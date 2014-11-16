@@ -1,8 +1,5 @@
 package swagger
 
-// TODO:
-// Operations is partially done, should continue at the responses object
-
 type License struct {
 	Name string `json:"name" yaml:"name"`
 	URL  string `json:"url" yaml:"url"`
@@ -32,13 +29,26 @@ type ConsumesProduces struct {
 
 type Swagger struct {
 	ConsumesProduces
-	Swagger  string `json:"swagger" yaml:"swagger"`
-	Info     Info   `json:"info" yaml:"info"`
-	Host     string `json:"host,omitempty" yaml:"host,omitempty"`
-	BasePath string `json:"basePath,omitempty" yaml:"basePath,omitempty"` // must start with a leading "/"
-	Paths    Paths  `json:"paths" yaml:"paths"`                           // required
+	Swagger             string                    `json:"swagger" yaml:"swagger"`
+	Info                Info                      `json:"info" yaml:"info"`
+	Host                string                    `json:"host,omitempty" yaml:"host,omitempty"`
+	BasePath            string                    `json:"basePath,omitempty" yaml:"basePath,omitempty"` // must start with a leading "/"
+	Paths               Paths                     `json:"paths" yaml:"paths"`                           // required
+	Definitions         map[string]Schema         `json:"definitions,omitempty" yaml:"definitions,omitempty"`
+	Parameters          []Parameter               `json:"parameters,omitempty" yaml:"parameters,omitempty"`
+	Responses           map[string]Response       `json:"responses,omitempty", yaml:"responses,omitempty"`
+	SecurityDefinitions map[string]SecurityScheme `json:"securityDefinitions,omitempty", yaml:"securityDefintions,omitempty"`
+	Security            []SecurityRequirement     `json:"security,omitempty" yaml:"security,omitempty"`
+	Tags                []Tag                     `json:"tags,omitempty" yaml:"tags,omitempty"`
+	ExternalDocs        *ExternalDocumentation    `json:"externalDocs,omitempty" yaml:"externalDocs,omitempty"`
 }
 
+type Tag struct {
+	Describable
+	VendorExtensible
+	Name         string                 `json:"name" yaml:"name"`
+	ExternalDocs *ExternalDocumentation `json:"externalDocs,omitempty" yaml:"externalDocs,omitempty"`
+}
 type Paths struct {
 	VendorExtensible
 	Paths map[string]PathItem // custom serializer to flatten this, each entry must start with "/"
@@ -55,7 +65,14 @@ type Reference struct {
 type PathItem struct {
 	Reference
 	VendorExtensible
-	Get *Operation `json:"get,omitempty" yaml:"get,omitempty"`
+	Get        *Operation  `json:"get,omitempty" yaml:"get,omitempty"`
+	Put        *Operation  `json:"put,omitempty" yaml:"put,omitempty"`
+	Post       *Operation  `json:"post,omitempty" yaml:"post,omitempty"`
+	Delete     *Operation  `json:"delete,omitempty" yaml:"delete,omitempty"`
+	Options    *Operation  `json:"options,omitempty" yaml:"options,omitempty"`
+	Head       *Operation  `json:"head,omitempty" yaml:"head,omitempty"`
+	Patch      *Operation  `json:"patch,omitempty" yaml:"patch,omitempty"`
+	Parameters []Parameter `json:"parameters,omitempty" yaml:"paramters,omitempty"`
 }
 
 type Describable struct {
@@ -71,13 +88,44 @@ type Operation struct {
 	ExternalDocs *ExternalDocumentation `json:"externalDocs,omitempty" yaml:"externalDocs,omitempty"`
 	ID           string                 `json:"operationId" yaml:"operationId"`
 	Deprecated   bool                   `json:"deprecated,omitempty" yaml:"deprecated,omitempty"`
-	Security     map[string][]string    `json:"security,omitempty" yaml:"security,omitempty"`
+	Security     []SecurityRequirement  `json:"security,omitempty" yaml:"security,omitempty"`
+	Parameters   []Parameter            `json:"parameters,omitempty" yaml:"parameters,omitempty"`
+	Responses    Responses              `json:"responses" yaml:"responses"`
+}
+
+type Responses struct {
+	VendorExtensible
+	Default             *Response           `json:"default,omitempty" yaml:"default,omitempty"`
+	StatusCodeResponses StatusCodeResponses // requires lifting for the json or yaml representation
+}
+
+type StatusCodeResponses map[int]Response
+
+type Response struct {
+	Describable
+	Reference
+	Schema   *Schema     `json:"schema,omitempty" yaml:"schema,omitempty"`
+	Headers  Headers     `json:"headers,omitempty" yaml:"headers,omitempty"`
+	Examples interface{} `json:"examples,omitempty" yaml:"examples,omitempty"`
+}
+
+type Headers map[string]Header
+
+type Header struct {
+	Describable
+	Items
+	Validatable
+	Type    string      `json:"type,omitempty" yaml:"type,omitempty"`
+	Format  string      `json:"format,omitempty" yaml:"format,omitempty"`
+	Default interface{} `json:"default,omitempty" yaml:"default,omitempty"`
 }
 
 type ExternalDocumentation struct {
 	Describable
 	URL string `json:"url" yaml:"url"`
 }
+
+type SecurityRequirement map[string][]string
 
 type SecurityScheme struct {
 	Describable
@@ -91,25 +139,8 @@ type SecurityScheme struct {
 	Scopes           map[string]string `json:"scopes,omitempty" yaml:"scopes,omitempty"`                     // oauth2
 }
 
-type Parameter struct {
-	Describable
-	Items
-	VendorExtensible
-	Reference
-	Type     string  `json:"type,omitempty" yaml:"type,omitempty"`
-	Format   string  `json:"format,omitempty" yaml:"format,omitempty"`
-	Name     string  `json:"name,omitempty" yaml:"name,omitempty"`
-	In       string  `json:"in,omitempty" yaml:"in,omitempty"`
-	Required bool    `json:"required,omitempty" yaml:"required,omitempty"`
-	Schema   *Schema `json:"schema,omitempty" yaml:"schema,omitempty"` // when in == "body"
-}
-
-type Items struct {
-	Type             string        `json:"type,omitempty" yaml:"type,omitempty"`
-	Format           string        `json:"format,omitempty" yaml:"format,omitempty"`
-	Items            *Items        `json:"items,omitempty" yaml:"items,omitempty"`
-	CollectionFormat string        `json:"collectionFormat,omitempty" yaml:"collectionFormat,omitempty"`
-	Default          interface{}   `json:"default,omitempty" yaml:"default,omitemtpy"`
+type Validatable struct {
+	Maximum          float64       `json:"maximum,omitempty" yaml:"maximum,omitempty"`
 	ExclusiveMaximum bool          `json:"exclusiveMaximum,omitempty" yaml:"exclusiveMaximum,omitempty"`
 	Minimum          float64       `json:"minimum,omitempty" yaml:"minimum,omitempty"`
 	ExclusiveMinimum bool          `json:"exclusiveMinimum,omitempty" yaml:"exclusiveMinimum,omitempty"`
@@ -123,37 +154,51 @@ type Items struct {
 	Enum             []interface{} `json:"enum,omitempty" yaml:"enum,omitempty"`
 }
 
+type Parameter struct {
+	Describable
+	Items
+	VendorExtensible
+	Reference
+	Validatable
+	Type             string      `json:"type,omitempty" yaml:"type,omitempty"`
+	Format           string      `json:"format,omitempty" yaml:"format,omitempty"`
+	Name             string      `json:"name,omitempty" yaml:"name,omitempty"`
+	In               string      `json:"in,omitempty" yaml:"in,omitempty"`
+	Required         bool        `json:"required,omitempty" yaml:"required,omitempty"`
+	Schema           *Schema     `json:"schema,omitempty" yaml:"schema,omitempty"` // when in == "body"
+	CollectionFormat string      `json:"collectionFormat,omitempty" yaml:"collectionFormat,omitempty"`
+	Default          interface{} `json:"default,omitempty" yaml:"default,omitempty"`
+}
+
+type Items struct {
+	Validatable
+	Type             string      `json:"type,omitempty" yaml:"type,omitempty"`
+	Format           string      `json:"format,omitempty" yaml:"format,omitempty"`
+	Items            *Items      `json:"items,omitempty" yaml:"items,omitempty"`
+	CollectionFormat string      `json:"collectionFormat,omitempty" yaml:"collectionFormat,omitempty"`
+	Default          interface{} `json:"default,omitempty" yaml:"default,omitemtpy"`
+}
+
 type Schema struct {
 	Reference
 	Describable
-	Format           string                 `json:"format" yaml:"format"`
-	Title            string                 `json:"title" yaml:"title"`
-	Description      string                 `json:"description" yaml:"description"`
-	Default          interface{}            `json:"default,omitempty" yaml:"default,omitemtpy"`
-	MultipleOf       float64                `json:"multipleOf,omitempty" yaml:"multipleOf,omitempty"`
-	Maximum          float64                `json:"maximum,omitempty" yaml:"maximum,omitempty"`
-	ExclusiveMaximum bool                   `json:"exclusiveMaximum,omitempty" yaml:"exclusiveMaximum,omitempty"`
-	Minimum          float64                `json:"minimum,omitempty" yaml:"minimum,omitempty"`
-	ExclusiveMinimum bool                   `json:"exclusiveMinimum,omitempty" yaml:"exclusiveMinimum,omitempty"`
-	MaxLength        int64                  `json:"maxLength,omitempty" yaml:"maxLength,omitempty"`
-	MinLength        int64                  `json:"minLength,omitempty" yaml:"minLength,omitempty"`
-	Pattern          string                 `json:"pattern,omitempty" yaml:"pattern,omitempty"`
-	MaxItems         int64                  `json:"maxItems,omitempty" yaml:"maxItems,omitempty"`
-	MinItems         int64                  `json:"minItems,omitempty" yaml:"minItems,omitempty"`
-	UniqueItems      bool                   `json:"uniqueItems,omitempty" yaml:"uniqueItems,omitempty"`
-	MaxProperties    int64                  `json:"maxProperties,omitempty" yaml:"maxProperties,omitempty"`
-	MinProperties    int64                  `json:"minProperties,omitempty" yaml:"minProperties,omitempty"`
-	Required         bool                   `json:"required,omitempty" yaml:"required,omitempty"`
-	Enum             []interface{}          `json:"enum,omitempty" yaml:"enum,omitempty"`
-	Type             *StringOrArray         `json:"type,omitempty" yaml:"type,omitempty"`
-	Items            *SchemaOrArray         `json:"items,omitempty" yaml:"items,omitempty"`
-	AllOf            []Schema               `json:"allOf,omitempty" yaml:"allOf,omitempty"`
-	Properties       map[string]Schema      `json:"properties,omitempty" yaml:"properties,omitempty"`
-	Discriminator    string                 `json:"discriminator,omitempty" yaml:"discriminator,omitempty"`
-	ReadOnly         bool                   `json:"readOnly,omitempty" yaml:"readOnly,omitempty"`
-	XML              *XMLObject             `json:"xml,omitempty" yaml:"xml,omitempty"`
-	ExternalDocs     *ExternalDocumentation `json:"externalDocs,omitempty" yaml:"externalDocs,omitempty"`
-	Example          interface{}            `json:"example,omitempty" yaml:"example,omitempty"`
+	Validatable
+	Format        string                 `json:"format" yaml:"format"`
+	Title         string                 `json:"title" yaml:"title"`
+	Description   string                 `json:"description" yaml:"description"`
+	Default       interface{}            `json:"default,omitempty" yaml:"default,omitemtpy"`
+	MaxProperties int64                  `json:"maxProperties,omitempty" yaml:"maxProperties,omitempty"`
+	MinProperties int64                  `json:"minProperties,omitempty" yaml:"minProperties,omitempty"`
+	Required      bool                   `json:"required,omitempty" yaml:"required,omitempty"`
+	Type          *StringOrArray         `json:"type,omitempty" yaml:"type,omitempty"`
+	Items         *SchemaOrArray         `json:"items,omitempty" yaml:"items,omitempty"`
+	AllOf         []Schema               `json:"allOf,omitempty" yaml:"allOf,omitempty"`
+	Properties    map[string]Schema      `json:"properties,omitempty" yaml:"properties,omitempty"`
+	Discriminator string                 `json:"discriminator,omitempty" yaml:"discriminator,omitempty"`
+	ReadOnly      bool                   `json:"readOnly,omitempty" yaml:"readOnly,omitempty"`
+	XML           *XMLObject             `json:"xml,omitempty" yaml:"xml,omitempty"`
+	ExternalDocs  *ExternalDocumentation `json:"externalDocs,omitempty" yaml:"externalDocs,omitempty"`
+	Example       interface{}            `json:"example,omitempty" yaml:"example,omitempty"`
 }
 
 type XMLObject struct {
