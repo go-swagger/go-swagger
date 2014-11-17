@@ -105,7 +105,7 @@ func (s Swagger) MarshalYAML() (interface{}, error) {
 	return s.Map(), nil
 }
 
-type SecurityDefinitions map[string]SecurityScheme
+type SecurityDefinitions map[string]*SecurityScheme
 
 func (s SecurityDefinitions) Map() map[string]interface{} {
 	res := make(map[string]interface{})
@@ -345,6 +345,47 @@ type ExternalDocumentation struct {
 type SecurityRequirement map[string][]string
 type SecurityRequirements []SecurityRequirement
 
+func BasicAuth() *SecurityScheme {
+	return &SecurityScheme{Type: "basic"}
+}
+
+func ApiKeyAuth(fieldName, valueSource string) *SecurityScheme {
+	return &SecurityScheme{Type: "apiKey", Name: fieldName, In: valueSource}
+}
+
+func OAuth2Implicit(authorizationURL string) *SecurityScheme {
+	return &SecurityScheme{
+		Type:             "oauth2",
+		Flow:             "implicit",
+		AuthorizationURL: authorizationURL,
+	}
+}
+
+func OAuth2Password(tokenURL string) *SecurityScheme {
+	return &SecurityScheme{
+		Type:     "oauth2",
+		Flow:     "password",
+		TokenURL: tokenURL,
+	}
+}
+
+func OAuth2Application(tokenURL string) *SecurityScheme {
+	return &SecurityScheme{
+		Type:     "oauth2",
+		Flow:     "application",
+		TokenURL: tokenURL,
+	}
+}
+
+func OAuth2AccessToken(authorizationURL, tokenURL string) *SecurityScheme {
+	return &SecurityScheme{
+		Type:             "oauth2",
+		Flow:             "accessCode",
+		AuthorizationURL: authorizationURL,
+		TokenURL:         tokenURL,
+	}
+}
+
 type SecurityScheme struct {
 	Description      string                 `structs:"description,omitempty"`
 	Extensions       map[string]interface{} `structs:"-"` // custom extensions, omitted when empty
@@ -355,6 +396,13 @@ type SecurityScheme struct {
 	AuthorizationURL string                 `structs:"authorizationUrl,omitempty"` // oauth2
 	TokenURL         string                 `structs:"tokenUrl,omitempty"`         // oauth2
 	Scopes           map[string]string      `structs:"scopes,omitempty"`           // oauth2
+}
+
+func (s *SecurityScheme) AddScope(scope, description string) {
+	if s.Scopes == nil {
+		s.Scopes = make(map[string]string)
+	}
+	s.Scopes[scope] = description
 }
 
 func (s SecurityScheme) Map() map[string]interface{} {
@@ -369,6 +417,22 @@ func (s SecurityScheme) MarshalJSON() ([]byte, error) {
 
 func (s SecurityScheme) MarshalYAML() (interface{}, error) {
 	return s.Map(), nil
+}
+
+func QueryParam() *Parameter {
+	return &Parameter{In: "query"}
+}
+
+func HeaderParam() *Parameter {
+	return &Parameter{In: "header", Required: true}
+}
+
+func PathParam() *Parameter {
+	return &Parameter{In: "path", Required: true}
+}
+
+func BodyParam() *Parameter {
+	return &Parameter{In: "body"}
 }
 
 type Parameter struct {
@@ -392,7 +456,7 @@ type Parameter struct {
 	Format           string                 `structs:"format,omitempty"`
 	Name             string                 `structs:"name,omitempty"`
 	In               string                 `structs:"in,omitempty"`
-	Required         bool                   `structs:"required,omitempty"`
+	Required         bool                   `structs:"required"`
 	Schema           *Schema                `structs:"-"` // when in == "body"
 	CollectionFormat string                 `structs:"collectionFormat,omitempty"`
 	Default          interface{}            `structs:"default,omitempty"`
@@ -438,36 +502,77 @@ type Items struct {
 	Enum             []interface{} `structs:"enum,omitempty"`
 }
 
+func BooleanProperty() *Schema {
+	return &Schema{Type: &StringOrArray{Single: "boolean"}}
+}
+
+func StringProperty() *Schema {
+	return &Schema{Type: &StringOrArray{Single: "string"}}
+}
+func Float64Property() *Schema {
+	return &Schema{Type: &StringOrArray{Single: "number"}, Format: "double"}
+}
+
+func Float32Property() *Schema {
+	return &Schema{Type: &StringOrArray{Single: "number"}, Format: "float"}
+}
+
+func Int32Property() *Schema {
+	return &Schema{Type: &StringOrArray{Single: "number"}, Format: "int32"}
+}
+
+func Int64Property() *Schema {
+	return &Schema{Type: &StringOrArray{Single: "number"}, Format: "int64"}
+}
+
+func DateProperty() *Schema {
+	return &Schema{Type: &StringOrArray{Single: "string"}, Format: "date"}
+}
+func DateTimeProperty() *Schema {
+	return &Schema{Type: &StringOrArray{Single: "string"}, Format: "date-time"}
+}
+func MapProperty(property *Schema) *Schema {
+	return &Schema{Type: &StringOrArray{Single: "object"}, AdditionalProperties: property}
+}
+func RefProperty(name string) *Schema {
+	return &Schema{Ref: name}
+}
+
+func ArrayProperty(items *Schema) *Schema {
+	return &Schema{Items: &SchemaOrArray{Single: items}, Type: &StringOrArray{Single: "array"}}
+}
+
 type Schema struct {
-	Ref              string                 `structs:"-"`
-	Description      string                 `structs:"description,omitempty"`
-	Maximum          float64                `structs:"maximum,omitempty"`
-	ExclusiveMaximum bool                   `structs:"exclusiveMaximum,omitempty"`
-	Minimum          float64                `structs:"minimum,omitempty"`
-	ExclusiveMinimum bool                   `structs:"exclusiveMinimum,omitempty"`
-	MaxLength        int64                  `structs:"maxLength,omitempty"`
-	MinLength        int64                  `structs:"minLength,omitempty"`
-	Pattern          string                 `structs:"pattern,omitempty"`
-	MaxItems         int64                  `structs:"maxItems,omitempty"`
-	MinItems         int64                  `structs:"minItems,omitempty"`
-	UniqueItems      bool                   `structs:"uniqueItems,omitempty"`
-	MultipleOf       float64                `structs:"multipleOf,omitempty"`
-	Enum             []interface{}          `structs:"enum,omitempty"`
-	Type             *StringOrArray         `structs:"-"`
-	Format           string                 `structs:"format,omitempty"`
-	Title            string                 `structs:"title,omitempty"`
-	Default          interface{}            `structs:"default,omitempty"`
-	MaxProperties    int64                  `structs:"maxProperties,omitempty"`
-	MinProperties    int64                  `structs:"minProperties,omitempty"`
-	Required         bool                   `structs:"required,omitempty"`
-	Items            *SchemaOrArray         `structs:"-"`
-	AllOf            []Schema               `structs:"-"`
-	Properties       map[string]Schema      `structs:"-"`
-	Discriminator    string                 `structs:"discriminator,omitempty"`
-	ReadOnly         bool                   `structs:"readOnly,omitempty"`
-	XML              *XMLObject             `structs:"xml,omitempty"`
-	ExternalDocs     *ExternalDocumentation `structs:"externalDocs,omitempty"`
-	Example          interface{}            `structs:"example,omitempty"`
+	Ref                  string                 `structs:"-"`
+	Description          string                 `structs:"description,omitempty"`
+	Maximum              float64                `structs:"maximum,omitempty"`
+	ExclusiveMaximum     bool                   `structs:"exclusiveMaximum,omitempty"`
+	Minimum              float64                `structs:"minimum,omitempty"`
+	ExclusiveMinimum     bool                   `structs:"exclusiveMinimum,omitempty"`
+	MaxLength            int64                  `structs:"maxLength,omitempty"`
+	MinLength            int64                  `structs:"minLength,omitempty"`
+	Pattern              string                 `structs:"pattern,omitempty"`
+	MaxItems             int64                  `structs:"maxItems,omitempty"`
+	MinItems             int64                  `structs:"minItems,omitempty"`
+	UniqueItems          bool                   `structs:"uniqueItems,omitempty"`
+	MultipleOf           float64                `structs:"multipleOf,omitempty"`
+	Enum                 []interface{}          `structs:"enum,omitempty"`
+	Type                 *StringOrArray         `structs:"-"`
+	Format               string                 `structs:"format,omitempty"`
+	Title                string                 `structs:"title,omitempty"`
+	Default              interface{}            `structs:"default,omitempty"`
+	MaxProperties        int64                  `structs:"maxProperties,omitempty"`
+	MinProperties        int64                  `structs:"minProperties,omitempty"`
+	Required             []string               `structs:"required,omitempty"`
+	Items                *SchemaOrArray         `structs:"-"`
+	AllOf                []Schema               `structs:"-"`
+	Properties           map[string]Schema      `structs:"-"`
+	Discriminator        string                 `structs:"discriminator,omitempty"`
+	ReadOnly             bool                   `structs:"readOnly,omitempty"`
+	XML                  *XMLObject             `structs:"xml,omitempty"`
+	ExternalDocs         *ExternalDocumentation `structs:"externalDocs,omitempty"`
+	Example              interface{}            `structs:"example,omitempty"`
+	AdditionalProperties *Schema                `structs:"-"`
 }
 
 func (s Schema) Map() map[string]interface{} {
@@ -485,11 +590,14 @@ func (s Schema) Map() map[string]interface{} {
 	}
 
 	if len(s.Properties) > 0 {
-		var ser map[string]interface{}
+		ser := make(map[string]interface{})
 		for k, v := range s.Properties {
 			ser[k] = v.Map()
 		}
 		res["properties"] = ser
+	}
+	if s.AdditionalProperties != nil {
+		res["additionalProperties"] = s.AdditionalProperties.Map()
 	}
 
 	if s.Type != nil {
@@ -501,9 +609,9 @@ func (s Schema) Map() map[string]interface{} {
 	}
 
 	if s.Items != nil {
-		var value interface{} = s.Type.Multi
-		if len(s.Type.Multi) == 0 && s.Type.Single != "" {
-			value = s.Type.Single
+		var value interface{} = s.Items.Multi
+		if len(s.Items.Multi) == 0 && s.Items.Single != nil {
+			value = s.Items.Single
 		}
 		res["items"] = value
 	}
