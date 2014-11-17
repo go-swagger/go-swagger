@@ -58,40 +58,21 @@ func (i Info) MarshalYAML() (interface{}, error) {
 }
 
 type Swagger struct {
-	Consumes            []string                  `structs:"consumes,omitempty"`
-	Produces            []string                  `structs:"produces,omitempty"`
-	Schemes             []string                  `structs:"schemes,omitempty"` // the scheme, when present must be from [http, https, ws, wss]
-	Swagger             string                    `structs:"swagger"`
-	Info                Info                      `structs:"-"`
-	Host                string                    `structs:"host,omitempty"`
-	BasePath            string                    `structs:"basePath,omitempty"` // must start with a leading "/"
-	Paths               Paths                     `structs:"-"`                  // required
-	Definitions         map[string]Schema         `structs:"definitions,omitempty"`
-	Parameters          []Parameter               `structs:"parameters,omitempty"`
-	Responses           ResponsesMap              `structs:"-"`
-	SecurityDefinitions map[string]SecurityScheme `structs:"securityDefinitions,omitempty"`
-	Security            []SecurityRequirement     `structs:"security,omitempty"`
-	Tags                []Tag                     `structs:"-,omitempty"`
-	ExternalDocs        *ExternalDocumentation    `structs:"externalDocs,omitempty"`
-}
-
-//type Definitions map[string]Schema
-//func (d Definitions) Map() map[string]interface{} {
-//res := make(map[string]interface{})
-//for k, v := range r {
-//res[k] = v.Map()
-//}
-//return res
-//}
-
-type ResponsesMap map[string]Response
-
-func (r ResponsesMap) Map() map[string]interface{} {
-	res := make(map[string]interface{})
-	for k, v := range r {
-		res[k] = v.Map()
-	}
-	return res
+	Consumes            []string               `structs:"consumes,omitempty"`
+	Produces            []string               `structs:"produces,omitempty"`
+	Schemes             []string               `structs:"schemes,omitempty"` // the scheme, when present must be from [http, https, ws, wss]
+	Swagger             string                 `structs:"swagger"`
+	Info                Info                   `structs:"-"`
+	Host                string                 `structs:"host,omitempty"`
+	BasePath            string                 `structs:"basePath,omitempty"` // must start with a leading "/"
+	Paths               Paths                  `structs:"-"`                  // required
+	Definitions         Definitions            `structs:"-"`
+	Parameters          []Parameter            `structs:"-"`
+	Responses           ResponsesMap           `structs:"-"`
+	SecurityDefinitions SecurityDefinitions    `structs:"-"`
+	Security            SecurityRequirements   `structs:"security,omitempty"`
+	Tags                []Tag                  `structs:"-"`
+	ExternalDocs        *ExternalDocumentation `structs:"externalDocs,omitempty"`
 }
 
 func (s Swagger) Map() map[string]interface{} {
@@ -99,6 +80,14 @@ func (s Swagger) Map() map[string]interface{} {
 	res["info"] = s.Info.Map()
 	res["paths"] = s.Paths.Map()
 	res["responses"] = s.Responses.Map()
+	res["definitions"] = s.Definitions.Map()
+	res["securityDefinitions"] = s.SecurityDefinitions.Map()
+
+	var params []map[string]interface{}
+	for _, param := range s.Parameters {
+		params = append(params, param.Map())
+	}
+	res["parameters"] = params
 
 	var tags []map[string]interface{}
 	for _, t := range s.Tags {
@@ -114,6 +103,36 @@ func (s Swagger) MarshalJSON() ([]byte, error) {
 
 func (s Swagger) MarshalYAML() (interface{}, error) {
 	return s.Map(), nil
+}
+
+type SecurityDefinitions map[string]SecurityScheme
+
+func (s SecurityDefinitions) Map() map[string]interface{} {
+	res := make(map[string]interface{})
+	for k, v := range s {
+		res[k] = v.Map()
+	}
+	return res
+}
+
+type Definitions map[string]Schema
+
+func (d Definitions) Map() map[string]interface{} {
+	res := make(map[string]interface{})
+	for k, v := range d {
+		res[k] = v.Map()
+	}
+	return res
+}
+
+type ResponsesMap map[string]Response
+
+func (r ResponsesMap) Map() map[string]interface{} {
+	res := make(map[string]interface{})
+	for k, v := range r {
+		res[k] = v.Map()
+	}
+	return res
 }
 
 type Tag struct {
@@ -173,7 +192,7 @@ type PathItem struct {
 	Options    *Operation             `structs:"options,omitempty"`
 	Head       *Operation             `structs:"head,omitempty"`
 	Patch      *Operation             `structs:"patch,omitempty"`
-	Parameters []Parameter            `structs:"parameters,omitempty"`
+	Parameters []Parameter            `structs:"-"`
 }
 
 func (p PathItem) Map() map[string]interface{} {
@@ -194,6 +213,13 @@ func (p PathItem) Map() map[string]interface{} {
 	addOp("head", p.Head)
 	addOp("options", p.Options)
 	addOp("patch", p.Patch)
+
+	var params []map[string]interface{}
+	for _, param := range p.Parameters {
+		params = append(params, param.Map())
+	}
+	res["parameters"] = params
+
 	addExtensions(res, p.Extensions)
 
 	return res
@@ -218,13 +244,18 @@ type Operation struct {
 	ID           string                 `structs:"operationId"`
 	Deprecated   bool                   `structs:"deprecated,omitempty"`
 	Security     []SecurityRequirement  `structs:"security,omitempty"`
-	Parameters   []Parameter            `structs:"parameters,omitempty"`
+	Parameters   []Parameter            `structs:"-"`
 	Responses    Responses              `structs:"-"`
 }
 
 func (o Operation) Map() map[string]interface{} {
 	res := structs.Map(o)
 	res["responses"] = o.Responses.Map()
+	var params []map[string]interface{}
+	for _, param := range o.Parameters {
+		params = append(params, param.Map())
+	}
+	res["parameters"] = params
 	addExtensions(res, o.Extensions)
 	return res
 }
@@ -312,6 +343,7 @@ type ExternalDocumentation struct {
 }
 
 type SecurityRequirement map[string][]string
+type SecurityRequirements []SecurityRequirement
 
 type SecurityScheme struct {
 	Description      string                 `structs:"description,omitempty"`
