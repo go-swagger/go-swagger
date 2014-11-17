@@ -60,7 +60,6 @@ func TestPropertySerialization(t *testing.T) {
 		})
 		Convey("a string array property", func() {
 			prop := ArrayProperty(StringProperty())
-
 			So(prop, validateJSON, `{"items":{"type":"string"},"type":"array"}`)
 		})
 	})

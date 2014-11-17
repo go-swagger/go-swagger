@@ -8,11 +8,13 @@ import (
 	"github.com/fatih/structs"
 )
 
+// License information for the exposed API.
 type License struct {
 	Name string `structs:"name"`
 	URL  string `structs:"url"`
 }
 
+// Contact information for the exposed API.
 type ContactInfo struct {
 	Name  string `structs:"name"`
 	URL   string `structs:"url"`
@@ -33,6 +35,8 @@ func addExtensions(res map[string]interface{}, extensions map[string]interface{}
 	}
 }
 
+// The object provides metadata about the API.
+// The metadata can be used by the clients if needed, and can be presented in the Swagger-UI for convenience.
 type Info struct {
 	Extensions     map[string]interface{} `structs:"-"` // custom extensions, omitted when empty
 	Description    string                 `structs:"description,omitempty"`
@@ -57,6 +61,8 @@ func (i Info) MarshalYAML() (interface{}, error) {
 	return i.Map(), nil
 }
 
+// This is the root document object for the API specification.
+// It combines what previously was the Resource Listing and API Declaration (version 1.2 and earlier) together into one document.
 type Swagger struct {
 	Consumes            []string               `structs:"consumes,omitempty"`
 	Produces            []string               `structs:"produces,omitempty"`
@@ -156,6 +162,10 @@ func (t Tag) MarshalYAML() (interface{}, error) {
 	return t.Map(), nil
 }
 
+// Holds the relative paths to the individual endpoints.
+// The path is appended to the [`basePath`](#swaggerBasePath) in order
+// to construct the full URL.
+// The Paths may be empty, due to [ACL constraints](#securityFiltering).
 type Paths struct {
 	Extensions map[string]interface{} `structs:"-"` // custom extensions, omitted when empty
 	Paths      map[string]PathItem    `structs:"-"` // custom serializer to flatten this, each entry must start with "/"
@@ -182,6 +192,10 @@ func (p Paths) MarshalYAML() (interface{}, error) {
 	return p.Map(), nil
 }
 
+// Describes the operations available on a single path.
+// A Path Item may be empty, due to [ACL constraints](#securityFiltering).
+// The path itself is still exposed to the documentation viewer but they will
+// not know which operations and parameters are available.
 type PathItem struct {
 	Ref        string                 `structs:"-"`
 	Extensions map[string]interface{} `structs:"-"` // custom extensions, omitted when empty
@@ -232,6 +246,7 @@ func (p PathItem) MarshalYAML() (interface{}, error) {
 	return p.Map(), nil
 }
 
+// Describes a single API operation on a path.
 type Operation struct {
 	Description  string                 `structs:"description,omitempty"`
 	Extensions   map[string]interface{} `structs:"-"` // custom extensions, omitted when empty
@@ -435,6 +450,16 @@ func BodyParam() *Parameter {
 	return &Parameter{In: "body"}
 }
 
+// A unique parameter is defined by a combination of a [name](#parameterName) and [location](#parameterIn).
+//
+// There are five possible parameter types.
+// * Path - Used together with [Path Templating](#pathTemplating), where the parameter value is actually part of the operation's URL. This does not include the host or base path of the API. For example, in `/items/{itemId}`, the path parameter is `itemId`.
+// * Query - Parameters that are appended to the URL. For example, in `/items?id=###`, the query parameter is `id`.
+// * Header - Custom headers that are expected as part of the request.
+// * Body - The payload that's appended to the HTTP request. Since there can only be one payload, there can only be *one* body parameter. The name of the body parameter has no effect on the parameter itself and is used for documentation purposes only. Since Form parameters are also in the payload, body and form parameters cannot exist together for the same operation.
+// * Form - Used to describe the payload of an HTTP request when either `application/x-www-form-urlencoded` or `multipart/form-data` are used as the content type of the request (in Swagger's definition, the [`consumes`](#operationConsumes) property of an operation). This is the only parameter type that can be used to send files, thus supporting the `file` type. Since form parameters are sent in the payload, they cannot be declared together with a body parameter for the same operation. Form parameters have a different format based on the content-type used (for further details, consult http://www.w3.org/TR/html401/interact/forms.html#h-17.13.4):
+//   * `application/x-www-form-urlencoded` - Similar to the format of Query parameters but as a payload. For example, `foo=1&bar=swagger` - both `foo` and `bar` are form parameters. This is normally used for simple parameters that are being transferred.
+//   * `multipart/form-data` - each parameter takes a section in the payload with an internal header. For example, for the header `Content-Disposition: form-data; name="submit-name"` the name of the parameter is `submit-name`. This type of form parameters is more commonly used for file transfers.
 type Parameter struct {
 	Description      string                 `structs:"description,omitempty"`
 	Items            *Items                 `structs:"items,omitempty"`
