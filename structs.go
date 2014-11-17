@@ -1,217 +1,498 @@
 package swagger
 
+import (
+	"encoding/json"
+	"strconv"
+	"strings"
+
+	"github.com/fatih/structs"
+)
+
 type License struct {
-	Name string `json:"name" yaml:"name"`
-	URL  string `json:"url" yaml:"url"`
+	Name string `structs:"name"`
+	URL  string `structs:"url"`
 }
 
 type ContactInfo struct {
-	Name  string `json:"name" yaml:"name"`
-	URL   string `json:"url" yaml:"url"`
-	Email string `json:"email" yaml:"email"`
+	Name  string `structs:"name"`
+	URL   string `structs:"url"`
+	Email string `structs:"email"`
+}
+
+func addExtensions(res map[string]interface{}, extensions map[string]interface{}) {
+	for k, v := range extensions {
+		key := k
+		if key != "" {
+			if !strings.HasPrefix(key, "x-") {
+				key = "x-" + key
+			}
+			if !structs.IsZero(v) {
+				res[key] = structs.Map(v)
+			}
+		}
+	}
 }
 
 type Info struct {
-	VendorExtensible
-	Describable
-	Title          string       `json:"title" yaml:"title"`
-	TermsOfService string       `json:"termsOfService,omitempty" yaml:"termsOfService,omitempty"`
-	Contact        *ContactInfo `json:"contact,omitempty" yaml:"contact,omitempty"`
-	License        *License     `json:"license,omitempty" yaml:"license,omitempty"`
-	Version        string       `json:"version" yaml:"version"`
+	Extensions     map[string]interface{} `structs:"-"` // custom extensions, omitted when empty
+	Description    string                 `structs:"description,omitempty"`
+	Title          string                 `structs:"title,omitempty"`
+	TermsOfService string                 `structs:"termsOfService,omitempty"`
+	Contact        *ContactInfo           `structs:"contact,omitempty"`
+	License        *License               `structs:"license,omitempty"`
+	Version        string                 `structs:"version,omitempty"`
 }
 
-type ConsumesProduces struct {
-	Consumes []string `json:"consumes,omitempty" yaml:"consumes,omitempty"`
-	Produces []string `json:"produces,omitempty" yaml:"produces,omitempty"`
-	Schemes  []string `json:"schemes,omitempty" yaml:"schemes,omitempty"` // the scheme, when present must be from [http, https, ws, wss]
+func (i Info) Map() map[string]interface{} {
+	res := structs.Map(i)
+	addExtensions(res, i.Extensions)
+	return res
+}
+
+func (i Info) MarshalJSON() ([]byte, error) {
+	return json.Marshal(i.Map())
+}
+
+func (i Info) MarshalYAML() (interface{}, error) {
+	return i.Map(), nil
 }
 
 type Swagger struct {
-	ConsumesProduces
-	Swagger             string                    `json:"swagger" yaml:"swagger"`
-	Info                Info                      `json:"info" yaml:"info"`
-	Host                string                    `json:"host,omitempty" yaml:"host,omitempty"`
-	BasePath            string                    `json:"basePath,omitempty" yaml:"basePath,omitempty"` // must start with a leading "/"
-	Paths               Paths                     `json:"paths" yaml:"paths"`                           // required
-	Definitions         map[string]Schema         `json:"definitions,omitempty" yaml:"definitions,omitempty"`
-	Parameters          []Parameter               `json:"parameters,omitempty" yaml:"parameters,omitempty"`
-	Responses           map[string]Response       `json:"responses,omitempty", yaml:"responses,omitempty"`
-	SecurityDefinitions map[string]SecurityScheme `json:"securityDefinitions,omitempty", yaml:"securityDefintions,omitempty"`
-	Security            []SecurityRequirement     `json:"security,omitempty" yaml:"security,omitempty"`
-	Tags                []Tag                     `json:"tags,omitempty" yaml:"tags,omitempty"`
-	ExternalDocs        *ExternalDocumentation    `json:"externalDocs,omitempty" yaml:"externalDocs,omitempty"`
+	Consumes            []string                  `structs:"consumes,omitempty"`
+	Produces            []string                  `structs:"produces,omitempty"`
+	Schemes             []string                  `structs:"schemes,omitempty"` // the scheme, when present must be from [http, https, ws, wss]
+	Swagger             string                    `structs:"swagger"`
+	Info                Info                      `structs:"-"`
+	Host                string                    `structs:"host,omitempty"`
+	BasePath            string                    `structs:"basePath,omitempty"` // must start with a leading "/"
+	Paths               Paths                     `structs:"-"`                  // required
+	Definitions         map[string]Schema         `structs:"definitions,omitempty"`
+	Parameters          []Parameter               `structs:"parameters,omitempty"`
+	Responses           ResponsesMap              `structs:"-"`
+	SecurityDefinitions map[string]SecurityScheme `structs:"securityDefinitions,omitempty"`
+	Security            []SecurityRequirement     `structs:"security,omitempty"`
+	Tags                []Tag                     `structs:"-,omitempty"`
+	ExternalDocs        *ExternalDocumentation    `structs:"externalDocs,omitempty"`
+}
+
+//type Definitions map[string]Schema
+//func (d Definitions) Map() map[string]interface{} {
+//res := make(map[string]interface{})
+//for k, v := range r {
+//res[k] = v.Map()
+//}
+//return res
+//}
+
+type ResponsesMap map[string]Response
+
+func (r ResponsesMap) Map() map[string]interface{} {
+	res := make(map[string]interface{})
+	for k, v := range r {
+		res[k] = v.Map()
+	}
+	return res
+}
+
+func (s Swagger) Map() map[string]interface{} {
+	res := structs.Map(s)
+	res["info"] = s.Info.Map()
+	res["paths"] = s.Paths.Map()
+	res["responses"] = s.Responses.Map()
+
+	var tags []map[string]interface{}
+	for _, t := range s.Tags {
+		tags = append(tags, t.Map())
+	}
+	res["tags"] = tags
+	return res
+}
+
+func (s Swagger) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.Map())
+}
+
+func (s Swagger) MarshalYAML() (interface{}, error) {
+	return s.Map(), nil
 }
 
 type Tag struct {
-	Describable
-	VendorExtensible
-	Name         string                 `json:"name" yaml:"name"`
-	ExternalDocs *ExternalDocumentation `json:"externalDocs,omitempty" yaml:"externalDocs,omitempty"`
+	Description  string                 `structs:"description,omitempty"`
+	Extensions   map[string]interface{} `structs:"-"` // custom extensions, omitted when empty
+	Name         string                 `structs:"name"`
+	ExternalDocs *ExternalDocumentation `structs:"externalDocs,omitempty"`
 }
+
+func (t Tag) Map() map[string]interface{} {
+	res := structs.Map(t)
+	addExtensions(res, t.Extensions)
+	return res
+}
+
+func (t Tag) MarshalJSON() ([]byte, error) {
+	return json.Marshal(t.Map())
+}
+
+func (t Tag) MarshalYAML() (interface{}, error) {
+	return t.Map(), nil
+}
+
 type Paths struct {
-	VendorExtensible
-	Paths map[string]PathItem // custom serializer to flatten this, each entry must start with "/"
+	Extensions map[string]interface{} `structs:"-"` // custom extensions, omitted when empty
+	Paths      map[string]PathItem    `structs:"-"` // custom serializer to flatten this, each entry must start with "/"
 }
 
-type VendorExtensible struct {
-	Extensions map[string]interface{} // custom extensions, omitted when empty
+func (p Paths) Map() map[string]interface{} {
+	res := make(map[string]interface{})
+	for k, v := range p.Paths {
+		key := k
+		if !strings.HasPrefix(key, "/") {
+			key = "/" + key
+		}
+		res[key] = v.Map()
+	}
+	addExtensions(res, p.Extensions)
+	return res
 }
 
-type Reference struct {
-	Ref string `json:"$ref,omitempty" yaml:"$ref,omitempty"`
+func (p Paths) MarshalJSON() ([]byte, error) {
+	return json.Marshal(p.Map())
+}
+
+func (p Paths) MarshalYAML() (interface{}, error) {
+	return p.Map(), nil
 }
 
 type PathItem struct {
-	Reference
-	VendorExtensible
-	Get        *Operation  `json:"get,omitempty" yaml:"get,omitempty"`
-	Put        *Operation  `json:"put,omitempty" yaml:"put,omitempty"`
-	Post       *Operation  `json:"post,omitempty" yaml:"post,omitempty"`
-	Delete     *Operation  `json:"delete,omitempty" yaml:"delete,omitempty"`
-	Options    *Operation  `json:"options,omitempty" yaml:"options,omitempty"`
-	Head       *Operation  `json:"head,omitempty" yaml:"head,omitempty"`
-	Patch      *Operation  `json:"patch,omitempty" yaml:"patch,omitempty"`
-	Parameters []Parameter `json:"parameters,omitempty" yaml:"paramters,omitempty"`
+	Ref        string                 `structs:"-"`
+	Extensions map[string]interface{} `structs:"-"` // custom extensions, omitted when empty
+	Get        *Operation             `structs:"get,omitempty"`
+	Put        *Operation             `structs:"put,omitempty"`
+	Post       *Operation             `structs:"post,omitempty"`
+	Delete     *Operation             `structs:"delete,omitempty"`
+	Options    *Operation             `structs:"options,omitempty"`
+	Head       *Operation             `structs:"head,omitempty"`
+	Patch      *Operation             `structs:"patch,omitempty"`
+	Parameters []Parameter            `structs:"parameters,omitempty"`
 }
 
-type Describable struct {
-	Description string `json:"description,omitempty" yaml:"description,omitempty"`
+func (p PathItem) Map() map[string]interface{} {
+	if p.Ref != "" {
+		return map[string]interface{}{"$ref": p.Ref}
+	}
+
+	res := make(map[string]interface{})
+	addOp := func(key string, op *Operation) {
+		if op != nil {
+			res[key] = op.Map()
+		}
+	}
+	addOp("get", p.Get)
+	addOp("put", p.Put)
+	addOp("post", p.Post)
+	addOp("delete", p.Delete)
+	addOp("head", p.Head)
+	addOp("options", p.Options)
+	addOp("patch", p.Patch)
+	addExtensions(res, p.Extensions)
+
+	return res
+}
+
+func (p PathItem) MarshalJSON() ([]byte, error) {
+	return json.Marshal(p.Map())
+}
+func (p PathItem) MarshalYAML() (interface{}, error) {
+	return p.Map(), nil
 }
 
 type Operation struct {
-	Describable
-	VendorExtensible
-	ConsumesProduces
-	Tags         []string               `json:"tags,omitempty" yaml:"tags,omitempty"`
-	Summary      string                 `json:"summary,omitempty" yaml:"summary,omitempty"`
-	ExternalDocs *ExternalDocumentation `json:"externalDocs,omitempty" yaml:"externalDocs,omitempty"`
-	ID           string                 `json:"operationId" yaml:"operationId"`
-	Deprecated   bool                   `json:"deprecated,omitempty" yaml:"deprecated,omitempty"`
-	Security     []SecurityRequirement  `json:"security,omitempty" yaml:"security,omitempty"`
-	Parameters   []Parameter            `json:"parameters,omitempty" yaml:"parameters,omitempty"`
-	Responses    Responses              `json:"responses" yaml:"responses"`
+	Description  string                 `structs:"description,omitempty"`
+	Extensions   map[string]interface{} `structs:"-"` // custom extensions, omitted when empty
+	Consumes     []string               `structs:"consumes,omitempty"`
+	Produces     []string               `structs:"produces,omitempty"`
+	Schemes      []string               `structs:"schemes,omitempty"` // the scheme, when present must be from [http, https, ws, wss]
+	Tags         []string               `structs:"tags,omitempty"`
+	Summary      string                 `structs:"summary,omitempty"`
+	ExternalDocs *ExternalDocumentation `structs:"externalDocs,omitempty"`
+	ID           string                 `structs:"operationId"`
+	Deprecated   bool                   `structs:"deprecated,omitempty"`
+	Security     []SecurityRequirement  `structs:"security,omitempty"`
+	Parameters   []Parameter            `structs:"parameters,omitempty"`
+	Responses    Responses              `structs:"-"`
+}
+
+func (o Operation) Map() map[string]interface{} {
+	res := structs.Map(o)
+	res["responses"] = o.Responses.Map()
+	addExtensions(res, o.Extensions)
+	return res
+}
+
+func (o Operation) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.Map())
+}
+
+func (o Operation) MarshalYAML() (interface{}, error) {
+	return o.Map(), nil
 }
 
 type Responses struct {
-	VendorExtensible
-	Default             *Response           `json:"default,omitempty" yaml:"default,omitempty"`
-	StatusCodeResponses StatusCodeResponses // requires lifting for the json or yaml representation
+	Extensions          map[string]interface{}
+	Default             *Response
+	StatusCodeResponses map[int]Response
 }
 
-type StatusCodeResponses map[int]Response
+func (r Responses) Map() map[string]interface{} {
+	res := make(map[string]interface{})
+	if r.Default != nil {
+		res["default"] = r.Default.Map()
+	}
+	for k, v := range r.StatusCodeResponses {
+		res[strconv.Itoa(k)] = v.Map()
+	}
+	addExtensions(res, r.Extensions)
+	return res
+}
+
+func (r Responses) MarshalJSON() ([]byte, error) {
+	return json.Marshal(r.Map())
+}
+func (r Responses) MarshalYAML() (interface{}, error) {
+	return r.Map(), nil
+}
 
 type Response struct {
-	Describable
-	Reference
-	Schema   *Schema     `json:"schema,omitempty" yaml:"schema,omitempty"`
-	Headers  Headers     `json:"headers,omitempty" yaml:"headers,omitempty"`
-	Examples interface{} `json:"examples,omitempty" yaml:"examples,omitempty"`
+	Description string            `structs:"description,omitempty"`
+	Ref         string            `structs:"-"`
+	Schema      *Schema           `structs:"schema,omitempty"`
+	Headers     map[string]Header `structs:"headers,omitempty"`
+	Examples    interface{}       `structs:"examples,omitempty"`
 }
 
-type Headers map[string]Header
+func (r Response) Map() map[string]interface{} {
+	if r.Ref != "" {
+		return map[string]interface{}{"$ref": r.Ref}
+	}
+
+	return structs.Map(r)
+}
+
+func (r Response) MarshalJSON() ([]byte, error) {
+	return json.Marshal(r.Map())
+}
+
+func (r Response) MarshalYAML() (interface{}, error) {
+	return r.Map(), nil
+}
 
 type Header struct {
-	Describable
-	Items
-	Validatable
-	Type    string      `json:"type,omitempty" yaml:"type,omitempty"`
-	Format  string      `json:"format,omitempty" yaml:"format,omitempty"`
-	Default interface{} `json:"default,omitempty" yaml:"default,omitempty"`
+	Description      string        `structs:"description,omitempty"`
+	Maximum          float64       `structs:"maximum,omitempty"`
+	ExclusiveMaximum bool          `structs:"exclusiveMaximum,omitempty"`
+	Minimum          float64       `structs:"minimum,omitempty"`
+	ExclusiveMinimum bool          `structs:"exclusiveMinimum,omitempty"`
+	MaxLength        int64         `structs:"maxLength,omitempty"`
+	MinLength        int64         `structs:"minLength,omitempty"`
+	Pattern          string        `structs:"pattern,omitempty"`
+	MaxItems         int64         `structs:"maxItems,omitempty"`
+	MinItems         int64         `structs:"minItems,omitempty"`
+	UniqueItems      bool          `structs:"uniqueItems,omitempty"`
+	MultipleOf       float64       `structs:"multipleOf,omitempty"`
+	Enum             []interface{} `structs:"enum,omitempty"`
+	Type             string        `structs:"type,omitempty"`
+	Format           string        `structs:"format,omitempty"`
+	Default          interface{}   `structs:"default,omitempty"`
+	Items            *Items        `structs:"items,omitempty"`
 }
 
 type ExternalDocumentation struct {
-	Describable
-	URL string `json:"url" yaml:"url"`
+	Description string `structs:"description,omitempty"`
+	URL         string `structs:"url"`
 }
 
 type SecurityRequirement map[string][]string
 
 type SecurityScheme struct {
-	Describable
-	VendorExtensible
-	Type             string            `json:"type" yaml:"type"`
-	Name             string            `json:"name,omitempty" yaml:"name,omitempty"`                         // api key
-	In               string            `json:"in,omitempty" yaml:"in,omitempty"`                             // api key
-	Flow             string            `json:"flow,omitempty" yaml:"flow,omitempty"`                         // oauth2
-	AuthorizationURL string            `json:"authorizationUrl,omitempty" yaml:"authorizationUrl,omitempty"` // oauth2
-	TokenURL         string            `json:"tokenUrl,omitempty" yaml:"tokenUrl,omitempty"`                 // oauth2
-	Scopes           map[string]string `json:"scopes,omitempty" yaml:"scopes,omitempty"`                     // oauth2
+	Description      string                 `structs:"description,omitempty"`
+	Extensions       map[string]interface{} `structs:"-"` // custom extensions, omitted when empty
+	Type             string                 `structs:"type"`
+	Name             string                 `structs:"name,omitempty"`             // api key
+	In               string                 `structs:"in,omitempty"`               // api key
+	Flow             string                 `structs:"flow,omitempty"`             // oauth2
+	AuthorizationURL string                 `structs:"authorizationUrl,omitempty"` // oauth2
+	TokenURL         string                 `structs:"tokenUrl,omitempty"`         // oauth2
+	Scopes           map[string]string      `structs:"scopes,omitempty"`           // oauth2
 }
 
-type Validatable struct {
-	Maximum          float64       `json:"maximum,omitempty" yaml:"maximum,omitempty"`
-	ExclusiveMaximum bool          `json:"exclusiveMaximum,omitempty" yaml:"exclusiveMaximum,omitempty"`
-	Minimum          float64       `json:"minimum,omitempty" yaml:"minimum,omitempty"`
-	ExclusiveMinimum bool          `json:"exclusiveMinimum,omitempty" yaml:"exclusiveMinimum,omitempty"`
-	MaxLength        int64         `json:"maxLength,omitempty" yaml:"maxLength,omitempty"`
-	MinLength        int64         `json:"minLength,omitempty" yaml:"minLength,omitempty"`
-	Pattern          string        `json:"pattern,omitempty" yaml:"pattern,omitempty"`
-	MaxItems         int64         `json:"maxItems,omitempty" yaml:"maxItems,omitempty"`
-	MinItems         int64         `json:"minItems,omitempty" yaml:"minItems,omitempty"`
-	UniqueItems      bool          `json:"uniqueItems,omitempty" yaml:"uniqueItems,omitempty"`
-	MultipleOf       float64       `json:"multipleOf,omitempty" yaml:"multipleOf,omitempty"`
-	Enum             []interface{} `json:"enum,omitempty" yaml:"enum,omitempty"`
+func (s SecurityScheme) Map() map[string]interface{} {
+	res := structs.Map(s)
+	addExtensions(res, s.Extensions)
+	return res
+}
+
+func (s SecurityScheme) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.Map())
+}
+
+func (s SecurityScheme) MarshalYAML() (interface{}, error) {
+	return s.Map(), nil
 }
 
 type Parameter struct {
-	Describable
-	Items
-	VendorExtensible
-	Reference
-	Validatable
-	Type             string      `json:"type,omitempty" yaml:"type,omitempty"`
-	Format           string      `json:"format,omitempty" yaml:"format,omitempty"`
-	Name             string      `json:"name,omitempty" yaml:"name,omitempty"`
-	In               string      `json:"in,omitempty" yaml:"in,omitempty"`
-	Required         bool        `json:"required,omitempty" yaml:"required,omitempty"`
-	Schema           *Schema     `json:"schema,omitempty" yaml:"schema,omitempty"` // when in == "body"
-	CollectionFormat string      `json:"collectionFormat,omitempty" yaml:"collectionFormat,omitempty"`
-	Default          interface{} `json:"default,omitempty" yaml:"default,omitempty"`
+	Description      string                 `structs:"description,omitempty"`
+	Items            *Items                 `structs:"items,omitempty"`
+	Extensions       map[string]interface{} `structs:"-"` // custom extensions, omitted when empty
+	Ref              string                 `structs:"-"`
+	Maximum          float64                `structs:"maximum,omitempty"`
+	ExclusiveMaximum bool                   `structs:"exclusiveMaximum,omitempty"`
+	Minimum          float64                `structs:"minimum,omitempty"`
+	ExclusiveMinimum bool                   `structs:"exclusiveMinimum,omitempty"`
+	MaxLength        int64                  `structs:"maxLength,omitempty"`
+	MinLength        int64                  `structs:"minLength,omitempty"`
+	Pattern          string                 `structs:"pattern,omitempty"`
+	MaxItems         int64                  `structs:"maxItems,omitempty"`
+	MinItems         int64                  `structs:"minItems,omitempty"`
+	UniqueItems      bool                   `structs:"uniqueItems,omitempty"`
+	MultipleOf       float64                `structs:"multipleOf,omitempty"`
+	Enum             []interface{}          `structs:"enum,omitempty"`
+	Type             string                 `structs:"type,omitempty"`
+	Format           string                 `structs:"format,omitempty"`
+	Name             string                 `structs:"name,omitempty"`
+	In               string                 `structs:"in,omitempty"`
+	Required         bool                   `structs:"required,omitempty"`
+	Schema           *Schema                `structs:"-"` // when in == "body"
+	CollectionFormat string                 `structs:"collectionFormat,omitempty"`
+	Default          interface{}            `structs:"default,omitempty"`
+}
+
+func (p Parameter) Map() map[string]interface{} {
+	if p.Ref != "" {
+		return map[string]interface{}{"$ref": p.Ref}
+	}
+	res := structs.Map(p)
+	if p.Schema != nil {
+		res["schema"] = p.Schema.Map()
+	}
+	addExtensions(res, p.Extensions)
+	return res
+}
+
+func (p Parameter) MarshalJSON() ([]byte, error) {
+	return json.Marshal(p.Map())
+}
+
+func (p Parameter) MarshalYAML() (interface{}, error) {
+	return p.Map(), nil
 }
 
 type Items struct {
-	Validatable
-	Type             string      `json:"type,omitempty" yaml:"type,omitempty"`
-	Format           string      `json:"format,omitempty" yaml:"format,omitempty"`
-	Items            *Items      `json:"items,omitempty" yaml:"items,omitempty"`
-	CollectionFormat string      `json:"collectionFormat,omitempty" yaml:"collectionFormat,omitempty"`
-	Default          interface{} `json:"default,omitempty" yaml:"default,omitemtpy"`
+	Type             string        `structs:"type,omitempty"`
+	Format           string        `structs:"format,omitempty"`
+	Items            *Items        `structs:"items,omitempty"`
+	CollectionFormat string        `structs:"collectionFormat,omitempty"`
+	Default          interface{}   `structs:"default,omitempty"`
+	Maximum          float64       `structs:"maximum,omitempty"`
+	ExclusiveMaximum bool          `structs:"exclusiveMaximum,omitempty"`
+	Minimum          float64       `structs:"minimum,omitempty"`
+	ExclusiveMinimum bool          `structs:"exclusiveMinimum,omitempty"`
+	MaxLength        int64         `structs:"maxLength,omitempty"`
+	MinLength        int64         `structs:"minLength,omitempty"`
+	Pattern          string        `structs:"pattern,omitempty"`
+	MaxItems         int64         `structs:"maxItems,omitempty"`
+	MinItems         int64         `structs:"minItems,omitempty"`
+	UniqueItems      bool          `structs:"uniqueItems,omitempty"`
+	MultipleOf       float64       `structs:"multipleOf,omitempty"`
+	Enum             []interface{} `structs:"enum,omitempty"`
 }
 
 type Schema struct {
-	Reference
-	Describable
-	Validatable
-	Format        string                 `json:"format" yaml:"format"`
-	Title         string                 `json:"title" yaml:"title"`
-	Description   string                 `json:"description" yaml:"description"`
-	Default       interface{}            `json:"default,omitempty" yaml:"default,omitemtpy"`
-	MaxProperties int64                  `json:"maxProperties,omitempty" yaml:"maxProperties,omitempty"`
-	MinProperties int64                  `json:"minProperties,omitempty" yaml:"minProperties,omitempty"`
-	Required      bool                   `json:"required,omitempty" yaml:"required,omitempty"`
-	Type          *StringOrArray         `json:"type,omitempty" yaml:"type,omitempty"`
-	Items         *SchemaOrArray         `json:"items,omitempty" yaml:"items,omitempty"`
-	AllOf         []Schema               `json:"allOf,omitempty" yaml:"allOf,omitempty"`
-	Properties    map[string]Schema      `json:"properties,omitempty" yaml:"properties,omitempty"`
-	Discriminator string                 `json:"discriminator,omitempty" yaml:"discriminator,omitempty"`
-	ReadOnly      bool                   `json:"readOnly,omitempty" yaml:"readOnly,omitempty"`
-	XML           *XMLObject             `json:"xml,omitempty" yaml:"xml,omitempty"`
-	ExternalDocs  *ExternalDocumentation `json:"externalDocs,omitempty" yaml:"externalDocs,omitempty"`
-	Example       interface{}            `json:"example,omitempty" yaml:"example,omitempty"`
+	Ref              string                 `structs:"-"`
+	Description      string                 `structs:"description,omitempty"`
+	Maximum          float64                `structs:"maximum,omitempty"`
+	ExclusiveMaximum bool                   `structs:"exclusiveMaximum,omitempty"`
+	Minimum          float64                `structs:"minimum,omitempty"`
+	ExclusiveMinimum bool                   `structs:"exclusiveMinimum,omitempty"`
+	MaxLength        int64                  `structs:"maxLength,omitempty"`
+	MinLength        int64                  `structs:"minLength,omitempty"`
+	Pattern          string                 `structs:"pattern,omitempty"`
+	MaxItems         int64                  `structs:"maxItems,omitempty"`
+	MinItems         int64                  `structs:"minItems,omitempty"`
+	UniqueItems      bool                   `structs:"uniqueItems,omitempty"`
+	MultipleOf       float64                `structs:"multipleOf,omitempty"`
+	Enum             []interface{}          `structs:"enum,omitempty"`
+	Type             *StringOrArray         `structs:"-"`
+	Format           string                 `structs:"format,omitempty"`
+	Title            string                 `structs:"title,omitempty"`
+	Default          interface{}            `structs:"default,omitempty"`
+	MaxProperties    int64                  `structs:"maxProperties,omitempty"`
+	MinProperties    int64                  `structs:"minProperties,omitempty"`
+	Required         bool                   `structs:"required,omitempty"`
+	Items            *SchemaOrArray         `structs:"-"`
+	AllOf            []Schema               `structs:"-"`
+	Properties       map[string]Schema      `structs:"-"`
+	Discriminator    string                 `structs:"discriminator,omitempty"`
+	ReadOnly         bool                   `structs:"readOnly,omitempty"`
+	XML              *XMLObject             `structs:"xml,omitempty"`
+	ExternalDocs     *ExternalDocumentation `structs:"externalDocs,omitempty"`
+	Example          interface{}            `structs:"example,omitempty"`
+}
+
+func (s Schema) Map() map[string]interface{} {
+	if s.Ref != "" {
+		return map[string]interface{}{"$ref": s.Ref}
+	}
+	res := structs.Map(s)
+
+	if len(s.AllOf) > 0 {
+		var ser []map[string]interface{}
+		for _, sch := range s.AllOf {
+			ser = append(ser, sch.Map())
+		}
+		res["allOf"] = ser
+	}
+
+	if len(s.Properties) > 0 {
+		var ser map[string]interface{}
+		for k, v := range s.Properties {
+			ser[k] = v.Map()
+		}
+		res["properties"] = ser
+	}
+
+	if s.Type != nil {
+		var value interface{} = s.Type.Multi
+		if s.Type.Single != "" && len(s.Type.Multi) == 0 {
+			value = s.Type.Single
+		}
+		res["type"] = value
+	}
+
+	if s.Items != nil {
+		var value interface{} = s.Type.Multi
+		if len(s.Type.Multi) == 0 && s.Type.Single != "" {
+			value = s.Type.Single
+		}
+		res["items"] = value
+	}
+
+	return res
+}
+
+func (s Schema) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.Map())
+}
+
+func (s Schema) MarshalYAML() (interface{}, error) {
+	return s.Map(), nil
 }
 
 type XMLObject struct {
-	Name      string `json:"name,omitempty" yaml:"name,omitempty"`
-	Namespace string `json:"namespace,omitempty" yaml:"namespace,omitempty"`
-	Prefix    string `json:"prefix,omitempty" yaml:"prefix,omitempty"`
-	Attribute bool   `json:"attribute,omitempty" yaml:"attribute,omitempty"`
-	Wrapped   bool   `json:"wrapped,omitempty" yaml:"wrapped,omitempty"`
-}
-
-type BoolOrSchema struct {
-	Flag   bool
-	Schema *Schema
+	Name      string `structs:"name,omitempty"`
+	Namespace string `structs:"namespace,omitempty"`
+	Prefix    string `structs:"prefix,omitempty"`
+	Attribute bool   `structs:"attribute,omitempty"`
+	Wrapped   bool   `structs:"wrapped,omitempty"`
 }
 
 type StringOrArray struct {
@@ -219,7 +500,35 @@ type StringOrArray struct {
 	Multi  []string
 }
 
+func (s StringOrArray) MarshalYAML() (interface{}, error) {
+	if s.Single != "" {
+		return s.Single, nil
+	}
+	return s.Multi, nil
+}
+
+func (s StringOrArray) MarshalJSON() ([]byte, error) {
+	if s.Single != "" {
+		return json.Marshal(s.Single)
+	}
+	return json.Marshal(s.Multi)
+}
+
 type SchemaOrArray struct {
 	Single *Schema
 	Multi  []Schema
+}
+
+func (s SchemaOrArray) MarshalYAML() (interface{}, error) {
+	if s.Single != nil {
+		return s.Single, nil
+	}
+	return s.Multi, nil
+}
+
+func (s SchemaOrArray) MarshalJSON() ([]byte, error) {
+	if s.Single != nil {
+		return json.Marshal(s.Single)
+	}
+	return json.Marshal(s.Multi)
 }
