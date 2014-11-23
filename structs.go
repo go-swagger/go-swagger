@@ -311,8 +311,8 @@ func (r Responses) MarshalYAML() (interface{}, error) {
 type Response struct {
 	Description string            `structs:"description,omitempty"`
 	Ref         string            `structs:"-"`
-	Schema      *Schema           `structs:"schema,omitempty"`
-	Headers     map[string]Header `structs:"headers,omitempty"`
+	Schema      *Schema           `structs:"-"`
+	Headers     map[string]Header `structs:"-"`
 	Examples    interface{}       `structs:"examples,omitempty"`
 }
 
@@ -321,7 +321,21 @@ func (r Response) Map() map[string]interface{} {
 		return map[string]interface{}{"$ref": r.Ref}
 	}
 
-	return structs.Map(r)
+	res := structs.Map(r)
+
+	if r.Schema != nil {
+		res["schema"] = r.Schema.Map()
+	}
+
+	if len(r.Headers) > 0 {
+		headers := make(map[string]map[string]interface{}, len(r.Headers))
+		for k, v := range r.Headers {
+			headers[k] = v.Map()
+		}
+		res["headers"] = headers
+	}
+
+	return res
 }
 
 func (r Response) MarshalJSON() ([]byte, error) {
@@ -349,7 +363,23 @@ type Header struct {
 	Type             string        `structs:"type,omitempty"`
 	Format           string        `structs:"format,omitempty"`
 	Default          interface{}   `structs:"default,omitempty"`
-	Items            *Items        `structs:"items,omitempty"`
+	Items            *Items        `structs:"-"`
+}
+
+func (h Header) Map() map[string]interface{} {
+	res := structs.Map(h)
+	if h.Items != nil {
+		res["items"] = h.Items.Map()
+	}
+	return res
+}
+
+func (h Header) MarshalJSON() ([]byte, error) {
+	return json.Marshal(h.Map())
+}
+
+func (h Header) MarshalYAML() (interface{}, error) {
+	return h.Map(), nil
 }
 
 type ExternalDocumentation struct {
@@ -462,7 +492,7 @@ func BodyParam() *Parameter {
 //   * `multipart/form-data` - each parameter takes a section in the payload with an internal header. For example, for the header `Content-Disposition: form-data; name="submit-name"` the name of the parameter is `submit-name`. This type of form parameters is more commonly used for file transfers.
 type Parameter struct {
 	Description      string                 `structs:"description,omitempty"`
-	Items            *Items                 `structs:"items,omitempty"`
+	Items            *Items                 `structs:"-"`
 	Extensions       map[string]interface{} `structs:"-"` // custom extensions, omitted when empty
 	Ref              string                 `structs:"-"`
 	Maximum          float64                `structs:"maximum,omitempty"`
@@ -495,6 +525,9 @@ func (p Parameter) Map() map[string]interface{} {
 	if p.Schema != nil {
 		res["schema"] = p.Schema.Map()
 	}
+	if p.Items != nil {
+		res["items"] = p.Items.Map()
+	}
 	addExtensions(res, p.Extensions)
 	return res
 }
@@ -508,9 +541,10 @@ func (p Parameter) MarshalYAML() (interface{}, error) {
 }
 
 type Items struct {
+	Ref              string        `structs:"-"`
 	Type             string        `structs:"type,omitempty"`
 	Format           string        `structs:"format,omitempty"`
-	Items            *Items        `structs:"items,omitempty"`
+	Items            *Items        `structs:"-"`
 	CollectionFormat string        `structs:"collectionFormat,omitempty"`
 	Default          interface{}   `structs:"default,omitempty"`
 	Maximum          float64       `structs:"maximum,omitempty"`
@@ -525,6 +559,25 @@ type Items struct {
 	UniqueItems      bool          `structs:"uniqueItems,omitempty"`
 	MultipleOf       float64       `structs:"multipleOf,omitempty"`
 	Enum             []interface{} `structs:"enum,omitempty"`
+}
+
+func (i Items) Map() map[string]interface{} {
+	if i.Ref != "" {
+		return map[string]interface{}{"$ref": i.Ref}
+	}
+	res := structs.Map(i)
+	if i.Items != nil {
+		res["items"] = i.Items.Map()
+	}
+	return res
+}
+
+func (i Items) MarshalJSON() ([]byte, error) {
+	return json.Marshal(i.Map())
+}
+
+func (i Items) MarshalYAML() (interface{}, error) {
+	return i.Map(), nil
 }
 
 func BooleanProperty() *Schema {

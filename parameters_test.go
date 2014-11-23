@@ -89,5 +89,11 @@ func TestParameterSerialization(t *testing.T) {
 			}
 			So(param, validateJSON, `{"in":"body","required":false,"schema":{"$ref":"Cat"}}`)
 		})
+
+		Convey("serialize an array body parameter", func(){
+			param := BodyParam()
+			param.Schema = ArrayProperty(RefProperty("Cat"))
+			So(param, validateJSON, `{"in":"body","required":false,"schema":{"items":{"$ref":"Cat"},"type":"array"}}`)
+		})
 	})
 }
