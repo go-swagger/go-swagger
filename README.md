@@ -1,5 +1,7 @@
 # Swagger 2.0
 
+[![Build Status](https://travis-ci.org/casualjim/go-swagger.svg?branch=master)](https://travis-ci.org/casualjim/go-swagger)
+
 Contains an implementation of Swagger 2.0.
 It knows how to serialize and deserialize swagger specifications.
 
