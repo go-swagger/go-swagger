@@ -1,4 +1,4 @@
-package schema
+package swagger
 
 // ContactInfo contact information for the exposed API.
 //

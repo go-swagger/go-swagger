@@ -1,4 +1,4 @@
-package schema
+package swagger
 
 // XMLObject a metadata object that allows for more fine-tuned XML model definitions.
 //

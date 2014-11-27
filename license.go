@@ -1,4 +1,4 @@
-package schema
+package swagger
 
 // License information for the exposed API.
 //

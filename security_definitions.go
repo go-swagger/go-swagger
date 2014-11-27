@@ -1,4 +1,4 @@
-package schema
+package swagger
 
 // SecurityDefinitions a declaration of the security schemes available to be used in the specification.
 // This does not enforce the security schemes on the operations and only serves to provide

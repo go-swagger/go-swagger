@@ -1,4 +1,4 @@
-package schema
+package swagger
 
 // Definitions contains the models explicitly defined in this spec
 // An object to hold data types that can be consumed and produced by operations.

@@ -1,4 +1,4 @@
-package schema
+package swagger
 
 // External Documentation allows referencing an external resource for
 // extended documentation.

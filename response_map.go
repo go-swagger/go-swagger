@@ -1,4 +1,4 @@
-package schema
+package swagger
 
 // ResponseMap contains the responses by key
 type ResponsesMap map[string]Response
