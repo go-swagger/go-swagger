@@ -8,6 +8,7 @@ before_install:
   - go get code.google.com/p/go.tools/cmd/cover
   - go get github.com/tools/godep
   - export PATH=$HOME/gopath/bin:$PATH
+  - make setup
 
 script: 
   - make travis
