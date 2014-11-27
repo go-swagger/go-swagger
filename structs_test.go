@@ -2,6 +2,7 @@ package swagger
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -18,12 +19,17 @@ func ShouldSerializeJSON(actual interface{}, expected ...interface{}) string {
 }
 
 func ShouldParseJSON(actual interface{}, expected ...interface{}) string {
-	ser, err := json.Marshal(actual)
+	exp := expected[0]
+	tpe := reflect.TypeOf(exp)
+	if tpe.Kind() == reflect.Ptr {
+		tpe = tpe.Elem()
+	}
+	parsed := reflect.New(tpe)
+	err := json.Unmarshal([]byte(actual.(string)), parsed.Interface())
 	if err != nil {
 		return err.Error()
 	}
-	exp := expected[0].(string)
-	return ShouldEqual(string(ser), exp)
+	return ShouldResemble(parsed.Interface(), exp)
 }
 
 func ShouldSerializeYAML(actual interface{}, expected ...interface{}) string {
