@@ -13,7 +13,7 @@ func TestParameterSerialization(t *testing.T) {
 		Convey("a query parameter", func() {
 			param := QueryParam()
 			param.Type = "string"
-			So(param, validateJSON, `{"in":"query","required":false,"type":"string"}`)
+			So(param, ShouldSerializeJSON, `{"in":"query","required":false,"type":"string"}`)
 		})
 
 		Convey("a query parameter with array", func() {
@@ -23,13 +23,13 @@ func TestParameterSerialization(t *testing.T) {
 			param.Items = &Items{
 				Type: "string",
 			}
-			So(param, validateJSON, `{"collectionFormat":"multi","in":"query","items":{"type":"string"},"required":false,"type":"array"}`)
+			So(param, ShouldSerializeJSON, `{"collectionFormat":"multi","in":"query","items":{"type":"string"},"required":false,"type":"array"}`)
 		})
 
 		Convey("a path parameter", func() {
 			param := PathParam()
 			param.Type = "string"
-			So(param, validateJSON, `{"in":"path","required":true,"type":"string"}`)
+			So(param, ShouldSerializeJSON, `{"in":"path","required":true,"type":"string"}`)
 		})
 
 		Convey("a path parameter with string array", func() {
@@ -39,7 +39,7 @@ func TestParameterSerialization(t *testing.T) {
 			param.Items = &Items{
 				Type: "string",
 			}
-			So(param, validateJSON, `{"collectionFormat":"multi","in":"path","items":{"type":"string"},"required":true,"type":"array"}`)
+			So(param, ShouldSerializeJSON, `{"collectionFormat":"multi","in":"path","items":{"type":"string"},"required":true,"type":"array"}`)
 		})
 
 		Convey("a path parameter with an int array", func() {
@@ -51,13 +51,13 @@ func TestParameterSerialization(t *testing.T) {
 				Type:   "int",
 				Format: "int32",
 			}
-			So(param, validateJSON, `{"collectionFormat":"multi","in":"path","items":{"format":"int32","type":"int"},"required":true,"type":"array"}`)
+			So(param, ShouldSerializeJSON, `{"collectionFormat":"multi","in":"path","items":{"format":"int32","type":"int"},"required":true,"type":"array"}`)
 		})
 
 		Convey("a header parameter", func() {
 			param := HeaderParam()
 			param.Type = "string"
-			So(param, validateJSON, `{"in":"header","required":true,"type":"string"}`)
+			So(param, ShouldSerializeJSON, `{"in":"header","required":true,"type":"string"}`)
 		})
 
 		Convey("a header parameter with string array", func() {
@@ -67,7 +67,7 @@ func TestParameterSerialization(t *testing.T) {
 			param.Items = &Items{
 				Type: "string",
 			}
-			So(param, validateJSON, `{"collectionFormat":"multi","in":"header","items":{"type":"string"},"required":true,"type":"array"}`)
+			So(param, ShouldSerializeJSON, `{"collectionFormat":"multi","in":"header","items":{"type":"string"},"required":true,"type":"array"}`)
 		})
 
 		Convey("a body parameter", func() {
@@ -79,7 +79,7 @@ func TestParameterSerialization(t *testing.T) {
 					},
 				},
 			}
-			So(param, validateJSON, `{"in":"body","required":false,"schema":{"properties":{"name":{"type":"string"}}}}`)
+			So(param, ShouldSerializeJSON, `{"in":"body","required":false,"schema":{"properties":{"name":{"type":"string"}}}}`)
 		})
 
 		Convey("a ref body parameter", func() {
@@ -87,13 +87,13 @@ func TestParameterSerialization(t *testing.T) {
 			param.Schema = &Schema{
 				Ref: "Cat",
 			}
-			So(param, validateJSON, `{"in":"body","required":false,"schema":{"$ref":"Cat"}}`)
+			So(param, ShouldSerializeJSON, `{"in":"body","required":false,"schema":{"$ref":"Cat"}}`)
 		})
 
 		Convey("serialize an array body parameter", func() {
 			param := BodyParam()
 			param.Schema = ArrayProperty(RefProperty("Cat"))
-			So(param, validateJSON, `{"in":"body","required":false,"schema":{"items":{"$ref":"Cat"},"type":"array"}}`)
+			So(param, ShouldSerializeJSON, `{"in":"body","required":false,"schema":{"items":{"$ref":"Cat"},"type":"array"}}`)
 		})
 	})
 }

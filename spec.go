@@ -10,7 +10,7 @@ import (
 // It combines what previously was the Resource Listing and API Declaration (version 1.2 and earlier) together into one document.
 //
 // For more information: http://goo.gl/8us55a#swagger-object-
-type Swagger struct {
+type Spec struct {
 	Consumes            []string               `structs:"consumes,omitempty"`
 	Produces            []string               `structs:"produces,omitempty"`
 	Schemes             []string               `structs:"schemes,omitempty"` // the scheme, when present must be from [http, https, ws, wss]
@@ -28,7 +28,7 @@ type Swagger struct {
 	ExternalDocs        *ExternalDocumentation `structs:"externalDocs,omitempty"`
 }
 
-func (s Swagger) Map() map[string]interface{} {
+func (s Spec) Map() map[string]interface{} {
 	res := structs.Map(s)
 	res["info"] = s.Info.Map()
 	res["paths"] = s.Paths.Map()
@@ -50,10 +50,10 @@ func (s Swagger) Map() map[string]interface{} {
 	return res
 }
 
-func (s Swagger) MarshalJSON() ([]byte, error) {
+func (s Spec) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s.Map())
 }
 
-func (s Swagger) MarshalYAML() (interface{}, error) {
+func (s Spec) MarshalYAML() (interface{}, error) {
 	return s.Map(), nil
 }
