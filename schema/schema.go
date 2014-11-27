@@ -6,46 +6,71 @@ import (
 	"github.com/fatih/structs"
 )
 
+// BooleanProperty creates a boolean property
 func BooleanProperty() *Schema {
 	return &Schema{Type: &StringOrArray{Single: "boolean"}}
 }
 
+// BoolProperty creates a boolean property
+func BoolProperty() *Schema { return BooleanProperty() }
+
+// StringProperty creates a string property
 func StringProperty() *Schema {
 	return &Schema{Type: &StringOrArray{Single: "string"}}
 }
+
+// Float64Property creates a float64/double property
 func Float64Property() *Schema {
 	return &Schema{Type: &StringOrArray{Single: "number"}, Format: "double"}
 }
 
+// Float32 creates a float32/float property
 func Float32Property() *Schema {
 	return &Schema{Type: &StringOrArray{Single: "number"}, Format: "float"}
 }
 
+// Int32Property creates an int32 property
 func Int32Property() *Schema {
 	return &Schema{Type: &StringOrArray{Single: "number"}, Format: "int32"}
 }
 
+// Int64Property creates an int64 property
 func Int64Property() *Schema {
 	return &Schema{Type: &StringOrArray{Single: "number"}, Format: "int64"}
 }
 
+// DateProperty creates an date property
 func DateProperty() *Schema {
 	return &Schema{Type: &StringOrArray{Single: "string"}, Format: "date"}
 }
+
+// DateTimeProperty creates a date time property
 func DateTimeProperty() *Schema {
 	return &Schema{Type: &StringOrArray{Single: "string"}, Format: "date-time"}
 }
+
+// MapProperty creates a map property
 func MapProperty(property *Schema) *Schema {
 	return &Schema{Type: &StringOrArray{Single: "object"}, AdditionalProperties: property}
 }
+
+// RefProperty creates a ref property
 func RefProperty(name string) *Schema {
 	return &Schema{Ref: name}
 }
 
+// ArrayProperty creates an array property
 func ArrayProperty(items *Schema) *Schema {
 	return &Schema{Items: &SchemaOrArray{Single: items}, Type: &StringOrArray{Single: "array"}}
 }
 
+// Schema the schema object allows the definition of input and output data types.
+// These types can be objects, but also primitives and arrays.
+// This object is based on the [JSON Schema Specification Draft 4](http://json-schema.org/)
+// and uses a predefined subset of it.
+// On top of this subset, there are extensions provided by this specification to allow for more complete documentation.
+//
+// For more information: http://goo.gl/8us55a#schemaObject
 type Schema struct {
 	Ref                  string                 `structs:"-"`
 	Description          string                 `structs:"description,omitempty"`
@@ -130,4 +155,3 @@ func (s Schema) MarshalJSON() ([]byte, error) {
 func (s Schema) MarshalYAML() (interface{}, error) {
 	return s.Map(), nil
 }
-

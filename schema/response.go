@@ -6,6 +6,9 @@ import (
 	"github.com/fatih/structs"
 )
 
+// Response describes a single response from an API Operation.
+//
+// For more information: http://goo.gl/8us55a#responseObject
 type Response struct {
 	Description string            `structs:"description,omitempty"`
 	Ref         string            `structs:"-"`

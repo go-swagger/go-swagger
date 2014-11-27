@@ -7,6 +7,8 @@ import (
 )
 
 // Operation describes a single API operation on a path.
+//
+// For more information: http://goo.gl/8us55a#operationObject
 type Operation struct {
 	Description  string                 `structs:"description,omitempty"`
 	Extensions   map[string]interface{} `structs:"-"` // custom extensions, omitted when empty

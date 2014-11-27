@@ -6,6 +6,10 @@ import (
 	"github.com/fatih/structs"
 )
 
+// Items a limited subset of JSON-Schema's items object.
+// It is used by parameter definitions that are not located in "body".
+//
+// For more information: http://goo.gl/8us55a#items-object-
 type Items struct {
 	Ref              string        `structs:"-"`
 	Type             string        `structs:"type,omitempty"`

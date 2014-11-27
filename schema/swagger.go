@@ -8,6 +8,8 @@ import (
 
 // Swagger this is the root document object for the API specification.
 // It combines what previously was the Resource Listing and API Declaration (version 1.2 and earlier) together into one document.
+//
+// For more information: http://goo.gl/8us55a#swagger-object-
 type Swagger struct {
 	Consumes            []string               `structs:"consumes,omitempty"`
 	Produces            []string               `structs:"produces,omitempty"`

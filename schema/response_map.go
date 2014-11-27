@@ -1,5 +1,6 @@
 package schema
 
+// ResponseMap contains the responses by key
 type ResponsesMap map[string]Response
 
 func (r ResponsesMap) Map() map[string]interface{} {

@@ -6,6 +6,9 @@ import (
 	"github.com/fatih/structs"
 )
 
+// Describes a header for a response of the API
+//
+// For more information: http://goo.gl/8us55a#headerObject
 type Header struct {
 	Description      string        `structs:"description,omitempty"`
 	Maximum          float64       `structs:"maximum,omitempty"`
@@ -40,9 +43,4 @@ func (h Header) MarshalJSON() ([]byte, error) {
 
 func (h Header) MarshalYAML() (interface{}, error) {
 	return h.Map(), nil
-}
-
-type ExternalDocumentation struct {
-	Description string `structs:"description,omitempty"`
-	URL         string `structs:"url"`
 }
