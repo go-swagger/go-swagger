@@ -24,7 +24,7 @@ func Float64Property() *Schema {
 	return &Schema{Type: &StringOrArray{Single: "number"}, Format: "double"}
 }
 
-// Float32 creates a float32/float property
+// Float32Property creates a float32/float property
 func Float32Property() *Schema {
 	return &Schema{Type: &StringOrArray{Single: "number"}, Format: "float"}
 }
@@ -104,6 +104,7 @@ type Schema struct {
 	AdditionalProperties *Schema                `swagger:"additionalProperties,omitempty"`
 }
 
+// MarshalMap converts this schema object to a map
 func (s Schema) MarshalMap() map[string]interface{} {
 	if s.Ref != "" {
 		return map[string]interface{}{"$ref": s.Ref}
@@ -111,14 +112,12 @@ func (s Schema) MarshalMap() map[string]interface{} {
 	return reflection.MarshalMapRecursed(s)
 }
 
+// MarshalJSON converts this schema object to JSON
 func (s Schema) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s.MarshalMap())
 }
 
+// MarshalYAML converts this schema object to YAML
 func (s Schema) MarshalYAML() (interface{}, error) {
 	return s.MarshalMap(), nil
-}
-
-func SchemaFromMap(data map[string]interface{}) (*Schema, error) {
-	return nil, nil
 }

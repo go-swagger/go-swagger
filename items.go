@@ -31,6 +31,7 @@ type Items struct {
 	Enum             []interface{} `swagger:"enum,omitempty"`
 }
 
+// MarshalMap converts this items object to a map
 func (i Items) MarshalMap() map[string]interface{} {
 	if i.Ref != "" {
 		return map[string]interface{}{"$ref": i.Ref}
@@ -38,10 +39,12 @@ func (i Items) MarshalMap() map[string]interface{} {
 	return reflection.MarshalMapRecursed(i)
 }
 
+// MarshalJSON converts this items object to JSON
 func (i Items) MarshalJSON() ([]byte, error) {
 	return json.Marshal(i.MarshalMap())
 }
 
+// MarshalYAML converts this items object to YAML
 func (i Items) MarshalYAML() (interface{}, error) {
 	return i.MarshalMap(), nil
 }

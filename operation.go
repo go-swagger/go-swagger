@@ -25,16 +25,19 @@ type Operation struct {
 	Responses    Responses              `swagger:"responses"`
 }
 
+// MarshalMap converts this operation to a map
 func (o Operation) MarshalMap() map[string]interface{} {
 	res := reflection.MarshalMapRecursed(o)
 	addExtensions(res, o.Extensions)
 	return res
 }
 
+// MarshalJSON converts this operation to JSON
 func (o Operation) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.MarshalMap())
 }
 
+// MarshalYAML converts this operation to YAML
 func (o Operation) MarshalYAML() (interface{}, error) {
 	return o.MarshalMap(), nil
 }

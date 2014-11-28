@@ -88,7 +88,7 @@ func marshalMap(data interface{}, skipInterface bool) map[string]interface{} {
 
 	val := reflect.ValueOf(data)
 	tpe := val.Type()
-	if tpe.Kind() == reflect.Ptr {
+	for tpe.Kind() == reflect.Ptr {
 		val = val.Elem()
 		tpe = tpe.Elem()
 	}
@@ -109,6 +109,9 @@ func marshalMap(data interface{}, skipInterface bool) map[string]interface{} {
 				return nil
 			}
 			value := val.MapIndex(key)
+			for value.Kind() == reflect.Ptr {
+				value = value.Elem()
+			}
 			var mapValue interface{}
 			if isStruct(value) {
 				mapValue = MarshalMap(value.Interface())
@@ -145,7 +148,7 @@ func marshalMap(data interface{}, skipInterface bool) map[string]interface{} {
 				var content []interface{}
 				for j := 0; j < fld.Len(); j++ {
 					el := fld.Index(j)
-					if el.Kind() == reflect.Ptr {
+					for el.Kind() == reflect.Ptr {
 						el = el.Elem()
 					}
 					if isStruct(el) && !tag.ByValue {

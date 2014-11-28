@@ -16,6 +16,7 @@ type Paths struct {
 	Paths      map[string]PathItem    `swagger:"-"` // custom serializer to flatten this, each entry must start with "/"
 }
 
+// MarshalMap converts this paths object to a map
 func (p Paths) MarshalMap() map[string]interface{} {
 	res := make(map[string]interface{})
 	for k, v := range p.Paths {
@@ -29,10 +30,12 @@ func (p Paths) MarshalMap() map[string]interface{} {
 	return res
 }
 
+// MarshalJSON converts this paths object to JSON
 func (p Paths) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p.MarshalMap())
 }
 
+// MarshalYAML converts this paths object to YAML
 func (p Paths) MarshalYAML() (interface{}, error) {
 	return p.MarshalMap(), nil
 }

@@ -20,16 +20,19 @@ type Info struct {
 	Version        string                 `swagger:"version,omitempty"`
 }
 
+// MarshalMap converts this info object to a map
 func (i Info) MarshalMap() map[string]interface{} {
 	res := reflection.MarshalMapRecursed(i)
 	addExtensions(res, i.Extensions)
 	return res
 }
 
+// MarshalJSON converts this info object to JSON
 func (i Info) MarshalJSON() ([]byte, error) {
 	return json.Marshal(i.MarshalMap())
 }
 
+// MarshalYAML converts this info object to YAML
 func (i Info) MarshalYAML() (interface{}, error) {
 	return i.MarshalMap(), nil
 }

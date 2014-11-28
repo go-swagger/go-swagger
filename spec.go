@@ -6,7 +6,7 @@ import (
 	"github.com/casualjim/go-swagger/reflection"
 )
 
-// Swagger this is the root document object for the API specification.
+// Spec this is the root document object for the API specification.
 // It combines what previously was the Resource Listing and API Declaration (version 1.2 and earlier) together into one document.
 //
 // For more information: http://goo.gl/8us55a#swagger-object-
@@ -28,10 +28,12 @@ type Spec struct {
 	ExternalDocs        *ExternalDocumentation `swagger:"externalDocs,omitempty"`
 }
 
+// MarshalJSON converts this spec object to JSON
 func (s Spec) MarshalJSON() ([]byte, error) {
 	return json.Marshal(reflection.MarshalMap(s))
 }
 
+// MarshalYAML converts this spec object to YAML
 func (s Spec) MarshalYAML() (interface{}, error) {
 	return reflection.MarshalMap(s), nil
 }

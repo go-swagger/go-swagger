@@ -1,14 +1,3 @@
-/*
-A POWERFUL INTERFACE TO YOUR API
-
-Swagger is a simple yet powerful representation of your RESTful API. With the largest ecosystem of API tooling on the planet,
-thousands of developers are supporting Swagger in almost every modern programming language and deployment environment.
-With a Swagger-enabled API, you get interactive documentation, client SDK generation and discoverability.
-We created Swagger to help fulfill the promise of APIs.
-Swagger helps companies like Apigee, Getty Images, Intuit, LivingSocial, McKesson, Microsoft, Morningstar, and PayPal build the best possible services with RESTful APIs.
-Now in version 2.0, Swagger is more enabling than ever.
-And it's 100% open source software.
-*/
 package swagger
 
 import (
@@ -59,6 +48,7 @@ type StringOrArray struct {
 	Multi  []string
 }
 
+// UnmarshalJSON unmarshals this string or array object from a JSON array or JSON string
 func (s *StringOrArray) UnmarshalJSON(data []byte) error {
 	var parsed interface{}
 	err := json.Unmarshal(data, &parsed)
@@ -68,6 +58,7 @@ func (s *StringOrArray) UnmarshalJSON(data []byte) error {
 	return s.unmarshalInterface(parsed, data)
 }
 
+// UnmarshalYAML unmarshals this string or array object from a YAML array or YAML string
 func (s *StringOrArray) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var parsed interface{}
 	err := unmarshal(&parsed)
@@ -104,6 +95,7 @@ func (s *StringOrArray) unmarshalInterface(parsed interface{}, data []byte) erro
 	}
 }
 
+// MarshalYAML converts this string or array to a YAML array or YAML string
 func (s StringOrArray) MarshalYAML() (interface{}, error) {
 	if s.Single != "" {
 		return s.Single, nil
@@ -111,6 +103,7 @@ func (s StringOrArray) MarshalYAML() (interface{}, error) {
 	return s.Multi, nil
 }
 
+// MarshalJSON converts this string or array to a JSON array or JSON string
 func (s StringOrArray) MarshalJSON() ([]byte, error) {
 	if s.Single != "" {
 		return json.Marshal(s.Single)
@@ -125,6 +118,7 @@ type SchemaOrArray struct {
 	Multi  []Schema
 }
 
+// MarshalYAML converts this schema object or array into YAML structure
 func (s SchemaOrArray) MarshalYAML() (interface{}, error) {
 	if s.Single != nil {
 		return s.Single, nil
@@ -132,6 +126,7 @@ func (s SchemaOrArray) MarshalYAML() (interface{}, error) {
 	return s.Multi, nil
 }
 
+// MarshalJSON converts this schema object or array into JSON structure
 func (s SchemaOrArray) MarshalJSON() ([]byte, error) {
 	if s.Single != nil {
 		return json.Marshal(s.Single)
@@ -139,6 +134,7 @@ func (s SchemaOrArray) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s.Multi)
 }
 
+// UnmarshalJSON converts this schema object or array from a JSON structure
 func (s *SchemaOrArray) UnmarshalJSON(data []byte) error {
 	var parsed interface{}
 	err := json.Unmarshal(data, &parsed)
@@ -148,6 +144,7 @@ func (s *SchemaOrArray) UnmarshalJSON(data []byte) error {
 	return s.unmarshalInterface(parsed, data)
 }
 
+// UnmarshalYAML converts this schema object or array from a YAML structure
 func (s *SchemaOrArray) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var parsed interface{}
 	err := unmarshal(&parsed)

@@ -26,6 +26,7 @@ type Responses struct {
 	StatusCodeResponses map[int]Response       `swagger:"-"`
 }
 
+// MarshalMap converts this responses object to a map
 func (r Responses) MarshalMap() map[string]interface{} {
 	res := make(map[string]interface{})
 	if r.Default != nil {
@@ -38,9 +39,12 @@ func (r Responses) MarshalMap() map[string]interface{} {
 	return res
 }
 
+// MarshalJSON converts this responses object to JSON
 func (r Responses) MarshalJSON() ([]byte, error) {
 	return json.Marshal(r.MarshalMap())
 }
+
+// MarshalYAML converts this responses object to YAML
 func (r Responses) MarshalYAML() (interface{}, error) {
 	return r.MarshalMap(), nil
 }

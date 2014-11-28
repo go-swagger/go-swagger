@@ -6,7 +6,7 @@ import (
 	"github.com/casualjim/go-swagger/reflection"
 )
 
-// Describes a header for a response of the API
+// Header describes a header for a response of the API
 //
 // For more information: http://goo.gl/8us55a#headerObject
 type Header struct {
@@ -29,10 +29,12 @@ type Header struct {
 	Items            *Items        `swagger:"-"`
 }
 
+// MarshalJSON converts this header object to JSON
 func (h Header) MarshalJSON() ([]byte, error) {
 	return json.Marshal(reflection.MarshalMapRecursed(h))
 }
 
+// MarshalYAML converts this header object to YAML
 func (h Header) MarshalYAML() (interface{}, error) {
 	return reflection.MarshalMap(h), nil
 }

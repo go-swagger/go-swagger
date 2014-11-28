@@ -27,8 +27,8 @@ func BasicAuth() *SecurityScheme {
 	return &SecurityScheme{Type: basic}
 }
 
-// ApiKeyAuth creates an api key auth security scheme
-func ApiKeyAuth(fieldName, valueSource string) *SecurityScheme {
+// APIKeyAuth creates an api key auth security scheme
+func APIKeyAuth(fieldName, valueSource string) *SecurityScheme {
 	return &SecurityScheme{Type: apiKey, Name: fieldName, In: valueSource}
 }
 
@@ -86,6 +86,7 @@ type SecurityScheme struct {
 	Scopes           map[string]string      `swagger:"scopes,omitempty"`           // oauth2
 }
 
+// AddScope adds a scope to this security scheme
 func (s *SecurityScheme) AddScope(scope, description string) {
 	if s.Scopes == nil {
 		s.Scopes = make(map[string]string)
@@ -93,16 +94,19 @@ func (s *SecurityScheme) AddScope(scope, description string) {
 	s.Scopes[scope] = description
 }
 
+// MarshalMap converts this security scheme object to a map
 func (s SecurityScheme) MarshalMap() map[string]interface{} {
 	res := reflection.MarshalMapRecursed(s)
 	addExtensions(res, s.Extensions)
 	return res
 }
 
+// MarshalJSON converts this security scheme object to JSON
 func (s SecurityScheme) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s.MarshalMap())
 }
 
+// MarshalYAML converts this security scheme object to YAML
 func (s SecurityScheme) MarshalYAML() (interface{}, error) {
 	return s.MarshalMap(), nil
 }

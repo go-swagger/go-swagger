@@ -26,7 +26,7 @@ func BodyParam() *Parameter {
 	return &Parameter{In: "body"}
 }
 
-// A unique parameter is defined by a combination of a [name](#parameterName) and [location](#parameterIn).
+// Parameter a unique parameter is defined by a combination of a [name](#parameterName) and [location](#parameterIn).
 //
 // There are five possible parameter types.
 // * Path - Used together with [Path Templating](#pathTemplating), where the parameter value is actually part of the operation's URL. This does not include the host or base path of the API. For example, in `/items/{itemId}`, the path parameter is `itemId`.
@@ -65,6 +65,7 @@ type Parameter struct {
 	Default          interface{}            `swagger:"default,omitempty"`
 }
 
+// MarshalMap converts this parameter object to a map
 func (p Parameter) MarshalMap() map[string]interface{} {
 	if p.Ref != "" {
 		return map[string]interface{}{"$ref": p.Ref}
@@ -74,10 +75,12 @@ func (p Parameter) MarshalMap() map[string]interface{} {
 	return res
 }
 
+// MarshalJSON converts this parameter object to JSON
 func (p Parameter) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p.MarshalMap())
 }
 
+// MarshalYAML converts this parameter object to YAML
 func (p Parameter) MarshalYAML() (interface{}, error) {
 	return p.MarshalMap(), nil
 }

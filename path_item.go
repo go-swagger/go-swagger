@@ -25,6 +25,7 @@ type PathItem struct {
 	Parameters []Parameter            `swagger:"parameters,omitempty"`
 }
 
+// MarshalMap converts this path item to a map
 func (p PathItem) MarshalMap() map[string]interface{} {
 	if p.Ref != "" {
 		return map[string]interface{}{"$ref": p.Ref}
@@ -36,9 +37,12 @@ func (p PathItem) MarshalMap() map[string]interface{} {
 	return res
 }
 
+// MarshalJSON converts this path item to
 func (p PathItem) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p.MarshalMap())
 }
+
+// MarshalYAML converts this path item to YAML
 func (p PathItem) MarshalYAML() (interface{}, error) {
 	return p.MarshalMap(), nil
 }
