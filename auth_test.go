@@ -15,7 +15,7 @@ func TestAuthSerialization(t *testing.T) {
 			})
 
 			Convey("header key model", func() {
-				auth := ApiKeyAuth("api-key", "header")
+				auth := APIKeyAuth("api-key", "header")
 				So(auth, ShouldSerializeJSON, `{"in":"header","name":"api-key","type":"apiKey"}`)
 			})
 
@@ -71,7 +71,7 @@ func TestAuthSerialization(t *testing.T) {
 			})
 
 			Convey("header key model", func() {
-				auth := ApiKeyAuth("api-key", "header")
+				auth := APIKeyAuth("api-key", "header")
 				So(`{"in":"header","name":"api-key","type":"apiKey"}`, ShouldParseJSON, auth)
 			})
 

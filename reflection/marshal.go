@@ -70,7 +70,12 @@ func isStruct(v reflect.Value) bool {
 	return v.Kind() == reflect.Struct
 }
 
-// MarshalMapRecursed this method marshals an interface to a map but skips the check for a custom interface
+func isZero(data reflect.Value) bool {
+	tpe := data.Type()
+	return reflect.DeepEqual(data.Interface(), reflect.Zero(tpe).Interface())
+}
+
+// MarshalMapRecursed this method marshals an interface to a map but skips the initial check for a custom interface
 // on the provided data
 func MarshalMapRecursed(data interface{}) map[string]interface{} {
 	return marshalMap(data, true)
@@ -86,12 +91,8 @@ func marshalMap(data interface{}, skipInterface bool) map[string]interface{} {
 		return nil
 	}
 
-	val := reflect.ValueOf(data)
+	val := reflect.Indirect(reflect.ValueOf(data))
 	tpe := val.Type()
-	for tpe.Kind() == reflect.Ptr {
-		val = val.Elem()
-		tpe = tpe.Elem()
-	}
 
 	if !skipInterface && tpe.Implements(mapMarshallerType) {
 		return val.Interface().(MapMarshaller).MarshalMap()
@@ -108,10 +109,7 @@ func marshalMap(data interface{}, skipInterface bool) map[string]interface{} {
 				log.Println("Only maps with string keys are allowed")
 				return nil
 			}
-			value := val.MapIndex(key)
-			for value.Kind() == reflect.Ptr {
-				value = value.Elem()
-			}
+			value := reflect.Indirect(val.MapIndex(key))
 			var mapValue interface{}
 			if isStruct(value) {
 				mapValue = MarshalMap(value.Interface())
@@ -137,8 +135,7 @@ func marshalMap(data interface{}, skipInterface bool) map[string]interface{} {
 			}
 
 			if tag.OmitEmpty {
-				zero := reflect.Zero(fld.Type()).Interface()
-				if reflect.DeepEqual(fld.Interface(), zero) {
+				if isZero(fld) {
 					continue
 				}
 			}
@@ -147,10 +144,8 @@ func marshalMap(data interface{}, skipInterface bool) map[string]interface{} {
 			if fld.Kind() == reflect.Slice {
 				var content []interface{}
 				for j := 0; j < fld.Len(); j++ {
-					el := fld.Index(j)
-					for el.Kind() == reflect.Ptr {
-						el = el.Elem()
-					}
+					el := reflect.Indirect(fld.Index(j))
+
 					if isStruct(el) && !tag.ByValue {
 						content = append(content, MarshalMap(el.Interface()))
 					} else {

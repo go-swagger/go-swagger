@@ -159,11 +159,6 @@ func (s *SchemaOrArray) unmarshalInterface(parsed interface{}, data []byte) erro
 
 	switch parsed.(type) {
 	case map[string]interface{}:
-		schema, err := SchemaFromMap(parsed.(map[string]interface{}))
-		if err != nil {
-			return err
-		}
-		s.Single = schema
 		return nil
 	case []interface{}:
 		return nil
