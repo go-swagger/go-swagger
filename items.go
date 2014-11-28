@@ -3,7 +3,7 @@ package swagger
 import (
 	"encoding/json"
 
-	"github.com/fatih/structs"
+	"github.com/casualjim/go-swagger/reflection"
 )
 
 // Items a limited subset of JSON-Schema's items object.
@@ -11,41 +11,37 @@ import (
 //
 // For more information: http://goo.gl/8us55a#items-object-
 type Items struct {
-	Ref              string        `structs:"-"`
-	Type             string        `structs:"type,omitempty"`
-	Format           string        `structs:"format,omitempty"`
-	Items            *Items        `structs:"-"`
-	CollectionFormat string        `structs:"collectionFormat,omitempty"`
-	Default          interface{}   `structs:"default,omitempty"`
-	Maximum          float64       `structs:"maximum,omitempty"`
-	ExclusiveMaximum bool          `structs:"exclusiveMaximum,omitempty"`
-	Minimum          float64       `structs:"minimum,omitempty"`
-	ExclusiveMinimum bool          `structs:"exclusiveMinimum,omitempty"`
-	MaxLength        int64         `structs:"maxLength,omitempty"`
-	MinLength        int64         `structs:"minLength,omitempty"`
-	Pattern          string        `structs:"pattern,omitempty"`
-	MaxItems         int64         `structs:"maxItems,omitempty"`
-	MinItems         int64         `structs:"minItems,omitempty"`
-	UniqueItems      bool          `structs:"uniqueItems,omitempty"`
-	MultipleOf       float64       `structs:"multipleOf,omitempty"`
-	Enum             []interface{} `structs:"enum,omitempty"`
+	Ref              string        `swagger:"-"`
+	Type             string        `swagger:"type,omitempty"`
+	Format           string        `swagger:"format,omitempty"`
+	Items            *Items        `swagger:"items,omitempty"`
+	CollectionFormat string        `swagger:"collectionFormat,omitempty"`
+	Default          interface{}   `swagger:"default,omitempty"`
+	Maximum          float64       `swagger:"maximum,omitempty"`
+	ExclusiveMaximum bool          `swagger:"exclusiveMaximum,omitempty"`
+	Minimum          float64       `swagger:"minimum,omitempty"`
+	ExclusiveMinimum bool          `swagger:"exclusiveMinimum,omitempty"`
+	MaxLength        int64         `swagger:"maxLength,omitempty"`
+	MinLength        int64         `swagger:"minLength,omitempty"`
+	Pattern          string        `swagger:"pattern,omitempty"`
+	MaxItems         int64         `swagger:"maxItems,omitempty"`
+	MinItems         int64         `swagger:"minItems,omitempty"`
+	UniqueItems      bool          `swagger:"uniqueItems,omitempty"`
+	MultipleOf       float64       `swagger:"multipleOf,omitempty"`
+	Enum             []interface{} `swagger:"enum,omitempty"`
 }
 
-func (i Items) Map() map[string]interface{} {
+func (i Items) MarshalMap() map[string]interface{} {
 	if i.Ref != "" {
 		return map[string]interface{}{"$ref": i.Ref}
 	}
-	res := structs.Map(i)
-	if i.Items != nil {
-		res["items"] = i.Items.Map()
-	}
-	return res
+	return reflection.MarshalMapRecursed(i)
 }
 
 func (i Items) MarshalJSON() ([]byte, error) {
-	return json.Marshal(i.Map())
+	return json.Marshal(i.MarshalMap())
 }
 
 func (i Items) MarshalYAML() (interface{}, error) {
-	return i.Map(), nil
+	return i.MarshalMap(), nil
 }

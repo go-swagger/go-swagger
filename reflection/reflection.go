@@ -1,22 +1,29 @@
 package reflection
 
 import (
+	"log"
 	"reflect"
 	"strings"
 )
 
 const (
+	// TagName the name of the tag used for reflection
 	TagName = "swagger"
 )
 
+// MapMarshaller is an interface for things that have a need to customize this marshalling process
 type MapMarshaller interface {
-	MarshalMap() (map[string]interface{}, error)
+	MarshalMap() map[string]interface{}
 }
+
+var (
+	mapMarshallerType = reflect.TypeOf(new(MapMarshaller)).Elem()
+	stringType        = reflect.TypeOf("")
+)
 
 type parsedTag struct {
 	Name       string
 	OmitEmpty  bool
-	Inline     bool
 	ShouldSkip bool
 	ByValue    bool
 }
@@ -33,13 +40,10 @@ func parseTag(tag string, name string) *parsedTag {
 		nm = name
 	}
 	shouldSkip := nm == "-"
-	var omitEmpty, inline, byValue bool
+	var omitEmpty, byValue bool
 	for _, p := range parts[1:] {
 		if p == "omitempty" {
 			omitEmpty = true
-		}
-		if p == "inline" {
-			inline = true
 		}
 		if p == "byValue" {
 			byValue = true
@@ -48,7 +52,6 @@ func parseTag(tag string, name string) *parsedTag {
 	return &parsedTag{
 		Name:       nm,
 		OmitEmpty:  omitEmpty,
-		Inline:     inline,
 		ShouldSkip: shouldSkip,
 		ByValue:    byValue,
 	}
@@ -67,18 +70,54 @@ func isStruct(v reflect.Value) bool {
 	return v.Kind() == reflect.Struct
 }
 
-func MarshalMap(data interface{}) (map[string]interface{}, error) {
-	if data == nil {
-		return nil, nil
-	}
+// MarshalMapRecursed this method marshals an interface to a map but skips the check for a custom interface
+// on the provided data
+func MarshalMapRecursed(data interface{}) map[string]interface{} {
+	return marshalMap(data, true)
+}
 
-	var result map[string]interface{}
+// MarshalMap this method marshals an interface to a map
+// when the data provided implements MapMarshaller it will use that marshaller to get to the map
+func MarshalMap(data interface{}) map[string]interface{} {
+	return marshalMap(data, false)
+}
+func marshalMap(data interface{}, skipInterface bool) map[string]interface{} {
+	if data == nil {
+		return nil
+	}
 
 	val := reflect.ValueOf(data)
 	tpe := val.Type()
 	if tpe.Kind() == reflect.Ptr {
 		val = val.Elem()
 		tpe = tpe.Elem()
+	}
+
+	if !skipInterface && tpe.Implements(mapMarshallerType) {
+		return val.Interface().(MapMarshaller).MarshalMap()
+	}
+
+	result := map[string]interface{}{}
+	if tpe.Kind() == reflect.Map {
+		keys := val.MapKeys()
+		if len(keys) == 0 {
+			return nil
+		}
+		for _, key := range keys {
+			if key.Type() != stringType {
+				log.Println("Only maps with string keys are allowed")
+				return nil
+			}
+			value := val.MapIndex(key)
+			var mapValue interface{}
+			if isStruct(value) {
+				mapValue = MarshalMap(value.Interface())
+			} else {
+				mapValue = value.Interface()
+			}
+			result[key.Interface().(string)] = mapValue
+		}
+		return result
 	}
 
 	for i := 0; i < tpe.NumField(); i++ {
@@ -102,29 +141,31 @@ func MarshalMap(data interface{}) (map[string]interface{}, error) {
 			}
 
 			var value interface{}
-			if isStruct(fld) && !tag.ByValue {
-				v, err := MarshalMap(fld.Interface())
-				if err != nil {
-					return nil, err
+			if fld.Kind() == reflect.Slice {
+				var content []interface{}
+				for j := 0; j < fld.Len(); j++ {
+					el := fld.Index(j)
+					if el.Kind() == reflect.Ptr {
+						el = el.Elem()
+					}
+					if isStruct(el) && !tag.ByValue {
+						content = append(content, MarshalMap(el.Interface()))
+					} else {
+						content = append(content, el.Interface())
+					}
 				}
+				result[tag.Name] = content
+				continue
+			}
+
+			if isStruct(fld) && !tag.ByValue {
+				v := MarshalMap(fld.Interface())
 				value = v
 			} else {
 				value = fld.Interface()
 			}
-
-			if !tag.Inline {
-				result[tag.Name] = value
-			}
-
+			result[tag.Name] = value
 		}
 	}
-	return result, nil
-}
-
-type MapUnmarshaller interface {
-	UnmarshalMap(map[string]interface{}) error
-}
-
-func UnmarshalMap(data map[string]interface{}, obj interface{}) error {
-	return nil
+	return result
 }

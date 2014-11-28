@@ -3,6 +3,8 @@ package swagger
 import (
 	"encoding/json"
 	"strconv"
+
+	"github.com/casualjim/go-swagger/reflection"
 )
 
 // Responses is a container for the expected responses of an operation.
@@ -19,26 +21,26 @@ import (
 //
 // For more information: http://goo.gl/8us55a#responsesObject
 type Responses struct {
-	Extensions          map[string]interface{}
-	Default             *Response
-	StatusCodeResponses map[int]Response
+	Extensions          map[string]interface{} `swagger:"-"`
+	Default             *Response              `swagger:"-"`
+	StatusCodeResponses map[int]Response       `swagger:"-"`
 }
 
-func (r Responses) Map() map[string]interface{} {
+func (r Responses) MarshalMap() map[string]interface{} {
 	res := make(map[string]interface{})
 	if r.Default != nil {
-		res["default"] = r.Default.Map()
+		res["default"] = reflection.MarshalMap(r.Default)
 	}
 	for k, v := range r.StatusCodeResponses {
-		res[strconv.Itoa(k)] = v.Map()
+		res[strconv.Itoa(k)] = reflection.MarshalMap(v)
 	}
 	addExtensions(res, r.Extensions)
 	return res
 }
 
 func (r Responses) MarshalJSON() ([]byte, error) {
-	return json.Marshal(r.Map())
+	return json.Marshal(r.MarshalMap())
 }
 func (r Responses) MarshalYAML() (interface{}, error) {
-	return r.Map(), nil
+	return r.MarshalMap(), nil
 }

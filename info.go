@@ -3,7 +3,7 @@ package swagger
 import (
 	"encoding/json"
 
-	"github.com/fatih/structs"
+	"github.com/casualjim/go-swagger/reflection"
 )
 
 // Info object provides metadata about the API.
@@ -11,25 +11,25 @@ import (
 //
 // For more information: http://goo.gl/8us55a#infoObject
 type Info struct {
-	Extensions     map[string]interface{} `structs:"-"` // custom extensions, omitted when empty
-	Description    string                 `structs:"description,omitempty"`
-	Title          string                 `structs:"title,omitempty"`
-	TermsOfService string                 `structs:"termsOfService,omitempty"`
-	Contact        *ContactInfo           `structs:"contact,omitempty"`
-	License        *License               `structs:"license,omitempty"`
-	Version        string                 `structs:"version,omitempty"`
+	Extensions     map[string]interface{} `swagger:"-"` // custom extensions, omitted when empty
+	Description    string                 `swagger:"description,omitempty"`
+	Title          string                 `swagger:"title,omitempty"`
+	TermsOfService string                 `swagger:"termsOfService,omitempty"`
+	Contact        *ContactInfo           `swagger:"contact,omitempty"`
+	License        *License               `swagger:"license,omitempty"`
+	Version        string                 `swagger:"version,omitempty"`
 }
 
-func (i Info) Map() map[string]interface{} {
-	res := structs.Map(i)
+func (i Info) MarshalMap() map[string]interface{} {
+	res := reflection.MarshalMapRecursed(i)
 	addExtensions(res, i.Extensions)
 	return res
 }
 
 func (i Info) MarshalJSON() ([]byte, error) {
-	return json.Marshal(i.Map())
+	return json.Marshal(i.MarshalMap())
 }
 
 func (i Info) MarshalYAML() (interface{}, error) {
-	return i.Map(), nil
+	return i.MarshalMap(), nil
 }

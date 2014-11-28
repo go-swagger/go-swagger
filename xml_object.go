@@ -4,9 +4,9 @@ package swagger
 //
 // For more information: http://goo.gl/8us55a#xmlObject
 type XMLObject struct {
-	Name      string `structs:"name,omitempty"`
-	Namespace string `structs:"namespace,omitempty"`
-	Prefix    string `structs:"prefix,omitempty"`
-	Attribute bool   `structs:"attribute,omitempty"`
-	Wrapped   bool   `structs:"wrapped,omitempty"`
+	Name      string `swagger:"name,omitempty"`
+	Namespace string `swagger:"namespace,omitempty"`
+	Prefix    string `swagger:"prefix,omitempty"`
+	Attribute bool   `swagger:"attribute,omitempty"`
+	Wrapped   bool   `swagger:"wrapped,omitempty"`
 }

@@ -1,6 +1,10 @@
 package swagger
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/casualjim/go-swagger/reflection"
+)
 
 // PathItem describes the operations available on a single path.
 // A Path Item may be empty, due to [ACL constraints](http://goo.gl/8us55a#securityFiltering).
@@ -9,51 +13,32 @@ import "encoding/json"
 //
 // For more information: http://goo.gl/8us55a#pathItemObject
 type PathItem struct {
-	Ref        string                 `structs:"-"`
-	Extensions map[string]interface{} `structs:"-"` // custom extensions, omitted when empty
-	Get        *Operation             `structs:"get,omitempty"`
-	Put        *Operation             `structs:"put,omitempty"`
-	Post       *Operation             `structs:"post,omitempty"`
-	Delete     *Operation             `structs:"delete,omitempty"`
-	Options    *Operation             `structs:"options,omitempty"`
-	Head       *Operation             `structs:"head,omitempty"`
-	Patch      *Operation             `structs:"patch,omitempty"`
-	Parameters []Parameter            `structs:"-"`
+	Ref        string                 `swagger:"-"`
+	Extensions map[string]interface{} `swagger:"-"` // custom extensions, omitted when empty
+	Get        *Operation             `swagger:"get,omitempty"`
+	Put        *Operation             `swagger:"put,omitempty"`
+	Post       *Operation             `swagger:"post,omitempty"`
+	Delete     *Operation             `swagger:"delete,omitempty"`
+	Options    *Operation             `swagger:"options,omitempty"`
+	Head       *Operation             `swagger:"head,omitempty"`
+	Patch      *Operation             `swagger:"patch,omitempty"`
+	Parameters []Parameter            `swagger:"parameters,omitempty"`
 }
 
-func (p PathItem) Map() map[string]interface{} {
+func (p PathItem) MarshalMap() map[string]interface{} {
 	if p.Ref != "" {
 		return map[string]interface{}{"$ref": p.Ref}
 	}
 
-	res := make(map[string]interface{})
-	addOp := func(key string, op *Operation) {
-		if op != nil {
-			res[key] = op.Map()
-		}
-	}
-	addOp("get", p.Get)
-	addOp("put", p.Put)
-	addOp("post", p.Post)
-	addOp("delete", p.Delete)
-	addOp("head", p.Head)
-	addOp("options", p.Options)
-	addOp("patch", p.Patch)
-
-	var params []map[string]interface{}
-	for _, param := range p.Parameters {
-		params = append(params, param.Map())
-	}
-	res["parameters"] = params
-
+	res := reflection.MarshalMapRecursed(p)
 	addExtensions(res, p.Extensions)
 
 	return res
 }
 
 func (p PathItem) MarshalJSON() ([]byte, error) {
-	return json.Marshal(p.Map())
+	return json.Marshal(p.MarshalMap())
 }
 func (p PathItem) MarshalYAML() (interface{}, error) {
-	return p.Map(), nil
+	return p.MarshalMap(), nil
 }

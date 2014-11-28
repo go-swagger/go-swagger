@@ -3,7 +3,7 @@ package swagger
 import (
 	"encoding/json"
 
-	"github.com/fatih/structs"
+	"github.com/casualjim/go-swagger/reflection"
 )
 
 // QueryParam creates a query parameter
@@ -39,51 +39,45 @@ func BodyParam() *Parameter {
 //
 // For more information: http://goo.gl/8us55a#parameterObject
 type Parameter struct {
-	Description      string                 `structs:"description,omitempty"`
-	Items            *Items                 `structs:"-"`
-	Extensions       map[string]interface{} `structs:"-"` // custom extensions, omitted when empty
-	Ref              string                 `structs:"-"`
-	Maximum          float64                `structs:"maximum,omitempty"`
-	ExclusiveMaximum bool                   `structs:"exclusiveMaximum,omitempty"`
-	Minimum          float64                `structs:"minimum,omitempty"`
-	ExclusiveMinimum bool                   `structs:"exclusiveMinimum,omitempty"`
-	MaxLength        int64                  `structs:"maxLength,omitempty"`
-	MinLength        int64                  `structs:"minLength,omitempty"`
-	Pattern          string                 `structs:"pattern,omitempty"`
-	MaxItems         int64                  `structs:"maxItems,omitempty"`
-	MinItems         int64                  `structs:"minItems,omitempty"`
-	UniqueItems      bool                   `structs:"uniqueItems,omitempty"`
-	MultipleOf       float64                `structs:"multipleOf,omitempty"`
-	Enum             []interface{}          `structs:"enum,omitempty"`
-	Type             string                 `structs:"type,omitempty"`
-	Format           string                 `structs:"format,omitempty"`
-	Name             string                 `structs:"name,omitempty"`
-	In               string                 `structs:"in,omitempty"`
-	Required         bool                   `structs:"required"`
-	Schema           *Schema                `structs:"-"` // when in == "body"
-	CollectionFormat string                 `structs:"collectionFormat,omitempty"`
-	Default          interface{}            `structs:"default,omitempty"`
+	Description      string                 `swagger:"description,omitempty"`
+	Items            *Items                 `swagger:"items,omitempty"`
+	Extensions       map[string]interface{} `swagger:"-"` // custom extensions, omitted when empty
+	Ref              string                 `swagger:"-"`
+	Maximum          float64                `swagger:"maximum,omitempty"`
+	ExclusiveMaximum bool                   `swagger:"exclusiveMaximum,omitempty"`
+	Minimum          float64                `swagger:"minimum,omitempty"`
+	ExclusiveMinimum bool                   `swagger:"exclusiveMinimum,omitempty"`
+	MaxLength        int64                  `swagger:"maxLength,omitempty"`
+	MinLength        int64                  `swagger:"minLength,omitempty"`
+	Pattern          string                 `swagger:"pattern,omitempty"`
+	MaxItems         int64                  `swagger:"maxItems,omitempty"`
+	MinItems         int64                  `swagger:"minItems,omitempty"`
+	UniqueItems      bool                   `swagger:"uniqueItems,omitempty"`
+	MultipleOf       float64                `swagger:"multipleOf,omitempty"`
+	Enum             []interface{}          `swagger:"enum,omitempty"`
+	Type             string                 `swagger:"type,omitempty"`
+	Format           string                 `swagger:"format,omitempty"`
+	Name             string                 `swagger:"name,omitempty"`
+	In               string                 `swagger:"in,omitempty"`
+	Required         bool                   `swagger:"required"`
+	Schema           *Schema                `swagger:"schema,omitempty"` // when in == "body"
+	CollectionFormat string                 `swagger:"collectionFormat,omitempty"`
+	Default          interface{}            `swagger:"default,omitempty"`
 }
 
-func (p Parameter) Map() map[string]interface{} {
+func (p Parameter) MarshalMap() map[string]interface{} {
 	if p.Ref != "" {
 		return map[string]interface{}{"$ref": p.Ref}
 	}
-	res := structs.Map(p)
-	if p.Schema != nil {
-		res["schema"] = p.Schema.Map()
-	}
-	if p.Items != nil {
-		res["items"] = p.Items.Map()
-	}
+	res := reflection.MarshalMapRecursed(p)
 	addExtensions(res, p.Extensions)
 	return res
 }
 
 func (p Parameter) MarshalJSON() ([]byte, error) {
-	return json.Marshal(p.Map())
+	return json.Marshal(p.MarshalMap())
 }
 
 func (p Parameter) MarshalYAML() (interface{}, error) {
-	return p.Map(), nil
+	return p.MarshalMap(), nil
 }

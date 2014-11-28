@@ -3,7 +3,7 @@ package swagger
 import (
 	"encoding/json"
 
-	"github.com/fatih/structs"
+	"github.com/casualjim/go-swagger/reflection"
 )
 
 // Swagger this is the root document object for the API specification.
@@ -11,49 +11,27 @@ import (
 //
 // For more information: http://goo.gl/8us55a#swagger-object-
 type Spec struct {
-	Consumes            []string               `structs:"consumes,omitempty"`
-	Produces            []string               `structs:"produces,omitempty"`
-	Schemes             []string               `structs:"schemes,omitempty"` // the scheme, when present must be from [http, https, ws, wss]
-	Swagger             string                 `structs:"swagger"`
-	Info                Info                   `structs:"-"`
-	Host                string                 `structs:"host,omitempty"`
-	BasePath            string                 `structs:"basePath,omitempty"` // must start with a leading "/"
-	Paths               Paths                  `structs:"-"`                  // required
-	Definitions         Definitions            `structs:"-"`
-	Parameters          []Parameter            `structs:"-"`
-	Responses           ResponsesMap           `structs:"-"`
-	SecurityDefinitions SecurityDefinitions    `structs:"-"`
-	Security            SecurityRequirements   `structs:"security,omitempty"`
-	Tags                []Tag                  `structs:"-"`
-	ExternalDocs        *ExternalDocumentation `structs:"externalDocs,omitempty"`
-}
-
-func (s Spec) Map() map[string]interface{} {
-	res := structs.Map(s)
-	res["info"] = s.Info.Map()
-	res["paths"] = s.Paths.Map()
-	res["responses"] = s.Responses.Map()
-	res["definitions"] = s.Definitions.Map()
-	res["securityDefinitions"] = s.SecurityDefinitions.Map()
-
-	var params []map[string]interface{}
-	for _, param := range s.Parameters {
-		params = append(params, param.Map())
-	}
-	res["parameters"] = params
-
-	var tags []map[string]interface{}
-	for _, t := range s.Tags {
-		tags = append(tags, t.Map())
-	}
-	res["tags"] = tags
-	return res
+	Consumes            []string               `swagger:"consumes,omitempty"`
+	Produces            []string               `swagger:"produces,omitempty"`
+	Schemes             []string               `swagger:"schemes,omitempty"` // the scheme, when present must be from [http, https, ws, wss]
+	Swagger             string                 `swagger:"swagger"`
+	Info                Info                   `swagger:"info"`
+	Host                string                 `swagger:"host,omitempty"`
+	BasePath            string                 `swagger:"basePath,omitempty"` // must start with a leading "/"
+	Paths               Paths                  `swagger:"paths"`              // required
+	Definitions         Definitions            `swagger:"definitions,omitempty"`
+	Parameters          []Parameter            `swagger:"parameters,omitempty"`
+	Responses           ResponsesMap           `swagger:"responses,omitempty"`
+	SecurityDefinitions SecurityDefinitions    `swagger:"securityDefintions"`
+	Security            SecurityRequirements   `swagger:"security,omitempty"`
+	Tags                []Tag                  `swagger:"tags,omitempty"`
+	ExternalDocs        *ExternalDocumentation `swagger:"externalDocs,omitempty"`
 }
 
 func (s Spec) MarshalJSON() ([]byte, error) {
-	return json.Marshal(s.Map())
+	return json.Marshal(reflection.MarshalMap(s))
 }
 
 func (s Spec) MarshalYAML() (interface{}, error) {
-	return s.Map(), nil
+	return reflection.MarshalMap(s), nil
 }

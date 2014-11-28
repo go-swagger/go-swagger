@@ -3,44 +3,38 @@ package swagger
 import (
 	"encoding/json"
 
-	"github.com/fatih/structs"
+	"github.com/casualjim/go-swagger/reflection"
 )
 
 // Operation describes a single API operation on a path.
 //
 // For more information: http://goo.gl/8us55a#operationObject
 type Operation struct {
-	Description  string                 `structs:"description,omitempty"`
-	Extensions   map[string]interface{} `structs:"-"` // custom extensions, omitted when empty
-	Consumes     []string               `structs:"consumes,omitempty"`
-	Produces     []string               `structs:"produces,omitempty"`
-	Schemes      []string               `structs:"schemes,omitempty"` // the scheme, when present must be from [http, https, ws, wss]
-	Tags         []string               `structs:"tags,omitempty"`
-	Summary      string                 `structs:"summary,omitempty"`
-	ExternalDocs *ExternalDocumentation `structs:"externalDocs,omitempty"`
-	ID           string                 `structs:"operationId"`
-	Deprecated   bool                   `structs:"deprecated,omitempty"`
-	Security     []SecurityRequirement  `structs:"security,omitempty"`
-	Parameters   []Parameter            `structs:"-"`
-	Responses    Responses              `structs:"-"`
+	Description  string                 `swagger:"description,omitempty"`
+	Extensions   map[string]interface{} `swagger:"-"` // custom extensions, omitted when empty
+	Consumes     []string               `swagger:"consumes,omitempty"`
+	Produces     []string               `swagger:"produces,omitempty"`
+	Schemes      []string               `swagger:"schemes,omitempty"` // the scheme, when present must be from [http, https, ws, wss]
+	Tags         []string               `swagger:"tags,omitempty"`
+	Summary      string                 `swagger:"summary,omitempty"`
+	ExternalDocs *ExternalDocumentation `swagger:"externalDocs,omitempty"`
+	ID           string                 `swagger:"operationId"`
+	Deprecated   bool                   `swagger:"deprecated,omitempty"`
+	Security     []SecurityRequirement  `swagger:"security,omitempty"`
+	Parameters   []Parameter            `swagger:"parameters,omitempty"`
+	Responses    Responses              `swagger:"responses"`
 }
 
-func (o Operation) Map() map[string]interface{} {
-	res := structs.Map(o)
-	res["responses"] = o.Responses.Map()
-	var params []map[string]interface{}
-	for _, param := range o.Parameters {
-		params = append(params, param.Map())
-	}
-	res["parameters"] = params
+func (o Operation) MarshalMap() map[string]interface{} {
+	res := reflection.MarshalMapRecursed(o)
 	addExtensions(res, o.Extensions)
 	return res
 }
 
 func (o Operation) MarshalJSON() ([]byte, error) {
-	return json.Marshal(o.Map())
+	return json.Marshal(o.MarshalMap())
 }
 
 func (o Operation) MarshalYAML() (interface{}, error) {
-	return o.Map(), nil
+	return o.MarshalMap(), nil
 }

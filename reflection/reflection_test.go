@@ -7,6 +7,14 @@ import (
 	c "github.com/smartystreets/goconvey/convey"
 )
 
+type customMarshalling struct {
+	A string
+}
+
+func (c customMarshalling) MarshalMap() map[string]interface{} {
+	return map[string]interface{}{"field": c.A}
+}
+
 func TestMarshalling(t *testing.T) {
 	c.Convey("marshals a map from", t, func() {
 
@@ -31,8 +39,7 @@ func TestMarshalling(t *testing.T) {
 				G: 1,
 				H: 1,
 			}
-			res, err := MarshalMap(obj)
-			c.So(err, c.ShouldBeNil)
+			res := MarshalMap(obj)
 			c.So(res["A"], c.ShouldEqual, "the value")
 			c.So(res["B"], c.ShouldEqual, 1)
 			c.So(res["C"], c.ShouldEqual, 1)
@@ -48,8 +55,7 @@ func TestMarshalling(t *testing.T) {
 				A string `swagger:"field"`
 			}
 			obj := &T1{"the value"}
-			res, err := MarshalMap(obj)
-			c.So(err, c.ShouldBeNil)
+			res := MarshalMap(obj)
 			c.So(res["field"], c.ShouldEqual, "the value")
 		})
 
@@ -59,8 +65,7 @@ func TestMarshalling(t *testing.T) {
 				B string `swagger:"-"`
 			}
 			obj := &T1{"the value", "another value"}
-			res, err := MarshalMap(obj)
-			c.So(err, c.ShouldBeNil)
+			res := MarshalMap(obj)
 			c.So(res["A"], c.ShouldEqual, "the value")
 			_, ok := res["B"]
 			c.So(ok, c.ShouldBeFalse)
@@ -72,8 +77,7 @@ func TestMarshalling(t *testing.T) {
 				B string `swagger:"key,omitempty"`
 			}
 			obj := &T1{"the value", "another value"}
-			res, err := MarshalMap(obj)
-			c.So(err, c.ShouldBeNil)
+			res := MarshalMap(obj)
 			c.So(res["field"], c.ShouldEqual, "the value")
 			b, ok := res["key"]
 			c.So(ok, c.ShouldBeTrue)
@@ -86,8 +90,7 @@ func TestMarshalling(t *testing.T) {
 				B string `swagger:"key,omitempty"`
 			}
 			obj := &T1{"the value", ""}
-			res, err := MarshalMap(obj)
-			c.So(err, c.ShouldBeNil)
+			res := MarshalMap(obj)
 			c.So(res["field"], c.ShouldEqual, "the value")
 			_, ok := res["key"]
 			c.So(ok, c.ShouldBeFalse)
@@ -98,9 +101,53 @@ func TestMarshalling(t *testing.T) {
 				A time.Time `swagger:"field,byValue"`
 			}
 			obj := &T1{time.Now()}
-			res, err := MarshalMap(obj)
-			c.So(err, c.ShouldBeNil)
+			res := MarshalMap(obj)
 			c.So(res["field"], c.ShouldHappenOnOrBefore, obj.A)
+		})
+
+		c.Convey("a struct with a custom marshaller should use the marshaller", func() {
+			obj := &customMarshalling{"a value"}
+			res := MarshalMap(obj)
+			c.So(res["field"], c.ShouldEqual, "a value")
+		})
+
+		c.Convey("a struct field with a custom marshaller should use the marshaller", func() {
+			type T1 struct {
+				B *customMarshalling
+			}
+			obj := &T1{&customMarshalling{"a value"}}
+			res := MarshalMap(obj)
+			c.So(res["B"].(map[string]interface{})["field"], c.ShouldEqual, "a value")
+		})
+
+		c.Convey("a map and convert it to map[string]interface", func() {
+			obj := map[string]customMarshalling{"field": customMarshalling{"a value"}}
+			res := MarshalMap(obj)
+			c.So(res["field"], c.ShouldResemble, map[string]interface{}{"field": "a value"})
+		})
+
+		c.Convey("a map and convert it to map[string]interface", func() {
+			obj := map[string]*customMarshalling{"field": &customMarshalling{"a value"}}
+			res := MarshalMap(obj)
+			c.So(res["field"], c.ShouldResemble, map[string]interface{}{"field": "a value"})
+		})
+
+		c.Convey("a struct with a slice property", func() {
+			type T1 struct {
+				C []string
+			}
+			obj := &T1{[]string{"first", "second"}}
+			res := MarshalMap(obj)
+			c.So(res["C"], c.ShouldResemble, []interface{}{"first", "second"})
+		})
+
+		c.Convey("a struct with a slice property that implements a map marshaller", func() {
+			type T1 struct {
+				C []customMarshalling
+			}
+			obj := &T1{[]customMarshalling{customMarshalling{"first"}, customMarshalling{"second"}}}
+			res := MarshalMap(obj)
+			c.So(res["C"], c.ShouldResemble, []interface{}{map[string]interface{}{"field": "first"}, map[string]interface{}{"field": "second"}})
 		})
 	})
 }

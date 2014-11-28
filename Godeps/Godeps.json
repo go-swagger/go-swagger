@@ -6,10 +6,6 @@
 	],
 	"Deps": [
 		{
-			"ImportPath": "github.com/fatih/structs",
-			"Rev": "cff54a688549a095900d74a02d02b1120bee96e7"
-		},
-		{
 			"ImportPath": "github.com/smartystreets/goconvey/convey",
 			"Comment": "1.5.0-305-gd2a9d04",
 			"Rev": "d2a9d04ab6b73e2de18248414edd9d6fc0ffa632"

@@ -4,7 +4,7 @@ package swagger
 //
 // For more information: http://goo.gl/8us55a#contactObject
 type ContactInfo struct {
-	Name  string `structs:"name"`
-	URL   string `structs:"url"`
-	Email string `structs:"email"`
+	Name  string `swagger:"name"`
+	URL   string `swagger:"url"`
+	Email string `swagger:"email"`
 }

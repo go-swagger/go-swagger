@@ -63,6 +63,7 @@ func TestAuthSerialization(t *testing.T) {
 				So(auth, ShouldSerializeJSON, `{"authorizationUrl":"http://foo.com/authorization","flow":"accessCode","scopes":{"email":"read your email"},"tokenUrl":"http://foo.com/token","type":"oauth2"}`)
 			})
 		})
+
 		Convey("deserialize", func() {
 			Convey("basic auth security scheme", func() {
 				auth := BasicAuth()

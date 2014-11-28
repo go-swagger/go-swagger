@@ -3,7 +3,7 @@ package swagger
 import (
 	"encoding/json"
 
-	"github.com/fatih/structs"
+	"github.com/casualjim/go-swagger/reflection"
 )
 
 // BooleanProperty creates a boolean property
@@ -72,86 +72,53 @@ func ArrayProperty(items *Schema) *Schema {
 //
 // For more information: http://goo.gl/8us55a#schemaObject
 type Schema struct {
-	Ref                  string                 `structs:"-"`
-	Description          string                 `structs:"description,omitempty"`
-	Maximum              float64                `structs:"maximum,omitempty"`
-	ExclusiveMaximum     bool                   `structs:"exclusiveMaximum,omitempty"`
-	Minimum              float64                `structs:"minimum,omitempty"`
-	ExclusiveMinimum     bool                   `structs:"exclusiveMinimum,omitempty"`
-	MaxLength            int64                  `structs:"maxLength,omitempty"`
-	MinLength            int64                  `structs:"minLength,omitempty"`
-	Pattern              string                 `structs:"pattern,omitempty"`
-	MaxItems             int64                  `structs:"maxItems,omitempty"`
-	MinItems             int64                  `structs:"minItems,omitempty"`
-	UniqueItems          bool                   `structs:"uniqueItems,omitempty"`
-	MultipleOf           float64                `structs:"multipleOf,omitempty"`
-	Enum                 []interface{}          `structs:"enum,omitempty"`
-	Type                 *StringOrArray         `structs:"-"`
-	Format               string                 `structs:"format,omitempty"`
-	Title                string                 `structs:"title,omitempty"`
-	Default              interface{}            `structs:"default,omitempty"`
-	MaxProperties        int64                  `structs:"maxProperties,omitempty"`
-	MinProperties        int64                  `structs:"minProperties,omitempty"`
-	Required             []string               `structs:"required,omitempty"`
-	Items                *SchemaOrArray         `structs:"-"`
-	AllOf                []Schema               `structs:"-"`
-	Properties           map[string]Schema      `structs:"-"`
-	Discriminator        string                 `structs:"discriminator,omitempty"`
-	ReadOnly             bool                   `structs:"readOnly,omitempty"`
-	XML                  *XMLObject             `structs:"xml,omitempty"`
-	ExternalDocs         *ExternalDocumentation `structs:"externalDocs,omitempty"`
-	Example              interface{}            `structs:"example,omitempty"`
-	AdditionalProperties *Schema                `structs:"-"`
+	Ref                  string                 `swagger:"-"`
+	Description          string                 `swagger:"description,omitempty"`
+	Maximum              float64                `swagger:"maximum,omitempty"`
+	ExclusiveMaximum     bool                   `swagger:"exclusiveMaximum,omitempty"`
+	Minimum              float64                `swagger:"minimum,omitempty"`
+	ExclusiveMinimum     bool                   `swagger:"exclusiveMinimum,omitempty"`
+	MaxLength            int64                  `swagger:"maxLength,omitempty"`
+	MinLength            int64                  `swagger:"minLength,omitempty"`
+	Pattern              string                 `swagger:"pattern,omitempty"`
+	MaxItems             int64                  `swagger:"maxItems,omitempty"`
+	MinItems             int64                  `swagger:"minItems,omitempty"`
+	UniqueItems          bool                   `swagger:"uniqueItems,omitempty"`
+	MultipleOf           float64                `swagger:"multipleOf,omitempty"`
+	Enum                 []interface{}          `swagger:"enum,omitempty"`
+	Type                 *StringOrArray         `swagger:"type,omitempty,byValue"`
+	Format               string                 `swagger:"format,omitempty"`
+	Title                string                 `swagger:"title,omitempty"`
+	Default              interface{}            `swagger:"default,omitempty"`
+	MaxProperties        int64                  `swagger:"maxProperties,omitempty"`
+	MinProperties        int64                  `swagger:"minProperties,omitempty"`
+	Required             []string               `swagger:"required,omitempty"`
+	Items                *SchemaOrArray         `swagger:"items,omitempty,byValue"`
+	AllOf                []Schema               `swagger:"allOf,omitempty"`
+	Properties           map[string]Schema      `swagger:"properties,omitempty"`
+	Discriminator        string                 `swagger:"discriminator,omitempty"`
+	ReadOnly             bool                   `swagger:"readOnly,omitempty"`
+	XML                  *XMLObject             `swagger:"xml,omitempty"`
+	ExternalDocs         *ExternalDocumentation `swagger:"externalDocs,omitempty"`
+	Example              interface{}            `swagger:"example,omitempty"`
+	AdditionalProperties *Schema                `swagger:"additionalProperties,omitempty"`
 }
 
-func (s Schema) Map() map[string]interface{} {
+func (s Schema) MarshalMap() map[string]interface{} {
 	if s.Ref != "" {
 		return map[string]interface{}{"$ref": s.Ref}
 	}
-	res := structs.Map(s)
-
-	if len(s.AllOf) > 0 {
-		var ser []map[string]interface{}
-		for _, sch := range s.AllOf {
-			ser = append(ser, sch.Map())
-		}
-		res["allOf"] = ser
-	}
-
-	if len(s.Properties) > 0 {
-		ser := make(map[string]interface{})
-		for k, v := range s.Properties {
-			ser[k] = v.Map()
-		}
-		res["properties"] = ser
-	}
-	if s.AdditionalProperties != nil {
-		res["additionalProperties"] = s.AdditionalProperties.Map()
-	}
-
-	if s.Type != nil {
-		var value interface{} = s.Type.Multi
-		if s.Type.Single != "" && len(s.Type.Multi) == 0 {
-			value = s.Type.Single
-		}
-		res["type"] = value
-	}
-
-	if s.Items != nil {
-		var value interface{} = s.Items.Multi
-		if len(s.Items.Multi) == 0 && s.Items.Single != nil {
-			value = s.Items.Single
-		}
-		res["items"] = value
-	}
-
-	return res
+	return reflection.MarshalMapRecursed(s)
 }
 
 func (s Schema) MarshalJSON() ([]byte, error) {
-	return json.Marshal(s.Map())
+	return json.Marshal(s.MarshalMap())
 }
 
 func (s Schema) MarshalYAML() (interface{}, error) {
-	return s.Map(), nil
+	return s.MarshalMap(), nil
+}
+
+func SchemaFromMap(data map[string]interface{}) (*Schema, error) {
+	return nil, nil
 }

@@ -3,7 +3,7 @@ package swagger
 import (
 	"encoding/json"
 
-	"github.com/fatih/structs"
+	"github.com/casualjim/go-swagger/reflection"
 )
 
 const (
@@ -75,15 +75,15 @@ func OAuth2AccessToken(authorizationURL, tokenURL string) *SecurityScheme {
 //
 // For more information: http://goo.gl/8us55a#securitySchemeObject
 type SecurityScheme struct {
-	Description      string                 `structs:"description,omitempty"`
-	Extensions       map[string]interface{} `structs:"-"` // custom extensions, omitted when empty
-	Type             string                 `structs:"type"`
-	Name             string                 `structs:"name,omitempty"`             // api key
-	In               string                 `structs:"in,omitempty"`               // api key
-	Flow             string                 `structs:"flow,omitempty"`             // oauth2
-	AuthorizationURL string                 `structs:"authorizationUrl,omitempty"` // oauth2
-	TokenURL         string                 `structs:"tokenUrl,omitempty"`         // oauth2
-	Scopes           map[string]string      `structs:"scopes,omitempty"`           // oauth2
+	Description      string                 `swagger:"description,omitempty"`
+	Extensions       map[string]interface{} `swagger:"-"` // custom extensions, omitted when empty
+	Type             string                 `swagger:"type"`
+	Name             string                 `swagger:"name,omitempty"`             // api key
+	In               string                 `swagger:"in,omitempty"`               // api key
+	Flow             string                 `swagger:"flow,omitempty"`             // oauth2
+	AuthorizationURL string                 `swagger:"authorizationUrl,omitempty"` // oauth2
+	TokenURL         string                 `swagger:"tokenUrl,omitempty"`         // oauth2
+	Scopes           map[string]string      `swagger:"scopes,omitempty"`           // oauth2
 }
 
 func (s *SecurityScheme) AddScope(scope, description string) {
@@ -93,16 +93,16 @@ func (s *SecurityScheme) AddScope(scope, description string) {
 	s.Scopes[scope] = description
 }
 
-func (s SecurityScheme) Map() map[string]interface{} {
-	res := structs.Map(s)
+func (s SecurityScheme) MarshalMap() map[string]interface{} {
+	res := reflection.MarshalMapRecursed(s)
 	addExtensions(res, s.Extensions)
 	return res
 }
 
 func (s SecurityScheme) MarshalJSON() ([]byte, error) {
-	return json.Marshal(s.Map())
+	return json.Marshal(s.MarshalMap())
 }
 
 func (s SecurityScheme) MarshalYAML() (interface{}, error) {
-	return s.Map(), nil
+	return s.MarshalMap(), nil
 }
