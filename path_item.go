@@ -29,8 +29,7 @@ type PathItem struct {
 func (p *PathItem) UnmarshalMap(data interface{}) error {
 	dict := reflection.MarshalMap(data)
 	if ref, ok := dict["$ref"]; ok {
-		*p = PathItem{Ref: ref.(string)}
-		return nil
+		p.Ref = ref.(string)
 	}
 	return reflection.UnmarshalMapRecursed(dict, p)
 }
@@ -55,11 +54,10 @@ func (p *PathItem) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 // MarshalMap converts this path item to a map
 func (p PathItem) MarshalMap() map[string]interface{} {
-	if p.Ref != "" {
-		return map[string]interface{}{"$ref": p.Ref}
-	}
-
 	res := reflection.MarshalMapRecursed(p)
+	if p.Ref != "" {
+		res["$ref"] = p.Ref
+	}
 	addExtensions(res, p.Extensions)
 
 	return res

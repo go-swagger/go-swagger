@@ -20,6 +20,34 @@ type Info struct {
 	Version        string                 `swagger:"version,omitempty"`
 }
 
+// UnmarshalMap hydrates this info instance with the data from the map
+func (i *Info) UnmarshalMap(data interface{}) error {
+	dict := reflection.MarshalMap(data)
+	if err := reflection.UnmarshalMapRecursed(dict, i); err != nil {
+		return err
+	}
+	i.Extensions = readExtensions(dict)
+	return nil
+}
+
+// UnmarshalJSON hydrates this info instance with the data from JSON
+func (i *Info) UnmarshalJSON(data []byte) error {
+	var value map[string]interface{}
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	return i.UnmarshalMap(value)
+}
+
+// UnmarshalYAML hydrates this info instance with the data from YAML
+func (i *Info) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var value map[string]interface{}
+	if err := unmarshal(value); err != nil {
+		return err
+	}
+	return i.UnmarshalMap(value)
+}
+
 // MarshalMap converts this info object to a map
 func (i Info) MarshalMap() map[string]interface{} {
 	res := reflection.MarshalMapRecursed(i)

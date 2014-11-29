@@ -68,12 +68,11 @@ type Parameter struct {
 // UnmarshalMap hydrates this parameter instance with the data from the map
 func (p *Parameter) UnmarshalMap(data interface{}) error {
 	dict := reflection.MarshalMap(data)
-	if ref, ok := dict["$ref"]; ok {
-		*p = Parameter{Ref: ref.(string)}
-		return nil
-	}
 	if err := reflection.UnmarshalMapRecursed(dict, p); err != nil {
 		return err
+	}
+	if ref, ok := dict["$ref"]; ok {
+		p.Ref = ref.(string)
 	}
 	p.Extensions = readExtensions(dict)
 	return nil
@@ -99,10 +98,10 @@ func (p *Parameter) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 // MarshalMap converts this parameter object to a map
 func (p Parameter) MarshalMap() map[string]interface{} {
-	if p.Ref != "" {
-		return map[string]interface{}{"$ref": p.Ref}
-	}
 	res := reflection.MarshalMapRecursed(p)
+	if p.Ref != "" {
+		res["$ref"] = p.Ref
+	}
 	addExtensions(res, p.Extensions)
 	return res
 }

@@ -108,7 +108,7 @@ type Schema struct {
 func (s *Schema) UnmarshalMap(data interface{}) error {
 	dict := reflection.MarshalMap(data)
 	if ref, ok := dict["$ref"]; ok {
-		*s = Schema{Ref: ref.(string)}
+		s.Ref = ref.(string)
 	}
 	return reflection.UnmarshalMapRecursed(dict, s)
 }

@@ -3,7 +3,6 @@ package swagger
 import (
 	"encoding/json"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -11,56 +10,124 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func roundTripTest(fileName string, schema interface{}) {
-	b, err := ioutil.ReadFile(fileName)
-	So(err, ShouldBeNil)
-	var expected map[string]interface{}
-	err = json.Unmarshal(b, &expected)
-	So(err, ShouldBeNil)
-	err = json.Unmarshal(b, &schema)
-	So(err, ShouldBeNil)
-	cb, err := json.Marshal(schema)
-	So(err, ShouldBeNil)
-	var actual map[string]interface{}
-	err = json.Unmarshal(cb, &actual)
-	So(err, ShouldBeNil)
-	So(expected, ShouldResemble, actual)
+func roundTripTest(t *testing.T, fixtureType, fileName string, schema interface{}) {
+	specName := strings.TrimSuffix(fileName, filepath.Ext(fileName))
+	Convey("verifying "+fixtureType+" fixture "+specName, t, func() {
+		b, err := ioutil.ReadFile(fileName)
+		So(err, ShouldBeNil)
+
+		//fmt.Println("Reading file", fileName, "returned", string(b))
+		var expected map[string]interface{}
+		err = json.Unmarshal(b, &expected)
+		So(err, ShouldBeNil)
+
+		err = json.Unmarshal(b, schema)
+		So(err, ShouldBeNil)
+
+		//fmt.Println("unmarshalling from file resulted in: %#v", schema)
+		cb, err := json.Marshal(schema)
+		So(err, ShouldBeNil)
+		//fmt.Println("Marshalling to json returned", string(cb))
+
+		var actual map[string]interface{}
+		err = json.Unmarshal(cb, &actual)
+		So(err, ShouldBeNil)
+		//fmt.Printf("comparing %s\n\t%#v\nto\n\t%#+v\n", fileName, expected, actual)
+		So(actual, ShouldResemble, expected)
+	})
 }
 
 func TestPropertyFixtures(t *testing.T) {
 	path := filepath.Join("fixtures", "json", "models", "properties")
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
-	Convey("the property fixtures should round trip", t, func() {
-		for _, f := range files {
-			Convey("for "+strings.TrimSuffix(f.Name(), filepath.Ext(f.Name())), func() {
-				roundTripTest(filepath.Join(path, f.Name()), Schema{})
-			})
-		}
-	})
+	for _, f := range files {
+		roundTripTest(t, "property", filepath.Join(path, f.Name()), &Schema{})
+	}
 }
+
 func TestModelFixtures(t *testing.T) {
 	path := filepath.Join("fixtures", "json", "models")
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
-	var filepaths []os.FileInfo
+	specs := []string{"models", "modelWithComposition", "modelWithExamples", "multipleModels"}
+	toSkip := []string{"modelWithComposition"}
+FILES:
 	for _, f := range files {
-		if !f.IsDir() {
-			filepaths = append(filepaths, f)
+		if f.IsDir() {
+			continue
 		}
+		for _, spec := range specs {
+			if strings.HasPrefix(f.Name(), spec) {
+				for _, skip := range toSkip {
+					if strings.HasPrefix(f.Name(), skip) {
+						continue FILES
+					}
+				}
+				roundTripTest(t, "model", filepath.Join(path, f.Name()), &Spec{})
+				continue FILES
+			}
+		}
+		//fmt.Println("trying", f.Name())
+		roundTripTest(t, "model", filepath.Join(path, f.Name()), &Schema{})
+	}
+}
+
+func TestParameterFixtures(t *testing.T) {
+	path := filepath.Join("fixtures", "json", "resources", "parameters")
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	Convey("the spec should round trip for models", t, func() {
-
-		for _, f := range filepaths {
-			Convey("for "+strings.TrimSuffix(f.Name(), filepath.Ext(f.Name())), func() {
-				roundTripTest(filepath.Join(path, f.Name()), Spec{})
-			})
-		}
-	})
+	for _, f := range files {
+		roundTripTest(t, "parameter", filepath.Join(path, f.Name()), &Parameter{})
+	}
 }
+
+//func TestOperationFixtures(t *testing.T) {
+//path := filepath.Join("fixtures", "json", "resources", "operations")
+//files, err := ioutil.ReadDir(path)
+//if err != nil {
+//t.Fatal(err)
+//}
+
+//for _, f := range files {
+//roundTripTest(t, "operation", filepath.Join(path, f.Name()), &Operation{})
+//}
+//}
+
+//func TestResponseFixtures(t *testing.T) {
+//path := filepath.Join("fixtures", "json", "responses")
+//files, err := ioutil.ReadDir(path)
+//if err != nil {
+//t.Fatal(err)
+//}
+
+//for _, f := range files {
+//if !strings.HasPrefix(f.Name(), "multiple") {
+//roundTripTest(t, "response", filepath.Join(path, f.Name()), &Response{})
+//} else {
+//roundTripTest(t, "responses", filepath.Join(path, f.Name()), &Responses{})
+//}
+//}
+//}
+
+//func TestResourcesFixtures(t *testing.T) {
+//path := filepath.Join("fixtures", "json", "models")
+//files, err := ioutil.ReadDir(path)
+//if err != nil {
+//t.Fatal(err)
+//}
+//for _, f := range files {
+//if f.IsDir() {
+//continue
+//}
+//roundTripTest(t, "resources", filepath.Join(path, f.Name()), &Spec{})
+//}
+//}

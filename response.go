@@ -21,8 +21,7 @@ type Response struct {
 func (r *Response) UnmarshalMap(data interface{}) error {
 	dict := reflection.MarshalMap(data)
 	if ref, ok := dict["$ref"]; ok {
-		*r = Response{Ref: ref.(string)}
-		return nil
+		r.Ref = ref.(string)
 	}
 	return reflection.UnmarshalMapRecursed(dict, r)
 }
@@ -47,11 +46,11 @@ func (r *Response) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 // MarshalMap converts this response object to a map
 func (r Response) MarshalMap() map[string]interface{} {
+	result := reflection.MarshalMapRecursed(r)
 	if r.Ref != "" {
-		return map[string]interface{}{"$ref": r.Ref}
+		result["$ref"] = r.Ref
 	}
-
-	return reflection.MarshalMapRecursed(r)
+	return result
 }
 
 // MarshalJSON converts this response object to JSON

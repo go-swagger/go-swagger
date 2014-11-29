@@ -35,8 +35,7 @@ type Items struct {
 func (i *Items) UnmarshalMap(data interface{}) error {
 	dict := reflection.MarshalMap(data)
 	if ref, ok := dict["$ref"]; ok {
-		*i = Items{Ref: ref.(string)}
-		return nil
+		i.Ref = ref.(string)
 	}
 	return reflection.UnmarshalMapRecursed(dict, i)
 }
@@ -61,10 +60,11 @@ func (i *Items) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 // MarshalMap converts this items object to a map
 func (i Items) MarshalMap() map[string]interface{} {
+	result := reflection.MarshalMapRecursed(i)
 	if i.Ref != "" {
-		return map[string]interface{}{"$ref": i.Ref}
+		result["$ref"] = i.Ref
 	}
-	return reflection.MarshalMapRecursed(i)
+	return result
 }
 
 // MarshalJSON converts this items object to JSON

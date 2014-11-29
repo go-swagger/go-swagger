@@ -14,15 +14,15 @@ type Spec struct {
 	Consumes            []string               `swagger:"consumes,omitempty"`
 	Produces            []string               `swagger:"produces,omitempty"`
 	Schemes             []string               `swagger:"schemes,omitempty"` // the scheme, when present must be from [http, https, ws, wss]
-	Swagger             string                 `swagger:"swagger"`
-	Info                Info                   `swagger:"info"`
+	Swagger             string                 `swagger:"swagger,omitempty"`
+	Info                Info                   `swagger:"info,omitempty"`
 	Host                string                 `swagger:"host,omitempty"`
 	BasePath            string                 `swagger:"basePath,omitempty"` // must start with a leading "/"
-	Paths               Paths                  `swagger:"paths"`              // required
+	Paths               Paths                  `swagger:"paths,omitempty"`    // required
 	Definitions         Definitions            `swagger:"definitions,omitempty"`
 	Parameters          []Parameter            `swagger:"parameters,omitempty"`
 	Responses           ResponsesMap           `swagger:"responses,omitempty"`
-	SecurityDefinitions SecurityDefinitions    `swagger:"securityDefintions"`
+	SecurityDefinitions SecurityDefinitions    `swagger:"securityDefintions,omitempty"`
 	Security            SecurityRequirements   `swagger:"security,omitempty"`
 	Tags                []Tag                  `swagger:"tags,omitempty"`
 	ExternalDocs        *ExternalDocumentation `swagger:"externalDocs,omitempty"`
