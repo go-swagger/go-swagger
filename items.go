@@ -31,6 +31,34 @@ type Items struct {
 	Enum             []interface{} `swagger:"enum,omitempty"`
 }
 
+// UnmarshalMap hydrates this items instance with the data from the map
+func (i *Items) UnmarshalMap(data interface{}) error {
+	dict := reflection.MarshalMap(data)
+	if ref, ok := dict["$ref"]; ok {
+		*i = Items{Ref: ref.(string)}
+		return nil
+	}
+	return reflection.UnmarshalMapRecursed(dict, i)
+}
+
+// UnmarshalJSON hydrates this items instance with the data from JSON
+func (i *Items) UnmarshalJSON(data []byte) error {
+	var value map[string]interface{}
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	return i.UnmarshalMap(value)
+}
+
+// UnmarshalYAML hydrates this items instance with the data from YAML
+func (i *Items) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var value map[string]interface{}
+	if err := unmarshal(value); err != nil {
+		return err
+	}
+	return i.UnmarshalMap(value)
+}
+
 // MarshalMap converts this items object to a map
 func (i Items) MarshalMap() map[string]interface{} {
 	if i.Ref != "" {

@@ -18,6 +18,16 @@ func (c *CustomUnmarshaller) UnmarshalMap(data interface{}) error {
 
 func TestUnmarshalling(t *testing.T) {
 	c.Convey("Unmarshalling a map should", t, func() {
+		c.Convey("convert a map with interface keys", func() {
+			data := map[string]interface{}{
+				"AA": map[interface{}]interface{}{
+					"A": "value",
+				},
+			}
+			actual := new(struct{ AA map[string]string })
+			c.So(UnmarshalMap(data, actual), c.ShouldBeNil)
+			c.So(actual.AA, c.ShouldResemble, map[string]string{"A": "value"})
+		})
 
 		c.Convey("use custom unmarshaller when top level", func() {
 			data := map[string]interface{}{

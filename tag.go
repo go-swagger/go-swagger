@@ -33,3 +33,31 @@ func (t Tag) MarshalJSON() ([]byte, error) {
 func (t Tag) MarshalYAML() (interface{}, error) {
 	return t.MarshalMap(), nil
 }
+
+// UnmarshalMap hydrates this tag instance with the data from the map
+func (t *Tag) UnmarshalMap(data interface{}) error {
+	dict := reflection.MarshalMap(data)
+	if err := reflection.UnmarshalMapRecursed(dict, t); err != nil {
+		return err
+	}
+	t.Extensions = readExtensions(dict)
+	return nil
+}
+
+// UnmarshalJSON hydrates this tag instance with the data from JSON
+func (t *Tag) UnmarshalJSON(data []byte) error {
+	var value map[string]interface{}
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	return t.UnmarshalMap(value)
+}
+
+// UnmarshalYAML hydrates this tag instance with the data from YAML
+func (t *Tag) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var value map[string]interface{}
+	if err := unmarshal(value); err != nil {
+		return err
+	}
+	return t.UnmarshalMap(value)
+}

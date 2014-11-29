@@ -33,12 +33,26 @@ func addExtensions(res map[string]interface{}, extensions map[string]interface{}
 			if !strings.HasPrefix(key, "x-") {
 				key = "x-" + key
 			}
-			zero := reflect.Zero(reflect.TypeOf(v)).Interface()
-			if !reflect.DeepEqual(v, zero) {
-				res[key] = reflection.MarshalMap(v)
-			}
+		}
+		zero := reflect.Zero(reflect.TypeOf(v)).Interface()
+		if !reflect.DeepEqual(v, zero) {
+			res[key] = reflection.MarshalMap(v)
 		}
 	}
+}
+
+func readExtensions(res map[string]interface{}) map[string]interface{} {
+	var extensions map[string]interface{}
+	for k, v := range res {
+		if strings.HasPrefix(k, "x-") {
+			if extensions == nil {
+				extensions = make(map[string]interface{})
+			}
+			extensions[k] = v
+			delete(res, k)
+		}
+	}
+	return extensions
 }
 
 // StringOrArray represents a value that can either be a string
@@ -168,7 +182,7 @@ func (s *SchemaOrArray) unmarshalInterface(parsed interface{}, data []byte) erro
 	switch parsed.(type) {
 	case map[string]interface{}:
 		val := &Schema{}
-		err := reflection.UnmarshalMapRecursed(parsed.(map[string]interface{}), val)
+		err := reflection.UnmarshalMap(parsed.(map[string]interface{}), val)
 		if err != nil {
 			return err
 		}
@@ -180,7 +194,7 @@ func (s *SchemaOrArray) unmarshalInterface(parsed interface{}, data []byte) erro
 		for k, v := range parsed.(map[interface{}]interface{}) {
 			stringMap[k.(string)] = v
 		}
-		err := reflection.UnmarshalMapRecursed(stringMap, val)
+		err := reflection.UnmarshalMap(stringMap, val)
 		if err != nil {
 			return err
 		}
@@ -203,7 +217,7 @@ func (s *SchemaOrArray) unmarshalInterface(parsed interface{}, data []byte) erro
 					stringMap[k.(string)] = vv
 				}
 
-				err := reflection.UnmarshalMapRecursed(stringMap, &elem)
+				err := reflection.UnmarshalMap(stringMap, &elem)
 				if err != nil {
 					return err
 				}

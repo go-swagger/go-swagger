@@ -75,6 +75,7 @@ func convertValue(name, key string, source, target reflect.Value) error {
 		return nil
 	}
 
+	//fmt.Printf("converting %s (key %s) from %s into %s\n", name, key, source.Type(), target.Type())
 	switch target.Kind() {
 	case reflect.Interface:
 		return convertInterface(name, key, source, target)
@@ -174,9 +175,9 @@ func convertMap(name, key string, source, target reflect.Value) error {
 	for _, k := range sourceValue.MapKeys() {
 		keyName := fmt.Sprintf("%s[%s]", name, k)
 
-		currentKey := reflect.Indirect(reflect.New(fieldType.Key()))
-		if err := convertValue(name, keyName, k, currentKey); err != nil {
-			return wrapError(name, keyName, currentKey, k, err)
+		newKey := reflect.Indirect(reflect.New(fieldType.Key()))
+		if err := convertValue(name, keyName, k, newKey); err != nil {
+			return wrapError(name, keyName, newKey, k, err)
 		}
 
 		currentValue := sourceValue.MapIndex(k)
@@ -186,7 +187,7 @@ func convertMap(name, key string, source, target reflect.Value) error {
 			return wrapError(name, keyName, currentElem, currentValue, err)
 		}
 
-		value.SetMapIndex(currentKey, currentElem)
+		value.SetMapIndex(newKey, currentElem)
 	}
 
 	target.Set(value)
@@ -210,6 +211,8 @@ func wrapError(name, key string, source, target reflect.Value, err error) error 
 
 func convertBool(name, key string, source, target reflect.Value) error {
 	switch source.Kind() {
+	case reflect.Interface:
+		target.SetBool(source.Interface().(bool))
 	case reflect.Bool:
 		target.SetBool(source.Bool())
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -237,6 +240,8 @@ func convertBool(name, key string, source, target reflect.Value) error {
 
 func convertString(name, key string, source, target reflect.Value) error {
 	switch source.Kind() {
+	case reflect.Interface:
+		target.SetString(source.Interface().(string))
 	case reflect.Bool:
 		target.SetString(strconv.FormatBool(source.Bool()))
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:

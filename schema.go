@@ -104,7 +104,7 @@ type Schema struct {
 	AdditionalProperties *Schema                `swagger:"additionalProperties,omitempty"`
 }
 
-// UnmarshalMap hydrates this shema instance with the data from the map
+// UnmarshalMap hydrates this schema instance with the data from the map
 func (s *Schema) UnmarshalMap(data interface{}) error {
 	dict := reflection.MarshalMap(data)
 	if ref, ok := dict["$ref"]; ok {

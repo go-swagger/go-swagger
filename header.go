@@ -38,7 +38,7 @@ func (h *Header) UnmarshalJSON(data []byte) error {
 	return reflection.UnmarshalMap(value, h)
 }
 
-// UnmarshalJSON hydrates this header from JSON
+// UnmarshalYAML hydrates this header from YAML
 func (h *Header) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value map[string]interface{}
 	if err := unmarshal(value); err != nil {

@@ -17,6 +17,34 @@ type Response struct {
 	Examples    interface{}       `swagger:"examples,omitempty"`
 }
 
+// UnmarshalMap hydrates this response instance with the data from the map
+func (r *Response) UnmarshalMap(data interface{}) error {
+	dict := reflection.MarshalMap(data)
+	if ref, ok := dict["$ref"]; ok {
+		*r = Response{Ref: ref.(string)}
+		return nil
+	}
+	return reflection.UnmarshalMapRecursed(dict, r)
+}
+
+// UnmarshalJSON hydrates this response instance with the data from JSON
+func (r *Response) UnmarshalJSON(data []byte) error {
+	var value map[string]interface{}
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	return r.UnmarshalMap(value)
+}
+
+// UnmarshalYAML hydrates this response instance with the data from YAML
+func (r *Response) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var value map[string]interface{}
+	if err := unmarshal(value); err != nil {
+		return err
+	}
+	return r.UnmarshalMap(value)
+}
+
 // MarshalMap converts this response object to a map
 func (r Response) MarshalMap() map[string]interface{} {
 	if r.Ref != "" {

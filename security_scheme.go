@@ -94,6 +94,34 @@ func (s *SecurityScheme) AddScope(scope, description string) {
 	s.Scopes[scope] = description
 }
 
+// UnmarshalMap hydrates this security scheme instance with the data from the map
+func (s *SecurityScheme) UnmarshalMap(data interface{}) error {
+	dict := reflection.MarshalMap(data)
+	if err := reflection.UnmarshalMapRecursed(dict, s); err != nil {
+		return err
+	}
+	s.Extensions = readExtensions(dict)
+	return nil
+}
+
+// UnmarshalJSON hydrates this security scheme instance with the data from JSON
+func (s *SecurityScheme) UnmarshalJSON(data []byte) error {
+	var value map[string]interface{}
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	return s.UnmarshalMap(value)
+}
+
+// UnmarshalYAML hydrates this security scheme instance with the data from YAML
+func (s *SecurityScheme) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var value map[string]interface{}
+	if err := unmarshal(value); err != nil {
+		return err
+	}
+	return s.UnmarshalMap(value)
+}
+
 // MarshalMap converts this security scheme object to a map
 func (s SecurityScheme) MarshalMap() map[string]interface{} {
 	res := reflection.MarshalMapRecursed(s)

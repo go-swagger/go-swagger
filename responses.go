@@ -26,6 +26,34 @@ type Responses struct {
 	StatusCodeResponses map[int]Response       `swagger:"-"`
 }
 
+// UnmarshalMap hydrates this responses instance with the data from the map
+func (r *Responses) UnmarshalMap(data interface{}) error {
+	dict := reflection.MarshalMap(data)
+	if err := reflection.UnmarshalMapRecursed(dict, r); err != nil {
+		return err
+	}
+	r.Extensions = readExtensions(dict)
+	return nil
+}
+
+// UnmarshalJSON hydrates this responses instance with the data from JSON
+func (r *Responses) UnmarshalJSON(data []byte) error {
+	var value map[string]interface{}
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	return r.UnmarshalMap(value)
+}
+
+// UnmarshalYAML hydrates this responses instance with the data from YAML
+func (r *Responses) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var value map[string]interface{}
+	if err := unmarshal(value); err != nil {
+		return err
+	}
+	return r.UnmarshalMap(value)
+}
+
 // MarshalMap converts this responses object to a map
 func (r Responses) MarshalMap() map[string]interface{} {
 	res := make(map[string]interface{})

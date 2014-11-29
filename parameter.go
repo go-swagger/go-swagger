@@ -65,6 +65,38 @@ type Parameter struct {
 	Default          interface{}            `swagger:"default,omitempty"`
 }
 
+// UnmarshalMap hydrates this parameter instance with the data from the map
+func (p *Parameter) UnmarshalMap(data interface{}) error {
+	dict := reflection.MarshalMap(data)
+	if ref, ok := dict["$ref"]; ok {
+		*p = Parameter{Ref: ref.(string)}
+		return nil
+	}
+	if err := reflection.UnmarshalMapRecursed(dict, p); err != nil {
+		return err
+	}
+	p.Extensions = readExtensions(dict)
+	return nil
+}
+
+// UnmarshalJSON hydrates this parameter instance with the data from JSON
+func (p *Parameter) UnmarshalJSON(data []byte) error {
+	var value map[string]interface{}
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	return p.UnmarshalMap(value)
+}
+
+// UnmarshalYAML hydrates this parameter instance with the data from YAML
+func (p *Parameter) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var value map[string]interface{}
+	if err := unmarshal(value); err != nil {
+		return err
+	}
+	return p.UnmarshalMap(value)
+}
+
 // MarshalMap converts this parameter object to a map
 func (p Parameter) MarshalMap() map[string]interface{} {
 	if p.Ref != "" {

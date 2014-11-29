@@ -41,3 +41,31 @@ func (o Operation) MarshalJSON() ([]byte, error) {
 func (o Operation) MarshalYAML() (interface{}, error) {
 	return o.MarshalMap(), nil
 }
+
+// UnmarshalMap hydrates this operation instance with the data from the map
+func (o *Operation) UnmarshalMap(data interface{}) error {
+	dict := reflection.MarshalMap(data)
+	if err := reflection.UnmarshalMapRecursed(dict, o); err != nil {
+		return err
+	}
+	o.Extensions = readExtensions(dict)
+	return nil
+}
+
+// UnmarshalJSON hydrates this operation instance with the data from JSON
+func (o *Operation) UnmarshalJSON(data []byte) error {
+	var value map[string]interface{}
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	return o.UnmarshalMap(value)
+}
+
+// UnmarshalYAML hydrates this operation instance with the data from YAML
+func (o *Operation) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var value map[string]interface{}
+	if err := unmarshal(value); err != nil {
+		return err
+	}
+	return o.UnmarshalMap(value)
+}

@@ -37,3 +37,21 @@ func (s Spec) MarshalJSON() ([]byte, error) {
 func (s Spec) MarshalYAML() (interface{}, error) {
 	return reflection.MarshalMap(s), nil
 }
+
+// UnmarshalJSON hydrates this spec instance with the data from JSON
+func (s *Spec) UnmarshalJSON(data []byte) error {
+	var value map[string]interface{}
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	return reflection.UnmarshalMap(value, s)
+}
+
+// UnmarshalYAML hydrates this spec instance with the data from YAML
+func (s *Spec) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var value map[string]interface{}
+	if err := unmarshal(value); err != nil {
+		return err
+	}
+	return reflection.UnmarshalMap(value, s)
+}

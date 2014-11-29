@@ -25,6 +25,34 @@ type PathItem struct {
 	Parameters []Parameter            `swagger:"parameters,omitempty"`
 }
 
+// UnmarshalMap hydrates this path item instance with the data from the map
+func (p *PathItem) UnmarshalMap(data interface{}) error {
+	dict := reflection.MarshalMap(data)
+	if ref, ok := dict["$ref"]; ok {
+		*p = PathItem{Ref: ref.(string)}
+		return nil
+	}
+	return reflection.UnmarshalMapRecursed(dict, p)
+}
+
+// UnmarshalJSON hydrates this path item instance with the data from JSON
+func (p *PathItem) UnmarshalJSON(data []byte) error {
+	var value map[string]interface{}
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	return p.UnmarshalMap(value)
+}
+
+// UnmarshalYAML hydrates this path item instance with the data from YAML
+func (p *PathItem) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var value map[string]interface{}
+	if err := unmarshal(value); err != nil {
+		return err
+	}
+	return p.UnmarshalMap(value)
+}
+
 // MarshalMap converts this path item to a map
 func (p PathItem) MarshalMap() map[string]interface{} {
 	if p.Ref != "" {
