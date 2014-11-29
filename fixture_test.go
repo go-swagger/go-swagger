@@ -3,19 +3,20 @@ package swagger
 import (
 	"encoding/json"
 	"io/ioutil"
+	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func propertyTest(fileName string) {
+func roundTripTest(fileName string, schema interface{}) {
 	b, err := ioutil.ReadFile(fileName)
 	So(err, ShouldBeNil)
 	var expected map[string]interface{}
 	err = json.Unmarshal(b, &expected)
 	So(err, ShouldBeNil)
-	schema := Schema{}
 	err = json.Unmarshal(b, &schema)
 	So(err, ShouldBeNil)
 	cb, err := json.Marshal(schema)
@@ -27,13 +28,39 @@ func propertyTest(fileName string) {
 }
 
 func TestPropertyFixtures(t *testing.T) {
-	Convey("the property fixtures should round trip", t, func() {
-		path := filepath.Join("fixtures", "json", "models", "properties")
-		files, err := ioutil.ReadDir(path)
-		So(err, ShouldBeNil)
+	path := filepath.Join("fixtures", "json", "models", "properties")
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		t.Error(err)
+	}
 
+	Convey("the property fixtures should round trip", t, func() {
 		for _, f := range files {
-			propertyTest(filepath.Join(path, f.Name()))
+			Convey("for "+strings.TrimSuffix(f.Name(), filepath.Ext(f.Name())), func() {
+				roundTripTest(filepath.Join(path, f.Name()), Schema{})
+			})
+		}
+	})
+}
+func TestModelFixtures(t *testing.T) {
+	path := filepath.Join("fixtures", "json", "models")
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		t.Error(err)
+	}
+	var filepaths []os.FileInfo
+	for _, f := range files {
+		if !f.IsDir() {
+			filepaths = append(filepaths, f)
+		}
+	}
+
+	Convey("the spec should round trip for models", t, func() {
+
+		for _, f := range filepaths {
+			Convey("for "+strings.TrimSuffix(f.Name(), filepath.Ext(f.Name())), func() {
+				roundTripTest(filepath.Join(path, f.Name()), Spec{})
+			})
 		}
 	})
 }
