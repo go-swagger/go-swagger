@@ -29,9 +29,27 @@ type Header struct {
 	Items            *Items        `swagger:"-"`
 }
 
+// UnmarshalJSON hydrates this header from JSON
+func (h *Header) UnmarshalJSON(data []byte) error {
+	var value map[string]interface{}
+	if err := json.Unmarshal(data, value); err != nil {
+		return err
+	}
+	return reflection.UnmarshalMap(value, h)
+}
+
+// UnmarshalJSON hydrates this header from JSON
+func (h *Header) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var value map[string]interface{}
+	if err := unmarshal(value); err != nil {
+		return err
+	}
+	return reflection.UnmarshalMap(value, h)
+}
+
 // MarshalJSON converts this header object to JSON
 func (h Header) MarshalJSON() ([]byte, error) {
-	return json.Marshal(reflection.MarshalMapRecursed(h))
+	return json.Marshal(reflection.MarshalMap(h))
 }
 
 // MarshalYAML converts this header object to YAML

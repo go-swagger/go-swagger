@@ -6,8 +6,59 @@ import (
 	c "github.com/smartystreets/goconvey/convey"
 )
 
+type CustomUnmarshaller struct {
+	Field string
+}
+
+func (c *CustomUnmarshaller) UnmarshalMap(data interface{}) error {
+	v := data.(map[string]interface{})
+	c.Field = v["A"].(string)
+	return nil
+}
+
 func TestUnmarshalling(t *testing.T) {
 	c.Convey("Unmarshalling a map should", t, func() {
+
+		c.Convey("use custom unmarshaller when top level", func() {
+			data := map[string]interface{}{
+				"A": "value",
+			}
+			actual := new(CustomUnmarshaller)
+			c.So(UnmarshalMap(data, actual), c.ShouldBeNil)
+			c.So(actual.Field, c.ShouldEqual, "value")
+		})
+
+		c.Convey("use custom unmarshaller when used as map value", func() {
+			data := map[string]interface{}{
+				"AA": map[string]interface{}{
+					"A": map[string]interface{}{"A": "value"},
+				},
+			}
+			actual := new(struct{ AA map[string]CustomUnmarshaller })
+			c.So(UnmarshalMap(data, actual), c.ShouldBeNil)
+			c.So(actual.AA["A"].Field, c.ShouldEqual, "value")
+		})
+		c.Convey("use custom unmarshaller when used as struct", func() {
+			data := map[string]interface{}{
+				"AA": map[string]interface{}{
+					"A": "value",
+				},
+			}
+			actual := new(struct{ AA CustomUnmarshaller })
+			c.So(UnmarshalMap(data, actual), c.ShouldBeNil)
+			c.So(actual.AA.Field, c.ShouldEqual, "value")
+		})
+
+		c.Convey("use custom unmarshaller when used as pointer to a struct", func() {
+			data := map[string]interface{}{
+				"AA": map[string]interface{}{
+					"A": "value",
+				},
+			}
+			actual := new(struct{ AA *CustomUnmarshaller })
+			c.So(UnmarshalMap(data, actual), c.ShouldBeNil)
+			c.So(actual.AA.Field, c.ShouldEqual, "value")
+		})
 
 		c.Convey("convert values to a struct from a map", func() {
 			data := map[string]interface{}{

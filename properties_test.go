@@ -101,7 +101,7 @@ func TestPropertySerialization(t *testing.T) {
 			prop := MapProperty(Int32Property())
 			So(`{"additionalProperties":{"format":"int32","type":"number"},"type":"object"}`, ShouldParseJSON, prop)
 		})
-		SkipConvey("a ref property", func() {
+		Convey("a ref property", func() {
 			prop := RefProperty("Dog")
 			So(`{"$ref":"Dog"}`, ShouldParseJSON, prop)
 		})
@@ -114,9 +114,13 @@ func TestPropertySerialization(t *testing.T) {
 			prop.Enum = append(prop.Enum, "a", "b")
 			So(`{"enum":["a","b"],"type":"string"}`, ShouldParseJSON, prop)
 		})
-		SkipConvey("a string array property", func() {
+		Convey("a string array property", func() {
 			prop := ArrayProperty(StringProperty())
 			So(`{"items":{"type":"string"},"type":"array"}`, ShouldParseJSON, prop)
+		})
+		Convey("a list of string array properties", func() {
+			prop := &Schema{Items: &SchemaOrArray{Multi: []Schema{Schema{Type: &StringOrArray{Single: "string"}}, Schema{Type: &StringOrArray{Single: "string"}}}}}
+			So(`{"items":[{"type":"string"},{"type":"string"}]}`, ShouldParseJSON, prop)
 		})
 	})
 }

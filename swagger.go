@@ -48,6 +48,10 @@ type StringOrArray struct {
 	Multi  []string
 }
 
+func (s *StringOrArray) UnmarshalMap(data interface{}) error {
+	return s.unmarshalInterface(data, []byte{})
+}
+
 // UnmarshalJSON unmarshals this string or array object from a JSON array or JSON string
 func (s *StringOrArray) UnmarshalJSON(data []byte) error {
 	var parsed interface{}
@@ -134,6 +138,10 @@ func (s SchemaOrArray) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s.Multi)
 }
 
+func (s *SchemaOrArray) UnmarshalMap(data interface{}) error {
+	return s.unmarshalInterface(data, []byte{})
+}
+
 // UnmarshalJSON converts this schema object or array from a JSON structure
 func (s *SchemaOrArray) UnmarshalJSON(data []byte) error {
 	var parsed interface{}
@@ -159,8 +167,27 @@ func (s *SchemaOrArray) unmarshalInterface(parsed interface{}, data []byte) erro
 
 	switch parsed.(type) {
 	case map[string]interface{}:
+		val := &Schema{}
+		err := reflection.UnmarshalMapRecursed(parsed.(map[string]interface{}), val)
+		if err != nil {
+			return err
+		}
+		s.Single = val
 		return nil
 	case []interface{}:
+		val := []Schema{}
+		for _, v := range parsed.([]interface{}) {
+			if dict, ok := v.(map[string]interface{}); ok {
+				elem := Schema{}
+				err := reflection.UnmarshalMap(dict, &elem)
+				if err != nil {
+					return err
+				}
+				val = append(val, elem)
+			}
+		}
+		s.Multi = val
+		fmt.Println("this is an array")
 		return nil
 	case nil:
 		return nil

@@ -104,6 +104,23 @@ type Schema struct {
 	AdditionalProperties *Schema                `swagger:"additionalProperties,omitempty"`
 }
 
+func (s *Schema) UnmarshalMap(data interface{}) error {
+	dict := reflection.MarshalMap(data)
+	if ref, ok := dict["$ref"]; ok {
+		*s = Schema{Ref: ref.(string)}
+		return nil
+	}
+	return reflection.UnmarshalMapRecursed(dict, s)
+}
+
+func (s *Schema) UnmarshalJSON(data []byte) error {
+	var value map[string]interface{}
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	return s.UnmarshalMap(value)
+}
+
 // MarshalMap converts this schema object to a map
 func (s Schema) MarshalMap() map[string]interface{} {
 	if s.Ref != "" {

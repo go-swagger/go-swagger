@@ -16,11 +16,31 @@ type MapUnmarshaller interface {
 	UnmarshalMap(interface{}) error
 }
 
+// UnmarshalMapRecursed converts the provided map to the target interface, but skips the
+// initial interface check
+func UnmarshalMapRecursed(data map[string]interface{}, target interface{}) error {
+	return unmarshalMap(data, target, true)
+}
+
+type fieldInfo struct {
+	Descriptor reflect.StructField
+	ByValue    bool
+}
+
 // UnmarshalMap converts the provided map to the target interface
 func UnmarshalMap(data map[string]interface{}, target interface{}) error {
-	if reflect.TypeOf(target).Kind() != reflect.Ptr {
+	return unmarshalMap(data, target, false)
+}
+func unmarshalMap(data map[string]interface{}, target interface{}, skipCheck bool) error {
+	targetType := reflect.TypeOf(target)
+	if targetType.Kind() != reflect.Ptr {
 		return fmt.Errorf("target must be a pointer")
 	}
+
+	if !skipCheck && targetType.Implements(unmarshallerType) {
+		return target.(MapUnmarshaller).UnmarshalMap(data)
+	}
+
 	val := reflect.Indirect(reflect.ValueOf(target))
 	tpe := val.Type()
 
@@ -35,7 +55,7 @@ func UnmarshalMap(data map[string]interface{}, target interface{}) error {
 	return nil
 }
 
-func convertValue(name, key string, value, target reflect.Value) error {
+func convertValue(name, key string, source, target reflect.Value) error {
 	if !target.IsValid() {
 		target.Set(reflect.Zero(target.Type()))
 		return nil
@@ -45,29 +65,39 @@ func convertValue(name, key string, value, target reflect.Value) error {
 		return fmt.Errorf("%s (key %q) %#v must be addressable", name, key, target)
 	}
 
+	ptr := reflect.PtrTo(target.Type())
+	if ptr.AssignableTo(unmarshallerType) {
+		value := reflect.New(target.Type())
+		if err := value.Interface().(MapUnmarshaller).UnmarshalMap(MarshalMap(source.Interface())); err != nil {
+			return err
+		}
+		target.Set(reflect.Indirect(value))
+		return nil
+	}
+
 	switch target.Kind() {
 	case reflect.Interface:
-		return convertInterface(name, key, value, target)
+		return convertInterface(name, key, source, target)
 	case reflect.Bool:
-		return convertBool(name, key, value, target)
+		return convertBool(name, key, source, target)
 	case reflect.String:
-		return convertString(name, key, value, target)
+		return convertString(name, key, source, target)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return convertInt(name, key, value, target)
+		return convertInt(name, key, source, target)
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return convertUint(name, key, value, target)
+		return convertUint(name, key, source, target)
 	case reflect.Float32, reflect.Float64:
-		return convertFloat(name, key, value, target)
+		return convertFloat(name, key, source, target)
 	case reflect.Map:
-		return convertMap(name, key, value, target)
+		return convertMap(name, key, source, target)
 	case reflect.Slice:
-		return convertSlice(name, key, value, target)
+		return convertSlice(name, key, source, target)
 	case reflect.Struct:
-		return convertStruct(name, key, value, target)
+		return convertStruct(name, key, source, target)
 	case reflect.Ptr:
-		return convertPtr(name, key, value, target)
+		return convertPtr(name, key, source, target)
 	default:
-		return makeError(name, key, value, target)
+		return makeError(name, key, source, target)
 	}
 
 }
@@ -95,11 +125,16 @@ func convertStruct(name, key string, source, target reflect.Value) (err error) {
 }
 
 func convertPtr(name, key string, source, target reflect.Value) error {
-	result := reflect.Indirect(reflect.New(target.Type().Elem()))
-	if err := convertValue(name, key, source, result); err != nil {
-		return wrapError(name, key, source, result, err)
+	valueptr := reflect.New(target.Type().Elem())
+	if valueptr.Type().Implements(unmarshallerType) {
+		valueptr.Interface().(MapUnmarshaller).UnmarshalMap(source.Interface())
+	} else {
+		result := reflect.Indirect(valueptr)
+		if err := convertValue(name, key, source, result); err != nil {
+			return wrapError(name, key, source, result, err)
+		}
 	}
-	target.Set(result)
+	target.Set(valueptr)
 	return nil
 }
 
@@ -146,6 +181,7 @@ func convertMap(name, key string, source, target reflect.Value) error {
 
 		currentValue := sourceValue.MapIndex(k)
 		currentElem := reflect.Indirect(reflect.New(fieldType.Elem()))
+
 		if err := convertValue(name, keyName, currentValue, currentElem); err != nil {
 			return wrapError(name, keyName, currentElem, currentValue, err)
 		}
