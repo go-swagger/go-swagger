@@ -2,6 +2,7 @@ package swagger
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -15,8 +16,8 @@ func roundTripTest(t *testing.T, fixtureType, fileName string, schema interface{
 	Convey("verifying "+fixtureType+" fixture "+specName, t, func() {
 		b, err := ioutil.ReadFile(fileName)
 		So(err, ShouldBeNil)
-
-		//fmt.Println("Reading file", fileName, "returned", string(b))
+		Println()
+		Println("Reading file", fileName, "returned", string(b))
 		var expected map[string]interface{}
 		err = json.Unmarshal(b, &expected)
 		So(err, ShouldBeNil)
@@ -24,15 +25,18 @@ func roundTripTest(t *testing.T, fixtureType, fileName string, schema interface{
 		err = json.Unmarshal(b, schema)
 		So(err, ShouldBeNil)
 
-		//fmt.Println("unmarshalling from file resulted in: %#v", schema)
-		cb, err := json.Marshal(schema)
+		//Println()
+		//Println("unmarshalling from file resulted in: %#v", schema)
+		cb, err := json.MarshalIndent(schema, "", "  ")
 		So(err, ShouldBeNil)
-		//fmt.Println("Marshalling to json returned", string(cb))
+		Println()
+		Println("Marshalling to json returned", string(cb))
 
 		var actual map[string]interface{}
 		err = json.Unmarshal(cb, &actual)
 		So(err, ShouldBeNil)
-		//fmt.Printf("comparing %s\n\t%#v\nto\n\t%#+v\n", fileName, expected, actual)
+		Println()
+		fmt.Printf("comparing %s\n\t%#v\nto\n\t%#+v\n", fileName, expected, actual)
 		So(actual, ShouldResemble, expected)
 	})
 }
