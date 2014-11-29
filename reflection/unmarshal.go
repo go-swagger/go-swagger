@@ -24,7 +24,7 @@ func UnmarshalMapRecursed(data map[string]interface{}, target interface{}) error
 
 type fieldInfo struct {
 	Descriptor reflect.StructField
-	ByValue    bool
+	Tag        *parsedTag
 }
 
 // UnmarshalMap converts the provided map to the target interface
@@ -47,7 +47,7 @@ func unmarshalMap(data map[string]interface{}, target interface{}, skipCheck boo
 	fieldNameMap := fieldTagNameMap(tpe)
 	for k, v := range data {
 		if targetDes, ok := fieldNameMap[k]; ok {
-			if err := convertValue(targetDes.Name, k, reflect.ValueOf(v), val.FieldByName(targetDes.Name)); err != nil {
+			if err := convertValue(targetDes.Descriptor.Name, k, reflect.ValueOf(v), val.FieldByName(targetDes.Descriptor.Name), targetDes.Tag); err != nil {
 				return err
 			}
 		}
@@ -55,7 +55,7 @@ func unmarshalMap(data map[string]interface{}, target interface{}, skipCheck boo
 	return nil
 }
 
-func convertValue(name, key string, source, target reflect.Value) error {
+func convertValue(name, key string, source, target reflect.Value, tag *parsedTag) error {
 	if !target.IsValid() {
 		target.Set(reflect.Zero(target.Type()))
 		return nil
@@ -78,32 +78,32 @@ func convertValue(name, key string, source, target reflect.Value) error {
 	//fmt.Printf("converting %s (key %s) from %s into %s\n", name, key, source.Type(), target.Type())
 	switch target.Kind() {
 	case reflect.Interface:
-		return convertInterface(name, key, source, target)
+		return convertInterface(name, key, source, target, tag)
 	case reflect.Bool:
-		return convertBool(name, key, source, target)
+		return convertBool(name, key, source, target, tag)
 	case reflect.String:
-		return convertString(name, key, source, target)
+		return convertString(name, key, source, target, tag)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return convertInt(name, key, source, target)
+		return convertInt(name, key, source, target, tag)
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return convertUint(name, key, source, target)
+		return convertUint(name, key, source, target, tag)
 	case reflect.Float32, reflect.Float64:
-		return convertFloat(name, key, source, target)
+		return convertFloat(name, key, source, target, tag)
 	case reflect.Map:
-		return convertMap(name, key, source, target)
+		return convertMap(name, key, source, target, tag)
 	case reflect.Slice:
-		return convertSlice(name, key, source, target)
+		return convertSlice(name, key, source, target, tag)
 	case reflect.Struct:
-		return convertStruct(name, key, source, target)
+		return convertStruct(name, key, source, target, tag)
 	case reflect.Ptr:
-		return convertPtr(name, key, source, target)
+		return convertPtr(name, key, source, target, tag)
 	default:
 		return makeError(name, key, source, target)
 	}
 
 }
 
-func convertStruct(name, key string, source, target reflect.Value) (err error) {
+func convertStruct(name, key string, source, target reflect.Value, tag *parsedTag) (err error) {
 	if !source.IsValid() {
 		return
 	}
@@ -112,6 +112,9 @@ func convertStruct(name, key string, source, target reflect.Value) (err error) {
 	sourceValueKind := sourceValue.Kind()
 	if sourceValueKind != reflect.Map && sourceValueKind != reflect.Struct {
 		return fmt.Errorf("structs can only be read back in from maps at this moment (field %q key %q) but got %s", name, key, sourceValueKind)
+	}
+	if tag.ByValue && source.Type().AssignableTo(target.Type()) {
+		target.Set(source)
 	}
 
 	value := reflect.New(target.Type())
@@ -125,13 +128,13 @@ func convertStruct(name, key string, source, target reflect.Value) (err error) {
 	return
 }
 
-func convertPtr(name, key string, source, target reflect.Value) error {
+func convertPtr(name, key string, source, target reflect.Value, tag *parsedTag) error {
 	valueptr := reflect.New(target.Type().Elem())
 	if valueptr.Type().Implements(unmarshallerType) {
 		valueptr.Interface().(MapUnmarshaller).UnmarshalMap(source.Interface())
 	} else {
 		result := reflect.Indirect(valueptr)
-		if err := convertValue(name, key, source, result); err != nil {
+		if err := convertValue(name, key, source, result, tag); err != nil {
 			return wrapError(name, key, source, result, err)
 		}
 	}
@@ -139,7 +142,7 @@ func convertPtr(name, key string, source, target reflect.Value) error {
 	return nil
 }
 
-func convertSlice(name, key string, source, target reflect.Value) error {
+func convertSlice(name, key string, source, target reflect.Value, tag *parsedTag) error {
 	sourceValue := reflect.Indirect(source)
 	sourceValueKind := sourceValue.Kind()
 
@@ -154,7 +157,7 @@ func convertSlice(name, key string, source, target reflect.Value) error {
 		targetElement := value.Index(i)
 
 		keyName := fmt.Sprintf("%s[%d]", name, i)
-		if err := convertValue(name, keyName, sourceData, targetElement); err != nil {
+		if err := convertValue(name, keyName, sourceData, targetElement, tag); err != nil {
 			return wrapError(name, keyName, sourceData, targetElement, err)
 		}
 	}
@@ -163,7 +166,7 @@ func convertSlice(name, key string, source, target reflect.Value) error {
 	return nil
 }
 
-func convertMap(name, key string, source, target reflect.Value) error {
+func convertMap(name, key string, source, target reflect.Value, tag *parsedTag) error {
 	fieldType := target.Type()
 	value := reflect.MakeMap(reflect.MapOf(fieldType.Key(), fieldType.Elem()))
 
@@ -176,14 +179,14 @@ func convertMap(name, key string, source, target reflect.Value) error {
 		keyName := fmt.Sprintf("%s[%s]", name, k)
 
 		newKey := reflect.Indirect(reflect.New(fieldType.Key()))
-		if err := convertValue(name, keyName, k, newKey); err != nil {
+		if err := convertValue(name, keyName, k, newKey, tag); err != nil {
 			return wrapError(name, keyName, newKey, k, err)
 		}
 
 		currentValue := sourceValue.MapIndex(k)
 		currentElem := reflect.Indirect(reflect.New(fieldType.Elem()))
 
-		if err := convertValue(name, keyName, currentValue, currentElem); err != nil {
+		if err := convertValue(name, keyName, currentValue, currentElem, tag); err != nil {
 			return wrapError(name, keyName, currentElem, currentValue, err)
 		}
 
@@ -194,7 +197,7 @@ func convertMap(name, key string, source, target reflect.Value) error {
 	return nil
 }
 
-func convertInterface(name, key string, source, target reflect.Value) error {
+func convertInterface(name, key string, source, target reflect.Value, tag *parsedTag) error {
 	if source.Type().AssignableTo(target.Type()) {
 		target.Set(source)
 		return nil
@@ -209,7 +212,7 @@ func wrapError(name, key string, source, target reflect.Value, err error) error 
 	return fmt.Errorf("Couldn't convert %s (key %q) '%s' to a '%s', because %v", name, key, source.Type(), target.Type(), err)
 }
 
-func convertBool(name, key string, source, target reflect.Value) error {
+func convertBool(name, key string, source, target reflect.Value, tag *parsedTag) error {
 	switch source.Kind() {
 	case reflect.Interface:
 		target.SetBool(source.Interface().(bool))
@@ -238,7 +241,7 @@ func convertBool(name, key string, source, target reflect.Value) error {
 	return nil
 }
 
-func convertString(name, key string, source, target reflect.Value) error {
+func convertString(name, key string, source, target reflect.Value, tag *parsedTag) error {
 	switch source.Kind() {
 	case reflect.Interface:
 		target.SetString(source.Interface().(string))
@@ -272,7 +275,7 @@ func round(x float64, prec int) float64 {
 	return rounder / pow
 }
 
-func convertInt(name, key string, source, target reflect.Value) error {
+func convertInt(name, key string, source, target reflect.Value, tag *parsedTag) error {
 	switch source.Kind() {
 	case reflect.Bool:
 		if source.Bool() {
@@ -301,7 +304,7 @@ func convertInt(name, key string, source, target reflect.Value) error {
 	return nil
 }
 
-func convertUint(name, key string, source, target reflect.Value) error {
+func convertUint(name, key string, source, target reflect.Value, tag *parsedTag) error {
 	switch source.Kind() {
 	case reflect.Bool:
 		if source.Bool() {
@@ -330,7 +333,7 @@ func convertUint(name, key string, source, target reflect.Value) error {
 	return nil
 }
 
-func convertFloat(name, key string, source, target reflect.Value) error {
+func convertFloat(name, key string, source, target reflect.Value, tag *parsedTag) error {
 	switch source.Kind() {
 	case reflect.Bool:
 		if source.Bool() {
@@ -359,8 +362,8 @@ func convertFloat(name, key string, source, target reflect.Value) error {
 	return nil
 }
 
-func fieldTagNameMap(tpe reflect.Type) map[string]reflect.StructField {
-	result := map[string]reflect.StructField{}
+func fieldTagNameMap(tpe reflect.Type) map[string]fieldInfo {
+	result := map[string]fieldInfo{}
 	for i := 0; i < tpe.NumField(); i++ {
 		targetDes := tpe.Field(i)
 
@@ -370,7 +373,7 @@ func fieldTagNameMap(tpe reflect.Type) map[string]reflect.StructField {
 
 		tag := parseTag(targetDes.Tag.Get(TagName), targetDes.Name)
 		if !tag.ShouldSkip {
-			result[tag.Name] = targetDes
+			result[tag.Name] = fieldInfo{targetDes, tag}
 		}
 	}
 	return result

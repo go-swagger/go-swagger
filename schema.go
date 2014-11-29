@@ -109,7 +109,6 @@ func (s *Schema) UnmarshalMap(data interface{}) error {
 	dict := reflection.MarshalMap(data)
 	if ref, ok := dict["$ref"]; ok {
 		*s = Schema{Ref: ref.(string)}
-		return nil
 	}
 	return reflection.UnmarshalMapRecursed(dict, s)
 }
@@ -134,10 +133,11 @@ func (s *Schema) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 // MarshalMap converts this schema object to a map
 func (s Schema) MarshalMap() map[string]interface{} {
+	result := reflection.MarshalMapRecursed(s)
 	if s.Ref != "" {
-		return map[string]interface{}{"$ref": s.Ref}
+		result["$ref"] = s.Ref
 	}
-	return reflection.MarshalMapRecursed(s)
+	return result
 }
 
 // MarshalJSON converts this schema object to JSON
