@@ -104,6 +104,7 @@ type Schema struct {
 	AdditionalProperties *Schema                `swagger:"additionalProperties,omitempty"`
 }
 
+// UnmarshalMap hydrates this shema instance with the data from the map
 func (s *Schema) UnmarshalMap(data interface{}) error {
 	dict := reflection.MarshalMap(data)
 	if ref, ok := dict["$ref"]; ok {
@@ -113,9 +114,19 @@ func (s *Schema) UnmarshalMap(data interface{}) error {
 	return reflection.UnmarshalMapRecursed(dict, s)
 }
 
+// UnmarshalJSON hydrates this schema instance with the data from JSON
 func (s *Schema) UnmarshalJSON(data []byte) error {
 	var value map[string]interface{}
 	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	return s.UnmarshalMap(value)
+}
+
+// UnmarshalYAML hydrates this schema instance with the data from YAML
+func (s *Schema) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var value map[string]interface{}
+	if err := unmarshal(value); err != nil {
 		return err
 	}
 	return s.UnmarshalMap(value)

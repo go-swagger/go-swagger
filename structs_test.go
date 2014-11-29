@@ -168,7 +168,7 @@ func TestSerialization(t *testing.T) {
 			})
 		})
 
-		SkipConvey("a schema or array property", func() {
+		Convey("a schema or array property", func() {
 			Convey("when string", func() {
 				obj := SchemaOrArray{Single: &Schema{Type: &StringOrArray{Single: "string"}}}
 
@@ -196,12 +196,11 @@ func TestSerialization(t *testing.T) {
 			})
 
 			Convey("when empty", func() {
-				obj := SchemaOrArray{}
 				Convey("for json returns an empty array", func() {
-					So("null", ShouldParseJSON, &obj)
+					So("null", ShouldParseJSON, &SchemaOrArray{})
 				})
 				Convey("for yaml returns an emtpy array", func() {
-					So("[]\n", ShouldParseYAML, &obj)
+					So("[]\n", ShouldParseYAML, &SchemaOrArray{Multi: []Schema{}})
 				})
 			})
 		})

@@ -48,6 +48,7 @@ type StringOrArray struct {
 	Multi  []string
 }
 
+// UnmarshalMap hydrates this string or string array with data from the map
 func (s *StringOrArray) UnmarshalMap(data interface{}) error {
 	return s.unmarshalInterface(data, []byte{})
 }
@@ -95,7 +96,7 @@ func (s *StringOrArray) unmarshalInterface(parsed interface{}, data []byte) erro
 	case nil:
 		return nil
 	default:
-		return fmt.Errorf("Could not unmarshal string or array from: `%s`", data)
+		return fmt.Errorf("could not unmarshal string or array from: `%s`", data)
 	}
 }
 
@@ -138,6 +139,7 @@ func (s SchemaOrArray) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s.Multi)
 }
 
+// UnmarshalMap hydrates this schema or array with data from a map
 func (s *SchemaOrArray) UnmarshalMap(data interface{}) error {
 	return s.unmarshalInterface(data, []byte{})
 }
@@ -163,12 +165,22 @@ func (s *SchemaOrArray) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 func (s *SchemaOrArray) unmarshalInterface(parsed interface{}, data []byte) error {
-	fmt.Printf("\nschema or interface: %T %#v\n", parsed, parsed)
-
 	switch parsed.(type) {
 	case map[string]interface{}:
 		val := &Schema{}
 		err := reflection.UnmarshalMapRecursed(parsed.(map[string]interface{}), val)
+		if err != nil {
+			return err
+		}
+		s.Single = val
+		return nil
+	case map[interface{}]interface{}:
+		val := &Schema{}
+		stringMap := make(map[string]interface{})
+		for k, v := range parsed.(map[interface{}]interface{}) {
+			stringMap[k.(string)] = v
+		}
+		err := reflection.UnmarshalMapRecursed(stringMap, val)
 		if err != nil {
 			return err
 		}
@@ -184,14 +196,25 @@ func (s *SchemaOrArray) unmarshalInterface(parsed interface{}, data []byte) erro
 					return err
 				}
 				val = append(val, elem)
+			} else if dict, ok := v.(map[interface{}]interface{}); ok {
+				elem := Schema{}
+				stringMap := make(map[string]interface{})
+				for k, vv := range dict {
+					stringMap[k.(string)] = vv
+				}
+
+				err := reflection.UnmarshalMapRecursed(stringMap, &elem)
+				if err != nil {
+					return err
+				}
+				val = append(val, elem)
 			}
 		}
 		s.Multi = val
-		fmt.Println("this is an array")
 		return nil
 	case nil:
 		return nil
 	default:
-		return fmt.Errorf("Could not unmarshal string or array from: `%s`", data)
+		return fmt.Errorf("could not unmarshal string or array from: `%s`", data)
 	}
 }
