@@ -60,6 +60,7 @@ func TestModelFixtures(t *testing.T) {
 		t.Fatal(err)
 	}
 	specs := []string{"models", "modelWithComposition", "modelWithExamples", "multipleModels"}
+	//toSkip := []string{}
 	toSkip := []string{"modelWithComposition"}
 FILES:
 	for _, f := range files {

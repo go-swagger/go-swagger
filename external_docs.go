@@ -12,7 +12,7 @@ import (
 // For more information: http://goo.gl/8us55a#externalDocumentationObject
 type ExternalDocumentation struct {
 	Description string `swagger:"description,omitempty"`
-	URL         string `swagger:"url"`
+	URL         string `swagger:"url,omitempty"`
 }
 
 // MarshalJSON converts this spec object to JSON
