@@ -117,16 +117,30 @@ func TestResponseFixtures(t *testing.T) {
 	}
 }
 
-//func TestResourcesFixtures(t *testing.T) {
-//path := filepath.Join("fixtures", "json", "resources")
-//files, err := ioutil.ReadDir(path)
-//if err != nil {
-//t.Fatal(err)
-//}
-//for _, f := range files {
-//if f.IsDir() {
-//continue
-//}
-//roundTripTest(t, "resources", filepath.Join(path, f.Name()), &Spec{})
-//}
-//}
+func TestResourcesFixtures(t *testing.T) {
+	path := filepath.Join("fixtures", "json", "resources")
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pathItems := []string{"resourceWithLinkedDefinitions_part1"}
+	toSkip := []string{"reusableParameters", "securityExample", "taggedResource", "vendorExtensionExamples"}
+FILES:
+	for _, f := range files {
+		if f.IsDir() {
+			continue
+		}
+		for _, ts := range toSkip {
+			if strings.HasPrefix(f.Name(), ts) {
+				continue FILES
+			}
+		}
+		for _, pi := range pathItems {
+			if strings.HasPrefix(f.Name(), pi) {
+				roundTripTest(t, "path items", filepath.Join(path, f.Name()), &PathItem{})
+				continue FILES
+			}
+		}
+		roundTripTest(t, "resources", filepath.Join(path, f.Name()), &Spec{})
+	}
+}
