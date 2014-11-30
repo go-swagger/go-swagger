@@ -8,14 +8,14 @@ import (
 )
 
 var parameter = Parameter{
-	Items: &Items{
-		Ref: "Cat",
-	},
 	Extensions: map[string]interface{}{
 		"x-framework": "swagger-go",
 	},
+	Description: "the description of this parameter",
+	Items: &Items{
+		Ref: "Cat",
+	},
 	Ref:              "Dog",
-	Description:      "the description of this parameter",
 	Maximum:          100,
 	ExclusiveMaximum: true,
 	ExclusiveMinimum: true,

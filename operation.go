@@ -64,7 +64,7 @@ func (o *Operation) UnmarshalJSON(data []byte) error {
 // UnmarshalYAML hydrates this operation instance with the data from YAML
 func (o *Operation) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value map[string]interface{}
-	if err := unmarshal(value); err != nil {
+	if err := unmarshal(&value); err != nil {
 		return err
 	}
 	return o.UnmarshalMap(value)

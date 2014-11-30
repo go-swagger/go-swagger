@@ -51,7 +51,7 @@ func (e *ExternalDocumentation) UnmarshalJSON(data []byte) error {
 // UnmarshalYAML hydrates this external documentation instance with the data from YAML
 func (e *ExternalDocumentation) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value map[string]interface{}
-	if err := unmarshal(value); err != nil {
+	if err := unmarshal(&value); err != nil {
 		return err
 	}
 	return reflection.UnmarshalMap(value, e)

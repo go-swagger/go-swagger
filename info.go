@@ -42,7 +42,7 @@ func (i *Info) UnmarshalJSON(data []byte) error {
 // UnmarshalYAML hydrates this info instance with the data from YAML
 func (i *Info) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value map[string]interface{}
-	if err := unmarshal(value); err != nil {
+	if err := unmarshal(&value); err != nil {
 		return err
 	}
 	return i.UnmarshalMap(value)

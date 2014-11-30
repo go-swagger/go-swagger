@@ -51,7 +51,7 @@ func (c *ContactInfo) UnmarshalJSON(data []byte) error {
 // UnmarshalYAML hydrates this contact info instance with the data from YAML
 func (c *ContactInfo) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value map[string]interface{}
-	if err := unmarshal(value); err != nil {
+	if err := unmarshal(&value); err != nil {
 		return err
 	}
 	return reflection.UnmarshalMap(value, c)

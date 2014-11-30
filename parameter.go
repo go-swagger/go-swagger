@@ -90,7 +90,7 @@ func (p *Parameter) UnmarshalJSON(data []byte) error {
 // UnmarshalYAML hydrates this parameter instance with the data from YAML
 func (p *Parameter) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value map[string]interface{}
-	if err := unmarshal(value); err != nil {
+	if err := unmarshal(&value); err != nil {
 		return err
 	}
 	return p.UnmarshalMap(value)

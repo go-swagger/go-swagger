@@ -53,7 +53,7 @@ func (x *XMLObject) UnmarshalJSON(data []byte) error {
 // UnmarshalYAML hydrates this spec instance with the data from YAML
 func (x *XMLObject) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value map[string]interface{}
-	if err := unmarshal(value); err != nil {
+	if err := unmarshal(&value); err != nil {
 		return err
 	}
 	return reflection.UnmarshalMap(value, x)

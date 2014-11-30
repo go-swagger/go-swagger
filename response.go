@@ -38,7 +38,7 @@ func (r *Response) UnmarshalJSON(data []byte) error {
 // UnmarshalYAML hydrates this response instance with the data from YAML
 func (r *Response) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value map[string]interface{}
-	if err := unmarshal(value); err != nil {
+	if err := unmarshal(&value); err != nil {
 		return err
 	}
 	return r.UnmarshalMap(value)

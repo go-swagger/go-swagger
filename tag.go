@@ -56,7 +56,7 @@ func (t *Tag) UnmarshalJSON(data []byte) error {
 // UnmarshalYAML hydrates this tag instance with the data from YAML
 func (t *Tag) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value map[string]interface{}
-	if err := unmarshal(value); err != nil {
+	if err := unmarshal(&value); err != nil {
 		return err
 	}
 	return t.UnmarshalMap(value)
