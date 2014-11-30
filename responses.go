@@ -2,6 +2,7 @@ package swagger
 
 import (
 	"encoding/json"
+	"regexp"
 	"strconv"
 
 	"github.com/casualjim/go-swagger/reflection"
@@ -26,13 +27,35 @@ type Responses struct {
 	StatusCodeResponses map[int]Response       `swagger:"-"`
 }
 
+var onlyNumbers = regexp.MustCompile("\\d+")
+
 // UnmarshalMap hydrates this responses instance with the data from the map
 func (r *Responses) UnmarshalMap(data interface{}) error {
 	dict := reflection.MarshalMap(data)
-	if err := reflection.UnmarshalMapRecursed(dict, r); err != nil {
-		return err
+	if def, ok := dict["default"]; ok {
+		value := &Response{}
+		if err := value.UnmarshalMap(def.(map[string]interface{})); err != nil {
+			return err
+		}
+		r.Default = value
+		delete(dict, "default")
 	}
 	r.Extensions = readExtensions(dict)
+	statusCodeResponses := make(map[int]Response)
+	for k, v := range dict {
+		if nk, err := strconv.Atoi(k); err == nil {
+			resVal, ok := v.(map[string]interface{})
+			if !ok {
+				resVal = reflection.MarshalMap(resVal)
+			}
+			response := new(Response)
+			if err := response.UnmarshalMap(resVal); err != nil {
+				return err
+			}
+			statusCodeResponses[nk] = *response
+		}
+	}
+	r.StatusCodeResponses = statusCodeResponses
 	return nil
 }
 

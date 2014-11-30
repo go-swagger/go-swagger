@@ -10,8 +10,22 @@ import (
 //
 // For more information: http://goo.gl/8us55a#licenseObject
 type License struct {
-	Name string `swagger:"name"`
-	URL  string `swagger:"url"`
+	Name string `swagger:"name,omitempty"`
+	URL  string `swagger:"url,omitempty"`
+}
+
+// MarshalMap converts this license object to map
+func (l License) MarshalMap() map[string]interface{} {
+	return reflection.MarshalMapRecursed(l)
+}
+
+// UnmarshalMap hydrates this license instance with the data from a map
+func (l *License) UnmarshalMap(data interface{}) error {
+	dict := reflection.MarshalMap(data)
+	if err := reflection.UnmarshalMapRecursed(dict, l); err != nil {
+		return err
+	}
+	return nil
 }
 
 // MarshalJSON converts this spec object to JSON

@@ -31,7 +31,11 @@ func (p *PathItem) UnmarshalMap(data interface{}) error {
 	if ref, ok := dict["$ref"]; ok {
 		p.Ref = ref.(string)
 	}
-	return reflection.UnmarshalMapRecursed(dict, p)
+	if err := reflection.UnmarshalMapRecursed(dict, p); err != nil {
+		return err
+	}
+	p.Extensions = readExtensions(dict)
+	return nil
 }
 
 // UnmarshalJSON hydrates this path item instance with the data from JSON
@@ -59,7 +63,6 @@ func (p PathItem) MarshalMap() map[string]interface{} {
 		res["$ref"] = p.Ref
 	}
 	addExtensions(res, p.Extensions)
-
 	return res
 }
 

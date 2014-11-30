@@ -21,11 +21,25 @@ type Spec struct {
 	Paths               Paths                  `swagger:"paths,omitempty"`    // required
 	Definitions         Definitions            `swagger:"definitions,omitempty"`
 	Parameters          []Parameter            `swagger:"parameters,omitempty"`
-	Responses           ResponsesMap           `swagger:"responses,omitempty"`
+	Responses           map[string]Response    `swagger:"responses,omitempty"`
 	SecurityDefinitions SecurityDefinitions    `swagger:"securityDefintions,omitempty"`
-	Security            SecurityRequirements   `swagger:"security,omitempty"`
+	Security            []map[string][]string  `swagger:"security,omitempty"`
 	Tags                []Tag                  `swagger:"tags,omitempty"`
 	ExternalDocs        *ExternalDocumentation `swagger:"externalDocs,omitempty"`
+}
+
+// MarshalMap converts this spec object to map
+func (s Spec) MarshalMap() map[string]interface{} {
+	return reflection.MarshalMapRecursed(s)
+}
+
+// UnmarshalMap hydrates this spec instance with the data from a map
+func (s *Spec) UnmarshalMap(data interface{}) error {
+	dict := reflection.MarshalMap(data)
+	if err := reflection.UnmarshalMapRecursed(dict, s); err != nil {
+		return err
+	}
+	return nil
 }
 
 // MarshalJSON converts this spec object to JSON

@@ -18,11 +18,11 @@ type Operation struct {
 	Tags         []string               `swagger:"tags,omitempty"`
 	Summary      string                 `swagger:"summary,omitempty"`
 	ExternalDocs *ExternalDocumentation `swagger:"externalDocs,omitempty"`
-	ID           string                 `swagger:"operationId"`
+	ID           string                 `swagger:"operationId,omitempty"`
 	Deprecated   bool                   `swagger:"deprecated,omitempty"`
-	Security     []SecurityRequirement  `swagger:"security,omitempty"`
+	Security     []map[string][]string  `swagger:"security,omitempty"`
 	Parameters   []Parameter            `swagger:"parameters,omitempty"`
-	Responses    Responses              `swagger:"responses"`
+	Responses    Responses              `swagger:"responses,omitempty"`
 }
 
 // MarshalMap converts this operation to a map

@@ -10,22 +10,36 @@ import (
 //
 // For more information: http://goo.gl/8us55a#contactObject
 type ContactInfo struct {
-	Name  string `swagger:"name"`
-	URL   string `swagger:"url"`
-	Email string `swagger:"email"`
+	Name  string `swagger:"name,omitempty"`
+	URL   string `swagger:"url,omitempty"`
+	Email string `swagger:"email,omitempty"`
 }
 
-// MarshalJSON converts this spec object to JSON
+// MarshalJSON converts this contact info object to JSON
 func (c ContactInfo) MarshalJSON() ([]byte, error) {
-	return json.Marshal(reflection.MarshalMap(c))
+	return json.Marshal(c.MarshalMap())
 }
 
-// MarshalYAML converts this spec object to YAML
+// MarshalYAML converts this contact info object to YAML
 func (c ContactInfo) MarshalYAML() (interface{}, error) {
-	return reflection.MarshalMap(c), nil
+	return c.MarshalMap(), nil
 }
 
-// UnmarshalJSON hydrates this spec instance with the data from JSON
+// MarshalMap converts this contact info object to map
+func (c ContactInfo) MarshalMap() map[string]interface{} {
+	return reflection.MarshalMapRecursed(c)
+}
+
+// UnmarshalMap hydrates this contact info instance with the data from a map
+func (c *ContactInfo) UnmarshalMap(data interface{}) error {
+	dict := reflection.MarshalMap(data)
+	if err := reflection.UnmarshalMapRecursed(dict, c); err != nil {
+		return err
+	}
+	return nil
+}
+
+// UnmarshalJSON hydrates this contact info instance with the data from JSON
 func (c *ContactInfo) UnmarshalJSON(data []byte) error {
 	var value map[string]interface{}
 	if err := json.Unmarshal(data, &value); err != nil {
@@ -34,7 +48,7 @@ func (c *ContactInfo) UnmarshalJSON(data []byte) error {
 	return reflection.UnmarshalMap(value, c)
 }
 
-// UnmarshalYAML hydrates this spec instance with the data from YAML
+// UnmarshalYAML hydrates this contact info instance with the data from YAML
 func (c *ContactInfo) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value map[string]interface{}
 	if err := unmarshal(value); err != nil {

@@ -27,8 +27,7 @@
               "type": "integer",
               "format": "int32",
               "description": "the size of the pack the dog is from",
-              "default": 0,
-              "minimum": 0
+              "default": 0
             }
           },
           "required": [ "name", "packSize" ]
@@ -44,8 +43,7 @@
             "fins": {
               "type": "integer",
               "format": "int32",
-              "description": "count of fins",
-              "minimum": 0
+              "description": "count of fins"
             }
           },
           "required": [ "fins" ]

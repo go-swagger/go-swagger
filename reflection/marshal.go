@@ -1,6 +1,7 @@
 package reflection
 
 import (
+	"fmt"
 	"log"
 	"reflect"
 	"strings"
@@ -84,22 +85,36 @@ func MarshalMapRecursed(data interface{}) map[string]interface{} {
 // MarshalMap this method marshals an interface to a map
 // when the data provided implements MapMarshaller it will use that marshaller to get to the map
 func MarshalMap(data interface{}) map[string]interface{} {
+	//if _, f, lnr, ok := runtime.Caller(1); ok {
+	//log.Printf("MarshalMap called from %s:%v\n", f, lnr)
+	//}
 	return marshalMap(data, false)
 }
 func marshalMap(data interface{}, skipInterface bool) map[string]interface{} {
+	//if _, f, lnr, ok := runtime.Caller(1); ok {
+	//log.Printf("Called from %s:%v\n", f, lnr)
+	//}
 	if data == nil {
 		return nil
 	}
 
 	val := reflect.Indirect(reflect.ValueOf(data))
 	tpe := val.Type()
+	//fmt.Printf("trying data %+v (%T) %s\n", data, data, tpe.Kind())
 
 	if !skipInterface && tpe.Implements(mapMarshallerType) {
 		return val.Interface().(MapMarshaller).MarshalMap()
 	}
 
+	if tpe.Kind() != reflect.Map && tpe.Kind() != reflect.Struct {
+		fmt.Printf("Wanted a map or struct but got a %s\n", tpe.Kind())
+		//log.Panicf("Wanted a map or struct but got a %s\n", tpe.Kind())
+		return nil
+	}
+
 	result := map[string]interface{}{}
 	if tpe.Kind() == reflect.Map {
+		//fmt.Println("This is a map")
 		keys := val.MapKeys()
 		if len(keys) == 0 {
 			return nil
@@ -110,6 +125,7 @@ func marshalMap(data interface{}, skipInterface bool) map[string]interface{} {
 				return nil
 			}
 			value := reflect.Indirect(val.MapIndex(key))
+
 			var mapValue interface{}
 			if isStruct(value) {
 				mapValue = MarshalMap(value.Interface())
@@ -121,6 +137,7 @@ func marshalMap(data interface{}, skipInterface bool) map[string]interface{} {
 		return result
 	}
 
+	//fmt.Println("This is a struct")
 	for i := 0; i < tpe.NumField(); i++ {
 		fld := val.Field(i)
 		fldTpe := tpe.Field(i)
@@ -140,6 +157,8 @@ func marshalMap(data interface{}, skipInterface bool) map[string]interface{} {
 				}
 			}
 
+			//fmt.Println("reading for key:", tag.Name)
+
 			var value interface{}
 			if fld.Kind() == reflect.Slice {
 				var content []interface{}
@@ -147,8 +166,10 @@ func marshalMap(data interface{}, skipInterface bool) map[string]interface{} {
 					el := reflect.Indirect(fld.Index(j))
 
 					if isStruct(el) && !tag.ByValue {
+						//fmt.Println("we think this is a slice struct")
 						content = append(content, MarshalMap(el.Interface()))
 					} else {
+						//fmt.Println("we think this is a slice value")
 						content = append(content, el.Interface())
 					}
 				}
@@ -157,9 +178,11 @@ func marshalMap(data interface{}, skipInterface bool) map[string]interface{} {
 			}
 
 			if isStruct(fld) && !tag.ByValue {
+				//fmt.Println("we think this is a struct")
 				v := MarshalMap(fld.Interface())
 				value = v
 			} else {
+				//fmt.Println("we think this is a value")
 				value = fld.Interface()
 			}
 			result[tag.Name] = value

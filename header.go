@@ -26,7 +26,21 @@ type Header struct {
 	Type             string        `swagger:"type,omitempty"`
 	Format           string        `swagger:"format,omitempty"`
 	Default          interface{}   `swagger:"default,omitempty"`
-	Items            *Items        `swagger:"-"`
+	Items            *Items        `swagger:"items,omitempty"`
+}
+
+// MarshalMap converts this header object to map
+func (h Header) MarshalMap() map[string]interface{} {
+	return reflection.MarshalMapRecursed(h)
+}
+
+// UnmarshalMap hydrates this header instance with the data from a map
+func (h *Header) UnmarshalMap(data interface{}) error {
+	dict := reflection.MarshalMap(data)
+	if err := reflection.UnmarshalMapRecursed(dict, h); err != nil {
+		return err
+	}
+	return nil
 }
 
 // UnmarshalJSON hydrates this header from JSON

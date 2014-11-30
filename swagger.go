@@ -16,9 +16,6 @@ import (
 // For more information: http://goo.gl/8us55a#definitionsObject
 type Definitions map[string]Schema
 
-// ResponsesMap contains the responses by key
-type ResponsesMap map[string]Response
-
 // SecurityDefinitions a declaration of the security schemes available to be used in the specification.
 // This does not enforce the security schemes on the operations and only serves to provide
 // the relevant details for each scheme.
@@ -34,9 +31,15 @@ func addExtensions(res map[string]interface{}, extensions map[string]interface{}
 				key = "x-" + key
 			}
 		}
+		valueType := reflect.TypeOf(v)
 		zero := reflect.Zero(reflect.TypeOf(v)).Interface()
 		if !reflect.DeepEqual(v, zero) {
-			res[key] = reflection.MarshalMap(v)
+			switch valueType.Kind() {
+			case reflect.Struct, reflect.Map:
+				res[key] = reflection.MarshalMap(v)
+			default:
+				res[key] = v
+			}
 		}
 	}
 }

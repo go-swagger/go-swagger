@@ -16,12 +16,6 @@ const (
 	accessCode  = "accessCode"
 )
 
-// SecurityRequirement is a single security requirement
-type SecurityRequirement map[string][]string
-
-// SecurityRequirements contains all the supported security requirements
-type SecurityRequirements []SecurityRequirement
-
 // BasicAuth creates a basic auth security scheme
 func BasicAuth() *SecurityScheme {
 	return &SecurityScheme{Type: basic}

@@ -44,7 +44,7 @@ func unmarshalMap(data map[string]interface{}, target interface{}, skipCheck boo
 	val := reflect.Indirect(reflect.ValueOf(target))
 	tpe := val.Type()
 
-	fieldNameMap := fieldTagNameMap(tpe)
+	fieldNameMap := fieldTagNameMap(tpe, val)
 	for k, v := range data {
 		if targetDes, ok := fieldNameMap[k]; ok {
 			if err := convertValue(targetDes.Descriptor.Name, k, reflect.ValueOf(v), val.FieldByName(targetDes.Descriptor.Name), targetDes.Tag); err != nil {
@@ -65,8 +65,9 @@ func convertValue(name, key string, source, target reflect.Value, tag *parsedTag
 		return fmt.Errorf("%s (key %q) %#v must be addressable", name, key, target)
 	}
 
-	ptr := reflect.PtrTo(target.Type())
-	if ptr.AssignableTo(unmarshallerType) {
+	//fmt.Printf("converting %s (key %s) from %s into %s\n", name, key, source.Type(), target.Type())
+	if reflect.PtrTo(target.Type()).Implements(unmarshallerType) {
+		//fmt.Printf("converting custom converter %s\n", key)
 		value := reflect.New(target.Type())
 		if err := value.Interface().(MapUnmarshaller).UnmarshalMap(MarshalMap(source.Interface())); err != nil {
 			return err
@@ -75,27 +76,44 @@ func convertValue(name, key string, source, target reflect.Value, tag *parsedTag
 		return nil
 	}
 
-	//fmt.Printf("converting %s (key %s) from %s into %s\n", name, key, source.Type(), target.Type())
-	switch target.Kind() {
-	case reflect.Interface:
+	if target.Kind() == reflect.Interface {
+		//fmt.Printf("setting interface %s\n", key)
+		target.Set(source)
+		return nil
+	}
+
+	if source.Kind() == reflect.Interface {
+		//fmt.Printf("converting interface %s\n", key)
 		return convertInterface(name, key, source, target, tag)
+	}
+
+	switch target.Kind() {
 	case reflect.Bool:
+		//fmt.Printf("converting bool %s\n", key)
 		return convertBool(name, key, source, target, tag)
 	case reflect.String:
+		//fmt.Printf("converting string %s\n", key)
 		return convertString(name, key, source, target, tag)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		//fmt.Printf("converting int %s\n", key)
 		return convertInt(name, key, source, target, tag)
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		//fmt.Printf("converting uint %s\n", key)
 		return convertUint(name, key, source, target, tag)
 	case reflect.Float32, reflect.Float64:
+		//fmt.Printf("converting float %s\n", key)
 		return convertFloat(name, key, source, target, tag)
 	case reflect.Map:
+		//fmt.Printf("converting map %s\n", key)
 		return convertMap(name, key, source, target, tag)
 	case reflect.Slice:
+		//fmt.Printf("converting slice %s\n", key)
 		return convertSlice(name, key, source, target, tag)
 	case reflect.Struct:
+		//fmt.Printf("converting struct %s\n", key)
 		return convertStruct(name, key, source, target, tag)
 	case reflect.Ptr:
+		//fmt.Printf("converting pointer %s\n", key)
 		return convertPtr(name, key, source, target, tag)
 	default:
 		return makeError(name, key, source, target)
@@ -109,9 +127,10 @@ func convertStruct(name, key string, source, target reflect.Value, tag *parsedTa
 	}
 
 	sourceValue := reflect.Indirect(source)
-	sourceValueKind := sourceValue.Kind()
-	if sourceValueKind != reflect.Map && sourceValueKind != reflect.Struct {
-		return fmt.Errorf("structs can only be read back in from maps at this moment (field %q key %q) but got %s", name, key, sourceValueKind)
+	sourceValueKind := sourceValue.Type().Kind()
+
+	if sourceValueKind != reflect.Interface && sourceValueKind != reflect.Map && sourceValueKind != reflect.Struct {
+		return fmt.Errorf("structs can only be read back in from maps at this moment but got %s", sourceValueKind)
 	}
 	if tag.ByValue && source.Type().AssignableTo(target.Type()) {
 		target.Set(source)
@@ -198,11 +217,69 @@ func convertMap(name, key string, source, target reflect.Value, tag *parsedTag) 
 }
 
 func convertInterface(name, key string, source, target reflect.Value, tag *parsedTag) error {
-	if source.Type().AssignableTo(target.Type()) {
+	switch target.Kind() {
+	case reflect.Bool:
+		target.SetBool(source.Interface().(bool))
+		return nil
+	case reflect.String:
+		target.SetString(source.Interface().(string))
+		return nil
+	case reflect.Int:
+		target.SetInt(int64(source.Interface().(int)))
+		return nil
+	case reflect.Int8:
+		target.SetInt(int64(source.Interface().(int8)))
+		return nil
+	case reflect.Int16:
+		target.SetInt(int64(source.Interface().(int16)))
+		return nil
+	case reflect.Int32:
+		target.SetInt(int64(source.Interface().(int32)))
+		return nil
+	case reflect.Int64:
+		target.SetInt(source.Interface().(int64))
+		return nil
+	case reflect.Uint:
+		target.SetUint(uint64(source.Interface().(uint)))
+		return nil
+	case reflect.Uint8:
+		target.SetUint(uint64(source.Interface().(uint8)))
+		return nil
+	case reflect.Uint16:
+		target.SetUint(uint64(source.Interface().(uint16)))
+		return nil
+	case reflect.Uint32:
+		target.SetUint(uint64(source.Interface().(uint32)))
+		return nil
+	case reflect.Uint64:
+		target.SetUint(source.Interface().(uint64))
+		return nil
+	case reflect.Float32:
+		target.SetFloat(float64(source.Interface().(float32)))
+		return nil
+	case reflect.Float64:
+		target.SetFloat(source.Interface().(float64))
+		return nil
+	case reflect.Struct:
+		//fmt.Printf("convertInterface: this is a slice target\n")
+		return convertValue(name, key, reflect.ValueOf(source.Interface()), target, tag)
+	case reflect.Interface:
+		//fmt.Printf("convertInterface: this is an interface target\n")
 		target.Set(source)
 		return nil
+	case reflect.Map:
+		//fmt.Printf("convertInterface: this is a map target\n")
+		return convertValue(name, key, reflect.ValueOf(source.Interface()), target, tag)
+	case reflect.Slice:
+		//fmt.Printf("convertInterface: this is a slice target\n")
+		return convertValue(name, key, reflect.ValueOf(source.Interface()), target, tag)
+	default:
+		if source.Type().AssignableTo(target.Type()) {
+			target.Set(source)
+			return nil
+		}
+		return makeError(name, key, source, target)
 	}
-	return makeError(name, key, source, target)
 }
 
 func makeError(name, key string, source, target reflect.Value) error {
@@ -362,7 +439,7 @@ func convertFloat(name, key string, source, target reflect.Value, tag *parsedTag
 	return nil
 }
 
-func fieldTagNameMap(tpe reflect.Type) map[string]fieldInfo {
+func fieldTagNameMap(tpe reflect.Type, val reflect.Value) map[string]fieldInfo {
 	result := map[string]fieldInfo{}
 	for i := 0; i < tpe.NumField(); i++ {
 		targetDes := tpe.Field(i)
@@ -372,7 +449,7 @@ func fieldTagNameMap(tpe reflect.Type) map[string]fieldInfo {
 		}
 
 		tag := parseTag(targetDes.Tag.Get(TagName), targetDes.Name)
-		if !tag.ShouldSkip {
+		if !tag.ShouldSkip && !targetDes.Anonymous {
 			result[tag.Name] = fieldInfo{targetDes, tag}
 		}
 	}

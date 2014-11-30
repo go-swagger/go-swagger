@@ -17,6 +17,20 @@ type XMLObject struct {
 	Wrapped   bool   `swagger:"wrapped,omitempty"`
 }
 
+// MarshalMap converts this xml object to map
+func (x XMLObject) MarshalMap() map[string]interface{} {
+	return reflection.MarshalMapRecursed(x)
+}
+
+// UnmarshalMap hydrates this xml object instance with the data from a map
+func (x *XMLObject) UnmarshalMap(data interface{}) error {
+	dict := reflection.MarshalMap(data)
+	if err := reflection.UnmarshalMapRecursed(dict, x); err != nil {
+		return err
+	}
+	return nil
+}
+
 // MarshalJSON converts this spec object to JSON
 func (x XMLObject) MarshalJSON() ([]byte, error) {
 	return json.Marshal(reflection.MarshalMap(x))

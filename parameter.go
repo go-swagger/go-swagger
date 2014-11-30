@@ -59,7 +59,7 @@ type Parameter struct {
 	Format           string                 `swagger:"format,omitempty"`
 	Name             string                 `swagger:"name,omitempty"`
 	In               string                 `swagger:"in,omitempty"`
-	Required         bool                   `swagger:"required"`
+	Required         bool                   `swagger:"required,omitempty"`
 	Schema           *Schema                `swagger:"schema,omitempty"` // when in == "body"
 	CollectionFormat string                 `swagger:"collectionFormat,omitempty"`
 	Default          interface{}            `swagger:"default,omitempty"`

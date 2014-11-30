@@ -2,7 +2,6 @@ package swagger
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -16,8 +15,8 @@ func roundTripTest(t *testing.T, fixtureType, fileName string, schema interface{
 	Convey("verifying "+fixtureType+" fixture "+specName, t, func() {
 		b, err := ioutil.ReadFile(fileName)
 		So(err, ShouldBeNil)
-		Println()
-		Println("Reading file", fileName, "returned", string(b))
+		//Println()
+		//Println("Reading file", fileName, "returned", string(b))
 		var expected map[string]interface{}
 		err = json.Unmarshal(b, &expected)
 		So(err, ShouldBeNil)
@@ -29,14 +28,16 @@ func roundTripTest(t *testing.T, fixtureType, fileName string, schema interface{
 		//Println("unmarshalling from file resulted in: %#v", schema)
 		cb, err := json.MarshalIndent(schema, "", "  ")
 		So(err, ShouldBeNil)
-		Println()
-		Println("Marshalling to json returned", string(cb))
+		//Println()
+		//Println("Marshalling to json returned", string(cb))
 
 		var actual map[string]interface{}
 		err = json.Unmarshal(cb, &actual)
 		So(err, ShouldBeNil)
-		Println()
-		fmt.Printf("comparing %s\n\t%#v\nto\n\t%#+v\n", fileName, expected, actual)
+		//Println()
+		//spew.Dump(expected)
+		//spew.Dump(actual)
+		//fmt.Printf("comparing %s\n\t%#v\nto\n\t%#+v\n", fileName, expected, actual)
 		So(actual, ShouldResemble, expected)
 	})
 }
@@ -60,8 +61,6 @@ func TestModelFixtures(t *testing.T) {
 		t.Fatal(err)
 	}
 	specs := []string{"models", "modelWithComposition", "modelWithExamples", "multipleModels"}
-	//toSkip := []string{}
-	toSkip := []string{"modelWithComposition"}
 FILES:
 	for _, f := range files {
 		if f.IsDir() {
@@ -69,11 +68,6 @@ FILES:
 		}
 		for _, spec := range specs {
 			if strings.HasPrefix(f.Name(), spec) {
-				for _, skip := range toSkip {
-					if strings.HasPrefix(f.Name(), skip) {
-						continue FILES
-					}
-				}
 				roundTripTest(t, "model", filepath.Join(path, f.Name()), &Spec{})
 				continue FILES
 			}
@@ -95,36 +89,36 @@ func TestParameterFixtures(t *testing.T) {
 	}
 }
 
-//func TestOperationFixtures(t *testing.T) {
-//path := filepath.Join("fixtures", "json", "resources", "operations")
-//files, err := ioutil.ReadDir(path)
-//if err != nil {
-//t.Fatal(err)
-//}
+func TestOperationFixtures(t *testing.T) {
+	path := filepath.Join("fixtures", "json", "resources", "operations")
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-//for _, f := range files {
-//roundTripTest(t, "operation", filepath.Join(path, f.Name()), &Operation{})
-//}
-//}
+	for _, f := range files {
+		roundTripTest(t, "operation", filepath.Join(path, f.Name()), &Operation{})
+	}
+}
 
-//func TestResponseFixtures(t *testing.T) {
-//path := filepath.Join("fixtures", "json", "responses")
-//files, err := ioutil.ReadDir(path)
-//if err != nil {
-//t.Fatal(err)
-//}
+func TestResponseFixtures(t *testing.T) {
+	path := filepath.Join("fixtures", "json", "responses")
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-//for _, f := range files {
-//if !strings.HasPrefix(f.Name(), "multiple") {
-//roundTripTest(t, "response", filepath.Join(path, f.Name()), &Response{})
-//} else {
-//roundTripTest(t, "responses", filepath.Join(path, f.Name()), &Responses{})
-//}
-//}
-//}
+	for _, f := range files {
+		if !strings.HasPrefix(f.Name(), "multiple") {
+			roundTripTest(t, "response", filepath.Join(path, f.Name()), &Response{})
+		} else {
+			roundTripTest(t, "responses", filepath.Join(path, f.Name()), &Responses{})
+		}
+	}
+}
 
 //func TestResourcesFixtures(t *testing.T) {
-//path := filepath.Join("fixtures", "json", "models")
+//path := filepath.Join("fixtures", "json", "resources")
 //files, err := ioutil.ReadDir(path)
 //if err != nil {
 //t.Fatal(err)
