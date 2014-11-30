@@ -20,9 +20,9 @@ type Spec struct {
 	BasePath            string                 `swagger:"basePath,omitempty"` // must start with a leading "/"
 	Paths               Paths                  `swagger:"paths,omitempty"`    // required
 	Definitions         Definitions            `swagger:"definitions,omitempty"`
-	Parameters          []Parameter            `swagger:"parameters,omitempty"`
+	Parameters          map[string]Parameter   `swagger:"parameters,omitempty"`
 	Responses           map[string]Response    `swagger:"responses,omitempty"`
-	SecurityDefinitions SecurityDefinitions    `swagger:"securityDefintions,omitempty"`
+	SecurityDefinitions SecurityDefinitions    `swagger:"securityDefinitions,omitempty"`
 	Security            []map[string][]string  `swagger:"security,omitempty"`
 	Tags                []Tag                  `swagger:"tags,omitempty"`
 	ExternalDocs        *ExternalDocumentation `swagger:"externalDocs,omitempty"`

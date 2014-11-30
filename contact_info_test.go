@@ -5,13 +5,13 @@ import (
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
-	"gopkg.in/v1/yaml"
+	"gopkg.in/yaml.v2"
 )
 
 var contactInfoJson = `{"email":"some@mailayada.dkdkd","name":"wordnik api team","url":"http://developer.wordnik.com"}`
-var contactInfoYaml = `name: wordnik api team
+var contactInfoYaml = `email: some@mailayada.dkdkd
+name: wordnik api team
 url: http://developer.wordnik.com
-email: some@mailayada.dkdkd
 `
 var contactInfo = ContactInfo{
 	Email: "some@mailayada.dkdkd",

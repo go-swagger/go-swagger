@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/casualjim/go-swagger/reflection"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -57,9 +56,11 @@ var schema = Schema{
 		Type:   &StringOrArray{Single: "integer"},
 		Format: "int32",
 	},
+	Extensions: map[string]interface{}{"x-framework": "go-swagger"},
 }
 
 var schemaJson = `{
+	"x-framework": "go-swagger",
   "$ref": "Cat",
   "description": "the description of this schema",
   "maximum": 100,
@@ -135,41 +136,11 @@ func TestSchema(t *testing.T) {
 		Convey("serialize", func() {
 			expected := map[string]interface{}{}
 			json.Unmarshal([]byte(schemaJson), &expected)
-			actual := reflection.MarshalMap(schema)
-			So(actual["$ref"], ShouldEqual, schema.Ref)
-			So(actual["description"], ShouldEqual, schema.Description)
-			So(actual["maximum"], ShouldEqual, schema.Maximum)
-			So(actual["minimum"], ShouldEqual, schema.Minimum)
-			So(actual["exclusiveMinimum"], ShouldEqual, schema.ExclusiveMinimum)
-			So(actual["exclusiveMaximum"], ShouldEqual, schema.ExclusiveMaximum)
-			So(actual["maxLength"], ShouldEqual, schema.MaxLength)
-			So(actual["minLength"], ShouldEqual, schema.MinLength)
-			So(actual["pattern"], ShouldEqual, schema.Pattern)
-			So(actual["maxItems"], ShouldEqual, schema.MaxItems)
-			So(actual["minItems"], ShouldEqual, schema.MinItems)
-			So(actual["uniqueItems"], ShouldBeTrue)
-			So(actual["multipleOf"], ShouldEqual, schema.MultipleOf)
-			So(actual["enum"], ShouldResemble, schema.Enum)
-			So(actual["type"], ShouldResemble, schema.Type)
-			So(actual["format"], ShouldEqual, schema.Format)
-			So(actual["title"], ShouldEqual, schema.Title)
-			So(actual["default"], ShouldResemble, schema.Default)
-			So(actual["maxProperties"], ShouldResemble, schema.MaxProperties)
-			So(actual["minProperties"], ShouldResemble, schema.MinProperties)
-			So(actual["required"], ShouldResemble, []interface{}{"id", "name"})
-			So(actual["items"], ShouldResemble, schema.Items)
-			So(actual["allOf"], ShouldResemble, []interface{}{map[string]interface{}{"type": schema.AllOf[0].Type}})
-			So(actual["properties"], ShouldResemble, schema.Properties)
-			So(actual["discriminator"], ShouldEqual, schema.Discriminator)
-			So(actual["readOnly"], ShouldEqual, schema.ReadOnly)
-			So(actual["xml"], ShouldResemble, reflection.MarshalMap(schema.XML))
-			So(actual["externalDocs"], ShouldResemble, reflection.MarshalMap(schema.ExternalDocs))
-			So(actual["example"], ShouldResemble, schema.Example)
-			additionalProps := map[string]interface{}{
-				"type":   schema.AdditionalProperties.Type,
-				"format": schema.AdditionalProperties.Format,
-			}
-			So(actual["additionalProperties"], ShouldResemble, additionalProps)
+			b, err := json.Marshal(schema)
+			So(err, ShouldBeNil)
+			var actual map[string]interface{}
+			json.Unmarshal(b, &actual)
+			So(actual, ShouldBeEquivalentTo, expected)
 		})
 		Convey("deserialize", func() {
 			actual := Schema{}
@@ -213,7 +184,9 @@ func TestSchema(t *testing.T) {
 			So(ex1["id"], ShouldEqual, exp1["id"])
 			So(ex2["name"], ShouldEqual, exp2["name"])
 			So(ex2["id"], ShouldEqual, exp2["id"])
+			//So(actual.Example, ShouldBeEquivalentTo, schema.Example)
 			So(actual.AdditionalProperties, ShouldResemble, schema.AdditionalProperties)
+			So(actual.Extensions, ShouldBeEquivalentTo, schema.Extensions)
 		})
 	})
 

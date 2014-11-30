@@ -5,11 +5,11 @@ import (
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
-	"gopkg.in/yaml.v1"
+	"gopkg.in/yaml.v2"
 )
 
 func TestIntegrationLicense(t *testing.T) {
-	Convey("all fields of licens should", t, func() {
+	Convey("all fields of license should", t, func() {
 		Convey("serialize to JSON", func() {
 			b, err := json.Marshal(License{"the name", "the url"})
 			So(err, ShouldBeNil)

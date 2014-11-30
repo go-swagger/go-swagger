@@ -32,13 +32,16 @@ func addExtensions(res map[string]interface{}, extensions map[string]interface{}
 			}
 		}
 		valueType := reflect.TypeOf(v)
-		zero := reflect.Zero(reflect.TypeOf(v)).Interface()
-		if !reflect.DeepEqual(v, zero) {
+		if !reflection.IsZero(reflect.ValueOf(v)) {
 			switch valueType.Kind() {
 			case reflect.Struct, reflect.Map:
 				res[key] = reflection.MarshalMap(v)
 			default:
-				res[key] = v
+				if reflection.IsZero(reflect.ValueOf(v)) {
+					res[key] = make(map[string]interface{})
+				} else {
+					res[key] = v
+				}
 			}
 		}
 	}
@@ -51,7 +54,11 @@ func readExtensions(res map[string]interface{}) map[string]interface{} {
 			if extensions == nil {
 				extensions = make(map[string]interface{})
 			}
-			extensions[k] = v
+			if reflection.IsZero(reflect.ValueOf(v)) {
+				extensions[k] = make(map[string]interface{})
+			} else {
+				extensions[k] = v
+			}
 			delete(res, k)
 		}
 	}

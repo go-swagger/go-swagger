@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
-	"gopkg.in/v1/yaml"
+	"gopkg.in/yaml.v2"
 )
 
 func TestIntegrationExternalDocs(t *testing.T) {

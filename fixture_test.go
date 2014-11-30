@@ -15,7 +15,7 @@ func roundTripTest(t *testing.T, fixtureType, fileName string, schema interface{
 	Convey("verifying "+fixtureType+" fixture "+specName, t, func() {
 		b, err := ioutil.ReadFile(fileName)
 		So(err, ShouldBeNil)
-		//Println()
+		Println()
 		//Println("Reading file", fileName, "returned", string(b))
 		var expected map[string]interface{}
 		err = json.Unmarshal(b, &expected)
@@ -38,7 +38,7 @@ func roundTripTest(t *testing.T, fixtureType, fileName string, schema interface{
 		//spew.Dump(expected)
 		//spew.Dump(actual)
 		//fmt.Printf("comparing %s\n\t%#v\nto\n\t%#+v\n", fileName, expected, actual)
-		So(actual, ShouldResemble, expected)
+		So(actual, ShouldBeEquivalentTo, expected)
 	})
 }
 
@@ -124,7 +124,7 @@ func TestResourcesFixtures(t *testing.T) {
 		t.Fatal(err)
 	}
 	pathItems := []string{"resourceWithLinkedDefinitions_part1"}
-	toSkip := []string{"reusableParameters", "securityExample", "taggedResource", "vendorExtensionExamples"}
+	toSkip := []string{}
 FILES:
 	for _, f := range files {
 		if f.IsDir() {
@@ -132,6 +132,11 @@ FILES:
 		}
 		for _, ts := range toSkip {
 			if strings.HasPrefix(f.Name(), ts) {
+				Convey("verifying resource"+strings.TrimSuffix(f.Name(), filepath.Ext(f.Name())), t, func() {
+					b, err := ioutil.ReadFile(filepath.Join(path, f.Name()))
+					So(err, ShouldBeNil)
+					verifySpecJson(b)
+				})
 				continue FILES
 			}
 		}
@@ -141,6 +146,11 @@ FILES:
 				continue FILES
 			}
 		}
-		roundTripTest(t, "resources", filepath.Join(path, f.Name()), &Spec{})
+		Convey("verifying resource "+strings.TrimSuffix(f.Name(), filepath.Ext(f.Name())), t, func() {
+			b, err := ioutil.ReadFile(filepath.Join(path, f.Name()))
+			So(err, ShouldBeNil)
+			verifySpecJson(b)
+		})
+
 	}
 }

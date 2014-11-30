@@ -71,7 +71,7 @@ func isStruct(v reflect.Value) bool {
 	return v.Kind() == reflect.Struct
 }
 
-func isZero(data reflect.Value) bool {
+func IsZero(data reflect.Value) bool {
 	tpe := data.Type()
 	return reflect.DeepEqual(data.Interface(), reflect.Zero(tpe).Interface())
 }
@@ -116,9 +116,6 @@ func marshalMap(data interface{}, skipInterface bool) map[string]interface{} {
 	if tpe.Kind() == reflect.Map {
 		//fmt.Println("This is a map")
 		keys := val.MapKeys()
-		if len(keys) == 0 {
-			return nil
-		}
 		for _, key := range keys {
 			if key.Type() != stringType {
 				log.Println("Only maps with string keys are allowed")
@@ -152,7 +149,7 @@ func marshalMap(data interface{}, skipInterface bool) map[string]interface{} {
 			}
 
 			if tag.OmitEmpty {
-				if isZero(fld) {
+				if IsZero(fld) {
 					continue
 				}
 			}

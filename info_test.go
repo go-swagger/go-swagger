@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
-	"gopkg.in/v1/yaml"
 )
 
 var infoJson = `{
@@ -23,19 +22,6 @@ var infoJson = `{
 	"version": "1.0.9-abcd",
 	"x-framework": "go-swagger"
 }`
-
-var infoYaml = `x-framework: go-swagger
-description: A sample API that uses a petstore as an example to demonstrate features in the swagger-2.0 specification
-title: Swagger Sample API
-termsOfService: http://helloreverb.com/terms/
-contact:
-  name: wordnik api team
-	url: http://developer.wordnik.com
-license:
-	name: Creative Commons 4.0 International
-	url: http://creativecommons.org/licenses/by/4.0/
-version: 1.0.9-abcd
-`
 
 var info = Info{
 	Version:        "1.0.9-abcd",
@@ -55,12 +41,6 @@ func TestIntegrationInfo(t *testing.T) {
 			So(string(b), ShouldEqual, infoJson)
 		})
 
-		Convey("serialize to YAML", func() {
-			b, err := yaml.Marshal(contactInfo)
-			So(err, ShouldBeNil)
-			So(string(b), ShouldEqual, contactInfoYaml)
-		})
-
 		Convey("deserialize from JSON", func() {
 			actual := Info{}
 			err := json.Unmarshal([]byte(infoJson), &actual)
@@ -68,11 +48,5 @@ func TestIntegrationInfo(t *testing.T) {
 			So(actual, ShouldResemble, info)
 		})
 
-		Convey("deserialize from YAML", func() {
-			actual := ContactInfo{}
-			err := yaml.Unmarshal([]byte(contactInfoYaml), &actual)
-			So(err, ShouldBeNil)
-			So(actual, ShouldResemble, contactInfo)
-		})
 	})
 }

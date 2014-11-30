@@ -102,6 +102,7 @@ type Schema struct {
 	ExternalDocs         *ExternalDocumentation `swagger:"externalDocs,omitempty"`
 	Example              interface{}            `swagger:"example,omitempty"`
 	AdditionalProperties *Schema                `swagger:"additionalProperties,omitempty"`
+	Extensions           map[string]interface{} `swagger:"-"` // custom extensions, omitted when empty
 }
 
 // UnmarshalMap hydrates this schema instance with the data from the map
@@ -110,6 +111,7 @@ func (s *Schema) UnmarshalMap(data interface{}) error {
 	if ref, ok := dict["$ref"]; ok {
 		s.Ref = ref.(string)
 	}
+	s.Extensions = readExtensions(dict)
 	return reflection.UnmarshalMapRecursed(dict, s)
 }
 
@@ -137,6 +139,7 @@ func (s Schema) MarshalMap() map[string]interface{} {
 	if s.Ref != "" {
 		result["$ref"] = s.Ref
 	}
+	addExtensions(result, s.Extensions)
 	return result
 }
 

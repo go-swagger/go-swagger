@@ -217,6 +217,7 @@ func convertMap(name, key string, source, target reflect.Value, tag *parsedTag) 
 }
 
 func convertInterface(name, key string, source, target reflect.Value, tag *parsedTag) error {
+	//fmt.Printf("convertInterface(%s): this is a %s (kind %s) target\n", name, target.Type(), target.Kind())
 	switch target.Kind() {
 	case reflect.Bool:
 		target.SetBool(source.Interface().(bool))
@@ -260,8 +261,11 @@ func convertInterface(name, key string, source, target reflect.Value, tag *parse
 	case reflect.Float64:
 		target.SetFloat(source.Interface().(float64))
 		return nil
+	case reflect.Ptr:
+		//fmt.Printf("convertInterface: this is a pointer target\n")
+		return convertValue(name, key, reflect.ValueOf(reflect.Indirect(source).Interface()), target, tag)
 	case reflect.Struct:
-		//fmt.Printf("convertInterface: this is a slice target\n")
+		//fmt.Printf("convertInterface: this is a struct target\n")
 		return convertValue(name, key, reflect.ValueOf(source.Interface()), target, tag)
 	case reflect.Interface:
 		//fmt.Printf("convertInterface: this is an interface target\n")
