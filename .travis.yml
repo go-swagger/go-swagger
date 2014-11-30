@@ -9,7 +9,6 @@ before_install:
   - go get github.com/tools/godep
 
   # linting
-  - go get code.google.com/p/go.tools/cmd/vet
   - go get github.com/golang/lint
   - go install github.com/golang/lint/golint
 
@@ -17,8 +16,7 @@ before_install:
   - go get code.google.com/p/go.tools/cmd/cover
   - if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ]; then go get github.com/mattn/goveralls; fi
 
-  - export PATH=$HOME/gopath/bin:$PATH
-  - make setup
+  - godep restore
 
 script: 
   - golint ./...
