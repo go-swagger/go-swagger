@@ -291,8 +291,6 @@ func wrapError(name, key string, source, target reflect.Value, err error) error 
 
 func convertBool(name, key string, source, target reflect.Value, tag *parsedTag) error {
 	switch source.Kind() {
-	case reflect.Interface:
-		target.SetBool(source.Interface().(bool))
 	case reflect.Bool:
 		target.SetBool(source.Bool())
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -320,8 +318,6 @@ func convertBool(name, key string, source, target reflect.Value, tag *parsedTag)
 
 func convertString(name, key string, source, target reflect.Value, tag *parsedTag) error {
 	switch source.Kind() {
-	case reflect.Interface:
-		target.SetString(source.Interface().(string))
 	case reflect.Bool:
 		target.SetString(strconv.FormatBool(source.Bool()))
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:

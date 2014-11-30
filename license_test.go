@@ -29,7 +29,7 @@ func TestIntegrationLicense(t *testing.T) {
 			So(actual, ShouldResemble, License{"the name", "the url"})
 		})
 
-		Convey("deserialize from JSON", func() {
+		Convey("deserialize from YAML", func() {
 			actual := License{}
 			err := yaml.Unmarshal([]byte("name: the name\nurl: the url\n"), &actual)
 			So(err, ShouldBeNil)
