@@ -7,12 +7,25 @@ import (
 	"strings"
 	"testing"
 
+	"gopkg.in/yaml.v2"
+
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func roundTripTest(t *testing.T, fixtureType, fileName string, schema interface{}) {
+var extensions = []string{"json", "yaml"}
+
+func roundTripTest(t *testing.T, fixtureType, extension, fileName string, schema interface{}) {
+	if extension == "yaml" {
+		roundTripTestYAML(t, fixtureType, fileName, schema)
+	} else {
+		roundTripTestJSON(t, fixtureType, fileName, schema)
+	}
+
+}
+
+func roundTripTestJSON(t *testing.T, fixtureType, fileName string, schema interface{}) {
 	specName := strings.TrimSuffix(fileName, filepath.Ext(fileName))
-	Convey("verifying "+fixtureType+" fixture "+specName, t, func() {
+	Convey("verifying "+fixtureType+" JSON fixture "+specName, t, func() {
 		b, err := ioutil.ReadFile(fileName)
 		So(err, ShouldBeNil)
 		Println()
@@ -42,15 +55,49 @@ func roundTripTest(t *testing.T, fixtureType, fileName string, schema interface{
 	})
 }
 
-func TestPropertyFixtures(t *testing.T) {
-	path := filepath.Join("fixtures", "json", "models", "properties")
-	files, err := ioutil.ReadDir(path)
-	if err != nil {
-		t.Fatal(err)
-	}
+func roundTripTestYAML(t *testing.T, fixtureType, fileName string, schema interface{}) {
+	specName := strings.TrimSuffix(fileName, filepath.Ext(fileName))
+	Convey("verifying "+fixtureType+" YAML fixture "+specName, t, func() {
+		b, err := ioutil.ReadFile(fileName)
+		So(err, ShouldBeNil)
+		Println()
+		//Println("Reading file", fileName, "returned", string(b))
+		var expected map[string]interface{}
+		err = yaml.Unmarshal(b, &expected)
+		So(err, ShouldBeNil)
 
-	for _, f := range files {
-		roundTripTest(t, "property", filepath.Join(path, f.Name()), &Schema{})
+		err = yaml.Unmarshal(b, schema)
+		So(err, ShouldBeNil)
+
+		//Println()
+		//Println("unmarshalling from file resulted in: %#v", schema)
+		cb, err := yaml.Marshal(schema)
+		So(err, ShouldBeNil)
+		//Println()
+		//Println("Marshalling to yaml returned", string(cb))
+
+		var actual map[string]interface{}
+		err = yaml.Unmarshal(cb, &actual)
+		So(err, ShouldBeNil)
+		//Println()
+		//spew.Dump(expected)
+		//spew.Dump(actual)
+		//fmt.Printf("comparing %s\n\t%#v\nto\n\t%#+v\n", fileName, expected, actual)
+		So(actual, ShouldBeEquivalentTo, expected)
+	})
+}
+
+func TestPropertyFixtures(t *testing.T) {
+	for _, extension := range extensions {
+		path := filepath.Join("fixtures", extension, "models", "properties")
+		files, err := ioutil.ReadDir(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for _, f := range files {
+			roundTripTest(t, "property", extension, filepath.Join(path, f.Name()), &Schema{})
+		}
 	}
 }
 
@@ -68,12 +115,12 @@ FILES:
 		}
 		for _, spec := range specs {
 			if strings.HasPrefix(f.Name(), spec) {
-				roundTripTest(t, "model", filepath.Join(path, f.Name()), &Spec{})
+				roundTripTest(t, "model", "json", filepath.Join(path, f.Name()), &Spec{})
 				continue FILES
 			}
 		}
 		//fmt.Println("trying", f.Name())
-		roundTripTest(t, "model", filepath.Join(path, f.Name()), &Schema{})
+		roundTripTest(t, "model", "json", filepath.Join(path, f.Name()), &Schema{})
 	}
 }
 
@@ -85,7 +132,7 @@ func TestParameterFixtures(t *testing.T) {
 	}
 
 	for _, f := range files {
-		roundTripTest(t, "parameter", filepath.Join(path, f.Name()), &Parameter{})
+		roundTripTest(t, "parameter", "json", filepath.Join(path, f.Name()), &Parameter{})
 	}
 }
 
@@ -97,7 +144,7 @@ func TestOperationFixtures(t *testing.T) {
 	}
 
 	for _, f := range files {
-		roundTripTest(t, "operation", filepath.Join(path, f.Name()), &Operation{})
+		roundTripTest(t, "operation", "json", filepath.Join(path, f.Name()), &Operation{})
 	}
 }
 
@@ -110,9 +157,9 @@ func TestResponseFixtures(t *testing.T) {
 
 	for _, f := range files {
 		if !strings.HasPrefix(f.Name(), "multiple") {
-			roundTripTest(t, "response", filepath.Join(path, f.Name()), &Response{})
+			roundTripTest(t, "response", "json", filepath.Join(path, f.Name()), &Response{})
 		} else {
-			roundTripTest(t, "responses", filepath.Join(path, f.Name()), &Responses{})
+			roundTripTest(t, "responses", "json", filepath.Join(path, f.Name()), &Responses{})
 		}
 	}
 }
@@ -142,7 +189,7 @@ FILES:
 		}
 		for _, pi := range pathItems {
 			if strings.HasPrefix(f.Name(), pi) {
-				roundTripTest(t, "path items", filepath.Join(path, f.Name()), &PathItem{})
+				roundTripTest(t, "path items", "json", filepath.Join(path, f.Name()), &PathItem{})
 				continue FILES
 			}
 		}
