@@ -26,3 +26,4 @@ application.linux
 swagger
 _workspace
 playground
+*.coverprofile

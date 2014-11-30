@@ -40,7 +40,7 @@ var pathItem = PathItem{
 	},
 }
 
-var pathItemJson = `{
+var pathItemJSON = `{
 	"$ref": "Dog",
 	"x-framework": "go-swagger",
 	"get": { "description": "get operation description" },
@@ -58,7 +58,7 @@ func TestIntegrationPathItem(t *testing.T) {
 
 		Convey("serialize", func() {
 			expected := map[string]interface{}{}
-			json.Unmarshal([]byte(pathItemJson), &expected)
+			json.Unmarshal([]byte(pathItemJSON), &expected)
 			b, err := json.Marshal(pathItem)
 			So(err, ShouldBeNil)
 			var actual map[string]interface{}
@@ -78,7 +78,7 @@ func TestIntegrationPathItem(t *testing.T) {
 
 		Convey("deserialize", func() {
 			actual := PathItem{}
-			err := json.Unmarshal([]byte(pathItemJson), &actual)
+			err := json.Unmarshal([]byte(pathItemJSON), &actual)
 			So(err, ShouldBeNil)
 			So(actual.Ref, ShouldEqual, pathItem.Ref)
 			So(actual.Get, ShouldResemble, pathItem.Get)

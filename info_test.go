@@ -7,7 +7,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-var infoJson = `{
+var infoJSON = `{
 	"contact": {
 		"name": "wordnik api team",
 		"url": "http://developer.wordnik.com"
@@ -38,12 +38,12 @@ func TestIntegrationInfo(t *testing.T) {
 		Convey("serialize to JSON", func() {
 			b, err := json.MarshalIndent(info, "", "\t")
 			So(err, ShouldBeNil)
-			So(string(b), ShouldEqual, infoJson)
+			So(string(b), ShouldEqual, infoJSON)
 		})
 
 		Convey("deserialize from JSON", func() {
 			actual := Info{}
-			err := json.Unmarshal([]byte(infoJson), &actual)
+			err := json.Unmarshal([]byte(infoJSON), &actual)
 			So(err, ShouldBeNil)
 			So(actual, ShouldResemble, info)
 		})

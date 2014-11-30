@@ -5,10 +5,25 @@ go:
 
 before_install:
   - go install -race std
-  - go get code.google.com/p/go.tools/cmd/cover
   - go get github.com/tools/godep
+
+  # linting
+  - go get code.google.com/p/go.tools/cmd/vet
+  - go get github.com/golang/lint
+  - go install github.com/golang/lint/golint
+
+  # code coverage
+  - go get code.google.com/p/go.tools/cmd/cover
+  - if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ]; then go get github.com/mattn/goveralls; fi
+
   - export PATH=$HOME/gopath/bin:$PATH
-  - godep restore
+  - make setup
 
 script: 
-  - make travis
+  - golint ./...
+  - godep go test -v -race ./...
+  - godep go test -cover -covermode=count -coverprofile=coverage.out ./...
+  - if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ]; then goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN; fi
+
+env:
+  secure: "BVU08Ozu3y4JRVeaaRV0h0Px3u2PpOdchykHfJX0+AeOQZO6mmE69JfCJFOkynBVOY9P3AerDPlrVHPK3eBAeEwX+XgKaFenE4n7LgvH1rlrjOngaPte76x5BdbiGkJ///L0cKJw1t6FQlPnqFpjckbmr9f6w9ItR8ClqR0vMEs="

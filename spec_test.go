@@ -42,7 +42,7 @@ var spec = Spec{
 	ExternalDocs: &ExternalDocumentation{"the name", "the url"},
 }
 
-var specJson = `{
+var specJSON = `{
 	"consumes": ["application/json", "application/x-yaml"],
 	"produces": ["application/json"],
 	"schemes": ["http", "https"],
@@ -86,9 +86,9 @@ var specJson = `{
 	"externalDocs": {"description":"the name","url":"the url"}
 }`
 
-func verifySpecSerialize(specJson []byte, spec Spec) {
+func verifySpecSerialize(specJSON []byte, spec Spec) {
 	expected := map[string]interface{}{}
-	json.Unmarshal(specJson, &expected)
+	json.Unmarshal(specJSON, &expected)
 	b, err := json.MarshalIndent(spec, "", "  ")
 	So(err, ShouldBeNil)
 	var actual map[string]interface{}
@@ -147,31 +147,17 @@ func compareSpecMaps(actual, expected map[string]interface{}) {
 
 func compareSpecs(actual Spec, spec Spec) {
 	So(actual, ShouldBeEquivalentTo, spec)
-	//So(actual.Consumes, ShouldResemble, spec.Consumes)
-	//So(actual.Produces, ShouldResemble, spec.Produces)
-	//So(actual.Schemes, ShouldResemble, spec.Schemes)
-	//So(actual.Swagger, ShouldEqual, spec.Swagger)
-	//So(actual.Info, ShouldResemble, spec.Info)
-	//So(actual.Host, ShouldEqual, spec.Host)
-	//So(actual.BasePath, ShouldEqual, spec.BasePath)
-	//So(actual.Paths, ShouldResemble, spec.Paths)
-	//So(actual.Definitions, ShouldResemble, spec.Definitions)
-	//So(actual.Responses, ShouldResemble, spec.Responses)
-	//So(actual.SecurityDefinitions, ShouldResemble, spec.SecurityDefinitions)
-	//So(actual.Security, ShouldResemble, spec.Security)
-	//So(actual.Tags, ShouldResemble, spec.Tags)
-	//So(actual.ExternalDocs, ShouldResemble, spec.ExternalDocs)
 }
 
-func verifySpecJson(specJson []byte) {
+func verifySpecJSON(specJSON []byte) {
 	//Println()
 	//Println("json to verify", string(specJson))
 	var expected map[string]interface{}
-	err := json.Unmarshal(specJson, &expected)
+	err := json.Unmarshal(specJSON, &expected)
 	So(err, ShouldBeNil)
 
 	obj := Spec{}
-	err = json.Unmarshal(specJson, &obj)
+	err = json.Unmarshal(specJSON, &obj)
 	So(err, ShouldBeNil)
 
 	//spew.Dump(obj)
@@ -194,12 +180,12 @@ func verifySpecJson(specJson []byte) {
 func TestIntegrationSpec(t *testing.T) {
 	Convey("all fields of a spec should", t, func() {
 		Convey("serialize", func() {
-			verifySpecSerialize([]byte(specJson), spec)
+			verifySpecSerialize([]byte(specJSON), spec)
 		})
 
 		Convey("deserialize", func() {
 			actual := Spec{}
-			err := json.Unmarshal([]byte(specJson), &actual)
+			err := json.Unmarshal([]byte(specJSON), &actual)
 			So(err, ShouldBeNil)
 			compareSpecs(actual, spec)
 		})

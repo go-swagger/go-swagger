@@ -38,7 +38,7 @@ var parameter = Parameter{
 	Default:          "8",
 }
 
-var parameterJson = `{
+var parameterJSON = `{
 	"items": { 
 		"$ref": "Cat"
 	},
@@ -73,7 +73,7 @@ func TestIntegrationParameter(t *testing.T) {
 	Convey("for all properties a parameter should", t, func() {
 		Convey("serialize", func() {
 			expected := map[string]interface{}{}
-			json.Unmarshal([]byte(parameterJson), &expected)
+			json.Unmarshal([]byte(parameterJSON), &expected)
 			b, err := json.Marshal(parameter)
 			So(err, ShouldBeNil)
 			var actual map[string]interface{}
@@ -84,7 +84,7 @@ func TestIntegrationParameter(t *testing.T) {
 
 		Convey("deserialize", func() {
 			actual := Parameter{}
-			err := json.Unmarshal([]byte(parameterJson), &actual)
+			err := json.Unmarshal([]byte(parameterJSON), &actual)
 			So(err, ShouldBeNil)
 			So(actual.Items, ShouldResemble, parameter.Items)
 			So(actual.Extensions, ShouldResemble, parameter.Extensions)

@@ -30,7 +30,7 @@ var items = Items{
 	},
 }
 
-var itemsJson = `{
+var itemsJSON = `{
 	"items": { 
 		"$ref": "Cat"
 	},
@@ -59,7 +59,7 @@ func TestIntegrationItems(t *testing.T) {
 
 		Convey("serialize", func() {
 			expected := map[string]interface{}{}
-			json.Unmarshal([]byte(itemsJson), &expected)
+			json.Unmarshal([]byte(itemsJSON), &expected)
 			b, err := json.Marshal(items)
 			So(err, ShouldBeNil)
 			var actual map[string]interface{}
@@ -70,7 +70,7 @@ func TestIntegrationItems(t *testing.T) {
 
 		Convey("deserialize", func() {
 			actual := Items{}
-			err := json.Unmarshal([]byte(itemsJson), &actual)
+			err := json.Unmarshal([]byte(itemsJSON), &actual)
 			So(err, ShouldBeNil)
 			So(actual.Items, ShouldResemble, items.Items)
 			So(actual.Ref, ShouldEqual, items.Ref)

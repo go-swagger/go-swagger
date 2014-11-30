@@ -1,6 +1,7 @@
 # Swagger 2.0
 
 [![Build Status](https://travis-ci.org/casualjim/go-swagger.svg?branch=master)](https://travis-ci.org/casualjim/go-swagger)
+[![Coverage Status](https://img.shields.io/coveralls/casualjim/go-swagger.svg)](https://coveralls.io/r/casualjim/go-swagger)
 [![GoDoc](https://godoc.org/github.com/casualjim/go-swagger?status.svg)](http://godoc.org/github.com/casualjim/go-swagger)
 [![license](http://img.shields.io/badge/license-Apache%20v2-orange.svg)](https://raw.githubusercontent.com/swagger-api/swagger-spec/master/LICENSE)
 
@@ -19,6 +20,12 @@ We created Swagger to help fulfill the promise of APIs.
 Swagger helps companies like Apigee, Getty Images, Intuit, LivingSocial, McKesson, Microsoft, Morningstar, and PayPal 
 build the best possible services with RESTful APIs.Now in version 2.0, Swagger is more enabling than ever. 
 And it's 100% open source software.
+
+## What's inside?
+
+* An object model that serializes to swagger yaml or json 
+* A tool to work with swagger:
+    * validate a swagger spec document
 
 ## Planned:
 * Generate validations based on the swagger spec

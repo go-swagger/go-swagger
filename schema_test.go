@@ -59,7 +59,7 @@ var schema = Schema{
 	Extensions: map[string]interface{}{"x-framework": "go-swagger"},
 }
 
-var schemaJson = `{
+var schemaJSON = `{
 	"x-framework": "go-swagger",
   "$ref": "Cat",
   "description": "the description of this schema",
@@ -135,7 +135,7 @@ func TestSchema(t *testing.T) {
 
 		Convey("serialize", func() {
 			expected := map[string]interface{}{}
-			json.Unmarshal([]byte(schemaJson), &expected)
+			json.Unmarshal([]byte(schemaJSON), &expected)
 			b, err := json.Marshal(schema)
 			So(err, ShouldBeNil)
 			var actual map[string]interface{}
@@ -144,7 +144,7 @@ func TestSchema(t *testing.T) {
 		})
 		Convey("deserialize", func() {
 			actual := Schema{}
-			err := json.Unmarshal([]byte(schemaJson), &actual)
+			err := json.Unmarshal([]byte(schemaJSON), &actual)
 			So(err, ShouldBeNil)
 			So(actual.Ref, ShouldEqual, schema.Ref)
 			So(actual.Description, ShouldEqual, schema.Description)

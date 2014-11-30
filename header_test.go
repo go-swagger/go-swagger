@@ -29,7 +29,7 @@ var header = Header{
 	Default:          "8",
 }
 
-var headerJson = `{
+var headerJSON = `{
 	"items": { 
 		"$ref": "Cat"
 	},
@@ -57,7 +57,7 @@ func TestIntegrationHeader(t *testing.T) {
 
 		Convey("serialize", func() {
 			expected := map[string]interface{}{}
-			json.Unmarshal([]byte(headerJson), &expected)
+			json.Unmarshal([]byte(headerJSON), &expected)
 			b, err := json.Marshal(header)
 			So(err, ShouldBeNil)
 			var actual map[string]interface{}
@@ -68,7 +68,7 @@ func TestIntegrationHeader(t *testing.T) {
 
 		Convey("deserialize", func() {
 			actual := Header{}
-			err := json.Unmarshal([]byte(headerJson), &actual)
+			err := json.Unmarshal([]byte(headerJSON), &actual)
 			So(err, ShouldBeNil)
 			So(actual.Items, ShouldResemble, header.Items)
 			So(actual.Description, ShouldEqual, header.Description)

@@ -8,8 +8,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var contactInfoJson = `{"email":"some@mailayada.dkdkd","name":"wordnik api team","url":"http://developer.wordnik.com"}`
-var contactInfoYaml = `email: some@mailayada.dkdkd
+var contactInfoJSON = `{"email":"some@mailayada.dkdkd","name":"wordnik api team","url":"http://developer.wordnik.com"}`
+var contactInfoYAML = `email: some@mailayada.dkdkd
 name: wordnik api team
 url: http://developer.wordnik.com
 `
@@ -24,25 +24,25 @@ func TestIntegrationContactInfo(t *testing.T) {
 		Convey("serialize to JSON", func() {
 			b, err := json.Marshal(contactInfo)
 			So(err, ShouldBeNil)
-			So(string(b), ShouldEqual, contactInfoJson)
+			So(string(b), ShouldEqual, contactInfoJSON)
 		})
 
 		Convey("serialize to YAML", func() {
 			b, err := yaml.Marshal(contactInfo)
 			So(err, ShouldBeNil)
-			So(string(b), ShouldEqual, contactInfoYaml)
+			So(string(b), ShouldEqual, contactInfoYAML)
 		})
 
 		Convey("deserialize from JSON", func() {
 			actual := ContactInfo{}
-			err := json.Unmarshal([]byte(contactInfoJson), &actual)
+			err := json.Unmarshal([]byte(contactInfoJSON), &actual)
 			So(err, ShouldBeNil)
 			So(actual, ShouldResemble, contactInfo)
 		})
 
 		Convey("deserialize from YAML", func() {
 			actual := ContactInfo{}
-			err := yaml.Unmarshal([]byte(contactInfoYaml), &actual)
+			err := yaml.Unmarshal([]byte(contactInfoYAML), &actual)
 			So(err, ShouldBeNil)
 			So(actual, ShouldResemble, contactInfo)
 		})

@@ -34,7 +34,7 @@ var operation = Operation{
 	},
 }
 
-var operationJson = `{
+var operationJSON = `{
 	"description": "operation description",
 	"x-framework": "go-swagger",
 	"consumes": [ "application/json", "application/x-yaml" ],
@@ -59,7 +59,7 @@ func TestIntegrationOperation(t *testing.T) {
 
 		Convey("serialize", func() {
 			expected := map[string]interface{}{}
-			json.Unmarshal([]byte(operationJson), &expected)
+			json.Unmarshal([]byte(operationJSON), &expected)
 			b, err := json.Marshal(operation)
 			So(err, ShouldBeNil)
 			var actual map[string]interface{}
@@ -70,7 +70,7 @@ func TestIntegrationOperation(t *testing.T) {
 
 		Convey("deserialize", func() {
 			actual := Operation{}
-			err := json.Unmarshal([]byte(operationJson), &actual)
+			err := json.Unmarshal([]byte(operationJSON), &actual)
 			So(err, ShouldBeNil)
 			So(actual.Description, ShouldEqual, operation.Description)
 			So(actual.Extensions, ShouldResemble, operation.Extensions)

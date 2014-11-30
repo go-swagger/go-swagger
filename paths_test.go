@@ -16,14 +16,14 @@ var paths = Paths{
 	},
 }
 
-var pathsJson = `{"x-framework":"go-swagger","/":{"$ref":"cats"}}`
+var pathsJSON = `{"x-framework":"go-swagger","/":{"$ref":"cats"}}`
 
 func TestIntegrationPaths(t *testing.T) {
 	Convey("all fields of paths should", t, func() {
 
 		Convey("serialize", func() {
 			expected := map[string]interface{}{}
-			json.Unmarshal([]byte(pathsJson), &expected)
+			json.Unmarshal([]byte(pathsJSON), &expected)
 			b, err := json.Marshal(paths)
 			So(err, ShouldBeNil)
 			var actual map[string]interface{}
@@ -35,7 +35,7 @@ func TestIntegrationPaths(t *testing.T) {
 		Convey("deserialize", func() {
 
 			actual := Paths{}
-			err := json.Unmarshal([]byte(pathsJson), &actual)
+			err := json.Unmarshal([]byte(pathsJSON), &actual)
 			So(err, ShouldBeNil)
 			So(actual, ShouldResemble, paths)
 		})

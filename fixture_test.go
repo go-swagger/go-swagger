@@ -182,7 +182,7 @@ FILES:
 				Convey("verifying resource"+strings.TrimSuffix(f.Name(), filepath.Ext(f.Name())), t, func() {
 					b, err := ioutil.ReadFile(filepath.Join(path, f.Name()))
 					So(err, ShouldBeNil)
-					verifySpecJson(b)
+					verifySpecJSON(b)
 				})
 				continue FILES
 			}
@@ -196,7 +196,7 @@ FILES:
 		Convey("verifying resource "+strings.TrimSuffix(f.Name(), filepath.Ext(f.Name())), t, func() {
 			b, err := ioutil.ReadFile(filepath.Join(path, f.Name()))
 			So(err, ShouldBeNil)
-			verifySpecJson(b)
+			verifySpecJSON(b)
 		})
 
 	}
