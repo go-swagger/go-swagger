@@ -4,6 +4,7 @@ go:
   - 1.3
 
 before_install:
+  - echo $(env)
   - go install -race std
   - go get github.com/tools/godep
 
