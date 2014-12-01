@@ -9,17 +9,17 @@ import (
 
 var items = Items{
 	Ref:              "Dog",
-	Maximum:          100,
+	Maximum:          float64Ptr(100),
 	ExclusiveMaximum: true,
 	ExclusiveMinimum: true,
-	Minimum:          5,
-	MaxLength:        100,
-	MinLength:        5,
+	Minimum:          float64Ptr(5),
+	MaxLength:        int64Ptr(100),
+	MinLength:        int64Ptr(5),
 	Pattern:          "\\w{1,5}\\w+",
-	MaxItems:         100,
-	MinItems:         5,
+	MaxItems:         int64Ptr(100),
+	MinItems:         int64Ptr(5),
 	UniqueItems:      true,
-	MultipleOf:       5,
+	MultipleOf:       float64Ptr(5),
 	Enum:             []interface{}{"hello", "world"},
 	Type:             "string",
 	Format:           "date",
@@ -72,24 +72,7 @@ func TestIntegrationItems(t *testing.T) {
 			actual := Items{}
 			err := json.Unmarshal([]byte(itemsJSON), &actual)
 			So(err, ShouldBeNil)
-			So(actual.Items, ShouldResemble, items.Items)
-			So(actual.Ref, ShouldEqual, items.Ref)
-			So(actual.Maximum, ShouldEqual, items.Maximum)
-			So(actual.Minimum, ShouldEqual, items.Minimum)
-			So(actual.ExclusiveMinimum, ShouldEqual, items.ExclusiveMinimum)
-			So(actual.ExclusiveMaximum, ShouldEqual, items.ExclusiveMaximum)
-			So(actual.MaxLength, ShouldEqual, items.MaxLength)
-			So(actual.MinLength, ShouldEqual, items.MinLength)
-			So(actual.Pattern, ShouldEqual, items.Pattern)
-			So(actual.MaxItems, ShouldEqual, items.MaxItems)
-			So(actual.MinItems, ShouldEqual, items.MinItems)
-			So(actual.UniqueItems, ShouldBeTrue)
-			So(actual.MultipleOf, ShouldEqual, items.MultipleOf)
-			So(actual.Enum, ShouldResemble, items.Enum)
-			So(actual.Type, ShouldResemble, items.Type)
-			So(actual.Format, ShouldEqual, items.Format)
-			So(actual.CollectionFormat, ShouldEqual, items.CollectionFormat)
-			So(actual.Default, ShouldResemble, items.Default)
+			So(actual, ShouldBeEquivalentTo, items)
 		})
 	})
 }

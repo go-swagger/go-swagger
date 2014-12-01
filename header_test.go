@@ -7,22 +7,29 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+func float64Ptr(f float64) *float64 {
+	return &f
+}
+func int64Ptr(f int64) *int64 {
+	return &f
+}
+
 var header = Header{
 	Description: "the description of this header",
 	Items: &Items{
 		Ref: "Cat",
 	},
-	Maximum:          100,
+	Maximum:          float64Ptr(100),
 	ExclusiveMaximum: true,
 	ExclusiveMinimum: true,
-	Minimum:          5,
-	MaxLength:        100,
-	MinLength:        5,
+	Minimum:          float64Ptr(5),
+	MaxLength:        int64Ptr(100),
+	MinLength:        int64Ptr(5),
 	Pattern:          "\\w{1,5}\\w+",
-	MaxItems:         100,
-	MinItems:         5,
+	MaxItems:         int64Ptr(100),
+	MinItems:         int64Ptr(5),
 	UniqueItems:      true,
-	MultipleOf:       5,
+	MultipleOf:       float64Ptr(5),
 	Enum:             []interface{}{"hello", "world"},
 	Type:             "string",
 	Format:           "date",
@@ -70,23 +77,7 @@ func TestIntegrationHeader(t *testing.T) {
 			actual := Header{}
 			err := json.Unmarshal([]byte(headerJSON), &actual)
 			So(err, ShouldBeNil)
-			So(actual.Items, ShouldResemble, header.Items)
-			So(actual.Description, ShouldEqual, header.Description)
-			So(actual.Maximum, ShouldEqual, header.Maximum)
-			So(actual.Minimum, ShouldEqual, header.Minimum)
-			So(actual.ExclusiveMinimum, ShouldEqual, header.ExclusiveMinimum)
-			So(actual.ExclusiveMaximum, ShouldEqual, header.ExclusiveMaximum)
-			So(actual.MaxLength, ShouldEqual, header.MaxLength)
-			So(actual.MinLength, ShouldEqual, header.MinLength)
-			So(actual.Pattern, ShouldEqual, header.Pattern)
-			So(actual.MaxItems, ShouldEqual, header.MaxItems)
-			So(actual.MinItems, ShouldEqual, header.MinItems)
-			So(actual.UniqueItems, ShouldBeTrue)
-			So(actual.MultipleOf, ShouldEqual, header.MultipleOf)
-			So(actual.Enum, ShouldResemble, header.Enum)
-			So(actual.Type, ShouldResemble, header.Type)
-			So(actual.Format, ShouldEqual, header.Format)
-			So(actual.Default, ShouldResemble, header.Default)
+			So(actual, ShouldBeEquivalentTo, header)
 		})
 	})
 }

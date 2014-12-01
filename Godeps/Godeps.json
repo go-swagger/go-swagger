@@ -6,9 +6,30 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/jessevdk/go-flags",
+			"Comment": "v1-284-gc144b88",
+			"Rev": "c144b8803670469bffe9b9c6bb09c622ead4d900"
+		},
+		{
+			"ImportPath": "github.com/op/go-logging",
+			"Rev": "3aac294f0523fecd878d6faa003ba48b52769ae5"
+		},
+		{
 			"ImportPath": "github.com/smartystreets/goconvey/convey",
 			"Comment": "1.5.0-305-gd2a9d04",
 			"Rev": "d2a9d04ab6b73e2de18248414edd9d6fc0ffa632"
+		},
+		{
+			"ImportPath": "github.com/xeipuuv/gojsonpointer",
+			"Rev": "57ab5e9c764219a3e0c4d7759797fefdcab22e9c"
+		},
+		{
+			"ImportPath": "github.com/xeipuuv/gojsonreference",
+			"Rev": "47e61ed14ee33a23dadf5baffffc7d1b35d0b0ec"
+		},
+		{
+			"ImportPath": "github.com/xeipuuv/gojsonschema",
+			"Rev": "4949f2aa206eaf84313923d5def08a070711f5cf"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",

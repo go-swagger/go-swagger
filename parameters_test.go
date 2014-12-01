@@ -16,17 +16,17 @@ var parameter = Parameter{
 		Ref: "Cat",
 	},
 	Ref:              "Dog",
-	Maximum:          100,
+	Maximum:          float64Ptr(100),
 	ExclusiveMaximum: true,
 	ExclusiveMinimum: true,
-	Minimum:          5,
-	MaxLength:        100,
-	MinLength:        5,
+	Minimum:          float64Ptr(5),
+	MaxLength:        int64Ptr(100),
+	MinLength:        int64Ptr(5),
 	Pattern:          "\\w{1,5}\\w+",
-	MaxItems:         100,
-	MinItems:         5,
+	MaxItems:         int64Ptr(100),
+	MinItems:         int64Ptr(5),
 	UniqueItems:      true,
-	MultipleOf:       5,
+	MultipleOf:       float64Ptr(5),
 	Enum:             []interface{}{"hello", "world"},
 	Type:             "string",
 	Format:           "date",
@@ -90,17 +90,17 @@ func TestIntegrationParameter(t *testing.T) {
 			So(actual.Extensions, ShouldResemble, parameter.Extensions)
 			So(actual.Ref, ShouldEqual, parameter.Ref)
 			So(actual.Description, ShouldEqual, parameter.Description)
-			So(actual.Maximum, ShouldEqual, parameter.Maximum)
-			So(actual.Minimum, ShouldEqual, parameter.Minimum)
+			So(actual.Maximum, ShouldResemble, parameter.Maximum)
+			So(actual.Minimum, ShouldResemble, parameter.Minimum)
 			So(actual.ExclusiveMinimum, ShouldEqual, parameter.ExclusiveMinimum)
 			So(actual.ExclusiveMaximum, ShouldEqual, parameter.ExclusiveMaximum)
-			So(actual.MaxLength, ShouldEqual, parameter.MaxLength)
-			So(actual.MinLength, ShouldEqual, parameter.MinLength)
+			So(actual.MaxLength, ShouldResemble, parameter.MaxLength)
+			So(actual.MinLength, ShouldResemble, parameter.MinLength)
 			So(actual.Pattern, ShouldEqual, parameter.Pattern)
-			So(actual.MaxItems, ShouldEqual, parameter.MaxItems)
-			So(actual.MinItems, ShouldEqual, parameter.MinItems)
+			So(actual.MaxItems, ShouldResemble, parameter.MaxItems)
+			So(actual.MinItems, ShouldResemble, parameter.MinItems)
 			So(actual.UniqueItems, ShouldBeTrue)
-			So(actual.MultipleOf, ShouldEqual, parameter.MultipleOf)
+			So(actual.MultipleOf, ShouldResemble, parameter.MultipleOf)
 			So(actual.Enum, ShouldResemble, parameter.Enum)
 			So(actual.Type, ShouldResemble, parameter.Type)
 			So(actual.Format, ShouldEqual, parameter.Format)

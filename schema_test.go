@@ -10,17 +10,17 @@ import (
 var schema = Schema{
 	Ref:              "Cat",
 	Description:      "the description of this schema",
-	Maximum:          100,
+	Maximum:          float64Ptr(100),
 	ExclusiveMaximum: true,
 	ExclusiveMinimum: true,
-	Minimum:          5,
-	MaxLength:        100,
-	MinLength:        5,
+	Minimum:          float64Ptr(5),
+	MaxLength:        int64Ptr(100),
+	MinLength:        int64Ptr(5),
 	Pattern:          "\\w{1,5}\\w+",
-	MaxItems:         100,
-	MinItems:         5,
+	MaxItems:         int64Ptr(100),
+	MinItems:         int64Ptr(5),
 	UniqueItems:      true,
-	MultipleOf:       5,
+	MultipleOf:       float64Ptr(5),
 	Enum:             []interface{}{"hello", "world"},
 	Type:             &StringOrArray{Single: "string"},
 	Format:           "date",
@@ -148,17 +148,17 @@ func TestSchema(t *testing.T) {
 			So(err, ShouldBeNil)
 			So(actual.Ref, ShouldEqual, schema.Ref)
 			So(actual.Description, ShouldEqual, schema.Description)
-			So(actual.Maximum, ShouldEqual, schema.Maximum)
-			So(actual.Minimum, ShouldEqual, schema.Minimum)
+			So(actual.Maximum, ShouldResemble, schema.Maximum)
+			So(actual.Minimum, ShouldResemble, schema.Minimum)
 			So(actual.ExclusiveMinimum, ShouldEqual, schema.ExclusiveMinimum)
 			So(actual.ExclusiveMaximum, ShouldEqual, schema.ExclusiveMaximum)
-			So(actual.MaxLength, ShouldEqual, schema.MaxLength)
-			So(actual.MinLength, ShouldEqual, schema.MinLength)
+			So(actual.MaxLength, ShouldResemble, schema.MaxLength)
+			So(actual.MinLength, ShouldResemble, schema.MinLength)
 			So(actual.Pattern, ShouldEqual, schema.Pattern)
-			So(actual.MaxItems, ShouldEqual, schema.MaxItems)
-			So(actual.MinItems, ShouldEqual, schema.MinItems)
+			So(actual.MaxItems, ShouldResemble, schema.MaxItems)
+			So(actual.MinItems, ShouldResemble, schema.MinItems)
 			So(actual.UniqueItems, ShouldBeTrue)
-			So(actual.MultipleOf, ShouldEqual, schema.MultipleOf)
+			So(actual.MultipleOf, ShouldResemble, schema.MultipleOf)
 			So(actual.Enum, ShouldResemble, schema.Enum)
 			So(actual.Type, ShouldResemble, schema.Type)
 			So(actual.Format, ShouldEqual, schema.Format)
