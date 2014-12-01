@@ -90,8 +90,8 @@ type Schema struct {
 	Format               string                 `swagger:"format,omitempty"`
 	Title                string                 `swagger:"title,omitempty"`
 	Default              interface{}            `swagger:"default,omitempty"`
-	MaxProperties        int64                  `swagger:"maxProperties,omitempty"`
-	MinProperties        int64                  `swagger:"minProperties,omitempty"`
+	MaxProperties        *int64                 `swagger:"maxProperties,omitempty"`
+	MinProperties        *int64                 `swagger:"minProperties,omitempty"`
 	Required             []string               `swagger:"required,omitempty"`
 	Items                *SchemaOrArray         `swagger:"items,omitempty,byValue"`
 	AllOf                []Schema               `swagger:"allOf,omitempty"`

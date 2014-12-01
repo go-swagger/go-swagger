@@ -1,11 +1,45 @@
 package reflection
 
 import (
+	"fmt"
+	"reflect"
 	"testing"
 	"time"
 
 	c "github.com/smartystreets/goconvey/convey"
 )
+
+func ShouldBeEquivalentTo(actual interface{}, expecteds ...interface{}) string {
+	expected := expecteds[0]
+	if actual == nil || expected == nil {
+		return ""
+	}
+
+	if reflect.DeepEqual(expected, actual) {
+		return ""
+	}
+
+	actualType := reflect.TypeOf(actual)
+	if reflect.TypeOf(actual).ConvertibleTo(reflect.TypeOf(expected)) {
+		expectedValue := reflect.ValueOf(expected)
+		if IsZero(expectedValue) && IsZero(reflect.ValueOf(actual)) {
+			return ""
+		}
+
+		// Attempt comparison after type conversion
+		if reflect.DeepEqual(actual, expectedValue.Convert(actualType).Interface()) {
+			return ""
+		}
+	}
+
+	// Last ditch effort
+	if fmt.Sprintf("%#v", expected) == fmt.Sprintf("%#v", actual) {
+		return ""
+	}
+	errFmt := "Expected: '%T(%+v)'\nActual:   '%T(%+v)'\n(Should be equivalent)!"
+	return fmt.Sprintf(errFmt, expected, expected, actual, actual)
+
+}
 
 type customMarshalling struct {
 	A string
@@ -18,6 +52,37 @@ func (c customMarshalling) MarshalMap() map[string]interface{} {
 func TestMarshalling(t *testing.T) {
 	c.Convey("marshals a map from", t, func() {
 
+		c.Convey("a simple struct with slices", func() {
+			type T1 struct {
+				A []string
+				B []int
+				C []int8
+				D []int16
+				E []int32
+				F []int64
+				G []float32
+				H []float64
+			}
+			obj := &T1{
+				A: []string{"the value"},
+				B: []int{1},
+				C: []int8{1},
+				D: []int16{1},
+				E: []int32{1},
+				F: []int64{1},
+				G: []float32{1},
+				H: []float64{1},
+			}
+			res := MarshalMap(obj)
+			c.So(res["A"], ShouldBeEquivalentTo, []interface{}{"the value"})
+			c.So(res["B"], ShouldBeEquivalentTo, []interface{}{1})
+			c.So(res["C"], ShouldBeEquivalentTo, []interface{}{1})
+			c.So(res["D"], ShouldBeEquivalentTo, []interface{}{1})
+			c.So(res["E"], ShouldBeEquivalentTo, []interface{}{1})
+			c.So(res["F"], ShouldBeEquivalentTo, []interface{}{1})
+			c.So(res["G"], ShouldBeEquivalentTo, []interface{}{1})
+			c.So(res["H"], ShouldBeEquivalentTo, []interface{}{1})
+		})
 		c.Convey("a simple struct", func() {
 			type T1 struct {
 				A string
