@@ -14,6 +14,9 @@ before_install:
   - go get code.google.com/p/go.tools/cmd/cover
   - go get github.com/modocache/gover
   - if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ]; then go get github.com/mattn/goveralls; fi
+
+  # get the dependencies etc
+  - go get github.com/tools/godep
   - godep restore
 
 script: 
