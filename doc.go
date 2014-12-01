@@ -1,4 +1,4 @@
-/*Package swagger provides a powerful interface to your API
+/*swagger (2.0) provides a powerful interface to your API
 
 Contains an implementation of Swagger 2.0.
 It knows how to serialize, deserialize and validate swagger specifications.
