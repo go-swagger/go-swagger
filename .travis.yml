@@ -4,9 +4,7 @@ go:
   - 1.3
 
 before_install:
-  - echo $(env)
   - go install -race std
-  - go get github.com/tools/godep
 
   # linting
   - go get github.com/golang/lint
@@ -14,8 +12,8 @@ before_install:
 
   # code coverage
   - go get code.google.com/p/go.tools/cmd/cover
+  - go get github.com/modocache/gover
   - if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ]; then go get github.com/mattn/goveralls; fi
-
   - godep restore
 
 script: 
