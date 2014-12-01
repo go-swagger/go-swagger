@@ -21,7 +21,8 @@ before_install:
 script: 
   - golint ./...
   - godep go test -v -race ./...
-  - godep go test -cover -covermode=count -coverprofile=coverage.out ./...
+  - godep go test -coverprofile=swagger.coverprofile .
+  - godep go test -coverprofile=reflection.coverprofile ./reflection
   - if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ]; then goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN; fi
 
 env:
