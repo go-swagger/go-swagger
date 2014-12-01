@@ -23,7 +23,6 @@ _testmain.go
 *.test
 *.prof
 application.linux
-swagger
 _workspace
 playground
 *.coverprofile
