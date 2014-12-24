@@ -1,4 +1,4 @@
-/*swagger (2.0) provides a powerful interface to your API
+/*Package swagger (2.0) provides a powerful interface to your API
 
 Contains an implementation of Swagger 2.0.
 It knows how to serialize, deserialize and validate swagger specifications.
@@ -23,5 +23,6 @@ The implementation also provides a number of command line tools to help working 
 Currently there is a spec validator tool:
 
 	swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
+
 */
 package swagger

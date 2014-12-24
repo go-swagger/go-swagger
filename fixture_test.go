@@ -29,7 +29,6 @@ func roundTripTestJSON(t *testing.T, fixtureType, fileName string, schema interf
 		b, err := ioutil.ReadFile(fileName)
 		So(err, ShouldBeNil)
 		Println()
-		//Println("Reading file", fileName, "returned", string(b))
 		var expected map[string]interface{}
 		err = json.Unmarshal(b, &expected)
 		So(err, ShouldBeNil)
@@ -37,20 +36,12 @@ func roundTripTestJSON(t *testing.T, fixtureType, fileName string, schema interf
 		err = json.Unmarshal(b, schema)
 		So(err, ShouldBeNil)
 
-		//Println()
-		//Println("unmarshalling from file resulted in: %#v", schema)
 		cb, err := json.MarshalIndent(schema, "", "  ")
 		So(err, ShouldBeNil)
-		//Println()
-		//Println("Marshalling to json returned", string(cb))
 
 		var actual map[string]interface{}
 		err = json.Unmarshal(cb, &actual)
 		So(err, ShouldBeNil)
-		//Println()
-		//spew.Dump(expected)
-		//spew.Dump(actual)
-		//fmt.Printf("comparing %s\n\t%#v\nto\n\t%#+v\n", fileName, expected, actual)
 		So(actual, ShouldBeEquivalentTo, expected)
 	})
 }
@@ -61,7 +52,6 @@ func roundTripTestYAML(t *testing.T, fixtureType, fileName string, schema interf
 		b, err := ioutil.ReadFile(fileName)
 		So(err, ShouldBeNil)
 		Println()
-		//Println("Reading file", fileName, "returned", string(b))
 		var expected map[string]interface{}
 		err = yaml.Unmarshal(b, &expected)
 		So(err, ShouldBeNil)
@@ -69,20 +59,12 @@ func roundTripTestYAML(t *testing.T, fixtureType, fileName string, schema interf
 		err = yaml.Unmarshal(b, schema)
 		So(err, ShouldBeNil)
 
-		//Println()
-		//Println("unmarshalling from file resulted in: %#v", schema)
 		cb, err := yaml.Marshal(schema)
 		So(err, ShouldBeNil)
-		//Println()
-		//Println("Marshalling to yaml returned", string(cb))
 
 		var actual map[string]interface{}
 		err = yaml.Unmarshal(cb, &actual)
 		So(err, ShouldBeNil)
-		//Println()
-		//spew.Dump(expected)
-		//spew.Dump(actual)
-		//fmt.Printf("comparing %s\n\t%#v\nto\n\t%#+v\n", fileName, expected, actual)
 		So(actual, ShouldBeEquivalentTo, expected)
 	})
 }

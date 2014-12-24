@@ -14,6 +14,7 @@ type ValidateSpec struct {
 	SchemaURL string `long:"schema" description:"The schema url to use" default:"http://swagger.io/v2/schema.json"`
 }
 
+// Execute validates the spec
 func (c *ValidateSpec) Execute(args []string) error {
 	if len(args) == 0 {
 		return errors.New("The validate command requires the swagger document url to be specified")
