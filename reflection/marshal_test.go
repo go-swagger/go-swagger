@@ -191,12 +191,6 @@ func TestMarshalling(t *testing.T) {
 			c.So(res["field"], c.ShouldResemble, map[string]interface{}{"field": "a value"})
 		})
 
-		c.Convey("a map and convert it to map[string]interface", func() {
-			obj := map[string]*customMarshalling{"field": &customMarshalling{"a value"}}
-			res := MarshalMap(obj)
-			c.So(res["field"], c.ShouldResemble, map[string]interface{}{"field": "a value"})
-		})
-
 		c.Convey("a struct with a slice property", func() {
 			type T1 struct {
 				C []string
