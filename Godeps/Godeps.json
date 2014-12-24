@@ -1,23 +1,51 @@
 {
 	"ImportPath": "github.com/casualjim/go-swagger",
-	"GoVersion": "go1.3.3",
+	"GoVersion": "go1.4",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/jessevdk/go-flags",
-			"Comment": "v1-284-gc144b88",
-			"Rev": "c144b8803670469bffe9b9c6bb09c622ead4d900"
+			"Comment": "v1-285-g1679536",
+			"Rev": "1679536dcc895411a9f5848d9a0250be7856448c"
+		},
+		{
+			"ImportPath": "github.com/jtolds/gls",
+			"Rev": "f1ac7f4f24f50328e6bc838ca4437d1612a0243c"
 		},
 		{
 			"ImportPath": "github.com/op/go-logging",
 			"Rev": "3aac294f0523fecd878d6faa003ba48b52769ae5"
 		},
 		{
+			"ImportPath": "github.com/robertkrimen/otto/ast",
+			"Rev": "dea31a3d392779af358ec41f77a07fcc7e9d04ba"
+		},
+		{
+			"ImportPath": "github.com/robertkrimen/otto/dbg",
+			"Rev": "dea31a3d392779af358ec41f77a07fcc7e9d04ba"
+		},
+		{
+			"ImportPath": "github.com/robertkrimen/otto/file",
+			"Rev": "dea31a3d392779af358ec41f77a07fcc7e9d04ba"
+		},
+		{
+			"ImportPath": "github.com/robertkrimen/otto/parser",
+			"Rev": "dea31a3d392779af358ec41f77a07fcc7e9d04ba"
+		},
+		{
+			"ImportPath": "github.com/robertkrimen/otto/token",
+			"Rev": "dea31a3d392779af358ec41f77a07fcc7e9d04ba"
+		},
+		{
 			"ImportPath": "github.com/smartystreets/goconvey/convey",
-			"Comment": "1.5.0-305-gd2a9d04",
-			"Rev": "d2a9d04ab6b73e2de18248414edd9d6fc0ffa632"
+			"Comment": "1.5.0-345-g432ed38",
+			"Rev": "432ed384e87b0d670f738ef45d613e513c0456d0"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/assert",
+			"Rev": "ae37dedcaae6fce497569786a8694aa3daa97abf"
 		},
 		{
 			"ImportPath": "github.com/xeipuuv/gojsonpointer",
@@ -33,7 +61,7 @@
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
-			"Rev": "eca94c41d994ae2215d455ce578ae6e2dc6ee516"
+			"Rev": "d466437aa4adc35830964cffc5b5f262c63ddcb4"
 		}
 	]
 }

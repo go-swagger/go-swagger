@@ -5,6 +5,8 @@ import (
 	"reflect"
 )
 
+// IsInteger returns true when the value is an integer number
+// or convertible to an integer number without precision loss
 func IsInteger(value reflect.Value) bool {
 	kind := value.Kind()
 	switch {
@@ -23,6 +25,7 @@ func IsInteger(value reflect.Value) bool {
 	}
 }
 
+// IsNumeric returns true when the value is a numeric value
 func IsNumeric(value reflect.Value) bool {
 	kind := value.Kind()
 	switch {
@@ -61,6 +64,8 @@ var simpleTypes = map[string]struct{}{
 	"Time":       struct{}{},
 }
 
+// IsSimpleType returns true when the value is a simple type.
+// simple types are bools, uints, ints, floats, strings, complex numbers, bytes, runes, errors and time.Time
 func IsSimpleType(value reflect.Value) (ok bool) {
 	if reflect.Ptr == value.Type().Kind() {
 		return IsSimpleType(reflect.Indirect(value))
