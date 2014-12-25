@@ -8,7 +8,7 @@ import (
 	"github.com/casualjim/go-swagger"
 )
 
-// NewAPI creates the default untyped mux
+// NewAPI creates the default untyped API
 func NewAPI(spec *swagger.Spec) *API {
 	return &API{
 		spec: spec,
@@ -55,6 +55,14 @@ func (d *API) RegisterProducer(mediaType string, handler Producer) {
 // RegisterOperation registers an operation handler for an operation name
 func (d *API) RegisterOperation(operationID string, handler OperationHandler) {
 	d.registeredOperations[operationID] = handler
+}
+
+// OperationHandlerFor returns the operation handler for the specified id if it can be found
+func (d *API) OperationHandlerFor(operationID string) *OperationHandler {
+	if h, ok := d.registeredOperations[operationID]; ok {
+		return &h
+	}
+	return nil
 }
 
 // ValidateWith validates the registrations in this API against the provided spec analyzer

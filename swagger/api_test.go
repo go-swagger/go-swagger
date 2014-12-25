@@ -54,4 +54,9 @@ func TestUntypedAPIRegistrations(t *testing.T) {
 	assert.True(t, ok)
 	_, ok = api.registeredOperations["someId"]
 	assert.True(t, ok)
+
+	h := api.OperationHandlerFor("someId")
+	assert.NotNil(t, h)
+	h = api.OperationHandlerFor("doesntExist")
+	assert.Nil(t, h)
 }
