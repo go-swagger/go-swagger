@@ -1,6 +1,9 @@
 package swagger
 
-import "net/http"
+import (
+	"errors"
+	"net/http"
+)
 
 // ServeAPI takes the untyped API and a router
 // with those it will validate the registrations in the API.
@@ -9,11 +12,18 @@ import "net/http"
 // If there are missing auth handlers for registered security schemes it will return an error
 // If there are missing operation handlers for operationIds it will return an error
 func ServeAPI(api *API, router Router) (http.Handler, error) {
+	if api == nil {
+		return nil, errors.New("the api to serve can't be nil, but it was")
+	}
+
 	if router == nil {
 		router = DefaultRouter()
 	}
+
+	analyzer := NewAnalyzer(api.Spec())
+
 	// validate the api registrations against the swagger spec
-	if err := validateAPIRegistrations(api); err != nil {
+	if err := api.ValidateWith(analyzer); err != nil {
 		return nil, err
 	}
 
@@ -25,14 +35,6 @@ func ServeAPI(api *API, router Router) (http.Handler, error) {
 
 	// invoke the build method on the router
 	return router.Build()
-}
-
-func validateAPIRegistrations(api *API) error {
-	// check all the consumers
-	// check all the producers
-	// check all the security schemes
-	// check all the operations
-	return nil
 }
 
 func convertOperations(api *API, router Router) error {

@@ -57,6 +57,30 @@ func (d *API) RegisterOperation(operationID string, handler OperationHandler) {
 	d.registeredOperations[operationID] = handler
 }
 
+// ValidateWith validates the registrations in this API against the provided spec analyzer
+func (d *API) ValidateWith(analyzer *SpecAnalyzer) error {
+	var consumes []string
+	for k := range d.consumers {
+		consumes = append(consumes, k)
+	}
+	var produces []string
+	for k := range d.producers {
+		produces = append(produces, k)
+	}
+	// TODO: implement auth handlers later
+	var authHandlers []string
+	// for k := range d.authHandlers {
+	// 	authHandlers = append(authHandlers, k)
+	// }
+
+	var operations []string
+	for k := range d.registeredOperations {
+		operations = append(operations, k)
+	}
+
+	return analyzer.ValidateRegistrations(consumes, produces, authHandlers, operations)
+}
+
 // HandlerFunc represents a swagger enabled handler func
 type HandlerFunc func(http.ResponseWriter, *http.Request, RouteParams)
 
