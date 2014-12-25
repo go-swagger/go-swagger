@@ -22,4 +22,7 @@ func TestRouteParams(t *testing.T) {
 	v3, ok := coll1.Get("ccc")
 	assert.True(t, ok)
 	assert.Equal(t, v3, "efg")
+	v4, ok := coll1.Get("ydkdk")
+	assert.False(t, ok)
+	assert.Empty(t, v4)
 }
