@@ -2,7 +2,7 @@
 
 The goals are to be as unintrusive as possible. The swagger spec is the source of truth for your application.
 
-The reference framework will make use of a swagger muxer that is based on the denco router.
+The reference framework will make use of a swagger API that is based on the denco router.
 
 The general idea is that it is a middleware which you provide with the swagger spec.
 This document can be either JSON or YAML as both are required.
@@ -14,31 +14,31 @@ In addition to the middleware there are some generator commands that will use th
 Takes a raw spec document either as a []byte, and it adds the /api-docs route to serve this spec up.
 
 The middleware performs validation, data binding and security as defined in the swagger spec. 
-It also uses the muxer to match request paths to functions of `func(paramsObject) (responseModel, error)`
+It also uses the API to match request paths to functions of `func(paramsObject) (responseModel, error)`
 
 When a request comes in that doesn't match the /api-docs endpoint it will look for it in the swagger spec routes.
-These are provided in the muxer. There is a tool to generate a statically typed muxer, based on operation names and 
+These are provided in the API. There is a tool to generate a statically typed API, based on operation names and 
 operation interfaces
 
-### The muxer
+### The API
 
-The reference muxer will use the denco router to register route handlers.
-The actual request handler implementation is always the same.  The muxer must be designed in such a way that other frameworks can use their router implementation
+The reference API will use the denco router to register route handlers.
+The actual request handler implementation is always the same.  The API must be designed in such a way that other frameworks can use their router implementation
 and perhaps their own validation infrastructure.
 
-The muxer comes in 2 flavors an untyped one and a typed one. 
+The API comes in 2 flavors an untyped one and a typed one. 
 
-#### Untyped muxer
+#### Untyped API
 
-The untyped muxer links operation names to operation handlers
+The untyped API links operation names to operation handlers
 
 ```go
 type SwaggerOperationHandler func(interface{}) (interface{}, error)
 ```
 
-The muxer has 4 methods: RegisterSerializer, RegisterSecurityScheme, Register, Validate.
+The API has methods to register consumers, producers, auth handlers and operation handlers
 
-The register serializer is responsible for attaching extra serializers to media types. These are then used during content negotiation phases for looking up 
+The register serializer is responsible for attaching extra serializers to media types. These are then used during content negotiation phases for look up 
 
 The validate method will verify that all the operations in the spec have a handler registered to them. 
 If this is not the case it will exit the application with a non-zero exit code.
@@ -47,9 +47,9 @@ The register method takes an operation name and a swagger operation handler.
 It will then use that to build a path pattern for the router and it uses the swagger operation handler to produce a result
 based on the information in an incoming web request. It does this by injecing the handler in the swagger web request handler.
 
-#### Typed muxer
+#### Typed API
 
-The typed muxer uses a swagger spec to generate a typed muxer. 
+The typed API uses a swagger spec to generate a typed API. 
 
 For this there is a generator that will take the swagger spec document.
 It will then generate an interface for each operation and optionally a default implementation of that interface.
@@ -57,7 +57,7 @@ The default implemenation of an interface just returns a not implemented api err
 
 When all the interfaces and default implementations are generated it will generate a swagger mux implementation.
 This swagger mux implemenation links all the interface implementations to operation names. 
-The typed muxer wraps an untyped muxer to do the actual route registration, it's mostly sugar for providing better compile time type safety.
+The typed API wraps an untyped API to do the actual route registration, it's mostly sugar for providing better compile time type safety.
 
 This is done through integration in the `go generate` command
 
@@ -83,15 +83,11 @@ Maybe it's better add a SwaggerPrincipal property to the operation parameter obj
 type SecurityHandler func(*http.Request) (interface{}, error)
 ```
 
-#### Serialization
+#### Binding
 
 Binding makes use of plain vanilla golang serializers and they are identified by the media type they consume and produce. 
 
 Binding is not only about request bodies but also about values obtained from headers, query string parameters and potentially the route path pattern. So the binding should make use of the full request object to produce a model.
-
-```go
-type Binder func(*http.Request, interface{}) error
-```
 
 It determines a serializer to use by looking in the the merged consumes values and the `Content-Type` header to determine which deserializer to use.  
 When a result is produced it will do the same thing by making use of the `Accept` http header etc and the merged produces clauses for the operation endpoint. 

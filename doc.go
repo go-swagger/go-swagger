@@ -16,7 +16,7 @@ And it's 100% open source software.
 
 Install:
 
-	go get -u github.com/casualjim/go-swagger/swagger
+	go get -u github.com/casualjim/go-swagger/cmd/swagger
 
 The implementation also provides a number of command line tools to help working with swagger.
 

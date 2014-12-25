@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/casualjim/go-swagger/swagger/commands"
+	"github.com/casualjim/go-swagger/cmd/swagger/commands"
 	"github.com/jessevdk/go-flags"
 )
 
