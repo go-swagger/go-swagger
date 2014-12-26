@@ -3,6 +3,7 @@ package swagger
 import (
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 	"testing"
 
@@ -96,13 +97,13 @@ func TestInitializeRouter(t *testing.T) {
 			}
 
 			api := NewAPI(spec)
-			api.RegisterOperation("doGet", emptyOperationHandler)
-			api.RegisterOperation("doNew", emptyOperationHandler)
-			api.RegisterOperation("doOptions", emptyOperationHandler)
-			api.RegisterOperation("doHead", emptyOperationHandler)
-			api.RegisterOperation("doReplace", emptyOperationHandler)
-			api.RegisterOperation("doUpdate", emptyOperationHandler)
-			api.RegisterOperation("doDelete", emptyOperationHandler)
+			api.RegisterOperation("doGet", new(stubOperationHandler))
+			api.RegisterOperation("doNew", new(stubOperationHandler))
+			api.RegisterOperation("doOptions", new(stubOperationHandler))
+			api.RegisterOperation("doHead", new(stubOperationHandler))
+			api.RegisterOperation("doReplace", new(stubOperationHandler))
+			api.RegisterOperation("doUpdate", new(stubOperationHandler))
+			api.RegisterOperation("doDelete", new(stubOperationHandler))
 
 			router := DefaultRouter().(*defaultRouter)
 			h, err := api.Handler(router)
@@ -111,10 +112,12 @@ func TestInitializeRouter(t *testing.T) {
 			So(len(router.handlers), ShouldEqual, 7)
 
 			expectedMethods := []string{"GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"}
+			sort.Sort(sort.StringSlice(expectedMethods))
 			var seenMethods []string
 			for _, h := range router.handlers {
 				seenMethods = append(seenMethods, h.Method)
 			}
+			sort.Sort(sort.StringSlice(seenMethods))
 			So(seenMethods, ShouldResemble, expectedMethods)
 		})
 	})

@@ -65,6 +65,7 @@ func (s *specAnalyzer) analyzeOperation(path string, op *swagger.Operation) {
 	}
 }
 
+// AllPaths returns all the paths in the swagger spec
 func (s *specAnalyzer) AllPaths() map[string]swagger.PathItem {
 	return s.spec.Paths.Paths
 }
@@ -79,6 +80,18 @@ func (s *specAnalyzer) ConsumesFor(operation *swagger.Operation) []string {
 		cons[c] = struct{}{}
 	}
 	return s.structMapKeys(cons)
+}
+
+// ConsumesFor gets the mediatypes for the operation
+func (s *specAnalyzer) ProducesFor(operation *swagger.Operation) []string {
+	prod := make(map[string]struct{})
+	for k := range s.produces {
+		prod[k] = struct{}{}
+	}
+	for _, c := range operation.Produces {
+		prod[c] = struct{}{}
+	}
+	return s.structMapKeys(prod)
 }
 
 // ValidateRegistrations validates the registrations against the analyzed spec

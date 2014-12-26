@@ -30,7 +30,16 @@ func (s *stubProducer) Produce(_ io.Writer, _ interface{}) error {
 	return nil
 }
 
-var emptyOperationHandler = func(_ interface{}) (interface{}, error) { return nil, nil }
+type stubOperationHandler struct {
+}
+
+func (s *stubOperationHandler) ParameterModel() interface{} {
+	return nil
+}
+
+func (s *stubOperationHandler) Handle(params interface{}) (interface{}, error) {
+	return nil, nil
+}
 
 func TestUntypedAPIRegistrations(t *testing.T) {
 	api := NewAPI(new(swagger.Spec))
@@ -38,7 +47,7 @@ func TestUntypedAPIRegistrations(t *testing.T) {
 	api.RegisterAuth("basic", new(stubAuthHandler))
 	api.RegisterConsumer("application/yada", new(stubConsumer))
 	api.RegisterProducer("application/yada-2", new(stubProducer))
-	api.RegisterOperation("someId", emptyOperationHandler)
+	api.RegisterOperation("someId", new(stubOperationHandler))
 
 	assert.NotEmpty(t, api.authHandlers)
 

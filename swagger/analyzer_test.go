@@ -1,6 +1,7 @@
 package swagger
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/casualjim/go-swagger"
@@ -45,7 +46,7 @@ func TestAnalyzer(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, "missing [someOperation] operation registrations", err.Error())
 
-	api1.RegisterOperation("someOperation", emptyOperationHandler)
+	api1.RegisterOperation("someOperation", new(stubOperationHandler))
 	err = api1.validateWith(analyzer)
 	assert.NoError(t, err)
 
@@ -60,4 +61,17 @@ func TestAnalyzer(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, "missing [application/x-yaml] consumes registrations\nmissing from spec file [application/something] consumes", err.Error())
 
+	expected := []string{"application/json", "application/x-yaml"}
+	sort.Sort(sort.StringSlice(expected))
+	consumes := analyzer.ConsumesFor(spec.Paths.Paths["/"].Get)
+	sort.Sort(sort.StringSlice(consumes))
+	assert.Equal(t, expected, consumes)
+	consumers := api1.ConsumersFor(consumes)
+	assert.Len(t, consumers, 2)
+
+	produces := analyzer.ProducesFor(spec.Paths.Paths["/"].Get)
+	sort.Sort(sort.StringSlice(produces))
+	assert.Equal(t, expected, produces)
+	producers := api1.ProducersFor(produces)
+	assert.Len(t, producers, 2)
 }

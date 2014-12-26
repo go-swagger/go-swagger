@@ -69,6 +69,17 @@ func (d *API) ConsumersFor(mediaTypes []string) map[string]Consumer {
 	return result
 }
 
+// ProducersFor gets the producers for the specified media types
+func (d *API) ProducersFor(mediaTypes []string) map[string]Producer {
+	result := make(map[string]Producer)
+	for _, mt := range mediaTypes {
+		if producer, ok := d.producers[mt]; ok {
+			result[mt] = producer
+		}
+	}
+	return result
+}
+
 // Validate validates this API for any missing items
 func (d *API) Validate() error {
 	return d.validateWith(d.analyzer)
@@ -127,7 +138,10 @@ func (d *API) validateWith(analyzer *specAnalyzer) error {
 type HandlerFunc func(http.ResponseWriter, *http.Request, RouteParams)
 
 // OperationHandler a handler for a swagger operation
-type OperationHandler func(interface{}) (interface{}, error)
+type OperationHandler interface {
+	ParameterModel() interface{}
+	Handle(interface{}) (interface{}, error)
+}
 
 // ConsumerFunc represents a function that can be used as a consumer
 type ConsumerFunc func(io.Reader, interface{}) error

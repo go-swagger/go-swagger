@@ -2,22 +2,13 @@ package swagger
 
 import (
 	"net/http"
-
-	"github.com/casualjim/go-swagger"
+	"reflect"
 )
 
-// requestBinder binds the values from the request to the operation parameter struct
-type requestBinder struct {
-	Consumers map[string]Consumer
-	Operation *swagger.Operation
-}
+var requestBinderType = reflect.TypeOf(new(RequestBinder)).Elem()
 
-// NewRequestBinder creates a new instance of a request binder
-func newRequestBinder(operation *swagger.Operation, consumers map[string]Consumer) *requestBinder {
-	return &requestBinder{Consumers: consumers, Operation: operation}
-}
-
-// Bind binds the request values to the provided struct
-func (o *requestBinder) Bind(req *http.Request, routeParams RouteParams, data interface{}) error {
-	return nil
+// RequestBinder is an interface for types that want to take charge of customizing the binding process
+// or want to sidestep the reflective binding of values.
+type RequestBinder interface {
+	BindRequest(*http.Request, RouteParams) error
 }

@@ -71,6 +71,7 @@ func isStruct(v reflect.Value) bool {
 	return v.Kind() == reflect.Struct
 }
 
+// IsZero returns true when the value is a zero for the type
 func IsZero(data reflect.Value) bool {
 	tpe := data.Type()
 	return reflect.DeepEqual(data.Interface(), reflect.Zero(tpe).Interface())
