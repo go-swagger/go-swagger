@@ -26,10 +26,10 @@ func InitializeRouter(api *API, router Router) (http.Handler, error) {
 		return nil, err
 	}
 
-	return initializeRouter(api, router)
+	return initializeRoutes(api, router)
 }
 
-func initializeRouter(api *API, router Router) (http.Handler, error) {
+func initializeRoutes(api *API, router Router) (http.Handler, error) {
 	for path, pathItem := range api.Spec().Paths.Paths {
 		if op := pathItem.Get; op != nil {
 			if h := api.OperationHandlerFor(op.ID); h != nil {

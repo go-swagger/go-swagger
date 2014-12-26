@@ -52,7 +52,7 @@ func TestUntypedAPIRegistrations(t *testing.T) {
 	assert.True(t, ok)
 	_, ok = api.producers["application/json"]
 	assert.True(t, ok)
-	_, ok = api.registeredOperations["someId"]
+	_, ok = api.operations["someId"]
 	assert.True(t, ok)
 
 	h := api.OperationHandlerFor("someId")

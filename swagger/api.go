@@ -18,18 +18,18 @@ func NewAPI(spec *swagger.Spec) *API {
 		producers: map[string]Producer{
 			"application/json": JSONProducer(),
 		},
-		authHandlers:         make(map[string]AuthHandler),
-		registeredOperations: make(map[string]OperationHandler),
+		authHandlers: make(map[string]AuthHandler),
+		operations:   make(map[string]OperationHandler),
 	}
 }
 
 // API represents an untyped mux for a swagger spec
 type API struct {
-	spec                 *swagger.Spec
-	consumers            map[string]Consumer
-	producers            map[string]Producer
-	authHandlers         map[string]AuthHandler
-	registeredOperations map[string]OperationHandler
+	spec         *swagger.Spec
+	consumers    map[string]Consumer
+	producers    map[string]Producer
+	authHandlers map[string]AuthHandler
+	operations   map[string]OperationHandler
 }
 
 // Spec returns the swagger spec this untyped mux will serve
@@ -54,12 +54,12 @@ func (d *API) RegisterProducer(mediaType string, handler Producer) {
 
 // RegisterOperation registers an operation handler for an operation name
 func (d *API) RegisterOperation(operationID string, handler OperationHandler) {
-	d.registeredOperations[operationID] = handler
+	d.operations[operationID] = handler
 }
 
 // OperationHandlerFor returns the operation handler for the specified id if it can be found
 func (d *API) OperationHandlerFor(operationID string) *OperationHandler {
-	if h, ok := d.registeredOperations[operationID]; ok {
+	if h, ok := d.operations[operationID]; ok {
 		return &h
 	}
 	return nil
@@ -82,7 +82,7 @@ func (d *API) ValidateWith(analyzer *SpecAnalyzer) error {
 	// }
 
 	var operations []string
-	for k := range d.registeredOperations {
+	for k := range d.operations {
 		operations = append(operations, k)
 	}
 

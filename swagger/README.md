@@ -23,29 +23,33 @@ operation interfaces
 ### The API
 
 The reference API will use the denco router to register route handlers.
-The actual request handler implementation is always the same.  The API must be designed in such a way that other frameworks can use their router implementation
-and perhaps their own validation infrastructure.
+The actual request handler implementation is always the same.  The API must be designed in such a way that other frameworks can use their router implementation and perhaps their own validation infrastructure.
+
+An API is served over http by a router, the default implementation is a router based on denco. This is just an interface implemenation so it can be replaced with another router should you so desire.
 
 The API comes in 2 flavors an untyped one and a typed one. 
 
 #### Untyped API
 
-The untyped API links operation names to operation handlers
+The untyped API is the main glue. It takes registrations of operation ids to operation handlers.
+It also takes the registrations for mime types to consumers and producers. And it links security schemes to authentication handlers.
 
 ```go
-type SwaggerOperationHandler func(interface{}) (interface{}, error)
+type OperationHandler func(interface{}) (interface{}, error)
 ```
 
 The API has methods to register consumers, producers, auth handlers and operation handlers
 
-The register serializer is responsible for attaching extra serializers to media types. These are then used during content negotiation phases for look up 
+The register consumer and producer methods are responsible for attaching extra serializers to media types. These are then used during content negotiation phases for look up and binding the data.
 
-The validate method will verify that all the operations in the spec have a handler registered to them. 
+When an API is used to initialize a router it goes through a validation step.
+This validation step will verify that all the operations in the spec have a handler registered to them. 
+It also ensures that for all the mentioned media types there are consumers and producers provided.
+And it checks if for each authentication scheme there is a handler present.
 If this is not the case it will exit the application with a non-zero exit code.
 
-The register method takes an operation name and a swagger operation handler. 
-It will then use that to build a path pattern for the router and it uses the swagger operation handler to produce a result
-based on the information in an incoming web request. It does this by injecing the handler in the swagger web request handler.
+The register method takes an operation name and a swagger operation handler.  
+It will then use that to build a path pattern for the router and it uses the swagger operation handler to produce a result based on the information in an incoming web request. It does this by injecing the handler in the swagger web request handler.
 
 #### Typed API
 
