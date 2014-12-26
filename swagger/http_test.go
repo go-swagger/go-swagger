@@ -44,7 +44,7 @@ func ShouldBeEquivalentTo(actual interface{}, expecteds ...interface{}) string {
 }
 
 func TestInitializeRouter(t *testing.T) {
-	Convey("InitializeRouter should", t, func() {
+	Convey("api.Handler should", t, func() {
 
 		Convey("for invalid input", func() {
 
@@ -66,14 +66,8 @@ func TestInitializeRouter(t *testing.T) {
 
 			api := NewAPI(spec)
 
-			Convey("return an error when the passed api is nil", func() {
-				h, err := InitializeRouter(nil, nil)
-				So(h, ShouldBeNil)
-				So(err, ShouldNotBeNil)
-			})
-
 			Convey("return an error when the API registrations are invalid", func() {
-				h, err := InitializeRouter(api, nil)
+				h, err := api.Handler(nil)
 				So(h, ShouldBeNil)
 				So(err, ShouldNotBeNil)
 				So(strings.HasPrefix(err.Error(), "missing"), ShouldBeTrue)
@@ -111,7 +105,7 @@ func TestInitializeRouter(t *testing.T) {
 			api.RegisterOperation("doDelete", emptyOperationHandler)
 
 			router := DefaultRouter().(*defaultRouter)
-			h, err := InitializeRouter(api, router)
+			h, err := api.Handler(router)
 			So(err, ShouldBeNil)
 			So(h, ShouldNotBeNil)
 			So(len(router.handlers), ShouldEqual, 7)

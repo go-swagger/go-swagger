@@ -8,9 +8,9 @@ import (
 	"github.com/casualjim/go-swagger"
 )
 
-// SpecAnalyzer takes a swagger spec object and turns it into a registry
+// specAnalyzer takes a swagger spec object and turns it into a registry
 // with a bunch of utility methods to act on the information in the spec
-type SpecAnalyzer struct {
+type specAnalyzer struct {
 	spec        *swagger.Spec
 	consumes    map[string]struct{}
 	produces    map[string]struct{}
@@ -18,9 +18,9 @@ type SpecAnalyzer struct {
 	operations  map[string]string
 }
 
-// NewAnalyzer creates a new spec analyzer instance
-func NewAnalyzer(spec *swagger.Spec) *SpecAnalyzer {
-	a := &SpecAnalyzer{
+// newAnalyzer creates a new spec analyzer instance
+func newAnalyzer(spec *swagger.Spec) *specAnalyzer {
+	a := &specAnalyzer{
 		spec:        spec,
 		consumes:    make(map[string]struct{}),
 		produces:    make(map[string]struct{}),
@@ -31,7 +31,7 @@ func NewAnalyzer(spec *swagger.Spec) *SpecAnalyzer {
 	return a
 }
 
-func (s *SpecAnalyzer) initialize() {
+func (s *specAnalyzer) initialize() {
 	for _, c := range s.spec.Consumes {
 		s.consumes[c] = struct{}{}
 	}
@@ -43,7 +43,7 @@ func (s *SpecAnalyzer) initialize() {
 	}
 }
 
-func (s *SpecAnalyzer) analyzeOperations(path string, op *swagger.PathItem) {
+func (s *specAnalyzer) analyzeOperations(path string, op *swagger.PathItem) {
 	s.analyzeOperation(path, op.Get)
 	s.analyzeOperation(path, op.Put)
 	s.analyzeOperation(path, op.Post)
@@ -53,7 +53,7 @@ func (s *SpecAnalyzer) analyzeOperations(path string, op *swagger.PathItem) {
 	s.analyzeOperation(path, op.Options)
 }
 
-func (s *SpecAnalyzer) analyzeOperation(path string, op *swagger.Operation) {
+func (s *specAnalyzer) analyzeOperation(path string, op *swagger.Operation) {
 	if op != nil {
 		for _, c := range op.Consumes {
 			s.consumes[c] = struct{}{}
@@ -65,8 +65,24 @@ func (s *SpecAnalyzer) analyzeOperation(path string, op *swagger.Operation) {
 	}
 }
 
+func (s *specAnalyzer) AllPaths() map[string]swagger.PathItem {
+	return s.spec.Paths.Paths
+}
+
+// ConsumesFor gets the mediatypes for the operation
+func (s *specAnalyzer) ConsumesFor(operation *swagger.Operation) []string {
+	cons := make(map[string]struct{})
+	for k := range s.consumes {
+		cons[k] = struct{}{}
+	}
+	for _, c := range operation.Consumes {
+		cons[c] = struct{}{}
+	}
+	return s.structMapKeys(cons)
+}
+
 // ValidateRegistrations validates the registrations against the analyzed spec
-func (s *SpecAnalyzer) ValidateRegistrations(consumes, produces, schemes, operations []string) error {
+func (s *specAnalyzer) ValidateRegistrations(consumes, produces, schemes, operations []string) error {
 	if err := s.verify("consumes", consumes, s.structMapKeys(s.consumes)); err != nil {
 		return err
 	}
@@ -83,7 +99,7 @@ func (s *SpecAnalyzer) ValidateRegistrations(consumes, produces, schemes, operat
 	return nil
 }
 
-func (s *SpecAnalyzer) structMapKeys(mp map[string]struct{}) []string {
+func (s *specAnalyzer) structMapKeys(mp map[string]struct{}) []string {
 	var result []string
 	for k := range mp {
 		result = append(result, k)
@@ -91,7 +107,7 @@ func (s *SpecAnalyzer) structMapKeys(mp map[string]struct{}) []string {
 	return result
 }
 
-func (s *SpecAnalyzer) stringMapKeys(mp map[string]string) []string {
+func (s *specAnalyzer) stringMapKeys(mp map[string]string) []string {
 	var result []string
 	for k := range mp {
 		result = append(result, k)
@@ -99,13 +115,16 @@ func (s *SpecAnalyzer) stringMapKeys(mp map[string]string) []string {
 	return result
 }
 
-type verifyError struct {
+// APIVerificationFailed is an error that contains all the missing info for a mismatched section
+// between the api registrations and the api spec
+type APIVerificationFailed struct {
 	Section              string
 	MissingSpecification []string
 	MissingRegistration  []string
 }
 
-func (v *verifyError) Error() string {
+//
+func (v *APIVerificationFailed) Error() string {
 	buf := bytes.NewBuffer(nil)
 
 	hasRegMissing := len(v.MissingRegistration) > 0
@@ -126,7 +145,7 @@ func (v *verifyError) Error() string {
 	return buf.String()
 }
 
-func (s *SpecAnalyzer) verify(name string, registrations []string, expectations []string) error {
+func (s *specAnalyzer) verify(name string, registrations []string, expectations []string) error {
 	expected := map[string]struct{}{}
 	seen := map[string]struct{}{}
 
@@ -152,7 +171,7 @@ func (s *SpecAnalyzer) verify(name string, registrations []string, expectations 
 	}
 
 	if len(unregistered) > 0 || len(unspecified) > 0 {
-		return &verifyError{
+		return &APIVerificationFailed{
 			Section:              name,
 			MissingSpecification: unspecified,
 			MissingRegistration:  unregistered,

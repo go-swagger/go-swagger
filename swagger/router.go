@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/casualjim/go-swagger"
 	"github.com/naoina/denco"
 )
 
@@ -73,5 +74,32 @@ func (d *defaultRouter) wrapHandlerFunc(handler HandlerFunc) denco.HandlerFunc {
 			routeParams = append(routeParams, RouteParam{Name: param.Name, Value: param.Value})
 		}
 		handler(rw, r, routeParams)
+	}
+}
+
+type routerInitializer struct {
+	Router   Router
+	Analyzer *specAnalyzer
+	API      *API
+}
+
+func (r *routerInitializer) Initialize() (http.Handler, error) {
+	for path, pathItem := range r.Analyzer.AllPaths() {
+		r.registerRoute("GET", path, pathItem.Get)
+		r.registerRoute("HEAD", path, pathItem.Head)
+		r.registerRoute("OPTIONS", path, pathItem.Options)
+		r.registerRoute("POST", path, pathItem.Post)
+		r.registerRoute("PUT", path, pathItem.Put)
+		r.registerRoute("PATCH", path, pathItem.Patch)
+		r.registerRoute("DELETE", path, pathItem.Delete)
+	}
+	return r.Router.Build()
+}
+
+func (r *routerInitializer) registerRoute(method, path string, operation *swagger.Operation) {
+	if operation != nil {
+		if h, ok := r.API.OperationHandlerFor(operation.ID); ok {
+			r.Router.AddRoute(method, path, createHandler(r.API, operation, h, r.Analyzer).Handle)
+		}
 	}
 }

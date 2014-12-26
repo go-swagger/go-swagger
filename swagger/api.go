@@ -11,7 +11,7 @@ import (
 // NewAPI creates the default untyped API
 func NewAPI(spec *swagger.Spec) *API {
 	return &API{
-		spec: spec,
+		analyzer: newAnalyzer(spec),
 		consumers: map[string]Consumer{
 			"application/json": JSONConsumer(),
 		},
@@ -25,16 +25,11 @@ func NewAPI(spec *swagger.Spec) *API {
 
 // API represents an untyped mux for a swagger spec
 type API struct {
-	spec         *swagger.Spec
+	analyzer     *specAnalyzer
 	consumers    map[string]Consumer
 	producers    map[string]Producer
 	authHandlers map[string]AuthHandler
 	operations   map[string]OperationHandler
-}
-
-// Spec returns the swagger spec this untyped mux will serve
-func (d *API) Spec() *swagger.Spec {
-	return d.spec
 }
 
 // RegisterAuth registers an auth handler in this api
@@ -58,15 +53,54 @@ func (d *API) RegisterOperation(operationID string, handler OperationHandler) {
 }
 
 // OperationHandlerFor returns the operation handler for the specified id if it can be found
-func (d *API) OperationHandlerFor(operationID string) *OperationHandler {
-	if h, ok := d.operations[operationID]; ok {
-		return &h
-	}
-	return nil
+func (d *API) OperationHandlerFor(operationID string) (OperationHandler, bool) {
+	h, ok := d.operations[operationID]
+	return h, ok
 }
 
-// ValidateWith validates the registrations in this API against the provided spec analyzer
-func (d *API) ValidateWith(analyzer *SpecAnalyzer) error {
+// ConsumersFor gets the consumers for the specified media types
+func (d *API) ConsumersFor(mediaTypes []string) map[string]Consumer {
+	result := make(map[string]Consumer)
+	for _, mt := range mediaTypes {
+		if consumer, ok := d.consumers[mt]; ok {
+			result[mt] = consumer
+		}
+	}
+	return result
+}
+
+// Validate validates this API for any missing items
+func (d *API) Validate() error {
+	return d.validateWith(d.analyzer)
+}
+
+// Handler takes the untyped API and a router with those it will validate the registrations in the API.
+// When everything is found to be valid it will build the http.Handler with the provided router
+//
+// If there are missing consumers for registered media types it will return an error
+// If there are missing producers for registered media types it will return an error
+// If there are missing auth handlers for registered security schemes it will return an error
+// If there are missing operation handlers for operationIds it will return an error
+func (d *API) Handler(router Router) (http.Handler, error) {
+	if router == nil {
+		router = DefaultRouter()
+	}
+
+	if err := d.Validate(); err != nil {
+		return nil, err
+	}
+
+	initializer := &routerInitializer{
+		API:      d,
+		Router:   router,
+		Analyzer: d.analyzer,
+	}
+
+	return initializer.Initialize()
+}
+
+// validateWith validates the registrations in this API against the provided spec analyzer
+func (d *API) validateWith(analyzer *specAnalyzer) error {
 	var consumes []string
 	for k := range d.consumers {
 		consumes = append(consumes, k)
@@ -144,6 +178,6 @@ type Producer interface {
 
 // AuthHandler handles authentication for an API
 type AuthHandler interface {
-	// Authenticate peforms tha authentication
-	Authenticate(*http.Request, RouteParams) interface{}
+	// Authenticate peforms the authentication
+	Authenticate(*http.Request) interface{}
 }

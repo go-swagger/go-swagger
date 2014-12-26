@@ -12,7 +12,7 @@ import (
 type stubAuthHandler struct {
 }
 
-func (s *stubAuthHandler) Authenticate(_ *http.Request, _ RouteParams) interface{} {
+func (s *stubAuthHandler) Authenticate(_ *http.Request) interface{} {
 	return nil
 }
 
@@ -41,7 +41,7 @@ func TestUntypedAPIRegistrations(t *testing.T) {
 	api.RegisterOperation("someId", emptyOperationHandler)
 
 	assert.NotEmpty(t, api.authHandlers)
-	assert.NotNil(t, api.Spec())
+
 	_, ok := api.authHandlers["BASIC"]
 	assert.True(t, ok)
 	_, ok = api.consumers["application/yada"]
@@ -55,8 +55,10 @@ func TestUntypedAPIRegistrations(t *testing.T) {
 	_, ok = api.operations["someId"]
 	assert.True(t, ok)
 
-	h := api.OperationHandlerFor("someId")
+	h, ok := api.OperationHandlerFor("someId")
+	assert.True(t, ok)
 	assert.NotNil(t, h)
-	h = api.OperationHandlerFor("doesntExist")
-	assert.Nil(t, h)
+
+	_, ok = api.OperationHandlerFor("doesntExist")
+	assert.False(t, ok)
 }
