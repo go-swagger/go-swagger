@@ -4,16 +4,18 @@ import (
 	"net/http"
 
 	"github.com/casualjim/go-swagger"
+	"github.com/casualjim/go-swagger/swagger/util"
 )
 
 type handler struct {
-	Consumes  []string
-	Consumers map[string]Consumer
-	Produces  []string
-	Producers map[string]Producer
-	Operation *swagger.Operation
-	Handler   OperationHandler
-	Analyzer  *specAnalyzer
+	Consumes   []string
+	Consumers  map[string]Consumer
+	Produces   []string
+	Producers  map[string]Producer
+	Operation  *swagger.Operation
+	Handler    OperationHandler
+	Analyzer   *specAnalyzer
+	ParamNames map[string]string
 	// Binder    *requestBinder
 }
 
@@ -22,6 +24,10 @@ func createHandler(api *API, operation *swagger.Operation, h OperationHandler, a
 	consumers := api.ConsumersFor(consumes)
 	produces := analyzer.ProducesFor(operation)
 	producers := api.ProducersFor(produces)
+	paramNames := make(map[string]string)
+	for _, param := range operation.Parameters {
+		paramNames[param.Name] = util.ToGoName(param.Name)
+	}
 	// parameters := parameterContainerFor(operation)
 
 	return &handler{
