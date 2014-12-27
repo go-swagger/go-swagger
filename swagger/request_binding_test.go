@@ -41,7 +41,7 @@ type jsonRequestSlice struct {
 	Friend    []friend
 }
 
-func parametersForJSONRequestParams(fmt string) []swagger.Parameter {
+func parametersForJSONRequestParams(fmt string) map[string]swagger.Parameter {
 	if fmt == "" {
 		fmt = "csv"
 	}
@@ -71,7 +71,7 @@ func parametersForJSONRequestParams(fmt string) []swagger.Parameter {
 	tagsParam.Items.Type = "string"
 	tagsParam.CollectionFormat = fmt
 
-	return []swagger.Parameter{*idParam, *nameParam, *requestIDParam, *friendParam, *tagsParam}
+	return map[string]swagger.Parameter{"ID": *idParam, "Name": *nameParam, "RequestID": *requestIDParam, "Friend": *friendParam, "Tags": *tagsParam}
 }
 
 func TestRequestBindingForInvalid(t *testing.T) {
@@ -79,7 +79,7 @@ func TestRequestBindingForInvalid(t *testing.T) {
 	invalidParam := swagger.QueryParam()
 	invalidParam.Name = "some"
 
-	op1 := []swagger.Parameter{*invalidParam}
+	op1 := map[string]swagger.Parameter{"Some": *invalidParam}
 
 	binder := &operationBinder{op1, map[string]Consumer{}}
 	req, _ := http.NewRequest("GET", "http://localhost:8002/hello?name=the-name", nil)
@@ -115,7 +115,7 @@ func TestRequestBindingForInvalid(t *testing.T) {
 	invalidMultiParam.Items = new(swagger.Items)
 	invalidMultiParam.CollectionFormat = "multi"
 
-	op3 := []swagger.Parameter{*invalidMultiParam}
+	op3 := map[string]swagger.Parameter{"Tags": *invalidMultiParam}
 	binder = &operationBinder{op3, map[string]Consumer{"application/json": JSONConsumer()}}
 
 	req, _ = http.NewRequest("POST", "http://localhost:8002/hello/1?name=the-name", bytes.NewBuffer([]byte(`{}`)))
@@ -130,7 +130,7 @@ func TestRequestBindingForInvalid(t *testing.T) {
 	invalidMultiParam.Items = new(swagger.Items)
 	invalidMultiParam.CollectionFormat = "multi"
 
-	op4 := []swagger.Parameter{*invalidMultiParam}
+	op4 := map[string]swagger.Parameter{"Tags": *invalidMultiParam}
 	binder = &operationBinder{op4, map[string]Consumer{"application/json": JSONConsumer()}}
 
 	req, _ = http.NewRequest("POST", "http://localhost:8002/hello/1?name=the-name", bytes.NewBuffer([]byte(`{}`)))
@@ -143,7 +143,7 @@ func TestRequestBindingForInvalid(t *testing.T) {
 	invalidInParam.Name = "tags"
 	invalidInParam.Type = "string"
 	invalidInParam.In = "invalid"
-	op5 := []swagger.Parameter{*invalidInParam}
+	op5 := map[string]swagger.Parameter{"Tags": *invalidInParam}
 	binder = &operationBinder{op5, map[string]Consumer{"application/json": JSONConsumer()}}
 
 	req, _ = http.NewRequest("POST", "http://localhost:8002/hello/1?name=the-name", bytes.NewBuffer([]byte(`{}`)))
@@ -243,7 +243,7 @@ func TestFormUpload(t *testing.T) {
 	ageParam.Type = "integer"
 	ageParam.Format = "int32"
 
-	params := []swagger.Parameter{*nameParam, *ageParam}
+	params := map[string]swagger.Parameter{"Name": *nameParam, "Age": *ageParam}
 	binder := &operationBinder{params, map[string]Consumer{"application/json": JSONConsumer()}}
 
 	urlStr := "http://localhost:8002/hello"
@@ -276,7 +276,7 @@ func TestBindingFileUpload(t *testing.T) {
 	fileParam.Name = "file"
 	fileParam.Type = "file"
 
-	params := []swagger.Parameter{*nameParam, *fileParam}
+	params := map[string]swagger.Parameter{"Name": *nameParam, "File": *fileParam}
 	binder := &operationBinder{params, map[string]Consumer{"application/json": JSONConsumer()}}
 
 	body := bytes.NewBuffer(nil)

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/casualjim/go-swagger"
+	"github.com/casualjim/go-swagger/swagger/util"
 )
 
 // specAnalyzer takes a swagger spec object and turns it into a registry
@@ -92,6 +93,43 @@ func (s *specAnalyzer) ProducesFor(operation *swagger.Operation) []string {
 		prod[c] = struct{}{}
 	}
 	return s.structMapKeys(prod)
+}
+
+func fieldNameFromParam(param *swagger.Parameter) string {
+	if nm, ok := param.Extensions.GetString("go-name"); ok {
+		return nm
+	}
+	return util.ToGoName(param.Name)
+}
+
+func (s *specAnalyzer) pathItemParams(operation, toMatch *swagger.Operation, parameters []swagger.Parameter, res map[string]swagger.Parameter) {
+	if operation != nil && operation.ID == operation.ID {
+		for _, param := range parameters {
+			res[fieldNameFromParam(&param)] = param
+		}
+	}
+}
+
+// ParametersFor gets the parameters for the specified operation, collecting all the shared ones along the way
+func (s *specAnalyzer) ParametersFor(operation *swagger.Operation) map[string]swagger.Parameter {
+	res := map[string]swagger.Parameter{}
+
+	for _, param := range s.spec.Parameters {
+		res[fieldNameFromParam(&param)] = param
+	}
+	for _, pathItem := range s.spec.Paths.Paths {
+		s.pathItemParams(pathItem.Get, operation, pathItem.Parameters, res)
+		s.pathItemParams(pathItem.Head, operation, pathItem.Parameters, res)
+		s.pathItemParams(pathItem.Options, operation, pathItem.Parameters, res)
+		s.pathItemParams(pathItem.Post, operation, pathItem.Parameters, res)
+		s.pathItemParams(pathItem.Put, operation, pathItem.Parameters, res)
+		s.pathItemParams(pathItem.Patch, operation, pathItem.Parameters, res)
+		s.pathItemParams(pathItem.Delete, operation, pathItem.Parameters, res)
+	}
+	for _, param := range operation.Parameters {
+		res[fieldNameFromParam(&param)] = param
+	}
+	return res
 }
 
 // ValidateRegistrations validates the registrations against the analyzed spec

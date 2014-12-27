@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/casualjim/go-swagger"
-	"github.com/casualjim/go-swagger/swagger/util"
 )
 
 var requestBinderType = reflect.TypeOf(new(RequestBinder)).Elem()
@@ -32,18 +31,16 @@ type RequestBinder interface {
 }
 
 type operationBinder struct {
-	Parameters []swagger.Parameter
+	Parameters map[string]swagger.Parameter
 	Consumers  map[string]Consumer
 }
 
 func (o *operationBinder) Bind(request *http.Request, routeParams RouteParams, data interface{}) error {
 	val := reflect.Indirect(reflect.ValueOf(data))
 
-	for _, param := range o.Parameters {
+	for fieldName, param := range o.Parameters {
 
-		fieldName := fieldNameFromParam(&param)
 		target := val.FieldByName(fieldName)
-
 		if !target.IsValid() {
 			return fmt.Errorf("parameter name %q is an unknown field", fieldName)
 		}
@@ -153,13 +150,6 @@ func readSingle(from interface {
 	Get(string) string
 }, name string) string {
 	return from.Get(name)
-}
-
-func fieldNameFromParam(param *swagger.Parameter) string {
-	if nm, ok := param.Extensions.GetString("GO-NAME"); ok {
-		return nm
-	}
-	return util.ToGoName(param.Name)
 }
 
 func setFieldValue(target reflect.Value, data string, defaultValue interface{}) error {

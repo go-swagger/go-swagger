@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/casualjim/go-swagger"
-	"github.com/casualjim/go-swagger/swagger/util"
 )
 
 type handler struct {
@@ -16,7 +15,7 @@ type handler struct {
 	Handler    OperationHandler
 	Analyzer   *specAnalyzer
 	ParamNames map[string]string
-	// Binder    *requestBinder
+	Binder     *operationBinder
 }
 
 func createHandler(api *API, operation *swagger.Operation, h OperationHandler, analyzer *specAnalyzer) *handler {
@@ -24,11 +23,7 @@ func createHandler(api *API, operation *swagger.Operation, h OperationHandler, a
 	consumers := api.ConsumersFor(consumes)
 	produces := analyzer.ProducesFor(operation)
 	producers := api.ProducersFor(produces)
-	paramNames := make(map[string]string)
-	for _, param := range operation.Parameters {
-		paramNames[param.Name] = util.ToGoName(param.Name)
-	}
-	// parameters := parameterContainerFor(operation)
+	parameters := analyzer.ParametersFor(operation)
 
 	return &handler{
 		Consumes:  consumes,
@@ -38,7 +33,7 @@ func createHandler(api *API, operation *swagger.Operation, h OperationHandler, a
 		Operation: operation,
 		Handler:   h,
 		Analyzer:  analyzer,
-		// Binder:    newRequestBinder(parameters, consumers),
+		Binder:    &operationBinder{parameters, consumers},
 	}
 }
 
@@ -46,12 +41,12 @@ func (h *handler) Handle(rw http.ResponseWriter, req *http.Request, routeParams 
 	// authenticate
 
 	// create new instance
-	// parameters := h.Handler.ParameterModel()
-	// if err := h.Binder.Bind(req, routeParams, parameters); err != nil {
-	// 	// use renderer to render an error with the appropriate status code
-	// 	//h.Renderer(rw, err)
-	// 	return
-	// }
+	parameters := h.Handler.ParameterModel()
+	if err := h.Binder.Bind(req, routeParams, parameters); err != nil {
+		// use renderer to render an error with the appropriate status code
+		//h.Renderer(rw, err)
+		return
+	}
 
 	// validate
 
