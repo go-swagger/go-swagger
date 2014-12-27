@@ -9,16 +9,35 @@ import (
 )
 
 func TestAnalyzer(t *testing.T) {
+	formatParam := swagger.QueryParam()
+	formatParam.Name = "format"
+	formatParam.Type = "string"
+
+	limitParam := swagger.QueryParam()
+	limitParam.Name = "limit"
+	limitParam.Type = "integer"
+	limitParam.Format = "int32"
+	limitParam.Extensions = swagger.Extensions(map[string]interface{}{})
+	limitParam.Extensions.Add("go-name", "Limit")
+
+	skipParam := swagger.QueryParam()
+	skipParam.Name = "skip"
+	skipParam.Type = "integer"
+	skipParam.Format = "int32"
+
 	spec := &swagger.Spec{
-		Consumes: []string{"application/json"},
-		Produces: []string{"application/json"},
+		Consumes:   []string{"application/json"},
+		Produces:   []string{"application/json"},
+		Parameters: map[string]swagger.Parameter{"format": *formatParam},
 		Paths: swagger.Paths{
 			Paths: map[string]swagger.PathItem{
 				"/": swagger.PathItem{
+					Parameters: []swagger.Parameter{*limitParam},
 					Get: &swagger.Operation{
-						Consumes: []string{"application/x-yaml"},
-						Produces: []string{"application/x-yaml"},
-						ID:       "someOperation",
+						Consumes:   []string{"application/x-yaml"},
+						Produces:   []string{"application/x-yaml"},
+						ID:         "someOperation",
+						Parameters: []swagger.Parameter{*skipParam},
 					},
 				},
 			},
@@ -74,4 +93,7 @@ func TestAnalyzer(t *testing.T) {
 	assert.Equal(t, expected, produces)
 	producers := api1.ProducersFor(produces)
 	assert.Len(t, producers, 2)
+
+	parameters := analyzer.ParametersFor(spec.Paths.Paths["/"].Get)
+	assert.Len(t, parameters, 3)
 }
