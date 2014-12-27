@@ -26,6 +26,21 @@ func BodyParam() *Parameter {
 	return &Parameter{In: "body"}
 }
 
+// FormDataParam creates a body parameter
+func FormDataParam() *Parameter {
+	return &Parameter{In: "formData"}
+}
+
+// FileParam creates a body parameter
+func FileParam() *Parameter {
+	return &Parameter{Type: "file"}
+}
+
+// SimpleArrayParam creates a param for a simple array (string, int, date etc)
+func SimpleArrayParam(tpe, fmt string) *Parameter {
+	return &Parameter{Type: "array", CollectionFormat: "csv", Items: &Items{Type: "string", Format: fmt}}
+}
+
 // Parameter a unique parameter is defined by a combination of a [name](#parameterName) and [location](#parameterIn).
 //
 // There are five possible parameter types.
@@ -39,30 +54,30 @@ func BodyParam() *Parameter {
 //
 // For more information: http://goo.gl/8us55a#parameterObject
 type Parameter struct {
-	Description      string                 `swagger:"description,omitempty"`
-	Items            *Items                 `swagger:"items,omitempty"`
-	Extensions       map[string]interface{} `swagger:"-"` // custom extensions, omitted when empty
-	Ref              string                 `swagger:"-"`
-	Maximum          *float64               `swagger:"maximum,omitempty"`
-	ExclusiveMaximum bool                   `swagger:"exclusiveMaximum,omitempty"`
-	Minimum          *float64               `swagger:"minimum,omitempty"`
-	ExclusiveMinimum bool                   `swagger:"exclusiveMinimum,omitempty"`
-	MaxLength        *int64                 `swagger:"maxLength,omitempty"`
-	MinLength        *int64                 `swagger:"minLength,omitempty"`
-	Pattern          string                 `swagger:"pattern,omitempty"`
-	MaxItems         *int64                 `swagger:"maxItems,omitempty"`
-	MinItems         *int64                 `swagger:"minItems,omitempty"`
-	UniqueItems      bool                   `swagger:"uniqueItems,omitempty"`
-	MultipleOf       *float64               `swagger:"multipleOf,omitempty"`
-	Enum             []interface{}          `swagger:"enum,omitempty"`
-	Type             string                 `swagger:"type,omitempty"`
-	Format           string                 `swagger:"format,omitempty"`
-	Name             string                 `swagger:"name,omitempty"`
-	In               string                 `swagger:"in,omitempty"`
-	Required         bool                   `swagger:"required,omitempty"`
-	Schema           *Schema                `swagger:"schema,omitempty"` // when in == "body"
-	CollectionFormat string                 `swagger:"collectionFormat,omitempty"`
-	Default          interface{}            `swagger:"default,omitempty"`
+	Description      string        `swagger:"description,omitempty"`
+	Items            *Items        `swagger:"items,omitempty"`
+	Extensions       Extensions    `swagger:"-"` // custom extensions, omitted when empty
+	Ref              string        `swagger:"-"`
+	Maximum          *float64      `swagger:"maximum,omitempty"`
+	ExclusiveMaximum bool          `swagger:"exclusiveMaximum,omitempty"`
+	Minimum          *float64      `swagger:"minimum,omitempty"`
+	ExclusiveMinimum bool          `swagger:"exclusiveMinimum,omitempty"`
+	MaxLength        *int64        `swagger:"maxLength,omitempty"`
+	MinLength        *int64        `swagger:"minLength,omitempty"`
+	Pattern          string        `swagger:"pattern,omitempty"`
+	MaxItems         *int64        `swagger:"maxItems,omitempty"`
+	MinItems         *int64        `swagger:"minItems,omitempty"`
+	UniqueItems      bool          `swagger:"uniqueItems,omitempty"`
+	MultipleOf       *float64      `swagger:"multipleOf,omitempty"`
+	Enum             []interface{} `swagger:"enum,omitempty"`
+	Type             string        `swagger:"type,omitempty"`
+	Format           string        `swagger:"format,omitempty"`
+	Name             string        `swagger:"name,omitempty"`
+	In               string        `swagger:"in,omitempty"`
+	Required         bool          `swagger:"required,omitempty"`
+	Schema           *Schema       `swagger:"schema,omitempty"` // when in == "body"
+	CollectionFormat string        `swagger:"collectionFormat,omitempty"`
+	Default          interface{}   `swagger:"default,omitempty"`
 }
 
 // UnmarshalMap hydrates this parameter instance with the data from the map

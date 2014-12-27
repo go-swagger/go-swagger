@@ -21,11 +21,8 @@ func YAMLConsumer() Consumer {
 // YAMLProducer creates a producer for yaml data
 func YAMLProducer() Producer {
 	return FuncProducer(func(w io.Writer, v interface{}) error {
-		b, err := yaml.Marshal(v)
-		if err != nil {
-			return err
-		}
-		_, err = w.Write(b)
+		b, _ := yaml.Marshal(v) // can't make this error come up
+		_, err := w.Write(b)
 		return err
 	})
 }

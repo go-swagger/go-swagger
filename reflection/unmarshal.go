@@ -287,10 +287,10 @@ func convertInterface(name, key string, source, target reflect.Value, tag *parse
 }
 
 func makeError(name, key string, source, target reflect.Value) error {
-	return fmt.Errorf("Couldn't convert %s (key %q) '%s' to a '%s'", name, key, source.Type(), target.Type())
+	return fmt.Errorf("failed convert %s (key %q) '%s' to a '%s'", name, key, source.Type(), target.Type())
 }
 func wrapError(name, key string, source, target reflect.Value, err error) error {
-	return fmt.Errorf("Couldn't convert %s (key %q) '%s' to a '%s', because %v", name, key, source.Type(), target.Type(), err)
+	return fmt.Errorf("failed convert %s (key %q) '%s' to a '%s', because %v", name, key, source.Type(), target.Type(), err)
 }
 
 func convertBool(name, key string, source, target reflect.Value, tag *parsedTag) error {

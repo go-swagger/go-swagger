@@ -2,6 +2,7 @@ package swagger
 
 import (
 	"bytes"
+	"errors"
 	"net/http/httptest"
 	"testing"
 
@@ -33,4 +34,15 @@ func TestYAMLProducer(t *testing.T) {
 	err := prod.Produce(rw, data)
 	assert.NoError(t, err)
 	assert.Equal(t, consProdYAML, rw.Body.String())
+}
+
+type failReader struct {
+}
+
+func (f *failReader) Read(p []byte) (n int, err error) {
+	return 0, errors.New("expected")
+}
+func TestFailYAMLReader(t *testing.T) {
+	cons := YAMLConsumer()
+	assert.Error(t, cons.Consume(&failReader{}, nil))
 }

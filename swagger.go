@@ -23,6 +23,24 @@ type Definitions map[string]Schema
 // For more information: http://goo.gl/8us55a#securityDefinitionsObject
 type SecurityDefinitions map[string]*SecurityScheme
 
+// Extensions vendor specific extensions
+type Extensions map[string]interface{}
+
+// Add adds a value to these extensions
+func (e Extensions) Add(key string, value interface{}) {
+	realKey := strings.ToLower(key)
+	e[realKey] = value
+}
+
+// GetString gets a string value from the extensions
+func (e Extensions) GetString(key string) (string, bool) {
+	if v, ok := e[strings.ToLower(key)]; ok {
+		str, ok := v.(string)
+		return str, ok
+	}
+	return "", false
+}
+
 func addExtensions(res map[string]interface{}, extensions map[string]interface{}) {
 	for k, v := range extensions {
 		key := k

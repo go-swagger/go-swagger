@@ -20,13 +20,13 @@ type RouteParam struct {
 type RouteParams []RouteParam
 
 // Get gets the value for the route param for the specified key
-func (r RouteParams) Get(name string) (string, bool) {
+func (r RouteParams) Get(name string) string {
 	for _, p := range r {
 		if p.Name == name {
-			return p.Value, true
+			return p.Value
 		}
 	}
-	return "", false
+	return ""
 }
 
 // Router implementations provide the integration with url routers

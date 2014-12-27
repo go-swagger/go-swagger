@@ -79,7 +79,6 @@ func TestRouterIntegration(t *testing.T) {
 	assert.NoError(t, err)
 	handler.ServeHTTP(rw, req)
 	assert.Len(t, recvParams, 1)
-	rp, ok := recvParams.Get("name")
-	assert.True(t, ok)
+	rp := recvParams.Get("name")
 	assert.Equal(t, "the-thing", rp)
 }
