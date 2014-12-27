@@ -25,6 +25,7 @@ script:
   - godep go test -v -race ./...
   - godep go test -covermode=count -coverprofile=swagger.coverprofile .
   - godep go test -covermode=count -coverprofile=reflection.coverprofile ./reflection
+  - godep go test -covermode=count -coverprofile=swagger-serve.coverprofile ./swagger
   - gover
   - if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ]; then goveralls -coverprofile=gover.coverprofile -service=travis-ci -repotoken $COVERALLS_TOKEN; fi
 
