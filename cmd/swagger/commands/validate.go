@@ -29,9 +29,9 @@ func (c *ValidateSpec) Execute(args []string) error {
 	if result.Valid() {
 		fmt.Printf("The swagger spec at %q is valid against swagger specification %s\n", swaggerDoc, schemaDocument.Version())
 	} else {
-		str := fmt.Fprintf("The swagger spec at %q is valid against swagger specification %s. see errors :\n", swaggerDoc, schemaDocument.Version())
+		str := fmt.Sprintf("The swagger spec at %q is valid against swagger specification %s. see errors :\n", swaggerDoc, schemaDocument.Version())
 		for _, desc := range result.Errors() {
-			str += fmt.Fprintf("- %s\n", desc)
+			str += fmt.Sprintf("- %s\n", desc)
 		}
 		return errors.New(str)
 	}

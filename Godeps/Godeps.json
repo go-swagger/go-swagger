@@ -23,26 +23,6 @@
 			"Rev": "3aac294f0523fecd878d6faa003ba48b52769ae5"
 		},
 		{
-			"ImportPath": "github.com/robertkrimen/otto/ast",
-			"Rev": "dea31a3d392779af358ec41f77a07fcc7e9d04ba"
-		},
-		{
-			"ImportPath": "github.com/robertkrimen/otto/dbg",
-			"Rev": "dea31a3d392779af358ec41f77a07fcc7e9d04ba"
-		},
-		{
-			"ImportPath": "github.com/robertkrimen/otto/file",
-			"Rev": "dea31a3d392779af358ec41f77a07fcc7e9d04ba"
-		},
-		{
-			"ImportPath": "github.com/robertkrimen/otto/parser",
-			"Rev": "dea31a3d392779af358ec41f77a07fcc7e9d04ba"
-		},
-		{
-			"ImportPath": "github.com/robertkrimen/otto/token",
-			"Rev": "dea31a3d392779af358ec41f77a07fcc7e9d04ba"
-		},
-		{
 			"ImportPath": "github.com/smartystreets/goconvey/convey",
 			"Comment": "1.5.0-345-g432ed38",
 			"Rev": "432ed384e87b0d670f738ef45d613e513c0456d0"
