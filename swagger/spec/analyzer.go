@@ -62,11 +62,6 @@ func (s *specAnalyzer) analyzeOperation(path string, op *swagger.Operation) {
 	}
 }
 
-// AllPaths returns all the paths in the swagger spec
-func (s *specAnalyzer) AllPaths() map[string]swagger.PathItem {
-	return s.spec.Paths.Paths
-}
-
 // ConsumesFor gets the mediatypes for the operation
 func (s *specAnalyzer) ConsumesFor(operation *swagger.Operation) []string {
 	cons := make(map[string]struct{})
@@ -79,7 +74,7 @@ func (s *specAnalyzer) ConsumesFor(operation *swagger.Operation) []string {
 	return s.structMapKeys(cons)
 }
 
-// ConsumesFor gets the mediatypes for the operation
+// ProducesFor gets the mediatypes for the operation
 func (s *specAnalyzer) ProducesFor(operation *swagger.Operation) []string {
 	prod := make(map[string]struct{})
 	for k := range s.produces {
