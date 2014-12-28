@@ -10,11 +10,10 @@ import (
 
 // Document represents a swagger spec document
 type Document struct {
-	version    string
+	specAnalyzer
 	specSchema *jsonschema.JsonSchemaDocument
 	data       map[string]interface{}
 	spec       *swagger.Spec
-	analyzer   *specAnalyzer
 }
 
 // New creates a new shema document
@@ -36,41 +35,28 @@ func New(data json.RawMessage, version string) (*Document, error) {
 	var v map[string]interface{}
 	json.Unmarshal(data, &v)
 
-	return &Document{
-		version:    version,
+	d := &Document{
+		specAnalyzer: specAnalyzer{
+			spec:        spec,
+			consumes:    make(map[string]struct{}),
+			produces:    make(map[string]struct{}),
+			authSchemes: make(map[string]struct{}),
+			operations:  make(map[string]string),
+		},
 		specSchema: specSchema,
 		data:       v,
 		spec:       spec,
-		analyzer:   newAnalyzer(spec),
-	}, nil
+	}
+	d.initialize()
+	return d, nil
 }
 
 // Version returns the version of this spec
 func (d *Document) Version() string {
-	return d.version
+	return d.spec.Swagger
 }
 
 // Validate validates this spec document
 func (d *Document) Validate() *jsonschema.ValidationResult {
 	return d.specSchema.Validate(d.data)
-}
-
-// ParametersFor gets the parameters for the specified operation, collecting all the shared ones along the way
-func (d *Document) ParametersFor(operation *swagger.Operation) map[string]swagger.Parameter {
-	return d.analyzer.ParametersFor(operation)
-}
-
-// ProducesFor gets the mediatypes for the operation
-func (d *Document) ProducesFor(operation *swagger.Operation) []string {
-	return d.analyzer.ProducesFor(operation)
-}
-
-// ConsumesFor gets the mediatypes for the operation
-func (d *Document) ConsumesFor(operation *swagger.Operation) []string {
-	return d.analyzer.ConsumesFor(operation)
-}
-
-// AllPaths returns all the paths in the swagger spec
-func (d *Document) AllPaths() map[string]swagger.PathItem {
-	return d.spec.Paths.Paths
 }

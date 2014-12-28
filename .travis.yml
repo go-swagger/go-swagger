@@ -19,7 +19,7 @@ before_install:
 
   # get the dependencies etc
   - go get github.com/tools/godep
-  - go get github.com/jteeuwen/go-bindata
+  - go get github.com/jteeuwen/go-bindata/go-bindata
   - godep restore
 
 script: 

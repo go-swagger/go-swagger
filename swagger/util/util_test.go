@@ -43,3 +43,12 @@ func TestToGoName(t *testing.T) {
 		assert.Equal(t, sample.out, ToGoName(sample.str))
 	}
 }
+
+func TestContainsStringsCI(t *testing.T) {
+	list := []string{"hello", "world", "and", "such"}
+
+	assert.True(t, ContainsStringsCI(list, "hELLo"))
+	assert.True(t, ContainsStringsCI(list, "world"))
+	assert.True(t, ContainsStringsCI(list, "AND"))
+	assert.False(t, ContainsStringsCI(list, "nuts"))
+}

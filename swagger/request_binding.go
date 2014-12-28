@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/casualjim/go-swagger"
+	"github.com/casualjim/go-swagger/swagger/util"
 )
 
 var requestBinderType = reflect.TypeOf(new(RequestBinder)).Elem()
@@ -172,7 +173,7 @@ func setFieldValue(target reflect.Value, data string, defaultValue interface{}) 
 			target.SetBool(defVal.Bool())
 			return nil
 		}
-		target.SetBool(contains(evaluatesAsTrue, data))
+		target.SetBool(util.ContainsStringsCI(evaluatesAsTrue, data))
 
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		if data == "" {
@@ -311,12 +312,3 @@ func split(data, format string) []string {
 }
 
 var evaluatesAsTrue = []string{"true", "1", "yes", "ok", "y", "on", "selected", "checked", "t", "enabled"}
-
-func contains(s []string, e string) bool {
-	for _, a := range s {
-		if strings.EqualFold(a, e) {
-			return true
-		}
-	}
-	return false
-}

@@ -5,13 +5,13 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/casualjim/go-swagger"
+	"github.com/casualjim/go-swagger/swagger/spec"
 )
 
 // NewAPI creates the default untyped API
-func NewAPI(spec *swagger.Spec) *API {
+func NewAPI(spec *spec.Document) *API {
 	return &API{
-		analyzer: newAnalyzer(spec),
+		spec: spec,
 		consumers: map[string]Consumer{
 			"application/json": JSONConsumer(),
 		},
@@ -25,7 +25,7 @@ func NewAPI(spec *swagger.Spec) *API {
 
 // API represents an untyped mux for a swagger spec
 type API struct {
-	analyzer     *specAnalyzer
+	spec         *spec.Document
 	consumers    map[string]Consumer
 	producers    map[string]Producer
 	authHandlers map[string]AuthHandler
@@ -82,7 +82,7 @@ func (d *API) ProducersFor(mediaTypes []string) map[string]Producer {
 
 // Validate validates this API for any missing items
 func (d *API) Validate() error {
-	return d.validateWith(d.analyzer)
+	return d.validate()
 }
 
 // Handler takes the untyped API and a router with those it will validate the registrations in the API.
@@ -102,16 +102,16 @@ func (d *API) Handler(router Router) (http.Handler, error) {
 	}
 
 	initializer := &routerInitializer{
-		API:      d,
-		Router:   router,
-		Analyzer: d.analyzer,
+		API:    d,
+		Router: router,
+		Spec:   d.spec,
 	}
 
 	return initializer.Initialize()
 }
 
 // validateWith validates the registrations in this API against the provided spec analyzer
-func (d *API) validateWith(analyzer *specAnalyzer) error {
+func (d *API) validate() error {
 	var consumes []string
 	for k := range d.consumers {
 		consumes = append(consumes, k)
@@ -121,7 +121,7 @@ func (d *API) validateWith(analyzer *specAnalyzer) error {
 		produces = append(produces, k)
 	}
 	// TODO: implement auth handlers later
-	var authHandlers []string
+	// var authHandlers []string
 	// for k := range d.authHandlers {
 	// 	authHandlers = append(authHandlers, k)
 	// }
@@ -131,7 +131,56 @@ func (d *API) validateWith(analyzer *specAnalyzer) error {
 		operations = append(operations, k)
 	}
 
-	return analyzer.ValidateRegistrations(consumes, produces, authHandlers, operations)
+	if err := d.verify("consumes", consumes, d.spec.RequiredConsumes()); err != nil {
+		return err
+	}
+	if err := d.verify("produces", produces, d.spec.RequiredProduces()); err != nil {
+		return err
+	}
+	// TODO: hook auth in later on
+	// if err := d.verify("auth scheme", schemes, s.structMapKeys(s.authSchemes)); err != nil {
+	// 	return err
+	// }
+	if err := d.verify("operation", operations, d.spec.OperationIDs()); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (d *API) verify(name string, registrations []string, expectations []string) error {
+	expected := map[string]struct{}{}
+	seen := map[string]struct{}{}
+
+	for _, v := range expectations {
+		expected[v] = struct{}{}
+	}
+
+	var unspecified []string
+	for _, v := range registrations {
+		seen[v] = struct{}{}
+		if _, ok := expected[v]; !ok {
+			unspecified = append(unspecified, v)
+		}
+	}
+
+	for k := range seen {
+		delete(expected, k)
+	}
+
+	var unregistered []string
+	for k := range expected {
+		unregistered = append(unregistered, k)
+	}
+
+	if len(unregistered) > 0 || len(unspecified) > 0 {
+		return &APIVerificationFailed{
+			Section:              name,
+			MissingSpecification: unspecified,
+			MissingRegistration:  unregistered,
+		}
+	}
+
+	return nil
 }
 
 // HandlerFunc represents a swagger enabled handler func

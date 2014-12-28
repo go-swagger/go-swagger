@@ -15,19 +15,6 @@ type specAnalyzer struct {
 	operations  map[string]string
 }
 
-// newAnalyzer creates a new spec analyzer instance
-func newAnalyzer(spec *swagger.Spec) *specAnalyzer {
-	a := &specAnalyzer{
-		spec:        spec,
-		consumes:    make(map[string]struct{}),
-		produces:    make(map[string]struct{}),
-		authSchemes: make(map[string]struct{}),
-		operations:  make(map[string]string),
-	}
-	a.initialize()
-	return a
-}
-
 func (s *specAnalyzer) initialize() {
 	for _, c := range s.spec.Consumes {
 		s.consumes[c] = struct{}{}
@@ -129,4 +116,29 @@ func (s *specAnalyzer) structMapKeys(mp map[string]struct{}) []string {
 		result = append(result, k)
 	}
 	return result
+}
+
+func (s *specAnalyzer) stringMapKeys(mp map[string]string) []string {
+	var result []string
+	for k := range mp {
+		result = append(result, k)
+	}
+	return result
+}
+
+// AllPaths returns all the paths in the swagger spec
+func (s *specAnalyzer) AllPaths() map[string]swagger.PathItem {
+	return s.spec.Paths.Paths
+}
+
+func (s *specAnalyzer) OperationIDs() []string {
+	return s.stringMapKeys(s.operations)
+}
+
+func (s *specAnalyzer) RequiredConsumes() []string {
+	return s.structMapKeys(s.consumes)
+}
+
+func (s *specAnalyzer) RequiredProduces() []string {
+	return s.structMapKeys(s.produces)
 }

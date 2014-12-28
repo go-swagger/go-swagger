@@ -8,6 +8,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func newAnalyzer(spec *swagger.Spec) *specAnalyzer {
+	a := &specAnalyzer{
+		spec:        spec,
+		consumes:    make(map[string]struct{}),
+		produces:    make(map[string]struct{}),
+		authSchemes: make(map[string]struct{}),
+		operations:  make(map[string]string),
+	}
+	a.initialize()
+	return a
+}
+
 func TestAnalyzer(t *testing.T) {
 	formatParam := swagger.QueryParam()
 	formatParam.Name = "format"
@@ -62,5 +74,13 @@ func TestAnalyzer(t *testing.T) {
 
 	parameters := analyzer.ParametersFor(spec.Paths.Paths["/"].Get)
 	assert.Len(t, parameters, 3)
+
+	operations := analyzer.OperationIDs()
+	assert.Len(t, operations, 1)
+
+	producers := analyzer.RequiredProduces()
+	assert.Len(t, producers, 2)
+	consumers := analyzer.RequiredConsumes()
+	assert.Len(t, consumers, 2)
 
 }

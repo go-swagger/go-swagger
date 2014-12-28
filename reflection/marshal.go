@@ -1,7 +1,6 @@
 package reflection
 
 import (
-	"fmt"
 	"log"
 	"reflect"
 	"strings"
@@ -108,7 +107,7 @@ func marshalMap(data interface{}, skipInterface bool) map[string]interface{} {
 	}
 
 	if tpe.Kind() != reflect.Map && tpe.Kind() != reflect.Struct {
-		fmt.Printf("Wanted a map or struct but got a %s\n", tpe.Kind())
+		// fmt.Printf("Wanted a map or struct but got a %s\n", tpe.Kind())
 		//log.Panicf("Wanted a map or struct but got a %s\n", tpe.Kind())
 		return nil
 	}

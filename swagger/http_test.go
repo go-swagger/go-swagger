@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/reflection"
+	"github.com/casualjim/go-swagger/swagger/spec"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -48,22 +48,22 @@ func TestInitializeRouter(t *testing.T) {
 	Convey("api.Handler should", t, func() {
 
 		Convey("for invalid input", func() {
-
-			spec := &swagger.Spec{
-				Consumes: []string{"application/json"},
-				Produces: []string{"application/json"},
-				Paths: swagger.Paths{
-					Paths: map[string]swagger.PathItem{
-						"/": swagger.PathItem{
-							Get: &swagger.Operation{
-								Consumes: []string{"application/x-yaml"},
-								Produces: []string{"application/x-yaml"},
-								ID:       "someOperation",
-							},
-						},
-					},
-				},
+			specStr := `{
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "paths": {
+		"/": {
+			"get": {
+				"operationId": "someOperation",
+				"consumes": ["application/x-yaml"],
+				"produces": ["application/x-yaml"]
 			}
+		}
+  }
+}`
+			spec, err := spec.New([]byte(specStr), "")
+			So(err, ShouldBeNil)
+			So(spec, ShouldNotBeNil)
 
 			api := NewAPI(spec)
 
@@ -76,25 +76,26 @@ func TestInitializeRouter(t *testing.T) {
 		})
 
 		Convey("for valid input", func() {
-			spec := &swagger.Spec{
-				Consumes: []string{"application/json"},
-				Produces: []string{"application/json"},
-				Paths: swagger.Paths{
-					Paths: map[string]swagger.PathItem{
-						"/": swagger.PathItem{
-							Get:     &swagger.Operation{ID: "doGet"},
-							Post:    &swagger.Operation{ID: "doNew"},
-							Options: &swagger.Operation{ID: "doOptions"},
-							Head:    &swagger.Operation{ID: "doHead"},
-						},
-						"/{id}": swagger.PathItem{
-							Put:    &swagger.Operation{ID: "doReplace"},
-							Patch:  &swagger.Operation{ID: "doUpdate"},
-							Delete: &swagger.Operation{ID: "doDelete"},
-						},
-					},
+			specStr := `{
+		  "consumes": ["application/json"],
+		  "produces": ["application/json"],
+		  "paths": {
+				"/": {
+					"get": {"operationId": "doGet"},
+					"post": {"operationId": "doNew"},
+					"options": {"operationId": "doOptions"},
+					"head": {"operationId": "doHead"}
 				},
+				"/{id}": {
+					"put": {"operationId": "doReplace"},
+					"patch": {"operationId": "doUpdate"},
+					"delete": {"operationId": "doDelete"}
+				}
 			}
+		}`
+			spec, err := spec.New([]byte(specStr), "")
+			So(err, ShouldBeNil)
+			So(spec, ShouldNotBeNil)
 
 			api := NewAPI(spec)
 			api.RegisterOperation("doGet", new(stubOperationHandler))

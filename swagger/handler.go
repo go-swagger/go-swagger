@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/casualjim/go-swagger"
+	"github.com/casualjim/go-swagger/swagger/spec"
 )
 
 type handler struct {
@@ -13,17 +14,17 @@ type handler struct {
 	Producers  map[string]Producer
 	Operation  *swagger.Operation
 	Handler    OperationHandler
-	Analyzer   *specAnalyzer
+	Spec       *spec.Document
 	ParamNames map[string]string
 	Binder     *operationBinder
 }
 
-func createHandler(api *API, operation *swagger.Operation, h OperationHandler, analyzer *specAnalyzer) *handler {
-	consumes := analyzer.ConsumesFor(operation)
+func createHandler(api *API, operation *swagger.Operation, h OperationHandler, spec *spec.Document) *handler {
+	consumes := spec.ConsumesFor(operation)
 	consumers := api.ConsumersFor(consumes)
-	produces := analyzer.ProducesFor(operation)
+	produces := spec.ProducesFor(operation)
 	producers := api.ProducersFor(produces)
-	parameters := analyzer.ParametersFor(operation)
+	parameters := spec.ParametersFor(operation)
 
 	return &handler{
 		Consumes:  consumes,
@@ -32,7 +33,7 @@ func createHandler(api *API, operation *swagger.Operation, h OperationHandler, a
 		Producers: producers,
 		Operation: operation,
 		Handler:   h,
-		Analyzer:  analyzer,
+		Spec:      spec,
 		Binder:    &operationBinder{parameters, consumers},
 	}
 }

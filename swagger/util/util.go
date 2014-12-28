@@ -83,3 +83,13 @@ func ToGoName(name string) string {
 	}
 	return strings.Join(out, "")
 }
+
+// ContainsStringsCI searches a slice of strings for a case-insensitive match
+func ContainsStringsCI(coll []string, item string) bool {
+	for _, a := range coll {
+		if strings.EqualFold(a, item) {
+			return true
+		}
+	}
+	return false
+}
