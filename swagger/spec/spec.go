@@ -47,30 +47,30 @@ func New(data json.RawMessage, version string) (*Document, error) {
 
 // Version returns the version of this spec
 func (d *Document) Version() string {
-	return s.version
+	return d.version
 }
 
 // Validate validates this spec document
 func (d *Document) Validate() *jsonschema.ValidationResult {
-	return s.specSchema.Validate(s.data)
+	return d.specSchema.Validate(d.data)
 }
 
 // ParametersFor gets the parameters for the specified operation, collecting all the shared ones along the way
 func (d *Document) ParametersFor(operation *swagger.Operation) map[string]swagger.Parameter {
-	return s.analyzer.ParametersFor(operation)
+	return d.analyzer.ParametersFor(operation)
 }
 
 // ProducesFor gets the mediatypes for the operation
 func (d *Document) ProducesFor(operation *swagger.Operation) []string {
-	return s.analyzer.ProducesFor(operation)
+	return d.analyzer.ProducesFor(operation)
 }
 
 // ConsumesFor gets the mediatypes for the operation
 func (d *Document) ConsumesFor(operation *swagger.Operation) []string {
-	return s.analyzer.ConsumesFor(operation)
+	return d.analyzer.ConsumesFor(operation)
 }
 
 // AllPaths returns all the paths in the swagger spec
 func (d *Document) AllPaths() map[string]swagger.PathItem {
-	return s.spec.Paths.Paths
+	return d.spec.Paths.Paths
 }

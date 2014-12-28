@@ -63,5 +63,4 @@ func TestAnalyzer(t *testing.T) {
 	parameters := analyzer.ParametersFor(spec.Paths.Paths["/"].Get)
 	assert.Len(t, parameters, 3)
 
-	assert.Equal(t, spec.Paths.Paths, analyzer.AllPaths())
 }
