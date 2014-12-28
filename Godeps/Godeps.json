@@ -15,6 +15,10 @@
 			"Rev": "f1ac7f4f24f50328e6bc838ca4437d1612a0243c"
 		},
 		{
+			"ImportPath": "github.com/naoina/denco",
+			"Rev": "06a71203a220e9e999097d9dbe31daa60f5eb0ee"
+		},
+		{
 			"ImportPath": "github.com/op/go-logging",
 			"Rev": "3aac294f0523fecd878d6faa003ba48b52769ae5"
 		},
@@ -54,10 +58,6 @@
 		{
 			"ImportPath": "github.com/xeipuuv/gojsonreference",
 			"Rev": "47e61ed14ee33a23dadf5baffffc7d1b35d0b0ec"
-		},
-		{
-			"ImportPath": "github.com/xeipuuv/gojsonschema",
-			"Rev": "4949f2aa206eaf84313923d5def08a070711f5cf"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",

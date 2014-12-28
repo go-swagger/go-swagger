@@ -40,6 +40,8 @@ func createHandler(api *API, operation *swagger.Operation, h OperationHandler, a
 func (h *handler) Handle(rw http.ResponseWriter, req *http.Request, routeParams RouteParams) {
 	// authenticate
 
+	// perform non-body validations
+
 	// create new instance
 	parameters := h.Handler.ParameterModel()
 	if err := h.Binder.Bind(req, routeParams, parameters); err != nil {
@@ -48,7 +50,7 @@ func (h *handler) Handle(rw http.ResponseWriter, req *http.Request, routeParams 
 		return
 	}
 
-	// validate
+	// validate body
 
 	// execute
 

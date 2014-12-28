@@ -45,7 +45,9 @@ type defaultRouter struct {
 }
 
 func (d *defaultRouter) Build() (http.Handler, error) {
-	return denco.NewMux().Build(d.handlers)
+	mux := denco.NewMux()
+
+	return mux.Build(d.handlers)
 }
 
 var pathConverter = regexp.MustCompile(`{(\w+)}`)

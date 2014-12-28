@@ -3,15 +3,14 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"strings"
 
-	"github.com/xeipuuv/gojsonschema"
+	"github.com/casualjim/go-swagger/swagger/load"
 )
 
 // ValidateSpec is a command that validates a swagger document
 // against the swagger json schema
 type ValidateSpec struct {
-	SchemaURL string `long:"schema" description:"The schema url to use" default:"http://swagger.io/v2/schema.json"`
+	// SchemaURL string `long:"schema" description:"The schema url to use" default:"http://swagger.io/v2/schema.json"`
 }
 
 // Execute validates the spec
@@ -21,35 +20,20 @@ func (c *ValidateSpec) Execute(args []string) error {
 	}
 
 	swaggerDoc := args[0]
-	schemaDocument, err := gojsonschema.NewJsonSchemaDocument(c.SchemaURL)
+	schemaDocument, err := load.JSONSpec(swaggerDoc)
 	if err != nil {
 		return err
 	}
 
-	var jsonDocument interface{}
-	if strings.HasPrefix(swaggerDoc, "http") {
-		// Loads the JSON to validate from a http location
-		jsonDocument, err = gojsonschema.GetHttpJson(swaggerDoc)
-	} else {
-		// Loads the JSON to validate from a local file
-		jsonDocument, err = gojsonschema.GetFileJson(swaggerDoc)
-	}
-	if err != nil {
-		return err
-	}
-
-	// Try to validate the Json against the schema
-	result := schemaDocument.Validate(jsonDocument)
-
-	// Deal with result
+	result := schemaDocument.Validate()
 	if result.Valid() {
-		fmt.Printf("The swagger spec at %q is valid against schema %q\n", swaggerDoc, c.SchemaURL)
+		fmt.Printf("The swagger spec at %q is valid against swagger specification %s\n", swaggerDoc, schemaDocument.Version())
 	} else {
-		fmt.Printf("The swagger spec at %q is valid against schema %q. see errors :\n", swaggerDoc, c.SchemaURL)
-		// Loop through errors
+		str := fmt.Fprintf("The swagger spec at %q is valid against swagger specification %s. see errors :\n", swaggerDoc, schemaDocument.Version())
 		for _, desc := range result.Errors() {
-			fmt.Printf("- %s\n", desc)
+			str += fmt.Fprintf("- %s\n", desc)
 		}
+		return errors.New(str)
 	}
 	return nil
 }

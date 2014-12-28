@@ -3,6 +3,7 @@ language: go
 
 go:
   - 1.4
+  - tip
 
 before_install:
   - go install -race std
@@ -12,7 +13,7 @@ before_install:
   - go install github.com/golang/lint/golint
 
   # code coverage
-  - go get golang.org/x/tools/cmd/cover
+  - go get golang.org/x/tools/cmd/...
   - go get github.com/modocache/gover
   - if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ]; then go get github.com/mattn/goveralls; fi
 
@@ -21,6 +22,7 @@ before_install:
   - godep restore
 
 script: 
+  - go generate ./...
   - golint ./...
   - godep go test -v -race ./...
   - godep go test -covermode=count -coverprofile=swagger.coverprofile .

@@ -1,0 +1,3 @@
+// Package assets contains the embedded assets like the json schema json doc and the swagger 2.0 schema doc
+//go:generate go-bindata -pkg=assets -prefix=../schemas -ignore=.*\.md ../schemas/...
+package assets
