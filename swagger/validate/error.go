@@ -2,11 +2,6 @@ package validate
 
 import "fmt"
 
-// Result represents a result of one or more validations that occurred
-type Result struct {
-	Errors []Error
-}
-
 // Error represents a general swagger error
 type Error struct {
 	code    int32

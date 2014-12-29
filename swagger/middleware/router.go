@@ -4,22 +4,23 @@ import (
 	"net/http"
 
 	"github.com/casualjim/go-swagger/swagger/errors"
+	"github.com/gorilla/context"
 )
 
-// NewRouter creates a new router middleware function
-func NewRouter(context *Context) func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
+func newRouter(ctx *Context) func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
 	return func(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		defer context.Clear(r)
 		// use context to lookup routes
-		if _, ok := context.RouteInfo(r); ok {
+		if _, ok := ctx.RouteInfo(r); ok {
 			next(rw, r)
 			return
 		}
 
 		// Not found, check if it exists in the other methods first
-		if others := context.AllowedMethods(r); len(others) > 0 {
-			context.Respond(rw, r, errors.MethodNotAllowed(r.Method, others))
+		if others := ctx.AllowedMethods(r); len(others) > 0 {
+			ctx.Respond(rw, r, errors.MethodNotAllowed(r.Method, others))
 			return
 		}
-		context.Respond(rw, r, errors.NotFound("path %s was not found", r.URL.Path))
+		ctx.Respond(rw, r, errors.NotFound("path %s was not found", r.URL.Path))
 	}
 }

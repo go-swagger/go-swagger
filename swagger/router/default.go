@@ -8,7 +8,6 @@ import (
 	swagger_api "github.com/casualjim/go-swagger/swagger"
 	"github.com/casualjim/go-swagger/swagger/spec"
 	"github.com/naoina/denco"
-	"github.com/wsxiaoys/terminal/color"
 )
 
 // Router represents a swagger aware router
@@ -115,7 +114,6 @@ func (d *defaultRouteBuilder) AddRoute(method, path string, operation *swagger.O
 			Producers:  d.api.ProducersFor(produces),
 			Parameters: d.spec.ParamsFor(method, path),
 		})
-		color.Printf("registered route @{c}%s@{|}\t@{y}%q@{|}\t@{m}%s@{|}\n", mn, path, operation.ID)
 		d.records[mn] = append(d.records[mn], record)
 	}
 }

@@ -6,16 +6,21 @@ import (
 )
 
 const (
-	charsetKey  = "charset"
-	defaultMime = "application/octet-stream"
+	charsetKey = "charset"
+	// DefaultMime the default fallback mime type
+	DefaultMime = "application/octet-stream"
+	// JSONMime the json mime type
+	JSONMime = "application/json"
+	// YAMLMime the yaml mime type
+	YAMLMime = "application/x-yaml"
 )
 
 // ContentType parses a content type header
-func ContentType(headers http.Header) (string, string, error) {
+func ContentType(headers http.Header) (string, string, *ParseError) {
 	ct := headers.Get(HeaderContentType)
 	orig := ct
 	if ct == "" {
-		ct = defaultMime
+		ct = DefaultMime
 	}
 
 	mt, opts, err := mime.ParseMediaType(ct)

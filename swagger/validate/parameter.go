@@ -1,9 +1,11 @@
 package validate
 
-// // Validator rerpresents types capabale of validating
-// type Validator interface {
-// 	Validate(data interface{}) []Error
-// }
+import (
+	"net/http"
+
+	"github.com/casualjim/go-swagger"
+	"github.com/casualjim/go-swagger/swagger/router"
+)
 
 // // Parameter creates a parameter validator
 // func Parameter(param *swagger.Parameter) (*jsonschema.JsonSchemaDocument, error) {
@@ -35,3 +37,15 @@ package validate
 
 // 	return loadSchema(b)
 // }
+
+type parameterContext struct {
+	request *http.Request
+	route   *router.MatchedRoute
+	model   map[string]interface{}
+	param   *swagger.Parameter
+}
+
+// Parameter validates a request parameter
+func Parameter(request *http.Request, route *router.MatchedRoute, model map[string]interface{}, param *swagger.Parameter) []*Error {
+	return nil
+}

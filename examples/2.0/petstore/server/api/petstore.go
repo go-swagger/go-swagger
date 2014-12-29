@@ -12,6 +12,49 @@ import (
 	"github.com/codegangsta/negroni"
 )
 
+// NewPetstore creates a new petstore api handler
+func NewPetstore() (http.Handler, error) {
+	spec, err := spec.New(testing.PetStoreJSONMessage, "")
+	if err != nil {
+		return nil, err
+	}
+	api := swagger.NewAPI(spec)
+
+	api.RegisterOperation("getAllPets", getAllPets)
+	api.RegisterOperation("createPet", createPet)
+	api.RegisterOperation("deletePet", deletePet)
+	api.RegisterOperation("getPetById", getPetByID)
+
+	context := middleware.NewContext(spec, api)
+	n := negroni.New()
+	// register authentication middleware
+	n.Use(negroni.HandlerFunc(context.RouterMiddleware()))
+	n.Use(negroni.HandlerFunc(context.ValidationMiddleware()))
+	return n, nil
+}
+
+var getAllPets = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
+	return pets, nil
+})
+var createPet = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
+	body := data.(map[string]interface{})["pet"]
+	var pet Pet
+	reflection.UnmarshalMap(body.(map[string]interface{}), &pet)
+	addPet(pet)
+	return pet, nil
+})
+
+var deletePet = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
+	id := data.(map[string]interface{})["id"].(int64)
+	removePet(id)
+	return nil, nil
+})
+
+var getPetByID = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
+	id := data.(map[string]interface{})["id"].(int64)
+	return petByID(id)
+})
+
 // Tag the tag model
 type Tag struct {
 	ID   int64
@@ -48,51 +91,4 @@ func removePet(id int64) {
 
 func petByID(id int64) (*Pet, error) {
 	return nil, nil
-}
-
-var getAllPets = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
-	return pets, nil
-})
-var createPet = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
-	body := data.(map[string]interface{})["pet"]
-	var pet Pet
-	reflection.UnmarshalMap(body.(map[string]interface{}), &pet)
-	addPet(pet)
-	return pet, nil
-})
-
-var deletePet = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
-	id := data.(map[string]interface{})["id"].(int64)
-	removePet(id)
-	return nil, nil
-})
-
-var getPetByID = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
-	id := data.(map[string]interface{})["id"].(int64)
-	return petByID(id)
-})
-
-// NewPetstore creates a new petstore api handler
-func NewPetstore() (http.Handler, error) {
-	spec, err := spec.New(testing.PetStoreJSONMessage, "")
-	if err != nil {
-		return nil, err
-	}
-	api := swagger.NewAPI(spec)
-
-	api.RegisterOperation("getAllPets", getAllPets)
-	api.RegisterOperation("createPet", createPet)
-	api.RegisterOperation("deletePet", deletePet)
-	api.RegisterOperation("getPetById", getPetByID)
-
-	api.Models["Pet"] = func() interface{} { return new(Pet) }
-	api.Models["Tag"] = func() interface{} { return new(Tag) }
-
-	context := middleware.NewContext(spec, api)
-	n := negroni.New()
-	// register authentication middleware
-	n.Use(negroni.HandlerFunc(middleware.NewRouter(context)))
-	n.Use(negroni.HandlerFunc(middleware.NewValidation(context)))
-	// register validation middleware
-	return n, nil
 }

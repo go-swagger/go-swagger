@@ -157,4 +157,11 @@ func TestUntypedAppValidation(t *testing.T) {
 	producers := api1.ProducersFor(produces)
 	assert.Len(t, producers, 2)
 
+	opHandler := OperationHandlerFunc(func(data interface{}) (interface{}, error) {
+		return data, nil
+	})
+	d, err := opHandler.Handle(1)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, d)
+
 }

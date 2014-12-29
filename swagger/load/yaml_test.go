@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/casualjim/go-swagger/swagger/util"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -27,7 +28,7 @@ func TestYAMLToJSON(t *testing.T) {
 	dd, err := bytesToYAMLDoc([]byte("description: 'object created'\n"))
 	assert.NoError(t, err)
 
-	d, err := yamlToJSON(dd)
+	d, err := util.YAMLToJSON(dd)
 	assert.NoError(t, err)
 	assert.Equal(t, json.RawMessage(`{"description":"object created"}`), d)
 }
