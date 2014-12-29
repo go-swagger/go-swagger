@@ -2,7 +2,6 @@ package swagger
 
 import (
 	"io"
-	"net/http"
 	"sort"
 	"testing"
 
@@ -10,12 +9,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type stubAuthHandler struct {
-}
+// type stubAuthHandler struct {
+// }
 
-func (s *stubAuthHandler) Authenticate(_ *http.Request) interface{} {
-	return nil
-}
+// func (s *stubAuthHandler) Authenticate(_ *http.Request) interface{} {
+// 	return nil
+// }
 
 type stubConsumer struct {
 }
@@ -45,16 +44,16 @@ func (s *stubOperationHandler) Handle(params interface{}) (interface{}, error) {
 func TestUntypedAPIRegistrations(t *testing.T) {
 	api := NewAPI(new(spec.Document))
 
-	api.RegisterAuth("basic", new(stubAuthHandler))
+	// api.RegisterAuth("basic", new(stubAuthHandler))
 	api.RegisterConsumer("application/yada", new(stubConsumer))
 	api.RegisterProducer("application/yada-2", new(stubProducer))
 	api.RegisterOperation("someId", new(stubOperationHandler))
 
-	assert.NotEmpty(t, api.authHandlers)
+	// assert.NotEmpty(t, api.authHandlers)
 
-	_, ok := api.authHandlers["BASIC"]
-	assert.True(t, ok)
-	_, ok = api.consumers["application/yada"]
+	// _, ok := api.authHandlers["BASIC"]
+	// assert.True(t, ok)
+	_, ok := api.consumers["application/yada"]
 	assert.True(t, ok)
 	_, ok = api.producers["application/yada-2"]
 	assert.True(t, ok)
@@ -158,6 +157,4 @@ func TestUntypedAppValidation(t *testing.T) {
 	producers := api1.ProducersFor(produces)
 	assert.Len(t, producers, 2)
 
-	parameters := spec.ParametersFor(spec.AllPaths()["/"].Get)
-	assert.Len(t, parameters, 3)
 }

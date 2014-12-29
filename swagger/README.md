@@ -109,9 +109,11 @@ type Validatable interface {
 }
 
 type Error struct {
-  Code int16
-  MessageTemplate *template.Template
-  FieldName string
+  Code     int32
+  Path     string
+  In       string
+  Value    interface{}
+  Message  string
 }
 ```
 

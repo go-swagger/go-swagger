@@ -4,7 +4,6 @@ import (
 	"encoding"
 	"errors"
 	"fmt"
-	"mime"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -13,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/casualjim/go-swagger"
+	"github.com/casualjim/go-swagger/swagger/httputils"
 	"github.com/casualjim/go-swagger/swagger/util"
 )
 
@@ -57,11 +57,7 @@ func (o *operationBinder) Bind(request *http.Request, routeParams RouteParams, d
 const defaultMaxMemory = 32 << 20
 
 func contentType(req *http.Request) (string, error) {
-	ct := req.Header.Get("Content-Type")
-	if ct == "" {
-		ct = "application/octet-stream"
-	}
-	mt, _, err := mime.ParseMediaType(ct)
+	mt, _, err := httputils.ContentType(req.Header)
 	if err != nil {
 		return "", err
 	}

@@ -2,7 +2,6 @@ package swagger
 
 import (
 	"io"
-	"net/http"
 	"strings"
 
 	"github.com/casualjim/go-swagger/swagger/spec"
@@ -18,24 +17,24 @@ func NewAPI(spec *spec.Document) *API {
 		producers: map[string]Producer{
 			"application/json": JSONProducer(),
 		},
-		authHandlers: make(map[string]AuthHandler),
-		operations:   make(map[string]OperationHandler),
+		// authHandlers: make(map[string]AuthHandler),
+		operations: make(map[string]OperationHandler),
 	}
 }
 
 // API represents an untyped mux for a swagger spec
 type API struct {
-	spec         *spec.Document
-	consumers    map[string]Consumer
-	producers    map[string]Producer
-	authHandlers map[string]AuthHandler
-	operations   map[string]OperationHandler
+	spec      *spec.Document
+	consumers map[string]Consumer
+	producers map[string]Producer
+	// authHandlers map[string]AuthHandler
+	operations map[string]OperationHandler
 }
 
-// RegisterAuth registers an auth handler in this api
-func (d *API) RegisterAuth(scheme string, handler AuthHandler) {
-	d.authHandlers[strings.ToUpper(scheme)] = handler
-}
+// // RegisterAuth registers an auth handler in this api
+// func (d *API) RegisterAuth(scheme string, handler AuthHandler) {
+// 	d.authHandlers[strings.ToUpper(scheme)] = handler
+// }
 
 // RegisterConsumer registers a consumer for a media type.
 func (d *API) RegisterConsumer(mediaType string, handler Consumer) {
@@ -85,30 +84,30 @@ func (d *API) Validate() error {
 	return d.validate()
 }
 
-// Handler takes the untyped API and a router with those it will validate the registrations in the API.
-// When everything is found to be valid it will build the http.Handler with the provided router
-//
-// If there are missing consumers for registered media types it will return an error
-// If there are missing producers for registered media types it will return an error
-// If there are missing auth handlers for registered security schemes it will return an error
-// If there are missing operation handlers for operationIds it will return an error
-func (d *API) Handler(router Router) (http.Handler, error) {
-	if router == nil {
-		router = DefaultRouter()
-	}
+// // Handler takes the untyped API and a router with those it will validate the registrations in the API.
+// // When everything is found to be valid it will build the http.Handler with the provided router
+// //
+// // If there are missing consumers for registered media types it will return an error
+// // If there are missing producers for registered media types it will return an error
+// // If there are missing auth handlers for registered security schemes it will return an error
+// // If there are missing operation handlers for operationIds it will return an error
+// func (d *API) Handler(router Router) (http.Handler, error) {
+// 	if router == nil {
+// 		router = DefaultRouter()
+// 	}
 
-	if err := d.Validate(); err != nil {
-		return nil, err
-	}
+// 	if err := d.Validate(); err != nil {
+// 		return nil, err
+// 	}
 
-	initializer := &routerInitializer{
-		API:    d,
-		Router: router,
-		Spec:   d.spec,
-	}
+// 	initializer := &routerInitializer{
+// 		API:    d,
+// 		Router: router,
+// 		Spec:   d.spec,
+// 	}
 
-	return initializer.Initialize()
-}
+// 	return initializer.Initialize()
+// }
 
 // validateWith validates the registrations in this API against the provided spec analyzer
 func (d *API) validate() error {
@@ -184,11 +183,10 @@ func (d *API) verify(name string, registrations []string, expectations []string)
 }
 
 // HandlerFunc represents a swagger enabled handler func
-type HandlerFunc func(http.ResponseWriter, *http.Request, RouteParams)
+// type HandlerFunc func(http.ResponseWriter, *http.Request, RouteParams)
 
 // OperationHandler a handler for a swagger operation
 type OperationHandler interface {
-	ParameterModel() interface{}
 	Handle(interface{}) (interface{}, error)
 }
 
@@ -239,8 +237,8 @@ type Producer interface {
 	Produce(io.Writer, interface{}) error
 }
 
-// AuthHandler handles authentication for an API
-type AuthHandler interface {
-	// Authenticate peforms the authentication
-	Authenticate(*http.Request) interface{}
-}
+// // AuthHandler handles authentication for an API
+// type AuthHandler interface {
+// 	// Authenticate peforms the authentication
+// 	Authenticate(*http.Request) interface{}
+// }

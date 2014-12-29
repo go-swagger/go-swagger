@@ -26,3 +26,6 @@ application.linux
 _workspace
 playground
 *.coverprofile
+
+# Sublime files
+*.sublime-*

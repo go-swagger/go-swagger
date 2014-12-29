@@ -1,6 +1,8 @@
 package spec
 
 import (
+	"strings"
+
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/swagger/util"
 )
@@ -12,7 +14,7 @@ type specAnalyzer struct {
 	consumes    map[string]struct{}
 	produces    map[string]struct{}
 	authSchemes map[string]struct{}
-	operations  map[string]string
+	operations  map[string]map[string]*swagger.Operation
 }
 
 func (s *specAnalyzer) initialize() {
@@ -22,22 +24,22 @@ func (s *specAnalyzer) initialize() {
 	for _, c := range s.spec.Produces {
 		s.produces[c] = struct{}{}
 	}
-	for path, pathItem := range s.spec.Paths.Paths {
+	for path, pathItem := range s.AllPaths() {
 		s.analyzeOperations(path, &pathItem)
 	}
 }
 
 func (s *specAnalyzer) analyzeOperations(path string, op *swagger.PathItem) {
-	s.analyzeOperation(path, op.Get)
-	s.analyzeOperation(path, op.Put)
-	s.analyzeOperation(path, op.Post)
-	s.analyzeOperation(path, op.Patch)
-	s.analyzeOperation(path, op.Delete)
-	s.analyzeOperation(path, op.Head)
-	s.analyzeOperation(path, op.Options)
+	s.analyzeOperation("GET", path, op.Get)
+	s.analyzeOperation("PUT", path, op.Put)
+	s.analyzeOperation("POST", path, op.Post)
+	s.analyzeOperation("PATCH", path, op.Patch)
+	s.analyzeOperation("DELETE", path, op.Delete)
+	s.analyzeOperation("HEAD", path, op.Head)
+	s.analyzeOperation("OPTIONS", path, op.Options)
 }
 
-func (s *specAnalyzer) analyzeOperation(path string, op *swagger.Operation) {
+func (s *specAnalyzer) analyzeOperation(method, path string, op *swagger.Operation) {
 	if op != nil {
 		for _, c := range op.Consumes {
 			s.consumes[c] = struct{}{}
@@ -45,7 +47,10 @@ func (s *specAnalyzer) analyzeOperation(path string, op *swagger.Operation) {
 		for _, c := range op.Produces {
 			s.produces[c] = struct{}{}
 		}
-		s.operations[op.ID] = path
+		if _, ok := s.operations[method]; !ok {
+			s.operations[method] = make(map[string]*swagger.Operation)
+		}
+		s.operations[method][path] = op
 	}
 }
 
@@ -80,45 +85,37 @@ func fieldNameFromParam(param *swagger.Parameter) string {
 	return util.ToGoName(param.Name)
 }
 
-func (s *specAnalyzer) pathItemParams(operation, toMatch *swagger.Operation, parameters []swagger.Parameter, res map[string]swagger.Parameter) {
-	if operation != nil && operation.ID == operation.ID {
-		for _, param := range parameters {
-			res[fieldNameFromParam(&param)] = param
-		}
+func (s *specAnalyzer) paramsAsMap(parameters []swagger.Parameter, res map[string]swagger.Parameter) {
+	for _, param := range parameters {
+		res[fieldNameFromParam(&param)] = param
 	}
 }
 
-// ParametersFor gets the parameters for the specified operation, collecting all the shared ones along the way
-func (s *specAnalyzer) ParametersFor(operation *swagger.Operation) map[string]swagger.Parameter {
-	res := map[string]swagger.Parameter{}
-
+func (s *specAnalyzer) ParamsFor(method, path string) map[string]swagger.Parameter {
+	res := make(map[string]swagger.Parameter)
 	for _, param := range s.spec.Parameters {
 		res[fieldNameFromParam(&param)] = param
 	}
-	for _, pathItem := range s.spec.Paths.Paths {
-		s.pathItemParams(pathItem.Get, operation, pathItem.Parameters, res)
-		s.pathItemParams(pathItem.Head, operation, pathItem.Parameters, res)
-		s.pathItemParams(pathItem.Options, operation, pathItem.Parameters, res)
-		s.pathItemParams(pathItem.Post, operation, pathItem.Parameters, res)
-		s.pathItemParams(pathItem.Put, operation, pathItem.Parameters, res)
-		s.pathItemParams(pathItem.Patch, operation, pathItem.Parameters, res)
-		s.pathItemParams(pathItem.Delete, operation, pathItem.Parameters, res)
-	}
-	for _, param := range operation.Parameters {
-		res[fieldNameFromParam(&param)] = param
+	if pi, ok := s.spec.Paths.Paths[path]; ok {
+		s.paramsAsMap(pi.Parameters, res)
+		s.paramsAsMap(s.operations[strings.ToUpper(method)][path].Parameters, res)
 	}
 	return res
 }
 
-func (s *specAnalyzer) structMapKeys(mp map[string]struct{}) []string {
-	var result []string
-	for k := range mp {
-		result = append(result, k)
+func (s *specAnalyzer) OperationFor(method, path string) (*swagger.Operation, bool) {
+	if mp, ok := s.operations[strings.ToUpper(method)]; ok {
+		op, fn := mp[path]
+		return op, fn
 	}
-	return result
+	return nil, false
 }
 
-func (s *specAnalyzer) stringMapKeys(mp map[string]string) []string {
+func (s *specAnalyzer) Operations() map[string]map[string]*swagger.Operation {
+	return s.operations
+}
+
+func (s *specAnalyzer) structMapKeys(mp map[string]struct{}) []string {
 	var result []string
 	for k := range mp {
 		result = append(result, k)
@@ -132,7 +129,13 @@ func (s *specAnalyzer) AllPaths() map[string]swagger.PathItem {
 }
 
 func (s *specAnalyzer) OperationIDs() []string {
-	return s.stringMapKeys(s.operations)
+	var result []string
+	for _, v := range s.operations {
+		for _, vv := range v {
+			result = append(result, vv.ID)
+		}
+	}
+	return result
 }
 
 func (s *specAnalyzer) RequiredConsumes() []string {

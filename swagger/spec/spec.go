@@ -41,7 +41,7 @@ func New(data json.RawMessage, version string) (*Document, error) {
 			consumes:    make(map[string]struct{}),
 			produces:    make(map[string]struct{}),
 			authSchemes: make(map[string]struct{}),
-			operations:  make(map[string]string),
+			operations:  make(map[string]map[string]*swagger.Operation),
 		},
 		specSchema: specSchema,
 		data:       v,
@@ -49,6 +49,10 @@ func New(data json.RawMessage, version string) (*Document, error) {
 	}
 	d.initialize()
 	return d, nil
+}
+
+func (d *Document) BasePath() string {
+	return d.spec.BasePath
 }
 
 // Version returns the version of this spec

@@ -1,6 +1,8 @@
-package spec
+package testing
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 const PetStore20YAML = `swagger: '2.0'
 info:
@@ -223,6 +225,8 @@ const PetStore20 = `{
         "tags": [ "Pet Operations" ],
         "operationId": "createPet",
         "summary": "Creates a new pet",
+        "consumes": ["application/x-yaml"],
+        "produces": ["application/x-yaml"],
         "parameters": [
           {
             "name": "pet",
@@ -411,6 +415,10 @@ const PetStore20 = `{
       }
     }
   },
+  "consumes": [
+    "application/json",
+    "application/xml"
+  ],
   "produces": [
     "application/json",
     "application/xml",

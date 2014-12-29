@@ -14,7 +14,7 @@ func newAnalyzer(spec *swagger.Spec) *specAnalyzer {
 		consumes:    make(map[string]struct{}),
 		produces:    make(map[string]struct{}),
 		authSchemes: make(map[string]struct{}),
-		operations:  make(map[string]string),
+		operations:  make(map[string]map[string]*swagger.Operation),
 	}
 	a.initialize()
 	return a
@@ -60,7 +60,7 @@ func TestAnalyzer(t *testing.T) {
 	assert.Len(t, analyzer.consumes, 2)
 	assert.Len(t, analyzer.produces, 2)
 	assert.Len(t, analyzer.operations, 1)
-	assert.Equal(t, analyzer.operations["someOperation"], "/")
+	assert.Equal(t, analyzer.operations["GET"]["/"], spec.Paths.Paths["/"].Get)
 
 	expected := []string{"application/json", "application/x-yaml"}
 	sort.Sort(sort.StringSlice(expected))
@@ -72,7 +72,7 @@ func TestAnalyzer(t *testing.T) {
 	sort.Sort(sort.StringSlice(produces))
 	assert.Equal(t, expected, produces)
 
-	parameters := analyzer.ParametersFor(spec.Paths.Paths["/"].Get)
+	parameters := analyzer.ParamsFor("GET", "/")
 	assert.Len(t, parameters, 3)
 
 	operations := analyzer.OperationIDs()
@@ -83,4 +83,15 @@ func TestAnalyzer(t *testing.T) {
 	consumers := analyzer.RequiredConsumes()
 	assert.Len(t, consumers, 2)
 
+	ops := analyzer.Operations()
+	assert.Len(t, ops, 1)
+	assert.Len(t, ops["GET"], 1)
+
+	op, ok := analyzer.OperationFor("get", "/")
+	assert.True(t, ok)
+	assert.NotNil(t, op)
+
+	op, ok = analyzer.OperationFor("delete", "/")
+	assert.False(t, ok)
+	assert.Nil(t, op)
 }
