@@ -6,6 +6,10 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/gorilla/context",
+			"Rev": "50c25fb3b2b3b3cc724e9b6ac75fb44b3bccd0da"
+		},
+		{
 			"ImportPath": "github.com/jessevdk/go-flags",
 			"Comment": "v1-285-g1679536",
 			"Rev": "1679536dcc895411a9f5848d9a0250be7856448c"
@@ -17,10 +21,6 @@
 		{
 			"ImportPath": "github.com/naoina/denco",
 			"Rev": "06a71203a220e9e999097d9dbe31daa60f5eb0ee"
-		},
-		{
-			"ImportPath": "github.com/op/go-logging",
-			"Rev": "3aac294f0523fecd878d6faa003ba48b52769ae5"
 		},
 		{
 			"ImportPath": "github.com/smartystreets/goconvey/convey",
