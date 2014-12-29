@@ -30,7 +30,26 @@ func NewAPI(t *gotest.T) (*spec.Document, *swagger.API) {
 	api.RegisterOperation("deletePet", new(stubOperationHandler))
 	api.RegisterOperation("getPetById", new(stubOperationHandler))
 
+	api.Models["pet"] = func() interface{} { return new(Pet) }
+	api.Models["newPet"] = func() interface{} { return new(Pet) }
+	api.Models["tag"] = func() interface{} { return new(Tag) }
+
 	return spec, api
+}
+
+// Tag the tag model
+type Tag struct {
+	ID   int64
+	Name string
+}
+
+// Pet the pet model
+type Pet struct {
+	ID        int64
+	Name      string
+	PhotoURLs []string
+	Status    string
+	Tags      []Tag
 }
 
 type stubConsumer struct {

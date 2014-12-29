@@ -2,12 +2,13 @@ package middleware
 
 import (
 	"net/http"
-	"strings"
+
+	"github.com/casualjim/go-swagger/swagger/errors"
 )
 
 // NewRouter creates a new router middleware function
-func NewRouter(context *Context) func(http.ResponseWriter, *http.Request, func(http.ResponseWriter, *http.Request)) {
-	return func(rw http.ResponseWriter, r *http.Request, next func(http.ResponseWriter, *http.Request)) {
+func NewRouter(context *Context) func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
+	return func(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		// use context to lookup routes
 		if _, ok := context.RouteInfo(r); ok {
 			next(rw, r)
@@ -15,11 +16,10 @@ func NewRouter(context *Context) func(http.ResponseWriter, *http.Request, func(h
 		}
 
 		// Not found, check if it exists in the other methods first
-		if others := context.router.OtherMethods(r.Method, r.URL.Path); len(others) > 0 {
-			rw.Header().Add("Allow", strings.Join(others, ","))
-			rw.WriteHeader(http.StatusMethodNotAllowed)
+		if others := context.AllowedMethods(r); len(others) > 0 {
+			context.Respond(rw, r, errors.MethodNotAllowed(r.Method, others))
 			return
 		}
-		rw.WriteHeader(http.StatusNotFound)
+		context.Respond(rw, r, errors.NotFound("path %s was not found", r.URL.Path))
 	}
 }

@@ -2,8 +2,10 @@ package swagger
 
 import (
 	"io"
+	"net/http"
 	"strings"
 
+	"github.com/casualjim/go-swagger/swagger/errors"
 	"github.com/casualjim/go-swagger/swagger/spec"
 )
 
@@ -19,6 +21,8 @@ func NewAPI(spec *spec.Document) *API {
 		},
 		// authHandlers: make(map[string]AuthHandler),
 		operations: make(map[string]OperationHandler),
+		ServeError: errors.ServeError,
+		Models:     make(map[string]func() interface{}),
 	}
 }
 
@@ -29,6 +33,8 @@ type API struct {
 	producers map[string]Producer
 	// authHandlers map[string]AuthHandler
 	operations map[string]OperationHandler
+	ServeError func(http.ResponseWriter, *http.Request, error)
+	Models     map[string]func() interface{}
 }
 
 // // RegisterAuth registers an auth handler in this api
@@ -184,6 +190,14 @@ func (d *API) verify(name string, registrations []string, expectations []string)
 
 // HandlerFunc represents a swagger enabled handler func
 // type HandlerFunc func(http.ResponseWriter, *http.Request, RouteParams)
+
+// OperationHandlerFunc an adapter for a function to the OperationHandler interface
+type OperationHandlerFunc func(interface{}) (interface{}, error)
+
+// Handle implements the operation handler interface
+func (s OperationHandlerFunc) Handle(data interface{}) (interface{}, error) {
+	return s(data)
+}
 
 // OperationHandler a handler for a swagger operation
 type OperationHandler interface {

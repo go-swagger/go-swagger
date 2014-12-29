@@ -3,6 +3,8 @@ package middleware
 import (
 	"net/http"
 	"net/http/httptest"
+	"sort"
+	"strings"
 	"testing"
 
 	"github.com/casualjim/go-swagger/swagger/testing/petstore"
@@ -28,7 +30,9 @@ func TestRouterMiddleware(t *testing.T) {
 
 	mw(recorder, request, terminator)
 	assert.Equal(t, http.StatusMethodNotAllowed, recorder.Code)
-	assert.Equal(t, "GET,POST", recorder.Header().Get("Allow"))
+	methods := strings.Split(recorder.Header().Get("Allow"), ",")
+	sort.Sort(sort.StringSlice(methods))
+	assert.Equal(t, "GET,POST", strings.Join(methods, ","))
 
 	recorder = httptest.NewRecorder()
 	request, _ = http.NewRequest("GET", "http://localhost:8080/pets", nil)

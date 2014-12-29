@@ -29,6 +29,7 @@ const (
 	_ contextKey = iota
 	ctxContentType
 	ctxMatchedRoute
+	ctxAllowedMethods
 	ctxConsumer
 )
 
@@ -69,13 +70,18 @@ func (c *Context) RouteInfo(request *http.Request) (*router.MatchedRoute, bool) 
 	return nil, false
 }
 
-// func (c *Context) ConsumerFor(request *http.Request) (swagger.Consumer, bool) {
-//   if consumer, ok := o.Consumers[mt]; ok {
-//     newValue := reflect.New(target.Type())
-//     if err := consumer.Consume(request.Body, newValue.Interface()); err != nil {
-//       return err
-//     }
-//     target.Set(reflect.Indirect(newValue))
-//     return nil
-//   }
-// }
+// AllowedMethods gets the allowed methods for the path of this request
+func (c *Context) AllowedMethods(request *http.Request) []string {
+	return c.router.OtherMethods(request.Method, request.URL.Path)
+}
+
+// Respond renders the response after doing some content negotiation
+func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, data interface{}) {
+	if err, ok := data.(error); ok {
+		c.api.ServeError(rw, r, err)
+		return
+	}
+	// perform content negotiation
+	// pick a producer
+	// render content with producer
+}
