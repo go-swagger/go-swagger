@@ -28,6 +28,8 @@ package jsonpointer
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -137,6 +139,53 @@ func TestArray(t *testing.T) {
 			t.Errorf("Get(%v) = %v, expect %v", ins[i], result, outs[i])
 		}
 	}
+
+}
+
+func TestOtherThings(t *testing.T) {
+	_, err := New("abc")
+	assert.Error(t, err)
+
+	p, err := New("")
+	assert.NoError(t, err)
+	assert.Equal(t, "", p.String())
+
+	p, err = New("/obj/a")
+	assert.Equal(t, "/obj/a", p.String())
+
+	s := encodeReferenceToken("m~n")
+	assert.Equal(t, "m~0n", s)
+	s = encodeReferenceToken("m/n")
+	assert.Equal(t, "m~01n", s)
+
+	p, err = New("/foo/3")
+	assert.NoError(t, err)
+	_, _, err = p.Get(testDocumentJSON)
+	assert.Error(t, err)
+
+	p, err = New("/foo/a")
+	assert.NoError(t, err)
+	_, _, err = p.Get(testDocumentJSON)
+	assert.Error(t, err)
+
+	p, err = New("/notthere")
+	assert.NoError(t, err)
+	_, _, err = p.Get(testDocumentJSON)
+	assert.Error(t, err)
+
+	p, err = New("/invalid")
+	assert.NoError(t, err)
+	_, _, err = p.Get(1234)
+	assert.Error(t, err)
+
+	p, err = New("/foo/1")
+	assert.NoError(t, err)
+	expected := "hello"
+	_, err = p.Set(testDocumentJSON, expected)
+	assert.NoError(t, err)
+	v, _, err := p.Get(testDocumentJSON)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, v)
 
 }
 

@@ -137,7 +137,7 @@ func (p *Pointer) implementation(i *implStruct) {
 					m[decodedToken] = i.setInValue
 				}
 			} else {
-				i.outError = fmt.Errorf("Object has no key '%s'", token)
+				i.outError = fmt.Errorf("object has no key '%s'", token)
 				i.getOutKind = kind
 				i.getOutNode = nil
 				return
@@ -147,14 +147,14 @@ func (p *Pointer) implementation(i *implStruct) {
 			s := node.([]interface{})
 			tokenIndex, err := strconv.Atoi(token)
 			if err != nil {
-				i.outError = fmt.Errorf("Invalid array index '%s'", token)
+				i.outError = fmt.Errorf("invalid array index '%s'", token)
 				i.getOutKind = kind
 				i.getOutNode = nil
 				return
 			}
 			sLength := len(s)
 			if tokenIndex < 0 || tokenIndex >= sLength {
-				i.outError = fmt.Errorf("Out of bound array[0,%d] index '%d'", sLength, tokenIndex)
+				i.outError = fmt.Errorf("index out of bounds array[0,%d] index '%d'", sLength, tokenIndex)
 				i.getOutKind = kind
 				i.getOutNode = nil
 				return
@@ -166,7 +166,7 @@ func (p *Pointer) implementation(i *implStruct) {
 			}
 
 		default:
-			i.outError = fmt.Errorf("Invalid token reference '%s'", token)
+			i.outError = fmt.Errorf("invalid token reference '%s'", token)
 			i.getOutKind = kind
 			i.getOutNode = nil
 			return

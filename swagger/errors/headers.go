@@ -57,6 +57,6 @@ func InvalidResponseFormat(value string, allowed []string) *Validation {
 		In:      "header",
 		Value:   value,
 		Values:  values,
-		message: fmt.Sprintf(responseFormatFail, value, allowed),
+		message: fmt.Sprintf(responseFormatFail, allowed),
 	}
 }
