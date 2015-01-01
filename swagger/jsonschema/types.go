@@ -26,121 +26,159 @@
 package jsonschema
 
 const (
-	KEY_SCHEMA                = "$schema"
-	KEY_ID                    = "$id"
-	KEY_REF                   = "$ref"
-	KEY_TITLE                 = "title"
-	KEY_DESCRIPTION           = "description"
-	KEY_TYPE                  = "type"
-	KEY_ITEMS                 = "items"
-	KEY_ADDITIONAL_ITEMS      = "additionalItems"
-	KEY_PROPERTIES            = "properties"
-	KEY_PATTERN_PROPERTIES    = "patternProperties"
-	KEY_ADDITIONAL_PROPERTIES = "additionalProperties"
-	KEY_DEFINITIONS           = "definitions"
-	KEY_MULTIPLE_OF           = "multipleOf"
-	KEY_MINIMUM               = "minimum"
-	KEY_MAXIMUM               = "maximum"
-	KEY_EXCLUSIVE_MINIMUM     = "exclusiveMinimum"
-	KEY_EXCLUSIVE_MAXIMUM     = "exclusiveMaximum"
-	KEY_MIN_LENGTH            = "minLength"
-	KEY_MAX_LENGTH            = "maxLength"
-	KEY_PATTERN               = "pattern"
-	KEY_MIN_PROPERTIES        = "minProperties"
-	KEY_MAX_PROPERTIES        = "maxProperties"
-	KEY_DEPENDENCIES          = "dependencies"
-	KEY_REQUIRED              = "required"
-	KEY_MIN_ITEMS             = "minItems"
-	KEY_MAX_ITEMS             = "maxItems"
-	KEY_UNIQUE_ITEMS          = "uniqueItems"
-	KEY_ENUM                  = "enum"
-	KEY_ONE_OF                = "oneOf"
-	KEY_ANY_OF                = "anyOf"
-	KEY_ALL_OF                = "allOf"
-	KEY_NOT                   = "not"
-
-	STRING_STRING                     = "string"
-	STRING_BOOLEAN                    = "boolean"
-	STRING_ARRAY_OF_STRINGS           = "array of strings"
-	STRING_ARRAY_OF_SCHEMAS           = "array of schemas"
-	STRING_OBJECT                     = "object"
-	STRING_SCHEMA                     = "schema"
-	STRING_SCHEMA_OR_ARRAY_OF_STRINGS = "schema or array of strings"
-	STRING_PROPERTIES                 = "properties"
-	STRING_DEPENDENCY                 = "dependency"
-
-	CONTEXT_ROOT         = "(root)"
-	ROOT_SCHEMA_PROPERTY = "(root)"
+	// KeySchema the schema property name
+	KeySchema = "$schema"
+	// KeyID the id property name
+	KeyID = "$id"
+	// KeyRef the ref property name
+	KeyRef = "$ref"
+	// KeyTitle the title property name
+	KeyTitle = "title"
+	// KeyDescription the description property name
+	KeyDescription = "description"
+	// KeyType the type property name
+	KeyType = "type"
+	// KeyItems the items property name
+	KeyItems = "items"
+	// KeyAdditionalItems the additional items property name
+	KeyAdditionalItems = "additionalItems"
+	// KeyProperties the properties property name
+	KeyProperties = "properties"
+	// KeyPatternProperties the pattern properties property name
+	KeyPatternProperties = "patternProperties"
+	// KeyAdditionalProperties the additional properties property name
+	KeyAdditionalProperties = "additionalProperties"
+	// KeyDefinitions the definitions property name
+	KeyDefinitions = "definitions"
+	// KeyMultipleOf the multipleOf property name
+	KeyMultipleOf = "multipleOf"
+	// KeyMinimum the minimum property name
+	KeyMinimum = "minimum"
+	// KeyMaximum the maximum property name
+	KeyMaximum = "maximum"
+	// KeyExclusiveMinimum the exclusiveMinimum property name
+	KeyExclusiveMinimum = "exclusiveMinimum"
+	// KeyExclusiveMaximum the exclusiveMaximum property name
+	KeyExclusiveMaximum = "exclusiveMaximum"
+	// KeyMinLength the minLength property name
+	KeyMinLength = "minLength"
+	// KeyMaxLength the maxLength property name
+	KeyMaxLength = "maxLength"
+	// KeyPattern the pattern property name
+	KeyPattern = "pattern"
+	// KeyMinProperties the minProperties property name
+	KeyMinProperties = "minProperties"
+	// KeyMaxProperties the maxProperties property name
+	KeyMaxProperties = "maxProperties"
+	// KeyDependencies the dependencies property name
+	KeyDependencies = "dependencies"
+	// KeyRequired the required property name
+	KeyRequired = "required"
+	// KeyMinItems the minItems property name
+	KeyMinItems = "minItems"
+	// KeyMaxItems the maxItems property name
+	KeyMaxItems = "maxItems"
+	// KeyUniqueItems the uniqueItems property name
+	KeyUniqueItems = "uniqueItems"
+	// KeyEnum the enum property name
+	KeyEnum = "enum"
+	// KeyOneOf the oneOf property name
+	KeyOneOf = "oneOf"
+	// KeyAnyOf the anyOf property name
+	KeyAnyOf = "anyOf"
+	// KeyAllOf the allOf property name
+	KeyAllOf = "allOf"
+	// KeyNot the not property name
+	KeyNot = "not"
 )
 
 const (
-	ERROR_MESSAGE_X_MUST_BE_OF_TYPE_Y = `%s must be of type %s`
-
-	ERROR_MESSAGE_X_IS_MISSING_AND_REQUIRED  = `%s is missing and required`
-	ERROR_MESSAGE_MUST_BE_OF_TYPE_X          = `must be of type %s`
-	ERROR_MESSAGE_ARRAY_ITEMS_MUST_BE_UNIQUE = `array items must be unique`
-	ERROR_MESSAGE_DOES_NOT_MATCH_PATTERN     = `does not match pattern '%s'`
-	ERROR_MESSAGE_MUST_MATCH_ONE_ENUM_VALUES = `must match one of the enum values [%s]`
-
-	ERROR_MESSAGE_STRING_LENGTH_MUST_BE_GREATER_OR_EQUAL = `string length must be greater or equal to %d`
-	ERROR_MESSAGE_STRING_LENGTH_MUST_BE_LOWER_OR_EQUAL   = `string length must be lower or equal to %d`
-
-	ERROR_MESSAGE_NUMBER_MUST_BE_LOWER_OR_EQUAL   = `must be lower than or equal to %s`
-	ERROR_MESSAGE_NUMBER_MUST_BE_LOWER            = `must be lower than %s`
-	ERROR_MESSAGE_NUMBER_MUST_BE_GREATER_OR_EQUAL = `must be greater than or equal to %s`
-	ERROR_MESSAGE_NUMBER_MUST_BE_GREATER          = `must be greater than %s`
-
-	ERROR_MESSAGE_NUMBER_MUST_VALIDATE_ALLOF = `must validate all the schemas (allOf)`
-	ERROR_MESSAGE_NUMBER_MUST_VALIDATE_ONEOF = `must validate one and only one schema (oneOf)`
-	ERROR_MESSAGE_NUMBER_MUST_VALIDATE_ANYOF = `must validate at least one schema (anyOf)`
-	ERROR_MESSAGE_NUMBER_MUST_VALIDATE_NOT   = `must not validate the schema (not)`
-
-	ERROR_MESSAGE_ARRAY_MIN_ITEMS = `array must have at least %d items`
-	ERROR_MESSAGE_ARRAY_MAX_ITEMS = `array must have at the most %d items`
-
-	ERROR_MESSAGE_ARRAY_MIN_PROPERTIES = `must have at least %d properties`
-	ERROR_MESSAGE_ARRAY_MAX_PROPERTIES = `must have at the most %d properties`
-
-	ERROR_MESSAGE_HAS_DEPENDENCY_ON = `has a dependency on %s`
-
-	ERROR_MESSAGE_MULTIPLE_OF = `must be a multiple of %s`
-
-	ERROR_MESSAGE_ARRAY_NO_ADDITIONAL_ITEM = `no additional item allowed on array`
-
-	ERROR_MESSAGE_ADDITIONAL_PROPERTY_NOT_ALLOWED = `additional property "%s" is not allowed`
-	ERROR_MESSAGE_INVALID_PATTERN_PROPERTY        = `property "%s" does not match pattern %s`
-
-	ERROR_MESSAGE_INTERNAL = `internal error %s`
+	typeString         = "string"
+	typeBoolean        = "boolean"
+	typeArrayOfStrings = "array of strings"
+	typeArrayOfSchemas = "array of schemas"
+	typeObject         = "object"
+	typeSchema         = "schema"
 )
 
 const (
-	TYPE_ARRAY   = `array`
-	TYPE_BOOLEAN = `boolean`
-	TYPE_INTEGER = `integer`
-	TYPE_NUMBER  = `number`
-	TYPE_NULL    = `null`
-	TYPE_OBJECT  = `object`
-	TYPE_STRING  = `string`
+	stringSchemaOrArrayOfStrings = "schema or array of strings"
+	stringProperties             = "properties"
+	stringDependency             = "dependency"
 )
 
-var JSON_TYPES []string
-var SCHEMA_TYPES []string
+const (
+	contextRoot        = "(root)"
+	rootSchemaProperty = "(root)"
+)
+
+const (
+	errMessageXMustBeOfTypeY                   = `%s must be of type %s`
+	errMessageXIsMissingAndRequired            = `%s is missing and required`
+	errMessageMustBeOfTypeX                    = `must be of type %s`
+	errMessageArrayItemsMustBeUnique           = `array items must be unique`
+	errMessageDoesNotMatchPattern              = `does not match pattern '%s'`
+	errMessageMustMatchOneEnumValue            = `must match one of the enum values [%s]`
+	errMessageStringLengthMustBeGreaterOrEqual = `string length must be greater than or equal to %d`
+	errMessageStringLengthMustBeLessOrEqual    = `string length must be less than or equal to %d`
+	errMessageNumberMustBeLessOrEqual          = `must be less than or equal to %s`
+	errMessageNumberMustBeLess                 = `must be less than %s`
+	errMessageNumberMustBeGreaterOrEqual       = `must be greater than or equal to %s`
+	errMessageNumberMustBeGreater              = `must be greater than %s`
+	errMessageMustValidateAllOf                = `must validate all the schemas (allOf)`
+	errMessageMustValidateOneOf                = `must validate one and only one schema (oneOf)`
+	errMessageMustValidateAnyOf                = `must validate at least one schema (anyOf)`
+	errMessageMustValidateNot                  = `must not validate the schema (not)`
+	errMessageArrayMinItems                    = `array must have at least %d items`
+	errMessageArrayMaxItems                    = `array must have at the most %d items`
+	errMessageArrayMinProperties               = `must have at least %d properties`
+	errMessageArrayMaxProperties               = `must have at the most %d properties`
+	errMessageHasDependencyOn                  = `has a dependency on %s`
+	errMessageMultipleOf                       = `must be a multiple of %s`
+	errMessageArrayNoAdditionalItems           = `no additional item allowed on array`
+	errMessageAdditionalPropertyNotAllowed     = `additional property "%s" is not allowed`
+	errMessageInvalidPatternProperty           = `property "%s" does not match pattern %s`
+	errMessageInternal                         = `internal error %s`
+)
+
+const (
+	// JSONTypeArray name for JSON/Schema array type
+	JSONTypeArray = `array`
+	// JSONTypeBoolean name for JSON/Schema boolean type
+	JSONTypeBoolean = `boolean`
+	// JSONTypeInteger name for JSON/Schema integer type
+	JSONTypeInteger = `integer`
+	// JSONTypeNumber name for JSON/Schema number type
+	JSONTypeNumber = `number`
+	// JSONTypeNull name for JSON/Schema null type
+	JSONTypeNull = `null`
+	// JSONTypeObject name for JSON/Schema object type
+	JSONTypeObject = `object`
+	// JSONTypeString name for JSON/Schema string type
+	JSONTypeString = `string`
+)
+
+// JSONTypes the json types
+var JSONTypes []string
+
+// SchemaTypes the schema types
+var SchemaTypes []string
 
 func init() {
-	JSON_TYPES = []string{
-		TYPE_ARRAY,
-		TYPE_BOOLEAN,
-		TYPE_INTEGER,
-		TYPE_NUMBER,
-		TYPE_NULL,
-		TYPE_OBJECT,
-		TYPE_STRING}
+	JSONTypes = []string{
+		JSONTypeArray,
+		JSONTypeBoolean,
+		JSONTypeInteger,
+		JSONTypeNumber,
+		JSONTypeNull,
+		JSONTypeObject,
+		JSONTypeString}
 
-	SCHEMA_TYPES = []string{
-		TYPE_ARRAY,
-		TYPE_BOOLEAN,
-		TYPE_INTEGER,
-		TYPE_NUMBER,
-		TYPE_OBJECT,
-		TYPE_STRING}
+	SchemaTypes = []string{
+		JSONTypeArray,
+		JSONTypeBoolean,
+		JSONTypeInteger,
+		JSONTypeNumber,
+		JSONTypeObject,
+		JSONTypeString}
 }

@@ -40,9 +40,8 @@ func mustBeInteger(what interface{}) *int {
 		if isFloat64AnInteger(fnumber) {
 			number = int(fnumber)
 			return &number
-		} else {
-			return nil
 		}
+		return nil
 	} else if isKind(what, reflect.Int) {
 		number = what.(int)
 		return &number
@@ -83,14 +82,14 @@ func isStringInSlice(s []string, what string) bool {
 
 // same as ECMA Number.MAX_SAFE_INTEGER and Number.MIN_SAFE_INTEGER
 const (
-	max_json_float = float64(1<<53 - 1)  // 9007199254740991.0 	 	 2^53 - 1
-	min_json_float = -float64(1<<53 - 1) //-9007199254740991.0	-2^53 - 1
+	MaxJSONFloat = float64(1<<53 - 1)  // 9007199254740991.0 	 	 2^53 - 1
+	MinJSONFloat = -float64(1<<53 - 1) //-9007199254740991.0	-2^53 - 1
 )
 
 // allow for integers [-2^53, 2^53-1] inclusive
 func isFloat64AnInteger(f float64) bool {
 
-	if math.IsNaN(f) || math.IsInf(f, 0) || f < min_json_float || f > max_json_float {
+	if math.IsNaN(f) || math.IsInf(f, 0) || f < MinJSONFloat || f > MaxJSONFloat {
 		return false
 	}
 
@@ -107,7 +106,7 @@ func validationErrorFormatNumber(n float64) string {
 	return fmt.Sprintf("%g", n)
 }
 
-func marshalToJsonString(value interface{}) (*string, error) {
+func toJSONString(value interface{}) (*string, error) {
 
 	mBytes, err := json.Marshal(value)
 	if err != nil {

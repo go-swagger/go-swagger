@@ -32,9 +32,9 @@ import (
 	"net/http"
 )
 
-// Helper function to read a JSON from a http request
-// Http request must return 200 OK
-func GetHttpJson(url string) (interface{}, error) {
+// GetHTTPJSON reads a JSON document from a HTTP request
+// HTTP request must return 200 OK
+func GetHTTPJSON(url string) (interface{}, error) {
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -59,8 +59,8 @@ func GetHttpJson(url string) (interface{}, error) {
 	return document, nil
 }
 
-// Helper function to read a JSON from a file path
-func GetFileJson(filepath string) (interface{}, error) {
+// GetFileJSON reads a JSON document from a file path
+func GetFileJSON(filepath string) (interface{}, error) {
 
 	bodyBuff, err := ioutil.ReadFile(filepath)
 	if err != nil {

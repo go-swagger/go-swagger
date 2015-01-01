@@ -17,7 +17,7 @@ func TestRouterBuilder(t *testing.T) {
 	assert.Len(t, spec.OperationIDs(), 4)
 
 	// context := NewContext(spec, api)
-	builder := PetAPIRouterBuilder(spec, api)
+	builder := petAPIRouterBuilder(spec, api)
 	getRecords := builder.records["GET"]
 	postRecords := builder.records["POST"]
 	deleteRecords := builder.records["DELETE"]
@@ -62,7 +62,7 @@ func TestRouterStruct(t *testing.T) {
 	assert.False(t, ok)
 }
 
-func PetAPIRouterBuilder(spec *spec.Document, api *swagger_api.API) *defaultRouteBuilder {
+func petAPIRouterBuilder(spec *spec.Document, api *swagger_api.API) *defaultRouteBuilder {
 	builder := newDefaultRouteBuilder(spec, api)
 	builder.AddRoute("GET", "/pets", spec.AllPaths()["/pets"].Get)
 	builder.AddRoute("POST", "/pets", spec.AllPaths()["/pets"].Post)

@@ -26,7 +26,6 @@
 package jsonschema
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 )
@@ -43,12 +42,12 @@ func (t *jsonSchemaType) IsTyped() bool {
 
 func (t *jsonSchemaType) Add(etype string) error {
 
-	if !isStringInSlice(JSON_TYPES, etype) {
-		return errors.New(fmt.Sprintf("%s is not a valid type", etype))
+	if !isStringInSlice(JSONTypes, etype) {
+		return fmt.Errorf("%s is not a valid type", etype)
 	}
 
 	if t.Contains(etype) {
-		return errors.New(fmt.Sprintf("%s type is duplicated", etype))
+		return fmt.Errorf("%s type is duplicated", etype)
 	}
 
 	t.types = append(t.types, etype)

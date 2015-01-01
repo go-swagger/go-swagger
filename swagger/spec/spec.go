@@ -11,7 +11,7 @@ import (
 )
 
 // MustLoadSwagger20Schema panics when Swagger20Schema returns an error
-func MustLoadSwagger20Schema() *jsonschema.JsonSchemaDocument {
+func MustLoadSwagger20Schema() *jsonschema.Document {
 	d, e := Swagger20Schema()
 	if e != nil {
 		panic(e)
@@ -20,7 +20,7 @@ func MustLoadSwagger20Schema() *jsonschema.JsonSchemaDocument {
 }
 
 // Swagger20Schema loads the swagger 2.0 schema from the embedded asses
-func Swagger20Schema() (*jsonschema.JsonSchemaDocument, error) {
+func Swagger20Schema() (*jsonschema.Document, error) {
 
 	b, err := assets.Asset("2.0/schema.json")
 	if err != nil {
@@ -28,13 +28,13 @@ func Swagger20Schema() (*jsonschema.JsonSchemaDocument, error) {
 	}
 	loader := jsonschema.NewLoader(bytes.NewBuffer(b), "http://swagger.io/v2/schema.json#")
 
-	return jsonschema.LoadJSONSchemaDocument(loader)
+	return jsonschema.Load(loader)
 }
 
 // Document represents a swagger spec document
 type Document struct {
 	specAnalyzer
-	specSchema *jsonschema.JsonSchemaDocument
+	specSchema *jsonschema.Document
 	data       map[string]interface{}
 	spec       *swagger.Spec
 }
@@ -74,6 +74,7 @@ func New(data json.RawMessage, version string) (*Document, error) {
 	return d, nil
 }
 
+// BasePath the base path for this spec
 func (d *Document) BasePath() string {
 	return d.spec.BasePath
 }

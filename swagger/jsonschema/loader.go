@@ -9,6 +9,7 @@ import (
 	"github.com/casualjim/go-swagger/swagger/jsonreference"
 )
 
+// Loader represents a loader for a json schema
 type Loader interface {
 	URL() string
 	Load() (interface{}, error)
@@ -48,11 +49,11 @@ func readAll(reader io.Reader) (interface{}, error) {
 }
 
 type referenceLoader struct {
-	ref *jsonreference.JsonReference
+	ref *jsonreference.Ref
 }
 
-// NewReferenceLoader creates a loader for a jsonreference.JsonReference
-func NewReferenceLoader(reference *jsonreference.JsonReference) Loader {
+// NewReferenceLoader creates a loader for a jsonreference.Ref
+func NewReferenceLoader(reference *jsonreference.Ref) Loader {
 	return &referenceLoader{reference}
 }
 
@@ -62,11 +63,11 @@ func (r *referenceLoader) URL() string {
 
 func (r *referenceLoader) Load() (interface{}, error) {
 	refToURL := r.ref
-	refToURL.GetUrl().Fragment = ""
+	refToURL.GetURL().Fragment = ""
 	if refToURL.HasFileScheme {
 		// Load from file
 		filename := strings.Replace(refToURL.String(), "file://", "", -1)
-		return GetFileJson(filename)
+		return GetFileJSON(filename)
 	}
-	return GetHttpJson(refToURL.String())
+	return GetHTTPJSON(refToURL.String())
 }

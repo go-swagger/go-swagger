@@ -5,22 +5,24 @@ import "time"
 // ISO8601 format to millis instead of to nanos
 const RFC3339Millis = "2006-01-02T15:04:05.000Z07:00"
 
+var dateTimeFormats = []string{RFC3339Millis, time.RFC3339, time.RFC3339Nano}
+
 // ParseDateTime parses a string that represents an ISO8601 time or a unix epoch
 func ParseDateTime(data string) (DateTime, error) {
 	if data == "" {
 		return DateTime{Time: time.Unix(0, 0).UTC()}, nil
 	}
-	dd, err := time.Parse(RFC3339Millis, data)
-	if err != nil {
-		dd, err = time.Parse(time.RFC3339, data)
+	var lastError error
+	for _, layout := range dateTimeFormats {
+		dd, err := time.Parse(layout, data)
 		if err != nil {
-			dd, err = time.Parse(time.RFC3339Nano, data)
-			if err != nil {
-				return DateTime{}, err
-			}
+			lastError = err
+			continue
 		}
+		lastError = nil
+		return DateTime{dd}, nil
 	}
-	return DateTime{Time: dd}, nil
+	return DateTime{}, lastError
 }
 
 // DateTime is a time but it serializes to ISO8601 format with millis

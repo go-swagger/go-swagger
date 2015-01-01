@@ -47,11 +47,11 @@ type jsonSchema struct {
 	types jsonSchemaType
 
 	// Reference url
-	ref *jsonreference.JsonReference
+	ref *jsonreference.Ref
 	// Schema referenced
 	refSchema *jsonSchema
 	// Json reference
-	schema *jsonreference.JsonReference
+	schema *jsonreference.Ref
 
 	// hierarchy
 	parent *jsonSchema
@@ -104,7 +104,7 @@ type jsonSchema struct {
 
 func (s *jsonSchema) AddEnum(i interface{}) error {
 
-	is, err := marshalToJsonString(i)
+	is, err := toJSONString(i)
 	if err != nil {
 		return err
 	}
@@ -120,7 +120,7 @@ func (s *jsonSchema) AddEnum(i interface{}) error {
 
 func (s *jsonSchema) ContainsEnum(i interface{}) (bool, error) {
 
-	is, err := marshalToJsonString(i)
+	is, err := toJSONString(i)
 	if err != nil {
 		return false, err
 	}
@@ -174,7 +174,7 @@ func (s *jsonSchema) PatternPropertiesString() string {
 	}
 
 	patternPropertiesKeySlice := []string{}
-	for pk, _ := range s.patternProperties {
+	for pk := range s.patternProperties {
 		patternPropertiesKeySlice = append(patternPropertiesKeySlice, `"`+pk+`"`)
 	}
 

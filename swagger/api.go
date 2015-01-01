@@ -197,6 +197,7 @@ type Consumer interface {
 // ProducerFunc represents a function that can be used as a producer
 type ProducerFunc func(io.Writer, interface{}) error
 
+// Produce produces the response for the provided data
 func (f ProducerFunc) Produce(writer io.Writer, data interface{}) error {
 	return f(writer, data)
 }

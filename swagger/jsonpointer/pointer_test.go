@@ -31,9 +31,9 @@ import (
 )
 
 const (
-	TEST_DOCUMENT_NB_ELEMENTS = 11
-	TEST_NODE_OBJ_NB_ELEMENTS = 4
-	TEST_DOCUMENT_STRING      = `{
+	TestDocumentNBItems = 11
+	TestNodeObjNBItems  = 4
+	TestDocumentString  = `{
 "foo": ["bar", "baz"],
 "obj": { "a":1, "b":2, "c":[3,4], "d":[ {"e":9}, {"f":[50,51]} ] },
 "": 0,
@@ -48,10 +48,10 @@ const (
 }`
 )
 
-var testDocumentJson interface{}
+var testDocumentJSON interface{}
 
 func init() {
-	json.Unmarshal([]byte(TEST_DOCUMENT_STRING), &testDocumentJson)
+	json.Unmarshal([]byte(TestDocumentString), &testDocumentJSON)
 }
 
 func TestEscaping(t *testing.T) {
@@ -61,12 +61,12 @@ func TestEscaping(t *testing.T) {
 
 	for i := range ins {
 
-		p, err := NewJsonPointer(ins[i])
+		p, err := New(ins[i])
 		if err != nil {
-			t.Errorf("NewJsonPointer(%v) error %v", ins[i], err.Error())
+			t.Errorf("New(%v) error %v", ins[i], err.Error())
 		}
 
-		result, _, err := p.Get(testDocumentJson)
+		result, _, err := p.Get(testDocumentJSON)
 		if err != nil {
 			t.Errorf("Get(%v) error %v", ins[i], err.Error())
 		}
@@ -82,17 +82,17 @@ func TestFullDocument(t *testing.T) {
 
 	in := ``
 
-	p, err := NewJsonPointer(in)
+	p, err := New(in)
 	if err != nil {
-		t.Errorf("NewJsonPointer(%v) error %v", in, err.Error())
+		t.Errorf("New(%v) error %v", in, err.Error())
 	}
 
-	result, _, err := p.Get(testDocumentJson)
+	result, _, err := p.Get(testDocumentJSON)
 	if err != nil {
 		t.Errorf("Get(%v) error %v", in, err.Error())
 	}
 
-	if len(result.(map[string]interface{})) != TEST_DOCUMENT_NB_ELEMENTS {
+	if len(result.(map[string]interface{})) != TestDocumentNBItems {
 		t.Errorf("Get(%v) = %v, expect full document", in, result)
 	}
 }
@@ -101,17 +101,17 @@ func TestGetNode(t *testing.T) {
 
 	in := `/obj`
 
-	p, err := NewJsonPointer(in)
+	p, err := New(in)
 	if err != nil {
-		t.Errorf("NewJsonPointer(%v) error %v", in, err.Error())
+		t.Errorf("New(%v) error %v", in, err.Error())
 	}
 
-	result, _, err := p.Get(testDocumentJson)
+	result, _, err := p.Get(testDocumentJSON)
 	if err != nil {
 		t.Errorf("Get(%v) error %v", in, err.Error())
 	}
 
-	if len(result.(map[string]interface{})) != TEST_NODE_OBJ_NB_ELEMENTS {
+	if len(result.(map[string]interface{})) != TestNodeObjNBItems {
 		t.Errorf("Get(%v) = %v, expect full document", in, result)
 	}
 }
@@ -123,12 +123,12 @@ func TestArray(t *testing.T) {
 
 	for i := range ins {
 
-		p, err := NewJsonPointer(ins[i])
+		p, err := New(ins[i])
 		if err != nil {
-			t.Errorf("NewJsonPointer(%v) error %v", ins[i], err.Error())
+			t.Errorf("New(%v) error %v", ins[i], err.Error())
 		}
 
-		result, _, err := p.Get(testDocumentJson)
+		result, _, err := p.Get(testDocumentJSON)
 		if err != nil {
 			t.Errorf("Get(%v) error %v", ins[i], err.Error())
 		}
@@ -147,12 +147,12 @@ func TestObject(t *testing.T) {
 
 	for i := range ins {
 
-		p, err := NewJsonPointer(ins[i])
+		p, err := New(ins[i])
 		if err != nil {
-			t.Errorf("NewJsonPointer(%v) error %v", ins[i], err.Error())
+			t.Errorf("New(%v) error %v", ins[i], err.Error())
 		}
 
-		result, _, err := p.Get(testDocumentJson)
+		result, _, err := p.Get(testDocumentJSON)
 		if err != nil {
 			t.Errorf("Get(%v) error %v", ins[i], err.Error())
 		}
@@ -173,9 +173,9 @@ func TestSetNode(t *testing.T) {
 
 	in := "/a/0/c"
 
-	p, err := NewJsonPointer(in)
+	p, err := New(in)
 	if err != nil {
-		t.Errorf("NewJsonPointer(%v) error %v", in, err.Error())
+		t.Errorf("New(%v) error %v", in, err.Error())
 	}
 
 	_, err = p.Set(jsonDocument, 999)

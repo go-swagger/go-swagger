@@ -32,7 +32,7 @@ type jsonContext struct {
 	tail *jsonContext
 }
 
-func consJsonContext(head string, tail *jsonContext) *jsonContext {
+func consJSONContext(head string, tail *jsonContext) *jsonContext {
 	return &jsonContext{head, tail}
 }
 

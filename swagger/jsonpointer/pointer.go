@@ -34,10 +34,10 @@ import (
 )
 
 const (
-	const_empty_pointer     = ``
-	const_pointer_separator = `/`
+	emptyPointer     = ``
+	pointerSeparator = `/`
 
-	const_invalid_start = `JSON pointer must be empty or start with a "` + const_pointer_separator
+	invalidStart = `JSON pointer must be empty or start with a "` + pointerSeparator
 )
 
 type implStruct struct {
@@ -52,28 +52,30 @@ type implStruct struct {
 	outError   error
 }
 
-func NewJsonPointer(jsonPointerString string) (JsonPointer, error) {
+// New creates a new json pointer for the given string
+func New(jsonPointerString string) (Pointer, error) {
 
-	var p JsonPointer
+	var p Pointer
 	err := p.parse(jsonPointerString)
 	return p, err
 
 }
 
-type JsonPointer struct {
+// Pointer the json pointer reprsentation
+type Pointer struct {
 	referenceTokens []string
 }
 
 // "Constructor", parses the given string JSON pointer
-func (p *JsonPointer) parse(jsonPointerString string) error {
+func (p *Pointer) parse(jsonPointerString string) error {
 
 	var err error
 
-	if jsonPointerString != const_empty_pointer {
-		if !strings.HasPrefix(jsonPointerString, const_pointer_separator) {
-			err = errors.New(const_invalid_start)
+	if jsonPointerString != emptyPointer {
+		if !strings.HasPrefix(jsonPointerString, pointerSeparator) {
+			err = errors.New(invalidStart)
 		} else {
-			referenceTokens := strings.Split(jsonPointerString, const_pointer_separator)
+			referenceTokens := strings.Split(jsonPointerString, pointerSeparator)
 			for _, referenceToken := range referenceTokens[1:] {
 				p.referenceTokens = append(p.referenceTokens, referenceToken)
 			}
@@ -83,8 +85,8 @@ func (p *JsonPointer) parse(jsonPointerString string) error {
 	return err
 }
 
-// Uses the pointer to retrieve a value from a JSON document
-func (p *JsonPointer) Get(document interface{}) (interface{}, reflect.Kind, error) {
+// Get uses the pointer to retrieve a value from a JSON document
+func (p *Pointer) Get(document interface{}) (interface{}, reflect.Kind, error) {
 
 	is := &implStruct{mode: "GET", inDocument: document}
 	p.implementation(is)
@@ -92,8 +94,8 @@ func (p *JsonPointer) Get(document interface{}) (interface{}, reflect.Kind, erro
 
 }
 
-// Uses the pointer to update a value from a JSON document
-func (p *JsonPointer) Set(document interface{}, value interface{}) (interface{}, error) {
+// Set uses the pointer to update a value from a JSON document
+func (p *Pointer) Set(document interface{}, value interface{}) (interface{}, error) {
 
 	is := &implStruct{mode: "SET", inDocument: document, setInValue: value}
 	p.implementation(is)
@@ -102,7 +104,7 @@ func (p *JsonPointer) Set(document interface{}, value interface{}) (interface{},
 }
 
 // Both Get and Set functions use the same implementation to avoid code duplication
-func (p *JsonPointer) implementation(i *implStruct) {
+func (p *Pointer) implementation(i *implStruct) {
 
 	kind := reflect.Invalid
 
@@ -135,7 +137,7 @@ func (p *JsonPointer) implementation(i *implStruct) {
 					m[decodedToken] = i.setInValue
 				}
 			} else {
-				i.outError = errors.New(fmt.Sprintf("Object has no key '%s'", token))
+				i.outError = fmt.Errorf("Object has no key '%s'", token)
 				i.getOutKind = kind
 				i.getOutNode = nil
 				return
@@ -145,14 +147,14 @@ func (p *JsonPointer) implementation(i *implStruct) {
 			s := node.([]interface{})
 			tokenIndex, err := strconv.Atoi(token)
 			if err != nil {
-				i.outError = errors.New(fmt.Sprintf("Invalid array index '%s'", token))
+				i.outError = fmt.Errorf("Invalid array index '%s'", token)
 				i.getOutKind = kind
 				i.getOutNode = nil
 				return
 			}
 			sLength := len(s)
 			if tokenIndex < 0 || tokenIndex >= sLength {
-				i.outError = errors.New(fmt.Sprintf("Out of bound array[0,%d] index '%d'", sLength, tokenIndex))
+				i.outError = fmt.Errorf("Out of bound array[0,%d] index '%d'", sLength, tokenIndex)
 				i.getOutKind = kind
 				i.getOutNode = nil
 				return
@@ -164,7 +166,7 @@ func (p *JsonPointer) implementation(i *implStruct) {
 			}
 
 		default:
-			i.outError = errors.New(fmt.Sprintf("Invalid token reference '%s'", token))
+			i.outError = fmt.Errorf("Invalid token reference '%s'", token)
 			i.getOutKind = kind
 			i.getOutNode = nil
 			return
@@ -181,13 +183,13 @@ func (p *JsonPointer) implementation(i *implStruct) {
 }
 
 // Pointer to string representation function
-func (p *JsonPointer) String() string {
+func (p *Pointer) String() string {
 
 	if len(p.referenceTokens) == 0 {
-		return const_empty_pointer
+		return emptyPointer
 	}
 
-	pointerString := const_pointer_separator + strings.Join(p.referenceTokens, const_pointer_separator)
+	pointerString := pointerSeparator + strings.Join(p.referenceTokens, pointerSeparator)
 
 	return pointerString
 }
@@ -198,20 +200,20 @@ func (p *JsonPointer) String() string {
 // ... and vice versa
 
 const (
-	const_encoded_reference_token_0 = `~0`
-	const_encoded_reference_token_1 = `~1`
-	const_decoded_reference_token_0 = `~`
-	const_decoded_reference_token_1 = `/`
+	encRefTok0 = `~0`
+	encRefTok1 = `~1`
+	decRefTok0 = `~`
+	decRefTok1 = `/`
 )
 
 func decodeReferenceToken(token string) string {
-	step1 := strings.Replace(token, const_encoded_reference_token_1, const_decoded_reference_token_1, -1)
-	step2 := strings.Replace(step1, const_encoded_reference_token_0, const_decoded_reference_token_0, -1)
+	step1 := strings.Replace(token, encRefTok1, decRefTok1, -1)
+	step2 := strings.Replace(step1, encRefTok0, decRefTok0, -1)
 	return step2
 }
 
 func encodeReferenceToken(token string) string {
-	step1 := strings.Replace(token, const_decoded_reference_token_1, const_encoded_reference_token_1, -1)
-	step2 := strings.Replace(step1, const_decoded_reference_token_0, const_encoded_reference_token_0, -1)
+	step1 := strings.Replace(token, decRefTok1, encRefTok1, -1)
+	step2 := strings.Replace(step1, decRefTok0, encRefTok0, -1)
 	return step2
 }

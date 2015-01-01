@@ -16,6 +16,7 @@ func (e *ParseError) Error() string {
 	return e.message
 }
 
+// Code returns the http status code for this error
 func (e *ParseError) Code() int32 {
 	return e.code
 }

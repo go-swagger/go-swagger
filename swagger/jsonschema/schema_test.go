@@ -35,9 +35,9 @@ import (
 
 const displayErrorMessages = false
 
-func TestJsonSchemaTestSuite(t *testing.T) {
+func TestJSONSchemaTestSuite(t *testing.T) {
 
-	JsonSchemaTestSuiteMap := []map[string]string{
+	JSONSchemaTestSuiteConfig := []map[string]string{
 
 		map[string]string{"phase": "integer type matches integers", "test": "an integer is an integer", "schema": "type/schema_0.json", "data": "type/data_00.json", "valid": "true"},
 		map[string]string{"phase": "integer type matches integers", "test": "a float is not an integer", "schema": "type/schema_0.json", "data": "type/data_01.json", "valid": "false"},
@@ -310,18 +310,18 @@ func TestJsonSchemaTestSuite(t *testing.T) {
 
 	// Launch tests
 
-	for testJsonIndex, testJson := range JsonSchemaTestSuiteMap {
+	for testJSONIndex, testJSON := range JSONSchemaTestSuiteConfig {
 
-		fmt.Printf("Test (%d) | %s :: %s\n", testJsonIndex, testJson["phase"], testJson["test"])
+		fmt.Printf("Test (%d) | %s :: %s\n", testJSONIndex, testJSON["phase"], testJSON["test"])
 
 		// get schema
-		schemaDocument, err := NewJsonSchemaDocument("file://" + testwd + "/" + testJson["schema"])
+		schemaDocument, err := New("file://" + testwd + "/" + testJSON["schema"])
 		if err != nil {
 			t.Errorf("Cound not parse schema : %s\n", err.Error())
 		}
 
 		// get data
-		dataDocument, err := GetFileJson(testwd + "/" + testJson["data"])
+		dataDocument, err := GetFileJSON(testwd + "/" + testJSON["data"])
 		if err != nil {
 			t.Errorf("Could not get test data : %s\n", err.Error())
 		}
@@ -336,12 +336,12 @@ func TestJsonSchemaTestSuite(t *testing.T) {
 			}
 		}
 
-		expectedValid, _ := strconv.ParseBool(testJson["valid"])
+		expectedValid, _ := strconv.ParseBool(testJSON["valid"])
 		if givenValid != expectedValid {
-			t.Errorf("Test failed : %s :: %s, expects %t, given %t\n", testJson["phase"], testJson["test"], expectedValid, givenValid)
+			t.Errorf("Test failed : %s :: %s, expects %t, given %t\n", testJSON["phase"], testJSON["test"], expectedValid, givenValid)
 		}
 
 	}
 
-	fmt.Printf("\n%d tests performed / %d total tests to perform ( %.2f %% )\n", len(JsonSchemaTestSuiteMap), 248, float32(len(JsonSchemaTestSuiteMap))/248.0*100.0)
+	fmt.Printf("\n%d tests performed / %d total tests to perform ( %.2f %% )\n", len(JSONSchemaTestSuiteConfig), 248, float32(len(JSONSchemaTestSuiteConfig))/248.0*100.0)
 }

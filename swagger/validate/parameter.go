@@ -1,43 +1,40 @@
 package validate
 
-import (
-	"bytes"
+// // Parameter creates a parameter validator
+// func Parameter(param *swagger.Parameter) (*jsonschema.Document, error) {
+// 	if param.In == "body" {
+// 		return Schema(param.Schema)
+// 	}
+// 	b, err := param.MarshalJSON()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	"github.com/casualjim/go-swagger"
-	"github.com/casualjim/go-swagger/swagger/jsonschema"
-)
+// 	return loadSchema(b)
+// }
 
-// Parameter creates a parameter validator
-func Parameter(param *swagger.Parameter) (*jsonschema.JsonSchemaDocument, error) {
-	if param.In == "body" {
-		return Schema(param.Schema)
-	}
-	b, err := param.MarshalJSON()
-	if err != nil {
-		return nil, err
-	}
+// func loadSchema(schemaJSON []byte) (*jsonschema.Document, error) {
+// 	var doc interface{}
+// 	if err := json.Unmarshal(schemaJSON, &doc); err != nil {
+// 		return nil, err
+// 	}
+// 	return jsonschema.New(doc)
+// }
 
-	return loadSchema(b)
-}
+// // Schema creates a schema validator
+// func Schema(schema *swagger.Schema) (*jsonschema.Document, error) {
+// 	b, err := schema.MarshalJSON()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-func loadSchema(schemaJSON []byte) (*jsonschema.JsonSchemaDocument, error) {
-	return jsonschema.LoadJSONSchemaDocument(jsonschema.NewLoader(bytes.NewBuffer(schemaJSON), "#"))
-}
-
-// Schema creates a schema validator
-func Schema(schema *swagger.Schema) (*jsonschema.JsonSchemaDocument, error) {
-	b, err := schema.MarshalJSON()
-	if err != nil {
-		return nil, err
-	}
-
-	return loadSchema(b)
-}
+// 	return loadSchema(b)
+// }
 
 // type parameterContext struct {
 // 	request *http.Request
 // 	route   *router.MatchedRoute
-// 	model   interface{}
+// 	model   map[string]interface{}
 // 	param   *swagger.Parameter
 // }
 

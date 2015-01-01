@@ -58,7 +58,7 @@ func (p *schemaPool) GetStandaloneDocument() (document interface{}) {
 	return p.standaloneDocument
 }
 
-func (p *schemaPool) GetDocumentFromLoader(reference jsonreference.JsonReference, loader Loader) (*schemaPoolDocument, error) {
+func (p *schemaPool) GetDocumentFromLoader(reference jsonreference.Ref, loader Loader) (*schemaPoolDocument, error) {
 	internalLog(fmt.Sprintf("Get document from pool (%s) :", reference.String()))
 
 	var err error
@@ -69,7 +69,7 @@ func (p *schemaPool) GetDocumentFromLoader(reference jsonreference.JsonReference
 	}
 
 	refToURL := reference
-	refToURL.GetUrl().Fragment = ""
+	refToURL.GetURL().Fragment = ""
 
 	var spd *schemaPoolDocument
 
@@ -90,6 +90,6 @@ func (p *schemaPool) GetDocumentFromLoader(reference jsonreference.JsonReference
 	return spd, nil
 }
 
-func (p *schemaPool) GetDocument(reference jsonreference.JsonReference) (*schemaPoolDocument, error) {
+func (p *schemaPool) GetDocument(reference jsonreference.Ref) (*schemaPoolDocument, error) {
 	return p.GetDocumentFromLoader(reference, NewReferenceLoader(&reference))
 }

@@ -34,94 +34,100 @@ import (
 )
 
 const (
-	const_fragment_char = `#`
+	fragmentRune = `#`
 )
 
-func NewJsonReference(jsonReferenceString string) (JsonReference, error) {
+// New creates a new reference for the given string
+func New(jsonReferenceString string) (Ref, error) {
 
-	var r JsonReference
+	var r Ref
 	err := r.parse(jsonReferenceString)
 	return r, err
 
 }
 
-type JsonReference struct {
-	referenceUrl     *url.URL
-	referencePointer jsonpointer.JsonPointer
+// Ref represents a json reference object
+type Ref struct {
+	referenceURL     *url.URL
+	referencePointer jsonpointer.Pointer
 
-	HasFullUrl      bool
-	HasUrlPathOnly  bool
+	HasFullURL      bool
+	HasURLPathOnly  bool
 	HasFragmentOnly bool
 	HasFileScheme   bool
 	HasFullFilePath bool
 }
 
-func (r *JsonReference) GetUrl() *url.URL {
-	return r.referenceUrl
+// GetURL gets the URL for this reference
+func (r *Ref) GetURL() *url.URL {
+	return r.referenceURL
 }
 
-func (r *JsonReference) GetPointer() *jsonpointer.JsonPointer {
+// GetPointer gets the json pointer for this reference
+func (r *Ref) GetPointer() *jsonpointer.Pointer {
 	return &r.referencePointer
 }
 
-func (r *JsonReference) String() string {
+// String returns the best version of the url for this reference
+func (r *Ref) String() string {
 
-	if r.referenceUrl != nil {
-		return r.referenceUrl.String()
+	if r.referenceURL != nil {
+		return r.referenceURL.String()
 	}
 
 	if r.HasFragmentOnly {
-		return const_fragment_char + r.referencePointer.String()
+		return fragmentRune + r.referencePointer.String()
 	}
 
 	return r.referencePointer.String()
 }
 
-func (r *JsonReference) IsCanonical() bool {
-	return (r.HasFileScheme && r.HasFullFilePath) || (!r.HasFileScheme && r.HasFullUrl)
+// IsCanonical returns true when this pointer starts with http(s):// or file://
+func (r *Ref) IsCanonical() bool {
+	return (r.HasFileScheme && r.HasFullFilePath) || (!r.HasFileScheme && r.HasFullURL)
 }
 
 // "Constructor", parses the given string JSON reference
-func (r *JsonReference) parse(jsonReferenceString string) (err error) {
+func (r *Ref) parse(jsonReferenceString string) (err error) {
 
-	r.referenceUrl, err = url.Parse(jsonReferenceString)
+	r.referenceURL, err = url.Parse(jsonReferenceString)
 	if err != nil {
 		return
 	}
-	refUrl := r.referenceUrl
+	refURL := r.referenceURL
 
-	if refUrl.Scheme != "" && refUrl.Host != "" {
-		r.HasFullUrl = true
+	if refURL.Scheme != "" && refURL.Host != "" {
+		r.HasFullURL = true
 	} else {
-		if refUrl.Path != "" {
-			r.HasUrlPathOnly = true
-		} else if refUrl.RawQuery == "" && refUrl.Fragment != "" {
+		if refURL.Path != "" {
+			r.HasURLPathOnly = true
+		} else if refURL.RawQuery == "" && refURL.Fragment != "" {
 			r.HasFragmentOnly = true
 		}
 	}
 
-	r.HasFileScheme = refUrl.Scheme == "file"
-	r.HasFullFilePath = strings.HasPrefix(refUrl.Path, "/")
+	r.HasFileScheme = refURL.Scheme == "file"
+	r.HasFullFilePath = strings.HasPrefix(refURL.Path, "/")
 
 	// invalid json-pointer error means url has no json-pointer fragment. simply ignore error
-	r.referencePointer, _ = jsonpointer.NewJsonPointer(refUrl.Fragment)
+	r.referencePointer, _ = jsonpointer.New(refURL.Fragment)
 
 	return
 }
 
-// Creates a new reference from a parent and a child
+// Inherits creates a new reference from a parent and a child
 // If the child cannot inherit from the parent, an error is returned
-func (r *JsonReference) Inherits(child JsonReference) (*JsonReference, error) {
-	childUrl := child.GetUrl()
-	parentUrl := r.GetUrl()
-	if childUrl == nil {
-		return nil, errors.New("childUrl is nil!")
+func (r *Ref) Inherits(child Ref) (*Ref, error) {
+	childURL := child.GetURL()
+	parentURL := r.GetURL()
+	if childURL == nil {
+		return nil, errors.New("child url is nil")
 	}
-	if parentUrl == nil {
-		return nil, errors.New("parentUrl is nil!")
+	if parentURL == nil {
+		return nil, errors.New("parent url is nil")
 	}
 
-	ref, err := NewJsonReference(parentUrl.ResolveReference(childUrl).String())
+	ref, err := New(parentURL.ResolveReference(childURL).String())
 	if err != nil {
 		return nil, err
 	}
