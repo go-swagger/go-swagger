@@ -16,14 +16,14 @@ func NewAPI(t *gotest.T) (*spec.Document, *swagger.API) {
 	assert.NoError(t, err)
 	api := swagger.NewAPI(spec)
 
-	api.RegisterConsumer("application/json", new(stubConsumer))
-	api.RegisterProducer("application/json", new(stubProducer))
+	api.RegisterConsumer("application/json", swagger.JSONConsumer())
+	api.RegisterProducer("application/json", swagger.JSONProducer())
 	api.RegisterConsumer("application/xml", new(stubConsumer))
 	api.RegisterProducer("application/xml", new(stubProducer))
 	api.RegisterProducer("text/plain", new(stubProducer))
 	api.RegisterProducer("text/html", new(stubProducer))
-	api.RegisterConsumer("application/x-yaml", new(stubConsumer))
-	api.RegisterProducer("application/x-yaml", new(stubProducer))
+	api.RegisterConsumer("application/x-yaml", swagger.YAMLConsumer())
+	api.RegisterProducer("application/x-yaml", swagger.YAMLProducer())
 
 	api.RegisterOperation("getAllPets", new(stubOperationHandler))
 	api.RegisterOperation("createPet", new(stubOperationHandler))

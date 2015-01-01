@@ -35,10 +35,7 @@ import (
 )
 
 func (v *JsonSchemaDocument) Validate(document interface{}) *ValidationResult {
-	result := &ValidationResult{}
-	context := consJsonContext(CONTEXT_ROOT, nil)
-	v.rootSchema.validateRecursive(v.rootSchema, document, result, context)
-	return result
+	return v.rootSchema.Validate(document, consJsonContext(CONTEXT_ROOT, nil))
 }
 
 func (v *jsonSchema) Validate(document interface{}, context *jsonContext) *ValidationResult {

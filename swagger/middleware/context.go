@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/casualjim/go-swagger/swagger"
@@ -81,8 +82,8 @@ func (c *Context) ResponseFormat(r *http.Request, offers []string) string {
 		}
 	}
 
-	ct, _, _ := c.ContentType(r)
-	format := httputil.NegotiateContentType(r, offers, ct)
+	format := httputil.NegotiateContentType(r, offers, "")
+	// fmt.Fprintf(os.Stdout, "content type %q format %q", ct, format)
 	if format != "" {
 		context.Set(r, ctxResponseFormat, format)
 	}
@@ -95,22 +96,29 @@ func (c *Context) AllowedMethods(request *http.Request) []string {
 }
 
 // Respond renders the response after doing some content negotiation
-func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, data interface{}) {
+func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []string, data interface{}) {
 	if err, ok := data.(error); ok {
 		c.api.ServeError(rw, r, err)
 		return
 	}
-	// perform content negotiation
-	// pick a producer
-	// render content with producer
+
+	format := c.ResponseFormat(r, produces)
+	producers := c.api.ProducersFor([]string{format})
+	prod, ok := producers[format]
+	if !ok {
+		panic(errors.New("can't find a producer for " + format))
+	}
+	if err := prod.Produce(rw, data); err != nil {
+		panic(err) // let the recovery middleware deal with this
+	}
 }
 
-// RouterMiddleware creates a new router middleware for this context
-func (c *Context) RouterMiddleware() func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
-	return newRouter(c)
-}
+// // RouterMiddleware creates a new router middleware for this context
+// func (c *Context) RouterMiddleware() func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
+// 	return newRouter(c)
+// }
 
-// ValidationMiddleware creates a new validation middleware for this context
-func (c *Context) ValidationMiddleware() func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
-	return newValidation(c)
-}
+// // ValidationMiddleware creates a new validation middleware for this context
+// func (c *Context) ValidationMiddleware() func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
+// 	return newValidation(c)
+// }

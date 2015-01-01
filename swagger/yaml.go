@@ -9,7 +9,7 @@ import (
 
 // YAMLConsumer creates a consumer for yaml data
 func YAMLConsumer() Consumer {
-	return FuncConsumer(func(r io.Reader, v interface{}) error {
+	return ConsumerFunc(func(r io.Reader, v interface{}) error {
 		buf, err := ioutil.ReadAll(r)
 		if err != nil {
 			return err
@@ -20,7 +20,7 @@ func YAMLConsumer() Consumer {
 
 // YAMLProducer creates a producer for yaml data
 func YAMLProducer() Producer {
-	return FuncProducer(func(w io.Writer, v interface{}) error {
+	return ProducerFunc(func(w io.Writer, v interface{}) error {
 		b, _ := yaml.Marshal(v) // can't make this error come up
 		_, err := w.Write(b)
 		return err

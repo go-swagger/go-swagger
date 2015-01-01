@@ -3,17 +3,18 @@ package validate
 import (
 	"mime"
 
+	"github.com/casualjim/go-swagger/swagger/errors"
 	"github.com/casualjim/go-swagger/swagger/util"
 )
 
 // ContentType validates the content type of a request
-func ContentType(allowed []string, actual string) *Error {
+func ContentType(allowed []string, actual string) *errors.Validation {
 	mt, _, err := mime.ParseMediaType(actual)
 	if err != nil {
-		return invalidContentType(actual, allowed)
+		return errors.InvalidContentType(actual, allowed)
 	}
 	if util.ContainsStringsCI(allowed, mt) {
 		return nil
 	}
-	return invalidContentType(actual, allowed)
+	return errors.InvalidContentType(actual, allowed)
 }

@@ -90,31 +90,6 @@ func (d *API) Validate() error {
 	return d.validate()
 }
 
-// // Handler takes the untyped API and a router with those it will validate the registrations in the API.
-// // When everything is found to be valid it will build the http.Handler with the provided router
-// //
-// // If there are missing consumers for registered media types it will return an error
-// // If there are missing producers for registered media types it will return an error
-// // If there are missing auth handlers for registered security schemes it will return an error
-// // If there are missing operation handlers for operationIds it will return an error
-// func (d *API) Handler(router Router) (http.Handler, error) {
-// 	if router == nil {
-// 		router = DefaultRouter()
-// 	}
-
-// 	if err := d.Validate(); err != nil {
-// 		return nil, err
-// 	}
-
-// 	initializer := &routerInitializer{
-// 		API:    d,
-// 		Router: router,
-// 		Spec:   d.spec,
-// 	}
-
-// 	return initializer.Initialize()
-// }
-
 // validateWith validates the registrations in this API against the provided spec analyzer
 func (d *API) validate() error {
 	var consumes []string
@@ -207,18 +182,9 @@ type OperationHandler interface {
 // ConsumerFunc represents a function that can be used as a consumer
 type ConsumerFunc func(io.Reader, interface{}) error
 
-type funcConsumer struct {
-	fn ConsumerFunc
-}
-
 // Consume consumes the reader into the data parameter
-func (f *funcConsumer) Consume(reader io.Reader, data interface{}) error {
-	return f.fn(reader, data)
-}
-
-// FuncConsumer creates a consumer from a function
-func FuncConsumer(fn ConsumerFunc) Consumer {
-	return &funcConsumer{fn: fn}
+func (fn ConsumerFunc) Consume(reader io.Reader, data interface{}) error {
+	return fn(reader, data)
 }
 
 // Consumer implementations know how to bind the values on the provided interface to
@@ -231,17 +197,8 @@ type Consumer interface {
 // ProducerFunc represents a function that can be used as a producer
 type ProducerFunc func(io.Writer, interface{}) error
 
-type funcProducer struct {
-	fn ProducerFunc
-}
-
-func (f *funcProducer) Produce(writer io.Writer, data interface{}) error {
-	return f.fn(writer, data)
-}
-
-// FuncProducer creates a producer implemenation from a function
-func FuncProducer(fn ProducerFunc) Producer {
-	return &funcProducer{fn: fn}
+func (f ProducerFunc) Produce(writer io.Writer, data interface{}) error {
+	return f(writer, data)
 }
 
 // Producer implementations know how to turn the provided interface into a valid

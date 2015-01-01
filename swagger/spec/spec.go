@@ -1,12 +1,35 @@
 package spec
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 
 	"github.com/casualjim/go-swagger"
+	"github.com/casualjim/go-swagger/swagger/assets"
 	"github.com/casualjim/go-swagger/swagger/jsonschema"
 )
+
+// MustLoadSwagger20Schema panics when Swagger20Schema returns an error
+func MustLoadSwagger20Schema() *jsonschema.JsonSchemaDocument {
+	d, e := Swagger20Schema()
+	if e != nil {
+		panic(e)
+	}
+	return d
+}
+
+// Swagger20Schema loads the swagger 2.0 schema from the embedded asses
+func Swagger20Schema() (*jsonschema.JsonSchemaDocument, error) {
+
+	b, err := assets.Asset("2.0/schema.json")
+	if err != nil {
+		return nil, err
+	}
+	loader := jsonschema.NewLoader(bytes.NewBuffer(b), "http://swagger.io/v2/schema.json#")
+
+	return jsonschema.LoadJSONSchemaDocument(loader)
+}
 
 // Document represents a swagger spec document
 type Document struct {
@@ -25,7 +48,7 @@ func New(data json.RawMessage, version string) (*Document, error) {
 		return nil, fmt.Errorf("spec version %q is not supported", version)
 	}
 
-	specSchema := jsonschema.MustLoadSwagger20Schema()
+	specSchema := MustLoadSwagger20Schema()
 
 	spec := new(swagger.Spec)
 	if err := json.Unmarshal(data, spec); err != nil {

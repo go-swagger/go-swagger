@@ -27,12 +27,9 @@
 package jsonschema
 
 import (
-	"encoding/json"
 	"fmt"
-	"strings"
 
-	"github.com/casualjim/go-swagger/swagger/assets"
-	"github.com/xeipuuv/gojsonreference"
+	"github.com/casualjim/go-swagger/swagger/jsonreference"
 )
 
 type schemaPoolDocument struct {
@@ -61,7 +58,7 @@ func (p *schemaPool) GetStandaloneDocument() (document interface{}) {
 	return p.standaloneDocument
 }
 
-func (p *schemaPool) GetAssetDocument(reference gojsonreference.JsonReference, path string) (*schemaPoolDocument, error) {
+func (p *schemaPool) GetDocumentFromLoader(reference jsonreference.JsonReference, loader Loader) (*schemaPoolDocument, error) {
 	internalLog(fmt.Sprintf("Get document from pool (%s) :", reference.String()))
 
 	var err error
@@ -81,12 +78,8 @@ func (p *schemaPool) GetAssetDocument(reference gojsonreference.JsonReference, p
 	}
 
 	// Load the document
-	b, err := assets.Asset(path)
+	document, err := loader.Load()
 	if err != nil {
-		return nil, err
-	}
-	var document interface{}
-	if err := json.Unmarshal(b, &document); err != nil {
 		return nil, err
 	}
 
@@ -97,56 +90,6 @@ func (p *schemaPool) GetAssetDocument(reference gojsonreference.JsonReference, p
 	return spd, nil
 }
 
-func (p *schemaPool) GetDocument(reference gojsonreference.JsonReference) (*schemaPoolDocument, error) {
-
-	internalLog(fmt.Sprintf("Get document from pool (%s) :", reference.String()))
-
-	var err error
-
-	// It is not possible to load anything that is not canonical...
-	if !reference.IsCanonical() {
-		return nil, fmt.Errorf("reference must be canonical %s", reference.String())
-	}
-
-	refToURL := reference
-	refToURL.GetUrl().Fragment = ""
-
-	var spd *schemaPoolDocument
-
-	if d, ok := p.schemaPoolDocuments[refToURL.String()]; ok {
-		return d, nil
-	}
-
-	// Load the document
-
-	var document interface{}
-
-	if reference.HasFileScheme {
-
-		internalLog(" Loading new document from file")
-
-		// Load from file
-		filename := strings.Replace(refToURL.String(), "file://", "", -1)
-		document, err = GetFileJson(filename)
-		if err != nil {
-			return nil, err
-		}
-
-	} else {
-
-		internalLog(" Loading new document from http")
-
-		// Load from HTTP
-		document, err = GetHttpJson(refToURL.String())
-		if err != nil {
-			return nil, err
-		}
-
-	}
-
-	spd = &schemaPoolDocument{Document: document}
-	// add the document to the pool for potential later use
-	p.schemaPoolDocuments[refToURL.String()] = spd
-
-	return spd, nil
+func (p *schemaPool) GetDocument(reference jsonreference.JsonReference) (*schemaPoolDocument, error) {
+	return p.GetDocumentFromLoader(reference, NewReferenceLoader(&reference))
 }

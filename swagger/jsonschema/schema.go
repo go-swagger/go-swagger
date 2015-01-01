@@ -31,7 +31,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/xeipuuv/gojsonreference"
+	"github.com/casualjim/go-swagger/swagger/jsonreference"
 )
 
 type jsonSchema struct {
@@ -47,11 +47,11 @@ type jsonSchema struct {
 	types jsonSchemaType
 
 	// Reference url
-	ref *gojsonreference.JsonReference
+	ref *jsonreference.JsonReference
 	// Schema referenced
 	refSchema *jsonSchema
 	// Json reference
-	schema *gojsonreference.JsonReference
+	schema *jsonreference.JsonReference
 
 	// hierarchy
 	parent *jsonSchema

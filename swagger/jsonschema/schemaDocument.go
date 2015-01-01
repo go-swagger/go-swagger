@@ -32,58 +32,22 @@ import (
 	"reflect"
 	"regexp"
 
-	"github.com/xeipuuv/gojsonreference"
+	"github.com/casualjim/go-swagger/swagger/jsonreference"
 )
 
-func loadRootSchema() (*JsonSchemaDocument, error) {
+// LoadJSONSchemaDocument loads a json schema document from a loader
+func LoadJSONSchemaDocument(loader Loader) (*JsonSchemaDocument, error) {
 	var err error
 	d := JsonSchemaDocument{}
 	d.pool = newSchemaPool()
 	d.referencePool = newSchemaReferencePool()
 
-	d.documentReference, err = gojsonreference.NewJsonReference("http://json-schema.org/draft-04/schema#")
+	d.documentReference, err = jsonreference.NewJsonReference(loader.URL())
 	if err != nil {
 		return nil, err
 	}
 
-	spd, err := d.pool.GetAssetDocument(d.documentReference, "jsonschema-draft-04.json")
-	if err != nil {
-		return nil, err
-	}
-
-	err = d.parse(spd.Document)
-	if err != nil {
-		return nil, err
-	}
-
-	return &d, nil
-}
-
-func MustLoadSwagger20Schema() *JsonSchemaDocument {
-	d, e := Swagger20Schema()
-	if e != nil {
-		panic(e)
-	}
-	return d
-}
-
-func Swagger20Schema() (*JsonSchemaDocument, error) {
-	var err error
-	d := JsonSchemaDocument{}
-	d.pool = newSchemaPool()
-	d.referencePool = newSchemaReferencePool()
-
-	// _, err = loadRootSchema()
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	d.documentReference, err = gojsonreference.NewJsonReference("http://swagger.io/v2/schema.json#")
-	if err != nil {
-		return nil, err
-	}
-
-	spd, err := d.pool.GetAssetDocument(d.documentReference, "2.0/schema.json")
+	spd, err := d.pool.GetDocumentFromLoader(d.documentReference, loader)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +77,7 @@ func NewJsonSchemaDocument(document interface{}) (*JsonSchemaDocument, error) {
 
 		internalLog(fmt.Sprintf(" From http or file (%s)", document.(string)))
 
-		d.documentReference, err = gojsonreference.NewJsonReference(document.(string))
+		d.documentReference, err = jsonreference.NewJsonReference(document.(string))
 		spd, err := d.pool.GetDocument(d.documentReference)
 		if err != nil {
 			return nil, err
@@ -129,7 +93,7 @@ func NewJsonSchemaDocument(document interface{}) (*JsonSchemaDocument, error) {
 
 		internalLog(" From map")
 
-		d.documentReference, err = gojsonreference.NewJsonReference("#")
+		d.documentReference, err = jsonreference.NewJsonReference("#")
 		d.pool.SetStandaloneDocument(document)
 		if err != nil {
 			return nil, err
@@ -148,7 +112,7 @@ func NewJsonSchemaDocument(document interface{}) (*JsonSchemaDocument, error) {
 }
 
 type JsonSchemaDocument struct {
-	documentReference gojsonreference.JsonReference
+	documentReference jsonreference.JsonReference
 	rootSchema        *jsonSchema
 	pool              *schemaPool
 	referencePool     *schemaReferencePool
@@ -196,7 +160,7 @@ func (d *JsonSchemaDocument) parseSchema(documentNode interface{}, currentSchema
 			return errors.New(fmt.Sprintf(ERROR_MESSAGE_X_MUST_BE_OF_TYPE_Y, KEY_SCHEMA, STRING_STRING))
 		}
 		schemaRef := m[KEY_SCHEMA].(string)
-		schemaReference, err := gojsonreference.NewJsonReference(schemaRef)
+		schemaReference, err := jsonreference.NewJsonReference(schemaRef)
 		currentSchema.schema = &schemaReference
 		if err != nil {
 			return err
@@ -663,7 +627,7 @@ func (d *JsonSchemaDocument) parseReference(documentNode interface{}, currentSch
 
 	var err error
 
-	jsonReference, err := gojsonreference.NewJsonReference(reference)
+	jsonReference, err := jsonreference.NewJsonReference(reference)
 	if err != nil {
 		return err
 	}

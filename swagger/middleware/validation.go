@@ -17,7 +17,7 @@ func newValidation(context *Context) func(http.ResponseWriter, *http.Request, ht
 
 		result := validateRequest(context, r, matched)
 		if result.HasErrors() {
-			context.Respond(rw, r, result.Errors[0])
+			context.Respond(rw, r, matched.Produces, result.Errors[0])
 			return
 		}
 
@@ -38,18 +38,18 @@ func validateRequest(context *Context, request *http.Request, route *router.Matc
 
 	validate.contentType()
 	validate.responseFormat()
-	validate.parameters()
+	// validate.parameters()
 
 	return validate.result
 }
 
-func (v *validation) parameters() {
-	for _, param := range v.route.Parameters {
-		for _, err := range validate.Parameter(v.request, v.route, v.bound, &param) {
-			v.result.AddErrors(err)
-		}
-	}
-}
+// func (v *validation) parameters() {
+// for _, param := range v.route.Parameters {
+// 	for _, err := range validate.Parameter(v.request, v.route, v.bound, &param) {
+// 		v.result.AddErrors(err)
+// 	}
+// }
+// }
 
 func (v *validation) contentType() {
 	if httputils.CanHaveBody(v.request.Method) {
@@ -66,7 +66,7 @@ func (v *validation) contentType() {
 
 func (v *validation) responseFormat() {
 	if str := v.context.ResponseFormat(v.request, v.route.Produces); str == "" {
-		// v.result.AddErrors(errors.N)
+		v.result.AddErrors(errors.InvalidResponseFormat(v.request.Header.Get(httputils.HeaderAccept), v.route.Produces))
 	}
 }
 

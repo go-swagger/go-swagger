@@ -6,8 +6,12 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/golang/gddo/httputil",
+			"Rev": "5033884f68f933e391e2e43a5f2c7135a1a9ed3b"
+		},
+		{
 			"ImportPath": "github.com/gorilla/context",
-			"Rev": "50c25fb3b2b3b3cc724e9b6ac75fb44b3bccd0da"
+			"Rev": "215affda49addc4c8ef7e2534915df2c8c35c6cd"
 		},
 		{
 			"ImportPath": "github.com/jessevdk/go-flags",
@@ -20,24 +24,16 @@
 		},
 		{
 			"ImportPath": "github.com/naoina/denco",
-			"Rev": "06a71203a220e9e999097d9dbe31daa60f5eb0ee"
+			"Rev": "272550a98ec2a20075bcc55e2c9996d66d2876f1"
 		},
 		{
 			"ImportPath": "github.com/smartystreets/goconvey/convey",
-			"Comment": "1.5.0-345-g432ed38",
-			"Rev": "432ed384e87b0d670f738ef45d613e513c0456d0"
+			"Comment": "1.5.0-356-gfbc0a1c",
+			"Rev": "fbc0a1c888f9f96263f9a559d1769905245f1123"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Rev": "ae37dedcaae6fce497569786a8694aa3daa97abf"
-		},
-		{
-			"ImportPath": "github.com/xeipuuv/gojsonpointer",
-			"Rev": "57ab5e9c764219a3e0c4d7759797fefdcab22e9c"
-		},
-		{
-			"ImportPath": "github.com/xeipuuv/gojsonreference",
-			"Rev": "47e61ed14ee33a23dadf5baffffc7d1b35d0b0ec"
+			"Rev": "2eaa4b48b8954bf871229043b8064ca156a542a5"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",

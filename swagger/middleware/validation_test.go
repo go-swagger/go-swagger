@@ -21,12 +21,13 @@ func TestResult(t *testing.T) {
 	assert.False(t, result.IsValid())
 }
 
-func TestValidation(t *testing.T) {
+func TestContentTypeValidation(t *testing.T) {
 	context := NewContext(petstore.NewAPI(t))
 	mw := newValidation(context)
 
 	recorder := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "http://localhost:8080/api/pets", nil)
+	request.Header.Add("Accept", "*/*")
 	mw(recorder, request, terminator)
 	assert.Equal(t, 200, recorder.Code)
 
@@ -40,6 +41,7 @@ func TestValidation(t *testing.T) {
 
 	recorder = httptest.NewRecorder()
 	request, _ = http.NewRequest("POST", "http://localhost:8080/api/pets", nil)
+	request.Header.Add("Accept", "*/*")
 	request.Header.Add("content-type", "text/html")
 
 	mw(recorder, request, terminator)
@@ -58,4 +60,12 @@ func TestResponseFormatValidation(t *testing.T) {
 
 	mw(recorder, request, terminator)
 	assert.Equal(t, 200, recorder.Code)
+
+	recorder = httptest.NewRecorder()
+	request, _ = http.NewRequest("POST", "http://localhost:8080/api/pets", nil)
+	request.Header.Set(httputils.HeaderContentType, "application/json")
+	request.Header.Set(httputils.HeaderAccept, "application/sml")
+
+	mw(recorder, request, terminator)
+	assert.Equal(t, http.StatusNotAcceptable, recorder.Code)
 }
