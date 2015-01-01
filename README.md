@@ -38,6 +38,9 @@ Currently there is a spec validator tool:
 * An object model that serializes to swagger yaml or json 
 * A tool to work with swagger:
     * validate a swagger spec document
+* Middlewares:
+  * routing
+  * validation 
 
 ## Planned:
 * Generate validations based on the swagger spec

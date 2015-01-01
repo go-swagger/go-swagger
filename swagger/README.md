@@ -70,10 +70,11 @@ This is done through integration in the `go generate` command
 The request handler does the following things:
 
 1. Authenticate and authorize if necessary
-2. Bind the request data to the parameter struct based on the swagger schema
-3. Validate the parameter struct based on the swagger schema
-4. Produce a model or an error by invoking the operation interface
-5. Create a response with status code etc based on the operation interface invocation result
+2. Validate the request data
+3. Bind the request data to the parameter struct based on the swagger schema
+4. Validate the parameter struct based on the swagger schema
+5. Produce a model or an error by invoking the operation interface
+6. Create a response with status code etc based on the operation interface invocation result
 
 #### Authentication
 

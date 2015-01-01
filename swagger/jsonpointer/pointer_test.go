@@ -153,9 +153,9 @@ func TestOtherThings(t *testing.T) {
 	p, err = New("/obj/a")
 	assert.Equal(t, "/obj/a", p.String())
 
-	s := encodeReferenceToken("m~n")
+	s := Escape("m~n")
 	assert.Equal(t, "m~0n", s)
-	s = encodeReferenceToken("m/n")
+	s = Escape("m/n")
 	assert.Equal(t, "m~01n", s)
 
 	p, err = New("/foo/3")

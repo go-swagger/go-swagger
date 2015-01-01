@@ -121,7 +121,7 @@ func (p *Pointer) implementation(i *implStruct) {
 
 	for ti, token := range p.referenceTokens {
 
-		decodedToken := decodeReferenceToken(token)
+		decodedToken := Unescape(token)
 		isLastToken := ti == len(p.referenceTokens)-1
 
 		rValue := reflect.ValueOf(node)
@@ -206,13 +206,15 @@ const (
 	decRefTok1 = `/`
 )
 
-func decodeReferenceToken(token string) string {
+// Unescape unescapes a json pointer reference token string to the original representation
+func Unescape(token string) string {
 	step1 := strings.Replace(token, encRefTok1, decRefTok1, -1)
 	step2 := strings.Replace(step1, encRefTok0, decRefTok0, -1)
 	return step2
 }
 
-func encodeReferenceToken(token string) string {
+// Escape escapes a pointer reference token string
+func Escape(token string) string {
 	step1 := strings.Replace(token, decRefTok1, encRefTok1, -1)
 	step2 := strings.Replace(step1, decRefTok0, encRefTok0, -1)
 	return step2
