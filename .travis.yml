@@ -28,6 +28,18 @@ script:
   - godep go test -covermode=count -coverprofile=swagger.coverprofile .
   - godep go test -covermode=count -coverprofile=reflection.coverprofile ./reflection
   - godep go test -covermode=count -coverprofile=swagger-serve.coverprofile ./swagger
+  - godep go test -covermode=count -coverprofile=swagger-serve-errors.coverprofile ./swagger/errors
+  - godep go test -covermode=count -coverprofile=swagger-serve-httputils.coverprofile ./swagger/httputils
+  - godep go test -covermode=count -coverprofile=swagger-serve-jsonpointer.coverprofile ./swagger/jsonpointer
+  - godep go test -covermode=count -coverprofile=swagger-serve-jsonreference.coverprofile ./swagger/jsonreference
+  - godep go test -covermode=count -coverprofile=swagger-serve-jsonschema.coverprofile ./swagger/jsonschema
+  - godep go test -covermode=count -coverprofile=swagger-serve-jsonschema.coverprofile ./swagger/jsonschema
+  - godep go test -covermode=count -coverprofile=swagger-serve-load.coverprofile ./swagger/load
+  - godep go test -covermode=count -coverprofile=swagger-serve-middleware.coverprofile ./swagger/middleware
+  - godep go test -covermode=count -coverprofile=swagger-serve-router.coverprofile ./swagger/router
+  - godep go test -covermode=count -coverprofile=swagger-serve-spec.coverprofile ./swagger/spec
+  - godep go test -covermode=count -coverprofile=swagger-serve-util.coverprofile ./swagger/util
+  - godep go test -covermode=count -coverprofile=swagger-serve-validate.coverprofile ./swagger/validate
   - gover
   - if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ]; then goveralls -coverprofile=gover.coverprofile -service=travis-ci -repotoken $COVERALLS_TOKEN; fi
 
