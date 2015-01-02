@@ -25,8 +25,8 @@ func (e *Validation) Code() int32 {
 }
 
 const (
-	contentTypeFail    = `Unsupported media type %q, only %v are allowed`
-	responseFormatFail = `Unsupported media type requested, only %v are allowed`
+	contentTypeFail    = `unsupported media type %q, only %v are allowed`
+	responseFormatFail = `unsupported media type requested, only %v are available`
 )
 
 // InvalidContentType error for an invalid content type
