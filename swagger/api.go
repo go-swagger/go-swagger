@@ -2,6 +2,7 @@ package swagger
 
 import (
 	"io"
+	"mime/multipart"
 	"net/http"
 	"strings"
 
@@ -163,8 +164,11 @@ func (d *API) verify(name string, registrations []string, expectations []string)
 	return nil
 }
 
-// HandlerFunc represents a swagger enabled handler func
-// type HandlerFunc func(http.ResponseWriter, *http.Request, RouteParams)
+// File represents an uploaded file.
+type File struct {
+	Data   multipart.File
+	Header *multipart.FileHeader
+}
 
 // OperationHandlerFunc an adapter for a function to the OperationHandler interface
 type OperationHandlerFunc func(interface{}) (interface{}, error)

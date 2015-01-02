@@ -1,17 +1,22 @@
 package validate
 
-// func TestParameterValidation(t *testing.T) {
-// 	param := params["name"]
-// 	p, err := Parameter(&param)
-// 	assert.NoError(t, err)
-// 	assert.NotNil(t, p)
+import (
+	"testing"
 
-// }
+	"github.com/casualjim/go-swagger"
+	"github.com/stretchr/testify/assert"
+)
 
-// var params = map[string]swagger.Parameter{
-// 	"name": swagger.Parameter{
-// 		In:   "query",
-// 		Type: "string",
-// 		Name: "name",
-// 	},
-// }
+func TestParameterValidation(t *testing.T) {
+	var param = swagger.Parameter{}
+	param.In = "query"
+	param.Type = "string"
+	param.Name = "name"
+
+	p, err := Parameter(&param)
+	assert.NoError(t, err)
+	assert.NotNil(t, p)
+
+	res := p.Validate(123.0) // needs to be json number so float
+	assert.False(t, res.Valid())
+}

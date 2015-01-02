@@ -1,4 +1,4 @@
-package swagger
+package validate
 
 import (
 	"errors"
@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/casualjim/go-swagger/swagger"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -35,9 +36,9 @@ type SomeOperationParams struct {
 	USeq        uint8
 	Score       float32
 	Rate        float64
-	Timestamp   DateTime
-	Birthdate   Date
-	LastFailure *DateTime
+	Timestamp   swagger.DateTime
+	Birthdate   swagger.Date
+	LastFailure *swagger.DateTime
 	Unsupported struct{}
 	Tags        []string
 	Prefs       []int32
@@ -130,8 +131,8 @@ func TestParamBinding(t *testing.T) {
 	assert.NoError(t, err)
 	assert.False(t, actual.Confirmed)
 
-	dt := DateTime{Time: time.Date(2014, 3, 19, 2, 9, 0, 0, time.UTC)}
-	exp := DateTime{Time: time.Date(2014, 5, 14, 2, 9, 0, 0, time.UTC)}
+	dt := swagger.DateTime{Time: time.Date(2014, 3, 19, 2, 9, 0, 0, time.UTC)}
+	exp := swagger.DateTime{Time: time.Date(2014, 5, 14, 2, 9, 0, 0, time.UTC)}
 	timeField := val.FieldByName("Timestamp")
 
 	err = setFieldValue(timeField, exp.String(), dt)
@@ -145,8 +146,8 @@ func TestParamBinding(t *testing.T) {
 	err = setFieldValue(timeField, "yada", dt)
 	assert.Error(t, err)
 
-	ddt := Date{Time: time.Date(2014, 3, 19, 0, 0, 0, 0, time.UTC)}
-	expd := Date{Time: time.Date(2014, 5, 14, 0, 0, 0, 0, time.UTC)}
+	ddt := swagger.Date{Time: time.Date(2014, 3, 19, 0, 0, 0, 0, time.UTC)}
+	expd := swagger.Date{Time: time.Date(2014, 5, 14, 0, 0, 0, 0, time.UTC)}
 	dateField := val.FieldByName("Birthdate")
 
 	err = setFieldValue(dateField, expd.String(), ddt)
@@ -160,8 +161,8 @@ func TestParamBinding(t *testing.T) {
 	err = setFieldValue(dateField, "yada", ddt)
 	assert.Error(t, err)
 
-	fdt := &DateTime{Time: time.Date(2014, 3, 19, 2, 9, 0, 0, time.UTC)}
-	fexp := &DateTime{Time: time.Date(2014, 5, 14, 2, 9, 0, 0, time.UTC)}
+	fdt := &swagger.DateTime{Time: time.Date(2014, 3, 19, 2, 9, 0, 0, time.UTC)}
+	fexp := &swagger.DateTime{Time: time.Date(2014, 5, 14, 2, 9, 0, 0, time.UTC)}
 	ftimeField := val.FieldByName("LastFailure")
 
 	err = setFieldValue(ftimeField, fexp.String(), fdt)

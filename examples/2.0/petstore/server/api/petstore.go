@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/casualjim/go-swagger/reflection"
 	"github.com/casualjim/go-swagger/swagger"
 	"github.com/casualjim/go-swagger/swagger/spec"
 	"github.com/casualjim/go-swagger/swagger/testing"
@@ -37,10 +36,10 @@ var getAllPets = swagger.OperationHandlerFunc(func(data interface{}) (interface{
 })
 var createPet = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
 	body := data.(map[string]interface{})["pet"]
-	var pet Pet
-	reflection.UnmarshalMap(body.(map[string]interface{}), &pet)
-	addPet(pet)
-	return pet, nil
+	// var pet Pet
+	// reflection.UnmarshalMap(body.(map[string]interface{}), &pet)
+	// addPet(pet)
+	return body, nil
 })
 
 var deletePet = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {

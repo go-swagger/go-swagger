@@ -12,7 +12,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-var extensions = []string{"json", "yaml"}
+var extensions = []string{"json"}
 
 func roundTripTest(t *testing.T, fixtureType, extension, fileName string, schema interface{}) {
 	if extension == "yaml" {
@@ -97,7 +97,7 @@ FILES:
 		}
 		for _, spec := range specs {
 			if strings.HasPrefix(f.Name(), spec) {
-				roundTripTest(t, "model", "json", filepath.Join(path, f.Name()), &Spec{})
+				roundTripTest(t, "model", "json", filepath.Join(path, f.Name()), &Swagger{})
 				continue FILES
 			}
 		}

@@ -39,6 +39,11 @@ func NotFound(message string, args ...interface{}) Error {
 	return New(404, fmt.Sprintf(message, args...))
 }
 
+// NotImplemented creates a new not implemented error
+func NotImplemented(message string) Error {
+	return New(501, message)
+}
+
 // MethodNotAllowedError represents an error for when the path matches but the method doesn't
 type MethodNotAllowedError struct {
 	code    int32

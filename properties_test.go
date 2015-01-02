@@ -15,35 +15,35 @@ func TestPropertySerialization(t *testing.T) {
 		})
 		Convey("a date property", func() {
 			prop := DateProperty()
-			So(prop, ShouldSerializeJSON, `{"format":"date","type":"string"}`)
+			So(prop, ShouldSerializeJSON, `{"type":"string","format":"date"}`)
 		})
 		Convey("a date-time property", func() {
 			prop := DateTimeProperty()
-			So(prop, ShouldSerializeJSON, `{"format":"date-time","type":"string"}`)
+			So(prop, ShouldSerializeJSON, `{"type":"string","format":"date-time"}`)
 		})
 		Convey("a float64 property", func() {
 			prop := Float64Property()
-			So(prop, ShouldSerializeJSON, `{"format":"double","type":"number"}`)
+			So(prop, ShouldSerializeJSON, `{"type":"number","format":"double"}`)
 		})
 		Convey("a float32 property", func() {
 			prop := Float32Property()
-			So(prop, ShouldSerializeJSON, `{"format":"float","type":"number"}`)
+			So(prop, ShouldSerializeJSON, `{"type":"number","format":"float"}`)
 		})
 		Convey("a int32 property", func() {
 			prop := Int32Property()
-			So(prop, ShouldSerializeJSON, `{"format":"int32","type":"number"}`)
+			So(prop, ShouldSerializeJSON, `{"type":"number","format":"int32"}`)
 		})
 		Convey("a int64 property", func() {
 			prop := Int64Property()
-			So(prop, ShouldSerializeJSON, `{"format":"int64","type":"number"}`)
+			So(prop, ShouldSerializeJSON, `{"type":"number","format":"int64"}`)
 		})
 		Convey("a string map property", func() {
 			prop := MapProperty(StringProperty())
-			So(prop, ShouldSerializeJSON, `{"additionalProperties":{"type":"string"},"type":"object"}`)
+			So(prop, ShouldSerializeJSON, `{"type":"object","additionalProperties":{"type":"string"}}`)
 		})
 		Convey("an int32 map property", func() {
 			prop := MapProperty(Int32Property())
-			So(prop, ShouldSerializeJSON, `{"additionalProperties":{"format":"int32","type":"number"},"type":"object"}`)
+			So(prop, ShouldSerializeJSON, `{"type":"object","additionalProperties":{"type":"number","format":"int32"}}`)
 		})
 		Convey("a ref property", func() {
 			prop := RefProperty("Dog")
@@ -56,11 +56,11 @@ func TestPropertySerialization(t *testing.T) {
 		Convey("a string property with enums", func() {
 			prop := StringProperty()
 			prop.Enum = append(prop.Enum, "a", "b")
-			So(prop, ShouldSerializeJSON, `{"enum":["a","b"],"type":"string"}`)
+			So(prop, ShouldSerializeJSON, `{"type":"string","enum":["a","b"]}`)
 		})
 		Convey("a string array property", func() {
 			prop := ArrayProperty(StringProperty())
-			So(prop, ShouldSerializeJSON, `{"items":{"type":"string"},"type":"array"}`)
+			So(prop, ShouldSerializeJSON, `{"type":"array","items":{"type":"string"}}`)
 		})
 	})
 
@@ -119,7 +119,14 @@ func TestPropertySerialization(t *testing.T) {
 			So(`{"items":{"type":"string"},"type":"array"}`, ShouldParseJSON, prop)
 		})
 		Convey("a list of string array properties", func() {
-			prop := &Schema{Items: &SchemaOrArray{Multi: []Schema{Schema{Type: &StringOrArray{Single: "string"}}, Schema{Type: &StringOrArray{Single: "string"}}}}}
+			prop := &Schema{schemaProps: schemaProps{
+				Items: &SchemaOrArray{
+					Multi: []Schema{
+						Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}},
+						Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}},
+					},
+				},
+			}}
 			So(`{"items":[{"type":"string"},{"type":"string"}]}`, ShouldParseJSON, prop)
 		})
 	})

@@ -3,42 +3,50 @@ package swagger
 import (
 	"encoding/json"
 
-	"github.com/casualjim/go-swagger/reflection"
+	"github.com/casualjim/go-swagger/swagger/util"
 )
 
 // QueryParam creates a query parameter
 func QueryParam() *Parameter {
-	return &Parameter{In: "query"}
+	return &Parameter{paramProps: paramProps{In: "query"}}
 }
 
 // HeaderParam creates a header parameter, this is always required by default
 func HeaderParam() *Parameter {
-	return &Parameter{In: "header", Required: true}
+	return &Parameter{paramProps: paramProps{In: "header", Required: true}}
 }
 
 // PathParam creates a path parameter, this is always required
 func PathParam() *Parameter {
-	return &Parameter{In: "path", Required: true}
+	return &Parameter{paramProps: paramProps{In: "path", Required: true}}
 }
 
 // BodyParam creates a body parameter
 func BodyParam() *Parameter {
-	return &Parameter{In: "body"}
+	return &Parameter{paramProps: paramProps{In: "body"}}
 }
 
 // FormDataParam creates a body parameter
 func FormDataParam() *Parameter {
-	return &Parameter{In: "formData"}
+	return &Parameter{paramProps: paramProps{In: "formData"}}
 }
 
 // FileParam creates a body parameter
 func FileParam() *Parameter {
-	return &Parameter{Type: "file"}
+	return &Parameter{simpleSchema: simpleSchema{Type: "file"}}
 }
 
 // SimpleArrayParam creates a param for a simple array (string, int, date etc)
 func SimpleArrayParam(tpe, fmt string) *Parameter {
-	return &Parameter{Type: "array", CollectionFormat: "csv", Items: &Items{Type: "string", Format: fmt}}
+	return &Parameter{simpleSchema: simpleSchema{Type: "array", CollectionFormat: "csv", Items: &Items{simpleSchema: simpleSchema{Type: "string", Format: fmt}}}}
+}
+
+type paramProps struct {
+	Description string  `json:"description,omitempty"`
+	Name        string  `json:"name,omitempty"`
+	In          string  `json:"in,omitempty"`
+	Required    bool    `json:"required,omitempty"`
+	Schema      *Schema `json:"schema,omitempty"` // when in == "body"
 }
 
 // Parameter a unique parameter is defined by a combination of a [name](#parameterName) and [location](#parameterIn).
@@ -54,79 +62,54 @@ func SimpleArrayParam(tpe, fmt string) *Parameter {
 //
 // For more information: http://goo.gl/8us55a#parameterObject
 type Parameter struct {
-	Description      string        `swagger:"description,omitempty"`
-	Items            *Items        `swagger:"items,omitempty"`
-	Extensions       Extensions    `swagger:"-"` // custom extensions, omitted when empty
-	Ref              string        `swagger:"-"`
-	Maximum          *float64      `swagger:"maximum,omitempty"`
-	ExclusiveMaximum bool          `swagger:"exclusiveMaximum,omitempty"`
-	Minimum          *float64      `swagger:"minimum,omitempty"`
-	ExclusiveMinimum bool          `swagger:"exclusiveMinimum,omitempty"`
-	MaxLength        *int64        `swagger:"maxLength,omitempty"`
-	MinLength        *int64        `swagger:"minLength,omitempty"`
-	Pattern          string        `swagger:"pattern,omitempty"`
-	MaxItems         *int64        `swagger:"maxItems,omitempty"`
-	MinItems         *int64        `swagger:"minItems,omitempty"`
-	UniqueItems      bool          `swagger:"uniqueItems,omitempty"`
-	MultipleOf       *float64      `swagger:"multipleOf,omitempty"`
-	Enum             []interface{} `swagger:"enum,omitempty"`
-	Type             string        `swagger:"type,omitempty"`
-	Format           string        `swagger:"format,omitempty"`
-	Name             string        `swagger:"name,omitempty"`
-	In               string        `swagger:"in,omitempty"`
-	Required         bool          `swagger:"required,omitempty"`
-	Schema           *Schema       `swagger:"schema,omitempty"` // when in == "body"
-	CollectionFormat string        `swagger:"collectionFormat,omitempty"`
-	Default          interface{}   `swagger:"default,omitempty"`
+	refable
+	commonValidations
+	simpleSchema
+	vendorExtensible
+	paramProps
 }
 
-// UnmarshalMap hydrates this parameter instance with the data from the map
-func (p *Parameter) UnmarshalMap(data interface{}) error {
-	dict := reflection.MarshalMap(data)
-	if err := reflection.UnmarshalMapRecursed(dict, p); err != nil {
+// UnmarshalJSON hydrates this items instance with the data from JSON
+func (p *Parameter) UnmarshalJSON(data []byte) error {
+	if err := json.Unmarshal(data, &p.commonValidations); err != nil {
 		return err
 	}
-	if ref, ok := dict["$ref"]; ok {
-		p.Ref = ref.(string)
+	if err := json.Unmarshal(data, &p.refable); err != nil {
+		return err
 	}
-	p.Extensions = readExtensions(dict)
+	if err := json.Unmarshal(data, &p.simpleSchema); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(data, &p.vendorExtensible); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(data, &p.paramProps); err != nil {
+		return err
+	}
 	return nil
 }
 
-// UnmarshalJSON hydrates this parameter instance with the data from JSON
-func (p *Parameter) UnmarshalJSON(data []byte) error {
-	var value map[string]interface{}
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	return p.UnmarshalMap(value)
-}
-
-// UnmarshalYAML hydrates this parameter instance with the data from YAML
-func (p *Parameter) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var value map[string]interface{}
-	if err := unmarshal(&value); err != nil {
-		return err
-	}
-	return p.UnmarshalMap(value)
-}
-
-// MarshalMap converts this parameter object to a map
-func (p Parameter) MarshalMap() map[string]interface{} {
-	res := reflection.MarshalMapRecursed(p)
-	if p.Ref != "" {
-		res["$ref"] = p.Ref
-	}
-	addExtensions(res, p.Extensions)
-	return res
-}
-
-// MarshalJSON converts this parameter object to JSON
+// MarshalJSON converts this items object to JSON
 func (p Parameter) MarshalJSON() ([]byte, error) {
-	return json.Marshal(p.MarshalMap())
-}
-
-// MarshalYAML converts this parameter object to YAML
-func (p Parameter) MarshalYAML() (interface{}, error) {
-	return p.MarshalMap(), nil
+	b1, err := json.Marshal(p.commonValidations)
+	if err != nil {
+		return nil, err
+	}
+	b2, err := json.Marshal(p.simpleSchema)
+	if err != nil {
+		return nil, err
+	}
+	b3, err := json.Marshal(p.refable)
+	if err != nil {
+		return nil, err
+	}
+	b4, err := json.Marshal(p.vendorExtensible)
+	if err != nil {
+		return nil, err
+	}
+	b5, err := json.Marshal(p.paramProps)
+	if err != nil {
+		return nil, err
+	}
+	return util.ConcatJSON(b3, b1, b2, b4, b5), nil
 }

@@ -1,10 +1,8 @@
-package swagger
+package validate
 
 import (
 	"encoding"
-	"errors"
 	"fmt"
-	"mime/multipart"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -12,45 +10,99 @@ import (
 	"strings"
 
 	"github.com/casualjim/go-swagger"
+	swagger_api "github.com/casualjim/go-swagger/swagger"
+	"github.com/casualjim/go-swagger/swagger/errors"
 	"github.com/casualjim/go-swagger/swagger/httputils"
 	"github.com/casualjim/go-swagger/swagger/util"
 )
 
-var requestBinderType = reflect.TypeOf(new(RequestBinder)).Elem()
 var textUnmarshalType = reflect.TypeOf(new(encoding.TextUnmarshaler)).Elem()
-
-// File represents an uploaded file.
-type File struct {
-	Data   multipart.File
-	Header *multipart.FileHeader
-}
-
-// RequestBinder is an interface for types that want to take charge of customizing the binding process
-// or want to sidestep the reflective binding of values.
-type RequestBinder interface {
-	BindRequest(*http.Request, RouteParams) error
-}
 
 type operationBinder struct {
 	Parameters map[string]swagger.Parameter
-	Consumers  map[string]Consumer
+	Consumers  map[string]swagger_api.Consumer
+	Formats    map[string]map[string]reflect.Type
 }
 
-func (o *operationBinder) Bind(request *http.Request, routeParams RouteParams, data interface{}) error {
+func (o *operationBinder) Bind(request *http.Request, routeParams swagger_api.RouteParams, data interface{}) error {
 	val := reflect.Indirect(reflect.ValueOf(data))
-
+	isMap := val.Kind() == reflect.Map
 	for fieldName, param := range o.Parameters {
+		name := fieldName
+		var target reflect.Value
+		if !isMap {
+			target = val.FieldByName(name)
+		}
 
-		target := val.FieldByName(fieldName)
+		if isMap {
+			name = param.Name
+			tpe := o.typeForSchema(param.Type, param.Format, param.Items)
+			if tpe == nil {
+				continue
+			}
+			target = reflect.Indirect(reflect.New(tpe))
+		}
+
 		if !target.IsValid() {
-			return fmt.Errorf("parameter name %q is an unknown field", fieldName)
+			return fmt.Errorf("parameter name %q is an unknown field", name)
 		}
 
 		if err := o.setParamValue(target, &param, request, routeParams); err != nil {
 			return err
 		}
+		if isMap {
+			val.SetMapIndex(reflect.ValueOf(param.Name), target)
+		}
 	}
 
+	return nil
+}
+
+func (o *operationBinder) typeForSchema(tpe, format string, items *swagger.Items) reflect.Type {
+	switch tpe {
+	case "boolean":
+		return reflect.TypeOf(true)
+	case "string":
+		switch format {
+		case "byte":
+			return reflect.TypeOf(byte(1))
+		case "date":
+			return reflect.TypeOf(swagger_api.Date{})
+		case "date-time":
+			return reflect.TypeOf(swagger_api.DateTime{})
+		default:
+			if fmts, ok := o.Formats[tpe]; ok {
+				if tp, ok := fmts[format]; ok {
+					return tp
+				}
+			}
+			return reflect.TypeOf("")
+		}
+	case "integer":
+		switch format {
+		case "int32":
+			return reflect.TypeOf(int32(0))
+		case "int64":
+			return reflect.TypeOf(int64(0))
+		}
+	case "number":
+		switch format {
+		case "float":
+			return reflect.TypeOf(float32(0))
+		case "double":
+			return reflect.TypeOf(float64(0))
+		}
+	case "array":
+		itemsType := o.typeForSchema(items.Type, items.Format, nil)
+		if itemsType == nil {
+			return nil
+		}
+		return reflect.MakeSlice(reflect.SliceOf(itemsType), 0, 0).Type()
+	case "file":
+		return reflect.TypeOf(swagger_api.File{})
+	case "object":
+		return reflect.TypeOf(map[string]interface{}{})
+	}
 	return nil
 }
 
@@ -64,7 +116,7 @@ func contentType(req *http.Request) (string, error) {
 	return mt, nil
 }
 
-func (o *operationBinder) setParamValue(target reflect.Value, param *swagger.Parameter, request *http.Request, routeParams RouteParams) error {
+func (o *operationBinder) setParamValue(target reflect.Value, param *swagger.Parameter, request *http.Request, routeParams swagger_api.RouteParams) error {
 
 	switch param.In {
 	case "query":
@@ -82,7 +134,7 @@ func (o *operationBinder) setParamValue(target reflect.Value, param *swagger.Par
 			return err
 		}
 		if mt != "multipart/form-data" && mt != "application/x-www-form-urlencoded" {
-			return errors.New("invalid content type, should be \"multipart/form-data\" or \"application/x-www-form-urlencoded\"")
+			return errors.InvalidContentType(mt, []string{"multipart/form-data", "application/x-www-form-urlencoded"})
 		}
 		if mt == "multipart/form-data" {
 			if err := request.ParseMultipartForm(defaultMaxMemory); err != nil {
@@ -98,7 +150,7 @@ func (o *operationBinder) setParamValue(target reflect.Value, param *swagger.Par
 			if err != nil {
 				return err
 			}
-			target.Set(reflect.ValueOf(&File{file, header}))
+			target.Set(reflect.ValueOf(&swagger_api.File{Data: file, Header: header}))
 			return nil
 		}
 

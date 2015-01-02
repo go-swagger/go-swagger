@@ -15,25 +15,29 @@ func int64Ptr(f int64) *int64 {
 }
 
 var header = Header{
-	Description: "the description of this header",
-	Items: &Items{
-		Ref: "Cat",
+	headerProps: headerProps{Description: "the description of this header"},
+	simpleSchema: simpleSchema{
+		Items: &Items{
+			refable: refable{Ref: "Cat"},
+		},
+		Type:    "string",
+		Format:  "date",
+		Default: "8",
 	},
-	Maximum:          float64Ptr(100),
-	ExclusiveMaximum: true,
-	ExclusiveMinimum: true,
-	Minimum:          float64Ptr(5),
-	MaxLength:        int64Ptr(100),
-	MinLength:        int64Ptr(5),
-	Pattern:          "\\w{1,5}\\w+",
-	MaxItems:         int64Ptr(100),
-	MinItems:         int64Ptr(5),
-	UniqueItems:      true,
-	MultipleOf:       float64Ptr(5),
-	Enum:             []interface{}{"hello", "world"},
-	Type:             "string",
-	Format:           "date",
-	Default:          "8",
+	commonValidations: commonValidations{
+		Maximum:          float64Ptr(100),
+		ExclusiveMaximum: true,
+		ExclusiveMinimum: true,
+		Minimum:          float64Ptr(5),
+		MaxLength:        int64Ptr(100),
+		MinLength:        int64Ptr(5),
+		Pattern:          "\\w{1,5}\\w+",
+		MaxItems:         int64Ptr(100),
+		MinItems:         int64Ptr(5),
+		UniqueItems:      true,
+		MultipleOf:       float64Ptr(5),
+		Enum:             []interface{}{"hello", "world"},
+	},
 }
 
 var headerJSON = `{

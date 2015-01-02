@@ -7,10 +7,15 @@ import (
 	"github.com/casualjim/go-swagger/swagger/util"
 )
 
+// type operationRef struct {
+// 	operation *swagger.Operation
+// 	parameter *swagger.Parameter
+// }
+
 // specAnalyzer takes a swagger spec object and turns it into a registry
 // with a bunch of utility methods to act on the information in the spec
 type specAnalyzer struct {
-	spec        *swagger.Spec
+	spec        *swagger.Swagger
 	consumes    map[string]struct{}
 	produces    map[string]struct{}
 	authSchemes map[string]struct{}

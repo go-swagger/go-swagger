@@ -6,39 +6,41 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/casualjim/go-swagger/reflection"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-var spec = Spec{
+func IsZero(data reflect.Value) bool {
+	tpe := data.Type()
+	return reflect.DeepEqual(data.Interface(), reflect.Zero(tpe).Interface())
+}
+
+var spec = Swagger{
 	Consumes:    []string{"application/json", "application/x-yaml"},
 	Produces:    []string{"application/json"},
 	Schemes:     []string{"http", "https"},
 	Swagger:     "2.0",
-	Info:        info,
+	Info:        &info,
 	Host:        "some.api.out.there",
 	BasePath:    "/",
-	Paths:       paths,
-	Definitions: map[string]Schema{"Category": Schema{Type: &StringOrArray{Single: "string"}}},
+	Paths:       &paths,
+	Definitions: map[string]Schema{"Category": Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}}},
 	Parameters: map[string]Parameter{
-		"categoryParam": Parameter{Name: "category", In: "query", Type: "string"},
+		"categoryParam": Parameter{paramProps: paramProps{Name: "category", In: "query"}, simpleSchema: simpleSchema{Type: "string"}},
 	},
 	Responses: map[string]Response{
 		"EmptyAnswer": Response{
-			Description: "no data to return for this operation",
+			responseProps: responseProps{
+				Description: "no data to return for this operation",
+			},
 		},
 	},
 	SecurityDefinitions: map[string]*SecurityScheme{
-		"internalApiKey": &SecurityScheme{
-			Type: "apiKey",
-			In:   "header",
-			Name: "api_key",
-		},
+		"internalApiKey": APIKeyAuth("api_key", "header"),
 	},
 	Security: []map[string][]string{
 		map[string][]string{"internalApiKey": []string{}},
 	},
-	Tags:         []Tag{Tag{Name: "pets"}},
+	Tags:         []Tag{NewTag("pets", "", nil)},
 	ExternalDocs: &ExternalDocumentation{"the name", "the url"},
 }
 
@@ -86,7 +88,7 @@ var specJSON = `{
 	"externalDocs": {"description":"the name","url":"the url"}
 }`
 
-func verifySpecSerialize(specJSON []byte, spec Spec) {
+func verifySpecSerialize(specJSON []byte, spec Swagger) {
 	expected := map[string]interface{}{}
 	json.Unmarshal(specJSON, &expected)
 	b, err := json.MarshalIndent(spec, "", "  ")
@@ -110,7 +112,7 @@ func ShouldBeEquivalentTo(actual interface{}, expecteds ...interface{}) string {
 	actualType := reflect.TypeOf(actual)
 	if reflect.TypeOf(actual).ConvertibleTo(reflect.TypeOf(expected)) {
 		expectedValue := reflect.ValueOf(expected)
-		if reflection.IsZero(expectedValue) && reflection.IsZero(reflect.ValueOf(actual)) {
+		if IsZero(expectedValue) && IsZero(reflect.ValueOf(actual)) {
 			return ""
 		}
 
@@ -145,7 +147,7 @@ func compareSpecMaps(actual, expected map[string]interface{}) {
 	So(actual["externalDocs"], ShouldResemble, expected["externalDocs"])
 }
 
-func compareSpecs(actual Spec, spec Spec) {
+func compareSpecs(actual Swagger, spec Swagger) {
 	So(actual, ShouldBeEquivalentTo, spec)
 }
 
@@ -156,7 +158,7 @@ func verifySpecJSON(specJSON []byte) {
 	err := json.Unmarshal(specJSON, &expected)
 	So(err, ShouldBeNil)
 
-	obj := Spec{}
+	obj := Swagger{}
 	err = json.Unmarshal(specJSON, &obj)
 	So(err, ShouldBeNil)
 
@@ -184,7 +186,7 @@ func TestIntegrationSpec(t *testing.T) {
 		})
 
 		Convey("deserialize", func() {
-			actual := Spec{}
+			actual := Swagger{}
 			err := json.Unmarshal([]byte(specJSON), &actual)
 			So(err, ShouldBeNil)
 			compareSpecs(actual, spec)

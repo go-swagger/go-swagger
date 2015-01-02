@@ -215,7 +215,7 @@ func Unescape(token string) string {
 
 // Escape escapes a pointer reference token string
 func Escape(token string) string {
-	step1 := strings.Replace(token, decRefTok1, encRefTok1, -1)
-	step2 := strings.Replace(step1, decRefTok0, encRefTok0, -1)
+	step1 := strings.Replace(token, decRefTok0, encRefTok0, -1)
+	step2 := strings.Replace(step1, decRefTok1, encRefTok1, -1)
 	return step2
 }

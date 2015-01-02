@@ -65,18 +65,12 @@ func TestSerialization(t *testing.T) {
 				Convey("for json returns quoted string", func() {
 					So(obj, ShouldSerializeJSON, "\"hello\"")
 				})
-				Convey("for yaml returns quoted string", func() {
-					So(obj, ShouldSerializeYAML, "hello\n")
-				})
 			})
 
 			Convey("when slice", func() {
 				obj := StringOrArray{Multi: []string{"hello", "world", "and", "stuff"}}
 				Convey("for json returns an array of strings", func() {
 					So(obj, ShouldSerializeJSON, "[\"hello\",\"world\",\"and\",\"stuff\"]")
-				})
-				Convey("for yaml returns an array of strings", func() {
-					So(obj, ShouldSerializeYAML, "- hello\n- world\n- and\n- stuff\n")
 				})
 			})
 
@@ -85,36 +79,27 @@ func TestSerialization(t *testing.T) {
 				Convey("for json returns an empty array", func() {
 					So(obj, ShouldSerializeJSON, "null")
 				})
-				Convey("for yaml returns an emtpy array", func() {
-					So(obj, ShouldSerializeYAML, "[]\n")
-				})
 			})
 		})
 
 		Convey("a schema or array property", func() {
 			Convey("when string", func() {
-				obj := SchemaOrArray{Single: &Schema{Type: &StringOrArray{Single: "string"}}}
+				obj := SchemaOrArray{Single: &Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}}}
 
 				Convey("for json returns quoted string", func() {
 					So(obj, ShouldSerializeJSON, "{\"type\":\"string\"}")
-				})
-				Convey("for yaml returns quoted string", func() {
-					So(obj, ShouldSerializeYAML, "type: string\n")
 				})
 			})
 
 			Convey("when slice", func() {
 				obj := SchemaOrArray{
 					Multi: []Schema{
-						Schema{Type: &StringOrArray{Single: "string"}},
-						Schema{Type: &StringOrArray{Single: "string"}},
+						Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}},
+						Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}},
 					},
 				}
 				Convey("for json returns an array of strings", func() {
 					So(obj, ShouldSerializeJSON, "[{\"type\":\"string\"},{\"type\":\"string\"}]")
-				})
-				Convey("for yaml returns an array of strings", func() {
-					So(obj, ShouldSerializeYAML, "- type: string\n- type: string\n")
 				})
 			})
 
@@ -122,9 +107,6 @@ func TestSerialization(t *testing.T) {
 				obj := SchemaOrArray{}
 				Convey("for json returns an empty array", func() {
 					So(obj, ShouldSerializeJSON, "null")
-				})
-				Convey("for yaml returns an emtpy array", func() {
-					So(obj, ShouldSerializeYAML, "[]\n")
 				})
 			})
 		})
@@ -139,9 +121,6 @@ func TestSerialization(t *testing.T) {
 				Convey("for json returns quoted string", func() {
 					So("\"hello\"", ShouldParseJSON, &obj)
 				})
-				Convey("for yaml returns quoted string", func() {
-					So("hello\n", ShouldParseYAML, &obj)
-				})
 			})
 
 			Convey("when slice", func() {
@@ -150,10 +129,7 @@ func TestSerialization(t *testing.T) {
 					So("[\"hello\",\"world\",\"and\",\"stuff\"]", ShouldParseJSON, &obj)
 				})
 				Convey("for json returns an array of strings with nil", func() {
-					So("[\"hello\",\"world\",null,\"stuff\"]", ShouldParseJSON, &StringOrArray{Multi: []string{"hello", "world", "stuff"}})
-				})
-				Convey("for yaml returns an array of strings", func() {
-					So("- hello\n- world\n- and\n- stuff\n", ShouldParseYAML, &obj)
+					So("[\"hello\",\"world\",null,\"stuff\"]", ShouldParseJSON, &StringOrArray{Multi: []string{"hello", "world", "", "stuff"}})
 				})
 			})
 
@@ -162,45 +138,33 @@ func TestSerialization(t *testing.T) {
 				Convey("for json returns an empty array", func() {
 					So("null", ShouldParseJSON, &obj)
 				})
-				Convey("for yaml returns an emtpy array", func() {
-					So("[]\n", ShouldParseYAML, &obj)
-				})
 			})
 		})
 
 		Convey("a schema or array property", func() {
 			Convey("when string", func() {
-				obj := SchemaOrArray{Single: &Schema{Type: &StringOrArray{Single: "string"}}}
+				obj := SchemaOrArray{Single: &Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}}}
 
 				Convey("for json returns quoted string", func() {
 					So("{\"type\":\"string\"}", ShouldParseJSON, &obj)
-				})
-				Convey("for yaml returns quoted string", func() {
-					So("type: string\n", ShouldParseYAML, &obj)
 				})
 			})
 
 			Convey("when slice", func() {
 				obj := SchemaOrArray{
 					Multi: []Schema{
-						Schema{Type: &StringOrArray{Single: "string"}},
-						Schema{Type: &StringOrArray{Single: "string"}},
+						Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}},
+						Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}},
 					},
 				}
 				Convey("for json returns an array of strings", func() {
 					So("[{\"type\":\"string\"},{\"type\":\"string\"}]", ShouldParseJSON, &obj)
-				})
-				Convey("for yaml returns an array of strings", func() {
-					So("- type: string\n- type: string\n", ShouldParseYAML, &obj)
 				})
 			})
 
 			Convey("when empty", func() {
 				Convey("for json returns an empty array", func() {
 					So("null", ShouldParseJSON, &SchemaOrArray{})
-				})
-				Convey("for yaml returns an emtpy array", func() {
-					So("[]\n", ShouldParseYAML, &SchemaOrArray{Multi: []Schema{}})
 				})
 			})
 		})

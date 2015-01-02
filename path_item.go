@@ -3,8 +3,20 @@ package swagger
 import (
 	"encoding/json"
 
-	"github.com/casualjim/go-swagger/reflection"
+	"github.com/casualjim/go-swagger/swagger/util"
 )
+
+// pathItemProps the path item specific properties
+type pathItemProps struct {
+	Get        *Operation  `json:"get,omitempty"`
+	Put        *Operation  `json:"put,omitempty"`
+	Post       *Operation  `json:"post,omitempty"`
+	Delete     *Operation  `json:"delete,omitempty"`
+	Options    *Operation  `json:"options,omitempty"`
+	Head       *Operation  `json:"head,omitempty"`
+	Patch      *Operation  `json:"patch,omitempty"`
+	Parameters []Parameter `json:"parameters,omitempty"`
+}
 
 // PathItem describes the operations available on a single path.
 // A Path Item may be empty, due to [ACL constraints](http://goo.gl/8us55a#securityFiltering).
@@ -13,65 +25,39 @@ import (
 //
 // For more information: http://goo.gl/8us55a#pathItemObject
 type PathItem struct {
-	Ref        string                 `swagger:"-"`
-	Extensions map[string]interface{} `swagger:"-"` // custom extensions, omitted when empty
-	Get        *Operation             `swagger:"get,omitempty"`
-	Put        *Operation             `swagger:"put,omitempty"`
-	Post       *Operation             `swagger:"post,omitempty"`
-	Delete     *Operation             `swagger:"delete,omitempty"`
-	Options    *Operation             `swagger:"options,omitempty"`
-	Head       *Operation             `swagger:"head,omitempty"`
-	Patch      *Operation             `swagger:"patch,omitempty"`
-	Parameters []Parameter            `swagger:"parameters,omitempty"`
+	refable
+	vendorExtensible
+	pathItemProps
 }
 
-// UnmarshalMap hydrates this path item instance with the data from the map
-func (p *PathItem) UnmarshalMap(data interface{}) error {
-	dict := reflection.MarshalMap(data)
-	if ref, ok := dict["$ref"]; ok {
-		p.Ref = ref.(string)
-	}
-	if err := reflection.UnmarshalMapRecursed(dict, p); err != nil {
+// UnmarshalJSON hydrates this items instance with the data from JSON
+func (p *PathItem) UnmarshalJSON(data []byte) error {
+	if err := json.Unmarshal(data, &p.refable); err != nil {
 		return err
 	}
-	p.Extensions = readExtensions(dict)
+	if err := json.Unmarshal(data, &p.vendorExtensible); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(data, &p.pathItemProps); err != nil {
+		return err
+	}
 	return nil
 }
 
-// UnmarshalJSON hydrates this path item instance with the data from JSON
-func (p *PathItem) UnmarshalJSON(data []byte) error {
-	var value map[string]interface{}
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	return p.UnmarshalMap(value)
-}
-
-// UnmarshalYAML hydrates this path item instance with the data from YAML
-func (p *PathItem) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var value map[string]interface{}
-	if err := unmarshal(&value); err != nil {
-		return err
-	}
-	return p.UnmarshalMap(value)
-}
-
-// MarshalMap converts this path item to a map
-func (p PathItem) MarshalMap() map[string]interface{} {
-	res := reflection.MarshalMapRecursed(p)
-	if p.Ref != "" {
-		res["$ref"] = p.Ref
-	}
-	addExtensions(res, p.Extensions)
-	return res
-}
-
-// MarshalJSON converts this path item to
+// MarshalJSON converts this items object to JSON
 func (p PathItem) MarshalJSON() ([]byte, error) {
-	return json.Marshal(p.MarshalMap())
-}
-
-// MarshalYAML converts this path item to YAML
-func (p PathItem) MarshalYAML() (interface{}, error) {
-	return p.MarshalMap(), nil
+	b3, err := json.Marshal(p.refable)
+	if err != nil {
+		return nil, err
+	}
+	b4, err := json.Marshal(p.vendorExtensible)
+	if err != nil {
+		return nil, err
+	}
+	b5, err := json.Marshal(p.pathItemProps)
+	if err != nil {
+		return nil, err
+	}
+	concated := util.ConcatJSON(b3, b4, b5)
+	return concated, nil
 }

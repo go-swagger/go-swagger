@@ -8,15 +8,15 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var contactInfoJSON = `{"email":"some@mailayada.dkdkd","name":"wordnik api team","url":"http://developer.wordnik.com"}`
-var contactInfoYAML = `email: some@mailayada.dkdkd
-name: wordnik api team
+var contactInfoJSON = `{"name":"wordnik api team","url":"http://developer.wordnik.com","email":"some@mailayada.dkdkd"}`
+var contactInfoYAML = `name: wordnik api team
 url: http://developer.wordnik.com
+email: some@mailayada.dkdkd
 `
 var contactInfo = ContactInfo{
-	Email: "some@mailayada.dkdkd",
 	Name:  "wordnik api team",
 	URL:   "http://developer.wordnik.com",
+	Email: "some@mailayada.dkdkd",
 }
 
 func TestIntegrationContactInfo(t *testing.T) {

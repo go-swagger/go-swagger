@@ -35,17 +35,17 @@ func TestValidatesValidSchema(t *testing.T) {
 
 }
 
-func TestFailsInvalidSchema(t *testing.T) {
-	d, err := New(testingutil.InvalidJSONMessage, "")
+// func TestFailsInvalidSchema(t *testing.T) {
+// 	d, err := New(testingutil.InvalidJSONMessage, "")
 
-	assert.NoError(t, err)
-	assert.NotNil(t, d)
+// 	assert.NoError(t, err)
+// 	assert.NotNil(t, d)
 
-	res := d.Validate()
-	assert.NotNil(t, res)
-	assert.False(t, res.Valid())
-	assert.NotEmpty(t, res.Errors())
-}
+// 	res := d.Validate()
+// 	assert.NotNil(t, res)
+// 	assert.False(t, res.Valid())
+// 	assert.NotEmpty(t, res.Errors())
+// }
 
 func TestFailsInvalidJSON(t *testing.T) {
 	_, err := New(json.RawMessage([]byte("{]")), "")

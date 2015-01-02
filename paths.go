@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/casualjim/go-swagger/reflection"
+	"github.com/casualjim/go-swagger/swagger/util"
 )
 
 // Paths holds the relative paths to the individual endpoints.
@@ -14,70 +14,60 @@ import (
 //
 // For more information: http://goo.gl/8us55a#pathsObject
 type Paths struct {
-	Extensions map[string]interface{} `swagger:"-"` // custom extensions, omitted when empty
-	Paths      map[string]PathItem    `swagger:"-"` // custom serializer to flatten this, each entry must start with "/"
+	vendorExtensible
+	Paths map[string]PathItem `json:"-"` // custom serializer to flatten this, each entry must start with "/"
 }
 
-// UnmarshalMap hydrates this paths instance with the data from the map
-func (p *Paths) UnmarshalMap(data interface{}) error {
-	dict := reflection.MarshalMap(data)
-	var res map[string]PathItem
-	for k, v := range dict {
-		if strings.HasPrefix(k, "/") {
-			if res == nil {
-				res = make(map[string]PathItem)
+// UnmarshalJSON hydrates this items instance with the data from JSON
+func (p *Paths) UnmarshalJSON(data []byte) error {
+	var res map[string]json.RawMessage
+	if err := json.Unmarshal(data, &res); err != nil {
+		return err
+	}
+	for k, v := range res {
+		if strings.HasPrefix(strings.ToLower(k), "x-") {
+			if p.Extensions == nil {
+				p.Extensions = make(map[string]interface{})
 			}
-			pathItem := PathItem{}
-			if err := reflection.UnmarshalMap(reflection.MarshalMap(v), &pathItem); err != nil {
+			var d interface{}
+			if err := json.Unmarshal(v, &d); err != nil {
 				return err
 			}
-			res[k] = pathItem
-			delete(dict, k)
+			p.Extensions[k] = d
+		}
+		if strings.HasPrefix(k, "/") {
+			if p.Paths == nil {
+				p.Paths = make(map[string]PathItem)
+			}
+			var pi PathItem
+			if err := json.Unmarshal(v, &pi); err != nil {
+				return err
+			}
+			p.Paths[k] = pi
 		}
 	}
-	p.Paths = res
-	p.Extensions = readExtensions(dict)
 	return nil
 }
 
-// UnmarshalJSON hydrates this paths instance with the data from JSON
-func (p *Paths) UnmarshalJSON(data []byte) error {
-	var value map[string]interface{}
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	return p.UnmarshalMap(value)
-}
-
-// UnmarshalYAML hydrates this paths instance with the data from YAML
-func (p *Paths) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var value map[string]interface{}
-	if err := unmarshal(&value); err != nil {
-		return err
-	}
-	return p.UnmarshalMap(value)
-}
-
-// MarshalMap converts this paths object to a map
-func (p Paths) MarshalMap() map[string]interface{} {
-	res := make(map[string]interface{})
-	for k, v := range p.Paths {
-		key := k
-		if !strings.HasPrefix(key, "/") {
-			key = "/" + key
-		}
-		res[key] = v.MarshalMap()
-	}
-	addExtensions(res, p.Extensions)
-	return res
-}
-
-// MarshalJSON converts this paths object to JSON
+// MarshalJSON converts this items object to JSON
 func (p Paths) MarshalJSON() ([]byte, error) {
-	return json.Marshal(p.MarshalMap())
-}
-
-// MarshalYAML converts this paths object to YAML
-func (p Paths) MarshalYAML() (interface{}, error) {
-	return p.MarshalMap(), nil
+	b1, err := json.Marshal(p.vendorExtensible)
+	if err != nil {
+		return nil, err
+	}
+	var pths map[string]PathItem
+	for k, v := range p.Paths {
+		if strings.HasPrefix(k, "/") {
+			if pths == nil {
+				pths = make(map[string]PathItem)
+			}
+			pths[k] = v
+		}
+	}
+	b2, err := json.Marshal(pths)
+	if err != nil {
+		return nil, err
+	}
+	concated := util.ConcatJSON(b1, b2)
+	return concated, nil
 }

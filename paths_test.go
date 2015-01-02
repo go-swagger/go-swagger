@@ -8,10 +8,10 @@ import (
 )
 
 var paths = Paths{
-	Extensions: map[string]interface{}{"x-framework": "go-swagger"},
+	vendorExtensible: vendorExtensible{Extensions: map[string]interface{}{"x-framework": "go-swagger"}},
 	Paths: map[string]PathItem{
 		"/": PathItem{
-			Ref: "cats",
+			refable: refable{Ref: "cats"},
 		},
 	},
 }

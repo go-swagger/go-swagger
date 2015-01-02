@@ -3,62 +3,44 @@ package swagger
 import (
 	"encoding/json"
 
-	"github.com/casualjim/go-swagger/reflection"
+	"github.com/casualjim/go-swagger/swagger/util"
 )
+
+type responseProps struct {
+	Description string            `json:"description,omitempty"`
+	Schema      *Schema           `json:"schema,omitempty"`
+	Headers     map[string]Header `json:"headers,omitempty"`
+	Examples    interface{}       `json:"examples,omitempty"`
+}
 
 // Response describes a single response from an API Operation.
 //
 // For more information: http://goo.gl/8us55a#responseObject
 type Response struct {
-	Description string            `swagger:"description,omitempty"`
-	Ref         string            `swagger:"-"`
-	Schema      *Schema           `swagger:"schema,omitempty"`
-	Headers     map[string]Header `swagger:"headers,omitempty"`
-	Examples    interface{}       `swagger:"examples,omitempty"`
+	refable
+	responseProps
 }
 
-// UnmarshalMap hydrates this response instance with the data from the map
-func (r *Response) UnmarshalMap(data interface{}) error {
-	dict := reflection.MarshalMap(data)
-	if ref, ok := dict["$ref"]; ok {
-		r.Ref = ref.(string)
-	}
-	return reflection.UnmarshalMapRecursed(dict, r)
-}
-
-// UnmarshalJSON hydrates this response instance with the data from JSON
+// UnmarshalJSON hydrates this items instance with the data from JSON
 func (r *Response) UnmarshalJSON(data []byte) error {
-	var value map[string]interface{}
-	if err := json.Unmarshal(data, &value); err != nil {
+	if err := json.Unmarshal(data, &r.responseProps); err != nil {
 		return err
 	}
-	return r.UnmarshalMap(value)
-}
-
-// UnmarshalYAML hydrates this response instance with the data from YAML
-func (r *Response) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var value map[string]interface{}
-	if err := unmarshal(&value); err != nil {
+	if err := json.Unmarshal(data, &r.refable); err != nil {
 		return err
 	}
-	return r.UnmarshalMap(value)
+	return nil
 }
 
-// MarshalMap converts this response object to a map
-func (r Response) MarshalMap() map[string]interface{} {
-	result := reflection.MarshalMapRecursed(r)
-	if r.Ref != "" {
-		result["$ref"] = r.Ref
-	}
-	return result
-}
-
-// MarshalJSON converts this response object to JSON
+// MarshalJSON converts this items object to JSON
 func (r Response) MarshalJSON() ([]byte, error) {
-	return json.Marshal(r.MarshalMap())
-}
-
-// MarshalYAML converts this response object to YAML
-func (r Response) MarshalYAML() (interface{}, error) {
-	return r.MarshalMap(), nil
+	b1, err := json.Marshal(r.responseProps)
+	if err != nil {
+		return nil, err
+	}
+	b2, err := json.Marshal(r.refable)
+	if err != nil {
+		return nil, err
+	}
+	return util.ConcatJSON(b1, b2), nil
 }

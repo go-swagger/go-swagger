@@ -8,34 +8,38 @@ import (
 )
 
 var pathItem = PathItem{
-	Ref: "Dog",
-	Extensions: map[string]interface{}{
-		"x-framework": "go-swagger",
+	refable: refable{Ref: "Dog"},
+	vendorExtensible: vendorExtensible{
+		Extensions: map[string]interface{}{
+			"x-framework": "go-swagger",
+		},
 	},
-	Get: &Operation{
-		Description: "get operation description",
-	},
-	Put: &Operation{
-		Description: "put operation description",
-	},
-	Post: &Operation{
-		Description: "post operation description",
-	},
-	Delete: &Operation{
-		Description: "delete operation description",
-	},
-	Options: &Operation{
-		Description: "options operation description",
-	},
-	Head: &Operation{
-		Description: "head operation description",
-	},
-	Patch: &Operation{
-		Description: "patch operation description",
-	},
-	Parameters: []Parameter{
-		Parameter{
-			In: "path",
+	pathItemProps: pathItemProps{
+		Get: &Operation{
+			operationProps: operationProps{Description: "get operation description"},
+		},
+		Put: &Operation{
+			operationProps: operationProps{Description: "put operation description"},
+		},
+		Post: &Operation{
+			operationProps: operationProps{Description: "post operation description"},
+		},
+		Delete: &Operation{
+			operationProps: operationProps{Description: "delete operation description"},
+		},
+		Options: &Operation{
+			operationProps: operationProps{Description: "options operation description"},
+		},
+		Head: &Operation{
+			operationProps: operationProps{Description: "head operation description"},
+		},
+		Patch: &Operation{
+			operationProps: operationProps{Description: "patch operation description"},
+		},
+		Parameters: []Parameter{
+			Parameter{
+				paramProps: paramProps{In: "path"},
+			},
 		},
 	},
 }

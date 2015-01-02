@@ -10,6 +10,17 @@ import (
 	"github.com/casualjim/go-swagger/swagger/jsonschema"
 )
 
+// JSONSchemaDraft04 loads the json schema document for json shema draft04
+func JSONSchemaDraft04() (*jsonschema.Document, error) {
+	b, err := assets.Asset("jsonschema-draft-04.json")
+	if err != nil {
+		return nil, err
+	}
+	loader := jsonschema.NewLoader(bytes.NewBuffer(b), "http://json-schema.org/draft-04/schema#")
+
+	return jsonschema.Load(loader)
+}
+
 // MustLoadSwagger20Schema panics when Swagger20Schema returns an error
 func MustLoadSwagger20Schema() *jsonschema.Document {
 	d, e := Swagger20Schema()
@@ -36,7 +47,7 @@ type Document struct {
 	specAnalyzer
 	specSchema *jsonschema.Document
 	data       map[string]interface{}
-	spec       *swagger.Spec
+	spec       *swagger.Swagger
 }
 
 // New creates a new shema document
@@ -50,7 +61,7 @@ func New(data json.RawMessage, version string) (*Document, error) {
 
 	specSchema := MustLoadSwagger20Schema()
 
-	spec := new(swagger.Spec)
+	spec := new(swagger.Swagger)
 	if err := json.Unmarshal(data, spec); err != nil {
 		return nil, err
 	}

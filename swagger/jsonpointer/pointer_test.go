@@ -156,7 +156,7 @@ func TestOtherThings(t *testing.T) {
 	s := Escape("m~n")
 	assert.Equal(t, "m~0n", s)
 	s = Escape("m/n")
-	assert.Equal(t, "m~01n", s)
+	assert.Equal(t, "m~1n", s)
 
 	p, err = New("/foo/3")
 	assert.NoError(t, err)
@@ -187,6 +187,15 @@ func TestOtherThings(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, v)
 
+	esc := Escape("a/")
+	assert.Equal(t, "a~1", esc)
+	unesc := Unescape(esc)
+	assert.Equal(t, "a/", unesc)
+
+	unesc = Unescape("~01")
+	assert.Equal(t, "~1", unesc)
+	assert.Equal(t, "~0~1", Escape("~/"))
+	assert.Equal(t, "~/", Unescape("~0~1"))
 }
 
 func TestObject(t *testing.T) {

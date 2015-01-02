@@ -2,65 +2,99 @@ package swagger
 
 import (
 	"encoding/json"
+	"strings"
 
-	"github.com/casualjim/go-swagger/reflection"
+	"github.com/casualjim/go-swagger/swagger/util"
 )
+
+// Extensions vendor specific extensions
+type Extensions map[string]interface{}
+
+// Add adds a value to these extensions
+func (e Extensions) Add(key string, value interface{}) {
+	realKey := strings.ToLower(key)
+	e[realKey] = value
+}
+
+// GetString gets a string value from the extensions
+func (e Extensions) GetString(key string) (string, bool) {
+	if v, ok := e[strings.ToLower(key)]; ok {
+		str, ok := v.(string)
+		return str, ok
+	}
+	return "", false
+}
+
+type vendorExtensible struct {
+	Extensions Extensions
+}
+
+func (v vendorExtensible) MarshalJSON() ([]byte, error) {
+	toser := make(map[string]interface{})
+	for k, v := range v.Extensions {
+		lk := strings.ToLower(k)
+		if strings.HasPrefix(lk, "x-") {
+			toser[k] = v
+		}
+	}
+	return json.Marshal(toser)
+}
+
+func (v *vendorExtensible) UnmarshalJSON(data []byte) error {
+	var d map[string]interface{}
+	if err := json.Unmarshal(data, &d); err != nil {
+		return err
+	}
+	for k, vv := range d {
+		lk := strings.ToLower(k)
+		if strings.HasPrefix(lk, "x-") {
+			if v.Extensions == nil {
+				v.Extensions = map[string]interface{}{}
+			}
+			v.Extensions[k] = vv
+		}
+	}
+	return nil
+}
+
+type infoProps struct {
+	Description    string       `json:"description,omitempty"`
+	Title          string       `json:"title,omitempty"`
+	TermsOfService string       `json:"termsOfService,omitempty"`
+	Contact        *ContactInfo `json:"contact,omitempty"`
+	License        *License     `json:"license,omitempty"`
+	Version        string       `json:"version,omitempty"`
+}
 
 // Info object provides metadata about the API.
 // The metadata can be used by the clients if needed, and can be presented in the Swagger-UI for convenience.
 //
 // For more information: http://goo.gl/8us55a#infoObject
 type Info struct {
-	Extensions     map[string]interface{} `swagger:"-"` // custom extensions, omitted when empty
-	Description    string                 `swagger:"description,omitempty"`
-	Title          string                 `swagger:"title,omitempty"`
-	TermsOfService string                 `swagger:"termsOfService,omitempty"`
-	Contact        *ContactInfo           `swagger:"contact,omitempty"`
-	License        *License               `swagger:"license,omitempty"`
-	Version        string                 `swagger:"version,omitempty"`
+	vendorExtensible
+	infoProps
 }
 
-// UnmarshalMap hydrates this info instance with the data from the map
-func (i *Info) UnmarshalMap(data interface{}) error {
-	dict := reflection.MarshalMap(data)
-	if err := reflection.UnmarshalMapRecursed(dict, i); err != nil {
-		return err
-	}
-	i.Extensions = readExtensions(dict)
-	return nil
-}
-
-// UnmarshalJSON hydrates this info instance with the data from JSON
-func (i *Info) UnmarshalJSON(data []byte) error {
-	var value map[string]interface{}
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	return i.UnmarshalMap(value)
-}
-
-// UnmarshalYAML hydrates this info instance with the data from YAML
-func (i *Info) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var value map[string]interface{}
-	if err := unmarshal(&value); err != nil {
-		return err
-	}
-	return i.UnmarshalMap(value)
-}
-
-// MarshalMap converts this info object to a map
-func (i Info) MarshalMap() map[string]interface{} {
-	res := reflection.MarshalMapRecursed(i)
-	addExtensions(res, i.Extensions)
-	return res
-}
-
-// MarshalJSON converts this info object to JSON
+// MarshalJSON marshal this to JSON
 func (i Info) MarshalJSON() ([]byte, error) {
-	return json.Marshal(i.MarshalMap())
+	b1, err := json.Marshal(i.infoProps)
+	if err != nil {
+		return nil, err
+	}
+	b2, err := json.Marshal(i.vendorExtensible)
+	if err != nil {
+		return nil, err
+	}
+	return util.ConcatJSON(b1, b2), nil
 }
 
-// MarshalYAML converts this info object to YAML
-func (i Info) MarshalYAML() (interface{}, error) {
-	return i.MarshalMap(), nil
+// UnmarshalJSON marshal this from JSON
+func (i *Info) UnmarshalJSON(data []byte) error {
+	if err := json.Unmarshal(data, &i.infoProps); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(data, &i.vendorExtensible); err != nil {
+		return err
+	}
+	return nil
 }

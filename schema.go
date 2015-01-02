@@ -2,13 +2,14 @@ package swagger
 
 import (
 	"encoding/json"
+	"fmt"
 
-	"github.com/casualjim/go-swagger/reflection"
+	"github.com/casualjim/go-swagger/swagger/util"
 )
 
 // BooleanProperty creates a boolean property
 func BooleanProperty() *Schema {
-	return &Schema{Type: &StringOrArray{Single: "boolean"}}
+	return &Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "boolean"}}}
 }
 
 // BoolProperty creates a boolean property
@@ -16,52 +17,72 @@ func BoolProperty() *Schema { return BooleanProperty() }
 
 // StringProperty creates a string property
 func StringProperty() *Schema {
-	return &Schema{Type: &StringOrArray{Single: "string"}}
+	return &Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}}
 }
 
 // Float64Property creates a float64/double property
 func Float64Property() *Schema {
-	return &Schema{Type: &StringOrArray{Single: "number"}, Format: "double"}
+	return &Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "number"}, Format: "double"}}
 }
 
 // Float32Property creates a float32/float property
 func Float32Property() *Schema {
-	return &Schema{Type: &StringOrArray{Single: "number"}, Format: "float"}
+	return &Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "number"}, Format: "float"}}
 }
 
 // Int32Property creates an int32 property
 func Int32Property() *Schema {
-	return &Schema{Type: &StringOrArray{Single: "number"}, Format: "int32"}
+	return &Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "number"}, Format: "int32"}}
 }
 
 // Int64Property creates an int64 property
 func Int64Property() *Schema {
-	return &Schema{Type: &StringOrArray{Single: "number"}, Format: "int64"}
+	return &Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "number"}, Format: "int64"}}
 }
 
 // DateProperty creates an date property
 func DateProperty() *Schema {
-	return &Schema{Type: &StringOrArray{Single: "string"}, Format: "date"}
+	return &Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}, Format: "date"}}
 }
 
 // DateTimeProperty creates a date time property
 func DateTimeProperty() *Schema {
-	return &Schema{Type: &StringOrArray{Single: "string"}, Format: "date-time"}
+	return &Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}, Format: "date-time"}}
 }
 
 // MapProperty creates a map property
 func MapProperty(property *Schema) *Schema {
-	return &Schema{Type: &StringOrArray{Single: "object"}, AdditionalProperties: property}
+	return &Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "object"}, AdditionalProperties: property}}
 }
 
 // RefProperty creates a ref property
 func RefProperty(name string) *Schema {
-	return &Schema{Ref: name}
+	return &Schema{refable: refable{Ref: Ref(name)}}
 }
 
 // ArrayProperty creates an array property
 func ArrayProperty(items *Schema) *Schema {
-	return &Schema{Items: &SchemaOrArray{Single: items}, Type: &StringOrArray{Single: "array"}}
+	return &Schema{schemaProps: schemaProps{Items: &SchemaOrArray{Single: items}, Type: &StringOrArray{Single: "array"}}}
+}
+
+type schemaProps struct {
+	Description          string                 `json:"description,omitempty"`
+	Type                 *StringOrArray         `json:"type,omitempty,byValue"`
+	Format               string                 `json:"format,omitempty"`
+	Title                string                 `json:"title,omitempty"`
+	Default              interface{}            `json:"default,omitempty"`
+	MaxProperties        *int64                 `json:"maxProperties,omitempty"`
+	MinProperties        *int64                 `json:"minProperties,omitempty"`
+	Required             []string               `json:"required,omitempty"`
+	Items                *SchemaOrArray         `json:"items,omitempty,byValue"`
+	AllOf                []Schema               `json:"allOf,omitempty"`
+	Properties           map[string]Schema      `json:"properties,omitempty"`
+	Discriminator        string                 `json:"discriminator,omitempty"`
+	ReadOnly             bool                   `json:"readOnly,omitempty"`
+	XML                  *XMLObject             `json:"xml,omitempty"`
+	ExternalDocs         *ExternalDocumentation `json:"externalDocs,omitempty"`
+	Example              interface{}            `json:"example,omitempty"`
+	AdditionalProperties *Schema                `json:"additionalProperties,omitempty"`
 }
 
 // Schema the schema object allows the definition of input and output data types.
@@ -72,83 +93,46 @@ func ArrayProperty(items *Schema) *Schema {
 //
 // For more information: http://goo.gl/8us55a#schemaObject
 type Schema struct {
-	Ref                  string                 `swagger:"-"`
-	Description          string                 `swagger:"description,omitempty"`
-	Maximum              *float64               `swagger:"maximum,omitempty"`
-	ExclusiveMaximum     bool                   `swagger:"exclusiveMaximum,omitempty"`
-	Minimum              *float64               `swagger:"minimum,omitempty"`
-	ExclusiveMinimum     bool                   `swagger:"exclusiveMinimum,omitempty"`
-	MaxLength            *int64                 `swagger:"maxLength,omitempty"`
-	MinLength            *int64                 `swagger:"minLength,omitempty"`
-	Pattern              string                 `swagger:"pattern,omitempty"`
-	MaxItems             *int64                 `swagger:"maxItems,omitempty"`
-	MinItems             *int64                 `swagger:"minItems,omitempty"`
-	UniqueItems          bool                   `swagger:"uniqueItems,omitempty"`
-	MultipleOf           *float64               `swagger:"multipleOf,omitempty"`
-	Enum                 []interface{}          `swagger:"enum,omitempty"`
-	Type                 *StringOrArray         `swagger:"type,omitempty,byValue"`
-	Format               string                 `swagger:"format,omitempty"`
-	Title                string                 `swagger:"title,omitempty"`
-	Default              interface{}            `swagger:"default,omitempty"`
-	MaxProperties        *int64                 `swagger:"maxProperties,omitempty"`
-	MinProperties        *int64                 `swagger:"minProperties,omitempty"`
-	Required             []string               `swagger:"required,omitempty"`
-	Items                *SchemaOrArray         `swagger:"items,omitempty,byValue"`
-	AllOf                []Schema               `swagger:"allOf,omitempty"`
-	Properties           map[string]Schema      `swagger:"properties,omitempty"`
-	Discriminator        string                 `swagger:"discriminator,omitempty"`
-	ReadOnly             bool                   `swagger:"readOnly,omitempty"`
-	XML                  *XMLObject             `swagger:"xml,omitempty"`
-	ExternalDocs         *ExternalDocumentation `swagger:"externalDocs,omitempty"`
-	Example              interface{}            `swagger:"example,omitempty"`
-	AdditionalProperties *Schema                `swagger:"additionalProperties,omitempty"`
-	Extensions           map[string]interface{} `swagger:"-"` // custom extensions, omitted when empty
+	refable
+	vendorExtensible
+	commonValidations
+	schemaProps
 }
 
-// UnmarshalMap hydrates this schema instance with the data from the map
-func (s *Schema) UnmarshalMap(data interface{}) error {
-	dict := reflection.MarshalMap(data)
-	if ref, ok := dict["$ref"]; ok {
-		s.Ref = ref.(string)
-	}
-	s.Extensions = readExtensions(dict)
-	return reflection.UnmarshalMapRecursed(dict, s)
-}
-
-// UnmarshalJSON hydrates this schema instance with the data from JSON
-func (s *Schema) UnmarshalJSON(data []byte) error {
-	var value map[string]interface{}
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	return s.UnmarshalMap(value)
-}
-
-// UnmarshalYAML hydrates this schema instance with the data from YAML
-func (s *Schema) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var value map[string]interface{}
-	if err := unmarshal(&value); err != nil {
-		return err
-	}
-	return s.UnmarshalMap(value)
-}
-
-// MarshalMap converts this schema object to a map
-func (s Schema) MarshalMap() map[string]interface{} {
-	result := reflection.MarshalMapRecursed(s)
-	if s.Ref != "" {
-		result["$ref"] = s.Ref
-	}
-	addExtensions(result, s.Extensions)
-	return result
-}
-
-// MarshalJSON converts this schema object to JSON
+// MarshalJSON marshal this to JSON
 func (s Schema) MarshalJSON() ([]byte, error) {
-	return json.Marshal(s.MarshalMap())
+	b1, err := json.Marshal(s.schemaProps)
+	if err != nil {
+		return nil, fmt.Errorf("schema props %v", err)
+	}
+	b2, err := json.Marshal(s.vendorExtensible)
+	if err != nil {
+		return nil, fmt.Errorf("vendor props %v", err)
+	}
+	b3, err := json.Marshal(s.refable)
+	if err != nil {
+		return nil, fmt.Errorf("ref prop %v", err)
+	}
+	b4, err := json.Marshal(s.commonValidations)
+	if err != nil {
+		return nil, fmt.Errorf("common validations %v", err)
+	}
+	return util.ConcatJSON(b1, b2, b3, b4), nil
 }
 
-// MarshalYAML converts this schema object to YAML
-func (s Schema) MarshalYAML() (interface{}, error) {
-	return s.MarshalMap(), nil
+// UnmarshalJSON marshal this from JSON
+func (s *Schema) UnmarshalJSON(data []byte) error {
+	if err := json.Unmarshal(data, &s.schemaProps); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(data, &s.vendorExtensible); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(data, &s.refable); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(data, &s.commonValidations); err != nil {
+		return err
+	}
+	return nil
 }

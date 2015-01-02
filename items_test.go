@@ -8,25 +8,29 @@ import (
 )
 
 var items = Items{
-	Ref:              "Dog",
-	Maximum:          float64Ptr(100),
-	ExclusiveMaximum: true,
-	ExclusiveMinimum: true,
-	Minimum:          float64Ptr(5),
-	MaxLength:        int64Ptr(100),
-	MinLength:        int64Ptr(5),
-	Pattern:          "\\w{1,5}\\w+",
-	MaxItems:         int64Ptr(100),
-	MinItems:         int64Ptr(5),
-	UniqueItems:      true,
-	MultipleOf:       float64Ptr(5),
-	Enum:             []interface{}{"hello", "world"},
-	Type:             "string",
-	Format:           "date",
-	CollectionFormat: "csv",
-	Default:          "8",
-	Items: &Items{
-		Ref: "Cat",
+	refable: refable{Ref: "Dog"},
+	commonValidations: commonValidations{
+		Maximum:          float64Ptr(100),
+		ExclusiveMaximum: true,
+		ExclusiveMinimum: true,
+		Minimum:          float64Ptr(5),
+		MaxLength:        int64Ptr(100),
+		MinLength:        int64Ptr(5),
+		Pattern:          "\\w{1,5}\\w+",
+		MaxItems:         int64Ptr(100),
+		MinItems:         int64Ptr(5),
+		UniqueItems:      true,
+		MultipleOf:       float64Ptr(5),
+		Enum:             []interface{}{"hello", "world"},
+	},
+	simpleSchema: simpleSchema{
+		Type:   "string",
+		Format: "date",
+		Items: &Items{
+			refable: refable{Ref: "Cat"},
+		},
+		CollectionFormat: "csv",
+		Default:          "8",
 	},
 }
 

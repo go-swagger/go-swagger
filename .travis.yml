@@ -6,11 +6,8 @@ go:
   - tip
 
 before_install:
-  - go install -race std
-
   # linting
-  - go get github.com/golang/lint
-  - go install github.com/golang/lint/golint
+  - go get github.com/golang/lint/golint
 
   # code coverage
   - go get golang.org/x/tools/cmd/...
@@ -24,24 +21,8 @@ before_install:
 
 script: 
   - golint ./...
-  - godep go test -v -race ./...
-  - godep go test -covermode=count -coverprofile=swagger.coverprofile .
-  - godep go test -covermode=count -coverprofile=reflection.coverprofile ./reflection
-  - godep go test -covermode=count -coverprofile=swagger-serve.coverprofile ./swagger
-  - godep go test -covermode=count -coverprofile=swagger-serve-errors.coverprofile ./swagger/errors
-  - godep go test -covermode=count -coverprofile=swagger-serve-httputils.coverprofile ./swagger/httputils
-  - godep go test -covermode=count -coverprofile=swagger-serve-jsonpointer.coverprofile ./swagger/jsonpointer
-  - godep go test -covermode=count -coverprofile=swagger-serve-jsonreference.coverprofile ./swagger/jsonreference
-  - godep go test -covermode=count -coverprofile=swagger-serve-jsonschema.coverprofile ./swagger/jsonschema
-  - godep go test -covermode=count -coverprofile=swagger-serve-jsonschema.coverprofile ./swagger/jsonschema
-  - godep go test -covermode=count -coverprofile=swagger-serve-load.coverprofile ./swagger/load
-  - godep go test -covermode=count -coverprofile=swagger-serve-middleware.coverprofile ./swagger/middleware
-  - godep go test -covermode=count -coverprofile=swagger-serve-router.coverprofile ./swagger/router
-  - godep go test -covermode=count -coverprofile=swagger-serve-spec.coverprofile ./swagger/spec
-  - godep go test -covermode=count -coverprofile=swagger-serve-util.coverprofile ./swagger/util
-  - godep go test -covermode=count -coverprofile=swagger-serve-validate.coverprofile ./swagger/validate
-  - gover
-  - if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ]; then goveralls -coverprofile=gover.coverprofile -service=travis-ci -repotoken $COVERALLS_TOKEN; fi
+  - go vet ./...
+  - ./autoclean.sh
 
 env:
   secure: "BVU08Ozu3y4JRVeaaRV0h0Px3u2PpOdchykHfJX0+AeOQZO6mmE69JfCJFOkynBVOY9P3AerDPlrVHPK3eBAeEwX+XgKaFenE4n7LgvH1rlrjOngaPte76x5BdbiGkJ///L0cKJw1t6FQlPnqFpjckbmr9f6w9ItR8ClqR0vMEs="

@@ -3,61 +3,49 @@ package swagger
 import (
 	"encoding/json"
 
-	"github.com/casualjim/go-swagger/reflection"
+	"github.com/casualjim/go-swagger/swagger/util"
 )
+
+type tagProps struct {
+	Description  string                 `json:"description,omitempty"`
+	Name         string                 `json:"name,omitempty"`
+	ExternalDocs *ExternalDocumentation `json:"externalDocs,omitempty"`
+}
+
+// NewTag creates a new tag
+func NewTag(name, description string, externalDocs *ExternalDocumentation) Tag {
+	return Tag{tagProps: tagProps{description, name, externalDocs}}
+}
 
 // Tag allows adding meta data to a single tag that is used by the [Operation Object](http://goo.gl/8us55a#operationObject).
 // It is not mandatory to have a Tag Object per tag used there.
 //
 // For more information: http://goo.gl/8us55a#tagObject
 type Tag struct {
-	Description  string                 `swagger:"description,omitempty"`
-	Extensions   map[string]interface{} `swagger:"-"` // custom extensions, omitted when empty
-	Name         string                 `swagger:"name"`
-	ExternalDocs *ExternalDocumentation `swagger:"externalDocs,omitempty"`
+	vendorExtensible
+	tagProps
 }
 
-// MarshalMap converts this tag object into a map
-func (t Tag) MarshalMap() map[string]interface{} {
-	res := reflection.MarshalMapRecursed(t)
-	addExtensions(res, t.Extensions)
-	return res
-}
-
-// MarshalJSON converts this tag object into JSON
+// MarshalJSON marshal this to JSON
 func (t Tag) MarshalJSON() ([]byte, error) {
-	return json.Marshal(t.MarshalMap())
-}
-
-// MarshalYAML converts this tag object into YAML
-func (t Tag) MarshalYAML() (interface{}, error) {
-	return t.MarshalMap(), nil
-}
-
-// UnmarshalMap hydrates this tag instance with the data from the map
-func (t *Tag) UnmarshalMap(data interface{}) error {
-	dict := reflection.MarshalMap(data)
-	if err := reflection.UnmarshalMapRecursed(dict, t); err != nil {
-		return err
+	b1, err := json.Marshal(t.tagProps)
+	if err != nil {
+		return nil, err
 	}
-	t.Extensions = readExtensions(dict)
-	return nil
+	b2, err := json.Marshal(t.vendorExtensible)
+	if err != nil {
+		return nil, err
+	}
+	return util.ConcatJSON(b1, b2), nil
 }
 
-// UnmarshalJSON hydrates this tag instance with the data from JSON
+// UnmarshalJSON marshal this from JSON
 func (t *Tag) UnmarshalJSON(data []byte) error {
-	var value map[string]interface{}
-	if err := json.Unmarshal(data, &value); err != nil {
+	if err := json.Unmarshal(data, &t.tagProps); err != nil {
 		return err
 	}
-	return t.UnmarshalMap(value)
-}
-
-// UnmarshalYAML hydrates this tag instance with the data from YAML
-func (t *Tag) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var value map[string]interface{}
-	if err := unmarshal(&value); err != nil {
+	if err := json.Unmarshal(data, &t.vendorExtensible); err != nil {
 		return err
 	}
-	return t.UnmarshalMap(value)
+	return nil
 }

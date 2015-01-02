@@ -3,76 +3,87 @@ package swagger
 import (
 	"encoding/json"
 
-	"github.com/casualjim/go-swagger/reflection"
+	"github.com/casualjim/go-swagger/swagger/util"
 )
+
+type refable struct {
+	Ref Ref
+}
+
+func (j refable) MarshalJSON() ([]byte, error) {
+	return j.Ref.MarshalJSON()
+}
+
+func (j *refable) UnmarshalJSON(d []byte) error {
+	return j.Ref.UnmarshalJSON(d)
+}
+
+type simpleSchema struct {
+	Type             string      `json:"type,omitempty"`
+	Format           string      `json:"format,omitempty"`
+	Items            *Items      `json:"items,omitempty"`
+	CollectionFormat string      `json:"collectionFormat,omitempty"`
+	Default          interface{} `json:"default,omitempty"`
+}
+
+type commonValidations struct {
+	Maximum          *float64      `json:"maximum,omitempty"`
+	ExclusiveMaximum bool          `json:"exclusiveMaximum,omitempty"`
+	Minimum          *float64      `json:"minimum,omitempty"`
+	ExclusiveMinimum bool          `json:"exclusiveMinimum,omitempty"`
+	MaxLength        *int64        `json:"maxLength,omitempty"`
+	MinLength        *int64        `json:"minLength,omitempty"`
+	Pattern          string        `json:"pattern,omitempty"`
+	MaxItems         *int64        `json:"maxItems,omitempty"`
+	MinItems         *int64        `json:"minItems,omitempty"`
+	UniqueItems      bool          `json:"uniqueItems,omitempty"`
+	MultipleOf       *float64      `json:"multipleOf,omitempty"`
+	Enum             []interface{} `json:"enum,omitempty"`
+}
 
 // Items a limited subset of JSON-Schema's items object.
 // It is used by parameter definitions that are not located in "body".
 //
 // For more information: http://goo.gl/8us55a#items-object-
 type Items struct {
-	Ref              string        `swagger:"-"`
-	Type             string        `swagger:"type,omitempty"`
-	Format           string        `swagger:"format,omitempty"`
-	Items            *Items        `swagger:"items,omitempty"`
-	CollectionFormat string        `swagger:"collectionFormat,omitempty"`
-	Default          interface{}   `swagger:"default,omitempty"`
-	Maximum          *float64      `swagger:"maximum,omitempty"`
-	ExclusiveMaximum bool          `swagger:"exclusiveMaximum,omitempty"`
-	Minimum          *float64      `swagger:"minimum,omitempty"`
-	ExclusiveMinimum bool          `swagger:"exclusiveMinimum,omitempty"`
-	MaxLength        *int64        `swagger:"maxLength,omitempty"`
-	MinLength        *int64        `swagger:"minLength,omitempty"`
-	Pattern          string        `swagger:"pattern,omitempty"`
-	MaxItems         *int64        `swagger:"maxItems,omitempty"`
-	MinItems         *int64        `swagger:"minItems,omitempty"`
-	UniqueItems      bool          `swagger:"uniqueItems,omitempty"`
-	MultipleOf       *float64      `swagger:"multipleOf,omitempty"`
-	Enum             []interface{} `swagger:"enum,omitempty"`
-}
-
-// UnmarshalMap hydrates this items instance with the data from the map
-func (i *Items) UnmarshalMap(data interface{}) error {
-	dict := reflection.MarshalMap(data)
-	if ref, ok := dict["$ref"]; ok {
-		i.Ref = ref.(string)
-	}
-	return reflection.UnmarshalMapRecursed(dict, i)
+	refable
+	commonValidations
+	simpleSchema
 }
 
 // UnmarshalJSON hydrates this items instance with the data from JSON
 func (i *Items) UnmarshalJSON(data []byte) error {
-	var value map[string]interface{}
-	if err := json.Unmarshal(data, &value); err != nil {
+	var validations commonValidations
+	if err := json.Unmarshal(data, &validations); err != nil {
 		return err
 	}
-	return i.UnmarshalMap(value)
-}
-
-// UnmarshalYAML hydrates this items instance with the data from YAML
-func (i *Items) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var value map[string]interface{}
-	if err := unmarshal(&value); err != nil {
+	var ref refable
+	if err := json.Unmarshal(data, &ref); err != nil {
 		return err
 	}
-	return i.UnmarshalMap(value)
-}
-
-// MarshalMap converts this items object to a map
-func (i Items) MarshalMap() map[string]interface{} {
-	result := reflection.MarshalMapRecursed(i)
-	if i.Ref != "" {
-		result["$ref"] = i.Ref
+	var simpleSchema simpleSchema
+	if err := json.Unmarshal(data, &simpleSchema); err != nil {
+		return err
 	}
-	return result
+	i.refable = ref
+	i.commonValidations = validations
+	i.simpleSchema = simpleSchema
+	return nil
 }
 
 // MarshalJSON converts this items object to JSON
 func (i Items) MarshalJSON() ([]byte, error) {
-	return json.Marshal(i.MarshalMap())
-}
-
-// MarshalYAML converts this items object to YAML
-func (i Items) MarshalYAML() (interface{}, error) {
-	return i.MarshalMap(), nil
+	b1, err := json.Marshal(i.commonValidations)
+	if err != nil {
+		return nil, err
+	}
+	b2, err := json.Marshal(i.simpleSchema)
+	if err != nil {
+		return nil, err
+	}
+	b3, err := json.Marshal(i.refable)
+	if err != nil {
+		return nil, err
+	}
+	return util.ConcatJSON(b3, b1, b2), nil
 }

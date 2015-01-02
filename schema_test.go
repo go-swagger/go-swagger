@@ -8,55 +8,59 @@ import (
 )
 
 var schema = Schema{
-	Ref:              "Cat",
-	Description:      "the description of this schema",
-	Maximum:          float64Ptr(100),
-	ExclusiveMaximum: true,
-	ExclusiveMinimum: true,
-	Minimum:          float64Ptr(5),
-	MaxLength:        int64Ptr(100),
-	MinLength:        int64Ptr(5),
-	Pattern:          "\\w{1,5}\\w+",
-	MaxItems:         int64Ptr(100),
-	MinItems:         int64Ptr(5),
-	UniqueItems:      true,
-	MultipleOf:       float64Ptr(5),
-	Enum:             []interface{}{"hello", "world"},
-	Type:             &StringOrArray{Single: "string"},
-	Format:           "date",
-	Title:            "the title",
-	Default:          "blah",
-	MaxProperties:    int64Ptr(5),
-	MinProperties:    int64Ptr(1),
-	Required:         []string{"id", "name"},
-	Items:            &SchemaOrArray{Single: &Schema{Type: &StringOrArray{Single: "string"}}},
-	AllOf:            []Schema{Schema{Type: &StringOrArray{Single: "string"}}},
-	Properties: map[string]Schema{
-		"id":   Schema{Type: &StringOrArray{Single: "integer"}, Format: "int64"},
-		"name": Schema{Type: &StringOrArray{Single: "string"}},
+	refable: refable{Ref: "Cat"},
+	commonValidations: commonValidations{
+		Maximum:          float64Ptr(100),
+		ExclusiveMaximum: true,
+		ExclusiveMinimum: true,
+		Minimum:          float64Ptr(5),
+		MaxLength:        int64Ptr(100),
+		MinLength:        int64Ptr(5),
+		Pattern:          "\\w{1,5}\\w+",
+		MaxItems:         int64Ptr(100),
+		MinItems:         int64Ptr(5),
+		UniqueItems:      true,
+		MultipleOf:       float64Ptr(5),
+		Enum:             []interface{}{"hello", "world"},
 	},
-	Discriminator: "not this",
-	ReadOnly:      true,
-	XML:           &XMLObject{"sch", "swagger.io", "sw", true, true},
-	ExternalDocs: &ExternalDocumentation{
-		Description: "the documentation etc",
-		URL:         "http://readthedocs.org/swagger",
-	},
-	Example: []interface{}{
-		map[string]interface{}{
-			"id":   1,
-			"name": "a book",
+	vendorExtensible: vendorExtensible{Extensions: map[string]interface{}{"x-framework": "go-swagger"}},
+	schemaProps: schemaProps{
+		Type:          &StringOrArray{Single: "string"},
+		Format:        "date",
+		Description:   "the description of this schema",
+		Title:         "the title",
+		Default:       "blah",
+		MaxProperties: int64Ptr(5),
+		MinProperties: int64Ptr(1),
+		Required:      []string{"id", "name"},
+		Items:         &SchemaOrArray{Single: &Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}}},
+		AllOf:         []Schema{Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}}},
+		Properties: map[string]Schema{
+			"id":   Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "integer"}, Format: "int64"}},
+			"name": Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}},
 		},
-		map[string]interface{}{
-			"id":   2,
-			"name": "the thing",
+		Discriminator: "not this",
+		ReadOnly:      true,
+		XML:           &XMLObject{"sch", "swagger.io", "sw", true, true},
+		ExternalDocs: &ExternalDocumentation{
+			Description: "the documentation etc",
+			URL:         "http://readthedocs.org/swagger",
 		},
+		Example: []interface{}{
+			map[string]interface{}{
+				"id":   1,
+				"name": "a book",
+			},
+			map[string]interface{}{
+				"id":   2,
+				"name": "the thing",
+			},
+		},
+		AdditionalProperties: &Schema{schemaProps: schemaProps{
+			Type:   &StringOrArray{Single: "integer"},
+			Format: "int32",
+		}},
 	},
-	AdditionalProperties: &Schema{
-		Type:   &StringOrArray{Single: "integer"},
-		Format: "int32",
-	},
-	Extensions: map[string]interface{}{"x-framework": "go-swagger"},
 }
 
 var schemaJSON = `{
@@ -184,7 +188,6 @@ func TestSchema(t *testing.T) {
 			So(ex1["id"], ShouldEqual, exp1["id"])
 			So(ex2["name"], ShouldEqual, exp2["name"])
 			So(ex2["id"], ShouldEqual, exp2["id"])
-			//So(actual.Example, ShouldBeEquivalentTo, schema.Example)
 			So(actual.AdditionalProperties, ShouldResemble, schema.AdditionalProperties)
 			So(actual.Extensions, ShouldBeEquivalentTo, schema.Extensions)
 		})

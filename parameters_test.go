@@ -8,34 +8,40 @@ import (
 )
 
 var parameter = Parameter{
-	Extensions: map[string]interface{}{
+	vendorExtensible: vendorExtensible{Extensions: map[string]interface{}{
 		"x-framework": "swagger-go",
+	}},
+	refable: refable{Ref: "Dog"},
+	commonValidations: commonValidations{
+		Maximum:          float64Ptr(100),
+		ExclusiveMaximum: true,
+		ExclusiveMinimum: true,
+		Minimum:          float64Ptr(5),
+		MaxLength:        int64Ptr(100),
+		MinLength:        int64Ptr(5),
+		Pattern:          "\\w{1,5}\\w+",
+		MaxItems:         int64Ptr(100),
+		MinItems:         int64Ptr(5),
+		UniqueItems:      true,
+		MultipleOf:       float64Ptr(5),
+		Enum:             []interface{}{"hello", "world"},
 	},
-	Description: "the description of this parameter",
-	Items: &Items{
-		Ref: "Cat",
+	simpleSchema: simpleSchema{
+		Type:             "string",
+		Format:           "date",
+		CollectionFormat: "csv",
+		Items: &Items{
+			refable: refable{Ref: "Cat"},
+		},
+		Default: "8",
 	},
-	Ref:              "Dog",
-	Maximum:          float64Ptr(100),
-	ExclusiveMaximum: true,
-	ExclusiveMinimum: true,
-	Minimum:          float64Ptr(5),
-	MaxLength:        int64Ptr(100),
-	MinLength:        int64Ptr(5),
-	Pattern:          "\\w{1,5}\\w+",
-	MaxItems:         int64Ptr(100),
-	MinItems:         int64Ptr(5),
-	UniqueItems:      true,
-	MultipleOf:       float64Ptr(5),
-	Enum:             []interface{}{"hello", "world"},
-	Type:             "string",
-	Format:           "date",
-	Name:             "param-name",
-	In:               "header",
-	Required:         true,
-	Schema:           &Schema{Type: &StringOrArray{Single: "string"}},
-	CollectionFormat: "csv",
-	Default:          "8",
+	paramProps: paramProps{
+		Name:        "param-name",
+		In:          "header",
+		Required:    true,
+		Schema:      &Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}},
+		Description: "the description of this parameter",
+	},
 }
 
 var parameterJSON = `{
@@ -121,7 +127,7 @@ func TestParameterSerialization(t *testing.T) {
 		Convey("a query parameter", func() {
 			param := QueryParam()
 			param.Type = "string"
-			So(param, ShouldSerializeJSON, `{"in":"query","type":"string"}`)
+			So(param, ShouldSerializeJSON, `{"type":"string","in":"query"}`)
 		})
 
 		Convey("a query parameter with array", func() {
@@ -129,15 +135,15 @@ func TestParameterSerialization(t *testing.T) {
 			param.Type = "array"
 			param.CollectionFormat = "multi"
 			param.Items = &Items{
-				Type: "string",
+				simpleSchema: simpleSchema{Type: "string"},
 			}
-			So(param, ShouldSerializeJSON, `{"collectionFormat":"multi","in":"query","items":{"type":"string"},"type":"array"}`)
+			So(param, ShouldSerializeJSON, `{"type":"array","items":{"type":"string"},"collectionFormat":"multi","in":"query"}`)
 		})
 
 		Convey("a path parameter", func() {
 			param := PathParam()
 			param.Type = "string"
-			So(param, ShouldSerializeJSON, `{"in":"path","required":true,"type":"string"}`)
+			So(param, ShouldSerializeJSON, `{"type":"string","in":"path","required":true}`)
 		})
 
 		Convey("a path parameter with string array", func() {
@@ -145,9 +151,9 @@ func TestParameterSerialization(t *testing.T) {
 			param.Type = "array"
 			param.CollectionFormat = "multi"
 			param.Items = &Items{
-				Type: "string",
+				simpleSchema: simpleSchema{Type: "string"},
 			}
-			So(param, ShouldSerializeJSON, `{"collectionFormat":"multi","in":"path","items":{"type":"string"},"required":true,"type":"array"}`)
+			So(param, ShouldSerializeJSON, `{"type":"array","items":{"type":"string"},"collectionFormat":"multi","in":"path","required":true}`)
 		})
 
 		Convey("a path parameter with an int array", func() {
@@ -156,16 +162,15 @@ func TestParameterSerialization(t *testing.T) {
 			param.Type = "array"
 			param.CollectionFormat = "multi"
 			param.Items = &Items{
-				Type:   "int",
-				Format: "int32",
+				simpleSchema: simpleSchema{Type: "int", Format: "int32"},
 			}
-			So(param, ShouldSerializeJSON, `{"collectionFormat":"multi","in":"path","items":{"format":"int32","type":"int"},"required":true,"type":"array"}`)
+			So(param, ShouldSerializeJSON, `{"type":"array","items":{"type":"int","format":"int32"},"collectionFormat":"multi","in":"path","required":true}`)
 		})
 
 		Convey("a header parameter", func() {
 			param := HeaderParam()
 			param.Type = "string"
-			So(param, ShouldSerializeJSON, `{"in":"header","required":true,"type":"string"}`)
+			So(param, ShouldSerializeJSON, `{"type":"string","in":"header","required":true}`)
 		})
 
 		Convey("a header parameter with string array", func() {
@@ -173,27 +178,27 @@ func TestParameterSerialization(t *testing.T) {
 			param.Type = "array"
 			param.CollectionFormat = "multi"
 			param.Items = &Items{
-				Type: "string",
+				simpleSchema: simpleSchema{Type: "string"},
 			}
-			So(param, ShouldSerializeJSON, `{"collectionFormat":"multi","in":"header","items":{"type":"string"},"required":true,"type":"array"}`)
+			So(param, ShouldSerializeJSON, `{"type":"array","items":{"type":"string"},"collectionFormat":"multi","in":"header","required":true}`)
 		})
 
 		Convey("a body parameter", func() {
 			param := BodyParam()
-			param.Schema = &Schema{
+			param.Schema = &Schema{schemaProps: schemaProps{
 				Properties: map[string]Schema{
-					"name": Schema{
+					"name": Schema{schemaProps: schemaProps{
 						Type: &StringOrArray{Single: "string"},
-					},
+					}},
 				},
-			}
+			}}
 			So(param, ShouldSerializeJSON, `{"in":"body","schema":{"properties":{"name":{"type":"string"}}}}`)
 		})
 
 		Convey("a ref body parameter", func() {
 			param := BodyParam()
 			param.Schema = &Schema{
-				Ref: "Cat",
+				refable: refable{Ref: "Cat"},
 			}
 			So(param, ShouldSerializeJSON, `{"in":"body","schema":{"$ref":"Cat"}}`)
 		})
@@ -201,7 +206,7 @@ func TestParameterSerialization(t *testing.T) {
 		Convey("serialize an array body parameter", func() {
 			param := BodyParam()
 			param.Schema = ArrayProperty(RefProperty("Cat"))
-			So(param, ShouldSerializeJSON, `{"in":"body","schema":{"items":{"$ref":"Cat"},"type":"array"}}`)
+			So(param, ShouldSerializeJSON, `{"in":"body","schema":{"type":"array","items":{"$ref":"Cat"}}}`)
 		})
 	})
 }

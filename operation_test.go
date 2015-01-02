@@ -8,28 +8,36 @@ import (
 )
 
 var operation = Operation{
-	Description: "operation description",
-	Extensions: map[string]interface{}{
-		"x-framework": "go-swagger",
-	},
-	Consumes:   []string{"application/json", "application/x-yaml"},
-	Produces:   []string{"application/json", "application/x-yaml"},
-	Schemes:    []string{"http", "https"},
-	Tags:       []string{"dogs"},
-	Summary:    "the summary of the operation",
-	ID:         "sendCat",
-	Deprecated: true,
-	Security: []map[string][]string{
-		map[string][]string{
-			"apiKey": []string{},
+	vendorExtensible: vendorExtensible{
+		Extensions: map[string]interface{}{
+			"x-framework": "go-swagger",
 		},
 	},
-	Parameters: []Parameter{
-		Parameter{Ref: "Cat"},
-	},
-	Responses: Responses{
-		Default: &Response{
-			Description: "void response",
+	operationProps: operationProps{
+		Description: "operation description",
+		Consumes:    []string{"application/json", "application/x-yaml"},
+		Produces:    []string{"application/json", "application/x-yaml"},
+		Schemes:     []string{"http", "https"},
+		Tags:        []string{"dogs"},
+		Summary:     "the summary of the operation",
+		ID:          "sendCat",
+		Deprecated:  true,
+		Security: []map[string][]string{
+			map[string][]string{
+				"apiKey": []string{},
+			},
+		},
+		Parameters: []Parameter{
+			Parameter{refable: refable{Ref: "Cat"}},
+		},
+		Responses: &Responses{
+			responsesProps: responsesProps{
+				Default: &Response{
+					responseProps: responseProps{
+						Description: "void response",
+					},
+				},
+			},
 		},
 	},
 }

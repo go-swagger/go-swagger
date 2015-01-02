@@ -2,10 +2,10 @@ package swagger
 
 import (
 	"encoding/json"
-	"regexp"
+	"reflect"
 	"strconv"
 
-	"github.com/casualjim/go-swagger/reflection"
+	"github.com/casualjim/go-swagger/swagger/util"
 )
 
 // Responses is a container for the expected responses of an operation.
@@ -22,80 +22,70 @@ import (
 //
 // For more information: http://goo.gl/8us55a#responsesObject
 type Responses struct {
-	Extensions          map[string]interface{} `swagger:"-"`
-	Default             *Response              `swagger:"-"`
-	StatusCodeResponses map[int]Response       `swagger:"-"`
+	vendorExtensible
+	responsesProps
 }
 
-var onlyNumbers = regexp.MustCompile("\\d+")
-
-// UnmarshalMap hydrates this responses instance with the data from the map
-func (r *Responses) UnmarshalMap(data interface{}) error {
-	dict := reflection.MarshalMap(data)
-	if def, ok := dict["default"]; ok {
-		value := &Response{}
-		if err := value.UnmarshalMap(def.(map[string]interface{})); err != nil {
-			return err
-		}
-		r.Default = value
-		delete(dict, "default")
+// UnmarshalJSON hydrates this items instance with the data from JSON
+func (r *Responses) UnmarshalJSON(data []byte) error {
+	if err := json.Unmarshal(data, &r.responsesProps); err != nil {
+		return err
 	}
-	r.Extensions = readExtensions(dict)
-	statusCodeResponses := make(map[int]Response)
-	for k, v := range dict {
-		if nk, err := strconv.Atoi(k); err == nil {
-			resVal, ok := v.(map[string]interface{})
-			if !ok {
-				resVal = reflection.MarshalMap(resVal)
-			}
-			response := new(Response)
-			if err := response.UnmarshalMap(resVal); err != nil {
-				return err
-			}
-			statusCodeResponses[nk] = *response
-		}
+	if err := json.Unmarshal(data, &r.vendorExtensible); err != nil {
+		return err
 	}
-	r.StatusCodeResponses = statusCodeResponses
+	if reflect.DeepEqual(responsesProps{}, r.responsesProps) {
+		r.responsesProps = responsesProps{}
+	}
 	return nil
 }
 
-// UnmarshalJSON hydrates this responses instance with the data from JSON
-func (r *Responses) UnmarshalJSON(data []byte) error {
-	var value map[string]interface{}
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
+// MarshalJSON converts this items object to JSON
+func (r Responses) MarshalJSON() ([]byte, error) {
+	b1, err := json.Marshal(r.responsesProps)
+	if err != nil {
+		return nil, err
 	}
-	return r.UnmarshalMap(value)
+	b2, err := json.Marshal(r.vendorExtensible)
+	if err != nil {
+		return nil, err
+	}
+	concated := util.ConcatJSON(b1, b2)
+	return concated, nil
 }
 
-// UnmarshalYAML hydrates this responses instance with the data from YAML
-func (r *Responses) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var value map[string]interface{}
-	if err := unmarshal(&value); err != nil {
-		return err
-	}
-	return r.UnmarshalMap(value)
+type responsesProps struct {
+	Default             *Response
+	StatusCodeResponses map[int]Response
 }
 
-// MarshalMap converts this responses object to a map
-func (r Responses) MarshalMap() map[string]interface{} {
-	res := make(map[string]interface{})
+func (r responsesProps) MarshalJSON() ([]byte, error) {
+	toser := map[string]Response{}
 	if r.Default != nil {
-		res["default"] = reflection.MarshalMap(r.Default)
+		toser["default"] = *r.Default
 	}
 	for k, v := range r.StatusCodeResponses {
-		res[strconv.Itoa(k)] = reflection.MarshalMap(v)
+		toser[strconv.Itoa(k)] = v
 	}
-	addExtensions(res, r.Extensions)
-	return res
+	return json.Marshal(toser)
 }
 
-// MarshalJSON converts this responses object to JSON
-func (r Responses) MarshalJSON() ([]byte, error) {
-	return json.Marshal(r.MarshalMap())
-}
-
-// MarshalYAML converts this responses object to YAML
-func (r Responses) MarshalYAML() (interface{}, error) {
-	return r.MarshalMap(), nil
+func (r *responsesProps) UnmarshalJSON(data []byte) error {
+	var res map[string]Response
+	if err := json.Unmarshal(data, &res); err != nil {
+		return nil
+	}
+	if v, ok := res["default"]; ok {
+		r.Default = &v
+		delete(res, "default")
+	}
+	for k, v := range res {
+		if nk, err := strconv.Atoi(k); err == nil {
+			if r.StatusCodeResponses == nil {
+				r.StatusCodeResponses = map[int]Response{}
+			}
+			r.StatusCodeResponses[nk] = v
+		}
+	}
+	return nil
 }

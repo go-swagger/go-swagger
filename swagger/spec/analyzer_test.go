@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func newAnalyzer(spec *swagger.Spec) *specAnalyzer {
+func newAnalyzer(spec *swagger.Swagger) *specAnalyzer {
 	a := &specAnalyzer{
 		spec:        spec,
 		consumes:    make(map[string]struct{}),
@@ -36,22 +36,23 @@ func TestAnalyzer(t *testing.T) {
 	skipParam.Name = "skip"
 	skipParam.Type = "integer"
 	skipParam.Format = "int32"
+	pi := swagger.PathItem{}
+	pi.Parameters = []swagger.Parameter{*limitParam}
 
-	spec := &swagger.Spec{
+	op := &swagger.Operation{}
+	op.Consumes = []string{"application/x-yaml"}
+	op.Produces = []string{"application/x-yaml"}
+	op.ID = "someOperation"
+	op.Parameters = []swagger.Parameter{*skipParam}
+	pi.Get = op
+
+	spec := &swagger.Swagger{
 		Consumes:   []string{"application/json"},
 		Produces:   []string{"application/json"},
 		Parameters: map[string]swagger.Parameter{"format": *formatParam},
-		Paths: swagger.Paths{
+		Paths: &swagger.Paths{
 			Paths: map[string]swagger.PathItem{
-				"/": swagger.PathItem{
-					Parameters: []swagger.Parameter{*limitParam},
-					Get: &swagger.Operation{
-						Consumes:   []string{"application/x-yaml"},
-						Produces:   []string{"application/x-yaml"},
-						ID:         "someOperation",
-						Parameters: []swagger.Parameter{*skipParam},
-					},
-				},
+				"/": pi,
 			},
 		},
 	}
