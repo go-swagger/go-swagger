@@ -24,7 +24,7 @@ func NewPetstore() (http.Handler, error) {
 
 	// context := middleware.Serve(spec, api)
 	// n := negroni.New()
-	// // register authentication middleware
+	// n.Use(negroni.HandlerFunc(context.SecurityMiddleware()))
 	// n.Use(negroni.HandlerFunc(context.RouterMiddleware()))
 	// n.Use(negroni.HandlerFunc(context.ValidationMiddleware()))
 	// return n, nil

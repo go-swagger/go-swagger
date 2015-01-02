@@ -44,8 +44,5 @@ func (t *Tag) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &t.tagProps); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(data, &t.vendorExtensible); err != nil {
-		return err
-	}
-	return nil
+	return json.Unmarshal(data, &t.vendorExtensible)
 }

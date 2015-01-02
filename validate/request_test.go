@@ -42,6 +42,104 @@ type jsonRequestSlice struct {
 	Friend    []friend
 }
 
+type jsonRequestAllTypes struct {
+	Confirmed bool
+	Planned   swagger.Date
+	Delivered swagger.DateTime
+	Age       int32
+	ID        int64
+	Score     float32
+	Factor    float64
+	Friend    friend
+	Name      string
+	Tags      []string
+	Picture   []byte
+	RequestID int64
+}
+
+func parametersForAllTypes(fmt string) map[string]spec.Parameter {
+	if fmt == "" {
+		fmt = "csv"
+	}
+	nameParam := spec.QueryParam()
+	nameParam.Name = "name"
+	nameParam.Type = "string"
+
+	idParam := spec.PathParam()
+	idParam.Name = "id"
+	idParam.Type = "integer"
+	idParam.Format = "int64"
+
+	ageParam := spec.QueryParam()
+	ageParam.Name = "age"
+	ageParam.Type = "integer"
+	ageParam.Format = "int32"
+
+	scoreParam := spec.QueryParam()
+	scoreParam.Name = "score"
+	scoreParam.Type = "number"
+	scoreParam.Format = "float"
+
+	factorParam := spec.QueryParam()
+	factorParam.Name = "factor"
+	factorParam.Type = "number"
+	factorParam.Format = "double"
+
+	friendParam := spec.BodyParam()
+	friendParam.Name = "friend"
+	friendParam.Type = "object"
+
+	requestIDParam := spec.HeaderParam()
+	requestIDParam.Name = "X-Request-Id"
+	requestIDParam.Type = "integer"
+	requestIDParam.Format = "int64"
+	requestIDParam.Extensions = spec.Extensions(map[string]interface{}{})
+	requestIDParam.Extensions.Add("go-name", "RequestID")
+
+	tagsParam := spec.QueryParam()
+	tagsParam.Name = "tags"
+	tagsParam.Type = "array"
+	tagsParam.Items = new(spec.Items)
+	tagsParam.Items.Type = "string"
+	tagsParam.CollectionFormat = fmt
+
+	confirmedParam := spec.QueryParam()
+	confirmedParam.Name = "confirmed"
+	confirmedParam.Type = "boolean"
+
+	plannedParam := spec.QueryParam()
+	plannedParam.Name = "planned"
+	plannedParam.Type = "string"
+	plannedParam.Format = "date"
+
+	deliveredParam := spec.QueryParam()
+	deliveredParam.Name = "delivered"
+	deliveredParam.Type = "string"
+	deliveredParam.Format = "date-time"
+
+	pictureParam := spec.QueryParam() // base64 encoded during transport
+	pictureParam.Name = "picture"
+	pictureParam.Type = "array"
+	pictureParam.Items = new(spec.Items)
+	pictureParam.Items.Type = "string"
+	pictureParam.Items.Format = "byte"
+
+	return map[string]spec.Parameter{
+		"ID":        *idParam,
+		"Name":      *nameParam,
+		"RequestID": *requestIDParam,
+		"Friend":    *friendParam,
+		"Tags":      *tagsParam,
+		"Age":       *ageParam,
+		"Score":     *scoreParam,
+		"Factor":    *factorParam,
+		"Confirmed": *confirmedParam,
+		"Planned":   *plannedParam,
+		"Delivered": *deliveredParam,
+		// "Picture":   *pictureParam,
+	}
+}
+
 func parametersForJSONRequestParams(fmt string) map[string]spec.Parameter {
 	if fmt == "" {
 		fmt = "csv"
@@ -61,7 +159,8 @@ func parametersForJSONRequestParams(fmt string) map[string]spec.Parameter {
 
 	requestIDParam := spec.HeaderParam()
 	requestIDParam.Name = "X-Request-Id"
-	requestIDParam.Type = "string"
+	requestIDParam.Type = "integer"
+	requestIDParam.Format = "int64"
 	requestIDParam.Extensions = spec.Extensions(map[string]interface{}{})
 	requestIDParam.Extensions.Add("go-name", "RequestID")
 
@@ -72,7 +171,13 @@ func parametersForJSONRequestParams(fmt string) map[string]spec.Parameter {
 	tagsParam.Items.Type = "string"
 	tagsParam.CollectionFormat = fmt
 
-	return map[string]spec.Parameter{"ID": *idParam, "Name": *nameParam, "RequestID": *requestIDParam, "Friend": *friendParam, "Tags": *tagsParam}
+	return map[string]spec.Parameter{
+		"ID":        *idParam,
+		"Name":      *nameParam,
+		"RequestID": *requestIDParam,
+		"Friend":    *friendParam,
+		"Tags":      *tagsParam,
+	}
 }
 
 func TestRequestBindingForInvalid(t *testing.T) {
@@ -234,7 +339,7 @@ type formRequest struct {
 	Age  int
 }
 
-func TestFormUpload(t *testing.T) {
+func parametersForFormUpload() map[string]spec.Parameter {
 	nameParam := spec.FormDataParam()
 	nameParam.Name = "name"
 	nameParam.Type = "string"
@@ -244,7 +349,11 @@ func TestFormUpload(t *testing.T) {
 	ageParam.Type = "integer"
 	ageParam.Format = "int32"
 
-	params := map[string]spec.Parameter{"Name": *nameParam, "Age": *ageParam}
+	return map[string]spec.Parameter{"Name": *nameParam, "Age": *ageParam}
+}
+
+func TestFormUpload(t *testing.T) {
+	params := parametersForFormUpload()
 	binder := &operationBinder{Parameters: params, Consumers: map[string]swagger.Consumer{"application/json": swagger.JSONConsumer()}}
 
 	urlStr := "http://localhost:8002/hello"
@@ -264,11 +373,11 @@ func TestFormUpload(t *testing.T) {
 }
 
 type fileRequest struct {
-	Name string        // body
-	File *swagger.File // upload
+	Name string       // body
+	File swagger.File // upload
 }
 
-func TestBindingFileUpload(t *testing.T) {
+func paramsForFileUpload() *operationBinder {
 	nameParam := spec.FormDataParam()
 	nameParam.Name = "name"
 	nameParam.Type = "string"
@@ -278,7 +387,14 @@ func TestBindingFileUpload(t *testing.T) {
 	fileParam.Type = "file"
 
 	params := map[string]spec.Parameter{"Name": *nameParam, "File": *fileParam}
-	binder := &operationBinder{Parameters: params, Consumers: map[string]swagger.Consumer{"application/json": swagger.JSONConsumer()}}
+	return &operationBinder{
+		Parameters: params,
+		Consumers:  map[string]swagger.Consumer{"application/json": swagger.JSONConsumer()},
+	}
+}
+
+func TestBindingFileUpload(t *testing.T) {
+	binder := paramsForFileUpload()
 
 	body := bytes.NewBuffer(nil)
 	writer := multipart.NewWriter(body)

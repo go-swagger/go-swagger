@@ -117,16 +117,17 @@ func contentType(req *http.Request) (string, error) {
 }
 
 func (o *operationBinder) setParamValue(target reflect.Value, param *spec.Parameter, request *http.Request, routeParams swagger.RouteParams) error {
+	tgt := target
 
 	switch param.In {
 	case "query":
-		return o.setValue(target, request.URL.Query(), param, true)
+		return o.setValue(tgt, request.URL.Query(), param, true)
 
 	case "header":
-		return o.setValue(target, request.Header, param, false)
+		return o.setValue(tgt, request.Header, param, false)
 
 	case "path":
-		return o.setValue(target, routeParams, param, false)
+		return o.setValue(tgt, routeParams, param, false)
 
 	case "formData":
 		mt, err := contentType(request)
@@ -150,14 +151,14 @@ func (o *operationBinder) setParamValue(target reflect.Value, param *spec.Parame
 			if err != nil {
 				return err
 			}
-			target.Set(reflect.ValueOf(&swagger.File{Data: file, Header: header}))
+			tgt.Set(reflect.ValueOf(swagger.File{Data: file, Header: header}))
 			return nil
 		}
 
 		if request.MultipartForm != nil {
-			return o.setValue(target, url.Values(request.MultipartForm.Value), param, true)
+			return o.setValue(tgt, url.Values(request.MultipartForm.Value), param, true)
 		}
-		return o.setValue(target, request.PostForm, param, true)
+		return o.setValue(tgt, request.PostForm, param, true)
 
 	case "body":
 		mt, err := contentType(request)
@@ -165,11 +166,11 @@ func (o *operationBinder) setParamValue(target reflect.Value, param *spec.Parame
 			return err
 		}
 		if consumer, ok := o.Consumers[mt]; ok {
-			newValue := reflect.New(target.Type())
+			newValue := reflect.New(tgt.Type())
 			if err := consumer.Consume(request.Body, newValue.Interface()); err != nil {
 				return err
 			}
-			target.Set(reflect.Indirect(newValue))
+			tgt.Set(reflect.Indirect(newValue))
 			return nil
 		}
 		return fmt.Errorf("no consumer for the body as %q", mt)

@@ -49,6 +49,8 @@ type Document struct {
 	spec       *Swagger
 }
 
+var swaggerSchema = MustLoadSwagger20Schema()
+
 // New creates a new shema document
 func New(data json.RawMessage, version string) (*Document, error) {
 	if version == "" {
@@ -57,8 +59,6 @@ func New(data json.RawMessage, version string) (*Document, error) {
 	if version != "2.0" {
 		return nil, fmt.Errorf("spec version %q is not supported", version)
 	}
-
-	specSchema := MustLoadSwagger20Schema()
 
 	spec := new(Swagger)
 	if err := json.Unmarshal(data, spec); err != nil {
@@ -76,7 +76,7 @@ func New(data json.RawMessage, version string) (*Document, error) {
 			authSchemes: make(map[string]struct{}),
 			operations:  make(map[string]map[string]*Operation),
 		},
-		specSchema: specSchema,
+		specSchema: swaggerSchema,
 		data:       v,
 		spec:       spec,
 	}

@@ -6,7 +6,6 @@ import (
 
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/httputils"
-	"github.com/casualjim/go-swagger/jsonschema"
 	"github.com/casualjim/go-swagger/router"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/golang/gddo/httputil"
@@ -112,11 +111,6 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 	if err := prod.Produce(rw, data); err != nil {
 		panic(err) // let the recovery middleware deal with this
 	}
-}
-
-func (c *Context) SchemaFor(request *http.Request) (*jsonschema.Document, error) {
-	// c.spec.SchemaFor
-	return nil, nil
 }
 
 // // RouterMiddleware creates a new router middleware for this context
