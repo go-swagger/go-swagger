@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/casualjim/go-swagger/swagger/load"
+	"github.com/casualjim/go-swagger/load"
 )
 
 // ValidateSpec is a command that validates a swagger document

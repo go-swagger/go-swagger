@@ -10,6 +10,7 @@
 set -e
 
 # Run test coverage on each subdirectories and merge the coverage profile.
+godep go test -race ./...
 
 echo "mode: count" > profile.cov
 

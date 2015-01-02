@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/casualjim/go-swagger/swagger"
-	"github.com/casualjim/go-swagger/swagger/spec"
-	"github.com/casualjim/go-swagger/swagger/testing"
+	"github.com/casualjim/go-swagger"
+	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/testing"
 )
 
 // NewPetstore creates a new petstore api handler
