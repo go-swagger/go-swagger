@@ -20,21 +20,13 @@ func newAnalyzer(spec *Swagger) *specAnalyzer {
 }
 
 func TestAnalyzer(t *testing.T) {
-	formatParam := QueryParam()
-	formatParam.Name = "format"
-	formatParam.Type = "string"
+	formatParam := QueryParam("format").Typed("string", "")
 
-	limitParam := QueryParam()
-	limitParam.Name = "limit"
-	limitParam.Type = "integer"
-	limitParam.Format = "int32"
+	limitParam := QueryParam("limit").Typed("integer", "int32")
 	limitParam.Extensions = Extensions(map[string]interface{}{})
 	limitParam.Extensions.Add("go-name", "Limit")
 
-	skipParam := QueryParam()
-	skipParam.Name = "skip"
-	skipParam.Type = "integer"
-	skipParam.Format = "int32"
+	skipParam := QueryParam("skip").Typed("integer", "int32")
 	pi := PathItem{}
 	pi.Parameters = []Parameter{*limitParam}
 

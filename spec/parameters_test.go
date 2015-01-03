@@ -123,90 +123,73 @@ func TestIntegrationParameter(t *testing.T) {
 func TestParameterSerialization(t *testing.T) {
 
 	Convey("Parameters should serialize", t, func() {
-
+		items := &Items{
+			simpleSchema: simpleSchema{Type: "string"},
+		}
 		Convey("a query parameter", func() {
-			param := QueryParam()
+			param := QueryParam("")
 			param.Type = "string"
 			So(param, ShouldSerializeJSON, `{"type":"string","in":"query"}`)
 		})
 
 		Convey("a query parameter with array", func() {
-			param := QueryParam()
-			param.Type = "array"
-			param.CollectionFormat = "multi"
-			param.Items = &Items{
-				simpleSchema: simpleSchema{Type: "string"},
-			}
+
+			param := QueryParam("").CollectionOf(items, "multi")
 			So(param, ShouldSerializeJSON, `{"type":"array","items":{"type":"string"},"collectionFormat":"multi","in":"query"}`)
 		})
 
 		Convey("a path parameter", func() {
-			param := PathParam()
-			param.Type = "string"
+			param := PathParam("").Typed("string", "")
 			So(param, ShouldSerializeJSON, `{"type":"string","in":"path","required":true}`)
 		})
 
 		Convey("a path parameter with string array", func() {
-			param := PathParam()
-			param.Type = "array"
-			param.CollectionFormat = "multi"
-			param.Items = &Items{
-				simpleSchema: simpleSchema{Type: "string"},
-			}
+			param := PathParam("").CollectionOf(items, "multi")
+
 			So(param, ShouldSerializeJSON, `{"type":"array","items":{"type":"string"},"collectionFormat":"multi","in":"path","required":true}`)
 		})
 
 		Convey("a path parameter with an int array", func() {
-			param := PathParam()
-			param.Type = "string"
-			param.Type = "array"
-			param.CollectionFormat = "multi"
-			param.Items = &Items{
+			items = &Items{
 				simpleSchema: simpleSchema{Type: "int", Format: "int32"},
 			}
+			param := PathParam("").CollectionOf(items, "multi")
 			So(param, ShouldSerializeJSON, `{"type":"array","items":{"type":"int","format":"int32"},"collectionFormat":"multi","in":"path","required":true}`)
 		})
 
 		Convey("a header parameter", func() {
-			param := HeaderParam()
-			param.Type = "string"
+			param := HeaderParam("").Typed("string", "")
 			So(param, ShouldSerializeJSON, `{"type":"string","in":"header","required":true}`)
 		})
 
 		Convey("a header parameter with string array", func() {
-			param := HeaderParam()
-			param.Type = "array"
-			param.CollectionFormat = "multi"
-			param.Items = &Items{
-				simpleSchema: simpleSchema{Type: "string"},
-			}
+			param := HeaderParam("").CollectionOf(items, "multi")
 			So(param, ShouldSerializeJSON, `{"type":"array","items":{"type":"string"},"collectionFormat":"multi","in":"header","required":true}`)
 		})
 
 		Convey("a body parameter", func() {
-			param := BodyParam()
-			param.Schema = &Schema{schemaProps: schemaProps{
+			schema := &Schema{schemaProps: schemaProps{
 				Properties: map[string]Schema{
 					"name": Schema{schemaProps: schemaProps{
 						Type: &StringOrArray{Single: "string"},
 					}},
 				},
 			}}
-			So(param, ShouldSerializeJSON, `{"in":"body","schema":{"properties":{"name":{"type":"string"}}}}`)
+			param := BodyParam("", schema)
+			So(param, ShouldSerializeJSON, `{"type":"object","in":"body","schema":{"properties":{"name":{"type":"string"}}}}`)
 		})
 
 		Convey("a ref body parameter", func() {
-			param := BodyParam()
-			param.Schema = &Schema{
+			schema := &Schema{
 				refable: refable{Ref: "Cat"},
 			}
-			So(param, ShouldSerializeJSON, `{"in":"body","schema":{"$ref":"Cat"}}`)
+			param := BodyParam("", schema)
+			So(param, ShouldSerializeJSON, `{"type":"object","in":"body","schema":{"$ref":"Cat"}}`)
 		})
 
 		Convey("serialize an array body parameter", func() {
-			param := BodyParam()
-			param.Schema = ArrayProperty(RefProperty("Cat"))
-			So(param, ShouldSerializeJSON, `{"in":"body","schema":{"type":"array","items":{"$ref":"Cat"}}}`)
+			param := BodyParam("", ArrayProperty(RefProperty("Cat")))
+			So(param, ShouldSerializeJSON, `{"type":"object","in":"body","schema":{"type":"array","items":{"$ref":"Cat"}}}`)
 		})
 	})
 }

@@ -5,8 +5,10 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/spec"
@@ -61,68 +63,26 @@ func parametersForAllTypes(fmt string) map[string]spec.Parameter {
 	if fmt == "" {
 		fmt = "csv"
 	}
-	nameParam := spec.QueryParam()
-	nameParam.Name = "name"
-	nameParam.Type = "string"
+	nameParam := spec.QueryParam("name").Typed("string", "")
+	idParam := spec.PathParam("id").Typed("integer", "int64")
+	ageParam := spec.QueryParam("age").Typed("integer", "int32")
+	scoreParam := spec.QueryParam("score").Typed("number", "float")
+	factorParam := spec.QueryParam("factor").Typed("number", "double")
 
-	idParam := spec.PathParam()
-	idParam.Name = "id"
-	idParam.Type = "integer"
-	idParam.Format = "int64"
+	friendParam := spec.BodyParam("friend", nil)
 
-	ageParam := spec.QueryParam()
-	ageParam.Name = "age"
-	ageParam.Type = "integer"
-	ageParam.Format = "int32"
-
-	scoreParam := spec.QueryParam()
-	scoreParam.Name = "score"
-	scoreParam.Type = "number"
-	scoreParam.Format = "float"
-
-	factorParam := spec.QueryParam()
-	factorParam.Name = "factor"
-	factorParam.Type = "number"
-	factorParam.Format = "double"
-
-	friendParam := spec.BodyParam()
-	friendParam.Name = "friend"
-	friendParam.Type = "object"
-
-	requestIDParam := spec.HeaderParam()
-	requestIDParam.Name = "X-Request-Id"
-	requestIDParam.Type = "integer"
-	requestIDParam.Format = "int64"
+	requestIDParam := spec.HeaderParam("X-Request-Id").Typed("integer", "int64")
 	requestIDParam.Extensions = spec.Extensions(map[string]interface{}{})
 	requestIDParam.Extensions.Add("go-name", "RequestID")
 
-	tagsParam := spec.QueryParam()
-	tagsParam.Name = "tags"
-	tagsParam.Type = "array"
-	tagsParam.Items = new(spec.Items)
-	tagsParam.Items.Type = "string"
-	tagsParam.CollectionFormat = fmt
+	items := new(spec.Items)
+	items.Type = "string"
+	tagsParam := spec.QueryParam("tags").CollectionOf(items, fmt)
 
-	confirmedParam := spec.QueryParam()
-	confirmedParam.Name = "confirmed"
-	confirmedParam.Type = "boolean"
-
-	plannedParam := spec.QueryParam()
-	plannedParam.Name = "planned"
-	plannedParam.Type = "string"
-	plannedParam.Format = "date"
-
-	deliveredParam := spec.QueryParam()
-	deliveredParam.Name = "delivered"
-	deliveredParam.Type = "string"
-	deliveredParam.Format = "date-time"
-
-	pictureParam := spec.QueryParam() // base64 encoded during transport
-	pictureParam.Name = "picture"
-	pictureParam.Type = "array"
-	pictureParam.Items = new(spec.Items)
-	pictureParam.Items.Type = "string"
-	pictureParam.Items.Format = "byte"
+	confirmedParam := spec.QueryParam("confirmed").Typed("boolean", "")
+	plannedParam := spec.QueryParam("planned").Typed("string", "date")
+	deliveredParam := spec.QueryParam("delivered").Typed("string", "date-time")
+	pictureParam := spec.QueryParam("picture").Typed("string", "byte") // base64 encoded during transport
 
 	return map[string]spec.Parameter{
 		"ID":        *idParam,
@@ -136,7 +96,7 @@ func parametersForAllTypes(fmt string) map[string]spec.Parameter {
 		"Confirmed": *confirmedParam,
 		"Planned":   *plannedParam,
 		"Delivered": *deliveredParam,
-		// "Picture":   *pictureParam,
+		"Picture":   *pictureParam,
 	}
 }
 
@@ -144,32 +104,17 @@ func parametersForJSONRequestParams(fmt string) map[string]spec.Parameter {
 	if fmt == "" {
 		fmt = "csv"
 	}
-	nameParam := spec.QueryParam()
-	nameParam.Name = "name"
-	nameParam.Type = "string"
+	nameParam := spec.QueryParam("name").Typed("string", "")
+	idParam := spec.PathParam("id").Typed("integer", "int64")
+	friendParam := spec.BodyParam("friend", nil)
 
-	idParam := spec.PathParam()
-	idParam.Name = "id"
-	idParam.Type = "integer"
-	idParam.Format = "int64"
-
-	friendParam := spec.BodyParam()
-	friendParam.Name = "friend"
-	friendParam.Type = "object"
-
-	requestIDParam := spec.HeaderParam()
-	requestIDParam.Name = "X-Request-Id"
-	requestIDParam.Type = "integer"
-	requestIDParam.Format = "int64"
+	requestIDParam := spec.HeaderParam("X-Request-Id").Typed("integer", "int64")
 	requestIDParam.Extensions = spec.Extensions(map[string]interface{}{})
 	requestIDParam.Extensions.Add("go-name", "RequestID")
 
-	tagsParam := spec.QueryParam()
-	tagsParam.Name = "tags"
-	tagsParam.Type = "array"
-	tagsParam.Items = new(spec.Items)
-	tagsParam.Items.Type = "string"
-	tagsParam.CollectionFormat = fmt
+	items := new(spec.Items)
+	items.Type = "string"
+	tagsParam := spec.QueryParam("tags").CollectionOf(items, fmt)
 
 	return map[string]spec.Parameter{
 		"ID":        *idParam,
@@ -180,10 +125,68 @@ func parametersForJSONRequestParams(fmt string) map[string]spec.Parameter {
 	}
 }
 
+func TestRequestBindingDefaultValue(t *testing.T) {
+
+	confirmed := true
+	name := "thomas"
+	friend := map[string]interface{}{"name": "toby", "age": float64(32)}
+	id, age, score, factor := int64(7575), int32(348), float32(5.309), float64(37.403)
+	requestID := 19394858
+	tags := []string{"one", "two", "three"}
+	dt1 := time.Date(2014, 8, 9, 0, 0, 0, 0, time.UTC)
+	planned := swagger.Date{Time: dt1}
+	dt2 := time.Date(2014, 10, 12, 8, 5, 5, 0, time.UTC)
+	delivered := swagger.DateTime{Time: dt2}
+	// picture := base64.StdEncoding.EncodeToString([]byte("hello"))
+	uri, _ := url.Parse("http://localhost:8002/hello")
+	defaults := map[string]interface{}{
+		"id":           id,
+		"age":          age,
+		"score":        score,
+		"factor":       factor,
+		"name":         name,
+		"friend":       friend,
+		"X-Request-Id": requestID,
+		"tags":         tags,
+		"confirmed":    confirmed,
+		"planned":      planned,
+		"delivered":    delivered,
+		"picture":      []byte("hello"),
+	}
+	op2 := parametersForAllTypes("")
+	op3 := make(map[string]spec.Parameter)
+	for k, p := range op2 {
+		p.Default = defaults[p.Name]
+		op3[k] = p
+	}
+
+	req, _ := http.NewRequest("POST", uri.String(), bytes.NewBuffer([]byte(`{}`)))
+	req.Header.Set("Content-Type", "application/json")
+	binder := &operationBinder{
+		Parameters: op3,
+		Consumers:  map[string]swagger.Consumer{"application/json": swagger.JSONConsumer()},
+	}
+
+	data := make(map[string]interface{})
+	err := binder.Bind(req, swagger.RouteParams(nil), &data)
+	assert.NoError(t, err)
+	assert.Equal(t, defaults["id"], data["id"])
+	assert.Equal(t, name, data["name"])
+	// assert.Equal(t, friend, data["friend"])
+	assert.Equal(t, requestID, data["X-Request-Id"])
+	assert.Equal(t, tags, data["tags"])
+	assert.Equal(t, planned, data["planned"])
+	assert.Equal(t, delivered, data["delivered"])
+	assert.Equal(t, confirmed, data["confirmed"])
+	assert.Equal(t, age, data["age"])
+	assert.Equal(t, factor, data["factor"])
+	assert.Equal(t, score, data["score"])
+	assert.Equal(t, "hello", string(data["picture"].([]byte)))
+}
+
 func TestRequestBindingForInvalid(t *testing.T) {
 
-	invalidParam := spec.QueryParam()
-	invalidParam.Name = "some"
+	invalidParam := spec.QueryParam("some")
 
 	op1 := map[string]spec.Parameter{"Some": *invalidParam}
 
@@ -215,12 +218,7 @@ func TestRequestBindingForInvalid(t *testing.T) {
 	err = binder.Bind(req, swagger.RouteParams([]swagger.RouteParam{{"id", "1"}}), &data)
 	assert.Error(t, err)
 
-	invalidMultiParam := spec.HeaderParam()
-	invalidMultiParam.Name = "tags"
-	invalidMultiParam.Type = "array"
-	invalidMultiParam.Items = new(spec.Items)
-	invalidMultiParam.CollectionFormat = "multi"
-
+	invalidMultiParam := spec.HeaderParam("tags").CollectionOf(new(spec.Items), "multi")
 	op3 := map[string]spec.Parameter{"Tags": *invalidMultiParam}
 	binder = &operationBinder{Parameters: op3, Consumers: map[string]swagger.Consumer{"application/json": swagger.JSONConsumer()}}
 
@@ -230,11 +228,7 @@ func TestRequestBindingForInvalid(t *testing.T) {
 	err = binder.Bind(req, swagger.RouteParams([]swagger.RouteParam{{"id", "1"}}), &data)
 	assert.Error(t, err)
 
-	invalidMultiParam = spec.PathParam()
-	invalidMultiParam.Name = "tags"
-	invalidMultiParam.Type = "array"
-	invalidMultiParam.Items = new(spec.Items)
-	invalidMultiParam.CollectionFormat = "multi"
+	invalidMultiParam = spec.PathParam("").CollectionOf(new(spec.Items), "multi")
 
 	op4 := map[string]spec.Parameter{"Tags": *invalidMultiParam}
 	binder = &operationBinder{Parameters: op4, Consumers: map[string]swagger.Consumer{"application/json": swagger.JSONConsumer()}}
@@ -245,9 +239,7 @@ func TestRequestBindingForInvalid(t *testing.T) {
 	err = binder.Bind(req, swagger.RouteParams([]swagger.RouteParam{{"id", "1"}}), &data)
 	assert.Error(t, err)
 
-	invalidInParam := spec.HeaderParam()
-	invalidInParam.Name = "tags"
-	invalidInParam.Type = "string"
+	invalidInParam := spec.HeaderParam("tags").Typed("string", "")
 	invalidInParam.In = "invalid"
 	op5 := map[string]spec.Parameter{"Tags": *invalidInParam}
 	binder = &operationBinder{Parameters: op5, Consumers: map[string]swagger.Consumer{"application/json": swagger.JSONConsumer()}}
@@ -340,14 +332,9 @@ type formRequest struct {
 }
 
 func parametersForFormUpload() map[string]spec.Parameter {
-	nameParam := spec.FormDataParam()
-	nameParam.Name = "name"
-	nameParam.Type = "string"
+	nameParam := spec.FormDataParam("name").Typed("string", "")
 
-	ageParam := spec.FormDataParam()
-	ageParam.Name = "age"
-	ageParam.Type = "integer"
-	ageParam.Format = "int32"
+	ageParam := spec.FormDataParam("age").Typed("integer", "int32")
 
 	return map[string]spec.Parameter{"Name": *nameParam, "Age": *ageParam}
 }
@@ -378,13 +365,9 @@ type fileRequest struct {
 }
 
 func paramsForFileUpload() *operationBinder {
-	nameParam := spec.FormDataParam()
-	nameParam.Name = "name"
-	nameParam.Type = "string"
+	nameParam := spec.FormDataParam("name").Typed("string", "")
 
-	fileParam := spec.FormDataParam()
-	fileParam.Name = "file"
-	fileParam.Type = "file"
+	fileParam := spec.FileParam("file")
 
 	params := map[string]spec.Parameter{"Name": *nameParam, "File": *fileParam}
 	return &operationBinder{

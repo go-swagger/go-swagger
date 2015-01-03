@@ -142,5 +142,6 @@ func TestUntypedBindingTypesForValid(t *testing.T) {
 	assert.Equal(t, age, data["age"])
 	assert.Equal(t, factor, data["factor"])
 	assert.Equal(t, score, data["score"])
+	assert.Equal(t, "hello", string(data["picture"].([]byte)))
 
 }

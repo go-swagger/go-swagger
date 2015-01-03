@@ -7,38 +7,38 @@ import (
 )
 
 // QueryParam creates a query parameter
-func QueryParam() *Parameter {
-	return &Parameter{paramProps: paramProps{In: "query"}}
+func QueryParam(name string) *Parameter {
+	return &Parameter{paramProps: paramProps{Name: name, In: "query"}}
 }
 
 // HeaderParam creates a header parameter, this is always required by default
-func HeaderParam() *Parameter {
-	return &Parameter{paramProps: paramProps{In: "header", Required: true}}
+func HeaderParam(name string) *Parameter {
+	return &Parameter{paramProps: paramProps{Name: name, In: "header", Required: true}}
 }
 
 // PathParam creates a path parameter, this is always required
-func PathParam() *Parameter {
-	return &Parameter{paramProps: paramProps{In: "path", Required: true}}
+func PathParam(name string) *Parameter {
+	return &Parameter{paramProps: paramProps{Name: name, In: "path", Required: true}}
 }
 
 // BodyParam creates a body parameter
-func BodyParam() *Parameter {
-	return &Parameter{paramProps: paramProps{In: "body"}}
+func BodyParam(name string, schema *Schema) *Parameter {
+	return &Parameter{paramProps: paramProps{Name: name, In: "body", Schema: schema}, simpleSchema: simpleSchema{Type: "object"}}
 }
 
 // FormDataParam creates a body parameter
-func FormDataParam() *Parameter {
-	return &Parameter{paramProps: paramProps{In: "formData"}}
+func FormDataParam(name string) *Parameter {
+	return &Parameter{paramProps: paramProps{Name: name, In: "formData"}}
 }
 
 // FileParam creates a body parameter
-func FileParam() *Parameter {
-	return &Parameter{simpleSchema: simpleSchema{Type: "file"}}
+func FileParam(name string) *Parameter {
+	return &Parameter{paramProps: paramProps{Name: name, In: "formData"}, simpleSchema: simpleSchema{Type: "file"}}
 }
 
 // SimpleArrayParam creates a param for a simple array (string, int, date etc)
-func SimpleArrayParam(tpe, fmt string) *Parameter {
-	return &Parameter{simpleSchema: simpleSchema{Type: "array", CollectionFormat: "csv", Items: &Items{simpleSchema: simpleSchema{Type: "string", Format: fmt}}}}
+func SimpleArrayParam(name, tpe, fmt string) *Parameter {
+	return &Parameter{paramProps: paramProps{Name: name}, simpleSchema: simpleSchema{Type: "array", CollectionFormat: "csv", Items: &Items{simpleSchema: simpleSchema{Type: "string", Format: fmt}}}}
 }
 
 type paramProps struct {
@@ -67,6 +67,39 @@ type Parameter struct {
 	simpleSchema
 	vendorExtensible
 	paramProps
+}
+
+// Typed a fluent builder method for the type of parameter
+func (p *Parameter) Typed(tpe, format string) *Parameter {
+	p.Type = tpe
+	p.Format = format
+	return p
+}
+
+// CollectionOf a fluent builder method for an array parameter
+func (p *Parameter) CollectionOf(items *Items, format string) *Parameter {
+	p.Type = "array"
+	p.Items = items
+	p.CollectionFormat = format
+	return p
+}
+
+// WithDefault sets the default value on this parameter
+func (p *Parameter) WithDefault(defaultValue interface{}) *Parameter {
+	p.Default = defaultValue
+	return p
+}
+
+// AsOptional flags this parameter as optional
+func (p *Parameter) AsOptional() *Parameter {
+	p.Required = false
+	return p
+}
+
+// AsRequired flags this parameter as required
+func (p *Parameter) AsRequired() *Parameter {
+	p.Required = true
+	return p
 }
 
 // UnmarshalJSON hydrates this items instance with the data from JSON
