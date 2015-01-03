@@ -16,7 +16,7 @@ func terminator(rw http.ResponseWriter, r *http.Request) {
 }
 
 func TestRouterMiddleware(t *testing.T) {
-	context := NewContext(petstore.NewAPI(t))
+	context := Serve(petstore.NewAPI(t))
 	mw := newRouter(context)
 
 	recorder := httptest.NewRecorder()

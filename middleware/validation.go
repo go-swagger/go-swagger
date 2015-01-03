@@ -43,13 +43,21 @@ func validateRequest(context *Context, request *http.Request, route *router.Matc
 	return validate.result
 }
 
-// func (v *validation) parameters() {
-// for _, param := range v.route.Parameters {
-// 	for _, err := range validate.Parameter(v.request, v.route, v.bound, &param) {
-// 		v.result.AddErrors(err)
-// 	}
-// }
-// }
+func (v *validation) parameters() {
+	// TODO: use just one consumer here
+	binder := &validate.RequestBinder{
+		Parameters: v.route.Parameters,
+		Consumers:  v.route.Consumers,
+	}
+	if err := binder.Bind(v.request, v.route.Params, v.bound); err != nil {
+		v.result.AddErrors(err)
+	}
+	// for _, param := range v.route.Parameters {
+	// 	for _, err := range validate.Parameter(v.request, v.route, v.bound, &param) {
+	// 		v.result.AddErrors(err)
+	// 	}
+	// }
+}
 
 func (v *validation) contentType() {
 	if httputils.CanHaveBody(v.request.Method) {

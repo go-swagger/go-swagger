@@ -50,6 +50,44 @@ func testCollectionFormat(t *testing.T, param *spec.Parameter, valid bool) {
 	}
 }
 
+func requiredError(param *spec.Parameter) *errors.Validation {
+	return errors.Required(param.Name, param.In)
+}
+
+func validateRequiredTest(t *testing.T, param *spec.Parameter, value reflect.Value) {
+	request, _ := http.NewRequest("GET", "http://localhost:8002/missing-prop?name=", nil)
+	binder := np(param, request, value)
+	err := binder.bindValue([]string{})
+	assert.Error(t, err)
+	assert.EqualError(t, requiredError(param), err.Error())
+	err = binder.bindValue([]string{""})
+	assert.Error(t, err)
+	assert.EqualError(t, requiredError(param), err.Error())
+}
+
+func TestRequiredValidation(t *testing.T) {
+	strParam := spec.QueryParam("name").Typed("string", "").AsRequired()
+	validateRequiredTest(t, strParam, reflect.ValueOf(""))
+
+	intParam := spec.QueryParam("id").Typed("integer", "int32").AsRequired()
+	validateRequiredTest(t, intParam, reflect.ValueOf(int32(0)))
+	longParam := spec.QueryParam("id").Typed("integer", "int64").AsRequired()
+	validateRequiredTest(t, longParam, reflect.ValueOf(int64(0)))
+
+	floatParam := spec.QueryParam("score").Typed("number", "float").AsRequired()
+	validateRequiredTest(t, floatParam, reflect.ValueOf(float32(0)))
+	doubleParam := spec.QueryParam("score").Typed("number", "double").AsRequired()
+	validateRequiredTest(t, doubleParam, reflect.ValueOf(float64(0)))
+
+	dateTimeParam := spec.QueryParam("registered").Typed("string", "date-time").AsRequired()
+	validateRequiredTest(t, dateTimeParam, reflect.ValueOf(swagger.DateTime{}))
+	dateParam := spec.QueryParam("registered").Typed("string", "date").AsRequired()
+	validateRequiredTest(t, dateParam, reflect.ValueOf(swagger.DateTime{}))
+
+	sliceParam := spec.QueryParam("tags").CollectionOf(stringItems, "").AsRequired()
+	validateRequiredTest(t, sliceParam, reflect.ValueOf([]string{}))
+}
+
 func TestInvalidCollectionFormat(t *testing.T) {
 	validCf1 := spec.QueryParam("validFmt").CollectionOf(stringItems, "multi")
 	validCf2 := spec.FormDataParam("validFmt2").CollectionOf(stringItems, "multi")

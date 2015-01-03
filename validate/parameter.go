@@ -4,6 +4,7 @@ import (
 	"encoding"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -203,6 +204,10 @@ func (p *paramBinder) Bind() error {
 		if consumer, ok := p.consumers[mt]; ok {
 			newValue := reflect.New(p.target.Type())
 			if err := consumer.Consume(p.request.Body, newValue.Interface()); err != nil {
+				if err == io.EOF && p.parameter.Default != nil {
+					p.target.Set(reflect.ValueOf(p.parameter.Default))
+					return nil
+				}
 				tpe := p.parameter.Type
 				if p.parameter.Format != "" {
 					tpe = p.parameter.Format
@@ -238,7 +243,10 @@ func (p *paramBinder) setFieldValue(target reflect.Value, defaultValue interface
 	if p.parameter.Format != "" {
 		tpe = p.parameter.Format
 	}
-	// fmt.Println("The target is of kind", target.Kind())
+
+	if data == "" && p.parameter.Required && p.parameter.Default == nil {
+		return errors.Required(p.name, p.parameter.In)
+	}
 
 	ok, err := p.tryUnmarshaler(target, defaultValue, data)
 	if err != nil {
@@ -320,11 +328,12 @@ func (p *paramBinder) setFieldValue(target reflect.Value, defaultValue interface
 		target.SetFloat(f)
 
 	case reflect.String:
-		if data == "" {
-			target.SetString(defVal.String())
-			return nil
+		value := data
+		if value == "" {
+			value = defVal.String()
 		}
-		target.SetString(data)
+		// validate string
+		target.SetString(value)
 
 	case reflect.Ptr:
 		if data == "" && defVal.Kind() == reflect.Ptr {
@@ -332,8 +341,7 @@ func (p *paramBinder) setFieldValue(target reflect.Value, defaultValue interface
 			return nil
 		}
 		newVal := reflect.New(target.Type().Elem())
-		err := p.setFieldValue(reflect.Indirect(newVal), defVal, data)
-		if err != nil {
+		if err := p.setFieldValue(reflect.Indirect(newVal), defVal, data); err != nil {
 			return err
 		}
 		target.Set(newVal)
@@ -373,6 +381,9 @@ func (p *paramBinder) readFormattedSliceFieldValue(data string) ([]string, bool,
 }
 
 func (p *paramBinder) setSliceFieldValue(target reflect.Value, defaultValue interface{}, data []string) error {
+	if len(data) == 0 && p.parameter.Required && p.parameter.Default == nil {
+		return errors.Required(p.name, p.parameter.In)
+	}
 	defVal := reflect.Zero(target.Type())
 	if defaultValue != nil {
 		defVal = reflect.ValueOf(defaultValue)

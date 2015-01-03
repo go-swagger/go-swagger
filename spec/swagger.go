@@ -27,35 +27,6 @@ type Swagger struct {
 	ExternalDocs        *ExternalDocumentation `json:"externalDocs,omitempty"`
 }
 
-// Ref represents a json reference
-type Ref string
-
-// MarshalJSON marshal this to JSON
-func (r Ref) MarshalJSON() ([]byte, error) {
-	if r == "" {
-		return []byte("{}"), nil
-	}
-	v := map[string]interface{}{"$ref": string(r)}
-	return json.Marshal(v)
-}
-
-// UnmarshalJSON unmarshal this from JSON
-func (r *Ref) UnmarshalJSON(data []byte) error {
-	var v map[string]interface{}
-	if err := json.Unmarshal(data, &v); err != nil {
-		return err
-	}
-	if v == nil {
-		return nil
-	}
-	if vv, ok := v["$ref"]; ok {
-		if str, ok := vv.(string); ok {
-			*r = Ref(str)
-		}
-	}
-	return nil
-}
-
 // Definitions contains the models explicitly defined in this spec
 // An object to hold data types that can be consumed and produced by operations.
 // These data types can be primitives, arrays or models.

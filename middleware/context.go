@@ -20,8 +20,8 @@ type Context struct {
 	router router.Router
 }
 
-// NewContext creates a new context wrapper
-func NewContext(spec *spec.Document, api *swagger.API) *Context {
+// Serve creates a new context wrapper
+func Serve(spec *spec.Document, api *swagger.API) *Context {
 	return &Context{spec: spec, api: api, router: router.Default(spec, api)}
 }
 
@@ -113,12 +113,12 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 	}
 }
 
-// // RouterMiddleware creates a new router middleware for this context
-// func (c *Context) RouterMiddleware() func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
-// 	return newRouter(c)
-// }
+// RouterMiddleware creates a new router middleware for this context
+func (c *Context) RouterMiddleware() func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
+	return newRouter(c)
+}
 
-// // ValidationMiddleware creates a new validation middleware for this context
-// func (c *Context) ValidationMiddleware() func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
-// 	return newValidation(c)
-// }
+// ValidationMiddleware creates a new validation middleware for this context
+func (c *Context) ValidationMiddleware() func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
+	return newValidation(c)
+}

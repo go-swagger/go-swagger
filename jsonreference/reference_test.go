@@ -27,6 +27,9 @@ package jsonreference
 
 import (
 	"testing"
+
+	"github.com/casualjim/go-swagger/jsonpointer"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFull(t *testing.T) {
@@ -129,6 +132,13 @@ func TestFragmentOnly(t *testing.T) {
 	if r1.GetPointer().String() != "/fragment/only" {
 		t.Errorf("New(%v)::GetPointer() %v expect %v", in, r1.GetPointer().String(), "/fragment/only")
 	}
+
+	p, _ := jsonpointer.New(r1.referenceURL.Fragment)
+	r2 := Ref{referencePointer: p, HasFragmentOnly: true}
+	assert.Equal(t, r2.String(), in)
+
+	r3 := Ref{referencePointer: p, HasFragmentOnly: false}
+	assert.Equal(t, r3.String(), in[1:])
 }
 
 func TestURLPathOnly(t *testing.T) {
@@ -197,6 +207,23 @@ func TestURLRelativePathOnly(t *testing.T) {
 	if r1.GetPointer().String() != "" {
 		t.Errorf("New(%v)::GetPointer() %v expect %v", in, r1.GetPointer().String(), "")
 	}
+}
+
+func TestInheritsInValid(t *testing.T) {
+	in1 := "http://www.test.com/doc.json"
+	in2 := "#/a/b"
+
+	r1, _ := New(in1)
+	r2 := Ref{}
+	result, err := r1.Inherits(r2)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+
+	r1 = Ref{}
+	r2, _ = New(in2)
+	result, err = r1.Inherits(r2)
+	assert.Error(t, err)
+	assert.Nil(t, result)
 }
 
 func TestInheritsValid(t *testing.T) {

@@ -102,6 +102,50 @@ func (p *Parameter) AsRequired() *Parameter {
 	return p
 }
 
+// WithMaxLength sets a max length value
+func (p *Parameter) WithMaxLength(max int64) *Parameter {
+	p.MaxLength = &max
+	return p
+}
+
+// WithMinLength sets a min length value
+func (p *Parameter) WithMinLength(min int64) *Parameter {
+	p.MinLength = &min
+	return p
+}
+
+// WithPattern sets a pattern value
+func (p *Parameter) WithPattern(pattern string) *Parameter {
+	p.Pattern = pattern
+	return p
+}
+
+// WithMultipleOf sets a multiple of value
+func (p *Parameter) WithMultipleOf(number float64) *Parameter {
+	p.MultipleOf = &number
+	return p
+}
+
+// WithMaximum sets a maximum number value
+func (p *Parameter) WithMaximum(max float64, exclusive bool) *Parameter {
+	p.Maximum = &max
+	p.ExclusiveMaximum = exclusive
+	return p
+}
+
+// WithMinimum sets a minimum number value
+func (p *Parameter) WithMinimum(min float64, exclusive bool) *Parameter {
+	p.Minimum = &min
+	p.ExclusiveMinimum = exclusive
+	return p
+}
+
+// WithEnum sets a the enum values (replace)
+func (p *Parameter) WithEnum(values ...interface{}) *Parameter {
+	p.Enum = append([]interface{}{}, values...)
+	return p
+}
+
 // UnmarshalJSON hydrates this items instance with the data from JSON
 func (p *Parameter) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &p.commonValidations); err != nil {

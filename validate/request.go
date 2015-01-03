@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/casualjim/go-swagger"
+	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/httputils"
 	"github.com/casualjim/go-swagger/spec"
 )
@@ -16,13 +17,15 @@ var textUnmarshalType = reflect.TypeOf(new(encoding.TextUnmarshaler)).Elem()
 
 type formats map[string]map[string]reflect.Type
 
-type operationBinder struct {
+// RequestBinder binds and validates the data from a http request
+type RequestBinder struct {
 	Parameters map[string]spec.Parameter
 	Consumers  map[string]swagger.Consumer
 	Formats    formats
 }
 
-func (o *operationBinder) Bind(request *http.Request, routeParams swagger.RouteParams, data interface{}) error {
+// Bind perform the databinding and validation
+func (o *RequestBinder) Bind(request *http.Request, routeParams swagger.RouteParams, data interface{}) errors.Error {
 	val := reflect.Indirect(reflect.ValueOf(data))
 	isMap := val.Kind() == reflect.Map
 	for fieldName, param := range o.Parameters {
@@ -48,11 +51,18 @@ func (o *operationBinder) Bind(request *http.Request, routeParams swagger.RouteP
 		}
 
 		if !binder.target.IsValid() {
-			return fmt.Errorf("parameter name %q is an unknown field", binder.name)
+			return errors.New(500, fmt.Sprintf("parameter name %q is an unknown field", binder.name))
 		}
 
 		if err := binder.Bind(); err != nil {
-			return err
+			switch err.(type) {
+			case *errors.Validation:
+				return err.(*errors.Validation)
+			case errors.Error:
+				return err.(errors.Error)
+			default:
+				return errors.New(500, err.Error())
+			}
 		}
 
 		if isMap {

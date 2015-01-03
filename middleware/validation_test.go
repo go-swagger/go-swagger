@@ -22,7 +22,7 @@ func TestResult(t *testing.T) {
 }
 
 func TestContentTypeValidation(t *testing.T) {
-	context := NewContext(petstore.NewAPI(t))
+	context := Serve(petstore.NewAPI(t))
 	mw := newValidation(context)
 
 	recorder := httptest.NewRecorder()
@@ -50,7 +50,7 @@ func TestContentTypeValidation(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	context := NewContext(petstore.NewAPI(t))
+	context := Serve(petstore.NewAPI(t))
 	mw := newValidation(context)
 
 	recorder := httptest.NewRecorder()

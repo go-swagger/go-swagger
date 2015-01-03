@@ -14,7 +14,7 @@ import (
 
 func TestContextRender(t *testing.T) {
 	ct := httputils.JSONMime
-	ctx := NewContext(petstore.NewAPI(t))
+	ctx := Serve(petstore.NewAPI(t))
 	request, _ := http.NewRequest("GET", "http://localhost:8080/api/pets", nil)
 	request.Header.Set(httputils.HeaderAccept, ct)
 
@@ -38,7 +38,7 @@ func TestContextRender(t *testing.T) {
 
 func TestContextValidResponseFormat(t *testing.T) {
 	ct := "application/json"
-	ctx := NewContext(nil, nil)
+	ctx := Serve(nil, nil)
 
 	request, _ := http.NewRequest("GET", "http://localhost:8080", nil)
 	request.Header.Set(httputils.HeaderAccept, ct)
@@ -65,7 +65,7 @@ func TestContextValidResponseFormat(t *testing.T) {
 func TestContextInvalidResponseFormat(t *testing.T) {
 	ct := "application/x-yaml"
 	other := "application/xml"
-	ctx := NewContext(nil, nil)
+	ctx := Serve(nil, nil)
 
 	request, _ := http.NewRequest("GET", "http://localhost:8080", nil)
 	request.Header.Set(httputils.HeaderAccept, ct)
@@ -90,7 +90,7 @@ func TestContextInvalidResponseFormat(t *testing.T) {
 }
 
 func TestContextValidRoute(t *testing.T) {
-	ctx := NewContext(petstore.NewAPI(t))
+	ctx := Serve(petstore.NewAPI(t))
 	request, _ := http.NewRequest("GET", "http://localhost:8080/api/pets", nil)
 
 	// check there's nothing there
@@ -111,7 +111,7 @@ func TestContextValidRoute(t *testing.T) {
 }
 
 func TestContextInvalidRoute(t *testing.T) {
-	ctx := NewContext(petstore.NewAPI(t))
+	ctx := Serve(petstore.NewAPI(t))
 	request, _ := http.NewRequest("DELETE", "http://localhost:8080/api/pets", nil)
 
 	// check there's nothing there
@@ -133,7 +133,7 @@ func TestContextInvalidRoute(t *testing.T) {
 
 func TestContextValidContentType(t *testing.T) {
 	ct := "application/json"
-	ctx := NewContext(nil, nil)
+	ctx := Serve(nil, nil)
 
 	request, _ := http.NewRequest("GET", "http://localhost:8080", nil)
 	request.Header.Set(httputils.HeaderContentType, ct)
@@ -159,7 +159,7 @@ func TestContextValidContentType(t *testing.T) {
 
 func TestContextInvalidContentType(t *testing.T) {
 	ct := "application("
-	ctx := NewContext(nil, nil)
+	ctx := Serve(nil, nil)
 
 	request, _ := http.NewRequest("GET", "http://localhost:8080", nil)
 	request.Header.Set(httputils.HeaderContentType, ct)
