@@ -38,7 +38,9 @@ func validateRequest(context *Context, request *http.Request, route *router.Matc
 
 	validate.contentType()
 	validate.responseFormat()
-	// validate.parameters()
+	if validate.result.IsValid() {
+		validate.parameters()
+	}
 
 	return validate.result
 }
@@ -52,11 +54,6 @@ func (v *validation) parameters() {
 	if err := binder.Bind(v.request, v.route.Params, v.bound); err != nil {
 		v.result.AddErrors(err)
 	}
-	// for _, param := range v.route.Parameters {
-	// 	for _, err := range validate.Parameter(v.request, v.route, v.bound, &param) {
-	// 		v.result.AddErrors(err)
-	// 	}
-	// }
 }
 
 func (v *validation) contentType() {
