@@ -23,7 +23,7 @@ type paramBinder struct {
 	parameter   *spec.Parameter
 	formats     formats
 	name        string
-	consumers   map[string]swagger.Consumer
+	consumer    swagger.Consumer
 }
 
 func (p *paramBinder) Type() reflect.Type {
@@ -197,31 +197,20 @@ func (p *paramBinder) Bind() error {
 		return p.bindValue(data)
 
 	case "body":
-		mt, err := contentType(p.request)
-		if err != nil {
-			return err
-		}
-		if consumer, ok := p.consumers[mt]; ok {
-			newValue := reflect.New(p.target.Type())
-			if err := consumer.Consume(p.request.Body, newValue.Interface()); err != nil {
-				if err == io.EOF && p.parameter.Default != nil {
-					p.target.Set(reflect.ValueOf(p.parameter.Default))
-					return nil
-				}
-				tpe := p.parameter.Type
-				if p.parameter.Format != "" {
-					tpe = p.parameter.Format
-				}
-				return errors.InvalidType(p.name, p.parameter.In, tpe, nil)
+		newValue := reflect.New(p.target.Type())
+		if err := p.consumer.Consume(p.request.Body, newValue.Interface()); err != nil {
+			if err == io.EOF && p.parameter.Default != nil {
+				p.target.Set(reflect.ValueOf(p.parameter.Default))
+				return nil
 			}
-			p.target.Set(reflect.Indirect(newValue))
-			return nil
+			tpe := p.parameter.Type
+			if p.parameter.Format != "" {
+				tpe = p.parameter.Format
+			}
+			return errors.InvalidType(p.name, p.parameter.In, tpe, nil)
 		}
-		var names []string
-		for k := range p.consumers {
-			names = append(names, k)
-		}
-		return errors.InvalidContentType(mt, names)
+		p.target.Set(reflect.Indirect(newValue))
+		return nil
 	default:
 		return errors.New(500, fmt.Sprintf("invalid parameter location %q", p.parameter.In))
 	}

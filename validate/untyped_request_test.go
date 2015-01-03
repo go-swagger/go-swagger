@@ -17,7 +17,7 @@ import (
 
 func TestUntypedFormPost(t *testing.T) {
 	params := parametersForFormUpload()
-	binder := &RequestBinder{Parameters: params, Consumers: map[string]swagger.Consumer{"application/json": swagger.JSONConsumer()}}
+	binder := &RequestBinder{Parameters: params, Consumer: swagger.JSONConsumer()}
 
 	urlStr := "http://localhost:8002/hello"
 	req, _ := http.NewRequest("POST", urlStr, bytes.NewBufferString(`name=the-name&age=32`))
@@ -99,7 +99,7 @@ func TestUntypedFileUpload(t *testing.T) {
 func TestUntypedBindingTypesForValid(t *testing.T) {
 
 	op2 := parametersForAllTypes("")
-	binder := &RequestBinder{Parameters: op2, Consumers: map[string]swagger.Consumer{"application/json": swagger.JSONConsumer()}}
+	binder := &RequestBinder{Parameters: op2, Consumer: swagger.JSONConsumer()}
 
 	confirmed := true
 	name := "thomas"

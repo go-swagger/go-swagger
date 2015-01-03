@@ -2,6 +2,7 @@ package validate
 
 import (
 	"bytes"
+	"io"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
@@ -14,6 +15,13 @@ import (
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/stretchr/testify/assert"
 )
+
+type stubConsumer struct {
+}
+
+func (s *stubConsumer) Consume(_ io.Reader, _ interface{}) error {
+	return nil
+}
 
 type friend struct {
 	Name string `json:"name"`
@@ -162,7 +170,7 @@ func TestRequestBindingDefaultValue(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	binder := &RequestBinder{
 		Parameters: op3,
-		Consumers:  map[string]swagger.Consumer{"application/json": swagger.JSONConsumer()},
+		Consumer:   swagger.JSONConsumer(),
 	}
 
 	data := make(map[string]interface{})
@@ -188,25 +196,22 @@ func TestRequestBindingForInvalid(t *testing.T) {
 
 	op1 := map[string]spec.Parameter{"Some": *invalidParam}
 
-	binder := &RequestBinder{Parameters: op1, Consumers: map[string]swagger.Consumer{}}
+	binder := &RequestBinder{Parameters: op1, Consumer: new(stubConsumer)}
 	req, _ := http.NewRequest("GET", "http://localhost:8002/hello?name=the-name", nil)
 
 	err := binder.Bind(req, nil, new(jsonRequestParams))
 	assert.Error(t, err)
 
 	op2 := parametersForJSONRequestParams("")
-	binder = &RequestBinder{Parameters: op2, Consumers: map[string]swagger.Consumer{"application/json": swagger.JSONConsumer()}}
+	binder = &RequestBinder{Parameters: op2, Consumer: swagger.JSONConsumer()}
 
 	req, _ = http.NewRequest("POST", "http://localhost:8002/hello/1?name=the-name", bytes.NewBuffer([]byte(`{"name":"toby","age":32}`)))
 	req.Header.Set("X-Request-Id", "1325959595")
-
-	data := jsonRequestParams{}
-	err = binder.Bind(req, swagger.RouteParams([]swagger.RouteParam{{"id", "1"}}), &data)
-	assert.Error(t, err)
+	req.Header.Set("Content-Type", "application/json")
 
 	req, _ = http.NewRequest("POST", "http://localhost:8002/hello/1?name=the-name", bytes.NewBuffer([]byte(`{"name":"toby","age":32}`)))
 	req.Header.Set("Content-Type", "application(")
-	data = jsonRequestParams{}
+	data := jsonRequestParams{}
 	err = binder.Bind(req, swagger.RouteParams([]swagger.RouteParam{{"id", "1"}}), &data)
 	assert.Error(t, err)
 
@@ -218,7 +223,7 @@ func TestRequestBindingForInvalid(t *testing.T) {
 
 	invalidMultiParam := spec.HeaderParam("tags").CollectionOf(new(spec.Items), "multi")
 	op3 := map[string]spec.Parameter{"Tags": *invalidMultiParam}
-	binder = &RequestBinder{Parameters: op3, Consumers: map[string]swagger.Consumer{"application/json": swagger.JSONConsumer()}}
+	binder = &RequestBinder{Parameters: op3, Consumer: swagger.JSONConsumer()}
 
 	req, _ = http.NewRequest("POST", "http://localhost:8002/hello/1?name=the-name", bytes.NewBuffer([]byte(`{}`)))
 	req.Header.Set("Content-Type", "application/json")
@@ -229,7 +234,7 @@ func TestRequestBindingForInvalid(t *testing.T) {
 	invalidMultiParam = spec.PathParam("").CollectionOf(new(spec.Items), "multi")
 
 	op4 := map[string]spec.Parameter{"Tags": *invalidMultiParam}
-	binder = &RequestBinder{Parameters: op4, Consumers: map[string]swagger.Consumer{"application/json": swagger.JSONConsumer()}}
+	binder = &RequestBinder{Parameters: op4, Consumer: swagger.JSONConsumer()}
 
 	req, _ = http.NewRequest("POST", "http://localhost:8002/hello/1?name=the-name", bytes.NewBuffer([]byte(`{}`)))
 	req.Header.Set("Content-Type", "application/json")
@@ -240,7 +245,7 @@ func TestRequestBindingForInvalid(t *testing.T) {
 	invalidInParam := spec.HeaderParam("tags").Typed("string", "")
 	invalidInParam.In = "invalid"
 	op5 := map[string]spec.Parameter{"Tags": *invalidInParam}
-	binder = &RequestBinder{Parameters: op5, Consumers: map[string]swagger.Consumer{"application/json": swagger.JSONConsumer()}}
+	binder = &RequestBinder{Parameters: op5, Consumer: swagger.JSONConsumer()}
 
 	req, _ = http.NewRequest("POST", "http://localhost:8002/hello/1?name=the-name", bytes.NewBuffer([]byte(`{}`)))
 	req.Header.Set("Content-Type", "application/json")
@@ -254,7 +259,7 @@ func TestRequestBindingForValid(t *testing.T) {
 	for _, fmt := range []string{"csv", "pipes", "tsv", "ssv", "multi"} {
 		op1 := parametersForJSONRequestParams(fmt)
 
-		binder := &RequestBinder{Parameters: op1, Consumers: map[string]swagger.Consumer{"application/json": swagger.JSONConsumer()}}
+		binder := &RequestBinder{Parameters: op1, Consumer: swagger.JSONConsumer()}
 
 		lval := []string{"one", "two", "three"}
 		queryString := ""
@@ -293,7 +298,7 @@ func TestRequestBindingForValid(t *testing.T) {
 
 	op1 := parametersForJSONRequestParams("")
 
-	binder := &RequestBinder{Parameters: op1, Consumers: map[string]swagger.Consumer{"application/json": swagger.JSONConsumer()}}
+	binder := &RequestBinder{Parameters: op1, Consumer: swagger.JSONConsumer()}
 	urlStr := "http://localhost:8002/hello/1?name=the-name&tags=one,two,three"
 	req, _ := http.NewRequest("POST", urlStr, bytes.NewBuffer([]byte(`{"name":"toby","age":32}`)))
 	req.Header.Set("Content-Type", "application/json;charset=utf-8")
@@ -344,7 +349,7 @@ func parametersForFormUpload() map[string]spec.Parameter {
 
 func TestFormUpload(t *testing.T) {
 	params := parametersForFormUpload()
-	binder := &RequestBinder{Parameters: params, Consumers: map[string]swagger.Consumer{"application/json": swagger.JSONConsumer()}}
+	binder := &RequestBinder{Parameters: params, Consumer: swagger.JSONConsumer()}
 
 	urlStr := "http://localhost:8002/hello"
 	req, _ := http.NewRequest("POST", urlStr, bytes.NewBufferString(`name=the-name&age=32`))
@@ -375,7 +380,7 @@ func paramsForFileUpload() *RequestBinder {
 	params := map[string]spec.Parameter{"Name": *nameParam, "File": *fileParam}
 	return &RequestBinder{
 		Parameters: params,
-		Consumers:  map[string]swagger.Consumer{"application/json": swagger.JSONConsumer()},
+		Consumer:   swagger.JSONConsumer(),
 	}
 }
 

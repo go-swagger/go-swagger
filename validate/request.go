@@ -20,7 +20,7 @@ type formats map[string]map[string]reflect.Type
 // RequestBinder binds and validates the data from a http request
 type RequestBinder struct {
 	Parameters map[string]spec.Parameter
-	Consumers  map[string]swagger.Consumer
+	Consumer   swagger.Consumer
 	Formats    formats
 }
 
@@ -28,11 +28,12 @@ type RequestBinder struct {
 func (o *RequestBinder) Bind(request *http.Request, routeParams swagger.RouteParams, data interface{}) errors.Error {
 	val := reflect.Indirect(reflect.ValueOf(data))
 	isMap := val.Kind() == reflect.Map
+
 	for fieldName, param := range o.Parameters {
 		binder := new(paramBinder)
 		binder.name = fieldName
 		binder.parameter = &param
-		binder.consumers = o.Consumers
+		binder.consumer = o.Consumer
 		binder.formats = o.Formats
 		binder.request = request
 		binder.routeParams = routeParams

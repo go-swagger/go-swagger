@@ -3,6 +3,7 @@ package middleware
 import (
 	"net/http"
 
+	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/httputils"
 	"github.com/casualjim/go-swagger/router"
@@ -26,15 +27,16 @@ func newValidation(context *Context) func(http.ResponseWriter, *http.Request, ht
 }
 
 type validation struct {
-	context *Context
-	result  *result
-	request *http.Request
-	route   *router.MatchedRoute
-	bound   map[string]interface{}
+	context  *Context
+	result   *result
+	request  *http.Request
+	route    *router.MatchedRoute
+	bound    map[string]interface{}
+	consumer swagger.Consumer
 }
 
 func validateRequest(context *Context, request *http.Request, route *router.MatchedRoute) *result {
-	validate := &validation{context, &result{}, request, route, make(map[string]interface{})}
+	validate := &validation{context, &result{}, request, route, make(map[string]interface{}), nil}
 
 	validate.contentType()
 	validate.responseFormat()
@@ -49,7 +51,7 @@ func (v *validation) parameters() {
 	// TODO: use just one consumer here
 	binder := &validate.RequestBinder{
 		Parameters: v.route.Parameters,
-		Consumers:  v.route.Consumers,
+		Consumer:   v.consumer,
 	}
 	if err := binder.Bind(v.request, v.route.Params, v.bound); err != nil {
 		v.result.AddErrors(err)
@@ -65,6 +67,7 @@ func (v *validation) contentType() {
 			if err := validate.ContentType(v.route.Consumes, ct); err != nil {
 				v.result.AddErrors(err)
 			}
+			v.consumer = v.route.Consumers[ct]
 		}
 	}
 }
