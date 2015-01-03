@@ -9,6 +9,9 @@ import (
 	"github.com/casualjim/go-swagger/spec"
 )
 
+type itemsValidator struct {
+}
+
 // a param has very limited subset of validations to apply
 type paramValidator struct {
 	param *spec.Parameter
@@ -48,6 +51,13 @@ func (p *paramValidator) Validate(data interface{}) *errors.Validation {
 		if err := p.validateCommon(data); err != nil {
 			return err
 		}
+	case reflect.Slice:
+		if err := p.validateSlice(data); err != nil {
+			return err
+		}
+		if err := p.validateCommon(data); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -64,6 +74,17 @@ func (p *paramValidator) validateCommon(data interface{}) *errors.Validation {
 	return nil
 }
 
+func (p *paramValidator) validateSlice(data interface{}) *errors.Validation {
+	return (&sliceValidator{
+		Name:        p.param.Name,
+		In:          p.param.In,
+		Default:     p.param.Default,
+		MaxItems:    p.param.MaxItems,
+		MinItems:    p.param.MinItems,
+		UniqueItems: p.param.UniqueItems,
+	}).Validate(data)
+}
+
 func (p *paramValidator) validateNumber(data float64) *errors.Validation {
 	return (&numberValidator{
 		Name:             p.param.Name,
@@ -76,6 +97,7 @@ func (p *paramValidator) validateNumber(data float64) *errors.Validation {
 		ExclusiveMinimum: p.param.ExclusiveMinimum,
 	}).Validate(data)
 }
+
 func (p *paramValidator) validateString(data string) *errors.Validation {
 	return (&stringValidator{
 		Name:      p.param.Name,
@@ -86,6 +108,45 @@ func (p *paramValidator) validateString(data string) *errors.Validation {
 		MinLength: p.param.MinLength,
 		Pattern:   p.param.Pattern,
 	}).Validate(data)
+}
+
+type sliceValidator struct {
+	Name        string
+	In          string
+	Default     interface{}
+	MaxItems    *int64
+	MinItems    *int64
+	UniqueItems bool
+}
+
+func (s *sliceValidator) Validate(data interface{}) *errors.Validation {
+	val := reflect.ValueOf(data) // YOLO: just going to assume this is an array
+	if val.Kind() != reflect.Slice {
+		return nil // no business to do for this thing
+	}
+	size := int64(val.Len())
+	if s.MinItems != nil && size < *s.MinItems {
+		return errors.TooFewItems(s.Name, s.In, *s.MinItems)
+	}
+	if s.MaxItems != nil && size > *s.MaxItems {
+		return errors.TooManyItems(s.Name, s.In, *s.MaxItems)
+	}
+	if s.UniqueItems && s.hasDuplicates(val, int(size)) {
+		return errors.DuplicateItems(s.Name, s.In)
+	}
+	return nil
+}
+
+func (s *sliceValidator) hasDuplicates(value reflect.Value, size int) bool {
+	dict := make(map[interface{}]struct{})
+	for i := 0; i < size; i++ {
+		ele := value.Index(i)
+		if _, ok := dict[ele.Interface()]; ok {
+			return true
+		}
+		dict[ele.Interface()] = struct{}{}
+	}
+	return false
 }
 
 type numberValidator struct {

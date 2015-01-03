@@ -146,6 +146,30 @@ func (p *Parameter) WithEnum(values ...interface{}) *Parameter {
 	return p
 }
 
+// WithMaxItems sets the max items
+func (p *Parameter) WithMaxItems(size int64) *Parameter {
+	p.MaxItems = &size
+	return p
+}
+
+// WithMinItems sets the min items
+func (p *Parameter) WithMinItems(size int64) *Parameter {
+	p.MinItems = &size
+	return p
+}
+
+// UniqueValues dictates that this array can only have unique items
+func (p *Parameter) UniqueValues() *Parameter {
+	p.UniqueItems = true
+	return p
+}
+
+// AllowDuplicates this array can have duplicates
+func (p *Parameter) AllowDuplicates() *Parameter {
+	p.UniqueItems = false
+	return p
+}
+
 // UnmarshalJSON hydrates this items instance with the data from JSON
 func (p *Parameter) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &p.commonValidations); err != nil {

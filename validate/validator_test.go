@@ -89,6 +89,7 @@ func TestNumberParameterValidation(t *testing.T) {
 		assert.NoError(t, validator.Validate(v[6]))
 	}
 
+	// Not required in a parameter or items
 	// AllOf
 	// AnyOf
 	// OneOf
@@ -143,39 +144,50 @@ func TestStringParameterValidation(t *testing.T) {
 	err = validator.Validate("bbb")
 	assert.NoError(t, err)
 
-	// Not required in a parameter
+	// Not required in a parameter or items
 	// AllOf
 	// AnyOf
 	// OneOf
 	// Not
 	// Definitions
+}
+
+func minItemsError(param *spec.Parameter) *errors.Validation {
+	return errors.TooFewItems(param.Name, param.In, *param.MinItems)
+}
+func maxItemsError(param *spec.Parameter) *errors.Validation {
+	return errors.TooManyItems(param.Name, param.In, *param.MaxItems)
+}
+func duplicatesError(param *spec.Parameter) *errors.Validation {
+	return errors.DuplicateItems(param.Name, param.In)
 }
 
 func TestArrayParameterValidation(t *testing.T) {
+	tagsParam := spec.QueryParam("tags").CollectionOf(stringItems, "").WithMinItems(1).WithMaxItems(5).UniqueValues()
+	tagsParam.WithEnum([]string{"a", "a", "a"}, []string{"b", "b", "b"}, []string{"c", "c", "c"})
+	validator := &paramValidator{tagsParam, tagsParam.Name}
+
+	// MinItems
+	err := validator.Validate([]string{})
+	assert.Error(t, err)
+	assert.Error(t, minItemsError(tagsParam), err.Error())
+	// MaxItems
+	err = validator.Validate([]string{"a", "b", "c", "d", "e", "f"})
+	assert.Error(t, err)
+	assert.Error(t, maxItemsError(tagsParam), err.Error())
+	// UniqueItems
+	err = validator.Validate([]string{"a", "a"})
+	assert.Error(t, err)
+	assert.Error(t, duplicatesError(tagsParam), err.Error())
+
+	// Enum
+	err = validator.Validate([]string{"a", "b", "a"})
+	assert.Error(t, err)
+	assert.Error(t, enumFail(tagsParam, []string{"a", "b", "c"}), err.Error())
+
+	// Not required in a parameter or items
 	// Additional items
 	// Items
-	// MaxItems
-	// MinItems
-	// UniqueItems
-
-	// Enum
-	// AllOf
-	// AnyOf
-	// OneOf
-	// Not
-	// Definitions
-}
-
-func TestObjectParameterValidation(t *testing.T) {
-	// MaxProperties
-	// MinProperties
-	// Required
-	// AdditionalProperties
-	// Properties
-	// PatternProperties
-	// Dependencies
-
-	// Enum
 	// AllOf
 	// AnyOf
 	// OneOf

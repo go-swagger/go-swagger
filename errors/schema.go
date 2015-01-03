@@ -16,6 +16,9 @@ const (
 	maxExcFail        = `%s in %s should be less than %v`
 	minIncFail        = `%s in %s should be greater than or equal to %v`
 	minExcFail        = `%s in %s should be greater than %v`
+	uniqueFail        = `%s in %s should shouldn't contain duplicates`
+	maxItemsFail      = `%s in %s should at most have %d items`
+	minItemsFail      = `%s in %s should at most have %d items`
 )
 
 // InvalidCollectionFormat another flavor of invalid type error
@@ -46,6 +49,36 @@ func InvalidType(name, in, typeName string, value interface{}) *Validation {
 		In:      in,
 		Value:   value,
 		message: message,
+	}
+}
+
+// DuplicateItems error for when an array contains duplicates
+func DuplicateItems(name, in string) *Validation {
+	return &Validation{
+		code:    422,
+		Name:    name,
+		In:      in,
+		message: fmt.Sprintf(uniqueFail, name, in),
+	}
+}
+
+// TooManyItems error for when an array contains too many items
+func TooManyItems(name, in string, max int64) *Validation {
+	return &Validation{
+		code:    422,
+		Name:    name,
+		In:      in,
+		message: fmt.Sprintf(maxItemsFail, name, in, max),
+	}
+}
+
+// TooFewItems error for when an array contains too few items
+func TooFewItems(name, in string, min int64) *Validation {
+	return &Validation{
+		code:    422,
+		Name:    name,
+		In:      in,
+		message: fmt.Sprintf(minItemsFail, name, in, min),
 	}
 }
 
