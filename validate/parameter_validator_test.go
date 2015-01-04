@@ -185,9 +185,15 @@ func TestArrayParameterValidation(t *testing.T) {
 	assert.Error(t, err)
 	assert.Error(t, enumFail(tagsParam, []string{"a", "b", "c"}), err.Error())
 
+	// Items
+	strItems := spec.NewItems().WithMinLength(3).WithMaxLength(5).WithPattern(`^[a-z]+$`)
+	tagsParam = spec.QueryParam("tags").CollectionOf(strItems, "").WithMinItems(1).WithMaxItems(5).UniqueValues()
+	validator = &paramValidator{tagsParam, tagsParam.Name}
+	err = validator.Validate([]string{"aa", "bbb", "ccc"})
+	assert.Error(t, err)
+	assert.EqualError(t, minLengthErrorItems("tags.0", tagsParam.In, strItems), err.Error())
 	// Not required in a parameter or items
 	// Additional items
-	// Items
 	// AllOf
 	// AnyOf
 	// OneOf

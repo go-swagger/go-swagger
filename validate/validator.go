@@ -1,6 +1,7 @@
 package validate
 
 import (
+	"fmt"
 	"math"
 	"reflect"
 	"regexp"
@@ -9,7 +10,86 @@ import (
 	"github.com/casualjim/go-swagger/spec"
 )
 
+type schemaValidator struct {
+	schema *spec.Schema
+	parent interface{}
+	path   string
+	in     string
+}
+
 type itemsValidator struct {
+	items  *spec.Items
+	parent interface{}
+	path   string
+	in     string
+}
+
+func (i *itemsValidator) Validate(index int, data interface{}) *errors.Validation {
+	tpe := reflect.TypeOf(data)
+	kind := tpe.Kind()
+
+	path := fmt.Sprintf("%s.%d", i.path, index)
+	validators := []valueValidator{
+		i.stringValidator(path),
+		i.numberValidator(path),
+		i.sliceValidator(path),
+		i.commonValidator(path),
+	}
+
+	for _, validator := range validators {
+		if validator.Applies(i.parent, kind) {
+			if err := validator.Validate(data); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (i *itemsValidator) commonValidator(path string) valueValidator {
+	return &basicCommonValidator{
+		Name:    path,
+		In:      i.in,
+		Default: i.items.Default,
+		Enum:    i.items.Enum,
+	}
+}
+
+func (i *itemsValidator) sliceValidator(path string) valueValidator {
+	return &basicSliceValidator{
+		Name:        path,
+		In:          i.in,
+		Default:     i.items.Default,
+		MaxItems:    i.items.MaxItems,
+		MinItems:    i.items.MinItems,
+		UniqueItems: i.items.UniqueItems,
+		Source:      i.parent,
+		Items:       i.items.Items,
+	}
+}
+
+func (i *itemsValidator) numberValidator(path string) valueValidator {
+	return &numberValidator{
+		Name:             path,
+		In:               i.in,
+		Default:          i.items.Default,
+		MultipleOf:       i.items.MultipleOf,
+		Maximum:          i.items.Maximum,
+		ExclusiveMaximum: i.items.ExclusiveMaximum,
+		Minimum:          i.items.Minimum,
+		ExclusiveMinimum: i.items.ExclusiveMinimum,
+	}
+}
+
+func (i *itemsValidator) stringValidator(path string) valueValidator {
+	return &stringValidator{
+		Name:      path,
+		In:        i.in,
+		Default:   i.items.Default,
+		MaxLength: i.items.MaxLength,
+		MinLength: i.items.MinLength,
+		Pattern:   i.items.Pattern,
+	}
 }
 
 // a param has very limited subset of validations to apply
@@ -19,74 +99,82 @@ type paramValidator struct {
 }
 
 func (p *paramValidator) Validate(data interface{}) *errors.Validation {
-	val := reflect.Indirect(reflect.ValueOf(data))
-	tpe := val.Type()
+	tpe := reflect.TypeOf(data)
+	kind := tpe.Kind()
 
-	switch tpe.Kind() {
-	case reflect.String:
-		if err := p.validateString(data.(string)); err != nil {
-			return err
-		}
-		if err := p.validateCommon(data); err != nil {
-			return err
-		}
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		if err := p.validateNumber(float64(val.Int())); err != nil {
-			return err
-		}
-		if err := p.validateCommon(data); err != nil {
-			return err
-		}
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		if err := p.validateNumber(float64(val.Uint())); err != nil {
-			return err
-		}
-		if err := p.validateCommon(data); err != nil {
-			return err
-		}
-	case reflect.Float32, reflect.Float64:
-		if err := p.validateNumber(val.Float()); err != nil {
-			return err
-		}
-		if err := p.validateCommon(data); err != nil {
-			return err
-		}
-	case reflect.Slice:
-		if err := p.validateSlice(data); err != nil {
-			return err
-		}
-		if err := p.validateCommon(data); err != nil {
-			return err
+	validators := []valueValidator{
+		p.stringValidator(),
+		p.numberValidator(),
+		p.sliceValidator(),
+		p.commonValidator(),
+	}
+
+	for _, validator := range validators {
+		if validator.Applies(p.param, kind) {
+			if err := validator.Validate(data); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
 }
 
-func (p *paramValidator) validateCommon(data interface{}) *errors.Validation {
-	if len(p.param.Enum) > 0 {
-		for i := 0; i < len(p.param.Enum); i++ {
-			if reflect.DeepEqual(p.param.Enum[i], data) {
+func (p *paramValidator) commonValidator() valueValidator {
+	return &basicCommonValidator{
+		Name:    p.param.Name,
+		In:      p.param.In,
+		Default: p.param.Default,
+		Enum:    p.param.Enum,
+	}
+}
+
+type valueValidator interface {
+	Applies(interface{}, reflect.Kind) bool
+	Validate(interface{}) *errors.Validation
+}
+
+type basicCommonValidator struct {
+	Name    string
+	In      string
+	Default interface{}
+	Enum    []interface{}
+}
+
+func (b *basicCommonValidator) Applies(source interface{}, kind reflect.Kind) bool {
+	switch source.(type) {
+	case *spec.Parameter, *spec.Schema:
+		return true
+	}
+	return false
+}
+
+func (b *basicCommonValidator) Validate(data interface{}) *errors.Validation {
+	if len(b.Enum) > 0 {
+		for i := 0; i < len(b.Enum); i++ {
+			if reflect.DeepEqual(b.Enum[i], data) {
 				return nil
 			}
 		}
-		return errors.EnumFail(p.name, p.param.In, data, p.param.Enum)
+		return errors.EnumFail(b.Name, b.In, data, b.Enum)
 	}
 	return nil
 }
 
-func (p *paramValidator) validateSlice(data interface{}) *errors.Validation {
-	return (&sliceValidator{
+func (p *paramValidator) sliceValidator() valueValidator {
+	return &basicSliceValidator{
 		Name:        p.param.Name,
 		In:          p.param.In,
 		Default:     p.param.Default,
 		MaxItems:    p.param.MaxItems,
 		MinItems:    p.param.MinItems,
 		UniqueItems: p.param.UniqueItems,
-	}).Validate(data)
+		Items:       p.param.Items,
+		Source:      p.param,
+	}
 }
 
-func (p *paramValidator) validateNumber(data float64) *errors.Validation {
-	return (&numberValidator{
+func (p *paramValidator) numberValidator() valueValidator {
+	return &numberValidator{
 		Name:             p.param.Name,
 		In:               p.param.In,
 		Default:          p.param.Default,
@@ -95,11 +183,11 @@ func (p *paramValidator) validateNumber(data float64) *errors.Validation {
 		ExclusiveMaximum: p.param.ExclusiveMaximum,
 		Minimum:          p.param.Minimum,
 		ExclusiveMinimum: p.param.ExclusiveMinimum,
-	}).Validate(data)
+	}
 }
 
-func (p *paramValidator) validateString(data string) *errors.Validation {
-	return (&stringValidator{
+func (p *paramValidator) stringValidator() valueValidator {
+	return &stringValidator{
 		Name:      p.param.Name,
 		In:        p.param.In,
 		Default:   p.param.Default,
@@ -107,19 +195,29 @@ func (p *paramValidator) validateString(data string) *errors.Validation {
 		MaxLength: p.param.MaxLength,
 		MinLength: p.param.MinLength,
 		Pattern:   p.param.Pattern,
-	}).Validate(data)
+	}
 }
 
-type sliceValidator struct {
+type basicSliceValidator struct {
 	Name        string
 	In          string
 	Default     interface{}
 	MaxItems    *int64
 	MinItems    *int64
 	UniqueItems bool
+	Items       *spec.Items
+	Source      interface{}
 }
 
-func (s *sliceValidator) Validate(data interface{}) *errors.Validation {
+func (s *basicSliceValidator) Applies(source interface{}, kind reflect.Kind) bool {
+	switch source.(type) {
+	case *spec.Parameter, *spec.Items, *spec.Schema:
+		return kind == reflect.Slice
+	}
+	return false
+}
+
+func (s *basicSliceValidator) Validate(data interface{}) *errors.Validation {
 	val := reflect.ValueOf(data) // YOLO: just going to assume this is an array
 	if val.Kind() != reflect.Slice {
 		return nil // no business to do for this thing
@@ -134,10 +232,24 @@ func (s *sliceValidator) Validate(data interface{}) *errors.Validation {
 	if s.UniqueItems && s.hasDuplicates(val, int(size)) {
 		return errors.DuplicateItems(s.Name, s.In)
 	}
+	if s.Items != nil {
+		for i := 0; i < int(size); i++ {
+			ele := val.Index(i)
+			validator := itemsValidator{
+				items:  s.Items,
+				parent: s.Source,
+				in:     s.In,
+				path:   s.Name,
+			}
+			if err := validator.Validate(i, ele.Interface()); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
-func (s *sliceValidator) hasDuplicates(value reflect.Value, size int) bool {
+func (s *basicSliceValidator) hasDuplicates(value reflect.Value, size int) bool {
 	dict := make(map[interface{}]struct{})
 	for i := 0; i < size; i++ {
 		ele := value.Index(i)
@@ -160,7 +272,31 @@ type numberValidator struct {
 	ExclusiveMinimum bool
 }
 
-func (n *numberValidator) Validate(data float64) *errors.Validation {
+func (n *numberValidator) Applies(source interface{}, kind reflect.Kind) bool {
+	switch source.(type) {
+	case *spec.Parameter, *spec.Schema:
+		isInt := kind >= reflect.Int && kind <= reflect.Uint64
+		isFloat := kind == reflect.Float32 || kind == reflect.Float64
+		return isInt || isFloat
+	}
+	return false
+}
+
+func (n *numberValidator) convertToFloat(val interface{}) float64 {
+	v := reflect.ValueOf(val)
+	switch v.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return float64(v.Int())
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return float64(v.Uint())
+	case reflect.Float32, reflect.Float64:
+		return v.Float()
+	}
+	return 0
+}
+
+func (n *numberValidator) Validate(val interface{}) *errors.Validation {
+	data := n.convertToFloat(val)
 	if n.MultipleOf != nil && math.Mod(data, *n.MultipleOf) != 0 {
 		return errors.NotMultipleOf(n.Name, n.In, *n.MultipleOf)
 	}
@@ -195,7 +331,16 @@ type stringValidator struct {
 	In        string
 }
 
-func (s *stringValidator) Validate(data string) *errors.Validation {
+func (s *stringValidator) Applies(source interface{}, kind reflect.Kind) bool {
+	switch source.(type) {
+	case *spec.Parameter, *spec.Schema:
+		return kind == reflect.String
+	}
+	return false
+}
+
+func (s *stringValidator) Validate(val interface{}) *errors.Validation {
+	data := val.(string)
 	if s.Required && s.Default == nil && data == "" {
 		return errors.Required(s.Name, s.In)
 	}
@@ -218,70 +363,3 @@ func (s *stringValidator) Validate(data string) *errors.Validation {
 	}
 	return nil
 }
-
-// type objectPath struct {
-// 	head string
-// 	tail *objectPath
-// }
-
-// func consPathNode(head string, tail *objectPath) *objectPath {
-// 	return &objectPath{head, tail}
-// }
-
-// // String displays the context in reverse.
-// // This plays well with the data structure's persistent nature with
-// // Cons and a json document's tree structure.
-// func (c *objectPath) String() string {
-// 	byteArr := make([]byte, 0, c.stringLen())
-// 	buf := bytes.NewBuffer(byteArr)
-// 	c.writeStringToBuffer(buf)
-
-// 	return buf.String()
-// }
-
-// func (c *objectPath) stringLen() int {
-// 	length := 0
-// 	if c.tail != nil {
-// 		length = c.tail.stringLen() + 1 // add 1 for "."
-// 	}
-
-// 	length += len(c.head)
-// 	return length
-// }
-
-// func (c *objectPath) writeStringToBuffer(buf *bytes.Buffer) {
-// 	if c.tail != nil {
-// 		c.tail.writeStringToBuffer(buf)
-// 		buf.WriteString(".")
-// 	}
-
-// 	buf.WriteString(c.head)
-// }
-
-// // validates things after the type has been verified, defaults are set and the value was converted
-// // knows how to validate schemas as the other things are just subsets of a schema
-// type schemaValidator struct {
-// 	path     objectPath
-// 	schema   spec.Schema // copy of schema, or adapter for parameter, items and header
-// 	required bool
-// }
-
-// func (s *schemaValidator) Validate(data interface{}) errors.Error {
-// 	val := reflect.ValueOf(data)
-// 	tpe := val.Type()
-// 	if tpe.Kind() == reflect.Ptr {
-// 		val = val.Elem()
-// 		tpe = val.Type()
-// 	}
-
-// 	switch val.Kind() {
-// 	case reflect.String:
-// 		// validate required
-// 		// validate max length
-// 		// validate min length
-// 		// validate pattern
-// 	default:
-// 		return errors.NotImplemented("validating other kinds than string is not yet implemented")
-// 	}
-// 	return nil
-// }

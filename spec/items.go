@@ -51,6 +51,100 @@ type Items struct {
 	simpleSchema
 }
 
+// NewItems creates a new instance of items
+func NewItems() *Items {
+	return &Items{}
+}
+
+// Typed a fluent builder method for the type of item
+func (i *Items) Typed(tpe, format string) *Items {
+	i.Type = tpe
+	i.Format = format
+	return i
+}
+
+// CollectionOf a fluent builder method for an array item
+func (i *Items) CollectionOf(items *Items, format string) *Items {
+	i.Type = "array"
+	i.Items = items
+	i.CollectionFormat = format
+	return i
+}
+
+// WithDefault sets the default value on this item
+func (i *Items) WithDefault(defaultValue interface{}) *Items {
+	i.Default = defaultValue
+	return i
+}
+
+// WithMaxLength sets a max length value
+func (i *Items) WithMaxLength(max int64) *Items {
+	i.MaxLength = &max
+	return i
+}
+
+// WithMinLength sets a min length value
+func (i *Items) WithMinLength(min int64) *Items {
+	i.MinLength = &min
+	return i
+}
+
+// WithPattern sets a pattern value
+func (i *Items) WithPattern(pattern string) *Items {
+	i.Pattern = pattern
+	return i
+}
+
+// WithMultipleOf sets a multiple of value
+func (i *Items) WithMultipleOf(number float64) *Items {
+	i.MultipleOf = &number
+	return i
+}
+
+// WithMaximum sets a maximum number value
+func (i *Items) WithMaximum(max float64, exclusive bool) *Items {
+	i.Maximum = &max
+	i.ExclusiveMaximum = exclusive
+	return i
+}
+
+// WithMinimum sets a minimum number value
+func (i *Items) WithMinimum(min float64, exclusive bool) *Items {
+	i.Minimum = &min
+	i.ExclusiveMinimum = exclusive
+	return i
+}
+
+// WithEnum sets a the enum values (replace)
+func (i *Items) WithEnum(values ...interface{}) *Items {
+	i.Enum = append([]interface{}{}, values...)
+	return i
+}
+
+// WithMaxItems sets the max items
+func (i *Items) WithMaxItems(size int64) *Items {
+	i.MaxItems = &size
+	return i
+}
+
+// WithMinItems sets the min items
+func (i *Items) WithMinItems(size int64) *Items {
+	i.MinItems = &size
+	return i
+}
+
+// UniqueValues dictates that this array can only have unique items
+func (i *Items) UniqueValues() *Items {
+	i.UniqueItems = true
+	return i
+}
+
+// AllowDuplicates this array can have duplicates
+func (i *Items) AllowDuplicates() *Items {
+	i.UniqueItems = false
+	return i
+}
+
 // UnmarshalJSON hydrates this items instance with the data from JSON
 func (i *Items) UnmarshalJSON(data []byte) error {
 	var validations commonValidations
