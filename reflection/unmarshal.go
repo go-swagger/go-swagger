@@ -7,6 +7,10 @@ import (
 	"strconv"
 )
 
+// TODO: this is not right.
+// it should piggy back on the json tag
+// when
+
 var (
 	unmarshallerType = reflect.TypeOf(new(MapUnmarshaller)).Elem()
 )
@@ -44,7 +48,7 @@ func unmarshalMap(data map[string]interface{}, target interface{}, skipCheck boo
 	val := reflect.Indirect(reflect.ValueOf(target))
 	tpe := val.Type()
 
-	fieldNameMap := fieldTagNameMap(tpe, val)
+	fieldNameMap := fieldTagNameMap(tpe) //, val)
 	for k, v := range data {
 		if targetDes, ok := fieldNameMap[k]; ok {
 			if err := convertValue(targetDes.Descriptor.Name, k, reflect.ValueOf(v), val.FieldByName(targetDes.Descriptor.Name), targetDes.Tag); err != nil {
@@ -439,19 +443,29 @@ func convertFloat(name, key string, source, target reflect.Value, tag *parsedTag
 	return nil
 }
 
-func fieldTagNameMap(tpe reflect.Type, val reflect.Value) map[string]fieldInfo {
+func fieldTagNameMap(tpe reflect.Type) map[string]fieldInfo {
 	result := map[string]fieldInfo{}
+	fieldTagNameMapR(tpe, result)
+	return result
+}
+
+func fieldTagNameMapR(tpe reflect.Type, result map[string]fieldInfo) {
 	for i := 0; i < tpe.NumField(); i++ {
 		targetDes := tpe.Field(i)
 
-		if targetDes.PkgPath != "" {
+		if targetDes.PkgPath != "" { // only exported fields count, also for embedded
+			continue
+		}
+
+		if targetDes.Anonymous {
+			// TODO: this seems dangerous, could cause an infinite loop should track visited types
+			fieldTagNameMapR(tpe, result) // traverse the embedded structures
 			continue
 		}
 
 		tag := parseTag(targetDes.Tag.Get(TagName), targetDes.Name)
-		if !tag.ShouldSkip && !targetDes.Anonymous {
+		if !tag.ShouldSkip {
 			result[tag.Name] = fieldInfo{targetDes, tag}
 		}
 	}
-	return result
 }

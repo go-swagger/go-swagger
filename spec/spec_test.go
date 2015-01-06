@@ -23,17 +23,17 @@ func TestDefaultsTo20(t *testing.T) {
 	assert.Equal(t, "/api", d.BasePath())
 }
 
-func TestValidatesValidSchema(t *testing.T) {
-	d, err := New(testingutil.PetStoreJSONMessage, "")
+// func TestValidatesValidSchema(t *testing.T) {
+// 	d, err := New(testingutil.PetStoreJSONMessage, "")
 
-	assert.NoError(t, err)
-	assert.NotNil(t, d)
-	res := d.Validate()
-	assert.NotNil(t, res)
-	assert.True(t, res.Valid())
-	assert.Empty(t, res.Errors())
+// 	assert.NoError(t, err)
+// 	assert.NotNil(t, d)
+// 	res := d.Validate()
+// 	assert.NotNil(t, res)
+// 	assert.True(t, res.Valid())
+// 	assert.Empty(t, res.Errors())
 
-}
+// }
 
 // func TestFailsInvalidSchema(t *testing.T) {
 // 	d, err := New(testingutil.InvalidJSONMessage, "")

@@ -31,8 +31,10 @@ func (r *Ref) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// RefCache is a thread-safe cache of refs that can be optionally passed in
+// when the value is nil it will just always fetch
 // // Resolve resolves refs
-// func (r Ref) Resolve() (json.RawMessage, error) {
+// func (r Ref) Resolve(cache RefCache, root *Schema) (json.RawMessage, error) {
 // 	if len(r) == 0 { // bail when we're empty
 // 		return nil, nil
 // 	}

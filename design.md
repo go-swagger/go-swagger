@@ -15,10 +15,10 @@ Takes a raw spec document either as a []byte, and it adds the /api-docs route to
 
 The middleware performs validation, data binding and security as defined in the swagger spec. 
 It also uses the API to match request paths to functions of `func(paramsObject) (responseModel, error)`
+The middleware does this by building up a series of rules for each operation. When the spec.Document is first created it analyzes the swagger spec and builds a routing, validation and binding rules for each operation in the specification. Before doing that it expands all the $ref fields in the swagger document. After expanding all the rules it validates the registrations made in the API and will take an configurable action for missing operations.
 
-When a request comes in that doesn't match the /api-docs endpoint it will look for it in the swagger spec routes.
-These are provided in the API. There is a tool to generate a statically typed API, based on operation names and 
-operation interfaces
+When a request comes in that doesn't match the /api-docs endpoint it will look for it in the swagger spec routes.  It doesn't need to create a plan for anything anymore it did that at startup time but it will then execute the plan with the request and route params.
+These are provided in the API. There is a tool to generate a statically typed API, based on operation names and operation interfaces
 
 ### The API
 

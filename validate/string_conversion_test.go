@@ -51,7 +51,6 @@ func FloatParamTest(t *testing.T, fName, pName, format string, val reflect.Value
 	binder := &paramBinder{
 		parameter: spec.QueryParam(pName).Typed("number", "double").WithDefault(defVal),
 		name:      pName,
-		target:    fld,
 	}
 
 	err := binder.setFieldValue(fld, defVal, "5")
@@ -72,7 +71,6 @@ func IntParamTest(t *testing.T, pName string, val reflect.Value, defVal, expecte
 	binder := &paramBinder{
 		parameter: spec.QueryParam(pName).Typed("integer", "int64").WithDefault(defVal),
 		name:      pName,
-		target:    fld,
 	}
 	err := binder.setFieldValue(fld, defVal, "5")
 	assert.NoError(t, err)
@@ -96,7 +94,6 @@ func TestParamBinding(t *testing.T) {
 	binder := &paramBinder{
 		parameter: spec.QueryParam(pName).Typed("string", "").WithDefault("some-name"),
 		name:      pName,
-		target:    fld,
 	}
 
 	err := binder.setFieldValue(fld, "some-name", "the name value")
@@ -138,7 +135,6 @@ func TestParamBinding(t *testing.T) {
 	binder = &paramBinder{
 		parameter: spec.QueryParam(pName).Typed("boolean", "").WithDefault(true),
 		name:      pName,
-		target:    confirmedField,
 	}
 
 	for _, tv := range evaluatesAsTrue {
@@ -161,7 +157,6 @@ func TestParamBinding(t *testing.T) {
 	binder = &paramBinder{
 		parameter: spec.QueryParam(pName).Typed("string", "date-time").WithDefault(dt),
 		name:      pName,
-		target:    timeField,
 	}
 	exp := swagger.DateTime{Time: time.Date(2014, 5, 14, 2, 9, 0, 0, time.UTC)}
 
@@ -182,7 +177,6 @@ func TestParamBinding(t *testing.T) {
 	binder = &paramBinder{
 		parameter: spec.QueryParam(pName).Typed("string", "date").WithDefault(ddt),
 		name:      pName,
-		target:    dateField,
 	}
 	expd := swagger.Date{Time: time.Date(2014, 5, 14, 0, 0, 0, 0, time.UTC)}
 
@@ -203,7 +197,6 @@ func TestParamBinding(t *testing.T) {
 	binder = &paramBinder{
 		parameter: spec.QueryParam(pName).Typed("string", "date").WithDefault(fdt),
 		name:      pName,
-		target:    ftimeField,
 	}
 	fexp := &swagger.DateTime{Time: time.Date(2014, 5, 14, 2, 9, 0, 0, time.UTC)}
 
@@ -229,7 +222,6 @@ func TestParamBinding(t *testing.T) {
 	binder = &paramBinder{
 		parameter: spec.QueryParam(pName).Typed("string", ""),
 		name:      pName,
-		target:    unsupportedField,
 	}
 	err = binder.setFieldValue(unsupportedField, nil, "")
 	assert.Error(t, err)
@@ -251,21 +243,20 @@ func TestSliceConversion(t *testing.T) {
 	tagsField := val.FieldByName("Tags")
 	for k, sep := range seps {
 		binder := &paramBinder{
-			target:    tagsField,
 			name:      "Tags",
 			parameter: spec.QueryParam("tags").CollectionOf(stringItems, k),
 		}
 
 		actual.Tags = nil
 		cData := strings.Join(sliced, sep)
-		tags, _, err := binder.readFormattedSliceFieldValue(cData)
+		tags, _, err := binder.readFormattedSliceFieldValue(cData, tagsField)
 		assert.NoError(t, err)
 		assert.Equal(t, sliced, tags)
 		cData = strings.Join(sliced, " "+sep+" ")
-		tags, _, err = binder.readFormattedSliceFieldValue(cData)
+		tags, _, err = binder.readFormattedSliceFieldValue(cData, tagsField)
 		assert.NoError(t, err)
 		assert.Equal(t, sliced, tags)
-		tags, _, err = binder.readFormattedSliceFieldValue("")
+		tags, _, err = binder.readFormattedSliceFieldValue("", tagsField)
 		assert.NoError(t, err)
 		assert.Empty(t, tags)
 	}
@@ -275,17 +266,16 @@ func TestSliceConversion(t *testing.T) {
 
 	categoriesField := val.FieldByName("Categories")
 	binder := &paramBinder{
-		target:    categoriesField,
 		name:      "Categories",
 		parameter: spec.QueryParam("categories").CollectionOf(stringItems, "csv"),
 	}
 	cData := strings.Join(sliced, ",")
-	categories, custom, err := binder.readFormattedSliceFieldValue(cData)
+	categories, custom, err := binder.readFormattedSliceFieldValue(cData, categoriesField)
 	assert.NoError(t, err)
 	assert.Equal(t, sliced, actual.Categories)
 	assert.True(t, custom)
 	assert.Empty(t, categories)
-	categories, custom, err = binder.readFormattedSliceFieldValue("")
+	categories, custom, err = binder.readFormattedSliceFieldValue("", categoriesField)
 	assert.Error(t, err)
 	assert.True(t, custom)
 	assert.Empty(t, categories)

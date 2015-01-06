@@ -39,7 +39,7 @@ var parameter = Parameter{
 		Name:        "param-name",
 		In:          "header",
 		Required:    true,
-		Schema:      &Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}},
+		Schema:      &Schema{schemaProps: schemaProps{Type: []string{"string"}}},
 		Description: "the description of this parameter",
 	},
 }
@@ -171,7 +171,7 @@ func TestParameterSerialization(t *testing.T) {
 			schema := &Schema{schemaProps: schemaProps{
 				Properties: map[string]Schema{
 					"name": Schema{schemaProps: schemaProps{
-						Type: &StringOrArray{Single: "string"},
+						Type: []string{"string"},
 					}},
 				},
 			}}
@@ -181,7 +181,7 @@ func TestParameterSerialization(t *testing.T) {
 
 		Convey("a ref body parameter", func() {
 			schema := &Schema{
-				refable: refable{Ref: "Cat"},
+				schemaProps: schemaProps{Ref: "Cat"},
 			}
 			param := BodyParam("", schema)
 			So(param, ShouldSerializeJSON, `{"type":"object","in":"body","schema":{"$ref":"Cat"}}`)

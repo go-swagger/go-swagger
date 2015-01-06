@@ -2,7 +2,6 @@ package validate
 
 import (
 	"math"
-	"net/http"
 	"net/url"
 	"reflect"
 	"strconv"
@@ -27,8 +26,8 @@ var paramFactories = []paramFactory{
 	spec.FormDataParam,
 }
 
-func np(param *spec.Parameter, request *http.Request, tgt reflect.Value) *paramBinder {
-	return &paramBinder{name: param.Name, parameter: param, request: request, target: tgt}
+func np(param *spec.Parameter) *paramBinder {
+	return &paramBinder{name: param.Name, parameter: param}
 }
 
 var stringItems = new(spec.Items)
@@ -41,7 +40,7 @@ func testCollectionFormat(t *testing.T, param *spec.Parameter, valid bool) {
 	binder := &paramBinder{
 		parameter: param,
 	}
-	_, _, err := binder.readValue(url.Values(nil))
+	_, _, err := binder.readValue(url.Values(nil), reflect.ValueOf(nil))
 	if valid {
 		assert.NoError(t, err)
 	} else {
@@ -55,12 +54,11 @@ func requiredError(param *spec.Parameter) *errors.Validation {
 }
 
 func validateRequiredTest(t *testing.T, param *spec.Parameter, value reflect.Value) {
-	request, _ := http.NewRequest("GET", "http://localhost:8002/missing-prop?name=", nil)
-	binder := np(param, request, value)
-	err := binder.bindValue([]string{})
+	binder := np(param)
+	err := binder.bindValue([]string{}, value)
 	assert.Error(t, err)
 	assert.EqualError(t, requiredError(param), err.Error())
-	err = binder.bindValue([]string{""})
+	err = binder.bindValue([]string{""}, value)
 	assert.Error(t, err)
 	assert.EqualError(t, requiredError(param), err.Error())
 }
@@ -111,92 +109,82 @@ func invalidTypeError(param *spec.Parameter, data interface{}) *errors.Validatio
 func TestTypeValidation(t *testing.T) {
 	for _, newParam := range paramFactories {
 		intParam := newParam("badInt").Typed("integer", "int32")
-		request, _ := http.NewRequest("GET", "http://localhost:8002/bad?badInt=yada", nil)
 		value := reflect.ValueOf(int32(0))
-		binder := np(intParam, request, value)
-		err := binder.bindValue([]string{"yada"})
+		binder := np(intParam)
+		err := binder.bindValue([]string{"yada"}, value)
 		// fails for invalid string
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(intParam, "yada"), err)
 		// fails for overflow
 		val := int64(math.MaxInt32)
 		str := strconv.FormatInt(val, 10) + "0"
-		request, _ = http.NewRequest("GET", "http://localhost:8002/bad?badInt="+str, nil)
 		v := int32(0)
 		value = reflect.ValueOf(&v).Elem()
-		binder = np(intParam, request, value)
-		err = binder.bindValue([]string{str})
+		binder = np(intParam)
+		err = binder.bindValue([]string{str}, value)
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(intParam, str), err)
 
 		longParam := newParam("badLong").Typed("integer", "int64")
-		request, _ = http.NewRequest("GET", "http://localhost:8002/bad?badLong=yada", nil)
 		value = reflect.ValueOf(int64(0))
-		binder = np(longParam, request, value)
-		err = binder.bindValue([]string{"yada"})
+		binder = np(longParam)
+		err = binder.bindValue([]string{"yada"}, value)
 		// fails for invalid string
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(longParam, "yada"), err)
 		// fails for overflow
 		str2 := strconv.FormatInt(math.MaxInt64, 10) + "0"
-		request, _ = http.NewRequest("GET", "http://localhost:8002/bad?badLong="+str2, nil)
 		v2 := int64(0)
 		vv2 := reflect.ValueOf(&v2).Elem()
-		binder = np(longParam, request, vv2)
-		err = binder.bindValue([]string{str2})
+		binder = np(longParam)
+		err = binder.bindValue([]string{str2}, vv2)
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(longParam, str2), err)
 
 		floatParam := newParam("badFloat").Typed("number", "float")
-		request, _ = http.NewRequest("GET", "http://localhost:8002/bad?badFloat=yada", nil)
 		value = reflect.ValueOf(float64(0))
-		binder = np(floatParam, request, value)
-		err = binder.bindValue([]string{"yada"})
+		binder = np(floatParam)
+		err = binder.bindValue([]string{"yada"}, value)
 		// fails for invalid string
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(floatParam, "yada"), err)
 		// fails for overflow
 		str3 := strconv.FormatFloat(math.MaxFloat64, 'f', 5, 64)
-		request, _ = http.NewRequest("GET", "http://localhost:8002/bad?badFloat="+str3, nil)
 		v3 := reflect.TypeOf(float32(0))
 		value = reflect.New(v3).Elem()
-		binder = np(floatParam, request, value)
-		err = binder.bindValue([]string{str3})
+		binder = np(floatParam)
+		err = binder.bindValue([]string{str3}, value)
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(floatParam, str3), err)
 
 		doubleParam := newParam("badDouble").Typed("number", "double")
-		request, _ = http.NewRequest("GET", "http://localhost:8002/bad?badDouble=yada", nil)
 		value = reflect.ValueOf(float64(0))
-		binder = np(doubleParam, request, value)
-		err = binder.bindValue([]string{"yada"})
+		binder = np(doubleParam)
+		err = binder.bindValue([]string{"yada"}, value)
 		// fails for invalid string
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(doubleParam, "yada"), err)
 		// fails for overflow
 		str4 := "9" + strconv.FormatFloat(math.MaxFloat64, 'f', 5, 64)
-		request, _ = http.NewRequest("GET", "http://localhost:8002/bad?badDouble="+str4, nil)
 		v4 := reflect.TypeOf(float64(0))
 		value = reflect.New(v4).Elem()
-		binder = np(doubleParam, request, value)
-		err = binder.bindValue([]string{str4})
+		binder = np(doubleParam)
+		err = binder.bindValue([]string{str4}, value)
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(doubleParam, str4), err)
 
 		dateParam := newParam("badDate").Typed("string", "date")
-		request, _ = http.NewRequest("GET", "http://localhost:8002/bad?badDate=yada", nil)
 		value = reflect.ValueOf(swagger.Date{})
-		binder = np(dateParam, request, value)
-		err = binder.bindValue([]string{"yada"})
+		binder = np(dateParam)
+		err = binder.bindValue([]string{"yada"}, value)
 		// fails for invalid string
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(dateParam, "yada"), err)
 
 		dateTimeParam := newParam("badDateTime").Typed("string", "date-time")
-		request, _ = http.NewRequest("GET", "http://localhost:8002/bad?badDate=yada", nil)
 		value = reflect.ValueOf(swagger.DateTime{})
-		binder = np(dateTimeParam, request, value)
-		err = binder.bindValue([]string{"yada"})
+		binder = np(dateTimeParam)
+		err = binder.bindValue([]string{"yada"}, value)
 		// fails for invalid string
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(dateTimeParam, "yada"), err)
@@ -204,11 +192,10 @@ func TestTypeValidation(t *testing.T) {
 		byteParam := newParam("badByte").Typed("string", "byte")
 		values := url.Values(map[string][]string{})
 		values.Add("badByte", "yaüda")
-		request, _ = http.NewRequest("GET", "http://localhost:8002/bad?"+values.Encode(), nil)
 		v5 := []byte{}
 		value = reflect.ValueOf(&v5).Elem()
-		binder = np(byteParam, request, value)
-		err = binder.bindValue([]string{"yaüda"})
+		binder = np(byteParam)
+		err = binder.bindValue([]string{"yaüda"}, value)
 		// fails for invalid string
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(byteParam, "yaüda"), err)

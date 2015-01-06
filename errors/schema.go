@@ -3,6 +3,7 @@ package errors
 import "fmt"
 
 const (
+	invalidType       = `%s is an invalid type name`
 	typeFail          = `%s in %s must be of type %s`
 	typeFailWithData  = `%s in %s must be of type %s: %q`
 	typeFailWithError = `%s in %s must be of type %s, because: %s`
@@ -21,6 +22,15 @@ const (
 	minItemsFail      = `%s in %s should at most have %d items`
 )
 
+// CompositeValidationError an error to wrap a bunch of other errors
+func CompositeValidationError(errors ...Error) *Validation {
+	return &Validation{
+		code:    422,
+		Value:   append([]Error{}, errors...),
+		message: "validation failure list",
+	}
+}
+
 // InvalidCollectionFormat another flavor of invalid type error
 func InvalidCollectionFormat(name, in, format string) *Validation {
 	return &Validation{
@@ -29,6 +39,14 @@ func InvalidCollectionFormat(name, in, format string) *Validation {
 		In:      in,
 		Value:   format,
 		message: fmt.Sprintf("the collection format %q is not supported for a %s param", format, in),
+	}
+}
+
+// InvalidTypeName an error for when the type is invalid
+func InvalidTypeName(typeName string) *Validation {
+	return &Validation{
+		code:    422,
+		message: fmt.Sprintf(invalidType, typeName),
 	}
 }
 

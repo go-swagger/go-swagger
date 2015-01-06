@@ -33,13 +33,11 @@ func (o *RequestBinder) Bind(request *http.Request, routeParams swagger.RoutePar
 		binder := new(paramBinder)
 		binder.name = fieldName
 		binder.parameter = &param
-		binder.consumer = o.Consumer
 		binder.formats = o.Formats
-		binder.request = request
-		binder.routeParams = routeParams
 
+		var target reflect.Value
 		if !isMap {
-			binder.target = val.FieldByName(fieldName)
+			target = val.FieldByName(fieldName)
 		}
 
 		if isMap {
@@ -48,14 +46,14 @@ func (o *RequestBinder) Bind(request *http.Request, routeParams swagger.RoutePar
 			if tpe == nil {
 				continue
 			}
-			binder.target = reflect.Indirect(reflect.New(tpe))
+			target = reflect.Indirect(reflect.New(tpe))
 		}
 
-		if !binder.target.IsValid() {
+		if !target.IsValid() {
 			return errors.New(500, fmt.Sprintf("parameter name %q is an unknown field", binder.name))
 		}
 
-		if err := binder.Bind(); err != nil {
+		if err := binder.Bind(request, routeParams, o.Consumer, target); err != nil {
 			switch err.(type) {
 			case *errors.Validation:
 				return err.(*errors.Validation)
@@ -67,7 +65,7 @@ func (o *RequestBinder) Bind(request *http.Request, routeParams swagger.RoutePar
 		}
 
 		if isMap {
-			val.SetMapIndex(reflect.ValueOf(param.Name), binder.target)
+			val.SetMapIndex(reflect.ValueOf(param.Name), target)
 		}
 	}
 

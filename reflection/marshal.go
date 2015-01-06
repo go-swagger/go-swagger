@@ -6,6 +6,14 @@ import (
 	"strings"
 )
 
+// TODO: this is not right.
+// it should piggy back on the json tag
+// instead of the byValue tag it should look for the TextMarshaller or TextUnmarshaler interface
+// if it implements that it should assume by value
+// the same goes for the marshaljson and unmarshaljson interfaces
+// it should check for more types and flatten them to the json types instead.
+// that way we can pretend to do untyped json without having to go through the entire serialization/deserialization cycle
+
 const (
 	// TagName the name of the tag used for reflection
 	TagName = "swagger"
@@ -72,6 +80,9 @@ func isStruct(v reflect.Value) bool {
 
 // IsZero returns true when the value is a zero for the type
 func IsZero(data reflect.Value) bool {
+	if !data.CanInterface() {
+		return true
+	}
 	tpe := data.Type()
 	return reflect.DeepEqual(data.Interface(), reflect.Zero(tpe).Interface())
 }

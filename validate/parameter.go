@@ -17,18 +17,15 @@ import (
 )
 
 type paramBinder struct {
-	request     *http.Request
-	routeParams swagger.RouteParams
-	target      reflect.Value
-	parameter   *spec.Parameter
-	formats     formats
-	name        string
-	consumer    swagger.Consumer
+	parameter *spec.Parameter
+	formats   formats
+	name      string
 }
 
 func (p *paramBinder) Type() reflect.Type {
 	return p.typeForSchema(p.parameter.Type, p.parameter.Format, p.parameter.Items)
 }
+
 func (p *paramBinder) typeForSchema(tpe, format string, items *spec.Items) reflect.Type {
 	if fmts, ok := p.formats[tpe]; ok {
 		if tp, ok := fmts[format]; ok {
@@ -49,6 +46,16 @@ func (p *paramBinder) typeForSchema(tpe, format string, items *spec.Items) refle
 			return reflect.TypeOf(swagger.Date{})
 		case "date-time":
 			return reflect.TypeOf(swagger.DateTime{})
+		// case "uri":
+		// 	return reflect.TypeOf(swagger.URI)
+		// case "email":
+		// 	return reflect.TypeOf(swagger.Email)
+		// case "hostname":
+		// 	return reflect.TypeOf(swagger.HostName)
+		// case "ipv4":
+		// 	return reflect.TypeOf(swagger.IPv4)
+		// case "ipv6":
+		// 	return reflect.TypeOf(swagger.IPv6)
 		default:
 			return reflect.TypeOf("")
 		}
@@ -96,7 +103,7 @@ type getValue interface {
 	Get(string) string
 }
 
-func (p *paramBinder) readValue(values interface{}) ([]string, bool, error) {
+func (p *paramBinder) readValue(values interface{}, target reflect.Value) ([]string, bool, error) {
 	name, in, cf, tpe := p.parameter.Name, p.parameter.In, p.parameter.CollectionFormat, p.parameter.Type
 	if tpe == "array" {
 		if cf == "multi" {
@@ -107,7 +114,7 @@ func (p *paramBinder) readValue(values interface{}) ([]string, bool, error) {
 		}
 
 		v := readSingle(values.(getValue), name)
-		return p.readFormattedSliceFieldValue(v)
+		return p.readFormattedSliceFieldValue(v, target)
 	}
 
 	v := readSingle(values.(getValue), name)
@@ -117,11 +124,10 @@ func (p *paramBinder) readValue(values interface{}) ([]string, bool, error) {
 	return []string{v}, false, nil
 }
 
-func (p *paramBinder) Bind() error {
-
+func (p *paramBinder) Bind(request *http.Request, routeParams swagger.RouteParams, consumer swagger.Consumer, target reflect.Value) error {
 	switch p.parameter.In {
 	case "query":
-		data, custom, err := p.readValue(p.request.URL.Query())
+		data, custom, err := p.readValue(request.URL.Query(), target)
 		if err != nil {
 			return err
 		}
@@ -129,30 +135,30 @@ func (p *paramBinder) Bind() error {
 			return nil
 		}
 
-		return p.bindValue(data)
+		return p.bindValue(data, target)
 
 	case "header":
-		data, custom, err := p.readValue(p.request.Header)
+		data, custom, err := p.readValue(request.Header, target)
 		if err != nil {
 			return err
 		}
 		if custom {
 			return nil
 		}
-		return p.bindValue(data)
+		return p.bindValue(data, target)
 
 	case "path":
-		data, custom, err := p.readValue(p.routeParams)
+		data, custom, err := p.readValue(routeParams, target)
 		if err != nil {
 			return err
 		}
 		if custom {
 			return nil
 		}
-		return p.bindValue(data)
+		return p.bindValue(data, target)
 
 	case "formData":
-		mt, err := contentType(p.request)
+		mt, err := contentType(request)
 		if err != nil {
 			return errors.InvalidContentType("", []string{"multipart/form-data", "application/x-www-form-urlencoded"})
 		}
@@ -160,47 +166,47 @@ func (p *paramBinder) Bind() error {
 			return errors.InvalidContentType(mt, []string{"multipart/form-data", "application/x-www-form-urlencoded"})
 		}
 		if mt == "multipart/form-data" {
-			if err := p.request.ParseMultipartForm(defaultMaxMemory); err != nil {
+			if err := request.ParseMultipartForm(defaultMaxMemory); err != nil {
 				return err
 			}
 		}
-		if err := p.request.ParseForm(); err != nil {
+		if err := request.ParseForm(); err != nil {
 			return err
 		}
 
 		if p.parameter.Type == "file" {
-			file, header, err := p.request.FormFile(p.parameter.Name)
+			file, header, err := request.FormFile(p.parameter.Name)
 			if err != nil {
 				return err
 			}
-			p.target.Set(reflect.ValueOf(swagger.File{Data: file, Header: header}))
+			target.Set(reflect.ValueOf(swagger.File{Data: file, Header: header}))
 			return nil
 		}
 
-		if p.request.MultipartForm != nil {
-			data, custom, err := p.readValue(url.Values(p.request.MultipartForm.Value))
+		if request.MultipartForm != nil {
+			data, custom, err := p.readValue(url.Values(request.MultipartForm.Value), target)
 			if err != nil {
 				return err
 			}
 			if custom {
 				return nil
 			}
-			return p.bindValue(data)
+			return p.bindValue(data, target)
 		}
-		data, custom, err := p.readValue(url.Values(p.request.PostForm))
+		data, custom, err := p.readValue(url.Values(request.PostForm), target)
 		if err != nil {
 			return err
 		}
 		if custom {
 			return nil
 		}
-		return p.bindValue(data)
+		return p.bindValue(data, target)
 
 	case "body":
-		newValue := reflect.New(p.target.Type())
-		if err := p.consumer.Consume(p.request.Body, newValue.Interface()); err != nil {
+		newValue := reflect.New(target.Type())
+		if err := consumer.Consume(request.Body, newValue.Interface()); err != nil {
 			if err == io.EOF && p.parameter.Default != nil {
-				p.target.Set(reflect.ValueOf(p.parameter.Default))
+				target.Set(reflect.ValueOf(p.parameter.Default))
 				return nil
 			}
 			tpe := p.parameter.Type
@@ -209,22 +215,22 @@ func (p *paramBinder) Bind() error {
 			}
 			return errors.InvalidType(p.name, p.parameter.In, tpe, nil)
 		}
-		p.target.Set(reflect.Indirect(newValue))
+		target.Set(reflect.Indirect(newValue))
 		return nil
 	default:
 		return errors.New(500, fmt.Sprintf("invalid parameter location %q", p.parameter.In))
 	}
 }
 
-func (p *paramBinder) bindValue(data []string) error {
+func (p *paramBinder) bindValue(data []string, target reflect.Value) error {
 	if p.parameter.Type == "array" {
-		return p.setSliceFieldValue(p.target, p.parameter.Default, data)
+		return p.setSliceFieldValue(target, p.parameter.Default, data)
 	}
 	var d string
 	if len(data) > 0 {
 		d = data[0]
 	}
-	return p.setFieldValue(p.target, p.parameter.Default, d)
+	return p.setFieldValue(target, p.parameter.Default, d)
 }
 
 func (p *paramBinder) setFieldValue(target reflect.Value, defaultValue interface{}, data string) error {
@@ -357,8 +363,8 @@ func (p *paramBinder) tryUnmarshaler(target reflect.Value, defaultValue interfac
 	return false, nil
 }
 
-func (p *paramBinder) readFormattedSliceFieldValue(data string) ([]string, bool, error) {
-	ok, err := p.tryUnmarshaler(p.target, p.parameter.Default, data)
+func (p *paramBinder) readFormattedSliceFieldValue(data string, target reflect.Value) ([]string, bool, error) {
+	ok, err := p.tryUnmarshaler(target, p.parameter.Default, data)
 	if err != nil {
 		return nil, true, err
 	}

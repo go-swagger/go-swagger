@@ -8,8 +8,14 @@ import (
 )
 
 var schema = Schema{
-	refable: refable{Ref: "Cat"},
-	commonValidations: commonValidations{
+	vendorExtensible: vendorExtensible{Extensions: map[string]interface{}{"x-framework": "go-swagger"}},
+	schemaProps: schemaProps{
+		Ref:              "Cat",
+		Type:             []string{"string"},
+		Format:           "date",
+		Description:      "the description of this schema",
+		Title:            "the title",
+		Default:          "blah",
 		Maximum:          float64Ptr(100),
 		ExclusiveMaximum: true,
 		ExclusiveMinimum: true,
@@ -22,23 +28,21 @@ var schema = Schema{
 		UniqueItems:      true,
 		MultipleOf:       float64Ptr(5),
 		Enum:             []interface{}{"hello", "world"},
-	},
-	vendorExtensible: vendorExtensible{Extensions: map[string]interface{}{"x-framework": "go-swagger"}},
-	schemaProps: schemaProps{
-		Type:          &StringOrArray{Single: "string"},
-		Format:        "date",
-		Description:   "the description of this schema",
-		Title:         "the title",
-		Default:       "blah",
-		MaxProperties: int64Ptr(5),
-		MinProperties: int64Ptr(1),
-		Required:      []string{"id", "name"},
-		Items:         &SchemaOrArray{Single: &Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}}},
-		AllOf:         []Schema{Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}}},
+		MaxProperties:    int64Ptr(5),
+		MinProperties:    int64Ptr(1),
+		Required:         []string{"id", "name"},
+		Items:            &SchemaOrArray{Schema: &Schema{schemaProps: schemaProps{Type: []string{"string"}}}},
+		AllOf:            []Schema{Schema{schemaProps: schemaProps{Type: []string{"string"}}}},
 		Properties: map[string]Schema{
-			"id":   Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "integer"}, Format: "int64"}},
-			"name": Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}},
+			"id":   Schema{schemaProps: schemaProps{Type: []string{"integer"}, Format: "int64"}},
+			"name": Schema{schemaProps: schemaProps{Type: []string{"string"}}},
 		},
+		AdditionalProperties: &SchemaOrBool{Allows: true, Schema: &Schema{schemaProps: schemaProps{
+			Type:   []string{"integer"},
+			Format: "int32",
+		}}},
+	},
+	swaggerSchemaProps: swaggerSchemaProps{
 		Discriminator: "not this",
 		ReadOnly:      true,
 		XML:           &XMLObject{"sch", "io", "sw", true, true},
@@ -56,10 +60,6 @@ var schema = Schema{
 				"name": "the thing",
 			},
 		},
-		AdditionalProperties: &Schema{schemaProps: schemaProps{
-			Type:   &StringOrArray{Single: "integer"},
-			Format: "int32",
-		}},
 	},
 }
 

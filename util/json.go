@@ -1,6 +1,9 @@
 package util
 
-import "bytes"
+import (
+	"bytes"
+	"encoding/json"
+)
 
 const comma = byte(',')
 
@@ -21,14 +24,16 @@ func ConcatJSON(blobs ...[]byte) []byte {
 	last := len(blobs) - 1
 	var opening, closing byte
 	a := 0
-	setClosing := false
 	idx := 0
 	buf := bytes.NewBuffer(nil)
 
 	for i, b := range blobs {
-		if len(b) > 0 && !setClosing { // is this an array or an object?
-			setClosing = true
+		if len(b) > 0 && opening == 0 { // is this an array or an object?
 			opening, closing = b[0], closers[b[0]]
+		}
+
+		if opening != '{' && opening != '[' {
+			continue // don't know how to concatenate non container objects
 		}
 
 		if len(b) < 3 { // yep empty but also the last one, so closing this thing
@@ -57,4 +62,12 @@ func ConcatJSON(blobs ...[]byte) []byte {
 		buf.WriteByte(closing)
 	}
 	return buf.Bytes()
+}
+
+// ToDynamicJSON turns an object into a properly JSON typed structure
+func ToDynamicJSON(data interface{}) interface{} {
+	b, _ := json.Marshal(data)
+	var res interface{}
+	json.Unmarshal(b, &res)
+	return res
 }

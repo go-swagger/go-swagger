@@ -69,46 +69,51 @@ func TestNumberItemsValidation(t *testing.T) {
 		items.WithEnum(v[3], v[6], v[8], v[1])
 		parent := spec.QueryParam("factors").CollectionOf(items, "")
 		path := fmt.Sprintf("factors.%d", i)
-		validator := &itemsValidator{items, parent, parent.Name, parent.In}
+		validator := newItemsValidator(parent.Name, parent.In, items, parent)
 
 		// MultipleOf
 		err := validator.Validate(i, v[0])
-		assert.Error(t, err)
-		assert.EqualError(t, multipleOfErrorItems(path, validator.in, items), err.Error())
+		assert.True(t, err.HasErrors())
+		assert.EqualError(t, multipleOfErrorItems(path, validator.in, items), err.Errors[0].Error())
 
 		// Maximum
 		err = validator.Validate(i, v[1])
-		assert.NoError(t, err)
+		assert.True(t, err == nil || err.IsValid())
 		err = validator.Validate(i, v[2])
-		assert.Error(t, err)
-		assert.EqualError(t, maxErrorItems(path, validator.in, items), err.Error())
+		assert.True(t, err.HasErrors())
+		assert.EqualError(t, maxErrorItems(path, validator.in, items), err.Errors[0].Error())
 
 		// ExclusiveMaximum
 		items.ExclusiveMaximum = true
+		// requires a new items validator because this is set a creation time
+		validator = newItemsValidator(parent.Name, parent.In, items, parent)
 		err = validator.Validate(i, v[1])
-		assert.Error(t, err)
-		assert.EqualError(t, maxErrorItems(path, validator.in, items), err.Error())
+		assert.True(t, err.HasErrors())
+		assert.EqualError(t, maxErrorItems(path, validator.in, items), err.Errors[0].Error())
 
 		// Minimum
 		err = validator.Validate(i, v[3])
-		assert.NoError(t, err)
+		assert.True(t, err == nil || err.IsValid())
 		err = validator.Validate(i, v[4])
-		assert.Error(t, err)
-		assert.EqualError(t, minErrorItems(path, validator.in, items), err.Error())
+		assert.True(t, err.HasErrors())
+		assert.EqualError(t, minErrorItems(path, validator.in, items), err.Errors[0].Error())
 
 		// ExclusiveMinimum
 		items.ExclusiveMinimum = true
+		// requires a new items validator because this is set a creation time
+		validator = newItemsValidator(parent.Name, parent.In, items, parent)
 		err = validator.Validate(i, v[3])
-		assert.Error(t, err)
-		assert.EqualError(t, minErrorItems(path, validator.in, items), err.Error())
+		assert.True(t, err.HasErrors())
+		assert.EqualError(t, minErrorItems(path, validator.in, items), err.Errors[0].Error())
 
 		// Enum
 		err = validator.Validate(i, v[5])
-		assert.Error(t, err)
-		assert.EqualError(t, enumFailItems(path, validator.in, items, v[5]), err.Error())
+		assert.True(t, err.HasErrors())
+		assert.EqualError(t, enumFailItems(path, validator.in, items, v[5]), err.Errors[0].Error())
 
 		// Valid passes
-		assert.NoError(t, validator.Validate(i, v[6]))
+		err = validator.Validate(i, v[6])
+		assert.True(t, err == nil || err.IsValid())
 	}
 
 }
@@ -118,36 +123,36 @@ func TestStringItemsValidation(t *testing.T) {
 	items.WithEnum("aaa", "bbb", "ccc")
 	parent := spec.QueryParam("tags").CollectionOf(items, "")
 	path := parent.Name + ".1"
-	validator := &itemsValidator{items, parent, parent.Name, parent.In}
+	validator := newItemsValidator(parent.Name, parent.In, items, parent)
 
 	// required
 	err := validator.Validate(1, "")
-	assert.Error(t, err)
-	assert.EqualError(t, minLengthErrorItems(path, validator.in, items), err.Error())
+	assert.True(t, err.HasErrors())
+	assert.EqualError(t, minLengthErrorItems(path, validator.in, items), err.Errors[0].Error())
 
 	// MaxLength
 	err = validator.Validate(1, "abcdef")
-	assert.Error(t, err)
-	assert.EqualError(t, maxLengthErrorItems(path, validator.in, items), err.Error())
+	assert.True(t, err.HasErrors())
+	assert.EqualError(t, maxLengthErrorItems(path, validator.in, items), err.Errors[0].Error())
 
 	// MinLength
 	err = validator.Validate(1, "a")
-	assert.Error(t, err)
-	assert.EqualError(t, minLengthErrorItems(path, validator.in, items), err.Error())
+	assert.True(t, err.HasErrors())
+	assert.EqualError(t, minLengthErrorItems(path, validator.in, items), err.Errors[0].Error())
 
 	// Pattern
 	err = validator.Validate(1, "a394")
-	assert.Error(t, err)
-	assert.EqualError(t, patternFailItems(path, validator.in, items), err.Error())
+	assert.True(t, err.HasErrors())
+	assert.EqualError(t, patternFailItems(path, validator.in, items), err.Errors[0].Error())
 
 	// Enum
 	err = validator.Validate(1, "abcde")
-	assert.Error(t, err)
-	assert.EqualError(t, enumFailItems(path, validator.in, items, "abcde"), err.Error())
+	assert.True(t, err.HasErrors())
+	assert.EqualError(t, enumFailItems(path, validator.in, items, "abcde"), err.Errors[0].Error())
 
 	// Valid passes
 	err = validator.Validate(1, "bbb")
-	assert.NoError(t, err)
+	assert.True(t, err == nil || err.IsValid())
 }
 
 func TestArrayItemsValidation(t *testing.T) {
@@ -155,32 +160,32 @@ func TestArrayItemsValidation(t *testing.T) {
 	items.WithEnum("aaa", "bbb", "ccc")
 	parent := spec.QueryParam("tags").CollectionOf(items, "")
 	path := parent.Name + ".1"
-	validator := &itemsValidator{items, parent, parent.Name, parent.In}
+	validator := newItemsValidator(parent.Name, parent.In, items, parent)
 
 	// MinItems
 	err := validator.Validate(1, []string{})
-	assert.Error(t, err)
-	assert.Error(t, minItemsErrorItems(path, validator.in, items), err.Error())
+	assert.True(t, err.HasErrors())
+	assert.EqualError(t, minItemsErrorItems(path, validator.in, items), err.Errors[0].Error())
 	// MaxItems
 	err = validator.Validate(1, []string{"a", "b", "c", "d", "e", "f"})
-	assert.Error(t, err)
-	assert.Error(t, maxItemsErrorItems(path, validator.in, items), err.Error())
+	assert.True(t, err.HasErrors())
+	assert.EqualError(t, maxItemsErrorItems(path, validator.in, items), err.Errors[0].Error())
 	// UniqueItems
 	err = validator.Validate(1, []string{"a", "a"})
-	assert.Error(t, err)
-	assert.Error(t, duplicatesErrorItems(path, validator.in), err.Error())
+	assert.True(t, err.HasErrors())
+	assert.EqualError(t, duplicatesErrorItems(path, validator.in), err.Errors[0].Error())
 
 	// Enum
-	err = validator.Validate(1, []string{"a", "b", "a"})
-	assert.Error(t, err)
-	assert.Error(t, enumFailItems(path, validator.in, items, []string{"a", "b", "c"}), err.Error())
+	err = validator.Validate(1, []string{"a", "b", "c"})
+	assert.True(t, err.HasErrors())
+	assert.EqualError(t, enumFailItems(path, validator.in, items, []string{"a", "b", "c"}), err.Errors[0].Error())
 
 	// Items
 	strItems := spec.NewItems().WithMinLength(3).WithMaxLength(5).WithPattern(`^[a-z]+$`)
 	items = spec.NewItems().CollectionOf(strItems, "").WithMinItems(1).WithMaxItems(5).UniqueValues()
-	validator = &itemsValidator{items, parent, parent.Name, parent.In}
+	validator = newItemsValidator(parent.Name, parent.In, items, parent)
 
 	err = validator.Validate(1, []string{"aa", "bbb", "ccc"})
-	assert.Error(t, err)
-	assert.EqualError(t, minLengthErrorItems(path+".0", parent.In, strItems), err.Error())
+	assert.True(t, err.HasErrors())
+	assert.EqualError(t, minLengthErrorItems(path+".0", parent.In, strItems), err.Errors[0].Error())
 }

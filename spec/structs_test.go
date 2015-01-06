@@ -60,22 +60,22 @@ func TestSerialization(t *testing.T) {
 
 		Convey("a string or array property", func() {
 			Convey("when string", func() {
-				obj := StringOrArray{Single: "hello"}
+				obj := []string{"hello"}
 
 				Convey("for json returns quoted string", func() {
-					So(obj, ShouldSerializeJSON, "\"hello\"")
+					So(obj, ShouldSerializeJSON, "[\"hello\"]")
 				})
 			})
 
 			Convey("when slice", func() {
-				obj := StringOrArray{Multi: []string{"hello", "world", "and", "stuff"}}
+				obj := []string{"hello", "world", "and", "stuff"}
 				Convey("for json returns an array of strings", func() {
 					So(obj, ShouldSerializeJSON, "[\"hello\",\"world\",\"and\",\"stuff\"]")
 				})
 			})
 
 			Convey("when empty", func() {
-				obj := StringOrArray{}
+				obj := StringOrArray(nil)
 				Convey("for json returns an empty array", func() {
 					So(obj, ShouldSerializeJSON, "null")
 				})
@@ -84,20 +84,19 @@ func TestSerialization(t *testing.T) {
 
 		Convey("a schema or array property", func() {
 			Convey("when string", func() {
-				obj := SchemaOrArray{Single: &Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}}}
+				obj := SchemaOrArray{Schemas: []Schema{Schema{schemaProps: schemaProps{Type: []string{"string"}}}}}
 
 				Convey("for json returns quoted string", func() {
-					So(obj, ShouldSerializeJSON, "{\"type\":\"string\"}")
+					So(obj, ShouldSerializeJSON, "[{\"type\":\"string\"}]")
 				})
 			})
 
 			Convey("when slice", func() {
 				obj := SchemaOrArray{
-					Multi: []Schema{
-						Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}},
-						Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}},
-					},
-				}
+					Schemas: []Schema{
+						Schema{schemaProps: schemaProps{Type: []string{"string"}}},
+						Schema{schemaProps: schemaProps{Type: []string{"string"}}},
+					}}
 				Convey("for json returns an array of strings", func() {
 					So(obj, ShouldSerializeJSON, "[{\"type\":\"string\"},{\"type\":\"string\"}]")
 				})
@@ -116,7 +115,7 @@ func TestSerialization(t *testing.T) {
 
 		Convey("a string or array property", func() {
 			Convey("when string", func() {
-				obj := StringOrArray{Single: "hello"}
+				obj := StringOrArray([]string{"hello"})
 
 				Convey("for json returns quoted string", func() {
 					So("\"hello\"", ShouldParseJSON, &obj)
@@ -124,17 +123,18 @@ func TestSerialization(t *testing.T) {
 			})
 
 			Convey("when slice", func() {
-				obj := StringOrArray{Multi: []string{"hello", "world", "and", "stuff"}}
+				obj := StringOrArray([]string{"hello", "world", "and", "stuff"})
 				Convey("for json returns an array of strings", func() {
 					So("[\"hello\",\"world\",\"and\",\"stuff\"]", ShouldParseJSON, &obj)
 				})
 				Convey("for json returns an array of strings with nil", func() {
-					So("[\"hello\",\"world\",null,\"stuff\"]", ShouldParseJSON, &StringOrArray{Multi: []string{"hello", "world", "", "stuff"}})
+					obj = StringOrArray([]string{"hello", "world", "", "stuff"})
+					So("[\"hello\",\"world\",null,\"stuff\"]", ShouldParseJSON, &obj)
 				})
 			})
 
 			Convey("when empty", func() {
-				obj := StringOrArray{}
+				obj := StringOrArray(nil)
 				Convey("for json returns an empty array", func() {
 					So("null", ShouldParseJSON, &obj)
 				})
@@ -143,7 +143,7 @@ func TestSerialization(t *testing.T) {
 
 		Convey("a schema or array property", func() {
 			Convey("when string", func() {
-				obj := SchemaOrArray{Single: &Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}}}
+				obj := SchemaOrArray{Schema: &Schema{schemaProps: schemaProps{Type: []string{"string"}}}}
 
 				Convey("for json returns quoted string", func() {
 					So("{\"type\":\"string\"}", ShouldParseJSON, &obj)
@@ -151,20 +151,21 @@ func TestSerialization(t *testing.T) {
 			})
 
 			Convey("when slice", func() {
-				obj := SchemaOrArray{
-					Multi: []Schema{
-						Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}},
-						Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}},
+				obj := &SchemaOrArray{
+					Schemas: []Schema{
+						Schema{schemaProps: schemaProps{Type: []string{"string"}}},
+						Schema{schemaProps: schemaProps{Type: []string{"string"}}},
 					},
 				}
 				Convey("for json returns an array of strings", func() {
-					So("[{\"type\":\"string\"},{\"type\":\"string\"}]", ShouldParseJSON, &obj)
+					So("[{\"type\":\"string\"},{\"type\":\"string\"}]", ShouldParseJSON, obj)
 				})
 			})
 
 			Convey("when empty", func() {
 				Convey("for json returns an empty array", func() {
-					So("null", ShouldParseJSON, &SchemaOrArray{})
+					obj := SchemaOrArray{}
+					So("null", ShouldParseJSON, &obj)
 				})
 			})
 		})

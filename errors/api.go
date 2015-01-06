@@ -27,7 +27,10 @@ func (a *apiError) Code() int32 {
 }
 
 // New creates a new API error with a code and a message
-func New(code int32, message string) Error {
+func New(code int32, message string, args ...interface{}) Error {
+	if len(args) > 0 {
+		return &apiError{code, fmt.Sprintf(message, args...)}
+	}
 	return &apiError{code, message}
 }
 

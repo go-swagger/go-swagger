@@ -23,7 +23,7 @@ var spec = Swagger{
 	Host:        "some.api.out.there",
 	BasePath:    "/",
 	Paths:       &paths,
-	Definitions: map[string]Schema{"Category": Schema{schemaProps: schemaProps{Type: &StringOrArray{Single: "string"}}}},
+	Definitions: map[string]Schema{"Category": Schema{schemaProps: schemaProps{Type: []string{"string"}}}},
 	Parameters: map[string]Parameter{
 		"categoryParam": Parameter{paramProps: paramProps{Name: "category", In: "query"}, simpleSchema: simpleSchema{Type: "string"}},
 	},

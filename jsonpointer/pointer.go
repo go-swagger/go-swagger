@@ -182,6 +182,10 @@ func (p *Pointer) implementation(i *implStruct) {
 	i.outError = nil
 }
 
+func (p *Pointer) Tokens() []string {
+	return p.referenceTokens
+}
+
 // Pointer to string representation function
 func (p *Pointer) String() string {
 

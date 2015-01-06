@@ -86,6 +86,7 @@ func (p *Parameter) CollectionOf(items *Items, format string) *Parameter {
 
 // WithDefault sets the default value on this parameter
 func (p *Parameter) WithDefault(defaultValue interface{}) *Parameter {
+	p.AsOptional() // with default implies optional
 	p.Default = defaultValue
 	return p
 }
@@ -98,6 +99,9 @@ func (p *Parameter) AsOptional() *Parameter {
 
 // AsRequired flags this parameter as required
 func (p *Parameter) AsRequired() *Parameter {
+	if p.Default != nil { // with a default required makes no sense
+		return p
+	}
 	p.Required = true
 	return p
 }
