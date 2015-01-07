@@ -366,7 +366,9 @@ func (n *numberValidator) Validate(val interface{}) *result {
 			return sErr(errors.ExceedsMinimum(n.Path, n.In, *n.Minimum, n.ExclusiveMinimum))
 		}
 	}
-	return &result{}
+	result := &result{}
+	result.Inc()
+	return result
 }
 
 type stringValidator struct {

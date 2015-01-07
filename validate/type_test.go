@@ -77,16 +77,14 @@ var enabled = []string{
 	"uniqueItems",
 	"properties",
 	"additionalProperties",
+	"allOf",
+	"not",
+	"oneOf",
+	"anyOf",
 
 	// These still fail
-
-	// "allOf",
-	// "anyOf",
-	// "definitions",
-	// "not",
-	// "oneOf",
-
 	// Ref is not implemented yet, so these should not pass yet.
+	// "definitions",
 	// "ref",
 	// "refRemote",
 }

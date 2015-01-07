@@ -137,17 +137,19 @@ func newSchemaPropsValidator(path string, in string, allOf, oneOf, anyOf []spec.
 }
 
 func (s *schemaPropsValidator) Applies(source interface{}, kind reflect.Kind) bool {
-	return reflect.TypeOf(source) == specSchemaType && kind == reflect.Map
+	return reflect.TypeOf(source) == specSchemaType
 }
 
 func (s *schemaPropsValidator) Validate(data interface{}) *result {
 	mainResult := &result{}
 	if len(s.anyOfValidators) > 0 {
 		var bestFailures *result
+		succeededOnce := false
 		for _, anyOfSchema := range s.anyOfValidators {
 			result := anyOfSchema.Validate(data)
 			if result.IsValid() {
 				bestFailures = nil
+				succeededOnce = true
 				break
 			}
 			if bestFailures == nil || result.MatchCount > bestFailures.MatchCount {
@@ -155,7 +157,9 @@ func (s *schemaPropsValidator) Validate(data interface{}) *result {
 			}
 		}
 
-		mainResult.AddErrors(errors.New(422, "must validate at least one schema (anyOf)"))
+		if !succeededOnce {
+			mainResult.AddErrors(errors.New(422, "must validate at least one schema (anyOf)"))
+		}
 		if bestFailures != nil {
 			mainResult.Merge(bestFailures)
 		}
@@ -208,7 +212,7 @@ func (s *schemaPropsValidator) Validate(data interface{}) *result {
 		}
 	}
 
-	if s.Dependencies != nil && len(s.Dependencies) > 0 {
+	if s.Dependencies != nil && len(s.Dependencies) > 0 && reflect.TypeOf(data).Kind() == reflect.Map {
 		val := data.(map[string]interface{})
 		for key := range val {
 			if dep, ok := s.Dependencies[key]; ok {
