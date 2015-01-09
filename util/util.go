@@ -44,6 +44,7 @@ var commonInitialisms = map[string]bool{
 func split(str string) (words []string) {
 	repl := strings.NewReplacer("-", " ", "_", " ")
 
+	// TODO: make this unicode aware
 	rex1 := regexp.MustCompile("([A-Z])")
 	rex2 := regexp.MustCompile("(\\w+)")
 

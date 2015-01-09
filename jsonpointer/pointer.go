@@ -31,6 +31,8 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/casualjim/go-swagger/util"
 )
 
 const (
@@ -89,7 +91,7 @@ func (p *Pointer) parse(jsonPointerString string) error {
 func (p *Pointer) Get(document interface{}) (interface{}, reflect.Kind, error) {
 
 	is := &implStruct{mode: "GET", inDocument: document}
-	p.implementation(is)
+	p.implementation(is, util.DefaultJSONNameProvider)
 	return is.getOutNode, is.getOutKind, is.outError
 
 }
@@ -98,13 +100,17 @@ func (p *Pointer) Get(document interface{}) (interface{}, reflect.Kind, error) {
 func (p *Pointer) Set(document interface{}, value interface{}) (interface{}, error) {
 
 	is := &implStruct{mode: "SET", inDocument: document, setInValue: value}
-	p.implementation(is)
+	p.implementation(is, util.DefaultJSONNameProvider)
 	return document, is.outError
 
 }
 
 // Both Get and Set functions use the same implementation to avoid code duplication
-func (p *Pointer) implementation(i *implStruct) {
+func (p *Pointer) implementation(i *implStruct, nameProvider *util.NameProvider) {
+
+	if nameProvider == nil {
+		nameProvider = util.DefaultJSONNameProvider
+	}
 
 	kind := reflect.Invalid
 
@@ -124,10 +130,24 @@ func (p *Pointer) implementation(i *implStruct) {
 		decodedToken := Unescape(token)
 		isLastToken := ti == len(p.referenceTokens)-1
 
-		rValue := reflect.ValueOf(node)
+		rValue := reflect.Indirect(reflect.ValueOf(node))
 		kind = rValue.Kind()
 
 		switch kind {
+
+		case reflect.Struct:
+			nm, ok := nameProvider.GetGoNameForType(rValue.Type(), decodedToken)
+			if !ok {
+				i.outError = fmt.Errorf("object has no field %q", token)
+				i.getOutKind = kind
+				i.getOutNode = nil
+				return
+			}
+			fld := rValue.FieldByName(nm)
+			node = fld.Interface()
+			if isLastToken && i.mode == "SET" {
+				fld.Set(reflect.ValueOf(i.setInValue))
+			}
 
 		case reflect.Map:
 			m := node.(map[string]interface{})
@@ -144,7 +164,6 @@ func (p *Pointer) implementation(i *implStruct) {
 			}
 
 		case reflect.Slice:
-			s := node.([]interface{})
 			tokenIndex, err := strconv.Atoi(token)
 			if err != nil {
 				i.outError = fmt.Errorf("invalid array index '%s'", token)
@@ -152,7 +171,7 @@ func (p *Pointer) implementation(i *implStruct) {
 				i.getOutNode = nil
 				return
 			}
-			sLength := len(s)
+			sLength := rValue.Len()
 			if tokenIndex < 0 || tokenIndex >= sLength {
 				i.outError = fmt.Errorf("index out of bounds array[0,%d] index '%d'", sLength, tokenIndex)
 				i.getOutKind = kind
@@ -160,9 +179,10 @@ func (p *Pointer) implementation(i *implStruct) {
 				return
 			}
 
-			node = s[tokenIndex]
+			elem := rValue.Index(tokenIndex)
+			node = elem.Interface()
 			if isLastToken && i.mode == "SET" {
-				s[tokenIndex] = i.setInValue
+				elem.Set(reflect.ValueOf(i.setInValue))
 			}
 
 		default:
@@ -182,6 +202,7 @@ func (p *Pointer) implementation(i *implStruct) {
 	i.outError = nil
 }
 
+// Tokens returns the path segments for this pointer
 func (p *Pointer) Tokens() []string {
 	return p.referenceTokens
 }

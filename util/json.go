@@ -3,13 +3,28 @@ package util
 import (
 	"bytes"
 	"encoding/json"
+	"reflect"
+	"strings"
+	"sync"
 )
+
+// DefaultJSONNameProvider the default cache for types
+var DefaultJSONNameProvider = NewNameProvider()
 
 const comma = byte(',')
 
 var closers = map[byte]byte{
 	'{': '}',
 	'[': ']',
+}
+
+// JSONDoc loads a json document from either a file or a remote url
+func JSONDoc(path string) (json.RawMessage, error) {
+	data, err := LoadFromFileOrHTTP(path)
+	if err != nil {
+		return nil, err
+	}
+	return json.RawMessage(data), nil
 }
 
 // ConcatJSON concatenates multiple json objects efficiently
@@ -70,4 +85,107 @@ func ToDynamicJSON(data interface{}) interface{} {
 	var res interface{}
 	json.Unmarshal(b, &res)
 	return res
+}
+
+// NameProvider represents an object capabale of translating from go property names
+// to json property names
+// This type is thread-safe.
+type NameProvider struct {
+	lock  *sync.Mutex
+	index map[reflect.Type]nameIndex
+}
+
+type nameIndex struct {
+	jsonNames map[string]string
+	goNames   map[string]string
+}
+
+// NewNameProvider creates a new name provider
+func NewNameProvider() *NameProvider {
+	return &NameProvider{
+		lock:  &sync.Mutex{},
+		index: make(map[reflect.Type]nameIndex),
+	}
+}
+
+func buildnameIndex(tpe reflect.Type, idx, reverseIdx map[string]string) {
+	for i := 0; i < tpe.NumField(); i++ {
+		targetDes := tpe.Field(i)
+
+		if targetDes.PkgPath != "" { // unexported
+			continue
+		}
+
+		if targetDes.Anonymous { // walk embedded structures tree down first
+			buildnameIndex(targetDes.Type, idx, reverseIdx)
+			continue
+		}
+
+		if tag := targetDes.Tag.Get("json"); tag != "" {
+
+			parts := strings.Split(tag, ",")
+			if len(parts) == 0 {
+				continue
+			}
+
+			nm := parts[0]
+			if nm == "-" {
+				continue
+			}
+			if nm == "" { // empty string means we want to use the Go name
+				nm = targetDes.Name
+			}
+
+			idx[nm] = targetDes.Name
+			reverseIdx[targetDes.Name] = nm
+		}
+	}
+}
+
+func newNameIndex(tpe reflect.Type) nameIndex {
+	var idx = make(map[string]string, tpe.NumField())
+	var reverseIdx = make(map[string]string, tpe.NumField())
+
+	buildnameIndex(tpe, idx, reverseIdx)
+	return nameIndex{jsonNames: idx, goNames: reverseIdx}
+}
+
+// GetJSONName gets the json name for a go property name
+func (n *NameProvider) GetJSONName(subject interface{}, name string) (string, bool) {
+	tpe := reflect.Indirect(reflect.ValueOf(subject)).Type()
+	return n.GetJSONNameForType(tpe, name)
+}
+
+// GetJSONNameForType gets the json name for a go property name on a given type
+func (n *NameProvider) GetJSONNameForType(tpe reflect.Type, name string) (string, bool) {
+	names, ok := n.index[tpe]
+	if !ok {
+		names = n.makeNameIndex(tpe)
+	}
+	nme, ok := names.goNames[name]
+	return nme, ok
+}
+
+func (n *NameProvider) makeNameIndex(tpe reflect.Type) nameIndex {
+	n.lock.Lock()
+	defer n.lock.Unlock()
+	names := newNameIndex(tpe)
+	n.index[tpe] = names
+	return names
+}
+
+// GetGoName gets the go name for a json property name
+func (n *NameProvider) GetGoName(subject interface{}, name string) (string, bool) {
+	tpe := reflect.Indirect(reflect.ValueOf(subject)).Type()
+	return n.GetGoNameForType(tpe, name)
+}
+
+// GetGoNameForType gets the go name for a given type for a json property name
+func (n *NameProvider) GetGoNameForType(tpe reflect.Type, name string) (string, bool) {
+	names, ok := n.index[tpe]
+	if !ok {
+		names = n.makeNameIndex(tpe)
+	}
+	nme, ok := names.jsonNames[name]
+	return nme, ok
 }

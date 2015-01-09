@@ -52,8 +52,26 @@ const (
 
 var testDocumentJSON interface{}
 
+type testStructJSON struct {
+	Foo []string `json:"foo"`
+	Obj struct {
+		A int   `json:"a"`
+		B int   `json:"b"`
+		C []int `json:"c"`
+		D []struct {
+			E int   `json:"e"`
+			F []int `json:"f"`
+		} `json:"d"`
+	} `json:"obj"`
+}
+
+var testStructJSONDoc testStructJSON
+var testStructJSONPtr *testStructJSON
+
 func init() {
 	json.Unmarshal([]byte(TestDocumentString), &testDocumentJSON)
+	json.Unmarshal([]byte(TestDocumentString), &testStructJSONDoc)
+	testStructJSONPtr = &testStructJSONDoc
 }
 
 func TestEscaping(t *testing.T) {
@@ -104,18 +122,18 @@ func TestGetNode(t *testing.T) {
 	in := `/obj`
 
 	p, err := New(in)
-	if err != nil {
-		t.Errorf("New(%v) error %v", in, err.Error())
-	}
-
+	assert.NoError(t, err)
 	result, _, err := p.Get(testDocumentJSON)
-	if err != nil {
-		t.Errorf("Get(%v) error %v", in, err.Error())
-	}
+	assert.NoError(t, err)
+	assert.Len(t, result, TestNodeObjNBItems)
 
-	if len(result.(map[string]interface{})) != TestNodeObjNBItems {
-		t.Errorf("Get(%v) = %v, expect full document", in, result)
-	}
+	result, _, err = p.Get(testStructJSONDoc)
+	assert.NoError(t, err)
+	assert.Equal(t, testStructJSONDoc.Obj, result)
+
+	result, _, err = p.Get(testStructJSONPtr)
+	assert.NoError(t, err)
+	assert.Equal(t, testStructJSONDoc.Obj, result)
 }
 
 func TestArray(t *testing.T) {
@@ -124,22 +142,21 @@ func TestArray(t *testing.T) {
 	outs := []string{"bar", "bar", "baz"}
 
 	for i := range ins {
-
 		p, err := New(ins[i])
-		if err != nil {
-			t.Errorf("New(%v) error %v", ins[i], err.Error())
-		}
+		assert.NoError(t, err)
 
-		result, _, err := p.Get(testDocumentJSON)
-		if err != nil {
-			t.Errorf("Get(%v) error %v", ins[i], err.Error())
-		}
+		result, _, err := p.Get(testStructJSONDoc)
+		assert.NoError(t, err)
+		assert.Equal(t, outs[i], result)
 
-		if result != outs[i] {
-			t.Errorf("Get(%v) = %v, expect %v", ins[i], result, outs[i])
-		}
+		result, _, err = p.Get(testStructJSONPtr)
+		assert.NoError(t, err)
+		assert.Equal(t, outs[i], result)
+
+		result, _, err = p.Get(testDocumentJSON)
+		assert.NoError(t, err)
+		assert.Equal(t, outs[i], result)
 	}
-
 }
 
 func TestOtherThings(t *testing.T) {
@@ -206,20 +223,20 @@ func TestObject(t *testing.T) {
 	for i := range ins {
 
 		p, err := New(ins[i])
-		if err != nil {
-			t.Errorf("New(%v) error %v", ins[i], err.Error())
-		}
+		assert.NoError(t, err)
 
 		result, _, err := p.Get(testDocumentJSON)
-		if err != nil {
-			t.Errorf("Get(%v) error %v", ins[i], err.Error())
-		}
+		assert.NoError(t, err)
+		assert.Equal(t, outs[i], result)
 
-		if result != outs[i] {
-			t.Errorf("Get(%v) = %v, expect %v", ins[i], result, outs[i])
-		}
+		result, _, err = p.Get(testStructJSONDoc)
+		assert.NoError(t, err)
+		assert.Equal(t, outs[i], result)
+
+		result, _, err = p.Get(testStructJSONPtr)
+		assert.NoError(t, err)
+		assert.Equal(t, outs[i], result)
 	}
-
 }
 
 func TestSetNode(t *testing.T) {

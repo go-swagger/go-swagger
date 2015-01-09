@@ -1,4 +1,4 @@
-package load
+package spec
 
 import (
 	"net/http"

@@ -51,3 +51,28 @@ func transformData(in interface{}) (out interface{}, err error) {
 	}
 	return in, nil
 }
+
+// YAMLDoc loads a yaml document from either http or a file and converts it to json
+func YAMLDoc(path string) (json.RawMessage, error) {
+	yamlDoc, err := YAMLData(path)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := YAMLToJSON(yamlDoc)
+	if err != nil {
+		return nil, err
+	}
+
+	return json.RawMessage(data), nil
+}
+
+// YAMLData loads a yaml document from either http or a file
+func YAMLData(path string) (interface{}, error) {
+	data, err := LoadFromFileOrHTTP(path)
+	if err != nil {
+		return nil, err
+	}
+
+	return bytesToYAMLDoc(data)
+}
