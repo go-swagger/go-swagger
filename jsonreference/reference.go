@@ -46,6 +46,16 @@ func New(jsonReferenceString string) (Ref, error) {
 
 }
 
+// MustCreateRef parses the ref string and panics when it's invalid.
+// Use the New method for a version that returns an error
+func MustCreateRef(ref string) Ref {
+	r, err := New(ref)
+	if err != nil {
+		panic(err)
+	}
+	return r
+}
+
 // Ref represents a json reference object
 type Ref struct {
 	referenceURL     *url.URL

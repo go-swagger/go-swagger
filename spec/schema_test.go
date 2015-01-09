@@ -10,7 +10,7 @@ import (
 var schema = Schema{
 	vendorExtensible: vendorExtensible{Extensions: map[string]interface{}{"x-framework": "go-swagger"}},
 	schemaProps: schemaProps{
-		Ref:              "Cat",
+		Ref:              MustCreateRef("Cat"),
 		Type:             []string{"string"},
 		Format:           "date",
 		Description:      "the description of this schema",
@@ -150,7 +150,7 @@ func TestSchema(t *testing.T) {
 			actual := Schema{}
 			err := json.Unmarshal([]byte(schemaJSON), &actual)
 			So(err, ShouldBeNil)
-			So(actual.Ref, ShouldEqual, schema.Ref)
+			So(actual.Ref, ShouldResemble, schema.Ref)
 			So(actual.Description, ShouldEqual, schema.Description)
 			So(actual.Maximum, ShouldResemble, schema.Maximum)
 			So(actual.Minimum, ShouldResemble, schema.Minimum)

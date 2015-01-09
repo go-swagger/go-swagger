@@ -18,7 +18,7 @@ var header = Header{
 	headerProps: headerProps{Description: "the description of this header"},
 	simpleSchema: simpleSchema{
 		Items: &Items{
-			refable: refable{Ref: "Cat"},
+			refable: refable{Ref: MustCreateRef("Cat")},
 		},
 		Type:    "string",
 		Format:  "date",

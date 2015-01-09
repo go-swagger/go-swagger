@@ -3,7 +3,32 @@ package spec
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/casualjim/go-swagger/util"
 )
+
+// Doc represents a doc loader type
+type Doc func(string) (json.RawMessage, error)
+
+// JSONSpec loads a spec from a json document
+func JSONSpec(path string) (*Document, error) {
+	data, err := util.JSONDoc(path)
+	if err != nil {
+		return nil, err
+	}
+	// convert to json
+	return New(json.RawMessage(data), "")
+}
+
+// YAMLSpec loads a swagger spec document
+func YAMLSpec(path string) (*Document, error) {
+	data, err := util.YAMLDoc(path)
+	if err != nil {
+		return nil, err
+	}
+
+	return New(data, "")
+}
 
 // // MustLoadJSONSchemaDraft04 panics when Swagger20Schema returns an error
 // func MustLoadJSONSchemaDraft04() *jsonschema.Document {

@@ -8,7 +8,7 @@ import (
 )
 
 var pathItem = PathItem{
-	refable: refable{Ref: "Dog"},
+	refable: refable{Ref: MustCreateRef("Dog")},
 	vendorExtensible: vendorExtensible{
 		Extensions: map[string]interface{}{
 			"x-framework": "go-swagger",
@@ -84,7 +84,7 @@ func TestIntegrationPathItem(t *testing.T) {
 			actual := PathItem{}
 			err := json.Unmarshal([]byte(pathItemJSON), &actual)
 			So(err, ShouldBeNil)
-			So(actual.Ref, ShouldEqual, pathItem.Ref)
+			So(actual.Ref, ShouldResemble, pathItem.Ref)
 			So(actual.Get, ShouldResemble, pathItem.Get)
 			So(actual.Put, ShouldResemble, pathItem.Put)
 			So(actual.Post, ShouldResemble, pathItem.Post)

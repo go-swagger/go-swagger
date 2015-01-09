@@ -41,11 +41,12 @@ Currently there is a spec validator tool:
 * Middlewares:
   * routing
   * validation 
+* Validation based on the swagger spec
+* Typed JSON Schema implementation
 
 ## Planned:
-* Generate validations based on the swagger spec
-* Later it will also know how to generate those specifications from your source code.
+* Security middleware
 * Generate a stub api based on a swagger spec
 * Generate a client from a swagger spec
-* Build a full swagger spec by inspecting your source code and embedding it in a go file.
+
 

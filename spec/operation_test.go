@@ -28,7 +28,7 @@ var operation = Operation{
 			},
 		},
 		Parameters: []Parameter{
-			Parameter{refable: refable{Ref: "Cat"}},
+			Parameter{refable: refable{Ref: MustCreateRef("Cat")}},
 		},
 		Responses: &Responses{
 			responsesProps: responsesProps{

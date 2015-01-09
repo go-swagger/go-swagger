@@ -6,18 +6,6 @@ import (
 	"github.com/casualjim/go-swagger/util"
 )
 
-type refable struct {
-	Ref Ref
-}
-
-func (j refable) MarshalJSON() ([]byte, error) {
-	return j.Ref.MarshalJSON()
-}
-
-func (j *refable) UnmarshalJSON(d []byte) error {
-	return j.Ref.UnmarshalJSON(d)
-}
-
 type simpleSchema struct {
 	Type             string      `json:"type,omitempty"`
 	Format           string      `json:"format,omitempty"`

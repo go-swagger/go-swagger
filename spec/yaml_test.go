@@ -1,8 +1,6 @@
-package load
+package spec
 
 import (
-	"encoding/json"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,52 +8,6 @@ import (
 	"github.com/casualjim/go-swagger/util"
 	"github.com/stretchr/testify/assert"
 )
-
-type failJSONMarhal struct {
-}
-
-func (f failJSONMarhal) MarshalJSON() ([]byte, error) {
-	return nil, errors.New("expected")
-}
-
-func TestYAMLToJSON(t *testing.T) {
-	// _, err := yamlToJSON(failJSONMarhal{})
-	// assert.Error(t, err)
-
-	_, err := bytesToYAMLDoc([]byte("- name: hello\n"))
-	assert.Error(t, err)
-
-	dd, err := bytesToYAMLDoc([]byte("description: 'object created'\n"))
-	assert.NoError(t, err)
-
-	d, err := util.YAMLToJSON(dd)
-	assert.NoError(t, err)
-	assert.Equal(t, json.RawMessage(`{"description":"object created"}`), d)
-}
-
-func TestLoadHTTPBytes(t *testing.T) {
-
-	_, err := loadHTTPBytes("httx://12394:abd")
-	assert.Error(t, err)
-
-	serv := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		rw.WriteHeader(http.StatusNotFound)
-	}))
-	defer serv.Close()
-
-	_, err = loadHTTPBytes(serv.URL)
-	assert.Error(t, err)
-
-	ts2 := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		rw.WriteHeader(http.StatusOK)
-		rw.Write([]byte("the content"))
-	}))
-	defer ts2.Close()
-
-	d, err := loadHTTPBytes(ts2.URL)
-	assert.NoError(t, err)
-	assert.Equal(t, []byte("the content"), d)
-}
 
 func TestLoadStrategy(t *testing.T) {
 
@@ -66,7 +18,7 @@ func TestLoadStrategy(t *testing.T) {
 		return []byte("not it"), nil
 	}
 
-	ld := loadStrategy("blah", loader, remLoader)
+	ld := util.LoadStrategy("blah", loader, remLoader)
 	b, _ := ld("")
 	assert.Equal(t, []byte(yamlPetStore), b)
 

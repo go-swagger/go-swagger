@@ -1,23 +1,63 @@
 package spec
 
-import "encoding/json"
+import (
+	"encoding/json"
 
-// Ref represents a json reference
-type Ref string
+	"github.com/casualjim/go-swagger/jsonreference"
+)
 
-// MarshalJSON marshal this to JSON
+type refable struct {
+	Ref Ref
+}
+
+func (r refable) MarshalJSON() ([]byte, error) {
+	return r.Ref.MarshalJSON()
+}
+
+func (r *refable) UnmarshalJSON(d []byte) error {
+	return json.Unmarshal(d, &r.Ref)
+}
+
+// Ref represents a json reference that is potentially resolved
+type Ref struct {
+	jsonreference.Ref
+	Resolved interface{}
+}
+
+// IsResolved returns true if the reference has been resolved
+func (r *Ref) IsResolved() bool {
+	return r.Resolved != nil
+}
+
+// NewRef creates a new instance of a ref object
+// returns an error when the reference uri is an invalid uri
+func NewRef(refURI string) (Ref, error) {
+	ref, err := jsonreference.New(refURI)
+	if err != nil {
+		return Ref{}, err
+	}
+	return Ref{Ref: ref}, nil
+}
+
+// MustCreateRef creates a ref object but
+func MustCreateRef(refURI string) Ref {
+	return Ref{Ref: jsonreference.MustCreateRef(refURI)}
+}
+
+// MarshalJSON marshals this ref into a JSON object
 func (r Ref) MarshalJSON() ([]byte, error) {
-	if r == "" {
+	str := r.String()
+	if str == "" {
 		return []byte("{}"), nil
 	}
-	v := map[string]interface{}{"$ref": string(r)}
+	v := map[string]interface{}{"$ref": str}
 	return json.Marshal(v)
 }
 
-// UnmarshalJSON unmarshal this from JSON
-func (r *Ref) UnmarshalJSON(data []byte) error {
+// UnmarshalJSON unmarshals this ref from a JSON object
+func (r *Ref) UnmarshalJSON(d []byte) error {
 	var v map[string]interface{}
-	if err := json.Unmarshal(data, &v); err != nil {
+	if err := json.Unmarshal(d, &v); err != nil {
 		return err
 	}
 	if v == nil {
@@ -25,21 +65,23 @@ func (r *Ref) UnmarshalJSON(data []byte) error {
 	}
 	if vv, ok := v["$ref"]; ok {
 		if str, ok := vv.(string); ok {
-			*r = Ref(str)
+			ref, err := jsonreference.New(str)
+			if err != nil {
+				return err
+			}
+			*r = Ref{Ref: ref}
 		}
 	}
 	return nil
 }
 
-// RefCache is a thread-safe cache of refs that can be optionally passed in
-// when the value is nil it will just always fetch
 // // Resolve resolves refs
-// func (r Ref) Resolve(cache RefCache, root *Schema) (json.RawMessage, error) {
-// 	if len(r) == 0 { // bail when we're empty
-// 		return nil, nil
+// // RefCache is a thread-safe cache of refs that can be optionally passed in
+// // when the value is nil it will just always fetch
+// func (r *Ref) resolve(cache *refCache, root interface{}) (interface{}, error) {
+// 	if !r.IsCanonical() {
+// 		return nil, fmt.Errorf("reference %q must be canonical", str)
 // 	}
-// 	// check file scheme
-// 	// check http scheme
-// 	// cache resolved references
+
 // 	return nil, nil
 // }

@@ -11,7 +11,7 @@ var parameter = Parameter{
 	vendorExtensible: vendorExtensible{Extensions: map[string]interface{}{
 		"x-framework": "swagger-go",
 	}},
-	refable: refable{Ref: "Dog"},
+	refable: refable{Ref: MustCreateRef("Dog")},
 	commonValidations: commonValidations{
 		Maximum:          float64Ptr(100),
 		ExclusiveMaximum: true,
@@ -31,7 +31,7 @@ var parameter = Parameter{
 		Format:           "date",
 		CollectionFormat: "csv",
 		Items: &Items{
-			refable: refable{Ref: "Cat"},
+			refable: refable{Ref: MustCreateRef("Cat")},
 		},
 		Default: "8",
 	},
@@ -94,7 +94,7 @@ func TestIntegrationParameter(t *testing.T) {
 			So(err, ShouldBeNil)
 			So(actual.Items, ShouldResemble, parameter.Items)
 			So(actual.Extensions, ShouldResemble, parameter.Extensions)
-			So(actual.Ref, ShouldEqual, parameter.Ref)
+			So(actual.Ref, ShouldResemble, parameter.Ref)
 			So(actual.Description, ShouldEqual, parameter.Description)
 			So(actual.Maximum, ShouldResemble, parameter.Maximum)
 			So(actual.Minimum, ShouldResemble, parameter.Minimum)
@@ -181,7 +181,7 @@ func TestParameterSerialization(t *testing.T) {
 
 		Convey("a ref body parameter", func() {
 			schema := &Schema{
-				schemaProps: schemaProps{Ref: "Cat"},
+				schemaProps: schemaProps{Ref: MustCreateRef("Cat")},
 			}
 			param := BodyParam("", schema)
 			So(param, ShouldSerializeJSON, `{"type":"object","in":"body","schema":{"$ref":"Cat"}}`)

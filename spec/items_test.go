@@ -8,7 +8,7 @@ import (
 )
 
 var items = Items{
-	refable: refable{Ref: "Dog"},
+	refable: refable{Ref: MustCreateRef("Dog")},
 	commonValidations: commonValidations{
 		Maximum:          float64Ptr(100),
 		ExclusiveMaximum: true,
@@ -27,7 +27,7 @@ var items = Items{
 		Type:   "string",
 		Format: "date",
 		Items: &Items{
-			refable: refable{Ref: "Cat"},
+			refable: refable{Ref: MustCreateRef("Cat")},
 		},
 		CollectionFormat: "csv",
 		Default:          "8",

@@ -58,7 +58,7 @@ func MapProperty(property *Schema) *Schema {
 
 // RefProperty creates a ref property
 func RefProperty(name string) *Schema {
-	return &Schema{schemaProps: schemaProps{Ref: Ref(name)}}
+	return &Schema{schemaProps: schemaProps{Ref: MustCreateRef(name)}}
 }
 
 // ArrayProperty creates an array property
