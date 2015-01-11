@@ -222,8 +222,8 @@ func TestInheritsInValid(t *testing.T) {
 	r1 = Ref{}
 	r2, _ = New(in2)
 	result, err = r1.Inherits(r2)
-	assert.Error(t, err)
-	assert.Nil(t, result)
+	assert.NoError(t, err)
+	assert.Equal(t, r2, *result)
 }
 
 func TestInheritsValid(t *testing.T) {

@@ -15,36 +15,41 @@ func IsZero(data reflect.Value) bool {
 }
 
 var spec = Swagger{
-	Consumes:    []string{"application/json", "application/x-yaml"},
-	Produces:    []string{"application/json"},
-	Schemes:     []string{"http", "https"},
-	Swagger:     "2.0",
-	Info:        &info,
-	Host:        "some.api.out.there",
-	BasePath:    "/",
-	Paths:       &paths,
-	Definitions: map[string]Schema{"Category": Schema{schemaProps: schemaProps{Type: []string{"string"}}}},
-	Parameters: map[string]Parameter{
-		"categoryParam": Parameter{paramProps: paramProps{Name: "category", In: "query"}, simpleSchema: simpleSchema{Type: "string"}},
-	},
-	Responses: map[string]Response{
-		"EmptyAnswer": Response{
-			responseProps: responseProps{
-				Description: "no data to return for this operation",
+	swaggerProps: swaggerProps{
+		ID:          "http://localhost:3849/api-docs",
+		Consumes:    []string{"application/json", "application/x-yaml"},
+		Produces:    []string{"application/json"},
+		Schemes:     []string{"http", "https"},
+		Swagger:     "2.0",
+		Info:        &info,
+		Host:        "some.api.out.there",
+		BasePath:    "/",
+		Paths:       &paths,
+		Definitions: map[string]Schema{"Category": Schema{schemaProps: schemaProps{Type: []string{"string"}}}},
+		Parameters: map[string]Parameter{
+			"categoryParam": Parameter{paramProps: paramProps{Name: "category", In: "query"}, simpleSchema: simpleSchema{Type: "string"}},
+		},
+		Responses: map[string]Response{
+			"EmptyAnswer": Response{
+				responseProps: responseProps{
+					Description: "no data to return for this operation",
+				},
 			},
 		},
+		SecurityDefinitions: map[string]*SecurityScheme{
+			"internalApiKey": APIKeyAuth("api_key", "header"),
+		},
+		Security: []map[string][]string{
+			map[string][]string{"internalApiKey": []string{}},
+		},
+		Tags:         []Tag{NewTag("pets", "", nil)},
+		ExternalDocs: &ExternalDocumentation{"the name", "the url"},
 	},
-	SecurityDefinitions: map[string]*SecurityScheme{
-		"internalApiKey": APIKeyAuth("api_key", "header"),
-	},
-	Security: []map[string][]string{
-		map[string][]string{"internalApiKey": []string{}},
-	},
-	Tags:         []Tag{NewTag("pets", "", nil)},
-	ExternalDocs: &ExternalDocumentation{"the name", "the url"},
 }
 
 var specJSON = `{
+	"id": "http://localhost:3849/api-docs",
+	"$schema": "http://swagger.io/v2/schema.json#",
 	"consumes": ["application/json", "application/x-yaml"],
 	"produces": ["application/json"],
 	"schemes": ["http", "https"],
@@ -110,7 +115,8 @@ func ShouldBeEquivalentTo(actual interface{}, expecteds ...interface{}) string {
 	}
 
 	actualType := reflect.TypeOf(actual)
-	if reflect.TypeOf(actual).ConvertibleTo(reflect.TypeOf(expected)) {
+	expectedType := reflect.TypeOf(expected)
+	if reflect.TypeOf(actual).ConvertibleTo(expectedType) {
 		expectedValue := reflect.ValueOf(expected)
 		if IsZero(expectedValue) && IsZero(reflect.ValueOf(actual)) {
 			return ""
@@ -132,6 +138,10 @@ func ShouldBeEquivalentTo(actual interface{}, expecteds ...interface{}) string {
 }
 
 func compareSpecMaps(actual, expected map[string]interface{}) {
+	if id, ok := expected["id"]; ok {
+		So(actual["id"], ShouldEqual, id)
+	}
+	So(actual["$schema"], ShouldEqual, SwaggerSchemaURL)
 	So(actual["consumes"], ShouldResemble, expected["consumes"])
 	So(actual["produces"], ShouldResemble, expected["produces"])
 	So(actual["schemes"], ShouldResemble, expected["schemes"])

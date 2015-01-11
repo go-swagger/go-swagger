@@ -32,6 +32,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/casualjim/go-swagger/reflection"
 	"github.com/casualjim/go-swagger/util"
 )
 
@@ -41,6 +42,14 @@ const (
 
 	invalidStart = `JSON pointer must be empty or start with a "` + pointerSeparator
 )
+
+var jsonPointableType = reflect.TypeOf(new(JSONPointable)).Elem()
+
+// JSONPointable is an interface for structs to implement when they need to customize the
+// json pointer process
+type JSONPointable interface {
+	JSONLookup(token string) (interface{}, error)
+}
 
 type implStruct struct {
 	mode string // "SET" or "GET"
@@ -89,24 +98,63 @@ func (p *Pointer) parse(jsonPointerString string) error {
 
 // Get uses the pointer to retrieve a value from a JSON document
 func (p *Pointer) Get(document interface{}) (interface{}, reflect.Kind, error) {
+	return p.get(document, util.DefaultJSONNameProvider)
+}
 
-	is := &implStruct{mode: "GET", inDocument: document}
-	p.implementation(is, util.DefaultJSONNameProvider)
-	return is.getOutNode, is.getOutKind, is.outError
+// GetForToken gets a value for a json pointer token 1 level deep
+func GetForToken(document interface{}, decodedToken string) (interface{}, reflect.Kind, error) {
+	return getSingleImpl(document, decodedToken, util.DefaultJSONNameProvider)
+}
+
+func getSingleImpl(node interface{}, decodedToken string, nameProvider *util.NameProvider) (interface{}, reflect.Kind, error) {
+	kind := reflect.Invalid
+	rValue := reflect.Indirect(reflect.ValueOf(node))
+	kind = rValue.Kind()
+	switch kind {
+
+	case reflect.Struct:
+		if rValue.Type().Implements(jsonPointableType) {
+			r, err := node.(JSONPointable).JSONLookup(decodedToken)
+			if err != nil {
+				return nil, kind, err
+			}
+			return r, kind, nil
+		}
+		nm, ok := nameProvider.GetGoNameForType(rValue.Type(), decodedToken)
+		if !ok {
+			return nil, kind, fmt.Errorf("object has no field %q", decodedToken)
+		}
+		fld := rValue.FieldByName(nm)
+		return fld.Interface(), kind, nil
+
+	case reflect.Map:
+		kv := reflect.ValueOf(decodedToken)
+		mv := rValue.MapIndex(kv)
+		if mv.IsValid() && !reflection.IsZero(mv) {
+			return mv.Interface(), kind, nil
+		}
+		return nil, kind, fmt.Errorf("object has no key %q", decodedToken)
+
+	case reflect.Slice:
+		tokenIndex, err := strconv.Atoi(decodedToken)
+		if err != nil {
+			return nil, kind, err
+		}
+		sLength := rValue.Len()
+		if tokenIndex < 0 || tokenIndex >= sLength {
+			return nil, kind, fmt.Errorf("index out of bounds array[0,%d] index '%d'", sLength, tokenIndex)
+		}
+
+		elem := rValue.Index(tokenIndex)
+		return elem.Interface(), kind, nil
+
+	default:
+		return nil, kind, fmt.Errorf("invalid token reference %q", decodedToken)
+	}
 
 }
 
-// Set uses the pointer to update a value from a JSON document
-func (p *Pointer) Set(document interface{}, value interface{}) (interface{}, error) {
-
-	is := &implStruct{mode: "SET", inDocument: document, setInValue: value}
-	p.implementation(is, util.DefaultJSONNameProvider)
-	return document, is.outError
-
-}
-
-// Both Get and Set functions use the same implementation to avoid code duplication
-func (p *Pointer) implementation(i *implStruct, nameProvider *util.NameProvider) {
+func (p *Pointer) get(node interface{}, nameProvider *util.NameProvider) (interface{}, reflect.Kind, error) {
 
 	if nameProvider == nil {
 		nameProvider = util.DefaultJSONNameProvider
@@ -116,95 +164,40 @@ func (p *Pointer) implementation(i *implStruct, nameProvider *util.NameProvider)
 
 	// Full document when empty
 	if len(p.referenceTokens) == 0 {
-		i.getOutNode = i.inDocument
-		i.outError = nil
-		i.getOutKind = kind
-		i.outError = nil
-		return
+		return node, kind, nil
 	}
 
-	node := i.inDocument
-
-	for ti, token := range p.referenceTokens {
+	for _, token := range p.referenceTokens {
 
 		decodedToken := Unescape(token)
-		isLastToken := ti == len(p.referenceTokens)-1
 
-		rValue := reflect.Indirect(reflect.ValueOf(node))
-		kind = rValue.Kind()
-
-		switch kind {
-
-		case reflect.Struct:
-			nm, ok := nameProvider.GetGoNameForType(rValue.Type(), decodedToken)
-			if !ok {
-				i.outError = fmt.Errorf("object has no field %q", token)
-				i.getOutKind = kind
-				i.getOutNode = nil
-				return
-			}
-			fld := rValue.FieldByName(nm)
-			node = fld.Interface()
-			if isLastToken && i.mode == "SET" {
-				fld.Set(reflect.ValueOf(i.setInValue))
-			}
-
-		case reflect.Map:
-			m := node.(map[string]interface{})
-			if _, ok := m[decodedToken]; ok {
-				node = m[decodedToken]
-				if isLastToken && i.mode == "SET" {
-					m[decodedToken] = i.setInValue
-				}
-			} else {
-				i.outError = fmt.Errorf("object has no key '%s'", token)
-				i.getOutKind = kind
-				i.getOutNode = nil
-				return
-			}
-
-		case reflect.Slice:
-			tokenIndex, err := strconv.Atoi(token)
-			if err != nil {
-				i.outError = fmt.Errorf("invalid array index '%s'", token)
-				i.getOutKind = kind
-				i.getOutNode = nil
-				return
-			}
-			sLength := rValue.Len()
-			if tokenIndex < 0 || tokenIndex >= sLength {
-				i.outError = fmt.Errorf("index out of bounds array[0,%d] index '%d'", sLength, tokenIndex)
-				i.getOutKind = kind
-				i.getOutNode = nil
-				return
-			}
-
-			elem := rValue.Index(tokenIndex)
-			node = elem.Interface()
-			if isLastToken && i.mode == "SET" {
-				elem.Set(reflect.ValueOf(i.setInValue))
-			}
-
-		default:
-			i.outError = fmt.Errorf("invalid token reference '%s'", token)
-			i.getOutKind = kind
-			i.getOutNode = nil
-			return
+		r, knd, err := getSingleImpl(node, decodedToken, nameProvider)
+		if err != nil {
+			return nil, knd, err
 		}
+		node, kind = r, knd
 
 	}
 
 	rValue := reflect.ValueOf(node)
 	kind = rValue.Kind()
 
-	i.getOutNode = node
-	i.getOutKind = kind
-	i.outError = nil
+	return node, kind, nil
 }
 
-// Tokens returns the path segments for this pointer
-func (p *Pointer) Tokens() []string {
-	return p.referenceTokens
+// DecodedTokens returns the decoded tokens
+func (p *Pointer) DecodedTokens() []string {
+	result := make([]string, 0, len(p.referenceTokens))
+	for _, t := range p.referenceTokens {
+		result = append(result, Unescape(t))
+	}
+	return result
+}
+
+// IsEmpty returns true if this is an empty json pointer
+// this indicates that it points to the root document
+func (p *Pointer) IsEmpty() bool {
+	return len(p.referenceTokens) == 0
 }
 
 // Pointer to string representation function

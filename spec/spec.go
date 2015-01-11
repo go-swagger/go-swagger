@@ -4,11 +4,19 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/casualjim/go-swagger/assets"
 	"github.com/casualjim/go-swagger/util"
 )
 
-// Doc represents a doc loader type
-type Doc func(string) (json.RawMessage, error)
+const (
+	// SwaggerSchemaURL the url for the swagger 2.0 schema to validate specs
+	SwaggerSchemaURL = "http://swagger.io/v2/schema.json#"
+	// JSONSchemaURL the url for the json schema schema
+	JSONSchemaURL = "http://json-schema.org/draft-04/schema#"
+)
+
+// DocLoader represents a doc loader type
+type DocLoader func(string) (json.RawMessage, error)
 
 // JSONSpec loads a spec from a json document
 func JSONSpec(path string) (*Document, error) {
@@ -30,75 +38,65 @@ func YAMLSpec(path string) (*Document, error) {
 	return New(data, "")
 }
 
-// // MustLoadJSONSchemaDraft04 panics when Swagger20Schema returns an error
-// func MustLoadJSONSchemaDraft04() *jsonschema.Document {
-// 	d, e := Swagger20Schema()
-// 	if e != nil {
-// 		panic(e)
-// 	}
-// 	return d
-// }
+// MustLoadJSONSchemaDraft04 panics when Swagger20Schema returns an error
+func MustLoadJSONSchemaDraft04() *Schema {
+	d, e := Swagger20Schema()
+	if e != nil {
+		panic(e)
+	}
+	return d
+}
 
-// // JSONSchemaDraft04 loads the json schema document for json shema draft04
-// func JSONSchemaDraft04() (*jsonschema.Document, error) {
-// 	b, err := assets.Asset("jsonschema-draft-04.json")
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	loader := jsonschema.NewLoader(bytes.NewBuffer(b), "http://json-schema.org/draft-04/schema#")
+// JSONSchemaDraft04 loads the json schema document for json shema draft04
+func JSONSchemaDraft04() (*Schema, error) {
+	b, err := assets.Asset("jsonschema-draft-04.json")
+	if err != nil {
+		return nil, err
+	}
 
-// 	return jsonschema.Load(loader)
-// }
+	schema := new(Schema)
+	if err := json.Unmarshal(b, schema); err != nil {
+		return nil, err
+	}
+	return schema, nil
+}
 
-// // MustLoadSwagger20Schema panics when Swagger20Schema returns an error
-// func MustLoadSwagger20Schema() *jsonschema.Document {
-// 	d, e := Swagger20Schema()
-// 	if e != nil {
-// 		panic(e)
-// 	}
-// 	return d
-// }
+// MustLoadSwagger20Schema panics when Swagger20Schema returns an error
+func MustLoadSwagger20Schema() *Schema {
+	d, e := Swagger20Schema()
+	if e != nil {
+		panic(e)
+	}
+	return d
+}
 
-// // Swagger20Schema loads the swagger 2.0 schema from the embedded asses
-// func Swagger20Schema() (*jsonschema.Document, error) {
+// Swagger20Schema loads the swagger 2.0 schema from the embedded asses
+func Swagger20Schema() (*Schema, error) {
 
-// 	b, err := assets.Asset("2.0/schema.json")
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	loader := jsonschema.NewLoader(bytes.NewBuffer(b), "http://swagger.io/v2/schema.json#")
+	b, err := assets.Asset("2.0/schema.json")
+	if err != nil {
+		return nil, err
+	}
 
-// 	return jsonschema.Load(loader)
-// }
+	schema := new(Schema)
+	if err := json.Unmarshal(b, schema); err != nil {
+		return nil, err
+	}
+	return schema, nil
+}
 
 // Document represents a swagger spec document
 type Document struct {
 	specAnalyzer
-	// specSchema *jsonschema.Document
-	data map[string]interface{}
 	spec *Swagger
 }
 
-// var swaggerSchema *jsonschema.Document
-// var jsonSchema *jsonschema.Document
+var swaggerSchema *Schema
+var jsonSchema *Schema
 
-// func init() {
-// 	jsonSchema = MustLoadJSONSchemaDraft04()
-// 	swaggerSchema = MustLoadSwagger20Schema()
-// }
-
-func expandSpec(spec *Swagger) error {
-	// TODO: add a spec expander,
-	// this should be an external method that walks the tree of the swagger document
-	// and loads all the references, it should make sure it doesn't get in an infinite loop
-	// so it should track resolutions that are in progress and skip them
-	// and use the same value when it is resolved later
-	// it should keep a cache of resolutions already performed. the key for the cache of each item
-	// is the json pointer string representation of the full path from root.
-	//
-	// things that can have a ref: schema, response, path item, parameter, items
-	// note that items only have a ref to be resolved when used in a schema
-	return nil
+func init() {
+	jsonSchema = MustLoadJSONSchemaDraft04()
+	swaggerSchema = MustLoadSwagger20Schema()
 }
 
 // New creates a new shema document
@@ -110,13 +108,19 @@ func New(data json.RawMessage, version string) (*Document, error) {
 		return nil, fmt.Errorf("spec version %q is not supported", version)
 	}
 
+	// var v map[string]interface{}
+	// if err := json.Unmarshal(data, &v); err != nil {
+	// 	return nil, err
+	// }
+
 	spec := new(Swagger)
 	if err := json.Unmarshal(data, spec); err != nil {
 		return nil, err
 	}
 
-	var v map[string]interface{}
-	json.Unmarshal(data, &v)
+	// if err := expandSpec(spec); err != nil {
+	// 	return nil, err
+	// }
 
 	d := &Document{
 		specAnalyzer: specAnalyzer{
@@ -127,7 +131,6 @@ func New(data json.RawMessage, version string) (*Document, error) {
 			operations:  make(map[string]map[string]*Operation),
 		},
 		// specSchema: swaggerSchema,
-		data: v,
 		spec: spec,
 	}
 	d.initialize()

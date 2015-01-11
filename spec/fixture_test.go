@@ -97,7 +97,7 @@ FILES:
 		}
 		for _, spec := range specs {
 			if strings.HasPrefix(f.Name(), spec) {
-				roundTripTest(t, "model", "json", filepath.Join(path, f.Name()), &Swagger{})
+				roundTripTest(t, "model", "json", filepath.Join(path, f.Name()), &Schema{})
 				continue FILES
 			}
 		}

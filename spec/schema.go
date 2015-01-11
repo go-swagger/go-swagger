@@ -103,43 +103,53 @@ func (r *SchemaURL) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// JSONSchema represents a structure that is a json schema draft 04
-type JSONSchema struct {
-	schemaProps
-}
+// type extraSchemaProps map[string]interface{}
 
-// MarshalJSON marshal this to JSON
-func (s JSONSchema) MarshalJSON() ([]byte, error) {
-	b1, err := json.Marshal(s.schemaProps)
-	if err != nil {
-		return nil, err
-	}
-	b2, err := s.Ref.MarshalJSON()
-	if err != nil {
-		return nil, err
-	}
-	b3, err := s.Schema.MarshalJSON()
-	if err != nil {
-		return nil, err
-	}
-	return util.ConcatJSON(b1, b2, b3), nil
-}
+// // JSONSchema represents a structure that is a json schema draft 04
+// type JSONSchema struct {
+// 	schemaProps
+// 	extraSchemaProps
+// }
 
-// UnmarshalJSON marshal this from JSON
-func (s *JSONSchema) UnmarshalJSON(data []byte) error {
-	var sch JSONSchema
-	if err := json.Unmarshal(data, &sch.schemaProps); err != nil {
-		return err
-	}
-	if err := json.Unmarshal(data, &sch.Ref); err != nil {
-		return err
-	}
-	if err := json.Unmarshal(data, &sch.Schema); err != nil {
-		return err
-	}
-	*s = sch
-	return nil
-}
+// // MarshalJSON marshal this to JSON
+// func (s JSONSchema) MarshalJSON() ([]byte, error) {
+// 	b1, err := json.Marshal(s.schemaProps)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	b2, err := s.Ref.MarshalJSON()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	b3, err := s.Schema.MarshalJSON()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	b4, err := json.Marshal(s.extraSchemaProps)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return util.ConcatJSON(b1, b2, b3, b4), nil
+// }
+
+// // UnmarshalJSON marshal this from JSON
+// func (s *JSONSchema) UnmarshalJSON(data []byte) error {
+// 	var sch JSONSchema
+// 	if err := json.Unmarshal(data, &sch.schemaProps); err != nil {
+// 		return err
+// 	}
+// 	if err := json.Unmarshal(data, &sch.Ref); err != nil {
+// 		return err
+// 	}
+// 	if err := json.Unmarshal(data, &sch.Schema); err != nil {
+// 		return err
+// 	}
+// 	if err := json.Unmarshal(data, &sch.extraSchemaProps); err != nil {
+// 		return err
+// 	}
+// 	*s = sch
+// 	return nil
+// }
 
 type schemaProps struct {
 	ID                   string            `json:"id,omitempty"`
@@ -175,7 +185,7 @@ type schemaProps struct {
 	PatternProperties    map[string]Schema `json:"patternProperties,omitempty"`
 	Dependencies         Dependencies      `json:"dependencies,omitempty"`
 	AdditionalItems      *SchemaOrBool     `json:"additionalItems,omitempty"`
-	Definitions          map[string]Schema `json:"definitions,omitempty"`
+	Definitions          Definitions       `json:"definitions,omitempty"`
 }
 
 type swaggerSchemaProps struct {

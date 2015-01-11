@@ -2,6 +2,7 @@ package spec
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/casualjim/go-swagger/util"
@@ -16,6 +17,16 @@ import (
 type Paths struct {
 	vendorExtensible
 	Paths map[string]PathItem `json:"-"` // custom serializer to flatten this, each entry must start with "/"
+}
+
+func (p Paths) JSONLookup(token string) (interface{}, error) {
+	if pi, ok := p.Paths[token]; ok {
+		return &pi, nil
+	}
+	if ex, ok := p.Extensions[token]; ok {
+		return &ex, nil
+	}
+	return nil, fmt.Errorf("object has no field %q", token)
 }
 
 // UnmarshalJSON hydrates this items instance with the data from JSON

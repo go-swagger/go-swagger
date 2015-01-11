@@ -1,0 +1,31 @@
+{
+  "definitions": {
+    "car": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "make": {
+          "type": "string"
+        },
+        "brand": {
+          "$ref": "#/definitions/brand"
+        }
+      }
+    },
+    "brand": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

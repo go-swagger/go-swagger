@@ -2,6 +2,7 @@ package spec
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/casualjim/go-swagger/jsonreference"
 )
@@ -25,8 +26,32 @@ type Ref struct {
 }
 
 // IsResolved returns true if the reference has been resolved
-func (r *Ref) IsResolved() bool {
+func (r Ref) IsResolved() bool {
 	return r.Resolved != nil
+}
+
+// NeedsResolving returns true if the reference needs to be resolved
+func (r Ref) NeedsResolving() bool {
+	return r.Ref.GetURL() != nil && r.Resolved == nil
+}
+
+// Inherits creates a new reference from a parent and a child
+// If the child cannot inherit from the parent, an error is returned
+func (r *Ref) Inherits(child Ref) (*Ref, error) {
+	childURL := child.GetURL()
+	parentURL := r.GetURL()
+	if childURL == nil {
+		return nil, errors.New("child url is nil")
+	}
+	if parentURL == nil {
+		return nil, errors.New("parent url is nil")
+	}
+
+	ref, err := NewRef(parentURL.ResolveReference(childURL).String())
+	if err != nil {
+		return nil, err
+	}
+	return &ref, err
 }
 
 // NewRef creates a new instance of a ref object
@@ -42,6 +67,14 @@ func NewRef(refURI string) (Ref, error) {
 // MustCreateRef creates a ref object but
 func MustCreateRef(refURI string) Ref {
 	return Ref{Ref: jsonreference.MustCreateRef(refURI)}
+}
+
+// NewResolvedRef creates a resolved ref
+func NewResolvedRef(refURI string, data interface{}) Ref {
+	return Ref{
+		Ref:      jsonreference.MustCreateRef(refURI),
+		Resolved: data,
+	}
 }
 
 // MarshalJSON marshals this ref into a JSON object
@@ -60,9 +93,11 @@ func (r *Ref) UnmarshalJSON(d []byte) error {
 	if err := json.Unmarshal(d, &v); err != nil {
 		return err
 	}
+
 	if v == nil {
 		return nil
 	}
+
 	if vv, ok := v["$ref"]; ok {
 		if str, ok := vv.(string); ok {
 			ref, err := jsonreference.New(str)
@@ -72,16 +107,6 @@ func (r *Ref) UnmarshalJSON(d []byte) error {
 			*r = Ref{Ref: ref}
 		}
 	}
+
 	return nil
 }
-
-// // Resolve resolves refs
-// // RefCache is a thread-safe cache of refs that can be optionally passed in
-// // when the value is nil it will just always fetch
-// func (r *Ref) resolve(cache *refCache, root interface{}) (interface{}, error) {
-// 	if !r.IsCanonical() {
-// 		return nil, fmt.Errorf("reference %q must be canonical", str)
-// 	}
-
-// 	return nil, nil
-// }

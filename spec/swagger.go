@@ -3,6 +3,8 @@ package spec
 import (
 	"encoding/json"
 	"reflect"
+
+	"github.com/casualjim/go-swagger/util"
 )
 
 // Swagger this is the root document object for the API specification.
@@ -10,6 +12,34 @@ import (
 //
 // For more information: http://goo.gl/8us55a#swagger-object-
 type Swagger struct {
+	swaggerProps
+}
+
+const schemaJSONString = `{"$schema":"http://swagger.io/v2/schema.json#"}`
+
+var schemaJSONBytes = []byte(schemaJSONString)
+
+// MarshalJSON marshals this swagger structure to json
+func (s Swagger) MarshalJSON() ([]byte, error) {
+	b1, err := json.Marshal(s.swaggerProps)
+	if err != nil {
+		return nil, err
+	}
+	return util.ConcatJSON(schemaJSONBytes, b1), nil
+}
+
+// UnmarshalJSON unmarshals a swagger spec from json
+func (s *Swagger) UnmarshalJSON(data []byte) error {
+	var sw Swagger
+	if err := json.Unmarshal(data, &sw.swaggerProps); err != nil {
+		return err
+	}
+	*s = sw
+	return nil
+}
+
+type swaggerProps struct {
+	ID                  string                 `json:"id,omitempty"`
 	Consumes            []string               `json:"consumes,omitempty"`
 	Produces            []string               `json:"produces,omitempty"`
 	Schemes             []string               `json:"schemes,omitempty"` // the scheme, when present must be from [http, https, ws, wss]
@@ -216,25 +246,4 @@ func (s *SchemaOrArray) UnmarshalJSON(data []byte) error {
 	}
 	*s = nw
 	return nil
-	// if len(data) < 3 {
-	// 	return nil
-	// }
-	// if data[0] == '[' {
-	// 	var parsed []Schema
-	// 	if err := json.Unmarshal(data, &parsed); err != nil {
-	// 		return err
-	// 	}
-	// 	*s = SchemaOrArray{Schemas: parsed}
-	// 	return nil
-	// }
-
-	// var parsed Schema
-	// if err := json.Unmarshal(data, &parsed); err != nil {
-	// 	return err
-	// }
-	// if reflect.DeepEqual(Schema{}, parsed) {
-	// 	return nil
-	// }
-	// *s = SchemaOrArray{Schema: &parsed}
-	// return nil
 }

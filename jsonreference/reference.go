@@ -30,6 +30,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/PuerkitoBio/purell"
 	"github.com/casualjim/go-swagger/jsonpointer"
 )
 
@@ -92,18 +93,28 @@ func (r *Ref) String() string {
 	return r.referencePointer.String()
 }
 
+// IsRoot returns true if this reference is a root document
+func (r *Ref) IsRoot() bool {
+	return r.referenceURL != nil &&
+		!r.IsCanonical() &&
+		!r.HasURLPathOnly &&
+		r.referenceURL.Fragment == ""
+}
+
 // IsCanonical returns true when this pointer starts with http(s):// or file://
 func (r *Ref) IsCanonical() bool {
 	return (r.HasFileScheme && r.HasFullFilePath) || (!r.HasFileScheme && r.HasFullURL)
 }
 
 // "Constructor", parses the given string JSON reference
-func (r *Ref) parse(jsonReferenceString string) (err error) {
+func (r *Ref) parse(jsonReferenceString string) error {
 
-	r.referenceURL, err = url.Parse(jsonReferenceString)
+	parsed, err := url.Parse(jsonReferenceString)
 	if err != nil {
-		return
+		return err
 	}
+
+	r.referenceURL, _ = url.Parse(purell.NormalizeURL(parsed, purell.FlagsSafe|purell.FlagRemoveDuplicateSlashes))
 	refURL := r.referenceURL
 
 	if refURL.Scheme != "" && refURL.Host != "" {
@@ -122,7 +133,7 @@ func (r *Ref) parse(jsonReferenceString string) (err error) {
 	// invalid json-pointer error means url has no json-pointer fragment. simply ignore error
 	r.referencePointer, _ = jsonpointer.New(refURL.Fragment)
 
-	return
+	return nil
 }
 
 // Inherits creates a new reference from a parent and a child
@@ -134,7 +145,7 @@ func (r *Ref) Inherits(child Ref) (*Ref, error) {
 		return nil, errors.New("child url is nil")
 	}
 	if parentURL == nil {
-		return nil, errors.New("parent url is nil")
+		return &child, nil
 	}
 
 	ref, err := New(parentURL.ResolveReference(childURL).String())

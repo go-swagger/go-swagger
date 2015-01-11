@@ -38,12 +38,14 @@ func TestAnalyzer(t *testing.T) {
 	pi.Get = op
 
 	spec := &Swagger{
-		Consumes:   []string{"application/json"},
-		Produces:   []string{"application/json"},
-		Parameters: map[string]Parameter{"format": *formatParam},
-		Paths: &Paths{
-			Paths: map[string]PathItem{
-				"/": pi,
+		swaggerProps: swaggerProps{
+			Consumes:   []string{"application/json"},
+			Produces:   []string{"application/json"},
+			Parameters: map[string]Parameter{"format": *formatParam},
+			Paths: &Paths{
+				Paths: map[string]PathItem{
+					"/": pi,
+				},
 			},
 		},
 	}

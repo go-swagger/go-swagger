@@ -65,6 +65,8 @@ type testStructJSON struct {
 	} `json:"obj"`
 }
 
+type aliasedMap map[string]interface{}
+
 var testStructJSONDoc testStructJSON
 var testStructJSONPtr *testStructJSON
 
@@ -124,6 +126,10 @@ func TestGetNode(t *testing.T) {
 	p, err := New(in)
 	assert.NoError(t, err)
 	result, _, err := p.Get(testDocumentJSON)
+	assert.NoError(t, err)
+	assert.Len(t, result, TestNodeObjNBItems)
+
+	result, _, err = p.Get(aliasedMap(testDocumentJSON.(map[string]interface{})))
 	assert.NoError(t, err)
 	assert.Len(t, result, TestNodeObjNBItems)
 
@@ -198,8 +204,9 @@ func TestOtherThings(t *testing.T) {
 	p, err = New("/foo/1")
 	assert.NoError(t, err)
 	expected := "hello"
-	_, err = p.Set(testDocumentJSON, expected)
-	assert.NoError(t, err)
+	bbb := testDocumentJSON.(map[string]interface{})["foo"]
+	bbb.([]interface{})[1] = "hello"
+
 	v, _, err := p.Get(testDocumentJSON)
 	assert.NoError(t, err)
 	assert.Equal(t, expected, v)
@@ -237,44 +244,4 @@ func TestObject(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, outs[i], result)
 	}
-}
-
-func TestSetNode(t *testing.T) {
-
-	jsonText := `{"a":[{"b": 1, "c": 2}], "d": 3}`
-
-	var jsonDocument interface{}
-	json.Unmarshal([]byte(jsonText), &jsonDocument)
-
-	in := "/a/0/c"
-
-	p, err := New(in)
-	if err != nil {
-		t.Errorf("New(%v) error %v", in, err.Error())
-	}
-
-	_, err = p.Set(jsonDocument, 999)
-	if err != nil {
-		t.Errorf("Set(%v) error %v", in, err.Error())
-	}
-
-	firstNode := jsonDocument.(map[string]interface{})
-	if len(firstNode) != 2 {
-		t.Errorf("Set(%s) failed", in)
-	}
-
-	sliceNode := firstNode["a"].([]interface{})
-	if len(sliceNode) != 1 {
-		t.Errorf("Set(%s) failed", in)
-	}
-
-	changedNode := sliceNode[0].(map[string]interface{})
-	changedNodeValue := changedNode["c"].(int)
-
-	if changedNodeValue != 999 {
-		if len(sliceNode) != 1 {
-			t.Errorf("Set(%s) failed", in)
-		}
-	}
-
 }
