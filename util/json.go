@@ -27,6 +27,18 @@ func JSONDoc(path string) (json.RawMessage, error) {
 	return json.RawMessage(data), nil
 }
 
+// DynamicJSONToStruct converts an untyped json structure into a struct
+func DynamicJSONToStruct(data map[string]interface{}, target interface{}) error {
+	b, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(b, target); err != nil {
+		return err
+	}
+	return nil
+}
+
 // ConcatJSON concatenates multiple json objects efficiently
 func ConcatJSON(blobs ...[]byte) []byte {
 	if len(blobs) == 0 {
@@ -148,6 +160,21 @@ func newNameIndex(tpe reflect.Type) nameIndex {
 
 	buildnameIndex(tpe, idx, reverseIdx)
 	return nameIndex{jsonNames: idx, goNames: reverseIdx}
+}
+
+// GetJSONNames gets all the json property names for a type
+func (n *NameProvider) GetJSONNames(subject interface{}) []string {
+	tpe := reflect.Indirect(reflect.ValueOf(subject)).Type()
+	names, ok := n.index[tpe]
+	if !ok {
+		names = n.makeNameIndex(tpe)
+	}
+
+	var res []string
+	for k := range names.jsonNames {
+		res = append(res, k)
+	}
+	return res
 }
 
 // GetJSONName gets the json name for a go property name

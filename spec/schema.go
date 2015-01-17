@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strings"
 
+	"github.com/casualjim/go-swagger/jsonpointer"
 	"github.com/casualjim/go-swagger/util"
 )
 
@@ -207,6 +209,25 @@ type Schema struct {
 	vendorExtensible
 	schemaProps
 	swaggerSchemaProps
+	ExtraProps map[string]interface{} `json:"-"`
+}
+
+// JSONLookup implements an interface to customize json pointer lookup
+func (s Schema) JSONLookup(token string) (interface{}, error) {
+	if ex, ok := s.Extensions[token]; ok {
+		return &ex, nil
+	}
+
+	if ex, ok := s.ExtraProps[token]; ok {
+		return &ex, nil
+	}
+
+	r, _, err := jsonpointer.GetForToken(s.schemaProps, token)
+	if r != nil || err != nil {
+		return r, err
+	}
+	r, _, err = jsonpointer.GetForToken(s.swaggerSchemaProps, token)
+	return r, err
 }
 
 // WithProperties sets the properties for this schema
@@ -367,6 +388,11 @@ func (s Schema) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("common validations %v", err)
 	}
+	// b6, err := json.Marshal(s.ExtraProps)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("extra props %v", err)
+	// }
+	// return util.ConcatJSON(b1, b2, b3, b4, b5, b6), nil
 	return util.ConcatJSON(b1, b2, b3, b4, b5), nil
 }
 
@@ -374,9 +400,6 @@ func (s Schema) MarshalJSON() ([]byte, error) {
 func (s *Schema) UnmarshalJSON(data []byte) error {
 	var sch Schema
 	if err := json.Unmarshal(data, &sch.schemaProps); err != nil {
-		return err
-	}
-	if err := json.Unmarshal(data, &sch.vendorExtensible); err != nil {
 		return err
 	}
 	if err := json.Unmarshal(data, &sch.Ref); err != nil {
@@ -388,6 +411,34 @@ func (s *Schema) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &sch.swaggerSchemaProps); err != nil {
 		return err
 	}
+
+	var d map[string]interface{}
+	if err := json.Unmarshal(data, &d); err != nil {
+		return err
+	}
+
+	delete(d, "$ref")
+	delete(d, "$schema")
+	for _, pn := range util.DefaultJSONNameProvider.GetJSONNames(s) {
+		delete(d, pn)
+	}
+
+	for k, vv := range d {
+		lk := strings.ToLower(k)
+		if strings.HasPrefix(lk, "x-") {
+			if sch.Extensions == nil {
+				sch.Extensions = map[string]interface{}{}
+			}
+			sch.Extensions[k] = vv
+			continue
+		}
+		if sch.ExtraProps == nil {
+			sch.ExtraProps = map[string]interface{}{}
+		}
+		sch.ExtraProps[k] = vv
+	}
+
 	*s = sch
+
 	return nil
 }

@@ -118,9 +118,9 @@ func New(data json.RawMessage, version string) (*Document, error) {
 		return nil, err
 	}
 
-	// if err := expandSpec(spec); err != nil {
-	// 	return nil, err
-	// }
+	if err := expandSpec(spec); err != nil {
+		return nil, err
+	}
 
 	d := &Document{
 		specAnalyzer: specAnalyzer{

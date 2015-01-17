@@ -22,18 +22,22 @@ func (r *refable) UnmarshalJSON(d []byte) error {
 // Ref represents a json reference that is potentially resolved
 type Ref struct {
 	jsonreference.Ref
-	Resolved interface{}
 }
 
-// IsResolved returns true if the reference has been resolved
-func (r Ref) IsResolved() bool {
-	return r.Resolved != nil
-}
+// // PointsToRoot returns true when this reference should point to root
+// func (r *Ref) PointsToRoot() bool {
+// 	return r.RawURL == "#"
+// }
 
-// NeedsResolving returns true if the reference needs to be resolved
-func (r Ref) NeedsResolving() bool {
-	return r.Ref.GetURL() != nil && r.Resolved == nil
-}
+// // IsResolved returns true if the reference has been resolved
+// func (r Ref) IsResolved() bool {
+// 	return r.Resolved != nil
+// }
+
+// // NeedsResolving returns true if the reference needs to be resolved
+// func (r Ref) NeedsResolving() bool {
+// 	return r.Ref.GetURL() != nil && r.Resolved == nil
+// }
 
 // Inherits creates a new reference from a parent and a child
 // If the child cannot inherit from the parent, an error is returned
@@ -69,13 +73,13 @@ func MustCreateRef(refURI string) Ref {
 	return Ref{Ref: jsonreference.MustCreateRef(refURI)}
 }
 
-// NewResolvedRef creates a resolved ref
-func NewResolvedRef(refURI string, data interface{}) Ref {
-	return Ref{
-		Ref:      jsonreference.MustCreateRef(refURI),
-		Resolved: data,
-	}
-}
+// // NewResolvedRef creates a resolved ref
+// func NewResolvedRef(refURI string, data interface{}) Ref {
+// 	return Ref{
+// 		Ref:      jsonreference.MustCreateRef(refURI),
+// 		Resolved: data,
+// 	}
+// }
 
 // MarshalJSON marshals this ref into a JSON object
 func (r Ref) MarshalJSON() ([]byte, error) {

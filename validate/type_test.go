@@ -116,6 +116,8 @@ func TestJSONSchemaSuite(t *testing.T) {
 
 						Convey(testDescription.Description, func() {
 
+							So(spec.ExpandSchema(testDescription.Schema, nil), ShouldBeNil)
+
 							validator := newSchemaValidator(testDescription.Schema, "data")
 
 							for _, test := range testDescription.Tests {

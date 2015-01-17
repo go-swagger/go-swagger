@@ -140,6 +140,9 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 		return fmt.Errorf("resolve ref: target needs to be a pointer")
 	}
 
+	fmt.Printf("[before] current ref: %s, ref: %s for target %T\n", currentRef, ref, target)
+	// pretty.Println(node)
+
 	oldRef := currentRef
 	if currentRef != nil {
 		var err error
@@ -151,19 +154,27 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 	if currentRef == nil {
 		currentRef = ref
 	}
-	refURL := currentRef.GetURL()
 
+	refURL := currentRef.GetURL()
+	if refURL == nil {
+		fmt.Println("ref url was nil")
+		return nil
+	}
 	if refURL.String() == "" {
-		reflect.Indirect(tgt).Set(reflect.ValueOf(node))
+		nv := reflect.ValueOf(node)
+		reflect.Indirect(tgt).Set(reflect.Indirect(nv))
 		return nil
 	}
 
 	if strings.HasPrefix(refURL.String(), "#") {
+		fmt.Println("local ref so getting data and bailing")
+		// pretty.Println(node)
 		res, _, err := ref.GetPointer().Get(node)
 		if err != nil {
+			fmt.Println(err)
 			return err
 		}
-
+		fmt.Printf("[result] %+v\n", res)
 		reflect.Indirect(tgt).Set(reflect.Indirect(reflect.ValueOf(res)))
 		return nil
 	}
@@ -176,6 +187,7 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 
 		data, fromCache := r.cache.Get(toFetch.String())
 		if !fromCache {
+			fmt.Println("fetching:", toFetch.String())
 			b, err := r.loadDoc(toFetch.String())
 			if err != nil {
 				return err
@@ -201,6 +213,8 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 		} else {
 			res = data
 		}
+
+		// fmt.Printf("[result] %+v\n", res)
 
 		bb, err := json.Marshal(res)
 		if err != nil {
@@ -235,7 +249,7 @@ func expandSpec(spec *Swagger) error {
 
 	resolver, err := defaultSchemaLoader(spec, nil)
 	if err != nil {
-		return nil
+		return err
 	}
 	for key, defintition := range spec.Definitions {
 		if err := expandSchema(&defintition, resolver); err != nil {
@@ -258,22 +272,42 @@ func expandSpec(spec *Swagger) error {
 		spec.Responses[key] = response
 	}
 
-	for key, path := range spec.Paths.Paths {
-		if err := expandPathItem(&path, resolver); err != nil {
-			return err
+	if spec.Paths != nil {
+		for key, path := range spec.Paths.Paths {
+			if err := expandPathItem(&path, resolver); err != nil {
+				return err
+			}
+			spec.Paths.Paths[key] = path
 		}
-		spec.Paths.Paths[key] = path
 	}
 
 	return nil
+}
+
+// ExpandSchema expands the refs in the schema object
+func ExpandSchema(schema *Schema, root interface{}) error {
+	if schema == nil {
+		return nil
+	}
+	if root == nil {
+		root = schema
+	}
+
+	resolver, err := defaultSchemaLoader(root, nil)
+	if err != nil {
+		return err
+	}
+
+	return expandSchema(schema, resolver)
 }
 
 func expandSchema(schema *Schema, resolver *schemaLoader) error {
 	if schema == nil {
 		return nil
 	}
+
 	// create a schema expander and run that
-	if schema.Ref.String() != "" {
+	if schema.Ref.String() != "" || schema.Ref.IsRoot() {
 		var newSchema Schema
 		if err := resolver.Resolve(&schema.Ref, &newSchema); err != nil {
 			return err
@@ -361,14 +395,9 @@ func expandPathItem(pathItem *PathItem, resolver *schemaLoader) error {
 	if pathItem == nil {
 		return nil
 	}
-	var newItem PathItem
-	ref := pathItem.Ref
-	if err := resolver.Resolve(&ref, &newItem); err != nil {
+	if err := resolver.Resolve(&pathItem.Ref, &pathItem); err != nil {
 		return err
 	}
-
-	*pathItem = newItem
-	pathItem.Ref = ref
 
 	if err := expandOperation(pathItem.Get, resolver); err != nil {
 		return err
@@ -424,14 +453,9 @@ func expandResponse(response *Response, resolver *schemaLoader) error {
 	if response == nil {
 		return nil
 	}
-	var newItem Response
-	ref := response.Ref
-	if err := resolver.Resolve(&ref, &newItem); err != nil {
+	if err := resolver.Resolve(&response.Ref, response); err != nil {
 		return err
 	}
-
-	*response = newItem
-	response.Ref = ref
 
 	if response.Schema != nil {
 		if err := expandSchema(response.Schema, resolver); err != nil {
@@ -445,13 +469,9 @@ func expandParameter(parameter *Parameter, resolver *schemaLoader) error {
 	if parameter == nil {
 		return nil
 	}
-	var newItem Parameter
-	ref := parameter.Ref
-	if err := resolver.Resolve(&ref, &newItem); err != nil {
+	if err := resolver.Resolve(&parameter.Ref, parameter); err != nil {
 		return err
 	}
-	*parameter = newItem
-	parameter.Ref = ref
 	if parameter.Schema != nil {
 		if err := expandSchema(parameter.Schema, resolver); err != nil {
 			return err

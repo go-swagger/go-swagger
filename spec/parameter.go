@@ -3,6 +3,7 @@ package spec
 import (
 	"encoding/json"
 
+	"github.com/casualjim/go-swagger/jsonpointer"
 	"github.com/casualjim/go-swagger/util"
 )
 
@@ -67,6 +68,32 @@ type Parameter struct {
 	simpleSchema
 	vendorExtensible
 	paramProps
+}
+
+// JSONLookup look up a value by the json property name
+func (p Parameter) JSONLookup(token string) (interface{}, error) {
+	if ex, ok := p.Extensions[token]; ok {
+		return &ex, nil
+	}
+	if token == "$ref" {
+		return &p.Ref, nil
+	}
+	r, _, err := jsonpointer.GetForToken(p.commonValidations, token)
+	if err != nil {
+		return nil, err
+	}
+	if r != nil {
+		return r, nil
+	}
+	r, _, err = jsonpointer.GetForToken(p.simpleSchema, token)
+	if err != nil {
+		return nil, err
+	}
+	if r != nil {
+		return r, nil
+	}
+	r, _, err = jsonpointer.GetForToken(p.paramProps, token)
+	return r, err
 }
 
 // Typed a fluent builder method for the type of parameter

@@ -3,6 +3,7 @@ package spec
 import (
 	"encoding/json"
 
+	"github.com/casualjim/go-swagger/jsonpointer"
 	"github.com/casualjim/go-swagger/util"
 )
 
@@ -90,6 +91,16 @@ func (s *securitySchemeProps) AddScope(scope, description string) {
 type SecurityScheme struct {
 	vendorExtensible
 	securitySchemeProps
+}
+
+// JSONLookup implements an interface to customize json pointer lookup
+func (s SecurityScheme) JSONLookup(token string) (interface{}, error) {
+	if ex, ok := s.Extensions[token]; ok {
+		return &ex, nil
+	}
+
+	r, _, err := jsonpointer.GetForToken(s.securitySchemeProps, token)
+	return r, err
 }
 
 // MarshalJSON marshal this to JSON

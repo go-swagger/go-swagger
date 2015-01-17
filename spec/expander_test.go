@@ -14,8 +14,223 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestSpecExpansion(t *testing.T) {
+	spec := new(Swagger)
+	// resolver, err := defaultSchemaLoader(spec, nil)
+	// assert.NoError(t, err)
+
+	err := expandSpec(spec)
+	assert.NoError(t, err)
+
+	specDoc, err := util.JSONDoc("../fixtures/expansion/all-the-things.json")
+	assert.NoError(t, err)
+
+	spec = new(Swagger)
+	err = json.Unmarshal(specDoc, spec)
+	assert.NoError(t, err)
+
+	pet := spec.Definitions["pet"]
+	errorModel := spec.Definitions["errorModel"]
+	petResponse := spec.Responses["petResponse"]
+	petResponse.Schema = &pet
+	stringResponse := spec.Responses["stringResponse"]
+	tagParam := spec.Parameters["tag"]
+	idParam := spec.Parameters["idParam"]
+
+	err = expandSpec(spec)
+	assert.NoError(t, err)
+
+	assert.Equal(t, tagParam, spec.Parameters["query"])
+	assert.Equal(t, petResponse, spec.Responses["petResponse"])
+	assert.Equal(t, petResponse, spec.Responses["anotherPet"])
+	assert.Equal(t, pet, *spec.Responses["petResponse"].Schema)
+	assert.Equal(t, stringResponse, *spec.Paths.Paths["/"].Get.Responses.Default)
+	assert.Equal(t, petResponse, spec.Paths.Paths["/"].Get.Responses.StatusCodeResponses[200])
+	assert.Equal(t, pet, *spec.Paths.Paths["/pets"].Get.Responses.StatusCodeResponses[200].Schema.Items.Schema)
+	assert.Equal(t, errorModel, *spec.Paths.Paths["/pets"].Get.Responses.Default.Schema)
+	assert.Equal(t, pet, spec.Definitions["petInput"].AllOf[0])
+	assert.Equal(t, spec.Definitions["petInput"], *spec.Paths.Paths["/pets"].Post.Parameters[0].Schema)
+	assert.Equal(t, petResponse, spec.Paths.Paths["/pets"].Post.Responses.StatusCodeResponses[200])
+	assert.Equal(t, errorModel, *spec.Paths.Paths["/pets"].Post.Responses.Default.Schema)
+	pi := spec.Paths.Paths["/pets/{id}"]
+	assert.Equal(t, idParam, pi.Get.Parameters[0])
+	assert.Equal(t, petResponse, pi.Get.Responses.StatusCodeResponses[200])
+	assert.Equal(t, errorModel, *pi.Get.Responses.Default.Schema)
+	assert.Equal(t, idParam, pi.Delete.Parameters[0])
+	assert.Equal(t, errorModel, *pi.Delete.Responses.Default.Schema)
+}
+
+func TestResponseExpansion(t *testing.T) {
+	specDoc, err := util.JSONDoc("../fixtures/expansion/all-the-things.json")
+	assert.NoError(t, err)
+
+	spec := new(Swagger)
+	err = json.Unmarshal(specDoc, spec)
+	assert.NoError(t, err)
+
+	resolver, err := defaultSchemaLoader(spec, nil)
+	assert.NoError(t, err)
+
+	resp := spec.Responses["anotherPet"]
+	expected := spec.Responses["petResponse"]
+
+	err = expandResponse(&resp, resolver)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, resp)
+
+	resp2 := spec.Paths.Paths["/"].Get.Responses.Default
+	expected = spec.Responses["stringResponse"]
+
+	err = expandResponse(resp2, resolver)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, *resp2)
+
+	resp = spec.Paths.Paths["/"].Get.Responses.StatusCodeResponses[200]
+	expected = spec.Responses["petResponse"]
+
+	err = expandResponse(&resp, resolver)
+	assert.NoError(t, err)
+	// assert.Equal(t, expected, resp)
+}
+
+func TestParameterExpansion(t *testing.T) {
+	paramDoc, err := util.JSONDoc("../fixtures/expansion/params.json")
+	assert.NoError(t, err)
+
+	spec := new(Swagger)
+	err = json.Unmarshal(paramDoc, spec)
+	assert.NoError(t, err)
+
+	resolver, err := defaultSchemaLoader(spec, nil)
+	assert.NoError(t, err)
+
+	param := spec.Parameters["query"]
+	expected := spec.Parameters["tag"]
+
+	err = expandParameter(&param, resolver)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, param)
+
+	param = spec.Paths.Paths["/cars/{id}"].Parameters[0]
+	expected = spec.Parameters["id"]
+
+	err = expandParameter(&param, resolver)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, param)
+}
+
 func TestSchemaExpansion(t *testing.T) {
-	// carsDoc, err := util.JSONDoc("../fixtures/expansion/schemas1.json")
+	carsDoc, err := util.JSONDoc("../fixtures/expansion/schemas1.json")
+	assert.NoError(t, err)
+
+	spec := new(Swagger)
+	err = json.Unmarshal(carsDoc, spec)
+	assert.NoError(t, err)
+
+	resolver, err := defaultSchemaLoader(spec, nil)
+	assert.NoError(t, err)
+
+	schema := spec.Definitions["car"]
+	oldBrand := schema.Properties["brand"]
+	assert.NotEmpty(t, oldBrand.Ref.String())
+	assert.NotEqual(t, spec.Definitions["brand"], oldBrand)
+
+	err = expandSchema(&schema, resolver)
+	assert.NoError(t, err)
+
+	newBrand := schema.Properties["brand"]
+	assert.Empty(t, newBrand.Ref.String())
+	assert.Equal(t, spec.Definitions["brand"], newBrand)
+
+	schema = spec.Definitions["truck"]
+	assert.NotEmpty(t, schema.Ref.String())
+
+	err = expandSchema(&schema, resolver)
+	assert.NoError(t, err)
+	assert.Empty(t, schema.Ref.String())
+	assert.Equal(t, spec.Definitions["car"], schema)
+
+	sch := new(Schema)
+	err = expandSchema(sch, resolver)
+	assert.NoError(t, err)
+
+	schema = spec.Definitions["batch"]
+	err = expandSchema(&schema, resolver)
+	assert.NoError(t, err)
+	assert.Empty(t, schema.Items.Schema.Ref.String())
+	assert.Equal(t, *schema.Items.Schema, spec.Definitions["brand"])
+
+	schema = spec.Definitions["batch2"]
+	err = expandSchema(&schema, resolver)
+	assert.NoError(t, err)
+	assert.Empty(t, schema.Items.Schemas[0].Ref.String())
+	assert.Empty(t, schema.Items.Schemas[1].Ref.String())
+	assert.Equal(t, schema.Items.Schemas[0], spec.Definitions["brand"])
+	assert.Equal(t, schema.Items.Schemas[1], spec.Definitions["tag"])
+
+	schema = spec.Definitions["allofBoth"]
+	err = expandSchema(&schema, resolver)
+	assert.NoError(t, err)
+	assert.Empty(t, schema.AllOf[0].Ref.String())
+	assert.Empty(t, schema.AllOf[1].Ref.String())
+	assert.Equal(t, schema.AllOf[0], spec.Definitions["brand"])
+	assert.Equal(t, schema.AllOf[1], spec.Definitions["tag"])
+
+	schema = spec.Definitions["anyofBoth"]
+	err = expandSchema(&schema, resolver)
+	assert.NoError(t, err)
+	assert.Empty(t, schema.AnyOf[0].Ref.String())
+	assert.Empty(t, schema.AnyOf[1].Ref.String())
+	assert.Equal(t, schema.AnyOf[0], spec.Definitions["brand"])
+	assert.Equal(t, schema.AnyOf[1], spec.Definitions["tag"])
+
+	schema = spec.Definitions["oneofBoth"]
+	err = expandSchema(&schema, resolver)
+	assert.NoError(t, err)
+	assert.Empty(t, schema.OneOf[0].Ref.String())
+	assert.Empty(t, schema.OneOf[1].Ref.String())
+	assert.Equal(t, schema.OneOf[0], spec.Definitions["brand"])
+	assert.Equal(t, schema.OneOf[1], spec.Definitions["tag"])
+
+	schema = spec.Definitions["notSomething"]
+	err = expandSchema(&schema, resolver)
+	assert.NoError(t, err)
+	assert.Empty(t, schema.Not.Ref.String())
+	assert.Equal(t, *schema.Not, spec.Definitions["tag"])
+
+	schema = spec.Definitions["withAdditional"]
+	err = expandSchema(&schema, resolver)
+	assert.NoError(t, err)
+	assert.Empty(t, schema.AdditionalProperties.Schema.Ref.String())
+	assert.Equal(t, *schema.AdditionalProperties.Schema, spec.Definitions["tag"])
+
+	schema = spec.Definitions["withAdditionalItems"]
+	err = expandSchema(&schema, resolver)
+	assert.NoError(t, err)
+	assert.Empty(t, schema.AdditionalItems.Schema.Ref.String())
+	assert.Equal(t, *schema.AdditionalItems.Schema, spec.Definitions["tag"])
+
+	schema = spec.Definitions["withPattern"]
+	err = expandSchema(&schema, resolver)
+	assert.NoError(t, err)
+	prop := schema.PatternProperties["^x-ab"]
+	assert.Empty(t, prop.Ref.String())
+	assert.Equal(t, prop, spec.Definitions["tag"])
+
+	schema = spec.Definitions["deps"]
+	err = expandSchema(&schema, resolver)
+	assert.NoError(t, err)
+	prop2 := schema.Dependencies["something"]
+	assert.Empty(t, prop2.Schema.Ref.String())
+	assert.Equal(t, *prop2.Schema, spec.Definitions["tag"])
+
+	schema = spec.Definitions["defined"]
+	err = expandSchema(&schema, resolver)
+	assert.NoError(t, err)
+	prop = schema.Definitions["something"]
+	assert.Empty(t, prop.Ref.String())
+	assert.Equal(t, prop, spec.Definitions["tag"])
+
 }
 
 func TestDefaultResolutionCache(t *testing.T) {
@@ -179,7 +394,6 @@ func TestResolveRemoteRef(t *testing.T) {
 					So(err, ShouldBeNil)
 
 					resolver, _ := defaultSchemaLoader(rootDoc, nil)
-					// pretty.Println(resolver)
 					err = resolver.Resolve(&ref, &tgt)
 					So(err, ShouldBeNil)
 					So(tgt.Type, ShouldResemble, StringOrArray([]string{"string"}))
@@ -193,7 +407,6 @@ func TestResolveRemoteRef(t *testing.T) {
 					So(err, ShouldBeNil)
 
 					resolver, _ := defaultSchemaLoader(rootDoc, nil)
-					// pretty.Println(resolver)
 					err = resolver.Resolve(&ref, &tgt)
 					So(err, ShouldBeNil)
 					So(tgt.Type, ShouldResemble, StringOrArray([]string{"file"}))
@@ -253,12 +466,12 @@ func TestResolveLocalRef(t *testing.T) {
 			Convey("to a schema", func() {
 
 				Convey("resolves root to same ptr instance", func() {
-					var result interface{}
+					result := new(Swagger)
 					ref, _ := NewRef("#")
 					resolver, _ := defaultSchemaLoader(rootDoc, nil)
-					err := resolver.Resolve(&ref, &result)
+					err := resolver.Resolve(&ref, result)
 					So(err, ShouldBeNil)
-					So(result, ShouldEqual, rootDoc)
+					So(result, ShouldResemble, rootDoc)
 				})
 
 				Convey("from a fragment", func() {

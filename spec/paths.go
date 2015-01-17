@@ -19,6 +19,7 @@ type Paths struct {
 	Paths map[string]PathItem `json:"-"` // custom serializer to flatten this, each entry must start with "/"
 }
 
+// JSONLookup look up a value by the json property name
 func (p Paths) JSONLookup(token string) (interface{}, error) {
 	if pi, ok := p.Paths[token]; ok {
 		return &pi, nil

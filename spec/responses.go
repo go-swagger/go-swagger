@@ -2,6 +2,7 @@ package spec
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"strconv"
 
@@ -24,6 +25,22 @@ import (
 type Responses struct {
 	vendorExtensible
 	responsesProps
+}
+
+// JSONLookup implements an interface to customize json pointer lookup
+func (r Responses) JSONLookup(token string) (interface{}, error) {
+	if token == "default" {
+		return r.Default, nil
+	}
+	if ex, ok := r.Extensions[token]; ok {
+		return &ex, nil
+	}
+	if i, err := strconv.Atoi(token); err == nil {
+		if scr, ok := r.StatusCodeResponses[i]; ok {
+			return &scr, nil
+		}
+	}
+	return nil, fmt.Errorf("object has no field %q", token)
 }
 
 // UnmarshalJSON hydrates this items instance with the data from JSON

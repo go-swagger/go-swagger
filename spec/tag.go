@@ -3,6 +3,7 @@ package spec
 import (
 	"encoding/json"
 
+	"github.com/casualjim/go-swagger/jsonpointer"
 	"github.com/casualjim/go-swagger/util"
 )
 
@@ -24,6 +25,16 @@ func NewTag(name, description string, externalDocs *ExternalDocumentation) Tag {
 type Tag struct {
 	vendorExtensible
 	tagProps
+}
+
+// JSONLookup implements an interface to customize json pointer lookup
+func (t Tag) JSONLookup(token string) (interface{}, error) {
+	if ex, ok := t.Extensions[token]; ok {
+		return &ex, nil
+	}
+
+	r, _, err := jsonpointer.GetForToken(t.tagProps, token)
+	return r, err
 }
 
 // MarshalJSON marshal this to JSON
