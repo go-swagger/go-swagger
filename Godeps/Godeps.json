@@ -1,10 +1,20 @@
 {
 	"ImportPath": "github.com/casualjim/go-swagger",
-	"GoVersion": "go1.4",
+	"GoVersion": "go1.4.1",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
+		{
+			"ImportPath": "github.com/PuerkitoBio/purell",
+			"Comment": "v0.1.0-10-g1909519",
+			"Rev": "1909519b19f44750062c3e8209d65c0921f18060"
+		},
+		{
+			"ImportPath": "github.com/codegangsta/negroni",
+			"Comment": "v0.1-55-g1dd3ab0",
+			"Rev": "1dd3ab0ff59e13f5b73dcbf70703710aebe50d2f"
+		},
 		{
 			"ImportPath": "github.com/golang/gddo/httputil",
 			"Rev": "5033884f68f933e391e2e43a5f2c7135a1a9ed3b"
