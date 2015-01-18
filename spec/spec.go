@@ -146,8 +146,3 @@ func (d *Document) BasePath() string {
 func (d *Document) Version() string {
 	return d.spec.Swagger
 }
-
-// // Validate validates this spec document
-// func (d *Document) Validate() *jsonschema.ValidationResult {
-// 	return d.specSchema.Validate(d.data)
-// }

@@ -294,6 +294,7 @@ func (p *paramBinder) setFieldValue(target reflect.Value, defaultValue interface
 			return errors.InvalidType(p.name, p.parameter.In, tpe, data)
 		}
 		target.SetInt(i)
+
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		if data == "" {
 			target.SetUint(defVal.Uint())
@@ -340,6 +341,7 @@ func (p *paramBinder) setFieldValue(target reflect.Value, defaultValue interface
 			return err
 		}
 		target.Set(newVal)
+
 	default:
 		return errors.InvalidType(p.name, p.parameter.In, tpe, data)
 	}

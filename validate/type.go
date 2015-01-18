@@ -91,12 +91,12 @@ func (t *typeValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	return len(t.Type) > 0 && reflect.TypeOf(source) == specSchemaType
 }
 
-func (t *typeValidator) Validate(data interface{}) *result {
+func (t *typeValidator) Validate(data interface{}) *Result {
 	if data == nil || reflection.IsZero(reflect.ValueOf(data)) {
 		if len(t.Type) > 0 && !t.Type.Contains("null") {
 			return sErr(errors.InvalidType(t.Path, t.In, strings.Join(t.Type, ","), "null"))
 		}
-		return &result{}
+		return &Result{}
 	}
 
 	// check if the type matches, should be used in every validator chain as first item
@@ -105,8 +105,13 @@ func (t *typeValidator) Validate(data interface{}) *result {
 	schType, format := t.schemaInfoForType(data)
 	isLowerInt := t.Format == "int64" && format == "int32"
 	isLowerFloat := t.Format == "float64" && format == "float32"
-	if t.Format != "" && !(format == t.Format || isLowerInt || isLowerFloat) {
+	allowedStringFormat := schType == "string" && format == ""
+
+	if !allowedStringFormat && t.Format != "" && !(format == t.Format || isLowerInt || isLowerFloat) {
 		return sErr(errors.InvalidType(t.Path, t.In, t.Format, format))
+	}
+	if t.Type.Contains(schType) && allowedStringFormat {
+		return &Result{}
 	}
 
 	isFloatInt := schType == "number" && isFloat64AnInteger(val.Float()) && t.Type.Contains("integer")
@@ -114,5 +119,5 @@ func (t *typeValidator) Validate(data interface{}) *result {
 	if !(t.Type.Contains(schType) || isFloatInt || isIntFloat) {
 		return sErr(errors.InvalidType(t.Path, t.In, strings.Join(t.Type, ","), schType))
 	}
-	return &result{}
+	return &Result{}
 }

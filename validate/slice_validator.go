@@ -16,7 +16,7 @@ type schemaSliceValidator struct {
 	UniqueItems     bool
 	AdditionalItems *spec.SchemaOrBool
 	Items           *spec.SchemaOrArray
-	Root            *spec.Schema
+	Root            interface{}
 }
 
 func (s *schemaSliceValidator) SetPath(path string) {
@@ -28,8 +28,8 @@ func (s *schemaSliceValidator) Applies(source interface{}, kind reflect.Kind) bo
 	return ok && kind == reflect.Slice
 }
 
-func (s *schemaSliceValidator) Validate(data interface{}) *result {
-	result := new(result)
+func (s *schemaSliceValidator) Validate(data interface{}) *Result {
+	result := new(Result)
 	val := data.([]interface{})
 	size := int64(len(val))
 

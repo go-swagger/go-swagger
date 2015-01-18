@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"reflect"
 	"strings"
+	"sync"
 
 	"github.com/casualjim/go-swagger/jsonpointer"
 	"github.com/casualjim/go-swagger/util"
@@ -18,22 +19,28 @@ type ResolutionCache interface {
 }
 
 type simpleCache struct {
+	lock  *sync.RWMutex
 	store map[string]interface{}
 }
 
 func defaultResolutionCache() ResolutionCache {
-	return &simpleCache{store: map[string]interface{}{
+	return &simpleCache{lock: new(sync.RWMutex), store: map[string]interface{}{
 		"http://swagger.io/v2/schema.json":       swaggerSchema,
 		"http://json-schema.org/draft-04/schema": jsonSchema,
 	}}
 }
 
 func (s *simpleCache) Get(uri string) (interface{}, bool) {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	v, ok := s.store[uri]
 	return v, ok
 }
 
 func (s *simpleCache) Set(uri string, data interface{}) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
 	s.store[uri] = data
 }
 

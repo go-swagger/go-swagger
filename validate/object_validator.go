@@ -17,7 +17,7 @@ type objectValidator struct {
 	Properties           map[string]spec.Schema
 	AdditionalProperties *spec.SchemaOrBool
 	PatternProperties    map[string]spec.Schema
-	Root                 *spec.Schema
+	Root                 interface{}
 }
 
 func (o *objectValidator) SetPath(path string) {
@@ -28,7 +28,7 @@ func (o *objectValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	return reflect.TypeOf(source) == specSchemaType && kind == reflect.Map
 }
 
-func (o *objectValidator) Validate(data interface{}) *result {
+func (o *objectValidator) Validate(data interface{}) *Result {
 	val := data.(map[string]interface{})
 	numKeys := int64(len(val))
 
@@ -39,7 +39,7 @@ func (o *objectValidator) Validate(data interface{}) *result {
 		return sErr(errors.New(422, "must have at most %d properties", *o.MaxProperties))
 	}
 
-	res := new(result)
+	res := new(Result)
 	if len(o.Required) > 0 {
 		for _, k := range o.Required {
 			if _, ok := val[k]; !ok {
@@ -90,7 +90,7 @@ func (o *objectValidator) Validate(data interface{}) *result {
 	return res
 }
 
-func (o *objectValidator) validatePatternProperty(key string, value interface{}, result *result) (bool, bool, []string) {
+func (o *objectValidator) validatePatternProperty(key string, value interface{}, result *Result) (bool, bool, []string) {
 	matched := false
 	succeededOnce := false
 	var patterns []string

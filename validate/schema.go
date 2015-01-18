@@ -8,16 +8,22 @@ import (
 
 var specSchemaType = reflect.TypeOf(&spec.Schema{})
 
+// WithSchema validates the specified data with the provided schema, when no schema
+// is provided it uses the json schema as default
+func WithSchema(schema *spec.Schema, data interface{}) *Result {
+	return newSchemaValidator(schema, nil, "(root)").Validate(data)
+}
+
 // like param validator but for a full json schema
 type schemaValidator struct {
 	Path       string
 	in         string
 	Schema     *spec.Schema
 	validators []valueValidator
-	Root       *spec.Schema
+	Root       interface{}
 }
 
-func newSchemaValidator(schema *spec.Schema, rootSchema *spec.Schema, root string) *schemaValidator {
+func newSchemaValidator(schema *spec.Schema, rootSchema interface{}, root string) *schemaValidator {
 	if rootSchema == nil {
 		rootSchema = schema
 	}
@@ -41,13 +47,13 @@ func newSchemaValidator(schema *spec.Schema, rootSchema *spec.Schema, root strin
 	return &s
 }
 
-func (s *schemaValidator) Validate(data interface{}) *result {
+func (s *schemaValidator) Validate(data interface{}) *Result {
 	if data == nil {
 		v := s.validators[0].Validate(data)
 		v.Merge(s.validators[5].Validate(data))
 		return v
 	}
-	result := &result{}
+	result := &Result{}
 
 	tpe := reflect.TypeOf(data)
 	kind := tpe.Kind()

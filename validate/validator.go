@@ -13,15 +13,15 @@ import (
 type valueValidator interface {
 	SetPath(path string)
 	Applies(interface{}, reflect.Kind) bool
-	Validate(interface{}) *result
+	Validate(interface{}) *Result
 }
 
-type result struct {
+type Result struct {
 	Errors     []errors.Error
 	MatchCount int
 }
 
-func (r *result) Merge(other *result) *result {
+func (r *Result) Merge(other *Result) *Result {
 	if other == nil {
 		return r
 	}
@@ -30,19 +30,19 @@ func (r *result) Merge(other *result) *result {
 	return r
 }
 
-func (r *result) AddErrors(errors ...errors.Error) {
+func (r *Result) AddErrors(errors ...errors.Error) {
 	r.Errors = append(r.Errors, errors...)
 }
 
-func (r *result) IsValid() bool {
+func (r *Result) IsValid() bool {
 	return len(r.Errors) == 0
 }
 
-func (r *result) HasErrors() bool {
+func (r *Result) HasErrors() bool {
 	return !r.IsValid()
 }
 
-func (r *result) Inc() {
+func (r *Result) Inc() {
 	r.MatchCount++
 }
 
@@ -65,10 +65,10 @@ func newItemsValidator(path, in string, items *spec.Items, root interface{}) *it
 	return iv
 }
 
-func (i *itemsValidator) Validate(index int, data interface{}) *result {
+func (i *itemsValidator) Validate(index int, data interface{}) *Result {
 	tpe := reflect.TypeOf(data)
 	kind := tpe.Kind()
-	mainResult := &result{}
+	mainResult := &Result{}
 	path := fmt.Sprintf("%s.%d", i.path, index)
 
 	for _, validator := range i.validators {
@@ -144,8 +144,8 @@ func newParamValidator(param *spec.Parameter) *paramValidator {
 	return p
 }
 
-func (p *paramValidator) Validate(data interface{}) *result {
-	result := &result{}
+func (p *paramValidator) Validate(data interface{}) *Result {
+	result := &Result{}
 	tpe := reflect.TypeOf(data)
 	kind := tpe.Kind()
 
@@ -190,7 +190,7 @@ func (b *basicCommonValidator) Applies(source interface{}, kind reflect.Kind) bo
 	return false
 }
 
-func (b *basicCommonValidator) Validate(data interface{}) (res *result) {
+func (b *basicCommonValidator) Validate(data interface{}) (res *Result) {
 	if len(b.Enum) > 0 {
 
 		for _, enumValue := range b.Enum {
@@ -198,7 +198,7 @@ func (b *basicCommonValidator) Validate(data interface{}) (res *result) {
 				return nil
 			}
 		}
-		return &result{Errors: []errors.Error{errors.EnumFail(b.Path, b.In, data, b.Enum)}}
+		return &Result{Errors: []errors.Error{errors.EnumFail(b.Path, b.In, data, b.Enum)}}
 	}
 	return nil
 }
@@ -265,11 +265,11 @@ func (s *basicSliceValidator) Applies(source interface{}, kind reflect.Kind) boo
 	return false
 }
 
-func sErr(err errors.Error) *result {
-	return &result{Errors: []errors.Error{err}}
+func sErr(err errors.Error) *Result {
+	return &Result{Errors: []errors.Error{err}}
 }
 
-func (s *basicSliceValidator) Validate(data interface{}) *result {
+func (s *basicSliceValidator) Validate(data interface{}) *Result {
 	val := reflect.ValueOf(data)
 	if val.Kind() != reflect.Slice {
 		return nil // no business to do for this thing
@@ -349,7 +349,7 @@ func (n *numberValidator) convertToFloat(val interface{}) float64 {
 	return 0
 }
 
-func (n *numberValidator) Validate(val interface{}) *result {
+func (n *numberValidator) Validate(val interface{}) *Result {
 	data := n.convertToFloat(val)
 	if n.MultipleOf != nil && !isFloat64AnInteger(data / *n.MultipleOf) {
 		return sErr(errors.NotMultipleOf(n.Path, n.In, *n.MultipleOf))
@@ -366,7 +366,7 @@ func (n *numberValidator) Validate(val interface{}) *result {
 			return sErr(errors.ExceedsMinimum(n.Path, n.In, *n.Minimum, n.ExclusiveMinimum))
 		}
 	}
-	result := &result{}
+	result := &Result{}
 	result.Inc()
 	return result
 }
@@ -393,7 +393,7 @@ func (s *stringValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	return false
 }
 
-func (s *stringValidator) Validate(val interface{}) *result {
+func (s *stringValidator) Validate(val interface{}) *Result {
 	data := val.(string)
 	if s.Required && s.Default == nil && data == "" {
 		return sErr(errors.Required(s.Path, s.In))

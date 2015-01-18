@@ -19,14 +19,14 @@ type schemaPropsValidator struct {
 	allOfValidators []schemaValidator
 	oneOfValidators []schemaValidator
 	notValidator    *schemaValidator
-	Root            *spec.Schema
+	Root            interface{}
 }
 
 func (s *schemaPropsValidator) SetPath(path string) {
 	s.Path = path
 }
 
-func newSchemaPropsValidator(path string, in string, allOf, oneOf, anyOf []spec.Schema, not *spec.Schema, deps spec.Dependencies, root *spec.Schema) *schemaPropsValidator {
+func newSchemaPropsValidator(path string, in string, allOf, oneOf, anyOf []spec.Schema, not *spec.Schema, deps spec.Dependencies, root interface{}) *schemaPropsValidator {
 	var anyValidators []schemaValidator
 	for _, v := range anyOf {
 		anyValidators = append(anyValidators, *newSchemaValidator(&v, root, path))
@@ -65,10 +65,10 @@ func (s *schemaPropsValidator) Applies(source interface{}, kind reflect.Kind) bo
 	return reflect.TypeOf(source) == specSchemaType
 }
 
-func (s *schemaPropsValidator) Validate(data interface{}) *result {
-	mainResult := &result{}
+func (s *schemaPropsValidator) Validate(data interface{}) *Result {
+	mainResult := &Result{}
 	if len(s.anyOfValidators) > 0 {
-		var bestFailures *result
+		var bestFailures *Result
 		succeededOnce := false
 		for _, anyOfSchema := range s.anyOfValidators {
 			result := anyOfSchema.Validate(data)
@@ -91,7 +91,7 @@ func (s *schemaPropsValidator) Validate(data interface{}) *result {
 	}
 
 	if len(s.oneOfValidators) > 0 {
-		var bestFailures *result
+		var bestFailures *Result
 		validated := 0
 
 		for _, oneOfSchema := range s.oneOfValidators {
