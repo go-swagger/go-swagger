@@ -16,7 +16,7 @@ import (
 
 func TestSpecExpansion(t *testing.T) {
 	spec := new(Swagger)
-	// resolver, err := defaultSchemaLoader(spec, nil)
+	// resolver, err := defaultSchemaLoader(spec, nil, nil)
 	// assert.NoError(t, err)
 
 	err := expandSpec(spec)
@@ -68,7 +68,7 @@ func TestResponseExpansion(t *testing.T) {
 	err = json.Unmarshal(specDoc, spec)
 	assert.NoError(t, err)
 
-	resolver, err := defaultSchemaLoader(spec, nil)
+	resolver, err := defaultSchemaLoader(spec, nil, nil)
 	assert.NoError(t, err)
 
 	resp := spec.Responses["anotherPet"]
@@ -101,7 +101,7 @@ func TestParameterExpansion(t *testing.T) {
 	err = json.Unmarshal(paramDoc, spec)
 	assert.NoError(t, err)
 
-	resolver, err := defaultSchemaLoader(spec, nil)
+	resolver, err := defaultSchemaLoader(spec, nil, nil)
 	assert.NoError(t, err)
 
 	param := spec.Parameters["query"]
@@ -127,7 +127,7 @@ func TestSchemaExpansion(t *testing.T) {
 	err = json.Unmarshal(carsDoc, spec)
 	assert.NoError(t, err)
 
-	resolver, err := defaultSchemaLoader(spec, nil)
+	resolver, err := defaultSchemaLoader(spec, nil, nil)
 	assert.NoError(t, err)
 
 	schema := spec.Definitions["car"]
@@ -345,7 +345,7 @@ func TestResolveRemoteRef(t *testing.T) {
 			Convey("resolves root to same schema", func() {
 				var result Swagger
 				ref, _ := NewRef(server.URL + "/refed.json#")
-				resolver, _ := defaultSchemaLoader(rootDoc, nil)
+				resolver, _ := defaultSchemaLoader(rootDoc, nil, nil)
 				err = resolver.Resolve(&ref, &result)
 				So(err, ShouldBeNil)
 				compareSpecs(result, *rootDoc)
@@ -368,7 +368,7 @@ func TestResolveRemoteRef(t *testing.T) {
 					ref, err := NewRef(server.URL + "/refed.json#/definitions/NotThere")
 					So(err, ShouldBeNil)
 
-					resolver, _ := defaultSchemaLoader(rootDoc, nil)
+					resolver, _ := defaultSchemaLoader(rootDoc, nil, nil)
 					err = resolver.Resolve(&ref, &tgt)
 					So(err, ShouldNotBeNil)
 				})
@@ -380,7 +380,7 @@ func TestResolveRemoteRef(t *testing.T) {
 					ref, err := NewRef(server.URL + "/resolution.json#/definitions/bool")
 					So(err, ShouldBeNil)
 
-					resolver, _ := defaultSchemaLoader(rootDoc, nil)
+					resolver, _ := defaultSchemaLoader(rootDoc, nil, nil)
 					err = resolver.Resolve(&ref, &tgt)
 					So(err, ShouldBeNil)
 					So(tgt.Type, ShouldResemble, StringOrArray([]string{"boolean"}))
@@ -393,7 +393,7 @@ func TestResolveRemoteRef(t *testing.T) {
 					ref, err := NewRef(server.URL + "/resolution.json#/items/items")
 					So(err, ShouldBeNil)
 
-					resolver, _ := defaultSchemaLoader(rootDoc, nil)
+					resolver, _ := defaultSchemaLoader(rootDoc, nil, nil)
 					err = resolver.Resolve(&ref, &tgt)
 					So(err, ShouldBeNil)
 					So(tgt.Type, ShouldResemble, StringOrArray([]string{"string"}))
@@ -406,7 +406,7 @@ func TestResolveRemoteRef(t *testing.T) {
 					ref, err := NewRef(server.URL + "/resolution2.json#/items/items")
 					So(err, ShouldBeNil)
 
-					resolver, _ := defaultSchemaLoader(rootDoc, nil)
+					resolver, _ := defaultSchemaLoader(rootDoc, nil, nil)
 					err = resolver.Resolve(&ref, &tgt)
 					So(err, ShouldBeNil)
 					So(tgt.Type, ShouldResemble, StringOrArray([]string{"file"}))
@@ -418,7 +418,7 @@ func TestResolveRemoteRef(t *testing.T) {
 				ref, err := NewRef(server.URL + "/refed.json#/parameters/idParam")
 				So(err, ShouldBeNil)
 
-				resolver, _ := defaultSchemaLoader(rootDoc, nil)
+				resolver, _ := defaultSchemaLoader(rootDoc, nil, nil)
 				err = resolver.Resolve(&ref, &tgt)
 				So(err, ShouldBeNil)
 				So(tgt.Name, ShouldEqual, "id")
@@ -434,7 +434,7 @@ func TestResolveRemoteRef(t *testing.T) {
 				ref, err := NewRef(server.URL + "/refed.json#/paths/" + jsonpointer.Escape("/pets/{id}"))
 				So(err, ShouldBeNil)
 
-				resolver, _ := defaultSchemaLoader(rootDoc, nil)
+				resolver, _ := defaultSchemaLoader(rootDoc, nil, nil)
 				err = resolver.Resolve(&ref, &tgt)
 				So(err, ShouldBeNil)
 				So(tgt.Get, ShouldResemble, rootDoc.Paths.Paths["/pets/{id}"].Get)
@@ -445,7 +445,7 @@ func TestResolveRemoteRef(t *testing.T) {
 				ref, err := NewRef(server.URL + "/refed.json#/responses/petResponse")
 				So(err, ShouldBeNil)
 
-				resolver, _ := defaultSchemaLoader(rootDoc, nil)
+				resolver, _ := defaultSchemaLoader(rootDoc, nil, nil)
 				err = resolver.Resolve(&ref, &tgt)
 				So(err, ShouldBeNil)
 				So(tgt, ShouldResemble, rootDoc.Responses["petResponse"])
@@ -468,7 +468,7 @@ func TestResolveLocalRef(t *testing.T) {
 				Convey("resolves root to same ptr instance", func() {
 					result := new(Swagger)
 					ref, _ := NewRef("#")
-					resolver, _ := defaultSchemaLoader(rootDoc, nil)
+					resolver, _ := defaultSchemaLoader(rootDoc, nil, nil)
 					err := resolver.Resolve(&ref, result)
 					So(err, ShouldBeNil)
 					So(result, ShouldResemble, rootDoc)
@@ -479,7 +479,7 @@ func TestResolveLocalRef(t *testing.T) {
 					ref, err := NewRef("#/definitions/Category")
 					So(err, ShouldBeNil)
 
-					resolver, _ := defaultSchemaLoader(rootDoc, nil)
+					resolver, _ := defaultSchemaLoader(rootDoc, nil, nil)
 					err = resolver.Resolve(&ref, &tgt)
 					So(err, ShouldBeNil)
 					So(tgt.ID, ShouldEqual, "Category")
@@ -490,7 +490,7 @@ func TestResolveLocalRef(t *testing.T) {
 					ref, err := NewRef("#/definitions/NotThere")
 					So(err, ShouldBeNil)
 
-					resolver, _ := defaultSchemaLoader(rootDoc, nil)
+					resolver, _ := defaultSchemaLoader(rootDoc, nil, nil)
 					err = resolver.Resolve(&ref, &tgt)
 					So(err, ShouldNotBeNil)
 				})
@@ -507,7 +507,7 @@ func TestResolveLocalRef(t *testing.T) {
 				ref, err := NewRef("#/parameters/idParam")
 				So(err, ShouldBeNil)
 
-				resolver, _ := defaultSchemaLoader(rootDoc, nil)
+				resolver, _ := defaultSchemaLoader(rootDoc, nil, nil)
 				err = resolver.Resolve(&ref, &tgt)
 				So(err, ShouldBeNil)
 				So(tgt.Name, ShouldEqual, "id")
@@ -528,7 +528,7 @@ func TestResolveLocalRef(t *testing.T) {
 				ref, err := NewRef("#/paths/" + jsonpointer.Escape("/pets/{id}"))
 				So(err, ShouldBeNil)
 
-				resolver, _ := defaultSchemaLoader(rootDoc, nil)
+				resolver, _ := defaultSchemaLoader(rootDoc, nil, nil)
 				err = resolver.Resolve(&ref, &tgt)
 				So(err, ShouldBeNil)
 				So(tgt.Get, ShouldEqual, rootDoc.Paths.Paths["/pets/{id}"].Get)
@@ -544,7 +544,7 @@ func TestResolveLocalRef(t *testing.T) {
 				ref, err := NewRef("#/responses/petResponse")
 				So(err, ShouldBeNil)
 
-				resolver, _ := defaultSchemaLoader(rootDoc, nil)
+				resolver, _ := defaultSchemaLoader(rootDoc, nil, nil)
 				err = resolver.Resolve(&ref, &tgt)
 				So(err, ShouldBeNil)
 				So(tgt, ShouldResemble, rootDoc.Responses["petResponse"])

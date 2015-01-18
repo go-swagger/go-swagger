@@ -3,6 +3,7 @@ package spec
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"reflect"
 	"strings"
 
@@ -50,32 +51,23 @@ var idPtr, _ = jsonpointer.New("/id")
 var schemaPtr, _ = jsonpointer.New("/$schema")
 var refPtr, _ = jsonpointer.New("/$ref")
 
-func defaultSchemaLoader(root interface{}, ref *Ref) (*schemaLoader, error) {
-	startingRef := ref
-
-	if startingRef != nil {
-		idRef, err := idFromNode(root)
-		if err != nil {
-			return nil, err
-		}
-		if idRef != nil {
-			startingRef, err = ref.Inherits(*idRef)
-			if err != nil {
-				return nil, err
-			}
-		}
+func defaultSchemaLoader(root interface{}, ref *Ref, cache ResolutionCache) (*schemaLoader, error) {
+	if cache == nil {
+		cache = defaultResolutionCache()
 	}
+
 	var ptr *jsonpointer.Pointer
 	if ref != nil {
 		ptr = ref.GetPointer()
 	}
 
-	currentRef := nextRef(root, startingRef, ptr)
+	currentRef := nextRef(root, ref, ptr)
+
 	return &schemaLoader{
 		root:        root,
 		loadingRef:  ref,
-		startingRef: startingRef,
-		cache:       defaultResolutionCache(),
+		startingRef: ref,
+		cache:       cache,
 		loadDoc:     util.JSONDoc,
 		currentRef:  currentRef,
 	}, nil
@@ -101,6 +93,7 @@ func nextRef(startingNode interface{}, startingRef *Ref, ptr *jsonpointer.Pointe
 	if ptr == nil {
 		return startingRef
 	}
+
 	ret := startingRef
 	var idRef *Ref
 	node := startingNode
@@ -140,9 +133,6 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 		return fmt.Errorf("resolve ref: target needs to be a pointer")
 	}
 
-	fmt.Printf("[before] current ref: %s, ref: %s for target %T\n", currentRef, ref, target)
-	// pretty.Println(node)
-
 	oldRef := currentRef
 	if currentRef != nil {
 		var err error
@@ -157,53 +147,49 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 
 	refURL := currentRef.GetURL()
 	if refURL == nil {
-		fmt.Println("ref url was nil")
 		return nil
 	}
-	if refURL.String() == "" {
+	if currentRef.IsRoot() {
 		nv := reflect.ValueOf(node)
 		reflect.Indirect(tgt).Set(reflect.Indirect(nv))
 		return nil
 	}
 
 	if strings.HasPrefix(refURL.String(), "#") {
-		fmt.Println("local ref so getting data and bailing")
-		// pretty.Println(node)
 		res, _, err := ref.GetPointer().Get(node)
 		if err != nil {
-			fmt.Println(err)
-			return err
+			res, _, err = ref.GetPointer().Get(r.root)
+			if err != nil {
+				return err
+			}
 		}
-		fmt.Printf("[result] %+v\n", res)
-		reflect.Indirect(tgt).Set(reflect.Indirect(reflect.ValueOf(res)))
+		rv := reflect.Indirect(reflect.ValueOf(res))
+		tgtType := reflect.Indirect(tgt).Type()
+		if rv.Type().AssignableTo(tgtType) {
+			reflect.Indirect(tgt).Set(reflect.Indirect(reflect.ValueOf(res)))
+		} else {
+			if err := util.DynamicJSONToStruct(rv.Interface(), target); err != nil {
+				return err
+			}
+		}
+
 		return nil
 	}
 
 	if refURL.Scheme != "" && refURL.Host != "" {
 		// most definitely take the red pill
-		toFetch := *refURL
-		toFetch.Fragment = ""
-		fmt.Println("loading:", toFetch.String())
+		data, _, _, err := r.load(refURL)
 
-		data, fromCache := r.cache.Get(toFetch.String())
-		if !fromCache {
-			fmt.Println("fetching:", toFetch.String())
-			b, err := r.loadDoc(toFetch.String())
-			if err != nil {
-				return err
-			}
+		if ((oldRef == nil && currentRef != nil) ||
+			(oldRef != nil && currentRef == nil) ||
+			oldRef.String() != currentRef.String()) &&
+			((oldRef == nil && ref != nil) ||
+				(oldRef != nil && ref == nil) ||
+				(oldRef.String() != ref.String())) {
 
-			if err := json.Unmarshal(b, &data); err != nil {
-				return err
-			}
-			r.cache.Set(toFetch.String(), data)
-		}
-
-		if oldRef != currentRef && oldRef != ref {
 			return r.resolveRef(currentRef, ref, data, target)
 		}
 
-		var err error
 		var res interface{}
 		if currentRef.String() != "" {
 			res, _, err = currentRef.GetPointer().Get(data)
@@ -214,24 +200,33 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 			res = data
 		}
 
-		// fmt.Printf("[result] %+v\n", res)
-
-		bb, err := json.Marshal(res)
-		if err != nil {
+		if err := util.DynamicJSONToStruct(res, target); err != nil {
 			return err
-		}
-
-		if err := json.Unmarshal(bb, target); err != nil {
-			return err
-		}
-		if !fromCache {
-			r.cache.Set(toFetch.String(), target)
 		}
 
 	}
 	return nil
 }
 
+func (r *schemaLoader) load(refURL *url.URL) (interface{}, url.URL, bool, error) {
+	toFetch := *refURL
+	toFetch.Fragment = ""
+
+	data, fromCache := r.cache.Get(toFetch.String())
+	if !fromCache {
+		b, err := r.loadDoc(toFetch.String())
+		if err != nil {
+			return nil, url.URL{}, false, err
+		}
+
+		if err := json.Unmarshal(b, &data); err != nil {
+			return nil, url.URL{}, false, err
+		}
+		r.cache.Set(toFetch.String(), data)
+	}
+
+	return data, toFetch, fromCache, nil
+}
 func (r *schemaLoader) Resolve(ref *Ref, target interface{}) error {
 	if err := r.resolveRef(r.currentRef, ref, r.root, target); err != nil {
 		return err
@@ -247,7 +242,7 @@ type specExpander struct {
 
 func expandSpec(spec *Swagger) error {
 
-	resolver, err := defaultSchemaLoader(spec, nil)
+	resolver, err := defaultSchemaLoader(spec, nil, nil)
 	if err != nil {
 		return err
 	}
@@ -285,7 +280,8 @@ func expandSpec(spec *Swagger) error {
 }
 
 // ExpandSchema expands the refs in the schema object
-func ExpandSchema(schema *Schema, root interface{}) error {
+func ExpandSchema(schema *Schema, root interface{}, cache ResolutionCache) error {
+
 	if schema == nil {
 		return nil
 	}
@@ -293,12 +289,21 @@ func ExpandSchema(schema *Schema, root interface{}) error {
 		root = schema
 	}
 
-	resolver, err := defaultSchemaLoader(root, nil)
+	nrr, _ := NewRef(schema.ID)
+	var rrr *Ref
+	if nrr.GetURL() != nil {
+		rid, _ := NewRef(root.(*Schema).ID)
+		rrr, _ = rid.Inherits(nrr)
+	}
+	resolver, err := defaultSchemaLoader(root, rrr, cache)
 	if err != nil {
 		return err
 	}
 
-	return expandSchema(schema, resolver)
+	if err := expandSchema(schema, resolver); err != nil {
+		return nil
+	}
+	return nil
 }
 
 func expandSchema(schema *Schema, resolver *schemaLoader) error {
@@ -306,55 +311,83 @@ func expandSchema(schema *Schema, resolver *schemaLoader) error {
 		return nil
 	}
 
-	// create a schema expander and run that
-	if schema.Ref.String() != "" || schema.Ref.IsRoot() {
-		var newSchema Schema
-		if err := resolver.Resolve(&schema.Ref, &newSchema); err != nil {
-			return err
-		}
-		*schema = newSchema
+	if schema.Ref.String() == "" && schema.Ref.IsRoot() {
+		*schema = *resolver.root.(*Schema)
 		return nil
 	}
-
+	// create a schema expander and run that
+	if schema.Ref.String() != "" {
+		currentSchema := *schema
+		for currentSchema.Ref.String() != "" {
+			var newSchema Schema
+			if err := resolver.Resolve(&currentSchema.Ref, &newSchema); err != nil {
+				return err
+			}
+			currentSchema = newSchema
+		}
+		*schema = currentSchema
+	}
 	if schema.Items != nil {
 		if schema.Items.Schema != nil {
-			if err := expandSchema(schema.Items.Schema, resolver); err != nil {
-				return err
+			sch := schema.Items.Schema
+			if sch.Ref.String() != "" || sch.Ref.IsRoot() {
+				if err := expandSchema(sch, resolver); err != nil {
+					return err
+				}
+
 			}
 		}
 		for i := range schema.Items.Schemas {
 			sch := &(schema.Items.Schemas[i])
-			if err := expandSchema(sch, resolver); err != nil {
-				return err
+			if sch.Ref.String() != "" || sch.Ref.IsRoot() {
+				if err := expandSchema(sch, resolver); err != nil {
+					return err
+				}
+
 			}
 		}
 	}
 	for i := range schema.AllOf {
 		sch := &(schema.AllOf[i])
-		if err := expandSchema(sch, resolver); err != nil {
-			return err
+		if sch.Ref.String() != "" || sch.Ref.IsRoot() {
+			if err := expandSchema(sch, resolver); err != nil {
+				return err
+			}
 		}
 	}
 	for i := range schema.AnyOf {
 		sch := &(schema.AnyOf[i])
-		if err := expandSchema(sch, resolver); err != nil {
-			return err
+		if sch.Ref.String() != "" || sch.Ref.IsRoot() {
+			if err := expandSchema(sch, resolver); err != nil {
+				return err
+			}
+
 		}
 	}
 	for i := range schema.OneOf {
 		sch := &(schema.OneOf[i])
-		if err := expandSchema(sch, resolver); err != nil {
-			return err
+		if sch.Ref.String() != "" || sch.Ref.IsRoot() {
+			if err := expandSchema(sch, resolver); err != nil {
+				return err
+			}
+
 		}
 	}
 	if schema.Not != nil {
-		if err := expandSchema(schema.Not, resolver); err != nil {
-			return err
+		sch := schema.Not
+		if sch.Ref.String() != "" || sch.Ref.IsRoot() {
+			if err := expandSchema(sch, resolver); err != nil {
+				return err
+			}
+
 		}
 	}
 	for k, v := range schema.Properties {
-		if err := expandSchema(&v, resolver); err != nil {
-			return err
+		if v.Ref.String() != "" || v.Ref.IsRoot() {
+			if err := expandSchema(&v, resolver); err != nil {
+				return err
+			}
+
 		}
 		schema.Properties[k] = v
 	}
@@ -364,27 +397,43 @@ func expandSchema(schema *Schema, resolver *schemaLoader) error {
 		}
 	}
 	for k, v := range schema.PatternProperties {
-		if err := expandSchema(&v, resolver); err != nil {
-			return err
+		vp := &v
+		if vp.Ref.String() != "" || v.Ref.IsRoot() {
+			if err := expandSchema(&v, resolver); err != nil {
+				return err
+			}
+
 		}
-		schema.PatternProperties[k] = v
+		schema.PatternProperties[k] = *vp
 	}
 	for k, v := range schema.Dependencies {
 		if v.Schema != nil {
-			if err := expandSchema(v.Schema, resolver); err != nil {
-				return err
+			sch := v.Schema
+			if sch.Ref.String() != "" || sch.Ref.IsRoot() {
+				if err := expandSchema(sch, resolver); err != nil {
+					return err
+				}
+
 			}
+
 			schema.Dependencies[k] = v
 		}
 	}
 	if schema.AdditionalItems != nil && schema.AdditionalItems.Schema != nil {
-		if err := expandSchema(schema.AdditionalItems.Schema, resolver); err != nil {
-			return err
+		sch := schema.AdditionalItems.Schema
+		if sch.Ref.String() != "" || sch.Ref.IsRoot() {
+			if err := expandSchema(sch, resolver); err != nil {
+				return err
+			}
+
 		}
 	}
 	for k, v := range schema.Definitions {
-		if err := expandSchema(&v, resolver); err != nil {
-			return err
+		if v.Ref.String() != "" || v.Ref.IsRoot() {
+			if err := expandSchema(&v, resolver); err != nil {
+				return err
+			}
+
 		}
 		schema.Definitions[k] = v
 	}
@@ -453,6 +502,7 @@ func expandResponse(response *Response, resolver *schemaLoader) error {
 	if response == nil {
 		return nil
 	}
+
 	if err := resolver.Resolve(&response.Ref, response); err != nil {
 		return err
 	}

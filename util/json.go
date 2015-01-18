@@ -28,7 +28,7 @@ func JSONDoc(path string) (json.RawMessage, error) {
 }
 
 // DynamicJSONToStruct converts an untyped json structure into a struct
-func DynamicJSONToStruct(data map[string]interface{}, target interface{}) error {
+func DynamicJSONToStruct(data interface{}, target interface{}) error {
 	b, err := json.Marshal(data)
 	if err != nil {
 		return err

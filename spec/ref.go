@@ -48,7 +48,7 @@ func (r *Ref) Inherits(child Ref) (*Ref, error) {
 		return nil, errors.New("child url is nil")
 	}
 	if parentURL == nil {
-		return nil, errors.New("parent url is nil")
+		return &child, nil
 	}
 
 	ref, err := NewRef(parentURL.ResolveReference(childURL).String())
@@ -85,6 +85,9 @@ func MustCreateRef(refURI string) Ref {
 func (r Ref) MarshalJSON() ([]byte, error) {
 	str := r.String()
 	if str == "" {
+		if r.IsRoot() {
+			return []byte(`{"$ref":"#"}`), nil
+		}
 		return []byte("{}"), nil
 	}
 	v := map[string]interface{}{"$ref": str}

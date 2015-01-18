@@ -388,12 +388,15 @@ func (s Schema) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("common validations %v", err)
 	}
-	// b6, err := json.Marshal(s.ExtraProps)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("extra props %v", err)
-	// }
-	// return util.ConcatJSON(b1, b2, b3, b4, b5, b6), nil
-	return util.ConcatJSON(b1, b2, b3, b4, b5), nil
+	var b6 []byte
+	if s.ExtraProps != nil {
+		jj, err := json.Marshal(s.ExtraProps)
+		if err != nil {
+			return nil, fmt.Errorf("extra props %v", err)
+		}
+		b6 = jj
+	}
+	return util.ConcatJSON(b1, b2, b3, b4, b5, b6), nil
 }
 
 // UnmarshalJSON marshal this from JSON

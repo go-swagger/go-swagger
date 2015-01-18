@@ -40,7 +40,7 @@ func YAMLSpec(path string) (*Document, error) {
 
 // MustLoadJSONSchemaDraft04 panics when Swagger20Schema returns an error
 func MustLoadJSONSchemaDraft04() *Schema {
-	d, e := Swagger20Schema()
+	d, e := JSONSchemaDraft04()
 	if e != nil {
 		panic(e)
 	}

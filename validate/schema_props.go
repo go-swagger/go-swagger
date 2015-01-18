@@ -19,29 +19,30 @@ type schemaPropsValidator struct {
 	allOfValidators []schemaValidator
 	oneOfValidators []schemaValidator
 	notValidator    *schemaValidator
+	Root            *spec.Schema
 }
 
 func (s *schemaPropsValidator) SetPath(path string) {
 	s.Path = path
 }
 
-func newSchemaPropsValidator(path string, in string, allOf, oneOf, anyOf []spec.Schema, not *spec.Schema, deps spec.Dependencies) *schemaPropsValidator {
+func newSchemaPropsValidator(path string, in string, allOf, oneOf, anyOf []spec.Schema, not *spec.Schema, deps spec.Dependencies, root *spec.Schema) *schemaPropsValidator {
 	var anyValidators []schemaValidator
 	for _, v := range anyOf {
-		anyValidators = append(anyValidators, *newSchemaValidator(&v, path))
+		anyValidators = append(anyValidators, *newSchemaValidator(&v, root, path))
 	}
 	var allValidators []schemaValidator
 	for _, v := range allOf {
-		allValidators = append(allValidators, *newSchemaValidator(&v, path))
+		allValidators = append(allValidators, *newSchemaValidator(&v, root, path))
 	}
 	var oneValidators []schemaValidator
 	for _, v := range oneOf {
-		oneValidators = append(oneValidators, *newSchemaValidator(&v, path))
+		oneValidators = append(oneValidators, *newSchemaValidator(&v, root, path))
 	}
 
 	var notValidator *schemaValidator
 	if not != nil {
-		notValidator = newSchemaValidator(not, path)
+		notValidator = newSchemaValidator(not, root, path)
 	}
 
 	return &schemaPropsValidator{
@@ -56,6 +57,7 @@ func newSchemaPropsValidator(path string, in string, allOf, oneOf, anyOf []spec.
 		allOfValidators: allValidators,
 		oneOfValidators: oneValidators,
 		notValidator:    notValidator,
+		Root:            root,
 	}
 }
 
@@ -141,7 +143,7 @@ func (s *schemaPropsValidator) Validate(data interface{}) *result {
 			if dep, ok := s.Dependencies[key]; ok {
 
 				if dep.Schema != nil {
-					mainResult.Merge(newSchemaValidator(dep.Schema, s.Path+"."+key).Validate(data))
+					mainResult.Merge(newSchemaValidator(dep.Schema, s.Root, s.Path+"."+key).Validate(data))
 					continue
 				}
 

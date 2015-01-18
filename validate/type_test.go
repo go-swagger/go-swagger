@@ -3,6 +3,7 @@ package validate
 import (
 	"encoding/json"
 	"io/ioutil"
+	"net/http"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -81,12 +82,19 @@ var enabled = []string{
 	"not",
 	"oneOf",
 	"anyOf",
+	"ref",
+	"definitions",
+	"refRemote",
+}
 
-	// These still fail
-	// Ref is not implemented yet, so these should not pass yet.
-	// "definitions",
-	// "ref",
-	// "refRemote",
+type noopResCache struct {
+}
+
+func (n *noopResCache) Get(key string) (interface{}, bool) {
+	return nil, false
+}
+func (n *noopResCache) Set(string, interface{}) {
+
 }
 
 func isEnabled(nm string) bool {
@@ -94,7 +102,12 @@ func isEnabled(nm string) bool {
 }
 
 func TestJSONSchemaSuite(t *testing.T) {
-
+	go func() {
+		err := http.ListenAndServe(":1234", http.FileServer(http.Dir(jsonSchemaFixturesPath+"/remotes")))
+		if err != nil {
+			panic(err.Error())
+		}
+	}()
 	Convey("The JSON Schema test suite", t, func() {
 		files, _ := ioutil.ReadDir(jsonSchemaFixturesPath)
 
@@ -116,9 +129,9 @@ func TestJSONSchemaSuite(t *testing.T) {
 
 						Convey(testDescription.Description, func() {
 
-							So(spec.ExpandSchema(testDescription.Schema, nil), ShouldBeNil)
+							So(spec.ExpandSchema(testDescription.Schema, nil, nil /*new(noopResCache)*/), ShouldBeNil)
 
-							validator := newSchemaValidator(testDescription.Schema, "data")
+							validator := newSchemaValidator(testDescription.Schema, nil, "data")
 
 							for _, test := range testDescription.Tests {
 
@@ -133,7 +146,6 @@ func TestJSONSchemaSuite(t *testing.T) {
 									} else {
 										So(result.Errors, ShouldNotBeEmpty)
 									}
-
 								})
 							}
 						})
@@ -142,27 +154,4 @@ func TestJSONSchemaSuite(t *testing.T) {
 			}
 		}
 	})
-	// Convey("go types for int", t, func() {
-	// 	for _, i := range ints {
-	// 		runSchemaTest("type/schema_0.json", i, true)
-	// 	}
-	// 	for _, i := range notInts {
-	// 		runSchemaTest("type/schema_0.json", i, false)
-	// 	}
-	// 	for _, i := range notNumbers {
-	// 		runSchemaTest("type/schema_0.json", i, false)
-	// 	}
-	// })
-
-	// Convey("go types for number", t, func() {
-	// 	for _, i := range ints {
-	// 		runSchemaTest("type/schema_1.json", i, true)
-	// 	}
-	// 	for _, i := range notInts {
-	// 		runSchemaTest("type/schema_1.json", i, true)
-	// 	}
-	// 	for _, i := range notNumbers {
-	// 		runSchemaTest("type/schema_1.json", i, false)
-	// 	}
-	// })
 }

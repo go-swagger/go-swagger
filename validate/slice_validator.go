@@ -16,6 +16,7 @@ type schemaSliceValidator struct {
 	UniqueItems     bool
 	AdditionalItems *spec.SchemaOrBool
 	Items           *spec.SchemaOrArray
+	Root            *spec.Schema
 }
 
 func (s *schemaSliceValidator) SetPath(path string) {
@@ -34,7 +35,7 @@ func (s *schemaSliceValidator) Validate(data interface{}) *result {
 
 	if s.Items != nil && s.Items.Schema != nil {
 		for i, value := range val {
-			validator := newSchemaValidator(s.Items.Schema, fmt.Sprintf("%s.%d", s.Path, i))
+			validator := newSchemaValidator(s.Items.Schema, s.Root, fmt.Sprintf("%s.%d", s.Path, i))
 			result.Merge(validator.Validate(value))
 		}
 	}
@@ -42,9 +43,8 @@ func (s *schemaSliceValidator) Validate(data interface{}) *result {
 	itemsSize := int64(0)
 	if s.Items != nil && len(s.Items.Schemas) > 0 {
 		itemsSize = int64(len(s.Items.Schemas))
-
 		for i := int64(0); i < itemsSize; i++ {
-			validator := newSchemaValidator(&s.Items.Schemas[i], fmt.Sprintf("%s.%d", s.Path, i))
+			validator := newSchemaValidator(&s.Items.Schemas[i], s.Root, fmt.Sprintf("%s.%d", s.Path, i))
 			result.Merge(validator.Validate(val[i]))
 		}
 
@@ -55,7 +55,7 @@ func (s *schemaSliceValidator) Validate(data interface{}) *result {
 		}
 		if s.AdditionalItems.Schema != nil {
 			for i := itemsSize; i < (size-itemsSize)+1; i++ {
-				validator := newSchemaValidator(s.AdditionalItems.Schema, fmt.Sprintf("%s.%d", s.Path, i))
+				validator := newSchemaValidator(s.AdditionalItems.Schema, s.Root, fmt.Sprintf("%s.%d", s.Path, i))
 				result.Merge(validator.Validate(val[i]))
 			}
 		}

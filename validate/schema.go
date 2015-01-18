@@ -14,10 +14,21 @@ type schemaValidator struct {
 	in         string
 	Schema     *spec.Schema
 	validators []valueValidator
+	Root       *spec.Schema
 }
 
-func newSchemaValidator(schema *spec.Schema, root string) *schemaValidator {
-	s := schemaValidator{Path: root, in: "body", Schema: schema}
+func newSchemaValidator(schema *spec.Schema, rootSchema *spec.Schema, root string) *schemaValidator {
+	if rootSchema == nil {
+		rootSchema = schema
+	}
+	if schema.ID != "" || schema.Ref.String() != "" || schema.Ref.IsRoot() {
+		err := spec.ExpandSchema(schema, rootSchema, nil)
+		if err != nil {
+			panic(err)
+		}
+	}
+	s := schemaValidator{Path: root, in: "body", Schema: schema, Root: rootSchema}
+
 	s.validators = []valueValidator{
 		s.typeValidator(),
 		s.schemaValidator(),
@@ -29,6 +40,7 @@ func newSchemaValidator(schema *spec.Schema, root string) *schemaValidator {
 	}
 	return &s
 }
+
 func (s *schemaValidator) Validate(data interface{}) *result {
 	if data == nil {
 		v := s.validators[0].Validate(data)
@@ -75,6 +87,7 @@ func (s *schemaValidator) sliceValidator() valueValidator {
 		UniqueItems:     s.Schema.UniqueItems,
 		AdditionalItems: s.Schema.AdditionalItems,
 		Items:           s.Schema.Items,
+		Root:            s.Root,
 	}
 }
 
@@ -104,7 +117,7 @@ func (s *schemaValidator) stringValidator() valueValidator {
 
 func (s *schemaValidator) schemaValidator() valueValidator {
 	sch := s.Schema
-	return newSchemaPropsValidator(s.Path, s.in, sch.AllOf, sch.OneOf, sch.AnyOf, sch.Not, sch.Dependencies)
+	return newSchemaPropsValidator(s.Path, s.in, sch.AllOf, sch.OneOf, sch.AnyOf, sch.Not, sch.Dependencies, s.Root)
 }
 
 func (s *schemaValidator) objectValidator() valueValidator {
@@ -117,5 +130,6 @@ func (s *schemaValidator) objectValidator() valueValidator {
 		Properties:           s.Schema.Properties,
 		AdditionalProperties: s.Schema.AdditionalProperties,
 		PatternProperties:    s.Schema.PatternProperties,
+		Root:                 s.Root,
 	}
 }

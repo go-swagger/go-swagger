@@ -2,8 +2,11 @@ package spec
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
+	"strconv"
 
+	"github.com/casualjim/go-swagger/jsonpointer"
 	"github.com/casualjim/go-swagger/util"
 )
 
@@ -66,6 +69,15 @@ type SchemaOrBool struct {
 	Schema *Schema
 }
 
+// JSONLookup implements an interface to customize json pointer lookup
+func (s SchemaOrBool) JSONLookup(token string) (interface{}, error) {
+	if token == "allows" {
+		return s.Allows, nil
+	}
+	r, _, err := jsonpointer.GetForToken(s.Schema, token)
+	return r, err
+}
+
 // MarshalJSON convert this object to JSON
 func (s SchemaOrBool) MarshalJSON() ([]byte, error) {
 	if s.Schema != nil {
@@ -75,7 +87,7 @@ func (s SchemaOrBool) MarshalJSON() ([]byte, error) {
 	if s.Schema == nil && s.Allows {
 		return jsTrue, nil
 	}
-	return nil, nil
+	return []byte("false"), nil
 }
 
 var jsTrue = []byte("true")
@@ -107,6 +119,12 @@ func (s *SchemaOrBool) UnmarshalJSON(data []byte) error {
 type SchemaOrStringArray struct {
 	Schema   *Schema
 	Property []string
+}
+
+// JSONLookup implements an interface to customize json pointer lookup
+func (s SchemaOrStringArray) JSONLookup(token string) (interface{}, error) {
+	r, _, err := jsonpointer.GetForToken(s.Schema, token)
+	return r, err
 }
 
 // MarshalJSON converts this schema object or array into JSON structure
@@ -174,6 +192,16 @@ func (s StringOrArray) Contains(value string) bool {
 	return false
 }
 
+// JSONLookup implements an interface to customize json pointer lookup
+func (s SchemaOrArray) JSONLookup(token string) (interface{}, error) {
+	if _, err := strconv.Atoi(token); err == nil {
+		r, _, err := jsonpointer.GetForToken(s.Schemas, token)
+		return r, err
+	}
+	r, _, err := jsonpointer.GetForToken(s.Schema, token)
+	return r, err
+}
+
 // UnmarshalJSON unmarshals this string or array object from a JSON array or JSON string
 func (s *StringOrArray) UnmarshalJSON(data []byte) error {
 	if len(data) < 3 {
@@ -189,14 +217,20 @@ func (s *StringOrArray) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var single string
+	var single interface{}
 	if err := json.Unmarshal(data, &single); err != nil {
 		return err
 	}
-	if single != "" {
-		*s = StringOrArray([]string{single})
+	if single == nil {
+		return nil
 	}
-	return nil
+	switch single.(type) {
+	case string:
+		*s = StringOrArray([]string{single.(string)})
+		return nil
+	default:
+		return fmt.Errorf("only string or array is allowed, not %T", single)
+	}
 }
 
 // MarshalJSON converts this string or array to a JSON array or JSON string

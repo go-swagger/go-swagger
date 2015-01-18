@@ -169,7 +169,7 @@ func (p *Pointer) get(node interface{}, nameProvider *util.NameProvider) (interf
 
 	for _, token := range p.referenceTokens {
 
-		decodedToken := strings.Replace(Unescape(token), "%25", "%", -1)
+		decodedToken := Unescape(token)
 
 		r, knd, err := getSingleImpl(node, decodedToken, nameProvider)
 		if err != nil {
