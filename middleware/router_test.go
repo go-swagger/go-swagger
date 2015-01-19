@@ -17,18 +17,18 @@ func terminator(rw http.ResponseWriter, r *http.Request) {
 
 func TestRouterMiddleware(t *testing.T) {
 	context := Serve(petstore.NewAPI(t))
-	mw := newRouter(context)
+	mw := newRouter(context, http.HandlerFunc(terminator))
 
 	recorder := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "http://localhost:8080/api/pets", nil)
 
-	mw(recorder, request, terminator)
+	mw.ServeHTTP(recorder, request)
 	assert.Equal(t, 200, recorder.Code)
 
 	recorder = httptest.NewRecorder()
 	request, _ = http.NewRequest("DELETE", "http://localhost:8080/api/pets", nil)
 
-	mw(recorder, request, terminator)
+	mw.ServeHTTP(recorder, request)
 	assert.Equal(t, http.StatusMethodNotAllowed, recorder.Code)
 	methods := strings.Split(recorder.Header().Get("Allow"), ",")
 	sort.Sort(sort.StringSlice(methods))
@@ -37,7 +37,7 @@ func TestRouterMiddleware(t *testing.T) {
 	recorder = httptest.NewRecorder()
 	request, _ = http.NewRequest("GET", "http://localhost:8080/pets", nil)
 
-	mw(recorder, request, terminator)
+	mw.ServeHTTP(recorder, request)
 	assert.Equal(t, http.StatusNotFound, recorder.Code)
 
 }

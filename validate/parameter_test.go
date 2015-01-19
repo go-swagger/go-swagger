@@ -27,7 +27,7 @@ var paramFactories = []paramFactory{
 }
 
 func np(param *spec.Parameter) *paramBinder {
-	return &paramBinder{name: param.Name, parameter: param}
+	return newParamBinder(*param, new(spec.Swagger), nil)
 }
 
 var stringItems = new(spec.Items)

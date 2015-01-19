@@ -41,10 +41,15 @@ Currently there is a spec validator tool:
   - [ ] generate stub api based on swagger spec
   - [ ] generate client from a swagger spec
   - [ ] generate spec document based on the code
+  - [ ] generate "sensible" random data based on swagger spec
+  - [ ] generate tests based on swagger spec for server
+  - [ ] generate tests based on swagger spec for client
 - [x] Middlewares:
   - [x] routing
   - [x] validation 
   - [ ] authorization
+  - [ ] swagger docs UI
+  - [ ] swagger editor UI
 - [x] Typed JSON Schema implementation
 - [x] extended string formats
   - uuid, uuid3, uuid4, uuid5

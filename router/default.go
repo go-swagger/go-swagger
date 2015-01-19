@@ -6,6 +6,7 @@ import (
 
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/validate"
 	"github.com/naoina/denco"
 )
 
@@ -58,6 +59,7 @@ type routeEntry struct {
 	Producers   map[string]swagger.Producer
 	Parameters  map[string]spec.Parameter
 	Handler     swagger.OperationHandler
+	Binder      *validate.RequestBinder
 }
 
 // MatchedRoute represents the route that was matched in this request
@@ -103,6 +105,7 @@ func (d *defaultRouteBuilder) AddRoute(method, path string, operation *spec.Oper
 	if handler, ok := d.api.OperationHandlerFor(operation.ID); ok {
 		consumes := d.spec.ConsumesFor(operation)
 		produces := d.spec.ProducesFor(operation)
+		parameters := d.spec.ParamsFor(method, path)
 
 		record := denco.NewRecord(pathConverter.ReplaceAllString(path, ":$1"), &routeEntry{
 			Operation:  operation,
@@ -111,7 +114,8 @@ func (d *defaultRouteBuilder) AddRoute(method, path string, operation *spec.Oper
 			Produces:   produces,
 			Consumers:  d.api.ConsumersFor(consumes),
 			Producers:  d.api.ProducersFor(produces),
-			Parameters: d.spec.ParamsFor(method, path),
+			Parameters: parameters,
+			Binder:     validate.NewRequestBinder(parameters, d.spec.Spec()),
 		})
 		d.records[mn] = append(d.records[mn], record)
 	}

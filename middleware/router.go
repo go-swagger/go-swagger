@@ -7,12 +7,12 @@ import (
 	"github.com/gorilla/context"
 )
 
-func newRouter(ctx *Context) func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
-	return func(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+func newRouter(ctx *Context, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		defer context.Clear(r)
 		// use context to lookup routes
 		if _, ok := ctx.RouteInfo(r); ok {
-			next(rw, r)
+			next.ServeHTTP(rw, r)
 			return
 		}
 
@@ -22,5 +22,5 @@ func newRouter(ctx *Context) func(http.ResponseWriter, *http.Request, http.Handl
 			return
 		}
 		ctx.Respond(rw, r, ctx.spec.RequiredProduces(), errors.NotFound("path %s was not found", r.URL.Path))
-	}
+	})
 }

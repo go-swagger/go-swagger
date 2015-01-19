@@ -23,19 +23,19 @@ func TestResult(t *testing.T) {
 
 func TestContentTypeValidation(t *testing.T) {
 	context := Serve(petstore.NewAPI(t))
-	mw := newValidation(context)
+	mw := newValidation(context, http.HandlerFunc(terminator))
 
 	recorder := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "http://localhost:8080/api/pets", nil)
 	request.Header.Add("Accept", "*/*")
-	mw(recorder, request, terminator)
+	mw.ServeHTTP(recorder, request)
 	assert.Equal(t, 200, recorder.Code)
 
 	recorder = httptest.NewRecorder()
 	request, _ = http.NewRequest("POST", "http://localhost:8080/api/pets", nil)
 	request.Header.Add("content-type", "application(")
 
-	mw(recorder, request, terminator)
+	mw.ServeHTTP(recorder, request)
 	assert.Equal(t, 400, recorder.Code)
 	assert.Equal(t, "application/json", recorder.Header().Get("content-type"))
 
@@ -44,21 +44,21 @@ func TestContentTypeValidation(t *testing.T) {
 	request.Header.Add("Accept", "*/*")
 	request.Header.Add("content-type", "text/html")
 
-	mw(recorder, request, terminator)
+	mw.ServeHTTP(recorder, request)
 	assert.Equal(t, 415, recorder.Code)
 	assert.Equal(t, "application/json", recorder.Header().Get("content-type"))
 }
 
 func TestResponseFormatValidation(t *testing.T) {
 	context := Serve(petstore.NewAPI(t))
-	mw := newValidation(context)
+	mw := newValidation(context, http.HandlerFunc(terminator))
 
 	recorder := httptest.NewRecorder()
 	request, _ := http.NewRequest("POST", "http://localhost:8080/api/pets", nil)
 	request.Header.Set(httputils.HeaderContentType, "application/json")
 	request.Header.Set(httputils.HeaderAccept, "application/json")
 
-	mw(recorder, request, terminator)
+	mw.ServeHTTP(recorder, request)
 	assert.Equal(t, 200, recorder.Code)
 
 	recorder = httptest.NewRecorder()
@@ -66,6 +66,6 @@ func TestResponseFormatValidation(t *testing.T) {
 	request.Header.Set(httputils.HeaderContentType, "application/json")
 	request.Header.Set(httputils.HeaderAccept, "application/sml")
 
-	mw(recorder, request, terminator)
+	mw.ServeHTTP(recorder, request)
 	assert.Equal(t, http.StatusNotAcceptable, recorder.Code)
 }

@@ -114,11 +114,11 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 }
 
 // RouterMiddleware creates a new router middleware for this context
-func (c *Context) RouterMiddleware() func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
-	return newRouter(c)
+func (c *Context) RouterMiddleware(handler http.Handler) http.Handler {
+	return newRouter(c, handler)
 }
 
 // ValidationMiddleware creates a new validation middleware for this context
-func (c *Context) ValidationMiddleware() func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
-	return newValidation(c)
+func (c *Context) ValidationMiddleware(handler http.Handler) http.Handler {
+	return newValidation(c, handler)
 }

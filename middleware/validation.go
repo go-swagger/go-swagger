@@ -11,9 +11,9 @@ import (
 )
 
 // NewValidation starts a new validation middleware
-func newValidation(context *Context) func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
+func newValidation(context *Context, next http.Handler) http.Handler {
 
-	return func(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		matched, _ := context.RouteInfo(r)
 
 		result := validateRequest(context, r, matched)
@@ -22,8 +22,8 @@ func newValidation(context *Context) func(http.ResponseWriter, *http.Request, ht
 			return
 		}
 
-		next(rw, r)
-	}
+		next.ServeHTTP(rw, r)
+	})
 }
 
 type validation struct {
@@ -48,14 +48,8 @@ func validateRequest(context *Context, request *http.Request, route *router.Matc
 }
 
 func (v *validation) parameters() {
-	// TODO: use just one consumer here
-	binder := &validate.RequestBinder{
-		Parameters: v.route.Parameters,
-		Consumer:   v.consumer,
-	}
-	if err := binder.Bind(v.request, v.route.Params, v.bound); err != nil {
-		v.result.AddErrors(err)
-	}
+	result := v.route.Binder.Bind(v.request, v.route.Params, v.consumer, v.bound)
+	v.result.AddErrors(result.Errors...)
 }
 
 func (v *validation) contentType() {

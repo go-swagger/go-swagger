@@ -299,8 +299,15 @@ func ExpandSchema(schema *Schema, root interface{}, cache ResolutionCache) error
 	nrr, _ := NewRef(schema.ID)
 	var rrr *Ref
 	if nrr.GetURL() != nil {
-		rid, _ := NewRef(root.(*Schema).ID)
-		rrr, _ = rid.Inherits(nrr)
+		switch root.(type) {
+		case *Schema:
+			rid, _ := NewRef(root.(*Schema).ID)
+			rrr, _ = rid.Inherits(nrr)
+		case *Swagger:
+			rid, _ := NewRef(root.(*Swagger).ID)
+			rrr, _ = rid.Inherits(nrr)
+		}
+
 	}
 
 	resolver, err := defaultSchemaLoader(root, rrr, cache)

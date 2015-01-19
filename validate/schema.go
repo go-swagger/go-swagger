@@ -29,6 +29,9 @@ type schemaValidator struct {
 }
 
 func newSchemaValidator(schema *spec.Schema, rootSchema interface{}, root string) *schemaValidator {
+	if schema == nil {
+		return nil
+	}
 	if rootSchema == nil {
 		rootSchema = schema
 	}

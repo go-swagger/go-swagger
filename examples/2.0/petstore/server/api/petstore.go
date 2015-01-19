@@ -8,7 +8,6 @@ import (
 	"github.com/casualjim/go-swagger/middleware"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/testing"
-	"github.com/codegangsta/negroni"
 )
 
 // NewPetstore creates a new petstore api handler
@@ -25,12 +24,7 @@ func NewPetstore() (http.Handler, error) {
 	api.RegisterOperation("getPetById", getPetByID)
 
 	context := middleware.Serve(spec, api)
-	n := negroni.New()
-	// TODO: add security middleware
-	// n.Use(negroni.HandlerFunc(context.SecurityMiddleware()))
-	n.Use(negroni.HandlerFunc(context.RouterMiddleware()))
-	n.Use(negroni.HandlerFunc(context.ValidationMiddleware()))
-	return n, nil
+	return context.RouterMiddleware(context.ValidationMiddleware(nil)), nil
 }
 
 var getAllPets = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {

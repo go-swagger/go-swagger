@@ -2,7 +2,6 @@ package validate
 
 import (
 	"encoding"
-	"fmt"
 	"net/http"
 	"reflect"
 	"strings"
@@ -19,29 +18,43 @@ type formats map[string]map[string]reflect.Type
 
 // RequestBinder binds and validates the data from a http request
 type RequestBinder struct {
-	Parameters map[string]spec.Parameter
-	Consumer   swagger.Consumer
-	Formats    formats
+	Spec         *spec.Swagger
+	Parameters   map[string]spec.Parameter
+	Formats      formats
+	paramBinders map[string]*paramBinder
+}
+
+// NewRequestBinder creates a new binder for reading a request.
+func NewRequestBinder(parameters map[string]spec.Parameter, spec *spec.Swagger) *RequestBinder {
+	binders := make(map[string]*paramBinder)
+	for fieldName, param := range parameters {
+		binders[fieldName] = newParamBinder(param, spec, nil)
+	}
+
+	return &RequestBinder{
+		Parameters:   parameters,
+		paramBinders: binders,
+		Spec:         spec,
+	}
 }
 
 // Bind perform the databinding and validation
-func (o *RequestBinder) Bind(request *http.Request, routeParams swagger.RouteParams, data interface{}) errors.Error {
+func (o *RequestBinder) Bind(request *http.Request, routeParams swagger.RouteParams, consumer swagger.Consumer, data interface{}) *Result {
 	val := reflect.Indirect(reflect.ValueOf(data))
 	isMap := val.Kind() == reflect.Map
+	result := new(Result)
 
 	for fieldName, param := range o.Parameters {
-		binder := new(paramBinder)
-		binder.name = fieldName
-		binder.parameter = &param
-		binder.formats = o.Formats
+		binder := o.paramBinders[fieldName]
+		// fmt.Println("binding", binder.name, "as", binder.Type(), "with", binder.validator)
 
 		var target reflect.Value
 		if !isMap {
+			binder.name = fieldName
 			target = val.FieldByName(fieldName)
 		}
 
 		if isMap {
-			binder.name = param.Name
 			tpe := binder.Type()
 			if tpe == nil {
 				continue
@@ -50,18 +63,24 @@ func (o *RequestBinder) Bind(request *http.Request, routeParams swagger.RoutePar
 		}
 
 		if !target.IsValid() {
-			return errors.New(500, fmt.Sprintf("parameter name %q is an unknown field", binder.name))
+			result.AddErrors(errors.New(500, "parameter name %q is an unknown field", binder.name))
+			continue
 		}
 
-		if err := binder.Bind(request, routeParams, o.Consumer, target); err != nil {
+		if err := binder.Bind(request, routeParams, consumer, target); err != nil {
 			switch err.(type) {
 			case *errors.Validation:
-				return err.(*errors.Validation)
+				result.AddErrors(err.(*errors.Validation))
 			case errors.Error:
-				return err.(errors.Error)
+				result.AddErrors(err.(errors.Error))
 			default:
-				return errors.New(500, err.Error())
+				result.AddErrors(errors.New(500, err.Error()))
 			}
+			continue
+		}
+
+		if binder.validator != nil {
+			result.Merge(binder.validator.Validate(target.Interface()))
 		}
 
 		if isMap {
@@ -69,7 +88,7 @@ func (o *RequestBinder) Bind(request *http.Request, routeParams swagger.RoutePar
 		}
 	}
 
-	return nil
+	return result
 }
 
 const defaultMaxMemory = 32 << 20

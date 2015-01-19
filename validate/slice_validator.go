@@ -33,13 +33,14 @@ func (s *schemaSliceValidator) Validate(data interface{}) *Result {
 	if data == nil {
 		return result
 	}
-	val := data.([]interface{})
-	size := int64(len(val))
+	val := reflect.ValueOf(data)
+	size := val.Len()
 
 	if s.Items != nil && s.Items.Schema != nil {
-		for i, value := range val {
+		for i := 0; i < size; i++ {
+			value := val.Index(i)
 			validator := newSchemaValidator(s.Items.Schema, s.Root, fmt.Sprintf("%s.%d", s.Path, i))
-			result.Merge(validator.Validate(value))
+			result.Merge(validator.Validate(value.Interface()))
 		}
 	}
 
@@ -48,38 +49,39 @@ func (s *schemaSliceValidator) Validate(data interface{}) *Result {
 		itemsSize = int64(len(s.Items.Schemas))
 		for i := int64(0); i < itemsSize; i++ {
 			validator := newSchemaValidator(&s.Items.Schemas[i], s.Root, fmt.Sprintf("%s.%d", s.Path, i))
-			result.Merge(validator.Validate(val[i]))
+			result.Merge(validator.Validate(val.Index(int(i)).Interface()))
 		}
 
 	}
-	if s.AdditionalItems != nil && itemsSize < size {
+	if s.AdditionalItems != nil && itemsSize < int64(size) {
 		if s.Items != nil && (s.Items.Schema != nil || len(s.Items.Schemas) > 0) && !s.AdditionalItems.Allows {
 			result.AddErrors(errors.New(422, "array doesn't allow for additional items"))
 		}
 		if s.AdditionalItems.Schema != nil {
-			for i := itemsSize; i < (size-itemsSize)+1; i++ {
+			for i := itemsSize; i < (int64(size)-itemsSize)+1; i++ {
 				validator := newSchemaValidator(s.AdditionalItems.Schema, s.Root, fmt.Sprintf("%s.%d", s.Path, i))
-				result.Merge(validator.Validate(val[i]))
+				result.Merge(validator.Validate(val.Index(int(i)).Interface()))
 			}
 		}
 	}
 
-	if s.MinItems != nil && size < *s.MinItems {
+	if s.MinItems != nil && int64(size) < *s.MinItems {
 		result.AddErrors(errors.TooFewItems(s.Path, s.In, *s.MinItems))
 	}
-	if s.MaxItems != nil && size > *s.MaxItems {
+	if s.MaxItems != nil && int64(size) > *s.MaxItems {
 		result.AddErrors(errors.TooManyItems(s.Path, s.In, *s.MaxItems))
 	}
-	if s.UniqueItems && s.hasDuplicates(val, int(size)) {
+	if s.UniqueItems && s.hasDuplicates(val, size) {
 		result.AddErrors(errors.DuplicateItems(s.Path, s.In))
 	}
 	result.Inc()
 	return result
 }
 
-func (s *schemaSliceValidator) hasDuplicates(value []interface{}, size int) bool {
+func (s *schemaSliceValidator) hasDuplicates(value reflect.Value, size int) bool {
 	var unique []interface{}
-	for _, v := range value {
+	for i := 0; i < value.Len(); i++ {
+		v := value.Index(i).Interface()
 		for _, u := range unique {
 			if reflect.DeepEqual(v, u) {
 				return true

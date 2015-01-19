@@ -11,6 +11,10 @@ import (
 	"github.com/casualjim/go-swagger/spec"
 )
 
+type entityValidator interface {
+	Validate(interface{}) *Result
+}
+
 type valueValidator interface {
 	SetPath(path string)
 	Applies(interface{}, reflect.Kind) bool

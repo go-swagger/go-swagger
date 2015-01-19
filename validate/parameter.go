@@ -17,10 +17,25 @@ import (
 	"github.com/casualjim/go-swagger/util"
 )
 
+func newParamBinder(param spec.Parameter, spec *spec.Swagger, formats formats) *paramBinder {
+	binder := new(paramBinder)
+	binder.name = param.Name
+	binder.parameter = &param
+	binder.formats = formats
+	if param.In != "body" {
+		binder.validator = newParamValidator(&param)
+	} else {
+		binder.validator = newSchemaValidator(param.Schema, spec, param.Name)
+	}
+
+	return binder
+}
+
 type paramBinder struct {
 	parameter *spec.Parameter
 	formats   formats
 	name      string
+	validator entityValidator
 }
 
 func (p *paramBinder) Type() reflect.Type {
@@ -148,6 +163,7 @@ func (p *paramBinder) readValue(values interface{}, target reflect.Value) ([]str
 }
 
 func (p *paramBinder) Bind(request *http.Request, routeParams swagger.RouteParams, consumer swagger.Consumer, target reflect.Value) error {
+	// fmt.Println("binding", p.name, "as", p.Type())
 	switch p.parameter.In {
 	case "query":
 		data, custom, err := p.readValue(request.URL.Query(), target)
@@ -316,6 +332,7 @@ func (p *paramBinder) setFieldValue(target reflect.Value, defaultValue interface
 		if target.OverflowInt(i) {
 			return errors.InvalidType(p.name, p.parameter.In, tpe, data)
 		}
+
 		target.SetInt(i)
 
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
