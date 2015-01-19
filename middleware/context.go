@@ -8,6 +8,7 @@ import (
 	"github.com/casualjim/go-swagger/httputils"
 	"github.com/casualjim/go-swagger/router"
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/validate"
 	"github.com/golang/gddo/httputil"
 	"github.com/gorilla/context"
 )
@@ -20,9 +21,17 @@ type Context struct {
 	router router.Router
 }
 
-// Serve creates a new context wrapper
-func Serve(spec *spec.Document, api *swagger.API) *Context {
-	return &Context{spec: spec, api: api, router: router.Default(spec, api)}
+// NewContext creates a new context wrapper
+func NewContext(spec *spec.Document, api *swagger.API, routes router.Router) *Context {
+	if routes == nil {
+		routes = router.Default(spec, api)
+	}
+	return &Context{spec: spec, api: api, router: routes}
+}
+
+// Serve serves the specified spec with the specified api registrations as a http.Handler
+func Serve(spec *spec.Document, api *swagger.API) http.Handler {
+	return newCompleteMiddleware(NewContext(spec, api, nil))
 }
 
 type contextKey int8
@@ -33,6 +42,7 @@ const (
 	ctxResponseFormat
 	ctxMatchedRoute
 	ctxAllowedMethods
+	ctxBoundParams
 
 	ctxConsumer
 )
@@ -95,6 +105,20 @@ func (c *Context) AllowedMethods(request *http.Request) []string {
 	return c.router.OtherMethods(request.Method, request.URL.Path)
 }
 
+// BindAndValidate binds and validates the request
+func (c *Context) BindAndValidate(request *http.Request, matched *router.MatchedRoute) (interface{}, *validate.Result) {
+	if v, ok := context.GetOk(request, ctxBoundParams); ok {
+		if val, ok := v.(*validation); ok {
+			return val.bound, val.result
+		}
+	}
+	result := validateRequest(c, request, matched)
+	if result != nil {
+		context.Set(request, ctxBoundParams, result)
+	}
+	return result.bound, result.result
+}
+
 // Respond renders the response after doing some content negotiation
 func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []string, data interface{}) {
 	if err, ok := data.(error); ok {
@@ -121,4 +145,9 @@ func (c *Context) RouterMiddleware(handler http.Handler) http.Handler {
 // ValidationMiddleware creates a new validation middleware for this context
 func (c *Context) ValidationMiddleware(handler http.Handler) http.Handler {
 	return newValidation(c, handler)
+}
+
+// OperationHandlerMiddleware creates a terminating http handler
+func (c *Context) OperationHandlerMiddleware() http.Handler {
+	return newOperationExecutor(c)
 }

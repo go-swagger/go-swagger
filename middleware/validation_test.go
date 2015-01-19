@@ -5,24 +5,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/httputils"
 	"github.com/casualjim/go-swagger/testing/petstore"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestResult(t *testing.T) {
-	result := new(result)
-	assert.True(t, result.IsValid())
-	assert.False(t, result.HasErrors())
-	result.AddErrors(errors.New(400, "yada"))
-	assert.Len(t, result.Errors, 1)
-	assert.True(t, result.HasErrors())
-	assert.False(t, result.IsValid())
-}
-
 func TestContentTypeValidation(t *testing.T) {
-	context := Serve(petstore.NewAPI(t))
+	spec, api := petstore.NewAPI(t)
+	context := NewContext(spec, api, nil)
 	mw := newValidation(context, http.HandlerFunc(terminator))
 
 	recorder := httptest.NewRecorder()
@@ -50,7 +40,8 @@ func TestContentTypeValidation(t *testing.T) {
 }
 
 func TestResponseFormatValidation(t *testing.T) {
-	context := Serve(petstore.NewAPI(t))
+	spec, api := petstore.NewAPI(t)
+	context := NewContext(spec, api, nil)
 	mw := newValidation(context, http.HandlerFunc(terminator))
 
 	recorder := httptest.NewRecorder()

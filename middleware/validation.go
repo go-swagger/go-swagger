@@ -11,14 +11,14 @@ import (
 )
 
 // NewValidation starts a new validation middleware
-func newValidation(context *Context, next http.Handler) http.Handler {
+func newValidation(ctx *Context, next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		matched, _ := context.RouteInfo(r)
+		matched, _ := ctx.RouteInfo(r)
+		_, result := ctx.BindAndValidate(r, matched)
 
-		result := validateRequest(context, r, matched)
 		if result.HasErrors() {
-			context.Respond(rw, r, matched.Produces, result.Errors[0])
+			ctx.Respond(rw, r, matched.Produces, result.Errors[0])
 			return
 		}
 
@@ -28,15 +28,22 @@ func newValidation(context *Context, next http.Handler) http.Handler {
 
 type validation struct {
 	context  *Context
-	result   *result
+	result   *validate.Result
 	request  *http.Request
 	route    *router.MatchedRoute
 	bound    map[string]interface{}
 	consumer swagger.Consumer
 }
 
-func validateRequest(context *Context, request *http.Request, route *router.MatchedRoute) *result {
-	validate := &validation{context, &result{}, request, route, make(map[string]interface{}), nil}
+func validateRequest(ctx *Context, request *http.Request, route *router.MatchedRoute) *validation {
+	validate := &validation{
+		context:  ctx,
+		result:   new(validate.Result),
+		request:  request,
+		route:    route,
+		bound:    make(map[string]interface{}),
+		consumer: nil,
+	}
 
 	validate.contentType()
 	validate.responseFormat()
@@ -44,12 +51,12 @@ func validateRequest(context *Context, request *http.Request, route *router.Matc
 		validate.parameters()
 	}
 
-	return validate.result
+	return validate
 }
 
 func (v *validation) parameters() {
 	result := v.route.Binder.Bind(v.request, v.route.Params, v.consumer, v.bound)
-	v.result.AddErrors(result.Errors...)
+	v.result.Merge(result)
 }
 
 func (v *validation) contentType() {
@@ -70,20 +77,4 @@ func (v *validation) responseFormat() {
 	if str := v.context.ResponseFormat(v.request, v.route.Produces); str == "" {
 		v.result.AddErrors(errors.InvalidResponseFormat(v.request.Header.Get(httputils.HeaderAccept), v.route.Produces))
 	}
-}
-
-type result struct {
-	Errors []errors.Error
-}
-
-func (r *result) AddErrors(errors ...errors.Error) {
-	r.Errors = append(r.Errors, errors...)
-}
-
-func (r *result) IsValid() bool {
-	return len(r.Errors) == 0
-}
-
-func (r *result) HasErrors() bool {
-	return !r.IsValid()
 }

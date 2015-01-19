@@ -23,8 +23,7 @@ func NewPetstore() (http.Handler, error) {
 	api.RegisterOperation("deletePet", deletePet)
 	api.RegisterOperation("getPetById", getPetByID)
 
-	context := middleware.Serve(spec, api)
-	return context.RouterMiddleware(context.ValidationMiddleware(nil)), nil
+	return middleware.Serve(spec, api), nil
 }
 
 var getAllPets = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {

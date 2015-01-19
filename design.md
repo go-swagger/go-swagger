@@ -78,15 +78,17 @@ The request handler does the following things:
 
 #### Authentication
 
-TODO: put some coherent sentences here that describe how the auth integration is supposed to work.
-
-Does this make it so that we require a context type object or add a pointer param for the principal on each authenticated operation? 
-
-Maybe it's better add a SwaggerPrincipal property to the operation parameter object?
+The authentication integration should execute security handlers. A security handler performs 2 functions it should authenticate and upon successful authentication it should authorize the request if the security scheme requires authorization. The authorization should be mainly required for the oauth2 based authentication flows.
 
 ```go
-type SecurityHandler func(*http.Request) (interface{}, error)
+type Authenticator func(...string) (interface{}, error)
+
+type Authorizer func(interface{}, ...string) bool
 ```
+
+When we've determined a route matches we should check if the request is allowed to proceed.
+To do this our middleware knows how to deal with basic auth and how to retrieve access tokens etc.
+It does this by using the information in the security scheme object registered for a handler with the same scheme name.
 
 #### Binding
 
@@ -118,4 +120,11 @@ type Error struct {
 }
 ```
 
+#### Execute operation
+
+When all the middlewares have finished processing the request ends up in the operation handling middleware.  
+This middleware is responsible for taking the bound model produced in the validation middleware and executing the registered operation handler for this request.
+By the time the operation handler is executed we're sure the request is **authorized and valid**.
+
+The result it gets from the operation handler will be turned into a response. Should the result of the operation handler be an error or a series of errors it will determine an appropriate status code and render the error result.
 

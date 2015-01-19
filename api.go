@@ -213,6 +213,12 @@ type Producer interface {
 	Produce(io.Writer, interface{}) error
 }
 
+// AuthHandler implementations know how to authenticate and subsequently authorize a request.
+type AuthHandler interface {
+	Authenticate(...string) (interface{}, error)
+	Authorize(interface{}, ...string) error
+}
+
 // // AuthHandler handles authentication for an API
 // type AuthHandler interface {
 // 	// Authenticate peforms the authentication
