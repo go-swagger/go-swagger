@@ -1,12 +1,10 @@
 package commands
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 
 	"github.com/casualjim/go-swagger/spec"
-	"github.com/casualjim/go-swagger/util"
 	"github.com/casualjim/go-swagger/validate"
 )
 
@@ -23,20 +21,16 @@ func (c *ValidateSpec) Execute(args []string) error {
 	}
 
 	swaggerDoc := args[0]
-	b, err := util.JSONDoc(swaggerDoc)
+	specDoc, err := spec.Load(swaggerDoc)
 	if err != nil {
-		return err
+		return nil
 	}
-	var toValidate interface{}
-	if err := json.Unmarshal(b, &toValidate); err != nil {
-		return err
-	}
-	result := validate.WithSchema(spec.MustLoadSwagger20Schema(), toValidate)
 
+	result := validate.Spec(specDoc)
 	if result.IsValid() {
-		fmt.Printf("The swagger spec at %q is valid against swagger specification %s\n", swaggerDoc, "2.0")
+		fmt.Printf("The swagger spec at %q is valid against swagger specification %s\n", swaggerDoc, specDoc.Version())
 	} else {
-		str := fmt.Sprintf("The swagger spec at %q is invalid against swagger specification %s. see errors :\n", swaggerDoc, "2.0")
+		str := fmt.Sprintf("The swagger spec at %q is invalid against swagger specification %s. see errors :\n", swaggerDoc, specDoc.Version())
 		for _, desc := range result.Errors {
 			str += fmt.Sprintf("- %s\n", desc)
 		}

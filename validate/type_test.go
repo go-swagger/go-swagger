@@ -85,6 +85,7 @@ var enabled = []string{
 	"ref",
 	"definitions",
 	"refRemote",
+	"format",
 }
 
 type noopResCache struct {

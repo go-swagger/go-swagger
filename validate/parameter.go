@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
@@ -39,23 +40,45 @@ func (p *paramBinder) typeForSchema(tpe, format string, items *spec.Items) refle
 		return reflect.TypeOf(true)
 
 	case "string":
-		switch format {
+		switch strings.Replace(format, "-", "", -1) {
 		case "byte":
 			return reflect.TypeOf([]byte{})
 		case "date":
 			return reflect.TypeOf(swagger.Date{})
-		case "date-time":
+		case "datetime":
 			return reflect.TypeOf(swagger.DateTime{})
-		// case "uri":
-		// 	return reflect.TypeOf(swagger.URI)
-		// case "email":
-		// 	return reflect.TypeOf(swagger.Email)
-		// case "hostname":
-		// 	return reflect.TypeOf(swagger.HostName)
-		// case "ipv4":
-		// 	return reflect.TypeOf(swagger.IPv4)
-		// case "ipv6":
-		// 	return reflect.TypeOf(swagger.IPv6)
+		case "uri":
+			return reflect.TypeOf(swagger.URI(""))
+		case "email":
+			return reflect.TypeOf(swagger.Email(""))
+		case "hostname":
+			return reflect.TypeOf(swagger.Hostname(""))
+		case "ipv4":
+			return reflect.TypeOf(swagger.IPv4(""))
+		case "ipv6":
+			return reflect.TypeOf(swagger.IPv6(""))
+		case "uuid":
+			return reflect.TypeOf(swagger.UUID(""))
+		case "uuid3":
+			return reflect.TypeOf(swagger.UUID3(""))
+		case "uuid4":
+			return reflect.TypeOf(swagger.UUID4(""))
+		case "uuid5":
+			return reflect.TypeOf(swagger.UUID5(""))
+		case "isbn":
+			return reflect.TypeOf(swagger.ISBN(""))
+		case "isbn10":
+			return reflect.TypeOf(swagger.ISBN10(""))
+		case "isbn13":
+			return reflect.TypeOf(swagger.ISBN13(""))
+		case "creditcard":
+			return reflect.TypeOf(swagger.CreditCard(""))
+		case "ssn":
+			return reflect.TypeOf(swagger.SSN(""))
+		case "hexcolor":
+			return reflect.TypeOf(swagger.HexColor(""))
+		case "rgbcolor":
+			return reflect.TypeOf(swagger.RGBColor(""))
 		default:
 			return reflect.TypeOf("")
 		}

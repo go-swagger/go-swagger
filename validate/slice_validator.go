@@ -30,6 +30,9 @@ func (s *schemaSliceValidator) Applies(source interface{}, kind reflect.Kind) bo
 
 func (s *schemaSliceValidator) Validate(data interface{}) *Result {
 	result := new(Result)
+	if data == nil {
+		return result
+	}
 	val := data.([]interface{})
 	size := int64(len(val))
 

@@ -35,18 +35,28 @@ Currently there is a spec validator tool:
 
 ## What's inside?
 
-* An object model that serializes to swagger yaml or json 
-* A tool to work with swagger:
-    * validate a swagger spec document
-* Middlewares:
-  * routing
-  * validation 
-* Validation based on the swagger spec
-* Typed JSON Schema implementation
-
-## Planned:
-* Security middleware
-* Generate a stub api based on a swagger spec
-* Generate a client from a swagger spec
+- [x] An object model that serializes to swagger yaml or json 
+- [x] A tool to work with swagger:
+  - [x] validate a swagger spec document
+  - [ ] generate stub api based on swagger spec
+  - [ ] generate client from a swagger spec
+  - [ ] generate spec document based on the code
+- [x] Middlewares:
+  - [x] routing
+  - [x] validation 
+  - [ ] authorization
+- [x] Typed JSON Schema implementation
+- [x] extended string formats
+  - uuid, uuid3, uuid4, uuid5
+  - email
+  - uri
+  - hostname
+  - ipv4
+  - ipv6
+  - credit card
+  - isbn, isbn10, isbn13
+  - social security number
+  - hexcolor
+  - rgbcolor
 
 

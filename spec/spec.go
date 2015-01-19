@@ -3,6 +3,8 @@ package spec
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"path/filepath"
 
 	"github.com/casualjim/go-swagger/assets"
 	"github.com/casualjim/go-swagger/util"
@@ -99,6 +101,21 @@ func init() {
 	swaggerSchema = MustLoadSwagger20Schema()
 }
 
+// Load loads a new spec document
+func Load(path string) (*Document, error) {
+	specURL, err := url.Parse(path)
+	if err != nil {
+		return nil, err
+	}
+
+	ext := filepath.Ext(specURL.Path)
+	if ext == ".yaml" || ext == ".yml" {
+		return YAMLSpec(path)
+	}
+
+	return JSONSpec(path)
+}
+
 // New creates a new shema document
 func New(data json.RawMessage, version string) (*Document, error) {
 	if version == "" {
@@ -107,11 +124,6 @@ func New(data json.RawMessage, version string) (*Document, error) {
 	if version != "2.0" {
 		return nil, fmt.Errorf("spec version %q is not supported", version)
 	}
-
-	// var v map[string]interface{}
-	// if err := json.Unmarshal(data, &v); err != nil {
-	// 	return nil, err
-	// }
 
 	spec := new(Swagger)
 	if err := json.Unmarshal(data, spec); err != nil {
@@ -130,7 +142,6 @@ func New(data json.RawMessage, version string) (*Document, error) {
 			authSchemes: make(map[string]struct{}),
 			operations:  make(map[string]map[string]*Operation),
 		},
-		// specSchema: swaggerSchema,
 		spec: spec,
 	}
 	d.initialize()
@@ -145,4 +156,14 @@ func (d *Document) BasePath() string {
 // Version returns the version of this spec
 func (d *Document) Version() string {
 	return d.spec.Swagger
+}
+
+// Schema returns the swagger 2.0 schema
+func (d *Document) Schema() *Schema {
+	return swaggerSchema
+}
+
+// Spec returns the swagger spec object model
+func (d *Document) Spec() *Swagger {
+	return d.spec
 }

@@ -8,10 +8,15 @@ import (
 
 var specSchemaType = reflect.TypeOf(&spec.Schema{})
 
+// Spec validates a spec document
+func Spec(doc *spec.Document) *Result {
+	return WithSchema(doc.Schema(), doc.Spec())
+}
+
 // WithSchema validates the specified data with the provided schema, when no schema
 // is provided it uses the json schema as default
 func WithSchema(schema *spec.Schema, data interface{}) *Result {
-	return newSchemaValidator(schema, nil, "(root)").Validate(data)
+	return newSchemaValidator(schema, nil, "").Validate(data)
 }
 
 // like param validator but for a full json schema
@@ -39,6 +44,7 @@ func newSchemaValidator(schema *spec.Schema, rootSchema interface{}, root string
 		s.typeValidator(),
 		s.schemaValidator(),
 		s.stringValidator(),
+		s.formatValidator(),
 		s.numberValidator(),
 		s.sliceValidator(),
 		s.commonValidator(),
@@ -50,7 +56,7 @@ func newSchemaValidator(schema *spec.Schema, rootSchema interface{}, root string
 func (s *schemaValidator) Validate(data interface{}) *Result {
 	if data == nil {
 		v := s.validators[0].Validate(data)
-		v.Merge(s.validators[5].Validate(data))
+		v.Merge(s.validators[6].Validate(data))
 		return v
 	}
 	result := &Result{}
@@ -118,6 +124,15 @@ func (s *schemaValidator) stringValidator() valueValidator {
 		MaxLength: s.Schema.MaxLength,
 		MinLength: s.Schema.MinLength,
 		Pattern:   s.Schema.Pattern,
+	}
+}
+
+func (s *schemaValidator) formatValidator() valueValidator {
+	return &formatValidator{
+		Path:    s.Path,
+		In:      s.in,
+		Default: s.Schema.Default,
+		Format:  s.Schema.Format,
 	}
 }
 

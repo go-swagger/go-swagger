@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/casualjim/go-swagger/errors"
@@ -16,11 +17,13 @@ type valueValidator interface {
 	Validate(interface{}) *Result
 }
 
+// Result represents a validation result
 type Result struct {
 	Errors     []errors.Error
 	MatchCount int
 }
 
+// Merge merges this result with the other one, preserving match counts etc
 func (r *Result) Merge(other *Result) *Result {
 	if other == nil {
 		return r
@@ -30,18 +33,22 @@ func (r *Result) Merge(other *Result) *Result {
 	return r
 }
 
+// AddErrors adds errors to this validation result
 func (r *Result) AddErrors(errors ...errors.Error) {
 	r.Errors = append(r.Errors, errors...)
 }
 
+// IsValid returns true when this result is valid
 func (r *Result) IsValid() bool {
 	return len(r.Errors) == 0
 }
 
+// HasErrors returns true when this result is invalid
 func (r *Result) HasErrors() bool {
 	return !r.IsValid()
 }
 
+// Inc increments the match count
 func (r *Result) Inc() {
 	r.MatchCount++
 }
@@ -58,6 +65,7 @@ func newItemsValidator(path, in string, items *spec.Items, root interface{}) *it
 	iv := &itemsValidator{path: path, in: in, items: items, root: root}
 	iv.validators = []valueValidator{
 		iv.stringValidator(),
+		iv.formatValidator(),
 		iv.numberValidator(),
 		iv.sliceValidator(),
 		iv.commonValidator(),
@@ -127,6 +135,14 @@ func (i *itemsValidator) stringValidator() valueValidator {
 	}
 }
 
+func (i *itemsValidator) formatValidator() valueValidator {
+	return &formatValidator{
+		In:      i.in,
+		Default: i.items.Default,
+		Format:  i.items.Format,
+	}
+}
+
 // a param has very limited subset of validations to apply
 type paramValidator struct {
 	param      *spec.Parameter
@@ -137,6 +153,7 @@ func newParamValidator(param *spec.Parameter) *paramValidator {
 	p := &paramValidator{param: param}
 	p.validators = []valueValidator{
 		p.stringValidator(),
+		p.formatValidator(),
 		p.numberValidator(),
 		p.sliceValidator(),
 		p.commonValidator(),
@@ -192,7 +209,6 @@ func (b *basicCommonValidator) Applies(source interface{}, kind reflect.Kind) bo
 
 func (b *basicCommonValidator) Validate(data interface{}) (res *Result) {
 	if len(b.Enum) > 0 {
-
 		for _, enumValue := range b.Enum {
 			if data != nil && reflect.DeepEqual(enumValue, data) {
 				return nil
@@ -238,6 +254,15 @@ func (p *paramValidator) stringValidator() valueValidator {
 		MaxLength: p.param.MaxLength,
 		MinLength: p.param.MinLength,
 		Pattern:   p.param.Pattern,
+	}
+}
+
+func (p *paramValidator) formatValidator() valueValidator {
+	return &formatValidator{
+		Path:    p.param.Name,
+		In:      p.param.In,
+		Default: p.param.Default,
+		Format:  p.param.Format,
 	}
 }
 
@@ -371,6 +396,53 @@ func (n *numberValidator) Validate(val interface{}) *Result {
 	return result
 }
 
+type formatValidator struct {
+	Default interface{}
+	Format  string
+	Path    string
+	In      string
+}
+
+func (f *formatValidator) SetPath(path string) {
+	f.Path = path
+}
+
+func (f *formatValidator) Applies(source interface{}, kind reflect.Kind) bool {
+	if source == nil {
+		return false
+	}
+	switch source.(type) {
+	case *spec.Items:
+		it := source.(*spec.Items)
+		_, known := formatCheckers[strings.Replace(it.Format, "-", "", -1)]
+		return kind == reflect.String && known
+	case *spec.Parameter:
+		par := source.(*spec.Parameter)
+		_, known := formatCheckers[strings.Replace(par.Format, "-", "", -1)]
+		return kind == reflect.String && known
+	case *spec.Schema:
+		sch := source.(*spec.Schema)
+		_, known := formatCheckers[strings.Replace(sch.Format, "-", "", -1)]
+		return kind == reflect.String && known
+	}
+	return false
+}
+
+func (f *formatValidator) Validate(val interface{}) *Result {
+	result := new(Result)
+
+	var valid bool
+	if validate, ok := formatCheckers[strings.Replace(f.Format, "-", "", -1)]; ok {
+		valid = validate(val.(string))
+	}
+
+	if !valid {
+		result.AddErrors(errors.InvalidType(f.Path, f.In, f.Format, val))
+	}
+	result.Inc()
+	return result
+}
+
 type stringValidator struct {
 	Default   interface{}
 	Required  bool
@@ -387,7 +459,7 @@ func (s *stringValidator) SetPath(path string) {
 
 func (s *stringValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	switch source.(type) {
-	case *spec.Parameter, *spec.Schema:
+	case *spec.Parameter, *spec.Schema, *spec.Items:
 		return kind == reflect.String
 	}
 	return false

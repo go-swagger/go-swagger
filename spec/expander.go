@@ -302,6 +302,7 @@ func ExpandSchema(schema *Schema, root interface{}, cache ResolutionCache) error
 		rid, _ := NewRef(root.(*Schema).ID)
 		rrr, _ = rid.Inherits(nrr)
 	}
+
 	resolver, err := defaultSchemaLoader(root, rrr, cache)
 	if err != nil {
 		return err
