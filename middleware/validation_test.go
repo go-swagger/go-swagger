@@ -13,7 +13,7 @@ import (
 func TestContentTypeValidation(t *testing.T) {
 	spec, api := petstore.NewAPI(t)
 	context := NewContext(spec, api, nil)
-	mw := newValidation(context, http.HandlerFunc(terminator))
+	mw := context.ValidationMiddleware(http.HandlerFunc(terminator))
 
 	recorder := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "http://localhost:8080/api/pets", nil)
@@ -42,7 +42,7 @@ func TestContentTypeValidation(t *testing.T) {
 func TestResponseFormatValidation(t *testing.T) {
 	spec, api := petstore.NewAPI(t)
 	context := NewContext(spec, api, nil)
-	mw := newValidation(context, http.HandlerFunc(terminator))
+	mw := context.ValidationMiddleware(http.HandlerFunc(terminator))
 
 	recorder := httptest.NewRecorder()
 	request, _ := http.NewRequest("POST", "http://localhost:8080/api/pets", nil)

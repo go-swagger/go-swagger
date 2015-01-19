@@ -31,7 +31,12 @@ func NewContext(spec *spec.Document, api *swagger.API, routes router.Router) *Co
 
 // Serve serves the specified spec with the specified api registrations as a http.Handler
 func Serve(spec *spec.Document, api *swagger.API) http.Handler {
-	return newCompleteMiddleware(NewContext(spec, api, nil))
+	context := NewContext(spec, api, nil)
+
+	terminator := context.OperationHandlerMiddleware()
+	validator := context.ValidationMiddleware(terminator)
+
+	return specMiddleware(context, context.RouterMiddleware(validator))
 }
 
 type contextKey int8

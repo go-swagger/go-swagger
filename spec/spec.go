@@ -91,6 +91,7 @@ func Swagger20Schema() (*Schema, error) {
 type Document struct {
 	specAnalyzer
 	spec *Swagger
+	raw  json.RawMessage
 }
 
 var swaggerSchema *Schema
@@ -143,6 +144,7 @@ func New(data json.RawMessage, version string) (*Document, error) {
 			operations:  make(map[string]map[string]*Operation),
 		},
 		spec: spec,
+		raw:  data,
 	}
 	d.initialize()
 	return d, nil
@@ -166,4 +168,9 @@ func (d *Document) Schema() *Schema {
 // Spec returns the swagger spec object model
 func (d *Document) Spec() *Swagger {
 	return d.spec
+}
+
+// Row returns the raw swagger spec as json bytes
+func (d *Document) Raw() json.RawMessage {
+	return d.raw
 }

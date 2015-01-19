@@ -5,7 +5,9 @@ import (
 	"sync"
 
 	"github.com/casualjim/go-swagger"
+	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/middleware"
+	"github.com/casualjim/go-swagger/reflection"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/testing"
 )
@@ -31,9 +33,9 @@ var getAllPets = swagger.OperationHandlerFunc(func(data interface{}) (interface{
 })
 var createPet = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
 	body := data.(map[string]interface{})["pet"]
-	// var pet Pet
-	// reflection.UnmarshalMap(body.(map[string]interface{}), &pet)
-	// addPet(pet)
+	var pet Pet
+	reflection.UnmarshalMap(body.(map[string]interface{}), &pet)
+	addPet(pet)
 	return body, nil
 })
 
@@ -56,11 +58,11 @@ type Tag struct {
 
 // Pet the pet model
 type Pet struct {
-	ID        int64
-	Name      string
-	PhotoURLs []string
-	Status    string
-	Tags      []Tag
+	ID        int64    `json:"id"`
+	Name      string   `json:"name"`
+	PhotoURLs []string `json:"photoUrls,omitempty"`
+	Status    string   `json:"status,omitempty"`
+	Tags      []Tag    `json:"tags,omitempty"`
 }
 
 var pets = []Pet{
@@ -79,9 +81,20 @@ func addPet(pet Pet) {
 func removePet(id int64) {
 	petsLock.Lock()
 	defer petsLock.Unlock()
-
+	var newPets []Pet
+	for _, pet := range pets {
+		if pet.ID != id {
+			newPets = append(newPets, pet)
+		}
+	}
+	pets = newPets
 }
 
 func petByID(id int64) (*Pet, error) {
-	return nil, nil
+	for _, pet := range pets {
+		if pet.ID == id {
+			return &pet, nil
+		}
+	}
+	return nil, errors.NotFound("not found: pet %d", id)
 }
