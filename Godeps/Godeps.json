@@ -11,9 +11,8 @@
 			"Rev": "1909519b19f44750062c3e8209d65c0921f18060"
 		},
 		{
-			"ImportPath": "github.com/codegangsta/negroni",
-			"Comment": "v0.1-55-g1dd3ab0",
-			"Rev": "1dd3ab0ff59e13f5b73dcbf70703710aebe50d2f"
+			"ImportPath": "github.com/asaskevich/govalidator",
+			"Rev": "4d06bf8df527bece2a00b948cb13b1c02764a612"
 		},
 		{
 			"ImportPath": "github.com/golang/gddo/httputil",
@@ -31,6 +30,15 @@
 		{
 			"ImportPath": "github.com/jtolds/gls",
 			"Rev": "f1ac7f4f24f50328e6bc838ca4437d1612a0243c"
+		},
+		{
+			"ImportPath": "github.com/kr/pretty",
+			"Comment": "go.weekly.2011-12-22-24-gf31442d",
+			"Rev": "f31442d60e51465c69811e2107ae978868dbea5c"
+		},
+		{
+			"ImportPath": "github.com/kr/text",
+			"Rev": "6807e777504f54ad073ecef66747de158294b639"
 		},
 		{
 			"ImportPath": "github.com/naoina/denco",
