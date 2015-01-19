@@ -12,11 +12,11 @@
 		},
 		{
 			"ImportPath": "github.com/asaskevich/govalidator",
-			"Rev": "4d06bf8df527bece2a00b948cb13b1c02764a612"
+			"Rev": "7883eee97610f4055832b397a1074a36297b54ce"
 		},
 		{
 			"ImportPath": "github.com/golang/gddo/httputil",
-			"Rev": "5033884f68f933e391e2e43a5f2c7135a1a9ed3b"
+			"Rev": "bb20f8c58cabb359ba8de621fdd304c020d8c63c"
 		},
 		{
 			"ImportPath": "github.com/gorilla/context",
@@ -32,15 +32,6 @@
 			"Rev": "f1ac7f4f24f50328e6bc838ca4437d1612a0243c"
 		},
 		{
-			"ImportPath": "github.com/kr/pretty",
-			"Comment": "go.weekly.2011-12-22-24-gf31442d",
-			"Rev": "f31442d60e51465c69811e2107ae978868dbea5c"
-		},
-		{
-			"ImportPath": "github.com/kr/text",
-			"Rev": "6807e777504f54ad073ecef66747de158294b639"
-		},
-		{
 			"ImportPath": "github.com/naoina/denco",
 			"Rev": "272550a98ec2a20075bcc55e2c9996d66d2876f1"
 		},
@@ -51,11 +42,11 @@
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Rev": "2eaa4b48b8954bf871229043b8064ca156a542a5"
+			"Rev": "e897f97d666c44ddbc131f4121c2961034b4c1b4"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
-			"Rev": "d466437aa4adc35830964cffc5b5f262c63ddcb4"
+			"Rev": "bef53efd0c76e49e6de55ead051f886bea7e9420"
 		}
 	]
 }
