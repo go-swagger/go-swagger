@@ -1,7 +1,7 @@
 # Swagger 2.0
 
-[![Build Status](https://travis-ci.org/casualjim/go-swagger.svg?branch=feature/serve)](https://travis-ci.org/casualjim/go-swagger)
-[![Coverage Status](https://coveralls.io/repos/casualjim/go-swagger/badge.png?branch=feature/serve)](https://coveralls.io/r/casualjim/go-swagger?branch=feature/serve)
+[![Build Status](https://travis-ci.org/casualjim/go-swagger.svg?branch=master)](https://travis-ci.org/casualjim/go-swagger)
+[![Coverage Status](https://coveralls.io/repos/casualjim/go-swagger/badge.svg?branch=master)](https://coveralls.io/r/casualjim/go-swagger?branch=master)
 [![GoDoc](https://godoc.org/github.com/casualjim/go-swagger?status.svg)](http://godoc.org/github.com/casualjim/go-swagger)
 [![license](http://img.shields.io/badge/license-Apache%20v2-orange.svg)](https://raw.githubusercontent.com/swagger-api/swagger-spec/master/LICENSE)
 
@@ -45,6 +45,7 @@ Currently there is a spec validator tool:
   - [ ] generate tests based on swagger spec for server
   - [ ] generate tests based on swagger spec for client
 - [x] Middlewares:
+  - [x] serve spec
   - [x] routing
   - [x] validation 
   - [ ] authorization

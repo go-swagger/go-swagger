@@ -8,6 +8,7 @@ import (
 	"github.com/casualjim/go-swagger/httputils"
 	"github.com/casualjim/go-swagger/router"
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/swagger-ui"
 	"github.com/casualjim/go-swagger/validate"
 	"github.com/golang/gddo/httputil"
 	"github.com/gorilla/context"
@@ -35,8 +36,10 @@ func Serve(spec *spec.Document, api *swagger.API) http.Handler {
 
 	terminator := context.OperationHandlerMiddleware()
 	validator := context.ValidationMiddleware(terminator)
+	router := context.RouterMiddleware(validator)
+	swaggerUI := swaggerui.Middleware(router)
 
-	return specMiddleware(context, context.RouterMiddleware(validator))
+	return specMiddleware(context, swaggerUI)
 }
 
 type contextKey int8
