@@ -6,14 +6,15 @@ import (
 	"os"
 
 	"github.com/casualjim/go-swagger/util"
+	"github.com/elazarl/go-bindata-assetfs"
 )
 
 // Middleware serves this static site as middleware on /swagger-ui
 // passing nil will make this a regular handler not a middleware
 func Middleware(path string, next http.Handler) http.Handler {
 
-	assetFS := func() *util.AssetFS {
-		return &util.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "/"}
+	assetFS := func() *assetfs.AssetFS {
+		return &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "/"}
 	}
 
 	swaggerUI := util.MiddlewareAt("/swagger-ui", assetFS, next)
@@ -22,7 +23,7 @@ func Middleware(path string, next http.Handler) http.Handler {
 	}
 
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/api-docs" {
+		if r.URL.Path == "/swagger.json" {
 			specFile, err := os.Open(path)
 			defer specFile.Close()
 
