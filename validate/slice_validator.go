@@ -17,6 +17,7 @@ type schemaSliceValidator struct {
 	AdditionalItems *spec.SchemaOrBool
 	Items           *spec.SchemaOrArray
 	Root            interface{}
+	KnownFormats    map[string]FormatValidator
 }
 
 func (s *schemaSliceValidator) SetPath(path string) {
@@ -25,7 +26,9 @@ func (s *schemaSliceValidator) SetPath(path string) {
 
 func (s *schemaSliceValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	_, ok := source.(*spec.Schema)
-	return ok && kind == reflect.Slice
+	r := ok && kind == reflect.Slice
+	// fmt.Printf("slice validator for %q applies %t for %T (kind: %v)\n", s.Path, r, source, kind)
+	return r
 }
 
 func (s *schemaSliceValidator) Validate(data interface{}) *Result {
@@ -39,7 +42,7 @@ func (s *schemaSliceValidator) Validate(data interface{}) *Result {
 	if s.Items != nil && s.Items.Schema != nil {
 		for i := 0; i < size; i++ {
 			value := val.Index(i)
-			validator := newSchemaValidator(s.Items.Schema, s.Root, fmt.Sprintf("%s.%d", s.Path, i))
+			validator := newSchemaValidator(s.Items.Schema, s.Root, fmt.Sprintf("%s.%d", s.Path, i), s.KnownFormats)
 			result.Merge(validator.Validate(value.Interface()))
 		}
 	}
@@ -48,7 +51,7 @@ func (s *schemaSliceValidator) Validate(data interface{}) *Result {
 	if s.Items != nil && len(s.Items.Schemas) > 0 {
 		itemsSize = int64(len(s.Items.Schemas))
 		for i := int64(0); i < itemsSize; i++ {
-			validator := newSchemaValidator(&s.Items.Schemas[i], s.Root, fmt.Sprintf("%s.%d", s.Path, i))
+			validator := newSchemaValidator(&s.Items.Schemas[i], s.Root, fmt.Sprintf("%s.%d", s.Path, i), s.KnownFormats)
 			result.Merge(validator.Validate(val.Index(int(i)).Interface()))
 		}
 
@@ -59,7 +62,7 @@ func (s *schemaSliceValidator) Validate(data interface{}) *Result {
 		}
 		if s.AdditionalItems.Schema != nil {
 			for i := itemsSize; i < (int64(size)-itemsSize)+1; i++ {
-				validator := newSchemaValidator(s.AdditionalItems.Schema, s.Root, fmt.Sprintf("%s.%d", s.Path, i))
+				validator := newSchemaValidator(s.AdditionalItems.Schema, s.Root, fmt.Sprintf("%s.%d", s.Path, i), s.KnownFormats)
 				result.Merge(validator.Validate(val.Index(int(i)).Interface()))
 			}
 		}

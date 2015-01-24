@@ -29,6 +29,7 @@ func JSONDoc(path string) (json.RawMessage, error) {
 
 // DynamicJSONToStruct converts an untyped json structure into a struct
 func DynamicJSONToStruct(data interface{}, target interface{}) error {
+	// TODO: convert straight to a json typed map  (mergo + iterate?)
 	b, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -93,6 +94,7 @@ func ConcatJSON(blobs ...[]byte) []byte {
 
 // ToDynamicJSON turns an object into a properly JSON typed structure
 func ToDynamicJSON(data interface{}) interface{} {
+	// TODO: convert straight to a json typed map (mergo + iterate?)
 	b, _ := json.Marshal(data)
 	var res interface{}
 	json.Unmarshal(b, &res)

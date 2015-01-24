@@ -20,29 +20,30 @@ type schemaPropsValidator struct {
 	oneOfValidators []schemaValidator
 	notValidator    *schemaValidator
 	Root            interface{}
+	KnownFormats    map[string]FormatValidator
 }
 
 func (s *schemaPropsValidator) SetPath(path string) {
 	s.Path = path
 }
 
-func newSchemaPropsValidator(path string, in string, allOf, oneOf, anyOf []spec.Schema, not *spec.Schema, deps spec.Dependencies, root interface{}) *schemaPropsValidator {
+func newSchemaPropsValidator(path string, in string, allOf, oneOf, anyOf []spec.Schema, not *spec.Schema, deps spec.Dependencies, root interface{}, formats map[string]FormatValidator) *schemaPropsValidator {
 	var anyValidators []schemaValidator
 	for _, v := range anyOf {
-		anyValidators = append(anyValidators, *newSchemaValidator(&v, root, path))
+		anyValidators = append(anyValidators, *newSchemaValidator(&v, root, path, formats))
 	}
 	var allValidators []schemaValidator
 	for _, v := range allOf {
-		allValidators = append(allValidators, *newSchemaValidator(&v, root, path))
+		allValidators = append(allValidators, *newSchemaValidator(&v, root, path, formats))
 	}
 	var oneValidators []schemaValidator
 	for _, v := range oneOf {
-		oneValidators = append(oneValidators, *newSchemaValidator(&v, root, path))
+		oneValidators = append(oneValidators, *newSchemaValidator(&v, root, path, formats))
 	}
 
 	var notValidator *schemaValidator
 	if not != nil {
-		notValidator = newSchemaValidator(not, root, path)
+		notValidator = newSchemaValidator(not, root, path, formats)
 	}
 
 	return &schemaPropsValidator{
@@ -58,11 +59,14 @@ func newSchemaPropsValidator(path string, in string, allOf, oneOf, anyOf []spec.
 		oneOfValidators: oneValidators,
 		notValidator:    notValidator,
 		Root:            root,
+		KnownFormats:    formats,
 	}
 }
 
 func (s *schemaPropsValidator) Applies(source interface{}, kind reflect.Kind) bool {
-	return reflect.TypeOf(source) == specSchemaType
+	r := reflect.TypeOf(source) == specSchemaType
+	// fmt.Printf("schema props validator for %q applies %t for %T (kind: %v)\n", s.Path, r, source, kind)
+	return r
 }
 
 func (s *schemaPropsValidator) Validate(data interface{}) *Result {
@@ -143,7 +147,7 @@ func (s *schemaPropsValidator) Validate(data interface{}) *Result {
 			if dep, ok := s.Dependencies[key]; ok {
 
 				if dep.Schema != nil {
-					mainResult.Merge(newSchemaValidator(dep.Schema, s.Root, s.Path+"."+key).Validate(data))
+					mainResult.Merge(newSchemaValidator(dep.Schema, s.Root, s.Path+"."+key, s.KnownFormats).Validate(data))
 					continue
 				}
 

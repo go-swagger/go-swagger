@@ -5,10 +5,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/asaskevich/govalidator"
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
-	"github.com/casualjim/go-swagger/reflection"
 	"github.com/casualjim/go-swagger/spec"
 )
 
@@ -17,28 +15,6 @@ const (
 	MaxJSONFloat = float64(1<<53 - 1)  // 9007199254740991.0 	 	 2^53 - 1
 	MinJSONFloat = -float64(1<<53 - 1) //-9007199254740991.0	-2^53 - 1
 )
-
-var formatCheckers = map[string]func(string) bool{
-	"datetime":   IsDateTime,
-	"date":       IsDate,
-	"byte":       govalidator.IsBase64,
-	"uri":        IsURI,
-	"email":      govalidator.IsEmail,
-	"hostname":   IsHostname,
-	"ipv4":       govalidator.IsIPv4,
-	"ipv6":       govalidator.IsIPv6,
-	"uuid":       govalidator.IsUUID,
-	"uuid3":      govalidator.IsUUIDv3,
-	"uuid4":      govalidator.IsUUIDv4,
-	"uuid5":      govalidator.IsUUIDv5,
-	"isbn":       func(str string) bool { return govalidator.IsISBN10(str) || govalidator.IsISBN13(str) },
-	"isbn10":     govalidator.IsISBN10,
-	"isbn13":     govalidator.IsISBN13,
-	"creditcard": govalidator.IsCreditCard,
-	"ssn":        govalidator.IsSSN,
-	"hexcolor":   govalidator.IsHexcolor,
-	"rgbcolor":   govalidator.IsRGBcolor,
-}
 
 // allow for integers [-2^53, 2^53-1] inclusive
 func isFloat64AnInteger(f float64) bool {
@@ -143,14 +119,16 @@ func (t *typeValidator) SetPath(path string) {
 }
 
 func (t *typeValidator) Applies(source interface{}, kind reflect.Kind) bool {
-	return (len(t.Type) > 0 || t.Format != "") && reflect.TypeOf(source) == specSchemaType
+	r := (len(t.Type) > 0 || t.Format != "") && reflect.TypeOf(source) == specSchemaType
+	// fmt.Printf("type validator for %q applies %t for %T (kind: %v)\n", t.Path, r, source, kind)
+	return r
 }
 
 func (t *typeValidator) Validate(data interface{}) *Result {
 	result := new(Result)
 	result.Inc()
-	if data == nil || reflection.IsZero(reflect.ValueOf(data)) {
-		if len(t.Type) > 0 && !t.Type.Contains("null") {
+	if data == nil || reflect.DeepEqual(reflect.Zero(reflect.TypeOf(data)), reflect.ValueOf(data)) {
+		if len(t.Type) > 0 && !t.Type.Contains("null") { // TODO: if a property is not required it also passes this
 			return sErr(errors.InvalidType(t.Path, t.In, strings.Join(t.Type, ","), "null"))
 		}
 		return result

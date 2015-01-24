@@ -13,6 +13,7 @@ func newOperationExecutor(ctx *Context) http.Handler {
 			ctx.Respond(rw, r, route.Produces, err)
 			return
 		}
+
 		ctx.Respond(rw, r, route.Produces, result)
 	})
 }

@@ -2,8 +2,13 @@ package validate
 
 import (
 	"net/url"
+	"reflect"
 	"regexp"
 	"strings"
+
+	"github.com/asaskevich/govalidator"
+	"github.com/casualjim/go-swagger/errors"
+	"github.com/casualjim/go-swagger/spec"
 )
 
 const (
@@ -41,9 +46,16 @@ var (
 	rxDateTime = regexp.MustCompile(DateTimePattern)
 )
 
-func IsURI(str string) bool {
+func IsStrictURI(str string) bool {
 	_, err := url.ParseRequestURI(str)
 	return err == nil
+}
+
+func IsURI(str string) bool {
+	// this makes little sense really but it needs
+	// https://github.com/swagger-api/swagger-spec/issues/249
+	// to be resolved before this can be changed
+	return IsStrictURI(str) || IsHostname(str)
 }
 
 // IsHostname returns true when the string is a valid hostname
@@ -92,4 +104,82 @@ func IsDateTime(str string) bool {
 	m := matches[0]
 	res := m[1] <= "23" && m[2] <= "59" && m[3] <= "59"
 	return res
+}
+
+// FormatValidator validates if a string matches a format
+type FormatValidator func(string) bool
+
+var formatCheckers = map[string]FormatValidator{
+	"datetime":   IsDateTime,
+	"date":       IsDate,
+	"byte":       govalidator.IsBase64,
+	"uri":        IsStrictURI,
+	"email":      govalidator.IsEmail,
+	"hostname":   IsHostname,
+	"ipv4":       govalidator.IsIPv4,
+	"ipv6":       govalidator.IsIPv6,
+	"uuid":       govalidator.IsUUID,
+	"uuid3":      govalidator.IsUUIDv3,
+	"uuid4":      govalidator.IsUUIDv4,
+	"uuid5":      govalidator.IsUUIDv5,
+	"isbn":       func(str string) bool { return govalidator.IsISBN10(str) || govalidator.IsISBN13(str) },
+	"isbn10":     govalidator.IsISBN10,
+	"isbn13":     govalidator.IsISBN13,
+	"creditcard": govalidator.IsCreditCard,
+	"ssn":        govalidator.IsSSN,
+	"hexcolor":   govalidator.IsHexcolor,
+	"rgbcolor":   govalidator.IsRGBcolor,
+}
+
+type formatValidator struct {
+	Default      interface{}
+	Format       string
+	Path         string
+	In           string
+	KnownFormats map[string]FormatValidator
+}
+
+func (f *formatValidator) SetPath(path string) {
+	f.Path = path
+}
+
+func (f *formatValidator) Applies(source interface{}, kind reflect.Kind) bool {
+	doit := func() bool {
+		if source == nil {
+			return false
+		}
+		switch source.(type) {
+		case *spec.Items:
+			it := source.(*spec.Items)
+			_, known := formatCheckers[strings.Replace(it.Format, "-", "", -1)]
+			return kind == reflect.String && known
+		case *spec.Parameter:
+			par := source.(*spec.Parameter)
+			_, known := formatCheckers[strings.Replace(par.Format, "-", "", -1)]
+			return kind == reflect.String && known
+		case *spec.Schema:
+			sch := source.(*spec.Schema)
+			_, known := formatCheckers[strings.Replace(sch.Format, "-", "", -1)]
+			return kind == reflect.String && known
+		}
+		return false
+	}
+	r := doit()
+	// fmt.Printf("schema props validator for %q applies %t for %T (kind: %v)\n", f.Path, r, source, kind)
+	return r
+}
+
+func (f *formatValidator) Validate(val interface{}) *Result {
+	result := new(Result)
+
+	var valid bool
+	if validate, ok := formatCheckers[strings.Replace(f.Format, "-", "", -1)]; ok {
+		valid = validate(val.(string))
+	}
+
+	if !valid {
+		result.AddErrors(errors.InvalidType(f.Path, f.In, f.Format, val))
+	}
+	result.Inc()
+	return result
 }

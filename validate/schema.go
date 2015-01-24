@@ -4,31 +4,41 @@ import (
 	"reflect"
 
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/util"
 )
 
 var specSchemaType = reflect.TypeOf(&spec.Schema{})
 
 // Spec validates a spec document
 func Spec(doc *spec.Document) *Result {
-	return WithSchema(doc.Schema(), doc.Spec())
+	fmts := make(map[string]FormatValidator)
+	for k, v := range formatCheckers {
+		if k == "uri" {
+			fmts[k] = IsURI
+		} else {
+			fmts[k] = v
+		}
+	}
+	return newSchemaValidator(doc.Schema(), nil, "", fmts).Validate(doc.Spec())
 }
 
-// WithSchema validates the specified data with the provided schema, when no schema
+// AgainstSchema validates the specified data with the provided schema, when no schema
 // is provided it uses the json schema as default
-func WithSchema(schema *spec.Schema, data interface{}) *Result {
-	return newSchemaValidator(schema, nil, "").Validate(data)
+func AgainstSchema(schema *spec.Schema, data interface{}) *Result {
+	return newSchemaValidator(schema, nil, "", formatCheckers).Validate(data)
 }
 
 // like param validator but for a full json schema
 type schemaValidator struct {
-	Path       string
-	in         string
-	Schema     *spec.Schema
-	validators []valueValidator
-	Root       interface{}
+	Path         string
+	in           string
+	Schema       *spec.Schema
+	validators   []valueValidator
+	Root         interface{}
+	KnownFormats map[string]FormatValidator
 }
 
-func newSchemaValidator(schema *spec.Schema, rootSchema interface{}, root string) *schemaValidator {
+func newSchemaValidator(schema *spec.Schema, rootSchema interface{}, root string, formats map[string]FormatValidator) *schemaValidator {
 	if schema == nil {
 		return nil
 	}
@@ -41,7 +51,12 @@ func newSchemaValidator(schema *spec.Schema, rootSchema interface{}, root string
 			panic(err)
 		}
 	}
-	s := schemaValidator{Path: root, in: "body", Schema: schema, Root: rootSchema}
+	// b, _ := json.MarshalIndent(schema, "", "  ")
+	// fmt.Printf("%s\n", b)
+	// b, _ = json.MarshalIndent(rootSchema, "", "  ")
+	// fmt.Printf("%s\n", b)
+
+	s := schemaValidator{Path: root, in: "body", Schema: schema, Root: rootSchema, KnownFormats: formats}
 
 	s.validators = []valueValidator{
 		s.typeValidator(),
@@ -66,13 +81,21 @@ func (s *schemaValidator) Validate(data interface{}) *Result {
 
 	tpe := reflect.TypeOf(data)
 	kind := tpe.Kind()
+	for kind == reflect.Ptr {
+		tpe = tpe.Elem()
+		kind = tpe.Kind()
+	}
+	d := data
+	if kind == reflect.Struct {
+		d = util.ToDynamicJSON(data)
+	}
 
 	for _, v := range s.validators {
 		if !v.Applies(s.Schema, kind) {
 			continue
 		}
 
-		err := v.Validate(data)
+		err := v.Validate(d)
 		result.Merge(err)
 		result.Inc()
 	}
@@ -103,6 +126,7 @@ func (s *schemaValidator) sliceValidator() valueValidator {
 		AdditionalItems: s.Schema.AdditionalItems,
 		Items:           s.Schema.Items,
 		Root:            s.Root,
+		KnownFormats:    s.KnownFormats,
 	}
 }
 
@@ -132,16 +156,17 @@ func (s *schemaValidator) stringValidator() valueValidator {
 
 func (s *schemaValidator) formatValidator() valueValidator {
 	return &formatValidator{
-		Path:    s.Path,
-		In:      s.in,
-		Default: s.Schema.Default,
-		Format:  s.Schema.Format,
+		Path:         s.Path,
+		In:           s.in,
+		Default:      s.Schema.Default,
+		Format:       s.Schema.Format,
+		KnownFormats: s.KnownFormats,
 	}
 }
 
 func (s *schemaValidator) schemaValidator() valueValidator {
 	sch := s.Schema
-	return newSchemaPropsValidator(s.Path, s.in, sch.AllOf, sch.OneOf, sch.AnyOf, sch.Not, sch.Dependencies, s.Root)
+	return newSchemaPropsValidator(s.Path, s.in, sch.AllOf, sch.OneOf, sch.AnyOf, sch.Not, sch.Dependencies, s.Root, s.KnownFormats)
 }
 
 func (s *schemaValidator) objectValidator() valueValidator {
@@ -155,5 +180,6 @@ func (s *schemaValidator) objectValidator() valueValidator {
 		AdditionalProperties: s.Schema.AdditionalProperties,
 		PatternProperties:    s.Schema.PatternProperties,
 		Root:                 s.Root,
+		KnownFormats:         s.KnownFormats,
 	}
 }

@@ -14,7 +14,13 @@ import (
 
 var textUnmarshalType = reflect.TypeOf(new(encoding.TextUnmarshaler)).Elem()
 
-type formats map[string]map[string]reflect.Type
+type StringFormat interface {
+	Name() string
+	Type() reflect.Type
+	Matches(string) bool
+}
+
+type formats []StringFormat
 
 // RequestBinder binds and validates the data from a http request
 type RequestBinder struct {
@@ -28,7 +34,7 @@ type RequestBinder struct {
 func NewRequestBinder(parameters map[string]spec.Parameter, spec *spec.Swagger) *RequestBinder {
 	binders := make(map[string]*paramBinder)
 	for fieldName, param := range parameters {
-		binders[fieldName] = newParamBinder(param, spec, nil)
+		binders[fieldName] = newParamBinder(param, spec, nil, formatCheckers)
 	}
 
 	return &RequestBinder{

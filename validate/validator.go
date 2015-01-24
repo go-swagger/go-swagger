@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
-	"strings"
 	"unicode/utf8"
 
 	"github.com/casualjim/go-swagger/errors"
@@ -58,14 +57,15 @@ func (r *Result) Inc() {
 }
 
 type itemsValidator struct {
-	items      *spec.Items
-	root       interface{}
-	path       string
-	in         string
-	validators []valueValidator
+	items        *spec.Items
+	root         interface{}
+	path         string
+	in           string
+	validators   []valueValidator
+	KnownFormats map[string]FormatValidator
 }
 
-func newItemsValidator(path, in string, items *spec.Items, root interface{}) *itemsValidator {
+func newItemsValidator(path, in string, items *spec.Items, root interface{}, formats map[string]FormatValidator) *itemsValidator {
 	iv := &itemsValidator{path: path, in: in, items: items, root: root}
 	iv.validators = []valueValidator{
 		iv.stringValidator(),
@@ -107,13 +107,14 @@ func (i *itemsValidator) commonValidator() valueValidator {
 
 func (i *itemsValidator) sliceValidator() valueValidator {
 	return &basicSliceValidator{
-		In:          i.in,
-		Default:     i.items.Default,
-		MaxItems:    i.items.MaxItems,
-		MinItems:    i.items.MinItems,
-		UniqueItems: i.items.UniqueItems,
-		Source:      i.root,
-		Items:       i.items.Items,
+		In:           i.in,
+		Default:      i.items.Default,
+		MaxItems:     i.items.MaxItems,
+		MinItems:     i.items.MinItems,
+		UniqueItems:  i.items.UniqueItems,
+		Source:       i.root,
+		Items:        i.items.Items,
+		KnownFormats: i.KnownFormats,
 	}
 }
 
@@ -141,20 +142,22 @@ func (i *itemsValidator) stringValidator() valueValidator {
 
 func (i *itemsValidator) formatValidator() valueValidator {
 	return &formatValidator{
-		In:      i.in,
-		Default: i.items.Default,
-		Format:  i.items.Format,
+		In:           i.in,
+		Default:      i.items.Default,
+		Format:       i.items.Format,
+		KnownFormats: i.KnownFormats,
 	}
 }
 
 // a param has very limited subset of validations to apply
 type paramValidator struct {
-	param      *spec.Parameter
-	validators []valueValidator
+	param        *spec.Parameter
+	validators   []valueValidator
+	KnownFormats map[string]FormatValidator
 }
 
-func newParamValidator(param *spec.Parameter) *paramValidator {
-	p := &paramValidator{param: param}
+func newParamValidator(param *spec.Parameter, formats map[string]FormatValidator) *paramValidator {
+	p := &paramValidator{param: param, KnownFormats: formats}
 	p.validators = []valueValidator{
 		p.stringValidator(),
 		p.formatValidator(),
@@ -263,10 +266,11 @@ func (p *paramValidator) stringValidator() valueValidator {
 
 func (p *paramValidator) formatValidator() valueValidator {
 	return &formatValidator{
-		Path:    p.param.Name,
-		In:      p.param.In,
-		Default: p.param.Default,
-		Format:  p.param.Format,
+		Path:         p.param.Name,
+		In:           p.param.In,
+		Default:      p.param.Default,
+		Format:       p.param.Format,
+		KnownFormats: p.KnownFormats,
 	}
 }
 
@@ -280,6 +284,7 @@ type basicSliceValidator struct {
 	Items          *spec.Items
 	Source         interface{}
 	itemsValidator *itemsValidator
+	KnownFormats   map[string]FormatValidator
 }
 
 func (s *basicSliceValidator) SetPath(path string) {
@@ -315,7 +320,7 @@ func (s *basicSliceValidator) Validate(data interface{}) *Result {
 		return sErr(errors.DuplicateItems(s.Path, s.In))
 	}
 	if s.itemsValidator == nil && s.Items != nil {
-		s.itemsValidator = newItemsValidator(s.Path, s.In, s.Items, s.Source)
+		s.itemsValidator = newItemsValidator(s.Path, s.In, s.Items, s.Source, s.KnownFormats)
 	}
 	if s.itemsValidator != nil {
 		for i := 0; i < int(size); i++ {
@@ -357,11 +362,14 @@ func (n *numberValidator) SetPath(path string) {
 
 func (n *numberValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	switch source.(type) {
-	case *spec.Parameter, *spec.Schema:
+	case *spec.Parameter, *spec.Schema, *spec.Items:
 		isInt := kind >= reflect.Int && kind <= reflect.Uint64
 		isFloat := kind == reflect.Float32 || kind == reflect.Float64
-		return isInt || isFloat
+		r := isInt || isFloat
+		// fmt.Printf("schema props validator for %q applies %t for %T (kind: %v)\n", n.Path, r, source, kind)
+		return r
 	}
+	// fmt.Printf("schema props validator for %q applies %t for %T (kind: %v)\n", n.Path, false, source, kind)
 	return false
 }
 
@@ -400,53 +408,6 @@ func (n *numberValidator) Validate(val interface{}) *Result {
 	return result
 }
 
-type formatValidator struct {
-	Default interface{}
-	Format  string
-	Path    string
-	In      string
-}
-
-func (f *formatValidator) SetPath(path string) {
-	f.Path = path
-}
-
-func (f *formatValidator) Applies(source interface{}, kind reflect.Kind) bool {
-	if source == nil {
-		return false
-	}
-	switch source.(type) {
-	case *spec.Items:
-		it := source.(*spec.Items)
-		_, known := formatCheckers[strings.Replace(it.Format, "-", "", -1)]
-		return kind == reflect.String && known
-	case *spec.Parameter:
-		par := source.(*spec.Parameter)
-		_, known := formatCheckers[strings.Replace(par.Format, "-", "", -1)]
-		return kind == reflect.String && known
-	case *spec.Schema:
-		sch := source.(*spec.Schema)
-		_, known := formatCheckers[strings.Replace(sch.Format, "-", "", -1)]
-		return kind == reflect.String && known
-	}
-	return false
-}
-
-func (f *formatValidator) Validate(val interface{}) *Result {
-	result := new(Result)
-
-	var valid bool
-	if validate, ok := formatCheckers[strings.Replace(f.Format, "-", "", -1)]; ok {
-		valid = validate(val.(string))
-	}
-
-	if !valid {
-		result.AddErrors(errors.InvalidType(f.Path, f.In, f.Format, val))
-	}
-	result.Inc()
-	return result
-}
-
 type stringValidator struct {
 	Default   interface{}
 	Required  bool
@@ -464,14 +425,17 @@ func (s *stringValidator) SetPath(path string) {
 func (s *stringValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	switch source.(type) {
 	case *spec.Parameter, *spec.Schema, *spec.Items:
-		return kind == reflect.String
+		r := kind == reflect.String
+		// fmt.Printf("string validator for %q applies %t for %T (kind: %v)\n", s.Path, r, source, kind)
+		return r
 	}
+	// fmt.Printf("string validator for %q applies %t for %T (kind: %v)\n", s.Path, false, source, kind)
 	return false
 }
 
 func (s *stringValidator) Validate(val interface{}) *Result {
 	data := val.(string)
-	if s.Required && s.Default == nil && data == "" {
+	if s.Required && (s.Default == nil || s.Default == "") && data == "" {
 		return sErr(errors.Required(s.Path, s.In))
 	}
 	strLen := int64(utf8.RuneCount([]byte(data)))

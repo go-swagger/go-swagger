@@ -1,8 +1,14 @@
-package swaggerui
+/*
+	Modified version of assetfs file here:
+	https://github.com/elazarl/go-bindata-assetfs/blob/master/assetfs.go
+*/
+
+package util
 
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -126,65 +132,43 @@ type AssetFS struct {
 	AssetDir func(path string) ([]string, error)
 	// Prefix would be prepended to http requests
 	Prefix string
-
-	Strip string
 }
 
 func (fs *AssetFS) Open(name string) (http.File, error) {
-	if name == fs.Strip {
-		name = fs.Strip + "/index.html"
-	}
-
-	// name = path.Join(fs.Prefix, name)
+	fmt.Println("looking for", name)
+	name = path.Join(fs.Prefix, name)
 	if len(name) > 0 && name[0] == '/' {
+		fmt.Println("stripping prefix", name[1:])
 		name = name[1:]
 	}
-	if name == "" || name == fs.Strip {
-		name = fs.Strip + "/index.html"
+	fmt.Println("asked for", name)
+	if children, err := fs.AssetDir(name); err == nil {
+		fmt.Println("this is a directory", children)
+		return NewAssetDirectory(name, children, fs), nil
 	}
-
-	if strings.Count(name, "/") > 1 {
-		if children, err := fs.AssetDir(name); err == nil {
-			return NewAssetDirectory(name, children, fs), nil
-		}
-
-	}
-
 	b, err := fs.Asset(name)
 	if err != nil {
 		return nil, err
 	}
-	return NewAssetFile(path.Join(fs.Prefix, name), b), nil
-}
-
-// Middleware creates a middleware to serve swagger-ui at /swagger-ui
-func Middleware(next http.Handler) http.Handler {
-	return middlewareAt("/swagger-ui", next)
+	return NewAssetFile(name, b), nil
 }
 
 // MiddlewareAt creates a middleware to serve swagger ui at the specified basePath
-func middlewareAt(basePath string, next http.Handler) http.Handler {
-	assetFS := func() *AssetFS {
-		for k := range _bintree.Children {
-			return &AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: basePath + "/" + k, Strip: basePath}
-		}
-		panic("unreachable")
+func MiddlewareAt(basePath string, assetFS func() *AssetFS, next http.Handler) http.Handler {
+	fileServer := http.FileServer(assetFS())
+	if basePath != "" && basePath != "/" {
+		fileServer = http.StripPrefix(basePath, fileServer)
 	}
 
-	fileServer := http.FileServer(assetFS())
-
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, "/favico") {
-			rw.WriteHeader(http.StatusNotFound)
-		}
-
 		if strings.HasPrefix(r.URL.Path, basePath) {
+			fmt.Println("serving url", r.URL)
 			fileServer.ServeHTTP(rw, r)
 			return
 		}
 
 		if next == nil {
-			rw.WriteHeader(http.StatusNotFound)
+			http.NotFound(rw, r)
 		} else {
 			next.ServeHTTP(rw, r)
 		}

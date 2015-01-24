@@ -30,16 +30,20 @@ func NewContext(spec *spec.Document, api *swagger.API, routes router.Router) *Co
 	return &Context{spec: spec, api: api, router: routes}
 }
 
+func defaultStack(context *Context) http.Handler {
+	terminator := context.OperationHandlerMiddleware()
+	validator := context.ValidationMiddleware(terminator)
+	return context.RouterMiddleware(validator)
+}
+
+func defaultStackWithUI(context *Context) http.Handler {
+	return swaggerui.Middleware("", defaultStack(context))
+}
+
 // Serve serves the specified spec with the specified api registrations as a http.Handler
 func Serve(spec *spec.Document, api *swagger.API) http.Handler {
 	context := NewContext(spec, api, nil)
-
-	terminator := context.OperationHandlerMiddleware()
-	validator := context.ValidationMiddleware(terminator)
-	router := context.RouterMiddleware(validator)
-	swaggerUI := swaggerui.Middleware(router)
-
-	return specMiddleware(context, swaggerUI)
+	return specMiddleware(context, defaultStackWithUI(context))
 }
 
 type contextKey int8

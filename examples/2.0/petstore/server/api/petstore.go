@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
 
@@ -32,6 +33,7 @@ var getAllPets = swagger.OperationHandlerFunc(func(data interface{}) (interface{
 	return pets, nil
 })
 var createPet = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
+	fmt.Println(data)
 	body := data.(map[string]interface{})["pet"]
 	var pet Pet
 	reflection.UnmarshalMap(body.(map[string]interface{}), &pet)

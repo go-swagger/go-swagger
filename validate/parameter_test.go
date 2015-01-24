@@ -27,7 +27,7 @@ var paramFactories = []paramFactory{
 }
 
 func np(param *spec.Parameter) *paramBinder {
-	return newParamBinder(*param, new(spec.Swagger), nil)
+	return newParamBinder(*param, new(spec.Swagger), nil, formatCheckers)
 }
 
 var stringItems = new(spec.Items)
@@ -228,12 +228,30 @@ func TestTypeDetectionInvalidItems(t *testing.T) {
 	assert.Nil(t, binder.Type())
 }
 
+type emailStrFmt struct {
+	name      string
+	tpe       reflect.Type
+	validator FormatValidator
+}
+
+func (e *emailStrFmt) Name() string {
+	return e.name
+}
+
+func (e *emailStrFmt) Type() reflect.Type {
+	return e.tpe
+}
+
+func (e *emailStrFmt) Matches(str string) bool {
+	return e.validator(str)
+}
+
 func TestTypeDetectionValid(t *testing.T) {
-	formats := map[string]map[string]reflect.Type{
-		"string": map[string]reflect.Type{
-			"email": reflect.TypeOf(email{}),
-		},
+	emlFmt := &emailStrFmt{
+		name: "email",
+		tpe:  reflect.TypeOf(email{}),
 	}
+	formats := []StringFormat{emlFmt}
 
 	expected := map[string]reflect.Type{
 		"name":         reflect.TypeOf(""),

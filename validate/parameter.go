@@ -17,15 +17,15 @@ import (
 	"github.com/casualjim/go-swagger/util"
 )
 
-func newParamBinder(param spec.Parameter, spec *spec.Swagger, formats formats) *paramBinder {
+func newParamBinder(param spec.Parameter, spec *spec.Swagger, formats formats, formatValidators map[string]FormatValidator) *paramBinder {
 	binder := new(paramBinder)
 	binder.name = param.Name
 	binder.parameter = &param
 	binder.formats = formats
 	if param.In != "body" {
-		binder.validator = newParamValidator(&param)
+		binder.validator = newParamValidator(&param, formatValidators)
 	} else {
-		binder.validator = newSchemaValidator(param.Schema, spec, param.Name)
+		binder.validator = newSchemaValidator(param.Schema, spec, param.Name, formatValidators)
 	}
 
 	return binder
@@ -43,9 +43,9 @@ func (p *paramBinder) Type() reflect.Type {
 }
 
 func (p *paramBinder) typeForSchema(tpe, format string, items *spec.Items) reflect.Type {
-	if fmts, ok := p.formats[tpe]; ok {
-		if tp, ok := fmts[format]; ok {
-			return tp
+	for _, fmt := range p.formats {
+		if tpe == "string" && format == fmt.Name() {
+			return fmt.Type()
 		}
 	}
 
