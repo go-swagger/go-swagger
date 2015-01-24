@@ -27,7 +27,7 @@
       if (!window.location.origin) {
         window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: '');
       }
-      var url = window.location.origin + "/api-docs";
+      var url = window.location.origin + "/swagger.json";
       window.swaggerUi = new SwaggerUi({
         url: url,
         dom_id: "swagger-ui-container",
