@@ -15,6 +15,10 @@
 			"Rev": "7883eee97610f4055832b397a1074a36297b54ce"
 		},
 		{
+			"ImportPath": "github.com/elazarl/go-bindata-assetfs",
+			"Rev": "fe5a90c9bd2990734f4928be5d3aeebb00f61f70"
+		},
+		{
 			"ImportPath": "github.com/golang/gddo/httputil",
 			"Rev": "bb20f8c58cabb359ba8de621fdd304c020d8c63c"
 		},
@@ -32,8 +36,21 @@
 			"Rev": "f1ac7f4f24f50328e6bc838ca4437d1612a0243c"
 		},
 		{
+			"ImportPath": "github.com/kr/pretty",
+			"Comment": "go.weekly.2011-12-22-24-gf31442d",
+			"Rev": "f31442d60e51465c69811e2107ae978868dbea5c"
+		},
+		{
+			"ImportPath": "github.com/kr/text",
+			"Rev": "6807e777504f54ad073ecef66747de158294b639"
+		},
+		{
 			"ImportPath": "github.com/naoina/denco",
 			"Rev": "272550a98ec2a20075bcc55e2c9996d66d2876f1"
+		},
+		{
+			"ImportPath": "github.com/nu7hatch/gouuid",
+			"Rev": "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
 		},
 		{
 			"ImportPath": "github.com/smartystreets/goconvey/convey",
@@ -46,7 +63,7 @@
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
-			"Rev": "bef53efd0c76e49e6de55ead051f886bea7e9420"
+			"Rev": "5d6f7e02b7cdad63b06ab3877915532cd30073b4"
 		}
 	]
 }
