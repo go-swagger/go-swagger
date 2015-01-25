@@ -30,6 +30,21 @@ type Operation struct {
 	operationProps
 }
 
+// SuccessResponse gets a success response model
+func (o *Operation) SuccessResponse() (*Response, int, bool) {
+	if o.Responses == nil {
+		return nil, 0, false
+	}
+
+	for k, v := range o.Responses.StatusCodeResponses {
+		if k/100 == 2 {
+			return &v, k, true
+		}
+	}
+
+	return nil, 0, false
+}
+
 // JSONLookup look up a value by the json property name
 func (o Operation) JSONLookup(token string) (interface{}, error) {
 	if ex, ok := o.Extensions[token]; ok {

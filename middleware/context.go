@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/casualjim/go-swagger"
+	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/httputils"
 	"github.com/casualjim/go-swagger/router"
 	"github.com/casualjim/go-swagger/spec"
@@ -127,22 +127,53 @@ func (c *Context) BindAndValidate(request *http.Request, matched *router.Matched
 	return result.bound, result.result
 }
 
+// NotFound the default not found responder for when no route has been matched yet
+func (c *Context) NotFound(rw http.ResponseWriter, r *http.Request) {
+	c.Respond(rw, r, []string{httputils.JSONMime}, nil, errors.NotFound("not found"))
+}
+
 // Respond renders the response after doing some content negotiation
-func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []string, data interface{}) {
+func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []string, route *router.MatchedRoute, data interface{}) {
+	format := c.ResponseFormat(r, produces)
+	rw.Header().Set(httputils.HeaderContentType, format)
+
 	if err, ok := data.(error); ok {
+		if format == "" {
+			rw.Header().Set(httputils.HeaderContentType, httputils.JSONMime)
+		}
 		c.api.ServeError(rw, r, err)
 		return
 	}
+	if route == nil || route.Operation == nil {
+		rw.WriteHeader(200)
+		producers := c.api.ProducersFor(produces)
+		prod, ok := producers[format]
+		if !ok {
+			panic(errors.New(http.StatusInternalServerError, "can't find a producer for "+format))
+		}
+		if err := prod.Produce(rw, data); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+		return
+	}
+	if _, code, ok := route.Operation.SuccessResponse(); ok {
+		if code == 201 || code == 204 {
+			rw.WriteHeader(code)
+			return
+		}
 
-	format := c.ResponseFormat(r, produces)
-	producers := c.api.ProducersFor([]string{format})
-	prod, ok := producers[format]
-	if !ok {
-		panic(errors.New("can't find a producer for " + format))
+		rw.WriteHeader(code)
+		producers := route.Producers
+		prod, ok := producers[format]
+		if !ok {
+			panic(errors.New(http.StatusInternalServerError, "can't find a producer for "+format))
+		}
+		if err := prod.Produce(rw, data); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+		return
 	}
-	if err := prod.Produce(rw, data); err != nil {
-		panic(err) // let the recovery middleware deal with this
-	}
+	c.api.ServeError(rw, r, errors.New(http.StatusInternalServerError, "can't produce response"))
 }
 
 // SpecMiddleware generates a middleware for serving the swagger spec document at /swagger.json

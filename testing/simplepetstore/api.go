@@ -2,7 +2,6 @@ package simplepetstore
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"sync"
 	"sync/atomic"
@@ -10,9 +9,7 @@ import (
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/middleware"
-	"github.com/casualjim/go-swagger/reflection"
 	"github.com/casualjim/go-swagger/spec"
-	"github.com/kr/pretty"
 )
 
 // NewPetstore creates a new petstore api handler
@@ -34,14 +31,13 @@ func NewPetstore() (http.Handler, error) {
 var getAllPets = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
 	return pets, nil
 })
-var createPet = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
-	fmt.Println("create pet")
-	pretty.Println(data)
-	body := data.(map[string]interface{})["pet"]
-	var pet Pet
-	reflection.UnmarshalMap(body.(map[string]interface{}), &pet)
 
-	return addPet(pet), nil
+var createPet = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
+	body := data.(map[string]interface{})["pet"].(map[string]interface{})
+	return addPet(Pet{
+		Name:   body["name"].(string),
+		Status: body["status"].(string),
+	}), nil
 })
 
 var deletePet = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {

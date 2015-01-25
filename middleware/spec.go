@@ -11,7 +11,7 @@ func specMiddleware(ctx *Context, next http.Handler) http.Handler {
 			return
 		}
 		if next == nil {
-			http.NotFound(rw, r)
+			ctx.NotFound(rw, r)
 			return
 		}
 		next.ServeHTTP(rw, r)

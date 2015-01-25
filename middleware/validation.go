@@ -18,7 +18,7 @@ func newValidation(ctx *Context, next http.Handler) http.Handler {
 		_, result := ctx.BindAndValidate(r, matched)
 
 		if result.HasErrors() {
-			ctx.Respond(rw, r, matched.Produces, result.Errors[0])
+			ctx.Respond(rw, r, matched.Produces, matched, result.Errors[0])
 			return
 		}
 

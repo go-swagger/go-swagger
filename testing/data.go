@@ -380,14 +380,16 @@ const PetStore20 = `{
       ]
     },
     "newPet": {
-      "allOf": [
+      "anyOf": [
         {
           "$ref": "#/definitions/Pet"
+        },
+        {
+          "required": [
+            "name"
+          ]
         }
-      ],
-      "required": [
-        "name"
-      ]
+      ]    
     },
     "Tag": {
       "id": "Tag",

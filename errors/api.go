@@ -82,16 +82,13 @@ func ServeError(rw http.ResponseWriter, r *http.Request, err error) {
 	switch err.(type) {
 	case *MethodNotAllowedError:
 		e := err.(*MethodNotAllowedError)
-		rw.Header().Set("content-type", "application/json")
 		rw.Header().Add("Allow", strings.Join(err.(*MethodNotAllowedError).Allowed, ","))
 		rw.WriteHeader(int(e.Code()))
 		rw.Write(errorAsJSON(e))
 	case Error:
-		rw.Header().Set("content-type", "application/json")
 		rw.WriteHeader(int(err.(Error).Code()))
 		rw.Write(errorAsJSON(err.(Error)))
 	default:
-		rw.Header().Set("content-type", "application/json")
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write(errorAsJSON(New(http.StatusInternalServerError, err.Error())))
 	}

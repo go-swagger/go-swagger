@@ -73,22 +73,23 @@ func TestContextRender(t *testing.T) {
 	ctx := NewContext(spec, api, nil)
 	request, _ := http.NewRequest("GET", "pets", nil)
 	request.Header.Set(httputils.HeaderAccept, ct)
+	ri, _ := ctx.RouteInfo(request)
 
 	recorder := httptest.NewRecorder()
-	ctx.Respond(recorder, request, []string{ct}, map[string]interface{}{"name": "hello"})
+	ctx.Respond(recorder, request, []string{ct}, ri, map[string]interface{}{"name": "hello"})
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "{\"name\":\"hello\"}\n", recorder.Body.String())
 
 	recorder = httptest.NewRecorder()
-	ctx.Respond(recorder, request, []string{ct}, errors.New("this went wrong"))
+	ctx.Respond(recorder, request, []string{ct}, ri, errors.New("this went wrong"))
 	assert.Equal(t, 500, recorder.Code)
 
 	recorder = httptest.NewRecorder()
-	assert.Panics(t, func() { ctx.Respond(recorder, request, []string{ct}, map[int]interface{}{1: "hello"}) })
+	assert.Panics(t, func() { ctx.Respond(recorder, request, []string{ct}, ri, map[int]interface{}{1: "hello"}) })
 
 	recorder = httptest.NewRecorder()
 	request, _ = http.NewRequest("GET", "pets", nil)
-	assert.Panics(t, func() { ctx.Respond(recorder, request, []string{}, map[string]interface{}{"name": "hello"}) })
+	assert.Panics(t, func() { ctx.Respond(recorder, request, []string{}, ri, map[string]interface{}{"name": "hello"}) })
 
 }
 

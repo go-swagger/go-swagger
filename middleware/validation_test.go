@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"bytes"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -31,7 +32,7 @@ func TestContentTypeValidation(t *testing.T) {
 
 	recorder = httptest.NewRecorder()
 	request, _ = http.NewRequest("POST", "/pets", nil)
-	request.Header.Add("Accept", "*/*")
+	request.Header.Add("Accept", "application/json")
 	request.Header.Add("content-type", "text/html")
 
 	mw.ServeHTTP(recorder, request)
@@ -45,15 +46,15 @@ func TestResponseFormatValidation(t *testing.T) {
 	mw := context.ValidationMiddleware(http.HandlerFunc(terminator))
 
 	recorder := httptest.NewRecorder()
-	request, _ := http.NewRequest("POST", "/pets", nil)
+	request, _ := http.NewRequest("POST", "/pets", bytes.NewBuffer([]byte(`{"name":"Dog"}`)))
 	request.Header.Set(httputils.HeaderContentType, "application/json")
 	request.Header.Set(httputils.HeaderAccept, "application/json")
 
 	mw.ServeHTTP(recorder, request)
-	assert.Equal(t, 200, recorder.Code)
+	assert.Equal(t, 200, recorder.Code, recorder.Body.String())
 
 	recorder = httptest.NewRecorder()
-	request, _ = http.NewRequest("POST", "/pets", nil)
+	request, _ = http.NewRequest("POST", "/pets", bytes.NewBuffer([]byte(`{"name":"Dog"}`)))
 	request.Header.Set(httputils.HeaderContentType, "application/json")
 	request.Header.Set(httputils.HeaderAccept, "application/sml")
 

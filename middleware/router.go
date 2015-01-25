@@ -35,10 +35,10 @@ func newRouter(ctx *Context, next http.Handler) http.Handler {
 
 		// Not found, check if it exists in the other methods first
 		if others := ctx.AllowedMethods(r); len(others) > 0 {
-			ctx.Respond(rw, r, ctx.spec.RequiredProduces(), errors.MethodNotAllowed(r.Method, others))
+			ctx.Respond(rw, r, ctx.spec.RequiredProduces(), nil, errors.MethodNotAllowed(r.Method, others))
 			return
 		}
 
-		ctx.Respond(rw, r, ctx.spec.RequiredProduces(), errors.NotFound("path %s was not found", r.URL.Path))
+		ctx.Respond(rw, r, ctx.spec.RequiredProduces(), nil, errors.NotFound("path %s was not found", r.URL.Path))
 	})
 }

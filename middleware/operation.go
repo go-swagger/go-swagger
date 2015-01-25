@@ -10,9 +10,9 @@ func newOperationExecutor(ctx *Context) http.Handler {
 		result, err := route.Handler.Handle(bound)
 
 		if err != nil {
-			ctx.Respond(rw, r, route.Produces, err)
+			ctx.Respond(rw, r, route.Produces, route, err)
 			return
 		}
-		ctx.Respond(rw, r, route.Produces, result)
+		ctx.Respond(rw, r, route.Produces, route, result)
 	})
 }

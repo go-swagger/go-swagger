@@ -51,7 +51,7 @@ func (o *RequestBinder) Bind(request *http.Request, routeParams swagger.RoutePar
 
 	for fieldName, param := range o.Parameters {
 		binder := o.paramBinders[fieldName]
-		// fmt.Println("binding", binder.name, "as", binder.Type(), "with", binder.validator)
+		// fmt.Println("binding", binder.name, "from", param.In, "as", binder.Type()) //, "with", binder.validator)
 
 		var target reflect.Value
 		if !isMap {
@@ -62,9 +62,14 @@ func (o *RequestBinder) Bind(request *http.Request, routeParams swagger.RoutePar
 		if isMap {
 			tpe := binder.Type()
 			if tpe == nil {
-				continue
+				if param.Schema.Type.Contains("array") {
+					tpe = reflect.TypeOf([]interface{}{})
+				} else {
+					tpe = reflect.TypeOf(map[string]interface{}{})
+				}
 			}
 			target = reflect.Indirect(reflect.New(tpe))
+
 		}
 
 		if !target.IsValid() {
