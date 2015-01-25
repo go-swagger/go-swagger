@@ -7,12 +7,12 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/PuerkitoBio/purell",
-			"Comment": "v0.1.0-10-g1909519",
-			"Rev": "1909519b19f44750062c3e8209d65c0921f18060"
+			"Comment": "v0.1.0-14-gc350669",
+			"Rev": "c350669cafb929d7c3910ed8a49ff6877d5d50a9"
 		},
 		{
 			"ImportPath": "github.com/asaskevich/govalidator",
-			"Rev": "7883eee97610f4055832b397a1074a36297b54ce"
+			"Rev": "e60f596c4ada4dcda1f2f3b150cb7b44d6d09690"
 		},
 		{
 			"ImportPath": "github.com/elazarl/go-bindata-assetfs",
@@ -28,8 +28,8 @@
 		},
 		{
 			"ImportPath": "github.com/jessevdk/go-flags",
-			"Comment": "v1-285-g1679536",
-			"Rev": "1679536dcc895411a9f5848d9a0250be7856448c"
+			"Comment": "v1-287-g43c5f3c",
+			"Rev": "43c5f3c18560f27f7a2749ab8c71679bd6496c45"
 		},
 		{
 			"ImportPath": "github.com/jtolds/gls",
@@ -37,8 +37,8 @@
 		},
 		{
 			"ImportPath": "github.com/kr/pretty",
-			"Comment": "go.weekly.2011-12-22-24-gf31442d",
-			"Rev": "f31442d60e51465c69811e2107ae978868dbea5c"
+			"Comment": "go.weekly.2011-12-22-26-gcb0850c",
+			"Rev": "cb0850c1681cbca3233e84f7e6ec3e4c3f352085"
 		},
 		{
 			"ImportPath": "github.com/kr/text",
@@ -59,7 +59,7 @@
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Rev": "e897f97d666c44ddbc131f4121c2961034b4c1b4"
+			"Rev": "33a31e5dbed8302d5ab7e6d12b416e95c2c4ebc0"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",

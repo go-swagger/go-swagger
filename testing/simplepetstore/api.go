@@ -2,6 +2,7 @@ package simplepetstore
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sync"
 	"sync/atomic"
@@ -11,6 +12,7 @@ import (
 	"github.com/casualjim/go-swagger/middleware"
 	"github.com/casualjim/go-swagger/reflection"
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/kr/pretty"
 )
 
 // NewPetstore creates a new petstore api handler
@@ -21,10 +23,10 @@ func NewPetstore() (http.Handler, error) {
 	}
 	api := swagger.NewAPI(spec)
 
-	api.RegisterOperation("getAllPets", getAllPets)
-	api.RegisterOperation("createPet", createPet)
+	api.RegisterOperation("findPets", getAllPets)
+	api.RegisterOperation("addPet", createPet)
 	api.RegisterOperation("deletePet", deletePet)
-	api.RegisterOperation("getPetById", getPetByID)
+	api.RegisterOperation("findPetById", getPetByID)
 
 	return middleware.Serve(spec, api), nil
 }
@@ -33,11 +35,13 @@ var getAllPets = swagger.OperationHandlerFunc(func(data interface{}) (interface{
 	return pets, nil
 })
 var createPet = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
+	fmt.Println("create pet")
+	pretty.Println(data)
 	body := data.(map[string]interface{})["pet"]
 	var pet Pet
 	reflection.UnmarshalMap(body.(map[string]interface{}), &pet)
-	addPet(pet)
-	return body, nil
+
+	return addPet(pet), nil
 })
 
 var deletePet = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
@@ -78,11 +82,12 @@ func newPetID() int64 {
 	return atomic.AddInt64(&lastPetID, 1)
 }
 
-func addPet(pet Pet) {
+func addPet(pet Pet) Pet {
 	petsLock.Lock()
 	defer petsLock.Unlock()
 	pet.ID = newPetID()
 	pets = append(pets, pet)
+	return pet
 }
 
 func removePet(id int64) {

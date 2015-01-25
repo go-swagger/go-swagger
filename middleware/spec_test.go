@@ -38,4 +38,5 @@ func TestServeSpecMiddleware(t *testing.T) {
 	recorder = httptest.NewRecorder()
 	handler.ServeHTTP(recorder, request)
 	assert.Equal(t, 200, recorder.Code)
+
 }

@@ -21,22 +21,23 @@ func TestRouterMiddleware(t *testing.T) {
 	mw := context.RouterMiddleware(http.HandlerFunc(terminator))
 
 	recorder := httptest.NewRecorder()
-	request, _ := http.NewRequest("GET", "http://localhost:8080/api/pets", nil)
+	request, _ := http.NewRequest("GET", "/api/pets", nil)
 
 	mw.ServeHTTP(recorder, request)
 	assert.Equal(t, 200, recorder.Code)
 
 	recorder = httptest.NewRecorder()
-	request, _ = http.NewRequest("DELETE", "http://localhost:8080/api/pets", nil)
+	request, _ = http.NewRequest("DELETE", "/api/pets", nil)
 
 	mw.ServeHTTP(recorder, request)
 	assert.Equal(t, http.StatusMethodNotAllowed, recorder.Code)
+
 	methods := strings.Split(recorder.Header().Get("Allow"), ",")
 	sort.Sort(sort.StringSlice(methods))
 	assert.Equal(t, "GET,POST", strings.Join(methods, ","))
 
 	recorder = httptest.NewRecorder()
-	request, _ = http.NewRequest("GET", "http://localhost:8080/pets", nil)
+	request, _ = http.NewRequest("GET", "/api/nopets", nil)
 
 	mw.ServeHTTP(recorder, request)
 	assert.Equal(t, http.StatusNotFound, recorder.Code)

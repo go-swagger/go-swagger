@@ -84,7 +84,6 @@ func (c *Context) RouteInfo(request *http.Request) (*router.MatchedRoute, bool) 
 			return val, ok
 		}
 	}
-
 	if route, ok := c.router.Lookup(request.Method, request.URL.Path); ok {
 		context.Set(request, ctxMatchedRoute, route)
 		return route, ok

@@ -45,7 +45,7 @@ func TestContextBindAndValidate(t *testing.T) {
 	spec, api := petstore.NewAPI(t)
 	ctx := NewContext(spec, api, nil)
 
-	request, _ := http.NewRequest("POST", "http://localhost:8080/api/pets", nil)
+	request, _ := http.NewRequest("POST", "/pets", nil)
 	request.Header.Add("Accept", "*/*")
 	request.Header.Add("content-type", "text/html")
 
@@ -71,7 +71,7 @@ func TestContextRender(t *testing.T) {
 	ct := httputils.JSONMime
 	spec, api := petstore.NewAPI(t)
 	ctx := NewContext(spec, api, nil)
-	request, _ := http.NewRequest("GET", "http://localhost:8080/api/pets", nil)
+	request, _ := http.NewRequest("GET", "pets", nil)
 	request.Header.Set(httputils.HeaderAccept, ct)
 
 	recorder := httptest.NewRecorder()
@@ -87,7 +87,7 @@ func TestContextRender(t *testing.T) {
 	assert.Panics(t, func() { ctx.Respond(recorder, request, []string{ct}, map[int]interface{}{1: "hello"}) })
 
 	recorder = httptest.NewRecorder()
-	request, _ = http.NewRequest("GET", "http://localhost:8080/api/pets", nil)
+	request, _ = http.NewRequest("GET", "pets", nil)
 	assert.Panics(t, func() { ctx.Respond(recorder, request, []string{}, map[string]interface{}{"name": "hello"}) })
 
 }
@@ -148,7 +148,7 @@ func TestContextInvalidResponseFormat(t *testing.T) {
 func TestContextValidRoute(t *testing.T) {
 	spec, api := petstore.NewAPI(t)
 	ctx := NewContext(spec, api, nil)
-	request, _ := http.NewRequest("GET", "http://localhost:8080/api/pets", nil)
+	request, _ := http.NewRequest("GET", "/pets", nil)
 
 	// check there's nothing there
 	_, ok := context.GetOk(request, ctxMatchedRoute)
@@ -170,7 +170,7 @@ func TestContextValidRoute(t *testing.T) {
 func TestContextInvalidRoute(t *testing.T) {
 	spec, api := petstore.NewAPI(t)
 	ctx := NewContext(spec, api, nil)
-	request, _ := http.NewRequest("DELETE", "http://localhost:8080/api/pets", nil)
+	request, _ := http.NewRequest("DELETE", "pets", nil)
 
 	// check there's nothing there
 	_, ok := context.GetOk(request, ctxMatchedRoute)

@@ -36,13 +36,13 @@ func newDefaultRouteBuilder(spec *spec.Document, api *swagger.API) *defaultRoute
 	}
 }
 
-// Default dreates a default implemenation of the router
+// Default creates a default implemenation of the router
 func Default(spec *spec.Document, api *swagger.API) Router {
 	builder := newDefaultRouteBuilder(spec, api)
 	if spec != nil {
 		for method, paths := range spec.Operations() {
 			for path, operation := range paths {
-				builder.AddRoute(method, spec.BasePath()+path, operation)
+				builder.AddRoute(method, path, operation)
 			}
 		}
 	}

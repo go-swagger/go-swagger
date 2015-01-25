@@ -70,7 +70,7 @@ For a V1 I want to have this feature set completed:
 
 ### Later
 
-After the v1 implementation extra transports is on the roadmap
+After the v1 implementation extra transports are on the roadmap
 
 - Transports:
   - [ ] swagger socket (swagger over tcp sockets)

@@ -46,19 +46,19 @@ func TestRouterStruct(t *testing.T) {
 	spec, api := petstore.NewAPI(t)
 	router := Default(spec, api)
 
-	methods := router.OtherMethods("post", "/api/pets/{id}")
+	methods := router.OtherMethods("post", "/pets/{id}")
 	assert.Len(t, methods, 2)
 
-	entry, ok := router.Lookup("delete", "/api/pets/{id}")
+	entry, ok := router.Lookup("delete", "/pets/{id}")
 	assert.True(t, ok)
 	assert.NotNil(t, entry)
 	assert.Len(t, entry.Params, 1)
 	assert.Equal(t, "id", entry.Params[0].Name)
 
-	_, ok = router.Lookup("delete", "/api/pets")
+	_, ok = router.Lookup("delete", "/pets")
 	assert.False(t, ok)
 
-	_, ok = router.Lookup("post", "/pets")
+	_, ok = router.Lookup("post", "/no-pets")
 	assert.False(t, ok)
 }
 

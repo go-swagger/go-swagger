@@ -36,7 +36,6 @@ func NewRequestBinder(parameters map[string]spec.Parameter, spec *spec.Swagger) 
 	for fieldName, param := range parameters {
 		binders[fieldName] = newParamBinder(param, spec, nil, formatCheckers)
 	}
-
 	return &RequestBinder{
 		Parameters:   parameters,
 		paramBinders: binders,

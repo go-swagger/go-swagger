@@ -23,7 +23,7 @@ func TestOperationExecutor(t *testing.T) {
 	mw := context.OperationHandlerMiddleware()
 
 	recorder := httptest.NewRecorder()
-	request, _ := http.NewRequest("GET", "http://localhost:8080/api/pets", nil)
+	request, _ := http.NewRequest("GET", "/pets", nil)
 	request.Header.Add("Accept", "application/json")
 	mw.ServeHTTP(recorder, request)
 	assert.Equal(t, 200, recorder.Code)
@@ -38,7 +38,7 @@ func TestOperationExecutor(t *testing.T) {
 	mw = context.OperationHandlerMiddleware()
 
 	recorder = httptest.NewRecorder()
-	request, _ = http.NewRequest("GET", "http://localhost:8080/api/pets", nil)
+	request, _ = http.NewRequest("GET", "/pets", nil)
 	request.Header.Add("Accept", "application/json")
 	mw.ServeHTTP(recorder, request)
 	assert.Equal(t, 422, recorder.Code)
