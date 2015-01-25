@@ -48,7 +48,7 @@ var jsonPointableType = reflect.TypeOf(new(JSONPointable)).Elem()
 // JSONPointable is an interface for structs to implement when they need to customize the
 // json pointer process
 type JSONPointable interface {
-	JSONLookup(token string) (interface{}, error)
+	JSONLookup(string) (interface{}, error)
 }
 
 type implStruct struct {

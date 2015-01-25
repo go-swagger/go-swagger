@@ -1,8 +1,7 @@
-package api
+package simplepetstore
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"sync"
 	"sync/atomic"
@@ -12,7 +11,6 @@ import (
 	"github.com/casualjim/go-swagger/middleware"
 	"github.com/casualjim/go-swagger/reflection"
 	"github.com/casualjim/go-swagger/spec"
-	"github.com/kr/pretty"
 )
 
 // NewPetstore creates a new petstore api handler
@@ -32,13 +30,9 @@ func NewPetstore() (http.Handler, error) {
 }
 
 var getAllPets = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
-	fmt.Println("getAllPets")
-	pretty.Println(data)
 	return pets, nil
 })
 var createPet = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
-	fmt.Println("createPet")
-	pretty.Println(data)
 	body := data.(map[string]interface{})["pet"]
 	var pet Pet
 	reflection.UnmarshalMap(body.(map[string]interface{}), &pet)
@@ -47,16 +41,12 @@ var createPet = swagger.OperationHandlerFunc(func(data interface{}) (interface{}
 })
 
 var deletePet = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
-	fmt.Println("deletePet")
-	pretty.Println(data)
 	id := data.(map[string]interface{})["id"].(int64)
 	removePet(id)
 	return nil, nil
 })
 
 var getPetByID = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
-	fmt.Println("getPetByID")
-	pretty.Println(data)
 	id := data.(map[string]interface{})["id"].(int64)
 	return petByID(id)
 })

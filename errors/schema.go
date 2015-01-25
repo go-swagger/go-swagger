@@ -17,9 +17,9 @@ const (
 	maxExcFail        = `%s in %s should be less than %v`
 	minIncFail        = `%s in %s should be greater than or equal to %v`
 	minExcFail        = `%s in %s should be greater than %v`
-	uniqueFail        = `%s in %s should shouldn't contain duplicates`
-	maxItemsFail      = `%s in %s should at most have %d items`
-	minItemsFail      = `%s in %s should at most have %d items`
+	uniqueFail        = `%s in %s shouldn't contain duplicates`
+	maxItemsFail      = `%s in %s should have at most %d items`
+	minItemsFail      = `%s in %s should have at least %d items`
 )
 
 // CompositeValidationError an error to wrap a bunch of other errors
@@ -38,7 +38,7 @@ func InvalidCollectionFormat(name, in, format string) *Validation {
 		Name:    name,
 		In:      in,
 		Value:   format,
-		message: fmt.Sprintf("the collection format %q is not supported for a %s param", format, in),
+		message: fmt.Sprintf("the collection format %q is not supported for the %s param %q", format, in, name),
 	}
 }
 

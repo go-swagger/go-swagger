@@ -10,6 +10,10 @@ func specMiddleware(ctx *Context, next http.Handler) http.Handler {
 			rw.Write(ctx.spec.Raw())
 			return
 		}
+		if next == nil {
+			http.NotFound(rw, r)
+			return
+		}
 		next.ServeHTTP(rw, r)
 	})
 }

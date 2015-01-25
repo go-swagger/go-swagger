@@ -12,6 +12,61 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestServe(t *testing.T) {
+	spec, api := petstore.NewAPI(t)
+	handler := Serve(spec, api)
+
+	// serve spec document
+	request, _ := http.NewRequest("GET", "http://localhost:8080/swagger.json", nil)
+	request.Header.Add("Content-Type", httputils.JSONMime)
+	request.Header.Add("Accept", httputils.JSONMime)
+	recorder := httptest.NewRecorder()
+
+	handler.ServeHTTP(recorder, request)
+	assert.Equal(t, 200, recorder.Code)
+
+	request, _ = http.NewRequest("GET", "http://localhost:8080/swagger-ui", nil)
+	recorder = httptest.NewRecorder()
+
+	handler.ServeHTTP(recorder, request)
+	assert.Equal(t, 404, recorder.Code)
+
+	// serve UI
+	handler = ServeWithUI(spec, api)
+	request, _ = http.NewRequest("GET", "http://localhost:8080/swagger-ui", nil)
+	recorder = httptest.NewRecorder()
+
+	handler.ServeHTTP(recorder, request)
+	assert.Equal(t, 200, recorder.Code)
+
+}
+
+func TestContextBindAndValidate(t *testing.T) {
+	spec, api := petstore.NewAPI(t)
+	ctx := NewContext(spec, api, nil)
+
+	request, _ := http.NewRequest("POST", "http://localhost:8080/api/pets", nil)
+	request.Header.Add("Accept", "*/*")
+	request.Header.Add("content-type", "text/html")
+
+	v, ok := context.GetOk(request, ctxBoundParams)
+	assert.False(t, ok)
+	assert.Nil(t, v)
+
+	ri, _ := ctx.RouteInfo(request)
+	data, result := ctx.BindAndValidate(request, ri) // this requires a much more thorough test
+	assert.NotNil(t, data)
+	assert.NotNil(t, result)
+
+	v, ok = context.GetOk(request, ctxBoundParams)
+	assert.True(t, ok)
+	assert.NotNil(t, v)
+
+	dd, rr := ctx.BindAndValidate(request, ri)
+	assert.Equal(t, data, dd)
+	assert.Equal(t, result, rr)
+}
+
 func TestContextRender(t *testing.T) {
 	ct := httputils.JSONMime
 	spec, api := petstore.NewAPI(t)

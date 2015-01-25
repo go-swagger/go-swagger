@@ -32,6 +32,21 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestIsRoot(t *testing.T) {
+	in := "#"
+	r1, err := New(in)
+	assert.NoError(t, err)
+	assert.True(t, r1.IsRoot())
+
+	in = "#/ok"
+	r1 = MustCreateRef(in)
+	assert.False(t, r1.IsRoot())
+
+	assert.Panics(t, assert.PanicTestFunc(func() {
+		MustCreateRef("%2")
+	}))
+}
+
 func TestFull(t *testing.T) {
 
 	in := "http://host/path/a/b/c#/f/a/b"

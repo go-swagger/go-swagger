@@ -30,20 +30,17 @@ func NewContext(spec *spec.Document, api *swagger.API, routes router.Router) *Co
 	return &Context{spec: spec, api: api, router: routes}
 }
 
-func defaultStack(context *Context) http.Handler {
-	terminator := context.OperationHandlerMiddleware()
-	validator := context.ValidationMiddleware(terminator)
-	return context.RouterMiddleware(validator)
-}
-
-func defaultStackWithUI(context *Context) http.Handler {
-	return swaggerui.Middleware("", defaultStack(context))
-}
-
 // Serve serves the specified spec with the specified api registrations as a http.Handler
 func Serve(spec *spec.Document, api *swagger.API) http.Handler {
 	context := NewContext(spec, api, nil)
-	return specMiddleware(context, defaultStackWithUI(context))
+	return context.APIHandler()
+}
+
+// ServeWithUI serves the specified spec with the specified api registrations as a http.Handler
+// it also enables the swagger docs ui on /swagger-ui
+func ServeWithUI(spec *spec.Document, api *swagger.API) http.Handler {
+	context := NewContext(spec, api, nil)
+	return context.UIMiddleware(context.APIHandler())
 }
 
 type contextKey int8
@@ -149,6 +146,11 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 	}
 }
 
+// SpecMiddleware generates a middleware for serving the swagger spec document at /swagger.json
+func (c *Context) SpecMiddleware(handler http.Handler) http.Handler {
+	return specMiddleware(c, handler)
+}
+
 // RouterMiddleware creates a new router middleware for this context
 func (c *Context) RouterMiddleware(handler http.Handler) http.Handler {
 	return newRouter(c, handler)
@@ -162,4 +164,21 @@ func (c *Context) ValidationMiddleware(handler http.Handler) http.Handler {
 // OperationHandlerMiddleware creates a terminating http handler
 func (c *Context) OperationHandlerMiddleware() http.Handler {
 	return newOperationExecutor(c)
+}
+
+// APIHandler returns a handler to serve
+func (c *Context) APIHandler() http.Handler {
+	return c.SpecMiddleware(c.DefaultMiddlewares())
+}
+
+// UIMiddleware creates a new swagger UI middleware for this context
+func (c *Context) UIMiddleware(handler http.Handler) http.Handler {
+	return swaggerui.Middleware("", handler)
+}
+
+// DefaultMiddlewares generates the default middleware handler stack
+func (c *Context) DefaultMiddlewares() http.Handler {
+	terminator := c.OperationHandlerMiddleware()
+	validator := c.ValidationMiddleware(terminator)
+	return c.RouterMiddleware(validator)
 }

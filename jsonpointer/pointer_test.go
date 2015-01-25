@@ -27,6 +27,7 @@ package jsonpointer
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -117,6 +118,71 @@ func TestFullDocument(t *testing.T) {
 	if len(result.(map[string]interface{})) != TestDocumentNBItems {
 		t.Errorf("Get(%v) = %v, expect full document", in, result)
 	}
+
+	result, _, err = p.get(testDocumentJSON, nil)
+	if err != nil {
+		t.Errorf("Get(%v) error %v", in, err.Error())
+	}
+
+	if len(result.(map[string]interface{})) != TestDocumentNBItems {
+		t.Errorf("Get(%v) = %v, expect full document", in, result)
+	}
+}
+
+func TestDecodedTokens(t *testing.T) {
+	p, err := New("/obj/a~1b")
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"obj", "a/b"}, p.DecodedTokens())
+}
+
+func TestIsEmpty(t *testing.T) {
+	p, err := New("")
+	assert.NoError(t, err)
+	assert.True(t, p.IsEmpty())
+	p, err = New("/obj")
+	assert.NoError(t, err)
+	assert.False(t, p.IsEmpty())
+}
+
+func TestGetSingle(t *testing.T) {
+	in := `/obj`
+
+	_, err := New(in)
+	assert.NoError(t, err)
+	result, _, err := GetForToken(testDocumentJSON, "obj")
+	assert.NoError(t, err)
+	assert.Len(t, result, TestNodeObjNBItems)
+
+	result, _, err = GetForToken(testStructJSONDoc, "Obj")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+
+	result, _, err = GetForToken(testStructJSONDoc, "Obj2")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+type pointableImpl struct {
+	a string
+}
+
+func (p pointableImpl) JSONLookup(token string) (interface{}, error) {
+	if token == "some" {
+		return p.a, nil
+	}
+	return nil, fmt.Errorf("object has no field %q", token)
+}
+
+func TestPointableInterface(t *testing.T) {
+	p := &pointableImpl{"hello"}
+
+	result, _, err := GetForToken(p, "some")
+	assert.NoError(t, err)
+	assert.Equal(t, p.a, result)
+
+	result, _, err = GetForToken(p, "something")
+	assert.Error(t, err)
+	assert.Nil(t, result)
 }
 
 func TestGetNode(t *testing.T) {

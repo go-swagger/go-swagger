@@ -35,6 +35,8 @@ Currently there is a spec validator tool:
 
 ## What's inside?
 
+For a V1 I want to have this feature set completed:
+
 - [x] An object model that serializes to swagger yaml or json 
 - [x] A tool to work with swagger:
   - [x] validate a swagger spec document
@@ -64,5 +66,16 @@ Currently there is a spec validator tool:
   - social security number
   - hexcolor
   - rgbcolor
+- [ ] custom string formats
 
+### Later
+
+After the v1 implementation extra transports is on the roadmap
+
+- Transports:
+  - [ ] swagger socket (swagger over tcp sockets)
+  - [ ] swagger websocket (swagger over websockets)
+  - [ ] swagger sockjs (swagger over sockjs)
+  - [ ] swagger socket.io (swagger over socket.io)
+  - [ ] swagger 0mq (swagger over 0mq)
 
