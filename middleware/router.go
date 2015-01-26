@@ -23,16 +23,15 @@ func newRouter(ctx *Context, next http.Handler) http.Handler {
 				handleRequest(rw, r)
 				return
 			}
-		}
-
-		if p := strings.TrimPrefix(r.URL.Path, ctx.spec.BasePath()); len(p) < len(r.URL.Path) {
-			r.URL.Path = p
-			if _, ok := ctx.RouteInfo(r); ok {
-				handleRequest(rw, r)
-				return
+		} else {
+			if p := strings.TrimPrefix(r.URL.Path, ctx.spec.BasePath()); len(p) < len(r.URL.Path) {
+				r.URL.Path = p
+				if _, ok := ctx.RouteInfo(r); ok {
+					handleRequest(rw, r)
+					return
+				}
 			}
 		}
-
 		// Not found, check if it exists in the other methods first
 		if others := ctx.AllowedMethods(r); len(others) > 0 {
 			ctx.Respond(rw, r, ctx.spec.RequiredProduces(), nil, errors.MethodNotAllowed(r.Method, others))

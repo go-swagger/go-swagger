@@ -7,6 +7,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func schemeNames(schemes []SecurityRequirement) []string {
+	var names []string
+	for _, v := range schemes {
+		names = append(names, v.Name)
+	}
+	sort.Sort(sort.StringSlice(names))
+	return names
+}
+
 func newAnalyzer(spec *Swagger) *specAnalyzer {
 	a := &specAnalyzer{
 		spec:        spec,
@@ -33,14 +42,26 @@ func TestAnalyzer(t *testing.T) {
 	op := &Operation{}
 	op.Consumes = []string{"application/x-yaml"}
 	op.Produces = []string{"application/x-yaml"}
+	op.Security = []map[string][]string{
+		map[string][]string{"oauth2": []string{}},
+		map[string][]string{"basic": nil},
+	}
 	op.ID = "someOperation"
 	op.Parameters = []Parameter{*skipParam}
 	pi.Get = op
 
 	spec := &Swagger{
 		swaggerProps: swaggerProps{
-			Consumes:   []string{"application/json"},
-			Produces:   []string{"application/json"},
+			Consumes: []string{"application/json"},
+			Produces: []string{"application/json"},
+			Security: []map[string][]string{
+				map[string][]string{"apikey": nil},
+			},
+			SecurityDefinitions: map[string]*SecurityScheme{
+				"basic":  BasicAuth(),
+				"apiKey": APIKeyAuth("api_key", "query"),
+				"oauth2": OAuth2AccessToken("http://authorize.com", "http://token.com"),
+			},
 			Parameters: map[string]Parameter{"format": *formatParam},
 			Paths: &Paths{
 				Paths: map[string]PathItem{
@@ -66,6 +87,14 @@ func TestAnalyzer(t *testing.T) {
 	sort.Sort(sort.StringSlice(produces))
 	assert.Equal(t, expected, produces)
 
+	expectedSchemes := []SecurityRequirement{SecurityRequirement{"oauth2", []string{}}, SecurityRequirement{"basic", nil}}
+	schemes := analyzer.securityRequirementsFor(spec.Paths.Paths["/"].Get)
+	assert.Equal(t, schemeNames(expectedSchemes), schemeNames(schemes))
+
+	securityDefinitions := analyzer.SecurityDefinitionsFor(spec.Paths.Paths["/"].Get)
+	assert.Equal(t, securityDefinitions["basic"], *spec.SecurityDefinitions["basic"])
+	assert.Equal(t, securityDefinitions["oauth2"], *spec.SecurityDefinitions["oauth2"])
+
 	parameters := analyzer.ParamsFor("GET", "/")
 	assert.Len(t, parameters, 3)
 
@@ -76,6 +105,8 @@ func TestAnalyzer(t *testing.T) {
 	assert.Len(t, producers, 2)
 	consumers := analyzer.RequiredConsumes()
 	assert.Len(t, consumers, 2)
+	authSchemes := analyzer.RequiredSchemes()
+	assert.Len(t, authSchemes, 3)
 
 	ops := analyzer.Operations()
 	assert.Len(t, ops, 1)

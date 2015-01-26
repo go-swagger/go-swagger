@@ -37,7 +37,33 @@ func TestRouterMiddleware(t *testing.T) {
 	assert.Equal(t, "GET,POST", strings.Join(methods, ","))
 
 	recorder = httptest.NewRecorder()
-	request, _ = http.NewRequest("GET", "/api/nopets", nil)
+	request, _ = http.NewRequest("GET", "/nopets", nil)
+
+	mw.ServeHTTP(recorder, request)
+	assert.Equal(t, http.StatusNotFound, recorder.Code)
+
+	spec, api = petstore.NewRootAPI(t)
+	context = NewContext(spec, api, nil)
+	mw = context.RouterMiddleware(http.HandlerFunc(terminator))
+
+	recorder = httptest.NewRecorder()
+	request, _ = http.NewRequest("GET", "/pets", nil)
+
+	mw.ServeHTTP(recorder, request)
+	assert.Equal(t, 200, recorder.Code)
+
+	recorder = httptest.NewRecorder()
+	request, _ = http.NewRequest("DELETE", "/pets", nil)
+
+	mw.ServeHTTP(recorder, request)
+	assert.Equal(t, http.StatusMethodNotAllowed, recorder.Code)
+
+	methods = strings.Split(recorder.Header().Get("Allow"), ",")
+	sort.Sort(sort.StringSlice(methods))
+	assert.Equal(t, "GET,POST", strings.Join(methods, ","))
+
+	recorder = httptest.NewRecorder()
+	request, _ = http.NewRequest("GET", "/nopets", nil)
 
 	mw.ServeHTTP(recorder, request)
 	assert.Equal(t, http.StatusNotFound, recorder.Code)

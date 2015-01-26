@@ -52,6 +52,7 @@ const (
 	ctxMatchedRoute
 	ctxAllowedMethods
 	ctxBoundParams
+	ctxSecurityPrincipal
 
 	ctxConsumer
 )
@@ -101,7 +102,6 @@ func (c *Context) ResponseFormat(r *http.Request, offers []string) string {
 	}
 
 	format := httputil.NegotiateContentType(r, offers, "")
-	// fmt.Fprintf(os.Stdout, "content type %q format %q", ct, format)
 	if format != "" {
 		context.Set(r, ctxResponseFormat, format)
 	}
@@ -111,6 +111,22 @@ func (c *Context) ResponseFormat(r *http.Request, offers []string) string {
 // AllowedMethods gets the allowed methods for the path of this request
 func (c *Context) AllowedMethods(request *http.Request) []string {
 	return c.router.OtherMethods(request.Method, request.URL.Path)
+}
+
+// Authorize authorizes the request
+func (c *Context) Authorize(request *http.Request, route *router.MatchedRoute) (interface{}, error) {
+	if v, ok := context.GetOk(request, ctxSecurityPrincipal); ok {
+		return v, nil
+	}
+	for _, authenticator := range route.Authenticators {
+		applies, usr, err := authenticator.Authenticate(request)
+		if !applies || err != nil || usr == nil {
+			continue
+		}
+		context.Set(request, ctxSecurityPrincipal, usr)
+		return usr, nil
+	}
+	return nil, errors.Unauthenticated("invalid credentials")
 }
 
 // BindAndValidate binds and validates the request
@@ -206,9 +222,15 @@ func (c *Context) UIMiddleware(handler http.Handler) http.Handler {
 	return swaggerui.Middleware("", handler)
 }
 
+// SecurityMiddleware creates the middleware to provide security for the API
+func (c *Context) SecurityMiddleware(handler http.Handler) http.Handler {
+	return newSecureAPI(c, handler)
+}
+
 // DefaultMiddlewares generates the default middleware handler stack
 func (c *Context) DefaultMiddlewares() http.Handler {
 	terminator := c.OperationHandlerMiddleware()
 	validator := c.ValidationMiddleware(terminator)
-	return c.RouterMiddleware(validator)
+	secured := c.SecurityMiddleware(validator)
+	return c.RouterMiddleware(secured)
 }

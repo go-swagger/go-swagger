@@ -5,6 +5,8 @@ import (
 	gotest "testing"
 
 	"github.com/casualjim/go-swagger"
+	"github.com/casualjim/go-swagger/errors"
+	"github.com/casualjim/go-swagger/security"
 	"github.com/casualjim/go-swagger/spec"
 	testingutil "github.com/casualjim/go-swagger/testing"
 	"github.com/stretchr/testify/assert"
@@ -25,6 +27,57 @@ func NewAPI(t *gotest.T) (*spec.Document, *swagger.API) {
 	api.RegisterConsumer("application/x-yaml", swagger.YAMLConsumer())
 	api.RegisterProducer("application/x-yaml", swagger.YAMLProducer())
 
+	api.RegisterAuth("basic", security.BasicAuth(func(username, password string) (interface{}, error) {
+		if username == "admin" && password == "admin" {
+			return "admin", nil
+		}
+		return nil, errors.Unauthenticated("basic")
+	}))
+	api.RegisterAuth("apiKey", security.APIKeyAuth("X-API-KEY", "header", func(token string) (interface{}, error) {
+		if token == "token123" {
+			return "admin", nil
+		}
+		return nil, errors.Unauthenticated("token")
+	}))
+	api.RegisterOperation("getAllPets", new(stubOperationHandler))
+	api.RegisterOperation("createPet", new(stubOperationHandler))
+	api.RegisterOperation("deletePet", new(stubOperationHandler))
+	api.RegisterOperation("getPetById", new(stubOperationHandler))
+
+	api.Models["pet"] = func() interface{} { return new(Pet) }
+	api.Models["newPet"] = func() interface{} { return new(Pet) }
+	api.Models["tag"] = func() interface{} { return new(Tag) }
+
+	return spec, api
+}
+
+// NewAPI registers a stub api for the pet store
+func NewRootAPI(t *gotest.T) (*spec.Document, *swagger.API) {
+	spec, err := spec.New(testingutil.RootPetStoreJSONMessage, "")
+	assert.NoError(t, err)
+	api := swagger.NewAPI(spec)
+
+	api.RegisterConsumer("application/json", swagger.JSONConsumer())
+	api.RegisterProducer("application/json", swagger.JSONProducer())
+	api.RegisterConsumer("application/xml", new(stubConsumer))
+	api.RegisterProducer("application/xml", new(stubProducer))
+	api.RegisterProducer("text/plain", new(stubProducer))
+	api.RegisterProducer("text/html", new(stubProducer))
+	api.RegisterConsumer("application/x-yaml", swagger.YAMLConsumer())
+	api.RegisterProducer("application/x-yaml", swagger.YAMLProducer())
+
+	api.RegisterAuth("basic", security.BasicAuth(func(username, password string) (interface{}, error) {
+		if username == "admin" && password == "admin" {
+			return "admin", nil
+		}
+		return nil, errors.Unauthenticated("basic")
+	}))
+	api.RegisterAuth("apiKey", security.APIKeyAuth("X-API-KEY", "header", func(token string) (interface{}, error) {
+		if token == "token123" {
+			return "admin", nil
+		}
+		return nil, errors.Unauthenticated("token")
+	}))
 	api.RegisterOperation("getAllPets", new(stubOperationHandler))
 	api.RegisterOperation("createPet", new(stubOperationHandler))
 	api.RegisterOperation("deletePet", new(stubOperationHandler))

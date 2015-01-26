@@ -28,6 +28,11 @@ func (s *specAnalyzer) initialize() {
 	for _, c := range s.spec.Produces {
 		s.produces[c] = struct{}{}
 	}
+	for _, ss := range s.spec.Security {
+		for k := range ss {
+			s.authSchemes[k] = struct{}{}
+		}
+	}
 	for path, pathItem := range s.AllPaths() {
 		s.analyzeOperations(path, &pathItem)
 	}
@@ -51,11 +56,66 @@ func (s *specAnalyzer) analyzeOperation(method, path string, op *Operation) {
 		for _, c := range op.Produces {
 			s.produces[c] = struct{}{}
 		}
+		for _, ss := range op.Security {
+			for k := range ss {
+				s.authSchemes[k] = struct{}{}
+			}
+		}
 		if _, ok := s.operations[method]; !ok {
 			s.operations[method] = make(map[string]*Operation)
 		}
 		s.operations[method][path] = op
 	}
+}
+
+// SecurityRequirement is a representation of a security requirement for an operation
+type SecurityRequirement struct {
+	Name   string
+	Scopes []string
+}
+
+// SecurityRequirementsFor gets the security requirements for the operation
+func (s *specAnalyzer) securityRequirementsFor(operation *Operation) []SecurityRequirement {
+	if s.spec.Security == nil && operation.Security == nil {
+		return nil
+	}
+
+	schemes := s.spec.Security
+	if operation.Security != nil {
+		schemes = operation.Security
+	}
+
+	unique := make(map[string]SecurityRequirement)
+	for _, scheme := range schemes {
+		for k, v := range scheme {
+			if _, ok := unique[k]; !ok {
+				unique[k] = SecurityRequirement{Name: k, Scopes: v}
+			}
+		}
+	}
+
+	var result []SecurityRequirement
+	for _, v := range unique {
+		result = append(result, v)
+	}
+	return result
+}
+
+// SecurityDefinitionsFor gets the matching security definitions for a set of requirements
+func (s *specAnalyzer) SecurityDefinitionsFor(operation *Operation) map[string]SecurityScheme {
+	requirements := s.securityRequirementsFor(operation)
+	if len(requirements) == 0 {
+		return nil
+	}
+	result := make(map[string]SecurityScheme)
+	for _, v := range requirements {
+		if definition, ok := s.spec.SecurityDefinitions[v.Name]; ok {
+			if definition != nil {
+				result[v.Name] = *definition
+			}
+		}
+	}
+	return result
 }
 
 // ConsumesFor gets the mediatypes for the operation
@@ -148,4 +208,8 @@ func (s *specAnalyzer) RequiredConsumes() []string {
 
 func (s *specAnalyzer) RequiredProduces() []string {
 	return s.structMapKeys(s.produces)
+}
+
+func (s *specAnalyzer) RequiredSchemes() []string {
+	return s.structMapKeys(s.authSchemes)
 }

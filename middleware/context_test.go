@@ -41,6 +41,49 @@ func TestServe(t *testing.T) {
 
 }
 
+func TestContextAuthorize(t *testing.T) {
+	spec, api := petstore.NewAPI(t)
+	ctx := NewContext(spec, api, nil)
+
+	request, _ := httputils.JSONRequest("GET", "/pets", nil)
+
+	v, ok := context.GetOk(request, ctxSecurityPrincipal)
+	assert.False(t, ok)
+	assert.Nil(t, v)
+
+	ri, _ := ctx.RouteInfo(request)
+	p, err := ctx.Authorize(request, ri)
+	assert.Error(t, err)
+	assert.Nil(t, p)
+
+	v, ok = context.GetOk(request, ctxSecurityPrincipal)
+	assert.False(t, ok)
+	assert.Nil(t, v)
+
+	request.SetBasicAuth("wrong", "wrong")
+	p, err = ctx.Authorize(request, ri)
+	assert.Error(t, err)
+	assert.Nil(t, p)
+
+	v, ok = context.GetOk(request, ctxSecurityPrincipal)
+	assert.False(t, ok)
+	assert.Nil(t, v)
+
+	request.SetBasicAuth("admin", "admin")
+	p, err = ctx.Authorize(request, ri)
+	assert.NoError(t, err)
+	assert.Equal(t, "admin", p)
+
+	v, ok = context.GetOk(request, ctxSecurityPrincipal)
+	assert.True(t, ok)
+	assert.Equal(t, "admin", v)
+
+	request.SetBasicAuth("doesn't matter", "doesn't")
+	pp, rr := ctx.Authorize(request, ri)
+	assert.Equal(t, p, pp)
+	assert.Equal(t, err, rr)
+}
+
 func TestContextBindAndValidate(t *testing.T) {
 	spec, api := petstore.NewAPI(t)
 	ctx := NewContext(spec, api, nil)
@@ -91,6 +134,31 @@ func TestContextRender(t *testing.T) {
 	request, _ = http.NewRequest("GET", "pets", nil)
 	assert.Panics(t, func() { ctx.Respond(recorder, request, []string{}, ri, map[string]interface{}{"name": "hello"}) })
 
+	request, _ = http.NewRequest("GET", "/pets", nil)
+	request.Header.Set(httputils.HeaderAccept, ct)
+	ri, _ = ctx.RouteInfo(request)
+
+	recorder = httptest.NewRecorder()
+	ctx.Respond(recorder, request, []string{ct}, ri, map[string]interface{}{"name": "hello"})
+	assert.Equal(t, 200, recorder.Code)
+	assert.Equal(t, "{\"name\":\"hello\"}\n", recorder.Body.String())
+
+	recorder = httptest.NewRecorder()
+	ctx.Respond(recorder, request, []string{ct}, ri, errors.New("this went wrong"))
+	assert.Equal(t, 500, recorder.Code)
+
+	recorder = httptest.NewRecorder()
+	assert.Panics(t, func() { ctx.Respond(recorder, request, []string{ct}, ri, map[int]interface{}{1: "hello"}) })
+
+	recorder = httptest.NewRecorder()
+	request, _ = http.NewRequest("GET", "/pets", nil)
+	assert.Panics(t, func() { ctx.Respond(recorder, request, []string{}, ri, map[string]interface{}{"name": "hello"}) })
+
+	recorder = httptest.NewRecorder()
+	request, _ = http.NewRequest("DELETE", "/pets/1", nil)
+	ri, _ = ctx.RouteInfo(request)
+	ctx.Respond(recorder, request, ri.Produces, ri, nil)
+	assert.Equal(t, 204, recorder.Code)
 }
 
 func TestContextValidResponseFormat(t *testing.T) {

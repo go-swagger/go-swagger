@@ -5,6 +5,8 @@
 [![GoDoc](https://godoc.org/github.com/casualjim/go-swagger?status.svg)](http://godoc.org/github.com/casualjim/go-swagger)
 [![license](http://img.shields.io/badge/license-Apache%20v2-orange.svg)](https://raw.githubusercontent.com/swagger-api/swagger-spec/master/LICENSE)
 
+This API is not stable yet, when it is stable it will be distributed over gopkg.in
+
 Contains an implementation of Swagger 2.0.
 It knows how to serialize and deserialize swagger specifications.
 
@@ -33,6 +35,10 @@ Currently there is a spec validator tool:
 
   swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
 
+You can also serve a swagger document with the swagger UI
+
+  swagger ui ./swagger.json
+
 ## What's inside?
 
 For a V1 I want to have this feature set completed:
@@ -52,21 +58,29 @@ For a V1 I want to have this feature set completed:
   - [x] routing
   - [x] validation 
   - [ ] authorization
+    - [x] basic auth
+    - [x] api key auth
+    - [ ] oauth2
   - [x] swagger docs UI
 - [x] Typed JSON Schema implementation
-- [x] extended string formats
-  - uuid, uuid3, uuid4, uuid5
-  - email
-  - uri
-  - hostname
-  - ipv4
-  - ipv6
-  - credit card
-  - isbn, isbn10, isbn13
-  - social security number
-  - hexcolor
-  - rgbcolor
-- [ ] custom string formats
+  - [x] JSON Pointer that knows about structs
+  - [x] JSON Reference that knows about structs
+- [ ] extended string formats
+  - [x] uuid, uuid3, uuid4, uuid5
+  - [x] email
+  - [x] uri (absolute)
+  - [x] hostname
+  - [x] ipv4
+  - [x] ipv6
+  - [x] credit card
+  - [x] isbn, isbn10, isbn13
+  - [x] social security number
+  - [x] hexcolor
+  - [x] rgbcolor
+  - [x] date
+  - [x] date-time
+  - [ ] duration
+  - [ ] custom string formats
 
 ### Later
 
@@ -78,4 +92,10 @@ After the v1 implementation extra transports are on the roadmap
   - [ ] swagger sockjs (swagger over sockjs)
   - [ ] swagger socket.io (swagger over socket.io)
   - [ ] swagger 0mq (swagger over 0mq)
+- Authorization:
+  - [ ] oauth2 provider
+    - [ ] implicit
+    - [ ] access code
+    - [ ] password
+    - [ ] application
 

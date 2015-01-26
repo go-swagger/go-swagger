@@ -50,16 +50,17 @@ func Default(spec *spec.Document, api *swagger.API) Router {
 }
 
 type routeEntry struct {
-	PathPattern string
-	BasePath    string
-	Operation   *spec.Operation
-	Consumes    []string
-	Consumers   map[string]swagger.Consumer
-	Produces    []string
-	Producers   map[string]swagger.Producer
-	Parameters  map[string]spec.Parameter
-	Handler     swagger.OperationHandler
-	Binder      *validate.RequestBinder
+	PathPattern    string
+	BasePath       string
+	Operation      *spec.Operation
+	Consumes       []string
+	Consumers      map[string]swagger.Consumer
+	Produces       []string
+	Producers      map[string]swagger.Producer
+	Parameters     map[string]spec.Parameter
+	Handler        swagger.OperationHandler
+	Binder         *validate.RequestBinder
+	Authenticators map[string]swagger.Authenticator
 }
 
 // MatchedRoute represents the route that was matched in this request
@@ -106,16 +107,18 @@ func (d *defaultRouteBuilder) AddRoute(method, path string, operation *spec.Oper
 		consumes := d.spec.ConsumesFor(operation)
 		produces := d.spec.ProducesFor(operation)
 		parameters := d.spec.ParamsFor(method, path)
+		definitions := d.spec.SecurityDefinitionsFor(operation)
 
 		record := denco.NewRecord(pathConverter.ReplaceAllString(path, ":$1"), &routeEntry{
-			Operation:  operation,
-			Handler:    handler,
-			Consumes:   consumes,
-			Produces:   produces,
-			Consumers:  d.api.ConsumersFor(consumes),
-			Producers:  d.api.ProducersFor(produces),
-			Parameters: parameters,
-			Binder:     validate.NewRequestBinder(parameters, d.spec.Spec()),
+			Operation:      operation,
+			Handler:        handler,
+			Consumes:       consumes,
+			Produces:       produces,
+			Consumers:      d.api.ConsumersFor(consumes),
+			Producers:      d.api.ProducersFor(produces),
+			Parameters:     parameters,
+			Binder:         validate.NewRequestBinder(parameters, d.spec.Spec()),
+			Authenticators: d.api.AuthenticatorsFor(definitions),
 		})
 		d.records[mn] = append(d.records[mn], record)
 	}

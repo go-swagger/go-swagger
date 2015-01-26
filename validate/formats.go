@@ -46,11 +46,13 @@ var (
 	rxDateTime = regexp.MustCompile(DateTimePattern)
 )
 
+// IsStrictURI returns true when the string is an absolute URI
 func IsStrictURI(str string) bool {
 	_, err := url.ParseRequestURI(str)
 	return err == nil
 }
 
+// IsURI returns true when the string resembles an URI
 func IsURI(str string) bool {
 	// this makes little sense really but it needs
 	// https://github.com/swagger-api/swagger-spec/issues/249
@@ -151,15 +153,15 @@ func (f *formatValidator) Applies(source interface{}, kind reflect.Kind) bool {
 		switch source.(type) {
 		case *spec.Items:
 			it := source.(*spec.Items)
-			_, known := formatCheckers[strings.Replace(it.Format, "-", "", -1)]
+			_, known := f.KnownFormats[strings.Replace(it.Format, "-", "", -1)]
 			return kind == reflect.String && known
 		case *spec.Parameter:
 			par := source.(*spec.Parameter)
-			_, known := formatCheckers[strings.Replace(par.Format, "-", "", -1)]
+			_, known := f.KnownFormats[strings.Replace(par.Format, "-", "", -1)]
 			return kind == reflect.String && known
 		case *spec.Schema:
 			sch := source.(*spec.Schema)
-			_, known := formatCheckers[strings.Replace(sch.Format, "-", "", -1)]
+			_, known := f.KnownFormats[strings.Replace(sch.Format, "-", "", -1)]
 			return kind == reflect.String && known
 		}
 		return false
@@ -173,7 +175,7 @@ func (f *formatValidator) Validate(val interface{}) *Result {
 	result := new(Result)
 
 	var valid bool
-	if validate, ok := formatCheckers[strings.Replace(f.Format, "-", "", -1)]; ok {
+	if validate, ok := f.KnownFormats[strings.Replace(f.Format, "-", "", -1)]; ok {
 		valid = validate(val.(string))
 	}
 

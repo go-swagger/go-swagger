@@ -1,9 +1,11 @@
 package swagger
 
 import (
+	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
+	"sort"
 	"strings"
 
 	"github.com/casualjim/go-swagger/errors"
@@ -20,28 +22,28 @@ func NewAPI(spec *spec.Document) *API {
 		producers: map[string]Producer{
 			"application/json": JSONProducer(),
 		},
-		// authHandlers: make(map[string]AuthHandler),
-		operations: make(map[string]OperationHandler),
-		ServeError: errors.ServeError,
-		Models:     make(map[string]func() interface{}),
+		authenticators: make(map[string]Authenticator),
+		operations:     make(map[string]OperationHandler),
+		ServeError:     errors.ServeError,
+		Models:         make(map[string]func() interface{}),
 	}
 }
 
 // API represents an untyped mux for a swagger spec
 type API struct {
-	spec      *spec.Document
-	consumers map[string]Consumer
-	producers map[string]Producer
-	// authHandlers map[string]AuthHandler
-	operations map[string]OperationHandler
-	ServeError func(http.ResponseWriter, *http.Request, error)
-	Models     map[string]func() interface{}
+	spec           *spec.Document
+	consumers      map[string]Consumer
+	producers      map[string]Producer
+	authenticators map[string]Authenticator
+	operations     map[string]OperationHandler
+	ServeError     func(http.ResponseWriter, *http.Request, error)
+	Models         map[string]func() interface{}
 }
 
-// // RegisterAuth registers an auth handler in this api
-// func (d *API) RegisterAuth(scheme string, handler AuthHandler) {
-// 	d.authHandlers[strings.ToUpper(scheme)] = handler
-// }
+// RegisterAuth registers an auth handler in this api
+func (d *API) RegisterAuth(scheme string, handler Authenticator) {
+	d.authenticators[scheme] = handler
+}
 
 // RegisterConsumer registers a consumer for a media type.
 func (d *API) RegisterConsumer(mediaType string, handler Consumer) {
@@ -86,6 +88,17 @@ func (d *API) ProducersFor(mediaTypes []string) map[string]Producer {
 	return result
 }
 
+// AuthenticatorsFor gets the authenticators for the specified security schemes
+func (d *API) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]Authenticator {
+	result := make(map[string]Authenticator)
+	for k := range schemes {
+		if a, ok := d.authenticators[k]; ok {
+			result[k] = a
+		}
+	}
+	return result
+}
+
 // Validate validates this API for any missing items
 func (d *API) Validate() error {
 	return d.validate()
@@ -97,19 +110,25 @@ func (d *API) validate() error {
 	for k := range d.consumers {
 		consumes = append(consumes, k)
 	}
+
 	var produces []string
 	for k := range d.producers {
 		produces = append(produces, k)
 	}
-	// TODO: implement auth handlers later
-	// var authHandlers []string
-	// for k := range d.authHandlers {
-	// 	authHandlers = append(authHandlers, k)
-	// }
+
+	var authenticators []string
+	for k := range d.authenticators {
+		authenticators = append(authenticators, k)
+	}
 
 	var operations []string
 	for k := range d.operations {
 		operations = append(operations, k)
+	}
+
+	var definedAuths []string
+	for k := range d.spec.Spec().SecurityDefinitions {
+		definedAuths = append(definedAuths, k)
 	}
 
 	if err := d.verify("consumes", consumes, d.spec.RequiredConsumes()); err != nil {
@@ -118,17 +137,26 @@ func (d *API) validate() error {
 	if err := d.verify("produces", produces, d.spec.RequiredProduces()); err != nil {
 		return err
 	}
-	// TODO: hook auth in later on
-	// if err := d.verify("auth scheme", schemes, s.structMapKeys(s.authSchemes)); err != nil {
-	// 	return err
-	// }
 	if err := d.verify("operation", operations, d.spec.OperationIDs()); err != nil {
+		return err
+	}
+
+	requiredAuths := d.spec.RequiredSchemes()
+	if err := d.verify("auth scheme", authenticators, requiredAuths); err != nil {
+		return err
+	}
+	fmt.Printf("comparing %s with %s\n", strings.Join(definedAuths, ","), strings.Join(requiredAuths, ","))
+	if err := d.verify("security definitions", definedAuths, requiredAuths); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (d *API) verify(name string, registrations []string, expectations []string) error {
+
+	sort.Sort(sort.StringSlice(registrations))
+	sort.Sort(sort.StringSlice(expectations))
+
 	expected := map[string]struct{}{}
 	seen := map[string]struct{}{}
 
@@ -152,6 +180,8 @@ func (d *API) verify(name string, registrations []string, expectations []string)
 	for k := range expected {
 		unregistered = append(unregistered, k)
 	}
+	sort.Sort(sort.StringSlice(unspecified))
+	sort.Sort(sort.StringSlice(unregistered))
 
 	if len(unregistered) > 0 || len(unspecified) > 0 {
 		return &APIVerificationFailed{
@@ -213,14 +243,17 @@ type Producer interface {
 	Produce(io.Writer, interface{}) error
 }
 
-// AuthHandler implementations know how to authenticate and subsequently authorize a request.
-type AuthHandler interface {
-	Authenticate(...string) (interface{}, error)
-	Authorize(interface{}, ...string) error
+// AuthenticatorFunc turns a function into an authenticator
+type AuthenticatorFunc func(interface{}) (bool, interface{}, error)
+
+// Authenticate authenticates the request with the provided data
+func (f AuthenticatorFunc) Authenticate(params interface{}) (bool, interface{}, error) {
+	return f(params)
 }
 
-// // AuthHandler handles authentication for an API
-// type AuthHandler interface {
-// 	// Authenticate peforms the authentication
-// 	Authenticate(*http.Request) interface{}
-// }
+// Authenticator represents an authentication strategy
+// implementations of Authenticator know how to authenticate the
+// request data and translate that into a valid principal object or an error
+type Authenticator interface {
+	Authenticate(interface{}) (bool, interface{}, error)
+}
