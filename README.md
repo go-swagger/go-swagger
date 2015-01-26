@@ -49,7 +49,6 @@ For a V1 I want to have this feature set completed:
   - [x] serve swagger UI for any swagger spec file
   - [ ] generate stub api based on swagger spec
   - [ ] generate client from a swagger spec
-  - [ ] generate spec document based on the code
   - [ ] generate "sensible" random data based on swagger spec
   - [ ] generate tests based on swagger spec for server
   - [ ] generate tests based on swagger spec for client
@@ -65,6 +64,7 @@ For a V1 I want to have this feature set completed:
 - [x] Typed JSON Schema implementation
   - [x] JSON Pointer that knows about structs
   - [x] JSON Reference that knows about structs
+  - [x] Passes current json schema test suite
 - [ ] extended string formats
   - [x] uuid, uuid3, uuid4, uuid5
   - [x] email
@@ -86,6 +86,8 @@ For a V1 I want to have this feature set completed:
 
 After the v1 implementation extra transports are on the roadmap
 
+- Tools:
+  - [ ] generate spec document based on the code
 - Transports:
   - [ ] swagger socket (swagger over tcp sockets)
   - [ ] swagger websocket (swagger over websockets)
