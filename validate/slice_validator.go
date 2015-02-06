@@ -40,9 +40,10 @@ func (s *schemaSliceValidator) Validate(data interface{}) *Result {
 	size := val.Len()
 
 	if s.Items != nil && s.Items.Schema != nil {
+		validator := newSchemaValidator(s.Items.Schema, s.Root, s.Path, s.KnownFormats)
 		for i := 0; i < size; i++ {
+			validator.SetPath(fmt.Sprintf("%s.%d", s.Path, i))
 			value := val.Index(i)
-			validator := newSchemaValidator(s.Items.Schema, s.Root, fmt.Sprintf("%s.%d", s.Path, i), s.KnownFormats)
 			result.Merge(validator.Validate(value.Interface()))
 		}
 	}
@@ -68,14 +69,20 @@ func (s *schemaSliceValidator) Validate(data interface{}) *Result {
 		}
 	}
 
-	if s.MinItems != nil && int64(size) < *s.MinItems {
-		result.AddErrors(errors.TooFewItems(s.Path, s.In, *s.MinItems))
+	if s.MinItems != nil {
+		if err := MinItems(s.Path, s.In, itemsSize, *s.MinItems); err != nil {
+			result.AddErrors(err)
+		}
 	}
-	if s.MaxItems != nil && int64(size) > *s.MaxItems {
-		result.AddErrors(errors.TooManyItems(s.Path, s.In, *s.MaxItems))
+	if s.MaxItems != nil {
+		if err := MaxItems(s.Path, s.In, itemsSize, *s.MaxItems); err != nil {
+			result.AddErrors(err)
+		}
 	}
-	if s.UniqueItems && s.hasDuplicates(val, size) {
-		result.AddErrors(errors.DuplicateItems(s.Path, s.In))
+	if s.UniqueItems {
+		if err := UniqueItems(s.Path, s.In, val.Interface()); err != nil {
+			result.AddErrors(err)
+		}
 	}
 	result.Inc()
 	return result

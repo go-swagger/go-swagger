@@ -5,4 +5,13 @@ const (
 	HeaderContentType = "Content-Type"
 	// HeaderAccept the Accept header
 	HeaderAccept = "Accept"
+
+	charsetKey = "charset"
+
+	// DefaultMime the default fallback mime type
+	DefaultMime = "application/octet-stream"
+	// JSONMime the json mime type
+	JSONMime = "application/json"
+	// YAMLMime the yaml mime type
+	YAMLMime = "application/x-yaml"
 )

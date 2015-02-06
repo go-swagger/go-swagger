@@ -56,10 +56,15 @@ For a V1 I want to have this feature set completed:
   - [x] serve spec
   - [x] routing
   - [x] validation 
+    - [ ] additional validation through an interface
   - [ ] authorization
     - [x] basic auth
     - [x] api key auth
     - [ ] oauth2
+      - [ ] implicit
+      - [ ] access code
+      - [ ] password
+      - [ ] application
   - [x] swagger docs UI
 - [x] Typed JSON Schema implementation
   - [x] JSON Pointer that knows about structs
@@ -94,10 +99,7 @@ After the v1 implementation extra transports are on the roadmap
   - [ ] swagger sockjs (swagger over sockjs)
   - [ ] swagger socket.io (swagger over socket.io)
   - [ ] swagger 0mq (swagger over 0mq)
-- Authorization:
-  - [ ] oauth2 provider
-    - [ ] implicit
-    - [ ] access code
-    - [ ] password
-    - [ ] application
+- Templates:
+  - [ ] Allow usage of templates using stdlib templates
+    
 

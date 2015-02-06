@@ -35,6 +35,15 @@ type validation struct {
 	consumer swagger.Consumer
 }
 
+type untypedBinder map[string]interface{}
+
+func (ub untypedBinder) BindRequest(r *http.Request, route *router.MatchedRoute, consumer swagger.Consumer) error {
+	if res := route.Binder.Bind(r, route.Params, consumer, ub); res != nil && res.HasErrors() {
+		return errors.CompositeValidationError(res.Errors...)
+	}
+	return nil
+}
+
 func validateRequest(ctx *Context, request *http.Request, route *router.MatchedRoute) *validation {
 	validate := &validation{
 		context:  ctx,

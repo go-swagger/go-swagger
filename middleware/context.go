@@ -14,6 +14,12 @@ import (
 	"github.com/gorilla/context"
 )
 
+// RequestBinder is an interface for types to implement
+// when they want to be able to bind from a request
+type RequestBinder interface {
+	BindRequest(*http.Request, *router.MatchedRoute, swagger.Consumer) *validate.Result
+}
+
 // Context is a type safe wrapper around an untyped request context
 // used throughout to store request context with the gorilla context module
 type Context struct {
@@ -62,8 +68,57 @@ type contentTypeValue struct {
 	Charset   string
 }
 
+// BasePath returns the base path for this API
+func (c *Context) BasePath() string {
+	return c.spec.BasePath()
+}
+
+// RequiredProduces returns the accepted content types for responses
+func (c *Context) RequiredProduces() []string {
+	return c.spec.RequiredProduces()
+}
+
+// BindValidRequest binds a params object to a request but only when the request is valid
+// if the request is not valid an error will be returned
+func (c *Context) BindValidRequest(binder RequestBinder, request *http.Request, route *router.MatchedRoute) error {
+	res := new(validate.Result)
+	var consumer swagger.Consumer
+
+	// check and validate content type, select consumer
+	if httputils.CanHaveBody(request.Method) {
+		ct, _, err := httputils.ContentType(request.Header)
+		if err != nil {
+			res.AddErrors(err)
+		} else {
+			if err := validate.ContentType(route.Consumes, ct); err != nil {
+				res.AddErrors(err)
+			}
+			consumer = route.Consumers[ct]
+		}
+	}
+
+	// check and validate the response format
+	if res.IsValid() {
+		if str := httputil.NegotiateContentType(request, route.Produces, ""); str == "" {
+			res.AddErrors(errors.InvalidResponseFormat(request.Header.Get(httputils.HeaderAccept), route.Produces))
+		}
+	}
+
+	// now bind the request with the provided binder
+	// it's assumed the binder will also validate the request and return an error if the
+	// request is invalid
+	if res.IsValid() {
+		res.Merge(binder.BindRequest(request, route, consumer))
+	}
+
+	if res.HasErrors() {
+		return errors.CompositeValidationError(res.Errors...)
+	}
+	return nil
+}
+
 // ContentType gets the parsed value of a content type
-func (c *Context) ContentType(request *http.Request) (string, string, *httputils.ParseError) {
+func (c *Context) ContentType(request *http.Request) (string, string, *errors.ParseError) {
 	if v, ok := context.GetOk(request, ctxContentType); ok {
 		if val, ok := v.(*contentTypeValue); ok {
 			return val.MediaType, val.Charset, nil
@@ -78,6 +133,14 @@ func (c *Context) ContentType(request *http.Request) (string, string, *httputils
 	return mt, cs, nil
 }
 
+// LookupRoute looks a route up and returns true when it is found
+func (c *Context) LookupRoute(request *http.Request) (*router.MatchedRoute, bool) {
+	if route, ok := c.router.Lookup(request.Method, request.URL.Path); ok {
+		return route, ok
+	}
+	return nil, false
+}
+
 // RouteInfo tries to match a route for this request
 func (c *Context) RouteInfo(request *http.Request) (*router.MatchedRoute, bool) {
 	if v, ok := context.GetOk(request, ctxMatchedRoute); ok {
@@ -85,7 +148,7 @@ func (c *Context) RouteInfo(request *http.Request) (*router.MatchedRoute, bool) 
 			return val, ok
 		}
 	}
-	if route, ok := c.router.Lookup(request.Method, request.URL.Path); ok {
+	if route, ok := c.LookupRoute(request); ok {
 		context.Set(request, ctxMatchedRoute, route)
 		return route, ok
 	}
@@ -115,6 +178,9 @@ func (c *Context) AllowedMethods(request *http.Request) []string {
 
 // Authorize authorizes the request
 func (c *Context) Authorize(request *http.Request, route *router.MatchedRoute) (interface{}, error) {
+	if len(route.Authenticators) == 0 {
+		return nil, nil
+	}
 	if v, ok := context.GetOk(request, ctxSecurityPrincipal); ok {
 		return v, nil
 	}

@@ -8,16 +8,6 @@ import (
 	"github.com/casualjim/go-swagger/errors"
 )
 
-// func stringAuthenticator(handler TokenAuthentication) swagger.Authenticator {
-// 	return swagger.AuthenticatorFunc(func(params interface{}) (bool, interface{}, error) {
-// 		if token, ok := params.(string); ok {
-// 			p, err := handler(token)
-// 			return true, p, err
-// 		}
-// 		return false, nil, nil
-// 	})
-// }
-
 // httpAuthenticator is a function that authenticates a HTTP request
 func httpAuthenticator(handler func(*http.Request) (bool, interface{}, error)) swagger.Authenticator {
 	return swagger.AuthenticatorFunc(func(params interface{}) (bool, interface{}, error) {
@@ -69,17 +59,3 @@ func APIKeyAuth(name, in string, authenticate TokenAuthentication) swagger.Authe
 		return true, p, err
 	})
 }
-
-// // OAuth2Client is an authenticator that mounts some middlewares in addition to being
-// // an actual autenticator, used when the context initializes for serving
-// type OAuth2Client struct {
-// 	SchemeName   string
-// 	ClientID     string
-// 	ClientSecret string
-// 	RedirectURL  string
-// }
-
-// // OAuth2 uses an access token to exchange for a principal object
-// func OAuth2(authenticate TokenAuthentication) swagger.Authenticator {
-// 	return stringAuthenticator(authenticate)
-// }

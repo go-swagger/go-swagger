@@ -170,7 +170,12 @@ func (d *Document) Spec() *Swagger {
 	return d.spec
 }
 
-// Row returns the raw swagger spec as json bytes
+// Host returns the host for the API
+func (d *Document) Host() string {
+	return d.spec.Host
+}
+
+// Raw returns the raw swagger spec as json bytes
 func (d *Document) Raw() json.RawMessage {
 	return d.raw
 }

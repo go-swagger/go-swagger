@@ -12,7 +12,6 @@ type translationSample struct {
 }
 
 func titleize(s string) string { return strings.ToTitle(s) }
-func lower(s string) string    { return strings.ToLower(s) }
 
 func TestToGoName(t *testing.T) {
 	samples := []translationSample{

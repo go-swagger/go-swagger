@@ -105,7 +105,7 @@ When a result is produced it will do the same thing by making use of the `Accept
 When the muxer registers routes it also builds a suite of validation plans, one for each operation. 
 Validation allows for adding custom validations for types through implementing a Validatable interface. This interface does not override but extends the validations provided by the swagger schema. 
 
-There is a mapping from validation name to status code, this mapping is also prioritized so that in the event of multiple validation errors that would required different status codes we get a consistent result. 
+There is a mapping from validation name to status code, this mapping is also prioritized so that in the event of multiple validation errors that would required different status codes we get a consistent result. This prioritization can be done by the user by providing a ServeError function.
 
 ```go
 type Validatable interface {
@@ -130,5 +130,16 @@ By the time the operation handler is executed we're sure the request is **author
 The result it gets from the operation handler will be turned into a response. Should the result of the operation handler be an error or a series of errors it will determine an appropriate status code and render the error result.
 
 
+# Codegen
 
+Most of the codegen will try to reuse the templates from the swagger-codegen project. These are mustache templates and could be downloaded on demand. 
+`swagger generate add-templates objc` would download the templates for generating an objective c client.
+
+The go server api generator however won't reuse those templates but define its own set, because currently no proper go support exists in that project. Once I'm happy with what they generate I'll contribute them back to the swagger-codegen project.
+
+But both the server and the client generator use mustache and not the go template system, not because there is a defficiency in the go template system, but mostly to keep taking advantage of community contributions in the swagger codegen project.
+
+A generated client needs to have support for uploading files as multipart entries. The model generating code is shared between client and server. The things that operate with those models will be different. 
+A generated client could implement validation on the client side for the request parameters and received response. The meat of the client is not actually implemented as generated code but a single submit function that knows how to perform all the shared operations and then issue the request.
+A client typically has only one consumer and producer registered. The content type for the request is the media type of the consumer, the accept header is the media type of the producer.
 

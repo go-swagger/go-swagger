@@ -3,20 +3,12 @@ package httputils
 import (
 	"mime"
 	"net/http"
-)
 
-const (
-	charsetKey = "charset"
-	// DefaultMime the default fallback mime type
-	DefaultMime = "application/octet-stream"
-	// JSONMime the json mime type
-	JSONMime = "application/json"
-	// YAMLMime the yaml mime type
-	YAMLMime = "application/x-yaml"
+	"github.com/casualjim/go-swagger/errors"
 )
 
 // ContentType parses a content type header
-func ContentType(headers http.Header) (string, string, *ParseError) {
+func ContentType(headers http.Header) (string, string, *errors.ParseError) {
 	ct := headers.Get(HeaderContentType)
 	orig := ct
 	if ct == "" {
@@ -25,7 +17,7 @@ func ContentType(headers http.Header) (string, string, *ParseError) {
 
 	mt, opts, err := mime.ParseMediaType(ct)
 	if err != nil {
-		return "", "", NewParseError(HeaderContentType, "header", orig, err)
+		return "", "", errors.NewParseError(HeaderContentType, "header", orig, err)
 	}
 
 	if cs, ok := opts[charsetKey]; ok {

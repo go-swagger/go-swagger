@@ -11,15 +11,7 @@ var specSchemaType = reflect.TypeOf(&spec.Schema{})
 
 // Spec validates a spec document
 func Spec(doc *spec.Document) *Result {
-	fmts := make(map[string]FormatValidator)
-	for k, v := range formatCheckers {
-		if k == "uri" {
-			fmts[k] = IsURI
-		} else {
-			fmts[k] = v
-		}
-	}
-	return newSchemaValidator(doc.Schema(), nil, "", fmts).Validate(doc.Spec())
+	return newSchemaValidator(doc.Schema(), nil, "", formatCheckers).Validate(doc.Spec())
 }
 
 // AgainstSchema validates the specified data with the provided schema, when no schema
@@ -57,7 +49,6 @@ func newSchemaValidator(schema *spec.Schema, rootSchema interface{}, root string
 	// fmt.Printf("%s\n", b)
 
 	s := schemaValidator{Path: root, in: "body", Schema: schema, Root: rootSchema, KnownFormats: formats}
-
 	s.validators = []valueValidator{
 		s.typeValidator(),
 		s.schemaValidator(),
@@ -69,6 +60,10 @@ func newSchemaValidator(schema *spec.Schema, rootSchema interface{}, root string
 		s.objectValidator(),
 	}
 	return &s
+}
+
+func (s *schemaValidator) SetPath(path string) {
+	s.Path = path
 }
 
 func (s *schemaValidator) Validate(data interface{}) *Result {

@@ -2,13 +2,13 @@ package validate
 
 import (
 	"encoding"
+	"mime"
 	"net/http"
 	"reflect"
 	"strings"
 
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
-	"github.com/casualjim/go-swagger/httputils"
 	"github.com/casualjim/go-swagger/spec"
 )
 
@@ -104,10 +104,17 @@ func (o *RequestBinder) Bind(request *http.Request, routeParams swagger.RoutePar
 const defaultMaxMemory = 32 << 20
 
 func contentType(req *http.Request) (string, error) {
-	mt, _, err := httputils.ContentType(req.Header)
-	if err != nil {
-		return "", err
+	ct := req.Header.Get("Content-Type")
+	orig := ct
+	if ct == "" {
+		ct = "application/octect-stream"
 	}
+
+	mt, _, err := mime.ParseMediaType(ct)
+	if err != nil {
+		return "", errors.NewParseError("Content-Type", "header", orig, err)
+	}
+
 	return mt, nil
 }
 

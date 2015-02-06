@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/asaskevich/govalidator"
-	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/spec"
 )
 
@@ -52,13 +51,13 @@ func IsStrictURI(str string) bool {
 	return err == nil
 }
 
-// IsURI returns true when the string resembles an URI
-func IsURI(str string) bool {
-	// this makes little sense really but it needs
-	// https://github.com/swagger-api/swagger-spec/issues/249
-	// to be resolved before this can be changed
-	return IsStrictURI(str) || IsHostname(str)
-}
+// // IsURI returns true when the string resembles an URI
+// func IsURI(str string) bool {
+// 	// this makes little sense really but it needs
+// 	// https://github.com/swagger-api/swagger-spec/issues/249
+// 	// to be resolved before this can be changed
+// 	return IsStrictURI(str) || IsHostname(str)
+// }
 
 // IsHostname returns true when the string is a valid hostname
 func IsHostname(str string) bool {
@@ -174,13 +173,8 @@ func (f *formatValidator) Applies(source interface{}, kind reflect.Kind) bool {
 func (f *formatValidator) Validate(val interface{}) *Result {
 	result := new(Result)
 
-	var valid bool
-	if validate, ok := f.KnownFormats[strings.Replace(f.Format, "-", "", -1)]; ok {
-		valid = validate(val.(string))
-	}
-
-	if !valid {
-		result.AddErrors(errors.InvalidType(f.Path, f.In, f.Format, val))
+	if err := FormatOf(f.Path, f.In, f.Format, val.(string)); err != nil {
+		result.AddErrors(err)
 	}
 	result.Inc()
 	return result

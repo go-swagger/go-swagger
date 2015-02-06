@@ -3,8 +3,6 @@ package validate
 import (
 	"fmt"
 	"reflect"
-	"regexp"
-	"unicode/utf8"
 
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/spec"
@@ -305,23 +303,30 @@ func sErr(err errors.Error) *Result {
 
 func (s *basicSliceValidator) Validate(data interface{}) *Result {
 	val := reflect.ValueOf(data)
-	if val.Kind() != reflect.Slice {
-		return nil // no business to do for this thing
-	}
 
 	size := int64(val.Len())
-	if s.MinItems != nil && size < *s.MinItems {
-		return sErr(errors.TooFewItems(s.Path, s.In, *s.MinItems))
+	if s.MinItems != nil {
+		if err := MinItems(s.Path, s.In, size, *s.MinItems); err != nil {
+			return sErr(err)
+		}
 	}
-	if s.MaxItems != nil && size > *s.MaxItems {
-		return sErr(errors.TooManyItems(s.Path, s.In, *s.MaxItems))
+
+	if s.MaxItems != nil {
+		if err := MaxItems(s.Path, s.In, size, *s.MaxItems); err != nil {
+			return sErr(err)
+		}
 	}
-	if s.UniqueItems && s.hasDuplicates(val, int(size)) {
-		return sErr(errors.DuplicateItems(s.Path, s.In))
+
+	if s.UniqueItems {
+		if err := UniqueItems(s.Path, s.In, data); err != nil {
+			return sErr(err)
+		}
 	}
+
 	if s.itemsValidator == nil && s.Items != nil {
 		s.itemsValidator = newItemsValidator(s.Path, s.In, s.Items, s.Source, s.KnownFormats)
 	}
+
 	if s.itemsValidator != nil {
 		for i := 0; i < int(size); i++ {
 			ele := val.Index(i)
@@ -388,19 +393,20 @@ func (n *numberValidator) convertToFloat(val interface{}) float64 {
 
 func (n *numberValidator) Validate(val interface{}) *Result {
 	data := n.convertToFloat(val)
-	if n.MultipleOf != nil && !isFloat64AnInteger(data / *n.MultipleOf) {
-		return sErr(errors.NotMultipleOf(n.Path, n.In, *n.MultipleOf))
+
+	if n.MultipleOf != nil {
+		if err := MultipleOf(n.Path, n.In, data, *n.MultipleOf); err != nil {
+			return sErr(err)
+		}
 	}
 	if n.Maximum != nil {
-		max := *n.Maximum
-		if (!n.ExclusiveMaximum && data > max) || (n.ExclusiveMaximum && data >= max) {
-			return sErr(errors.ExceedsMaximum(n.Path, n.In, *n.Maximum, n.ExclusiveMaximum))
+		if err := Maximum(n.Path, n.In, data, *n.Maximum, n.ExclusiveMaximum); err != nil {
+			return sErr(err)
 		}
 	}
 	if n.Minimum != nil {
-		min := *n.Minimum
-		if (!n.ExclusiveMinimum && data < min) || (n.ExclusiveMinimum && data <= min) {
-			return sErr(errors.ExceedsMinimum(n.Path, n.In, *n.Minimum, n.ExclusiveMinimum))
+		if err := Minimum(n.Path, n.In, data, *n.Minimum, n.ExclusiveMinimum); err != nil {
+			return sErr(err)
 		}
 	}
 	result := &Result{}
@@ -435,24 +441,28 @@ func (s *stringValidator) Applies(source interface{}, kind reflect.Kind) bool {
 
 func (s *stringValidator) Validate(val interface{}) *Result {
 	data := val.(string)
-	if s.Required && (s.Default == nil || s.Default == "") && data == "" {
-		return sErr(errors.Required(s.Path, s.In))
-	}
-	strLen := int64(utf8.RuneCount([]byte(data)))
-	if s.MaxLength != nil && strLen > *s.MaxLength {
-		return sErr(errors.TooLong(s.Path, s.In, *s.MaxLength))
+
+	if s.Required && (s.Default == nil || s.Default == "") {
+		if err := RequiredString(s.Path, s.In, data); err != nil {
+			return sErr(err)
+		}
 	}
 
-	if s.MinLength != nil && strLen < *s.MinLength {
-		return sErr(errors.TooShort(s.Path, s.In, *s.MinLength))
+	if s.MaxLength != nil {
+		if err := MaxLength(s.Path, s.In, data, *s.MaxLength); err != nil {
+			return sErr(err)
+		}
+	}
+
+	if s.MinLength != nil {
+		if err := MinLength(s.Path, s.In, data, *s.MinLength); err != nil {
+			return sErr(err)
+		}
 	}
 
 	if s.Pattern != "" {
-		// TODO: translate back and forth from javascript syntax, peferrably cached?
-		//       perhaps allow the option of using a different regex engine like pcre?
-		re := regexp.MustCompile(s.Pattern)
-		if !re.MatchString(data) {
-			return sErr(errors.FailedPattern(s.Path, s.In, s.Pattern))
+		if err := Pattern(s.Path, s.In, data, s.Pattern); err != nil {
+			return sErr(err)
 		}
 	}
 	return nil
