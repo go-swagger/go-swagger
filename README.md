@@ -1,5 +1,7 @@
 # Swagger 2.0
 
+[![Join the chat at https://gitter.im/casualjim/go-swagger](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/casualjim/go-swagger?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [![Build Status](https://travis-ci.org/casualjim/go-swagger.svg?branch=master)](https://travis-ci.org/casualjim/go-swagger)
 [![Coverage Status](https://coveralls.io/repos/casualjim/go-swagger/badge.svg?branch=master)](https://coveralls.io/r/casualjim/go-swagger?branch=master)
 [![GoDoc](https://godoc.org/github.com/casualjim/go-swagger?status.svg)](http://godoc.org/github.com/casualjim/go-swagger)
