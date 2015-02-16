@@ -1,6 +1,6 @@
 package generate
 
-import "github.com/casualjim/go-swagger/generator2"
+import "github.com/casualjim/go-swagger/generator"
 
 // Operation the generate operation files command
 type Operation struct {
@@ -13,13 +13,13 @@ type Operation struct {
 
 // Execute generates a model file
 func (o *Operation) Execute(args []string) error {
-	return generator2.GenerateServerOperation(
+	return generator.GenerateServerOperation(
 		o.Name,
 		o.Tags,
 		!o.NoHandler,
 		!o.NoStruct,
 		false,
-		generator2.GenOpts{
+		generator.GenOpts{
 			Spec:         string(o.Spec),
 			Target:       string(o.Target),
 			APIPackage:   o.APIPackage,

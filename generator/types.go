@@ -1,4 +1,4 @@
-package generator2
+package generator
 
 import (
 	"path/filepath"

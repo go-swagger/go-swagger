@@ -1,6 +1,6 @@
 package generate
 
-import "github.com/casualjim/go-swagger/generator2"
+import "github.com/casualjim/go-swagger/generator"
 
 // Model the generate model file command
 type Model struct {
@@ -12,11 +12,11 @@ type Model struct {
 
 // Execute generates a model file
 func (m *Model) Execute(args []string) error {
-	return generator2.GenerateModel(
+	return generator.GenerateModel(
 		m.Name,
 		!m.NoStruct,
 		!m.NoValidator,
-		generator2.GenOpts{
+		generator.GenOpts{
 			Spec:         string(m.Spec),
 			Target:       string(m.Target),
 			APIPackage:   m.APIPackage,
