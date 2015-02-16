@@ -12,13 +12,13 @@ It knows how to serialize and deserialize swagger specifications.
 
 Swagger is a simple yet powerful representation of your RESTful API.  
 With the largest ecosystem of API tooling on the planet, thousands of developers are supporting Swagger
-in almost every modern programming language and deployment environment.   
+in almost every modern programming language and deployment environment.
 
 With a Swagger-enabled API, you get interactive documentation, client SDK generation and discoverability.
-We created Swagger to help fulfill the promise of APIs.   
+We created Swagger to help fulfill the promise of APIs.
 
-Swagger helps companies like Apigee, Getty Images, Intuit, LivingSocial, McKesson, Microsoft, Morningstar, and PayPal 
-build the best possible services with RESTful APIs.Now in version 2.0, Swagger is more enabling than ever. 
+Swagger helps companies like Apigee, Getty Images, Intuit, LivingSocial, McKesson, Microsoft, Morningstar, and PayPal
+build the best possible services with RESTful APIs.Now in version 2.0, Swagger is more enabling than ever.
 And it's 100% open source software.
 
 ## Docs
@@ -43,7 +43,7 @@ You can also serve a swagger document with the swagger UI
 
 For a V1 I want to have this feature set completed:
 
-- [x] An object model that serializes to swagger yaml or json 
+- [x] An object model that serializes to swagger yaml or json
 - [x] A tool to work with swagger:
   - [x] validate a swagger spec document
   - [x] serve swagger UI for any swagger spec file
@@ -55,8 +55,8 @@ For a V1 I want to have this feature set completed:
 - [x] Middlewares:
   - [x] serve spec
   - [x] routing
-  - [x] validation 
-    - [ ] additional validation through an interface
+  - [x] validation
+    - [x] additional validation through an interface
   - [ ] authorization
     - [x] basic auth
     - [x] api key auth
@@ -101,5 +101,3 @@ After the v1 implementation extra transports are on the roadmap
   - [ ] swagger 0mq (swagger over 0mq)
 - Templates:
   - [ ] Allow usage of templates using stdlib templates
-    
-

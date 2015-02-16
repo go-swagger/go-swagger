@@ -31,6 +31,7 @@ func BasicAuth(authenticate UserPassAuthentication) swagger.Authenticator {
 			p, err := authenticate(usr, pass)
 			return true, p, err
 		}
+
 		return false, nil, nil
 	})
 }
@@ -44,17 +45,20 @@ func APIKeyAuth(name, in string, authenticate TokenAuthentication) swagger.Authe
 		panic(errors.New(500, "api key auth: in value needs to be either \"query\" or \"header\"."))
 	}
 
+	var getToken func(*http.Request) string
+	switch inl {
+	case "header":
+		getToken = func(r *http.Request) string { return r.Header.Get(name) }
+	case "query":
+		getToken = func(r *http.Request) string { return r.URL.Query().Get(name) }
+	}
+
 	return httpAuthenticator(func(r *http.Request) (bool, interface{}, error) {
-		var token string
-		switch inl {
-		case "header":
-			token = r.Header.Get(name)
-		case "query":
-			token = r.URL.Query().Get(name)
-		}
+		token := getToken(r)
 		if token == "" {
 			return false, nil, nil
 		}
+
 		p, err := authenticate(token)
 		return true, p, err
 	})

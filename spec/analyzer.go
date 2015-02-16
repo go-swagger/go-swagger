@@ -167,6 +167,17 @@ func (s *specAnalyzer) ParamsFor(method, path string) map[string]Parameter {
 	return res
 }
 
+func (s *specAnalyzer) OperationForName(operationID string) (*Operation, bool) {
+	for _, v := range s.operations {
+		for _, vv := range v {
+			if operationID == vv.ID {
+				return vv, true
+			}
+		}
+	}
+	return nil, false
+}
+
 func (s *specAnalyzer) OperationFor(method, path string) (*Operation, bool) {
 	if mp, ok := s.operations[strings.ToUpper(method)]; ok {
 		op, fn := mp[path]

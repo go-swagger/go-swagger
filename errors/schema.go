@@ -36,6 +36,8 @@ const (
 	uniqueFailNoIn        = `%s shouldn't contain duplicates`
 	maxItemsFailNoIn      = `%s should have at most %d items`
 	minItemsFailNoIn      = `%s should have at least %d items`
+	noAdditionalItems     = "%s in %s can't have additional items"
+	noAdditionalItemsNoIn = "%s can't have additional items"
 )
 
 // CompositeValidationError an error to wrap a bunch of other errors
@@ -44,6 +46,20 @@ func CompositeValidationError(errors ...Error) *Validation {
 		code:    422,
 		Value:   append([]Error{}, errors...),
 		message: "validation failure list",
+	}
+}
+
+// AdditionalItemsNotAllowed an error for invalid additional items
+func AdditionalItemsNotAllowed(name, in string) *Validation {
+	msg := fmt.Sprintf(noAdditionalItems, name, in)
+	if in == "" {
+		msg = fmt.Sprintf(noAdditionalItemsNoIn, name)
+	}
+	return &Validation{
+		code:    422,
+		Name:    name,
+		In:      in,
+		message: msg,
 	}
 }
 
@@ -62,6 +78,7 @@ func InvalidCollectionFormat(name, in, format string) *Validation {
 func InvalidTypeName(typeName string) *Validation {
 	return &Validation{
 		code:    422,
+		Value:   typeName,
 		message: fmt.Sprintf(invalidType, typeName),
 	}
 }

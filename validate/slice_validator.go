@@ -58,7 +58,7 @@ func (s *schemaSliceValidator) Validate(data interface{}) *Result {
 
 	}
 	if s.AdditionalItems != nil && itemsSize < int64(size) {
-		if s.Items != nil && (s.Items.Schema != nil || len(s.Items.Schemas) > 0) && !s.AdditionalItems.Allows {
+		if s.Items != nil && len(s.Items.Schemas) > 0 && !s.AdditionalItems.Allows {
 			result.AddErrors(errors.New(422, "array doesn't allow for additional items"))
 		}
 		if s.AdditionalItems.Schema != nil {
