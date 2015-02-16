@@ -17,5 +17,5 @@ func TestDate(t *testing.T) {
 	assert.NoError(t, err)
 	txt, err := pp.MarshalText()
 	assert.NoError(t, err)
-	assert.Equal(t, orig, txt)
+	assert.Equal(t, orig, string(txt))
 }

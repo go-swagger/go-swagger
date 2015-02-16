@@ -74,11 +74,11 @@ func IntParamTest(t *testing.T, pName string, val reflect.Value, defVal, expecte
 	}
 	err := binder.setFieldValue(fld, defVal, "5")
 	assert.NoError(t, err)
-	assert.Equal(t, 5, actual())
+	assert.EqualValues(t, 5, actual())
 
 	err = binder.setFieldValue(fld, defVal, "")
 	assert.NoError(t, err)
-	assert.Equal(t, expectedDef, actual())
+	assert.EqualValues(t, expectedDef, actual())
 
 	err = binder.setFieldValue(fld, defVal, "yada")
 	assert.Error(t, err)
@@ -272,7 +272,7 @@ func TestSliceConversion(t *testing.T) {
 	cData := strings.Join(sliced, ",")
 	categories, custom, err := binder.readFormattedSliceFieldValue(cData, categoriesField)
 	assert.NoError(t, err)
-	assert.Equal(t, sliced, actual.Categories)
+	assert.EqualValues(t, sliced, actual.Categories)
 	assert.True(t, custom)
 	assert.Empty(t, categories)
 	categories, custom, err = binder.readFormattedSliceFieldValue("", categoriesField)

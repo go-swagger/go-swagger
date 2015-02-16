@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"strings"
 	"text/template"
 
 	"github.com/casualjim/go-swagger/spec"
@@ -43,6 +44,7 @@ func GenerateServerOperation(operationName string, tags []string, includeHandler
 	generator := operationGenerator{
 		Name:              operationName,
 		APIPackage:        opts.APIPackage,
+		ModelsPackage:     opts.ModelPackage,
 		Operation:         *operation,
 		Target:            filepath.Join(opts.Target, opts.APIPackage),
 		Tags:              tags,
@@ -56,6 +58,7 @@ func GenerateServerOperation(operationName string, tags []string, includeHandler
 type operationGenerator struct {
 	Name              string
 	APIPackage        string
+	ModelsPackage     string
 	Operation         spec.Operation
 	Target            string
 	Tags              []string
@@ -73,18 +76,18 @@ func (o *operationGenerator) Generate() error {
 	var operations []genOperation
 	for _, tag := range o.Operation.Tags {
 		if len(o.Tags) == 0 {
-			operations = append(operations, makeCodegenOperation(o.Name, tag, o.Operation))
+			operations = append(operations, makeCodegenOperation(o.Name, tag, o.ModelsPackage, o.Operation))
 			continue
 		}
 		for _, ft := range o.Tags {
 			if ft == tag {
-				operations = append(operations, makeCodegenOperation(o.Name, tag, o.Operation))
+				operations = append(operations, makeCodegenOperation(o.Name, tag, o.ModelsPackage, o.Operation))
 			}
 		}
 
 	}
 	if len(operations) == 0 {
-		operations = append(operations, makeCodegenOperation(o.Name, o.APIPackage, o.Operation))
+		operations = append(operations, makeCodegenOperation(o.Name, o.APIPackage, o.ModelsPackage, o.Operation))
 	}
 
 	for _, op := range operations {
@@ -163,17 +166,35 @@ func (o *operationGenerator) generateParameterValidator() error {
 	return writeToFile(fp, o.Name+"ParametersValidator", buf.Bytes())
 }
 
-func makeCodegenOperation(name, pkg string, operation spec.Operation) genOperation {
+func makeCodegenOperation(name, pkg, modelsPkg string, operation spec.Operation) genOperation {
 	receiver := "o"
 
-	var params []genParameter
+	var params, qp, pp, hp, fp []genParameter
 	var hasQueryParams bool
 	for _, p := range operation.Parameters {
 		cp := makeCodegenParameter(receiver, p)
 		if cp.IsQueryParam {
 			hasQueryParams = true
+			qp = append(qp, cp)
+		}
+		if cp.IsFormParam {
+			fp = append(fp, cp)
+		}
+		if cp.IsPathParam {
+			pp = append(pp, cp)
+		}
+		if cp.IsHeaderParam {
+			hp = append(hp, cp)
 		}
 		params = append(params, cp)
+	}
+
+	var successModel string
+	if operation.Responses != nil {
+		if r, ok := operation.Responses.StatusCodeResponses[200]; ok {
+			fmt.Println("getting success model", r.Schema)
+			successModel = typeForSchema(r.Schema, modelsPkg)
+		}
 	}
 
 	return genOperation{
@@ -181,12 +202,61 @@ func makeCodegenOperation(name, pkg string, operation spec.Operation) genOperati
 		ClassName:      util.ToGoName(name),
 		Name:           util.ToJSONName(name),
 		Description:    operation.Description,
-		DocString:      modelDocString(util.ToGoName(name), operation.Description),
+		DocString:      operationDocString(util.ToGoName(name), operation),
 		ReceiverName:   receiver,
 		HumanClassName: util.ToHumanNameLower(util.ToGoName(name)),
 		Params:         params,
+		Summary:        operation.Summary,
+		QueryParams:    qp,
+		PathParams:     pp,
+		HeaderParams:   hp,
+		FormParams:     fp,
 		HasQueryParams: hasQueryParams,
+		SuccessModel:   successModel,
 	}
+}
+
+func operationDocString(name string, operation spec.Operation) string {
+	hdr := fmt.Sprintf("%s %s", name, operation.Description)
+	ed := operation.ExternalDocs
+	var txtFoot string
+	if ed != nil {
+		if ed.Description != "" && ed.URL != "" {
+			txtFoot = fmt.Sprintf("\n%s\nSee: %s", ed.Description, ed.URL)
+		}
+		if ed.URL != "" {
+			txtFoot = "\nSee: " + ed.URL
+		}
+	}
+	return commentedLines(strings.Join([]string{hdr, txtFoot}, "\n"))
+}
+
+type genOperation struct {
+	Package        string `json:"package,omitempty"`        // -
+	ReceiverName   string `json:"receiverName,omitempty"`   // -
+	ClassName      string `json:"classname,omitempty"`      // -
+	Name           string `json:"name,omitempty"`           // -
+	HumanClassName string `json:"humanClassname,omitempty"` // -
+
+	Summary      string `json:"summary,omitempty"`
+	Description  string `json:"description,omitempty"` // -
+	DocString    string `json:"docString,omitempty"`   // -
+	ExternalDocs string `json:"externalDocs,omitempty"`
+
+	Imports []string `json:"imports,omitempty"`
+
+	Authorized bool `json:"authorized,omitempty"`
+
+	SuccessModel     string `json:"successModel,omitempty"`
+	ReturnsPrimitive bool   `json:"returnTypeIsPrimitive,omitempty"`
+	ReturnsSimple    bool   `json:"returnSimpleType,omitempty"`
+
+	Params         []genParameter `json:"params,omitempty"`         // -
+	QueryParams    []genParameter `json:"queryParams,omitempty"`    // -
+	PathParams     []genParameter `json:"pathParams,omitempty"`     // -
+	HeaderParams   []genParameter `json:"headerParams,omitempty"`   // -
+	FormParams     []genParameter `json:"formParams,omitempty"`     // -
+	HasQueryParams bool           `json:"hasQueryParams,omitempty"` // -
 }
 
 func makeCodegenParameter(receiver string, param spec.Parameter) genParameter {
@@ -213,11 +283,28 @@ func makeCodegenParameter(receiver string, param spec.Parameter) genParameter {
 		IsBodyParam:      param.In == "body",
 		IsHeaderParam:    param.In == "header",
 		IsPathParam:      param.In == "path",
+		IsFormParam:      param.In == "formData",
 		CollectionFormat: param.CollectionFormat,
 		Child:            child,
 		Location:         param.In,
 		Converter:        stringConverters[ctx.Type],
 	}
+}
+
+type genParameter struct {
+	sharedParam
+	ReceiverName     string            `json:"receiverName,omitempty"`
+	Description      string            `json:"description,omitempty"`
+	IsQueryParam     bool              `json:"isQueryParam,omitempty"`
+	IsFormParam      bool              `json:"isFormParam,omitempty"`
+	IsPathParam      bool              `json:"isPathParam,omitempty"`
+	IsHeaderParam    bool              `json:"isHeaderParam,omitempty"`
+	IsBodyParam      bool              `json:"isBodyParam,omitempty"`
+	CollectionFormat string            `json:"collectionFormat,omitempty"`
+	Child            *genParameterItem `json:"child,omitempty"`
+	BodyParam        *genParameter     `json:"bodyParam,omitempty"`
+	Converter        string            `json:"converter,omitempty"`
+	Location         string            `json:"location,omitempty"`
 }
 
 func makeCodegenParamItem(path, paramName, accessor, indexVar, valueExpression string, items spec.Items) genParameterItem {
@@ -241,36 +328,6 @@ func makeCodegenParamItem(path, paramName, accessor, indexVar, valueExpression s
 		CollectionFormat: items.CollectionFormat,
 		Child:            child,
 	}
-}
-
-type genOperation struct {
-	Package        string         `json:"package,omitempty"`
-	ReceiverName   string         `json:"receiverName,omitempty"`
-	ClassName      string         `json:"classname,omitempty"`
-	Name           string         `json:"name,omitempty"`
-	Description    string         `json:"description,omitempty"`
-	DocString      string         `json:"docString,omitempty"`
-	HumanClassName string         `json:"humanClassname,omitempty"`
-	Imports        []string       `json:"imports,omitempty"`
-	Authorized     bool           `json:"authorized,omitempty"`
-	SuccessModel   string         `json:"successModel,omitempty"`
-	Params         []genParameter `json:"params,omitempty"`
-	HasQueryParams bool           `json:"hasQueryParams,omitempty"`
-}
-
-type genParameter struct {
-	sharedParam
-	ReceiverName     string            `json:"receiverName,omitempty"`
-	Description      string            `json:"description,omitempty"`
-	IsQueryParam     bool              `json:"isQueryParam,omitempty"`
-	IsPathParam      bool              `json:"isPathParam,omitempty"`
-	IsHeaderParam    bool              `json:"isHeaderParam,omitempty"`
-	IsBodyParam      bool              `json:"isBodyParam,omitempty"`
-	CollectionFormat string            `json:"collectionFormat,omitempty"`
-	Child            *genParameterItem `json:"child,omitempty"`
-	BodyParam        *genParameter     `json:"bodyParam,omitempty"`
-	Converter        string            `json:"converter,omitempty"`
-	Location         string            `json:"location,omitempty"`
 }
 
 type genParameterItem struct {

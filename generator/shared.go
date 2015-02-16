@@ -13,7 +13,22 @@ import (
 	"golang.org/x/tools/imports"
 )
 
-//go:generate go-bindata -pkg=generator2 ./templates/...
+//go:generate go-bindata -pkg=generator ./templates/...
+
+var reservedGoWords = []string{
+	"break", "default", "func", "interface", "select",
+	"case", "defer", "go", "map", "struct",
+	"chan", "else", "goto", "package", "switch",
+	"const", "fallthrough", "if", "range", "type",
+	"continue", "for", "import", "return", "var",
+}
+
+var defaultGoImports = []string{
+	"bool", "int", "int8", "int16", "int32", "int64",
+	"uint", "uint8", "uint16", "uint32", "uint64",
+	"float32", "float64", "interface{}", "string",
+	"byte", "rune",
+}
 
 func findSwaggerSpec(name string) (string, error) {
 	f, err := os.Stat(name)
@@ -32,6 +47,8 @@ type GenOpts struct {
 	APIPackage   string
 	ModelPackage string
 	Target       string
+	TypeMapping  map[string]string
+	Imports      map[string]string
 }
 
 type generatorOptions struct {

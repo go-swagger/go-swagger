@@ -8,43 +8,11 @@ import (
 	"github.com/casualjim/go-swagger/util"
 )
 
-func typeForSchemaOrArray(schemas *spec.SchemaOrArray) string {
+func typeForSchemaOrArray(schemas *spec.SchemaOrArray, modelsPkg string) string {
 	if schemas == nil || len(schemas.Schemas) > 0 {
 		return "interface{}"
 	}
-	return typeForSchema(schemas.Schema)
-}
-
-var reservedGoWords = []string{
-	"break", "default", "func", "interface", "select",
-	"case", "defer", "go", "map", "struct",
-	"chan", "else", "goto", "package", "switch",
-	"const", "fallthrough", "if", "range", "type",
-	"continue", "for", "import", "return", "var",
-}
-
-var defaultGoImports = []string{
-	"bool", "int", "int8", "int16", "int32", "int64",
-	"uint", "uint8", "uint16", "uint32", "uint64",
-	"float32", "float64", "interface{}", "string",
-	"byte", "rune",
-}
-
-var goTypeMapping = map[string]string{
-	"array":    "[]",
-	"map":      "map",
-	"List":     "[]",
-	"boolean":  "bool",
-	"int":      "int32",
-	"float":    "float32",
-	"number":   "inf.Dec",
-	"DateTime": "swagger.DateTime",
-	"long":     "int64",
-	"short":    "int16",
-	"char":     "rune",
-	"double":   "float64",
-	"object":   "interface{}",
-	"integer":  "int32",
+	return typeForSchema(schemas.Schema, modelsPkg)
 }
 
 var goImports = map[string]string{
@@ -138,12 +106,16 @@ func resolveSimpleType(tn, fmt string, items *spec.Items) string {
 	return tn
 }
 
-func typeForSchema(schema *spec.Schema) string {
+func typeForSchema(schema *spec.Schema, modelsPkg string) string {
 	if schema == nil {
 		return "interface{}"
 	}
 	if schema.Ref.GetURL() != nil {
-		return util.ToGoName(filepath.Base(schema.Ref.GetURL().Fragment))
+		tn := util.ToGoName(filepath.Base(schema.Ref.GetURL().Fragment))
+		if modelsPkg != "" {
+			return modelsPkg + "." + tn
+		}
+		return tn
 	}
 	if schema.Format != "" {
 		if tpe, ok := typeMapping[strings.Replace(schema.Format, "-", "", -1)]; ok {
@@ -151,7 +123,7 @@ func typeForSchema(schema *spec.Schema) string {
 		}
 	}
 	if schema.Type.Contains("array") {
-		return "[]" + typeForSchemaOrArray(schema.Items)
+		return "[]" + typeForSchemaOrArray(schema.Items, modelsPkg)
 	}
 	if schema.Type.Contains("file") {
 		return typeMapping["file"]

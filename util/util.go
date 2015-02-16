@@ -111,11 +111,13 @@ func ToJSONName(name string) string {
 func ToGoName(name string) string {
 	var out []string
 	for _, w := range split(name) {
-		uw := upper(w)
-		if !commonInitialisms[uw] && !commonInitialisms[uw[:len(uw)-2]] {
-			uw = upper(w[:1]) + lower(w[1:])
+		if w != "" {
+			uw := upper(w)
+			if !commonInitialisms[uw] && len(uw) > 2 && !commonInitialisms[uw[:len(uw)-2]] {
+				uw = upper(w[:1]) + lower(w[1:])
+			}
+			out = append(out, uw)
 		}
-		out = append(out, uw)
 	}
 	return strings.Join(out, "")
 }

@@ -227,7 +227,7 @@ type genModelProperty struct {
 }
 
 func modelValidations(path, paramName, accessor, indexVar, valueExpression string, required bool, model spec.Schema) commonValidations {
-	tpe := typeForSchema(&model)
+	tpe := typeForSchema(&model, "")
 
 	_, isPrimitive := primitives[tpe]
 	_, isCustomFormatter := customFormatters[tpe]

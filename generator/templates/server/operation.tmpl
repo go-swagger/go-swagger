@@ -70,8 +70,8 @@ func ({{.ReceiverName}} *{{.ClassName}}) ServeHTTP(rw http.ResponseWriter, r *ht
     {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, err)
     return
   }
+  
   {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, nil)
-
   {{end}}
   {{else}}
   {{if .SuccessModel}}res, err := {{.ReceiverName}}.Handler.Handle({{.ReceiverName}}.Params) // actually handle the request
