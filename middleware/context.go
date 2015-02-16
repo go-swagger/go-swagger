@@ -80,7 +80,7 @@ func (c *Context) RequiredProduces() []string {
 
 // BindValidRequest binds a params object to a request but only when the request is valid
 // if the request is not valid an error will be returned
-func (c *Context) BindValidRequest(binder RequestBinder, request *http.Request, route *router.MatchedRoute) error {
+func (c *Context) BindValidRequest(request *http.Request, route *router.MatchedRoute, binder RequestBinder) error {
 	res := new(validate.Result)
 	var consumer swagger.Consumer
 

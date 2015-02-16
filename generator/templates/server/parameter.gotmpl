@@ -124,25 +124,37 @@ func ({{.ReceiverName}} *{{.ClassName}}Params) BindRequest(r *http.Request, rout
 {{ $className := .ClassName }}
 {{range .Params}}
 {{if or .IsPrimitive .IsCustomFormatter}}
-func ({{.ReceiverName}} *{{$className}}) bind{{.PropertyName}}(raw string) *validate.Result {
+func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw string) *validate.Result {
   res := new(validate.Result)
-  res.Inc()
 
   {{if .Required}}if err := validate.RequiredString({{.Path}}, "{{.Location}}", raw); err != nil {
     res.AddErrors(err)
     return res
   }
+  res.Inc()
   {{end}}
-  value, err := {{.Converter}}(raw)
+  {{if .Converter}}value, err := {{.Converter}}(raw)
   if err != nil {
     res.AddErrors(errors.InvalidType({{.Path}}, "{{.Location}}", "{{.Type}}", raw))
     return res
   }
+  res.Inc()
+  {{.ValueExpression}} = value
+  {{else}}
+  {{.ValueExpression}} = raw
+  {{end}}
+  {{if .HasValidations}}if err := {{.ReceiverName}}.validate{{.PropertyName}}(); err != nil {
+    res.AddErrors(err)
+  }
 
+  if res.IsValid() {
+    res.Inc()
+  }
+  {{end}}
   return res
 }
 {{else if .IsContainer}}
-func ({{.ReceiverName}} *{{$className}}) bind{{.PropertyName}}(raw []string) *validate.Result {
+func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw []string) *validate.Result {
   res := new(validate.Result)
 
   res.Inc()
@@ -150,7 +162,7 @@ func ({{.ReceiverName}} *{{$className}}) bind{{.PropertyName}}(raw []string) *va
 }
 {{end}}
 {{if .HasValidations}}
-func ({{.ReceiverName}} *{{$className}}) validate{{.PropertyName}}() *errors.Validation {
+func ({{.ReceiverName}} *{{$className}}Params) validate{{.PropertyName}}() *errors.Validation {
   {{template "propertyvalidator" .}}
 
   return nil

@@ -19,17 +19,17 @@ var (
 )
 
 func init() {
-	bv, _ := Asset("templates/server/parameter.tmpl")
+	bv, _ := Asset("templates/server/parameter.gotmpl")
 	parameterTemplate = template.Must(template.New("parameter").Parse(string(bv)))
 
-	bm, _ := Asset("templates/server/operation.tmpl")
+	bm, _ := Asset("templates/server/operation.gotmpl")
 	operationTemplate = template.Must(template.New("operation").Parse(string(bm)))
 }
 
 // GenerateServerOperation generates a parameter model, parameter validator, http handler implementations for a given operation
 // It also generates an operation handler interface that uses the parameter model for handling a valid request.
 // Allows for specifying a list of tags to include only certain tags for the generation
-func GenerateServerOperation(operationName string, tags []string, includeHandler, includeParameters, includeValidator bool, opts GenOpts) error {
+func GenerateServerOperation(operationName string, tags []string, includeHandler, includeParameters bool, opts GenOpts) error {
 	// Load the spec
 	specPath, specDoc, err := loadSpec(opts.Spec)
 	if err != nil {
@@ -42,31 +42,35 @@ func GenerateServerOperation(operationName string, tags []string, includeHandler
 	}
 
 	generator := operationGenerator{
-		Name:              operationName,
-		APIPackage:        opts.APIPackage,
-		ModelsPackage:     opts.ModelPackage,
-		Operation:         *operation,
-		Target:            filepath.Join(opts.Target, opts.APIPackage),
-		Tags:              tags,
-		IncludeHandler:    includeHandler,
-		IncludeValidator:  includeValidator, // parameter template has validator code
-		IncludeParameters: includeParameters,
+		Name:                 operationName,
+		APIPackage:           opts.APIPackage,
+		ModelsPackage:        opts.ModelPackage,
+		Operation:            *operation,
+		SecurityRequirements: specDoc.SecurityRequirementsFor(operation),
+		Principal:            opts.Principal,
+		Target:               filepath.Join(opts.Target, opts.APIPackage),
+		Tags:                 tags,
+		IncludeHandler:       includeHandler,
+		IncludeParameters:    includeParameters,
 	}
 	return generator.Generate()
 }
 
 type operationGenerator struct {
-	Name              string
-	APIPackage        string
-	ModelsPackage     string
-	Operation         spec.Operation
-	Target            string
-	Tags              []string
-	data              interface{}
-	pkg               string
-	IncludeHandler    bool
-	IncludeValidator  bool
-	IncludeParameters bool
+	Name                 string
+	Authorized           bool
+	APIPackage           string
+	ModelsPackage        string
+	Operation            spec.Operation
+	SecurityRequirements []spec.SecurityRequirement
+	Principal            string
+	Target               string
+	Tags                 []string
+	data                 interface{}
+	pkg                  string
+	cname                string
+	IncludeHandler       bool
+	IncludeParameters    bool
 }
 
 func (o *operationGenerator) Generate() error {
@@ -74,20 +78,23 @@ func (o *operationGenerator) Generate() error {
 	// the tag decides the actual package for an operation
 	// the user specified package serves as root for generating the directory structure
 	var operations []genOperation
+	authed := len(o.SecurityRequirements) > 0
+	bb, _ := json.MarshalIndent(util.ToDynamicJSON(o), "", " ")
+	fmt.Println(string(bb))
 	for _, tag := range o.Operation.Tags {
 		if len(o.Tags) == 0 {
-			operations = append(operations, makeCodegenOperation(o.Name, tag, o.ModelsPackage, o.Operation))
+			operations = append(operations, makeCodegenOperation(o.Name, tag, o.ModelsPackage, o.Principal, o.Operation, authed))
 			continue
 		}
 		for _, ft := range o.Tags {
 			if ft == tag {
-				operations = append(operations, makeCodegenOperation(o.Name, tag, o.ModelsPackage, o.Operation))
+				operations = append(operations, makeCodegenOperation(o.Name, tag, o.ModelsPackage, o.Principal, o.Operation, authed))
 			}
 		}
 
 	}
 	if len(operations) == 0 {
-		operations = append(operations, makeCodegenOperation(o.Name, o.APIPackage, o.ModelsPackage, o.Operation))
+		operations = append(operations, makeCodegenOperation(o.Name, o.APIPackage, o.ModelsPackage, o.Principal, o.Operation, authed))
 	}
 
 	for _, op := range operations {
@@ -95,27 +102,21 @@ func (o *operationGenerator) Generate() error {
 		fmt.Println(string(bb))
 		o.data = op
 		o.pkg = op.Package
+		o.cname = op.ClassName
 
 		if o.IncludeHandler {
 			if err := o.generateHandler(); err != nil {
 				return fmt.Errorf("handler: %s", err)
 			}
+			log.Println("generated handler", op.Package+"."+op.ClassName)
 		}
-		log.Println("generated handler", op.Package+"."+o.Name)
 
 		if o.IncludeParameters {
 			if err := o.generateParameterModel(); err != nil {
 				return fmt.Errorf("parameters: %s", err)
 			}
+			log.Println("generated parameters", op.Package+"."+op.ClassName+"Parameters")
 		}
-		log.Println("generated parameters", op.Package+"."+o.Name+"Parameters")
-
-		if o.IncludeValidator {
-			if err := o.generateParameterValidator(); err != nil {
-				return fmt.Errorf("parameters validator: %s", err)
-			}
-		}
-		log.Println("generated parameters validator", op.Package+"."+o.Name+"Parameters")
 	}
 
 	return nil
@@ -127,7 +128,7 @@ func (o *operationGenerator) generateHandler() error {
 	if err := operationTemplate.Execute(buf, o.data); err != nil {
 		return err
 	}
-	log.Println("rendered handler template:", o.pkg+"."+o.Name)
+	log.Println("rendered handler template:", o.pkg+"."+o.cname)
 
 	fp := o.Target
 	if len(o.Operation.Tags) > 0 {
@@ -142,7 +143,7 @@ func (o *operationGenerator) generateParameterModel() error {
 	if err := parameterTemplate.Execute(buf, o.data); err != nil {
 		return err
 	}
-	log.Println("rendered parameters template:", o.pkg+"."+o.Name+"Parameters")
+	log.Println("rendered parameters template:", o.pkg+"."+o.cname+"Parameters")
 
 	fp := o.Target
 	if len(o.Operation.Tags) > 0 {
@@ -151,22 +152,7 @@ func (o *operationGenerator) generateParameterModel() error {
 	return writeToFile(fp, o.Name+"Parameters", buf.Bytes())
 }
 
-func (o *operationGenerator) generateParameterValidator() error {
-	buf := bytes.NewBuffer(nil)
-
-	if err := parameterTemplate.Execute(buf, o.data); err != nil {
-		return err
-	}
-	log.Println("rendered parameters validator template:", o.pkg+"."+o.Name+"Parameters")
-
-	fp := o.Target
-	if len(o.Operation.Tags) > 0 {
-		fp = filepath.Join(fp, o.pkg)
-	}
-	return writeToFile(fp, o.Name+"ParametersValidator", buf.Bytes())
-}
-
-func makeCodegenOperation(name, pkg, modelsPkg string, operation spec.Operation) genOperation {
+func makeCodegenOperation(name, pkg, modelsPkg, principal string, operation spec.Operation, authorized bool) genOperation {
 	receiver := "o"
 
 	var params, qp, pp, hp, fp []genParameter
@@ -190,29 +176,44 @@ func makeCodegenOperation(name, pkg, modelsPkg string, operation spec.Operation)
 	}
 
 	var successModel string
+	var returnsPrimitive, returnsFormatted, returnsContainer bool
 	if operation.Responses != nil {
 		if r, ok := operation.Responses.StatusCodeResponses[200]; ok {
-			fmt.Println("getting success model", r.Schema)
-			successModel = typeForSchema(r.Schema, modelsPkg)
+			tn := typeForSchema(r.Schema, modelsPkg)
+			_, returnsPrimitive = primitives[tn]
+			_, returnsFormatted = customFormatters[tn]
+			returnsContainer = r.Schema.Items != nil || r.Schema.Type.Contains("array")
+			successModel = tn
 		}
 	}
 
+	prin := principal
+	if prin == "" {
+		prin = "interface{}"
+	}
+
 	return genOperation{
-		Package:        pkg,
-		ClassName:      util.ToGoName(name),
-		Name:           util.ToJSONName(name),
-		Description:    operation.Description,
-		DocString:      operationDocString(util.ToGoName(name), operation),
-		ReceiverName:   receiver,
-		HumanClassName: util.ToHumanNameLower(util.ToGoName(name)),
-		Params:         params,
-		Summary:        operation.Summary,
-		QueryParams:    qp,
-		PathParams:     pp,
-		HeaderParams:   hp,
-		FormParams:     fp,
-		HasQueryParams: hasQueryParams,
-		SuccessModel:   successModel,
+		Package:              pkg,
+		ClassName:            util.ToGoName(name),
+		Name:                 util.ToJSONName(name),
+		Description:          operation.Description,
+		DocString:            operationDocString(util.ToGoName(name), operation),
+		ReceiverName:         receiver,
+		HumanClassName:       util.ToHumanNameLower(util.ToGoName(name)),
+		Params:               params,
+		Summary:              operation.Summary,
+		QueryParams:          qp,
+		PathParams:           pp,
+		HeaderParams:         hp,
+		FormParams:           fp,
+		HasQueryParams:       hasQueryParams,
+		SuccessModel:         successModel,
+		ReturnsPrimitive:     returnsPrimitive,
+		ReturnsFormatted:     returnsFormatted,
+		ReturnsContainer:     returnsContainer,
+		ReturnsComplexObject: !returnsPrimitive && !returnsFormatted && !returnsContainer,
+		Authorized:           authorized,
+		Principal:            prin,
 	}
 }
 
@@ -245,11 +246,14 @@ type genOperation struct {
 
 	Imports []string `json:"imports,omitempty"`
 
-	Authorized bool `json:"authorized,omitempty"`
+	Authorized bool   `json:"authorized,omitempty"` // -
+	Principal  string `json:"principal,omitempty"`  // -
 
-	SuccessModel     string `json:"successModel,omitempty"`
-	ReturnsPrimitive bool   `json:"returnTypeIsPrimitive,omitempty"`
-	ReturnsSimple    bool   `json:"returnSimpleType,omitempty"`
+	SuccessModel         string `json:"successModel,omitempty"`         // -
+	ReturnsPrimitive     bool   `json:"returnsPrimitive,omitempty"`     // -
+	ReturnsFormatted     bool   `json:"returnsFormatted,omitempty"`     // -
+	ReturnsContainer     bool   `json:"returnsContainer,omitempty"`     // -
+	ReturnsComplexObject bool   `json:"returnsComplexObject,omitempty"` // -
 
 	Params         []genParameter `json:"params,omitempty"`         // -
 	QueryParams    []genParameter `json:"queryParams,omitempty"`    // -

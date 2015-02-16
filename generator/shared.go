@@ -46,6 +46,7 @@ type GenOpts struct {
 	Spec         string
 	APIPackage   string
 	ModelPackage string
+	Principal    string
 	Target       string
 	TypeMapping  map[string]string
 	Imports      map[string]string

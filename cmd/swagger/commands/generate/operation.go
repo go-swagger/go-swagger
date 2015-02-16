@@ -7,6 +7,7 @@ type Operation struct {
 	shared
 	Name      string   `long:"name" short:"n" required:"true" description:"the operation to generate"`
 	Tags      []string `long:"tags" description:"the tags to include, if not specified defaults to all"`
+	Principal string   `long:"principal" description:"the model to use for the security principal"`
 	NoHandler bool     `long:"skip-handler" description:"when present will not generate an operation handler"`
 	NoStruct  bool     `long:"skip-parameters" description:"when present will not generate the parameter model struct"`
 }
@@ -18,11 +19,11 @@ func (o *Operation) Execute(args []string) error {
 		o.Tags,
 		!o.NoHandler,
 		!o.NoStruct,
-		false,
 		generator.GenOpts{
 			Spec:         string(o.Spec),
 			Target:       string(o.Target),
 			APIPackage:   o.APIPackage,
 			ModelPackage: o.ModelPackage,
+			Principal:    o.Principal,
 		})
 }

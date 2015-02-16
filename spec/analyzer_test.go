@@ -88,7 +88,7 @@ func TestAnalyzer(t *testing.T) {
 	assert.Equal(t, expected, produces)
 
 	expectedSchemes := []SecurityRequirement{SecurityRequirement{"oauth2", []string{}}, SecurityRequirement{"basic", nil}}
-	schemes := analyzer.securityRequirementsFor(spec.Paths.Paths["/"].Get)
+	schemes := analyzer.SecurityRequirementsFor(spec.Paths.Paths["/"].Get)
 	assert.Equal(t, schemeNames(expectedSchemes), schemeNames(schemes))
 
 	securityDefinitions := analyzer.SecurityDefinitionsFor(spec.Paths.Paths["/"].Get)

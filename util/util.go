@@ -1,6 +1,7 @@
 package util
 
 import (
+	"math"
 	"regexp"
 	"strings"
 )
@@ -111,13 +112,12 @@ func ToJSONName(name string) string {
 func ToGoName(name string) string {
 	var out []string
 	for _, w := range split(name) {
-		if w != "" {
-			uw := upper(w)
-			if !commonInitialisms[uw] && len(uw) > 2 && !commonInitialisms[uw[:len(uw)-2]] {
-				uw = upper(w[:1]) + lower(w[1:])
-			}
-			out = append(out, uw)
+		uw := upper(w)
+		mod := int(math.Min(float64(len(uw)), 2))
+		if !commonInitialisms[uw] && !commonInitialisms[uw[:len(uw)-mod]] {
+			uw = upper(w[:1]) + lower(w[1:])
 		}
+		out = append(out, uw)
 	}
 	return strings.Join(out, "")
 }

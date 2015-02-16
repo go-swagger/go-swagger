@@ -20,14 +20,12 @@ import (
 type {{.ClassName}}Handler interface {
   {{if .Authorized}}
   // Handle produces a result or an error. Gets the request params as well as the security principal{{if .SuccessModel}}
-  Handle({{.ClassName}}Params, interface{}) ({{.SuccessModel}}, error)
-  {{else}}
-  Handle({{.ClassName}}Params, interface{}) error
+  Handle({{.ClassName}}Params, *{{.Principal}}) ({{if .ReturnsComplexObject}}*{{end}}{{.SuccessModel}}, error)
+  {{else}}Handle({{.ClassName}}Params, *{{.Principal}}) error
   {{end}}
   {{else}}// Handle produces a result or an error. Gets the request params{{if .SuccessModel}}
-  Handle({{.ClassName}}Params) ({{.SuccessModel}}, error)
-  {{else}}
-  Handle({{.ClassName}}Params) error
+  Handle({{.ClassName}}Params) ({{if .ReturnsComplexObject}}*{{end}}{{.SuccessModel}}, error)
+  {{else}}Handle({{.ClassName}}Params) error
   {{end}}
   {{end}}
 }
@@ -47,11 +45,12 @@ type {{.ClassName}} struct {
 func ({{.ReceiverName}} *{{.ClassName}}) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
   route, _ := {{.ReceiverName}}.Context.RouteInfo(r)
 
-  {{if .Authorized}}principal, err := {{.ReceiverName}}.Context.Authorize(r, route)
+  {{if .Authorized}}uprinc, err := {{.ReceiverName}}.Context.Authorize(r, route)
   if err != nil {
     {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, err)
     return
   }
+  principal := {{if eq .Principal "interface{}"}}uprinc{{else}}uprinc.(*{{.Principal}}){{end}}
 
   {{end}}
   if err := {{.ReceiverName}}.Context.BindValidRequest(r, route, &{{.ReceiverName}}.Params); err != nil { // bind params
@@ -65,12 +64,13 @@ func ({{.ReceiverName}} *{{.ClassName}}) ServeHTTP(rw http.ResponseWriter, r *ht
     {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, err)
     return
   }
+
   {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, res)
   {{else}}if err := {{.ReceiverName}}.Handler({{.ReceiverName}}.Params, principal); err != nil { // actually handle the request
     {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, err)
     return
   }
-  
+
   {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, nil)
   {{end}}
   {{else}}

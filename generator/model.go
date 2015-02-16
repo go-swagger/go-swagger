@@ -19,10 +19,10 @@ var (
 )
 
 func init() {
-	bv, _ := Asset("templates/modelvalidator.tmpl")
+	bv, _ := Asset("templates/modelvalidator.gotmpl")
 	modelValidatorTemplate = template.Must(template.New("modelvalidator").Parse(string(bv)))
 
-	bm, _ := Asset("templates/model.tmpl")
+	bm, _ := Asset("templates/model.gotmpl")
 	modelTemplate = template.Must(template.New("model").Parse(string(bm)))
 
 }

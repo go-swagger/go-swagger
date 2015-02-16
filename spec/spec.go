@@ -131,10 +131,6 @@ func New(data json.RawMessage, version string) (*Document, error) {
 		return nil, err
 	}
 
-	if err := expandSpec(spec); err != nil {
-		return nil, err
-	}
-
 	d := &Document{
 		specAnalyzer: specAnalyzer{
 			spec:        spec,
@@ -148,6 +144,14 @@ func New(data json.RawMessage, version string) (*Document, error) {
 	}
 	d.initialize()
 	return d, nil
+}
+
+// ExpandSpec expands the ref fields in the spec document
+func (d *Document) ExpandSpec() error {
+	if err := expandSpec(d.spec); err != nil {
+		return err
+	}
+	return nil
 }
 
 // BasePath the base path for this spec
