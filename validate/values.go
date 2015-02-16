@@ -50,14 +50,15 @@ func UniqueItems(path, in string, data interface{}) *errors.Validation {
 	if val.Kind() != reflect.Slice {
 		return nil
 	}
-
-	dict := make(map[interface{}]struct{})
+	var unique []interface{}
 	for i := 0; i < val.Len(); i++ {
-		ele := val.Index(i)
-		if _, ok := dict[ele.Interface()]; ok {
-			return errors.DuplicateItems(path, in)
+		v := val.Index(i).Interface()
+		for _, u := range unique {
+			if reflect.DeepEqual(v, u) {
+				return errors.DuplicateItems(path, in)
+			}
 		}
-		dict[ele.Interface()] = struct{}{}
+		unique = append(unique, v)
 	}
 	return nil
 }

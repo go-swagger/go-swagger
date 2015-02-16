@@ -27,7 +27,6 @@ func (s *schemaSliceValidator) SetPath(path string) {
 func (s *schemaSliceValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	_, ok := source.(*spec.Schema)
 	r := ok && kind == reflect.Slice
-	// fmt.Printf("slice validator for %q applies %t for %T (kind: %v)\n", s.Path, r, source, kind)
 	return r
 }
 
@@ -70,12 +69,12 @@ func (s *schemaSliceValidator) Validate(data interface{}) *Result {
 	}
 
 	if s.MinItems != nil {
-		if err := MinItems(s.Path, s.In, itemsSize, *s.MinItems); err != nil {
+		if err := MinItems(s.Path, s.In, int64(size), *s.MinItems); err != nil {
 			result.AddErrors(err)
 		}
 	}
 	if s.MaxItems != nil {
-		if err := MaxItems(s.Path, s.In, itemsSize, *s.MaxItems); err != nil {
+		if err := MaxItems(s.Path, s.In, int64(size), *s.MaxItems); err != nil {
 			result.AddErrors(err)
 		}
 	}
@@ -86,18 +85,4 @@ func (s *schemaSliceValidator) Validate(data interface{}) *Result {
 	}
 	result.Inc()
 	return result
-}
-
-func (s *schemaSliceValidator) hasDuplicates(value reflect.Value, size int) bool {
-	var unique []interface{}
-	for i := 0; i < value.Len(); i++ {
-		v := value.Index(i).Interface()
-		for _, u := range unique {
-			if reflect.DeepEqual(v, u) {
-				return true
-			}
-		}
-		unique = append(unique, v)
-	}
-	return false
 }
