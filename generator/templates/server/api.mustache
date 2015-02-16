@@ -1,0 +1,67 @@
+package {{package}}
+
+import (
+	"net/http"
+
+	"github.com/casualjim/go-swagger"
+	"github.com/casualjim/go-swagger/errors"
+	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/router"
+
+	{{#imports}}{{import}}
+	{{/imports}}
+)
+
+type {{classname}}Handler interface {
+	{{#authorized}}// Handle produces a result or an error. Gets the request params as well as the security principal
+	{{#successModel}}Handle({{classname}}Params, interface{}) ({{successModel}}, error){{/successModel}}{{^successModel}}Handle({{classname}}Params, interface{}) error{{/successModel}}{{/authorized}}{{^authorized}}// Handle produces a result or an error. Gets the request params
+	{{#successModel}}Handle({{classname}}Params) ({{successModel}}, error){{/successModel}}{{^successModel}}Handle({{classname}}Params) error{{/successModel}}{{/authorized}}
+}
+
+{{#docstring}}{{docstring}}{{/docstring}}
+func New{{classname}}(ctx *middleware.Context, handler {{classname}}Handler) *{{classname}} {
+	return &{{classname}}{Context: ctx, Handler: handler, isRoot: isRoot}
+}
+
+type {{classname}} struct {
+	Context *middleware.Context
+	Params  {{classname}}Params
+	Handler {{classname}}Handler
+}
+
+func (o *{{classname}}) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+	route, _ := o.Context.RouteInfo(r)
+
+	{{#authorized}}principal, err := o.Context.Authorize(r, route)
+	if err != nil {
+		o.Context.Respond(rw, r, route.Produces, route, err)
+		return
+	}
+
+	{{/authorized}}
+	if err := o.Context.BindValidRequest(r, route, &o.Params); err != nil { // bind params
+		o.Context.Respond(rw, r, route.Produces, route, err)
+		return
+	}
+
+	{{#authorized}}{{#successModel}}res, err := o.Handler.Handle(o.Params, principal) // actually handle the request
+	if err != nil {
+		o.Context.Respond(rw, r, route.Produces, route, err)
+		return
+	}
+	o.Context.Respond(rw, r, route.Produces, route, res)
+	{{/successModel}}{{^successModel}}if err := o.Handler(o.Params, principal); err != nil { // actually handle the request
+		return err
+	}
+	o.Context.Respond(rw, r, route.Produces, route, nil)
+	{{/successModel}}{{/authorized}}{{^authorized}}{{#successModel}}res, err := o.Handler.Handle(o.Params) // actually handle the request
+	if err != nil {
+		o.Context.Respond(rw, r, route.Produces, route, err)
+		return
+	}
+	o.Context.Respond(rw, r, route.Produces, route, res)
+	{{/successModel}}{{^successModel}}if err := o.Handler(o.Params); err != nil { // actually handle the request
+		return err
+	}
+	o.Context.Respond(rw, r, route.Produces, route, nil){{/successModel}}{{/authorized}}
+}

@@ -1,0 +1,80 @@
+package {{package}}
+
+import (
+	"net/http"
+	"github.com/casualjim/go-swagger"
+	"github.com/casualjim/go-swagger/errors"
+	"github.com/casualjim/go-swagger/httputils"
+	"github.com/casualjim/go-swagger/router"  
+	"github.com/casualjim/go-swagger/validate"
+
+	{{#imports}}{{import}}
+	{{/imports}}
+)
+
+type {{classname}}Params struct {
+	{{#parent}}{{parent}}{{/parent}}
+	{{#vars}}
+	{{#description}}// {{description}}{{/description}}
+	{{name}} {{^required}}*{{/required}}{{datatype}}
+	{{/vars}}
+}
+
+// BindRequest both binds and validates a request, it assumes that complex things implement a Validatable() *validate.Result interface
+// for simple values it will use straight method calls
+func (i *{{classname}}Params) BindRequest(r *http.Request, route *router.MatchedRoute, consumer swagger.Consumer) *validate.Result {
+	res := new(validate.Result)
+	{{#hasQueryParams}}qs := request.URL.Query()
+	{{/hasQueryParams}}
+	var pth string
+	{{#pathParams}}
+	pth = "{{paramName}}"
+	{{#isContainer}}
+	{{>sliceParam}}
+	{{/isContainer}}{{^isContainer}}
+	{{>valueParam}}
+	{{/isContainer}}
+	{{/pathParams}}
+	{{#headerParams}}
+	pth = "{{paramName}}"
+	{{#isContainer}}
+	{{>sliceParam}}
+	{{/isContainer}}{{^isContainer}}
+	{{>valueParam}}
+	{{/isContainer}}
+	{{/headerParams}}
+	{{#queryParams}}
+	pth = "{{paramName}}"
+	{{#isContainer}}
+	{{>sliceParam}}
+	{{/isContainer}}{{^isContainer}}
+	{{>valueParam}}
+	{{/isContainer}}
+	{{/queryParams}}
+	{{#formParams}}
+	pth = "{{paramName}}"
+	{{#isContainer}}
+	{{>sliceParam}}
+	{{/isContainer}}{{^isContainer}}
+	{{>valueParam}}
+	{{/isContainer}}
+	{{/formParams}}
+	{{#bodyParam}}
+	if err := consumer.Consume(r.Body, &i.{{propertyName}}); err != nil {
+		res.AddErrors(errors.NewParseError("{{paramName}}", "body", "", err))
+	} else {
+		res.Merge(i.{{propertyName}}.Validate())
+	}
+	{{/bodyParam}}
+	
+	if res.HasErrors() {
+		return res
+	}
+
+	return nil
+}
+
+func (i *{{classname}}Params) Validate() *validate.Result {
+	return nil
+}
+
