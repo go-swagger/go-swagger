@@ -5,7 +5,7 @@ import "github.com/casualjim/go-swagger/generator"
 // Operation the generate operation files command
 type Operation struct {
 	shared
-	Name      string   `long:"name" short:"n" required:"true" description:"the operation to generate"`
+	Name      []string `long:"name" short:"n" required:"true" description:"the operations to generate, repeat for multiple"`
 	Tags      []string `long:"tags" description:"the tags to include, if not specified defaults to all"`
 	Principal string   `long:"principal" description:"the model to use for the security principal"`
 	NoHandler bool     `long:"skip-handler" description:"when present will not generate an operation handler"`

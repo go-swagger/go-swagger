@@ -2,7 +2,6 @@ package generator
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
 	"path/filepath"
@@ -28,29 +27,41 @@ func init() {
 }
 
 // GenerateModel generates a model file for a schema defintion
-func GenerateModel(modelName string, includeModel, includeValidator bool, opts GenOpts) error {
+func GenerateModel(modelNames []string, includeModel, includeValidator bool, opts GenOpts) error {
 	// Load the spec
 	specPath, specDoc, err := loadSpec(opts.Spec)
 	if err != nil {
 		return err
 	}
 
-	// lookup schema
-	model, ok := specDoc.Spec().Definitions[modelName]
-	if !ok {
-		return fmt.Errorf("model %q not found in definitions in %s", modelName, specPath)
+	if len(modelNames) == 0 {
+		for k := range specDoc.Spec().Definitions {
+			modelNames = append(modelNames, k)
+		}
 	}
 
-	// generate files
-	generator := modelGenerator{
-		Name:             modelName,
-		Model:            model,
-		Target:           filepath.Join(opts.Target, opts.ModelPackage),
-		IncludeModel:     includeModel,
-		IncludeValidator: includeValidator,
+	for _, modelName := range modelNames {
+		// lookup schema
+		model, ok := specDoc.Spec().Definitions[modelName]
+		if !ok {
+			return fmt.Errorf("model %q not found in definitions in %s", modelName, specPath)
+		}
+
+		// generate files
+		generator := modelGenerator{
+			Name:             modelName,
+			Model:            model,
+			Target:           filepath.Join(opts.Target, opts.ModelPackage),
+			IncludeModel:     includeModel,
+			IncludeValidator: includeValidator,
+		}
+
+		if err := generator.Generate(); err != nil {
+			return err
+		}
 	}
 
-	return generator.Generate()
+	return nil
 }
 
 type modelGenerator struct {
@@ -64,9 +75,9 @@ type modelGenerator struct {
 
 func (m *modelGenerator) Generate() error {
 	mod := makeCodegenModel(m.Name, m.Target, m.Model)
-	bb, _ := json.MarshalIndent(util.ToDynamicJSON(mod), "", " ")
-	fmt.Println(string(bb))
-	m.Data = mod //util.ToDynamicJSON(mod)
+	// bb, _ := json.MarshalIndent(util.ToDynamicJSON(mod), "", " ")
+	// fmt.Println(string(bb))
+	m.Data = mod
 
 	if m.IncludeModel {
 		if err := m.generateModel(); err != nil {
@@ -147,7 +158,7 @@ func modelDocString(className, desc string) string {
 }
 
 func makeGenModelProperty(path, paramName, accessor, receiver, indexVar, valueExpression string, schema spec.Schema, required bool) genModelProperty {
-	log.Printf("property: (path %s) (param %s) (accessor %s) (receiver %s) (indexVar %s) (expr %s) required %t", path, paramName, accessor, receiver, indexVar, valueExpression, required)
+	// log.Printf("property: (path %s) (param %s) (accessor %s) (receiver %s) (indexVar %s) (expr %s) required %t", path, paramName, accessor, receiver, indexVar, valueExpression, required)
 	ex := ""
 	if schema.Example != nil {
 		ex = fmt.Sprintf("%#v", schema.Example)

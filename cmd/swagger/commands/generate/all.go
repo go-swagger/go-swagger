@@ -1,12 +1,15 @@
 package generate
 
-import "github.com/jessevdk/go-flags"
+import (
+	"github.com/casualjim/go-swagger/generator"
+	"github.com/jessevdk/go-flags"
+)
 
 type shared struct {
-	Spec         flags.Filename `long:"spec" short:"f" default:"./swagger.json"`
-	APIPackage   string         `long:"api-package" short:"a" default:"operations"`
-	ModelPackage string         `long:"model-package" short:"m" default:"models"`
-	Target       flags.Filename `long:"target" short:"t" default:"./"`
+	Spec         flags.Filename `long:"spec" short:"f" description:"the spec file to use" default:"./swagger.json"`
+	APIPackage   string         `long:"api-package" short:"a" description:"the package to save the operation" default:"operations"`
+	ModelPackage string         `long:"model-package" short:"m" description:"the package to save the models" default:"models"`
+	Target       flags.Filename `long:"target" short:"t" default:"./" description:"the base directory for generating the files"`
 	// TemplateDir  flags.Filename `long:"template-dir"`
 
 }
@@ -14,4 +17,34 @@ type shared struct {
 // All the command to generate an entire application
 // both server and client will be generated
 type All struct {
+	shared
+	Operations []string `long:"operation" short:"O" description:"specify an operation to include, repeat for multiple"`
+	Tags       []string `long:"tags" description:"the tags to include, if not specified defaults to all"`
+	Principal  string   `long:"principal" description:"the model to use for the security principal"`
+	Models     []string `long:"model" short:"M" description:"specify a model to include, repeat for multiple"`
+}
+
+// Execute runs this command
+func (a *All) Execute(args []string) error {
+	opts := generator.GenOpts{
+		Spec:         string(a.Spec),
+		Target:       string(a.Target),
+		APIPackage:   a.APIPackage,
+		ModelPackage: a.ModelPackage,
+		Principal:    a.Principal,
+	}
+
+	if len(a.Models) > 0 || len(a.Operations) == 0 {
+		if err := generator.GenerateModel(a.Models, true, true, opts); err != nil {
+			return err
+		}
+	}
+
+	if len(a.Operations) > 0 || len(a.Models) == 0 {
+		if err := generator.GenerateServerOperation(a.Operations, a.Tags, true, true, opts); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

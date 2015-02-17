@@ -2,7 +2,6 @@ package generator
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
 	"path/filepath"
@@ -29,31 +28,40 @@ func init() {
 // GenerateServerOperation generates a parameter model, parameter validator, http handler implementations for a given operation
 // It also generates an operation handler interface that uses the parameter model for handling a valid request.
 // Allows for specifying a list of tags to include only certain tags for the generation
-func GenerateServerOperation(operationName string, tags []string, includeHandler, includeParameters bool, opts GenOpts) error {
+func GenerateServerOperation(operationNames, tags []string, includeHandler, includeParameters bool, opts GenOpts) error {
 	// Load the spec
 	specPath, specDoc, err := loadSpec(opts.Spec)
 	if err != nil {
 		return err
 	}
 
-	operation, ok := specDoc.OperationForName(operationName)
-	if !ok {
-		return fmt.Errorf("operation %q not found in %s", operationName, specPath)
+	if len(operationNames) == 0 {
+		operationNames = specDoc.OperationIDs()
 	}
 
-	generator := operationGenerator{
-		Name:                 operationName,
-		APIPackage:           opts.APIPackage,
-		ModelsPackage:        opts.ModelPackage,
-		Operation:            *operation,
-		SecurityRequirements: specDoc.SecurityRequirementsFor(operation),
-		Principal:            opts.Principal,
-		Target:               filepath.Join(opts.Target, opts.APIPackage),
-		Tags:                 tags,
-		IncludeHandler:       includeHandler,
-		IncludeParameters:    includeParameters,
+	for _, operationName := range operationNames {
+		operation, ok := specDoc.OperationForName(operationName)
+		if !ok {
+			return fmt.Errorf("operation %q not found in %s", operationName, specPath)
+		}
+
+		generator := operationGenerator{
+			Name:                 operationName,
+			APIPackage:           opts.APIPackage,
+			ModelsPackage:        opts.ModelPackage,
+			Operation:            *operation,
+			SecurityRequirements: specDoc.SecurityRequirementsFor(operation),
+			Principal:            opts.Principal,
+			Target:               filepath.Join(opts.Target, opts.APIPackage),
+			Tags:                 tags,
+			IncludeHandler:       includeHandler,
+			IncludeParameters:    includeParameters,
+		}
+		if err := generator.Generate(); err != nil {
+			return err
+		}
 	}
-	return generator.Generate()
+	return nil
 }
 
 type operationGenerator struct {
@@ -98,8 +106,8 @@ func (o *operationGenerator) Generate() error {
 	}
 
 	for _, op := range operations {
-		bb, _ := json.MarshalIndent(util.ToDynamicJSON(op), "", " ")
-		fmt.Println(string(bb))
+		// bb, _ := json.MarshalIndent(util.ToDynamicJSON(op), "", " ")
+		// fmt.Println(string(bb))
 		o.data = op
 		o.pkg = op.Package
 		o.cname = op.ClassName

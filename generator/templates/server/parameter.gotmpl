@@ -167,7 +167,7 @@ func ({{.ReceiverName}} *{{.ClassName}}Params) BindRequest(r *http.Request, rout
 func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw string) *validate.Result {
   res := new(validate.Result)
 
-  {{if .Required}}if err := validate.RequiredString({{.Path}}, "{{.Location}}", raw); err != nil {
+  {{if and (not .IsPathParam) .Required}}if err := validate.RequiredString({{.Path}}, "{{.Location}}", raw); err != nil {
     res.AddErrors(err)
     return res
   }
