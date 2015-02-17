@@ -41,6 +41,37 @@ var commonInitialisms = map[string]bool{
 	"XML":   true,
 }
 
+// SplitByFormat splits a string by a known format:
+// ssv: space separated value
+// tsv: tab separated value
+// pipes: pipe (|) separated value
+// csv: comma separated value (default)
+func SplitByFormat(data, format string) []string {
+	if data == "" {
+		return nil
+	}
+	var sep string
+	switch format {
+	case "ssv":
+		sep = " "
+	case "tsv":
+		sep = "\t"
+	case "pipes":
+		sep = "|"
+	case "multi":
+		return nil
+	default:
+		sep = ","
+	}
+	var result []string
+	for _, s := range strings.Split(data, sep) {
+		if ts := strings.TrimSpace(s); ts != "" {
+			result = append(result, ts)
+		}
+	}
+	return result
+}
+
 // Prepares strings by splitting by caps, spaces, dashes, and underscore
 func split(str string) (words []string) {
 	repl := strings.NewReplacer("-", " ", "_", " ")

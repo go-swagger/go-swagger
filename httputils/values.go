@@ -23,7 +23,7 @@ func ReadStringSliceParam(name, in, format string, defaultValue []string, values
 		return defaultValue, nil
 	}
 
-	return split(value, format), nil
+	return util.SplitByFormat(value, format), nil
 }
 
 // ReadBoolSliceParam reads a bool slice param
@@ -43,7 +43,7 @@ func ReadBoolSliceParam(name, in, format string, defaultValue []bool, values Get
 	}
 
 	var result []bool
-	for _, r := range split(value, format) {
+	for _, r := range util.SplitByFormat(value, format) {
 		v, err := util.ConvertBool(r)
 		if err != nil {
 			return nil, errors.InvalidType(name, in, "bool", r)
@@ -71,7 +71,7 @@ func ReadFloat32SliceParam(name, in, format string, defaultValue []float32, valu
 	}
 
 	var result []float32
-	for _, r := range split(value, format) {
+	for _, r := range util.SplitByFormat(value, format) {
 		v, err := util.ConvertFloat32(r)
 		if err != nil {
 			return nil, errors.InvalidType(name, in, "float32", r)
@@ -99,7 +99,7 @@ func ReadFloat64SliceParam(name, in, format string, defaultValue []float64, valu
 	}
 
 	var result []float64
-	for _, r := range split(value, format) {
+	for _, r := range util.SplitByFormat(value, format) {
 		v, err := util.ConvertFloat64(r)
 		if err != nil {
 			return nil, errors.InvalidType(name, in, "float64", r)
@@ -127,7 +127,7 @@ func ReadInt8SliceParam(name, in, format string, defaultValue []int8, values Get
 	}
 
 	var result []int8
-	for _, r := range split(value, format) {
+	for _, r := range util.SplitByFormat(value, format) {
 		v, err := util.ConvertInt8(r)
 		if err != nil {
 			return nil, errors.InvalidType(name, in, "int8", r)
@@ -155,7 +155,7 @@ func ReadInt16SliceParam(name, in, format string, defaultValue []int16, values G
 	}
 
 	var result []int16
-	for _, r := range split(value, format) {
+	for _, r := range util.SplitByFormat(value, format) {
 		v, err := util.ConvertInt16(r)
 		if err != nil {
 			return nil, errors.InvalidType(name, in, "int16", r)
@@ -183,7 +183,7 @@ func ReadInt32SliceParam(name, in, format string, defaultValue []int32, values G
 	}
 
 	var result []int32
-	for _, r := range split(value, format) {
+	for _, r := range util.SplitByFormat(value, format) {
 		v, err := util.ConvertInt32(r)
 		if err != nil {
 			return nil, errors.InvalidType(name, in, "int32", r)
@@ -211,7 +211,7 @@ func ReadInt64SliceParam(name, in, format string, defaultValue []int64, values G
 	}
 
 	var result []int64
-	for _, r := range split(value, format) {
+	for _, r := range util.SplitByFormat(value, format) {
 		v, err := util.ConvertInt64(r)
 		if err != nil {
 			return nil, errors.InvalidType(name, in, "int64", r)
@@ -239,7 +239,7 @@ func ReadUint8SliceParam(name, in, format string, defaultValue []uint8, values G
 	}
 
 	var result []uint8
-	for _, r := range split(value, format) {
+	for _, r := range util.SplitByFormat(value, format) {
 		v, err := util.ConvertUint8(r)
 		if err != nil {
 			return nil, errors.InvalidType(name, in, "uint8", r)
@@ -267,7 +267,7 @@ func ReadUint16SliceParam(name, in, format string, defaultValue []uint16, values
 	}
 
 	var result []uint16
-	for _, r := range split(value, format) {
+	for _, r := range util.SplitByFormat(value, format) {
 		v, err := util.ConvertUint16(r)
 		if err != nil {
 			return nil, errors.InvalidType(name, in, "uint16", r)
@@ -295,7 +295,7 @@ func ReadUint32SliceParam(name, in, format string, defaultValue []uint32, values
 	}
 
 	var result []uint32
-	for _, r := range split(value, format) {
+	for _, r := range util.SplitByFormat(value, format) {
 		v, err := util.ConvertUint32(r)
 		if err != nil {
 			return nil, errors.InvalidType(name, in, "uint32", r)
@@ -323,7 +323,7 @@ func ReadUint64SliceParam(name, in, format string, defaultValue []uint64, values
 	}
 
 	var result []uint64
-	for _, r := range split(value, format) {
+	for _, r := range util.SplitByFormat(value, format) {
 		v, err := util.ConvertUint64(r)
 		if err != nil {
 			return nil, errors.InvalidType(name, in, "uint64", r)

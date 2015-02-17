@@ -79,8 +79,8 @@ func (o *operationGenerator) Generate() error {
 	// the user specified package serves as root for generating the directory structure
 	var operations []genOperation
 	authed := len(o.SecurityRequirements) > 0
-	bb, _ := json.MarshalIndent(util.ToDynamicJSON(o), "", " ")
-	fmt.Println(string(bb))
+	// bb, _ := json.MarshalIndent(util.ToDynamicJSON(o), "", " ")
+	// fmt.Println(string(bb))
 	for _, tag := range o.Operation.Tags {
 		if len(o.Tags) == 0 {
 			operations = append(operations, makeCodegenOperation(o.Name, tag, o.ModelsPackage, o.Principal, o.Operation, authed))
@@ -246,8 +246,8 @@ type genOperation struct {
 
 	Imports []string `json:"imports,omitempty"`
 
-	Authorized bool   `json:"authorized,omitempty"` // -
-	Principal  string `json:"principal,omitempty"`  // -
+	Authorized bool   `json:"authorized"`          // -
+	Principal  string `json:"principal,omitempty"` // -
 
 	SuccessModel         string `json:"successModel,omitempty"`         // -
 	ReturnsPrimitive     bool   `json:"returnsPrimitive,omitempty"`     // -
@@ -266,6 +266,13 @@ type genOperation struct {
 func makeCodegenParameter(receiver string, param spec.Parameter) genParameter {
 
 	ctx := makeGenValidations(paramValidations(receiver, param))
+	thisItem := genParameterItem{}
+	thisItem.sharedParam = ctx
+	thisItem.ValueExpression = ctx.IndexVar + "c"
+	thisItem.CollectionFormat = param.CollectionFormat
+	thisItem.Converter = stringConverters[ctx.Type]
+	thisItem.Location = param.In
+
 	var child *genParameterItem
 	if param.Items != nil {
 		it := makeCodegenParamItem(
@@ -273,7 +280,8 @@ func makeCodegenParameter(receiver string, param spec.Parameter) genParameter {
 			ctx.ParamName,
 			ctx.PropertyName,
 			ctx.IndexVar+"i",
-			ctx.ValueExpression+"["+ctx.IndexVar+"]",
+			ctx.IndexVar+"c["+ctx.IndexVar+"]",
+			thisItem,
 			*param.Items,
 		)
 		child = &it
@@ -308,11 +316,24 @@ type genParameter struct {
 	Child            *genParameterItem `json:"child,omitempty"`
 	BodyParam        *genParameter     `json:"bodyParam,omitempty"`
 	Converter        string            `json:"converter,omitempty"`
+	Parent           *genParameterItem `json:"parent,omitempty"` // this is meant to be nil, just here for completeness in the templates
 	Location         string            `json:"location,omitempty"`
 }
 
-func makeCodegenParamItem(path, paramName, accessor, indexVar, valueExpression string, items spec.Items) genParameterItem {
+func makeCodegenParamItem(path, paramName, accessor, indexVar, valueExpression string, parent genParameterItem, items spec.Items) genParameterItem {
 	ctx := makeGenValidations(paramItemValidations(path, paramName, accessor, indexVar, valueExpression, items))
+
+	res := genParameterItem{}
+	res.sharedParam = ctx
+	res.CollectionFormat = items.CollectionFormat
+	res.Parent = &parent
+	res.Converter = stringConverters[ctx.Type]
+	res.Location = parent.Location
+	valueExpr := ctx.IndexVar + "c[" + ctx.IndexVar + "]"
+	if ctx.IsPrimitive && res.Converter != "" {
+		valueExpr = "value"
+	}
+	res.ValueExpression = valueExpr
 
 	var child *genParameterItem
 	if items.Items != nil {
@@ -321,23 +342,24 @@ func makeCodegenParamItem(path, paramName, accessor, indexVar, valueExpression s
 			ctx.ParamName,
 			ctx.PropertyName,
 			ctx.IndexVar+"i",
-			ctx.ValueExpression+"["+ctx.IndexVar+"]",
+			ctx.IndexVar+"c["+ctx.IndexVar+"]",
+			res,
 			*items.Items,
 		)
 		child = &it
 	}
+	res.Child = child
 
-	return genParameterItem{
-		sharedParam:      ctx,
-		CollectionFormat: items.CollectionFormat,
-		Child:            child,
-	}
+	return res
 }
 
 type genParameterItem struct {
 	sharedParam
 	CollectionFormat string            `json:"collectionFormat,omitempty"`
 	Child            *genParameterItem `json:"child,omitempty"`
+	Parent           *genParameterItem `json:"parent,omitempty"`
+	Converter        string            `json:"converter,omitempty"`
+	Location         string            `json:"location,omitempty"`
 }
 
 type sharedParam struct {

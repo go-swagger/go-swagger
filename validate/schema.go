@@ -11,6 +11,7 @@ var specSchemaType = reflect.TypeOf(&spec.Schema{})
 
 // Spec validates a spec document
 func Spec(doc *spec.Document) *Result {
+	// TODO: add more validations beyond just jsonschema
 	return newSchemaValidator(doc.Schema(), nil, "", formatCheckers).Validate(doc.Spec())
 }
 

@@ -4,6 +4,8 @@ import (
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/casualjim/go-swagger/util"
 )
 
 // CanHaveBody returns true if this method can have a body
@@ -36,31 +38,5 @@ func ReadSingleValue(values Gettable, name string) string {
 // ReadCollectionValue reads a collection value from a string data source
 func ReadCollectionValue(values Gettable, name, collectionFormat string) []string {
 	v := ReadSingleValue(values, name)
-	return split(v, collectionFormat)
-}
-
-func split(data, format string) []string {
-	if data == "" {
-		return nil
-	}
-	var sep string
-	switch format {
-	case "ssv":
-		sep = " "
-	case "tsv":
-		sep = "\t"
-	case "pipes":
-		sep = "|"
-	case "multi":
-		return nil
-	default:
-		sep = ","
-	}
-	var result []string
-	for _, s := range strings.Split(data, sep) {
-		if ts := strings.TrimSpace(s); ts != "" {
-			result = append(result, ts)
-		}
-	}
-	return result
+	return util.SplitByFormat(v, collectionFormat)
 }
