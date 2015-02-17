@@ -329,11 +329,8 @@ func makeCodegenParamItem(path, paramName, accessor, indexVar, valueExpression s
 	res.Parent = &parent
 	res.Converter = stringConverters[ctx.Type]
 	res.Location = parent.Location
-	valueExpr := ctx.IndexVar + "c[" + ctx.IndexVar + "]"
-	if ctx.IsPrimitive && res.Converter != "" {
-		valueExpr = "value"
-	}
-	res.ValueExpression = valueExpr
+	// valueExpr := ctx.IndexVar + "c[" + ctx.IndexVar + "]"
+	res.ValueExpression = "value"
 
 	var child *genParameterItem
 	if items.Items != nil {

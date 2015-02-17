@@ -72,26 +72,38 @@ if err := validate.Enum({{.Path}}, "{{.Location}}", {{.ValueExpression}}, {{.Enu
 {{else}}{{.IndexVar}}c := raw{{end}}
 {{.IndexVar}}sz := size
 var {{.IndexVar}}r {{.Type}}
-{{if and .IsContainer .Child.IsPrimitive}}{{if .Child.Converter}}validateElement := func({{.IndexVar}} int, {{.Child.ValueExpression}} {{.Child.Type}}) *errors.Validation {
+{{.IndexVar}}ValidateElement := func({{.IndexVar}} int, {{.Child.ValueExpression}} {{.Child.Type}}) *errors.Validation {
   {{template "propertyvalidator" .Child}}
   return nil
 }
-{{end}}{{end}}for {{.IndexVar}} := 0; {{.IndexVar}} < {{.IndexVar}}sz; {{.IndexVar}}++ {
+
+for {{.IndexVar}} := 0; {{.IndexVar}} < {{.IndexVar}}sz; {{.IndexVar}}++ {
   {{if .Child.IsPrimitive}}{{if .Child.Converter}}value, err := {{.Child.Converter}}({{.IndexVar}}c[{{.IndexVar}}])
   if err != nil {
     res.AddErrors(errors.InvalidType({{.Child.Path}}, "{{.Location}}", "{{.Child.Type}}", {{.IndexVar}}c[{{.IndexVar}}]))
     return res
   }
 
-  if err := validateElement({{.IndexVar}}, {{.Child.ValueExpression}}); err != nil {
+  if err := {{.IndexVar}}ValidateElement({{.IndexVar}}, {{.Child.ValueExpression}}); err != nil {
     res.AddErrors(err)
     return res
   }
   res.Inc()
   {{.IndexVar}}r = append({{.IndexVar}}r, value)
-  {{else}}res.Inc()
+  {{else}}
+    if err := {{.IndexVar}}ValidateElement({{.IndexVar}}, {{.IndexVar}}c[{{.IndexVar}}]); err != nil {
+      res.AddErrors(err)
+      return res
+    }
+
+    res.Inc()
   {{.IndexVar}}r = append({{.IndexVar}}r, {{.IndexVar}}c[{{.IndexVar}}]){{end}}{{else if .Child.IsContainer}}
-  {{template "slicebinder" .Child}}res.Inc()
+  {{template "slicebinder" .Child}}
+    if err := {{.IndexVar}}ValidateElement({{.IndexVar}}, {{.Child.IndexVar}}r); err != nil {
+      res.AddErrors(err)
+      return res
+    }
+    res.Inc()
   {{.IndexVar}}r = append({{.IndexVar}}r, {{.Child.IndexVar}}r){{end}}
 }
 {{end}}package {{.Package}}
@@ -200,7 +212,7 @@ func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw []strin
     return res{{end}}
   }
   {{template "slicebinder" .}}{{.ValueExpression}} = {{.IndexVar}}r
-  {{if .HasValidations}}if err := {{.ReceiverName}}.validate{{.PropertyName}}(); err != nil {
+  {{if .HasSliceValidations}}if err := {{.ReceiverName}}.validate{{.PropertyName}}(); err != nil {
     res.AddErrors(err)
   }
 
@@ -211,7 +223,7 @@ func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw []strin
   return res
 }
 {{end}}
-{{if .HasValidations}}
+{{if or .HasValidations .HasSliceValidations}}
 func ({{.ReceiverName}} *{{$className}}Params) validate{{.PropertyName}}() *errors.Validation {
   {{template "propertyvalidator" .}}
 

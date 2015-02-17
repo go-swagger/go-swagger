@@ -46,6 +46,8 @@ For a V1 I want to have this feature set completed:
 - [x] An object model that serializes to swagger yaml or json
 - [x] A tool to work with swagger:
   - [x] validate a swagger spec document
+    - [x] validate against jsonschema
+    - [ ] validate extra rules outlined [here](https://github.com/apigee-127/swagger-tools/blob/master/docs/Swagger_Validation.md)
   - [x] serve swagger UI for any swagger spec file
   - [ ] generate stub api based on swagger spec
   - [ ] generate client from a swagger spec
