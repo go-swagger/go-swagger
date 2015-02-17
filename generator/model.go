@@ -51,6 +51,7 @@ func GenerateModel(modelNames []string, includeModel, includeValidator bool, opt
 		generator := modelGenerator{
 			Name:             modelName,
 			Model:            model,
+			SpecDoc:          specDoc,
 			Target:           filepath.Join(opts.Target, opts.ModelPackage),
 			IncludeModel:     includeModel,
 			IncludeValidator: includeValidator,
@@ -67,6 +68,7 @@ func GenerateModel(modelNames []string, includeModel, includeValidator bool, opt
 type modelGenerator struct {
 	Name             string
 	Model            spec.Schema
+	SpecDoc          *spec.Document
 	Target           string
 	IncludeModel     bool
 	IncludeValidator bool
@@ -74,7 +76,7 @@ type modelGenerator struct {
 }
 
 func (m *modelGenerator) Generate() error {
-	mod := makeCodegenModel(m.Name, m.Target, m.Model)
+	mod := makeCodegenModel(m.Name, m.Target, m.Model, m.SpecDoc)
 	// bb, _ := json.MarshalIndent(util.ToDynamicJSON(mod), "", " ")
 	// fmt.Println(string(bb))
 	m.Data = mod
@@ -115,9 +117,9 @@ func (m *modelGenerator) generateModel() error {
 	return writeToFile(m.Target, m.Name, buf.Bytes())
 }
 
-func makeCodegenModel(name, pkg string, schema spec.Schema) *genModel {
+func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Document) *genModel {
 	receiver := "m"
-	var props []genModelProperty
+	props := make(map[string]genModelProperty)
 	for pn, p := range schema.Properties {
 		var required bool
 		for _, v := range schema.Required {
@@ -126,7 +128,32 @@ func makeCodegenModel(name, pkg string, schema spec.Schema) *genModel {
 				break
 			}
 		}
-		props = append(props, makeGenModelProperty("\""+pn+"\"", util.ToJSONName(pn), util.ToGoName(pn), receiver, "i", receiver+"."+util.ToGoName(pn), p, required))
+		props[util.ToJSONName(pn)] = makeGenModelProperty(
+			"\""+pn+"\"",
+			util.ToJSONName(pn),
+			util.ToGoName(pn),
+			receiver,
+			"i",
+			receiver+"."+util.ToGoName(pn),
+			p,
+			required)
+	}
+	for _, p := range schema.AllOf {
+		if p.Ref.GetURL() != nil {
+			tn := filepath.Base(p.Ref.GetURL().Fragment)
+			p = specDoc.Spec().Definitions[tn]
+		}
+		mod := makeCodegenModel(name, pkg, p, specDoc)
+		if mod != nil {
+			for _, prop := range mod.Properties {
+				props[prop.ParamName] = prop
+			}
+		}
+	}
+
+	var properties []genModelProperty
+	for _, v := range props {
+		properties = append(properties, v)
 	}
 
 	return &genModel{
@@ -134,7 +161,7 @@ func makeCodegenModel(name, pkg string, schema spec.Schema) *genModel {
 		ClassName:      util.ToGoName(name),
 		Name:           util.ToJSONName(name),
 		ReceiverName:   receiver,
-		Properties:     props,
+		Properties:     properties,
 		Description:    schema.Description,
 		DocString:      modelDocString(util.ToGoName(name), schema.Description),
 		HumanClassName: util.ToHumanNameLower(util.ToGoName(name)),

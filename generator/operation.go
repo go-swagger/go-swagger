@@ -166,7 +166,7 @@ func makeCodegenOperation(name, pkg, modelsPkg, principal string, operation spec
 	var params, qp, pp, hp, fp []genParameter
 	var hasQueryParams bool
 	for _, p := range operation.Parameters {
-		cp := makeCodegenParameter(receiver, p)
+		cp := makeCodegenParameter(receiver, modelsPkg, p)
 		if cp.IsQueryParam {
 			hasQueryParams = true
 			qp = append(qp, cp)
@@ -271,28 +271,42 @@ type genOperation struct {
 	HasQueryParams bool           `json:"hasQueryParams,omitempty"` // -
 }
 
-func makeCodegenParameter(receiver string, param spec.Parameter) genParameter {
-
-	ctx := makeGenValidations(paramValidations(receiver, param))
-	thisItem := genParameterItem{}
-	thisItem.sharedParam = ctx
-	thisItem.ValueExpression = ctx.IndexVar + "c"
-	thisItem.CollectionFormat = param.CollectionFormat
-	thisItem.Converter = stringConverters[ctx.Type]
-	thisItem.Location = param.In
-
+func makeCodegenParameter(receiver, modelsPkg string, param spec.Parameter) genParameter {
+	var ctx sharedParam
 	var child *genParameterItem
-	if param.Items != nil {
-		it := makeCodegenParamItem(
-			"fmt.Sprintf(\"%s.%v\", "+ctx.Path+", "+ctx.IndexVar+")",
-			ctx.ParamName,
-			ctx.PropertyName,
-			ctx.IndexVar+"i",
-			ctx.IndexVar+"c["+ctx.IndexVar+"]",
-			thisItem,
-			*param.Items,
-		)
-		child = &it
+
+	if param.In == "body" {
+		ctx = makeGenValidations(modelValidations(
+			"\""+util.ToJSONName(param.Name)+"\"",
+			util.ToJSONName(param.Name),
+			util.ToGoName(param.Name),
+			"i",
+			receiver+"."+util.ToGoName(param.Name),
+			param.Required,
+			*param.Schema))
+
+	} else {
+		ctx := makeGenValidations(paramValidations(receiver, param))
+		thisItem := genParameterItem{}
+		thisItem.sharedParam = ctx
+		thisItem.ValueExpression = ctx.IndexVar + "c"
+		thisItem.CollectionFormat = param.CollectionFormat
+		thisItem.Converter = stringConverters[ctx.Type]
+		thisItem.Location = param.In
+
+		if param.Items != nil {
+			it := makeCodegenParamItem(
+				"fmt.Sprintf(\"%s.%v\", "+ctx.Path+", "+ctx.IndexVar+")",
+				ctx.ParamName,
+				ctx.PropertyName,
+				ctx.IndexVar+"i",
+				ctx.IndexVar+"c["+ctx.IndexVar+"]",
+				thisItem,
+				*param.Items,
+			)
+			child = &it
+		}
+
 	}
 
 	return genParameter{
