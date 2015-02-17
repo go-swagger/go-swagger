@@ -211,7 +211,8 @@ func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw []strin
     res.Inc()
     return res{{end}}
   }
-  {{template "slicebinder" .}}{{.ValueExpression}} = {{.IndexVar}}r
+  {{template "slicebinder" .}}
+  {{.ValueExpression}} = {{.IndexVar}}r
   {{if .HasSliceValidations}}if err := {{.ReceiverName}}.validate{{.PropertyName}}(); err != nil {
     res.AddErrors(err)
   }
