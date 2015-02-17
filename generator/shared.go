@@ -50,6 +50,7 @@ type GenOpts struct {
 	Target       string
 	TypeMapping  map[string]string
 	Imports      map[string]string
+	DumpData     bool
 }
 
 type generatorOptions struct {

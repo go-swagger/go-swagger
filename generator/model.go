@@ -2,8 +2,10 @@ package generator
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -73,12 +75,17 @@ type modelGenerator struct {
 	IncludeModel     bool
 	IncludeValidator bool
 	Data             interface{}
+	DumpData         bool
 }
 
 func (m *modelGenerator) Generate() error {
 	mod := makeCodegenModel(m.Name, m.Target, m.Model, m.SpecDoc)
-	// bb, _ := json.MarshalIndent(util.ToDynamicJSON(mod), "", " ")
-	// fmt.Println(string(bb))
+	if m.DumpData {
+		bb, _ := json.MarshalIndent(util.ToDynamicJSON(mod), "", " ")
+		fmt.Fprintln(os.Stdout, string(bb))
+		return nil
+	}
+
 	m.Data = mod
 
 	if m.IncludeModel {

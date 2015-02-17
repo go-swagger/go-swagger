@@ -2,8 +2,10 @@ package generator
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -56,6 +58,7 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 			Tags:                 tags,
 			IncludeHandler:       includeHandler,
 			IncludeParameters:    includeParameters,
+			DumpData:             opts.DumpData,
 		}
 		if err := generator.Generate(); err != nil {
 			return err
@@ -79,6 +82,7 @@ type operationGenerator struct {
 	cname                string
 	IncludeHandler       bool
 	IncludeParameters    bool
+	DumpData             bool
 }
 
 func (o *operationGenerator) Generate() error {
@@ -106,8 +110,11 @@ func (o *operationGenerator) Generate() error {
 	}
 
 	for _, op := range operations {
-		// bb, _ := json.MarshalIndent(util.ToDynamicJSON(op), "", " ")
-		// fmt.Println(string(bb))
+		if o.DumpData {
+			bb, _ := json.MarshalIndent(util.ToDynamicJSON(op), "", " ")
+			fmt.Fprintln(os.Stdout, string(bb))
+			continue
+		}
 		o.data = op
 		o.pkg = op.Package
 		o.cname = op.ClassName
