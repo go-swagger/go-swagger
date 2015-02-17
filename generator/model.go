@@ -176,15 +176,15 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 }
 
 type genModel struct {
-	Package        string             `json:"package,omitempty"`
-	ReceiverName   string             `json:"receiverName,omitempty"`
-	ClassName      string             `json:"classname,omitempty"`
-	Name           string             `json:"name,omitempty"`
-	Description    string             `json:"description,omitempty"`
-	Properties     []genModelProperty `json:"properties,omitempty"`
-	DocString      string             `json:"docString,omitempty"`
-	HumanClassName string             `json:"humanClassname,omitempty"`
-	Imports        []string           `json:"imports,omitempty"`
+	Package        string             //`json:"package,omitempty"`
+	ReceiverName   string             ////`json:"receiverName,omitempty"`
+	ClassName      string             //`json:"classname,omitempty"`
+	Name           string             //`json:"name,omitempty"`
+	Description    string             //`json:"description,omitempty"`
+	Properties     []genModelProperty //`json:"properties,omitempty"`
+	DocString      string             //`json:"docString,omitempty"`
+	HumanClassName string             //`json:"humanClassname,omitempty"`
+	Imports        []string           //`json:"imports,omitempty"`
 }
 
 func modelDocString(className, desc string) string {
@@ -254,21 +254,21 @@ func makeGenModelProperty(path, paramName, accessor, receiver, indexVar, valueEx
 
 type genModelProperty struct {
 	sharedParam
-	Example               string             `json:"example,omitempty"`
-	Description           string             `json:"description,omitempty"`
-	DataType              string             `json:"dataType,omitempty"`
-	DocString             string             `json:"docString,omitempty"`
-	Location              string             `json:"location,omitempty"`
-	ReceiverName          string             `json:"receiverName,omitempty"`
-	IsComplexObject       bool               `json:"isComplex,omitempty"` // not slice, custom formatter or primitive
-	SingleSchemaSlice     bool               `json:"singleSchemaSlice,omitempty"`
-	Items                 []genModelProperty `json:"items,omitempty"`
-	ItemsLen              int                `json:"itemsLength,omitempty"`
-	AllowsAdditionalItems bool               `json:"allowsAdditionalItems,omitempty"`
-	HasAdditionalItems    bool               `json:"hasAdditionalItems,omitempty"`
-	AdditionalItems       *genModelProperty  `json:"additionalItems,omitempty"`
-	Object                *genModelProperty  `json:"object,omitempty"`
-	Imports               []string           `json:"imports,omitempty"`
+	Example               string             //`json:"example,omitempty"`
+	Description           string             //`json:"description,omitempty"`
+	DataType              string             //`json:"dataType,omitempty"`
+	DocString             string             //`json:"docString,omitempty"`
+	Location              string             //`json:"location,omitempty"`
+	ReceiverName          string             //`json:"receiverName,omitempty"`
+	IsComplexObject       bool               //`json:"isComplex,omitempty"` // not slice, custom formatter or primitive
+	SingleSchemaSlice     bool               //`json:"singleSchemaSlice,omitempty"`
+	Items                 []genModelProperty //`json:"items,omitempty"`
+	ItemsLen              int                //`json:"itemsLength,omitempty"`
+	AllowsAdditionalItems bool               //`json:"allowsAdditionalItems,omitempty"`
+	HasAdditionalItems    bool               //`json:"hasAdditionalItems,omitempty"`
+	AdditionalItems       *genModelProperty  //`json:"additionalItems,omitempty"`
+	Object                *genModelProperty  //`json:"object,omitempty"`
+	Imports               []string           //`json:"imports,omitempty"`
 }
 
 func modelValidations(path, paramName, accessor, indexVar, valueExpression string, required bool, model spec.Schema) commonValidations {

@@ -59,58 +59,58 @@ type generatorOptions struct {
 }
 
 type propertyDescriptor struct {
-	PropertyName      string `json:"propertyName,omitempty"`
-	ParamName         string `json:"paramName,omitempty"`
-	Path              string `json:"path,omitempty"` // language escaped string or expression
-	ValueExpression   string `json:"valueExpression,omitempty"`
-	IndexVar          string `json:"indexVar,omitempty"`
-	IsPrimitive       bool   `json:"isPrimitive,omitempty"`       // plain old primitive type
-	IsCustomFormatter bool   `json:"isCustomFormatter,omitempty"` // custom format or default format
-	IsContainer       bool   `json:"isContainer,omitempty"`       // slice
+	PropertyName      string //`json:"propertyName,omitempty"`
+	ParamName         string //`json:"paramName,omitempty"`
+	Path              string //`json:"path,omitempty"` // language escaped string or expression
+	ValueExpression   string //`json:"valueExpression,omitempty"`
+	IndexVar          string //`json:"indexVar,omitempty"`
+	IsPrimitive       bool   //`json:"isPrimitive,omitempty"`       // plain old primitive type
+	IsCustomFormatter bool   //`json:"isCustomFormatter,omitempty"` // custom format or default format
+	IsContainer       bool   //`json:"isContainer,omitempty"`       // slice
 
 }
 
 type commonValidations struct {
 	propertyDescriptor
-	Required         bool          `json:"required,omitempty"`
-	Type             string        `json:"type,omitempty"`
-	Format           string        `json:"format,omitempty"`
-	Items            *spec.Items   `json:"items,omitempty"`
-	Default          interface{}   `json:"default,omitempty"`
-	Maximum          *float64      `json:"maximum,omitempty"`
-	ExclusiveMaximum bool          `json:"exclusiveMaximum,omitempty"`
-	Minimum          *float64      `json:"minimum,omitempty"`
-	ExclusiveMinimum bool          `json:"exclusiveMinimum,omitempty"`
-	MaxLength        *int64        `json:"maxLength,omitempty"`
-	MinLength        *int64        `json:"minLength,omitempty"`
-	Pattern          string        `json:"pattern,omitempty"`
-	MaxItems         *int64        `json:"maxItems,omitempty"`
-	MinItems         *int64        `json:"minItems,omitempty"`
-	UniqueItems      bool          `json:"uniqueItems,omitempty"`
-	MultipleOf       *float64      `json:"multipleOf,omitempty"`
-	Enum             []interface{} `json:"enum,omitempty"`
+	Required         bool          //`json:"required,omitempty"`
+	Type             string        //`json:"type,omitempty"`
+	Format           string        //`json:"format,omitempty"`
+	Items            *spec.Items   //`json:"items,omitempty"`
+	Default          interface{}   //`json:"default,omitempty"`
+	Maximum          *float64      //`json:"maximum,omitempty"`
+	ExclusiveMaximum bool          //`json:"exclusiveMaximum,omitempty"`
+	Minimum          *float64      //`json:"minimum,omitempty"`
+	ExclusiveMinimum bool          //`json:"exclusiveMinimum,omitempty"`
+	MaxLength        *int64        //`json:"maxLength,omitempty"`
+	MinLength        *int64        //`json:"minLength,omitempty"`
+	Pattern          string        //`json:"pattern,omitempty"`
+	MaxItems         *int64        //`json:"maxItems,omitempty"`
+	MinItems         *int64        //`json:"minItems,omitempty"`
+	UniqueItems      bool          //`json:"uniqueItems,omitempty"`
+	MultipleOf       *float64      //`json:"multipleOf,omitempty"`
+	Enum             []interface{} //`json:"enum,omitempty"`
 }
 
 type genValidations struct {
-	Type                string  `json:"type,omitempty"`
-	Required            bool    `json:"required,omitempty"`
-	DefaultValue        string  `json:"defaultValue,omitempty"`
-	MaxLength           int64   `json:"maxLength,omitempty"`
-	MinLength           int64   `json:"minLength,omitempty"`
-	Pattern             string  `json:"pattern,omitempty"`
-	MultipleOf          float64 `json:"multipleOf,omitempty"`
-	Minimum             float64 `json:"minimum,omitempty"`
-	Maximum             float64 `json:"maximum,omitempty"`
-	ExclusiveMinimum    bool    `json:"exclusiveMinimum,omitempty"`
-	ExclusiveMaximum    bool    `json:"exclusiveMaximum,omitempty"`
-	Enum                string  `json:"enum,omitempty"`
-	HasValidations      bool    `json:"hasValidations,omitempty"`
-	Format              string  `json:"format,empty"`
-	MinItems            int64   `json:"minItems,omitempty"`
-	MaxItems            int64   `json:"maxItems,omitempty"`
-	UniqueItems         bool    `json:"uniqueItems,omitempty"`
-	HasSliceValidations bool    `json:"hasSliceValidations,omitempty"`
-	NeedsSize           bool    `json:"needsSize,omitempty"`
+	Type                string  //`json:"type,omitempty"`
+	Required            bool    //`json:"required,omitempty"`
+	DefaultValue        string  //`json:"defaultValue,omitempty"`
+	MaxLength           int64   //`json:"maxLength,omitempty"`
+	MinLength           int64   //`json:"minLength,omitempty"`
+	Pattern             string  //`json:"pattern,omitempty"`
+	MultipleOf          float64 //`json:"multipleOf,omitempty"`
+	Minimum             float64 //`json:"minimum,omitempty"`
+	Maximum             float64 //`json:"maximum,omitempty"`
+	ExclusiveMinimum    bool    //`json:"exclusiveMinimum,omitempty"`
+	ExclusiveMaximum    bool    //`json:"exclusiveMaximum,omitempty"`
+	Enum                string  //`json:"enum,omitempty"`
+	HasValidations      bool    //`json:"hasValidations,omitempty"`
+	Format              string  //`json:"format,empty"`
+	MinItems            int64   //`json:"minItems,omitempty"`
+	MaxItems            int64   //`json:"maxItems,omitempty"`
+	UniqueItems         bool    //`json:"uniqueItems,omitempty"`
+	HasSliceValidations bool    //`json:"hasSliceValidations,omitempty"`
+	NeedsSize           bool    //`json:"needsSize,omitempty"`
 }
 
 func loadSpec(specFile string) (string, *spec.Document, error) {

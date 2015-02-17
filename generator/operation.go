@@ -248,34 +248,34 @@ func operationDocString(name string, operation spec.Operation) string {
 }
 
 type genOperation struct {
-	Package        string `json:"package,omitempty"`        // -
-	ReceiverName   string `json:"receiverName,omitempty"`   // -
-	ClassName      string `json:"classname,omitempty"`      // -
-	Name           string `json:"name,omitempty"`           // -
-	HumanClassName string `json:"humanClassname,omitempty"` // -
+	Package        string //`json:"package,omitempty"`        // -
+	ReceiverName   string //`json:"receiverName,omitempty"`   // -
+	ClassName      string //`json:"classname,omitempty"`      // -
+	Name           string //`json:"name,omitempty"`           // -
+	HumanClassName string //`json:"humanClassname,omitempty"` // -
 
-	Summary      string `json:"summary,omitempty"`
-	Description  string `json:"description,omitempty"` // -
-	DocString    string `json:"docString,omitempty"`   // -
-	ExternalDocs string `json:"externalDocs,omitempty"`
+	Summary      string //`json:"summary,omitempty"`
+	Description  string //`json:"description,omitempty"` // -
+	DocString    string //`json:"docString,omitempty"`   // -
+	ExternalDocs string //`json:"externalDocs,omitempty"`
 
-	Imports []string `json:"imports,omitempty"`
+	Imports []string //`json:"imports,omitempty"`
 
-	Authorized bool   `json:"authorized"`          // -
-	Principal  string `json:"principal,omitempty"` // -
+	Authorized bool   //`json:"authorized"`          // -
+	Principal  string //`json:"principal,omitempty"` // -
 
-	SuccessModel         string `json:"successModel,omitempty"`         // -
-	ReturnsPrimitive     bool   `json:"returnsPrimitive,omitempty"`     // -
-	ReturnsFormatted     bool   `json:"returnsFormatted,omitempty"`     // -
-	ReturnsContainer     bool   `json:"returnsContainer,omitempty"`     // -
-	ReturnsComplexObject bool   `json:"returnsComplexObject,omitempty"` // -
+	SuccessModel         string //`json:"successModel,omitempty"`         // -
+	ReturnsPrimitive     bool   //`json:"returnsPrimitive,omitempty"`     // -
+	ReturnsFormatted     bool   //`json:"returnsFormatted,omitempty"`     // -
+	ReturnsContainer     bool   //`json:"returnsContainer,omitempty"`     // -
+	ReturnsComplexObject bool   //`json:"returnsComplexObject,omitempty"` // -
 
-	Params         []genParameter `json:"params,omitempty"`         // -
-	QueryParams    []genParameter `json:"queryParams,omitempty"`    // -
-	PathParams     []genParameter `json:"pathParams,omitempty"`     // -
-	HeaderParams   []genParameter `json:"headerParams,omitempty"`   // -
-	FormParams     []genParameter `json:"formParams,omitempty"`     // -
-	HasQueryParams bool           `json:"hasQueryParams,omitempty"` // -
+	Params         []genParameter //`json:"params,omitempty"`         // -
+	QueryParams    []genParameter //`json:"queryParams,omitempty"`    // -
+	PathParams     []genParameter //`json:"pathParams,omitempty"`     // -
+	HeaderParams   []genParameter //`json:"headerParams,omitempty"`   // -
+	FormParams     []genParameter //`json:"formParams,omitempty"`     // -
+	HasQueryParams bool           `//json:"hasQueryParams,omitempty"` // -
 }
 
 func makeCodegenParameter(receiver, modelsPkg string, param spec.Parameter) genParameter {
@@ -334,19 +334,19 @@ func makeCodegenParameter(receiver, modelsPkg string, param spec.Parameter) genP
 
 type genParameter struct {
 	sharedParam
-	ReceiverName     string            `json:"receiverName,omitempty"`
-	Description      string            `json:"description,omitempty"`
-	IsQueryParam     bool              `json:"isQueryParam,omitempty"`
-	IsFormParam      bool              `json:"isFormParam,omitempty"`
-	IsPathParam      bool              `json:"isPathParam,omitempty"`
-	IsHeaderParam    bool              `json:"isHeaderParam,omitempty"`
-	IsBodyParam      bool              `json:"isBodyParam,omitempty"`
-	CollectionFormat string            `json:"collectionFormat,omitempty"`
-	Child            *genParameterItem `json:"child,omitempty"`
-	BodyParam        *genParameter     `json:"bodyParam,omitempty"`
-	Converter        string            `json:"converter,omitempty"`
-	Parent           *genParameterItem `json:"parent,omitempty"` // this is meant to be nil, just here for completeness in the templates
-	Location         string            `json:"location,omitempty"`
+	ReceiverName     string            //`json:"receiverName,omitempty"`
+	Description      string            //`json:"description,omitempty"`
+	IsQueryParam     bool              //`json:"isQueryParam,omitempty"`
+	IsFormParam      bool              // `json:"isFormParam,omitempty"`
+	IsPathParam      bool              //`json:"isPathParam,omitempty"`
+	IsHeaderParam    bool              //`json:"isHeaderParam,omitempty"`
+	IsBodyParam      bool              //`json:"isBodyParam,omitempty"`
+	CollectionFormat string            //`json:"collectionFormat,omitempty"`
+	Child            *genParameterItem //`json:"child,omitempty"`
+	BodyParam        *genParameter     //`json:"bodyParam,omitempty"`
+	Converter        string            //`json:"converter,omitempty"`
+	Parent           *genParameterItem //`json:"parent,omitempty"` // this is meant to be nil, just here for completeness in the templates
+	Location         string            //`json:"location,omitempty"`
 }
 
 func makeCodegenParamItem(path, paramName, accessor, indexVar, valueExpression string, parent genParameterItem, items spec.Items) genParameterItem {
@@ -380,11 +380,11 @@ func makeCodegenParamItem(path, paramName, accessor, indexVar, valueExpression s
 
 type genParameterItem struct {
 	sharedParam
-	CollectionFormat string            `json:"collectionFormat,omitempty"`
-	Child            *genParameterItem `json:"child,omitempty"`
-	Parent           *genParameterItem `json:"parent,omitempty"`
-	Converter        string            `json:"converter,omitempty"`
-	Location         string            `json:"location,omitempty"`
+	CollectionFormat string            //`json:"collectionFormat,omitempty"`
+	Child            *genParameterItem //`json:"child,omitempty"`
+	Parent           *genParameterItem //`json:"parent,omitempty"`
+	Converter        string            //`json:"converter,omitempty"`
+	Location         string            //`json:"location,omitempty"`
 }
 
 type sharedParam struct {
