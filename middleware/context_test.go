@@ -51,7 +51,8 @@ func TestContextAuthorize(t *testing.T) {
 	assert.False(t, ok)
 	assert.Nil(t, v)
 
-	ri, _ := ctx.RouteInfo(request)
+	ri, ok := ctx.RouteInfo(request)
+	assert.True(t, ok)
 	p, err := ctx.Authorize(request, ri)
 	assert.Error(t, err)
 	assert.Nil(t, p)

@@ -6,7 +6,6 @@ import (
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/httputils"
-	"github.com/casualjim/go-swagger/router"
 	"github.com/casualjim/go-swagger/validate"
 )
 
@@ -30,21 +29,21 @@ type validation struct {
 	context  *Context
 	result   *validate.Result
 	request  *http.Request
-	route    *router.MatchedRoute
+	route    *MatchedRoute
 	bound    map[string]interface{}
 	consumer swagger.Consumer
 }
 
 type untypedBinder map[string]interface{}
 
-func (ub untypedBinder) BindRequest(r *http.Request, route *router.MatchedRoute, consumer swagger.Consumer) error {
+func (ub untypedBinder) BindRequest(r *http.Request, route *MatchedRoute, consumer swagger.Consumer) error {
 	if res := route.Binder.Bind(r, route.Params, consumer, ub); res != nil && res.HasErrors() {
 		return errors.CompositeValidationError(res.Errors...)
 	}
 	return nil
 }
 
-func validateRequest(ctx *Context, request *http.Request, route *router.MatchedRoute) *validation {
+func validateRequest(ctx *Context, request *http.Request, route *MatchedRoute) *validation {
 	validate := &validation{
 		context:  ctx,
 		result:   new(validate.Result),

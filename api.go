@@ -12,6 +12,10 @@ import (
 	"github.com/casualjim/go-swagger/spec"
 )
 
+// TODO:
+// * move to middleware/untyped package
+// * implement routable api missing methods
+
 // NewAPI creates the default untyped API
 func NewAPI(spec *spec.Document) *API {
 	return &API{

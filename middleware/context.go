@@ -6,7 +6,6 @@ import (
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/httputils"
-	"github.com/casualjim/go-swagger/router"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/swagger-ui"
 	"github.com/casualjim/go-swagger/validate"
@@ -17,7 +16,7 @@ import (
 // RequestBinder is an interface for types to implement
 // when they want to be able to bind from a request
 type RequestBinder interface {
-	BindRequest(*http.Request, *router.MatchedRoute, swagger.Consumer) *validate.Result
+	BindRequest(*http.Request, *MatchedRoute, swagger.Consumer) *validate.Result
 }
 
 // Context is a type safe wrapper around an untyped request context
@@ -25,15 +24,87 @@ type RequestBinder interface {
 type Context struct {
 	spec   *spec.Document
 	api    *swagger.API
-	router router.Router
+	router Router
+}
+
+type routableUntypedAPI struct {
+	api      *swagger.API
+	handlers map[string]http.Handler
+}
+
+func newRoutableUntypedAPI(spec *spec.Document, api *swagger.API, context *Context) *routableUntypedAPI {
+	var handlers map[string]http.Handler
+	if spec == nil || api == nil {
+		return nil
+	}
+	for _, hls := range spec.Operations() {
+		for _, op := range hls {
+			schemes := spec.SecurityDefinitionsFor(op)
+
+			if oh, ok := api.OperationHandlerFor(op.ID); ok {
+				if handlers == nil {
+					handlers = make(map[string]http.Handler)
+				}
+
+				handlers[op.ID] = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					// lookup route info in the context
+					route, _ := context.RouteInfo(r)
+
+					// bind and validate the request using reflection
+					bound, validation := context.BindAndValidate(r, route)
+					if validation.HasErrors() {
+						context.Respond(w, r, route.Produces, route, validation.Errors[0])
+						return
+					}
+
+					// actually handle the request
+					result, err := oh.Handle(bound)
+					if err != nil {
+						// respond with failure
+						context.Respond(w, r, route.Produces, route, err)
+						return
+					}
+
+					// respond with success
+					context.Respond(w, r, route.Produces, route, result)
+				})
+
+				if len(schemes) > 0 {
+					handlers[op.ID] = newSecureAPI(context, handlers[op.ID])
+				}
+			}
+		}
+	}
+
+	return &routableUntypedAPI{api: api, handlers: handlers}
+}
+
+func (r *routableUntypedAPI) HandlerFor(operationID string) (http.Handler, bool) {
+	handler, ok := r.handlers[operationID]
+	return handler, ok
+}
+func (r *routableUntypedAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
+	return r.api.ServeError
+}
+func (r *routableUntypedAPI) ConsumersFor(mediaTypes []string) map[string]swagger.Consumer {
+	return r.api.ConsumersFor(mediaTypes)
+}
+func (r *routableUntypedAPI) ProducersFor(mediaTypes []string) map[string]swagger.Producer {
+	return r.api.ProducersFor(mediaTypes)
+}
+func (r *routableUntypedAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]swagger.Authenticator {
+	return r.api.AuthenticatorsFor(schemes)
 }
 
 // NewContext creates a new context wrapper
-func NewContext(spec *spec.Document, api *swagger.API, routes router.Router) *Context {
+func NewContext(spec *spec.Document, api *swagger.API, routes Router) *Context {
+	ctx := &Context{spec: spec, api: api}
 	if routes == nil {
-		routes = router.Default(spec, api)
+		routableAPI := newRoutableUntypedAPI(spec, api, ctx)
+		routes = DefaultRouter(spec, routableAPI)
 	}
-	return &Context{spec: spec, api: api, router: routes}
+	ctx.router = routes
+	return ctx
 }
 
 // Serve serves the specified spec with the specified api registrations as a http.Handler
@@ -80,7 +151,7 @@ func (c *Context) RequiredProduces() []string {
 
 // BindValidRequest binds a params object to a request but only when the request is valid
 // if the request is not valid an error will be returned
-func (c *Context) BindValidRequest(request *http.Request, route *router.MatchedRoute, binder RequestBinder) error {
+func (c *Context) BindValidRequest(request *http.Request, route *MatchedRoute, binder RequestBinder) error {
 	res := new(validate.Result)
 	var consumer swagger.Consumer
 
@@ -134,7 +205,7 @@ func (c *Context) ContentType(request *http.Request) (string, string, *errors.Pa
 }
 
 // LookupRoute looks a route up and returns true when it is found
-func (c *Context) LookupRoute(request *http.Request) (*router.MatchedRoute, bool) {
+func (c *Context) LookupRoute(request *http.Request) (*MatchedRoute, bool) {
 	if route, ok := c.router.Lookup(request.Method, request.URL.Path); ok {
 		return route, ok
 	}
@@ -142,12 +213,13 @@ func (c *Context) LookupRoute(request *http.Request) (*router.MatchedRoute, bool
 }
 
 // RouteInfo tries to match a route for this request
-func (c *Context) RouteInfo(request *http.Request) (*router.MatchedRoute, bool) {
+func (c *Context) RouteInfo(request *http.Request) (*MatchedRoute, bool) {
 	if v, ok := context.GetOk(request, ctxMatchedRoute); ok {
-		if val, ok := v.(*router.MatchedRoute); ok {
+		if val, ok := v.(*MatchedRoute); ok {
 			return val, ok
 		}
 	}
+
 	if route, ok := c.LookupRoute(request); ok {
 		context.Set(request, ctxMatchedRoute, route)
 		return route, ok
@@ -177,13 +249,14 @@ func (c *Context) AllowedMethods(request *http.Request) []string {
 }
 
 // Authorize authorizes the request
-func (c *Context) Authorize(request *http.Request, route *router.MatchedRoute) (interface{}, error) {
+func (c *Context) Authorize(request *http.Request, route *MatchedRoute) (interface{}, error) {
 	if len(route.Authenticators) == 0 {
 		return nil, nil
 	}
 	if v, ok := context.GetOk(request, ctxSecurityPrincipal); ok {
 		return v, nil
 	}
+
 	for _, authenticator := range route.Authenticators {
 		applies, usr, err := authenticator.Authenticate(request)
 		if !applies || err != nil || usr == nil {
@@ -192,11 +265,12 @@ func (c *Context) Authorize(request *http.Request, route *router.MatchedRoute) (
 		context.Set(request, ctxSecurityPrincipal, usr)
 		return usr, nil
 	}
+
 	return nil, errors.Unauthenticated("invalid credentials")
 }
 
 // BindAndValidate binds and validates the request
-func (c *Context) BindAndValidate(request *http.Request, matched *router.MatchedRoute) (interface{}, *validate.Result) {
+func (c *Context) BindAndValidate(request *http.Request, matched *MatchedRoute) (interface{}, *validate.Result) {
 	if v, ok := context.GetOk(request, ctxBoundParams); ok {
 		if val, ok := v.(*validation); ok {
 			return val.bound, val.result
@@ -215,7 +289,7 @@ func (c *Context) NotFound(rw http.ResponseWriter, r *http.Request) {
 }
 
 // Respond renders the response after doing some content negotiation
-func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []string, route *router.MatchedRoute, data interface{}) {
+func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []string, route *MatchedRoute, data interface{}) {
 	format := c.ResponseFormat(r, produces)
 	rw.Header().Set(httputils.HeaderContentType, format)
 
@@ -238,6 +312,7 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 		}
 		return
 	}
+
 	if _, code, ok := route.Operation.SuccessResponse(); ok {
 		if code == 201 || code == 204 {
 			rw.WriteHeader(code)
@@ -258,45 +333,12 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 	c.api.ServeError(rw, r, errors.New(http.StatusInternalServerError, "can't produce response"))
 }
 
-// SpecMiddleware generates a middleware for serving the swagger spec document at /swagger.json
-func (c *Context) SpecMiddleware(handler http.Handler) http.Handler {
-	return specMiddleware(c, handler)
-}
-
-// RouterMiddleware creates a new router middleware for this context
-func (c *Context) RouterMiddleware(handler http.Handler) http.Handler {
-	return newRouter(c, handler)
-}
-
-// ValidationMiddleware creates a new validation middleware for this context
-func (c *Context) ValidationMiddleware(handler http.Handler) http.Handler {
-	return newValidation(c, handler)
-}
-
-// OperationHandlerMiddleware creates a terminating http handler
-func (c *Context) OperationHandlerMiddleware() http.Handler {
-	return newOperationExecutor(c)
-}
-
 // APIHandler returns a handler to serve
 func (c *Context) APIHandler() http.Handler {
-	return c.SpecMiddleware(c.DefaultMiddlewares())
+	return specMiddleware(c, newRouter(c, newOperationExecutor(c)))
 }
 
 // UIMiddleware creates a new swagger UI middleware for this context
 func (c *Context) UIMiddleware(handler http.Handler) http.Handler {
 	return swaggerui.Middleware("", handler)
-}
-
-// SecurityMiddleware creates the middleware to provide security for the API
-func (c *Context) SecurityMiddleware(handler http.Handler) http.Handler {
-	return newSecureAPI(c, handler)
-}
-
-// DefaultMiddlewares generates the default middleware handler stack
-func (c *Context) DefaultMiddlewares() http.Handler {
-	terminator := c.OperationHandlerMiddleware()
-	validator := c.ValidationMiddleware(terminator)
-	secured := c.SecurityMiddleware(validator)
-	return c.RouterMiddleware(secured)
 }

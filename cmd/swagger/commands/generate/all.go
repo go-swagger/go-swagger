@@ -18,10 +18,12 @@ type shared struct {
 // both server and client will be generated
 type All struct {
 	shared
-	Operations []string `long:"operation" short:"O" description:"specify an operation to include, repeat for multiple"`
-	Tags       []string `long:"tags" description:"the tags to include, if not specified defaults to all"`
-	Principal  string   `long:"principal" description:"the model to use for the security principal"`
-	Models     []string `long:"model" short:"M" description:"specify a model to include, repeat for multiple"`
+	Operations     []string `long:"operation" short:"O" description:"specify an operation to include, repeat for multiple"`
+	Tags           []string `long:"tags" description:"the tags to include, if not specified defaults to all"`
+	Principal      string   `long:"principal" description:"the model to use for the security principal"`
+	Models         []string `long:"model" short:"M" description:"specify a model to include, repeat for multiple"`
+	SkipModels     bool     `long:"skip-models" description:"no models will be generated when this flag is specified"`
+	SkipOperations bool     `long:"skip-models" description:"no operations will be generated when this flag is specified"`
 }
 
 // Execute runs this command
@@ -34,13 +36,13 @@ func (a *All) Execute(args []string) error {
 		Principal:    a.Principal,
 	}
 
-	if len(a.Models) > 0 || len(a.Operations) == 0 {
+	if !a.SkipModels && (len(a.Models) > 0 || len(a.Operations) == 0) {
 		if err := generator.GenerateModel(a.Models, true, true, opts); err != nil {
 			return err
 		}
 	}
 
-	if len(a.Operations) > 0 || len(a.Models) == 0 {
+	if !a.SkipOperations && (len(a.Operations) > 0 || len(a.Models) == 0) {
 		if err := generator.GenerateServerOperation(a.Operations, a.Tags, true, true, opts); err != nil {
 			return err
 		}

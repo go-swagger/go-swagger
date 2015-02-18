@@ -20,11 +20,12 @@ func TestOperationExecutor(t *testing.T) {
 	}))
 
 	context := NewContext(spec, api, nil)
-	mw := context.OperationHandlerMiddleware()
+	mw := newOperationExecutor(context)
 
 	recorder := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/pets", nil)
 	request.Header.Add("Accept", "application/json")
+	request.SetBasicAuth("admin", "admin")
 	mw.ServeHTTP(recorder, request)
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, `[{"id":1,"name":"a dog"}]`+"\n", recorder.Body.String())
@@ -35,11 +36,12 @@ func TestOperationExecutor(t *testing.T) {
 	}))
 
 	context = NewContext(spec, api, nil)
-	mw = context.OperationHandlerMiddleware()
+	mw = newOperationExecutor(context)
 
 	recorder = httptest.NewRecorder()
 	request, _ = http.NewRequest("GET", "/pets", nil)
 	request.Header.Add("Accept", "application/json")
+	request.SetBasicAuth("admin", "admin")
 	mw.ServeHTTP(recorder, request)
 	assert.Equal(t, 422, recorder.Code)
 	assert.Equal(t, `{"code":422,"message":"expected"}`, recorder.Body.String())

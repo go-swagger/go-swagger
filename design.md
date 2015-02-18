@@ -13,7 +13,7 @@ In addition to the middleware there are some generator commands that will use th
 
 Takes a raw spec document either as a []byte, and it adds the /api-docs route to serve this spec up.
 
-The middleware performs validation, data binding and security as defined in the swagger spec. 
+The middleware performs validation, data binding and security as defined in the swagger spec.
 It also uses the API to match request paths to functions of `func(paramsObject) (responseModel, error)`
 The middleware does this by building up a series of rules for each operation. When the spec.Document is first created it analyzes the swagger spec and builds a routing, validation and binding rules for each operation in the specification. Before doing that it expands all the $ref fields in the swagger document. After expanding all the rules it validates the registrations made in the API and will take an configurable action for missing operations.
 
@@ -27,7 +27,7 @@ The actual request handler implementation is always the same.  The API must be d
 
 An API is served over http by a router, the default implementation is a router based on denco. This is just an interface implemenation so it can be replaced with another router should you so desire.
 
-The API comes in 2 flavors an untyped one and a typed one. 
+The API comes in 2 flavors an untyped one and a typed one.
 
 #### Untyped API
 
@@ -43,7 +43,7 @@ The API has methods to register consumers, producers, auth handlers and operatio
 The register consumer and producer methods are responsible for attaching extra serializers to media types. These are then used during content negotiation phases for look up and binding the data.
 
 When an API is used to initialize a router it goes through a validation step.
-This validation step will verify that all the operations in the spec have a handler registered to them. 
+This validation step will verify that all the operations in the spec have a handler registered to them.
 It also ensures that for all the mentioned media types there are consumers and producers provided.
 And it checks if for each authentication scheme there is a handler present.
 If this is not the case it will exit the application with a non-zero exit code.
@@ -53,14 +53,14 @@ It will then use that to build a path pattern for the router and it uses the swa
 
 #### Typed API
 
-The typed API uses a swagger spec to generate a typed API. 
+The typed API uses a swagger spec to generate a typed API.
 
 For this there is a generator that will take the swagger spec document.
 It will then generate an interface for each operation and optionally a default implementation of that interface.
 The default implemenation of an interface just returns a not implemented api error.
 
 When all the interfaces and default implementations are generated it will generate a swagger mux implementation.
-This swagger mux implemenation links all the interface implementations to operation names. 
+This swagger mux implemenation links all the interface implementations to operation names.
 The typed API wraps an untyped API to do the actual route registration, it's mostly sugar for providing better compile time type safety.
 
 This is done through integration in the `go generate` command
@@ -81,7 +81,7 @@ The request handler does the following things:
 The authentication integration should execute security handlers. A security handler performs 2 functions it should authenticate and upon successful authentication it should authorize the request if the security scheme requires authorization. The authorization should be mainly required for the oauth2 based authentication flows.
 
 ```go
-type Authenticator func(interface{}) (bool, interface{}, error)
+type Authenticator func(interface{}) (matched bool, principal interface{}, err error)
 ```
 
 basic auth and api key type authorizations require the request for their authentication to work.
@@ -93,23 +93,29 @@ It does this by using the information in the security scheme object registered f
 
 #### Binding
 
-Binding makes use of plain vanilla golang serializers and they are identified by the media type they consume and produce. 
+Binding makes use of plain vanilla golang serializers and they are identified by the media type they consume and produce.
 
 Binding is not only about request bodies but also about values obtained from headers, query string parameters and potentially the route path pattern. So the binding should make use of the full request object to produce a model.
 
 It determines a serializer to use by looking in the the merged consumes values and the `Content-Type` header to determine which deserializer to use.  
-When a result is produced it will do the same thing by making use of the `Accept` http header etc and the merged produces clauses for the operation endpoint. 
+When a result is produced it will do the same thing by making use of the `Accept` http header etc and the merged produces clauses for the operation endpoint.
 
-#### Validation 
+```go
+type RequestBinder interface {
+  BindRequest(*http.Request, *router.MatchedRoute, swagger.Consumer) *validate.Result
+}
+```
 
-When the muxer registers routes it also builds a suite of validation plans, one for each operation. 
-Validation allows for adding custom validations for types through implementing a Validatable interface. This interface does not override but extends the validations provided by the swagger schema. 
+#### Validation
+
+When the muxer registers routes it also builds a suite of validation plans, one for each operation.
+Validation allows for adding custom validations for types through implementing a Validatable interface. This interface does not override but extends the validations provided by the swagger schema.
 
 There is a mapping from validation name to status code, this mapping is also prioritized so that in the event of multiple validation errors that would required different status codes we get a consistent result. This prioritization can be done by the user by providing a ServeError function.
 
 ```go
 type Validatable interface {
-  Validate() []Error
+  Validate() *validate.Result
 }
 
 type Error struct {
@@ -132,14 +138,11 @@ The result it gets from the operation handler will be turned into a response. Sh
 
 # Codegen
 
-Most of the codegen will try to reuse the templates from the swagger-codegen project. These are mustache templates and could be downloaded on demand. 
+Most of the codegen will try to reuse the templates from the swagger-codegen project. These are mustache templates and could be downloaded on demand.
 `swagger generate add-templates objc` would download the templates for generating an objective c client.
 
 The go server api generator however won't reuse those templates but define its own set, because currently no proper go support exists in that project. Once I'm happy with what they generate I'll contribute them back to the swagger-codegen project.
 
-But both the server and the client generator use mustache and not the go template system, not because there is a defficiency in the go template system, but mostly to keep taking advantage of community contributions in the swagger codegen project.
-
-A generated client needs to have support for uploading files as multipart entries. The model generating code is shared between client and server. The things that operate with those models will be different. 
+A generated client needs to have support for uploading files as multipart entries. The model generating code is shared between client and server. The things that operate with those models will be different.
 A generated client could implement validation on the client side for the request parameters and received response. The meat of the client is not actually implemented as generated code but a single submit function that knows how to perform all the shared operations and then issue the request.
 A client typically has only one consumer and producer registered. The content type for the request is the media type of the consumer, the accept header is the media type of the producer.
-

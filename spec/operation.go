@@ -42,7 +42,7 @@ func (o *Operation) SuccessResponse() (*Response, int, bool) {
 		}
 	}
 
-	return nil, 0, false
+	return o.Responses.Default, 0, false
 }
 
 // JSONLookup look up a value by the json property name
