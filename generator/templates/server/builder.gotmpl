@@ -107,8 +107,10 @@ func ({{.ReceiverName}} *{{.AppName}}API) ConsumersFor(mediaTypes []string) map[
   for _, mt := range mediaTypes {
     switch mt {
       {{range .Consumes}}
+      {{range .AllSerializers}}
       case "{{.MediaType}}":
         result["{{.MediaType}}"] = {{.ReceiverName}}.{{.ClassName}}Consumer
+      {{end}}
       {{end}}
     }
   }
