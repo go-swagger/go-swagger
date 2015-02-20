@@ -162,6 +162,7 @@ func ({{.ReceiverName}} *{{.ClassName}}Params) BindRequest(r *http.Request, rout
 
 {{ $className := .ClassName }}
 {{range .Params}}
+{{if not .IsBodyParam}}
 {{if or .IsPrimitive .IsCustomFormatter}}
 func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw string) *validate.Result {
   res := new(validate.Result)
@@ -229,5 +230,6 @@ func ({{.ReceiverName}} *{{$className}}Params) validate{{.PropertyName}}() *erro
 
   return nil
 }
+{{end}}
 {{end}}
 {{end}}
