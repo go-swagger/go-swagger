@@ -31,18 +31,14 @@ type {{.AppName}}API struct {
   {{if .IsBasicAuth}}// {{.ClassName}}Auth registers a function that takes username and password and returns a principal
   // it performs authentication with basic auth
   {{.ClassName}}Auth func(string, string) ({{.Principal}}, error)
-  {{end}}
-  {{if .IsAPIKeyAuth}}// {{.ClassName}}Auth registers a function that takes a token and returns a principal
+  {{end}}{{if .IsAPIKeyAuth}}// {{.ClassName}}Auth registers a function that takes a token and returns a principal
   // it performs authentication based on an api key {{.ParamName}} provided in the {{.Source}}
   {{.ClassName}}Auth func(string) ({{.Principal}}, error)
   {{end}}
   {{end}}
-  {{range .Operations}}
-  // {{.ClassName}}Handler sets the operation handler for the {{.HumanClassName}} operation
-  {{if .Package}}
-  {{.ClassName}}Handler {{.Package}}.{{.ClassName}}Handler
-  {{else}}
-  {{.ClassName}}Handler {{.ClassName}}Handler
+  {{range .Operations}}// {{.ClassName}}Handler sets the operation handler for the {{.HumanClassName}} operation
+  {{if .Package}}{{.ClassName}}Handler {{.Package}}.{{.ClassName}}Handler
+  {{else}}{{.ClassName}}Handler {{.ClassName}}Handler
   {{end}}
   {{end}}
   // ServeError is called when an error is received, there is a default handler
@@ -85,8 +81,9 @@ func ({{.ReceiverName}} *{{.AppName}}API) Validate() error {
 func ({{.ReceiverName}} *{{.AppName}}API) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
   return {{.ReceiverName}}.ServeError
 }
-{{if .SecurityDefinitions}}// AuthenticatorsFor gets the authenticators for the specified security schemes
+// AuthenticatorsFor gets the authenticators for the specified security schemes
 func ({{.ReceiverName}} *{{.AppName}}API) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]swagger.Authenticator {
+  {{if .SecurityDefinitions}}
   result := make(map[string]swagger.Authenticator)
   for name, scheme := range schemes {
     switch name {
@@ -98,11 +95,14 @@ func ({{.ReceiverName}} *{{.AppName}}API) AuthenticatorsFor(schemes map[string]s
     }
   }
   return result
+  {{else}}
+  return nil
+  {{end}}
 }
-{{end}}
 
-{{if .Consumes}}// ConsumersFor gets the consumers for the specified media types
+// ConsumersFor gets the consumers for the specified media types
 func ({{.ReceiverName}} *{{.AppName}}API) ConsumersFor(mediaTypes []string) map[string]swagger.Consumer {
+  {{if .Consumes}}
   result := make(map[string]swagger.Consumer)
   for _, mt := range mediaTypes {
     switch mt {
@@ -113,43 +113,55 @@ func ({{.ReceiverName}} *{{.AppName}}API) ConsumersFor(mediaTypes []string) map[
     }
   }
   return result
+  {{else}}
+  return nil
+  {{end}}
 }
-{{end}}
-{{if.Produces}}// ProducersFor gets the producers for the specified media types
+
+// ProducersFor gets the producers for the specified media types
 func ({{.ReceiverName}} *{{.AppName}}API) ProducersFor(mediaTypes []string) map[string]swagger.Producer {
+  {{if.Produces}}
   result := make(map[string]swagger.Producer)
   for _, mt := range mediaTypes {
     switch mt {
       {{range .Produces}}
+      {{range .AllSerializers}}
       case "{{.MediaType}}":
         result["{{.MediaType}}"] = {{.ReceiverName}}.{{.ClassName}}Producer
+      {{end}}
       {{end}}
     }
   }
   return result
+  {{else}}
+  return nil
+  {{end}}
 }
-{{end}}
 
-{{if .Operations}}// HandlerFor gets a http.Handler for the provided operation id
+// HandlerFor gets a http.Handler for the provided operation id
 func ({{.ReceiverName}} *{{.AppName}}API) HandlerFor(operationID string) (http.Handler, bool) {
   if len({{.ReceiverName}}.handlers) == 0 {
     {{.ReceiverName}}.initHandlerCache()
   }
+  if {{.ReceiverName}}.handlers == nil {
+    return nil, false
+  }
   h, ok := {{.ReceiverName}}.handlers[operationID]
   return h, ok
 }
-{{end}}
 
 func ({{.ReceiverName}} *{{.AppName}}API) initHandlerCache() {
   if {{.ReceiverName}}.context == nil {
     {{.ReceiverName}}.context = middleware.NewRoutableContext({{.ReceiverName}}.spec, {{.ReceiverName}}, nil)
   }
+  {{if .Operations}}
   {{.ReceiverName}}.handlers = make(map[string]http.Handler)
   {{range .Operations}}
   {{if .Package}}
   {{.ReceiverName}}.handlers["{{.Name}}"] = {{.Package}}.New{{.ClassName}}({{.ReceiverName}}.context, {{.ReceiverName}}.{{.ClassName}}Handler)
   {{else}}
   {{.ReceiverName}}.handlers["{{.Name}}"] = New{{.ClassName}}({{.ReceiverName}}.context, {{.ReceiverName}}.{{.ClassName}}Handler)
+  {{end}}
   {{end}}
   {{end}}
 }
