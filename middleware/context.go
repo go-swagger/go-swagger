@@ -6,6 +6,7 @@ import (
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/httputils"
+	"github.com/casualjim/go-swagger/middleware/untyped"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/swagger-ui"
 	"github.com/casualjim/go-swagger/validate"
@@ -28,11 +29,11 @@ type Context struct {
 }
 
 type routableUntypedAPI struct {
-	api      *swagger.API
+	api      *untyped.API
 	handlers map[string]http.Handler
 }
 
-func newRoutableUntypedAPI(spec *spec.Document, api *swagger.API, context *Context) *routableUntypedAPI {
+func newRoutableUntypedAPI(spec *spec.Document, api *untyped.API, context *Context) *routableUntypedAPI {
 	var handlers map[string]http.Handler
 	if spec == nil || api == nil {
 		return nil
@@ -107,7 +108,7 @@ func NewRoutableContext(spec *spec.Document, routableAPI RoutableAPI, routes Rou
 }
 
 // NewContext creates a new context wrapper
-func NewContext(spec *spec.Document, api *swagger.API, routes Router) *Context {
+func NewContext(spec *spec.Document, api *untyped.API, routes Router) *Context {
 	ctx := &Context{spec: spec}
 	if routes == nil {
 		ctx.api = newRoutableUntypedAPI(spec, api, ctx)
@@ -118,14 +119,14 @@ func NewContext(spec *spec.Document, api *swagger.API, routes Router) *Context {
 }
 
 // Serve serves the specified spec with the specified api registrations as a http.Handler
-func Serve(spec *spec.Document, api *swagger.API) http.Handler {
+func Serve(spec *spec.Document, api *untyped.API) http.Handler {
 	context := NewContext(spec, api, nil)
 	return context.APIHandler()
 }
 
 // ServeWithUI serves the specified spec with the specified api registrations as a http.Handler
 // it also enables the swagger docs ui on /swagger-ui
-func ServeWithUI(spec *spec.Document, api *swagger.API) http.Handler {
+func ServeWithUI(spec *spec.Document, api *untyped.API) http.Handler {
 	context := NewContext(spec, api, nil)
 	return context.UIMiddleware(context.APIHandler())
 }

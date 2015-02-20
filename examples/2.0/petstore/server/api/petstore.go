@@ -10,6 +10,7 @@ import (
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/middleware"
+	"github.com/casualjim/go-swagger/middleware/untyped"
 	"github.com/casualjim/go-swagger/reflection"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/kr/pretty"
@@ -21,7 +22,7 @@ func NewPetstore() (http.Handler, error) {
 	if err != nil {
 		return nil, err
 	}
-	api := swagger.NewAPI(spec)
+	api := untyped.NewAPI(spec)
 
 	api.RegisterOperation("getAllPets", getAllPets)
 	api.RegisterOperation("createPet", createPet)
