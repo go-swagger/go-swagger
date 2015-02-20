@@ -9,7 +9,6 @@ import (
   "github.com/casualjim/go-swagger"
   "github.com/casualjim/go-swagger/errors"
   "github.com/casualjim/go-swagger/spec"
-  "github.com/casualjim/go-swagger/router"
 
   {{range .Imports}}
   {{ printf "%q" .}}
@@ -19,12 +18,12 @@ import (
 // {{.ClassName}}Handler interface for that can handle valid {{.HumanClassName}} params
 type {{.ClassName}}Handler interface {
   {{if .Authorized}}
-  // Handle produces a result or an error. Gets the request params as well as the security principal{{if .SuccessModel}}
-  Handle({{.ClassName}}Params, *{{.Principal}}) ({{if .ReturnsComplexObject}}*{{end}}{{.SuccessModel}}, error)
+  // Handle produces a result or an error. Gets the request params as well as the security principal
+  {{if .SuccessModel}}Handle({{.ClassName}}Params, *{{.Principal}}) ({{if .ReturnsComplexObject}}*{{end}}{{.SuccessModel}}, error)
   {{else}}Handle({{.ClassName}}Params, *{{.Principal}}) error
   {{end}}
-  {{else}}// Handle produces a result or an error. Gets the request params{{if .SuccessModel}}
-  Handle({{.ClassName}}Params) ({{if .ReturnsComplexObject}}*{{end}}{{.SuccessModel}}, error)
+  {{else}}// Handle produces a result or an error. Gets the request params
+  {{if .SuccessModel}}Handle({{.ClassName}}Params) ({{if .ReturnsComplexObject}}*{{end}}{{.SuccessModel}}, error)
   {{else}}Handle({{.ClassName}}Params) error
   {{end}}
   {{end}}
@@ -66,7 +65,7 @@ func ({{.ReceiverName}} *{{.ClassName}}) ServeHTTP(rw http.ResponseWriter, r *ht
   }
 
   {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, res)
-  {{else}}if err := {{.ReceiverName}}.Handler({{.ReceiverName}}.Params, principal); err != nil { // actually handle the request
+  {{else}}if err := {{.ReceiverName}}.Handler.Handle({{.ReceiverName}}.Params, principal); err != nil { // actually handle the request
     {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, err)
     return
   }
@@ -80,7 +79,7 @@ func ({{.ReceiverName}} *{{.ClassName}}) ServeHTTP(rw http.ResponseWriter, r *ht
     return
   }
   {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, res)
-  {{else}}if err := {{.ReceiverName}}.Handler({{.ReceiverName}}.Params); err != nil { // actually handle the request
+  {{else}}if err := {{.ReceiverName}}.Handler.Handle({{.ReceiverName}}.Params); err != nil { // actually handle the request
     {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, err)
     return
   }

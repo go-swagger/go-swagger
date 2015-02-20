@@ -23,7 +23,7 @@ type RequestBinder interface {
 // used throughout to store request context with the gorilla context module
 type Context struct {
 	spec   *spec.Document
-	api    *swagger.API
+	api    RoutableAPI
 	router Router
 }
 
@@ -96,12 +96,22 @@ func (r *routableUntypedAPI) AuthenticatorsFor(schemes map[string]spec.SecurityS
 	return r.api.AuthenticatorsFor(schemes)
 }
 
+// NewRoutableContext creates a new context for a routable API
+func NewRoutableContext(spec *spec.Document, routableAPI RoutableAPI, routes Router) *Context {
+	ctx := &Context{spec: spec, api: routableAPI}
+	if routes == nil {
+		routes = DefaultRouter(spec, routableAPI)
+	}
+	ctx.router = routes
+	return ctx
+}
+
 // NewContext creates a new context wrapper
 func NewContext(spec *spec.Document, api *swagger.API, routes Router) *Context {
-	ctx := &Context{spec: spec, api: api}
+	ctx := &Context{spec: spec}
 	if routes == nil {
-		routableAPI := newRoutableUntypedAPI(spec, api, ctx)
-		routes = DefaultRouter(spec, routableAPI)
+		ctx.api = newRoutableUntypedAPI(spec, api, ctx)
+		routes = DefaultRouter(spec, ctx.api)
 	}
 	ctx.router = routes
 	return ctx
@@ -297,7 +307,11 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 		if format == "" {
 			rw.Header().Set(httputils.HeaderContentType, httputils.JSONMime)
 		}
-		c.api.ServeError(rw, r, err)
+		if route == nil || route.Operation == nil {
+			c.api.ServeErrorFor("")(rw, r, err)
+			return
+		}
+		c.api.ServeErrorFor(route.Operation.ID)(rw, r, err)
 		return
 	}
 	if route == nil || route.Operation == nil {
@@ -330,7 +344,7 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 		}
 		return
 	}
-	c.api.ServeError(rw, r, errors.New(http.StatusInternalServerError, "can't produce response"))
+	c.api.ServeErrorFor(route.Operation.ID)(rw, r, errors.New(http.StatusInternalServerError, "can't produce response"))
 }
 
 // APIHandler returns a handler to serve

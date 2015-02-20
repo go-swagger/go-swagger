@@ -116,7 +116,6 @@ import (
   "github.com/casualjim/go-swagger"
   "github.com/casualjim/go-swagger/errors"
   "github.com/casualjim/go-swagger/httputils"
-  "github.com/casualjim/go-swagger/router"
   "github.com/casualjim/go-swagger/validate"
 
   {{range .Imports}}
@@ -134,7 +133,7 @@ type {{.ClassName}}Params struct {
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable() *validate.Result interface
 // for simple values it will use straight method calls
-func ({{.ReceiverName}} *{{.ClassName}}Params) BindRequest(r *http.Request, route *router.MatchedRoute, consumer swagger.Consumer) *validate.Result {
+func ({{.ReceiverName}} *{{.ClassName}}Params) BindRequest(r *http.Request, route *middleware.MatchedRoute, consumer swagger.Consumer) *validate.Result {
   res := new(validate.Result)
   {{if .HasQueryParams}}qs := r.URL.Query()
   {{end}}

@@ -289,6 +289,7 @@ func makeCodegenParameter(receiver, modelsPkg string, param spec.Parameter) genP
 			util.ToGoName(param.Name),
 			"i",
 			receiver+"."+util.ToGoName(param.Name),
+			modelsPkg,
 			param.Required,
 			*param.Schema))
 
