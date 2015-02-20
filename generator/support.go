@@ -131,34 +131,89 @@ var mediaTypeNames = map[string]string{
 	"text/css":                "css",
 }
 
+func getSerializer(sers []genSerGroup, ext string) (*genSerGroup, bool) {
+	for i := range sers {
+		s := &sers[i]
+		if s.Name == ext {
+			return s, true
+		}
+	}
+	return nil, false
+}
+
 func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal string, specDoc *spec.Document, models map[string]spec.Schema, operations map[string]spec.Operation) genApp {
 	sw := specDoc.Spec()
 	receiver := strings.ToLower(name[:1])
 	appName := util.ToGoName(name)
 
-	var consumes []genSerializer
+	var consumes []genSerGroup
 	for _, cons := range specDoc.RequiredConsumes() {
 		cn := mediaTypeNames[cons]
-		consumes = append(consumes, genSerializer{
+		nm := util.ToJSONName(cn)
+
+		if ser, ok := getSerializer(consumes, cn); ok {
+			ser.AllSerializers = append(ser.AllSerializers, genSerializer{
+				AppName:        ser.AppName,
+				ReceiverName:   ser.ReceiverName,
+				ClassName:      ser.ClassName,
+				HumanClassName: ser.HumanClassName,
+				Name:           ser.Name,
+				MediaType:      cons,
+			})
+			continue
+		}
+
+		ser := genSerializer{
 			AppName:        appName,
 			ReceiverName:   receiver,
 			ClassName:      util.ToGoName(cn),
 			HumanClassName: util.ToHumanNameLower(cn),
-			Name:           util.ToJSONName(cn),
+			Name:           nm,
 			MediaType:      cons,
+		}
+		consumes = append(consumes, genSerGroup{
+			AppName:        ser.AppName,
+			ReceiverName:   ser.ReceiverName,
+			ClassName:      ser.ClassName,
+			HumanClassName: ser.HumanClassName,
+			Name:           ser.Name,
+			MediaType:      cons,
+			AllSerializers: []genSerializer{ser},
 		})
 	}
 
-	var produces []genSerializer
+	var produces []genSerGroup
 	for _, prod := range specDoc.RequiredProduces() {
 		pn := mediaTypeNames[prod]
-		produces = append(produces, genSerializer{
+		nm := util.ToJSONName(pn)
+
+		if ser, ok := getSerializer(produces, pn); ok {
+			ser.AllSerializers = append(ser.AllSerializers, genSerializer{
+				AppName:        ser.AppName,
+				ReceiverName:   ser.ReceiverName,
+				ClassName:      ser.ClassName,
+				HumanClassName: ser.HumanClassName,
+				Name:           ser.Name,
+				MediaType:      prod,
+			})
+			continue
+		}
+		ser := genSerializer{
 			AppName:        appName,
 			ReceiverName:   receiver,
 			ClassName:      util.ToGoName(pn),
 			HumanClassName: util.ToHumanNameLower(pn),
-			Name:           util.ToJSONName(pn),
+			Name:           nm,
 			MediaType:      prod,
+		}
+		produces = append(produces, genSerGroup{
+			AppName:        ser.AppName,
+			ReceiverName:   ser.ReceiverName,
+			ClassName:      ser.ClassName,
+			HumanClassName: ser.HumanClassName,
+			Name:           ser.Name,
+			MediaType:      prod,
+			AllSerializers: []genSerializer{ser},
 		})
 	}
 
@@ -233,11 +288,21 @@ type genApp struct {
 	Info                *spec.Info
 	ExternalDocs        *spec.ExternalDocumentation
 	Imports             []string
-	Consumes            []genSerializer
-	Produces            []genSerializer
+	Consumes            []genSerGroup
+	Produces            []genSerGroup
 	SecurityDefinitions []genSecurityScheme
 	Models              []genModel
 	Operations          []genOperation
+}
+
+type genSerGroup struct {
+	ReceiverName   string
+	AppName        string
+	ClassName      string
+	HumanClassName string
+	Name           string
+	MediaType      string
+	AllSerializers []genSerializer
 }
 
 type genSerializer struct {
