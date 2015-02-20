@@ -275,7 +275,7 @@ type genOperation struct {
 	PathParams     []genParameter //`json:"pathParams,omitempty"`     // -
 	HeaderParams   []genParameter //`json:"headerParams,omitempty"`   // -
 	FormParams     []genParameter //`json:"formParams,omitempty"`     // -
-	HasQueryParams bool           `//json:"hasQueryParams,omitempty"` // -
+	HasQueryParams bool           //`json:"hasQueryParams,omitempty"` // -
 }
 
 func makeCodegenParameter(receiver, modelsPkg string, param spec.Parameter) genParameter {
@@ -294,7 +294,7 @@ func makeCodegenParameter(receiver, modelsPkg string, param spec.Parameter) genP
 			*param.Schema))
 
 	} else {
-		ctx := makeGenValidations(paramValidations(receiver, param))
+		ctx = makeGenValidations(paramValidations(receiver, param))
 		thisItem := genParameterItem{}
 		thisItem.sharedParam = ctx
 		thisItem.ValueExpression = ctx.IndexVar + "c"
