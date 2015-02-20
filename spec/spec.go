@@ -148,6 +148,9 @@ func New(data json.RawMessage, version string) (*Document, error) {
 
 // ExpandSpec expands the ref fields in the spec document
 func (d *Document) ExpandSpec() error {
+	// TODO: use a copy of the spec doc to expand instead
+	// things requiring an expanded spec should first get the
+	// expanded version of the document
 	if err := expandSpec(d.spec); err != nil {
 		return err
 	}

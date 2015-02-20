@@ -164,7 +164,7 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 	}
 
 	return &genModel{
-		Package:        pkg,
+		Package:        filepath.Base(pkg),
 		ClassName:      util.ToGoName(name),
 		Name:           util.ToJSONName(name),
 		ReceiverName:   receiver,
@@ -198,7 +198,7 @@ func makeGenModelProperty(path, paramName, accessor, receiver, indexVar, valueEx
 		ex = fmt.Sprintf("%#v", schema.Example)
 	}
 
-	ctx := makeGenValidations(modelValidations(path, paramName, accessor, indexVar, valueExpression, required, schema))
+	ctx := makeGenValidations(modelValidations(path, paramName, accessor, indexVar, valueExpression, "", required, schema))
 
 	singleSchemaSlice := schema.Items != nil && schema.Items.Schema != nil
 	var items []genModelProperty
@@ -271,8 +271,8 @@ type genModelProperty struct {
 	Imports               []string           //`json:"imports,omitempty"`
 }
 
-func modelValidations(path, paramName, accessor, indexVar, valueExpression string, required bool, model spec.Schema) commonValidations {
-	tpe := typeForSchema(&model, "")
+func modelValidations(path, paramName, accessor, indexVar, valueExpression, pkg string, required bool, model spec.Schema) commonValidations {
+	tpe := typeForSchema(&model, pkg)
 
 	_, isPrimitive := primitives[tpe]
 	_, isCustomFormatter := customFormatters[tpe]

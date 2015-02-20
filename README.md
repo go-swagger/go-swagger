@@ -50,6 +50,7 @@ For a V1 I want to have this feature set completed:
     - [ ] validate extra rules outlined [here](https://github.com/apigee-127/swagger-tools/blob/master/docs/Swagger_Validation.md)
   - [x] serve swagger UI for any swagger spec file
   - [ ] generate stub api based on swagger spec
+  - [ ] watch swagger spec file and regenerate when modified
   - [ ] generate client from a swagger spec
   - [ ] generate "sensible" random data based on swagger spec
   - [ ] generate tests based on swagger spec for server
