@@ -223,7 +223,7 @@ func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw []strin
   return res
 }
 {{end}}
-{{if or .HasValidations .HasSliceValidations}}
+{{if and (not .IsBodyParam) (or .HasValidations .HasSliceValidations)}}
 func ({{.ReceiverName}} *{{$className}}Params) validate{{.PropertyName}}() *errors.Validation {
   {{template "propertyvalidator" .}}
 
