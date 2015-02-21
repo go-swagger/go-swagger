@@ -1,4 +1,4 @@
-package swagger
+package errors
 
 import (
 	"bytes"
