@@ -23,7 +23,7 @@ func (e *ParseError) Code() int32 {
 
 const (
 	parseErrorTemplContent     = `parsing %s %s from %q failed, because %s`
-	parseErrorTemplContentNoIn = `parsing %s %s failed, because %s`
+	parseErrorTemplContentNoIn = `parsing %s from %q failed, because %s`
 )
 
 // NewParseError creates a new parse error

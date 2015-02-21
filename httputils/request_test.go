@@ -1,6 +1,7 @@
 package httputils
 
 import (
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,4 +29,18 @@ func TestCanHaveBody(t *testing.T) {
 	assert.False(t, CanHaveBody("head"))
 	assert.False(t, CanHaveBody("delete"))
 	assert.False(t, CanHaveBody("invalid"))
+}
+
+func TestReadSingle(t *testing.T) {
+	values := url.Values(make(map[string][]string))
+	values.Add("something", "the thing")
+	assert.Equal(t, "the thing", ReadSingleValue(values, "something"))
+	assert.Empty(t, ReadSingleValue(values, "notthere"))
+}
+
+func TestReadCollection(t *testing.T) {
+	values := url.Values(make(map[string][]string))
+	values.Add("something", "value1,value2")
+	assert.Equal(t, []string{"value1", "value2"}, ReadCollectionValue(values, "something", "csv"))
+	assert.Empty(t, ReadCollectionValue(values, "notthere", ""))
 }
