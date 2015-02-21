@@ -186,7 +186,7 @@ func (d *API) verify(name string, registrations []string, expectations []string)
 	sort.Sort(sort.StringSlice(unregistered))
 
 	if len(unregistered) > 0 || len(unspecified) > 0 {
-		return &swagger.APIVerificationFailed{
+		return &errors.APIVerificationFailed{
 			Section:              name,
 			MissingSpecification: unspecified,
 			MissingRegistration:  unregistered,
