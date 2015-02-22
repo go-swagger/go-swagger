@@ -1,4 +1,4 @@
-package swagger
+package middleware
 
 import (
 	"testing"

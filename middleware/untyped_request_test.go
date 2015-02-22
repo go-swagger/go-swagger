@@ -1,4 +1,4 @@
-package untyped
+package middleware
 
 import (
 	"bytes"
@@ -18,7 +18,7 @@ import (
 
 func TestUntypedFormPost(t *testing.T) {
 	params := parametersForFormUpload()
-	binder := NewRequestBinder(params, nil, strfmt.Default)
+	binder := newUntypedRequestBinder(params, nil, strfmt.Default)
 
 	urlStr := "http://localhost:8002/hello"
 	req, _ := http.NewRequest("POST", urlStr, bytes.NewBufferString(`name=the-name&age=32`))
@@ -100,7 +100,7 @@ func TestUntypedFileUpload(t *testing.T) {
 func TestUntypedBindingTypesForValid(t *testing.T) {
 
 	op2 := parametersForAllTypes("")
-	binder := NewRequestBinder(op2, nil, strfmt.Default)
+	binder := newUntypedRequestBinder(op2, nil, strfmt.Default)
 
 	confirmed := true
 	name := "thomas"
@@ -130,7 +130,7 @@ func TestUntypedBindingTypesForValid(t *testing.T) {
 	req.Header.Set("X-Request-Id", "19394858")
 
 	data := make(map[string]interface{})
-	err := binder.Bind(req, swagger.RouteParams([]swagger.RouteParam{{"id", "7575"}}), swagger.JSONConsumer(), &data)
+	err := binder.Bind(req, RouteParams([]RouteParam{{"id", "7575"}}), swagger.JSONConsumer(), &data)
 	assert.True(t, err.IsValid())
 	assert.Equal(t, id, data["id"])
 	assert.Equal(t, name, data["name"])

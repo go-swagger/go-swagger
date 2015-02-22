@@ -1,4 +1,4 @@
-package untyped
+package middleware
 
 import (
 	"math"
@@ -26,8 +26,8 @@ var paramFactories = []paramFactory{
 	spec.FormDataParam,
 }
 
-func np(param *spec.Parameter) *ParamBinder {
-	return NewParamBinder(*param, new(spec.Swagger), strfmt.Default)
+func np(param *spec.Parameter) *untypedParamBinder {
+	return newUntypedParamBinder(*param, new(spec.Swagger), strfmt.Default)
 }
 
 var stringItems = new(spec.Items)
@@ -37,7 +37,7 @@ func init() {
 }
 
 func testCollectionFormat(t *testing.T, param *spec.Parameter, valid bool) {
-	binder := &ParamBinder{
+	binder := &untypedParamBinder{
 		parameter: param,
 	}
 	_, _, err := binder.readValue(url.Values(nil), reflect.ValueOf(nil))
@@ -205,8 +205,8 @@ func TestTypeValidation(t *testing.T) {
 
 func TestTypeDetectionInvalidItems(t *testing.T) {
 	withoutItems := spec.QueryParam("without").CollectionOf(nil, "")
-	binder := &ParamBinder{
-		name:      "without",
+	binder := &untypedParamBinder{
+		Name:      "without",
 		parameter: withoutItems,
 	}
 	assert.Nil(t, binder.Type())
@@ -214,16 +214,16 @@ func TestTypeDetectionInvalidItems(t *testing.T) {
 	items := new(spec.Items)
 	items.Type = "array"
 	withInvalidItems := spec.QueryParam("invalidItems").CollectionOf(items, "")
-	binder = &ParamBinder{
-		name:      "invalidItems",
+	binder = &untypedParamBinder{
+		Name:      "invalidItems",
 		parameter: withInvalidItems,
 	}
 	assert.Nil(t, binder.Type())
 
 	noType := spec.QueryParam("invalidType")
 	noType.Type = "invalid"
-	binder = &ParamBinder{
-		name:      "invalidType",
+	binder = &untypedParamBinder{
+		Name:      "invalidType",
 		parameter: noType,
 	}
 	assert.Nil(t, binder.Type())

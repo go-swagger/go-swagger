@@ -1,4 +1,4 @@
-package untyped
+package middleware
 
 import (
 	"errors"
@@ -9,8 +9,11 @@ import (
 
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
+	"github.com/casualjim/go-swagger/util"
 	"github.com/stretchr/testify/assert"
 )
+
+var evaluatesAsTrue = []string{"true", "1", "yes", "ok", "y", "on", "selected", "checked", "t", "enabled"}
 
 type unmarshallerSlice []string
 
@@ -48,9 +51,9 @@ type SomeOperationParams struct {
 
 func FloatParamTest(t *testing.T, fName, pName, format string, val reflect.Value, defVal, expectedDef interface{}, actual func() interface{}) {
 	fld := val.FieldByName(pName)
-	binder := &ParamBinder{
+	binder := &untypedParamBinder{
 		parameter: spec.QueryParam(pName).Typed("number", "double").WithDefault(defVal),
-		name:      pName,
+		Name:      pName,
 	}
 
 	err := binder.setFieldValue(fld, defVal, "5")
@@ -68,9 +71,9 @@ func FloatParamTest(t *testing.T, fName, pName, format string, val reflect.Value
 func IntParamTest(t *testing.T, pName string, val reflect.Value, defVal, expectedDef interface{}, actual func() interface{}) {
 	fld := val.FieldByName(pName)
 
-	binder := &ParamBinder{
+	binder := &untypedParamBinder{
 		parameter: spec.QueryParam(pName).Typed("integer", "int64").WithDefault(defVal),
-		name:      pName,
+		Name:      pName,
 	}
 	err := binder.setFieldValue(fld, defVal, "5")
 	assert.NoError(t, err)
@@ -91,9 +94,9 @@ func TestParamBinding(t *testing.T) {
 	pName := "Name"
 	fld := val.FieldByName(pName)
 
-	binder := &ParamBinder{
+	binder := &untypedParamBinder{
 		parameter: spec.QueryParam(pName).Typed("string", "").WithDefault("some-name"),
-		name:      pName,
+		Name:      pName,
 	}
 
 	err := binder.setFieldValue(fld, "some-name", "the name value")
@@ -132,9 +135,9 @@ func TestParamBinding(t *testing.T) {
 
 	pName = "Confirmed"
 	confirmedField := val.FieldByName(pName)
-	binder = &ParamBinder{
+	binder = &untypedParamBinder{
 		parameter: spec.QueryParam(pName).Typed("boolean", "").WithDefault(true),
-		name:      pName,
+		Name:      pName,
 	}
 
 	for _, tv := range evaluatesAsTrue {
@@ -154,9 +157,9 @@ func TestParamBinding(t *testing.T) {
 	pName = "Timestamp"
 	timeField := val.FieldByName(pName)
 	dt := strfmt.DateTime{Time: time.Date(2014, 3, 19, 2, 9, 0, 0, time.UTC)}
-	binder = &ParamBinder{
+	binder = &untypedParamBinder{
 		parameter: spec.QueryParam(pName).Typed("string", "date-time").WithDefault(dt),
-		name:      pName,
+		Name:      pName,
 	}
 	exp := strfmt.DateTime{Time: time.Date(2014, 5, 14, 2, 9, 0, 0, time.UTC)}
 
@@ -174,9 +177,9 @@ func TestParamBinding(t *testing.T) {
 	ddt := strfmt.Date{Time: time.Date(2014, 3, 19, 0, 0, 0, 0, time.UTC)}
 	pName = "Birthdate"
 	dateField := val.FieldByName(pName)
-	binder = &ParamBinder{
+	binder = &untypedParamBinder{
 		parameter: spec.QueryParam(pName).Typed("string", "date").WithDefault(ddt),
-		name:      pName,
+		Name:      pName,
 	}
 	expd := strfmt.Date{Time: time.Date(2014, 5, 14, 0, 0, 0, 0, time.UTC)}
 
@@ -194,9 +197,9 @@ func TestParamBinding(t *testing.T) {
 	fdt := &strfmt.DateTime{Time: time.Date(2014, 3, 19, 2, 9, 0, 0, time.UTC)}
 	pName = "LastFailure"
 	ftimeField := val.FieldByName(pName)
-	binder = &ParamBinder{
+	binder = &untypedParamBinder{
 		parameter: spec.QueryParam(pName).Typed("string", "date").WithDefault(fdt),
-		name:      pName,
+		Name:      pName,
 	}
 	fexp := &strfmt.DateTime{Time: time.Date(2014, 5, 14, 2, 9, 0, 0, time.UTC)}
 
@@ -219,9 +222,9 @@ func TestParamBinding(t *testing.T) {
 
 	pName = "Unsupported"
 	unsupportedField := val.FieldByName(pName)
-	binder = &ParamBinder{
+	binder = &untypedParamBinder{
 		parameter: spec.QueryParam(pName).Typed("string", ""),
-		name:      pName,
+		Name:      pName,
 	}
 	err = binder.setFieldValue(unsupportedField, nil, "")
 	assert.Error(t, err)
@@ -242,8 +245,8 @@ func TestSliceConversion(t *testing.T) {
 
 	tagsField := val.FieldByName("Tags")
 	for k, sep := range seps {
-		binder := &ParamBinder{
-			name:      "Tags",
+		binder := &untypedParamBinder{
+			Name:      "Tags",
 			parameter: spec.QueryParam("tags").CollectionOf(stringItems, k),
 		}
 
@@ -261,12 +264,12 @@ func TestSliceConversion(t *testing.T) {
 		assert.Empty(t, tags)
 	}
 
-	assert.Nil(t, split("yada", "multi"))
-	assert.Nil(t, split("", ""))
+	assert.Nil(t, util.SplitByFormat("yada", "multi"))
+	assert.Nil(t, util.SplitByFormat("", ""))
 
 	categoriesField := val.FieldByName("Categories")
-	binder := &ParamBinder{
-		name:      "Categories",
+	binder := &untypedParamBinder{
+		Name:      "Categories",
 		parameter: spec.QueryParam("categories").CollectionOf(stringItems, "csv"),
 	}
 	cData := strings.Join(sliced, ",")
