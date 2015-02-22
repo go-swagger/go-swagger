@@ -6,8 +6,8 @@ import (
 
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
+	"github.com/casualjim/go-swagger/middleware/security"
 	"github.com/casualjim/go-swagger/middleware/untyped"
-	"github.com/casualjim/go-swagger/security"
 	"github.com/casualjim/go-swagger/spec"
 	testingutil "github.com/casualjim/go-swagger/testing"
 	"github.com/stretchr/testify/assert"
