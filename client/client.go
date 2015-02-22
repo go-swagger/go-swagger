@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/casualjim/go-swagger"
-	"github.com/casualjim/go-swagger/httputils"
+	"github.com/casualjim/go-swagger/middleware/httputils"
 	"github.com/casualjim/go-swagger/spec"
 )
 
