@@ -7,9 +7,9 @@ import (
 
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
+	"github.com/casualjim/go-swagger/internal/validate"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/validate"
 	"github.com/gorilla/context"
 	"github.com/naoina/denco"
 )

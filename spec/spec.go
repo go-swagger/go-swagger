@@ -17,6 +17,13 @@ const (
 	JSONSchemaURL = "http://json-schema.org/draft-04/schema#"
 )
 
+//
+// // Validate validates a spec document
+// func Validate(doc *spec.Document, formats strfmt.Registry) *validate.Result {
+// 	// TODO: add more validations beyond just jsonschema
+// 	return newSchemaValidator(doc.Schema(), nil, "", formats).Validate(doc.Spec())
+// }
+
 // DocLoader represents a doc loader type
 type DocLoader func(string) (json.RawMessage, error)
 

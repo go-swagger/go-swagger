@@ -1,7 +1,6 @@
 package validate
 
 import (
-	"math"
 	"reflect"
 	"strings"
 
@@ -9,22 +8,9 @@ import (
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
+	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/validate"
 )
-
-// same as ECMA Number.MAX_SAFE_INTEGER and Number.MIN_SAFE_INTEGER
-const (
-	MaxJSONFloat = float64(1<<53 - 1)  // 9007199254740991.0 	 	 2^53 - 1
-	MinJSONFloat = -float64(1<<53 - 1) //-9007199254740991.0	-2^53 - 1
-)
-
-// allow for integers [-2^53, 2^53-1] inclusive
-func isFloat64AnInteger(f float64) bool {
-	if math.IsNaN(f) || math.IsInf(f, 0) || f < MinJSONFloat || f > MaxJSONFloat {
-		return false
-	}
-
-	return f == float64(int64(f)) || f == float64(uint64(f))
-}
 
 type typeValidator struct {
 	Type   spec.StringOrArray
@@ -125,8 +111,8 @@ func (t *typeValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	return r
 }
 
-func (t *typeValidator) Validate(data interface{}) *Result {
-	result := new(Result)
+func (t *typeValidator) Validate(data interface{}) *validate.Result {
+	result := new(validate.Result)
 	result.Inc()
 	if data == nil || reflect.DeepEqual(reflect.Zero(reflect.TypeOf(data)), reflect.ValueOf(data)) {
 		if len(t.Type) > 0 && !t.Type.Contains("null") { // TODO: if a property is not required it also passes this
@@ -149,7 +135,7 @@ func (t *typeValidator) Validate(data interface{}) *Result {
 		return result
 	}
 
-	isFloatInt := schType == "number" && isFloat64AnInteger(val.Float()) && t.Type.Contains("integer")
+	isFloatInt := schType == "number" && util.IsFloat64AJSONInteger(val.Float()) && t.Type.Contains("integer")
 	isIntFloat := schType == "integer" && t.Type.Contains("number")
 	if !(t.Type.Contains(schType) || isFloatInt || isIntFloat) {
 		return sErr(errors.InvalidType(t.Path, t.In, strings.Join(t.Type, ","), schType))

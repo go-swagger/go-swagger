@@ -1,9 +1,25 @@
 package util
 
 import (
+	"math"
 	"strconv"
 	"strings"
 )
+
+// same as ECMA Number.MAX_SAFE_INTEGER and Number.MIN_SAFE_INTEGER
+const (
+	maxJSONFloat = float64(1<<53 - 1)  // 9007199254740991.0 	 	 2^53 - 1
+	minJSONFloat = -float64(1<<53 - 1) //-9007199254740991.0	-2^53 - 1
+)
+
+// IsFloat64AJSONInteger allow for integers [-2^53, 2^53-1] inclusive
+func IsFloat64AJSONInteger(f float64) bool {
+	if math.IsNaN(f) || math.IsInf(f, 0) || f < minJSONFloat || f > maxJSONFloat {
+		return false
+	}
+
+	return f == float64(int64(f)) || f == float64(uint64(f))
+}
 
 var evaluatesAsTrue = map[string]struct{}{
 	"true":     struct{}{},

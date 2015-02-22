@@ -7,6 +7,7 @@ import (
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
+	"github.com/casualjim/go-swagger/validate"
 )
 
 type objectValidator struct {
@@ -35,7 +36,7 @@ func (o *objectValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	return r
 }
 
-func (o *objectValidator) Validate(data interface{}) *Result {
+func (o *objectValidator) Validate(data interface{}) *validate.Result {
 	val := data.(map[string]interface{})
 	numKeys := int64(len(val))
 
@@ -46,7 +47,7 @@ func (o *objectValidator) Validate(data interface{}) *Result {
 		return sErr(errors.New(422, "must have at most %d properties", *o.MaxProperties))
 	}
 
-	res := new(Result)
+	res := new(validate.Result)
 	if len(o.Required) > 0 {
 		for _, k := range o.Required {
 			if _, ok := val[k]; !ok {
@@ -101,7 +102,7 @@ func (o *objectValidator) Validate(data interface{}) *Result {
 	return res
 }
 
-func (o *objectValidator) validatePatternProperty(key string, value interface{}, result *Result) (bool, bool, []string) {
+func (o *objectValidator) validatePatternProperty(key string, value interface{}, result *validate.Result) (bool, bool, []string) {
 	matched := false
 	succeededOnce := false
 	var patterns []string

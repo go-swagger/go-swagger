@@ -6,19 +6,20 @@ import (
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/validate"
 )
 
 var specSchemaType = reflect.TypeOf(&spec.Schema{})
 
 // Spec validates a spec document
-func Spec(doc *spec.Document, formats strfmt.Registry) *Result {
+func Spec(doc *spec.Document, formats strfmt.Registry) *validate.Result {
 	// TODO: add more validations beyond just jsonschema
 	return newSchemaValidator(doc.Schema(), nil, "", formats).Validate(doc.Spec())
 }
 
 // AgainstSchema validates the specified data with the provided schema, when no schema
 // is provided it uses the json schema as default
-func AgainstSchema(schema *spec.Schema, data interface{}, formats strfmt.Registry) *Result {
+func AgainstSchema(schema *spec.Schema, data interface{}, formats strfmt.Registry) *validate.Result {
 	return newSchemaValidator(schema, nil, "", formats).Validate(data)
 }
 
@@ -66,13 +67,13 @@ func (s *schemaValidator) SetPath(path string) {
 	s.Path = path
 }
 
-func (s *schemaValidator) Validate(data interface{}) *Result {
+func (s *schemaValidator) Validate(data interface{}) *validate.Result {
 	if data == nil {
 		v := s.validators[0].Validate(data)
 		v.Merge(s.validators[6].Validate(data))
 		return v
 	}
-	result := &Result{}
+	result := &validate.Result{}
 
 	tpe := reflect.TypeOf(data)
 	kind := tpe.Kind()

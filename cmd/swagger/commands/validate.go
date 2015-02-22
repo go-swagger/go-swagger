@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/casualjim/go-swagger/internal/validate"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/validate"
 )
 
 // ValidateSpec is a command that validates a swagger document
