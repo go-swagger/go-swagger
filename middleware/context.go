@@ -8,6 +8,7 @@ import (
 	"github.com/casualjim/go-swagger/httputils"
 	"github.com/casualjim/go-swagger/middleware/untyped"
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/casualjim/go-swagger/swagger-ui"
 	"github.com/casualjim/go-swagger/validate"
 	"github.com/golang/gddo/httputil"
@@ -23,9 +24,10 @@ type RequestBinder interface {
 // Context is a type safe wrapper around an untyped request context
 // used throughout to store request context with the gorilla context module
 type Context struct {
-	spec   *spec.Document
-	api    RoutableAPI
-	router Router
+	spec    *spec.Document
+	api     RoutableAPI
+	router  Router
+	formats strfmt.Registry
 }
 
 type routableUntypedAPI struct {
@@ -95,6 +97,9 @@ func (r *routableUntypedAPI) ProducersFor(mediaTypes []string) map[string]swagge
 }
 func (r *routableUntypedAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]swagger.Authenticator {
 	return r.api.AuthenticatorsFor(schemes)
+}
+func (r *routableUntypedAPI) Formats() strfmt.Registry {
+	return r.api.Formats()
 }
 
 // NewRoutableContext creates a new context for a routable API

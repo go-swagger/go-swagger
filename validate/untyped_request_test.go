@@ -12,12 +12,13 @@ import (
 	"time"
 
 	"github.com/casualjim/go-swagger"
+	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUntypedFormPost(t *testing.T) {
 	params := parametersForFormUpload()
-	binder := NewRequestBinder(params, nil)
+	binder := NewRequestBinder(params, nil, strfmt.Default)
 
 	urlStr := "http://localhost:8002/hello"
 	req, _ := http.NewRequest("POST", urlStr, bytes.NewBufferString(`name=the-name&age=32`))
@@ -99,7 +100,7 @@ func TestUntypedFileUpload(t *testing.T) {
 func TestUntypedBindingTypesForValid(t *testing.T) {
 
 	op2 := parametersForAllTypes("")
-	binder := NewRequestBinder(op2, nil)
+	binder := NewRequestBinder(op2, nil, strfmt.Default)
 
 	confirmed := true
 	name := "thomas"
@@ -108,10 +109,10 @@ func TestUntypedBindingTypesForValid(t *testing.T) {
 	requestID := 19394858
 	tags := []string{"one", "two", "three"}
 	dt1 := time.Date(2014, 8, 9, 0, 0, 0, 0, time.UTC)
-	planned := swagger.Date{Time: dt1}
+	planned := strfmt.Date{Time: dt1}
 	dt2 := time.Date(2014, 10, 12, 8, 5, 5, 0, time.UTC)
-	delivered := swagger.DateTime{Time: dt2}
-	picture := base64.StdEncoding.EncodeToString([]byte("hello"))
+	delivered := strfmt.DateTime{Time: dt2}
+	picture := base64.URLEncoding.EncodeToString([]byte("hello"))
 	uri, _ := url.Parse("http://localhost:8002/hello/7575")
 	qs := uri.Query()
 	qs.Add("name", name)
@@ -142,6 +143,7 @@ func TestUntypedBindingTypesForValid(t *testing.T) {
 	assert.Equal(t, age, data["age"])
 	assert.Equal(t, factor, data["factor"])
 	assert.Equal(t, score, data["score"])
-	assert.Equal(t, "hello", string(data["picture"].([]byte)))
+	pb, _ := base64.URLEncoding.DecodeString(picture)
+	assert.EqualValues(t, pb, data["picture"].(strfmt.Base64))
 
 }

@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -37,9 +37,9 @@ type SomeOperationParams struct {
 	USeq        uint8
 	Score       float32
 	Rate        float64
-	Timestamp   swagger.DateTime
-	Birthdate   swagger.Date
-	LastFailure *swagger.DateTime
+	Timestamp   strfmt.DateTime
+	Birthdate   strfmt.Date
+	LastFailure *strfmt.DateTime
 	Unsupported struct{}
 	Tags        []string
 	Prefs       []int32
@@ -153,12 +153,12 @@ func TestParamBinding(t *testing.T) {
 
 	pName = "Timestamp"
 	timeField := val.FieldByName(pName)
-	dt := swagger.DateTime{Time: time.Date(2014, 3, 19, 2, 9, 0, 0, time.UTC)}
+	dt := strfmt.DateTime{Time: time.Date(2014, 3, 19, 2, 9, 0, 0, time.UTC)}
 	binder = &paramBinder{
 		parameter: spec.QueryParam(pName).Typed("string", "date-time").WithDefault(dt),
 		name:      pName,
 	}
-	exp := swagger.DateTime{Time: time.Date(2014, 5, 14, 2, 9, 0, 0, time.UTC)}
+	exp := strfmt.DateTime{Time: time.Date(2014, 5, 14, 2, 9, 0, 0, time.UTC)}
 
 	err = binder.setFieldValue(timeField, dt, exp.String())
 	assert.NoError(t, err)
@@ -171,14 +171,14 @@ func TestParamBinding(t *testing.T) {
 	err = binder.setFieldValue(timeField, dt, "yada")
 	assert.Error(t, err)
 
-	ddt := swagger.Date{Time: time.Date(2014, 3, 19, 0, 0, 0, 0, time.UTC)}
+	ddt := strfmt.Date{Time: time.Date(2014, 3, 19, 0, 0, 0, 0, time.UTC)}
 	pName = "Birthdate"
 	dateField := val.FieldByName(pName)
 	binder = &paramBinder{
 		parameter: spec.QueryParam(pName).Typed("string", "date").WithDefault(ddt),
 		name:      pName,
 	}
-	expd := swagger.Date{Time: time.Date(2014, 5, 14, 0, 0, 0, 0, time.UTC)}
+	expd := strfmt.Date{Time: time.Date(2014, 5, 14, 0, 0, 0, 0, time.UTC)}
 
 	err = binder.setFieldValue(dateField, ddt, expd.String())
 	assert.NoError(t, err)
@@ -191,14 +191,14 @@ func TestParamBinding(t *testing.T) {
 	err = binder.setFieldValue(dateField, ddt, "yada")
 	assert.Error(t, err)
 
-	fdt := &swagger.DateTime{Time: time.Date(2014, 3, 19, 2, 9, 0, 0, time.UTC)}
+	fdt := &strfmt.DateTime{Time: time.Date(2014, 3, 19, 2, 9, 0, 0, time.UTC)}
 	pName = "LastFailure"
 	ftimeField := val.FieldByName(pName)
 	binder = &paramBinder{
 		parameter: spec.QueryParam(pName).Typed("string", "date").WithDefault(fdt),
 		name:      pName,
 	}
-	fexp := &swagger.DateTime{Time: time.Date(2014, 5, 14, 2, 9, 0, 0, time.UTC)}
+	fexp := &strfmt.DateTime{Time: time.Date(2014, 5, 14, 2, 9, 0, 0, time.UTC)}
 
 	err = binder.setFieldValue(ftimeField, fdt, fexp.String())
 	assert.NoError(t, err)

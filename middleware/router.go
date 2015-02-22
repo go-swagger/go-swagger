@@ -8,6 +8,7 @@ import (
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/casualjim/go-swagger/validate"
 	"github.com/gorilla/context"
 	"github.com/naoina/denco"
@@ -51,6 +52,7 @@ type RoutableAPI interface {
 	ConsumersFor([]string) map[string]swagger.Consumer
 	ProducersFor([]string) map[string]swagger.Producer
 	AuthenticatorsFor(map[string]spec.SecurityScheme) map[string]swagger.Authenticator
+	Formats() strfmt.Registry
 }
 
 // Router represents a swagger aware router
@@ -160,7 +162,7 @@ func (d *defaultRouteBuilder) AddRoute(method, path string, operation *spec.Oper
 			Consumers:      d.api.ConsumersFor(consumes),
 			Producers:      d.api.ProducersFor(produces),
 			Parameters:     parameters,
-			Binder:         validate.NewRequestBinder(parameters, d.spec.Spec()),
+			Binder:         validate.NewRequestBinder(parameters, d.spec.Spec(), d.api.Formats()),
 			Authenticators: d.api.AuthenticatorsFor(definitions),
 		})
 		d.records[mn] = append(d.records[mn], record)

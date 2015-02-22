@@ -4,21 +4,22 @@ import (
 	"reflect"
 
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/casualjim/go-swagger/util"
 )
 
 var specSchemaType = reflect.TypeOf(&spec.Schema{})
 
 // Spec validates a spec document
-func Spec(doc *spec.Document) *Result {
+func Spec(doc *spec.Document, formats strfmt.Registry) *Result {
 	// TODO: add more validations beyond just jsonschema
-	return newSchemaValidator(doc.Schema(), nil, "", formatCheckers).Validate(doc.Spec())
+	return newSchemaValidator(doc.Schema(), nil, "", formats).Validate(doc.Spec())
 }
 
 // AgainstSchema validates the specified data with the provided schema, when no schema
 // is provided it uses the json schema as default
-func AgainstSchema(schema *spec.Schema, data interface{}) *Result {
-	return newSchemaValidator(schema, nil, "", formatCheckers).Validate(data)
+func AgainstSchema(schema *spec.Schema, data interface{}, formats strfmt.Registry) *Result {
+	return newSchemaValidator(schema, nil, "", formats).Validate(data)
 }
 
 // like param validator but for a full json schema
@@ -28,26 +29,24 @@ type schemaValidator struct {
 	Schema       *spec.Schema
 	validators   []valueValidator
 	Root         interface{}
-	KnownFormats map[string]FormatValidator
+	KnownFormats strfmt.Registry
 }
 
-func newSchemaValidator(schema *spec.Schema, rootSchema interface{}, root string, formats map[string]FormatValidator) *schemaValidator {
+func newSchemaValidator(schema *spec.Schema, rootSchema interface{}, root string, formats strfmt.Registry) *schemaValidator {
 	if schema == nil {
 		return nil
 	}
+
 	if rootSchema == nil {
 		rootSchema = schema
 	}
+
 	if schema.ID != "" || schema.Ref.String() != "" || schema.Ref.IsRoot() {
 		err := spec.ExpandSchema(schema, rootSchema, nil)
 		if err != nil {
 			panic(err)
 		}
 	}
-	// b, _ := json.MarshalIndent(schema, "", "  ")
-	// fmt.Printf("%s\n", b)
-	// b, _ = json.MarshalIndent(rootSchema, "", "  ")
-	// fmt.Printf("%s\n", b)
 
 	s := schemaValidator{Path: root, in: "body", Schema: schema, Root: rootSchema, KnownFormats: formats}
 	s.validators = []valueValidator{

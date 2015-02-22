@@ -68,7 +68,7 @@ For a V1 I want to have this feature set completed:
 	-	[x] JSON Pointer that knows about structs
 	-	[x] JSON Reference that knows about structs
 	-	[x] Passes current json schema test suite
--	[ ] extended string formats
+-	[x] extended string formats
 	-	[x] uuid, uuid3, uuid4, uuid5
 	-	[x] email
 	-	[x] uri (absolute)
@@ -82,8 +82,8 @@ For a V1 I want to have this feature set completed:
 	-	[x] rgbcolor
 	-	[x] date
 	-	[x] date-time
-	-	[ ] duration
-	-	[ ] custom string formats
+	-	[x] duration
+	-	[x] custom string formats
 
 ### Later
 

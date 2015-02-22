@@ -13,6 +13,7 @@ import (
 
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -54,8 +55,8 @@ type jsonRequestSlice struct {
 
 type jsonRequestAllTypes struct {
 	Confirmed bool
-	Planned   swagger.Date
-	Delivered swagger.DateTime
+	Planned   strfmt.Date
+	Delivered strfmt.DateTime
 	Age       int32
 	ID        int64
 	Score     float32
@@ -170,9 +171,9 @@ func TestRequestBindingDefaultValue(t *testing.T) {
 	requestID := 19394858
 	tags := []string{"one", "two", "three"}
 	dt1 := time.Date(2014, 8, 9, 0, 0, 0, 0, time.UTC)
-	planned := swagger.Date{Time: dt1}
+	planned := strfmt.Date{Time: dt1}
 	dt2 := time.Date(2014, 10, 12, 8, 5, 5, 0, time.UTC)
-	delivered := swagger.DateTime{Time: dt2}
+	delivered := strfmt.DateTime{Time: dt2}
 	uri, _ := url.Parse("http://localhost:8002/hello")
 	defaults := map[string]interface{}{
 		"id":           id,
@@ -197,7 +198,7 @@ func TestRequestBindingDefaultValue(t *testing.T) {
 
 	req, _ := http.NewRequest("POST", uri.String(), bytes.NewBuffer(nil))
 	req.Header.Set("Content-Type", "application/json")
-	binder := NewRequestBinder(op3, new(spec.Swagger))
+	binder := NewRequestBinder(op3, new(spec.Swagger), strfmt.Default)
 
 	data := make(map[string]interface{})
 	err := binder.Bind(req, swagger.RouteParams(nil), swagger.JSONConsumer(), &data)
@@ -213,7 +214,7 @@ func TestRequestBindingDefaultValue(t *testing.T) {
 	assert.Equal(t, age, data["age"])
 	assert.Equal(t, factor, data["factor"])
 	assert.Equal(t, score, data["score"])
-	assert.Equal(t, "hello", string(data["picture"].([]byte)))
+	assert.Equal(t, "hello", string(data["picture"].(strfmt.Base64)))
 }
 
 func TestRequestBindingForInvalid(t *testing.T) {
@@ -222,14 +223,14 @@ func TestRequestBindingForInvalid(t *testing.T) {
 
 	op1 := map[string]spec.Parameter{"Some": *invalidParam}
 
-	binder := NewRequestBinder(op1, new(spec.Swagger))
+	binder := NewRequestBinder(op1, new(spec.Swagger), strfmt.Default)
 	req, _ := http.NewRequest("GET", "http://localhost:8002/hello?name=the-name", nil)
 
 	err := binder.Bind(req, nil, new(stubConsumer), new(jsonRequestParams))
 	assert.False(t, err.IsValid())
 
 	op2 := parametersForJSONRequestParams("")
-	binder = NewRequestBinder(op2, new(spec.Swagger))
+	binder = NewRequestBinder(op2, new(spec.Swagger), strfmt.Default)
 
 	req, _ = http.NewRequest("POST", "http://localhost:8002/hello/1?name=the-name", bytes.NewBuffer([]byte(`{"name":"toby","age":32}`)))
 	req.Header.Set("Content-Type", "application(")
@@ -245,7 +246,7 @@ func TestRequestBindingForInvalid(t *testing.T) {
 
 	invalidMultiParam := spec.HeaderParam("tags").CollectionOf(new(spec.Items), "multi")
 	op3 := map[string]spec.Parameter{"Tags": *invalidMultiParam}
-	binder = NewRequestBinder(op3, new(spec.Swagger))
+	binder = NewRequestBinder(op3, new(spec.Swagger), strfmt.Default)
 
 	req, _ = http.NewRequest("POST", "http://localhost:8002/hello/1?name=the-name", bytes.NewBuffer([]byte(`{}`)))
 	req.Header.Set("Content-Type", "application/json")
@@ -256,7 +257,7 @@ func TestRequestBindingForInvalid(t *testing.T) {
 	invalidMultiParam = spec.PathParam("").CollectionOf(new(spec.Items), "multi")
 
 	op4 := map[string]spec.Parameter{"Tags": *invalidMultiParam}
-	binder = NewRequestBinder(op4, new(spec.Swagger))
+	binder = NewRequestBinder(op4, new(spec.Swagger), strfmt.Default)
 
 	req, _ = http.NewRequest("POST", "http://localhost:8002/hello/1?name=the-name", bytes.NewBuffer([]byte(`{}`)))
 	req.Header.Set("Content-Type", "application/json")
@@ -267,7 +268,7 @@ func TestRequestBindingForInvalid(t *testing.T) {
 	invalidInParam := spec.HeaderParam("tags").Typed("string", "")
 	invalidInParam.In = "invalid"
 	op5 := map[string]spec.Parameter{"Tags": *invalidInParam}
-	binder = NewRequestBinder(op5, new(spec.Swagger))
+	binder = NewRequestBinder(op5, new(spec.Swagger), strfmt.Default)
 
 	req, _ = http.NewRequest("POST", "http://localhost:8002/hello/1?name=the-name", bytes.NewBuffer([]byte(`{}`)))
 	req.Header.Set("Content-Type", "application/json")
@@ -281,7 +282,7 @@ func TestRequestBindingForValid(t *testing.T) {
 	for _, fmt := range []string{"csv", "pipes", "tsv", "ssv", "multi"} {
 		op1 := parametersForJSONRequestParams(fmt)
 
-		binder := NewRequestBinder(op1, new(spec.Swagger))
+		binder := NewRequestBinder(op1, new(spec.Swagger), strfmt.Default)
 
 		lval := []string{"one", "two", "three"}
 		queryString := ""
@@ -320,7 +321,7 @@ func TestRequestBindingForValid(t *testing.T) {
 
 	op1 := parametersForJSONRequestParams("")
 
-	binder := NewRequestBinder(op1, new(spec.Swagger))
+	binder := NewRequestBinder(op1, new(spec.Swagger), strfmt.Default)
 	urlStr := "http://localhost:8002/hello/1?name=the-name&tags=one,two,three"
 	req, _ := http.NewRequest("POST", urlStr, bytes.NewBuffer([]byte(`{"name":"toby","age":32}`)))
 	req.Header.Set("Content-Type", "application/json;charset=utf-8")
@@ -344,7 +345,7 @@ func TestRequestBindingForValid(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json;charset=utf-8")
 	req.Header.Set("X-Request-Id", "1325959595")
 	op2 := parametersForJSONRequestSliceParams("")
-	binder = NewRequestBinder(op2, new(spec.Swagger))
+	binder = NewRequestBinder(op2, new(spec.Swagger), strfmt.Default)
 	data3 := jsonRequestSlice{}
 	err = binder.Bind(req, []swagger.RouteParam{{"id", "1"}}, swagger.JSONConsumer(), &data3)
 
@@ -372,7 +373,7 @@ func parametersForFormUpload() map[string]spec.Parameter {
 
 func TestFormUpload(t *testing.T) {
 	params := parametersForFormUpload()
-	binder := NewRequestBinder(params, new(spec.Swagger))
+	binder := NewRequestBinder(params, new(spec.Swagger), strfmt.Default)
 
 	urlStr := "http://localhost:8002/hello"
 	req, _ := http.NewRequest("POST", urlStr, bytes.NewBufferString(`name=the-name&age=32`))
@@ -401,7 +402,7 @@ func paramsForFileUpload() *RequestBinder {
 	fileParam := spec.FileParam("file")
 
 	params := map[string]spec.Parameter{"Name": *nameParam, "File": *fileParam}
-	return NewRequestBinder(params, new(spec.Swagger))
+	return NewRequestBinder(params, new(spec.Swagger), strfmt.Default)
 }
 
 func TestBindingFileUpload(t *testing.T) {

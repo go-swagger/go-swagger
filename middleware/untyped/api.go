@@ -9,6 +9,7 @@ import (
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/strfmt"
 )
 
 // TODO:
@@ -28,6 +29,7 @@ func NewAPI(spec *spec.Document) *API {
 		operations:     make(map[string]swagger.OperationHandler),
 		ServeError:     errors.ServeError,
 		Models:         make(map[string]func() interface{}),
+		formats:        strfmt.NewFormats(),
 	}
 }
 
@@ -40,6 +42,17 @@ type API struct {
 	operations     map[string]swagger.OperationHandler
 	ServeError     func(http.ResponseWriter, *http.Request, error)
 	Models         map[string]func() interface{}
+	formats        strfmt.Registry
+}
+
+// Formats returns the registered string formats
+func (d *API) Formats() strfmt.Registry {
+	return d.formats
+}
+
+// RegisterFormat registers a custom format validator
+func (d *API) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
+	d.formats.Add(name, format, validator)
 }
 
 // RegisterAuth registers an auth handler in this api

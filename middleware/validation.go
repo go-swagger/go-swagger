@@ -6,6 +6,7 @@ import (
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/httputils"
+	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/casualjim/go-swagger/validate"
 )
 
@@ -32,6 +33,7 @@ type validation struct {
 	route    *MatchedRoute
 	bound    map[string]interface{}
 	consumer swagger.Consumer
+	formats  strfmt.Registry
 }
 
 type untypedBinder map[string]interface{}

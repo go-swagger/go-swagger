@@ -8,6 +8,7 @@ import (
 
 	"github.com/asaskevich/govalidator"
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/strfmt"
 )
 
 const (
@@ -137,7 +138,7 @@ type formatValidator struct {
 	Format       string
 	Path         string
 	In           string
-	KnownFormats map[string]FormatValidator
+	KnownFormats strfmt.Registry
 }
 
 func (f *formatValidator) SetPath(path string) {
@@ -152,16 +153,13 @@ func (f *formatValidator) Applies(source interface{}, kind reflect.Kind) bool {
 		switch source.(type) {
 		case *spec.Items:
 			it := source.(*spec.Items)
-			_, known := f.KnownFormats[strings.Replace(it.Format, "-", "", -1)]
-			return kind == reflect.String && known
+			return kind == reflect.String && f.KnownFormats.ContainsName(it.Format)
 		case *spec.Parameter:
 			par := source.(*spec.Parameter)
-			_, known := f.KnownFormats[strings.Replace(par.Format, "-", "", -1)]
-			return kind == reflect.String && known
+			return kind == reflect.String && f.KnownFormats.ContainsName(par.Format)
 		case *spec.Schema:
 			sch := source.(*spec.Schema)
-			_, known := f.KnownFormats[strings.Replace(sch.Format, "-", "", -1)]
-			return kind == reflect.String && known
+			return kind == reflect.String && f.KnownFormats.ContainsName(sch.Format)
 		}
 		return false
 	}
@@ -173,7 +171,7 @@ func (f *formatValidator) Applies(source interface{}, kind reflect.Kind) bool {
 func (f *formatValidator) Validate(val interface{}) *Result {
 	result := new(Result)
 
-	if err := FormatOf(f.Path, f.In, f.Format, val.(string)); err != nil {
+	if err := FormatOf(f.Path, f.In, f.Format, val.(string), f.KnownFormats); err != nil {
 		result.AddErrors(err)
 	}
 	result.Inc()

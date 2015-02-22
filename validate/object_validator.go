@@ -6,6 +6,7 @@ import (
 
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/strfmt"
 )
 
 type objectValidator struct {
@@ -18,7 +19,7 @@ type objectValidator struct {
 	AdditionalProperties *spec.SchemaOrBool
 	PatternProperties    map[string]spec.Schema
 	Root                 interface{}
-	KnownFormats         map[string]FormatValidator
+	KnownFormats         strfmt.Registry
 }
 
 func (o *objectValidator) SetPath(path string) {

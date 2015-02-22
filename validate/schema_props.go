@@ -5,6 +5,7 @@ import (
 
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/strfmt"
 )
 
 type schemaPropsValidator struct {
@@ -20,14 +21,14 @@ type schemaPropsValidator struct {
 	oneOfValidators []schemaValidator
 	notValidator    *schemaValidator
 	Root            interface{}
-	KnownFormats    map[string]FormatValidator
+	KnownFormats    strfmt.Registry
 }
 
 func (s *schemaPropsValidator) SetPath(path string) {
 	s.Path = path
 }
 
-func newSchemaPropsValidator(path string, in string, allOf, oneOf, anyOf []spec.Schema, not *spec.Schema, deps spec.Dependencies, root interface{}, formats map[string]FormatValidator) *schemaPropsValidator {
+func newSchemaPropsValidator(path string, in string, allOf, oneOf, anyOf []spec.Schema, not *spec.Schema, deps spec.Dependencies, root interface{}, formats strfmt.Registry) *schemaPropsValidator {
 	var anyValidators []schemaValidator
 	for _, v := range anyOf {
 		anyValidators = append(anyValidators, *newSchemaValidator(&v, root, path, formats))

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/casualjim/go-swagger/util"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -132,7 +133,7 @@ func TestJSONSchemaSuite(t *testing.T) {
 
 							So(spec.ExpandSchema(testDescription.Schema, nil, nil /*new(noopResCache)*/), ShouldBeNil)
 
-							validator := newSchemaValidator(testDescription.Schema, nil, "data", formatCheckers)
+							validator := newSchemaValidator(testDescription.Schema, nil, "data", strfmt.Default)
 
 							for _, test := range testDescription.Tests {
 
