@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"mime"
 	"net/http"
 
 	"github.com/casualjim/go-swagger"
@@ -8,6 +9,7 @@ import (
 	"github.com/casualjim/go-swagger/httputils"
 	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/casualjim/go-swagger/validate"
+	"github.com/reverb/agora/util"
 )
 
 // NewValidation starts a new validation middleware
@@ -45,6 +47,18 @@ func (ub untypedBinder) BindRequest(r *http.Request, route *MatchedRoute, consum
 	return nil
 }
 
+// ContentType validates the content type of a request
+func validateContentType(allowed []string, actual string) *errors.Validation {
+	mt, _, err := mime.ParseMediaType(actual)
+	if err != nil {
+		return errors.InvalidContentType(actual, allowed)
+	}
+	if util.ContainsStringsCI(allowed, mt) {
+		return nil
+	}
+	return errors.InvalidContentType(actual, allowed)
+}
+
 func validateRequest(ctx *Context, request *http.Request, route *MatchedRoute) *validation {
 	validate := &validation{
 		context:  ctx,
@@ -75,7 +89,7 @@ func (v *validation) contentType() {
 		if err != nil {
 			v.result.AddErrors(err)
 		} else {
-			if err := validate.ContentType(v.route.Consumes, ct); err != nil {
+			if err := validateContentType(v.route.Consumes, ct); err != nil {
 				v.result.AddErrors(err)
 			}
 			v.consumer = v.route.Consumers[ct]

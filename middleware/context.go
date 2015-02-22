@@ -177,7 +177,7 @@ func (c *Context) BindValidRequest(request *http.Request, route *MatchedRoute, b
 		if err != nil {
 			res.AddErrors(err)
 		} else {
-			if err := validate.ContentType(route.Consumes, ct); err != nil {
+			if err := validateContentType(route.Consumes, ct); err != nil {
 				res.AddErrors(err)
 			}
 			consumer = route.Consumers[ct]
