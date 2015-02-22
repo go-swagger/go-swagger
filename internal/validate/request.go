@@ -11,6 +11,7 @@ import (
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
+	"github.com/casualjim/go-swagger/validate"
 )
 
 var textUnmarshalType = reflect.TypeOf(new(encoding.TextUnmarshaler)).Elem()
@@ -38,10 +39,10 @@ func NewRequestBinder(parameters map[string]spec.Parameter, spec *spec.Swagger, 
 }
 
 // Bind perform the databinding and validation
-func (o *RequestBinder) Bind(request *http.Request, routeParams swagger.RouteParams, consumer swagger.Consumer, data interface{}) *Result {
+func (o *RequestBinder) Bind(request *http.Request, routeParams swagger.RouteParams, consumer swagger.Consumer, data interface{}) *validate.Result {
 	val := reflect.Indirect(reflect.ValueOf(data))
 	isMap := val.Kind() == reflect.Map
-	result := new(Result)
+	result := new(validate.Result)
 
 	for fieldName, param := range o.Parameters {
 		binder := o.paramBinders[fieldName]

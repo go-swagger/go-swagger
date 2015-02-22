@@ -5,6 +5,7 @@ import (
 
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
+	"github.com/casualjim/go-swagger/validate"
 )
 
 type formatValidator struct {
@@ -42,10 +43,10 @@ func (f *formatValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	return r
 }
 
-func (f *formatValidator) Validate(val interface{}) *Result {
-	result := new(Result)
+func (f *formatValidator) Validate(val interface{}) *validate.Result {
+	result := new(validate.Result)
 
-	if err := FormatOf(f.Path, f.In, f.Format, val.(string), f.KnownFormats); err != nil {
+	if err := validate.FormatOf(f.Path, f.In, f.Format, val.(string), f.KnownFormats); err != nil {
 		result.AddErrors(err)
 	}
 	result.Inc()
