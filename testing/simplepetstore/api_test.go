@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/casualjim/go-swagger/httputils"
+	"github.com/casualjim/go-swagger/middleware/httputils"
 	"github.com/stretchr/testify/assert"
 )
 

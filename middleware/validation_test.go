@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/casualjim/go-swagger/errors"
-	"github.com/casualjim/go-swagger/httputils"
+	"github.com/casualjim/go-swagger/middleware/httputils"
 	"github.com/casualjim/go-swagger/testing/petstore"
 	"github.com/stretchr/testify/assert"
 )
