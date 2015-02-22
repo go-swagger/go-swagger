@@ -7,12 +7,32 @@ import (
 
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
-	"github.com/casualjim/go-swagger/middleware/untyped"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/gorilla/context"
 	"github.com/naoina/denco"
 )
+
+// RouteParam is a object to capture route params in a framework agnostic way.
+// implementations of the muxer should use these route params to communicate with the
+// swagger framework
+type RouteParam struct {
+	Name  string
+	Value string
+}
+
+// RouteParams the collection of route params
+type RouteParams []RouteParam
+
+// Get gets the value for the route param for the specified key
+func (r RouteParams) Get(name string) string {
+	for _, p := range r {
+		if p.Name == name {
+			return p.Value
+		}
+	}
+	return ""
+}
 
 func newRouter(ctx *Context, next http.Handler) http.Handler {
 	isRoot := ctx.spec.BasePath() == "" || ctx.spec.BasePath() == "/"
@@ -105,14 +125,14 @@ type routeEntry struct {
 	Parameters     map[string]spec.Parameter
 	Handler        http.Handler
 	Formats        strfmt.Registry
-	Binder         *untyped.RequestBinder
+	Binder         *untypedRequestBinder
 	Authenticators map[string]swagger.Authenticator
 }
 
 // MatchedRoute represents the route that was matched in this request
 type MatchedRoute struct {
 	routeEntry
-	Params   swagger.RouteParams
+	Params   RouteParams
 	Consumer swagger.Consumer
 	Producer swagger.Producer
 }
@@ -121,9 +141,9 @@ func (d *defaultRouter) Lookup(method, path string) (*MatchedRoute, bool) {
 	if router, ok := d.routers[strings.ToUpper(method)]; ok {
 		if m, rp, ok := router.Lookup(path); ok && m != nil {
 			if entry, ok := m.(*routeEntry); ok {
-				var params swagger.RouteParams
+				var params RouteParams
 				for _, p := range rp {
-					params = append(params, swagger.RouteParam{Name: p.Name, Value: p.Value})
+					params = append(params, RouteParam{Name: p.Name, Value: p.Value})
 				}
 				return &MatchedRoute{routeEntry: *entry, Params: params}, true
 			}
@@ -166,7 +186,7 @@ func (d *defaultRouteBuilder) AddRoute(method, path string, operation *spec.Oper
 			Producers:      d.api.ProducersFor(produces),
 			Parameters:     parameters,
 			Formats:        d.api.Formats(),
-			Binder:         untyped.NewRequestBinder(parameters, d.spec.Spec(), d.api.Formats()),
+			Binder:         newUntypedRequestBinder(parameters, d.spec.Spec(), d.api.Formats()),
 			Authenticators: d.api.AuthenticatorsFor(definitions),
 		})
 		d.records[mn] = append(d.records[mn], record)

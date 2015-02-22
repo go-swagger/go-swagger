@@ -15,6 +15,13 @@ func stubAutenticator() swagger.Authenticator {
 	return swagger.AuthenticatorFunc(func(_ interface{}) (bool, interface{}, error) { return false, nil, nil })
 }
 
+type stubConsumer struct {
+}
+
+func (s *stubConsumer) Consume(_ io.Reader, _ interface{}) error {
+	return nil
+}
+
 type stubProducer struct {
 }
 

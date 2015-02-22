@@ -1,10 +1,11 @@
-package untyped
+package middleware
 
 import (
 	"encoding"
 	"encoding/base64"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -12,15 +13,20 @@ import (
 
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
+	"github.com/casualjim/go-swagger/internal/validate"
+	"github.com/casualjim/go-swagger/middleware/httputils"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/casualjim/go-swagger/util"
-	"github.com/casualjim/go-swagger/internal/validate"
 )
 
-func NewParamBinder(param spec.Parameter, spec *spec.Swagger, formats strfmt.Registry) *ParamBinder {
-	binder := new(ParamBinder)
-	binder.name = param.Name
+const defaultMaxMemory = 32 << 20
+
+var textUnmarshalType = reflect.TypeOf(new(encoding.TextUnmarshaler)).Elem()
+
+func newUntypedParamBinder(param spec.Parameter, spec *spec.Swagger, formats strfmt.Registry) *untypedParamBinder {
+	binder := new(untypedParamBinder)
+	binder.Name = param.Name
 	binder.parameter = &param
 	binder.formats = formats
 	if param.In != "body" {
@@ -32,18 +38,18 @@ func NewParamBinder(param spec.Parameter, spec *spec.Swagger, formats strfmt.Reg
 	return binder
 }
 
-type ParamBinder struct {
+type untypedParamBinder struct {
 	parameter *spec.Parameter
 	formats   strfmt.Registry
-	name      string
+	Name      string
 	validator validate.EntityValidator
 }
 
-func (p *ParamBinder) Type() reflect.Type {
+func (p *untypedParamBinder) Type() reflect.Type {
 	return p.typeForSchema(p.parameter.Type, p.parameter.Format, p.parameter.Items)
 }
 
-func (p *ParamBinder) typeForSchema(tpe, format string, items *spec.Items) reflect.Type {
+func (p *untypedParamBinder) typeForSchema(tpe, format string, items *spec.Items) reflect.Type {
 	switch tpe {
 	case "boolean":
 		return reflect.TypeOf(true)
@@ -93,15 +99,11 @@ func (p *ParamBinder) typeForSchema(tpe, format string, items *spec.Items) refle
 	return nil
 }
 
-func (p *ParamBinder) allowsMulti() bool {
+func (p *untypedParamBinder) allowsMulti() bool {
 	return p.parameter.In == "query" || p.parameter.In == "formData"
 }
 
-type getValue interface {
-	Get(string) string
-}
-
-func (p *ParamBinder) readValue(values interface{}, target reflect.Value) ([]string, bool, error) {
+func (p *untypedParamBinder) readValue(values interface{}, target reflect.Value) ([]string, bool, error) {
 	name, in, cf, tpe := p.parameter.Name, p.parameter.In, p.parameter.CollectionFormat, p.parameter.Type
 	if tpe == "array" {
 		if cf == "multi" {
@@ -111,18 +113,33 @@ func (p *ParamBinder) readValue(values interface{}, target reflect.Value) ([]str
 			return values.(url.Values)[name], false, nil
 		}
 
-		v := readSingle(values.(getValue), name)
+		v := httputils.ReadSingleValue(values.(httputils.Gettable), name)
 		return p.readFormattedSliceFieldValue(v, target)
 	}
 
-	v := readSingle(values.(getValue), name)
+	v := httputils.ReadSingleValue(values.(httputils.Gettable), name)
 	if v == "" {
 		return nil, false, nil
 	}
 	return []string{v}, false, nil
 }
 
-func (p *ParamBinder) Bind(request *http.Request, routeParams swagger.RouteParams, consumer swagger.Consumer, target reflect.Value) error {
+func contentType(req *http.Request) (string, error) {
+	ct := req.Header.Get("Content-Type")
+	orig := ct
+	if ct == "" {
+		ct = "application/octet-stream"
+	}
+
+	mt, _, err := mime.ParseMediaType(ct)
+	if err != nil {
+		return "", errors.NewParseError("Content-Type", "header", orig, err)
+	}
+
+	return mt, nil
+}
+
+func (p *untypedParamBinder) Bind(request *http.Request, routeParams RouteParams, consumer swagger.Consumer, target reflect.Value) error {
 	// fmt.Println("binding", p.name, "as", p.Type())
 	switch p.parameter.In {
 	case "query":
@@ -157,6 +174,7 @@ func (p *ParamBinder) Bind(request *http.Request, routeParams swagger.RouteParam
 		return p.bindValue(data, target)
 
 	case "formData":
+		var err error
 		mt, err := contentType(request)
 		if err != nil {
 			return errors.InvalidContentType("", []string{"multipart/form-data", "application/x-www-form-urlencoded"})
@@ -215,7 +233,7 @@ func (p *ParamBinder) Bind(request *http.Request, routeParams swagger.RouteParam
 			if p.parameter.Format != "" {
 				tpe = p.parameter.Format
 			}
-			return errors.InvalidType(p.name, p.parameter.In, tpe, nil)
+			return errors.InvalidType(p.Name, p.parameter.In, tpe, nil)
 		}
 		target.Set(reflect.Indirect(newValue))
 		return nil
@@ -224,7 +242,7 @@ func (p *ParamBinder) Bind(request *http.Request, routeParams swagger.RouteParam
 	}
 }
 
-func (p *ParamBinder) bindValue(data []string, target reflect.Value) error {
+func (p *untypedParamBinder) bindValue(data []string, target reflect.Value) error {
 	if p.parameter.Type == "array" {
 		return p.setSliceFieldValue(target, p.parameter.Default, data)
 	}
@@ -235,19 +253,19 @@ func (p *ParamBinder) bindValue(data []string, target reflect.Value) error {
 	return p.setFieldValue(target, p.parameter.Default, d)
 }
 
-func (p *ParamBinder) setFieldValue(target reflect.Value, defaultValue interface{}, data string) error {
+func (p *untypedParamBinder) setFieldValue(target reflect.Value, defaultValue interface{}, data string) error {
 	tpe := p.parameter.Type
 	if p.parameter.Format != "" {
 		tpe = p.parameter.Format
 	}
 
 	if data == "" && p.parameter.Required && p.parameter.Default == nil {
-		return errors.Required(p.name, p.parameter.In)
+		return errors.Required(p.Name, p.parameter.In)
 	}
 
 	ok, err := p.tryUnmarshaler(target, defaultValue, data)
 	if err != nil {
-		return errors.InvalidType(p.name, p.parameter.In, tpe, data)
+		return errors.InvalidType(p.Name, p.parameter.In, tpe, data)
 	}
 	if ok {
 		return nil
@@ -268,7 +286,7 @@ func (p *ParamBinder) setFieldValue(target reflect.Value, defaultValue interface
 		if err != nil {
 			b, err = base64.URLEncoding.DecodeString(data)
 			if err != nil {
-				return errors.InvalidType(p.name, p.parameter.In, tpe, data)
+				return errors.InvalidType(p.Name, p.parameter.In, tpe, data)
 			}
 		}
 		target.SetBytes(b)
@@ -281,7 +299,11 @@ func (p *ParamBinder) setFieldValue(target reflect.Value, defaultValue interface
 			target.SetBool(defVal.Bool())
 			return nil
 		}
-		target.SetBool(util.ContainsStringsCI(evaluatesAsTrue, data))
+		b, err := util.ConvertBool(data)
+		if err != nil {
+			return err
+		}
+		target.SetBool(b)
 
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		if data == "" {
@@ -290,10 +312,10 @@ func (p *ParamBinder) setFieldValue(target reflect.Value, defaultValue interface
 		}
 		i, err := strconv.ParseInt(data, 10, 64)
 		if err != nil {
-			return errors.InvalidType(p.name, p.parameter.In, tpe, data)
+			return errors.InvalidType(p.Name, p.parameter.In, tpe, data)
 		}
 		if target.OverflowInt(i) {
-			return errors.InvalidType(p.name, p.parameter.In, tpe, data)
+			return errors.InvalidType(p.Name, p.parameter.In, tpe, data)
 		}
 
 		target.SetInt(i)
@@ -305,10 +327,10 @@ func (p *ParamBinder) setFieldValue(target reflect.Value, defaultValue interface
 		}
 		u, err := strconv.ParseUint(data, 10, 64)
 		if err != nil {
-			return errors.InvalidType(p.name, p.parameter.In, tpe, data)
+			return errors.InvalidType(p.Name, p.parameter.In, tpe, data)
 		}
 		if target.OverflowUint(u) {
-			return errors.InvalidType(p.name, p.parameter.In, tpe, data)
+			return errors.InvalidType(p.Name, p.parameter.In, tpe, data)
 		}
 		target.SetUint(u)
 
@@ -319,10 +341,10 @@ func (p *ParamBinder) setFieldValue(target reflect.Value, defaultValue interface
 		}
 		f, err := strconv.ParseFloat(data, 64)
 		if err != nil {
-			return errors.InvalidType(p.name, p.parameter.In, tpe, data)
+			return errors.InvalidType(p.Name, p.parameter.In, tpe, data)
 		}
 		if target.OverflowFloat(f) {
-			return errors.InvalidType(p.name, p.parameter.In, tpe, data)
+			return errors.InvalidType(p.Name, p.parameter.In, tpe, data)
 		}
 		target.SetFloat(f)
 
@@ -346,12 +368,12 @@ func (p *ParamBinder) setFieldValue(target reflect.Value, defaultValue interface
 		target.Set(newVal)
 
 	default:
-		return errors.InvalidType(p.name, p.parameter.In, tpe, data)
+		return errors.InvalidType(p.Name, p.parameter.In, tpe, data)
 	}
 	return nil
 }
 
-func (p *ParamBinder) tryUnmarshaler(target reflect.Value, defaultValue interface{}, data string) (bool, error) {
+func (p *untypedParamBinder) tryUnmarshaler(target reflect.Value, defaultValue interface{}, data string) (bool, error) {
 	// When a type implements encoding.TextUnmarshaler we'll use that instead of reflecting some more
 	if reflect.PtrTo(target.Type()).Implements(textUnmarshalType) {
 		if defaultValue != nil && len(data) == 0 {
@@ -368,7 +390,7 @@ func (p *ParamBinder) tryUnmarshaler(target reflect.Value, defaultValue interfac
 	return false, nil
 }
 
-func (p *ParamBinder) readFormattedSliceFieldValue(data string, target reflect.Value) ([]string, bool, error) {
+func (p *untypedParamBinder) readFormattedSliceFieldValue(data string, target reflect.Value) ([]string, bool, error) {
 	ok, err := p.tryUnmarshaler(target, p.parameter.Default, data)
 	if err != nil {
 		return nil, true, err
@@ -377,12 +399,12 @@ func (p *ParamBinder) readFormattedSliceFieldValue(data string, target reflect.V
 		return nil, true, nil
 	}
 
-	return split(data, p.parameter.CollectionFormat), false, nil
+	return util.SplitByFormat(data, p.parameter.CollectionFormat), false, nil
 }
 
-func (p *ParamBinder) setSliceFieldValue(target reflect.Value, defaultValue interface{}, data []string) error {
+func (p *untypedParamBinder) setSliceFieldValue(target reflect.Value, defaultValue interface{}, data []string) error {
 	if len(data) == 0 && p.parameter.Required && p.parameter.Default == nil {
-		return errors.Required(p.name, p.parameter.In)
+		return errors.Required(p.Name, p.parameter.In)
 	}
 	defVal := reflect.Zero(target.Type())
 	if defaultValue != nil {
