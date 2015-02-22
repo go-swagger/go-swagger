@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
@@ -79,9 +78,10 @@ func TestRequiredValidation(t *testing.T) {
 	validateRequiredTest(t, doubleParam, reflect.ValueOf(float64(0)))
 
 	dateTimeParam := spec.QueryParam("registered").Typed("string", "date-time").AsRequired()
-	validateRequiredTest(t, dateTimeParam, reflect.ValueOf(swagger.DateTime{}))
+	validateRequiredTest(t, dateTimeParam, reflect.ValueOf(strfmt.DateTime{}))
+
 	dateParam := spec.QueryParam("registered").Typed("string", "date").AsRequired()
-	validateRequiredTest(t, dateParam, reflect.ValueOf(swagger.DateTime{}))
+	validateRequiredTest(t, dateParam, reflect.ValueOf(strfmt.DateTime{}))
 
 	sliceParam := spec.QueryParam("tags").CollectionOf(stringItems, "").AsRequired()
 	validateRequiredTest(t, sliceParam, reflect.ValueOf([]string{}))
@@ -175,7 +175,7 @@ func TestTypeValidation(t *testing.T) {
 		assert.Equal(t, invalidTypeError(doubleParam, str4), err)
 
 		dateParam := newParam("badDate").Typed("string", "date")
-		value = reflect.ValueOf(swagger.Date{})
+		value = reflect.ValueOf(strfmt.Date{})
 		binder = np(dateParam)
 		err = binder.bindValue([]string{"yada"}, value)
 		// fails for invalid string
@@ -183,7 +183,7 @@ func TestTypeValidation(t *testing.T) {
 		assert.Equal(t, invalidTypeError(dateParam, "yada"), err)
 
 		dateTimeParam := newParam("badDateTime").Typed("string", "date-time")
-		value = reflect.ValueOf(swagger.DateTime{})
+		value = reflect.ValueOf(strfmt.DateTime{})
 		binder = np(dateTimeParam)
 		err = binder.bindValue([]string{"yada"}, value)
 		// fails for invalid string
