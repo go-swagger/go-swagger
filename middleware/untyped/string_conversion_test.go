@@ -1,4 +1,4 @@
-package validate
+package untyped
 
 import (
 	"errors"
@@ -48,7 +48,7 @@ type SomeOperationParams struct {
 
 func FloatParamTest(t *testing.T, fName, pName, format string, val reflect.Value, defVal, expectedDef interface{}, actual func() interface{}) {
 	fld := val.FieldByName(pName)
-	binder := &paramBinder{
+	binder := &ParamBinder{
 		parameter: spec.QueryParam(pName).Typed("number", "double").WithDefault(defVal),
 		name:      pName,
 	}
@@ -68,7 +68,7 @@ func FloatParamTest(t *testing.T, fName, pName, format string, val reflect.Value
 func IntParamTest(t *testing.T, pName string, val reflect.Value, defVal, expectedDef interface{}, actual func() interface{}) {
 	fld := val.FieldByName(pName)
 
-	binder := &paramBinder{
+	binder := &ParamBinder{
 		parameter: spec.QueryParam(pName).Typed("integer", "int64").WithDefault(defVal),
 		name:      pName,
 	}
@@ -91,7 +91,7 @@ func TestParamBinding(t *testing.T) {
 	pName := "Name"
 	fld := val.FieldByName(pName)
 
-	binder := &paramBinder{
+	binder := &ParamBinder{
 		parameter: spec.QueryParam(pName).Typed("string", "").WithDefault("some-name"),
 		name:      pName,
 	}
@@ -132,7 +132,7 @@ func TestParamBinding(t *testing.T) {
 
 	pName = "Confirmed"
 	confirmedField := val.FieldByName(pName)
-	binder = &paramBinder{
+	binder = &ParamBinder{
 		parameter: spec.QueryParam(pName).Typed("boolean", "").WithDefault(true),
 		name:      pName,
 	}
@@ -154,7 +154,7 @@ func TestParamBinding(t *testing.T) {
 	pName = "Timestamp"
 	timeField := val.FieldByName(pName)
 	dt := strfmt.DateTime{Time: time.Date(2014, 3, 19, 2, 9, 0, 0, time.UTC)}
-	binder = &paramBinder{
+	binder = &ParamBinder{
 		parameter: spec.QueryParam(pName).Typed("string", "date-time").WithDefault(dt),
 		name:      pName,
 	}
@@ -174,7 +174,7 @@ func TestParamBinding(t *testing.T) {
 	ddt := strfmt.Date{Time: time.Date(2014, 3, 19, 0, 0, 0, 0, time.UTC)}
 	pName = "Birthdate"
 	dateField := val.FieldByName(pName)
-	binder = &paramBinder{
+	binder = &ParamBinder{
 		parameter: spec.QueryParam(pName).Typed("string", "date").WithDefault(ddt),
 		name:      pName,
 	}
@@ -194,7 +194,7 @@ func TestParamBinding(t *testing.T) {
 	fdt := &strfmt.DateTime{Time: time.Date(2014, 3, 19, 2, 9, 0, 0, time.UTC)}
 	pName = "LastFailure"
 	ftimeField := val.FieldByName(pName)
-	binder = &paramBinder{
+	binder = &ParamBinder{
 		parameter: spec.QueryParam(pName).Typed("string", "date").WithDefault(fdt),
 		name:      pName,
 	}
@@ -219,7 +219,7 @@ func TestParamBinding(t *testing.T) {
 
 	pName = "Unsupported"
 	unsupportedField := val.FieldByName(pName)
-	binder = &paramBinder{
+	binder = &ParamBinder{
 		parameter: spec.QueryParam(pName).Typed("string", ""),
 		name:      pName,
 	}
@@ -242,7 +242,7 @@ func TestSliceConversion(t *testing.T) {
 
 	tagsField := val.FieldByName("Tags")
 	for k, sep := range seps {
-		binder := &paramBinder{
+		binder := &ParamBinder{
 			name:      "Tags",
 			parameter: spec.QueryParam("tags").CollectionOf(stringItems, k),
 		}
@@ -265,7 +265,7 @@ func TestSliceConversion(t *testing.T) {
 	assert.Nil(t, split("", ""))
 
 	categoriesField := val.FieldByName("Categories")
-	binder := &paramBinder{
+	binder := &ParamBinder{
 		name:      "Categories",
 		parameter: spec.QueryParam("categories").CollectionOf(stringItems, "csv"),
 	}

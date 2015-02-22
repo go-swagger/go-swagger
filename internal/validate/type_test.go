@@ -133,7 +133,7 @@ func TestJSONSchemaSuite(t *testing.T) {
 
 							So(spec.ExpandSchema(testDescription.Schema, nil, nil /*new(noopResCache)*/), ShouldBeNil)
 
-							validator := newSchemaValidator(testDescription.Schema, nil, "data", strfmt.Default)
+							validator := NewSchemaValidator(testDescription.Schema, nil, "data", strfmt.Default)
 
 							for _, test := range testDescription.Tests {
 

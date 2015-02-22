@@ -1,4 +1,4 @@
-package validate
+package untyped
 
 import (
 	"encoding"
@@ -15,34 +15,35 @@ import (
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/internal/validate"
 )
 
-func newParamBinder(param spec.Parameter, spec *spec.Swagger, formats strfmt.Registry) *paramBinder {
-	binder := new(paramBinder)
+func NewParamBinder(param spec.Parameter, spec *spec.Swagger, formats strfmt.Registry) *ParamBinder {
+	binder := new(ParamBinder)
 	binder.name = param.Name
 	binder.parameter = &param
 	binder.formats = formats
 	if param.In != "body" {
-		binder.validator = newParamValidator(&param, formats)
+		binder.validator = validate.NewParamValidator(&param, formats)
 	} else {
-		binder.validator = newSchemaValidator(param.Schema, spec, param.Name, formats)
+		binder.validator = validate.NewSchemaValidator(param.Schema, spec, param.Name, formats)
 	}
 
 	return binder
 }
 
-type paramBinder struct {
+type ParamBinder struct {
 	parameter *spec.Parameter
 	formats   strfmt.Registry
 	name      string
-	validator entityValidator
+	validator validate.EntityValidator
 }
 
-func (p *paramBinder) Type() reflect.Type {
+func (p *ParamBinder) Type() reflect.Type {
 	return p.typeForSchema(p.parameter.Type, p.parameter.Format, p.parameter.Items)
 }
 
-func (p *paramBinder) typeForSchema(tpe, format string, items *spec.Items) reflect.Type {
+func (p *ParamBinder) typeForSchema(tpe, format string, items *spec.Items) reflect.Type {
 	switch tpe {
 	case "boolean":
 		return reflect.TypeOf(true)
@@ -92,7 +93,7 @@ func (p *paramBinder) typeForSchema(tpe, format string, items *spec.Items) refle
 	return nil
 }
 
-func (p *paramBinder) allowsMulti() bool {
+func (p *ParamBinder) allowsMulti() bool {
 	return p.parameter.In == "query" || p.parameter.In == "formData"
 }
 
@@ -100,7 +101,7 @@ type getValue interface {
 	Get(string) string
 }
 
-func (p *paramBinder) readValue(values interface{}, target reflect.Value) ([]string, bool, error) {
+func (p *ParamBinder) readValue(values interface{}, target reflect.Value) ([]string, bool, error) {
 	name, in, cf, tpe := p.parameter.Name, p.parameter.In, p.parameter.CollectionFormat, p.parameter.Type
 	if tpe == "array" {
 		if cf == "multi" {
@@ -121,7 +122,7 @@ func (p *paramBinder) readValue(values interface{}, target reflect.Value) ([]str
 	return []string{v}, false, nil
 }
 
-func (p *paramBinder) Bind(request *http.Request, routeParams swagger.RouteParams, consumer swagger.Consumer, target reflect.Value) error {
+func (p *ParamBinder) Bind(request *http.Request, routeParams swagger.RouteParams, consumer swagger.Consumer, target reflect.Value) error {
 	// fmt.Println("binding", p.name, "as", p.Type())
 	switch p.parameter.In {
 	case "query":
@@ -223,7 +224,7 @@ func (p *paramBinder) Bind(request *http.Request, routeParams swagger.RouteParam
 	}
 }
 
-func (p *paramBinder) bindValue(data []string, target reflect.Value) error {
+func (p *ParamBinder) bindValue(data []string, target reflect.Value) error {
 	if p.parameter.Type == "array" {
 		return p.setSliceFieldValue(target, p.parameter.Default, data)
 	}
@@ -234,7 +235,7 @@ func (p *paramBinder) bindValue(data []string, target reflect.Value) error {
 	return p.setFieldValue(target, p.parameter.Default, d)
 }
 
-func (p *paramBinder) setFieldValue(target reflect.Value, defaultValue interface{}, data string) error {
+func (p *ParamBinder) setFieldValue(target reflect.Value, defaultValue interface{}, data string) error {
 	tpe := p.parameter.Type
 	if p.parameter.Format != "" {
 		tpe = p.parameter.Format
@@ -350,7 +351,7 @@ func (p *paramBinder) setFieldValue(target reflect.Value, defaultValue interface
 	return nil
 }
 
-func (p *paramBinder) tryUnmarshaler(target reflect.Value, defaultValue interface{}, data string) (bool, error) {
+func (p *ParamBinder) tryUnmarshaler(target reflect.Value, defaultValue interface{}, data string) (bool, error) {
 	// When a type implements encoding.TextUnmarshaler we'll use that instead of reflecting some more
 	if reflect.PtrTo(target.Type()).Implements(textUnmarshalType) {
 		if defaultValue != nil && len(data) == 0 {
@@ -367,7 +368,7 @@ func (p *paramBinder) tryUnmarshaler(target reflect.Value, defaultValue interfac
 	return false, nil
 }
 
-func (p *paramBinder) readFormattedSliceFieldValue(data string, target reflect.Value) ([]string, bool, error) {
+func (p *ParamBinder) readFormattedSliceFieldValue(data string, target reflect.Value) ([]string, bool, error) {
 	ok, err := p.tryUnmarshaler(target, p.parameter.Default, data)
 	if err != nil {
 		return nil, true, err
@@ -379,7 +380,7 @@ func (p *paramBinder) readFormattedSliceFieldValue(data string, target reflect.V
 	return split(data, p.parameter.CollectionFormat), false, nil
 }
 
-func (p *paramBinder) setSliceFieldValue(target reflect.Value, defaultValue interface{}, data []string) error {
+func (p *ParamBinder) setSliceFieldValue(target reflect.Value, defaultValue interface{}, data []string) error {
 	if len(data) == 0 && p.parameter.Required && p.parameter.Default == nil {
 		return errors.Required(p.name, p.parameter.In)
 	}

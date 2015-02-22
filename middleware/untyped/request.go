@@ -1,4 +1,4 @@
-package validate
+package untyped
 
 import (
 	"encoding"
@@ -21,14 +21,14 @@ type RequestBinder struct {
 	Spec         *spec.Swagger
 	Parameters   map[string]spec.Parameter
 	Formats      strfmt.Registry
-	paramBinders map[string]*paramBinder
+	paramBinders map[string]*ParamBinder
 }
 
 // NewRequestBinder creates a new binder for reading a request.
 func NewRequestBinder(parameters map[string]spec.Parameter, spec *spec.Swagger, formats strfmt.Registry) *RequestBinder {
-	binders := make(map[string]*paramBinder)
+	binders := make(map[string]*ParamBinder)
 	for fieldName, param := range parameters {
-		binders[fieldName] = newParamBinder(param, spec, formats)
+		binders[fieldName] = NewParamBinder(param, spec, formats)
 	}
 	return &RequestBinder{
 		Parameters:   parameters,

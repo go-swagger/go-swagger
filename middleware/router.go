@@ -7,7 +7,7 @@ import (
 
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
-	"github.com/casualjim/go-swagger/internal/validate"
+	"github.com/casualjim/go-swagger/middleware/untyped"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/gorilla/context"
@@ -104,14 +104,17 @@ type routeEntry struct {
 	Producers      map[string]swagger.Producer
 	Parameters     map[string]spec.Parameter
 	Handler        http.Handler
-	Binder         *validate.RequestBinder
+	Formats        strfmt.Registry
+	Binder         *untyped.RequestBinder
 	Authenticators map[string]swagger.Authenticator
 }
 
 // MatchedRoute represents the route that was matched in this request
 type MatchedRoute struct {
 	routeEntry
-	Params swagger.RouteParams
+	Params   swagger.RouteParams
+	Consumer swagger.Consumer
+	Producer swagger.Producer
 }
 
 func (d *defaultRouter) Lookup(method, path string) (*MatchedRoute, bool) {
@@ -162,7 +165,8 @@ func (d *defaultRouteBuilder) AddRoute(method, path string, operation *spec.Oper
 			Consumers:      d.api.ConsumersFor(consumes),
 			Producers:      d.api.ProducersFor(produces),
 			Parameters:     parameters,
-			Binder:         validate.NewRequestBinder(parameters, d.spec.Spec(), d.api.Formats()),
+			Formats:        d.api.Formats(),
+			Binder:         untyped.NewRequestBinder(parameters, d.spec.Spec(), d.api.Formats()),
 			Authenticators: d.api.AuthenticatorsFor(definitions),
 		})
 		d.records[mn] = append(d.records[mn], record)
