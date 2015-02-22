@@ -6,6 +6,7 @@ import (
 
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/strfmt"
 )
 
 type schemaSliceValidator struct {
@@ -17,7 +18,7 @@ type schemaSliceValidator struct {
 	AdditionalItems *spec.SchemaOrBool
 	Items           *spec.SchemaOrArray
 	Root            interface{}
-	KnownFormats    map[string]FormatValidator
+	KnownFormats    strfmt.Registry
 }
 
 func (s *schemaSliceValidator) SetPath(path string) {

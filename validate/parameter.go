@@ -9,23 +9,23 @@ import (
 	"net/url"
 	"reflect"
 	"strconv"
-	"strings"
 
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/casualjim/go-swagger/util"
 )
 
-func newParamBinder(param spec.Parameter, spec *spec.Swagger, formats formats, formatValidators map[string]FormatValidator) *paramBinder {
+func newParamBinder(param spec.Parameter, spec *spec.Swagger, formats strfmt.Registry) *paramBinder {
 	binder := new(paramBinder)
 	binder.name = param.Name
 	binder.parameter = &param
 	binder.formats = formats
 	if param.In != "body" {
-		binder.validator = newParamValidator(&param, formatValidators)
+		binder.validator = newParamValidator(&param, formats)
 	} else {
-		binder.validator = newSchemaValidator(param.Schema, spec, param.Name, formatValidators)
+		binder.validator = newSchemaValidator(param.Schema, spec, param.Name, formats)
 	}
 
 	return binder
@@ -33,7 +33,7 @@ func newParamBinder(param spec.Parameter, spec *spec.Swagger, formats formats, f
 
 type paramBinder struct {
 	parameter *spec.Parameter
-	formats   formats
+	formats   strfmt.Registry
 	name      string
 	validator entityValidator
 }
@@ -43,60 +43,15 @@ func (p *paramBinder) Type() reflect.Type {
 }
 
 func (p *paramBinder) typeForSchema(tpe, format string, items *spec.Items) reflect.Type {
-	for _, fmt := range p.formats {
-		if tpe == "string" && format == fmt.Name() {
-			return fmt.Type()
-		}
-	}
-
 	switch tpe {
-
 	case "boolean":
 		return reflect.TypeOf(true)
 
 	case "string":
-		switch strings.Replace(format, "-", "", -1) {
-		case "byte":
-			return reflect.TypeOf([]byte{})
-		case "date":
-			return reflect.TypeOf(swagger.Date{})
-		case "datetime":
-			return reflect.TypeOf(swagger.DateTime{})
-		case "uri":
-			return reflect.TypeOf(swagger.URI(""))
-		case "email":
-			return reflect.TypeOf(swagger.Email(""))
-		case "hostname":
-			return reflect.TypeOf(swagger.Hostname(""))
-		case "ipv4":
-			return reflect.TypeOf(swagger.IPv4(""))
-		case "ipv6":
-			return reflect.TypeOf(swagger.IPv6(""))
-		case "uuid":
-			return reflect.TypeOf(swagger.UUID(""))
-		case "uuid3":
-			return reflect.TypeOf(swagger.UUID3(""))
-		case "uuid4":
-			return reflect.TypeOf(swagger.UUID4(""))
-		case "uuid5":
-			return reflect.TypeOf(swagger.UUID5(""))
-		case "isbn":
-			return reflect.TypeOf(swagger.ISBN(""))
-		case "isbn10":
-			return reflect.TypeOf(swagger.ISBN10(""))
-		case "isbn13":
-			return reflect.TypeOf(swagger.ISBN13(""))
-		case "creditcard":
-			return reflect.TypeOf(swagger.CreditCard(""))
-		case "ssn":
-			return reflect.TypeOf(swagger.SSN(""))
-		case "hexcolor":
-			return reflect.TypeOf(swagger.HexColor(""))
-		case "rgbcolor":
-			return reflect.TypeOf(swagger.RGBColor(""))
-		default:
-			return reflect.TypeOf("")
+		if tt, ok := p.formats.GetType(format); ok {
+			return tt
 		}
+		return reflect.TypeOf("")
 
 	case "integer":
 		switch format {
@@ -201,14 +156,17 @@ func (p *paramBinder) Bind(request *http.Request, routeParams swagger.RouteParam
 		if err != nil {
 			return errors.InvalidContentType("", []string{"multipart/form-data", "application/x-www-form-urlencoded"})
 		}
+
 		if mt != "multipart/form-data" && mt != "application/x-www-form-urlencoded" {
 			return errors.InvalidContentType(mt, []string{"multipart/form-data", "application/x-www-form-urlencoded"})
 		}
+
 		if mt == "multipart/form-data" {
 			if err := request.ParseMultipartForm(defaultMaxMemory); err != nil {
 				return err
 			}
 		}
+
 		if err := request.ParseForm(); err != nil {
 			return err
 		}

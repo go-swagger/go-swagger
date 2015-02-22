@@ -1,4 +1,4 @@
-package swagger
+package strfmt
 
 import (
 	"testing"

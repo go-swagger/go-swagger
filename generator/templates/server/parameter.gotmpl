@@ -154,9 +154,9 @@ func ({{.ReceiverName}} *{{.ClassName}}Params) BindRequest(r *http.Request, rout
   } else {
     res.Merge({{.ReceiverName}}.{{.PropertyName}}.Validate())
   }
-  {{end}}
-  {{end}}
 
+  {{end}}
+  {{end}}
   return res
 }
 
@@ -224,10 +224,9 @@ func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw []strin
   return res
 }
 {{end}}
-{{if and (not .IsBodyParam) (or .HasValidations .HasSliceValidations)}}
+{{if or .HasValidations .HasSliceValidations}}
 func ({{.ReceiverName}} *{{$className}}Params) validate{{.PropertyName}}() *errors.Validation {
   {{template "propertyvalidator" .}}
-
   return nil
 }
 {{end}}

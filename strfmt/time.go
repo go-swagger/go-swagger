@@ -1,11 +1,43 @@
-package swagger
+package strfmt
 
-import "time"
+import (
+	"regexp"
+	"strings"
+	"time"
+)
 
-// ISO8601 format to millis instead of to nanos
-const RFC3339Millis = "2006-01-02T15:04:05.000Z07:00"
+func init() {
+	dt := DateTime{}
+	Default.Add("datetime", &dt, IsDateTime)
+}
 
-var dateTimeFormats = []string{RFC3339Millis, time.RFC3339, time.RFC3339Nano}
+// IsDateTime returns true when the string is a valid date-time
+func IsDateTime(str string) bool {
+	s := strings.Split(strings.ToLower(str), "t")
+	if !IsDate(s[0]) {
+		return false
+	}
+
+	matches := rxDateTime.FindAllStringSubmatch(s[1], -1)
+	if len(matches) == 0 || len(matches[0]) == 0 {
+		return false
+	}
+	m := matches[0]
+	res := m[1] <= "23" && m[2] <= "59" && m[3] <= "59"
+	return res
+}
+
+const (
+	// RFC3339Millis represents a ISO8601 format to millis instead of to nanos
+	RFC3339Millis = "2006-01-02T15:04:05.000Z07:00"
+	// DateTimePattern pattern to match for the date-time format from http://tools.ietf.org/html/rfc3339#section-5.6
+	DateTimePattern = `^([0-9]{2}):([0-9]{2}):([0-9]{2})(.[0-9]+)?(z|([+-][0-9]{2}:[0-9]{2}))$`
+)
+
+var (
+	dateTimeFormats = []string{RFC3339Millis, time.RFC3339, time.RFC3339Nano}
+	rxDateTime      = regexp.MustCompile(DateTimePattern)
+)
 
 // ParseDateTime parses a string that represents an ISO8601 time or a unix epoch
 func ParseDateTime(data string) (DateTime, error) {

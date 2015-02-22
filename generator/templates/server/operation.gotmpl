@@ -19,12 +19,12 @@ import (
 type {{.ClassName}}Handler interface {
   {{if .Authorized}}
   // Handle produces a result or an error. Gets the request params as well as the security principal
-  {{if .SuccessModel}}Handle({{.ClassName}}Params, *{{.Principal}}) ({{if .ReturnsComplexObject}}*{{end}}{{.SuccessModel}}, error)
-  {{else}}Handle({{.ClassName}}Params, *{{.Principal}}) error
+  {{if .SuccessModel}}Handle({{if .Params}}{{.ClassName}}Params, {{end}}*{{.Principal}}) ({{if .ReturnsComplexObject}}*{{end}}{{.SuccessModel}}, error)
+  {{else}}Handle({{if .Params}}{{.ClassName}}Params, {{end}}*{{.Principal}}) error
   {{end}}
   {{else}}// Handle produces a result or an error. Gets the request params
-  {{if .SuccessModel}}Handle({{.ClassName}}Params) ({{if .ReturnsComplexObject}}*{{end}}{{.SuccessModel}}, error)
-  {{else}}Handle({{.ClassName}}Params) error
+  {{if .SuccessModel}}Handle({{if .Params}}{{.ClassName}}Params {{end}}) ({{if .ReturnsComplexObject}}*{{end}}{{.SuccessModel}}, error)
+  {{else}}Handle({{if .Params}}{{.ClassName}}Params{{end}}) error
   {{end}}
   {{end}}
 }
@@ -37,8 +37,8 @@ func New{{.ClassName}}(ctx *middleware.Context, handler {{.ClassName}}Handler) *
 {{if .DocString}}{{.DocString}}{{end}}
 type {{.ClassName}} struct {
   Context *middleware.Context
-  Params  {{.ClassName}}Params
-  Handler {{.ClassName}}Handler
+  {{if .Params}}Params  {{.ClassName}}Params
+  {{end}}Handler {{.ClassName}}Handler
 }
 
 func ({{.ReceiverName}} *{{.ClassName}}) ServeHTTP(rw http.ResponseWriter, r *http.Request) {

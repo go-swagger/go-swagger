@@ -10,36 +10,30 @@ import (
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/strfmt"
 )
 
 var textUnmarshalType = reflect.TypeOf(new(encoding.TextUnmarshaler)).Elem()
-
-type StringFormat interface {
-	Name() string
-	Type() reflect.Type
-	Matches(string) bool
-}
-
-type formats []StringFormat
 
 // RequestBinder binds and validates the data from a http request
 type RequestBinder struct {
 	Spec         *spec.Swagger
 	Parameters   map[string]spec.Parameter
-	Formats      formats
+	Formats      strfmt.Registry
 	paramBinders map[string]*paramBinder
 }
 
 // NewRequestBinder creates a new binder for reading a request.
-func NewRequestBinder(parameters map[string]spec.Parameter, spec *spec.Swagger) *RequestBinder {
+func NewRequestBinder(parameters map[string]spec.Parameter, spec *spec.Swagger, formats strfmt.Registry) *RequestBinder {
 	binders := make(map[string]*paramBinder)
 	for fieldName, param := range parameters {
-		binders[fieldName] = newParamBinder(param, spec, nil, formatCheckers)
+		binders[fieldName] = newParamBinder(param, spec, formats)
 	}
 	return &RequestBinder{
 		Parameters:   parameters,
 		paramBinders: binders,
 		Spec:         spec,
+		Formats:      formats,
 	}
 }
 

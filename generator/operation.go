@@ -126,11 +126,15 @@ func (o *operationGenerator) Generate() error {
 			log.Println("generated handler", op.Package+"."+op.ClassName)
 		}
 
-		if o.IncludeParameters {
+		if o.IncludeParameters && len(o.Operation.Parameters) > 0 {
 			if err := o.generateParameterModel(); err != nil {
 				return fmt.Errorf("parameters: %s", err)
 			}
 			log.Println("generated parameters", op.Package+"."+op.ClassName+"Parameters")
+		}
+
+		if len(o.Operation.Parameters) == 0 {
+			log.Println("no parameters for operation", op.Package+"."+op.ClassName)
 		}
 	}
 
@@ -269,13 +273,16 @@ type genOperation struct {
 	ReturnsFormatted     bool   //`json:"returnsFormatted,omitempty"`     // -
 	ReturnsContainer     bool   //`json:"returnsContainer,omitempty"`     // -
 	ReturnsComplexObject bool   //`json:"returnsComplexObject,omitempty"` // -
+	ReturnsUntypedObject bool   //`json:"returnsUntypedObject,omitempty"`
 
 	Params         []genParameter //`json:"params,omitempty"`         // -
 	QueryParams    []genParameter //`json:"queryParams,omitempty"`    // -
 	PathParams     []genParameter //`json:"pathParams,omitempty"`     // -
 	HeaderParams   []genParameter //`json:"headerParams,omitempty"`   // -
-	FormParams     []genParameter //`json:"formParams,omitempty"`     // -
+	FormParams     []genParameter //`json:"formParams,omitempty"`
 	HasQueryParams bool           //`json:"hasQueryParams,omitempty"` // -
+	HasFormParams  bool           //`json:"hasFormParams,omitempty"`
+	HasFileParams  bool           //`json:"hasFileParams,omitempty"`
 }
 
 func makeCodegenParameter(receiver, modelsPkg string, param spec.Parameter) genParameter {
@@ -342,6 +349,7 @@ type genParameter struct {
 	IsPathParam      bool              //`json:"isPathParam,omitempty"`
 	IsHeaderParam    bool              //`json:"isHeaderParam,omitempty"`
 	IsBodyParam      bool              //`json:"isBodyParam,omitempty"`
+	IsFileParam      bool              //`json:"isFileParam,omitempty"`
 	CollectionFormat string            //`json:"collectionFormat,omitempty"`
 	Child            *genParameterItem //`json:"child,omitempty"`
 	BodyParam        *genParameter     //`json:"bodyParam,omitempty"`

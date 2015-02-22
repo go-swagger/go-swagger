@@ -8,6 +8,7 @@ import (
   "net/http"
   "github.com/casualjim/go-swagger"
   "github.com/casualjim/go-swagger/spec"
+  "github.com/casualjim/go-swagger/strfmt"
   "github.com/casualjim/go-swagger/security"
   "github.com/casualjim/go-swagger/middleware"
 
@@ -21,6 +22,7 @@ type {{.AppName}}API struct {
   spec           *spec.Document
   context        *middleware.Context
   handlers       map[string]http.Handler
+  formats        strfmt.Registry
   {{range .Consumes}}// {{.ClassName}}Consumer registers a consumer for a "{{.MediaType}}" mime type
   {{.ClassName}}Consumer swagger.Consumer
   {{end}}
@@ -44,6 +46,16 @@ type {{.AppName}}API struct {
   // ServeError is called when an error is received, there is a default handler
   // but you can set your own with this
   ServeError     func(http.ResponseWriter, *http.Request, error)
+}
+
+// Formats returns the registered string formats
+func ({{.ReceiverName}} *{{.AppName}}API) Formats() strfmt.Registry {
+	return {{.ReceiverName}}.formats
+}
+
+// RegisterFormat registers a custom format validator
+func ({{.ReceiverName}} *{{.AppName}}API) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
+  {{.ReceiverName}}.formats.Add(name, format, validator)
 }
 
 // Validate validates the registrations in the {{.AppName}}API

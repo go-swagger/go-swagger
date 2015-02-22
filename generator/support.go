@@ -171,6 +171,7 @@ func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal strin
 			Name:           nm,
 			MediaType:      cons,
 		}
+
 		consumes = append(consumes, genSerGroup{
 			AppName:        ser.AppName,
 			ReceiverName:   ser.ReceiverName,
@@ -220,15 +221,17 @@ func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal strin
 	var security []genSecurityScheme
 	for _, scheme := range specDoc.RequiredSchemes() {
 		if req, ok := specDoc.Spec().SecurityDefinitions[scheme]; ok {
-			security = append(security, genSecurityScheme{
-				AppName:        appName,
-				ReceiverName:   receiver,
-				ClassName:      util.ToGoName(req.Name),
-				HumanClassName: util.ToHumanNameLower(req.Name),
-				Name:           util.ToJSONName(req.Name),
-				IsBasicAuth:    strings.ToLower(req.Type) == "basic",
-				IsAPIKeyAuth:   strings.ToLower(req.Type) == "apiKey",
-			})
+			if req.Type == "basic" || req.Type == "apiKey" {
+				security = append(security, genSecurityScheme{
+					AppName:        appName,
+					ReceiverName:   receiver,
+					ClassName:      util.ToGoName(req.Name),
+					HumanClassName: util.ToHumanNameLower(req.Name),
+					Name:           util.ToJSONName(req.Name),
+					IsBasicAuth:    strings.ToLower(req.Type) == "basic",
+					IsAPIKeyAuth:   strings.ToLower(req.Type) == "apiKey",
+				})
+			}
 		}
 	}
 
@@ -251,16 +254,17 @@ func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal strin
 		if apiPackage == pkg {
 			ap = ""
 		}
-		op := makeCodegenOperation(
-			on,
-			ap,
-			modelPackage,
-			principal,
-			o,
-			authed,
-		)
-		op.ReceiverName = receiver
-		genOps = append(genOps, op)
+		if len(o.Tags) > 0 {
+			for _, tag := range o.Tags {
+				op := makeCodegenOperation(on, tag, modelPackage, principal, o, authed)
+				op.ReceiverName = receiver
+				genOps = append(genOps, op)
+			}
+		} else {
+			op := makeCodegenOperation(on, ap, modelPackage, principal, o, authed)
+			op.ReceiverName = receiver
+			genOps = append(genOps, op)
+		}
 	}
 
 	return genApp{

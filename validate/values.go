@@ -3,10 +3,10 @@ package validate
 import (
 	"reflect"
 	"regexp"
-	"strings"
 	"unicode/utf8"
 
 	"github.com/casualjim/go-swagger/errors"
+	"github.com/casualjim/go-swagger/strfmt"
 )
 
 // Enum validates if the data is a member of the enum
@@ -140,13 +140,16 @@ func MultipleOf(path, in string, data, factor float64) *errors.Validation {
 }
 
 // FormatOf validates if a string matches a format in the format registry
-func FormatOf(path, in, format, data string) *errors.Validation {
-	validate, ok := formatCheckers[strings.Replace(format, "-", "", -1)]
-	if !ok {
+func FormatOf(path, in, format, data string, registry strfmt.Registry) *errors.Validation {
+	if registry == nil {
+		registry = strfmt.Default
+	}
+	if ok := registry.ContainsName(format); !ok {
 		return errors.InvalidTypeName(format)
 	}
-	if validate(data) {
-		return nil
+	if ok := registry.Validates(format, data); !ok {
+		return errors.InvalidType(path, in, format, data)
 	}
-	return errors.InvalidType(path, in, format, data)
+
+	return nil
 }

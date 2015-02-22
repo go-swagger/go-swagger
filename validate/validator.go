@@ -6,6 +6,7 @@ import (
 
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/strfmt"
 )
 
 type entityValidator interface {
@@ -60,11 +61,11 @@ type itemsValidator struct {
 	path         string
 	in           string
 	validators   []valueValidator
-	KnownFormats map[string]FormatValidator
+	KnownFormats strfmt.Registry
 }
 
-func newItemsValidator(path, in string, items *spec.Items, root interface{}, formats map[string]FormatValidator) *itemsValidator {
-	iv := &itemsValidator{path: path, in: in, items: items, root: root}
+func newItemsValidator(path, in string, items *spec.Items, root interface{}, formats strfmt.Registry) *itemsValidator {
+	iv := &itemsValidator{path: path, in: in, items: items, root: root, KnownFormats: formats}
 	iv.validators = []valueValidator{
 		iv.stringValidator(),
 		iv.formatValidator(),
@@ -151,10 +152,10 @@ func (i *itemsValidator) formatValidator() valueValidator {
 type paramValidator struct {
 	param        *spec.Parameter
 	validators   []valueValidator
-	KnownFormats map[string]FormatValidator
+	KnownFormats strfmt.Registry
 }
 
-func newParamValidator(param *spec.Parameter, formats map[string]FormatValidator) *paramValidator {
+func newParamValidator(param *spec.Parameter, formats strfmt.Registry) *paramValidator {
 	p := &paramValidator{param: param, KnownFormats: formats}
 	p.validators = []valueValidator{
 		p.stringValidator(),
@@ -226,14 +227,15 @@ func (b *basicCommonValidator) Validate(data interface{}) (res *Result) {
 
 func (p *paramValidator) sliceValidator() valueValidator {
 	return &basicSliceValidator{
-		Path:        p.param.Name,
-		In:          p.param.In,
-		Default:     p.param.Default,
-		MaxItems:    p.param.MaxItems,
-		MinItems:    p.param.MinItems,
-		UniqueItems: p.param.UniqueItems,
-		Items:       p.param.Items,
-		Source:      p.param,
+		Path:         p.param.Name,
+		In:           p.param.In,
+		Default:      p.param.Default,
+		MaxItems:     p.param.MaxItems,
+		MinItems:     p.param.MinItems,
+		UniqueItems:  p.param.UniqueItems,
+		Items:        p.param.Items,
+		Source:       p.param,
+		KnownFormats: p.KnownFormats,
 	}
 }
 
@@ -282,7 +284,7 @@ type basicSliceValidator struct {
 	Items          *spec.Items
 	Source         interface{}
 	itemsValidator *itemsValidator
-	KnownFormats   map[string]FormatValidator
+	KnownFormats   strfmt.Registry
 }
 
 func (s *basicSliceValidator) SetPath(path string) {
