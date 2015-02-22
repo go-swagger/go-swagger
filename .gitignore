@@ -31,3 +31,4 @@ playground
 *.sublime-*
 
 cmd/swagger/swagger.json.bak
+tags
