@@ -10,7 +10,7 @@ import (
 	"github.com/casualjim/go-swagger/validate"
 )
 
-type entityValidator interface {
+type EntityValidator interface {
 	Validate(interface{}) *validate.Result
 }
 
@@ -114,14 +114,14 @@ func (i *itemsValidator) formatValidator() valueValidator {
 }
 
 // a param has very limited subset of validations to apply
-type paramValidator struct {
+type ParamValidator struct {
 	param        *spec.Parameter
 	validators   []valueValidator
 	KnownFormats strfmt.Registry
 }
 
-func newParamValidator(param *spec.Parameter, formats strfmt.Registry) *paramValidator {
-	p := &paramValidator{param: param, KnownFormats: formats}
+func NewParamValidator(param *spec.Parameter, formats strfmt.Registry) *ParamValidator {
+	p := &ParamValidator{param: param, KnownFormats: formats}
 	p.validators = []valueValidator{
 		p.stringValidator(),
 		p.formatValidator(),
@@ -132,7 +132,7 @@ func newParamValidator(param *spec.Parameter, formats strfmt.Registry) *paramVal
 	return p
 }
 
-func (p *paramValidator) Validate(data interface{}) *validate.Result {
+func (p *ParamValidator) Validate(data interface{}) *validate.Result {
 	result := &validate.Result{}
 	tpe := reflect.TypeOf(data)
 	kind := tpe.Kind()
@@ -150,7 +150,7 @@ func (p *paramValidator) Validate(data interface{}) *validate.Result {
 	return nil
 }
 
-func (p *paramValidator) commonValidator() valueValidator {
+func (p *ParamValidator) commonValidator() valueValidator {
 	return &basicCommonValidator{
 		Path:    p.param.Name,
 		In:      p.param.In,
@@ -190,7 +190,7 @@ func (b *basicCommonValidator) Validate(data interface{}) (res *validate.Result)
 	return nil
 }
 
-func (p *paramValidator) sliceValidator() valueValidator {
+func (p *ParamValidator) sliceValidator() valueValidator {
 	return &basicSliceValidator{
 		Path:         p.param.Name,
 		In:           p.param.In,
@@ -204,7 +204,7 @@ func (p *paramValidator) sliceValidator() valueValidator {
 	}
 }
 
-func (p *paramValidator) numberValidator() valueValidator {
+func (p *ParamValidator) numberValidator() valueValidator {
 	return &numberValidator{
 		Path:             p.param.Name,
 		In:               p.param.In,
@@ -217,7 +217,7 @@ func (p *paramValidator) numberValidator() valueValidator {
 	}
 }
 
-func (p *paramValidator) stringValidator() valueValidator {
+func (p *ParamValidator) stringValidator() valueValidator {
 	return &stringValidator{
 		Path:      p.param.Name,
 		In:        p.param.In,
@@ -229,7 +229,7 @@ func (p *paramValidator) stringValidator() valueValidator {
 	}
 }
 
-func (p *paramValidator) formatValidator() valueValidator {
+func (p *ParamValidator) formatValidator() valueValidator {
 	return &formatValidator{
 		Path:         p.param.Name,
 		In:           p.param.In,

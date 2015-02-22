@@ -51,7 +51,7 @@ func TestNumberParameterValidation(t *testing.T) {
 		factorParam.WithMinimum(makeFloat(v[3]), false)
 		factorParam.WithMultipleOf(makeFloat(v[7]))
 		factorParam.WithEnum(v[3], v[6], v[8], v[1])
-		validator := newParamValidator(factorParam, strfmt.Default)
+		validator := NewParamValidator(factorParam, strfmt.Default)
 
 		// MultipleOf
 		err := validator.Validate(v[0])
@@ -72,7 +72,7 @@ func TestNumberParameterValidation(t *testing.T) {
 		// ExclusiveMaximum
 		factorParam.ExclusiveMaximum = true
 		// requires a new items validator because this is set a creation time
-		validator = newParamValidator(factorParam, strfmt.Default)
+		validator = NewParamValidator(factorParam, strfmt.Default)
 		err = validator.Validate(v[1])
 		assert.True(t, err.HasErrors())
 		assert.EqualError(t, maxError(factorParam), err.Errors[0].Error())
@@ -87,7 +87,7 @@ func TestNumberParameterValidation(t *testing.T) {
 		// ExclusiveMinimum
 		factorParam.ExclusiveMinimum = true
 		// requires a new items validator because this is set a creation time
-		validator = newParamValidator(factorParam, strfmt.Default)
+		validator = NewParamValidator(factorParam, strfmt.Default)
 		err = validator.Validate(v[3])
 		assert.True(t, err.HasErrors())
 		assert.EqualError(t, minError(factorParam), err.Errors[0].Error())
@@ -128,7 +128,7 @@ func enumFail(param *spec.Parameter, data interface{}) *errors.Validation {
 func TestStringParameterValidation(t *testing.T) {
 	nameParam := spec.QueryParam("name").AsRequired().WithMinLength(3).WithMaxLength(5).WithPattern(`^[a-z]+$`)
 	nameParam.WithEnum("aaa", "bbb", "ccc")
-	validator := newParamValidator(nameParam, strfmt.Default)
+	validator := NewParamValidator(nameParam, strfmt.Default)
 
 	// required
 	err := validator.Validate("")
@@ -177,7 +177,7 @@ func duplicatesError(param *spec.Parameter) *errors.Validation {
 func TestArrayParameterValidation(t *testing.T) {
 	tagsParam := spec.QueryParam("tags").CollectionOf(stringItems, "").WithMinItems(1).WithMaxItems(5).UniqueValues()
 	tagsParam.WithEnum([]string{"a", "a", "a"}, []string{"b", "b", "b"}, []string{"c", "c", "c"})
-	validator := newParamValidator(tagsParam, strfmt.Default)
+	validator := NewParamValidator(tagsParam, strfmt.Default)
 
 	// MinItems
 	err := validator.Validate([]string{})
@@ -200,7 +200,7 @@ func TestArrayParameterValidation(t *testing.T) {
 	// Items
 	strItems := spec.NewItems().WithMinLength(3).WithMaxLength(5).WithPattern(`^[a-z]+$`)
 	tagsParam = spec.QueryParam("tags").CollectionOf(strItems, "").WithMinItems(1).WithMaxItems(5).UniqueValues()
-	validator = newParamValidator(tagsParam, strfmt.Default)
+	validator = NewParamValidator(tagsParam, strfmt.Default)
 	err = validator.Validate([]string{"aa", "bbb", "ccc"})
 	assert.True(t, err.HasErrors())
 	assert.EqualError(t, minLengthErrorItems("tags.0", tagsParam.In, strItems), err.Errors[0].Error())

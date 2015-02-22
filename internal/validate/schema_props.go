@@ -17,10 +17,10 @@ type schemaPropsValidator struct {
 	AnyOf           []spec.Schema
 	Not             *spec.Schema
 	Dependencies    spec.Dependencies
-	anyOfValidators []schemaValidator
-	allOfValidators []schemaValidator
-	oneOfValidators []schemaValidator
-	notValidator    *schemaValidator
+	anyOfValidators []SchemaValidator
+	allOfValidators []SchemaValidator
+	oneOfValidators []SchemaValidator
+	notValidator    *SchemaValidator
 	Root            interface{}
 	KnownFormats    strfmt.Registry
 }
@@ -30,22 +30,22 @@ func (s *schemaPropsValidator) SetPath(path string) {
 }
 
 func newSchemaPropsValidator(path string, in string, allOf, oneOf, anyOf []spec.Schema, not *spec.Schema, deps spec.Dependencies, root interface{}, formats strfmt.Registry) *schemaPropsValidator {
-	var anyValidators []schemaValidator
+	var anyValidators []SchemaValidator
 	for _, v := range anyOf {
-		anyValidators = append(anyValidators, *newSchemaValidator(&v, root, path, formats))
+		anyValidators = append(anyValidators, *NewSchemaValidator(&v, root, path, formats))
 	}
-	var allValidators []schemaValidator
+	var allValidators []SchemaValidator
 	for _, v := range allOf {
-		allValidators = append(allValidators, *newSchemaValidator(&v, root, path, formats))
+		allValidators = append(allValidators, *NewSchemaValidator(&v, root, path, formats))
 	}
-	var oneValidators []schemaValidator
+	var oneValidators []SchemaValidator
 	for _, v := range oneOf {
-		oneValidators = append(oneValidators, *newSchemaValidator(&v, root, path, formats))
+		oneValidators = append(oneValidators, *NewSchemaValidator(&v, root, path, formats))
 	}
 
-	var notValidator *schemaValidator
+	var notValidator *SchemaValidator
 	if not != nil {
-		notValidator = newSchemaValidator(not, root, path, formats)
+		notValidator = NewSchemaValidator(not, root, path, formats)
 	}
 
 	return &schemaPropsValidator{
@@ -149,7 +149,7 @@ func (s *schemaPropsValidator) Validate(data interface{}) *validate.Result {
 			if dep, ok := s.Dependencies[key]; ok {
 
 				if dep.Schema != nil {
-					mainResult.Merge(newSchemaValidator(dep.Schema, s.Root, s.Path+"."+key, s.KnownFormats).Validate(data))
+					mainResult.Merge(NewSchemaValidator(dep.Schema, s.Root, s.Path+"."+key, s.KnownFormats).Validate(data))
 					continue
 				}
 

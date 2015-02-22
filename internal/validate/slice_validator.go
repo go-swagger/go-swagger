@@ -41,7 +41,7 @@ func (s *schemaSliceValidator) Validate(data interface{}) *validate.Result {
 	size := val.Len()
 
 	if s.Items != nil && s.Items.Schema != nil {
-		validator := newSchemaValidator(s.Items.Schema, s.Root, s.Path, s.KnownFormats)
+		validator := NewSchemaValidator(s.Items.Schema, s.Root, s.Path, s.KnownFormats)
 		for i := 0; i < size; i++ {
 			validator.SetPath(fmt.Sprintf("%s.%d", s.Path, i))
 			value := val.Index(i)
@@ -53,7 +53,7 @@ func (s *schemaSliceValidator) Validate(data interface{}) *validate.Result {
 	if s.Items != nil && len(s.Items.Schemas) > 0 {
 		itemsSize = int64(len(s.Items.Schemas))
 		for i := int64(0); i < itemsSize; i++ {
-			validator := newSchemaValidator(&s.Items.Schemas[i], s.Root, fmt.Sprintf("%s.%d", s.Path, i), s.KnownFormats)
+			validator := NewSchemaValidator(&s.Items.Schemas[i], s.Root, fmt.Sprintf("%s.%d", s.Path, i), s.KnownFormats)
 			result.Merge(validator.Validate(val.Index(int(i)).Interface()))
 		}
 
@@ -64,7 +64,7 @@ func (s *schemaSliceValidator) Validate(data interface{}) *validate.Result {
 		}
 		if s.AdditionalItems.Schema != nil {
 			for i := itemsSize; i < (int64(size)-itemsSize)+1; i++ {
-				validator := newSchemaValidator(s.AdditionalItems.Schema, s.Root, fmt.Sprintf("%s.%d", s.Path, i), s.KnownFormats)
+				validator := NewSchemaValidator(s.AdditionalItems.Schema, s.Root, fmt.Sprintf("%s.%d", s.Path, i), s.KnownFormats)
 				result.Merge(validator.Validate(val.Index(int(i)).Interface()))
 			}
 		}

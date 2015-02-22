@@ -14,17 +14,17 @@ var specSchemaType = reflect.TypeOf(&spec.Schema{})
 // Spec validates a spec document
 func Spec(doc *spec.Document, formats strfmt.Registry) *validate.Result {
 	// TODO: add more validations beyond just jsonschema
-	return newSchemaValidator(doc.Schema(), nil, "", formats).Validate(doc.Spec())
+	return NewSchemaValidator(doc.Schema(), nil, "", formats).Validate(doc.Spec())
 }
 
 // AgainstSchema validates the specified data with the provided schema, when no schema
 // is provided it uses the json schema as default
 func AgainstSchema(schema *spec.Schema, data interface{}, formats strfmt.Registry) *validate.Result {
-	return newSchemaValidator(schema, nil, "", formats).Validate(data)
+	return NewSchemaValidator(schema, nil, "", formats).Validate(data)
 }
 
 // like param validator but for a full json schema
-type schemaValidator struct {
+type SchemaValidator struct {
 	Path         string
 	in           string
 	Schema       *spec.Schema
@@ -33,7 +33,7 @@ type schemaValidator struct {
 	KnownFormats strfmt.Registry
 }
 
-func newSchemaValidator(schema *spec.Schema, rootSchema interface{}, root string, formats strfmt.Registry) *schemaValidator {
+func NewSchemaValidator(schema *spec.Schema, rootSchema interface{}, root string, formats strfmt.Registry) *SchemaValidator {
 	if schema == nil {
 		return nil
 	}
@@ -49,10 +49,10 @@ func newSchemaValidator(schema *spec.Schema, rootSchema interface{}, root string
 		}
 	}
 
-	s := schemaValidator{Path: root, in: "body", Schema: schema, Root: rootSchema, KnownFormats: formats}
+	s := SchemaValidator{Path: root, in: "body", Schema: schema, Root: rootSchema, KnownFormats: formats}
 	s.validators = []valueValidator{
 		s.typeValidator(),
-		s.schemaValidator(),
+		s.schemaPropsValidator(),
 		s.stringValidator(),
 		s.formatValidator(),
 		s.numberValidator(),
@@ -63,11 +63,11 @@ func newSchemaValidator(schema *spec.Schema, rootSchema interface{}, root string
 	return &s
 }
 
-func (s *schemaValidator) SetPath(path string) {
+func (s *SchemaValidator) SetPath(path string) {
 	s.Path = path
 }
 
-func (s *schemaValidator) Validate(data interface{}) *validate.Result {
+func (s *SchemaValidator) Validate(data interface{}) *validate.Result {
 	if data == nil {
 		v := s.validators[0].Validate(data)
 		v.Merge(s.validators[6].Validate(data))
@@ -99,11 +99,11 @@ func (s *schemaValidator) Validate(data interface{}) *validate.Result {
 	return result
 }
 
-func (s *schemaValidator) typeValidator() valueValidator {
+func (s *SchemaValidator) typeValidator() valueValidator {
 	return &typeValidator{Type: s.Schema.Type, Format: s.Schema.Format, In: s.in, Path: s.Path}
 }
 
-func (s *schemaValidator) commonValidator() valueValidator {
+func (s *SchemaValidator) commonValidator() valueValidator {
 	return &basicCommonValidator{
 		Path:    s.Path,
 		In:      s.in,
@@ -112,7 +112,7 @@ func (s *schemaValidator) commonValidator() valueValidator {
 	}
 }
 
-func (s *schemaValidator) sliceValidator() valueValidator {
+func (s *SchemaValidator) sliceValidator() valueValidator {
 	return &schemaSliceValidator{
 		Path:            s.Path,
 		In:              s.in,
@@ -126,7 +126,7 @@ func (s *schemaValidator) sliceValidator() valueValidator {
 	}
 }
 
-func (s *schemaValidator) numberValidator() valueValidator {
+func (s *SchemaValidator) numberValidator() valueValidator {
 	return &numberValidator{
 		Path:             s.Path,
 		In:               s.in,
@@ -139,7 +139,7 @@ func (s *schemaValidator) numberValidator() valueValidator {
 	}
 }
 
-func (s *schemaValidator) stringValidator() valueValidator {
+func (s *SchemaValidator) stringValidator() valueValidator {
 	return &stringValidator{
 		Path:      s.Path,
 		In:        s.in,
@@ -150,7 +150,7 @@ func (s *schemaValidator) stringValidator() valueValidator {
 	}
 }
 
-func (s *schemaValidator) formatValidator() valueValidator {
+func (s *SchemaValidator) formatValidator() valueValidator {
 	return &formatValidator{
 		Path:         s.Path,
 		In:           s.in,
@@ -160,12 +160,12 @@ func (s *schemaValidator) formatValidator() valueValidator {
 	}
 }
 
-func (s *schemaValidator) schemaValidator() valueValidator {
+func (s *SchemaValidator) schemaPropsValidator() valueValidator {
 	sch := s.Schema
 	return newSchemaPropsValidator(s.Path, s.in, sch.AllOf, sch.OneOf, sch.AnyOf, sch.Not, sch.Dependencies, s.Root, s.KnownFormats)
 }
 
-func (s *schemaValidator) objectValidator() valueValidator {
+func (s *SchemaValidator) objectValidator() valueValidator {
 	return &objectValidator{
 		Path:                 s.Path,
 		In:                   s.in,

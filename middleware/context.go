@@ -18,7 +18,7 @@ import (
 // RequestBinder is an interface for types to implement
 // when they want to be able to bind from a request
 type RequestBinder interface {
-	BindRequest(*http.Request, *MatchedRoute, swagger.Consumer) *validate.Result
+	BindRequest(*http.Request, *MatchedRoute) *validate.Result
 }
 
 // Context is a type safe wrapper around an untyped request context
@@ -169,7 +169,6 @@ func (c *Context) RequiredProduces() []string {
 // if the request is not valid an error will be returned
 func (c *Context) BindValidRequest(request *http.Request, route *MatchedRoute, binder RequestBinder) error {
 	res := new(validate.Result)
-	var consumer swagger.Consumer
 
 	// check and validate content type, select consumer
 	if httputils.CanHaveBody(request.Method) {
@@ -180,7 +179,7 @@ func (c *Context) BindValidRequest(request *http.Request, route *MatchedRoute, b
 			if err := validateContentType(route.Consumes, ct); err != nil {
 				res.AddErrors(err)
 			}
-			consumer = route.Consumers[ct]
+			route.Consumer = route.Consumers[ct]
 		}
 	}
 
@@ -195,7 +194,7 @@ func (c *Context) BindValidRequest(request *http.Request, route *MatchedRoute, b
 	// it's assumed the binder will also validate the request and return an error if the
 	// request is invalid
 	if res.IsValid() {
-		res.Merge(binder.BindRequest(request, route, consumer))
+		res.Merge(binder.BindRequest(request, route))
 	}
 
 	if res.HasErrors() {

@@ -7,9 +7,8 @@ import (
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/httputils"
-	"github.com/casualjim/go-swagger/strfmt"
+	"github.com/casualjim/go-swagger/util"
 	"github.com/casualjim/go-swagger/validate"
-	"github.com/reverb/agora/util"
 )
 
 // NewValidation starts a new validation middleware
@@ -29,13 +28,11 @@ func newValidation(ctx *Context, next http.Handler) http.Handler {
 }
 
 type validation struct {
-	context  *Context
-	result   *validate.Result
-	request  *http.Request
-	route    *MatchedRoute
-	bound    map[string]interface{}
-	consumer swagger.Consumer
-	formats  strfmt.Registry
+	context *Context
+	result  *validate.Result
+	request *http.Request
+	route   *MatchedRoute
+	bound   map[string]interface{}
 }
 
 type untypedBinder map[string]interface{}
@@ -61,12 +58,11 @@ func validateContentType(allowed []string, actual string) *errors.Validation {
 
 func validateRequest(ctx *Context, request *http.Request, route *MatchedRoute) *validation {
 	validate := &validation{
-		context:  ctx,
-		result:   new(validate.Result),
-		request:  request,
-		route:    route,
-		bound:    make(map[string]interface{}),
-		consumer: nil,
+		context: ctx,
+		result:  new(validate.Result),
+		request: request,
+		route:   route,
+		bound:   make(map[string]interface{}),
 	}
 
 	validate.contentType()
@@ -79,7 +75,7 @@ func validateRequest(ctx *Context, request *http.Request, route *MatchedRoute) *
 }
 
 func (v *validation) parameters() {
-	result := v.route.Binder.Bind(v.request, v.route.Params, v.consumer, v.bound)
+	result := v.route.Binder.Bind(v.request, v.route.Params, v.route.Consumer, v.bound)
 	v.result.Merge(result)
 }
 
@@ -92,7 +88,7 @@ func (v *validation) contentType() {
 			if err := validateContentType(v.route.Consumes, ct); err != nil {
 				v.result.AddErrors(err)
 			}
-			v.consumer = v.route.Consumers[ct]
+			v.route.Consumer = v.route.Consumers[ct]
 		}
 	}
 }

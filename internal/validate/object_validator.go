@@ -79,7 +79,7 @@ func (o *objectValidator) Validate(data interface{}) *validate.Result {
 			matched, succeededOnce, _ := o.validatePatternProperty(key, value, res)
 			if !(regularProperty || matched || succeededOnce) {
 				if o.AdditionalProperties != nil && o.AdditionalProperties.Schema != nil {
-					res.Merge(newSchemaValidator(o.AdditionalProperties.Schema, o.Root, o.Path+"."+key, o.KnownFormats).Validate(value))
+					res.Merge(NewSchemaValidator(o.AdditionalProperties.Schema, o.Root, o.Path+"."+key, o.KnownFormats).Validate(value))
 				} else if regularProperty && !(matched || succeededOnce) {
 					res.AddErrors(errors.New(422, "%s.%s in %s failed all pattern properties", o.Path, key, o.In))
 				}
@@ -93,7 +93,7 @@ func (o *objectValidator) Validate(data interface{}) *validate.Result {
 			rName = o.Path + "." + pName
 		}
 		if v, ok := val[pName]; ok {
-			res.Merge(newSchemaValidator(&pSchema, o.Root, rName, o.KnownFormats).Validate(v))
+			res.Merge(NewSchemaValidator(&pSchema, o.Root, rName, o.KnownFormats).Validate(v))
 		}
 	}
 
@@ -111,7 +111,7 @@ func (o *objectValidator) validatePatternProperty(key string, value interface{},
 		patterns = append(patterns, k)
 		if match, _ := regexp.MatchString(k, key); match {
 			matched = true
-			validator := newSchemaValidator(&schema, o.Root, o.Path+"."+key, o.KnownFormats)
+			validator := NewSchemaValidator(&schema, o.Root, o.Path+"."+key, o.KnownFormats)
 
 			res := validator.Validate(value)
 			result.Merge(res)

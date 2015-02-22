@@ -10,6 +10,29 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type email struct {
+	Address string
+}
+
+type paramFactory func(string) *spec.Parameter
+
+var paramFactories = []paramFactory{
+	spec.QueryParam,
+	spec.HeaderParam,
+	spec.PathParam,
+	spec.FormDataParam,
+}
+
+var stringItems = new(spec.Items)
+
+func init() {
+	stringItems.Type = "string"
+}
+
+func requiredError(param *spec.Parameter) *errors.Validation {
+	return errors.Required(param.Name, param.In)
+}
+
 func maxErrorItems(path, in string, items *spec.Items) *errors.Validation {
 	return errors.ExceedsMaximum(path, in, *items.Maximum, items.ExclusiveMaximum)
 }
