@@ -12,9 +12,6 @@ import (
 	"github.com/casualjim/go-swagger/strfmt"
 )
 
-// TODO:
-// * implement routable api missing methods
-
 // NewAPI creates the default untyped API
 func NewAPI(spec *spec.Document) *API {
 	return &API{

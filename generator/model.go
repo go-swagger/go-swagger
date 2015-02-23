@@ -57,6 +57,7 @@ func GenerateModel(modelNames []string, includeModel, includeValidator bool, opt
 			Target:           filepath.Join(opts.Target, opts.ModelPackage),
 			IncludeModel:     includeModel,
 			IncludeValidator: includeValidator,
+			DumpData:         opts.DumpData,
 		}
 
 		if err := generator.Generate(); err != nil {
@@ -184,7 +185,7 @@ type genModel struct {
 	Properties     []genModelProperty //`json:"properties,omitempty"`
 	DocString      string             //`json:"docString,omitempty"`
 	HumanClassName string             //`json:"humanClassname,omitempty"`
-	Imports        []string           //`json:"imports,omitempty"`
+	Imports        map[string]string  //`json:"imports,omitempty"`
 }
 
 func modelDocString(className, desc string) string {
@@ -268,7 +269,6 @@ type genModelProperty struct {
 	HasAdditionalItems    bool               //`json:"hasAdditionalItems,omitempty"`
 	AdditionalItems       *genModelProperty  //`json:"additionalItems,omitempty"`
 	Object                *genModelProperty  //`json:"object,omitempty"`
-	Imports               []string           //`json:"imports,omitempty"`
 }
 
 func modelValidations(path, paramName, accessor, indexVar, valueExpression, pkg string, required bool, model spec.Schema) commonValidations {
@@ -287,6 +287,7 @@ func modelValidations(path, paramName, accessor, indexVar, valueExpression, pkg 
 			IsContainer:       model.Items != nil || model.Type.Contains("array"),
 			IsPrimitive:       isPrimitive,
 			IsCustomFormatter: isCustomFormatter,
+			IsMap:             strings.HasPrefix(tpe, "map"),
 		},
 		Required:         required,
 		Type:             tpe,

@@ -193,7 +193,7 @@ func (c *Context) BindValidRequest(request *http.Request, route *MatchedRoute, b
 	// now bind the request with the provided binder
 	// it's assumed the binder will also validate the request and return an error if the
 	// request is invalid
-	if res.IsValid() {
+	if binder != nil && res.IsValid() {
 		res.Merge(binder.BindRequest(request, route))
 	}
 
