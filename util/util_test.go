@@ -12,7 +12,6 @@ type translationSample struct {
 }
 
 func titleize(s string) string { return strings.ToTitle(s) }
-func lower(s string) string    { return strings.ToLower(s) }
 
 func TestToGoName(t *testing.T) {
 	samples := []translationSample{
@@ -21,6 +20,7 @@ func TestToGoName(t *testing.T) {
 		{"sample_text", "SampleText"},
 		{"sampleText", "SampleText"},
 		{"sample 2 Text", "Sample2Text"},
+		{"findThingById", "FindThingByID"},
 	}
 
 	for k := range commonInitialisms {

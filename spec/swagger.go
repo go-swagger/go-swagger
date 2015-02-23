@@ -95,7 +95,6 @@ var jsTrue = []byte("true")
 // UnmarshalJSON converts this bool or schema object from a JSON structure
 func (s *SchemaOrBool) UnmarshalJSON(data []byte) error {
 	var nw SchemaOrBool
-	// nw.Allows = true
 	if len(data) < 5 {
 		return nil
 	}

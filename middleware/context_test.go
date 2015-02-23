@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/casualjim/go-swagger/httputils"
+	"github.com/casualjim/go-swagger/middleware/httputils"
 	"github.com/casualjim/go-swagger/testing/petstore"
 	"github.com/gorilla/context"
 	"github.com/stretchr/testify/assert"
@@ -51,7 +51,8 @@ func TestContextAuthorize(t *testing.T) {
 	assert.False(t, ok)
 	assert.Nil(t, v)
 
-	ri, _ := ctx.RouteInfo(request)
+	ri, ok := ctx.RouteInfo(request)
+	assert.True(t, ok)
 	p, err := ctx.Authorize(request, ri)
 	assert.Error(t, err)
 	assert.Nil(t, p)

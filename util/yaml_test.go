@@ -49,7 +49,7 @@ func TestYAMLToJSON(t *testing.T) {
 
 	d, err := YAMLToJSON(data)
 	assert.NoError(t, err)
-	assert.Equal(t, []byte(`{"1":"the int key value","name":"a string value"}`), d)
+	assert.Equal(t, []byte(`{"1":"the int key value","name":"a string value"}`), []byte(d))
 
 	data[true] = "the bool value"
 	d, err = YAMLToJSON(data)
@@ -64,7 +64,7 @@ func TestYAMLToJSON(t *testing.T) {
 
 	d, err = YAMLToJSON(data)
 	assert.NoError(t, err)
-	assert.Equal(t, []byte(`{"1":"the int key value","name":"a string value","tag":{"name":"tag name"}}`), d)
+	assert.Equal(t, []byte(`{"1":"the int key value","name":"a string value","tag":{"name":"tag name"}}`), []byte(d))
 
 	tag = make(map[interface{}]interface{})
 	tag[true] = "bool tag name"
@@ -79,7 +79,7 @@ func TestYAMLToJSON(t *testing.T) {
 
 	d, err = YAMLToJSON(lst)
 	assert.NoError(t, err)
-	assert.Equal(t, []byte(`["hello"]`), d)
+	assert.Equal(t, []byte(`["hello"]`), []byte(d))
 
 	lst = append(lst, data)
 

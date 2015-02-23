@@ -21,7 +21,6 @@
     },
     "host": {
       "type": "string",
-      "format": "uri",
       "pattern": "^[^{}/ :\\\\]+(?::\\d+)?$",
       "description": "The fully qualified URI to the host of the API."
     },

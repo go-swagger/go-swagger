@@ -6,17 +6,18 @@ import (
 
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
-	"github.com/casualjim/go-swagger/security"
+	"github.com/casualjim/go-swagger/middleware/security"
+	"github.com/casualjim/go-swagger/middleware/untyped"
 	"github.com/casualjim/go-swagger/spec"
 	testingutil "github.com/casualjim/go-swagger/testing"
 	"github.com/stretchr/testify/assert"
 )
 
 // NewAPI registers a stub api for the pet store
-func NewAPI(t *gotest.T) (*spec.Document, *swagger.API) {
+func NewAPI(t *gotest.T) (*spec.Document, *untyped.API) {
 	spec, err := spec.New(testingutil.PetStoreJSONMessage, "")
 	assert.NoError(t, err)
-	api := swagger.NewAPI(spec)
+	api := untyped.NewAPI(spec)
 
 	api.RegisterConsumer("application/json", swagger.JSONConsumer())
 	api.RegisterProducer("application/json", swagger.JSONProducer())
@@ -51,11 +52,11 @@ func NewAPI(t *gotest.T) (*spec.Document, *swagger.API) {
 	return spec, api
 }
 
-// NewAPI registers a stub api for the pet store
-func NewRootAPI(t *gotest.T) (*spec.Document, *swagger.API) {
+// NewRootAPI registers a stub api for the pet store
+func NewRootAPI(t *gotest.T) (*spec.Document, *untyped.API) {
 	spec, err := spec.New(testingutil.RootPetStoreJSONMessage, "")
 	assert.NoError(t, err)
-	api := swagger.NewAPI(spec)
+	api := untyped.NewAPI(spec)
 
 	api.RegisterConsumer("application/json", swagger.JSONConsumer())
 	api.RegisterProducer("application/json", swagger.JSONProducer())

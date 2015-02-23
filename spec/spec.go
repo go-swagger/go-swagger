@@ -17,6 +17,13 @@ const (
 	JSONSchemaURL = "http://json-schema.org/draft-04/schema#"
 )
 
+//
+// // Validate validates a spec document
+// func Validate(doc *spec.Document, formats strfmt.Registry) *validate.Result {
+// 	// TODO: add more validations beyond just jsonschema
+// 	return newSchemaValidator(doc.Schema(), nil, "", formats).Validate(doc.Spec())
+// }
+
 // DocLoader represents a doc loader type
 type DocLoader func(string) (json.RawMessage, error)
 
@@ -131,10 +138,6 @@ func New(data json.RawMessage, version string) (*Document, error) {
 		return nil, err
 	}
 
-	if err := expandSpec(spec); err != nil {
-		return nil, err
-	}
-
 	d := &Document{
 		specAnalyzer: specAnalyzer{
 			spec:        spec,
@@ -148,6 +151,17 @@ func New(data json.RawMessage, version string) (*Document, error) {
 	}
 	d.initialize()
 	return d, nil
+}
+
+// ExpandSpec expands the ref fields in the spec document
+func (d *Document) ExpandSpec() error {
+	// TODO: use a copy of the spec doc to expand instead
+	// things requiring an expanded spec should first get the
+	// expanded version of the document
+	if err := expandSpec(d.spec); err != nil {
+		return err
+	}
+	return nil
 }
 
 // BasePath the base path for this spec
@@ -170,7 +184,12 @@ func (d *Document) Spec() *Swagger {
 	return d.spec
 }
 
-// Row returns the raw swagger spec as json bytes
+// Host returns the host for the API
+func (d *Document) Host() string {
+	return d.spec.Host
+}
+
+// Raw returns the raw swagger spec as json bytes
 func (d *Document) Raw() json.RawMessage {
 	return d.raw
 }

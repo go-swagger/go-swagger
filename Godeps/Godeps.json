@@ -12,15 +12,15 @@
 		},
 		{
 			"ImportPath": "github.com/asaskevich/govalidator",
-			"Rev": "e60f596c4ada4dcda1f2f3b150cb7b44d6d09690"
+			"Rev": "e43f387b7891260b3948717f64dcd146979a2af1"
 		},
 		{
 			"ImportPath": "github.com/elazarl/go-bindata-assetfs",
-			"Rev": "fe5a90c9bd2990734f4928be5d3aeebb00f61f70"
+			"Rev": "00534a354892d0250efb8b422243df123f733c39"
 		},
 		{
 			"ImportPath": "github.com/golang/gddo/httputil",
-			"Rev": "bb20f8c58cabb359ba8de621fdd304c020d8c63c"
+			"Rev": "bb1ac60e4a278210b176c686ed0c3c5620354ccd"
 		},
 		{
 			"ImportPath": "github.com/gorilla/context",
@@ -28,8 +28,8 @@
 		},
 		{
 			"ImportPath": "github.com/jessevdk/go-flags",
-			"Comment": "v1-287-g43c5f3c",
-			"Rev": "43c5f3c18560f27f7a2749ab8c71679bd6496c45"
+			"Comment": "v1-293-g5e11878",
+			"Rev": "5e118789801496c93ba210d34ef1f2ce5a9173bd"
 		},
 		{
 			"ImportPath": "github.com/jtolds/gls",
@@ -59,11 +59,19 @@
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Rev": "33a31e5dbed8302d5ab7e6d12b416e95c2c4ebc0"
+			"Rev": "efa3c4c36479edac5af79cbcb4bc8cb525e09b13"
+		},
+		{
+			"ImportPath": "golang.org/x/tools/go/ast/astutil",
+			"Rev": "753a094e8ab3f6e567ce75c7feebea04917a137f"
+		},
+		{
+			"ImportPath": "golang.org/x/tools/imports",
+			"Rev": "753a094e8ab3f6e567ce75c7feebea04917a137f"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
-			"Rev": "5d6f7e02b7cdad63b06ab3877915532cd30073b4"
+			"Rev": "a1c4bcb6c278a41992e2f4f0f29a44b4146daa5c"
 		}
 	]
 }

@@ -101,6 +101,12 @@ func ToDynamicJSON(data interface{}) interface{} {
 	return res
 }
 
+// FromDynamicJSON turns an object into a properly JSON typed structure
+func FromDynamicJSON(data, target interface{}) error {
+	b, _ := json.Marshal(data)
+	return json.Unmarshal(b, target)
+}
+
 // NameProvider represents an object capabale of translating from go property names
 // to json property names
 // This type is thread-safe.
