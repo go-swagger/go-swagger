@@ -75,7 +75,7 @@ type SecurityRequirement struct {
 }
 
 // SecurityRequirementsFor gets the security requirements for the operation
-func (s *specAnalyzer) securityRequirementsFor(operation *Operation) []SecurityRequirement {
+func (s *specAnalyzer) SecurityRequirementsFor(operation *Operation) []SecurityRequirement {
 	if s.spec.Security == nil && operation.Security == nil {
 		return nil
 	}
@@ -103,7 +103,7 @@ func (s *specAnalyzer) securityRequirementsFor(operation *Operation) []SecurityR
 
 // SecurityDefinitionsFor gets the matching security definitions for a set of requirements
 func (s *specAnalyzer) SecurityDefinitionsFor(operation *Operation) map[string]SecurityScheme {
-	requirements := s.securityRequirementsFor(operation)
+	requirements := s.SecurityRequirementsFor(operation)
 	if len(requirements) == 0 {
 		return nil
 	}
@@ -165,6 +165,17 @@ func (s *specAnalyzer) ParamsFor(method, path string) map[string]Parameter {
 		s.paramsAsMap(s.operations[strings.ToUpper(method)][path].Parameters, res)
 	}
 	return res
+}
+
+func (s *specAnalyzer) OperationForName(operationID string) (*Operation, bool) {
+	for _, v := range s.operations {
+		for _, vv := range v {
+			if operationID == vv.ID {
+				return vv, true
+			}
+		}
+	}
+	return nil, false
 }
 
 func (s *specAnalyzer) OperationFor(method, path string) (*Operation, bool) {

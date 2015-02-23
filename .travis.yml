@@ -2,7 +2,7 @@ sudo: false
 language: go
 
 go:
-  - 1.4.1
+  - 1.4.2
   - tip
 
 before_install:
@@ -20,10 +20,18 @@ before_install:
   - go get github.com/elazarl/go-bindata-assetfs/...
   - godep restore
 
-script: 
+script:
   - golint ./...
-  - go vet ./...
-  - ./autoclean.sh
+  # - go vet -printf=false -structags=false ./...
+  - ./coverage.sh
 
 env:
   secure: "BVU08Ozu3y4JRVeaaRV0h0Px3u2PpOdchykHfJX0+AeOQZO6mmE69JfCJFOkynBVOY9P3AerDPlrVHPK3eBAeEwX+XgKaFenE4n7LgvH1rlrjOngaPte76x5BdbiGkJ///L0cKJw1t6FQlPnqFpjckbmr9f6w9ItR8ClqR0vMEs="
+
+notifications:
+  webhooks:
+    urls:
+      - https://webhooks.gitter.im/e/261dbc1ac177ff4a4560
+    on_success: change  # options: [always|never|change] default: always
+    on_failure: always  # options: [always|never|change] default: always
+    on_start: false     # default: false

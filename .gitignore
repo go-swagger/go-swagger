@@ -29,3 +29,6 @@ playground
 
 # Sublime files
 *.sublime-*
+
+cmd/swagger/swagger.json.bak
+tags

@@ -14,6 +14,20 @@ type simpleSchema struct {
 	Default          interface{} `json:"default,omitempty"`
 }
 
+func (s *simpleSchema) TypeName() string {
+	if s.Format != "" {
+		return s.Format
+	}
+	return s.Type
+}
+
+func (s *simpleSchema) ItemsTypeName() string {
+	if s.Items == nil {
+		return ""
+	}
+	return s.Items.TypeName()
+}
+
 type commonValidations struct {
 	Maximum          *float64      `json:"maximum,omitempty"`
 	ExclusiveMaximum bool          `json:"exclusiveMaximum,omitempty"`
