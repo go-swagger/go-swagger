@@ -9,8 +9,8 @@ package {{.Package}}
 // Editing this file might prove futile when you re-run the swagger generate command
 
 {{if .Imports}}imports (
-  {{range .Imports}}
-  {{ printf "%q" .}}
+  {{range $key, $value := .Imports}}
+  {{$key}} {{ printf "import %q" $value}}
   {{end}}
 )
 {{end}}

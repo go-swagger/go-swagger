@@ -55,6 +55,7 @@ var typeMapping = map[string]string{
 	"ssn":        "strfmt.SSN",
 	"hexcolor":   "strfmt.HexColor",
 	"rgbcolor":   "strfmt.RGBColor",
+	"duration":   "strfmt.Duration",
 	"char":       "rune",
 	"int":        "int64",
 	"int8":       "int8",
@@ -140,6 +141,9 @@ func typeForSchema(schema *spec.Schema, modelsPkg string) string {
 	if schema.Type.Contains("string") {
 		return "string"
 	}
+	if schema.AdditionalProperties != nil && schema.AdditionalProperties.Schema != nil {
+		return "map[string]" + typeForSchema(schema.AdditionalProperties.Schema, modelsPkg)
+	}
 	if schema.Type.Contains("object") || schema.Type.Contains("") || len(schema.Type) == 0 {
 		return "map[string]interface{}"
 	}
@@ -169,21 +173,23 @@ var primitives = map[string]struct{}{
 }
 
 var customFormatters = map[string]struct{}{
-	"swagger.DateTime":   struct{}{},
-	"swagger.Time":       struct{}{},
-	"swagger.URI":        struct{}{},
-	"swagger.Email":      struct{}{},
-	"swagger.Hostname":   struct{}{},
-	"swagger.IPv4":       struct{}{},
-	"swagger.UUID":       struct{}{},
-	"swagger.UUID3":      struct{}{},
-	"swagger.UUID4":      struct{}{},
-	"swagger.UUID5":      struct{}{},
-	"swagger.ISBN":       struct{}{},
-	"swagger.ISBN10":     struct{}{},
-	"swagger.ISBN13":     struct{}{},
-	"swagger.CreditCard": struct{}{},
-	"swagger.SSN":        struct{}{},
-	"swagger.HexColor":   struct{}{},
-	"swagger.RGBColor":   struct{}{},
+	// "strfmt.DateTime":   struct{}{},
+	// "strfmt.Date":       struct{}{},
+	"strfmt.URI":        struct{}{},
+	"strfmt.Email":      struct{}{},
+	"strfmt.Hostname":   struct{}{},
+	"strfmt.IPv4":       struct{}{},
+	"strfmt.UUID":       struct{}{},
+	"strfmt.UUID3":      struct{}{},
+	"strfmt.UUID4":      struct{}{},
+	"strfmt.UUID5":      struct{}{},
+	"strfmt.ISBN":       struct{}{},
+	"strfmt.ISBN10":     struct{}{},
+	"strfmt.ISBN13":     struct{}{},
+	"strfmt.CreditCard": struct{}{},
+	"strfmt.SSN":        struct{}{},
+	"strfmt.HexColor":   struct{}{},
+	"strfmt.RGBColor":   struct{}{},
+	"strfmt.Base64":     struct{}{},
+	// "strfmt.Duration":   struct{}{},
 }

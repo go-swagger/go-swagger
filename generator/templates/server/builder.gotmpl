@@ -12,8 +12,8 @@ import (
   "github.com/casualjim/go-swagger/security"
   "github.com/casualjim/go-swagger/middleware"
 
-  {{range .Imports}}
-  {{ printf "%q" .}}
+  {{range $key, $value := .Imports}}
+  {{$key}} {{ printf "%q" $value}}
   {{end}}
 )
 

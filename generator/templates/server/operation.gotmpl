@@ -6,12 +6,8 @@ package {{.Package}}
 import (
   "net/http"
 
-  "github.com/casualjim/go-swagger"
-  "github.com/casualjim/go-swagger/errors"
-  "github.com/casualjim/go-swagger/spec"
-
-  {{range .Imports}}
-  {{ printf "%q" .}}
+  {{range $key, $value := .Imports}}
+  {{$key}} {{ printf "%q" $value}}
   {{end}}
 )
 
@@ -49,40 +45,28 @@ func ({{.ReceiverName}} *{{.ClassName}}) ServeHTTP(rw http.ResponseWriter, r *ht
     {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, err)
     return
   }
-  principal := {{if eq .Principal "interface{}"}}uprinc{{else}}uprinc.(*{{.Principal}}){{end}}
+  principal := {{if eq .Principal "interface{}"}}uprinc{{else}}uprinc.(*{{.Principal}}) // it's ok this is really a {{.Principal}}{{end}}
 
   {{end}}
-  if err := {{.ReceiverName}}.Context.BindValidRequest(r, route, &{{.ReceiverName}}.Params); err != nil { // bind params
+  if err := {{.ReceiverName}}.Context.BindValidRequest(r, route, {{if .Params}}&{{.ReceiverName}}.Params{{else}}nil{{end}}); err != nil { // bind params
     {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, err)
     return
   }
 
   {{if .Authorized}}
-  {{if .SuccessModel}}res, err := {{.ReceiverName}}.Handler.Handle({{.ReceiverName}}.Params, principal) // actually handle the request
+  {{if .SuccessModel}}res, {{end}}err {{if .SuccessModel}}:{{end}}= {{.ReceiverName}}.Handler.Handle({{if .Params}}{{.ReceiverName}}.Params, {{end}}principal) // actually handle the request
   if err != nil {
     {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, err)
     return
   }
 
-  {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, res)
-  {{else}}if err := {{.ReceiverName}}.Handler.Handle({{.ReceiverName}}.Params, principal); err != nil { // actually handle the request
-    {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, err)
-    return
-  }
-
-  {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, nil)
-  {{end}}
+  {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, {{if .SuccessModel}}res{{else}}nil{{end}})
   {{else}}
-  {{if .SuccessModel}}res, err := {{.ReceiverName}}.Handler.Handle({{.ReceiverName}}.Params) // actually handle the request
+  {{if .SuccessModel}}res, {{end}}err := {{.ReceiverName}}.Handler.Handle({{if .Params}}{{.ReceiverName}}.Params{{end}}) // actually handle the request
   if err != nil {
     {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, err)
     return
   }
-  {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, res)
-  {{else}}if err := {{.ReceiverName}}.Handler.Handle({{.ReceiverName}}.Params); err != nil { // actually handle the request
-    {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, err)
-    return
-  }
-
-  {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, nil){{end}}{{end}}
+  {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, {{if .SuccessModel}}res{{else}}nil{{end}})
+  {{end}}
 }

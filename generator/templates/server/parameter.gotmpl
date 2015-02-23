@@ -35,7 +35,7 @@ if err := validate.Enum({{.Path}}, "{{.Location}}", {{.ValueExpression}}, {{.Enu
 }
 {{end}}
 {{end}}{{define "customformatvalidator"}}
-if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.Format}}", string({{.ValueExpression}})); err != nil {
+if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.Format}}", string({{.ValueExpression}}), formats); err != nil {
   return err
 }
 {{end}}{{define "slicevalidator"}}
@@ -78,7 +78,7 @@ var {{.IndexVar}}r {{.Type}}
 }
 
 for {{.IndexVar}} := 0; {{.IndexVar}} < {{.IndexVar}}sz; {{.IndexVar}}++ {
-  {{if .Child.IsPrimitive}}{{if .Child.Converter}}value, err := {{.Child.Converter}}({{.IndexVar}}c[{{.IndexVar}}])
+  {{if or .Child.IsCustomFormatter .Child.IsPrimitive}}{{if .Child.Converter}}value, err := {{.Child.Converter}}({{.IndexVar}}c[{{.IndexVar}}])
   if err != nil {
     res.AddErrors(errors.InvalidType({{.Child.Path}}, "{{.Location}}", "{{.Child.Type}}", {{.IndexVar}}c[{{.IndexVar}}]))
     return res
@@ -115,11 +115,11 @@ import (
   "net/http"
   "github.com/casualjim/go-swagger"
   "github.com/casualjim/go-swagger/errors"
-  "github.com/casualjim/go-swagger/httputils"
+  "github.com/casualjim/go-swagger/middleware/httputils"
   "github.com/casualjim/go-swagger/validate"
 
-  {{range .Imports}}
-  {{ printf "%q" .}}
+  {{range $key, $value := .Imports}}
+  {{$key}} {{ printf "%q" $value}}
   {{end}}
 )
 
@@ -133,26 +133,26 @@ type {{.ClassName}}Params struct {
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable() *validate.Result interface
 // for simple values it will use straight method calls
-func ({{.ReceiverName}} *{{.ClassName}}Params) BindRequest(r *http.Request, route *middleware.MatchedRoute, consumer swagger.Consumer) *validate.Result {
+func ({{.ReceiverName}} *{{.ClassName}}Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) *validate.Result {
   res := new(validate.Result)
   {{if .HasQueryParams}}qs := r.URL.Query()
   {{end}}
 
   {{range .Params}}
-  {{if .IsPrimitive}}{{if .IsQueryParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(httputils.ReadSingleValue(qs, {{.Path}})))
-  {{else if .IsPathParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(httputils.ReadSingleValue(route.Params, {{.Path}})))
-  {{else if .IsHeaderParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(httputils.ReadSingleValue(r.Header, {{.Path}})))
+  {{if or .IsCustomFormatter .IsPrimitive}}{{if .IsQueryParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(httputils.ReadSingleValue(qs, {{.Path}}), route.Formats))
+  {{else if .IsPathParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(httputils.ReadSingleValue(route.Params, {{.Path}}), route.Formats))
+  {{else if .IsHeaderParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(httputils.ReadSingleValue(r.Header, {{.Path}}), route.Formats))
   {{end}}
-  {{else if .IsContainer}}{{if .IsQueryParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(httputils.ReadCollectionValue(qs, {{.Path}}, "{{.CollectionFormat}}")))
-  {{else if .IsPathParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(httputils.ReadCollectionValue(route.Params, {{.Path}}, "{{.CollectionFormat}}")))
-  {{else if .IsHeaderParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(httputils.ReadCollectionValue(r.Header, {{.Path}}, "{{.CollectionFormat}}")))
+  {{else if .IsContainer}}{{if .IsQueryParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(httputils.ReadCollectionValue(qs, {{.Path}}, "{{.CollectionFormat}}"), route.Formats))
+  {{else if .IsPathParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(httputils.ReadCollectionValue(route.Params, {{.Path}}, "{{.CollectionFormat}}"), route.Formats))
+  {{else if .IsHeaderParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(httputils.ReadCollectionValue(r.Header, {{.Path}}, "{{.CollectionFormat}}"), route.Formats))
   {{end}}{{end}}
 
   {{if .IsBodyParam}}
-  if err := consumer.Consume(r.Body, &{{.ReceiverName}}.{{.PropertyName}}); err != nil {
+  if err := route.Consumer.Consume(r.Body, &{{.ReceiverName}}.{{.PropertyName}}); err != nil {
     res.AddErrors(errors.NewParseError("{{.ParamName}}", "{{.Location}}", "", err))
   } else {
-    res.Merge({{.ReceiverName}}.{{.PropertyName}}.Validate())
+    res.Merge({{.ReceiverName}}.{{.PropertyName}}.Validate(route.Formats))
   }
 
   {{end}}
@@ -164,7 +164,7 @@ func ({{.ReceiverName}} *{{.ClassName}}Params) BindRequest(r *http.Request, rout
 {{range .Params}}
 {{if not .IsBodyParam}}
 {{if or .IsPrimitive .IsCustomFormatter}}
-func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw string) *validate.Result {
+func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw string, formats strfmt.Registry) *validate.Result {
   res := new(validate.Result)
 
   {{if and (not .IsPathParam) .Required}}if err := validate.RequiredString({{.Path}}, "{{.Location}}", raw); err != nil {
@@ -183,7 +183,7 @@ func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw string)
   {{else}}
   {{.ValueExpression}} = raw
   {{end}}
-  {{if .HasValidations}}if err := {{.ReceiverName}}.validate{{.PropertyName}}(); err != nil {
+  {{if .HasValidations}}if err := {{.ReceiverName}}.validate{{.PropertyName}}(formats); err != nil {
     res.AddErrors(err)
   }
 
@@ -194,7 +194,7 @@ func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw string)
   return res
 }
 {{else if .IsContainer}}
-func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw []string) *validate.Result {
+func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw []string, formats strfmt.Registry) *validate.Result {
   res := new(validate.Result)
   size := len(raw)
 
@@ -205,15 +205,16 @@ func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw []strin
   res.Inc()
   {{end}}
 
-  {{if .DefaultValue}}if size == 0 && len({{.DefaultValue}}) > 0 {
-    {{.ValueExpression}} = {{.DefaultValue}}
+  {{if .DefaultValue}}defValue := util.SplitByFormat({{.DefaultValue}}, "{{.CollectionFormat}}")
+  if size == 0 && len(defValue) > 0 {
+    {{.ValueExpression}} = defValue
   {{else}}if size == 0 {
     res.Inc()
     return res{{end}}
   }
   {{template "slicebinder" .}}
   {{.ValueExpression}} = {{.IndexVar}}r
-  {{if .HasSliceValidations}}if err := {{.ReceiverName}}.validate{{.PropertyName}}(); err != nil {
+  {{if .HasSliceValidations}}if err := {{.ReceiverName}}.validate{{.PropertyName}}(formats); err != nil {
     res.AddErrors(err)
   }
 
@@ -225,7 +226,7 @@ func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw []strin
 }
 {{end}}
 {{if or .HasValidations .HasSliceValidations}}
-func ({{.ReceiverName}} *{{$className}}Params) validate{{.PropertyName}}() *errors.Validation {
+func ({{.ReceiverName}} *{{$className}}Params) validate{{.PropertyName}}(formats strfmt.Registry) *errors.Validation {
   {{template "propertyvalidator" .}}
   return nil
 }

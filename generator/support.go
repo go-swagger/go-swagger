@@ -291,7 +291,7 @@ type genApp struct {
 	Name                string
 	Info                *spec.Info
 	ExternalDocs        *spec.ExternalDocumentation
-	Imports             []string
+	Imports             map[string]string
 	Consumes            []genSerGroup
 	Produces            []genSerGroup
 	SecurityDefinitions []genSecurityScheme

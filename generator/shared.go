@@ -67,7 +67,7 @@ type propertyDescriptor struct {
 	IsPrimitive       bool   //`json:"isPrimitive,omitempty"`       // plain old primitive type
 	IsCustomFormatter bool   //`json:"isCustomFormatter,omitempty"` // custom format or default format
 	IsContainer       bool   //`json:"isContainer,omitempty"`       // slice
-
+	IsMap             bool   // json:"isMap,omitempty"
 }
 
 type commonValidations struct {

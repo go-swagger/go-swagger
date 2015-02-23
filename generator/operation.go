@@ -195,13 +195,14 @@ func makeCodegenOperation(name, pkg, modelsPkg, principal string, operation spec
 	}
 
 	var successModel string
-	var returnsPrimitive, returnsFormatted, returnsContainer bool
+	var returnsPrimitive, returnsFormatted, returnsContainer, returnsMap bool
 	if operation.Responses != nil {
 		if r, ok := operation.Responses.StatusCodeResponses[200]; ok {
 			tn := typeForSchema(r.Schema, modelsPkg)
 			_, returnsPrimitive = primitives[tn]
 			_, returnsFormatted = customFormatters[tn]
 			returnsContainer = r.Schema.Items != nil || r.Schema.Type.Contains("array")
+			returnsMap = strings.HasPrefix(tn, "map")
 			successModel = tn
 		}
 	}
@@ -230,7 +231,8 @@ func makeCodegenOperation(name, pkg, modelsPkg, principal string, operation spec
 		ReturnsPrimitive:     returnsPrimitive,
 		ReturnsFormatted:     returnsFormatted,
 		ReturnsContainer:     returnsContainer,
-		ReturnsComplexObject: !returnsPrimitive && !returnsFormatted && !returnsContainer,
+		ReturnsMap:           returnsMap,
+		ReturnsComplexObject: !returnsPrimitive && !returnsFormatted && !returnsContainer && !returnsMap,
 		Authorized:           authorized,
 		Principal:            prin,
 	}
@@ -263,7 +265,7 @@ type genOperation struct {
 	DocString    string //`json:"docString,omitempty"`   // -
 	ExternalDocs string //`json:"externalDocs,omitempty"`
 
-	Imports []string //`json:"imports,omitempty"`
+	Imports map[string]string //`json:"imports,omitempty"`
 
 	Authorized bool   //`json:"authorized"`          // -
 	Principal  string //`json:"principal,omitempty"` // -
@@ -273,7 +275,7 @@ type genOperation struct {
 	ReturnsFormatted     bool   //`json:"returnsFormatted,omitempty"`     // -
 	ReturnsContainer     bool   //`json:"returnsContainer,omitempty"`     // -
 	ReturnsComplexObject bool   //`json:"returnsComplexObject,omitempty"` // -
-	ReturnsUntypedObject bool   //`json:"returnsUntypedObject,omitempty"`
+	ReturnsMap           bool   //`json:"returnsMap,omitempty"`
 
 	Params         []genParameter //`json:"params,omitempty"`         // -
 	QueryParams    []genParameter //`json:"queryParams,omitempty"`    // -
@@ -333,6 +335,7 @@ func makeCodegenParameter(receiver, modelsPkg string, param spec.Parameter) genP
 		IsHeaderParam:    param.In == "header",
 		IsPathParam:      param.In == "path",
 		IsFormParam:      param.In == "formData",
+		IsFileParam:      param.Type == "file",
 		CollectionFormat: param.CollectionFormat,
 		Child:            child,
 		Location:         param.In,
@@ -416,6 +419,7 @@ func paramItemValidations(path, paramName, accessor, indexVar, valueExpression s
 			IsContainer:       items.Items != nil || tpe == "array",
 			IsPrimitive:       isPrimitive,
 			IsCustomFormatter: isCustomFormatter,
+			IsMap:             strings.HasPrefix(tpe, "map"),
 		},
 
 		Type:             tpe,
@@ -455,6 +459,7 @@ func paramValidations(receiver string, param spec.Parameter) commonValidations {
 			IsContainer:       param.Items != nil || tpe == "array",
 			IsPrimitive:       isPrimitive,
 			IsCustomFormatter: isCustomFormatter,
+			IsMap:             strings.HasPrefix(tpe, "map"),
 		},
 		Required:         param.Required,
 		Type:             tpe,

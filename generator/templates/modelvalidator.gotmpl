@@ -41,7 +41,7 @@ if err := validate.Enum({{.Path}}, "{{.Location}}", {{.ValueExpression}}, {{.Enu
 {{end}}
 {{end}}
 {{define "customformatvalidator"}}
-if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.Format}}", string({{.ValueExpression}})); err != nil {
+if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.Format}}", string({{.ValueExpression}}), formats); err != nil {
   return err
 }
 {{end}}
@@ -94,7 +94,7 @@ if len({{.ValueExpression}}) > {{.ItemsLen}} {
 {{end}}
 {{define "objectvalidator"}}
 // custom object {{.DataType}}
-{{.ParamName}}Res := {{.ValueExpression}}.Validate()
+{{.ParamName}}Res := {{.ValueExpression}}.Validate(formats)
 if {{.ParamName}}Res.HasErrors() {
   return errors.CompositeValidationError({{.ParamName}}Res.Errors...)
 }
@@ -111,21 +111,22 @@ package {{.Package}}
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-  "github.com/casualjim/go-swagger/validate"
   "github.com/casualjim/go-swagger/errors"
+  "github.com/casualjim/go-swagger/strfmt"
+  "github.com/casualjim/go-swagger/validate"
 
-  {{range .Imports}}
-  {{ printf "%q" .}}
+  {{range $key, $value := .Imports}}
+  {{$key}} {{ printf "import %q" $value}}
   {{end}}
 )
 
 // Validate validates this {{.HumanClassName}}
-func ({{.ReceiverName}} *{{.ClassName}}) Validate() *validate.Result {
+func ({{.ReceiverName}} *{{.ClassName}}) Validate(formats strfmt.Registry) *validate.Result {
   res := new(validate.Result)
 
   {{range .Properties}}
   {{if .HasValidations}}
-  if err := {{.ReceiverName}}.validate{{.PropertyName}}(); err != nil {
+  if err := {{.ReceiverName}}.validate{{.PropertyName}}(formats); err != nil {
     res.AddErrors(err)
   }
   {{end}}
@@ -137,7 +138,7 @@ func ({{.ReceiverName}} *{{.ClassName}}) Validate() *validate.Result {
 {{range .Properties}}
 {{if .HasValidations}}
 
-func ({{.ReceiverName}} *{{$className}}) validate{{.PropertyName}}() *errors.Validation {
+func ({{.ReceiverName}} *{{$className}}) validate{{.PropertyName}}(formats strfmt.Registry) *errors.Validation {
   {{template "propertyvalidator" .}}
 
   return nil
