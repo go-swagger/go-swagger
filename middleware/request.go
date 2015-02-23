@@ -41,7 +41,6 @@ func (o *untypedRequestBinder) Bind(request *http.Request, routeParams RoutePara
 
 	for fieldName, param := range o.Parameters {
 		binder := o.paramBinders[fieldName]
-		// fmt.Println("binding", binder.name, "from", param.In, "as", binder.Type()) //, "with", binder.validator)
 
 		var target reflect.Value
 		if !isMap {
@@ -90,50 +89,3 @@ func (o *untypedRequestBinder) Bind(request *http.Request, routeParams RoutePara
 
 	return result
 }
-
-// func contentType(req *http.Request) (string, error) {
-// 	ct := req.Header.Get("Content-Type")
-// 	orig := ct
-// 	if ct == "" {
-// 		ct = "application/octect-stream"
-// 	}
-//
-// 	mt, _, err := mime.ParseMediaType(ct)
-// 	if err != nil {
-// 		return "", errors.NewParseError("Content-Type", "header", orig, err)
-// 	}
-//
-// 	return mt, nil
-// }
-//
-// func readSingle(from getValue, name string) string {
-// 	return from.Get(name)
-// }
-//
-// var evaluatesAsTrue = []string{"true", "1", "yes", "ok", "y", "on", "selected", "checked", "t", "enabled"}
-//
-// func split(data, format string) []string {
-// 	if data == "" {
-// 		return nil
-// 	}
-// 	var sep string
-// 	switch format {
-// 	case "ssv":
-// 		sep = " "
-// 	case "tsv":
-// 		sep = "\t"
-// 	case "pipes":
-// 		sep = "|"
-// 	case "multi":
-// 		return nil
-// 	default:
-// 		sep = ","
-// 	}
-// 	var result []string
-// 	for _, s := range strings.Split(data, sep) {
-// 		if ts := strings.TrimSpace(s); ts != "" {
-// 			result = append(result, ts)
-// 		}
-// 	}
-// 	return result
-// }

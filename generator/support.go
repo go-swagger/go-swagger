@@ -220,9 +220,7 @@ func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal strin
 
 	var security []genSecurityScheme
 	for _, scheme := range specDoc.RequiredSchemes() {
-		fmt.Println("getting security scheme:", scheme)
 		if req, ok := specDoc.Spec().SecurityDefinitions[scheme]; ok {
-			fmt.Println("got security scheme of type:", req.Type)
 			if req.Type == "basic" || req.Type == "apiKey" {
 				security = append(security, genSecurityScheme{
 					AppName:        appName,

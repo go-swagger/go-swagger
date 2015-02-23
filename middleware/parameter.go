@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"mime"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -124,21 +123,6 @@ func (p *untypedParamBinder) readValue(values interface{}, target reflect.Value)
 	return []string{v}, false, nil
 }
 
-func contentType(req *http.Request) (string, error) {
-	ct := req.Header.Get("Content-Type")
-	orig := ct
-	if ct == "" {
-		ct = "application/octet-stream"
-	}
-
-	mt, _, err := mime.ParseMediaType(ct)
-	if err != nil {
-		return "", errors.NewParseError("Content-Type", "header", orig, err)
-	}
-
-	return mt, nil
-}
-
 func (p *untypedParamBinder) Bind(request *http.Request, routeParams RouteParams, consumer swagger.Consumer, target reflect.Value) error {
 	// fmt.Println("binding", p.name, "as", p.Type())
 	switch p.parameter.In {
@@ -175,7 +159,15 @@ func (p *untypedParamBinder) Bind(request *http.Request, routeParams RouteParams
 
 	case "formData":
 		var err error
-		mt, err := contentType(request)
+		var mt string
+
+		mt, _, e := httputils.ContentType(request.Header)
+		if e != nil {
+			// because of the interface conversion go thinks the error is not nil
+			// so we first check for nil and then set the err var if it's not nil
+			err = e
+		}
+
 		if err != nil {
 			return errors.InvalidContentType("", []string{"multipart/form-data", "application/x-www-form-urlencoded"})
 		}
@@ -186,7 +178,7 @@ func (p *untypedParamBinder) Bind(request *http.Request, routeParams RouteParams
 
 		if mt == "multipart/form-data" {
 			if err := request.ParseMultipartForm(defaultMaxMemory); err != nil {
-				return err
+				return errors.New(400, "parsing %s in %s failed: %v", p.Name, p.parameter.In, err)
 			}
 		}
 
@@ -197,7 +189,7 @@ func (p *untypedParamBinder) Bind(request *http.Request, routeParams RouteParams
 		if p.parameter.Type == "file" {
 			file, header, err := request.FormFile(p.parameter.Name)
 			if err != nil {
-				return err
+				return errors.New(400, "parsing %s in %s failed: %v", p.Name, p.parameter.In, err)
 			}
 			target.Set(reflect.ValueOf(swagger.File{Data: file, Header: header}))
 			return nil
