@@ -136,16 +136,23 @@ type {{.ClassName}}Params struct {
 func ({{.ReceiverName}} *{{.ClassName}}Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) *validate.Result {
   res := new(validate.Result)
   {{if .HasQueryParams}}qs := r.URL.Query()
+  {{else if .HasFormParams}}
   {{end}}
 
   {{range .Params}}
-  {{if or .IsCustomFormatter .IsPrimitive}}{{if .IsQueryParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(httputils.ReadSingleValue(qs, {{.Path}}), route.Formats))
-  {{else if .IsPathParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(httputils.ReadSingleValue(route.Params, {{.Path}}), route.Formats))
-  {{else if .IsHeaderParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(httputils.ReadSingleValue(r.Header, {{.Path}}), route.Formats))
-  {{end}}
-  {{else if .IsContainer}}{{if .IsQueryParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(httputils.ReadCollectionValue(qs, {{.Path}}, "{{.CollectionFormat}}"), route.Formats))
-  {{else if .IsPathParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(httputils.ReadCollectionValue(route.Params, {{.Path}}, "{{.CollectionFormat}}"), route.Formats))
-  {{else if .IsHeaderParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(httputils.ReadCollectionValue(r.Header, {{.Path}}, "{{.CollectionFormat}}"), route.Formats))
+  {{if not .IsContainer}}{{if .IsQueryParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(qs.Get({{.Path}}), route.Formats))
+  {{else if .IsPathParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(route.Params.Get({{.Path}}), route.Formats))
+  {{else if .IsHeaderParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(r.Header.Get({{.Path}}), route.Formats))
+  {{else if .IsFormParam}}{{if .IsFileParam}}{{.ParamName}}, {{.ParamName}}Header, err := r.FormFile({{.Path}})
+  if err != nil {
+    res.AddErrors(errors.New(400, "reading file \"{{.ParamName}}\" failed: %v", err))
+  } else {
+    {{.ReceiverName}}.{{.PropertyName}} = swagger.File{Data: {{.ParamName}}, Header: {{.ParamName}}Header}
+  }
+  {{else}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(r.FormValue({{.Path}}), route.Formats))
+  {{end}}{{end}}
+  {{else if .IsContainer}}{{if .IsQueryParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(util.SplitByFormat(qs.Get({{.Path}}), "{{.CollectionFormat}}"), route.Formats))
+  {{else if and .IsFormParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(util.SplitByFormat(r.FormValue({{.Path}}), "{{.CollectionFormat}}"), route.Formats))
   {{end}}{{end}}
 
   {{if .IsBodyParam}}

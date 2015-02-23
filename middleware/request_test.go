@@ -380,7 +380,8 @@ func TestFormUpload(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	data := formRequest{}
-	assert.True(t, binder.Bind(req, nil, swagger.JSONConsumer(), &data).IsValid())
+	res := binder.Bind(req, nil, swagger.JSONConsumer(), &data)
+	assert.Empty(t, res.Errors)
 	assert.Equal(t, "the-name", data.Name)
 	assert.Equal(t, 32, data.Age)
 

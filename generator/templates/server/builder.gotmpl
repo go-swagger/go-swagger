@@ -82,12 +82,11 @@ func ({{.ReceiverName}} *{{.AppName}}API) Validate() error {
   }
   {{end}}
 
-  sz := len(unregistered)
-  if sz == 0 {
-    return nil
+  if len(unregistered) > 0 {
+    return fmt.Errorf("missing registration: %s", strings.Join(unregistered, ", "))
   }
 
-  return fmt.Errorf("missing registration: %s", strings.Join(unregistered, ", "))
+  return nil
 }
 // ServeErrorFor gets a error handler for a given operation id
 func ({{.ReceiverName}} *{{.AppName}}API) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
