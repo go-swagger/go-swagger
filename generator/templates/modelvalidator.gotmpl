@@ -116,7 +116,7 @@ import (
   "github.com/casualjim/go-swagger/validate"
 
   {{range $key, $value := .Imports}}
-  {{$key}} {{ printf "import %q" $value}}
+  {{$key}} {{ printf "%q" $value}}
   {{end}}
 )
 

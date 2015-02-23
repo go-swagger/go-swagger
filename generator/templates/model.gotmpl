@@ -10,7 +10,7 @@ package {{.Package}}
 
 {{if .Imports}}imports (
   {{range $key, $value := .Imports}}
-  {{$key}} {{ printf "import %q" $value}}
+  {{$key}} {{ printf "%q" $value}}
   {{end}}
 )
 {{end}}

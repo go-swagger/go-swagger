@@ -9,8 +9,8 @@ import (
   "github.com/casualjim/go-swagger"
   "github.com/casualjim/go-swagger/spec"
   "github.com/casualjim/go-swagger/strfmt"
-  "github.com/casualjim/go-swagger/security"
   "github.com/casualjim/go-swagger/middleware"
+  "github.com/casualjim/go-swagger/middleware/security"
 
   {{range $key, $value := .Imports}}
   {{$key}} {{ printf "%q" $value}}
@@ -34,7 +34,7 @@ type {{.AppName}}API struct {
   // it performs authentication with basic auth
   {{.ClassName}}Auth func(string, string) ({{.Principal}}, error)
   {{end}}{{if .IsAPIKeyAuth}}// {{.ClassName}}Auth registers a function that takes a token and returns a principal
-  // it performs authentication based on an api key {{.ParamName}} provided in the {{.Source}}
+  // it performs authentication based on an api key {{.Name}} provided in the {{.Source}}
   {{.ClassName}}Auth func(string) ({{.Principal}}, error)
   {{end}}
   {{end}}
@@ -101,8 +101,8 @@ func ({{.ReceiverName}} *{{.AppName}}API) AuthenticatorsFor(schemes map[string]s
     switch name {
       {{range .SecurityDefinitions}}
       case "{{.Name}}":
-        {{if .IsBasicAuth}}result[name] = security.BasicAuth({{.ReceiverName}}.{{.ClassName}}Auth){{end}}
-        {{if .IsAPIKeyAuth}}result[name] = security.APIKeyAuth(scheme.Name, scheme.In, {{.ReceiverName}}.{{.ClassName}}Auth){{end}}
+        {{if .IsBasicAuth}}result[name] = security.BasicAuth(func (u, p string) (interface{}, error) { return {{.ReceiverName}}.{{.ClassName}}Auth(u, p)}){{end}}
+        {{if .IsAPIKeyAuth}}result[name] = security.APIKeyAuth(scheme.Name, scheme.In, func(tok string) (interface{}, error) { return {{.ReceiverName}}.{{.ClassName}}Auth(tok) }){{end}}
       {{end}}
     }
   }

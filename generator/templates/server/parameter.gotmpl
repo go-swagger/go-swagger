@@ -152,7 +152,14 @@ func ({{.ReceiverName}} *{{.ClassName}}Params) BindRequest(r *http.Request, rout
   if err := route.Consumer.Consume(r.Body, &{{.ReceiverName}}.{{.PropertyName}}); err != nil {
     res.AddErrors(errors.NewParseError("{{.ParamName}}", "{{.Location}}", "", err))
   } else {
-    res.Merge({{.ReceiverName}}.{{.PropertyName}}.Validate(route.Formats))
+    {{if .IsContainer}}for _, {{.IndexVar}}{{.ReceiverName}} := range {{.ReceiverName}}.{{.PropertyName}} {
+      if err := {{.IndexVar}}{{.ReceiverName}}.Validate(route.Formats); err != nil {
+        res.Merge(err)
+        break
+      }
+    }
+    {{else}}res.Merge({{.ReceiverName}}.{{.PropertyName}}.Validate(route.Formats))
+    {{end}}
   }
 
   {{end}}
