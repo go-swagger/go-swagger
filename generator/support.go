@@ -220,7 +220,9 @@ func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal strin
 
 	var security []genSecurityScheme
 	for _, scheme := range specDoc.RequiredSchemes() {
+		fmt.Println("getting security scheme:", scheme)
 		if req, ok := specDoc.Spec().SecurityDefinitions[scheme]; ok {
+			fmt.Println("got security scheme of type:", req.Type)
 			if req.Type == "basic" || req.Type == "apiKey" {
 				security = append(security, genSecurityScheme{
 					AppName:        appName,
@@ -229,7 +231,9 @@ func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal strin
 					HumanClassName: util.ToHumanNameLower(req.Name),
 					Name:           util.ToJSONName(req.Name),
 					IsBasicAuth:    strings.ToLower(req.Type) == "basic",
-					IsAPIKeyAuth:   strings.ToLower(req.Type) == "apiKey",
+					IsAPIKeyAuth:   strings.ToLower(req.Type) == "apikey",
+					Principal:      principal,
+					Source:         req.In,
 				})
 			}
 		}
@@ -326,4 +330,6 @@ type genSecurityScheme struct {
 	ReceiverName   string
 	IsBasicAuth    bool
 	IsAPIKeyAuth   bool
+	Source         string
+	Principal      string
 }
