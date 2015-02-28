@@ -7,7 +7,7 @@ import (
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/validate"
+	"github.com/casualjim/go-swagger/validation"
 )
 
 type schemaSliceValidator struct {
@@ -32,8 +32,8 @@ func (s *schemaSliceValidator) Applies(source interface{}, kind reflect.Kind) bo
 	return r
 }
 
-func (s *schemaSliceValidator) Validate(data interface{}) *validate.Result {
-	result := new(validate.Result)
+func (s *schemaSliceValidator) Validate(data interface{}) *Result {
+	result := new(Result)
 	if data == nil {
 		return result
 	}
@@ -71,17 +71,17 @@ func (s *schemaSliceValidator) Validate(data interface{}) *validate.Result {
 	}
 
 	if s.MinItems != nil {
-		if err := validate.MinItems(s.Path, s.In, int64(size), *s.MinItems); err != nil {
+		if err := validation.MinItems(s.Path, s.In, int64(size), *s.MinItems); err != nil {
 			result.AddErrors(err)
 		}
 	}
 	if s.MaxItems != nil {
-		if err := validate.MaxItems(s.Path, s.In, int64(size), *s.MaxItems); err != nil {
+		if err := validation.MaxItems(s.Path, s.In, int64(size), *s.MaxItems); err != nil {
 			result.AddErrors(err)
 		}
 	}
 	if s.UniqueItems {
-		if err := validate.UniqueItems(s.Path, s.In, val.Interface()); err != nil {
+		if err := validation.UniqueItems(s.Path, s.In, val.Interface()); err != nil {
 			result.AddErrors(err)
 		}
 	}

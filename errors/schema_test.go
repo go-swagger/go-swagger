@@ -183,8 +183,8 @@ func TestSchemaErrors(t *testing.T) {
 	assert.Equal(t, 422, err.Code())
 	assert.Equal(t, "the collection format \"yada\" is not supported for the query param \"something\"", err.Error())
 
-	err = CompositeValidationError()
-	assert.Error(t, err)
-	assert.Equal(t, 422, err.Code())
-	assert.Equal(t, "validation failure list", err.Error())
+	err2 := CompositeValidationError()
+	assert.Error(t, err2)
+	assert.Equal(t, 422, err2.Code())
+	assert.Equal(t, "validation failure list", err2.Error())
 }

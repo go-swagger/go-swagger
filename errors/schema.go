@@ -1,51 +1,144 @@
 package errors
 
-import "fmt"
-
-const (
-	invalidType           = `%s is an invalid type name`
-	typeFail              = `%s in %s must be of type %s`
-	typeFailWithData      = `%s in %s must be of type %s: %q`
-	typeFailWithError     = `%s in %s must be of type %s, because: %s`
-	requiredFail          = `%s in %s is required`
-	tooLongMessage        = `%s in %s should be at most %d chars long`
-	tooShortMessage       = `%s in %s should be at least %d chars long`
-	patternFail           = `%s in %s should match '%s'`
-	enumFail              = `%s in %s should be one of %v`
-	mulitpleOfFail        = `%s in %s should be a multiple of %v`
-	maxIncFail            = `%s in %s should be less than or equal to %v`
-	maxExcFail            = `%s in %s should be less than %v`
-	minIncFail            = `%s in %s should be greater than or equal to %v`
-	minExcFail            = `%s in %s should be greater than %v`
-	uniqueFail            = `%s in %s shouldn't contain duplicates`
-	maxItemsFail          = `%s in %s should have at most %d items`
-	minItemsFail          = `%s in %s should have at least %d items`
-	typeFailNoIn          = `%s must be of type %s`
-	typeFailWithDataNoIn  = `%s must be of type %s: %q`
-	typeFailWithErrorNoIn = `%s must be of type %s, because: %s`
-	requiredFailNoIn      = `%s is required`
-	tooLongMessageNoIn    = `%s should be at most %d chars long`
-	tooShortMessageNoIn   = `%s should be at least %d chars long`
-	patternFailNoIn       = `%s should match '%s'`
-	enumFailNoIn          = `%s should be one of %v`
-	mulitpleOfFailNoIn    = `%s should be a multiple of %v`
-	maxIncFailNoIn        = `%s should be less than or equal to %v`
-	maxExcFailNoIn        = `%s should be less than %v`
-	minIncFailNoIn        = `%s should be greater than or equal to %v`
-	minExcFailNoIn        = `%s should be greater than %v`
-	uniqueFailNoIn        = `%s shouldn't contain duplicates`
-	maxItemsFailNoIn      = `%s should have at most %d items`
-	minItemsFailNoIn      = `%s should have at least %d items`
-	noAdditionalItems     = "%s in %s can't have additional items"
-	noAdditionalItemsNoIn = "%s can't have additional items"
+import (
+	"fmt"
+	"strings"
 )
 
+const (
+	invalidType               = "%s is an invalid type name"
+	typeFail                  = "%s in %s must be of type %s"
+	typeFailWithData          = "%s in %s must be of type %s: %q"
+	typeFailWithError         = "%s in %s must be of type %s, because: %s"
+	requiredFail              = "%s in %s is required"
+	tooLongMessage            = "%s in %s should be at most %d chars long"
+	tooShortMessage           = "%s in %s should be at least %d chars long"
+	patternFail               = "%s in %s should match '%s'"
+	enumFail                  = "%s in %s should be one of %v"
+	mulitpleOfFail            = "%s in %s should be a multiple of %v"
+	maxIncFail                = "%s in %s should be less than or equal to %v"
+	maxExcFail                = "%s in %s should be less than %v"
+	minIncFail                = "%s in %s should be greater than or equal to %v"
+	minExcFail                = "%s in %s should be greater than %v"
+	uniqueFail                = "%s in %s shouldn't contain duplicates"
+	maxItemsFail              = "%s in %s should have at most %d items"
+	minItemsFail              = "%s in %s should have at least %d items"
+	typeFailNoIn              = "%s must be of type %s"
+	typeFailWithDataNoIn      = "%s must be of type %s: %q"
+	typeFailWithErrorNoIn     = "%s must be of type %s, because: %s"
+	requiredFailNoIn          = "%s is required"
+	tooLongMessageNoIn        = "%s should be at most %d chars long"
+	tooShortMessageNoIn       = "%s should be at least %d chars long"
+	patternFailNoIn           = "%s should match '%s'"
+	enumFailNoIn              = "%s should be one of %v"
+	mulitpleOfFailNoIn        = "%s should be a multiple of %v"
+	maxIncFailNoIn            = "%s should be less than or equal to %v"
+	maxExcFailNoIn            = "%s should be less than %v"
+	minIncFailNoIn            = "%s should be greater than or equal to %v"
+	minExcFailNoIn            = "%s should be greater than %v"
+	uniqueFailNoIn            = "%s shouldn't contain duplicates"
+	maxItemsFailNoIn          = "%s should have at most %d items"
+	minItemsFailNoIn          = "%s should have at least %d items"
+	noAdditionalItems         = "%s in %s can't have additional items"
+	noAdditionalItemsNoIn     = "%s can't have additional items"
+	tooFewProperties          = "%s in %s should have at least %d properties"
+	tooFewPropertiesNoIn      = "%s should have at least %d properties"
+	tooManyProperties         = "%s in %s should have at most %d properties"
+	tooManyPropertiesNoIn     = "%s should have at most %d properties"
+	unallowedProperty         = "%s.%s in %s is a forbidden property"
+	unallowedPropertyNoIn     = "%s.%s is a forbidden property"
+	failedAllPatternProps     = "%s.%s in %s failed all pattern properties"
+	failedAllPatternPropsNoIn = "%s.%s failed all pattern properties"
+)
+
+// CompositeError is an error that groups several errors together
+type CompositeError struct {
+	Errors  []error
+	code    int32
+	message string
+}
+
+func (c *CompositeError) Code() int32 {
+	return c.code
+}
+
+func (c *CompositeError) Error() string {
+	if len(c.Errors) > 0 {
+		msgs := []string{c.message + ":"}
+		for _, e := range c.Errors {
+			msgs = append(msgs, e.Error())
+		}
+		return strings.Join(msgs, "\n")
+	}
+	return c.message
+}
+
 // CompositeValidationError an error to wrap a bunch of other errors
-func CompositeValidationError(errors ...Error) *Validation {
+func CompositeValidationError(errors ...error) *CompositeError {
+	return &CompositeError{
+		code:    422,
+		Errors:  append([]error{}, errors...),
+		message: "validation failure list",
+	}
+}
+
+// FailedAllPatternProperties an error for when the property doesn't match a pattern
+func FailedAllPatternProperties(name, in, key string) *Validation {
+	msg := fmt.Sprintf(failedAllPatternProps, name, key, in)
+	if in == "" {
+		msg = fmt.Sprintf(failedAllPatternPropsNoIn, name, key)
+	}
 	return &Validation{
 		code:    422,
-		Value:   append([]Error{}, errors...),
-		message: "validation failure list",
+		Name:    name,
+		In:      in,
+		Value:   key,
+		message: msg,
+	}
+}
+
+// PropertyNotAllowed an error for when the property doesn't match a pattern
+func PropertyNotAllowed(name, in, key string) *Validation {
+	msg := fmt.Sprintf(unallowedProperty, name, key, in)
+	if in == "" {
+		msg = fmt.Sprintf(unallowedPropertyNoIn, name, key)
+	}
+	return &Validation{
+		code:    422,
+		Name:    name,
+		In:      in,
+		Value:   key,
+		message: msg,
+	}
+}
+
+// TooFewProperties an error for an object with too few properties
+func TooFewProperties(name, in string, n int64) *Validation {
+	msg := fmt.Sprintf(tooFewProperties, name, in, n)
+	if in == "" {
+		msg = fmt.Sprintf(tooFewPropertiesNoIn, name, n)
+	}
+	return &Validation{
+		code:    422,
+		Name:    name,
+		In:      in,
+		Value:   n,
+		message: msg,
+	}
+}
+
+// TooManyProperties an error for an object with too many properties
+func TooManyProperties(name, in string, n int64) *Validation {
+	msg := fmt.Sprintf(tooManyProperties, name, in, n)
+	if in == "" {
+		msg = fmt.Sprintf(tooManyPropertiesNoIn, name, n)
+	}
+	return &Validation{
+		code:    422,
+		Name:    name,
+		In:      in,
+		Value:   n,
+		message: msg,
 	}
 }
 

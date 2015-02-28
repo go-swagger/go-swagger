@@ -6,7 +6,6 @@ import (
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/validate"
 )
 
 type schemaPropsValidator struct {
@@ -71,10 +70,10 @@ func (s *schemaPropsValidator) Applies(source interface{}, kind reflect.Kind) bo
 	return r
 }
 
-func (s *schemaPropsValidator) Validate(data interface{}) *validate.Result {
-	mainResult := &validate.Result{}
+func (s *schemaPropsValidator) Validate(data interface{}) *Result {
+	mainResult := new(Result)
 	if len(s.anyOfValidators) > 0 {
-		var bestFailures *validate.Result
+		var bestFailures *Result
 		succeededOnce := false
 		for _, anyOfSchema := range s.anyOfValidators {
 			result := anyOfSchema.Validate(data)
@@ -97,7 +96,7 @@ func (s *schemaPropsValidator) Validate(data interface{}) *validate.Result {
 	}
 
 	if len(s.oneOfValidators) > 0 {
-		var bestFailures *validate.Result
+		var bestFailures *Result
 		validated := 0
 
 		for _, oneOfSchema := range s.oneOfValidators {

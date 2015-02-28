@@ -178,18 +178,18 @@ func (p *untypedParamBinder) Bind(request *http.Request, routeParams RouteParams
 
 		if mt == "multipart/form-data" {
 			if err := request.ParseMultipartForm(defaultMaxMemory); err != nil {
-				return errors.New(400, "parsing %s in %s failed: %v", p.Name, p.parameter.In, err)
+				return errors.NewParseError(p.Name, p.parameter.In, "", err)
 			}
 		}
 
 		if err := request.ParseForm(); err != nil {
-			return err
+			return errors.NewParseError(p.Name, p.parameter.In, "", err)
 		}
 
 		if p.parameter.Type == "file" {
 			file, header, err := request.FormFile(p.parameter.Name)
 			if err != nil {
-				return errors.New(400, "parsing %s in %s failed: %v", p.Name, p.parameter.In, err)
+				return errors.NewParseError(p.Name, p.parameter.In, "", err)
 			}
 			target.Set(reflect.ValueOf(swagger.File{Data: file, Header: header}))
 			return nil

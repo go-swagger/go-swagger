@@ -7,17 +7,17 @@ import (
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/validate"
+	"github.com/casualjim/go-swagger/validation"
 )
 
 type EntityValidator interface {
-	Validate(interface{}) *validate.Result
+	Validate(interface{}) *Result
 }
 
 type valueValidator interface {
 	SetPath(path string)
 	Applies(interface{}, reflect.Kind) bool
-	Validate(interface{}) *validate.Result
+	Validate(interface{}) *Result
 }
 
 type itemsValidator struct {
@@ -41,10 +41,10 @@ func newItemsValidator(path, in string, items *spec.Items, root interface{}, for
 	return iv
 }
 
-func (i *itemsValidator) Validate(index int, data interface{}) *validate.Result {
+func (i *itemsValidator) Validate(index int, data interface{}) *Result {
 	tpe := reflect.TypeOf(data)
 	kind := tpe.Kind()
-	mainResult := &validate.Result{}
+	mainResult := new(Result)
 	path := fmt.Sprintf("%s.%d", i.path, index)
 
 	for _, validator := range i.validators {
@@ -132,8 +132,8 @@ func NewParamValidator(param *spec.Parameter, formats strfmt.Registry) *ParamVal
 	return p
 }
 
-func (p *ParamValidator) Validate(data interface{}) *validate.Result {
-	result := &validate.Result{}
+func (p *ParamValidator) Validate(data interface{}) *Result {
+	result := new(Result)
 	tpe := reflect.TypeOf(data)
 	kind := tpe.Kind()
 
@@ -178,14 +178,14 @@ func (b *basicCommonValidator) Applies(source interface{}, kind reflect.Kind) bo
 	return false
 }
 
-func (b *basicCommonValidator) Validate(data interface{}) (res *validate.Result) {
+func (b *basicCommonValidator) Validate(data interface{}) (res *Result) {
 	if len(b.Enum) > 0 {
 		for _, enumValue := range b.Enum {
 			if data != nil && reflect.DeepEqual(enumValue, data) {
 				return nil
 			}
 		}
-		return &validate.Result{Errors: []errors.Error{errors.EnumFail(b.Path, b.In, data, b.Enum)}}
+		return sErr(errors.EnumFail(b.Path, b.In, data, b.Enum))
 	}
 	return nil
 }
@@ -264,28 +264,28 @@ func (s *basicSliceValidator) Applies(source interface{}, kind reflect.Kind) boo
 	return false
 }
 
-func sErr(err errors.Error) *validate.Result {
-	return &validate.Result{Errors: []errors.Error{err}}
+func sErr(err errors.Error) *Result {
+	return &Result{Errors: []error{err}}
 }
 
-func (s *basicSliceValidator) Validate(data interface{}) *validate.Result {
+func (s *basicSliceValidator) Validate(data interface{}) *Result {
 	val := reflect.ValueOf(data)
 
 	size := int64(val.Len())
 	if s.MinItems != nil {
-		if err := validate.MinItems(s.Path, s.In, size, *s.MinItems); err != nil {
+		if err := validation.MinItems(s.Path, s.In, size, *s.MinItems); err != nil {
 			return sErr(err)
 		}
 	}
 
 	if s.MaxItems != nil {
-		if err := validate.MaxItems(s.Path, s.In, size, *s.MaxItems); err != nil {
+		if err := validation.MaxItems(s.Path, s.In, size, *s.MaxItems); err != nil {
 			return sErr(err)
 		}
 	}
 
 	if s.UniqueItems {
-		if err := validate.UniqueItems(s.Path, s.In, data); err != nil {
+		if err := validation.UniqueItems(s.Path, s.In, data); err != nil {
 			return sErr(err)
 		}
 	}
@@ -358,25 +358,25 @@ func (n *numberValidator) convertToFloat(val interface{}) float64 {
 	return 0
 }
 
-func (n *numberValidator) Validate(val interface{}) *validate.Result {
+func (n *numberValidator) Validate(val interface{}) *Result {
 	data := n.convertToFloat(val)
 
 	if n.MultipleOf != nil {
-		if err := validate.MultipleOf(n.Path, n.In, data, *n.MultipleOf); err != nil {
+		if err := validation.MultipleOf(n.Path, n.In, data, *n.MultipleOf); err != nil {
 			return sErr(err)
 		}
 	}
 	if n.Maximum != nil {
-		if err := validate.Maximum(n.Path, n.In, data, *n.Maximum, n.ExclusiveMaximum); err != nil {
+		if err := validation.Maximum(n.Path, n.In, data, *n.Maximum, n.ExclusiveMaximum); err != nil {
 			return sErr(err)
 		}
 	}
 	if n.Minimum != nil {
-		if err := validate.Minimum(n.Path, n.In, data, *n.Minimum, n.ExclusiveMinimum); err != nil {
+		if err := validation.Minimum(n.Path, n.In, data, *n.Minimum, n.ExclusiveMinimum); err != nil {
 			return sErr(err)
 		}
 	}
-	result := &validate.Result{}
+	result := new(Result)
 	result.Inc()
 	return result
 }
@@ -406,29 +406,29 @@ func (s *stringValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	return false
 }
 
-func (s *stringValidator) Validate(val interface{}) *validate.Result {
+func (s *stringValidator) Validate(val interface{}) *Result {
 	data := val.(string)
 
 	if s.Required && (s.Default == nil || s.Default == "") {
-		if err := validate.RequiredString(s.Path, s.In, data); err != nil {
+		if err := validation.RequiredString(s.Path, s.In, data); err != nil {
 			return sErr(err)
 		}
 	}
 
 	if s.MaxLength != nil {
-		if err := validate.MaxLength(s.Path, s.In, data, *s.MaxLength); err != nil {
+		if err := validation.MaxLength(s.Path, s.In, data, *s.MaxLength); err != nil {
 			return sErr(err)
 		}
 	}
 
 	if s.MinLength != nil {
-		if err := validate.MinLength(s.Path, s.In, data, *s.MinLength); err != nil {
+		if err := validation.MinLength(s.Path, s.In, data, *s.MinLength); err != nil {
 			return sErr(err)
 		}
 	}
 
 	if s.Pattern != "" {
-		if err := validate.Pattern(s.Path, s.In, data, s.Pattern); err != nil {
+		if err := validation.Pattern(s.Path, s.In, data, s.Pattern); err != nil {
 			return sErr(err)
 		}
 	}

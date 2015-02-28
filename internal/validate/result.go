@@ -4,7 +4,7 @@ import "github.com/casualjim/go-swagger/errors"
 
 // Result represents a validation result
 type Result struct {
-	Errors     []errors.Error
+	Errors     []error
 	MatchCount int
 }
 
@@ -19,7 +19,7 @@ func (r *Result) Merge(other *Result) *Result {
 }
 
 // AddErrors adds errors to this validation result
-func (r *Result) AddErrors(errors ...errors.Error) {
+func (r *Result) AddErrors(errors ...error) {
 	r.Errors = append(r.Errors, errors...)
 }
 
@@ -36,4 +36,11 @@ func (r *Result) HasErrors() bool {
 // Inc increments the match count
 func (r *Result) Inc() {
 	r.MatchCount++
+}
+
+func (r *Result) AsError() error {
+	if r.IsValid() {
+		return nil
+	}
+	return errors.CompositeValidationError(r.Errors...)
 }

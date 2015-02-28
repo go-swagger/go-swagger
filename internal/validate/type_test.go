@@ -25,7 +25,7 @@ type schemaTestT struct {
 	}
 }
 
-var jsonSchemaFixturesPath = filepath.Join("..", "fixtures", "jsonschema_suite")
+var jsonSchemaFixturesPath = filepath.Join("..", "..", "fixtures", "jsonschema_suite")
 
 var ints = []interface{}{
 	1,
@@ -111,7 +111,10 @@ func TestJSONSchemaSuite(t *testing.T) {
 		}
 	}()
 	Convey("The JSON Schema test suite", t, func() {
-		files, _ := ioutil.ReadDir(jsonSchemaFixturesPath)
+		files, err := ioutil.ReadDir(jsonSchemaFixturesPath)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		for _, f := range files {
 			if f.IsDir() {
