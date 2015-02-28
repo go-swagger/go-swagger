@@ -10,7 +10,6 @@ import (
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/casualjim/go-swagger/swagger-ui"
-	"github.com/casualjim/go-swagger/validate"
 	"github.com/golang/gddo/httputil"
 	"github.com/gorilla/context"
 )
@@ -18,7 +17,7 @@ import (
 // RequestBinder is an interface for types to implement
 // when they want to be able to bind from a request
 type RequestBinder interface {
-	BindRequest(*http.Request, *MatchedRoute) *validate.Result
+	BindRequest(*http.Request, *MatchedRoute) error
 }
 
 // Context is a type safe wrapper around an untyped request context
@@ -55,8 +54,8 @@ func newRoutableUntypedAPI(spec *spec.Document, api *untyped.API, context *Conte
 
 					// bind and validate the request using reflection
 					bound, validation := context.BindAndValidate(r, route)
-					if validation.HasErrors() {
-						context.Respond(w, r, route.Produces, route, validation.Errors[0])
+					if validation != nil {
+						context.Respond(w, r, route.Produces, route, validation)
 						return
 					}
 
@@ -168,37 +167,39 @@ func (c *Context) RequiredProduces() []string {
 // BindValidRequest binds a params object to a request but only when the request is valid
 // if the request is not valid an error will be returned
 func (c *Context) BindValidRequest(request *http.Request, route *MatchedRoute, binder RequestBinder) error {
-	res := new(validate.Result)
+	var res []error
 
 	// check and validate content type, select consumer
 	if httputils.CanHaveBody(request.Method) {
 		ct, _, err := httputils.ContentType(request.Header)
 		if err != nil {
-			res.AddErrors(err)
+			res = append(res, err)
 		} else {
 			if err := validateContentType(route.Consumes, ct); err != nil {
-				res.AddErrors(err)
+				res = append(res, err)
 			}
 			route.Consumer = route.Consumers[ct]
 		}
 	}
 
 	// check and validate the response format
-	if res.IsValid() {
+	if len(res) == 0 {
 		if str := httputil.NegotiateContentType(request, route.Produces, ""); str == "" {
-			res.AddErrors(errors.InvalidResponseFormat(request.Header.Get(httputils.HeaderAccept), route.Produces))
+			res = append(res, errors.InvalidResponseFormat(request.Header.Get(httputils.HeaderAccept), route.Produces))
 		}
 	}
 
 	// now bind the request with the provided binder
 	// it's assumed the binder will also validate the request and return an error if the
 	// request is invalid
-	if binder != nil && res.IsValid() {
-		res.Merge(binder.BindRequest(request, route))
+	if binder != nil && len(res) == 0 {
+		if err := binder.BindRequest(request, route); err != nil {
+			res = append(res, err)
+		}
 	}
 
-	if res.HasErrors() {
-		return errors.CompositeValidationError(res.Errors...)
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
 	}
 	return nil
 }
@@ -285,17 +286,23 @@ func (c *Context) Authorize(request *http.Request, route *MatchedRoute) (interfa
 }
 
 // BindAndValidate binds and validates the request
-func (c *Context) BindAndValidate(request *http.Request, matched *MatchedRoute) (interface{}, *validate.Result) {
+func (c *Context) BindAndValidate(request *http.Request, matched *MatchedRoute) (interface{}, error) {
 	if v, ok := context.GetOk(request, ctxBoundParams); ok {
 		if val, ok := v.(*validation); ok {
-			return val.bound, val.result
+			if len(val.result) > 0 {
+				return val.bound, errors.CompositeValidationError(val.result...)
+			}
+			return val.bound, nil
 		}
 	}
 	result := validateRequest(c, request, matched)
 	if result != nil {
 		context.Set(request, ctxBoundParams, result)
 	}
-	return result.bound, result.result
+	if len(result.result) > 0 {
+		return result.bound, errors.CompositeValidationError(result.result...)
+	}
+	return result.bound, nil
 }
 
 // NotFound the default not found responder for when no route has been matched yet
@@ -321,6 +328,9 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 	}
 	if route == nil || route.Operation == nil {
 		rw.WriteHeader(200)
+		if r.Method == "HEAD" {
+			return
+		}
 		producers := c.api.ProducersFor(produces)
 		prod, ok := producers[format]
 		if !ok {
@@ -333,12 +343,11 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 	}
 
 	if _, code, ok := route.Operation.SuccessResponse(); ok {
-		if code == 201 || code == 204 {
-			rw.WriteHeader(code)
+		rw.WriteHeader(code)
+		if code == 201 || code == 204 || r.Method == "HEAD" {
 			return
 		}
 
-		rw.WriteHeader(code)
 		producers := route.Producers
 		prod, ok := producers[format]
 		if !ok {

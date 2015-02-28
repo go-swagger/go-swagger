@@ -4,9 +4,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/casualjim/go-swagger/internal/validate"
+	swaggererrors "github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
+	"github.com/casualjim/go-swagger/validate"
 )
 
 // ValidateSpec is a command that validates a swagger document
@@ -28,11 +29,11 @@ func (c *ValidateSpec) Execute(args []string) error {
 	}
 
 	result := validate.Spec(specDoc, strfmt.Default)
-	if result.IsValid() {
+	if result == nil {
 		fmt.Printf("The swagger spec at %q is valid against swagger specification %s\n", swaggerDoc, specDoc.Version())
 	} else {
 		str := fmt.Sprintf("The swagger spec at %q is invalid against swagger specification %s. see errors :\n", swaggerDoc, specDoc.Version())
-		for _, desc := range result.Errors {
+		for _, desc := range result.(*swaggererrors.CompositeError).Errors {
 			str += fmt.Sprintf("- %s\n", desc)
 		}
 		return errors.New(str)

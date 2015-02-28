@@ -8,7 +8,6 @@ import (
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/middleware/httputils"
 	"github.com/casualjim/go-swagger/util"
-	"github.com/casualjim/go-swagger/validate"
 )
 
 // NewValidation starts a new validation middleware
@@ -18,8 +17,8 @@ func newValidation(ctx *Context, next http.Handler) http.Handler {
 		matched, _ := ctx.RouteInfo(r)
 		_, result := ctx.BindAndValidate(r, matched)
 
-		if result.HasErrors() {
-			ctx.Respond(rw, r, matched.Produces, matched, result.Errors[0])
+		if result != nil {
+			ctx.Respond(rw, r, matched.Produces, matched, result)
 			return
 		}
 
@@ -29,7 +28,7 @@ func newValidation(ctx *Context, next http.Handler) http.Handler {
 
 type validation struct {
 	context *Context
-	result  *validate.Result
+	result  []error
 	request *http.Request
 	route   *MatchedRoute
 	bound   map[string]interface{}
@@ -38,8 +37,8 @@ type validation struct {
 type untypedBinder map[string]interface{}
 
 func (ub untypedBinder) BindRequest(r *http.Request, route *MatchedRoute, consumer swagger.Consumer) error {
-	if res := route.Binder.Bind(r, route.Params, consumer, ub); res != nil && res.HasErrors() {
-		return errors.CompositeValidationError(res.Errors...)
+	if err := route.Binder.Bind(r, route.Params, consumer, ub); err != nil {
+		return err
 	}
 	return nil
 }
@@ -59,7 +58,6 @@ func validateContentType(allowed []string, actual string) *errors.Validation {
 func validateRequest(ctx *Context, request *http.Request, route *MatchedRoute) *validation {
 	validate := &validation{
 		context: ctx,
-		result:  new(validate.Result),
 		request: request,
 		route:   route,
 		bound:   make(map[string]interface{}),
@@ -67,7 +65,7 @@ func validateRequest(ctx *Context, request *http.Request, route *MatchedRoute) *
 
 	validate.contentType()
 	validate.responseFormat()
-	if validate.result.IsValid() {
+	if len(validate.result) == 0 {
 		validate.parameters()
 	}
 
@@ -75,18 +73,25 @@ func validateRequest(ctx *Context, request *http.Request, route *MatchedRoute) *
 }
 
 func (v *validation) parameters() {
-	result := v.route.Binder.Bind(v.request, v.route.Params, v.route.Consumer, v.bound)
-	v.result.Merge(result)
+	if result := v.route.Binder.Bind(v.request, v.route.Params, v.route.Consumer, v.bound); result != nil {
+		if result.Error() == "validation failure list" {
+			for _, e := range result.(*errors.Validation).Value.([]interface{}) {
+				v.result = append(v.result, e.(error))
+			}
+			return
+		}
+		v.result = append(v.result, result)
+	}
 }
 
 func (v *validation) contentType() {
 	if httputils.CanHaveBody(v.request.Method) {
 		ct, _, err := v.context.ContentType(v.request)
 		if err != nil {
-			v.result.AddErrors(err)
+			v.result = append(v.result, err)
 		} else {
 			if err := validateContentType(v.route.Consumes, ct); err != nil {
-				v.result.AddErrors(err)
+				v.result = append(v.result, err)
 			}
 			v.route.Consumer = v.route.Consumers[ct]
 		}
@@ -95,6 +100,6 @@ func (v *validation) contentType() {
 
 func (v *validation) responseFormat() {
 	if str := v.context.ResponseFormat(v.request, v.route.Produces); str == "" {
-		v.result.AddErrors(errors.InvalidResponseFormat(v.request.Header.Get(httputils.HeaderAccept), v.route.Produces))
+		v.result = append(v.result, errors.InvalidResponseFormat(v.request.Header.Get(httputils.HeaderAccept), v.route.Produces))
 	}
 }

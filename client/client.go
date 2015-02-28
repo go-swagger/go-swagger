@@ -94,7 +94,11 @@ func (r *Runtime) Submit(request *Request, result interface{}) error {
 					return err
 				}
 			} else {
-				return &APIError{OperationName: request.Operation.ID, Value: fmt.Sprintf("no consumer for %q", consumerMediaType), Code: res.StatusCode}
+				return &APIError{
+					OperationName: request.Operation.ID,
+					Value:         fmt.Sprintf("no consumer for %q", consumerMediaType),
+					Code:          res.StatusCode,
+				}
 			}
 		}
 		return nil

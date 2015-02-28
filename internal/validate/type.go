@@ -9,7 +9,6 @@ import (
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/casualjim/go-swagger/util"
-	"github.com/casualjim/go-swagger/validate"
 )
 
 type typeValidator struct {
@@ -111,8 +110,8 @@ func (t *typeValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	return r
 }
 
-func (t *typeValidator) Validate(data interface{}) *validate.Result {
-	result := new(validate.Result)
+func (t *typeValidator) Validate(data interface{}) *Result {
+	result := new(Result)
 	result.Inc()
 	if data == nil || reflect.DeepEqual(reflect.Zero(reflect.TypeOf(data)), reflect.ValueOf(data)) {
 		if len(t.Type) > 0 && !t.Type.Contains("null") { // TODO: if a property is not required it also passes this

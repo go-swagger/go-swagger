@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-// Validation represents a failure of a precondidition
+// Validation represents a failure of a precondition
 type Validation struct {
 	code    int32
 	Name    string

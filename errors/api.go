@@ -71,6 +71,20 @@ func errorAsJSON(err Error) []byte {
 	return b
 }
 
+func flattenComposite(errs *CompositeError) *CompositeError {
+	var res []error
+	for _, er := range errs.Errors {
+		switch e := er.(type) {
+		case *CompositeError:
+			flat := flattenComposite(e)
+			res = append(res, flat.Errors...)
+		default:
+			res = append(res, e)
+		}
+	}
+	return CompositeValidationError(res...)
+}
+
 // MethodNotAllowed creates a new method not allowed error
 func MethodNotAllowed(requested string, allow []string) Error {
 	msg := fmt.Sprintf("method %s is not allowed, but [%s] are", requested, strings.Join(allow, ","))
@@ -79,18 +93,26 @@ func MethodNotAllowed(requested string, allow []string) Error {
 
 // ServeError the error handler interface implemenation
 func ServeError(rw http.ResponseWriter, r *http.Request, err error) {
-	switch err.(type) {
+	switch e := err.(type) {
+	case *CompositeError:
+		er := flattenComposite(e)
+		ServeError(rw, r, er.Errors[0])
 	case *MethodNotAllowedError:
-		e := err.(*MethodNotAllowedError)
 		rw.Header().Add("Allow", strings.Join(err.(*MethodNotAllowedError).Allowed, ","))
 		rw.WriteHeader(int(e.Code()))
-		rw.Write(errorAsJSON(e))
+		if r == nil || r.Method != "HEAD" {
+			rw.Write(errorAsJSON(e))
+		}
 	case Error:
-		rw.WriteHeader(int(err.(Error).Code()))
-		rw.Write(errorAsJSON(err.(Error)))
+		rw.WriteHeader(int(e.Code()))
+		if r == nil || r.Method != "HEAD" {
+			rw.Write(errorAsJSON(e))
+		}
 	default:
 		rw.WriteHeader(http.StatusInternalServerError)
-		rw.Write(errorAsJSON(New(http.StatusInternalServerError, err.Error())))
+		if r == nil || r.Method != "HEAD" {
+			rw.Write(errorAsJSON(New(http.StatusInternalServerError, err.Error())))
+		}
 	}
 
 }

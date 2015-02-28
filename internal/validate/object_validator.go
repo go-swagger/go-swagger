@@ -7,7 +7,6 @@ import (
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/validate"
 )
 
 type objectValidator struct {
@@ -36,25 +35,24 @@ func (o *objectValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	return r
 }
 
-func (o *objectValidator) Validate(data interface{}) *validate.Result {
+func (o *objectValidator) Validate(data interface{}) *Result {
 	val := data.(map[string]interface{})
 	numKeys := int64(len(val))
 
 	if o.MinProperties != nil && numKeys < *o.MinProperties {
-		return sErr(errors.New(422, "must have at least %d properties", *o.MinProperties))
+		return sErr(errors.TooFewProperties(o.Path, o.In, *o.MinProperties))
 	}
 	if o.MaxProperties != nil && numKeys > *o.MaxProperties {
-		return sErr(errors.New(422, "must have at most %d properties", *o.MaxProperties))
+		return sErr(errors.TooManyProperties(o.Path, o.In, *o.MaxProperties))
 	}
 
-	res := new(validate.Result)
+	res := new(Result)
 	if len(o.Required) > 0 {
 		for _, k := range o.Required {
 			if _, ok := val[k]; !ok {
 				res.AddErrors(errors.Required(o.Path+"."+k, o.In))
 				continue
 			}
-			res.Inc()
 		}
 	}
 	if o.AdditionalProperties != nil && !o.AdditionalProperties.Allows {
@@ -69,9 +67,8 @@ func (o *objectValidator) Validate(data interface{}) *validate.Result {
 				}
 			}
 			if !(regularProperty || k == "$schema" || k == "id" || matched) {
-				res.AddErrors(errors.New(422, "%s.%s in %s is a forbidden property", o.Path, k, o.In))
+				res.AddErrors(errors.PropertyNotAllowed(o.Path, o.In, k))
 			}
-
 		}
 	} else {
 		for key, value := range val {
@@ -81,7 +78,7 @@ func (o *objectValidator) Validate(data interface{}) *validate.Result {
 				if o.AdditionalProperties != nil && o.AdditionalProperties.Schema != nil {
 					res.Merge(NewSchemaValidator(o.AdditionalProperties.Schema, o.Root, o.Path+"."+key, o.KnownFormats).Validate(value))
 				} else if regularProperty && !(matched || succeededOnce) {
-					res.AddErrors(errors.New(422, "%s.%s in %s failed all pattern properties", o.Path, key, o.In))
+					res.AddErrors(errors.FailedAllPatternProperties(o.Path, o.In, key))
 				}
 			}
 		}
@@ -98,11 +95,10 @@ func (o *objectValidator) Validate(data interface{}) *validate.Result {
 	}
 
 	// Pattern Properties
-	res.Inc()
 	return res
 }
 
-func (o *objectValidator) validatePatternProperty(key string, value interface{}, result *validate.Result) (bool, bool, []string) {
+func (o *objectValidator) validatePatternProperty(key string, value interface{}, result *Result) (bool, bool, []string) {
 	matched := false
 	succeededOnce := false
 	var patterns []string

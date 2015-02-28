@@ -160,7 +160,11 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 	}
 
 	var properties []genModelProperty
+	var hasValidations bool
 	for _, v := range props {
+		if v.HasValidations {
+			hasValidations = v.HasValidations
+		}
 		properties = append(properties, v)
 	}
 
@@ -173,6 +177,7 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 		Description:    schema.Description,
 		DocString:      modelDocString(util.ToGoName(name), schema.Description),
 		HumanClassName: util.ToHumanNameLower(util.ToGoName(name)),
+		HasValidations: hasValidations,
 	}
 }
 
@@ -186,6 +191,7 @@ type genModel struct {
 	DocString      string             //`json:"docString,omitempty"`
 	HumanClassName string             //`json:"humanClassname,omitempty"`
 	Imports        map[string]string  //`json:"imports,omitempty"`
+	HasValidations bool               // `json:"hasValidatins,omitempty"`
 }
 
 func modelDocString(className, desc string) string {

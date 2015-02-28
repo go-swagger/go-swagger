@@ -80,30 +80,22 @@ var {{.IndexVar}}r {{.Type}}
 for {{.IndexVar}} := 0; {{.IndexVar}} < {{.IndexVar}}sz; {{.IndexVar}}++ {
   {{if or .Child.IsCustomFormatter .Child.IsPrimitive}}{{if .Child.Converter}}value, err := {{.Child.Converter}}({{.IndexVar}}c[{{.IndexVar}}])
   if err != nil {
-    res.AddErrors(errors.InvalidType({{.Child.Path}}, "{{.Location}}", "{{.Child.Type}}", {{.IndexVar}}c[{{.IndexVar}}]))
-    return res
+    return errors.InvalidType({{.Child.Path}}, "{{.Location}}", "{{.Child.Type}}", {{.IndexVar}}c[{{.IndexVar}}])
   }
 
   if err := {{.IndexVar}}ValidateElement({{.IndexVar}}, {{.Child.ValueExpression}}); err != nil {
-    res.AddErrors(err)
-    return res
+    return err
   }
-  res.Inc()
   {{.IndexVar}}r = append({{.IndexVar}}r, value)
   {{else}}
     if err := {{.IndexVar}}ValidateElement({{.IndexVar}}, {{.IndexVar}}c[{{.IndexVar}}]); err != nil {
-      res.AddErrors(err)
-      return res
+      return err
     }
-
-    res.Inc()
   {{.IndexVar}}r = append({{.IndexVar}}r, {{.IndexVar}}c[{{.IndexVar}}]){{end}}{{else if .Child.IsContainer}}
   {{template "slicebinder" .Child}}
     if err := {{.IndexVar}}ValidateElement({{.IndexVar}}, {{.Child.IndexVar}}r); err != nil {
-      res.AddErrors(err)
-      return res
+      return err
     }
-    res.Inc()
   {{.IndexVar}}r = append({{.IndexVar}}r, {{.Child.IndexVar}}r){{end}}
 }
 {{end}}package {{.Package}}
@@ -116,7 +108,6 @@ import (
   "github.com/casualjim/go-swagger"
   "github.com/casualjim/go-swagger/errors"
   "github.com/casualjim/go-swagger/middleware/httputils"
-  "github.com/casualjim/go-swagger/validate"
 
   {{range $key, $value := .Imports}}
   {{$key}} {{ printf "%q" $value}}
@@ -131,116 +122,116 @@ type {{.ClassName}}Params struct {
   {{end}}
 }
 
-// BindRequest both binds and validates a request, it assumes that complex things implement a Validatable() *validate.Result interface
+// BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls
-func ({{.ReceiverName}} *{{.ClassName}}Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) *validate.Result {
-  res := new(validate.Result)
+func ({{.ReceiverName}} *{{.ClassName}}Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
+  var res []error
   {{if .HasQueryParams}}qs := r.URL.Query()
   {{else if .HasFormParams}}
   {{end}}
 
   {{range .Params}}
-  {{if not .IsContainer}}{{if .IsQueryParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(qs.Get({{.Path}}), route.Formats))
-  {{else if .IsPathParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(route.Params.Get({{.Path}}), route.Formats))
-  {{else if .IsHeaderParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(r.Header.Get({{.Path}}), route.Formats))
+  {{if not .IsContainer}}{{if .IsQueryParam}}if err := {{.ReceiverName}}.bind{{.PropertyName}}(qs.Get({{.Path}}), route.Formats); err != nil {
+    res = append(res, err)
+  }
+  {{else if .IsPathParam}}if err := {{.ReceiverName}}.bind{{.PropertyName}}(route.Params.Get({{.Path}}), route.Formats); err != nil {
+    res = append(res, err)
+  }
+  {{else if .IsHeaderParam}}if err := {{.ReceiverName}}.bind{{.PropertyName}}(r.Header.Get({{.Path}}), route.Formats); err != nil {
+    res = append(res, err)
+  }
   {{else if .IsFormParam}}{{if .IsFileParam}}{{.ParamName}}, {{.ParamName}}Header, err := r.FormFile({{.Path}})
   if err != nil {
-    res.AddErrors(errors.New(400, "reading file \"{{.ParamName}}\" failed: %v", err))
+    res = append(res, errors.New(400, "reading file \"{{.ParamName}}\" failed: %v", err))
   } else {
     {{.ReceiverName}}.{{.PropertyName}} = swagger.File{Data: {{.ParamName}}, Header: {{.ParamName}}Header}
   }
-  {{else}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(r.FormValue({{.Path}}), route.Formats))
+  {{else}}if err := {{.ReceiverName}}.bind{{.PropertyName}}(r.FormValue({{.Path}}), route.Formats); err != nil {
+    res = append(res, err)
+  }
   {{end}}{{end}}
-  {{else if .IsContainer}}{{if .IsQueryParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(util.SplitByFormat(qs.Get({{.Path}}), "{{.CollectionFormat}}"), route.Formats))
-  {{else if and .IsFormParam}}res.Merge({{.ReceiverName}}.bind{{.PropertyName}}(util.SplitByFormat(r.FormValue({{.Path}}), "{{.CollectionFormat}}"), route.Formats))
+  {{else if .IsContainer}}{{if .IsQueryParam}}if err := {{.ReceiverName}}.bind{{.PropertyName}}(util.SplitByFormat(qs.Get({{.Path}}), "{{.CollectionFormat}}"), route.Formats); err != nil {
+    res = append(res, err)
+  }
+  {{else if and .IsFormParam}}if err := {{.ReceiverName}}.bind{{.PropertyName}}(util.SplitByFormat(r.FormValue({{.Path}}), "{{.CollectionFormat}}"), route.Formats); err != nil {
+    res = append(res, err)
+  }
   {{end}}{{end}}
 
   {{if .IsBodyParam}}
   if err := route.Consumer.Consume(r.Body, &{{.ReceiverName}}.{{.PropertyName}}); err != nil {
-    res.AddErrors(errors.NewParseError("{{.ParamName}}", "{{.Location}}", "", err))
+    res = append(res, errors.NewParseError("{{.ParamName}}", "{{.Location}}", "", err))
   } else {
     {{if .IsContainer}}for _, {{.IndexVar}}{{.ReceiverName}} := range {{.ReceiverName}}.{{.PropertyName}} {
       if err := {{.IndexVar}}{{.ReceiverName}}.Validate(route.Formats); err != nil {
-        res.Merge(err)
+        res = append(res, err)
         break
       }
     }
-    {{else}}res.Merge({{.ReceiverName}}.{{.PropertyName}}.Validate(route.Formats))
+    {{else}}if err := {{.ReceiverName}}.{{.PropertyName}}.Validate(route.Formats); err != nil {
+      res = append(res, err)
+    }
     {{end}}
   }
 
   {{end}}
   {{end}}
-  return res
+  if len(res) > 0 {
+    return errors.CompositeValidationError(res...)
+  }
+  return nil
 }
 
 {{ $className := .ClassName }}
 {{range .Params}}
 {{if not .IsBodyParam}}
 {{if or .IsPrimitive .IsCustomFormatter}}
-func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw string, formats strfmt.Registry) *validate.Result {
-  res := new(validate.Result)
-
+func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw string, formats strfmt.Registry) error {
   {{if and (not .IsPathParam) .Required}}if err := validate.RequiredString({{.Path}}, "{{.Location}}", raw); err != nil {
-    res.AddErrors(err)
-    return res
+    return err
   }
-  res.Inc()
   {{end}}
   {{if .Converter}}value, err := {{.Converter}}(raw)
   if err != nil {
-    res.AddErrors(errors.InvalidType({{.Path}}, "{{.Location}}", "{{.Type}}", raw))
-    return res
+    return errors.InvalidType({{.Path}}, "{{.Location}}", "{{.Type}}", raw)
   }
-  res.Inc()
   {{.ValueExpression}} = value
   {{else}}
   {{.ValueExpression}} = raw
   {{end}}
   {{if .HasValidations}}if err := {{.ReceiverName}}.validate{{.PropertyName}}(formats); err != nil {
-    res.AddErrors(err)
-  }
-
-  if res.IsValid() {
-    res.Inc()
+    return err
   }
   {{end}}
-  return res
+  return nil
 }
 {{else if .IsContainer}}
-func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw []string, formats strfmt.Registry) *validate.Result {
-  res := new(validate.Result)
+func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw []string, formats strfmt.Registry) error {
   size := len(raw)
 
   {{if .Required}}if size == 0 {
-    res.AddErrors(errors.Required({{.Path}}, "{{.Location}}"))
-    return res
+    return errors.Required({{.Path}}, "{{.Location}}")
   }
-  res.Inc()
   {{end}}
 
   {{if .DefaultValue}}defValue := util.SplitByFormat({{.DefaultValue}}, "{{.CollectionFormat}}")
   if size == 0 && len(defValue) > 0 {
     {{.ValueExpression}} = defValue
   {{else}}if size == 0 {
-    res.Inc()
-    return res{{end}}
+    return nil{{end}}
   }
   {{template "slicebinder" .}}
   {{.ValueExpression}} = {{.IndexVar}}r
   {{if .HasSliceValidations}}if err := {{.ReceiverName}}.validate{{.PropertyName}}(formats); err != nil {
-    res.AddErrors(err)
-  }
-
-  if res.IsValid() {
-    res.Inc()
+    return err
   }
   {{end}}
-  return res
+
+  return nil
 }
 {{end}}
 {{if or .HasValidations .HasSliceValidations}}
-func ({{.ReceiverName}} *{{$className}}Params) validate{{.PropertyName}}(formats strfmt.Registry) *errors.Validation {
+func ({{.ReceiverName}} *{{$className}}Params) validate{{.PropertyName}}(formats strfmt.Registry) error {
   {{template "propertyvalidator" .}}
   return nil
 }

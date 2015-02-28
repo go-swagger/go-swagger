@@ -8,7 +8,6 @@ import (
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/validate"
 )
 
 // RequestBinder binds and validates the data from a http request
@@ -34,10 +33,10 @@ func newUntypedRequestBinder(parameters map[string]spec.Parameter, spec *spec.Sw
 }
 
 // Bind perform the databinding and validation
-func (o *untypedRequestBinder) Bind(request *http.Request, routeParams RouteParams, consumer swagger.Consumer, data interface{}) *validate.Result {
+func (o *untypedRequestBinder) Bind(request *http.Request, routeParams RouteParams, consumer swagger.Consumer, data interface{}) error {
 	val := reflect.Indirect(reflect.ValueOf(data))
 	isMap := val.Kind() == reflect.Map
-	result := new(validate.Result)
+	var result []error
 
 	for fieldName, param := range o.Parameters {
 		binder := o.paramBinders[fieldName]
@@ -62,24 +61,20 @@ func (o *untypedRequestBinder) Bind(request *http.Request, routeParams RoutePara
 		}
 
 		if !target.IsValid() {
-			result.AddErrors(errors.New(500, "parameter name %q is an unknown field", binder.Name))
+			result = append(result, errors.New(500, "parameter name %q is an unknown field", binder.Name))
 			continue
 		}
 
 		if err := binder.Bind(request, routeParams, consumer, target); err != nil {
-			switch err.(type) {
-			case *errors.Validation:
-				result.AddErrors(err.(*errors.Validation))
-			case errors.Error:
-				result.AddErrors(err.(errors.Error))
-			default:
-				result.AddErrors(errors.New(500, err.Error()))
-			}
+			result = append(result, err)
 			continue
 		}
 
 		if binder.validator != nil {
-			result.Merge(binder.validator.Validate(target.Interface()))
+			rr := binder.validator.Validate(target.Interface())
+			if rr != nil && rr.HasErrors() {
+				result = append(result, rr.AsError())
+			}
 		}
 
 		if isMap {
@@ -87,5 +82,9 @@ func (o *untypedRequestBinder) Bind(request *http.Request, routeParams RoutePara
 		}
 	}
 
-	return result
+	if len(result) > 0 {
+		return errors.CompositeValidationError(result...)
+	}
+
+	return nil
 }

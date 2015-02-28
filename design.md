@@ -102,7 +102,7 @@ When a result is produced it will do the same thing by making use of the `Accept
 
 ```go
 type RequestBinder interface {
-  BindRequest(*http.Request, *router.MatchedRoute, swagger.Consumer) *validate.Result
+  BindRequest(*http.Request, *router.MatchedRoute, swagger.Consumer) error
 }
 ```
 
@@ -115,7 +115,7 @@ There is a mapping from validation name to status code, this mapping is also pri
 
 ```go
 type Validatable interface {
-  Validate() *validate.Result
+  Validate(strfmt.Registry) error
 }
 
 type Error struct {
