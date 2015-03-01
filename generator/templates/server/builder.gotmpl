@@ -17,6 +17,19 @@ import (
   {{end}}
 )
 
+// New{{.AppName}}API creates a new {{.AppName}} instance
+func New{{.AppName}}API(spec *spec.Document) *{{.AppName}}API {
+  {{.ReceiverName}} := &{{.AppName}}API{
+    spec:     spec,
+    handlers: make(map[string]http.Handler),
+    formats:  strfmt.Default,
+  }
+
+  {{.ReceiverName}}.context =  middleware.NewRoutableContext(spec, {{.ReceiverName}}, nil)
+
+  return {{.ReceiverName}}
+}
+
 // {{.AppName}}API {{.Info.Description}}
 type {{.AppName}}API struct {
   spec           *spec.Document
@@ -177,4 +190,25 @@ func ({{.ReceiverName}} *{{.AppName}}API) initHandlerCache() {
   {{end}}
   {{end}}
   {{end}}
+}
+
+// Serve creates a http handler to serve the API over HTTP
+// can be used directly in http.ListenAndServe(":8000", api.Serve())
+func ({{.ReceiverName}} *{{.AppName}}API) Serve() http.Handler {
+  if len({{.ReceiverName}}.handlers) == 0 {
+    {{.ReceiverName}}.initHandlerCache()
+  }
+
+  return {{.ReceiverName}}.context.APIHandler()
+}
+
+// ServeWithUI creates a http handler to serve the API over HTTP
+// includes a middleware that serves a swagger ui on /swagger-ui
+// can be used directly in http.ListenAndServe(":8000", api.ServeWithUI())
+func ({{.ReceiverName}} *{{.AppName}}API) ServeWithUI() http.Handler {
+  if len({{.ReceiverName}}.handlers) == 0 {
+    {{.ReceiverName}}.initHandlerCache()
+  }
+
+  return {{.ReceiverName}}.context.UIMiddleware({{.ReceiverName}}.context.APIHandler())
 }

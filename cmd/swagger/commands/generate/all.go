@@ -26,6 +26,8 @@ type All struct {
 	SkipModels     bool     `long:"skip-models" description:"no models will be generated when this flag is specified"`
 	SkipOperations bool     `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
 	SkipSupport    bool     `long:"skip-support" description:"no supporting files will be generated when this flag is specified"`
+	IncludeMain    bool     `long:"include-main" description:"generates a main package for the server"`
+	IncludeUI      bool     `long:"include-ui" description:"when generating a main package it uses a middleware that also serves a swagger-ui for the swagger json"`
 }
 
 // Execute runs this command
@@ -39,7 +41,7 @@ func (a *All) Execute(args []string) error {
 	}
 
 	if !a.SkipSupport {
-		if err := generator.GenerateSupport(a.Name, a.Models, a.Operations, opts); err != nil {
+		if err := generator.GenerateSupport(a.Name, a.Models, a.Operations, a.IncludeMain, a.IncludeUI, opts); err != nil {
 			return err
 		}
 	}

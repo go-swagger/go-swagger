@@ -265,7 +265,7 @@ type genOperation struct {
 	DocString    string //`json:"docString,omitempty"`   // -
 	ExternalDocs string //`json:"externalDocs,omitempty"`
 
-	Imports map[string]string //`json:"imports,omitempty"`
+	Imports map[string]string //`json:"imports,omitempty"` // -
 
 	Authorized bool   //`json:"authorized"`          // -
 	Principal  string //`json:"principal,omitempty"` // -
@@ -281,10 +281,10 @@ type genOperation struct {
 	QueryParams    []genParameter //`json:"queryParams,omitempty"`    // -
 	PathParams     []genParameter //`json:"pathParams,omitempty"`     // -
 	HeaderParams   []genParameter //`json:"headerParams,omitempty"`   // -
-	FormParams     []genParameter //`json:"formParams,omitempty"`
+	FormParams     []genParameter //`json:"formParams,omitempty"`     // -
 	HasQueryParams bool           //`json:"hasQueryParams,omitempty"` // -
-	HasFormParams  bool           //`json:"hasFormParams,omitempty"`
-	HasFileParams  bool           //`json:"hasFileParams,omitempty"`
+	HasFormParams  bool           //`json:"hasFormParams,omitempty"`  // -
+	HasFileParams  bool           //`json:"hasFileParams,omitempty"`  // -
 }
 
 func makeCodegenParameter(receiver, modelsPkg string, param spec.Parameter) genParameter {
