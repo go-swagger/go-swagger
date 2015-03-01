@@ -21,17 +21,28 @@ http://godoc.org/github.com/casualjim/go-swagger
 
 Install:
 
-go get -u github.com/casualjim/go-swagger/cmd/swagger
+		go get -u github.com/casualjim/go-swagger/cmd/swagger
 
 The implementation also provides a number of command line tools to help working with swagger.
 
 Currently there is a spec validator tool:
 
-swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
+		swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
 
 You can also serve a swagger document with the swagger UI
 
-swagger ui ./swagger.json
+		swagger ui ./swagger.json
+
+To generate a server for a swagger spec document:
+
+		swagger generate all -f ./swagger.json -A [application-name] [--principal [principal-name]] --include-main --include-ui
+
+
+Design
+------
+
+For now what exists of documentation on how all the pieces fit together, is described in this [doc](design.md)
+
 
 What's inside?
 --------------
@@ -45,7 +56,6 @@ For a V1 I want to have this feature set completed:
 	-	[ ] validate extra rules outlined [here](https://github.com/apigee-127/swagger-tools/blob/master/docs/Swagger_Validation.md)
 	-	[x] serve swagger UI for any swagger spec file
 	-	[x] generate stub api based on swagger spec
-	-	[ ] watch swagger spec file and regenerate when modified
 	-	[ ] generate client from a swagger spec
 	-	[ ] generate "sensible" random data based on swagger spec
 	-	[ ] generate tests based on swagger spec for server
@@ -85,17 +95,18 @@ For a V1 I want to have this feature set completed:
 	-	[x] duration
 	-	[x] custom string formats
 
-### Later
+Later
+-----
 
 After the v1 implementation extra transports are on the roadmap
 
+- Formats:
+	- [ ] custom serializer for XML to support namespaces and prefixes
+	- [ ] optimized serializer for JSON
+	- [ ] optimized serializer for YAML
 -	Tools:
 	-	[ ] generate spec document based on the code
+	-	[ ] watch swagger spec file and regenerate when modified
 -	Transports:
 	-	[ ] swagger socket (swagger over tcp sockets)
 	-	[ ] swagger websocket (swagger over websockets)
-	-	[ ] swagger sockjs (swagger over sockjs)
-	-	[ ] swagger socket.io (swagger over socket.io)
-	-	[ ] swagger 0mq (swagger over 0mq)
--	Templates:
-	-	[ ] Allow usage of templates using stdlib templates

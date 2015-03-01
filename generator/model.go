@@ -233,6 +233,16 @@ func makeGenModelProperty(path, paramName, accessor, receiver, indexVar, valueEx
 	ctx.HasSliceValidations = len(items) > 0 || hasAdditionalItems
 	ctx.HasValidations = ctx.HasValidations || ctx.HasSliceValidations
 
+	xmlName := paramName
+	if schema.XML != nil {
+		if schema.XML.Name != "" {
+			xmlName = schema.XML.Name
+			if schema.XML.Attribute {
+				xmlName += ",attr"
+			}
+		}
+	}
+
 	return genModelProperty{
 		sharedParam:     ctx,
 		DataType:        ctx.Type,
@@ -249,6 +259,8 @@ func makeGenModelProperty(path, paramName, accessor, receiver, indexVar, valueEx
 		Items:             items,
 		ItemsLen:          len(items),
 		SingleSchemaSlice: singleSchemaSlice,
+
+		XMLName: xmlName,
 	}
 }
 
@@ -275,6 +287,7 @@ type genModelProperty struct {
 	HasAdditionalItems    bool               //`json:"hasAdditionalItems,omitempty"`
 	AdditionalItems       *genModelProperty  //`json:"additionalItems,omitempty"`
 	Object                *genModelProperty  //`json:"object,omitempty"`
+	XMLName               string             //`json:"xmlName,omitempty"`
 }
 
 func modelValidations(path, paramName, accessor, indexVar, valueExpression, pkg string, required bool, model spec.Schema) commonValidations {

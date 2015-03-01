@@ -61,9 +61,9 @@ The default implemenation of an interface just returns a not implemented api err
 
 When all the interfaces and default implementations are generated it will generate a swagger mux implementation.
 This swagger mux implemenation links all the interface implementations to operation names.
-The typed API wraps an untyped API to do the actual route registration, it's mostly sugar for providing better compile time type safety.
 
-This is done through integration in the `go generate` command
+The typed API avoids reflection as much as possible, there are 1 or 2 validations that require it.
+
 
 ### The request handler
 
@@ -138,11 +138,8 @@ The result it gets from the operation handler will be turned into a response. Sh
 
 # Codegen
 
-Most of the codegen will try to reuse the templates from the swagger-codegen project. These are mustache templates and could be downloaded on demand.
-`swagger generate add-templates objc` would download the templates for generating an objective c client.
-
 The go server api generator however won't reuse those templates but define its own set, because currently no proper go support exists in that project. Once I'm happy with what they generate I'll contribute them back to the swagger-codegen project.
 
 A generated client needs to have support for uploading files as multipart entries. The model generating code is shared between client and server. The things that operate with those models will be different.
 A generated client could implement validation on the client side for the request parameters and received response. The meat of the client is not actually implemented as generated code but a single submit function that knows how to perform all the shared operations and then issue the request.
-A client typically has only one consumer and producer registered. The content type for the request is the media type of the consumer, the accept header is the media type of the producer.
+A client typically has only one consumer and producer registered. The content type for the request is the media type of the producer, the accept header is the media type of the consumer.
