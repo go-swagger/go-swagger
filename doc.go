@@ -16,16 +16,20 @@ And it's 100% open source software.
 
 Install:
 
-  go get -u github.com/casualjim/go-swagger/cmd/swagger
+		go get -u github.com/casualjim/go-swagger/cmd/swagger
 
 The implementation also provides a number of command line tools to help working with swagger.
 
 Currently there is a spec validator tool:
 
-  swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
+		swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
 
 You can also serve a swagger document with the swagger UI
 
-  swagger ui ./swagger.json
+		swagger ui ./swagger.json
+
+To generate a server for a swagger spec document:
+
+		swagger generate all -f ./swagger.json -A [application-name] [--principal [principal-name]] --include-main --include-ui
 */
 package swagger

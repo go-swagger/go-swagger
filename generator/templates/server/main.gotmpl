@@ -25,10 +25,15 @@ func main() {
     port = "0"
   }
 
+  host := os.Getenv("HOST")
+  if host == "" {
+    host = "localhost"
+  }
+
   api := operations.New{{.AppName}}API(swaggerSpec)
   configureAPI(api)
 
-  listener, err := net.Listen("tcp", "localhost:" + port)
+  listener, err := net.Listen("tcp", host + ":" + port)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -38,8 +43,4 @@ func main() {
   if err := http.Serve(listener, api.Serve{{if .IncludeUI}}WithUI{{end}}()); err != nil {
     log.Fatalln(err)
   }
-}
-
-func configureAPI(api *operations.{{.AppName}}API) {
-  // configure the api here
 }
