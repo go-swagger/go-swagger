@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	testingutil "github.com/casualjim/go-swagger/internal/testing"
 	"github.com/casualjim/go-swagger/jsonpointer"
-	testingutil "github.com/casualjim/go-swagger/testing"
 	"github.com/casualjim/go-swagger/util"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
