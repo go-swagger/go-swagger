@@ -16,15 +16,19 @@ import (
 
 var (
 	builderTemplate *template.Template
+	mainTemplate    *template.Template
 )
 
 func init() {
 	bv, _ := Asset("templates/server/builder.gotmpl")
 	builderTemplate = template.Must(template.New("builder").Parse(string(bv)))
+
+	bm, _ := Asset("templates/server/main.gotmpl")
+	mainTemplate = template.Must(template.New("main").Parse(string(bm)))
 }
 
 // GenerateSupport generates the supporting files for an API
-func GenerateSupport(name string, modelNames, operationIDs []string, opts GenOpts) error {
+func GenerateSupport(name string, modelNames, operationIDs []string, includeMain, includeUI bool, opts GenOpts) error {
 	// Load the spec
 	_, specDoc, err := loadSpec(opts.Spec)
 	if err != nil {
@@ -77,6 +81,8 @@ func GenerateSupport(name string, modelNames, operationIDs []string, opts GenOpt
 		APIPackage:    opts.APIPackage,
 		ModelsPackage: opts.ModelPackage,
 		Principal:     opts.Principal,
+		IncludeMain:   includeMain,
+		IncludeUI:     includeUI,
 	}
 
 	return generator.Generate()
@@ -93,17 +99,52 @@ type appGenerator struct {
 	Operations    map[string]spec.Operation
 	Target        string
 	DumpData      bool
+	IncludeMain   bool
+	IncludeUI     bool
+}
+
+type genServerMain struct {
+	*genApp
+	IncludeUI   bool
+	SwaggerJSON string
 }
 
 func (a *appGenerator) Generate() error {
 	app := makeCodegenApp(a.Name, a.Package, a.Target, a.ModelsPackage, a.APIPackage, a.Principal, a.SpecDoc, a.Models, a.Operations)
 
 	if a.DumpData {
-		bb, _ := json.MarshalIndent(util.ToDynamicJSON(app), "", " ")
+		bb, _ := json.MarshalIndent(util.ToDynamicJSON(app), "", "  ")
 		fmt.Fprintln(os.Stdout, string(bb))
 		return nil
 	}
+
+	if a.IncludeMain {
+		if err := a.generateMain(&app); err != nil {
+			return err
+		}
+	}
+
 	return a.generateAPIBuilder(&app)
+}
+
+func (a *appGenerator) generateMain(app *genApp) error {
+	buf := bytes.NewBuffer(nil)
+
+	jsonb, err := json.MarshalIndent(a.SpecDoc.Spec(), "", "  ")
+	if err != nil {
+		return err
+	}
+
+	dd := &genServerMain{
+		genApp:      app,
+		IncludeUI:   a.IncludeUI,
+		SwaggerJSON: fmt.Sprintf("%#v", jsonb),
+	}
+	if err := mainTemplate.Execute(buf, dd); err != nil {
+		return err
+	}
+	log.Println("rendered main template:", "server."+app.AppName)
+	return writeToFile(filepath.Join(a.Target, "cmd", util.ToCommandName(app.AppName+"Server")), "main", buf.Bytes())
 }
 
 func (a *appGenerator) generateAPIBuilder(app *genApp) error {
@@ -111,8 +152,8 @@ func (a *appGenerator) generateAPIBuilder(app *genApp) error {
 	if err := builderTemplate.Execute(buf, app); err != nil {
 		return err
 	}
-	log.Println("rendered builder template:", app.AppName)
-	return writeToFile(filepath.Join(a.Target, app.Package), app.AppName+"Builder", buf.Bytes())
+	log.Println("rendered builder template:", app.Package+"."+app.AppName)
+	return writeToFile(filepath.Join(a.Target, app.Package), app.AppName+"API", buf.Bytes())
 }
 
 var mediaTypeNames = map[string]string{
@@ -148,7 +189,10 @@ func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal strin
 
 	var consumes []genSerGroup
 	for _, cons := range specDoc.RequiredConsumes() {
-		cn := mediaTypeNames[cons]
+		cn, ok := mediaTypeNames[cons]
+		if !ok {
+			continue
+		}
 		nm := util.ToJSONName(cn)
 
 		if ser, ok := getSerializer(consumes, cn); ok {
@@ -185,7 +229,10 @@ func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal strin
 
 	var produces []genSerGroup
 	for _, prod := range specDoc.RequiredProduces() {
-		pn := mediaTypeNames[prod]
+		pn, ok := mediaTypeNames[prod]
+		if !ok {
+			continue
+		}
 		nm := util.ToJSONName(pn)
 
 		if ser, ok := getSerializer(produces, pn); ok {

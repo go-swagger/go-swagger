@@ -30,7 +30,7 @@ func (d *ui) Execute(args []string) error {
 		return err
 	}
 	if fi.IsDir() {
-		return fmt.Errorf("expected")
+		return fmt.Errorf("%s is a directory, expected a file", fileName)
 	}
 
 	orig := fileName

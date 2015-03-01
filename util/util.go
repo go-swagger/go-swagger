@@ -117,6 +117,15 @@ func ToFileName(name string) string {
 	return strings.Join(out, "_")
 }
 
+// ToCommandName lowercases and underscores a go type name
+func ToCommandName(name string) string {
+	var out []string
+	for _, w := range split(name) {
+		out = append(out, lower(w))
+	}
+	return strings.Join(out, "-")
+}
+
 // ToHumanNameLower represents a code name as a human series of words
 func ToHumanNameLower(name string) string {
 	var out []string

@@ -8,9 +8,11 @@ type Support struct {
 	Name       string   `json:"name" short:"A" description:"the name of the application" default:"swagger"`
 	Operations []string `long:"operation" short:"O" description:"specify an operation to include, repeat for multiple"`
 	// Tags       []string `long:"tags" description:"the tags to include, if not specified defaults to all"`
-	Principal string   `long:"principal" description:"the model to use for the security principal"`
-	Models    []string `long:"model" short:"M" description:"specify a model to include, repeat for multiple"`
-	DumpData  bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
+	Principal   string   `long:"principal" description:"the model to use for the security principal"`
+	Models      []string `long:"model" short:"M" description:"specify a model to include, repeat for multiple"`
+	DumpData    bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
+	IncludeMain bool     `long:"include-main" description:"generates a main package for the server"`
+	IncludeUI   bool     `long:"include-ui" description:"when generating a main package it uses a middleware that also serves a swagger-ui for the swagger json"`
 }
 
 // Execute generates the supporting files file
@@ -19,6 +21,8 @@ func (s *Support) Execute(args []string) error {
 		s.Name,
 		nil,
 		nil,
+		s.IncludeMain,
+		s.IncludeUI,
 		generator.GenOpts{
 			Spec:         string(s.Spec),
 			Target:       string(s.Target),
