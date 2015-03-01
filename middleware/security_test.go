@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/casualjim/go-swagger/testing/petstore"
+	"github.com/casualjim/go-swagger/internal/testing/petstore"
 	"github.com/stretchr/testify/assert"
 )
 

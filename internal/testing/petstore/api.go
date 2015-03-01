@@ -6,10 +6,10 @@ import (
 
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
+	testingutil "github.com/casualjim/go-swagger/internal/testing"
 	"github.com/casualjim/go-swagger/middleware/security"
 	"github.com/casualjim/go-swagger/middleware/untyped"
 	"github.com/casualjim/go-swagger/spec"
-	testingutil "github.com/casualjim/go-swagger/testing"
 	"github.com/stretchr/testify/assert"
 )
 

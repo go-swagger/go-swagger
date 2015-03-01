@@ -7,7 +7,7 @@ import (
 
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
-	"github.com/casualjim/go-swagger/testing/petstore"
+	"github.com/casualjim/go-swagger/internal/testing/petstore"
 	"github.com/stretchr/testify/assert"
 )
 

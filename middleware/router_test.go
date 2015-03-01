@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/casualjim/go-swagger/internal/testing/petstore"
 	"github.com/casualjim/go-swagger/middleware/untyped"
 	"github.com/casualjim/go-swagger/spec"
-	"github.com/casualjim/go-swagger/testing/petstore"
 	"github.com/stretchr/testify/assert"
 )
 
