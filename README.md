@@ -37,6 +37,14 @@ To generate a server for a swagger spec document:
 
 		swagger generate all -f ./swagger.json -A [application-name] [--principal [principal-name]] --include-main --include-ui
 
+There are several other sub commands available for the generate command
+
+Sub command | Description
+------------|----------------------------------------------------------------------------------
+operation   | generates one or more models specified in the swagger definition
+model       | generates model files for one or more models specified in the swagger definition
+support     | generates the api builder and the main method
+server      | generates an entire server application
 
 Design
 ------
