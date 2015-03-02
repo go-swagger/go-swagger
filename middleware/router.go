@@ -73,6 +73,8 @@ type RoutableAPI interface {
 	ProducersFor([]string) map[string]swagger.Producer
 	AuthenticatorsFor(map[string]spec.SecurityScheme) map[string]swagger.Authenticator
 	Formats() strfmt.Registry
+	DefaultProduces() string
+	DefaultConsumes() string
 }
 
 // Router represents a swagger aware router

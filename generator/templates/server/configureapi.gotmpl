@@ -2,6 +2,11 @@ package main
 
 import (
   "github.com/casualjim/go-swagger/errors"
+
+  {{range .DefaultImports}}{{printf "%q" .}}
+  {{end}}
+  {{range $key, $value := .Imports}}{{$key}} {{ printf "%q" $value}}
+  {{end}}
 )
 
 // This file is safe to edit. Once it exists it won't be overwritten

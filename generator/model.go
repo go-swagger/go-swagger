@@ -191,6 +191,7 @@ type genModel struct {
 	DocString      string             //`json:"docString,omitempty"`
 	HumanClassName string             //`json:"humanClassname,omitempty"`
 	Imports        map[string]string  //`json:"imports,omitempty"`
+	DefaultImports []string           //`json:"defaultImports,omitempty"`
 	HasValidations bool               // `json:"hasValidatins,omitempty"`
 }
 

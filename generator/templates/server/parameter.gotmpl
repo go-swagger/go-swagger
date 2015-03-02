@@ -110,8 +110,9 @@ import (
   "github.com/casualjim/go-swagger/validation"
   "github.com/casualjim/go-swagger/middleware/httputils"
 
-  {{range $key, $value := .Imports}}
-  {{$key}} {{ printf "%q" $value}}
+  {{range .DefaultImports}}{{printf "%q" .}}
+  {{end}}
+  {{range $key, $value := .Imports}}{{$key}} {{ printf "%q" $value}}
   {{end}}
 )
 

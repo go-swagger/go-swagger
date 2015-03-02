@@ -15,7 +15,9 @@ import (
 // NewAPI creates the default untyped API
 func NewAPI(spec *spec.Document) *API {
 	return &API{
-		spec: spec,
+		spec:            spec,
+		DefaultProduces: "application/json",
+		DefaultConsumes: "application/json",
 		consumers: map[string]swagger.Consumer{
 			"application/json": swagger.JSONConsumer(),
 		},
@@ -32,14 +34,16 @@ func NewAPI(spec *spec.Document) *API {
 
 // API represents an untyped mux for a swagger spec
 type API struct {
-	spec           *spec.Document
-	consumers      map[string]swagger.Consumer
-	producers      map[string]swagger.Producer
-	authenticators map[string]swagger.Authenticator
-	operations     map[string]swagger.OperationHandler
-	ServeError     func(http.ResponseWriter, *http.Request, error)
-	Models         map[string]func() interface{}
-	formats        strfmt.Registry
+	spec            *spec.Document
+	DefaultProduces string
+	DefaultConsumes string
+	consumers       map[string]swagger.Consumer
+	producers       map[string]swagger.Producer
+	authenticators  map[string]swagger.Authenticator
+	operations      map[string]swagger.OperationHandler
+	ServeError      func(http.ResponseWriter, *http.Request, error)
+	Models          map[string]func() interface{}
+	formats         strfmt.Registry
 }
 
 // Formats returns the registered string formats
