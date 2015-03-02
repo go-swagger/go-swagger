@@ -105,6 +105,7 @@ func (o *operationGenerator) Generate() error {
 		for _, ft := range o.Tags {
 			if ft == tag {
 				operations = append(operations, makeCodegenOperation(o.Name, tag, o.ModelsPackage, o.Principal, o.Target, o.Operation, authed))
+				break
 			}
 		}
 
@@ -229,7 +230,7 @@ func makeCodegenOperation(name, pkg, modelsPkg, principal, target string, operat
 		DocString:            operationDocString(util.ToGoName(name), operation),
 		ReceiverName:         receiver,
 		HumanClassName:       util.ToHumanNameLower(util.ToGoName(name)),
-		DefaultImports:       []string{filepath.Join(baseImport(target), modelsPkg)},
+		DefaultImports:       []string{filepath.Join(baseImport(filepath.Join(target, "..")), modelsPkg)},
 		Params:               params,
 		Summary:              operation.Summary,
 		QueryParams:          qp,
