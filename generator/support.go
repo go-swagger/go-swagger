@@ -15,8 +15,9 @@ import (
 )
 
 var (
-	builderTemplate *template.Template
-	mainTemplate    *template.Template
+	builderTemplate      *template.Template
+	mainTemplate         *template.Template
+	configureAPITemplate *template.Template
 )
 
 func init() {
@@ -25,10 +26,13 @@ func init() {
 
 	bm, _ := Asset("templates/server/main.gotmpl")
 	mainTemplate = template.Must(template.New("main").Parse(string(bm)))
+
+	bc, _ := Asset("templates/server/configureapi.gotmpl")
+	configureAPITemplate = template.Must(template.New("configureapi").Parse(string(bc)))
 }
 
 // GenerateSupport generates the supporting files for an API
-func GenerateSupport(name string, modelNames, operationIDs []string, includeMain, includeUI bool, opts GenOpts) error {
+func GenerateSupport(name string, modelNames, operationIDs []string, includeUI bool, opts GenOpts) error {
 	// Load the spec
 	_, specDoc, err := loadSpec(opts.Spec)
 	if err != nil {
@@ -69,6 +73,14 @@ func GenerateSupport(name string, modelNames, operationIDs []string, includeMain
 		}
 	}
 
+	if name == "" {
+		if specDoc.Spec().Info != nil && specDoc.Spec().Info.Title != "" {
+			name = util.ToGoName(specDoc.Spec().Info.Title)
+		} else {
+			name = "swagger"
+		}
+	}
+
 	generator := appGenerator{
 		Name:       name,
 		SpecDoc:    specDoc,
@@ -81,7 +93,6 @@ func GenerateSupport(name string, modelNames, operationIDs []string, includeMain
 		APIPackage:    opts.APIPackage,
 		ModelsPackage: opts.ModelPackage,
 		Principal:     opts.Principal,
-		IncludeMain:   includeMain,
 		IncludeUI:     includeUI,
 	}
 
@@ -99,18 +110,11 @@ type appGenerator struct {
 	Operations    map[string]spec.Operation
 	Target        string
 	DumpData      bool
-	IncludeMain   bool
 	IncludeUI     bool
 }
 
-type genServerMain struct {
-	*genApp
-	IncludeUI   bool
-	SwaggerJSON string
-}
-
 func (a *appGenerator) Generate() error {
-	app := makeCodegenApp(a.Name, a.Package, a.Target, a.ModelsPackage, a.APIPackage, a.Principal, a.SpecDoc, a.Models, a.Operations)
+	app := makeCodegenApp(a.Name, a.Package, a.Target, a.ModelsPackage, a.APIPackage, a.Principal, a.SpecDoc, a.Models, a.Operations, a.IncludeUI)
 
 	if a.DumpData {
 		bb, _ := json.MarshalIndent(util.ToDynamicJSON(app), "", "  ")
@@ -118,29 +122,40 @@ func (a *appGenerator) Generate() error {
 		return nil
 	}
 
-	if a.IncludeMain {
-		if err := a.generateMain(&app); err != nil {
-			return err
-		}
+	if err := a.generateAPIBuilder(&app); err != nil {
+		return err
 	}
 
-	return a.generateAPIBuilder(&app)
+	if err := a.generateConfigureAPI(&app); err != nil {
+		return err
+	}
+
+	if err := a.generateMain(&app); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a *appGenerator) generateConfigureAPI(app *genApp) error {
+	pth := filepath.Join(a.Target, "cmd", util.ToCommandName(app.AppName+"Server"))
+	nm := "Configure" + app.AppName
+	if fileExists(pth, nm) {
+		log.Println("skipped (already exists) configure api template:", app.Package+".Configure"+app.AppName)
+		return nil
+	}
+
+	buf := bytes.NewBuffer(nil)
+	if err := configureAPITemplate.Execute(buf, app); err != nil {
+		return err
+	}
+	log.Println("rendered configure api template:", app.Package+".Configure"+app.AppName)
+	return writeToFileIfNotExist(pth, nm, buf.Bytes())
 }
 
 func (a *appGenerator) generateMain(app *genApp) error {
 	buf := bytes.NewBuffer(nil)
-
-	jsonb, err := json.MarshalIndent(a.SpecDoc.Spec(), "", "  ")
-	if err != nil {
-		return err
-	}
-
-	dd := &genServerMain{
-		genApp:      app,
-		IncludeUI:   a.IncludeUI,
-		SwaggerJSON: fmt.Sprintf("%#v", jsonb),
-	}
-	if err := mainTemplate.Execute(buf, dd); err != nil {
+	if err := mainTemplate.Execute(buf, app); err != nil {
 		return err
 	}
 	log.Println("rendered main template:", "server."+app.AppName)
@@ -153,7 +168,7 @@ func (a *appGenerator) generateAPIBuilder(app *genApp) error {
 		return err
 	}
 	log.Println("rendered builder template:", app.Package+"."+app.AppName)
-	return writeToFile(filepath.Join(a.Target, app.Package), app.AppName+"API", buf.Bytes())
+	return writeToFile(filepath.Join(a.Target, app.Package), app.AppName+"Api", buf.Bytes())
 }
 
 var mediaTypeNames = map[string]string{
@@ -172,6 +187,16 @@ var mediaTypeNames = map[string]string{
 	"text/css":                "css",
 }
 
+var knownProducers = map[string]string{
+	"json": "swagger.JSONProducer",
+	"yaml": "swagger.YAMLProducer",
+}
+
+var knownConsumers = map[string]string{
+	"json": "swagger.JSONConsumer",
+	"yaml": "swagger.YAMLConsumer",
+}
+
 func getSerializer(sers []genSerGroup, ext string) (*genSerGroup, bool) {
 	for i := range sers {
 		s := &sers[i]
@@ -182,10 +207,12 @@ func getSerializer(sers []genSerGroup, ext string) (*genSerGroup, bool) {
 	return nil, false
 }
 
-func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal string, specDoc *spec.Document, models map[string]spec.Schema, operations map[string]spec.Operation) genApp {
+func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal string, specDoc *spec.Document, models map[string]spec.Schema, operations map[string]spec.Operation, includeUI bool) genApp {
 	sw := specDoc.Spec()
 	receiver := strings.ToLower(name[:1])
 	appName := util.ToGoName(name)
+
+	jsonb, _ := json.MarshalIndent(specDoc.Spec(), "", "  ")
 
 	var consumes []genSerGroup
 	for _, cons := range specDoc.RequiredConsumes() {
@@ -203,6 +230,7 @@ func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal strin
 				HumanClassName: ser.HumanClassName,
 				Name:           ser.Name,
 				MediaType:      cons,
+				Implementation: knownConsumers[nm],
 			})
 			continue
 		}
@@ -214,6 +242,7 @@ func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal strin
 			HumanClassName: util.ToHumanNameLower(cn),
 			Name:           nm,
 			MediaType:      cons,
+			Implementation: knownConsumers[nm],
 		}
 
 		consumes = append(consumes, genSerGroup{
@@ -224,6 +253,7 @@ func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal strin
 			Name:           ser.Name,
 			MediaType:      cons,
 			AllSerializers: []genSerializer{ser},
+			Implementation: ser.Implementation,
 		})
 	}
 
@@ -243,6 +273,7 @@ func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal strin
 				HumanClassName: ser.HumanClassName,
 				Name:           ser.Name,
 				MediaType:      prod,
+				Implementation: knownProducers[nm],
 			})
 			continue
 		}
@@ -253,6 +284,7 @@ func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal strin
 			HumanClassName: util.ToHumanNameLower(pn),
 			Name:           nm,
 			MediaType:      prod,
+			Implementation: knownProducers[nm],
 		}
 		produces = append(produces, genSerGroup{
 			AppName:        ser.AppName,
@@ -261,6 +293,7 @@ func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal strin
 			HumanClassName: ser.HumanClassName,
 			Name:           ser.Name,
 			MediaType:      prod,
+			Implementation: ser.Implementation,
 			AllSerializers: []genSerializer{ser},
 		})
 	}
@@ -329,6 +362,9 @@ func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal strin
 		SecurityDefinitions: security,
 		Models:              genMods,
 		Operations:          genOps,
+		IncludeUI:           includeUI,
+		Principal:           principal,
+		SwaggerJSON:         fmt.Sprintf("%#v", jsonb),
 	}
 }
 
@@ -338,6 +374,7 @@ type genApp struct {
 	AppName             string
 	HumanAppName        string
 	Name                string
+	Principal           string
 	Info                *spec.Info
 	ExternalDocs        *spec.ExternalDocumentation
 	Imports             map[string]string
@@ -346,6 +383,8 @@ type genApp struct {
 	SecurityDefinitions []genSecurityScheme
 	Models              []genModel
 	Operations          []genOperation
+	IncludeUI           bool
+	SwaggerJSON         string
 }
 
 type genSerGroup struct {
@@ -355,6 +394,7 @@ type genSerGroup struct {
 	HumanClassName string
 	Name           string
 	MediaType      string
+	Implementation string
 	AllSerializers []genSerializer
 }
 
@@ -365,6 +405,7 @@ type genSerializer struct {
 	HumanClassName string
 	Name           string
 	MediaType      string
+	Implementation string
 }
 
 type genSecurityScheme struct {

@@ -212,6 +212,11 @@ func makeCodegenOperation(name, pkg, modelsPkg, principal string, operation spec
 		prin = "interface{}"
 	}
 
+	zero, ok := zeroes[successModel]
+	if !ok {
+		zero = "nil"
+	}
+
 	return genOperation{
 		Package:              pkg,
 		ClassName:            util.ToGoName(name),
@@ -228,6 +233,7 @@ func makeCodegenOperation(name, pkg, modelsPkg, principal string, operation spec
 		FormParams:           fp,
 		HasQueryParams:       hasQueryParams,
 		SuccessModel:         successModel,
+		SuccessZero:          zero,
 		ReturnsPrimitive:     returnsPrimitive,
 		ReturnsFormatted:     returnsFormatted,
 		ReturnsContainer:     returnsContainer,
@@ -271,6 +277,7 @@ type genOperation struct {
 	Principal  string //`json:"principal,omitempty"` // -
 
 	SuccessModel         string //`json:"successModel,omitempty"`         // -
+	SuccessZero          string //`json:"successZero,omitempty"`         // -
 	ReturnsPrimitive     bool   //`json:"returnsPrimitive,omitempty"`     // -
 	ReturnsFormatted     bool   //`json:"returnsFormatted,omitempty"`     // -
 	ReturnsContainer     bool   //`json:"returnsContainer,omitempty"`     // -
