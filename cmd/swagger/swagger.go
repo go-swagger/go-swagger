@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/casualjim/go-swagger/cmd/swagger/commands"
 	"github.com/jessevdk/go-flags"
 )
@@ -20,6 +22,26 @@ It aims to represent the contract of your API with a language agnostic descripti
 	// parser.AddCommand("editor", "edit the swagger.json document", "serve the swagger editor with the specified spec file", commands.NewEditor())
 	parser.AddCommand("ui", "api-docs for the swagger.json document", "serve the swagger ui application with the specified spec file", commands.NewUI())
 
-	parser.AddCommand("generate", "genererate go code", "generate go code for the swagger spec file", &commands.Generate{})
+	genpar, err := parser.AddCommand("generate", "genererate go code", "generate go code for the swagger spec file", &commands.Generate{})
+	if err != nil {
+		log.Fatalln(err)
+	}
+	for _, cmd := range genpar.Commands() {
+		switch cmd.Name {
+		case "server":
+			cmd.ShortDescription = "generate all the files for a server application"
+			cmd.LongDescription = cmd.ShortDescription
+		case "model":
+			cmd.ShortDescription = "generate one or more models from the swagger spec"
+			cmd.LongDescription = cmd.ShortDescription
+		case "support":
+			cmd.ShortDescription = "generate supporting files like the main function and the api builder"
+			cmd.LongDescription = cmd.ShortDescription
+		case "operation":
+			cmd.ShortDescription = "generate one or more operations from the swagger spec"
+			cmd.LongDescription = cmd.ShortDescription
+		}
+	}
+
 	parser.Parse()
 }

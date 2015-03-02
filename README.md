@@ -35,13 +35,13 @@ You can also serve a swagger document with the swagger UI
 
 To generate a server for a swagger spec document:
 
-		swagger generate all -f ./swagger.json -A [application-name] [--principal [principal-name]] --include-main --include-ui
+		swagger generate server [-f ./swagger.json] [--principal [principal-name]] [--with-ui]
 
 There are several other sub commands available for the generate command
 
 Sub command | Description
 ------------|----------------------------------------------------------------------------------
-operation   | generates one or more models specified in the swagger definition
+operation   | generates one or more operations specified in the swagger definition
 model       | generates model files for one or more models specified in the swagger definition
 support     | generates the api builder and the main method
 server      | generates an entire server application
@@ -112,9 +112,13 @@ After the v1 implementation extra transports are on the roadmap
 	- [ ] custom serializer for XML to support namespaces and prefixes
 	- [ ] optimized serializer for JSON
 	- [ ] optimized serializer for YAML
+- Middlewares:
+	- [ ] swagger editor
 -	Tools:
 	-	[ ] generate spec document based on the code
 	-	[ ] watch swagger spec file and regenerate when modified
 -	Transports:
 	-	[ ] swagger socket (swagger over tcp sockets)
 	-	[ ] swagger websocket (swagger over websockets)
+	- [ ] swagger proxy (assemble several backend apis into a single swagger spec and route the requests)
+	- [ ] swagger discovery (repository for swagger specifications)

@@ -1,6 +1,7 @@
-package middleware
+/*Package middleware provides the library with helper functions for serving swagger APIs.
 
-/*
+Pseudo middleware handler
+
   import (
   	"net/http"
 
@@ -47,3 +48,4 @@ package middleware
   	})
   }
 */
+package middleware

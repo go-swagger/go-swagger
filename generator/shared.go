@@ -128,16 +128,32 @@ func loadSpec(specFile string) (string, *spec.Document, error) {
 	return specPath, specDoc, nil
 }
 
-func writeToFile(target, name string, content []byte) error {
+func fileExists(target, name string) bool {
+	ffn := util.ToFileName(name) + ".go"
+	_, err := os.Stat(filepath.Join(target, ffn))
+	return !os.IsNotExist(err)
+}
+
+func writeToFileIfNotExist(target, name string, content []byte) error {
+	if fileExists(target, name) {
+		return nil
+	}
+	return writeToFile(target, name, content)
+}
+
+func formatGoFile(ffn string, content []byte) ([]byte, error) {
 	opts := new(imports.Options)
 	opts.TabIndent = true
 	opts.TabWidth = 2
 	opts.Fragment = true
 	opts.Comments = true
 
-	ffn := util.ToFileName(name) + ".go"
-	res, err := imports.Process(ffn, content, opts)
+	return imports.Process(ffn, content, opts)
+}
 
+func writeToFile(target, name string, content []byte) error {
+	ffn := util.ToFileName(name) + ".go"
+	res, err := formatGoFile(ffn, content)
 	if err != nil {
 		log.Println(err)
 		return writeFile(target, ffn, content)

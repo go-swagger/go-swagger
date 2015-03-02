@@ -45,10 +45,10 @@ type {{.AppName}}API struct {
   {{range .SecurityDefinitions}}
   {{if .IsBasicAuth}}// {{.ClassName}}Auth registers a function that takes username and password and returns a principal
   // it performs authentication with basic auth
-  {{.ClassName}}Auth func(string, string) ({{.Principal}}, error)
+  {{.ClassName}}Auth func(string, string) (*{{.Principal}}, error)
   {{end}}{{if .IsAPIKeyAuth}}// {{.ClassName}}Auth registers a function that takes a token and returns a principal
   // it performs authentication based on an api key {{.Name}} provided in the {{.Source}}
-  {{.ClassName}}Auth func(string) ({{.Principal}}, error)
+  {{.ClassName}}Auth func(string) (*{{.Principal}}, error)
   {{end}}
   {{end}}
   {{range .Operations}}// {{.ClassName}}Handler sets the operation handler for the {{.HumanClassName}} operation
@@ -166,9 +166,6 @@ func ({{.ReceiverName}} *{{.AppName}}API) ProducersFor(mediaTypes []string) map[
 
 // HandlerFor gets a http.Handler for the provided operation id
 func ({{.ReceiverName}} *{{.AppName}}API) HandlerFor(operationID string) (http.Handler, bool) {
-  if len({{.ReceiverName}}.handlers) == 0 {
-    {{.ReceiverName}}.initHandlerCache()
-  }
   if {{.ReceiverName}}.handlers == nil {
     return nil, false
   }
