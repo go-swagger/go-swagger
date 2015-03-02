@@ -92,6 +92,8 @@ func GenerateSupport(name string, modelNames, operationIDs []string, includeUI b
 		Package:       opts.APIPackage,
 		APIPackage:    opts.APIPackage,
 		ModelsPackage: opts.ModelPackage,
+		ServerPackage: opts.ServerPackage,
+		ClientPackage: opts.ClientPackage,
 		Principal:     opts.Principal,
 		IncludeUI:     includeUI,
 	}
@@ -105,6 +107,8 @@ type appGenerator struct {
 	Package       string
 	APIPackage    string
 	ModelsPackage string
+	ServerPackage string
+	ClientPackage string
 	Principal     string
 	Models        map[string]spec.Schema
 	Operations    map[string]spec.Operation
@@ -168,7 +172,7 @@ func (a *appGenerator) generateAPIBuilder(app *genApp) error {
 		return err
 	}
 	log.Println("rendered builder template:", app.Package+"."+app.AppName)
-	return writeToFile(filepath.Join(a.Target, app.Package), app.AppName+"Api", buf.Bytes())
+	return writeToFile(filepath.Join(a.Target, a.ServerPackage, app.Package), app.AppName+"Api", buf.Bytes())
 }
 
 var mediaTypeNames = map[string]string{

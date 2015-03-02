@@ -51,6 +51,8 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 			Name:                 operationName,
 			APIPackage:           opts.APIPackage,
 			ModelsPackage:        opts.ModelPackage,
+			ClientPackage:        opts.ClientPackage,
+			ServerPackage:        opts.ServerPackage,
 			Operation:            *operation,
 			SecurityRequirements: specDoc.SecurityRequirementsFor(operation),
 			Principal:            opts.Principal,
@@ -72,6 +74,8 @@ type operationGenerator struct {
 	Authorized           bool
 	APIPackage           string
 	ModelsPackage        string
+	ServerPackage        string
+	ClientPackage        string
 	Operation            spec.Operation
 	SecurityRequirements []spec.SecurityRequirement
 	Principal            string
@@ -149,7 +153,7 @@ func (o *operationGenerator) generateHandler() error {
 	}
 	log.Println("rendered handler template:", o.pkg+"."+o.cname)
 
-	fp := o.Target
+	fp := filepath.Join(o.ServerPackage, o.Target)
 	if len(o.Operation.Tags) > 0 {
 		fp = filepath.Join(fp, o.pkg)
 	}
@@ -164,7 +168,7 @@ func (o *operationGenerator) generateParameterModel() error {
 	}
 	log.Println("rendered parameters template:", o.pkg+"."+o.cname+"Parameters")
 
-	fp := o.Target
+	fp := filepath.Join(o.ServerPackage, o.Target)
 	if len(o.Operation.Tags) > 0 {
 		fp = filepath.Join(fp, o.pkg)
 	}
