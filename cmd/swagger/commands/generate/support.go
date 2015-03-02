@@ -22,11 +22,13 @@ func (s *Support) Execute(args []string) error {
 		nil,
 		s.IncludeUI,
 		generator.GenOpts{
-			Spec:         string(s.Spec),
-			Target:       string(s.Target),
-			APIPackage:   s.APIPackage,
-			ModelPackage: s.ModelPackage,
-			Principal:    s.Principal,
-			DumpData:     s.DumpData,
+			Spec:          string(s.Spec),
+			Target:        string(s.Target),
+			APIPackage:    s.APIPackage,
+			ModelPackage:  s.ModelPackage,
+			ServerPackage: s.ServerPackage,
+			ClientPackage: s.ClientPackage,
+			Principal:     s.Principal,
+			DumpData:      s.DumpData,
 		})
 }

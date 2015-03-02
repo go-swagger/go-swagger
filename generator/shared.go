@@ -43,14 +43,16 @@ func findSwaggerSpec(name string) (string, error) {
 
 // GenOpts the options for the generator
 type GenOpts struct {
-	Spec         string
-	APIPackage   string
-	ModelPackage string
-	Principal    string
-	Target       string
-	TypeMapping  map[string]string
-	Imports      map[string]string
-	DumpData     bool
+	Spec          string
+	APIPackage    string
+	ModelPackage  string
+	ServerPackage string
+	ClientPackage string
+	Principal     string
+	Target        string
+	TypeMapping   map[string]string
+	Imports       map[string]string
+	DumpData      bool
 }
 
 type generatorOptions struct {

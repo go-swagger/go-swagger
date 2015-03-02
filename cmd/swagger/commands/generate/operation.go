@@ -28,11 +28,13 @@ func (o *Operation) Execute(args []string) error {
 		!o.NoHandler,
 		!o.NoStruct,
 		generator.GenOpts{
-			Spec:         string(o.Spec),
-			Target:       string(o.Target),
-			APIPackage:   o.APIPackage,
-			ModelPackage: o.ModelPackage,
-			Principal:    o.Principal,
-			DumpData:     o.DumpData,
+			Spec:          string(o.Spec),
+			Target:        string(o.Target),
+			APIPackage:    o.APIPackage,
+			ModelPackage:  o.ModelPackage,
+			ServerPackage: o.ServerPackage,
+			ClientPackage: o.ClientPackage,
+			Principal:     o.Principal,
+			DumpData:      o.DumpData,
 		})
 }

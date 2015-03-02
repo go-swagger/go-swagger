@@ -1,8 +1,6 @@
 package generate
 
 import (
-	"time"
-
 	"github.com/casualjim/go-swagger/generator"
 	"github.com/jessevdk/go-flags"
 )
@@ -11,15 +9,15 @@ type shared struct {
 	Spec          flags.Filename `long:"spec" short:"f" description:"the spec file to use" default:"./swagger.json"`
 	APIPackage    string         `long:"api-package" short:"a" description:"the package to save the operations" default:"operations"`
 	ModelPackage  string         `long:"model-package" short:"m" description:"the package to save the models" default:"models"`
-	ServerPackage string         `long:"server-package" short:"s" description:"the package to save the server specific code" default:"server"`
+	ServerPackage string         `long:"server-package" short:"s" description:"the package to save the server specific code" default:"restapi"`
 	ClientPackage string         `long:"client-package" short:"c" description:"the package to save the client specific code" default:"client"`
 	Target        flags.Filename `long:"target" short:"t" default:"./" description:"the base directory for generating the files"`
 	// TemplateDir  flags.Filename `long:"template-dir"`
 
 }
 
-// All the command to generate an entire server application
-type All struct {
+// Server the command to generate an entire server application
+type Server struct {
 	shared
 	Name           string   `long:"name" short:"A" description:"the name of the application, defaults to a mangled value of info.title"`
 	Operations     []string `long:"operation" short:"O" description:"specify an operation to include, repeat for multiple"`
@@ -33,29 +31,31 @@ type All struct {
 }
 
 // Execute runs this command
-func (a *All) Execute(args []string) error {
+func (s *Server) Execute(args []string) error {
 	opts := generator.GenOpts{
-		Spec:         string(a.Spec),
-		Target:       string(a.Target),
-		APIPackage:   a.APIPackage,
-		ModelPackage: a.ModelPackage,
-		Principal:    a.Principal,
+		Spec:          string(s.Spec),
+		Target:        string(s.Target),
+		APIPackage:    s.APIPackage,
+		ModelPackage:  s.ModelPackage,
+		ServerPackage: s.ServerPackage,
+		ClientPackage: s.ClientPackage,
+		Principal:     s.Principal,
 	}
 
-	if !a.SkipModels && (len(a.Models) > 0 || len(a.Operations) == 0) {
-		if err := generator.GenerateModel(a.Models, true, true, opts); err != nil {
+	if !s.SkipModels && (len(s.Models) > 0 || len(s.Operations) == 0) {
+		if err := generator.GenerateModel(s.Models, true, true, opts); err != nil {
 			return err
 		}
 	}
 
-	if !a.SkipOperations && (len(a.Operations) > 0 || len(a.Models) == 0) {
-		if err := generator.GenerateServerOperation(a.Operations, a.Tags, true, true, opts); err != nil {
+	if !s.SkipOperations && (len(s.Operations) > 0 || len(s.Models) == 0) {
+		if err := generator.GenerateServerOperation(s.Operations, s.Tags, true, true, opts); err != nil {
 			return err
 		}
 	}
-	<-time.After(1 * time.Second)
-	if !a.SkipSupport {
-		if err := generator.GenerateSupport(a.Name, a.Models, a.Operations, a.IncludeUI, opts); err != nil {
+
+	if !s.SkipSupport {
+		if err := generator.GenerateSupport(s.Name, s.Models, s.Operations, s.IncludeUI, opts); err != nil {
 			return err
 		}
 	}
