@@ -117,8 +117,29 @@ type appGenerator struct {
 	IncludeUI     bool
 }
 
+func baseImport(tgt string) string {
+	p, err := filepath.Abs(tgt)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	var pth string
+	for _, gp := range filepath.SplitList(os.Getenv("GOPATH")) {
+		pp := filepath.Join(gp, "src")
+		if strings.HasPrefix(p, pp) {
+			pth = strings.TrimPrefix(p, pp+"/")
+			break
+		}
+	}
+
+	if pth == "" {
+		log.Fatalln("target must reside inside a location in the gopath")
+	}
+	return pth
+}
+
 func (a *appGenerator) Generate() error {
-	app := makeCodegenApp(a.Name, a.Package, a.Target, a.ModelsPackage, a.APIPackage, a.Principal, a.SpecDoc, a.Models, a.Operations, a.IncludeUI)
+	app := a.makeCodegenApp()
 
 	if a.DumpData {
 		bb, _ := json.MarshalIndent(util.ToDynamicJSON(app), "", "  ")
@@ -129,6 +150,7 @@ func (a *appGenerator) Generate() error {
 	if err := a.generateAPIBuilder(&app); err != nil {
 		return err
 	}
+	app.DefaultImports = append(app.DefaultImports, filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage))
 
 	if err := a.generateConfigureAPI(&app); err != nil {
 		return err
@@ -211,20 +233,27 @@ func getSerializer(sers []genSerGroup, ext string) (*genSerGroup, bool) {
 	return nil, false
 }
 
-func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal string, specDoc *spec.Document, models map[string]spec.Schema, operations map[string]spec.Operation, includeUI bool) genApp {
-	sw := specDoc.Spec()
-	receiver := strings.ToLower(name[:1])
-	appName := util.ToGoName(name)
+// func makeCodegenApp(operations map[string]spec.Operation, includeUI bool) genApp {
+func (a *appGenerator) makeCodegenApp() genApp {
+	sw := a.SpecDoc.Spec()
+	// app := makeCodegenApp(a.Operations, a.IncludeUI)
+	receiver := strings.ToLower(a.Name[:1])
+	appName := util.ToGoName(a.Name)
+	var defaultImports []string
 
-	jsonb, _ := json.MarshalIndent(specDoc.Spec(), "", "  ")
+	jsonb, _ := json.MarshalIndent(a.SpecDoc.Spec(), "", "  ")
 
+	consumesJSON := false
 	var consumes []genSerGroup
-	for _, cons := range specDoc.RequiredConsumes() {
+	for _, cons := range a.SpecDoc.RequiredConsumes() {
 		cn, ok := mediaTypeNames[cons]
 		if !ok {
 			continue
 		}
 		nm := util.ToJSONName(cn)
+		if nm == "json" {
+			consumesJSON = true
+		}
 
 		if ser, ok := getSerializer(consumes, cn); ok {
 			ser.AllSerializers = append(ser.AllSerializers, genSerializer{
@@ -261,13 +290,17 @@ func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal strin
 		})
 	}
 
+	producesJSON := false
 	var produces []genSerGroup
-	for _, prod := range specDoc.RequiredProduces() {
+	for _, prod := range a.SpecDoc.RequiredProduces() {
 		pn, ok := mediaTypeNames[prod]
 		if !ok {
 			continue
 		}
 		nm := util.ToJSONName(pn)
+		if nm == "json" {
+			producesJSON = true
+		}
 
 		if ser, ok := getSerializer(produces, pn); ok {
 			ser.AllSerializers = append(ser.AllSerializers, genSerializer{
@@ -303,8 +336,8 @@ func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal strin
 	}
 
 	var security []genSecurityScheme
-	for _, scheme := range specDoc.RequiredSchemes() {
-		if req, ok := specDoc.Spec().SecurityDefinitions[scheme]; ok {
+	for _, scheme := range a.SpecDoc.RequiredSchemes() {
+		if req, ok := a.SpecDoc.Spec().SecurityDefinitions[scheme]; ok {
 			if req.Type == "basic" || req.Type == "apiKey" {
 				security = append(security, genSecurityScheme{
 					AppName:        appName,
@@ -314,7 +347,7 @@ func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal strin
 					Name:           util.ToJSONName(req.Name),
 					IsBasicAuth:    strings.ToLower(req.Type) == "basic",
 					IsAPIKeyAuth:   strings.ToLower(req.Type) == "apikey",
-					Principal:      principal,
+					Principal:      a.Principal,
 					Source:         req.In,
 				})
 			}
@@ -322,52 +355,73 @@ func makeCodegenApp(name, pkg, target, modelPackage, apiPackage, principal strin
 	}
 
 	var genMods []genModel
-	for mn, m := range models {
+	defaultImports = append(defaultImports, filepath.Join(baseImport(a.Target), a.ModelsPackage))
+	for mn, m := range a.Models {
 		mod := *makeCodegenModel(
 			mn,
-			modelPackage,
+			a.ModelsPackage,
 			m,
-			specDoc,
+			a.SpecDoc,
 		)
 		mod.ReceiverName = receiver
 		genMods = append(genMods, mod)
 	}
 
 	var genOps []genOperation
-	for on, o := range operations {
-		authed := len(specDoc.SecurityRequirementsFor(&o)) > 0
-		ap := apiPackage
-		if apiPackage == pkg {
+	tns := make(map[string]struct{})
+	for on, o := range a.Operations {
+		authed := len(a.SpecDoc.SecurityRequirementsFor(&o)) > 0
+		ap := a.APIPackage
+		if a.APIPackage == a.Package {
 			ap = ""
 		}
 		if len(o.Tags) > 0 {
 			for _, tag := range o.Tags {
-				op := makeCodegenOperation(on, tag, modelPackage, principal, o, authed)
+				tns[tag] = struct{}{}
+				op := makeCodegenOperation(on, tag, a.ModelsPackage, a.Principal, a.Target, o, authed)
 				op.ReceiverName = receiver
 				genOps = append(genOps, op)
 			}
 		} else {
-			op := makeCodegenOperation(on, ap, modelPackage, principal, o, authed)
+			op := makeCodegenOperation(on, ap, a.ModelsPackage, a.Principal, a.Target, o, authed)
 			op.ReceiverName = receiver
 			genOps = append(genOps, op)
 		}
 	}
+	for k := range tns {
+		defaultImports = append(defaultImports, filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage, k))
+	}
+
+	defaultConsumes := "application/json"
+	rc := a.SpecDoc.RequiredConsumes()
+	if !consumesJSON && len(rc) > 0 {
+		defaultConsumes = rc[0]
+	}
+
+	defaultProduces := "application/json"
+	rp := a.SpecDoc.RequiredProduces()
+	if !producesJSON && len(rp) > 0 {
+		defaultProduces = rp[0]
+	}
 
 	return genApp{
-		Package:             pkg,
+		Package:             a.Package,
 		ReceiverName:        receiver,
-		AppName:             util.ToGoName(name),
-		HumanAppName:        util.ToHumanNameLower(name),
-		Name:                util.ToJSONName(name),
+		AppName:             util.ToGoName(a.Name),
+		HumanAppName:        util.ToHumanNameLower(a.Name),
+		Name:                util.ToJSONName(a.Name),
 		ExternalDocs:        sw.ExternalDocs,
 		Info:                sw.Info,
 		Consumes:            consumes,
 		Produces:            produces,
+		DefaultConsumes:     defaultConsumes,
+		DefaultProduces:     defaultProduces,
+		DefaultImports:      defaultImports,
 		SecurityDefinitions: security,
 		Models:              genMods,
 		Operations:          genOps,
-		IncludeUI:           includeUI,
-		Principal:           principal,
+		IncludeUI:           a.IncludeUI,
+		Principal:           a.Principal,
 		SwaggerJSON:         fmt.Sprintf("%#v", jsonb),
 	}
 }
@@ -379,9 +433,12 @@ type genApp struct {
 	HumanAppName        string
 	Name                string
 	Principal           string
+	DefaultConsumes     string
+	DefaultProduces     string
 	Info                *spec.Info
 	ExternalDocs        *spec.ExternalDocumentation
 	Imports             map[string]string
+	DefaultImports      []string
 	Consumes            []genSerGroup
 	Produces            []genSerGroup
 	SecurityDefinitions []genSecurityScheme

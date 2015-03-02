@@ -101,6 +101,14 @@ func (r *routableUntypedAPI) Formats() strfmt.Registry {
 	return r.api.Formats()
 }
 
+func (r *routableUntypedAPI) DefaultProduces() string {
+	return r.api.DefaultProduces
+}
+
+func (r *routableUntypedAPI) DefaultConsumes() string {
+	return r.api.DefaultConsumes
+}
+
 // NewRoutableContext creates a new context for a routable API
 func NewRoutableContext(spec *spec.Document, routableAPI RoutableAPI, routes Router) *Context {
 	ctx := &Context{spec: spec, api: routableAPI}
@@ -252,7 +260,7 @@ func (c *Context) ResponseFormat(r *http.Request, offers []string) string {
 		}
 	}
 
-	format := httputil.NegotiateContentType(r, offers, "")
+	format := httputil.NegotiateContentType(r, offers, c.api.DefaultProduces())
 	if format != "" {
 		context.Set(r, ctxResponseFormat, format)
 	}
@@ -312,7 +320,14 @@ func (c *Context) NotFound(rw http.ResponseWriter, r *http.Request) {
 
 // Respond renders the response after doing some content negotiation
 func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []string, route *MatchedRoute, data interface{}) {
-	format := c.ResponseFormat(r, produces)
+	offers := []string{c.api.DefaultProduces()}
+	for _, mt := range produces {
+		if mt != c.api.DefaultProduces() {
+			offers = append(offers, mt)
+		}
+	}
+
+	format := c.ResponseFormat(r, offers)
 	rw.Header().Set(httputils.HeaderContentType, format)
 
 	if err, ok := data.(error); ok {
@@ -331,7 +346,7 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 		if r.Method == "HEAD" {
 			return
 		}
-		producers := c.api.ProducersFor(produces)
+		producers := c.api.ProducersFor(offers)
 		prod, ok := producers[format]
 		if !ok {
 			panic(errors.New(http.StatusInternalServerError, "can't find a producer for "+format))

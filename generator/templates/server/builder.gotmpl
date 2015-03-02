@@ -12,8 +12,9 @@ import (
   "github.com/casualjim/go-swagger/middleware"
   "github.com/casualjim/go-swagger/middleware/security"
 
-  {{range $key, $value := .Imports}}
-  {{$key}} {{ printf "%q" $value}}
+  {{range .DefaultImports}}{{printf "%q" .}}
+  {{end}}
+  {{range $key, $value := .Imports}}{{$key}} {{ printf "%q" $value}}
   {{end}}
 )
 
@@ -23,19 +24,21 @@ func New{{.AppName}}API(spec *spec.Document) *{{.AppName}}API {
     spec:     spec,
     handlers: make(map[string]http.Handler),
     formats:  strfmt.Default,
+    defaultConsumes: "{{.DefaultConsumes}}",
+    defaultProduces: "{{.DefaultProduces}}",
   }
-
-  {{.ReceiverName}}.context =  middleware.NewRoutableContext(spec, {{.ReceiverName}}, nil)
 
   return {{.ReceiverName}}
 }
 
 // {{.AppName}}API {{.Info.Description}}
 type {{.AppName}}API struct {
-  spec           *spec.Document
-  context        *middleware.Context
-  handlers       map[string]http.Handler
-  formats        strfmt.Registry
+  spec            *spec.Document
+  context         *middleware.Context
+  handlers        map[string]http.Handler
+  formats         strfmt.Registry
+  defaultConsumes string
+  defaultProduces string
   {{range .Consumes}}// {{.ClassName}}Consumer registers a consumer for a "{{.MediaType}}" mime type
   {{.ClassName}}Consumer swagger.Consumer
   {{end}}
@@ -59,6 +62,26 @@ type {{.AppName}}API struct {
   // ServeError is called when an error is received, there is a default handler
   // but you can set your own with this
   ServeError     func(http.ResponseWriter, *http.Request, error)
+}
+
+// SetDefaultProduces sets the default produces media type
+func ({{.ReceiverName}} *{{.AppName}}API) SetDefaultProduces(mediaType string) {
+	{{.ReceiverName}}.defaultProduces = mediaType
+}
+
+// SetDefaultConsumes returns the default consumes media type
+func ({{.ReceiverName}} *{{.AppName}}API) SetDefaultConsumes(mediaType string) {
+	{{.ReceiverName}}.defaultConsumes = mediaType
+}
+
+// DefaultProduces returns the default produces media type
+func ({{.ReceiverName}} *{{.AppName}}API) DefaultProduces() string {
+	return {{.ReceiverName}}.defaultProduces
+}
+
+// DefaultConsumes returns the default consumes media type
+func ({{.ReceiverName}} *{{.AppName}}API) DefaultConsumes() string {
+	return {{.ReceiverName}}.defaultConsumes
 }
 
 // Formats returns the registered string formats

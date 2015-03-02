@@ -6,8 +6,9 @@ package {{.Package}}
 import (
   "net/http"
 
-  {{range $key, $value := .Imports}}
-  {{$key}} {{ printf "%q" $value}}
+  {{range .DefaultImports}}{{printf "%q" .}}
+  {{end}}
+  {{range $key, $value := .Imports}}{{$key}} {{ printf "%q" $value}}
   {{end}}
 )
 

@@ -114,8 +114,9 @@ import (
   "github.com/casualjim/go-swagger/strfmt"
   "github.com/casualjim/go-swagger/validation"
 
-  {{range $key, $value := .Imports}}
-  {{$key}} {{ printf "%q" $value}}
+  {{range .DefaultImports}}{{printf "%q" .}}
+  {{end}}
+  {{range $key, $value := .Imports}}{{$key}} {{ printf "%q" $value}}
   {{end}}
 )
 

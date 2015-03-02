@@ -99,18 +99,18 @@ func (o *operationGenerator) Generate() error {
 	// fmt.Println(string(bb))
 	for _, tag := range o.Operation.Tags {
 		if len(o.Tags) == 0 {
-			operations = append(operations, makeCodegenOperation(o.Name, tag, o.ModelsPackage, o.Principal, o.Operation, authed))
+			operations = append(operations, makeCodegenOperation(o.Name, tag, o.ModelsPackage, o.Principal, o.Target, o.Operation, authed))
 			continue
 		}
 		for _, ft := range o.Tags {
 			if ft == tag {
-				operations = append(operations, makeCodegenOperation(o.Name, tag, o.ModelsPackage, o.Principal, o.Operation, authed))
+				operations = append(operations, makeCodegenOperation(o.Name, tag, o.ModelsPackage, o.Principal, o.Target, o.Operation, authed))
 			}
 		}
 
 	}
 	if len(operations) == 0 {
-		operations = append(operations, makeCodegenOperation(o.Name, o.APIPackage, o.ModelsPackage, o.Principal, o.Operation, authed))
+		operations = append(operations, makeCodegenOperation(o.Name, o.APIPackage, o.ModelsPackage, o.Principal, o.Target, o.Operation, authed))
 	}
 
 	for _, op := range operations {
@@ -175,7 +175,7 @@ func (o *operationGenerator) generateParameterModel() error {
 	return writeToFile(fp, o.Name+"Parameters", buf.Bytes())
 }
 
-func makeCodegenOperation(name, pkg, modelsPkg, principal string, operation spec.Operation, authorized bool) genOperation {
+func makeCodegenOperation(name, pkg, modelsPkg, principal, target string, operation spec.Operation, authorized bool) genOperation {
 	receiver := "o"
 
 	var params, qp, pp, hp, fp []genParameter
@@ -229,6 +229,7 @@ func makeCodegenOperation(name, pkg, modelsPkg, principal string, operation spec
 		DocString:            operationDocString(util.ToGoName(name), operation),
 		ReceiverName:         receiver,
 		HumanClassName:       util.ToHumanNameLower(util.ToGoName(name)),
+		DefaultImports:       []string{filepath.Join(baseImport(target), modelsPkg)},
 		Params:               params,
 		Summary:              operation.Summary,
 		QueryParams:          qp,
@@ -275,7 +276,8 @@ type genOperation struct {
 	DocString    string //`json:"docString,omitempty"`   // -
 	ExternalDocs string //`json:"externalDocs,omitempty"`
 
-	Imports map[string]string //`json:"imports,omitempty"` // -
+	Imports        map[string]string //`json:"imports,omitempty"` // -
+	DefaultImports []string          //`json:"defaultImports,omitempty"` // -
 
 	Authorized bool   //`json:"authorized"`          // -
 	Principal  string //`json:"principal,omitempty"` // -
