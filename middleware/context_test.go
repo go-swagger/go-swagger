@@ -114,6 +114,8 @@ func TestContextBindAndValidate(t *testing.T) {
 func TestContextRender(t *testing.T) {
 	ct := httputils.JSONMime
 	spec, api := petstore.NewAPI(t)
+	assert.NotNil(t, spec)
+	assert.NotNil(t, api)
 	ctx := NewContext(spec, api, nil)
 	request, _ := http.NewRequest("GET", "pets", nil)
 	request.Header.Set(httputils.HeaderAccept, ct)
@@ -164,7 +166,8 @@ func TestContextRender(t *testing.T) {
 
 func TestContextValidResponseFormat(t *testing.T) {
 	ct := "application/json"
-	ctx := NewContext(nil, nil, nil)
+	spec, api := petstore.NewAPI(t)
+	ctx := NewContext(spec, api, nil)
 
 	request, _ := http.NewRequest("GET", "http://localhost:8080", nil)
 	request.Header.Set(httputils.HeaderAccept, ct)
@@ -190,8 +193,9 @@ func TestContextValidResponseFormat(t *testing.T) {
 
 func TestContextInvalidResponseFormat(t *testing.T) {
 	ct := "application/x-yaml"
-	other := "application/xml"
-	ctx := NewContext(nil, nil, nil)
+	other := "application/sgml"
+	spec, api := petstore.NewAPI(t)
+	ctx := NewContext(spec, api, nil)
 
 	request, _ := http.NewRequest("GET", "http://localhost:8080", nil)
 	request.Header.Set(httputils.HeaderAccept, ct)

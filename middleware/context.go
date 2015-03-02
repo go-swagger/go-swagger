@@ -30,8 +30,10 @@ type Context struct {
 }
 
 type routableUntypedAPI struct {
-	api      *untyped.API
-	handlers map[string]http.Handler
+	api             *untyped.API
+	handlers        map[string]http.Handler
+	defaultConsumes string
+	defaultProduces string
 }
 
 func newRoutableUntypedAPI(spec *spec.Document, api *untyped.API, context *Context) *routableUntypedAPI {
@@ -78,7 +80,12 @@ func newRoutableUntypedAPI(spec *spec.Document, api *untyped.API, context *Conte
 		}
 	}
 
-	return &routableUntypedAPI{api: api, handlers: handlers}
+	return &routableUntypedAPI{
+		api:             api,
+		handlers:        handlers,
+		defaultProduces: api.DefaultProduces,
+		defaultConsumes: api.DefaultConsumes,
+	}
 }
 
 func (r *routableUntypedAPI) HandlerFor(operationID string) (http.Handler, bool) {
@@ -102,11 +109,11 @@ func (r *routableUntypedAPI) Formats() strfmt.Registry {
 }
 
 func (r *routableUntypedAPI) DefaultProduces() string {
-	return r.api.DefaultProduces
+	return r.defaultProduces
 }
 
 func (r *routableUntypedAPI) DefaultConsumes() string {
-	return r.api.DefaultConsumes
+	return r.defaultConsumes
 }
 
 // NewRoutableContext creates a new context for a routable API
@@ -260,7 +267,7 @@ func (c *Context) ResponseFormat(r *http.Request, offers []string) string {
 		}
 	}
 
-	format := httputil.NegotiateContentType(r, offers, c.api.DefaultProduces())
+	format := httputil.NegotiateContentType(r, offers, "")
 	if format != "" {
 		context.Set(r, ctxResponseFormat, format)
 	}
