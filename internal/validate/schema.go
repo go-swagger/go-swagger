@@ -54,6 +54,11 @@ func (s *SchemaValidator) SetPath(path string) {
 	s.Path = path
 }
 
+func (s *SchemaValidator) Applies(source interface{}, kind reflect.Kind) bool {
+	_, ok := source.(*spec.Schema)
+	return ok
+}
+
 func (s *SchemaValidator) Validate(data interface{}) *Result {
 	if data == nil {
 		v := s.validators[0].Validate(data)
