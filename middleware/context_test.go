@@ -44,6 +44,7 @@ func TestServe(t *testing.T) {
 func TestContextAuthorize(t *testing.T) {
 	spec, api := petstore.NewAPI(t)
 	ctx := NewContext(spec, api, nil)
+	ctx.router = DefaultRouter(spec, ctx.api)
 
 	request, _ := httputils.JSONRequest("GET", "/pets", nil)
 
@@ -88,6 +89,7 @@ func TestContextAuthorize(t *testing.T) {
 func TestContextBindAndValidate(t *testing.T) {
 	spec, api := petstore.NewAPI(t)
 	ctx := NewContext(spec, api, nil)
+	ctx.router = DefaultRouter(spec, ctx.api)
 
 	request, _ := http.NewRequest("POST", "/pets", nil)
 	request.Header.Add("Accept", "*/*")
@@ -114,9 +116,12 @@ func TestContextBindAndValidate(t *testing.T) {
 func TestContextRender(t *testing.T) {
 	ct := httputils.JSONMime
 	spec, api := petstore.NewAPI(t)
+
 	assert.NotNil(t, spec)
 	assert.NotNil(t, api)
 	ctx := NewContext(spec, api, nil)
+	ctx.router = DefaultRouter(spec, ctx.api)
+
 	request, _ := http.NewRequest("GET", "pets", nil)
 	request.Header.Set(httputils.HeaderAccept, ct)
 	ri, _ := ctx.RouteInfo(request)
@@ -168,6 +173,7 @@ func TestContextValidResponseFormat(t *testing.T) {
 	ct := "application/json"
 	spec, api := petstore.NewAPI(t)
 	ctx := NewContext(spec, api, nil)
+	ctx.router = DefaultRouter(spec, ctx.api)
 
 	request, _ := http.NewRequest("GET", "http://localhost:8080", nil)
 	request.Header.Set(httputils.HeaderAccept, ct)
@@ -196,6 +202,7 @@ func TestContextInvalidResponseFormat(t *testing.T) {
 	other := "application/sgml"
 	spec, api := petstore.NewAPI(t)
 	ctx := NewContext(spec, api, nil)
+	ctx.router = DefaultRouter(spec, ctx.api)
 
 	request, _ := http.NewRequest("GET", "http://localhost:8080", nil)
 	request.Header.Set(httputils.HeaderAccept, ct)
@@ -222,6 +229,8 @@ func TestContextInvalidResponseFormat(t *testing.T) {
 func TestContextValidRoute(t *testing.T) {
 	spec, api := petstore.NewAPI(t)
 	ctx := NewContext(spec, api, nil)
+	ctx.router = DefaultRouter(spec, ctx.api)
+
 	request, _ := http.NewRequest("GET", "/pets", nil)
 
 	// check there's nothing there
@@ -244,6 +253,8 @@ func TestContextValidRoute(t *testing.T) {
 func TestContextInvalidRoute(t *testing.T) {
 	spec, api := petstore.NewAPI(t)
 	ctx := NewContext(spec, api, nil)
+	ctx.router = DefaultRouter(spec, ctx.api)
+
 	request, _ := http.NewRequest("DELETE", "pets", nil)
 
 	// check there's nothing there

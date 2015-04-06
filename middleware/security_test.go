@@ -12,6 +12,7 @@ import (
 func TestSecurityMiddleware(t *testing.T) {
 	spec, api := petstore.NewAPI(t)
 	context := NewContext(spec, api, nil)
+	context.router = DefaultRouter(spec, context.api)
 	mw := newSecureAPI(context, http.HandlerFunc(terminator))
 
 	recorder := httptest.NewRecorder()
