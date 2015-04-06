@@ -15,6 +15,7 @@ import (
 func TestContentTypeValidation(t *testing.T) {
 	spec, api := petstore.NewAPI(t)
 	context := NewContext(spec, api, nil)
+	context.router = DefaultRouter(spec, context.api)
 	mw := newValidation(context, http.HandlerFunc(terminator))
 
 	recorder := httptest.NewRecorder()
@@ -44,6 +45,7 @@ func TestContentTypeValidation(t *testing.T) {
 func TestResponseFormatValidation(t *testing.T) {
 	spec, api := petstore.NewAPI(t)
 	context := NewContext(spec, api, nil)
+	context.router = DefaultRouter(spec, context.api)
 	mw := newValidation(context, http.HandlerFunc(terminator))
 
 	recorder := httptest.NewRecorder()

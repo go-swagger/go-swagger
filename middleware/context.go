@@ -119,21 +119,13 @@ func (r *routableUntypedAPI) DefaultConsumes() string {
 // NewRoutableContext creates a new context for a routable API
 func NewRoutableContext(spec *spec.Document, routableAPI RoutableAPI, routes Router) *Context {
 	ctx := &Context{spec: spec, api: routableAPI}
-	if routes == nil {
-		routes = DefaultRouter(spec, routableAPI)
-	}
-	ctx.router = routes
 	return ctx
 }
 
 // NewContext creates a new context wrapper
 func NewContext(spec *spec.Document, api *untyped.API, routes Router) *Context {
 	ctx := &Context{spec: spec}
-	if routes == nil {
-		ctx.api = newRoutableUntypedAPI(spec, api, ctx)
-		routes = DefaultRouter(spec, ctx.api)
-	}
-	ctx.router = routes
+	ctx.api = newRoutableUntypedAPI(spec, api, ctx)
 	return ctx
 }
 

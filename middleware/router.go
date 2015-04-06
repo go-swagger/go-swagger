@@ -35,6 +35,9 @@ func (r RouteParams) Get(name string) string {
 }
 
 func newRouter(ctx *Context, next http.Handler) http.Handler {
+	if ctx.router == nil {
+		ctx.router = DefaultRouter(ctx.spec, ctx.api)
+	}
 	isRoot := ctx.spec.BasePath() == "" || ctx.spec.BasePath() == "/"
 
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {

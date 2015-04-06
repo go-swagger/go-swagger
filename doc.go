@@ -37,7 +37,7 @@ However extra files you create won't be lost so they are safe to use for customi
 
 To generate a server for a swagger spec document:
 
-	swagger generate all -f ./swagger.json -A [application-name] [--principal [principal-name]] --with-ui
+	swagger generate server -f ./swagger.json -A [application-name] [--principal [principal-name]] --with-ui
 
 There are several other sub commands available for the generate command
 
