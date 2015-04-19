@@ -247,6 +247,22 @@ type SchemaOrArray struct {
 	Schemas []Schema
 }
 
+// Len returns the number of schemas in this property
+func (s SchemaOrArray) Len() int {
+	if s.Schema != nil {
+		return 1
+	}
+	return len(s.Schemas)
+}
+
+// ContainsType returns true when one of the schemas is of the specified type
+func (s *SchemaOrArray) ContainsType(name string) bool {
+	if s.Schema != nil {
+		return s.Schema.Type != nil && s.Schema.Type.Contains(name)
+	}
+	return false
+}
+
 // MarshalJSON converts this schema object or array into JSON structure
 func (s SchemaOrArray) MarshalJSON() ([]byte, error) {
 	if len(s.Schemas) > 0 {
@@ -280,3 +296,5 @@ func (s *SchemaOrArray) UnmarshalJSON(data []byte) error {
 	*s = nw
 	return nil
 }
+
+// vim:set ft=go noet sts=2 sw=2 ts=2:
