@@ -59,41 +59,37 @@ For a V1 I want to have this feature set completed:
 
 -	[x] An object model that serializes to swagger yaml or json
 -	[x] A tool to work with swagger:
-	-	[x] validate a swagger spec document
-	-	[x] validate against jsonschema
-	-	[ ] validate extra rules outlined [here](https://github.com/apigee-127/swagger-tools/blob/master/docs/Swagger_Validation.md)
-		- [ ] :boom: definition can't declare a property that's already defined by one of its ancestors (Error)
-		- [ ] :boom: definition's ancestor can't be a descendant of the same model (Error)
-		- [x] :boom: each api path should be non-verbatim (account for path param names) unique per method (Error)
-		- [ ] :warning: each security reference should contain only unique scopes (Warning)
-		- [ ] :warning: each security scope in a security definition should be unique (Warning)
-		- [x] :boom: each path parameter should correspond to a parameter placeholder and vice versa (Error)
-		- [ ] :warning: each referencable definition must have references (Warning)
-		- [ ] :boom: each definition property listed in the required array must be defined in the properties of the model (Error)
-		- [x] :boom: each parameter should have a unique `name` and `type` combination (Error)
-		- [x] :boom: each operation should have only 1 parameter of type body (Error)
-		- [ ] :boom: each reference must point to a valid object (Error)
-		- [ ] :boom: every default value that is specified must validate against the schema for that property (Error)
-		- [ ] :boom: items property is required for all schemas/definitions of type `array` (Error)
+	-	[x] validate a swagger spec document:
+    -	[x] validate against jsonschema
+    -	[ ] validate extra rules outlined [here](https://github.com/apigee-127/swagger-tools/blob/master/docs/Swagger_Validation.md)
+      - [ ] :boom: definition can't declare a property that's already defined by one of its ancestors (Error)
+      - [ ] :boom: definition's ancestor can't be a descendant of the same model (Error)
+      - [x] :boom: each api path should be non-verbatim (account for path param names) unique per method (Error)
+      - [ ] :warning: each security reference should contain only unique scopes (Warning)
+      - [ ] :warning: each security scope in a security definition should be unique (Warning)
+      - [x] :boom: each path parameter should correspond to a parameter placeholder and vice versa (Error)
+      - [ ] :warning: each referencable definition must have references (Warning)
+      - [ ] :boom: each definition property listed in the required array must be defined in the properties of the model (Error)
+      - [x] :boom: each parameter should have a unique `name` and `type` combination (Error)
+      - [x] :boom: each operation should have only 1 parameter of type body (Error)
+      - [ ] :boom: each reference must point to a valid object (Error)
+      - [ ] :boom: every default value that is specified must validate against the schema for that property (Error)
+      - [x] :boom: items property is required for all schemas/definitions of type `array` (Error)
 	-	[x] serve swagger UI for any swagger spec file
-	-	[x] generate api based on swagger spec
-	-	[ ] generate go client from a swagger spec
-	-	[ ] generate "sensible" random data based on swagger spec
-	-	[ ] generate tests based on swagger spec for server
-	-	[ ] generate tests based on swagger spec for client
+  - code generation
+    -	[x] generate api based on swagger spec
+    -	[ ] generate go client from a swagger spec
+    -	[ ] generate "sensible" random data based on swagger spec
+    -	[ ] generate tests based on swagger spec for client
+    -	[ ] generate tests based on swagger spec for server
 -	[x] Middlewares:
 	-	[x] serve spec
 	-	[x] routing
 	-	[x] validation
 	-	[x] additional validation through an interface
-	-	[ ] authorization
+	-	[x] authorization
 		-	[x] basic auth
 		-	[x] api key auth
-		-	[ ] oauth2
-			-	[ ] implicit
-			-	[ ] access code
-			-	[ ] password
-			-	[ ] application
 	-	[x] swagger docs UI
 -	[x] Typed JSON Schema implementation
 	-	[x] JSON Pointer that knows about structs
@@ -127,6 +123,12 @@ After the v1 implementation extra transports are on the roadmap
 	- [ ] optimized serializer for YAML
 - Middlewares:
 	- [ ] swagger editor
+  - [ ] authorization:
+		-	[ ] oauth2
+			-	[ ] implicit
+			-	[ ] access code
+			-	[ ] password
+			-	[ ] application
 -	Tools:
 	-	[ ] generate spec document based on the code
 	-	[ ] watch swagger spec file and regenerate when modified

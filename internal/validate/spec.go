@@ -1,6 +1,7 @@
 package validate
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/casualjim/go-swagger/errors"
@@ -24,7 +25,7 @@ func NewSpecValidator(schema *spec.Schema, formats strfmt.Registry) *SpecValidat
 }
 
 // Validate validates the swagger spec
-func (s *SpecValidator) Validate(data interface{}) *Result {
+func (s *SpecValidator) Validate(data interface{}) (errs *Result, warnings *Result) {
 	var sd *spec.Document
 
 	switch v := data.(type) {
@@ -32,26 +33,103 @@ func (s *SpecValidator) Validate(data interface{}) *Result {
 		sd = v
 	}
 	if sd == nil {
-		return sErr(errors.New(500, "spec validator can only validate spec.Document objects"))
+		errs = sErr(errors.New(500, "spec validator can only validate spec.Document objects"))
+		return
 	}
 	s.spec = sd
 
-	res := new(Result)
+	errs = new(Result)
+	warnings = new(Result)
+
 	schv := NewSchemaValidator(s.schema, nil, "", s.KnownFormats)
-	res.Merge(schv.Validate(sd.Spec())) // -
-	res.Merge(s.validateItems())
-	res.Merge(s.validateUniqueSecurityScopes())
-	res.Merge(s.validateUniqueScopesSecurityDefinitions())
-	res.Merge(s.validateReferenced())
-	res.Merge(s.validateRequiredDefinitions())
-	res.Merge(s.validateParameters())
-	res.Merge(s.validateReferencesValid())
-	res.Merge(s.validateDefaultValueValidAgainstSchema())
-	return res
+	errs.Merge(schv.Validate(sd.Spec()))                        // error -
+	errs.Merge(s.validateItems())                               // error -
+	warnings.Merge(s.validateUniqueSecurityScopes())            // warning
+	warnings.Merge(s.validateUniqueScopesSecurityDefinitions()) // warning
+	warnings.Merge(s.validateReferenced())                      // warning
+	errs.Merge(s.validateRequiredDefinitions())                 // error
+	errs.Merge(s.validateParameters())                          // error -
+	errs.Merge(s.validateReferencesValid())                     // error
+	errs.Merge(s.validateDefaultValueValidAgainstSchema())      // error
+
+	return
 }
 
 func (s *SpecValidator) validateItems() *Result {
 	// validate parameter, items, schema and response objects for presence of item if type is array
+	res := new(Result)
+
+	// TODO: implement support for lookups of refs
+	for method, pi := range s.spec.Operations() {
+		for path, op := range pi {
+			for _, param := range s.spec.ParamsFor(method, path) {
+				if param.TypeName() == "array" && param.ItemsTypeName() == "" {
+					res.AddErrors(errors.New(422, "param %q for %q is a collection without an element type", param.Name, op.ID))
+					continue
+				}
+				if param.In != "body" {
+					if param.Items != nil {
+						items := param.Items
+						for items.TypeName() == "array" {
+							if items.ItemsTypeName() == "" {
+								res.AddErrors(errors.New(422, "param %q for %q is a collection without an element type", param.Name, op.ID))
+								break
+							}
+							items = items.Items
+						}
+					}
+				} else {
+					if err := s.validateSchemaItems(*param.Schema, fmt.Sprintf("body param %q", param.Name), op.ID); err != nil {
+						res.AddErrors(err)
+					}
+				}
+			}
+
+			var responses []spec.Response
+			if op.Responses != nil {
+				if op.Responses.Default != nil {
+					responses = append(responses, *op.Responses.Default)
+				}
+				for _, v := range op.Responses.StatusCodeResponses {
+					responses = append(responses, v)
+				}
+			}
+
+			for _, resp := range responses {
+				for hn, hv := range resp.Headers {
+					if hv.TypeName() == "array" && hv.ItemsTypeName() == "" {
+						res.AddErrors(errors.New(422, "header %q for %q is a collection without an element type", hn, op.ID))
+					}
+				}
+				if resp.Schema != nil {
+					if err := s.validateSchemaItems(*resp.Schema, "response body", op.ID); err != nil {
+						res.AddErrors(err)
+					}
+				}
+			}
+		}
+	}
+	return res
+}
+
+func (s *SpecValidator) validateSchemaItems(schema spec.Schema, prefix, opID string) error {
+	if !schema.Type.Contains("array") {
+		return nil
+	}
+
+	if schema.Items == nil || schema.Items.Len() == 0 {
+		return errors.New(422, "%s for %q is a collection without an element type", prefix, opID)
+	}
+
+	schemas := schema.Items.Schemas
+	if schema.Items.Schema != nil {
+		schemas = []spec.Schema{*schema.Items.Schema}
+	}
+	for _, sch := range schemas {
+		if err := s.validateSchemaItems(sch, prefix, opID); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
