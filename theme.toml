@@ -1,14 +1,14 @@
 name = "Hugo Theme Simple Document"
 license = "MIT"
-licenselink = "https://github.com/.../.../LICENSE.md"
-description = ""
-homepage = "http://siteforthistheme.com/"
-tags = ["", ""]
-features = ["", ""]
+licenselink = "https://github.com/key-amb/hugo-theme-simple-docs/LICENSE.md"
+description = "A simple Hugo theme for documentation"
+#homepage = "http://siteforthistheme.com/"
+tags = ["document", ""]
+features = ["document", ""]
 
 [author]
-  name = ""
-  homepage = ""
+  name = "YASUTAKE Kiyoshi"
+  homepage = "https://github.com/key-amb"
 
 # If porting an existing theme
 [original]
