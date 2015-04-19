@@ -64,10 +64,10 @@ For a V1 I want to have this feature set completed:
 	-	[ ] validate extra rules outlined [here](https://github.com/apigee-127/swagger-tools/blob/master/docs/Swagger_Validation.md)
 		- [ ] :boom: definition can't declare a property that's already defined by one of its ancestors (Error)
 		- [ ] :boom: definition's ancestor can't be a descendant of the same model (Error)
-		- [ ] :boom: each api path should be non-verbatim (account for path param names) unique per method (Error)
+		- [x] :boom: each api path should be non-verbatim (account for path param names) unique per method (Error)
 		- [ ] :warning: each security reference should contain only unique scopes (Warning)
 		- [ ] :warning: each security scope in a security definition should be unique (Warning)
-		- [ ] :boom: each path parameter should correspond to a parameter placeholder and vice versa (Error)
+		- [x] :boom: each path parameter should correspond to a parameter placeholder and vice versa (Error)
 		- [ ] :warning: each referencable definition must have references (Warning)
 		- [ ] :boom: each definition property listed in the required array must be defined in the properties of the model (Error)
 		- [x] :boom: each parameter should have a unique `name` and `type` combination (Error)
@@ -76,8 +76,8 @@ For a V1 I want to have this feature set completed:
 		- [ ] :boom: every default value that is specified must validate against the schema for that property (Error)
 		- [ ] :boom: items property is required for all schemas/definitions of type `array` (Error)
 	-	[x] serve swagger UI for any swagger spec file
-	-	[x] generate stub api based on swagger spec
-	-	[ ] generate client from a swagger spec
+	-	[x] generate api based on swagger spec
+	-	[ ] generate go client from a swagger spec
 	-	[ ] generate "sensible" random data based on swagger spec
 	-	[ ] generate tests based on swagger spec for server
 	-	[ ] generate tests based on swagger spec for client

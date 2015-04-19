@@ -186,3 +186,16 @@ func (d *Document) Host() string {
 func (d *Document) Raw() json.RawMessage {
 	return d.raw
 }
+
+// Reload reanalyzes the spec
+func (d *Document) Reload() *Document {
+	d.specAnalyzer = specAnalyzer{
+		spec:        d.spec,
+		consumes:    make(map[string]struct{}),
+		produces:    make(map[string]struct{}),
+		authSchemes: make(map[string]struct{}),
+		operations:  make(map[string]map[string]*Operation),
+	}
+	d.initialize()
+	return d
+}
