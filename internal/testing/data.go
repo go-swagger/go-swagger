@@ -197,6 +197,13 @@ const PetStore20 = `{
             "in": "query",
             "description": "The status to filter by",
             "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The maximum number of results to return",
+            "type": "integer",
+						"format": "int64"
           }
         ],
         "summary": "Finds all pets in the system",
@@ -384,7 +391,7 @@ const PetStore20 = `{
             "name"
           ]
         }
-      ]    
+      ]
     },
     "Tag": {
       "id": "Tag",
@@ -660,7 +667,7 @@ const RootPetStore20 = `{
             "name"
           ]
         }
-      ]    
+      ]
     },
     "Tag": {
       "id": "Tag",

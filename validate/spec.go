@@ -26,11 +26,7 @@ import (
 // 	- items property is required for all schemas/definitions of type `array`
 func Spec(doc *spec.Document, formats strfmt.Registry) error {
 	// TODO: add more validations beyond just jsonschema
-	res := validate.NewSchemaValidator(doc.Schema(), nil, "", formats).Validate(doc.Spec())
-	if len(res.Errors) > 0 {
-		return errors.CompositeValidationError(res.Errors...)
-	}
-	return nil
+	return AgainstSchema(doc.Schema(), doc.Spec(), formats)
 }
 
 // AgainstSchema validates the specified data with the provided schema, when no schema

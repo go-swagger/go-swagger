@@ -34,6 +34,7 @@ func (s *SpecValidator) Validate(data interface{}) *Result {
 	if sd == nil {
 		return sErr(errors.New(500, "spec validator can only validate spec.Document objects"))
 	}
+	s.spec = sd
 
 	res := new(Result)
 	schv := NewSchemaValidator(s.schema, nil, "", s.KnownFormats)
@@ -41,11 +42,11 @@ func (s *SpecValidator) Validate(data interface{}) *Result {
 	res.Merge(s.validateItems())
 	res.Merge(s.validateUniqueSecurityScopes())
 	res.Merge(s.validateUniqueScopesSecurityDefinitions())
-	res.Merge(s.validatePathParamPresence())
 	res.Merge(s.validateReferenced())
 	res.Merge(s.validateRequiredDefinitions())
 	res.Merge(s.validateParameters())
 	res.Merge(s.validateReferencesValid())
+	res.Merge(s.validateDefaultValueValidAgainstSchema())
 	return res
 }
 
@@ -66,10 +67,37 @@ func (s *SpecValidator) validateUniqueScopesSecurityDefinitions() *Result {
 	return nil
 }
 
-func (s *SpecValidator) validatePathParamPresence() *Result {
+func (s *SpecValidator) validatePathParamPresence(fromPath, fromOperation []string) *Result {
 	// Each defined operation path parameters must correspond to a named element in the API's path pattern.
 	// (For example, you cannot have a path parameter named id for the following path /pets/{petId} but you must have a path parameter named petId.)
-	return nil
+	res := new(Result)
+	for _, l := range fromPath {
+		var matched bool
+		for _, r := range fromOperation {
+			if l == "{"+r+"}" {
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			res.Errors = append(res.Errors, errors.New(422, "path param %q has no parameter definition", l))
+		}
+	}
+
+	for _, p := range fromOperation {
+		var matched bool
+		for _, r := range fromPath {
+			if "{"+p+"}" == r {
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			res.AddErrors(errors.New(422, "Path param %q is not present in the path", p))
+		}
+	}
+
+	return res
 }
 
 func (s *SpecValidator) validateReferenced() *Result {
@@ -87,35 +115,31 @@ func (s *SpecValidator) validateParameters() *Result {
 	// each operation should have only 1 parameter of type body
 	// each api path should be non-verbatim (account for path param names) unique per method
 	res := new(Result)
-	knownPaths := make(map[string]string)
-	for path, pi := range s.spec.Operations() {
-		segments, params := parsePath(path)
-		knowns := make([]string, 0, len(segments))
-		for _, s := range segments {
-			knowns = append(knowns, s)
-		}
-		for _, i := range params {
-			knowns[i] = "!"
-		}
-		knownPath := strings.Join(knowns, "/")
-		if orig, ok := knownPaths[knownPath]; ok {
-			res.AddErrors(errors.New(422, "path %s overlaps with %s", path, orig))
-		} else {
-			knownPaths[knownPath] = path
-		}
+	for method, pi := range s.spec.Operations() {
+		knownPaths := make(map[string]string)
+		for path, op := range pi {
+			segments, params := parsePath(path)
+			knowns := make([]string, 0, len(segments))
+			for _, s := range segments {
+				knowns = append(knowns, s)
+			}
+			var fromPath []string
+			for _, i := range params {
+				fromPath = append(fromPath, knowns[i])
+				knowns[i] = "!"
+			}
+			knownPath := strings.Join(knowns, "/")
+			if orig, ok := knownPaths[knownPath]; ok {
+				res.AddErrors(errors.New(422, "path %s overlaps with %s", path, orig))
+			} else {
+				knownPaths[knownPath] = path
+			}
 
-		for _, op := range pi {
 			ptypes := make(map[string]map[string]struct{})
 			var firstBodyParam string
 
+			var paramNames []string
 			for _, pr := range op.Parameters {
-				if pr.In == "body" {
-					if firstBodyParam != "" {
-						res.AddErrors(errors.New(422, "operation %q has more than 1 body param (accepted: %q, dropped: %q)", op.ID, firstBodyParam, pr.Name))
-					}
-					firstBodyParam = pr.Name
-				}
-
 				pnames, ok := ptypes[pr.In]
 				if !ok {
 					pnames = make(map[string]struct{})
@@ -128,13 +152,32 @@ func (s *SpecValidator) validateParameters() *Result {
 				}
 				pnames[pr.Name] = struct{}{}
 			}
+			for _, pr := range s.spec.ParamsFor(method, path) {
+				if pr.In == "body" {
+					if firstBodyParam != "" {
+						res.AddErrors(errors.New(422, "operation %q has more than 1 body param (accepted: %q, dropped: %q)", op.ID, firstBodyParam, pr.Name))
+					}
+					firstBodyParam = pr.Name
+				}
+
+				if pr.In == "path" {
+					paramNames = append(paramNames, pr.Name)
+				}
+			}
+			res.Merge(s.validatePathParamPresence(fromPath, paramNames))
 		}
 	}
 	return res
 }
 
-func parsePath(path string) ([]string, map[string]int) {
-	return nil, nil
+func parsePath(path string) (segments []string, params []int) {
+	for i, p := range strings.Split(path, "/") {
+		segments = append(segments, p)
+		if len(p) > 0 && p[0] == '{' && p[len(p)-1] == '}' {
+			params = append(params, i)
+		}
+	}
+	return
 }
 
 func (s *SpecValidator) validateReferencesValid() *Result {
