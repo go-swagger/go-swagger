@@ -1,0 +1,15 @@
+{{ partial "header.html" . }}
+
+	<main role="main">
+		<h1 class="list-title">{{ .Title }}</h1>
+{{ range .Data.Pages }}
+		<article itemscope itemtype="http://schema.org/Blog">
+			<h2 class="entry-title" itemprop="headline"><a href="{{ .RelPermalink }}">{{ .Title }}{{ if .Draft }} #Draft{{ end }}</a></h2>
+			<span class="entry-meta"><time itemprop="datePublished" datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "January 02, 2006" }}</time></span>
+		</article>
+{{ end }}
+	</main>
+
+	{{ partial "author.html" . }}
+
+{{ partial "footer.html" . }}
