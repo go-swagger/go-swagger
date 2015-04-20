@@ -113,7 +113,44 @@ func TestValidateReferenced(t *testing.T) {
 }
 
 func TestValidateRequiredDefinitions(t *testing.T) {
+	doc, api := petstore.NewAPI(t)
+	validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
+	validator.spec = doc
+	res := validator.validateRequiredDefinitions()
+	assert.Empty(t, res.Errors)
 
+	// properties
+	sw := doc.Spec()
+	def := sw.Definitions["Tag"]
+	def.Required = append(def.Required, "type")
+	sw.Definitions["Tag"] = def
+	res = validator.validateRequiredDefinitions()
+	assert.NotEmpty(t, res.Errors)
+
+	// pattern properties
+	def.PatternProperties = make(map[string]spec.Schema)
+	def.PatternProperties["ty.*"] = *spec.StringProperty()
+	sw.Definitions["Tag"] = def
+	res = validator.validateRequiredDefinitions()
+	assert.Empty(t, res.Errors)
+
+	def.PatternProperties = make(map[string]spec.Schema)
+	def.PatternProperties["^ty.$"] = *spec.StringProperty()
+	sw.Definitions["Tag"] = def
+	res = validator.validateRequiredDefinitions()
+	assert.NotEmpty(t, res.Errors)
+
+	// additional properties
+	def.PatternProperties = nil
+	def.AdditionalProperties = &spec.SchemaOrBool{Allows: true}
+	sw.Definitions["Tag"] = def
+	res = validator.validateRequiredDefinitions()
+	assert.Empty(t, res.Errors)
+
+	def.AdditionalProperties = &spec.SchemaOrBool{Allows: false}
+	sw.Definitions["Tag"] = def
+	res = validator.validateRequiredDefinitions()
+	assert.NotEmpty(t, res.Errors)
 }
 
 func TestValidateParameters(t *testing.T) {
