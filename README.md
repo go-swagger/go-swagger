@@ -69,7 +69,7 @@ For a V1 I want to have this feature set completed:
       - [ ] :warning: each security scope in a security definition should be unique (Warning)
       - [x] :boom: each path parameter should correspond to a parameter placeholder and vice versa (Error)
       - [ ] :warning: each referencable definition must have references (Warning)
-      - [ ] :boom: each definition property listed in the required array must be defined in the properties of the model (Error)
+      - [x] :boom: each definition property listed in the required array must be defined in the properties of the model (Error)
       - [x] :boom: each parameter should have a unique `name` and `type` combination (Error)
       - [x] :boom: each operation should have only 1 parameter of type body (Error)
       - [ ] :boom: each reference must point to a valid object (Error)

@@ -2,6 +2,7 @@ package validate
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/casualjim/go-swagger/errors"
@@ -171,7 +172,7 @@ func (s *SpecValidator) validatePathParamPresence(fromPath, fromOperation []stri
 			}
 		}
 		if !matched {
-			res.AddErrors(errors.New(422, "Path param %q is not present in the path", p))
+			res.AddErrors(errors.New(422, "path param %q is not present in the path", p))
 		}
 	}
 
@@ -185,7 +186,34 @@ func (s *SpecValidator) validateReferenced() *Result {
 
 func (s *SpecValidator) validateRequiredDefinitions() *Result {
 	// Each definition property listed in the required array must be defined in the properties of the model
-	return nil
+	res := new(Result)
+	for d, v := range s.spec.Spec().Definitions {
+	REQUIRED:
+		for _, pn := range v.Required {
+			if _, ok := v.Properties[pn]; ok {
+				continue
+			}
+
+			for pp := range v.PatternProperties {
+				re := regexp.MustCompile(pp)
+				if re.MatchString(pn) {
+					continue REQUIRED
+				}
+			}
+
+			if v.AdditionalProperties != nil {
+				if v.AdditionalProperties.Allows {
+					continue
+				}
+				if v.AdditionalProperties.Schema != nil {
+					continue
+				}
+			}
+
+			res.AddErrors(errors.New(422, "%q is present in required but not defined as property in defintion %q", pn, d))
+		}
+	}
+	return res
 }
 
 func (s *SpecValidator) validateParameters() *Result {
