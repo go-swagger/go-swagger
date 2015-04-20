@@ -1,9 +1,9 @@
-name = "Hugo Theme Simple Document"
+name = "Hugo Theme Bootie Docs"
 license = "MIT"
-licenselink = "https://github.com/key-amb/hugo-theme-simple-docs/LICENSE.md"
-description = "A simple Hugo theme for documentation"
+licenselink = "https://github.com/key-amb/hugo-theme-bootie-docs/LICENSE.md"
+description = "A simple Hugo theme with Bootstrap for documentation"
 #homepage = "http://siteforthistheme.com/"
-tags = ["document", ""]
+tags = ["document", "bootstrap"]
 features = ["document", ""]
 
 [author]
