@@ -43,15 +43,23 @@ func (s *SpecValidator) Validate(data interface{}) (errs *Result, warnings *Resu
 	warnings = new(Result)
 
 	schv := NewSchemaValidator(s.schema, nil, "", s.KnownFormats)
-	errs.Merge(schv.Validate(sd.Spec()))                        // error -
-	errs.Merge(s.validateItems())                               // error -
+	errs.Merge(schv.Validate(sd.Spec())) // error -
+	if errs.HasErrors() {
+		return // no point in continuing
+	}
+	errs.Merge(s.validateReferencesValid()) // error
+	if errs.HasErrors() {
+		return // no point in continuing
+	}
+
+	errs.Merge(s.validateParameters())                     // error -
+	errs.Merge(s.validateItems())                          // error -
+	errs.Merge(s.validateRequiredDefinitions())            // error -
+	errs.Merge(s.validateDefaultValueValidAgainstSchema()) // error
+
 	warnings.Merge(s.validateUniqueSecurityScopes())            // warning
 	warnings.Merge(s.validateUniqueScopesSecurityDefinitions()) // warning
 	warnings.Merge(s.validateReferenced())                      // warning
-	errs.Merge(s.validateRequiredDefinitions())                 // error
-	errs.Merge(s.validateParameters())                          // error -
-	errs.Merge(s.validateReferencesValid())                     // error
-	errs.Merge(s.validateDefaultValueValidAgainstSchema())      // error
 
 	return
 }
@@ -293,5 +301,7 @@ func (s *SpecValidator) validateReferencesValid() *Result {
 
 func (s *SpecValidator) validateDefaultValueValidAgainstSchema() *Result {
 	// every default value that is specified must validate against the schema for that property
+	// headers, items, parameters, schema
+
 	return nil
 }
