@@ -20,6 +20,7 @@ type SchemaValidator struct {
 	KnownFormats strfmt.Registry
 }
 
+// NewSchemaValidator creates a new schema validator
 func NewSchemaValidator(schema *spec.Schema, rootSchema interface{}, root string, formats strfmt.Registry) *SchemaValidator {
 	if schema == nil {
 		return nil
@@ -50,15 +51,18 @@ func NewSchemaValidator(schema *spec.Schema, rootSchema interface{}, root string
 	return &s
 }
 
+// SetPath sets the path for this schema valdiator
 func (s *SchemaValidator) SetPath(path string) {
 	s.Path = path
 }
 
+// Applies returns true when this schema validator applies
 func (s *SchemaValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	_, ok := source.(*spec.Schema)
 	return ok
 }
 
+// Validate validates the data against the schema
 func (s *SchemaValidator) Validate(data interface{}) *Result {
 	if data == nil {
 		v := s.validators[0].Validate(data)
