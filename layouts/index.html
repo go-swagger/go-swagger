@@ -1,12 +1,25 @@
 {{ partial "header.html" . }}
 
-	<main role="main">
-{{ range .Data.Pages }}
-		<article itemscope itemtype="http://schema.org/Blog">
-			<h2 class="entry-title" itemprop="headline"><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
-			<span class="entry-meta"><time itemprop="datePublished" datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "January 02, 2006" }}</time></span>
-		</article>
-{{ end }}
-	</main>
+<div class="row">
+
+	<!-- Main jumbotron for a primary marketing message or call to action -->
+	<div class="jumbotron">
+		<h1>Theme example</h1>
+		<p>This is a template showcasing the optional theme stylesheet 
+included in Bootstrap. Use it as a starting point to create something 
+more unique by building on or modifying it.</p>
+	</div>
+
+	<div class="col-md-8 doc-main">
+		<main role="main">
+	{{ range .Data.Pages }}
+			<article itemscope itemtype="http://schema.org/Blog">
+				<h2 class="entry-title" itemprop="headline"><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
+				<span class="entry-meta"><time itemprop="datePublished" datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "January 02, 2006" }}</time></span>
+			</article>
+	{{ end }}
+		</main>
+	</div> <!-- /.doc-main -->
+</div> <!-- /.row -->
 
 {{ partial "footer.html" . }}
