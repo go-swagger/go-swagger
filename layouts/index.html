@@ -1,7 +1,6 @@
 {{ partial "header.html" . }}
 
 	<main role="main">
-		{{ partial "author.html" . }}
 {{ range .Data.Pages }}
 		<article itemscope itemtype="http://schema.org/Blog">
 			<h2 class="entry-title" itemprop="headline"><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
