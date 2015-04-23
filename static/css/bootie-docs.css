@@ -118,8 +118,21 @@ h6, .h6 {
 .sidebar-module-inset ol:last-child {
   margin-bottom: 0;
 }
-.sidebar-module ul {
+.sidebar-module ul li {
   list-style-type: none;
+}
+
+.tag-box {
+  padding: 10px 15px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+}
+.tag-item {
+  margin: 5px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  line-height: 2;
+  background-color: #ffffff;
 }
 
 
