@@ -41,39 +41,6 @@ h6, .h6 {
           box-shadow: inset 0 -2px 5px rgba(0,0,0,.1);
 }
 
-/* Nav links */
-.blog-nav-item {
-  position: relative;
-  display: inline-block;
-  padding: 10px;
-  font-weight: 500;
-  color: #cdddeb;
-}
-.blog-nav-item:hover,
-.blog-nav-item:focus {
-  color: #fff;
-  text-decoration: none;
-}
-
-/* Active state gets a caret at the bottom */
-.blog-nav .active {
-  color: #fff;
-}
-.blog-nav .active:after {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: 0;
-  height: 0;
-  margin-left: -5px;
-  vertical-align: middle;
-  content: " ";
-  border-right: 5px solid transparent;
-  border-bottom: 5px solid;
-  border-left: 5px solid transparent;
-}
-
-
 /*
  * Blog name and description
  */
@@ -92,7 +59,6 @@ h6, .h6 {
   font-size: 20px;
   color: #999;
 }
-
 
 /*
  * Main column and sidebar layout
@@ -118,8 +84,11 @@ h6, .h6 {
 .sidebar-module-inset ol:last-child {
   margin-bottom: 0;
 }
-.sidebar-module ul li {
+.sidebar-toc ul li {
   list-style-type: none;
+  list-style-position: outside;
+  margin-left: -1.5em;
+  padding: 0;
 }
 
 .tag-box {
@@ -180,3 +149,7 @@ h6, .h6 {
 .doc-footer p:last-child {
   margin-bottom: 0;
 }
+.doc-footer-em {
+  font-size: 16px;
+}
+
