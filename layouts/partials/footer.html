@@ -1,22 +1,12 @@
-
-	<footer role="contentinfo">
-		<div class="hr"></div>
-		<div class="footer-link">
-			{{ with .Site.Params.email }}<a href="mailto:{{ . }}" target="_blank">Email</a></span>{{ end }}
-			{{ with .Site.Params.twitter }}<a href="{{ . }}" target="_blank">Twitter</a></span>{{ end }}
-			{{ with .Site.Params.facebook }}<a href="{{ . }}" target="_blank">Facebook</a></span>{{ end }}
-			{{ with .Site.Params.github }}<a href="{{ . }}" target="_blank">GitHub</a></span>{{ end }}
-		</div>
-		<div class="copyright">Copyright &copy; {{ .Site.Params.copyright }}</div>
-	</footer>
-
 </div> <!-- /.container -->
 
 <footer class="doc-footer">
 	<p class="doc-footer-em">
-		<a href="#">Back to Top</a>
+		<a href="#">Back to TOP</a>
 	</p>
-	<p><strong><a href="https://github.com/key-amb/hugo-theme-bootie-docs">Bootie Docs</a></strong> - theme for <a href="http://gohugo.io/">Hugo</a> by <a href="https://github.com/key-amb/">key-amb</a>.</p>
+	{{ with .Site.Params.repositoryUrl }}<p class="doc-footer-em">Browse <strong><a href="{{ . }}">Repository</a></strong></p>{{ end }}
+	<p>{{ .Site.Copyright }}</p>
+	<p>Powered by <strong><a href="https://github.com/key-amb/hugo-theme-bootie-docs">Bootie Docs</a></strong> - theme for <a href="http://gohugo.io/">Hugo</a> by <a href="https://github.com/key-amb/">key-amb</a>.</p>
 </footer>
 
 {{ with .Site.Params.analytics }}<script>

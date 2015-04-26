@@ -1,23 +1,43 @@
 {{ partial "header.html" . }}
 
-<div class="row">
+<main role="main">
 
+<div class="row">
 	<!-- Main jumbotron for a primary marketing message or call to action -->
 	<div class="jumbotron">
 		<h1>{{ .Site.Title }}</h1>
 		<p>{{ if isset .Site.Params "description" }}{{ .Site.Params.description }}{{ else }}You can customize this text by params "description" in your <code>config.toml</code>.{{ end }}</p>
 	</div>
+</div>
 
-	<div class="col-md-8 doc-main">
-		<main role="main">
-	{{ range .Data.Pages }}
-			<article itemscope itemtype="http://schema.org/Blog">
-				<h2 class="entry-title" itemprop="headline"><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
-				<span class="entry-meta"><time itemprop="datePublished" datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "January 02, 2006" }}</time></span>
-			</article>
-	{{ end }}
-		</main>
-	</div> <!-- /.doc-main -->
+{{ partial "top-content.html" . }}
+
+<!--
+<div class="row">
+	<div class="col-sm-4 doc-main">
+		<h3>Categories</h3>
+		<ul class="list-unstyled">
+		{{ range $name, $taxonomy := .Site.Taxonomies.categories }}
+			<li><a href="/categories/{{ $name | urlize }}">{{ $name }}</a></li>
+		{{ end }}
+		</ul>
+	</div>
+	<div class="col-sm-4 doc-main">
+		<h3>Tags</h3>
+		<ul class="list-unstyled">
+		{{ range $name, $taxonomy := .Site.Taxonomies.tags }}
+			<li><a href="/categories/{{ $name | urlize }}">{{ $name }}</a></li>
+		{{ end }}
+		</ul>
+	</div>
 </div> <!-- /.row -->
+
+<hr />
+
+<div class="row doc-main text-center">
+	<a href="/post">See posts for {{ .Site.Title }}</a>
+</div>
+
+</main>
 
 {{ partial "footer.html" . }}
