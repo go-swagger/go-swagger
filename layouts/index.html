@@ -11,7 +11,7 @@
 	</div>
 </div>
 
-{{ partial "top-content.html" . }}
+{{ if isset .Site.Params "withTopContent" }}{{ partial "top-content.html" . }}{{ end }}
 
 <!--
 <div class="row">
@@ -33,11 +33,13 @@
 	</div>
 </div> <!-- /.row -->
 
+{{ if isset .Site.Params "withSitePosts" }}
 <hr />
 
 <div class="row doc-main text-center">
 	<a href="{{ $baseUrl }}/post">See posts for {{ .Site.Title }}</a>
 </div>
+{{ end }}
 
 </main>
 
