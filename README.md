@@ -3,6 +3,8 @@
 **Bootie Docs** is a simple [hugo](http://gohugo.io/) theme for documentation.  
 The name "bootie" comes from [Bootstrap](http://getbootstrap.com/) CSS.
 
+You can see Demo and documents of **Bootie Docs** at http://key-amb.github.io/bootie-docs-demo/ .
+
 ## CONTENTS
 
 * [DEPENDENCIES](#dependencies)
