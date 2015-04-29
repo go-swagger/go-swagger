@@ -18,6 +18,12 @@ h6, .h6 {
   color: #333;
 }
 
+h1, .h1,
+h2, .h2 {
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
 /*
  * Override Bootstrap's default container.
  */
@@ -44,8 +50,6 @@ h6, .h6 {
 
 /* List items */
 .doc-list-header {
-  margin-bottom: 10px;
-  border-bottom: 1px solid #eee;
 }
 .doc-entry {
   color: #666;
