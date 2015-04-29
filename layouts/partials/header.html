@@ -31,7 +31,7 @@
 			</div>
 			<div id="navbar" class="navbar-collapse collapse">
 				<ul class="nav navbar-nav">
-					<li {{ if eq $isHomePage true }}class="active"{{ end }}><a href="/">Home</a></li>
+					<li {{ if eq $isHomePage true }}class="active"{{ end }}><a href="{{ $baseUrl }}/">Home</a></li>
 			{{ if isset .Site.Params "mainMenu" }}
 				{{ range $item := .Site.Params.mainMenu }}
 					<li><a href="{{ $baseUrl }}/{{ $item }}">{{ title $item}}</a></li>
