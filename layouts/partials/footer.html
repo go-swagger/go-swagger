@@ -1,3 +1,4 @@
+{{ $baseUrl := .Site.BaseUrl }}
 <hr />
 
 <div class="row">
@@ -23,10 +24,10 @@
 	ga('send', 'pageview');
 </script>{{ end }}
 
-<script src="/js/jquery-1.11.2.min.js"></script>
-<script src="/js/bootstrap.min.js"></script>
+<script src="{{ $baseUrl }}/js/jquery-1.11.2.min.js"></script>
+<script src="{{ $baseUrl }}/js/bootstrap.min.js"></script>
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-<script src="/js/ie10-viewport-bug-workaround.js"></script>
+<script src="{{ $baseUrl }}/js/ie10-viewport-bug-workaround.js"></script>
 
 </body>
 </html>
