@@ -3,12 +3,40 @@
 **Bootie Docs** is a simple [hugo](http://gohugo.io/) theme for documentation.  
 The name "bootie" comes from [Bootstrap](http://getbootstrap.com/) CSS.
 
-You can see Demo and documents of **Bootie Docs** at http://key-amb.github.io/bootie-docs-demo/ .
+![Bootie Docs screenshot](https://raw.githubusercontent.com/key-amb/hugo-theme-bootie-docs/master/static/images/tn.png)
+
+You can see demo and full documentation at http://key-amb.github.io/bootie-docs-demo/ .
 
 ## CONTENTS
 
+* [QUICKSTART](#quickstart)
+* [OPTIONS](#options)
+* [LIMITATION](#limitation)
 * [DEPENDENCIES](#dependencies)
 * [LICENSE](#license)
+
+## QUICKSTART
+
+1. `hugo new _index.md`
+1. Edit `content/_index.md`
+
+Then the content appears on top page.
+
+## OPTIONS
+
+You can customize the menu items in the header navigation bar by configuring `params.mainMenu` in your _config.toml_ (or _config.yaml_).
+
+```
+# example of config.toml
+[params]
+  mainMenu = ["about", "usage"]
+```
+
+All other options and usages are described at the documentation site -- http://key-amb.github.io/bootie-docs-demo/ .
+
+## LIMITATION
+
+Because _Bootie Docs_ is developed for documentation, it lacks many blog-type facilities such as RSS feeds, pagination of posts and so on.
 
 ## DEPENDENCIES
 
