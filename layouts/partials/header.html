@@ -9,6 +9,7 @@
 		<link rel="icon" href="{{ $baseUrl }}/favicon.ico">
 		<title>{{ .Title }}{{ if eq $isHomePage false }} - {{ .Site.Title }}{{ end }}</title>
 		<!--<link href="http://fonts.googleapis.com/css?family=PT+Sans:400,700" rel="stylesheet" type="text/css">-->
+		<link rel="stylesheet" href="{{ $baseUrl }}/css/highlight.js.min.css">
 		<link rel="stylesheet" href="{{ $baseUrl }}/css/bootstrap.min.css">
 		<link rel="stylesheet" href="{{ $baseUrl }}/css/bootstrap-theme.css">
 		<link rel="stylesheet" href="{{ $baseUrl }}/css/theme.css">
@@ -37,14 +38,17 @@
 					<li><a href="{{ $baseUrl }}/{{ $item }}">{{ title $item}}</a></li>
 				{{ end }}
 			{{ end }}
-				<li class="dropdown">
+				{{ if isset .Site.Params "noCategoryLink" }}{{ else }}
+					<li class="dropdown">
 						<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Categories<span class="caret"></span></a>
 						<ul class="dropdown-menu" role="menu">
 						{{ range $name, $taxonomy := .Site.Taxonomies.categories }}
 							<li><a href="{{ $baseUrl }}/categories/{{ $name | urlize }}">{{ title $name }}</a></li>
 						{{ end }}
 						</ul>
-					</li>				</ul>
+					</li>
+				{{ end }}
+				</ul>
 			</div><!--/.nav-collapse -->
 		</div>
 	</nav>
