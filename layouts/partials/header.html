@@ -34,8 +34,10 @@
 				<ul class="nav navbar-nav">
 					<li {{ if eq $isHomePage true }}class="active"{{ end }}><a href="{{ $baseUrl }}/">Home</a></li>
 			{{ if isset .Site.Params "mainMenu" }}
+				{{ $url := .Permalink }}
 				{{ range $item := .Site.Params.mainMenu }}
-					<li><a href="{{ $baseUrl }}/{{ $item }}">{{ title $item}}</a></li>
+					{{ $itemUrl := printf "%s/%s/" $baseUrl $item }}
+					<li {{ if eq $url $itemUrl }}class="active"{{ end }}><a href="{{ $baseUrl }}/{{ $item }}">{{ title $item }}</a></li>
 				{{ end }}
 			{{ end }}
 				{{ if isset .Site.Params "noCategoryLink" }}{{ else }}
