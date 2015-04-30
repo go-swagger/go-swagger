@@ -11,7 +11,7 @@
 
 <footer class="doc-footer">
 	{{ with .Site.Params.repositoryUrl }}<p class="doc-footer-em">Browse <strong><a href="{{ . }}">Repository</a></strong></p>{{ end }}
-	{{ with .Site.Copyright }}<p>{{ .Site.Copyright }}</p>{{ end }}
+	{{ with .Site.Copyright }}<p>{{ . }}</p>{{ end }}
 	<p>Powered by <strong><a href="https://github.com/key-amb/hugo-theme-bootie-docs">Bootie Docs</a></strong> - theme for <a href="http://gohugo.io/">Hugo</a> by <a href="https://github.com/key-amb/">key-amb</a>.</p>
 </footer>
 
