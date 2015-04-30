@@ -11,27 +11,11 @@
 	</div>
 </div>
 
-{{ if isset .Site.Params "withTopContent" }}{{ partial "top-content.html" . }}{{ end }}
-
-<!--
-<div class="row">
-	<div class="col-sm-4 doc-main">
-		<h3>Categories</h3>
-		<ul class="list-unstyled">
-		{{ range $name, $taxonomy := .Site.Taxonomies.categories }}
-			<li><a href="/categories/{{ $name | urlize }}">{{ $name }}</a></li>
-		{{ end }}
-		</ul>
+{{ range where .Site.Pages "Title" "_index" }}
+	<div class="row doc-main">
+		{{ .Content }}
 	</div>
-	<div class="col-sm-4 doc-main">
-		<h3>Tags</h3>
-		<ul class="list-unstyled">
-		{{ range $name, $taxonomy := .Site.Taxonomies.tags }}
-			<li><a href="/categories/{{ $name | urlize }}">{{ $name }}</a></li>
-		{{ end }}
-		</ul>
-	</div>
-</div> <!-- /.row -->
+{{ end }}
 
 {{ if isset .Site.Params "withSitePosts" }}
 <hr />
