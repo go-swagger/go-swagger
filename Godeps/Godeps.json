@@ -47,7 +47,7 @@
 		},
 		{
 			"ImportPath": "github.com/naoina/denco",
-			"Rev": "7e5f34b675c929608e4edaf4c4b97819e111b929"
+			"Rev": "9af2ba0e24214bac003821f4a501b131b2e04c75"
 		},
 		{
 			"ImportPath": "github.com/nu7hatch/gouuid",
@@ -64,20 +64,20 @@
 		},
 		{
 			"ImportPath": "github.com/smartystreets/goconvey/convey",
-			"Comment": "1.5.0-386-geb2e83c",
-			"Rev": "eb2e83c1df892d2c9ad5a3c85672da30be585dfd"
+			"Comment": "1.5.0-387-g43652d6",
+			"Rev": "43652d6f5820494c94d44658c1c0ae1a0ace403a"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Rev": "e4ec8152c15fc46bd5056ce65997a07c7d415325"
+			"Rev": "3b361f7ebbeff8f74ac0af5b9751f01b32cd74e5"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/ast/astutil",
-			"Rev": "20186168d5994c0682d36c5e57e190cd5b81a79c"
+			"Rev": "41d9a0e7b2d60d52ef1caf232b081c16af220b44"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/imports",
-			"Rev": "20186168d5994c0682d36c5e57e190cd5b81a79c"
+			"Rev": "41d9a0e7b2d60d52ef1caf232b081c16af220b44"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",

@@ -45,13 +45,14 @@ func (a *APIError) Error() string {
 }
 
 func validateRequest(request *Request) error {
+	// TODO: validate the request here against the operation
+	// this should only be the params model against the schema for the operation
 	return nil
 }
 
 // Submit a request and when there is a body on success it will turn that into the result
 // all other things are turned into an api error for swagger which retains the status code
 func (r *Runtime) Submit(request *Request, result interface{}) error {
-	// TODO: validate the request here against the operation
 	if err := validateRequest(request); err != nil {
 		return err
 	}

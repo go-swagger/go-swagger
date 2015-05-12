@@ -8,4 +8,5 @@ type Generate struct {
 	Operation *generate.Operation `command:"operation"`
 	Support   *generate.Support   `command:"support"`
 	Server    *generate.Server    `command:"server"`
+	Spec      *generate.SpecFile  `command:"spec"`
 }

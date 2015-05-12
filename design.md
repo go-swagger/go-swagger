@@ -138,8 +138,55 @@ The result it gets from the operation handler will be turned into a response. Sh
 
 # Codegen
 
+Codegen consists out of 2 parts. There is generating a server application from a swagger spec.
+The second part is generating a swagger spec from go code based on annotations and information retrieved from the AST.
+
+## Go generation
+
+The goal of this code generation is to just take care of the boilerplate.
+It uses a very small runtime to accommodate the swagger workflow. These are just small helpers for sharing some common
+code.  The server application uses plain go http do do its thing. All other code is generated so you can read what it
+does and if you think it's worth it.
+
 The go server api generator however won't reuse those templates but define its own set, because currently no proper go support exists in that project. Once I'm happy with what they generate I'll contribute them back to the swagger-codegen project.
 
 A generated client needs to have support for uploading files as multipart entries. The model generating code is shared between client and server. The things that operate with those models will be different.
 A generated client could implement validation on the client side for the request parameters and received response. The meat of the client is not actually implemented as generated code but a single submit function that knows how to perform all the shared operations and then issue the request.
 A client typically has only one consumer and producer registered. The content type for the request is the media type of the producer, the accept header is the media type of the consumer.
+
+## Spec generation
+
+Based on the work from https://github.com/yvasiyarov/swagger
+It uses a similar approach but with expanded annotations and it produces a swagger 2.0 spec.
+
+The goal of the syntax is to make it look as a natural part of the documentation for the application code.
+
+The generator is passed a base path (defaults to current) and tries to extract a go package path from that.
+Once it has a go package path it will scan the package recursively, skipping the Godeps, files ending in test.go and
+directories that start with an underscore, it also skips file system entries that start with a dot.
+
+Once the parser has encountered a comment that matches on of its known tags, the parser will assume that the rest of
+the comment block is for swagger.
+
+### Info Properties
+
+Annotation | Format
+-----------|--------
+Description | free text block or a url containing the description for this API
+Title | the short description for the API
+TOS | allows for either a url or a free text definition describing the terms of services for the API
+Version | the current version of the API
+Contact | the name of for the person to contact concerning the API eg. John Doe<john@blogs.com> http://john.blogs.com
+License | the name of the license followed by the URL of the license eg. MIT http://opensource.org/license/MIT
+
+The description property uses the rest of the comment block as description for the api when not explictily provided
+
+### Swagger object
+
+Annotation | Format
+-----------|--------
+Swagger | the swagger version to use for this API, defaults to latest known (currently 2.0)
+
+### Definition object
+
+### Operation object

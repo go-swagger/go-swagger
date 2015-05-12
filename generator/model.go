@@ -183,7 +183,7 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 
 type genModel struct {
 	Package        string             //`json:"package,omitempty"`
-	ReceiverName   string             ////`json:"receiverName,omitempty"`
+	ReceiverName   string             //`json:"receiverName,omitempty"`
 	ClassName      string             //`json:"classname,omitempty"`
 	Name           string             //`json:"name,omitempty"`
 	Description    string             //`json:"description,omitempty"`
@@ -192,7 +192,7 @@ type genModel struct {
 	HumanClassName string             //`json:"humanClassname,omitempty"`
 	Imports        map[string]string  //`json:"imports,omitempty"`
 	DefaultImports []string           //`json:"defaultImports,omitempty"`
-	HasValidations bool               // `json:"hasValidatins,omitempty"`
+	HasValidations bool               //`json:"hasValidatins,omitempty"`
 }
 
 func modelDocString(className, desc string) string {

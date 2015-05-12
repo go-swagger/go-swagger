@@ -82,6 +82,10 @@ For a V1 I want to have this feature set completed:
     -	[ ] generate "sensible" random data based on swagger spec
     -	[ ] generate tests based on swagger spec for client
     -	[ ] generate tests based on swagger spec for server
+    -	[ ] watch swagger spec file and regenerate when modified
+  - spec generation
+    -	[ ] generate spec document based on the code
+    -	[ ] watch application folders and regenerate the swagger document
 -	[x] Middlewares:
 	-	[x] serve spec
 	-	[x] routing

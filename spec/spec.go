@@ -146,15 +146,29 @@ func New(data json.RawMessage, version string) (*Document, error) {
 	return d, nil
 }
 
-// ExpandSpec expands the ref fields in the spec document
-func (d *Document) ExpandSpec() error {
-	// TODO: use a copy of the spec doc to expand instead
-	// things requiring an expanded spec should first get the
-	// expanded version of the document
-	if err := expandSpec(d.spec); err != nil {
-		return err
+// Expanded expands the ref fields in the spec document and returns a new spec document
+func (d *Document) Expanded() (*Document, error) {
+	spec := new(Swagger)
+	if err := json.Unmarshal(d.raw, spec); err != nil {
+		return nil, err
 	}
-	return nil
+	if err := expandSpec(spec); err != nil {
+		return nil, err
+	}
+
+	dd := &Document{
+		specAnalyzer: specAnalyzer{
+			spec:        spec,
+			consumes:    make(map[string]struct{}),
+			produces:    make(map[string]struct{}),
+			authSchemes: make(map[string]struct{}),
+			operations:  make(map[string]map[string]*Operation),
+		},
+		spec: spec,
+		raw:  d.raw,
+	}
+	dd.initialize()
+	return dd, nil
 }
 
 // BasePath the base path for this spec
