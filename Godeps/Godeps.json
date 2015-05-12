@@ -12,8 +12,8 @@
 		},
 		{
 			"ImportPath": "github.com/asaskevich/govalidator",
-			"Comment": "v1",
-			"Rev": "68d5221a67affc98529c25b1fbfeb69212a4dc8b"
+			"Comment": "v1-2-g6cc0206",
+			"Rev": "6cc0206a17d4b2ac62ff4a5fa21443b1e8532097"
 		},
 		{
 			"ImportPath": "github.com/elazarl/go-bindata-assetfs",
@@ -69,15 +69,15 @@
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Rev": "3b361f7ebbeff8f74ac0af5b9751f01b32cd74e5"
+			"Rev": "dab07ac62d4905d3e48d17dc549c684ac3b7c15a"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/ast/astutil",
-			"Rev": "41d9a0e7b2d60d52ef1caf232b081c16af220b44"
+			"Rev": "d00f0cb57d439b122af924676c6d45d3106891c9"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/imports",
-			"Rev": "41d9a0e7b2d60d52ef1caf232b081c16af220b44"
+			"Rev": "d00f0cb57d439b122af924676c6d45d3106891c9"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
