@@ -13,7 +13,7 @@ func TestFormats(t *testing.T) {
 	b := []byte(str)
 	err := uri.UnmarshalText(b)
 	assert.NoError(t, err)
-	assert.Equal(t, URI("http://somewhereelse.com"), string(b))
+	assert.EqualValues(t, URI("http://somewhereelse.com"), string(b))
 
 	b, err = uri.MarshalText()
 	assert.NoError(t, err)
@@ -24,7 +24,7 @@ func TestFormats(t *testing.T) {
 	b = []byte(str)
 	err = email.UnmarshalText(b)
 	assert.NoError(t, err)
-	assert.Equal(t, Email("somebodyelse@somewhere.com"), string(b))
+	assert.EqualValues(t, Email("somebodyelse@somewhere.com"), string(b))
 
 	b, err = email.MarshalText()
 	assert.NoError(t, err)
@@ -35,7 +35,7 @@ func TestFormats(t *testing.T) {
 	b = []byte(str)
 	err = hostname.UnmarshalText(b)
 	assert.NoError(t, err)
-	assert.Equal(t, Hostname("somewhere.com"), string(b))
+	assert.EqualValues(t, Hostname("somewhere.com"), string(b))
 
 	b, err = hostname.MarshalText()
 	assert.NoError(t, err)
@@ -46,7 +46,7 @@ func TestFormats(t *testing.T) {
 	b = []byte(str)
 	err = ipv4.UnmarshalText(b)
 	assert.NoError(t, err)
-	assert.Equal(t, IPv4("192.168.254.2"), string(b))
+	assert.EqualValues(t, IPv4("192.168.254.2"), string(b))
 
 	b, err = ipv4.MarshalText()
 	assert.NoError(t, err)
@@ -57,7 +57,7 @@ func TestFormats(t *testing.T) {
 	b = []byte(str)
 	err = ipv6.UnmarshalText(b)
 	assert.NoError(t, err)
-	assert.Equal(t, IPv6("::2"), string(b))
+	assert.EqualValues(t, IPv6("::2"), string(b))
 
 	b, err = ipv6.MarshalText()
 	assert.NoError(t, err)
@@ -70,11 +70,11 @@ func TestFormats(t *testing.T) {
 	b = []byte(str)
 	err = uuid3.UnmarshalText(b)
 	assert.NoError(t, err)
-	assert.Equal(t, UUID3(other3.String()), string(b))
+	assert.EqualValues(t, UUID3(other3.String()), string(b))
 
 	b, err = uuid3.MarshalText()
 	assert.NoError(t, err)
-	assert.Equal(t, []byte(other3.String()), b)
+	assert.EqualValues(t, []byte(other3.String()), b)
 
 	first4, _ := uuid.NewV4()
 	other4, _ := uuid.NewV4()
@@ -83,7 +83,7 @@ func TestFormats(t *testing.T) {
 	b = []byte(str)
 	err = uuid4.UnmarshalText(b)
 	assert.NoError(t, err)
-	assert.Equal(t, UUID4(other4.String()), string(b))
+	assert.EqualValues(t, UUID4(other4.String()), string(b))
 
 	b, err = uuid4.MarshalText()
 	assert.NoError(t, err)
@@ -96,7 +96,7 @@ func TestFormats(t *testing.T) {
 	b = []byte(str)
 	err = uuid5.UnmarshalText(b)
 	assert.NoError(t, err)
-	assert.Equal(t, UUID5(other5.String()), string(b))
+	assert.EqualValues(t, UUID5(other5.String()), string(b))
 
 	b, err = uuid5.MarshalText()
 	assert.NoError(t, err)
@@ -107,7 +107,7 @@ func TestFormats(t *testing.T) {
 	b = []byte(str)
 	err = uuid.UnmarshalText(b)
 	assert.NoError(t, err)
-	assert.Equal(t, UUID(other5.String()), string(b))
+	assert.EqualValues(t, UUID(other5.String()), string(b))
 
 	b, err = uuid.MarshalText()
 	assert.NoError(t, err)
@@ -118,7 +118,7 @@ func TestFormats(t *testing.T) {
 	b = []byte(str)
 	err = isbn.UnmarshalText(b)
 	assert.NoError(t, err)
-	assert.Equal(t, ISBN("0836217463"), string(b))
+	assert.EqualValues(t, ISBN("0836217463"), string(b))
 
 	b, err = isbn.MarshalText()
 	assert.NoError(t, err)
@@ -129,7 +129,7 @@ func TestFormats(t *testing.T) {
 	b = []byte(str)
 	err = isbn10.UnmarshalText(b)
 	assert.NoError(t, err)
-	assert.Equal(t, ISBN10("0836217463"), string(b))
+	assert.EqualValues(t, ISBN10("0836217463"), string(b))
 
 	b, err = isbn10.MarshalText()
 	assert.NoError(t, err)
@@ -140,7 +140,7 @@ func TestFormats(t *testing.T) {
 	b = []byte(str)
 	err = isbn13.UnmarshalText(b)
 	assert.NoError(t, err)
-	assert.Equal(t, ISBN13("0836217462385"), string(b))
+	assert.EqualValues(t, ISBN13("0836217462385"), string(b))
 
 	b, err = isbn13.MarshalText()
 	assert.NoError(t, err)
@@ -151,7 +151,7 @@ func TestFormats(t *testing.T) {
 	b = []byte(str)
 	err = hexColor.UnmarshalText(b)
 	assert.NoError(t, err)
-	assert.Equal(t, HexColor("#000000"), string(b))
+	assert.EqualValues(t, HexColor("#000000"), string(b))
 
 	b, err = hexColor.MarshalText()
 	assert.NoError(t, err)
@@ -162,7 +162,7 @@ func TestFormats(t *testing.T) {
 	b = []byte(str)
 	err = rgbColor.UnmarshalText(b)
 	assert.NoError(t, err)
-	assert.Equal(t, RGBColor("rgb(0,0,0)"), string(b))
+	assert.EqualValues(t, RGBColor("rgb(0,0,0)"), string(b))
 
 	b, err = rgbColor.MarshalText()
 	assert.NoError(t, err)
@@ -173,7 +173,7 @@ func TestFormats(t *testing.T) {
 	b = []byte(str)
 	err = ssn.UnmarshalText(b)
 	assert.NoError(t, err)
-	assert.Equal(t, SSN("999 99 9999"), string(b))
+	assert.EqualValues(t, SSN("999 99 9999"), string(b))
 
 	b, err = ssn.MarshalText()
 	assert.NoError(t, err)
@@ -184,7 +184,7 @@ func TestFormats(t *testing.T) {
 	b = []byte(str)
 	err = creditCard.UnmarshalText(b)
 	assert.NoError(t, err)
-	assert.Equal(t, CreditCard("9999-9999-9999-9999"), string(b))
+	assert.EqualValues(t, CreditCard("9999-9999-9999-9999"), string(b))
 
 	b, err = creditCard.MarshalText()
 	assert.NoError(t, err)
