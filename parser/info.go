@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"go/ast"
 	"net/mail"
 	"regexp"
 	"strings"
@@ -20,106 +19,29 @@ var infoTags = []string{
 
 type infoSetter func(*spec.Info, []string) error
 
-type infoSectionTagger struct {
-	*sectionTagger
-	set infoSetter
-}
-
-func newInfoSection(name string, multiLine bool, setter infoSetter) (t *infoSectionTagger) {
-	t = new(infoSectionTagger)
-	t.sectionTagger = newSectionTagger(name, multiLine)
-	t.set = setter
+func newInfoSection(name string, multiLine bool, setter infoSetter) (t *sectionTagger) {
+	t = newSectionTagger(name, multiLine)
+	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Info), lines) }
 	return
 }
 
-func newAPIInfoParser() *apiInfoParser {
-	taggers := []*infoSectionTagger{
+func newAPIInfoParser(otherTags []string) *docCommentParser {
+	return newDocCommentParser(
+		otherTags,
 		newInfoSection("Version", false, setInfoVersion),
 		newInfoSection("Description", true, setInfoDescription),
 		newInfoSection("Title", true, setInfoTitle),
 		newInfoSection("TOS", true, setInfoTOS),
 		newInfoSection("License", false, setInfoLicense),
 		newInfoSection("Contact", false, setInfoContact),
-	}
-	return &apiInfoParser{taggers}
-}
-
-type apiInfoParser struct {
-	taggers []*infoSectionTagger
-}
-
-func (ai *apiInfoParser) Parse(gofile *ast.File) (*spec.Info, error) {
-	info := new(spec.Info)
-
-	// var currentLines []string
-	var selectedTagger *infoSectionTagger
-	var otherTags []string
-	taggers := ai.taggers
-	for _, c := range gofile.Doc.List {
-		text := c.Text
-		lines := strings.Split(text, "\n")
-	LINES:
-		for _, line := range lines {
-			// this is an aggregating tagger
-			if selectedTagger != nil {
-				switch res := selectedTagger.Tag(line, otherTags).(type) {
-				case multiLineSectionPart:
-					continue LINES
-				case multiLineSectionTerminator:
-					if err := selectedTagger.set(info, res.taggedSection.Lines); err != nil {
-						return nil, err
-					}
-					selectedTagger = nil
-					continue LINES
-				case newTagSectionTerminator:
-					if err := selectedTagger.set(info, res.taggedSection.Lines); err != nil {
-						return nil, err
-					}
-				}
-			}
-			selectedTagger = nil
-			for i, tagger := range taggers {
-				switch res := tagger.Tag(line, nil).(type) {
-				case singleLineSection:
-					if err := tagger.set(info, res.taggedSection.Lines); err != nil {
-						return nil, err
-					}
-					// once it has matched we don't care for probing for it again
-					taggers = append(taggers[:i], taggers[i+1:]...)
-					continue LINES
-
-				case multiLineSectionPart:
-					selectedTagger = tagger
-					otherTags = nil
-					for _, t := range ai.taggers {
-						if t.Name != tagger.Name {
-							otherTags = append(otherTags, t.Name)
-						}
-					}
-					// once it has matched we don't care for probing for it again
-					taggers = append(taggers[:i], taggers[i+1:]...)
-					continue LINES
-				case unmatchedSection:
-					// TODO: something slightly smarter than nothing
-				}
-			}
-		}
-	}
-
-	if selectedTagger != nil {
-		if err := selectedTagger.set(info, selectedTagger.Lines); err != nil {
-			return nil, err
-		}
-	}
-
-	return info, nil
+	)
 }
 
 func setInfoVersion(info *spec.Info, lines []string) error {
 	if len(lines) == 0 {
 		return nil
 	}
-	info.Version = lines[0]
+	info.Version = strings.TrimSpace(lines[0])
 	return nil
 }
 
@@ -185,16 +107,16 @@ func splitURL(line string) (notURL, url string) {
 }
 
 func setInfoTitle(info *spec.Info, lines []string) error {
-	info.Title = strings.Join(lines, "\n")
+	info.Title = strings.TrimSpace(strings.Join(lines, "\n"))
 	return nil
 }
 
 func setInfoDescription(info *spec.Info, lines []string) error {
-	info.Description = strings.Join(lines, "\n")
+	info.Description = strings.TrimSpace(strings.Join(lines, "\n"))
 	return nil
 }
 
 func setInfoTOS(info *spec.Info, lines []string) error {
-	info.TermsOfService = strings.Join(lines, "\n")
+	info.TermsOfService = strings.TrimSpace(strings.Join(lines, "\n"))
 	return nil
 }

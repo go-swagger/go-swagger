@@ -55,7 +55,15 @@ func TestSetInfoContact(t *testing.T) {
 }
 
 func TestParseInfo(t *testing.T) {
-	parser := newAPIInfoParser()
+	otherTags := []string{
+		"Produces",
+		"Consumes",
+		"Schemes",
+		"Host",
+		"BasePath",
+		"Tags",
+	}
+	parser := newAPIInfoParser(otherTags)
 	docFile := "../fixtures/goparsing/petstoreapp/doc.go"
 	fileSet := token.NewFileSet()
 	fileTree, err := goparser.ParseFile(fileSet, docFile, nil, goparser.ParseComments)

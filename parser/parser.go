@@ -2,15 +2,19 @@ package parser
 
 import (
 	"fmt"
+	"go/ast"
 	"log"
 	"regexp"
 	"strings"
 
+	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/util"
 )
 
 // Many thanks go to https://github.com/yvasiyarov/swagger
 // this is loosely based on that implementation but for swagger 2.0
+
+type setter func(interface{}, []string) error
 
 // apiParser the global context for parsing a go application
 // into a swagger specification
@@ -75,6 +79,7 @@ type sectionTagger struct {
 	// starts out being true
 	isFirst  bool
 	wasEmpty bool
+	set      setter
 }
 type unmatchedSection struct{} // marker struct
 
@@ -141,4 +146,83 @@ func (st *sectionTagger) Tag(text string, terminatingTags []string) interface{} 
 		return multiLineSectionPart{st.taggedSection}
 	}
 	return unmatchedSection{}
+}
+
+func newDocCommentParser(otherTags []string, taggers ...*sectionTagger) *docCommentParser {
+	return &docCommentParser{taggers: taggers, otherTags: otherTags}
+}
+
+type docCommentParser struct {
+	taggers   []*sectionTagger
+	otherTags []string
+}
+
+func (ai *docCommentParser) Parse(gofile *ast.File) (*spec.Info, error) {
+	info := new(spec.Info)
+
+	// var currentLines []string
+	var selectedTagger *sectionTagger
+	var otherTags []string
+	taggers := ai.taggers
+	for _, c := range gofile.Doc.List {
+		text := c.Text
+		lines := strings.Split(text, "\n")
+
+	LINES:
+		for _, line := range lines {
+			// this is an aggregating tagger
+			if selectedTagger != nil {
+				switch res := selectedTagger.Tag(line, otherTags).(type) {
+				case multiLineSectionPart:
+					continue LINES
+				case multiLineSectionTerminator:
+					if err := selectedTagger.set(info, res.taggedSection.Lines); err != nil {
+						return nil, err
+					}
+					selectedTagger = nil
+					continue LINES
+				case newTagSectionTerminator:
+					if err := selectedTagger.set(info, res.taggedSection.Lines); err != nil {
+						return nil, err
+					}
+				}
+			}
+
+			selectedTagger = nil
+			for i, tagger := range taggers {
+				switch res := tagger.Tag(line, nil).(type) {
+				case singleLineSection:
+					if err := tagger.set(info, res.taggedSection.Lines); err != nil {
+						return nil, err
+					}
+					// once it has matched we don't care for probing for it again
+					taggers = append(taggers[:i], taggers[i+1:]...)
+					continue LINES
+
+				case multiLineSectionPart:
+					selectedTagger = tagger
+					otherTags = ai.otherTags
+					for _, t := range ai.taggers {
+						if t.Name != tagger.Name {
+							otherTags = append(otherTags, t.Name)
+						}
+					}
+					// once it has matched we don't care for probing for it again
+					taggers = append(taggers[:i], taggers[i+1:]...)
+					continue LINES
+
+				case unmatchedSection:
+					// TODO: something slightly smarter than nothing???
+				}
+			}
+		}
+	}
+
+	if selectedTagger != nil {
+		if err := selectedTagger.set(info, selectedTagger.Lines); err != nil {
+			return nil, err
+		}
+	}
+
+	return info, nil
 }
