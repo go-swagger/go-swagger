@@ -11,7 +11,7 @@ import (
 
 // This file is safe to edit. Once it exists it won't be overwritten
 
-func configureAPI(api *operations.{{.AppName}}API) {
+func configureAPI(api *{{.Package}}.{{.AppName}}API) {
   // configure the api here
   api.ServeError = errors.ServeError
 

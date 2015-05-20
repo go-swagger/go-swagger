@@ -36,7 +36,7 @@ func main() {
     host = "localhost"
   }
 
-  api := operations.New{{.AppName}}API(swaggerSpec)
+  api := {{.Package}}.New{{.AppName}}API(swaggerSpec)
   configureAPI(api)
 
   listener, err := net.Listen("tcp", host + ":" + port)
