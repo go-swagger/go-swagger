@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"go/ast"
 	goparser "go/parser"
 	"log"
@@ -124,22 +123,22 @@ func (ai *docCommentParser) Parse(gofile *ast.File, target interface{}) error {
 
 	LINES:
 		for _, line := range lines {
-			fmt.Printf("processing: %q\n", line)
+			//fmt.Printf("processing: %q\n", line)
 			// this is an aggregating tagger
 			if selectedTagger != nil {
 				switch res := selectedTagger.Tag(line, otherTags).(type) {
 				case multiLineSectionPart:
-					fmt.Println("this is a multi line section part for", selectedTagger.Name)
+					//fmt.Println("this is a multi line section part for", selectedTagger.Name)
 					continue
 				case multiLineSectionTerminator:
-					fmt.Println("this is a multi line section terminator for", selectedTagger.Name)
+					//fmt.Println("this is a multi line section terminator for", selectedTagger.Name)
 					if err := selectedTagger.set(target, res.taggedSection.Lines); err != nil {
 						return err
 					}
 					selectedTagger = nil
 					continue
 				case newTagSectionTerminator:
-					fmt.Println("this is a multi line section tag terminator for", selectedTagger.Name)
+					//fmt.Println("this is a multi line section tag terminator for", selectedTagger.Name)
 					if err := selectedTagger.set(target, res.taggedSection.Lines); err != nil {
 						return err
 					}
@@ -153,7 +152,8 @@ func (ai *docCommentParser) Parse(gofile *ast.File, target interface{}) error {
 			for i, tagger := range taggers {
 				switch res := tagger.Tag(line, nil).(type) {
 				case singleLineSection:
-					fmt.Println("this is a single line section for", tagger.Name)
+					//fmt.Println("this is a single line section for", tagger.Name)
+					//fmt.Println("collected:", res.Lines)
 					if err := tagger.set(target, res.taggedSection.Lines); err != nil {
 						return err
 					}
@@ -162,7 +162,7 @@ func (ai *docCommentParser) Parse(gofile *ast.File, target interface{}) error {
 					continue LINES
 
 				case multiLineSectionPart:
-					fmt.Println("this is a multi line section for", tagger.Name)
+					//fmt.Println("this is a multi line section for", tagger.Name)
 					selectedTagger = tagger
 					otherTags = ai.otherTags
 					for _, t := range ai.taggers {

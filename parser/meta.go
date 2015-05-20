@@ -58,12 +58,21 @@ func newMetaParser() *docCommentParser {
 }
 
 func setSwaggerConsumes(swspec *spec.Swagger, lines []string) error {
-	swspec.Consumes = lines
+	swspec.Consumes = removeEmptyLines(lines)
 	return nil
 }
 
+func removeEmptyLines(lines []string) (notEmpty []string) {
+	for _, l := range lines {
+		if len(strings.TrimSpace(l)) > 0 {
+			notEmpty = append(notEmpty, l)
+		}
+	}
+	return
+}
+
 func setSwaggerProduces(swspec *spec.Swagger, lines []string) error {
-	swspec.Produces = lines
+	swspec.Produces = removeEmptyLines(lines)
 	return nil
 }
 
@@ -72,7 +81,12 @@ func setSwaggerSchemes(swspec *spec.Swagger, lines []string) error {
 	if len(lns) == 0 || lns[0] == "" {
 		lns = []string{"http"}
 	}
-	swspec.Schemes = strings.Split(lns[0], ",")
+	sch := strings.Split(lns[0], ", ")
+	var schemes []string
+	for _, s := range sch {
+		schemes = append(schemes, s)
+	}
+	swspec.Schemes = schemes
 	return nil
 }
 
@@ -86,11 +100,12 @@ func setSwaggerHost(swspec *spec.Swagger, lines []string) error {
 }
 
 func setSwaggerBasePath(swspec *spec.Swagger, lines []string) error {
-	lns := lines
-	if len(lns) == 0 {
-		lns = []string{"/"}
+	var ln string
+	if len(lines) > 0 {
+		ln = lines[0]
 	}
-	swspec.BasePath = lns[0]
+	// the tagger strips of the / because it is a comment sign
+	swspec.BasePath = "/" + ln
 	return nil
 }
 

@@ -16,11 +16,17 @@
 //
 // Consumes:
 // application/json
+// application/xml
 //
 // Produces:
 // application/json
+// application/xml
 //
 // Schemes: http, https
+//
+// Host: localhost
+//
+// BasePath: /v2
 //
 // +swagger:meta
 package classification

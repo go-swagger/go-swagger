@@ -12,7 +12,7 @@ var (
 )
 
 func tagNameMatcher(name string) *regexp.Regexp {
-	return regexp.MustCompile(fmt.Sprintf("[^\\w]*(?:%s)[^:]*:[^\\w]*", name))
+	return regexp.MustCompile(fmt.Sprintf("[^\\w]*(?:%s)[^:]*:\\s*", name))
 }
 
 func swaggerClassifier(name string) *regexp.Regexp {

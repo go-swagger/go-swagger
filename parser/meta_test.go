@@ -84,5 +84,42 @@ that are available to turn go code into a fully compliant swagger 2.0 spec`
 	assert.Equal(t, "John Doe", swspec.Info.Contact.Name)
 	assert.Equal(t, "john.doe@example.com", swspec.Info.Contact.Email)
 	assert.Equal(t, "http://john.doe.com", swspec.Info.Contact.URL)
+}
 
+func TestParseSwagger(t *testing.T) {
+	parser := newMetaParser()
+	docFile := "../fixtures/goparsing/classification/doc.go"
+	fileSet := token.NewFileSet()
+	fileTree, err := goparser.ParseFile(fileSet, docFile, nil, goparser.ParseComments)
+	if err != nil {
+		t.FailNow()
+	}
+	swspec := new(spec.Swagger)
+	err = parser.Parse(fileTree, swspec)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "0.0.1", swspec.Info.Version)
+	assert.Equal(t, "there are no TOS at this moment, use at your own risk we take no responsibility", swspec.Info.TermsOfService)
+	assert.Equal(t, "Petstore API", swspec.Info.Title)
+	descr := `the purpose of this application is to provide an application
+that is using plain go code to define an API
+
+This should demonstrate all the possible comment annotations
+that are available to turn go code into a fully compliant swagger 2.0 spec`
+	assert.Equal(t, descr, swspec.Info.Description)
+
+	assert.NotNil(t, swspec.Info.License)
+	assert.Equal(t, "MIT", swspec.Info.License.Name)
+	assert.Equal(t, "http://opensource.org/licenses/MIT", swspec.Info.License.URL)
+
+	assert.NotNil(t, swspec.Info.Contact)
+	assert.Equal(t, "John Doe", swspec.Info.Contact.Name)
+	assert.Equal(t, "john.doe@example.com", swspec.Info.Contact.Email)
+	assert.Equal(t, "http://john.doe.com", swspec.Info.Contact.URL)
+
+	assert.EqualValues(t, []string{"application/json", "application/xml"}, swspec.Consumes)
+	assert.EqualValues(t, []string{"application/json", "application/xml"}, swspec.Produces)
+	assert.EqualValues(t, []string{"http", "https"}, swspec.Schemes)
+	assert.Equal(t, "localhost", swspec.Host)
+	assert.Equal(t, "/v2", swspec.BasePath)
 }
