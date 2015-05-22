@@ -68,7 +68,7 @@ func TestParseInfo(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "0.0.1", swspec.Info.Version)
 	assert.Equal(t, "there are no TOS at this moment, use at your own risk we take no responsibility", swspec.Info.TermsOfService)
-	assert.Equal(t, "Petstore API", swspec.Info.Title)
+	assert.Equal(t, "Petstore API.", swspec.Info.Title)
 	descr := `the purpose of this application is to provide an application
 that is using plain go code to define an API
 
@@ -100,7 +100,7 @@ func TestParseSwagger(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "0.0.1", swspec.Info.Version)
 	assert.Equal(t, "there are no TOS at this moment, use at your own risk we take no responsibility", swspec.Info.TermsOfService)
-	assert.Equal(t, "Petstore API", swspec.Info.Title)
+	assert.Equal(t, "Petstore API.", swspec.Info.Title)
 	descr := `the purpose of this application is to provide an application
 that is using plain go code to define an API
 

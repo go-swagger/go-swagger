@@ -11,12 +11,24 @@ var (
 	rxStripTitleComments = regexp.MustCompile("^[^\\w]*(:?P|p)ackage\\s+\\w+[^\\w]*")
 )
 
+func tagNamesMatcher(tags []string) *regexp.Regexp {
+	var escaped []string
+	for _, t := range tags {
+		escaped = append(escaped, regexp.QuoteMeta(t))
+	}
+	return unsafeTagNameMatcher(strings.Join(escaped, "|"))
+}
+
 func tagNameMatcher(name string) *regexp.Regexp {
+	return unsafeTagNameMatcher(regexp.QuoteMeta(name))
+}
+
+func unsafeTagNameMatcher(name string) *regexp.Regexp {
 	return regexp.MustCompile(fmt.Sprintf("[^\\w]*(?:%s)[^:]*:\\s*", name))
 }
 
 func swaggerClassifier(name string) *regexp.Regexp {
-	return regexp.MustCompile(fmt.Sprintf("[^+]*\\+\\s*swagger:%s", name))
+	return regexp.MustCompile(fmt.Sprintf("[^+]*\\+\\s*swagger:%s", regexp.QuoteMeta(name)))
 }
 
 type taggedSection struct {
@@ -153,8 +165,7 @@ func (st *sectionTagger) Tag(text string, terminatingTags []string) interface{} 
 
 		// check for tags that terminate
 		if len(terminatingTags) > 0 {
-			terminates := tagNameMatcher(strings.Join(terminatingTags, "|"))
-			if terminates.MatchString(text) {
+			if tagNamesMatcher(terminatingTags).MatchString(text) {
 				return newTagSectionTerminator{st.taggedSection}
 			}
 		}

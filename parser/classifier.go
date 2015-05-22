@@ -113,6 +113,8 @@ func (pc *programClassifier) Classify(prog *loader.Program) (*classifiedProgram,
 							cp.Meta = append(cp.Meta, file)
 							mt = true
 						}
+					case "strfmt":
+						// TODO: perhaps collect these and pass along to avoid lookups later on
 					default:
 						return nil, fmt.Errorf("classifier: unknown swagger annotation %q", matches[1])
 					}

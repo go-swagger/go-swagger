@@ -54,7 +54,7 @@ func (a *apiParser) Parse() (*spec.Swagger, error) {
 	// build definitions dictionary
 	var definitions = make(map[string]spec.Schema)
 	for _, modFile := range cp.Models {
-		if err := a.parseSchema(modFile, definitions, nil); err != nil {
+		if err := a.parseSchema(modFile, definitions); err != nil {
 			return nil, err
 		}
 	}
@@ -79,8 +79,8 @@ func (a *apiParser) Parse() (*spec.Swagger, error) {
 	return result, nil
 }
 
-func (a *apiParser) parseSchema(file *ast.File, definitions map[string]spec.Schema, parent *spec.Schema) error {
-	return nil
+func (a *apiParser) parseSchema(file *ast.File, definitions map[string]spec.Schema) error {
+	return schemaParser(a.prog).Parse(file, definitions)
 }
 
 func (a *apiParser) parseRoutes(file *ast.File, paths *spec.Paths) error {
@@ -88,8 +88,7 @@ func (a *apiParser) parseRoutes(file *ast.File, paths *spec.Paths) error {
 }
 
 func (a *apiParser) parseMeta(file *ast.File, swspec *spec.Swagger) error {
-	newMetaParser().Parse(file, swspec)
-	return nil
+	return newMetaParser().Parse(file, swspec)
 }
 
 // MustExpandPackagePath gets the real package path on disk
@@ -106,18 +105,11 @@ func newDocCommentParser(otherTags []string, taggers ...*sectionTagger) *docComm
 	return &docCommentParser{taggers: taggers, otherTags: otherTags}
 }
 
-type docCommentParser struct {
-	taggers   []*sectionTagger
-	otherTags []string
-	header    []string
-	body      []string
-}
-
-func (ai *docCommentParser) Parse(gofile *ast.File, target interface{}) error {
+func parseDocComments(doc *ast.CommentGroup, target interface{}, tgrs []*sectionTagger, ot []string) error {
 	var selectedTagger *sectionTagger
 	var otherTags []string
-	taggers := ai.taggers
-	for _, c := range gofile.Doc.List {
+	taggers := tgrs
+	for _, c := range doc.List {
 		text := c.Text
 		lines := strings.Split(text, "\n")
 
@@ -157,8 +149,8 @@ func (ai *docCommentParser) Parse(gofile *ast.File, target interface{}) error {
 
 				case multiLineSectionPart:
 					selectedTagger = tagger
-					otherTags = ai.otherTags
-					for _, t := range ai.taggers {
+					otherTags = ot
+					for _, t := range tgrs {
 						if t.Name != tagger.Name {
 							otherTags = append(otherTags, t.Name)
 						}
@@ -180,4 +172,13 @@ func (ai *docCommentParser) Parse(gofile *ast.File, target interface{}) error {
 	}
 
 	return nil
+}
+
+type docCommentParser struct {
+	taggers   []*sectionTagger
+	otherTags []string
+}
+
+func (ai *docCommentParser) Parse(gofile *ast.File, target interface{}) error {
+	return parseDocComments(gofile.Doc, target, ai.taggers, ai.otherTags)
 }

@@ -2,9 +2,9 @@ package mods
 
 // Pet represents a pet in our store
 //
-// this model is not annotated with the swagger annotation.
+// this model is not explictly mentioned in the import paths
 // but because it it transitively required by the order
-// it should also be collected by a classifier
+// it should also be collected.
 //
 // +swagger:model
 type Pet struct {
@@ -12,6 +12,7 @@ type Pet struct {
 	//
 	// required: true
 	ID int64 `json:"id"`
+
 	// Name the name of the pet
 	// this is more like the breed or race of the pet
 	//

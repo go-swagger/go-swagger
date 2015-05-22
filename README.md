@@ -62,30 +62,30 @@ For a V1 I want to have this feature set completed:
 	-	[x] validate a swagger spec document:
     -	[x] validate against jsonschema
     -	[ ] validate extra rules outlined [here](https://github.com/apigee-127/swagger-tools/blob/master/docs/Swagger_Validation.md)
-      - [ ] :boom: definition can't declare a property that's already defined by one of its ancestors (Error)
-      - [ ] :boom: definition's ancestor can't be a descendant of the same model (Error)
-      - [x] :boom: each api path should be non-verbatim (account for path param names) unique per method (Error)
-      - [ ] :warning: each security reference should contain only unique scopes (Warning)
-      - [ ] :warning: each security scope in a security definition should be unique (Warning)
-      - [x] :boom: each path parameter should correspond to a parameter placeholder and vice versa (Error)
-      - [ ] :warning: each referencable definition must have references (Warning)
-      - [x] :boom: each definition property listed in the required array must be defined in the properties of the model (Error)
-      - [x] :boom: each parameter should have a unique `name` and `type` combination (Error)
-      - [x] :boom: each operation should have only 1 parameter of type body (Error)
-      - [ ] :boom: each reference must point to a valid object (Error)
-      - [ ] :boom: every default value that is specified must validate against the schema for that property (Error)
-      - [x] :boom: items property is required for all schemas/definitions of type `array` (Error)
+      - [ ] definition can't declare a property that's already defined by one of its ancestors (Error)
+      - [ ] definition's ancestor can't be a descendant of the same model (Error)
+      - [x] each api path should be non-verbatim (account for path param names) unique per method (Error)
+      - [ ] each security reference should contain only unique scopes (Warning)
+      - [ ] each security scope in a security definition should be unique (Warning)
+      - [x] each path parameter should correspond to a parameter placeholder and vice versa (Error)
+      - [ ] each referencable definition must have references (Warning)
+      - [x] each definition property listed in the required array must be defined in the properties of the model (Error)
+      - [x] each parameter should have a unique `name` and `type` combination (Error)
+      - [x] each operation should have only 1 parameter of type body (Error)
+      - [ ] each reference must point to a valid object (Error)
+      - [ ] every default value that is specified must validate against the schema for that property (Error)
+      - [x] items property is required for all schemas/definitions of type `array` (Error)
 	-	[x] serve swagger UI for any swagger spec file
   - code generation
     -	[x] generate api based on swagger spec
     -	[ ] generate go client from a swagger spec
-    -	[ ] generate "sensible" random data based on swagger spec
-    -	[ ] generate tests based on swagger spec for client
-    -	[ ] generate tests based on swagger spec for server
-    -	[ ] watch swagger spec file and regenerate when modified
   - spec generation
     -	[ ] generate spec document based on the code
-    -	[ ] watch application folders and regenerate the swagger document
+      - [x] generate meta data (top level swagger properties) from package docs
+      - [ ] generate definition entries for models
+        - [ ] support allOf for composed structs
+        - [ ] support discriminator based polymorphism
+      - [ ] generate path entries for routes
 -	[x] Middlewares:
 	-	[x] serve spec
 	-	[x] routing
@@ -125,6 +125,14 @@ After the v1 implementation extra transports are on the roadmap
 	- [ ] custom serializer for XML to support namespaces and prefixes
 	- [ ] optimized serializer for JSON
 	- [ ] optimized serializer for YAML
+- Tools:
+  - Code generation:
+    -	[ ] generate "sensible" random data based on swagger spec
+    -	[ ] generate tests based on swagger spec for client
+    -	[ ] generate tests based on swagger spec for server
+    -	[ ] watch swagger spec file and regenerate when modified
+  - Spec generation:
+    -	[ ] watch application folders and regenerate the swagger document
 - Middlewares:
 	- [ ] swagger editor
   - [ ] authorization:
@@ -133,9 +141,6 @@ After the v1 implementation extra transports are on the roadmap
 			-	[ ] access code
 			-	[ ] password
 			-	[ ] application
--	Tools:
-	-	[ ] generate spec document based on the code
-	-	[ ] watch swagger spec file and regenerate when modified
 -	Transports:
 	-	[ ] swagger socket (swagger over tcp sockets)
 	-	[ ] swagger websocket (swagger over websockets)
