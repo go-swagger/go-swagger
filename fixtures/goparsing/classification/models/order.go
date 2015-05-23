@@ -2,12 +2,12 @@ package models
 
 import "github.com/casualjim/go-swagger/fixtures/goparsing/classification/transitive/mods"
 
-// Order represents an order in this application
+// StoreOrder represents an order in this application.
 //
 // An order can either be created, processed or completed.
 //
-// +swagger:model
-type Order struct {
+// +swagger:model order
+type StoreOrder struct {
 	// the id for this order
 	//
 	// required: true

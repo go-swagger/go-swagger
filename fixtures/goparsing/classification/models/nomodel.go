@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	mods "github.com/casualjim/go-swagger/fixtures/goparsing/classification/transitive/mods"
+	"github.com/casualjim/go-swagger/fixtures/goparsing/classification/transitive/mods"
 	"github.com/casualjim/go-swagger/strfmt"
 )
 
@@ -12,15 +12,46 @@ import (
 // so it should now show up in a test
 //
 type NoModel struct {
-	// ID of this no model instance
+	// ID of this no model instance.
+	// ids in this application start at 11 and are smaller than 1000
+	//
+	//
+	// required: true
+	// minimum: > 10
+	// maximum: < 1000
 	ID int64 `json:"id"`
+
+	// The Score of this model
+	//
+	//
+	// required: true
+	// minimum: 3
+	// maximum: 45
+	// multiple of: 3
+	Score int32 `json:"score"`
+
 	// Name of this no model instance
+	//
+	//
+	// min length: 4
+	// max length: 50
+	// pattern: [A-Za-z0-9-.]*
+	// required: true
 	Name string `json:"name"`
 
-	// the time when this entry was created
+	// Created holds the time when this entry was created
+	//
+	//
+	// required: false
+	// read only: true
 	Created strfmt.DateTime `json:"created"`
 
-	FooArr   [3]string
+	// a FooSlice has foos which are strings
+	//
+	//
+	// min items: 3
+	// max items: 10
+	// unique: true
 	FooSlice []string
 
 	NestedFoo          [][]string
@@ -30,6 +61,13 @@ type NoModel struct {
 
 	// the items for this order
 	Items []struct {
+		// ID of this no model instance.
+		// ids in this application start at 11 and are smaller than 1000
+		//
+		//
+		// required: true
+		// minimum: > 10
+		// maximum: < 1000
 		ID       int32    `json:"id"`
 		Pet      mods.Pet `json:"pet"`
 		Quantity int16    `json:"quantity"`
@@ -95,4 +133,91 @@ type FormattedModel struct {
 	R strfmt.UUID3      `json:"r"`
 	S strfmt.UUID4      `json:"s"`
 	T strfmt.UUID5      `json:"t"`
+}
+
+// A SimpleComplexModel is a struct with only other struct types
+//
+// It doesn't have slices or arrays etc but only complex types
+// so also no primitives or string formatters
+type SimpleComplexModel struct {
+	Top Something `json:"top"`
+
+	NotSel mods.NotSelected `json:"notSel"`
+
+	Emb struct {
+		CID int64  `json:"cid"`
+		Baz string `json:"baz"`
+	} `json:"emb"`
+}
+
+type Something struct {
+	DID int64  `json:"did"`
+	Cat string `json:"cat"`
+}
+
+// Pointdexter is a struct with only pointers
+type Pointdexter struct {
+	ID   *int64        `json:"id"`
+	Name *string       `json:"name"`
+	T    *strfmt.UUID5 `json:"t"`
+	Top  *Something    `json:"top"`
+
+	NotSel *mods.NotSelected `json:"notSel"`
+
+	Emb *struct {
+		CID *int64  `json:"cid"`
+		Baz *string `json:"baz"`
+	} `json:"emb"`
+}
+
+// A SliceAndDice struct contains only slices
+//
+// the elements of the slices are structs, primitives or string formats
+// there is also a pointer version of each property
+type SliceAndDice struct {
+	IDs     []int64            `json:"ids"`
+	Names   []string           `json:"names"`
+	UUIDs   []strfmt.UUID      `json:"uuids"`
+	Tops    []Something        `json:"tops"`
+	NotSels []mods.NotSelected `json:"notSels"`
+	Embs    []struct {
+		CID []int64  `json:"cid"`
+		Baz []string `json:"baz"`
+	} `json:"embs"`
+
+	PtrIDs     []*int64            `json:"ptrIds"`
+	PtrNames   []*string           `json:"ptrNames"`
+	PtrUUIDs   []*strfmt.UUID      `json:"ptrUuids"`
+	PtrTops    []*Something        `json:"ptrTops"`
+	PtrNotSels []*mods.NotSelected `json:"ptrNotSels"`
+	PtrEmbs    []*struct {
+		PtrCID []*int64  `json:"ptrCid"`
+		PtrBaz []*string `json:"ptrBaz"`
+	} `json:"ptrEmbs"`
+}
+
+// A MapTastic struct contains only maps
+//
+// the values of the maps are structs, primitives or string formats
+// there is also a pointer version of each property
+type MapTastic struct {
+	IDs     map[string]int64            `json:"ids"`
+	Names   map[string]string           `json:"names"`
+	UUIDs   map[string]strfmt.UUID      `json:"uuids"`
+	Tops    map[string]Something        `json:"tops"`
+	NotSels map[string]mods.NotSelected `json:"notSels"`
+	Embs    map[string]struct {
+		CID map[string]int64  `json:"cid"`
+		Baz map[string]string `json:"baz"`
+	} `json:"embs"`
+
+	PtrIDs     map[string]*int64            `json:"ptrIds"`
+	PtrNames   map[string]*string           `json:"ptrNames"`
+	PtrUUIDs   map[string]*strfmt.UUID      `json:"ptrUuids"`
+	PtrTops    map[string]*Something        `json:"ptrTops"`
+	PtrNotSels map[string]*mods.NotSelected `json:"ptrNotSels"`
+	PtrEmbs    map[string]*struct {
+		PtrCID map[string]*int64  `json:"ptrCid"`
+		PtrBaz map[string]*string `json:"ptrBaz"`
+	} `json:"ptrEmbs"`
 }

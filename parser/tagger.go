@@ -178,5 +178,6 @@ func (st *sectionTagger) Tag(text string, terminatingTags []string) interface{} 
 	return unmatchedSection{}
 }
 func (st *sectionTagger) stripComment(line string) string {
-	return st.rxStripComments.ReplaceAllString(line, "")
+	after := st.rxStripComments.ReplaceAllString(line, "")
+	return after
 }

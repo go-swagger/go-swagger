@@ -23,6 +23,7 @@ type apiParser struct {
 	loader     *loader.Config
 	prog       *loader.Program
 	classifier *programClassifier
+	discovered []structDecl
 
 	// MainPackage the path to find the main class in
 	MainPackage string
@@ -58,6 +59,23 @@ func (a *apiParser) Parse() (*spec.Swagger, error) {
 			return nil, err
 		}
 	}
+	// loop over discovered until all the items are in definitions
+	keepGoing := len(a.discovered) > 0
+	for keepGoing {
+		var queue []structDecl
+		for _, d := range a.discovered {
+			if _, ok := definitions[d.Name]; !ok {
+				queue = append(queue, d)
+			}
+		}
+		a.discovered = nil
+		for _, sd := range queue {
+			if err := a.parseSchema(sd.File, definitions); err != nil {
+				return nil, err
+			}
+		}
+		keepGoing = len(a.discovered) > 0
+	}
 
 	// build paths dictionary
 	var paths spec.Paths
@@ -80,7 +98,12 @@ func (a *apiParser) Parse() (*spec.Swagger, error) {
 }
 
 func (a *apiParser) parseSchema(file *ast.File, definitions map[string]spec.Schema) error {
-	return schemaParser(a.prog).Parse(file, definitions)
+	sp := schemaParser(a.prog)
+	if err := sp.Parse(file, definitions); err != nil {
+		return err
+	}
+	a.discovered = append(a.discovered, sp.postDecls...)
+	return nil
 }
 
 func (a *apiParser) parseRoutes(file *ast.File, paths *spec.Paths) error {
@@ -106,6 +129,9 @@ func newDocCommentParser(otherTags []string, taggers ...*sectionTagger) *docComm
 }
 
 func parseDocComments(doc *ast.CommentGroup, target interface{}, tgrs []*sectionTagger, ot []string) error {
+	if doc == nil {
+		return nil
+	}
 	var selectedTagger *sectionTagger
 	var otherTags []string
 	taggers := tgrs

@@ -2,6 +2,7 @@ package parser
 
 import (
 	goparser "go/parser"
+	"log"
 	"path/filepath"
 	"sort"
 	"testing"
@@ -31,7 +32,7 @@ func TestAnnotationMatcher(t *testing.T) {
 	}
 }
 
-func classifierProgram(t *testing.T) *loader.Program {
+func classifierProgram() *loader.Program {
 	var ldr loader.Config
 	ldr.ParserMode = goparser.ParseComments
 	ldr.Import("../fixtures/goparsing/classification")
@@ -39,14 +40,14 @@ func classifierProgram(t *testing.T) *loader.Program {
 	ldr.Import("../fixtures/goparsing/classification/operations")
 	prog, err := ldr.Load()
 	if err != nil {
-		t.FailNow()
+		log.Fatal(err)
 	}
 	return prog
 }
 
 func TestClassifier(t *testing.T) {
 
-	prog := classifierProgram(t)
+	prog := classificationProg
 	classifier := &programClassifier{}
 	classified, err := classifier.Classify(prog)
 	assert.NoError(t, err)
@@ -69,7 +70,7 @@ func TestClassifier(t *testing.T) {
 
 func TestClassifierInclude(t *testing.T) {
 
-	prog := classifierProgram(t)
+	prog := classificationProg
 	classifier := &programClassifier{
 		Includes: packageFilters{
 			Models: []packageFilter{
@@ -100,7 +101,7 @@ func TestClassifierInclude(t *testing.T) {
 
 func TestClassifierExclude(t *testing.T) {
 
-	prog := classifierProgram(t)
+	prog := classificationProg
 	classifier := &programClassifier{
 		Excludes: packageFilters{
 			Models: []packageFilter{
