@@ -76,12 +76,14 @@ func TestSchemaValueExtractors(t *testing.T) {
 	verifySwaggerOneArgSwaggerTag(t, rxStrFmt, strfmts, validParams, append(invalidParams, "", "  ", " "))
 	verifySwaggerOneArgSwaggerTag(t, rxModelOverride, models, append(validParams, "", "  ", " "), invalidParams)
 
-	verifyMinMax(t, rxMinimum, "min", []string{"", ">", "="})
-	verifyMinMax(t, rxMaximum, "max", []string{"", "<", "="})
-	verifyNumeric2Words(t, rxMultipleOf, "multiple", "of")
+	verifyMinMax(t, rxf(rxMinimumFmt, ""), "min", []string{"", ">", "="})
+	verifyMinMax(t, rxf(rxMinimumFmt, rxItemsPrefix), "items.min", []string{"", ">", "="})
+	verifyMinMax(t, rxf(rxMaximumFmt, ""), "max", []string{"", "<", "="})
+	verifyMinMax(t, rxf(rxMaximumFmt, rxItemsPrefix), "items.max", []string{"", "<", "="})
+	verifyNumeric2Words(t, rxf(rxMultipleOfFmt, ""), "multiple", "of")
+	verifyNumeric2Words(t, rxf(rxMultipleOfFmt, rxItemsPrefix), "items.multiple", "of")
 
-	verifyIntegerMinMaxManyWords(t, rxMinLength, "min", []string{"len", "length"})
-	verifyIntegerMinMaxManyWords(t, rxMaxLength, "max", []string{"len", "length"})
+	verifyIntegerMinMaxManyWords(t, rxf(rxMinLengthFmt, ""), "min", []string{"len", "length"})
 	// pattern
 	extraSpaces := []string{"", " ", "  ", "     "}
 	prefixes := []string{"//", "*", ""}
@@ -94,7 +96,7 @@ func TestSchemaValueExtractors(t *testing.T) {
 					for _, es3 := range extraSpaces {
 						for _, arg := range patArgs {
 							line := strings.Join([]string{pref, es1, nm, es2, ":", es3, arg}, "")
-							matches := rxPattern.FindStringSubmatch(line)
+							matches := rxf(rxPatternFmt, "").FindStringSubmatch(line)
 							assert.Len(t, matches, 2)
 							assert.Equal(t, arg, matches[1])
 						}
@@ -104,9 +106,8 @@ func TestSchemaValueExtractors(t *testing.T) {
 		}
 	}
 
-	verifyIntegerMinMaxManyWords(t, rxMinItems, "min", []string{"items"})
-	verifyIntegerMinMaxManyWords(t, rxMaxItems, "max", []string{"items"})
-	verifyBoolean(t, rxUnique, []string{"unique"}, nil)
+	verifyIntegerMinMaxManyWords(t, rxf(rxMinItemsFmt, ""), "min", []string{"items"})
+	verifyBoolean(t, rxf(rxUniqueFmt, ""), []string{"unique"}, nil)
 
 	verifyBoolean(t, rxReadOnly, []string{"read"}, []string{"only"})
 	verifyBoolean(t, rxRequired, []string{"required"}, nil)
@@ -291,7 +292,7 @@ func verifyMinMax(t *testing.T, matcher *regexp.Regexp, name string, operators [
 								for _, vv := range validNumericArgs {
 									line := strings.Join([]string{pref, es1, wrd, es2, ":", es3, op, es4, vv}, "")
 									matches := matcher.FindStringSubmatch(line)
-									//fmt.Printf("matching %q, matches (%d): %v\n", line, len(matches), matches)
+									// fmt.Printf("matching %q with %q, matches (%d): %v\n", line, matcher, len(matches), matches)
 									assert.Len(t, matches, 3)
 									assert.Equal(t, vv, matches[2])
 									cnt++
@@ -336,7 +337,6 @@ func TestSchemaParser(t *testing.T) {
 
 	assert.Equal(t, spec.StringOrArray([]string{"object"}), schema.Type)
 	assert.Equal(t, "NoModel is a struct that exists in a package\nbut is not annotated with the swagger model annotations\nso it should now show up in a test", schema.Title)
-	//assert.Equal(t, "this model is not explictly mentioned in the import paths\nbut because it it transitively required by the order\nit should also be collected.", schema.Description)
 	assert.Len(t, schema.Required, 3)
 
 	assertProperty(t, &schema, "number", "id", "int64", "ID")
@@ -361,6 +361,19 @@ func TestSchemaParser(t *testing.T) {
 	prop, ok = schema.Properties["created"]
 	assert.True(t, ok, "should have a 'created' property")
 	assert.True(t, prop.ReadOnly, "'created' should be read only")
+
+	assertArrayProperty(t, &schema, "string", "foo_slice", "", "FooSlice")
+	prop, ok = schema.Properties["foo_slice"]
+	assert.True(t, ok, "should have a 'foo_slice' property")
+	assert.NotNil(t, prop.Items, "foo_slice should have had an items property")
+	assert.NotNil(t, prop.Items.Schema, "foo_slice.items should have had a schema property")
+	assert.True(t, prop.UniqueItems, "'foo_slice' should have unique items")
+	assert.EqualValues(t, 3, *prop.MinItems, "'foo_slice' should have had 3 min items")
+	assert.EqualValues(t, 10, *prop.MaxItems, "'foo_slice' should have had 10 max items")
+	itprop := prop.Items.Schema
+	assert.EqualValues(t, 3, *itprop.MinLength, "'foo_slice.items.minLength' should have been 3")
+	assert.EqualValues(t, 10, *itprop.MaxLength, "'foo_slice.items.maxLength' should have been 10")
+	assert.EqualValues(t, "\\w+", itprop.Pattern, "'foo_slice.items.pattern' should have \\w+")
 
 	definitions := make(map[string]spec.Schema)
 	sp := schemaParser(classificationProg)

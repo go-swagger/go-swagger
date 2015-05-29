@@ -17,23 +17,30 @@ var (
 	rxStrFmt        = regexp.MustCompile("\\+swagger:strfmt\\p{Zs}*(\\p{L}[\\p{L}\\p{N}-]+)$")
 	rxModelOverride = regexp.MustCompile("\\+swagger:model\\p{Zs}*(\\p{L}[\\p{L}\\p{N}-]+)?$")
 
-	rxMaximum    = regexp.MustCompile("(?:M|m)ax(?:imum)?\\p{Zs}*:\\p{Zs}*(\\<|=)?\\p{Zs}*([\\+-]?(?:\\p{N}+\\.)?\\p{N}+)$")
-	rxMinimum    = regexp.MustCompile("(?:M|m)in(?:imum)?\\p{Zs}*:\\p{Zs}*(\\>|=)?\\p{Zs}*([\\+-]?(?:\\p{N}+\\.)?\\p{N}+)$")
-	rxMultipleOf = regexp.MustCompile("(?:M|m)ultiple\\p{Zs}*(?:O|o)f\\p{Zs}*:\\p{Zs}*([\\+-]?(?:\\p{N}+\\.)?\\p{N}+)$")
+	rxMaximumFmt    = "%s[Mm]ax(?:imum)?\\p{Zs}*:\\p{Zs}*([\\<=])?\\p{Zs}*([\\+-]?(?:\\p{N}+\\.)?\\p{N}+)$"
+	rxMinimumFmt    = "%s[Mm]in(?:imum)?\\p{Zs}*:\\p{Zs}*([\\>=])?\\p{Zs}*([\\+-]?(?:\\p{N}+\\.)?\\p{N}+)$"
+	rxMultipleOfFmt = "%s[Mm]ultiple\\p{Zs}*[Oo]f\\p{Zs}*:\\p{Zs}*([\\+-]?(?:\\p{N}+\\.)?\\p{N}+)$"
 
-	rxMaxLength = regexp.MustCompile("(?:M|m)ax(?:imum)?(?:\\p{Zs}*-?(?:L|l)en(?:gth)?)\\p{Zs}*:\\p{Zs}*(\\p{N}+)$")
-	rxMinLength = regexp.MustCompile("(?:M|m)in(?:imum)?(?:\\p{Zs}*-?(?:L|l)en(?:gth)?)\\p{Zs}*:\\p{Zs}*(\\p{N}+)$")
-	rxPattern   = regexp.MustCompile("(?:P|p)attern\\p{Zs}*:\\p{Zs}*(.*)$")
+	rxMaxLengthFmt = "%s[Mm]ax(?:imum)?(?:\\p{Zs}*-?[Ll]en(?:gth)?)\\p{Zs}*:\\p{Zs}*(\\p{N}+)$"
+	rxMinLengthFmt = "%s[Mm]in(?:imum)?(?:\\p{Zs}*-?[Ll]en(?:gth)?)\\p{Zs}*:\\p{Zs}*(\\p{N}+)$"
+	rxPatternFmt   = "%s(?:P|p)attern\\p{Zs}*:\\p{Zs}*(.*)$"
 
-	rxMaxItems = regexp.MustCompile("(?:M|m)ax(?:imum)?(?:\\p{Zs}*|-)?(?:I|i)tems\\p{Zs}*:\\p{Zs}*(\\p{N}+)$")
-	rxMinItems = regexp.MustCompile("(?:M|m)in(?:imum)?(?:\\p{Zs}*|-)?(?:I|i)tems\\p{Zs}*:\\p{Zs}*(\\p{N}+)$")
-	rxUnique   = regexp.MustCompile("(?:U|u)nique\\p{Zs}*:\\p{Zs}*(true|false)$")
+	rxMaxItemsFmt = "%s[Mm]ax(?:imum)?(?:\\p{Zs}*|-)?[Ii]tems\\p{Zs}*:\\p{Zs}*(\\p{N}+)$"
+	rxMinItemsFmt = "%s[Mm]in(?:imum)?(?:\\p{Zs}*|-)?[Ii]tems\\p{Zs}*:\\p{Zs}*(\\p{N}+)$"
+	rxUniqueFmt   = "%s[Uu]nique\\p{Zs}*:\\p{Zs}*(true|false)$"
 
-	rxRequired = regexp.MustCompile("(?:R|r)equired\\p{Zs}*:\\p{Zs}*(true|false)$")
-	rxReadOnly = regexp.MustCompile("(?:R|r)ead(?:\\p{Zs}*|-)?(?:O|o)nly\\p{Zs}*:\\p{Zs}*(true|false)$")
+	rxRequired = regexp.MustCompile("[Rr]equired\\p{Zs}*:\\p{Zs}*(true|false)$")
+	rxReadOnly = regexp.MustCompile("[Rr]ead(?:\\p{Zs}*|-)?[Oo]nly\\p{Zs}*:\\p{Zs}*(true|false)$")
+
+	rxItemsPrefix = "(?:[Ii]tems[\\.\\p{Zs}]?)+"
 )
 
 type schemaSetter func(*spec.Schema, []string) error
+type matchingSchemaSetter func(*regexp.Regexp) schemaSetter
+
+func rxf(rxp, ar string) *regexp.Regexp {
+	return regexp.MustCompile(fmt.Sprintf(rxp, ar))
+}
 
 func newSchemaTitle(setter schemaSetter) (t *sectionTagger) {
 	t = newTitleTagger()
@@ -56,7 +63,16 @@ func newSchemaSection(name string, multiLine bool, setter schemaSetter) (t *sect
 	return
 }
 
-func newFieldSection(name string, matcher *regexp.Regexp, setter schemaSetter) (t *sectionTagger) {
+func newFieldSection(name string, matcher *regexp.Regexp, ms matchingSchemaSetter) (t *sectionTagger) {
+	t = newSectionTagger(name, false)
+	t.stripsTag = false
+	t.matcher = matcher
+	setter := ms(matcher)
+	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Schema), lines) }
+	return
+}
+
+func newSchemaFieldSection(name string, matcher *regexp.Regexp, setter schemaSetter) (t *sectionTagger) {
 	t = newSectionTagger(name, false)
 	t.stripsTag = false
 	t.matcher = matcher
@@ -83,137 +99,155 @@ func joinDropLast(lines []string) string {
 	return strings.Join(lns, "\n")
 }
 
-func setSchemaMaximum(schema *spec.Schema, lines []string) error {
-	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+func setSchemaMaximum(rx *regexp.Regexp) schemaSetter {
+	return func(schema *spec.Schema, lines []string) error {
+		if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+			return nil
+		}
+		matches := rx.FindStringSubmatch(lines[0])
+		if len(matches) > 2 && len(matches[2]) > 0 {
+			max, err := strconv.ParseFloat(matches[2], 64)
+			if err != nil {
+				return err
+			}
+			schema.Maximum = &max
+			schema.ExclusiveMaximum = matches[1] == "<"
+		}
 		return nil
 	}
-	matches := rxMaximum.FindStringSubmatch(lines[0])
-	if len(matches) > 2 && len(matches[2]) > 0 {
-		max, err := strconv.ParseFloat(matches[2], 64)
-		if err != nil {
-			return err
-		}
-		schema.Maximum = &max
-		schema.ExclusiveMaximum = matches[1] == "<"
-	}
-	return nil
 }
 
-func setSchemaMinimum(schema *spec.Schema, lines []string) error {
-	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+func setSchemaMinimum(rx *regexp.Regexp) schemaSetter {
+	return func(schema *spec.Schema, lines []string) error {
+		if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+			return nil
+		}
+		matches := rx.FindStringSubmatch(lines[0])
+		if len(matches) > 2 && len(matches[2]) > 0 {
+			min, err := strconv.ParseFloat(matches[2], 64)
+			if err != nil {
+				return err
+			}
+			schema.Minimum = &min
+			schema.ExclusiveMinimum = matches[1] == ">"
+		}
 		return nil
 	}
-	matches := rxMinimum.FindStringSubmatch(lines[0])
-	if len(matches) > 2 && len(matches[2]) > 0 {
-		min, err := strconv.ParseFloat(matches[2], 64)
-		if err != nil {
-			return err
-		}
-		schema.Minimum = &min
-		schema.ExclusiveMinimum = matches[1] == ">"
-	}
-	return nil
 }
 
-func setSchemaMultipleOf(schema *spec.Schema, lines []string) error {
-	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+func setSchemaMultipleOf(rx *regexp.Regexp) schemaSetter {
+	return func(schema *spec.Schema, lines []string) error {
+		if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+			return nil
+		}
+		matches := rx.FindStringSubmatch(lines[0])
+		if len(matches) > 1 && len(matches[1]) > 0 {
+			multipleOf, err := strconv.ParseFloat(matches[1], 64)
+			if err != nil {
+				return err
+			}
+			schema.MultipleOf = &multipleOf
+		}
 		return nil
 	}
-	matches := rxMultipleOf.FindStringSubmatch(lines[0])
-	if len(matches) > 1 && len(matches[1]) > 0 {
-		multipleOf, err := strconv.ParseFloat(matches[1], 64)
-		if err != nil {
-			return err
-		}
-		schema.MultipleOf = &multipleOf
-	}
-	return nil
 }
 
-func setSchemaMaxItems(schema *spec.Schema, lines []string) error {
-	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+func setSchemaMaxItems(rx *regexp.Regexp) schemaSetter {
+	return func(schema *spec.Schema, lines []string) error {
+		if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+			return nil
+		}
+		matches := rx.FindStringSubmatch(lines[0])
+		if len(matches) > 1 && len(matches[1]) > 0 {
+			maxItems, err := strconv.ParseInt(matches[1], 10, 64)
+			if err != nil {
+				return err
+			}
+			schema.MaxItems = &maxItems
+		}
 		return nil
 	}
-	matches := rxMaxItems.FindStringSubmatch(lines[0])
-	if len(matches) > 1 && len(matches[1]) > 0 {
-		maxItems, err := strconv.ParseInt(matches[1], 10, 64)
-		if err != nil {
-			return err
-		}
-		schema.MaxItems = &maxItems
-	}
-	return nil
 }
 
-func setSchemaMinItems(schema *spec.Schema, lines []string) error {
-	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+func setSchemaMinItems(rx *regexp.Regexp) schemaSetter {
+	return func(schema *spec.Schema, lines []string) error {
+		if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+			return nil
+		}
+		matches := rx.FindStringSubmatch(lines[0])
+		if len(matches) > 1 && len(matches[1]) > 0 {
+			minItems, err := strconv.ParseInt(matches[1], 10, 64)
+			if err != nil {
+				return err
+			}
+			schema.MinItems = &minItems
+		}
 		return nil
 	}
-	matches := rxMinItems.FindStringSubmatch(lines[0])
-	if len(matches) > 1 && len(matches[1]) > 0 {
-		minItems, err := strconv.ParseInt(matches[1], 10, 64)
-		if err != nil {
-			return err
-		}
-		schema.MinItems = &minItems
-	}
-	return nil
 }
 
-func setSchemaMaxLength(schema *spec.Schema, lines []string) error {
-	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+func setSchemaMaxLength(rx *regexp.Regexp) schemaSetter {
+	return func(schema *spec.Schema, lines []string) error {
+		if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+			return nil
+		}
+		matches := rx.FindStringSubmatch(lines[0])
+		if len(matches) > 1 && len(matches[1]) > 0 {
+			maxLength, err := strconv.ParseInt(matches[1], 10, 64)
+			if err != nil {
+				return err
+			}
+			schema.MaxLength = &maxLength
+		}
 		return nil
 	}
-	matches := rxMaxLength.FindStringSubmatch(lines[0])
-	if len(matches) > 1 && len(matches[1]) > 0 {
-		maxLength, err := strconv.ParseInt(matches[1], 10, 64)
-		if err != nil {
-			return err
-		}
-		schema.MaxLength = &maxLength
-	}
-	return nil
 }
 
-func setSchemaMinLength(schema *spec.Schema, lines []string) error {
-	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+func setSchemaMinLength(rx *regexp.Regexp) schemaSetter {
+	return func(schema *spec.Schema, lines []string) error {
+		if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+			return nil
+		}
+		matches := rx.FindStringSubmatch(lines[0])
+		if len(matches) > 1 && len(matches[1]) > 0 {
+			minLength, err := strconv.ParseInt(matches[1], 10, 64)
+			if err != nil {
+				return err
+			}
+			schema.MinLength = &minLength
+		}
 		return nil
 	}
-	matches := rxMinLength.FindStringSubmatch(lines[0])
-	if len(matches) > 1 && len(matches[1]) > 0 {
-		minLength, err := strconv.ParseInt(matches[1], 10, 64)
-		if err != nil {
-			return err
-		}
-		schema.MinLength = &minLength
-	}
-	return nil
 }
 
-func setSchemaPattern(schema *spec.Schema, lines []string) error {
-	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+func setSchemaPattern(rx *regexp.Regexp) schemaSetter {
+	return func(schema *spec.Schema, lines []string) error {
+		if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+			return nil
+		}
+		matches := rx.FindStringSubmatch(lines[0])
+		if len(matches) > 1 && len(matches[1]) > 0 {
+			schema.Pattern = matches[1]
+		}
 		return nil
 	}
-	matches := rxPattern.FindStringSubmatch(lines[0])
-	if len(matches) > 1 && len(matches[1]) > 0 {
-		schema.Pattern = matches[1]
-	}
-	return nil
 }
 
-func setSchemaUnique(schema *spec.Schema, lines []string) error {
-	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+func setSchemaUnique(rx *regexp.Regexp) schemaSetter {
+	return func(schema *spec.Schema, lines []string) error {
+		if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+			return nil
+		}
+		matches := rx.FindStringSubmatch(lines[0])
+		if len(matches) > 1 && len(matches[1]) > 0 {
+			req, err := strconv.ParseBool(matches[1])
+			if err != nil {
+				return err
+			}
+			schema.UniqueItems = req
+		}
 		return nil
 	}
-	matches := rxUnique.FindStringSubmatch(lines[0])
-	if len(matches) > 1 && len(matches[1]) > 0 {
-		req, err := strconv.ParseBool(matches[1])
-		if err != nil {
-			return err
-		}
-		schema.UniqueItems = req
-	}
-	return nil
 }
 
 func setSchemaReadOnly(schema *spec.Schema, lines []string) error {
@@ -407,22 +441,40 @@ func (scp *structCommentParser) parseStructType(gofile *ast.File, schema *spec.S
 					return err
 				}
 
+				// check if this is a primitive, if so parse the validations from the
+				// doc comments of the slice declaration.
+				if ftpe, ok := fld.Type.(*ast.ArrayType); ok {
+					if iftpe, ok := ftpe.Elt.(*ast.Ident); ok && iftpe.Obj == nil {
+						if ps.Items.Schema != nil {
+							if err := scp.parseItemsDocComments(gofile, fld, ps.Items.Schema); err != nil {
+								return err
+							}
+						} else {
+							for _, sch := range ps.Items.Schemas {
+								if err := scp.parseItemsDocComments(gofile, fld, &sch); err != nil {
+									return err
+								}
+							}
+						}
+					}
+				}
+
 				if ps.Ref.GetURL() == nil {
 					// add title and description for property
 					// add validations for property
 					taggers := []*sectionTagger{
 						newSchemaDescription(setSchemaDescription),
-						newFieldSection("maximum", rxMaximum, setSchemaMaximum),
-						newFieldSection("minimum", rxMinimum, setSchemaMinimum),
-						newFieldSection("multipleOf", rxMultipleOf, setSchemaMultipleOf),
-						newFieldSection("minLength", rxMinLength, setSchemaMinLength),
-						newFieldSection("maxLength", rxMaxLength, setSchemaMaxLength),
-						newFieldSection("pattern", rxPattern, setSchemaPattern),
-						newFieldSection("minItems", rxMinItems, setSchemaMinItems),
-						newFieldSection("maxItems", rxMaxItems, setSchemaMaxItems),
-						newFieldSection("unique", rxUnique, setSchemaUnique),
-						newFieldSection("readOnly", rxReadOnly, setSchemaReadOnly),
-						newFieldSection("required", rxRequired, setSchemaRequired(schema, nm)),
+						newFieldSection("maximum", rxf(rxMaximumFmt, ""), setSchemaMaximum),
+						newFieldSection("minimum", rxf(rxMinimumFmt, ""), setSchemaMinimum),
+						newFieldSection("multipleOf", rxf(rxMultipleOfFmt, ""), setSchemaMultipleOf),
+						newFieldSection("minLength", rxf(rxMinLengthFmt, ""), setSchemaMinLength),
+						newFieldSection("maxLength", rxf(rxMaxLengthFmt, ""), setSchemaMaxLength),
+						newFieldSection("pattern", rxf(rxPatternFmt, ""), setSchemaPattern),
+						newFieldSection("minItems", rxf(rxMinItemsFmt, ""), setSchemaMinItems),
+						newFieldSection("maxItems", rxf(rxMaxItemsFmt, ""), setSchemaMaxItems),
+						newFieldSection("unique", rxf(rxUniqueFmt, ""), setSchemaUnique),
+						newSchemaFieldSection("readOnly", rxReadOnly, setSchemaReadOnly),
+						newSchemaFieldSection("required", rxRequired, setSchemaRequired(schema, nm)),
 					}
 					parseDocComments(fld.Doc, &ps, taggers, nil)
 				}
@@ -446,6 +498,23 @@ func (scp *structCommentParser) parseStructType(gofile *ast.File, schema *spec.S
 	}
 
 	return nil
+}
+
+func (scp *structCommentParser) parseItemsDocComments(gofile *ast.File, fld *ast.Field, prop *spec.Schema) error {
+	// add title and description for property
+	// add validations for property
+	taggers := []*sectionTagger{
+		newFieldSection("maximum", rxf(rxMaximumFmt, rxItemsPrefix), setSchemaMaximum),
+		newFieldSection("minimum", rxf(rxMinimumFmt, rxItemsPrefix), setSchemaMinimum),
+		newFieldSection("multipleOf", rxf(rxMultipleOfFmt, rxItemsPrefix), setSchemaMultipleOf),
+		newFieldSection("minLength", rxf(rxMinLengthFmt, rxItemsPrefix), setSchemaMinLength),
+		newFieldSection("maxLength", rxf(rxMaxLengthFmt, rxItemsPrefix), setSchemaMaxLength),
+		newFieldSection("pattern", rxf(rxPatternFmt, rxItemsPrefix), setSchemaPattern),
+		newFieldSection("minItems", rxf(rxMinItemsFmt, rxItemsPrefix), setSchemaMinItems),
+		newFieldSection("maxItems", rxf(rxMaxItemsFmt, rxItemsPrefix), setSchemaMaxItems),
+		newFieldSection("unique", rxf(rxUniqueFmt, rxItemsPrefix), setSchemaUnique),
+	}
+	return parseDocComments(fld.Doc, prop, taggers, nil)
 }
 
 func (scp *structCommentParser) parseProperty(gofile *ast.File, fld ast.Expr, prop *spec.Schema) error {
@@ -502,6 +571,7 @@ func (scp *structCommentParser) parseProperty(gofile *ast.File, fld ast.Expr, pr
 			prop.Items = new(spec.SchemaOrArray)
 		}
 		prop.Items.Schema = items
+		prop.Items.Schemas = nil
 
 	case *ast.StructType:
 		return scp.parseStructType(gofile, prop, ftpe)

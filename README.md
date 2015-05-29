@@ -82,7 +82,7 @@ For a V1 I want to have this feature set completed:
   - spec generation
     -	[ ] generate spec document based on the code
       - [x] generate meta data (top level swagger properties) from package docs
-      - [ ] generate definition entries for models
+      - [x] generate definition entries for models
         - [ ] support allOf for composed structs
         - [ ] support discriminator based polymorphism
       - [ ] generate path entries for routes

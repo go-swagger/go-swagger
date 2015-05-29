@@ -10,6 +10,7 @@ import (
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/middleware/httputils"
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/strfmt"
 )
 
 // Runtime represents an API client that uses the transport
@@ -23,6 +24,7 @@ type Runtime struct {
 	Host             string
 	BasePath         string
 	client           *http.Client
+	Formats          strfmt.Registry
 }
 
 // Request represents a swagger client request
@@ -47,6 +49,7 @@ func (a *APIError) Error() string {
 func validateRequest(request *Request) error {
 	// TODO: validate the request here against the operation
 	// this should only be the params model against the schema for the operation
+
 	return nil
 }
 

@@ -52,7 +52,10 @@ type NoModel struct {
 	// min items: 3
 	// max items: 10
 	// unique: true
-	FooSlice []string
+	// items.minLength: 3
+	// items.maxLength: 10
+	// items.pattern: \w+
+	FooSlice []string `json:"foo_slice"`
 
 	NestedFoo          [][]string
 	DeeplyNestedFooBar [][]map[string][]map[string]string
@@ -150,6 +153,7 @@ type SimpleComplexModel struct {
 	} `json:"emb"`
 }
 
+// A Something struct is used by other structs
 type Something struct {
 	DID int64  `json:"did"`
 	Cat string `json:"cat"`
