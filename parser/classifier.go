@@ -3,7 +3,6 @@ package parser
 import (
 	"fmt"
 	"go/ast"
-	"regexp"
 
 	"golang.org/x/tools/go/loader"
 )
@@ -14,10 +13,8 @@ const (
 	swMeta swaggerKind = iota
 	swModel
 	swRoute
-)
-
-var (
-	rxSwaggerAnnotation = regexp.MustCompile("[^+]*\\+[^\\w]*swagger:(\\w+)")
+	swParameters
+	swStrFmt
 )
 
 type packageFilter struct {
@@ -62,6 +59,7 @@ type classifiedProgram struct {
 	Meta       []*ast.File
 	Models     []*ast.File
 	Operations []*ast.File
+	Parameters []*ast.File
 }
 
 // programClassifier classifies the files of a program into buckets
@@ -93,7 +91,7 @@ func (pc *programClassifier) Classify(prog *loader.Program) (*classifiedProgram,
 		}
 
 		for _, file := range pkgInfo.Files {
-			var op, md, mt bool // only add a particular file once
+			var op, md, mt, pm bool // only add a particular file once
 			for _, comments := range file.Comments {
 				matches := rxSwaggerAnnotation.FindStringSubmatch(comments.Text())
 				if len(matches) > 1 {
@@ -112,6 +110,11 @@ func (pc *programClassifier) Classify(prog *loader.Program) (*classifiedProgram,
 						if !mt {
 							cp.Meta = append(cp.Meta, file)
 							mt = true
+						}
+					case "parameters":
+						if !pm {
+							cp.Parameters = append(cp.Parameters, file)
+							pm = true
 						}
 					case "strfmt":
 						// TODO: perhaps collect these and pass along to avoid lookups later on

@@ -13,28 +13,6 @@ import (
 	"github.com/casualjim/go-swagger/spec"
 )
 
-var (
-	rxStrFmt        = regexp.MustCompile("\\+swagger:strfmt\\p{Zs}*(\\p{L}[\\p{L}\\p{N}-]+)$")
-	rxModelOverride = regexp.MustCompile("\\+swagger:model\\p{Zs}*(\\p{L}[\\p{L}\\p{N}-]+)?$")
-
-	rxMaximumFmt    = "%s[Mm]ax(?:imum)?\\p{Zs}*:\\p{Zs}*([\\<=])?\\p{Zs}*([\\+-]?(?:\\p{N}+\\.)?\\p{N}+)$"
-	rxMinimumFmt    = "%s[Mm]in(?:imum)?\\p{Zs}*:\\p{Zs}*([\\>=])?\\p{Zs}*([\\+-]?(?:\\p{N}+\\.)?\\p{N}+)$"
-	rxMultipleOfFmt = "%s[Mm]ultiple\\p{Zs}*[Oo]f\\p{Zs}*:\\p{Zs}*([\\+-]?(?:\\p{N}+\\.)?\\p{N}+)$"
-
-	rxMaxLengthFmt = "%s[Mm]ax(?:imum)?(?:\\p{Zs}*-?[Ll]en(?:gth)?)\\p{Zs}*:\\p{Zs}*(\\p{N}+)$"
-	rxMinLengthFmt = "%s[Mm]in(?:imum)?(?:\\p{Zs}*-?[Ll]en(?:gth)?)\\p{Zs}*:\\p{Zs}*(\\p{N}+)$"
-	rxPatternFmt   = "%s(?:P|p)attern\\p{Zs}*:\\p{Zs}*(.*)$"
-
-	rxMaxItemsFmt = "%s[Mm]ax(?:imum)?(?:\\p{Zs}*|-)?[Ii]tems\\p{Zs}*:\\p{Zs}*(\\p{N}+)$"
-	rxMinItemsFmt = "%s[Mm]in(?:imum)?(?:\\p{Zs}*|-)?[Ii]tems\\p{Zs}*:\\p{Zs}*(\\p{N}+)$"
-	rxUniqueFmt   = "%s[Uu]nique\\p{Zs}*:\\p{Zs}*(true|false)$"
-
-	rxRequired = regexp.MustCompile("[Rr]equired\\p{Zs}*:\\p{Zs}*(true|false)$")
-	rxReadOnly = regexp.MustCompile("[Rr]ead(?:\\p{Zs}*|-)?[Oo]nly\\p{Zs}*:\\p{Zs}*(true|false)$")
-
-	rxItemsPrefix = "(?:[Ii]tems[\\.\\p{Zs}]?)+"
-)
-
 type schemaSetter func(*spec.Schema, []string) error
 type matchingSchemaSetter func(*regexp.Regexp) schemaSetter
 
