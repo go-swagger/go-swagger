@@ -1,338 +1,15 @@
 package parser
 
 import (
-	"fmt"
-	goparser "go/parser"
-	"log"
 	"path/filepath"
-	"regexp"
-	"strings"
 	"testing"
-
-	"golang.org/x/tools/go/loader"
 
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/stretchr/testify/assert"
 )
 
-var classificationProg *loader.Program
-var noModelDefs map[string]spec.Schema
-
-func init() {
-	classificationProg = classifierProgram()
-	docFile := "../fixtures/goparsing/classification/models/nomodel.go"
-	fileTree, err := goparser.ParseFile(classificationProg.Fset, docFile, nil, goparser.ParseComments)
-	if err != nil {
-		log.Fatal(err)
-	}
-	sp := schemaParser(classificationProg)
-	noModelDefs = make(map[string]spec.Schema)
-	err = sp.Parse(fileTree, noModelDefs)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func TestSchemaValueExtractors(t *testing.T) {
-	strfmts := []string{
-		"// +swagger:strfmt ",
-		"* +swagger:strfmt ",
-		"* +swagger:strfmt ",
-		" +swagger:strfmt ",
-		"+swagger:strfmt ",
-		"// +swagger:strfmt    ",
-		"* +swagger:strfmt     ",
-		"* +swagger:strfmt    ",
-		" +swagger:strfmt     ",
-		"+swagger:strfmt      ",
-	}
-	models := []string{
-		"// +swagger:model ",
-		"* +swagger:model ",
-		"* +swagger:model ",
-		" +swagger:model ",
-		"+swagger:model ",
-		"// +swagger:model    ",
-		"* +swagger:model     ",
-		"* +swagger:model    ",
-		" +swagger:model     ",
-		"+swagger:model      ",
-	}
-	validParams := []string{
-		"yada123",
-		"date",
-		"date-time",
-		"long-combo-1-with-combo-2-and-a-3rd-one-too",
-	}
-	invalidParams := []string{
-		"1-yada-3",
-		"1-2-3",
-		"-yada-3",
-		"-2-3",
-		"*blah",
-		"blah*",
-	}
-
-	verifySwaggerOneArgSwaggerTag(t, rxStrFmt, strfmts, validParams, append(invalidParams, "", "  ", " "))
-	verifySwaggerOneArgSwaggerTag(t, rxModelOverride, models, append(validParams, "", "  ", " "), invalidParams)
-
-	verifyMinMax(t, rxf(rxMinimumFmt, ""), "min", []string{"", ">", "="})
-	verifyMinMax(t, rxf(rxMinimumFmt, rxItemsPrefix), "items.min", []string{"", ">", "="})
-	verifyMinMax(t, rxf(rxMaximumFmt, ""), "max", []string{"", "<", "="})
-	verifyMinMax(t, rxf(rxMaximumFmt, rxItemsPrefix), "items.max", []string{"", "<", "="})
-	verifyNumeric2Words(t, rxf(rxMultipleOfFmt, ""), "multiple", "of")
-	verifyNumeric2Words(t, rxf(rxMultipleOfFmt, rxItemsPrefix), "items.multiple", "of")
-
-	verifyIntegerMinMaxManyWords(t, rxf(rxMinLengthFmt, ""), "min", []string{"len", "length"})
-	// pattern
-	extraSpaces := []string{"", " ", "  ", "     "}
-	prefixes := []string{"//", "*", ""}
-	patArgs := []string{"^\\w+$", "[A-Za-z0-9-.]*"}
-	patNames := []string{"pattern", "Pattern"}
-	for _, pref := range prefixes {
-		for _, es1 := range extraSpaces {
-			for _, nm := range patNames {
-				for _, es2 := range extraSpaces {
-					for _, es3 := range extraSpaces {
-						for _, arg := range patArgs {
-							line := strings.Join([]string{pref, es1, nm, es2, ":", es3, arg}, "")
-							matches := rxf(rxPatternFmt, "").FindStringSubmatch(line)
-							assert.Len(t, matches, 2)
-							assert.Equal(t, arg, matches[1])
-						}
-					}
-				}
-			}
-		}
-	}
-
-	verifyIntegerMinMaxManyWords(t, rxf(rxMinItemsFmt, ""), "min", []string{"items"})
-	verifyBoolean(t, rxf(rxUniqueFmt, ""), []string{"unique"}, nil)
-
-	verifyBoolean(t, rxReadOnly, []string{"read"}, []string{"only"})
-	verifyBoolean(t, rxRequired, []string{"required"}, nil)
-}
-
-func makeMinMax(lower string) (res []string) {
-	for _, a := range []string{"", "imum"} {
-		res = append(res, lower+a, strings.Title(lower)+a)
-	}
-	return
-}
-
-func verifyBoolean(t *testing.T, matcher *regexp.Regexp, names, names2 []string) {
-	extraSpaces := []string{"", " ", "  ", "     "}
-	prefixes := []string{"//", "*", ""}
-	validArgs := []string{"true", "false"}
-	invalidArgs := []string{"TRUE", "FALSE", "t", "f", "1", "0", "True", "False", "true*", "false*"}
-	var nms []string
-	for _, nm := range names {
-		nms = append(nms, nm, strings.Title(nm))
-	}
-
-	var nms2 []string
-	for _, nm := range names2 {
-		nms2 = append(nms2, nm, strings.Title(nm))
-	}
-
-	var rnms []string
-	if len(nms2) > 0 {
-		for _, nm := range nms {
-			for _, es := range append(extraSpaces, "-") {
-				for _, nm2 := range nms2 {
-					rnms = append(rnms, strings.Join([]string{nm, es, nm2}, ""))
-				}
-			}
-		}
-	} else {
-		rnms = nms
-	}
-
-	var cnt int
-	for _, pref := range prefixes {
-		for _, es1 := range extraSpaces {
-			for _, nm := range rnms {
-				for _, es2 := range extraSpaces {
-					for _, es3 := range extraSpaces {
-						for _, vv := range validArgs {
-							line := strings.Join([]string{pref, es1, nm, es2, ":", es3, vv}, "")
-							matches := matcher.FindStringSubmatch(line)
-							assert.Len(t, matches, 2)
-							assert.Equal(t, vv, matches[1])
-							cnt++
-						}
-						for _, iv := range invalidArgs {
-							line := strings.Join([]string{pref, es1, nm, es2, ":", es3, iv}, "")
-							matches := matcher.FindStringSubmatch(line)
-							assert.Empty(t, matches)
-							cnt++
-						}
-					}
-				}
-			}
-		}
-	}
-	var nm2 string
-	if len(names2) > 0 {
-		nm2 = " " + names2[0]
-	}
-	fmt.Printf("tested %d %s%s combinations\n", cnt, names[0], nm2)
-}
-
-func verifyIntegerMinMaxManyWords(t *testing.T, matcher *regexp.Regexp, name1 string, words []string) {
-	extraSpaces := []string{"", " ", "  ", "     "}
-	prefixes := []string{"//", "*", ""}
-	validNumericArgs := []string{"0", "1234"}
-	invalidNumericArgs := []string{"1A3F", "2e10", "*12", "12*", "-1235", "0.0", "1234.0394", "-2948.484"}
-
-	var names []string
-	for _, w := range words {
-		names = append(names, w, strings.Title(w))
-	}
-
-	var cnt int
-	for _, pref := range prefixes {
-		for _, es1 := range extraSpaces {
-			for _, nm1 := range makeMinMax(name1) {
-				for _, es2 := range append(extraSpaces, "-") {
-					for _, nm2 := range names {
-						for _, es3 := range extraSpaces {
-							for _, es4 := range extraSpaces {
-								for _, vv := range validNumericArgs {
-									line := strings.Join([]string{pref, es1, nm1, es2, nm2, es3, ":", es4, vv}, "")
-									matches := matcher.FindStringSubmatch(line)
-									//fmt.Printf("matching %q, matches (%d): %v\n", line, len(matches), matches)
-									assert.Len(t, matches, 2)
-									assert.Equal(t, vv, matches[1])
-									cnt++
-								}
-								for _, iv := range invalidNumericArgs {
-									line := strings.Join([]string{pref, es1, nm1, es2, nm2, es3, ":", es4, iv}, "")
-									matches := matcher.FindStringSubmatch(line)
-									assert.Empty(t, matches)
-									cnt++
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	var nm2 string
-	if len(words) > 0 {
-		nm2 = " " + words[0]
-	}
-	fmt.Printf("tested %d %s%s combinations\n", cnt, name1, nm2)
-}
-
-func verifyNumeric2Words(t *testing.T, matcher *regexp.Regexp, name1, name2 string) {
-	extraSpaces := []string{"", " ", "  ", "     "}
-	prefixes := []string{"//", "*", ""}
-	validNumericArgs := []string{"0", "1234", "-1235", "0.0", "1234.0394", "-2948.484"}
-	invalidNumericArgs := []string{"1A3F", "2e10", "*12", "12*"}
-
-	var cnt int
-	for _, pref := range prefixes {
-		for _, es1 := range extraSpaces {
-			for _, es2 := range extraSpaces {
-				for _, es3 := range extraSpaces {
-					for _, es4 := range extraSpaces {
-						for _, vv := range validNumericArgs {
-							lines := []string{
-								strings.Join([]string{pref, es1, name1, es2, name2, es3, ":", es4, vv}, ""),
-								strings.Join([]string{pref, es1, strings.Title(name1), es2, strings.Title(name2), es3, ":", es4, vv}, ""),
-								strings.Join([]string{pref, es1, strings.Title(name1), es2, name2, es3, ":", es4, vv}, ""),
-								strings.Join([]string{pref, es1, name1, es2, strings.Title(name2), es3, ":", es4, vv}, ""),
-							}
-							for _, line := range lines {
-								matches := matcher.FindStringSubmatch(line)
-								//fmt.Printf("matching %q, matches (%d): %v\n", line, len(matches), matches)
-								assert.Len(t, matches, 2)
-								assert.Equal(t, vv, matches[1])
-								cnt++
-							}
-						}
-						for _, iv := range invalidNumericArgs {
-							lines := []string{
-								strings.Join([]string{pref, es1, name1, es2, name2, es3, ":", es4, iv}, ""),
-								strings.Join([]string{pref, es1, strings.Title(name1), es2, strings.Title(name2), es3, ":", es4, iv}, ""),
-								strings.Join([]string{pref, es1, strings.Title(name1), es2, name2, es3, ":", es4, iv}, ""),
-								strings.Join([]string{pref, es1, name1, es2, strings.Title(name2), es3, ":", es4, iv}, ""),
-							}
-							for _, line := range lines {
-								matches := matcher.FindStringSubmatch(line)
-								//fmt.Printf("matching %q, matches (%d): %v\n", line, len(matches), matches)
-								assert.Empty(t, matches)
-								cnt++
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	fmt.Printf("tested %d %s %s combinations\n", cnt, name1, name2)
-}
-
-func verifyMinMax(t *testing.T, matcher *regexp.Regexp, name string, operators []string) {
-	extraSpaces := []string{"", " ", "  ", "     "}
-	prefixes := []string{"//", "*", ""}
-	validNumericArgs := []string{"0", "1234", "-1235", "0.0", "1234.0394", "-2948.484"}
-	invalidNumericArgs := []string{"1A3F", "2e10", "*12", "12*"}
-
-	var cnt int
-	for _, pref := range prefixes {
-		for _, es1 := range extraSpaces {
-			for _, wrd := range makeMinMax(name) {
-				for _, es2 := range extraSpaces {
-					for _, es3 := range extraSpaces {
-						for _, op := range operators {
-							for _, es4 := range extraSpaces {
-								for _, vv := range validNumericArgs {
-									line := strings.Join([]string{pref, es1, wrd, es2, ":", es3, op, es4, vv}, "")
-									matches := matcher.FindStringSubmatch(line)
-									// fmt.Printf("matching %q with %q, matches (%d): %v\n", line, matcher, len(matches), matches)
-									assert.Len(t, matches, 3)
-									assert.Equal(t, vv, matches[2])
-									cnt++
-								}
-								for _, iv := range invalidNumericArgs {
-									line := strings.Join([]string{pref, es1, wrd, es2, ":", es3, op, es4, iv}, "")
-									matches := matcher.FindStringSubmatch(line)
-									assert.Empty(t, matches)
-									cnt++
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	fmt.Printf("tested %d %s combinations\n", cnt, name)
-}
-
-func verifySwaggerOneArgSwaggerTag(t *testing.T, matcher *regexp.Regexp, prefixes, validParams, invalidParams []string) {
-	for _, pref := range prefixes {
-		for _, param := range validParams {
-			line := pref + param
-			matches := matcher.FindStringSubmatch(line)
-			assert.Len(t, matches, 2)
-			assert.Equal(t, strings.TrimSpace(param), matches[1])
-		}
-	}
-
-	for _, pref := range prefixes {
-		for _, param := range invalidParams {
-			line := pref + param
-			matches := matcher.FindStringSubmatch(line)
-			assert.Empty(t, matches)
-		}
-	}
-}
-
 func TestSchemaParser(t *testing.T) {
+	_ = classificationProg
 	schema := noModelDefs["NoModel"]
 
 	assert.Equal(t, spec.StringOrArray([]string{"object"}), schema.Type)
@@ -341,6 +18,7 @@ func TestSchemaParser(t *testing.T) {
 
 	assertProperty(t, &schema, "number", "id", "int64", "ID")
 	prop, ok := schema.Properties["id"]
+	assert.Equal(t, "ID of this no model instance.\nids in this application start at 11 and are smaller than 1000", prop.Description)
 	assert.True(t, ok, "should have had an 'id' property")
 	assert.EqualValues(t, 1000, *prop.Maximum)
 	assert.True(t, prop.ExclusiveMaximum, "'id' should have had an exclusive maximum")
@@ -350,6 +28,7 @@ func TestSchemaParser(t *testing.T) {
 
 	assertProperty(t, &schema, "number", "score", "int32", "Score")
 	prop, ok = schema.Properties["score"]
+	assert.Equal(t, "The Score of this model", prop.Description)
 	assert.True(t, ok, "should have had a 'score' property")
 	assert.EqualValues(t, 45, *prop.Maximum)
 	assert.False(t, prop.ExclusiveMaximum, "'score' should not have had an exclusive maximum")
@@ -357,13 +36,22 @@ func TestSchemaParser(t *testing.T) {
 	assert.EqualValues(t, 3, *prop.Minimum)
 	assert.False(t, prop.ExclusiveMinimum, "'score' should not have had an exclusive minimum")
 
+	assertProperty(t, &schema, "string", "name", "", "Name")
+	prop, ok = schema.Properties["name"]
+	assert.Equal(t, "Name of this no model instance", prop.Description)
+	assert.EqualValues(t, 4, *prop.MinLength)
+	assert.EqualValues(t, 50, *prop.MaxLength)
+	assert.Equal(t, "[A-Za-z0-9-.]*", prop.Pattern)
+
 	assertProperty(t, &schema, "string", "created", "date-time", "Created")
 	prop, ok = schema.Properties["created"]
+	assert.Equal(t, "Created holds the time when this entry was created", prop.Description)
 	assert.True(t, ok, "should have a 'created' property")
 	assert.True(t, prop.ReadOnly, "'created' should be read only")
 
 	assertArrayProperty(t, &schema, "string", "foo_slice", "", "FooSlice")
 	prop, ok = schema.Properties["foo_slice"]
+	assert.Equal(t, "a FooSlice has foos which are strings", prop.Description)
 	assert.True(t, ok, "should have a 'foo_slice' property")
 	assert.NotNil(t, prop.Items, "foo_slice should have had an items property")
 	assert.NotNil(t, prop.Items.Schema, "foo_slice.items should have had a schema property")
@@ -375,8 +63,43 @@ func TestSchemaParser(t *testing.T) {
 	assert.EqualValues(t, 10, *itprop.MaxLength, "'foo_slice.items.maxLength' should have been 10")
 	assert.EqualValues(t, "\\w+", itprop.Pattern, "'foo_slice.items.pattern' should have \\w+")
 
+	assertArrayProperty(t, &schema, "object", "items", "", "Items")
+	prop, ok = schema.Properties["items"]
+	assert.True(t, ok, "should have an 'items' slice")
+	assert.NotNil(t, prop.Items, "items should have had an items property")
+	assert.NotNil(t, prop.Items.Schema, "items.items should have had a schema property")
+	itprop = prop.Items.Schema
+	assert.Len(t, itprop.Properties, 4)
+	assert.Len(t, itprop.Required, 3)
+	assertProperty(t, itprop, "number", "id", "int32", "ID")
+	iprop, ok := itprop.Properties["id"]
+	assert.True(t, ok)
+	assert.Equal(t, "ID of this no model instance.\nids in this application start at 11 and are smaller than 1000", iprop.Description)
+	assert.EqualValues(t, 1000, *iprop.Maximum)
+	assert.True(t, iprop.ExclusiveMaximum, "'id' should have had an exclusive maximum")
+	assert.NotNil(t, iprop.Minimum)
+	assert.EqualValues(t, 10, *iprop.Minimum)
+	assert.True(t, iprop.ExclusiveMinimum, "'id' should have had an exclusive minimum")
+
+	assertRef(t, itprop, "pet", "Pet", "#/definitions/Pet")
+	iprop, ok = itprop.Properties["pet"]
+	assert.True(t, ok)
+	assert.Equal(t, "The Pet to add to this NoModel items bucket.\nPets can appear more than once in the bucket", iprop.Description)
+
+	assertProperty(t, itprop, "number", "quantity", "int16", "Quantity")
+	iprop, ok = itprop.Properties["quantity"]
+	assert.True(t, ok)
+	assert.Equal(t, "The amount of pets to add to this bucket.", iprop.Description)
+	assert.EqualValues(t, 1, *iprop.Minimum)
+	assert.EqualValues(t, 10, *iprop.Maximum)
+
+	assertProperty(t, itprop, "string", "notes", "", "Notes")
+	iprop, ok = itprop.Properties["notes"]
+	assert.True(t, ok)
+	assert.Equal(t, "Notes to add to this item.\nThis can be used to add special instructions.", iprop.Description)
+
 	definitions := make(map[string]spec.Schema)
-	sp := schemaParser(classificationProg)
+	sp := newSchemaParser(classificationProg)
 	pn := "github.com/casualjim/go-swagger/fixtures/goparsing/classification/models"
 	pnr := "../fixtures/goparsing/classification/models"
 	pkg := classificationProg.Package(pnr)

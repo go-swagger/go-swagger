@@ -16,8 +16,68 @@ import (
 type schemaSetter func(*spec.Schema, []string) error
 type matchingSchemaSetter func(*regexp.Regexp) schemaSetter
 
-func rxf(rxp, ar string) *regexp.Regexp {
-	return regexp.MustCompile(fmt.Sprintf(rxp, ar))
+type schemaTypable struct {
+	schema *spec.Schema
+}
+
+func (st *schemaTypable) Typed(tpe, format string) {
+	st.schema.Typed(tpe, format)
+}
+
+func (st *schemaTypable) SetRef(ref spec.Ref) {
+	st.schema.Ref = ref
+}
+
+type schemaValidations struct {
+	current *spec.Schema
+}
+
+func (sv schemaValidations) SetMaximum(val float64, exclusive bool) {
+	sv.current.Maximum = &val
+	sv.current.ExclusiveMaximum = exclusive
+}
+func (sv schemaValidations) SetMinimum(val float64, exclusive bool) {
+	sv.current.Minimum = &val
+	sv.current.ExclusiveMinimum = exclusive
+}
+func (sv schemaValidations) SetMultipleOf(val float64) { sv.current.MultipleOf = &val }
+func (sv schemaValidations) SetMinItems(val int64)     { sv.current.MinItems = &val }
+func (sv schemaValidations) SetMaxItems(val int64)     { sv.current.MaxItems = &val }
+func (sv schemaValidations) SetMinLength(val int64)    { sv.current.MinLength = &val }
+func (sv schemaValidations) SetMaxLength(val int64)    { sv.current.MaxLength = &val }
+func (sv schemaValidations) SetPattern(val string)     { sv.current.Pattern = val }
+func (sv schemaValidations) SetUnique(val bool)        { sv.current.UniqueItems = val }
+
+type schemaDecl struct {
+	File     *ast.File
+	Decl     *ast.GenDecl
+	TypeSpec *ast.TypeSpec
+	GoName   string
+	Name     string
+}
+
+func (sd *schemaDecl) inferNames() (goName string, name string) {
+	if sd.GoName != "" {
+		goName, name = sd.GoName, sd.Name
+		return
+	}
+	goName = sd.TypeSpec.Name.Name
+	name = goName
+	if sd.Decl.Doc != nil {
+	DECLS:
+		for _, cmt := range sd.Decl.Doc.List {
+			for _, ln := range strings.Split(cmt.Text, "\n") {
+				matches := rxModelOverride.FindStringSubmatch(ln)
+				if len(matches) > 1 && len(matches[1]) > 0 {
+					name = matches[1]
+					break DECLS
+				}
+			}
+		}
+	}
+	sd.GoName = goName
+	sd.Name = name
+	return
 }
 
 func newSchemaTitle(setter schemaSetter) (t *sectionTagger) {
@@ -79,152 +139,65 @@ func joinDropLast(lines []string) string {
 
 func setSchemaMaximum(rx *regexp.Regexp) schemaSetter {
 	return func(schema *spec.Schema, lines []string) error {
-		if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
-			return nil
-		}
-		matches := rx.FindStringSubmatch(lines[0])
-		if len(matches) > 2 && len(matches[2]) > 0 {
-			max, err := strconv.ParseFloat(matches[2], 64)
-			if err != nil {
-				return err
-			}
-			schema.Maximum = &max
-			schema.ExclusiveMaximum = matches[1] == "<"
-		}
-		return nil
+		bldr := setMaximum{schemaValidations{schema}, rx}
+		return bldr.Parse(lines)
 	}
 }
 
 func setSchemaMinimum(rx *regexp.Regexp) schemaSetter {
 	return func(schema *spec.Schema, lines []string) error {
-		if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
-			return nil
-		}
-		matches := rx.FindStringSubmatch(lines[0])
-		if len(matches) > 2 && len(matches[2]) > 0 {
-			min, err := strconv.ParseFloat(matches[2], 64)
-			if err != nil {
-				return err
-			}
-			schema.Minimum = &min
-			schema.ExclusiveMinimum = matches[1] == ">"
-		}
-		return nil
+		bldr := setMinimum{schemaValidations{schema}, rx}
+		return bldr.Parse(lines)
 	}
 }
 
 func setSchemaMultipleOf(rx *regexp.Regexp) schemaSetter {
 	return func(schema *spec.Schema, lines []string) error {
-		if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
-			return nil
-		}
-		matches := rx.FindStringSubmatch(lines[0])
-		if len(matches) > 1 && len(matches[1]) > 0 {
-			multipleOf, err := strconv.ParseFloat(matches[1], 64)
-			if err != nil {
-				return err
-			}
-			schema.MultipleOf = &multipleOf
-		}
-		return nil
+		bldr := setMultipleOf{schemaValidations{schema}, rx}
+		return bldr.Parse(lines)
 	}
 }
 
 func setSchemaMaxItems(rx *regexp.Regexp) schemaSetter {
 	return func(schema *spec.Schema, lines []string) error {
-		if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
-			return nil
-		}
-		matches := rx.FindStringSubmatch(lines[0])
-		if len(matches) > 1 && len(matches[1]) > 0 {
-			maxItems, err := strconv.ParseInt(matches[1], 10, 64)
-			if err != nil {
-				return err
-			}
-			schema.MaxItems = &maxItems
-		}
-		return nil
+		bldr := setMaxItems{schemaValidations{schema}, rx}
+		return bldr.Parse(lines)
 	}
 }
 
 func setSchemaMinItems(rx *regexp.Regexp) schemaSetter {
 	return func(schema *spec.Schema, lines []string) error {
-		if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
-			return nil
-		}
-		matches := rx.FindStringSubmatch(lines[0])
-		if len(matches) > 1 && len(matches[1]) > 0 {
-			minItems, err := strconv.ParseInt(matches[1], 10, 64)
-			if err != nil {
-				return err
-			}
-			schema.MinItems = &minItems
-		}
-		return nil
+		bldr := setMinItems{schemaValidations{schema}, rx}
+		return bldr.Parse(lines)
 	}
 }
 
 func setSchemaMaxLength(rx *regexp.Regexp) schemaSetter {
 	return func(schema *spec.Schema, lines []string) error {
-		if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
-			return nil
-		}
-		matches := rx.FindStringSubmatch(lines[0])
-		if len(matches) > 1 && len(matches[1]) > 0 {
-			maxLength, err := strconv.ParseInt(matches[1], 10, 64)
-			if err != nil {
-				return err
-			}
-			schema.MaxLength = &maxLength
-		}
-		return nil
+		bldr := setMaxLength{schemaValidations{schema}, rx}
+		return bldr.Parse(lines)
 	}
 }
 
 func setSchemaMinLength(rx *regexp.Regexp) schemaSetter {
 	return func(schema *spec.Schema, lines []string) error {
-		if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
-			return nil
-		}
-		matches := rx.FindStringSubmatch(lines[0])
-		if len(matches) > 1 && len(matches[1]) > 0 {
-			minLength, err := strconv.ParseInt(matches[1], 10, 64)
-			if err != nil {
-				return err
-			}
-			schema.MinLength = &minLength
-		}
-		return nil
+		bldr := setMinLength{schemaValidations{schema}, rx}
+		return bldr.Parse(lines)
+
 	}
 }
 
 func setSchemaPattern(rx *regexp.Regexp) schemaSetter {
 	return func(schema *spec.Schema, lines []string) error {
-		if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
-			return nil
-		}
-		matches := rx.FindStringSubmatch(lines[0])
-		if len(matches) > 1 && len(matches[1]) > 0 {
-			schema.Pattern = matches[1]
-		}
-		return nil
+		bldr := setPattern{schemaValidations{schema}, rx}
+		return bldr.Parse(lines)
 	}
 }
 
 func setSchemaUnique(rx *regexp.Regexp) schemaSetter {
 	return func(schema *spec.Schema, lines []string) error {
-		if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
-			return nil
-		}
-		matches := rx.FindStringSubmatch(lines[0])
-		if len(matches) > 1 && len(matches[1]) > 0 {
-			req, err := strconv.ParseBool(matches[1])
-			if err != nil {
-				return err
-			}
-			schema.UniqueItems = req
-		}
-		return nil
+		bldr := setUnique{schemaValidations{schema}, rx}
+		return bldr.Parse(lines)
 	}
 }
 
@@ -273,36 +246,6 @@ func setSchemaRequired(parent *spec.Schema, value string) func(*spec.Schema, []s
 	}
 }
 
-type structDecl struct {
-	File     *ast.File
-	Decl     *ast.GenDecl
-	TypeSpec *ast.TypeSpec
-	GoName   string
-	Name     string
-}
-
-func (sd *structDecl) inferNames() (goName string, name string) {
-	if sd.GoName != "" {
-		goName, name = sd.GoName, sd.Name
-		return
-	}
-	goName = sd.TypeSpec.Name.Name
-	name = goName
-	if sd.Decl.Doc != nil {
-		for _, cmt := range sd.Decl.Doc.List {
-			for _, ln := range strings.Split(cmt.Text, "\n") {
-				matches := rxModelOverride.FindStringSubmatch(ln)
-				if len(matches) > 1 && len(matches[1]) > 0 {
-					name = matches[1]
-				}
-			}
-		}
-	}
-	sd.GoName = goName
-	sd.Name = name
-	return
-}
-
 type structCommentParser struct {
 	taggers []*sectionTagger
 	header  struct {
@@ -310,10 +253,10 @@ type structCommentParser struct {
 		otherTags []string
 	}
 	program   *loader.Program
-	postDecls []structDecl
+	postDecls []schemaDecl
 }
 
-func schemaParser(prog *loader.Program) *structCommentParser {
+func newSchemaParser(prog *loader.Program) *structCommentParser {
 	scp := new(structCommentParser)
 	scp.program = prog
 	scp.header.taggers = []*sectionTagger{newSchemaTitle(setSchemaTitle), newSchemaDescription(setSchemaDescription)}
@@ -330,7 +273,7 @@ func (scp *structCommentParser) Parse(gofile *ast.File, target interface{}) erro
 		}
 		for _, spc := range gd.Specs {
 			if ts, ok := spc.(*ast.TypeSpec); ok {
-				sd := structDecl{gofile, gd, ts, "", ""}
+				sd := schemaDecl{gofile, gd, ts, "", ""}
 				sd.inferNames()
 				if err := scp.parseDecl(tgt, sd); err != nil {
 					return err
@@ -341,7 +284,7 @@ func (scp *structCommentParser) Parse(gofile *ast.File, target interface{}) erro
 	return nil
 }
 
-func (scp *structCommentParser) parseDecl(definitions map[string]spec.Schema, decl structDecl) error {
+func (scp *structCommentParser) parseDecl(definitions map[string]spec.Schema, decl schemaDecl) error {
 	// check if there is a +swagger:model tag that is followed by a word,
 	// this word is the type name for swagger
 	// the package and type are recorded in the extensions
@@ -392,7 +335,7 @@ func (scp *structCommentParser) parseDecl(definitions map[string]spec.Schema, de
 }
 
 func (scp *structCommentParser) parseStructType(gofile *ast.File, schema *spec.Schema, tpe *ast.StructType) error {
-	schema.Type = spec.StringOrArray([]string{"object"})
+	schema.Typed("object", "")
 	if tpe.Fields != nil {
 		seenProperties := make(map[string]struct{})
 		for _, fld := range tpe.Fields.List {
@@ -437,10 +380,11 @@ func (scp *structCommentParser) parseStructType(gofile *ast.File, schema *spec.S
 					}
 				}
 
+				var taggers []*sectionTagger
 				if ps.Ref.GetURL() == nil {
 					// add title and description for property
 					// add validations for property
-					taggers := []*sectionTagger{
+					taggers = []*sectionTagger{
 						newSchemaDescription(setSchemaDescription),
 						newFieldSection("maximum", rxf(rxMaximumFmt, ""), setSchemaMaximum),
 						newFieldSection("minimum", rxf(rxMinimumFmt, ""), setSchemaMinimum),
@@ -454,8 +398,15 @@ func (scp *structCommentParser) parseStructType(gofile *ast.File, schema *spec.S
 						newSchemaFieldSection("readOnly", rxReadOnly, setSchemaReadOnly),
 						newSchemaFieldSection("required", rxRequired, setSchemaRequired(schema, nm)),
 					}
-					parseDocComments(fld.Doc, &ps, taggers, nil)
+				} else {
+					// add title and description for property
+					// add validations for property
+					taggers = []*sectionTagger{
+						newSchemaDescription(setSchemaDescription),
+						newSchemaFieldSection("required", rxRequired, setSchemaRequired(schema, nm)),
+					}
 				}
+				parseDocComments(fld.Doc, &ps, taggers, nil)
 
 				if nm != gnm {
 					ps.AddExtension("x-go-name", gnm)
@@ -496,10 +447,11 @@ func (scp *structCommentParser) parseItemsDocComments(gofile *ast.File, fld *ast
 }
 
 func (scp *structCommentParser) parseProperty(gofile *ast.File, fld ast.Expr, prop *spec.Schema) error {
+	sct := &schemaTypable{prop}
 	switch ftpe := fld.(type) {
 	case *ast.Ident: // simple value
 		if ftpe.Obj == nil {
-			return swaggerSchemaForType(ftpe.Name, prop)
+			return swaggerSchemaForType(ftpe.Name, sct)
 		}
 		// we're probably looking at a struct here
 		// make sure it is one. Try to find it in the package
@@ -513,22 +465,25 @@ func (scp *structCommentParser) parseProperty(gofile *ast.File, fld ast.Expr, pr
 						return err
 					}
 					prop.Ref = ref
-				DECLS:
+
 					for _, d := range gofile.Decls {
 						if gd, ok := d.(*ast.GenDecl); ok {
 							for _, tss := range gd.Specs {
 								if tss.Pos() == ts.Pos() {
-									sd := structDecl{gofile, gd, ts, "", ""}
+									sd := schemaDecl{gofile, gd, ts, "", ""}
 									sd.inferNames()
 									scp.postDecls = append(scp.postDecls, sd)
-									break DECLS
+									return nil
 								}
 							}
 						}
 					}
 				}
 			}
+			return nil
 		}
+
+		return fmt.Errorf("couldn't infer type for %v", ftpe.Name)
 
 	case *ast.StarExpr: // pointer to something, optional by default
 		scp.parseProperty(gofile, ftpe.X, prop)
@@ -555,7 +510,11 @@ func (scp *structCommentParser) parseProperty(gofile *ast.File, fld ast.Expr, pr
 		return scp.parseStructType(gofile, prop, ftpe)
 
 	case *ast.SelectorExpr:
-		return scp.swaggerSchemaForSelector(gofile, ftpe, prop)
+		sp := selectorParser{
+			program:     scp.program,
+			AddPostDecl: func(sd schemaDecl) { scp.postDecls = append(scp.postDecls) },
+		}
+		return sp.TypeForSelector(gofile, ftpe, sct)
 
 	case *ast.MapType:
 		// check if key is a string type, if not print a message
@@ -581,113 +540,7 @@ func (scp *structCommentParser) parseProperty(gofile *ast.File, fld ast.Expr, pr
 		// I guess something can be done with a discriminator field
 		// but is it worth the trouble?
 	default:
-		fmt.Println("???", ftpe)
-	}
-	return nil
-}
-
-func (scp *structCommentParser) swaggerSchemaForSelector(gofile *ast.File, expr *ast.SelectorExpr, prop *spec.Schema) error {
-	if pth, ok := expr.X.(*ast.Ident); ok {
-		// lookup import
-		var selPath string
-		for _, imp := range gofile.Imports {
-			pv, err := strconv.Unquote(imp.Path.Value)
-			if err != nil {
-				pv = imp.Path.Value
-			}
-			if imp.Name != nil {
-				if imp.Name.Name == pth.Name {
-					selPath = pv
-					break
-				}
-			} else {
-				parts := strings.Split(pv, "/")
-				if len(parts) > 0 && parts[len(parts)-1] == pth.Name {
-					selPath = pv
-					break
-				}
-			}
-		}
-		// find actual struct
-		if selPath == "" {
-			return fmt.Errorf("no import found for %s", pth.Name)
-		}
-
-		pkg := scp.program.Package(selPath)
-		if pkg == nil {
-			return fmt.Errorf("no package found for %s", selPath)
-		}
-
-		// find the file this selector points to
-		for _, file := range pkg.Files {
-			for _, decl := range file.Decls {
-				if gd, ok := decl.(*ast.GenDecl); ok {
-					for _, gs := range gd.Specs {
-						if ts, ok := gs.(*ast.TypeSpec); ok {
-							if ts.Name != nil && ts.Name.Name == expr.Sel.Name {
-								// look at doc comments for +swagger:strfmt [name]
-								// when found this is the format name, create a schema with that name
-								if gd.Doc != nil {
-									for _, cmt := range gd.Doc.List {
-										for _, ln := range strings.Split(cmt.Text, "\n") {
-											matches := rxStrFmt.FindStringSubmatch(ln)
-											if len(matches) > 1 && len(matches[1]) > 0 {
-												prop.Typed("string", matches[1])
-												return nil
-											}
-										}
-									}
-								}
-								// ok so not a string format, perhaps a model?
-								if _, ok := ts.Type.(*ast.StructType); ok {
-									ref, err := spec.NewRef("#/definitions/" + ts.Name.Name)
-									if err != nil {
-										return err
-									}
-									prop.Ref = ref
-									sd := structDecl{file, gd, ts, "", ""}
-									sd.inferNames()
-									scp.postDecls = append(scp.postDecls, sd)
-									return nil
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-		return fmt.Errorf("schema parser: no string format for %s.%s", pth.Name, expr.Sel.Name)
-	}
-	return fmt.Errorf("schema parser: no string format for %v", expr.Sel.Name)
-}
-
-func swaggerSchemaForType(typeName string, prop *spec.Schema) error {
-	switch typeName {
-	case "bool":
-		prop.Typed("boolean", "")
-	case "rune", "string":
-		prop.Typed("string", "")
-	case "int8":
-		prop.Typed("number", "int8")
-	case "int16":
-		prop.Typed("number", "int16")
-	case "int32":
-		prop.Typed("number", "int32")
-	case "int", "int64":
-		prop.Typed("number", "int64")
-	case "uint8":
-		prop.Typed("number", "uint8")
-	case "uint16":
-		prop.Typed("number", "uint16")
-	case "uint32":
-		prop.Typed("number", "uint32")
-	case "uint", "uint64":
-		prop.Typed("number", "uint64")
-	case "float32":
-		prop.Typed("number", "float")
-	case "float64":
-		prop.Typed("number", "double")
+		return fmt.Errorf("%s is unsupported for a schema", ftpe)
 	}
 	return nil
 }

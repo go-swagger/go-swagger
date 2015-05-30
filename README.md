@@ -80,12 +80,11 @@ For a V1 I want to have this feature set completed:
     -	[x] generate api based on swagger spec
     -	[ ] generate go client from a swagger spec
   - spec generation
-    -	[ ] generate spec document based on the code
+    -	[x] generate spec document based on the code
       - [x] generate meta data (top level swagger properties) from package docs
       - [x] generate definition entries for models
         - [ ] support allOf for composed structs
-        - [ ] support discriminator based polymorphism
-      - [ ] generate path entries for routes
+      - [x] generate path entries for routes
 -	[x] Middlewares:
 	-	[x] serve spec
 	-	[x] routing

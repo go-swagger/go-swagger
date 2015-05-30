@@ -23,6 +23,8 @@ func TestAnnotationMatcher(t *testing.T) {
 		"meta",
 		"route",
 		"model",
+		"parameters",
+		"strfmt",
 	}
 
 	for _, variation := range variations {

@@ -27,6 +27,19 @@ type Runtime struct {
 	Formats          strfmt.Registry
 }
 
+// New creates a new default runtim for a swagger api client.
+func New(swaggerSpec *spec.Document) *Runtime {
+	var rt Runtime
+	rt.DefaultMediaType = "application/json"
+	rt.Consumers = map[string]swagger.Consumer{
+		"application/json": swagger.JSONConsumer(),
+	}
+	rt.Producers = map[string]swagger.Producer{
+		"application/json": swagger.JSONProducer(),
+	}
+	return &rt
+}
+
 // Request represents a swagger client request
 type Request struct {
 	Path      string

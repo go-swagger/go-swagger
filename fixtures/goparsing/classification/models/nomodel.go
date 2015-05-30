@@ -57,11 +57,6 @@ type NoModel struct {
 	// items.pattern: \w+
 	FooSlice []string `json:"foo_slice"`
 
-	NestedFoo          [][]string
-	DeeplyNestedFooBar [][]map[string][]map[string]string
-
-	BarIFace interface{}
-
 	// the items for this order
 	Items []struct {
 		// ID of this no model instance.
@@ -71,9 +66,28 @@ type NoModel struct {
 		// required: true
 		// minimum: > 10
 		// maximum: < 1000
-		ID       int32    `json:"id"`
-		Pet      mods.Pet `json:"pet"`
-		Quantity int16    `json:"quantity"`
+		ID int32 `json:"id"`
+
+		// The Pet to add to this NoModel items bucket.
+		// Pets can appear more than once in the bucket
+		//
+		//
+		// required: true
+		Pet *mods.Pet `json:"pet"`
+
+		// The amount of pets to add to this bucket.
+		//
+		// required: true
+		// minimum: 1
+		// maximum: 10
+		Quantity int16 `json:"quantity"`
+
+		// Notes to add to this item.
+		// This can be used to add special instructions.
+		//
+		//
+		// required: false
+		Notes string `json:"notes"`
 	} `json:"items"`
 }
 
