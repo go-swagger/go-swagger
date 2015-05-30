@@ -91,7 +91,11 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, "Items", params.Extensions["x-go-name"])
 			assert.Equal(t, "body", params.In)
 			assert.NotNil(t, params.Schema)
-			itprop := params.Schema
+			aprop := params.Schema
+			assert.Equal(t, "array", aprop.Type[0])
+			assert.NotNil(t, aprop.Items)
+			assert.NotNil(t, aprop.Items.Schema)
+			itprop := aprop.Items.Schema
 			assert.Len(t, itprop.Properties, 4)
 			assert.Len(t, itprop.Required, 3)
 			assertProperty(t, itprop, "number", "id", "int32", "ID")

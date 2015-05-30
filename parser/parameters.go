@@ -470,10 +470,22 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 					}
 				}
 
+				in := "query"
+				// scan for param location first, this changes some behavior down the line
+				for _, cmt := range fld.Doc.List {
+					for _, line := range strings.Split(cmt.Text, "\n") {
+						matches := rxIn.FindStringSubmatch(line)
+						if len(matches) > 0 && len(strings.TrimSpace(matches[1])) > 0 {
+							in = strings.TrimSpace(matches[1])
+						}
+					}
+				}
+
 				ps := pt[nm]
-				if err := pp.parseProperty(gofile, fld.Type, paramTypable{&ps}); err != nil {
+				if err := pp.parseProperty(gofile, fld.Type, paramTypable{&ps}, in); err != nil {
 					return err
 				}
+				ps.In = in
 
 				// check if this is a primitive, if so parse the validations from the
 				// doc comments of the slice declaration.
@@ -504,7 +516,6 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 						newParameterFieldSection("maxItems", rxf(rxMaxItemsFmt, ""), setParamMaxItems),
 						newParameterFieldSection("unique", rxf(rxUniqueFmt, ""), setParamUnique),
 						newParameterFieldSection("required", rxRequired, setParamRequired),
-						newParameterFieldSection("in", rxIn, setParamIn),
 					}
 				} else {
 					taggers = []*sectionTagger{
@@ -559,7 +570,7 @@ func (pp *paramStructParser) parseItemsDocComments(gofile *ast.File, fld *ast.Fi
 	return parseDocComments(fld.Doc, prop, taggers, nil)
 }
 
-func (pp *paramStructParser) parseProperty(gofile *ast.File, fld ast.Expr, prop operationTypable) error {
+func (pp *paramStructParser) parseProperty(gofile *ast.File, fld ast.Expr, prop operationTypable, in string) error {
 	switch ftpe := fld.(type) {
 	case *ast.Ident: // simple value
 		if ftpe.Obj == nil {
@@ -599,9 +610,18 @@ func (pp *paramStructParser) parseProperty(gofile *ast.File, fld ast.Expr, prop 
 		return fmt.Errorf("couldn't infer type for %v", ftpe.Name)
 
 	case *ast.StarExpr: // pointer to something
-		pp.parseProperty(gofile, ftpe.X, prop)
+		pp.parseProperty(gofile, ftpe.X, prop, in)
 
 	case *ast.ArrayType: // slice type
+		if in == "body" {
+			var items spec.Schema
+			scp := newSchemaParser(pp.program)
+			if err := scp.parseProperty(gofile, ftpe.Elt, &items); err != nil {
+				return err
+			}
+			prop.(paramTypable).SetSchema(new(spec.Schema).CollectionOf(items))
+			return nil
+		}
 		var items *spec.Items
 		if prop.Items() != nil {
 			items = prop.Items()
@@ -609,7 +629,7 @@ func (pp *paramStructParser) parseProperty(gofile *ast.File, fld ast.Expr, prop 
 		if items == nil {
 			items = new(spec.Items)
 		}
-		if err := pp.parseProperty(gofile, ftpe.Elt, itemsTypable{items}); err != nil {
+		if err := pp.parseProperty(gofile, ftpe.Elt, itemsTypable{items}, in); err != nil {
 			return err
 		}
 		prop.CollectionOf(items, "")
@@ -617,7 +637,7 @@ func (pp *paramStructParser) parseProperty(gofile *ast.File, fld ast.Expr, prop 
 	case *ast.StructType:
 		// this is an embedded struct, we want to parse this to a schema
 		ptb, ok := prop.(paramTypable)
-		if !ok {
+		if !ok && in != "body" {
 			return fmt.Errorf("items doesn't support embedded structs")
 		}
 		schema := ptb.Schema()
