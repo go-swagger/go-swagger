@@ -1,4 +1,4 @@
-/*Package parser provides a parser for go files that produces a swagger spec document.
+/*Package parse provides a parser for go files that produces a swagger spec document.
 
 You give it a main file and it will parse all the files that are required by that main
 package to produce a swagger specification.  This parser doesn't function standalone though; it needs you to provide it
@@ -74,5 +74,9 @@ There are no guarantees given on how property name overlaps are resolved when se
 This tag works very similar to the swagger:model tag except that it produces valid parameter objects instead of schema
 objects.
 
++swagger:response [?response name]
+
+Reads a struct decorated with +swagger:response and uses that information to fill up the headers and the schema for a response.
+A +swagger:route can specify a response name for a status code and then the matching response will be used for that operation in the swagger definition.
 */
 package parse

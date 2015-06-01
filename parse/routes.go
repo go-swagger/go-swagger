@@ -2,6 +2,8 @@ package parse
 
 import (
 	"go/ast"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/casualjim/go-swagger/spec"
@@ -27,6 +29,13 @@ func newOperationDescription(setter operationSetter) (t *sectionTagger) {
 
 func newOperationSection(name string, multiLine bool, setter operationSetter) (t *sectionTagger) {
 	t = newSectionTagger(name, multiLine)
+	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Operation), lines) }
+	return
+}
+
+func newOperationFieldSection(name string, multiLine bool, matcher *regexp.Regexp, setter operationSetter) (t *sectionTagger) {
+	t = newSectionTagger(name, multiLine)
+	t.matcher = matcher
 	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Operation), lines) }
 	return
 }
@@ -86,30 +95,65 @@ func setOperationSecurity(op *spec.Operation, lines []string) error {
 			op.Security = append(op.Security, map[string][]string{key: scopes})
 		}
 	}
+	return nil
+}
 
+func setOperationResponse(op *spec.Operation, lines []string) error {
+	if len(lines) == 0 {
+		return nil
+	}
+
+	for _, line := range lines {
+		kv := strings.SplitN(line, ":", 2)
+		var key, value string
+
+		if len(kv) > 1 {
+			key = strings.TrimSpace(kv[0])
+			value = strings.TrimSpace(kv[1])
+
+			if op.Responses == nil {
+				op.Responses = new(spec.Responses)
+			}
+			resps := op.Responses
+			var resp spec.Response
+			ref, err := spec.NewRef("#/responses/" + value)
+			if err != nil {
+				return err
+			}
+			resp.Ref = ref
+			if strings.EqualFold("default", key) {
+				if resps.Default == nil {
+					resps.Default = &resp
+				}
+			} else {
+				if sc, err := strconv.Atoi(key); err == nil {
+					if resps.StatusCodeResponses == nil {
+						resps.StatusCodeResponses = make(map[int]spec.Response)
+					}
+					resps.StatusCodeResponses[sc] = resp
+				}
+			}
+		}
+	}
 	return nil
 }
 
 func newRoutesParser(prog *loader.Program) *routesParser {
 	return &routesParser{
 		program: prog,
-		taggers: []*sectionTagger{
-			newOperationSummary(setOperationSummary),
-			newOperationDescription(setOperationDescription),
-			newOperationSection("Consumes", true, setOperationConsumes),
-			newOperationSection("Produces", true, setOperationProduces),
-			newOperationSection("Schemes", false, setOperationSchemes),
-			newOperationSection("Security", true, setOperationSecurity),
-		},
+		//taggers: []*sectionTagger{
+		//newOperationSummary(setOperationSummary),
+		//newOperationDescription(setOperationDescription),
+		//newOperationFieldSection("Consumes", true, regexp.MustCompile("[Cc]onsumes\\p{Zs}*:"), setOperationConsumes),
+		//newOperationFieldSection("Produces", true, regexp.MustCompile("[Pp]roduces\\p{Zs}*:"), setOperationProduces),
+		//newOperationFieldSection("Schemes", false, regexp.MustCompile("[Pp]roduces\\p{Zs}*:\\p{Zs}*((?:(?:https?|wss?)\\p{Zs}*,?\\p{Zs}*)+)$"), setOperationSchemes),
+		//newOperationFieldSection("Security", true, regexp.MustCompile("[Ss]ecurity\\p{Zs}*:"), setOperationSecurity),
+		//},
 	}
 }
 
 type routesParser struct {
-	taggers     []*sectionTagger
-	program     *loader.Program
-	definitions map[string]spec.Schema
-	responses   map[string]spec.Response
-	operations  map[string]spec.Operation
+	program *loader.Program
 }
 
 func (rp *routesParser) Parse(gofile *ast.File, target interface{}) error {
@@ -238,6 +282,7 @@ func (rp *routesParser) Parse(gofile *ast.File, target interface{}) error {
 			newOperationSection("Produces", true, setOperationProduces),
 			newOperationSection("Schemes", false, setOperationSchemes),
 			newOperationSection("Security", true, setOperationSecurity),
+			newOperationSection("Responses", true, setOperationResponse),
 		}
 		if err := parseDocComments(remaining, op, taggers, nil); err != nil {
 			return err

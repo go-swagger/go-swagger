@@ -29,6 +29,11 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	// Security:
 	// api_key:
 	// oauth: read, write
+	//
+	// Responses:
+	// default: genericError
+	// 200: someResponse
+	// 422: validationError
 	mountItem("GET", basePath+"/pets", nil)
 
 	/* +swagger:route POST /pets pets users createPet
@@ -45,6 +50,11 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	application/x-protobuf
 
 	Schemes: http, https, ws, wss
+
+	Responses:
+	default: genericError
+	200: someResponse
+	422: validationError
 
 	Security:
 	api_key:
@@ -69,6 +79,11 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	// Security:
 	// api_key:
 	// oauth: read, write
+	//
+	// Responses:
+	// default: genericError
+	// 200: someResponse
+	// 422: validationError
 	mountItem("GET", basePath+"/orders", nil)
 
 	// +swagger:route POST /orders orders createOrder
@@ -89,6 +104,11 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	// Security:
 	// api_key:
 	// oauth: read, write
+	//
+	// Responses:
+	// default: genericError
+	// 200: someResponse
+	// 422: validationError
 	mountItem("POST", basePath+"/orders", nil)
 
 	// +swagger:route GET /orders/{id} orders orderDetails
@@ -109,6 +129,11 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	// Security:
 	// api_key:
 	// oauth: read, write
+	//
+	// Responses:
+	// default: genericError
+	// 200: someResponse
+	// 422: validationError
 	mountItem("GET", basePath+"/orders/:id", nil)
 
 	// +swagger:route PUT /orders/{id} orders updateOrder
@@ -130,6 +155,11 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	// Security:
 	// api_key:
 	// oauth: read, write
+	//
+	// Responses:
+	// default: genericError
+	// 200: someResponse
+	// 422: validationError
 	mountItem("PUT", basePath+"/orders/:id", nil)
 
 	// +swagger:route DELETE /orders/{id} orders deleteOrder
@@ -150,6 +180,11 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	// Security:
 	// api_key:
 	// oauth: read, write
+	//
+	// Responses:
+	// default: genericError
+	// 200: someResponse
+	// 422: validationError
 	mountItem("DELETE", basePath+"/orders/:id", nil)
 
 	return nil

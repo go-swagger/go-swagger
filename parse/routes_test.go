@@ -100,4 +100,14 @@ func assertOperation(t *testing.T, op *spec.Operation, id, summary, description 
 	vv, ok := op.Security[1]["oauth"]
 	assert.True(t, ok)
 	assert.EqualValues(t, []string{"read", "write"}, vv)
+
+	assert.NotNil(t, op.Responses.Default)
+	assert.Equal(t, "#/responses/genericError", op.Responses.Default.Ref.String())
+
+	rsp, ok := op.Responses.StatusCodeResponses[200]
+	assert.True(t, ok)
+	assert.Equal(t, "#/responses/someResponse", rsp.Ref.String())
+	rsp, ok = op.Responses.StatusCodeResponses[422]
+	assert.True(t, ok)
+	assert.Equal(t, "#/responses/validationError", rsp.Ref.String())
 }

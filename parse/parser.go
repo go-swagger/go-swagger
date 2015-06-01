@@ -39,6 +39,7 @@ const (
 
 var (
 	rxSwaggerAnnotation  = regexp.MustCompile("[^+]*\\+\\p{Zs}*swagger:([\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)")
+	rxMeta               = regexp.MustCompile("\\+swagger:meta")
 	rxStrFmt             = regexp.MustCompile("\\+swagger:strfmt\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)$")
 	rxModelOverride      = regexp.MustCompile("\\+swagger:model\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)?$")
 	rxResponseOverride   = regexp.MustCompile("\\+swagger:response\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)?$")
@@ -134,22 +135,8 @@ func (a *apiParser) Parse() (*spec.Swagger, error) {
 		}
 	}
 
-	// loop over discovered until all the items are in definitions
-	keepGoing := len(a.discovered) > 0
-	for keepGoing {
-		var queue []schemaDecl
-		for _, d := range a.discovered {
-			if _, ok := definitions[d.Name]; !ok {
-				queue = append(queue, d)
-			}
-		}
-		a.discovered = nil
-		for _, sd := range queue {
-			if err := a.parseSchema(sd.File, definitions); err != nil {
-				return nil, err
-			}
-		}
-		keepGoing = len(a.discovered) > 0
+	if err := a.processDiscovered(definitions); err != nil {
+		return nil, err
 	}
 
 	// build paths dictionary
@@ -167,9 +154,32 @@ func (a *apiParser) Parse() (*spec.Swagger, error) {
 			return nil, err
 		}
 	}
+	// assemble swagger object, only including things that are in actual use
 	result.Paths = &paths
 	result.Definitions = definitions
 	return result, nil
+}
+
+func (a *apiParser) processDiscovered(definitions map[string]spec.Schema) error {
+	// loop over discovered until all the items are in definitions
+	keepGoing := len(a.discovered) > 0
+	for keepGoing {
+		var queue []schemaDecl
+		for _, d := range a.discovered {
+			if _, ok := definitions[d.Name]; !ok {
+				queue = append(queue, d)
+			}
+		}
+		a.discovered = nil
+		for _, sd := range queue {
+			if err := a.parseSchema(sd.File, definitions); err != nil {
+				return err
+			}
+		}
+		keepGoing = len(a.discovered) > 0
+	}
+
+	return nil
 }
 
 func (a *apiParser) parseSchema(file *ast.File, definitions map[string]spec.Schema) error {
