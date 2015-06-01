@@ -430,17 +430,7 @@ func (pp *paramStructParser) parseDecl(operations map[string]spec.Operation, dec
 				return err
 			}
 		}
-		// TODO: perhaps move this to the classifier
-		// and build a map from file pos to package
-		//for _, pkgInfo := range pp.program.AllPackages {
-		//if pkgInfo.Importable {
-		//for _, fil := range pkgInfo.Files {
-		//if fil.Pos() == decl.File.Pos() {
-		//opPtr.AddExtension("x-go-package", pkgInfo.Pkg.Path())
-		//}
-		//}
-		//}
-		//}
+
 		operations[opid] = operation
 	}
 	return nil

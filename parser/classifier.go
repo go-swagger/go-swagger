@@ -62,6 +62,7 @@ type classifiedProgram struct {
 	Models     []*ast.File
 	Operations []*ast.File
 	Parameters []*ast.File
+	Responses  []*ast.File
 }
 
 // programClassifier classifies the files of a program into buckets
@@ -93,7 +94,7 @@ func (pc *programClassifier) Classify(prog *loader.Program) (*classifiedProgram,
 		}
 
 		for _, file := range pkgInfo.Files {
-			var op, md, mt, pm bool // only add a particular file once
+			var op, md, mt, pm, rs bool // only add a particular file once
 			for _, comments := range file.Comments {
 				matches := rxSwaggerAnnotation.FindStringSubmatch(comments.Text())
 				if len(matches) > 1 {
@@ -117,6 +118,11 @@ func (pc *programClassifier) Classify(prog *loader.Program) (*classifiedProgram,
 						if !pm {
 							cp.Parameters = append(cp.Parameters, file)
 							pm = true
+						}
+					case "response":
+						if !rs {
+							cp.Responses = append(cp.Responses, file)
+							rs = true
 						}
 					case "strfmt":
 						// TODO: perhaps collect these and pass along to avoid lookups later on

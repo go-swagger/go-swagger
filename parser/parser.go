@@ -15,24 +15,11 @@ import (
 	"github.com/casualjim/go-swagger/util"
 )
 
-var (
-	rxSwaggerAnnotation  = regexp.MustCompile("[^+]*\\+\\p{Zs}*swagger:([\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)")
-	rxStrFmt             = regexp.MustCompile("\\+swagger:strfmt\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)$")
-	rxModelOverride      = regexp.MustCompile("\\+swagger:model\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)?$")
-	rxParametersOverride = regexp.MustCompile("\\+swagger:parameters\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\p{Zs}]+)$")
-	rxMethod             = "(\\p{L}+)"
-	rxPath               = "((?:/[\\p{L}\\p{N}\\p{Pd}\\p{Pc}{}]*)+/?)"
-	rxOpTags             = "(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\p{Zs}]+)"
-	rxOpID               = "((?:\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)+)"
-	rxRoute              = regexp.MustCompile(
-		"\\+swagger:route\\p{Zs}*" +
-			rxMethod +
-			"\\p{Zs}*" +
-			rxPath +
-			"\\p{Zs}+" +
-			rxOpTags +
-			"\\p{Zs}+" +
-			rxOpID + "$")
+const (
+	rxMethod = "(\\p{L}+)"
+	rxPath   = "((?:/[\\p{L}\\p{N}\\p{Pd}\\p{Pc}{}]*)+/?)"
+	rxOpTags = "(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\p{Zs}]+)"
+	rxOpID   = "((?:\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)+)"
 
 	rxMaximumFmt    = "%s[Mm]ax(?:imum)?\\p{Zs}*:\\p{Zs}*([\\<=])?\\p{Zs}*([\\+-]?(?:\\p{N}+\\.)?\\p{N}+)$"
 	rxMinimumFmt    = "%s[Mm]in(?:imum)?\\p{Zs}*:\\p{Zs}*([\\>=])?\\p{Zs}*([\\+-]?(?:\\p{N}+\\.)?\\p{N}+)$"
@@ -47,12 +34,29 @@ var (
 	rxMinItemsFmt = "%s[Mm]in(?:imum)?(?:\\p{Zs}*|[\\p{Pd}\\p{Pc}]|\\.)?[Ii]tems\\p{Zs}*:\\p{Zs}*(\\p{N}+)$"
 	rxUniqueFmt   = "%s[Uu]nique\\p{Zs}*:\\p{Zs}*(true|false)$"
 
-	rxIn       = regexp.MustCompile("(?:[Ii]n|[Ss]ource)\\p{Zs}*:\\p{Zs}*(query|path|header|body)$")
-	rxRequired = regexp.MustCompile("[Rr]equired\\p{Zs}*:\\p{Zs}*(true|false)$")
-	rxReadOnly = regexp.MustCompile("[Rr]ead(?:\\p{Zs}*|[\\p{Pd}\\p{Pc}])?[Oo]nly\\p{Zs}*:\\p{Zs}*(true|false)$")
-	rxSpace    = regexp.MustCompile("\\p{Zs}+")
+	rxItemsPrefix = "(?:[Ii]tems[\\.\\p{Zs}]?)+"
+)
 
-	rxItemsPrefix        = "(?:[Ii]tems[\\.\\p{Zs}]?)+"
+var (
+	rxSwaggerAnnotation  = regexp.MustCompile("[^+]*\\+\\p{Zs}*swagger:([\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)")
+	rxStrFmt             = regexp.MustCompile("\\+swagger:strfmt\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)$")
+	rxModelOverride      = regexp.MustCompile("\\+swagger:model\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)?$")
+	rxResponseOverride   = regexp.MustCompile("\\+swagger:response\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)?$")
+	rxParametersOverride = regexp.MustCompile("\\+swagger:parameters\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\p{Zs}]+)$")
+	rxRoute              = regexp.MustCompile(
+		"\\+swagger:route\\p{Zs}*" +
+			rxMethod +
+			"\\p{Zs}*" +
+			rxPath +
+			"\\p{Zs}+" +
+			rxOpTags +
+			"\\p{Zs}+" +
+			rxOpID + "$")
+
+	rxIn                 = regexp.MustCompile("(?:[Ii]n|[Ss]ource)\\p{Zs}*:\\p{Zs}*(query|path|header|body)$")
+	rxRequired           = regexp.MustCompile("[Rr]equired\\p{Zs}*:\\p{Zs}*(true|false)$")
+	rxReadOnly           = regexp.MustCompile("[Rr]ead(?:\\p{Zs}*|[\\p{Pd}\\p{Pc}])?[Oo]nly\\p{Zs}*:\\p{Zs}*(true|false)$")
+	rxSpace              = regexp.MustCompile("\\p{Zs}+")
 	rxNotAlNumSpaceComma = regexp.MustCompile("[^\\p{L}\\p{N}\\p{Zs},]")
 )
 
@@ -107,6 +111,17 @@ func (a *apiParser) Parse() (*spec.Swagger, error) {
 			return nil, err
 		}
 	}
+
+	// build parameters dictionary
+	var parameters = make(map[string]spec.Operation)
+	for _, paramsFile := range cp.Parameters {
+		if err := a.parseParameters(paramsFile, parameters); err != nil {
+			return nil, err
+		}
+	}
+
+	// build responses dictionary
+
 	// loop over discovered until all the items are in definitions
 	keepGoing := len(a.discovered) > 0
 	for keepGoing {
@@ -155,6 +170,19 @@ func (a *apiParser) parseSchema(file *ast.File, definitions map[string]spec.Sche
 }
 
 func (a *apiParser) parseRoutes(file *ast.File, paths *spec.Paths) error {
+	rp := newRoutesParser(a.prog)
+	if err := rp.Parse(file, paths); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a *apiParser) parseParameters(file *ast.File, operations map[string]spec.Operation) error {
+	rp := newParameterParser(a.prog)
+	if err := rp.Parse(file, operations); err != nil {
+		return err
+	}
+	a.discovered = append(a.discovered, rp.postDecls...)
 	return nil
 }
 

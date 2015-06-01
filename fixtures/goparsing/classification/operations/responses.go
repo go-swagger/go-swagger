@@ -1,0 +1,88 @@
+package operations
+
+import (
+	"github.com/casualjim/go-swagger/fixtures/goparsing/classification/transitive/mods"
+	"github.com/casualjim/go-swagger/strfmt"
+)
+
+// A SomeResponse is a dummy response object to test parsing.
+//
+// The properties are the same as the other structs used to test parsing.
+//
+// +swagger:response someResponse
+type SomeResponse struct {
+	// ID of this some response instance.
+	// ids in this application start at 11 and are smaller than 1000
+	//
+	//
+	// minimum: > 10
+	// maximum: < 1000
+	ID int64 `json:"id"`
+
+	// The Score of this model
+	//
+	//
+	// minimum: 3
+	// maximum: 45
+	// multiple of: 3
+	Score int32 `json:"score"`
+
+	// Name of this some response instance
+	//
+	//
+	// min length: 4
+	// max length: 50
+	// pattern: [A-Za-z0-9-.]*
+	Name string `json:"x-hdr-name"`
+
+	// Created holds the time when this entry was created
+	Created strfmt.DateTime `json:"created"`
+
+	// a FooSlice has foos which are strings
+	//
+	//
+	// min items: 3
+	// max items: 10
+	// unique: true
+	// items.minLength: 3
+	// items.maxLength: 10
+	// items.pattern: \w+
+	// collection format: pipe
+	FooSlice []string `json:"foo_slice"`
+
+	// the items for this order
+	//
+	//
+	// in: body
+	Items []struct {
+		// ID of this some response instance.
+		// ids in this application start at 11 and are smaller than 1000
+		//
+		//
+		// required: true
+		// minimum: > 10
+		// maximum: < 1000
+		ID int32 `json:"id"`
+
+		// The Pet to add to this NoModel items bucket.
+		// Pets can appear more than once in the bucket
+		//
+		//
+		// required: true
+		Pet *mods.Pet `json:"pet"`
+
+		// The amount of pets to add to this bucket.
+		//
+		// required: true
+		// minimum: 1
+		// maximum: 10
+		Quantity int16 `json:"quantity"`
+
+		// Notes to add to this item.
+		// This can be used to add special instructions.
+		//
+		//
+		// required: false
+		Notes string `json:"notes"`
+	} `json:"items"`
+}

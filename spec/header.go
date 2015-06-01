@@ -19,6 +19,21 @@ type Header struct {
 	headerProps
 }
 
+// Typed a fluent builder method for the type of parameter
+func (h *Header) Typed(tpe, format string) *Header {
+	h.Type = tpe
+	h.Format = format
+	return h
+}
+
+// CollectionOf a fluent builder method for an array item
+func (h *Header) CollectionOf(items *Items, format string) *Header {
+	h.Type = "array"
+	h.Items = items
+	h.CollectionFormat = format
+	return h
+}
+
 // MarshalJSON marshal this to JSON
 func (h Header) MarshalJSON() ([]byte, error) {
 	b1, err := json.Marshal(h.commonValidations)
