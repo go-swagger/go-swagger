@@ -406,7 +406,9 @@ func (scp *structCommentParser) parseStructType(gofile *ast.File, schema *spec.S
 						newSchemaFieldSection("required", rxRequired, setSchemaRequired(schema, nm)),
 					}
 				}
-				parseDocComments(fld.Doc, &ps, taggers, nil)
+				if err := parseDocComments(fld.Doc, &ps, taggers, nil); err != nil {
+					return err
+				}
 
 				if nm != gnm {
 					ps.AddExtension("x-go-name", gnm)

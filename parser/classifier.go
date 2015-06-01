@@ -14,7 +14,9 @@ const (
 	swModel
 	swRoute
 	swParameters
+	swResponse
 	swStrFmt
+	swTag
 )
 
 type packageFilter struct {

@@ -9,43 +9,148 @@ type ListPetParams struct {
 // ServeAPI serves the API for this record store
 func ServeAPI(host, basePath string, schemes []string) error {
 
-	// +swagger:route GET /pets ListPetParams pets
+	// +swagger:route GET /pets pets users listPets
 	//
-	// lists pets filtered by some parameters.
+	// Lists pets filtered by some parameters.
 	//
 	// This will show all available pets by default.
 	// You can get the pets that are out of stock
+	//
+	// Consumes:
+	// application/json
+	// application/x-protobuf
+	//
+	// Produces:
+	// application/json
+	// application/x-protobuf
+	//
+	// Schemes: http, https, ws, wss
+	//
+	// Security:
+	// api_key:
+	// oauth: read, write
 	mountItem("GET", basePath+"/pets", nil)
 
-	// +swagger:route POST /pets createPet pets
-	//
-	// Create a pet based on the parameters
+	/* +swagger:route POST /pets pets users createPet
+
+	Create a pet based on the parameters
+
+
+	Consumes:
+	application/json
+	application/x-protobuf
+
+	Produces:
+	application/json
+	application/x-protobuf
+
+	Schemes: http, https, ws, wss
+
+	Security:
+	api_key:
+	oauth: read, write */
 	mountItem("POST", basePath+"/pets", nil)
 
-	// +swagger:route GET /orders listOrders orders
+	// +swagger:route GET /orders orders listOrders
 	//
-	// lists pets filtered by some parameters
+	// lists orders filtered by some parameters
+	//
+	//
+	// Consumes:
+	// application/json
+	// application/x-protobuf
+	//
+	// Produces:
+	// application/json
+	// application/x-protobuf
+	//
+	// Schemes: http, https, ws, wss
+	//
+	// Security:
+	// api_key:
+	// oauth: read, write
 	mountItem("GET", basePath+"/orders", nil)
 
-	// +swagger:route POST /orders createOrder orders
+	// +swagger:route POST /orders orders createOrder
 	//
 	// create an order based on the parameters
+	//
+	//
+	// Consumes:
+	// application/json
+	// application/x-protobuf
+	//
+	// Produces:
+	// application/json
+	// application/x-protobuf
+	//
+	// Schemes: http, https, ws, wss
+	//
+	// Security:
+	// api_key:
+	// oauth: read, write
 	mountItem("POST", basePath+"/orders", nil)
 
-	// +swagger:route GET /orders/{id} orderDetails orders
+	// +swagger:route GET /orders/{id} orders orderDetails
 	//
 	// gets the details for an order
 	//
-	// +swagger:param route:id number:int32
-	// required: true
 	//
-	// +swagger:param query:purchaseDates array
-	// items: string
-	// items.min length: 10
-	// min items: 2
+	// Consumes:
+	// application/json
+	// application/x-protobuf
 	//
-	// +swagger:response 200:order
+	// Produces:
+	// application/json
+	// application/x-protobuf
+	//
+	// Schemes: http, https, ws, wss
+	//
+	// Security:
+	// api_key:
+	// oauth: read, write
 	mountItem("GET", basePath+"/orders/:id", nil)
+
+	// +swagger:route PUT /orders/{id} orders updateOrder
+	//
+	// Update the details for an order.
+	//
+	// When the order doesn't exist this will return an error.
+	//
+	// Consumes:
+	// application/json
+	// application/x-protobuf
+	//
+	// Produces:
+	// application/json
+	// application/x-protobuf
+	//
+	// Schemes: http, https, ws, wss
+	//
+	// Security:
+	// api_key:
+	// oauth: read, write
+	mountItem("PUT", basePath+"/orders/:id", nil)
+
+	// +swagger:route DELETE /orders/{id} orders deleteOrder
+	//
+	// delete a particular order
+	//
+	//
+	// Consumes:
+	// application/json
+	// application/x-protobuf
+	//
+	// Produces:
+	// application/json
+	// application/x-protobuf
+	//
+	// Schemes: http, https, ws, wss
+	//
+	// Security:
+	// api_key:
+	// oauth: read, write
+	mountItem("DELETE", basePath+"/orders/:id", nil)
 
 	return nil
 }

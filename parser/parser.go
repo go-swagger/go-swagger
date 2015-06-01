@@ -16,30 +16,44 @@ import (
 )
 
 var (
-	rxSwaggerAnnotation  = regexp.MustCompile("[^+]*\\+\\p{Zs}*swagger:([\\p{L}\\p{N}-_]+)")
-	rxStrFmt             = regexp.MustCompile("\\+swagger:strfmt\\p{Zs}*(\\p{L}[\\p{L}\\p{N}-]+)$")
-	rxModelOverride      = regexp.MustCompile("\\+swagger:model\\p{Zs}*(\\p{L}[\\p{L}\\p{N}-]+)?$")
-	rxParametersOverride = regexp.MustCompile("\\+swagger:parameters\\p{Zs}*(\\p{L}[\\p{L}\\p{N}-\\p{Zs}]+)$")
-	rxRoute              = regexp.MustCompile("\\+swagger:route\\p{Zs}*(\\p{L}+)\\p{Zs}*((?:/[\\p{L}\\p{N}-_{}]*)+/?)\\p{Zs}+((?:\\p{L}[\\p{L}\\p{N}-]+)+)\\p{Zs}*(\\p{L}[\\p{L}\\p{N}-\\p{Zs}]+)$")
+	rxSwaggerAnnotation  = regexp.MustCompile("[^+]*\\+\\p{Zs}*swagger:([\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)")
+	rxStrFmt             = regexp.MustCompile("\\+swagger:strfmt\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)$")
+	rxModelOverride      = regexp.MustCompile("\\+swagger:model\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)?$")
+	rxParametersOverride = regexp.MustCompile("\\+swagger:parameters\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\p{Zs}]+)$")
+	rxMethod             = "(\\p{L}+)"
+	rxPath               = "((?:/[\\p{L}\\p{N}\\p{Pd}\\p{Pc}{}]*)+/?)"
+	rxOpTags             = "(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\p{Zs}]+)"
+	rxOpID               = "((?:\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)+)"
+	rxRoute              = regexp.MustCompile(
+		"\\+swagger:route\\p{Zs}*" +
+			rxMethod +
+			"\\p{Zs}*" +
+			rxPath +
+			"\\p{Zs}+" +
+			rxOpTags +
+			"\\p{Zs}+" +
+			rxOpID + "$")
 
 	rxMaximumFmt    = "%s[Mm]ax(?:imum)?\\p{Zs}*:\\p{Zs}*([\\<=])?\\p{Zs}*([\\+-]?(?:\\p{N}+\\.)?\\p{N}+)$"
 	rxMinimumFmt    = "%s[Mm]in(?:imum)?\\p{Zs}*:\\p{Zs}*([\\>=])?\\p{Zs}*([\\+-]?(?:\\p{N}+\\.)?\\p{N}+)$"
 	rxMultipleOfFmt = "%s[Mm]ultiple\\p{Zs}*[Oo]f\\p{Zs}*:\\p{Zs}*([\\+-]?(?:\\p{N}+\\.)?\\p{N}+)$"
 
-	rxMaxLengthFmt        = "%s[Mm]ax(?:imum)?(?:\\p{Zs}*-?[Ll]en(?:gth)?)\\p{Zs}*:\\p{Zs}*(\\p{N}+)$"
-	rxMinLengthFmt        = "%s[Mm]in(?:imum)?(?:\\p{Zs}*-?[Ll]en(?:gth)?)\\p{Zs}*:\\p{Zs}*(\\p{N}+)$"
+	rxMaxLengthFmt        = "%s[Mm]ax(?:imum)?(?:\\p{Zs}*[\\p{Pd}\\p{Pc}]?[Ll]en(?:gth)?)\\p{Zs}*:\\p{Zs}*(\\p{N}+)$"
+	rxMinLengthFmt        = "%s[Mm]in(?:imum)?(?:\\p{Zs}*[\\p{Pd}\\p{Pc}]?[Ll]en(?:gth)?)\\p{Zs}*:\\p{Zs}*(\\p{N}+)$"
 	rxPatternFmt          = "%s[Pp]attern\\p{Zs}*:\\p{Zs}*(.*)$"
-	rxCollectionFormatFmt = "%s[Cc]ollection(?:\\p{Zs}*-?[Ff]ormat)\\p{Zs}*:\\p{Zs}*(.*)$"
+	rxCollectionFormatFmt = "%s[Cc]ollection(?:\\p{Zs}*[\\p{Pd}\\p{Pc}]?[Ff]ormat)\\p{Zs}*:\\p{Zs}*(.*)$"
 
-	rxMaxItemsFmt = "%s[Mm]ax(?:imum)?(?:\\p{Zs}*|-)?[Ii]tems\\p{Zs}*:\\p{Zs}*(\\p{N}+)$"
-	rxMinItemsFmt = "%s[Mm]in(?:imum)?(?:\\p{Zs}*|-)?[Ii]tems\\p{Zs}*:\\p{Zs}*(\\p{N}+)$"
+	rxMaxItemsFmt = "%s[Mm]ax(?:imum)?(?:\\p{Zs}*|[\\p{Pd}\\p{Pc}]|\\.)?[Ii]tems\\p{Zs}*:\\p{Zs}*(\\p{N}+)$"
+	rxMinItemsFmt = "%s[Mm]in(?:imum)?(?:\\p{Zs}*|[\\p{Pd}\\p{Pc}]|\\.)?[Ii]tems\\p{Zs}*:\\p{Zs}*(\\p{N}+)$"
 	rxUniqueFmt   = "%s[Uu]nique\\p{Zs}*:\\p{Zs}*(true|false)$"
 
 	rxIn       = regexp.MustCompile("(?:[Ii]n|[Ss]ource)\\p{Zs}*:\\p{Zs}*(query|path|header|body)$")
 	rxRequired = regexp.MustCompile("[Rr]equired\\p{Zs}*:\\p{Zs}*(true|false)$")
-	rxReadOnly = regexp.MustCompile("[Rr]ead(?:\\p{Zs}*|-)?[Oo]nly\\p{Zs}*:\\p{Zs}*(true|false)$")
+	rxReadOnly = regexp.MustCompile("[Rr]ead(?:\\p{Zs}*|[\\p{Pd}\\p{Pc}])?[Oo]nly\\p{Zs}*:\\p{Zs}*(true|false)$")
+	rxSpace    = regexp.MustCompile("\\p{Zs}+")
 
-	rxItemsPrefix = "(?:[Ii]tems[\\.\\p{Zs}]?)+"
+	rxItemsPrefix        = "(?:[Ii]tems[\\.\\p{Zs}]?)+"
+	rxNotAlNumSpaceComma = regexp.MustCompile("[^\\p{L}\\p{N}\\p{Zs},]")
 )
 
 // Many thanks go to https://github.com/yvasiyarov/swagger

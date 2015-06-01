@@ -522,7 +522,9 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 						newParamDescription(setParamDescription),
 					}
 				}
-				parseDocComments(fld.Doc, &ps, taggers, nil)
+				if err := parseDocComments(fld.Doc, &ps, taggers, nil); err != nil {
+					return err
+				}
 
 				if ps.Name == "" {
 					ps.Name = nm

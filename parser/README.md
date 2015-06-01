@@ -7,8 +7,14 @@ with a template swagger document.
 It seems weird to me to have to write doc comments to produce JSON when the only purpose of those comments is to provide that JSON.  
 So instead of duplicating work it can take a swagger spec to start from and then
 synchronize the content of the specs definitions and parameters, with whatever is in your code.
-This way this parser can focus on just analyzing go code instead of defining a lossy grammar that will look crappy
-when it's displayed on godoc.org.
+This tool takes the stance that if you want to use it in the swagger spec then you should be able to define it as a struct.
+Whenever types are involved I want the compiler to actually agree that it is that type and use that information in the produced json.
+
+Swagger 2.0 is a lot larger in scope than any of the previous versions and as such the documentation would require quite
+a bit of cross-referencing but all of this would be done with plain strings in doc comments.
+The opportunities for a misspelled identifier are plenty and the resulting JSON would still mostly look ok, so the errors would be fairly hard to spot.
+
+Feel free to submit an issue if you disagree with any of this.
 
 The parser supports filters to limit the packages to scan for rest operations
 There are also filters for models so you can specify which packages
