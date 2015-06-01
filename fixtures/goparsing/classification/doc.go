@@ -6,27 +6,22 @@
 // This should demonstrate all the possible comment annotations
 // that are available to turn go code into a fully compliant swagger 2.0 spec
 //
-// Version: 0.0.1
+//     Schemes: http, https
+//     Host: localhost
+//     BasePath: /v2
+//     Version: 0.0.1
+//     TOS: there are no TOS at this moment, use at your own risk we take no responsibility
+//     License: MIT http://opensource.org/licenses/MIT
+//     Contact: John Doe<john.doe@example.com> http://john.doe.com
 //
-// TOS: there are no TOS at this moment, use at your own risk we take no responsibility
+//     Consumes:
+//     - application/json
+//     - application/xml
 //
-// License: MIT http://opensource.org/licenses/MIT
+//     Produces:
+//     - application/json
+//     - application/xml
 //
-// Contact: John Doe<john.doe@example.com> http://john.doe.com
-//
-// Consumes:
-// application/json
-// application/xml
-//
-// Produces:
-// application/json
-// application/xml
-//
-// Schemes: http, https
-//
-// Host: localhost
-//
-// BasePath: /v2
 //
 // +swagger:meta
 package classification

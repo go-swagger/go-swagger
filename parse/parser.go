@@ -1,4 +1,4 @@
-package parser
+package parse
 
 import (
 	"fmt"
@@ -104,6 +104,12 @@ func (a *apiParser) Parse() (*spec.Swagger, error) {
 		return nil, err
 	}
 
+	// find the operations
+	// build the responses
+	// build the paramters
+	// build schemas for discovered models
+	// add meta data
+
 	// build definitions dictionary
 	var definitions = make(map[string]spec.Schema)
 	for _, modFile := range cp.Models {
@@ -121,6 +127,12 @@ func (a *apiParser) Parse() (*spec.Swagger, error) {
 	}
 
 	// build responses dictionary
+	var responses = make(map[string]spec.Response)
+	for _, responseFile := range cp.Responses {
+		if err := a.parseResponses(responseFile, responses); err != nil {
+			return nil, err
+		}
+	}
 
 	// loop over discovered until all the items are in definitions
 	keepGoing := len(a.discovered) > 0
@@ -180,6 +192,15 @@ func (a *apiParser) parseRoutes(file *ast.File, paths *spec.Paths) error {
 func (a *apiParser) parseParameters(file *ast.File, operations map[string]spec.Operation) error {
 	rp := newParameterParser(a.prog)
 	if err := rp.Parse(file, operations); err != nil {
+		return err
+	}
+	a.discovered = append(a.discovered, rp.postDecls...)
+	return nil
+}
+
+func (a *apiParser) parseResponses(file *ast.File, responses map[string]spec.Response) error {
+	rp := newResponseParser(a.prog)
+	if err := rp.Parse(file, responses); err != nil {
 		return err
 	}
 	a.discovered = append(a.discovered, rp.postDecls...)

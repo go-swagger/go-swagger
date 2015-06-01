@@ -1,4 +1,4 @@
-package parser
+package parse
 
 import (
 	goparser "go/parser"

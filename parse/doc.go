@@ -75,4 +75,4 @@ This tag works very similar to the swagger:model tag except that it produces val
 objects.
 
 */
-package parser
+package parse

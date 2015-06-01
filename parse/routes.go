@@ -1,4 +1,4 @@
-package parser
+package parse
 
 import (
 	"go/ast"
@@ -105,8 +105,11 @@ func newRoutesParser(prog *loader.Program) *routesParser {
 }
 
 type routesParser struct {
-	taggers []*sectionTagger
-	program *loader.Program
+	taggers     []*sectionTagger
+	program     *loader.Program
+	definitions map[string]spec.Schema
+	responses   map[string]spec.Response
+	operations  map[string]spec.Operation
 }
 
 func (rp *routesParser) Parse(gofile *ast.File, target interface{}) error {
