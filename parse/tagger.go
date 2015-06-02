@@ -1,183 +1,194 @@
 package parse
 
 import (
-	"fmt"
+	"go/ast"
 	"regexp"
 	"strings"
 )
 
-var (
-	rxStripComments      = regexp.MustCompile("^[^\\w]*")
-	rxStripTitleComments = regexp.MustCompile("^[^\\w]*(:?P|p)ackage\\s+\\w+[^\\w]*")
-)
-
-func tagNamesMatcher(tags []string) *regexp.Regexp {
-	var escaped []string
-	for _, t := range tags {
-		escaped = append(escaped, regexp.QuoteMeta(t))
-	}
-	return unsafeTagNameMatcher(strings.Join(escaped, "|"))
-}
-
-func tagNameMatcher(name string) *regexp.Regexp {
-	return unsafeTagNameMatcher(regexp.QuoteMeta(name))
-}
-
-func unsafeTagNameMatcher(name string) *regexp.Regexp {
-	return regexp.MustCompile(fmt.Sprintf("[^\\w]*(?:%s)[^:]*:\\s*", name))
-}
-
-func swaggerClassifier(name string) *regexp.Regexp {
-	return regexp.MustCompile(fmt.Sprintf("[^+]*\\+\\s*swagger:%s", regexp.QuoteMeta(name)))
-}
-
-type taggedSection struct {
-	Name  string
-	Lines []string
-}
-
-type unmatchedSection struct{} // marker struct
-
-type singleLineSection struct {
-	taggedSection
-}
-
-func (sls singleLineSection) Line() string {
-	if len(sls.Lines) == 0 {
-		return ""
-	}
-	return sls.Lines[0]
-}
-
-// grabs lines to aggregate
-type multiLineSectionPart struct {
-	taggedSection
-}
-
-// stops and discards the last line
-type multiLineSectionTerminator struct {
-	taggedSection
-}
-
-// this means that whoever is aggregating the tagged section needs to move on to the next
-// section tagger but probably not advance the lines
-type newTagSectionTerminator struct {
-	taggedSection
-}
-
-func newSectionTagger(name string, multiLine bool) *sectionTagger {
-	return &sectionTagger{
-		taggedSection: taggedSection{
-			Name: name,
-		},
-		matcher:         tagNameMatcher(name),
-		Multiline:       multiLine,
-		isFirst:         true,
-		stripsTag:       true,
-		rxStripComments: rxStripComments,
+func newMultiLineTagParser(name string, parser valueParser) tagParser {
+	return tagParser{
+		Name:      name,
+		MultiLine: true,
+		Parser:    parser,
 	}
 }
 
-// a title matcher is a special section tagger that collects until the first open line, but doesn't really
-// have a tag name. It expects that the first line of the comment flagged with swagger:meta is the title
-func newTitleTagger() *sectionTagger {
-	return &sectionTagger{
-		taggedSection: taggedSection{
-			Name: "Title",
-		},
-		matcher:         regexp.MustCompile(".*"),
-		Multiline:       true,
-		isFirst:         true,
-		wasEmpty:        true,
-		rxStripComments: rxStripTitleComments,
+func newSingleLineTagParser(name string, parser valueParser) tagParser {
+	return tagParser{
+		Name:      name,
+		MultiLine: false,
+		Parser:    parser,
 	}
 }
 
-// a description matcher is a special section tagger that collects after the first paragraph and until
-// the first open line, but doesn't really have a tag name. It expects everything but the first paragraph
-// of the comment before any tags appear is the description
-func newDescriptionTagger() *sectionTagger {
-	return &sectionTagger{
-		taggedSection: taggedSection{
-			Name: "Description",
-		},
-		matcher:         regexp.MustCompile(".*"),
-		Multiline:       true,
-		isFirst:         true,
-		rxStripComments: rxStripComments,
-	}
+type tagParser struct {
+	Name      string
+	MultiLine bool
+	Lines     []string
+	Parser    valueParser
 }
 
-// a section tagger analyzes comment lines
-// and groups them together by tag
-type sectionTagger struct {
-	taggedSection
-	matcher *regexp.Regexp
-	// when true this section needs to read multiple lines
-	// a section terminates when:
-	//   * another tag is found
-	//   * 2 consecutive new lines are found
-	//   * the comment group ends
-	// this applies to title, description and TOS for the info object for example
-	Multiline bool
-
-	// starts out being true
-	isFirst   bool
-	wasEmpty  bool
-	stripsTag bool
-	set       setter
-
-	rxStripComments *regexp.Regexp
+func (st *tagParser) Matches(line string) bool {
+	return st.Parser.Matches(line)
 }
 
-// not exported, ambiguous return type
-func (st *sectionTagger) Tag(text string, terminatingTags []string) interface{} {
-	if st.isFirst && st.matcher.MatchString(text) {
-		st.isFirst = false
+func (st *tagParser) Parse(lines []string) error {
+	return st.Parser.Parse(lines)
+}
 
-		txt := strings.TrimSpace(st.stripComment(text))
-		if st.stripsTag {
-			txt = strings.TrimSpace(st.stripComment(st.matcher.ReplaceAllString(text, "")))
+// aggregates lines in header until it sees a tag.
+type sectionedParser struct {
+	header     []string
+	matched    map[string]tagParser
+	annotation valueParser
+
+	seenTag        bool
+	skipHeader     bool
+	setTitle       func([]string)
+	setDescription func([]string)
+	workedOutTitle bool
+	taggers        []tagParser
+	currentTagger  *tagParser
+	title          []string
+	description    []string
+}
+
+func (st *sectionedParser) cleanup(lines []string) []string {
+	seenLine := -1
+	var lastContent int
+	var uncommented []string
+	for i, v := range lines {
+		str := regexp.MustCompile("^[^\\p{L}\\p{N}\\+]*").ReplaceAllString(v, "")
+		uncommented = append(uncommented, str)
+		if str != "" {
+			if seenLine < 0 {
+				seenLine = i
+			}
+			lastContent = i
 		}
+	}
+	return uncommented[seenLine : lastContent+1]
+}
 
-		if !st.Multiline {
-			st.Lines = []string{txt}
-			return singleLineSection{st.taggedSection}
+func (st *sectionedParser) collectTitleDescription() {
+	if st.workedOutTitle {
+		return
+	}
+	if st.setTitle == nil {
+		st.header = st.cleanup(st.header)
+		return
+	}
+	hdrs := st.cleanup(st.header)
+
+	st.workedOutTitle = true
+	idx := -1
+	for i, line := range hdrs {
+		if strings.TrimSpace(line) == "" {
+			idx = i
+			break
 		}
-		if len(txt) > 0 {
-			st.Lines = []string{txt}
-		}
-		// so far only title wants to have a different pattern
-		// and this is only for the first line, after that we replace
-		// the strip comments with the default pattern
-		st.rxStripComments = rxStripComments
-		return multiLineSectionPart{st.taggedSection}
 	}
 
-	if !st.isFirst && st.Multiline {
-		txt := strings.TrimSpace(st.stripComment(text))
-		isEmpty := txt == ""
+	if idx > -1 {
 
-		if isEmpty && st.wasEmpty {
-			return multiLineSectionTerminator{st.taggedSection} // terminated
+		st.title = hdrs[:idx]
+		if len(hdrs) > idx+1 {
+			st.header = hdrs[idx+1:]
+		} else {
+			st.header = nil
 		}
-		st.wasEmpty = isEmpty
+		return
+	}
 
-		// check for tags that terminate
-		if len(terminatingTags) > 0 {
-			if tagNamesMatcher(terminatingTags).MatchString(text) {
-				return newTagSectionTerminator{st.taggedSection}
+	if len(hdrs) > 0 {
+		line := hdrs[0]
+		if rxPunctuationEnd.MatchString(line) {
+			st.title = []string{line}
+			st.header = hdrs[1:]
+		} else {
+			st.header = hdrs
+		}
+	}
+}
+
+func (st *sectionedParser) Title() []string {
+	st.collectTitleDescription()
+	return st.title
+}
+
+func (st *sectionedParser) Description() []string {
+	st.collectTitleDescription()
+	return st.header
+}
+
+func (st *sectionedParser) Parse(doc *ast.CommentGroup) error {
+	if doc == nil {
+		return nil
+	}
+COMMENTS:
+	for _, c := range doc.List {
+		for _, line := range strings.Split(c.Text, "\n") {
+			if rxSwaggerAnnotation.MatchString(line) {
+				if st.annotation == nil || !st.annotation.Matches(line) {
+					break COMMENTS // a new +swagger: annotation terminates this parser
+				}
+
+				st.annotation.Parse([]string{line})
+				if len(st.header) > 0 {
+					st.seenTag = true
+				}
+				continue
+			}
+
+			var matched bool
+			for _, tagger := range st.taggers {
+				if tagger.Matches(line) {
+					st.seenTag = true
+					st.currentTagger = &tagger
+					matched = true
+					break
+				}
+			}
+
+			if st.currentTagger == nil {
+				if !st.skipHeader && !st.seenTag {
+					st.header = append(st.header, line)
+				}
+				// didn't match a tag, moving on
+				continue
+			}
+
+			if st.currentTagger.MultiLine && matched {
+				// the first line of a multiline tagger doesn't count
+				continue
+			}
+
+			ts, ok := st.matched[st.currentTagger.Name]
+			if !ok {
+				ts = *st.currentTagger
+			}
+			ts.Lines = append(ts.Lines, line)
+			if st.matched == nil {
+				st.matched = make(map[string]tagParser)
+			}
+			st.matched[st.currentTagger.Name] = ts
+
+			if !st.currentTagger.MultiLine {
+				st.currentTagger = nil
 			}
 		}
-
-		if len(st.Lines) > 0 || !isEmpty {
-			st.Lines = append(st.Lines, txt)
-		}
-		return multiLineSectionPart{st.taggedSection}
 	}
-	return unmatchedSection{}
-}
-func (st *sectionTagger) stripComment(line string) string {
-	after := st.rxStripComments.ReplaceAllString(line, "")
-	return after
+	if st.setTitle != nil {
+		st.setTitle(st.Title())
+	}
+	if st.setDescription != nil {
+		st.setDescription(st.Description())
+	}
+	for _, mt := range st.matched {
+		if err := mt.Parse(st.cleanup(mt.Lines)); err != nil {
+			return err
+		}
+	}
+	return nil
 }

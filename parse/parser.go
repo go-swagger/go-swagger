@@ -59,12 +59,45 @@ var (
 	rxReadOnly           = regexp.MustCompile("[Rr]ead(?:\\p{Zs}*|[\\p{Pd}\\p{Pc}])?[Oo]nly\\p{Zs}*:\\p{Zs}*(true|false)$")
 	rxSpace              = regexp.MustCompile("\\p{Zs}+")
 	rxNotAlNumSpaceComma = regexp.MustCompile("[^\\p{L}\\p{N}\\p{Zs},]")
+	rxPunctuationEnd     = regexp.MustCompile("\\p{Po}$")
+	rxStripComments      = regexp.MustCompile("^[^\\w\\+]*")
+	rxStripTitleComments = regexp.MustCompile("^[^\\p{L}]*(:?P|p)ackage\\p{Zs}+[^\\p{Zs}]+\\p{Zs}*")
+
+	rxConsumes  = regexp.MustCompile("[Cc]onsumes\\p{Zs}*:")
+	rxProduces  = regexp.MustCompile("[Pp]roduces\\p{Zs}*:")
+	rxSecurity  = regexp.MustCompile("[Ss]ecurity\\p{Zs}*:")
+	rxResponses = regexp.MustCompile("[Rr]esponses\\p{Zs}*:")
+	rxSchemes   = regexp.MustCompile("[Ss]chemes\\p{Zs}*:\\p{Zs}*((?:(?:https?|HTTPS?|wss?|WSS?)[\\p{Zs},]*)+)$")
+	rxVersion   = regexp.MustCompile("[Vv]ersion\\p{Zs}*:\\p{Zs}*(.+)$")
+	rxHost      = regexp.MustCompile("[Hh]ost\\p{Zs}*:\\p{Zs}*(.+)$")
+	rxBasePath  = regexp.MustCompile("[Bb]ase\\p{Zs}*-*[Pp]ath\\p{Zs}*:\\p{Zs}*" + rxPath + "$")
+	rxLicense   = regexp.MustCompile("[Ll]icense\\p{Zs}*:\\p{Zs}*(.+)$")
+	rxContact   = regexp.MustCompile("[Cc]ontact\\p{Zs}*-?(?:[Ii]info\\p{Zs}*)?:\\p{Zs}*(.+)$")
+	rxTOS       = regexp.MustCompile("[Tt](:?erms)?\\p{Zs}*-?[Oo]f?\\p{Zs}*-?[Ss](?:ervice)?\\p{Zs}*:")
 )
 
 // Many thanks go to https://github.com/yvasiyarov/swagger
 // this is loosely based on that implementation but for swagger 2.0
 
 type setter func(interface{}, []string) error
+
+func joinDropLast(lines []string) string {
+	l := len(lines)
+	lns := lines
+	if l > 0 && len(strings.TrimSpace(lines[l-1])) == 0 {
+		lns = lines[:l-1]
+	}
+	return strings.Join(lns, "\n")
+}
+
+func removeEmptyLines(lines []string) (notEmpty []string) {
+	for _, l := range lines {
+		if len(strings.TrimSpace(l)) > 0 {
+			notEmpty = append(notEmpty, l)
+		}
+	}
+	return
+}
 
 func rxf(rxp, ar string) *regexp.Regexp {
 	return regexp.MustCompile(fmt.Sprintf(rxp, ar))
@@ -218,7 +251,7 @@ func (a *apiParser) parseResponses(file *ast.File, responses map[string]spec.Res
 }
 
 func (a *apiParser) parseMeta(file *ast.File, swspec *spec.Swagger) error {
-	return newMetaParser().Parse(file, swspec)
+	return newMetaParser(swspec).Parse(file.Doc)
 }
 
 // MustExpandPackagePath gets the real package path on disk
@@ -229,91 +262,6 @@ func (a *apiParser) MustExpandPackagePath(packagePath string) string {
 	}
 
 	return pkgRealpath
-}
-
-func newDocCommentParser(otherTags []string, taggers ...*sectionTagger) *docCommentParser {
-	return &docCommentParser{taggers: taggers, otherTags: otherTags}
-}
-
-func parseDocComments(doc *ast.CommentGroup, target interface{}, tgrs []*sectionTagger, ot []string) error {
-	if doc == nil {
-		return nil
-	}
-	var selectedTagger *sectionTagger
-	var otherTags []string
-	taggers := tgrs
-	for _, c := range doc.List {
-		text := c.Text
-		lines := strings.Split(text, "\n")
-
-	LINES:
-		for _, line := range lines {
-			// this is an aggregating tagger
-			if selectedTagger != nil {
-				switch res := selectedTagger.Tag(line, otherTags).(type) {
-				case multiLineSectionPart:
-					continue
-				case multiLineSectionTerminator:
-					if err := selectedTagger.set(target, res.taggedSection.Lines); err != nil {
-						return err
-					}
-					selectedTagger = nil
-					continue
-				case newTagSectionTerminator:
-					if err := selectedTagger.set(target, res.taggedSection.Lines); err != nil {
-						return err
-					}
-					selectedTagger = nil
-				}
-			}
-			if len(taggers) == 0 {
-				break
-			}
-			selectedTagger = nil
-			for i, tagger := range taggers {
-				switch res := tagger.Tag(line, nil).(type) {
-				case singleLineSection:
-					if err := tagger.set(target, res.taggedSection.Lines); err != nil {
-						return err
-					}
-					// once it has matched we don't care for probing for it again
-					taggers = append(taggers[:i], taggers[i+1:]...)
-					continue LINES
-
-				case multiLineSectionPart:
-					selectedTagger = tagger
-					otherTags = ot
-					for _, t := range tgrs {
-						if t.Name != tagger.Name {
-							otherTags = append(otherTags, t.Name)
-						}
-					}
-					// once it has matched we don't care for probing for it again
-					taggers = append(taggers[:i], taggers[i+1:]...)
-					continue LINES
-
-				case unmatchedSection:
-				}
-			}
-		}
-	}
-
-	if selectedTagger != nil {
-		if err := selectedTagger.set(target, selectedTagger.Lines); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-type docCommentParser struct {
-	taggers   []*sectionTagger
-	otherTags []string
-}
-
-func (ai *docCommentParser) Parse(gofile *ast.File, target interface{}) error {
-	return parseDocComments(gofile.Doc, target, ai.taggers, ai.otherTags)
 }
 
 type swaggerTypable interface {

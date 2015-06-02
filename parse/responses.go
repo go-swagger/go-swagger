@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"go/ast"
 	"reflect"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -12,11 +11,6 @@ import (
 
 	"github.com/casualjim/go-swagger/spec"
 )
-
-type headerSetter func(*spec.Header, []string) error
-type responseSetter func(*spec.Response, []string) error
-
-type matchingHeaderSetter func(*regexp.Regexp) headerSetter
 
 type responseTypable struct {
 	header   *spec.Header
@@ -97,123 +91,6 @@ func (sd *responseDecl) inferNames() (goName string, name string) {
 	sd.GoName = goName
 	sd.Name = name
 	return
-}
-
-func newHeaderDescription(setter headerSetter) (t *sectionTagger) {
-	t = newDescriptionTagger()
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Header), lines) }
-	return
-}
-
-func newHeaderSection(name string, multiLine bool, setter headerSetter) (t *sectionTagger) {
-	t = newSectionTagger(name, multiLine)
-	t.stripsTag = false
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Header), lines) }
-	return
-}
-
-func newHeaderFieldSection(name string, matcher *regexp.Regexp, ms matchingHeaderSetter) (t *sectionTagger) {
-	t = newSectionTagger(name, false)
-	t.stripsTag = false
-	t.matcher = matcher
-	setter := ms(matcher)
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Header), lines) }
-	return
-}
-
-func newHeaderValidatorSection(name string, matcher *regexp.Regexp, setter headerSetter) (t *sectionTagger) {
-	t = newSectionTagger(name, false)
-	t.stripsTag = false
-	t.matcher = matcher
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Header), lines) }
-	return
-}
-
-func newResponseDescription(setter responseSetter) (t *sectionTagger) {
-	t = newDescriptionTagger()
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Response), lines) }
-	return
-}
-
-func setResponseDescription(header *spec.Response, lines []string) error {
-	header.Description = joinDropLast(lines)
-	return nil
-}
-
-func setHeaderDescription(header *spec.Header, lines []string) error {
-	header.Description = joinDropLast(lines)
-	return nil
-}
-
-func setHeaderMaximum(rx *regexp.Regexp) headerSetter {
-	return func(schema *spec.Header, lines []string) error {
-		bldr := setMaximum{headerValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setHeaderMinimum(rx *regexp.Regexp) headerSetter {
-	return func(schema *spec.Header, lines []string) error {
-		bldr := setMinimum{headerValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setHeaderMultipleOf(rx *regexp.Regexp) headerSetter {
-	return func(schema *spec.Header, lines []string) error {
-		bldr := setMultipleOf{headerValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setHeaderMaxItems(rx *regexp.Regexp) headerSetter {
-	return func(schema *spec.Header, lines []string) error {
-		bldr := setMaxItems{headerValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setHeaderMinItems(rx *regexp.Regexp) headerSetter {
-	return func(schema *spec.Header, lines []string) error {
-		bldr := setMinItems{headerValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setHeaderMaxLength(rx *regexp.Regexp) headerSetter {
-	return func(schema *spec.Header, lines []string) error {
-		bldr := setMaxLength{headerValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setHeaderMinLength(rx *regexp.Regexp) headerSetter {
-	return func(schema *spec.Header, lines []string) error {
-		bldr := setMinLength{headerValidations{schema}, rx}
-		return bldr.Parse(lines)
-
-	}
-}
-
-func setHeaderPattern(rx *regexp.Regexp) headerSetter {
-	return func(schema *spec.Header, lines []string) error {
-		bldr := setPattern{headerValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setHeaderUnique(rx *regexp.Regexp) headerSetter {
-	return func(schema *spec.Header, lines []string) error {
-		bldr := setUnique{headerValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setHeaderCollectionFormat(rx *regexp.Regexp) headerSetter {
-	return func(schema *spec.Header, lines []string) error {
-		bldr := setCollectionFormat{headerValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
 }
 
 func newResponseParser(prog *loader.Program) *responseParser {
@@ -308,35 +185,47 @@ func (rp *responseParser) parseStructType(gofile *ast.File, response *spec.Respo
 					return err
 				}
 
+				sp := new(sectionedParser)
+				sp.setDescription = func(lines []string) { ps.Description = joinDropLast(lines) }
+				sp.taggers = []tagParser{
+					newSingleLineTagParser("maximum", &setMaximum{headerValidations{&ps}, rxf(rxMaximumFmt, "")}),
+					newSingleLineTagParser("minimum", &setMinimum{headerValidations{&ps}, rxf(rxMinimumFmt, "")}),
+					newSingleLineTagParser("multipleOf", &setMultipleOf{headerValidations{&ps}, rxf(rxMultipleOfFmt, "")}),
+					newSingleLineTagParser("minLength", &setMinLength{headerValidations{&ps}, rxf(rxMinLengthFmt, "")}),
+					newSingleLineTagParser("maxLength", &setMaxLength{headerValidations{&ps}, rxf(rxMaxLengthFmt, "")}),
+					newSingleLineTagParser("pattern", &setPattern{headerValidations{&ps}, rxf(rxPatternFmt, "")}),
+					newSingleLineTagParser("collectionFormat", &setCollectionFormat{headerValidations{&ps}, rxf(rxCollectionFormatFmt, "")}),
+					newSingleLineTagParser("minItems", &setMinItems{headerValidations{&ps}, rxf(rxMinItemsFmt, "")}),
+					newSingleLineTagParser("maxItems", &setMaxItems{headerValidations{&ps}, rxf(rxMaxItemsFmt, "")}),
+					newSingleLineTagParser("unique", &setUnique{headerValidations{&ps}, rxf(rxUniqueFmt, "")}),
+				}
+				itemsTaggers := func() []tagParser {
+					return []tagParser{
+						newSingleLineTagParser("itemsMaximum", &setMaximum{itemsValidations{ps.Items}, rxf(rxMaximumFmt, rxItemsPrefix)}),
+						newSingleLineTagParser("itemsMinimum", &setMinimum{itemsValidations{ps.Items}, rxf(rxMinimumFmt, rxItemsPrefix)}),
+						newSingleLineTagParser("itemsMultipleOf", &setMultipleOf{itemsValidations{ps.Items}, rxf(rxMultipleOfFmt, rxItemsPrefix)}),
+						newSingleLineTagParser("itemsMinLength", &setMinLength{itemsValidations{ps.Items}, rxf(rxMinLengthFmt, rxItemsPrefix)}),
+						newSingleLineTagParser("itemsMaxLength", &setMaxLength{itemsValidations{ps.Items}, rxf(rxMaxLengthFmt, rxItemsPrefix)}),
+						newSingleLineTagParser("itemsPattern", &setPattern{itemsValidations{ps.Items}, rxf(rxPatternFmt, rxItemsPrefix)}),
+						newSingleLineTagParser("itemsCollectionFormat", &setCollectionFormat{itemsValidations{ps.Items}, rxf(rxCollectionFormatFmt, rxItemsPrefix)}),
+						newSingleLineTagParser("itemsMinItems", &setMinItems{itemsValidations{ps.Items}, rxf(rxMinItemsFmt, rxItemsPrefix)}),
+						newSingleLineTagParser("itemsMaxItems", &setMaxItems{itemsValidations{ps.Items}, rxf(rxMaxItemsFmt, rxItemsPrefix)}),
+						newSingleLineTagParser("itemsUnique", &setUnique{itemsValidations{ps.Items}, rxf(rxUniqueFmt, rxItemsPrefix)}),
+					}
+				}
+
 				// check if this is a primitive, if so parse the validations from the
 				// doc comments of the slice declaration.
 				if ftpe, ok := fld.Type.(*ast.ArrayType); ok {
 					if iftpe, ok := ftpe.Elt.(*ast.Ident); ok && iftpe.Obj == nil {
 						if ps.Items != nil {
-							if err := rp.parseItemsDocComments(gofile, fld, ps.Items); err != nil {
-								return err
-							}
+							// items matchers should go before the default matchers so they match first
+							sp.taggers = append(itemsTaggers(), sp.taggers...)
 						}
 					}
 				}
 
-				var taggers []*sectionTagger
-				// add title and description for property
-				// add validations for property
-				taggers = []*sectionTagger{
-					newHeaderDescription(setHeaderDescription),
-					newHeaderFieldSection("maximum", rxf(rxMaximumFmt, ""), setHeaderMaximum),
-					newHeaderFieldSection("minimum", rxf(rxMinimumFmt, ""), setHeaderMinimum),
-					newHeaderFieldSection("multipleOf", rxf(rxMultipleOfFmt, ""), setHeaderMultipleOf),
-					newHeaderFieldSection("minLength", rxf(rxMinLengthFmt, ""), setHeaderMinLength),
-					newHeaderFieldSection("maxLength", rxf(rxMaxLengthFmt, ""), setHeaderMaxLength),
-					newHeaderFieldSection("pattern", rxf(rxPatternFmt, ""), setHeaderPattern),
-					newHeaderFieldSection("collectionFormat", rxf(rxCollectionFormatFmt, ""), setHeaderCollectionFormat),
-					newHeaderFieldSection("minItems", rxf(rxMinItemsFmt, ""), setHeaderMinItems),
-					newHeaderFieldSection("maxItems", rxf(rxMaxItemsFmt, ""), setHeaderMaxItems),
-					newHeaderFieldSection("unique", rxf(rxUniqueFmt, ""), setHeaderUnique),
-				}
-				if err := parseDocComments(fld.Doc, &ps, taggers, nil); err != nil {
+				if err := sp.Parse(fld.Doc); err != nil {
 					return err
 				}
 
@@ -358,24 +247,6 @@ func (rp *responseParser) parseStructType(gofile *ast.File, response *spec.Respo
 	}
 
 	return nil
-}
-
-func (rp *responseParser) parseItemsDocComments(gofile *ast.File, fld *ast.Field, prop *spec.Items) error {
-	// add title and description for property
-	// add validations for property
-	taggers := []*sectionTagger{
-		newItemsFieldSection("maximum", rxf(rxMaximumFmt, rxItemsPrefix), setItemsMaximum),
-		newItemsFieldSection("minimum", rxf(rxMinimumFmt, rxItemsPrefix), setItemsMinimum),
-		newItemsFieldSection("multipleOf", rxf(rxMultipleOfFmt, rxItemsPrefix), setItemsMultipleOf),
-		newItemsFieldSection("minLength", rxf(rxMinLengthFmt, rxItemsPrefix), setItemsMinLength),
-		newItemsFieldSection("maxLength", rxf(rxMaxLengthFmt, rxItemsPrefix), setItemsMaxLength),
-		newItemsFieldSection("pattern", rxf(rxPatternFmt, rxItemsPrefix), setItemsPattern),
-		newItemsFieldSection("minItems", rxf(rxMinItemsFmt, rxItemsPrefix), setItemsMinItems),
-		newItemsFieldSection("maxItems", rxf(rxMaxItemsFmt, rxItemsPrefix), setItemsMaxItems),
-		newItemsFieldSection("unique", rxf(rxUniqueFmt, rxItemsPrefix), setItemsUnique),
-		newItemsFieldSection("collectionFormat", rxf(rxCollectionFormatFmt, rxItemsPrefix), setItemsCollectionFormat),
-	}
-	return parseDocComments(fld.Doc, prop, taggers, nil)
 }
 
 func (rp *responseParser) parseProperty(gofile *ast.File, fld ast.Expr, prop operationTypable, in string) error {

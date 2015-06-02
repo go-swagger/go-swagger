@@ -152,236 +152,13 @@ func (sd paramDecl) inferOperationIDs() (opids []string) {
 	return
 }
 
-func newParamDescription(setter paramSetter) (t *sectionTagger) {
-	t = newDescriptionTagger()
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Parameter), lines) }
-	return
-}
-
-func newParamSection(name string, multiLine bool, setter paramSetter) (t *sectionTagger) {
-	t = newSectionTagger(name, multiLine)
-	t.stripsTag = false
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Parameter), lines) }
-	return
-}
-
-func newParameterFieldSection(name string, matcher *regexp.Regexp, ms matchingParamSetter) (t *sectionTagger) {
-	t = newSectionTagger(name, false)
-	t.stripsTag = false
-	t.matcher = matcher
-	setter := ms(matcher)
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Parameter), lines) }
-	return
-}
-
-func newParamValidatorSection(name string, matcher *regexp.Regexp, setter paramSetter) (t *sectionTagger) {
-	t = newSectionTagger(name, false)
-	t.stripsTag = false
-	t.matcher = matcher
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Parameter), lines) }
-	return
-}
-
-func newItemsFieldSection(name string, matcher *regexp.Regexp, ms matchingItemsSetter) (t *sectionTagger) {
-	t = newSectionTagger(name, false)
-	t.stripsTag = false
-	t.matcher = matcher
-	setter := ms(matcher)
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Items), lines) }
-	return
-}
-
-func setParamDescription(param *spec.Parameter, lines []string) error {
-	param.Description = joinDropLast(lines)
-	return nil
-}
-
-func setParamMaximum(rx *regexp.Regexp) paramSetter {
-	return func(schema *spec.Parameter, lines []string) error {
-		bldr := setMaximum{paramValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setParamMinimum(rx *regexp.Regexp) paramSetter {
-	return func(schema *spec.Parameter, lines []string) error {
-		bldr := setMinimum{paramValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setParamMultipleOf(rx *regexp.Regexp) paramSetter {
-	return func(schema *spec.Parameter, lines []string) error {
-		bldr := setMultipleOf{paramValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setParamMaxItems(rx *regexp.Regexp) paramSetter {
-	return func(schema *spec.Parameter, lines []string) error {
-		bldr := setMaxItems{paramValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setParamMinItems(rx *regexp.Regexp) paramSetter {
-	return func(schema *spec.Parameter, lines []string) error {
-		bldr := setMinItems{paramValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setParamMaxLength(rx *regexp.Regexp) paramSetter {
-	return func(schema *spec.Parameter, lines []string) error {
-		bldr := setMaxLength{paramValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setParamMinLength(rx *regexp.Regexp) paramSetter {
-	return func(schema *spec.Parameter, lines []string) error {
-		bldr := setMinLength{paramValidations{schema}, rx}
-		return bldr.Parse(lines)
-
-	}
-}
-
-func setParamPattern(rx *regexp.Regexp) paramSetter {
-	return func(schema *spec.Parameter, lines []string) error {
-		bldr := setPattern{paramValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setParamUnique(rx *regexp.Regexp) paramSetter {
-	return func(schema *spec.Parameter, lines []string) error {
-		bldr := setUnique{paramValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setParamRequired(rx *regexp.Regexp) paramSetter {
-	return func(param *spec.Parameter, lines []string) error {
-		if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
-			return nil
-		}
-		matches := rx.FindStringSubmatch(lines[0])
-		if len(matches) > 1 && len(matches[1]) > 0 {
-			req, err := strconv.ParseBool(matches[1])
-			if err != nil {
-				return err
-			}
-			param.Required = req
-		}
-		return nil
-	}
-}
-
-func setParamIn(rx *regexp.Regexp) paramSetter {
-	return func(param *spec.Parameter, lines []string) error {
-		if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
-			return nil
-		}
-		matches := rx.FindStringSubmatch(lines[0])
-		if len(matches) > 1 && len(matches[1]) > 0 {
-			param.In = strings.TrimSpace(matches[1])
-		}
-		return nil
-	}
-}
-
-func setParamCollectionFormat(rx *regexp.Regexp) paramSetter {
-	return func(schema *spec.Parameter, lines []string) error {
-		bldr := setCollectionFormat{paramValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setItemsMaximum(rx *regexp.Regexp) itemsSetter {
-	return func(schema *spec.Items, lines []string) error {
-		bldr := setMaximum{itemsValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setItemsMinimum(rx *regexp.Regexp) itemsSetter {
-	return func(schema *spec.Items, lines []string) error {
-		bldr := setMinimum{itemsValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setItemsMultipleOf(rx *regexp.Regexp) itemsSetter {
-	return func(schema *spec.Items, lines []string) error {
-		bldr := setMultipleOf{itemsValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setItemsMaxItems(rx *regexp.Regexp) itemsSetter {
-	return func(schema *spec.Items, lines []string) error {
-		bldr := setMaxItems{itemsValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setItemsMinItems(rx *regexp.Regexp) itemsSetter {
-	return func(schema *spec.Items, lines []string) error {
-		bldr := setMinItems{itemsValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setItemsMaxLength(rx *regexp.Regexp) itemsSetter {
-	return func(schema *spec.Items, lines []string) error {
-		bldr := setMaxLength{itemsValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setItemsMinLength(rx *regexp.Regexp) itemsSetter {
-	return func(schema *spec.Items, lines []string) error {
-		bldr := setMinLength{itemsValidations{schema}, rx}
-		return bldr.Parse(lines)
-
-	}
-}
-
-func setItemsPattern(rx *regexp.Regexp) itemsSetter {
-	return func(schema *spec.Items, lines []string) error {
-		bldr := setPattern{itemsValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setItemsUnique(rx *regexp.Regexp) itemsSetter {
-	return func(schema *spec.Items, lines []string) error {
-		bldr := setUnique{itemsValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setItemsCollectionFormat(rx *regexp.Regexp) itemsSetter {
-	return func(schema *spec.Items, lines []string) error {
-		bldr := setCollectionFormat{itemsValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
 func newParameterParser(prog *loader.Program) *paramStructParser {
 	scp := new(paramStructParser)
 	scp.program = prog
-	scp.header.taggers = []*sectionTagger{newParamDescription(setParamDescription)}
-	scp.header.otherTags = []string{"+swagger"}
 	return scp
 }
 
 type paramStructParser struct {
-	taggers []*sectionTagger
-	header  struct {
-		taggers   []*sectionTagger
-		otherTags []string
-	}
 	program   *loader.Program
 	postDecls []schemaDecl
 }
@@ -477,42 +254,50 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 				}
 				ps.In = in
 
-				// check if this is a primitive, if so parse the validations from the
-				// doc comments of the slice declaration.
-				if ftpe, ok := fld.Type.(*ast.ArrayType); ok {
-					if iftpe, ok := ftpe.Elt.(*ast.Ident); ok && iftpe.Obj == nil {
-						if ps.Items != nil {
-							if err := pp.parseItemsDocComments(gofile, fld, ps.Items); err != nil {
-								return err
+				sp := new(sectionedParser)
+				sp.setDescription = func(lines []string) { ps.Description = joinDropLast(lines) }
+				if ps.Ref.GetURL() == nil {
+					sp.taggers = []tagParser{
+						newSingleLineTagParser("maximum", &setMaximum{paramValidations{&ps}, rxf(rxMaximumFmt, "")}),
+						newSingleLineTagParser("minimum", &setMinimum{paramValidations{&ps}, rxf(rxMinimumFmt, "")}),
+						newSingleLineTagParser("multipleOf", &setMultipleOf{paramValidations{&ps}, rxf(rxMultipleOfFmt, "")}),
+						newSingleLineTagParser("minLength", &setMinLength{paramValidations{&ps}, rxf(rxMinLengthFmt, "")}),
+						newSingleLineTagParser("maxLength", &setMaxLength{paramValidations{&ps}, rxf(rxMaxLengthFmt, "")}),
+						newSingleLineTagParser("pattern", &setPattern{paramValidations{&ps}, rxf(rxPatternFmt, "")}),
+						newSingleLineTagParser("collectionFormat", &setCollectionFormat{paramValidations{&ps}, rxf(rxCollectionFormatFmt, "")}),
+						newSingleLineTagParser("minItems", &setMinItems{paramValidations{&ps}, rxf(rxMinItemsFmt, "")}),
+						newSingleLineTagParser("maxItems", &setMaxItems{paramValidations{&ps}, rxf(rxMaxItemsFmt, "")}),
+						newSingleLineTagParser("unique", &setUnique{paramValidations{&ps}, rxf(rxUniqueFmt, "")}),
+						newSingleLineTagParser("required", &setRequiredParam{&ps}),
+					}
+					itemsTaggers := func() []tagParser {
+						return []tagParser{
+							newSingleLineTagParser("itemsMaximum", &setMaximum{itemsValidations{ps.Items}, rxf(rxMaximumFmt, rxItemsPrefix)}),
+							newSingleLineTagParser("itemsMinimum", &setMinimum{itemsValidations{ps.Items}, rxf(rxMinimumFmt, rxItemsPrefix)}),
+							newSingleLineTagParser("itemsMultipleOf", &setMultipleOf{itemsValidations{ps.Items}, rxf(rxMultipleOfFmt, rxItemsPrefix)}),
+							newSingleLineTagParser("itemsMinLength", &setMinLength{itemsValidations{ps.Items}, rxf(rxMinLengthFmt, rxItemsPrefix)}),
+							newSingleLineTagParser("itemsMaxLength", &setMaxLength{itemsValidations{ps.Items}, rxf(rxMaxLengthFmt, rxItemsPrefix)}),
+							newSingleLineTagParser("itemsPattern", &setPattern{itemsValidations{ps.Items}, rxf(rxPatternFmt, rxItemsPrefix)}),
+							newSingleLineTagParser("itemsCollectionFormat", &setCollectionFormat{itemsValidations{ps.Items}, rxf(rxCollectionFormatFmt, rxItemsPrefix)}),
+							newSingleLineTagParser("itemsMinItems", &setMinItems{itemsValidations{ps.Items}, rxf(rxMinItemsFmt, rxItemsPrefix)}),
+							newSingleLineTagParser("itemsMaxItems", &setMaxItems{itemsValidations{ps.Items}, rxf(rxMaxItemsFmt, rxItemsPrefix)}),
+							newSingleLineTagParser("itemsUnique", &setUnique{itemsValidations{ps.Items}, rxf(rxUniqueFmt, rxItemsPrefix)}),
+						}
+					}
+
+					// check if this is a primitive, if so parse the validations from the
+					// doc comments of the slice declaration.
+					if ftpe, ok := fld.Type.(*ast.ArrayType); ok {
+						if iftpe, ok := ftpe.Elt.(*ast.Ident); ok && iftpe.Obj == nil {
+							if ps.Items != nil {
+								// items matchers should go before the default matchers so they match first
+								sp.taggers = append(itemsTaggers(), sp.taggers...)
 							}
 						}
 					}
-				}
 
-				var taggers []*sectionTagger
-				if ps.Ref.GetURL() == nil {
-					// add title and description for property
-					// add validations for property
-					taggers = []*sectionTagger{
-						newParamDescription(setParamDescription),
-						newParameterFieldSection("maximum", rxf(rxMaximumFmt, ""), setParamMaximum),
-						newParameterFieldSection("minimum", rxf(rxMinimumFmt, ""), setParamMinimum),
-						newParameterFieldSection("multipleOf", rxf(rxMultipleOfFmt, ""), setParamMultipleOf),
-						newParameterFieldSection("minLength", rxf(rxMinLengthFmt, ""), setParamMinLength),
-						newParameterFieldSection("maxLength", rxf(rxMaxLengthFmt, ""), setParamMaxLength),
-						newParameterFieldSection("pattern", rxf(rxPatternFmt, ""), setParamPattern),
-						newParameterFieldSection("collectionFormat", rxf(rxCollectionFormatFmt, ""), setParamCollectionFormat),
-						newParameterFieldSection("minItems", rxf(rxMinItemsFmt, ""), setParamMinItems),
-						newParameterFieldSection("maxItems", rxf(rxMaxItemsFmt, ""), setParamMaxItems),
-						newParameterFieldSection("unique", rxf(rxUniqueFmt, ""), setParamUnique),
-						newParameterFieldSection("required", rxRequired, setParamRequired),
-					}
-				} else {
-					taggers = []*sectionTagger{
-						newParamDescription(setParamDescription),
-					}
 				}
-				if err := parseDocComments(fld.Doc, &ps, taggers, nil); err != nil {
+				if err := sp.Parse(fld.Doc); err != nil {
 					return err
 				}
 
@@ -542,24 +327,6 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 	}
 
 	return nil
-}
-
-func (pp *paramStructParser) parseItemsDocComments(gofile *ast.File, fld *ast.Field, prop *spec.Items) error {
-	// add title and description for property
-	// add validations for property
-	taggers := []*sectionTagger{
-		newItemsFieldSection("maximum", rxf(rxMaximumFmt, rxItemsPrefix), setItemsMaximum),
-		newItemsFieldSection("minimum", rxf(rxMinimumFmt, rxItemsPrefix), setItemsMinimum),
-		newItemsFieldSection("multipleOf", rxf(rxMultipleOfFmt, rxItemsPrefix), setItemsMultipleOf),
-		newItemsFieldSection("minLength", rxf(rxMinLengthFmt, rxItemsPrefix), setItemsMinLength),
-		newItemsFieldSection("maxLength", rxf(rxMaxLengthFmt, rxItemsPrefix), setItemsMaxLength),
-		newItemsFieldSection("pattern", rxf(rxPatternFmt, rxItemsPrefix), setItemsPattern),
-		newItemsFieldSection("minItems", rxf(rxMinItemsFmt, rxItemsPrefix), setItemsMinItems),
-		newItemsFieldSection("maxItems", rxf(rxMaxItemsFmt, rxItemsPrefix), setItemsMaxItems),
-		newItemsFieldSection("unique", rxf(rxUniqueFmt, rxItemsPrefix), setItemsUnique),
-		newItemsFieldSection("collectionFormat", rxf(rxCollectionFormatFmt, rxItemsPrefix), setItemsCollectionFormat),
-	}
-	return parseDocComments(fld.Doc, prop, taggers, nil)
 }
 
 func (pp *paramStructParser) parseProperty(gofile *ast.File, fld ast.Expr, prop operationTypable, in string) error {

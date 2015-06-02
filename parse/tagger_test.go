@@ -1,141 +1,162 @@
 package parse
 
 import (
+	"fmt"
+	"go/ast"
+	"regexp"
+	"strings"
 	"testing"
 
+	"github.com/casualjim/go-swagger/spec"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSingleLineTag(t *testing.T) {
+func TestSectionedParser_TitleDescription(t *testing.T) {
+	text := `This has a title, separated by a whitespace line
 
-	lines := []string{
-		"// Version: 0.0.1",
-		"//Version: 0.0.1",
-		"Version: 0.0.1",
-		"  Version: 0.0.1",
-		"// Version : 0.0.1",
-		"//Version : 0.0.1",
-		"Version : 0.0.1",
-		"  Version : 0.0.1",
-	}
+In this example the punctuation for the title should not matter for swagger.
+For go it will still make a difference though.
+`
+	text2 := `This has a title without whitespace.
+The punctuation here does indeed matter. But it won't for go.
+`
 
-	for _, line := range lines {
-		tagger := newSectionTagger("Version", false)
-		ts := tagger.Tag(line, nil)
-		assert.IsType(t, singleLineSection{}, ts)
-		tss := ts.(singleLineSection)
-		assert.Equal(t, "Version", tss.Name)
-		assert.Equal(t, "0.0.1", tss.Line())
-	}
+	st := &sectionedParser{}
+	st.setTitle = func(lines []string) {}
+	st.Parse(ascg(text))
 
-	invalid := []string{
-		"Version",
-		"Versoin: 0.0.1",
-	}
-	for _, line := range invalid {
-		tagger := newSectionTagger("Version", false)
-		ts := tagger.Tag(line, nil)
-		assert.IsType(t, unmatchedSection{}, ts)
-	}
+	assert.EqualValues(t, []string{"This has a title, separated by a whitespace line"}, st.Title())
+	assert.EqualValues(t, []string{"In this example the punctuation for the title should not matter for swagger.", "For go it will still make a difference though."}, st.Description())
+
+	st = &sectionedParser{}
+	st.setTitle = func(lines []string) {}
+	st.Parse(ascg(text2))
+
+	assert.EqualValues(t, []string{"This has a title without whitespace."}, st.Title())
+	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
 }
 
-func TestMultilineTag_DoubleSpaceTerminator(t *testing.T) {
-	lines := []string{
-		"// Description: some content here",
-		"// and also on another line",
-		"// ",
-		"// there is a linebreak in this one",
-		"// ",
-		"// ",
-		"// this line should not be included",
-	}
-	parsed := []string{
-		"some content here",
-		"and also on another line",
-		"",
-		"there is a linebreak in this one",
-		"",
-		"Version: 0.0.1",
-	}
-
-	var collected multiLineSectionPart
-	var res interface{}
-	tagger := newSectionTagger("Description", true)
-	res = tagger.Tag(lines[0], nil)
-	assert.IsType(t, multiLineSectionPart{}, res)
-	collected = res.(multiLineSectionPart)
-	assert.EqualValues(t, parsed[:1], collected.Lines)
-
-	res = tagger.Tag(lines[1], nil)
-	assert.IsType(t, multiLineSectionPart{}, res)
-	collected = res.(multiLineSectionPart)
-	assert.EqualValues(t, parsed[:2], collected.Lines)
-
-	res = tagger.Tag(lines[2], nil)
-	assert.IsType(t, multiLineSectionPart{}, res)
-	collected = res.(multiLineSectionPart)
-	assert.EqualValues(t, parsed[:3], collected.Lines)
-
-	res = tagger.Tag(lines[3], nil)
-	assert.IsType(t, multiLineSectionPart{}, res)
-	collected = res.(multiLineSectionPart)
-	assert.EqualValues(t, parsed[:4], collected.Lines)
-
-	res = tagger.Tag(lines[4], nil)
-	assert.IsType(t, multiLineSectionPart{}, res)
-	collected = res.(multiLineSectionPart)
-	assert.EqualValues(t, parsed[:5], collected.Lines)
-
-	res = tagger.Tag(lines[5], nil)
-	assert.IsType(t, multiLineSectionTerminator{}, res)
+func dummyBuilder() schemaValidations {
+	return schemaValidations{new(spec.Schema)}
 }
 
-func TestMultilineTag_NextTagTerminator(t *testing.T) {
-	lines := []string{
-		"// Description: some content here",
-		"// and also on another line",
-		"// ",
-		"// there is a linebreak in this one",
-		"// ",
-		"// Version: 0.0.1",
+func TestSectionedParser_TagsDescription(t *testing.T) {
+	block := `This has a title without whitespace.
+The punctuation here does indeed matter. But it won't for go.
+minimum: 10
+maximum: 20
+`
+	block2 := `This has a title without whitespace.
+The punctuation here does indeed matter. But it won't for go.
+
+minimum: 10
+maximum: 20
+`
+
+	st := &sectionedParser{}
+	st.setTitle = func(lines []string) {}
+	st.taggers = []tagParser{
+		{"Maximum", false, nil, &setMaximum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMaximumFmt, ""))}},
+		{"Minimum", false, nil, &setMinimum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMinimumFmt, ""))}},
+		{"MultipleOf", false, nil, &setMultipleOf{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMultipleOfFmt, ""))}},
 	}
-	parsed := []string{
-		"some content here",
-		"and also on another line",
-		"",
-		"there is a linebreak in this one",
-		"",
-		"Version: 0.0.1",
+
+	st.Parse(ascg(block))
+	assert.EqualValues(t, []string{"This has a title without whitespace."}, st.Title())
+	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
+	assert.Len(t, st.matched, 2)
+	_, ok := st.matched["Maximum"]
+	assert.True(t, ok)
+	_, ok = st.matched["Minimum"]
+	assert.True(t, ok)
+
+	st = &sectionedParser{}
+	st.setTitle = func(lines []string) {}
+	st.taggers = []tagParser{
+		{"Maximum", false, nil, &setMaximum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMaximumFmt, ""))}},
+		{"Minimum", false, nil, &setMinimum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMinimumFmt, ""))}},
+		{"MultipleOf", false, nil, &setMultipleOf{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMultipleOfFmt, ""))}},
 	}
 
-	var collected multiLineSectionPart
-	var res interface{}
-	tagger := newSectionTagger("Description", true)
-	res = tagger.Tag(lines[0], []string{"Version"})
-	assert.IsType(t, multiLineSectionPart{}, res)
-	collected = res.(multiLineSectionPart)
-	assert.EqualValues(t, parsed[:1], collected.Lines)
+	st.Parse(ascg(block2))
+	assert.EqualValues(t, []string{"This has a title without whitespace."}, st.Title())
+	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
+	assert.Len(t, st.matched, 2)
+	_, ok = st.matched["Maximum"]
+	assert.True(t, ok)
+	_, ok = st.matched["Minimum"]
+	assert.True(t, ok)
+}
 
-	res = tagger.Tag(lines[1], []string{"Version"})
-	assert.IsType(t, multiLineSectionPart{}, res)
-	collected = res.(multiLineSectionPart)
-	assert.EqualValues(t, parsed[:2], collected.Lines)
+func TestSectionedParser_SkipSectionAnnotation(t *testing.T) {
+	block := `+swagger:model someModel
 
-	res = tagger.Tag(lines[2], []string{"Version"})
-	assert.IsType(t, multiLineSectionPart{}, res)
-	collected = res.(multiLineSectionPart)
-	assert.EqualValues(t, parsed[:3], collected.Lines)
+This has a title without whitespace.
+The punctuation here does indeed matter. But it won't for go.
 
-	res = tagger.Tag(lines[3], []string{"Version"})
-	assert.IsType(t, multiLineSectionPart{}, res)
-	collected = res.(multiLineSectionPart)
-	assert.EqualValues(t, parsed[:4], collected.Lines)
+minimum: 10
+maximum: 20
+`
+	st := &sectionedParser{}
+	st.setTitle = func(lines []string) {}
+	ap := newSchemaAnnotationParser("SomeModel")
+	st.annotation = ap
+	st.taggers = []tagParser{
+		{"Maximum", false, nil, &setMaximum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMaximumFmt, ""))}},
+		{"Minimum", false, nil, &setMinimum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMinimumFmt, ""))}},
+		{"MultipleOf", false, nil, &setMultipleOf{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMultipleOfFmt, ""))}},
+	}
 
-	res = tagger.Tag(lines[4], []string{"Version"})
-	assert.IsType(t, multiLineSectionPart{}, res)
-	collected = res.(multiLineSectionPart)
-	assert.EqualValues(t, parsed[:5], collected.Lines)
+	st.Parse(ascg(block))
+	assert.EqualValues(t, []string{"This has a title without whitespace."}, st.Title())
+	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
+	assert.Len(t, st.matched, 2)
+	_, ok := st.matched["Maximum"]
+	assert.True(t, ok)
+	_, ok = st.matched["Minimum"]
+	assert.True(t, ok)
+	assert.Equal(t, "SomeModel", ap.GoName)
+	assert.Equal(t, "someModel", ap.Name)
+}
 
-	res = tagger.Tag(lines[5], []string{"Version"})
-	assert.IsType(t, newTagSectionTerminator{}, res)
+func TestSectionedParser_TerminateOnNewAnnotation(t *testing.T) {
+	block := `+swagger:model someModel
+
+This has a title without whitespace.
+The punctuation here does indeed matter. But it won't for go.
+
+minimum: 10
++swagger:meta
+maximum: 20
+`
+	st := &sectionedParser{}
+	st.setTitle = func(lines []string) {}
+	ap := newSchemaAnnotationParser("SomeModel")
+	st.annotation = ap
+	st.taggers = []tagParser{
+		{"Maximum", false, nil, &setMaximum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMaximumFmt, ""))}},
+		{"Minimum", false, nil, &setMinimum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMinimumFmt, ""))}},
+		{"MultipleOf", false, nil, &setMultipleOf{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMultipleOfFmt, ""))}},
+	}
+
+	st.Parse(ascg(block))
+	assert.EqualValues(t, []string{"This has a title without whitespace."}, st.Title())
+	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
+	assert.Len(t, st.matched, 1)
+	_, ok := st.matched["Maximum"]
+	assert.False(t, ok)
+	_, ok = st.matched["Minimum"]
+	assert.True(t, ok)
+	assert.Equal(t, "SomeModel", ap.GoName)
+	assert.Equal(t, "someModel", ap.Name)
+}
+
+func ascg(txt string) *ast.CommentGroup {
+	var cg ast.CommentGroup
+	for _, line := range strings.Split(txt, "\n") {
+		var cmt ast.Comment
+		cmt.Text = "// " + line
+		cg.List = append(cg.List, &cmt)
+	}
+	return &cg
 }

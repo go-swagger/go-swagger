@@ -7,14 +7,14 @@ import (
 	"github.com/casualjim/go-swagger/strfmt"
 )
 
-// NoModel is a struct that exists in a package
+// NoModel is a struct without an annotation.
+// NoModel exists in a package
 // but is not annotated with the swagger model annotations
-// so it should now show up in a test
+// so it should now show up in a test.
 //
 type NoModel struct {
 	// ID of this no model instance.
 	// ids in this application start at 11 and are smaller than 1000
-	//
 	//
 	// required: true
 	// minimum: > 10
@@ -22,7 +22,6 @@ type NoModel struct {
 	ID int64 `json:"id"`
 
 	// The Score of this model
-	//
 	//
 	// required: true
 	// minimum: 3
@@ -32,7 +31,6 @@ type NoModel struct {
 
 	// Name of this no model instance
 	//
-	//
 	// min length: 4
 	// max length: 50
 	// pattern: [A-Za-z0-9-.]*
@@ -41,13 +39,11 @@ type NoModel struct {
 
 	// Created holds the time when this entry was created
 	//
-	//
 	// required: false
 	// read only: true
 	Created strfmt.DateTime `json:"created"`
 
 	// a FooSlice has foos which are strings
-	//
 	//
 	// min items: 3
 	// max items: 10
@@ -62,7 +58,6 @@ type NoModel struct {
 		// ID of this no model instance.
 		// ids in this application start at 11 and are smaller than 1000
 		//
-		//
 		// required: true
 		// minimum: > 10
 		// maximum: < 1000
@@ -70,7 +65,6 @@ type NoModel struct {
 
 		// The Pet to add to this NoModel items bucket.
 		// Pets can appear more than once in the bucket
-		//
 		//
 		// required: true
 		Pet *mods.Pet `json:"pet"`
@@ -84,7 +78,6 @@ type NoModel struct {
 
 		// Notes to add to this item.
 		// This can be used to add special instructions.
-		//
 		//
 		// required: false
 		Notes string `json:"notes"`

@@ -36,7 +36,7 @@ func TestRoutesParser(t *testing.T) {
 	assertOperation(t,
 		po.Post,
 		"createPet",
-		"Create a pet based on the parameters",
+		"Create a pet based on the parameters.",
 		"",
 		[]string{"pets", "users"},
 	)
@@ -47,14 +47,14 @@ func TestRoutesParser(t *testing.T) {
 	assertOperation(t,
 		po.Get,
 		"listOrders",
-		"lists orders filtered by some parameters",
+		"lists orders filtered by some parameters.",
 		"",
 		[]string{"orders"},
 	)
 	assertOperation(t,
 		po.Post,
 		"createOrder",
-		"create an order based on the parameters",
+		"create an order based on the parameters.",
 		"",
 		[]string{"orders"},
 	)
@@ -65,7 +65,7 @@ func TestRoutesParser(t *testing.T) {
 	assertOperation(t,
 		po.Get,
 		"orderDetails",
-		"gets the details for an order",
+		"gets the details for an order.",
 		"",
 		[]string{"orders"},
 	)
@@ -79,7 +79,7 @@ func TestRoutesParser(t *testing.T) {
 	assertOperation(t,
 		po.Delete,
 		"deleteOrder",
-		"delete a particular order",
+		"delete a particular order.",
 		"",
 		[]string{"orders"},
 	)

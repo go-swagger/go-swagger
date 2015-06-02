@@ -38,16 +38,15 @@ func ServeAPI(host, basePath string, schemes []string) error {
 
 	/* +swagger:route POST /pets pets users createPet
 
-	Create a pet based on the parameters
-
+	Create a pet based on the parameters.
 
 	Consumes:
-	application/json
-	application/x-protobuf
+	- application/json
+	- application/x-protobuf
 
 	Produces:
-	application/json
-	application/x-protobuf
+	- application/json
+	- application/x-protobuf
 
 	Schemes: http, https, ws, wss
 
@@ -63,8 +62,7 @@ func ServeAPI(host, basePath string, schemes []string) error {
 
 	// +swagger:route GET /orders orders listOrders
 	//
-	// lists orders filtered by some parameters
-	//
+	// lists orders filtered by some parameters.
 	//
 	// Consumes:
 	// application/json
@@ -88,8 +86,7 @@ func ServeAPI(host, basePath string, schemes []string) error {
 
 	// +swagger:route POST /orders orders createOrder
 	//
-	// create an order based on the parameters
-	//
+	// create an order based on the parameters.
 	//
 	// Consumes:
 	// application/json
@@ -113,8 +110,7 @@ func ServeAPI(host, basePath string, schemes []string) error {
 
 	// +swagger:route GET /orders/{id} orders orderDetails
 	//
-	// gets the details for an order
-	//
+	// gets the details for an order.
 	//
 	// Consumes:
 	// application/json
@@ -164,8 +160,7 @@ func ServeAPI(host, basePath string, schemes []string) error {
 
 	// +swagger:route DELETE /orders/{id} orders deleteOrder
 	//
-	// delete a particular order
-	//
+	// delete a particular order.
 	//
 	// Consumes:
 	// application/json

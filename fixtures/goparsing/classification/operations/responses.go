@@ -14,13 +14,11 @@ type SomeResponse struct {
 	// ID of this some response instance.
 	// ids in this application start at 11 and are smaller than 1000
 	//
-	//
 	// minimum: > 10
 	// maximum: < 1000
 	ID int64 `json:"id"`
 
 	// The Score of this model
-	//
 	//
 	// minimum: 3
 	// maximum: 45
@@ -28,7 +26,6 @@ type SomeResponse struct {
 	Score int32 `json:"score"`
 
 	// Name of this some response instance
-	//
 	//
 	// min length: 4
 	// max length: 50
@@ -39,7 +36,6 @@ type SomeResponse struct {
 	Created strfmt.DateTime `json:"created"`
 
 	// a FooSlice has foos which are strings
-	//
 	//
 	// min items: 3
 	// max items: 10
@@ -52,12 +48,10 @@ type SomeResponse struct {
 
 	// the items for this order
 	//
-	//
 	// in: body
 	Items []struct {
 		// ID of this some response instance.
 		// ids in this application start at 11 and are smaller than 1000
-		//
 		//
 		// required: true
 		// minimum: > 10
@@ -66,7 +60,6 @@ type SomeResponse struct {
 
 		// The Pet to add to this NoModel items bucket.
 		// Pets can appear more than once in the bucket
-		//
 		//
 		// required: true
 		Pet *mods.Pet `json:"pet"`
@@ -80,7 +73,6 @@ type SomeResponse struct {
 
 		// Notes to add to this item.
 		// This can be used to add special instructions.
-		//
 		//
 		// required: false
 		Notes string `json:"notes"`

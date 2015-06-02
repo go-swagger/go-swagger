@@ -21,78 +21,76 @@ var allSwaggerTags = []string{
 	"Contact",
 }
 
-type metaSetter func(*spec.Swagger, []string) error
-
-func newMetaTitle(setter metaSetter) (t *sectionTagger) {
-	t = newTitleTagger()
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Swagger), lines) }
-	return
-}
-func newMetaDescription(setter metaSetter) (t *sectionTagger) {
-	t = newDescriptionTagger()
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Swagger), lines) }
-	return
-}
-func newMetaSection(name string, multiLine bool, setter metaSetter) (t *sectionTagger) {
-	t = newSectionTagger(name, multiLine)
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Swagger), lines) }
-	return
+func metaTOSSetter(meta *spec.Info) func([]string) {
+	return func(lines []string) {
+		meta.TermsOfService = joinDropLast(lines)
+	}
 }
 
-func newMetaParser() *docCommentParser {
-	return newDocCommentParser(
-		nil,
-		newMetaTitle(setInfoTitle),
-		newMetaDescription(setInfoDescription),
-		newMetaSection("Version", false, setInfoVersion),
-		newMetaSection("TOS", true, setInfoTOS),
-		newMetaSection("License", false, setInfoLicense),
-		newMetaSection("Contact", false, setInfoContact),
-		newMetaSection("Consumes", true, setSwaggerConsumes),
-		newMetaSection("Produces", true, setSwaggerProduces),
-		newMetaSection("Schemes", false, setSwaggerSchemes),
-		newMetaSection("Host", false, setSwaggerHost),
-		newMetaSection("BasePath", false, setSwaggerBasePath),
-		//newMetaSection("Tags", false, setSwaggerBasePath),
-	)
+func metaConsumesSetter(meta *spec.Swagger) func([]string) {
+	return func(consumes []string) { meta.Consumes = consumes }
 }
 
-func setSwaggerConsumes(swspec *spec.Swagger, lines []string) error {
-	swspec.Consumes = removeEmptyLines(lines)
-	return nil
+func metaProducesSetter(meta *spec.Swagger) func([]string) {
+	return func(produces []string) { meta.Produces = produces }
 }
 
-func removeEmptyLines(lines []string) (notEmpty []string) {
-	for _, l := range lines {
-		if len(strings.TrimSpace(l)) > 0 {
-			notEmpty = append(notEmpty, l)
+func metaSchemeSetter(meta *spec.Swagger) func([]string) {
+	return func(schemes []string) { meta.Schemes = schemes }
+}
+
+func newMetaParser(swspec *spec.Swagger) *sectionedParser {
+	sp := new(sectionedParser)
+	if swspec.Info == nil {
+		swspec.Info = new(spec.Info)
+	}
+	info := swspec.Info
+	sp.setTitle = func(lines []string) {
+		tosave := joinDropLast(lines)
+		if len(tosave) > 0 {
+			tosave = rxStripTitleComments.ReplaceAllString(tosave, "")
 		}
+		info.Title = tosave
 	}
-	return
+	sp.setDescription = func(lines []string) { info.Description = joinDropLast(lines) }
+	sp.taggers = []tagParser{
+		newMultiLineTagParser("TOS", newMultilineDropEmptyParser(rxTOS, metaTOSSetter(info))),
+		newMultiLineTagParser("Consumes", newMultilineDropEmptyParser(rxConsumes, metaConsumesSetter(swspec))),
+		newMultiLineTagParser("Produces", newMultilineDropEmptyParser(rxProduces, metaProducesSetter(swspec))),
+		newSingleLineTagParser("Schemes", newSetSchemes(metaSchemeSetter(swspec))),
+		newSingleLineTagParser("Version", &setMetaSingle{swspec, rxVersion, setInfoVersion}),
+		newSingleLineTagParser("Host", &setMetaSingle{swspec, rxHost, setSwaggerHost}),
+		newSingleLineTagParser("BasePath", &setMetaSingle{swspec, rxBasePath, setSwaggerBasePath}),
+		newSingleLineTagParser("Contact", &setMetaSingle{swspec, rxContact, setInfoContact}),
+		newSingleLineTagParser("License", &setMetaSingle{swspec, rxLicense, setInfoLicense}),
+	}
+	return sp
 }
 
-func setSwaggerProduces(swspec *spec.Swagger, lines []string) error {
-	swspec.Produces = removeEmptyLines(lines)
-	return nil
+type setMetaSingle struct {
+	spec *spec.Swagger
+	rx   *regexp.Regexp
+	set  func(spec *spec.Swagger, lines []string) error
 }
 
-func setSwaggerSchemes(swspec *spec.Swagger, lines []string) error {
-	lns := lines
-	if len(lns) == 0 || lns[0] == "" {
-		lns = []string{"http"}
+func (s *setMetaSingle) Matches(line string) bool {
+	return s.rx.MatchString(line)
+}
+
+func (s *setMetaSingle) Parse(lines []string) error {
+	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+		return nil
 	}
-	sch := strings.Split(lns[0], ", ")
-	var schemes []string
-	for _, s := range sch {
-		schemes = append(schemes, s)
+	matches := s.rx.FindStringSubmatch(lines[0])
+	if len(matches) > 1 && len(matches[1]) > 0 {
+		return s.set(s.spec, []string{matches[1]})
 	}
-	swspec.Schemes = schemes
 	return nil
 }
 
 func setSwaggerHost(swspec *spec.Swagger, lines []string) error {
 	lns := lines
-	if len(lns) == 0 {
+	if len(lns) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
 		lns = []string{"localhost"}
 	}
 	swspec.Host = lns[0]
@@ -104,8 +102,7 @@ func setSwaggerBasePath(swspec *spec.Swagger, lines []string) error {
 	if len(lines) > 0 {
 		ln = lines[0]
 	}
-	// the tagger strips of the / because it is a comment sign
-	swspec.BasePath = "/" + ln
+	swspec.BasePath = ln
 	return nil
 }
 
@@ -119,7 +116,7 @@ func setInfoVersion(swspec *spec.Swagger, lines []string) error {
 }
 
 func setInfoContact(swspec *spec.Swagger, lines []string) error {
-	if len(lines) == 0 {
+	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
 		return nil
 	}
 	contact, err := parseContactInfo(lines[0])
@@ -149,7 +146,7 @@ func parseContactInfo(line string) (*spec.ContactInfo, error) {
 }
 
 func setInfoLicense(swspec *spec.Swagger, lines []string) error {
-	if len(lines) == 0 {
+	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
 		return nil
 	}
 	info := safeInfo(swspec)
@@ -169,8 +166,8 @@ func safeInfo(swspec *spec.Swagger) *spec.Info {
 	return swspec.Info
 }
 
-// httpFTPScheme matches http://, https://, ftp:// or ftps://
-var httpFTPScheme = regexp.MustCompile("(?:ht|f)tp(?:s)?://")
+// httpFTPScheme matches http://, https://, ws://, wss://
+var httpFTPScheme = regexp.MustCompile("(?:ht|f)tps?://")
 
 func splitURL(line string) (notURL, url string) {
 	str := strings.TrimSpace(line)
@@ -186,22 +183,4 @@ func splitURL(line string) (notURL, url string) {
 		url = strings.TrimSpace(str[parts[0]:])
 	}
 	return
-}
-
-func setInfoTitle(swspec *spec.Swagger, lines []string) error {
-	info := safeInfo(swspec)
-	info.Title = strings.TrimSpace(strings.Join(lines, "\n"))
-	return nil
-}
-
-func setInfoDescription(swspec *spec.Swagger, lines []string) error {
-	info := safeInfo(swspec)
-	info.Description = strings.TrimSpace(strings.Join(lines, "\n"))
-	return nil
-}
-
-func setInfoTOS(swspec *spec.Swagger, lines []string) error {
-	info := safeInfo(swspec)
-	info.TermsOfService = strings.TrimSpace(strings.Join(lines, "\n"))
-	return nil
 }

@@ -2,43 +2,12 @@ package parse
 
 import (
 	"go/ast"
-	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/casualjim/go-swagger/spec"
 
 	"golang.org/x/tools/go/loader"
 )
-
-type operationSetter func(*spec.Operation, []string) error
-
-func newOperationSummary(setter operationSetter) (t *sectionTagger) {
-	t = newTitleTagger()
-	t.Name = "Summary"
-	t.rxStripComments = rxStripComments
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Operation), lines) }
-	return
-}
-
-func newOperationDescription(setter operationSetter) (t *sectionTagger) {
-	t = newDescriptionTagger()
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Operation), lines) }
-	return
-}
-
-func newOperationSection(name string, multiLine bool, setter operationSetter) (t *sectionTagger) {
-	t = newSectionTagger(name, multiLine)
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Operation), lines) }
-	return
-}
-
-func newOperationFieldSection(name string, multiLine bool, matcher *regexp.Regexp, setter operationSetter) (t *sectionTagger) {
-	t = newSectionTagger(name, multiLine)
-	t.matcher = matcher
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Operation), lines) }
-	return
-}
 
 func setOperationSummary(op *spec.Operation, lines []string) error {
 	op.Summary = joinDropLast(lines)
@@ -50,105 +19,35 @@ func setOperationDescription(op *spec.Operation, lines []string) error {
 	return nil
 }
 
-func setOperationConsumes(op *spec.Operation, lines []string) error {
-	op.Consumes = removeEmptyLines(lines)
-	return nil
+func opConsumesSetter(op *spec.Operation) func([]string) {
+	return func(consumes []string) { op.Consumes = consumes }
 }
 
-func setOperationProduces(op *spec.Operation, lines []string) error {
-	op.Produces = removeEmptyLines(lines)
-	return nil
+func opProducesSetter(op *spec.Operation) func([]string) {
+	return func(produces []string) { op.Produces = produces }
 }
 
-func setOperationSchemes(op *spec.Operation, lines []string) error {
-	lns := lines
-	if len(lns) == 0 || lns[0] == "" {
-		return nil
-	}
-	sch := strings.Split(lns[0], ", ")
-	var schemes []string
-	for _, s := range sch {
-		schemes = append(schemes, strings.TrimSpace(s))
-	}
-	op.Schemes = schemes
-	return nil
+func opSchemeSetter(op *spec.Operation) func([]string) {
+	return func(schemes []string) { op.Schemes = schemes }
 }
 
-func setOperationSecurity(op *spec.Operation, lines []string) error {
-	if len(lines) == 0 {
-		return nil
-	}
+func opSecurityDefsSetter(op *spec.Operation) func([]map[string][]string) {
+	return func(securityDefs []map[string][]string) { op.Security = securityDefs }
+}
 
-	for _, line := range lines {
-		kv := strings.SplitN(line, ":", 2)
-		var scopes []string
-		var key string
-
-		if len(kv) > 1 {
-			scs := strings.Split(rxNotAlNumSpaceComma.ReplaceAllString(kv[1], ""), ",")
-			for _, scope := range scs {
-				scopes = append(scopes, strings.TrimSpace(scope))
-			}
-
-			key = strings.TrimSpace(kv[0])
-
-			op.Security = append(op.Security, map[string][]string{key: scopes})
+func opResponsesSetter(op *spec.Operation) func(*spec.Response, map[int]spec.Response) {
+	return func(def *spec.Response, scr map[int]spec.Response) {
+		if op.Responses == nil {
+			op.Responses = new(spec.Responses)
 		}
+		op.Responses.Default = def
+		op.Responses.StatusCodeResponses = scr
 	}
-	return nil
-}
-
-func setOperationResponse(op *spec.Operation, lines []string) error {
-	if len(lines) == 0 {
-		return nil
-	}
-
-	for _, line := range lines {
-		kv := strings.SplitN(line, ":", 2)
-		var key, value string
-
-		if len(kv) > 1 {
-			key = strings.TrimSpace(kv[0])
-			value = strings.TrimSpace(kv[1])
-
-			if op.Responses == nil {
-				op.Responses = new(spec.Responses)
-			}
-			resps := op.Responses
-			var resp spec.Response
-			ref, err := spec.NewRef("#/responses/" + value)
-			if err != nil {
-				return err
-			}
-			resp.Ref = ref
-			if strings.EqualFold("default", key) {
-				if resps.Default == nil {
-					resps.Default = &resp
-				}
-			} else {
-				if sc, err := strconv.Atoi(key); err == nil {
-					if resps.StatusCodeResponses == nil {
-						resps.StatusCodeResponses = make(map[int]spec.Response)
-					}
-					resps.StatusCodeResponses[sc] = resp
-				}
-			}
-		}
-	}
-	return nil
 }
 
 func newRoutesParser(prog *loader.Program) *routesParser {
 	return &routesParser{
 		program: prog,
-		//taggers: []*sectionTagger{
-		//newOperationSummary(setOperationSummary),
-		//newOperationDescription(setOperationDescription),
-		//newOperationFieldSection("Consumes", true, regexp.MustCompile("[Cc]onsumes\\p{Zs}*:"), setOperationConsumes),
-		//newOperationFieldSection("Produces", true, regexp.MustCompile("[Pp]roduces\\p{Zs}*:"), setOperationProduces),
-		//newOperationFieldSection("Schemes", false, regexp.MustCompile("[Pp]roduces\\p{Zs}*:\\p{Zs}*((?:(?:https?|wss?)\\p{Zs}*,?\\p{Zs}*)+)$"), setOperationSchemes),
-		//newOperationFieldSection("Security", true, regexp.MustCompile("[Ss]ecurity\\p{Zs}*:"), setOperationSecurity),
-		//},
 	}
 }
 
@@ -274,17 +173,17 @@ func (rp *routesParser) Parse(gofile *ast.File, target interface{}) error {
 			}
 		}
 		op.Tags = tags
-
-		taggers := []*sectionTagger{
-			newOperationSummary(setOperationSummary),
-			newOperationDescription(setOperationDescription),
-			newOperationSection("Consumes", true, setOperationConsumes),
-			newOperationSection("Produces", true, setOperationProduces),
-			newOperationSection("Schemes", false, setOperationSchemes),
-			newOperationSection("Security", true, setOperationSecurity),
-			newOperationSection("Responses", true, setOperationResponse),
+		sp := new(sectionedParser)
+		sp.setTitle = func(lines []string) { op.Summary = joinDropLast(lines) }
+		sp.setDescription = func(lines []string) { op.Description = joinDropLast(lines) }
+		sp.taggers = []tagParser{
+			newMultiLineTagParser("Consumes", newMultilineDropEmptyParser(rxConsumes, opConsumesSetter(op))),
+			newMultiLineTagParser("Produces", newMultilineDropEmptyParser(rxProduces, opProducesSetter(op))),
+			newSingleLineTagParser("Schemes", newSetSchemes(opSchemeSetter(op))),
+			newMultiLineTagParser("Security", newSetSecurityDefinitions(opSecurityDefsSetter(op))),
+			newMultiLineTagParser("Responses", newSetResponses(opResponsesSetter(op))),
 		}
-		if err := parseDocComments(remaining, op, taggers, nil); err != nil {
+		if err := sp.Parse(remaining); err != nil {
 			return err
 		}
 

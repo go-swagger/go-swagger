@@ -3,6 +3,9 @@ package parse
 import (
 	"regexp"
 	"strconv"
+	"strings"
+
+	"github.com/casualjim/go-swagger/spec"
 )
 
 type validationBuilder interface {
@@ -22,6 +25,7 @@ type validationBuilder interface {
 
 type valueParser interface {
 	Parse([]string) error
+	Matches(string) bool
 }
 
 type setMaximum struct {
@@ -44,9 +48,17 @@ func (sm *setMaximum) Parse(lines []string) error {
 	return nil
 }
 
+func (sm *setMaximum) Matches(line string) bool {
+	return sm.rx.MatchString(line)
+}
+
 type setMinimum struct {
 	builder validationBuilder
 	rx      *regexp.Regexp
+}
+
+func (sm *setMinimum) Matches(line string) bool {
+	return sm.rx.MatchString(line)
 }
 
 func (sm *setMinimum) Parse(lines []string) error {
@@ -69,6 +81,10 @@ type setMultipleOf struct {
 	rx      *regexp.Regexp
 }
 
+func (sm *setMultipleOf) Matches(line string) bool {
+	return sm.rx.MatchString(line)
+}
+
 func (sm *setMultipleOf) Parse(lines []string) error {
 	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
 		return nil
@@ -89,6 +105,10 @@ type setMaxItems struct {
 	rx      *regexp.Regexp
 }
 
+func (sm *setMaxItems) Matches(line string) bool {
+	return sm.rx.MatchString(line)
+}
+
 func (sm *setMaxItems) Parse(lines []string) error {
 	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
 		return nil
@@ -107,6 +127,10 @@ func (sm *setMaxItems) Parse(lines []string) error {
 type setMinItems struct {
 	builder validationBuilder
 	rx      *regexp.Regexp
+}
+
+func (sm *setMinItems) Matches(line string) bool {
+	return sm.rx.MatchString(line)
 }
 
 func (sm *setMinItems) Parse(lines []string) error {
@@ -144,6 +168,10 @@ func (sm *setMaxLength) Parse(lines []string) error {
 	return nil
 }
 
+func (sm *setMaxLength) Matches(line string) bool {
+	return sm.rx.MatchString(line)
+}
+
 type setMinLength struct {
 	builder validationBuilder
 	rx      *regexp.Regexp
@@ -164,6 +192,10 @@ func (sm *setMinLength) Parse(lines []string) error {
 	return nil
 }
 
+func (sm *setMinLength) Matches(line string) bool {
+	return sm.rx.MatchString(line)
+}
+
 type setPattern struct {
 	builder validationBuilder
 	rx      *regexp.Regexp
@@ -178,6 +210,10 @@ func (sm *setPattern) Parse(lines []string) error {
 		sm.builder.SetPattern(matches[1])
 	}
 	return nil
+}
+
+func (sm *setPattern) Matches(line string) bool {
+	return sm.rx.MatchString(line)
 }
 
 type setCollectionFormat struct {
@@ -196,9 +232,17 @@ func (sm *setCollectionFormat) Parse(lines []string) error {
 	return nil
 }
 
+func (sm *setCollectionFormat) Matches(line string) bool {
+	return sm.rx.MatchString(line)
+}
+
 type setUnique struct {
 	builder validationBuilder
 	rx      *regexp.Regexp
+}
+
+func (su *setUnique) Matches(line string) bool {
+	return su.rx.MatchString(line)
 }
 
 func (su *setUnique) Parse(lines []string) error {
@@ -213,5 +257,243 @@ func (su *setUnique) Parse(lines []string) error {
 		}
 		su.builder.SetUnique(req)
 	}
+	return nil
+}
+
+type setRequiredParam struct {
+	tgt *spec.Parameter
+}
+
+func (su *setRequiredParam) Matches(line string) bool {
+	return rxRequired.MatchString(line)
+}
+
+func (su *setRequiredParam) Parse(lines []string) error {
+	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+		return nil
+	}
+	matches := rxRequired.FindStringSubmatch(lines[0])
+	if len(matches) > 1 && len(matches[1]) > 0 {
+		req, err := strconv.ParseBool(matches[1])
+		if err != nil {
+			return err
+		}
+		su.tgt.Required = req
+	}
+	return nil
+}
+
+type setReadOnlySchema struct {
+	tgt *spec.Schema
+}
+
+func (su *setReadOnlySchema) Matches(line string) bool {
+	return rxReadOnly.MatchString(line)
+}
+
+func (su *setReadOnlySchema) Parse(lines []string) error {
+	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+		return nil
+	}
+	matches := rxReadOnly.FindStringSubmatch(lines[0])
+	if len(matches) > 1 && len(matches[1]) > 0 {
+		req, err := strconv.ParseBool(matches[1])
+		if err != nil {
+			return err
+		}
+		su.tgt.ReadOnly = req
+	}
+	return nil
+}
+
+type setRequiredSchema struct {
+	schema *spec.Schema
+	field  string
+}
+
+func (su *setRequiredSchema) Matches(line string) bool {
+	return rxRequired.MatchString(line)
+}
+
+func (su *setRequiredSchema) Parse(lines []string) error {
+	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+		return nil
+	}
+	matches := rxRequired.FindStringSubmatch(lines[0])
+	if len(matches) > 1 && len(matches[1]) > 0 {
+		req, err := strconv.ParseBool(matches[1])
+		if err != nil {
+			return err
+		}
+		midx := -1
+		for i, nm := range su.schema.Required {
+			if nm == su.field {
+				midx = i
+				break
+			}
+		}
+		if req {
+			if midx < 0 {
+				su.schema.Required = append(su.schema.Required, su.field)
+			}
+		} else if midx >= 0 {
+			su.schema.Required = append(su.schema.Required[:midx], su.schema.Required[midx+1:]...)
+		}
+	}
+	return nil
+}
+
+func newMultilineDropEmptyParser(rx *regexp.Regexp, set func([]string)) *multiLineDropEmptyParser {
+	return &multiLineDropEmptyParser{
+		rx:  rx,
+		set: set,
+	}
+}
+
+type multiLineDropEmptyParser struct {
+	set func([]string)
+	rx  *regexp.Regexp
+}
+
+func (m *multiLineDropEmptyParser) Matches(line string) bool {
+	return m.rx.MatchString(line)
+}
+
+func (m *multiLineDropEmptyParser) Parse(lines []string) error {
+	m.set(removeEmptyLines(lines))
+	return nil
+}
+
+func newSetSchemes(set func([]string)) *setSchemes {
+	return &setSchemes{
+		set: set,
+		rx:  rxSchemes,
+	}
+}
+
+type setSchemes struct {
+	set func([]string)
+	rx  *regexp.Regexp
+}
+
+func (ss *setSchemes) Matches(line string) bool {
+	return ss.rx.MatchString(line)
+}
+
+func (ss *setSchemes) Parse(lines []string) error {
+	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+		return nil
+	}
+	matches := ss.rx.FindStringSubmatch(lines[0])
+	if len(matches) > 1 && len(matches[1]) > 0 {
+		sch := strings.Split(matches[1], ", ")
+
+		var schemes []string
+		for _, s := range sch {
+			ts := strings.TrimSpace(s)
+			if ts != "" {
+				schemes = append(schemes, ts)
+			}
+		}
+		ss.set(schemes)
+	}
+	return nil
+}
+
+func newSetSecurityDefinitions(setter func([]map[string][]string)) *setSecurityDefinitions {
+	return &setSecurityDefinitions{
+		set: setter,
+		rx:  rxSecurity,
+	}
+}
+
+type setSecurityDefinitions struct {
+	set func([]map[string][]string)
+	rx  *regexp.Regexp
+}
+
+func (ss *setSecurityDefinitions) Matches(line string) bool {
+	return ss.rx.MatchString(line)
+}
+
+func (ss *setSecurityDefinitions) Parse(lines []string) error {
+	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+		return nil
+	}
+
+	var result []map[string][]string
+	for _, line := range lines {
+		kv := strings.SplitN(line, ":", 2)
+		var scopes []string
+		var key string
+
+		if len(kv) > 1 {
+			scs := strings.Split(rxNotAlNumSpaceComma.ReplaceAllString(kv[1], ""), ",")
+			for _, scope := range scs {
+				scopes = append(scopes, strings.TrimSpace(scope))
+			}
+
+			key = strings.TrimSpace(kv[0])
+
+			result = append(result, map[string][]string{key: scopes})
+		}
+	}
+	ss.set(result)
+	return nil
+}
+
+func newSetResponses(setter func(*spec.Response, map[int]spec.Response)) *setOpResponses {
+	return &setOpResponses{
+		set: setter,
+		rx:  rxResponses,
+	}
+}
+
+type setOpResponses struct {
+	set func(*spec.Response, map[int]spec.Response)
+	rx  *regexp.Regexp
+}
+
+func (ss *setOpResponses) Matches(line string) bool {
+	return ss.rx.MatchString(line)
+}
+
+func (ss *setOpResponses) Parse(lines []string) error {
+	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+		return nil
+	}
+
+	var def *spec.Response
+	var scr map[int]spec.Response
+
+	for _, line := range lines {
+		kv := strings.SplitN(line, ":", 2)
+		var key, value string
+
+		if len(kv) > 1 {
+			key = strings.TrimSpace(kv[0])
+			value = strings.TrimSpace(kv[1])
+
+			var resp spec.Response
+			ref, err := spec.NewRef("#/responses/" + value)
+			if err != nil {
+				return err
+			}
+			resp.Ref = ref
+			if strings.EqualFold("default", key) {
+				if def == nil {
+					def = &resp
+				}
+			} else {
+				if sc, err := strconv.Atoi(key); err == nil {
+					if scr == nil {
+						scr = make(map[int]spec.Response)
+					}
+					scr[sc] = resp
+				}
+			}
+		}
+	}
+	ss.set(def, scr)
 	return nil
 }

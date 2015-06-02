@@ -13,9 +13,6 @@ import (
 	"github.com/casualjim/go-swagger/spec"
 )
 
-type schemaSetter func(*spec.Schema, []string) error
-type matchingSchemaSetter func(*regexp.Regexp) schemaSetter
-
 type schemaTypable struct {
 	schema *spec.Schema
 }
@@ -47,6 +44,37 @@ func (sv schemaValidations) SetMinLength(val int64)    { sv.current.MinLength = 
 func (sv schemaValidations) SetMaxLength(val int64)    { sv.current.MaxLength = &val }
 func (sv schemaValidations) SetPattern(val string)     { sv.current.Pattern = val }
 func (sv schemaValidations) SetUnique(val bool)        { sv.current.UniqueItems = val }
+
+func newSchemaAnnotationParser(goName string) *schemaAnnotationParser {
+	return &schemaAnnotationParser{GoName: goName, rx: rxModelOverride}
+}
+
+type schemaAnnotationParser struct {
+	GoName string
+	Name   string
+	rx     *regexp.Regexp
+}
+
+func (sap *schemaAnnotationParser) Matches(line string) bool {
+	return sap.rx.MatchString(line)
+}
+
+func (sap *schemaAnnotationParser) Parse(lines []string) error {
+	if sap.Name != "" {
+		return nil
+	}
+
+	if len(lines) > 0 {
+		for _, line := range lines {
+			matches := sap.rx.FindStringSubmatch(line)
+			if len(matches) > 1 && len(matches[1]) > 0 {
+				sap.Name = matches[1]
+				return nil
+			}
+		}
+	}
+	return nil
+}
 
 type schemaDecl struct {
 	File     *ast.File
@@ -80,178 +108,7 @@ func (sd *schemaDecl) inferNames() (goName string, name string) {
 	return
 }
 
-func newSchemaTitle(setter schemaSetter) (t *sectionTagger) {
-	t = newTitleTagger()
-	t.rxStripComments = rxStripComments
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Schema), lines) }
-	return
-}
-
-func newSchemaDescription(setter schemaSetter) (t *sectionTagger) {
-	t = newDescriptionTagger()
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Schema), lines) }
-	return
-}
-
-func newSchemaSection(name string, multiLine bool, setter schemaSetter) (t *sectionTagger) {
-	t = newSectionTagger(name, multiLine)
-	t.stripsTag = false
-
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Schema), lines) }
-	return
-}
-
-func newFieldSection(name string, matcher *regexp.Regexp, ms matchingSchemaSetter) (t *sectionTagger) {
-	t = newSectionTagger(name, false)
-	t.stripsTag = false
-	t.matcher = matcher
-	setter := ms(matcher)
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Schema), lines) }
-	return
-}
-
-func newSchemaFieldSection(name string, matcher *regexp.Regexp, setter schemaSetter) (t *sectionTagger) {
-	t = newSectionTagger(name, false)
-	t.stripsTag = false
-	t.matcher = matcher
-	t.set = func(obj interface{}, lines []string) error { return setter(obj.(*spec.Schema), lines) }
-	return
-}
-
-func setSchemaTitle(schema *spec.Schema, lines []string) error {
-	schema.Title = joinDropLast(lines)
-	return nil
-}
-
-func setSchemaDescription(schema *spec.Schema, lines []string) error {
-	schema.Description = joinDropLast(lines)
-	return nil
-}
-
-func joinDropLast(lines []string) string {
-	l := len(lines)
-	lns := lines
-	if l > 0 && len(strings.TrimSpace(lines[l-1])) == 0 {
-		lns = lines[:l-1]
-	}
-	return strings.Join(lns, "\n")
-}
-
-func setSchemaMaximum(rx *regexp.Regexp) schemaSetter {
-	return func(schema *spec.Schema, lines []string) error {
-		bldr := setMaximum{schemaValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setSchemaMinimum(rx *regexp.Regexp) schemaSetter {
-	return func(schema *spec.Schema, lines []string) error {
-		bldr := setMinimum{schemaValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setSchemaMultipleOf(rx *regexp.Regexp) schemaSetter {
-	return func(schema *spec.Schema, lines []string) error {
-		bldr := setMultipleOf{schemaValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setSchemaMaxItems(rx *regexp.Regexp) schemaSetter {
-	return func(schema *spec.Schema, lines []string) error {
-		bldr := setMaxItems{schemaValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setSchemaMinItems(rx *regexp.Regexp) schemaSetter {
-	return func(schema *spec.Schema, lines []string) error {
-		bldr := setMinItems{schemaValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setSchemaMaxLength(rx *regexp.Regexp) schemaSetter {
-	return func(schema *spec.Schema, lines []string) error {
-		bldr := setMaxLength{schemaValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setSchemaMinLength(rx *regexp.Regexp) schemaSetter {
-	return func(schema *spec.Schema, lines []string) error {
-		bldr := setMinLength{schemaValidations{schema}, rx}
-		return bldr.Parse(lines)
-
-	}
-}
-
-func setSchemaPattern(rx *regexp.Regexp) schemaSetter {
-	return func(schema *spec.Schema, lines []string) error {
-		bldr := setPattern{schemaValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setSchemaUnique(rx *regexp.Regexp) schemaSetter {
-	return func(schema *spec.Schema, lines []string) error {
-		bldr := setUnique{schemaValidations{schema}, rx}
-		return bldr.Parse(lines)
-	}
-}
-
-func setSchemaReadOnly(schema *spec.Schema, lines []string) error {
-	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
-		return nil
-	}
-	matches := rxReadOnly.FindStringSubmatch(lines[0])
-	if len(matches) > 1 && len(matches[1]) > 0 {
-		req, err := strconv.ParseBool(matches[1])
-		if err != nil {
-			return err
-		}
-		schema.ReadOnly = req
-	}
-	return nil
-}
-
-func setSchemaRequired(parent *spec.Schema, value string) func(*spec.Schema, []string) error {
-	return func(schema *spec.Schema, lines []string) error {
-		if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
-			return nil
-		}
-		matches := rxRequired.FindStringSubmatch(lines[0])
-		if len(matches) > 1 && len(matches[1]) > 0 {
-			req, err := strconv.ParseBool(matches[1])
-			if err != nil {
-				return err
-			}
-			midx := -1
-			for i, nm := range parent.Required {
-				if nm == value {
-					midx = i
-					break
-				}
-			}
-			if req {
-				if midx < 0 {
-					parent.Required = append(parent.Required, value)
-				}
-			} else if midx >= 0 {
-				parent.Required = append(parent.Required[:midx], parent.Required[midx+1:]...)
-			}
-		}
-		return nil
-	}
-}
-
 type structCommentParser struct {
-	taggers []*sectionTagger
-	header  struct {
-		taggers   []*sectionTagger
-		otherTags []string
-	}
 	program   *loader.Program
 	postDecls []schemaDecl
 }
@@ -259,8 +116,6 @@ type structCommentParser struct {
 func newSchemaParser(prog *loader.Program) *structCommentParser {
 	scp := new(structCommentParser)
 	scp.program = prog
-	scp.header.taggers = []*sectionTagger{newSchemaTitle(setSchemaTitle), newSchemaDescription(setSchemaDescription)}
-	scp.header.otherTags = []string{"+swagger"}
 	return scp
 }
 
@@ -295,11 +150,10 @@ func (scp *structCommentParser) parseDecl(definitions map[string]spec.Schema, de
 	schPtr := &schema
 
 	// analyze doc comment for the model
-	// first line of the doc comment is the title
-	// all following lines are description
-	// all other things are ignored and by definition added to the last matched tag unless
-	// preceded by 2 new lines
-	if err := parseDocComments(decl.Decl.Doc, schPtr, scp.header.taggers, scp.header.otherTags); err != nil {
+	sp := new(sectionedParser)
+	sp.setTitle = func(lines []string) { schema.Title = joinDropLast(lines) }
+	sp.setDescription = func(lines []string) { schema.Description = joinDropLast(lines) }
+	if err := sp.Parse(decl.Decl.Doc); err != nil {
 		return err
 	}
 
@@ -362,51 +216,51 @@ func (scp *structCommentParser) parseStructType(gofile *ast.File, schema *spec.S
 					return err
 				}
 
-				// check if this is a primitive, if so parse the validations from the
-				// doc comments of the slice declaration.
-				if ftpe, ok := fld.Type.(*ast.ArrayType); ok {
-					if iftpe, ok := ftpe.Elt.(*ast.Ident); ok && iftpe.Obj == nil {
-						if ps.Items.Schema != nil {
-							if err := scp.parseItemsDocComments(gofile, fld, ps.Items.Schema); err != nil {
-								return err
-							}
-						} else {
-							for _, sch := range ps.Items.Schemas {
-								if err := scp.parseItemsDocComments(gofile, fld, &sch); err != nil {
-									return err
+				sp := new(sectionedParser)
+				sp.setDescription = func(lines []string) { ps.Description = joinDropLast(lines) }
+				if ps.Ref.GetURL() == nil {
+					sp.taggers = []tagParser{
+						newSingleLineTagParser("maximum", &setMaximum{schemaValidations{&ps}, rxf(rxMaximumFmt, "")}),
+						newSingleLineTagParser("minimum", &setMinimum{schemaValidations{&ps}, rxf(rxMinimumFmt, "")}),
+						newSingleLineTagParser("multipleOf", &setMultipleOf{schemaValidations{&ps}, rxf(rxMultipleOfFmt, "")}),
+						newSingleLineTagParser("minLength", &setMinLength{schemaValidations{&ps}, rxf(rxMinLengthFmt, "")}),
+						newSingleLineTagParser("maxLength", &setMaxLength{schemaValidations{&ps}, rxf(rxMaxLengthFmt, "")}),
+						newSingleLineTagParser("pattern", &setPattern{schemaValidations{&ps}, rxf(rxPatternFmt, "")}),
+						newSingleLineTagParser("minItems", &setMinItems{schemaValidations{&ps}, rxf(rxMinItemsFmt, "")}),
+						newSingleLineTagParser("maxItems", &setMaxItems{schemaValidations{&ps}, rxf(rxMaxItemsFmt, "")}),
+						newSingleLineTagParser("unique", &setUnique{schemaValidations{&ps}, rxf(rxUniqueFmt, "")}),
+						newSingleLineTagParser("required", &setRequiredSchema{schema, nm}),
+						newSingleLineTagParser("readOnly", &setReadOnlySchema{&ps}),
+					}
+
+					// check if this is a primitive, if so parse the validations from the
+					// doc comments of the slice declaration.
+					if ftpe, ok := fld.Type.(*ast.ArrayType); ok {
+						if iftpe, ok := ftpe.Elt.(*ast.Ident); ok && iftpe.Obj == nil {
+							if ps.Items != nil && ps.Items.Schema != nil {
+								itemsTaggers := []tagParser{
+									newSingleLineTagParser("itemsMaximum", &setMaximum{schemaValidations{ps.Items.Schema}, rxf(rxMaximumFmt, rxItemsPrefix)}),
+									newSingleLineTagParser("itemsMinimum", &setMinimum{schemaValidations{ps.Items.Schema}, rxf(rxMinimumFmt, rxItemsPrefix)}),
+									newSingleLineTagParser("itemsMultipleOf", &setMultipleOf{schemaValidations{ps.Items.Schema}, rxf(rxMultipleOfFmt, rxItemsPrefix)}),
+									newSingleLineTagParser("itemsMinLength", &setMinLength{schemaValidations{ps.Items.Schema}, rxf(rxMinLengthFmt, rxItemsPrefix)}),
+									newSingleLineTagParser("itemsMaxLength", &setMaxLength{schemaValidations{ps.Items.Schema}, rxf(rxMaxLengthFmt, rxItemsPrefix)}),
+									newSingleLineTagParser("itemsPattern", &setPattern{schemaValidations{ps.Items.Schema}, rxf(rxPatternFmt, rxItemsPrefix)}),
+									newSingleLineTagParser("itemsMinItems", &setMinItems{schemaValidations{ps.Items.Schema}, rxf(rxMinItemsFmt, rxItemsPrefix)}),
+									newSingleLineTagParser("itemsMaxItems", &setMaxItems{schemaValidations{ps.Items.Schema}, rxf(rxMaxItemsFmt, rxItemsPrefix)}),
+									newSingleLineTagParser("itemsUnique", &setUnique{schemaValidations{ps.Items.Schema}, rxf(rxUniqueFmt, rxItemsPrefix)}),
 								}
+
+								// items matchers should go before the default matchers so they match first
+								sp.taggers = append(itemsTaggers, sp.taggers...)
 							}
 						}
 					}
-				}
-
-				var taggers []*sectionTagger
-				if ps.Ref.GetURL() == nil {
-					// add title and description for property
-					// add validations for property
-					taggers = []*sectionTagger{
-						newSchemaDescription(setSchemaDescription),
-						newFieldSection("maximum", rxf(rxMaximumFmt, ""), setSchemaMaximum),
-						newFieldSection("minimum", rxf(rxMinimumFmt, ""), setSchemaMinimum),
-						newFieldSection("multipleOf", rxf(rxMultipleOfFmt, ""), setSchemaMultipleOf),
-						newFieldSection("minLength", rxf(rxMinLengthFmt, ""), setSchemaMinLength),
-						newFieldSection("maxLength", rxf(rxMaxLengthFmt, ""), setSchemaMaxLength),
-						newFieldSection("pattern", rxf(rxPatternFmt, ""), setSchemaPattern),
-						newFieldSection("minItems", rxf(rxMinItemsFmt, ""), setSchemaMinItems),
-						newFieldSection("maxItems", rxf(rxMaxItemsFmt, ""), setSchemaMaxItems),
-						newFieldSection("unique", rxf(rxUniqueFmt, ""), setSchemaUnique),
-						newSchemaFieldSection("readOnly", rxReadOnly, setSchemaReadOnly),
-						newSchemaFieldSection("required", rxRequired, setSchemaRequired(schema, nm)),
-					}
 				} else {
-					// add title and description for property
-					// add validations for property
-					taggers = []*sectionTagger{
-						newSchemaDescription(setSchemaDescription),
-						newSchemaFieldSection("required", rxRequired, setSchemaRequired(schema, nm)),
+					sp.taggers = []tagParser{
+						newSingleLineTagParser("required", &setRequiredSchema{schema, nm}),
 					}
 				}
-				if err := parseDocComments(fld.Doc, &ps, taggers, nil); err != nil {
+				if err := sp.Parse(fld.Doc); err != nil {
 					return err
 				}
 
@@ -429,23 +283,6 @@ func (scp *structCommentParser) parseStructType(gofile *ast.File, schema *spec.S
 	}
 
 	return nil
-}
-
-func (scp *structCommentParser) parseItemsDocComments(gofile *ast.File, fld *ast.Field, prop *spec.Schema) error {
-	// add title and description for property
-	// add validations for property
-	taggers := []*sectionTagger{
-		newFieldSection("maximum", rxf(rxMaximumFmt, rxItemsPrefix), setSchemaMaximum),
-		newFieldSection("minimum", rxf(rxMinimumFmt, rxItemsPrefix), setSchemaMinimum),
-		newFieldSection("multipleOf", rxf(rxMultipleOfFmt, rxItemsPrefix), setSchemaMultipleOf),
-		newFieldSection("minLength", rxf(rxMinLengthFmt, rxItemsPrefix), setSchemaMinLength),
-		newFieldSection("maxLength", rxf(rxMaxLengthFmt, rxItemsPrefix), setSchemaMaxLength),
-		newFieldSection("pattern", rxf(rxPatternFmt, rxItemsPrefix), setSchemaPattern),
-		newFieldSection("minItems", rxf(rxMinItemsFmt, rxItemsPrefix), setSchemaMinItems),
-		newFieldSection("maxItems", rxf(rxMaxItemsFmt, rxItemsPrefix), setSchemaMaxItems),
-		newFieldSection("unique", rxf(rxUniqueFmt, rxItemsPrefix), setSchemaUnique),
-	}
-	return parseDocComments(fld.Doc, prop, taggers, nil)
 }
 
 func (scp *structCommentParser) parseProperty(gofile *ast.File, fld ast.Expr, prop *spec.Schema) error {
