@@ -109,16 +109,16 @@ func rxf(rxp, ar string) *regexp.Regexp {
 // When something in the discovered items requires a type that is contained in the includes or excludes it will still be
 // in the spec.
 func Application(bp string, input *spec.Swagger, includes, excludes packageFilters) (*spec.Swagger, error) {
-	parser, err := newAPIParser(bp, input, includes, excludes)
+	parser, err := newAppScanner(bp, input, includes, excludes)
 	if err != nil {
 		return nil, err
 	}
 	return parser.Parse()
 }
 
-// apiParser the global context for parsing a go application
+// appScanner the global context for scanning a go application
 // into a swagger specification
-type apiParser struct {
+type appScanner struct {
 	loader      *loader.Config
 	prog        *loader.Program
 	classifier  *programClassifier
@@ -133,7 +133,7 @@ type apiParser struct {
 }
 
 // newAPIParser creates a new api parser
-func newAPIParser(bp string, input *spec.Swagger, includes, excludes packageFilters) (*apiParser, error) {
+func newAppScanner(bp string, input *spec.Swagger, includes, excludes packageFilters) (*appScanner, error) {
 	var ldr loader.Config
 	ldr.ParserMode = goparser.ParseComments
 	ldr.Import(bp)
@@ -162,7 +162,7 @@ func newAPIParser(bp string, input *spec.Swagger, includes, excludes packageFilt
 		responses = make(map[string]spec.Response)
 	}
 
-	return &apiParser{
+	return &appScanner{
 		MainPackage: bp,
 		prog:        prog,
 		input:       input,
@@ -208,7 +208,7 @@ func collectOperationsFromInput(input *spec.Swagger) map[string]*spec.Operation 
 }
 
 // Parse produces a swagger object for an application
-func (a *apiParser) Parse() (*spec.Swagger, error) {
+func (a *appScanner) Parse() (*spec.Swagger, error) {
 	// classification still includes files that are completely commented out
 	cp, err := a.classifier.Classify(a.prog)
 	if err != nil {
@@ -250,7 +250,7 @@ func (a *apiParser) Parse() (*spec.Swagger, error) {
 	return a.input, nil
 }
 
-func (a *apiParser) processDiscovered() error {
+func (a *appScanner) processDiscovered() error {
 	// loop over discovered until all the items are in definitions
 	keepGoing := len(a.discovered) > 0
 	for keepGoing {
@@ -272,7 +272,7 @@ func (a *apiParser) processDiscovered() error {
 	return nil
 }
 
-func (a *apiParser) parseSchema(file *ast.File) error {
+func (a *appScanner) parseSchema(file *ast.File) error {
 	sp := newSchemaParser(a.prog)
 	if err := sp.Parse(file, a.definitions); err != nil {
 		return err
@@ -281,7 +281,7 @@ func (a *apiParser) parseSchema(file *ast.File) error {
 	return nil
 }
 
-func (a *apiParser) parseRoutes(file *ast.File) error {
+func (a *appScanner) parseRoutes(file *ast.File) error {
 	rp := newRoutesParser(a.prog)
 	rp.operations = a.operations
 	rp.definitions = a.definitions
@@ -292,7 +292,7 @@ func (a *apiParser) parseRoutes(file *ast.File) error {
 	return nil
 }
 
-func (a *apiParser) parseParameters(file *ast.File) error {
+func (a *appScanner) parseParameters(file *ast.File) error {
 	rp := newParameterParser(a.prog)
 	if err := rp.Parse(file, a.operations); err != nil {
 		return err
@@ -301,7 +301,7 @@ func (a *apiParser) parseParameters(file *ast.File) error {
 	return nil
 }
 
-func (a *apiParser) parseResponses(file *ast.File) error {
+func (a *appScanner) parseResponses(file *ast.File) error {
 	rp := newResponseParser(a.prog)
 	if err := rp.Parse(file, a.responses); err != nil {
 		return err
@@ -310,12 +310,12 @@ func (a *apiParser) parseResponses(file *ast.File) error {
 	return nil
 }
 
-func (a *apiParser) parseMeta(file *ast.File) error {
+func (a *appScanner) parseMeta(file *ast.File) error {
 	return newMetaParser(a.input).Parse(file.Doc)
 }
 
 // MustExpandPackagePath gets the real package path on disk
-func (a *apiParser) MustExpandPackagePath(packagePath string) string {
+func (a *appScanner) MustExpandPackagePath(packagePath string) string {
 	pkgRealpath := util.FindInGoSearchPath(packagePath)
 	if pkgRealpath == "" {
 		log.Fatalf("Can't find package %s \n", packagePath)
