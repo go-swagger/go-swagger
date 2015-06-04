@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/casualjim/go-swagger/parse"
+	"github.com/casualjim/go-swagger/scan"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/jessevdk/go-flags"
 )
@@ -25,7 +25,7 @@ func (s *SpecFile) Execute(args []string) error {
 		return err
 	}
 
-	swspec, err := parse.Application(s.BasePath, input, nil, nil)
+	swspec, err := scan.Application(s.BasePath, input, nil, nil)
 	if err != nil {
 		return err
 	}
