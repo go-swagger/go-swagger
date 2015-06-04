@@ -16,7 +16,7 @@ func TestParamsParser(t *testing.T) {
 		log.Fatal(err)
 	}
 	sp := newParameterParser(classificationProg)
-	noParamOps := make(map[string]spec.Operation)
+	noParamOps := make(map[string]*spec.Operation)
 	err = sp.Parse(fileTree, noParamOps)
 	if err != nil {
 		log.Fatal(err)

@@ -164,7 +164,7 @@ type paramStructParser struct {
 }
 
 func (pp *paramStructParser) Parse(gofile *ast.File, target interface{}) error {
-	tgt := target.(map[string]spec.Operation)
+	tgt := target.(map[string]*spec.Operation)
 	for _, decl := range gofile.Decls {
 		gd, ok := decl.(*ast.GenDecl)
 		if !ok {
@@ -183,7 +183,7 @@ func (pp *paramStructParser) Parse(gofile *ast.File, target interface{}) error {
 	return nil
 }
 
-func (pp *paramStructParser) parseDecl(operations map[string]spec.Operation, decl paramDecl) error {
+func (pp *paramStructParser) parseDecl(operations map[string]*spec.Operation, decl paramDecl) error {
 	// check if there is a +swagger:parameters tag that is followed by one or more words,
 	// these words are the ids of the operations this parameter struct applies to
 	// once type name is found convert it to a schema, by looking up the schema in the
@@ -191,9 +191,10 @@ func (pp *paramStructParser) parseDecl(operations map[string]spec.Operation, dec
 	for _, opid := range decl.inferOperationIDs() {
 		operation, ok := operations[opid]
 		if !ok {
+			operation = new(spec.Operation)
+			operations[opid] = operation
 			operation.ID = opid
 		}
-		opPtr := &operation
 
 		// analyze struct body for fields etc
 		// each exported struct field:
@@ -203,12 +204,12 @@ func (pp *paramStructParser) parseDecl(operations map[string]spec.Operation, dec
 		// * when the struct field points to a model it becomes a ref: #/definitions/ModelName
 		// * comments that aren't tags is used as the description
 		if tpe, ok := decl.TypeSpec.Type.(*ast.StructType); ok {
-			if err := pp.parseStructType(decl.File, opPtr, tpe); err != nil {
+			if err := pp.parseStructType(decl.File, operation, tpe); err != nil {
 				return err
 			}
 		}
 
-		operations[opid] = operation
+		//operations[opid] = operation
 	}
 	return nil
 }
@@ -343,18 +344,17 @@ func (pp *paramStructParser) parseProperty(gofile *ast.File, fld ast.Expr, prop 
 		if ftpe.Obj.Kind == ast.Typ {
 			if ts, ok := ftpe.Obj.Decl.(*ast.TypeSpec); ok {
 				if _, ok := ts.Type.(*ast.StructType); ok {
-					ref, err := spec.NewRef("#/definitions/" + ts.Name.Name)
-					if err != nil {
-						return err
-					}
-					prop.SetRef(ref)
-
 					for _, d := range gofile.Decls {
 						if gd, ok := d.(*ast.GenDecl); ok {
 							for _, tss := range gd.Specs {
 								if tss.Pos() == ts.Pos() {
 									sd := schemaDecl{gofile, gd, ts, "", ""}
 									sd.inferNames()
+									ref, err := spec.NewRef("#/definitions/" + sd.Name)
+									if err != nil {
+										return err
+									}
+									prop.SetRef(ref)
 									pp.postDecls = append(pp.postDecls, sd)
 									return nil
 								}

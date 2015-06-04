@@ -1,6 +1,7 @@
 package parse
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -442,6 +443,14 @@ func (ss *setSecurityDefinitions) Parse(lines []string) error {
 	return nil
 }
 
+func newSetResponses2(definitions map[string]spec.Schema, responses map[string]spec.Response, setter func(*spec.Response, map[int]spec.Response)) *setOpResponses {
+	return &setOpResponses{
+		set:         setter,
+		rx:          rxResponses,
+		definitions: definitions,
+		responses:   responses,
+	}
+}
 func newSetResponses(setter func(*spec.Response, map[int]spec.Response)) *setOpResponses {
 	return &setOpResponses{
 		set: setter,
@@ -450,8 +459,14 @@ func newSetResponses(setter func(*spec.Response, map[int]spec.Response)) *setOpR
 }
 
 type setOpResponses struct {
-	set func(*spec.Response, map[int]spec.Response)
-	rx  *regexp.Regexp
+	set         func(*spec.Response, map[int]spec.Response)
+	rx          *regexp.Regexp
+	definitions map[string]spec.Schema
+	responses   map[string]spec.Response
+	used        struct {
+		definitions map[string]struct{}
+		responses   map[string]struct{}
+	}
 }
 
 func (ss *setOpResponses) Matches(line string) bool {
@@ -472,13 +487,29 @@ func (ss *setOpResponses) Parse(lines []string) error {
 
 		if len(kv) > 1 {
 			key = strings.TrimSpace(kv[0])
+			if key == "" {
+				// this must be some weird empty line
+				continue
+			}
 			value = strings.TrimSpace(kv[1])
+			if value == "" {
+				return fmt.Errorf("no name for %q response", key)
+			}
 
-			var resp spec.Response
 			ref, err := spec.NewRef("#/responses/" + value)
+			if _, ok := ss.responses[value]; !ok {
+				if _, ok := ss.definitions[value]; ok {
+					ref, err = spec.NewRef("#/definitions/" + value)
+					ss.used.definitions[value] = struct{}{}
+				}
+			} else {
+				ss.used.responses[value] = struct{}{}
+			}
 			if err != nil {
 				return err
 			}
+
+			var resp spec.Response
 			resp.Ref = ref
 			if strings.EqualFold("default", key) {
 				if def == nil {

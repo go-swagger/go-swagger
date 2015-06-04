@@ -1,6 +1,7 @@
 package parse
 
 import (
+	"fmt"
 	"go/ast"
 	"strings"
 
@@ -8,16 +9,6 @@ import (
 
 	"golang.org/x/tools/go/loader"
 )
-
-func setOperationSummary(op *spec.Operation, lines []string) error {
-	op.Summary = joinDropLast(lines)
-	return nil
-}
-
-func setOperationDescription(op *spec.Operation, lines []string) error {
-	op.Description = joinDropLast(lines)
-	return nil
-}
 
 func opConsumesSetter(op *spec.Operation) func([]string) {
 	return func(consumes []string) { op.Consumes = consumes }
@@ -52,7 +43,10 @@ func newRoutesParser(prog *loader.Program) *routesParser {
 }
 
 type routesParser struct {
-	program *loader.Program
+	program     *loader.Program
+	definitions map[string]spec.Schema
+	operations  map[string]*spec.Operation
+	responses   map[string]spec.Response
 }
 
 func (rp *routesParser) Parse(gofile *ast.File, target interface{}) error {
@@ -92,8 +86,11 @@ func (rp *routesParser) Parse(gofile *ast.File, target interface{}) error {
 		}
 
 		pthObj := tgt.Paths[path]
-		op := new(spec.Operation)
-		op.ID = id
+		op := rp.operations[id]
+		if op == nil {
+			op = new(spec.Operation)
+			op.ID = id
+		}
 		switch strings.ToUpper(method) {
 		case "GET":
 			if pthObj.Get != nil {
@@ -176,15 +173,16 @@ func (rp *routesParser) Parse(gofile *ast.File, target interface{}) error {
 		sp := new(sectionedParser)
 		sp.setTitle = func(lines []string) { op.Summary = joinDropLast(lines) }
 		sp.setDescription = func(lines []string) { op.Description = joinDropLast(lines) }
+		sr := newSetResponses2(rp.definitions, rp.responses, opResponsesSetter(op))
 		sp.taggers = []tagParser{
 			newMultiLineTagParser("Consumes", newMultilineDropEmptyParser(rxConsumes, opConsumesSetter(op))),
 			newMultiLineTagParser("Produces", newMultilineDropEmptyParser(rxProduces, opProducesSetter(op))),
 			newSingleLineTagParser("Schemes", newSetSchemes(opSchemeSetter(op))),
 			newMultiLineTagParser("Security", newSetSecurityDefinitions(opSecurityDefsSetter(op))),
-			newMultiLineTagParser("Responses", newSetResponses(opResponsesSetter(op))),
+			newMultiLineTagParser("Responses", sr),
 		}
 		if err := sp.Parse(remaining); err != nil {
-			return err
+			return fmt.Errorf("operation (%s): %v", op.ID, err)
 		}
 
 		if tgt.Paths == nil {

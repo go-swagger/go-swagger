@@ -1,92 +1,68 @@
 package generate
 
 import (
+	"encoding/json"
 	"fmt"
-	goparser "go/parser"
-	"go/token"
-	"path/filepath"
-	"sort"
+	"io"
+	"os"
 
-	"golang.org/x/tools/go/loader"
-
+	"github.com/casualjim/go-swagger/parse"
+	"github.com/casualjim/go-swagger/spec"
 	"github.com/jessevdk/go-flags"
 )
 
 // SpecFile command to generate a swagger spec from a go application
 type SpecFile struct {
 	BasePath string         `long:"base-path" short:"b" description:"the base path to use" default:"."`
-	Output   flags.Filename `long:"output" short:"o" description:"the file to write to" default:"./swagger.json"`
+	Output   flags.Filename `long:"output" short:"o" description:"the file to write to"`
+	Input    flags.Filename `long:"input" short:"i" description:"the file to use as input"`
 }
 
 // Execute runs this command
 func (s *SpecFile) Execute(args []string) error {
-	//docFile := "/home/ivan/go/src/github.com/casualjim/go-swagger/internal/testing/petstoreapp/doc.go"
-	//fileSet := token.NewFileSet()
-	//fileTree, err := goparser.ParseFile(fileSet, docFile, nil, goparser.ParseComments)
-	//if err != nil {
-	//return err
-	//}
-	//pretty.Println(fileTree)
-
-	//for _, comment := range fileTree.Comments {
-	//for i, commentLine := range strings.Split(comment.Text(), "\n") {
-	//fmt.Println("comment", i+1)
-	//fmt.Println(commentLine)
-	//fmt.Println(len(commentLine), "$#$")
-	//}
-	//}
-
-	var conf loader.Config
-	conf.Import("./cmd/swagger-petstore-server")
-	conf.ParserMode = goparser.ParseComments
-	prog, err := conf.Load()
+	input, err := loadSpec(string(s.Input))
 	if err != nil {
 		return err
 	}
 
-	//printProgram(prog)
-	printFile(prog.Fset, prog.Package("github.com/casualjim/go-swagger/cmd/swagger/models"))
+	swspec, err := parse.Application(s.BasePath, input, nil, nil)
+	if err != nil {
+		return err
+	}
 
+	return writeToFile(swspec, string(s.Output))
+}
+
+var (
+	newLine = []byte("\n")
+)
+
+func loadSpec(input string) (*spec.Swagger, error) {
+	if fi, err := os.Stat(input); err == nil {
+		if fi.IsDir() {
+			return nil, fmt.Errorf("expected %q to be a file not a directory", input)
+		}
+		sp, err := spec.Load(input)
+		if err != nil {
+			return nil, err
+		}
+		return sp.Spec(), nil
+	}
+	return nil, nil
+}
+
+func writeToFile(swspec *spec.Swagger, output string) error {
+	var wrtr io.WriteCloser = os.Stdout
+	if output != "" {
+		wrtr = os.Stdout
+		defer wrtr.Close()
+	}
+
+	b, err := json.Marshal(swspec)
+	if err != nil {
+		return err
+	}
+	wrtr.Write(b)
+	wrtr.Write(newLine)
 	return nil
-}
-func printFile(fset *token.FileSet, info *loader.PackageInfo) {
-	var names []string
-	for _, f := range info.Files {
-		names = append(names, filepath.Base(fset.File(f.Pos()).Name()))
-	}
-	fmt.Printf("%s.Files: %s\n", info.Pkg.Path(), names)
-}
-func printProgram(prog *loader.Program) {
-	// Created packages are the initial packages specified by a call
-	// to CreateFromFilenames or CreateFromFiles.
-	var names []string
-	for _, info := range prog.Created {
-		names = append(names, info.Pkg.Path())
-	}
-	fmt.Printf("created: %s\n", names)
-
-	// Imported packages are the initial packages specified by a
-	// call to Import or ImportWithTests.
-	names = nil
-	for _, info := range prog.Imported {
-		names = append(names, info.Pkg.Path())
-	}
-	sort.Strings(names)
-	fmt.Printf("imported: %s\n", names)
-
-	// InitialPackages contains the union of created and imported.
-	names = nil
-	for _, info := range prog.InitialPackages() {
-		names = append(names, info.Pkg.Path())
-	}
-	sort.Strings(names)
-	fmt.Printf("initial: %s\n", names)
-
-	// AllPackages contains all initial packages and their dependencies.
-	names = nil
-	for pkg := range prog.AllPackages {
-		names = append(names, pkg.Path())
-	}
-	sort.Strings(names)
-	fmt.Printf("all: %s\n", names)
 }

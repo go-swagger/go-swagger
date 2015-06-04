@@ -61,7 +61,7 @@ var (
 	rxNotAlNumSpaceComma = regexp.MustCompile("[^\\p{L}\\p{N}\\p{Zs},]")
 	rxPunctuationEnd     = regexp.MustCompile("\\p{Po}$")
 	rxStripComments      = regexp.MustCompile("^[^\\w\\+]*")
-	rxStripTitleComments = regexp.MustCompile("^[^\\p{L}]*(:?P|p)ackage\\p{Zs}+[^\\p{Zs}]+\\p{Zs}*")
+	rxStripTitleComments = regexp.MustCompile("^[^\\p{L}]*[Pp]ackage\\p{Zs}+[^\\p{Zs}]+\\p{Zs}*")
 
 	rxConsumes  = regexp.MustCompile("[Cc]onsumes\\p{Zs}*:")
 	rxProduces  = regexp.MustCompile("[Pp]roduces\\p{Zs}*:")
@@ -103,20 +103,37 @@ func rxf(rxp, ar string) *regexp.Regexp {
 	return regexp.MustCompile(fmt.Sprintf(rxp, ar))
 }
 
+// Application scans the application and builds a swagger spec based on the information from the code files.
+// When there are includes provided, only those files are considered for the initial discovery.
+// Similarly the excludes will exclude an item from initial discovery through scanning for annotations.
+// When something in the discovered items requires a type that is contained in the includes or excludes it will still be
+// in the spec.
+func Application(bp string, input *spec.Swagger, includes, excludes packageFilters) (*spec.Swagger, error) {
+	parser, err := newAPIParser(bp, input, includes, excludes)
+	if err != nil {
+		return nil, err
+	}
+	return parser.Parse()
+}
+
 // apiParser the global context for parsing a go application
 // into a swagger specification
 type apiParser struct {
-	loader     *loader.Config
-	prog       *loader.Program
-	classifier *programClassifier
-	discovered []schemaDecl
+	loader      *loader.Config
+	prog        *loader.Program
+	classifier  *programClassifier
+	discovered  []schemaDecl
+	input       *spec.Swagger
+	definitions map[string]spec.Schema
+	responses   map[string]spec.Response
+	operations  map[string]*spec.Operation
 
 	// MainPackage the path to find the main class in
 	MainPackage string
 }
 
 // newAPIParser creates a new api parser
-func newAPIParser(bp string, includes, excludes packageFilters) (*apiParser, error) {
+func newAPIParser(bp string, input *spec.Swagger, includes, excludes packageFilters) (*apiParser, error) {
 	var ldr loader.Config
 	ldr.ParserMode = goparser.ParseComments
 	ldr.Import(bp)
@@ -124,10 +141,70 @@ func newAPIParser(bp string, includes, excludes packageFilters) (*apiParser, err
 	if err != nil {
 		return nil, err
 	}
-	return &apiParser{MainPackage: bp, prog: prog, loader: &ldr, classifier: &programClassifier{
-		Includes: includes,
-		Excludes: excludes,
-	}}, nil
+
+	if input.Paths == nil {
+		input.Paths = new(spec.Paths)
+	}
+	operations := collectOperationsFromInput(input)
+	var definitions map[string]spec.Schema
+	if input != nil {
+		definitions = input.Definitions
+	}
+	if definitions == nil {
+		definitions = make(map[string]spec.Schema)
+	}
+
+	var responses map[string]spec.Response
+	if input != nil {
+		responses = input.Responses
+	}
+	if responses == nil {
+		responses = make(map[string]spec.Response)
+	}
+
+	return &apiParser{
+		MainPackage: bp,
+		prog:        prog,
+		input:       input,
+		loader:      &ldr,
+		operations:  operations,
+		definitions: definitions,
+		responses:   responses,
+		classifier: &programClassifier{
+			Includes: includes,
+			Excludes: excludes,
+		},
+	}, nil
+}
+
+func collectOperationsFromInput(input *spec.Swagger) map[string]*spec.Operation {
+	operations := make(map[string]*spec.Operation)
+	if input != nil && input.Paths != nil {
+		for _, pth := range input.Paths.Paths {
+			if pth.Get != nil {
+				operations[pth.Get.ID] = pth.Get
+			}
+			if pth.Post != nil {
+				operations[pth.Post.ID] = pth.Post
+			}
+			if pth.Put != nil {
+				operations[pth.Put.ID] = pth.Put
+			}
+			if pth.Patch != nil {
+				operations[pth.Patch.ID] = pth.Patch
+			}
+			if pth.Delete != nil {
+				operations[pth.Delete.ID] = pth.Delete
+			}
+			if pth.Head != nil {
+				operations[pth.Head.ID] = pth.Head
+			}
+			if pth.Options != nil {
+				operations[pth.Options.ID] = pth.Options
+			}
+		}
+	}
+	return operations
 }
 
 // Parse produces a swagger object for an application
@@ -138,74 +215,54 @@ func (a *apiParser) Parse() (*spec.Swagger, error) {
 		return nil, err
 	}
 
-	// find the operations
-	// build the responses
-	// build the paramters
-	// build schemas for discovered models
-	// add meta data
-
-	// build definitions dictionary
-	var definitions = make(map[string]spec.Schema)
-	for _, modFile := range cp.Models {
-		if err := a.parseSchema(modFile, definitions); err != nil {
-			return nil, err
-		}
-	}
-
 	// build parameters dictionary
-	var parameters = make(map[string]spec.Operation)
 	for _, paramsFile := range cp.Parameters {
-		if err := a.parseParameters(paramsFile, parameters); err != nil {
+		if err := a.parseParameters(paramsFile); err != nil {
 			return nil, err
 		}
 	}
 
 	// build responses dictionary
-	var responses = make(map[string]spec.Response)
 	for _, responseFile := range cp.Responses {
-		if err := a.parseResponses(responseFile, responses); err != nil {
+		if err := a.parseResponses(responseFile); err != nil {
 			return nil, err
 		}
 	}
 
-	if err := a.processDiscovered(definitions); err != nil {
+	// build definitions dictionary
+	if err := a.processDiscovered(); err != nil {
 		return nil, err
 	}
 
 	// build paths dictionary
-	var paths spec.Paths
 	for _, routeFile := range cp.Operations {
-		if err := a.parseRoutes(routeFile, &paths); err != nil {
+		if err := a.parseRoutes(routeFile); err != nil {
 			return nil, err
 		}
 	}
 
 	// build swagger object
-	result := new(spec.Swagger)
 	for _, metaFile := range cp.Meta {
-		if err := a.parseMeta(metaFile, result); err != nil {
+		if err := a.parseMeta(metaFile); err != nil {
 			return nil, err
 		}
 	}
-	// assemble swagger object, only including things that are in actual use
-	result.Paths = &paths
-	result.Definitions = definitions
-	return result, nil
+	return a.input, nil
 }
 
-func (a *apiParser) processDiscovered(definitions map[string]spec.Schema) error {
+func (a *apiParser) processDiscovered() error {
 	// loop over discovered until all the items are in definitions
 	keepGoing := len(a.discovered) > 0
 	for keepGoing {
 		var queue []schemaDecl
 		for _, d := range a.discovered {
-			if _, ok := definitions[d.Name]; !ok {
+			if _, ok := a.definitions[d.Name]; !ok {
 				queue = append(queue, d)
 			}
 		}
 		a.discovered = nil
 		for _, sd := range queue {
-			if err := a.parseSchema(sd.File, definitions); err != nil {
+			if err := a.parseSchema(sd.File); err != nil {
 				return err
 			}
 		}
@@ -215,43 +272,46 @@ func (a *apiParser) processDiscovered(definitions map[string]spec.Schema) error 
 	return nil
 }
 
-func (a *apiParser) parseSchema(file *ast.File, definitions map[string]spec.Schema) error {
+func (a *apiParser) parseSchema(file *ast.File) error {
 	sp := newSchemaParser(a.prog)
-	if err := sp.Parse(file, definitions); err != nil {
+	if err := sp.Parse(file, a.definitions); err != nil {
 		return err
 	}
 	a.discovered = append(a.discovered, sp.postDecls...)
 	return nil
 }
 
-func (a *apiParser) parseRoutes(file *ast.File, paths *spec.Paths) error {
+func (a *apiParser) parseRoutes(file *ast.File) error {
 	rp := newRoutesParser(a.prog)
-	if err := rp.Parse(file, paths); err != nil {
+	rp.operations = a.operations
+	rp.definitions = a.definitions
+	rp.responses = a.responses
+	if err := rp.Parse(file, a.input.Paths); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (a *apiParser) parseParameters(file *ast.File, operations map[string]spec.Operation) error {
+func (a *apiParser) parseParameters(file *ast.File) error {
 	rp := newParameterParser(a.prog)
-	if err := rp.Parse(file, operations); err != nil {
+	if err := rp.Parse(file, a.operations); err != nil {
 		return err
 	}
 	a.discovered = append(a.discovered, rp.postDecls...)
 	return nil
 }
 
-func (a *apiParser) parseResponses(file *ast.File, responses map[string]spec.Response) error {
+func (a *apiParser) parseResponses(file *ast.File) error {
 	rp := newResponseParser(a.prog)
-	if err := rp.Parse(file, responses); err != nil {
+	if err := rp.Parse(file, a.responses); err != nil {
 		return err
 	}
 	a.discovered = append(a.discovered, rp.postDecls...)
 	return nil
 }
 
-func (a *apiParser) parseMeta(file *ast.File, swspec *spec.Swagger) error {
-	return newMetaParser(swspec).Parse(file.Doc)
+func (a *apiParser) parseMeta(file *ast.File) error {
+	return newMetaParser(a.input).Parse(file.Doc)
 }
 
 // MustExpandPackagePath gets the real package path on disk
@@ -328,13 +388,13 @@ func (sp *selectorParser) TypeForSelector(gofile *ast.File, expr *ast.SelectorEx
 								}
 								// ok so not a string format, perhaps a model?
 								if _, ok := ts.Type.(*ast.StructType); ok {
-									ref, err := spec.NewRef("#/definitions/" + ts.Name.Name)
+									sd := schemaDecl{file, gd, ts, "", ""}
+									sd.inferNames()
+									ref, err := spec.NewRef("#/definitions/" + sd.Name)
 									if err != nil {
 										return err
 									}
 									prop.SetRef(ref)
-									sd := schemaDecl{file, gd, ts, "", ""}
-									sd.inferNames()
 									sp.AddPostDecl(sd)
 									return nil
 								}

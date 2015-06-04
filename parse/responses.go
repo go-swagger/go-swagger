@@ -263,11 +263,6 @@ func (rp *responseParser) parseProperty(gofile *ast.File, fld ast.Expr, prop ope
 		if ftpe.Obj.Kind == ast.Typ {
 			if ts, ok := ftpe.Obj.Decl.(*ast.TypeSpec); ok {
 				if _, ok := ts.Type.(*ast.StructType); ok {
-					ref, err := spec.NewRef("#/definitions/" + ts.Name.Name)
-					if err != nil {
-						return err
-					}
-					prop.SetRef(ref)
 
 					for _, d := range gofile.Decls {
 						if gd, ok := d.(*ast.GenDecl); ok {
@@ -275,6 +270,11 @@ func (rp *responseParser) parseProperty(gofile *ast.File, fld ast.Expr, prop ope
 								if tss.Pos() == ts.Pos() {
 									sd := schemaDecl{gofile, gd, ts, "", ""}
 									sd.inferNames()
+									ref, err := spec.NewRef("#/definitions/" + sd.Name)
+									if err != nil {
+										return err
+									}
+									prop.SetRef(ref)
 									rp.postDecls = append(rp.postDecls, sd)
 									return nil
 								}

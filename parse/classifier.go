@@ -7,18 +7,6 @@ import (
 	"golang.org/x/tools/go/loader"
 )
 
-type swaggerKind int8
-
-const (
-	swMeta swaggerKind = iota
-	swModel
-	swRoute
-	swParameters
-	swResponse
-	swStrFmt
-	swTag
-)
-
 type packageFilter struct {
 	Name string
 }
@@ -27,29 +15,15 @@ func (pf *packageFilter) Matches(path string) bool {
 	return path == pf.Name
 }
 
-type packageFilters struct {
-	Operations []packageFilter
-	Models     []packageFilter
-	Meta       *packageFilter
+type packageFilters []packageFilter
+
+func (pf packageFilters) HasFilters() bool {
+	return len(pf) > 0
 }
 
-func (pf *packageFilters) HasFilters() bool {
-	return len(pf.Operations) > 0 || len(pf.Models) > 0 || pf.Meta != nil
-}
-
-func (pf *packageFilters) Matches(path string) bool {
-	if pf.Meta != nil && pf.Meta.Matches(path) {
-		return true
-	}
-
-	for _, mod := range pf.Models {
+func (pf packageFilters) Matches(path string) bool {
+	for _, mod := range pf {
 		if mod.Matches(path) {
-			return true
-		}
-	}
-
-	for _, op := range pf.Operations {
-		if op.Matches(path) {
 			return true
 		}
 	}
@@ -94,7 +68,7 @@ func (pc *programClassifier) Classify(prog *loader.Program) (*classifiedProgram,
 		}
 
 		for _, file := range pkgInfo.Files {
-			var op, md, mt, pm, rs bool // only add a particular file once
+			var op, mt, pm, rs bool // only add a particular file once
 			for _, comments := range file.Comments {
 				matches := rxSwaggerAnnotation.FindStringSubmatch(comments.Text())
 				if len(matches) > 1 {
@@ -105,10 +79,8 @@ func (pc *programClassifier) Classify(prog *loader.Program) (*classifiedProgram,
 							op = true
 						}
 					case "model":
-						if !md {
-							cp.Models = append(cp.Models, file)
-							md = true
-						}
+						// models are discovered through parameters and responses
+						// no actual scanning for them is required
 					case "meta":
 						if !mt {
 							cp.Meta = append(cp.Meta, file)

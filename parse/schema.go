@@ -108,18 +108,18 @@ func (sd *schemaDecl) inferNames() (goName string, name string) {
 	return
 }
 
-type structCommentParser struct {
+type schemaParser struct {
 	program   *loader.Program
 	postDecls []schemaDecl
 }
 
-func newSchemaParser(prog *loader.Program) *structCommentParser {
-	scp := new(structCommentParser)
+func newSchemaParser(prog *loader.Program) *schemaParser {
+	scp := new(schemaParser)
 	scp.program = prog
 	return scp
 }
 
-func (scp *structCommentParser) Parse(gofile *ast.File, target interface{}) error {
+func (scp *schemaParser) Parse(gofile *ast.File, target interface{}) error {
 	tgt := target.(map[string]spec.Schema)
 	for _, decl := range gofile.Decls {
 		gd, ok := decl.(*ast.GenDecl)
@@ -139,7 +139,7 @@ func (scp *structCommentParser) Parse(gofile *ast.File, target interface{}) erro
 	return nil
 }
 
-func (scp *structCommentParser) parseDecl(definitions map[string]spec.Schema, decl schemaDecl) error {
+func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl schemaDecl) error {
 	// check if there is a +swagger:model tag that is followed by a word,
 	// this word is the type name for swagger
 	// the package and type are recorded in the extensions
@@ -188,7 +188,7 @@ func (scp *structCommentParser) parseDecl(definitions map[string]spec.Schema, de
 	return nil
 }
 
-func (scp *structCommentParser) parseStructType(gofile *ast.File, schema *spec.Schema, tpe *ast.StructType) error {
+func (scp *schemaParser) parseStructType(gofile *ast.File, schema *spec.Schema, tpe *ast.StructType) error {
 	schema.Typed("object", "")
 	if tpe.Fields != nil {
 		seenProperties := make(map[string]struct{})
@@ -285,7 +285,7 @@ func (scp *structCommentParser) parseStructType(gofile *ast.File, schema *spec.S
 	return nil
 }
 
-func (scp *structCommentParser) parseProperty(gofile *ast.File, fld ast.Expr, prop *spec.Schema) error {
+func (scp *schemaParser) parseProperty(gofile *ast.File, fld ast.Expr, prop *spec.Schema) error {
 	sct := &schemaTypable{prop}
 	switch ftpe := fld.(type) {
 	case *ast.Ident: // simple value
@@ -299,11 +299,6 @@ func (scp *structCommentParser) parseProperty(gofile *ast.File, fld ast.Expr, pr
 		if ftpe.Obj.Kind == ast.Typ {
 			if ts, ok := ftpe.Obj.Decl.(*ast.TypeSpec); ok {
 				if _, ok := ts.Type.(*ast.StructType); ok {
-					ref, err := spec.NewRef("#/definitions/" + ts.Name.Name)
-					if err != nil {
-						return err
-					}
-					prop.Ref = ref
 
 					for _, d := range gofile.Decls {
 						if gd, ok := d.(*ast.GenDecl); ok {
@@ -311,6 +306,11 @@ func (scp *structCommentParser) parseProperty(gofile *ast.File, fld ast.Expr, pr
 								if tss.Pos() == ts.Pos() {
 									sd := schemaDecl{gofile, gd, ts, "", ""}
 									sd.inferNames()
+									ref, err := spec.NewRef("#/definitions/" + sd.Name)
+									if err != nil {
+										return err
+									}
+									prop.Ref = ref
 									scp.postDecls = append(scp.postDecls, sd)
 									return nil
 								}
