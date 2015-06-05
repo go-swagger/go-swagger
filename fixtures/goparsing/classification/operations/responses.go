@@ -5,6 +5,29 @@ import (
 	"github.com/casualjim/go-swagger/strfmt"
 )
 
+// A GenericError is an error that is used when no other error is appropriate
+// +swagger:response genericError
+type GenericError struct {
+	// The error message
+	// in: body
+	Body struct {
+		Message string
+	}
+}
+
+// A ValidationError is an error that is used when the required input fails validation.
+// +swagger:response validationError
+type ValidationError struct {
+	// The error message
+	// in: body
+	Body struct {
+		// The validation message
+		Message string
+		// An optional field name to which this validation applies
+		FieldName string
+	}
+}
+
 // A SomeResponse is a dummy response object to test parsing.
 //
 // The properties are the same as the other structs used to test parsing.

@@ -22,7 +22,7 @@ func TestParseResponses(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Len(t, responses, 1)
+	assert.Len(t, responses, 3)
 	//pretty.Println(responses)
 	res, ok := responses["someResponse"]
 	assert.True(t, ok)
@@ -101,7 +101,7 @@ func TestParseResponses(t *testing.T) {
 	assert.EqualValues(t, 10, *iprop.Minimum)
 	assert.True(t, iprop.ExclusiveMinimum, "'id' should have had an exclusive minimum")
 
-	assertRef(t, itprop, "pet", "Pet", "#/definitions/Pet")
+	assertRef(t, itprop, "pet", "Pet", "#/definitions/pet")
 	iprop, ok = itprop.Properties["pet"]
 	assert.True(t, ok)
 	assert.Equal(t, "The Pet to add to this NoModel items bucket.\nPets can appear more than once in the bucket", iprop.Description)

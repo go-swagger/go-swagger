@@ -173,8 +173,6 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl sche
 	if decl.Name != decl.GoName {
 		schPtr.AddExtension("x-go-name", decl.GoName)
 	}
-	// TODO: perhaps move this to the classifier
-	// and build a map from file pos to package
 	for _, pkgInfo := range scp.program.AllPackages {
 		if pkgInfo.Importable {
 			for _, fil := range pkgInfo.Files {
@@ -212,6 +210,7 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, schema *spec.Schema, 
 				}
 
 				ps := schema.Properties[nm]
+				ps.ID = nm
 				if err := scp.parseProperty(gofile, fld.Type, &ps); err != nil {
 					return err
 				}
@@ -287,23 +286,23 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, schema *spec.Schema, 
 
 func (scp *schemaParser) parseProperty(gofile *ast.File, fld ast.Expr, prop *spec.Schema) error {
 	sct := &schemaTypable{prop}
+	//fmt.Printf("the type: %#v\n", fld)
 	switch ftpe := fld.(type) {
 	case *ast.Ident: // simple value
 		if ftpe.Obj == nil {
 			return swaggerSchemaForType(ftpe.Name, sct)
 		}
-		// we're probably looking at a struct here
-		// make sure it is one. Try to find it in the package
-		// when found make sure the struct gets added as a schema too
-		// and turn this property into a ref
+
 		if ftpe.Obj.Kind == ast.Typ {
 			if ts, ok := ftpe.Obj.Decl.(*ast.TypeSpec); ok {
-				if _, ok := ts.Type.(*ast.StructType); ok {
-
-					for _, d := range gofile.Decls {
-						if gd, ok := d.(*ast.GenDecl); ok {
-							for _, tss := range gd.Specs {
-								if tss.Pos() == ts.Pos() {
+				for _, d := range gofile.Decls {
+					if gd, ok := d.(*ast.GenDecl); ok {
+						for _, tss := range gd.Specs {
+							if tss.Pos() == ts.Pos() {
+								if _, ok := ts.Type.(*ast.StructType); ok {
+									// At this stage we're no longer interested in actually
+									// parsing a struct like this, we're going to reference it instead
+									// In addition to referencing, it is added to a bag of discovered schemas
 									sd := schemaDecl{gofile, gd, ts, "", ""}
 									sd.inferNames()
 									ref, err := spec.NewRef("#/definitions/" + sd.Name)
@@ -314,6 +313,14 @@ func (scp *schemaParser) parseProperty(gofile *ast.File, fld ast.Expr, prop *spe
 									scp.postDecls = append(scp.postDecls, sd)
 									return nil
 								}
+
+								// Check if this might be a type decorated with strfmt
+								if sfn, ok := strfmtName(gd.Doc); ok {
+									prop.Typed("string", sfn)
+									return nil
+								}
+								// check if this is possibly a strfmt override on the aliased type
+								return scp.parseProperty(gofile, ts.Type, prop)
 							}
 						}
 					}
@@ -351,9 +358,10 @@ func (scp *schemaParser) parseProperty(gofile *ast.File, fld ast.Expr, prop *spe
 	case *ast.SelectorExpr:
 		sp := selectorParser{
 			program:     scp.program,
-			AddPostDecl: func(sd schemaDecl) { scp.postDecls = append(scp.postDecls) },
+			AddPostDecl: func(sd schemaDecl) { scp.postDecls = append(scp.postDecls, sd) },
 		}
-		return sp.TypeForSelector(gofile, ftpe, sct)
+		err := sp.TypeForSelector(gofile, ftpe, sct)
+		return err
 
 	case *ast.MapType:
 		// check if key is a string type, if not print a message
@@ -373,7 +381,7 @@ func (scp *schemaParser) parseProperty(gofile *ast.File, fld ast.Expr, prop *spe
 		}
 
 	case *ast.InterfaceType:
-		// FIXME:
+		// NOTE:
 		// what to do with an interface? support it?
 		// ignoring it for now
 		// I guess something can be done with a discriminator field
@@ -382,4 +390,18 @@ func (scp *schemaParser) parseProperty(gofile *ast.File, fld ast.Expr, prop *spe
 		return fmt.Errorf("%s is unsupported for a schema", ftpe)
 	}
 	return nil
+}
+
+func strfmtName(comments *ast.CommentGroup) (string, bool) {
+	if comments != nil {
+		for _, cmt := range comments.List {
+			for _, ln := range strings.Split(cmt.Text, "\n") {
+				matches := rxStrFmt.FindStringSubmatch(ln)
+				if len(matches) > 1 && len(strings.TrimSpace(matches[1])) > 0 {
+					return strings.TrimSpace(matches[1]), true
+				}
+			}
+		}
+	}
+	return "", false
 }

@@ -141,25 +141,18 @@ func newAppScanner(bp string, input *spec.Swagger, includes, excludes packageFil
 	if err != nil {
 		return nil, err
 	}
+	if input == nil {
+		input = new(spec.Swagger)
+	}
 
 	if input.Paths == nil {
 		input.Paths = new(spec.Paths)
 	}
-	operations := collectOperationsFromInput(input)
-	var definitions map[string]spec.Schema
-	if input != nil {
-		definitions = input.Definitions
+	if input.Definitions == nil {
+		input.Definitions = make(map[string]spec.Schema)
 	}
-	if definitions == nil {
-		definitions = make(map[string]spec.Schema)
-	}
-
-	var responses map[string]spec.Response
-	if input != nil {
-		responses = input.Responses
-	}
-	if responses == nil {
-		responses = make(map[string]spec.Response)
+	if input.Responses == nil {
+		input.Responses = make(map[string]spec.Response)
 	}
 
 	return &appScanner{
@@ -167,9 +160,9 @@ func newAppScanner(bp string, input *spec.Swagger, includes, excludes packageFil
 		prog:        prog,
 		input:       input,
 		loader:      &ldr,
-		operations:  operations,
-		definitions: definitions,
-		responses:   responses,
+		operations:  collectOperationsFromInput(input),
+		definitions: input.Definitions,
+		responses:   input.Responses,
 		classifier: &programClassifier{
 			Includes: includes,
 			Excludes: excludes,
@@ -375,19 +368,13 @@ func (sp *selectorParser) TypeForSelector(gofile *ast.File, expr *ast.SelectorEx
 							if ts.Name != nil && ts.Name.Name == expr.Sel.Name {
 								// look at doc comments for +swagger:strfmt [name]
 								// when found this is the format name, create a schema with that name
-								if gd.Doc != nil {
-									for _, cmt := range gd.Doc.List {
-										for _, ln := range strings.Split(cmt.Text, "\n") {
-											matches := rxStrFmt.FindStringSubmatch(ln)
-											if len(matches) > 1 && len(matches[1]) > 0 {
-												prop.Typed("string", matches[1])
-												return nil
-											}
-										}
-									}
+								if strfmtName, ok := strfmtName(gd.Doc); ok {
+									prop.Typed("string", strfmtName)
+									return nil
 								}
-								// ok so not a string format, perhaps a model?
-								if _, ok := ts.Type.(*ast.StructType); ok {
+
+								switch tpe := ts.Type.(type) {
+								case *ast.StructType:
 									sd := schemaDecl{file, gd, ts, "", ""}
 									sd.inferNames()
 									ref, err := spec.NewRef("#/definitions/" + sd.Name)
@@ -397,7 +384,44 @@ func (sp *selectorParser) TypeForSelector(gofile *ast.File, expr *ast.SelectorEx
 									prop.SetRef(ref)
 									sp.AddPostDecl(sd)
 									return nil
+								case *ast.Ident:
+									for _, fl := range pkg.Files {
+										for _, dcl := range fl.Decls {
+											if gdd, ok := dcl.(*ast.GenDecl); ok {
+												for _, gss := range gdd.Specs {
+													if st, ok := gss.(*ast.TypeSpec); ok {
+														if st.Name != nil && st.Name.Name == tpe.Name {
+															if _, ok := st.Type.(*ast.StructType); ok {
+																// At this stage we're no longer interested in actually
+																// parsing a struct like this, we're going to reference it instead
+																// In addition to referencing, it is added to a bag of discovered schemas
+																sd := schemaDecl{fl, gdd, st, "", ""}
+																sd.inferNames()
+																ref, err := spec.NewRef("#/definitions/" + sd.Name)
+																if err != nil {
+																	return err
+																}
+																prop.SetRef(ref)
+																sp.AddPostDecl(sd)
+																return nil
+															}
+
+															// Check if this might be a type decorated with strfmt
+															if sfn, ok := strfmtName(gdd.Doc); ok {
+																prop.Typed("string", sfn)
+																return nil
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+									return swaggerSchemaForType(tpe.Name, prop)
+								case *ast.SelectorExpr:
+									return sp.TypeForSelector(file, tpe, prop)
 								}
+
 							}
 						}
 					}

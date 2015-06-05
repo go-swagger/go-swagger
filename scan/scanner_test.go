@@ -1,6 +1,7 @@
 package scan
 
 import (
+	"encoding/json"
 	"fmt"
 	"go/ast"
 	goparser "go/parser"
@@ -30,6 +31,18 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func TestAppScanner_NewSpec(t *testing.T) {
+	scanner, err := newAppScanner("../fixtures/goparsing/classification/operations", nil, nil, nil)
+	assert.NoError(t, err)
+	assert.NotNil(t, scanner)
+	doc, err := scanner.Parse()
+	assert.NoError(t, err)
+	assert.NotNil(t, doc)
+
+	b, _ := json.MarshalIndent(doc, "", "  ")
+	fmt.Println(string(b))
 }
 
 func TestSectionedParser_TitleDescription(t *testing.T) {

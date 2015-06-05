@@ -431,7 +431,10 @@ func (ss *setSecurityDefinitions) Parse(lines []string) error {
 		if len(kv) > 1 {
 			scs := strings.Split(rxNotAlNumSpaceComma.ReplaceAllString(kv[1], ""), ",")
 			for _, scope := range scs {
-				scopes = append(scopes, strings.TrimSpace(scope))
+				tr := strings.TrimSpace(scope)
+				if tr != "" {
+					scopes = append(scopes, strings.TrimSpace(scope))
+				}
 			}
 
 			key = strings.TrimSpace(kv[0])
@@ -463,10 +466,6 @@ type setOpResponses struct {
 	rx          *regexp.Regexp
 	definitions map[string]spec.Schema
 	responses   map[string]spec.Response
-	used        struct {
-		definitions map[string]struct{}
-		responses   map[string]struct{}
-	}
 }
 
 func (ss *setOpResponses) Matches(line string) bool {
@@ -500,10 +499,8 @@ func (ss *setOpResponses) Parse(lines []string) error {
 			if _, ok := ss.responses[value]; !ok {
 				if _, ok := ss.definitions[value]; ok {
 					ref, err = spec.NewRef("#/definitions/" + value)
-					ss.used.definitions[value] = struct{}{}
 				}
 			} else {
-				ss.used.responses[value] = struct{}{}
 			}
 			if err != nil {
 				return err

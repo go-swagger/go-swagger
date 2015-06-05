@@ -171,11 +171,13 @@ func (rp *responseParser) parseStructType(gofile *ast.File, response *spec.Respo
 
 				var in string
 				// scan for param location first, this changes some behavior down the line
-				for _, cmt := range fld.Doc.List {
-					for _, line := range strings.Split(cmt.Text, "\n") {
-						matches := rxIn.FindStringSubmatch(line)
-						if len(matches) > 0 && len(strings.TrimSpace(matches[1])) > 0 {
-							in = strings.TrimSpace(matches[1])
+				if fld.Doc != nil {
+					for _, cmt := range fld.Doc.List {
+						for _, line := range strings.Split(cmt.Text, "\n") {
+							matches := rxIn.FindStringSubmatch(line)
+							if len(matches) > 0 && len(strings.TrimSpace(matches[1])) > 0 {
+								in = strings.TrimSpace(matches[1])
+							}
 						}
 					}
 				}
@@ -333,7 +335,7 @@ func (rp *responseParser) parseProperty(gofile *ast.File, fld ast.Expr, prop ope
 	case *ast.SelectorExpr:
 		sp := selectorParser{
 			program:     rp.program,
-			AddPostDecl: func(sd schemaDecl) { rp.postDecls = append(rp.postDecls) },
+			AddPostDecl: func(sd schemaDecl) { rp.postDecls = append(rp.postDecls, sd) },
 		}
 		return sp.TypeForSelector(gofile, ftpe, prop)
 

@@ -82,7 +82,7 @@ func TestSchemaParser(t *testing.T) {
 	assert.EqualValues(t, 10, *iprop.Minimum)
 	assert.True(t, iprop.ExclusiveMinimum, "'id' should have had an exclusive minimum")
 
-	assertRef(t, itprop, "pet", "Pet", "#/definitions/Pet")
+	assertRef(t, itprop, "pet", "Pet", "#/definitions/pet")
 	iprop, ok = itprop.Properties["pet"]
 	assert.True(t, ok)
 	assert.Equal(t, "The Pet to add to this NoModel items bucket.\nPets can appear more than once in the bucket", iprop.Description)
@@ -120,6 +120,22 @@ func TestSchemaParser(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, pn, msch.Extensions["x-go-package"])
 	assert.Equal(t, "StoreOrder", msch.Extensions["x-go-name"])
+}
+
+func TestAliasedTypes(t *testing.T) {
+	schema := noModelDefs["OtherTypes"]
+	assertProperty(t, &schema, "string", "named", "", "Named")
+	assertProperty(t, &schema, "number", "numbered", "int64", "Numbered")
+	assertProperty(t, &schema, "string", "timed", "date-time", "Timed")
+	assertRef(t, &schema, "petted", "Petted", "#/definitions/pet")
+	assertRef(t, &schema, "somethinged", "Somethinged", "#/definitions/Something")
+	assertProperty(t, &schema, "string", "dated", "date-time", "Dated")
+
+	assertProperty(t, &schema, "string", "modsNamed", "", "ModsNamed")
+	assertProperty(t, &schema, "number", "modsNumbered", "int64", "ModsNumbered")
+	assertProperty(t, &schema, "string", "modsTimed", "date-time", "ModsTimed")
+	assertRef(t, &schema, "modsPetted", "ModsPetted", "#/definitions/pet")
+	assertProperty(t, &schema, "string", "modsDated", "date-time", "ModsDated")
 }
 
 func TestParsePrimitiveSchemaProperty(t *testing.T) {

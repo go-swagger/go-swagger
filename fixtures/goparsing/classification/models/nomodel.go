@@ -91,7 +91,52 @@ type SomeStringType string
 type SomeIntType int64
 
 // SomeTimeType is a type that refines time.Time
+// +swagger:strfmt date-time
 type SomeTimeType time.Time
+
+// SomeTimedType is a type that refines strfmt.DateTime
+type SomeTimedType strfmt.DateTime
+
+// SomePettedType is a type that refines mods.Pet
+type SomePettedType mods.Pet
+
+// SomethingType is a type that refines a type contained in the same package
+type SomethingType Something
+
+// A OtherTypes struct contains type aliases
+type OtherTypes struct {
+	Named       SomeStringType `json:"named"`
+	Numbered    SomeIntType    `json:"numbered"`
+	Dated       SomeTimeType   `json:"dated"`
+	Timed       SomeTimedType  `json:"timed"`
+	Petted      SomePettedType `json:"petted"`
+	Somethinged SomethingType  `json:"somethinged"`
+
+	ModsNamed    mods.SomeStringType `json:"modsNamed"`
+	ModsNumbered mods.SomeIntType    `json:"modsNumbered"`
+	ModsDated    mods.SomeTimeType   `json:"modsDated"`
+	ModsTimed    mods.SomeTimedType  `json:"modsTimed"`
+	ModsPetted   mods.SomePettedType `json:"modsPetted"`
+}
+
+// A SimpleOne is a model with a few simple fields
+type SimpleOne struct {
+	ID   int64
+	Name string
+	Age  int32
+}
+
+// A ComplexerOne is composed of a SimpleOne and some extra fields
+type ComplexerOne struct {
+	SimpleOne
+	CreatedAt strfmt.DateTime
+}
+
+// An OverridingOne is composed of a SimpleOne and overrides a field
+type OverridingOne struct {
+	SimpleOne
+	Age int64
+}
 
 // A PrimateModel is a struct with nothing but primitives.
 //

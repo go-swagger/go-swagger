@@ -413,7 +413,7 @@ func (pp *paramStructParser) parseProperty(gofile *ast.File, fld ast.Expr, prop 
 	case *ast.SelectorExpr:
 		sp := selectorParser{
 			program:     pp.program,
-			AddPostDecl: func(sd schemaDecl) { pp.postDecls = append(pp.postDecls) },
+			AddPostDecl: func(sd schemaDecl) { pp.postDecls = append(pp.postDecls, sd) },
 		}
 		return sp.TypeForSelector(gofile, ftpe, prop)
 

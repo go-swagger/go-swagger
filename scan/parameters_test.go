@@ -108,7 +108,7 @@ func TestParamsParser(t *testing.T) {
 			assert.EqualValues(t, 10, *iprop.Minimum)
 			assert.True(t, iprop.ExclusiveMinimum, "'id' should have had an exclusive minimum")
 
-			assertRef(t, itprop, "pet", "Pet", "#/definitions/Pet")
+			assertRef(t, itprop, "pet", "Pet", "#/definitions/pet")
 			iprop, ok = itprop.Properties["pet"]
 			assert.True(t, ok)
 			assert.Equal(t, "The Pet to add to this NoModel items bucket.\nPets can appear more than once in the bucket", iprop.Description)
