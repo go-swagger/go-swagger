@@ -1,7 +1,6 @@
 package scan
 
 import (
-	"fmt"
 	"go/ast"
 	"reflect"
 	"regexp"
@@ -16,12 +15,6 @@ type paramSetter func(*spec.Parameter, []string) error
 type itemsSetter func(*spec.Items, []string) error
 type matchingParamSetter func(*regexp.Regexp) paramSetter
 type matchingItemsSetter func(*regexp.Regexp) itemsSetter
-
-type operationTypable interface {
-	swaggerTypable
-	Items() *spec.Items
-	CollectionOf(*spec.Items, string)
-}
 
 type operationValidationBuilder interface {
 	validationBuilder
@@ -40,20 +33,37 @@ func (pt paramTypable) SetRef(ref spec.Ref) {
 	pt.param.Ref = ref
 }
 
-func (pt paramTypable) Items() *spec.Items {
-	return pt.param.Items
+func (pt paramTypable) Items() swaggerTypable {
+	if pt.param.In == "body" {
+		// get the schema for items on the schema property
+		if pt.param.Schema == nil {
+			pt.param.Schema = new(spec.Schema)
+		}
+		if pt.param.Schema.Items == nil {
+			pt.param.Schema.Items = new(spec.SchemaOrArray)
+		}
+		if pt.param.Schema.Items.Schema == nil {
+			pt.param.Schema.Items.Schema = new(spec.Schema)
+		}
+		pt.param.Schema.Typed("array", "")
+		return schemaTypable{pt.param.Schema.Items.Schema}
+	}
+
+	if pt.param.Items == nil {
+		pt.param.Items = new(spec.Items)
+	}
+	pt.param.Type = "array"
+	return itemsTypable{pt.param.Items}
 }
 
 func (pt paramTypable) Schema() *spec.Schema {
+	if pt.param.In != "body" {
+		return nil
+	}
+	if pt.param.Schema == nil {
+		pt.param.Schema = new(spec.Schema)
+	}
 	return pt.param.Schema
-}
-
-func (pt paramTypable) SetSchema(schema *spec.Schema) {
-	pt.param.Schema = schema
-}
-
-func (pt paramTypable) CollectionOf(items *spec.Items, format string) {
-	pt.param.CollectionOf(items, format)
 }
 
 type itemsTypable struct {
@@ -68,12 +78,16 @@ func (pt itemsTypable) SetRef(ref spec.Ref) {
 	pt.items.Ref = ref
 }
 
-func (pt itemsTypable) Items() *spec.Items {
-	return pt.items.Items
+func (pt itemsTypable) Schema() *spec.Schema {
+	return nil
 }
 
-func (pt itemsTypable) CollectionOf(items *spec.Items, format string) {
-	pt.items.CollectionOf(items, format)
+func (pt itemsTypable) Items() swaggerTypable {
+	if pt.items.Items == nil {
+		pt.items.Items = new(spec.Items)
+	}
+	pt.items.Type = "array"
+	return itemsTypable{pt.items.Items}
 }
 
 type paramValidations struct {
@@ -155,12 +169,14 @@ func (sd paramDecl) inferOperationIDs() (opids []string) {
 func newParameterParser(prog *loader.Program) *paramStructParser {
 	scp := new(paramStructParser)
 	scp.program = prog
+	scp.scp = newSchemaParser(prog)
 	return scp
 }
 
 type paramStructParser struct {
 	program   *loader.Program
 	postDecls []schemaDecl
+	scp       *schemaParser
 }
 
 func (pp *paramStructParser) Parse(gofile *ast.File, target interface{}) error {
@@ -250,10 +266,10 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 				}
 
 				ps := pt[nm]
-				if err := pp.parseProperty(gofile, fld.Type, paramTypable{&ps}, in); err != nil {
+				ps.In = in
+				if err := parseProperty(pp.scp, gofile, fld.Type, paramTypable{&ps}); err != nil {
 					return err
 				}
-				ps.In = in
 
 				sp := new(sectionedParser)
 				sp.setDescription = func(lines []string) { ps.Description = joinDropLast(lines) }
@@ -327,98 +343,5 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 		}
 	}
 
-	return nil
-}
-
-func (pp *paramStructParser) parseProperty(gofile *ast.File, fld ast.Expr, prop operationTypable, in string) error {
-	switch ftpe := fld.(type) {
-	case *ast.Ident: // simple value
-		if ftpe.Obj == nil {
-			return swaggerSchemaForType(ftpe.Name, prop)
-		}
-
-		// we're probably looking at a struct here
-		// make sure it is one. Try to find it in the package
-		// when found make sure the struct gets added as a schema too
-		// and turn this property into a ref
-		if ftpe.Obj.Kind == ast.Typ {
-			if ts, ok := ftpe.Obj.Decl.(*ast.TypeSpec); ok {
-				if _, ok := ts.Type.(*ast.StructType); ok {
-					for _, d := range gofile.Decls {
-						if gd, ok := d.(*ast.GenDecl); ok {
-							for _, tss := range gd.Specs {
-								if tss.Pos() == ts.Pos() {
-									sd := schemaDecl{gofile, gd, ts, "", ""}
-									sd.inferNames()
-									ref, err := spec.NewRef("#/definitions/" + sd.Name)
-									if err != nil {
-										return err
-									}
-									prop.SetRef(ref)
-									pp.postDecls = append(pp.postDecls, sd)
-									return nil
-								}
-							}
-						}
-					}
-				}
-			}
-			return nil
-		}
-
-		return fmt.Errorf("couldn't infer type for %v", ftpe.Name)
-
-	case *ast.StarExpr: // pointer to something
-		pp.parseProperty(gofile, ftpe.X, prop, in)
-
-	case *ast.ArrayType: // slice type
-		if in == "body" {
-			var items spec.Schema
-			scp := newSchemaParser(pp.program)
-			if err := scp.parseProperty(gofile, ftpe.Elt, &items); err != nil {
-				return err
-			}
-			prop.(paramTypable).SetSchema(new(spec.Schema).CollectionOf(items))
-			return nil
-		}
-		var items *spec.Items
-		if prop.Items() != nil {
-			items = prop.Items()
-		}
-		if items == nil {
-			items = new(spec.Items)
-		}
-		if err := pp.parseProperty(gofile, ftpe.Elt, itemsTypable{items}, in); err != nil {
-			return err
-		}
-		prop.CollectionOf(items, "")
-
-	case *ast.StructType:
-		// this is an embedded struct, we want to parse this to a schema
-		ptb, ok := prop.(paramTypable)
-		if !ok && in != "body" {
-			return fmt.Errorf("items doesn't support embedded structs")
-		}
-		schema := ptb.Schema()
-		if schema == nil {
-			schema = new(spec.Schema)
-		}
-		scp := newSchemaParser(pp.program)
-		if err := scp.parseStructType(gofile, schema, ftpe); err != nil {
-			return err
-		}
-		ptb.SetSchema(schema)
-		pp.postDecls = append(pp.postDecls, scp.postDecls...)
-
-	case *ast.SelectorExpr:
-		sp := selectorParser{
-			program:     pp.program,
-			AddPostDecl: func(sd schemaDecl) { pp.postDecls = append(pp.postDecls, sd) },
-		}
-		return sp.TypeForSelector(gofile, ftpe, prop)
-
-	default:
-		return fmt.Errorf("%s is unsupported as parameter", ftpe)
-	}
 	return nil
 }

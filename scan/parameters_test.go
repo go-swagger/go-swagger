@@ -1,6 +1,8 @@
 package scan
 
 import (
+	"encoding/json"
+	"fmt"
 	goparser "go/parser"
 	"log"
 	"testing"
@@ -88,6 +90,8 @@ func TestParamsParser(t *testing.T) {
 			assert.EqualValues(t, "\\w+", itprop.Pattern, "'foo_slice.items.pattern' should have \\w+")
 
 		case "items":
+			b, _ := json.MarshalIndent(params, "", "  ")
+			fmt.Println(string(b))
 			assert.Equal(t, "Items", params.Extensions["x-go-name"])
 			assert.Equal(t, "body", params.In)
 			assert.NotNil(t, params.Schema)

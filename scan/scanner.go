@@ -6,7 +6,6 @@ import (
 	goparser "go/parser"
 	"log"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"golang.org/x/tools/go/loader"
@@ -320,118 +319,8 @@ func (a *appScanner) MustExpandPackagePath(packagePath string) string {
 type swaggerTypable interface {
 	Typed(string, string)
 	SetRef(spec.Ref)
-}
-
-type selectorParser struct {
-	program     *loader.Program
-	AddPostDecl func(schemaDecl)
-}
-
-func (sp *selectorParser) TypeForSelector(gofile *ast.File, expr *ast.SelectorExpr, prop swaggerTypable) error {
-	if pth, ok := expr.X.(*ast.Ident); ok {
-		// lookup import
-		var selPath string
-		for _, imp := range gofile.Imports {
-			pv, err := strconv.Unquote(imp.Path.Value)
-			if err != nil {
-				pv = imp.Path.Value
-			}
-			if imp.Name != nil {
-				if imp.Name.Name == pth.Name {
-					selPath = pv
-					break
-				}
-			} else {
-				parts := strings.Split(pv, "/")
-				if len(parts) > 0 && parts[len(parts)-1] == pth.Name {
-					selPath = pv
-					break
-				}
-			}
-		}
-		// find actual struct
-		if selPath == "" {
-			return fmt.Errorf("no import found for %s", pth.Name)
-		}
-
-		pkg := sp.program.Package(selPath)
-		if pkg == nil {
-			return fmt.Errorf("no package found for %s", selPath)
-		}
-
-		// find the file this selector points to
-		for _, file := range pkg.Files {
-			for _, decl := range file.Decls {
-				if gd, ok := decl.(*ast.GenDecl); ok {
-					for _, gs := range gd.Specs {
-						if ts, ok := gs.(*ast.TypeSpec); ok {
-							if ts.Name != nil && ts.Name.Name == expr.Sel.Name {
-								// look at doc comments for +swagger:strfmt [name]
-								// when found this is the format name, create a schema with that name
-								if strfmtName, ok := strfmtName(gd.Doc); ok {
-									prop.Typed("string", strfmtName)
-									return nil
-								}
-
-								switch tpe := ts.Type.(type) {
-								case *ast.StructType:
-									sd := schemaDecl{file, gd, ts, "", ""}
-									sd.inferNames()
-									ref, err := spec.NewRef("#/definitions/" + sd.Name)
-									if err != nil {
-										return err
-									}
-									prop.SetRef(ref)
-									sp.AddPostDecl(sd)
-									return nil
-								case *ast.Ident:
-									for _, fl := range pkg.Files {
-										for _, dcl := range fl.Decls {
-											if gdd, ok := dcl.(*ast.GenDecl); ok {
-												for _, gss := range gdd.Specs {
-													if st, ok := gss.(*ast.TypeSpec); ok {
-														if st.Name != nil && st.Name.Name == tpe.Name {
-															if _, ok := st.Type.(*ast.StructType); ok {
-																// At this stage we're no longer interested in actually
-																// parsing a struct like this, we're going to reference it instead
-																// In addition to referencing, it is added to a bag of discovered schemas
-																sd := schemaDecl{fl, gdd, st, "", ""}
-																sd.inferNames()
-																ref, err := spec.NewRef("#/definitions/" + sd.Name)
-																if err != nil {
-																	return err
-																}
-																prop.SetRef(ref)
-																sp.AddPostDecl(sd)
-																return nil
-															}
-
-															// Check if this might be a type decorated with strfmt
-															if sfn, ok := strfmtName(gdd.Doc); ok {
-																prop.Typed("string", sfn)
-																return nil
-															}
-														}
-													}
-												}
-											}
-										}
-									}
-									return swaggerSchemaForType(tpe.Name, prop)
-								case *ast.SelectorExpr:
-									return sp.TypeForSelector(file, tpe, prop)
-								}
-
-							}
-						}
-					}
-				}
-			}
-		}
-
-		return fmt.Errorf("schema parser: no string format for %s.%s", pth.Name, expr.Sel.Name)
-	}
-	return fmt.Errorf("schema parser: no string format for %v", expr.Sel.Name)
+	Items() swaggerTypable
+	Schema() *spec.Schema
 }
 
 func swaggerSchemaForType(typeName string, prop swaggerTypable) error {
@@ -460,6 +349,8 @@ func swaggerSchemaForType(typeName string, prop swaggerTypable) error {
 		prop.Typed("number", "float")
 	case "float64":
 		prop.Typed("number", "double")
+	default:
+		return fmt.Errorf("unknown primitive %q", typeName)
 	}
 	return nil
 }

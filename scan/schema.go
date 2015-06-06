@@ -11,18 +11,35 @@ import (
 	"golang.org/x/tools/go/loader"
 
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/kr/pretty"
 )
 
 type schemaTypable struct {
 	schema *spec.Schema
 }
 
-func (st *schemaTypable) Typed(tpe, format string) {
+func (st schemaTypable) Typed(tpe, format string) {
 	st.schema.Typed(tpe, format)
 }
 
-func (st *schemaTypable) SetRef(ref spec.Ref) {
+func (st schemaTypable) SetRef(ref spec.Ref) {
 	st.schema.Ref = ref
+}
+
+func (st schemaTypable) Schema() *spec.Schema {
+	return st.schema
+}
+
+func (st schemaTypable) Items() swaggerTypable {
+	if st.schema.Items == nil {
+		st.schema.Items = new(spec.SchemaOrArray)
+	}
+	if st.schema.Items.Schema == nil {
+		st.schema.Items.Schema = new(spec.Schema)
+	}
+
+	st.schema.Typed("array", "")
+	return schemaTypable{st.schema.Items.Schema}
 }
 
 type schemaValidations struct {
@@ -156,6 +173,7 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl sche
 	if err := sp.Parse(decl.Decl.Doc); err != nil {
 		return err
 	}
+	fmt.Println("processing model:", decl.Name)
 
 	// analyze struct body for fields etc
 	// each exported struct field:
@@ -210,10 +228,11 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, schema *spec.Schema, 
 				}
 
 				ps := schema.Properties[nm]
-				ps.ID = nm
-				if err := scp.parseProperty(gofile, fld.Type, &ps); err != nil {
+				fmt.Println("parsing:", nm)
+				if err := parseProperty(scp, gofile, fld.Type, schemaTypable{&ps}); err != nil {
 					return err
 				}
+				fmt.Println("end parsing:", nm)
 
 				sp := new(sectionedParser)
 				sp.setDescription = func(lines []string) { ps.Description = joinDropLast(lines) }
@@ -284,112 +303,145 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, schema *spec.Schema, 
 	return nil
 }
 
-func (scp *schemaParser) parseProperty(gofile *ast.File, fld ast.Expr, prop *spec.Schema) error {
-	sct := &schemaTypable{prop}
-	//fmt.Printf("the type: %#v\n", fld)
-	switch ftpe := fld.(type) {
-	case *ast.Ident: // simple value
-		if ftpe.Obj == nil {
-			return swaggerSchemaForType(ftpe.Name, sct)
+func (scp *schemaParser) packageForSelector(gofile *ast.File, expr ast.Expr) (*loader.PackageInfo, error) {
+
+	if pth, ok := expr.(*ast.Ident); ok {
+		// lookup import
+		var selPath string
+		for _, imp := range gofile.Imports {
+			pv, err := strconv.Unquote(imp.Path.Value)
+			if err != nil {
+				pv = imp.Path.Value
+			}
+			if imp.Name != nil {
+				if imp.Name.Name == pth.Name {
+					selPath = pv
+					break
+				}
+			} else {
+				parts := strings.Split(pv, "/")
+				if len(parts) > 0 && parts[len(parts)-1] == pth.Name {
+					selPath = pv
+					break
+				}
+			}
+		}
+		// find actual struct
+		if selPath == "" {
+			return nil, fmt.Errorf("no import found for %s", pth.Name)
 		}
 
-		if ftpe.Obj.Kind == ast.Typ {
-			if ts, ok := ftpe.Obj.Decl.(*ast.TypeSpec); ok {
-				for _, d := range gofile.Decls {
-					if gd, ok := d.(*ast.GenDecl); ok {
-						for _, tss := range gd.Specs {
-							if tss.Pos() == ts.Pos() {
-								if _, ok := ts.Type.(*ast.StructType); ok {
-									// At this stage we're no longer interested in actually
-									// parsing a struct like this, we're going to reference it instead
-									// In addition to referencing, it is added to a bag of discovered schemas
-									sd := schemaDecl{gofile, gd, ts, "", ""}
-									sd.inferNames()
-									ref, err := spec.NewRef("#/definitions/" + sd.Name)
-									if err != nil {
-										return err
-									}
-									prop.Ref = ref
-									scp.postDecls = append(scp.postDecls, sd)
-									return nil
-								}
+		pkg := scp.program.Package(selPath)
+		if pkg == nil {
+			return nil, fmt.Errorf("no package found for %s", selPath)
+		}
+		return pkg, nil
+	}
+	return nil, fmt.Errorf("can't determine selector path from %v", expr)
+}
 
-								// Check if this might be a type decorated with strfmt
-								if sfn, ok := strfmtName(gd.Doc); ok {
-									prop.Typed("string", sfn)
-									return nil
-								}
-								// check if this is possibly a strfmt override on the aliased type
-								return scp.parseProperty(gofile, ts.Type, prop)
-							}
+func (scp *schemaParser) parseSelectorProperty(pkg *loader.PackageInfo, expr *ast.Ident, prop swaggerTypable) error {
+	// find the file this selector points to
+	file, gd, ts, err := findSourceFile(pkg, expr.Name)
+	if err != nil {
+		return swaggerSchemaForType(expr.Name, prop)
+	}
+	if at, ok := ts.Type.(*ast.ArrayType); ok {
+		// the swagger spec defines strfmt base64 as []byte.
+		// in that case we don't actually want to turn it into an array
+		// but we want to turn it into a string
+		if _, ok := at.Elt.(*ast.Ident); ok {
+			if strfmtName, ok := strfmtName(gd.Doc); ok {
+				prop.Typed("string", strfmtName)
+				return nil
+			}
+		}
+		// this is a selector, so most likely not base64
+		if strfmtName, ok := strfmtName(gd.Doc); ok {
+			prop.Items().Typed("string", strfmtName)
+			return nil
+		}
+	}
+
+	// look at doc comments for +swagger:strfmt [name]
+	// when found this is the format name, create a schema with that name
+	if strfmtName, ok := strfmtName(gd.Doc); ok {
+		prop.Typed("string", strfmtName)
+		return nil
+	}
+	switch tpe := ts.Type.(type) {
+	case *ast.ArrayType:
+		switch atpe := tpe.Elt.(type) {
+		case *ast.Ident:
+			return scp.parseSelectorProperty(pkg, atpe, prop.Items())
+		case *ast.SelectorExpr:
+			fmt.Println("This is a selector expression")
+			return scp.typeForSelector(file, atpe, prop.Items())
+		default:
+			return fmt.Errorf("unknown selector type: %#v", tpe)
+		}
+	case *ast.StructType:
+		sd := schemaDecl{file, gd, ts, "", ""}
+		sd.inferNames()
+		ref, err := spec.NewRef("#/definitions/" + sd.Name)
+		if err != nil {
+			return err
+		}
+		prop.SetRef(ref)
+		scp.postDecls = append(scp.postDecls, sd)
+		return nil
+
+	case *ast.Ident:
+		return scp.parseSelectorProperty(pkg, tpe, prop)
+
+	case *ast.SelectorExpr:
+		return scp.typeForSelector(file, tpe, prop)
+
+	default:
+		return swaggerSchemaForType(expr.Name, prop)
+	}
+
+}
+
+func (scp *schemaParser) typeForSelector(gofile *ast.File, expr *ast.SelectorExpr, prop swaggerTypable) error {
+	pkg, err := scp.packageForSelector(gofile, expr.X)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("package:", pkg.String())
+	// find the file this selector points to
+	//_, gd, _, err := findSourceFile(pkg, expr.Sel.Name)
+	//if err != nil {
+	//return err
+	//}
+
+	pretty.Println(expr.Sel)
+	// look at doc comments for +swagger:strfmt [name]
+	// when found this is the format name, create a schema with that name
+	//if strfmtName, ok := strfmtName(gd.Doc); ok {
+	//prop.Typed("string", strfmtName)
+	//return nil
+	//}
+	return scp.parseSelectorProperty(pkg, expr.Sel, prop)
+}
+
+func findSourceFile(pkg *loader.PackageInfo, typeName string) (*ast.File, *ast.GenDecl, *ast.TypeSpec, error) {
+	for _, file := range pkg.Files {
+		for _, decl := range file.Decls {
+			if gd, ok := decl.(*ast.GenDecl); ok {
+				for _, gs := range gd.Specs {
+					if ts, ok := gs.(*ast.TypeSpec); ok {
+						strfmtNme, isStrfmt := strfmtName(gd.Doc)
+						if (isStrfmt && strfmtNme == typeName) || ts.Name != nil && ts.Name.Name == typeName {
+							return file, gd, ts, nil
 						}
 					}
 				}
 			}
-			return nil
 		}
-
-		return fmt.Errorf("couldn't infer type for %v", ftpe.Name)
-
-	case *ast.StarExpr: // pointer to something, optional by default
-		scp.parseProperty(gofile, ftpe.X, prop)
-
-	case *ast.ArrayType: // slice type
-		var items *spec.Schema
-		if prop.Items != nil && prop.Items.Schema != nil {
-			items = prop.Items.Schema
-		}
-		if items == nil {
-			items = new(spec.Schema)
-		}
-		if err := scp.parseProperty(gofile, ftpe.Elt, items); err != nil {
-			return err
-		}
-		prop.Typed("array", "")
-		if prop.Items == nil {
-			prop.Items = new(spec.SchemaOrArray)
-		}
-		prop.Items.Schema = items
-		prop.Items.Schemas = nil
-
-	case *ast.StructType:
-		return scp.parseStructType(gofile, prop, ftpe)
-
-	case *ast.SelectorExpr:
-		sp := selectorParser{
-			program:     scp.program,
-			AddPostDecl: func(sd schemaDecl) { scp.postDecls = append(scp.postDecls, sd) },
-		}
-		err := sp.TypeForSelector(gofile, ftpe, sct)
-		return err
-
-	case *ast.MapType:
-		// check if key is a string type, if not print a message
-		// and skip the map property. Only maps with string keys can go into additional properties
-		if keyIdent, ok := ftpe.Key.(*ast.Ident); ok {
-			if keyIdent.Name == "string" {
-				if prop.AdditionalProperties == nil {
-					prop.AdditionalProperties = new(spec.SchemaOrBool)
-				}
-				prop.AdditionalProperties.Allows = false
-				if prop.AdditionalProperties.Schema == nil {
-					prop.AdditionalProperties.Schema = new(spec.Schema)
-				}
-				scp.parseProperty(gofile, ftpe.Value, prop.AdditionalProperties.Schema)
-				prop.Typed("object", "")
-			}
-		}
-
-	case *ast.InterfaceType:
-		// NOTE:
-		// what to do with an interface? support it?
-		// ignoring it for now
-		// I guess something can be done with a discriminator field
-		// but is it worth the trouble?
-	default:
-		return fmt.Errorf("%s is unsupported for a schema", ftpe)
 	}
-	return nil
+	return nil, nil, nil, fmt.Errorf("unable to find %s in %s", typeName, pkg.String())
 }
 
 func strfmtName(comments *ast.CommentGroup) (string, bool) {
@@ -404,4 +456,121 @@ func strfmtName(comments *ast.CommentGroup) (string, bool) {
 		}
 	}
 	return "", false
+}
+
+func parseProperty(scp *schemaParser, gofile *ast.File, fld ast.Expr, prop swaggerTypable) error {
+	fmt.Printf("the type: %#v\n", fld)
+	switch ftpe := fld.(type) {
+	case *ast.Ident: // simple value
+		fmt.Println("top ident property")
+		//pkg, err := scp.packageForSelector(gofile, ftpe)
+		//if err != nil {
+		//return err
+		//}
+		//file, gd, tsp, err := findSourceFile(pkg, ftpe)
+		if ftpe.Obj != nil && ftpe.Obj.Kind == ast.Typ {
+			if ts, ok := ftpe.Obj.Decl.(*ast.TypeSpec); ok {
+				for _, d := range gofile.Decls {
+					if gd, ok := d.(*ast.GenDecl); ok {
+						for _, tss := range gd.Specs {
+							if tsp, ok := tss.(*ast.TypeSpec); ok {
+								if tss.Pos() == ts.Pos() {
+									if _, ok := tsp.Type.(*ast.ArrayType); ok {
+										if sfn, ok := strfmtName(gd.Doc); ok {
+											prop.Items().Typed("string", sfn)
+											return nil
+										}
+										return parseProperty(scp, gofile, tsp.Type, prop)
+									}
+
+									// Check if this might be a type decorated with strfmt
+									if sfn, ok := strfmtName(gd.Doc); ok {
+										prop.Typed("string", sfn)
+										return nil
+									}
+
+									if _, ok := tsp.Type.(*ast.StructType); ok {
+										// At this stage we're no longer interested in actually
+										// parsing a struct like this, we're going to reference it instead
+										// In addition to referencing, it is added to a bag of discovered schemas
+										sd := schemaDecl{gofile, gd, ts, "", ""}
+										sd.inferNames()
+										ref, err := spec.NewRef("#/definitions/" + sd.Name)
+										if err != nil {
+											return err
+										}
+										prop.SetRef(ref)
+										scp.postDecls = append(scp.postDecls, sd)
+										return nil
+									}
+
+									return parseProperty(scp, gofile, tsp.Type, prop)
+								}
+							}
+						}
+					}
+				}
+			}
+			return nil
+		}
+		if ftpe.Obj == nil {
+			return swaggerSchemaForType(ftpe.Name, prop)
+		}
+
+		return fmt.Errorf("couldn't infer type for %v", ftpe.Name)
+
+	case *ast.StarExpr: // pointer to something, optional by default
+		fmt.Println("top star expr")
+		parseProperty(scp, gofile, ftpe.X, prop)
+
+	case *ast.ArrayType: // slice type
+		fmt.Println("top array type")
+		if err := parseProperty(scp, gofile, ftpe.Elt, prop.Items()); err != nil {
+			return err
+		}
+
+	case *ast.StructType:
+		fmt.Println("top struct type")
+		schema := prop.Schema()
+		if schema == nil {
+			return fmt.Errorf("items doesn't support embedded structs")
+		}
+		return scp.parseStructType(gofile, prop.Schema(), ftpe)
+
+	case *ast.SelectorExpr:
+		fmt.Println("top selector type")
+		err := scp.typeForSelector(gofile, ftpe, prop)
+		return err
+
+	case *ast.MapType:
+		fmt.Println("top map type")
+		// check if key is a string type, if not print a message
+		// and skip the map property. Only maps with string keys can go into additional properties
+		sch := prop.Schema()
+		if keyIdent, ok := ftpe.Key.(*ast.Ident); sch != nil && ok {
+			if keyIdent.Name == "string" {
+				fmt.Println("processing for map type")
+				if sch.AdditionalProperties == nil {
+					sch.AdditionalProperties = new(spec.SchemaOrBool)
+				}
+				sch.AdditionalProperties.Allows = false
+				if sch.AdditionalProperties.Schema == nil {
+					sch.AdditionalProperties.Schema = new(spec.Schema)
+				}
+				parseProperty(scp, gofile, ftpe.Value, schemaTypable{sch.AdditionalProperties.Schema})
+				sch.Typed("object", "")
+				fmt.Println("END processing for map type")
+			}
+		}
+
+	case *ast.InterfaceType:
+		// NOTE:
+		// what to do with an interface? support it?
+		// ignoring it for now
+		// I guess something can be done with a discriminator field
+		// but is it worth the trouble?
+	default:
+		return fmt.Errorf("%s is unsupported for a schema", ftpe)
+	}
+	return nil
 }

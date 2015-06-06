@@ -1,6 +1,8 @@
 package scan
 
 import (
+	"encoding/json"
+	"fmt"
 	"path/filepath"
 	"testing"
 
@@ -131,11 +133,37 @@ func TestAliasedTypes(t *testing.T) {
 	assertRef(t, &schema, "somethinged", "Somethinged", "#/definitions/Something")
 	assertProperty(t, &schema, "string", "dated", "date-time", "Dated")
 
+	assertArrayProperty(t, &schema, "string", "manyNamed", "", "ManyNamed")
+	assertArrayProperty(t, &schema, "number", "manyNumbered", "int64", "ManyNumbered")
+	assertArrayProperty(t, &schema, "string", "manyTimed", "date-time", "ManyTimed")
+	assertArrayRef(t, &schema, "manyPetted", "ManyPetted", "#/definitions/pet")
+	assertArrayRef(t, &schema, "manySomethinged", "ManySomethinged", "#/definitions/Something")
+	assertArrayProperty(t, &schema, "string", "manyDated", "date-time", "ManyDated")
+
+	assertArrayProperty(t, &schema, "string", "nameds", "", "Nameds")
+	assertArrayProperty(t, &schema, "number", "numbereds", "int64", "Numbereds")
+	assertArrayProperty(t, &schema, "string", "timeds", "date-time", "Timeds")
+	assertArrayRef(t, &schema, "petteds", "Petteds", "#/definitions/pet")
+	assertArrayRef(t, &schema, "somethingeds", "Somethingeds", "#/definitions/Something")
+	assertArrayProperty(t, &schema, "string", "dateds", "date-time", "Dateds")
+
 	assertProperty(t, &schema, "string", "modsNamed", "", "ModsNamed")
 	assertProperty(t, &schema, "number", "modsNumbered", "int64", "ModsNumbered")
 	assertProperty(t, &schema, "string", "modsTimed", "date-time", "ModsTimed")
 	assertRef(t, &schema, "modsPetted", "ModsPetted", "#/definitions/pet")
 	assertProperty(t, &schema, "string", "modsDated", "date-time", "ModsDated")
+
+	assertArrayProperty(t, &schema, "string", "manyModsNamed", "", "ManyModsNamed")
+	assertArrayProperty(t, &schema, "number", "manyModsNumbered", "int64", "ManyModsNumbered")
+	assertArrayProperty(t, &schema, "string", "manyModsTimed", "date-time", "ManyModsTimed")
+	assertArrayRef(t, &schema, "manyModsPetted", "ManyModsPetted", "#/definitions/pet")
+	assertArrayProperty(t, &schema, "string", "manyModsDated", "date-time", "ManyModsDated")
+
+	assertArrayProperty(t, &schema, "string", "modsNameds", "", "ModsNameds")
+	assertArrayProperty(t, &schema, "number", "modsNumbereds", "int64", "ModsNumbereds")
+	assertArrayProperty(t, &schema, "string", "modsTimeds", "date-time", "ModsTimeds")
+	assertArrayRef(t, &schema, "modsPetteds", "ModsPetteds", "#/definitions/pet")
+	assertArrayProperty(t, &schema, "string", "modsDateds", "date-time", "ModsDateds")
 }
 
 func TestParsePrimitiveSchemaProperty(t *testing.T) {
@@ -159,6 +187,8 @@ func TestParsePrimitiveSchemaProperty(t *testing.T) {
 
 func TestParseStringFormatSchemaProperty(t *testing.T) {
 	schema := noModelDefs["FormattedModel"]
+	b, _ := json.MarshalIndent(schema, "", "  ")
+	fmt.Println(string(b))
 	assertProperty(t, &schema, "string", "a", "byte", "A")
 	assertProperty(t, &schema, "string", "b", "creditcard", "B")
 	assertProperty(t, &schema, "string", "c", "date", "C")

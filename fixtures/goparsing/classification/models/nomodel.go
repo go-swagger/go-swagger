@@ -103,6 +103,25 @@ type SomePettedType mods.Pet
 // SomethingType is a type that refines a type contained in the same package
 type SomethingType Something
 
+// SomeStringsType is a type that refines []string
+type SomeStringsType []string
+
+// SomeIntsType is a type that refines []int64
+type SomeIntsType []int64
+
+// SomeTimesType is a type that refines time.Time
+// +swagger:strfmt date-time
+type SomeTimesType []time.Time
+
+// SomeTimedsType is a type that refines strfmt.DateTime
+type SomeTimedsType []strfmt.DateTime
+
+// SomePettedsType is a type that refines mods.Pet
+type SomePettedsType []mods.Pet
+
+// SomethingsType is a type that refines a type contained in the same package
+type SomethingsType []Something
+
 // A OtherTypes struct contains type aliases
 type OtherTypes struct {
 	Named       SomeStringType `json:"named"`
@@ -112,11 +131,37 @@ type OtherTypes struct {
 	Petted      SomePettedType `json:"petted"`
 	Somethinged SomethingType  `json:"somethinged"`
 
+	ManyNamed       SomeStringsType `json:"manyNamed"`
+	ManyNumbered    SomeIntsType    `json:"manyNumbered"`
+	ManyDated       SomeTimesType   `json:"manyDated"`
+	ManyTimed       SomeTimedsType  `json:"manyTimed"`
+	ManyPetted      SomePettedsType `json:"manyPetted"`
+	ManySomethinged SomethingsType  `json:"manySomethinged"`
+
+	Nameds       []SomeStringType `json:"nameds"`
+	Numbereds    []SomeIntType    `json:"numbereds"`
+	Dateds       []SomeTimeType   `json:"dateds"`
+	Timeds       []SomeTimedType  `json:"timeds"`
+	Petteds      []SomePettedType `json:"petteds"`
+	Somethingeds []SomethingType  `json:"somethingeds"`
+
 	ModsNamed    mods.SomeStringType `json:"modsNamed"`
 	ModsNumbered mods.SomeIntType    `json:"modsNumbered"`
 	ModsDated    mods.SomeTimeType   `json:"modsDated"`
 	ModsTimed    mods.SomeTimedType  `json:"modsTimed"`
 	ModsPetted   mods.SomePettedType `json:"modsPetted"`
+
+	ModsNameds    []mods.SomeStringType `json:"modsNameds"`
+	ModsNumbereds []mods.SomeIntType    `json:"modsNumbereds"`
+	ModsDateds    []mods.SomeTimeType   `json:"modsDateds"`
+	ModsTimeds    []mods.SomeTimedType  `json:"modsTimeds"`
+	ModsPetteds   []mods.SomePettedType `json:"modsPetteds"`
+
+	ManyModsNamed    mods.SomeStringsType `json:"manyModsNamed"`
+	ManyModsNumbered mods.SomeIntsType    `json:"manyModsNumbered"`
+	ManyModsDated    mods.SomeTimesType   `json:"manyModsDated"`
+	ManyModsTimed    mods.SomeTimedsType  `json:"manyModsTimed"`
+	ManyModsPetted   mods.SomePettedsType `json:"manyModsPetted"`
 }
 
 // A SimpleOne is a model with a few simple fields

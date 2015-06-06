@@ -1,7 +1,6 @@
 package scan
 
 import (
-	"fmt"
 	"go/ast"
 	"reflect"
 	"strconv"
@@ -13,6 +12,7 @@ import (
 )
 
 type responseTypable struct {
+	in       string
 	header   *spec.Header
 	response *spec.Response
 }
@@ -21,8 +21,27 @@ func (ht responseTypable) Typed(tpe, format string) {
 	ht.header.Typed(tpe, format)
 }
 
-func (ht responseTypable) Items() *spec.Items {
-	return ht.header.Items
+func (ht responseTypable) Items() swaggerTypable {
+	if ht.in == "body" {
+		// get the schema for items on the schema property
+		if ht.response.Schema == nil {
+			ht.response.Schema = new(spec.Schema)
+		}
+		if ht.response.Schema.Items == nil {
+			ht.response.Schema.Items = new(spec.SchemaOrArray)
+		}
+		if ht.response.Schema.Items.Schema == nil {
+			ht.response.Schema.Items.Schema = new(spec.Schema)
+		}
+		ht.response.Schema.Typed("array", "")
+		return schemaTypable{ht.response.Schema.Items.Schema}
+	}
+
+	if ht.header.Items == nil {
+		ht.header.Items = new(spec.Items)
+	}
+	ht.header.Type = "array"
+	return itemsTypable{ht.header.Items}
 }
 
 func (ht responseTypable) SetRef(ref spec.Ref) {
@@ -30,6 +49,9 @@ func (ht responseTypable) SetRef(ref spec.Ref) {
 }
 
 func (ht responseTypable) Schema() *spec.Schema {
+	if ht.response.Schema == nil {
+		ht.response.Schema = new(spec.Schema)
+	}
 	return ht.response.Schema
 }
 
@@ -94,12 +116,13 @@ func (sd *responseDecl) inferNames() (goName string, name string) {
 }
 
 func newResponseParser(prog *loader.Program) *responseParser {
-	return &responseParser{prog, nil}
+	return &responseParser{prog, nil, newSchemaParser(prog)}
 }
 
 type responseParser struct {
 	program   *loader.Program
 	postDecls []schemaDecl
+	scp       *schemaParser
 }
 
 func (rp *responseParser) Parse(gofile *ast.File, target interface{}) error {
@@ -183,7 +206,7 @@ func (rp *responseParser) parseStructType(gofile *ast.File, response *spec.Respo
 				}
 
 				ps := response.Headers[nm]
-				if err := rp.parseProperty(gofile, fld.Type, responseTypable{&ps, response}, in); err != nil {
+				if err := parseProperty(rp.scp, gofile, fld.Type, responseTypable{in, &ps, response}); err != nil {
 					return err
 				}
 
@@ -248,99 +271,5 @@ func (rp *responseParser) parseStructType(gofile *ast.File, response *spec.Respo
 		}
 	}
 
-	return nil
-}
-
-func (rp *responseParser) parseProperty(gofile *ast.File, fld ast.Expr, prop operationTypable, in string) error {
-	switch ftpe := fld.(type) {
-	case *ast.Ident: // simple value
-		if ftpe.Obj == nil {
-			return swaggerSchemaForType(ftpe.Name, prop)
-		}
-
-		// we're probably looking at a struct here
-		// make sure it is one. Try to find it in the package
-		// when found make sure the struct gets added as a schema too
-		// and turn this property into a ref
-		if ftpe.Obj.Kind == ast.Typ {
-			if ts, ok := ftpe.Obj.Decl.(*ast.TypeSpec); ok {
-				if _, ok := ts.Type.(*ast.StructType); ok {
-
-					for _, d := range gofile.Decls {
-						if gd, ok := d.(*ast.GenDecl); ok {
-							for _, tss := range gd.Specs {
-								if tss.Pos() == ts.Pos() {
-									sd := schemaDecl{gofile, gd, ts, "", ""}
-									sd.inferNames()
-									ref, err := spec.NewRef("#/definitions/" + sd.Name)
-									if err != nil {
-										return err
-									}
-									prop.SetRef(ref)
-									rp.postDecls = append(rp.postDecls, sd)
-									return nil
-								}
-							}
-						}
-					}
-				}
-			}
-			return nil
-		}
-
-		return fmt.Errorf("couldn't infer type for %v", ftpe.Name)
-
-	case *ast.StarExpr: // pointer to something
-		rp.parseProperty(gofile, ftpe.X, prop, in)
-
-	case *ast.ArrayType: // slice type
-		if in == "body" {
-			var items spec.Schema
-			scp := newSchemaParser(rp.program)
-			if err := scp.parseProperty(gofile, ftpe.Elt, &items); err != nil {
-				return err
-			}
-			prop.(responseTypable).SetSchema(new(spec.Schema).CollectionOf(items))
-			return nil
-		}
-		var items *spec.Items
-		if prop.Items() != nil {
-			items = prop.Items()
-		}
-		if items == nil {
-			items = new(spec.Items)
-		}
-		if err := rp.parseProperty(gofile, ftpe.Elt, itemsTypable{items}, in); err != nil {
-			return err
-		}
-		prop.CollectionOf(items, "")
-
-	case *ast.StructType:
-		// this is an embedded struct, we want to parse this to a schema
-		ptb, ok := prop.(responseTypable)
-		if !ok && in != "body" {
-			return fmt.Errorf("items doesn't support embedded structs")
-		}
-		schema := ptb.Schema()
-		if schema == nil {
-			schema = new(spec.Schema)
-		}
-		scp := newSchemaParser(rp.program)
-		if err := scp.parseStructType(gofile, schema, ftpe); err != nil {
-			return err
-		}
-		ptb.SetSchema(schema)
-		rp.postDecls = append(rp.postDecls, scp.postDecls...)
-
-	case *ast.SelectorExpr:
-		sp := selectorParser{
-			program:     rp.program,
-			AddPostDecl: func(sd schemaDecl) { rp.postDecls = append(rp.postDecls, sd) },
-		}
-		return sp.TypeForSelector(gofile, ftpe, prop)
-
-	default:
-		return fmt.Errorf("%s is unsupported as parameter", ftpe)
-	}
 	return nil
 }
