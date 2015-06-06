@@ -215,6 +215,7 @@ func (scp *schemaParser) parseEmbeddedStruct(gofile *ast.File, schema *spec.Sche
 		if err != nil {
 			return err
 		}
+		// TODO: When this is annotated with swagger:allOf then turn it into a $ref
 		if st, ok := ts.Type.(*ast.StructType); ok {
 			return scp.parseStructType(file, schema, st, seenPreviously)
 		}
@@ -229,6 +230,7 @@ func (scp *schemaParser) parseEmbeddedStruct(gofile *ast.File, schema *spec.Sche
 		if err != nil {
 			return fmt.Errorf("embedded struct: %v", err)
 		}
+		// TODO: When this is annotated with swagger:allOf then turn it into a $ref
 		if st, ok := ts.Type.(*ast.StructType); ok {
 			return scp.parseStructType(file, schema, st, seenPreviously)
 		}
@@ -393,7 +395,7 @@ func (scp *schemaParser) packageForSelector(gofile *ast.File, expr ast.Expr) (*l
 	return nil, fmt.Errorf("can't determine selector path from %v", expr)
 }
 
-func (scp *schemaParser) parseSelectorProperty(pkg *loader.PackageInfo, expr *ast.Ident, prop swaggerTypable) error {
+func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.Ident, prop swaggerTypable) error {
 	// find the file this selector points to
 	file, gd, ts, err := findSourceFile(pkg, expr.Name)
 	if err != nil {
@@ -426,7 +428,7 @@ func (scp *schemaParser) parseSelectorProperty(pkg *loader.PackageInfo, expr *as
 	case *ast.ArrayType:
 		switch atpe := tpe.Elt.(type) {
 		case *ast.Ident:
-			return scp.parseSelectorProperty(pkg, atpe, prop.Items())
+			return scp.parseIdentProperty(pkg, atpe, prop.Items())
 		case *ast.SelectorExpr:
 			return scp.typeForSelector(file, atpe, prop.Items())
 		default:
@@ -444,7 +446,7 @@ func (scp *schemaParser) parseSelectorProperty(pkg *loader.PackageInfo, expr *as
 		return nil
 
 	case *ast.Ident:
-		return scp.parseSelectorProperty(pkg, tpe, prop)
+		return scp.parseIdentProperty(pkg, tpe, prop)
 
 	case *ast.SelectorExpr:
 		return scp.typeForSelector(file, tpe, prop)
@@ -461,7 +463,7 @@ func (scp *schemaParser) typeForSelector(gofile *ast.File, expr *ast.SelectorExp
 		return err
 	}
 
-	return scp.parseSelectorProperty(pkg, expr.Sel, prop)
+	return scp.parseIdentProperty(pkg, expr.Sel, prop)
 }
 
 func findSourceFile(pkg *loader.PackageInfo, typeName string) (*ast.File, *ast.GenDecl, *ast.TypeSpec, error) {
@@ -514,43 +516,9 @@ func parseProperty(scp *schemaParser, gofile *ast.File, fld ast.Expr, prop swagg
 	case *ast.Ident: // simple value
 		pkg, err := scp.packageForFile(gofile)
 		if err != nil {
-			return swaggerSchemaForType(ftpe.Name, prop)
+			return err
 		}
-		file, gd, tsp, err := findSourceFile(pkg, ftpe.Name)
-		if err != nil {
-			return swaggerSchemaForType(ftpe.Name, prop)
-		}
-
-		if _, ok := tsp.Type.(*ast.ArrayType); ok {
-			if sfn, ok := strfmtName(gd.Doc); ok {
-				prop.Items().Typed("string", sfn)
-				return nil
-			}
-			return parseProperty(scp, gofile, tsp.Type, prop)
-		}
-
-		// Check if this might be a type decorated with strfmt
-		if sfn, ok := strfmtName(gd.Doc); ok {
-			prop.Typed("string", sfn)
-			return nil
-		}
-
-		if _, ok := tsp.Type.(*ast.StructType); ok {
-			// At this stage we're no longer interested in actually
-			// parsing a struct like this, we're going to reference it instead
-			// In addition to referencing, it is added to a bag of discovered schemas
-			sd := schemaDecl{gofile, gd, tsp, "", ""}
-			sd.inferNames()
-			ref, err := spec.NewRef("#/definitions/" + sd.Name)
-			if err != nil {
-				return err
-			}
-			prop.SetRef(ref)
-			scp.postDecls = append(scp.postDecls, sd)
-			return nil
-		}
-
-		return parseProperty(scp, file, tsp.Type, prop)
+		return scp.parseIdentProperty(pkg, ftpe, prop)
 
 	case *ast.StarExpr: // pointer to something, optional by default
 		parseProperty(scp, gofile, ftpe.X, prop)
@@ -575,6 +543,9 @@ func parseProperty(scp *schemaParser, gofile *ast.File, fld ast.Expr, prop swagg
 		// check if key is a string type, if not print a message
 		// and skip the map property. Only maps with string keys can go into additional properties
 		sch := prop.Schema()
+		if sch == nil {
+			return fmt.Errorf("items doesn't support maps")
+		}
 		if keyIdent, ok := ftpe.Key.(*ast.Ident); sch != nil && ok {
 			if keyIdent.Name == "string" {
 				if sch.AdditionalProperties == nil {
