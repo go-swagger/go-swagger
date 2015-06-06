@@ -318,6 +318,9 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 				// their own proper schema
 				// first process embedded structs in order of embedding
 				if allOfMember(fld.Doc) {
+					if schema == nil {
+						schema = new(spec.Schema)
+					}
 					var newSch spec.Schema
 					// when the embedded struct is annotated with swagger:allOf it will be used as allOf property
 					// otherwise the fields will just be included as normal properties
@@ -328,7 +331,7 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 					continue
 				}
 				if schema == nil {
-					schema = new(spec.Schema)
+					schema = bschema
 				}
 
 				// when the embedded struct is annotated with swagger:allOf it will be used as allOf property
@@ -338,9 +341,10 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 				}
 			}
 		}
-		if schema != nil {
+		if schema != nil && len(bschema.AllOf) > 0 {
 			bschema.AllOf = append(bschema.AllOf, *schema)
-		} else {
+		}
+		if schema == nil {
 			schema = bschema
 		}
 

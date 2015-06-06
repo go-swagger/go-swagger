@@ -61,6 +61,7 @@ What's inside?
 
 For a V1 I want to have this feature set completed:
 
+- [ ] Documentation site
 -	[x] An object model that serializes to swagger yaml or json
 -	[x] A tool to work with swagger:
 	-	[x] validate a swagger spec document:
