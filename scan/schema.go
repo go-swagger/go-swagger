@@ -207,20 +207,18 @@ func (scp *schemaParser) parseEmbeddedStruct(gofile *ast.File, schema *spec.Sche
 	case *ast.Ident:
 		// do lookup of type
 		// take primitives into account, they should result in an error for swagger
-		for _, decl := range gofile.Decls {
-			if gd, ok := decl.(*ast.GenDecl); ok {
-				for _, sp := range gd.Specs {
-					if ts, ok := sp.(*ast.TypeSpec); ok {
-						if ts.Name != nil && ts.Name.Name == tpe.Name {
-							if st, ok := ts.Type.(*ast.StructType); ok {
-								// TODO: probe for all of membership
-								return scp.parseStructType(gofile, schema, st, seenPreviously)
-							}
-						}
-					}
-				}
-			}
+		pkg, err := scp.packageForFile(gofile)
+		if err != nil {
+			return err
 		}
+		file, _, ts, err := findSourceFile(pkg, tpe.Name)
+		if err != nil {
+			return err
+		}
+		if st, ok := ts.Type.(*ast.StructType); ok {
+			return scp.parseStructType(file, schema, st, seenPreviously)
+		}
+
 	case *ast.SelectorExpr:
 		// look up package, file and then type
 		pkg, err := scp.packageForSelector(gofile, tpe.X)
@@ -346,6 +344,16 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, schema *spec.Schema, 
 	}
 
 	return nil
+}
+
+func (scp *schemaParser) packageForFile(gofile *ast.File) (*loader.PackageInfo, error) {
+	for pkg, pkgInfo := range scp.program.AllPackages {
+		if pkg.Name() == gofile.Name.Name {
+			return pkgInfo, nil
+		}
+	}
+	fn := scp.program.Fset.File(gofile.Pos()).Name()
+	return nil, fmt.Errorf("unable to determine package for %s", fn)
 }
 
 func (scp *schemaParser) packageForSelector(gofile *ast.File, expr ast.Expr) (*loader.PackageInfo, error) {
@@ -504,56 +512,45 @@ func strfmtName(comments *ast.CommentGroup) (string, bool) {
 func parseProperty(scp *schemaParser, gofile *ast.File, fld ast.Expr, prop swaggerTypable) error {
 	switch ftpe := fld.(type) {
 	case *ast.Ident: // simple value
-		if ftpe.Obj != nil && ftpe.Obj.Kind == ast.Typ {
-			if ts, ok := ftpe.Obj.Decl.(*ast.TypeSpec); ok {
-				for _, d := range gofile.Decls {
-					if gd, ok := d.(*ast.GenDecl); ok {
-						for _, tss := range gd.Specs {
-							if tsp, ok := tss.(*ast.TypeSpec); ok {
-								if tss.Pos() == ts.Pos() {
-									if _, ok := tsp.Type.(*ast.ArrayType); ok {
-										if sfn, ok := strfmtName(gd.Doc); ok {
-											prop.Items().Typed("string", sfn)
-											return nil
-										}
-										return parseProperty(scp, gofile, tsp.Type, prop)
-									}
-
-									// Check if this might be a type decorated with strfmt
-									if sfn, ok := strfmtName(gd.Doc); ok {
-										prop.Typed("string", sfn)
-										return nil
-									}
-
-									if _, ok := tsp.Type.(*ast.StructType); ok {
-										// At this stage we're no longer interested in actually
-										// parsing a struct like this, we're going to reference it instead
-										// In addition to referencing, it is added to a bag of discovered schemas
-										sd := schemaDecl{gofile, gd, ts, "", ""}
-										sd.inferNames()
-										ref, err := spec.NewRef("#/definitions/" + sd.Name)
-										if err != nil {
-											return err
-										}
-										prop.SetRef(ref)
-										scp.postDecls = append(scp.postDecls, sd)
-										return nil
-									}
-
-									return parseProperty(scp, gofile, tsp.Type, prop)
-								}
-							}
-						}
-					}
-				}
-			}
-			return nil
+		pkg, err := scp.packageForFile(gofile)
+		if err != nil {
+			return swaggerSchemaForType(ftpe.Name, prop)
 		}
-		if ftpe.Obj == nil {
+		file, gd, tsp, err := findSourceFile(pkg, ftpe.Name)
+		if err != nil {
 			return swaggerSchemaForType(ftpe.Name, prop)
 		}
 
-		return fmt.Errorf("couldn't infer type for %v", ftpe.Name)
+		if _, ok := tsp.Type.(*ast.ArrayType); ok {
+			if sfn, ok := strfmtName(gd.Doc); ok {
+				prop.Items().Typed("string", sfn)
+				return nil
+			}
+			return parseProperty(scp, gofile, tsp.Type, prop)
+		}
+
+		// Check if this might be a type decorated with strfmt
+		if sfn, ok := strfmtName(gd.Doc); ok {
+			prop.Typed("string", sfn)
+			return nil
+		}
+
+		if _, ok := tsp.Type.(*ast.StructType); ok {
+			// At this stage we're no longer interested in actually
+			// parsing a struct like this, we're going to reference it instead
+			// In addition to referencing, it is added to a bag of discovered schemas
+			sd := schemaDecl{gofile, gd, tsp, "", ""}
+			sd.inferNames()
+			ref, err := spec.NewRef("#/definitions/" + sd.Name)
+			if err != nil {
+				return err
+			}
+			prop.SetRef(ref)
+			scp.postDecls = append(scp.postDecls, sd)
+			return nil
+		}
+
+		return parseProperty(scp, file, tsp.Type, prop)
 
 	case *ast.StarExpr: // pointer to something, optional by default
 		parseProperty(scp, gofile, ftpe.X, prop)

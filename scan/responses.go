@@ -176,19 +176,16 @@ func (rp *responseParser) parseEmbeddedStruct(gofile *ast.File, response *spec.R
 	case *ast.Ident:
 		// do lookup of type
 		// take primitives into account, they should result in an error for swagger
-		for _, decl := range gofile.Decls {
-			if gd, ok := decl.(*ast.GenDecl); ok {
-				for _, sp := range gd.Specs {
-					if ts, ok := sp.(*ast.TypeSpec); ok {
-						if ts.Name != nil && ts.Name.Name == tpe.Name {
-							if st, ok := ts.Type.(*ast.StructType); ok {
-								// TODO: probe for all of membership
-								return rp.parseStructType(gofile, response, st, seenPreviously)
-							}
-						}
-					}
-				}
-			}
+		pkg, err := rp.scp.packageForFile(gofile)
+		if err != nil {
+			return fmt.Errorf("embedded struct: %v", err)
+		}
+		file, _, ts, err := findSourceFile(pkg, tpe.Name)
+		if err != nil {
+			return fmt.Errorf("embedded struct: %v", err)
+		}
+		if st, ok := ts.Type.(*ast.StructType); ok {
+			return rp.parseStructType(file, response, st, seenPreviously)
 		}
 	case *ast.SelectorExpr:
 		// look up package, file and then type

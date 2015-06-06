@@ -236,7 +236,7 @@ func (pp *paramStructParser) parseEmbeddedStruct(gofile *ast.File, operation *sp
 	case *ast.Ident:
 		// do lookup of type
 		// take primitives into account, they should result in an error for swagger
-		pkg, err := pp.packageForFile(gofile)
+		pkg, err := pp.scp.packageForFile(gofile)
 		if err != nil {
 			return fmt.Errorf("embedded struct: %v", err)
 		}
@@ -262,16 +262,6 @@ func (pp *paramStructParser) parseEmbeddedStruct(gofile *ast.File, operation *sp
 		}
 	}
 	return fmt.Errorf("unable to resolve embedded struct for: %v\n", expr)
-}
-
-func (pp *paramStructParser) packageForFile(gofile *ast.File) (*loader.PackageInfo, error) {
-	for pkg, pkgInfo := range pp.program.AllPackages {
-		if pkg.Name() == gofile.Name.Name {
-			return pkgInfo, nil
-		}
-	}
-	fn := pp.program.Fset.File(gofile.Pos()).Name()
-	return nil, fmt.Errorf("unable to determine package for %s", fn)
 }
 
 func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.Operation, tpe *ast.StructType, seenPreviously map[string]spec.Parameter) error {

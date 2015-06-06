@@ -1,7 +1,7 @@
 Swagger 2.0
 ===========
 
-[![Build Status](https://travis-ci.org/casualjim/go-swagger.svg?branch=master)](https://travis-ci.org/casualjim/go-swagger)[![Coverage Status](https://coveralls.io/repos/casualjim/go-swagger/badge.svg?branch=master)](https://coveralls.io/r/casualjim/go-swagger?branch=master)[![GoDoc](https://godoc.org/github.com/casualjim/go-swagger?status.svg)](http://godoc.org/github.com/casualjim/go-swagger)[![license](http://img.shields.io/badge/license-Apache%20v2-orange.svg)](https://raw.githubusercontent.com/swagger-api/swagger-spec/master/LICENSE)
+[![Build Status](https://travis-ci.org/casualjim/go-swagger.svg?branch=master)](https://travis-ci.org/casualjim/go-swagger)[![GoDoc](https://godoc.org/github.com/casualjim/go-swagger?status.svg)](http://godoc.org/github.com/casualjim/go-swagger)[![license](http://img.shields.io/badge/license-Apache%20v2-orange.svg)](https://raw.githubusercontent.com/swagger-api/swagger-spec/master/LICENSE)
 
 This API is not stable yet, when it is stable it will be distributed over gopkg.in
 
@@ -36,6 +36,10 @@ You can also serve a swagger document with the swagger UI
 To generate a server for a swagger spec document:
 
 		swagger generate server [-f ./swagger.json] [--principal [principal-name]] [--with-ui]
+
+To generate a swagger spec document for a go application:
+
+    swagger generate spec -o ./swagger.json
 
 There are several other sub commands available for the generate command
 
@@ -83,8 +87,13 @@ For a V1 I want to have this feature set completed:
     -	[x] generate spec document based on the code
       - [x] generate meta data (top level swagger properties) from package docs
       - [x] generate definition entries for models
+        - [x] support composed structs out of several embeds
         - [ ] support allOf for composed structs
       - [x] generate path entries for routes
+      - [x] generate responses from structs
+        - [x] support composed structs out of several embeds
+      - [x] generate parameters from structs
+        - [x] support composed structs out of several embeds
 -	[x] Middlewares:
 	-	[x] serve spec
 	-	[x] routing
