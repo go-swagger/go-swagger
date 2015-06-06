@@ -16,27 +16,6 @@ func TestSetInfoVersion(t *testing.T) {
 	assert.Equal(t, "0.0.1", info.Info.Version)
 }
 
-// func TestSetInfoTitle(t *testing.T) {
-// 	info := new(spec.Swagger)
-// 	err := setInfoTitle(info, []string{"A title in", "2 parts"})
-// 	assert.NoError(t, err)
-// 	assert.Equal(t, "A title in\n2 parts", info.Info.Title)
-// }
-//
-// func TestSetInfoTOS(t *testing.T) {
-// 	info := new(spec.Swagger)
-// 	err := setInfoTOS(info, []string{"A TOS in", "2 parts"})
-// 	assert.NoError(t, err)
-// 	assert.Equal(t, "A TOS in\n2 parts", info.Info.TermsOfService)
-// }
-
-// func TestSetInfoDescription(t *testing.T) {
-// 	info := new(spec.Swagger)
-// 	err := setInfoDescription(info, []string{"A description in", "2 parts"})
-// 	assert.NoError(t, err)
-// 	assert.Equal(t, "A description in\n2 parts", info.Info.Description)
-// }
-
 func TestSetInfoLicense(t *testing.T) {
 	info := new(spec.Swagger)
 	err := setInfoLicense(info, []string{"MIT http://license.org/MIT"})
@@ -67,24 +46,7 @@ func TestParseInfo(t *testing.T) {
 	err = parser.Parse(fileTree.Doc)
 
 	assert.NoError(t, err)
-	assert.Equal(t, "0.0.1", swspec.Info.Version)
-	assert.Equal(t, "there are no TOS at this moment, use at your own risk we take no responsibility", swspec.Info.TermsOfService)
-	assert.Equal(t, "Petstore API.", swspec.Info.Title)
-	descr := `the purpose of this application is to provide an application
-that is using plain go code to define an API
-
-This should demonstrate all the possible comment annotations
-that are available to turn go code into a fully compliant swagger 2.0 spec`
-	assert.Equal(t, descr, swspec.Info.Description)
-
-	assert.NotNil(t, swspec.Info.License)
-	assert.Equal(t, "MIT", swspec.Info.License.Name)
-	assert.Equal(t, "http://opensource.org/licenses/MIT", swspec.Info.License.URL)
-
-	assert.NotNil(t, swspec.Info.Contact)
-	assert.Equal(t, "John Doe", swspec.Info.Contact.Name)
-	assert.Equal(t, "john.doe@example.com", swspec.Info.Contact.Email)
-	assert.Equal(t, "http://john.doe.com", swspec.Info.Contact.URL)
+	verifyInfo(t, swspec.Info)
 }
 
 func TestParseSwagger(t *testing.T) {
@@ -98,30 +60,39 @@ func TestParseSwagger(t *testing.T) {
 	}
 
 	err = parser.Parse(fileTree.Doc)
+	verifyMeta(t, swspec)
 
 	assert.NoError(t, err)
-	assert.Equal(t, "0.0.1", swspec.Info.Version)
-	assert.Equal(t, "there are no TOS at this moment, use at your own risk we take no responsibility", swspec.Info.TermsOfService)
-	assert.Equal(t, "Petstore API.", swspec.Info.Title)
+}
+
+func verifyMeta(t testing.TB, doc *spec.Swagger) {
+	assert.NotNil(t, doc)
+	verifyInfo(t, doc.Info)
+	assert.EqualValues(t, []string{"application/json", "application/xml"}, doc.Consumes)
+	assert.EqualValues(t, []string{"application/json", "application/xml"}, doc.Produces)
+	assert.EqualValues(t, []string{"http", "https"}, doc.Schemes)
+	assert.Equal(t, "localhost", doc.Host)
+	assert.Equal(t, "/v2", doc.BasePath)
+}
+
+func verifyInfo(t testing.TB, info *spec.Info) {
+	assert.NotNil(t, info)
+	assert.Equal(t, "0.0.1", info.Version)
+	assert.Equal(t, "there are no TOS at this moment, use at your own risk we take no responsibility", info.TermsOfService)
+	assert.Equal(t, "Petstore API.", info.Title)
 	descr := `the purpose of this application is to provide an application
 that is using plain go code to define an API
 
 This should demonstrate all the possible comment annotations
 that are available to turn go code into a fully compliant swagger 2.0 spec`
-	assert.Equal(t, descr, swspec.Info.Description)
+	assert.Equal(t, descr, info.Description)
 
-	assert.NotNil(t, swspec.Info.License)
-	assert.Equal(t, "MIT", swspec.Info.License.Name)
-	assert.Equal(t, "http://opensource.org/licenses/MIT", swspec.Info.License.URL)
+	assert.NotNil(t, info.License)
+	assert.Equal(t, "MIT", info.License.Name)
+	assert.Equal(t, "http://opensource.org/licenses/MIT", info.License.URL)
 
-	assert.NotNil(t, swspec.Info.Contact)
-	assert.Equal(t, "John Doe", swspec.Info.Contact.Name)
-	assert.Equal(t, "john.doe@example.com", swspec.Info.Contact.Email)
-	assert.Equal(t, "http://john.doe.com", swspec.Info.Contact.URL)
-
-	assert.EqualValues(t, []string{"application/json", "application/xml"}, swspec.Consumes)
-	assert.EqualValues(t, []string{"application/json", "application/xml"}, swspec.Produces)
-	assert.EqualValues(t, []string{"http", "https"}, swspec.Schemes)
-	assert.Equal(t, "localhost", swspec.Host)
-	assert.Equal(t, "/v2", swspec.BasePath)
+	assert.NotNil(t, info.Contact)
+	assert.Equal(t, "John Doe", info.Contact.Name)
+	assert.Equal(t, "john.doe@example.com", info.Contact.Email)
+	assert.Equal(t, "http://john.doe.com", info.Contact.URL)
 }

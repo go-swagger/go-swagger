@@ -34,7 +34,7 @@ func init() {
 }
 
 func TestAppScanner_NewSpec(t *testing.T) {
-	scanner, err := newAppScanner("../fixtures/goparsing/classification/operations", nil, nil, nil)
+	scanner, err := newAppScanner("../fixtures/goparsing/petstore/petstore-fixture", nil, nil, nil, "../fixtures/goparsing/petstore")
 	assert.NoError(t, err)
 	assert.NotNil(t, scanner)
 	doc, err := scanner.Parse()
@@ -43,6 +43,16 @@ func TestAppScanner_NewSpec(t *testing.T) {
 
 	b, _ := json.MarshalIndent(doc, "", "  ")
 	fmt.Println(string(b))
+	verifyParsedPetStore(t, doc)
+}
+
+func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
+	assert.EqualValues(t, []string{"application/json"}, doc.Consumes)
+	assert.EqualValues(t, []string{"application/json"}, doc.Produces)
+	assert.EqualValues(t, []string{"http", "https"}, doc.Schemes)
+	assert.Equal(t, "localhost", doc.Host)
+	assert.Equal(t, "/v2", doc.BasePath)
+	verifyInfo(t, doc.Info)
 }
 
 func TestSectionedParser_TitleDescription(t *testing.T) {

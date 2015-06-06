@@ -495,9 +495,23 @@ func (ss *setOpResponses) Parse(lines []string) error {
 				return fmt.Errorf("no name for %q response", key)
 			}
 
-			ref, err := spec.NewRef("#/responses/" + value)
+			var arrays int
+			for strings.HasPrefix(value, "[]") {
+				arrays++
+				value = value[2:]
+			}
+
+			var isDefinitionRef bool
+			var ref spec.Ref
+			var err error
+			if arrays == 0 {
+				ref, err = spec.NewRef("#/responses/" + value)
+			} else {
+				ref, err = spec.NewRef("#/definitions/" + value)
+			}
 			if _, ok := ss.responses[value]; !ok {
 				if _, ok := ss.definitions[value]; ok {
+					isDefinitionRef = true
 					ref, err = spec.NewRef("#/definitions/" + value)
 				}
 			} else {
@@ -507,7 +521,23 @@ func (ss *setOpResponses) Parse(lines []string) error {
 			}
 
 			var resp spec.Response
-			resp.Ref = ref
+			if !isDefinitionRef {
+				resp.Ref = ref
+			} else {
+				resp.Schema = new(spec.Schema)
+				if arrays == 0 {
+					resp.Schema.Ref = ref
+				} else {
+					cs := resp.Schema
+					for i := 0; i < arrays; i++ {
+						cs.Typed("array", "")
+						cs.Items = new(spec.SchemaOrArray)
+						cs.Items.Schema = new(spec.Schema)
+						cs = cs.Items.Schema
+					}
+					cs.Ref = ref
+				}
+			}
 			if strings.EqualFold("default", key) {
 				if def == nil {
 					def = &resp
