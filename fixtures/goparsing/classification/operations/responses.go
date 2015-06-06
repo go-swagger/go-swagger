@@ -28,6 +28,22 @@ type ValidationError struct {
 	}
 }
 
+// A SimpleOne is a model with a few simple fields
+type SimpleOne struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+	Age  int32  `json:"age"`
+}
+
+// A ComplexerOne is composed of a SimpleOne and some extra fields.
+// +swagger:response complexerOne
+type ComplexerOne struct {
+	SimpleOne
+	mods.NotSelected
+	mods.Notable
+	CreatedAt strfmt.DateTime `json:"createdAt"`
+}
+
 // A SomeResponse is a dummy response object to test parsing.
 //
 // The properties are the same as the other structs used to test parsing.

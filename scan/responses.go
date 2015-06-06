@@ -1,6 +1,7 @@
 package scan
 
 import (
+	"fmt"
 	"go/ast"
 	"reflect"
 	"strconv"
@@ -161,7 +162,7 @@ func (rp *responseParser) parseDecl(responses map[string]spec.Response, decl res
 	// * when the struct field points to a model it becomes a ref: #/definitions/ModelName
 	// * comments that aren't tags is used as the description
 	if tpe, ok := decl.TypeSpec.Type.(*ast.StructType); ok {
-		if err := rp.parseStructType(decl.File, resPtr, tpe); err != nil {
+		if err := rp.parseStructType(decl.File, resPtr, tpe, make(map[string]struct{})); err != nil {
 			return err
 		}
 	}
@@ -170,10 +171,60 @@ func (rp *responseParser) parseDecl(responses map[string]spec.Response, decl res
 	return nil
 }
 
-func (rp *responseParser) parseStructType(gofile *ast.File, response *spec.Response, tpe *ast.StructType) error {
+func (rp *responseParser) parseEmbeddedStruct(gofile *ast.File, response *spec.Response, expr ast.Expr, seenPreviously map[string]struct{}) error {
+	switch tpe := expr.(type) {
+	case *ast.Ident:
+		// do lookup of type
+		// take primitives into account, they should result in an error for swagger
+		for _, decl := range gofile.Decls {
+			if gd, ok := decl.(*ast.GenDecl); ok {
+				for _, sp := range gd.Specs {
+					if ts, ok := sp.(*ast.TypeSpec); ok {
+						if ts.Name != nil && ts.Name.Name == tpe.Name {
+							if st, ok := ts.Type.(*ast.StructType); ok {
+								// TODO: probe for all of membership
+								return rp.parseStructType(gofile, response, st, seenPreviously)
+							}
+						}
+					}
+				}
+			}
+		}
+	case *ast.SelectorExpr:
+		// look up package, file and then type
+		pkg, err := rp.scp.packageForSelector(gofile, tpe.X)
+		if err != nil {
+			return fmt.Errorf("embedded struct: %v", err)
+		}
+		file, _, ts, err := findSourceFile(pkg, tpe.Sel.Name)
+		if err != nil {
+			return fmt.Errorf("embedded struct: %v", err)
+		}
+		if st, ok := ts.Type.(*ast.StructType); ok {
+			return rp.parseStructType(file, response, st, seenPreviously)
+		}
+	}
+	return fmt.Errorf("unable to resolve embedded struct for: %v\n", expr)
+}
+
+func (rp *responseParser) parseStructType(gofile *ast.File, response *spec.Response, tpe *ast.StructType, seenPreviously map[string]struct{}) error {
 	if tpe.Fields != nil {
 
-		seenProperties := make(map[string]struct{})
+		seenProperties := seenPreviously
+
+		for _, fld := range tpe.Fields.List {
+			if len(fld.Names) == 0 {
+				// when the embedded struct is annotated with swagger:allOf it will be used as allOf property
+				// otherwise the fields will just be included as normal properties
+				if err := rp.parseEmbeddedStruct(gofile, response, fld.Type, seenProperties); err != nil {
+					return err
+				}
+				for k := range seenProperties {
+					seenProperties[k] = struct{}{}
+				}
+			}
+		}
+
 		for _, fld := range tpe.Fields.List {
 			var nm string
 			if len(fld.Names) > 0 && fld.Names[0] != nil && fld.Names[0].IsExported() {

@@ -22,8 +22,33 @@ func TestParseResponses(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Len(t, responses, 3)
-	//pretty.Println(responses)
+	assert.Len(t, responses, 5)
+	cr, ok := responses["complexerOne"]
+	assert.True(t, ok)
+	assert.Len(t, cr.Headers, 6)
+	for k, header := range cr.Headers {
+		switch k {
+		case "id":
+			assert.Equal(t, "number", header.Type)
+			assert.Equal(t, "int64", header.Format)
+		case "name":
+			assert.Equal(t, "string", header.Type)
+			assert.Equal(t, "", header.Format)
+		case "age":
+			assert.Equal(t, "number", header.Type)
+			assert.Equal(t, "int32", header.Format)
+		case "notes":
+			assert.Equal(t, "string", header.Type)
+			assert.Equal(t, "", header.Format)
+		case "extra":
+			assert.Equal(t, "string", header.Type)
+			assert.Equal(t, "", header.Format)
+		case "createdAt":
+			assert.Equal(t, "string", header.Type)
+			assert.Equal(t, "date-time", header.Format)
+		}
+	}
+
 	res, ok := responses["someResponse"]
 	assert.True(t, ok)
 	assert.Len(t, res.Headers, 5)

@@ -250,7 +250,7 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, schema *spec.Schema, 
 			if len(fld.Names) == 0 {
 				// when the embedded struct is annotated with swagger:allOf it will be used as allOf property
 				// otherwise the fields will just be included as normal properties
-				if err := scp.parseEmbeddedStruct(gofile, schema, fld.Type, seenPreviously); err != nil {
+				if err := scp.parseEmbeddedStruct(gofile, schema, fld.Type, seenProperties); err != nil {
 					return err
 				}
 				for k := range schema.Properties {

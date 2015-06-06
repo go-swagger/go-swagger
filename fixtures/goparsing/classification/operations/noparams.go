@@ -5,6 +5,15 @@ import (
 	"github.com/casualjim/go-swagger/strfmt"
 )
 
+// A ComplexerOneParams is composed of a SimpleOne and some extra fields
+// +swagger:parameters yetAnotherOperation
+type ComplexerOneParams struct {
+	SimpleOne
+	mods.NotSelected
+	mods.Notable
+	CreatedAt strfmt.DateTime `json:"createdAt"`
+}
+
 // NoParams is a struct that exists in a package
 // but is not annotated with the swagger params annotations
 // so it should now show up in a test

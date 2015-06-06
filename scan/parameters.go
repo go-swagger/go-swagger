@@ -1,6 +1,7 @@
 package scan
 
 import (
+	"fmt"
 	"go/ast"
 	"reflect"
 	"regexp"
@@ -220,7 +221,7 @@ func (pp *paramStructParser) parseDecl(operations map[string]*spec.Operation, de
 		// * when the struct field points to a model it becomes a ref: #/definitions/ModelName
 		// * comments that aren't tags is used as the description
 		if tpe, ok := decl.TypeSpec.Type.(*ast.StructType); ok {
-			if err := pp.parseStructType(decl.File, operation, tpe); err != nil {
+			if err := pp.parseStructType(decl.File, operation, tpe, make(map[string]spec.Parameter)); err != nil {
 				return err
 			}
 		}
@@ -230,11 +231,67 @@ func (pp *paramStructParser) parseDecl(operations map[string]*spec.Operation, de
 	return nil
 }
 
-func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.Operation, tpe *ast.StructType) error {
-	if tpe.Fields != nil {
-		pt := make(map[string]spec.Parameter)
+func (pp *paramStructParser) parseEmbeddedStruct(gofile *ast.File, operation *spec.Operation, expr ast.Expr, seenPreviously map[string]spec.Parameter) error {
+	switch tpe := expr.(type) {
+	case *ast.Ident:
+		// do lookup of type
+		// take primitives into account, they should result in an error for swagger
+		pkg, err := pp.packageForFile(gofile)
+		if err != nil {
+			return fmt.Errorf("embedded struct: %v", err)
+		}
+		file, _, ts, err := findSourceFile(pkg, tpe.Name)
+		if err != nil {
+			return fmt.Errorf("embedded struct: %v", err)
+		}
+		if st, ok := ts.Type.(*ast.StructType); ok {
+			return pp.parseStructType(file, operation, st, seenPreviously)
+		}
+	case *ast.SelectorExpr:
+		// look up package, file and then type
+		pkg, err := pp.scp.packageForSelector(gofile, tpe.X)
+		if err != nil {
+			return fmt.Errorf("embedded struct: %v", err)
+		}
+		file, _, ts, err := findSourceFile(pkg, tpe.Sel.Name)
+		if err != nil {
+			return fmt.Errorf("embedded struct: %v", err)
+		}
+		if st, ok := ts.Type.(*ast.StructType); ok {
+			return pp.parseStructType(file, operation, st, seenPreviously)
+		}
+	}
+	return fmt.Errorf("unable to resolve embedded struct for: %v\n", expr)
+}
 
+func (pp *paramStructParser) packageForFile(gofile *ast.File) (*loader.PackageInfo, error) {
+	for pkg, pkgInfo := range pp.program.AllPackages {
+		if pkg.Name() == gofile.Name.Name {
+			return pkgInfo, nil
+		}
+	}
+	fn := pp.program.Fset.File(gofile.Pos()).Name()
+	return nil, fmt.Errorf("unable to determine package for %s", fn)
+}
+
+func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.Operation, tpe *ast.StructType, seenPreviously map[string]spec.Parameter) error {
+	if tpe.Fields != nil {
+		pt := seenPreviously
 		seenProperties := make(map[string]struct{})
+
+		for _, fld := range tpe.Fields.List {
+			if len(fld.Names) == 0 {
+				// when the embedded struct is annotated with swagger:allOf it will be used as allOf property
+				// otherwise the fields will just be included as normal properties
+				if err := pp.parseEmbeddedStruct(gofile, operation, fld.Type, pt); err != nil {
+					return err
+				}
+				for k := range pt {
+					seenProperties[k] = struct{}{}
+				}
+			}
+		}
+
 		for _, fld := range tpe.Fields.List {
 			var nm, gnm string
 			if len(fld.Names) > 0 && fld.Names[0] != nil && fld.Names[0].IsExported() {
@@ -256,11 +313,13 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 
 				in := "query"
 				// scan for param location first, this changes some behavior down the line
-				for _, cmt := range fld.Doc.List {
-					for _, line := range strings.Split(cmt.Text, "\n") {
-						matches := rxIn.FindStringSubmatch(line)
-						if len(matches) > 0 && len(strings.TrimSpace(matches[1])) > 0 {
-							in = strings.TrimSpace(matches[1])
+				if fld.Doc != nil {
+					for _, cmt := range fld.Doc.List {
+						for _, line := range strings.Split(cmt.Text, "\n") {
+							matches := rxIn.FindStringSubmatch(line)
+							if len(matches) > 0 && len(strings.TrimSpace(matches[1])) > 0 {
+								in = strings.TrimSpace(matches[1])
+							}
 						}
 					}
 				}
