@@ -6,7 +6,7 @@ package mods
 // but because it it transitively required by the order
 // it should also be collected.
 //
-// +swagger:model pet
+// swagger:model pet
 type Pet struct {
 	// ID the id of this pet
 	//

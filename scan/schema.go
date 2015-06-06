@@ -174,7 +174,7 @@ func (scp *schemaParser) Parse(gofile *ast.File, target interface{}) error {
 }
 
 func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl *schemaDecl) error {
-	// check if there is a +swagger:model tag that is followed by a word,
+	// check if there is a swagger:model tag that is followed by a word,
 	// this word is the type name for swagger
 	// the package and type are recorded in the extensions
 	// once type name is found convert it to a schema, by looking up the schema in the
@@ -512,7 +512,7 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 		}
 	}
 
-	// look at doc comments for +swagger:strfmt [name]
+	// look at doc comments for swagger:strfmt [name]
 	// when found this is the format name, create a schema with that name
 	if strfmtName, ok := strfmtName(gd.Doc); ok {
 		prop.Typed("string", strfmtName)

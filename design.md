@@ -195,4 +195,4 @@ Swagger | the swagger version to use for this API, defaults to latest known (cur
 
 Operations are not supported at this time. I don't know if it's worth supporting them at all.
 There isn't much that can be inferred from code. What can be supported is parameter structs when they are annotated
-with +swagger:params [operation id]
+with swagger:params [operation id]

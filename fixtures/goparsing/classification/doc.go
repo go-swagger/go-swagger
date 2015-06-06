@@ -26,5 +26,5 @@
 //     - application/xml
 //
 //
-// +swagger:meta
+// swagger:meta
 package classification

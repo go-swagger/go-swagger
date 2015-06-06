@@ -9,7 +9,7 @@ type ListPetParams struct {
 // ServeAPI serves the API for this record store
 func ServeAPI(host, basePath string, schemes []string) error {
 
-	// +swagger:route GET /pets pets users listPets
+	// swagger:route GET /pets pets users listPets
 	//
 	// Lists pets filtered by some parameters.
 	//
@@ -36,7 +36,7 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	// 422: validationError
 	mountItem("GET", basePath+"/pets", nil)
 
-	/* +swagger:route POST /pets pets users createPet
+	/* swagger:route POST /pets pets users createPet
 
 	Create a pet based on the parameters.
 
@@ -60,7 +60,7 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	oauth: read, write */
 	mountItem("POST", basePath+"/pets", nil)
 
-	// +swagger:route GET /orders orders listOrders
+	// swagger:route GET /orders orders listOrders
 	//
 	// lists orders filtered by some parameters.
 	//
@@ -84,7 +84,7 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	// 422: validationError
 	mountItem("GET", basePath+"/orders", nil)
 
-	// +swagger:route POST /orders orders createOrder
+	// swagger:route POST /orders orders createOrder
 	//
 	// create an order based on the parameters.
 	//
@@ -108,7 +108,7 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	// 422: validationError
 	mountItem("POST", basePath+"/orders", nil)
 
-	// +swagger:route GET /orders/{id} orders orderDetails
+	// swagger:route GET /orders/{id} orders orderDetails
 	//
 	// gets the details for an order.
 	//
@@ -132,7 +132,7 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	// 422: validationError
 	mountItem("GET", basePath+"/orders/:id", nil)
 
-	// +swagger:route PUT /orders/{id} orders updateOrder
+	// swagger:route PUT /orders/{id} orders updateOrder
 	//
 	// Update the details for an order.
 	//
@@ -158,7 +158,7 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	// 422: validationError
 	mountItem("PUT", basePath+"/orders/:id", nil)
 
-	// +swagger:route DELETE /orders/{id} orders deleteOrder
+	// swagger:route DELETE /orders/{id} orders deleteOrder
 	//
 	// delete a particular order.
 	//

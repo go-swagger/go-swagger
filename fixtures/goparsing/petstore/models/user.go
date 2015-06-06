@@ -1,7 +1,7 @@
 package models
 
 // A User can purchase pets
-// +swagger:model user
+// swagger:model user
 type User struct {
 	// The id of the user.
 	//

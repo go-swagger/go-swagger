@@ -3,7 +3,7 @@ package models
 // A Pet is the main product in the store.
 // It is used to describe the animals available in the store.
 //
-// +swagger:model pet
+// swagger:model pet
 type Pet struct {
 	// The id of the pet.
 	//

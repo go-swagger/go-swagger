@@ -6,7 +6,7 @@ import (
 )
 
 // A ComplexerOneParams is composed of a SimpleOne and some extra fields
-// +swagger:parameters yetAnotherOperation
+// swagger:parameters yetAnotherOperation
 type ComplexerOneParams struct {
 	SimpleOne
 	mods.NotSelected
@@ -18,7 +18,7 @@ type ComplexerOneParams struct {
 // but is not annotated with the swagger params annotations
 // so it should now show up in a test
 //
-// +swagger:parameters someOperation anotherOperation
+// swagger:parameters someOperation anotherOperation
 type NoParams struct {
 	// ID of this no model instance.
 	// ids in this application start at 11 and are smaller than 1000

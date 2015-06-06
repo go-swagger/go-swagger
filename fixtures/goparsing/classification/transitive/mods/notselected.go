@@ -13,7 +13,7 @@ type NotSelected struct {
 // Notable is a model in a transitive package.
 // it's used for embedding in another model
 //
-// +swagger:model withNotes
+// swagger:model withNotes
 type Notable struct {
 	Notes string `json:"notes"`
 

@@ -12,10 +12,10 @@ import (
 
 func TestAnnotationMatcher(t *testing.T) {
 	variations := []string{
-		"// +swagger",
-		" +swagger",
-		"+swagger",
-		" * +swagger",
+		"// swagger",
+		" swagger",
+		"swagger",
+		" * swagger",
 	}
 	known := []string{
 		"meta",

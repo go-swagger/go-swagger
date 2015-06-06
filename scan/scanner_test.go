@@ -133,7 +133,7 @@ maximum: 20
 }
 
 func TestSectionedParser_SkipSectionAnnotation(t *testing.T) {
-	block := `+swagger:model someModel
+	block := `swagger:model someModel
 
 This has a title without whitespace.
 The punctuation here does indeed matter. But it won't for go.
@@ -164,13 +164,13 @@ maximum: 20
 }
 
 func TestSectionedParser_TerminateOnNewAnnotation(t *testing.T) {
-	block := `+swagger:model someModel
+	block := `swagger:model someModel
 
 This has a title without whitespace.
 The punctuation here does indeed matter. But it won't for go.
 
 minimum: 10
-+swagger:meta
+swagger:meta
 maximum: 20
 `
 	st := &sectionedParser{}
@@ -207,40 +207,40 @@ func ascg(txt string) *ast.CommentGroup {
 
 func TestSchemaValueExtractors(t *testing.T) {
 	strfmts := []string{
-		"// +swagger:strfmt ",
-		"* +swagger:strfmt ",
-		"* +swagger:strfmt ",
-		" +swagger:strfmt ",
-		"+swagger:strfmt ",
-		"// +swagger:strfmt    ",
-		"* +swagger:strfmt     ",
-		"* +swagger:strfmt    ",
-		" +swagger:strfmt     ",
-		"+swagger:strfmt      ",
+		"// swagger:strfmt ",
+		"* swagger:strfmt ",
+		"* swagger:strfmt ",
+		" swagger:strfmt ",
+		"swagger:strfmt ",
+		"// swagger:strfmt    ",
+		"* swagger:strfmt     ",
+		"* swagger:strfmt    ",
+		" swagger:strfmt     ",
+		"swagger:strfmt      ",
 	}
 	models := []string{
-		"// +swagger:model ",
-		"* +swagger:model ",
-		"* +swagger:model ",
-		" +swagger:model ",
-		"+swagger:model ",
-		"// +swagger:model    ",
-		"* +swagger:model     ",
-		"* +swagger:model    ",
-		" +swagger:model     ",
-		"+swagger:model      ",
+		"// swagger:model ",
+		"* swagger:model ",
+		"* swagger:model ",
+		" swagger:model ",
+		"swagger:model ",
+		"// swagger:model    ",
+		"* swagger:model     ",
+		"* swagger:model    ",
+		" swagger:model     ",
+		"swagger:model      ",
 	}
 	parameters := []string{
-		"// +swagger:parameters ",
-		"* +swagger:parameters ",
-		"* +swagger:parameters ",
-		" +swagger:parameters ",
-		"+swagger:parameters ",
-		"// +swagger:parameters    ",
-		"* +swagger:parameters     ",
-		"* +swagger:parameters    ",
-		" +swagger:parameters     ",
-		"+swagger:parameters      ",
+		"// swagger:parameters ",
+		"* swagger:parameters ",
+		"* swagger:parameters ",
+		" swagger:parameters ",
+		"swagger:parameters ",
+		"// swagger:parameters    ",
+		"* swagger:parameters     ",
+		"* swagger:parameters    ",
+		" swagger:parameters     ",
+		"swagger:parameters      ",
 	}
 	validParams := []string{
 		"yada123",

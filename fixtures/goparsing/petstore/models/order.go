@@ -3,7 +3,7 @@ package models
 import "github.com/casualjim/go-swagger/strfmt"
 
 // An Order for one or more pets by a user.
-// +swagger:model order
+// swagger:model order
 type Order struct {
 	// the ID of the order
 	//

@@ -148,9 +148,9 @@ type OverridingOne struct {
 // An AllOfModel is composed out of embedded structs but it should build
 // an allOf property
 type AllOfModel struct {
-	// +swagger:allOf
+	// swagger:allOf
 	SimpleOne
-	// +swagger:allOf
+	// swagger:allOf
 	mods.Notable
 
 	Something // not annotated with anything, so should be included

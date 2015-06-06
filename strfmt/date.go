@@ -34,7 +34,7 @@ var (
 
 // Date represents a date from the API
 //
-// +swagger:strfmt date
+// swagger:strfmt date
 type Date struct {
 	time.Time
 }

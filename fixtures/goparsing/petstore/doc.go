@@ -23,5 +23,5 @@
 //     Produces:
 //     - application/json
 //
-// +swagger:meta
+// swagger:meta
 package petstore

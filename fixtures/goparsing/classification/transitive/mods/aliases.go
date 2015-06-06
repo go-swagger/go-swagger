@@ -13,7 +13,7 @@ type SomeStringsType []string
 type SomeIntsType []int64
 
 // SomeTimesType is a type that refines time.Time
-// +swagger:strfmt date-time
+// swagger:strfmt date-time
 type SomeTimesType []time.Time
 
 // SomeTimedsType is a type that refines strfmt.DateTime
@@ -29,7 +29,7 @@ type SomeStringType string
 type SomeIntType int64
 
 // SomeTimeType is a type that refines time.Time
-// +swagger:strfmt date-time
+// swagger:strfmt date-time
 type SomeTimeType time.Time
 
 // SomeTimedType is a type that refines strfmt.DateTime

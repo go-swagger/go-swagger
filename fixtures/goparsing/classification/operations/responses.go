@@ -6,7 +6,7 @@ import (
 )
 
 // A GenericError is an error that is used when no other error is appropriate
-// +swagger:response genericError
+// swagger:response genericError
 type GenericError struct {
 	// The error message
 	// in: body
@@ -16,7 +16,7 @@ type GenericError struct {
 }
 
 // A ValidationError is an error that is used when the required input fails validation.
-// +swagger:response validationError
+// swagger:response validationError
 type ValidationError struct {
 	// The error message
 	// in: body
@@ -36,7 +36,7 @@ type SimpleOne struct {
 }
 
 // A ComplexerOne is composed of a SimpleOne and some extra fields.
-// +swagger:response complexerOne
+// swagger:response complexerOne
 type ComplexerOne struct {
 	SimpleOne
 	mods.NotSelected
@@ -48,7 +48,7 @@ type ComplexerOne struct {
 //
 // The properties are the same as the other structs used to test parsing.
 //
-// +swagger:response someResponse
+// swagger:response someResponse
 type SomeResponse struct {
 	// ID of this some response instance.
 	// ids in this application start at 11 and are smaller than 1000

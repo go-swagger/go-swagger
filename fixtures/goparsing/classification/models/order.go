@@ -6,7 +6,7 @@ import "github.com/casualjim/go-swagger/fixtures/goparsing/classification/transi
 //
 // An order can either be created, processed or completed.
 //
-// +swagger:model order
+// swagger:model order
 type StoreOrder struct {
 	// the id for this order
 	//

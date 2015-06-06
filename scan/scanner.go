@@ -37,15 +37,15 @@ const (
 )
 
 var (
-	rxSwaggerAnnotation  = regexp.MustCompile("[^+]*\\+\\p{Zs}*swagger:([\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)")
-	rxMeta               = regexp.MustCompile("\\+swagger:meta")
-	rxStrFmt             = regexp.MustCompile("\\+swagger:strfmt\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)$")
-	rxAllOf              = regexp.MustCompile("\\+swagger:allOf")
-	rxModelOverride      = regexp.MustCompile("\\+swagger:model\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)?$")
-	rxResponseOverride   = regexp.MustCompile("\\+swagger:response\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)?$")
-	rxParametersOverride = regexp.MustCompile("\\+swagger:parameters\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\p{Zs}]+)$")
+	rxSwaggerAnnotation  = regexp.MustCompile("swagger:([\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)")
+	rxMeta               = regexp.MustCompile("swagger:meta")
+	rxStrFmt             = regexp.MustCompile("swagger:strfmt\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)$")
+	rxAllOf              = regexp.MustCompile("swagger:allOf")
+	rxModelOverride      = regexp.MustCompile("swagger:model\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)?$")
+	rxResponseOverride   = regexp.MustCompile("swagger:response\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)?$")
+	rxParametersOverride = regexp.MustCompile("swagger:parameters\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\p{Zs}]+)$")
 	rxRoute              = regexp.MustCompile(
-		"\\+swagger:route\\p{Zs}*" +
+		"swagger:route\\p{Zs}*" +
 			rxMethod +
 			"\\p{Zs}*" +
 			rxPath +
@@ -484,7 +484,7 @@ COMMENTS:
 		for _, line := range strings.Split(c.Text, "\n") {
 			if rxSwaggerAnnotation.MatchString(line) {
 				if st.annotation == nil || !st.annotation.Matches(line) {
-					break COMMENTS // a new +swagger: annotation terminates this parser
+					break COMMENTS // a new swagger: annotation terminates this parser
 				}
 
 				st.annotation.Parse([]string{line})

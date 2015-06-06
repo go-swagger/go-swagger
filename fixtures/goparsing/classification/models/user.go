@@ -9,7 +9,7 @@ import "github.com/casualjim/go-swagger/strfmt"
 //
 // A user can have friends with whom they can share what they like.
 //
-// +swagger:model
+// swagger:model
 type User struct {
 	// the id for this user
 	//

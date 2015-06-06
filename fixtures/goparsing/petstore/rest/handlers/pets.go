@@ -6,7 +6,7 @@ import (
 	"github.com/naoina/denco"
 )
 
-// GetPets +swagger:route GET /pets pets listPets
+// GetPets swagger:route GET /pets pets listPets
 //
 // Lists the pets known to the store.
 //
@@ -19,7 +19,7 @@ func GetPets(w http.ResponseWriter, r *http.Request, params denco.Params) {
 
 // GetPetByID http handler.
 //
-// +swagger:route GET /pets/{id} pets getPetById
+// swagger:route GET /pets/{id} pets getPetById
 //
 // Gets the details for a pet
 func GetPetByID(w http.ResponseWriter, r *http.Request, params denco.Params) {
@@ -28,7 +28,7 @@ func GetPetByID(w http.ResponseWriter, r *http.Request, params denco.Params) {
 
 // CreatePet http handler.
 //
-// +swagger:route POST /pets pets createPet
+// swagger:route POST /pets pets createPet
 //
 // Creates a new pet in the store.
 func CreatePet(w http.ResponseWriter, r *http.Request, params denco.Params) {
@@ -37,7 +37,7 @@ func CreatePet(w http.ResponseWriter, r *http.Request, params denco.Params) {
 
 // UpdatePet http handler.
 //
-// +swagger:route GET /pets/{id} pets updatePet
+// swagger:route GET /pets/{id} pets updatePet
 //
 // Updates the details for a pet.
 func UpdatePet(w http.ResponseWriter, r *http.Request, params denco.Params) {
@@ -46,7 +46,7 @@ func UpdatePet(w http.ResponseWriter, r *http.Request, params denco.Params) {
 
 // DeletePet http handler.
 //
-// +swagger:route DELETE /pets/{id} pets deletePet
+// swagger:route DELETE /pets/{id} pets deletePet
 //
 // Deletes a pet from the store.
 func DeletePet(w http.ResponseWriter, r *http.Request, params denco.Params) {
