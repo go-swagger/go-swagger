@@ -88,7 +88,7 @@ For a V1 I want to have this feature set completed:
       - [x] generate meta data (top level swagger properties) from package docs
       - [x] generate definition entries for models
         - [x] support composed structs out of several embeds
-        - [ ] support allOf for composed structs
+        - [x] support allOf for composed structs
       - [x] generate path entries for routes
       - [x] generate responses from structs
         - [x] support composed structs out of several embeds

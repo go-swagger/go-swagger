@@ -216,9 +216,6 @@ func (rp *responseParser) parseStructType(gofile *ast.File, response *spec.Respo
 				if err := rp.parseEmbeddedStruct(gofile, response, fld.Type, seenProperties); err != nil {
 					return err
 				}
-				for k := range seenProperties {
-					seenProperties[k] = struct{}{}
-				}
 			}
 		}
 

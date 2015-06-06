@@ -145,6 +145,19 @@ type OverridingOne struct {
 	Age int64
 }
 
+// An AllOfModel is composed out of embedded structs but it should build
+// an allOf property
+type AllOfModel struct {
+	// +swagger:allOf
+	SimpleOne
+	// +swagger:allOf
+	mods.Notable
+
+	Something // not annotated with anything, so should be included
+
+	CreatedAt strfmt.DateTime `json:"createdAt"`
+}
+
 // A PrimateModel is a struct with nothing but primitives.
 //
 // It only has values 1 level deep and each of those is of a very simple

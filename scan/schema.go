@@ -93,11 +93,27 @@ func (sap *schemaAnnotationParser) Parse(lines []string) error {
 }
 
 type schemaDecl struct {
-	File     *ast.File
-	Decl     *ast.GenDecl
-	TypeSpec *ast.TypeSpec
-	GoName   string
-	Name     string
+	File      *ast.File
+	Decl      *ast.GenDecl
+	TypeSpec  *ast.TypeSpec
+	GoName    string
+	Name      string
+	annotated bool
+}
+
+func newSchemaDecl(file *ast.File, decl *ast.GenDecl, ts *ast.TypeSpec) *schemaDecl {
+	sd := &schemaDecl{
+		File:     file,
+		Decl:     decl,
+		TypeSpec: ts,
+	}
+	sd.inferNames()
+	return sd
+}
+
+func (sd *schemaDecl) hasAnnotation() bool {
+	sd.inferNames()
+	return sd.annotated
 }
 
 func (sd *schemaDecl) inferNames() (goName string, name string) {
@@ -112,6 +128,9 @@ func (sd *schemaDecl) inferNames() (goName string, name string) {
 		for _, cmt := range sd.Decl.Doc.List {
 			for _, ln := range strings.Split(cmt.Text, "\n") {
 				matches := rxModelOverride.FindStringSubmatch(ln)
+				if len(matches) > 0 {
+					sd.annotated = true
+				}
 				if len(matches) > 1 && len(matches[1]) > 0 {
 					name = matches[1]
 					break DECLS
@@ -144,8 +163,7 @@ func (scp *schemaParser) Parse(gofile *ast.File, target interface{}) error {
 		}
 		for _, spc := range gd.Specs {
 			if ts, ok := spc.(*ast.TypeSpec); ok {
-				sd := schemaDecl{gofile, gd, ts, "", ""}
-				sd.inferNames()
+				sd := newSchemaDecl(gofile, gd, ts)
 				if err := scp.parseDecl(tgt, sd); err != nil {
 					return err
 				}
@@ -155,7 +173,7 @@ func (scp *schemaParser) Parse(gofile *ast.File, target interface{}) error {
 	return nil
 }
 
-func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl schemaDecl) error {
+func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl *schemaDecl) error {
 	// check if there is a +swagger:model tag that is followed by a word,
 	// this word is the type name for swagger
 	// the package and type are recorded in the extensions
@@ -215,7 +233,6 @@ func (scp *schemaParser) parseEmbeddedStruct(gofile *ast.File, schema *spec.Sche
 		if err != nil {
 			return err
 		}
-		// TODO: When this is annotated with swagger:allOf then turn it into a $ref
 		if st, ok := ts.Type.(*ast.StructType); ok {
 			return scp.parseStructType(file, schema, st, seenPreviously)
 		}
@@ -230,7 +247,6 @@ func (scp *schemaParser) parseEmbeddedStruct(gofile *ast.File, schema *spec.Sche
 		if err != nil {
 			return fmt.Errorf("embedded struct: %v", err)
 		}
-		// TODO: When this is annotated with swagger:allOf then turn it into a $ref
 		if st, ok := ts.Type.(*ast.StructType); ok {
 			return scp.parseStructType(file, schema, st, seenPreviously)
 		}
@@ -238,27 +254,101 @@ func (scp *schemaParser) parseEmbeddedStruct(gofile *ast.File, schema *spec.Sche
 	return fmt.Errorf("unable to resolve embedded struct for: %v\n", expr)
 }
 
-func (scp *schemaParser) parseStructType(gofile *ast.File, schema *spec.Schema, tpe *ast.StructType, seenPreviously map[string]struct{}) error {
-	schema.Typed("object", "")
-	if tpe.Fields != nil {
-		if schema.Properties == nil {
-			schema.Properties = make(map[string]spec.Schema)
+func (scp *schemaParser) parseAllOfMember(gofile *ast.File, schema *spec.Schema, expr ast.Expr, seenPreviously map[string]struct{}) error {
+	// TODO: check if struct is annotated with swagger:model or known in the definitions otherwise
+	var pkg *loader.PackageInfo
+	var file *ast.File
+	var gd *ast.GenDecl
+	var ts *ast.TypeSpec
+	var err error
+
+	switch tpe := expr.(type) {
+	case *ast.Ident:
+		// do lookup of type
+		// take primitives into account, they should result in an error for swagger
+		pkg, err = scp.packageForFile(gofile)
+		if err != nil {
+			return err
 		}
+		file, gd, ts, err = findSourceFile(pkg, tpe.Name)
+		if err != nil {
+			return err
+		}
+
+	case *ast.SelectorExpr:
+		// look up package, file and then type
+		pkg, err = scp.packageForSelector(gofile, tpe.X)
+		if err != nil {
+			return fmt.Errorf("embedded struct: %v", err)
+		}
+		file, gd, ts, err = findSourceFile(pkg, tpe.Sel.Name)
+		if err != nil {
+			return fmt.Errorf("embedded struct: %v", err)
+		}
+	default:
+		return fmt.Errorf("unable to resolve allOf member for: %v\n", expr)
+	}
+
+	sd := newSchemaDecl(file, gd, ts)
+	if sd.hasAnnotation() {
+		ref, err := spec.NewRef("#/definitions/" + sd.Name)
+		if err != nil {
+			return err
+		}
+		schema.Ref = ref
+		scp.postDecls = append(scp.postDecls, *sd)
+	} else {
+		if st, ok := ts.Type.(*ast.StructType); ok {
+			return scp.parseStructType(file, schema, st, seenPreviously)
+		}
+	}
+
+	return nil
+}
+
+func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema, tpe *ast.StructType, seenPreviously map[string]struct{}) error {
+	if tpe.Fields != nil {
+		var schema *spec.Schema
 		seenProperties := seenPreviously
-		// first process embedded structs in order of embedding
+
 		for _, fld := range tpe.Fields.List {
 			if len(fld.Names) == 0 {
+				// if this created an allOf property then we have to rejig the schema var
+				// because all the fields collected that aren't from embedded structs should go in
+				// their own proper schema
+				// first process embedded structs in order of embedding
+				if allOfMember(fld.Doc) {
+					var newSch spec.Schema
+					// when the embedded struct is annotated with swagger:allOf it will be used as allOf property
+					// otherwise the fields will just be included as normal properties
+					if err := scp.parseAllOfMember(gofile, &newSch, fld.Type, seenProperties); err != nil {
+						return err
+					}
+					bschema.AllOf = append(bschema.AllOf, newSch)
+					continue
+				}
+				if schema == nil {
+					schema = new(spec.Schema)
+				}
+
 				// when the embedded struct is annotated with swagger:allOf it will be used as allOf property
 				// otherwise the fields will just be included as normal properties
 				if err := scp.parseEmbeddedStruct(gofile, schema, fld.Type, seenProperties); err != nil {
 					return err
 				}
-				for k := range schema.Properties {
-					seenProperties[k] = struct{}{}
-				}
 			}
 		}
+		if schema != nil {
+			bschema.AllOf = append(bschema.AllOf, *schema)
+		} else {
+			schema = bschema
+		}
+
 		// then add and possibly override values
+		if schema.Properties == nil {
+			schema.Properties = make(map[string]spec.Schema)
+		}
+		schema.Typed("object", "")
 		for _, fld := range tpe.Fields.List {
 			if len(fld.Names) > 0 && fld.Names[0] != nil && fld.Names[0].IsExported() {
 				var nm, gnm string
@@ -435,14 +525,14 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 			return fmt.Errorf("unknown selector type: %#v", tpe)
 		}
 	case *ast.StructType:
-		sd := schemaDecl{file, gd, ts, "", ""}
+		sd := newSchemaDecl(file, gd, ts)
 		sd.inferNames()
 		ref, err := spec.NewRef("#/definitions/" + sd.Name)
 		if err != nil {
 			return err
 		}
 		prop.SetRef(ref)
-		scp.postDecls = append(scp.postDecls, sd)
+		scp.postDecls = append(scp.postDecls, *sd)
 		return nil
 
 	case *ast.Ident:

@@ -132,6 +132,24 @@ func TestEmbeddedTypes(t *testing.T) {
 	assertProperty(t, &schema, "string", "notes", "", "Notes")
 }
 
+func TestEmbeddedAllOf(t *testing.T) {
+	schema := noModelDefs["AllOfModel"]
+
+	assert.Len(t, schema.AllOf, 3)
+	asch := schema.AllOf[0]
+	assertProperty(t, &asch, "number", "age", "int32", "Age")
+	assertProperty(t, &asch, "number", "id", "int64", "ID")
+	assertProperty(t, &asch, "string", "name", "", "Name")
+
+	asch = schema.AllOf[1]
+	assert.Equal(t, "#/definitions/withNotes", asch.Ref.GetURL().String())
+
+	asch = schema.AllOf[2]
+	assertProperty(t, &asch, "string", "createdAt", "date-time", "CreatedAt")
+	assertProperty(t, &asch, "number", "did", "int64", "DID")
+	assertProperty(t, &asch, "string", "cat", "", "Cat")
+}
+
 func TestAliasedTypes(t *testing.T) {
 	schema := noModelDefs["OtherTypes"]
 	assertProperty(t, &schema, "string", "named", "", "Named")

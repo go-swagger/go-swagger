@@ -267,7 +267,6 @@ func (pp *paramStructParser) parseEmbeddedStruct(gofile *ast.File, operation *sp
 func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.Operation, tpe *ast.StructType, seenPreviously map[string]spec.Parameter) error {
 	if tpe.Fields != nil {
 		pt := seenPreviously
-		seenProperties := make(map[string]struct{})
 
 		for _, fld := range tpe.Fields.List {
 			if len(fld.Names) == 0 {
@@ -275,9 +274,6 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 				// otherwise the fields will just be included as normal properties
 				if err := pp.parseEmbeddedStruct(gofile, operation, fld.Type, pt); err != nil {
 					return err
-				}
-				for k := range pt {
-					seenProperties[k] = struct{}{}
 				}
 			}
 		}
@@ -374,21 +370,18 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 				if nm != gnm {
 					ps.AddExtension("x-go-name", gnm)
 				}
-				seenProperties[nm] = struct{}{}
 				pt[nm] = ps
 			}
 		}
 
-		for k := range seenProperties {
-			if p, ok := pt[k]; ok {
-				for i, v := range operation.Parameters {
-					if v.Name == k {
-						operation.Parameters = append(operation.Parameters[:i], operation.Parameters[i+1:]...)
-						break
-					}
+		for k, p := range pt {
+			for i, v := range operation.Parameters {
+				if v.Name == k {
+					operation.Parameters = append(operation.Parameters[:i], operation.Parameters[i+1:]...)
+					break
 				}
-				operation.Parameters = append(operation.Parameters, p)
 			}
+			operation.Parameters = append(operation.Parameters, p)
 		}
 	}
 
