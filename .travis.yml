@@ -25,7 +25,7 @@ script:
   - ./coverage.sh
 
 env:
-  secure: "BVU08Ozu3y4JRVeaaRV0h0Px3u2PpOdchykHfJX0+AeOQZO6mmE69JfCJFOkynBVOY9P3AerDPlrVHPK3eBAeEwX+XgKaFenE4n7LgvH1rlrjOngaPte76x5BdbiGkJ///L0cKJw1t6FQlPnqFpjckbmr9f6w9ItR8ClqR0vMEs="
+  secure: "QkBMwu7HL57yi6/EHVT42ofmuCI9ey3AR9+1vF6AwcVErm5pbhSSGMHTAo8ruP80PBOnJEAl65xOS5fzEIPIxFNbbL57Qsty/NCsMwxd9aPl+xP8pNFlffVz3CmbpfFLsGuWc77kDCHRdnsK+/mOjs+EKw0XHUmViX2DAGkHQ8U="
 
 notifications:
   webhooks:
