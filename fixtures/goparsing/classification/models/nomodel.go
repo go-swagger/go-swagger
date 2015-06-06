@@ -166,15 +166,17 @@ type OtherTypes struct {
 
 // A SimpleOne is a model with a few simple fields
 type SimpleOne struct {
-	ID   int64
-	Name string
-	Age  int32
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+	Age  int32  `json:"age"`
 }
 
 // A ComplexerOne is composed of a SimpleOne and some extra fields
 type ComplexerOne struct {
 	SimpleOne
-	CreatedAt strfmt.DateTime
+	mods.NotSelected
+	mods.Notable
+	CreatedAt strfmt.DateTime `json:"createdAt"`
 }
 
 // An OverridingOne is composed of a SimpleOne and overrides a field

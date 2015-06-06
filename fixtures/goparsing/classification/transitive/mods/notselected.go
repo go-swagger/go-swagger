@@ -9,3 +9,10 @@ type NotSelected struct {
 	// Name the name of this not selected model
 	Name string `json:"name"`
 }
+
+// Notable is a model in a transitive package.
+// it's used for embedding in another model
+type Notable struct {
+	Notes string `json:"notes"`
+	Extra string `json:"extra"`
+}

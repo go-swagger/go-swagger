@@ -11,7 +11,6 @@ import (
 	"golang.org/x/tools/go/loader"
 
 	"github.com/casualjim/go-swagger/spec"
-	"github.com/kr/pretty"
 )
 
 type schemaTypable struct {
@@ -173,7 +172,6 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl sche
 	if err := sp.Parse(decl.Decl.Doc); err != nil {
 		return err
 	}
-	fmt.Println("processing model:", decl.Name)
 
 	// analyze struct body for fields etc
 	// each exported struct field:
@@ -184,7 +182,7 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl sche
 	// * the first line of the comment is the title
 	// * the following lines are the description
 	if tpe, ok := decl.TypeSpec.Type.(*ast.StructType); ok {
-		if err := scp.parseStructType(decl.File, schPtr, tpe); err != nil {
+		if err := scp.parseStructType(decl.File, schPtr, tpe, make(map[string]struct{})); err != nil {
 			return err
 		}
 	}
@@ -204,13 +202,66 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl sche
 	return nil
 }
 
-func (scp *schemaParser) parseStructType(gofile *ast.File, schema *spec.Schema, tpe *ast.StructType) error {
+func (scp *schemaParser) parseEmbeddedStruct(gofile *ast.File, schema *spec.Schema, expr ast.Expr, seenPreviously map[string]struct{}) error {
+	switch tpe := expr.(type) {
+	case *ast.Ident:
+		// do lookup of type
+		// take primitives into account, they should result in an error for swagger
+		for _, decl := range gofile.Decls {
+			if gd, ok := decl.(*ast.GenDecl); ok {
+				for _, sp := range gd.Specs {
+					if ts, ok := sp.(*ast.TypeSpec); ok {
+						if ts.Name != nil && ts.Name.Name == tpe.Name {
+							if st, ok := ts.Type.(*ast.StructType); ok {
+								// TODO: probe for all of membership
+								return scp.parseStructType(gofile, schema, st, seenPreviously)
+							}
+						}
+					}
+				}
+			}
+		}
+	case *ast.SelectorExpr:
+		// look up package, file and then type
+		pkg, err := scp.packageForSelector(gofile, tpe.X)
+		if err != nil {
+			return fmt.Errorf("embedded struct: %v", err)
+		}
+		file, _, ts, err := findSourceFile(pkg, tpe.Sel.Name)
+		if err != nil {
+			return fmt.Errorf("embedded struct: %v", err)
+		}
+		if st, ok := ts.Type.(*ast.StructType); ok {
+			return scp.parseStructType(file, schema, st, seenPreviously)
+		}
+	}
+	return fmt.Errorf("unable to resolve embedded struct for: %v\n", expr)
+}
+
+func (scp *schemaParser) parseStructType(gofile *ast.File, schema *spec.Schema, tpe *ast.StructType, seenPreviously map[string]struct{}) error {
 	schema.Typed("object", "")
 	if tpe.Fields != nil {
-		seenProperties := make(map[string]struct{})
+		if schema.Properties == nil {
+			schema.Properties = make(map[string]spec.Schema)
+		}
+		seenProperties := seenPreviously
+		// first process embedded structs in order of embedding
 		for _, fld := range tpe.Fields.List {
-			var nm, gnm string
+			if len(fld.Names) == 0 {
+				// when the embedded struct is annotated with swagger:allOf it will be used as allOf property
+				// otherwise the fields will just be included as normal properties
+				if err := scp.parseEmbeddedStruct(gofile, schema, fld.Type, seenPreviously); err != nil {
+					return err
+				}
+				for k := range schema.Properties {
+					seenProperties[k] = struct{}{}
+				}
+			}
+		}
+		// then add and possibly override values
+		for _, fld := range tpe.Fields.List {
 			if len(fld.Names) > 0 && fld.Names[0] != nil && fld.Names[0].IsExported() {
+				var nm, gnm string
 				nm = fld.Names[0].Name
 				gnm = nm
 				if fld.Tag != nil && len(strings.TrimSpace(fld.Tag.Value)) > 0 {
@@ -228,11 +279,9 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, schema *spec.Schema, 
 				}
 
 				ps := schema.Properties[nm]
-				fmt.Println("parsing:", nm)
 				if err := parseProperty(scp, gofile, fld.Type, schemaTypable{&ps}); err != nil {
 					return err
 				}
-				fmt.Println("end parsing:", nm)
 
 				sp := new(sectionedParser)
 				sp.setDescription = func(lines []string) { ps.Description = joinDropLast(lines) }
@@ -285,14 +334,10 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, schema *spec.Schema, 
 				if nm != gnm {
 					ps.AddExtension("x-go-name", gnm)
 				}
-				if schema.Properties == nil {
-					schema.Properties = make(map[string]spec.Schema)
-				}
 				seenProperties[nm] = struct{}{}
 				schema.Properties[nm] = ps
 			}
 		}
-
 		for k := range schema.Properties {
 			if _, ok := seenProperties[k]; !ok {
 				delete(schema.Properties, k)
@@ -375,7 +420,6 @@ func (scp *schemaParser) parseSelectorProperty(pkg *loader.PackageInfo, expr *as
 		case *ast.Ident:
 			return scp.parseSelectorProperty(pkg, atpe, prop.Items())
 		case *ast.SelectorExpr:
-			fmt.Println("This is a selector expression")
 			return scp.typeForSelector(file, atpe, prop.Items())
 		default:
 			return fmt.Errorf("unknown selector type: %#v", tpe)
@@ -409,20 +453,6 @@ func (scp *schemaParser) typeForSelector(gofile *ast.File, expr *ast.SelectorExp
 		return err
 	}
 
-	fmt.Println("package:", pkg.String())
-	// find the file this selector points to
-	//_, gd, _, err := findSourceFile(pkg, expr.Sel.Name)
-	//if err != nil {
-	//return err
-	//}
-
-	pretty.Println(expr.Sel)
-	// look at doc comments for +swagger:strfmt [name]
-	// when found this is the format name, create a schema with that name
-	//if strfmtName, ok := strfmtName(gd.Doc); ok {
-	//prop.Typed("string", strfmtName)
-	//return nil
-	//}
 	return scp.parseSelectorProperty(pkg, expr.Sel, prop)
 }
 
@@ -444,6 +474,19 @@ func findSourceFile(pkg *loader.PackageInfo, typeName string) (*ast.File, *ast.G
 	return nil, nil, nil, fmt.Errorf("unable to find %s in %s", typeName, pkg.String())
 }
 
+func allOfMember(comments *ast.CommentGroup) bool {
+	if comments != nil {
+		for _, cmt := range comments.List {
+			for _, ln := range strings.Split(cmt.Text, "\n") {
+				if rxAllOf.MatchString(ln) {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
 func strfmtName(comments *ast.CommentGroup) (string, bool) {
 	if comments != nil {
 		for _, cmt := range comments.List {
@@ -459,15 +502,8 @@ func strfmtName(comments *ast.CommentGroup) (string, bool) {
 }
 
 func parseProperty(scp *schemaParser, gofile *ast.File, fld ast.Expr, prop swaggerTypable) error {
-	fmt.Printf("the type: %#v\n", fld)
 	switch ftpe := fld.(type) {
 	case *ast.Ident: // simple value
-		fmt.Println("top ident property")
-		//pkg, err := scp.packageForSelector(gofile, ftpe)
-		//if err != nil {
-		//return err
-		//}
-		//file, gd, tsp, err := findSourceFile(pkg, ftpe)
 		if ftpe.Obj != nil && ftpe.Obj.Kind == ast.Typ {
 			if ts, ok := ftpe.Obj.Decl.(*ast.TypeSpec); ok {
 				for _, d := range gofile.Decls {
@@ -520,36 +556,30 @@ func parseProperty(scp *schemaParser, gofile *ast.File, fld ast.Expr, prop swagg
 		return fmt.Errorf("couldn't infer type for %v", ftpe.Name)
 
 	case *ast.StarExpr: // pointer to something, optional by default
-		fmt.Println("top star expr")
 		parseProperty(scp, gofile, ftpe.X, prop)
 
 	case *ast.ArrayType: // slice type
-		fmt.Println("top array type")
 		if err := parseProperty(scp, gofile, ftpe.Elt, prop.Items()); err != nil {
 			return err
 		}
 
 	case *ast.StructType:
-		fmt.Println("top struct type")
 		schema := prop.Schema()
 		if schema == nil {
 			return fmt.Errorf("items doesn't support embedded structs")
 		}
-		return scp.parseStructType(gofile, prop.Schema(), ftpe)
+		return scp.parseStructType(gofile, prop.Schema(), ftpe, make(map[string]struct{}))
 
 	case *ast.SelectorExpr:
-		fmt.Println("top selector type")
 		err := scp.typeForSelector(gofile, ftpe, prop)
 		return err
 
 	case *ast.MapType:
-		fmt.Println("top map type")
 		// check if key is a string type, if not print a message
 		// and skip the map property. Only maps with string keys can go into additional properties
 		sch := prop.Schema()
 		if keyIdent, ok := ftpe.Key.(*ast.Ident); sch != nil && ok {
 			if keyIdent.Name == "string" {
-				fmt.Println("processing for map type")
 				if sch.AdditionalProperties == nil {
 					sch.AdditionalProperties = new(spec.SchemaOrBool)
 				}
@@ -559,7 +589,6 @@ func parseProperty(scp *schemaParser, gofile *ast.File, fld ast.Expr, prop swagg
 				}
 				parseProperty(scp, gofile, ftpe.Value, schemaTypable{sch.AdditionalProperties.Schema})
 				sch.Typed("object", "")
-				fmt.Println("END processing for map type")
 			}
 		}
 

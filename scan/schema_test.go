@@ -1,8 +1,6 @@
 package scan
 
 import (
-	"encoding/json"
-	"fmt"
 	"path/filepath"
 	"testing"
 
@@ -124,6 +122,16 @@ func TestSchemaParser(t *testing.T) {
 	assert.Equal(t, "StoreOrder", msch.Extensions["x-go-name"])
 }
 
+func TestEmbeddedTypes(t *testing.T) {
+	schema := noModelDefs["ComplexerOne"]
+	assertProperty(t, &schema, "number", "age", "int32", "Age")
+	assertProperty(t, &schema, "number", "id", "int64", "ID")
+	assertProperty(t, &schema, "string", "createdAt", "date-time", "CreatedAt")
+	assertProperty(t, &schema, "string", "extra", "", "Extra")
+	assertProperty(t, &schema, "string", "name", "", "Name")
+	assertProperty(t, &schema, "string", "notes", "", "Notes")
+}
+
 func TestAliasedTypes(t *testing.T) {
 	schema := noModelDefs["OtherTypes"]
 	assertProperty(t, &schema, "string", "named", "", "Named")
@@ -187,8 +195,6 @@ func TestParsePrimitiveSchemaProperty(t *testing.T) {
 
 func TestParseStringFormatSchemaProperty(t *testing.T) {
 	schema := noModelDefs["FormattedModel"]
-	b, _ := json.MarshalIndent(schema, "", "  ")
-	fmt.Println(string(b))
 	assertProperty(t, &schema, "string", "a", "byte", "A")
 	assertProperty(t, &schema, "string", "b", "creditcard", "B")
 	assertProperty(t, &schema, "string", "c", "date", "C")
