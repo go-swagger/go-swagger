@@ -1,9 +1,22 @@
 package operations
 
 import (
+	"github.com/casualjim/go-swagger/fixtures/goparsing/classification/models"
 	"github.com/casualjim/go-swagger/fixtures/goparsing/classification/transitive/mods"
 	"github.com/casualjim/go-swagger/strfmt"
 )
+
+// An OrderBodyParams model.
+//
+// This is used for operations that want an Order as body of the request
+// swagger:parameters updateOrder createOrder
+type OrderBodyParams struct {
+	// The order to submit.
+	//
+	// in: body
+	// required: true
+	Order *models.StoreOrder `json:"order"`
+}
 
 // A ComplexerOneParams is composed of a SimpleOne and some extra fields
 // swagger:parameters yetAnotherOperation
@@ -23,7 +36,6 @@ type NoParams struct {
 	// ID of this no model instance.
 	// ids in this application start at 11 and are smaller than 1000
 	//
-	//
 	// required: true
 	// minimum: > 10
 	// maximum: < 1000
@@ -31,7 +43,6 @@ type NoParams struct {
 	ID int64 `json:"id"`
 
 	// The Score of this model
-	//
 	//
 	// required: true
 	// minimum: 3
@@ -42,7 +53,6 @@ type NoParams struct {
 
 	// Name of this no model instance
 	//
-	//
 	// min length: 4
 	// max length: 50
 	// pattern: [A-Za-z0-9-.]*
@@ -52,13 +62,11 @@ type NoParams struct {
 
 	// Created holds the time when this entry was created
 	//
-	//
 	// required: false
 	// in: query
 	Created strfmt.DateTime `json:"created"`
 
 	// a FooSlice has foos which are strings
-	//
 	//
 	// min items: 3
 	// max items: 10
@@ -72,12 +80,10 @@ type NoParams struct {
 
 	// the items for this order
 	//
-	//
 	// in: body
 	Items []struct {
 		// ID of this no model instance.
 		// ids in this application start at 11 and are smaller than 1000
-		//
 		//
 		// required: true
 		// minimum: > 10
@@ -86,7 +92,6 @@ type NoParams struct {
 
 		// The Pet to add to this NoModel items bucket.
 		// Pets can appear more than once in the bucket
-		//
 		//
 		// required: true
 		Pet *mods.Pet `json:"pet"`

@@ -22,7 +22,7 @@ func TestParseResponses(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Len(t, responses, 5)
+	assert.Len(t, responses, 4)
 	cr, ok := responses["complexerOne"]
 	assert.True(t, ok)
 	assert.Len(t, cr.Headers, 6)

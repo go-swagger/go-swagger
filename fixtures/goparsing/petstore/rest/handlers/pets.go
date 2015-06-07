@@ -3,9 +3,34 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/casualjim/go-swagger/examples/generated/models"
+	"github.com/casualjim/go-swagger/fixtures/goparsing/petstore/models"
 	"github.com/naoina/denco"
 )
+
+// A GenericError is the default error message that is generated.
+// For certain status codes there are more appropriate error structures.
+//
+// swagger:response genericError
+type GenericError struct {
+	// in: body
+	Body struct {
+		Code    int32  `json:"code"`
+		Message string `json:"message"`
+	} `json:"body"`
+}
+
+// A ValidationError is an that is generated for validation failures.
+// It has the same fields as a generic error but adds a Field property.
+//
+// swagger:response validationError
+type ValidationError struct {
+	// in: body
+	Body struct {
+		Code    int32  `json:"code"`
+		Message string `json:"message"`
+		Field   string `json:"field"`
+	} `json:"body"`
+}
 
 // A PetQueryFlags contains the query flags for things that list pets.
 // swagger:parameters listPets
@@ -13,10 +38,10 @@ type PetQueryFlags struct {
 	Status string `json:"status"`
 }
 
-// An PetID parameter model.
+// A PetID parameter model.
 //
 // This is used for operations that want the ID of an pet in the path
-// swagger:parameters getPetById deletePet
+// swagger:parameters getPetById deletePet updatePet
 type PetID struct {
 	// The ID of the pet
 	//
@@ -25,13 +50,12 @@ type PetID struct {
 	ID int64 `json:"id"`
 }
 
-// An PetBodyParams model.
+// A PetBodyParams model.
 //
 // This is used for operations that want an Order as body of the request
 // swagger:parameters updatePet createPet
 type PetBodyParams struct {
-
-	// The pet to submit
+	// The pet to submit.
 	//
 	// in: body
 	// required: true
@@ -54,7 +78,7 @@ func GetPets(w http.ResponseWriter, r *http.Request, params denco.Params) {
 
 // GetPetByID swagger:route GET /pets/{id} pets getPetById
 //
-// Gets the details for a pet
+// Gets the details for a pet.
 //
 // Responses:
 //    default: genericError
@@ -75,7 +99,7 @@ func CreatePet(w http.ResponseWriter, r *http.Request, params denco.Params) {
 	// some actual stuff should happen in here
 }
 
-// UpdatePet swagger:route GET /pets/{id} pets updatePet
+// UpdatePet swagger:route PUT /pets/{id} pets updatePet
 //
 // Updates the details for a pet.
 //

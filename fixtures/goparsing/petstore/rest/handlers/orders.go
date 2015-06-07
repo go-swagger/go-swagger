@@ -3,14 +3,14 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/casualjim/go-swagger/examples/generated/models"
+	"github.com/casualjim/go-swagger/fixtures/goparsing/petstore/models"
 	"github.com/naoina/denco"
 )
 
 // An OrderID parameter model.
 //
 // This is used for operations that want the ID of an order in the path
-// swagger:parameters getOrderDetails cancelOrder
+// swagger:parameters getOrderDetails cancelOrder updateOrder
 type OrderID struct {
 	// The ID of the order
 	//
@@ -24,11 +24,10 @@ type OrderID struct {
 // This is used for operations that want an Order as body of the request
 // swagger:parameters updateOrder createOrder
 type OrderBodyParams struct {
-
 	// The order to submit
 	//
-	// in: body
 	// required: true
+	// in: body
 	Order *models.Order `json:"order"`
 }
 

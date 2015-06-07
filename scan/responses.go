@@ -84,12 +84,27 @@ func (sv headerValidations) SetPattern(val string)          { sv.current.Pattern
 func (sv headerValidations) SetUnique(val bool)             { sv.current.UniqueItems = val }
 func (sv headerValidations) SetCollectionFormat(val string) { sv.current.CollectionFormat = val }
 
+func newResponseDecl(file *ast.File, decl *ast.GenDecl, ts *ast.TypeSpec) responseDecl {
+	var rd responseDecl
+	rd.File = file
+	rd.Decl = decl
+	rd.TypeSpec = ts
+	rd.inferNames()
+	return rd
+}
+
 type responseDecl struct {
-	File     *ast.File
-	Decl     *ast.GenDecl
-	TypeSpec *ast.TypeSpec
-	GoName   string
-	Name     string
+	File      *ast.File
+	Decl      *ast.GenDecl
+	TypeSpec  *ast.TypeSpec
+	GoName    string
+	Name      string
+	annotated bool
+}
+
+func (sd *responseDecl) hasAnnotation() bool {
+	sd.inferNames()
+	return sd.annotated
 }
 
 func (sd *responseDecl) inferNames() (goName string, name string) {
@@ -104,6 +119,9 @@ func (sd *responseDecl) inferNames() (goName string, name string) {
 		for _, cmt := range sd.Decl.Doc.List {
 			for _, ln := range strings.Split(cmt.Text, "\n") {
 				matches := rxResponseOverride.FindStringSubmatch(ln)
+				if len(matches) > 0 {
+					sd.annotated = true
+				}
 				if len(matches) > 1 && len(matches[1]) > 0 {
 					name = matches[1]
 					break DECLS
@@ -135,10 +153,11 @@ func (rp *responseParser) Parse(gofile *ast.File, target interface{}) error {
 		}
 		for _, spc := range gd.Specs {
 			if ts, ok := spc.(*ast.TypeSpec); ok {
-				sd := responseDecl{gofile, gd, ts, "", ""}
-				sd.inferNames()
-				if err := rp.parseDecl(tgt, sd); err != nil {
-					return err
+				sd := newResponseDecl(gofile, gd, ts)
+				if sd.hasAnnotation() {
+					if err := rp.parseDecl(tgt, sd); err != nil {
+						return err
+					}
 				}
 			}
 		}

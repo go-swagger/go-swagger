@@ -235,7 +235,7 @@ func TestParseStringFormatSchemaProperty(t *testing.T) {
 	assertProperty(t, &schema, "string", "t", "uuid5", "T")
 }
 
-func assertProperty(t *testing.T, schema *spec.Schema, typeName, jsonName, format, goName string) {
+func assertProperty(t testing.TB, schema *spec.Schema, typeName, jsonName, format, goName string) {
 	if typeName == "" {
 		assert.Empty(t, schema.Properties[jsonName].Type)
 	} else {
@@ -246,7 +246,7 @@ func assertProperty(t *testing.T, schema *spec.Schema, typeName, jsonName, forma
 	assert.Equal(t, format, schema.Properties[jsonName].Format)
 }
 
-func assertRef(t *testing.T, schema *spec.Schema, jsonName, goName, fragment string) {
+func assertRef(t testing.TB, schema *spec.Schema, jsonName, goName, fragment string) {
 	assertProperty(t, schema, "", jsonName, "", goName)
 	psch := schema.Properties[jsonName]
 	assert.Equal(t, fragment, psch.Ref.String())
@@ -278,7 +278,7 @@ func TestParsePointerFields(t *testing.T) {
 	assertRef(t, &schema, "notSel", "NotSel", "#/definitions/NotSelected")
 }
 
-func assertArrayProperty(t *testing.T, schema *spec.Schema, typeName, jsonName, format, goName string) {
+func assertArrayProperty(t testing.TB, schema *spec.Schema, typeName, jsonName, format, goName string) {
 	prop := schema.Properties[jsonName]
 	assert.NotEmpty(t, prop.Type)
 	assert.True(t, prop.Type.Contains("array"))
@@ -290,7 +290,7 @@ func assertArrayProperty(t *testing.T, schema *spec.Schema, typeName, jsonName, 
 	assert.Equal(t, format, prop.Items.Schema.Format)
 }
 
-func assertArrayRef(t *testing.T, schema *spec.Schema, jsonName, goName, fragment string) {
+func assertArrayRef(t testing.TB, schema *spec.Schema, jsonName, goName, fragment string) {
 	assertArrayProperty(t, schema, "", jsonName, "", goName)
 	psch := schema.Properties[jsonName].Items.Schema
 	assert.Equal(t, fragment, psch.Ref.String())
@@ -322,7 +322,7 @@ func TestParseSliceFields(t *testing.T) {
 	assertArrayRef(t, &schema, "ptrNotSels", "PtrNotSels", "#/definitions/NotSelected")
 }
 
-func assertMapProperty(t *testing.T, schema *spec.Schema, typeName, jsonName, format, goName string) {
+func assertMapProperty(t testing.TB, schema *spec.Schema, typeName, jsonName, format, goName string) {
 	prop := schema.Properties[jsonName]
 	assert.NotEmpty(t, prop.Type)
 	assert.True(t, prop.Type.Contains("object"))
@@ -334,7 +334,7 @@ func assertMapProperty(t *testing.T, schema *spec.Schema, typeName, jsonName, fo
 	assert.Equal(t, format, prop.AdditionalProperties.Schema.Format)
 }
 
-func assertMapRef(t *testing.T, schema *spec.Schema, jsonName, goName, fragment string) {
+func assertMapRef(t testing.TB, schema *spec.Schema, jsonName, goName, fragment string) {
 	assertMapProperty(t, schema, "", jsonName, "", goName)
 	psch := schema.Properties[jsonName].AdditionalProperties.Schema
 	assert.Equal(t, fragment, psch.Ref.String())

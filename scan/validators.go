@@ -262,10 +262,11 @@ func (su *setUnique) Parse(lines []string) error {
 
 type matchOnlyParam struct {
 	tgt *spec.Parameter
+	rx  *regexp.Regexp
 }
 
 func (mo *matchOnlyParam) Matches(line string) bool {
-	return rxIn.MatchString(line)
+	return mo.rx.MatchString(line)
 }
 
 func (mo *matchOnlyParam) Parse(lines []string) error {
@@ -531,6 +532,7 @@ func (ss *setOpResponses) Parse(lines []string) error {
 			if arrays == 0 {
 				ref, err = spec.NewRef("#/responses/" + value)
 			} else {
+				isDefinitionRef = true
 				ref, err = spec.NewRef("#/definitions/" + value)
 			}
 			if _, ok := ss.responses[value]; !ok {

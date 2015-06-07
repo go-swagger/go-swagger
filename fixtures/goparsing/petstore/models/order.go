@@ -27,7 +27,12 @@ type Order struct {
 		// the id of the pet to order
 		//
 		// required: true
-		PetID    int64 `json:"petId"`
+		PetID int64 `json:"petId"`
+
+		// the quantity of this pet to order
+		//
+		// required: true
+		// minimum: 1
 		Quantity int32 `json:"qty"`
-	}
+	} `json:"items"`
 }

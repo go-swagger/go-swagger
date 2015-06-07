@@ -133,13 +133,10 @@ type appScanner struct {
 }
 
 // newAPIParser creates a new api parser
-func newAppScanner(bp string, input *spec.Swagger, includes, excludes packageFilters, extra ...string) (*appScanner, error) {
+func newAppScanner(bp string, input *spec.Swagger, includes, excludes packageFilters) (*appScanner, error) {
 	var ldr loader.Config
 	ldr.ParserMode = goparser.ParseComments
 	ldr.Import(bp)
-	for _, p := range extra {
-		ldr.Import(p)
-	}
 	prog, err := ldr.Load()
 	if err != nil {
 		return nil, err
@@ -294,6 +291,7 @@ func (a *appScanner) parseParameters(file *ast.File) error {
 		return err
 	}
 	a.discovered = append(a.discovered, rp.postDecls...)
+	a.discovered = append(a.discovered, rp.scp.postDecls...)
 	return nil
 }
 
@@ -303,6 +301,7 @@ func (a *appScanner) parseResponses(file *ast.File) error {
 		return err
 	}
 	a.discovered = append(a.discovered, rp.postDecls...)
+	a.discovered = append(a.discovered, rp.scp.postDecls...)
 	return nil
 }
 

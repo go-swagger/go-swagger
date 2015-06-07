@@ -86,6 +86,7 @@ func TestRoutesParser(t *testing.T) {
 }
 
 func assertOperation(t *testing.T, op *spec.Operation, id, summary, description string, tags []string) {
+	assert.NotNil(t, op)
 	assert.Equal(t, summary, op.Summary)
 	assert.Equal(t, description, op.Description)
 	assert.Equal(t, id, op.ID)

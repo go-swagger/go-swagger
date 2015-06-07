@@ -312,7 +312,11 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 
 				ps := pt[nm]
 				ps.In = in
-				if err := parseProperty(pp.scp, gofile, fld.Type, paramTypable{&ps}); err != nil {
+				var pty swaggerTypable = paramTypable{&ps}
+				if in == "body" {
+					pty = schemaTypable{pty.Schema()}
+				}
+				if err := parseProperty(pp.scp, gofile, fld.Type, pty); err != nil {
 					return err
 				}
 
@@ -331,7 +335,7 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 						newSingleLineTagParser("maxItems", &setMaxItems{paramValidations{&ps}, rxf(rxMaxItemsFmt, "")}),
 						newSingleLineTagParser("unique", &setUnique{paramValidations{&ps}, rxf(rxUniqueFmt, "")}),
 						newSingleLineTagParser("required", &setRequiredParam{&ps}),
-						newSingleLineTagParser("in", &matchOnlyParam{&ps}),
+						newSingleLineTagParser("in", &matchOnlyParam{&ps, rxIn}),
 					}
 					itemsTaggers := func() []tagParser {
 						return []tagParser{
@@ -359,6 +363,12 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 						}
 					}
 
+				} else {
+
+					sp.taggers = []tagParser{
+						newSingleLineTagParser("required", &matchOnlyParam{&ps, rxRequired}),
+						newSingleLineTagParser("in", &matchOnlyParam{&ps, rxIn}),
+					}
 				}
 				if err := sp.Parse(fld.Doc); err != nil {
 					return err

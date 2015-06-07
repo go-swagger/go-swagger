@@ -21,7 +21,7 @@ func TestParamsParser(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	assert.Len(t, noParamOps, 3)
+	assert.Len(t, noParamOps, 5)
 
 	cr, ok := noParamOps["yetAnotherOperation"]
 	assert.True(t, ok)
@@ -48,6 +48,15 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, "date-time", param.Format)
 		}
 	}
+
+	ob, ok := noParamOps["updateOrder"]
+	assert.True(t, ok)
+	assert.Len(t, ob.Parameters, 1)
+	bodyParam := ob.Parameters[0]
+	assert.Equal(t, "The order to submit.", bodyParam.Description)
+	assert.Equal(t, "body", bodyParam.In)
+	assert.Equal(t, "#/definitions/order", bodyParam.Schema.Ref.String())
+	assert.True(t, bodyParam.Required)
 
 	op, ok := noParamOps["someOperation"]
 	assert.True(t, ok)
