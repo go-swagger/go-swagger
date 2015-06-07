@@ -3,25 +3,77 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/casualjim/go-swagger/examples/generated/models"
 	"github.com/naoina/denco"
 )
 
-// GetOrderDetails gets the details for an order
+// An OrderID parameter model.
 //
-// swagger:route GET /orders/{id} orders getOrderDetails
-func GetOrderDetails(rw http.ResponseWriter, req *http.Request, params denco.Params) {}
+// This is used for operations that want the ID of an order in the path
+// swagger:parameters getOrderDetails cancelOrder
+type OrderID struct {
+	// The ID of the order
+	//
+	// in: path
+	// required: true
+	ID int64 `json:"id"`
+}
 
-// CancelOrder deletes an order
+// An OrderBodyParams model.
 //
-// swagger:route DELETE /orders/{id} orders cancelOrder
-func CancelOrder(rw http.ResponseWriter, req *http.Request, params denco.Params) {}
+// This is used for operations that want an Order as body of the request
+// swagger:parameters updateOrder createOrder
+type OrderBodyParams struct {
 
-// UpdateOrder updates an order
-//
-// swagger:route PUT /orders/{id} orders updateOrder
-func UpdateOrder(rw http.ResponseWriter, req *http.Request, params denco.Params) {}
+	// The order to submit
+	//
+	// in: body
+	// required: true
+	Order *models.Order `json:"order"`
+}
 
-// CreateOrder creates an order
+// GetOrderDetails swagger:route GET /orders/{id} orders getOrderDetails
 //
-// swagger:route POST /orders orders createOrder
-func CreateOrder(rw http.ResponseWriter, req *http.Request, params denco.Params) {}
+// Gets the details for an order.
+//
+// Responses:
+//    default: genericError
+//        200: order
+func GetOrderDetails(rw http.ResponseWriter, req *http.Request, params denco.Params) {
+	// some actual stuff should happen in here
+}
+
+// CancelOrder swagger:route DELETE /orders/{id} orders cancelOrder
+//
+// Deletes an order.
+//
+// Responses:
+//    default: genericError
+//        204:
+func CancelOrder(rw http.ResponseWriter, req *http.Request, params denco.Params) {
+	// some actual stuff should happen in here
+}
+
+// UpdateOrder swagger:route PUT /orders/{id} orders updateOrder
+//
+// Updates an order.
+//
+// Responses:
+//    default: genericError
+//        200: order
+//        422: validationError
+func UpdateOrder(rw http.ResponseWriter, req *http.Request, params denco.Params) {
+	// some actual stuff should happen in here
+}
+
+// CreateOrder swagger:route POST /orders orders createOrder
+//
+// Creates an order.
+//
+// Responses:
+//    default: genericError
+//        200: order
+//        422: validationError
+func CreateOrder(rw http.ResponseWriter, req *http.Request, params denco.Params) {
+	// some actual stuff should happen in here
+}

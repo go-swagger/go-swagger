@@ -29,10 +29,6 @@ Currently there is a spec validator tool:
 
 		swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
 
-You can also serve a swagger document with the swagger UI
-
-		swagger ui ./swagger.json
-
 To generate a server for a swagger spec document:
 
 		swagger generate server [-f ./swagger.json] [--principal [principal-name]] [--with-ui]
@@ -62,6 +58,7 @@ What's inside?
 For a V1 I want to have this feature set completed:
 
 - [ ] Documentation site
+- [x] Play nice with golint, go vet etc.
 -	[x] An object model that serializes to swagger yaml or json
 -	[x] A tool to work with swagger:
 	-	[x] validate a swagger spec document:
@@ -128,12 +125,12 @@ For a V1 I want to have this feature set completed:
 Later
 -----
 
-After the v1 implementation extra transports are on the roadmap
+After the v1 implementation extra transports are on the roadmap.
+
+Many of these fall under the maybe, perhaps, could be nice to have, might not happen bucket:
 
 - Formats:
 	- [ ] custom serializer for XML to support namespaces and prefixes
-	- [ ] optimized serializer for JSON
-	- [ ] optimized serializer for YAML
 - Tools:
   - Code generation:
     -	[ ] generate "sensible" random data based on swagger spec

@@ -54,7 +54,7 @@ var (
 			"\\p{Zs}+" +
 			rxOpID + "$")
 
-	rxIn                 = regexp.MustCompile("(?:[Ii]n|[Ss]ource)\\p{Zs}*:\\p{Zs}*(query|path|header|body)$")
+	rxIn                 = regexp.MustCompile("[Ii]n\\p{Zs}*:\\p{Zs}*(query|path|header|body)$")
 	rxRequired           = regexp.MustCompile("[Rr]equired\\p{Zs}*:\\p{Zs}*(true|false)$")
 	rxReadOnly           = regexp.MustCompile("[Rr]ead(?:\\p{Zs}*|[\\p{Pd}\\p{Pc}])?[Oo]nly\\p{Zs}*:\\p{Zs}*(true|false)$")
 	rxSpace              = regexp.MustCompile("\\p{Zs}+")

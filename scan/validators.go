@@ -1,7 +1,6 @@
 package scan
 
 import (
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -261,6 +260,18 @@ func (su *setUnique) Parse(lines []string) error {
 	return nil
 }
 
+type matchOnlyParam struct {
+	tgt *spec.Parameter
+}
+
+func (mo *matchOnlyParam) Matches(line string) bool {
+	return rxIn.MatchString(line)
+}
+
+func (mo *matchOnlyParam) Parse(lines []string) error {
+	return nil
+}
+
 type setRequiredParam struct {
 	tgt *spec.Parameter
 }
@@ -492,7 +503,20 @@ func (ss *setOpResponses) Parse(lines []string) error {
 			}
 			value = strings.TrimSpace(kv[1])
 			if value == "" {
-				return fmt.Errorf("no name for %q response", key)
+				var resp spec.Response
+				if strings.EqualFold("default", key) {
+					if def == nil {
+						def = &resp
+					}
+				} else {
+					if sc, err := strconv.Atoi(key); err == nil {
+						if scr == nil {
+							scr = make(map[int]spec.Response)
+						}
+						scr[sc] = resp
+					}
+				}
+				continue
 			}
 
 			var arrays int
@@ -521,6 +545,7 @@ func (ss *setOpResponses) Parse(lines []string) error {
 			}
 
 			var resp spec.Response
+
 			if !isDefinitionRef {
 				resp.Ref = ref
 			} else {
@@ -538,6 +563,7 @@ func (ss *setOpResponses) Parse(lines []string) error {
 					cs.Ref = ref
 				}
 			}
+
 			if strings.EqualFold("default", key) {
 				if def == nil {
 					def = &resp

@@ -1,8 +1,7 @@
 /*Package scan provides a scanner for go files that produces a swagger spec document.
 
 You give it a main file and it will parse all the files that are required by that main
-package to produce a swagger specification.  This parser doesn't function standalone though; it needs you to provide it
-with a template swagger document.
+package to produce a swagger specification.
 
 To use you can add a go:generate comment to your main file for example:
 

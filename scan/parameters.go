@@ -331,6 +331,7 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 						newSingleLineTagParser("maxItems", &setMaxItems{paramValidations{&ps}, rxf(rxMaxItemsFmt, "")}),
 						newSingleLineTagParser("unique", &setUnique{paramValidations{&ps}, rxf(rxUniqueFmt, "")}),
 						newSingleLineTagParser("required", &setRequiredParam{&ps}),
+						newSingleLineTagParser("in", &matchOnlyParam{&ps}),
 					}
 					itemsTaggers := func() []tagParser {
 						return []tagParser{
