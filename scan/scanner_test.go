@@ -1,7 +1,6 @@
 package scan
 
 import (
-	"encoding/json"
 	"fmt"
 	"go/ast"
 	goparser "go/parser"
@@ -41,8 +40,6 @@ func TestAppScanner_NewSpec(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, doc)
 
-	b, _ := json.MarshalIndent(doc, "", "  ")
-	fmt.Println(string(b))
 	verifyParsedPetStore(t, doc)
 }
 
