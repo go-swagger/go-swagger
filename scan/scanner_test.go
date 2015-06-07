@@ -38,9 +38,9 @@ func TestAppScanner_NewSpec(t *testing.T) {
 	assert.NotNil(t, scanner)
 	doc, err := scanner.Parse()
 	assert.NoError(t, err)
-	assert.NotNil(t, doc)
-
-	verifyParsedPetStore(t, doc)
+	if assert.NotNil(t, doc) {
+		verifyParsedPetStore(t, doc)
+	}
 }
 
 func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
@@ -52,8 +52,9 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 
 	verifyInfo(t, doc.Info)
 
-	assert.NotNil(t, doc.Paths)
-	assert.Len(t, doc.Paths.Paths, 4)
+	if assert.NotNil(t, doc.Paths) {
+		assert.Len(t, doc.Paths.Paths, 4)
+	}
 	assert.Len(t, doc.Definitions, 3)
 	assert.Len(t, doc.Responses, 2)
 
@@ -96,9 +97,9 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	assertArrayProperty(t, &mod, "string", "photoUrls", "", "PhotoURLs")
 	prop, ok = mod.Properties["photoUrls"]
 	assert.Equal(t, "The photo urls for the pet.\nThis only accepts jpeg or png images.", prop.Description)
-	assert.NotNil(t, prop.Items)
-	assert.NotNil(t, prop.Items.Schema)
-	assert.Equal(t, "\\.(jpe?g|png)$", prop.Items.Schema.Pattern)
+	if assert.NotNil(t, prop.Items) && assert.NotNil(t, prop.Items.Schema) {
+		assert.Equal(t, "\\.(jpe?g|png)$", prop.Items.Schema.Pattern)
+	}
 
 	assertProperty(t, &mod, "string", "status", "", "Status")
 	prop, ok = mod.Properties["status"]
