@@ -25,8 +25,11 @@ import (
 // 	- every default value that is specified must validate against the schema for that property
 // 	- items property is required for all schemas/definitions of type `array`
 func Spec(doc *spec.Document, formats strfmt.Registry) error {
-	// TODO: add more validations beyond just jsonschema
-	return AgainstSchema(doc.Schema(), doc.Spec(), formats)
+	errs, _ /*warns*/ := validate.NewSpecValidator(doc.Schema(), formats).Validate(doc)
+	if errs.HasErrors() {
+		return errors.CompositeValidationError(errs.Errors...)
+	}
+	return nil
 }
 
 // AgainstSchema validates the specified data with the provided schema, when no schema

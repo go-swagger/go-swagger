@@ -27,7 +27,7 @@ func TestUntypedFormPost(t *testing.T) {
 	data := make(map[string]interface{})
 	assert.NoError(t, binder.Bind(req, nil, swagger.JSONConsumer(), &data))
 	assert.Equal(t, "the-name", data["name"])
-	assert.Equal(t, 32, data["age"])
+	assert.EqualValues(t, 32, data["age"])
 
 	req, _ = http.NewRequest("POST", urlStr, bytes.NewBufferString(`name=%3&age=32`))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -135,7 +135,7 @@ func TestUntypedBindingTypesForValid(t *testing.T) {
 	assert.Equal(t, id, data["id"])
 	assert.Equal(t, name, data["name"])
 	assert.Equal(t, friend, data["friend"])
-	assert.Equal(t, requestID, data["X-Request-Id"])
+	assert.EqualValues(t, requestID, data["X-Request-Id"])
 	assert.Equal(t, tags, data["tags"])
 	assert.Equal(t, planned, data["planned"])
 	assert.Equal(t, delivered, data["delivered"])

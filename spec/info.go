@@ -30,6 +30,16 @@ type vendorExtensible struct {
 	Extensions Extensions
 }
 
+func (v *vendorExtensible) AddExtension(key string, value interface{}) {
+	if value == nil {
+		return
+	}
+	if v.Extensions == nil {
+		v.Extensions = make(map[string]interface{})
+	}
+	v.Extensions.Add(key, value)
+}
+
 func (v vendorExtensible) MarshalJSON() ([]byte, error) {
 	toser := make(map[string]interface{})
 	for k, v := range v.Extensions {

@@ -23,6 +23,11 @@ func StringProperty() *Schema {
 	return &Schema{schemaProps: schemaProps{Type: []string{"string"}}}
 }
 
+// CharProperty creates a string property
+func CharProperty() *Schema {
+	return &Schema{schemaProps: schemaProps{Type: []string{"string"}}}
+}
+
 // Float64Property creates a float64/double property
 func Float64Property() *Schema {
 	return &Schema{schemaProps: schemaProps{Type: []string{"number"}, Format: "double"}}
@@ -31,6 +36,16 @@ func Float64Property() *Schema {
 // Float32Property creates a float32/float property
 func Float32Property() *Schema {
 	return &Schema{schemaProps: schemaProps{Type: []string{"number"}, Format: "float"}}
+}
+
+// Int8Property creates an int8 property
+func Int8Property() *Schema {
+	return &Schema{schemaProps: schemaProps{Type: []string{"number"}, Format: "int8"}}
+}
+
+// Int16Property creates an int16 property
+func Int16Property() *Schema {
+	return &Schema{schemaProps: schemaProps{Type: []string{"number"}, Format: "int16"}}
 }
 
 // Int32Property creates an int32 property
@@ -43,7 +58,12 @@ func Int64Property() *Schema {
 	return &Schema{schemaProps: schemaProps{Type: []string{"number"}, Format: "int64"}}
 }
 
-// DateProperty creates an date property
+// StrFmtProperty creates a property for the named string format
+func StrFmtProperty(format string) *Schema {
+	return &Schema{schemaProps: schemaProps{Type: []string{"string"}, Format: format}}
+}
+
+// DateProperty creates a date property
 func DateProperty() *Schema {
 	return &Schema{schemaProps: schemaProps{Type: []string{"string"}, Format: "date"}}
 }

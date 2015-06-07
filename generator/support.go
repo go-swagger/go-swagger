@@ -39,17 +39,11 @@ func GenerateSupport(name string, modelNames, operationIDs []string, includeUI b
 		return err
 	}
 
-	models := make(map[string]spec.Schema)
-	if len(modelNames) == 0 {
-		for k, v := range specDoc.Spec().Definitions {
-			models[k] = v
-		}
-	} else {
-		for k, v := range specDoc.Spec().Definitions {
-			for _, nm := range modelNames {
-				if k == nm {
-					models[k] = v
-				}
+	models, mnc := make(map[string]spec.Schema), len(modelNames)
+	for k, v := range specDoc.Spec().Definitions {
+		for _, nm := range modelNames {
+			if mnc == 0 || k == nm {
+				models[k] = v
 			}
 		}
 	}

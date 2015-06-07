@@ -40,6 +40,7 @@ var zeroes = map[string]string{
 	"strfmt.Email":      "strfmt.Email(\"\")",
 	"strfmt.Hostname":   "strfmt.Hostname(\"\")",
 	"strfmt.IPv4":       "strfmt.IPv4(\"\")",
+	"strfmt.IPv6":       "strfmt.IPv6(\"\")",
 	"strfmt.UUID":       "strfmt.UUID(\"\")",
 	"strfmt.UUID3":      "strfmt.UUID3(\"\")",
 	"strfmt.UUID4":      "strfmt.UUID4(\"\")",
@@ -69,6 +70,7 @@ var stringConverters = map[string]string{
 	"float64": "util.ConvertFloat64",
 }
 
+// typeMapping contais a mapping of format or type name to go type
 var typeMapping = map[string]string{
 	"byte":       "strfmt.Base64",
 	"date":       "strfmt.Date",
@@ -109,12 +111,13 @@ var typeMapping = map[string]string{
 	"file":       "swagger.File",
 }
 
-var swaggerTypeMapping map[string]string
+// swaggerTypeMapping contains a mapping from go type to swagger type or format
+var swaggerTypeName map[string]string
 
 func init() {
-	swaggerTypeMapping = make(map[string]string)
+	swaggerTypeName = make(map[string]string)
 	for k, v := range typeMapping {
-		swaggerTypeMapping[v] = k
+		swaggerTypeName[v] = k
 	}
 }
 
@@ -213,6 +216,7 @@ var customFormatters = map[string]struct{}{
 	"strfmt.Email":      struct{}{},
 	"strfmt.Hostname":   struct{}{},
 	"strfmt.IPv4":       struct{}{},
+	"strfmt.IPv6":       struct{}{},
 	"strfmt.UUID":       struct{}{},
 	"strfmt.UUID3":      struct{}{},
 	"strfmt.UUID4":      struct{}{},

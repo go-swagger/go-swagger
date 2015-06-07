@@ -10,6 +10,7 @@ import (
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/middleware/httputils"
 	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/strfmt"
 )
 
 // Runtime represents an API client that uses the transport
@@ -23,6 +24,20 @@ type Runtime struct {
 	Host             string
 	BasePath         string
 	client           *http.Client
+	Formats          strfmt.Registry
+}
+
+// New creates a new default runtim for a swagger api client.
+func New(swaggerSpec *spec.Document) *Runtime {
+	var rt Runtime
+	rt.DefaultMediaType = "application/json"
+	rt.Consumers = map[string]swagger.Consumer{
+		"application/json": swagger.JSONConsumer(),
+	}
+	rt.Producers = map[string]swagger.Producer{
+		"application/json": swagger.JSONProducer(),
+	}
+	return &rt
 }
 
 // Request represents a swagger client request
@@ -45,13 +60,15 @@ func (a *APIError) Error() string {
 }
 
 func validateRequest(request *Request) error {
+	// TODO: validate the request here against the operation
+	// this should only be the params model against the schema for the operation
+
 	return nil
 }
 
 // Submit a request and when there is a body on success it will turn that into the result
 // all other things are turned into an api error for swagger which retains the status code
 func (r *Runtime) Submit(request *Request, result interface{}) error {
-	// TODO: validate the request here against the operation
 	if err := validateRequest(request); err != nil {
 		return err
 	}

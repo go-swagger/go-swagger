@@ -304,10 +304,10 @@ func TestObject(t *testing.T) {
 
 		result, _, err = p.Get(testStructJSONDoc)
 		assert.NoError(t, err)
-		assert.Equal(t, outs[i], result)
+		assert.EqualValues(t, outs[i], result)
 
 		result, _, err = p.Get(testStructJSONPtr)
 		assert.NoError(t, err)
-		assert.Equal(t, outs[i], result)
+		assert.EqualValues(t, outs[i], result)
 	}
 }

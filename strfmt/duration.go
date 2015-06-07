@@ -46,6 +46,8 @@ func IsDuration(str string) bool {
 }
 
 // Duration represents a duration
+//
+// swagger:strfmt duration
 type Duration time.Duration
 
 // MarshalText turns this instance into text

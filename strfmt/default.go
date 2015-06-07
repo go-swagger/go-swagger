@@ -122,6 +122,8 @@ var formatCheckers = map[string]Validator{
 }
 
 // Base64 represents a base64 encoded string
+//
+// swagger:strfmt byte
 type Base64 []byte
 
 // MarshalText turns this instance into text
@@ -148,6 +150,8 @@ func (b *Base64) UnmarshalText(data []byte) error { // validation is performed l
 }
 
 // URI represents the uri string format as specified by the json schema spec
+//
+// swagger:strfmt uri
 type URI string
 
 // MarshalText turns this instance into text
@@ -162,6 +166,8 @@ func (u *URI) UnmarshalText(data []byte) error { // validation is performed late
 }
 
 // Email represents the email string format as specified by the json schema spec
+//
+// swagger:strfmt email
 type Email string
 
 // MarshalText turns this instance into text
@@ -176,6 +182,8 @@ func (e *Email) UnmarshalText(data []byte) error { // validation is performed la
 }
 
 // Hostname represents the hostname string format as specified by the json schema spec
+//
+// swagger:strfmt hostname
 type Hostname string
 
 // MarshalText turns this instance into text
@@ -190,6 +198,8 @@ func (h *Hostname) UnmarshalText(data []byte) error { // validation is performed
 }
 
 // IPv4 represents an IP v4 address
+//
+// swagger:strfmt ipv4
 type IPv4 string
 
 // MarshalText turns this instance into text
@@ -204,6 +214,8 @@ func (u *IPv4) UnmarshalText(data []byte) error { // validation is performed lat
 }
 
 // IPv6 represents an IP v6 address
+//
+// swagger:strfmt ipv6
 type IPv6 string
 
 // MarshalText turns this instance into text
@@ -218,6 +230,8 @@ func (u *IPv6) UnmarshalText(data []byte) error { // validation is performed lat
 }
 
 // UUID represents a uuid string format
+//
+// swagger:strfmt uuid
 type UUID string
 
 // MarshalText turns this instance into text
@@ -232,6 +246,8 @@ func (u *UUID) UnmarshalText(data []byte) error { // validation is performed lat
 }
 
 // UUID3 represents a uuid3 string format
+//
+// swagger:strfmt uuid3
 type UUID3 string
 
 // MarshalText turns this instance into text
@@ -246,6 +262,8 @@ func (u *UUID3) UnmarshalText(data []byte) error { // validation is performed la
 }
 
 // UUID4 represents a uuid4 string format
+//
+// swagger:strfmt uuid4
 type UUID4 string
 
 // MarshalText turns this instance into text
@@ -260,6 +278,8 @@ func (u *UUID4) UnmarshalText(data []byte) error { // validation is performed la
 }
 
 // UUID5 represents a uuid5 string format
+//
+// swagger:strfmt uuid5
 type UUID5 string
 
 // MarshalText turns this instance into text
@@ -274,6 +294,8 @@ func (u *UUID5) UnmarshalText(data []byte) error { // validation is performed la
 }
 
 // ISBN represents an isbn string format
+//
+// swagger:strfmt isbn
 type ISBN string
 
 // MarshalText turns this instance into text
@@ -288,6 +310,8 @@ func (u *ISBN) UnmarshalText(data []byte) error { // validation is performed lat
 }
 
 // ISBN10 represents an isbn 10 string format
+//
+// swagger:strfmt isbn10
 type ISBN10 string
 
 // MarshalText turns this instance into text
@@ -302,6 +326,8 @@ func (u *ISBN10) UnmarshalText(data []byte) error { // validation is performed l
 }
 
 // ISBN13 represents an isbn 13 string format
+//
+// swagger:strfmt isbn13
 type ISBN13 string
 
 // MarshalText turns this instance into text
@@ -316,6 +342,8 @@ func (u *ISBN13) UnmarshalText(data []byte) error { // validation is performed l
 }
 
 // CreditCard represents a credit card string format
+//
+// swagger:strfmt creditcard
 type CreditCard string
 
 // MarshalText turns this instance into text
@@ -330,6 +358,8 @@ func (u *CreditCard) UnmarshalText(data []byte) error { // validation is perform
 }
 
 // SSN represents a social security string format
+//
+// swagger:strfmt ssn
 type SSN string
 
 // MarshalText turns this instance into text
@@ -344,6 +374,8 @@ func (u *SSN) UnmarshalText(data []byte) error { // validation is performed late
 }
 
 // HexColor represents a hex color string format
+//
+// swagger:strfmt hexcolor
 type HexColor string
 
 // MarshalText turns this instance into text
@@ -358,6 +390,8 @@ func (h *HexColor) UnmarshalText(data []byte) error { // validation is performed
 }
 
 // RGBColor represents a RGB color string format
+//
+// swagger:strfmt rgbcolor
 type RGBColor string
 
 // MarshalText turns this instance into text

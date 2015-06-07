@@ -58,11 +58,11 @@ func FloatParamTest(t *testing.T, fName, pName, format string, val reflect.Value
 
 	err := binder.setFieldValue(fld, defVal, "5")
 	assert.NoError(t, err)
-	assert.Equal(t, 5, actual())
+	assert.EqualValues(t, 5, actual())
 
 	err = binder.setFieldValue(fld, defVal, "")
 	assert.NoError(t, err)
-	assert.Equal(t, expectedDef, actual())
+	assert.EqualValues(t, expectedDef, actual())
 
 	err = binder.setFieldValue(fld, defVal, "yada")
 	assert.Error(t, err)

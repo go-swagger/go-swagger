@@ -206,7 +206,7 @@ func TestRequestBindingDefaultValue(t *testing.T) {
 	assert.Equal(t, defaults["id"], data["id"])
 	assert.Equal(t, name, data["name"])
 	assert.Equal(t, friend, data["friend"])
-	assert.Equal(t, requestID, data["X-Request-Id"])
+	assert.EqualValues(t, requestID, data["X-Request-Id"])
 	assert.Equal(t, tags, data["tags"])
 	assert.Equal(t, planned, data["planned"])
 	assert.Equal(t, delivered, data["delivered"])

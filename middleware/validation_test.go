@@ -89,7 +89,7 @@ func TestValidateContentType(t *testing.T) {
 			assert.Error(t, err, "input: %q", v.hdr)
 			assert.IsType(t, &errors.Validation{}, err, "input: %q", v.hdr)
 			assert.Equal(t, v.err.Error(), err.Error(), "input: %q", v.hdr)
-			assert.Equal(t, http.StatusUnsupportedMediaType, err.Code())
+			assert.EqualValues(t, http.StatusUnsupportedMediaType, err.Code())
 		}
 	}
 }
