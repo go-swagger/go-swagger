@@ -10,7 +10,7 @@ import (
   "github.com/casualjim/go-swagger/spec"
   "github.com/casualjim/go-swagger/strfmt"
   "github.com/casualjim/go-swagger/middleware"
-  "github.com/casualjim/go-swagger/middleware/security"
+  "github.com/casualjim/go-swagger/httpkit/security"
 
   {{range .DefaultImports}}{{printf "%q" .}}
   {{end}}
@@ -221,4 +221,3 @@ func ({{.ReceiverName}} *{{.AppName}}API) Serve() http.Handler {
 
   return {{.ReceiverName}}.context.APIHandler()
 }
-
