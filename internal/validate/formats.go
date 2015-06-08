@@ -3,9 +3,9 @@ package validate
 import (
 	"reflect"
 
+	"github.com/casualjim/go-swagger/httpkit/validate"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/validation"
 )
 
 type formatValidator struct {
@@ -46,7 +46,7 @@ func (f *formatValidator) Applies(source interface{}, kind reflect.Kind) bool {
 func (f *formatValidator) Validate(val interface{}) *Result {
 	result := new(Result)
 
-	if err := validation.FormatOf(f.Path, f.In, f.Format, val.(string), f.KnownFormats); err != nil {
+	if err := validate.FormatOf(f.Path, f.In, f.Format, val.(string), f.KnownFormats); err != nil {
 		result.AddErrors(err)
 	}
 

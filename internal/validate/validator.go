@@ -5,9 +5,9 @@ import (
 	"reflect"
 
 	"github.com/casualjim/go-swagger/errors"
+	"github.com/casualjim/go-swagger/httpkit/validate"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/validation"
 )
 
 type EntityValidator interface {
@@ -273,19 +273,19 @@ func (s *basicSliceValidator) Validate(data interface{}) *Result {
 
 	size := int64(val.Len())
 	if s.MinItems != nil {
-		if err := validation.MinItems(s.Path, s.In, size, *s.MinItems); err != nil {
+		if err := validate.MinItems(s.Path, s.In, size, *s.MinItems); err != nil {
 			return sErr(err)
 		}
 	}
 
 	if s.MaxItems != nil {
-		if err := validation.MaxItems(s.Path, s.In, size, *s.MaxItems); err != nil {
+		if err := validate.MaxItems(s.Path, s.In, size, *s.MaxItems); err != nil {
 			return sErr(err)
 		}
 	}
 
 	if s.UniqueItems {
-		if err := validation.UniqueItems(s.Path, s.In, data); err != nil {
+		if err := validate.UniqueItems(s.Path, s.In, data); err != nil {
 			return sErr(err)
 		}
 	}
@@ -362,17 +362,17 @@ func (n *numberValidator) Validate(val interface{}) *Result {
 	data := n.convertToFloat(val)
 
 	if n.MultipleOf != nil {
-		if err := validation.MultipleOf(n.Path, n.In, data, *n.MultipleOf); err != nil {
+		if err := validate.MultipleOf(n.Path, n.In, data, *n.MultipleOf); err != nil {
 			return sErr(err)
 		}
 	}
 	if n.Maximum != nil {
-		if err := validation.Maximum(n.Path, n.In, data, *n.Maximum, n.ExclusiveMaximum); err != nil {
+		if err := validate.Maximum(n.Path, n.In, data, *n.Maximum, n.ExclusiveMaximum); err != nil {
 			return sErr(err)
 		}
 	}
 	if n.Minimum != nil {
-		if err := validation.Minimum(n.Path, n.In, data, *n.Minimum, n.ExclusiveMinimum); err != nil {
+		if err := validate.Minimum(n.Path, n.In, data, *n.Minimum, n.ExclusiveMinimum); err != nil {
 			return sErr(err)
 		}
 	}
@@ -410,25 +410,25 @@ func (s *stringValidator) Validate(val interface{}) *Result {
 	data := val.(string)
 
 	if s.Required && (s.Default == nil || s.Default == "") {
-		if err := validation.RequiredString(s.Path, s.In, data); err != nil {
+		if err := validate.RequiredString(s.Path, s.In, data); err != nil {
 			return sErr(err)
 		}
 	}
 
 	if s.MaxLength != nil {
-		if err := validation.MaxLength(s.Path, s.In, data, *s.MaxLength); err != nil {
+		if err := validate.MaxLength(s.Path, s.In, data, *s.MaxLength); err != nil {
 			return sErr(err)
 		}
 	}
 
 	if s.MinLength != nil {
-		if err := validation.MinLength(s.Path, s.In, data, *s.MinLength); err != nil {
+		if err := validate.MinLength(s.Path, s.In, data, *s.MinLength); err != nil {
 			return sErr(err)
 		}
 	}
 
 	if s.Pattern != "" {
-		if err := validation.Pattern(s.Path, s.In, data, s.Pattern); err != nil {
+		if err := validate.Pattern(s.Path, s.In, data, s.Pattern); err != nil {
 			return sErr(err)
 		}
 	}

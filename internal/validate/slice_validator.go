@@ -5,9 +5,9 @@ import (
 	"reflect"
 
 	"github.com/casualjim/go-swagger/errors"
+	"github.com/casualjim/go-swagger/httpkit/validate"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/validation"
 )
 
 type schemaSliceValidator struct {
@@ -71,17 +71,17 @@ func (s *schemaSliceValidator) Validate(data interface{}) *Result {
 	}
 
 	if s.MinItems != nil {
-		if err := validation.MinItems(s.Path, s.In, int64(size), *s.MinItems); err != nil {
+		if err := validate.MinItems(s.Path, s.In, int64(size), *s.MinItems); err != nil {
 			result.AddErrors(err)
 		}
 	}
 	if s.MaxItems != nil {
-		if err := validation.MaxItems(s.Path, s.In, int64(size), *s.MaxItems); err != nil {
+		if err := validate.MaxItems(s.Path, s.In, int64(size), *s.MaxItems); err != nil {
 			result.AddErrors(err)
 		}
 	}
 	if s.UniqueItems {
-		if err := validation.UniqueItems(s.Path, s.In, val.Interface()); err != nil {
+		if err := validate.UniqueItems(s.Path, s.In, val.Interface()); err != nil {
 			result.AddErrors(err)
 		}
 	}

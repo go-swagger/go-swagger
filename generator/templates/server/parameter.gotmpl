@@ -1,41 +1,41 @@
 {{define "primitivevalidator"}}
 {{if .MinLength}}
-if err := validation.MinLength({{.Path}}, "{{.Location}}", {{.ValueExpression}}, {{.MinLength}}); err != nil {
+if err := validate.MinLength({{.Path}}, "{{.Location}}", {{.ValueExpression}}, {{.MinLength}}); err != nil {
   return err
 }
 {{end}}
 {{if .MaxLength}}
-if err := validation.MaxLength({{.Path}}, "{{.Location}}", {{.ValueExpression}}, {{.MaxLength}}); err != nil {
+if err := validate.MaxLength({{.Path}}, "{{.Location}}", {{.ValueExpression}}, {{.MaxLength}}); err != nil {
   return err
 }
 {{end}}
 {{if .Pattern}}
-if err := validation.Pattern({{.Path}}, "{{.Location}}", {{.ValueExpression}}, `{{.Pattern}}`); err != nil {
+if err := validate.Pattern({{.Path}}, "{{.Location}}", {{.ValueExpression}}, `{{.Pattern}}`); err != nil {
   return err
 }
 {{end}}
 {{if .Minimum}}
-if err := validation.Minimum({{.Path}}, "{{.Location}}", float64({{.ValueExpression}}), {{.Minimum}}, {{.ExclusiveMinimum}}); err != nil {
+if err := validate.Minimum({{.Path}}, "{{.Location}}", float64({{.ValueExpression}}), {{.Minimum}}, {{.ExclusiveMinimum}}); err != nil {
   return err
 }
 {{end}}
 {{if .Maximum}}
-if err := validation.Maximum({{.Path}}, "{{.Location}}", float64({{.ValueExpression}}), {{.Maximum}}, {{.ExclusiveMaximum}}); err != nil {
+if err := validate.Maximum({{.Path}}, "{{.Location}}", float64({{.ValueExpression}}), {{.Maximum}}, {{.ExclusiveMaximum}}); err != nil {
   return err
 }
 {{end}}
 {{if .MultipleOf}}
-if err := validation.MultipleOf({{.Path}}, "{{.Location}}", float64({{.ValueExpression}}), {{.MultipleOf}}); err != nil {
+if err := validate.MultipleOf({{.Path}}, "{{.Location}}", float64({{.ValueExpression}}), {{.MultipleOf}}); err != nil {
   return err
 }
 {{end}}
 {{if .Enum}}
-if err := validation.Enum({{.Path}}, "{{.Location}}", {{.ValueExpression}}, {{.Enum}}); err != nil {
+if err := validate.Enum({{.Path}}, "{{.Location}}", {{.ValueExpression}}, {{.Enum}}); err != nil {
   return err
 }
 {{end}}
 {{end}}{{define "customformatvalidator"}}
-if err := validation.FormatOf({{.Path}}, "{{.Location}}", "{{.Format}}", string({{.ValueExpression}}), formats); err != nil {
+if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.Format}}", string({{.ValueExpression}}), formats); err != nil {
   return err
 }
 {{end}}{{define "slicevalidator"}}
@@ -43,22 +43,22 @@ if err := validation.FormatOf({{.Path}}, "{{.Location}}", "{{.Format}}", string(
 {{.ParamName}}Size := int64(len({{.ValueExpression}}))
 {{end}}
 {{if .MinItems}}
-if err := validation.MinItems({{.Path}}, "{{.Location}}", {{.ParamName}}Size, {{.MinItems}}); err != nil {
+if err := validate.MinItems({{.Path}}, "{{.Location}}", {{.ParamName}}Size, {{.MinItems}}); err != nil {
   return err
 }
 {{end}}
 {{if .MaxItems}}
-if err := validation.MaxItems({{.Path}}, "{{.Location}}", {{.ParamName}}Size, {{.MaxItems}}); err != nil {
+if err := validate.MaxItems({{.Path}}, "{{.Location}}", {{.ParamName}}Size, {{.MaxItems}}); err != nil {
   return err
 }
 {{end}}
 {{if .UniqueItems}}
-if err := validation.UniqueItems({{.Path}}, "{{.Location}}", {{.ValueExpression}}); err != nil {
+if err := validate.UniqueItems({{.Path}}, "{{.Location}}", {{.ValueExpression}}); err != nil {
   return err
 }
 {{end}}
 {{if .Enum}}
-if err := validation.Enum({{.Path}}, "{{.Location}}", {{.ValueExpression}}, {{.Enum}}); err != nil {
+if err := validate.Enum({{.Path}}, "{{.Location}}", {{.ValueExpression}}, {{.Enum}}); err != nil {
   return err
 }
 {{end}}
@@ -108,7 +108,7 @@ import (
   "github.com/casualjim/go-swagger"
   "github.com/casualjim/go-swagger/swag"
   "github.com/casualjim/go-swagger/errors"
-  "github.com/casualjim/go-swagger/validation"
+  "github.com/casualjim/go-swagger/httpkit/validate"
   "github.com/casualjim/go-swagger/httpkit"
 
   {{range .DefaultImports}}{{printf "%q" .}}
@@ -190,7 +190,7 @@ func ({{.ReceiverName}} *{{.ClassName}}Params) BindRequest(r *http.Request, rout
 {{if not .IsBodyParam}}
 {{if or .IsPrimitive .IsCustomFormatter}}
 func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw string, formats strfmt.Registry) error {
-  {{if and (not .IsPathParam) .Required}}if err := validation.RequiredString({{.Path}}, "{{.Location}}", raw); err != nil {
+  {{if and (not .IsPathParam) .Required}}if err := validate.RequiredString({{.Path}}, "{{.Location}}", raw); err != nil {
     return err
   }
   {{end}}

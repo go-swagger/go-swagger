@@ -8,8 +8,8 @@ import (
 
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/httpkit/middleware"
+	"github.com/casualjim/go-swagger/httpkit/validate"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/validation"
 )
 
 // UpdatePetWithFormParams contains all the bound params for the update pet with form operation
@@ -63,7 +63,7 @@ func (o *UpdatePetWithFormParams) validatePetID(formats strfmt.Registry) error {
 }
 
 func (o *UpdatePetWithFormParams) bindName(raw string, formats strfmt.Registry) error {
-	if err := validation.RequiredString("name", "formData", raw); err != nil {
+	if err := validate.RequiredString("name", "formData", raw); err != nil {
 		return err
 	}
 
@@ -82,7 +82,7 @@ func (o *UpdatePetWithFormParams) validateName(formats strfmt.Registry) error {
 }
 
 func (o *UpdatePetWithFormParams) bindStatus(raw string, formats strfmt.Registry) error {
-	if err := validation.RequiredString("status", "formData", raw); err != nil {
+	if err := validate.RequiredString("status", "formData", raw); err != nil {
 		return err
 	}
 

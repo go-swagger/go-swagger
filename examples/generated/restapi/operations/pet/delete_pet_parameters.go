@@ -8,9 +8,9 @@ import (
 
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/httpkit/middleware"
+	"github.com/casualjim/go-swagger/httpkit/validate"
 	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/casualjim/go-swagger/swag"
-	"github.com/casualjim/go-swagger/validation"
 )
 
 // DeletePetParams contains all the bound params for the delete pet operation
@@ -41,7 +41,7 @@ func (o *DeletePetParams) BindRequest(r *http.Request, route *middleware.Matched
 }
 
 func (o *DeletePetParams) bindAPIKey(raw string, formats strfmt.Registry) error {
-	if err := validation.RequiredString("apiKey", "header", raw); err != nil {
+	if err := validate.RequiredString("apiKey", "header", raw); err != nil {
 		return err
 	}
 

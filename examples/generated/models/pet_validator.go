@@ -5,8 +5,8 @@ package models
 
 import (
 	"github.com/casualjim/go-swagger/errors"
+	"github.com/casualjim/go-swagger/httpkit/validate"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/validation"
 )
 
 // Validate validates this pet
@@ -35,7 +35,7 @@ func (m *Pet) Validate(formats strfmt.Registry) error {
 
 func (m *Pet) validateName(formats strfmt.Registry) error {
 
-	if err := validation.Required("name", "", m.Name); err != nil {
+	if err := validate.Required("name", "", m.Name); err != nil {
 		return err
 	}
 
