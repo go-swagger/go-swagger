@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/casualjim/go-swagger"
-	"github.com/casualjim/go-swagger/middleware/httputils"
+	"github.com/casualjim/go-swagger/httpkit"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
 )
@@ -90,8 +90,8 @@ func (r *Runtime) Submit(request *Request, result interface{}) error {
 	}
 
 	req, _ := http.NewRequest(request.Method, request.Path, body)
-	req.Header.Add(httputils.HeaderContentType, producerMediaType) // use selected producer mime type
-	req.Header.Add(httputils.HeaderAccept, consumerMediaType)      // use selected consumer mime type
+	req.Header.Add(httpkit.HeaderContentType, producerMediaType) // use selected producer mime type
+	req.Header.Add(httpkit.HeaderAccept, consumerMediaType)      // use selected consumer mime type
 	if body != nil && body.Len() > 0 {
 		req.Header.Add("Content-Length", fmt.Sprintf("%d", body.Len()))
 	}

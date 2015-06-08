@@ -5,8 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/casualjim/go-swagger/httpkit"
 	"github.com/casualjim/go-swagger/internal/testing/petstore"
-	"github.com/casualjim/go-swagger/middleware/httputils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,14 +17,14 @@ func TestServeSpecMiddleware(t *testing.T) {
 	handler := specMiddleware(ctx, nil)
 	// serves spec
 	request, _ := http.NewRequest("GET", "/swagger.json", nil)
-	request.Header.Add(httputils.HeaderContentType, httputils.JSONMime)
+	request.Header.Add(httpkit.HeaderContentType, httpkit.JSONMime)
 	recorder := httptest.NewRecorder()
 	handler.ServeHTTP(recorder, request)
 	assert.Equal(t, 200, recorder.Code)
 
 	// returns 404 when no next handler
 	request, _ = http.NewRequest("GET", "/api/pets", nil)
-	request.Header.Add(httputils.HeaderContentType, httputils.JSONMime)
+	request.Header.Add(httpkit.HeaderContentType, httpkit.JSONMime)
 	recorder = httptest.NewRecorder()
 	handler.ServeHTTP(recorder, request)
 	assert.Equal(t, 404, recorder.Code)
@@ -34,7 +34,7 @@ func TestServeSpecMiddleware(t *testing.T) {
 		rw.WriteHeader(http.StatusOK)
 	}))
 	request, _ = http.NewRequest("GET", "/api/pets", nil)
-	request.Header.Add(httputils.HeaderContentType, httputils.JSONMime)
+	request.Header.Add(httpkit.HeaderContentType, httpkit.JSONMime)
 	recorder = httptest.NewRecorder()
 	handler.ServeHTTP(recorder, request)
 	assert.Equal(t, 200, recorder.Code)

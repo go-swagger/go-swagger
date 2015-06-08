@@ -6,7 +6,7 @@ import (
 
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
-	"github.com/casualjim/go-swagger/middleware/httputils"
+	"github.com/casualjim/go-swagger/httpkit"
 	"github.com/casualjim/go-swagger/swag"
 )
 
@@ -85,7 +85,7 @@ func (v *validation) parameters() {
 }
 
 func (v *validation) contentType() {
-	if httputils.CanHaveBody(v.request.Method) {
+	if httpkit.CanHaveBody(v.request.Method) {
 		ct, _, err := v.context.ContentType(v.request)
 		if err != nil {
 			v.result = append(v.result, err)
@@ -100,6 +100,6 @@ func (v *validation) contentType() {
 
 func (v *validation) responseFormat() {
 	if str := v.context.ResponseFormat(v.request, v.route.Produces); str == "" {
-		v.result = append(v.result, errors.InvalidResponseFormat(v.request.Header.Get(httputils.HeaderAccept), v.route.Produces))
+		v.result = append(v.result, errors.InvalidResponseFormat(v.request.Header.Get(httpkit.HeaderAccept), v.route.Produces))
 	}
 }

@@ -6,8 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/casualjim/go-swagger/httpkit"
 	"github.com/casualjim/go-swagger/internal/testing/petstore"
-	"github.com/casualjim/go-swagger/middleware/httputils"
 	"github.com/gorilla/context"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,8 +18,8 @@ func TestServe(t *testing.T) {
 
 	// serve spec document
 	request, _ := http.NewRequest("GET", "http://localhost:8080/swagger.json", nil)
-	request.Header.Add("Content-Type", httputils.JSONMime)
-	request.Header.Add("Accept", httputils.JSONMime)
+	request.Header.Add("Content-Type", httpkit.JSONMime)
+	request.Header.Add("Accept", httpkit.JSONMime)
 	recorder := httptest.NewRecorder()
 
 	handler.ServeHTTP(recorder, request)
@@ -37,7 +37,7 @@ func TestContextAuthorize(t *testing.T) {
 	ctx := NewContext(spec, api, nil)
 	ctx.router = DefaultRouter(spec, ctx.api)
 
-	request, _ := httputils.JSONRequest("GET", "/pets", nil)
+	request, _ := httpkit.JSONRequest("GET", "/pets", nil)
 
 	v, ok := context.GetOk(request, ctxSecurityPrincipal)
 	assert.False(t, ok)
@@ -105,7 +105,7 @@ func TestContextBindAndValidate(t *testing.T) {
 }
 
 func TestContextRender(t *testing.T) {
-	ct := httputils.JSONMime
+	ct := httpkit.JSONMime
 	spec, api := petstore.NewAPI(t)
 
 	assert.NotNil(t, spec)
@@ -114,7 +114,7 @@ func TestContextRender(t *testing.T) {
 	ctx.router = DefaultRouter(spec, ctx.api)
 
 	request, _ := http.NewRequest("GET", "pets", nil)
-	request.Header.Set(httputils.HeaderAccept, ct)
+	request.Header.Set(httpkit.HeaderAccept, ct)
 	ri, _ := ctx.RouteInfo(request)
 
 	recorder := httptest.NewRecorder()
@@ -134,7 +134,7 @@ func TestContextRender(t *testing.T) {
 	assert.Panics(t, func() { ctx.Respond(recorder, request, []string{}, ri, map[string]interface{}{"name": "hello"}) })
 
 	request, _ = http.NewRequest("GET", "/pets", nil)
-	request.Header.Set(httputils.HeaderAccept, ct)
+	request.Header.Set(httpkit.HeaderAccept, ct)
 	ri, _ = ctx.RouteInfo(request)
 
 	recorder = httptest.NewRecorder()
@@ -167,7 +167,7 @@ func TestContextValidResponseFormat(t *testing.T) {
 	ctx.router = DefaultRouter(spec, ctx.api)
 
 	request, _ := http.NewRequest("GET", "http://localhost:8080", nil)
-	request.Header.Set(httputils.HeaderAccept, ct)
+	request.Header.Set(httpkit.HeaderAccept, ct)
 
 	// check there's nothing there
 	cached, ok := context.GetOk(request, ctxResponseFormat)
@@ -196,7 +196,7 @@ func TestContextInvalidResponseFormat(t *testing.T) {
 	ctx.router = DefaultRouter(spec, ctx.api)
 
 	request, _ := http.NewRequest("GET", "http://localhost:8080", nil)
-	request.Header.Set(httputils.HeaderAccept, ct)
+	request.Header.Set(httpkit.HeaderAccept, ct)
 
 	// check there's nothing there
 	cached, ok := context.GetOk(request, ctxResponseFormat)
@@ -270,7 +270,7 @@ func TestContextValidContentType(t *testing.T) {
 	ctx := NewContext(nil, nil, nil)
 
 	request, _ := http.NewRequest("GET", "http://localhost:8080", nil)
-	request.Header.Set(httputils.HeaderContentType, ct)
+	request.Header.Set(httpkit.HeaderContentType, ct)
 
 	// check there's nothing there
 	_, ok := context.GetOk(request, ctxContentType)
@@ -296,7 +296,7 @@ func TestContextInvalidContentType(t *testing.T) {
 	ctx := NewContext(nil, nil, nil)
 
 	request, _ := http.NewRequest("GET", "http://localhost:8080", nil)
-	request.Header.Set(httputils.HeaderContentType, ct)
+	request.Header.Set(httpkit.HeaderContentType, ct)
 
 	// check there's nothing there
 	_, ok := context.GetOk(request, ctxContentType)

@@ -5,7 +5,7 @@ import (
 
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
-	"github.com/casualjim/go-swagger/middleware/httputils"
+	"github.com/casualjim/go-swagger/httpkit"
 	"github.com/casualjim/go-swagger/middleware/untyped"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
@@ -169,8 +169,8 @@ func (c *Context) BindValidRequest(request *http.Request, route *MatchedRoute, b
 	var res []error
 
 	// check and validate content type, select consumer
-	if httputils.CanHaveBody(request.Method) {
-		ct, _, err := httputils.ContentType(request.Header)
+	if httpkit.CanHaveBody(request.Method) {
+		ct, _, err := httpkit.ContentType(request.Header)
 		if err != nil {
 			res = append(res, err)
 		} else {
@@ -184,7 +184,7 @@ func (c *Context) BindValidRequest(request *http.Request, route *MatchedRoute, b
 	// check and validate the response format
 	if len(res) == 0 {
 		if str := httputil.NegotiateContentType(request, route.Produces, ""); str == "" {
-			res = append(res, errors.InvalidResponseFormat(request.Header.Get(httputils.HeaderAccept), route.Produces))
+			res = append(res, errors.InvalidResponseFormat(request.Header.Get(httpkit.HeaderAccept), route.Produces))
 		}
 	}
 
@@ -211,7 +211,7 @@ func (c *Context) ContentType(request *http.Request) (string, string, *errors.Pa
 		}
 	}
 
-	mt, cs, err := httputils.ContentType(request.Header)
+	mt, cs, err := httpkit.ContentType(request.Header)
 	if err != nil {
 		return "", "", err
 	}
@@ -306,7 +306,7 @@ func (c *Context) BindAndValidate(request *http.Request, matched *MatchedRoute) 
 
 // NotFound the default not found responder for when no route has been matched yet
 func (c *Context) NotFound(rw http.ResponseWriter, r *http.Request) {
-	c.Respond(rw, r, []string{httputils.JSONMime}, nil, errors.NotFound("not found"))
+	c.Respond(rw, r, []string{httpkit.JSONMime}, nil, errors.NotFound("not found"))
 }
 
 // Respond renders the response after doing some content negotiation
@@ -319,11 +319,11 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 	}
 
 	format := c.ResponseFormat(r, offers)
-	rw.Header().Set(httputils.HeaderContentType, format)
+	rw.Header().Set(httpkit.HeaderContentType, format)
 
 	if err, ok := data.(error); ok {
 		if format == "" {
-			rw.Header().Set(httputils.HeaderContentType, httputils.JSONMime)
+			rw.Header().Set(httpkit.HeaderContentType, httpkit.JSONMime)
 		}
 		if route == nil || route.Operation == nil {
 			c.api.ServeErrorFor("")(rw, r, err)

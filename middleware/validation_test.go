@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/casualjim/go-swagger/errors"
+	"github.com/casualjim/go-swagger/httpkit"
 	"github.com/casualjim/go-swagger/internal/testing/petstore"
-	"github.com/casualjim/go-swagger/middleware/httputils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -50,16 +50,16 @@ func TestResponseFormatValidation(t *testing.T) {
 
 	recorder := httptest.NewRecorder()
 	request, _ := http.NewRequest("POST", "/pets", bytes.NewBuffer([]byte(`{"name":"Dog"}`)))
-	request.Header.Set(httputils.HeaderContentType, "application/json")
-	request.Header.Set(httputils.HeaderAccept, "application/json")
+	request.Header.Set(httpkit.HeaderContentType, "application/json")
+	request.Header.Set(httpkit.HeaderAccept, "application/json")
 
 	mw.ServeHTTP(recorder, request)
 	assert.Equal(t, 200, recorder.Code, recorder.Body.String())
 
 	recorder = httptest.NewRecorder()
 	request, _ = http.NewRequest("POST", "/pets", bytes.NewBuffer([]byte(`{"name":"Dog"}`)))
-	request.Header.Set(httputils.HeaderContentType, "application/json")
-	request.Header.Set(httputils.HeaderAccept, "application/sml")
+	request.Header.Set(httpkit.HeaderContentType, "application/json")
+	request.Header.Set(httpkit.HeaderAccept, "application/sml")
 
 	mw.ServeHTTP(recorder, request)
 	assert.Equal(t, http.StatusNotAcceptable, recorder.Code)

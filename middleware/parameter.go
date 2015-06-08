@@ -12,8 +12,8 @@ import (
 
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
+	"github.com/casualjim/go-swagger/httpkit"
 	"github.com/casualjim/go-swagger/internal/validate"
-	"github.com/casualjim/go-swagger/middleware/httputils"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/casualjim/go-swagger/swag"
@@ -112,11 +112,11 @@ func (p *untypedParamBinder) readValue(values interface{}, target reflect.Value)
 			return values.(url.Values)[name], false, nil
 		}
 
-		v := httputils.ReadSingleValue(values.(httputils.Gettable), name)
+		v := httpkit.ReadSingleValue(values.(httpkit.Gettable), name)
 		return p.readFormattedSliceFieldValue(v, target)
 	}
 
-	v := httputils.ReadSingleValue(values.(httputils.Gettable), name)
+	v := httpkit.ReadSingleValue(values.(httpkit.Gettable), name)
 	if v == "" {
 		return nil, false, nil
 	}
@@ -161,7 +161,7 @@ func (p *untypedParamBinder) Bind(request *http.Request, routeParams RouteParams
 		var err error
 		var mt string
 
-		mt, _, e := httputils.ContentType(request.Header)
+		mt, _, e := httpkit.ContentType(request.Header)
 		if e != nil {
 			// because of the interface conversion go thinks the error is not nil
 			// so we first check for nil and then set the err var if it's not nil
