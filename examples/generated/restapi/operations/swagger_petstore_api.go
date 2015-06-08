@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/casualjim/go-swagger"
+	"github.com/casualjim/go-swagger/httpkit/middleware"
 	"github.com/casualjim/go-swagger/httpkit/security"
-	"github.com/casualjim/go-swagger/middleware"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
 

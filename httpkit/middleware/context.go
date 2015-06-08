@@ -6,7 +6,7 @@ import (
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/httpkit"
-	"github.com/casualjim/go-swagger/middleware/untyped"
+	"github.com/casualjim/go-swagger/httpkit/middleware/untyped"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/golang/gddo/httputil"

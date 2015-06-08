@@ -6,9 +6,9 @@ import (
 
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
+	"github.com/casualjim/go-swagger/httpkit/middleware/untyped"
 	"github.com/casualjim/go-swagger/httpkit/security"
 	testingutil "github.com/casualjim/go-swagger/internal/testing"
-	"github.com/casualjim/go-swagger/middleware/untyped"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/stretchr/testify/assert"
 )

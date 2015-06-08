@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/casualjim/go-swagger/errors"
-	"github.com/casualjim/go-swagger/middleware"
+	"github.com/casualjim/go-swagger/httpkit/middleware"
 	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/casualjim/go-swagger/swag"
 	"github.com/casualjim/go-swagger/validation"

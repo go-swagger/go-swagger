@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/casualjim/go-swagger/examples/generated/models"
-	"github.com/casualjim/go-swagger/middleware"
+	"github.com/casualjim/go-swagger/httpkit/middleware"
 )
 
 // GetOrderByIDHandlerFunc turns a function with the right signature into a get order by i d handler

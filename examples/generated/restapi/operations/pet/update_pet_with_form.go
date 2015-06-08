@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/casualjim/go-swagger/examples/generated/models"
-	"github.com/casualjim/go-swagger/middleware"
+	"github.com/casualjim/go-swagger/httpkit/middleware"
 )
 
 // UpdatePetWithFormHandlerFunc turns a function with the right signature into a update pet with form handler

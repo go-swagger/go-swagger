@@ -6,7 +6,7 @@ package user
 import (
 	"net/http"
 
-	"github.com/casualjim/go-swagger/middleware"
+	"github.com/casualjim/go-swagger/httpkit/middleware"
 )
 
 // LoginUserHandlerFunc turns a function with the right signature into a login user handler

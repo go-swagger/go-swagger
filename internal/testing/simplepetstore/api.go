@@ -8,8 +8,8 @@ import (
 
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
-	"github.com/casualjim/go-swagger/middleware"
-	"github.com/casualjim/go-swagger/middleware/untyped"
+	"github.com/casualjim/go-swagger/httpkit/middleware"
+	"github.com/casualjim/go-swagger/httpkit/middleware/untyped"
 	"github.com/casualjim/go-swagger/spec"
 )
 
