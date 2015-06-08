@@ -9,7 +9,6 @@ import (
 	"github.com/casualjim/go-swagger/middleware/untyped"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/swagger-ui"
 	"github.com/golang/gddo/httputil"
 	"github.com/gorilla/context"
 )
@@ -133,13 +132,6 @@ func NewContext(spec *spec.Document, api *untyped.API, routes Router) *Context {
 func Serve(spec *spec.Document, api *untyped.API) http.Handler {
 	context := NewContext(spec, api, nil)
 	return context.APIHandler()
-}
-
-// ServeWithUI serves the specified spec with the specified api registrations as a http.Handler
-// it also enables the swagger docs ui on /swagger-ui
-func ServeWithUI(spec *spec.Document, api *untyped.API) http.Handler {
-	context := NewContext(spec, api, nil)
-	return context.UIMiddleware(context.APIHandler())
 }
 
 type contextKey int8
@@ -378,9 +370,4 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 // APIHandler returns a handler to serve
 func (c *Context) APIHandler() http.Handler {
 	return specMiddleware(c, newRouter(c, newOperationExecutor(c)))
-}
-
-// UIMiddleware creates a new swagger UI middleware for this context
-func (c *Context) UIMiddleware(handler http.Handler) http.Handler {
-	return swaggerui.Middleware("", handler)
 }

@@ -372,14 +372,3 @@ func (s *SwaggerPetstoreAPI) Serve() http.Handler {
 
 	return s.context.APIHandler()
 }
-
-// ServeWithUI creates a http handler to serve the API over HTTP
-// includes a middleware that serves a swagger ui on /swagger-ui
-// can be used directly in http.ListenAndServe(":8000", api.ServeWithUI())
-func (s *SwaggerPetstoreAPI) ServeWithUI() http.Handler {
-	if len(s.handlers) == 0 {
-		s.initHandlerCache()
-	}
-
-	return s.context.UIMiddleware(s.context.APIHandler())
-}

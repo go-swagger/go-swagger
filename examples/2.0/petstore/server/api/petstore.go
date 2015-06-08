@@ -29,7 +29,7 @@ func NewPetstore() (http.Handler, error) {
 	api.RegisterOperation("deletePet", deletePet)
 	api.RegisterOperation("getPetById", getPetByID)
 
-	return middleware.ServeWithUI(spec, api), nil
+	return middleware.Serve(spec, api), nil
 }
 
 var getAllPets = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {

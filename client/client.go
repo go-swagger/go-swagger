@@ -119,6 +119,7 @@ func (r *Runtime) Submit(request *Request, result interface{}) error {
 			}
 		}
 		return nil
+
 	case 4, 5:
 		// this is an error, check for default model and use that
 		cons, ok := r.Consumers[consumerMediaType]

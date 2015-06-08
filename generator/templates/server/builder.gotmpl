@@ -222,13 +222,3 @@ func ({{.ReceiverName}} *{{.AppName}}API) Serve() http.Handler {
   return {{.ReceiverName}}.context.APIHandler()
 }
 
-// ServeWithUI creates a http handler to serve the API over HTTP
-// includes a middleware that serves a swagger ui on /swagger-ui
-// can be used directly in http.ListenAndServe(":8000", api.ServeWithUI())
-func ({{.ReceiverName}} *{{.AppName}}API) ServeWithUI() http.Handler {
-  if len({{.ReceiverName}}.handlers) == 0 {
-    {{.ReceiverName}}.initHandlerCache()
-  }
-
-  return {{.ReceiverName}}.context.UIMiddleware({{.ReceiverName}}.context.APIHandler())
-}

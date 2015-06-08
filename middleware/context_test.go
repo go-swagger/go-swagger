@@ -30,15 +30,6 @@ func TestServe(t *testing.T) {
 
 	handler.ServeHTTP(recorder, request)
 	assert.Equal(t, 404, recorder.Code)
-
-	// serve UI
-	handler = ServeWithUI(spec, api)
-	request, _ = http.NewRequest("GET", "http://localhost:8080/swagger-ui", nil)
-	recorder = httptest.NewRecorder()
-
-	handler.ServeHTTP(recorder, request)
-	assert.Equal(t, 200, recorder.Code)
-
 }
 
 func TestContextAuthorize(t *testing.T) {
