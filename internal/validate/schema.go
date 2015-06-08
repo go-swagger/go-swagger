@@ -5,7 +5,7 @@ import (
 
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 var specSchemaType = reflect.TypeOf(&spec.Schema{})
@@ -79,7 +79,7 @@ func (s *SchemaValidator) Validate(data interface{}) *Result {
 	}
 	d := data
 	if kind == reflect.Struct {
-		d = util.ToDynamicJSON(data)
+		d = swag.ToDynamicJSON(data)
 	}
 
 	for _, v := range s.validators {

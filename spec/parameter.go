@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/casualjim/go-swagger/jsonpointer"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 // QueryParam creates a query parameter
@@ -243,5 +243,5 @@ func (p Parameter) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return util.ConcatJSON(b3, b1, b2, b4, b5), nil
+	return swag.ConcatJSON(b3, b1, b2, b4, b5), nil
 }

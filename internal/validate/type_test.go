@@ -11,7 +11,7 @@ import (
 
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -100,7 +100,7 @@ func (n *noopResCache) Set(string, interface{}) {
 }
 
 func isEnabled(nm string) bool {
-	return util.ContainsStringsCI(enabled, nm)
+	return swag.ContainsStringsCI(enabled, nm)
 }
 
 func TestJSONSchemaSuite(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/casualjim/go-swagger/jsonpointer"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 // pathItemProps the path item specific properties
@@ -71,6 +71,6 @@ func (p PathItem) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	concated := util.ConcatJSON(b3, b4, b5)
+	concated := swag.ConcatJSON(b3, b4, b5)
 	return concated, nil
 }

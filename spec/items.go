@@ -3,7 +3,7 @@ package spec
 import (
 	"encoding/json"
 
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 type simpleSchema struct {
@@ -181,5 +181,5 @@ func (i Items) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return util.ConcatJSON(b3, b1, b2), nil
+	return swag.ConcatJSON(b3, b1, b2), nil
 }

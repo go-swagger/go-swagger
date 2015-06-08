@@ -11,7 +11,7 @@ import (
 	"text/template"
 
 	"github.com/casualjim/go-swagger/spec"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 var (
@@ -69,7 +69,7 @@ func GenerateSupport(name string, modelNames, operationIDs []string, includeUI b
 
 	if name == "" {
 		if specDoc.Spec().Info != nil && specDoc.Spec().Info.Title != "" {
-			name = util.ToGoName(specDoc.Spec().Info.Title)
+			name = swag.ToGoName(specDoc.Spec().Info.Title)
 		} else {
 			name = "swagger"
 		}
@@ -136,7 +136,7 @@ func (a *appGenerator) Generate() error {
 	app := a.makeCodegenApp()
 
 	if a.DumpData {
-		bb, _ := json.MarshalIndent(util.ToDynamicJSON(app), "", "  ")
+		bb, _ := json.MarshalIndent(swag.ToDynamicJSON(app), "", "  ")
 		fmt.Fprintln(os.Stdout, string(bb))
 		return nil
 	}
@@ -158,7 +158,7 @@ func (a *appGenerator) Generate() error {
 }
 
 func (a *appGenerator) generateConfigureAPI(app *genApp) error {
-	pth := filepath.Join(a.Target, "cmd", util.ToCommandName(app.AppName+"Server"))
+	pth := filepath.Join(a.Target, "cmd", swag.ToCommandName(app.AppName+"Server"))
 	nm := "Configure" + app.AppName
 	if fileExists(pth, nm) {
 		log.Println("skipped (already exists) configure api template:", app.Package+".Configure"+app.AppName)
@@ -179,7 +179,7 @@ func (a *appGenerator) generateMain(app *genApp) error {
 		return err
 	}
 	log.Println("rendered main template:", "server."+app.AppName)
-	return writeToFile(filepath.Join(a.Target, "cmd", util.ToCommandName(app.AppName+"Server")), "main", buf.Bytes())
+	return writeToFile(filepath.Join(a.Target, "cmd", swag.ToCommandName(app.AppName+"Server")), "main", buf.Bytes())
 }
 
 func (a *appGenerator) generateAPIBuilder(app *genApp) error {
@@ -232,7 +232,7 @@ func (a *appGenerator) makeCodegenApp() genApp {
 	sw := a.SpecDoc.Spec()
 	// app := makeCodegenApp(a.Operations, a.IncludeUI)
 	receiver := strings.ToLower(a.Name[:1])
-	appName := util.ToGoName(a.Name)
+	appName := swag.ToGoName(a.Name)
 	var defaultImports []string
 
 	jsonb, _ := json.MarshalIndent(a.SpecDoc.Spec(), "", "  ")
@@ -244,7 +244,7 @@ func (a *appGenerator) makeCodegenApp() genApp {
 		if !ok {
 			continue
 		}
-		nm := util.ToJSONName(cn)
+		nm := swag.ToJSONName(cn)
 		if nm == "json" {
 			consumesJSON = true
 		}
@@ -265,8 +265,8 @@ func (a *appGenerator) makeCodegenApp() genApp {
 		ser := genSerializer{
 			AppName:        appName,
 			ReceiverName:   receiver,
-			ClassName:      util.ToGoName(cn),
-			HumanClassName: util.ToHumanNameLower(cn),
+			ClassName:      swag.ToGoName(cn),
+			HumanClassName: swag.ToHumanNameLower(cn),
 			Name:           nm,
 			MediaType:      cons,
 			Implementation: knownConsumers[nm],
@@ -291,7 +291,7 @@ func (a *appGenerator) makeCodegenApp() genApp {
 		if !ok {
 			continue
 		}
-		nm := util.ToJSONName(pn)
+		nm := swag.ToJSONName(pn)
 		if nm == "json" {
 			producesJSON = true
 		}
@@ -311,8 +311,8 @@ func (a *appGenerator) makeCodegenApp() genApp {
 		ser := genSerializer{
 			AppName:        appName,
 			ReceiverName:   receiver,
-			ClassName:      util.ToGoName(pn),
-			HumanClassName: util.ToHumanNameLower(pn),
+			ClassName:      swag.ToGoName(pn),
+			HumanClassName: swag.ToHumanNameLower(pn),
 			Name:           nm,
 			MediaType:      prod,
 			Implementation: knownProducers[nm],
@@ -336,9 +336,9 @@ func (a *appGenerator) makeCodegenApp() genApp {
 				security = append(security, genSecurityScheme{
 					AppName:        appName,
 					ReceiverName:   receiver,
-					ClassName:      util.ToGoName(req.Name),
-					HumanClassName: util.ToHumanNameLower(req.Name),
-					Name:           util.ToJSONName(req.Name),
+					ClassName:      swag.ToGoName(req.Name),
+					HumanClassName: swag.ToHumanNameLower(req.Name),
+					Name:           swag.ToJSONName(req.Name),
 					IsBasicAuth:    strings.ToLower(req.Type) == "basic",
 					IsAPIKeyAuth:   strings.ToLower(req.Type) == "apikey",
 					Principal:      a.Principal,
@@ -401,9 +401,9 @@ func (a *appGenerator) makeCodegenApp() genApp {
 	return genApp{
 		Package:             a.Package,
 		ReceiverName:        receiver,
-		AppName:             util.ToGoName(a.Name),
-		HumanAppName:        util.ToHumanNameLower(a.Name),
-		Name:                util.ToJSONName(a.Name),
+		AppName:             swag.ToGoName(a.Name),
+		HumanAppName:        swag.ToHumanNameLower(a.Name),
+		Name:                swag.ToJSONName(a.Name),
 		ExternalDocs:        sw.ExternalDocs,
 		Info:                sw.Info,
 		Consumes:            consumes,

@@ -11,7 +11,7 @@ import (
 	"golang.org/x/tools/go/loader"
 
 	"github.com/casualjim/go-swagger/spec"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 const (
@@ -311,7 +311,7 @@ func (a *appScanner) parseMeta(file *ast.File) error {
 
 // MustExpandPackagePath gets the real package path on disk
 func (a *appScanner) MustExpandPackagePath(packagePath string) string {
-	pkgRealpath := util.FindInGoSearchPath(packagePath)
+	pkgRealpath := swag.FindInGoSearchPath(packagePath)
 	if pkgRealpath == "" {
 		log.Fatalf("Can't find package %s \n", packagePath)
 	}

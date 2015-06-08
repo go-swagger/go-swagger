@@ -3,7 +3,7 @@
 	https://github.com/elazarl/go-bindata-assetfs/blob/master/assetfs.go
 */
 
-package util
+package swag
 
 import (
 	"fmt"

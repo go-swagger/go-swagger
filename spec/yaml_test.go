@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,7 +18,7 @@ func TestLoadStrategy(t *testing.T) {
 		return []byte("not it"), nil
 	}
 
-	ld := util.LoadStrategy("blah", loader, remLoader)
+	ld := swag.LoadStrategy("blah", loader, remLoader)
 	b, _ := ld("")
 	assert.Equal(t, []byte(yamlPetStore), b)
 

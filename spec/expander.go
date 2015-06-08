@@ -9,7 +9,7 @@ import (
 	"sync"
 
 	"github.com/casualjim/go-swagger/jsonpointer"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 // ResolutionCache a cache for resolving urls
@@ -75,7 +75,7 @@ func defaultSchemaLoader(root interface{}, ref *Ref, cache ResolutionCache) (*sc
 		loadingRef:  ref,
 		startingRef: ref,
 		cache:       cache,
-		loadDoc:     util.JSONDoc,
+		loadDoc:     swag.JSONDoc,
 		currentRef:  currentRef,
 	}, nil
 }
@@ -175,7 +175,7 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 		if rv.Type().AssignableTo(tgtType) {
 			reflect.Indirect(tgt).Set(reflect.Indirect(reflect.ValueOf(res)))
 		} else {
-			if err := util.DynamicJSONToStruct(rv.Interface(), target); err != nil {
+			if err := swag.DynamicJSONToStruct(rv.Interface(), target); err != nil {
 				return err
 			}
 		}
@@ -207,7 +207,7 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 			res = data
 		}
 
-		if err := util.DynamicJSONToStruct(res, target); err != nil {
+		if err := swag.DynamicJSONToStruct(res, target); err != nil {
 			return err
 		}
 

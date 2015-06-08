@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/casualjim/go-swagger/jsonpointer"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 // Swagger this is the root document object for the API specification.
@@ -28,7 +28,7 @@ func (s Swagger) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return util.ConcatJSON(schemaJSONBytes, b1), nil
+	return swag.ConcatJSON(schemaJSONBytes, b1), nil
 }
 
 // UnmarshalJSON unmarshals a swagger spec from json

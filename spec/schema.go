@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/casualjim/go-swagger/jsonpointer"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 // BooleanProperty creates a boolean property
@@ -416,7 +416,7 @@ func (s Schema) MarshalJSON() ([]byte, error) {
 		}
 		b6 = jj
 	}
-	return util.ConcatJSON(b1, b2, b3, b4, b5, b6), nil
+	return swag.ConcatJSON(b1, b2, b3, b4, b5, b6), nil
 }
 
 // UnmarshalJSON marshal this from JSON
@@ -442,7 +442,7 @@ func (s *Schema) UnmarshalJSON(data []byte) error {
 
 	delete(d, "$ref")
 	delete(d, "$schema")
-	for _, pn := range util.DefaultJSONNameProvider.GetJSONNames(s) {
+	for _, pn := range swag.DefaultJSONNameProvider.GetJSONNames(s) {
 		delete(d, pn)
 	}
 

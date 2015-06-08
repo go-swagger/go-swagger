@@ -68,7 +68,7 @@ if err := validation.Enum({{.Path}}, "{{.Location}}", {{.ValueExpression}}, {{.E
 {{if .IsContainer}}{{template "slicevalidator" .}}{{end}}
 {{end}}{{define "bindprimitive"}}
 {{end}}{{define "slicebinder"}}
-{{if .Parent}}{{.IndexVar}}c := util.SplitByFormat({{.Parent.IndexVar}}c[{{.Parent.IndexVar}}], "{{.CollectionFormat}}")
+{{if .Parent}}{{.IndexVar}}c := swag.SplitByFormat({{.Parent.IndexVar}}c[{{.Parent.IndexVar}}], "{{.CollectionFormat}}")
 {{else}}{{.IndexVar}}c := raw{{end}}
 {{.IndexVar}}sz := size
 var {{.IndexVar}}r {{.Type}}
@@ -106,6 +106,7 @@ for {{.IndexVar}} := 0; {{.IndexVar}} < {{.IndexVar}}sz; {{.IndexVar}}++ {
 import (
   "net/http"
   "github.com/casualjim/go-swagger"
+  "github.com/casualjim/go-swagger/swag"
   "github.com/casualjim/go-swagger/errors"
   "github.com/casualjim/go-swagger/validation"
   "github.com/casualjim/go-swagger/middleware/httputils"
@@ -152,10 +153,10 @@ func ({{.ReceiverName}} *{{.ClassName}}Params) BindRequest(r *http.Request, rout
     res = append(res, err)
   }
   {{end}}{{end}}
-  {{else if .IsContainer}}{{if .IsQueryParam}}if err := {{.ReceiverName}}.bind{{.PropertyName}}(util.SplitByFormat(qs.Get({{.Path}}), "{{.CollectionFormat}}"), route.Formats); err != nil {
+  {{else if .IsContainer}}{{if .IsQueryParam}}if err := {{.ReceiverName}}.bind{{.PropertyName}}(swag.SplitByFormat(qs.Get({{.Path}}), "{{.CollectionFormat}}"), route.Formats); err != nil {
     res = append(res, err)
   }
-  {{else if and .IsFormParam}}if err := {{.ReceiverName}}.bind{{.PropertyName}}(util.SplitByFormat(r.FormValue({{.Path}}), "{{.CollectionFormat}}"), route.Formats); err != nil {
+  {{else if and .IsFormParam}}if err := {{.ReceiverName}}.bind{{.PropertyName}}(swag.SplitByFormat(r.FormValue({{.Path}}), "{{.CollectionFormat}}"), route.Formats); err != nil {
     res = append(res, err)
   }
   {{end}}{{end}}
@@ -215,7 +216,7 @@ func ({{.ReceiverName}} *{{$className}}Params) bind{{.PropertyName}}(raw []strin
   }
   {{end}}
 
-  {{if .DefaultValue}}defValue := util.SplitByFormat({{.DefaultValue}}, "{{.CollectionFormat}}")
+  {{if .DefaultValue}}defValue := swag.SplitByFormat({{.DefaultValue}}, "{{.CollectionFormat}}")
   if size == 0 && len(defValue) > 0 {
     {{.ValueExpression}} = defValue
   {{else}}if size == 0 {

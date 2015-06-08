@@ -9,7 +9,7 @@ import (
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/middleware"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 // FindPetsByTagsParams contains all the bound params for the find pets by tags operation
@@ -25,7 +25,7 @@ func (o *FindPetsByTagsParams) BindRequest(r *http.Request, route *middleware.Ma
 	var res []error
 	qs := r.URL.Query()
 
-	if err := o.bindTags(util.SplitByFormat(qs.Get("tags"), "multi"), route.Formats); err != nil {
+	if err := o.bindTags(swag.SplitByFormat(qs.Get("tags"), "multi"), route.Formats); err != nil {
 		res = append(res, err)
 	}
 

@@ -12,7 +12,7 @@ import (
 	"github.com/casualjim/go-swagger/middleware"
 	"github.com/casualjim/go-swagger/middleware/untyped"
 	"github.com/casualjim/go-swagger/spec"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 	"github.com/kr/pretty"
 )
 
@@ -42,7 +42,7 @@ var createPet = swagger.OperationHandlerFunc(func(data interface{}) (interface{}
 	pretty.Println(data)
 	body := data.(map[string]interface{})["pet"]
 	var pet Pet
-	if err := util.FromDynamicJSON(body, &pet); err != nil {
+	if err := swag.FromDynamicJSON(body, &pet); err != nil {
 		return nil, err
 	}
 	addPet(pet)

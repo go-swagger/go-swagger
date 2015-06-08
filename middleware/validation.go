@@ -7,7 +7,7 @@ import (
 	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/middleware/httputils"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 // NewValidation starts a new validation middleware
@@ -49,7 +49,7 @@ func validateContentType(allowed []string, actual string) *errors.Validation {
 	if err != nil {
 		return errors.InvalidContentType(actual, allowed)
 	}
-	if util.ContainsStringsCI(allowed, mt) {
+	if swag.ContainsStringsCI(allowed, mt) {
 		return nil
 	}
 	return errors.InvalidContentType(actual, allowed)

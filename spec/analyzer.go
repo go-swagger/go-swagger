@@ -3,7 +3,7 @@ package spec
 import (
 	"strings"
 
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 // type operationRef struct {
@@ -146,7 +146,7 @@ func fieldNameFromParam(param *Parameter) string {
 	if nm, ok := param.Extensions.GetString("go-name"); ok {
 		return nm
 	}
-	return util.ToGoName(param.Name)
+	return swag.ToGoName(param.Name)
 }
 
 func (s *specAnalyzer) paramsAsMap(parameters []Parameter, res map[string]Parameter) {

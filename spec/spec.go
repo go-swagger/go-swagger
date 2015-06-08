@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/casualjim/go-swagger/assets"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 const (
@@ -22,7 +22,7 @@ type DocLoader func(string) (json.RawMessage, error)
 
 // JSONSpec loads a spec from a json document
 func JSONSpec(path string) (*Document, error) {
-	data, err := util.JSONDoc(path)
+	data, err := swag.JSONDoc(path)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func JSONSpec(path string) (*Document, error) {
 
 // YAMLSpec loads a swagger spec document
 func YAMLSpec(path string) (*Document, error) {
-	data, err := util.YAMLDoc(path)
+	data, err := swag.YAMLDoc(path)
 	if err != nil {
 		return nil, err
 	}

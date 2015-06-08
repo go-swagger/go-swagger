@@ -9,7 +9,7 @@ import (
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/middleware"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 // FindPetsByStatusParams contains all the bound params for the find pets by status operation
@@ -25,7 +25,7 @@ func (o *FindPetsByStatusParams) BindRequest(r *http.Request, route *middleware.
 	var res []error
 	qs := r.URL.Query()
 
-	if err := o.bindStatus(util.SplitByFormat(qs.Get("status"), "multi"), route.Formats); err != nil {
+	if err := o.bindStatus(swag.SplitByFormat(qs.Get("status"), "multi"), route.Formats); err != nil {
 		res = append(res, err)
 	}
 

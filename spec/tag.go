@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/casualjim/go-swagger/jsonpointer"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 type tagProps struct {
@@ -47,7 +47,7 @@ func (t Tag) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return util.ConcatJSON(b1, b2), nil
+	return swag.ConcatJSON(b1, b2), nil
 }
 
 // UnmarshalJSON marshal this from JSON

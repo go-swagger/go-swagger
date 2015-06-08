@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/casualjim/go-swagger/spec"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 	"golang.org/x/tools/imports"
 )
 
@@ -131,7 +131,7 @@ func loadSpec(specFile string) (string, *spec.Document, error) {
 }
 
 func fileExists(target, name string) bool {
-	ffn := util.ToFileName(name) + ".go"
+	ffn := swag.ToFileName(name) + ".go"
 	_, err := os.Stat(filepath.Join(target, ffn))
 	return !os.IsNotExist(err)
 }
@@ -154,7 +154,7 @@ func formatGoFile(ffn string, content []byte) ([]byte, error) {
 }
 
 func writeToFile(target, name string, content []byte) error {
-	ffn := util.ToFileName(name) + ".go"
+	ffn := swag.ToFileName(name) + ".go"
 	res, err := formatGoFile(ffn, content)
 	if err != nil {
 		log.Println(err)

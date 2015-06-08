@@ -9,7 +9,7 @@ import (
 
 	testingutil "github.com/casualjim/go-swagger/internal/testing"
 	"github.com/casualjim/go-swagger/jsonpointer"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
 )
@@ -22,7 +22,7 @@ func TestSpecExpansion(t *testing.T) {
 	err := expandSpec(spec)
 	assert.NoError(t, err)
 
-	specDoc, err := util.JSONDoc("../fixtures/expansion/all-the-things.json")
+	specDoc, err := swag.JSONDoc("../fixtures/expansion/all-the-things.json")
 	assert.NoError(t, err)
 
 	spec = new(Swagger)
@@ -61,7 +61,7 @@ func TestSpecExpansion(t *testing.T) {
 }
 
 func TestResponseExpansion(t *testing.T) {
-	specDoc, err := util.JSONDoc("../fixtures/expansion/all-the-things.json")
+	specDoc, err := swag.JSONDoc("../fixtures/expansion/all-the-things.json")
 	assert.NoError(t, err)
 
 	spec := new(Swagger)
@@ -94,7 +94,7 @@ func TestResponseExpansion(t *testing.T) {
 }
 
 func TestParameterExpansion(t *testing.T) {
-	paramDoc, err := util.JSONDoc("../fixtures/expansion/params.json")
+	paramDoc, err := swag.JSONDoc("../fixtures/expansion/params.json")
 	assert.NoError(t, err)
 
 	spec := new(Swagger)
@@ -120,7 +120,7 @@ func TestParameterExpansion(t *testing.T) {
 }
 
 func TestSchemaExpansion(t *testing.T) {
-	carsDoc, err := util.JSONDoc("../fixtures/expansion/schemas1.json")
+	carsDoc, err := swag.JSONDoc("../fixtures/expansion/schemas1.json")
 	assert.NoError(t, err)
 
 	spec := new(Swagger)
@@ -357,7 +357,7 @@ func TestResolveRemoteRef(t *testing.T) {
 					var tgt Schema
 					ref, err := NewRef(server.URL + "/refed.json#/definitions/pet")
 					So(err, ShouldBeNil)
-					resolver := &schemaLoader{root: rootDoc, cache: defaultResolutionCache(), loadDoc: util.JSONDoc}
+					resolver := &schemaLoader{root: rootDoc, cache: defaultResolutionCache(), loadDoc: swag.JSONDoc}
 					err = resolver.Resolve(&ref, &tgt)
 					So(err, ShouldBeNil)
 					So(tgt.Required, ShouldResemble, []string{"id", "name"})

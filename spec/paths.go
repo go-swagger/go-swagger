@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 // Paths holds the relative paths to the individual endpoints.
@@ -80,6 +80,6 @@ func (p Paths) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	concated := util.ConcatJSON(b1, b2)
+	concated := swag.ConcatJSON(b1, b2)
 	return concated, nil
 }

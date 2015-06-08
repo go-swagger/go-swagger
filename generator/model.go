@@ -11,7 +11,7 @@ import (
 	"text/template"
 
 	"github.com/casualjim/go-swagger/spec"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 var (
@@ -82,7 +82,7 @@ type modelGenerator struct {
 func (m *modelGenerator) Generate() error {
 	mod := makeCodegenModel(m.Name, m.Target, m.Model, m.SpecDoc)
 	if m.DumpData {
-		bb, _ := json.MarshalIndent(util.ToDynamicJSON(mod), "", " ")
+		bb, _ := json.MarshalIndent(swag.ToDynamicJSON(mod), "", " ")
 		fmt.Fprintln(os.Stdout, string(bb))
 		return nil
 	}
@@ -136,13 +136,13 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 				break
 			}
 		}
-		props[util.ToJSONName(pn)] = makeGenModelProperty(
+		props[swag.ToJSONName(pn)] = makeGenModelProperty(
 			"\""+pn+"\"",
-			util.ToJSONName(pn),
-			util.ToGoName(pn),
+			swag.ToJSONName(pn),
+			swag.ToGoName(pn),
 			receiver,
 			"i",
-			receiver+"."+util.ToGoName(pn),
+			receiver+"."+swag.ToGoName(pn),
 			p,
 			required)
 	}
@@ -170,13 +170,13 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 
 	return &genModel{
 		Package:        filepath.Base(pkg),
-		ClassName:      util.ToGoName(name),
-		Name:           util.ToJSONName(name),
+		ClassName:      swag.ToGoName(name),
+		Name:           swag.ToJSONName(name),
 		ReceiverName:   receiver,
 		Properties:     properties,
 		Description:    schema.Description,
-		DocString:      modelDocString(util.ToGoName(name), schema.Description),
-		HumanClassName: util.ToHumanNameLower(util.ToGoName(name)),
+		DocString:      modelDocString(swag.ToGoName(name), schema.Description),
+		HumanClassName: swag.ToHumanNameLower(swag.ToGoName(name)),
 		HasValidations: hasValidations,
 	}
 }

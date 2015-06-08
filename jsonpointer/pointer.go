@@ -32,7 +32,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 const (
@@ -97,12 +97,12 @@ func (p *Pointer) parse(jsonPointerString string) error {
 
 // Get uses the pointer to retrieve a value from a JSON document
 func (p *Pointer) Get(document interface{}) (interface{}, reflect.Kind, error) {
-	return p.get(document, util.DefaultJSONNameProvider)
+	return p.get(document, swag.DefaultJSONNameProvider)
 }
 
 // GetForToken gets a value for a json pointer token 1 level deep
 func GetForToken(document interface{}, decodedToken string) (interface{}, reflect.Kind, error) {
-	return getSingleImpl(document, decodedToken, util.DefaultJSONNameProvider)
+	return getSingleImpl(document, decodedToken, swag.DefaultJSONNameProvider)
 }
 
 func isZero(data reflect.Value) bool {
@@ -113,7 +113,7 @@ func isZero(data reflect.Value) bool {
 	return reflect.DeepEqual(data.Interface(), reflect.Zero(tpe).Interface())
 }
 
-func getSingleImpl(node interface{}, decodedToken string, nameProvider *util.NameProvider) (interface{}, reflect.Kind, error) {
+func getSingleImpl(node interface{}, decodedToken string, nameProvider *swag.NameProvider) (interface{}, reflect.Kind, error) {
 	kind := reflect.Invalid
 	rValue := reflect.Indirect(reflect.ValueOf(node))
 	kind = rValue.Kind()
@@ -161,10 +161,10 @@ func getSingleImpl(node interface{}, decodedToken string, nameProvider *util.Nam
 
 }
 
-func (p *Pointer) get(node interface{}, nameProvider *util.NameProvider) (interface{}, reflect.Kind, error) {
+func (p *Pointer) get(node interface{}, nameProvider *swag.NameProvider) (interface{}, reflect.Kind, error) {
 
 	if nameProvider == nil {
-		nameProvider = util.DefaultJSONNameProvider
+		nameProvider = swag.DefaultJSONNameProvider
 	}
 
 	kind := reflect.Invalid

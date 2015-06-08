@@ -11,7 +11,7 @@ import (
 	"text/template"
 
 	"github.com/casualjim/go-swagger/spec"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 var (
@@ -95,8 +95,6 @@ func (o *operationGenerator) Generate() error {
 	// the user specified package serves as root for generating the directory structure
 	var operations []genOperation
 	authed := len(o.SecurityRequirements) > 0
-	// bb, _ := json.MarshalIndent(util.ToDynamicJSON(o), "", " ")
-	// fmt.Println(string(bb))
 	for _, tag := range o.Operation.Tags {
 		if len(o.Tags) == 0 {
 			operations = append(operations, makeCodegenOperation(o.Name, tag, o.ModelsPackage, o.Principal, o.Target, o.Operation, authed))
@@ -116,7 +114,7 @@ func (o *operationGenerator) Generate() error {
 
 	for _, op := range operations {
 		if o.DumpData {
-			bb, _ := json.MarshalIndent(util.ToDynamicJSON(op), "", " ")
+			bb, _ := json.MarshalIndent(swag.ToDynamicJSON(op), "", " ")
 			fmt.Fprintln(os.Stdout, string(bb))
 			continue
 		}
@@ -224,12 +222,12 @@ func makeCodegenOperation(name, pkg, modelsPkg, principal, target string, operat
 
 	return genOperation{
 		Package:              pkg,
-		ClassName:            util.ToGoName(name),
-		Name:                 util.ToJSONName(name),
+		ClassName:            swag.ToGoName(name),
+		Name:                 swag.ToJSONName(name),
 		Description:          operation.Description,
-		DocString:            operationDocString(util.ToGoName(name), operation),
+		DocString:            operationDocString(swag.ToGoName(name), operation),
 		ReceiverName:         receiver,
-		HumanClassName:       util.ToHumanNameLower(util.ToGoName(name)),
+		HumanClassName:       swag.ToHumanNameLower(swag.ToGoName(name)),
 		DefaultImports:       []string{filepath.Join(baseImport(filepath.Join(target, "..")), modelsPkg)},
 		Params:               params,
 		Summary:              operation.Summary,
@@ -307,11 +305,11 @@ func makeCodegenParameter(receiver, modelsPkg string, param spec.Parameter) genP
 
 	if param.In == "body" {
 		ctx = makeGenValidations(modelValidations(
-			"\""+util.ToJSONName(param.Name)+"\"",
-			util.ToJSONName(param.Name),
-			util.ToGoName(param.Name),
+			"\""+swag.ToJSONName(param.Name)+"\"",
+			swag.ToJSONName(param.Name),
+			swag.ToGoName(param.Name),
 			"i",
-			receiver+"."+util.ToGoName(param.Name),
+			receiver+"."+swag.ToGoName(param.Name),
 			modelsPkg,
 			param.Required,
 			*param.Schema))
@@ -456,8 +454,8 @@ func paramItemValidations(path, paramName, accessor, indexVar, valueExpression s
 }
 
 func paramValidations(receiver string, param spec.Parameter) commonValidations {
-	accessor := util.ToGoName(param.Name)
-	paramName := util.ToJSONName(param.Name)
+	accessor := swag.ToGoName(param.Name)
+	paramName := swag.ToJSONName(param.Name)
 
 	tpe := typeForParameter(param)
 	_, isPrimitive := primitives[tpe]

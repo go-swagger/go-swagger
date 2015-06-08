@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/casualjim/go-swagger/jsonpointer"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 type operationProps struct {
@@ -75,6 +75,6 @@ func (o Operation) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	concated := util.ConcatJSON(b1, b2)
+	concated := swag.ConcatJSON(b1, b2)
 	return concated, nil
 }

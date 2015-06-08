@@ -7,7 +7,7 @@ import (
 
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 // Enum validates if the data is a member of the enum
@@ -134,7 +134,7 @@ func Minimum(path, in string, data, min float64, exclusive bool) *errors.Validat
 
 // MultipleOf validates if the provided number is a multiple of the factor
 func MultipleOf(path, in string, data, factor float64) *errors.Validation {
-	if !util.IsFloat64AJSONInteger(data / factor) {
+	if !swag.IsFloat64AJSONInteger(data / factor) {
 		return errors.NotMultipleOf(path, in, factor)
 	}
 	return nil

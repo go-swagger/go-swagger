@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/casualjim/go-swagger/spec"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 func typeForSchemaOrArray(schemas *spec.SchemaOrArray, modelsPkg string) string {
@@ -57,17 +57,17 @@ var zeroes = map[string]string{
 }
 
 var stringConverters = map[string]string{
-	"int8":    "util.ConvertInt8",
-	"int16":   "util.ConvertInt16",
-	"int32":   "util.ConvertInt32",
-	"int64":   "util.ConvertInt64",
-	"uint8":   "util.ConvertUint8",
-	"uint16":  "util.ConvertUint16",
-	"uint32":  "util.ConvertUint32",
-	"uint64":  "util.ConvertUint64",
-	"bool":    "util.ConvertBool",
-	"float32": "util.ConvertFloat32",
-	"float64": "util.ConvertFloat64",
+	"int8":    "swag.ConvertInt8",
+	"int16":   "swag.ConvertInt16",
+	"int32":   "swag.ConvertInt32",
+	"int64":   "swag.ConvertInt64",
+	"uint8":   "swag.ConvertUint8",
+	"uint16":  "swag.ConvertUint16",
+	"uint32":  "swag.ConvertUint32",
+	"uint64":  "swag.ConvertUint64",
+	"bool":    "swag.ConvertBool",
+	"float32": "swag.ConvertFloat32",
+	"float64": "swag.ConvertFloat64",
 }
 
 // typeMapping contais a mapping of format or type name to go type
@@ -149,7 +149,7 @@ func typeForSchema(schema *spec.Schema, modelsPkg string) string {
 		return "interface{}"
 	}
 	if schema.Ref.GetURL() != nil {
-		tn := util.ToGoName(filepath.Base(schema.Ref.GetURL().Fragment))
+		tn := swag.ToGoName(filepath.Base(schema.Ref.GetURL().Fragment))
 		if modelsPkg != "" {
 			return modelsPkg + "." + tn
 		}

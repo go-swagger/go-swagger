@@ -9,7 +9,7 @@ import (
 
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -264,8 +264,8 @@ func TestSliceConversion(t *testing.T) {
 		assert.Empty(t, tags)
 	}
 
-	assert.Nil(t, util.SplitByFormat("yada", "multi"))
-	assert.Nil(t, util.SplitByFormat("", ""))
+	assert.Nil(t, swag.SplitByFormat("yada", "multi"))
+	assert.Nil(t, swag.SplitByFormat("", ""))
 
 	categoriesField := val.FieldByName("Categories")
 	binder := &untypedParamBinder{

@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/casualjim/go-swagger/jsonpointer"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 // Extensions vendor specific extensions
@@ -105,7 +105,7 @@ func (i Info) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return util.ConcatJSON(b1, b2), nil
+	return swag.ConcatJSON(b1, b2), nil
 }
 
 // UnmarshalJSON marshal this from JSON

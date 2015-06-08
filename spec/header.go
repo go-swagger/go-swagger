@@ -3,7 +3,7 @@ package spec
 import (
 	"encoding/json"
 
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 type headerProps struct {
@@ -48,7 +48,7 @@ func (h Header) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return util.ConcatJSON(b1, b2, b3), nil
+	return swag.ConcatJSON(b1, b2, b3), nil
 }
 
 // UnmarshalJSON marshal this from JSON

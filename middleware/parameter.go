@@ -16,7 +16,7 @@ import (
 	"github.com/casualjim/go-swagger/middleware/httputils"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 const defaultMaxMemory = 32 << 20
@@ -291,7 +291,7 @@ func (p *untypedParamBinder) setFieldValue(target reflect.Value, defaultValue in
 			target.SetBool(defVal.Bool())
 			return nil
 		}
-		b, err := util.ConvertBool(data)
+		b, err := swag.ConvertBool(data)
 		if err != nil {
 			return err
 		}
@@ -391,7 +391,7 @@ func (p *untypedParamBinder) readFormattedSliceFieldValue(data string, target re
 		return nil, true, nil
 	}
 
-	return util.SplitByFormat(data, p.parameter.CollectionFormat), false, nil
+	return swag.SplitByFormat(data, p.parameter.CollectionFormat), false, nil
 }
 
 func (p *untypedParamBinder) setSliceFieldValue(target reflect.Value, defaultValue interface{}, data []string) error {

@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 // Responses is a container for the expected responses of an operation.
@@ -67,7 +67,7 @@ func (r Responses) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	concated := util.ConcatJSON(b1, b2)
+	concated := swag.ConcatJSON(b1, b2)
 	return concated, nil
 }
 

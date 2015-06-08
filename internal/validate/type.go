@@ -8,7 +8,7 @@ import (
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 type typeValidator struct {
@@ -134,7 +134,7 @@ func (t *typeValidator) Validate(data interface{}) *Result {
 		return result
 	}
 
-	isFloatInt := schType == "number" && util.IsFloat64AJSONInteger(val.Float()) && t.Type.Contains("integer")
+	isFloatInt := schType == "number" && swag.IsFloat64AJSONInteger(val.Float()) && t.Type.Contains("integer")
 	isIntFloat := schType == "integer" && t.Type.Contains("number")
 	if !(t.Type.Contains(schType) || isFloatInt || isIntFloat) {
 		return sErr(errors.InvalidType(t.Path, t.In, strings.Join(t.Type, ","), schType))

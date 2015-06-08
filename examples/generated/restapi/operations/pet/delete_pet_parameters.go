@@ -9,7 +9,7 @@ import (
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/middleware"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 	"github.com/casualjim/go-swagger/validation"
 )
 
@@ -61,7 +61,7 @@ func (o *DeletePetParams) validateAPIKey(formats strfmt.Registry) error {
 
 func (o *DeletePetParams) bindPetID(raw string, formats strfmt.Registry) error {
 
-	value, err := util.ConvertInt64(raw)
+	value, err := swag.ConvertInt64(raw)
 	if err != nil {
 		return errors.InvalidType("petId", "path", "int64", raw)
 	}

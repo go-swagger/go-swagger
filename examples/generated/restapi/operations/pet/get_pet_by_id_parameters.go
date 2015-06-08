@@ -9,7 +9,7 @@ import (
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/middleware"
 	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/util"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 // GetPetByIDParams contains all the bound params for the get pet by i d operation
@@ -36,7 +36,7 @@ func (o *GetPetByIDParams) BindRequest(r *http.Request, route *middleware.Matche
 
 func (o *GetPetByIDParams) bindPetID(raw string, formats strfmt.Registry) error {
 
-	value, err := util.ConvertInt64(raw)
+	value, err := swag.ConvertInt64(raw)
 	if err != nil {
 		return errors.InvalidType("petId", "path", "int64", raw)
 	}
