@@ -5,14 +5,14 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
+	"github.com/casualjim/go-swagger/httpkit"
 	swaggerspec "github.com/casualjim/go-swagger/spec"
 	"github.com/stretchr/testify/assert"
 )
 
-func stubAutenticator() swagger.Authenticator {
-	return swagger.AuthenticatorFunc(func(_ interface{}) (bool, interface{}, error) { return false, nil, nil })
+func stubAutenticator() httpkit.Authenticator {
+	return httpkit.AuthenticatorFunc(func(_ interface{}) (bool, interface{}, error) { return false, nil, nil })
 }
 
 type stubConsumer struct {
@@ -240,14 +240,14 @@ func TestUntypedAppValidation(t *testing.T) {
 	authenticators := api3.AuthenticatorsFor(definitions)
 	assert.Len(t, authenticators, 1)
 
-	opHandler := swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
+	opHandler := httpkit.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
 		return data, nil
 	})
 	d, err := opHandler.Handle(1)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, d)
 
-	authenticator := swagger.AuthenticatorFunc(func(params interface{}) (bool, interface{}, error) {
+	authenticator := httpkit.AuthenticatorFunc(func(params interface{}) (bool, interface{}, error) {
 		if str, ok := params.(string); ok {
 			return ok, str, nil
 		}

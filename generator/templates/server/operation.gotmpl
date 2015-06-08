@@ -44,7 +44,7 @@ func ({{.ReceiverName}} *{{.ClassName}}) ServeHTTP(rw http.ResponseWriter, r *ht
     {{.ReceiverName}}.Context.Respond(rw, r, route.Produces, route, err)
     return
   }
-  var principal {{if not (eq .Principal "interface{}")}}*{{end}}{{.Principal}} 
+  var principal {{if not (eq .Principal "interface{}")}}*{{end}}{{.Principal}}
   if uprinc != nil {
     principal = {{if eq .Principal "interface{}"}}uprinc{{else}}uprinc.(*{{.Principal}}) // it's ok this is really a {{.Principal}}{{end}}
   }

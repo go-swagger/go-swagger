@@ -105,7 +105,7 @@ for {{.IndexVar}} := 0; {{.IndexVar}} < {{.IndexVar}}sz; {{.IndexVar}}++ {
 
 import (
   "net/http"
-  "github.com/casualjim/go-swagger"
+  "github.com/casualjim/go-swagger/httpkit"
   "github.com/casualjim/go-swagger/swag"
   "github.com/casualjim/go-swagger/errors"
   "github.com/casualjim/go-swagger/httpkit/validate"
@@ -147,7 +147,7 @@ func ({{.ReceiverName}} *{{.ClassName}}Params) BindRequest(r *http.Request, rout
   if err != nil {
     res = append(res, errors.New(400, "reading file \"{{.ParamName}}\" failed: %v", err))
   } else {
-    {{.ReceiverName}}.{{.PropertyName}} = swagger.File{Data: {{.ParamName}}, Header: {{.ParamName}}Header}
+    {{.ReceiverName}}.{{.PropertyName}} = httpkit.File{Data: {{.ParamName}}, Header: {{.ParamName}}Header}
   }
   {{else}}if err := {{.ReceiverName}}.bind{{.PropertyName}}(r.FormValue({{.Path}}), route.Formats); err != nil {
     res = append(res, err)

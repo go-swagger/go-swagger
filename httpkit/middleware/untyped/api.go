@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
+	"github.com/casualjim/go-swagger/httpkit"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
 )
@@ -18,14 +18,14 @@ func NewAPI(spec *spec.Document) *API {
 		spec:            spec,
 		DefaultProduces: "application/json",
 		DefaultConsumes: "application/json",
-		consumers: map[string]swagger.Consumer{
-			"application/json": swagger.JSONConsumer(),
+		consumers: map[string]httpkit.Consumer{
+			"application/json": httpkit.JSONConsumer(),
 		},
-		producers: map[string]swagger.Producer{
-			"application/json": swagger.JSONProducer(),
+		producers: map[string]httpkit.Producer{
+			"application/json": httpkit.JSONProducer(),
 		},
-		authenticators: make(map[string]swagger.Authenticator),
-		operations:     make(map[string]swagger.OperationHandler),
+		authenticators: make(map[string]httpkit.Authenticator),
+		operations:     make(map[string]httpkit.OperationHandler),
 		ServeError:     errors.ServeError,
 		Models:         make(map[string]func() interface{}),
 		formats:        strfmt.NewFormats(),
@@ -37,10 +37,10 @@ type API struct {
 	spec            *spec.Document
 	DefaultProduces string
 	DefaultConsumes string
-	consumers       map[string]swagger.Consumer
-	producers       map[string]swagger.Producer
-	authenticators  map[string]swagger.Authenticator
-	operations      map[string]swagger.OperationHandler
+	consumers       map[string]httpkit.Consumer
+	producers       map[string]httpkit.Producer
+	authenticators  map[string]httpkit.Authenticator
+	operations      map[string]httpkit.OperationHandler
 	ServeError      func(http.ResponseWriter, *http.Request, error)
 	Models          map[string]func() interface{}
 	formats         strfmt.Registry
@@ -57,34 +57,34 @@ func (d *API) RegisterFormat(name string, format strfmt.Format, validator strfmt
 }
 
 // RegisterAuth registers an auth handler in this api
-func (d *API) RegisterAuth(scheme string, handler swagger.Authenticator) {
+func (d *API) RegisterAuth(scheme string, handler httpkit.Authenticator) {
 	d.authenticators[scheme] = handler
 }
 
 // RegisterConsumer registers a consumer for a media type.
-func (d *API) RegisterConsumer(mediaType string, handler swagger.Consumer) {
+func (d *API) RegisterConsumer(mediaType string, handler httpkit.Consumer) {
 	d.consumers[strings.ToLower(mediaType)] = handler
 }
 
 // RegisterProducer registers a producer for a media type
-func (d *API) RegisterProducer(mediaType string, handler swagger.Producer) {
+func (d *API) RegisterProducer(mediaType string, handler httpkit.Producer) {
 	d.producers[strings.ToLower(mediaType)] = handler
 }
 
 // RegisterOperation registers an operation handler for an operation name
-func (d *API) RegisterOperation(operationID string, handler swagger.OperationHandler) {
+func (d *API) RegisterOperation(operationID string, handler httpkit.OperationHandler) {
 	d.operations[operationID] = handler
 }
 
 // OperationHandlerFor returns the operation handler for the specified id if it can be found
-func (d *API) OperationHandlerFor(operationID string) (swagger.OperationHandler, bool) {
+func (d *API) OperationHandlerFor(operationID string) (httpkit.OperationHandler, bool) {
 	h, ok := d.operations[operationID]
 	return h, ok
 }
 
 // ConsumersFor gets the consumers for the specified media types
-func (d *API) ConsumersFor(mediaTypes []string) map[string]swagger.Consumer {
-	result := make(map[string]swagger.Consumer)
+func (d *API) ConsumersFor(mediaTypes []string) map[string]httpkit.Consumer {
+	result := make(map[string]httpkit.Consumer)
 	for _, mt := range mediaTypes {
 		if consumer, ok := d.consumers[mt]; ok {
 			result[mt] = consumer
@@ -94,8 +94,8 @@ func (d *API) ConsumersFor(mediaTypes []string) map[string]swagger.Consumer {
 }
 
 // ProducersFor gets the producers for the specified media types
-func (d *API) ProducersFor(mediaTypes []string) map[string]swagger.Producer {
-	result := make(map[string]swagger.Producer)
+func (d *API) ProducersFor(mediaTypes []string) map[string]httpkit.Producer {
+	result := make(map[string]httpkit.Producer)
 	for _, mt := range mediaTypes {
 		if producer, ok := d.producers[mt]; ok {
 			result[mt] = producer
@@ -105,8 +105,8 @@ func (d *API) ProducersFor(mediaTypes []string) map[string]swagger.Producer {
 }
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
-func (d *API) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]swagger.Authenticator {
-	result := make(map[string]swagger.Authenticator)
+func (d *API) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]httpkit.Authenticator {
+	result := make(map[string]httpkit.Authenticator)
 	for k := range schemes {
 		if a, ok := d.authenticators[k]; ok {
 			result[k] = a

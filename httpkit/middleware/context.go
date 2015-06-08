@@ -3,7 +3,6 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/httpkit"
 	"github.com/casualjim/go-swagger/httpkit/middleware/untyped"
@@ -94,13 +93,13 @@ func (r *routableUntypedAPI) HandlerFor(operationID string) (http.Handler, bool)
 func (r *routableUntypedAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
 	return r.api.ServeError
 }
-func (r *routableUntypedAPI) ConsumersFor(mediaTypes []string) map[string]swagger.Consumer {
+func (r *routableUntypedAPI) ConsumersFor(mediaTypes []string) map[string]httpkit.Consumer {
 	return r.api.ConsumersFor(mediaTypes)
 }
-func (r *routableUntypedAPI) ProducersFor(mediaTypes []string) map[string]swagger.Producer {
+func (r *routableUntypedAPI) ProducersFor(mediaTypes []string) map[string]httpkit.Producer {
 	return r.api.ProducersFor(mediaTypes)
 }
-func (r *routableUntypedAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]swagger.Authenticator {
+func (r *routableUntypedAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]httpkit.Authenticator {
 	return r.api.AuthenticatorsFor(schemes)
 }
 func (r *routableUntypedAPI) Formats() strfmt.Registry {

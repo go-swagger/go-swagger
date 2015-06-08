@@ -6,7 +6,7 @@ package {{.Package}}
 import (
   "strings"
   "net/http"
-  "github.com/casualjim/go-swagger"
+  "github.com/casualjim/go-swagger/httpkit"
   "github.com/casualjim/go-swagger/spec"
   "github.com/casualjim/go-swagger/strfmt"
   "github.com/casualjim/go-swagger/httpkit/middleware"
@@ -40,10 +40,10 @@ type {{.AppName}}API struct {
   defaultConsumes string
   defaultProduces string
   {{range .Consumes}}// {{.ClassName}}Consumer registers a consumer for a "{{.MediaType}}" mime type
-  {{.ClassName}}Consumer swagger.Consumer
+  {{.ClassName}}Consumer httpkit.Consumer
   {{end}}
   {{range .Produces}}// {{.ClassName}}Producer registers a producer for a "{{.MediaType}}" mime type
-  {{.ClassName}}Producer swagger.Producer
+  {{.ClassName}}Producer httpkit.Producer
   {{end}}
   {{range .SecurityDefinitions}}
   {{if .IsBasicAuth}}// {{.ClassName}}Auth registers a function that takes username and password and returns a principal
@@ -129,9 +129,9 @@ func ({{.ReceiverName}} *{{.AppName}}API) ServeErrorFor(operationID string) func
   return {{.ReceiverName}}.ServeError
 }
 // AuthenticatorsFor gets the authenticators for the specified security schemes
-func ({{.ReceiverName}} *{{.AppName}}API) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]swagger.Authenticator {
+func ({{.ReceiverName}} *{{.AppName}}API) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]httpkit.Authenticator {
   {{if .SecurityDefinitions}}
-  result := make(map[string]swagger.Authenticator)
+  result := make(map[string]httpkit.Authenticator)
   for name, scheme := range schemes {
     switch name {
       {{range .SecurityDefinitions}}
@@ -148,9 +148,9 @@ func ({{.ReceiverName}} *{{.AppName}}API) AuthenticatorsFor(schemes map[string]s
 }
 
 // ConsumersFor gets the consumers for the specified media types
-func ({{.ReceiverName}} *{{.AppName}}API) ConsumersFor(mediaTypes []string) map[string]swagger.Consumer {
+func ({{.ReceiverName}} *{{.AppName}}API) ConsumersFor(mediaTypes []string) map[string]httpkit.Consumer {
   {{if .Consumes}}
-  result := make(map[string]swagger.Consumer)
+  result := make(map[string]httpkit.Consumer)
   for _, mt := range mediaTypes {
     switch mt {
       {{range .Consumes}}
@@ -168,9 +168,9 @@ func ({{.ReceiverName}} *{{.AppName}}API) ConsumersFor(mediaTypes []string) map[
 }
 
 // ProducersFor gets the producers for the specified media types
-func ({{.ReceiverName}} *{{.AppName}}API) ProducersFor(mediaTypes []string) map[string]swagger.Producer {
+func ({{.ReceiverName}} *{{.AppName}}API) ProducersFor(mediaTypes []string) map[string]httpkit.Producer {
   {{if.Produces}}
-  result := make(map[string]swagger.Producer)
+  result := make(map[string]httpkit.Producer)
   for _, mt := range mediaTypes {
     switch mt {
       {{range .Produces}}

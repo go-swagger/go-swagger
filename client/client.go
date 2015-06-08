@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/httpkit"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
@@ -17,8 +16,8 @@ import (
 // to make http requests based on a swagger specification.
 type Runtime struct {
 	DefaultMediaType string
-	Consumers        map[string]swagger.Consumer
-	Producers        map[string]swagger.Producer
+	Consumers        map[string]httpkit.Consumer
+	Producers        map[string]httpkit.Producer
 	Transport        http.Transport
 	Spec             *spec.Document
 	Host             string
@@ -31,11 +30,11 @@ type Runtime struct {
 func New(swaggerSpec *spec.Document) *Runtime {
 	var rt Runtime
 	rt.DefaultMediaType = "application/json"
-	rt.Consumers = map[string]swagger.Consumer{
-		"application/json": swagger.JSONConsumer(),
+	rt.Consumers = map[string]httpkit.Consumer{
+		"application/json": httpkit.JSONConsumer(),
 	}
-	rt.Producers = map[string]swagger.Producer{
-		"application/json": swagger.JSONProducer(),
+	rt.Producers = map[string]httpkit.Producer{
+		"application/json": httpkit.JSONProducer(),
 	}
 	return &rt
 }

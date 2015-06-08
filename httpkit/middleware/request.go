@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
+	"github.com/casualjim/go-swagger/httpkit"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
 )
@@ -33,7 +33,7 @@ func newUntypedRequestBinder(parameters map[string]spec.Parameter, spec *spec.Sw
 }
 
 // Bind perform the databinding and validation
-func (o *untypedRequestBinder) Bind(request *http.Request, routeParams RouteParams, consumer swagger.Consumer, data interface{}) error {
+func (o *untypedRequestBinder) Bind(request *http.Request, routeParams RouteParams, consumer httpkit.Consumer, data interface{}) error {
 	val := reflect.Indirect(reflect.ValueOf(data))
 	isMap := val.Kind() == reflect.Map
 	var result []error

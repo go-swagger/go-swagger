@@ -3,8 +3,8 @@ package main
 import (
 	"io"
 
-	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
+	"github.com/casualjim/go-swagger/httpkit"
 
 	"github.com/casualjim/go-swagger/examples/generated/models"
 	"github.com/casualjim/go-swagger/examples/generated/restapi/operations"
@@ -19,15 +19,15 @@ func configureAPI(api *operations.SwaggerPetstoreAPI) {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
-	api.JSONConsumer = swagger.JSONConsumer()
+	api.JSONConsumer = httpkit.JSONConsumer()
 
-	api.XMLConsumer = swagger.ConsumerFunc(func(r io.Reader, target interface{}) error {
+	api.XMLConsumer = httpkit.ConsumerFunc(func(r io.Reader, target interface{}) error {
 		return errors.NotImplemented("xml consumer has not yet been implemented")
 	})
 
-	api.JSONProducer = swagger.JSONProducer()
+	api.JSONProducer = httpkit.JSONProducer()
 
-	api.XMLProducer = swagger.ProducerFunc(func(w io.Writer, data interface{}) error {
+	api.XMLProducer = httpkit.ProducerFunc(func(w io.Writer, data interface{}) error {
 		return errors.NotImplemented("xml producer has not yet been implemented")
 	})
 

@@ -7,8 +7,8 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
+	"github.com/casualjim/go-swagger/httpkit"
 	"github.com/casualjim/go-swagger/httpkit/middleware"
 	"github.com/casualjim/go-swagger/httpkit/middleware/untyped"
 	"github.com/casualjim/go-swagger/spec"
@@ -32,12 +32,12 @@ func NewPetstore() (http.Handler, error) {
 	return middleware.Serve(spec, api), nil
 }
 
-var getAllPets = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
+var getAllPets = httpkit.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
 	fmt.Println("getAllPets")
 	pretty.Println(data)
 	return pets, nil
 })
-var createPet = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
+var createPet = httpkit.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
 	fmt.Println("createPet")
 	pretty.Println(data)
 	body := data.(map[string]interface{})["pet"]
@@ -49,7 +49,7 @@ var createPet = swagger.OperationHandlerFunc(func(data interface{}) (interface{}
 	return body, nil
 })
 
-var deletePet = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
+var deletePet = httpkit.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
 	fmt.Println("deletePet")
 	pretty.Println(data)
 	id := data.(map[string]interface{})["id"].(int64)
@@ -57,7 +57,7 @@ var deletePet = swagger.OperationHandlerFunc(func(data interface{}) (interface{}
 	return nil, nil
 })
 
-var getPetByID = swagger.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
+var getPetByID = httpkit.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
 	fmt.Println("getPetByID")
 	pretty.Println(data)
 	id := data.(map[string]interface{})["id"].(int64)

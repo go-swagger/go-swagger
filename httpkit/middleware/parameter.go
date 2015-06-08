@@ -10,7 +10,6 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/httpkit"
 	"github.com/casualjim/go-swagger/internal/validate"
@@ -90,7 +89,7 @@ func (p *untypedParamBinder) typeForSchema(tpe, format string, items *spec.Items
 		return reflect.MakeSlice(reflect.SliceOf(itemsType), 0, 0).Type()
 
 	case "file":
-		return reflect.TypeOf(&swagger.File{}).Elem()
+		return reflect.TypeOf(&httpkit.File{}).Elem()
 
 	case "object":
 		return reflect.TypeOf(map[string]interface{}{})
@@ -123,7 +122,7 @@ func (p *untypedParamBinder) readValue(values interface{}, target reflect.Value)
 	return []string{v}, false, nil
 }
 
-func (p *untypedParamBinder) Bind(request *http.Request, routeParams RouteParams, consumer swagger.Consumer, target reflect.Value) error {
+func (p *untypedParamBinder) Bind(request *http.Request, routeParams RouteParams, consumer httpkit.Consumer, target reflect.Value) error {
 	// fmt.Println("binding", p.name, "as", p.Type())
 	switch p.parameter.In {
 	case "query":
@@ -191,7 +190,7 @@ func (p *untypedParamBinder) Bind(request *http.Request, routeParams RouteParams
 			if err != nil {
 				return errors.NewParseError(p.Name, p.parameter.In, "", err)
 			}
-			target.Set(reflect.ValueOf(swagger.File{Data: file, Header: header}))
+			target.Set(reflect.ValueOf(httpkit.File{Data: file, Header: header}))
 			return nil
 		}
 

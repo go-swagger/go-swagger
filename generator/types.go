@@ -18,7 +18,7 @@ func typeForSchemaOrArray(schemas *spec.SchemaOrArray, modelsPkg string) string 
 var goImports = map[string]string{
 	"inf.Dec":   "speter.net/go/exp/math/dec/inf",
 	"big.Int":   "math/big",
-	"swagger.*": "github.com/casualjim/go-swagger",
+	"swagger.*": "github.com/casualjim/go-swagger/httpkit",
 }
 
 var zeroes = map[string]string{
@@ -108,7 +108,7 @@ var typeMapping = map[string]string{
 	"number":     "float64",
 	"integer":    "int64",
 	"boolean":    "bool",
-	"file":       "swagger.File",
+	"file":       "httpkit.File",
 }
 
 // swaggerTypeMapping contains a mapping from go type to swagger type or format

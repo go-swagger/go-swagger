@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
+	"github.com/casualjim/go-swagger/httpkit"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/gorilla/context"
@@ -72,9 +72,9 @@ func newRouter(ctx *Context, next http.Handler) http.Handler {
 type RoutableAPI interface {
 	HandlerFor(string) (http.Handler, bool)
 	ServeErrorFor(string) func(http.ResponseWriter, *http.Request, error)
-	ConsumersFor([]string) map[string]swagger.Consumer
-	ProducersFor([]string) map[string]swagger.Producer
-	AuthenticatorsFor(map[string]spec.SecurityScheme) map[string]swagger.Authenticator
+	ConsumersFor([]string) map[string]httpkit.Consumer
+	ProducersFor([]string) map[string]httpkit.Producer
+	AuthenticatorsFor(map[string]spec.SecurityScheme) map[string]httpkit.Authenticator
 	Formats() strfmt.Registry
 	DefaultProduces() string
 	DefaultConsumes() string
@@ -124,22 +124,22 @@ type routeEntry struct {
 	BasePath       string
 	Operation      *spec.Operation
 	Consumes       []string
-	Consumers      map[string]swagger.Consumer
+	Consumers      map[string]httpkit.Consumer
 	Produces       []string
-	Producers      map[string]swagger.Producer
+	Producers      map[string]httpkit.Producer
 	Parameters     map[string]spec.Parameter
 	Handler        http.Handler
 	Formats        strfmt.Registry
 	Binder         *untypedRequestBinder
-	Authenticators map[string]swagger.Authenticator
+	Authenticators map[string]httpkit.Authenticator
 }
 
 // MatchedRoute represents the route that was matched in this request
 type MatchedRoute struct {
 	routeEntry
 	Params   RouteParams
-	Consumer swagger.Consumer
-	Producer swagger.Producer
+	Consumer httpkit.Consumer
+	Producer httpkit.Producer
 }
 
 func (d *defaultRouter) Lookup(method, path string) (*MatchedRoute, bool) {

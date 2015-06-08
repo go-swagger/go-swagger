@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/casualjim/go-swagger"
+	"github.com/casualjim/go-swagger/httpkit"
 	"github.com/casualjim/go-swagger/httpkit/middleware"
 	"github.com/casualjim/go-swagger/httpkit/security"
 	"github.com/casualjim/go-swagger/spec"
@@ -44,14 +44,14 @@ type SwaggerPetstoreAPI struct {
 	defaultConsumes string
 	defaultProduces string
 	// JSONConsumer registers a consumer for a "application/json" mime type
-	JSONConsumer swagger.Consumer
+	JSONConsumer httpkit.Consumer
 	// XMLConsumer registers a consumer for a "application/xml" mime type
-	XMLConsumer swagger.Consumer
+	XMLConsumer httpkit.Consumer
 
 	// JSONProducer registers a producer for a "application/json" mime type
-	JSONProducer swagger.Producer
+	JSONProducer httpkit.Producer
 	// XMLProducer registers a producer for a "application/xml" mime type
-	XMLProducer swagger.Producer
+	XMLProducer httpkit.Producer
 
 	// APIKeyAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key apiKey provided in the header
@@ -255,9 +255,9 @@ func (s *SwaggerPetstoreAPI) ServeErrorFor(operationID string) func(http.Respons
 }
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
-func (s *SwaggerPetstoreAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]swagger.Authenticator {
+func (s *SwaggerPetstoreAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]httpkit.Authenticator {
 
-	result := make(map[string]swagger.Authenticator)
+	result := make(map[string]httpkit.Authenticator)
 	for name, scheme := range schemes {
 		switch name {
 
@@ -272,9 +272,9 @@ func (s *SwaggerPetstoreAPI) AuthenticatorsFor(schemes map[string]spec.SecurityS
 }
 
 // ConsumersFor gets the consumers for the specified media types
-func (s *SwaggerPetstoreAPI) ConsumersFor(mediaTypes []string) map[string]swagger.Consumer {
+func (s *SwaggerPetstoreAPI) ConsumersFor(mediaTypes []string) map[string]httpkit.Consumer {
 
-	result := make(map[string]swagger.Consumer)
+	result := make(map[string]httpkit.Consumer)
 	for _, mt := range mediaTypes {
 		switch mt {
 
@@ -291,9 +291,9 @@ func (s *SwaggerPetstoreAPI) ConsumersFor(mediaTypes []string) map[string]swagge
 }
 
 // ProducersFor gets the producers for the specified media types
-func (s *SwaggerPetstoreAPI) ProducersFor(mediaTypes []string) map[string]swagger.Producer {
+func (s *SwaggerPetstoreAPI) ProducersFor(mediaTypes []string) map[string]httpkit.Producer {
 
-	result := make(map[string]swagger.Producer)
+	result := make(map[string]httpkit.Producer)
 	for _, mt := range mediaTypes {
 		switch mt {
 

@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
+	"github.com/casualjim/go-swagger/httpkit"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/casualjim/go-swagger/swag"
@@ -36,7 +36,7 @@ func (t *typeValidator) schemaInfoForType(data interface{}) (string, string) {
 		return "string", "date"
 	case strfmt.DateTime, *strfmt.DateTime:
 		return "string", "datetime"
-	case swagger.File, *swagger.File:
+	case httpkit.File, *httpkit.File:
 		return "file", ""
 	case strfmt.URI, *strfmt.URI:
 		return "string", "uri"

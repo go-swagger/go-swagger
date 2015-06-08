@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/casualjim/go-swagger"
+	"github.com/casualjim/go-swagger/httpkit"
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/stretchr/testify/assert"
@@ -201,7 +201,7 @@ func TestRequestBindingDefaultValue(t *testing.T) {
 	binder := newUntypedRequestBinder(op3, new(spec.Swagger), strfmt.Default)
 
 	data := make(map[string]interface{})
-	err := binder.Bind(req, RouteParams(nil), swagger.JSONConsumer(), &data)
+	err := binder.Bind(req, RouteParams(nil), httpkit.JSONConsumer(), &data)
 	assert.NoError(t, err)
 	assert.Equal(t, defaults["id"], data["id"])
 	assert.Equal(t, name, data["name"])
@@ -235,13 +235,13 @@ func TestRequestBindingForInvalid(t *testing.T) {
 	req, _ = http.NewRequest("POST", "http://localhost:8002/hello/1?name=the-name", bytes.NewBuffer([]byte(`{"name":"toby","age":32}`)))
 	req.Header.Set("Content-Type", "application(")
 	data := jsonRequestParams{}
-	err = binder.Bind(req, RouteParams([]RouteParam{{"id", "1"}}), swagger.JSONConsumer(), &data)
+	err = binder.Bind(req, RouteParams([]RouteParam{{"id", "1"}}), httpkit.JSONConsumer(), &data)
 	assert.Error(t, err)
 
 	req, _ = http.NewRequest("POST", "http://localhost:8002/hello/1?name=the-name", bytes.NewBuffer([]byte(`{]`)))
 	req.Header.Set("Content-Type", "application/json")
 	data = jsonRequestParams{}
-	err = binder.Bind(req, RouteParams([]RouteParam{{"id", "1"}}), swagger.JSONConsumer(), &data)
+	err = binder.Bind(req, RouteParams([]RouteParam{{"id", "1"}}), httpkit.JSONConsumer(), &data)
 	assert.Error(t, err)
 
 	invalidMultiParam := spec.HeaderParam("tags").CollectionOf(new(spec.Items), "multi")
@@ -251,7 +251,7 @@ func TestRequestBindingForInvalid(t *testing.T) {
 	req, _ = http.NewRequest("POST", "http://localhost:8002/hello/1?name=the-name", bytes.NewBuffer([]byte(`{}`)))
 	req.Header.Set("Content-Type", "application/json")
 	data = jsonRequestParams{}
-	err = binder.Bind(req, RouteParams([]RouteParam{{"id", "1"}}), swagger.JSONConsumer(), &data)
+	err = binder.Bind(req, RouteParams([]RouteParam{{"id", "1"}}), httpkit.JSONConsumer(), &data)
 	assert.Error(t, err)
 
 	invalidMultiParam = spec.PathParam("").CollectionOf(new(spec.Items), "multi")
@@ -262,7 +262,7 @@ func TestRequestBindingForInvalid(t *testing.T) {
 	req, _ = http.NewRequest("POST", "http://localhost:8002/hello/1?name=the-name", bytes.NewBuffer([]byte(`{}`)))
 	req.Header.Set("Content-Type", "application/json")
 	data = jsonRequestParams{}
-	err = binder.Bind(req, RouteParams([]RouteParam{{"id", "1"}}), swagger.JSONConsumer(), &data)
+	err = binder.Bind(req, RouteParams([]RouteParam{{"id", "1"}}), httpkit.JSONConsumer(), &data)
 	assert.Error(t, err)
 
 	invalidInParam := spec.HeaderParam("tags").Typed("string", "")
@@ -273,7 +273,7 @@ func TestRequestBindingForInvalid(t *testing.T) {
 	req, _ = http.NewRequest("POST", "http://localhost:8002/hello/1?name=the-name", bytes.NewBuffer([]byte(`{}`)))
 	req.Header.Set("Content-Type", "application/json")
 	data = jsonRequestParams{}
-	err = binder.Bind(req, RouteParams([]RouteParam{{"id", "1"}}), swagger.JSONConsumer(), &data)
+	err = binder.Bind(req, RouteParams([]RouteParam{{"id", "1"}}), httpkit.JSONConsumer(), &data)
 	assert.Error(t, err)
 }
 
@@ -306,7 +306,7 @@ func TestRequestBindingForValid(t *testing.T) {
 		req.Header.Set("X-Request-Id", "1325959595")
 
 		data := jsonRequestParams{}
-		err := binder.Bind(req, RouteParams([]RouteParam{{"id", "1"}}), swagger.JSONConsumer(), &data)
+		err := binder.Bind(req, RouteParams([]RouteParam{{"id", "1"}}), httpkit.JSONConsumer(), &data)
 
 		expected := jsonRequestParams{
 			ID:        1,
@@ -328,7 +328,7 @@ func TestRequestBindingForValid(t *testing.T) {
 	req.Header.Set("X-Request-Id", "1325959595")
 
 	data2 := jsonRequestPtr{}
-	err := binder.Bind(req, []RouteParam{{"id", "1"}}, swagger.JSONConsumer(), &data2)
+	err := binder.Bind(req, []RouteParam{{"id", "1"}}, httpkit.JSONConsumer(), &data2)
 
 	expected2 := jsonRequestPtr{
 		Friend: &friend{"toby", 32},
@@ -347,7 +347,7 @@ func TestRequestBindingForValid(t *testing.T) {
 	op2 := parametersForJSONRequestSliceParams("")
 	binder = newUntypedRequestBinder(op2, new(spec.Swagger), strfmt.Default)
 	data3 := jsonRequestSlice{}
-	err = binder.Bind(req, []RouteParam{{"id", "1"}}, swagger.JSONConsumer(), &data3)
+	err = binder.Bind(req, []RouteParam{{"id", "1"}}, httpkit.JSONConsumer(), &data3)
 
 	expected3 := jsonRequestSlice{
 		Friend: []friend{{"toby", 32}},
@@ -380,7 +380,7 @@ func TestFormUpload(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	data := formRequest{}
-	res := binder.Bind(req, nil, swagger.JSONConsumer(), &data)
+	res := binder.Bind(req, nil, httpkit.JSONConsumer(), &data)
 	assert.NoError(t, res)
 	assert.Equal(t, "the-name", data.Name)
 	assert.Equal(t, 32, data.Age)
@@ -389,12 +389,12 @@ func TestFormUpload(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	data = formRequest{}
-	assert.Error(t, binder.Bind(req, nil, swagger.JSONConsumer(), &data))
+	assert.Error(t, binder.Bind(req, nil, httpkit.JSONConsumer(), &data))
 }
 
 type fileRequest struct {
 	Name string       // body
-	File swagger.File // upload
+	File httpkit.File // upload
 }
 
 func paramsForFileUpload() *untypedRequestBinder {
@@ -423,7 +423,7 @@ func TestBindingFileUpload(t *testing.T) {
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	data := fileRequest{}
-	assert.NoError(t, binder.Bind(req, nil, swagger.JSONConsumer(), &data))
+	assert.NoError(t, binder.Bind(req, nil, httpkit.JSONConsumer(), &data))
 	assert.Equal(t, "the-name", data.Name)
 	assert.NotNil(t, data.File)
 	assert.NotNil(t, data.File.Header)
@@ -436,12 +436,12 @@ func TestBindingFileUpload(t *testing.T) {
 	req, _ = http.NewRequest("POST", urlStr, body)
 	req.Header.Set("Content-Type", "application/json")
 	data = fileRequest{}
-	assert.Error(t, binder.Bind(req, nil, swagger.JSONConsumer(), &data))
+	assert.Error(t, binder.Bind(req, nil, httpkit.JSONConsumer(), &data))
 
 	req, _ = http.NewRequest("POST", urlStr, body)
 	req.Header.Set("Content-Type", "application(")
 	data = fileRequest{}
-	assert.Error(t, binder.Bind(req, nil, swagger.JSONConsumer(), &data))
+	assert.Error(t, binder.Bind(req, nil, httpkit.JSONConsumer(), &data))
 
 	body = bytes.NewBuffer(nil)
 	writer = multipart.NewWriter(body)
@@ -455,13 +455,13 @@ func TestBindingFileUpload(t *testing.T) {
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	data = fileRequest{}
-	assert.Error(t, binder.Bind(req, nil, swagger.JSONConsumer(), &data))
+	assert.Error(t, binder.Bind(req, nil, httpkit.JSONConsumer(), &data))
 
 	req, _ = http.NewRequest("POST", urlStr, body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	req.MultipartReader()
 
 	data = fileRequest{}
-	assert.Error(t, binder.Bind(req, nil, swagger.JSONConsumer(), &data))
+	assert.Error(t, binder.Bind(req, nil, httpkit.JSONConsumer(), &data))
 
 }

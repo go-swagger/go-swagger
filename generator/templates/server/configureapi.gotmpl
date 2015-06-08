@@ -2,6 +2,7 @@ package main
 
 import (
   "github.com/casualjim/go-swagger/errors"
+  "github.com/casualjim/go-swagger/httpkit"
 
   {{range .DefaultImports}}{{printf "%q" .}}
   {{end}}
@@ -16,12 +17,12 @@ func configureAPI(api *{{.Package}}.{{.AppName}}API) {
   api.ServeError = errors.ServeError
 
   {{range .Consumes}}{{if .Implementation}}api.{{.ClassName}}Consumer = {{.Implementation}}()
-  {{else}}api.{{.ClassName}}Consumer = swagger.ConsumerFunc(func(r io.Reader, target interface{}) error {
+  {{else}}api.{{.ClassName}}Consumer = httpkit.ConsumerFunc(func(r io.Reader, target interface{}) error {
     return errors.NotImplemented("{{.Name}} consumer has not yet been implemented")
   }){{end}}
   {{end}}
   {{range .Produces}}{{if .Implementation}}api.{{.ClassName}}Producer = {{.Implementation}}()
-  {{else}}api.{{.ClassName}}Producer = swagger.ProducerFunc(func(w io.Writer, data interface{}) error {
+  {{else}}api.{{.ClassName}}Producer = httpkit.ProducerFunc(func(w io.Writer, data interface{}) error {
     return errors.NotImplemented("{{.Name}} producer has not yet been implemented")
   }){{end}}
   {{end}}

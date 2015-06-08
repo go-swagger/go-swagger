@@ -4,7 +4,6 @@ import (
 	"mime"
 	"net/http"
 
-	"github.com/casualjim/go-swagger"
 	"github.com/casualjim/go-swagger/errors"
 	"github.com/casualjim/go-swagger/httpkit"
 	"github.com/casualjim/go-swagger/swag"
@@ -36,7 +35,7 @@ type validation struct {
 
 type untypedBinder map[string]interface{}
 
-func (ub untypedBinder) BindRequest(r *http.Request, route *MatchedRoute, consumer swagger.Consumer) error {
+func (ub untypedBinder) BindRequest(r *http.Request, route *MatchedRoute, consumer httpkit.Consumer) error {
 	if err := route.Binder.Bind(r, route.Params, consumer, ub); err != nil {
 		return err
 	}

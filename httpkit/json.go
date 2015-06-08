@@ -1,4 +1,4 @@
-package swagger
+package httpkit
 
 import (
 	"encoding/json"

@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/casualjim/go-swagger"
+	"github.com/casualjim/go-swagger/httpkit"
 	"github.com/casualjim/go-swagger/strfmt"
 	"github.com/stretchr/testify/assert"
 )
@@ -25,7 +25,7 @@ func TestUntypedFormPost(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	data := make(map[string]interface{})
-	assert.NoError(t, binder.Bind(req, nil, swagger.JSONConsumer(), &data))
+	assert.NoError(t, binder.Bind(req, nil, httpkit.JSONConsumer(), &data))
 	assert.Equal(t, "the-name", data["name"])
 	assert.EqualValues(t, 32, data["age"])
 
@@ -33,7 +33,7 @@ func TestUntypedFormPost(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	data = make(map[string]interface{})
-	assert.Error(t, binder.Bind(req, nil, swagger.JSONConsumer(), &data))
+	assert.Error(t, binder.Bind(req, nil, httpkit.JSONConsumer(), &data))
 }
 
 func TestUntypedFileUpload(t *testing.T) {
@@ -53,11 +53,11 @@ func TestUntypedFileUpload(t *testing.T) {
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	data := make(map[string]interface{})
-	assert.NoError(t, binder.Bind(req, nil, swagger.JSONConsumer(), &data))
+	assert.NoError(t, binder.Bind(req, nil, httpkit.JSONConsumer(), &data))
 	assert.Equal(t, "the-name", data["name"])
 	assert.NotNil(t, data["file"])
-	assert.IsType(t, swagger.File{}, data["file"])
-	file := data["file"].(swagger.File)
+	assert.IsType(t, httpkit.File{}, data["file"])
+	file := data["file"].(httpkit.File)
 	assert.NotNil(t, file.Header)
 	assert.Equal(t, "plain-jane.txt", file.Header.Filename)
 
@@ -68,12 +68,12 @@ func TestUntypedFileUpload(t *testing.T) {
 	req, _ = http.NewRequest("POST", urlStr, body)
 	req.Header.Set("Content-Type", "application/json")
 	data = make(map[string]interface{})
-	assert.Error(t, binder.Bind(req, nil, swagger.JSONConsumer(), &data))
+	assert.Error(t, binder.Bind(req, nil, httpkit.JSONConsumer(), &data))
 
 	req, _ = http.NewRequest("POST", urlStr, body)
 	req.Header.Set("Content-Type", "application(")
 	data = make(map[string]interface{})
-	assert.Error(t, binder.Bind(req, nil, swagger.JSONConsumer(), &data))
+	assert.Error(t, binder.Bind(req, nil, httpkit.JSONConsumer(), &data))
 
 	body = bytes.NewBuffer(nil)
 	writer = multipart.NewWriter(body)
@@ -87,14 +87,14 @@ func TestUntypedFileUpload(t *testing.T) {
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	data = make(map[string]interface{})
-	assert.Error(t, binder.Bind(req, nil, swagger.JSONConsumer(), &data))
+	assert.Error(t, binder.Bind(req, nil, httpkit.JSONConsumer(), &data))
 
 	req, _ = http.NewRequest("POST", urlStr, body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	req.MultipartReader()
 
 	data = make(map[string]interface{})
-	assert.Error(t, binder.Bind(req, nil, swagger.JSONConsumer(), &data))
+	assert.Error(t, binder.Bind(req, nil, httpkit.JSONConsumer(), &data))
 }
 
 func TestUntypedBindingTypesForValid(t *testing.T) {
@@ -130,7 +130,7 @@ func TestUntypedBindingTypesForValid(t *testing.T) {
 	req.Header.Set("X-Request-Id", "19394858")
 
 	data := make(map[string]interface{})
-	err := binder.Bind(req, RouteParams([]RouteParam{{"id", "7575"}}), swagger.JSONConsumer(), &data)
+	err := binder.Bind(req, RouteParams([]RouteParam{{"id", "7575"}}), httpkit.JSONConsumer(), &data)
 	assert.NoError(t, err)
 	assert.Equal(t, id, data["id"])
 	assert.Equal(t, name, data["name"])
