@@ -21,17 +21,17 @@ http://godoc.org/github.com/casualjim/go-swagger
 
 Install:
 
-		go get -u github.com/casualjim/go-swagger/cmd/swagger
+    go get -u github.com/casualjim/go-swagger/cmd/swagger
 
 The implementation also provides a number of command line tools to help working with swagger.
 
 Currently there is a spec validator tool:
 
-		swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
+    swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
 
 To generate a server for a swagger spec document:
 
-		swagger generate server [-f ./swagger.json] [--principal [principal-name]] [--with-ui]
+    swagger generate server [-f ./swagger.json] -A [application-name] [--principal [principal-name]]
 
 To generate a swagger spec document for a go application:
 
