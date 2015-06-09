@@ -2,3 +2,4 @@
 package assets
 
 //go:generate go-bindata -pkg=assets -prefix=../schemas -ignore=.*\.md ../schemas/...
+//go:generate perl -pi -e s,Json,JSON,g bindata.go
