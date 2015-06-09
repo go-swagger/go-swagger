@@ -189,4 +189,15 @@ func TestFormats(t *testing.T) {
 	b, err = creditCard.MarshalText()
 	assert.NoError(t, err)
 	assert.Equal(t, []byte("9999-9999-9999-9999"), b)
+
+	password := Password("super secret stuff here")
+	str = string("even more secret")
+	b = []byte(str)
+	err = password.UnmarshalText(b)
+	assert.NoError(t, err)
+	assert.EqualValues(t, Password("even more secret"), string(b))
+
+	b, err = password.MarshalText()
+	assert.NoError(t, err)
+	assert.Equal(t, []byte("even more secret"), b)
 }

@@ -115,6 +115,9 @@ func init() {
 
 	b64 := Base64([]byte(nil))
 	Default.Add("byte", &b64, govalidator.IsBase64)
+
+	pw := Password("")
+	Default.Add("password", &pw, func(_ string) bool { return true })
 }
 
 var formatCheckers = map[string]Validator{
@@ -402,5 +405,22 @@ func (r RGBColor) MarshalText() ([]byte, error) {
 // UnmarshalText hydrates this instance from text
 func (r *RGBColor) UnmarshalText(data []byte) error { // validation is performed later on
 	*r = RGBColor(string(data))
+	return nil
+}
+
+// Password represents a password.
+// This has no validations and is mainly used as a marker for UI components.
+//
+// swagger:strfmt password
+type Password string
+
+// MarshalText turns this instance into text
+func (r Password) MarshalText() ([]byte, error) {
+	return []byte(string(r)), nil
+}
+
+// UnmarshalText hydrates this instance from text
+func (r *Password) UnmarshalText(data []byte) error { // validation is performed later on
+	*r = Password(string(data))
 	return nil
 }
