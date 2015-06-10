@@ -201,12 +201,17 @@ func makeCodegenOperation(name, pkg, modelsPkg, principal, target string, operat
 	var returnsPrimitive, returnsFormatted, returnsContainer, returnsMap bool
 	if operation.Responses != nil {
 		if r, ok := operation.Responses.StatusCodeResponses[200]; ok {
-			tn := typeForSchema(r.Schema, modelsPkg)
-			_, returnsPrimitive = primitives[tn]
-			_, returnsFormatted = customFormatters[tn]
-			returnsContainer = r.Schema.Items != nil || r.Schema.Type.Contains("array")
-			returnsMap = strings.HasPrefix(tn, "map")
-			successModel = tn
+			resolver := typeResolver{ModelsPackage: modelsPkg}
+			tn, err := resolver.ResolveSchema(r.Schema)
+			if err != nil {
+				// TODO: don't panic here, thread error through
+				panic(err)
+			}
+			_, returnsPrimitive = primitives[tn.GoType]
+			_, returnsFormatted = customFormatters[tn.GoType]
+			returnsContainer = tn.IsArray
+			returnsMap = tn.IsMap
+			successModel = tn.GoType
 		}
 	}
 
