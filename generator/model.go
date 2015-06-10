@@ -257,7 +257,6 @@ func makeGenModelProperty(params propGenBuildParams) (genModelProperty, error) {
 		}
 		items = []genModelProperty{
 			elProp,
-			//makeGenModelProperty("fmt.Sprintf(\"%s.%v\", "+path+", "+indexVar+")", paramName, accessor, receiver, indexVar+"i", valueExpression+"["+indexVar+"]", *params.Schema.Items.Schema, false),
 		}
 	} else if params.Schema.Items != nil {
 		for _, s := range params.Schema.Items.Schemas {
@@ -266,7 +265,6 @@ func makeGenModelProperty(params propGenBuildParams) (genModelProperty, error) {
 				return genModelProperty{}, err
 			}
 			items = append(items, elProp)
-			//items = append(items, makeGenModelProperty("fmt.Sprintf(\"%s.%v\", "+path+", "+indexVar+")", paramName, accessor, receiver, indexVar+"i", valueExpression+"["+indexVar+"]", s, false))
 		}
 	}
 
@@ -317,8 +315,11 @@ func makeGenModelProperty(params propGenBuildParams) (genModelProperty, error) {
 	}, nil
 }
 
-// TODO:
+// NOTE:
 // untyped data requires a cast somehow to the inner type
+// I wonder if this is still a problem after adding support for tuples
+// and anonymous structs. At that point there is very little that would
+// end up being cast to interface, and if it does it truly is the best guess
 
 type genModelProperty struct {
 	sharedParam
