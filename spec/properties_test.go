@@ -31,11 +31,11 @@ func TestPropertySerialization(t *testing.T) {
 		})
 		Convey("a int32 property", func() {
 			prop := Int32Property()
-			So(prop, ShouldSerializeJSON, `{"type":"number","format":"int32"}`)
+			So(prop, ShouldSerializeJSON, `{"type":"integer","format":"int32"}`)
 		})
 		Convey("a int64 property", func() {
 			prop := Int64Property()
-			So(prop, ShouldSerializeJSON, `{"type":"number","format":"int64"}`)
+			So(prop, ShouldSerializeJSON, `{"type":"integer","format":"int64"}`)
 		})
 		Convey("a string map property", func() {
 			prop := MapProperty(StringProperty())
@@ -43,7 +43,7 @@ func TestPropertySerialization(t *testing.T) {
 		})
 		Convey("an int32 map property", func() {
 			prop := MapProperty(Int32Property())
-			So(prop, ShouldSerializeJSON, `{"type":"object","additionalProperties":{"type":"number","format":"int32"}}`)
+			So(prop, ShouldSerializeJSON, `{"type":"object","additionalProperties":{"type":"integer","format":"int32"}}`)
 		})
 		Convey("a ref property", func() {
 			prop := RefProperty("Dog")
@@ -87,11 +87,11 @@ func TestPropertySerialization(t *testing.T) {
 		})
 		Convey("a int32 property", func() {
 			prop := Int32Property()
-			So(`{"format":"int32","type":"number"}`, ShouldParseJSON, prop)
+			So(`{"format":"int32","type":"integer"}`, ShouldParseJSON, prop)
 		})
 		Convey("a int64 property", func() {
 			prop := Int64Property()
-			So(`{"format":"int64","type":"number"}`, ShouldParseJSON, prop)
+			So(`{"format":"int64","type":"integer"}`, ShouldParseJSON, prop)
 		})
 		Convey("a string map property", func() {
 			prop := MapProperty(StringProperty())
@@ -99,7 +99,7 @@ func TestPropertySerialization(t *testing.T) {
 		})
 		Convey("an int32 map property", func() {
 			prop := MapProperty(Int32Property())
-			So(`{"additionalProperties":{"format":"int32","type":"number"},"type":"object"}`, ShouldParseJSON, prop)
+			So(`{"additionalProperties":{"format":"int32","type":"integer"},"type":"object"}`, ShouldParseJSON, prop)
 		})
 		Convey("a ref property", func() {
 			prop := RefProperty("Dog")
