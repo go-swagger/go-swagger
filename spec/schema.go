@@ -40,22 +40,22 @@ func Float32Property() *Schema {
 
 // Int8Property creates an int8 property
 func Int8Property() *Schema {
-	return &Schema{schemaProps: schemaProps{Type: []string{"number"}, Format: "int8"}}
+	return &Schema{schemaProps: schemaProps{Type: []string{"integer"}, Format: "int8"}}
 }
 
 // Int16Property creates an int16 property
 func Int16Property() *Schema {
-	return &Schema{schemaProps: schemaProps{Type: []string{"number"}, Format: "int16"}}
+	return &Schema{schemaProps: schemaProps{Type: []string{"integer"}, Format: "int16"}}
 }
 
 // Int32Property creates an int32 property
 func Int32Property() *Schema {
-	return &Schema{schemaProps: schemaProps{Type: []string{"number"}, Format: "int32"}}
+	return &Schema{schemaProps: schemaProps{Type: []string{"integer"}, Format: "int32"}}
 }
 
 // Int64Property creates an int64 property
 func Int64Property() *Schema {
-	return &Schema{schemaProps: schemaProps{Type: []string{"number"}, Format: "int64"}}
+	return &Schema{schemaProps: schemaProps{Type: []string{"integer"}, Format: "int64"}}
 }
 
 // StrFmtProperty creates a property for the named string format

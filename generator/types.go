@@ -187,19 +187,16 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema) (result resolvedType, 
 			return
 		}
 		if len(schema.Items.Schemas) > 0 {
+			result.IsArray = false
 			result.IsTuple = true
-			var tupleTypes []resolvedType
 			for _, esch := range schema.Items.Schemas {
 				et, er := t.ResolveSchema(&esch)
 				if er != nil {
 					err = er
 					return
 				}
-				tupleTypes = append(tupleTypes, et)
+				result.TupleTypes = append(result.TupleTypes, &et)
 			}
-			// TODO: build string for types, which are presumably anonymous structs
-			// for anything that's not a $ref
-			err = fmt.Errorf("tuples (arrays with multiple schema's) are not supported at the moment")
 			return
 		}
 		rt, er := t.ResolveSchema(schema.Items.Schema)
@@ -267,10 +264,11 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema) (result resolvedType, 
 }
 
 type resolvedType struct {
-	IsAnonymous     bool
-	IsArray         bool
-	IsMap           bool
-	IsInterface     bool
+	IsAnonymous bool
+	IsArray     bool
+	IsMap       bool
+	IsInterface bool
+	// A tuple gets rendered as an anonymous struct with P[index] as property name
 	IsTuple         bool
 	IsComplexObject bool
 
