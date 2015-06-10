@@ -150,6 +150,9 @@ func TestTypeResolver(t *testing.T) {
 			}
 		}
 
+		// tuple type (items with multiple schemas)
+		testTupleType(t, resolver)
+
 		// refs as additional properties
 		for _, val := range schRefVals {
 			sch := new(spec.Schema)
@@ -204,5 +207,36 @@ func testObjectTypes(t testing.TB, resolver *typeResolver, types ...string) {
 			assert.True(t, rt.ElementType.IsInterface)
 			assert.Equal(t, "interface{}", rt.ElementType.GoType)
 		}
+	}
+}
+
+func testTupleType(t testing.TB, resolver *typeResolver) {
+	parent := new(spec.Schema)
+	parent.Typed("array", "")
+	parent.Items = new(spec.SchemaOrArray)
+	parent.Items.Schemas = append(
+		parent.Items.Schemas,
+		*spec.StringProperty(),
+		*spec.Int64Property(),
+		*spec.Float64Property(),
+		*spec.BoolProperty(),
+		*spec.ArrayProperty(spec.StringProperty()),
+		*spec.RefProperty("#/definitions/Pet"),
+	)
+
+	rt, err := resolver.ResolveSchema(parent)
+	if assert.NoError(t, err) {
+		assert.False(t, rt.IsArray)
+		assert.True(t, rt.IsTuple)
+		assert.Len(t, rt.TupleTypes, 6)
+
+		assertPrimitiveResolve(t, "string", "", "string", *rt.TupleTypes[0])
+		assertPrimitiveResolve(t, "integer", "int64", "int64", *rt.TupleTypes[1])
+		assertPrimitiveResolve(t, "number", "double", "float64", *rt.TupleTypes[2])
+		assertPrimitiveResolve(t, "boolean", "", "bool", *rt.TupleTypes[3])
+		if assert.NotNil(t, rt.TupleTypes[4].ElementType) {
+			assertPrimitiveResolve(t, "string", "", "string", *rt.TupleTypes[4].ElementType)
+		}
+		assert.Equal(t, "models.Pet", rt.TupleTypes[5].GoType)
 	}
 }
