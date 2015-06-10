@@ -140,7 +140,7 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 			}
 		}
 
-		gmp, err := makeGenModelProperty2(propGenBuildParams{
+		gmp, err := makeGenModelProperty(propGenBuildParams{
 			Path:      "\"" + pn + "\"",
 			ParamName: swag.ToJSONName(pn),
 			Accessor:  swag.ToGoName(pn),
@@ -233,13 +233,13 @@ func (pg propGenBuildParams) NewSliceBranch(schema *spec.Schema) propGenBuildPar
 	return pg
 }
 
-func makeGenModelProperty2(params propGenBuildParams) (genModelProperty, error) {
+func makeGenModelProperty(params propGenBuildParams) (genModelProperty, error) {
 	// log.Printf("property: (path %s) (param %s) (accessor %s) (receiver %s) (indexVar %s) (expr %s) required %t", path, paramName, accessor, receiver, indexVar, valueExpression, required)
 	ex := ""
 	if params.Schema.Example != nil {
 		ex = fmt.Sprintf("%#v", params.Schema.Example)
 	}
-	validations, err := modelValidations2(params, false)
+	validations, err := modelValidations(params, false)
 	if err != nil {
 		return genModelProperty{}, err
 	}
@@ -251,7 +251,7 @@ func makeGenModelProperty2(params propGenBuildParams) (genModelProperty, error) 
 	if singleSchemaSlice {
 		ctx.HasSliceValidations = true
 
-		elProp, err := makeGenModelProperty2(params.NewSliceBranch(params.Schema.Items.Schema))
+		elProp, err := makeGenModelProperty(params.NewSliceBranch(params.Schema.Items.Schema))
 		if err != nil {
 			return genModelProperty{}, err
 		}
@@ -261,7 +261,7 @@ func makeGenModelProperty2(params propGenBuildParams) (genModelProperty, error) 
 		}
 	} else if params.Schema.Items != nil {
 		for _, s := range params.Schema.Items.Schemas {
-			elProp, err := makeGenModelProperty2(params.NewSliceBranch(&s))
+			elProp, err := makeGenModelProperty(params.NewSliceBranch(&s))
 			if err != nil {
 				return genModelProperty{}, err
 			}
@@ -276,7 +276,7 @@ func makeGenModelProperty2(params propGenBuildParams) (genModelProperty, error) 
 	hasAdditionalItems := allowsAdditionalItems && !singleSchemaSlice
 	var additionalItems *genModelProperty
 	if params.Schema.AdditionalItems != nil && params.Schema.AdditionalItems.Schema != nil {
-		it, err := makeGenModelProperty2(params.NewSliceBranch(params.Schema.AdditionalItems.Schema))
+		it, err := makeGenModelProperty(params.NewSliceBranch(params.Schema.AdditionalItems.Schema))
 		if err != nil {
 			return genModelProperty{}, err
 		}
@@ -339,7 +339,7 @@ type genModelProperty struct {
 	XMLName               string             //`json:"xmlName,omitempty"`
 }
 
-func modelValidations2(params propGenBuildParams, isAnonymous bool) (commonValidations, error) {
+func modelValidations(params propGenBuildParams, isAnonymous bool) (commonValidations, error) {
 	tpe, err := params.TypeResolver.ResolveSchema(&params.Schema, isAnonymous)
 	if err != nil {
 		return commonValidations{}, err
