@@ -9,13 +9,6 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
-func typeForSchemaOrArray(schemas *spec.SchemaOrArray, modelsPkg string) string {
-	if schemas == nil || len(schemas.Schemas) > 0 {
-		return "interface{}"
-	}
-	return typeForSchema(schemas.Schema, modelsPkg)
-}
-
 var goImports = map[string]string{
 	"inf.Dec":   "speter.net/go/exp/math/dec/inf",
 	"big.Int":   "math/big",
@@ -257,6 +250,8 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema) (result resolvedType, 
 		return
 	}
 	if schema.Type.Contains("object") || schema.Type.Contains("") || len(schema.Type) == 0 {
+		// TODO: if this schema has properties, build a map of property name to
+		//       resolved type, this should also flag the object as anonymous
 		result.GoType = "map[string]interface{}"
 		result.ElementType = &resolvedType{
 			IsInterface: true,
@@ -285,49 +280,6 @@ type resolvedType struct {
 	ElementType   *resolvedType
 	TupleTypes    []*resolvedType
 	PropertyTypes map[string]*resolvedType
-}
-
-func typeForSchema(schema *spec.Schema, modelsPkg string) string {
-	if schema == nil {
-		return "interface{}"
-	}
-	if schema.Ref.GetURL() != nil {
-		tn := swag.ToGoName(filepath.Base(schema.Ref.GetURL().Fragment))
-		if modelsPkg != "" {
-			return modelsPkg + "." + tn
-		}
-		return tn
-	}
-	if schema.Format != "" {
-		if tpe, ok := typeMapping[strings.Replace(schema.Format, "-", "", -1)]; ok {
-			return tpe
-		}
-	}
-	if schema.Type.Contains("array") {
-		return "[]" + typeForSchemaOrArray(schema.Items, modelsPkg)
-	}
-	if schema.Type.Contains("file") {
-		return typeMapping["file"]
-	}
-	if schema.Type.Contains("number") {
-		return typeMapping["number"]
-	}
-	if schema.Type.Contains("integer") {
-		return typeMapping["integer"]
-	}
-	if schema.Type.Contains("boolean") {
-		return typeMapping["boolean"]
-	}
-	if schema.Type.Contains("string") {
-		return "string"
-	}
-	if schema.AdditionalProperties != nil && schema.AdditionalProperties.Schema != nil {
-		return "map[string]" + typeForSchema(schema.AdditionalProperties.Schema, modelsPkg)
-	}
-	if schema.Type.Contains("object") || schema.Type.Contains("") || len(schema.Type) == 0 {
-		return "map[string]interface{}"
-	}
-	return "interface{}"
 }
 
 var primitives = map[string]struct{}{

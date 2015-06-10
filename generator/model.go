@@ -293,10 +293,17 @@ type genModelProperty struct {
 }
 
 func modelValidations(path, paramName, accessor, indexVar, valueExpression, pkg string, required bool, model spec.Schema) commonValidations {
-	tpe := typeForSchema(&model, pkg)
+	resolver := typeResolver{
+		ModelsPackage: pkg,
+	}
+	tpe, err := resolver.ResolveSchema(&model)
+	if err != nil {
+		// TODO: do not panic but forward error
+		panic(err)
+	}
 
-	_, isPrimitive := primitives[tpe]
-	_, isCustomFormatter := customFormatters[tpe]
+	_, isPrimitive := primitives[tpe.GoType]
+	_, isCustomFormatter := customFormatters[tpe.GoType]
 
 	return commonValidations{
 		propertyDescriptor: propertyDescriptor{
@@ -305,13 +312,13 @@ func modelValidations(path, paramName, accessor, indexVar, valueExpression, pkg 
 			ValueExpression:   valueExpression,
 			IndexVar:          indexVar,
 			Path:              path,
-			IsContainer:       model.Items != nil || model.Type.Contains("array"),
+			IsContainer:       tpe.IsArray,
 			IsPrimitive:       isPrimitive,
 			IsCustomFormatter: isCustomFormatter,
-			IsMap:             strings.HasPrefix(tpe, "map"),
+			IsMap:             tpe.IsMap,
 		},
 		Required:         required,
-		Type:             tpe,
+		Type:             tpe.GoType,
 		Format:           model.Format,
 		Default:          model.Default,
 		Maximum:          model.Maximum,
