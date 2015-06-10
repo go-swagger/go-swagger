@@ -132,12 +132,81 @@ func TestTypeResolver(t *testing.T) {
 			}
 		}
 
-		//for _, val := range schTypeVals {
-		//}
+		// primitives as additional properties
+		for _, val := range schTypeVals {
+			sch := new(spec.Schema)
 
-		// object definitions with additional properties
+			sch.Typed(val.Type, val.Format)
+			parent := new(spec.Schema)
+			parent.AdditionalProperties = new(spec.SchemaOrBool)
+			parent.AdditionalProperties.Schema = sch
+
+			rt, err := resolver.ResolveSchema(parent)
+			if assert.NoError(t, err) {
+				assert.True(t, rt.IsMap)
+				assert.Equal(t, "map[string]"+val.Expected, rt.GoType)
+				assert.Equal(t, "object", rt.SwaggerType)
+				if assert.NotNil(t, rt.ElementType) {
+					assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, *rt.ElementType)
+				}
+			}
+		}
+
+		// array of primitives as additional properties
+		for _, val := range schTypeVals {
+			sch := new(spec.Schema)
+
+			sch.Typed(val.Type, val.Format)
+			parent := new(spec.Schema)
+			parent.AdditionalProperties = new(spec.SchemaOrBool)
+			parent.AdditionalProperties.Schema = new(spec.Schema).CollectionOf(*sch)
+
+			rt, err := resolver.ResolveSchema(parent)
+			if assert.NoError(t, err) {
+				assert.True(t, rt.IsMap)
+				assert.Equal(t, "map[string][]"+val.Expected, rt.GoType)
+				assert.Equal(t, "object", rt.SwaggerType)
+				if assert.NotNil(t, rt.ElementType) {
+					et := rt.ElementType
+					assert.True(t, et.IsArray)
+					if assert.NotNil(t, et.ElementType) {
+						assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, *et.ElementType)
+					}
+				}
+			}
+		}
+
+		// refs as additional properties
+		for _, val := range schRefVals {
+			sch := new(spec.Schema)
+			sch.Ref, _ = spec.NewRef("#/definitions/" + val.Type)
+			parent := new(spec.Schema)
+			parent.AdditionalProperties = new(spec.SchemaOrBool)
+			parent.AdditionalProperties.Schema = sch
+
+			rt, err := resolver.ResolveSchema(parent)
+			if assert.NoError(t, err) {
+				assert.True(t, rt.IsMap)
+				assert.Equal(t, "map[string]"+val.Expected, rt.GoType)
+				assert.Equal(t, "object", rt.SwaggerType)
+			}
+		}
+
+		// very poor schema definitions (as in none)
+		testObjectTypes(t, resolver, "object", "")
+	}
+}
+
+func assertPrimitiveResolve(t testing.TB, tpe, tfmt, exp string, tr resolvedType) {
+	assert.Equal(t, tpe, tr.SwaggerType, fmt.Sprintf("expected %q (%q, %q) to for the swagger type but got %q", tpe, tfmt, exp, tr.SwaggerType))
+	assert.Equal(t, tfmt, tr.SwaggerFormat, fmt.Sprintf("expected %q (%q, %q) to for the swagger format but got %q", tfmt, tpe, exp, tr.SwaggerFormat))
+	assert.Equal(t, exp, tr.GoType, fmt.Sprintf("expected %q (%q, %q) to for the go type but got %q", exp, tpe, tfmt, tr.GoType))
+}
+
+func testObjectTypes(t testing.TB, resolver *typeResolver, types ...string) {
+	for _, tpe := range types {
 		sch := new(spec.Schema)
-		sch.Typed("object", "")
+		sch.Typed(tpe, "")
 		rt, err := resolver.ResolveSchema(sch)
 		if assert.NoError(t, err) {
 			assert.True(t, rt.IsMap)
@@ -150,10 +219,16 @@ func TestTypeResolver(t *testing.T) {
 			}
 		}
 	}
-}
+	sch := new(spec.Schema)
+	rt, err := resolver.ResolveSchema(sch)
+	if assert.NoError(t, err) {
+		assert.True(t, rt.IsMap)
+		assert.Equal(t, "map[string]interface{}", rt.GoType)
+		assert.Equal(t, "object", rt.SwaggerType)
 
-func assertPrimitiveResolve(t testing.TB, tpe, tfmt, exp string, tr resolvedType) {
-	assert.Equal(t, tpe, tr.SwaggerType, fmt.Sprintf("expected %q (%q, %q) to for the swagger type but got %q", tpe, tfmt, exp, tr.SwaggerType))
-	assert.Equal(t, tfmt, tr.SwaggerFormat, fmt.Sprintf("expected %q (%q, %q) to for the swagger format but got %q", tfmt, tpe, exp, tr.SwaggerFormat))
-	assert.Equal(t, exp, tr.GoType, fmt.Sprintf("expected %q (%q, %q) to for the go type but got %q", exp, tpe, tfmt, tr.GoType))
+		if assert.NotNil(t, rt.ElementType) {
+			assert.True(t, rt.ElementType.IsInterface)
+			assert.Equal(t, "interface{}", rt.ElementType.GoType)
+		}
+	}
 }
