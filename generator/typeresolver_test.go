@@ -65,7 +65,7 @@ func TestTypeResolver(t *testing.T) {
 			sch := new(spec.Schema)
 			sch.Typed(val.Type, val.Format)
 
-			rt, err := resolver.ResolveSchema(sch)
+			rt, err := resolver.ResolveSchema(sch, true)
 			if assert.NoError(t, err) {
 				assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, rt)
 			}
@@ -75,7 +75,7 @@ func TestTypeResolver(t *testing.T) {
 		for _, val := range schTypeVals {
 			var sch spec.Schema
 			sch.Typed(val.Type, val.Format)
-			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(sch))
+			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(sch), true)
 			if assert.NoError(t, err) && assert.True(t, rt.IsArray) && assert.NotNil(t, rt.ElementType) {
 				assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, *rt.ElementType)
 			}
@@ -86,9 +86,10 @@ func TestTypeResolver(t *testing.T) {
 			sch := new(spec.Schema)
 			sch.Ref, _ = spec.NewRef("#/definitions/" + val.Type)
 
-			rt, err := resolver.ResolveSchema(sch)
+			rt, err := resolver.ResolveSchema(sch, true)
 			if assert.NoError(t, err) {
 				assert.Equal(t, val.Expected, rt.GoType)
+				assert.False(t, rt.IsAnonymous)
 				assert.Equal(t, "object", rt.SwaggerType)
 			}
 		}
@@ -98,7 +99,7 @@ func TestTypeResolver(t *testing.T) {
 			sch := new(spec.Schema)
 			sch.Ref, _ = spec.NewRef("#/definitions/" + val.Type)
 
-			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(*sch))
+			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(*sch), true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsArray)
 				assert.Equal(t, val.Expected, rt.ElementType.GoType)
@@ -115,7 +116,7 @@ func TestTypeResolver(t *testing.T) {
 			parent.AdditionalProperties = new(spec.SchemaOrBool)
 			parent.AdditionalProperties.Schema = sch
 
-			rt, err := resolver.ResolveSchema(parent)
+			rt, err := resolver.ResolveSchema(parent, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsMap)
 				assert.Equal(t, "map[string]"+val.Expected, rt.GoType)
@@ -135,7 +136,7 @@ func TestTypeResolver(t *testing.T) {
 			parent.AdditionalProperties = new(spec.SchemaOrBool)
 			parent.AdditionalProperties.Schema = new(spec.Schema).CollectionOf(*sch)
 
-			rt, err := resolver.ResolveSchema(parent)
+			rt, err := resolver.ResolveSchema(parent, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsMap)
 				assert.Equal(t, "map[string][]"+val.Expected, rt.GoType)
@@ -161,13 +162,16 @@ func TestTypeResolver(t *testing.T) {
 			parent.AdditionalProperties = new(spec.SchemaOrBool)
 			parent.AdditionalProperties.Schema = sch
 
-			rt, err := resolver.ResolveSchema(parent)
+			rt, err := resolver.ResolveSchema(parent, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsMap)
 				assert.Equal(t, "map[string]"+val.Expected, rt.GoType)
 				assert.Equal(t, "object", rt.SwaggerType)
 			}
 		}
+
+		// anonymous structs should be accounted for
+		testAnonymousStruct(t, resolver)
 
 		// very poor schema definitions (as in none)
 		testObjectTypes(t, resolver, "object", "")
@@ -184,7 +188,7 @@ func testObjectTypes(t testing.TB, resolver *typeResolver, types ...string) {
 	for _, tpe := range types {
 		sch := new(spec.Schema)
 		sch.Typed(tpe, "")
-		rt, err := resolver.ResolveSchema(sch)
+		rt, err := resolver.ResolveSchema(sch, true)
 		if assert.NoError(t, err) {
 			assert.True(t, rt.IsMap)
 			assert.Equal(t, "map[string]interface{}", rt.GoType)
@@ -197,7 +201,7 @@ func testObjectTypes(t testing.TB, resolver *typeResolver, types ...string) {
 		}
 	}
 	sch := new(spec.Schema)
-	rt, err := resolver.ResolveSchema(sch)
+	rt, err := resolver.ResolveSchema(sch, true)
 	if assert.NoError(t, err) {
 		assert.True(t, rt.IsMap)
 		assert.Equal(t, "map[string]interface{}", rt.GoType)
@@ -224,7 +228,7 @@ func testTupleType(t testing.TB, resolver *typeResolver) {
 		*spec.RefProperty("#/definitions/Pet"),
 	)
 
-	rt, err := resolver.ResolveSchema(parent)
+	rt, err := resolver.ResolveSchema(parent, true)
 	if assert.NoError(t, err) {
 		assert.False(t, rt.IsArray)
 		assert.True(t, rt.IsTuple)
@@ -238,5 +242,22 @@ func testTupleType(t testing.TB, resolver *typeResolver) {
 			assertPrimitiveResolve(t, "string", "", "string", *rt.TupleTypes[4].ElementType)
 		}
 		assert.Equal(t, "models.Pet", rt.TupleTypes[5].GoType)
+	}
+}
+
+func testAnonymousStruct(t testing.TB, resolver *typeResolver) {
+	parent := new(spec.Schema)
+	parent.Typed("object", "")
+	parent.Properties = make(map[string]spec.Schema)
+	parent.Properties["name"] = *spec.StringProperty()
+	parent.Properties["age"] = *spec.Int32Property()
+
+	rt, err := resolver.ResolveSchema(parent, true)
+	if assert.NoError(t, err) {
+		assert.True(t, rt.IsAnonymous)
+		assert.True(t, rt.IsComplexObject)
+		assert.Len(t, rt.PropertyTypes, 2)
+		assertPrimitiveResolve(t, "string", "", "string", *rt.PropertyTypes["name"])
+		assertPrimitiveResolve(t, "integer", "int32", "int32", *rt.PropertyTypes["age"])
 	}
 }
