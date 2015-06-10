@@ -338,7 +338,7 @@ func makeCodegenParameter(receiver string, resolver *typeResolver, param spec.Pa
 			Required:     param.Required,
 			TypeResolver: resolver,
 		}
-		c, err := modelValidations2(bps, true)
+		c, err := modelValidations(bps, true)
 		if err != nil {
 			return genParameter{}, err
 		}
