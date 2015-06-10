@@ -21,7 +21,7 @@ securityDefinitions:
 
 info:
   version: "1.0.0"
-  title: Issue Tracker application for testing code generation
+  title: Issue Tracker API
   description: |
     This application implements a very simple issue tracker.
     It's implemented as an API which is described by this swagger spec document.
@@ -257,6 +257,9 @@ paths:
         201:
           description: Comment added
     get:
+      tags:
+        - tasks
+      operationId: getTaskComments
       summary: Gets the comments for a task
       description: |
         The comments require a size parameter.
@@ -286,6 +289,8 @@ paths:
       operationId: uploadTaskFile
       summary: Adds a file to a task.
       description: "The file can't be larger than **5MB**"
+      tags:
+        - tasks
       consumes:
         - multipart/form-data
       security:

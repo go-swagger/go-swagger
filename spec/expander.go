@@ -44,6 +44,20 @@ func (s *simpleCache) Set(uri string, data interface{}) {
 	s.store[uri] = data
 }
 
+// ResolveRef resolves a reference against a context root
+func ResolveRef(root interface{}, ref *Ref) (*Schema, error) {
+	resolver, err := defaultSchemaLoader(root, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := new(Schema)
+	if err := resolver.Resolve(ref, result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 type schemaLoader struct {
 	loadingRef  *Ref
 	startingRef *Ref
