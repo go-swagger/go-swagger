@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -50,6 +51,7 @@ var zeroes = map[string]string{
 	"strfmt.ISBN13":     "strfmt.ISBN13(\"\")",
 	"strfmt.CreditCard": "strfmt.CreditCard(\"\")",
 	"strfmt.SSN":        "strfmt.SSN(\"\")",
+	"strfmt.Password":   "strfmt.Password(\"\")",
 	"strfmt.HexColor":   "strfmt.HexColor(\"#000000\")",
 	"strfmt.RGBColor":   "strfmt.RGBColor(\"rgb(0,0,0)\")",
 	"strfmt.Base64":     "nil",
@@ -92,6 +94,7 @@ var typeMapping = map[string]string{
 	"hexcolor":   "strfmt.HexColor",
 	"rgbcolor":   "strfmt.RGBColor",
 	"duration":   "strfmt.Duration",
+	"password":   "strfmt.Password",
 	"char":       "rune",
 	"int":        "int64",
 	"int8":       "int8",
@@ -142,6 +145,146 @@ func resolveSimpleType(tn, fmt string, items *spec.Items) string {
 		return "[]" + resolveSimpleType(items.Type, items.Format, items.Items)
 	}
 	return tn
+}
+
+type typeResolver struct {
+	Doc           *spec.Document
+	ModelsPackage string
+}
+
+func (t *typeResolver) ResolveSchema(schema *spec.Schema) (result resolvedType, err error) {
+	if schema == nil {
+		result.IsInterface = true
+		result.GoType = "interface{}"
+		return
+	}
+
+	if schema.Ref.GetURL() != nil {
+		// TODO: look up ref and see if there is an x-go-name property
+		// the swagger type is not guaranteed to be an object either,
+		// this can be pretty much anything.
+		tn := swag.ToGoName(filepath.Base(schema.Ref.GetURL().Fragment))
+		result.GoType = t.ModelsPackage + "." + tn
+		result.SwaggerType = "object"
+		result.IsComplexObject = true
+
+		return
+	}
+	if schema.Format != "" {
+		schFmt := strings.Replace(schema.Format, "-", "", -1)
+		if tpe, ok := typeMapping[schFmt]; ok {
+			result.SwaggerType = "string"
+			if len(schema.Type) > 0 {
+				result.SwaggerType = schema.Type[0]
+			}
+			result.SwaggerFormat = schema.Format
+			result.GoType = tpe
+			return
+		}
+	}
+	if schema.Type.Contains("array") {
+		result.IsArray = true
+		if schema.Items == nil {
+			result.GoType = "[]interface{}"
+			result.SwaggerType = "array"
+			result.ElementType = &resolvedType{
+				IsInterface: true,
+				GoType:      "interface{}",
+			}
+			return
+		}
+		if len(schema.Items.Schemas) > 0 {
+			result.IsTuple = true
+			var tupleTypes []resolvedType
+			for _, esch := range schema.Items.Schemas {
+				et, er := t.ResolveSchema(&esch)
+				if er != nil {
+					err = er
+					return
+				}
+				tupleTypes = append(tupleTypes, et)
+			}
+			// TODO: build string for types, which are presumably anonymous structs
+			// for anything that's not a $ref
+			err = fmt.Errorf("tuples (arrays with multiple schema's) are not supported at the moment")
+			return
+		}
+		rt, er := t.ResolveSchema(schema.Items.Schema)
+		if er != nil {
+			err = er
+			return
+		}
+		result.GoType = "[]" + rt.GoType
+		result.SwaggerType = "array"
+		result.ElementType = &rt
+		return
+	}
+	if schema.Type.Contains("file") {
+		result.GoType = typeMapping["file"]
+		result.SwaggerType = "file"
+		return
+	}
+	if schema.Type.Contains("number") {
+		result.GoType = typeMapping["number"]
+		result.SwaggerType = "number"
+		return
+	}
+	if schema.Type.Contains("integer") {
+		result.GoType = typeMapping["integer"]
+		result.SwaggerType = "integer"
+		return
+	}
+	if schema.Type.Contains("boolean") {
+		result.GoType = typeMapping["boolean"]
+		result.SwaggerType = "boolean"
+		return
+	}
+	if schema.Type.Contains("string") {
+		result.GoType = "string"
+		result.SwaggerType = "string"
+		return
+	}
+	if schema.AdditionalProperties != nil && schema.AdditionalProperties.Schema != nil {
+		et, er := t.ResolveSchema(schema.AdditionalProperties.Schema)
+		if er != nil {
+			err = er
+			return
+		}
+		result.GoType = "map[string]" + et.GoType
+		result.ElementType = &et
+		result.IsMap = true
+		result.SwaggerType = "object"
+		return
+	}
+	if schema.Type.Contains("object") || schema.Type.Contains("") || len(schema.Type) == 0 {
+		result.GoType = "map[string]interface{}"
+		result.ElementType = &resolvedType{
+			IsInterface: true,
+			GoType:      "interface{}",
+		}
+
+		result.IsMap = true
+		result.SwaggerType = "object"
+		return
+	}
+	err = fmt.Errorf("unresolvable: %v (format %q)", schema.Type, schema.Format)
+	return
+}
+
+type resolvedType struct {
+	IsAnonymous     bool
+	IsArray         bool
+	IsMap           bool
+	IsInterface     bool
+	IsTuple         bool
+	IsComplexObject bool
+
+	GoType        string
+	SwaggerType   string
+	SwaggerFormat string
+	ElementType   *resolvedType
+	TupleTypes    []*resolvedType
+	PropertyTypes map[string]*resolvedType
 }
 
 func typeForSchema(schema *spec.Schema, modelsPkg string) string {
@@ -226,6 +369,7 @@ var customFormatters = map[string]struct{}{
 	"strfmt.ISBN13":     struct{}{},
 	"strfmt.CreditCard": struct{}{},
 	"strfmt.SSN":        struct{}{},
+	"strfmt.Password":   struct{}{},
 	"strfmt.HexColor":   struct{}{},
 	"strfmt.RGBColor":   struct{}{},
 	"strfmt.Base64":     struct{}{},
