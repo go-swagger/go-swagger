@@ -97,19 +97,31 @@ func (o *operationGenerator) Generate() error {
 	authed := len(o.SecurityRequirements) > 0
 	for _, tag := range o.Operation.Tags {
 		if len(o.Tags) == 0 {
-			operations = append(operations, makeCodegenOperation(o.Name, tag, o.ModelsPackage, o.Principal, o.Target, o.Operation, authed))
+			op, err := makeCodegenOperation(o.Name, tag, o.ModelsPackage, o.Principal, o.Target, o.Operation, authed)
+			if err != nil {
+				return err
+			}
+			operations = append(operations, op)
 			continue
 		}
 		for _, ft := range o.Tags {
 			if ft == tag {
-				operations = append(operations, makeCodegenOperation(o.Name, tag, o.ModelsPackage, o.Principal, o.Target, o.Operation, authed))
+				op, err := makeCodegenOperation(o.Name, tag, o.ModelsPackage, o.Principal, o.Target, o.Operation, authed)
+				if err != nil {
+					return err
+				}
+				operations = append(operations, op)
 				break
 			}
 		}
 
 	}
 	if len(operations) == 0 {
-		operations = append(operations, makeCodegenOperation(o.Name, o.APIPackage, o.ModelsPackage, o.Principal, o.Target, o.Operation, authed))
+		op, err := makeCodegenOperation(o.Name, o.APIPackage, o.ModelsPackage, o.Principal, o.Target, o.Operation, authed)
+		if err != nil {
+			return err
+		}
+		operations = append(operations, op)
 	}
 
 	for _, op := range operations {
@@ -174,13 +186,17 @@ func (o *operationGenerator) generateParameterModel() error {
 	return writeToFile(fp, o.Name+"Parameters", buf.Bytes())
 }
 
-func makeCodegenOperation(name, pkg, modelsPkg, principal, target string, operation spec.Operation, authorized bool) genOperation {
+func makeCodegenOperation(name, pkg, modelsPkg, principal, target string, operation spec.Operation, authorized bool) (genOperation, error) {
 	receiver := "o"
+	resolver := typeResolver{ModelsPackage: modelsPkg}
 
 	var params, qp, pp, hp, fp []genParameter
 	var hasQueryParams bool
 	for _, p := range operation.Parameters {
-		cp := makeCodegenParameter(receiver, modelsPkg, p)
+		cp, err := makeCodegenParameter(receiver, &resolver, p)
+		if err != nil {
+			return genOperation{}, err
+		}
 		if cp.IsQueryParam {
 			hasQueryParams = true
 			qp = append(qp, cp)
@@ -201,11 +217,9 @@ func makeCodegenOperation(name, pkg, modelsPkg, principal, target string, operat
 	var returnsPrimitive, returnsFormatted, returnsContainer, returnsMap bool
 	if operation.Responses != nil {
 		if r, ok := operation.Responses.StatusCodeResponses[200]; ok {
-			resolver := typeResolver{ModelsPackage: modelsPkg}
 			tn, err := resolver.ResolveSchema(r.Schema)
 			if err != nil {
-				// TODO: don't panic here, thread error through
-				panic(err)
+				return genOperation{}, err
 			}
 			_, returnsPrimitive = primitives[tn.GoType]
 			_, returnsFormatted = customFormatters[tn.GoType]
@@ -250,7 +264,7 @@ func makeCodegenOperation(name, pkg, modelsPkg, principal, target string, operat
 		ReturnsComplexObject: !returnsPrimitive && !returnsFormatted && !returnsContainer && !returnsMap,
 		Authorized:           authorized,
 		Principal:            prin,
-	}
+	}, nil
 }
 
 func operationDocString(name string, operation spec.Operation) string {
@@ -304,20 +318,27 @@ type genOperation struct {
 	HasFileParams  bool           //`json:"hasFileParams,omitempty"`  // -
 }
 
-func makeCodegenParameter(receiver, modelsPkg string, param spec.Parameter) genParameter {
+func makeCodegenParameter(receiver string, resolver *typeResolver, param spec.Parameter) (genParameter, error) {
 	var ctx sharedParam
 	var child *genParameterItem
 
 	if param.In == "body" {
-		ctx = makeGenValidations(modelValidations(
-			"\""+swag.ToJSONName(param.Name)+"\"",
-			swag.ToJSONName(param.Name),
-			swag.ToGoName(param.Name),
-			"i",
-			receiver+"."+swag.ToGoName(param.Name),
-			modelsPkg,
-			param.Required,
-			*param.Schema))
+		bps := propGenBuildParams{
+			Path:         "\"" + param.Name + "\"",
+			ParamName:    swag.ToJSONName(param.Name),
+			Accessor:     swag.ToGoName(param.Name),
+			Receiver:     receiver,
+			IndexVar:     "i",
+			ValueExpr:    receiver + "." + swag.ToGoName(param.Name),
+			Schema:       *param.Schema,
+			Required:     param.Required,
+			TypeResolver: resolver,
+		}
+		c, err := modelValidations2(bps)
+		if err != nil {
+			return genParameter{}, err
+		}
+		ctx = makeGenValidations(c)
 
 	} else {
 		ctx = makeGenValidations(paramValidations(receiver, param))
@@ -357,7 +378,7 @@ func makeCodegenParameter(receiver, modelsPkg string, param spec.Parameter) genP
 		Child:            child,
 		Location:         param.In,
 		Converter:        stringConverters[ctx.Type],
-	}
+	}, nil
 }
 
 type genParameter struct {

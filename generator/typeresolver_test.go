@@ -52,32 +52,6 @@ var schRefVals = []struct{ Type, GoType, Expected string }{
 	{"pet", "", "models.Pet"},
 }
 
-func TestTypeForSchema_Primitives(t *testing.T) {
-	for _, val := range schTypeVals {
-		sch := new(spec.Schema)
-		sch.Typed(val.Type, val.Format)
-		actual := typeForSchema(sch, "models")
-		assert.Equal(t, val.Expected, actual)
-	}
-}
-
-func TestTypeForSchema_Objects(t *testing.T) {
-	sch := new(spec.Schema)
-	sch.Ref, _ = spec.NewRef("#/definitions/Pet")
-	actual := typeForSchema(sch, "models")
-	assert.Equal(t, "models.Pet", actual)
-
-}
-
-func TestTypeForSchema_Arrays(t *testing.T) {
-	for _, val := range schTypeVals {
-		sch := new(spec.Schema)
-		sch.Typed(val.Type, val.Format)
-		actual := typeForSchema(new(spec.Schema).CollectionOf(*sch), "models")
-		assert.Equal(t, "[]"+val.Expected, actual)
-	}
-}
-
 func TestTypeResolver(t *testing.T) {
 	tlb, err := spec.Load("../fixtures/codegen/tasklist.basic.yml")
 	if assert.NoError(t, err) {

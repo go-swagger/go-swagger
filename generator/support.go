@@ -133,7 +133,10 @@ func baseImport(tgt string) string {
 }
 
 func (a *appGenerator) Generate() error {
-	app := a.makeCodegenApp()
+	app, err := a.makeCodegenApp()
+	if err != nil {
+		return err
+	}
 
 	if a.DumpData {
 		bb, _ := json.MarshalIndent(swag.ToDynamicJSON(app), "", "  ")
@@ -228,7 +231,7 @@ func getSerializer(sers []genSerGroup, ext string) (*genSerGroup, bool) {
 }
 
 // func makeCodegenApp(operations map[string]spec.Operation, includeUI bool) genApp {
-func (a *appGenerator) makeCodegenApp() genApp {
+func (a *appGenerator) makeCodegenApp() (genApp, error) {
 	sw := a.SpecDoc.Spec()
 	// app := makeCodegenApp(a.Operations, a.IncludeUI)
 	receiver := strings.ToLower(a.Name[:1])
@@ -351,14 +354,17 @@ func (a *appGenerator) makeCodegenApp() genApp {
 	var genMods []genModel
 	defaultImports = append(defaultImports, filepath.Join(baseImport(a.Target), a.ModelsPackage))
 	for mn, m := range a.Models {
-		mod := *makeCodegenModel(
+		mod, err := makeCodegenModel(
 			mn,
 			a.ModelsPackage,
 			m,
 			a.SpecDoc,
 		)
+		if err != nil {
+			return genApp{}, err
+		}
 		mod.ReceiverName = receiver
-		genMods = append(genMods, mod)
+		genMods = append(genMods, *mod)
 	}
 
 	var genOps []genOperation
@@ -372,12 +378,18 @@ func (a *appGenerator) makeCodegenApp() genApp {
 		if len(o.Tags) > 0 {
 			for _, tag := range o.Tags {
 				tns[tag] = struct{}{}
-				op := makeCodegenOperation(on, tag, a.ModelsPackage, a.Principal, a.Target, o, authed)
+				op, err := makeCodegenOperation(on, tag, a.ModelsPackage, a.Principal, a.Target, o, authed)
+				if err != nil {
+					return genApp{}, err
+				}
 				op.ReceiverName = receiver
 				genOps = append(genOps, op)
 			}
 		} else {
-			op := makeCodegenOperation(on, ap, a.ModelsPackage, a.Principal, a.Target, o, authed)
+			op, err := makeCodegenOperation(on, ap, a.ModelsPackage, a.Principal, a.Target, o, authed)
+			if err != nil {
+				return genApp{}, err
+			}
 			op.ReceiverName = receiver
 			genOps = append(genOps, op)
 		}
@@ -417,7 +429,7 @@ func (a *appGenerator) makeCodegenApp() genApp {
 		IncludeUI:           a.IncludeUI,
 		Principal:           a.Principal,
 		SwaggerJSON:         fmt.Sprintf("%#v", jsonb),
-	}
+	}, nil
 }
 
 type genApp struct {
