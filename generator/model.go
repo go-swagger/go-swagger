@@ -80,7 +80,10 @@ type modelGenerator struct {
 }
 
 func (m *modelGenerator) Generate() error {
-	mod := makeCodegenModel(m.Name, m.Target, m.Model, m.SpecDoc)
+	mod, err := makeCodegenModel(m.Name, m.Target, m.Model, m.SpecDoc)
+	if err != nil {
+		return err
+	}
 	if m.DumpData {
 		bb, _ := json.MarshalIndent(swag.ToDynamicJSON(mod), "", " ")
 		fmt.Fprintln(os.Stdout, string(bb))
@@ -125,7 +128,7 @@ func (m *modelGenerator) generateModel() error {
 	return writeToFile(m.Target, m.Name, buf.Bytes())
 }
 
-func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Document) *genModel {
+func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Document) (*genModel, error) {
 	receiver := "m"
 	props := make(map[string]genModelProperty)
 	for pn, p := range schema.Properties {
@@ -136,22 +139,31 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 				break
 			}
 		}
-		props[swag.ToJSONName(pn)] = makeGenModelProperty(
-			"\""+pn+"\"",
-			swag.ToJSONName(pn),
-			swag.ToGoName(pn),
-			receiver,
-			"i",
-			receiver+"."+swag.ToGoName(pn),
-			p,
-			required)
+
+		gmp, err := makeGenModelProperty2(propGenBuildParams{
+			Path:      "\"" + pn + "\"",
+			ParamName: swag.ToJSONName(pn),
+			Accessor:  swag.ToGoName(pn),
+			Receiver:  receiver,
+			IndexVar:  "i",
+			ValueExpr: receiver + "." + swag.ToGoName(pn),
+			Schema:    p,
+			Required:  required,
+		})
+		if err != nil {
+			return nil, err
+		}
+		props[swag.ToJSONName(pn)] = gmp
 	}
 	for _, p := range schema.AllOf {
 		if p.Ref.GetURL() != nil {
 			tn := filepath.Base(p.Ref.GetURL().Fragment)
 			p = specDoc.Spec().Definitions[tn]
 		}
-		mod := makeCodegenModel(name, pkg, p, specDoc)
+		mod, err := makeCodegenModel(name, pkg, p, specDoc)
+		if err != nil {
+			return nil, err
+		}
 		if mod != nil {
 			for _, prop := range mod.Properties {
 				props[prop.ParamName] = prop
@@ -179,7 +191,7 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 		HumanClassName: swag.ToHumanNameLower(swag.ToGoName(name)),
 		DefaultImports: []string{"github.com/go-swagger/go-swagger/strfmt"},
 		HasValidations: hasValidations,
-	}
+	}, nil
 }
 
 type genModel struct {
@@ -200,46 +212,86 @@ func modelDocString(className, desc string) string {
 	return commentedLines(fmt.Sprintf("%s %s", className, desc))
 }
 
-func makeGenModelProperty(path, paramName, accessor, receiver, indexVar, valueExpression string, schema spec.Schema, required bool) genModelProperty {
+type propGenBuildParams struct {
+	Path         string
+	ParamName    string
+	Accessor     string
+	Receiver     string
+	IndexVar     string
+	ValueExpr    string
+	Schema       spec.Schema
+	Required     bool
+	TypeResolver *typeResolver
+}
+
+func (pg propGenBuildParams) NewSliceBranch(schema *spec.Schema) propGenBuildParams {
+	indexVar := pg.IndexVar
+	pg.Path = "fmt.Sprintf(\"%s.%v\", " + pg.Path + ", " + indexVar + ")"
+	pg.IndexVar = indexVar + "i"
+	pg.ValueExpr = pg.ValueExpr + "[" + indexVar + "]"
+	pg.Schema = *schema
+	pg.Required = false
+	return pg
+}
+
+func makeGenModelProperty2(params propGenBuildParams) (genModelProperty, error) {
 	// log.Printf("property: (path %s) (param %s) (accessor %s) (receiver %s) (indexVar %s) (expr %s) required %t", path, paramName, accessor, receiver, indexVar, valueExpression, required)
 	ex := ""
-	if schema.Example != nil {
-		ex = fmt.Sprintf("%#v", schema.Example)
+	if params.Schema.Example != nil {
+		ex = fmt.Sprintf("%#v", params.Schema.Example)
+	}
+	validations, err := modelValidations2(params)
+	if err != nil {
+		return genModelProperty{}, err
 	}
 
-	ctx := makeGenValidations(modelValidations(path, paramName, accessor, indexVar, valueExpression, "", required, schema))
+	ctx := makeGenValidations(validations)
 
-	singleSchemaSlice := schema.Items != nil && schema.Items.Schema != nil
+	singleSchemaSlice := params.Schema.Items != nil && params.Schema.Items.Schema != nil
 	var items []genModelProperty
 	if singleSchemaSlice {
 		ctx.HasSliceValidations = true
-		items = []genModelProperty{
-			makeGenModelProperty("fmt.Sprintf(\"%s.%v\", "+path+", "+indexVar+")", paramName, accessor, receiver, indexVar+"i", valueExpression+"["+indexVar+"]", *schema.Items.Schema, false),
+
+		elProp, err := makeGenModelProperty2(params.NewSliceBranch(params.Schema.Items.Schema))
+		if err != nil {
+			return genModelProperty{}, err
 		}
-	} else if schema.Items != nil {
-		for _, s := range schema.Items.Schemas {
-			items = append(items, makeGenModelProperty("fmt.Sprintf(\"%s.%v\", "+path+", "+indexVar+")", paramName, accessor, receiver, indexVar+"i", valueExpression+"["+indexVar+"]", s, false))
+		items = []genModelProperty{
+			elProp,
+			//makeGenModelProperty("fmt.Sprintf(\"%s.%v\", "+path+", "+indexVar+")", paramName, accessor, receiver, indexVar+"i", valueExpression+"["+indexVar+"]", *params.Schema.Items.Schema, false),
+		}
+	} else if params.Schema.Items != nil {
+		for _, s := range params.Schema.Items.Schemas {
+			elProp, err := makeGenModelProperty2(params.NewSliceBranch(&s))
+			if err != nil {
+				return genModelProperty{}, err
+			}
+			items = append(items, elProp)
+			//items = append(items, makeGenModelProperty("fmt.Sprintf(\"%s.%v\", "+path+", "+indexVar+")", paramName, accessor, receiver, indexVar+"i", valueExpression+"["+indexVar+"]", s, false))
 		}
 	}
 
 	allowsAdditionalItems :=
-		schema.AdditionalItems != nil &&
-			(schema.AdditionalItems.Allows || schema.AdditionalItems.Schema != nil)
+		params.Schema.AdditionalItems != nil &&
+			(params.Schema.AdditionalItems.Allows || params.Schema.AdditionalItems.Schema != nil)
 	hasAdditionalItems := allowsAdditionalItems && !singleSchemaSlice
 	var additionalItems *genModelProperty
-	if schema.AdditionalItems != nil && schema.AdditionalItems.Schema != nil {
-		it := makeGenModelProperty("fmt.Sprintf(\"%s.%v\", "+path+", "+indexVar+")", paramName, accessor, receiver, indexVar+"i", valueExpression+"["+indexVar+"]", *schema.AdditionalItems.Schema, false)
+	if params.Schema.AdditionalItems != nil && params.Schema.AdditionalItems.Schema != nil {
+		it, err := makeGenModelProperty2(params.NewSliceBranch(params.Schema.AdditionalItems.Schema))
+		if err != nil {
+			return genModelProperty{}, err
+		}
 		additionalItems = &it
 	}
 
 	ctx.HasSliceValidations = len(items) > 0 || hasAdditionalItems
 	ctx.HasValidations = ctx.HasValidations || ctx.HasSliceValidations
 
-	xmlName := paramName
-	if schema.XML != nil {
-		if schema.XML.Name != "" {
-			xmlName = schema.XML.Name
-			if schema.XML.Attribute {
+	xmlName := params.ParamName
+	if params.Schema.XML != nil {
+		if params.Schema.XML.Name != "" {
+			xmlName = params.Schema.XML.Name
+			if params.Schema.XML.Attribute {
 				xmlName += ",attr"
 			}
 		}
@@ -249,9 +301,9 @@ func makeGenModelProperty(path, paramName, accessor, receiver, indexVar, valueEx
 		sharedParam:     ctx,
 		DataType:        ctx.Type,
 		Example:         ex,
-		DocString:       propertyDocString(accessor, schema.Description, ex),
-		Description:     schema.Description,
-		ReceiverName:    receiver,
+		DocString:       propertyDocString(params.Accessor, params.Schema.Description, ex),
+		Description:     params.Schema.Description,
+		ReceiverName:    params.Receiver,
 		IsComplexObject: !ctx.IsPrimitive && !ctx.IsCustomFormatter && !ctx.IsContainer,
 
 		HasAdditionalItems:    hasAdditionalItems,
@@ -263,7 +315,7 @@ func makeGenModelProperty(path, paramName, accessor, receiver, indexVar, valueEx
 		SingleSchemaSlice: singleSchemaSlice,
 
 		XMLName: xmlName,
-	}
+	}, nil
 }
 
 // TODO:
@@ -292,32 +344,29 @@ type genModelProperty struct {
 	XMLName               string             //`json:"xmlName,omitempty"`
 }
 
-func modelValidations(path, paramName, accessor, indexVar, valueExpression, pkg string, required bool, model spec.Schema) commonValidations {
-	resolver := typeResolver{
-		ModelsPackage: pkg,
-	}
-	tpe, err := resolver.ResolveSchema(&model)
+func modelValidations2(params propGenBuildParams) (commonValidations, error) {
+	tpe, err := params.TypeResolver.ResolveSchema(&params.Schema)
 	if err != nil {
-		// TODO: do not panic but forward error
-		panic(err)
+		return commonValidations{}, err
 	}
 
 	_, isPrimitive := primitives[tpe.GoType]
 	_, isCustomFormatter := customFormatters[tpe.GoType]
+	model := params.Schema
 
 	return commonValidations{
 		propertyDescriptor: propertyDescriptor{
-			PropertyName:      accessor,
-			ParamName:         paramName,
-			ValueExpression:   valueExpression,
-			IndexVar:          indexVar,
-			Path:              path,
+			PropertyName:      params.Accessor,
+			ParamName:         params.ParamName,
+			ValueExpression:   params.ValueExpr,
+			IndexVar:          params.IndexVar,
+			Path:              params.Path,
 			IsContainer:       tpe.IsArray,
 			IsPrimitive:       isPrimitive,
 			IsCustomFormatter: isCustomFormatter,
 			IsMap:             tpe.IsMap,
 		},
-		Required:         required,
+		Required:         params.Required,
 		Type:             tpe.GoType,
 		Format:           model.Format,
 		Default:          model.Default,
@@ -333,7 +382,7 @@ func modelValidations(path, paramName, accessor, indexVar, valueExpression, pkg 
 		UniqueItems:      model.UniqueItems,
 		MultipleOf:       model.MultipleOf,
 		Enum:             model.Enum,
-	}
+	}, nil
 }
 
 func propertyDocString(propertyName, description, example string) string {
