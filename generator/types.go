@@ -154,13 +154,28 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous bool) (res
 	}
 
 	if schema.Ref.GetURL() != nil {
-		// TODO: look up ref and see if there is an x-go-name property
-		// the swagger type is not guaranteed to be an object either,
-		// this can be pretty much anything.
-		tn := swag.ToGoName(filepath.Base(schema.Ref.GetURL().Fragment))
-		result.GoType = t.ModelsPackage + "." + tn
-		result.SwaggerType = "object"
-		result.IsComplexObject = true
+		ref, er := spec.ResolveRef(t.Doc.Spec(), &schema.Ref)
+		if er != nil {
+			err = er
+			return
+		}
+		var tn string
+		if gn, ok := ref.Extensions["x-go-name"]; ok {
+			tn = gn.(string)
+		} else {
+			tn = swag.ToGoName(filepath.Base(schema.Ref.GetURL().Fragment))
+		}
+
+		if ref.Type.Contains("object") {
+			result.GoType = t.ModelsPackage + "." + tn
+			result.SwaggerType = "object"
+			result.IsComplexObject = true
+		} else {
+			result, err = t.ResolveSchema(ref, true)
+			if err != nil {
+				return
+			}
+		}
 		result.IsAnonymous = false
 
 		return

@@ -48,13 +48,17 @@ var schTypeVals = []struct{ Type, Format, Expected string }{
 }
 
 var schRefVals = []struct{ Type, GoType, Expected string }{
-	{"Pet", "", "models.Pet"},
-	{"pet", "", "models.Pet"},
+	{"Comment", "", "models.Comment"},
+	{"UserCard", "UserItem", "models.UserItem"},
 }
 
 func TestTypeResolver(t *testing.T) {
 	tlb, err := spec.Load("../fixtures/codegen/tasklist.basic.yml")
 	if assert.NoError(t, err) {
+		swsp := tlb.Spec()
+		uc := swsp.Definitions["UserCard"]
+		uc.AddExtension("x-go-name", "UserItem")
+		swsp.Definitions["UserCard"] = uc
 		resolver := &typeResolver{
 			Doc:           tlb,
 			ModelsPackage: "models",
@@ -225,7 +229,7 @@ func testTupleType(t testing.TB, resolver *typeResolver) {
 		*spec.Float64Property(),
 		*spec.BoolProperty(),
 		*spec.ArrayProperty(spec.StringProperty()),
-		*spec.RefProperty("#/definitions/Pet"),
+		*spec.RefProperty("#/definitions/Comment"),
 	)
 
 	rt, err := resolver.ResolveSchema(parent, true)
@@ -241,7 +245,7 @@ func testTupleType(t testing.TB, resolver *typeResolver) {
 		if assert.NotNil(t, rt.TupleTypes[4].ElementType) {
 			assertPrimitiveResolve(t, "string", "", "string", *rt.TupleTypes[4].ElementType)
 		}
-		assert.Equal(t, "models.Pet", rt.TupleTypes[5].GoType)
+		assert.Equal(t, "models.Comment", rt.TupleTypes[5].GoType)
 	}
 }
 
