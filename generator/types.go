@@ -132,6 +132,7 @@ func resolveSimpleType(tn, fmt string, items *spec.Items) string {
 	}
 
 	if tn == "array" {
+		// TODO: Items can't be nil per spec, this should return an error
 		if items == nil {
 			return "[]interface{}"
 		}
@@ -145,7 +146,7 @@ type typeResolver struct {
 	ModelsPackage string
 }
 
-func (t *typeResolver) ResolveSchema(schema *spec.Schema) (result resolvedType, err error) {
+func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous bool) (result resolvedType, err error) {
 	if schema == nil {
 		result.IsInterface = true
 		result.GoType = "interface{}"
@@ -160,6 +161,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema) (result resolvedType, 
 		result.GoType = t.ModelsPackage + "." + tn
 		result.SwaggerType = "object"
 		result.IsComplexObject = true
+		result.IsAnonymous = false
 
 		return
 	}
@@ -190,7 +192,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema) (result resolvedType, 
 			result.IsArray = false
 			result.IsTuple = true
 			for _, esch := range schema.Items.Schemas {
-				et, er := t.ResolveSchema(&esch)
+				et, er := t.ResolveSchema(&esch, true)
 				if er != nil {
 					err = er
 					return
@@ -199,7 +201,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema) (result resolvedType, 
 			}
 			return
 		}
-		rt, er := t.ResolveSchema(schema.Items.Schema)
+		rt, er := t.ResolveSchema(schema.Items.Schema, true)
 		if er != nil {
 			err = er
 			return
@@ -234,21 +236,42 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema) (result resolvedType, 
 		result.SwaggerType = "string"
 		return
 	}
-	if schema.AdditionalProperties != nil && schema.AdditionalProperties.Schema != nil {
-		et, er := t.ResolveSchema(schema.AdditionalProperties.Schema)
-		if er != nil {
-			err = er
+	if schema.Type.Contains("object") || schema.Type.Contains("") || len(schema.Type) == 0 {
+		// if this schema has properties, build a map of property name to
+		// resolved type, this should also flag the object as anonymous,
+		// when a ref is found, the anonymous flag will be reset
+		if isAnonymous && len(schema.Properties) > 0 {
+			result.PropertyTypes = make(map[string]*resolvedType)
+			for key, prop := range schema.Properties {
+				result.IsAnonymous = isAnonymous
+				result.IsComplexObject = true
+				prt, er := t.ResolveSchema(&prop, true)
+				if er != nil {
+					err = er
+					return
+				}
+				result.PropertyTypes[key] = &prt
+			}
+			// no return here, still need to check for additional properties
+		}
+
+		// account for additional properties
+		if schema.AdditionalProperties != nil && schema.AdditionalProperties.Schema != nil {
+			et, er := t.ResolveSchema(schema.AdditionalProperties.Schema, true)
+			if er != nil {
+				err = er
+				return
+			}
+			result.GoType = "map[string]" + et.GoType
+			result.ElementType = &et
+			result.IsMap = true
+			result.SwaggerType = "object"
 			return
 		}
-		result.GoType = "map[string]" + et.GoType
-		result.ElementType = &et
-		result.IsMap = true
-		result.SwaggerType = "object"
-		return
-	}
-	if schema.Type.Contains("object") || schema.Type.Contains("") || len(schema.Type) == 0 {
-		// TODO: if this schema has properties, build a map of property name to
-		//       resolved type, this should also flag the object as anonymous
+
+		if len(schema.Properties) > 0 {
+			return
+		}
 		result.GoType = "map[string]interface{}"
 		result.ElementType = &resolvedType{
 			IsInterface: true,

@@ -240,7 +240,7 @@ func makeGenModelProperty2(params propGenBuildParams) (genModelProperty, error) 
 	if params.Schema.Example != nil {
 		ex = fmt.Sprintf("%#v", params.Schema.Example)
 	}
-	validations, err := modelValidations2(params)
+	validations, err := modelValidations2(params, false)
 	if err != nil {
 		return genModelProperty{}, err
 	}
@@ -320,10 +320,6 @@ func makeGenModelProperty2(params propGenBuildParams) (genModelProperty, error) 
 
 // TODO:
 // untyped data requires a cast somehow to the inner type
-//
-// wants an IsNested or IsAnonymous flag for schemas with properties
-// wants an IsMap or IsDynamic flag for schemas with additional properties set
-//
 
 type genModelProperty struct {
 	sharedParam
@@ -344,8 +340,8 @@ type genModelProperty struct {
 	XMLName               string             //`json:"xmlName,omitempty"`
 }
 
-func modelValidations2(params propGenBuildParams) (commonValidations, error) {
-	tpe, err := params.TypeResolver.ResolveSchema(&params.Schema)
+func modelValidations2(params propGenBuildParams, isAnonymous bool) (commonValidations, error) {
+	tpe, err := params.TypeResolver.ResolveSchema(&params.Schema, isAnonymous)
 	if err != nil {
 		return commonValidations{}, err
 	}

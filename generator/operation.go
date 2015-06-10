@@ -217,7 +217,7 @@ func makeCodegenOperation(name, pkg, modelsPkg, principal, target string, operat
 	var returnsPrimitive, returnsFormatted, returnsContainer, returnsMap bool
 	if operation.Responses != nil {
 		if r, ok := operation.Responses.StatusCodeResponses[200]; ok {
-			tn, err := resolver.ResolveSchema(r.Schema)
+			tn, err := resolver.ResolveSchema(r.Schema, true)
 			if err != nil {
 				return genOperation{}, err
 			}
@@ -338,7 +338,7 @@ func makeCodegenParameter(receiver string, resolver *typeResolver, param spec.Pa
 			Required:     param.Required,
 			TypeResolver: resolver,
 		}
-		c, err := modelValidations2(bps)
+		c, err := modelValidations2(bps, true)
 		if err != nil {
 			return genParameter{}, err
 		}
