@@ -41,8 +41,8 @@ func TestRuntime_Canary(t *testing.T) {
 	// and get the response for it.
 	// defaults all the way down
 	result := []task{
-		task{false, "task 1 content", strfmt.DateTime{time.Now().Add(-1 * time.Hour)}, strfmt.CreditCard(""), 1},
-		task{false, "task 2 content", strfmt.DateTime{time.Now()}, strfmt.CreditCard(""), 2},
+		{false, "task 1 content", strfmt.DateTime{time.Now().Add(-1 * time.Hour)}, strfmt.CreditCard(""), 1},
+		{false, "task 2 content", strfmt.DateTime{time.Now()}, strfmt.CreditCard(""), 2},
 	}
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.Header().Add(httpkit.HeaderContentType, httpkit.JSONMime)
@@ -73,7 +73,10 @@ func TestRuntime_Canary(t *testing.T) {
 		})
 		if assert.NoError(t, err) {
 			assert.IsType(t, []task{}, res)
-			assert.EqualValues(t, result, res)
+			actual := res.([]task)
+			assert.EqualValues(t, result, actual)
+			//assert.EqualValues(t, result[0], actual[0])
+			//assert.EqualValues(t, result[1], actual[1])
 		}
 	}
 }
