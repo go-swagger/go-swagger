@@ -7,13 +7,57 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"text/template"
 
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/swag"
 	"golang.org/x/tools/imports"
 )
 
-//go:generate go-bindata -pkg=generator ./templates/...
+//go:generate go-bindata -pkg=generator -ignore=.*\.sw? ./templates/...
+
+var (
+	modelTemplate          *template.Template
+	modelValidatorTemplate *template.Template
+	operationTemplate      *template.Template
+	parameterTemplate      *template.Template
+	builderTemplate        *template.Template
+	mainTemplate           *template.Template
+	configureAPITemplate   *template.Template
+)
+
+func init() {
+	// initialize all the templates
+	pv, _ := Asset("templates/validation/primitive.gotmpl")
+	cv, _ := Asset("templates/validation/customformat.gotmpl")
+
+	bv, _ := Asset("templates/modelvalidator.gotmpl")
+	modelValidatorTemplate = template.Must(template.New("primitivevalidator").Parse(string(pv)))
+	modelValidatorTemplate = template.Must(modelValidatorTemplate.New("customformatvalidator").Parse(string(cv)))
+	modelValidatorTemplate = template.Must(modelValidatorTemplate.New("modelvalidator").Parse(string(bv)))
+
+	sf, _ := Asset("templates/structfield.gotmpl")
+	bm, _ := Asset("templates/model.gotmpl")
+	modelTemplate = template.Must(template.New("structfield").Parse(string(sf)))
+	modelTemplate = template.Must(modelTemplate.New("model").Parse(string(bm)))
+
+	bp, _ := Asset("templates/server/parameter.gotmpl")
+	parameterTemplate = template.Must(template.New("primitivevalidator").Parse(string(pv)))
+	parameterTemplate = template.Must(parameterTemplate.New("customformatvalidator").Parse(string(cv)))
+	parameterTemplate = template.Must(parameterTemplate.New("parameter").Parse(string(bp)))
+
+	bo, _ := Asset("templates/server/operation.gotmpl")
+	operationTemplate = template.Must(template.New("operation").Parse(string(bo)))
+
+	bu, _ := Asset("templates/server/builder.gotmpl")
+	builderTemplate = template.Must(template.New("builder").Parse(string(bu)))
+
+	mn, _ := Asset("templates/server/main.gotmpl")
+	mainTemplate = template.Must(template.New("main").Parse(string(mn)))
+
+	bc, _ := Asset("templates/server/configureapi.gotmpl")
+	configureAPITemplate = template.Must(template.New("configureapi").Parse(string(bc)))
+}
 
 var reservedGoWords = []string{
 	"break", "default", "func", "interface", "select",

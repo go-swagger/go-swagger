@@ -8,24 +8,10 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"text/template"
 
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/swag"
 )
-
-var (
-	operationTemplate *template.Template
-	parameterTemplate *template.Template
-)
-
-func init() {
-	bv, _ := Asset("templates/server/parameter.gotmpl")
-	parameterTemplate = template.Must(template.New("parameter").Parse(string(bv)))
-
-	bm, _ := Asset("templates/server/operation.gotmpl")
-	operationTemplate = template.Must(template.New("operation").Parse(string(bm)))
-}
 
 // GenerateServerOperation generates a parameter model, parameter validator, http handler implementations for a given operation
 // It also generates an operation handler interface that uses the parameter model for handling a valid request.
@@ -61,6 +47,7 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 			IncludeHandler:       includeHandler,
 			IncludeParameters:    includeParameters,
 			DumpData:             opts.DumpData,
+			Doc:                  specDoc,
 		}
 		if err := generator.Generate(); err != nil {
 			return err
@@ -87,6 +74,18 @@ type operationGenerator struct {
 	IncludeHandler       bool
 	IncludeParameters    bool
 	DumpData             bool
+	Doc                  *spec.Document
+}
+
+type codeGenOpBuilder struct {
+	Name          string
+	APIPackage    string
+	ModelsPackage string
+	Principal     string
+	Target        string
+	Operation     spec.Operation
+	Doc           *spec.Document
+	Authed        bool
 }
 
 func (o *operationGenerator) Generate() error {
@@ -95,9 +94,20 @@ func (o *operationGenerator) Generate() error {
 	// the user specified package serves as root for generating the directory structure
 	var operations []genOperation
 	authed := len(o.SecurityRequirements) > 0
+
+	var bldr codeGenOpBuilder
+	bldr.Name = o.Name
+	bldr.ModelsPackage = o.ModelsPackage
+	bldr.Principal = o.Principal
+	bldr.Target = o.Target
+	bldr.Operation = o.Operation
+	bldr.Authed = authed
+	bldr.Doc = o.Doc
+
 	for _, tag := range o.Operation.Tags {
 		if len(o.Tags) == 0 {
-			op, err := makeCodegenOperation(o.Name, tag, o.ModelsPackage, o.Principal, o.Target, o.Operation, authed)
+			bldr.APIPackage = tag
+			op, err := makeCodegenOperation2(bldr)
 			if err != nil {
 				return err
 			}
@@ -106,7 +116,8 @@ func (o *operationGenerator) Generate() error {
 		}
 		for _, ft := range o.Tags {
 			if ft == tag {
-				op, err := makeCodegenOperation(o.Name, tag, o.ModelsPackage, o.Principal, o.Target, o.Operation, authed)
+				bldr.APIPackage = tag
+				op, err := makeCodegenOperation2(bldr)
 				if err != nil {
 					return err
 				}
@@ -117,7 +128,8 @@ func (o *operationGenerator) Generate() error {
 
 	}
 	if len(operations) == 0 {
-		op, err := makeCodegenOperation(o.Name, o.APIPackage, o.ModelsPackage, o.Principal, o.Target, o.Operation, authed)
+		bldr.APIPackage = o.APIPackage
+		op, err := makeCodegenOperation2(bldr)
 		if err != nil {
 			return err
 		}
@@ -186,10 +198,11 @@ func (o *operationGenerator) generateParameterModel() error {
 	return writeToFile(fp, o.Name+"Parameters", buf.Bytes())
 }
 
-func makeCodegenOperation(name, pkg, modelsPkg, principal, target string, operation spec.Operation, authorized bool) (genOperation, error) {
+func makeCodegenOperation2(b codeGenOpBuilder) (genOperation, error) {
 	receiver := "o"
-	resolver := typeResolver{ModelsPackage: modelsPkg}
+	resolver := typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
 
+	operation := b.Operation
 	var params, qp, pp, hp, fp []genParameter
 	var hasQueryParams bool
 	for _, p := range operation.Parameters {
@@ -229,7 +242,7 @@ func makeCodegenOperation(name, pkg, modelsPkg, principal, target string, operat
 		}
 	}
 
-	prin := principal
+	prin := b.Principal
 	if prin == "" {
 		prin = "interface{}"
 	}
@@ -240,14 +253,14 @@ func makeCodegenOperation(name, pkg, modelsPkg, principal, target string, operat
 	}
 
 	return genOperation{
-		Package:              pkg,
-		ClassName:            swag.ToGoName(name),
-		Name:                 swag.ToJSONName(name),
+		Package:              b.APIPackage,
+		ClassName:            swag.ToGoName(b.Name),
+		Name:                 swag.ToJSONName(b.Name),
 		Description:          operation.Description,
-		DocString:            operationDocString(swag.ToGoName(name), operation),
+		DocString:            operationDocString(swag.ToGoName(b.Name), operation),
 		ReceiverName:         receiver,
-		HumanClassName:       swag.ToHumanNameLower(swag.ToGoName(name)),
-		DefaultImports:       []string{filepath.Join(baseImport(filepath.Join(target, "..")), modelsPkg)},
+		HumanClassName:       swag.ToHumanNameLower(swag.ToGoName(b.Name)),
+		DefaultImports:       []string{filepath.Join(baseImport(filepath.Join(b.Target, "..")), b.ModelsPackage)},
 		Params:               params,
 		Summary:              operation.Summary,
 		QueryParams:          qp,
@@ -262,7 +275,7 @@ func makeCodegenOperation(name, pkg, modelsPkg, principal, target string, operat
 		ReturnsContainer:     returnsContainer,
 		ReturnsMap:           returnsMap,
 		ReturnsComplexObject: !returnsPrimitive && !returnsFormatted && !returnsContainer && !returnsMap,
-		Authorized:           authorized,
+		Authorized:           b.Authed,
 		Principal:            prin,
 	}, nil
 }

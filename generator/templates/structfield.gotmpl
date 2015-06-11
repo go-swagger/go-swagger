@@ -1,0 +1,2 @@
+{{ if .DocString }}{{ .DocString }}{{ end }}
+{{.PropertyName}} {{.DataType}} `json:"{{ .ParamName }}"{{ if .XMLName }} xml:"{{ .XMLName }}{{ end }}"`

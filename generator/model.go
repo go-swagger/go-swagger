@@ -8,25 +8,10 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"text/template"
 
 	"github.com/casualjim/go-swagger/spec"
 	"github.com/casualjim/go-swagger/swag"
 )
-
-var (
-	modelTemplate          *template.Template
-	modelValidatorTemplate *template.Template
-)
-
-func init() {
-	bv, _ := Asset("templates/modelvalidator.gotmpl")
-	modelValidatorTemplate = template.Must(template.New("modelvalidator").Parse(string(bv)))
-
-	bm, _ := Asset("templates/model.gotmpl")
-	modelTemplate = template.Must(template.New("model").Parse(string(bm)))
-
-}
 
 // GenerateModel generates a model file for a schema defintion
 func GenerateModel(modelNames []string, includeModel, includeValidator bool, opts GenOpts) error {
@@ -149,6 +134,10 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 			ValueExpr: receiver + "." + swag.ToGoName(pn),
 			Schema:    p,
 			Required:  required,
+			TypeResolver: &typeResolver{
+				ModelsPackage: filepath.Base(pkg),
+				Doc:           specDoc,
+			},
 		})
 		if err != nil {
 			return nil, err
