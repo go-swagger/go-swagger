@@ -369,7 +369,7 @@ func (a *appGenerator) makeCodegenApp() (genApp, error) {
 			for _, tag := range o.Tags {
 				tns[tag] = struct{}{}
 				bldr.APIPackage = tag
-				op, err := makeCodegenOperation2(bldr)
+				op, err := makeCodegenOperation(bldr)
 				if err != nil {
 					return genApp{}, err
 				}
@@ -378,7 +378,7 @@ func (a *appGenerator) makeCodegenApp() (genApp, error) {
 			}
 		} else {
 			bldr.APIPackage = ap
-			op, err := makeCodegenOperation2(bldr)
+			op, err := makeCodegenOperation(bldr)
 			if err != nil {
 				return genApp{}, err
 			}

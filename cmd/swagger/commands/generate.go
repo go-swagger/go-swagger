@@ -9,4 +9,6 @@ type Generate struct {
 	Support   *generate.Support   `command:"support"`
 	Server    *generate.Server    `command:"server"`
 	Spec      *generate.SpecFile  `command:"spec"`
+	Client    *generate.Client    `command:"client"`
+	Request   *generate.Request   `command:"request"`
 }
