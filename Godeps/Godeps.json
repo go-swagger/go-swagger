@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/casualjim/go-swagger/httpkit",
+	"ImportPath": "github.com/casualjim/go-swagger",
 	"GoVersion": "go1.4.2",
 	"Packages": [
 		"./..."
@@ -21,7 +21,7 @@
 		},
 		{
 			"ImportPath": "github.com/golang/gddo/httputil",
-			"Rev": "4523d2f070c74ef847157e9aa14137376df63964"
+			"Rev": "229ccc762a77d9bdc79212cfddc7c2b24c058e1d"
 		},
 		{
 			"ImportPath": "github.com/gorilla/context",
@@ -59,8 +59,8 @@
 		},
 		{
 			"ImportPath": "github.com/smartystreets/assertions",
-			"Comment": "1.5.0-384-gc702abf",
-			"Rev": "c702abfa8e05e48f79068ed1cf1aac7cf43f5eef"
+			"Comment": "1.5.0-385-gf84dc26",
+			"Rev": "f84dc26dce9c465dec172485e01faf2e53517a13"
 		},
 		{
 			"ImportPath": "github.com/smartystreets/goconvey/convey",
@@ -74,27 +74,27 @@
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/ast/astutil",
-			"Rev": "ac303766f5f240c1796eeea3dc9bf34f1261aa35"
+			"Rev": "a6d2a4254ebe0154bc44ff9b8473b8738f0d68e8"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/buildutil",
-			"Rev": "ac303766f5f240c1796eeea3dc9bf34f1261aa35"
+			"Rev": "a6d2a4254ebe0154bc44ff9b8473b8738f0d68e8"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/exact",
-			"Rev": "ac303766f5f240c1796eeea3dc9bf34f1261aa35"
+			"Rev": "a6d2a4254ebe0154bc44ff9b8473b8738f0d68e8"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/loader",
-			"Rev": "ac303766f5f240c1796eeea3dc9bf34f1261aa35"
+			"Rev": "a6d2a4254ebe0154bc44ff9b8473b8738f0d68e8"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/types",
-			"Rev": "ac303766f5f240c1796eeea3dc9bf34f1261aa35"
+			"Rev": "a6d2a4254ebe0154bc44ff9b8473b8738f0d68e8"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/imports",
-			"Rev": "ac303766f5f240c1796eeea3dc9bf34f1261aa35"
+			"Rev": "a6d2a4254ebe0154bc44ff9b8473b8738f0d68e8"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
