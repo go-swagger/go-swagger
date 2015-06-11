@@ -1,11 +1,14 @@
 package client
 
-import (
-	"io"
-	"os"
+import "github.com/casualjim/go-swagger/strfmt"
 
-	"github.com/casualjim/go-swagger/strfmt"
-)
+// RequestWriterFunc converts a function to a request writer interface
+type RequestWriterFunc func(Request, strfmt.Registry) error
+
+// WriteToRequest adds data to the request
+func (fn RequestWriterFunc) WriteToRequest(req Request, reg strfmt.Registry) error {
+	return fn(req, reg)
+}
 
 // RequestWriter is an interface for things that know how to write to a request
 type RequestWriter interface {
@@ -15,15 +18,15 @@ type RequestWriter interface {
 // Request is an interface for things that know how to
 // add information to a swagger client request
 type Request interface {
-	AddHeaderParam(string, ...string)
+	SetHeaderParam(string, ...string) error
 
-	AddQueryParam(string, ...string)
+	SetQueryParam(string, ...string) error
 
-	AddFormParam(string, ...string)
+	SetFormParam(string, ...string) error
 
-	AddPathParam(string, string)
+	SetPathParam(string, string) error
 
-	AddFileParam(string, *os.File)
+	SetFileParam(string, string) error
 
-	SetBodyParam(io.Writer)
+	SetBodyParam(interface{}) error
 }
