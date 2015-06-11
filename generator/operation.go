@@ -107,7 +107,7 @@ func (o *operationGenerator) Generate() error {
 	for _, tag := range o.Operation.Tags {
 		if len(o.Tags) == 0 {
 			bldr.APIPackage = tag
-			op, err := makeCodegenOperation2(bldr)
+			op, err := makeCodegenOperation(bldr)
 			if err != nil {
 				return err
 			}
@@ -117,7 +117,7 @@ func (o *operationGenerator) Generate() error {
 		for _, ft := range o.Tags {
 			if ft == tag {
 				bldr.APIPackage = tag
-				op, err := makeCodegenOperation2(bldr)
+				op, err := makeCodegenOperation(bldr)
 				if err != nil {
 					return err
 				}
@@ -129,7 +129,7 @@ func (o *operationGenerator) Generate() error {
 	}
 	if len(operations) == 0 {
 		bldr.APIPackage = o.APIPackage
-		op, err := makeCodegenOperation2(bldr)
+		op, err := makeCodegenOperation(bldr)
 		if err != nil {
 			return err
 		}
@@ -198,7 +198,7 @@ func (o *operationGenerator) generateParameterModel() error {
 	return writeToFile(fp, o.Name+"Parameters", buf.Bytes())
 }
 
-func makeCodegenOperation2(b codeGenOpBuilder) (genOperation, error) {
+func makeCodegenOperation(b codeGenOpBuilder) (genOperation, error) {
 	receiver := "o"
 	resolver := typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
 
@@ -397,6 +397,7 @@ func makeCodegenParameter(receiver string, resolver *typeResolver, param spec.Pa
 type genParameter struct {
 	sharedParam
 	ReceiverName     string            //`json:"receiverName,omitempty"`
+	Title            string            //`json:"title,omitempty"`
 	Description      string            //`json:"description,omitempty"`
 	IsQueryParam     bool              //`json:"isQueryParam,omitempty"`
 	IsFormParam      bool              // `json:"isFormParam,omitempty"`

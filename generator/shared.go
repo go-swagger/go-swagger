@@ -21,6 +21,7 @@ var (
 	modelValidatorTemplate *template.Template
 	operationTemplate      *template.Template
 	parameterTemplate      *template.Template
+	clientParamTemplate    *template.Template
 	builderTemplate        *template.Template
 	mainTemplate           *template.Template
 	configureAPITemplate   *template.Template
@@ -45,6 +46,11 @@ func init() {
 	parameterTemplate = template.Must(template.New("primitivevalidator").Parse(string(pv)))
 	parameterTemplate = template.Must(parameterTemplate.New("customformatvalidator").Parse(string(cv)))
 	parameterTemplate = template.Must(parameterTemplate.New("parameter").Parse(string(bp)))
+
+	cp, _ := Asset("templates/client/parameter.gotmpl")
+	clientParamTemplate = template.Must(template.New("primitivevalidator").Parse(string(pv)))
+	clientParamTemplate = template.Must(clientParamTemplate.New("customformatvalidator").Parse(string(cv)))
+	clientParamTemplate = template.Must(clientParamTemplate.New("parameter").Parse(string(cp)))
 
 	bo, _ := Asset("templates/server/operation.gotmpl")
 	operationTemplate = template.Must(template.New("operation").Parse(string(bo)))

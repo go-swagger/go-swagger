@@ -3,13 +3,13 @@ package generate
 import (
 	"errors"
 
-	"github.com/go-swagger/go-swagger/generator"
+	"github.com/casualjim/go-swagger/generator"
 )
 
-// Operation the generate operation files command
-type Operation struct {
+// Request the generate operation files command
+type Request struct {
 	shared
-	Name      []string `long:"name" short:"n" required:"true" description:"the operations to generate, repeat for multiple"`
+	Name      []string `long:"name" short:"n" required:"true" description:"the requests to generate, repeat for multiple"`
 	Tags      []string `long:"tags" description:"the tags to include, if not specified defaults to all"`
 	Principal string   `short:"P" long:"principal" description:"the model to use for the security principal"`
 	NoHandler bool     `long:"skip-handler" description:"when present will not generate an operation handler"`
@@ -18,11 +18,11 @@ type Operation struct {
 }
 
 // Execute generates a model file
-func (o *Operation) Execute(args []string) error {
+func (o *Request) Execute(args []string) error {
 	if o.DumpData && len(o.Name) > 1 {
 		return errors.New("only 1 operation at a time is supported for dumping data")
 	}
-	return generator.GenerateServerOperation(
+	return generator.GenerateClientRequest(
 		o.Name,
 		o.Tags,
 		!o.NoHandler,

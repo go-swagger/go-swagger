@@ -13,7 +13,8 @@ func main() {
 	parser := flags.NewParser(&opts, flags.Default)
 	parser.ShortDescription = "helps you keep your API well described"
 	parser.LongDescription = `
-Swagger tries to support you as best as possible when building API's
+Swagger tries to support you as best as possible when building API's.
+
 It aims to represent the contract of your API with a language agnostic description of your application in json or yaml.
 `
 	parser.AddCommand("validate", "validate the swagger document", "validate the provided swagger document against a swagger spec", &commands.ValidateSpec{})
@@ -24,6 +25,12 @@ It aims to represent the contract of your API with a language agnostic descripti
 	}
 	for _, cmd := range genpar.Commands() {
 		switch cmd.Name {
+		case "spec":
+			cmd.ShortDescription = "generate a swagger spec document from a go application"
+			cmd.LongDescription = cmd.ShortDescription
+		case "client":
+			cmd.ShortDescription = "generate all the files for a client library"
+			cmd.LongDescription = cmd.ShortDescription
 		case "server":
 			cmd.ShortDescription = "generate all the files for a server application"
 			cmd.LongDescription = cmd.ShortDescription
@@ -34,10 +41,10 @@ It aims to represent the contract of your API with a language agnostic descripti
 			cmd.ShortDescription = "generate supporting files like the main function and the api builder"
 			cmd.LongDescription = cmd.ShortDescription
 		case "operation":
-			cmd.ShortDescription = "generate one or more operations from the swagger spec"
+			cmd.ShortDescription = "generate one or more server operations from the swagger spec"
 			cmd.LongDescription = cmd.ShortDescription
-		case "spec":
-			cmd.ShortDescription = "generate a swagger spec document from a go application"
+		case "request":
+			cmd.ShortDescription = "generate one or more client requests from the swagger spec"
 			cmd.LongDescription = cmd.ShortDescription
 		}
 	}
