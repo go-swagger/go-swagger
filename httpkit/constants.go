@@ -14,4 +14,6 @@ const (
 	JSONMime = "application/json"
 	// YAMLMime the yaml mime type
 	YAMLMime = "application/x-yaml"
+	// MultipartFormMime the multipart form mime type
+	MultipartFormMime = "multipart/form-data"
 )

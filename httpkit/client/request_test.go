@@ -1,7 +1,164 @@
 package client
 
-import "testing"
+import (
+	"encoding/json"
+	"io/ioutil"
+	"mime"
+	"mime/multipart"
+	"path/filepath"
+	"testing"
 
-func TestBuildRequest(t *testing.T) {
+	"github.com/casualjim/go-swagger/client"
+	"github.com/casualjim/go-swagger/httpkit"
+	"github.com/casualjim/go-swagger/strfmt"
+	"github.com/stretchr/testify/assert"
+)
 
+func TestBuildRequest_SetHeaders(t *testing.T) {
+	r, _ := NewRequest("GET", "/flats/{id}/", nil)
+	// single value
+	r.SetHeaderParam("X-Rate-Limit", "500")
+	assert.Equal(t, "500", r.header.Get("X-Rate-Limit"))
+	r.SetHeaderParam("X-Rate-Limit", "400")
+	assert.Equal(t, "400", r.header.Get("X-Rate-Limit"))
+
+	// multi value
+	r.SetHeaderParam("X-Accepts", "json", "xml", "yaml")
+	assert.EqualValues(t, []string{"json", "xml", "yaml"}, r.header["X-Accepts"])
+}
+
+func TestBuildRequest_SetPath(t *testing.T) {
+	r, _ := NewRequest("GET", "/flats/{id}/?hello=world", nil)
+
+	r.SetPathParam("id", "1345")
+	assert.Equal(t, "1345", r.pathParams["id"])
+}
+
+func TestBuildRequest_SetQuery(t *testing.T) {
+	r, _ := NewRequest("GET", "/flats/{id}/", nil)
+
+	// single value
+	r.SetQueryParam("hello", "there")
+	assert.Equal(t, "there", r.query.Get("hello"))
+
+	// multi value
+	r.SetQueryParam("goodbye", "cruel", "world")
+	assert.Equal(t, []string{"cruel", "world"}, r.query["goodbye"])
+}
+
+func TestBuildRequest_SetForm(t *testing.T) {
+	// non-multipart
+	r, _ := NewRequest("POST", "/flats", nil)
+	r.SetFormParam("hello", "world")
+	assert.Equal(t, "world", r.formFields.Get("hello"))
+	r.SetFormParam("goodbye", "cruel", "world")
+	assert.Equal(t, []string{"cruel", "world"}, r.formFields["goodbye"])
+}
+
+func TestBuildRequest_SetFile(t *testing.T) {
+	// needs to convert form to multipart
+	r, _ := NewRequest("POST", "/flats/{id}/image", nil)
+	// error if it isn't there
+	err := r.SetFileParam("not there", "./i-dont-exist")
+	assert.Error(t, err)
+	// error if it isn't a file
+	err = r.SetFileParam("directory", "../client")
+	assert.Error(t, err)
+	// success adds it to the map
+	err = r.SetFileParam("file", "./client.go")
+	if assert.NoError(t, err) {
+		fl, ok := r.fileFields["file"]
+		if assert.True(t, ok) {
+			assert.Equal(t, "client.go", filepath.Base(fl.Name()))
+		}
+	}
+}
+
+func TestBuildRequest_SetBody(t *testing.T) {
+	r, _ := NewRequest("GET", "/flats/{id}/?hello=world", nil)
+	bd := []struct{ Name, Hobby string }{{"Tom", "Organ trail"}, {"John", "Bird watching"}}
+
+	r.SetBodyParam(bd)
+	assert.Equal(t, bd, r.payload)
+}
+
+func TestBuildRequest_BuildHTTP_Payload(t *testing.T) {
+	bd := []struct{ Name, Hobby string }{{"Tom", "Organ trail"}, {"John", "Bird watching"}}
+	reqWrtr := client.RequestWriterFunc(func(req client.Request, reg strfmt.Registry) error {
+		req.SetBodyParam(bd)
+		req.SetQueryParam("hello", "world")
+		req.SetPathParam("id", "1234")
+		req.SetHeaderParam("X-Rate-Limit", "200")
+		return nil
+	})
+	r, _ := NewRequest("GET", "/flats/{id}/", reqWrtr)
+	r.SetHeaderParam(httpkit.HeaderContentType, httpkit.JSONMime)
+
+	req, err := r.BuildHTTP(httpkit.JSONProducer(), nil)
+	if assert.NoError(t, err) && assert.NotNil(t, req) {
+		assert.Equal(t, "200", req.Header.Get("x-rate-limit"))
+		assert.Equal(t, "world", req.URL.Query().Get("hello"))
+		assert.Equal(t, "/flats/1234/", req.URL.Path)
+		expectedBody, _ := json.Marshal(bd)
+		actualBody, _ := ioutil.ReadAll(req.Body)
+		assert.Equal(t, append(expectedBody, '\n'), actualBody)
+	}
+}
+
+func TestBuildRequest_BuildHTTP_Form(t *testing.T) {
+	reqWrtr := client.RequestWriterFunc(func(req client.Request, reg strfmt.Registry) error {
+		req.SetFormParam("something", "some value")
+		req.SetQueryParam("hello", "world")
+		req.SetPathParam("id", "1234")
+		req.SetHeaderParam("X-Rate-Limit", "200")
+		return nil
+	})
+	r, _ := NewRequest("GET", "/flats/{id}/", reqWrtr)
+	r.SetHeaderParam(httpkit.HeaderContentType, httpkit.JSONMime)
+
+	req, err := r.BuildHTTP(httpkit.JSONProducer(), nil)
+	if assert.NoError(t, err) && assert.NotNil(t, req) {
+		assert.Equal(t, "200", req.Header.Get("x-rate-limit"))
+		assert.Equal(t, "world", req.URL.Query().Get("hello"))
+		assert.Equal(t, "/flats/1234/", req.URL.Path)
+		expected := []byte("something=some+value")
+		actual, _ := ioutil.ReadAll(req.Body)
+		assert.Equal(t, expected, actual)
+	}
+}
+
+func TestBuildRequest_BuildHTTP_Files(t *testing.T) {
+	cont, _ := ioutil.ReadFile("./client.go")
+	reqWrtr := client.RequestWriterFunc(func(req client.Request, reg strfmt.Registry) error {
+		req.SetFormParam("something", "some value")
+		req.SetFileParam("file", "./client.go")
+		req.SetQueryParam("hello", "world")
+		req.SetPathParam("id", "1234")
+		req.SetHeaderParam("X-Rate-Limit", "200")
+		return nil
+	})
+	r, _ := NewRequest("GET", "/flats/{id}/", reqWrtr)
+	r.SetHeaderParam(httpkit.HeaderContentType, httpkit.JSONMime)
+
+	req, err := r.BuildHTTP(httpkit.JSONProducer(), nil)
+	if assert.NoError(t, err) && assert.NotNil(t, req) {
+		assert.Equal(t, "200", req.Header.Get("x-rate-limit"))
+		assert.Equal(t, "world", req.URL.Query().Get("hello"))
+		assert.Equal(t, "/flats/1234/", req.URL.Path)
+		mediaType, params, err := mime.ParseMediaType(req.Header.Get(httpkit.HeaderContentType))
+		if assert.NoError(t, err) {
+			assert.Equal(t, httpkit.MultipartFormMime, mediaType)
+			boundary := params["boundary"]
+			mr := multipart.NewReader(req.Body, boundary)
+			frm, err := mr.ReadForm(1 << 20)
+			if assert.NoError(t, err) {
+				assert.Equal(t, "some value", frm.Value["something"][0])
+				mpff := frm.File["file"][0]
+				mpf, _ := mpff.Open()
+				assert.Equal(t, "client.go", mpff.Filename)
+				actual, _ := ioutil.ReadAll(mpf)
+				assert.Equal(t, cont, actual)
+			}
+		}
+	}
 }
