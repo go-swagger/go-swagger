@@ -26,7 +26,6 @@ paths:
         - name: size
           in: query
           description: Size of task list
-          required: true
           type: integer
           format: int32
           default: 20
