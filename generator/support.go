@@ -8,28 +8,10 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"text/template"
 
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
 )
-
-var (
-	builderTemplate      *template.Template
-	mainTemplate         *template.Template
-	configureAPITemplate *template.Template
-)
-
-func init() {
-	bv, _ := Asset("templates/server/builder.gotmpl")
-	builderTemplate = template.Must(template.New("builder").Parse(string(bv)))
-
-	bm, _ := Asset("templates/server/main.gotmpl")
-	mainTemplate = template.Must(template.New("main").Parse(string(bm)))
-
-	bc, _ := Asset("templates/server/configureapi.gotmpl")
-	configureAPITemplate = template.Must(template.New("configureapi").Parse(string(bc)))
-}
 
 // GenerateSupport generates the supporting files for an API
 func GenerateSupport(name string, modelNames, operationIDs []string, includeUI bool, opts GenOpts) error {
@@ -374,8 +356,16 @@ func (a *appGenerator) makeCodegenApp() (genApp, error) {
 
 	var genOps []genOperation
 	tns := make(map[string]struct{})
+	var bldr codeGenOpBuilder
+	bldr.ModelsPackage = a.ModelsPackage
+	bldr.Principal = a.Principal
+	bldr.Target = a.Target
+	bldr.Doc = a.SpecDoc
+
 	for on, o := range a.Operations {
-		authed := len(a.SpecDoc.SecurityRequirementsFor(&o)) > 0
+		bldr.Name = on
+		bldr.Operation = o
+		bldr.Authed = len(a.SpecDoc.SecurityRequirementsFor(&o)) > 0
 		ap := a.APIPackage
 		if a.APIPackage == a.Package {
 			ap = ""
@@ -383,7 +373,8 @@ func (a *appGenerator) makeCodegenApp() (genApp, error) {
 		if len(o.Tags) > 0 {
 			for _, tag := range o.Tags {
 				tns[tag] = struct{}{}
-				op, err := makeCodegenOperation(on, tag, a.ModelsPackage, a.Principal, a.Target, o, authed)
+				bldr.APIPackage = tag
+				op, err := makeCodegenOperation2(bldr)
 				if err != nil {
 					return genApp{}, err
 				}
@@ -391,7 +382,8 @@ func (a *appGenerator) makeCodegenApp() (genApp, error) {
 				genOps = append(genOps, op)
 			}
 		} else {
-			op, err := makeCodegenOperation(on, ap, a.ModelsPackage, a.Principal, a.Target, o, authed)
+			bldr.APIPackage = ap
+			op, err := makeCodegenOperation2(bldr)
 			if err != nil {
 				return genApp{}, err
 			}

@@ -1,44 +1,4 @@
-{{define "primitivevalidator"}}
-{{if .MinLength}}
-if err := validate.MinLength({{.Path}}, "{{.Location}}", {{.ValueExpression}}, {{.MinLength}}); err != nil {
-  return err
-}
-{{end}}
-{{if .MaxLength}}
-if err := validate.MaxLength({{.Path}}, "{{.Location}}", {{.ValueExpression}}, {{.MaxLength}}); err != nil {
-  return err
-}
-{{end}}
-{{if .Pattern}}
-if err := validate.Pattern({{.Path}}, "{{.Location}}", {{.ValueExpression}}, `{{.Pattern}}`); err != nil {
-  return err
-}
-{{end}}
-{{if .Minimum}}
-if err := validate.Minimum({{.Path}}, "{{.Location}}", float64({{.ValueExpression}}), {{.Minimum}}, {{.ExclusiveMinimum}}); err != nil {
-  return err
-}
-{{end}}
-{{if .Maximum}}
-if err := validate.Maximum({{.Path}}, "{{.Location}}", float64({{.ValueExpression}}), {{.Maximum}}, {{.ExclusiveMaximum}}); err != nil {
-  return err
-}
-{{end}}
-{{if .MultipleOf}}
-if err := validate.MultipleOf({{.Path}}, "{{.Location}}", float64({{.ValueExpression}}), {{.MultipleOf}}); err != nil {
-  return err
-}
-{{end}}
-{{if .Enum}}
-if err := validate.Enum({{.Path}}, "{{.Location}}", {{.ValueExpression}}, {{.Enum}}); err != nil {
-  return err
-}
-{{end}}
-{{end}}{{define "customformatvalidator"}}
-if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.Format}}", string({{.ValueExpression}}), formats); err != nil {
-  return err
-}
-{{end}}{{define "slicevalidator"}}
+{{define "slicevalidator"}}
 {{if .NeedsSize}}
 {{.ParamName}}Size := int64(len({{.ValueExpression}}))
 {{end}}

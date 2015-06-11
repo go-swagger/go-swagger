@@ -128,6 +128,10 @@ definitions:
       completed:
         title: when true this task is completed
         type: boolean
+      creditcard:
+        title: the credit card format usage
+        type: string
+        format: creditcard
       createdAt:
         title: task creation time
         type: string
