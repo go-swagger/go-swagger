@@ -3,6 +3,7 @@ package swag
 import (
 	"math"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -16,8 +17,8 @@ var commonInitialisms = map[string]bool{
 	"EOF":   true,
 	"GUID":  true,
 	"HTML":  true,
-	"HTTP":  true,
 	"HTTPS": true,
+	"HTTP":  true,
 	"ID":    true,
 	"IP":    true,
 	"JSON":  true,
@@ -29,16 +30,28 @@ var commonInitialisms = map[string]bool{
 	"SLA":   true,
 	"SMTP":  true,
 	"SSH":   true,
+	"TCP":   true,
 	"TLS":   true,
 	"TTL":   true,
-	"UI":    true,
-	"UID":   true,
+	"UDP":   true,
 	"UUID":  true,
+	"UID":   true,
+	"UI":    true,
 	"URI":   true,
 	"URL":   true,
 	"UTF8":  true,
 	"VM":    true,
 	"XML":   true,
+	"XSRF":  true,
+	"XSS":   true,
+}
+var initialisms []string
+
+func init() {
+	for k := range commonInitialisms {
+		initialisms = append(initialisms, k)
+	}
+	sort.Sort(sort.Reverse(byLength(initialisms)))
 }
 
 // JoinByFormat joins a string array by a known format:
@@ -97,6 +110,18 @@ func SplitByFormat(data, format string) []string {
 	return result
 }
 
+type byLength []string
+
+func (s byLength) Len() int {
+	return len(s)
+}
+func (s byLength) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+func (s byLength) Less(i, j int) bool {
+	return len(s[i]) < len(s[j])
+}
+
 // Prepares strings by splitting by caps, spaces, dashes, and underscore
 func split(str string) (words []string) {
 	repl := strings.NewReplacer("-", " ", "_", " ")
@@ -111,7 +136,11 @@ func split(str string) (words []string) {
 
 	// Split when uppercase is found (needed for Snake)
 	str = rex1.ReplaceAllString(str, " $1")
+	// check if consecutive single char things make up an initialism
 
+	for _, k := range initialisms {
+		str = strings.Replace(str, rex1.ReplaceAllString(k, " $1"), " "+k, -1)
+	}
 	// Get the final list of words
 	words = rex2.FindAllString(str, -1)
 
@@ -155,7 +184,11 @@ func ToCommandName(name string) string {
 func ToHumanNameLower(name string) string {
 	var out []string
 	for _, w := range split(name) {
-		out = append(out, lower(w))
+		if !commonInitialisms[w] {
+			out = append(out, lower(w))
+		} else {
+			out = append(out, w)
+		}
 	}
 	return strings.Join(out, " ")
 }
