@@ -22,8 +22,8 @@ func NewRequest(method, pathPattern string, writer client.RequestWriter) (*Reque
 		pathPattern: pathPattern,
 		method:      method,
 		writer:      writer,
-		header:      http.Header(make(map[string][]string)),
-		query:       url.Values(make(map[string][]string)),
+		header:      make(http.Header),
+		query:       make(url.Values),
 	}, nil
 }
 
@@ -131,7 +131,7 @@ func (r *Request) BuildHTTP(producer httpkit.Producer, registry strfmt.Registry)
 // when there are several values provided for the varargs it will add it (no overriding)
 func (r *Request) SetHeaderParam(name string, values ...string) error {
 	if r.header == nil {
-		r.header = make(map[string][]string)
+		r.header = make(http.Header)
 	}
 	r.header[name] = values
 	return nil
@@ -142,7 +142,7 @@ func (r *Request) SetHeaderParam(name string, values ...string) error {
 // when there are several values provided for the varargs it will add it (no overriding)
 func (r *Request) SetQueryParam(name string, values ...string) error {
 	if r.header == nil {
-		r.query = make(map[string][]string)
+		r.query = make(url.Values)
 	}
 	r.query[name] = values
 	return nil
@@ -153,7 +153,7 @@ func (r *Request) SetQueryParam(name string, values ...string) error {
 // when there are several values provided for the varargs it will add it (no overriding)
 func (r *Request) SetFormParam(name string, values ...string) error {
 	if r.formFields == nil {
-		r.formFields = make(map[string][]string)
+		r.formFields = make(url.Values)
 	}
 	r.formFields[name] = values
 	return nil
