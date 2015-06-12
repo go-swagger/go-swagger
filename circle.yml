@@ -22,3 +22,5 @@ test:
   override:
     - godep go test -race ./...:
         pwd: ../.go_workspace/src/github.com/casualjim/go-swagger
+    - ./coverage.sh:
+        pwd: ../.go_workspace/src/github.com/casualjim/go-swagger
