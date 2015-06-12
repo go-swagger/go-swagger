@@ -2,6 +2,8 @@
 
 set -e
 
+cd ${GOPATH/:*/}/src/github.com/casualjim/go-swagger
+
 godep go test -race ./...
 # Run test coverage on each subdirectories and merge the coverage profile.
 echo "mode: count" > profile.cov

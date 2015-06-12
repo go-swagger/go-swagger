@@ -20,5 +20,5 @@ dependencies:
     - godep restore
     - golint ./...
 test:
-  post:
+  override:
     - ./coverage.sh
