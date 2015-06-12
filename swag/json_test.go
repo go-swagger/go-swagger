@@ -118,6 +118,9 @@ func TestNameProvider(t *testing.T) {
 	assert.False(t, ok)
 	assert.Empty(t, nm)
 
+	nms := provider.GetJSONNames(ptr)
+	assert.Len(t, nms, 2)
+
 	assert.Len(t, provider.index, 1)
 
 }

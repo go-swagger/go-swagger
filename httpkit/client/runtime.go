@@ -22,35 +22,17 @@ type Runtime struct {
 	Spec             *spec.Document
 	Host             string
 	BasePath         string
+	Formats          strfmt.Registry
 
 	client          *http.Client
-	Formats         strfmt.Registry
 	methodsAndPaths map[string]methodAndPath
 }
 
-// A ResultFactory creates a new instance of a result for a given status code.
+// A ResponseReader creates a new instance of a result for a given status code.
 // when this is a response without a body the bool will be true
 // This needs to produce the result or it loses the type information.
 // That's the explanation for the somewhat many args to this function
-type ResultFactory func(int, io.Reader, httpkit.Consumer) (interface{}, error)
-
-// A ResponseConsumer is responsible for turning a response into a proper return
-// for a swagger operation.
-type ResponseConsumer interface {
-	Consume(*http.Response) (interface{}, error)
-}
-
-type responseConsumer struct {
-	runtime *Runtime
-	create  ResultFactory
-}
-
-func (hr *responseConsumer) Consume(response *http.Response) (interface{}, error) {
-	// work out the consumer
-	// TODO: be smarter about this
-	consumer := hr.runtime.Consumers[hr.runtime.DefaultMediaType]
-	return hr.create(response.StatusCode, response.Body, consumer)
-}
+type ResponseReader func(int, io.Reader, httpkit.Consumer) (interface{}, error)
 
 // New creates a new default runtime for a swagger api client.
 func New(swaggerSpec *spec.Document) *Runtime {
@@ -65,6 +47,8 @@ func New(swaggerSpec *spec.Document) *Runtime {
 	rt.Spec = swaggerSpec
 	rt.Transport = http.DefaultTransport
 	rt.client = http.DefaultClient
+	rt.Host = swaggerSpec.Host()
+	rt.BasePath = swaggerSpec.BasePath()
 	rt.methodsAndPaths = make(map[string]methodAndPath)
 	for mth, pathItem := range rt.Spec.Operations() {
 		for pth, op := range pathItem {
@@ -76,7 +60,7 @@ func New(swaggerSpec *spec.Document) *Runtime {
 
 // Submit a request and when there is a body on success it will turn that into the result
 // all other things are turned into an api error for swagger which retains the status code
-func (r *Runtime) Submit(operationID string, params client.RequestWriter, responses ResultFactory) (interface{}, error) {
+func (r *Runtime) Submit(operationID string, params client.RequestWriter, readResponse ResponseReader) (interface{}, error) {
 	mthPth, ok := r.methodsAndPaths[operationID]
 	if !ok {
 		return nil, fmt.Errorf("unknown operation: %q", operationID)
@@ -86,15 +70,18 @@ func (r *Runtime) Submit(operationID string, params client.RequestWriter, respon
 		return nil, err
 	}
 
-	// TODO: Something smarter for the content type
 	request.SetHeaderParam(httpkit.HeaderContentType, r.DefaultMediaType)
-	// TODO: Something smarter for the Accept headers, like say multiple sorted desc by q, preferring json as default
-	request.SetHeaderParam(httpkit.HeaderAccept, r.DefaultMediaType)
+	var accept []string
+	for k := range r.Consumers {
+		accept = append(accept, k)
+	}
+	request.SetHeaderParam(httpkit.HeaderAccept, accept...)
 
 	req, err := request.BuildHTTP(r.Producers[r.DefaultMediaType], r.Formats)
+	// TODO: work out scheme based on the operations and the default scheme
 	req.URL.Scheme = "http"
-	req.URL.Host = r.Spec.Host()
-	req.URL.Path = filepath.Join(r.Spec.BasePath(), req.URL.Path)
+	req.URL.Host = r.Host
+	req.URL.Path = filepath.Join(r.BasePath, req.URL.Host)
 	if err != nil {
 		return nil, err
 	}
@@ -103,6 +90,17 @@ func (r *Runtime) Submit(operationID string, params client.RequestWriter, respon
 	if err != nil {
 		return nil, err
 	}
+	ct := res.Header.Get(httpkit.HeaderContentType)
+	if ct == "" { // this should really really never occur
+		ct = r.DefaultMediaType
+	}
 
-	return (&responseConsumer{r, responses}).Consume(res)
+	// TODO: normalize this (ct) and only match on media type,
+	// skip the params like charset unless a tie breaker is needed
+	cons, ok := r.Consumers[ct]
+	if !ok {
+		// scream about not knowing what to do
+		return nil, fmt.Errorf("no consumer: %q", ct)
+	}
+	return readResponse(res.StatusCode, res.Body, cons)
 }

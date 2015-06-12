@@ -391,6 +391,7 @@ func makeCodegenParameter(receiver string, resolver *typeResolver, param spec.Pa
 		Child:            child,
 		Location:         param.In,
 		Converter:        stringConverters[ctx.Type],
+		Formatter:        stringFormatters[ctx.Type],
 	}, nil
 }
 
@@ -409,6 +410,7 @@ type genParameter struct {
 	Child            *genParameterItem //`json:"child,omitempty"`
 	BodyParam        *genParameter     //`json:"bodyParam,omitempty"`
 	Converter        string            //`json:"converter,omitempty"`
+	Formatter        string            //`json:"formattery,omitempty"`
 	Parent           *genParameterItem //`json:"parent,omitempty"` // this is meant to be nil, just here for completeness in the templates
 	Location         string            //`json:"location,omitempty"`
 }
@@ -421,6 +423,7 @@ func makeCodegenParamItem(path, paramName, accessor, indexVar, valueExpression s
 	res.CollectionFormat = items.CollectionFormat
 	res.Parent = &parent
 	res.Converter = stringConverters[ctx.Type]
+	res.Formatter = stringFormatters[ctx.Type]
 	res.Location = parent.Location
 	res.ValueExpression = "value"
 
@@ -448,6 +451,7 @@ type genParameterItem struct {
 	Child            *genParameterItem //`json:"child,omitempty"`
 	Parent           *genParameterItem //`json:"parent,omitempty"`
 	Converter        string            //`json:"converter,omitempty"`
+	Formatter        string            //`json:"formattery,omitempty"`
 	Location         string            //`json:"location,omitempty"`
 }
 

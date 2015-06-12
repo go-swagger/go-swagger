@@ -65,6 +65,20 @@ var stringConverters = map[string]string{
 	"float64": "swag.ConvertFloat64",
 }
 
+var stringFormatters = map[string]string{
+	"int8":    "swag.FormatInt8",
+	"int16":   "swag.FormatInt16",
+	"int32":   "swag.FormatInt32",
+	"int64":   "swag.FormatInt64",
+	"uint8":   "swag.FormatUint8",
+	"uint16":  "swag.FormatUint16",
+	"uint32":  "swag.FormatUint32",
+	"uint64":  "swag.FormatUint64",
+	"bool":    "swag.FormatBool",
+	"float32": "swag.FormatFloat32",
+	"float64": "swag.FormatFloat64",
+}
+
 // typeMapping contais a mapping of format or type name to go type
 var typeMapping = map[string]string{
 	"byte":       "strfmt.Base64",
