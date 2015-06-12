@@ -16,10 +16,6 @@
 			"Rev": "866354b2921d468a6463cf1ea2bf00cc597c9aaa"
 		},
 		{
-			"ImportPath": "github.com/elazarl/go-bindata-assetfs",
-			"Rev": "bea323321994103859d60197d229f1a94699dde3"
-		},
-		{
 			"ImportPath": "github.com/golang/gddo/httputil",
 			"Rev": "229ccc762a77d9bdc79212cfddc7c2b24c058e1d"
 		},

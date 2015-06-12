@@ -21,9 +21,10 @@ before_install:
 
 script:
   - golint ./...
-  # - go vet -printf=false -structags=false ./...
-  - ./coverage.sh
-
+  #- go vet -printf=false -structags=false ./
+  #- ./coverage.sh
+  - godep go test -race ./...
+  - if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ]; then GOPATH=`godep path`:$GOPATH goveralls -service=travis-ci -repotoken=$COVERALLS_TOKEN; fi
 env:
   secure: "QkBMwu7HL57yi6/EHVT42ofmuCI9ey3AR9+1vF6AwcVErm5pbhSSGMHTAo8ruP80PBOnJEAl65xOS5fzEIPIxFNbbL57Qsty/NCsMwxd9aPl+xP8pNFlffVz3CmbpfFLsGuWc77kDCHRdnsK+/mOjs+EKw0XHUmViX2DAGkHQ8U="
 
