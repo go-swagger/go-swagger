@@ -14,7 +14,6 @@ dependencies:
   override:
     - godep restore
     - golint ./...
-    - go
     - godep go build -v ./cmd/swagger
 test:
   override:
