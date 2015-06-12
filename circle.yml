@@ -14,7 +14,7 @@ dependencies:
 
   override:
     - golint ./...:
-        pwd: ../.go_workspace/src/github.com/casualjim/go-swagger/src/github.com/casualjim/go-swagger
+        pwd: ../.go_workspace/src/github.com/casualjim/go-swagger
     - go tool vet -printf=false -structtags=false `pwd`:
         pwd: ../.go_workspace/src/github.com/casualjim/go-swagger
     - godep restore
