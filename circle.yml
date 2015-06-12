@@ -1,6 +1,6 @@
 checkout:
   post:
-    - ln -sf `pwd` $GOPATH/src/github.com/casualjim/go-swagger
+    - ln -sf `pwd` ${GOPATH/:*/}/src/github.com/casualjim/go-swagger
 dependencies:
   pre:
     - go get github.com/golang/lint/golint
