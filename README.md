@@ -1,7 +1,7 @@
 Swagger 2.0
 ===========
 
-[![Build Status](https://travis-ci.org/casualjim/go-swagger.svg?branch=gen-client)](https://travis-ci.org/casualjim/go-swagger)[![Coverage Status](https://coveralls.io/repos/casualjim/go-swagger/badge.svg?branch=gen-client)](https://coveralls.io/r/casualjim/go-swagger?branch=gen-client)[![GoDoc](https://godoc.org/github.com/casualjim/go-swagger?status.svg)](http://godoc.org/github.com/casualjim/go-swagger)[![license](http://img.shields.io/badge/license-Apache%20v2-orange.svg)](https://raw.githubusercontent.com/swagger-api/swagger-spec/master/LICENSE)
+[![Circle CI](https://circleci.com/gh/casualjim/go-swagger/tree/gen-client.svg?style=svg)](https://circleci.com/gh/casualjim/go-swagger/tree/gen-client)[![Coverage Status](https://coveralls.io/repos/casualjim/go-swagger/badge.svg?branch=gen-client)](https://coveralls.io/r/casualjim/go-swagger?branch=gen-client)[![GoDoc](https://godoc.org/github.com/casualjim/go-swagger?status.svg)](http://godoc.org/github.com/casualjim/go-swagger)[![license](http://img.shields.io/badge/license-Apache%20v2-orange.svg)](https://raw.githubusercontent.com/swagger-api/swagger-spec/master/LICENSE)
 
 This API is not stable yet, when it is stable it will be distributed over gopkg.in
 
