@@ -1,7 +1,7 @@
 Swagger 2.0 [![Circle CI](https://circleci.com/gh/go-swagger/go-swagger/tree/gen-client.svg?style=svg)](https://circleci.com/gh/go-swagger/go-swagger/tree/master) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/go-swagger/go-swagger?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 ===========
 
-[![GoDoc](https://godoc.org/github.com/go-swagger/go-swagger?status.svg)](http://godoc.org/github.com/go-swagger/go-swagger) [![license](http://img.shields.io/badge/license-Apache%20v2-orange.svg)](https://raw.githubusercontent.com/swagger-api/swagger-spec/master/LICENSE)
+[![Circle CI](https://circleci.com/gh/casualjim/go-swagger.svg?style=svg)](https://circleci.com/gh/casualjim/go-swagger)[![GoDoc](https://godoc.org/github.com/casualjim/go-swagger?status.svg)](http://godoc.org/github.com/casualjim/go-swagger)[![license](http://img.shields.io/badge/license-Apache%20v2-orange.svg)](https://raw.githubusercontent.com/swagger-api/swagger-spec/master/LICENSE)
 
 This API is not stable yet, when it is stable it will be distributed over gopkg.in
 

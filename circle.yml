@@ -1,3 +1,6 @@
+checkout:
+  post:
+    - ln -sf `pwd` $GOPATH/src/github.com/casualjim/go-swagger
 dependencies:
   pre:
     - go get github.com/golang/lint/golint
@@ -11,9 +14,10 @@ dependencies:
     - go get github.com/tools/godep
     - go get github.com/jteeuwen/go-bindata/...
     - go get github.com/elazarl/go-bindata-assetfs/...
+
   override:
     - godep restore
-    - golint ./...    
+    - golint ./...
 test:
-  override:
+  post:
     - ./coverage.sh
