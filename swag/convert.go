@@ -117,3 +117,58 @@ func ConvertUint32(str string) (uint32, error) {
 func ConvertUint64(str string) (uint64, error) {
 	return strconv.ParseUint(str, 10, 64)
 }
+
+// FormatBool turns a boolean into a string
+func FormatBool(value bool) string {
+	return strconv.FormatBool(value)
+}
+
+// FormatFloat32 turns a float32 into a string
+func FormatFloat32(value float32) string {
+	return strconv.FormatFloat(float64(value), 'f', -1, 32)
+}
+
+// FormatFloat64 turns a float64 into a string
+func FormatFloat64(value float64) string {
+	return strconv.FormatFloat(value, 'f', -1, 64)
+}
+
+// FormatInt8 turns an int8 into a string
+func FormatInt8(value int8) string {
+	return strconv.FormatInt(int64(value), 10)
+}
+
+// FormatInt16 turns an int16 into a string
+func FormatInt16(value int16) string {
+	return strconv.FormatInt(int64(value), 10)
+}
+
+// FormatInt32 turns an int32 into a string
+func FormatInt32(value int32) string {
+	return strconv.FormatInt(int64(value), 10)
+}
+
+// FormatInt64 turns an int64 into a string
+func FormatInt64(value int64) string {
+	return strconv.FormatInt(value, 10)
+}
+
+// FormatUint8 turns an uint8 into a string
+func FormatUint8(value uint8) string {
+	return strconv.FormatUint(uint64(value), 10)
+}
+
+// FormatUint16 turns an uint16 into a string
+func FormatUint16(value uint16) string {
+	return strconv.FormatUint(uint64(value), 10)
+}
+
+// FormatUint32 turns an uint32 into a string
+func FormatUint32(value uint32) string {
+	return strconv.FormatUint(uint64(value), 10)
+}
+
+// FormatUint64 turns an uint64 into a string
+func FormatUint64(value uint64) string {
+	return strconv.FormatUint(value, 10)
+}

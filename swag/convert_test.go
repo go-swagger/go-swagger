@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// These are really dumb tests
+
 func TestConvertBool(t *testing.T) {
 	for k := range evaluatesAsTrue {
 		r, err := ConvertBool(k)
@@ -28,7 +30,7 @@ func TestConvertFloat32(t *testing.T) {
 	invalidFloats := []string{"a", strconv.FormatFloat(math.MaxFloat64, 'f', -1, 64), "true"}
 
 	for _, f := range validFloats {
-		c, err := ConvertFloat32(strconv.FormatFloat(float64(f), 'f', -1, 32))
+		c, err := ConvertFloat32(FormatFloat32(f))
 		if assert.NoError(t, err) {
 			assert.EqualValues(t, f, c)
 		}
@@ -44,7 +46,7 @@ func TestConvertFloat64(t *testing.T) {
 	invalidFloats := []string{"a", "true"}
 
 	for _, f := range validFloats {
-		c, err := ConvertFloat64(strconv.FormatFloat(float64(f), 'f', -1, 64))
+		c, err := ConvertFloat64(FormatFloat64(f))
 		if assert.NoError(t, err) {
 			assert.EqualValues(t, f, c)
 		}
@@ -60,7 +62,7 @@ func TestConvertInt8(t *testing.T) {
 	invalidInts := []string{"1.233", "a", "false", strconv.Itoa(int(math.MaxInt64))}
 
 	for _, f := range validInts {
-		c, err := ConvertInt8(strconv.FormatInt(int64(f), 10))
+		c, err := ConvertInt8(FormatInt8(f))
 		if assert.NoError(t, err) {
 			assert.EqualValues(t, f, c)
 		}
@@ -76,7 +78,7 @@ func TestConvertInt16(t *testing.T) {
 	invalidInts := []string{"1.233", "a", "false", strconv.Itoa(int(math.MaxInt64))}
 
 	for _, f := range validInts {
-		c, err := ConvertInt16(strconv.FormatInt(int64(f), 10))
+		c, err := ConvertInt16(FormatInt16(f))
 		if assert.NoError(t, err) {
 			assert.EqualValues(t, f, c)
 		}
@@ -92,7 +94,7 @@ func TestConvertInt32(t *testing.T) {
 	invalidInts := []string{"1.233", "a", "false", strconv.Itoa(int(math.MaxInt64))}
 
 	for _, f := range validInts {
-		c, err := ConvertInt32(strconv.FormatInt(int64(f), 10))
+		c, err := ConvertInt32(FormatInt32(f))
 		if assert.NoError(t, err) {
 			assert.EqualValues(t, f, c)
 		}
@@ -108,7 +110,7 @@ func TestConvertInt64(t *testing.T) {
 	invalidInts := []string{"1.233", "a", "false"}
 
 	for _, f := range validInts {
-		c, err := ConvertInt64(strconv.FormatInt(int64(f), 10))
+		c, err := ConvertInt64(FormatInt64(f))
 		if assert.NoError(t, err) {
 			assert.EqualValues(t, f, c)
 		}
@@ -124,7 +126,7 @@ func TestConvertUint8(t *testing.T) {
 	invalidInts := []string{"1.233", "a", "false", strconv.FormatUint(math.MaxUint64, 10)}
 
 	for _, f := range validInts {
-		c, err := ConvertUint8(strconv.FormatUint(uint64(f), 10))
+		c, err := ConvertUint8(FormatUint8(f))
 		if assert.NoError(t, err) {
 			assert.EqualValues(t, f, c)
 		}
@@ -140,7 +142,7 @@ func TestConvertUint16(t *testing.T) {
 	invalidUints := []string{"1.233", "a", "false", strconv.FormatUint(math.MaxUint64, 10)}
 
 	for _, f := range validUints {
-		c, err := ConvertUint16(strconv.FormatUint(uint64(f), 10))
+		c, err := ConvertUint16(FormatUint16(f))
 		if assert.NoError(t, err) {
 			assert.EqualValues(t, f, c)
 		}
@@ -156,7 +158,7 @@ func TestConvertUint32(t *testing.T) {
 	invalidUints := []string{"1.233", "a", "false", strconv.FormatUint(math.MaxUint64, 10)}
 
 	for _, f := range validUints {
-		c, err := ConvertUint32(strconv.FormatUint(uint64(f), 10))
+		c, err := ConvertUint32(FormatUint32(f))
 		if assert.NoError(t, err) {
 			assert.EqualValues(t, f, c)
 		}
@@ -172,7 +174,7 @@ func TestConvertUint64(t *testing.T) {
 	invalidUints := []string{"1.233", "a", "false"}
 
 	for _, f := range validUints {
-		c, err := ConvertUint64(strconv.FormatUint(uint64(f), 10))
+		c, err := ConvertUint64(FormatUint64(f))
 		if assert.NoError(t, err) {
 			assert.EqualValues(t, f, c)
 		}
@@ -191,4 +193,9 @@ func TestIsFloat64AJSONInteger(t *testing.T) {
 	assert.True(t, IsFloat64AJSONInteger(1.0))
 	assert.True(t, IsFloat64AJSONInteger(maxJSONFloat))
 	assert.True(t, IsFloat64AJSONInteger(minJSONFloat))
+}
+
+func TestFormatBool(t *testing.T) {
+	assert.Equal(t, "true", FormatBool(true))
+	assert.Equal(t, "false", FormatBool(false))
 }
