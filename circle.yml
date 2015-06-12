@@ -8,6 +8,7 @@ dependencies:
 
     # code coverage
     - go get golang.org/x/tools/cmd/...
+    - go get github.com/axw/gocov/gocov
     - go get github.com/mattn/goveralls
 
     # get the dependencies etc
@@ -16,10 +17,16 @@ dependencies:
     - go get github.com/elazarl/go-bindata-assetfs/...
 
   override:
+    - cd ${GOPATH/:*/}/src/github.com/casualjim/go-swagger
+    - golint ./...:
+        pwd: ${GOPATH/:*/}/src/github.com/casualjim/go-swagger
+    - go tool vet -printf=false -structtags=false `pwd`:
+        pwd: ${GOPATH/:*/}/src/github.com/casualjim/go-swagger
     - godep restore
-    - golint ./...
 test:
   override:
-    - cd ${GOPATH/:*/}/src/github.com/casualjim/go-swagger
-    - godep go test -race ./...
-    - GOPATH=`godep path`:$GOPATH goveralls -service=circle-ci -repotoken=$COVERALLS_TOKEN
+    - godep go test -race ./...:
+        pwd: ${GOPATH/:*/}/src/github.com/casualjim/go-swagger
+
+    - GOPATH=`godep path`:$GOPATH goveralls -service=circle-ci -repotoken=$COVERALLS_TOKEN:
+        pwd: ${GOPATH/:*/}/src/github.com/casualjim/go-swagger
