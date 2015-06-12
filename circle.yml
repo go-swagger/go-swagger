@@ -1,5 +1,6 @@
 checkout:
   post:
+    - mkdir -p ${GOPATH/:*/}/src/github.com/casualjim
     - ln -sf `pwd` ${GOPATH/:*/}/src/github.com/casualjim/go-swagger
 dependencies:
   pre:
