@@ -23,4 +23,4 @@ godep go tool cover -func profile.cov
 
 # To submit the test coverage result to coveralls.io,
 # use goveralls (https://github.com/mattn/goveralls)
-#if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ]; then goveralls -coverprofile=profile.cov -service=travis-ci -repotoken $COVERALLS_TOKEN; fi
+if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ]; then goveralls -coverprofile=profile.cov -service=travis-ci -repotoken $COVERALLS_TOKEN; fi
