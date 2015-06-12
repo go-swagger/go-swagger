@@ -10,7 +10,7 @@ before_install:
 
   # code coverage
   - go get golang.org/x/tools/cmd/...
-  - go get github.com/modocache/gover
+  - go get github.com/axw/gocov/gocov
   - if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ]; then go get github.com/mattn/goveralls; fi
 
   # get the dependencies etc
@@ -25,6 +25,7 @@ script:
   #- ./coverage.sh
   - godep go test -race ./...
   - if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ]; then GOPATH=`godep path`:$GOPATH goveralls -service=travis-ci -repotoken=$COVERALLS_TOKEN; fi
+
 env:
   secure: "QkBMwu7HL57yi6/EHVT42ofmuCI9ey3AR9+1vF6AwcVErm5pbhSSGMHTAo8ruP80PBOnJEAl65xOS5fzEIPIxFNbbL57Qsty/NCsMwxd9aPl+xP8pNFlffVz3CmbpfFLsGuWc77kDCHRdnsK+/mOjs+EKw0XHUmViX2DAGkHQ8U="
 
