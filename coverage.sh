@@ -20,5 +20,5 @@ done
 
 godep go tool cover -func profile.cov
 #if [ "$TRAVIS_SECURE_ENV_VARS" = "true" || "$CIRCLECI" = "true" ]; then
-  goveralls -coverprofile=profile.cov -service=travis-ci -repotoken=$COVERALLS_TOKEN;
+  goveralls -coverprofile=profile.cov -service=circleci -repotoken=$COVERALLS_TOKEN;
 #fi
