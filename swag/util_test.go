@@ -11,7 +11,7 @@ type translationSample struct {
 	str, out string
 }
 
-func titleize(s string) string { return strings.ToTitle(s) }
+func titleize(s string) string { return strings.ToTitle(s[:1]) + lower(s[1:]) }
 
 func TestToGoName(t *testing.T) {
 	samples := []translationSample{
@@ -101,17 +101,69 @@ func TestJoinByFormat(t *testing.T) {
 }
 
 func TestToFileName(t *testing.T) {
-	assert.Equal(t, "dog_walker", ToFileName("DogWalker"))
+	samples := []translationSample{
+		{"SampleText", "sample_text"},
+		{"FindThingByID", "find_thing_by_id"},
+	}
+
+	for k := range commonInitialisms {
+		samples = append(samples,
+			translationSample{"Sample" + k + "Text", "sample_" + lower(k) + "_text"},
+		)
+	}
+
+	for _, sample := range samples {
+		assert.Equal(t, sample.out, ToFileName(sample.str))
+	}
 }
 
 func TestToCommandName(t *testing.T) {
-	assert.Equal(t, "dog-walker", ToCommandName("DogWalker"))
+	samples := []translationSample{
+		{"SampleText", "sample-text"},
+		{"FindThingByID", "find-thing-by-id"},
+	}
+
+	for k := range commonInitialisms {
+		samples = append(samples,
+			translationSample{"Sample" + k + "Text", "sample-" + lower(k) + "-text"},
+		)
+	}
+
+	for _, sample := range samples {
+		assert.Equal(t, sample.out, ToCommandName(sample.str))
+	}
 }
 
 func TestToHumanName(t *testing.T) {
-	assert.Equal(t, "dog walker", ToHumanNameLower("DogWalker"))
+	samples := []translationSample{
+		{"SampleText", "sample text"},
+		{"FindThingByID", "find thing by ID"},
+	}
+
+	for k := range commonInitialisms {
+		samples = append(samples,
+			translationSample{"Sample" + k + "Text", "sample " + k + " text"},
+		)
+	}
+
+	for _, sample := range samples {
+		assert.Equal(t, sample.out, ToHumanNameLower(sample.str))
+	}
 }
 
 func TestToJSONName(t *testing.T) {
-	assert.Equal(t, "dogWalker", ToJSONName("DogWalker"))
+	samples := []translationSample{
+		{"SampleText", "sampleText"},
+		{"FindThingByID", "findThingById"},
+	}
+
+	for k := range commonInitialisms {
+		samples = append(samples,
+			translationSample{"Sample" + k + "Text", "sample" + titleize(k) + "Text"},
+		)
+	}
+
+	for _, sample := range samples {
+		assert.Equal(t, sample.out, ToJSONName(sample.str))
+	}
 }
