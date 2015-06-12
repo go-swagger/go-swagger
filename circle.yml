@@ -1,0 +1,21 @@
+dependencies:
+  pre:
+    - go get github.com/golang/lint/golint
+
+    # code coverage
+    - go get golang.org/x/tools/cmd/...
+    - go get github.com/modocache/gover
+    - go get github.com/mattn/goveralls
+
+    # get the dependencies etc
+    - go get github.com/tools/godep
+    - go get github.com/jteeuwen/go-bindata/...
+    - go get github.com/elazarl/go-bindata-assetfs/...
+  override:
+    - godep restore
+    - golint ./...
+    - go
+    - godep go build -v ./cmd/swagger
+test:
+  override:
+    - ./coverage.sh
