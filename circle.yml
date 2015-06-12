@@ -13,8 +13,7 @@ dependencies:
     - go get github.com/elazarl/go-bindata-assetfs/...
   override:
     - godep restore
-    - golint ./...
-    - go install -a -v ./cmd/swagger
+    - golint ./...    
 test:
   override:
     - ./coverage.sh
