@@ -4,6 +4,9 @@ set -e
 
 godep go test -race ./...
 
+# Run test coverage on each subdirectories and merge the coverage profile.
+echo "mode: count" > profile.cov
+
 # Standard go tooling behavior is to ignore dirs with leading underscores
 for dir in $(find . -maxdepth 10 -not -path './.git*' -not -path '*/_*' -type d -not -path 'Godeps' -not -path './examples*' -not -path './fixtures*' -not -path './swagger-ui')
 do
