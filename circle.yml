@@ -8,7 +8,6 @@ dependencies:
 
     # code coverage
     - go get golang.org/x/tools/cmd/...
-    - go get github.com/modocache/gover
     - go get github.com/mattn/goveralls
 
     # get the dependencies etc
@@ -20,5 +19,5 @@ dependencies:
     - godep restore
     - golint ./...
 test:
-  override:
+  post:
     - ./coverage.sh
