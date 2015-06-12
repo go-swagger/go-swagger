@@ -14,7 +14,7 @@ dependencies:
   override:
     - godep restore
     - golint ./...
-    - godep go build -v ./cmd/swagger
+    - go install -a -v ./cmd/swagger
 test:
   override:
     - ./coverage.sh
