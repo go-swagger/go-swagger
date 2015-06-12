@@ -22,6 +22,3 @@ test:
   override:
     - godep go test -race ./...:
         pwd: ../.go_workspace/src/github.com/casualjim/go-swagger
-
-    - GOPATH=`godep path`:$GOPATH goveralls -service=circle-ci -repotoken=$COVERALLS_TOKEN:
-        pwd: ../.go_workspace/src/github.com/casualjim/go-swagger
