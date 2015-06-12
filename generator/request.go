@@ -163,7 +163,7 @@ func (r *requestGenerator) generateHandler() error {
 	//}
 	log.Println("rendered handler template:", r.pkg+"."+r.cname)
 
-	//fp := filepath.Join(o.ServerPackage, o.Target)
+	//fp := filepath.Join(o.ClientPackage, o.Target)
 	//if len(o.Operation.Tags) > 0 {
 	//fp = filepath.Join(fp, o.pkg)
 	//}
