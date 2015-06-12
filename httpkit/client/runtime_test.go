@@ -68,8 +68,6 @@ func TestRuntime_Canary(t *testing.T) {
 			assert.IsType(t, []task{}, res)
 			actual := res.([]task)
 			assert.EqualValues(t, result, actual)
-			//assert.EqualValues(t, result[0], actual[0])
-			//assert.EqualValues(t, result[1], actual[1])
 		}
 	}
 }
