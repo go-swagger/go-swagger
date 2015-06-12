@@ -1,7 +1,3 @@
-checkout:
-  post:
-    - mkdir -p ${GOPATH/:*/}/src/github.com/casualjim
-    - ln -sf `pwd` ${GOPATH/:*/}/src/github.com/casualjim/go-swagger
 dependencies:
   pre:
     - go get github.com/golang/lint/golint
@@ -17,16 +13,15 @@ dependencies:
     - go get github.com/elazarl/go-bindata-assetfs/...
 
   override:
-    - cd ${GOPATH/:*/}/src/github.com/casualjim/go-swagger
     - golint ./...:
-        pwd: ${GOPATH/:*/}/src/github.com/casualjim/go-swagger
+        pwd: ../.go_workspace/src/github.com/casualjim/go-swagger/src/github.com/casualjim/go-swagger
     - go tool vet -printf=false -structtags=false `pwd`:
-        pwd: ${GOPATH/:*/}/src/github.com/casualjim/go-swagger
+        pwd: ../.go_workspace/src/github.com/casualjim/go-swagger
     - godep restore
 test:
   override:
     - godep go test -race ./...:
-        pwd: ${GOPATH/:*/}/src/github.com/casualjim/go-swagger
+        pwd: ../.go_workspace/src/github.com/casualjim/go-swagger
 
     - GOPATH=`godep path`:$GOPATH goveralls -service=circle-ci -repotoken=$COVERALLS_TOKEN:
-        pwd: ${GOPATH/:*/}/src/github.com/casualjim/go-swagger
+        pwd: ../.go_workspace/src/github.com/casualjim/go-swagger
