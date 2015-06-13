@@ -2,7 +2,6 @@ package client
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"path/filepath"
 
@@ -32,7 +31,7 @@ type Runtime struct {
 // when this is a response without a body the bool will be true
 // This needs to produce the result or it loses the type information.
 // That's the explanation for the somewhat many args to this function
-type ResponseReader func(int, io.Reader, httpkit.Consumer) (interface{}, error)
+type ResponseReader func(client.Response, httpkit.Consumer) (interface{}, error)
 
 // New creates a new default runtime for a swagger api client.
 func New(swaggerSpec *spec.Document) *Runtime {
@@ -102,5 +101,5 @@ func (r *Runtime) Submit(operationID string, params client.RequestWriter, readRe
 		// scream about not knowing what to do
 		return nil, fmt.Errorf("no consumer: %q", ct)
 	}
-	return readResponse(res.StatusCode, res.Body, cons)
+	return readResponse(response{res}, cons)
 }
