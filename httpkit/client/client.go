@@ -9,6 +9,15 @@ type methodAndPath struct {
 	PathPattern string
 }
 
+// NewAPIError creates a new API error
+func NewAPIError(opName string, payload []byte, code int) *APIError {
+	return &APIError{
+		OperationName: opName,
+		Payload:       payload,
+		Code:          code,
+	}
+}
+
 // APIError wraps an error model and captures the status code
 type APIError struct {
 	OperationName string

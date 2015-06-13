@@ -3,7 +3,6 @@ package client
 import (
 	"encoding/json"
 	"errors"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -54,10 +53,10 @@ func TestRuntime_Canary(t *testing.T) {
 	specDoc.Spec().BasePath = "/"
 	if assert.NoError(t, err) {
 		runtime := New(specDoc)
-		res, err := runtime.Submit("getTasks", rwrtr, func(statusCode int, body io.Reader, consumer httpkit.Consumer) (interface{}, error) {
-			if statusCode == 200 {
+		res, err := runtime.Submit("getTasks", rwrtr, func(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+			if response.Code() == 200 {
 				var result []task
-				if err := consumer.Consume(body, &result); err != nil {
+				if err := consumer.Consume(response.Body(), &result); err != nil {
 					return nil, err
 				}
 				return result, nil
