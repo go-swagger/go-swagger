@@ -39,7 +39,7 @@ func TestResponseReaderFunc(t *testing.T) {
 		actual.Header = r.GetHeader("blah")
 		return actual, nil
 	})
-	reader(response{}, nil)
+	reader.ReadResponse(response{}, nil)
 	assert.Equal(t, "the content", actual.Body)
 	assert.Equal(t, "the message", actual.Message)
 	assert.Equal(t, "the header", actual.Header)
