@@ -15,7 +15,7 @@ dependencies:
     - go get gopkg.in/matm/v1/gocov-html
 
     # test output
-    - go get -t -v -u github.com/cee-dub/go-junit-report
+    - go get -t -v -u -f github.com/cee-dub/go-junit-report
 
     # get the dependencies etc
     - go get github.com/tools/godep
@@ -24,14 +24,12 @@ dependencies:
     - godep restore
 test:
   pre:
-    - env
-    - go env
     - echo "$GOCOVMODE" > profile.cov
-    - go list ./... | grep -v generator | xargs -L 1 -I{} rm -f ${GOPATH/:*}/src/{}/profile.cov
+    - go list ./... | grep -v generator | xargs -L 1 -I{} rm -f ${GOPATH//*:}/src/{}/profile.cov
   override:
     - godep go test -v -race ./... | go-junit-report -dir $CIRCLE_TEST_REPORTS/go
-    - go list ./... | grep -v generator | xargs -L 1 -I{} godep go test -coverprofile=${GOPATH/:*}/src/{}/profile.cov {}
-    - go list ./... | grep -v generator | xargs -L 1 -I{} cat ${GOPATH/:*}/src/{}/profile.cov | grep -v "$GOCOVMODE" >> profile.cov
+    - go list ./... | grep -v generator | xargs -L 1 -I{} godep go test -coverprofile=${GOPATH//*:}/src/{}/profile.cov {}
+    - go list ./... | grep -v generator | xargs -L 1 -I{} cat ${GOPATH//*:}/src/{}/profile.cov | grep -v "$GOCOVMODE" >> profile.cov
   post:
     - go tool cover -func profile.cov
     - gocov report profile.cov
