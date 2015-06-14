@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/casualjim/go-swagger/strfmt"
+	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/stretchr/testify/assert"
 )
 

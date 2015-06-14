@@ -15,16 +15,16 @@ dependencies:
 
   override:
     - golint ./...:
-        pwd: ../.go_workspace/src/github.com/casualjim/go-swagger
+        pwd: ../.go_workspace/src/github.com/go-swagger/go-swagger
     - go tool vet -printf=false -structtags=false `pwd`:
-        pwd: ../.go_workspace/src/github.com/casualjim/go-swagger
+        pwd: ../.go_workspace/src/github.com/go-swagger/go-swagger
     - godep restore
 test:
   override:
     - godep go test -race ./...:
-        pwd: ../.go_workspace/src/github.com/casualjim/go-swagger
+        pwd: ../.go_workspace/src/github.com/go-swagger/go-swagger
     - ./coverage.sh:
-        pwd: ../.go_workspace/src/github.com/casualjim/go-swagger
+        pwd: ../.go_workspace/src/github.com/go-swagger/go-swagger
   post:
     #- goveralls -coverprofile=profile.cov -service=circleci -repotoken=$COVERALLS_REPO_TOKEN
 notify:

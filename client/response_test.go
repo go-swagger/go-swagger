@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/casualjim/go-swagger/httpkit"
+	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/stretchr/testify/assert"
 )
 

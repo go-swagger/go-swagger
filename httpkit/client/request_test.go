@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/casualjim/go-swagger/client"
-	"github.com/casualjim/go-swagger/httpkit"
-	"github.com/casualjim/go-swagger/strfmt"
+	"github.com/go-swagger/go-swagger/client"
+	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/stretchr/testify/assert"
 )
 
