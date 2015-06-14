@@ -6,8 +6,8 @@ import (
 	"net/url"
 	"path/filepath"
 
-	"github.com/casualjim/go-swagger/assets"
-	"github.com/casualjim/go-swagger/swag"
+	"github.com/go-swagger/go-swagger/assets"
+	"github.com/go-swagger/go-swagger/swag"
 )
 
 const (

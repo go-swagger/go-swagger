@@ -4,12 +4,12 @@ import (
 	"io"
 	gotest "testing"
 
-	"github.com/casualjim/go-swagger/errors"
-	"github.com/casualjim/go-swagger/httpkit"
-	"github.com/casualjim/go-swagger/httpkit/middleware/untyped"
-	"github.com/casualjim/go-swagger/httpkit/security"
-	testingutil "github.com/casualjim/go-swagger/internal/testing"
-	"github.com/casualjim/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-swagger/go-swagger/httpkit/middleware/untyped"
+	"github.com/go-swagger/go-swagger/httpkit/security"
+	testingutil "github.com/go-swagger/go-swagger/internal/testing"
+	"github.com/go-swagger/go-swagger/spec"
 	"github.com/stretchr/testify/assert"
 )
 

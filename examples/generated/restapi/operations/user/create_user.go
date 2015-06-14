@@ -6,7 +6,7 @@ package user
 import (
 	"net/http"
 
-	"github.com/casualjim/go-swagger/httpkit/middleware"
+	"github.com/go-swagger/go-swagger/httpkit/middleware"
 )
 
 // CreateUserHandlerFunc turns a function with the right signature into a create user handler

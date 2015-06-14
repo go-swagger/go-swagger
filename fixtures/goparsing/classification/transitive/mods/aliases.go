@@ -3,7 +3,7 @@ package mods
 import (
 	"time"
 
-	"github.com/casualjim/go-swagger/strfmt"
+	"github.com/go-swagger/go-swagger/strfmt"
 )
 
 // SomeStringsType is a type that refines []string

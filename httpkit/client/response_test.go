@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/casualjim/go-swagger/client"
+	"github.com/go-swagger/go-swagger/client"
 	"github.com/stretchr/testify/assert"
 )
 

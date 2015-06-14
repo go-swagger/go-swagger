@@ -3,7 +3,7 @@ package generate
 import (
 	"errors"
 
-	"github.com/casualjim/go-swagger/generator"
+	"github.com/go-swagger/go-swagger/generator"
 )
 
 // Operation the generate operation files command

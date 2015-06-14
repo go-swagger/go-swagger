@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/casualjim/go-swagger/spec"
-	"github.com/casualjim/go-swagger/swag"
+	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/swag"
 )
 
 // GenerateSupport generates the supporting files for an API

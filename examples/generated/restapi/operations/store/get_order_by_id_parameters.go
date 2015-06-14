@@ -6,9 +6,9 @@ package store
 import (
 	"net/http"
 
-	"github.com/casualjim/go-swagger/errors"
-	"github.com/casualjim/go-swagger/httpkit/middleware"
-	"github.com/casualjim/go-swagger/strfmt"
+	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-swagger/go-swagger/httpkit/middleware"
+	"github.com/go-swagger/go-swagger/strfmt"
 )
 
 // GetOrderByIDParams contains all the bound params for the get order by i d operation

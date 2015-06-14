@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/casualjim/go-swagger/swag"
+	"github.com/go-swagger/go-swagger/swag"
 )
 
 // Responses is a container for the expected responses of an operation.

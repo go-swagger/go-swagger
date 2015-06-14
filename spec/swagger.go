@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/casualjim/go-swagger/jsonpointer"
-	"github.com/casualjim/go-swagger/swag"
+	"github.com/go-swagger/go-swagger/jsonpointer"
+	"github.com/go-swagger/go-swagger/swag"
 )
 
 // Swagger this is the root document object for the API specification.

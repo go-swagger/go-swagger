@@ -3,8 +3,8 @@ package spec
 import (
 	"encoding/json"
 
-	"github.com/casualjim/go-swagger/jsonpointer"
-	"github.com/casualjim/go-swagger/swag"
+	"github.com/go-swagger/go-swagger/jsonpointer"
+	"github.com/go-swagger/go-swagger/swag"
 )
 
 // QueryParam creates a query parameter

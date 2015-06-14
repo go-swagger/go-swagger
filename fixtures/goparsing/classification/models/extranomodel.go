@@ -3,8 +3,8 @@ package models
 import (
 	"time"
 
-	"github.com/casualjim/go-swagger/fixtures/goparsing/classification/transitive/mods"
-	"github.com/casualjim/go-swagger/strfmt"
+	"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/transitive/mods"
+	"github.com/go-swagger/go-swagger/strfmt"
 )
 
 // A Something struct is used by other structs

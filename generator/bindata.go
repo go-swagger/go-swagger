@@ -43,7 +43,7 @@ type asset struct {
 
 // templatesClientClientGotmpl reads file data from disk. It returns an error on failure.
 func templatesClientClientGotmpl() (*asset, error) {
-	path := "/home/ivan/go/src/github.com/casualjim/go-swagger/generator/templates/client/client.gotmpl"
+	path := "/home/ivan/go/src/github.com/go-swagger/go-swagger/generator/templates/client/client.gotmpl"
 	name := "templates/client/client.gotmpl"
 	bytes, err := bindataRead(path, name)
 	if err != nil {
@@ -61,7 +61,7 @@ func templatesClientClientGotmpl() (*asset, error) {
 
 // templatesClientFacadeGotmpl reads file data from disk. It returns an error on failure.
 func templatesClientFacadeGotmpl() (*asset, error) {
-	path := "/home/ivan/go/src/github.com/casualjim/go-swagger/generator/templates/client/facade.gotmpl"
+	path := "/home/ivan/go/src/github.com/go-swagger/go-swagger/generator/templates/client/facade.gotmpl"
 	name := "templates/client/facade.gotmpl"
 	bytes, err := bindataRead(path, name)
 	if err != nil {
@@ -79,7 +79,7 @@ func templatesClientFacadeGotmpl() (*asset, error) {
 
 // templatesClientParameterGotmpl reads file data from disk. It returns an error on failure.
 func templatesClientParameterGotmpl() (*asset, error) {
-	path := "/home/ivan/go/src/github.com/casualjim/go-swagger/generator/templates/client/parameter.gotmpl"
+	path := "/home/ivan/go/src/github.com/go-swagger/go-swagger/generator/templates/client/parameter.gotmpl"
 	name := "templates/client/parameter.gotmpl"
 	bytes, err := bindataRead(path, name)
 	if err != nil {
@@ -97,7 +97,7 @@ func templatesClientParameterGotmpl() (*asset, error) {
 
 // templatesClientResponseGotmpl reads file data from disk. It returns an error on failure.
 func templatesClientResponseGotmpl() (*asset, error) {
-	path := "/home/ivan/go/src/github.com/casualjim/go-swagger/generator/templates/client/response.gotmpl"
+	path := "/home/ivan/go/src/github.com/go-swagger/go-swagger/generator/templates/client/response.gotmpl"
 	name := "templates/client/response.gotmpl"
 	bytes, err := bindataRead(path, name)
 	if err != nil {
@@ -115,7 +115,7 @@ func templatesClientResponseGotmpl() (*asset, error) {
 
 // templatesModelGotmpl reads file data from disk. It returns an error on failure.
 func templatesModelGotmpl() (*asset, error) {
-	path := "/home/ivan/go/src/github.com/casualjim/go-swagger/generator/templates/model.gotmpl"
+	path := "/home/ivan/go/src/github.com/go-swagger/go-swagger/generator/templates/model.gotmpl"
 	name := "templates/model.gotmpl"
 	bytes, err := bindataRead(path, name)
 	if err != nil {
@@ -133,7 +133,7 @@ func templatesModelGotmpl() (*asset, error) {
 
 // templatesModelvalidatorGotmpl reads file data from disk. It returns an error on failure.
 func templatesModelvalidatorGotmpl() (*asset, error) {
-	path := "/home/ivan/go/src/github.com/casualjim/go-swagger/generator/templates/modelvalidator.gotmpl"
+	path := "/home/ivan/go/src/github.com/go-swagger/go-swagger/generator/templates/modelvalidator.gotmpl"
 	name := "templates/modelvalidator.gotmpl"
 	bytes, err := bindataRead(path, name)
 	if err != nil {
@@ -151,7 +151,7 @@ func templatesModelvalidatorGotmpl() (*asset, error) {
 
 // templatesServerBuilderGotmpl reads file data from disk. It returns an error on failure.
 func templatesServerBuilderGotmpl() (*asset, error) {
-	path := "/home/ivan/go/src/github.com/casualjim/go-swagger/generator/templates/server/builder.gotmpl"
+	path := "/home/ivan/go/src/github.com/go-swagger/go-swagger/generator/templates/server/builder.gotmpl"
 	name := "templates/server/builder.gotmpl"
 	bytes, err := bindataRead(path, name)
 	if err != nil {
@@ -169,7 +169,7 @@ func templatesServerBuilderGotmpl() (*asset, error) {
 
 // templatesServerConfigureapiGotmpl reads file data from disk. It returns an error on failure.
 func templatesServerConfigureapiGotmpl() (*asset, error) {
-	path := "/home/ivan/go/src/github.com/casualjim/go-swagger/generator/templates/server/configureapi.gotmpl"
+	path := "/home/ivan/go/src/github.com/go-swagger/go-swagger/generator/templates/server/configureapi.gotmpl"
 	name := "templates/server/configureapi.gotmpl"
 	bytes, err := bindataRead(path, name)
 	if err != nil {
@@ -187,7 +187,7 @@ func templatesServerConfigureapiGotmpl() (*asset, error) {
 
 // templatesServerMainGotmpl reads file data from disk. It returns an error on failure.
 func templatesServerMainGotmpl() (*asset, error) {
-	path := "/home/ivan/go/src/github.com/casualjim/go-swagger/generator/templates/server/main.gotmpl"
+	path := "/home/ivan/go/src/github.com/go-swagger/go-swagger/generator/templates/server/main.gotmpl"
 	name := "templates/server/main.gotmpl"
 	bytes, err := bindataRead(path, name)
 	if err != nil {
@@ -205,7 +205,7 @@ func templatesServerMainGotmpl() (*asset, error) {
 
 // templatesServerOperationGotmpl reads file data from disk. It returns an error on failure.
 func templatesServerOperationGotmpl() (*asset, error) {
-	path := "/home/ivan/go/src/github.com/casualjim/go-swagger/generator/templates/server/operation.gotmpl"
+	path := "/home/ivan/go/src/github.com/go-swagger/go-swagger/generator/templates/server/operation.gotmpl"
 	name := "templates/server/operation.gotmpl"
 	bytes, err := bindataRead(path, name)
 	if err != nil {
@@ -223,7 +223,7 @@ func templatesServerOperationGotmpl() (*asset, error) {
 
 // templatesServerParameterGotmpl reads file data from disk. It returns an error on failure.
 func templatesServerParameterGotmpl() (*asset, error) {
-	path := "/home/ivan/go/src/github.com/casualjim/go-swagger/generator/templates/server/parameter.gotmpl"
+	path := "/home/ivan/go/src/github.com/go-swagger/go-swagger/generator/templates/server/parameter.gotmpl"
 	name := "templates/server/parameter.gotmpl"
 	bytes, err := bindataRead(path, name)
 	if err != nil {
@@ -241,7 +241,7 @@ func templatesServerParameterGotmpl() (*asset, error) {
 
 // templatesStructfieldGotmpl reads file data from disk. It returns an error on failure.
 func templatesStructfieldGotmpl() (*asset, error) {
-	path := "/home/ivan/go/src/github.com/casualjim/go-swagger/generator/templates/structfield.gotmpl"
+	path := "/home/ivan/go/src/github.com/go-swagger/go-swagger/generator/templates/structfield.gotmpl"
 	name := "templates/structfield.gotmpl"
 	bytes, err := bindataRead(path, name)
 	if err != nil {
@@ -259,7 +259,7 @@ func templatesStructfieldGotmpl() (*asset, error) {
 
 // templatesValidationCustomformatGotmpl reads file data from disk. It returns an error on failure.
 func templatesValidationCustomformatGotmpl() (*asset, error) {
-	path := "/home/ivan/go/src/github.com/casualjim/go-swagger/generator/templates/validation/customformat.gotmpl"
+	path := "/home/ivan/go/src/github.com/go-swagger/go-swagger/generator/templates/validation/customformat.gotmpl"
 	name := "templates/validation/customformat.gotmpl"
 	bytes, err := bindataRead(path, name)
 	if err != nil {
@@ -277,7 +277,7 @@ func templatesValidationCustomformatGotmpl() (*asset, error) {
 
 // templatesValidationPrimitiveGotmpl reads file data from disk. It returns an error on failure.
 func templatesValidationPrimitiveGotmpl() (*asset, error) {
-	path := "/home/ivan/go/src/github.com/casualjim/go-swagger/generator/templates/validation/primitive.gotmpl"
+	path := "/home/ivan/go/src/github.com/go-swagger/go-swagger/generator/templates/validation/primitive.gotmpl"
 	name := "templates/validation/primitive.gotmpl"
 	bytes, err := bindataRead(path, name)
 	if err != nil {

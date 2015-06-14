@@ -3,7 +3,7 @@ package client
 import (
 	"io"
 
-	"github.com/casualjim/go-swagger/httpkit"
+	"github.com/go-swagger/go-swagger/httpkit"
 )
 
 // A Response represents a client response

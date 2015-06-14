@@ -10,8 +10,8 @@ import (
 
 	"golang.org/x/tools/go/loader"
 
-	"github.com/casualjim/go-swagger/spec"
-	"github.com/casualjim/go-swagger/swag"
+	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/swag"
 )
 
 const (
