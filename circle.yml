@@ -15,10 +15,8 @@ dependencies:
     - godep restore
 test:
   override:
-    - godep go test -race ./...:
-        pwd: ../.go_workspace/src/github.com/go-swagger/go-swagger
-    - ./coverage.sh:
-        pwd: ../.go_workspace/src/github.com/go-swagger/go-swagger
+    - godep go test -race ./...
+    - ./coverage.sh
 notify:
   webhooks:
     # A list of hook hashes, containing the url field
