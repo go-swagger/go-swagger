@@ -25,7 +25,7 @@ test:
     - ./coverage.sh:
         pwd: ../.go_workspace/src/github.com/casualjim/go-swagger
   post:
-    - goveralls -coverprofile=profile.cov -service=circleci -repotoken=$COVERALLS_REPO_TOKEN
+    #- goveralls -coverprofile=profile.cov -service=circleci -repotoken=$COVERALLS_REPO_TOKEN
 notify:
   webhooks:
     # A list of hook hashes, containing the url field
