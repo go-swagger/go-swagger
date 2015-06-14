@@ -19,3 +19,4 @@ fi
 done
 
 godep go tool cover -func profile.cov
+gocov convert profile.cov | gocov-html > $CIRCLE_ARTIFACTS/coverage-$CIRCLE_BUILD_NUM.html
