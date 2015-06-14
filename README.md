@@ -1,9 +1,12 @@
-Swagger 2.0 [![Circle CI](https://circleci.com/gh/casualjim/go-swagger/tree/gen-client.svg?style=svg)](https://circleci.com/gh/casualjim/go-swagger/tree/gen-client)
+Swagger 2.0 [![Circle CI](https://circleci.com/gh/casualjim/go-swagger/tree/gen-client.svg?style=svg)](https://circleci.com/gh/casualjim/go-swagger/tree/gen-client) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/casualjim/go-swagger?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 ========================
 
-[![Slack](https://goswagger-slack.herokuapp.com/badge.svg)](https://goswagger-slack.herokuapp.com/)  [![Coverage Status](https://coveralls.io/repos/casualjim/go-swagger/badge.svg?branch=gen-client)](https://coveralls.io/r/casualjim/go-swagger?branch=gen-client) [![license](http://img.shields.io/badge/license-Apache%20v2-orange.svg)](https://raw.githubusercontent.com/swagger-api/swagger-spec/master/LICENSE) [![GoDoc](https://godoc.org/github.com/casualjim/go-swagger?status.svg)](http://godoc.org/github.com/casualjim/go-swagger)
+[![license](http://img.shields.io/badge/license-Apache%20v2-orange.svg)](https://raw.githubusercontent.com/swagger-api/swagger-spec/master/LICENSE) [![GoDoc](https://godoc.org/github.com/casualjim/go-swagger?status.svg)](http://godoc.org/github.com/casualjim/go-swagger)
 
 This API is not stable yet, when it is stable it will be distributed over gopkg.in
+
+There is a code coverage report available in the artifacts section of a build. Unfortunately using coveralls made the
+build unstable.
 
 Contains an implementation of Swagger 2.0. It knows how to serialize and deserialize swagger specifications.
 
