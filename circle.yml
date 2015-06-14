@@ -1,7 +1,6 @@
 machine:
   environment:
     GOCOVMODE: "mode: set"
-    PROJECT_DIR: ${GOPATH/:*}/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
 general:
   branches:
     ignore:
@@ -15,37 +14,27 @@ dependencies:
     - go get github.com/axw/gocov/gocov
     - go get gopkg.in/matm/v1/gocov-html
 
-    # test output
-    - go get -t -v -u github.com/cee-dub/go-junit-report
-
     # get the dependencies etc
     - go get github.com/tools/godep
     - go get github.com/jteeuwen/go-bindata/...
-  post:
+  override:
     - godep restore
 test:
   pre:
-    - echo "$GOCOVMODE" > profile.cov:
-        pwd: $PROJECT_DIR
-    - go list ./... | grep -v generator | xargs -L 1 -I{} rm -f ${GOPATH/:*}/src/{}/profile.cov:
-        pwd: $PROJECT_DIR
+    - echo "$GOCOVMODE" > profile.cov
+    - go list ./... | grep -v generator | xargs -L 1 -I{} rm -f ${GOPATH/:*}/src/{}/profile.cov
   override:
-    - godep go test -v -race ./... | go-junit-report -dir $CIRCLE_TEST_REPORTS/go:
-        pwd: $PROJECT_DIR
-    - go list ./... | grep -v generator | xargs -L 1 -I{} godep go test -coverprofile=${GOPATH/:*}/src/{}/profile.cov {}:
-        pwd: $PROJECT_DIR
-    - go list ./... | grep -v generator | xargs -L 1 -I{} cat ${GOPATH/:*}/src/{}/profile.cov | grep -v "$GOCOVMODE" >> profile.cov:
-        pwd: $PROJECT_DIR
+    - godep go test -v -race ./...
+    # - godep go test -v -race ./... | go-junit-report -dir $CIRCLE_TEST_REPORTS/go:
+    #     pwd: $PROJECT_DIR
+    - go list ./... | grep -v generator | xargs -L 1 -I{} godep go test -coverprofile=${GOPATH/:*}/src/{}/profile.cov {}
+    - go list ./... | grep -v generator | xargs -L 1 -I{} cat ${GOPATH/:*}/src/{}/profile.cov | grep -v "$GOCOVMODE" >> profile.cov
   post:
-    - go tool cover -func profile.cov:
-        pwd: $PROJECT_DIR
-    - gocov report profile.cov:
-        pwd: $PROJECT_DIR
+    - go tool cover -func profile.cov
+    - gocov report profile.cov
     #- goveralls -service=circleci -coverprofile=profile.cov -repotoken=$COVERALLS_REPO_TOKEN:
-    - gocov convert profile.cov | gocov-html > $CIRCLE_ARTIFACTS/coverage-$CIRCLE_BUILD_NUM.html:
-        pwd: $PROJECT_DIR
-    - find . -name profile.cov -delete:
-        pwd: $PROJECT_DIR
+    - gocov convert profile.cov | gocov-html > $CIRCLE_ARTIFACTS/coverage-$CIRCLE_BUILD_NUM.html
+    - find . -name profile.cov -delete
 notify:
   webhooks:
     - url: https://webhooks.gitter.im/e/9df333473f609f62a215
