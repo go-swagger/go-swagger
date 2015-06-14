@@ -20,8 +20,6 @@ dependencies:
     # get the dependencies etc
     - go get github.com/tools/godep
     - go get github.com/jteeuwen/go-bindata/...
-  override:
-    - go get -t -d -v ./...
   post:
     - godep restore
 test:
