@@ -16,7 +16,6 @@ dependencies:
     - go get gopkg.in/matm/v1/gocov-html
 
     # test output
-    - go get -u github.com/smartystreets/goconvey
     - go get -u github.com/cee-dub/go-junit-report
 
     # get the dependencies etc
