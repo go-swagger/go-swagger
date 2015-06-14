@@ -20,22 +20,13 @@ dependencies:
     # get the dependencies etc
     - go get github.com/tools/godep
     - go get github.com/jteeuwen/go-bindata/...
+  override:
+    - go get -t -d -v ./...
   post:
     - godep restore
 test:
-  pre:
-    - echo "$GOCOVMODE" > ~/profile.cov
-    - go list ./... | grep -v generator | xargs -L 1 -I{} rm -f ${GOPATH//*:}/src/{}/profile.cov
   override:
-    - godep go test -v -race ./... | go-junit-report -dir $CIRCLE_TEST_REPORTS/go
-    - go list ./... | grep -v generator | xargs -L 1 -I{} godep go test -coverprofile=${GOPATH//*:}/src/{}/profile.cov {}
-    - go list ./... | grep -v generator | xargs -L 1 -I{} cat ${GOPATH//*:}/src/{}/profile.cov | grep -v "$GOCOVMODE" >> ~/profile.cov
-  post:
-    - go tool cover -func ~/profile.cov
-    - gocov report ~/profile.cov
-    #- goveralls -service=circleci -coverprofile=profile.cov -repotoken=$COVERALLS_REPO_TOKEN:
-    - gocov convert ~/profile.cov | gocov-html > $CIRCLE_ARTIFACTS/coverage.html
-    - find ${GOPATH//*:} -name profile.cov -delete
+    - ./coverage.sh
 notify:
   webhooks:
     - url: https://webhooks.gitter.im/e/9df333473f609f62a215
