@@ -1,6 +1,4 @@
 machine:
-  services:
-    - docker
   environment:
     GOCOVMODE: "mode: set"
     PROJECT_DIR: ${GOPATH/:*}/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
@@ -23,10 +21,6 @@ dependencies:
     # get the dependencies etc
     - go get github.com/tools/godep
     - go get github.com/jteeuwen/go-bindata/...
-  dependencies:
-    override:
-      - docker info
-      - docker build -t circleci/elasticsearch .
   post:
     - godep restore
 test:
