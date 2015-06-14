@@ -43,9 +43,6 @@ It aims to represent the contract of your API with a language agnostic descripti
 		case "operation":
 			cmd.ShortDescription = "generate one or more server operations from the swagger spec"
 			cmd.LongDescription = cmd.ShortDescription
-		case "request":
-			cmd.ShortDescription = "generate one or more client requests from the swagger spec"
-			cmd.LongDescription = cmd.ShortDescription
 		}
 	}
 

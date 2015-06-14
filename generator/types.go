@@ -131,6 +131,10 @@ func init() {
 	}
 }
 
+func typeForHeader(header spec.Header) string {
+	return resolveSimpleType(header.Type, header.Format, header.Items)
+}
+
 func typeForParameter(param spec.Parameter) string {
 	return resolveSimpleType(param.Type, param.Format, param.Items)
 }

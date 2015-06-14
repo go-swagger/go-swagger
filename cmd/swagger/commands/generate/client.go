@@ -12,7 +12,6 @@ type Client struct {
 	Models         []string `long:"model" short:"M" description:"specify a model to include, repeat for multiple"`
 	SkipModels     bool     `long:"skip-models" description:"no models will be generated when this flag is specified"`
 	SkipOperations bool     `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
-	SkipSupport    bool     `long:"skip-support" description:"no supporting files will be generated when this flag is specified"`
 }
 
 // Execute runs this command
@@ -34,15 +33,9 @@ func (c *Client) Execute(args []string) error {
 	}
 
 	if !c.SkipOperations && (len(c.Operations) > 0 || len(c.Models) == 0) {
-		//if err := generator.GenerateServerOperation(c.Operations, c.Tags, true, true, opts); err != nil {
-		//return err
-		//}
-	}
-
-	if !c.SkipSupport {
-		//if err := generator.GenerateSupport(c.Name, c.Models, c.Operations, false, opts); err != nil {
-		//return err
-		//}
+		if err := generator.GenerateClient(c.Name, c.Models, c.Operations, opts); err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -39,6 +39,13 @@ paths:
           description: Generic Error
         200:
           description: Successful response
+          headers:
+            X-Rate-Limit:
+              type: integer
+              format: int32
+            X-Rate-Limit-Remaining:
+              type: integer
+              format: int32
           schema:
             type: array
             items:
@@ -53,6 +60,8 @@ paths:
           in: body
           schema:
             $ref: "#/definitions/Task"
+      tags:
+        - tasks
       responses:
         default:
           description: Generic Error

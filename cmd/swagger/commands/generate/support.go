@@ -10,7 +10,6 @@ type Support struct {
 	Principal  string   `long:"principal" description:"the model to use for the security principal"`
 	Models     []string `long:"model" short:"M" description:"specify a model to include, repeat for multiple"`
 	DumpData   bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
-	IncludeUI  bool     `long:"with-ui" description:"when generating a main package it uses a middleware that also serves a swagger-ui for the swagger json"`
 }
 
 // Execute generates the supporting files file
@@ -19,7 +18,6 @@ func (s *Support) Execute(args []string) error {
 		s.Name,
 		nil,
 		nil,
-		s.IncludeUI,
 		generator.GenOpts{
 			Spec:          string(s.Spec),
 			Target:        string(s.Target),

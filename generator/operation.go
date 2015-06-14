@@ -9,8 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/go-swagger/go-swagger/spec"
-	"github.com/go-swagger/go-swagger/swag"
+	"github.com/casualjim/go-swagger/httpkit"
+	"github.com/casualjim/go-swagger/spec"
+	"github.com/casualjim/go-swagger/swag"
 )
 
 // GenerateServerOperation generates a parameter model, parameter validator, http handler implementations for a given operation
@@ -228,6 +229,8 @@ func makeCodegenOperation(b codeGenOpBuilder) (genOperation, error) {
 
 	var successModel string
 	var returnsPrimitive, returnsFormatted, returnsContainer, returnsMap bool
+	var responses map[int]genResponse
+	var defaultResponse *genResponse
 	if operation.Responses != nil {
 		if r, ok := operation.Responses.StatusCodeResponses[200]; ok {
 			tn, err := resolver.ResolveSchema(r.Schema, true)
@@ -239,6 +242,23 @@ func makeCodegenOperation(b codeGenOpBuilder) (genOperation, error) {
 			returnsContainer = tn.IsArray
 			returnsMap = tn.IsMap
 			successModel = tn.GoType
+		}
+		for k, v := range operation.Responses.StatusCodeResponses {
+			gr, err := makeGenResponse(b.APIPackage, receiver, swag.ToGoName(b.Name+" "+httpkit.Statuses[k]), k/100 == 2, &resolver, v)
+			if err != nil {
+				return genOperation{}, err
+			}
+			if responses == nil {
+				responses = make(map[int]genResponse)
+			}
+			responses[k] = gr
+		}
+		if operation.Responses.Default != nil {
+			gr, err := makeGenResponse(b.APIPackage, receiver, swag.ToGoName(b.Name+" Default Response"), false, &resolver, *operation.Responses.Default)
+			if err != nil {
+				return genOperation{}, err
+			}
+			defaultResponse = &gr
 		}
 	}
 
@@ -260,7 +280,7 @@ func makeCodegenOperation(b codeGenOpBuilder) (genOperation, error) {
 		DocString:            operationDocString(swag.ToGoName(b.Name), operation),
 		ReceiverName:         receiver,
 		HumanClassName:       swag.ToHumanNameLower(swag.ToGoName(b.Name)),
-		DefaultImports:       []string{filepath.Join(baseImport(filepath.Join(b.Target, "..")), b.ModelsPackage)},
+		DefaultImports:       []string{filepath.Join(baseImport(b.Target), b.ModelsPackage)},
 		Params:               params,
 		Summary:              operation.Summary,
 		QueryParams:          qp,
@@ -277,6 +297,8 @@ func makeCodegenOperation(b codeGenOpBuilder) (genOperation, error) {
 		ReturnsComplexObject: !returnsPrimitive && !returnsFormatted && !returnsContainer && !returnsMap,
 		Authorized:           b.Authed,
 		Principal:            prin,
+		Responses:            responses,
+		DefaultResponse:      defaultResponse,
 	}, nil
 }
 
@@ -293,6 +315,15 @@ func operationDocString(name string, operation spec.Operation) string {
 		}
 	}
 	return commentedLines(strings.Join([]string{hdr, txtFoot}, "\n"))
+}
+
+type genOperationGroup struct {
+	Name       string
+	Operations []genOperation
+
+	DocString      string
+	Imports        map[string]string //`json:"imports,omitempty"` // -
+	DefaultImports []string          //`json:"defaultImports,omitempty"` // -
 }
 
 type genOperation struct {
@@ -320,6 +351,8 @@ type genOperation struct {
 	ReturnsContainer     bool   //`json:"returnsContainer,omitempty"`     // -
 	ReturnsComplexObject bool   //`json:"returnsComplexObject,omitempty"` // -
 	ReturnsMap           bool   //`json:"returnsMap,omitempty"`
+	Responses            map[int]genResponse
+	DefaultResponse      *genResponse
 
 	Params         []genParameter //`json:"params,omitempty"`         // -
 	QueryParams    []genParameter //`json:"queryParams,omitempty"`    // -
@@ -627,5 +660,122 @@ func makeGenValidations(s commonValidations) sharedParam {
 			HasSliceValidations: hasSliceValidations,
 			NeedsSize:           needsSize,
 		},
+	}
+}
+
+func makeGenResponse(pkg, receiver, name string, isSuccess bool, resolver *typeResolver, response spec.Response) (genResponse, error) {
+	var headers []genHeader
+	for hName, header := range response.Headers {
+		headers = append(headers, makeGenHeader(receiver, hName, header))
+	}
+	tpe, err := resolver.ResolveSchema(response.Schema, true)
+	if err != nil {
+		return genResponse{}, err
+	}
+	_, isPrimitive := primitives[tpe.GoType]
+	_, isCustomFormatter := customFormatters[tpe.GoType]
+
+	var model string
+	if response.Schema != nil {
+		model = tpe.GoType
+	}
+
+	return genResponse{
+		Package:         pkg,
+		ReceiverName:    receiver,
+		ClassName:       swag.ToGoName(name),
+		Name:            swag.ToJSONName(name),
+		HumanClassName:  swag.ToHumanNameLower(name),
+		DefaultImports:  nil,
+		Imports:         nil,
+		Headers:         headers,
+		IsSuccess:       isSuccess,
+		Type:            model,
+		IsPrimitive:     isPrimitive,
+		IsFormatted:     isCustomFormatter,
+		IsContainer:     tpe.IsArray,
+		IsComplexObject: tpe.IsComplexObject,
+	}, nil
+}
+
+type genResponse struct {
+	Package        string
+	ReceiverName   string
+	ClassName      string //`json:"classname,omitempty"`      // -
+	Name           string //`json:"name,omitempty"`           // -
+	HumanClassName string //`json:"humanClassname,omitempty"` // -
+	Description    string
+	IsSuccess      bool
+
+	Headers         []genHeader
+	Zero            string //`json:"successZero,omitempty"`         // -
+	IsPrimitive     bool   //`json:"returnsPrimitive,omitempty"`     // -
+	IsFormatted     bool   //`json:"returnsFormatted,omitempty"`     // -
+	IsContainer     bool   //`json:"returnsContainer,omitempty"`     // -
+	IsComplexObject bool   //`json:"returnsComplexObject,omitempty"` // -
+	IsMap           bool   //`json:"returnsMap,omitempty"`
+	Type            string
+	Format          string
+
+	Imports        map[string]string //`json:"imports,omitempty"` // -
+	DefaultImports []string          //`json:"defaultImports,omitempty"` // -
+}
+
+type genHeader struct {
+	sharedParam
+
+	ReceiverName string //`json:"receiverName,omitempty"`
+	Title        string //`json:"title,omitempty"`
+	Description  string //`json:"description,omitempty"`
+	Converter    string //`json:"converter,omitempty"`
+	Formatter    string //`json:"formatter,omitempty"`
+}
+
+func makeGenHeader(receiver, name string, header spec.Header) (result genHeader) {
+	ctx := makeGenValidations(headerValidations(receiver, name, header))
+	result.sharedParam = ctx
+	result.ReceiverName = receiver
+	result.Description = header.Description
+	result.Converter = stringConverters[ctx.Type]
+	result.Formatter = stringFormatters[ctx.Type]
+	return
+}
+
+func headerValidations(receiver, name string, header spec.Header) commonValidations {
+	accessor := swag.ToGoName(name)
+	paramName := name
+
+	tpe := typeForHeader(header)
+	_, isPrimitive := primitives[tpe]
+	_, isCustomFormatter := customFormatters[tpe]
+
+	return commonValidations{
+		propertyDescriptor: propertyDescriptor{
+			PropertyName:      accessor,
+			ParamName:         paramName,
+			ValueExpression:   fmt.Sprintf("%s.%s", receiver, accessor),
+			IndexVar:          "i",
+			Path:              "\"" + paramName + "\"",
+			IsContainer:       header.Items != nil || tpe == "array",
+			IsPrimitive:       isPrimitive,
+			IsCustomFormatter: isCustomFormatter,
+			IsMap:             strings.HasPrefix(tpe, "map"),
+		},
+		Type:             tpe,
+		Format:           header.Format,
+		Items:            header.Items,
+		Default:          header.Default,
+		Maximum:          header.Maximum,
+		ExclusiveMaximum: header.ExclusiveMaximum,
+		Minimum:          header.Minimum,
+		ExclusiveMinimum: header.ExclusiveMinimum,
+		MaxLength:        header.MaxLength,
+		MinLength:        header.MinLength,
+		Pattern:          header.Pattern,
+		MaxItems:         header.MaxItems,
+		MinItems:         header.MinItems,
+		UniqueItems:      header.UniqueItems,
+		MultipleOf:       header.MultipleOf,
+		Enum:             header.Enum,
 	}
 }

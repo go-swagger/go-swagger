@@ -53,7 +53,7 @@ func TestRuntime_Canary(t *testing.T) {
 	specDoc.Spec().BasePath = "/"
 	if assert.NoError(t, err) {
 		runtime := New(specDoc)
-		res, err := runtime.Submit("getTasks", rwrtr, func(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+		res, err := runtime.Submit("getTasks", rwrtr, client.ResponseReaderFunc(func(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
 			if response.Code() == 200 {
 				var result []task
 				if err := consumer.Consume(response.Body(), &result); err != nil {
@@ -62,7 +62,7 @@ func TestRuntime_Canary(t *testing.T) {
 				return result, nil
 			}
 			return nil, errors.New("Generic error")
-		})
+		}))
 		if assert.NoError(t, err) {
 			assert.IsType(t, []task{}, res)
 			actual := res.([]task)

@@ -15,7 +15,7 @@ import (
 )
 
 func TestBuildRequest_SetHeaders(t *testing.T) {
-	r, _ := NewRequest("GET", "/flats/{id}/", nil)
+	r, _ := newRequest("GET", "/flats/{id}/", nil)
 	// single value
 	r.SetHeaderParam("X-Rate-Limit", "500")
 	assert.Equal(t, "500", r.header.Get("X-Rate-Limit"))
@@ -28,14 +28,14 @@ func TestBuildRequest_SetHeaders(t *testing.T) {
 }
 
 func TestBuildRequest_SetPath(t *testing.T) {
-	r, _ := NewRequest("GET", "/flats/{id}/?hello=world", nil)
+	r, _ := newRequest("GET", "/flats/{id}/?hello=world", nil)
 
 	r.SetPathParam("id", "1345")
 	assert.Equal(t, "1345", r.pathParams["id"])
 }
 
 func TestBuildRequest_SetQuery(t *testing.T) {
-	r, _ := NewRequest("GET", "/flats/{id}/", nil)
+	r, _ := newRequest("GET", "/flats/{id}/", nil)
 
 	// single value
 	r.SetQueryParam("hello", "there")
@@ -48,7 +48,7 @@ func TestBuildRequest_SetQuery(t *testing.T) {
 
 func TestBuildRequest_SetForm(t *testing.T) {
 	// non-multipart
-	r, _ := NewRequest("POST", "/flats", nil)
+	r, _ := newRequest("POST", "/flats", nil)
 	r.SetFormParam("hello", "world")
 	assert.Equal(t, "world", r.formFields.Get("hello"))
 	r.SetFormParam("goodbye", "cruel", "world")
@@ -57,7 +57,7 @@ func TestBuildRequest_SetForm(t *testing.T) {
 
 func TestBuildRequest_SetFile(t *testing.T) {
 	// needs to convert form to multipart
-	r, _ := NewRequest("POST", "/flats/{id}/image", nil)
+	r, _ := newRequest("POST", "/flats/{id}/image", nil)
 	// error if it isn't there
 	err := r.SetFileParam("not there", "./i-dont-exist")
 	assert.Error(t, err)
@@ -75,7 +75,7 @@ func TestBuildRequest_SetFile(t *testing.T) {
 }
 
 func TestBuildRequest_SetBody(t *testing.T) {
-	r, _ := NewRequest("GET", "/flats/{id}/?hello=world", nil)
+	r, _ := newRequest("GET", "/flats/{id}/?hello=world", nil)
 	bd := []struct{ Name, Hobby string }{{"Tom", "Organ trail"}, {"John", "Bird watching"}}
 
 	r.SetBodyParam(bd)
@@ -91,7 +91,7 @@ func TestBuildRequest_BuildHTTP_Payload(t *testing.T) {
 		req.SetHeaderParam("X-Rate-Limit", "200")
 		return nil
 	})
-	r, _ := NewRequest("GET", "/flats/{id}/", reqWrtr)
+	r, _ := newRequest("GET", "/flats/{id}/", reqWrtr)
 	r.SetHeaderParam(httpkit.HeaderContentType, httpkit.JSONMime)
 
 	req, err := r.BuildHTTP(httpkit.JSONProducer(), nil)
@@ -113,7 +113,7 @@ func TestBuildRequest_BuildHTTP_Form(t *testing.T) {
 		req.SetHeaderParam("X-Rate-Limit", "200")
 		return nil
 	})
-	r, _ := NewRequest("GET", "/flats/{id}/", reqWrtr)
+	r, _ := newRequest("GET", "/flats/{id}/", reqWrtr)
 	r.SetHeaderParam(httpkit.HeaderContentType, httpkit.JSONMime)
 
 	req, err := r.BuildHTTP(httpkit.JSONProducer(), nil)
@@ -137,7 +137,7 @@ func TestBuildRequest_BuildHTTP_Files(t *testing.T) {
 		req.SetHeaderParam("X-Rate-Limit", "200")
 		return nil
 	})
-	r, _ := NewRequest("GET", "/flats/{id}/", reqWrtr)
+	r, _ := newRequest("GET", "/flats/{id}/", reqWrtr)
 	r.SetHeaderParam(httpkit.HeaderContentType, httpkit.JSONMime)
 
 	req, err := r.BuildHTTP(httpkit.JSONProducer(), nil)
