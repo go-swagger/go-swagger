@@ -12,7 +12,7 @@ dependencies:
     - go get github.com/tools/godep
     - go get github.com/jteeuwen/go-bindata/...
 
-  override:
+  post:
     # - golint ./...:
     #     pwd: ../.go_workspace/src/github.com/go-swagger/go-swagger
     # - go tool vet -printf=false -structtags=false `pwd`:
