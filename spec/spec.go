@@ -6,9 +6,11 @@ import (
 	"net/url"
 	"path/filepath"
 
-	"github.com/go-swagger/go-swagger/assets"
 	"github.com/go-swagger/go-swagger/swag"
 )
+
+//go:generate go-bindata -pkg=spec -prefix=./schemas -ignore=.*\.md ./schemas/...
+//go:generate perl -pi -e s,Json,JSON,g bindata.go
 
 const (
 	// SwaggerSchemaURL the url for the swagger 2.0 schema to validate specs
@@ -51,7 +53,7 @@ func MustLoadJSONSchemaDraft04() *Schema {
 
 // JSONSchemaDraft04 loads the json schema document for json shema draft04
 func JSONSchemaDraft04() (*Schema, error) {
-	b, err := assets.Asset("jsonschema-draft-04.json")
+	b, err := Asset("jsonschema-draft-04.json")
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +77,7 @@ func MustLoadSwagger20Schema() *Schema {
 // Swagger20Schema loads the swagger 2.0 schema from the embedded asses
 func Swagger20Schema() (*Schema, error) {
 
-	b, err := assets.Asset("v2/schema.json")
+	b, err := Asset("v2/schema.json")
 	if err != nil {
 		return nil, err
 	}
