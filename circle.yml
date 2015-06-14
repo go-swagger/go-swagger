@@ -16,7 +16,7 @@ dependencies:
     - go get gopkg.in/matm/v1/gocov-html
 
     # test output
-    - go get -u github.com/cee-dub/go-junit-report
+    - go get -t -v -u github.com/cee-dub/go-junit-report
 
     # get the dependencies etc
     - go get github.com/tools/godep
