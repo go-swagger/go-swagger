@@ -1,17 +1,16 @@
 dependencies:
   pre:
-    # - go get github.com/golang/lint/golint
+    - go get -u golang.org/x/tools/cmd/...
+    # - go get -u github.com/golang/lint/golint
 
     # code coverage
-    - go get golang.org/x/tools/cmd/...
-    - go get github.com/axw/gocov/gocov
-    - go get gopkg.in/matm/v1/gocov-html
+    - go get -u github.com/axw/gocov/gocov
+    - go get -u gopkg.in/matm/v1/gocov-html
     #- go get github.com/mattn/goveralls
 
     # get the dependencies etc
     - go get github.com/tools/godep
     - go get github.com/jteeuwen/go-bindata/...
-    - go get github.com/elazarl/go-bindata-assetfs/...
 
   override:
     # - golint ./...:
