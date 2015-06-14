@@ -4,19 +4,14 @@ dependencies:
     # - go get -u github.com/golang/lint/golint
 
     # code coverage
-    - go get -u github.com/axw/gocov/gocov
-    - go get -u gopkg.in/matm/v1/gocov-html
-    #- go get github.com/mattn/goveralls
+    - go get github.com/axw/gocov/gocov
+    - go get gopkg.in/matm/v1/gocov-html
 
     # get the dependencies etc
     - go get github.com/tools/godep
     - go get github.com/jteeuwen/go-bindata/...
 
   post:
-    # - golint ./...:
-    #     pwd: ../.go_workspace/src/github.com/go-swagger/go-swagger
-    # - go tool vet -printf=false -structtags=false `pwd`:
-    #     pwd: ../.go_workspace/src/github.com/go-swagger/go-swagger
     - godep restore
 test:
   override:
@@ -24,8 +19,6 @@ test:
         pwd: ../.go_workspace/src/github.com/go-swagger/go-swagger
     - ./coverage.sh:
         pwd: ../.go_workspace/src/github.com/go-swagger/go-swagger
-  post:
-    #- goveralls -coverprofile=profile.cov -service=circleci -repotoken=$COVERALLS_REPO_TOKEN
 notify:
   webhooks:
     # A list of hook hashes, containing the url field
