@@ -8,8 +8,8 @@ general:
       - gh-pages
 dependencies:
   pre:
-    - mkdir -p (dirname $PROJECT_DIR)
-    - cp -a .. (dirname $PROJECT_DIR)
+    - mkdir -p "$(dirname $PROJECT_DIR)"
+    - cp -a .. "$(dirname $PROJECT_DIR)"
     - mkdir -p $CIRCLE_TEST_REPORTS/go
     - go get -u golang.org/x/tools/cmd/...
 
