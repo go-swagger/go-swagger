@@ -6,16 +6,14 @@ set -e
 echo "mode: count" > profile.cov
 
 # Standard go tooling behavior is to ignore dirs with leading underscores
-for dir in $(find . -maxdepth 10 -not -path './.git*' -not -path '*/_*' -type d -not -path 'Godeps' -not -path './generator' -not -path './examples*' -not -path './fixtures*' -not -path './swagger-ui')
+for dir in $(go list ./... | grep -v generator)
 do
-if ls $dir/*.go &> /dev/null; then
-    godep go test -covermode=count -coverprofile=$dir/profile.tmp $dir
-    if [ -f $dir/profile.tmp ]
-    then
-        cat $dir/profile.tmp | tail -n +2 >> profile.cov
-        rm $dir/profile.tmp
-    fi
-fi
+  godep go test -covermode=count -coverprofile=$dir/profile.tmp $dir
+  if [ -f $dir/profile.tmp ]
+  then
+      cat $dir/profile.tmp | tail -n +2 >> profile.cov
+      rm $dir/profile.tmp
+  fi
 done
 
 godep go tool cover -func profile.cov
