@@ -17,8 +17,8 @@ import (
 )
 
 // NewRequest creates a new swagger http client request
-func NewRequest(method, pathPattern string, writer client.RequestWriter) (*Request, error) {
-	return &Request{
+func newRequest(method, pathPattern string, writer client.RequestWriter) (*request, error) {
+	return &request{
 		pathPattern: pathPattern,
 		method:      method,
 		writer:      writer,
@@ -36,7 +36,7 @@ func NewRequest(method, pathPattern string, writer client.RequestWriter) (*Reque
 //
 // The main purpose of this struct is to hide the machinery of adding params to a transport request.
 // The generated code only implements what is necessary to turn a param into a valid value for these methods.
-type Request struct {
+type request struct {
 	pathPattern string
 	method      string
 	writer      client.RequestWriter
@@ -52,11 +52,11 @@ type Request struct {
 
 var (
 	// ensure interface compliance
-	_ client.Request = new(Request)
+	_ client.Request = new(request)
 )
 
 // BuildHTTP creates a new http request based on the data from the params
-func (r *Request) BuildHTTP(producer httpkit.Producer, registry strfmt.Registry) (*http.Request, error) {
+func (r *request) BuildHTTP(producer httpkit.Producer, registry strfmt.Registry) (*http.Request, error) {
 	// build the data
 	if err := r.writer.WriteToRequest(r, registry); err != nil {
 		return nil, err
@@ -129,7 +129,7 @@ func (r *Request) BuildHTTP(producer httpkit.Producer, registry strfmt.Registry)
 // SetHeaderParam adds a header param to the request
 // when there is only 1 value provided for the varargs, it will set it.
 // when there are several values provided for the varargs it will add it (no overriding)
-func (r *Request) SetHeaderParam(name string, values ...string) error {
+func (r *request) SetHeaderParam(name string, values ...string) error {
 	if r.header == nil {
 		r.header = make(http.Header)
 	}
@@ -140,7 +140,7 @@ func (r *Request) SetHeaderParam(name string, values ...string) error {
 // SetQueryParam adds a query param to the request
 // when there is only 1 value provided for the varargs, it will set it.
 // when there are several values provided for the varargs it will add it (no overriding)
-func (r *Request) SetQueryParam(name string, values ...string) error {
+func (r *request) SetQueryParam(name string, values ...string) error {
 	if r.header == nil {
 		r.query = make(url.Values)
 	}
@@ -151,7 +151,7 @@ func (r *Request) SetQueryParam(name string, values ...string) error {
 // SetFormParam adds a forn param to the request
 // when there is only 1 value provided for the varargs, it will set it.
 // when there are several values provided for the varargs it will add it (no overriding)
-func (r *Request) SetFormParam(name string, values ...string) error {
+func (r *request) SetFormParam(name string, values ...string) error {
 	if r.formFields == nil {
 		r.formFields = make(url.Values)
 	}
@@ -160,7 +160,7 @@ func (r *Request) SetFormParam(name string, values ...string) error {
 }
 
 // SetPathParam adds a path param to the request
-func (r *Request) SetPathParam(name string, value string) error {
+func (r *request) SetPathParam(name string, value string) error {
 	if r.pathParams == nil {
 		r.pathParams = make(map[string]string)
 	}
@@ -170,7 +170,7 @@ func (r *Request) SetPathParam(name string, value string) error {
 }
 
 // SetFileParam adds a file param to the request
-func (r *Request) SetFileParam(name string, toSend string) error {
+func (r *request) SetFileParam(name string, toSend string) error {
 	file, err := os.Open(toSend)
 	if err != nil {
 		return err
@@ -196,7 +196,7 @@ func (r *Request) SetFileParam(name string, toSend string) error {
 
 // SetBodyParam sets a body parameter on the request.
 // This does not yet serialze the object, this happens as late as possible.
-func (r *Request) SetBodyParam(payload interface{}) error {
+func (r *request) SetBodyParam(payload interface{}) error {
 	r.payload = payload
 	return nil
 }

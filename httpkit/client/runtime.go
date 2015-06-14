@@ -27,12 +27,6 @@ type Runtime struct {
 	methodsAndPaths map[string]methodAndPath
 }
 
-// A ResponseReader creates a new instance of a result for a given status code.
-// when this is a response without a body the bool will be true
-// This needs to produce the result or it loses the type information.
-// That's the explanation for the somewhat many args to this function
-type ResponseReader func(client.Response, httpkit.Consumer) (interface{}, error)
-
 // New creates a new default runtime for a swagger api client.
 func New(swaggerSpec *spec.Document) *Runtime {
 	var rt Runtime
@@ -59,12 +53,12 @@ func New(swaggerSpec *spec.Document) *Runtime {
 
 // Submit a request and when there is a body on success it will turn that into the result
 // all other things are turned into an api error for swagger which retains the status code
-func (r *Runtime) Submit(operationID string, params client.RequestWriter, readResponse ResponseReader) (interface{}, error) {
+func (r *Runtime) Submit(operationID string, params client.RequestWriter, readResponse client.ResponseReader) (interface{}, error) {
 	mthPth, ok := r.methodsAndPaths[operationID]
 	if !ok {
 		return nil, fmt.Errorf("unknown operation: %q", operationID)
 	}
-	request, err := NewRequest(mthPth.Method, mthPth.PathPattern, params)
+	request, err := newRequest(mthPth.Method, mthPth.PathPattern, params)
 	if err != nil {
 		return nil, err
 	}
@@ -101,5 +95,5 @@ func (r *Runtime) Submit(operationID string, params client.RequestWriter, readRe
 		// scream about not knowing what to do
 		return nil, fmt.Errorf("no consumer: %q", ct)
 	}
-	return readResponse(response{res}, cons)
+	return readResponse.ReadResponse(response{res}, cons)
 }

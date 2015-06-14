@@ -14,51 +14,18 @@ import (
 )
 
 // GenerateSupport generates the supporting files for an API
-func GenerateSupport(name string, modelNames, operationIDs []string, includeUI bool, opts GenOpts) error {
+func GenerateSupport(name string, modelNames, operationIDs []string, opts GenOpts) error {
 	// Load the spec
 	_, specDoc, err := loadSpec(opts.Spec)
 	if err != nil {
 		return err
 	}
 
-	models, mnc := make(map[string]spec.Schema), len(modelNames)
-	for k, v := range specDoc.Spec().Definitions {
-		for _, nm := range modelNames {
-			if mnc == 0 || k == nm {
-				models[k] = v
-			}
-		}
-	}
-
-	operations := make(map[string]spec.Operation)
-	if len(modelNames) == 0 {
-		for _, k := range specDoc.OperationIDs() {
-			if op, ok := specDoc.OperationForName(k); ok {
-				operations[k] = *op
-			}
-		}
-	} else {
-		for _, k := range specDoc.OperationIDs() {
-			for _, nm := range operationIDs {
-				if k == nm {
-					if op, ok := specDoc.OperationForName(k); ok {
-						operations[k] = *op
-					}
-				}
-			}
-		}
-	}
-
-	if name == "" {
-		if specDoc.Spec().Info != nil && specDoc.Spec().Info.Title != "" {
-			name = swag.ToGoName(specDoc.Spec().Info.Title)
-		} else {
-			name = "swagger"
-		}
-	}
+	models := gatherModels(specDoc, modelNames)
+	operations := gatherOperations(specDoc, operationIDs)
 
 	generator := appGenerator{
-		Name:       name,
+		Name:       appNameOrDefault(specDoc, name, "swagger"),
 		SpecDoc:    specDoc,
 		Models:     models,
 		Operations: operations,
@@ -71,7 +38,6 @@ func GenerateSupport(name string, modelNames, operationIDs []string, includeUI b
 		ServerPackage: opts.ServerPackage,
 		ClientPackage: opts.ClientPackage,
 		Principal:     opts.Principal,
-		IncludeUI:     includeUI,
 	}
 
 	return generator.Generate()
@@ -90,7 +56,6 @@ type appGenerator struct {
 	Operations    map[string]spec.Operation
 	Target        string
 	DumpData      bool
-	IncludeUI     bool
 }
 
 func baseImport(tgt string) string {
@@ -212,11 +177,9 @@ func getSerializer(sers []genSerGroup, ext string) (*genSerGroup, bool) {
 	return nil, false
 }
 
-// func makeCodegenApp(operations map[string]spec.Operation, includeUI bool) genApp {
 func (a *appGenerator) makeCodegenApp() (genApp, error) {
 	sw := a.SpecDoc.Spec()
-	// app := makeCodegenApp(a.Operations, a.IncludeUI)
-	receiver := strings.ToLower(a.Name[:1])
+	receiver := "o" //strings.ToLower(a.Name[:1])
 	appName := swag.ToGoName(a.Name)
 	var defaultImports []string
 
@@ -418,7 +381,6 @@ func (a *appGenerator) makeCodegenApp() (genApp, error) {
 		SecurityDefinitions: security,
 		Models:              genMods,
 		Operations:          genOps,
-		IncludeUI:           a.IncludeUI,
 		Principal:           a.Principal,
 		SwaggerJSON:         fmt.Sprintf("%#v", jsonb),
 	}, nil
@@ -442,7 +404,7 @@ type genApp struct {
 	SecurityDefinitions []genSecurityScheme
 	Models              []genModel
 	Operations          []genOperation
-	IncludeUI           bool
+	OperationGroups     []genOperationGroup
 	SwaggerJSON         string
 }
 

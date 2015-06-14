@@ -144,6 +144,7 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 		}
 		props[swag.ToJSONName(pn)] = gmp
 	}
+
 	for _, p := range schema.AllOf {
 		if p.Ref.GetURL() != nil {
 			tn := filepath.Base(p.Ref.GetURL().Fragment)
@@ -159,6 +160,9 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 			}
 		}
 	}
+
+	// TODO: add support for oneOf?
+	// this would require a struct with unexported fields, custom json marshaller etc
 
 	var properties []genModelProperty
 	var hasValidations bool
