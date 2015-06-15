@@ -1,0 +1,3 @@
+{{ define "schemaObject"}}interface{}{{ end }}
+{{ define "complexSchemaType" }}{{ if .IsTuple }}[]interface{}{{else}}{{ template "schemaObject". }}{{end}}{{ end }}
+{{ define "schemaType"}}{{ if not (or .IsAnonymous .IsTuple) }}{{ if .IsNullable }}*{{ end }}{{ .GoType }}{{ else }}{{ template "complexSchemaType" . }}{{end}}{{ end }}

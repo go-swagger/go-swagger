@@ -1,0 +1,106 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: Private to-do list
+  description: |
+    A very simple api description that makes a json only API to submit to do's.
+
+produces:
+  - application/json
+
+consumes:
+  - application/json
+
+paths:
+  /models:
+    get:
+      operationId: modelOp
+      summary: all possible single value header parameters
+      description: Used to see if a codegen can render all the possible parameter variations for a header param
+      tags:
+        - testcgen
+      responses:
+        default:
+          description: Generic Out
+definitions:
+  AllPrimitives:
+    properties:
+      pa:
+        type: string
+      pb:
+        type: boolean
+      pc:
+        type: integer
+        format: int32
+      pd:
+        type: integer
+        format: int64
+      pe:
+        type: number
+        format: float
+      pf:
+        type: number
+        format: double
+      sg:
+        type: string
+        format: uuid
+      sa:
+        type: string
+        format: uuid3
+      sb:
+        type: string
+        format: uuid4
+      sc:
+        type: string
+        format: uuid5
+      sd:
+        type: string
+        format: email
+      se:
+        type: string
+        format: uri
+      sf:
+        type: string
+        format: hostname
+      sg:
+        type: string
+        format: ipv4
+      sh:
+        type: string
+        format: ipv6
+      si:
+        type: string
+        format: credit-card
+      sj:
+        type: string
+        format: isbn
+      sk:
+        type: string
+        format: isbn10
+      sl:
+        type: string
+        format: isbn13
+      sm:
+        type: string
+        format: ssn
+      sn:
+        type: string
+        format: hexcolor
+      so:
+        type: string
+        format: rgbcolor
+      sp:
+        type: string
+        format: date
+      sq:
+        type: string
+        format: date-time
+      sr:
+        type: string
+        format: duration
+      ss:
+        type: string
+        format: password
+
+

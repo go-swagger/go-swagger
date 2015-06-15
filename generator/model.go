@@ -128,6 +128,7 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 		gmp, err := makeGenModelProperty(propGenBuildParams{
 			Path:      "\"" + pn + "\"",
 			ParamName: swag.ToJSONName(pn),
+			Name:      pn,
 			Accessor:  swag.ToGoName(pn),
 			Receiver:  receiver,
 			IndexVar:  "i",
@@ -176,10 +177,11 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 	return &genModel{
 		Package:        filepath.Base(pkg),
 		ClassName:      swag.ToGoName(name),
-		Name:           swag.ToJSONName(name),
+		Name:           name,
 		ReceiverName:   receiver,
 		Properties:     properties,
 		Description:    schema.Description,
+		Title:          schema.Title,
 		DocString:      modelDocString(swag.ToGoName(name), schema.Description),
 		HumanClassName: swag.ToHumanNameLower(swag.ToGoName(name)),
 		DefaultImports: []string{"github.com/go-swagger/go-swagger/strfmt"},
@@ -188,10 +190,11 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 }
 
 type genModel struct {
-	Package        string             //`json:"package,omitempty"`
-	ReceiverName   string             //`json:"receiverName,omitempty"`
-	ClassName      string             //`json:"classname,omitempty"`
-	Name           string             //`json:"name,omitempty"`
+	Package        string //`json:"package,omitempty"`
+	ReceiverName   string //`json:"receiverName,omitempty"`
+	ClassName      string //`json:"classname,omitempty"`
+	Name           string //`json:"name,omitempty"`
+	Title          string
 	Description    string             //`json:"description,omitempty"`
 	Properties     []genModelProperty //`json:"properties,omitempty"`
 	DocString      string             //`json:"docString,omitempty"`
@@ -207,6 +210,7 @@ func modelDocString(className, desc string) string {
 
 type propGenBuildParams struct {
 	Path         string
+	Name         string
 	ParamName    string
 	Accessor     string
 	Receiver     string
@@ -278,8 +282,9 @@ func makeGenModelProperty(params propGenBuildParams) (genModelProperty, error) {
 	ctx.HasSliceValidations = len(items) > 0 || hasAdditionalItems
 	ctx.HasValidations = ctx.HasValidations || ctx.HasSliceValidations
 
-	xmlName := params.ParamName
+	var xmlName string
 	if params.Schema.XML != nil {
+		xmlName = params.ParamName
 		if params.Schema.XML.Name != "" {
 			xmlName = params.Schema.XML.Name
 			if params.Schema.XML.Attribute {
@@ -292,7 +297,9 @@ func makeGenModelProperty(params propGenBuildParams) (genModelProperty, error) {
 		sharedParam:     ctx,
 		DataType:        ctx.Type,
 		Example:         ex,
+		Name:            params.Name,
 		DocString:       propertyDocString(params.Accessor, params.Schema.Description, ex),
+		Title:           params.Schema.Title,
 		Description:     params.Schema.Description,
 		ReceiverName:    params.Receiver,
 		IsComplexObject: !ctx.IsPrimitive && !ctx.IsCustomFormatter && !ctx.IsContainer,
@@ -317,7 +324,9 @@ func makeGenModelProperty(params propGenBuildParams) (genModelProperty, error) {
 
 type genModelProperty struct {
 	sharedParam
-	Example               string             //`json:"example,omitempty"`
+	Example               string //`json:"example,omitempty"`
+	Name                  string
+	Title                 string
 	Description           string             //`json:"description,omitempty"`
 	DataType              string             //`json:"dataType,omitempty"`
 	DocString             string             //`json:"docString,omitempty"`
@@ -355,6 +364,7 @@ func modelValidations(params propGenBuildParams, isAnonymous bool) (commonValida
 			IsPrimitive:       isPrimitive,
 			IsCustomFormatter: isCustomFormatter,
 			IsMap:             tpe.IsMap,
+			T:                 tpe,
 		},
 		Required:         params.Required,
 		Type:             tpe.GoType,

@@ -81,8 +81,8 @@ import (
   {{end}}
 )
 
-// Validate validates this {{.HumanClassName}}
-func ({{.ReceiverName}} *{{.ClassName}}) Validate(formats strfmt.Registry) error {
+// Validate validates this {{ humanize .Name }}
+func ({{.ReceiverName}} *{{ pascalize .Name}}) Validate(formats strfmt.Registry) error {
   {{if .HasValidations}}
   var res []error
 

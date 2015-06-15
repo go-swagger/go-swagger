@@ -52,17 +52,38 @@ var schRefVals = []struct{ Type, GoType, Expected string }{
 	{"UserCard", "UserItem", "models.UserItem"},
 }
 
-func TestTypeResolver(t *testing.T) {
-	tlb, err := spec.Load("../fixtures/codegen/tasklist.basic.yml")
+func TestTypeResolver_AdditionalItems(t *testing.T) {
+	_, resolver, err := basicTaskListResolver(t)
+	tpe := spec.StringProperty()
 	if assert.NoError(t, err) {
-		swsp := tlb.Spec()
-		uc := swsp.Definitions["UserCard"]
-		uc.AddExtension("x-go-name", "UserItem")
-		swsp.Definitions["UserCard"] = uc
-		resolver := &typeResolver{
-			Doc:           tlb,
-			ModelsPackage: "models",
+		// arrays of primitives and string formats with additional formats
+		for _, val := range schTypeVals {
+			var sch spec.Schema
+			sch.Typed(val.Type, val.Format)
+			var coll spec.Schema
+			coll.Type = []string{"array"}
+			coll.Items = new(spec.SchemaOrArray)
+			coll.Items.Schema = tpe
+			coll.AdditionalItems = new(spec.SchemaOrBool)
+			coll.AdditionalItems.Schema = &sch
+
+			rt, err := resolver.ResolveSchema(&coll, true)
+			if assert.NoError(t, err) && assert.True(t, rt.IsArray) {
+				if assert.NotNil(t, rt.ElementType) {
+					assertPrimitiveResolve(t, "string", "", "string", *rt.ElementType)
+				}
+				if assert.NotNil(t, rt.AdditionalItems) {
+					assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, *rt.AdditionalItems)
+				}
+			}
 		}
+	}
+}
+
+func TestTypeResolver_BasicTypes(t *testing.T) {
+
+	_, resolver, err := basicTaskListResolver(t)
+	if assert.NoError(t, err) {
 
 		// primitives and string formats
 		for _, val := range schTypeVals {
@@ -84,6 +105,14 @@ func TestTypeResolver(t *testing.T) {
 				assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, *rt.ElementType)
 			}
 		}
+	}
+
+}
+
+func TestTypeResolver_Refs(t *testing.T) {
+
+	_, resolver, err := basicTaskListResolver(t)
+	if assert.NoError(t, err) {
 
 		// referenced objects
 		for _, val := range schRefVals {
@@ -110,6 +139,12 @@ func TestTypeResolver(t *testing.T) {
 				assert.Equal(t, "object", rt.ElementType.SwaggerType)
 			}
 		}
+	}
+}
+
+func TestTypeResolver_AdditionalProperties(t *testing.T) {
+	_, resolver, err := basicTaskListResolver(t)
+	if assert.NoError(t, err) {
 
 		// primitives as additional properties
 		for _, val := range schTypeVals {
@@ -155,9 +190,6 @@ func TestTypeResolver(t *testing.T) {
 			}
 		}
 
-		// tuple type (items with multiple schemas)
-		testTupleType(t, resolver)
-
 		// refs as additional properties
 		for _, val := range schRefVals {
 			sch := new(spec.Schema)
@@ -173,25 +205,100 @@ func TestTypeResolver(t *testing.T) {
 				assert.Equal(t, "object", rt.SwaggerType)
 			}
 		}
-
-		// anonymous structs should be accounted for
-		testAnonymousStruct(t, resolver)
-
-		// very poor schema definitions (as in none)
-		testObjectTypes(t, resolver, "object", "")
 	}
 }
 
-func assertPrimitiveResolve(t testing.TB, tpe, tfmt, exp string, tr resolvedType) {
-	assert.Equal(t, tpe, tr.SwaggerType, fmt.Sprintf("expected %q (%q, %q) to for the swagger type but got %q", tpe, tfmt, exp, tr.SwaggerType))
-	assert.Equal(t, tfmt, tr.SwaggerFormat, fmt.Sprintf("expected %q (%q, %q) to for the swagger format but got %q", tfmt, tpe, exp, tr.SwaggerFormat))
-	assert.Equal(t, exp, tr.GoType, fmt.Sprintf("expected %q (%q, %q) to for the go type but got %q", exp, tpe, tfmt, tr.GoType))
+func basicTaskListResolver(t testing.TB) (*spec.Document, *typeResolver, error) {
+	tlb, err := spec.Load("../fixtures/codegen/tasklist.basic.yml")
+	if err != nil {
+		return nil, nil, err
+	}
+	swsp := tlb.Spec()
+	uc := swsp.Definitions["UserCard"]
+	uc.AddExtension("x-go-name", "UserItem")
+	swsp.Definitions["UserCard"] = uc
+	return tlb, &typeResolver{
+		Doc:           tlb,
+		ModelsPackage: "models",
+	}, nil
 }
 
-func testObjectTypes(t testing.TB, resolver *typeResolver, types ...string) {
-	for _, tpe := range types {
+func TestTypeResolver_TupleTypes(t *testing.T) {
+	_, resolver, err := basicTaskListResolver(t)
+	if assert.NoError(t, err) {
+		// tuple type (items with multiple schemas)
+		parent := new(spec.Schema)
+		parent.Typed("array", "")
+		parent.Items = new(spec.SchemaOrArray)
+		parent.Items.Schemas = append(
+			parent.Items.Schemas,
+			*spec.StringProperty(),
+			*spec.Int64Property(),
+			*spec.Float64Property(),
+			*spec.BoolProperty(),
+			*spec.ArrayProperty(spec.StringProperty()),
+			*spec.RefProperty("#/definitions/Comment"),
+		)
+
+		rt, err := resolver.ResolveSchema(parent, true)
+		if assert.NoError(t, err) {
+			assert.False(t, rt.IsArray)
+			assert.True(t, rt.IsTuple)
+			assert.Len(t, rt.TupleTypes, 6)
+
+			assertPrimitiveResolve(t, "string", "", "string", *rt.TupleTypes[0])
+			assertPrimitiveResolve(t, "integer", "int64", "int64", *rt.TupleTypes[1])
+			assertPrimitiveResolve(t, "number", "double", "float64", *rt.TupleTypes[2])
+			assertPrimitiveResolve(t, "boolean", "", "bool", *rt.TupleTypes[3])
+			if assert.NotNil(t, rt.TupleTypes[4].ElementType) {
+				assertPrimitiveResolve(t, "string", "", "string", *rt.TupleTypes[4].ElementType)
+			}
+			assert.Equal(t, "models.Comment", rt.TupleTypes[5].GoType)
+		}
+	}
+}
+func TestTypeResolver_AnonymousStructs(t *testing.T) {
+
+	_, resolver, err := basicTaskListResolver(t)
+	if assert.NoError(t, err) {
+		// anonymous structs should be accounted for
+		parent := new(spec.Schema)
+		parent.Typed("object", "")
+		parent.Properties = make(map[string]spec.Schema)
+		parent.Properties["name"] = *spec.StringProperty()
+		parent.Properties["age"] = *spec.Int32Property()
+
+		rt, err := resolver.ResolveSchema(parent, true)
+		if assert.NoError(t, err) {
+			assert.True(t, rt.IsAnonymous)
+			assert.True(t, rt.IsComplexObject)
+			assert.Len(t, rt.PropertyTypes, 2)
+			assertPrimitiveResolve(t, "string", "", "string", *rt.PropertyTypes["name"])
+			assertPrimitiveResolve(t, "integer", "int32", "int32", *rt.PropertyTypes["age"])
+		}
+	}
+}
+func TestTypeResolver_ObjectType(t *testing.T) {
+	_, resolver, err := basicTaskListResolver(t)
+	if assert.NoError(t, err) {
+		// very poor schema definitions (as in none)
+		types := []string{"object", ""}
+		for _, tpe := range types {
+			sch := new(spec.Schema)
+			sch.Typed(tpe, "")
+			rt, err := resolver.ResolveSchema(sch, true)
+			if assert.NoError(t, err) {
+				assert.True(t, rt.IsMap)
+				assert.Equal(t, "map[string]interface{}", rt.GoType)
+				assert.Equal(t, "object", rt.SwaggerType)
+
+				if assert.NotNil(t, rt.ElementType) {
+					assert.True(t, rt.ElementType.IsInterface)
+					assert.Equal(t, "interface{}", rt.ElementType.GoType)
+				}
+			}
+		}
 		sch := new(spec.Schema)
-		sch.Typed(tpe, "")
 		rt, err := resolver.ResolveSchema(sch, true)
 		if assert.NoError(t, err) {
 			assert.True(t, rt.IsMap)
@@ -204,64 +311,10 @@ func testObjectTypes(t testing.TB, resolver *typeResolver, types ...string) {
 			}
 		}
 	}
-	sch := new(spec.Schema)
-	rt, err := resolver.ResolveSchema(sch, true)
-	if assert.NoError(t, err) {
-		assert.True(t, rt.IsMap)
-		assert.Equal(t, "map[string]interface{}", rt.GoType)
-		assert.Equal(t, "object", rt.SwaggerType)
-
-		if assert.NotNil(t, rt.ElementType) {
-			assert.True(t, rt.ElementType.IsInterface)
-			assert.Equal(t, "interface{}", rt.ElementType.GoType)
-		}
-	}
 }
 
-func testTupleType(t testing.TB, resolver *typeResolver) {
-	parent := new(spec.Schema)
-	parent.Typed("array", "")
-	parent.Items = new(spec.SchemaOrArray)
-	parent.Items.Schemas = append(
-		parent.Items.Schemas,
-		*spec.StringProperty(),
-		*spec.Int64Property(),
-		*spec.Float64Property(),
-		*spec.BoolProperty(),
-		*spec.ArrayProperty(spec.StringProperty()),
-		*spec.RefProperty("#/definitions/Comment"),
-	)
-
-	rt, err := resolver.ResolveSchema(parent, true)
-	if assert.NoError(t, err) {
-		assert.False(t, rt.IsArray)
-		assert.True(t, rt.IsTuple)
-		assert.Len(t, rt.TupleTypes, 6)
-
-		assertPrimitiveResolve(t, "string", "", "string", *rt.TupleTypes[0])
-		assertPrimitiveResolve(t, "integer", "int64", "int64", *rt.TupleTypes[1])
-		assertPrimitiveResolve(t, "number", "double", "float64", *rt.TupleTypes[2])
-		assertPrimitiveResolve(t, "boolean", "", "bool", *rt.TupleTypes[3])
-		if assert.NotNil(t, rt.TupleTypes[4].ElementType) {
-			assertPrimitiveResolve(t, "string", "", "string", *rt.TupleTypes[4].ElementType)
-		}
-		assert.Equal(t, "models.Comment", rt.TupleTypes[5].GoType)
-	}
-}
-
-func testAnonymousStruct(t testing.TB, resolver *typeResolver) {
-	parent := new(spec.Schema)
-	parent.Typed("object", "")
-	parent.Properties = make(map[string]spec.Schema)
-	parent.Properties["name"] = *spec.StringProperty()
-	parent.Properties["age"] = *spec.Int32Property()
-
-	rt, err := resolver.ResolveSchema(parent, true)
-	if assert.NoError(t, err) {
-		assert.True(t, rt.IsAnonymous)
-		assert.True(t, rt.IsComplexObject)
-		assert.Len(t, rt.PropertyTypes, 2)
-		assertPrimitiveResolve(t, "string", "", "string", *rt.PropertyTypes["name"])
-		assertPrimitiveResolve(t, "integer", "int32", "int32", *rt.PropertyTypes["age"])
-	}
+func assertPrimitiveResolve(t testing.TB, tpe, tfmt, exp string, tr resolvedType) {
+	assert.Equal(t, tpe, tr.SwaggerType, fmt.Sprintf("expected %q (%q, %q) to for the swagger type but got %q", tpe, tfmt, exp, tr.SwaggerType))
+	assert.Equal(t, tfmt, tr.SwaggerFormat, fmt.Sprintf("expected %q (%q, %q) to for the swagger format but got %q", tfmt, tpe, exp, tr.SwaggerFormat))
+	assert.Equal(t, exp, tr.GoType, fmt.Sprintf("expected %q (%q, %q) to for the go type but got %q", exp, tpe, tfmt, tr.GoType))
 }

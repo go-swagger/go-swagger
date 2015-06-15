@@ -1,2 +1,2 @@
-{{ if .DocString }}{{ .DocString }}{{ end }}
-{{.PropertyName}} {{.DataType}} `json:"{{ .ParamName }}"{{ if .XMLName }} xml:"{{ .XMLName }}{{ end }}"`
+/* {{ template "docstring" . }}{{ template "propertyValidationDocString" .}} */
+{{ pascalize .Name}} {{ template "schemaType" .T }} `json:"{{ .Name }}"{{ if .XMLName }} xml:"{{ .XMLName }}"{{ end }}`

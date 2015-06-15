@@ -164,14 +164,9 @@ type typeResolver struct {
 	ModelsPackage string
 }
 
-func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous bool) (result resolvedType, err error) {
-	if schema == nil {
-		result.IsInterface = true
-		result.GoType = "interface{}"
-		return
-	}
-
+func (t *typeResolver) resolveSchemaRef(schema *spec.Schema) (returns bool, result resolvedType, err error) {
 	if schema.Ref.GetURL() != nil {
+		returns = true
 		ref, er := spec.ResolveRef(t.Doc.Spec(), &schema.Ref)
 		if er != nil {
 			err = er
@@ -183,157 +178,219 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous bool) (res
 		} else {
 			tn = swag.ToGoName(filepath.Base(schema.Ref.GetURL().Fragment))
 		}
+		result.IsNullable = t.isNullable(ref)
+		result.IsAnonymous = false
 
 		if ref.Type.Contains("object") {
 			result.GoType = t.ModelsPackage + "." + tn
 			result.SwaggerType = "object"
 			result.IsComplexObject = true
 		} else {
+			// TODO: Preserve type name here?
 			result, err = t.ResolveSchema(ref, true)
 			if err != nil {
 				return
 			}
 		}
-		result.IsAnonymous = false
-
-		return
 	}
+	return
+}
+
+func (t *typeResolver) resolveFormat(schema *spec.Schema) (returns bool, result resolvedType, err error) {
 	if schema.Format != "" {
 		schFmt := strings.Replace(schema.Format, "-", "", -1)
 		if tpe, ok := typeMapping[schFmt]; ok {
+			returns = true
 			result.SwaggerType = "string"
 			if len(schema.Type) > 0 {
 				result.SwaggerType = schema.Type[0]
 			}
 			result.SwaggerFormat = schema.Format
 			result.GoType = tpe
+			result.IsPrimitive = true
+			result.IsNullable = t.isNullable(schema)
 			return
 		}
 	}
-	if schema.Type.Contains("array") {
-		result.IsArray = true
-		if schema.Items == nil {
-			result.GoType = "[]interface{}"
-			result.SwaggerType = "array"
-			result.ElementType = &resolvedType{
-				IsInterface: true,
-				GoType:      "interface{}",
-			}
-			return
-		}
-		if len(schema.Items.Schemas) > 0 {
-			result.IsArray = false
-			result.IsTuple = true
-			for _, esch := range schema.Items.Schemas {
-				et, er := t.ResolveSchema(&esch, true)
-				if er != nil {
-					err = er
-					return
-				}
-				result.TupleTypes = append(result.TupleTypes, &et)
-			}
-			return
-		}
-		rt, er := t.ResolveSchema(schema.Items.Schema, true)
+	return
+}
+
+func (t *typeResolver) isNullable(schema *spec.Schema) bool {
+	_, ok := schema.Extensions["x-isnullable"].(bool)
+	return schema.Type.Contains("object") || ok
+}
+
+func (t *typeResolver) firstType(schema *spec.Schema) string {
+	if len(schema.Type) == 0 || schema.Type[0] == "" {
+		return "object"
+	}
+	return schema.Type[0]
+}
+
+func (t *typeResolver) resolveArray(schema *spec.Schema) (result resolvedType, err error) {
+	result.IsArray = true
+	result.IsNullable = false
+	if schema.AdditionalItems != nil && (schema.AdditionalItems.Allows || schema.AdditionalItems.Schema != nil) {
+		result.HasAdditionalItems = true
+		rs, er := t.ResolveSchema(schema.AdditionalItems.Schema, true)
 		if er != nil {
 			err = er
 			return
 		}
-		result.GoType = "[]" + rt.GoType
+		result.AdditionalItems = &rs
+	}
+	if schema.Items == nil {
+		result.GoType = "[]interface{}"
 		result.SwaggerType = "array"
-		result.ElementType = &rt
-		return
-	}
-	if schema.Type.Contains("file") {
-		result.GoType = typeMapping["file"]
-		result.SwaggerType = "file"
-		return
-	}
-	if schema.Type.Contains("number") {
-		result.GoType = typeMapping["number"]
-		result.SwaggerType = "number"
-		return
-	}
-	if schema.Type.Contains("integer") {
-		result.GoType = typeMapping["integer"]
-		result.SwaggerType = "integer"
-		return
-	}
-	if schema.Type.Contains("boolean") {
-		result.GoType = typeMapping["boolean"]
-		result.SwaggerType = "boolean"
-		return
-	}
-	if schema.Type.Contains("string") {
-		result.GoType = "string"
-		result.SwaggerType = "string"
-		return
-	}
-	if schema.Type.Contains("object") || schema.Type.Contains("") || len(schema.Type) == 0 {
-		// if this schema has properties, build a map of property name to
-		// resolved type, this should also flag the object as anonymous,
-		// when a ref is found, the anonymous flag will be reset
-		if isAnonymous && len(schema.Properties) > 0 {
-			result.PropertyTypes = make(map[string]*resolvedType)
-			for key, prop := range schema.Properties {
-				result.IsAnonymous = isAnonymous
-				result.IsComplexObject = true
-				prt, er := t.ResolveSchema(&prop, true)
-				if er != nil {
-					err = er
-					return
-				}
-				result.PropertyTypes[key] = &prt
-			}
-			// no return here, still need to check for additional properties
-		}
-
-		// account for additional properties
-		if schema.AdditionalProperties != nil && schema.AdditionalProperties.Schema != nil {
-			et, er := t.ResolveSchema(schema.AdditionalProperties.Schema, true)
-			if er != nil {
-				err = er
-				return
-			}
-			result.GoType = "map[string]" + et.GoType
-			result.ElementType = &et
-			result.IsMap = true
-			result.SwaggerType = "object"
-			return
-		}
-
-		if len(schema.Properties) > 0 {
-			return
-		}
-		result.GoType = "map[string]interface{}"
 		result.ElementType = &resolvedType{
 			IsInterface: true,
 			GoType:      "interface{}",
 		}
-
-		result.IsMap = true
-		result.SwaggerType = "object"
 		return
 	}
-	err = fmt.Errorf("unresolvable: %v (format %q)", schema.Type, schema.Format)
+	if len(schema.Items.Schemas) > 0 {
+		result.IsArray = false
+		result.IsTuple = true
+		for _, esch := range schema.Items.Schemas {
+			et, er := t.ResolveSchema(&esch, true)
+			if er != nil {
+				err = er
+				return
+			}
+			result.TupleTypes = append(result.TupleTypes, &et)
+		}
+		return
+	}
+	rt, er := t.ResolveSchema(schema.Items.Schema, true)
+	if er != nil {
+		err = er
+		return
+	}
+	result.GoType = "[]" + rt.GoType
+	result.SwaggerType = "array"
+	result.ElementType = &rt
 	return
 }
 
+func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (result resolvedType, err error) {
+	result.IsAnonymous = isAnonymous
+	result.IsNullable = t.isNullable(schema)
+
+	// if this schema has properties, build a map of property name to
+	// resolved type, this should also flag the object as anonymous,
+	// when a ref is found, the anonymous flag will be reset
+	if isAnonymous && len(schema.Properties) > 0 {
+		result.PropertyTypes = make(map[string]*resolvedType)
+		for key, prop := range schema.Properties {
+			result.IsComplexObject = true
+			prt, er := t.ResolveSchema(&prop, true)
+			if er != nil {
+				err = er
+				return
+			}
+			result.PropertyTypes[key] = &prt
+		}
+		// no return here, still need to check for additional properties
+	}
+
+	// account for additional properties
+	if schema.AdditionalProperties != nil && schema.AdditionalProperties.Schema != nil {
+		et, er := t.ResolveSchema(schema.AdditionalProperties.Schema, true)
+		if er != nil {
+			err = er
+			return
+		}
+		result.GoType = "map[string]" + et.GoType
+		result.ElementType = &et
+		result.IsMap = true
+		result.SwaggerType = "object"
+		result.IsNullable = false
+		return
+	}
+
+	if len(schema.Properties) > 0 {
+		return
+	}
+	result.GoType = "map[string]interface{}"
+	result.ElementType = &resolvedType{
+		IsInterface: true,
+		GoType:      "interface{}",
+	}
+
+	result.IsMap = true
+	result.SwaggerType = "object"
+	result.IsNullable = false
+	return
+}
+
+func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous bool) (result resolvedType, err error) {
+	if schema == nil {
+		result.IsInterface = true
+		result.GoType = "interface{}"
+		return
+	}
+
+	var returns bool
+	returns, result, err = t.resolveSchemaRef(schema)
+	if returns {
+		return
+	}
+
+	returns, result, err = t.resolveFormat(schema)
+	if returns {
+		return
+	}
+
+	tpe := t.firstType(schema)
+	switch tpe {
+	case "array":
+		return t.resolveArray(schema)
+
+	case "file", "number", "integer", "boolean":
+		result.GoType = typeMapping[tpe]
+		result.SwaggerType = tpe
+		if tpe != "file" {
+			result.IsPrimitive = true
+		}
+		return
+
+	case "string":
+		result.GoType = "string"
+		result.SwaggerType = "string"
+		result.IsPrimitive = true
+		return
+
+	case "object":
+		return t.resolveObject(schema, isAnonymous)
+
+	default:
+		err = fmt.Errorf("unresolvable: %v (format %q)", schema.Type, schema.Format)
+		return
+	}
+}
+
+// A resolvedType is a swagger type that has been resolved and analyzed for usage
+// in a template
 type resolvedType struct {
 	IsAnonymous bool
 	IsArray     bool
 	IsMap       bool
 	IsInterface bool
-	// A tuple gets rendered as an anonymous struct with P[index] as property name
-	IsTuple         bool
-	IsComplexObject bool
+	IsPrimitive bool
+	IsNullable  bool
 
-	GoType        string
-	SwaggerType   string
-	SwaggerFormat string
-	ElementType   *resolvedType
-	TupleTypes    []*resolvedType
-	PropertyTypes map[string]*resolvedType
+	// A tuple gets rendered as an anonymous struct with P{index} as property name
+	IsTuple            bool
+	HasAdditionalItems bool
+	IsComplexObject    bool
+
+	GoType          string
+	SwaggerType     string
+	SwaggerFormat   string
+	ElementType     *resolvedType
+	TupleTypes      []*resolvedType
+	AdditionalItems *resolvedType
+	PropertyTypes   map[string]*resolvedType
 }
 
 var primitives = map[string]struct{}{

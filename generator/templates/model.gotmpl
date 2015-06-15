@@ -15,9 +15,13 @@ package {{.Package}}
 )
 {{end}}
 
-{{if .DocString}}{{.DocString}}
-{{end}}type {{.ClassName}} struct {
-{{range .Properties}}
-{{template "structfield" .}}
-{{end}}
+/*
+{{ template "docstring" . }}
+
+swagger:model {{ .Name }}
+*/
+type {{ pascalize .Name }} struct {
+  {{range .Properties}}
+  {{template "structfield" .}}
+  {{end}}
 }
