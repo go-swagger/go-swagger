@@ -182,10 +182,12 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema) (returns bool, resu
 		result.IsAnonymous = false
 
 		if ref.Type.Contains("object") {
-			result.GoType = t.ModelsPackage + "." + tn
+			result.GoType = tn
+			if t.ModelsPackage != "" {
+				result.GoType = t.ModelsPackage + "." + tn
+			}
 			result.SwaggerType = "object"
 			result.IsComplexObject = true
-			result.IsNullable = true
 		} else {
 			// TODO: Preserve type name here?
 			result, err = t.ResolveSchema(ref, true)
@@ -275,13 +277,13 @@ func (t *typeResolver) resolveArray(schema *spec.Schema) (result resolvedType, e
 }
 
 func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (result resolvedType, err error) {
-	result.IsAnonymous = isAnonymous
-	result.IsNullable = t.isNullable(schema)
 
 	// if this schema has properties, build a map of property name to
 	// resolved type, this should also flag the object as anonymous,
 	// when a ref is found, the anonymous flag will be reset
 	if isAnonymous && len(schema.Properties) > 0 {
+		result.IsAnonymous = isAnonymous
+		result.IsNullable = t.isNullable(schema)
 		result.PropertyTypes = make(map[string]*resolvedType)
 		for key, prop := range schema.Properties {
 			result.IsComplexObject = true

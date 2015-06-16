@@ -32,6 +32,8 @@ func TestGenerateModel_Primitives(t *testing.T) {
 		schema := definitions["Comment"]
 		genModel, err := makeCodegenModel("Comment", "models", schema, specDoc)
 		if assert.NoError(t, err) {
+			//b, _ := json.MarshalIndent(genModel, "", "  ")
+			//fmt.Println(string(b))
 			rendered := bytes.NewBuffer(nil)
 
 			err := modelTemplate.Execute(rendered, genModel)

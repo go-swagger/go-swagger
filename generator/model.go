@@ -116,6 +116,10 @@ func (m *modelGenerator) generateModel() error {
 func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Document) (*genModel, error) {
 	receiver := "m"
 	props := make(map[string]genModelProperty)
+	resolver := &typeResolver{
+		ModelsPackage: "",
+		Doc:           specDoc,
+	}
 	for pn, p := range schema.Properties {
 		var required bool
 		for _, v := range schema.Required {
@@ -126,40 +130,35 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 		}
 
 		gmp, err := makeGenModelProperty(propGenBuildParams{
-			Path:      "\"" + pn + "\"",
-			ParamName: swag.ToJSONName(pn),
-			Name:      pn,
-			Accessor:  swag.ToGoName(pn),
-			Receiver:  receiver,
-			IndexVar:  "i",
-			ValueExpr: receiver + "." + swag.ToGoName(pn),
-			Schema:    p,
-			Required:  required,
-			TypeResolver: &typeResolver{
-				ModelsPackage: filepath.Base(pkg),
-				Doc:           specDoc,
-			},
+			Path:         pn,
+			Name:         pn,
+			Receiver:     receiver,
+			IndexVar:     "i",
+			ValueExpr:    receiver + "." + swag.ToGoName(pn),
+			Schema:       p,
+			Required:     required,
+			TypeResolver: resolver,
 		})
 		if err != nil {
 			return nil, err
 		}
-		props[swag.ToJSONName(pn)] = gmp
+		props[pn] = gmp
 	}
 
+	var allOf []genModelProperty
 	for _, p := range schema.AllOf {
-		if p.Ref.GetURL() != nil {
-			tn := filepath.Base(p.Ref.GetURL().Fragment)
-			p = specDoc.Spec().Definitions[tn]
-		}
-		mod, err := makeCodegenModel(name, pkg, p, specDoc)
+		mod, err := makeGenModelProperty(propGenBuildParams{
+			Name:         name,
+			Path:         name + ".allOf",
+			Receiver:     receiver,
+			IndexVar:     "a",
+			Schema:       p,
+			TypeResolver: resolver,
+		})
 		if err != nil {
 			return nil, err
 		}
-		if mod != nil {
-			for _, prop := range mod.Properties {
-				props[prop.Name] = prop
-			}
-		}
+		allOf = append(allOf, mod)
 	}
 
 	// TODO: add support for oneOf?
@@ -182,6 +181,7 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 		Description:    schema.Description,
 		Title:          schema.Title,
 		HasValidations: hasValidations,
+		AllOf:          allOf,
 	}, nil
 }
 
@@ -199,6 +199,7 @@ type genModel struct {
 	ExtraModels    []genModel
 	Type           *resolvedType
 	IsAnonymous    bool // never actually set, because by definition this is named
+	AllOf          []genModelProperty
 }
 
 func modelDocString(className, desc string) string {
@@ -237,6 +238,11 @@ func (pg propGenBuildParams) NewStructBranch(name string, schema spec.Schema) pr
 	return pg
 }
 
+func (pg propGenBuildParams) NewCompositionBranch(schema spec.Schema) propGenBuildParams {
+	pg.Schema = schema
+	return pg
+}
+
 func makeGenModelProperty(params propGenBuildParams) (genModelProperty, error) {
 	// log.Printf("property: (path %s) (param %s) (accessor %s) (receiver %s) (indexVar %s) (expr %s) required %t", path, paramName, accessor, receiver, indexVar, valueExpression, required)
 	ex := ""
@@ -258,6 +264,15 @@ func makeGenModelProperty(params propGenBuildParams) (genModelProperty, error) {
 		properties = append(properties, emprop)
 	}
 
+	var allOf []genModelProperty
+	for _, sch := range params.Schema.AllOf {
+		comprop, err := makeGenModelProperty(params.NewCompositionBranch(sch))
+		if err != nil {
+			return genModelProperty{}, err
+		}
+		allOf = append(allOf, comprop)
+	}
+
 	singleSchemaSlice := params.Schema.Items != nil && params.Schema.Items.Schema != nil
 	var items []genModelProperty
 	if singleSchemaSlice {
@@ -267,9 +282,7 @@ func makeGenModelProperty(params propGenBuildParams) (genModelProperty, error) {
 		if err != nil {
 			return genModelProperty{}, err
 		}
-		items = []genModelProperty{
-			elProp,
-		}
+		items = []genModelProperty{elProp}
 	} else if params.Schema.Items != nil {
 		for _, s := range params.Schema.Items.Schemas {
 			elProp, err := makeGenModelProperty(params.NewSliceBranch(&s))
@@ -317,7 +330,9 @@ func makeGenModelProperty(params propGenBuildParams) (genModelProperty, error) {
 		Description:       params.Schema.Description,
 		ReceiverName:      params.Receiver,
 
-		Properties:            properties,
+		Properties: properties,
+		AllOf:      allOf,
+
 		HasAdditionalItems:    hasAdditionalItems,
 		AllowsAdditionalItems: allowsAdditionalItems,
 		AdditionalItems:       additionalItems,
@@ -355,6 +370,7 @@ type genModelProperty struct {
 	Object                *genModelProperty
 	XMLName               string
 	Properties            []genModelProperty
+	AllOf                 []genModelProperty
 }
 
 type sharedValidations struct {

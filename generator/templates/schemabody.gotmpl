@@ -1,4 +1,10 @@
-{{ define "schemaBody" }}struct{{ if not .IsAnonymous }} {{ end }}{
+{{ define "schemaBody" }}struct{{ if not .IsAnonymous }} {{end}}{
+  {{ range .AllOf }}
+  {{ if .IsAnonymous }}{{ range .Properties }}
+  {{ template "structfield" . }}
+  {{ end }}{{ else }}
+  {{if .IsNullable }}*{{ end }}{{ .GoType }}{{ end }}
+  {{ end }}
   {{range .Properties}}
   {{template "structfield" .}}
   {{end}}
