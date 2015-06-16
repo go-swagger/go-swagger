@@ -17,11 +17,6 @@ package {{.Package}}
 
 /*
 {{ template "docstring" . }}
-
 swagger:model {{ .Name }}
 */
-type {{ pascalize .Name }} struct {
-  {{range .Properties}}
-  {{template "structfield" .}}
-  {{end}}
-}
+type {{ pascalize .Name }} {{ template "schemaBody" . }}

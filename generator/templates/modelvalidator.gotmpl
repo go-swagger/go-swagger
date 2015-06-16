@@ -8,15 +8,15 @@ if err := validate.Required({{.Path}}, "{{.Location}}", {{.ValueExpression}}); e
 {{end}}
 {{define "slicevalidator"}}
 {{if .NeedsSize}}
-{{.ParamName}}Size := int64(len({{.ValueExpression}}))
+{{ camelize .Name }}Size := int64(len({{.ValueExpression}}))
 {{end}}
 {{if .MinItems}}
-if err := validate.MinItems({{.Path}}, "{{.Location}}", {{.ParamName}}Size, {{.MinItems}}); err != nil {
+if err := validate.MinItems({{.Path}}, "{{.Location}}", {{ camelize .Name }}Size, {{.MinItems}}); err != nil {
   return err
 }
 {{end}}
 {{if .MaxItems}}
-if err := validate.MaxItems({{.Path}}, "{{.Location}}", {{.ParamName}}Size, {{.MaxItems}}); err != nil {
+if err := validate.MaxItems({{.Path}}, "{{.Location}}", {{ camelize .Name }}Size, {{.MaxItems}}); err != nil {
   return err
 }
 {{end}}
@@ -38,7 +38,7 @@ for i := 0; i < len({{.ValueExpression}}); i++ {
 {{end}}
 }
 {{else}}
-// not single schema {{.PropertyName}}
+// not single schema {{ pascalize .Name }}
 {{range .Items}}
   {{template "propertyvalidator" .}}
 {{end}}
@@ -88,7 +88,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name}}) Validate(formats strfmt.Registry)
 
   {{range .Properties}}
   {{if .HasValidations}}
-  if err := {{.ReceiverName}}.validate{{.PropertyName}}(formats); err != nil {
+  if err := {{.ReceiverName}}.validate{{ pascalize .Name }}(formats); err != nil {
     res = append(res, err)
   }
   {{end}}
@@ -100,11 +100,11 @@ func ({{.ReceiverName}} *{{ pascalize .Name}}) Validate(formats strfmt.Registry)
   {{end}}
   return nil
 }
-{{ $className := .ClassName }}
+{{ $className := (pascalize .Name) }}
 {{range .Properties}}
 {{if .HasValidations}}
 
-func ({{.ReceiverName}} *{{$className}}) validate{{.PropertyName}}(formats strfmt.Registry) error {
+func ({{.ReceiverName}} *{{$className}}) validate{{ pascalize .Name }}(formats strfmt.Registry) error {
   {{template "propertyvalidator" .}}
 
   return nil

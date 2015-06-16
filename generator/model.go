@@ -157,7 +157,7 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 		}
 		if mod != nil {
 			for _, prop := range mod.Properties {
-				props[prop.ParamName] = prop
+				props[prop.Name] = prop
 			}
 		}
 	}
@@ -176,32 +176,29 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 
 	return &genModel{
 		Package:        filepath.Base(pkg),
-		ClassName:      swag.ToGoName(name),
 		Name:           name,
 		ReceiverName:   receiver,
 		Properties:     properties,
 		Description:    schema.Description,
 		Title:          schema.Title,
-		DocString:      modelDocString(swag.ToGoName(name), schema.Description),
-		HumanClassName: swag.ToHumanNameLower(swag.ToGoName(name)),
-		DefaultImports: []string{"github.com/go-swagger/go-swagger/strfmt"},
 		HasValidations: hasValidations,
 	}, nil
 }
 
 type genModel struct {
-	Package        string //`json:"package,omitempty"`
-	ReceiverName   string //`json:"receiverName,omitempty"`
-	ClassName      string //`json:"classname,omitempty"`
-	Name           string //`json:"name,omitempty"`
+	Package        string
+	ReceiverName   string
+	Name           string
+	Path           string
 	Title          string
-	Description    string             //`json:"description,omitempty"`
-	Properties     []genModelProperty //`json:"properties,omitempty"`
-	DocString      string             //`json:"docString,omitempty"`
-	HumanClassName string             //`json:"humanClassname,omitempty"`
-	Imports        map[string]string  //`json:"imports,omitempty"`
-	DefaultImports []string           //`json:"defaultImports,omitempty"`
-	HasValidations bool               //`json:"hasValidatins,omitempty"`
+	Description    string
+	Properties     []genModelProperty
+	Imports        map[string]string
+	DefaultImports []string
+	HasValidations bool
+	ExtraModels    []genModel
+	Type           *resolvedType
+	IsAnonymous    bool // never actually set, because by definition this is named
 }
 
 func modelDocString(className, desc string) string {
@@ -231,18 +228,35 @@ func (pg propGenBuildParams) NewSliceBranch(schema *spec.Schema) propGenBuildPar
 	return pg
 }
 
+func (pg propGenBuildParams) NewStructBranch(name string, schema spec.Schema) propGenBuildParams {
+	pg.Path = pg.Path + "." + name
+	pg.Name = name
+	pg.ValueExpr = pg.ValueExpr + "." + swag.ToGoName(name)
+	pg.Schema = schema
+	pg.Required = swag.ContainsStringsCI(schema.Required, name)
+	return pg
+}
+
 func makeGenModelProperty(params propGenBuildParams) (genModelProperty, error) {
 	// log.Printf("property: (path %s) (param %s) (accessor %s) (receiver %s) (indexVar %s) (expr %s) required %t", path, paramName, accessor, receiver, indexVar, valueExpression, required)
 	ex := ""
 	if params.Schema.Example != nil {
 		ex = fmt.Sprintf("%#v", params.Schema.Example)
 	}
-	validations, err := modelValidations(params, false)
+
+	ctx := modelValidations(params)
+	tpe, err := params.TypeResolver.ResolveSchema(&params.Schema, true)
 	if err != nil {
 		return genModelProperty{}, err
 	}
-
-	ctx := makeGenValidations(validations)
+	var properties []genModelProperty
+	for k, v := range params.Schema.Properties {
+		emprop, err := makeGenModelProperty(params.NewStructBranch(k, v))
+		if err != nil {
+			return genModelProperty{}, err
+		}
+		properties = append(properties, emprop)
+	}
 
 	singleSchemaSlice := params.Schema.Items != nil && params.Schema.Items.Schema != nil
 	var items []genModelProperty
@@ -294,16 +308,16 @@ func makeGenModelProperty(params propGenBuildParams) (genModelProperty, error) {
 	}
 
 	return genModelProperty{
-		sharedParam:     ctx,
-		DataType:        ctx.Type,
-		Example:         ex,
-		Name:            params.Name,
-		DocString:       propertyDocString(params.Accessor, params.Schema.Description, ex),
-		Title:           params.Schema.Title,
-		Description:     params.Schema.Description,
-		ReceiverName:    params.Receiver,
-		IsComplexObject: !ctx.IsPrimitive && !ctx.IsCustomFormatter && !ctx.IsContainer,
+		resolvedType:      tpe,
+		sharedValidations: ctx,
+		Example:           ex,
+		Path:              params.Path,
+		Name:              params.Name,
+		Title:             params.Schema.Title,
+		Description:       params.Schema.Description,
+		ReceiverName:      params.Receiver,
 
+		Properties:            properties,
 		HasAdditionalItems:    hasAdditionalItems,
 		AllowsAdditionalItems: allowsAdditionalItems,
 		AdditionalItems:       additionalItems,
@@ -323,53 +337,58 @@ func makeGenModelProperty(params propGenBuildParams) (genModelProperty, error) {
 // end up being cast to interface, and if it does it truly is the best guess
 
 type genModelProperty struct {
-	sharedParam
-	Example               string //`json:"example,omitempty"`
+	resolvedType
+	sharedValidations
+	Example               string
 	Name                  string
+	Path                  string
 	Title                 string
-	Description           string             //`json:"description,omitempty"`
-	DataType              string             //`json:"dataType,omitempty"`
-	DocString             string             //`json:"docString,omitempty"`
-	Location              string             //`json:"location,omitempty"`
-	ReceiverName          string             //`json:"receiverName,omitempty"`
-	IsComplexObject       bool               //`json:"isComplex,omitempty"` // not slice, custom formatter or primitive
-	SingleSchemaSlice     bool               //`json:"singleSchemaSlice,omitempty"`
-	Items                 []genModelProperty //`json:"items,omitempty"`
-	ItemsLen              int                //`json:"itemsLength,omitempty"`
-	AllowsAdditionalItems bool               //`json:"allowsAdditionalItems,omitempty"`
-	HasAdditionalItems    bool               //`json:"hasAdditionalItems,omitempty"`
-	AdditionalItems       *genModelProperty  //`json:"additionalItems,omitempty"`
-	Object                *genModelProperty  //`json:"object,omitempty"`
-	XMLName               string             //`json:"xmlName,omitempty"`
+	Description           string
+	Location              string
+	ReceiverName          string
+	SingleSchemaSlice     bool
+	Items                 []genModelProperty
+	ItemsLen              int
+	AllowsAdditionalItems bool
+	HasAdditionalItems    bool
+	AdditionalItems       *genModelProperty
+	Object                *genModelProperty
+	XMLName               string
+	Properties            []genModelProperty
 }
 
-func modelValidations(params propGenBuildParams, isAnonymous bool) (commonValidations, error) {
-	tpe, err := params.TypeResolver.ResolveSchema(&params.Schema, isAnonymous)
-	if err != nil {
-		return commonValidations{}, err
-	}
+type sharedValidations struct {
+	Type                resolvedType
+	Required            bool
+	MaxLength           *int64
+	MinLength           *int64
+	Pattern             string
+	MultipleOf          *float64
+	Minimum             *float64
+	Maximum             *float64
+	ExclusiveMinimum    bool
+	ExclusiveMaximum    bool
+	Enum                string
+	HasValidations      bool
+	MinItems            *int64
+	MaxItems            *int64
+	UniqueItems         bool
+	HasSliceValidations bool
+	NeedsSize           bool
+}
 
-	_, isPrimitive := primitives[tpe.GoType]
-	_, isCustomFormatter := customFormatters[tpe.GoType]
+// the adapter
+func modelValidations(params propGenBuildParams) sharedValidations {
+
 	model := params.Schema
 
-	return commonValidations{
-		propertyDescriptor: propertyDescriptor{
-			PropertyName:      params.Accessor,
-			ParamName:         params.ParamName,
-			ValueExpression:   params.ValueExpr,
-			IndexVar:          params.IndexVar,
-			Path:              params.Path,
-			IsContainer:       tpe.IsArray,
-			IsPrimitive:       isPrimitive,
-			IsCustomFormatter: isCustomFormatter,
-			IsMap:             tpe.IsMap,
-			T:                 tpe,
-		},
+	var enum string
+	if len(params.Schema.Enum) > 0 {
+		enum = fmt.Sprintf("%#v", model.Enum)
+	}
+
+	return sharedValidations{
 		Required:         params.Required,
-		Type:             tpe.GoType,
-		Format:           model.Format,
-		Default:          model.Default,
 		Maximum:          model.Maximum,
 		ExclusiveMaximum: model.ExclusiveMaximum,
 		Minimum:          model.Minimum,
@@ -381,8 +400,8 @@ func modelValidations(params propGenBuildParams, isAnonymous bool) (commonValida
 		MinItems:         model.MinItems,
 		UniqueItems:      model.UniqueItems,
 		MultipleOf:       model.MultipleOf,
-		Enum:             model.Enum,
-	}, nil
+		Enum:             enum,
+	}
 }
 
 func propertyDocString(propertyName, description, example string) string {

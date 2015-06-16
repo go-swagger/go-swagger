@@ -369,22 +369,24 @@ func makeCodegenParameter(receiver string, resolver *typeResolver, param spec.Pa
 	var child *genParameterItem
 
 	if param.In == "body" {
-		bps := propGenBuildParams{
-			Path:         "\"" + param.Name + "\"",
-			ParamName:    swag.ToJSONName(param.Name),
-			Accessor:     swag.ToGoName(param.Name),
-			Receiver:     receiver,
-			IndexVar:     "i",
-			ValueExpr:    receiver + "." + swag.ToGoName(param.Name),
-			Schema:       *param.Schema,
-			Required:     param.Required,
-			TypeResolver: resolver,
-		}
-		c, err := modelValidations(bps, true)
-		if err != nil {
-			return genParameter{}, err
-		}
-		ctx = makeGenValidations(c)
+		// bps := propGenBuildParams{
+		// 	Path:         "\"" + param.Name + "\"",
+		// 	ParamName:    swag.ToJSONName(param.Name),
+		// 	Accessor:     swag.ToGoName(param.Name),
+		// 	Receiver:     receiver,
+		// 	IndexVar:     "i",
+		// 	ValueExpr:    receiver + "." + swag.ToGoName(param.Name),
+		// 	Schema:       *param.Schema,
+		// 	Required:     param.Required,
+		// 	TypeResolver: resolver,
+		// }
+
+		// TODO: FIX ME!!!!!
+		// c, err := modelValidations(bps, true)
+		// if err != nil {
+		// 	return genParameter{}, err
+		// }
+		// ctx = makeGenValidations(c)
 
 	} else {
 		ctx = makeGenValidations(paramValidations(receiver, param))

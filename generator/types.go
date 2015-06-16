@@ -185,6 +185,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema) (returns bool, resu
 			result.GoType = t.ModelsPackage + "." + tn
 			result.SwaggerType = "object"
 			result.IsComplexObject = true
+			result.IsNullable = true
 		} else {
 			// TODO: Preserve type name here?
 			result, err = t.ResolveSchema(ref, true)
@@ -216,8 +217,9 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema) (returns bool, result 
 }
 
 func (t *typeResolver) isNullable(schema *spec.Schema) bool {
-	_, ok := schema.Extensions["x-isnullable"].(bool)
-	return schema.Type.Contains("object") || ok
+	v, found := schema.Extensions["x-isnullable"]
+	nullable, cast := v.(bool)
+	return found && cast && nullable
 }
 
 func (t *typeResolver) firstType(schema *spec.Schema) string {
@@ -341,6 +343,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous bool) (res
 		return
 	}
 
+	result.IsNullable = t.isNullable(schema)
 	tpe := t.firstType(schema)
 	switch tpe {
 	case "array":

@@ -1,2 +1,2 @@
 /* {{ template "docstring" . }}{{ template "propertyValidationDocString" .}} */
-{{ pascalize .Name}} {{ template "schemaType" .T }} `json:"{{ .Name }}"{{ if .XMLName }} xml:"{{ .XMLName }}"{{ end }}`
+{{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .Name }}"{{ if .XMLName }} xml:"{{ .XMLName }}"{{ end }}`

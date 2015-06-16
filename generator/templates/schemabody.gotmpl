@@ -1,0 +1,5 @@
+{{ define "schemaBody" }}struct{{ if not .IsAnonymous }} {{ end }}{
+  {{range .Properties}}
+  {{template "structfield" .}}
+  {{end}}
+}{{end}}

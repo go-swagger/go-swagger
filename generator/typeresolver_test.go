@@ -92,6 +92,7 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 
 			rt, err := resolver.ResolveSchema(sch, true)
 			if assert.NoError(t, err) {
+				assert.False(t, rt.IsNullable)
 				assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, rt)
 			}
 		}
@@ -102,9 +103,38 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 			sch.Typed(val.Type, val.Format)
 			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(sch), true)
 			if assert.NoError(t, err) && assert.True(t, rt.IsArray) && assert.NotNil(t, rt.ElementType) {
+				assert.False(t, rt.ElementType.IsNullable)
 				assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, *rt.ElementType)
 			}
 		}
+
+		// primitives and string formats
+		for _, val := range schTypeVals {
+			sch := new(spec.Schema)
+			sch.Typed(val.Type, val.Format)
+			sch.Extensions = make(spec.Extensions)
+			sch.Extensions["x-isnullable"] = true
+
+			rt, err := resolver.ResolveSchema(sch, true)
+			if assert.NoError(t, err) {
+				assert.True(t, rt.IsNullable, "expected %q (%q) to be nullable", val.Type, val.Format)
+				assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, rt)
+			}
+		}
+
+		// arrays of primitives and string formats
+		for _, val := range schTypeVals {
+			var sch spec.Schema
+			sch.Typed(val.Type, val.Format)
+			sch.AddExtension("x-isnullable", true)
+
+			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(sch), true)
+			if assert.NoError(t, err) && assert.True(t, rt.IsArray) && assert.NotNil(t, rt.ElementType) {
+				assert.True(t, rt.ElementType.IsNullable, "expected array of nullable %q (%q)", val.Type, val.Format)
+				assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, *rt.ElementType)
+			}
+		}
+
 	}
 
 }
