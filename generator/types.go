@@ -162,6 +162,7 @@ func resolveSimpleType(tn, fmt string, items *spec.Items) string {
 type typeResolver struct {
 	Doc           *spec.Document
 	ModelsPackage string
+	ModelName     string
 }
 
 func (t *typeResolver) resolveSchemaRef(schema *spec.Schema) (returns bool, result resolvedType, err error) {
@@ -178,23 +179,19 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema) (returns bool, resu
 		} else {
 			tn = swag.ToGoName(filepath.Base(schema.Ref.GetURL().Fragment))
 		}
-		result.IsNullable = t.isNullable(ref)
-		result.IsAnonymous = false
 
-		if ref.Type.Contains("object") {
-			result.GoType = tn
-			if t.ModelsPackage != "" {
-				result.GoType = t.ModelsPackage + "." + tn
-			}
-			result.SwaggerType = "object"
-			result.IsComplexObject = true
-		} else {
-			// TODO: Preserve type name here?
-			result, err = t.ResolveSchema(ref, true)
-			if err != nil {
-				return
-			}
+		res, er := t.ResolveSchema(ref, false)
+		if er != nil {
+			err = er
+			return
 		}
+		result = res
+		result.GoType = tn
+		if t.ModelsPackage != "" {
+			result.GoType = t.ModelsPackage + "." + tn
+		}
+		return
+
 	}
 	return
 }
@@ -258,12 +255,39 @@ func (t *typeResolver) resolveArray(schema *spec.Schema) (result resolvedType, e
 }
 
 func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (result resolvedType, err error) {
+	result.IsAnonymous = isAnonymous
+
+	if !isAnonymous {
+		result.SwaggerType = "object"
+		result.GoType = t.ModelName
+		if t.ModelsPackage != "" {
+			result.GoType = t.ModelsPackage + "." + t.ModelName
+		}
+	}
+	if len(schema.AllOf) > 0 {
+		// TODO: with further analysis this could work out some more nuances for what to render
+		//       eg. allOf with only 1 object that is a ref, it could become a type alias, there
+		//       can other items in the allOf collection but none that describe other properties.
+		result.GoType = t.ModelName
+		if t.ModelsPackage != "" {
+			result.GoType = t.ModelsPackage + "." + t.ModelName
+		}
+		result.IsComplexObject = true
+		var isNullable bool
+		for _, p := range schema.AllOf {
+			if t.isNullable(&p) {
+				isNullable = true
+			}
+		}
+		result.IsNullable = isNullable
+		result.SwaggerType = "object"
+		return
+	}
 
 	// if this schema has properties, build a map of property name to
 	// resolved type, this should also flag the object as anonymous,
 	// when a ref is found, the anonymous flag will be reset
 	if isAnonymous && len(schema.Properties) > 0 {
-		result.IsAnonymous = isAnonymous
 		result.IsNullable = t.isNullable(schema)
 		result.IsComplexObject = true
 		// no return here, still need to check for additional properties

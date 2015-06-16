@@ -25,26 +25,33 @@ func (tt *templateTest) assertRender(data interface{}, expected string) bool {
 	return assert.Equal(tt.t, expected, buf.String())
 }
 
-func TestGenerateModel_Primitives(t *testing.T) {
+func TestGenerateModel_Sanity(t *testing.T) {
+	// just checks if it can render and format these things
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 
+		//k := "Comment"
+		//schema := definitions[k]
 		for k, schema := range definitions {
-			genModel, err := makeCodegenModel(k, "models", schema, specDoc)
+			genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+
 			if assert.NoError(t, err) {
-				//b, _ := json.MarshalIndent(genModel, "", "  ")
+				//b, _ := json.MarshalIndent(genModel.IsCo, "", "  ")
 				//fmt.Println(string(b))
 				rendered := bytes.NewBuffer(nil)
 
 				err := modelTemplate.Execute(rendered, genModel)
 				if assert.NoError(t, err) {
-					//fmt.Println(rendered.String())
 					if assert.NoError(t, err) {
 						formatted, err := formatGoFile(strings.ToLower(k)+".go", rendered.Bytes())
 						if assert.NoError(t, err) {
 							fmt.Println(string(formatted))
+						} else {
+							fmt.Println(rendered.String())
+							break
 						}
+
 						//assert.EqualValues(t, strings.TrimSpace(string(expected)), strings.TrimSpace(string(formatted)))
 					}
 				}
@@ -57,7 +64,7 @@ func TestGenerateModel_DocString(t *testing.T) {
 	templ := template.Must(template.New("docstring").Funcs(FuncMap).Parse(string(assetDocString)))
 	tt := templateTest{t, templ}
 
-	var gmp genModelProperty
+	var gmp GenSchema
 	gmp.Title = "The title of the property"
 	gmp.Description = "The description of the property"
 	var expected = `The title of the property
@@ -82,7 +89,7 @@ func TestGenerateModel_PropertyValidation(t *testing.T) {
 	templ := template.Must(template.New("propertyValidationDocString").Funcs(FuncMap).Parse(string(assetStuctFieldValidation)))
 	tt := templateTest{t, templ}
 
-	var gmp genModelProperty
+	var gmp GenSchema
 	gmp.Required = true
 	tt.assertRender(gmp, `
 Required: true
@@ -132,7 +139,7 @@ Unique: true
 func TestGenerateModel_SchemaField(t *testing.T) {
 	tt := templateTest{t, modelTemplate.Lookup("structfield")}
 
-	var gmp genModelProperty
+	var gmp GenSchema
 	gmp.Name = "some name"
 	gmp.resolvedType = resolvedType{GoType: "string", IsPrimitive: true}
 	gmp.Title = "The title of the property"
@@ -183,41 +190,41 @@ Unique: true
 // * Schemas for simple types
 
 var schTypeGenDataSimple = []struct {
-	Value    genModelProperty
+	Value    GenSchema
 	Expected string
 }{
-	{genModelProperty{resolvedType: resolvedType{GoType: "string", IsPrimitive: true}}, "string"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "string", IsPrimitive: true, IsNullable: true}}, "*string"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "bool", IsPrimitive: true}}, "bool"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "int32", IsPrimitive: true}}, "int32"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "int64", IsPrimitive: true}}, "int64"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "float32", IsPrimitive: true}}, "float32"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "float64", IsPrimitive: true}}, "float64"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "strfmt.Base64", IsPrimitive: true}}, "strfmt.Base64"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "strfmt.Date", IsPrimitive: true}}, "strfmt.Date"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "strfmt.DateTime", IsPrimitive: true}}, "strfmt.DateTime"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "strfmt.URI", IsPrimitive: true}}, "strfmt.URI"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "strfmt.Email", IsPrimitive: true}}, "strfmt.Email"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "strfmt.Hostname", IsPrimitive: true}}, "strfmt.Hostname"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "strfmt.IPv4", IsPrimitive: true}}, "strfmt.IPv4"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "strfmt.IPv6", IsPrimitive: true}}, "strfmt.IPv6"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "strfmt.UUID", IsPrimitive: true}}, "strfmt.UUID"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "strfmt.UUID3", IsPrimitive: true}}, "strfmt.UUID3"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "strfmt.UUID4", IsPrimitive: true}}, "strfmt.UUID4"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "strfmt.UUID5", IsPrimitive: true}}, "strfmt.UUID5"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "strfmt.ISBN", IsPrimitive: true}}, "strfmt.ISBN"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "strfmt.ISBN10", IsPrimitive: true}}, "strfmt.ISBN10"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "strfmt.ISBN13", IsPrimitive: true}}, "strfmt.ISBN13"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "strfmt.CreditCard", IsPrimitive: true}}, "strfmt.CreditCard"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "strfmt.SSN", IsPrimitive: true}}, "strfmt.SSN"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "strfmt.HexColor", IsPrimitive: true}}, "strfmt.HexColor"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "strfmt.RGBColor", IsPrimitive: true}}, "strfmt.RGBColor"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "strfmt.Duration", IsPrimitive: true}}, "strfmt.Duration"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "strfmt.Password", IsPrimitive: true}}, "strfmt.Password"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "interface{}", IsInterface: true}}, "interface{}"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "[]int32", IsArray: true}}, "[]int32"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "[]string", IsArray: true}}, "[]string"},
-	{genModelProperty{resolvedType: resolvedType{GoType: "models.Task", IsComplexObject: true, IsNullable: true, IsAnonymous: false}}, "*models.Task"},
+	{GenSchema{resolvedType: resolvedType{GoType: "string", IsPrimitive: true}}, "string"},
+	{GenSchema{resolvedType: resolvedType{GoType: "string", IsPrimitive: true, IsNullable: true}}, "*string"},
+	{GenSchema{resolvedType: resolvedType{GoType: "bool", IsPrimitive: true}}, "bool"},
+	{GenSchema{resolvedType: resolvedType{GoType: "int32", IsPrimitive: true}}, "int32"},
+	{GenSchema{resolvedType: resolvedType{GoType: "int64", IsPrimitive: true}}, "int64"},
+	{GenSchema{resolvedType: resolvedType{GoType: "float32", IsPrimitive: true}}, "float32"},
+	{GenSchema{resolvedType: resolvedType{GoType: "float64", IsPrimitive: true}}, "float64"},
+	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.Base64", IsPrimitive: true}}, "strfmt.Base64"},
+	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.Date", IsPrimitive: true}}, "strfmt.Date"},
+	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.DateTime", IsPrimitive: true}}, "strfmt.DateTime"},
+	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.URI", IsPrimitive: true}}, "strfmt.URI"},
+	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.Email", IsPrimitive: true}}, "strfmt.Email"},
+	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.Hostname", IsPrimitive: true}}, "strfmt.Hostname"},
+	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.IPv4", IsPrimitive: true}}, "strfmt.IPv4"},
+	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.IPv6", IsPrimitive: true}}, "strfmt.IPv6"},
+	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.UUID", IsPrimitive: true}}, "strfmt.UUID"},
+	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.UUID3", IsPrimitive: true}}, "strfmt.UUID3"},
+	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.UUID4", IsPrimitive: true}}, "strfmt.UUID4"},
+	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.UUID5", IsPrimitive: true}}, "strfmt.UUID5"},
+	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.ISBN", IsPrimitive: true}}, "strfmt.ISBN"},
+	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.ISBN10", IsPrimitive: true}}, "strfmt.ISBN10"},
+	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.ISBN13", IsPrimitive: true}}, "strfmt.ISBN13"},
+	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.CreditCard", IsPrimitive: true}}, "strfmt.CreditCard"},
+	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.SSN", IsPrimitive: true}}, "strfmt.SSN"},
+	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.HexColor", IsPrimitive: true}}, "strfmt.HexColor"},
+	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.RGBColor", IsPrimitive: true}}, "strfmt.RGBColor"},
+	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.Duration", IsPrimitive: true}}, "strfmt.Duration"},
+	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.Password", IsPrimitive: true}}, "strfmt.Password"},
+	{GenSchema{resolvedType: resolvedType{GoType: "interface{}", IsInterface: true}}, "interface{}"},
+	{GenSchema{resolvedType: resolvedType{GoType: "[]int32", IsArray: true}}, "[]int32"},
+	{GenSchema{resolvedType: resolvedType{GoType: "[]string", IsArray: true}}, "[]string"},
+	{GenSchema{resolvedType: resolvedType{GoType: "models.Task", IsComplexObject: true, IsNullable: true, IsAnonymous: false}}, "*models.Task"},
 }
 
 func TestGenSchemaType(t *testing.T) {

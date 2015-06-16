@@ -20,7 +20,7 @@ func (m *Model) Execute(args []string) error {
 	if m.DumpData && len(m.Name) > 1 {
 		return errors.New("only 1 model at a time is supported for dumping data")
 	}
-	return generator.GenerateModel(
+	return generator.GenerateDefinition(
 		m.Name,
 		!m.NoStruct,
 		!m.NoValidator,

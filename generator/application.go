@@ -34,7 +34,7 @@ type AppData struct {
 	Consumes            []SerializerGroup
 	Produces            []SerializerGroup
 	SecurityDefinitions []SecuritySchemeData
-	Models              []genModel
+	Models              []GenDefinition
 	OperationGroups     map[string]genOperationGroup
 	SwaggerJSON         string
 }

@@ -42,7 +42,7 @@ func (s *Server) Execute(args []string) error {
 	}
 
 	if !s.SkipModels && (len(s.Models) > 0 || len(s.Operations) == 0) {
-		if err := generator.GenerateModel(s.Models, true, true, opts); err != nil {
+		if err := generator.GenerateDefinition(s.Models, true, true, opts); err != nil {
 			return err
 		}
 	}

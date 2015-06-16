@@ -12,8 +12,8 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
-// GenerateModel generates a model file for a schema defintion
-func GenerateModel(modelNames []string, includeModel, includeValidator bool, opts GenOpts) error {
+// GenerateDefinition generates a model file for a schema defintion
+func GenerateDefinition(modelNames []string, includeModel, includeValidator bool, opts GenOpts) error {
 	// Load the spec
 	specPath, specDoc, err := loadSpec(opts.Spec)
 	if err != nil {
@@ -34,7 +34,7 @@ func GenerateModel(modelNames []string, includeModel, includeValidator bool, opt
 		}
 
 		// generate files
-		generator := modelGenerator{
+		generator := definitionGenerator{
 			Name:             modelName,
 			Model:            model,
 			SpecDoc:          specDoc,
@@ -52,7 +52,7 @@ func GenerateModel(modelNames []string, includeModel, includeValidator bool, opt
 	return nil
 }
 
-type modelGenerator struct {
+type definitionGenerator struct {
 	Name             string
 	Model            spec.Schema
 	SpecDoc          *spec.Document
@@ -63,8 +63,8 @@ type modelGenerator struct {
 	DumpData         bool
 }
 
-func (m *modelGenerator) Generate() error {
-	mod, err := makeCodegenModel(m.Name, m.Target, m.Model, m.SpecDoc)
+func (m *definitionGenerator) Generate() error {
+	mod, err := makeGenDefinition(m.Name, m.Target, m.Model, m.SpecDoc)
 	if err != nil {
 		return err
 	}
@@ -92,7 +92,7 @@ func (m *modelGenerator) Generate() error {
 	return nil
 }
 
-func (m *modelGenerator) generateValidator() error {
+func (m *definitionGenerator) generateValidator() error {
 	buf := bytes.NewBuffer(nil)
 	if err := modelValidatorTemplate.Execute(buf, m.Data); err != nil {
 		return err
@@ -101,7 +101,7 @@ func (m *modelGenerator) generateValidator() error {
 	return writeToFile(m.Target, m.Name+"Validator", buf.Bytes())
 }
 
-func (m *modelGenerator) generateModel() error {
+func (m *definitionGenerator) generateModel() error {
 	buf := bytes.NewBuffer(nil)
 
 	if err := modelTemplate.Execute(buf, m.Data); err != nil {
@@ -112,13 +112,14 @@ func (m *modelGenerator) generateModel() error {
 	return writeToFile(m.Target, m.Name, buf.Bytes())
 }
 
-func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Document) (*genModel, error) {
+func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *spec.Document) (*GenDefinition, error) {
 	receiver := "m"
 	resolver := &typeResolver{
 		ModelsPackage: "",
+		ModelName:     name,
 		Doc:           specDoc,
 	}
-	pg := propGenBuildParams{
+	pg := schemaGenContext{
 		Path:         "",
 		Name:         name,
 		Receiver:     receiver,
@@ -128,28 +129,40 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 		Required:     false,
 		TypeResolver: resolver,
 	}
-	mp, dependsOn, err := pg.makeGenModelProperty()
+	mp, dependsOn, err := pg.makeGenSchema()
 	if err != nil {
 		return nil, err
 	}
 
-	return &genModel{
-		Package:          filepath.Base(pkg),
-		genModelProperty: mp,
-		DependsOn:        dependsOn,
+	var defaultImports []string
+	if mp.HasValidations {
+		defaultImports = []string{
+			"github.com/go-swagger/go-swagger/errors",
+			"github.com/go-swagger/go-swagger/strfmt",
+			"github.com/go-swagger/go-swagger/httpkit/validate",
+		}
+	}
+
+	return &GenDefinition{
+		Package:        filepath.Base(pkg),
+		GenSchema:      mp,
+		DependsOn:      dependsOn,
+		DefaultImports: defaultImports,
 	}, nil
 }
 
-type genModel struct {
-	genModelProperty
+// GenDefinition contains all the properties to generate a
+// defintion from a swagger spec
+type GenDefinition struct {
+	GenSchema
 	Package        string
 	Imports        map[string]string
 	DefaultImports []string
-	ExtraModels    []genModel
+	ExtraSchemas   []GenDefinition
 	DependsOn      []string
 }
 
-type propGenBuildParams struct {
+type schemaGenContext struct {
 	Path               string
 	Name               string
 	ParamName          string
@@ -164,7 +177,7 @@ type propGenBuildParams struct {
 	Named              bool
 }
 
-func (pg propGenBuildParams) NewSliceBranch(schema *spec.Schema) propGenBuildParams {
+func (pg schemaGenContext) NewSliceBranch(schema *spec.Schema) schemaGenContext {
 	indexVar := pg.IndexVar
 	pg.Path = pg.Path + "." + indexVar
 	pg.IndexVar = indexVar + "i"
@@ -174,7 +187,7 @@ func (pg propGenBuildParams) NewSliceBranch(schema *spec.Schema) propGenBuildPar
 	return pg
 }
 
-func (pg propGenBuildParams) NewStructBranch(name string, schema spec.Schema) propGenBuildParams {
+func (pg schemaGenContext) NewStructBranch(name string, schema spec.Schema) schemaGenContext {
 	pg.Path = pg.Path + "." + name
 	pg.Name = name
 	pg.ValueExpr = pg.ValueExpr + "." + swag.ToGoName(name)
@@ -183,19 +196,19 @@ func (pg propGenBuildParams) NewStructBranch(name string, schema spec.Schema) pr
 	return pg
 }
 
-func (pg propGenBuildParams) NewCompositionBranch(schema spec.Schema) propGenBuildParams {
+func (pg schemaGenContext) NewCompositionBranch(schema spec.Schema) schemaGenContext {
 	pg.Schema = schema
 	return pg
 }
 
-func (pg propGenBuildParams) NewAdditionalProperty(schema spec.Schema) propGenBuildParams {
+func (pg schemaGenContext) NewAdditionalProperty(schema spec.Schema) schemaGenContext {
 	pg.Schema = schema
 	pg.AdditionalProperty = true
 	pg.Name = "additionalProperties"
 	return pg
 }
 
-func (pg propGenBuildParams) modelValidations() sharedValidations {
+func (pg schemaGenContext) schemaValidations() sharedValidations {
 
 	model := pg.Schema
 
@@ -233,25 +246,25 @@ func (pg propGenBuildParams) modelValidations() sharedValidations {
 	}
 }
 
-func (pg propGenBuildParams) makeGenModelProperty() (genModelProperty, []string, error) {
+func (pg schemaGenContext) makeGenSchema() (GenSchema, []string, error) {
 	// log.Printf("property: (path %s) (param %s) (accessor %s) (receiver %s) (indexVar %s) (expr %s) required %t", path, paramName, accessor, receiver, indexVar, valueExpression, required)
 	ex := ""
 	if pg.Schema.Example != nil {
 		ex = fmt.Sprintf("%#v", pg.Schema.Example)
 	}
 
-	ctx := pg.modelValidations()
+	ctx := pg.schemaValidations()
 	tpe, err := pg.TypeResolver.ResolveSchema(&pg.Schema, !pg.Named)
 	if err != nil {
-		return genModelProperty{}, nil, err
+		return GenSchema{}, nil, err
 	}
 
 	var discovered []string
-	var properties []genModelProperty
+	var properties []GenSchema
 	for k, v := range pg.Schema.Properties {
-		emprop, disco, err := pg.NewStructBranch(k, v).makeGenModelProperty()
+		emprop, disco, err := pg.NewStructBranch(k, v).makeGenSchema()
 		if err != nil {
-			return genModelProperty{}, nil, err
+			return GenSchema{}, nil, err
 		}
 		if emprop.HasValidations {
 			ctx.HasValidations = emprop.HasValidations
@@ -260,11 +273,11 @@ func (pg propGenBuildParams) makeGenModelProperty() (genModelProperty, []string,
 		discovered = append(discovered, disco...)
 	}
 
-	var allOf []genModelProperty
+	var allOf []GenSchema
 	for _, sch := range pg.Schema.AllOf {
-		comprop, disco, err := pg.NewCompositionBranch(sch).makeGenModelProperty()
+		comprop, disco, err := pg.NewCompositionBranch(sch).makeGenSchema()
 		if err != nil {
-			return genModelProperty{}, nil, err
+			return GenSchema{}, nil, err
 		}
 		if comprop.HasValidations {
 			ctx.HasValidations = comprop.HasValidations
@@ -273,15 +286,15 @@ func (pg propGenBuildParams) makeGenModelProperty() (genModelProperty, []string,
 		discovered = append(discovered, disco...)
 	}
 
-	var additionalProperties *genModelProperty
+	var additionalProperties *GenSchema
 	var hasAdditionalProperties bool
 	if pg.Schema.AdditionalProperties != nil {
 		addp := pg.Schema.AdditionalProperties
 		hasAdditionalProperties = addp.Allows || addp.Schema != nil
 		if addp.Schema != nil {
-			comprop, disco, err := pg.NewAdditionalProperty(*addp.Schema).makeGenModelProperty()
+			comprop, disco, err := pg.NewAdditionalProperty(*addp.Schema).makeGenSchema()
 			if err != nil {
-				return genModelProperty{}, nil, err
+				return GenSchema{}, nil, err
 			}
 			if comprop.HasValidations {
 				ctx.HasValidations = comprop.HasValidations
@@ -292,21 +305,21 @@ func (pg propGenBuildParams) makeGenModelProperty() (genModelProperty, []string,
 	}
 
 	singleSchemaSlice := pg.Schema.Items != nil && pg.Schema.Items.Schema != nil
-	var items []genModelProperty
+	var items []GenSchema
 	if singleSchemaSlice {
 		ctx.HasSliceValidations = true
 
-		elProp, disco, err := pg.NewSliceBranch(pg.Schema.Items.Schema).makeGenModelProperty()
+		elProp, disco, err := pg.NewSliceBranch(pg.Schema.Items.Schema).makeGenSchema()
 		if err != nil {
-			return genModelProperty{}, nil, err
+			return GenSchema{}, nil, err
 		}
-		items = []genModelProperty{elProp}
+		items = []GenSchema{elProp}
 		discovered = append(discovered, disco...)
 	} else if pg.Schema.Items != nil {
 		for _, s := range pg.Schema.Items.Schemas {
-			elProp, disco, err := pg.NewSliceBranch(&s).makeGenModelProperty()
+			elProp, disco, err := pg.NewSliceBranch(&s).makeGenSchema()
 			if err != nil {
-				return genModelProperty{}, nil, err
+				return GenSchema{}, nil, err
 			}
 			items = append(items, elProp)
 			discovered = append(discovered, disco...)
@@ -317,11 +330,11 @@ func (pg propGenBuildParams) makeGenModelProperty() (genModelProperty, []string,
 		pg.Schema.AdditionalItems != nil &&
 			(pg.Schema.AdditionalItems.Allows || pg.Schema.AdditionalItems.Schema != nil)
 	hasAdditionalItems := allowsAdditionalItems && !singleSchemaSlice
-	var additionalItems *genModelProperty
+	var additionalItems *GenSchema
 	if pg.Schema.AdditionalItems != nil && pg.Schema.AdditionalItems.Schema != nil {
-		it, disco, err := pg.NewSliceBranch(pg.Schema.AdditionalItems.Schema).makeGenModelProperty()
+		it, disco, err := pg.NewSliceBranch(pg.Schema.AdditionalItems.Schema).makeGenSchema()
 		if err != nil {
-			return genModelProperty{}, nil, err
+			return GenSchema{}, nil, err
 		}
 		additionalItems = &it
 		discovered = append(discovered, disco...)
@@ -341,7 +354,7 @@ func (pg propGenBuildParams) makeGenModelProperty() (genModelProperty, []string,
 		}
 	}
 
-	return genModelProperty{
+	return GenSchema{
 		resolvedType:      tpe,
 		sharedValidations: ctx,
 		Example:           ex,
@@ -376,7 +389,9 @@ func (pg propGenBuildParams) makeGenModelProperty() (genModelProperty, []string,
 // and anonymous structs. At that point there is very little that would
 // end up being cast to interface, and if it does it truly is the best guess
 
-type genModelProperty struct {
+// GenSchema contains all the information needed to generate the code
+// for a schema
+type GenSchema struct {
 	resolvedType
 	sharedValidations
 	Example                 string
@@ -387,18 +402,18 @@ type genModelProperty struct {
 	Location                string
 	ReceiverName            string
 	SingleSchemaSlice       bool
-	Items                   []genModelProperty
+	Items                   []GenSchema
 	ItemsLen                int
 	AllowsAdditionalItems   bool
 	HasAdditionalItems      bool
-	AdditionalItems         *genModelProperty
-	Object                  *genModelProperty
+	AdditionalItems         *GenSchema
+	Object                  *GenSchema
 	XMLName                 string
-	Properties              []genModelProperty
-	AllOf                   []genModelProperty
+	Properties              []GenSchema
+	AllOf                   []GenSchema
 	HasAdditionalProperties bool
 	IsAdditionalProperties  bool
-	AdditionalProperties    *genModelProperty
+	AdditionalProperties    *GenSchema
 	ReadOnly                bool
 }
 

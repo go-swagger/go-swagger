@@ -27,7 +27,7 @@ func (c *Client) Execute(args []string) error {
 	}
 
 	if !c.SkipModels && (len(c.Models) > 0 || len(c.Operations) == 0) {
-		if err := generator.GenerateModel(c.Models, true, true, opts); err != nil {
+		if err := generator.GenerateDefinition(c.Models, true, true, opts); err != nil {
 			return err
 		}
 	}

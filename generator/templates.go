@@ -33,7 +33,10 @@ var (
 	assetSchemaStructField      = MustAsset("templates/structfield.gotmpl")
 	assetSchemaType             = MustAsset("templates/schematype.gotmpl")
 	assetSchemaBody             = MustAsset("templates/schemabody.gotmpl")
+	assetSchema                 = MustAsset("templates/schema.gotmpl")
+	assetSchemaValidator        = MustAsset("templates/schemavalidator.gotmpl")
 	assetSchemaStruct           = MustAsset("templates/model.gotmpl")
+	assetHeader                 = MustAsset("templates/header.gotmpl")
 
 	assetServerParameter    = MustAsset("templates/server/parameter.gotmpl")
 	assetServerOperation    = MustAsset("templates/server/operation.gotmpl")
@@ -88,9 +91,13 @@ func init() {
 
 func makeModelTemplate() *template.Template {
 	templ := template.Must(template.New("docstring").Funcs(FuncMap).Parse(string(assetDocString)))
+	templ = template.Must(templ.New("primitivevalidator").Parse(string(assetPrimitiveValidation)))
 	templ = template.Must(templ.New("validationDocString").Parse(string(assetStuctFieldValidation)))
 	templ = template.Must(templ.New("schemaType").Parse(string(assetSchemaType)))
 	templ = template.Must(templ.New("schemaBody").Parse(string(assetSchemaBody)))
+	templ = template.Must(templ.New("schema").Parse(string(assetSchema)))
+	templ = template.Must(templ.New("schemavalidations").Parse(string(assetSchemaValidator)))
+	templ = template.Must(templ.New("header").Parse(string(assetHeader)))
 	templ = template.Must(templ.New("structfield").Parse(string(assetSchemaStructField)))
 	templ = template.Must(templ.New("model").Parse(string(assetSchemaStruct)))
 	return templ

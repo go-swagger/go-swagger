@@ -296,8 +296,10 @@ func TestTypeResolver_AnonymousStructs(t *testing.T) {
 }
 func TestTypeResolver_ObjectType(t *testing.T) {
 	_, resolver, err := basicTaskListResolver(t)
+	resolver.ModelName = "TheModel"
+	defer func() { resolver.ModelName = "" }()
 	if assert.NoError(t, err) {
-		// very poor schema definitions (as in none)
+		//very poor schema definitions (as in none)
 		types := []string{"object", ""}
 		for _, tpe := range types {
 			sch := new(spec.Schema)
@@ -308,12 +310,33 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 				assert.Equal(t, "map[string]interface{}", rt.GoType)
 				assert.Equal(t, "object", rt.SwaggerType)
 			}
+			nsch := new(spec.Schema)
+			nsch.Typed(tpe, "")
+			nsch.AllOf = []spec.Schema{*sch}
+			rt, err = resolver.ResolveSchema(nsch, false)
+			if assert.NoError(t, err) {
+				assert.True(t, rt.IsComplexObject)
+				assert.False(t, rt.IsMap)
+				assert.Equal(t, "models.TheModel", rt.GoType)
+				assert.Equal(t, "object", rt.SwaggerType)
+			}
 		}
 		sch := new(spec.Schema)
 		rt, err := resolver.ResolveSchema(sch, true)
 		if assert.NoError(t, err) {
 			assert.True(t, rt.IsMap)
 			assert.Equal(t, "map[string]interface{}", rt.GoType)
+			assert.Equal(t, "object", rt.SwaggerType)
+
+		}
+		sch = new(spec.Schema)
+		var sp spec.Schema
+		sp.Typed("object", "")
+		sch.AllOf = []spec.Schema{sp}
+		rt, err = resolver.ResolveSchema(sch, true)
+		if assert.NoError(t, err) {
+			assert.True(t, rt.IsComplexObject)
+			assert.Equal(t, "models.TheModel", rt.GoType)
 			assert.Equal(t, "object", rt.SwaggerType)
 
 		}

@@ -1,0 +1,3 @@
+{{ if .IsComplexObject }}{{ if .Name }}type {{ pascalize .Name }} {{ end }}{{ template "schemaBody" . }}
+{{ else }}type {{ pascalize .Name }} {{ .GoType }}
+{{ end }}

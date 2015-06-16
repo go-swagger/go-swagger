@@ -1,0 +1,97 @@
+{{define "primitivefieldvalidator"}}
+{{if .Required}}
+if err := validate.Required({{.Path}}, "{{.Location}}", {{.ValueExpression}}); err != nil {
+  return err
+}
+{{end}}
+{{ template "primitivevalidator" . }}
+{{end}}
+{{define "slicevalidator"}}
+{{if .NeedsSize}}
+{{ camelize .Name }}Size := int64(len({{.ValueExpression}}))
+{{end}}
+{{if .MinItems}}
+if err := validate.MinItems({{.Path}}, "{{.Location}}", {{ camelize .Name }}Size, {{.MinItems}}); err != nil {
+  return err
+}
+{{end}}
+{{if .MaxItems}}
+if err := validate.MaxItems({{.Path}}, "{{.Location}}", {{ camelize .Name }}Size, {{.MaxItems}}); err != nil {
+  return err
+}
+{{end}}
+{{if .UniqueItems}}
+if err := validate.UniqueItems({{.Path}}, "{{.Location}}", {{.ValueExpression}}); err != nil {
+  return err
+}
+{{end}}
+{{if .Enum}}
+if err := validate.Enum({{.Path}}, "{{.Location}}", {{.ValueExpression}}, {{.Enum}}); err != nil {
+  return err
+}
+{{end}}
+{{if .SingleSchemaSlice }}
+// single schema {{.ValueExpression}}
+for i := 0; i < len({{.ValueExpression}}); i++ {
+{{range .Items}}
+  {{template "propertyvalidator" .}}
+{{end}}
+}
+{{else}}
+// not single schema {{ pascalize .Name }}
+{{range .Items}}
+  {{template "propertyvalidator" .}}
+{{end}}
+{{if .AdditionalItems}}
+  for i := {{.ItemsLen}}; i  < (len() - {{.ItemsLen}}) - 1; i ++ {
+    {{template "propertyvalidator" .}}
+  }
+{{else}}
+if len({{.ValueExpression}}) > {{.ItemsLen}} {
+  return errors.AdditionalItemsNotAllowed("{{.ValueExpression}}", "{{.Location}}")
+}
+{{end}}
+{{end}}
+{{end}}
+{{define "objectvalidator"}}
+// custom object {{.DataType}}
+if err := {{.ValueExpression}}.Validate(formats); err != nil {
+  return err
+}
+{{end}}
+{{define "propertyvalidator"}}
+{{if .IsPrimitive}}{{template "primitivefieldvalidator" .}}
+{{else if .IsCustomFormatter}}{{template "customformatvalidator" .}}
+{{else if .IsContainer}}{{template "slicevalidator" .}}
+{{else if .IsComplexObject}}{{template "objectvalidator" .}}{{end}}
+{{end}}
+// Validate validates this {{ humanize .Name }}
+func ({{.ReceiverName}} *{{ pascalize .Name}}) Validate(formats strfmt.Registry) error {
+  {{if .HasValidations}}
+  var res []error
+
+  {{range .Properties}}
+  {{if .HasValidations}}
+  if err := {{.ReceiverName}}.validate{{ pascalize .Name }}(formats); err != nil {
+    res = append(res, err)
+  }
+  {{end}}
+  {{end}}
+
+  if len(res) > 0 {
+    return errors.CompositeValidationError(res...)
+  }
+  {{end}}
+  return nil
+}
+{{ $className := (pascalize .Name) }}
+{{range .Properties}}
+{{if .HasValidations}}
+
+func ({{.ReceiverName}} *{{$className}}) validate{{ pascalize .Name }}(formats strfmt.Registry) error {
+  {{template "propertyvalidator" .}}
+
+  return nil
+}
+{{end}}
+{{end}}
