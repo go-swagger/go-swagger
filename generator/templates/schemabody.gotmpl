@@ -2,7 +2,9 @@
   {{ range .AllOf }}
   {{ if .IsAnonymous }}{{ range .Properties }}
   {{ template "structfield" . }}
-  {{ end }}{{ else }}
+  {{ end }}{{ else if .HasAdditionalProperties }}
+  AdditionalProperties map[string]{{ if .AdditionalProperties }}{{ template "schemaType" .AdditionalProperties }}{{ else }}interface{}{{ end }}
+  {{ else }}
   {{if .IsNullable }}*{{ end }}{{ .GoType }}{{ end }}
   {{ end }}
   {{range .Properties}}

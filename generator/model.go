@@ -161,6 +161,28 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 		allOf = append(allOf, mod)
 	}
 
+	var additionalProperties *genModelProperty
+	var hasAdditionalProperties bool
+	if schema.AdditionalProperties != nil {
+		addp := schema.AdditionalProperties
+		hasAdditionalProperties = addp.Allows || addp.Schema != nil
+		if addp.Schema != nil {
+			mod, err := makeGenModelProperty(propGenBuildParams{
+				Name:               name,
+				Path:               name + ".additionalProperties",
+				Receiver:           receiver,
+				IndexVar:           "p",
+				Schema:             *addp.Schema,
+				TypeResolver:       resolver,
+				AdditionalProperty: true,
+			})
+			if err != nil {
+				return nil, err
+			}
+			additionalProperties = &mod
+		}
+	}
+
 	// TODO: add support for oneOf?
 	// this would require a struct with unexported fields, custom json marshaller etc
 
@@ -182,24 +204,29 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 		Title:          schema.Title,
 		HasValidations: hasValidations,
 		AllOf:          allOf,
+		HasAdditionalProperties: hasAdditionalProperties,
+		AdditionalProperties:    additionalProperties,
 	}, nil
 }
 
 type genModel struct {
-	Package        string
-	ReceiverName   string
-	Name           string
-	Path           string
-	Title          string
-	Description    string
-	Properties     []genModelProperty
-	Imports        map[string]string
-	DefaultImports []string
-	HasValidations bool
-	ExtraModels    []genModel
-	Type           *resolvedType
-	IsAnonymous    bool // never actually set, because by definition this is named
-	AllOf          []genModelProperty
+	Package                 string
+	ReceiverName            string
+	Name                    string
+	Path                    string
+	Title                   string
+	Description             string
+	Properties              []genModelProperty
+	Imports                 map[string]string
+	DefaultImports          []string
+	HasValidations          bool
+	ExtraModels             []genModel
+	Type                    *resolvedType
+	IsAnonymous             bool // never actually set, because by definition this is named
+	IsAdditionalProperties  bool // never actually set, keeps templates happy
+	AllOf                   []genModelProperty
+	AdditionalProperties    *genModelProperty
+	HasAdditionalProperties bool
 }
 
 func modelDocString(className, desc string) string {
@@ -207,21 +234,22 @@ func modelDocString(className, desc string) string {
 }
 
 type propGenBuildParams struct {
-	Path         string
-	Name         string
-	ParamName    string
-	Accessor     string
-	Receiver     string
-	IndexVar     string
-	ValueExpr    string
-	Schema       spec.Schema
-	Required     bool
-	TypeResolver *typeResolver
+	Path               string
+	Name               string
+	ParamName          string
+	Accessor           string
+	Receiver           string
+	IndexVar           string
+	ValueExpr          string
+	Schema             spec.Schema
+	Required           bool
+	AdditionalProperty bool
+	TypeResolver       *typeResolver
 }
 
 func (pg propGenBuildParams) NewSliceBranch(schema *spec.Schema) propGenBuildParams {
 	indexVar := pg.IndexVar
-	pg.Path = "fmt.Sprintf(\"%s.%v\", " + pg.Path + ", " + indexVar + ")"
+	pg.Path = pg.Path + "." + indexVar
 	pg.IndexVar = indexVar + "i"
 	pg.ValueExpr = pg.ValueExpr + "[" + indexVar + "]"
 	pg.Schema = *schema
@@ -240,6 +268,12 @@ func (pg propGenBuildParams) NewStructBranch(name string, schema spec.Schema) pr
 
 func (pg propGenBuildParams) NewCompositionBranch(schema spec.Schema) propGenBuildParams {
 	pg.Schema = schema
+	return pg
+}
+
+func (pg propGenBuildParams) NewAdditionalProperty(schema spec.Schema) propGenBuildParams {
+	pg.Schema = schema
+	pg.AdditionalProperty = true
 	return pg
 }
 
@@ -271,6 +305,20 @@ func makeGenModelProperty(params propGenBuildParams) (genModelProperty, error) {
 			return genModelProperty{}, err
 		}
 		allOf = append(allOf, comprop)
+	}
+
+	var additionalProperties *genModelProperty
+	var hasAdditionalProperties bool
+	if params.Schema.AdditionalProperties != nil {
+		addp := params.Schema.AdditionalProperties
+		hasAdditionalProperties = addp.Allows || addp.Schema != nil
+		if addp.Schema != nil {
+			comprop, err := makeGenModelProperty(params.NewAdditionalProperty(*addp.Schema))
+			if err != nil {
+				return genModelProperty{}, err
+			}
+			additionalProperties = &comprop
+		}
 	}
 
 	singleSchemaSlice := params.Schema.Items != nil && params.Schema.Items.Schema != nil
@@ -332,6 +380,9 @@ func makeGenModelProperty(params propGenBuildParams) (genModelProperty, error) {
 
 		Properties: properties,
 		AllOf:      allOf,
+		HasAdditionalProperties: hasAdditionalProperties,
+		AdditionalProperties:    additionalProperties,
+		IsAdditionalProperties:  params.AdditionalProperty,
 
 		HasAdditionalItems:    hasAdditionalItems,
 		AllowsAdditionalItems: allowsAdditionalItems,
@@ -354,23 +405,26 @@ func makeGenModelProperty(params propGenBuildParams) (genModelProperty, error) {
 type genModelProperty struct {
 	resolvedType
 	sharedValidations
-	Example               string
-	Name                  string
-	Path                  string
-	Title                 string
-	Description           string
-	Location              string
-	ReceiverName          string
-	SingleSchemaSlice     bool
-	Items                 []genModelProperty
-	ItemsLen              int
-	AllowsAdditionalItems bool
-	HasAdditionalItems    bool
-	AdditionalItems       *genModelProperty
-	Object                *genModelProperty
-	XMLName               string
-	Properties            []genModelProperty
-	AllOf                 []genModelProperty
+	Example                 string
+	Name                    string
+	Path                    string
+	Title                   string
+	Description             string
+	Location                string
+	ReceiverName            string
+	SingleSchemaSlice       bool
+	Items                   []genModelProperty
+	ItemsLen                int
+	AllowsAdditionalItems   bool
+	HasAdditionalItems      bool
+	AdditionalItems         *genModelProperty
+	Object                  *genModelProperty
+	XMLName                 string
+	Properties              []genModelProperty
+	AllOf                   []genModelProperty
+	HasAdditionalProperties bool
+	IsAdditionalProperties  bool
+	AdditionalProperties    *genModelProperty
 }
 
 type sharedValidations struct {

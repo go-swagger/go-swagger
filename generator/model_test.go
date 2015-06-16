@@ -71,7 +71,8 @@ The description of the property
 
 	gmp.Description = ""
 	gmp.Name = "theModel"
-	expected = `TheModel the model`
+	expected = `TheModel the model
+`
 	tt.assertRender(gmp, expected)
 }
 
@@ -134,7 +135,8 @@ func TestGenerateModel_SchemaField(t *testing.T) {
 	gmp.resolvedType = resolvedType{GoType: "string", IsPrimitive: true}
 	gmp.Title = "The title of the property"
 
-	tt.assertRender(gmp, `/* The title of the property */
+	tt.assertRender(gmp, `/* The title of the property
+ */
 `+"SomeName string `json:\"some name\"`\n")
 
 	var fl float64 = 10

@@ -118,12 +118,21 @@ definitions:
       notes:
         type: string
         minLength: 5
+  Nota:
+    type: object
+    additionalProperties:
+      type: integer
+      format: int32
   Comment:
     type: "object"
     required:
       - content
     allOf:
       - $ref: "#/definitions/Notable"
+      - type: object
+        additionalProperties:
+          type: integer
+          format: int32
       - type: object
         properties:
           id:
@@ -159,3 +168,4 @@ definitions:
                     type: string
                     minLength: 5
                     maxLength: 2048
+
