@@ -54,15 +54,15 @@ var (
 			"\\p{Zs}+" +
 			rxOpID + "$")
 
-	rxIn                 = regexp.MustCompile("[Ii]n\\p{Zs}*:\\p{Zs}*(query|path|header|body)$")
-	rxRequired           = regexp.MustCompile("[Rr]equired\\p{Zs}*:\\p{Zs}*(true|false)$")
-	rxReadOnly           = regexp.MustCompile("[Rr]ead(?:\\p{Zs}*|[\\p{Pd}\\p{Pc}])?[Oo]nly\\p{Zs}*:\\p{Zs}*(true|false)$")
 	rxSpace              = regexp.MustCompile("\\p{Zs}+")
 	rxNotAlNumSpaceComma = regexp.MustCompile("[^\\p{L}\\p{N}\\p{Zs},]")
 	rxPunctuationEnd     = regexp.MustCompile("\\p{Po}$")
 	rxStripComments      = regexp.MustCompile("^[^\\w\\+]*")
 	rxStripTitleComments = regexp.MustCompile("^[^\\p{L}]*[Pp]ackage\\p{Zs}+[^\\p{Zs}]+\\p{Zs}*")
 
+	rxIn        = regexp.MustCompile("[Ii]n\\p{Zs}*:\\p{Zs}*(query|path|header|body)$")
+	rxRequired  = regexp.MustCompile("[Rr]equired\\p{Zs}*:\\p{Zs}*(true|false)$")
+	rxReadOnly  = regexp.MustCompile("[Rr]ead(?:\\p{Zs}*|[\\p{Pd}\\p{Pc}])?[Oo]nly\\p{Zs}*:\\p{Zs}*(true|false)$")
 	rxConsumes  = regexp.MustCompile("[Cc]onsumes\\p{Zs}*:")
 	rxProduces  = regexp.MustCompile("[Pp]roduces\\p{Zs}*:")
 	rxSecurity  = regexp.MustCompile("[Ss]ecurity\\p{Zs}*:")

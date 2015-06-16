@@ -234,35 +234,17 @@ func (t *typeResolver) firstType(schema *spec.Schema) string {
 func (t *typeResolver) resolveArray(schema *spec.Schema) (result resolvedType, err error) {
 	result.IsArray = true
 	result.IsNullable = false
-	if schema.AdditionalItems != nil && (schema.AdditionalItems.Allows || schema.AdditionalItems.Schema != nil) {
-		result.HasAdditionalItems = true
-		rs, er := t.ResolveSchema(schema.AdditionalItems.Schema, true)
-		if er != nil {
-			err = er
-			return
-		}
-		result.AdditionalItems = &rs
+	if schema.AdditionalItems != nil {
+		result.HasAdditionalItems = (schema.AdditionalItems.Allows || schema.AdditionalItems.Schema != nil)
 	}
 	if schema.Items == nil {
 		result.GoType = "[]interface{}"
 		result.SwaggerType = "array"
-		result.ElementType = &resolvedType{
-			IsInterface: true,
-			GoType:      "interface{}",
-		}
 		return
 	}
 	if len(schema.Items.Schemas) > 0 {
 		result.IsArray = false
 		result.IsTuple = true
-		for _, esch := range schema.Items.Schemas {
-			et, er := t.ResolveSchema(&esch, true)
-			if er != nil {
-				err = er
-				return
-			}
-			result.TupleTypes = append(result.TupleTypes, &et)
-		}
 		return
 	}
 	rt, er := t.ResolveSchema(schema.Items.Schema, true)
@@ -272,7 +254,6 @@ func (t *typeResolver) resolveArray(schema *spec.Schema) (result resolvedType, e
 	}
 	result.GoType = "[]" + rt.GoType
 	result.SwaggerType = "array"
-	result.ElementType = &rt
 	return
 }
 
@@ -284,16 +265,7 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 	if isAnonymous && len(schema.Properties) > 0 {
 		result.IsAnonymous = isAnonymous
 		result.IsNullable = t.isNullable(schema)
-		result.PropertyTypes = make(map[string]*resolvedType)
-		for key, prop := range schema.Properties {
-			result.IsComplexObject = true
-			prt, er := t.ResolveSchema(&prop, true)
-			if er != nil {
-				err = er
-				return
-			}
-			result.PropertyTypes[key] = &prt
-		}
+		result.IsComplexObject = true
 		// no return here, still need to check for additional properties
 	}
 
@@ -305,7 +277,6 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 			return
 		}
 		result.GoType = "map[string]" + et.GoType
-		result.ElementType = &et
 		result.IsMap = true
 		result.SwaggerType = "object"
 		result.IsNullable = false
@@ -316,11 +287,6 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 		return
 	}
 	result.GoType = "map[string]interface{}"
-	result.ElementType = &resolvedType{
-		IsInterface: true,
-		GoType:      "interface{}",
-	}
-
 	result.IsMap = true
 	result.SwaggerType = "object"
 	result.IsNullable = false
@@ -389,13 +355,9 @@ type resolvedType struct {
 	HasAdditionalItems bool
 	IsComplexObject    bool
 
-	GoType          string
-	SwaggerType     string
-	SwaggerFormat   string
-	ElementType     *resolvedType
-	TupleTypes      []*resolvedType
-	AdditionalItems *resolvedType
-	PropertyTypes   map[string]*resolvedType
+	GoType        string
+	SwaggerType   string
+	SwaggerFormat string
 }
 
 var primitives = map[string]struct{}{

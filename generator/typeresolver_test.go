@@ -69,12 +69,11 @@ func TestTypeResolver_AdditionalItems(t *testing.T) {
 
 			rt, err := resolver.ResolveSchema(&coll, true)
 			if assert.NoError(t, err) && assert.True(t, rt.IsArray) {
-				if assert.NotNil(t, rt.ElementType) {
-					assertPrimitiveResolve(t, "string", "", "string", *rt.ElementType)
-				}
-				if assert.NotNil(t, rt.AdditionalItems) {
-					assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, *rt.AdditionalItems)
-				}
+				assert.True(t, rt.HasAdditionalItems)
+				assert.False(t, rt.IsNullable)
+				//if assert.NotNil(t, rt.ElementType) {
+				//assertPrimitiveResolve(t, "string", "", "string", *rt.ElementType)
+				//}
 			}
 		}
 	}
@@ -102,9 +101,8 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 			var sch spec.Schema
 			sch.Typed(val.Type, val.Format)
 			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(sch), true)
-			if assert.NoError(t, err) && assert.True(t, rt.IsArray) && assert.NotNil(t, rt.ElementType) {
-				assert.False(t, rt.ElementType.IsNullable)
-				assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, *rt.ElementType)
+			if assert.NoError(t, err) {
+				assert.True(t, rt.IsArray)
 			}
 		}
 
@@ -129,9 +127,8 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 			sch.AddExtension("x-isnullable", true)
 
 			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(sch), true)
-			if assert.NoError(t, err) && assert.True(t, rt.IsArray) && assert.NotNil(t, rt.ElementType) {
-				assert.True(t, rt.ElementType.IsNullable, "expected array of nullable %q (%q)", val.Type, val.Format)
-				assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, *rt.ElementType)
+			if assert.NoError(t, err) {
+				assert.True(t, rt.IsArray)
 			}
 		}
 
@@ -165,8 +162,6 @@ func TestTypeResolver_Refs(t *testing.T) {
 			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(*sch), true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsArray)
-				assert.Equal(t, val.Expected, rt.ElementType.GoType)
-				assert.Equal(t, "object", rt.ElementType.SwaggerType)
 			}
 		}
 	}
@@ -190,9 +185,9 @@ func TestTypeResolver_AdditionalProperties(t *testing.T) {
 				assert.True(t, rt.IsMap)
 				assert.Equal(t, "map[string]"+val.Expected, rt.GoType)
 				assert.Equal(t, "object", rt.SwaggerType)
-				if assert.NotNil(t, rt.ElementType) {
-					assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, *rt.ElementType)
-				}
+				//if assert.NotNil(t, rt.ElementType) {
+				//assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, *rt.ElementType)
+				//}
 			}
 		}
 
@@ -210,13 +205,6 @@ func TestTypeResolver_AdditionalProperties(t *testing.T) {
 				assert.True(t, rt.IsMap)
 				assert.Equal(t, "map[string][]"+val.Expected, rt.GoType)
 				assert.Equal(t, "object", rt.SwaggerType)
-				if assert.NotNil(t, rt.ElementType) {
-					et := rt.ElementType
-					assert.True(t, et.IsArray)
-					if assert.NotNil(t, et.ElementType) {
-						assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, *et.ElementType)
-					}
-				}
 			}
 		}
 
@@ -274,16 +262,6 @@ func TestTypeResolver_TupleTypes(t *testing.T) {
 		if assert.NoError(t, err) {
 			assert.False(t, rt.IsArray)
 			assert.True(t, rt.IsTuple)
-			assert.Len(t, rt.TupleTypes, 6)
-
-			assertPrimitiveResolve(t, "string", "", "string", *rt.TupleTypes[0])
-			assertPrimitiveResolve(t, "integer", "int64", "int64", *rt.TupleTypes[1])
-			assertPrimitiveResolve(t, "number", "double", "float64", *rt.TupleTypes[2])
-			assertPrimitiveResolve(t, "boolean", "", "bool", *rt.TupleTypes[3])
-			if assert.NotNil(t, rt.TupleTypes[4].ElementType) {
-				assertPrimitiveResolve(t, "string", "", "string", *rt.TupleTypes[4].ElementType)
-			}
-			assert.Equal(t, "models.Comment", rt.TupleTypes[5].GoType)
 		}
 	}
 }
@@ -300,11 +278,19 @@ func TestTypeResolver_AnonymousStructs(t *testing.T) {
 
 		rt, err := resolver.ResolveSchema(parent, true)
 		if assert.NoError(t, err) {
+			assert.False(t, rt.IsNullable)
 			assert.True(t, rt.IsAnonymous)
 			assert.True(t, rt.IsComplexObject)
-			assert.Len(t, rt.PropertyTypes, 2)
-			assertPrimitiveResolve(t, "string", "", "string", *rt.PropertyTypes["name"])
-			assertPrimitiveResolve(t, "integer", "int32", "int32", *rt.PropertyTypes["age"])
+		}
+
+		parent.Extensions = make(spec.Extensions)
+		parent.Extensions["x-isnullable"] = true
+
+		rt, err = resolver.ResolveSchema(parent, true)
+		if assert.NoError(t, err) {
+			assert.True(t, rt.IsNullable)
+			assert.True(t, rt.IsAnonymous)
+			assert.True(t, rt.IsComplexObject)
 		}
 	}
 }
@@ -321,11 +307,6 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 				assert.True(t, rt.IsMap)
 				assert.Equal(t, "map[string]interface{}", rt.GoType)
 				assert.Equal(t, "object", rt.SwaggerType)
-
-				if assert.NotNil(t, rt.ElementType) {
-					assert.True(t, rt.ElementType.IsInterface)
-					assert.Equal(t, "interface{}", rt.ElementType.GoType)
-				}
 			}
 		}
 		sch := new(spec.Schema)
@@ -335,10 +316,6 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 			assert.Equal(t, "map[string]interface{}", rt.GoType)
 			assert.Equal(t, "object", rt.SwaggerType)
 
-			if assert.NotNil(t, rt.ElementType) {
-				assert.True(t, rt.ElementType.IsInterface)
-				assert.Equal(t, "interface{}", rt.ElementType.GoType)
-			}
 		}
 	}
 }

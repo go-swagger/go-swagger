@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
@@ -115,122 +114,39 @@ func (m *modelGenerator) generateModel() error {
 
 func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Document) (*genModel, error) {
 	receiver := "m"
-	props := make(map[string]genModelProperty)
 	resolver := &typeResolver{
 		ModelsPackage: "",
 		Doc:           specDoc,
 	}
-	for pn, p := range schema.Properties {
-		var required bool
-		for _, v := range schema.Required {
-			if v == pn {
-				required = true
-				break
-			}
-		}
-
-		gmp, err := makeGenModelProperty(propGenBuildParams{
-			Path:         pn,
-			Name:         pn,
-			Receiver:     receiver,
-			IndexVar:     "i",
-			ValueExpr:    receiver + "." + swag.ToGoName(pn),
-			Schema:       p,
-			Required:     required,
-			TypeResolver: resolver,
-		})
-		if err != nil {
-			return nil, err
-		}
-		props[pn] = gmp
+	pg := propGenBuildParams{
+		Path:         "",
+		Name:         name,
+		Receiver:     receiver,
+		IndexVar:     "i",
+		ValueExpr:    receiver,
+		Schema:       schema,
+		Required:     false,
+		TypeResolver: resolver,
 	}
-
-	var allOf []genModelProperty
-	for _, p := range schema.AllOf {
-		mod, err := makeGenModelProperty(propGenBuildParams{
-			Name:         name,
-			Path:         name + ".allOf",
-			Receiver:     receiver,
-			IndexVar:     "a",
-			Schema:       p,
-			TypeResolver: resolver,
-		})
-		if err != nil {
-			return nil, err
-		}
-		allOf = append(allOf, mod)
-	}
-
-	var additionalProperties *genModelProperty
-	var hasAdditionalProperties bool
-	if schema.AdditionalProperties != nil {
-		addp := schema.AdditionalProperties
-		hasAdditionalProperties = addp.Allows || addp.Schema != nil
-		if addp.Schema != nil {
-			mod, err := makeGenModelProperty(propGenBuildParams{
-				Name:               name,
-				Path:               name + ".additionalProperties",
-				Receiver:           receiver,
-				IndexVar:           "p",
-				Schema:             *addp.Schema,
-				TypeResolver:       resolver,
-				AdditionalProperty: true,
-			})
-			if err != nil {
-				return nil, err
-			}
-			additionalProperties = &mod
-		}
-	}
-
-	// TODO: add support for oneOf?
-	// this would require a struct with unexported fields, custom json marshaller etc
-
-	var properties []genModelProperty
-	var hasValidations bool
-	for _, v := range props {
-		if v.HasValidations {
-			hasValidations = v.HasValidations
-		}
-		properties = append(properties, v)
+	mp, dependsOn, err := pg.makeGenModelProperty()
+	if err != nil {
+		return nil, err
 	}
 
 	return &genModel{
-		Package:        filepath.Base(pkg),
-		Name:           name,
-		ReceiverName:   receiver,
-		Properties:     properties,
-		Description:    schema.Description,
-		Title:          schema.Title,
-		HasValidations: hasValidations,
-		AllOf:          allOf,
-		HasAdditionalProperties: hasAdditionalProperties,
-		AdditionalProperties:    additionalProperties,
+		Package:          filepath.Base(pkg),
+		genModelProperty: mp,
+		DependsOn:        dependsOn,
 	}, nil
 }
 
 type genModel struct {
-	Package                 string
-	ReceiverName            string
-	Name                    string
-	Path                    string
-	Title                   string
-	Description             string
-	Properties              []genModelProperty
-	Imports                 map[string]string
-	DefaultImports          []string
-	HasValidations          bool
-	ExtraModels             []genModel
-	Type                    *resolvedType
-	IsAnonymous             bool // never actually set, because by definition this is named
-	IsAdditionalProperties  bool // never actually set, keeps templates happy
-	AllOf                   []genModelProperty
-	AdditionalProperties    *genModelProperty
-	HasAdditionalProperties bool
-}
-
-func modelDocString(className, desc string) string {
-	return commentedLines(fmt.Sprintf("%s %s", className, desc))
+	genModelProperty
+	Package        string
+	Imports        map[string]string
+	DefaultImports []string
+	ExtraModels    []genModel
+	DependsOn      []string
 }
 
 type propGenBuildParams struct {
@@ -245,6 +161,7 @@ type propGenBuildParams struct {
 	Required           bool
 	AdditionalProperty bool
 	TypeResolver       *typeResolver
+	Named              bool
 }
 
 func (pg propGenBuildParams) NewSliceBranch(schema *spec.Schema) propGenBuildParams {
@@ -274,95 +191,151 @@ func (pg propGenBuildParams) NewCompositionBranch(schema spec.Schema) propGenBui
 func (pg propGenBuildParams) NewAdditionalProperty(schema spec.Schema) propGenBuildParams {
 	pg.Schema = schema
 	pg.AdditionalProperty = true
+	pg.Name = "additionalProperties"
 	return pg
 }
 
-func makeGenModelProperty(params propGenBuildParams) (genModelProperty, error) {
-	// log.Printf("property: (path %s) (param %s) (accessor %s) (receiver %s) (indexVar %s) (expr %s) required %t", path, paramName, accessor, receiver, indexVar, valueExpression, required)
-	ex := ""
-	if params.Schema.Example != nil {
-		ex = fmt.Sprintf("%#v", params.Schema.Example)
+func (pg propGenBuildParams) modelValidations() sharedValidations {
+
+	model := pg.Schema
+
+	isRequired := pg.Required
+	if pg.Schema.Default != nil {
+		isRequired = false
+	}
+	hasNumberValidation := model.Maximum != nil || model.Minimum != nil || model.MultipleOf != nil
+	hasStringValidation := model.MaxLength != nil || model.MinLength != nil || model.Pattern != ""
+	hasSliceValidations := model.MaxItems != nil || model.MinItems != nil || model.UniqueItems
+	hasValidations := isRequired || hasNumberValidation || hasStringValidation || hasSliceValidations
+
+	var enum string
+	if len(pg.Schema.Enum) > 0 {
+		hasValidations = true
+		enum = fmt.Sprintf("%#v", model.Enum)
 	}
 
-	ctx := modelValidations(params)
-	tpe, err := params.TypeResolver.ResolveSchema(&params.Schema, true)
-	if err != nil {
-		return genModelProperty{}, err
+	return sharedValidations{
+		Required:            pg.Required,
+		Maximum:             model.Maximum,
+		ExclusiveMaximum:    model.ExclusiveMaximum,
+		Minimum:             model.Minimum,
+		ExclusiveMinimum:    model.ExclusiveMinimum,
+		MaxLength:           model.MaxLength,
+		MinLength:           model.MinLength,
+		Pattern:             model.Pattern,
+		MaxItems:            model.MaxItems,
+		MinItems:            model.MinItems,
+		UniqueItems:         model.UniqueItems,
+		MultipleOf:          model.MultipleOf,
+		Enum:                enum,
+		HasValidations:      hasValidations,
+		HasSliceValidations: hasSliceValidations,
 	}
+}
+
+func (pg propGenBuildParams) makeGenModelProperty() (genModelProperty, []string, error) {
+	// log.Printf("property: (path %s) (param %s) (accessor %s) (receiver %s) (indexVar %s) (expr %s) required %t", path, paramName, accessor, receiver, indexVar, valueExpression, required)
+	ex := ""
+	if pg.Schema.Example != nil {
+		ex = fmt.Sprintf("%#v", pg.Schema.Example)
+	}
+
+	ctx := pg.modelValidations()
+	tpe, err := pg.TypeResolver.ResolveSchema(&pg.Schema, !pg.Named)
+	if err != nil {
+		return genModelProperty{}, nil, err
+	}
+
+	var discovered []string
 	var properties []genModelProperty
-	for k, v := range params.Schema.Properties {
-		emprop, err := makeGenModelProperty(params.NewStructBranch(k, v))
+	for k, v := range pg.Schema.Properties {
+		emprop, disco, err := pg.NewStructBranch(k, v).makeGenModelProperty()
 		if err != nil {
-			return genModelProperty{}, err
+			return genModelProperty{}, nil, err
+		}
+		if emprop.HasValidations {
+			ctx.HasValidations = emprop.HasValidations
 		}
 		properties = append(properties, emprop)
+		discovered = append(discovered, disco...)
 	}
 
 	var allOf []genModelProperty
-	for _, sch := range params.Schema.AllOf {
-		comprop, err := makeGenModelProperty(params.NewCompositionBranch(sch))
+	for _, sch := range pg.Schema.AllOf {
+		comprop, disco, err := pg.NewCompositionBranch(sch).makeGenModelProperty()
 		if err != nil {
-			return genModelProperty{}, err
+			return genModelProperty{}, nil, err
+		}
+		if comprop.HasValidations {
+			ctx.HasValidations = comprop.HasValidations
 		}
 		allOf = append(allOf, comprop)
+		discovered = append(discovered, disco...)
 	}
 
 	var additionalProperties *genModelProperty
 	var hasAdditionalProperties bool
-	if params.Schema.AdditionalProperties != nil {
-		addp := params.Schema.AdditionalProperties
+	if pg.Schema.AdditionalProperties != nil {
+		addp := pg.Schema.AdditionalProperties
 		hasAdditionalProperties = addp.Allows || addp.Schema != nil
 		if addp.Schema != nil {
-			comprop, err := makeGenModelProperty(params.NewAdditionalProperty(*addp.Schema))
+			comprop, disco, err := pg.NewAdditionalProperty(*addp.Schema).makeGenModelProperty()
 			if err != nil {
-				return genModelProperty{}, err
+				return genModelProperty{}, nil, err
+			}
+			if comprop.HasValidations {
+				ctx.HasValidations = comprop.HasValidations
 			}
 			additionalProperties = &comprop
+			discovered = append(discovered, disco...)
 		}
 	}
 
-	singleSchemaSlice := params.Schema.Items != nil && params.Schema.Items.Schema != nil
+	singleSchemaSlice := pg.Schema.Items != nil && pg.Schema.Items.Schema != nil
 	var items []genModelProperty
 	if singleSchemaSlice {
 		ctx.HasSliceValidations = true
 
-		elProp, err := makeGenModelProperty(params.NewSliceBranch(params.Schema.Items.Schema))
+		elProp, disco, err := pg.NewSliceBranch(pg.Schema.Items.Schema).makeGenModelProperty()
 		if err != nil {
-			return genModelProperty{}, err
+			return genModelProperty{}, nil, err
 		}
 		items = []genModelProperty{elProp}
-	} else if params.Schema.Items != nil {
-		for _, s := range params.Schema.Items.Schemas {
-			elProp, err := makeGenModelProperty(params.NewSliceBranch(&s))
+		discovered = append(discovered, disco...)
+	} else if pg.Schema.Items != nil {
+		for _, s := range pg.Schema.Items.Schemas {
+			elProp, disco, err := pg.NewSliceBranch(&s).makeGenModelProperty()
 			if err != nil {
-				return genModelProperty{}, err
+				return genModelProperty{}, nil, err
 			}
 			items = append(items, elProp)
+			discovered = append(discovered, disco...)
 		}
 	}
 
 	allowsAdditionalItems :=
-		params.Schema.AdditionalItems != nil &&
-			(params.Schema.AdditionalItems.Allows || params.Schema.AdditionalItems.Schema != nil)
+		pg.Schema.AdditionalItems != nil &&
+			(pg.Schema.AdditionalItems.Allows || pg.Schema.AdditionalItems.Schema != nil)
 	hasAdditionalItems := allowsAdditionalItems && !singleSchemaSlice
 	var additionalItems *genModelProperty
-	if params.Schema.AdditionalItems != nil && params.Schema.AdditionalItems.Schema != nil {
-		it, err := makeGenModelProperty(params.NewSliceBranch(params.Schema.AdditionalItems.Schema))
+	if pg.Schema.AdditionalItems != nil && pg.Schema.AdditionalItems.Schema != nil {
+		it, disco, err := pg.NewSliceBranch(pg.Schema.AdditionalItems.Schema).makeGenModelProperty()
 		if err != nil {
-			return genModelProperty{}, err
+			return genModelProperty{}, nil, err
 		}
 		additionalItems = &it
+		discovered = append(discovered, disco...)
 	}
 
 	ctx.HasSliceValidations = len(items) > 0 || hasAdditionalItems
 	ctx.HasValidations = ctx.HasValidations || ctx.HasSliceValidations
 
 	var xmlName string
-	if params.Schema.XML != nil {
-		xmlName = params.ParamName
-		if params.Schema.XML.Name != "" {
-			xmlName = params.Schema.XML.Name
-			if params.Schema.XML.Attribute {
+	if pg.Schema.XML != nil {
+		xmlName = pg.ParamName
+		if pg.Schema.XML.Name != "" {
+			xmlName = pg.Schema.XML.Name
+			if pg.Schema.XML.Attribute {
 				xmlName += ",attr"
 			}
 		}
@@ -372,17 +345,18 @@ func makeGenModelProperty(params propGenBuildParams) (genModelProperty, error) {
 		resolvedType:      tpe,
 		sharedValidations: ctx,
 		Example:           ex,
-		Path:              params.Path,
-		Name:              params.Name,
-		Title:             params.Schema.Title,
-		Description:       params.Schema.Description,
-		ReceiverName:      params.Receiver,
+		Path:              pg.Path,
+		Name:              pg.Name,
+		Title:             pg.Schema.Title,
+		Description:       pg.Schema.Description,
+		ReceiverName:      pg.Receiver,
+		ReadOnly:          pg.Schema.ReadOnly,
 
 		Properties: properties,
 		AllOf:      allOf,
 		HasAdditionalProperties: hasAdditionalProperties,
 		AdditionalProperties:    additionalProperties,
-		IsAdditionalProperties:  params.AdditionalProperty,
+		IsAdditionalProperties:  pg.AdditionalProperty,
 
 		HasAdditionalItems:    hasAdditionalItems,
 		AllowsAdditionalItems: allowsAdditionalItems,
@@ -393,7 +367,7 @@ func makeGenModelProperty(params propGenBuildParams) (genModelProperty, error) {
 		SingleSchemaSlice: singleSchemaSlice,
 
 		XMLName: xmlName,
-	}, nil
+	}, discovered, nil
 }
 
 // NOTE:
@@ -425,6 +399,7 @@ type genModelProperty struct {
 	HasAdditionalProperties bool
 	IsAdditionalProperties  bool
 	AdditionalProperties    *genModelProperty
+	ReadOnly                bool
 }
 
 type sharedValidations struct {
@@ -445,39 +420,4 @@ type sharedValidations struct {
 	UniqueItems         bool
 	HasSliceValidations bool
 	NeedsSize           bool
-}
-
-// the adapter
-func modelValidations(params propGenBuildParams) sharedValidations {
-
-	model := params.Schema
-
-	var enum string
-	if len(params.Schema.Enum) > 0 {
-		enum = fmt.Sprintf("%#v", model.Enum)
-	}
-
-	return sharedValidations{
-		Required:         params.Required,
-		Maximum:          model.Maximum,
-		ExclusiveMaximum: model.ExclusiveMaximum,
-		Minimum:          model.Minimum,
-		ExclusiveMinimum: model.ExclusiveMinimum,
-		MaxLength:        model.MaxLength,
-		MinLength:        model.MinLength,
-		Pattern:          model.Pattern,
-		MaxItems:         model.MaxItems,
-		MinItems:         model.MinItems,
-		UniqueItems:      model.UniqueItems,
-		MultipleOf:       model.MultipleOf,
-		Enum:             enum,
-	}
-}
-
-func propertyDocString(propertyName, description, example string) string {
-	ex := ""
-	if strings.TrimSpace(example) != "" {
-		ex = " eg.\n\n    " + example
-	}
-	return commentedLines(fmt.Sprintf("%s %s%s", propertyName, description, ex))
 }

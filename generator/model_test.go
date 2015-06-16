@@ -3,6 +3,7 @@ package generator
 import (
 	"bytes"
 	"fmt"
+	"strings"
 	"testing"
 	"text/template"
 
@@ -29,22 +30,23 @@ func TestGenerateModel_Primitives(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 
-		schema := definitions["Comment"]
-		genModel, err := makeCodegenModel("Comment", "models", schema, specDoc)
-		if assert.NoError(t, err) {
-			//b, _ := json.MarshalIndent(genModel, "", "  ")
-			//fmt.Println(string(b))
-			rendered := bytes.NewBuffer(nil)
-
-			err := modelTemplate.Execute(rendered, genModel)
+		for k, schema := range definitions {
+			genModel, err := makeCodegenModel(k, "models", schema, specDoc)
 			if assert.NoError(t, err) {
-				fmt.Println(rendered.String())
+				//b, _ := json.MarshalIndent(genModel, "", "  ")
+				//fmt.Println(string(b))
+				rendered := bytes.NewBuffer(nil)
+
+				err := modelTemplate.Execute(rendered, genModel)
 				if assert.NoError(t, err) {
-					formatted, err := formatGoFile("comment.go", rendered.Bytes())
+					//fmt.Println(rendered.String())
 					if assert.NoError(t, err) {
-						fmt.Println(string(formatted))
+						formatted, err := formatGoFile(strings.ToLower(k)+".go", rendered.Bytes())
+						if assert.NoError(t, err) {
+							fmt.Println(string(formatted))
+						}
+						//assert.EqualValues(t, strings.TrimSpace(string(expected)), strings.TrimSpace(string(formatted)))
 					}
-					//assert.EqualValues(t, strings.TrimSpace(string(expected)), strings.TrimSpace(string(formatted)))
 				}
 			}
 		}
@@ -155,11 +157,13 @@ func TestGenerateModel_SchemaField(t *testing.T) {
 	gmp.MaxItems = &in2
 	gmp.MinItems = &in2
 	gmp.UniqueItems = true
+	gmp.ReadOnly = true
 	tt.assertRender(gmp, `/* The title of the property
 
 The description of the property
 
 Required: true
+Read Only: true
 Maximum: < 10
 Minimum: > 10
 Max Length: 20

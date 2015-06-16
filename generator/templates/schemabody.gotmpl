@@ -2,10 +2,13 @@
   {{ range .AllOf }}
   {{ if .IsAnonymous }}{{ range .Properties }}
   {{ template "structfield" . }}
-  {{ end }}{{ else if .HasAdditionalProperties }}
-  AdditionalProperties map[string]{{ if .AdditionalProperties }}{{ template "schemaType" .AdditionalProperties }}{{ else }}interface{}{{ end }}
+  {{ end }}{{ else if .HasAdditionalProperties }}/* {{ template "docstring" .AdditionalProperties }}{{ template "propertyValidationDocString" .AdditionalProperties}} */
+  AdditionalProperties map[string]{{ if .AdditionalProperties }}{{ template "schemaType" .AdditionalProperties }}{{ else }}interface{}{{ end }} `json:"-"`
   {{ else }}
   {{if .IsNullable }}*{{ end }}{{ .GoType }}{{ end }}
+  {{ end }}
+  {{ if .HasAdditionalProperties }}/* {{ template "docstring" .AdditionalProperties }}{{ template "propertyValidationDocString" .AdditionalProperties}} */
+  AdditionalProperties map[string]{{ if .AdditionalProperties }}{{ template "schemaType" .AdditionalProperties }}{{ else }}interface{}{{ end }} `json:"-"`
   {{ end }}
   {{range .Properties}}
   {{template "structfield" .}}
