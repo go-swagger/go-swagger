@@ -2,7 +2,9 @@ package generator
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 	"text/template"
@@ -31,31 +33,31 @@ func TestGenerateModel_Sanity(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 
-		//k := "WithMap"
-		//schema := definitions[k]
-		for k, schema := range definitions {
-			genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		k := "JustRef"
+		schema := definitions[k]
+		//for k, schema := range definitions {
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
 
+		if assert.NoError(t, err) {
+			b, _ := json.MarshalIndent(genModel, "", "  ")
+			fmt.Println(string(b))
+			rendered := bytes.NewBuffer(nil)
+
+			err := modelTemplate.Execute(rendered, genModel)
 			if assert.NoError(t, err) {
-				//b, _ := json.MarshalIndent(genModel, "", "  ")
-				//fmt.Println(string(b))
-				rendered := bytes.NewBuffer(nil)
-
-				err := modelTemplate.Execute(rendered, genModel)
 				if assert.NoError(t, err) {
+					formatted, err := formatGoFile(strings.ToLower(k)+".go", rendered.Bytes())
 					if assert.NoError(t, err) {
-						formatted, err := formatGoFile(strings.ToLower(k)+".go", rendered.Bytes())
-						if assert.NoError(t, err) {
-							fmt.Println(string(formatted))
-						} else {
-							fmt.Println(rendered.String())
-							break
-						}
-
-						//assert.EqualValues(t, strings.TrimSpace(string(expected)), strings.TrimSpace(string(formatted)))
+						fmt.Println(string(formatted))
+					} else {
+						fmt.Println(rendered.String())
+						//break
 					}
+
+					//assert.EqualValues(t, strings.TrimSpace(string(expected)), strings.TrimSpace(string(formatted)))
 				}
 			}
+			//}
 		}
 	}
 }
@@ -250,7 +252,7 @@ func TestGenerateModel_Primitives(t *testing.T) {
 }
 
 func TestGenerateModel_MapRef(t *testing.T) {
-	// just checks if it can render and format these things
+	tt := templateTest{t, modelTemplate.Lookup("schema")}
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
@@ -262,6 +264,57 @@ func TestGenerateModel_MapRef(t *testing.T) {
 			assert.True(t, prop.HasAdditionalProperties)
 			assert.True(t, prop.IsMap)
 			assert.False(t, prop.IsComplexObject)
+			buf := bytes.NewBuffer(nil)
+			tt.template.Execute(buf, genModel)
+			res := buf.String()
+			assert.Regexp(t, regexp.MustCompile("type WithMap struct\\s*{"), res)
+			assert.Regexp(t, regexp.MustCompile("Data map\\[string\\]string `json:\"data\"`"), res)
+		}
+	}
+}
+
+func TestGenerateModel_WithAdditional(t *testing.T) {
+	tt := templateTest{t, modelTemplate.Lookup("schema")}
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["WithAdditional"]
+		genModel, err := makeGenDefinition("WithAdditional", "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			assert.False(t, genModel.HasAdditionalProperties)
+			prop := getDefinitionProperty(genModel, "data")
+			assert.True(t, prop.HasAdditionalProperties)
+			assert.False(t, prop.IsMap)
+			assert.True(t, prop.IsComplexObject)
+			buf := bytes.NewBuffer(nil)
+			tt.template.Execute(buf, genModel)
+			res := buf.String()
+			assert.Regexp(t, regexp.MustCompile("type WithAdditional struct\\s*{"), res)
+			assert.Regexp(t, regexp.MustCompile("Data struct\\s*{"), res)
+			assert.Regexp(t, regexp.MustCompile("AdditionalProperties map\\[string\\]string `json:\"-\"`"), res)
+			assert.Regexp(t, regexp.MustCompile("Name string `json:\"name\"`"), res)
+			assert.Regexp(t, regexp.MustCompile("} `json:\"data\"`"), res)
+		}
+	}
+}
+
+func TestGenerateModel_JustRef(t *testing.T) {
+	tt := templateTest{t, modelTemplate.Lookup("schema")}
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["JustRef"]
+		genModel, err := makeGenDefinition("JustRef", "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			assert.NotEmpty(t, genModel.AllOf)
+			assert.True(t, genModel.IsComplexObject)
+			assert.Equal(t, "JustRef", genModel.Name)
+			assert.Equal(t, "JustRef", genModel.GoType)
+			buf := bytes.NewBuffer(nil)
+			tt.template.Execute(buf, genModel)
+			res := buf.String()
+			assert.Regexp(t, regexp.MustCompile("type JustRef struct\\s*{"), res)
+			assert.Regexp(t, regexp.MustCompile("Notable"), res)
 		}
 	}
 }

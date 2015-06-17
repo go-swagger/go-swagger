@@ -164,6 +164,30 @@ func TestTypeResolver_Refs(t *testing.T) {
 				assert.True(t, rt.IsArray)
 			}
 		}
+		// for named objects
+		// referenced objects
+		for _, val := range schRefVals {
+			sch := new(spec.Schema)
+			sch.Ref, _ = spec.NewRef("#/definitions/" + val.Type)
+
+			rt, err := resolver.ResolveSchema(sch, false)
+			if assert.NoError(t, err) {
+				assert.Equal(t, val.Expected, rt.GoType)
+				assert.False(t, rt.IsAnonymous)
+				assert.Equal(t, "object", rt.SwaggerType)
+			}
+		}
+
+		// referenced array objects
+		for _, val := range schRefVals {
+			sch := new(spec.Schema)
+			sch.Ref, _ = spec.NewRef("#/definitions/" + val.Type)
+
+			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(*sch), false)
+			if assert.NoError(t, err) {
+				assert.True(t, rt.IsArray)
+			}
+		}
 	}
 }
 

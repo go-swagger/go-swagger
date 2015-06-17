@@ -135,6 +135,7 @@ func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *spec.Docum
 		Schema:       schema,
 		Required:     false,
 		TypeResolver: resolver,
+		Named:        true,
 	}
 	if err := pg.makeGenSchema(); err != nil {
 		return nil, err
@@ -386,10 +387,40 @@ func (sg *schemaGenContext) buildXMLName() error {
 }
 
 func (sg *schemaGenContext) makeGenSchema() error {
-	//log.Printf("property: (path %s) (name %s) (receiver %s) (indexVar %s) (expr %s) required %t", sg.Path, sg.Name, sg.Receiver, sg.IndexVar, sg.ValueExpr, sg.Required)
+	log.Printf("property: (path %s) (name %s) (receiver %s) (indexVar %s) (expr %s) required %t", sg.Path, sg.Name, sg.Receiver, sg.IndexVar, sg.ValueExpr, sg.Required)
+	log.Printf("(named: %t) ref: %v", sg.Named, sg.Schema.Ref)
 	ex := ""
 	if sg.Schema.Example != nil {
 		ex = fmt.Sprintf("%#v", sg.Schema.Example)
+	}
+	sg.GenSchema.Example = ex
+	sg.GenSchema.Path = sg.Path
+	sg.GenSchema.Name = sg.Name
+	sg.GenSchema.Title = sg.Schema.Title
+	sg.GenSchema.Description = sg.Schema.Description
+	sg.GenSchema.ReceiverName = sg.Receiver
+
+	// This if block ensures that a struct gets
+	// rendered with the ref as embedded ref.
+	if sg.Named && sg.Schema.Ref.GetURL() != nil {
+		tpe := resolvedType{}
+		tpe.GoType = sg.Name
+		if sg.TypeResolver.ModelsPackage != "" {
+			tpe.GoType = sg.TypeResolver.ModelsPackage + "." + sg.TypeResolver.ModelName
+		}
+
+		tpe.SwaggerType = "object"
+		tpe.IsComplexObject = true
+		tpe.IsMap = false
+		tpe.IsAnonymous = false
+
+		item := sg.NewCompositionBranch(sg.Schema)
+		if err := item.makeGenSchema(); err != nil {
+			return err
+		}
+		sg.GenSchema.resolvedType = tpe
+		sg.GenSchema.AllOf = append(sg.GenSchema.AllOf, item.GenSchema)
+		return nil
 	}
 
 	tpe, err := sg.TypeResolver.ResolveSchema(&sg.Schema, !sg.Named)
@@ -427,12 +458,6 @@ func (sg *schemaGenContext) makeGenSchema() error {
 
 	sg.GenSchema.resolvedType = tpe
 	sg.GenSchema.sharedValidations = ctx
-	sg.GenSchema.Example = ex
-	sg.GenSchema.Path = sg.Path
-	sg.GenSchema.Name = sg.Name
-	sg.GenSchema.Title = sg.Schema.Title
-	sg.GenSchema.Description = sg.Schema.Description
-	sg.GenSchema.ReceiverName = sg.Receiver
 	sg.GenSchema.ReadOnly = sg.Schema.ReadOnly
 	sg.GenSchema.ItemsLen = len(sg.GenSchema.Items)
 

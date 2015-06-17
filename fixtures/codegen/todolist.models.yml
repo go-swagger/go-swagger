@@ -70,6 +70,28 @@ definitions:
             type: string
         additionalProperties:
           type: string
+  JustRef:
+    $ref: "#/definitions/Notable"
+
+  Content:
+    type: object
+    allOf:
+      - $ref: "#/definitions/Notable"
+      - type: object
+        additionalProperties:
+          type: integer
+          format: int32
+      - type: object
+        properties:
+          title:
+            type: string
+            minLength: 5
+            maxLength: 140
+          body:
+            type: string
+            minLength: 5
+            maxLength: 2048
+
   Comment:
     type: "object"
     required:

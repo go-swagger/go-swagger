@@ -328,6 +328,10 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous bool) (res
 	var returns bool
 	returns, result, err = t.resolveSchemaRef(schema)
 	if returns {
+		if !isAnonymous {
+			result.IsMap = false
+			result.IsComplexObject = true
+		}
 		return
 	}
 
