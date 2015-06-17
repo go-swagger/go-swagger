@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
@@ -26,6 +27,13 @@ func GenerateDefinition(modelNames []string, includeModel, includeValidator bool
 		}
 	}
 
+	// NOTE: Change this to work on a collection of models
+	//       it should first build up a graph of the dependencies and
+	//       when there is a circular dependency, log a message
+	//       but still generate and hope for the best
+	//       This is a nice to have, at worst the code will need an extra format run, if this is out of order
+	//
+	//       So this needs to become a 2-phased approach so that dependencies can be worked out
 	for _, modelName := range modelNames {
 		// lookup schema
 		model, ok := specDoc.Spec().Definitions[modelName]
@@ -74,6 +82,7 @@ func (m *definitionGenerator) Generate() error {
 		return nil
 	}
 
+	mod.IncludeValidator = m.IncludeValidator
 	m.Data = mod
 
 	if m.IncludeModel {
@@ -83,22 +92,7 @@ func (m *definitionGenerator) Generate() error {
 	}
 	log.Println("generated model", m.Name)
 
-	if m.IncludeValidator {
-		if err := m.generateValidator(); err != nil {
-			return fmt.Errorf("validator: %s", err)
-		}
-	}
-	log.Println("generated validator", m.Name)
 	return nil
-}
-
-func (m *definitionGenerator) generateValidator() error {
-	buf := bytes.NewBuffer(nil)
-	if err := modelValidatorTemplate.Execute(buf, m.Data); err != nil {
-		return err
-	}
-	log.Println("rendered validator template:", m.Name)
-	return writeToFile(m.Target, m.Name+"Validator", buf.Bytes())
 }
 
 func (m *definitionGenerator) generateModel() error {
@@ -129,13 +123,12 @@ func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *spec.Docum
 		Required:     false,
 		TypeResolver: resolver,
 	}
-	mp, dependsOn, err := pg.makeGenSchema()
-	if err != nil {
+	if err := pg.makeGenSchema(); err != nil {
 		return nil, err
 	}
 
 	var defaultImports []string
-	if mp.HasValidations {
+	if pg.GenSchema.HasValidations {
 		defaultImports = []string{
 			"github.com/go-swagger/go-swagger/errors",
 			"github.com/go-swagger/go-swagger/strfmt",
@@ -145,8 +138,8 @@ func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *spec.Docum
 
 	return &GenDefinition{
 		Package:        filepath.Base(pkg),
-		GenSchema:      mp,
-		DependsOn:      dependsOn,
+		GenSchema:      pg.GenSchema,
+		DependsOn:      pg.Dependencies,
 		DefaultImports: defaultImports,
 	}, nil
 }
@@ -155,12 +148,23 @@ func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *spec.Docum
 // defintion from a swagger spec
 type GenDefinition struct {
 	GenSchema
-	Package        string
-	Imports        map[string]string
-	DefaultImports []string
-	ExtraSchemas   []GenDefinition
-	DependsOn      []string
+	Package          string
+	Imports          map[string]string
+	DefaultImports   []string
+	ExtraSchemas     []GenDefinition
+	DependsOn        []string
+	IncludeValidator bool
 }
+
+// GenSchemaList is a list of schemas for generation.
+//
+// It can be sorted by name to get a stable struct layout for
+// version control and such
+type GenSchemaList []GenSchema
+
+func (g GenSchemaList) Len() int           { return len(g) }
+func (g GenSchemaList) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
+func (g GenSchemaList) Less(i, j int) bool { return g[i].Name < g[j].Name }
 
 type schemaGenContext struct {
 	Path               string
@@ -175,9 +179,14 @@ type schemaGenContext struct {
 	AdditionalProperty bool
 	TypeResolver       *typeResolver
 	Named              bool
+
+	GenSchema        GenSchema
+	Dependencies     []string
+	ExtraDefinitions []GenDefinition
 }
 
-func (pg schemaGenContext) NewSliceBranch(schema *spec.Schema) schemaGenContext {
+func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContext {
+	pg := sg.shallowClone()
 	indexVar := pg.IndexVar
 	pg.Path = pg.Path + "." + indexVar
 	pg.IndexVar = indexVar + "i"
@@ -187,8 +196,12 @@ func (pg schemaGenContext) NewSliceBranch(schema *spec.Schema) schemaGenContext 
 	return pg
 }
 
-func (pg schemaGenContext) NewStructBranch(name string, schema spec.Schema) schemaGenContext {
+func (sg *schemaGenContext) NewStructBranch(name string, schema spec.Schema) *schemaGenContext {
+	pg := sg.shallowClone()
 	pg.Path = pg.Path + "." + name
+	if sg.Path == "" {
+		pg.Path = name
+	}
 	pg.Name = name
 	pg.ValueExpr = pg.ValueExpr + "." + swag.ToGoName(name)
 	pg.Schema = schema
@@ -196,24 +209,35 @@ func (pg schemaGenContext) NewStructBranch(name string, schema spec.Schema) sche
 	return pg
 }
 
-func (pg schemaGenContext) NewCompositionBranch(schema spec.Schema) schemaGenContext {
+func (sg *schemaGenContext) shallowClone() *schemaGenContext {
+	pg := new(schemaGenContext)
+	*pg = *sg
+	pg.GenSchema = GenSchema{}
+	pg.Dependencies = nil
+	pg.ExtraDefinitions = nil
+	pg.Named = false
+	return pg
+}
+
+func (sg *schemaGenContext) NewCompositionBranch(schema spec.Schema) *schemaGenContext {
+	pg := sg.shallowClone()
 	pg.Schema = schema
 	return pg
 }
 
-func (pg schemaGenContext) NewAdditionalProperty(schema spec.Schema) schemaGenContext {
+func (sg *schemaGenContext) NewAdditionalProperty(schema spec.Schema) *schemaGenContext {
+	pg := sg.shallowClone()
 	pg.Schema = schema
 	pg.AdditionalProperty = true
 	pg.Name = "additionalProperties"
 	return pg
 }
 
-func (pg schemaGenContext) schemaValidations() sharedValidations {
+func (sg *schemaGenContext) schemaValidations() sharedValidations {
+	model := sg.Schema
 
-	model := pg.Schema
-
-	isRequired := pg.Required
-	if pg.Schema.Default != nil {
+	isRequired := sg.Required
+	if sg.Schema.Default != nil {
 		isRequired = false
 	}
 	hasNumberValidation := model.Maximum != nil || model.Minimum != nil || model.MultipleOf != nil
@@ -222,13 +246,13 @@ func (pg schemaGenContext) schemaValidations() sharedValidations {
 	hasValidations := isRequired || hasNumberValidation || hasStringValidation || hasSliceValidations
 
 	var enum string
-	if len(pg.Schema.Enum) > 0 {
+	if len(sg.Schema.Enum) > 0 {
 		hasValidations = true
 		enum = fmt.Sprintf("%#v", model.Enum)
 	}
 
 	return sharedValidations{
-		Required:            pg.Required,
+		Required:            sg.Required,
 		Maximum:             model.Maximum,
 		ExclusiveMaximum:    model.ExclusiveMaximum,
 		Minimum:             model.Minimum,
@@ -245,142 +269,161 @@ func (pg schemaGenContext) schemaValidations() sharedValidations {
 		HasSliceValidations: hasSliceValidations,
 	}
 }
-
-func (pg schemaGenContext) makeGenSchema() (GenSchema, []string, error) {
-	// log.Printf("property: (path %s) (param %s) (accessor %s) (receiver %s) (indexVar %s) (expr %s) required %t", path, paramName, accessor, receiver, indexVar, valueExpression, required)
-	ex := ""
-	if pg.Schema.Example != nil {
-		ex = fmt.Sprintf("%#v", pg.Schema.Example)
+func (sg *schemaGenContext) MergeResult(other *schemaGenContext) {
+	if other.GenSchema.HasValidations {
+		sg.GenSchema.HasValidations = other.GenSchema.HasValidations
 	}
+	sg.Dependencies = append(sg.Dependencies, other.Dependencies...)
+}
 
-	ctx := pg.schemaValidations()
-	tpe, err := pg.TypeResolver.ResolveSchema(&pg.Schema, !pg.Named)
-	if err != nil {
-		return GenSchema{}, nil, err
+func (sg *schemaGenContext) buildProperties() error {
+	for k, v := range sg.Schema.Properties {
+		emprop := sg.NewStructBranch(k, v)
+		if err := emprop.makeGenSchema(); err != nil {
+			return err
+		}
+		sg.MergeResult(emprop)
+		sg.GenSchema.Properties = append(sg.GenSchema.Properties, emprop.GenSchema)
 	}
+	sort.Sort(sg.GenSchema.Properties)
+	return nil
+}
 
-	var discovered []string
-	var properties []GenSchema
-	for k, v := range pg.Schema.Properties {
-		emprop, disco, err := pg.NewStructBranch(k, v).makeGenSchema()
-		if err != nil {
-			return GenSchema{}, nil, err
+func (sg *schemaGenContext) buildAllOf() error {
+	for _, sch := range sg.Schema.AllOf {
+		comprop := sg.NewCompositionBranch(sch)
+		if err := comprop.makeGenSchema(); err != nil {
+			return err
 		}
-		if emprop.HasValidations {
-			ctx.HasValidations = emprop.HasValidations
-		}
-		properties = append(properties, emprop)
-		discovered = append(discovered, disco...)
+		sg.MergeResult(comprop)
+		sg.GenSchema.AllOf = append(sg.GenSchema.AllOf, comprop.GenSchema)
 	}
+	return nil
+}
 
-	var allOf []GenSchema
-	for _, sch := range pg.Schema.AllOf {
-		comprop, disco, err := pg.NewCompositionBranch(sch).makeGenSchema()
-		if err != nil {
-			return GenSchema{}, nil, err
-		}
-		if comprop.HasValidations {
-			ctx.HasValidations = comprop.HasValidations
-		}
-		allOf = append(allOf, comprop)
-		discovered = append(discovered, disco...)
-	}
+func (sg *schemaGenContext) buildAdditionalProperties() error {
+	if sg.Schema.AdditionalProperties != nil {
+		sg.GenSchema.IsAdditionalProperties = sg.AdditionalProperty
 
-	var additionalProperties *GenSchema
-	var hasAdditionalProperties bool
-	if pg.Schema.AdditionalProperties != nil {
-		addp := pg.Schema.AdditionalProperties
-		hasAdditionalProperties = addp.Allows || addp.Schema != nil
+		addp := sg.Schema.AdditionalProperties
+		sg.GenSchema.HasAdditionalProperties = addp.Allows || addp.Schema != nil
 		if addp.Schema != nil {
-			comprop, disco, err := pg.NewAdditionalProperty(*addp.Schema).makeGenSchema()
-			if err != nil {
-				return GenSchema{}, nil, err
+			comprop := sg.NewAdditionalProperty(*addp.Schema)
+			if err := comprop.makeGenSchema(); err != nil {
+				return err
 			}
-			if comprop.HasValidations {
-				ctx.HasValidations = comprop.HasValidations
-			}
-			additionalProperties = &comprop
-			discovered = append(discovered, disco...)
+			sg.MergeResult(comprop)
+			sg.GenSchema.AdditionalProperties = &comprop.GenSchema
 		}
 	}
+	return nil
+}
 
-	singleSchemaSlice := pg.Schema.Items != nil && pg.Schema.Items.Schema != nil
-	var items []GenSchema
-	if singleSchemaSlice {
-		ctx.HasSliceValidations = true
-
-		elProp, disco, err := pg.NewSliceBranch(pg.Schema.Items.Schema).makeGenSchema()
-		if err != nil {
-			return GenSchema{}, nil, err
+func (sg *schemaGenContext) buildItems() error {
+	sg.GenSchema.SingleSchemaSlice = sg.Schema.Items != nil && sg.Schema.Items.Schema != nil
+	if sg.GenSchema.SingleSchemaSlice {
+		elProp := sg.NewSliceBranch(sg.Schema.Items.Schema)
+		if err := elProp.makeGenSchema(); err != nil {
+			return err
 		}
-		items = []GenSchema{elProp}
-		discovered = append(discovered, disco...)
-	} else if pg.Schema.Items != nil {
-		for _, s := range pg.Schema.Items.Schemas {
-			elProp, disco, err := pg.NewSliceBranch(&s).makeGenSchema()
-			if err != nil {
-				return GenSchema{}, nil, err
+		sg.MergeResult(elProp)
+		sg.GenSchema.Items = []GenSchema{elProp.GenSchema}
+	} else if sg.Schema.Items != nil {
+		// This is a tuple, build a new model that represents this
+		for _, s := range sg.Schema.Items.Schemas {
+			elProp := sg.NewSliceBranch(&s)
+			if err := elProp.makeGenSchema(); err != nil {
+				return err
 			}
-			items = append(items, elProp)
-			discovered = append(discovered, disco...)
+			sg.MergeResult(elProp)
+			sg.GenSchema.Items = append(sg.GenSchema.Items, elProp.GenSchema)
 		}
 	}
+	return nil
+}
 
-	allowsAdditionalItems :=
-		pg.Schema.AdditionalItems != nil &&
-			(pg.Schema.AdditionalItems.Allows || pg.Schema.AdditionalItems.Schema != nil)
-	hasAdditionalItems := allowsAdditionalItems && !singleSchemaSlice
-	var additionalItems *GenSchema
-	if pg.Schema.AdditionalItems != nil && pg.Schema.AdditionalItems.Schema != nil {
-		it, disco, err := pg.NewSliceBranch(pg.Schema.AdditionalItems.Schema).makeGenSchema()
-		if err != nil {
-			return GenSchema{}, nil, err
+func (sg *schemaGenContext) buildAdditionalItems() error {
+	sg.GenSchema.AllowsAdditionalItems =
+		sg.Schema.AdditionalItems != nil &&
+			(sg.Schema.AdditionalItems.Allows || sg.Schema.AdditionalItems.Schema != nil)
+
+	sg.GenSchema.HasAdditionalItems = sg.GenSchema.AllowsAdditionalItems && !sg.GenSchema.SingleSchemaSlice
+	if sg.Schema.AdditionalItems != nil && sg.Schema.AdditionalItems.Schema != nil {
+		it := sg.NewSliceBranch(sg.Schema.AdditionalItems.Schema)
+		if err := it.makeGenSchema(); err != nil {
+			return err
 		}
-		additionalItems = &it
-		discovered = append(discovered, disco...)
+		sg.MergeResult(it)
+		sg.GenSchema.AdditionalItems = &it.GenSchema
+	}
+	return nil
+}
+
+func (sg *schemaGenContext) buildXMLName() error {
+	if sg.Schema.XML != nil {
+		sg.GenSchema.XMLName = sg.ParamName
+		if sg.Schema.XML.Name != "" {
+			sg.GenSchema.XMLName = sg.Schema.XML.Name
+			if sg.Schema.XML.Attribute {
+				sg.GenSchema.XMLName += ",attr"
+			}
+		}
+	}
+	return nil
+}
+
+func (sg *schemaGenContext) makeGenSchema() error {
+	//log.Printf("property: (path %s) (name %s) (receiver %s) (indexVar %s) (expr %s) required %t", sg.Path, sg.Name, sg.Receiver, sg.IndexVar, sg.ValueExpr, sg.Required)
+	ex := ""
+	if sg.Schema.Example != nil {
+		ex = fmt.Sprintf("%#v", sg.Schema.Example)
 	}
 
-	ctx.HasSliceValidations = len(items) > 0 || hasAdditionalItems
+	tpe, err := sg.TypeResolver.ResolveSchema(&sg.Schema, !sg.Named)
+	if err != nil {
+		return err
+	}
+
+	if err := sg.buildProperties(); err != nil {
+		return nil
+	}
+
+	if err := sg.buildAllOf(); err != nil {
+		return err
+	}
+
+	if err := sg.buildAdditionalProperties(); err != nil {
+		return err
+	}
+
+	if err := sg.buildItems(); err != nil {
+		return err
+	}
+
+	if err := sg.buildAdditionalItems(); err != nil {
+		return err
+	}
+
+	if err := sg.buildXMLName(); err != nil {
+		return err
+	}
+
+	ctx := sg.schemaValidations()
+	ctx.HasSliceValidations = len(sg.GenSchema.Items) > 0 || sg.GenSchema.HasAdditionalItems || sg.GenSchema.SingleSchemaSlice
 	ctx.HasValidations = ctx.HasValidations || ctx.HasSliceValidations
 
-	var xmlName string
-	if pg.Schema.XML != nil {
-		xmlName = pg.ParamName
-		if pg.Schema.XML.Name != "" {
-			xmlName = pg.Schema.XML.Name
-			if pg.Schema.XML.Attribute {
-				xmlName += ",attr"
-			}
-		}
-	}
+	sg.GenSchema.resolvedType = tpe
+	sg.GenSchema.sharedValidations = ctx
+	sg.GenSchema.Example = ex
+	sg.GenSchema.Path = sg.Path
+	sg.GenSchema.Name = sg.Name
+	sg.GenSchema.Title = sg.Schema.Title
+	sg.GenSchema.Description = sg.Schema.Description
+	sg.GenSchema.ReceiverName = sg.Receiver
+	sg.GenSchema.ReadOnly = sg.Schema.ReadOnly
+	sg.GenSchema.ItemsLen = len(sg.GenSchema.Items)
 
-	return GenSchema{
-		resolvedType:      tpe,
-		sharedValidations: ctx,
-		Example:           ex,
-		Path:              pg.Path,
-		Name:              pg.Name,
-		Title:             pg.Schema.Title,
-		Description:       pg.Schema.Description,
-		ReceiverName:      pg.Receiver,
-		ReadOnly:          pg.Schema.ReadOnly,
-
-		Properties: properties,
-		AllOf:      allOf,
-		HasAdditionalProperties: hasAdditionalProperties,
-		AdditionalProperties:    additionalProperties,
-		IsAdditionalProperties:  pg.AdditionalProperty,
-
-		HasAdditionalItems:    hasAdditionalItems,
-		AllowsAdditionalItems: allowsAdditionalItems,
-		AdditionalItems:       additionalItems,
-
-		Items:             items,
-		ItemsLen:          len(items),
-		SingleSchemaSlice: singleSchemaSlice,
-
-		XMLName: xmlName,
-	}, discovered, nil
+	return nil
 }
 
 // NOTE:
@@ -409,7 +452,7 @@ type GenSchema struct {
 	AdditionalItems         *GenSchema
 	Object                  *GenSchema
 	XMLName                 string
-	Properties              []GenSchema
+	Properties              GenSchemaList
 	AllOf                   []GenSchema
 	HasAdditionalProperties bool
 	IsAdditionalProperties  bool
@@ -418,7 +461,6 @@ type GenSchema struct {
 }
 
 type sharedValidations struct {
-	Type                resolvedType
 	Required            bool
 	MaxLength           *int64
 	MinLength           *int64

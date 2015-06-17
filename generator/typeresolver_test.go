@@ -183,11 +183,9 @@ func TestTypeResolver_AdditionalProperties(t *testing.T) {
 			rt, err := resolver.ResolveSchema(parent, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsMap)
+				assert.False(t, rt.IsComplexObject)
 				assert.Equal(t, "map[string]"+val.Expected, rt.GoType)
 				assert.Equal(t, "object", rt.SwaggerType)
-				//if assert.NotNil(t, rt.ElementType) {
-				//assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, *rt.ElementType)
-				//}
 			}
 		}
 
@@ -203,6 +201,7 @@ func TestTypeResolver_AdditionalProperties(t *testing.T) {
 			rt, err := resolver.ResolveSchema(parent, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsMap)
+				assert.False(t, rt.IsComplexObject)
 				assert.Equal(t, "map[string][]"+val.Expected, rt.GoType)
 				assert.Equal(t, "object", rt.SwaggerType)
 			}
@@ -219,10 +218,73 @@ func TestTypeResolver_AdditionalProperties(t *testing.T) {
 			rt, err := resolver.ResolveSchema(parent, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsMap)
+				assert.False(t, rt.IsComplexObject)
 				assert.Equal(t, "map[string]"+val.Expected, rt.GoType)
 				assert.Equal(t, "object", rt.SwaggerType)
 			}
 		}
+
+		// when additional properties and properties present, it's a complex object
+
+		// primitives as additional properties
+		for _, val := range schTypeVals {
+			sch := new(spec.Schema)
+
+			sch.Typed(val.Type, val.Format)
+			parent := new(spec.Schema)
+			parent.Properties = make(map[string]spec.Schema)
+			parent.Properties["id"] = *spec.Int32Property()
+			parent.AdditionalProperties = new(spec.SchemaOrBool)
+			parent.AdditionalProperties.Schema = sch
+
+			rt, err := resolver.ResolveSchema(parent, true)
+			if assert.NoError(t, err) {
+				assert.True(t, rt.IsComplexObject)
+				assert.False(t, rt.IsMap)
+				assert.Equal(t, "map[string]"+val.Expected, rt.GoType)
+				assert.Equal(t, "object", rt.SwaggerType)
+			}
+		}
+
+		// array of primitives as additional properties
+		for _, val := range schTypeVals {
+			sch := new(spec.Schema)
+
+			sch.Typed(val.Type, val.Format)
+			parent := new(spec.Schema)
+			parent.Properties = make(map[string]spec.Schema)
+			parent.Properties["id"] = *spec.Int32Property()
+			parent.AdditionalProperties = new(spec.SchemaOrBool)
+			parent.AdditionalProperties.Schema = new(spec.Schema).CollectionOf(*sch)
+
+			rt, err := resolver.ResolveSchema(parent, true)
+			if assert.NoError(t, err) {
+				assert.True(t, rt.IsComplexObject)
+				assert.False(t, rt.IsMap)
+				assert.Equal(t, "map[string][]"+val.Expected, rt.GoType)
+				assert.Equal(t, "object", rt.SwaggerType)
+			}
+		}
+
+		// refs as additional properties
+		for _, val := range schRefVals {
+			sch := new(spec.Schema)
+			sch.Ref, _ = spec.NewRef("#/definitions/" + val.Type)
+			parent := new(spec.Schema)
+			parent.Properties = make(map[string]spec.Schema)
+			parent.Properties["id"] = *spec.Int32Property()
+			parent.AdditionalProperties = new(spec.SchemaOrBool)
+			parent.AdditionalProperties.Schema = sch
+
+			rt, err := resolver.ResolveSchema(parent, true)
+			if assert.NoError(t, err) {
+				assert.True(t, rt.IsComplexObject)
+				assert.False(t, rt.IsMap)
+				assert.Equal(t, "map[string]"+val.Expected, rt.GoType)
+				assert.Equal(t, "object", rt.SwaggerType)
+			}
+		}
+
 	}
 }
 
@@ -307,6 +369,7 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 			rt, err := resolver.ResolveSchema(sch, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsMap)
+				assert.False(t, rt.IsComplexObject)
 				assert.Equal(t, "map[string]interface{}", rt.GoType)
 				assert.Equal(t, "object", rt.SwaggerType)
 			}
@@ -325,6 +388,7 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 		rt, err := resolver.ResolveSchema(sch, true)
 		if assert.NoError(t, err) {
 			assert.True(t, rt.IsMap)
+			assert.False(t, rt.IsComplexObject)
 			assert.Equal(t, "map[string]interface{}", rt.GoType)
 			assert.Equal(t, "object", rt.SwaggerType)
 
@@ -336,9 +400,9 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 		rt, err = resolver.ResolveSchema(sch, true)
 		if assert.NoError(t, err) {
 			assert.True(t, rt.IsComplexObject)
+			assert.False(t, rt.IsMap)
 			assert.Equal(t, "models.TheModel", rt.GoType)
 			assert.Equal(t, "object", rt.SwaggerType)
-
 		}
 	}
 }

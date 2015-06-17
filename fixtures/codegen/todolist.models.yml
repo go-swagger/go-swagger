@@ -56,11 +56,18 @@ definitions:
   WithMap:
     type: object
     properties:
-      id:
-        type: integer
-        format: int64
       data:
         type: object
+        additionalProperties:
+          type: string
+  WithAdditional:
+    type: object
+    properties:
+      data:
+        type: object
+        properties:
+          name:
+            type: string
         additionalProperties:
           type: string
   Comment:

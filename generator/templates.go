@@ -68,7 +68,7 @@ func init() {
 
 	modelTemplate = makeModelTemplate()
 	// common templates
-	bv, _ := Asset("templates/modelvalidator.gotmpl")
+	bv, _ := Asset("templates/modelvalidator.gotmpl") // about to be gobbled up by the model template
 	modelValidatorTemplate = template.Must(validatorTempl.Clone())
 	modelValidatorTemplate = template.Must(modelValidatorTemplate.New("modelvalidator").Parse(string(bv)))
 

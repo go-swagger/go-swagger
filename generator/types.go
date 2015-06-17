@@ -173,11 +173,12 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema) (returns bool, resu
 			err = er
 			return
 		}
+		var nm = filepath.Base(schema.Ref.GetURL().Fragment)
 		var tn string
 		if gn, ok := ref.Extensions["x-go-name"]; ok {
 			tn = gn.(string)
 		} else {
-			tn = swag.ToGoName(filepath.Base(schema.Ref.GetURL().Fragment))
+			tn = swag.ToGoName(nm)
 		}
 
 		res, er := t.ResolveSchema(ref, false)
@@ -301,7 +302,7 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 			return
 		}
 		result.GoType = "map[string]" + et.GoType
-		result.IsMap = true
+		result.IsMap = len(schema.Properties) == 0
 		result.SwaggerType = "object"
 		result.IsNullable = false
 		return

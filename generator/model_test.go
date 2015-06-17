@@ -31,13 +31,13 @@ func TestGenerateModel_Sanity(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 
-		//k := "Comment"
+		//k := "WithMap"
 		//schema := definitions[k]
 		for k, schema := range definitions {
 			genModel, err := makeGenDefinition(k, "models", schema, specDoc)
 
 			if assert.NoError(t, err) {
-				//b, _ := json.MarshalIndent(genModel.IsCo, "", "  ")
+				//b, _ := json.MarshalIndent(genModel, "", "  ")
 				//fmt.Println(string(b))
 				rendered := bytes.NewBuffer(nil)
 
@@ -232,4 +232,45 @@ func TestGenSchemaType(t *testing.T) {
 	for _, v := range schTypeGenDataSimple {
 		tt.assertRender(v.Value, v.Expected)
 	}
+}
+func TestGenerateModel_Primitives(t *testing.T) {
+	tt := templateTest{t, modelTemplate.Lookup("schema")}
+	for _, v := range schTypeGenDataSimple {
+		val := v.Value
+		if val.IsComplexObject {
+			continue
+		}
+		val.Name = "theType"
+		exp := v.Expected
+		if val.IsNullable {
+			exp = exp[1:]
+		}
+		tt.assertRender(val, "type TheType "+exp+"\n\n")
+	}
+}
+
+func TestGenerateModel_MapRef(t *testing.T) {
+	// just checks if it can render and format these things
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["WithMap"]
+		genModel, err := makeGenDefinition("WithMap", "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			assert.False(t, genModel.HasAdditionalProperties)
+			prop := getDefinitionProperty(genModel, "data")
+			assert.True(t, prop.HasAdditionalProperties)
+			assert.True(t, prop.IsMap)
+			assert.False(t, prop.IsComplexObject)
+		}
+	}
+}
+
+func getDefinitionProperty(genModel *GenDefinition, name string) *GenSchema {
+	for _, p := range genModel.Properties {
+		if p.Name == name {
+			return &p
+		}
+	}
+	return nil
 }
