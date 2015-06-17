@@ -33,7 +33,7 @@ func TestGenerateModel_Sanity(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 
-		k := "SimpleTuple"
+		k := "TupleWithExtra"
 		schema := definitions[k]
 		//for k, schema := range definitions {
 		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
@@ -439,6 +439,7 @@ func TestGenerateModel_SimpleTuple(t *testing.T) {
 			assert.Regexp(t, regexp.MustCompile("P4 \\*Notable `json:\"-\"`"), res)
 			assert.Regexp(t, regexp.MustCompile(k+"\\) UnmarshalJSON"), res)
 			assert.Regexp(t, regexp.MustCompile(k+"\\) MarshalJSON"), res)
+			assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Marshal(data)")), res)
 
 			for i, p := range genModel.Properties {
 				r := "m.P" + strconv.Itoa(i)
@@ -446,7 +447,55 @@ func TestGenerateModel_SimpleTuple(t *testing.T) {
 					r = "&" + r
 				}
 				assert.Regexp(t, regexp.MustCompile("json.Unmarshal\\(stage1\\["+strconv.Itoa(i)+"\\], "+r+"\\)"), res)
+				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("P"+strconv.Itoa(i)+",")), res)
 			}
+		}
+	}
+}
+
+func TestGenerateModel_TupleWithExtra(t *testing.T) {
+	tt := templateTest{t, modelTemplate}
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "TupleWithExtra"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) && assert.Empty(t, genModel.ExtraSchemas) {
+			assert.True(t, genModel.IsTuple)
+			assert.False(t, genModel.IsComplexObject)
+			assert.False(t, genModel.IsArray)
+			assert.False(t, genModel.IsAnonymous)
+			assert.Equal(t, k, genModel.Name)
+			assert.Equal(t, k, genModel.GoType)
+			assert.Len(t, genModel.Properties, 4)
+			buf := bytes.NewBuffer(nil)
+			tt.template.Execute(buf, genModel)
+			res := buf.String()
+			assert.Regexp(t, regexp.MustCompile("swagger:model "+k), res)
+			assert.Regexp(t, regexp.MustCompile("type "+k+" struct\\s*{"), res)
+			assert.Regexp(t, regexp.MustCompile("P0 int64 `json:\"-\"`"), res)
+			assert.Regexp(t, regexp.MustCompile("P1 string `json:\"-\"`"), res)
+			assert.Regexp(t, regexp.MustCompile("P2 strfmt.DateTime `json:\"-\"`"), res)
+			assert.Regexp(t, regexp.MustCompile("P3 Notable `json:\"-\"`"), res)
+			assert.Regexp(t, regexp.MustCompile("AdditionalItems \\[\\]float64 `json:\"-\"`"), res)
+			assert.Regexp(t, regexp.MustCompile(k+"\\) UnmarshalJSON"), res)
+			assert.Regexp(t, regexp.MustCompile(k+"\\) MarshalJSON"), res)
+
+			for i, p := range genModel.Properties {
+				r := "m.P" + strconv.Itoa(i)
+				if !p.IsNullable {
+					r = "&" + r
+				}
+				assert.Regexp(t, regexp.MustCompile("json.Unmarshal\\(stage1\\["+strconv.Itoa(i)+"\\], "+r+"\\)"), res)
+				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("P"+strconv.Itoa(i)+",")), res)
+			}
+			assert.Regexp(t, regexp.MustCompile("var lastIndex int"), res)
+			assert.Regexp(t, regexp.MustCompile("var toadd float64"), res)
+			assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("for _, val := range stage1[lastIndex+1:]")), res)
+			assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Unmarshal(val, &toadd)")), res)
+			assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Marshal(data)")), res)
+			assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("data = append(data, m.AdditionalItems...)")), res)
 		}
 	}
 }

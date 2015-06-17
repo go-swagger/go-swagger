@@ -31,13 +31,12 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(data []byte) error
 // MarshalJSON marshals this tuple type into a JSON array
 func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
   data := []interface{}{
-  {{ range .Properties }}  {{ pascalize .Name }},
+  {{ range .Properties }}{{ pascalize .Name }},
   {{ end }} }
   {{ if .HasAdditionalItems }}
-  data = append(data, {{ .ReceiverName }}.AdditionalItems...)
-  {{ else }}
+    data = append(data, {{ .ReceiverName }}.AdditionalItems...)
+  {{ end }}
   return json.Marshal(data)
-{{ end }}
 }
 {{ end }}
 {{ end }}
