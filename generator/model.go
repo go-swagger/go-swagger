@@ -387,8 +387,7 @@ func (sg *schemaGenContext) buildXMLName() error {
 }
 
 func (sg *schemaGenContext) makeGenSchema() error {
-	log.Printf("property: (path %s) (name %s) (receiver %s) (indexVar %s) (expr %s) required %t", sg.Path, sg.Name, sg.Receiver, sg.IndexVar, sg.ValueExpr, sg.Required)
-	log.Printf("(named: %t) ref: %v", sg.Named, sg.Schema.Ref)
+	log.Printf("property: (path %s) (named: %t) (name %s) (receiver %s) (indexVar %s) (expr %s) required %t", sg.Path, sg.Named, sg.Name, sg.Receiver, sg.IndexVar, sg.ValueExpr, sg.Required)
 	ex := ""
 	if sg.Schema.Example != nil {
 		ex = fmt.Sprintf("%#v", sg.Schema.Example)
@@ -427,6 +426,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	if err != nil {
 		return err
 	}
+	log.Printf("%+v", tpe)
 
 	if err := sg.buildProperties(); err != nil {
 		return nil

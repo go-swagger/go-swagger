@@ -288,7 +288,7 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 	// if this schema has properties, build a map of property name to
 	// resolved type, this should also flag the object as anonymous,
 	// when a ref is found, the anonymous flag will be reset
-	if isAnonymous && len(schema.Properties) > 0 {
+	if len(schema.Properties) > 0 {
 		result.IsNullable = t.isNullable(schema)
 		result.IsComplexObject = true
 		// no return here, still need to check for additional properties
@@ -302,7 +302,7 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 			return
 		}
 		result.GoType = "map[string]" + et.GoType
-		result.IsMap = len(schema.Properties) == 0
+		result.IsMap = !result.IsComplexObject
 		result.SwaggerType = "object"
 		result.IsNullable = false
 		return
@@ -313,6 +313,7 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 	}
 	result.GoType = "map[string]interface{}"
 	result.IsMap = true
+	result.IsMap = !result.IsComplexObject
 	result.SwaggerType = "object"
 	result.IsNullable = false
 	return

@@ -33,7 +33,7 @@ func TestGenerateModel_Sanity(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 
-		k := "JustRef"
+		k := "WithItems"
 		schema := definitions[k]
 		//for k, schema := range definitions {
 		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
@@ -315,6 +315,31 @@ func TestGenerateModel_JustRef(t *testing.T) {
 			res := buf.String()
 			assert.Regexp(t, regexp.MustCompile("type JustRef struct\\s*{"), res)
 			assert.Regexp(t, regexp.MustCompile("Notable"), res)
+		}
+	}
+}
+
+func TestGenerateModel_WithItems(t *testing.T) {
+	tt := templateTest{t, modelTemplate.Lookup("schema")}
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["WithItems"]
+		b, _ := json.MarshalIndent(schema, "", "  ")
+		fmt.Println(string(b))
+		genModel, err := makeGenDefinition("WithItems", "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			assert.Empty(t, genModel.Items)
+			assert.True(t, genModel.IsComplexObject)
+			prop := getDefinitionProperty(genModel, "tags")
+			assert.NotEmpty(t, prop.Items)
+			assert.True(t, prop.IsArray)
+			assert.False(t, prop.IsComplexObject)
+			buf := bytes.NewBuffer(nil)
+			tt.template.Execute(buf, genModel)
+			res := buf.String()
+			assert.Regexp(t, regexp.MustCompile("type WithItems struct\\s*{"), res)
+			assert.Regexp(t, regexp.MustCompile("Tags \\[\\]string `json:\"tags\"`"), res)
 		}
 	}
 }

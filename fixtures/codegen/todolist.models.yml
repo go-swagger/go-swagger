@@ -45,6 +45,13 @@ definitions:
     items:
       type: number
       format: float
+  WithItems:
+    type: object
+    properties:
+      tags:
+        type: array
+        items:
+          type: string
   Age:
     type: integer
     format: int32
