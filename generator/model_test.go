@@ -33,7 +33,7 @@ func TestGenerateModel_Sanity(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 
-		k := "WithItems"
+		k := "WithAllOf"
 		schema := definitions[k]
 		//for k, schema := range definitions {
 		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
@@ -338,6 +338,31 @@ func TestGenerateModel_WithItems(t *testing.T) {
 			res := buf.String()
 			assert.Regexp(t, regexp.MustCompile("type WithItems struct\\s*{"), res)
 			assert.Regexp(t, regexp.MustCompile("Tags \\[\\]string `json:\"tags\"`"), res)
+		}
+	}
+}
+
+func TestGenerateModel_WithAllOf(t *testing.T) {
+	tt := templateTest{t, modelTemplate.Lookup("schema")}
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["WithAllOf"]
+		genModel, err := makeGenDefinition("WithAllOf", "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			assert.Len(t, genModel.AllOf, 3)
+			assert.True(t, genModel.AllOf[1].HasAdditionalProperties)
+			assert.True(t, genModel.IsComplexObject)
+			assert.Equal(t, "WithAllOf", genModel.Name)
+			assert.Equal(t, "WithAllOf", genModel.GoType)
+			buf := bytes.NewBuffer(nil)
+			tt.template.Execute(buf, genModel)
+			res := buf.String()
+			assert.Regexp(t, regexp.MustCompile("type WithAllOf struct\\s*{"), res)
+			assert.Regexp(t, regexp.MustCompile("Notable"), res)
+			assert.Regexp(t, regexp.MustCompile("Title string `json:\"title\"`"), res)
+			assert.Regexp(t, regexp.MustCompile("Body string `json:\"body\"`"), res)
+			assert.Regexp(t, regexp.MustCompile("AdditionalProperties map\\[string\\]int32 `json:\"-\"`"), res)
 		}
 	}
 }

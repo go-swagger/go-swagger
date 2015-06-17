@@ -1,9 +1,10 @@
-{{ define "schemaBody" }}struct{{ if not .IsAnonymous }} {{end}}{
+{{ define "schemaBody" }}struct {
   {{ range .AllOf }}
   {{ if .IsAnonymous }}{{ range .Properties }}
   {{ template "structfield" . }}
-  {{ end }}{{ else if .HasAdditionalProperties }}/* {{ template "docstring" .AdditionalProperties }}{{ template "propertyValidationDocString" .AdditionalProperties}} */
+  {{ end }}{{ if .HasAdditionalProperties }}/* {{ template "docstring" .AdditionalProperties }}{{ template "propertyValidationDocString" .AdditionalProperties}} */
   AdditionalProperties map[string]{{ if .AdditionalProperties }}{{ template "schemaType" .AdditionalProperties }}{{ else }}interface{}{{ end }} `json:"-"`
+  {{end}}
   {{ else }}
   {{if .IsNullable }}*{{ end }}{{ .GoType }}{{ end }}
   {{ end }}

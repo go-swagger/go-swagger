@@ -80,7 +80,7 @@ definitions:
   JustRef:
     $ref: "#/definitions/Notable"
 
-  Content:
+  WithAllOf:
     type: object
     allOf:
       - $ref: "#/definitions/Notable"
