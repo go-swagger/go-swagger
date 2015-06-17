@@ -45,6 +45,7 @@ definitions:
     items:
       type: number
       format: float
+
   WithItems:
     type: object
     properties:
@@ -52,6 +53,26 @@ definitions:
         type: array
         items:
           type: string
+
+  WithItemsAndAdditional2:
+    type: object
+    properties:
+      tags:
+        type: array
+        items:
+          type: string
+        additionalItems:
+          type: integer
+          format: int32
+
+  WithItemsAndAdditional:
+    type: object
+    properties:
+      tags:
+        type: array
+        items:
+          type: string
+        additionalItems: true
   Age:
     type: integer
     format: int32
@@ -66,6 +87,7 @@ definitions:
     properties:
       notes:
         $ref: "#/definitions/Notable"
+
   WithNullableRef:
     type: object
     properties:

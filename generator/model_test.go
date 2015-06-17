@@ -2,7 +2,6 @@ package generator
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
@@ -33,14 +32,14 @@ func TestGenerateModel_Sanity(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 
-		k := "WithAllOf"
+		k := "Comment"
 		schema := definitions[k]
 		//for k, schema := range definitions {
 		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
 
 		if assert.NoError(t, err) {
-			b, _ := json.MarshalIndent(genModel, "", "  ")
-			fmt.Println(string(b))
+			//b, _ := json.MarshalIndent(genModel, "", "  ")
+			//fmt.Println(string(b))
 			rendered := bytes.NewBuffer(nil)
 
 			err := modelTemplate.Execute(rendered, genModel)
@@ -381,6 +380,32 @@ func TestGenerateModel_WithItems(t *testing.T) {
 			res := buf.String()
 			assert.Regexp(t, regexp.MustCompile("type WithItems struct\\s*{"), res)
 			assert.Regexp(t, regexp.MustCompile("Tags \\[\\]string `json:\"tags\"`"), res)
+		}
+	}
+}
+
+func TestGenerateModel_WithItemsAndAdditional(t *testing.T) {
+	tt := templateTest{t, modelTemplate.Lookup("schema")}
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		for _, k := range []string{"WithItemsAndAdditional", "WithItemsAndAdditional2"} {
+			schema := definitions[k]
+			genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+			if assert.NoError(t, err) {
+				assert.Empty(t, genModel.Items)
+				assert.True(t, genModel.IsComplexObject)
+				prop := getDefinitionProperty(genModel, "tags")
+				assert.NotEmpty(t, prop.Items)
+				assert.True(t, prop.IsArray)
+				assert.False(t, prop.IsComplexObject)
+				buf := bytes.NewBuffer(nil)
+				tt.template.Execute(buf, genModel)
+				res := buf.String()
+				assert.Regexp(t, regexp.MustCompile("type "+k+" struct\\s*{"), res)
+				// this would fail if it accepts additionalItems because it would come out as []interface{}
+				assert.Regexp(t, regexp.MustCompile("Tags \\[\\]string `json:\"tags\"`"), res)
+			}
 		}
 	}
 }

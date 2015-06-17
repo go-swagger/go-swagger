@@ -14,6 +14,10 @@ import (
 )
 
 // GenerateDefinition generates a model file for a schema defintion.
+// The general idea is that you should rarely see interface{} in the generated code.
+// You get a complete representation of a swagger document in somewhat idiomatic go.
+//
+// To do so there is set of mapping patterns that are applied to a spec to go types:
 //
 //    defintion of primitive => type alias/name
 //    defintion of array => type alias/name
@@ -27,6 +31,14 @@ import (
 //      * all of schema with ref => embedded value
 //      * all of schema with properties => properties are included in struct
 //      * adding an all of schema with just "x-isnullable": true turns the schema into a pointer
+//        when there are only other extension properties provided
+//
+// JSONSchema and by extension swagger allow for items that have a fixed size array
+// with schema's describing the items at each index. This can be combined with additional items
+// to form some kind of tuple with varargs.
+// To map this to go it creates a struct that has fixed names and a custom json serializer.
+//
+// The code that is generated
 func GenerateDefinition(modelNames []string, includeModel, includeValidator bool, opts GenOpts) error {
 	// Load the spec
 	specPath, specDoc, err := loadSpec(opts.Spec)
