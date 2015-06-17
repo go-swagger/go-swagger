@@ -1,2 +1,7 @@
-/* {{ template "docstring" . }}{{ template "propertyValidationDocString" .}} */
+{{ define "structfield" }}/* {{ template "docstring" . }}{{ template "propertyValidationDocString" .}} */
 {{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .Name }}"{{ if .XMLName }} xml:"{{ .XMLName }}"{{ end }}`
+{{ end }}
+{{ define "tuplefield" }}
+/* {{ template "docstring" . }}{{ template "propertyValidationDocString" .}} */
+{{ pascalize .Name}} {{ template "schemaType" . }} `json:"-"` // custom serializer
+{{ end }}

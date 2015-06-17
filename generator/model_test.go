@@ -32,7 +32,7 @@ func TestGenerateModel_Sanity(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 
-		k := "Comment"
+		k := "SimpleTuple"
 		schema := definitions[k]
 		//for k, schema := range definitions {
 		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
@@ -406,6 +406,36 @@ func TestGenerateModel_WithItemsAndAdditional(t *testing.T) {
 				// this would fail if it accepts additionalItems because it would come out as []interface{}
 				assert.Regexp(t, regexp.MustCompile("Tags \\[\\]string `json:\"tags\"`"), res)
 			}
+		}
+	}
+}
+
+func TestGenerateModel_SimpleTuple(t *testing.T) {
+	tt := templateTest{t, modelTemplate.Lookup("schema")}
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "SimpleTuple"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) && assert.Empty(t, genModel.ExtraSchemas) {
+			assert.True(t, genModel.IsTuple)
+			assert.False(t, genModel.IsComplexObject)
+			assert.False(t, genModel.IsArray)
+			assert.False(t, genModel.IsAnonymous)
+			assert.Equal(t, k, genModel.Name)
+			assert.Equal(t, k, genModel.GoType)
+			assert.Len(t, genModel.Properties, 5)
+			buf := bytes.NewBuffer(nil)
+			tt.template.Execute(buf, genModel)
+			res := buf.String()
+			assert.Regexp(t, regexp.MustCompile("type "+k+" struct\\s*{"), res)
+			// this would fail if it accepts additionalItems because it would come out as []interface{}
+			assert.Regexp(t, regexp.MustCompile("P0 int64 `json:\"-\"`"), res)
+			assert.Regexp(t, regexp.MustCompile("P1 string `json:\"-\"`"), res)
+			assert.Regexp(t, regexp.MustCompile("P2 strfmt.DateTime `json:\"-\"`"), res)
+			assert.Regexp(t, regexp.MustCompile("P3 Notable `json:\"-\"`"), res)
+			assert.Regexp(t, regexp.MustCompile("P4 \\*Notable `json:\"-\"`"), res)
 		}
 	}
 }

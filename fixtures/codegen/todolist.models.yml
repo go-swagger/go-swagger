@@ -103,6 +103,7 @@ definitions:
         type: object
         additionalProperties:
           type: string
+
   WithAdditional:
     type: object
     properties:
@@ -113,6 +114,34 @@ definitions:
             type: string
         additionalProperties:
           type: string
+
+  SimpleTuple:
+    type: array
+    items:
+      - type: integer
+        format: int64
+      - type: string
+      - type: string
+        format: date-time
+      - $ref: "#/definitions/Notable"
+      - allOf:
+        - $ref: "#/definitions/Notable"
+        - x-isnullable: true
+
+  TupleWithExtra:
+    type: array
+    items:
+      - type: integer
+        format: int64
+      - type: string
+      - type: string
+        format: date-time
+      - $ref: "#/definitions/Notable"
+    additionalItems:
+      type: number
+      format: double
+
+
   JustRef:
     $ref: "#/definitions/Notable"
 

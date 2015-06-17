@@ -229,7 +229,7 @@ func (t *typeResolver) firstType(schema *spec.Schema) string {
 	return schema.Type[0]
 }
 
-func (t *typeResolver) resolveArray(schema *spec.Schema) (result resolvedType, err error) {
+func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous bool) (result resolvedType, err error) {
 	result.IsArray = true
 	result.IsNullable = false
 	if schema.AdditionalItems != nil {
@@ -243,6 +243,7 @@ func (t *typeResolver) resolveArray(schema *spec.Schema) (result resolvedType, e
 	if len(schema.Items.Schemas) > 0 {
 		result.IsArray = false
 		result.IsTuple = true
+		result.SwaggerType = "array"
 		return
 	}
 	rt, er := t.ResolveSchema(schema.Items.Schema, true)
@@ -266,9 +267,6 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 		}
 	}
 	if len(schema.AllOf) > 0 {
-		// TODO: with further analysis this could work out some more nuances for what to render
-		//       eg. allOf with only 1 object that is a ref, it could become a type alias, there
-		//       can other items in the allOf collection but none that describe other properties.
 		result.GoType = t.ModelName
 		if t.ModelsPackage != "" {
 			result.GoType = t.ModelsPackage + "." + t.ModelName
@@ -345,7 +343,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous bool) (res
 	tpe := t.firstType(schema)
 	switch tpe {
 	case "array":
-		return t.resolveArray(schema)
+		return t.resolveArray(schema, isAnonymous)
 
 	case "file", "number", "integer", "boolean":
 		result.GoType = typeMapping[tpe]

@@ -94,11 +94,11 @@ func makeModelTemplate() *template.Template {
 	templ = template.Must(templ.New("primitivevalidator").Parse(string(assetPrimitiveValidation)))
 	templ = template.Must(templ.New("validationDocString").Parse(string(assetStuctFieldValidation)))
 	templ = template.Must(templ.New("schemaType").Parse(string(assetSchemaType)))
-	templ = template.Must(templ.New("schemaBody").Parse(string(assetSchemaBody)))
+	templ = template.Must(templ.New("body").Parse(string(assetSchemaBody)))
 	templ = template.Must(templ.New("schema").Parse(string(assetSchema)))
 	templ = template.Must(templ.New("schemavalidations").Parse(string(assetSchemaValidator)))
 	templ = template.Must(templ.New("header").Parse(string(assetHeader)))
-	templ = template.Must(templ.New("structfield").Parse(string(assetSchemaStructField)))
+	templ = template.Must(templ.New("fields").Parse(string(assetSchemaStructField)))
 	templ = template.Must(templ.New("model").Parse(string(assetSchemaStruct)))
 	return templ
 }

@@ -8,37 +8,13 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
 )
 
 // GenerateDefinition generates a model file for a schema defintion.
-// The general idea is that you should rarely see interface{} in the generated code.
-// You get a complete representation of a swagger document in somewhat idiomatic go.
-//
-// To do so there is set of mapping patterns that are applied to a spec to go types:
-//
-//    defintion of primitive => type alias/name
-//    defintion of array => type alias/name
-//    definition of map => type alias/name
-//    definition of object with properties => struct
-//    definition of ref => type alias/name
-//    object with only additional properties => map[string]T
-//    object with additional properties and properties => custom serializer
-//    schema with schema array in items => tuple (struct with properties, custom serializer)
-//    schema with all of => struct
-//      * all of schema with ref => embedded value
-//      * all of schema with properties => properties are included in struct
-//      * adding an all of schema with just "x-isnullable": true turns the schema into a pointer
-//        when there are only other extension properties provided
-//
-// JSONSchema and by extension swagger allow for items that have a fixed size array
-// with schema's describing the items at each index. This can be combined with additional items
-// to form some kind of tuple with varargs.
-// To map this to go it creates a struct that has fixed names and a custom json serializer.
-//
-// The code that is generated
 func GenerateDefinition(modelNames []string, includeModel, includeValidator bool, opts GenOpts) error {
 	// Load the spec
 	specPath, specDoc, err := loadSpec(opts.Spec)
@@ -167,6 +143,7 @@ func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *spec.Docum
 		GenSchema:      pg.GenSchema,
 		DependsOn:      pg.Dependencies,
 		DefaultImports: defaultImports,
+		ExtraSchemas:   pg.ExtraSchemas,
 	}, nil
 }
 
@@ -177,7 +154,7 @@ type GenDefinition struct {
 	Package          string
 	Imports          map[string]string
 	DefaultImports   []string
-	ExtraSchemas     []GenDefinition
+	ExtraSchemas     []GenSchema
 	DependsOn        []string
 	IncludeValidator bool
 }
@@ -206,9 +183,9 @@ type schemaGenContext struct {
 	TypeResolver       *typeResolver
 	Named              bool
 
-	GenSchema        GenSchema
-	Dependencies     []string
-	ExtraDefinitions []GenDefinition
+	GenSchema    GenSchema
+	Dependencies []string
+	ExtraSchemas []GenSchema
 }
 
 func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContext {
@@ -240,7 +217,7 @@ func (sg *schemaGenContext) shallowClone() *schemaGenContext {
 	*pg = *sg
 	pg.GenSchema = GenSchema{}
 	pg.Dependencies = nil
-	pg.ExtraDefinitions = nil
+	pg.ExtraSchemas = nil
 	pg.Named = false
 	return pg
 }
@@ -356,14 +333,41 @@ func (sg *schemaGenContext) buildItems() error {
 		sg.GenSchema.Items = []GenSchema{elProp.GenSchema}
 	} else if sg.Schema.Items != nil {
 		// This is a tuple, build a new model that represents this
-		for _, s := range sg.Schema.Items.Schemas {
-			elProp := sg.NewSliceBranch(&s)
-			if err := elProp.makeGenSchema(); err != nil {
-				return err
+		if sg.Named {
+			sg.GenSchema.Name = sg.Name
+			sg.GenSchema.GoType = swag.ToGoName(sg.Name)
+			if sg.TypeResolver.ModelsPackage != "" {
+				sg.GenSchema.GoType = sg.TypeResolver.ModelsPackage + "." + sg.GenSchema.GoType
 			}
-			sg.MergeResult(elProp)
-			sg.GenSchema.Items = append(sg.GenSchema.Items, elProp.GenSchema)
+			for i, s := range sg.Schema.Items.Schemas {
+				elProp := sg.NewSliceBranch(&s)
+				if err := elProp.makeGenSchema(); err != nil {
+					return err
+				}
+				sg.MergeResult(elProp)
+				elProp.GenSchema.Name = "p" + strconv.Itoa(i)
+				sg.GenSchema.Properties = append(sg.GenSchema.Properties, elProp.GenSchema)
+			}
+			return nil
 		}
+		// for an anonoymous object, we first build the new object
+		// and then we replace the current one with a $ref to the
+		// new tuple object
+		//var tup schemaGenContext
+		//tup = *sg
+
+		//for i, s := range sg.Schema.Items.Schemas {
+		//elProp := tup.NewSliceBranch(&s)
+		//if err := elProp.makeGenSchema(); err != nil {
+		//return err
+		//}
+		//tup.MergeResult(elProp)
+		//elProp.GenSchema.Name = "p" + strconv.Itoa(i)
+		//tup.GenSchema.Properties = append(tup.GenSchema.Properties, elProp.GenSchema)
+		//}
+		//sg.MergeResult(tup)
+		//sg.ExtraSchemas = append(sg.ExtraSchemas, tup.GenSchema)
+
 	}
 	return nil
 }
