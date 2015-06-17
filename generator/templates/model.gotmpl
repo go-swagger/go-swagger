@@ -12,4 +12,4 @@ swagger:model {{ .Name }}
 swagger:model {{ .Name }}
 */
 {{ template "schema" . }}
-{{ end }}
+{{ end }}{{ template "tupleSerializer" . }}

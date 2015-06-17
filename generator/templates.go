@@ -31,6 +31,7 @@ var (
 	assetStuctFieldValidation   = MustAsset("templates/validation/structfield.gotmpl")
 	assetModelValidator         = MustAsset("templates/modelvalidator.gotmpl")
 	assetSchemaStructField      = MustAsset("templates/structfield.gotmpl")
+	assetSchemaTupleSerializer  = MustAsset("templates/tupleserializer.gotmpl")
 	assetSchemaType             = MustAsset("templates/schematype.gotmpl")
 	assetSchemaBody             = MustAsset("templates/schemabody.gotmpl")
 	assetSchema                 = MustAsset("templates/schema.gotmpl")
@@ -99,6 +100,7 @@ func makeModelTemplate() *template.Template {
 	templ = template.Must(templ.New("schemavalidations").Parse(string(assetSchemaValidator)))
 	templ = template.Must(templ.New("header").Parse(string(assetHeader)))
 	templ = template.Must(templ.New("fields").Parse(string(assetSchemaStructField)))
+	templ = template.Must(templ.New("tupleSerializer").Parse(string(assetSchemaTupleSerializer)))
 	templ = template.Must(templ.New("model").Parse(string(assetSchemaStruct)))
 	return templ
 }

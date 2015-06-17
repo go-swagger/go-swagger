@@ -1,0 +1,43 @@
+{{ define "tupleSerializer" }}{{ if .IsTuple }}
+
+// UnmarshalJSON unmarshals this tuple type from a JSON array
+func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(data []byte) error {
+  // stage 1, get the array but just the array
+  var stage1 []json.RawMessage
+  if err := json.Unmarshal(data, &stage1); err != nil {
+    return err
+  }
+  // stage 2{{ if .HasAdditionalItems }}
+  var lastIndex int
+  {{ end }}
+  {{ range $idx, $val := .Properties }}if len(stage1) > {{ $idx }} {
+    lastIndex = {{ $idx }}
+    if err := json.Unmarshal(stage1[{{ $idx }}], &{{ $val.ReceiverName }}.{{ pascalize $val.Name }}); err != nil {
+      return err
+    }
+  }
+  {{ end }}
+  {{ if .HasAdditionalItems }}
+  for _, val := range stage1[lastIndex+1:] {
+    var toadd {{ template "schemaType" .AdditionalItems }}
+    if err := json.Unmarshal(val, &toadd); err != nil {
+      return err
+    }
+    {{ .ReceiverName }}.AdditionalItems = append({{ .ReceiverName }}.AdditionalItems, toadd)
+  }
+  {{ end }}return nil
+}
+
+// MarshalJSON marshals this tuple type into a JSON array
+func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
+  data := []interface{}{
+  {{ range .Properties }}  {{ pascalize .Name }},
+  {{ end }} }
+  {{ if .HasAdditionalItems }}
+  data = append(data, {{ .ReceiverName }}.AdditionalItems...)
+  {{ else }}
+  return json.Marshal(data)
+{{ end }}
+}
+{{ end }}
+{{ end }}
