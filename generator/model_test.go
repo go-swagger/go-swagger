@@ -430,7 +430,6 @@ func TestGenerateModel_SimpleTuple(t *testing.T) {
 			tt.template.Execute(buf, genModel)
 			res := buf.String()
 			assert.Regexp(t, regexp.MustCompile("type "+k+" struct\\s*{"), res)
-			// this would fail if it accepts additionalItems because it would come out as []interface{}
 			assert.Regexp(t, regexp.MustCompile("P0 int64 `json:\"-\"`"), res)
 			assert.Regexp(t, regexp.MustCompile("P1 string `json:\"-\"`"), res)
 			assert.Regexp(t, regexp.MustCompile("P2 strfmt.DateTime `json:\"-\"`"), res)
