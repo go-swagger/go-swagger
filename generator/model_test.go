@@ -325,8 +325,6 @@ func TestGenerateModel_WithItems(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithItems"]
-		b, _ := json.MarshalIndent(schema, "", "  ")
-		fmt.Println(string(b))
 		genModel, err := makeGenDefinition("WithItems", "models", schema, specDoc)
 		if assert.NoError(t, err) {
 			assert.Empty(t, genModel.Items)
