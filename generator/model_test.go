@@ -319,6 +319,49 @@ func TestGenerateModel_JustRef(t *testing.T) {
 	}
 }
 
+func TestGenerateModel_WithRef(t *testing.T) {
+	tt := templateTest{t, modelTemplate.Lookup("schema")}
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["WithRef"]
+		genModel, err := makeGenDefinition("WithRef", "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			assert.True(t, genModel.IsComplexObject)
+			assert.Equal(t, "WithRef", genModel.Name)
+			assert.Equal(t, "WithRef", genModel.GoType)
+			buf := bytes.NewBuffer(nil)
+			tt.template.Execute(buf, genModel)
+			res := buf.String()
+			assert.Regexp(t, regexp.MustCompile("type WithRef struct\\s*{"), res)
+			assert.Regexp(t, regexp.MustCompile("Notes Notable `json:\"notes\"`"), res)
+		}
+	}
+}
+
+func TestGenerateModel_WithNullableRef(t *testing.T) {
+	tt := templateTest{t, modelTemplate.Lookup("schema")}
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["WithNullableRef"]
+		genModel, err := makeGenDefinition("WithNullableRef", "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			assert.True(t, genModel.IsComplexObject)
+			assert.Equal(t, "WithNullableRef", genModel.Name)
+			assert.Equal(t, "WithNullableRef", genModel.GoType)
+			prop := getDefinitionProperty(genModel, "notes")
+			assert.True(t, prop.IsNullable)
+			assert.True(t, prop.IsComplexObject)
+			buf := bytes.NewBuffer(nil)
+			tt.template.Execute(buf, genModel)
+			res := buf.String()
+			assert.Regexp(t, regexp.MustCompile("type WithNullableRef struct\\s*{"), res)
+			assert.Regexp(t, regexp.MustCompile("Notes \\*Notable `json:\"notes\"`"), res)
+		}
+	}
+}
+
 func TestGenerateModel_WithItems(t *testing.T) {
 	tt := templateTest{t, modelTemplate.Lookup("schema")}
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")

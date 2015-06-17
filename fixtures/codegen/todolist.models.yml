@@ -60,6 +60,20 @@ definitions:
     additionalProperties:
       type: integer
       format: int32
+
+  WithRef:
+    type: object
+    properties:
+      notes:
+        $ref: "#/definitions/Notable"
+  WithNullableRef:
+    type: object
+    properties:
+      notes:
+        allOf:
+          - $ref: "#/definitions/Notable"
+          - x-isnullable: true
+
   WithMap:
     type: object
     properties:

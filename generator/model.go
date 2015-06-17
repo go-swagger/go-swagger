@@ -386,22 +386,11 @@ func (sg *schemaGenContext) buildXMLName() error {
 	return nil
 }
 
-func (sg *schemaGenContext) makeGenSchema() error {
-	//log.Printf("property: (path %s) (named: %t) (name %s) (receiver %s) (indexVar %s) (expr %s) required %t", sg.Path, sg.Named, sg.Name, sg.Receiver, sg.IndexVar, sg.ValueExpr, sg.Required)
-	ex := ""
-	if sg.Schema.Example != nil {
-		ex = fmt.Sprintf("%#v", sg.Schema.Example)
-	}
-	sg.GenSchema.Example = ex
-	sg.GenSchema.Path = sg.Path
-	sg.GenSchema.Name = sg.Name
-	sg.GenSchema.Title = sg.Schema.Title
-	sg.GenSchema.Description = sg.Schema.Description
-	sg.GenSchema.ReceiverName = sg.Receiver
-
+func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 	// This if block ensures that a struct gets
 	// rendered with the ref as embedded ref.
 	if sg.Named && sg.Schema.Ref.GetURL() != nil {
+		nullableOverride := sg.GenSchema.IsNullable
 		tpe := resolvedType{}
 		tpe.GoType = sg.Name
 		if sg.TypeResolver.ModelsPackage != "" {
@@ -415,18 +404,80 @@ func (sg *schemaGenContext) makeGenSchema() error {
 
 		item := sg.NewCompositionBranch(sg.Schema)
 		if err := item.makeGenSchema(); err != nil {
-			return err
+			return true, err
 		}
 		sg.GenSchema.resolvedType = tpe
+		sg.GenSchema.IsNullable = sg.GenSchema.IsNullable || nullableOverride
 		sg.GenSchema.AllOf = append(sg.GenSchema.AllOf, item.GenSchema)
+		return true, nil
+	}
+	return false, nil
+}
+
+func (sg *schemaGenContext) liftSpecialAllOf() error {
+	// if there is only a $ref or a primitive and an x-isnullable schema then this is a nullable pointer
+	if len(sg.Schema.AllOf) > 0 {
+		var seenSchema int
+		var seenNullable bool
+		var schemaToLift spec.Schema
+
+		for _, sch := range sg.Schema.AllOf {
+			tpe, err := sg.TypeResolver.ResolveSchema(&sch, true)
+			if err != nil {
+				return err
+			}
+			if sg.TypeResolver.isNullable(&sch) {
+				seenNullable = true
+			}
+			if len(sch.Type) > 0 || sch.Ref.GetURL() != nil {
+				seenSchema++
+				if (!tpe.IsAnonymous && tpe.IsComplexObject) || tpe.IsPrimitive {
+					schemaToLift = sch
+				}
+			}
+		}
+
+		if seenSchema == 1 {
+			sg.Schema = schemaToLift
+			sg.GenSchema.IsNullable = seenNullable
+		}
 		return nil
 	}
+	return nil
+}
+
+func (sg *schemaGenContext) makeGenSchema() error {
+	//log.Printf("property: (path %s) (named: %t) (name %s) (receiver %s) (indexVar %s) (expr %s) required %t", sg.Path, sg.Named, sg.Name, sg.Receiver, sg.IndexVar, sg.ValueExpr, sg.Required)
+	ex := ""
+	if sg.Schema.Example != nil {
+		ex = fmt.Sprintf("%#v", sg.Schema.Example)
+	}
+	sg.GenSchema.Example = ex
+	sg.GenSchema.Path = sg.Path
+	sg.GenSchema.Name = sg.Name
+	sg.GenSchema.Title = sg.Schema.Title
+	sg.GenSchema.Description = sg.Schema.Description
+	sg.GenSchema.ReceiverName = sg.Receiver
+
+	returns, err := sg.shortCircuitNamedRef()
+	if err != nil {
+		return err
+	}
+	if returns {
+		return nil
+	}
+
+	if err := sg.liftSpecialAllOf(); err != nil {
+		return err
+	}
+	nullableOverride := sg.GenSchema.IsNullable
 
 	tpe, err := sg.TypeResolver.ResolveSchema(&sg.Schema, !sg.Named)
 	if err != nil {
 		return err
 	}
-	//log.Printf("%+v", tpe)
+	tpe.IsNullable = tpe.IsNullable || nullableOverride
+	sg.GenSchema.resolvedType = tpe
 
 	if err := sg.buildProperties(); err != nil {
 		return nil
@@ -456,7 +507,6 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	ctx.HasSliceValidations = len(sg.GenSchema.Items) > 0 || sg.GenSchema.HasAdditionalItems || sg.GenSchema.SingleSchemaSlice
 	ctx.HasValidations = ctx.HasValidations || ctx.HasSliceValidations
 
-	sg.GenSchema.resolvedType = tpe
 	sg.GenSchema.sharedValidations = ctx
 	sg.GenSchema.ReadOnly = sg.Schema.ReadOnly
 	sg.GenSchema.ItemsLen = len(sg.GenSchema.Items)
