@@ -151,6 +151,19 @@ definitions:
           format: int64
         - type: string
 
+  WithTupleWithExtra:
+    type: object
+    properties:
+      flags:
+        type: array
+        items:
+        - type: integer
+          format: int64
+        - type: string
+        additionalItems:
+          type: number
+          format: float
+
   JustRef:
     $ref: "#/definitions/Notable"
 

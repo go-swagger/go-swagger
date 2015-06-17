@@ -517,11 +517,11 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		return err
 	}
 
-	if err := sg.buildAdditionalProperties(); err != nil {
+	if err := sg.buildXMLName(); err != nil {
 		return err
 	}
 
-	if err := sg.buildItems(); err != nil {
+	if err := sg.buildAdditionalProperties(); err != nil {
 		return err
 	}
 
@@ -529,7 +529,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		return err
 	}
 
-	if err := sg.buildXMLName(); err != nil {
+	if err := sg.buildItems(); err != nil {
 		return err
 	}
 
