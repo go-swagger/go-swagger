@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 	"text/template"
@@ -411,7 +412,7 @@ func TestGenerateModel_WithItemsAndAdditional(t *testing.T) {
 }
 
 func TestGenerateModel_SimpleTuple(t *testing.T) {
-	tt := templateTest{t, modelTemplate.Lookup("schema")}
+	tt := templateTest{t, modelTemplate}
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
@@ -429,12 +430,23 @@ func TestGenerateModel_SimpleTuple(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			tt.template.Execute(buf, genModel)
 			res := buf.String()
+			assert.Regexp(t, regexp.MustCompile("swagger:model "+k), res)
 			assert.Regexp(t, regexp.MustCompile("type "+k+" struct\\s*{"), res)
 			assert.Regexp(t, regexp.MustCompile("P0 int64 `json:\"-\"`"), res)
 			assert.Regexp(t, regexp.MustCompile("P1 string `json:\"-\"`"), res)
 			assert.Regexp(t, regexp.MustCompile("P2 strfmt.DateTime `json:\"-\"`"), res)
 			assert.Regexp(t, regexp.MustCompile("P3 Notable `json:\"-\"`"), res)
 			assert.Regexp(t, regexp.MustCompile("P4 \\*Notable `json:\"-\"`"), res)
+			assert.Regexp(t, regexp.MustCompile(k+"\\) UnmarshalJSON"), res)
+			assert.Regexp(t, regexp.MustCompile(k+"\\) MarshalJSON"), res)
+
+			for i, p := range genModel.Properties {
+				r := "m.P" + strconv.Itoa(i)
+				if !p.IsNullable {
+					r = "&" + r
+				}
+				assert.Regexp(t, regexp.MustCompile("json.Unmarshal\\(stage1\\["+strconv.Itoa(i)+"\\], "+r+"\\)"), res)
+			}
 		}
 	}
 }

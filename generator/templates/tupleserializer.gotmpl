@@ -12,7 +12,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(data []byte) error
   {{ end }}
   {{ range $idx, $val := .Properties }}if len(stage1) > {{ $idx }} {
     lastIndex = {{ $idx }}
-    if err := json.Unmarshal(stage1[{{ $idx }}], &{{ $val.ReceiverName }}.{{ pascalize $val.Name }}); err != nil {
+    if err := json.Unmarshal(stage1[{{ $idx }}], {{ if not $val.IsNullable }}&{{ end }}{{ $val.ReceiverName }}.{{ pascalize $val.Name }}); err != nil {
       return err
     }
   }
