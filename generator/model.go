@@ -277,6 +277,7 @@ func (sg *schemaGenContext) MergeResult(other *schemaGenContext) {
 		sg.GenSchema.HasValidations = other.GenSchema.HasValidations
 	}
 	sg.Dependencies = append(sg.Dependencies, other.Dependencies...)
+	sg.ExtraSchemas = append(sg.ExtraSchemas, other.ExtraSchemas...)
 }
 
 func (sg *schemaGenContext) buildProperties() error {
@@ -353,21 +354,34 @@ func (sg *schemaGenContext) buildItems() error {
 		// for an anonoymous object, we first build the new object
 		// and then we replace the current one with a $ref to the
 		// new tuple object
-		//var tup schemaGenContext
-		//tup = *sg
+		var tup schemaGenContext
+		tup = *sg
+		tup.GenSchema.IsTuple = true
+		tup.GenSchema.IsComplexObject = false
+		tup.GenSchema.Name = swag.ToGoName(sg.GenSchema.Name)
+		if sg.TypeResolver.ModelName != "" {
+			tup.GenSchema.Name = swag.ToGoName(sg.TypeResolver.ModelName + " " + tup.GenSchema.Name)
+		}
+		tup.GenSchema.GoType = tup.GenSchema.Name
+		if sg.TypeResolver.ModelsPackage != "" {
+			tup.GenSchema.GoType = sg.TypeResolver.ModelsPackage + "." + tup.GenSchema.Name
+		}
 
-		//for i, s := range sg.Schema.Items.Schemas {
-		//elProp := tup.NewSliceBranch(&s)
-		//if err := elProp.makeGenSchema(); err != nil {
-		//return err
-		//}
-		//tup.MergeResult(elProp)
-		//elProp.GenSchema.Name = "p" + strconv.Itoa(i)
-		//tup.GenSchema.Properties = append(tup.GenSchema.Properties, elProp.GenSchema)
-		//}
-		//sg.MergeResult(tup)
-		//sg.ExtraSchemas = append(sg.ExtraSchemas, tup.GenSchema)
+		sg.GenSchema.IsComplexObject = true
+		sg.GenSchema.IsTuple = false
+		sg.GenSchema.GoType = tup.GenSchema.GoType
 
+		for i, s := range sg.Schema.Items.Schemas {
+			elProp := tup.NewSliceBranch(&s)
+			if err := elProp.makeGenSchema(); err != nil {
+				return err
+			}
+			tup.MergeResult(elProp)
+			elProp.GenSchema.Name = "p" + strconv.Itoa(i)
+			tup.GenSchema.Properties = append(tup.GenSchema.Properties, elProp.GenSchema)
+		}
+		sg.MergeResult(&tup)
+		sg.ExtraSchemas = append(sg.ExtraSchemas, tup.GenSchema)
 	}
 	return nil
 }

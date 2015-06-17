@@ -33,7 +33,7 @@ func TestGenerateModel_Sanity(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 
-		k := "TupleWithExtra"
+		k := "WithTuple"
 		schema := definitions[k]
 		//for k, schema := range definitions {
 		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
@@ -247,7 +247,7 @@ func TestGenerateModel_Primitives(t *testing.T) {
 		if val.IsNullable {
 			exp = exp[1:]
 		}
-		tt.assertRender(val, "type TheType "+exp+"\n\n")
+		tt.assertRender(val, "type TheType "+exp+"\n\n\n")
 	}
 }
 
@@ -496,6 +496,59 @@ func TestGenerateModel_TupleWithExtra(t *testing.T) {
 			assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Unmarshal(val, &toadd)")), res)
 			assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Marshal(data)")), res)
 			assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("data = append(data, m.AdditionalItems...)")), res)
+		}
+	}
+}
+
+func TestGenerateModel_WithTuple(t *testing.T) {
+	tt := templateTest{t, modelTemplate}
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "WithTuple"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) && assert.NotEmpty(t, genModel.ExtraSchemas) && assert.NotEmpty(t, genModel.Properties) {
+			assert.False(t, genModel.IsTuple)
+			assert.True(t, genModel.IsComplexObject)
+			assert.False(t, genModel.IsArray)
+			assert.False(t, genModel.IsAnonymous)
+
+			sch := genModel.ExtraSchemas[0]
+			assert.True(t, sch.IsTuple)
+			assert.False(t, sch.IsComplexObject)
+			assert.False(t, sch.IsArray)
+			assert.False(t, sch.IsAnonymous)
+			assert.Equal(t, k+"Flags", sch.Name)
+
+			prop := genModel.Properties[0]
+			assert.False(t, genModel.IsTuple)
+			assert.True(t, genModel.IsComplexObject)
+			assert.False(t, prop.IsArray)
+			assert.False(t, prop.IsAnonymous)
+			assert.Equal(t, k+"Flags", prop.GoType)
+			assert.Equal(t, "flags", prop.Name)
+			buf := bytes.NewBuffer(nil)
+			err := tt.template.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				res := buf.String()
+				assert.Regexp(t, regexp.MustCompile("swagger:model "+k+"Flags"), res)
+				assert.Regexp(t, regexp.MustCompile("type "+k+"Flags struct\\s*{"), res)
+				assert.Regexp(t, regexp.MustCompile("P0 int64 `json:\"-\"`"), res)
+				assert.Regexp(t, regexp.MustCompile("P1 string `json:\"-\"`"), res)
+				assert.Regexp(t, regexp.MustCompile(k+"Flags\\) UnmarshalJSON"), res)
+				assert.Regexp(t, regexp.MustCompile(k+"Flags\\) MarshalJSON"), res)
+				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Marshal(data)")), res)
+
+				for i, p := range sch.Properties {
+					r := "m.P" + strconv.Itoa(i)
+					if !p.IsNullable {
+						r = "&" + r
+					}
+					assert.Regexp(t, regexp.MustCompile("json.Unmarshal\\(stage1\\["+strconv.Itoa(i)+"\\], "+r+"\\)"), res)
+					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("P"+strconv.Itoa(i)+",")), res)
+				}
+			}
 		}
 	}
 }

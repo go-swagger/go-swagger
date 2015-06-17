@@ -141,6 +141,15 @@ definitions:
       type: number
       format: double
 
+  WithTuple:
+    type: object
+    properties:
+      flags:
+        type: array
+        items:
+        - type: integer
+          format: int64
+        - type: string
 
   JustRef:
     $ref: "#/definitions/Notable"
