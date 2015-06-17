@@ -13,7 +13,20 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
-// GenerateDefinition generates a model file for a schema defintion
+// GenerateDefinition generates a model file for a schema defintion.
+//
+//    defintion of primitive => type alias/name
+//    defintion of array => type alias/name
+//    definition of map => type alias/name
+//    definition of object with properties => struct
+//    definition of ref => type alias/name
+//    object with only additional properties => map[string]T
+//    object with additional properties and properties => custom serializer
+//    schema with schema array in items => tuple (struct with properties, custom serializer)
+//    schema with all of => struct
+//      * all of schema with ref => embedded value
+//      * all of schema with properties => properties are included in struct
+//      * adding an all of schema with just "x-isnullable": true turns the schema into a pointer
 func GenerateDefinition(modelNames []string, includeModel, includeValidator bool, opts GenOpts) error {
 	// Load the spec
 	specPath, specDoc, err := loadSpec(opts.Spec)
