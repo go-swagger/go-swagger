@@ -109,6 +109,45 @@ definitions:
           maxLength: 10
           pattern: "\\w+"
 
+  NamedNestedArray:
+    type: array
+    minItems: 3
+    maxItems: 10
+    items:
+      type: array
+      minItems: 3
+      maxItems: 10
+      items:
+        minItems: 3
+        maxItems: 10
+        type: array
+        items:
+          type: string
+          minLength: 3
+          maxLength: 10
+          pattern: "\\w+"
+
+  NestedArrayValidations:
+    type: object
+    properties:
+      tags:
+        type: array
+        minItems: 3
+        maxItems: 10
+        items:
+          type: array
+          minItems: 3
+          maxItems: 10
+          items:
+            minItems: 3
+            maxItems: 10
+            type: array
+            items:
+              type: string
+              minLength: 3
+              maxLength: 10
+              pattern: "\\w+"
+
   StringValidationsAllOf:
     type: object
     allOf:

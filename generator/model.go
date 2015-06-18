@@ -566,6 +566,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	}
 	sg.GenSchema.Example = ex
 	sg.GenSchema.Path = sg.Path
+	sg.GenSchema.IndexVar = sg.IndexVar
 	sg.GenSchema.Location = "body"
 	sg.GenSchema.ValueExpression = sg.ValueExpr
 	sg.GenSchema.Name = sg.Name
@@ -642,6 +643,7 @@ type GenSchema struct {
 	Name                    string
 	Path                    string
 	ValueExpression         string
+	IndexVar                string
 	Title                   string
 	Description             string
 	Location                string

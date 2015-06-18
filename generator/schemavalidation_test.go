@@ -105,9 +105,9 @@ func TestSchemaValidation_StringProps(t *testing.T) {
 						res := string(formatted)
 						assertInCode(t, k+") Validate(formats", res)
 						assertInCode(t, "m.validateName(formats", res)
-						assertInCode(t, "err := validate.MinLength(\"name", res)
-						assertInCode(t, "err := validate.MaxLength(\"name", res)
-						assertInCode(t, "err := validate.Pattern(\"name", res)
+						assertInCode(t, "err := validate.MinLength(\"name\",", res)
+						assertInCode(t, "err := validate.MaxLength(\"name\",", res)
+						assertInCode(t, "err := validate.Pattern(\"name\",", res)
 						assertInCode(t, "errors.CompositeValidationError(res...)", res)
 					}
 				}
@@ -162,9 +162,9 @@ func TestSchemaValidation_NumberProps(t *testing.T) {
 						res := string(formatted)
 						assertInCode(t, k+") Validate(formats", res)
 						assertInCode(t, "m.validateAge(formats", res)
-						assertInCode(t, "err := validate.Minimum(\"age", res)
-						assertInCode(t, "err := validate.Maximum(\"age", res)
-						assertInCode(t, "err := validate.MultipleOf(\"age", res)
+						assertInCode(t, "err := validate.Minimum(\"age\",", res)
+						assertInCode(t, "err := validate.Maximum(\"age\",", res)
+						assertInCode(t, "err := validate.MultipleOf(\"age\",", res)
 						assertInCode(t, "errors.CompositeValidationError(res...)", res)
 					}
 				}
@@ -191,9 +191,9 @@ func TestSchemaValidation_NamedArray(t *testing.T) {
 						assertInCode(t, k+") Validate(formats", res)
 						assertInCode(t, "err := validate.MinItems(\"\"", res)
 						assertInCode(t, "err := validate.MaxItems(\"\"", res)
-						assertInCode(t, "err := validate.MinLength(strconv.Itoa(i)", res)
-						assertInCode(t, "err := validate.MaxLength(strconv.Itoa(i)", res)
-						assertInCode(t, "err := validate.Pattern(strconv.Itoa(i)", res)
+						assertInCode(t, "err := validate.MinLength(strconv.Itoa(i),", res)
+						assertInCode(t, "err := validate.MaxLength(strconv.Itoa(i),", res)
+						assertInCode(t, "err := validate.Pattern(strconv.Itoa(i),", res)
 						assertInCode(t, "errors.CompositeValidationError(res...)", res)
 					}
 				}
@@ -222,9 +222,83 @@ func TestSchemaValidation_ArrayProps(t *testing.T) {
 						assertInCode(t, "m.validateTags(formats", res)
 						assertInCode(t, "err := validate.MinItems(\"tags\"", res)
 						assertInCode(t, "err := validate.MaxItems(\"tags\"", res)
-						assertInCode(t, "err := validate.MinLength(\"tags\"+\".\"+strconv.Itoa(i)", res)
-						assertInCode(t, "err := validate.MaxLength(\"tags\"+\".\"+strconv.Itoa(i)", res)
-						assertInCode(t, "err := validate.Pattern(\"tags\"+\".\"+strconv.Itoa(i)", res)
+						assertInCode(t, "err := validate.MinLength(\"tags\"+\".\"+strconv.Itoa(i),", res)
+						assertInCode(t, "err := validate.MaxLength(\"tags\"+\".\"+strconv.Itoa(i),", res)
+						assertInCode(t, "err := validate.Pattern(\"tags\"+\".\"+strconv.Itoa(i),", res)
+						assertInCode(t, "errors.CompositeValidationError(res...)", res)
+					}
+				}
+			}
+		}
+	}
+}
+
+func TestSchemaValidation_NamedNestedArray(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "NamedNestedArray"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			if assertValidation(t, "", "m", gm.GenSchema) {
+				buf := bytes.NewBuffer(nil)
+				err := modelTemplate.Execute(buf, gm)
+				if assert.NoError(t, err) {
+					formatted, err := formatGoFile("named_nested_array.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(formatted)
+						assertInCode(t, k+") Validate(formats", res)
+						assertInCode(t, "iNamedNestedArraySize := int64(len(m))", res)
+						assertInCode(t, "iiNamedNestedArraySize := int64(len(m[i]))", res)
+						assertInCode(t, "iiiNamedNestedArraySize := int64(len(m[i][ii]))", res)
+						assertInCode(t, "err := validate.MinItems(\"\"", res)
+						assertInCode(t, "err := validate.MaxItems(\"\"", res)
+						assertInCode(t, "err := validate.MinItems(strconv.Itoa(i),", res)
+						assertInCode(t, "err := validate.MaxItems(strconv.Itoa(i),", res)
+						assertInCode(t, "err := validate.MinItems(strconv.Itoa(i)+\".\"+strconv.Itoa(ii),", res)
+						assertInCode(t, "err := validate.MaxItems(strconv.Itoa(i)+\".\"+strconv.Itoa(ii),", res)
+						assertInCode(t, "err := validate.MinLength(strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii),", res)
+						assertInCode(t, "err := validate.MaxLength(strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii),", res)
+						assertInCode(t, "err := validate.Pattern(strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii),", res)
+						assertInCode(t, "errors.CompositeValidationError(res...)", res)
+					}
+				}
+			}
+		}
+	}
+}
+
+func TestSchemaValidation_NestedArrayProps(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "NestedArrayValidations"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			prop := gm.Properties[0]
+			if assertValidation(t, "\"tags\"", "m.Tags", prop) {
+				buf := bytes.NewBuffer(nil)
+				err := modelTemplate.Execute(buf, gm)
+				if assert.NoError(t, err) {
+					formatted, err := formatGoFile("nested_array_validations.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(formatted)
+						assertInCode(t, k+") Validate(formats", res)
+						assertInCode(t, "m.validateTags(formats", res)
+						assertInCode(t, "iTagsSize := int64(len(m.Tags))", res)
+						assertInCode(t, "iiTagsSize := int64(len(m.Tags[i]))", res)
+						assertInCode(t, "iiiTagsSize := int64(len(m.Tags[i][ii]))", res)
+						assertInCode(t, "err := validate.MinItems(\"tags\"", res)
+						assertInCode(t, "err := validate.MaxItems(\"tags\"", res)
+						assertInCode(t, "err := validate.MinItems(\"tags\"+\".\"+strconv.Itoa(i),", res)
+						assertInCode(t, "err := validate.MaxItems(\"tags\"+\".\"+strconv.Itoa(i),", res)
+						assertInCode(t, "err := validate.MinItems(\"tags\"+\".\"+strconv.Itoa(i)+\".\"+strconv.Itoa(ii),", res)
+						assertInCode(t, "err := validate.MaxItems(\"tags\"+\".\"+strconv.Itoa(i)+\".\"+strconv.Itoa(ii),", res)
+						assertInCode(t, "err := validate.MinLength(\"tags\"+\".\"+strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii),", res)
+						assertInCode(t, "err := validate.MaxLength(\"tags\"+\".\"+strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii),", res)
+						assertInCode(t, "err := validate.Pattern(\"tags\"+\".\"+strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii),", res)
 						assertInCode(t, "errors.CompositeValidationError(res...)", res)
 					}
 				}

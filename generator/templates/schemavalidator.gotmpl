@@ -1,22 +1,22 @@
 {{define "primitivefieldvalidator"}}
 {{if .Required}}
-if err := validate.Required({{ printf "%q" .Path }}, {{ printf "%q" .Location }}, {{ if not .IsAnonymous }}{{ .GoType }}({{end}}{{.ValueExpression}}{{ if not .IsAnonymous }}){{end}}); err != nil {
+if err := validate.Required({{ .Path }}, {{ printf "%q" .Location }}, {{ if not .IsAnonymous }}{{ .GoType }}({{end}}{{.ValueExpression}}{{ if not .IsAnonymous }}){{end}}); err != nil {
   return err
 }
 {{end}}
 {{ template "primitivevalidator" . }}
 {{end}}
 {{define "slicevalidator"}}
-{{if .NeedsSize}}
-{{ camelize .Name }}Size := int64(len({{.ValueExpression}}))
+{{if or .MinItems .MaxItems }}
+{{ .IndexVar }}{{ pascalize .Name }}Size := int64(len({{.ValueExpression}}))
 {{end}}
 {{if .MinItems}}
-if err := validate.MinItems({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ camelize .Name }}Size, {{.MinItems}}); err != nil {
+if err := validate.MinItems({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ .IndexVar }}{{ pascalize .Name }}Size, {{.MinItems}}); err != nil {
   return err
 }
 {{end}}
 {{if .MaxItems}}
-if err := validate.MaxItems({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ camelize .Name }}Size, {{.MaxItems}}); err != nil {
+if err := validate.MaxItems({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ .IndexVar }}{{ pascalize .Name }}Size, {{.MaxItems}}); err != nil {
   return err
 }
 {{end}}
@@ -32,7 +32,7 @@ if err := validate.Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%
 {{end}}
 {{if .SingleSchemaSlice }}
 // single schema {{.ValueExpression}}
-for i := 0; i < len({{.ValueExpression}}); i++ {
+for {{.IndexVar}} := 0; {{.IndexVar}} < {{ .IndexVar }}{{ pascalize .Name }}Size; {{.IndexVar}}++ {
 {{range .Items}}
   {{template "propertyvalidator" .}}
 {{end}}
@@ -43,12 +43,12 @@ for i := 0; i < len({{.ValueExpression}}); i++ {
   {{template "propertyvalidator" .}}
 {{end}}
 {{if .AdditionalItems}}
-  for i := {{.ItemsLen}}; i  < (len({{.ValueExpression}}) - {{.ItemsLen}}) - 1; i ++ {
+  for {{.IndexVar}} := 0; {{.IndexVar}}  < (len({{.ValueExpression}}) - {{.ItemsLen}}) - 1; {{.IndexVar}} ++ {
     {{template "propertyvalidator" .}}
   }
 {{else}}
 if len({{.ValueExpression}}) > {{.ItemsLen}} {
-  return errors.AdditionalItemsNotAllowed({{ printf "%q" .Path }}, {{ printf "%q" .Location }})
+  return errors.AdditionalItemsNotAllowed({{ .Path }}, {{ printf "%q" .Location }})
 }
 {{end}}{{end}}{{end}}
 {{define "objectvalidator"}}{{ if not .IsAnonymous }}
