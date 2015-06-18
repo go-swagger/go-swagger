@@ -2,7 +2,6 @@ package generator
 
 import (
 	"bytes"
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -33,31 +32,32 @@ func TestGenerateModel_Sanity(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 
-		k := "Comment"
-		schema := definitions[k]
-		//for k, schema := range definitions {
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		//k := "Comment"
+		//schema := definitions[k]
+		for k, schema := range definitions {
+			genModel, err := makeGenDefinition(k, "models", schema, specDoc)
 
-		if assert.NoError(t, err) {
-			//b, _ := json.MarshalIndent(genModel, "", "  ")
-			//fmt.Println(string(b))
-			rendered := bytes.NewBuffer(nil)
-
-			err := modelTemplate.Execute(rendered, genModel)
 			if assert.NoError(t, err) {
-				if assert.NoError(t, err) {
-					formatted, err := formatGoFile(strings.ToLower(k)+".go", rendered.Bytes())
-					if assert.NoError(t, err) {
-						fmt.Println(string(formatted))
-					} else {
-						fmt.Println(rendered.String())
-						//break
-					}
+				//b, _ := json.MarshalIndent(genModel, "", "  ")
+				//fmt.Println(string(b))
+				rendered := bytes.NewBuffer(nil)
 
-					//assert.EqualValues(t, strings.TrimSpace(string(expected)), strings.TrimSpace(string(formatted)))
+				err := modelTemplate.Execute(rendered, genModel)
+				if assert.NoError(t, err) {
+					if assert.NoError(t, err) {
+						_, err := formatGoFile(strings.ToLower(k)+".go", rendered.Bytes())
+						assert.NoError(t, err)
+						//if assert.NoError(t, err) {
+						//fmt.Println(string(formatted))
+						//} else {
+						//fmt.Println(rendered.String())
+						////break
+						//}
+
+						//assert.EqualValues(t, strings.TrimSpace(string(expected)), strings.TrimSpace(string(formatted)))
+					}
 				}
 			}
-			//}
 		}
 	}
 }

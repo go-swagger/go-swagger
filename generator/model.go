@@ -418,6 +418,7 @@ func (sg *schemaGenContext) buildItems() error {
 			}
 			return nil
 		}
+
 		// for an anonoymous object, first build the new object
 		// and then replace the current one with a $ref to the
 		// new tuple object
