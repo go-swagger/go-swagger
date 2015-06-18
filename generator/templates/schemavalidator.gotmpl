@@ -11,22 +11,22 @@ if err := validate.Required({{ printf "%q" .Path }}, {{ printf "%q" .Location }}
 {{ camelize .Name }}Size := int64(len({{.ValueExpression}}))
 {{end}}
 {{if .MinItems}}
-if err := validate.MinItems({{ printf "%q" .Path }}, {{ printf "%q" .Location }}, {{ camelize .Name }}Size, {{.MinItems}}); err != nil {
+if err := validate.MinItems({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ camelize .Name }}Size, {{.MinItems}}); err != nil {
   return err
 }
 {{end}}
 {{if .MaxItems}}
-if err := validate.MaxItems({{ printf "%q" .Path }}, {{ printf "%q" .Location }}, {{ camelize .Name }}Size, {{.MaxItems}}); err != nil {
+if err := validate.MaxItems({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ camelize .Name }}Size, {{.MaxItems}}); err != nil {
   return err
 }
 {{end}}
 {{if .UniqueItems}}
-if err := validate.UniqueItems({{ printf "%q" .Path }}, {{ printf "%q" .Location }}, {{.ValueExpression}}); err != nil {
+if err := validate.UniqueItems({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{.ValueExpression}}); err != nil {
   return err
 }
 {{end}}
 {{if .Enum}}
-if err := validate.Enum({{ printf "%q" .Path }}, {{ printf "%q" .Location }}, {{.ValueExpression}}, {{.Enum}}); err != nil {
+if err := validate.Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{.ValueExpression}}, {{.Enum}}); err != nil {
   return err
 }
 {{end}}

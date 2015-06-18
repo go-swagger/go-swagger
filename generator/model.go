@@ -192,7 +192,11 @@ type schemaGenContext struct {
 func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContext {
 	pg := sg.shallowClone()
 	indexVar := pg.IndexVar
-	pg.Path = pg.Path + "." + indexVar
+	if pg.Path == "" {
+		pg.Path = "strconv.Itoa(" + indexVar + ")"
+	} else {
+		pg.Path = pg.Path + "+ \".\" + strconv.Itoa(" + indexVar + ")"
+	}
 	pg.IndexVar = indexVar + "i"
 	pg.ValueExpr = pg.ValueExpr + "[" + indexVar + "]"
 	pg.Schema = *schema
@@ -202,9 +206,10 @@ func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContex
 
 func (sg *schemaGenContext) NewStructBranch(name string, schema spec.Schema) *schemaGenContext {
 	pg := sg.shallowClone()
-	pg.Path = pg.Path + "." + name
 	if sg.Path == "" {
-		pg.Path = name
+		pg.Path = fmt.Sprintf("%q", name)
+	} else {
+		pg.Path = pg.Path + "+\".\"+" + fmt.Sprintf("%q", name)
 	}
 	pg.Name = name
 	pg.ValueExpr = pg.ValueExpr + "." + swag.ToGoName(name)

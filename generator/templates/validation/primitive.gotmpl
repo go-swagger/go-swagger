@@ -1,35 +1,35 @@
 {{if .MinLength}}
-if err := validate.MinLength({{ printf "%q" .Path }}, {{ printf "%q" .Location }}, string({{.ValueExpression}}), {{.MinLength}}); err != nil {
+if err := validate.MinLength({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, string({{.ValueExpression}}), {{.MinLength}}); err != nil {
   return err
 }
 {{end}}
 {{if .MaxLength}}
-if err := validate.MaxLength({{ printf "%q" .Path }}, {{ printf "%q" .Location }}, string({{.ValueExpression}}), {{.MaxLength}}); err != nil {
+if err := validate.MaxLength({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, string({{.ValueExpression}}), {{.MaxLength}}); err != nil {
   return err
 }
 {{end}}
 {{if .Pattern}}
-if err := validate.Pattern({{ printf "%q" .Path }}, {{ printf "%q" .Location }}, string({{.ValueExpression}}), `{{.Pattern}}`); err != nil {
+if err := validate.Pattern({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, string({{.ValueExpression}}), `{{.Pattern}}`); err != nil {
   return err
 }
 {{end}}
 {{if .Minimum}}
-if err := validate.Minimum({{ printf "%q" .Path }}, {{ printf "%q" .Location }}, float64({{.ValueExpression}}), {{.Minimum}}, {{.ExclusiveMinimum}}); err != nil {
+if err := validate.Minimum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, float64({{.ValueExpression}}), {{.Minimum}}, {{.ExclusiveMinimum}}); err != nil {
   return err
 }
 {{end}}
 {{if .Maximum}}
-if err := validate.Maximum({{ printf "%q" .Path }}, {{ printf "%q" .Location }}, float64({{.ValueExpression}}), {{.Maximum}}, {{.ExclusiveMaximum}}); err != nil {
+if err := validate.Maximum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, float64({{.ValueExpression}}), {{.Maximum}}, {{.ExclusiveMaximum}}); err != nil {
   return err
 }
 {{end}}
 {{if .MultipleOf}}
-if err := validate.MultipleOf({{ printf "%q" .Path }}, {{ printf "%q" .Location }}, float64({{.ValueExpression}}), {{.MultipleOf}}); err != nil {
+if err := validate.MultipleOf({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, float64({{.ValueExpression}}), {{.MultipleOf}}); err != nil {
   return err
 }
 {{end}}
 {{if .Enum}}
-if err := validate.Enum({{ printf "%q" .Path }}, {{ printf "%q" .Location }}, {{.ValueExpression}}, {{.Enum}}); err != nil {
+if err := validate.Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{.ValueExpression}}, {{.Enum}}); err != nil {
   return err
 }
 {{end}}

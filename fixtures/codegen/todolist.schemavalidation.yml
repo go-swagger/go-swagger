@@ -86,6 +86,29 @@ definitions:
         maximum: 500
         multipleOf: 1.5
 
+  NamedArray:
+    type: array
+    minItems: 3
+    maxItems: 10
+    items:
+      minLength: 3
+      maxLength: 10
+      pattern: "\\w+"
+      type: string
+
+  ArrayValidations:
+    type: object
+    properties:
+      tags:
+        type: array
+        minItems: 3
+        maxItems: 10
+        items:
+          type: string
+          minLength: 3
+          maxLength: 10
+          pattern: "\\w+"
+
   StringValidationsAllOf:
     type: object
     allOf:

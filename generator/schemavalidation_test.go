@@ -96,7 +96,7 @@ func TestSchemaValidation_StringProps(t *testing.T) {
 		gm, err := makeGenDefinition(k, "models", schema, specDoc)
 		if assert.NoError(t, err) {
 			prop := gm.Properties[0]
-			if assertValidation(t, "name", "m.Name", prop) {
+			if assertValidation(t, "\"name\"", "m.Name", prop) {
 				buf := bytes.NewBuffer(nil)
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
@@ -153,7 +153,7 @@ func TestSchemaValidation_NumberProps(t *testing.T) {
 		gm, err := makeGenDefinition(k, "models", schema, specDoc)
 		if assert.NoError(t, err) {
 			prop := gm.Properties[0]
-			if assertValidation(t, "age", "m.Age", prop) {
+			if assertValidation(t, "\"age\"", "m.Age", prop) {
 				buf := bytes.NewBuffer(nil)
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
@@ -165,6 +165,66 @@ func TestSchemaValidation_NumberProps(t *testing.T) {
 						assertInCode(t, "err := validate.Minimum(\"age", res)
 						assertInCode(t, "err := validate.Maximum(\"age", res)
 						assertInCode(t, "err := validate.MultipleOf(\"age", res)
+						assertInCode(t, "errors.CompositeValidationError(res...)", res)
+					}
+				}
+			}
+		}
+	}
+}
+
+func TestSchemaValidation_NamedArray(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "NamedArray"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			if assertValidation(t, "", "m", gm.GenSchema) {
+				buf := bytes.NewBuffer(nil)
+				err := modelTemplate.Execute(buf, gm)
+				if assert.NoError(t, err) {
+					formatted, err := formatGoFile("named_array.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(formatted)
+						assertInCode(t, k+") Validate(formats", res)
+						assertInCode(t, "err := validate.MinItems(\"\"", res)
+						assertInCode(t, "err := validate.MaxItems(\"\"", res)
+						assertInCode(t, "err := validate.MinLength(strconv.Itoa(i)", res)
+						assertInCode(t, "err := validate.MaxLength(strconv.Itoa(i)", res)
+						assertInCode(t, "err := validate.Pattern(strconv.Itoa(i)", res)
+						assertInCode(t, "errors.CompositeValidationError(res...)", res)
+					}
+				}
+			}
+		}
+	}
+}
+
+func TestSchemaValidation_ArrayProps(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "ArrayValidations"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			prop := gm.Properties[0]
+			if assertValidation(t, "\"tags\"", "m.Tags", prop) {
+				buf := bytes.NewBuffer(nil)
+				err := modelTemplate.Execute(buf, gm)
+				if assert.NoError(t, err) {
+					formatted, err := formatGoFile("array_validations.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(formatted)
+						assertInCode(t, k+") Validate(formats", res)
+						assertInCode(t, "m.validateTags(formats", res)
+						assertInCode(t, "err := validate.MinItems(\"tags\"", res)
+						assertInCode(t, "err := validate.MaxItems(\"tags\"", res)
+						assertInCode(t, "err := validate.MinLength(\"tags\"+\".\"+strconv.Itoa(i)", res)
+						assertInCode(t, "err := validate.MaxLength(\"tags\"+\".\"+strconv.Itoa(i)", res)
+						assertInCode(t, "err := validate.Pattern(\"tags\"+\".\"+strconv.Itoa(i)", res)
 						assertInCode(t, "errors.CompositeValidationError(res...)", res)
 					}
 				}
