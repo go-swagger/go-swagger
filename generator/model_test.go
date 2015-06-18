@@ -353,12 +353,12 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := buf.String()
 					assert.Regexp(t, regexp.MustCompile("type "+k+" struct\\s*{"), res)
-					assert.Regexp(t, regexp.MustCompile("Data "+k+"Data `json:\"data\"`"), res)
-					assert.Regexp(t, regexp.MustCompile("type "+k+"Data struct\\s*{"), res)
+					assert.Regexp(t, regexp.MustCompile("Data "+k+"DataAddedProps0 `json:\"data\"`"), res)
+					assert.Regexp(t, regexp.MustCompile("type "+k+"DataAddedProps0 struct\\s*{"), res)
 					assert.Regexp(t, regexp.MustCompile("AdditionalProperties map\\[string\\]string `json:\"-\"`"), res)
 					assert.Regexp(t, regexp.MustCompile("Name string `json:\"name\"`"), res)
-					assert.Regexp(t, regexp.MustCompile(k+"Data\\) UnmarshalJSON"), res)
-					assert.Regexp(t, regexp.MustCompile(k+"Data\\) MarshalJSON"), res)
+					assert.Regexp(t, regexp.MustCompile(k+"DataAddedProps0\\) UnmarshalJSON"), res)
+					assert.Regexp(t, regexp.MustCompile(k+"DataAddedProps0\\) MarshalJSON"), res)
 					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Marshal(m)")), res)
 					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Marshal(m.AdditionalProperties)")), res)
 					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Unmarshal(data, &stage1)")), res)
@@ -698,26 +698,30 @@ func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
 }
 
 func TestGenerateModel_WithAllOf(t *testing.T) {
-	tt := templateTest{t, modelTemplate.Lookup("schema")}
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithAllOf"]
 		genModel, err := makeGenDefinition("WithAllOf", "models", schema, specDoc)
 		if assert.NoError(t, err) {
-			assert.Len(t, genModel.AllOf, 3)
+			assert.Len(t, genModel.AllOf, 4)
 			assert.True(t, genModel.AllOf[1].HasAdditionalProperties)
 			assert.True(t, genModel.IsComplexObject)
 			assert.Equal(t, "WithAllOf", genModel.Name)
 			assert.Equal(t, "WithAllOf", genModel.GoType)
 			buf := bytes.NewBuffer(nil)
-			tt.template.Execute(buf, genModel)
-			res := buf.String()
-			assert.Regexp(t, regexp.MustCompile("type WithAllOf struct\\s*{"), res)
-			assert.Regexp(t, regexp.MustCompile("Notable"), res)
-			assert.Regexp(t, regexp.MustCompile("Title string `json:\"title\"`"), res)
-			assert.Regexp(t, regexp.MustCompile("Body string `json:\"body\"`"), res)
-			assert.Regexp(t, regexp.MustCompile("AdditionalProperties map\\[string\\]int32 `json:\"-\"`"), res)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				res := buf.String()
+				assert.Regexp(t, regexp.MustCompile("type WithAllOf struct\\s*{"), res)
+				assert.Regexp(t, regexp.MustCompile("type WithAllOfAddedProps2 struct\\s*{"), res)
+				assert.Regexp(t, regexp.MustCompile("Notable"), res)
+				assert.Regexp(t, regexp.MustCompile("Title string `json:\"title\"`"), res)
+				assert.Regexp(t, regexp.MustCompile("Body string `json:\"body\"`"), res)
+				assert.Regexp(t, regexp.MustCompile("Name string `json:\"name\"`"), res)
+				assert.Regexp(t, regexp.MustCompile("AdditionalProperties map\\[string\\]int32 `json:\"-\"`"), res)
+				assert.Regexp(t, regexp.MustCompile("AdditionalProperties map\\[string\\]int64 `json:\"-\"`"), res)
+			}
 		}
 	}
 }

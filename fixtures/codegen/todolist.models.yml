@@ -187,6 +187,13 @@ definitions:
           format: int32
       - type: object
         properties:
+          name:
+            type: string
+        additionalProperties:
+          type: integer
+          format: int64
+      - type: object
+        properties:
           title:
             type: string
             minLength: 5
@@ -203,6 +210,13 @@ definitions:
     allOf:
       - $ref: "#/definitions/Notable"
       - type: object
+        additionalProperties:
+          type: integer
+          format: int32
+      - type: object
+        properties:
+          name:
+            type: string
         additionalProperties:
           type: integer
           format: int32

@@ -182,6 +182,7 @@ type schemaGenContext struct {
 	AdditionalProperty bool
 	TypeResolver       *typeResolver
 	Named              bool
+	Index              int
 
 	GenSchema    GenSchema
 	Dependencies []string
@@ -219,12 +220,15 @@ func (sg *schemaGenContext) shallowClone() *schemaGenContext {
 	pg.Dependencies = nil
 	pg.ExtraSchemas = nil
 	pg.Named = false
+	pg.Index = 0
 	return pg
 }
 
-func (sg *schemaGenContext) NewCompositionBranch(schema spec.Schema) *schemaGenContext {
+func (sg *schemaGenContext) NewCompositionBranch(schema spec.Schema, index int) *schemaGenContext {
 	pg := sg.shallowClone()
 	pg.Schema = schema
+	pg.Name = ""
+	pg.Index = index
 	return pg
 }
 
@@ -293,8 +297,8 @@ func (sg *schemaGenContext) buildProperties() error {
 }
 
 func (sg *schemaGenContext) buildAllOf() error {
-	for _, sch := range sg.Schema.AllOf {
-		comprop := sg.NewCompositionBranch(sch)
+	for i, sch := range sg.Schema.AllOf {
+		comprop := sg.NewCompositionBranch(sch, i)
 		if err := comprop.makeGenSchema(); err != nil {
 			return err
 		}
@@ -335,7 +339,7 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 			additionalProps.Dependencies = nil
 			additionalProps.ExtraSchemas = nil
 			additionalProps.Named = true
-			additionalProps.Name = swag.ToGoName(sg.TypeResolver.ModelName + " " + sg.GenSchema.Name)
+			additionalProps.Name = swag.ToGoName(sg.GenSchema.Name + " AddedProps" + strconv.Itoa(sg.Index))
 			ex := ""
 			if additionalProps.Schema.Example != nil {
 				ex = fmt.Sprintf("%#v", additionalProps.Schema.Example)
@@ -346,7 +350,7 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 			additionalProps.ExtraSchemas = nil
 			additionalProps.Dependencies = nil
 			if sg.TypeResolver.ModelName != "" {
-				additionalProps.GenSchema.Name = swag.ToGoName(sg.TypeResolver.ModelName + " " + additionalProps.GenSchema.Name)
+				additionalProps.GenSchema.Name = swag.ToGoName(sg.TypeResolver.ModelName + " " + additionalProps.Name)
 			}
 			additionalProps.GenSchema.GoType = additionalProps.GenSchema.Name
 			if sg.TypeResolver.ModelsPackage != "" {
@@ -359,6 +363,7 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 				return err
 			}
 
+			// rewrite to be a ref instead of a complex object
 			sg.GenSchema.IsComplexObject = true
 			sg.GenSchema.IsAnonymous = false
 			sg.GenSchema.IsAdditionalProperties = false
@@ -491,7 +496,7 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 		tpe.IsMap = false
 		tpe.IsAnonymous = false
 
-		item := sg.NewCompositionBranch(sg.Schema)
+		item := sg.NewCompositionBranch(sg.Schema, 0)
 		if err := item.makeGenSchema(); err != nil {
 			return true, err
 		}

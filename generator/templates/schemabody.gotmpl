@@ -1,10 +1,13 @@
 {{ define "schemaBody" }}struct {
   {{ range .AllOf }}
   {{ if .IsAnonymous }}{{ range .Properties }}
-  {{ template "structfield" . }}
+  {{ if $.IsTuple }}{{ template "tuplefield" . }}{{ else }}{{template "structfield" . }}{{ end }}
   {{ end }}{{ if .HasAdditionalProperties }}/* {{ template "docstring" .AdditionalProperties }}{{ template "propertyValidationDocString" .AdditionalProperties}} */
   AdditionalProperties map[string]{{ if .AdditionalProperties }}{{ template "schemaType" .AdditionalProperties }}{{ else }}interface{}{{ end }} `json:"-"`
   {{end}}
+  {{ if .HasAdditionalItems }}/* {{ template "docstring" .AdditionalItems }}{{ template "propertyValidationDocString" .AdditionalItems}} */
+  AdditionalItems []{{ if .AdditionalItems }}{{ template "schemaType" .AdditionalItems }}{{ else }}[]interface{}{{ end }} `json:"-"`
+  {{ end }}
   {{ else }}
   {{if .IsNullable }}*{{ end }}{{ .GoType }}{{ end }}
   {{ end }}
