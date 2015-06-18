@@ -227,7 +227,10 @@ func (sg *schemaGenContext) shallowClone() *schemaGenContext {
 func (sg *schemaGenContext) NewCompositionBranch(schema spec.Schema, index int) *schemaGenContext {
 	pg := sg.shallowClone()
 	pg.Schema = schema
-	pg.Name = ""
+	pg.Name = "AO" + strconv.Itoa(index)
+	if sg.Name != sg.TypeResolver.ModelName {
+		pg.Name = sg.Name + pg.Name
+	}
 	pg.Index = index
 	return pg
 }
@@ -422,7 +425,8 @@ func (sg *schemaGenContext) buildItems() error {
 		tup = *sg
 		tup.GenSchema.IsTuple = true
 		tup.GenSchema.IsComplexObject = false
-		tup.GenSchema.Name = swag.ToGoName(sg.GenSchema.Name)
+		tup.GenSchema.Name = swag.ToGoName(sg.GenSchema.Name + "Tuple" + strconv.Itoa(sg.Index))
+		tup.Name = tup.GenSchema.Name
 		if sg.TypeResolver.ModelName != "" {
 			tup.GenSchema.Name = swag.ToGoName(sg.TypeResolver.ModelName + " " + tup.GenSchema.Name)
 		}

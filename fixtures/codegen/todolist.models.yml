@@ -192,6 +192,21 @@ definitions:
         additionalProperties:
           type: integer
           format: int64
+      - type: array
+        items:
+        - type: number
+          format: float
+        - type: string
+          format: date-time
+      - type: array
+        items:
+        - type: number
+          format: double
+        - type: string
+          format: date
+        additionalItems:
+          type: string
+          format: password
       - type: object
         properties:
           title:
@@ -220,6 +235,12 @@ definitions:
         additionalProperties:
           type: integer
           format: int32
+      - type: array
+        items:
+        - type: integer
+          format: int64
+        - type: string
+          format: date-time
       - type: object
         properties:
           id:
@@ -260,6 +281,19 @@ definitions:
                   format: int32
               - type: object
                 properties:
+                  name:
+                    type: string
+                additionalProperties:
+                  type: integer
+                  format: int32
+              - type: array
+                items:
+                - type: integer
+                  format: int64
+                - type: string
+                  format: date-time
+              - type: object
+                properties:
                   title:
                     type: string
                     minLength: 5
@@ -268,4 +302,13 @@ definitions:
                     type: string
                     minLength: 5
                     maxLength: 2048
+                  scores:
+                    $ref: "#/definitions/Scores"
+                  age:
+                    $ref: "#/definitions/Age"
+                  latestTag:
+                    type: object
+                    allOf:
+                      - $ref: "#/definitions/Tag"
+                      - x-isnullable: true
 

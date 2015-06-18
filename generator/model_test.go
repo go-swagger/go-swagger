@@ -598,7 +598,7 @@ func TestGenerateModel_WithTuple(t *testing.T) {
 			assert.False(t, sch.IsComplexObject)
 			assert.False(t, sch.IsArray)
 			assert.False(t, sch.IsAnonymous)
-			assert.Equal(t, k+"Flags", sch.Name)
+			assert.Equal(t, k+"FlagsTuple0", sch.Name)
 			assert.False(t, sch.HasAdditionalItems)
 			assert.Nil(t, sch.AdditionalItems)
 
@@ -607,18 +607,18 @@ func TestGenerateModel_WithTuple(t *testing.T) {
 			assert.True(t, genModel.IsComplexObject)
 			assert.False(t, prop.IsArray)
 			assert.False(t, prop.IsAnonymous)
-			assert.Equal(t, k+"Flags", prop.GoType)
+			assert.Equal(t, k+"FlagsTuple0", prop.GoType)
 			assert.Equal(t, "flags", prop.Name)
 			buf := bytes.NewBuffer(nil)
 			err := tt.template.Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assert.Regexp(t, regexp.MustCompile("swagger:model "+k+"Flags"), res)
-				assert.Regexp(t, regexp.MustCompile("type "+k+"Flags struct\\s*{"), res)
+				assert.Regexp(t, regexp.MustCompile("type "+k+"FlagsTuple0 struct\\s*{"), res)
 				assert.Regexp(t, regexp.MustCompile("P0 int64 `json:\"-\"`"), res)
 				assert.Regexp(t, regexp.MustCompile("P1 string `json:\"-\"`"), res)
-				assert.Regexp(t, regexp.MustCompile(k+"Flags\\) UnmarshalJSON"), res)
-				assert.Regexp(t, regexp.MustCompile(k+"Flags\\) MarshalJSON"), res)
+				assert.Regexp(t, regexp.MustCompile(k+"FlagsTuple0\\) UnmarshalJSON"), res)
+				assert.Regexp(t, regexp.MustCompile(k+"FlagsTuple0\\) MarshalJSON"), res)
 				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Marshal(data)")), res)
 
 				for i, p := range sch.Properties {
@@ -653,7 +653,7 @@ func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
 			assert.False(t, sch.IsComplexObject)
 			assert.False(t, sch.IsArray)
 			assert.False(t, sch.IsAnonymous)
-			assert.Equal(t, k+"Flags", sch.Name)
+			assert.Equal(t, k+"FlagsTuple0", sch.Name)
 			assert.True(t, sch.HasAdditionalItems)
 			assert.NotEmpty(t, sch.AdditionalItems)
 
@@ -662,19 +662,19 @@ func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
 			assert.True(t, genModel.IsComplexObject)
 			assert.False(t, prop.IsArray)
 			assert.False(t, prop.IsAnonymous)
-			assert.Equal(t, k+"Flags", prop.GoType)
+			assert.Equal(t, k+"FlagsTuple0", prop.GoType)
 			assert.Equal(t, "flags", prop.Name)
 			buf := bytes.NewBuffer(nil)
 			err := tt.template.Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assert.Regexp(t, regexp.MustCompile("swagger:model "+k+"Flags"), res)
-				assert.Regexp(t, regexp.MustCompile("type "+k+"Flags struct\\s*{"), res)
+				assert.Regexp(t, regexp.MustCompile("type "+k+"FlagsTuple0 struct\\s*{"), res)
 				assert.Regexp(t, regexp.MustCompile("P0 int64 `json:\"-\"`"), res)
 				assert.Regexp(t, regexp.MustCompile("P1 string `json:\"-\"`"), res)
 				assert.Regexp(t, regexp.MustCompile("AdditionalItems \\[\\]float32 `json:\"-\"`"), res)
-				assert.Regexp(t, regexp.MustCompile(k+"Flags\\) UnmarshalJSON"), res)
-				assert.Regexp(t, regexp.MustCompile(k+"Flags\\) MarshalJSON"), res)
+				assert.Regexp(t, regexp.MustCompile(k+"FlagsTuple0\\) UnmarshalJSON"), res)
+				assert.Regexp(t, regexp.MustCompile(k+"FlagsTuple0\\) MarshalJSON"), res)
 				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Marshal(data)")), res)
 
 				for i, p := range sch.Properties {
@@ -704,7 +704,7 @@ func TestGenerateModel_WithAllOf(t *testing.T) {
 		schema := definitions["WithAllOf"]
 		genModel, err := makeGenDefinition("WithAllOf", "models", schema, specDoc)
 		if assert.NoError(t, err) {
-			assert.Len(t, genModel.AllOf, 4)
+			assert.Len(t, genModel.AllOf, 6)
 			assert.True(t, genModel.AllOf[1].HasAdditionalProperties)
 			assert.True(t, genModel.IsComplexObject)
 			assert.Equal(t, "WithAllOf", genModel.Name)
@@ -714,11 +714,18 @@ func TestGenerateModel_WithAllOf(t *testing.T) {
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assert.Regexp(t, regexp.MustCompile("type WithAllOf struct\\s*{"), res)
-				assert.Regexp(t, regexp.MustCompile("type WithAllOfAddedProps2 struct\\s*{"), res)
+				assert.Regexp(t, regexp.MustCompile("type WithAllOfAO2AddedProps2 struct\\s*{"), res)
+				assert.Regexp(t, regexp.MustCompile("type WithAllOfAO3Tuple3 struct\\s*{"), res)
+				assert.Regexp(t, regexp.MustCompile("type WithAllOfAO4Tuple4 struct\\s*{"), res)
 				assert.Regexp(t, regexp.MustCompile("Notable"), res)
 				assert.Regexp(t, regexp.MustCompile("Title string `json:\"title\"`"), res)
 				assert.Regexp(t, regexp.MustCompile("Body string `json:\"body\"`"), res)
 				assert.Regexp(t, regexp.MustCompile("Name string `json:\"name\"`"), res)
+				assert.Regexp(t, regexp.MustCompile("P0 float32 `json:\"-\"`"), res)
+				assert.Regexp(t, regexp.MustCompile("P0 float64 `json:\"-\"`"), res)
+				assert.Regexp(t, regexp.MustCompile("P1 strfmt.DateTime `json:\"-\"`"), res)
+				assert.Regexp(t, regexp.MustCompile("P1 strfmt.Date `json:\"-\"`"), res)
+				assert.Regexp(t, regexp.MustCompile("AdditionalItems \\[\\]strfmt.Password `json:\"-\"`"), res)
 				assert.Regexp(t, regexp.MustCompile("AdditionalProperties map\\[string\\]int32 `json:\"-\"`"), res)
 				assert.Regexp(t, regexp.MustCompile("AdditionalProperties map\\[string\\]int64 `json:\"-\"`"), res)
 			}
