@@ -24,33 +24,48 @@ paths:
         default:
           description: Generic Out
 definitions:
+  RequiredProps:
+    type: object
+    required:
+      - id
+      - name
+      - createdAt
+      - age
+      - score
+      - tags
+    properties:
+      id:
+        type: integer
+        format: int64
+      name:
+        type: string
+      createdAt:
+        type: string
+        format: date-time
+      age:
+        type: integer
+        format: int32
+      score:
+        type: number
+        format: float
+      tags:
+        type: array
+        items:
+          type: string
   NamedString:
     type: string
     minLength: 2
     maxLength: 50
     Pattern: "[A-Za-z0-9][\\w- ]+"
+
   StringValidations:
     type: "object"
-    required:
-      - name
     properties:
       name:
         type: string
         minLength: 2
         maxLength: 50
         Pattern: "[A-Za-z0-9][\\w- ]+"
-  StringValidationsAllOF:
-    type: object
-    allOf:
-    - type: object
-      required:
-      - name
-      properties:
-        name:
-          type: string
-          minLength: 2
-          maxLength: 50
-          Pattern: "[A-Za-z0-9][\\w- ]+"
 
   NamedNumber:
     type: integer
@@ -70,6 +85,17 @@ definitions:
         exclusiveMinimum: true
         maximum: 500
         multipleOf: 1.5
+
+  StringValidationsAllOf:
+    type: object
+    allOf:
+    - type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 50
+          Pattern: "[A-Za-z0-9][\\w- ]+"
 
   NestedObject:
     type: object

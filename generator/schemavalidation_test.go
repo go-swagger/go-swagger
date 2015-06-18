@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/swag"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -28,6 +29,35 @@ func assertValidation(t testing.TB, pth, expr string, gm GenSchema) bool {
 		return false
 	}
 	return true
+}
+
+func TestSchemaValidation_RequiredProps(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "RequiredProps"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			assert.Len(t, gm.Properties, 6)
+			for _, p := range gm.Properties {
+				if assert.True(t, p.Required) {
+					buf := bytes.NewBuffer(nil)
+					err := modelTemplate.Execute(buf, gm)
+					if assert.NoError(t, err) {
+						formatted, err := formatGoFile("required_props.go", buf.Bytes())
+						if assert.NoError(t, err) {
+							res := string(formatted)
+							assertInCode(t, k+") Validate(formats", res)
+							assertInCode(t, "validate"+swag.ToGoName(p.Name), res)
+							assertInCode(t, "err := validate.Required", res)
+							assertInCode(t, "errors.CompositeValidationError(res...)", res)
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 func TestSchemaValidation_Strings(t *testing.T) {

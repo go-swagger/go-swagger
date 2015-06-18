@@ -209,7 +209,12 @@ func (sg *schemaGenContext) NewStructBranch(name string, schema spec.Schema) *sc
 	pg.Name = name
 	pg.ValueExpr = pg.ValueExpr + "." + swag.ToGoName(name)
 	pg.Schema = schema
-	pg.Required = swag.ContainsStringsCI(schema.Required, name)
+	for _, fn := range sg.Schema.Required {
+		if name == fn {
+			pg.Required = true
+			break
+		}
+	}
 	return pg
 }
 
@@ -247,7 +252,7 @@ func (sg *schemaGenContext) schemaValidations() sharedValidations {
 	model := sg.Schema
 
 	isRequired := sg.Required
-	if sg.Schema.Default != nil {
+	if sg.Schema.Default != nil || sg.Schema.ReadOnly {
 		isRequired = false
 	}
 	hasNumberValidation := model.Maximum != nil || model.Minimum != nil || model.MultipleOf != nil
