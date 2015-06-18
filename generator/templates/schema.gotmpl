@@ -5,5 +5,5 @@
 {{ else if .IsAdditionalProperties }}
 {{ template "additionalPropertiesSerializer" . }}
 {{ end }}{{if .HasValidations }}
-// render validations here
+{{ template "schemavalidator" . }}
 {{ end }}

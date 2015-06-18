@@ -115,7 +115,7 @@ func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *spec.Docum
 		Doc:           specDoc,
 	}
 	pg := schemaGenContext{
-		Path:         "",
+		Path:         receiver,
 		Name:         name,
 		Receiver:     receiver,
 		IndexVar:     "i",
@@ -239,6 +239,7 @@ func (sg *schemaGenContext) NewAdditionalProperty(schema spec.Schema) *schemaGen
 	pg := sg.shallowClone()
 	pg.Schema = schema
 	pg.Name = "additionalProperties"
+	pg.ValueExpr = pg.ValueExpr + ".AdditionalProperties"
 	return pg
 }
 
@@ -435,6 +436,8 @@ func (sg *schemaGenContext) buildItems() error {
 		if sg.TypeResolver.ModelsPackage != "" {
 			tup.GenSchema.GoType = sg.TypeResolver.ModelsPackage + "." + tup.GenSchema.Name
 		}
+		tup.GenSchema.Title = tup.GenSchema.Name + " a representation of an anonymous Tuple type"
+		tup.GenSchema.Description = ""
 
 		sg.GenSchema.IsComplexObject = true
 		sg.GenSchema.IsTuple = false
@@ -553,6 +556,8 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	}
 	sg.GenSchema.Example = ex
 	sg.GenSchema.Path = sg.Path
+	sg.GenSchema.Location = "body"
+	sg.GenSchema.ValueExpression = sg.ValueExpr
 	sg.GenSchema.Name = sg.Name
 	sg.GenSchema.Title = sg.Schema.Title
 	sg.GenSchema.Description = sg.Schema.Description
@@ -627,6 +632,7 @@ type GenSchema struct {
 	Example                 string
 	Name                    string
 	Path                    string
+	ValueExpression         string
 	Title                   string
 	Description             string
 	Location                string

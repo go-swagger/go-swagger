@@ -1,0 +1,72 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: Private to-do list
+  description: |
+    A very simple api description that makes a json only API to submit to do's.
+
+produces:
+  - application/json
+
+consumes:
+  - application/json
+
+paths:
+  /models:
+    get:
+      operationId: modelOp
+      summary: many model variations
+      description: Used to see if a codegen can render all the possible parameter variations for a header param
+      tags:
+        - testcgen
+      responses:
+        default:
+          description: Generic Out
+definitions:
+  NamedString:
+    type: string
+    minLength: 2
+    maxLength: 50
+    Pattern: "[A-Za-z0-9][\\w- ]+"
+  StringValidations:
+    type: "object"
+    required:
+      - name
+    properties:
+      name:
+        type: string
+        minLength: 2
+        maxLength: 50
+        Pattern: "[A-Za-z0-9][\\w- ]+"
+      meta:
+        type: object
+        properties:
+          first:
+            type: string
+            minLength: 2
+            maxLength: 50
+            Pattern: "^\\w+"
+  StringValidationsAllOF:
+    type: object
+    allOf:
+    - type: object
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 50
+          Pattern: "[A-Za-z0-9][\\w- ]+"
+
+  NumberValidations:
+    type: object
+    properties:
+      age:
+        type: integer
+        format: int32
+        min: 0
+        exclusiveMinimum: true
+        max: 500
+
