@@ -76,8 +76,18 @@ definitions:
   Age:
     type: integer
     format: int32
+
   Nota:
     type: object
+    additionalProperties:
+      type: integer
+      format: int32
+
+  NotaWithName:
+    type: object
+    properties:
+      name:
+        type: string
     additionalProperties:
       type: integer
       format: int32

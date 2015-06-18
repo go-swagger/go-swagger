@@ -231,7 +231,6 @@ func (sg *schemaGenContext) NewCompositionBranch(schema spec.Schema) *schemaGenC
 func (sg *schemaGenContext) NewAdditionalProperty(schema spec.Schema) *schemaGenContext {
 	pg := sg.shallowClone()
 	pg.Schema = schema
-	pg.AdditionalProperty = true
 	pg.Name = "additionalProperties"
 	return pg
 }
@@ -307,18 +306,78 @@ func (sg *schemaGenContext) buildAllOf() error {
 
 func (sg *schemaGenContext) buildAdditionalProperties() error {
 	if sg.Schema.AdditionalProperties != nil {
-		sg.GenSchema.IsAdditionalProperties = sg.AdditionalProperty
-
-		addp := sg.Schema.AdditionalProperties
+		addp := *sg.Schema.AdditionalProperties
 		sg.GenSchema.HasAdditionalProperties = addp.Allows || addp.Schema != nil
+		// flag swap
+		if sg.GenSchema.IsComplexObject {
+			sg.GenSchema.IsAdditionalProperties = sg.GenSchema.IsComplexObject
+			sg.GenSchema.IsComplexObject = sg.GenSchema.IsMap
+		}
+
 		if addp.Schema != nil {
-			comprop := sg.NewAdditionalProperty(*addp.Schema)
-			if err := comprop.makeGenSchema(); err != nil {
+			if sg.GenSchema.IsMap || (sg.GenSchema.IsAdditionalProperties && sg.Named) {
+				comprop := sg.NewAdditionalProperty(*addp.Schema)
+				if err := comprop.makeGenSchema(); err != nil {
+					return err
+				}
+				sg.MergeResult(comprop)
+				sg.GenSchema.AdditionalProperties = &comprop.GenSchema
+				return nil
+			}
+		}
+
+		if sg.GenSchema.IsAdditionalProperties && !sg.Named {
+			// for an anonoymous object, first build the new object
+			// and then replace the current one with a $ref to the
+			// new object
+			var additionalProps schemaGenContext
+			additionalProps = *sg
+			additionalProps.Dependencies = nil
+			additionalProps.ExtraSchemas = nil
+			additionalProps.Named = true
+			additionalProps.Name = swag.ToGoName(sg.TypeResolver.ModelName + " " + sg.GenSchema.Name)
+			ex := ""
+			if additionalProps.Schema.Example != nil {
+				ex = fmt.Sprintf("%#v", additionalProps.Schema.Example)
+			}
+			additionalProps.GenSchema.Example = ex
+			additionalProps.GenSchema.Path = ""
+			additionalProps.GenSchema.Name = swag.ToGoName(sg.GenSchema.Name)
+			additionalProps.ExtraSchemas = nil
+			additionalProps.Dependencies = nil
+			if sg.TypeResolver.ModelName != "" {
+				additionalProps.GenSchema.Name = swag.ToGoName(sg.TypeResolver.ModelName + " " + additionalProps.GenSchema.Name)
+			}
+			additionalProps.GenSchema.GoType = additionalProps.GenSchema.Name
+			if sg.TypeResolver.ModelsPackage != "" {
+				additionalProps.GenSchema.GoType = sg.TypeResolver.ModelsPackage + "." + additionalProps.GenSchema.Name
+			}
+			additionalProps.GenSchema.Title = additionalProps.GenSchema.Name + " a wrapper to serialize additional properties"
+			additionalProps.GenSchema.Description = ""
+			additionalProps.GenSchema.Properties = nil
+			if err := (&additionalProps).buildProperties(); err != nil {
 				return err
 			}
-			sg.MergeResult(comprop)
-			sg.GenSchema.AdditionalProperties = &comprop.GenSchema
+
+			sg.GenSchema.IsComplexObject = true
+			sg.GenSchema.IsAnonymous = false
+			sg.GenSchema.IsAdditionalProperties = false
+			sg.GenSchema.HasAdditionalProperties = false
+			sg.GenSchema.AdditionalProperties = nil
+			sg.GenSchema.Properties = nil
+			sg.GenSchema.GoType = additionalProps.GenSchema.GoType
+			if addp.Schema != nil {
+				comprop := additionalProps.NewAdditionalProperty(*addp.Schema)
+				if err := comprop.makeGenSchema(); err != nil {
+					return err
+				}
+				additionalProps.MergeResult(comprop)
+				additionalProps.GenSchema.AdditionalProperties = &comprop.GenSchema
+			}
+
+			sg.ExtraSchemas = append(sg.ExtraSchemas, additionalProps.GenSchema)
 		}
+
 	}
 	return nil
 }
@@ -351,8 +410,8 @@ func (sg *schemaGenContext) buildItems() error {
 			}
 			return nil
 		}
-		// for an anonoymous object, we first build the new object
-		// and then we replace the current one with a $ref to the
+		// for an anonoymous object, first build the new object
+		// and then replace the current one with a $ref to the
 		// new tuple object
 		var tup schemaGenContext
 		tup = *sg
@@ -513,15 +572,15 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		return nil
 	}
 
+	if err := sg.buildAdditionalProperties(); err != nil {
+		return err
+	}
+
 	if err := sg.buildAllOf(); err != nil {
 		return err
 	}
 
 	if err := sg.buildXMLName(); err != nil {
-		return err
-	}
-
-	if err := sg.buildAdditionalProperties(); err != nil {
 		return err
 	}
 

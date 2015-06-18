@@ -1,5 +1,4 @@
-{{ define "tupleSerializer" }}{{ if .IsTuple }}
-
+{{ define "tupleSerializer" }}
 // UnmarshalJSON unmarshals this tuple type from a JSON array
 func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(data []byte) error {
   // stage 1, get the array but just the array
@@ -38,5 +37,4 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
   {{ end }}
   return json.Marshal(data)
 }
-{{ end }}
 {{ end }}

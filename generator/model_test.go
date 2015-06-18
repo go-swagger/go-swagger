@@ -33,7 +33,7 @@ func TestGenerateModel_Sanity(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 
-		k := "WithTuple"
+		k := "Comment"
 		schema := definitions[k]
 		//for k, schema := range definitions {
 		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
@@ -185,12 +185,6 @@ Unique: true
 `+"SomeName string `json:\"some name\"`\n")
 }
 
-// TODO:
-// * Tuples, Tuples with AdditionalItems
-// * Slices with additional items
-// * Embedded Structs
-// * Schemas for simple types
-
 var schTypeGenDataSimple = []struct {
 	Value    GenSchema
 	Expected string
@@ -226,6 +220,7 @@ var schTypeGenDataSimple = []struct {
 	{GenSchema{resolvedType: resolvedType{GoType: "interface{}", IsInterface: true}}, "interface{}"},
 	{GenSchema{resolvedType: resolvedType{GoType: "[]int32", IsArray: true}}, "[]int32"},
 	{GenSchema{resolvedType: resolvedType{GoType: "[]string", IsArray: true}}, "[]string"},
+	{GenSchema{resolvedType: resolvedType{GoType: "map[string]int32", IsMap: true}}, "map[string]int32"},
 	{GenSchema{resolvedType: resolvedType{GoType: "models.Task", IsComplexObject: true, IsNullable: true, IsAnonymous: false}}, "*models.Task"},
 }
 
@@ -247,7 +242,62 @@ func TestGenerateModel_Primitives(t *testing.T) {
 		if val.IsNullable {
 			exp = exp[1:]
 		}
-		tt.assertRender(val, "type TheType "+exp+"\n\n\n")
+		tt.assertRender(val, "type TheType "+exp+"\n\n")
+	}
+}
+
+func TestGenerateModel_Nota(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "Nota"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				res := buf.String()
+				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("type Nota map[string]int32")), res)
+			}
+		}
+	}
+}
+
+func TestGenerateModel_NotaWithName(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "NotaWithName"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			assert.True(t, genModel.IsAdditionalProperties)
+			assert.False(t, genModel.IsComplexObject)
+			assert.False(t, genModel.IsMap)
+			assert.False(t, genModel.IsAnonymous)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				res := buf.String()
+				assert.Regexp(t, regexp.MustCompile("type "+k+" struct\\s*{"), res)
+				assert.Regexp(t, regexp.MustCompile("AdditionalProperties map\\[string\\]int32 `json:\"-\"`"), res)
+				assert.Regexp(t, regexp.MustCompile("Name string `json:\"name\"`"), res)
+				assert.Regexp(t, regexp.MustCompile(k+"\\) UnmarshalJSON"), res)
+				assert.Regexp(t, regexp.MustCompile(k+"\\) MarshalJSON"), res)
+				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Marshal(m)")), res)
+				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Marshal(m.AdditionalProperties)")), res)
+				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Unmarshal(data, &stage1)")), res)
+				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Unmarshal(data, &stage2)")), res)
+				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Unmarshal(v, &toadd)")), res)
+				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("result[k] = toadd")), res)
+				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("m.AdditionalProperties = result")), res)
+				for _, p := range genModel.Properties {
+					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("delete(stage2, \""+p.Name+"\")")), res)
+				}
+
+			}
+		}
 	}
 }
 
@@ -274,26 +324,53 @@ func TestGenerateModel_MapRef(t *testing.T) {
 }
 
 func TestGenerateModel_WithAdditional(t *testing.T) {
-	tt := templateTest{t, modelTemplate.Lookup("schema")}
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
-		schema := definitions["WithAdditional"]
-		genModel, err := makeGenDefinition("WithAdditional", "models", schema, specDoc)
-		if assert.NoError(t, err) {
+		k := "WithAdditional"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) && assert.NotEmpty(t, genModel.ExtraSchemas) {
 			assert.False(t, genModel.HasAdditionalProperties)
-			prop := getDefinitionProperty(genModel, "data")
-			assert.True(t, prop.HasAdditionalProperties)
-			assert.False(t, prop.IsMap)
-			assert.True(t, prop.IsComplexObject)
-			buf := bytes.NewBuffer(nil)
-			tt.template.Execute(buf, genModel)
-			res := buf.String()
-			assert.Regexp(t, regexp.MustCompile("type WithAdditional struct\\s*{"), res)
-			assert.Regexp(t, regexp.MustCompile("Data struct\\s*{"), res)
-			assert.Regexp(t, regexp.MustCompile("AdditionalProperties map\\[string\\]string `json:\"-\"`"), res)
-			assert.Regexp(t, regexp.MustCompile("Name string `json:\"name\"`"), res)
-			assert.Regexp(t, regexp.MustCompile("} `json:\"data\"`"), res)
+			assert.False(t, genModel.IsMap)
+			assert.False(t, genModel.IsAdditionalProperties)
+			assert.True(t, genModel.IsComplexObject)
+
+			sch := genModel.ExtraSchemas[0]
+			assert.True(t, sch.HasAdditionalProperties)
+			assert.False(t, sch.IsMap)
+			assert.True(t, sch.IsAdditionalProperties)
+			assert.False(t, sch.IsComplexObject)
+
+			if assert.NotNil(t, sch.AdditionalProperties) {
+				prop := findProperty(genModel.Properties, "data")
+				assert.False(t, prop.HasAdditionalProperties)
+				assert.False(t, prop.IsMap)
+				assert.False(t, prop.IsAdditionalProperties)
+				assert.True(t, prop.IsComplexObject)
+				buf := bytes.NewBuffer(nil)
+				err := modelTemplate.Execute(buf, genModel)
+				if assert.NoError(t, err) {
+					res := buf.String()
+					assert.Regexp(t, regexp.MustCompile("type "+k+" struct\\s*{"), res)
+					assert.Regexp(t, regexp.MustCompile("Data "+k+"Data `json:\"data\"`"), res)
+					assert.Regexp(t, regexp.MustCompile("type "+k+"Data struct\\s*{"), res)
+					assert.Regexp(t, regexp.MustCompile("AdditionalProperties map\\[string\\]string `json:\"-\"`"), res)
+					assert.Regexp(t, regexp.MustCompile("Name string `json:\"name\"`"), res)
+					assert.Regexp(t, regexp.MustCompile(k+"Data\\) UnmarshalJSON"), res)
+					assert.Regexp(t, regexp.MustCompile(k+"Data\\) MarshalJSON"), res)
+					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Marshal(m)")), res)
+					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Marshal(m.AdditionalProperties)")), res)
+					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Unmarshal(data, &stage1)")), res)
+					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Unmarshal(data, &stage2)")), res)
+					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Unmarshal(v, &toadd)")), res)
+					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("result[k] = toadd")), res)
+					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("m.AdditionalProperties = result")), res)
+					for _, p := range sch.Properties {
+						assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("delete(stage2, \""+p.Name+"\")")), res)
+					}
+				}
+			}
 		}
 	}
 }
@@ -645,11 +722,15 @@ func TestGenerateModel_WithAllOf(t *testing.T) {
 	}
 }
 
-func getDefinitionProperty(genModel *GenDefinition, name string) *GenSchema {
-	for _, p := range genModel.Properties {
+func findProperty(properties []GenSchema, name string) *GenSchema {
+	for _, p := range properties {
 		if p.Name == name {
 			return &p
 		}
 	}
 	return nil
+}
+
+func getDefinitionProperty(genModel *GenDefinition, name string) *GenSchema {
+	return findProperty(genModel.Properties, name)
 }
