@@ -43,27 +43,26 @@ for i := 0; i < len({{.ValueExpression}}); i++ {
   {{template "propertyvalidator" .}}
 {{end}}
 {{if .AdditionalItems}}
-  for i := {{.ItemsLen}}; i  < (len() - {{.ItemsLen}}) - 1; i ++ {
+  for i := {{.ItemsLen}}; i  < (len({{.ValueExpression}}) - {{.ItemsLen}}) - 1; i ++ {
     {{template "propertyvalidator" .}}
   }
 {{else}}
 if len({{.ValueExpression}}) > {{.ItemsLen}} {
-  return errors.AdditionalItemsNotAllowed("{{.ValueExpression}}", "{{.Location}}")
+  return errors.AdditionalItemsNotAllowed({{ printf "%q" .Path }}, {{ printf "%q" .Location }})
 }
-{{end}}
-{{end}}
-{{end}}
-{{define "objectvalidator"}}
-// custom object {{.DataType}}
+{{end}}{{end}}{{end}}
+{{define "objectvalidator"}}{{ if not .IsAnonymous }}
 if err := {{.ValueExpression}}.Validate(formats); err != nil {
   return err
 }
-{{end}}
+{{ else }}
+// validate fields of this thing somehow
+{{end}}{{end}}
 {{define "propertyvalidator"}}
 {{if .IsPrimitive}}{{template "primitivefieldvalidator" .}}
 {{else if .IsCustomFormatter}}{{template "customformatvalidator" .}}
-{{else if .IsContainer}}{{template "slicevalidator" .}}
-{{else if .IsComplexObject}}{{template "objectvalidator" .}}{{end}}
+{{else if .IsArray}}{{template "slicevalidator" .}}
+{{else if or .IsComplexObject .IsTuple .IsAdditionalProperties }}{{template "objectvalidator" .}}{{end}}
 {{end}}
 {{define "schemavalidator" }}
 // Validate validates this {{ humanize .Name }}

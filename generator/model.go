@@ -115,7 +115,7 @@ func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *spec.Docum
 		Doc:           specDoc,
 	}
 	pg := schemaGenContext{
-		Path:         receiver,
+		Path:         "",
 		Name:         name,
 		Receiver:     receiver,
 		IndexVar:     "i",
@@ -562,6 +562,8 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.Title = sg.Schema.Title
 	sg.GenSchema.Description = sg.Schema.Description
 	sg.GenSchema.ReceiverName = sg.Receiver
+	sg.GenSchema.sharedValidations = sg.schemaValidations()
+	sg.GenSchema.ReadOnly = sg.Schema.ReadOnly
 
 	returns, err := sg.shortCircuitNamedRef()
 	if err != nil {
@@ -607,12 +609,9 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		return err
 	}
 
-	ctx := sg.schemaValidations()
-	ctx.HasSliceValidations = len(sg.GenSchema.Items) > 0 || sg.GenSchema.HasAdditionalItems || sg.GenSchema.SingleSchemaSlice
-	ctx.HasValidations = ctx.HasValidations || ctx.HasSliceValidations
+	//ctx.HasSliceValidations = len(sg.GenSchema.Items) > 0 || sg.GenSchema.HasAdditionalItems || sg.GenSchema.SingleSchemaSlice
+	//ctx.HasValidations = ctx.HasValidations || ctx.HasSliceValidations
 
-	sg.GenSchema.sharedValidations = ctx
-	sg.GenSchema.ReadOnly = sg.Schema.ReadOnly
 	sg.GenSchema.ItemsLen = len(sg.GenSchema.Items)
 
 	return nil

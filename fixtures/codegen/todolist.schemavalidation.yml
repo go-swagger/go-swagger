@@ -39,14 +39,6 @@ definitions:
         minLength: 2
         maxLength: 50
         Pattern: "[A-Za-z0-9][\\w- ]+"
-      meta:
-        type: object
-        properties:
-          first:
-            type: string
-            minLength: 2
-            maxLength: 50
-            Pattern: "^\\w+"
   StringValidationsAllOF:
     type: object
     allOf:
@@ -60,13 +52,34 @@ definitions:
           maxLength: 50
           Pattern: "[A-Za-z0-9][\\w- ]+"
 
+  NamedNumber:
+    type: integer
+    format: int32
+    minimum: 0
+    exclusiveMinimum: true
+    maximum: 500
+    multipleOf: 1.5
+
   NumberValidations:
     type: object
     properties:
       age:
         type: integer
         format: int32
-        min: 0
+        minimum: 0
         exclusiveMinimum: true
-        max: 500
+        maximum: 500
+        multipleOf: 1.5
+
+  NestedObject:
+    type: object
+    properties:
+      meta:
+        type: object
+        properties:
+          first:
+            type: string
+            minLength: 2
+            maxLength: 50
+            Pattern: "^\\w+"
 

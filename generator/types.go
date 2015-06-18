@@ -210,6 +210,7 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema) (returns bool, result 
 			result.GoType = tpe
 			result.IsPrimitive = true
 			result.IsNullable = t.isNullable(schema)
+			_, result.IsCustomFormatter = customFormatters[tpe]
 			return
 		}
 	}
@@ -371,12 +372,13 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous bool) (res
 // A resolvedType is a swagger type that has been resolved and analyzed for usage
 // in a template
 type resolvedType struct {
-	IsAnonymous bool
-	IsArray     bool
-	IsMap       bool
-	IsInterface bool
-	IsPrimitive bool
-	IsNullable  bool
+	IsAnonymous       bool
+	IsArray           bool
+	IsMap             bool
+	IsInterface       bool
+	IsPrimitive       bool
+	IsCustomFormatter bool
+	IsNullable        bool
 
 	// A tuple gets rendered as an anonymous struct with P{index} as property name
 	IsTuple            bool
