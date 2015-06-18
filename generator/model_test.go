@@ -2,7 +2,6 @@ package generator
 
 import (
 	"bytes"
-	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -258,7 +257,7 @@ func TestGenerateModel_Nota(t *testing.T) {
 			err := modelTemplate.Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				res := buf.String()
-				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("type Nota map[string]int32")), res)
+				assertInCode(t, "type Nota map[string]int32", res)
 			}
 		}
 	}
@@ -280,20 +279,20 @@ func TestGenerateModel_NotaWithName(t *testing.T) {
 			err := modelTemplate.Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				res := buf.String()
-				assert.Regexp(t, regexp.MustCompile("type "+k+" struct\\s*{"), res)
-				assert.Regexp(t, regexp.MustCompile("AdditionalProperties map\\[string\\]int32 `json:\"-\"`"), res)
-				assert.Regexp(t, regexp.MustCompile("Name string `json:\"name\"`"), res)
-				assert.Regexp(t, regexp.MustCompile(k+"\\) UnmarshalJSON"), res)
-				assert.Regexp(t, regexp.MustCompile(k+"\\) MarshalJSON"), res)
-				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Marshal(m)")), res)
-				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Marshal(m.AdditionalProperties)")), res)
-				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Unmarshal(data, &stage1)")), res)
-				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Unmarshal(data, &stage2)")), res)
-				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Unmarshal(v, &toadd)")), res)
-				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("result[k] = toadd")), res)
-				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("m.AdditionalProperties = result")), res)
+				assertInCode(t, "type "+k+" struct {", res)
+				assertInCode(t, "AdditionalProperties map[string]int32 `json:\"-\"`", res)
+				assertInCode(t, "Name string `json:\"name\"`", res)
+				assertInCode(t, k+") UnmarshalJSON", res)
+				assertInCode(t, k+") MarshalJSON", res)
+				assertInCode(t, "json.Marshal(m)", res)
+				assertInCode(t, "json.Marshal(m.AdditionalProperties)", res)
+				assertInCode(t, "json.Unmarshal(data, &stage1)", res)
+				assertInCode(t, "json.Unmarshal(data, &stage2)", res)
+				assertInCode(t, "json.Unmarshal(v, &toadd)", res)
+				assertInCode(t, "result[k] = toadd", res)
+				assertInCode(t, "m.AdditionalProperties = result", res)
 				for _, p := range genModel.Properties {
-					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("delete(stage2, \""+p.Name+"\")")), res)
+					assertInCode(t, "delete(stage2, \""+p.Name+"\")", res)
 				}
 
 			}
@@ -317,8 +316,8 @@ func TestGenerateModel_MapRef(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			tt.template.Execute(buf, genModel)
 			res := buf.String()
-			assert.Regexp(t, regexp.MustCompile("type WithMap struct\\s*{"), res)
-			assert.Regexp(t, regexp.MustCompile("Data map\\[string\\]string `json:\"data\"`"), res)
+			assertInCode(t, "type WithMap struct {", res)
+			assertInCode(t, "Data map[string]string `json:\"data\"`", res)
 		}
 	}
 }
@@ -352,22 +351,22 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 				err := modelTemplate.Execute(buf, genModel)
 				if assert.NoError(t, err) {
 					res := buf.String()
-					assert.Regexp(t, regexp.MustCompile("type "+k+" struct\\s*{"), res)
-					assert.Regexp(t, regexp.MustCompile("Data "+k+"DataAddedProps0 `json:\"data\"`"), res)
-					assert.Regexp(t, regexp.MustCompile("type "+k+"DataAddedProps0 struct\\s*{"), res)
-					assert.Regexp(t, regexp.MustCompile("AdditionalProperties map\\[string\\]string `json:\"-\"`"), res)
-					assert.Regexp(t, regexp.MustCompile("Name string `json:\"name\"`"), res)
-					assert.Regexp(t, regexp.MustCompile(k+"DataAddedProps0\\) UnmarshalJSON"), res)
-					assert.Regexp(t, regexp.MustCompile(k+"DataAddedProps0\\) MarshalJSON"), res)
-					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Marshal(m)")), res)
-					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Marshal(m.AdditionalProperties)")), res)
-					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Unmarshal(data, &stage1)")), res)
-					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Unmarshal(data, &stage2)")), res)
-					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Unmarshal(v, &toadd)")), res)
-					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("result[k] = toadd")), res)
-					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("m.AdditionalProperties = result")), res)
+					assertInCode(t, "type "+k+" struct {", res)
+					assertInCode(t, "Data "+k+"DataAddedProps0 `json:\"data\"`", res)
+					assertInCode(t, "type "+k+"DataAddedProps0 struct {", res)
+					assertInCode(t, "AdditionalProperties map[string]string `json:\"-\"`", res)
+					assertInCode(t, "Name string `json:\"name\"`", res)
+					assertInCode(t, k+"DataAddedProps0) UnmarshalJSON", res)
+					assertInCode(t, k+"DataAddedProps0) MarshalJSON", res)
+					assertInCode(t, "json.Marshal(m)", res)
+					assertInCode(t, "json.Marshal(m.AdditionalProperties)", res)
+					assertInCode(t, "json.Unmarshal(data, &stage1)", res)
+					assertInCode(t, "json.Unmarshal(data, &stage2)", res)
+					assertInCode(t, "json.Unmarshal(v, &toadd)", res)
+					assertInCode(t, "result[k] = toadd", res)
+					assertInCode(t, "m.AdditionalProperties = result", res)
 					for _, p := range sch.Properties {
-						assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("delete(stage2, \""+p.Name+"\")")), res)
+						assertInCode(t, "delete(stage2, \""+p.Name+"\")", res)
 					}
 				}
 			}
@@ -390,8 +389,8 @@ func TestGenerateModel_JustRef(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			tt.template.Execute(buf, genModel)
 			res := buf.String()
-			assert.Regexp(t, regexp.MustCompile("type JustRef struct\\s*{"), res)
-			assert.Regexp(t, regexp.MustCompile("Notable"), res)
+			assertInCode(t, "type JustRef struct {", res)
+			assertInCode(t, "Notable", res)
 		}
 	}
 }
@@ -410,8 +409,8 @@ func TestGenerateModel_WithRef(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			tt.template.Execute(buf, genModel)
 			res := buf.String()
-			assert.Regexp(t, regexp.MustCompile("type WithRef struct\\s*{"), res)
-			assert.Regexp(t, regexp.MustCompile("Notes Notable `json:\"notes\"`"), res)
+			assertInCode(t, "type WithRef struct {", res)
+			assertInCode(t, "Notes Notable `json:\"notes\"`", res)
 		}
 	}
 }
@@ -433,8 +432,8 @@ func TestGenerateModel_WithNullableRef(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			tt.template.Execute(buf, genModel)
 			res := buf.String()
-			assert.Regexp(t, regexp.MustCompile("type WithNullableRef struct\\s*{"), res)
-			assert.Regexp(t, regexp.MustCompile("Notes \\*Notable `json:\"notes\"`"), res)
+			assertInCode(t, "type WithNullableRef struct {", res)
+			assertInCode(t, "Notes *Notable `json:\"notes\"`", res)
 		}
 	}
 }
@@ -456,8 +455,8 @@ func TestGenerateModel_WithItems(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			tt.template.Execute(buf, genModel)
 			res := buf.String()
-			assert.Regexp(t, regexp.MustCompile("type WithItems struct\\s*{"), res)
-			assert.Regexp(t, regexp.MustCompile("Tags \\[\\]string `json:\"tags\"`"), res)
+			assertInCode(t, "type WithItems struct {", res)
+			assertInCode(t, "Tags []string `json:\"tags\"`", res)
 		}
 	}
 }
@@ -480,9 +479,9 @@ func TestGenerateModel_WithItemsAndAdditional(t *testing.T) {
 				buf := bytes.NewBuffer(nil)
 				tt.template.Execute(buf, genModel)
 				res := buf.String()
-				assert.Regexp(t, regexp.MustCompile("type "+k+" struct\\s*{"), res)
+				assertInCode(t, "type "+k+" struct {", res)
 				// this would fail if it accepts additionalItems because it would come out as []interface{}
-				assert.Regexp(t, regexp.MustCompile("Tags \\[\\]string `json:\"tags\"`"), res)
+				assertInCode(t, "Tags []string `json:\"tags\"`", res)
 			}
 		}
 	}
@@ -507,24 +506,24 @@ func TestGenerateModel_SimpleTuple(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			tt.template.Execute(buf, genModel)
 			res := buf.String()
-			assert.Regexp(t, regexp.MustCompile("swagger:model "+k), res)
-			assert.Regexp(t, regexp.MustCompile("type "+k+" struct\\s*{"), res)
-			assert.Regexp(t, regexp.MustCompile("P0 int64 `json:\"-\"`"), res)
-			assert.Regexp(t, regexp.MustCompile("P1 string `json:\"-\"`"), res)
-			assert.Regexp(t, regexp.MustCompile("P2 strfmt.DateTime `json:\"-\"`"), res)
-			assert.Regexp(t, regexp.MustCompile("P3 Notable `json:\"-\"`"), res)
-			assert.Regexp(t, regexp.MustCompile("P4 \\*Notable `json:\"-\"`"), res)
-			assert.Regexp(t, regexp.MustCompile(k+"\\) UnmarshalJSON"), res)
-			assert.Regexp(t, regexp.MustCompile(k+"\\) MarshalJSON"), res)
-			assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Marshal(data)")), res)
+			assertInCode(t, "swagger:model "+k, res)
+			assertInCode(t, "type "+k+" struct {", res)
+			assertInCode(t, "P0 int64 `json:\"-\"`", res)
+			assertInCode(t, "P1 string `json:\"-\"`", res)
+			assertInCode(t, "P2 strfmt.DateTime `json:\"-\"`", res)
+			assertInCode(t, "P3 Notable `json:\"-\"`", res)
+			assertInCode(t, "P4 *Notable `json:\"-\"`", res)
+			assertInCode(t, k+") UnmarshalJSON", res)
+			assertInCode(t, k+") MarshalJSON", res)
+			assertInCode(t, "json.Marshal(data)", res)
 
 			for i, p := range genModel.Properties {
 				r := "m.P" + strconv.Itoa(i)
 				if !p.IsNullable {
 					r = "&" + r
 				}
-				assert.Regexp(t, regexp.MustCompile("json.Unmarshal\\(stage1\\["+strconv.Itoa(i)+"\\], "+r+"\\)"), res)
-				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("P"+strconv.Itoa(i)+",")), res)
+				assertInCode(t, "json.Unmarshal(stage1["+strconv.Itoa(i)+"], "+r+")", res)
+				assertInCode(t, "P"+strconv.Itoa(i)+",", res)
 			}
 		}
 	}
@@ -551,30 +550,30 @@ func TestGenerateModel_TupleWithExtra(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			tt.template.Execute(buf, genModel)
 			res := buf.String()
-			assert.Regexp(t, regexp.MustCompile("swagger:model "+k), res)
-			assert.Regexp(t, regexp.MustCompile("type "+k+" struct\\s*{"), res)
-			assert.Regexp(t, regexp.MustCompile("P0 int64 `json:\"-\"`"), res)
-			assert.Regexp(t, regexp.MustCompile("P1 string `json:\"-\"`"), res)
-			assert.Regexp(t, regexp.MustCompile("P2 strfmt.DateTime `json:\"-\"`"), res)
-			assert.Regexp(t, regexp.MustCompile("P3 Notable `json:\"-\"`"), res)
-			assert.Regexp(t, regexp.MustCompile("AdditionalItems \\[\\]float64 `json:\"-\"`"), res)
-			assert.Regexp(t, regexp.MustCompile(k+"\\) UnmarshalJSON"), res)
-			assert.Regexp(t, regexp.MustCompile(k+"\\) MarshalJSON"), res)
+			assertInCode(t, "swagger:model "+k, res)
+			assertInCode(t, "type "+k+" struct {", res)
+			assertInCode(t, "P0 int64 `json:\"-\"`", res)
+			assertInCode(t, "P1 string `json:\"-\"`", res)
+			assertInCode(t, "P2 strfmt.DateTime `json:\"-\"`", res)
+			assertInCode(t, "P3 Notable `json:\"-\"`", res)
+			assertInCode(t, "AdditionalItems []float64 `json:\"-\"`", res)
+			assertInCode(t, k+") UnmarshalJSON", res)
+			assertInCode(t, k+") MarshalJSON", res)
 
 			for i, p := range genModel.Properties {
 				r := "m.P" + strconv.Itoa(i)
 				if !p.IsNullable {
 					r = "&" + r
 				}
-				assert.Regexp(t, regexp.MustCompile("json.Unmarshal\\(stage1\\["+strconv.Itoa(i)+"\\], "+r+"\\)"), res)
-				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("P"+strconv.Itoa(i)+",")), res)
+				assertInCode(t, "json.Unmarshal(stage1["+strconv.Itoa(i)+"], "+r+")", res)
+				assertInCode(t, "P"+strconv.Itoa(i)+",", res)
 			}
-			assert.Regexp(t, regexp.MustCompile("var lastIndex int"), res)
-			assert.Regexp(t, regexp.MustCompile("var toadd float64"), res)
-			assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("for _, val := range stage1[lastIndex+1:]")), res)
-			assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Unmarshal(val, &toadd)")), res)
-			assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Marshal(data)")), res)
-			assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("data = append(data, m.AdditionalItems...)")), res)
+			assertInCode(t, "var lastIndex int", res)
+			assertInCode(t, "var toadd float64", res)
+			assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
+			assertInCode(t, "json.Unmarshal(val, &toadd)", res)
+			assertInCode(t, "json.Marshal(data)", res)
+			assertInCode(t, "data = append(data, m.AdditionalItems...)", res)
 		}
 	}
 }
@@ -613,21 +612,21 @@ func TestGenerateModel_WithTuple(t *testing.T) {
 			err := tt.template.Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				res := buf.String()
-				assert.Regexp(t, regexp.MustCompile("swagger:model "+k+"Flags"), res)
-				assert.Regexp(t, regexp.MustCompile("type "+k+"FlagsTuple0 struct\\s*{"), res)
-				assert.Regexp(t, regexp.MustCompile("P0 int64 `json:\"-\"`"), res)
-				assert.Regexp(t, regexp.MustCompile("P1 string `json:\"-\"`"), res)
-				assert.Regexp(t, regexp.MustCompile(k+"FlagsTuple0\\) UnmarshalJSON"), res)
-				assert.Regexp(t, regexp.MustCompile(k+"FlagsTuple0\\) MarshalJSON"), res)
-				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Marshal(data)")), res)
+				assertInCode(t, "swagger:model "+k+"Flags", res)
+				assertInCode(t, "type "+k+"FlagsTuple0 struct {", res)
+				assertInCode(t, "P0 int64 `json:\"-\"`", res)
+				assertInCode(t, "P1 string `json:\"-\"`", res)
+				assertInCode(t, k+"FlagsTuple0) UnmarshalJSON", res)
+				assertInCode(t, k+"FlagsTuple0) MarshalJSON", res)
+				assertInCode(t, "json.Marshal(data)", res)
 
 				for i, p := range sch.Properties {
 					r := "m.P" + strconv.Itoa(i)
 					if !p.IsNullable {
 						r = "&" + r
 					}
-					assert.Regexp(t, regexp.MustCompile("json.Unmarshal\\(stage1\\["+strconv.Itoa(i)+"\\], "+r+"\\)"), res)
-					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("P"+strconv.Itoa(i)+",")), res)
+					assertInCode(t, "json.Unmarshal(stage1["+strconv.Itoa(i)+"], "+r+")", res)
+					assertInCode(t, "P"+strconv.Itoa(i)+",", res)
 				}
 			}
 		}
@@ -668,30 +667,30 @@ func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
 			err := tt.template.Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				res := buf.String()
-				assert.Regexp(t, regexp.MustCompile("swagger:model "+k+"Flags"), res)
-				assert.Regexp(t, regexp.MustCompile("type "+k+"FlagsTuple0 struct\\s*{"), res)
-				assert.Regexp(t, regexp.MustCompile("P0 int64 `json:\"-\"`"), res)
-				assert.Regexp(t, regexp.MustCompile("P1 string `json:\"-\"`"), res)
-				assert.Regexp(t, regexp.MustCompile("AdditionalItems \\[\\]float32 `json:\"-\"`"), res)
-				assert.Regexp(t, regexp.MustCompile(k+"FlagsTuple0\\) UnmarshalJSON"), res)
-				assert.Regexp(t, regexp.MustCompile(k+"FlagsTuple0\\) MarshalJSON"), res)
-				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Marshal(data)")), res)
+				assertInCode(t, "swagger:model "+k+"Flags", res)
+				assertInCode(t, "type "+k+"FlagsTuple0 struct {", res)
+				assertInCode(t, "P0 int64 `json:\"-\"`", res)
+				assertInCode(t, "P1 string `json:\"-\"`", res)
+				assertInCode(t, "AdditionalItems []float32 `json:\"-\"`", res)
+				assertInCode(t, k+"FlagsTuple0) UnmarshalJSON", res)
+				assertInCode(t, k+"FlagsTuple0) MarshalJSON", res)
+				assertInCode(t, "json.Marshal(data)", res)
 
 				for i, p := range sch.Properties {
 					r := "m.P" + strconv.Itoa(i)
 					if !p.IsNullable {
 						r = "&" + r
 					}
-					assert.Regexp(t, regexp.MustCompile("json.Unmarshal\\(stage1\\["+strconv.Itoa(i)+"\\], "+r+"\\)"), res)
-					assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("P"+strconv.Itoa(i)+",")), res)
+					assertInCode(t, "json.Unmarshal(stage1["+strconv.Itoa(i)+"], "+r+")", res)
+					assertInCode(t, "P"+strconv.Itoa(i)+",", res)
 				}
 
-				assert.Regexp(t, regexp.MustCompile("var lastIndex int"), res)
-				assert.Regexp(t, regexp.MustCompile("var toadd float32"), res)
-				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("for _, val := range stage1[lastIndex+1:]")), res)
-				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Unmarshal(val, &toadd)")), res)
-				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("json.Marshal(data)")), res)
-				assert.Regexp(t, regexp.MustCompile(regexp.QuoteMeta("data = append(data, m.AdditionalItems...)")), res)
+				assertInCode(t, "var lastIndex int", res)
+				assertInCode(t, "var toadd float32", res)
+				assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
+				assertInCode(t, "json.Unmarshal(val, &toadd)", res)
+				assertInCode(t, "json.Marshal(data)", res)
+				assertInCode(t, "data = append(data, m.AdditionalItems...)", res)
 			}
 		}
 	}
@@ -713,21 +712,21 @@ func TestGenerateModel_WithAllOf(t *testing.T) {
 			err := modelTemplate.Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				res := buf.String()
-				assert.Regexp(t, regexp.MustCompile("type WithAllOf struct\\s*{"), res)
-				assert.Regexp(t, regexp.MustCompile("type WithAllOfAO2AddedProps2 struct\\s*{"), res)
-				assert.Regexp(t, regexp.MustCompile("type WithAllOfAO3Tuple3 struct\\s*{"), res)
-				assert.Regexp(t, regexp.MustCompile("type WithAllOfAO4Tuple4 struct\\s*{"), res)
-				assert.Regexp(t, regexp.MustCompile("Notable"), res)
-				assert.Regexp(t, regexp.MustCompile("Title string `json:\"title\"`"), res)
-				assert.Regexp(t, regexp.MustCompile("Body string `json:\"body\"`"), res)
-				assert.Regexp(t, regexp.MustCompile("Name string `json:\"name\"`"), res)
-				assert.Regexp(t, regexp.MustCompile("P0 float32 `json:\"-\"`"), res)
-				assert.Regexp(t, regexp.MustCompile("P0 float64 `json:\"-\"`"), res)
-				assert.Regexp(t, regexp.MustCompile("P1 strfmt.DateTime `json:\"-\"`"), res)
-				assert.Regexp(t, regexp.MustCompile("P1 strfmt.Date `json:\"-\"`"), res)
-				assert.Regexp(t, regexp.MustCompile("AdditionalItems \\[\\]strfmt.Password `json:\"-\"`"), res)
-				assert.Regexp(t, regexp.MustCompile("AdditionalProperties map\\[string\\]int32 `json:\"-\"`"), res)
-				assert.Regexp(t, regexp.MustCompile("AdditionalProperties map\\[string\\]int64 `json:\"-\"`"), res)
+				assertInCode(t, "type WithAllOf struct {", res)
+				assertInCode(t, "type WithAllOfAO2AddedProps2 struct {", res)
+				assertInCode(t, "type WithAllOfAO3Tuple3 struct {", res)
+				assertInCode(t, "type WithAllOfAO4Tuple4 struct {", res)
+				assertInCode(t, "Notable", res)
+				assertInCode(t, "Title string `json:\"title\"`", res)
+				assertInCode(t, "Body string `json:\"body\"`", res)
+				assertInCode(t, "Name string `json:\"name\"`", res)
+				assertInCode(t, "P0 float32 `json:\"-\"`", res)
+				assertInCode(t, "P0 float64 `json:\"-\"`", res)
+				assertInCode(t, "P1 strfmt.DateTime `json:\"-\"`", res)
+				assertInCode(t, "P1 strfmt.Date `json:\"-\"`", res)
+				assertInCode(t, "AdditionalItems []strfmt.Password `json:\"-\"`", res)
+				assertInCode(t, "AdditionalProperties map[string]int32 `json:\"-\"`", res)
+				assertInCode(t, "AdditionalProperties map[string]int64 `json:\"-\"`", res)
 			}
 		}
 	}
