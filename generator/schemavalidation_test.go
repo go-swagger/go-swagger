@@ -306,3 +306,60 @@ func TestSchemaValidation_NestedArrayProps(t *testing.T) {
 		}
 	}
 }
+
+func TestSchemaValidation_NamedNestedObject(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "NamedNestedObject"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			if assertValidation(t, "", "m", gm.GenSchema) {
+				buf := bytes.NewBuffer(nil)
+				err := modelTemplate.Execute(buf, gm)
+				if assert.NoError(t, err) {
+					formatted, err := formatGoFile("named_nested_object.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(formatted)
+						assertInCode(t, k+") Validate(formats", res)
+						assertInCode(t, k+") validateMeta(formats", res)
+						assertInCode(t, "err := validate.MinLength(\"meta\"+\".\"+\"first\",", res)
+						assertInCode(t, "err := validate.MaxLength(\"meta\"+\".\"+\"first\",", res)
+						assertInCode(t, "err := validate.Pattern(\"meta\"+\".\"+\"first\",", res)
+						assertInCode(t, "errors.CompositeValidationError(res...)", res)
+					}
+				}
+			}
+		}
+	}
+}
+
+func TestSchemaValidation_NestedObjectProps(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "NestedObjectValidations"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			prop := gm.Properties[0]
+			if assertValidation(t, "\"args\"", "m.Args", prop) {
+				buf := bytes.NewBuffer(nil)
+				err := modelTemplate.Execute(buf, gm)
+				if assert.NoError(t, err) {
+					formatted, err := formatGoFile("nested_array_validations.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(formatted)
+						assertInCode(t, k+") Validate(formats", res)
+						assertInCode(t, "m.validateArgs(formats", res)
+						assertInCode(t, "err := validate.MinLength(\"args\"+\".\"+\"meta\"+\".\"+\"first\",", res)
+						assertInCode(t, "err := validate.MaxLength(\"args\"+\".\"+\"meta\"+\".\"+\"first\",", res)
+						assertInCode(t, "err := validate.Pattern(\"args\"+\".\"+\"meta\"+\".\"+\"first\",", res)
+						assertInCode(t, "errors.CompositeValidationError(res...)", res)
+					}
+				}
+			}
+		}
+	}
+}

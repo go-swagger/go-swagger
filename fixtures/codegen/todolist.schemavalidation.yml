@@ -148,18 +148,7 @@ definitions:
               maxLength: 10
               pattern: "\\w+"
 
-  StringValidationsAllOf:
-    type: object
-    allOf:
-    - type: object
-      properties:
-        name:
-          type: string
-          minLength: 2
-          maxLength: 50
-          Pattern: "[A-Za-z0-9][\\w- ]+"
-
-  NestedObject:
+  NamedNestedObject:
     type: object
     properties:
       meta:
@@ -170,4 +159,30 @@ definitions:
             minLength: 2
             maxLength: 50
             Pattern: "^\\w+"
+
+  NestedObjectValidations:
+    type: object
+    properties:
+      args:
+        type: object
+        properties:
+          meta:
+            type: object
+            properties:
+              first:
+                type: string
+                minLength: 2
+                maxLength: 50
+                Pattern: "^\\w+"
+
+  StringValidationsAllOf:
+    type: object
+    allOf:
+    - type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 50
+          Pattern: "[A-Za-z0-9][\\w- ]+"
 
