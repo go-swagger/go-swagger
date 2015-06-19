@@ -159,6 +159,40 @@ definitions:
             minLength: 2
             maxLength: 50
             Pattern: "^\\w+"
+          second:
+            type: number
+            format: double
+            minimum: 3
+            maximum: 51
+            multipleOf: 1.5
+          third:
+            type: array
+            minItems: 5
+            maxItems: 93
+            items:
+              type: number
+              format: float
+              minimum: 3
+              maximum: 6
+              multipleOf: 0.5
+          fourth:
+            minItems: 5
+            maxItems: 93
+            type: array
+            items:
+              type: array
+              minItems: 5
+              maxItems: 93
+              items:
+                minItems: 5
+                maxItems: 93
+                type: array
+                items:
+                  type: number
+                  format: float
+                  minimum: 3
+                  maximum: 6
+                  multipleOf: 0.5
 
   NestedObjectValidations:
     type: object
@@ -174,6 +208,40 @@ definitions:
                 minLength: 2
                 maxLength: 50
                 Pattern: "^\\w+"
+              second:
+                type: number
+                format: double
+                minimum: 3
+                maximum: 51
+                multipleOf: 1.5
+              third:
+                type: array
+                minItems: 5
+                maxItems: 93
+                items:
+                  type: number
+                  format: float
+                  minimum: 3
+                  maximum: 6
+                  multipleOf: 0.5
+              fourth:
+                minItems: 5
+                maxItems: 93
+                type: array
+                items:
+                  type: array
+                  minItems: 5
+                  maxItems: 93
+                  items:
+                    minItems: 5
+                    maxItems: 93
+                    type: array
+                    items:
+                      type: number
+                      format: float
+                      minimum: 3
+                      maximum: 6
+                      multipleOf: 0.5
 
   StringValidationsAllOf:
     type: object
