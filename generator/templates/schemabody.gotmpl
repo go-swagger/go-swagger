@@ -6,7 +6,7 @@
   AdditionalProperties map[string]{{ if .AdditionalProperties }}{{ template "schemaType" .AdditionalProperties }}{{ else }}interface{}{{ end }} `json:"-"`
   {{end}}
   {{ if .HasAdditionalItems }}/* {{ template "docstring" .AdditionalItems }}{{ template "propertyValidationDocString" .AdditionalItems}} */
-  AdditionalItems []{{ if .AdditionalItems }}{{ template "schemaType" .AdditionalItems }}{{ else }}[]interface{}{{ end }} `json:"-"`
+  {{ pascalize $.Name }}{{ pascalize .Name }}Items []{{ if .AdditionalItems }}{{ template "schemaType" .AdditionalItems }}{{ else }}[]interface{}{{ end }} `json:"-"`
   {{ end }}
   {{ else }}
   {{if .IsNullable }}*{{ end }}{{ .GoType }}{{ end }}
@@ -17,7 +17,7 @@
   {{ if .HasAdditionalProperties }}/* {{ template "docstring" .AdditionalProperties }}{{ template "propertyValidationDocString" .AdditionalProperties}} */
   AdditionalProperties map[string]{{ if .AdditionalProperties }}{{ template "schemaType" .AdditionalProperties }}{{ else }}interface{}{{ end }} `json:"-"`
   {{ end }}
-  {{ if .HasAdditionalItems }}/* {{ template "docstring" .AdditionalItems }}{{ template "propertyValidationDocString" .AdditionalItems}} */
-  AdditionalItems []{{ if .AdditionalItems }}{{ template "schemaType" .AdditionalItems }}{{ else }}[]interface{}{{ end }} `json:"-"`
+  {{ if .AdditionalItems }}/* {{ template "docstring" .AdditionalItems }}{{ template "propertyValidationDocString" .AdditionalItems}} */
+  {{ pascalize .AdditionalItems.Name }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
   {{ end }}
 }{{end}}

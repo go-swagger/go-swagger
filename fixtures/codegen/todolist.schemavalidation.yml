@@ -52,6 +52,7 @@ definitions:
         type: array
         items:
           type: string
+
   NamedString:
     type: string
     minLength: 2
@@ -242,6 +243,78 @@ definitions:
                       minimum: 3
                       maximum: 6
                       multipleOf: 0.5
+
+  NamedArrayMulti:
+    type: array
+    items:
+      - minLength: 3
+        maxLength: 10
+        pattern: "\\w+"
+        type: string
+      - minimum: 3
+        maximum: 12
+        multipleOf: 1.5
+        type: number
+        format: double
+
+  ArrayMultiValidations:
+    type: object
+    properties:
+      args:
+        type: array
+        items:
+          - minLength: 3
+            maxLength: 10
+            pattern: "\\w+"
+            type: string
+          - minimum: 3
+            maximum: 12
+            multipleOf: 1.5
+            type: number
+            format: double
+
+  NamedArrayAdditional:
+    type: array
+    minItems: 3
+    maxItems: 10
+    items:
+      - minLength: 3
+        maxLength: 10
+        pattern: "\\w+"
+        type: string
+      - minimum: 3
+        maximum: 12
+        multipleOf: 1.5
+        type: number
+        format: double
+    additionalItems:
+      type: integer
+      format: int64
+      minimum: 3
+      maximum: 6
+      multipleOf: 1
+
+  ArrayAdditionalValidations:
+    type: object
+    properties:
+      args:
+        type: array
+        items:
+          - minLength: 3
+            maxLength: 10
+            pattern: "\\w+"
+            type: string
+          - minimum: 3
+            maximum: 12
+            multipleOf: 1.5
+            type: number
+            format: double
+        additionalItems:
+          type: integer
+          format: int64
+          minimum: 3
+          maximum: 6
+          multipleOf: 1
 
   StringValidationsAllOf:
     type: object

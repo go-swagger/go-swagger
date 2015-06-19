@@ -2,6 +2,7 @@ package generator
 
 import (
 	"bytes"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -516,6 +517,7 @@ func TestGenerateModel_SimpleTuple(t *testing.T) {
 			assertInCode(t, k+") UnmarshalJSON", res)
 			assertInCode(t, k+") MarshalJSON", res)
 			assertInCode(t, "json.Marshal(data)", res)
+			assert.NotRegexp(t, regexp.MustCompile("lastIndex"), res)
 
 			for i, p := range genModel.Properties {
 				r := "m.P" + strconv.Itoa(i)
@@ -548,32 +550,35 @@ func TestGenerateModel_TupleWithExtra(t *testing.T) {
 			assert.Equal(t, k, genModel.GoType)
 			assert.Len(t, genModel.Properties, 4)
 			buf := bytes.NewBuffer(nil)
-			tt.template.Execute(buf, genModel)
-			res := buf.String()
-			assertInCode(t, "swagger:model "+k, res)
-			assertInCode(t, "type "+k+" struct {", res)
-			assertInCode(t, "P0 int64 `json:\"-\"`", res)
-			assertInCode(t, "P1 string `json:\"-\"`", res)
-			assertInCode(t, "P2 strfmt.DateTime `json:\"-\"`", res)
-			assertInCode(t, "P3 Notable `json:\"-\"`", res)
-			assertInCode(t, "AdditionalItems []float64 `json:\"-\"`", res)
-			assertInCode(t, k+") UnmarshalJSON", res)
-			assertInCode(t, k+") MarshalJSON", res)
+			err := tt.template.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				res := buf.String()
+				assertInCode(t, "swagger:model "+k, res)
+				assertInCode(t, "type "+k+" struct {", res)
+				assertInCode(t, "P0 int64 `json:\"-\"`", res)
+				assertInCode(t, "P1 string `json:\"-\"`", res)
+				assertInCode(t, "P2 strfmt.DateTime `json:\"-\"`", res)
+				assertInCode(t, "P3 Notable `json:\"-\"`", res)
+				assertInCode(t, k+"Items []float64 `json:\"-\"`", res)
+				assertInCode(t, k+") UnmarshalJSON", res)
+				assertInCode(t, k+") MarshalJSON", res)
 
-			for i, p := range genModel.Properties {
-				r := "m.P" + strconv.Itoa(i)
-				if !p.IsNullable {
-					r = "&" + r
+				for i, p := range genModel.Properties {
+					r := "m.P" + strconv.Itoa(i)
+					if !p.IsNullable {
+						r = "&" + r
+					}
+					assertInCode(t, "lastIndex = "+strconv.Itoa(i), res)
+					assertInCode(t, "json.Unmarshal(stage1["+strconv.Itoa(i)+"], "+r+")", res)
+					assertInCode(t, "P"+strconv.Itoa(i)+",", res)
 				}
-				assertInCode(t, "json.Unmarshal(stage1["+strconv.Itoa(i)+"], "+r+")", res)
-				assertInCode(t, "P"+strconv.Itoa(i)+",", res)
+				assertInCode(t, "var lastIndex int", res)
+				assertInCode(t, "var toadd float64", res)
+				assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
+				assertInCode(t, "json.Unmarshal(val, &toadd)", res)
+				assertInCode(t, "json.Marshal(data)", res)
+				assertInCode(t, "for _, v := range m."+k+"Items", res)
 			}
-			assertInCode(t, "var lastIndex int", res)
-			assertInCode(t, "var toadd float64", res)
-			assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
-			assertInCode(t, "json.Unmarshal(val, &toadd)", res)
-			assertInCode(t, "json.Marshal(data)", res)
-			assertInCode(t, "data = append(data, m.AdditionalItems...)", res)
 		}
 	}
 }
@@ -619,6 +624,7 @@ func TestGenerateModel_WithTuple(t *testing.T) {
 				assertInCode(t, k+"FlagsTuple0) UnmarshalJSON", res)
 				assertInCode(t, k+"FlagsTuple0) MarshalJSON", res)
 				assertInCode(t, "json.Marshal(data)", res)
+				assert.NotRegexp(t, regexp.MustCompile("lastIndex"), res)
 
 				for i, p := range sch.Properties {
 					r := "m.P" + strconv.Itoa(i)
@@ -671,7 +677,7 @@ func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
 				assertInCode(t, "type "+k+"FlagsTuple0 struct {", res)
 				assertInCode(t, "P0 int64 `json:\"-\"`", res)
 				assertInCode(t, "P1 string `json:\"-\"`", res)
-				assertInCode(t, "AdditionalItems []float32 `json:\"-\"`", res)
+				assertInCode(t, k+"FlagsTuple0Items []float32 `json:\"-\"`", res)
 				assertInCode(t, k+"FlagsTuple0) UnmarshalJSON", res)
 				assertInCode(t, k+"FlagsTuple0) MarshalJSON", res)
 				assertInCode(t, "json.Marshal(data)", res)
@@ -681,6 +687,7 @@ func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
 					if !p.IsNullable {
 						r = "&" + r
 					}
+					assertInCode(t, "lastIndex = "+strconv.Itoa(i), res)
 					assertInCode(t, "json.Unmarshal(stage1["+strconv.Itoa(i)+"], "+r+")", res)
 					assertInCode(t, "P"+strconv.Itoa(i)+",", res)
 				}
@@ -690,7 +697,7 @@ func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
 				assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
 				assertInCode(t, "json.Unmarshal(val, &toadd)", res)
 				assertInCode(t, "json.Marshal(data)", res)
-				assertInCode(t, "data = append(data, m.AdditionalItems...)", res)
+				assertInCode(t, "for _, v := range m."+k+"FlagsTuple0Items", res)
 			}
 		}
 	}
@@ -724,7 +731,7 @@ func TestGenerateModel_WithAllOf(t *testing.T) {
 				assertInCode(t, "P0 float64 `json:\"-\"`", res)
 				assertInCode(t, "P1 strfmt.DateTime `json:\"-\"`", res)
 				assertInCode(t, "P1 strfmt.Date `json:\"-\"`", res)
-				assertInCode(t, "AdditionalItems []strfmt.Password `json:\"-\"`", res)
+				assertInCode(t, "WithAllOfAO4Tuple4Items []strfmt.Password `json:\"-\"`", res)
 				assertInCode(t, "AdditionalProperties map[string]int32 `json:\"-\"`", res)
 				assertInCode(t, "AdditionalProperties map[string]int64 `json:\"-\"`", res)
 			}

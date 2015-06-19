@@ -204,6 +204,43 @@ func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContex
 	return pg
 }
 
+func (sg *schemaGenContext) NewAdditionalItems(schema *spec.Schema) *schemaGenContext {
+	pg := sg.shallowClone()
+	indexVar := pg.IndexVar
+	pg.Name = sg.Name + " items"
+	itemsLen := 0
+	if sg.Schema.Items != nil {
+		itemsLen = sg.Schema.Items.Len()
+	}
+	var mod string
+	if itemsLen > 0 {
+		mod = "+" + strconv.Itoa(itemsLen)
+	}
+	if pg.Path == "" {
+		pg.Path = "strconv.Itoa(" + indexVar + mod + ")"
+	} else {
+		pg.Path = pg.Path + "+ \".\" + strconv.Itoa(" + indexVar + mod + ")"
+	}
+	pg.IndexVar = indexVar
+	pg.ValueExpr = sg.ValueExpr + "." + swag.ToGoName(sg.Name) + "Items[" + indexVar + "]"
+	pg.Schema = *schema
+	pg.Required = false
+	return pg
+}
+
+func (sg *schemaGenContext) NewTupleElement(schema *spec.Schema, index int) *schemaGenContext {
+	pg := sg.shallowClone()
+	if pg.Path == "" {
+		pg.Path = "\"" + strconv.Itoa(index) + "\""
+	} else {
+		pg.Path = pg.Path + "+ \".\"+\"" + strconv.Itoa(index) + "\""
+	}
+	pg.ValueExpr = pg.ValueExpr + ".P" + strconv.Itoa(index)
+	pg.Required = true
+	pg.Schema = *schema
+	return pg
+}
+
 func (sg *schemaGenContext) NewStructBranch(name string, schema spec.Schema) *schemaGenContext {
 	pg := sg.shallowClone()
 	if sg.Path == "" {
@@ -402,8 +439,8 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 }
 
 func (sg *schemaGenContext) buildItems() error {
-	sg.GenSchema.SingleSchemaSlice = sg.Schema.Items != nil && sg.Schema.Items.Schema != nil
-	if sg.GenSchema.SingleSchemaSlice {
+	singleSchemaSlice := sg.Schema.Items != nil && sg.Schema.Items.Schema != nil
+	if singleSchemaSlice {
 		elProp := sg.NewSliceBranch(sg.Schema.Items.Schema)
 		if err := elProp.makeGenSchema(); err != nil {
 			return err
@@ -419,12 +456,17 @@ func (sg *schemaGenContext) buildItems() error {
 				sg.GenSchema.GoType = sg.TypeResolver.ModelsPackage + "." + sg.GenSchema.GoType
 			}
 			for i, s := range sg.Schema.Items.Schemas {
-				elProp := sg.NewSliceBranch(&s)
+				elProp := sg.NewTupleElement(&s, i)
 				if err := elProp.makeGenSchema(); err != nil {
 					return err
 				}
 				sg.MergeResult(elProp)
 				elProp.GenSchema.Name = "p" + strconv.Itoa(i)
+
+				if err := sg.buildAdditionalItems(); err != nil {
+					return err
+				}
+
 				sg.GenSchema.Properties = append(sg.GenSchema.Properties, elProp.GenSchema)
 			}
 			return nil
@@ -435,13 +477,15 @@ func (sg *schemaGenContext) buildItems() error {
 		// new tuple object
 		var tup schemaGenContext
 		tup = *sg
+		tup.Accessor = tup.Receiver
 		tup.GenSchema.IsTuple = true
 		tup.GenSchema.IsComplexObject = false
 		tup.GenSchema.Name = swag.ToGoName(sg.GenSchema.Name + "Tuple" + strconv.Itoa(sg.Index))
-		tup.Name = tup.GenSchema.Name
 		if sg.TypeResolver.ModelName != "" {
 			tup.GenSchema.Name = swag.ToGoName(sg.TypeResolver.ModelName + " " + tup.GenSchema.Name)
 		}
+		tup.ValueExpr = tup.Receiver
+		tup.Name = tup.GenSchema.Name
 		tup.GenSchema.GoType = tup.GenSchema.Name
 		if sg.TypeResolver.ModelsPackage != "" {
 			tup.GenSchema.GoType = sg.TypeResolver.ModelsPackage + "." + tup.GenSchema.Name
@@ -454,13 +498,16 @@ func (sg *schemaGenContext) buildItems() error {
 		sg.GenSchema.GoType = tup.GenSchema.GoType
 
 		for i, s := range sg.Schema.Items.Schemas {
-			elProp := tup.NewSliceBranch(&s)
+			elProp := tup.NewTupleElement(&s, i)
 			if err := elProp.makeGenSchema(); err != nil {
 				return err
 			}
 			tup.MergeResult(elProp)
 			elProp.GenSchema.Name = "p" + strconv.Itoa(i)
 			tup.GenSchema.Properties = append(tup.GenSchema.Properties, elProp.GenSchema)
+		}
+		if err := tup.buildAdditionalItems(); err != nil {
+			return err
 		}
 		sg.MergeResult(&tup)
 		sg.ExtraSchemas = append(sg.ExtraSchemas, tup.GenSchema)
@@ -469,13 +516,13 @@ func (sg *schemaGenContext) buildItems() error {
 }
 
 func (sg *schemaGenContext) buildAdditionalItems() error {
-	sg.GenSchema.AllowsAdditionalItems =
+	wantsAdditionalItems :=
 		sg.Schema.AdditionalItems != nil &&
 			(sg.Schema.AdditionalItems.Allows || sg.Schema.AdditionalItems.Schema != nil)
 
-	sg.GenSchema.HasAdditionalItems = sg.GenSchema.AllowsAdditionalItems && !sg.GenSchema.SingleSchemaSlice
+	sg.GenSchema.HasAdditionalItems = wantsAdditionalItems
 	if sg.Schema.AdditionalItems != nil && sg.Schema.AdditionalItems.Schema != nil {
-		it := sg.NewSliceBranch(sg.Schema.AdditionalItems.Schema)
+		it := sg.NewAdditionalItems(sg.Schema.AdditionalItems.Schema)
 		if err := it.makeGenSchema(); err != nil {
 			return err
 		}
@@ -648,7 +695,6 @@ type GenSchema struct {
 	Description             string
 	Location                string
 	ReceiverName            string
-	SingleSchemaSlice       bool
 	Items                   []GenSchema
 	ItemsLen                int
 	AllowsAdditionalItems   bool

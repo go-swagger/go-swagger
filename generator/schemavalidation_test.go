@@ -401,3 +401,142 @@ func TestSchemaValidation_NestedObjectProps(t *testing.T) {
 		}
 	}
 }
+
+func TestSchemaValidation_NamedArrayMulti(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "NamedArrayMulti"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			if assertValidation(t, "", "m", gm.GenSchema) {
+				buf := bytes.NewBuffer(nil)
+				err := modelTemplate.Execute(buf, gm)
+				if assert.NoError(t, err) {
+					formatted, err := formatGoFile("named_array_multi.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(formatted)
+						assertInCode(t, k+") Validate(formats", res)
+						assertInCode(t, k+") validateP0(formats", res)
+						assertInCode(t, k+") validateP1(formats", res)
+						assertInCode(t, "err := validate.Required(\"0\",", res)
+						assertInCode(t, "err := validate.MinLength(\"0\",", res)
+						assertInCode(t, "err := validate.MaxLength(\"0\",", res)
+						assertInCode(t, "err := validate.Pattern(\"0\",", res)
+						assertInCode(t, "err := validate.Required(\"1\",", res)
+						assertInCode(t, "err := validate.Minimum(\"1\",", res)
+						assertInCode(t, "err := validate.Maximum(\"1\",", res)
+						assertInCode(t, "err := validate.MultipleOf(\"1\",", res)
+						assertInCode(t, "errors.CompositeValidationError(res...)", res)
+					}
+				}
+			}
+		}
+	}
+}
+
+func TestSchemaValidation_ArrayMultiProps(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "ArrayMultiValidations"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			prop := gm.Properties[0]
+			if assertValidation(t, "\"args\"", "m.Args", prop) {
+				buf := bytes.NewBuffer(nil)
+				err := modelTemplate.Execute(buf, gm)
+				if assert.NoError(t, err) {
+					formatted, err := formatGoFile("array_multi_validations.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(formatted)
+						assertInCode(t, k+") Validate(formats", res)
+						assertInCode(t, "m.validateArgs(formats", res)
+						assertInCode(t, "err := validate.Required(\"args\"+\".\"+\"0\",", res)
+						assertInCode(t, "err := validate.MinLength(\"args\"+\".\"+\"0\",", res)
+						assertInCode(t, "err := validate.MaxLength(\"args\"+\".\"+\"0\",", res)
+						assertInCode(t, "err := validate.Pattern(\"args\"+\".\"+\"0\",", res)
+						assertInCode(t, "err := validate.Required(\"args\"+\".\"+\"1\",", res)
+						assertInCode(t, "err := validate.Minimum(\"args\"+\".\"+\"1\",", res)
+						assertInCode(t, "err := validate.Maximum(\"args\"+\".\"+\"1\",", res)
+						assertInCode(t, "err := validate.MultipleOf(\"args\"+\".\"+\"1\",", res)
+						assertInCode(t, "errors.CompositeValidationError(res...)", res)
+					}
+				}
+			}
+		}
+	}
+}
+
+func TestSchemaValidation_NamedArrayAdditional(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "NamedArrayAdditional"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			if assertValidation(t, "", "m", gm.GenSchema) {
+				buf := bytes.NewBuffer(nil)
+				err := modelTemplate.Execute(buf, gm)
+				if assert.NoError(t, err) {
+					formatted, err := formatGoFile("named_array_additional.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(formatted)
+						assertInCode(t, k+") Validate(formats", res)
+						assertInCode(t, k+") validateP0(formats", res)
+						assertInCode(t, k+") validateP1(formats", res)
+						assertInCode(t, "err := validate.Required(\"0\",", res)
+						assertInCode(t, "err := validate.MinLength(\"0\",", res)
+						assertInCode(t, "err := validate.MaxLength(\"0\",", res)
+						assertInCode(t, "err := validate.Pattern(\"0\",", res)
+						assertInCode(t, "err := validate.Required(\"1\",", res)
+						assertInCode(t, "err := validate.Minimum(\"1\",", res)
+						assertInCode(t, "err := validate.Maximum(\"1\",", res)
+						assertInCode(t, "err := validate.MultipleOf(\"1\",", res)
+						assertInCode(t, "errors.CompositeValidationError(res...)", res)
+						assertInCode(t, "m.NamedArrayAdditionalItems[i]", res)
+
+					}
+				}
+			}
+		}
+	}
+}
+
+func TestSchemaValidation_ArrayAdditionalProps(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "ArrayAdditionalValidations"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			prop := gm.Properties[0]
+			if assertValidation(t, "\"args\"", "m.Args", prop) {
+				buf := bytes.NewBuffer(nil)
+				err := modelTemplate.Execute(buf, gm)
+				if assert.NoError(t, err) {
+					formatted, err := formatGoFile("array_additional_validations.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(formatted)
+						assertInCode(t, k+") Validate(formats", res)
+						assertInCode(t, "m.validateArgs(formats", res)
+						assertInCode(t, "err := validate.Required(\"args\"+\".\"+\"0\",", res)
+						assertInCode(t, "err := validate.MinLength(\"args\"+\".\"+\"0\",", res)
+						assertInCode(t, "err := validate.MaxLength(\"args\"+\".\"+\"0\",", res)
+						assertInCode(t, "err := validate.Pattern(\"args\"+\".\"+\"0\",", res)
+						assertInCode(t, "err := validate.Required(\"args\"+\".\"+\"1\",", res)
+						assertInCode(t, "err := validate.Minimum(\"args\"+\".\"+\"1\",", res)
+						assertInCode(t, "err := validate.Maximum(\"args\"+\".\"+\"1\",", res)
+						assertInCode(t, "err := validate.MultipleOf(\"args\"+\".\"+\"1\",", res)
+						assertInCode(t, "errors.CompositeValidationError(res...)", res)
+						assertInCode(t, "m.ArrayAdditionalValidationsArgsTuple0Items[i]", res)
+					}
+				}
+			}
+		}
+	}
+}

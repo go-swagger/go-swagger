@@ -6,23 +6,25 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(data []byte) error
   if err := json.Unmarshal(data, &stage1); err != nil {
     return err
   }
-  // stage 2{{ if .HasAdditionalItems }}
+  // stage 2{{ if .AdditionalItems }}
   var lastIndex int
   {{ end }}
   {{ range $idx, $val := .Properties }}if len(stage1) > {{ $idx }} {
-    lastIndex = {{ $idx }}
     if err := json.Unmarshal(stage1[{{ $idx }}], {{ if not $val.IsNullable }}&{{ end }}{{ $val.ReceiverName }}.{{ pascalize $val.Name }}); err != nil {
       return err
-    }
+    }{{ if $.HasAdditionalItems }}
+    lastIndex = {{ $idx }}{{end}}
   }
   {{ end }}
-  {{ if .HasAdditionalItems }}
-  for _, val := range stage1[lastIndex+1:] {
-    var toadd {{ template "schemaType" .AdditionalItems }}
-    if err := json.Unmarshal(val, &toadd); err != nil {
-      return err
+  {{ if .AdditionalItems }}
+  if len(stage1) > lastIndex+1 {
+    for _, val := range stage1[lastIndex+1:] {
+      var toadd {{ template "schemaType" .AdditionalItems }}
+      if err := json.Unmarshal(val, &toadd); err != nil {
+        return err
+      }
+      {{ .ValueExpression }} = append({{ .ValueExpression }}, toadd)
     }
-    {{ .ReceiverName }}.AdditionalItems = append({{ .ReceiverName }}.AdditionalItems, toadd)
   }
   {{ end }}return nil
 }
@@ -33,7 +35,9 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
   {{ range .Properties }}{{ pascalize .Name }},
   {{ end }} }
   {{ if .HasAdditionalItems }}
-    data = append(data, {{ .ReceiverName }}.AdditionalItems...)
+  for _, v := range {{ .ReceiverName }}.{{ pascalize .Name }}Items {
+    data = append(data, v)
+  }
   {{ end }}
   return json.Marshal(data)
 }

@@ -30,27 +30,12 @@ if err := validate.Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%
   return err
 }
 {{end}}
-{{if .SingleSchemaSlice }}
-// single schema {{.ValueExpression}}
-for {{.IndexVar}} := 0; {{.IndexVar}} < {{ .IndexVar }}{{ pascalize .Name }}Size; {{.IndexVar}}++ {
+for {{.IndexVar}} := 0; {{.IndexVar}} < len({{.ValueExpression}}); {{.IndexVar}}++ {
 {{range .Items}}
   {{template "propertyvalidator" .}}
 {{end}}
 }
-{{else}}
-// not single schema {{ pascalize .Name }}
-{{range .Items}}
-  {{template "propertyvalidator" .}}
 {{end}}
-{{if .AdditionalItems}}
-  for {{.IndexVar}} := 0; {{.IndexVar}}  < (len({{.ValueExpression}}) - {{.ItemsLen}}) - 1; {{.IndexVar}}++ {
-    {{template "propertyvalidator" .}}
-  }
-{{else}}
-if len({{.ValueExpression}}) > {{.ItemsLen}} {
-  return errors.AdditionalItemsNotAllowed({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }})
-}
-{{end}}{{end}}{{end}}
 {{define "objectvalidator"}}{{ if not .IsAnonymous }}
 if err := {{.ValueExpression}}.Validate(formats); err != nil {
   return err
@@ -58,7 +43,9 @@ if err := {{.ValueExpression}}.Validate(formats); err != nil {
 {{ else }}
 {{ range .Properties }}
 {{ template "propertyvalidator" . }}
-{{ end }}{{end}}{{end}}
+{{ end }}{{end}}{{if and .IsTuple .AdditionalItems}}
+// validating additional items should go here
+{{end}}{{end}}
 {{define "propertyvalidator"}}
 {{if .IsPrimitive }}{{ template "primitivefieldvalidator" .}}
 {{else if .IsCustomFormatter }}{{ template "customformatvalidator" .}}
@@ -70,7 +57,10 @@ if err := {{.ValueExpression}}.Validate(formats); err != nil {
 func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ pascalize .Name}}) Validate(formats strfmt.Registry) error {
   {{if .HasValidations}}
   var res []error
-  {{ template "propertyvalidator" . }}
+  {{if .IsPrimitive }}{{ template "primitivefieldvalidator" .}}
+  {{else if .IsCustomFormatter }}{{ template "customformatvalidator" .}}
+  {{else if .IsArray }}{{ template "slicevalidator" .}}
+  {{ end }}
 
   {{range .Properties}}
   {{if .HasValidations}}
@@ -78,6 +68,11 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
     res = append(res, err)
   }
   {{end}}
+  {{end}}
+  {{if and .IsTuple .AdditionalItems}}
+  if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Items(formats); err != nil {
+    res = append(res, err)
+  }
   {{end}}
 
   if len(res) > 0 {
@@ -95,5 +90,14 @@ func ({{.ReceiverName}} *{{ pascalize $.Name }}) validate{{ pascalize .Name }}(f
   return nil
 }
 {{end}}
+{{end}}
+{{if .HasAdditionalItems }}
+
+func ({{.ReceiverName}} *{{ pascalize .Name }}) validate{{ pascalize .Name }}Items(formats strfmt.Registry) error {
+  for {{ .IndexVar }} := range {{ .ValueExpression }}.{{ pascalize .Name }}Items {
+    {{template "propertyvalidator" .AdditionalItems }}
+  }
+  return nil
+}
 {{end}}
 {{end}}
