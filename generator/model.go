@@ -176,6 +176,7 @@ type schemaGenContext struct {
 	Accessor           string
 	Receiver           string
 	IndexVar           string
+	KeyVar             string
 	ValueExpr          string
 	Schema             spec.Schema
 	Required           bool
@@ -286,7 +287,15 @@ func (sg *schemaGenContext) NewAdditionalProperty(schema spec.Schema) *schemaGen
 	pg := sg.shallowClone()
 	pg.Schema = schema
 	pg.Name = "additionalProperties"
-	pg.ValueExpr = pg.ValueExpr + ".AdditionalProperties"
+	if pg.KeyVar == "" {
+		pg.ValueExpr = ""
+	}
+	pg.KeyVar += "k"
+	pg.ValueExpr += "v"
+	pg.Path = pg.KeyVar
+	if sg.Path != "" {
+		pg.Path = sg.Path + "+\".\"+" + pg.KeyVar
+	}
 	return pg
 }
 
@@ -327,6 +336,9 @@ func (sg *schemaGenContext) schemaValidations() sharedValidations {
 	}
 }
 func (sg *schemaGenContext) MergeResult(other *schemaGenContext) {
+	if other.GenSchema.AdditionalProperties != nil && other.GenSchema.AdditionalProperties.HasValidations {
+		sg.GenSchema.HasValidations = true
+	}
 	if other.GenSchema.HasValidations {
 		sg.GenSchema.HasValidations = other.GenSchema.HasValidations
 	}
@@ -616,6 +628,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.IndexVar = sg.IndexVar
 	sg.GenSchema.Location = "body"
 	sg.GenSchema.ValueExpression = sg.ValueExpr
+	sg.GenSchema.KeyVar = sg.KeyVar
 	sg.GenSchema.Name = sg.Name
 	sg.GenSchema.Title = sg.Schema.Title
 	sg.GenSchema.Description = sg.Schema.Description
@@ -691,6 +704,7 @@ type GenSchema struct {
 	Path                    string
 	ValueExpression         string
 	IndexVar                string
+	KeyVar                  string
 	Title                   string
 	Description             string
 	Location                string

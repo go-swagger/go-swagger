@@ -36,6 +36,11 @@ for {{.IndexVar}} := 0; {{.IndexVar}} < len({{.ValueExpression}}); {{.IndexVar}}
 {{end}}
 }
 {{end}}
+{{ define "mapvalidator" }}
+for {{.AdditionalProperties.KeyVar}}, {{.AdditionalProperties.ValueExpression}} := range {{ .ValueExpression }} {
+  {{ template "propertyvalidator" .AdditionalProperties }}
+}
+{{end}}
 {{define "objectvalidator"}}{{ if not .IsAnonymous }}
 if err := {{.ValueExpression}}.Validate(formats); err != nil {
   return err
@@ -50,6 +55,7 @@ if err := {{.ValueExpression}}.Validate(formats); err != nil {
 {{if .IsPrimitive }}{{ template "primitivefieldvalidator" .}}
 {{else if .IsCustomFormatter }}{{ template "customformatvalidator" .}}
 {{else if .IsArray }}{{ template "slicevalidator" .}}
+{{else if .IsMap}}{{ template "mapvalidator" . }}
 {{else if or .IsComplexObject .IsTuple .IsAdditionalProperties }}{{ template "objectvalidator" . }}{{end}}
 {{end}}
 {{define "schemavalidator" }}
@@ -60,6 +66,7 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
   {{if .IsPrimitive }}{{ template "primitivefieldvalidator" .}}
   {{else if .IsCustomFormatter }}{{ template "customformatvalidator" .}}
   {{else if .IsArray }}{{ template "slicevalidator" .}}
+  {{else if .IsMap}}{{ template "mapvalidator" . }}
   {{ end }}
 
   {{range .Properties}}

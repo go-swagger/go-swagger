@@ -12,7 +12,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(data []byte) error
   {{ range $idx, $val := .Properties }}if len(stage1) > {{ $idx }} {
     if err := json.Unmarshal(stage1[{{ $idx }}], {{ if not $val.IsNullable }}&{{ end }}{{ $val.ReceiverName }}.{{ pascalize $val.Name }}); err != nil {
       return err
-    }{{ if $.HasAdditionalItems }}
+    }{{ if $.AdditionalItems }}
     lastIndex = {{ $idx }}{{end}}
   }
   {{ end }}
@@ -34,8 +34,8 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
   data := []interface{}{
   {{ range .Properties }}{{ pascalize .Name }},
   {{ end }} }
-  {{ if .HasAdditionalItems }}
-  for _, v := range {{ .ReceiverName }}.{{ pascalize .Name }}Items {
+  {{ if .AdditionalItems }}
+  for _, v := range {{ .AdditionalItems.ValueExpression }} {
     data = append(data, v)
   }
   {{ end }}

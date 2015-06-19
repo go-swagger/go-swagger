@@ -316,6 +316,27 @@ definitions:
           maximum: 6
           multipleOf: 1
 
+  NamedMap:
+    type: object
+    additionalProperties:
+      type: integer
+      format: int64
+      minimum: 3
+      maximum: 6
+      multipleOf: 1
+
+  MapValidations:
+    type: object
+    properties:
+      meta:
+        type: object
+        additionalProperties:
+          type: integer
+          format: int64
+          minimum: 3
+          maximum: 6
+          multipleOf: 1
+
   StringValidationsAllOf:
     type: object
     allOf:
