@@ -286,7 +286,6 @@ func (sg *schemaGenContext) NewCompositionBranch(schema spec.Schema, index int) 
 func (sg *schemaGenContext) NewAdditionalProperty(schema spec.Schema) *schemaGenContext {
 	pg := sg.shallowClone()
 	pg.Schema = schema
-	pg.Name = "additionalProperties"
 	if pg.KeyVar == "" {
 		pg.ValueExpr = ""
 	}
@@ -383,6 +382,9 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 
 		if addp.Schema != nil {
 			if sg.GenSchema.IsMap || (sg.GenSchema.IsAdditionalProperties && sg.Named) {
+				if !sg.GenSchema.IsMap {
+					sg.GenSchema.ValueExpression += "." + sg.GenSchema.Name
+				}
 				comprop := sg.NewAdditionalProperty(*addp.Schema)
 				if err := comprop.makeGenSchema(); err != nil {
 					return err
@@ -402,19 +404,21 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 			additionalProps.Dependencies = nil
 			additionalProps.ExtraSchemas = nil
 			additionalProps.Named = true
-			additionalProps.Name = swag.ToGoName(sg.GenSchema.Name + " AddedProps" + strconv.Itoa(sg.Index))
 			ex := ""
 			if additionalProps.Schema.Example != nil {
 				ex = fmt.Sprintf("%#v", additionalProps.Schema.Example)
 			}
 			additionalProps.GenSchema.Example = ex
 			additionalProps.GenSchema.Path = ""
-			additionalProps.GenSchema.Name = swag.ToGoName(sg.GenSchema.Name)
+			additionalProps.GenSchema.Name = swag.ToGoName(sg.GenSchema.Name + " P" + strconv.Itoa(sg.Index))
 			additionalProps.ExtraSchemas = nil
 			additionalProps.Dependencies = nil
 			if sg.TypeResolver.ModelName != "" {
-				additionalProps.GenSchema.Name = swag.ToGoName(sg.TypeResolver.ModelName + " " + additionalProps.Name)
+				additionalProps.GenSchema.Name = swag.ToGoName(sg.TypeResolver.ModelName + " " + additionalProps.GenSchema.Name)
 			}
+			additionalProps.GenSchema.ValueExpression = "m"
+			additionalProps.GenSchema.ValueExpression = "m." + additionalProps.GenSchema.Name
+			additionalProps.Name = additionalProps.GenSchema.Name
 			additionalProps.GenSchema.GoType = additionalProps.GenSchema.Name
 			if sg.TypeResolver.ModelsPackage != "" {
 				additionalProps.GenSchema.GoType = sg.TypeResolver.ModelsPackage + "." + additionalProps.GenSchema.Name

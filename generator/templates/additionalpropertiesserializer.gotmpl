@@ -29,10 +29,10 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(data []byte) error
       }
       result[k] = toadd
     }
-    {{ .ReceiverName }}.AdditionalProperties = result
+    {{ .ValueExpression }} = result
   }
   {{ else }}
-  {{ .ReceiverName }}.AdditionalProperties = stage2
+  {{ .ValueExpression }} = stage2
   {{ end }}
 
   return nil
@@ -46,12 +46,12 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
     return nil, err
   }
 
-  if len({{ .ReceiverName }}.AdditionalProperties) == 0 {
+  if len({{ .ValueExpression }}) == 0 {
     return props, nil
   }
 
   // make JSON object for the additional properties
-  additional, err := json.Marshal({{ .ReceiverName }}.AdditionalProperties)
+  additional, err := json.Marshal({{ .ValueExpression }})
   if err != nil {
     return nil, err
   }

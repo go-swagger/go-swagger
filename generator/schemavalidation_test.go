@@ -2,7 +2,6 @@ package generator
 
 import (
 	"bytes"
-	"fmt"
 	"regexp"
 	"testing"
 
@@ -586,13 +585,74 @@ func TestSchemaValidation_MapProps(t *testing.T) {
 					formatted, err := formatGoFile("map_validations.go", buf.Bytes())
 					if assert.NoError(t, err) {
 						res := string(formatted)
-						fmt.Println(res)
 						assertInCode(t, k+") Validate(formats", res)
 						assertInCode(t, "m.validateMeta(formats", res)
 						assertInCode(t, "for k, v := range m.Meta {", res)
 						assertInCode(t, "err := validate.Minimum(\"meta\"+\".\"+k,", res)
 						assertInCode(t, "err := validate.Maximum(\"meta\"+\".\"+k,", res)
 						assertInCode(t, "err := validate.MultipleOf(\"meta\"+\".\"+k,", res)
+						assertInCode(t, "errors.CompositeValidationError(res...)", res)
+					}
+				}
+			}
+		}
+	}
+}
+
+func TestSchemaValidation_NamedNestedMap(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "NamedNestedMap"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			if assertValidation(t, "", "m", gm.GenSchema) {
+				buf := bytes.NewBuffer(nil)
+				err := modelTemplate.Execute(buf, gm)
+				if assert.NoError(t, err) {
+					formatted, err := formatGoFile("named_nested_map.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(formatted)
+						assertInCode(t, k+") Validate(formats", res)
+						assertInCode(t, "for k, v := range m {", res)
+						assertInCode(t, "for kk, vv := range v {", res)
+						assertInCode(t, "for kkk, vvv := range vv {", res)
+						assertInCode(t, "err := validate.Minimum(k+\".\"+kk+\".\"+kkk,", res)
+						assertInCode(t, "err := validate.Maximum(k+\".\"+kk+\".\"+kkk,", res)
+						assertInCode(t, "err := validate.MultipleOf(k+\".\"+kk+\".\"+kkk,", res)
+						assertInCode(t, "errors.CompositeValidationError(res...)", res)
+					}
+				}
+			}
+		}
+	}
+}
+
+func TestSchemaValidation_NestedMapProps(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "NestedMapValidations"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			prop := gm.Properties[0]
+			if assertValidation(t, "\"meta\"", "m.Meta", prop) {
+				buf := bytes.NewBuffer(nil)
+				err := modelTemplate.Execute(buf, gm)
+				if assert.NoError(t, err) {
+					formatted, err := formatGoFile("nested_map_validations.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(formatted)
+						assertInCode(t, k+") Validate(formats", res)
+						assertInCode(t, "m.validateMeta(formats", res)
+						assertInCode(t, "for k, v := range m.Meta {", res)
+						assertInCode(t, "for kk, vv := range v {", res)
+						assertInCode(t, "for kkk, vvv := range vv {", res)
+						assertInCode(t, "err := validate.Minimum(\"meta\"+\".\"+k+\".\"+kk+\".\"+kkk,", res)
+						assertInCode(t, "err := validate.Maximum(\"meta\"+\".\"+k+\".\"+kk+\".\"+kkk,", res)
+						assertInCode(t, "err := validate.MultipleOf(\"meta\"+\".\"+k+\".\"+kk+\".\"+kkk,", res)
 						assertInCode(t, "errors.CompositeValidationError(res...)", res)
 					}
 				}

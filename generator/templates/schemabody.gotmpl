@@ -3,8 +3,7 @@
   {{ if .IsAnonymous }}{{ range .Properties }}
   {{ if $.IsTuple }}{{ template "tuplefield" . }}{{ else }}{{template "structfield" . }}{{ end }}
   {{ end }}{{ if .HasAdditionalProperties }}/* {{ template "docstring" .AdditionalProperties }}{{ template "propertyValidationDocString" .AdditionalProperties}} */
-  AdditionalProperties map[string]{{ if .AdditionalProperties }}{{ template "schemaType" .AdditionalProperties }}{{ else }}interface{}{{ end }} `json:"-"`
-  {{end}}
+  {{ pascalize .AdditionalProperties.Name }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`  {{end}}
   {{ if .AdditionalItems }}/* {{ template "docstring" .AdditionalItems }}{{ template "propertyValidationDocString" .AdditionalItems}} */
   {{ pascalize .AdditionalItems.Name }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
   {{ end }}
@@ -15,7 +14,7 @@
   {{ if $.IsTuple }}{{ template "tuplefield" . }}{{ else }}{{template "structfield" . }}{{ end }}
   {{end}}
   {{ if .HasAdditionalProperties }}/* {{ template "docstring" .AdditionalProperties }}{{ template "propertyValidationDocString" .AdditionalProperties}} */
-  AdditionalProperties map[string]{{ if .AdditionalProperties }}{{ template "schemaType" .AdditionalProperties }}{{ else }}interface{}{{ end }} `json:"-"`
+  {{ pascalize .AdditionalProperties.Name }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
   {{ end }}
   {{ if .AdditionalItems }}/* {{ template "docstring" .AdditionalItems }}{{ template "propertyValidationDocString" .AdditionalItems}} */
   {{ pascalize .AdditionalItems.Name }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`

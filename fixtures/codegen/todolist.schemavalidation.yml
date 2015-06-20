@@ -337,6 +337,35 @@ definitions:
           maximum: 6
           multipleOf: 1
 
+  NamedNestedMap:
+    type: object
+    additionalProperties:
+      type: object
+      additionalProperties:
+        type: object
+        additionalProperties:
+          type: integer
+          format: int64
+          minimum: 3
+          maximum: 6
+          multipleOf: 1
+
+  NestedMapValidations:
+    type: object
+    properties:
+      meta:
+        type: object
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: integer
+              format: int64
+              minimum: 3
+              maximum: 6
+              multipleOf: 1
+
   StringValidationsAllOf:
     type: object
     allOf:

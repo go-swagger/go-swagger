@@ -281,17 +281,17 @@ func TestGenerateModel_NotaWithName(t *testing.T) {
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assertInCode(t, "type "+k+" struct {", res)
-				assertInCode(t, "AdditionalProperties map[string]int32 `json:\"-\"`", res)
+				assertInCode(t, k+" map[string]int32 `json:\"-\"`", res)
 				assertInCode(t, "Name string `json:\"name\"`", res)
 				assertInCode(t, k+") UnmarshalJSON", res)
 				assertInCode(t, k+") MarshalJSON", res)
 				assertInCode(t, "json.Marshal(m)", res)
-				assertInCode(t, "json.Marshal(m.AdditionalProperties)", res)
+				assertInCode(t, "json.Marshal(m."+k+")", res)
 				assertInCode(t, "json.Unmarshal(data, &stage1)", res)
 				assertInCode(t, "json.Unmarshal(data, &stage2)", res)
 				assertInCode(t, "json.Unmarshal(v, &toadd)", res)
 				assertInCode(t, "result[k] = toadd", res)
-				assertInCode(t, "m.AdditionalProperties = result", res)
+				assertInCode(t, "m."+k+" = result", res)
 				for _, p := range genModel.Properties {
 					assertInCode(t, "delete(stage2, \""+p.Name+"\")", res)
 				}
@@ -353,19 +353,19 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := buf.String()
 					assertInCode(t, "type "+k+" struct {", res)
-					assertInCode(t, "Data "+k+"DataAddedProps0 `json:\"data\"`", res)
-					assertInCode(t, "type "+k+"DataAddedProps0 struct {", res)
-					assertInCode(t, "AdditionalProperties map[string]string `json:\"-\"`", res)
+					assertInCode(t, "Data "+k+"DataP0 `json:\"data\"`", res)
+					assertInCode(t, "type "+k+"DataP0 struct {", res)
+					assertInCode(t, k+"DataP0 map[string]string `json:\"-\"`", res)
 					assertInCode(t, "Name string `json:\"name\"`", res)
-					assertInCode(t, k+"DataAddedProps0) UnmarshalJSON", res)
-					assertInCode(t, k+"DataAddedProps0) MarshalJSON", res)
+					assertInCode(t, k+"DataP0) UnmarshalJSON", res)
+					assertInCode(t, k+"DataP0) MarshalJSON", res)
 					assertInCode(t, "json.Marshal(m)", res)
-					assertInCode(t, "json.Marshal(m.AdditionalProperties)", res)
+					assertInCode(t, "json.Marshal(m."+k+"DataP0)", res)
 					assertInCode(t, "json.Unmarshal(data, &stage1)", res)
 					assertInCode(t, "json.Unmarshal(data, &stage2)", res)
 					assertInCode(t, "json.Unmarshal(v, &toadd)", res)
 					assertInCode(t, "result[k] = toadd", res)
-					assertInCode(t, "m.AdditionalProperties = result", res)
+					assertInCode(t, "m."+k+"DataP0 = result", res)
 					for _, p := range sch.Properties {
 						assertInCode(t, "delete(stage2, \""+p.Name+"\")", res)
 					}
@@ -720,7 +720,7 @@ func TestGenerateModel_WithAllOf(t *testing.T) {
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assertInCode(t, "type WithAllOf struct {", res)
-				assertInCode(t, "type WithAllOfAO2AddedProps2 struct {", res)
+				assertInCode(t, "type WithAllOfAO2P2 struct {", res)
 				assertInCode(t, "type WithAllOfAO3Tuple3 struct {", res)
 				assertInCode(t, "type WithAllOfAO4Tuple4 struct {", res)
 				assertInCode(t, "Notable", res)
@@ -732,8 +732,8 @@ func TestGenerateModel_WithAllOf(t *testing.T) {
 				assertInCode(t, "P1 strfmt.DateTime `json:\"-\"`", res)
 				assertInCode(t, "P1 strfmt.Date `json:\"-\"`", res)
 				assertInCode(t, "WithAllOfAO4Tuple4Items []strfmt.Password `json:\"-\"`", res)
-				assertInCode(t, "AdditionalProperties map[string]int32 `json:\"-\"`", res)
-				assertInCode(t, "AdditionalProperties map[string]int64 `json:\"-\"`", res)
+				assertInCode(t, "AO1 map[string]int32 `json:\"-\"`", res)
+				assertInCode(t, "WithAllOfAO2P2 map[string]int64 `json:\"-\"`", res)
 			}
 		}
 	}
