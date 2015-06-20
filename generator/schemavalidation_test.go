@@ -660,3 +660,80 @@ func TestSchemaValidation_NestedMapProps(t *testing.T) {
 		}
 	}
 }
+
+func TestSchemaValidation_NamedAllOf(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "NamedAllOf"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			if assertValidation(t, "", "m", gm.GenSchema) {
+				buf := bytes.NewBuffer(nil)
+				err := modelTemplate.Execute(buf, gm)
+				if assert.NoError(t, err) {
+					formatted, err := formatGoFile("named_all_of.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(formatted)
+						assertInCode(t, k+") Validate(formats", res)
+						assertInCode(t, k+") validateName(formats", res)
+						assertInCode(t, k+") validateAge(formats", res)
+						assertInCode(t, k+") validateArgs(formats", res)
+						assertInCode(t, k+") validateAssoc(formats", res)
+						assertInCode(t, k+") validateOpts(formats", res)
+						assertInCode(t, k+") validateExtOpts(formats", res)
+						assertInCode(t, k+") validateCoords(formats", res)
+						assertInCode(t, "validate.MinLength(\"name\",", res)
+						assertInCode(t, "validate.Minimum(\"age\",", res)
+						assertInCode(t, "validate.MinItems(\"args\",", res)
+						assertInCode(t, "validate.MinItems(\"assoc\",", res)
+						assertInCode(t, "validate.MinItems(\"assoc\"+\".\"+strconv.Itoa(i),", res)
+						assertInCode(t, "validate.MinItems(\"assoc\"+\".\"+strconv.Itoa(i)+\".\"+strconv.Itoa(ii),", res)
+						assertInCode(t, "validate.MinLength(\"assoc\"+\".\"+strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii),", res)
+						assertInCode(t, "validate.Minimum(\"opts\"+\".\"+k,", res)
+						assertInCode(t, "validate.Minimum(\"extOpts\"+\".\"+k+\".\"+kk+\".\"+kkk,", res)
+						assertInCode(t, "validate.MinLength(\"coords\"+\".\"+\"name\",", res)
+						assertInCode(t, "errors.CompositeValidationError(res...)", res)
+					}
+				}
+			}
+		}
+	}
+}
+
+func TestSchemaValidation_AllOfProps(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "AllOfValidations"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			prop := gm.Properties[0]
+			if assertValidation(t, "\"meta\"", "m.Meta", prop) {
+				buf := bytes.NewBuffer(nil)
+				err := modelTemplate.Execute(buf, gm)
+				if assert.NoError(t, err) {
+					formatted, err := formatGoFile("all_of_validations.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(formatted)
+						assertInCode(t, k+") Validate(formats", res)
+						assertInCode(t, "m.validateMeta(formats", res)
+						assertInCode(t, "validate.MinLength(\"meta\"+\".\"+\"name\",", res)
+						assertInCode(t, "validate.Minimum(\"meta\"+\".\"+\"age\",", res)
+						assertInCode(t, "validate.MinItems(\"meta\"+\".\"+\"args\",", res)
+						assertInCode(t, "validate.MinItems(\"meta\"+\".\"+\"assoc\",", res)
+						assertInCode(t, "validate.MinItems(\"meta\"+\".\"+\"assoc\"+\".\"+strconv.Itoa(i),", res)
+						assertInCode(t, "validate.MinItems(\"meta\"+\".\"+\"assoc\"+\".\"+strconv.Itoa(i)+\".\"+strconv.Itoa(ii),", res)
+						assertInCode(t, "validate.MinLength(\"meta\"+\".\"+\"assoc\"+\".\"+strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii),", res)
+						assertInCode(t, "validate.Minimum(\"meta\"+\".\"+\"opts\"+\".\"+k,", res)
+						assertInCode(t, "validate.Minimum(\"meta\"+\".\"+\"extOpts\"+\".\"+k+\".\"+kk+\".\"+kkk,", res)
+						assertInCode(t, "validate.MinLength(\"meta\"+\".\"+\"coords\"+\".\"+\"name\",", res)
+						assertInCode(t, "errors.CompositeValidationError(res...)", res)
+					}
+				}
+			}
+		}
+	}
+}

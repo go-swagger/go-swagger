@@ -366,7 +366,7 @@ definitions:
               maximum: 6
               multipleOf: 1
 
-  StringValidationsAllOf:
+  NamedAllOf:
     type: object
     allOf:
     - type: object
@@ -376,4 +376,181 @@ definitions:
           minLength: 2
           maxLength: 50
           Pattern: "[A-Za-z0-9][\\w- ]+"
+    - type: object
+      properties:
+        age:
+          type: integer
+          format: int32
+          minimum: 2
+          maximum: 50
+          multipleOf: 1.5
+    - type: object
+      properties:
+        args:
+          type: array
+          minItems: 5
+          maxItems: 20
+          items:
+            type: string
+            minLength: 2
+            maxLength: 50
+            Pattern: "[A-Za-z0-9][\\w- ]+"
+    - type: object
+      properties:
+        assoc:
+          type: array
+          minItems: 5
+          maxItems: 20
+          items:
+            type: array
+            minItems: 5
+            maxItems: 20
+            items:
+              type: array
+              minItems: 5
+              maxItems: 20
+              items:
+                type: string
+                minLength: 2
+                maxLength: 50
+                Pattern: "[A-Za-z0-9][\\w- ]+"
+    - type: object
+      properties:
+        opts:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int32
+            minimum: 2
+            maximum: 50
+            multipleOf: 1.5
+    - type: object
+      properties:
+        extOpts:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: object
+              additionalProperties:
+                type: integer
+                format: int32
+                minimum: 2
+                maximum: 50
+                multipleOf: 1.5
+    - type: object
+      properties:
+        coords:
+          type: object
+          allOf:
+          - type: object
+            properties:
+              name:
+                type: string
+                minLength: 2
+                maxLength: 50
+                Pattern: "[A-Za-z0-9][\\w- ]+"
+          - type: object
+            properties:
+              age:
+                type: integer
+                format: int32
+                minimum: 2
+                maximum: 50
+                multipleOf: 1.5
 
+  AllOfValidations:
+    type: object
+    properties:
+      meta:
+        type: object
+        allOf:
+        - type: object
+          properties:
+            name:
+              type: string
+              minLength: 2
+              maxLength: 50
+              Pattern: "[A-Za-z0-9][\\w- ]+"
+        - type: object
+          properties:
+            age:
+              type: integer
+              format: int32
+              minimum: 2
+              maximum: 50
+              multipleOf: 1.5
+        - type: object
+          properties:
+            args:
+              type: array
+              minItems: 5
+              maxItems: 20
+              items:
+                type: string
+                minLength: 2
+                maxLength: 50
+                Pattern: "[A-Za-z0-9][\\w- ]+"
+        - type: object
+          properties:
+            assoc:
+              type: array
+              minItems: 5
+              maxItems: 20
+              items:
+                type: array
+                minItems: 5
+                maxItems: 20
+                items:
+                  type: array
+                  minItems: 5
+                  maxItems: 20
+                  items:
+                    type: string
+                    minLength: 2
+                    maxLength: 50
+                    Pattern: "[A-Za-z0-9][\\w- ]+"
+        - type: object
+          properties:
+            opts:
+              type: object
+              additionalProperties:
+                type: integer
+                format: int32
+                minimum: 2
+                maximum: 50
+                multipleOf: 1.5
+        - type: object
+          properties:
+            extOpts:
+              type: object
+              additionalProperties:
+                type: object
+                additionalProperties:
+                  type: object
+                  additionalProperties:
+                    type: integer
+                    format: int32
+                    minimum: 2
+                    maximum: 50
+                    multipleOf: 1.5
+        - type: object
+          properties:
+            coords:
+              type: object
+              allOf:
+              - type: object
+                properties:
+                  name:
+                    type: string
+                    minLength: 2
+                    maxLength: 50
+                    Pattern: "[A-Za-z0-9][\\w- ]+"
+              - type: object
+                properties:
+                  age:
+                    type: integer
+                    format: int32
+                    minimum: 2
+                    maximum: 50
+                    multipleOf: 1.5

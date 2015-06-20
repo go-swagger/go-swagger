@@ -46,6 +46,11 @@ if err := {{.ValueExpression}}.Validate(formats); err != nil {
   return err
 }
 {{ else }}
+{{ range .AllOf }}
+{{ range .Properties }}
+{{ template "propertyvalidator" . }}
+{{ end }}
+{{ end }}
 {{ range .Properties }}
 {{ template "propertyvalidator" . }}
 {{ end }}{{end}}{{if and .IsTuple .AdditionalItems}}
@@ -63,6 +68,28 @@ if err := {{.ValueExpression}}.Validate(formats); err != nil {
 func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ pascalize .Name}}) Validate(formats strfmt.Registry) error {
   {{if .HasValidations}}
   var res []error
+  {{ range .AllOf }}
+    {{ if .HasValidations }}
+    {{if .IsPrimitive }}{{ template "primitivefieldvalidator" .}}
+    {{else if .IsCustomFormatter }}{{ template "customformatvalidator" .}}
+    {{else if .IsArray }}{{ template "slicevalidator" .}}
+    {{else if .IsMap}}{{ template "mapvalidator" . }}
+    {{ end }}
+
+    {{range .Properties}}
+    {{if .HasValidations}}
+    if err := {{.ReceiverName}}.validate{{ pascalize .Name }}(formats); err != nil {
+      res = append(res, err)
+    }
+    {{end}}
+    {{ end }}
+  {{end}}
+  {{if and .IsTuple .AdditionalItems}}
+  if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Items(formats); err != nil {
+    res = append(res, err)
+  }
+  {{end}}
+  {{ end }}
   {{if .IsPrimitive }}{{ template "primitivefieldvalidator" .}}
   {{else if .IsCustomFormatter }}{{ template "customformatvalidator" .}}
   {{else if .IsArray }}{{ template "slicevalidator" .}}
@@ -96,6 +123,18 @@ func ({{.ReceiverName}} *{{ pascalize $.Name }}) validate{{ pascalize .Name }}(f
 
   return nil
 }
+{{end}}
+{{end}}
+{{range .AllOf}}
+{{range .Properties}}
+{{if .HasValidations}}
+
+func ({{.ReceiverName}} *{{ pascalize $.Name }}) validate{{ pascalize .Name }}(formats strfmt.Registry) error {
+  {{template "propertyvalidator" .}}
+
+  return nil
+}
+{{ end }}
 {{end}}
 {{end}}
 {{if .HasAdditionalItems }}
