@@ -40,11 +40,62 @@ definitions:
       notes:
         type: string
         minLength: 5
+
   Scores:
     type: array
     items:
       type: number
       format: float
+
+  JaggedScores:
+    type: array
+    items:
+      type: array
+      items:
+        type: array
+        items:
+          type: number
+          format: float
+
+  Notables:
+    type: array
+    items:
+      $ref: "#/definitions/Notable"
+
+  Notablix:
+    type: array
+    items:
+      type: array
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/Notable"
+
+  Stats:
+    type: array
+    items:
+      type: object
+      properties:
+        points:
+          type: array
+          items:
+            type: number
+            format: int64
+
+  Statix:
+    type: array
+    items:
+      type: array
+      items:
+        type: array
+        items:
+          type: object
+          properties:
+            points:
+              type: array
+              items:
+                type: number
+                format: int64
 
   WithItems:
     type: object
@@ -54,16 +105,46 @@ definitions:
         items:
           type: string
 
+  WithComplexItems:
+    type: object
+    properties:
+      tags:
+        type: array
+        items:
+          type: object
+          properties:
+            points:
+              type: array
+              items:
+                type: number
+                format: int64
+
   WithItemsAndAdditional2:
     type: object
     properties:
       tags:
         type: array
         items:
-          type: string
+          - type: string
         additionalItems:
           type: integer
           format: int32
+
+  WithComplexAdditional:
+    type: object
+    properties:
+      tags:
+        type: array
+        items:
+          - type: string
+        additionalItems:
+          type: object
+          properties:
+            points:
+              type: array
+              items:
+                type: number
+                format: int64
 
   WithItemsAndAdditional:
     type: object
@@ -71,7 +152,7 @@ definitions:
       tags:
         type: array
         items:
-          type: string
+          - type: string
         additionalItems: true
   Age:
     type: integer
@@ -82,6 +163,22 @@ definitions:
     additionalProperties:
       type: integer
       format: int32
+
+  NotaWithRef:
+    type: object
+    additionalProperties:
+      $ref: "#/definitions/Notable"
+
+  NotaWithMeta:
+    type: object
+    additionalProperties:
+      type: object
+      properties:
+        comment:
+          type: string
+        count:
+          type: integer
+          format: int32
 
   NotaWithName:
     type: object
@@ -151,6 +248,26 @@ definitions:
       type: number
       format: double
 
+  TupleWithComplex:
+    type: array
+    items:
+      - type: integer
+        format: int64
+      - type: string
+      - type: string
+        format: date-time
+      - $ref: "#/definitions/Notable"
+    additionalItems:
+      type: object
+      properties:
+        args:
+          type: array
+          items:
+            - type: string
+          additionalItems:
+            type: number
+            format: float
+
   WithTuple:
     type: object
     properties:
@@ -192,6 +309,24 @@ definitions:
         additionalProperties:
           type: integer
           format: int64
+      - type: object
+        properties:
+          score:
+            type: number
+            format: float
+          count:
+            type: integer
+            format: int64
+          remark:
+            type: string
+        additionalProperties:
+          type: object
+          properties:
+            points:
+              type: array
+              items:
+                type: number
+                format: double
       - type: array
         items:
         - type: number
@@ -217,6 +352,33 @@ definitions:
             type: string
             minLength: 5
             maxLength: 2048
+          params:
+            type: object
+            maxProperties: 20
+            additionalProperties:
+              type: object
+              properties:
+                opinion:
+                  type: string
+          extra:
+            type: object
+            properties:
+              score:
+                type: number
+                format: float
+              count:
+                type: integer
+                format: int64
+              remark:
+                type: string
+            additionalProperties:
+              type: object
+              properties:
+                points:
+                  type: array
+                  items:
+                    type: number
+                    format: double
 
   Comment:
     type: "object"

@@ -124,6 +124,7 @@ func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *spec.Docum
 		Required:     false,
 		TypeResolver: resolver,
 		Named:        true,
+		ExtraSchemas: make(map[string]GenSchema),
 	}
 	if err := pg.makeGenSchema(); err != nil {
 		return nil, err
@@ -137,13 +138,17 @@ func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *spec.Docum
 			"github.com/go-swagger/go-swagger/httpkit/validate",
 		}
 	}
+	var extras []GenSchema
+	for _, v := range pg.ExtraSchemas {
+		extras = append(extras, v)
+	}
 
 	return &GenDefinition{
 		Package:        filepath.Base(pkg),
 		GenSchema:      pg.GenSchema,
 		DependsOn:      pg.Dependencies,
 		DefaultImports: defaultImports,
-		ExtraSchemas:   pg.ExtraSchemas,
+		ExtraSchemas:   extras,
 	}, nil
 }
 
@@ -182,12 +187,13 @@ type schemaGenContext struct {
 	Required           bool
 	AdditionalProperty bool
 	TypeResolver       *typeResolver
+	Untyped            bool
 	Named              bool
 	Index              int
 
 	GenSchema    GenSchema
 	Dependencies []string
-	ExtraSchemas []GenSchema
+	ExtraSchemas map[string]GenSchema
 }
 
 func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContext {
@@ -202,6 +208,8 @@ func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContex
 	pg.ValueExpr = pg.ValueExpr + "[" + indexVar + "]"
 	pg.Schema = *schema
 	pg.Required = false
+
+	// when this is an anonymous complex object, this needs to become a ref
 	return pg
 }
 
@@ -224,7 +232,10 @@ func (sg *schemaGenContext) NewAdditionalItems(schema *spec.Schema) *schemaGenCo
 	}
 	pg.IndexVar = indexVar
 	pg.ValueExpr = sg.ValueExpr + "." + swag.ToGoName(sg.Name) + "Items[" + indexVar + "]"
-	pg.Schema = *schema
+	pg.Schema = spec.Schema{}
+	if schema != nil {
+		pg.Schema = *schema
+	}
 	pg.Required = false
 	return pg
 }
@@ -266,7 +277,7 @@ func (sg *schemaGenContext) shallowClone() *schemaGenContext {
 	*pg = *sg
 	pg.GenSchema = GenSchema{}
 	pg.Dependencies = nil
-	pg.ExtraSchemas = nil
+	//pg.ExtraSchemas = make(map[string]GenSchema)
 	pg.Named = false
 	pg.Index = 0
 	return pg
@@ -342,7 +353,9 @@ func (sg *schemaGenContext) MergeResult(other *schemaGenContext) {
 		sg.GenSchema.HasValidations = other.GenSchema.HasValidations
 	}
 	sg.Dependencies = append(sg.Dependencies, other.Dependencies...)
-	sg.ExtraSchemas = append(sg.ExtraSchemas, other.ExtraSchemas...)
+	for k, v := range other.ExtraSchemas {
+		sg.ExtraSchemas[k] = v
+	}
 }
 
 func (sg *schemaGenContext) buildProperties() error {
@@ -373,17 +386,100 @@ func (sg *schemaGenContext) buildAllOf() error {
 func (sg *schemaGenContext) buildAdditionalProperties() error {
 	if sg.Schema.AdditionalProperties != nil {
 		addp := *sg.Schema.AdditionalProperties
-		sg.GenSchema.HasAdditionalProperties = addp.Allows || addp.Schema != nil
+		wantsAdditional := addp.Allows || addp.Schema != nil
+		sg.GenSchema.HasAdditionalProperties = wantsAdditional
+		//log.Printf("%s (complex: %t, map: %t, hasAdditional: %t)", sg.Name, sg.GenSchema.IsComplexObject, sg.GenSchema.IsMap, wantsAdditional)
 		// flag swap
 		if sg.GenSchema.IsComplexObject {
-			sg.GenSchema.IsAdditionalProperties = sg.GenSchema.IsComplexObject
-			sg.GenSchema.IsComplexObject = sg.GenSchema.IsMap
+			sg.GenSchema.IsAdditionalProperties = true
+			sg.GenSchema.IsComplexObject = false
+			sg.GenSchema.IsMap = false
 		}
 
 		if addp.Schema != nil {
-			if sg.GenSchema.IsMap || (sg.GenSchema.IsAdditionalProperties && sg.Named) {
-				if !sg.GenSchema.IsMap {
-					sg.GenSchema.ValueExpression += "." + sg.GenSchema.Name
+			if !sg.GenSchema.IsMap && (sg.GenSchema.IsAdditionalProperties && sg.Named) {
+				//tpe := sg.GenSchema
+				//log.Printf("additional properties for definition (complex: %t, anonymous: %t)", tpe.IsComplexObject, tpe.IsAnonymous)
+				sg.GenSchema.ValueExpression += "." + sg.GenSchema.Name
+				comprop := sg.NewAdditionalProperty(*addp.Schema)
+				if err := comprop.makeGenSchema(); err != nil {
+					return err
+				}
+				sg.MergeResult(comprop)
+				sg.GenSchema.AdditionalProperties = &comprop.GenSchema
+				return nil
+			}
+
+			if sg.GenSchema.IsMap && wantsAdditional {
+				tpe, err := sg.TypeResolver.ResolveSchema(addp.Schema, true)
+				if err != nil {
+					return err
+				}
+				//log.Printf("additional properties for map (complex: %t, anonymous: %t)", tpe.IsComplexObject, tpe.IsAnonymous)
+				if tpe.IsComplexObject && tpe.IsAnonymous {
+					//log.Printf("lifting complex object to a new struct type")
+					// for an anonymous struct map value, first build the new object
+					// and then replace the current one with a $ref to the
+					// new object
+					var additionalProps schemaGenContext
+					additionalProps = *sg
+					additionalProps.Schema = *addp.Schema
+					additionalProps.GenSchema.resolvedType = tpe
+					additionalProps.Dependencies = nil
+					additionalProps.ExtraSchemas = nil
+					additionalProps.Named = true
+					additionalProps.GenSchema.HasAdditionalProperties = false
+					ex := ""
+					if additionalProps.Schema.Example != nil {
+						ex = fmt.Sprintf("%#v", additionalProps.Schema.Example)
+					}
+					additionalProps.GenSchema.Example = ex
+					additionalProps.GenSchema.Path = ""
+					additionalProps.GenSchema.Name = swag.ToGoName(sg.Name + "Anon")
+					additionalProps.ExtraSchemas = nil
+					additionalProps.Dependencies = nil
+					if sg.TypeResolver.ModelName != sg.Name {
+						additionalProps.GenSchema.Name = swag.ToGoName(sg.TypeResolver.ModelName + " " + additionalProps.GenSchema.Name)
+					}
+					additionalProps.GenSchema.ValueExpression = "m"
+					additionalProps.GenSchema.ValueExpression = "m." + additionalProps.GenSchema.Name
+					additionalProps.Name = additionalProps.GenSchema.Name
+					additionalProps.GenSchema.GoType = additionalProps.GenSchema.Name
+					if sg.TypeResolver.ModelsPackage != "" {
+						additionalProps.GenSchema.GoType = sg.TypeResolver.ModelsPackage + "." + additionalProps.GenSchema.Name
+					}
+					additionalProps.GenSchema.Title = additionalProps.GenSchema.Name + " a wrapper to serialize additional properties"
+					additionalProps.GenSchema.Description = ""
+					additionalProps.GenSchema.IsAnonymous = false
+					additionalProps.GenSchema.IsComplexObject = true
+					additionalProps.GenSchema.IsMap = false
+					additionalProps.GenSchema.Properties = nil
+					if err := (&additionalProps).buildProperties(); err != nil {
+						return err
+					}
+
+					// rewrite to be a ref instead of a complex object
+					sg.GenSchema.IsComplexObject = false
+					sg.GenSchema.IsMap = true
+					sg.GenSchema.IsAnonymous = false
+					sg.GenSchema.IsAdditionalProperties = false
+					sg.GenSchema.HasAdditionalProperties = false
+					//sg.GenSchema.AdditionalProperties = nil
+					sg.GenSchema.Properties = nil
+					sg.GenSchema.GoType = "map[string]" + additionalProps.GenSchema.GoType
+					if addp.Schema != nil {
+						comprop := additionalProps.NewAdditionalProperty(*addp.Schema)
+
+						if err := comprop.makeGenSchema(); err != nil {
+							return err
+						}
+						additionalProps.MergeResult(comprop)
+						additionalProps.GenSchema.AdditionalProperties = &comprop.GenSchema
+					}
+
+					sg.MergeResult(&additionalProps)
+					sg.ExtraSchemas[additionalProps.Name] = additionalProps.GenSchema
+					return nil
 				}
 				comprop := sg.NewAdditionalProperty(*addp.Schema)
 				if err := comprop.makeGenSchema(); err != nil {
@@ -393,77 +489,132 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 				sg.GenSchema.AdditionalProperties = &comprop.GenSchema
 				return nil
 			}
-		}
 
-		if sg.GenSchema.IsAdditionalProperties && !sg.Named {
-			// for an anonoymous object, first build the new object
-			// and then replace the current one with a $ref to the
-			// new object
-			var additionalProps schemaGenContext
-			additionalProps = *sg
-			additionalProps.Dependencies = nil
-			additionalProps.ExtraSchemas = nil
-			additionalProps.Named = true
-			ex := ""
-			if additionalProps.Schema.Example != nil {
-				ex = fmt.Sprintf("%#v", additionalProps.Schema.Example)
-			}
-			additionalProps.GenSchema.Example = ex
-			additionalProps.GenSchema.Path = ""
-			additionalProps.GenSchema.Name = swag.ToGoName(sg.GenSchema.Name + " P" + strconv.Itoa(sg.Index))
-			additionalProps.ExtraSchemas = nil
-			additionalProps.Dependencies = nil
-			if sg.TypeResolver.ModelName != "" {
-				additionalProps.GenSchema.Name = swag.ToGoName(sg.TypeResolver.ModelName + " " + additionalProps.GenSchema.Name)
-			}
-			additionalProps.GenSchema.ValueExpression = "m"
-			additionalProps.GenSchema.ValueExpression = "m." + additionalProps.GenSchema.Name
-			additionalProps.Name = additionalProps.GenSchema.Name
-			additionalProps.GenSchema.GoType = additionalProps.GenSchema.Name
-			if sg.TypeResolver.ModelsPackage != "" {
-				additionalProps.GenSchema.GoType = sg.TypeResolver.ModelsPackage + "." + additionalProps.GenSchema.Name
-			}
-			additionalProps.GenSchema.Title = additionalProps.GenSchema.Name + " a wrapper to serialize additional properties"
-			additionalProps.GenSchema.Description = ""
-			additionalProps.GenSchema.Properties = nil
-			if err := (&additionalProps).buildProperties(); err != nil {
-				return err
-			}
-
-			// rewrite to be a ref instead of a complex object
-			sg.GenSchema.IsComplexObject = true
-			sg.GenSchema.IsAnonymous = false
-			sg.GenSchema.IsAdditionalProperties = false
-			sg.GenSchema.HasAdditionalProperties = false
-			sg.GenSchema.AdditionalProperties = nil
-			sg.GenSchema.Properties = nil
-			sg.GenSchema.GoType = additionalProps.GenSchema.GoType
-			if addp.Schema != nil {
-				comprop := additionalProps.NewAdditionalProperty(*addp.Schema)
-				if err := comprop.makeGenSchema(); err != nil {
+			if sg.GenSchema.IsAdditionalProperties && !sg.Named {
+				//tpe := sg.GenSchema
+				//log.Printf("additional properties (complex: %t, anonymous: %t)", tpe.IsComplexObject, tpe.IsAnonymous)
+				// for an anonoymous object, first build the new object
+				// and then replace the current one with a $ref to the
+				// new object
+				var additionalProps schemaGenContext
+				additionalProps = *sg
+				additionalProps.Dependencies = nil
+				additionalProps.ExtraSchemas = nil
+				additionalProps.Named = true
+				ex := ""
+				if additionalProps.Schema.Example != nil {
+					ex = fmt.Sprintf("%#v", additionalProps.Schema.Example)
+				}
+				additionalProps.GenSchema.Example = ex
+				additionalProps.GenSchema.Path = ""
+				additionalProps.GenSchema.Name = swag.ToGoName(sg.GenSchema.Name + " P" + strconv.Itoa(sg.Index))
+				additionalProps.ExtraSchemas = nil
+				additionalProps.Dependencies = nil
+				if sg.TypeResolver.ModelName != "" {
+					additionalProps.GenSchema.Name = swag.ToGoName(sg.TypeResolver.ModelName + " " + additionalProps.GenSchema.Name)
+				}
+				additionalProps.GenSchema.ValueExpression = "m"
+				additionalProps.GenSchema.ValueExpression = "m." + additionalProps.GenSchema.Name
+				additionalProps.Name = additionalProps.GenSchema.Name
+				additionalProps.GenSchema.GoType = additionalProps.GenSchema.Name
+				if sg.TypeResolver.ModelsPackage != "" {
+					additionalProps.GenSchema.GoType = sg.TypeResolver.ModelsPackage + "." + additionalProps.GenSchema.Name
+				}
+				additionalProps.GenSchema.Title = additionalProps.GenSchema.Name + " a wrapper to serialize additional properties"
+				additionalProps.GenSchema.Description = ""
+				additionalProps.GenSchema.Properties = nil
+				if err := (&additionalProps).buildProperties(); err != nil {
 					return err
 				}
-				additionalProps.MergeResult(comprop)
-				additionalProps.GenSchema.AdditionalProperties = &comprop.GenSchema
+
+				// rewrite to be a ref instead of a complex object
+				sg.GenSchema.IsComplexObject = true
+				sg.GenSchema.IsAnonymous = false
+				sg.GenSchema.IsAdditionalProperties = false
+				sg.GenSchema.HasAdditionalProperties = false
+				sg.GenSchema.AdditionalProperties = nil
+				sg.GenSchema.Properties = nil
+				sg.GenSchema.GoType = additionalProps.GenSchema.GoType
+				if addp.Schema != nil {
+					comprop := additionalProps.NewAdditionalProperty(*addp.Schema)
+					if err := comprop.makeGenSchema(); err != nil {
+						return err
+					}
+					additionalProps.MergeResult(comprop)
+					additionalProps.GenSchema.AdditionalProperties = &comprop.GenSchema
+				}
+
+				sg.ExtraSchemas[swag.ToGoName(additionalProps.Name)] = additionalProps.GenSchema
 			}
 
-			sg.ExtraSchemas = append(sg.ExtraSchemas, additionalProps.GenSchema)
 		}
-
 	}
 	return nil
 }
 
-func (sg *schemaGenContext) buildItems() error {
-	singleSchemaSlice := sg.Schema.Items != nil && sg.Schema.Items.Schema != nil
-	if singleSchemaSlice {
-		elProp := sg.NewSliceBranch(sg.Schema.Items.Schema)
-		if err := elProp.makeGenSchema(); err != nil {
+func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *schemaGenContext {
+	sp := sg.TypeResolver.Doc.Spec()
+	name = swag.ToGoName(name)
+	if sg.TypeResolver.ModelName != sg.Name {
+		name = swag.ToGoName(sg.TypeResolver.ModelName + " " + name)
+	}
+	sp.Definitions[name] = schema
+	pg := schemaGenContext{
+		Path:         "",
+		Name:         name,
+		Receiver:     "m",
+		IndexVar:     "i",
+		ValueExpr:    "m",
+		Schema:       schema,
+		Required:     false,
+		TypeResolver: sg.TypeResolver,
+		Named:        true,
+		ExtraSchemas: make(map[string]GenSchema),
+	}
+	pg.GenSchema.IsVirtual = true
+
+	sg.ExtraSchemas[name] = pg.GenSchema
+	return &pg
+}
+
+func (sg *schemaGenContext) buildArray() error {
+	tpe, err := sg.TypeResolver.ResolveSchema(sg.Schema.Items.Schema, true)
+	if err != nil {
+		return err
+	}
+	// check if the element is a complex object, if so generate a new type for it
+	if tpe.IsComplexObject && tpe.IsAnonymous {
+		pg := sg.makeNewStruct(sg.Name+" items"+strconv.Itoa(sg.Index), *sg.Schema.Items.Schema)
+		if err := pg.makeGenSchema(); err != nil {
 			return err
 		}
-		sg.MergeResult(elProp)
-		sg.GenSchema.Items = []GenSchema{elProp.GenSchema}
-	} else if sg.Schema.Items != nil {
+		sg.MergeResult(pg)
+		sg.ExtraSchemas[pg.Name] = pg.GenSchema
+		sg.Schema.Items.Schema = spec.RefProperty("#/definitions/" + pg.Name)
+		if err := sg.makeGenSchema(); err != nil {
+			return err
+		}
+		return nil
+	}
+	elProp := sg.NewSliceBranch(sg.Schema.Items.Schema)
+	if err := elProp.makeGenSchema(); err != nil {
+		return err
+	}
+	sg.MergeResult(elProp)
+	sg.GenSchema.GoType = "[]" + elProp.GenSchema.GoType
+	sg.GenSchema.Items = &elProp.GenSchema
+	return nil
+}
+
+func (sg *schemaGenContext) buildItems() error {
+	presentsAsSingle := sg.Schema.Items != nil && sg.Schema.Items.Schema != nil
+	if presentsAsSingle && sg.Schema.AdditionalItems != nil { // unsure if htis a valid of invalid schema
+		return fmt.Errorf("single schema (%s) can't have additional items", sg.Name)
+	}
+	if presentsAsSingle {
+		return sg.buildArray()
+	}
+	if sg.Schema.Items != nil {
 		// This is a tuple, build a new model that represents this
 		if sg.Named {
 			sg.GenSchema.Name = sg.Name
@@ -479,10 +630,6 @@ func (sg *schemaGenContext) buildItems() error {
 				sg.MergeResult(elProp)
 				elProp.GenSchema.Name = "p" + strconv.Itoa(i)
 
-				if err := sg.buildAdditionalItems(); err != nil {
-					return err
-				}
-
 				sg.GenSchema.Properties = append(sg.GenSchema.Properties, elProp.GenSchema)
 			}
 			return nil
@@ -491,42 +638,30 @@ func (sg *schemaGenContext) buildItems() error {
 		// for an anonoymous object, first build the new object
 		// and then replace the current one with a $ref to the
 		// new tuple object
-		var tup schemaGenContext
-		tup = *sg
-		tup.Accessor = tup.Receiver
-		tup.GenSchema.IsTuple = true
-		tup.GenSchema.IsComplexObject = false
-		tup.GenSchema.Name = swag.ToGoName(sg.GenSchema.Name + "Tuple" + strconv.Itoa(sg.Index))
-		if sg.TypeResolver.ModelName != "" {
-			tup.GenSchema.Name = swag.ToGoName(sg.TypeResolver.ModelName + " " + tup.GenSchema.Name)
+		var sch spec.Schema
+		sch.Typed("object", "")
+		sch.Properties = make(map[string]spec.Schema)
+		for i, v := range sg.Schema.Items.Schemas {
+			sch.Required = append(sch.Required, "P"+strconv.Itoa(i))
+			sch.Properties["P"+strconv.Itoa(i)] = v
 		}
-		tup.ValueExpr = tup.Receiver
-		tup.Name = tup.GenSchema.Name
-		tup.GenSchema.GoType = tup.GenSchema.Name
-		if sg.TypeResolver.ModelsPackage != "" {
-			tup.GenSchema.GoType = sg.TypeResolver.ModelsPackage + "." + tup.GenSchema.Name
-		}
-		tup.GenSchema.Title = tup.GenSchema.Name + " a representation of an anonymous Tuple type"
-		tup.GenSchema.Description = ""
-
-		sg.GenSchema.IsComplexObject = true
-		sg.GenSchema.IsTuple = false
-		sg.GenSchema.GoType = tup.GenSchema.GoType
-
-		for i, s := range sg.Schema.Items.Schemas {
-			elProp := tup.NewTupleElement(&s, i)
-			if err := elProp.makeGenSchema(); err != nil {
-				return err
-			}
-			tup.MergeResult(elProp)
-			elProp.GenSchema.Name = "p" + strconv.Itoa(i)
-			tup.GenSchema.Properties = append(tup.GenSchema.Properties, elProp.GenSchema)
-		}
-		if err := tup.buildAdditionalItems(); err != nil {
+		sch.AdditionalItems = sg.Schema.AdditionalItems
+		tup := sg.makeNewStruct(sg.GenSchema.Name+"Tuple"+strconv.Itoa(sg.Index), sch)
+		if err := tup.makeGenSchema(); err != nil {
 			return err
 		}
-		sg.MergeResult(&tup)
-		sg.ExtraSchemas = append(sg.ExtraSchemas, tup.GenSchema)
+		tup.GenSchema.IsTuple = true
+		tup.GenSchema.IsComplexObject = false
+		tup.GenSchema.Title = tup.GenSchema.Name + " a representation of an anonymous Tuple type"
+		tup.GenSchema.Description = ""
+		sg.ExtraSchemas[tup.Name] = tup.GenSchema
+
+		sg.Schema = *spec.RefProperty("#/definitions/" + tup.Name)
+		if err := sg.makeGenSchema(); err != nil {
+			return err
+		}
+		sg.MergeResult(tup)
+
 	}
 	return nil
 }
@@ -535,10 +670,31 @@ func (sg *schemaGenContext) buildAdditionalItems() error {
 	wantsAdditionalItems :=
 		sg.Schema.AdditionalItems != nil &&
 			(sg.Schema.AdditionalItems.Allows || sg.Schema.AdditionalItems.Schema != nil)
+	//log.Printf("%s wants additional items: %t", sg.Name, wantsAdditionalItems)
 
 	sg.GenSchema.HasAdditionalItems = wantsAdditionalItems
-	if sg.Schema.AdditionalItems != nil && sg.Schema.AdditionalItems.Schema != nil {
+	if wantsAdditionalItems {
+		// check if the element is a complex object, if so generate a new type for it
+		tpe, err := sg.TypeResolver.ResolveSchema(sg.Schema.AdditionalItems.Schema, true)
+		if err != nil {
+			return err
+		}
+		if tpe.IsComplexObject && tpe.IsAnonymous {
+			pg := sg.makeNewStruct(sg.Name+" Items", *sg.Schema.AdditionalItems.Schema)
+			if err := pg.makeGenSchema(); err != nil {
+				return err
+			}
+			sg.Schema.AdditionalItems.Schema = spec.RefProperty("#/definitions/" + pg.Name)
+			pg.GenSchema.HasValidations = true
+			sg.MergeResult(pg)
+			sg.ExtraSchemas[pg.Name] = pg.GenSchema
+		}
+
 		it := sg.NewAdditionalItems(sg.Schema.AdditionalItems.Schema)
+		if tpe.IsInterface {
+			it.Untyped = true
+		}
+
 		if err := it.makeGenSchema(); err != nil {
 			return err
 		}
@@ -550,7 +706,8 @@ func (sg *schemaGenContext) buildAdditionalItems() error {
 
 func (sg *schemaGenContext) buildXMLName() error {
 	if sg.Schema.XML != nil {
-		sg.GenSchema.XMLName = sg.ParamName
+		//log.Printf("bulding xml name %s", sg.Name)
+		sg.GenSchema.XMLName = sg.Name
 		if sg.Schema.XML.Name != "" {
 			sg.GenSchema.XMLName = sg.Schema.XML.Name
 			if sg.Schema.XML.Attribute {
@@ -565,6 +722,7 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 	// This if block ensures that a struct gets
 	// rendered with the ref as embedded ref.
 	if sg.Named && sg.Schema.Ref.GetURL() != nil {
+		//log.Printf("short circuiting name ref: %s", sg.Schema.Ref.String())
 		nullableOverride := sg.GenSchema.IsNullable
 		tpe := resolvedType{}
 		tpe.GoType = sg.Name
@@ -614,6 +772,7 @@ func (sg *schemaGenContext) liftSpecialAllOf() error {
 		}
 
 		if seenSchema == 1 {
+			//log.Printf("lifting nullable all of pattern (nullable: %t) %v", seenNullable, schemaToLift)
 			sg.Schema = schemaToLift
 			sg.GenSchema.IsNullable = seenNullable
 		}
@@ -654,7 +813,12 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	}
 	nullableOverride := sg.GenSchema.IsNullable
 
-	tpe, err := sg.TypeResolver.ResolveSchema(&sg.Schema, !sg.Named)
+	var tpe resolvedType
+	if sg.Untyped {
+		tpe, err = sg.TypeResolver.ResolveSchema(nil, !sg.Named)
+	} else {
+		tpe, err = sg.TypeResolver.ResolveSchema(&sg.Schema, !sg.Named)
+	}
 	if err != nil {
 		return err
 	}
@@ -688,7 +852,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	//ctx.HasSliceValidations = len(sg.GenSchema.Items) > 0 || sg.GenSchema.HasAdditionalItems || sg.GenSchema.SingleSchemaSlice
 	//ctx.HasValidations = ctx.HasValidations || ctx.HasSliceValidations
 
-	sg.GenSchema.ItemsLen = len(sg.GenSchema.Items)
+	//sg.GenSchema.ItemsLen = len(sg.GenSchema.Items)
 
 	return nil
 }
@@ -714,8 +878,7 @@ type GenSchema struct {
 	Description             string
 	Location                string
 	ReceiverName            string
-	Items                   []GenSchema
-	ItemsLen                int
+	Items                   *GenSchema
 	AllowsAdditionalItems   bool
 	HasAdditionalItems      bool
 	AdditionalItems         *GenSchema
@@ -727,6 +890,7 @@ type GenSchema struct {
 	IsAdditionalProperties  bool
 	AdditionalProperties    *GenSchema
 	ReadOnly                bool
+	IsVirtual               bool
 }
 
 type sharedValidations struct {

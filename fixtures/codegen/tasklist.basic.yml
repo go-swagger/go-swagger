@@ -453,6 +453,7 @@ definitions:
     title: a structure describing a complete task.
     description: |
       A Task is the main entity in this application. Everything revolves around tasks and managing them.
+    type: "object"
     allOf:
       - $ref: "#/definitions/TaskCard"
       - type: object

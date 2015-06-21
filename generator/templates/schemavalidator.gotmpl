@@ -31,7 +31,7 @@ if err := validate.Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%
 }
 {{end}}
 for {{.IndexVar}} := 0; {{.IndexVar}} < len({{.ValueExpression}}); {{.IndexVar}}++ {
-{{range .Items}}
+{{with .Items}}
   {{template "propertyvalidator" .}}
 {{end}}
 }

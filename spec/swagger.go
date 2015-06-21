@@ -72,6 +72,9 @@ func (s SchemaOrBool) JSONLookup(token string) (interface{}, error) {
 	return r, err
 }
 
+var jsTrue = []byte("true")
+var jsFalse = []byte("false")
+
 // MarshalJSON convert this object to JSON
 func (s SchemaOrBool) MarshalJSON() ([]byte, error) {
 	if s.Schema != nil {
@@ -81,15 +84,13 @@ func (s SchemaOrBool) MarshalJSON() ([]byte, error) {
 	if s.Schema == nil && s.Allows {
 		return jsTrue, nil
 	}
-	return []byte("false"), nil
+	return jsFalse, nil
 }
-
-var jsTrue = []byte("true")
 
 // UnmarshalJSON converts this bool or schema object from a JSON structure
 func (s *SchemaOrBool) UnmarshalJSON(data []byte) error {
 	var nw SchemaOrBool
-	if len(data) < 5 {
+	if len(data) < 4 {
 		return nil
 	}
 	if data[0] == '{' {

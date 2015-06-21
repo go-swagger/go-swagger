@@ -322,46 +322,46 @@ type genOperationGroup struct {
 	Operations []genOperation
 
 	DocString      string
-	Imports        map[string]string //`json:"imports,omitempty"` // -
-	DefaultImports []string          //`json:"defaultImports,omitempty"` // -
+	Imports        map[string]string
+	DefaultImports []string
 }
 
 type genOperation struct {
-	Package        string //`json:"package,omitempty"`        // -
-	ReceiverName   string //`json:"receiverName,omitempty"`   // -
-	ClassName      string //`json:"classname,omitempty"`      // -
-	Name           string //`json:"name,omitempty"`           // -
-	HumanClassName string //`json:"humanClassname,omitempty"` // -
+	Package        string
+	ReceiverName   string
+	ClassName      string
+	Name           string
+	HumanClassName string
 
-	Summary      string //`json:"summary,omitempty"`
-	Description  string //`json:"description,omitempty"` // -
-	DocString    string //`json:"docString,omitempty"`   // -
-	ExternalDocs string //`json:"externalDocs,omitempty"`
+	Summary      string
+	Description  string
+	DocString    string
+	ExternalDocs string
 
-	Imports        map[string]string //`json:"imports,omitempty"` // -
-	DefaultImports []string          //`json:"defaultImports,omitempty"` // -
+	Imports        map[string]string
+	DefaultImports []string
 
-	Authorized bool   //`json:"authorized"`          // -
-	Principal  string //`json:"principal,omitempty"` // -
+	Authorized bool
+	Principal  string
 
-	SuccessModel         string //`json:"successModel,omitempty"`         // -
-	SuccessZero          string //`json:"successZero,omitempty"`         // -
-	ReturnsPrimitive     bool   //`json:"returnsPrimitive,omitempty"`     // -
-	ReturnsFormatted     bool   //`json:"returnsFormatted,omitempty"`     // -
-	ReturnsContainer     bool   //`json:"returnsContainer,omitempty"`     // -
-	ReturnsComplexObject bool   //`json:"returnsComplexObject,omitempty"` // -
-	ReturnsMap           bool   //`json:"returnsMap,omitempty"`
+	SuccessModel         string
+	SuccessZero          string
+	ReturnsPrimitive     bool
+	ReturnsFormatted     bool
+	ReturnsContainer     bool
+	ReturnsComplexObject bool
+	ReturnsMap           bool
 	Responses            map[int]genResponse
 	DefaultResponse      *genResponse
 
-	Params         []genParameter //`json:"params,omitempty"`         // -
-	QueryParams    []genParameter //`json:"queryParams,omitempty"`    // -
-	PathParams     []genParameter //`json:"pathParams,omitempty"`     // -
-	HeaderParams   []genParameter //`json:"headerParams,omitempty"`   // -
-	FormParams     []genParameter //`json:"formParams,omitempty"`     // -
-	HasQueryParams bool           //`json:"hasQueryParams,omitempty"` // -
-	HasFormParams  bool           //`json:"hasFormParams,omitempty"`  // -
-	HasFileParams  bool           //`json:"hasFileParams,omitempty"`  // -
+	Params         []genParameter
+	QueryParams    []genParameter
+	PathParams     []genParameter
+	HeaderParams   []genParameter
+	FormParams     []genParameter
+	HasQueryParams bool
+	HasFormParams  bool
+	HasFileParams  bool
 }
 
 func makeCodegenParameter(receiver string, resolver *typeResolver, param spec.Parameter) (genParameter, error) {
@@ -369,24 +369,19 @@ func makeCodegenParameter(receiver string, resolver *typeResolver, param spec.Pa
 	var child *genParameterItem
 
 	if param.In == "body" {
-		// bps := propGenBuildParams{
-		// 	Path:         "\"" + param.Name + "\"",
-		// 	ParamName:    swag.ToJSONName(param.Name),
-		// 	Accessor:     swag.ToGoName(param.Name),
-		// 	Receiver:     receiver,
-		// 	IndexVar:     "i",
-		// 	ValueExpr:    receiver + "." + swag.ToGoName(param.Name),
-		// 	Schema:       *param.Schema,
-		// 	Required:     param.Required,
-		// 	TypeResolver: resolver,
-		// }
-
-		// TODO: FIX ME!!!!!
-		// c, err := modelValidations(bps, true)
-		// if err != nil {
-		// 	return genParameter{}, err
-		// }
-		// ctx = makeGenValidations(c)
+		sc := schemaGenContext{
+			Path:         param.Name,
+			Name:         param.Name,
+			Receiver:     receiver,
+			IndexVar:     "i",
+			Schema:       *param.Schema,
+			Required:     param.Required,
+			TypeResolver: resolver,
+			Named:        false,
+		}
+		if err := sc.makeGenSchema(); err != nil {
+			return genParameter{}, err
+		}
 
 	} else {
 		ctx = makeGenValidations(paramValidations(receiver, param))
@@ -432,22 +427,22 @@ func makeCodegenParameter(receiver string, resolver *typeResolver, param spec.Pa
 
 type genParameter struct {
 	sharedParam
-	ReceiverName     string            //`json:"receiverName,omitempty"`
-	Title            string            //`json:"title,omitempty"`
-	Description      string            //`json:"description,omitempty"`
-	IsQueryParam     bool              //`json:"isQueryParam,omitempty"`
-	IsFormParam      bool              // `json:"isFormParam,omitempty"`
-	IsPathParam      bool              //`json:"isPathParam,omitempty"`
-	IsHeaderParam    bool              //`json:"isHeaderParam,omitempty"`
-	IsBodyParam      bool              //`json:"isBodyParam,omitempty"`
-	IsFileParam      bool              //`json:"isFileParam,omitempty"`
-	CollectionFormat string            //`json:"collectionFormat,omitempty"`
-	Child            *genParameterItem //`json:"child,omitempty"`
-	BodyParam        *genParameter     //`json:"bodyParam,omitempty"`
-	Converter        string            //`json:"converter,omitempty"`
-	Formatter        string            //`json:"formattery,omitempty"`
-	Parent           *genParameterItem //`json:"parent,omitempty"` // this is meant to be nil, just here for completeness in the templates
-	Location         string            //`json:"location,omitempty"`
+	ReceiverName     string
+	Title            string
+	Description      string
+	IsQueryParam     bool
+	IsFormParam      bool
+	IsPathParam      bool
+	IsHeaderParam    bool
+	IsBodyParam      bool
+	IsFileParam      bool
+	CollectionFormat string
+	Child            *genParameterItem
+	BodyParam        *genParameter
+	Converter        string
+	Formatter        string
+	Parent           *genParameterItem
+	Location         string
 }
 
 func makeCodegenParamItem(path, paramName, accessor, indexVar, valueExpression string, parent genParameterItem, items spec.Items) genParameterItem {
@@ -482,12 +477,12 @@ func makeCodegenParamItem(path, paramName, accessor, indexVar, valueExpression s
 
 type genParameterItem struct {
 	sharedParam
-	CollectionFormat string            //`json:"collectionFormat,omitempty"`
-	Child            *genParameterItem //`json:"child,omitempty"`
-	Parent           *genParameterItem //`json:"parent,omitempty"`
-	Converter        string            //`json:"converter,omitempty"`
-	Formatter        string            //`json:"formattery,omitempty"`
-	Location         string            //`json:"location,omitempty"`
+	CollectionFormat string
+	Child            *genParameterItem
+	Parent           *genParameterItem
+	Converter        string
+	Formatter        string
+	Location         string
 }
 
 type sharedParam struct {
@@ -703,34 +698,34 @@ func makeGenResponse(pkg, receiver, name string, isSuccess bool, resolver *typeR
 type genResponse struct {
 	Package        string
 	ReceiverName   string
-	ClassName      string //`json:"classname,omitempty"`      // -
-	Name           string //`json:"name,omitempty"`           // -
-	HumanClassName string //`json:"humanClassname,omitempty"` // -
+	ClassName      string
+	Name           string
+	HumanClassName string
 	Description    string
 	IsSuccess      bool
 
 	Headers         []genHeader
-	Zero            string //`json:"successZero,omitempty"`         // -
-	IsPrimitive     bool   //`json:"returnsPrimitive,omitempty"`     // -
-	IsFormatted     bool   //`json:"returnsFormatted,omitempty"`     // -
-	IsContainer     bool   //`json:"returnsContainer,omitempty"`     // -
-	IsComplexObject bool   //`json:"returnsComplexObject,omitempty"` // -
-	IsMap           bool   //`json:"returnsMap,omitempty"`
+	Zero            string
+	IsPrimitive     bool
+	IsFormatted     bool
+	IsContainer     bool
+	IsComplexObject bool
+	IsMap           bool
 	Type            string
 	Format          string
 
-	Imports        map[string]string //`json:"imports,omitempty"` // -
-	DefaultImports []string          //`json:"defaultImports,omitempty"` // -
+	Imports        map[string]string
+	DefaultImports []string
 }
 
 type genHeader struct {
 	sharedParam
 
-	ReceiverName string //`json:"receiverName,omitempty"`
-	Title        string //`json:"title,omitempty"`
-	Description  string //`json:"description,omitempty"`
-	Converter    string //`json:"converter,omitempty"`
-	Formatter    string //`json:"formatter,omitempty"`
+	ReceiverName string
+	Title        string
+	Description  string
+	Converter    string
+	Formatter    string
 }
 
 func makeGenHeader(receiver, name string, header spec.Header) (result genHeader) {
