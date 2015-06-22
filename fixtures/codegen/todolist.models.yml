@@ -211,6 +211,18 @@ definitions:
         additionalProperties:
           type: string
 
+  WithMapComplex:
+    type: object
+    properties:
+      data:
+        type: object
+        additionalProperties:
+          comment:
+            type: string
+          count:
+            type: integer
+            format: int32
+
   WithAdditional:
     type: object
     properties:

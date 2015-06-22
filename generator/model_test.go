@@ -300,6 +300,9 @@ func TestGenerateModel_NotaWithMeta(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "type NotaWithMeta map[string]NotaWithMetaAnon", res)
+					assertInCode(t, "type NotaWithMetaAnon struct {", res)
+					assertInCode(t, "Comment string `json:\"comment\"`", res)
+					assertInCode(t, "Count int32 `json:\"count\"`", res)
 				}
 			}
 		}
@@ -881,7 +884,7 @@ func TestGenerateModel_TupleWithComplex(t *testing.T) {
 					assertInCode(t, "P1 string `json:\"-\"`", res)
 					assertInCode(t, "P2 strfmt.DateTime `json:\"-\"`", res)
 					assertInCode(t, "P3 Notable `json:\"-\"`", res)
-					//assertInCode(t, k+"Items []TupleWithComplexTupleWithComplex0 `json:\"-\"`", res)
+					assertInCode(t, k+"Items []TupleWithComplexItems `json:\"-\"`", res)
 					assertInCode(t, k+") UnmarshalJSON", res)
 					assertInCode(t, k+") MarshalJSON", res)
 
@@ -895,7 +898,7 @@ func TestGenerateModel_TupleWithComplex(t *testing.T) {
 						assertInCode(t, "P"+strconv.Itoa(i)+",", res)
 					}
 					assertInCode(t, "var lastIndex int", res)
-					//assertInCode(t, "var toadd TupleWithComplexTupleWithComplex0 ", res)
+					assertInCode(t, "var toadd TupleWithComplexItems", res)
 					assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
 					assertInCode(t, "json.Unmarshal(val, &toadd)", res)
 					assertInCode(t, "json.Marshal(data)", res)

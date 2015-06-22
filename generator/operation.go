@@ -490,6 +490,29 @@ type sharedParam struct {
 	propertyDescriptor
 }
 
+// GenParameter is used to represent
+// a parameter or a header for code generation.
+type GenParameter struct {
+	sharedValidations
+	Name              string
+	Path              string
+	ValueExpression   string
+	IndexVar          string
+	ReceiverName      string
+	Title             string
+	Description       string
+	Converter         string
+	Formatter         string
+	Type              string
+	Format            string
+	Items             *spec.Items
+	IsPrimitive       bool
+	IsCustomFormatter bool
+	IsArray           bool
+	Default           interface{}
+	Enum              []interface{}
+}
+
 func paramItemValidations(path, paramName, accessor, indexVar, valueExpression string, items spec.Items) commonValidations {
 	tpe := resolveSimpleType(items.Type, items.Format, items.Items)
 	_, isPrimitive := primitives[tpe]
@@ -669,8 +692,6 @@ func makeGenResponse(pkg, receiver, name string, isSuccess bool, resolver *typeR
 	if err != nil {
 		return genResponse{}, err
 	}
-	_, isPrimitive := primitives[tpe.GoType]
-	_, isCustomFormatter := customFormatters[tpe.GoType]
 
 	var model string
 	if response.Schema != nil {
@@ -688,8 +709,8 @@ func makeGenResponse(pkg, receiver, name string, isSuccess bool, resolver *typeR
 		Headers:         headers,
 		IsSuccess:       isSuccess,
 		Type:            model,
-		IsPrimitive:     isPrimitive,
-		IsFormatted:     isCustomFormatter,
+		IsPrimitive:     tpe.IsPrimitive,
+		IsFormatted:     tpe.IsCustomFormatter,
 		IsContainer:     tpe.IsArray,
 		IsComplexObject: tpe.IsComplexObject,
 	}, nil
@@ -745,6 +766,21 @@ func headerValidations(receiver, name string, header spec.Header) commonValidati
 	tpe := typeForHeader(header)
 	_, isPrimitive := primitives[tpe]
 	_, isCustomFormatter := customFormatters[tpe]
+
+	//res := sharedValidations{
+	//Maximum:          header.Maximum,
+	//ExclusiveMaximum: header.ExclusiveMaximum,
+	//Minimum:          header.Minimum,
+	//ExclusiveMinimum: header.ExclusiveMinimum,
+	//MaxLength:        header.MaxLength,
+	//MinLength:        header.MinLength,
+	//Pattern:          header.Pattern,
+	//MaxItems:         header.MaxItems,
+	//MinItems:         header.MinItems,
+	//UniqueItems:      header.UniqueItems,
+	//MultipleOf:       header.MultipleOf,
+	//Enum:             header.Enum,
+	//}
 
 	return commonValidations{
 		propertyDescriptor: propertyDescriptor{

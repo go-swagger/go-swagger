@@ -318,12 +318,36 @@ definitions:
 
   NamedMap:
     type: object
+    minProperties: 5
+    maxProperties: 10
     additionalProperties:
       type: integer
       format: int64
       minimum: 3
       maximum: 6
       multipleOf: 1
+
+  NamedMapComplex:
+    type: object
+    minProperties: 5
+    maxProperties: 10
+    additionalProperties:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 10
+          maxLength: 50
+          pattern: "\\w+"
+        age:
+          type: integer
+          format: int32
+          multipleOf: 1
+          min: 1
+          max: 200
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+
 
   MapValidations:
     type: object
@@ -424,6 +448,7 @@ definitions:
             minimum: 2
             maximum: 50
             multipleOf: 1.5
+
     - type: object
       properties:
         extOpts:

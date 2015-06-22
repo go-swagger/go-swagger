@@ -2,11 +2,13 @@ package generator
 
 import (
 	"bytes"
+	"fmt"
 	"regexp"
 	"testing"
 
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
+	"github.com/kr/pretty"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -565,6 +567,41 @@ func TestSchemaValidation_NamedMap(t *testing.T) {
 					}
 				}
 			}
+		}
+	}
+}
+
+func TestSchemaValidation_NamedMapComplex(t *testing.T) {
+	t.SkipNow()
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "NamedMapComplex"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			pretty.Println(gm.GenSchema)
+			//if assertValidation(t, "", "m", gm.GenSchema) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, gm)
+			if assert.NoError(t, err) {
+				formatted, err := formatGoFile("named_map_complex.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(formatted)
+					fmt.Println(res)
+					assertInCode(t, k+") Validate(formats", res)
+					assertInCode(t, "for k, v := range m {", res)
+					assertInCode(t, "v.Validate(formats)", res)
+					assertInCode(t, "err := validate.Minimum(\"age\",", res)
+					assertInCode(t, "err := validate.Maximum(\"age\",", res)
+					assertInCode(t, "err := validate.MultipleOf(\"age\",", res)
+					assertInCode(t, "err := validate.Minimum(k,", res)
+					assertInCode(t, "err := validate.Maximum(k,", res)
+					assertInCode(t, "err := validate.MultipleOf(k,", res)
+					assertInCode(t, "errors.CompositeValidationError(res...)", res)
+				}
+			}
+			//}
 		}
 	}
 }
