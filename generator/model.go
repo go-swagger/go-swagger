@@ -383,12 +383,22 @@ func (sg *schemaGenContext) buildAllOf() error {
 	return nil
 }
 
+type mapType struct {
+	Type     *spec.Schema
+	Next     *mapType
+	Previous *mapType
+	Context  *schemaGenContext
+	NewObj   *schemaGenContext
+}
+
 func (sg *schemaGenContext) buildAdditionalProperties() error {
 	if sg.Schema.AdditionalProperties != nil {
 		addp := *sg.Schema.AdditionalProperties
 		wantsAdditional := addp.Allows || addp.Schema != nil
 		sg.GenSchema.HasAdditionalProperties = wantsAdditional
-		//log.Printf("%s (complex: %t, map: %t, hasAdditional: %t)", sg.Name, sg.GenSchema.IsComplexObject, sg.GenSchema.IsMap, wantsAdditional)
+		// log.Printf("%s (complex: %t, map: %t, hasAdditional: %t)", sg.Name, sg.GenSchema.IsComplexObject, sg.GenSchema.IsMap, wantsAdditional)
+		// b, _ := json.MarshalIndent(sg.Schema, "", "  ")
+		// fmt.Println(string(b))
 		// flag swap
 		if sg.GenSchema.IsComplexObject {
 			sg.GenSchema.IsAdditionalProperties = true
@@ -398,8 +408,8 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 
 		if addp.Schema != nil {
 			if !sg.GenSchema.IsMap && (sg.GenSchema.IsAdditionalProperties && sg.Named) {
-				//tpe := sg.GenSchema
-				//log.Printf("additional properties for definition (complex: %t, anonymous: %t)", tpe.IsComplexObject, tpe.IsAnonymous)
+				// tpe := sg.GenSchema
+				// log.Printf("additional properties for definition (complex: %t, anonymous: %t)", tpe.IsComplexObject, tpe.IsAnonymous)
 				sg.GenSchema.ValueExpression += "." + sg.GenSchema.Name
 				comprop := sg.NewAdditionalProperty(*addp.Schema)
 				if err := comprop.makeGenSchema(); err != nil {
@@ -411,40 +421,110 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 			}
 
 			if sg.GenSchema.IsMap && wantsAdditional {
-				tpe, err := sg.TypeResolver.ResolveSchema(addp.Schema, true)
-				if err != nil {
-					return err
+				// find out how deep this rabbit hole goes
+				// descend, unwind and rewrite
+				stack := &mapType{
+					Type:    sg.Schema.AdditionalProperties.Schema,
+					Context: sg.NewAdditionalProperty(*sg.Schema.AdditionalProperties.Schema),
 				}
-				//log.Printf("additional properties for map (complex: %t, anonymous: %t)", tpe.IsComplexObject, tpe.IsAnonymous)
-				if tpe.IsComplexObject && tpe.IsAnonymous {
-					//log.Printf("lifting complex object to a new struct type")
-					// for an anonymous struct map value, first build the new object
-					// and then replace the current one with a $ref to the
-					// new object
-
-					newObj := sg.makeNewStruct(sg.Name+" Anon", *addp.Schema)
-					if err := newObj.makeGenSchema(); err != nil {
+				lastMapSchema := stack
+				for lastMapSchema.Type.AdditionalProperties != nil && (lastMapSchema.Type.AdditionalProperties.Allows || lastMapSchema.Type.AdditionalProperties.Schema != nil) {
+					tpe, err := sg.TypeResolver.ResolveSchema(lastMapSchema.Type.AdditionalProperties.Schema, true)
+					if err != nil {
 						return err
 					}
-
-					sg.Schema.AdditionalProperties.Schema = spec.RefProperty("#/definitions/" + newObj.Name)
-					if err := sg.makeGenSchema(); err != nil {
+					// log.Printf("%s context (complex: %t, anonymous: %t, map: %t)", sg.Name, sg.GenSchema.IsComplexObject, sg.GenSchema.IsAnonymous, sg.GenSchema.IsMap)
+					// log.Printf("%s additional properties for level down (complex: %t, anonymous: %t, map: %t)", tpe.GoType, tpe.IsComplexObject, tpe.IsAnonymous, tpe.IsMap)
+					if !tpe.IsMap {
+						if tpe.IsComplexObject && tpe.IsAnonymous {
+							nw := sg.makeNewStruct(sg.Name+" Anon", *lastMapSchema.Type.AdditionalProperties.Schema)
+							sch := spec.RefProperty("#/definitions/" + nw.Name)
+							lastMapSchema.NewObj = nw
+							lastMapSchema.Type.AdditionalProperties.Schema = sch
+							lastMapSchema.Context = lastMapSchema.Previous.Context.NewAdditionalProperty(*sch)
+						}
+						break
+					}
+					lastMapSchema.Next = &mapType{
+						Previous: lastMapSchema,
+						Type:     lastMapSchema.Type.AdditionalProperties.Schema,
+						Context:  lastMapSchema.Context.NewAdditionalProperty(*lastMapSchema.Type.AdditionalProperties.Schema),
+					}
+					lastMapSchema = lastMapSchema.Next
+				}
+				if stack.Type != nil && stack.Type.AdditionalProperties == nil { // might not be nested, so work the simple one out here
+					//b, _ := json.MarshalIndent(stack.Type, "", "  ")
+					//fmt.Println(string(b))
+					// pretty.Println(stack.Type)
+					tpe, err := sg.TypeResolver.ResolveSchema(stack.Type, true)
+					if err != nil {
 						return err
 					}
-					sg.MergeResult(newObj)
-					sg.ExtraSchemas[newObj.Name] = newObj.GenSchema
-					return nil
+					// log.Printf("%s top context (complex: %t, anonymous: %t, map: %t)", sg.Name, sg.GenSchema.IsComplexObject, sg.GenSchema.IsAnonymous, sg.GenSchema.IsMap)
+					// log.Printf("%s additional properties for top (complex: %t, anonymous: %t, map: %t)", tpe.GoType, tpe.IsComplexObject, tpe.IsAnonymous, tpe.IsMap)
+					if tpe.IsComplexObject && tpe.IsAnonymous {
+						nw := sg.makeNewStruct(sg.Name+" Anon", *stack.Type)
+						sch := spec.RefProperty("#/definitions/" + nw.Name)
+						stack.NewObj = nw
+						stack.Type = sch
+						stack.Context = sg.NewAdditionalProperty(*sch)
+					}
 				}
-				comprop := sg.NewAdditionalProperty(*addp.Schema)
-				if err := comprop.makeGenSchema(); err != nil {
-					return err
+
+				// when additional properties, push onto the stack
+				// when no more additional properties, then check for complex object
+				// if it is complex and anonymous, rewrite and
+				// unwind the stack so that it picks up the new ref type
+				cur := lastMapSchema
+				for cur != nil {
+					//log.Println("popping from linked list, has previous", cur.Previous != nil)
+					if cur.NewObj != nil { // this is the actual value type of a nested map
+						// log.Println("adding tpe")
+						if err := cur.NewObj.makeGenSchema(); err != nil {
+							return err
+						}
+						//b, _ := json.MarshalIndent(cur.NewObj.Schema, "", "  ")
+						//fmt.Println(string(b))
+						sg.GenSchema.GoType += cur.NewObj.GenSchema.Name
+						sg.MergeResult(cur.NewObj)
+						sg.ExtraSchemas[cur.NewObj.Name] = cur.NewObj.GenSchema
+					}
+
+					if cur.Previous != nil {
+						//log.Println("adding bridge map")
+						if err := cur.Context.makeGenSchema(); err != nil {
+							return err
+						}
+						//b, _ := json.MarshalIndent(cur.Previous.Type, "", "  ")
+						//fmt.Println(string(b))
+						if cur.NewObj != nil {
+							cur.Context.MergeResult(cur.NewObj)
+						} else if cur.Next != nil {
+							cur.Context.MergeResult(cur.Next.Context)
+						}
+						cur.Previous.Context.MergeResult(cur.Context)
+						cur.Previous.Context.GenSchema.AdditionalProperties = &cur.Context.GenSchema
+					} else {
+						if err := cur.Context.makeGenSchema(); err != nil {
+							return err
+						}
+						sg.GenSchema.AdditionalProperties = &cur.Context.GenSchema
+						if cur.NewObj != nil {
+							sg.MergeResult(cur.NewObj)
+						} else if cur.Next != nil {
+							sg.MergeResult(cur.Next.Context)
+						}
+
+					}
+					// fmt.Println("cur gotype:", cur.Context.GenSchema.GoType)
+					cur = cur.Previous
 				}
-				sg.MergeResult(comprop)
-				sg.GenSchema.AdditionalProperties = &comprop.GenSchema
+				sg.MergeResult(stack.Context)
 				return nil
 			}
 
 			if sg.GenSchema.IsAdditionalProperties && !sg.Named {
+				// log.Println("anonymous, additional complex properties")
 				// for an anonoymous object, first build the new object
 				// and then replace the current one with a $ref to the
 				// new object
@@ -468,6 +548,7 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 }
 
 func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *schemaGenContext {
+	// log.Println("making new struct:", name)
 	sp := sg.TypeResolver.Doc.Spec()
 	name = swag.ToGoName(name)
 	if sg.TypeResolver.ModelName != sg.Name {
@@ -493,6 +574,7 @@ func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *sche
 }
 
 func (sg *schemaGenContext) buildArray() error {
+	// log.Println("building array")
 	tpe, err := sg.TypeResolver.ResolveSchema(sg.Schema.Items.Schema, true)
 	if err != nil {
 		return err
@@ -715,6 +797,9 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.sharedValidations = sg.schemaValidations()
 	sg.GenSchema.ReadOnly = sg.Schema.ReadOnly
 
+	// b, _ := json.MarshalIndent(sg.Schema, "", "  ")
+	// log.Printf("%s (named %t): %s", sg.Name, sg.Named, b)
+
 	returns, err := sg.shortCircuitNamedRef()
 	if err != nil {
 		return err
@@ -722,11 +807,23 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	if returns {
 		return nil
 	}
-
+	// log.Printf("%s short circuited named ref", sg.Name)
+	// b, _ = json.MarshalIndent(sg.Schema, "", "  ")
+	// log.Printf("%s (named %t): %s", sg.Name, sg.Named, b)
 	if err := sg.liftSpecialAllOf(); err != nil {
 		return err
 	}
+	// log.Printf("%s short circuited all of", sg.Name)
 	nullableOverride := sg.GenSchema.IsNullable
+	// b, _ = json.MarshalIndent(sg.Schema, "", "  ")
+	// log.Printf("%s (named %t): %s", sg.Name, sg.Named, b)
+
+	if err := sg.buildAllOf(); err != nil {
+		return err
+	}
+	// log.Printf("%s built all of", sg.Name)
+	// b, _ = json.MarshalIndent(sg.Schema, "", "  ")
+	// log.Printf("%s (named %t): %s", sg.Name, sg.Named, b)
 
 	var tpe resolvedType
 	if sg.Untyped {
@@ -739,30 +836,38 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	}
 	tpe.IsNullable = tpe.IsNullable || nullableOverride
 	sg.GenSchema.resolvedType = tpe
-
-	if err := sg.buildProperties(); err != nil {
-		return nil
-	}
+	// log.Printf("%s resolved type", sg.Name)
+	// b, _ = json.MarshalIndent(sg.Schema, "", "  ")
+	// log.Printf("%s (named %t): %s", sg.Name, sg.Named, b)
 
 	if err := sg.buildAdditionalProperties(); err != nil {
 		return err
 	}
+	// b, _ = json.MarshalIndent(sg.Schema, "", "  ")
+	// log.Printf("%s (named %t): %s", sg.Name, sg.Named, b)
 
-	if err := sg.buildAllOf(); err != nil {
-		return err
+	// log.Printf("%s built additional properties", sg.Name)
+	if err := sg.buildProperties(); err != nil {
+		return nil
 	}
+	// log.Printf("%s built properties", sg.Name)
+	// b, _ = json.MarshalIndent(sg.Schema, "", "  ")
+	// log.Printf("%s (named %t): %s", sg.Name, sg.Named, b)
 
 	if err := sg.buildXMLName(); err != nil {
 		return err
 	}
+	// log.Printf("%s built xml name", sg.Name)
 
 	if err := sg.buildAdditionalItems(); err != nil {
 		return err
 	}
+	// log.Printf("%s built additional items", sg.Name)
 
 	if err := sg.buildItems(); err != nil {
 		return err
 	}
+	// log.Printf("%s built items", sg.Name)
 
 	//ctx.HasSliceValidations = len(sg.GenSchema.Items) > 0 || sg.GenSchema.HasAdditionalItems || sg.GenSchema.SingleSchemaSlice
 	//ctx.HasValidations = ctx.HasValidations || ctx.HasSliceValidations

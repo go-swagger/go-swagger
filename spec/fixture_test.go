@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"gopkg.in/yaml.v2"
-
+	"github.com/go-swagger/go-swagger/swag"
+	"github.com/kr/pretty"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -49,21 +49,21 @@ func roundTripTestJSON(t *testing.T, fixtureType, fileName string, schema interf
 func roundTripTestYAML(t *testing.T, fixtureType, fileName string, schema interface{}) {
 	specName := strings.TrimSuffix(fileName, filepath.Ext(fileName))
 	Convey("verifying "+fixtureType+" YAML fixture "+specName, t, func() {
-		b, err := ioutil.ReadFile(fileName)
+		b, err := swag.YAMLDoc(fileName)
 		So(err, ShouldBeNil)
 		Println()
 		var expected map[string]interface{}
-		err = yaml.Unmarshal(b, &expected)
+		err = json.Unmarshal(b, &expected)
 		So(err, ShouldBeNil)
 
-		err = yaml.Unmarshal(b, schema)
+		err = json.Unmarshal(b, schema)
 		So(err, ShouldBeNil)
 
-		cb, err := yaml.Marshal(schema)
+		cb, err := json.MarshalIndent(schema, "", "  ")
 		So(err, ShouldBeNil)
 
 		var actual map[string]interface{}
-		err = yaml.Unmarshal(cb, &actual)
+		err = json.Unmarshal(cb, &actual)
 		So(err, ShouldBeNil)
 		So(actual, ShouldBeEquivalentTo, expected)
 	})
@@ -83,13 +83,38 @@ func TestPropertyFixtures(t *testing.T) {
 	}
 }
 
+func TestAdditionalPropertiesWithObject(t *testing.T) {
+	schema := new(Schema)
+	Convey("verifying model with map with object value", t, func() {
+		b, err := swag.YAMLDoc("../fixtures/yaml/models/modelWithObjectMap.yaml")
+		So(err, ShouldBeNil)
+		Println()
+
+		var expected map[string]interface{}
+		err = json.Unmarshal(b, &expected)
+		So(err, ShouldBeNil)
+
+		err = json.Unmarshal(b, schema)
+		So(err, ShouldBeNil)
+
+		cb, err := json.MarshalIndent(schema, "", "  ")
+		So(err, ShouldBeNil)
+
+		var actual map[string]interface{}
+		err = json.Unmarshal(cb, &actual)
+		So(err, ShouldBeNil)
+		So(actual, ShouldBeEquivalentTo, expected)
+		pretty.Println(actual)
+	})
+}
+
 func TestModelFixtures(t *testing.T) {
 	path := filepath.Join("..", "fixtures", "json", "models")
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		t.Fatal(err)
 	}
-	specs := []string{"models", "modelWithComposition", "modelWithExamples", "multipleModels"}
+	specs := []string{"modelWithObjectMap", "models", "modelWithComposition", "modelWithExamples", "multipleModels"}
 FILES:
 	for _, f := range files {
 		if f.IsDir() {
@@ -103,6 +128,25 @@ FILES:
 		}
 		//fmt.Println("trying", f.Name())
 		roundTripTest(t, "model", "json", filepath.Join(path, f.Name()), &Schema{})
+	}
+	path = filepath.Join("..", "fixtures", "yaml", "models")
+	files, err = ioutil.ReadDir(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+YAMLFILES:
+	for _, f := range files {
+		if f.IsDir() {
+			continue
+		}
+		for _, spec := range specs {
+			if strings.HasPrefix(f.Name(), spec) {
+				roundTripTest(t, "model", "yaml", filepath.Join(path, f.Name()), &Schema{})
+				continue YAMLFILES
+			}
+		}
+		// fmt.Println("trying", f.Name())
+		roundTripTest(t, "model", "yaml", filepath.Join(path, f.Name()), &Schema{})
 	}
 }
 

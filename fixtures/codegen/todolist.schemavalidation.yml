@@ -343,11 +343,10 @@ definitions:
           type: integer
           format: int32
           multipleOf: 1
-          min: 1
-          max: 200
+          minimum: 1
+          maximum: 200
           exclusiveMaximum: true
           exclusiveMinimum: true
-
 
   MapValidations:
     type: object
@@ -361,6 +360,28 @@ definitions:
           maximum: 6
           multipleOf: 1
 
+  MapComplexValidations:
+    type: object
+    properties:
+      meta:
+        type: object
+        additionalProperties:
+          type: object
+          properties:
+            name:
+              type: string
+              minLength: 10
+              maxLength: 50
+              pattern: "\\w+"
+            age:
+              type: integer
+              format: int32
+              multipleOf: 1
+              minimum: 1
+              maximum: 200
+              exclusiveMaximum: true
+              exclusiveMinimum: true
+
   NamedNestedMap:
     type: object
     additionalProperties:
@@ -373,6 +394,29 @@ definitions:
           minimum: 3
           maximum: 6
           multipleOf: 1
+
+  NamedNestedMapComplex:
+    type: object
+    additionalProperties:
+      type: object
+      additionalProperties:
+        type: object
+        additionalProperties:
+          type: object
+          properties:
+            name:
+              type: string
+              minLength: 10
+              maxLength: 50
+              pattern: "\\w+"
+            age:
+              type: integer
+              format: int32
+              multipleOf: 1
+              minimum: 1
+              maximum: 200
+              exclusiveMaximum: true
+              exclusiveMinimum: true
 
   NestedMapValidations:
     type: object
@@ -389,6 +433,32 @@ definitions:
               minimum: 3
               maximum: 6
               multipleOf: 1
+
+  NestedMapComplexValidations:
+    type: object
+    properties:
+      meta:
+        type: object
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 10
+                  maxLength: 50
+                  pattern: "\\w+"
+                age:
+                  type: integer
+                  format: int32
+                  multipleOf: 1
+                  minimum: 1
+                  maximum: 200
+                  exclusiveMaximum: true
+                  exclusiveMinimum: true
 
   NamedAllOf:
     type: object

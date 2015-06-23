@@ -8,7 +8,6 @@ import (
 
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
-	"github.com/kr/pretty"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -571,41 +570,6 @@ func TestSchemaValidation_NamedMap(t *testing.T) {
 	}
 }
 
-func TestSchemaValidation_NamedMapComplex(t *testing.T) {
-	t.SkipNow()
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
-	if assert.NoError(t, err) {
-		k := "NamedMapComplex"
-		schema := specDoc.Spec().Definitions[k]
-
-		gm, err := makeGenDefinition(k, "models", schema, specDoc)
-		if assert.NoError(t, err) {
-			pretty.Println(gm.GenSchema)
-			//if assertValidation(t, "", "m", gm.GenSchema) {
-			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, gm)
-			if assert.NoError(t, err) {
-				formatted, err := formatGoFile("named_map_complex.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(formatted)
-					fmt.Println(res)
-					assertInCode(t, k+") Validate(formats", res)
-					assertInCode(t, "for k, v := range m {", res)
-					assertInCode(t, "v.Validate(formats)", res)
-					assertInCode(t, "err := validate.Minimum(\"age\",", res)
-					assertInCode(t, "err := validate.Maximum(\"age\",", res)
-					assertInCode(t, "err := validate.MultipleOf(\"age\",", res)
-					assertInCode(t, "err := validate.Minimum(k,", res)
-					assertInCode(t, "err := validate.Maximum(k,", res)
-					assertInCode(t, "err := validate.MultipleOf(k,", res)
-					assertInCode(t, "errors.CompositeValidationError(res...)", res)
-				}
-			}
-			//}
-		}
-	}
-}
-
 func TestSchemaValidation_MapProps(t *testing.T) {
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
@@ -628,6 +592,70 @@ func TestSchemaValidation_MapProps(t *testing.T) {
 						assertInCode(t, "err := validate.Minimum(\"meta\"+\".\"+k,", res)
 						assertInCode(t, "err := validate.Maximum(\"meta\"+\".\"+k,", res)
 						assertInCode(t, "err := validate.MultipleOf(\"meta\"+\".\"+k,", res)
+						assertInCode(t, "errors.CompositeValidationError(res...)", res)
+					}
+				}
+			}
+		}
+	}
+}
+
+func TestSchemaValidation_NamedMapComplex(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "NamedMapComplex"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			if assertValidation(t, "", "m", gm.GenSchema) {
+				buf := bytes.NewBuffer(nil)
+				err := modelTemplate.Execute(buf, gm)
+				if assert.NoError(t, err) {
+					formatted, err := formatGoFile("named_map_complex.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(formatted)
+						assertInCode(t, k+") Validate(formats", res)
+						assertInCode(t, "for k, v := range m {", res)
+						assertInCode(t, "v.Validate(formats)", res)
+						assertInCode(t, "err := validate.MinLength(\"name\",", res)
+						assertInCode(t, "err := validate.MaxLength(\"name\",", res)
+						assertInCode(t, "err := validate.Pattern(\"name\",", res)
+						assertInCode(t, "err := validate.Minimum(\"age\",", res)
+						assertInCode(t, "err := validate.Maximum(\"age\",", res)
+						assertInCode(t, "err := validate.MultipleOf(\"age\",", res)
+						assertInCode(t, "errors.CompositeValidationError(res...)", res)
+					}
+				}
+			}
+		}
+	}
+}
+
+func TestSchemaValidation_MapComplexProps(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "MapComplexValidations"
+		schema := specDoc.Spec().Definitions[k]
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			prop := gm.Properties[0]
+			if assertValidation(t, "\"meta\"", "m.Meta", prop) {
+				buf := bytes.NewBuffer(nil)
+				err := modelTemplate.Execute(buf, gm)
+				if assert.NoError(t, err) {
+					formatted, err := formatGoFile("map_complex_validations.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(formatted)
+						assertInCode(t, k+") Validate(formats", res)
+						assertInCode(t, "for k, v := range m.Meta {", res)
+						assertInCode(t, "v.Validate(formats)", res)
+						assertInCode(t, "err := validate.MinLength(\"name\",", res)
+						assertInCode(t, "err := validate.MaxLength(\"name\",", res)
+						assertInCode(t, "err := validate.Pattern(\"name\",", res)
+						assertInCode(t, "err := validate.Minimum(\"age\",", res)
+						assertInCode(t, "err := validate.Maximum(\"age\",", res)
+						assertInCode(t, "err := validate.MultipleOf(\"age\",", res)
 						assertInCode(t, "errors.CompositeValidationError(res...)", res)
 					}
 				}
@@ -690,6 +718,78 @@ func TestSchemaValidation_NestedMapProps(t *testing.T) {
 						assertInCode(t, "err := validate.Minimum(\"meta\"+\".\"+k+\".\"+kk+\".\"+kkk,", res)
 						assertInCode(t, "err := validate.Maximum(\"meta\"+\".\"+k+\".\"+kk+\".\"+kkk,", res)
 						assertInCode(t, "err := validate.MultipleOf(\"meta\"+\".\"+k+\".\"+kk+\".\"+kkk,", res)
+						assertInCode(t, "errors.CompositeValidationError(res...)", res)
+					}
+				}
+			}
+		}
+	}
+}
+
+func TestSchemaValidation_NamedNestedMapComplex(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "NamedNestedMapComplex"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			if assertValidation(t, "", "m", gm.GenSchema) {
+				buf := bytes.NewBuffer(nil)
+				err := modelTemplate.Execute(buf, gm)
+				if assert.NoError(t, err) {
+					formatted, err := formatGoFile("named_nested_map_complex.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(formatted)
+						assertInCode(t, k+") Validate(formats", res)
+						assertInCode(t, "for k, v := range m {", res)
+						assertInCode(t, "for kk, vv := range v {", res)
+						assertInCode(t, "for kkk, vvv := range vv {", res)
+						assertInCode(t, "vvv.Validate(formats)", res)
+						assertInCode(t, "err := validate.MinLength(\"name\",", res)
+						assertInCode(t, "err := validate.MaxLength(\"name\",", res)
+						assertInCode(t, "err := validate.Pattern(\"name\",", res)
+						assertInCode(t, "err := validate.Minimum(\"age\",", res)
+						assertInCode(t, "err := validate.Maximum(\"age\",", res)
+						assertInCode(t, "err := validate.MultipleOf(\"age\",", res)
+						assertInCode(t, "errors.CompositeValidationError(res...)", res)
+					} else {
+						fmt.Println(buf.String())
+					}
+				}
+			}
+		}
+	}
+}
+
+func TestSchemaValidation_NestedMapPropsComplex(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "NestedMapComplexValidations"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			prop := gm.Properties[0]
+			if assertValidation(t, "\"meta\"", "m.Meta", prop) {
+				buf := bytes.NewBuffer(nil)
+				err := modelTemplate.Execute(buf, gm)
+				if assert.NoError(t, err) {
+					formatted, err := formatGoFile("nested_map_complex_validations.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(formatted)
+						assertInCode(t, k+") Validate(formats", res)
+						assertInCode(t, "m.validateMeta(formats", res)
+						assertInCode(t, "for k, v := range m.Meta {", res)
+						assertInCode(t, "for kk, vv := range v {", res)
+						assertInCode(t, "for kkk, vvv := range vv {", res)
+						assertInCode(t, "vvv.Validate(formats)", res)
+						assertInCode(t, "err := validate.MinLength(\"name\",", res)
+						assertInCode(t, "err := validate.MaxLength(\"name\",", res)
+						assertInCode(t, "err := validate.Pattern(\"name\",", res)
+						assertInCode(t, "err := validate.Minimum(\"age\",", res)
+						assertInCode(t, "err := validate.Maximum(\"age\",", res)
+						assertInCode(t, "err := validate.MultipleOf(\"age\",", res)
 						assertInCode(t, "errors.CompositeValidationError(res...)", res)
 					}
 				}

@@ -81,10 +81,10 @@ func (s SchemaOrBool) MarshalJSON() ([]byte, error) {
 		return json.Marshal(s.Schema)
 	}
 
-	if s.Schema == nil && s.Allows {
-		return jsTrue, nil
+	if s.Schema == nil && !s.Allows {
+		return jsFalse, nil
 	}
-	return jsFalse, nil
+	return jsTrue, nil
 }
 
 // UnmarshalJSON converts this bool or schema object from a JSON structure

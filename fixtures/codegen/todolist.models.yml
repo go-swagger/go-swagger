@@ -189,6 +189,30 @@ definitions:
       type: integer
       format: int32
 
+  NotaWithRefRegistry:
+    type: object
+    additionalProperties:
+      type: object
+      additionalProperties:
+        type: object
+        additionalProperties:
+          $ref: "#/definitions/Notable"
+
+  NotaWithMetaRegistry:
+    type: object
+    additionalProperties:
+      type: object
+      additionalProperties:
+        type: object
+        additionalProperties:
+          type: object
+          properties:
+            comment:
+              type: string
+            count:
+              type: integer
+              format: int32
+
   WithRef:
     type: object
     properties:
@@ -211,17 +235,69 @@ definitions:
         additionalProperties:
           type: string
 
+  WithMapRef:
+    type: object
+    properties:
+      data:
+        type: object
+        additionalProperties:
+          $ref: "#/definitions/Notable"
+
   WithMapComplex:
     type: object
     properties:
       data:
         type: object
         additionalProperties:
-          comment:
-            type: string
-          count:
-            type: integer
-            format: int32
+          type: object
+          properties:
+            comment:
+              type: string
+            count:
+              type: integer
+              format: int32
+
+  WithMapRegistry:
+    type: object
+    properties:
+      data:
+        type: object
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: string
+
+  WithMapRegistryRef:
+    type: object
+    properties:
+      data:
+        type: object
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              $ref: "#/definitions/Notable"
+
+  WithMapComplexRegistry:
+    type: object
+    properties:
+      data:
+        type: object
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: object
+              properties:
+                comment:
+                  type: string
+                count:
+                  type: integer
+                  format: int32
 
   WithAdditional:
     type: object
@@ -485,4 +561,3 @@ definitions:
                     allOf:
                       - $ref: "#/definitions/Tag"
                       - x-isnullable: true
-

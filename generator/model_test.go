@@ -37,6 +37,7 @@ func TestGenerateModel_Sanity(t *testing.T) {
 		for k, schema := range definitions {
 			genModel, err := makeGenDefinition(k, "models", schema, specDoc)
 
+			// log.Printf("trying model: %s", k)
 			if assert.NoError(t, err) {
 				//b, _ := json.MarshalIndent(genModel, "", "  ")
 				//fmt.Println(string(b))
@@ -148,7 +149,7 @@ func TestGenerateModel_SchemaField(t *testing.T) {
 
 	tt.assertRender(gmp, `/* The title of the property
  */
-`+"SomeName string `json:\"some name\"`\n")
+`+"SomeName string `json:\"some name,omitempty\"`\n")
 
 	var fl float64 = 10
 	var in1 int64 = 20
@@ -301,8 +302,8 @@ func TestGenerateModel_NotaWithMeta(t *testing.T) {
 					res := string(ff)
 					assertInCode(t, "type NotaWithMeta map[string]NotaWithMetaAnon", res)
 					assertInCode(t, "type NotaWithMetaAnon struct {", res)
-					assertInCode(t, "Comment string `json:\"comment\"`", res)
-					assertInCode(t, "Count int32 `json:\"count\"`", res)
+					assertInCode(t, "Comment string `json:\"comment,omitempty\"`", res)
+					assertInCode(t, "Count int32 `json:\"count,omitempty\"`", res)
 				}
 			}
 		}
@@ -327,7 +328,7 @@ func TestGenerateModel_NotaWithName(t *testing.T) {
 				res := buf.String()
 				assertInCode(t, "type "+k+" struct {", res)
 				assertInCode(t, k+" map[string]int32 `json:\"-\"`", res)
-				assertInCode(t, "Name string `json:\"name\"`", res)
+				assertInCode(t, "Name string `json:\"name,omitempty\"`", res)
 				assertInCode(t, k+") UnmarshalJSON", res)
 				assertInCode(t, k+") MarshalJSON", res)
 				assertInCode(t, "json.Marshal(m)", res)
@@ -346,8 +347,52 @@ func TestGenerateModel_NotaWithName(t *testing.T) {
 	}
 }
 
-func TestGenerateModel_MapRef(t *testing.T) {
-	tt := templateTest{t, modelTemplate.Lookup("schema")}
+func TestGenerateModel_NotaWithRefRegistry(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "NotaWithRefRegistry"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("nota_with_ref_registry.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					assertInCode(t, "type "+k+" map[string]map[string]map[string]Notable", res)
+				}
+			}
+		}
+	}
+}
+
+func TestGenerateModel_NotaWithMetaRegistry(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "NotaWithMetaRegistry"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("nota_with_meta_registry.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					assertInCode(t, "type "+k+" map[string]map[string]map[string]NotaWithMetaRegistryAnon", res)
+					assertInCode(t, "type NotaWithMetaRegistryAnon struct {", res)
+					assertInCode(t, "Comment string `json:\"comment,omitempty\"`", res)
+					assertInCode(t, "Count int32 `json:\"count,omitempty\"`", res)
+				}
+			}
+		}
+	}
+}
+
+func TestGenerateModel_WithMap(t *testing.T) {
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
@@ -360,10 +405,131 @@ func TestGenerateModel_MapRef(t *testing.T) {
 			assert.True(t, prop.IsMap)
 			assert.False(t, prop.IsComplexObject)
 			buf := bytes.NewBuffer(nil)
-			tt.template.Execute(buf, genModel)
-			res := buf.String()
-			assertInCode(t, "type WithMap struct {", res)
-			assertInCode(t, "Data map[string]string `json:\"data\"`", res)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				res := buf.String()
+				assertInCode(t, "type WithMap struct {", res)
+				assertInCode(t, "Data map[string]string `json:\"data,omitempty\"`", res)
+			}
+		}
+	}
+}
+
+func TestGenerateModel_WithMapRef(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "WithMapRef"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			assert.False(t, genModel.HasAdditionalProperties)
+			prop := getDefinitionProperty(genModel, "data")
+			assert.True(t, prop.HasAdditionalProperties)
+			assert.True(t, prop.IsMap)
+			assert.False(t, prop.IsComplexObject)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				res := buf.String()
+				assertInCode(t, "type "+k+" struct {", res)
+				assertInCode(t, "Data map[string]Notable `json:\"data,omitempty\"`", res)
+			}
+		}
+	}
+}
+
+func TestGenerateModel_WithMapComplex(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "WithMapComplex"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			assert.False(t, genModel.HasAdditionalProperties)
+			prop := getDefinitionProperty(genModel, "data")
+			assert.True(t, prop.HasAdditionalProperties)
+			assert.True(t, prop.IsMap)
+			assert.False(t, prop.IsComplexObject)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				res := buf.String()
+				assertInCode(t, "type "+k+" struct {", res)
+				assertInCode(t, "Data map[string]"+k+"DataAnon `json:\"data,omitempty\"`", res)
+			}
+		}
+	}
+}
+
+func TestGenerateModel_WithMapRegistry(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["WithMapRegistry"]
+		genModel, err := makeGenDefinition("WithMap", "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			assert.False(t, genModel.HasAdditionalProperties)
+			prop := getDefinitionProperty(genModel, "data")
+			assert.True(t, prop.HasAdditionalProperties)
+			assert.True(t, prop.IsMap)
+			assert.False(t, prop.IsComplexObject)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				res := buf.String()
+				assertInCode(t, "type WithMap struct {", res)
+				assertInCode(t, "Data map[string]map[string]map[string]string `json:\"data,omitempty\"`", res)
+			}
+		}
+	}
+}
+
+func TestGenerateModel_WithMapRegistryRef(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "WithMapRegistryRef"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			assert.False(t, genModel.HasAdditionalProperties)
+			prop := getDefinitionProperty(genModel, "data")
+			assert.True(t, prop.HasAdditionalProperties)
+			assert.True(t, prop.IsMap)
+			assert.False(t, prop.IsComplexObject)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				res := buf.String()
+				assertInCode(t, "type "+k+" struct {", res)
+				assertInCode(t, "Data map[string]map[string]map[string]Notable `json:\"data,omitempty\"`", res)
+			}
+		}
+	}
+}
+
+func TestGenerateModel_WithMapComplexRegistry(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "WithMapComplexRegistry"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			assert.False(t, genModel.HasAdditionalProperties)
+			prop := getDefinitionProperty(genModel, "data")
+			assert.True(t, prop.HasAdditionalProperties)
+			assert.True(t, prop.IsMap)
+			assert.False(t, prop.IsComplexObject)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				res := buf.String()
+				assertInCode(t, "type "+k+" struct {", res)
+				assertInCode(t, "Data map[string]map[string]map[string]"+k+"DataAnon `json:\"data,omitempty\"`", res)
+			}
 		}
 	}
 }
@@ -398,10 +564,10 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := buf.String()
 					assertInCode(t, "type "+k+" struct {", res)
-					assertInCode(t, "Data "+k+"DataP0 `json:\"data\"`", res)
+					assertInCode(t, "Data "+k+"DataP0 `json:\"data,omitempty\"`", res)
 					assertInCode(t, "type "+k+"DataP0 struct {", res)
 					assertInCode(t, k+"DataP0 map[string]string `json:\"-\"`", res)
-					assertInCode(t, "Name string `json:\"name\"`", res)
+					assertInCode(t, "Name string `json:\"name,omitempty\"`", res)
 					assertInCode(t, k+"DataP0) UnmarshalJSON", res)
 					assertInCode(t, k+"DataP0) MarshalJSON", res)
 					assertInCode(t, "json.Marshal(m)", res)
@@ -456,7 +622,7 @@ func TestGenerateModel_WithRef(t *testing.T) {
 			tt.template.Execute(buf, genModel)
 			res := buf.String()
 			assertInCode(t, "type WithRef struct {", res)
-			assertInCode(t, "Notes Notable `json:\"notes\"`", res)
+			assertInCode(t, "Notes Notable `json:\"notes,omitempty\"`", res)
 		}
 	}
 }
@@ -479,7 +645,7 @@ func TestGenerateModel_WithNullableRef(t *testing.T) {
 			tt.template.Execute(buf, genModel)
 			res := buf.String()
 			assertInCode(t, "type WithNullableRef struct {", res)
-			assertInCode(t, "Notes *Notable `json:\"notes\"`", res)
+			assertInCode(t, "Notes *Notable `json:\"notes,omitempty\"`", res)
 		}
 	}
 }
@@ -584,7 +750,7 @@ func TestGenerateModel_Stats(t *testing.T) {
 					res := string(ff)
 					assertInCode(t, "type Stats []StatsItems0", res)
 					assertInCode(t, "type StatsItems0 struct {", res)
-					assertInCode(t, "Points []int64 `json:\"points\"`", res)
+					assertInCode(t, "Points []int64 `json:\"points,omitempty\"`", res)
 				}
 			}
 		}
@@ -607,7 +773,7 @@ func TestGenerateModel_Statix(t *testing.T) {
 					res := string(ff)
 					assertInCode(t, "type Statix [][][]StatixItems0", res)
 					assertInCode(t, "type StatixItems0 struct {", res)
-					assertInCode(t, "Points []int64 `json:\"points\"`", res)
+					assertInCode(t, "Points []int64 `json:\"points,omitempty\"`", res)
 				}
 			}
 		}
@@ -633,7 +799,7 @@ func TestGenerateModel_WithItems(t *testing.T) {
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assertInCode(t, "type WithItems struct {", res)
-				assertInCode(t, "Tags []string `json:\"tags\"`", res)
+				assertInCode(t, "Tags []string `json:\"tags,omitempty\"`", res)
 			}
 		}
 	}
@@ -661,7 +827,7 @@ func TestGenerateModel_WithComplexItems(t *testing.T) {
 					res := string(b)
 					assertInCode(t, "type WithComplexItems struct {", res)
 					assertInCode(t, "type WithComplexItemsTagsItems0 struct {", res)
-					assertInCode(t, "Tags []WithComplexItemsTagsItems0 `json:\"tags\"`", res)
+					assertInCode(t, "Tags []WithComplexItemsTagsItems0 `json:\"tags,omitempty\"`", res)
 				}
 			}
 		}
@@ -689,7 +855,7 @@ func TestGenerateModel_WithItemsAndAdditional(t *testing.T) {
 					assertInCode(t, "type "+k+" struct {", res)
 					assertInCode(t, "type "+k+"TagsTuple0 struct {", res)
 					// this would fail if it accepts additionalItems because it would come out as []interface{}
-					assertInCode(t, "Tags "+k+"TagsTuple0 `json:\"tags\"`", res)
+					assertInCode(t, "Tags "+k+"TagsTuple0 `json:\"tags,omitempty\"`", res)
 					assertInCode(t, "P0 string `json:\"-\"`", res)
 					assertInCode(t, k+"TagsTuple0Items []interface{} `json:\"-\"`", res)
 				}
@@ -720,7 +886,7 @@ func TestGenerateModel_WithItemsAndAdditional2(t *testing.T) {
 					assertInCode(t, "type "+k+"TagsTuple0 struct {", res)
 					// this would fail if it accepts additionalItems because it would come out as []interface{}
 					assertInCode(t, "P0 string `json:\"-\"`", res)
-					assertInCode(t, "Tags "+k+"TagsTuple0 `json:\"tags\"`", res)
+					assertInCode(t, "Tags "+k+"TagsTuple0 `json:\"tags,omitempty\"`", res)
 					assertInCode(t, k+"TagsTuple0Items []int32 `json:\"-\"`", res)
 
 				}
@@ -749,7 +915,7 @@ func TestGenerateModel_WithComplexAdditional(t *testing.T) {
 					res := string(b)
 					assertInCode(t, "type WithComplexAdditional struct {", res)
 					assertInCode(t, "type WithComplexAdditionalTagsTuple0 struct {", res)
-					assertInCode(t, "Tags WithComplexAdditionalTagsTuple0 `json:\"tags\"`", res)
+					assertInCode(t, "Tags WithComplexAdditionalTagsTuple0 `json:\"tags,omitempty\"`", res)
 					assertInCode(t, "P0 string `json:\"-\"`", res)
 					assertInCode(t, "WithComplexAdditionalTagsTuple0Items []WithComplexAdditionalTagsItems `json:\"-\"`", res)
 				}
@@ -1060,14 +1226,14 @@ func TestGenerateModel_WithAllOf(t *testing.T) {
 					assertInCode(t, "type WithAllOfAO4Tuple4 struct {", res)
 					assertInCode(t, "type WithAllOfAO5Tuple5 struct {", res)
 					assertInCode(t, "Notable", res)
-					assertInCode(t, "Title string `json:\"title\"`", res)
-					assertInCode(t, "Body string `json:\"body\"`", res)
-					assertInCode(t, "Name string `json:\"name\"`", res)
+					assertInCode(t, "Title string `json:\"title,omitempty\"`", res)
+					assertInCode(t, "Body string `json:\"body,omitempty\"`", res)
+					assertInCode(t, "Name string `json:\"name,omitempty\"`", res)
 					assertInCode(t, "P0 float32 `json:\"-\"`", res)
 					assertInCode(t, "P0 float64 `json:\"-\"`", res)
 					assertInCode(t, "P1 strfmt.DateTime `json:\"-\"`", res)
 					assertInCode(t, "P1 strfmt.Date `json:\"-\"`", res)
-					assertInCode(t, "Opinion string `json:\"opinion\"`", res)
+					assertInCode(t, "Opinion string `json:\"opinion,omitempty\"`", res)
 					assertInCode(t, "WithAllOfAO5Tuple5Items []strfmt.Password `json:\"-\"`", res)
 					assertInCode(t, "AO1 map[string]int32 `json:\"-\"`", res)
 					assertInCode(t, "WithAllOfAO2P2 map[string]int64 `json:\"-\"`", res)
