@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"encoding/json"
 	"text/template"
 
 	"github.com/go-swagger/go-swagger/swag"
@@ -60,6 +61,7 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	"humanize":  swag.ToHumanNameLower,
 	"snakize":   swag.ToFileName,
 	"dasherize": swag.ToCommandName,
+	"json":      asJSON,
 }
 
 func init() {
@@ -105,4 +107,12 @@ func makeModelTemplate() *template.Template {
 	templ = template.Must(templ.New("additionalPropsSerializer").Parse(string(assetAdditionalPropsSerializer)))
 	templ = template.Must(templ.New("model").Parse(string(assetSchemaStruct)))
 	return templ
+}
+
+func asJSON(data interface{}) (string, error) {
+	b, err := json.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }

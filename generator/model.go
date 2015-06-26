@@ -28,13 +28,6 @@ func GenerateDefinition(modelNames []string, includeModel, includeValidator bool
 		}
 	}
 
-	// NOTE: Change this to work on a collection of models
-	//       it should first build up a graph of the dependencies and
-	//       when there is a circular dependency, log a message
-	//       but still generate and hope for the best
-	//       This is a nice to have, at worst the code will need an extra format run, if this is out of order
-	//
-	//       So this needs to become a 2-phased approach so that dependencies can be worked out
 	for _, modelName := range modelNames {
 		// lookup schema
 		model, ok := specDoc.Spec().Definitions[modelName]
@@ -303,6 +296,7 @@ func (sg *schemaGenContext) NewAdditionalProperty(schema spec.Schema) *schemaGen
 	pg.KeyVar += "k"
 	pg.ValueExpr += "v"
 	pg.Path = pg.KeyVar
+	pg.GenSchema.Suffix = "Value"
 	if sg.Path != "" {
 		pg.Path = sg.Path + "+\".\"+" + pg.KeyVar
 	}
@@ -324,7 +318,6 @@ func (sg *schemaGenContext) schemaValidations() sharedValidations {
 	//var enum string
 	if len(sg.Schema.Enum) > 0 {
 		hasValidations = true
-		//enum = fmt.Sprintf("%#v", model.Enum)
 	}
 
 	return sharedValidations{
@@ -598,6 +591,8 @@ func (sg *schemaGenContext) buildArray() error {
 		return err
 	}
 	sg.MergeResult(elProp)
+	sg.GenSchema.ItemsEnum = elProp.GenSchema.Enum
+	elProp.GenSchema.Suffix = "Items"
 	sg.GenSchema.GoType = "[]" + elProp.GenSchema.GoType
 	sg.GenSchema.Items = &elProp.GenSchema
 	return nil
@@ -626,7 +621,6 @@ func (sg *schemaGenContext) buildItems() error {
 				}
 				sg.MergeResult(elProp)
 				elProp.GenSchema.Name = "p" + strconv.Itoa(i)
-
 				sg.GenSchema.Properties = append(sg.GenSchema.Properties, elProp.GenSchema)
 			}
 			return nil
@@ -869,11 +863,6 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	}
 	// log.Printf("%s built items", sg.Name)
 
-	//ctx.HasSliceValidations = len(sg.GenSchema.Items) > 0 || sg.GenSchema.HasAdditionalItems || sg.GenSchema.SingleSchemaSlice
-	//ctx.HasValidations = ctx.HasValidations || ctx.HasSliceValidations
-
-	//sg.GenSchema.ItemsLen = len(sg.GenSchema.Items)
-
 	return nil
 }
 
@@ -890,6 +879,7 @@ type GenSchema struct {
 	sharedValidations
 	Example                 string
 	Name                    string
+	Suffix                  string
 	Path                    string
 	ValueExpression         string
 	IndexVar                string
@@ -924,6 +914,7 @@ type sharedValidations struct {
 	ExclusiveMinimum    bool
 	ExclusiveMaximum    bool
 	Enum                []interface{}
+	ItemsEnum           []interface{}
 	HasValidations      bool
 	MinItems            *int64
 	MaxItems            *int64
