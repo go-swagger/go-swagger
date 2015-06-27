@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/casualjim/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/spec"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -101,7 +101,7 @@ func TestSchemaParser(t *testing.T) {
 
 	definitions := make(map[string]spec.Schema)
 	sp := newSchemaParser(classificationProg)
-	pn := "github.com/casualjim/go-swagger/fixtures/goparsing/classification/models"
+	pn := "github.com/go-swagger/go-swagger/fixtures/goparsing/classification/models"
 	pnr := "../fixtures/goparsing/classification/models"
 	pkg := classificationProg.Package(pnr)
 	assert.NotNil(t, pkg)

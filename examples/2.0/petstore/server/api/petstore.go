@@ -7,12 +7,12 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/casualjim/go-swagger/errors"
-	"github.com/casualjim/go-swagger/httpkit"
-	"github.com/casualjim/go-swagger/httpkit/middleware"
-	"github.com/casualjim/go-swagger/httpkit/middleware/untyped"
-	"github.com/casualjim/go-swagger/spec"
-	"github.com/casualjim/go-swagger/swag"
+	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-swagger/go-swagger/httpkit/middleware"
+	"github.com/go-swagger/go-swagger/httpkit/middleware/untyped"
+	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/swag"
 	"github.com/kr/pretty"
 )
 

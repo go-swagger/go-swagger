@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/casualjim/go-swagger/httpkit"
-	"github.com/casualjim/go-swagger/spec"
-	"github.com/casualjim/go-swagger/strfmt"
+	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/strfmt"
 )
 
 // Runtime represents an API client that uses the transport

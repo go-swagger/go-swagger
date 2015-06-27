@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/casualjim/go-swagger/swag"
+	"github.com/go-swagger/go-swagger/swag"
 )
 
 // Paths holds the relative paths to the individual endpoints.

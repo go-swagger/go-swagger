@@ -6,11 +6,11 @@ package pet
 import (
 	"net/http"
 
-	"github.com/casualjim/go-swagger/errors"
-	"github.com/casualjim/go-swagger/httpkit/middleware"
-	"github.com/casualjim/go-swagger/httpkit/validate"
-	"github.com/casualjim/go-swagger/strfmt"
-	"github.com/casualjim/go-swagger/swag"
+	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-swagger/go-swagger/httpkit/middleware"
+	"github.com/go-swagger/go-swagger/httpkit/validate"
+	"github.com/go-swagger/go-swagger/strfmt"
+	"github.com/go-swagger/go-swagger/swag"
 )
 
 // DeletePetParams contains all the bound params for the delete pet operation

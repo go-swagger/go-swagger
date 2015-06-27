@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/casualjim/go-swagger/errors"
-	"github.com/casualjim/go-swagger/httpkit"
+	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-swagger/go-swagger/httpkit"
 )
 
 // httpAuthenticator is a function that authenticates a HTTP request

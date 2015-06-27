@@ -4,8 +4,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/casualjim/go-swagger/spec"
-	"github.com/casualjim/go-swagger/swag"
+	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/swag"
 )
 
 func typeForSchemaOrArray(schemas *spec.SchemaOrArray, modelsPkg string) string {
@@ -18,7 +18,7 @@ func typeForSchemaOrArray(schemas *spec.SchemaOrArray, modelsPkg string) string 
 var goImports = map[string]string{
 	"inf.Dec":   "speter.net/go/exp/math/dec/inf",
 	"big.Int":   "math/big",
-	"swagger.*": "github.com/casualjim/go-swagger/httpkit",
+	"swagger.*": "github.com/go-swagger/go-swagger/httpkit",
 }
 
 var zeroes = map[string]string{

@@ -6,8 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/casualjim/go-swagger/httpkit"
-	"github.com/casualjim/go-swagger/internal/testing/petstore"
+	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-swagger/go-swagger/internal/testing/petstore"
 	"github.com/gorilla/context"
 	"github.com/stretchr/testify/assert"
 )

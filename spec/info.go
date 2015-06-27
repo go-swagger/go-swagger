@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/casualjim/go-swagger/jsonpointer"
-	"github.com/casualjim/go-swagger/swag"
+	"github.com/go-swagger/go-swagger/jsonpointer"
+	"github.com/go-swagger/go-swagger/swag"
 )
 
 // Extensions vendor specific extensions

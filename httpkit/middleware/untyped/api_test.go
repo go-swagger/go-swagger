@@ -5,9 +5,9 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/casualjim/go-swagger/errors"
-	"github.com/casualjim/go-swagger/httpkit"
-	swaggerspec "github.com/casualjim/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-swagger/go-swagger/httpkit"
+	swaggerspec "github.com/go-swagger/go-swagger/spec"
 	"github.com/stretchr/testify/assert"
 )
 

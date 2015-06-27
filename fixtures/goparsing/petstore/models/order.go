@@ -1,6 +1,6 @@
 package models
 
-import "github.com/casualjim/go-swagger/strfmt"
+import "github.com/go-swagger/go-swagger/strfmt"
 
 // An Order for one or more pets by a user.
 // swagger:model order

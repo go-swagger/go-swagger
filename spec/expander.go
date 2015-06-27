@@ -8,8 +8,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/casualjim/go-swagger/jsonpointer"
-	"github.com/casualjim/go-swagger/swag"
+	"github.com/go-swagger/go-swagger/jsonpointer"
+	"github.com/go-swagger/go-swagger/swag"
 )
 
 // ResolutionCache a cache for resolving urls

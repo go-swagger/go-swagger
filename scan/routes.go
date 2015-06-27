@@ -5,7 +5,7 @@ import (
 	"go/ast"
 	"strings"
 
-	"github.com/casualjim/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/spec"
 
 	"golang.org/x/tools/go/loader"
 )
