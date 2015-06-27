@@ -1,6 +1,6 @@
 package models
 
-import "github.com/casualjim/go-swagger/strfmt"
+import "github.com/go-swagger/go-swagger/strfmt"
 
 // User represents the user for this application
 //

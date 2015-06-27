@@ -6,10 +6,10 @@ package store
 import (
 	"net/http"
 
-	"github.com/casualjim/go-swagger/errors"
-	"github.com/casualjim/go-swagger/httpkit/middleware"
+	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-swagger/go-swagger/httpkit/middleware"
 
-	"github.com/casualjim/go-swagger/examples/generated/models"
+	"github.com/go-swagger/go-swagger/examples/generated/models"
 )
 
 // PlaceOrderParams contains all the bound params for the place order operation

@@ -32,7 +32,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/casualjim/go-swagger/swag"
+	"github.com/go-swagger/go-swagger/swag"
 )
 
 const (

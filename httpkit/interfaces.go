@@ -4,7 +4,7 @@ import (
 	"io"
 	"mime/multipart"
 
-	"github.com/casualjim/go-swagger/strfmt"
+	"github.com/go-swagger/go-swagger/strfmt"
 )
 
 // File represents an uploaded file.

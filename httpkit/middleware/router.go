@@ -5,10 +5,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/casualjim/go-swagger/errors"
-	"github.com/casualjim/go-swagger/httpkit"
-	"github.com/casualjim/go-swagger/spec"
-	"github.com/casualjim/go-swagger/strfmt"
+	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/gorilla/context"
 	"github.com/naoina/denco"
 )

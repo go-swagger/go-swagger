@@ -4,7 +4,7 @@ import (
 	"mime"
 	"net/http"
 
-	"github.com/casualjim/go-swagger/errors"
+	"github.com/go-swagger/go-swagger/errors"
 )
 
 // ContentType parses a content type header

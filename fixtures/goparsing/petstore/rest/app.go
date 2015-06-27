@@ -3,7 +3,7 @@ package rest
 import (
 	"net/http"
 
-	"github.com/casualjim/go-swagger/fixtures/goparsing/petstore/rest/handlers"
+	"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/rest/handlers"
 	"github.com/naoina/denco"
 )
 

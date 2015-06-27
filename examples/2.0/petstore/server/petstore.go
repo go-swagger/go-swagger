@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/casualjim/go-swagger/examples/2.0/petstore/server/api"
+	"github.com/go-swagger/go-swagger/examples/2.0/petstore/server/api"
 )
 
 func main() {

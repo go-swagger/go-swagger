@@ -6,8 +6,8 @@ package pet
 import (
 	"net/http"
 
-	"github.com/casualjim/go-swagger/examples/generated/models"
-	"github.com/casualjim/go-swagger/httpkit/middleware"
+	"github.com/go-swagger/go-swagger/examples/generated/models"
+	"github.com/go-swagger/go-swagger/httpkit/middleware"
 )
 
 // DeletePetHandlerFunc turns a function with the right signature into a delete pet handler

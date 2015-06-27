@@ -8,16 +8,16 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/casualjim/go-swagger/httpkit"
-	"github.com/casualjim/go-swagger/httpkit/middleware"
-	"github.com/casualjim/go-swagger/httpkit/security"
-	"github.com/casualjim/go-swagger/spec"
-	"github.com/casualjim/go-swagger/strfmt"
+	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-swagger/go-swagger/httpkit/middleware"
+	"github.com/go-swagger/go-swagger/httpkit/security"
+	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/strfmt"
 
-	"github.com/casualjim/go-swagger/examples/generated/models"
-	"github.com/casualjim/go-swagger/examples/generated/restapi/operations/pet"
-	"github.com/casualjim/go-swagger/examples/generated/restapi/operations/store"
-	"github.com/casualjim/go-swagger/examples/generated/restapi/operations/user"
+	"github.com/go-swagger/go-swagger/examples/generated/models"
+	"github.com/go-swagger/go-swagger/examples/generated/restapi/operations/pet"
+	"github.com/go-swagger/go-swagger/examples/generated/restapi/operations/store"
+	"github.com/go-swagger/go-swagger/examples/generated/restapi/operations/user"
 )
 
 // NewSwaggerPetstoreAPI creates a new SwaggerPetstore instance

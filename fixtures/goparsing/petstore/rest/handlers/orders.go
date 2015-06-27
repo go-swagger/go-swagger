@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/casualjim/go-swagger/fixtures/goparsing/petstore/models"
+	"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/models"
 	"github.com/naoina/denco"
 )
 
