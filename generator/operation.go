@@ -152,7 +152,7 @@ func (o *operationGenerator) generateHandler() error {
 	}
 	log.Println("rendered handler template:", o.pkg+"."+o.cname)
 
-	fp := filepath.Join(o.Target, o.ServerPackage)
+	fp := filepath.Join(o.ServerPackage, o.Target)
 	if len(o.Operation.Tags) > 0 {
 		fp = filepath.Join(fp, o.pkg)
 	}
@@ -167,7 +167,7 @@ func (o *operationGenerator) generateParameterModel() error {
 	}
 	log.Println("rendered parameters template:", o.pkg+"."+o.cname+"Parameters")
 
-	fp := filepath.Join(o.Target, o.ServerPackage)
+	fp := filepath.Join(o.ServerPackage, o.Target)
 	if len(o.Operation.Tags) > 0 {
 		fp = filepath.Join(fp, o.pkg)
 	}
