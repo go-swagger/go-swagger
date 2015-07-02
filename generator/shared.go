@@ -75,23 +75,11 @@ type propertyDescriptor struct {
 // on its way out
 type commonValidations struct {
 	propertyDescriptor
-	Required         bool
-	Type             string
-	Format           string
-	Items            *spec.Items
-	Default          interface{}
-	Maximum          *float64
-	ExclusiveMaximum bool
-	Minimum          *float64
-	ExclusiveMinimum bool
-	MaxLength        *int64
-	MinLength        *int64
-	Pattern          string
-	MaxItems         *int64
-	MinItems         *int64
-	UniqueItems      bool
-	MultipleOf       *float64
-	Enum             []interface{}
+	sharedValidations
+	Type    string
+	Format  string
+	Items   *spec.Items
+	Default interface{}
 }
 
 // on its way out

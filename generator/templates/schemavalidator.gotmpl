@@ -94,7 +94,7 @@ if err := {{.ValueExpression}}.Validate(formats); err != nil {
 {{ end }}
 {{ range .Properties }}
 {{ template "propertyvalidator" . }}
-{{ end }}{{end}}{{if and .IsTuple .AdditionalItems}}
+{{ end }}{{end}}{{if and .IsTuple .AdditionalItems }}
 // validating additional items should go here
 {{end}}{{end}}
 {{define "propertyvalidator"}}
@@ -197,7 +197,6 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
     res = append(res, err)
   }
   {{ end }}
-  {{ with .AdditionalProperties }}{{ end }}
 
   if len(res) > 0 {
     return errors.CompositeValidationError(res...)
@@ -300,9 +299,11 @@ func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}I
 }
 {{ end }}
 func ({{.ReceiverName}} *{{ pascalize .Name }}) validate{{ pascalize .Name }}Items(formats strfmt.Registry) error {
+  {{ if .AdditionalItems.HasValidations }}
   for {{ .IndexVar }} := range {{ .ValueExpression }}.{{ pascalize .Name }}Items {
     {{template "propertyvalidator" .AdditionalItems }}
   }
+  {{ end }}
   return nil
 }
 {{end}}

@@ -20,13 +20,13 @@ func assertInCode(t testing.TB, expr, code string) bool {
 }
 
 func assertValidation(t testing.TB, pth, expr string, gm GenSchema) bool {
-	if !assert.True(t, gm.HasValidations) {
+	if !assert.True(t, gm.HasValidations, "expected the schema to have validations") {
 		return false
 	}
-	if !assert.Equal(t, pth, gm.Path) {
+	if !assert.Equal(t, pth, gm.Path, "paths don't match") {
 		return false
 	}
-	if !assert.Equal(t, expr, gm.ValueExpression) {
+	if !assert.Equal(t, expr, gm.ValueExpression, "expressions don't match") {
 		return false
 	}
 	return true
@@ -725,6 +725,96 @@ func TestSchemaValidation_NestedMapProps(t *testing.T) {
 		}
 	}
 }
+func TestAdditionalProperties_Simple(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "NamedMapComplex"
+		schema := specDoc.Spec().Definitions[k]
+		tr := &typeResolver{
+			ModelsPackage: "",
+			ModelName:     k,
+			Doc:           specDoc,
+		}
+
+		sg := schemaGenContext{
+			Path:         "",
+			Name:         k,
+			Receiver:     "m",
+			IndexVar:     "i",
+			ValueExpr:    "m",
+			Schema:       schema,
+			Required:     false,
+			TypeResolver: tr,
+			Named:        true,
+			ExtraSchemas: make(map[string]GenSchema),
+		}
+
+		fsm, lsm, err := newMapStack(&sg)
+		if assert.NoError(t, err) {
+			assert.NotNil(t, fsm.Type)
+			assert.Equal(t, &schema, fsm.Type)
+			assert.Equal(t, fsm, lsm)
+			assert.NotNil(t, fsm.Type.AdditionalProperties)
+			assert.NotNil(t, fsm.Type.AdditionalProperties.Schema)
+			assert.NotNil(t, fsm.NewObj)
+			assert.Nil(t, fsm.Next)
+			assert.Equal(t, "#/definitions/NamedMapComplexAnon", fsm.Type.AdditionalProperties.Schema.Ref.GetURL().String())
+
+			assert.NoError(t, lsm.Build())
+		}
+	}
+}
+
+func TestAdditionalProperties_Nested(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "NamedNestedMapComplex"
+		schema := specDoc.Spec().Definitions[k]
+		tr := &typeResolver{
+			ModelsPackage: "",
+			ModelName:     k,
+			Doc:           specDoc,
+		}
+
+		sg := schemaGenContext{
+			Path:         "",
+			Name:         k,
+			Receiver:     "m",
+			IndexVar:     "i",
+			ValueExpr:    "m",
+			Schema:       schema,
+			Required:     false,
+			TypeResolver: tr,
+			Named:        true,
+			ExtraSchemas: make(map[string]GenSchema),
+		}
+
+		fsm, lsm, err := newMapStack(&sg)
+		if assert.NoError(t, err) {
+			assert.NotNil(t, fsm.Type)
+			assert.Equal(t, &schema, fsm.Type)
+			assert.Equal(t, "", fsm.Context.Path)
+
+			assert.NotNil(t, schema.AdditionalProperties.Schema)
+			if assert.NotNil(t, fsm.Next) && assert.Nil(t, fsm.Previous) {
+				assert.NotNil(t, fsm.Type)
+				assert.Equal(t, &schema, fsm.Type)
+				assert.NotEqual(t, fsm, lsm)
+				assert.NotNil(t, fsm.Type.AdditionalProperties)
+				assert.NotNil(t, fsm.Type.AdditionalProperties.Schema)
+				assert.Nil(t, fsm.NewObj)
+				assert.Nil(t, fsm.Next.NewObj)
+				assert.NotNil(t, fsm.Next.Previous)
+				assert.NotNil(t, fsm.Next.Next)
+				assert.NotNil(t, fsm.Next.Next.NewObj)
+				assert.NotNil(t, fsm.Next.Next.ValueRef)
+				assert.Nil(t, fsm.Next.Next.Next)
+				assert.Equal(t, fsm.Next.Next, lsm)
+				assert.NoError(t, lsm.Build())
+			}
+		}
+	}
+}
 
 func TestSchemaValidation_NamedNestedMapComplex(t *testing.T) {
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
@@ -735,26 +825,30 @@ func TestSchemaValidation_NamedNestedMapComplex(t *testing.T) {
 		gm, err := makeGenDefinition(k, "models", schema, specDoc)
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
-				buf := bytes.NewBuffer(nil)
-				err := modelTemplate.Execute(buf, gm)
-				if assert.NoError(t, err) {
-					formatted, err := formatGoFile("named_nested_map_complex.go", buf.Bytes())
-					if assert.NoError(t, err) {
-						res := string(formatted)
-						assertInCode(t, k+") Validate(formats", res)
-						assertInCode(t, "for k, v := range m {", res)
-						assertInCode(t, "for kk, vv := range v {", res)
-						assertInCode(t, "for kkk, vvv := range vv {", res)
-						assertInCode(t, "vvv.Validate(formats)", res)
-						assertInCode(t, "err := validate.MinLength(\"name\",", res)
-						assertInCode(t, "err := validate.MaxLength(\"name\",", res)
-						assertInCode(t, "err := validate.Pattern(\"name\",", res)
-						assertInCode(t, "err := validate.Minimum(\"age\",", res)
-						assertInCode(t, "err := validate.Maximum(\"age\",", res)
-						assertInCode(t, "err := validate.MultipleOf(\"age\",", res)
-						assertInCode(t, "errors.CompositeValidationError(res...)", res)
-					} else {
-						fmt.Println(buf.String())
+				if assert.True(t, gm.GenSchema.AdditionalProperties.HasValidations) {
+					if assert.True(t, gm.GenSchema.AdditionalProperties.AdditionalProperties.HasValidations) {
+						buf := bytes.NewBuffer(nil)
+						err := modelTemplate.Execute(buf, gm)
+						if assert.NoError(t, err) {
+							formatted, err := formatGoFile("named_nested_map_complex.go", buf.Bytes())
+							if assert.NoError(t, err) {
+								res := string(formatted)
+								assertInCode(t, k+") Validate(formats", res)
+								assertInCode(t, "for k, v := range m {", res)
+								assertInCode(t, "for kk, vv := range v {", res)
+								assertInCode(t, "for kkk, vvv := range vv {", res)
+								assertInCode(t, "vvv.Validate(formats)", res)
+								assertInCode(t, "err := validate.MinLength(\"name\",", res)
+								assertInCode(t, "err := validate.MaxLength(\"name\",", res)
+								assertInCode(t, "err := validate.Pattern(\"name\",", res)
+								assertInCode(t, "err := validate.Minimum(\"age\",", res)
+								assertInCode(t, "err := validate.Maximum(\"age\",", res)
+								assertInCode(t, "err := validate.MultipleOf(\"age\",", res)
+								assertInCode(t, "errors.CompositeValidationError(res...)", res)
+							} else {
+								fmt.Println(buf.String())
+							}
+						}
 					}
 				}
 			}

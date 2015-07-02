@@ -240,9 +240,6 @@ func TestGenerateModel_Primitives(t *testing.T) {
 		}
 		val.Name = "theType"
 		exp := v.Expected
-		if val.IsNullable {
-			exp = exp[1:]
-		}
 		tt.assertRender(val, "type TheType "+exp+"\n\n")
 	}
 }

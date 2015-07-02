@@ -383,6 +383,12 @@ func makeCodegenParameter(receiver string, resolver *typeResolver, param spec.Pa
 			return genParameter{}, err
 		}
 
+		if sc.GenSchema.IsAnonymous {
+			// turn it into something that's not anonymous
+		} else {
+			// build the shared param
+		}
+
 	} else {
 		ctx = makeGenValidations(paramValidations(receiver, param))
 		thisItem := genParameterItem{}
@@ -518,23 +524,7 @@ func paramItemValidations(path, paramName, accessor, indexVar, valueExpression s
 	_, isPrimitive := primitives[tpe]
 	_, isCustomFormatter := customFormatters[tpe]
 
-	return commonValidations{
-		propertyDescriptor: propertyDescriptor{
-			PropertyName:      accessor,
-			ParamName:         paramName,
-			ValueExpression:   valueExpression,
-			IndexVar:          indexVar,
-			Path:              path,
-			IsContainer:       items.Items != nil || tpe == "array",
-			IsPrimitive:       isPrimitive,
-			IsCustomFormatter: isCustomFormatter,
-			IsMap:             strings.HasPrefix(tpe, "map"),
-		},
-
-		Type:             tpe,
-		Format:           items.Format,
-		Items:            items.Items,
-		Default:          items.Default,
+	shv := sharedValidations{
 		Maximum:          items.Maximum,
 		ExclusiveMaximum: items.ExclusiveMaximum,
 		Minimum:          items.Minimum,
@@ -547,6 +537,26 @@ func paramItemValidations(path, paramName, accessor, indexVar, valueExpression s
 		UniqueItems:      items.UniqueItems,
 		MultipleOf:       items.MultipleOf,
 		Enum:             items.Enum,
+	}
+
+	return commonValidations{
+		propertyDescriptor: propertyDescriptor{
+			PropertyName:      accessor,
+			ParamName:         paramName,
+			ValueExpression:   valueExpression,
+			IndexVar:          indexVar,
+			Path:              path,
+			IsContainer:       items.Items != nil || tpe == "array",
+			IsPrimitive:       isPrimitive,
+			IsCustomFormatter: isCustomFormatter,
+			IsMap:             strings.HasPrefix(tpe, "map"),
+		},
+		sharedValidations: shv,
+
+		Type:    tpe,
+		Format:  items.Format,
+		Items:   items.Items,
+		Default: items.Default,
 	}
 }
 
@@ -570,23 +580,25 @@ func paramValidations(receiver string, param spec.Parameter) commonValidations {
 			IsCustomFormatter: isCustomFormatter,
 			IsMap:             strings.HasPrefix(tpe, "map"),
 		},
-		Required:         param.Required,
-		Type:             tpe,
-		Format:           param.Format,
-		Items:            param.Items,
-		Default:          param.Default,
-		Maximum:          param.Maximum,
-		ExclusiveMaximum: param.ExclusiveMaximum,
-		Minimum:          param.Minimum,
-		ExclusiveMinimum: param.ExclusiveMinimum,
-		MaxLength:        param.MaxLength,
-		MinLength:        param.MinLength,
-		Pattern:          param.Pattern,
-		MaxItems:         param.MaxItems,
-		MinItems:         param.MinItems,
-		UniqueItems:      param.UniqueItems,
-		MultipleOf:       param.MultipleOf,
-		Enum:             param.Enum,
+		sharedValidations: sharedValidations{
+			Required:         param.Required,
+			Maximum:          param.Maximum,
+			ExclusiveMaximum: param.ExclusiveMaximum,
+			Minimum:          param.Minimum,
+			ExclusiveMinimum: param.ExclusiveMinimum,
+			MaxLength:        param.MaxLength,
+			MinLength:        param.MinLength,
+			Pattern:          param.Pattern,
+			MaxItems:         param.MaxItems,
+			MinItems:         param.MinItems,
+			UniqueItems:      param.UniqueItems,
+			MultipleOf:       param.MultipleOf,
+			Enum:             param.Enum,
+		},
+		Type:    tpe,
+		Format:  param.Format,
+		Items:   param.Items,
+		Default: param.Default,
 	}
 }
 
@@ -767,21 +779,6 @@ func headerValidations(receiver, name string, header spec.Header) commonValidati
 	_, isPrimitive := primitives[tpe]
 	_, isCustomFormatter := customFormatters[tpe]
 
-	//res := sharedValidations{
-	//Maximum:          header.Maximum,
-	//ExclusiveMaximum: header.ExclusiveMaximum,
-	//Minimum:          header.Minimum,
-	//ExclusiveMinimum: header.ExclusiveMinimum,
-	//MaxLength:        header.MaxLength,
-	//MinLength:        header.MinLength,
-	//Pattern:          header.Pattern,
-	//MaxItems:         header.MaxItems,
-	//MinItems:         header.MinItems,
-	//UniqueItems:      header.UniqueItems,
-	//MultipleOf:       header.MultipleOf,
-	//Enum:             header.Enum,
-	//}
-
 	return commonValidations{
 		propertyDescriptor: propertyDescriptor{
 			PropertyName:      accessor,
@@ -794,21 +791,23 @@ func headerValidations(receiver, name string, header spec.Header) commonValidati
 			IsCustomFormatter: isCustomFormatter,
 			IsMap:             strings.HasPrefix(tpe, "map"),
 		},
-		Type:             tpe,
-		Format:           header.Format,
-		Items:            header.Items,
-		Default:          header.Default,
-		Maximum:          header.Maximum,
-		ExclusiveMaximum: header.ExclusiveMaximum,
-		Minimum:          header.Minimum,
-		ExclusiveMinimum: header.ExclusiveMinimum,
-		MaxLength:        header.MaxLength,
-		MinLength:        header.MinLength,
-		Pattern:          header.Pattern,
-		MaxItems:         header.MaxItems,
-		MinItems:         header.MinItems,
-		UniqueItems:      header.UniqueItems,
-		MultipleOf:       header.MultipleOf,
-		Enum:             header.Enum,
+		sharedValidations: sharedValidations{
+			Maximum:          header.Maximum,
+			ExclusiveMaximum: header.ExclusiveMaximum,
+			Minimum:          header.Minimum,
+			ExclusiveMinimum: header.ExclusiveMinimum,
+			MaxLength:        header.MaxLength,
+			MinLength:        header.MinLength,
+			Pattern:          header.Pattern,
+			MaxItems:         header.MaxItems,
+			MinItems:         header.MinItems,
+			UniqueItems:      header.UniqueItems,
+			MultipleOf:       header.MultipleOf,
+			Enum:             header.Enum,
+		},
+		Type:    tpe,
+		Format:  header.Format,
+		Items:   header.Items,
+		Default: header.Default,
 	}
 }

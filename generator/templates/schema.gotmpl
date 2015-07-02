@@ -1,5 +1,5 @@
 {{ if or .IsComplexObject .IsTuple .IsAdditionalProperties }}{{ if .Name }}type {{ pascalize .Name }} {{ end }}{{ template "schemaBody" . }}
-{{ else }}type {{ pascalize .Name }} {{ .GoType }}
+{{ else }}type {{ pascalize .Name }} {{ template "schemaType" . }}
 {{ end }}{{ if .IsTuple }}
 {{ template "tupleSerializer" . }}
 {{ else if .IsAdditionalProperties }}
