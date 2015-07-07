@@ -17,7 +17,6 @@ import (
 var (
 	builderTemplate      *template.Template
 	mainTemplate         *template.Template
-	configureAPITemplate *template.Template
 )
 
 func init() {
@@ -26,9 +25,6 @@ func init() {
 
 	bm, _ := Asset("templates/server/main.gotmpl")
 	mainTemplate = template.Must(template.New("main").Parse(string(bm)))
-
-	bc, _ := Asset("templates/server/configureapi.gotmpl")
-	configureAPITemplate = template.Must(template.New("configureapi").Parse(string(bc)))
 }
 
 // GenerateSupport generates the supporting files for an API
@@ -146,31 +142,11 @@ func (a *appGenerator) Generate() error {
 	}
 	app.DefaultImports = append(app.DefaultImports, filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage))
 
-	if err := a.generateConfigureAPI(&app); err != nil {
-		return err
-	}
-
 	if err := a.generateMain(&app); err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func (a *appGenerator) generateConfigureAPI(app *genApp) error {
-	pth := filepath.Join(a.Target, "cmd", swag.ToCommandName(app.AppName+"Server"))
-	nm := "Configure" + app.AppName
-	if fileExists(pth, nm) {
-		log.Println("skipped (already exists) configure api template:", app.Package+".Configure"+app.AppName)
-		return nil
-	}
-
-	buf := bytes.NewBuffer(nil)
-	if err := configureAPITemplate.Execute(buf, app); err != nil {
-		return err
-	}
-	log.Println("rendered configure api template:", app.Package+".Configure"+app.AppName)
-	return writeToFileIfNotExist(pth, nm, buf.Bytes())
 }
 
 func (a *appGenerator) generateMain(app *genApp) error {
