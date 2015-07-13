@@ -31,6 +31,6 @@ func New(transport client.Transport, formats strfmt.Registry) *{{ .AppName }} {
 // {{ .AppName }} is a client for {{ humanize .AppName }}
 type {{ .AppName }} struct {
   {{ range .OperationGroups }}
-  {{ pascalize .Name }} *{{ .Name }}.Client
+  {{ pascalize .Name }} *{{ camelize .Name }}.Client
   {{ end }}
 }

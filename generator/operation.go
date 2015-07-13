@@ -78,17 +78,6 @@ type operationGenerator struct {
 	Doc                  *spec.Document
 }
 
-type codeGenOpBuilder struct {
-	Name          string
-	APIPackage    string
-	ModelsPackage string
-	Principal     string
-	Target        string
-	Operation     spec.Operation
-	Doc           *spec.Document
-	Authed        bool
-}
-
 func (o *operationGenerator) Generate() error {
 	// Build a list of codegen operations based on the tags,
 	// the tag decides the actual package for an operation
@@ -126,7 +115,6 @@ func (o *operationGenerator) Generate() error {
 				break
 			}
 		}
-
 	}
 	if len(operations) == 0 {
 		bldr.APIPackage = o.APIPackage
@@ -197,6 +185,295 @@ func (o *operationGenerator) generateParameterModel() error {
 		fp = filepath.Join(fp, o.pkg)
 	}
 	return writeToFile(fp, o.Name+"Parameters", buf.Bytes())
+}
+
+type codeGenOpBuilder struct {
+	Name          string
+	APIPackage    string
+	ModelsPackage string
+	Principal     string
+	Target        string
+	Operation     spec.Operation
+	Doc           *spec.Document
+	Authed        bool
+	ExtraSchemas  map[string]GenSchema
+}
+
+func (b codeGenOpBuilder) MakeOperation() (GenOperation, error) {
+	resolver := typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+	receiver := "o"
+
+	operation := b.Operation
+	var params, qp, pp, hp, fp []GenParameter
+	var hasQueryParams bool
+	for _, p := range operation.Parameters {
+		cp, err := b.MakeParameter(receiver, &resolver, p)
+		if err != nil {
+			return GenOperation{}, err
+		}
+		if cp.IsQueryParam() {
+			hasQueryParams = true
+			qp = append(qp, cp)
+		}
+		if cp.IsFormParam() {
+			fp = append(fp, cp)
+		}
+		if cp.IsPathParam() {
+			pp = append(pp, cp)
+		}
+		if cp.IsHeaderParam() {
+			hp = append(hp, cp)
+		}
+		params = append(params, cp)
+	}
+
+	//var successModel string
+	//var returnsPrimitive, returnsFormatted, returnsContainer, returnsMap bool
+	var responses map[int]GenResponse
+	var defaultResponse *GenResponse
+	if operation.Responses != nil {
+		//if r, ok := operation.Responses.StatusCodeResponses[200]; ok {
+		////tn, err := resolver.ResolveSchema(r.Schema, true)
+		////if err != nil {
+		////return GenOperation{}, err
+		////}
+		////_, returnsPrimitive = primitives[tn.GoType]
+		////_, returnsFormatted = customFormatters[tn.GoType]
+		////returnsContainer = tn.IsArray
+		////returnsMap = tn.IsMap
+		////successModel = tn.GoType
+		//}
+		//for k, v := range operation.Responses.StatusCodeResponses {
+		//gr, err := b.MakeResponse(receiver, &resolver, v) //makeGenResponse(b.APIPackage, receiver, swag.ToGoName(b.Name+" "+httpkit.Statuses[k]), k/100 == 2, &resolver, v)
+		//if err != nil {
+		//return GenOperation{}, err
+		//}
+		//if responses == nil {
+		//responses = make(map[int]GenResponse)
+		//}
+		//responses[k] = gr
+		//}
+		//if operation.Responses.Default != nil {
+		//gr, err := b.MakeResponse(receiver, &resolver, *operation.Responses.Default) // makeGenResponse(b.APIPackage, receiver, swag.ToGoName(b.Name+" Default Response"), false, &resolver, *operation.Responses.Default)
+		//if err != nil {
+		//return GenOperation{}, err
+		//}
+		//defaultResponse = &gr
+		//}
+	}
+
+	prin := b.Principal
+	if prin == "" {
+		prin = "interface{}"
+	}
+
+	//zero, ok := zeroes[successModel]
+	//if !ok {
+	//zero = "nil"
+	//}
+
+	return GenOperation{
+		Package:         b.APIPackage,
+		Name:            b.Name,
+		Description:     operation.Description,
+		ReceiverName:    receiver,
+		DefaultImports:  []string{filepath.Join(baseImport(b.Target), b.ModelsPackage)},
+		Params:          params,
+		Summary:         operation.Summary,
+		QueryParams:     qp,
+		PathParams:      pp,
+		HeaderParams:    hp,
+		FormParams:      fp,
+		HasQueryParams:  hasQueryParams,
+		Authorized:      b.Authed,
+		Principal:       prin,
+		Responses:       responses,
+		DefaultResponse: defaultResponse,
+	}, nil
+}
+
+func (b codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, resolver *typeResolver, resp spec.Response) (GenResponse, error) {
+
+	res := GenResponse{
+		Package:        b.APIPackage,
+		ReceiverName:   receiver,
+		Name:           name,
+		DefaultImports: nil,
+		Imports:        nil,
+		IsSuccess:      isSuccess,
+	}
+
+	for hName, header := range resp.Headers {
+		res.Headers = append(res.Headers, b.MakeHeader(receiver, hName, header))
+	}
+
+	if resp.Schema != nil {
+		sc := schemaGenContext{
+			Path:         fmt.Sprintf("%q", name),
+			Name:         name + "Body",
+			Receiver:     receiver,
+			ValueExpr:    receiver + "." + name,
+			IndexVar:     "i",
+			Schema:       *resp.Schema,
+			Required:     true,
+			TypeResolver: resolver,
+			Named:        false,
+			ExtraSchemas: make(map[string]GenSchema),
+		}
+		if err := sc.makeGenSchema(); err != nil {
+			return GenResponse{}, err
+		}
+
+		for k, v := range sc.ExtraSchemas {
+			b.ExtraSchemas[k] = v
+		}
+
+		schema := sc.GenSchema
+		if schema.IsAnonymous {
+			schema.Name = swag.ToGoName(sc.Name + " Body")
+			nm := schema.Name
+			b.ExtraSchemas[schema.Name] = schema
+			schema = GenSchema{}
+			schema.IsAnonymous = false
+			schema.GoType = nm
+			schema.SwaggerType = nm
+		}
+
+		res.Schema = &schema
+	}
+	return res, nil
+}
+
+func (b codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) GenHeader {
+	hasNumberValidation := hdr.Maximum != nil || hdr.Minimum != nil || hdr.MultipleOf != nil
+	hasStringValidation := hdr.MaxLength != nil || hdr.MinLength != nil || hdr.Pattern != ""
+	hasSliceValidations := hdr.MaxItems != nil || hdr.MinItems != nil || hdr.UniqueItems
+	hasValidations := hasNumberValidation || hasStringValidation || hasSliceValidations || len(hdr.Enum) > 0
+
+	tpe := simpleResolvedType(hdr.Type, hdr.Format, hdr.Items)
+
+	return GenHeader{
+		sharedValidations: sharedValidations{
+			Required:            true,
+			Maximum:             hdr.Maximum,
+			ExclusiveMaximum:    hdr.ExclusiveMaximum,
+			Minimum:             hdr.Minimum,
+			ExclusiveMinimum:    hdr.ExclusiveMinimum,
+			MaxLength:           hdr.MaxLength,
+			MinLength:           hdr.MinLength,
+			Pattern:             hdr.Pattern,
+			MaxItems:            hdr.MaxItems,
+			MinItems:            hdr.MinItems,
+			UniqueItems:         hdr.UniqueItems,
+			MultipleOf:          hdr.MultipleOf,
+			Enum:                hdr.Enum,
+			HasValidations:      hasValidations,
+			HasSliceValidations: hasSliceValidations,
+		},
+		resolvedType: tpe,
+		Package:      b.APIPackage,
+		ReceiverName: receiver,
+		Name:         name,
+		Path:         name,
+		Description:  hdr.Description,
+		Converter:    stringConverters[tpe.GoType],
+		Formatter:    stringFormatters[tpe.GoType],
+	}
+}
+
+func (b codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver, param spec.Parameter) (GenParameter, error) {
+	var child *GenItems
+	res := GenParameter{
+		Name:             param.Name,
+		Path:             fmt.Sprintf("%q", param.Name),
+		ValueExpression:  param.Name,
+		IndexVar:         "i",
+		BodyParam:        nil,
+		Default:          param.Default,
+		Enum:             param.Enum,
+		Description:      param.Description,
+		ReceiverName:     receiver,
+		CollectionFormat: param.CollectionFormat,
+		Child:            child,
+		Location:         param.In,
+	}
+
+	if param.In == "body" {
+		sc := schemaGenContext{
+			Path:         res.Path,
+			Name:         res.Name,
+			Receiver:     res.ReceiverName,
+			ValueExpr:    res.ValueExpression,
+			IndexVar:     res.IndexVar,
+			Schema:       *param.Schema,
+			Required:     param.Required,
+			TypeResolver: resolver,
+			Named:        false,
+			ExtraSchemas: make(map[string]GenSchema),
+		}
+		if err := sc.makeGenSchema(); err != nil {
+			return GenParameter{}, err
+		}
+		res.Schema = &sc.GenSchema
+		res.resolvedType = sc.GenSchema.resolvedType
+		res.sharedValidations = sc.GenSchema.sharedValidations
+
+		//if sc.GenSchema.IsAnonymous {
+		//// turn it into something that's not anonymous
+		//}
+		// ctx = makeGenValidations(modelValidations(sc.GenSchema))
+
+	} else {
+		res.resolvedType = simpleResolvedType(param.Type, param.Format, param.Items)
+		res.sharedValidations = sharedValidations{
+			Required:         param.Required,
+			Maximum:          param.Maximum,
+			ExclusiveMaximum: param.ExclusiveMaximum,
+			Minimum:          param.Minimum,
+			ExclusiveMinimum: param.ExclusiveMinimum,
+			MaxLength:        param.MaxLength,
+			MinLength:        param.MinLength,
+			Pattern:          param.Pattern,
+			MaxItems:         param.MaxItems,
+			MinItems:         param.MinItems,
+			UniqueItems:      param.UniqueItems,
+			MultipleOf:       param.MultipleOf,
+			Enum:             param.Enum,
+		}
+
+		// ctx = makeGenValidations(paramValidations(receiver, param))
+		// thisItem := genParameterItem{}
+		// thisItem.sharedParam = ctx
+		// thisItem.ValueExpression = ctx.IndexVar + "c"
+		// thisItem.CollectionFormat = param.CollectionFormat
+		// thisItem.Converter = stringConverters[ctx.Type]
+		// thisItem.Location = param.In
+
+		//if param.Items != nil {
+		//it := makeCodegenParamItem(
+		//"fmt.Sprintf(\"%s.%v\", "+ctx.Path+", "+ctx.IndexVar+")",
+		//ctx.ParamName,
+		//ctx.PropertyName,
+		//ctx.IndexVar+"i",
+		//ctx.IndexVar+"c["+ctx.IndexVar+"]",
+		//thisItem,
+		//*param.Items,
+		//)
+		//child = &it
+		//}
+
+	}
+
+	hasNumberValidation := param.Maximum != nil || param.Minimum != nil || param.MultipleOf != nil
+	hasStringValidation := param.MaxLength != nil || param.MinLength != nil || param.Pattern != ""
+	hasSliceValidations := param.MaxItems != nil || param.MinItems != nil || param.UniqueItems
+	hasValidations := hasNumberValidation || hasStringValidation || hasSliceValidations || len(param.Enum) > 0
+
+	res.Converter = stringConverters[res.GoType]
+	res.Formatter = stringFormatters[res.GoType]
+	res.HasValidations = hasValidations
+	res.HasSliceValidations = hasSliceValidations
+	return res, nil
 }
 
 func makeCodegenOperation(b codeGenOpBuilder) (genOperation, error) {
@@ -373,21 +650,22 @@ func makeCodegenParameter(receiver string, resolver *typeResolver, param spec.Pa
 			Path:         param.Name,
 			Name:         param.Name,
 			Receiver:     receiver,
+			ValueExpr:    param.Name,
 			IndexVar:     "i",
 			Schema:       *param.Schema,
 			Required:     param.Required,
 			TypeResolver: resolver,
 			Named:        false,
+			ExtraSchemas: make(map[string]GenSchema),
 		}
 		if err := sc.makeGenSchema(); err != nil {
 			return genParameter{}, err
 		}
 
-		if sc.GenSchema.IsAnonymous {
-			// turn it into something that's not anonymous
-		} else {
-			// build the shared param
-		}
+		//if sc.GenSchema.IsAnonymous {
+		//// turn it into something that's not anonymous
+		//}
+		ctx = makeGenValidations(modelValidations(sc.GenSchema))
 
 	} else {
 		ctx = makeGenValidations(paramValidations(receiver, param))
@@ -429,6 +707,82 @@ func makeCodegenParameter(receiver string, resolver *typeResolver, param spec.Pa
 		Converter:        stringConverters[ctx.Type],
 		Formatter:        stringFormatters[ctx.Type],
 	}, nil
+}
+func modelValidations(gs GenSchema) commonValidations {
+
+	return commonValidations{
+		propertyDescriptor: propertyDescriptor{
+			PropertyName:      swag.ToGoName(gs.Name),
+			ParamName:         gs.Name,
+			ValueExpression:   gs.ValueExpression,
+			IndexVar:          gs.IndexVar,
+			Path:              gs.Path,
+			IsContainer:       gs.IsArray,
+			IsPrimitive:       gs.IsPrimitive,
+			IsCustomFormatter: gs.IsCustomFormatter,
+			IsMap:             gs.IsMap,
+		},
+		sharedValidations: sharedValidations{
+			Required:         gs.Required,
+			Maximum:          gs.Maximum,
+			ExclusiveMaximum: gs.ExclusiveMaximum,
+			Minimum:          gs.Minimum,
+			ExclusiveMinimum: gs.ExclusiveMinimum,
+			MaxLength:        gs.MaxLength,
+			MinLength:        gs.MinLength,
+			Pattern:          gs.Pattern,
+			MaxItems:         gs.MaxItems,
+			MinItems:         gs.MinItems,
+			UniqueItems:      gs.UniqueItems,
+			MultipleOf:       gs.MultipleOf,
+			Enum:             gs.Enum,
+		},
+		Type:   gs.GoType,
+		Format: gs.SwaggerFormat,
+		//Default:          model.Default,
+	}
+}
+
+func paramValidations(receiver string, param spec.Parameter) commonValidations {
+	accessor := swag.ToGoName(param.Name)
+	paramName := swag.ToJSONName(param.Name)
+
+	tpe := typeForParameter(param)
+	_, isPrimitive := primitives[tpe]
+	_, isCustomFormatter := customFormatters[tpe]
+
+	return commonValidations{
+		propertyDescriptor: propertyDescriptor{
+			PropertyName:      accessor,
+			ParamName:         paramName,
+			ValueExpression:   fmt.Sprintf("%s.%s", receiver, accessor),
+			IndexVar:          "i",
+			Path:              "\"" + paramName + "\"",
+			IsContainer:       param.Items != nil || tpe == "array",
+			IsPrimitive:       isPrimitive,
+			IsCustomFormatter: isCustomFormatter,
+			IsMap:             strings.HasPrefix(tpe, "map"),
+		},
+		sharedValidations: sharedValidations{
+			Required:         param.Required,
+			Maximum:          param.Maximum,
+			ExclusiveMaximum: param.ExclusiveMaximum,
+			Minimum:          param.Minimum,
+			ExclusiveMinimum: param.ExclusiveMinimum,
+			MaxLength:        param.MaxLength,
+			MinLength:        param.MinLength,
+			Pattern:          param.Pattern,
+			MaxItems:         param.MaxItems,
+			MinItems:         param.MinItems,
+			UniqueItems:      param.UniqueItems,
+			MultipleOf:       param.MultipleOf,
+			Enum:             param.Enum,
+		},
+		Type:    tpe,
+		Format:  param.Format,
+		Items:   param.Items,
+		Default: param.Default,
+	}
 }
 
 type genParameter struct {
@@ -496,29 +850,6 @@ type sharedParam struct {
 	propertyDescriptor
 }
 
-// GenParameter is used to represent
-// a parameter or a header for code generation.
-type GenParameter struct {
-	sharedValidations
-	Name              string
-	Path              string
-	ValueExpression   string
-	IndexVar          string
-	ReceiverName      string
-	Title             string
-	Description       string
-	Converter         string
-	Formatter         string
-	Type              string
-	Format            string
-	Items             *spec.Items
-	IsPrimitive       bool
-	IsCustomFormatter bool
-	IsArray           bool
-	Default           interface{}
-	Enum              []interface{}
-}
-
 func paramItemValidations(path, paramName, accessor, indexVar, valueExpression string, items spec.Items) commonValidations {
 	tpe := resolveSimpleType(items.Type, items.Format, items.Items)
 	_, isPrimitive := primitives[tpe]
@@ -557,48 +888,6 @@ func paramItemValidations(path, paramName, accessor, indexVar, valueExpression s
 		Format:  items.Format,
 		Items:   items.Items,
 		Default: items.Default,
-	}
-}
-
-func paramValidations(receiver string, param spec.Parameter) commonValidations {
-	accessor := swag.ToGoName(param.Name)
-	paramName := swag.ToJSONName(param.Name)
-
-	tpe := typeForParameter(param)
-	_, isPrimitive := primitives[tpe]
-	_, isCustomFormatter := customFormatters[tpe]
-
-	return commonValidations{
-		propertyDescriptor: propertyDescriptor{
-			PropertyName:      accessor,
-			ParamName:         paramName,
-			ValueExpression:   fmt.Sprintf("%s.%s", receiver, accessor),
-			IndexVar:          "i",
-			Path:              "\"" + paramName + "\"",
-			IsContainer:       param.Items != nil || tpe == "array",
-			IsPrimitive:       isPrimitive,
-			IsCustomFormatter: isCustomFormatter,
-			IsMap:             strings.HasPrefix(tpe, "map"),
-		},
-		sharedValidations: sharedValidations{
-			Required:         param.Required,
-			Maximum:          param.Maximum,
-			ExclusiveMaximum: param.ExclusiveMaximum,
-			Minimum:          param.Minimum,
-			ExclusiveMinimum: param.ExclusiveMinimum,
-			MaxLength:        param.MaxLength,
-			MinLength:        param.MinLength,
-			Pattern:          param.Pattern,
-			MaxItems:         param.MaxItems,
-			MinItems:         param.MinItems,
-			UniqueItems:      param.UniqueItems,
-			MultipleOf:       param.MultipleOf,
-			Enum:             param.Enum,
-		},
-		Type:    tpe,
-		Format:  param.Format,
-		Items:   param.Items,
-		Default: param.Default,
 	}
 }
 
@@ -726,6 +1015,152 @@ func makeGenResponse(pkg, receiver, name string, isSuccess bool, resolver *typeR
 		IsContainer:     tpe.IsArray,
 		IsComplexObject: tpe.IsComplexObject,
 	}, nil
+}
+
+// GenResponse represents a response object for code generation
+type GenResponse struct {
+	Package      string
+	ReceiverName string
+	Name         string
+	Description  string
+
+	IsSuccess bool
+
+	Headers []GenHeader
+	Schema  *GenSchema
+
+	Imports        map[string]string
+	DefaultImports []string
+}
+
+// GenHeader represents a header on a response for code generation
+type GenHeader struct {
+	resolvedType
+	sharedValidations
+
+	Package      string
+	ReceiverName string
+
+	Name string
+	Path string
+
+	Title       string
+	Description string
+
+	Converter string
+	Formatter string
+}
+
+// GenParameter is used to represent
+// a parameter or a header for code generation.
+type GenParameter struct {
+	resolvedType
+	sharedValidations
+
+	Name            string
+	Path            string
+	ValueExpression string
+	IndexVar        string
+	ReceiverName    string
+	Location        string
+	Title           string
+	Description     string
+	Converter       string
+	Formatter       string
+
+	Schema *GenSchema
+
+	CollectionFormat string
+
+	Child  *GenItems
+	Parent *GenItems
+
+	BodyParam *GenParameter
+
+	Default interface{}
+	Enum    []interface{}
+}
+
+// IsQueryParam returns true when this parameter is a query param
+func (g *GenParameter) IsQueryParam() bool {
+	return g.Location == "query"
+}
+
+// IsPathParam returns true when this parameter is a path param
+func (g *GenParameter) IsPathParam() bool {
+	return g.Location == "path"
+}
+
+// IsFormParam returns true when this parameter is a form param
+func (g *GenParameter) IsFormParam() bool {
+	return g.Location == "formData"
+}
+
+// IsHeaderParam returns true when this parameter is a header param
+func (g *GenParameter) IsHeaderParam() bool {
+	return g.Location == "header"
+}
+
+// IsBodyParam returns true when this parameter is a body param
+func (g *GenParameter) IsBodyParam() bool {
+	return g.Location == "body"
+}
+
+// IsFileParam returns true when this parameter is a file param
+func (g *GenParameter) IsFileParam() bool {
+	return g.SwaggerType == "file"
+}
+
+// GenItems represents the collection items for a collection parameter
+type GenItems struct {
+	sharedValidations
+	resolvedType
+
+	CollectionFormat string
+	Child            *GenItems
+	Parent           *GenItems
+	Converter        string
+	Formatter        string
+
+	Location string
+}
+
+// GenOperationGroup represents a named (tagged) group of operations
+type GenOperationGroup struct {
+	Name       string
+	Operations []GenOperation
+
+	DocString      string
+	Imports        map[string]string
+	DefaultImports []string
+}
+
+// GenOperation represents an operation for code generation
+type GenOperation struct {
+	Package      string
+	ReceiverName string
+	Name         string
+	Summary      string
+	Description  string
+
+	Imports        map[string]string
+	DefaultImports []string
+
+	Authorized bool
+	Principal  string
+
+	SuccessResponse *GenResponse
+	Responses       map[int]GenResponse
+	DefaultResponse *GenResponse
+
+	Params         []GenParameter
+	QueryParams    []GenParameter
+	PathParams     []GenParameter
+	HeaderParams   []GenParameter
+	FormParams     []GenParameter
+	HasQueryParams bool
+	HasFormParams  bool
+	HasFileParams  bool
 }
 
 type genResponse struct {

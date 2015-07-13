@@ -1,1 +1,1 @@
-{{ define "schemaType"}}{{ if and (or ((len .AllOf) gt 0) .IsAnonymous) ( not .IsMap) }}{{ template "schemaBody" . }}{{ else }}{{ if .IsNullable }}*{{ end }}{{ .GoType }}{{end}}{{ end }}
+{{ define "schemaType" }}{{ if and (or ((len .AllOf) gt 0) .IsAnonymous) ( not .IsMap) }}{{ template "schemaBody" . }}{{ else }}{{ if .IsNullable }}*{{ end }}{{ .GoType }}{{end}}{{ end }}

@@ -57,15 +57,15 @@ func ({{ .ReceiverName }} *{{.Name}}Reader) ReadResponse(response client.Respons
   switch response.Code() {
   {{ range $key, $value := .Responses }}
     case {{ $key }}:
-      var result {{ $value.ClassName }}
-      if err := result.readResponse(response, consumer, {{ $.ReceiverName }}.formats); err != nil {
+      var result {{ pascalize $value.Name }}
+      if err := result.readResponse(response, consumer, {{ $.Receiver }}.formats); err != nil {
         return nil, err
       }
-      return {{ if $value.IsSuccess }}&result, nil{{else}}nil, &result{{end}}
+      return {{ if $value.IsSuccess }}&result, nil{{else}}nil, NewAPIError("{{ $value.Name }}", &result, response.Code()){{end}}
   {{end}}{{ if .DefaultResponse }}{{ with .DefaultResponse }}
     default:
       var result {{ .ClassName }}
-      if err := result.readResponse(response, consumer, {{ $.ReceiverName }}.formats); err != nil {
+      if err := result.readResponse(response, consumer, {{ $.Receiver }}.formats); err != nil {
         return nil, err
       }
       return {{ if .IsSuccess }}&result, nil{{else}}nil, NewAPIError("{{ .Name }}", &result, response.Code()){{end}}{{ end }}{{ end }}
@@ -78,4 +78,3 @@ func ({{ .ReceiverName }} *{{.Name}}Reader) ReadResponse(response client.Respons
 {{ if .DefaultResponse }}
 {{ template "clientresponse" .DefaultResponse }}
 {{ end }}
-

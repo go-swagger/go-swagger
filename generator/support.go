@@ -77,7 +77,7 @@ func baseImport(tgt string) string {
 	}
 
 	if pth == "" {
-		log.Fatalln("target must reside inside a location in the gopath")
+		log.Fatalln("target must reside inside a location in the GOPATH")
 	}
 	return pth
 }
@@ -111,11 +111,11 @@ func (a *appGenerator) Generate() error {
 	return nil
 }
 
-func (a *appGenerator) generateConfigureAPI(app *genApp) error {
-	pth := filepath.Join(a.Target, "cmd", swag.ToCommandName(app.AppName+"Server"))
-	nm := "Configure" + app.AppName
+func (a *appGenerator) generateConfigureAPI(app *GenApp) error {
+	pth := filepath.Join(a.Target, "cmd", swag.ToCommandName(swag.ToGoName(app.Name)+"Server"))
+	nm := "Configure" + swag.ToGoName(app.Name)
 	if fileExists(pth, nm) {
-		log.Println("skipped (already exists) configure api template:", app.Package+".Configure"+app.AppName)
+		log.Println("skipped (already exists) configure api template:", app.Package+".Configure"+swag.ToGoName(app.Name))
 		return nil
 	}
 
@@ -123,26 +123,26 @@ func (a *appGenerator) generateConfigureAPI(app *genApp) error {
 	if err := configureAPITemplate.Execute(buf, app); err != nil {
 		return err
 	}
-	log.Println("rendered configure api template:", app.Package+".Configure"+app.AppName)
+	log.Println("rendered configure api template:", app.Package+".Configure"+swag.ToGoName(app.Name))
 	return writeToFileIfNotExist(pth, nm, buf.Bytes())
 }
 
-func (a *appGenerator) generateMain(app *genApp) error {
+func (a *appGenerator) generateMain(app *GenApp) error {
 	buf := bytes.NewBuffer(nil)
 	if err := mainTemplate.Execute(buf, app); err != nil {
 		return err
 	}
-	log.Println("rendered main template:", "server."+app.AppName)
-	return writeToFile(filepath.Join(a.Target, "cmd", swag.ToCommandName(app.AppName+"Server")), "main", buf.Bytes())
+	log.Println("rendered main template:", "server."+swag.ToGoName(app.Name))
+	return writeToFile(filepath.Join(a.Target, "cmd", swag.ToCommandName(swag.ToGoName(app.Name)+"Server")), "main", buf.Bytes())
 }
 
-func (a *appGenerator) generateAPIBuilder(app *genApp) error {
+func (a *appGenerator) generateAPIBuilder(app *GenApp) error {
 	buf := bytes.NewBuffer(nil)
 	if err := builderTemplate.Execute(buf, app); err != nil {
 		return err
 	}
-	log.Println("rendered builder template:", app.Package+"."+app.AppName)
-	return writeToFile(filepath.Join(a.Target, a.ServerPackage, app.Package), app.AppName+"Api", buf.Bytes())
+	log.Println("rendered builder template:", app.Package+"."+swag.ToGoName(app.Name))
+	return writeToFile(filepath.Join(a.Target, a.ServerPackage, app.Package), swag.ToGoName(app.Name)+"Api", buf.Bytes())
 }
 
 var mediaTypeNames = map[string]string{
@@ -171,7 +171,7 @@ var knownConsumers = map[string]string{
 	"yaml": "swagger.YAMLConsumer",
 }
 
-func getSerializer(sers []genSerGroup, ext string) (*genSerGroup, bool) {
+func getSerializer(sers []GenSerGroup, ext string) (*GenSerGroup, bool) {
 	for i := range sers {
 		s := &sers[i]
 		if s.Name == ext {
@@ -181,16 +181,16 @@ func getSerializer(sers []genSerGroup, ext string) (*genSerGroup, bool) {
 	return nil, false
 }
 
-func (a *appGenerator) makeCodegenApp() (genApp, error) {
+func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	sw := a.SpecDoc.Spec()
-	receiver := "o" //strings.ToLower(a.Name[:1])
-	appName := swag.ToGoName(a.Name)
+	receiver := "o"   //strings.ToLower(a.Name[:1])
+	appName := a.Name //swag.ToGoName(a.Name)
 	var defaultImports []string
 
 	jsonb, _ := json.MarshalIndent(a.SpecDoc.Spec(), "", "  ")
 
 	consumesJSON := false
-	var consumes []genSerGroup
+	var consumes []GenSerGroup
 	for _, cons := range a.SpecDoc.RequiredConsumes() {
 		cn, ok := mediaTypeNames[cons]
 		if !ok {
@@ -202,11 +202,9 @@ func (a *appGenerator) makeCodegenApp() (genApp, error) {
 		}
 
 		if ser, ok := getSerializer(consumes, cn); ok {
-			ser.AllSerializers = append(ser.AllSerializers, genSerializer{
+			ser.AllSerializers = append(ser.AllSerializers, GenSerializer{
 				AppName:        ser.AppName,
 				ReceiverName:   ser.ReceiverName,
-				ClassName:      ser.ClassName,
-				HumanClassName: ser.HumanClassName,
 				Name:           ser.Name,
 				MediaType:      cons,
 				Implementation: knownConsumers[nm],
@@ -214,30 +212,26 @@ func (a *appGenerator) makeCodegenApp() (genApp, error) {
 			continue
 		}
 
-		ser := genSerializer{
+		ser := GenSerializer{
 			AppName:        appName,
 			ReceiverName:   receiver,
-			ClassName:      swag.ToGoName(cn),
-			HumanClassName: swag.ToHumanNameLower(cn),
 			Name:           nm,
 			MediaType:      cons,
 			Implementation: knownConsumers[nm],
 		}
 
-		consumes = append(consumes, genSerGroup{
+		consumes = append(consumes, GenSerGroup{
 			AppName:        ser.AppName,
 			ReceiverName:   ser.ReceiverName,
-			ClassName:      ser.ClassName,
-			HumanClassName: ser.HumanClassName,
 			Name:           ser.Name,
 			MediaType:      cons,
-			AllSerializers: []genSerializer{ser},
+			AllSerializers: []GenSerializer{ser},
 			Implementation: ser.Implementation,
 		})
 	}
 
 	producesJSON := false
-	var produces []genSerGroup
+	var produces []GenSerGroup
 	for _, prod := range a.SpecDoc.RequiredProduces() {
 		pn, ok := mediaTypeNames[prod]
 		if !ok {
@@ -249,52 +243,44 @@ func (a *appGenerator) makeCodegenApp() (genApp, error) {
 		}
 
 		if ser, ok := getSerializer(produces, pn); ok {
-			ser.AllSerializers = append(ser.AllSerializers, genSerializer{
+			ser.AllSerializers = append(ser.AllSerializers, GenSerializer{
 				AppName:        ser.AppName,
 				ReceiverName:   ser.ReceiverName,
-				ClassName:      ser.ClassName,
-				HumanClassName: ser.HumanClassName,
 				Name:           ser.Name,
 				MediaType:      prod,
 				Implementation: knownProducers[nm],
 			})
 			continue
 		}
-		ser := genSerializer{
+		ser := GenSerializer{
 			AppName:        appName,
 			ReceiverName:   receiver,
-			ClassName:      swag.ToGoName(pn),
-			HumanClassName: swag.ToHumanNameLower(pn),
 			Name:           nm,
 			MediaType:      prod,
 			Implementation: knownProducers[nm],
 		}
-		produces = append(produces, genSerGroup{
+		produces = append(produces, GenSerGroup{
 			AppName:        ser.AppName,
 			ReceiverName:   ser.ReceiverName,
-			ClassName:      ser.ClassName,
-			HumanClassName: ser.HumanClassName,
 			Name:           ser.Name,
 			MediaType:      prod,
 			Implementation: ser.Implementation,
-			AllSerializers: []genSerializer{ser},
+			AllSerializers: []GenSerializer{ser},
 		})
 	}
 
-	var security []genSecurityScheme
+	var security []GenSecurityScheme
 	for _, scheme := range a.SpecDoc.RequiredSchemes() {
 		if req, ok := a.SpecDoc.Spec().SecurityDefinitions[scheme]; ok {
 			if req.Type == "basic" || req.Type == "apiKey" {
-				security = append(security, genSecurityScheme{
-					AppName:        appName,
-					ReceiverName:   receiver,
-					ClassName:      swag.ToGoName(req.Name),
-					HumanClassName: swag.ToHumanNameLower(req.Name),
-					Name:           swag.ToJSONName(req.Name),
-					IsBasicAuth:    strings.ToLower(req.Type) == "basic",
-					IsAPIKeyAuth:   strings.ToLower(req.Type) == "apikey",
-					Principal:      a.Principal,
-					Source:         req.In,
+				security = append(security, GenSecurityScheme{
+					AppName:      appName,
+					ReceiverName: receiver,
+					Name:         req.Name,
+					IsBasicAuth:  strings.ToLower(req.Type) == "basic",
+					IsAPIKeyAuth: strings.ToLower(req.Type) == "apikey",
+					Principal:    a.Principal,
+					Source:       req.In,
 				})
 			}
 		}
@@ -311,7 +297,7 @@ func (a *appGenerator) makeCodegenApp() (genApp, error) {
 			a.SpecDoc,
 		)
 		if err != nil {
-			return genApp{}, err
+			return GenApp{}, err
 		}
 		mod.ReceiverName = receiver
 		genMods = append(genMods, *mod)
@@ -339,7 +325,7 @@ func (a *appGenerator) makeCodegenApp() (genApp, error) {
 				bldr.APIPackage = tag
 				op, err := makeCodegenOperation(bldr)
 				if err != nil {
-					return genApp{}, err
+					return GenApp{}, err
 				}
 				op.ReceiverName = receiver
 				genOps = append(genOps, op)
@@ -348,7 +334,7 @@ func (a *appGenerator) makeCodegenApp() (genApp, error) {
 			bldr.APIPackage = ap
 			op, err := makeCodegenOperation(bldr)
 			if err != nil {
-				return genApp{}, err
+				return GenApp{}, err
 			}
 			op.ReceiverName = receiver
 			genOps = append(genOps, op)
@@ -371,12 +357,10 @@ func (a *appGenerator) makeCodegenApp() (genApp, error) {
 		defaultProduces = rp[0]
 	}
 
-	return genApp{
+	return GenApp{
 		Package:             a.Package,
 		ReceiverName:        receiver,
-		AppName:             swag.ToGoName(a.Name),
-		HumanAppName:        swag.ToHumanNameLower(a.Name),
-		Name:                swag.ToJSONName(a.Name),
+		Name:                a.Name,
 		ExternalDocs:        sw.ExternalDocs,
 		Info:                sw.Info,
 		Consumes:            consumes,
@@ -392,11 +376,11 @@ func (a *appGenerator) makeCodegenApp() (genApp, error) {
 	}, nil
 }
 
-type genApp struct {
+// GenApp represents all the meta data needed to generate an application
+// from a swagger spec
+type GenApp struct {
 	Package             string
 	ReceiverName        string
-	AppName             string
-	HumanAppName        string
 	Name                string
 	Principal           string
 	DefaultConsumes     string
@@ -405,44 +389,42 @@ type genApp struct {
 	ExternalDocs        *spec.ExternalDocumentation
 	Imports             map[string]string
 	DefaultImports      []string
-	Consumes            []genSerGroup
-	Produces            []genSerGroup
-	SecurityDefinitions []genSecurityScheme
+	Consumes            []GenSerGroup
+	Produces            []GenSerGroup
+	SecurityDefinitions []GenSecurityScheme
 	Models              []GenDefinition
 	Operations          []genOperation
 	OperationGroups     []genOperationGroup
 	SwaggerJSON         string
 }
 
-type genSerGroup struct {
+// GenSerGroup represents a group of serializers, most likely this is a media type to a list of
+// prioritized serializers.
+type GenSerGroup struct {
 	ReceiverName   string
 	AppName        string
-	ClassName      string
-	HumanClassName string
 	Name           string
 	MediaType      string
 	Implementation string
-	AllSerializers []genSerializer
+	AllSerializers []GenSerializer
 }
 
-type genSerializer struct {
+// GenSerializer represents a single serializer for a particular media type
+type GenSerializer struct {
 	ReceiverName   string
 	AppName        string
-	ClassName      string
-	HumanClassName string
 	Name           string
 	MediaType      string
 	Implementation string
 }
 
-type genSecurityScheme struct {
-	AppName        string
-	ClassName      string
-	HumanClassName string
-	Name           string
-	ReceiverName   string
-	IsBasicAuth    bool
-	IsAPIKeyAuth   bool
-	Source         string
-	Principal      string
+// GenSecurityScheme represents a security scheme for code generation
+type GenSecurityScheme struct {
+	AppName      string
+	Name         string
+	ReceiverName string
+	IsBasicAuth  bool
+	IsAPIKeyAuth bool
+	Source       string
+	Principal    string
 }

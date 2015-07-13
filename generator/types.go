@@ -131,6 +131,42 @@ func init() {
 	}
 }
 
+func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType) {
+	result.SwaggerType = tn
+	result.SwaggerFormat = fmt
+	_, result.IsPrimitive = primitives[tn]
+
+	if fmt != "" {
+		if tpe, ok := typeMapping[strings.Replace(fmt, "-", "", -1)]; ok {
+			result.GoType = tpe
+			result.IsPrimitive = true
+			result.IsCustomFormatter = true
+			return
+		}
+	}
+
+	if tpe, ok := typeMapping[tn]; ok {
+		result.GoType = tpe
+		return
+	}
+
+	if tn == "array" {
+		result.IsArray = true
+		result.IsPrimitive = false
+		result.IsCustomFormatter = false
+		result.IsNullable = false
+		if items == nil {
+			result.GoType = "[]interface{}"
+			return
+		}
+		res := simpleResolvedType(items.Type, items.Format, items.Items)
+		result.GoType = "[]" + res.GoType
+		return
+	}
+	result.GoType = tn
+	return
+}
+
 func typeForHeader(header spec.Header) string {
 	return resolveSimpleType(header.Type, header.Format, header.Items)
 }
@@ -145,6 +181,7 @@ func resolveSimpleType(tn, fmt string, items *spec.Items) string {
 			return tpe
 		}
 	}
+
 	if tpe, ok := typeMapping[tn]; ok {
 		return tpe
 	}

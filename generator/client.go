@@ -23,12 +23,11 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts GenOpts
 	operations := gatherOperations(specDoc, operationIDs)
 
 	generator := appGenerator{
-		Name:       appNameOrDefault(specDoc, name, "swagger"),
-		SpecDoc:    specDoc,
-		Models:     models,
-		Operations: operations,
-		Target:     opts.Target,
-		// Package:       filepath.Base(opts.Target),
+		Name:          appNameOrDefault(specDoc, name, "swagger"),
+		SpecDoc:       specDoc,
+		Models:        models,
+		Operations:    operations,
+		Target:        opts.Target,
 		DumpData:      opts.DumpData,
 		Package:       opts.APIPackage,
 		APIPackage:    opts.APIPackage,
@@ -132,14 +131,14 @@ func (c *clientGenerator) generateGroupClient(opGroup genOperationGroup) error {
 	return writeToFile(fp, swag.ToGoName(opGroup.Name)+"Client", buf.Bytes())
 }
 
-func (c *clientGenerator) generateFacade(app *genApp) error {
+func (c *clientGenerator) generateFacade(app *GenApp) error {
 	buf := bytes.NewBuffer(nil)
 
 	if err := clientFacadeTemplate.Execute(buf, app); err != nil {
 		return err
 	}
-	log.Println("rendered client facade template:", c.ClientPackage+"."+app.AppName+"Client")
+	log.Println("rendered client facade template:", c.ClientPackage+"."+swag.ToGoName(app.Name)+"Client")
 
 	fp := filepath.Join(c.ClientPackage, c.Target)
-	return writeToFile(fp, swag.ToGoName(app.AppName)+"Client", buf.Bytes())
+	return writeToFile(fp, swag.ToGoName(app.Name)+"Client", buf.Bytes())
 }
