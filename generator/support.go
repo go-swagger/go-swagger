@@ -121,7 +121,10 @@ func baseImport(tgt string) string {
 	for _, gp := range filepath.SplitList(os.Getenv("GOPATH")) {
 		pp := filepath.Join(gp, "src")
 		if strings.HasPrefix(p, pp) {
-			pth = strings.TrimPrefix(p, pp+"/")
+			pth, err = filepath.Rel(pp, p)
+			if err != nil {
+				log.Fatalln(err)
+			}
 			break
 		}
 	}
@@ -144,7 +147,8 @@ func (a *appGenerator) Generate() error {
 	if err := a.generateAPIBuilder(&app); err != nil {
 		return err
 	}
-	app.DefaultImports = append(app.DefaultImports, filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage))
+	importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage))
+	app.DefaultImports = append(app.DefaultImports, importPath)
 
 	if err := a.generateConfigureAPI(&app); err != nil {
 		return err
@@ -349,7 +353,8 @@ func (a *appGenerator) makeCodegenApp() genApp {
 	}
 
 	var genMods []genModel
-	defaultImports = append(defaultImports, filepath.Join(baseImport(a.Target), a.ModelsPackage))
+	importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ModelsPackage))
+	defaultImports = append(defaultImports, importPath)
 	for mn, m := range a.Models {
 		mod := *makeCodegenModel(
 			mn,
@@ -383,7 +388,8 @@ func (a *appGenerator) makeCodegenApp() genApp {
 		}
 	}
 	for k := range tns {
-		defaultImports = append(defaultImports, filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage, k))
+		importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage, k))
+		defaultImports = append(defaultImports, importPath)
 	}
 
 	defaultConsumes := "application/json"
