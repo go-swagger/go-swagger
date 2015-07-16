@@ -228,7 +228,7 @@ func makeCodegenOperation(name, pkg, modelsPkg, principal, target string, operat
 		DocString:            operationDocString(swag.ToGoName(name), operation),
 		ReceiverName:         receiver,
 		HumanClassName:       swag.ToHumanNameLower(swag.ToGoName(name)),
-		DefaultImports:       []string{filepath.Join(baseImport(filepath.Join(target, "..")), modelsPkg)},
+		DefaultImports:       []string{filepath.ToSlash(filepath.Join(baseImport(filepath.Join(target, "..")), modelsPkg))},
 		Params:               params,
 		Summary:              operation.Summary,
 		QueryParams:          qp,
