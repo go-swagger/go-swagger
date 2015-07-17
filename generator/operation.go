@@ -381,6 +381,64 @@ func (b codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) Gen
 	}
 }
 
+func (b codeGenOpBuilder) MakeParameterItem(receiver, paramName, accessor, indexVar, valueExpression string, resolver *typeResolver, items, parent *spec.Items) (GenItems, error) {
+
+	//ctx := makeGenValidations(paramItemValidations(path, paramName, accessor, indexVar, valueExpression, items))
+	var res GenItems
+	res.resolvedType = simpleResolvedType(items.Type, items.Format, items.Items)
+	res.sharedValidations = sharedValidations{
+		Maximum:          items.Maximum,
+		ExclusiveMaximum: items.ExclusiveMaximum,
+		Minimum:          items.Minimum,
+		ExclusiveMinimum: items.ExclusiveMinimum,
+		MaxLength:        items.MaxLength,
+		MinLength:        items.MinLength,
+		Pattern:          items.Pattern,
+		MaxItems:         items.MaxItems,
+		MinItems:         items.MinItems,
+		UniqueItems:      items.UniqueItems,
+		MultipleOf:       items.MultipleOf,
+		Enum:             items.Enum,
+	}
+	res.CollectionFormat = items.CollectionFormat
+	res.Converter = stringConverters[res.GoType]
+	res.Formatter = stringFormatters[res.GoType]
+
+	if items.Items != nil {
+		pi, err := b.MakeParameterItem(receiver, paramName, accessor, indexVar+"i", valueExpression+"["+indexVar+"]", resolver, items.Items, items)
+		if err != nil {
+			return GenItems{}, err
+		}
+		res.Child = &pi
+		pi.Parent = &res
+	}
+	//res := genParameterItem{}
+	//res.sharedParam = ctx
+	//res.CollectionFormat = items.CollectionFormat
+	//res.Parent = &parent
+	//res.Converter = stringConverters[ctx.Type]
+	//res.Formatter = stringFormatters[ctx.Type]
+	//res.Location = parent.Location
+	//res.ValueExpression = "value"
+
+	//var child *genParameterItem
+	//if items.Items != nil {
+	//it := makeCodegenParamItem(
+	//"fmt.Sprintf(\"%s.%v\", "+ctx.Path+", "+ctx.IndexVar+")",
+	//ctx.ParamName,
+	//ctx.PropertyName,
+	//ctx.IndexVar+"i",
+	//ctx.IndexVar+"c["+ctx.IndexVar+"]",
+	//res,
+	//*items.Items,
+	//)
+	//child = &it
+	//}
+	//res.Child = child
+
+	return res, nil
+}
+
 func (b codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver, param spec.Parameter) (GenParameter, error) {
 	var child *GenItems
 	res := GenParameter{

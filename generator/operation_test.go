@@ -35,6 +35,29 @@ func TestMakeResponse(t *testing.T) {
 	}
 }
 
+func TestMakeOperationParam(t *testing.T) {
+	b, err := opBuilder("getTasks")
+	if assert.NoError(t, err) {
+		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+		gO, err := b.MakeParameter("a", resolver, b.Operation.Parameters[0])
+		if assert.NoError(t, err) {
+			assert.Equal(t, "size", gO.Name)
+			assert.True(t, gO.IsPrimitive)
+		}
+	}
+}
+
+func TestMakeOperation(t *testing.T) {
+	b, err := opBuilder("getTasks")
+	if assert.NoError(t, err) {
+		gO, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			assert.Equal(t, "getTasks", gO.Name)
+			assert.Len(t, gO.Params, 2)
+		}
+	}
+}
+
 func opBuilder(name string) (codeGenOpBuilder, error) {
 
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.simple.yml")
