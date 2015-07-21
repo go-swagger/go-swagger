@@ -1,6 +1,7 @@
 package strfmt
 
 import (
+	"database/sql/driver"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -98,4 +99,26 @@ func ParseDuration(cand string) (time.Duration, error) {
 		return dur, nil
 	}
 	return 0, fmt.Errorf("Unable to parse %s as duration", cand)
+}
+
+// Scan reads a Duration value from database driver type.
+func (d *Duration) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	// TODO: case []byte: // ?
+	case int64:
+		*d = Duration(v)
+	case float64:
+		*d = Duration(int64(v))
+	case nil:
+		*d = Duration(0)
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.Duration from: %#v", v)
+	}
+
+	return nil
+}
+
+// Value converts Duration to a primitive value ready to written to a database.
+func (d Duration) Value() (driver.Value, error) {
+	return driver.Value(int64(d)), nil
 }

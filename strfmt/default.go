@@ -1,7 +1,9 @@
 package strfmt
 
 import (
+	"database/sql/driver"
 	"encoding/base64"
+	"fmt"
 	"net/url"
 	"regexp"
 	"strings"
@@ -152,6 +154,23 @@ func (b *Base64) UnmarshalText(data []byte) error { // validation is performed l
 	return nil
 }
 
+func (b *Base64) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		*b = Base64(string(v))
+	case string:
+		*b = Base64(v)
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.Base64 from: %#v", v)
+	}
+
+	return nil
+}
+
+func (b Base64) Value() (driver.Value, error) {
+	return driver.Value(string(b)), nil
+}
+
 // URI represents the uri string format as specified by the json schema spec
 //
 // swagger:strfmt uri
@@ -166,6 +185,23 @@ func (u URI) MarshalText() ([]byte, error) {
 func (u *URI) UnmarshalText(data []byte) error { // validation is performed later on
 	*u = URI(string(data))
 	return nil
+}
+
+func (b *URI) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		*b = URI(string(v))
+	case string:
+		*b = URI(v)
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.URI from: %#v", v)
+	}
+
+	return nil
+}
+
+func (b URI) Value() (driver.Value, error) {
+	return driver.Value(string(b)), nil
 }
 
 // Email represents the email string format as specified by the json schema spec
@@ -184,6 +220,23 @@ func (e *Email) UnmarshalText(data []byte) error { // validation is performed la
 	return nil
 }
 
+func (b *Email) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		*b = Email(string(v))
+	case string:
+		*b = Email(v)
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.Email from: %#v", v)
+	}
+
+	return nil
+}
+
+func (b Email) Value() (driver.Value, error) {
+	return driver.Value(string(b)), nil
+}
+
 // Hostname represents the hostname string format as specified by the json schema spec
 //
 // swagger:strfmt hostname
@@ -198,6 +251,23 @@ func (h Hostname) MarshalText() ([]byte, error) {
 func (h *Hostname) UnmarshalText(data []byte) error { // validation is performed later on
 	*h = Hostname(string(data))
 	return nil
+}
+
+func (b *Hostname) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		*b = Hostname(string(v))
+	case string:
+		*b = Hostname(v)
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.Hostname from: %#v", v)
+	}
+
+	return nil
+}
+
+func (b Hostname) Value() (driver.Value, error) {
+	return driver.Value(string(b)), nil
 }
 
 // IPv4 represents an IP v4 address
@@ -216,6 +286,23 @@ func (u *IPv4) UnmarshalText(data []byte) error { // validation is performed lat
 	return nil
 }
 
+func (b *IPv4) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		*b = IPv4(string(v))
+	case string:
+		*b = IPv4(v)
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.IPv4 from: %#v", v)
+	}
+
+	return nil
+}
+
+func (b IPv4) Value() (driver.Value, error) {
+	return driver.Value(string(b)), nil
+}
+
 // IPv6 represents an IP v6 address
 //
 // swagger:strfmt ipv6
@@ -230,6 +317,23 @@ func (u IPv6) MarshalText() ([]byte, error) {
 func (u *IPv6) UnmarshalText(data []byte) error { // validation is performed later on
 	*u = IPv6(string(data))
 	return nil
+}
+
+func (b *IPv6) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		*b = IPv6(string(v))
+	case string:
+		*b = IPv6(v)
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.IPv6 from: %#v", v)
+	}
+
+	return nil
+}
+
+func (b IPv6) Value() (driver.Value, error) {
+	return driver.Value(string(b)), nil
 }
 
 // UUID represents a uuid string format
@@ -248,6 +352,23 @@ func (u *UUID) UnmarshalText(data []byte) error { // validation is performed lat
 	return nil
 }
 
+func (u *UUID) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		*u = UUID(string(v))
+	case string:
+		*u = UUID(v)
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.UUID from: %#v", v)
+	}
+
+	return nil
+}
+
+func (b UUID) Value() (driver.Value, error) {
+	return driver.Value(string(b)), nil
+}
+
 // UUID3 represents a uuid3 string format
 //
 // swagger:strfmt uuid3
@@ -262,6 +383,23 @@ func (u UUID3) MarshalText() ([]byte, error) {
 func (u *UUID3) UnmarshalText(data []byte) error { // validation is performed later on
 	*u = UUID3(string(data))
 	return nil
+}
+
+func (u *UUID3) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		*u = UUID3(string(v))
+	case string:
+		*u = UUID3(v)
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.UUID3 from: %#v", v)
+	}
+
+	return nil
+}
+
+func (b UUID3) Value() (driver.Value, error) {
+	return driver.Value(string(b)), nil
 }
 
 // UUID4 represents a uuid4 string format
@@ -280,6 +418,23 @@ func (u *UUID4) UnmarshalText(data []byte) error { // validation is performed la
 	return nil
 }
 
+func (u *UUID4) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		*u = UUID4(string(v))
+	case string:
+		*u = UUID4(v)
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.UUID4 from: %#v", v)
+	}
+
+	return nil
+}
+
+func (b UUID4) Value() (driver.Value, error) {
+	return driver.Value(string(b)), nil
+}
+
 // UUID5 represents a uuid5 string format
 //
 // swagger:strfmt uuid5
@@ -294,6 +449,23 @@ func (u UUID5) MarshalText() ([]byte, error) {
 func (u *UUID5) UnmarshalText(data []byte) error { // validation is performed later on
 	*u = UUID5(string(data))
 	return nil
+}
+
+func (u *UUID5) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		*u = UUID5(string(v))
+	case string:
+		*u = UUID5(v)
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.UUID5 from: %#v", v)
+	}
+
+	return nil
+}
+
+func (b UUID5) Value() (driver.Value, error) {
+	return driver.Value(string(b)), nil
 }
 
 // ISBN represents an isbn string format
@@ -312,6 +484,23 @@ func (u *ISBN) UnmarshalText(data []byte) error { // validation is performed lat
 	return nil
 }
 
+func (i *ISBN) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		*i = ISBN(string(v))
+	case string:
+		*i = ISBN(v)
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.ISBN from: %#v", v)
+	}
+
+	return nil
+}
+
+func (i ISBN) Value() (driver.Value, error) {
+	return driver.Value(string(i)), nil
+}
+
 // ISBN10 represents an isbn 10 string format
 //
 // swagger:strfmt isbn10
@@ -326,6 +515,23 @@ func (u ISBN10) MarshalText() ([]byte, error) {
 func (u *ISBN10) UnmarshalText(data []byte) error { // validation is performed later on
 	*u = ISBN10(string(data))
 	return nil
+}
+
+func (i *ISBN10) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		*i = ISBN10(string(v))
+	case string:
+		*i = ISBN10(v)
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.ISBN10 from: %#v", v)
+	}
+
+	return nil
+}
+
+func (i ISBN10) Value() (driver.Value, error) {
+	return driver.Value(string(i)), nil
 }
 
 // ISBN13 represents an isbn 13 string format
@@ -344,6 +550,23 @@ func (u *ISBN13) UnmarshalText(data []byte) error { // validation is performed l
 	return nil
 }
 
+func (i *ISBN13) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		*i = ISBN13(string(v))
+	case string:
+		*i = ISBN13(v)
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.ISBN13 from: %#v", v)
+	}
+
+	return nil
+}
+
+func (i ISBN13) Value() (driver.Value, error) {
+	return driver.Value(string(i)), nil
+}
+
 // CreditCard represents a credit card string format
 //
 // swagger:strfmt creditcard
@@ -358,6 +581,23 @@ func (u CreditCard) MarshalText() ([]byte, error) {
 func (u *CreditCard) UnmarshalText(data []byte) error { // validation is performed later on
 	*u = CreditCard(string(data))
 	return nil
+}
+
+func (cc *CreditCard) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		*cc = CreditCard(string(v))
+	case string:
+		*cc = CreditCard(v)
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.CreditCard from: %#v", v)
+	}
+
+	return nil
+}
+
+func (cc CreditCard) Value() (driver.Value, error) {
+	return driver.Value(string(cc)), nil
 }
 
 // SSN represents a social security string format
@@ -376,6 +616,23 @@ func (u *SSN) UnmarshalText(data []byte) error { // validation is performed late
 	return nil
 }
 
+func (ssn *SSN) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		*ssn = SSN(string(v))
+	case string:
+		*ssn = SSN(v)
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.SSN from: %#v", v)
+	}
+
+	return nil
+}
+
+func (ssn SSN) Value() (driver.Value, error) {
+	return driver.Value(string(ssn)), nil
+}
+
 // HexColor represents a hex color string format
 //
 // swagger:strfmt hexcolor
@@ -390,6 +647,23 @@ func (h HexColor) MarshalText() ([]byte, error) {
 func (h *HexColor) UnmarshalText(data []byte) error { // validation is performed later on
 	*h = HexColor(string(data))
 	return nil
+}
+
+func (h *HexColor) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		*h = HexColor(string(v))
+	case string:
+		*h = HexColor(v)
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.HexColor from: %#v", v)
+	}
+
+	return nil
+}
+
+func (h HexColor) Value() (driver.Value, error) {
+	return driver.Value(string(h)), nil
 }
 
 // RGBColor represents a RGB color string format
@@ -408,6 +682,23 @@ func (r *RGBColor) UnmarshalText(data []byte) error { // validation is performed
 	return nil
 }
 
+func (r *RGBColor) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		*r = RGBColor(string(v))
+	case string:
+		*r = RGBColor(v)
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.RGBColor from: %#v", v)
+	}
+
+	return nil
+}
+
+func (r RGBColor) Value() (driver.Value, error) {
+	return driver.Value(string(r)), nil
+}
+
 // Password represents a password.
 // This has no validations and is mainly used as a marker for UI components.
 //
@@ -423,4 +714,21 @@ func (r Password) MarshalText() ([]byte, error) {
 func (r *Password) UnmarshalText(data []byte) error { // validation is performed later on
 	*r = Password(string(data))
 	return nil
+}
+
+func (p *Password) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		*p = Password(string(v))
+	case string:
+		*p = Password(v)
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.Password from: %#v", v)
+	}
+
+	return nil
+}
+
+func (p Password) Value() (driver.Value, error) {
+	return driver.Value(string(p)), nil
 }
