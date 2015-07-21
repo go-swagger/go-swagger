@@ -1,6 +1,8 @@
 package strfmt
 
 import (
+	"database/sql/driver"
+	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -86,4 +88,28 @@ func (t *DateTime) UnmarshalText(text []byte) error {
 	}
 	*t = tt
 	return nil
+}
+
+// Scan scans a DateTime value from database driver type.
+func (d *DateTime) Scan(raw interface{}) error {
+	// TODO: case int64: and case float64: ?
+	switch v := raw.(type) {
+	case []byte:
+		return d.UnmarshalText(v)
+	case string:
+		return d.UnmarshalText([]byte(v))
+	case time.Time:
+		*d = DateTime{v}
+	case nil:
+		*d = DateTime{}
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.DateTime from: %#v", v)
+	}
+
+	return nil
+}
+
+// Value converts DateTime to a primitive value ready to written to a database.
+func (d DateTime) Value() (driver.Value, error) {
+	return driver.Value(d.Time), nil
 }

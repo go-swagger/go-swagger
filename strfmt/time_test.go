@@ -32,6 +32,11 @@ func TestTime(t *testing.T) {
 		err = pp.UnmarshalText(mt)
 		assert.NoError(t, err)
 		assert.Equal(t, example.out.String(), pp.Time.String())
+
+		pp = DateTime{}
+		err = pp.Scan(example.in)
+		assert.NoError(t, err)
+		assert.Equal(t, DateTime{example.out}, pp)
 	}
 
 	_, err := ParseDateTime("yada")

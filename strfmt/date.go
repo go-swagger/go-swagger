@@ -1,6 +1,8 @@
 package strfmt
 
 import (
+	"database/sql/driver"
+	"fmt"
 	"regexp"
 	"time"
 )
@@ -60,4 +62,27 @@ func (d *Date) UnmarshalText(text []byte) error {
 // MarshalText serializes this date type to string
 func (d Date) MarshalText() ([]byte, error) {
 	return []byte(d.String()), nil
+}
+
+// Scan scans a Date value from database driver type.
+func (d *Date) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		return d.UnmarshalText(v)
+	case string:
+		return d.UnmarshalText([]byte(v))
+	case time.Time:
+		*d = Date{v}
+		return nil
+	case nil:
+		*d = Date{}
+		return nil
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.Date from: %#v", v)
+	}
+}
+
+// Value converts Date to a primitive value ready to written to a database.
+func (d Date) Value() (driver.Value, error) {
+	return driver.Value(d.Time), nil
 }
