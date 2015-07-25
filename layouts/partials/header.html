@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 {{ $baseUrl := .Site.BaseURL }}
-{{ $isHomePage := (eq .Permalink (print $baseUrl | safeHTML)) }}
+{{ $isHomePage := eq .Title .Site.Title }}
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
