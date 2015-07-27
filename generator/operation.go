@@ -221,14 +221,18 @@ func makeCodegenOperation(name, pkg, modelsPkg, principal, target string, operat
 	}
 
 	return genOperation{
-		Package:              pkg,
-		ClassName:            swag.ToGoName(name),
-		Name:                 swag.ToJSONName(name),
-		Description:          operation.Description,
-		DocString:            operationDocString(swag.ToGoName(name), operation),
-		ReceiverName:         receiver,
-		HumanClassName:       swag.ToHumanNameLower(swag.ToGoName(name)),
-		DefaultImports:       []string{filepath.ToSlash(filepath.Join(baseImport(filepath.Join(target, "..")), modelsPkg))},
+		Package:        pkg,
+		ClassName:      swag.ToGoName(name),
+		Name:           swag.ToJSONName(name),
+		Description:    operation.Description,
+		DocString:      operationDocString(swag.ToGoName(name), operation),
+		ReceiverName:   receiver,
+		HumanClassName: swag.ToHumanNameLower(swag.ToGoName(name)),
+		DefaultImports: []string{
+			filepath.ToSlash(filepath.Join(baseImport(filepath.Join(target, "..")), modelsPkg)),
+			"github.com/go-swagger/go-swagger/httpkit/middleware",
+			"github.com/go-swagger/go-swagger/strfmt",
+		},
 		Params:               params,
 		Summary:              operation.Summary,
 		QueryParams:          qp,

@@ -177,6 +177,7 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 		Description:    schema.Description,
 		DocString:      modelDocString(swag.ToGoName(name), schema.Description),
 		HumanClassName: swag.ToHumanNameLower(swag.ToGoName(name)),
+		DefaultImports: []string{"github.com/go-swagger/go-swagger/strfmt"},
 		HasValidations: hasValidations,
 	}
 }
