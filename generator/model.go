@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -168,6 +169,8 @@ func makeCodegenModel(name, pkg string, schema spec.Schema, specDoc *spec.Docume
 		properties = append(properties, v)
 	}
 
+	sort.Sort(genModelPropertySlice(properties))
+
 	return &genModel{
 		Package:        filepath.Base(pkg),
 		ClassName:      swag.ToGoName(name),
@@ -265,6 +268,12 @@ func makeGenModelProperty(path, paramName, accessor, receiver, indexVar, valueEx
 		XMLName: xmlName,
 	}
 }
+
+type genModelPropertySlice []genModelProperty
+
+func (s genModelPropertySlice) Len() int           { return len(s) }
+func (s genModelPropertySlice) Less(i, j int) bool { return s[i].PropertyName < s[j].PropertyName }
+func (s genModelPropertySlice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 
 // TODO:
 // untyped data requires a cast somehow to the inner type
