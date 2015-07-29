@@ -9,7 +9,7 @@ import (
 )
 
 func TestMakeResponseHeader(t *testing.T) {
-	b, err := opBuilder("getTasks")
+	b, err := opBuilder("getTasks", "")
 	if assert.NoError(t, err) {
 		hdr := findResponseHeader(&b.Operation, 200, "X-Rate-Limit")
 		gh := b.MakeHeader("a", "X-Rate-Limit", *hdr)
@@ -20,7 +20,7 @@ func TestMakeResponseHeader(t *testing.T) {
 }
 
 func TestMakeResponse(t *testing.T) {
-	b, err := opBuilder("getTasks")
+	b, err := opBuilder("getTasks", "")
 	if assert.NoError(t, err) {
 		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
 		gO, err := b.MakeResponse("a", "getTasksSuccess", true, resolver, b.Operation.Responses.StatusCodeResponses[200])
@@ -36,7 +36,7 @@ func TestMakeResponse(t *testing.T) {
 }
 
 func TestMakeOperationParam(t *testing.T) {
-	b, err := opBuilder("getTasks")
+	b, err := opBuilder("getTasks", "")
 	if assert.NoError(t, err) {
 		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
 		gO, err := b.MakeParameter("a", resolver, b.Operation.Parameters[0])
@@ -47,8 +47,20 @@ func TestMakeOperationParam(t *testing.T) {
 	}
 }
 
+func TestMakeOperationParamItem(t *testing.T) {
+	b, err := opBuilder("arrayQueryParams", "../fixtures/codegen/todolist.arrayquery.yml")
+	if assert.NoError(t, err) {
+		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+		gO, err := b.MakeParameterItem("a", "siString", "a.SiString", "i", "a.SiString", resolver, b.Operation.Parameters[1].Items, nil)
+		if assert.NoError(t, err) {
+			assert.Nil(t, gO.Parent)
+			assert.True(t, gO.IsPrimitive)
+		}
+	}
+}
+
 func TestMakeOperation(t *testing.T) {
-	b, err := opBuilder("getTasks")
+	b, err := opBuilder("getTasks", "")
 	if assert.NoError(t, err) {
 		gO, err := b.MakeOperation()
 		if assert.NoError(t, err) {
@@ -58,16 +70,19 @@ func TestMakeOperation(t *testing.T) {
 	}
 }
 
-func opBuilder(name string) (codeGenOpBuilder, error) {
+func opBuilder(name, fname string) (codeGenOpBuilder, error) {
+	if fname == "" {
+		fname = "../fixtures/codegen/todolist.simple.yml"
+	}
 
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.simple.yml")
+	specDoc, err := spec.Load(fname)
 	if err != nil {
 		return codeGenOpBuilder{}, err
 	}
 
 	op, ok := specDoc.OperationForName(name)
 	if !ok {
-		return codeGenOpBuilder{}, errors.New("No operation could be found for simpleHeaderParams")
+		return codeGenOpBuilder{}, errors.New("No operation could be found for " + name)
 	}
 
 	return codeGenOpBuilder{

@@ -412,29 +412,6 @@ func (b codeGenOpBuilder) MakeParameterItem(receiver, paramName, accessor, index
 		res.Child = &pi
 		pi.Parent = &res
 	}
-	//res := genParameterItem{}
-	//res.sharedParam = ctx
-	//res.CollectionFormat = items.CollectionFormat
-	//res.Parent = &parent
-	//res.Converter = stringConverters[ctx.Type]
-	//res.Formatter = stringFormatters[ctx.Type]
-	//res.Location = parent.Location
-	//res.ValueExpression = "value"
-
-	//var child *genParameterItem
-	//if items.Items != nil {
-	//it := makeCodegenParamItem(
-	//"fmt.Sprintf(\"%s.%v\", "+ctx.Path+", "+ctx.IndexVar+")",
-	//ctx.ParamName,
-	//ctx.PropertyName,
-	//ctx.IndexVar+"i",
-	//ctx.IndexVar+"c["+ctx.IndexVar+"]",
-	//res,
-	//*items.Items,
-	//)
-	//child = &it
-	//}
-	//res.Child = child
 
 	return res, nil
 }
@@ -508,16 +485,7 @@ func (b codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver,
 		// thisItem.Location = param.In
 
 		//if param.Items != nil {
-		//it := makeCodegenParamItem(
-		//"fmt.Sprintf(\"%s.%v\", "+ctx.Path+", "+ctx.IndexVar+")",
-		//ctx.ParamName,
-		//ctx.PropertyName,
-		//ctx.IndexVar+"i",
-		//ctx.IndexVar+"c["+ctx.IndexVar+"]",
-		//thisItem,
-		//*param.Items,
-		//)
-		//child = &it
+		//pi, err := b.MakeParameterItem(receiver, paramName, res.IndexVar)
 		//}
 
 	}
