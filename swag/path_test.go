@@ -64,22 +64,30 @@ func TestFindPackage(t *testing.T) {
 	// finds package when real name mentioned
 	pkg := FindInSearchPath(searchPath, "foo/bar")
 	assert.NotEmpty(t, pkg)
-	assert.Equal(t, filepath.Join(pth, "src", "foo", "bar"), pkg)
+	assertPath(t, filepath.Join(pth, "src", "foo", "bar"), pkg)
 	// finds package when real name is mentioned in secondary
 	pkg = FindInSearchPath(searchPath, "fuu/bir")
 	assert.NotEmpty(t, pkg)
-	assert.Equal(t, filepath.Join(pth2, "src", "fuu", "bir"), pkg)
+	assertPath(t, filepath.Join(pth2, "src", "fuu", "bir"), pkg)
 	// finds package when symlinked
 	pkg = FindInSearchPath(searchPath, "baz/das")
 	assert.NotEmpty(t, pkg)
-	assert.Equal(t, filepath.Join(pth, "src", "foo", "bar"), pkg)
+	assertPath(t, filepath.Join(pth, "src", "foo", "bar"), pkg)
 	// finds package when symlinked in secondary
 	pkg = FindInSearchPath(searchPath, "biz/dis")
 	assert.NotEmpty(t, pkg)
-	assert.Equal(t, filepath.Join(pth2, "src", "fuu", "bir"), pkg)
+	assertPath(t, filepath.Join(pth2, "src", "fuu", "bir"), pkg)
 	// return empty string when nothing is found
 	pkg = FindInSearchPath(searchPath, "not/there")
 	assert.Empty(t, pkg)
+}
+
+func assertPath(t testing.TB, expected, actual string) bool {
+	fp, err := filepath.EvalSymlinks(expected)
+	if assert.NoError(t, err) {
+		return assert.Equal(t, fp, actual)
+	}
+	return true
 }
 
 func TestFullGOPATH(t *testing.T) {
