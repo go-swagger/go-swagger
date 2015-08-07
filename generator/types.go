@@ -79,7 +79,7 @@ var stringFormatters = map[string]string{
 	"float64": "swag.FormatFloat64",
 }
 
-// typeMapping contais a mapping of format or type name to go type
+// typeMapping contains a mapping of format or type name to go type
 var typeMapping = map[string]string{
 	"byte":       "strfmt.Base64",
 	"date":       "strfmt.Date",

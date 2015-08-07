@@ -6,7 +6,7 @@ package {{.Package}}
 {{if or .Imports .DefaultImports }}import (
   {{range .DefaultImports }}{{ printf "%q" .}}
   {{end}}
-  {{range $key, $value := .Imports}}{{$key}} {{ printf "%q" $value}}
+  {{range $key, $value := .Imports}}{{ $key }} {{ printf "%q" $value}}
   {{end}}
 )
 {{end}}

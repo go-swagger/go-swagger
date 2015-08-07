@@ -41,6 +41,23 @@ paths:
           minItems: 5
           maxItems: 50
           collectionFormat: csv
+        - name: siNested
+          in: query
+          type: array
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                minLength: 5
+                maxLength: 50
+                pattern: "[A-Z][\\w-]+"
+                type: string
+          description: a simple string array
+          required: true
+          minItems: 5
+          maxItems: 50
+          collectionFormat: csv
         - name: siInt
           in: query
           description: an integer array property

@@ -421,7 +421,7 @@ func (b codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver,
 	res := GenParameter{
 		Name:             param.Name,
 		Path:             fmt.Sprintf("%q", param.Name),
-		ValueExpression:  param.Name,
+		ValueExpression:  fmt.Sprintf("%s.%s", receiver, swag.ToGoName(param.Name)),
 		IndexVar:         "i",
 		BodyParam:        nil,
 		Default:          param.Default,
