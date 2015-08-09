@@ -9,17 +9,69 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// tests the parameters for generation
+var arrayFormParams = []paramTestContext{
+	{"siBool", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatBool", "swag.ConvertBool", nil}},
+	{"siString", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"", "", nil}},
+	{"siNested", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"", "", &paramItemsTestContext{"", "", &paramItemsTestContext{"", "", nil}}}},
+	{"siInt", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatInt64", "swag.ConvertInt64", nil}},
+	{"siInt32", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatInt32", "swag.ConvertInt32", nil}},
+	{"siInt64", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatInt64", "swag.ConvertInt64", nil}},
+	{"siFloat", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatFloat64", "swag.ConvertFloat64", nil}},
+	{"siFloat32", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatFloat32", "swag.ConvertFloat32", nil}},
+	{"siFloat64", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatFloat64", "swag.ConvertFloat64", nil}},
+}
 
-var simplePathParams = []simpleParamContext{
-	{"siBool", "simplePathParams", simpleResolvedType("boolean", "", nil), "swag.FormatBool", "swag.ConvertBool", codeGenOpBuilder{}},
-	{"siString", "simplePathParams", simpleResolvedType("string", "", nil), "", "", codeGenOpBuilder{}},
-	{"siInt", "simplePathParams", simpleResolvedType("integer", "", nil), "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}},
-	{"siInt32", "simplePathParams", simpleResolvedType("integer", "int32", nil), "swag.FormatInt32", "swag.ConvertInt32", codeGenOpBuilder{}},
-	{"siInt64", "simplePathParams", simpleResolvedType("integer", "int64", nil), "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}},
-	{"siFloat", "simplePathParams", simpleResolvedType("number", "", nil), "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}},
-	{"siFloat32", "simplePathParams", simpleResolvedType("number", "float", nil), "swag.FormatFloat32", "swag.ConvertFloat32", codeGenOpBuilder{}},
-	{"siFloat64", "simplePathParams", simpleResolvedType("number", "double", nil), "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}},
+func TestFormArrayParams(t *testing.T) {
+	b, err := opBuilder("arrayFormParams", "../fixtures/codegen/todolist.arrayform.yml")
+
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+
+	for _, v := range arrayFormParams {
+		v.B = b
+		if !v.assertParameter(t) {
+			t.FailNow()
+		}
+	}
+}
+
+var arrayQueryParams = []paramTestContext{
+	{"siBool", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatBool", "swag.ConvertBool", nil}},
+	{"siString", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"", "", nil}},
+	{"siNested", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"", "", &paramItemsTestContext{"", "", &paramItemsTestContext{"", "", nil}}}},
+	{"siInt", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatInt64", "swag.ConvertInt64", nil}},
+	{"siInt32", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatInt32", "swag.ConvertInt32", nil}},
+	{"siInt64", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatInt64", "swag.ConvertInt64", nil}},
+	{"siFloat", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatFloat64", "swag.ConvertFloat64", nil}},
+	{"siFloat32", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatFloat32", "swag.ConvertFloat32", nil}},
+	{"siFloat64", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatFloat64", "swag.ConvertFloat64", nil}},
+}
+
+func TestQueryArrayParams(t *testing.T) {
+	b, err := opBuilder("arrayQueryParams", "../fixtures/codegen/todolist.arrayquery.yml")
+
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+
+	for _, v := range arrayQueryParams {
+		v.B = b
+		if !v.assertParameter(t) {
+			t.FailNow()
+		}
+	}
+}
+
+var simplePathParams = []paramTestContext{
+	{"siBool", "simplePathParams", "swag.FormatBool", "swag.ConvertBool", codeGenOpBuilder{}, nil},
+	{"siString", "simplePathParams", "", "", codeGenOpBuilder{}, nil},
+	{"siInt", "simplePathParams", "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}, nil},
+	{"siInt32", "simplePathParams", "swag.FormatInt32", "swag.ConvertInt32", codeGenOpBuilder{}, nil},
+	{"siInt64", "simplePathParams", "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}, nil},
+	{"siFloat", "simplePathParams", "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}, nil},
+	{"siFloat32", "simplePathParams", "swag.FormatFloat32", "swag.ConvertFloat32", codeGenOpBuilder{}, nil},
+	{"siFloat64", "simplePathParams", "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}, nil},
 }
 
 func TestSimplePathParams(t *testing.T) {
@@ -30,22 +82,22 @@ func TestSimplePathParams(t *testing.T) {
 	}
 	for _, v := range simplePathParams {
 		v.B = b
-		if !v.assertSimpleParameter(t) {
+		if !v.assertParameter(t) {
 			t.FailNow()
 		}
 	}
 }
 
-var simpleHeaderParams = []simpleParamContext{
-	{"id", "simpleHeaderParams", simpleResolvedType("integer", "int32", nil), "swag.FormatInt32", "swag.ConvertInt32", codeGenOpBuilder{}},
-	{"siBool", "simpleHeaderParams", simpleResolvedType("boolean", "", nil), "swag.FormatBool", "swag.ConvertBool", codeGenOpBuilder{}},
-	{"siString", "simpleHeaderParams", simpleResolvedType("string", "", nil), "", "", codeGenOpBuilder{}},
-	{"siInt", "simpleHeaderParams", simpleResolvedType("integer", "", nil), "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}},
-	{"siInt32", "simpleHeaderParams", simpleResolvedType("integer", "int32", nil), "swag.FormatInt32", "swag.ConvertInt32", codeGenOpBuilder{}},
-	{"siInt64", "simpleHeaderParams", simpleResolvedType("integer", "int64", nil), "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}},
-	{"siFloat", "simpleHeaderParams", simpleResolvedType("number", "", nil), "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}},
-	{"siFloat32", "simpleHeaderParams", simpleResolvedType("number", "float", nil), "swag.FormatFloat32", "swag.ConvertFloat32", codeGenOpBuilder{}},
-	{"siFloat64", "simpleHeaderParams", simpleResolvedType("number", "double", nil), "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}},
+var simpleHeaderParams = []paramTestContext{
+	{"id", "simpleHeaderParams", "swag.FormatInt32", "swag.ConvertInt32", codeGenOpBuilder{}, nil},
+	{"siBool", "simpleHeaderParams", "swag.FormatBool", "swag.ConvertBool", codeGenOpBuilder{}, nil},
+	{"siString", "simpleHeaderParams", "", "", codeGenOpBuilder{}, nil},
+	{"siInt", "simpleHeaderParams", "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}, nil},
+	{"siInt32", "simpleHeaderParams", "swag.FormatInt32", "swag.ConvertInt32", codeGenOpBuilder{}, nil},
+	{"siInt64", "simpleHeaderParams", "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}, nil},
+	{"siFloat", "simpleHeaderParams", "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}, nil},
+	{"siFloat32", "simpleHeaderParams", "swag.FormatFloat32", "swag.ConvertFloat32", codeGenOpBuilder{}, nil},
+	{"siFloat64", "simpleHeaderParams", "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}, nil},
 }
 
 func TestSimpleHeaderParams(t *testing.T) {
@@ -56,22 +108,22 @@ func TestSimpleHeaderParams(t *testing.T) {
 	}
 	for _, v := range simpleHeaderParams {
 		v.B = b
-		if !v.assertSimpleParameter(t) {
+		if !v.assertParameter(t) {
 			t.FailNow()
 		}
 	}
 }
 
-var simpleFormParams = []simpleParamContext{
-	{"id", "simpleFormParams", simpleResolvedType("integer", "int32", nil), "swag.FormatInt32", "swag.ConvertInt32", codeGenOpBuilder{}},
-	{"siBool", "simpleFormParams", simpleResolvedType("boolean", "", nil), "swag.FormatBool", "swag.ConvertBool", codeGenOpBuilder{}},
-	{"siString", "simpleFormParams", simpleResolvedType("string", "", nil), "", "", codeGenOpBuilder{}},
-	{"siInt", "simpleFormParams", simpleResolvedType("integer", "", nil), "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}},
-	{"siInt32", "simpleFormParams", simpleResolvedType("integer", "int32", nil), "swag.FormatInt32", "swag.ConvertInt32", codeGenOpBuilder{}},
-	{"siInt64", "simpleFormParams", simpleResolvedType("integer", "int64", nil), "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}},
-	{"siFloat", "simpleFormParams", simpleResolvedType("number", "", nil), "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}},
-	{"siFloat32", "simpleFormParams", simpleResolvedType("number", "float", nil), "swag.FormatFloat32", "swag.ConvertFloat32", codeGenOpBuilder{}},
-	{"siFloat64", "simpleFormParams", simpleResolvedType("number", "double", nil), "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}},
+var simpleFormParams = []paramTestContext{
+	{"id", "simpleFormParams", "swag.FormatInt32", "swag.ConvertInt32", codeGenOpBuilder{}, nil},
+	{"siBool", "simpleFormParams", "swag.FormatBool", "swag.ConvertBool", codeGenOpBuilder{}, nil},
+	{"siString", "simpleFormParams", "", "", codeGenOpBuilder{}, nil},
+	{"siInt", "simpleFormParams", "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}, nil},
+	{"siInt32", "simpleFormParams", "swag.FormatInt32", "swag.ConvertInt32", codeGenOpBuilder{}, nil},
+	{"siInt64", "simpleFormParams", "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}, nil},
+	{"siFloat", "simpleFormParams", "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}, nil},
+	{"siFloat32", "simpleFormParams", "swag.FormatFloat32", "swag.ConvertFloat32", codeGenOpBuilder{}, nil},
+	{"siFloat64", "simpleFormParams", "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}, nil},
 }
 
 func TestSimpleFormParams(t *testing.T) {
@@ -82,22 +134,22 @@ func TestSimpleFormParams(t *testing.T) {
 	}
 	for _, v := range simpleFormParams {
 		v.B = b
-		if !v.assertSimpleParameter(t) {
+		if !v.assertParameter(t) {
 			t.FailNow()
 		}
 	}
 }
 
-var simpleQueryParams = []simpleParamContext{
-	{"id", "simpleQueryParams", simpleResolvedType("integer", "int32", nil), "swag.FormatInt32", "swag.ConvertInt32", codeGenOpBuilder{}},
-	{"siBool", "simpleQueryParams", simpleResolvedType("boolean", "", nil), "swag.FormatBool", "swag.ConvertBool", codeGenOpBuilder{}},
-	{"siString", "simpleQueryParams", simpleResolvedType("string", "", nil), "", "", codeGenOpBuilder{}},
-	{"siInt", "simpleQueryParams", simpleResolvedType("integer", "", nil), "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}},
-	{"siInt32", "simpleQueryParams", simpleResolvedType("integer", "int32", nil), "swag.FormatInt32", "swag.ConvertInt32", codeGenOpBuilder{}},
-	{"siInt64", "simpleQueryParams", simpleResolvedType("integer", "int64", nil), "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}},
-	{"siFloat", "simpleQueryParams", simpleResolvedType("number", "", nil), "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}},
-	{"siFloat32", "simpleQueryParams", simpleResolvedType("number", "float", nil), "swag.FormatFloat32", "swag.ConvertFloat32", codeGenOpBuilder{}},
-	{"siFloat64", "simpleQueryParams", simpleResolvedType("number", "double", nil), "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}},
+var simpleQueryParams = []paramTestContext{
+	{"id", "simpleQueryParams", "swag.FormatInt32", "swag.ConvertInt32", codeGenOpBuilder{}, nil},
+	{"siBool", "simpleQueryParams", "swag.FormatBool", "swag.ConvertBool", codeGenOpBuilder{}, nil},
+	{"siString", "simpleQueryParams", "", "", codeGenOpBuilder{}, nil},
+	{"siInt", "simpleQueryParams", "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}, nil},
+	{"siInt32", "simpleQueryParams", "swag.FormatInt32", "swag.ConvertInt32", codeGenOpBuilder{}, nil},
+	{"siInt64", "simpleQueryParams", "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}, nil},
+	{"siFloat", "simpleQueryParams", "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}, nil},
+	{"siFloat32", "simpleQueryParams", "swag.FormatFloat32", "swag.ConvertFloat32", codeGenOpBuilder{}, nil},
+	{"siFloat64", "simpleQueryParams", "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}, nil},
 }
 
 func TestSimpleQueryParams(t *testing.T) {
@@ -108,22 +160,28 @@ func TestSimpleQueryParams(t *testing.T) {
 	}
 	for _, v := range simpleQueryParams {
 		v.B = b
-		if !v.assertSimpleParameter(t) {
+		if !v.assertParameter(t) {
 			t.FailNow()
 		}
 	}
 }
 
-type simpleParamContext struct {
+type paramItemsTestContext struct {
+	Formatter string
+	Converter string
+	Items     *paramItemsTestContext
+}
+
+type paramTestContext struct {
 	Name      string
 	OpID      string
-	Type      resolvedType
 	Formatter string
 	Converter string
 	B         codeGenOpBuilder
+	Items     *paramItemsTestContext
 }
 
-func (ctx simpleParamContext) assertSimpleParameter(t testing.TB) bool {
+func (ctx *paramTestContext) assertParameter(t testing.TB) bool {
 	op, err := ctx.B.Doc.OperationForName(ctx.OpID)
 	if assert.True(t, err) && assert.NotNil(t, op) {
 		resolver := &typeResolver{ModelsPackage: ctx.B.ModelsPackage, Doc: ctx.B.Doc}
@@ -140,7 +198,7 @@ func (ctx simpleParamContext) assertSimpleParameter(t testing.TB) bool {
 	return false
 }
 
-func (ctx simpleParamContext) assertGenParam(t testing.TB, param spec.Parameter, gp GenParameter) bool {
+func (ctx *paramTestContext) assertGenParam(t testing.TB, param spec.Parameter, gp GenParameter) bool {
 	// went with the verbose option here, easier to debug
 	if !assert.Equal(t, param.In, gp.Location) {
 		return false
@@ -213,16 +271,20 @@ func (ctx simpleParamContext) assertGenParam(t testing.TB, param spec.Parameter,
 	}
 	// verify rendered template
 	if param.In == "body" {
-		if !ctx.assertBodyParam(t, param, gp) {
+		if !assertBodyParam(t, param, gp) {
 			return false
 		}
 		return true
 	}
 
-	return ctx.assertParamItems(t, param, gp)
+	if ctx.Items != nil {
+		return ctx.Items.Assert(t, param.Items, gp.Child)
+	}
+
+	return true
 }
 
-func (ctx simpleParamContext) assertBodyParam(t testing.TB, param spec.Parameter, gp GenParameter) bool {
+func assertBodyParam(t testing.TB, param spec.Parameter, gp GenParameter) bool {
 	if !assert.Equal(t, "body", param.In) || !assert.Equal(t, "body", gp.Location) {
 		return false
 	}
@@ -232,50 +294,59 @@ func (ctx simpleParamContext) assertBodyParam(t testing.TB, param spec.Parameter
 	return true
 }
 
-func (ctx simpleParamContext) assertParamItems(t testing.TB, param spec.Parameter, gp GenParameter) bool {
-	if param.Items != nil {
-		pItems, gpItems := param.Items, gp.Child
-		// went with the verbose option here, easier to debug
-		if !assert.Equal(t, param.CollectionFormat, gp.CollectionFormat) {
-			return false
-		}
-		if !assert.Equal(t, pItems.Minimum, gpItems.Minimum) || !assert.Equal(t, pItems.ExclusiveMinimum, gpItems.ExclusiveMinimum) {
-			return false
-		}
-		if !assert.Equal(t, pItems.Maximum, gpItems.Maximum) || !assert.Equal(t, pItems.ExclusiveMaximum, gpItems.ExclusiveMaximum) {
-			return false
-		}
-		if !assert.Equal(t, pItems.MinLength, gpItems.MinLength) {
-			return false
-		}
-		if !assert.Equal(t, pItems.MaxLength, gpItems.MaxLength) {
-			return false
-		}
-		if !assert.Equal(t, pItems.Pattern, gpItems.Pattern) {
-			return false
-		}
-		if !assert.Equal(t, pItems.MaxItems, gpItems.MaxItems) {
-			return false
-		}
-		if !assert.Equal(t, pItems.MinItems, gpItems.MinItems) {
-			return false
-		}
-		if !assert.Equal(t, pItems.UniqueItems, gpItems.UniqueItems) {
-			return false
-		}
-		if !assert.Equal(t, pItems.MultipleOf, gpItems.MultipleOf) {
-			return false
-		}
-		if !assert.EqualValues(t, pItems.Enum, gpItems.Enum) {
-			return false
-		}
-		if !assert.Equal(t, pItems.Type, gpItems.SwaggerType) {
-			return false
-		}
-		if !assert.Equal(t, pItems.Format, gpItems.SwaggerFormat) {
-			return false
-		}
-
+func (ctx *paramItemsTestContext) Assert(t testing.TB, pItems *spec.Items, gpItems *GenItems) bool {
+	if !assert.NotNil(t, pItems) || !assert.NotNil(t, gpItems) {
+		return false
+	}
+	// went with the verbose option here, easier to debug
+	if !assert.Equal(t, ctx.Formatter, gpItems.Formatter) {
+		return false
+	}
+	if !assert.Equal(t, ctx.Converter, gpItems.Converter) {
+		return false
+	}
+	if !assert.Equal(t, pItems.CollectionFormat, gpItems.CollectionFormat) {
+		return false
+	}
+	if !assert.Equal(t, pItems.Minimum, gpItems.Minimum) || !assert.Equal(t, pItems.ExclusiveMinimum, gpItems.ExclusiveMinimum) {
+		return false
+	}
+	if !assert.Equal(t, pItems.Maximum, gpItems.Maximum) || !assert.Equal(t, pItems.ExclusiveMaximum, gpItems.ExclusiveMaximum) {
+		return false
+	}
+	if !assert.Equal(t, pItems.MinLength, gpItems.MinLength) {
+		return false
+	}
+	if !assert.Equal(t, pItems.MaxLength, gpItems.MaxLength) {
+		return false
+	}
+	if !assert.Equal(t, pItems.Pattern, gpItems.Pattern) {
+		return false
+	}
+	if !assert.Equal(t, pItems.MaxItems, gpItems.MaxItems) {
+		return false
+	}
+	if !assert.Equal(t, pItems.MinItems, gpItems.MinItems) {
+		return false
+	}
+	if !assert.Equal(t, pItems.UniqueItems, gpItems.UniqueItems) {
+		return false
+	}
+	if !assert.Equal(t, pItems.MultipleOf, gpItems.MultipleOf) {
+		return false
+	}
+	if !assert.EqualValues(t, pItems.Enum, gpItems.Enum) {
+		return false
+	}
+	if !assert.Equal(t, pItems.Type, gpItems.SwaggerType) {
+		return false
+	}
+	if !assert.Equal(t, pItems.Format, gpItems.SwaggerFormat) {
+		return false
+	}
+	if ctx.Items != nil {
+		return ctx.Items.Assert(t, pItems.Items, gpItems.Child)
 	}
 	return true
+
 }

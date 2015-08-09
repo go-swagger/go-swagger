@@ -381,7 +381,7 @@ func (b codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) Gen
 	}
 }
 
-func (b codeGenOpBuilder) MakeParameterItem(receiver, paramName, accessor, indexVar, valueExpression string, resolver *typeResolver, items, parent *spec.Items) (GenItems, error) {
+func (b codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, valueExpression string, resolver *typeResolver, items, parent *spec.Items) (GenItems, error) {
 
 	//ctx := makeGenValidations(paramItemValidations(path, paramName, accessor, indexVar, valueExpression, items))
 	var res GenItems
@@ -405,7 +405,7 @@ func (b codeGenOpBuilder) MakeParameterItem(receiver, paramName, accessor, index
 	res.Formatter = stringFormatters[res.GoType]
 
 	if items.Items != nil {
-		pi, err := b.MakeParameterItem(receiver, paramName, accessor, indexVar+"i", valueExpression+"["+indexVar+"]", resolver, items.Items, items)
+		pi, err := b.MakeParameterItem(receiver, paramName, indexVar+"i", valueExpression+"["+indexVar+"]", resolver, items.Items, items)
 		if err != nil {
 			return GenItems{}, err
 		}
@@ -484,9 +484,13 @@ func (b codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver,
 		// thisItem.Converter = stringConverters[ctx.Type]
 		// thisItem.Location = param.In
 
-		//if param.Items != nil {
-		//pi, err := b.MakeParameterItem(receiver, paramName, res.IndexVar)
-		//}
+		if param.Items != nil {
+			pi, err := b.MakeParameterItem(receiver, param.Name, res.IndexVar+"i", res.ValueExpression+"["+res.IndexVar+"]", resolver, param.Items, nil)
+			if err != nil {
+				return GenParameter{}, err
+			}
+			res.Child = &pi
+		}
 
 	}
 
