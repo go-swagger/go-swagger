@@ -449,10 +449,21 @@ func (b codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver,
 		if err := sc.makeGenSchema(); err != nil {
 			return GenParameter{}, err
 		}
-		res.Schema = &sc.GenSchema
-		res.resolvedType = sc.GenSchema.resolvedType
-		res.sharedValidations = sc.GenSchema.sharedValidations
 
+		schema := sc.GenSchema
+		if schema.IsAnonymous {
+			schema.Name = swag.ToGoName(b.Operation.ID + " Body")
+			nm := schema.Name
+			b.ExtraSchemas[schema.Name] = schema
+			schema = GenSchema{}
+			schema.IsAnonymous = false
+			schema.GoType = nm
+			schema.SwaggerType = nm
+			schema.IsComplexObject = true
+		}
+		res.Schema = &schema
+		res.resolvedType = schema.resolvedType
+		res.sharedValidations = schema.sharedValidations
 		//if sc.GenSchema.IsAnonymous {
 		//// turn it into something that's not anonymous
 		//}

@@ -9,6 +9,56 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestBodyParams(t *testing.T) {
+	b, err := opBuilder("updateTask", "../fixtures/codegen/todolist.bodyparams.yml")
+
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+
+	op, ok := b.Doc.OperationForName("updateTask")
+	if assert.True(t, ok) && assert.NotNil(t, op) {
+		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+		for _, param := range op.Parameters {
+			if param.Name == "body" {
+				gp, err := b.MakeParameter("a", resolver, param)
+				if assert.NoError(t, err) {
+					assert.True(t, gp.IsBodyParam())
+					if assert.NotNil(t, gp.Schema) {
+						assert.True(t, gp.Schema.IsComplexObject)
+						assert.False(t, gp.Schema.IsAnonymous)
+						assert.Equal(t, "models.Task", gp.Schema.GoType)
+					}
+				}
+			}
+		}
+	}
+
+	b, err = opBuilder("createTask", "../fixtures/codegen/todolist.bodyparams.yml")
+
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+
+	op, ok = b.Doc.OperationForName("createTask")
+	if assert.True(t, ok) && assert.NotNil(t, op) {
+		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+		for _, param := range op.Parameters {
+			if param.Name == "body" {
+				gp, err := b.MakeParameter("a", resolver, param)
+				if assert.NoError(t, err) {
+					assert.True(t, gp.IsBodyParam())
+					if assert.NotNil(t, gp.Schema) {
+						assert.True(t, gp.Schema.IsComplexObject)
+						assert.False(t, gp.Schema.IsAnonymous)
+						assert.Equal(t, "CreateTaskBody", gp.Schema.GoType)
+					}
+				}
+			}
+		}
+	}
+}
+
 var arrayFormParams = []paramTestContext{
 	{"siBool", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatBool", "swag.ConvertBool", nil}},
 	{"siString", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"", "", nil}},
