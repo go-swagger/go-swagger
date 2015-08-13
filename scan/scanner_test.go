@@ -414,6 +414,23 @@ maximum: 20
 	assert.True(t, ok)
 }
 
+func TestSectionedParser_Empty(t *testing.T) {
+	block := `swagger:response someResponse`
+
+	st := &sectionedParser{}
+	st.setTitle = func(lines []string) {}
+	ap := newSchemaAnnotationParser("SomeResponse")
+	ap.rx = rxResponseOverride
+	st.annotation = ap
+
+	st.Parse(ascg(block))
+	assert.Empty(t, st.Title())
+	assert.Empty(t, st.Description())
+	assert.Empty(t, st.taggers)
+	assert.Equal(t, "SomeResponse", ap.GoName)
+	assert.Equal(t, "someResponse", ap.Name)
+}
+
 func TestSectionedParser_SkipSectionAnnotation(t *testing.T) {
 	block := `swagger:model someModel
 

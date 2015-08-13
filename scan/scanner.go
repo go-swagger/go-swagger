@@ -132,7 +132,7 @@ type appScanner struct {
 	MainPackage string
 }
 
-// newAPIParser creates a new api parser
+// newAppScanner creates a new api parser
 func newAppScanner(bp string, input *spec.Swagger, includes, excludes packageFilters) (*appScanner, error) {
 	var ldr loader.Config
 	ldr.ParserMode = goparser.ParseComments
@@ -407,6 +407,10 @@ type sectionedParser struct {
 }
 
 func (st *sectionedParser) cleanup(lines []string) []string {
+	// bail early when there is nothing to parse
+	if len(lines) == 0 {
+		return lines
+	}
 	seenLine := -1
 	var lastContent int
 	var uncommented []string
@@ -419,6 +423,10 @@ func (st *sectionedParser) cleanup(lines []string) []string {
 			}
 			lastContent = i
 		}
+	}
+	// fixes issue #50
+	if seenLine == -1 {
+		return nil
 	}
 	return uncommented[seenLine : lastContent+1]
 }
