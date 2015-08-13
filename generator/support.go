@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -391,6 +392,8 @@ func (a *appGenerator) makeCodegenApp() genApp {
 		importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage, k))
 		defaultImports = append(defaultImports, importPath)
 	}
+
+	sort.Sort(genOperationSlice(genOps))
 
 	defaultConsumes := "application/json"
 	rc := a.SpecDoc.RequiredConsumes()

@@ -267,6 +267,12 @@ func operationDocString(name string, operation spec.Operation) string {
 	return commentedLines(strings.Join([]string{hdr, txtFoot}, "\n"))
 }
 
+type genOperationSlice []genOperation
+
+func (s genOperationSlice) Len() int           { return len(s) }
+func (s genOperationSlice) Less(i, j int) bool { return s[i].Name < s[j].Name }
+func (s genOperationSlice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+
 type genOperation struct {
 	Package        string //`json:"package,omitempty"`        // -
 	ReceiverName   string //`json:"receiverName,omitempty"`   // -
