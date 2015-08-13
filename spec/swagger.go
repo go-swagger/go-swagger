@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/go-swagger/go-swagger/jsonpointer"
-	"github.com/go-swagger/go-swagger/swag"
 )
 
 // Swagger this is the root document object for the API specification.
@@ -18,17 +17,12 @@ type Swagger struct {
 	swaggerProps
 }
 
-const schemaJSONString = `{"$schema":"http://swagger.io/v2/schema.json#"}`
-
-var schemaJSONBytes = []byte(schemaJSONString)
-
 // MarshalJSON marshals this swagger structure to json
 func (s Swagger) MarshalJSON() ([]byte, error) {
-	b1, err := json.Marshal(s.swaggerProps)
-	if err != nil {
-		return nil, err
+	if s.Swagger == "" {
+		s.Swagger = "2.0"
 	}
-	return swag.ConcatJSON(schemaJSONBytes, b1), nil
+	return json.Marshal(s.swaggerProps)
 }
 
 // UnmarshalJSON unmarshals a swagger spec from json

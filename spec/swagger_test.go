@@ -20,7 +20,6 @@ var spec = Swagger{
 		Consumes:    []string{"application/json", "application/x-yaml"},
 		Produces:    []string{"application/json"},
 		Schemes:     []string{"http", "https"},
-		Swagger:     "2.0",
 		Info:        &info,
 		Host:        "some.api.out.there",
 		BasePath:    "/",
@@ -49,7 +48,6 @@ var spec = Swagger{
 
 var specJSON = `{
 	"id": "http://localhost:3849/api-docs",
-	"$schema": "http://swagger.io/v2/schema.json#",
 	"consumes": ["application/json", "application/x-yaml"],
 	"produces": ["application/json"],
 	"schemes": ["http", "https"],
@@ -141,7 +139,7 @@ func compareSpecMaps(actual, expected map[string]interface{}) {
 	if id, ok := expected["id"]; ok {
 		So(actual["id"], ShouldEqual, id)
 	}
-	So(actual["$schema"], ShouldEqual, SwaggerSchemaURL)
+	//So(actual["$schema"], ShouldEqual, SwaggerSchemaURL)
 	So(actual["consumes"], ShouldResemble, expected["consumes"])
 	So(actual["produces"], ShouldResemble, expected["produces"])
 	So(actual["schemes"], ShouldResemble, expected["schemes"])
@@ -158,6 +156,7 @@ func compareSpecMaps(actual, expected map[string]interface{}) {
 }
 
 func compareSpecs(actual Swagger, spec Swagger) {
+	spec.Swagger = "2.0"
 	So(actual, ShouldBeEquivalentTo, spec)
 }
 
