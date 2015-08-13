@@ -232,6 +232,7 @@ func (b codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	var responses map[int]GenResponse
 	var defaultResponse *GenResponse
 	if operation.Responses != nil {
+
 		//if r, ok := operation.Responses.StatusCodeResponses[200]; ok {
 		////tn, err := resolver.ResolveSchema(r.Schema, true)
 		////if err != nil {
@@ -298,6 +299,7 @@ func (b codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, re
 		Package:        b.APIPackage,
 		ReceiverName:   receiver,
 		Name:           name,
+		Description:    resp.Description,
 		DefaultImports: nil,
 		Imports:        nil,
 		IsSuccess:      isSuccess,
@@ -382,8 +384,6 @@ func (b codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) Gen
 }
 
 func (b codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, valueExpression string, resolver *typeResolver, items, parent *spec.Items) (GenItems, error) {
-
-	//ctx := makeGenValidations(paramItemValidations(path, paramName, accessor, indexVar, valueExpression, items))
 	var res GenItems
 	res.resolvedType = simpleResolvedType(items.Type, items.Format, items.Items)
 	res.sharedValidations = sharedValidations{
@@ -454,7 +454,9 @@ func (b codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver,
 		if schema.IsAnonymous {
 			schema.Name = swag.ToGoName(b.Operation.ID + " Body")
 			nm := schema.Name
-			b.ExtraSchemas[schema.Name] = schema
+			schema.GoType = nm
+			schema.IsAnonymous = false
+			b.ExtraSchemas[nm] = schema
 			schema = GenSchema{}
 			schema.IsAnonymous = false
 			schema.GoType = nm
@@ -464,10 +466,6 @@ func (b codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver,
 		res.Schema = &schema
 		res.resolvedType = schema.resolvedType
 		res.sharedValidations = schema.sharedValidations
-		//if sc.GenSchema.IsAnonymous {
-		//// turn it into something that's not anonymous
-		//}
-		// ctx = makeGenValidations(modelValidations(sc.GenSchema))
 
 	} else {
 		res.resolvedType = simpleResolvedType(param.Type, param.Format, param.Items)
@@ -486,14 +484,6 @@ func (b codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver,
 			MultipleOf:       param.MultipleOf,
 			Enum:             param.Enum,
 		}
-
-		// ctx = makeGenValidations(paramValidations(receiver, param))
-		// thisItem := genParameterItem{}
-		// thisItem.sharedParam = ctx
-		// thisItem.ValueExpression = ctx.IndexVar + "c"
-		// thisItem.CollectionFormat = param.CollectionFormat
-		// thisItem.Converter = stringConverters[ctx.Type]
-		// thisItem.Location = param.In
 
 		if param.Items != nil {
 			pi, err := b.MakeParameterItem(receiver, param.Name, res.IndexVar+"i", res.ValueExpression+"["+res.IndexVar+"]", resolver, param.Items, nil)

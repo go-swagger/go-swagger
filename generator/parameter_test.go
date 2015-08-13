@@ -52,6 +52,12 @@ func TestBodyParams(t *testing.T) {
 						assert.True(t, gp.Schema.IsComplexObject)
 						assert.False(t, gp.Schema.IsAnonymous)
 						assert.Equal(t, "CreateTaskBody", gp.Schema.GoType)
+
+						gpe, ok := b.ExtraSchemas["CreateTaskBody"]
+						assert.True(t, ok)
+						assert.True(t, gpe.IsComplexObject)
+						assert.False(t, gpe.IsAnonymous)
+						assert.Equal(t, "CreateTaskBody", gpe.GoType)
 					}
 				}
 			}
