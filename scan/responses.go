@@ -173,6 +173,13 @@ func (rp *responseParser) parseDecl(responses map[string]spec.Response, decl res
 	response := responses[decl.Name]
 	resPtr := &response
 
+	// analyze doc comment for the model
+	sp := new(sectionedParser)
+	sp.setDescription = func(lines []string) { resPtr.Description = joinDropLast(lines) }
+	if err := sp.Parse(decl.Decl.Doc); err != nil {
+		return err
+	}
+
 	// analyze struct body for fields etc
 	// each exported struct field:
 	// * gets a type mapped to a go primitive
