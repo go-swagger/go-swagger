@@ -82,7 +82,7 @@ func (o *operationGenerator) Generate() error {
 	// Build a list of codegen operations based on the tags,
 	// the tag decides the actual package for an operation
 	// the user specified package serves as root for generating the directory structure
-	var operations []genOperation
+	var operations []GenOperation
 	authed := len(o.SecurityRequirements) > 0
 
 	var bldr codeGenOpBuilder
@@ -97,7 +97,8 @@ func (o *operationGenerator) Generate() error {
 	for _, tag := range o.Operation.Tags {
 		if len(o.Tags) == 0 {
 			bldr.APIPackage = tag
-			op, err := makeCodegenOperation(bldr)
+			//op, err := makeCodegenOperation(bldr)
+			op, err := bldr.MakeOperation()
 			if err != nil {
 				return err
 			}
@@ -107,7 +108,8 @@ func (o *operationGenerator) Generate() error {
 		for _, ft := range o.Tags {
 			if ft == tag {
 				bldr.APIPackage = tag
-				op, err := makeCodegenOperation(bldr)
+				//op, err := makeCodegenOperation(bldr)
+				op, err := bldr.MakeOperation()
 				if err != nil {
 					return err
 				}
@@ -118,7 +120,8 @@ func (o *operationGenerator) Generate() error {
 	}
 	if len(operations) == 0 {
 		bldr.APIPackage = o.APIPackage
-		op, err := makeCodegenOperation(bldr)
+		//op, err := makeCodegenOperation(bldr)
+		op, err := bldr.MakeOperation()
 		if err != nil {
 			return err
 		}
@@ -133,24 +136,24 @@ func (o *operationGenerator) Generate() error {
 		}
 		o.data = op
 		o.pkg = op.Package
-		o.cname = op.ClassName
+		o.cname = swag.ToGoName(op.Name)
 
 		if o.IncludeHandler {
 			if err := o.generateHandler(); err != nil {
 				return fmt.Errorf("handler: %s", err)
 			}
-			log.Println("generated handler", op.Package+"."+op.ClassName)
+			log.Println("generated handler", op.Package+"."+o.cname)
 		}
 
 		if o.IncludeParameters && len(o.Operation.Parameters) > 0 {
 			if err := o.generateParameterModel(); err != nil {
 				return fmt.Errorf("parameters: %s", err)
 			}
-			log.Println("generated parameters", op.Package+"."+op.ClassName+"Parameters")
+			log.Println("generated parameters", op.Package+"."+o.cname+"Parameters")
 		}
 
 		if len(o.Operation.Parameters) == 0 {
-			log.Println("no parameters for operation", op.Package+"."+op.ClassName)
+			log.Println("no parameters for operation", op.Package+"."+o.cname)
 		}
 	}
 
@@ -227,51 +230,38 @@ func (b codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		params = append(params, cp)
 	}
 
-	//var successModel string
-	//var returnsPrimitive, returnsFormatted, returnsContainer, returnsMap bool
 	var responses map[int]GenResponse
 	var defaultResponse *GenResponse
+	var successResponse *GenResponse
 	if operation.Responses != nil {
+		for k, v := range operation.Responses.StatusCodeResponses {
+			if v.Schema != nil {
+				//TODO: work out ref and schema stuff
+			}
 
-		//if r, ok := operation.Responses.StatusCodeResponses[200]; ok {
-		////tn, err := resolver.ResolveSchema(r.Schema, true)
-		////if err != nil {
-		////return GenOperation{}, err
-		////}
-		////_, returnsPrimitive = primitives[tn.GoType]
-		////_, returnsFormatted = customFormatters[tn.GoType]
-		////returnsContainer = tn.IsArray
-		////returnsMap = tn.IsMap
-		////successModel = tn.GoType
-		//}
-		//for k, v := range operation.Responses.StatusCodeResponses {
-		//gr, err := b.MakeResponse(receiver, &resolver, v) //makeGenResponse(b.APIPackage, receiver, swag.ToGoName(b.Name+" "+httpkit.Statuses[k]), k/100 == 2, &resolver, v)
-		//if err != nil {
-		//return GenOperation{}, err
-		//}
-		//if responses == nil {
-		//responses = make(map[int]GenResponse)
-		//}
-		//responses[k] = gr
-		//}
-		//if operation.Responses.Default != nil {
-		//gr, err := b.MakeResponse(receiver, &resolver, *operation.Responses.Default) // makeGenResponse(b.APIPackage, receiver, swag.ToGoName(b.Name+" Default Response"), false, &resolver, *operation.Responses.Default)
-		//if err != nil {
-		//return GenOperation{}, err
-		//}
-		//defaultResponse = &gr
-		//}
+			isSuccess := k/100 == 2
+			gr, err := b.MakeResponse(receiver, swag.ToJSONName(httpkit.Statuses[k]), isSuccess, &resolver, v)
+			if err != nil {
+				return GenOperation{}, err
+			}
+			if isSuccess {
+				successResponse = &gr
+			}
+		}
+
+		if operation.Responses.Default != nil {
+			gr, err := b.MakeResponse(receiver, "default", false, &resolver, *operation.Responses.Default)
+			if err != nil {
+				return GenOperation{}, err
+			}
+			defaultResponse = &gr
+		}
 	}
 
 	prin := b.Principal
 	if prin == "" {
 		prin = "interface{}"
 	}
-
-	//zero, ok := zeroes[successModel]
-	//if !ok {
-	//zero = "nil"
-	//}
 
 	return GenOperation{
 		Package:         b.APIPackage,
@@ -290,6 +280,7 @@ func (b codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		Principal:       prin,
 		Responses:       responses,
 		DefaultResponse: defaultResponse,
+		SuccessResponse: successResponse,
 	}, nil
 }
 

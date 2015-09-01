@@ -107,6 +107,11 @@ paths:
           description: Generic Error
         200:
           description: Task updated
+          headers:
+            X-Last-Task-Id:
+              type: integer
+              format: int64
+              description: the last task id known to the application
           schema:
             $ref: "#/definitions/Task"
     delete:
