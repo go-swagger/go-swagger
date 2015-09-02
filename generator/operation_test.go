@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/go-swagger/go-swagger/spec"
+	"github.com/kr/pretty"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -64,8 +65,12 @@ func TestMakeOperation(t *testing.T) {
 	if assert.NoError(t, err) {
 		gO, err := b.MakeOperation()
 		if assert.NoError(t, err) {
+			pretty.Println(gO)
 			assert.Equal(t, "getTasks", gO.Name)
 			assert.Len(t, gO.Params, 2)
+			assert.Len(t, gO.Responses, 1)
+			assert.NotNil(t, gO.DefaultResponse)
+			assert.NotNil(t, gO.SuccessResponse)
 		}
 	}
 }

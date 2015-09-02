@@ -243,6 +243,10 @@ func (b codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 			if isSuccess {
 				successResponse = &gr
 			}
+			if responses == nil {
+				responses = make(map[int]GenResponse)
+			}
+			responses[k] = gr
 		}
 
 		if operation.Responses.Default != nil {
