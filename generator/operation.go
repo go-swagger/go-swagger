@@ -235,10 +235,6 @@ func (b codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	var successResponse *GenResponse
 	if operation.Responses != nil {
 		for k, v := range operation.Responses.StatusCodeResponses {
-			if v.Schema != nil {
-				//TODO: work out ref and schema stuff
-			}
-
 			isSuccess := k/100 == 2
 			gr, err := b.MakeResponse(receiver, swag.ToJSONName(httpkit.Statuses[k]), isSuccess, &resolver, v)
 			if err != nil {

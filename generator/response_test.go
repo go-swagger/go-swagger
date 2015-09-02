@@ -1,12 +1,9 @@
 package generator
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/go-swagger/go-swagger/spec"
-	"github.com/go-swagger/go-swagger/swag"
-	"github.com/kr/pretty"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -37,7 +34,9 @@ func TestSimpleResponses(t *testing.T) {
 						}
 						res, err := b.MakeResponse("a", sucCtx.Name, sucCtx.IsSuccess, resolver, response)
 						if assert.NoError(t, err) {
-							sucCtx.Assert(t, response, res)
+							if !sucCtx.Assert(t, response, res) {
+								return
+							}
 						}
 					}
 				}
@@ -54,7 +53,6 @@ type responseTestContext struct {
 }
 
 func (ctx *responseTestContext) Assert(t testing.TB, response spec.Response, res GenResponse) bool {
-	pretty.Println(res)
 	if !assert.Equal(t, ctx.IsSuccess, res.IsSuccess) {
 		return false
 	}
@@ -73,7 +71,10 @@ func (ctx *responseTestContext) Assert(t testing.TB, response spec.Response, res
 			for _, h := range res.Headers {
 				if h.Name == k {
 					found = true
-					ctx.assertHeader(t, k, v, h)
+					hctx := &respHeaderTestContext{k, "swag.FormatInt64", "swag.ConvertInt64"}
+					if !hctx.Assert(t, v, h) {
+						return false
+					}
 					break
 				}
 			}
@@ -102,20 +103,11 @@ type respHeaderTestContext struct {
 	Converter string
 }
 
-func (ctx *respHeaderTestContext) Assert(t testing.TB, name string, header spec.Header, hdr GenHeader) bool {
-	if !assert.Equal(t, name, hdr.Name) {
-		return false
-	}
-	if !assert.Equal(t, fmt.Sprintf("%q", name), hdr.Path) {
-		return false
-	}
-	if !assert.Equal(t, "i", hdr.IndexVar) {
+func (ctx *respHeaderTestContext) Assert(t testing.TB, header spec.Header, hdr GenHeader) bool {
+	if !assert.Equal(t, ctx.Name, hdr.Name) {
 		return false
 	}
 	if !assert.Equal(t, "a", hdr.ReceiverName) {
-		return false
-	}
-	if !assert.Equal(t, "a."+swag.ToGoName(param.Name), hdr.ValueExpression) {
 		return false
 	}
 	if !assert.Equal(t, ctx.Formatter, hdr.Formatter) {
@@ -124,49 +116,43 @@ func (ctx *respHeaderTestContext) Assert(t testing.TB, name string, header spec.
 	if !assert.Equal(t, ctx.Converter, hdr.Converter) {
 		return false
 	}
-	if !assert.Equal(t, param.Description, hdr.Description) {
+	if !assert.Equal(t, header.Description, hdr.Description) {
 		return false
 	}
-	if !assert.Equal(t, param.CollectionFormat, hdr.CollectionFormat) {
+	if !assert.Equal(t, header.Minimum, hdr.Minimum) || !assert.Equal(t, header.ExclusiveMinimum, hdr.ExclusiveMinimum) {
 		return false
 	}
-	if !assert.Equal(t, param.Required, hdr.Required) {
+	if !assert.Equal(t, header.Maximum, hdr.Maximum) || !assert.Equal(t, header.ExclusiveMaximum, hdr.ExclusiveMaximum) {
 		return false
 	}
-	if !assert.Equal(t, param.Minimum, hdr.Minimum) || !assert.Equal(t, param.ExclusiveMinimum, hdr.ExclusiveMinimum) {
+	if !assert.Equal(t, header.MinLength, hdr.MinLength) {
 		return false
 	}
-	if !assert.Equal(t, param.Maximum, hdr.Maximum) || !assert.Equal(t, param.ExclusiveMaximum, hdr.ExclusiveMaximum) {
+	if !assert.Equal(t, header.MaxLength, hdr.MaxLength) {
 		return false
 	}
-	if !assert.Equal(t, param.MinLength, hdr.MinLength) {
+	if !assert.Equal(t, header.Pattern, hdr.Pattern) {
 		return false
 	}
-	if !assert.Equal(t, param.MaxLength, hdr.MaxLength) {
+	if !assert.Equal(t, header.MaxItems, hdr.MaxItems) {
 		return false
 	}
-	if !assert.Equal(t, param.Pattern, hdr.Pattern) {
+	if !assert.Equal(t, header.MinItems, hdr.MinItems) {
 		return false
 	}
-	if !assert.Equal(t, param.MaxItems, hdr.MaxItems) {
+	if !assert.Equal(t, header.UniqueItems, hdr.UniqueItems) {
 		return false
 	}
-	if !assert.Equal(t, param.MinItems, hdr.MinItems) {
+	if !assert.Equal(t, header.MultipleOf, hdr.MultipleOf) {
 		return false
 	}
-	if !assert.Equal(t, param.UniqueItems, hdr.UniqueItems) {
+	if !assert.EqualValues(t, header.Enum, hdr.Enum) {
 		return false
 	}
-	if !assert.Equal(t, param.MultipleOf, hdr.MultipleOf) {
+	if !assert.Equal(t, header.Type, hdr.SwaggerType) {
 		return false
 	}
-	if !assert.EqualValues(t, param.Enum, hdr.Enum) {
-		return false
-	}
-	if !assert.Equal(t, param.Type, hdr.SwaggerType) {
-		return false
-	}
-	if !assert.Equal(t, param.Format, hdr.SwaggerFormat) {
+	if !assert.Equal(t, header.Format, hdr.SwaggerFormat) {
 		return false
 	}
 	return true
