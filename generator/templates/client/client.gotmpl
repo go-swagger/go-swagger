@@ -23,22 +23,27 @@ func New(transport client.Transport, formats strfmt.Registry) *Client {
 }
 
 /*
-{{ if .DocString }}{{ .DocString }}{{ else }}A Client for the {{ humanize .Name }} API.{{ end }}
+{{ if .Summary }}{{ .Summary }}{{ if .Description }}
+
+{{ .Description }}{{ end }}{{ else if .Description}}{{ .Description }}{{ else }}{{ pascalize .Name }} {{ humanize .Name }} API{{ end }}
 */
 type Client struct {
   transport client.Transport
   formats strfmt.Registry
 }
 
-{{ range .Operations }}{{ if .DocString }}{{ .DocString }}{{ end }}
-func (a *Client) {{ .ClassName }}(params {{ .ClassName }}Params) {{ if .SuccessModel }}({{ if .ReturnsComplexObject }}*{{ end }}{{ .SuccessModel }}, {{ end }}error{{ if .SuccessModel }}){{ end }} {
+{{ range .Operations }}/*{{ if .Summary }}{{ .Summary }}{{ if .Description }}
+
+{{ .Description }}{{ end }}{{ else if .Description}}{{ .Description }}{{ else }}{{ pascalize .Name }} {{ humanize .Name }} API{{ end }}
+*/
+func (a *Client) {{ pascalize .Name }}(params {{ pascalize .Name }}Params) {{ if .SuccessResponse }}{{ if .SuccessResponse.Schema }}({{ .SuccessResponse.Schema.GoType }}, {{ end }}error{{ if .SuccessResponse.Schema }}){{ end }}{{ end }} {
   // TODO: Validate the params before sending
 
-  {{ if .SuccessModel }}result{{ else }}_{{ end }}, err := a.transport.Submit({{ printf "%q" .Name }}, &params, &{{ .Name }}Reader{formats: a.formats})
+  {{ if .SuccessResponse }}result{{ else }}_{{ end }}, err := a.transport.Submit({{ printf "%q" .Name }}, &params, &{{ .Name }}Reader{formats: a.formats})
   if err != nil {
-    return {{ if .SuccessModel }}nil, {{ end }}err
+    return {{ if .SuccessResponse }}nil, {{ end }}err
   }
-  return {{ if .SuccessModel }}result.({{ if .ReturnsComplexObject }}*{{ end }}{{ .SuccessModel }}), {{ end }}nil
+  return {{ if .SuccessResponse }}{{ if .SuccessResponse.Schema }}result.({{ .SuccessResponse.Schema.GoType }}), {{ end }}{{ end }}nil
 }
 {{ end }}
 

@@ -96,10 +96,25 @@ func init() {
 	clientParamTemplate = template.Must(clientParamTemplate.New("schType").Parse(string(assetSchemaType)))
 	clientParamTemplate = template.Must(clientParamTemplate.New("body").Parse(string(assetSchemaBody)))
 	clientParamTemplate = template.Must(clientParamTemplate.New("parameter").Parse(string(assetClientParameter)))
+
 	clientResponseTemplate = template.Must(validatorTempl.Clone())
+	clientResponseTemplate = template.Must(clientResponseTemplate.New("docstring").Parse(string(assetDocString)))
+	clientResponseTemplate = template.Must(clientResponseTemplate.New("validationDocString").Parse(string(assetStuctFieldValidation)))
+	clientResponseTemplate = template.Must(clientResponseTemplate.New("schType").Parse(string(assetSchemaType)))
+	clientResponseTemplate = template.Must(clientResponseTemplate.New("body").Parse(string(assetSchemaBody)))
 	clientResponseTemplate = template.Must(clientResponseTemplate.New("response").Parse(string(assetClientResponse)))
-	clientTemplate = template.Must(template.New("client").Funcs(FuncMap).Parse(string(assetClientClient)))
-	clientFacadeTemplate = template.Must(template.New("facade").Funcs(FuncMap).Parse(string(assetClientFacade)))
+
+	clientTemplate = template.Must(template.New("docstring").Funcs(FuncMap).Parse(string(assetDocString)))
+	clientTemplate = template.Must(clientTemplate.New("validationDocString").Parse(string(assetStuctFieldValidation)))
+	clientTemplate = template.Must(clientTemplate.New("schType").Parse(string(assetSchemaType)))
+	clientTemplate = template.Must(clientTemplate.New("body").Parse(string(assetSchemaBody)))
+	clientTemplate = template.Must(clientTemplate.New("client").Parse(string(assetClientClient)))
+
+	clientFacadeTemplate = template.Must(template.New("docstring").Funcs(FuncMap).Parse(string(assetDocString)))
+	clientFacadeTemplate = template.Must(clientFacadeTemplate.New("validationDocString").Parse(string(assetStuctFieldValidation)))
+	clientFacadeTemplate = template.Must(clientFacadeTemplate.New("schType").Parse(string(assetSchemaType)))
+	clientFacadeTemplate = template.Must(clientFacadeTemplate.New("body").Parse(string(assetSchemaBody)))
+	clientFacadeTemplate = template.Must(clientFacadeTemplate.New("facade").Parse(string(assetClientFacade)))
 }
 
 func makeModelTemplate() *template.Template {

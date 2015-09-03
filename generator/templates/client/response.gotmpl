@@ -1,29 +1,29 @@
 {{ define "clientresponse" }}/*
-{{ if .Description }}{{ .Description }}{{else}}{{ .ClassName}} {{ humanize .ClassName }}{{end}}
+{{ if .Description }}{{ .Description }}{{else}}{{ pascalize .Name }} {{ humanize .Name }}{{end}}
 */
-type {{ .ClassName }} struct {
+type {{ pascalize .Name }} struct {
   {{ range .Headers }}{{if .Description }}// {{ .Description }}{{ end }}
-  {{ .PropertyName }} {{ .Type }}
+  {{ pascalize .Name }} {{ .GoType }}
   {{ end }}
-  {{ if .Type }}
-  Payload {{ if .IsComplexObject }}*{{ end }}{{.Type}}
+  {{ if .Schema }}
+  Payload {{ if .Schema.IsComplexObject }}*{{ end }}{{ .Schema.GoType }}
   {{ end }}
 }
 
-func ({{ .ReceiverName }} *{{.ClassName}}) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
+func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
   {{ range .Headers }}
-  // response header {{.ParamName}}
-  {{if .Converter}}{{ camelize .ParamName }}, err := {{.Converter}}(response.GetHeader("{{ .ParamName }}"))
+  // response header {{.Name}}
+  {{if .Converter}}{{ camelize .Name }}, err := {{.Converter}}(response.GetHeader("{{ .Name }}"))
   if err != nil {
-    return errors.InvalidType({{.Path}}, "header", "{{.Type}}", response.GetHeader("{{ .ParamName }}"))
+    return errors.InvalidType({{ .Path }}, "header", "{{ .GoType }}", response.GetHeader("{{ .Name }}"))
   }
-  {{ .ReceiverName }}.{{ pascalize .ParamName }} = {{ camelize .ParamName }}
-  {{else}}{{ .ReceiverName }}.{{ pascalize .ParamName }} = response.GetHeader("{{ .ParamName }}")
+  {{ .ReceiverName }}.{{ pascalize .Name }} = {{ camelize .Name }}
+  {{else}}{{ .ReceiverName }}.{{ pascalize .Name }} = response.GetHeader("{{ .Name }}")
   {{end}}
   {{ end }}
-  {{ if .Type }}
+  {{ if .Schema }}
   // response payload
-  if err := consumer.Consume(response.Body(), {{ if not .IsComplexObject }}&{{ end}}{{ .ReceiverName }}.Payload); err != nil {
+  if err := consumer.Consume(response.Body(), {{ if not .Schema.IsComplexObject }}&{{ end}}{{ .ReceiverName }}.Payload); err != nil {
     return err
   }
   {{ end }}
@@ -49,23 +49,23 @@ import (
   {{ end }}
 )
 
-type {{ .Name }}Reader struct {
+type {{ pascalize .Name }}Reader struct {
   formats strfmt.Registry
 }
 
-func ({{ .ReceiverName }} *{{.Name}}Reader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
   switch response.Code() {
   {{ range $key, $value := .Responses }}
     case {{ $key }}:
       var result {{ pascalize $value.Name }}
-      if err := result.readResponse(response, consumer, {{ $.Receiver }}.formats); err != nil {
+      if err := result.readResponse(response, consumer, {{ $.ReceiverName }}.formats); err != nil {
         return nil, err
       }
       return {{ if $value.IsSuccess }}&result, nil{{else}}nil, NewAPIError("{{ $value.Name }}", &result, response.Code()){{end}}
   {{end}}{{ if .DefaultResponse }}{{ with .DefaultResponse }}
     default:
-      var result {{ .ClassName }}
-      if err := result.readResponse(response, consumer, {{ $.Receiver }}.formats); err != nil {
+      var result {{ pascalize .Name }}
+      if err := result.readResponse(response, consumer, {{ $.ReceiverName }}.formats); err != nil {
         return nil, err
       }
       return {{ if .IsSuccess }}&result, nil{{else}}nil, NewAPIError("{{ .Name }}", &result, response.Code()){{end}}{{ end }}{{ end }}

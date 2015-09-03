@@ -18,70 +18,70 @@ import (
 )
 
 /*
-{{ .ClassName }}Params contains all the parameters to send to the API endpoint
-for the {{ .HumanClassName }} operation typically these are written to a http.Request
+{{ pascalize .Name }}Params contains all the parameters to send to the API endpoint
+for the {{ humanize .Name }} operation typically these are written to a http.Request
 */
-type {{.ClassName }}Params struct {
+type {{ pascalize .Name }}Params struct {
   {{ range .Params }}{{if .Description }}/*
   {{ .Description }}
   */{{ end }}
-  {{ .PropertyName }} {{ .Type }}
+  {{ pascalize .Name }} {{ .GoType }}
   {{ end }}
 }
 
 // WriteToRequest writes these params to a swagger request
-func ({{ .ReceiverName }} *{{ .ClassName }}Params) WriteToRequest(r client.Request, reg strfmt.Registry) error {
+func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r client.Request, reg strfmt.Registry) error {
 
   var res []error
   {{range .Params}}
-  {{if not .IsContainer }}
+  {{if not .IsArray }}
 
   {{ if .IsQueryParam }}
-  // query param {{.ParamName}}
-  if err := r.SetQueryParam({{ printf "%q" .ParamName }}, {{ if .Formatter }}{{ .Formatter }}({{ .ValueExpression }}){{ else }}{{ .ValueExpression }}{{end}}); err != nil {
+  // query param {{ .Name }}
+  if err := r.SetQueryParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ .ValueExpression }}){{ else }}{{ .ValueExpression }}{{end}}); err != nil {
     return err
   }
   {{ else if .IsPathParam }}
-  // path param {{.ParamName}}
-  if err := r.SetPathParam({{ printf "%q" .ParamName }}, {{ if .Formatter }}{{ .Formatter }}({{ .ValueExpression }}){{ else }}{{ .ValueExpression }}{{end}}); err != nil {
+  // path param {{ .Name }}
+  if err := r.SetPathParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ .ValueExpression }}){{ else }}{{ .ValueExpression }}{{end}}); err != nil {
     return err
   }
   {{ else if .IsHeaderParam }}
-  // header param {{.ParamName}}
-  if err := r.SetHeaderParam({{ printf "%q" .ParamName }}, {{ if .Formatter }}{{ .Formatter }}({{ .ValueExpression }}){{ else }}{{ .ValueExpression }}{{end}}); err != nil {
+  // header param {{ .Name }}
+  if err := r.SetHeaderParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ .ValueExpression }}){{ else }}{{ .ValueExpression }}{{end}}); err != nil {
     return err
   }
   {{ else if .IsFormParam }}
   {{ if .IsFileParam }}
-  // form file param {{.ParamName}}
-  if err := r.SetFileParam({{ printf "%q" .ParamName }}, {{ .ValueExpression }}); err != nil {
+  // form file param {{ .Name }}
+  if err := r.SetFileParam({{ printf "%q" .Name }}, {{ .ValueExpression }}); err != nil {
     return err
   }
   {{ else }}
-  // form param {{.ParamName}}
-  if err := r.SetFormParam({{ printf "%q" .ParamName }}, {{ if .Formatter }}{{ .Formatter }}({{ .ValueExpression }}){{ else }}{{ .ValueExpression }}{{end}}); err != nil {
+  // form param {{ .Name }}
+  if err := r.SetFormParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ .ValueExpression }}){{ else }}{{ .ValueExpression }}{{end}}); err != nil {
     return err
   }
   {{ end }}
 
   {{ end }}
 
-  {{else if .IsContainer }}
+  {{else if .IsArray }}
 
-  {{ if .Child.Formatter }}var values{{ .ParamName }} []string
+  {{ if .Child.Formatter }}var values{{ pascalize .Name }} []string
   for _, v := range {{ .ValueExpression }} {
-    values{{ .ParamName }} = append(values{{ .ParamName }}, {{ .Child.Formatter }}(v))
+    values{{ .ParamName }} = append(values{{ pascalize .Name }}, {{ .Child.Formatter }}(v))
   }
-  {{ else }}values{{ .ParamName }} := {{ .ValueExpression }}
+  {{ else }}values{{ pascalize .Name }} := {{ .ValueExpression }}
   {{ end }}
   {{ if .IsQueryParam }}
-  // query array param {{ .ParamName }}
-  if err := r.SetQueryParam({{ printf "%q" .ParamName }}, swag.JoinByFormat(values{{ .ParamName }}, "{{.CollectionFormat}}")...); err != nil {
+  // query array param {{ .Name }}
+  if err := r.SetQueryParam({{ printf "%q" .Name }}, swag.JoinByFormat(values{{ pascalize .Name }}, "{{.CollectionFormat}}")...); err != nil {
     return err
   }
   {{ else if and .IsFormParam }}
-  // form array param {{ .ParamName }}
-  if err := r.SetFormParam({{ printf "%q" .ParamName }}, swag.JoinByFormat(values{{ .ParamName }}, "{{.CollectionFormat}}")...); err != nil {
+  // form array param {{ .Name }}
+  if err := r.SetFormParam({{ printf "%q" .Name }}, swag.JoinByFormat(values{{ pascalize .Name }}, "{{.CollectionFormat}}")...); err != nil {
     return err
   }
   {{ end }}

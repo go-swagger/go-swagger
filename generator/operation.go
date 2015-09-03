@@ -236,7 +236,7 @@ func (b codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	if operation.Responses != nil {
 		for k, v := range operation.Responses.StatusCodeResponses {
 			isSuccess := k/100 == 2
-			gr, err := b.MakeResponse(receiver, swag.ToJSONName(httpkit.Statuses[k]), isSuccess, &resolver, v)
+			gr, err := b.MakeResponse(receiver, swag.ToJSONName(b.Name+" "+httpkit.Statuses[k]), isSuccess, &resolver, v)
 			if err != nil {
 				return GenOperation{}, err
 			}
@@ -250,7 +250,7 @@ func (b codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		}
 
 		if operation.Responses.Default != nil {
-			gr, err := b.MakeResponse(receiver, "default", false, &resolver, *operation.Responses.Default)
+			gr, err := b.MakeResponse(receiver, b.Name+" default", false, &resolver, *operation.Responses.Default)
 			if err != nil {
 				return GenOperation{}, err
 			}
@@ -325,6 +325,9 @@ func (b codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, re
 		if schema.IsAnonymous {
 			schema.Name = swag.ToGoName(sc.Name + " Body")
 			nm := schema.Name
+			if b.ExtraSchemas == nil {
+				b.ExtraSchemas = make(map[string]GenSchema)
+			}
 			b.ExtraSchemas[schema.Name] = schema
 			schema = GenSchema{}
 			schema.IsAnonymous = false
@@ -447,6 +450,9 @@ func (b codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver,
 			nm := schema.Name
 			schema.GoType = nm
 			schema.IsAnonymous = false
+			if b.ExtraSchemas == nil {
+				b.ExtraSchemas = make(map[string]GenSchema)
+			}
 			b.ExtraSchemas[nm] = schema
 			schema = GenSchema{}
 			schema.IsAnonymous = false
@@ -1152,7 +1158,8 @@ type GenOperationGroup struct {
 	Name       string
 	Operations []GenOperation
 
-	DocString      string
+	Summary        string
+	Description    string
 	Imports        map[string]string
 	DefaultImports []string
 }

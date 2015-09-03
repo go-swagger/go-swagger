@@ -19,17 +19,17 @@ import (
   {{ end }}
 )
 
-// New creates a new {{ humanize .AppName }} client
-func New(transport client.Transport, formats strfmt.Registry) *{{ .AppName }} {
-  cli := new({{ .AppName }})
+// New creates a new {{ humanize .Name }} client
+func New(transport client.Transport, formats strfmt.Registry) *{{ pascalize .Name }} {
+  cli := new({{ pascalize .Name }})
   {{ range .OperationGroups }}
   cli.{{ pascalize .Name }} = {{ .Name }}.New(transport, formats)
   {{ end }}
   return cli
 }
 
-// {{ .AppName }} is a client for {{ humanize .AppName }}
-type {{ .AppName }} struct {
+// {{ pascalize .Name }} is a client for {{ humanize .Name }}
+type {{ pascalize .Name }} struct {
   {{ range .OperationGroups }}
   {{ pascalize .Name }} *{{ camelize .Name }}.Client
   {{ end }}

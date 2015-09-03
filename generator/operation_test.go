@@ -72,6 +72,8 @@ func TestMakeOperation(t *testing.T) {
 			assert.NotNil(t, gO.DefaultResponse)
 			assert.NotNil(t, gO.SuccessResponse)
 		}
+
+		// TODO: validate rendering of a complex operation
 	}
 }
 
