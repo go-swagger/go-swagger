@@ -300,7 +300,8 @@ func (a *appGenerator) makeCodegenApp2() (GenApp2, error) {
 	security := a.makeSecuritySchemes()
 
 	var genMods []GenDefinition
-	defaultImports = append(defaultImports, filepath.Join(baseImport(a.Target), a.ModelsPackage))
+	importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ModelsPackage))
+	defaultImports = append(defaultImports, importPath)
 
 	for mn, m := range a.Models {
 		mod, err := makeGenDefinition(
@@ -354,7 +355,8 @@ func (a *appGenerator) makeCodegenApp2() (GenApp2, error) {
 		}
 	}
 	for k := range tns {
-		defaultImports = append(defaultImports, filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage, k))
+		importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage, k))
+		defaultImports = append(defaultImports, importPath)
 	}
 
 	defaultConsumes := "application/json"
