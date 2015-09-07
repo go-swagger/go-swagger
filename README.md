@@ -30,25 +30,32 @@ The implementation also provides a number of command line tools to help working 
 
 Currently there is a spec validator tool:
 
-    swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
+		swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
 
 To generate a server for a swagger spec document:
 
-    swagger generate server [-f ./swagger.json] -A [application-name] [--principal [principal-name]]
+		swagger generate server [-f ./swagger.json] -A [application-name [--principal [principal-name]]
+
+To generate a client for a swagger spec document:
+
+		swagger generate client [-f ./swagger.json] -A [application-name [--principal [principal-name]]
 
 To generate a swagger spec document for a go application:
 
-    swagger generate spec -o ./swagger.json
+		swagger generate spec -o ./swagger.json
 
 There are several other sub commands available for the generate command
 
-Sub command | Description
-------------|----------------------------------------------------------------------------------
-operation   | generates one or more operations specified in the swagger definition
-model       | generates model files for one or more models specified in the swagger definition
-support     | generates the api builder and the main method
-server      | generates an entire server application
+		Sub command | Description
+		------------|----------------------------------------------------------------------------------
+		operation   | generates one or more operations specified in the swagger definition
+		model       | generates model files for one or more models specified in the swagger definition
+		support     | generates the api builder and the main method
+		server      | generates an entire server application
+		client      | generates a client for a swagger specification
+		spec        | generates a swagger spec document based on go code
 
+    
 Design
 ------
 

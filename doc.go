@@ -28,6 +28,10 @@ To generate a server for a swagger spec document:
 
 		swagger generate server [-f ./swagger.json] -A [application-name [--principal [principal-name]]
 
+To generate a client for a swagger spec document:
+
+		swagger generate client [-f ./swagger.json] -A [application-name [--principal [principal-name]]
+
 To generate a swagger spec document for a go application:
 
 		swagger generate spec -o ./swagger.json
@@ -40,6 +44,7 @@ There are several other sub commands available for the generate command
 		model       | generates model files for one or more models specified in the swagger definition
 		support     | generates the api builder and the main method
 		server      | generates an entire server application
+		client      | generates a client for a swagger specification
 		spec        | generates a swagger spec document based on go code
 
 
