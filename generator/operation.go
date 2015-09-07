@@ -377,7 +377,7 @@ func (b codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) Gen
 	}
 }
 
-func (b codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, valueExpression string, resolver *typeResolver, items, parent *spec.Items) (GenItems, error) {
+func (b codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path, valueExpression string, resolver *typeResolver, items, parent *spec.Items) (GenItems, error) {
 	var res GenItems
 	res.resolvedType = simpleResolvedType(items.Type, items.Format, items.Items)
 	res.sharedValidations = sharedValidations{
@@ -394,12 +394,14 @@ func (b codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, value
 		MultipleOf:       items.MultipleOf,
 		Enum:             items.Enum,
 	}
+	res.Name = paramName
+	res.ValueExpression = valueExpression
 	res.CollectionFormat = items.CollectionFormat
 	res.Converter = stringConverters[res.GoType]
 	res.Formatter = stringFormatters[res.GoType]
 
 	if items.Items != nil {
-		pi, err := b.MakeParameterItem(receiver, paramName, indexVar+"i", valueExpression+"["+indexVar+"]", resolver, items.Items, items)
+		pi, err := b.MakeParameterItem(receiver, paramName+" "+indexVar, indexVar+"i", "fmt.Sprintf(\"%s.%v\", "+path+", "+indexVar+")", valueExpression+"["+indexVar+"]", resolver, items.Items, items)
 		if err != nil {
 			return GenItems{}, err
 		}
@@ -483,7 +485,7 @@ func (b codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver,
 		}
 
 		if param.Items != nil {
-			pi, err := b.MakeParameterItem(receiver, param.Name, res.IndexVar+"i", res.ValueExpression+"["+res.IndexVar+"]", resolver, param.Items, nil)
+			pi, err := b.MakeParameterItem(receiver, param.Name+" "+res.IndexVar, res.IndexVar+"i", "fmt.Sprintf(\"%s.%v\", "+res.Path+", "+res.IndexVar+")", res.ValueExpression+"["+res.IndexVar+"]", resolver, param.Items, nil)
 			if err != nil {
 				return GenParameter{}, err
 			}
@@ -1144,6 +1146,9 @@ type GenItems struct {
 	sharedValidations
 	resolvedType
 
+	Name             string
+	Path             string
+	ValueExpression  string
 	CollectionFormat string
 	Child            *GenItems
 	Parent           *GenItems

@@ -12,51 +12,51 @@ import (
   "github.com/go-swagger/go-swagger/httpkit/middleware"
   "github.com/go-swagger/go-swagger/httpkit/security"
 
-  {{range .DefaultImports}}{{printf "%q" .}}
-  {{end}}
-  {{range $key, $value := .Imports}}{{$key}} {{ printf "%q" $value}}
-  {{end}}
+  {{ range .DefaultImports }}{{ printf "%q" . }}
+  {{ end }}
+  {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
+  {{ end }}
 )
 
-// New{{.AppName}}API creates a new {{.AppName}} instance
-func New{{.AppName}}API(spec *spec.Document) *{{.AppName}}API {
-  {{.ReceiverName}} := &{{.AppName}}API{
+// New{{ pascalize .Name }}API creates a new {{ pascalize .Name }} instance
+func New{{ pascalize .Name }}API(spec *spec.Document) *{{ pascalize .Name }}API {
+  {{.ReceiverName}} := &{{ pascalize .Name }}API{
     spec:     spec,
     handlers: make(map[string]http.Handler),
     formats:  strfmt.Default,
-    defaultConsumes: "{{.DefaultConsumes}}",
-    defaultProduces: "{{.DefaultProduces}}",
+    defaultConsumes: "{{ .DefaultConsumes }}",
+    defaultProduces: "{{ .DefaultProduces }}",
   }
 
   return {{.ReceiverName}}
 }
 
-// {{.AppName}}API {{.Info.Description}}
-type {{.AppName}}API struct {
+/* {{ pascalize .Name }}API {{.Info.Description}} */
+type {{ pascalize .Name }}API struct {
   spec            *spec.Document
   context         *middleware.Context
   handlers        map[string]http.Handler
   formats         strfmt.Registry
   defaultConsumes string
   defaultProduces string
-  {{range .Consumes}}// {{.ClassName}}Consumer registers a consumer for a "{{.MediaType}}" mime type
-  {{.ClassName}}Consumer httpkit.Consumer
+  {{range .Consumes}}// {{ pascalize .Name }}Consumer registers a consumer for a "{{ .MediaType }}" mime type
+  {{ pascalize .Name }}Consumer httpkit.Consumer
   {{end}}
-  {{range .Produces}}// {{.ClassName}}Producer registers a producer for a "{{.MediaType}}" mime type
-  {{.ClassName}}Producer httpkit.Producer
+  {{range .Produces}}// {{ pascalize .Name }}Producer registers a producer for a "{{ .MediaType }}" mime type
+  {{ pascalize .Name }}Producer httpkit.Producer
   {{end}}
   {{range .SecurityDefinitions}}
-  {{if .IsBasicAuth}}// {{.ClassName}}Auth registers a function that takes username and password and returns a principal
+  {{if .IsBasicAuth}}// {{ pascalize .Name }}Auth registers a function that takes username and password and returns a principal
   // it performs authentication with basic auth
-  {{.ClassName}}Auth func(string, string) (*{{.Principal}}, error)
-  {{end}}{{if .IsAPIKeyAuth}}// {{.ClassName}}Auth registers a function that takes a token and returns a principal
-  // it performs authentication based on an api key {{.Name}} provided in the {{.Source}}
-  {{.ClassName}}Auth func(string) (*{{.Principal}}, error)
+  {{ pascalize .Name }}Auth func(string, string) (*{{ .Principal }}, error)
+  {{end}}{{if .IsAPIKeyAuth}}// {{ pascalize .Name }}Auth registers a function that takes a token and returns a principal
+  // it performs authentication based on an api key {{ .Name }} provided in the {{.Source}}
+  {{ pascalize .Name }}Auth func(string) (*{{ .Principal }}, error)
   {{end}}
   {{end}}
-  {{range .Operations}}// {{.ClassName}}Handler sets the operation handler for the {{.HumanClassName}} operation
-  {{if .Package}}{{.ClassName}}Handler {{.Package}}.{{.ClassName}}Handler
-  {{else}}{{.ClassName}}Handler {{.ClassName}}Handler
+  {{range .Operations}}// {{ pascalize .Name }}Handler sets the operation handler for the {{.HumanClassName}} operation
+  {{if .Package}}{{ pascalize .Name }}Handler {{.Package}}.{{ pascalize .Name }}Handler
+  {{else}}{{ pascalize .Name }}Handler {{ pascalize .Name }}Handler
   {{end}}
   {{end}}
   // ServeError is called when an error is received, there is a default handler
@@ -65,56 +65,56 @@ type {{.AppName}}API struct {
 }
 
 // SetDefaultProduces sets the default produces media type
-func ({{.ReceiverName}} *{{.AppName}}API) SetDefaultProduces(mediaType string) {
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) SetDefaultProduces(mediaType string) {
 	{{.ReceiverName}}.defaultProduces = mediaType
 }
 
 // SetDefaultConsumes returns the default consumes media type
-func ({{.ReceiverName}} *{{.AppName}}API) SetDefaultConsumes(mediaType string) {
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) SetDefaultConsumes(mediaType string) {
 	{{.ReceiverName}}.defaultConsumes = mediaType
 }
 
 // DefaultProduces returns the default produces media type
-func ({{.ReceiverName}} *{{.AppName}}API) DefaultProduces() string {
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) DefaultProduces() string {
 	return {{.ReceiverName}}.defaultProduces
 }
 
 // DefaultConsumes returns the default consumes media type
-func ({{.ReceiverName}} *{{.AppName}}API) DefaultConsumes() string {
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) DefaultConsumes() string {
 	return {{.ReceiverName}}.defaultConsumes
 }
 
 // Formats returns the registered string formats
-func ({{.ReceiverName}} *{{.AppName}}API) Formats() strfmt.Registry {
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) Formats() strfmt.Registry {
 	return {{.ReceiverName}}.formats
 }
 
 // RegisterFormat registers a custom format validator
-func ({{.ReceiverName}} *{{.AppName}}API) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
   {{.ReceiverName}}.formats.Add(name, format, validator)
 }
 
-// Validate validates the registrations in the {{.AppName}}API
-func ({{.ReceiverName}} *{{.AppName}}API) Validate() error {
+// Validate validates the registrations in the {{ pascalize .Name }}API
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) Validate() error {
   var unregistered []string
   {{range .Consumes}}
-  if {{.ReceiverName}}.{{.ClassName}}Consumer == nil {
-    unregistered = append(unregistered, "{{.ClassName}}Consumer")
+  if {{.ReceiverName}}.{{ pascalize .Name }}Consumer == nil {
+    unregistered = append(unregistered, "{{ pascalize .Name }}Consumer")
   }
   {{end}}
   {{range .Produces}}
-  if {{.ReceiverName}}.{{.ClassName}}Producer == nil {
-    unregistered = append(unregistered, "{{.ClassName}}Producer")
+  if {{.ReceiverName}}.{{ pascalize .Name }}Producer == nil {
+    unregistered = append(unregistered, "{{ pascalize .Name }}Producer")
   }
   {{end}}
   {{range .SecurityDefinitions}}
-  if {{.ReceiverName}}.{{.ClassName}}Auth == nil {
-    unregistered = append(unregistered, "{{.ClassName}}Auth")
+  if {{.ReceiverName}}.{{ pascalize .Name }}Auth == nil {
+    unregistered = append(unregistered, "{{ pascalize .Name }}Auth")
   }
   {{end}}
   {{range .Operations}}
-  if {{.ReceiverName}}.{{.ClassName}}Handler == nil {
-    unregistered = append(unregistered, "{{.ClassName}}Handler")
+  if {{.ReceiverName}}.{{ pascalize .Name }}Handler == nil {
+    unregistered = append(unregistered, "{{ pascalize .Name }}Handler")
   }
   {{end}}
 
@@ -125,19 +125,19 @@ func ({{.ReceiverName}} *{{.AppName}}API) Validate() error {
   return nil
 }
 // ServeErrorFor gets a error handler for a given operation id
-func ({{.ReceiverName}} *{{.AppName}}API) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
   return {{.ReceiverName}}.ServeError
 }
 // AuthenticatorsFor gets the authenticators for the specified security schemes
-func ({{.ReceiverName}} *{{.AppName}}API) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]httpkit.Authenticator {
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]httpkit.Authenticator {
   {{if .SecurityDefinitions}}
   result := make(map[string]httpkit.Authenticator)
   for name, scheme := range schemes {
     switch name {
       {{range .SecurityDefinitions}}
       case "{{.Name}}":
-        {{if .IsBasicAuth}}result[name] = security.BasicAuth(func (u, p string) (interface{}, error) { return {{.ReceiverName}}.{{.ClassName}}Auth(u, p)}){{end}}
-        {{if .IsAPIKeyAuth}}result[name] = security.APIKeyAuth(scheme.Name, scheme.In, func(tok string) (interface{}, error) { return {{.ReceiverName}}.{{.ClassName}}Auth(tok) }){{end}}
+        {{if .IsBasicAuth}}result[name] = security.BasicAuth(func (u, p string) (interface{}, error) { return {{.ReceiverName}}.{{ pascalize .Name }}Auth(u, p)}){{end}}
+        {{if .IsAPIKeyAuth}}result[name] = security.APIKeyAuth(scheme.Name, scheme.In, func(tok string) (interface{}, error) { return {{.ReceiverName}}.{{ pascalize .Name }}Auth(tok) }){{end}}
       {{end}}
     }
   }
@@ -148,15 +148,15 @@ func ({{.ReceiverName}} *{{.AppName}}API) AuthenticatorsFor(schemes map[string]s
 }
 
 // ConsumersFor gets the consumers for the specified media types
-func ({{.ReceiverName}} *{{.AppName}}API) ConsumersFor(mediaTypes []string) map[string]httpkit.Consumer {
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) ConsumersFor(mediaTypes []string) map[string]httpkit.Consumer {
   {{if .Consumes}}
   result := make(map[string]httpkit.Consumer)
   for _, mt := range mediaTypes {
     switch mt {
       {{range .Consumes}}
       {{range .AllSerializers}}
-      case "{{.MediaType}}":
-        result["{{.MediaType}}"] = {{.ReceiverName}}.{{.ClassName}}Consumer
+      case "{{ .MediaType }}":
+        result["{{ .MediaType }}"] = {{.ReceiverName}}.{{ pascalize .Name }}Consumer
       {{end}}
       {{end}}
     }
@@ -168,15 +168,15 @@ func ({{.ReceiverName}} *{{.AppName}}API) ConsumersFor(mediaTypes []string) map[
 }
 
 // ProducersFor gets the producers for the specified media types
-func ({{.ReceiverName}} *{{.AppName}}API) ProducersFor(mediaTypes []string) map[string]httpkit.Producer {
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) ProducersFor(mediaTypes []string) map[string]httpkit.Producer {
   {{if.Produces}}
   result := make(map[string]httpkit.Producer)
   for _, mt := range mediaTypes {
     switch mt {
       {{range .Produces}}
       {{range .AllSerializers}}
-      case "{{.MediaType}}":
-        result["{{.MediaType}}"] = {{.ReceiverName}}.{{.ClassName}}Producer
+      case "{{ .MediaType }}":
+        result["{{ .MediaType }}"] = {{.ReceiverName}}.{{ pascalize .Name }}Producer
       {{end}}
       {{end}}
     }
@@ -188,7 +188,7 @@ func ({{.ReceiverName}} *{{.AppName}}API) ProducersFor(mediaTypes []string) map[
 }
 
 // HandlerFor gets a http.Handler for the provided operation id
-func ({{.ReceiverName}} *{{.AppName}}API) HandlerFor(operationID string) (http.Handler, bool) {
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) HandlerFor(operationID string) (http.Handler, bool) {
   if {{.ReceiverName}}.handlers == nil {
     return nil, false
   }
@@ -196,7 +196,7 @@ func ({{.ReceiverName}} *{{.AppName}}API) HandlerFor(operationID string) (http.H
   return h, ok
 }
 
-func ({{.ReceiverName}} *{{.AppName}}API) initHandlerCache() {
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) initHandlerCache() {
   if {{.ReceiverName}}.context == nil {
     {{.ReceiverName}}.context = middleware.NewRoutableContext({{.ReceiverName}}.spec, {{.ReceiverName}}, nil)
   }
@@ -204,9 +204,9 @@ func ({{.ReceiverName}} *{{.AppName}}API) initHandlerCache() {
   {{.ReceiverName}}.handlers = make(map[string]http.Handler)
   {{range .Operations}}
   {{if .Package}}
-  {{.ReceiverName}}.handlers["{{.Name}}"] = {{.Package}}.New{{.ClassName}}({{.ReceiverName}}.context, {{.ReceiverName}}.{{.ClassName}}Handler)
+  {{.ReceiverName}}.handlers["{{.Name}}"] = {{.Package}}.New{{ pascalize .Name }}({{.ReceiverName}}.context, {{.ReceiverName}}.{{ pascalize .Name }}Handler)
   {{else}}
-  {{.ReceiverName}}.handlers["{{.Name}}"] = New{{.ClassName}}({{.ReceiverName}}.context, {{.ReceiverName}}.{{.ClassName}}Handler)
+  {{.ReceiverName}}.handlers["{{.Name}}"] = New{{ pascalize .Name }}({{.ReceiverName}}.context, {{.ReceiverName}}.{{ pascalize .Name }}Handler)
   {{end}}
   {{end}}
   {{end}}
@@ -214,7 +214,7 @@ func ({{.ReceiverName}} *{{.AppName}}API) initHandlerCache() {
 
 // Serve creates a http handler to serve the API over HTTP
 // can be used directly in http.ListenAndServe(":8000", api.Serve())
-func ({{.ReceiverName}} *{{.AppName}}API) Serve() http.Handler {
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) Serve() http.Handler {
   if len({{.ReceiverName}}.handlers) == 0 {
     {{.ReceiverName}}.initHandlerCache()
   }

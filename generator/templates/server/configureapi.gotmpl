@@ -10,37 +10,37 @@ import (
   {{end}}
 )
 
-// This file is safe to edit. Once it exists it won't be overwritten
+// This file is safe to edit. Once it exists it will not be overwritten
 
-func configureAPI(api *{{.Package}}.{{.AppName}}API) {
+func configureAPI(api *{{.Package}}.{{ pascalize .Name }}API) {
   // configure the api here
   api.ServeError = errors.ServeError
 
-  {{range .Consumes}}{{if .Implementation}}api.{{.ClassName}}Consumer = {{.Implementation}}()
-  {{else}}api.{{.ClassName}}Consumer = httpkit.ConsumerFunc(func(r io.Reader, target interface{}) error {
+  {{ range .Consumes }}{{ if .Implementation }}api.{{ pascalize .Name }}Consumer = {{ .Implementation }}()
+  {{else}}api.{{ pascalize .Name }}Consumer = httpkit.ConsumerFunc(func(r io.Reader, target interface{}) error {
     return errors.NotImplemented("{{.Name}} consumer has not yet been implemented")
   }){{end}}
   {{end}}
-  {{range .Produces}}{{if .Implementation}}api.{{.ClassName}}Producer = {{.Implementation}}()
-  {{else}}api.{{.ClassName}}Producer = httpkit.ProducerFunc(func(w io.Writer, data interface{}) error {
+  {{ range .Produces }}{{ if .Implementation }}api.{{ pascalize .Name }}Producer = {{ .Implementation }}()
+  {{else}}api.{{ pascalize .Name }}Producer = httpkit.ProducerFunc(func(w io.Writer, data interface{}) error {
     return errors.NotImplemented("{{.Name}} producer has not yet been implemented")
   }){{end}}
   {{end}}
   {{range .SecurityDefinitions}}
   {{if .IsBasicAuth}}
-  api.{{.ClassName}}Auth = func(user string, pass string) (*{{.Principal}}, error) {
+  api.{{ pascalize .Name }}Auth = func(user string, pass string) (*{{.Principal}}, error) {
     return nil, errors.NotImplemented("basic auth has not yet been implemented")
   }
   {{end}}{{if .IsAPIKeyAuth}}
-  api.{{.ClassName}}Auth = func(token string) (*{{.Principal}}, error) {
+  api.{{ pascalize .Name }}Auth = func(token string) (*{{.Principal}}, error) {
     return nil, errors.NotImplemented("api key auth {{.Name}} from {{.Source}} has not yet been implemented")
   }
   {{end}}
   {{end}}
-  {{range .Operations}}{{if .Package}}api.{{.ClassName}}Handler = {{.Package}}.{{.ClassName}}HandlerFunc(func({{if .Params}}params {{.Package}}.{{.ClassName}}Params{{end}}{{if and .Authorized .Params}}, {{end}}{{if .Authorized}}principal *{{.Principal}}{{end}}) ({{if .SuccessModel}}{{if .ReturnsComplexObject}}*{{end}}{{.SuccessModel}}, {{end}}error) {
+  {{range .Operations}}{{if .Package}}api.{{ pascalize .Name }}Handler = {{.Package}}.{{ pascalize .Name }}HandlerFunc(func({{if .Params}}params {{.Package}}.{{ pascalize .Name }}Params{{end}}{{if and .Authorized .Params}}, {{end}}{{if .Authorized}}principal *{{.Principal}}{{end}}) ({{if .SuccessModel}}{{if .ReturnsComplexObject}}*{{end}}{{.SuccessModel}}, {{end}}error) {
     return {{if .SuccessModel}}{{.SuccessZero}}, {{end}}errors.NotImplemented("operation {{.Name}} has not yet been implemented")
   })
-  {{else}}api.{{.ClassName}}Handler = {{.ClassName}}HandlerFunc(func({{if .Params}}params {{.ClassName}}Params{{end}}{{if and .Authorized .Params}}, {{end}}{{if .Authorized}}principal *{{.Principal}}{{end}}) ({{if .SuccessModel}}{{if .ReturnsComplexObject}}*{{end}}{{.SuccessModel}}, {{end}}error) {
+  {{else}}api.{{ pascalize .Name }}Handler = {{ pascalize .Name }}HandlerFunc(func({{if .Params}}params {{ pascalize .Name }}Params{{end}}{{if and .Authorized .Params}}, {{end}}{{if .Authorized}}principal *{{.Principal}}{{end}}) ({{if .SuccessModel}}{{if .ReturnsComplexObject}}*{{end}}{{.SuccessModel}}, {{end}}error) {
     return {{if .SuccessModel}}{{.SuccessZero}}, {{end}}errors.NotImplemented("operation {{.Name}} has not yet been implemented")
   })
   {{end}}
