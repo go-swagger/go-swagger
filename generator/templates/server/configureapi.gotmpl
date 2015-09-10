@@ -37,11 +37,11 @@ func configureAPI(api *{{.Package}}.{{ pascalize .Name }}API) {
   }
   {{end}}
   {{end}}
-  {{range .Operations}}{{if .Package}}api.{{ pascalize .Name }}Handler = {{.Package}}.{{ pascalize .Name }}HandlerFunc(func({{if .Params}}params {{.Package}}.{{ pascalize .Name }}Params{{end}}{{if and .Authorized .Params}}, {{end}}{{if .Authorized}}principal *{{.Principal}}{{end}}) ({{if .SuccessModel}}{{if .ReturnsComplexObject}}*{{end}}{{.SuccessModel}}, {{end}}error) {
-    return {{if .SuccessModel}}{{.SuccessZero}}, {{end}}errors.NotImplemented("operation {{.Name}} has not yet been implemented")
+  {{range .Operations}}{{if .Package}}api.{{ pascalize .Name }}Handler = {{.Package}}.{{ pascalize .Name }}HandlerFunc(func({{if .Params}}params {{.Package}}.{{ pascalize .Name }}Params{{end}}{{if and .Authorized .Params}}, {{end}}{{if .Authorized}}principal *{{.Principal}}{{end}}) ({{if .SuccessResponse }}{{if .SuccessResponse.Schema }}*{{.SuccessResponse.Schema.GoType}}, {{end}}{{end}}error) {
+    return {{if .SuccessResponse }}nil, {{end}}errors.NotImplemented("operation {{.Name}} has not yet been implemented")
   })
-  {{else}}api.{{ pascalize .Name }}Handler = {{ pascalize .Name }}HandlerFunc(func({{if .Params}}params {{ pascalize .Name }}Params{{end}}{{if and .Authorized .Params}}, {{end}}{{if .Authorized}}principal *{{.Principal}}{{end}}) ({{if .SuccessModel}}{{if .ReturnsComplexObject}}*{{end}}{{.SuccessModel}}, {{end}}error) {
-    return {{if .SuccessModel}}{{.SuccessZero}}, {{end}}errors.NotImplemented("operation {{.Name}} has not yet been implemented")
+  {{else}}api.{{ pascalize .Name }}Handler = {{ pascalize .Name }}HandlerFunc(func({{if .Params}}params {{ pascalize .Name }}Params{{end}}{{if and .Authorized .Params}}, {{end}}{{if .Authorized}}principal *{{.Principal}}{{end}}) ({{if .SuccessResponse }}{{if .SuccessResponse.Schema }}*{{.SuccessResponse.Schema.GoType}}, {{ end }}{{end}}error) {
+    return {{if .SuccessResponse }}nil, {{end}}errors.NotImplemented("operation {{.Name}} has not yet been implemented")
   })
   {{end}}
   {{end}}

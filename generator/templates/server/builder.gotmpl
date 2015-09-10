@@ -54,7 +54,7 @@ type {{ pascalize .Name }}API struct {
   {{ pascalize .Name }}Auth func(string) (*{{ .Principal }}, error)
   {{end}}
   {{end}}
-  {{range .Operations}}// {{ pascalize .Name }}Handler sets the operation handler for the {{.HumanClassName}} operation
+  {{range .Operations}}// {{ pascalize .Name }}Handler sets the operation handler for the {{ humanize .Name }} operation
   {{if .Package}}{{ pascalize .Name }}Handler {{.Package}}.{{ pascalize .Name }}Handler
   {{else}}{{ pascalize .Name }}Handler {{ pascalize .Name }}Handler
   {{end}}
