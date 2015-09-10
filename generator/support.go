@@ -287,13 +287,13 @@ func (a *appGenerator) makeSecuritySchemes() (security []GenSecurityScheme) {
 	return
 }
 
-func (a *appGenerator) makeCodegenApp2() (GenApp2, error) {
+func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	sw := a.SpecDoc.Spec()
 	receiver := a.Receiver
 
 	var defaultImports []string
 
-	jsonb, _ := json.MarshalIndent(a.SpecDoc.Spec(), "", "  ")
+	jsonb, _ := json.MarshalIndent(sw, "", "  ")
 
 	consumes, consumesJSON := a.makeConsumes()
 	produces, producesJSON := a.makeProduces()
@@ -311,7 +311,7 @@ func (a *appGenerator) makeCodegenApp2() (GenApp2, error) {
 			a.SpecDoc,
 		)
 		if err != nil {
-			return GenApp2{}, err
+			return GenApp{}, err
 		}
 		mod.ReceiverName = receiver
 		genMods = append(genMods, *mod)
@@ -339,108 +339,6 @@ func (a *appGenerator) makeCodegenApp2() (GenApp2, error) {
 				bldr.APIPackage = tag
 				op, err := bldr.MakeOperation()
 				if err != nil {
-					return GenApp2{}, err
-				}
-				op.ReceiverName = receiver
-				genOps = append(genOps, op)
-			}
-		} else {
-			bldr.APIPackage = ap
-			op, err := bldr.MakeOperation()
-			if err != nil {
-				return GenApp2{}, err
-			}
-			op.ReceiverName = receiver
-			genOps = append(genOps, op)
-		}
-	}
-	for k := range tns {
-		importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage, k))
-		defaultImports = append(defaultImports, importPath)
-	}
-
-	defaultConsumes := "application/json"
-	rc := a.SpecDoc.RequiredConsumes()
-	if !consumesJSON && len(rc) > 0 {
-		defaultConsumes = rc[0]
-	}
-
-	defaultProduces := "application/json"
-	rp := a.SpecDoc.RequiredProduces()
-	if !producesJSON && len(rp) > 0 {
-		defaultProduces = rp[0]
-	}
-
-	return GenApp2{
-		Package:             a.Package,
-		ReceiverName:        receiver,
-		Name:                a.Name,
-		ExternalDocs:        sw.ExternalDocs,
-		Info:                sw.Info,
-		Consumes:            consumes,
-		Produces:            produces,
-		DefaultConsumes:     defaultConsumes,
-		DefaultProduces:     defaultProduces,
-		DefaultImports:      defaultImports,
-		SecurityDefinitions: security,
-		Models:              genMods,
-		Operations:          genOps,
-		Principal:           a.Principal,
-		SwaggerJSON:         fmt.Sprintf("%#v", jsonb),
-	}, nil
-}
-
-func (a *appGenerator) makeCodegenApp() (GenApp, error) {
-	sw := a.SpecDoc.Spec()
-	receiver := a.Receiver
-
-	var defaultImports []string
-
-	jsonb, _ := json.MarshalIndent(a.SpecDoc.Spec(), "", "  ")
-
-	consumes, consumesJSON := a.makeConsumes()
-	produces, producesJSON := a.makeProduces()
-	security := a.makeSecuritySchemes()
-
-	var genMods []GenDefinition
-	importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ModelsPackage))
-	defaultImports = append(defaultImports, importPath)
-	for mn, m := range a.Models {
-		mod, err := makeGenDefinition(
-			mn,
-			a.ModelsPackage,
-			m,
-			a.SpecDoc,
-		)
-		if err != nil {
-			return GenApp{}, err
-		}
-		mod.ReceiverName = receiver
-		genMods = append(genMods, *mod)
-	}
-
-	var genOps []genOperation
-	tns := make(map[string]struct{})
-	var bldr codeGenOpBuilder
-	bldr.ModelsPackage = a.ModelsPackage
-	bldr.Principal = a.Principal
-	bldr.Target = a.Target
-	bldr.Doc = a.SpecDoc
-
-	for on, o := range a.Operations {
-		bldr.Name = on
-		bldr.Operation = o
-		bldr.Authed = len(a.SpecDoc.SecurityRequirementsFor(&o)) > 0
-		ap := a.APIPackage
-		if a.APIPackage == a.Package {
-			ap = ""
-		}
-		if len(o.Tags) > 0 {
-			for _, tag := range o.Tags {
-				tns[tag] = struct{}{}
-				bldr.APIPackage = tag
-				op, err := makeCodegenOperation(bldr)
-				if err != nil {
 					return GenApp{}, err
 				}
 				op.ReceiverName = receiver
@@ -448,7 +346,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			}
 		} else {
 			bldr.APIPackage = ap
-			op, err := makeCodegenOperation(bldr)
+			op, err := bldr.MakeOperation()
 			if err != nil {
 				return GenApp{}, err
 			}
@@ -492,28 +390,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	}, nil
 }
 
-// GenApp2 represents all the meta data needed to generate an application
-// from a swagger spec
-type GenApp2 struct {
-	Package             string
-	ReceiverName        string
-	Name                string
-	Principal           string
-	DefaultConsumes     string
-	DefaultProduces     string
-	Info                *spec.Info
-	ExternalDocs        *spec.ExternalDocumentation
-	Imports             map[string]string
-	DefaultImports      []string
-	Consumes            []GenSerGroup
-	Produces            []GenSerGroup
-	SecurityDefinitions []GenSecurityScheme
-	Models              []GenDefinition
-	Operations          []GenOperation
-	OperationGroups     []GenOperationGroup
-	SwaggerJSON         string
-}
-
 // GenApp represents all the meta data needed to generate an application
 // from a swagger spec
 type GenApp struct {
@@ -531,8 +407,8 @@ type GenApp struct {
 	Produces            []GenSerGroup
 	SecurityDefinitions []GenSecurityScheme
 	Models              []GenDefinition
-	Operations          []genOperation
-	OperationGroups     []genOperationGroup
+	Operations          []GenOperation
+	OperationGroups     []GenOperationGroup
 	SwaggerJSON         string
 }
 

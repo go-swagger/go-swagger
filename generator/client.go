@@ -46,8 +46,8 @@ type clientGenerator struct {
 }
 
 func (c *clientGenerator) Generate() error {
-	app, err := c.makeCodegenApp2()
-	app.DefaultImports = []string{filepath.Join(baseImport(c.Target), c.ModelsPackage)}
+	app, err := c.makeCodegenApp()
+	app.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ModelsPackage))}
 	if err != nil {
 		return err
 	}
@@ -60,11 +60,11 @@ func (c *clientGenerator) Generate() error {
 
 	opsGroupedByTag := make(map[string][]GenOperation)
 	for _, operation := range app.Operations {
-		if err := c.generateParameters2(&operation); err != nil {
+		if err := c.generateParameters(&operation); err != nil {
 			return err
 		}
 
-		if err := c.generateResponses2(&operation); err != nil {
+		if err := c.generateResponses(&operation); err != nil {
 			return err
 		}
 		opsGroupedByTag[operation.Package] = append(opsGroupedByTag[operation.Package], operation)
@@ -74,23 +74,23 @@ func (c *clientGenerator) Generate() error {
 		opGroup := GenOperationGroup{
 			Name:           k,
 			Operations:     v,
-			DefaultImports: []string{filepath.Join(baseImport(c.Target), c.ModelsPackage)},
+			DefaultImports: []string{filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ModelsPackage))},
 		}
 		app.OperationGroups = append(app.OperationGroups, opGroup)
-		app.DefaultImports = append(app.DefaultImports, filepath.Join(baseImport(c.Target), c.ClientPackage, k))
-		if err := c.generateGroupClient2(opGroup); err != nil {
+		app.DefaultImports = append(app.DefaultImports, filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ClientPackage, k)))
+		if err := c.generateGroupClient(opGroup); err != nil {
 			return err
 		}
 	}
 
-	if err := c.generateFacade2(&app); err != nil {
+	if err := c.generateFacade(&app); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *clientGenerator) generateParameters2(op *GenOperation) error {
+func (c *clientGenerator) generateParameters(op *GenOperation) error {
 	buf := bytes.NewBuffer(nil)
 
 	if err := clientParamTemplate.Execute(buf, op); err != nil {
@@ -105,22 +105,7 @@ func (c *clientGenerator) generateParameters2(op *GenOperation) error {
 	return writeToFile(fp, swag.ToGoName(op.Name)+"Parameters", buf.Bytes())
 }
 
-func (c *clientGenerator) generateParameters(op *genOperation) error {
-	buf := bytes.NewBuffer(nil)
-
-	if err := clientParamTemplate.Execute(buf, op); err != nil {
-		return err
-	}
-	log.Println("rendered client parameters template:", op.Package+"."+op.ClassName+"Parameters")
-
-	fp := filepath.Join(c.ClientPackage, c.Target)
-	if len(op.Package) > 0 {
-		fp = filepath.Join(fp, op.Package)
-	}
-	return writeToFile(fp, op.ClassName+"Parameters", buf.Bytes())
-}
-
-func (c *clientGenerator) generateResponses2(op *GenOperation) error {
+func (c *clientGenerator) generateResponses(op *GenOperation) error {
 	buf := bytes.NewBuffer(nil)
 
 	if err := clientResponseTemplate.Execute(buf, op); err != nil {
@@ -135,22 +120,7 @@ func (c *clientGenerator) generateResponses2(op *GenOperation) error {
 	return writeToFile(fp, swag.ToGoName(op.Name)+"Responses", buf.Bytes())
 }
 
-func (c *clientGenerator) generateResponses(op *genOperation) error {
-	buf := bytes.NewBuffer(nil)
-
-	if err := clientResponseTemplate.Execute(buf, op); err != nil {
-		return err
-	}
-	log.Println("rendered client responses template:", op.Package+"."+op.ClassName+"Responses")
-
-	fp := filepath.Join(c.ClientPackage, c.Target)
-	if len(op.Package) > 0 {
-		fp = filepath.Join(fp, op.Package)
-	}
-	return writeToFile(fp, op.ClassName+"Responses", buf.Bytes())
-}
-
-func (c *clientGenerator) generateGroupClient2(opGroup GenOperationGroup) error {
+func (c *clientGenerator) generateGroupClient(opGroup GenOperationGroup) error {
 	buf := bytes.NewBuffer(nil)
 
 	if err := clientTemplate.Execute(buf, opGroup); err != nil {
@@ -160,30 +130,6 @@ func (c *clientGenerator) generateGroupClient2(opGroup GenOperationGroup) error 
 
 	fp := filepath.Join(c.ClientPackage, c.Target, opGroup.Name)
 	return writeToFile(fp, swag.ToGoName(opGroup.Name)+"Client", buf.Bytes())
-}
-
-func (c *clientGenerator) generateGroupClient(opGroup genOperationGroup) error {
-	buf := bytes.NewBuffer(nil)
-
-	if err := clientTemplate.Execute(buf, opGroup); err != nil {
-		return err
-	}
-	log.Println("rendered operation group client template:", opGroup.Name+"."+swag.ToGoName(opGroup.Name)+"Client")
-
-	fp := filepath.Join(c.ClientPackage, c.Target, opGroup.Name)
-	return writeToFile(fp, swag.ToGoName(opGroup.Name)+"Client", buf.Bytes())
-}
-
-func (c *clientGenerator) generateFacade2(app *GenApp2) error {
-	buf := bytes.NewBuffer(nil)
-
-	if err := clientFacadeTemplate.Execute(buf, app); err != nil {
-		return err
-	}
-	log.Println("rendered client facade template:", c.ClientPackage+"."+swag.ToGoName(app.Name)+"Client")
-
-	fp := filepath.Join(c.ClientPackage, c.Target)
-	return writeToFile(fp, swag.ToGoName(app.Name)+"Client", buf.Bytes())
 }
 
 func (c *clientGenerator) generateFacade(app *GenApp) error {
