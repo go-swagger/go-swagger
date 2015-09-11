@@ -263,6 +263,9 @@ func (b codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		prin = "interface{}"
 	}
 
+	fmt.Printf("the target directory for operation %s is %s\n", b.Name, b.Target)
+	fmt.Printf("the base import path for operation %s is %s\n", b.Name, baseImport(b.Target))
+
 	return GenOperation{
 		Package:         b.APIPackage,
 		Name:            b.Name,

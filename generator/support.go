@@ -99,9 +99,9 @@ func (a *appGenerator) Generate() error {
 	if err := a.generateAPIBuilder(&app); err != nil {
 		return err
 	}
+
 	importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage))
 	app.DefaultImports = append(app.DefaultImports, importPath)
-
 	if err := a.generateConfigureAPI(&app); err != nil {
 		return err
 	}
@@ -164,13 +164,13 @@ var mediaTypeNames = map[string]string{
 }
 
 var knownProducers = map[string]string{
-	"json": "swagger.JSONProducer",
-	"yaml": "swagger.YAMLProducer",
+	"json": "httpkit.JSONProducer",
+	"yaml": "httpkit.YAMLProducer",
 }
 
 var knownConsumers = map[string]string{
-	"json": "swagger.JSONConsumer",
-	"yaml": "swagger.YAMLConsumer",
+	"json": "httpkit.JSONConsumer",
+	"yaml": "httpkit.YAMLConsumer",
 }
 
 func getSerializer(sers []GenSerGroup, ext string) (*GenSerGroup, bool) {
