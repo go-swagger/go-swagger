@@ -88,9 +88,9 @@ For a V1 I want to have this feature set completed:
       - [ ] every default value that is specified must validate against the schema for that property (Error)
       - [x] items property is required for all schemas/definitions of type `array` (Error)
 	-	[x] serve swagger UI for any swagger spec file
-  - [ ] code generation
+  - [x] code generation
     -	[x] generate api based on swagger spec
-    -	[ ] generate go client from a swagger spec
+    -	[x] generate go client from a swagger spec
   - [x] spec generation
     -	[x] generate spec document based on the code
       - [x] generate meta data (top level swagger properties) from package docs

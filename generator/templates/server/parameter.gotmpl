@@ -1,4 +1,4 @@
-{{ define "slicevalidator"}}
+{{ define "sliceparamvalidator"}}
 {{ if .NeedsSize }}
 {{ camelize .Name }}Size := int64(len({{ .ValueExpression }}))
 {{ end }}
@@ -22,18 +22,18 @@ if err := validate.Enum({{ .Path }}, "{{ .Location }}", {{ .ValueExpression }}, 
   return err
 }
 {{ end }}
-{{ end }}{{ define "propertyvalidator" }}
+{{ end }}{{ define "propertyparamvalidator" }}
 {{ if .IsPrimitive }}{{ template "primitivevalidator" . }}{{ end }}
-{{ if .IsCustomFormatter }}{{ template "customformatvalidator" . }}{{ end }}
-{{ if .IsArray }}{{ template "slicevalidator" . }}{{ end }}
-{{ end }}{{define "bindprimitive" }}
-{{ end }}{{define "slicebinder" }}
+{{ if .IsCustomFormatter }}{{ template "customformatparamvalidator" . }}{{ end }}
+{{ if .IsArray }}{{ template "sliceparamvalidator" . }}{{ end }}
+{{ end }}{{define "bindprimitiveparam" }}
+{{ end }}{{define "sliceparambinder" }}
 {{ if .Parent }}{{ .IndexVar }}c := swag.SplitByFormat({{ .Parent.IndexVar }}c[{{ .Parent.IndexVar }}], "{{ .CollectionFormat }}")
 {{ else }}{{ .IndexVar }}c := raw{{ end }}
 {{ .IndexVar }}sz := size
 var {{ .IndexVar }}r {{ .GoType }}
 {{ .IndexVar }}ValidateElement := func({{ .IndexVar }} int, {{ camelize .Child.Name }} {{ .Child.GoType }}) *errors.Validation {
-  {{ template "propertyvalidator" .Child }}
+  {{ template "propertyparamvalidator" .Child }}
   return nil
 }
 
@@ -52,7 +52,7 @@ for {{ .IndexVar }} := 0; {{ .IndexVar }} < {{ .IndexVar }}sz; {{ .IndexVar }}++
       return err
     }
   {{ .IndexVar }}r = append({{ .IndexVar }}r, {{ .IndexVar }}c[{{ .IndexVar }}]){{ end }}{{ else if .Child.IsArray }}
-  {{ template "slicebinder" .Child }}
+  {{ template "sliceparambinder" .Child }}
     if err := {{ .IndexVar }}ValidateElement({{ .IndexVar }}, {{ .Child.IndexVar }}r); err != nil {
       return err
     }
@@ -65,11 +65,10 @@ for {{ .IndexVar }} := 0; {{ .IndexVar }} < {{ .IndexVar }}sz; {{ .IndexVar }}++
 
 import (
   "net/http"
-  "github.com/go-swagger/go-swagger/httpkit"
-  "github.com/go-swagger/go-swagger/swag"
   "github.com/go-swagger/go-swagger/errors"
   "github.com/go-swagger/go-swagger/httpkit/validate"
   "github.com/go-swagger/go-swagger/httpkit"
+  "github.com/go-swagger/go-swagger/swag"
 
   {{ range .DefaultImports }}{{ printf "%q" .}}
   {{ end }}
@@ -182,7 +181,7 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .Name }}(raw
   {{ else }}if size == 0 {
     return nil{{ end }}
   }
-  {{ template "slicebinder" . }}
+  {{ template "sliceparambinder" . }}
   {{ .ValueExpression }} = {{ .IndexVar }}r
   {{ if .HasSliceValidations }}if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}(formats); err != nil {
     return err
@@ -194,9 +193,17 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .Name }}(raw
 {{ end }}
 {{ if or .HasValidations .HasSliceValidations }}
 func ({{ .ReceiverName }} *{{ $className }}Params) validate{{ pascalize .Name }}(formats strfmt.Registry) error {
-  {{ template "propertyvalidator" . }}
+  {{ template "propertyparamvalidator" . }}
   return nil
 }
 {{ end }}
 {{ end }}
+{{ end }}
+
+{{ range .ExtraSchemas }}
+/*
+{{ template "docstring" . }}
+swagger:model {{ .Name }}
+*/
+{{ template "schema" . }}
 {{ end }}

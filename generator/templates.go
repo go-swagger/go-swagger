@@ -77,11 +77,11 @@ func init() {
 	modelValidatorTemplate = template.Must(modelValidatorTemplate.New("modelvalidator").Parse(string(bv)))
 
 	// server templates
-	parameterTemplate = template.Must(validatorTempl.Clone())
-	parameterTemplate = template.Must(parameterTemplate.New("docstring").Parse(string(assetDocString)))
-	parameterTemplate = template.Must(parameterTemplate.New("validationDocString").Parse(string(assetStuctFieldValidation)))
-	parameterTemplate = template.Must(parameterTemplate.New("schType").Parse(string(assetSchemaType)))
-	parameterTemplate = template.Must(parameterTemplate.New("body").Parse(string(assetSchemaBody)))
+	parameterTemplate = makeModelTemplate()
+	//parameterTemplate = template.Must(parameterTemplate.New("docstring").Parse(string(assetDocString)))
+	//parameterTemplate = template.Must(parameterTemplate.New("validationDocString").Parse(string(assetStuctFieldValidation)))
+	//parameterTemplate = template.Must(parameterTemplate.New("schType").Parse(string(assetSchemaType)))
+	//parameterTemplate = template.Must(parameterTemplate.New("body").Parse(string(assetSchemaBody)))
 	parameterTemplate = template.Must(parameterTemplate.New("parameter").Parse(string(assetServerParameter)))
 
 	operationTemplate = template.Must(template.New("operation").Funcs(FuncMap).Parse(string(assetServerOperation)))
@@ -90,11 +90,11 @@ func init() {
 	mainTemplate = template.Must(template.New("main").Funcs(FuncMap).Parse(string(assetServerMain)))
 
 	// Client templates
-	clientParamTemplate = template.Must(validatorTempl.Clone())
-	clientParamTemplate = template.Must(clientParamTemplate.New("docstring").Parse(string(assetDocString)))
-	clientParamTemplate = template.Must(clientParamTemplate.New("validationDocString").Parse(string(assetStuctFieldValidation)))
-	clientParamTemplate = template.Must(clientParamTemplate.New("schType").Parse(string(assetSchemaType)))
-	clientParamTemplate = template.Must(clientParamTemplate.New("body").Parse(string(assetSchemaBody)))
+	clientParamTemplate = makeModelTemplate()
+	//clientParamTemplate = template.Must(clientParamTemplate.New("docstring").Parse(string(assetDocString)))
+	//clientParamTemplate = template.Must(clientParamTemplate.New("validationDocString").Parse(string(assetStuctFieldValidation)))
+	//clientParamTemplate = template.Must(clientParamTemplate.New("schType").Parse(string(assetSchemaType)))
+	//clientParamTemplate = template.Must(clientParamTemplate.New("body").Parse(string(assetSchemaBody)))
 	clientParamTemplate = template.Must(clientParamTemplate.New("parameter").Parse(string(assetClientParameter)))
 
 	clientResponseTemplate = template.Must(validatorTempl.Clone())

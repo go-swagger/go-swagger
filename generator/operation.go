@@ -201,7 +201,7 @@ type codeGenOpBuilder struct {
 	ExtraSchemas   map[string]GenSchema
 }
 
-func (b codeGenOpBuilder) MakeOperation() (GenOperation, error) {
+func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	resolver := typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
 	receiver := "o"
 
@@ -262,6 +262,11 @@ func (b codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		prin = "interface{}"
 	}
 
+	var extra []GenSchema
+	for _, sch := range b.ExtraSchemas {
+		extra = append(extra, sch)
+	}
+
 	return GenOperation{
 		Package:         b.APIPackage,
 		Name:            b.Name,
@@ -280,10 +285,11 @@ func (b codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		Responses:       responses,
 		DefaultResponse: defaultResponse,
 		SuccessResponse: successResponse,
+		ExtraSchemas:    extra,
 	}, nil
 }
 
-func (b codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, resolver *typeResolver, resp spec.Response) (GenResponse, error) {
+func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, resolver *typeResolver, resp spec.Response) (GenResponse, error) {
 
 	res := GenResponse{
 		Package:        b.APIPackage,
@@ -304,7 +310,7 @@ func (b codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, re
 			Path:         fmt.Sprintf("%q", name),
 			Name:         name + "Body",
 			Receiver:     receiver,
-			ValueExpr:    receiver + "." + name,
+			ValueExpr:    receiver,
 			IndexVar:     "i",
 			Schema:       *resp.Schema,
 			Required:     true,
@@ -339,7 +345,7 @@ func (b codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, re
 	return res, nil
 }
 
-func (b codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) GenHeader {
+func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) GenHeader {
 	hasNumberValidation := hdr.Maximum != nil || hdr.Minimum != nil || hdr.MultipleOf != nil
 	hasStringValidation := hdr.MaxLength != nil || hdr.MinLength != nil || hdr.Pattern != ""
 	hasSliceValidations := hdr.MaxItems != nil || hdr.MinItems != nil || hdr.UniqueItems
@@ -376,7 +382,7 @@ func (b codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) Gen
 	}
 }
 
-func (b codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path, valueExpression string, resolver *typeResolver, items, parent *spec.Items) (GenItems, error) {
+func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path, valueExpression string, resolver *typeResolver, items, parent *spec.Items) (GenItems, error) {
 	var res GenItems
 	res.resolvedType = simpleResolvedType(items.Type, items.Format, items.Items)
 	res.sharedValidations = sharedValidations{
@@ -411,7 +417,7 @@ func (b codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path,
 	return res, nil
 }
 
-func (b codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver, param spec.Parameter) (GenParameter, error) {
+func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver, param spec.Parameter) (GenParameter, error) {
 	var child *GenItems
 	res := GenParameter{
 		Name:             param.Name,
@@ -433,7 +439,7 @@ func (b codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver,
 			Path:         res.Path,
 			Name:         res.Name,
 			Receiver:     res.ReceiverName,
-			ValueExpr:    res.ValueExpression,
+			ValueExpr:    res.ReceiverName,
 			IndexVar:     res.IndexVar,
 			Schema:       *param.Schema,
 			Required:     param.Required,
@@ -853,6 +859,7 @@ type GenOperation struct {
 
 	Imports        map[string]string
 	DefaultImports []string
+	ExtraSchemas   []GenSchema
 
 	Authorized bool
 	Principal  string
