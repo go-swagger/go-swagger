@@ -93,11 +93,11 @@ func (o *operationGenerator) Generate() error {
 	bldr.Operation = o.Operation
 	bldr.Authed = authed
 	bldr.Doc = o.Doc
+	//bldr.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(o.Target), o.ModelsPackage))}
 
 	for _, tag := range o.Operation.Tags {
 		if len(o.Tags) == 0 {
 			bldr.APIPackage = tag
-			//op, err := makeCodegenOperation(bldr)
 			op, err := bldr.MakeOperation()
 			if err != nil {
 				return err
@@ -108,7 +108,6 @@ func (o *operationGenerator) Generate() error {
 		for _, ft := range o.Tags {
 			if ft == tag {
 				bldr.APIPackage = tag
-				//op, err := makeCodegenOperation(bldr)
 				op, err := bldr.MakeOperation()
 				if err != nil {
 					return err
@@ -120,7 +119,6 @@ func (o *operationGenerator) Generate() error {
 	}
 	if len(operations) == 0 {
 		bldr.APIPackage = o.APIPackage
-		//op, err := makeCodegenOperation(bldr)
 		op, err := bldr.MakeOperation()
 		if err != nil {
 			return err
@@ -191,15 +189,16 @@ func (o *operationGenerator) generateParameterModel() error {
 }
 
 type codeGenOpBuilder struct {
-	Name          string
-	APIPackage    string
-	ModelsPackage string
-	Principal     string
-	Target        string
-	Operation     spec.Operation
-	Doc           *spec.Document
-	Authed        bool
-	ExtraSchemas  map[string]GenSchema
+	Name           string
+	APIPackage     string
+	ModelsPackage  string
+	Principal      string
+	Target         string
+	Operation      spec.Operation
+	Doc            *spec.Document
+	Authed         bool
+	DefaultImports []string
+	ExtraSchemas   map[string]GenSchema
 }
 
 func (b codeGenOpBuilder) MakeOperation() (GenOperation, error) {
@@ -263,15 +262,12 @@ func (b codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		prin = "interface{}"
 	}
 
-	fmt.Printf("the target directory for operation %s is %s\n", b.Name, b.Target)
-	fmt.Printf("the base import path for operation %s is %s\n", b.Name, baseImport(b.Target))
-
 	return GenOperation{
 		Package:         b.APIPackage,
 		Name:            b.Name,
 		Description:     operation.Description,
 		ReceiverName:    receiver,
-		DefaultImports:  []string{filepath.ToSlash(filepath.Join(baseImport(b.Target), b.ModelsPackage))},
+		DefaultImports:  b.DefaultImports,
 		Params:          params,
 		Summary:         operation.Summary,
 		QueryParams:     qp,

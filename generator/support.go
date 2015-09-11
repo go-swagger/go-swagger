@@ -323,6 +323,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	bldr.ModelsPackage = a.ModelsPackage
 	bldr.Principal = a.Principal
 	bldr.Target = a.Target
+	bldr.DefaultImports = defaultImports
 	bldr.Doc = a.SpecDoc
 
 	for on, o := range a.Operations {

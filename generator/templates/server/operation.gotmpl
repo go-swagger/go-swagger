@@ -60,19 +60,19 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) ServeHTTP(rw http.ResponseWrit
   }
 
   {{ if .Authorized }}
-  {{ if .SuccessResponse }}res, {{ end }}err {{ if .SuccessResponse }}:{{ end }}= {{ .ReceiverName }}.Handler.Handle({{ if .Params }}{{ .ReceiverName }}.Params, {{ end }}principal) // actually handle the request
+  {{ if and .SuccessResponse .SuccessResponse.Schema }}res, {{ end }}err {{ if and .SuccessResponse .SuccessResponse.Schema }}:{{ end }}= {{ .ReceiverName }}.Handler.Handle({{ if .Params }}{{ .ReceiverName }}.Params, {{ end }}principal) // actually handle the request
   if err != nil {
     {{ .ReceiverName }}.Context.Respond(rw, r, route.Produces, route, err)
     return
   }
 
-  {{ .ReceiverName }}.Context.Respond(rw, r, route.Produces, route, {{ if .SuccessResponse }}res{{ else }}nil{{ end }})
+  {{ .ReceiverName }}.Context.Respond(rw, r, route.Produces, route, {{ if and .SuccessResponse .SuccessResponse.Schema }}res{{ else }}nil{{ end }})
   {{else}}
-  {{ if .SuccessResponse }}res, {{ end }}err := {{ .ReceiverName }}.Handler.Handle({{ if .Params }}{{ .ReceiverName }}.Params{{ end }}) // actually handle the request
+  {{ if and .SuccessResponse .SuccessResponse.Schema }}res, {{ end }}err := {{ .ReceiverName }}.Handler.Handle({{ if .Params }}{{ .ReceiverName }}.Params{{ end }}) // actually handle the request
   if err != nil {
     {{ .ReceiverName }}.Context.Respond(rw, r, route.Produces, route, err)
     return
   }
-  {{ .ReceiverName }}.Context.Respond(rw, r, route.Produces, route, {{ if .SuccessResponse }}res{{ else }}nil{{ end }})
+  {{ .ReceiverName }}.Context.Respond(rw, r, route.Produces, route, {{ if and .SuccessResponse .SuccessResponse.Schema }}res{{ else }}nil{{ end }})
   {{ end }}
 }
