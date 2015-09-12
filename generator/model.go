@@ -290,10 +290,10 @@ func (sg *schemaGenContext) NewAdditionalProperty(schema spec.Schema) *schemaGen
 	pg := sg.shallowClone()
 	pg.Schema = schema
 	if pg.KeyVar == "" {
-		pg.ValueExpr = ""
+		pg.ValueExpr = sg.ValueExpr
 	}
 	pg.KeyVar += "k"
-	pg.ValueExpr += "v"
+	pg.ValueExpr += "[" + pg.KeyVar + "]"
 	pg.Path = pg.KeyVar
 	pg.GenSchema.Suffix = "Value"
 	if sg.Path != "" {

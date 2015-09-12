@@ -76,7 +76,7 @@ if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{
   return err
 }
 {{ end }}{{ if .AdditionalProperties.HasValidations }}
-for {{.AdditionalProperties.KeyVar}}, {{.AdditionalProperties.ValueExpression}} := range {{ .ValueExpression }} {
+for {{.AdditionalProperties.KeyVar}} := range {{ .ValueExpression }} {
   {{ with .AdditionalProperties }}
   {{ template "propertyvalidator" .}}
   {{ end }}
