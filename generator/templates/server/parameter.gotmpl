@@ -153,11 +153,16 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .Name }}(raw
     return err
   }
   {{ end }}
-  {{ if or .Converter .IsCustomFormatter }}value, err := {{ if .Converter }}{{ .Converter }}({{ else if .IsCustomFormatter }}formats.Parse({{ printf "%q" .SwaggerFormat }}, {{ end }}raw)
+  {{ if .Converter }}value, err := {{ if .Converter }}{{ .Converter }}({{ end }}raw)
   if err != nil {
     return errors.InvalidType({{ .Path }}, "{{ .Location }}", "{{ .GoType }}", raw)
   }
-  {{ .ValueExpression }} = {{ if .IsCustomFormatter }}*({{ end }}value{{ if .IsCustomFormatter }}.(*{{ .GoType }})){{ end }}
+  {{ .ValueExpression }} = value
+  {{ else if .IsCustomFormatter }}value, err := formats.Parse({{ printf "%q" .SwaggerFormat }}, raw)
+  if err != nil {
+    return errors.InvalidType({{ .Path }}, "{{ .Location }}", "{{ .GoType }}", raw)
+  }
+  {{ .ValueExpression }} = *(value.(*{{ .GoType }}))
   {{else}}{{ .ValueExpression }} = raw
   {{ end }}
   {{if .HasValidations }}if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}(formats); err != nil {

@@ -388,6 +388,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous bool) (res
 		result.SwaggerType = tpe
 		if tpe != "file" {
 			result.IsPrimitive = true
+			result.IsCustomFormatter = false
 		}
 		return
 
