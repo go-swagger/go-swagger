@@ -240,6 +240,11 @@ func (a *appScanner) Parse() (*spec.Swagger, error) {
 			return nil, err
 		}
 	}
+
+	if a.input.Swagger == "" {
+		a.input.Swagger = "2.0"
+	}
+
 	return a.input, nil
 }
 

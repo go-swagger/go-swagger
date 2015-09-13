@@ -19,9 +19,6 @@ type Swagger struct {
 
 // MarshalJSON marshals this swagger structure to json
 func (s Swagger) MarshalJSON() ([]byte, error) {
-	if s.Swagger == "" {
-		s.Swagger = "2.0"
-	}
 	return json.Marshal(s.swaggerProps)
 }
 
