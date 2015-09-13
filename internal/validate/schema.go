@@ -148,9 +148,9 @@ func (s *SchemaValidator) stringValidator() valueValidator {
 
 func (s *SchemaValidator) formatValidator() valueValidator {
 	return &formatValidator{
-		Path:         s.Path,
-		In:           s.in,
-		Default:      s.Schema.Default,
+		Path: s.Path,
+		In:   s.in,
+		//Default:      s.Schema.Default,
 		Format:       s.Schema.Format,
 		KnownFormats: s.KnownFormats,
 	}

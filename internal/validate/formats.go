@@ -9,7 +9,6 @@ import (
 )
 
 type formatValidator struct {
-	Default      interface{}
 	Format       string
 	Path         string
 	In           string

@@ -49,12 +49,12 @@ func (s *SpecValidator) Validate(data interface{}) (errs *Result, warnings *Resu
 		return // no point in continuing
 	}
 
-	errs.Merge(s.validateReferencesValid()) // error
+	errs.Merge(s.validateReferencesValid()) // error -
 	if errs.HasErrors() {
 		return // no point in continuing
 	}
 
-	errs.Merge(s.validateDuplicatePropertyNames())         // error
+	errs.Merge(s.validateDuplicatePropertyNames())         // error -
 	errs.Merge(s.validateParameters())                     // error -
 	errs.Merge(s.validateItems())                          // error -
 	errs.Merge(s.validateRequiredDefinitions())            // error -
@@ -428,5 +428,19 @@ func (s *SpecValidator) validateDefaultValueValidAgainstSchema() *Result {
 	// every default value that is specified must validate against the schema for that property
 	// headers, items, parameters, schema
 
-	return nil
+	res := new(Result)
+
+	for method, pathItem := range s.spec.Operations() {
+		for path := range pathItem {
+			// parameters
+			for _, param := range s.spec.ParamsFor(method, path) {
+				if param.Default != nil {
+					// check param valid
+					res.Merge(NewParamValidator(&param, s.KnownFormats).Validate(param.Default))
+				}
+			}
+		}
+	}
+
+	return res
 }

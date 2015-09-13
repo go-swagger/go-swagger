@@ -83,6 +83,29 @@ func TestValidateReferencesValid(t *testing.T) {
 }
 
 func TestValidateDefaultValueAgainstSchema(t *testing.T) {
+	doc, api := petstore.NewAPI(t)
+	validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
+	validator.spec = doc
+	res := validator.validateDefaultValueValidAgainstSchema()
+	assert.Empty(t, res.Errors)
+
+	// parameter values
+	// parameter item values
+	// header values
+	// header items values
+	// schema property values
+	// schema allOf property values
+	// schema property items values
+	// schema property additional items values
+	// schema pattern property values
+	// schema pattern property items values
+	// schema pattern property additional items values
+	// schema additional property values
+	// schema additional property items values
+	// schema additional property additional items values
+	// schema additional property values
+	// schema additional property items values
+	// schema additional property additional items values
 }
 
 func TestValidateRequiredDefinitions(t *testing.T) {
