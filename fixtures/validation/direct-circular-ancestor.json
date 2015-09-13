@@ -33,7 +33,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "Pet"
+                    "$ref": "#/definitions/Pet"
                   }
                 }
               }
@@ -128,4 +128,3 @@
         }
     }
 }
-
