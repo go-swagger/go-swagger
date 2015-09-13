@@ -75,7 +75,7 @@ For a V1 I want to have this feature set completed:
     -	[x] validate against jsonschema
     -	[ ] validate extra rules outlined [here](https://github.com/apigee-127/swagger-tools/blob/master/docs/Swagger_Validation.md)
       - [x] definition can't declare a property that's already defined by one of its ancestors (Error)
-      - [ ] definition's ancestor can't be a descendant of the same model (Error)
+      - [x] definition's ancestor can't be a descendant of the same model (Error)
       - [x] each api path should be non-verbatim (account for path param names) unique per method (Error)
       - [ ] each security reference should contain only unique scopes (Warning)
       - [ ] each security scope in a security definition should be unique (Warning)
