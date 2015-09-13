@@ -47,11 +47,14 @@ func (s *SpecValidator) Validate(data interface{}) (errs *Result, warnings *Resu
 	if errs.HasErrors() {
 		return // no point in continuing
 	}
+
 	errs.Merge(s.validateReferencesValid()) // error
 	if errs.HasErrors() {
 		return // no point in continuing
 	}
 
+	errs.Merge(s.validateDuplicatePropertyNames())         // error
+	errs.Merge(s.validateCircularAncestry())               // error
 	errs.Merge(s.validateParameters())                     // error -
 	errs.Merge(s.validateItems())                          // error -
 	errs.Merge(s.validateRequiredDefinitions())            // error -
@@ -62,6 +65,72 @@ func (s *SpecValidator) Validate(data interface{}) (errs *Result, warnings *Resu
 	warnings.Merge(s.validateReferenced())                      // warning
 
 	return
+}
+
+type dupProp struct {
+	Name       string
+	Definition string
+}
+
+func (s *SpecValidator) validateDuplicatePropertyNames() *Result {
+	// definition can't declare a property that's already defined by one of its ancestors
+	res := new(Result)
+	for k, sch := range s.spec.Spec().Definitions {
+		if len(sch.AllOf) == 0 {
+			continue
+		}
+		knowns := make(map[string]struct{})
+		dups := s.validateSchemaPropertyNames(k, sch, knowns)
+		if len(dups) > 0 {
+			var pns []string
+			for _, v := range dups {
+				pns = append(pns, v.Definition+"."+v.Name)
+			}
+			res.AddErrors(errors.New(422, "definition %q contains duplicate properties: %v", k, pns))
+		}
+	}
+	return res
+}
+
+func (s *SpecValidator) validateSchemaPropertyNames(nm string, sch spec.Schema, knowns map[string]struct{}) []dupProp {
+	var dups []dupProp
+
+	schn := nm
+	schc := &sch
+	if sch.Ref.GetURL() != nil {
+		// gather property names
+		if sch.Ref.GetURL() != nil {
+			reso, err := spec.ResolveRef(s.spec.Spec(), &sch.Ref)
+			if err != nil {
+				panic(err)
+			}
+			schc = reso
+			schn = sch.Ref.String()
+		}
+	}
+
+	if len(schc.AllOf) > 0 {
+		for _, chld := range schc.AllOf {
+			dups = append(dups, s.validateSchemaPropertyNames(schn, chld, knowns)...)
+		}
+		return dups
+	}
+
+	for k := range schc.Properties {
+		_, ok := knowns[k]
+		if ok {
+			dups = append(dups, dupProp{Name: k, Definition: schn})
+		} else {
+			knowns[k] = struct{}{}
+		}
+	}
+
+	return dups
+}
+
+func (s *SpecValidator) validateCircularAncestry() *Result {
+	// definition's ancestor can't be a descendant of the same model
+	return nil
 }
 
 func (s *SpecValidator) validateItems() *Result {

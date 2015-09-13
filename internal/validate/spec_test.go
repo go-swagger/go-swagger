@@ -1,107 +1,40 @@
 package validate
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/go-swagger/go-swagger/internal/testing/petstore"
 	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestValidateItems(t *testing.T) {
-	doc, api := petstore.NewAPI(t)
-	validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
-	validator.spec = doc
-	res := validator.validateItems()
-	assert.Empty(t, res.Errors)
+func TestValidateDuplicatePropertyNames(t *testing.T) {
+	// simple allOf
+	doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "duplicateprops.json"))
+	if assert.NoError(t, err) {
+		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
+		validator.spec = doc
+		res := validator.validateDuplicatePropertyNames()
+		assert.NotEmpty(t, res.Errors)
+		assert.Len(t, res.Errors, 1)
 
-	// in operation parameters
-	sw := doc.Spec()
-	sw.Paths.Paths["/pets"].Get.Parameters[0].Type = "array"
-	res = validator.validateItems()
-	assert.NotEmpty(t, res.Errors)
+	}
 
-	sw.Paths.Paths["/pets"].Get.Parameters[0].Items = spec.NewItems().Typed("string", "")
-	res = validator.validateItems()
-	assert.Empty(t, res.Errors)
+	// nested allOf
+	doc, err = spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "nestedduplicateprops.json"))
+	if assert.NoError(t, err) {
+		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
+		validator.spec = doc
+		res := validator.validateDuplicatePropertyNames()
+		assert.NotEmpty(t, res.Errors)
+		assert.Len(t, res.Errors, 1)
 
-	sw.Paths.Paths["/pets"].Get.Parameters[0].Items = spec.NewItems().Typed("array", "")
-	res = validator.validateItems()
-	assert.NotEmpty(t, res.Errors)
-
-	sw.Paths.Paths["/pets"].Get.Parameters[0].Items.Items = spec.NewItems().Typed("string", "")
-	res = validator.validateItems()
-	assert.Empty(t, res.Errors)
-
-	// in global parameters
-	sw.Parameters = make(map[string]spec.Parameter)
-	sw.Parameters["other"] = *spec.SimpleArrayParam("other", "array", "csv")
-	res = validator.validateItems()
-	assert.Empty(t, res.Errors)
-
-	pp := spec.SimpleArrayParam("other", "array", "")
-	pp.Items = nil
-	sw.Parameters["other"] = *pp
-	res = validator.validateItems()
-	assert.NotEmpty(t, res.Errors)
-
-	// in shared path object parameters
-	doc, api = petstore.NewAPI(t)
-	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
-	validator.spec = doc
-	sw = doc.Spec()
-
-	pa := sw.Paths.Paths["/pets"]
-	pa.Parameters = []spec.Parameter{*spec.SimpleArrayParam("another", "array", "csv")}
-	sw.Paths.Paths["/pets"] = pa
-	res = validator.validateItems()
-	assert.Empty(t, res.Errors)
-
-	pa = sw.Paths.Paths["/pets"]
-	pp = spec.SimpleArrayParam("other", "array", "")
-	pp.Items = nil
-	pa.Parameters = []spec.Parameter{*pp}
-	sw.Paths.Paths["/pets"] = pa
-	res = validator.validateItems()
-	assert.NotEmpty(t, res.Errors)
-
-	// in body param schema
-	doc, api = petstore.NewAPI(t)
-	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
-	validator.spec = doc
-	sw = doc.Spec()
-	pa = sw.Paths.Paths["/pets"]
-	pa.Post.Parameters[0].Schema = spec.ArrayProperty(nil)
-	res = validator.validateItems()
-	assert.NotEmpty(t, res.Errors)
-
-	// in response headers
-	doc, api = petstore.NewAPI(t)
-	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
-	validator.spec = doc
-	sw = doc.Spec()
-	pa = sw.Paths.Paths["/pets"]
-	rp := pa.Post.Responses.StatusCodeResponses[200]
-	var hdr spec.Header
-	hdr.Type = "array"
-	rp.Headers = make(map[string]spec.Header)
-	rp.Headers["X-YADA"] = hdr
-	pa.Post.Responses.StatusCodeResponses[200] = rp
-	res = validator.validateItems()
-	assert.NotEmpty(t, res.Errors)
-
-	// in response schema
-	doc, api = petstore.NewAPI(t)
-	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
-	validator.spec = doc
-	sw = doc.Spec()
-	pa = sw.Paths.Paths["/pets"]
-	rp = pa.Post.Responses.StatusCodeResponses[200]
-	rp.Schema = spec.ArrayProperty(nil)
-	pa.Post.Responses.StatusCodeResponses[200] = rp
-	res = validator.validateItems()
-	assert.NotEmpty(t, res.Errors)
+	}
 }
+
+func TestValidateCircularAncestry(t *testing.T) {}
 
 func TestValidateUniqueSecurityScopes(t *testing.T) {
 }
@@ -110,6 +43,12 @@ func TestValidateUniqueScopesSecurityDefinitions(t *testing.T) {
 }
 
 func TestValidateReferenced(t *testing.T) {
+}
+
+func TestValidateReferencesValid(t *testing.T) {
+}
+
+func TestValidateDefaultValueAgainstSchema(t *testing.T) {
 }
 
 func TestValidateRequiredDefinitions(t *testing.T) {
@@ -213,8 +152,97 @@ func TestValidateParameters(t *testing.T) {
 	assert.Contains(t, res.Errors[0].Error(), "has no parameter definition")
 }
 
-func TestValidateReferencesValid(t *testing.T) {
-}
+func TestValidateItems(t *testing.T) {
+	doc, api := petstore.NewAPI(t)
+	validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
+	validator.spec = doc
+	res := validator.validateItems()
+	assert.Empty(t, res.Errors)
 
-func TestValidateDefaultValueAgainstSchema(t *testing.T) {
+	// in operation parameters
+	sw := doc.Spec()
+	sw.Paths.Paths["/pets"].Get.Parameters[0].Type = "array"
+	res = validator.validateItems()
+	assert.NotEmpty(t, res.Errors)
+
+	sw.Paths.Paths["/pets"].Get.Parameters[0].Items = spec.NewItems().Typed("string", "")
+	res = validator.validateItems()
+	assert.Empty(t, res.Errors)
+
+	sw.Paths.Paths["/pets"].Get.Parameters[0].Items = spec.NewItems().Typed("array", "")
+	res = validator.validateItems()
+	assert.NotEmpty(t, res.Errors)
+
+	sw.Paths.Paths["/pets"].Get.Parameters[0].Items.Items = spec.NewItems().Typed("string", "")
+	res = validator.validateItems()
+	assert.Empty(t, res.Errors)
+
+	// in global parameters
+	sw.Parameters = make(map[string]spec.Parameter)
+	sw.Parameters["other"] = *spec.SimpleArrayParam("other", "array", "csv")
+	res = validator.validateItems()
+	assert.Empty(t, res.Errors)
+
+	pp := spec.SimpleArrayParam("other", "array", "")
+	pp.Items = nil
+	sw.Parameters["other"] = *pp
+	res = validator.validateItems()
+	assert.NotEmpty(t, res.Errors)
+
+	// in shared path object parameters
+	doc, api = petstore.NewAPI(t)
+	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
+	validator.spec = doc
+	sw = doc.Spec()
+
+	pa := sw.Paths.Paths["/pets"]
+	pa.Parameters = []spec.Parameter{*spec.SimpleArrayParam("another", "array", "csv")}
+	sw.Paths.Paths["/pets"] = pa
+	res = validator.validateItems()
+	assert.Empty(t, res.Errors)
+
+	pa = sw.Paths.Paths["/pets"]
+	pp = spec.SimpleArrayParam("other", "array", "")
+	pp.Items = nil
+	pa.Parameters = []spec.Parameter{*pp}
+	sw.Paths.Paths["/pets"] = pa
+	res = validator.validateItems()
+	assert.NotEmpty(t, res.Errors)
+
+	// in body param schema
+	doc, api = petstore.NewAPI(t)
+	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
+	validator.spec = doc
+	sw = doc.Spec()
+	pa = sw.Paths.Paths["/pets"]
+	pa.Post.Parameters[0].Schema = spec.ArrayProperty(nil)
+	res = validator.validateItems()
+	assert.NotEmpty(t, res.Errors)
+
+	// in response headers
+	doc, api = petstore.NewAPI(t)
+	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
+	validator.spec = doc
+	sw = doc.Spec()
+	pa = sw.Paths.Paths["/pets"]
+	rp := pa.Post.Responses.StatusCodeResponses[200]
+	var hdr spec.Header
+	hdr.Type = "array"
+	rp.Headers = make(map[string]spec.Header)
+	rp.Headers["X-YADA"] = hdr
+	pa.Post.Responses.StatusCodeResponses[200] = rp
+	res = validator.validateItems()
+	assert.NotEmpty(t, res.Errors)
+
+	// in response schema
+	doc, api = petstore.NewAPI(t)
+	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
+	validator.spec = doc
+	sw = doc.Spec()
+	pa = sw.Paths.Paths["/pets"]
+	rp = pa.Post.Responses.StatusCodeResponses[200]
+	rp.Schema = spec.ArrayProperty(nil)
+	pa.Post.Responses.StatusCodeResponses[200] = rp
+	res = validator.validateItems()
+	assert.NotEmpty(t, res.Errors)
 }
