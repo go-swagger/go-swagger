@@ -54,7 +54,6 @@ func (s *SpecValidator) Validate(data interface{}) (errs *Result, warnings *Resu
 	}
 
 	errs.Merge(s.validateDuplicatePropertyNames())         // error
-	errs.Merge(s.validateCircularAncestry())               // error
 	errs.Merge(s.validateParameters())                     // error -
 	errs.Merge(s.validateItems())                          // error -
 	errs.Merge(s.validateRequiredDefinitions())            // error -
@@ -79,6 +78,17 @@ func (s *SpecValidator) validateDuplicatePropertyNames() *Result {
 		if len(sch.AllOf) == 0 {
 			continue
 		}
+
+		knownanc := map[string]struct{}{
+			"#/definitions/" + k: struct{}{},
+		}
+
+		ancs := s.validateCircularAncestry(k, sch, knownanc)
+		if len(ancs) > 0 {
+			res.AddErrors(errors.New(422, "definition %q has circular ancestry: %v", k, ancs))
+			return res
+		}
+
 		knowns := make(map[string]struct{})
 		dups := s.validateSchemaPropertyNames(k, sch, knowns)
 		if len(dups) > 0 {
@@ -88,6 +98,7 @@ func (s *SpecValidator) validateDuplicatePropertyNames() *Result {
 			}
 			res.AddErrors(errors.New(422, "definition %q contains duplicate properties: %v", k, pns))
 		}
+
 	}
 	return res
 }
@@ -99,14 +110,12 @@ func (s *SpecValidator) validateSchemaPropertyNames(nm string, sch spec.Schema, 
 	schc := &sch
 	if sch.Ref.GetURL() != nil {
 		// gather property names
-		if sch.Ref.GetURL() != nil {
-			reso, err := spec.ResolveRef(s.spec.Spec(), &sch.Ref)
-			if err != nil {
-				panic(err)
-			}
-			schc = reso
-			schn = sch.Ref.String()
+		reso, err := spec.ResolveRef(s.spec.Spec(), &sch.Ref)
+		if err != nil {
+			panic(err)
 		}
+		schc = reso
+		schn = sch.Ref.String()
 	}
 
 	if len(schc.AllOf) > 0 {
@@ -128,9 +137,38 @@ func (s *SpecValidator) validateSchemaPropertyNames(nm string, sch spec.Schema, 
 	return dups
 }
 
-func (s *SpecValidator) validateCircularAncestry() *Result {
-	// definition's ancestor can't be a descendant of the same model
-	return nil
+func (s *SpecValidator) validateCircularAncestry(nm string, sch spec.Schema, knowns map[string]struct{}) []string {
+	var ancs []string
+
+	schn := nm
+	schc := &sch
+	if sch.Ref.GetURL() != nil {
+		reso, err := spec.ResolveRef(s.spec.Spec(), &sch.Ref)
+		if err != nil {
+			panic(err)
+		}
+		schc = reso
+		schn = sch.Ref.String()
+		knowns[schn] = struct{}{}
+	}
+
+	if _, ok := knowns[schn]; ok {
+		ancs = append(ancs, schn)
+	}
+	if len(ancs) > 0 {
+		return ancs
+	}
+
+	if len(schc.AllOf) > 0 {
+		for _, chld := range schc.AllOf {
+			ancs = append(ancs, s.validateCircularAncestry(schn, chld, knowns)...)
+			if len(ancs) > 0 {
+				return ancs
+			}
+		}
+	}
+
+	return ancs
 }
 
 func (s *SpecValidator) validateItems() *Result {
