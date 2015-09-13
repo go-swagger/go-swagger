@@ -3,11 +3,7 @@
   "id": "http://swagger.io/v2/schema.json#",
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
-  "required": [
-    "swagger",
-    "info",
-    "paths"
-  ],
+  "required": ["swagger", "info", "paths"],
   "additionalProperties": false,
   "patternProperties": {
     "^x-": {
@@ -17,9 +13,7 @@
   "properties": {
     "swagger": {
       "type": "string",
-      "enum": [
-        "2.0"
-      ],
+      "enum": ["2.0"],
       "description": "The Swagger version of this document."
     },
     "info": {
@@ -79,10 +73,7 @@
     "info": {
       "type": "object",
       "description": "General information about the API.",
-      "required": [
-        "version",
-        "title"
-      ],
+      "required": ["version", "title"],
       "additionalProperties": false,
       "patternProperties": {
         "^x-": {
@@ -142,9 +133,7 @@
     },
     "license": {
       "type": "object",
-      "required": [
-        "name"
-      ],
+      "required": ["name"],
       "additionalProperties": false,
       "properties": {
         "name": {
@@ -201,9 +190,7 @@
       "type": "object",
       "additionalProperties": false,
       "description": "information about external documentation",
-      "required": [
-        "url"
-      ],
+      "required": ["url"],
       "properties": {
         "description": {
           "type": "string"
@@ -229,9 +216,7 @@
     },
     "operation": {
       "type": "object",
-      "required": [
-        "responses"
-      ],
+      "required": ["responses"],
       "additionalProperties": false,
       "patternProperties": {
         "^x-": {
@@ -349,33 +334,25 @@
       }
     },
     "responseValue": {
-      "oneOf": [
-        {
-          "$ref": "#/definitions/response"
-        },
-        {
-          "$ref": "#/definitions/jsonReference"
-        }
-      ]
+      "oneOf": [{
+        "$ref": "#/definitions/response"
+      }, {
+        "$ref": "#/definitions/jsonReference"
+      }]
     },
     "response": {
       "type": "object",
-      "required": [
-        "description"
-      ],
+      "required": ["description"],
       "properties": {
         "description": {
           "type": "string"
         },
         "schema": {
-          "oneOf": [
-            {
-              "$ref": "#/definitions/schema"
-            },
-            {
-              "$ref": "#/definitions/fileSchema"
-            }
-          ]
+          "oneOf": [{
+            "$ref": "#/definitions/schema"
+          }, {
+            "$ref": "#/definitions/fileSchema"
+          }]
         },
         "headers": {
           "$ref": "#/definitions/headers"
@@ -400,19 +377,11 @@
     "header": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "type"
-      ],
+      "required": ["type"],
       "properties": {
         "type": {
           "type": "string",
-          "enum": [
-            "string",
-            "number",
-            "integer",
-            "boolean",
-            "array"
-          ]
+          "enum": ["string", "number", "integer", "boolean", "array"]
         },
         "format": {
           "type": "string"
@@ -479,11 +448,7 @@
     },
     "bodyParameter": {
       "type": "object",
-      "required": [
-        "name",
-        "in",
-        "schema"
-      ],
+      "required": ["name", "in", "schema"],
       "patternProperties": {
         "^x-": {
           "$ref": "#/definitions/vendorExtension"
@@ -501,9 +466,7 @@
         "in": {
           "type": "string",
           "description": "Determines the location of the parameter.",
-          "enum": [
-            "body"
-          ]
+          "enum": ["body"]
         },
         "required": {
           "type": "boolean",
@@ -532,9 +495,7 @@
         "in": {
           "type": "string",
           "description": "Determines the location of the parameter.",
-          "enum": [
-            "header"
-          ]
+          "enum": ["header"]
         },
         "description": {
           "type": "string",
@@ -546,13 +507,7 @@
         },
         "type": {
           "type": "string",
-          "enum": [
-            "string",
-            "number",
-            "boolean",
-            "integer",
-            "array"
-          ]
+          "enum": ["string", "number", "boolean", "integer", "array"]
         },
         "format": {
           "type": "string"
@@ -620,9 +575,7 @@
         "in": {
           "type": "string",
           "description": "Determines the location of the parameter.",
-          "enum": [
-            "query"
-          ]
+          "enum": ["query"]
         },
         "description": {
           "type": "string",
@@ -639,13 +592,7 @@
         },
         "type": {
           "type": "string",
-          "enum": [
-            "string",
-            "number",
-            "boolean",
-            "integer",
-            "array"
-          ]
+          "enum": ["string", "number", "boolean", "integer", "array"]
         },
         "format": {
           "type": "string"
@@ -713,9 +660,7 @@
         "in": {
           "type": "string",
           "description": "Determines the location of the parameter.",
-          "enum": [
-            "formData"
-          ]
+          "enum": ["formData"]
         },
         "description": {
           "type": "string",
@@ -732,14 +677,7 @@
         },
         "type": {
           "type": "string",
-          "enum": [
-            "string",
-            "number",
-            "boolean",
-            "integer",
-            "array",
-            "file"
-          ]
+          "enum": ["string", "number", "boolean", "integer", "array", "file"]
         },
         "format": {
           "type": "string"
@@ -798,23 +736,18 @@
           "$ref": "#/definitions/vendorExtension"
         }
       },
-      "required": [
-        "required"
-      ],
+      "required": ["required"],
       "properties": {
         "required": {
           "type": "boolean",
           "enum": [
-            true
-          ],
+          true],
           "description": "Determines whether or not this parameter is required or optional."
         },
         "in": {
           "type": "string",
           "description": "Determines the location of the parameter.",
-          "enum": [
-            "path"
-          ]
+          "enum": ["path"]
         },
         "description": {
           "type": "string",
@@ -826,13 +759,7 @@
         },
         "type": {
           "type": "string",
-          "enum": [
-            "string",
-            "number",
-            "boolean",
-            "integer",
-            "array"
-          ]
+          "enum": ["string", "number", "boolean", "integer", "array"]
         },
         "format": {
           "type": "string"
@@ -886,35 +813,23 @@
     },
     "nonBodyParameter": {
       "type": "object",
-      "required": [
-        "name",
-        "in",
-        "type"
-      ],
-      "oneOf": [
-        {
-          "$ref": "#/definitions/headerParameterSubSchema"
-        },
-        {
-          "$ref": "#/definitions/formDataParameterSubSchema"
-        },
-        {
-          "$ref": "#/definitions/queryParameterSubSchema"
-        },
-        {
-          "$ref": "#/definitions/pathParameterSubSchema"
-        }
-      ]
+      "required": ["name", "in", "type"],
+      "oneOf": [{
+        "$ref": "#/definitions/headerParameterSubSchema"
+      }, {
+        "$ref": "#/definitions/formDataParameterSubSchema"
+      }, {
+        "$ref": "#/definitions/queryParameterSubSchema"
+      }, {
+        "$ref": "#/definitions/pathParameterSubSchema"
+      }]
     },
     "parameter": {
-      "oneOf": [
-        {
-          "$ref": "#/definitions/bodyParameter"
-        },
-        {
-          "$ref": "#/definitions/nonBodyParameter"
-        }
-      ]
+      "oneOf": [{
+        "$ref": "#/definitions/bodyParameter"
+      }, {
+        "$ref": "#/definitions/nonBodyParameter"
+      }]
     },
     "schema": {
       "type": "object",
@@ -986,32 +901,26 @@
           "$ref": "http://json-schema.org/draft-04/schema#/properties/enum"
         },
         "additionalProperties": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/schema"
-            },
-            {
-              "type": "boolean"
-            }
-          ],
+          "anyOf": [{
+            "$ref": "#/definitions/schema"
+          }, {
+            "type": "boolean"
+          }],
           "default": {}
         },
         "type": {
           "$ref": "http://json-schema.org/draft-04/schema#/properties/type"
         },
         "items": {
-          "anyOf": [
-            {
+          "anyOf": [{
+            "$ref": "#/definitions/schema"
+          }, {
+            "type": "array",
+            "minItems": 1,
+            "items": {
               "$ref": "#/definitions/schema"
-            },
-            {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "$ref": "#/definitions/schema"
-              }
             }
-          ],
+          }],
           "default": {}
         },
         "allOf": {
@@ -1071,9 +980,7 @@
         },
         "type": {
           "type": "string",
-          "enum": [
-            "file"
-          ]
+          "enum": ["file"]
         },
         "readOnly": {
           "type": "boolean",
@@ -1092,13 +999,7 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": [
-            "string",
-            "number",
-            "integer",
-            "boolean",
-            "array"
-          ]
+          "enum": ["string", "number", "integer", "boolean", "array"]
         },
         "format": {
           "type": "string"
@@ -1203,9 +1104,7 @@
     "tag": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "name"
-      ],
+      "required": ["name"],
       "properties": {
         "name": {
           "type": "string"
@@ -1226,40 +1125,29 @@
     "securityDefinitions": {
       "type": "object",
       "additionalProperties": {
-        "oneOf": [
-          {
-            "$ref": "#/definitions/basicAuthenticationSecurity"
-          },
-          {
-            "$ref": "#/definitions/apiKeySecurity"
-          },
-          {
-            "$ref": "#/definitions/oauth2ImplicitSecurity"
-          },
-          {
-            "$ref": "#/definitions/oauth2PasswordSecurity"
-          },
-          {
-            "$ref": "#/definitions/oauth2ApplicationSecurity"
-          },
-          {
-            "$ref": "#/definitions/oauth2AccessCodeSecurity"
-          }
-        ]
+        "oneOf": [{
+          "$ref": "#/definitions/basicAuthenticationSecurity"
+        }, {
+          "$ref": "#/definitions/apiKeySecurity"
+        }, {
+          "$ref": "#/definitions/oauth2ImplicitSecurity"
+        }, {
+          "$ref": "#/definitions/oauth2PasswordSecurity"
+        }, {
+          "$ref": "#/definitions/oauth2ApplicationSecurity"
+        }, {
+          "$ref": "#/definitions/oauth2AccessCodeSecurity"
+        }]
       }
     },
     "basicAuthenticationSecurity": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "type"
-      ],
+      "required": ["type"],
       "properties": {
         "type": {
           "type": "string",
-          "enum": [
-            "basic"
-          ]
+          "enum": ["basic"]
         },
         "description": {
           "type": "string"
@@ -1274,27 +1162,18 @@
     "apiKeySecurity": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "type",
-        "name",
-        "in"
-      ],
+      "required": ["type", "name", "in"],
       "properties": {
         "type": {
           "type": "string",
-          "enum": [
-            "apiKey"
-          ]
+          "enum": ["apiKey"]
         },
         "name": {
           "type": "string"
         },
         "in": {
           "type": "string",
-          "enum": [
-            "header",
-            "query"
-          ]
+          "enum": ["header", "query"]
         },
         "description": {
           "type": "string"
@@ -1309,23 +1188,15 @@
     "oauth2ImplicitSecurity": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "type",
-        "flow",
-        "authorizationUrl"
-      ],
+      "required": ["type", "flow", "authorizationUrl"],
       "properties": {
         "type": {
           "type": "string",
-          "enum": [
-            "oauth2"
-          ]
+          "enum": ["oauth2"]
         },
         "flow": {
           "type": "string",
-          "enum": [
-            "implicit"
-          ]
+          "enum": ["implicit"]
         },
         "scopes": {
           "$ref": "#/definitions/oauth2Scopes"
@@ -1347,23 +1218,15 @@
     "oauth2PasswordSecurity": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "type",
-        "flow",
-        "tokenUrl"
-      ],
+      "required": ["type", "flow", "tokenUrl"],
       "properties": {
         "type": {
           "type": "string",
-          "enum": [
-            "oauth2"
-          ]
+          "enum": ["oauth2"]
         },
         "flow": {
           "type": "string",
-          "enum": [
-            "password"
-          ]
+          "enum": ["password"]
         },
         "scopes": {
           "$ref": "#/definitions/oauth2Scopes"
@@ -1385,23 +1248,15 @@
     "oauth2ApplicationSecurity": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "type",
-        "flow",
-        "tokenUrl"
-      ],
+      "required": ["type", "flow", "tokenUrl"],
       "properties": {
         "type": {
           "type": "string",
-          "enum": [
-            "oauth2"
-          ]
+          "enum": ["oauth2"]
         },
         "flow": {
           "type": "string",
-          "enum": [
-            "application"
-          ]
+          "enum": ["application"]
         },
         "scopes": {
           "$ref": "#/definitions/oauth2Scopes"
@@ -1423,24 +1278,15 @@
     "oauth2AccessCodeSecurity": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "type",
-        "flow",
-        "authorizationUrl",
-        "tokenUrl"
-      ],
+      "required": ["type", "flow", "authorizationUrl", "tokenUrl"],
       "properties": {
         "type": {
           "type": "string",
-          "enum": [
-            "oauth2"
-          ]
+          "enum": ["oauth2"]
         },
         "flow": {
           "type": "string",
-          "enum": [
-            "accessCode"
-          ]
+          "enum": ["accessCode"]
         },
         "scopes": {
           "$ref": "#/definitions/oauth2Scopes"
@@ -1481,14 +1327,11 @@
       "description": "The parameters needed to send a valid API call.",
       "additionalItems": false,
       "items": {
-        "oneOf": [
-          {
-            "$ref": "#/definitions/parameter"
-          },
-          {
-            "$ref": "#/definitions/jsonReference"
-          }
-        ]
+        "oneOf": [{
+          "$ref": "#/definitions/parameter"
+        }, {
+          "$ref": "#/definitions/jsonReference"
+        }]
       },
       "uniqueItems": true
     },
@@ -1497,34 +1340,18 @@
       "description": "The transfer protocol of the API.",
       "items": {
         "type": "string",
-        "enum": [
-          "http",
-          "https",
-          "ws",
-          "wss"
-        ]
+        "enum": ["http", "https", "ws", "wss"]
       },
       "uniqueItems": true
     },
     "collectionFormat": {
       "type": "string",
-      "enum": [
-        "csv",
-        "ssv",
-        "tsv",
-        "pipes"
-      ],
+      "enum": ["csv", "ssv", "tsv", "pipes"],
       "default": "csv"
     },
     "collectionFormatWithMulti": {
       "type": "string",
-      "enum": [
-        "csv",
-        "ssv",
-        "tsv",
-        "pipes",
-        "multi"
-      ],
+      "enum": ["csv", "ssv", "tsv", "pipes", "multi"],
       "default": "csv"
     },
     "title": {
@@ -1574,9 +1401,7 @@
     },
     "jsonReference": {
       "type": "object",
-      "required": [
-        "$ref"
-      ],
+      "required": ["$ref"],
       "additionalProperties": false,
       "properties": {
         "$ref": {
@@ -1586,3 +1411,4 @@
     }
   }
 }
+

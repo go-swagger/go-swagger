@@ -131,7 +131,7 @@ For a V1 I want to have this feature set completed:
 	-	[x] date-time
 	-	[x] duration
   - [x] password
-	-	[x] custom string formats
+  -	[x] custom string formats
 
 Later
 -----
