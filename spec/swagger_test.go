@@ -17,6 +17,7 @@ func IsZero(data reflect.Value) bool {
 var spec = Swagger{
 	swaggerProps: swaggerProps{
 		ID:          "http://localhost:3849/api-docs",
+		Swagger:     "2.0",
 		Consumes:    []string{"application/json", "application/x-yaml"},
 		Produces:    []string{"application/json"},
 		Schemes:     []string{"http", "https"},
