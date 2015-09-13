@@ -403,7 +403,12 @@ func parsePath(path string) (segments []string, params []int) {
 
 func (s *SpecValidator) validateReferencesValid() *Result {
 	// each reference must point to a valid object
-	return nil
+	res := new(Result)
+	_, err := s.spec.Expanded()
+	if err != nil {
+		res.AddErrors(err)
+	}
+	return res
 }
 
 func (s *SpecValidator) validateDefaultValueValidAgainstSchema() *Result {

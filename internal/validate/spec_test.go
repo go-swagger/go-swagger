@@ -64,6 +64,22 @@ func TestValidateReferenced(t *testing.T) {
 }
 
 func TestValidateReferencesValid(t *testing.T) {
+	doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "valid-ref.json"))
+	if assert.NoError(t, err) {
+		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
+		validator.spec = doc
+		res := validator.validateReferencesValid()
+		assert.Empty(t, res.Errors)
+	}
+
+	doc, err = spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-ref.json"))
+	if assert.NoError(t, err) {
+		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
+		validator.spec = doc
+		res := validator.validateReferencesValid()
+		assert.NotEmpty(t, res.Errors)
+		assert.Len(t, res.Errors, 1)
+	}
 }
 
 func TestValidateDefaultValueAgainstSchema(t *testing.T) {
