@@ -200,6 +200,9 @@ func (s *specAnalyzer) structMapKeys(mp map[string]struct{}) []string {
 
 // AllPaths returns all the paths in the swagger spec
 func (s *specAnalyzer) AllPaths() map[string]PathItem {
+	if s.spec == nil || s.spec.Paths == nil {
+		return nil
+	}
 	return s.spec.Paths.Paths
 }
 
