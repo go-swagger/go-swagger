@@ -20,6 +20,7 @@ Swagger helps companies like Apigee, Getty Images, Intuit, LivingSocial, McKesso
 Docs
 ----
 
+
 http://godoc.org/github.com/go-swagger/go-swagger
 
 Install:
@@ -43,6 +44,11 @@ To generate a client for a swagger spec document:
 To generate a swagger spec document for a go application:
 
 		swagger generate spec -o ./swagger.json
+
+Much improved documentation is in the works and will actually explain how to use this tool in much more depth.
+To learn about which annotations are available and how to use them for generating a spec from any go application
+(generating a spec is not opinionated), you can take a look at the files used for [testing the parser](https://github.com/go-swagger/go-swagger/tree/master/fixtures/goparsing/classification).
+
 
 There are several other sub commands available for the generate command
 
