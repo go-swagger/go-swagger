@@ -261,7 +261,7 @@ func (s *SpecValidator) validateUniqueScopesSecurityDefinitions() *Result {
 	return nil
 }
 
-func (s *SpecValidator) validatePathParamPresence(fromPath, fromOperation []string) *Result {
+func (s *SpecValidator) validatePathParamPresence(path string, fromPath, fromOperation []string) *Result {
 	// Each defined operation path parameters must correspond to a named element in the API's path pattern.
 	// (For example, you cannot have a path parameter named id for the following path /pets/{petId} but you must have a path parameter named petId.)
 	res := new(Result)
@@ -287,7 +287,7 @@ func (s *SpecValidator) validatePathParamPresence(fromPath, fromOperation []stri
 			}
 		}
 		if !matched {
-			res.AddErrors(errors.New(422, "path param %q is not present in the path", p))
+			res.AddErrors(errors.New(422, "path param %q is not present in path %q", p, path))
 		}
 	}
 
@@ -385,7 +385,7 @@ func (s *SpecValidator) validateParameters() *Result {
 					paramNames = append(paramNames, pr.Name)
 				}
 			}
-			res.Merge(s.validatePathParamPresence(fromPath, paramNames))
+			res.Merge(s.validatePathParamPresence(path, fromPath, paramNames))
 		}
 	}
 	return res

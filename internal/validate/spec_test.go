@@ -182,7 +182,7 @@ func TestValidateParameters(t *testing.T) {
 	res = validator.validateParameters()
 	assert.NotEmpty(t, res.Errors)
 	assert.Len(t, res.Errors, 2)
-	assert.Contains(t, res.Errors[1].Error(), "is not present in the path")
+	assert.Contains(t, res.Errors[1].Error(), "is not present in path \"/pets/{id}\"")
 	assert.Contains(t, res.Errors[0].Error(), "has no parameter definition")
 }
 
