@@ -60,6 +60,7 @@ func (c *clientGenerator) Generate() error {
 
 	opsGroupedByTag := make(map[string][]GenOperation)
 	for _, operation := range app.Operations {
+		operation.Package = c.Package
 		if err := c.generateParameters(&operation); err != nil {
 			return err
 		}
