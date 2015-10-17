@@ -8,7 +8,12 @@ general:
 dependencies:
   pre:
     - mkdir -p $CIRCLE_TEST_REPORTS/go
-    - go get -u golang.org/x/tools/cmd/...
+    - go get -u -v golang.org/x/tools/cmd/goimports
+    - go get -u -v golang.org/x/tools/cmd/cover
+    - go get -u -v golang.org/x/tools/cmd/vet
+    - go get -u -v golang.org/x/tools/cmd/stringer
+    - go get -u -v golang.org/x/tools/cmd/gotype
+    - go get -u -v golang.org/x/tools/cmd/godoc
 
     # code coverage
     - go get github.com/axw/gocov/gocov
