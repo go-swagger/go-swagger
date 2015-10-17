@@ -1197,6 +1197,31 @@ func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
 	}
 }
 
+func TestGenerateModel_WithAllOfAndDiscriminator(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["Cat"]
+		genModel, err := makeGenDefinition("Cat", "models", schema, specDoc)
+		if assert.NoError(t, err) && assert.Len(t, genModel.AllOf, 2) {
+			assert.True(t, genModel.IsComplexObject)
+			assert.Equal(t, "Cat", genModel.Name)
+			assert.Equal(t, "Cat", genModel.GoType)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("cat.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, "type Cat struct {", res)
+					assertInCode(t, "Pet", res)
+					assertInCode(t, "HuntingSkill string `json:\"huntingSkill\"`", res)
+				}
+			}
+		}
+	}
+}
+
 func TestGenerateModel_WithAllOf(t *testing.T) {
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {

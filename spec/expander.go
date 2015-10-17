@@ -262,11 +262,11 @@ type specExpander struct {
 }
 
 func expandSpec(spec *Swagger) error {
-
 	resolver, err := defaultSchemaLoader(spec, nil, nil)
 	if err != nil {
 		return err
 	}
+
 	for key, defintition := range spec.Definitions {
 		if err := expandSchema(&defintition, resolver); err != nil {
 			return err

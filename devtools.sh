@@ -6,8 +6,9 @@ go get -u -v github.com/tools/godep
 go get -u -v github.com/jteeuwen/go-bindata/...
 go get -u -v github.com/elazarl/go-bindata-assetfs/...
 go get -u -v github.com/redefiance/go-find-references
-go get -u -v code.google.com/p/gomock/gomock
-go get -u -v code.google.com/p/gomock/mockgen
+#go get -u -v code.google.com/p/gomock/gomock
+#go get -u -v code.google.com/p/gomock/mockgen
+go get -u -v github.com/rafrombrc/gomock/...
 go get -u -v github.com/axw/gocov/gocov
 go get -u -v gopkg.in/matm/v1/gocov-html
 go get -u -v github.com/AlekSi/gocov-xml

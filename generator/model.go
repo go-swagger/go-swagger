@@ -182,6 +182,7 @@ type schemaGenContext struct {
 	TypeResolver       *typeResolver
 	Untyped            bool
 	Named              bool
+	RefHandled         bool
 	Index              int
 
 	GenSchema    GenSchema
@@ -364,7 +365,8 @@ func (sg *schemaGenContext) buildProperties() error {
 
 func (sg *schemaGenContext) buildAllOf() error {
 	for i, sch := range sg.Schema.AllOf {
-		comprop := sg.NewCompositionBranch(sch, i)
+		var comprop *schemaGenContext
+		comprop = sg.NewCompositionBranch(sch, i)
 		if err := comprop.makeGenSchema(); err != nil {
 			return err
 		}
@@ -626,54 +628,54 @@ func (sg *schemaGenContext) buildItems() error {
 	if presentsAsSingle {
 		return sg.buildArray()
 	}
-	if sg.Schema.Items != nil {
-		// This is a tuple, build a new model that represents this
-		if sg.Named {
-			sg.GenSchema.Name = sg.Name
-			sg.GenSchema.GoType = swag.ToGoName(sg.Name)
-			if sg.TypeResolver.ModelsPackage != "" {
-				sg.GenSchema.GoType = sg.TypeResolver.ModelsPackage + "." + sg.GenSchema.GoType
-			}
-			for i, s := range sg.Schema.Items.Schemas {
-				elProp := sg.NewTupleElement(&s, i)
-				if err := elProp.makeGenSchema(); err != nil {
-					return err
-				}
-				sg.MergeResult(elProp)
-				elProp.GenSchema.Name = "p" + strconv.Itoa(i)
-				sg.GenSchema.Properties = append(sg.GenSchema.Properties, elProp.GenSchema)
-			}
-			return nil
-		}
-
-		// for an anonoymous object, first build the new object
-		// and then replace the current one with a $ref to the
-		// new tuple object
-		var sch spec.Schema
-		sch.Typed("object", "")
-		sch.Properties = make(map[string]spec.Schema)
-		for i, v := range sg.Schema.Items.Schemas {
-			sch.Required = append(sch.Required, "P"+strconv.Itoa(i))
-			sch.Properties["P"+strconv.Itoa(i)] = v
-		}
-		sch.AdditionalItems = sg.Schema.AdditionalItems
-		tup := sg.makeNewStruct(sg.GenSchema.Name+"Tuple"+strconv.Itoa(sg.Index), sch)
-		if err := tup.makeGenSchema(); err != nil {
-			return err
-		}
-		tup.GenSchema.IsTuple = true
-		tup.GenSchema.IsComplexObject = false
-		tup.GenSchema.Title = tup.GenSchema.Name + " a representation of an anonymous Tuple type"
-		tup.GenSchema.Description = ""
-		sg.ExtraSchemas[tup.Name] = tup.GenSchema
-
-		sg.Schema = *spec.RefProperty("#/definitions/" + tup.Name)
-		if err := sg.makeGenSchema(); err != nil {
-			return err
-		}
-		sg.MergeResult(tup)
-
+	if sg.Schema.Items == nil {
+		return nil
 	}
+	// This is a tuple, build a new model that represents this
+	if sg.Named {
+		sg.GenSchema.Name = sg.Name
+		sg.GenSchema.GoType = swag.ToGoName(sg.Name)
+		if sg.TypeResolver.ModelsPackage != "" {
+			sg.GenSchema.GoType = sg.TypeResolver.ModelsPackage + "." + sg.GenSchema.GoType
+		}
+		for i, s := range sg.Schema.Items.Schemas {
+			elProp := sg.NewTupleElement(&s, i)
+			if err := elProp.makeGenSchema(); err != nil {
+				return err
+			}
+			sg.MergeResult(elProp)
+			elProp.GenSchema.Name = "p" + strconv.Itoa(i)
+			sg.GenSchema.Properties = append(sg.GenSchema.Properties, elProp.GenSchema)
+		}
+		return nil
+	}
+
+	// for an anonoymous object, first build the new object
+	// and then replace the current one with a $ref to the
+	// new tuple object
+	var sch spec.Schema
+	sch.Typed("object", "")
+	sch.Properties = make(map[string]spec.Schema)
+	for i, v := range sg.Schema.Items.Schemas {
+		sch.Required = append(sch.Required, "P"+strconv.Itoa(i))
+		sch.Properties["P"+strconv.Itoa(i)] = v
+	}
+	sch.AdditionalItems = sg.Schema.AdditionalItems
+	tup := sg.makeNewStruct(sg.GenSchema.Name+"Tuple"+strconv.Itoa(sg.Index), sch)
+	if err := tup.makeGenSchema(); err != nil {
+		return err
+	}
+	tup.GenSchema.IsTuple = true
+	tup.GenSchema.IsComplexObject = false
+	tup.GenSchema.Title = tup.GenSchema.Name + " a representation of an anonymous Tuple type"
+	tup.GenSchema.Description = ""
+	sg.ExtraSchemas[tup.Name] = tup.GenSchema
+
+	sg.Schema = *spec.RefProperty("#/definitions/" + tup.Name)
+	if err := sg.makeGenSchema(); err != nil {
+		return err
+	}
+	sg.MergeResult(tup)
 	return nil
 }
 
@@ -715,13 +717,15 @@ func (sg *schemaGenContext) buildAdditionalItems() error {
 }
 
 func (sg *schemaGenContext) buildXMLName() error {
-	if sg.Schema.XML != nil {
-		sg.GenSchema.XMLName = sg.Name
-		if sg.Schema.XML.Name != "" {
-			sg.GenSchema.XMLName = sg.Schema.XML.Name
-			if sg.Schema.XML.Attribute {
-				sg.GenSchema.XMLName += ",attr"
-			}
+	if sg.Schema.XML == nil {
+		return nil
+	}
+	sg.GenSchema.XMLName = sg.Name
+
+	if sg.Schema.XML.Name != "" {
+		sg.GenSchema.XMLName = sg.Schema.XML.Name
+		if sg.Schema.XML.Attribute {
+			sg.GenSchema.XMLName += ",attr"
 		}
 	}
 	return nil
@@ -730,60 +734,64 @@ func (sg *schemaGenContext) buildXMLName() error {
 func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 	// This if block ensures that a struct gets
 	// rendered with the ref as embedded ref.
-	if sg.Named && sg.Schema.Ref.GetURL() != nil {
-		nullableOverride := sg.GenSchema.IsNullable
-		tpe := resolvedType{}
-		tpe.GoType = sg.Name
-		if sg.TypeResolver.ModelsPackage != "" {
-			tpe.GoType = sg.TypeResolver.ModelsPackage + "." + sg.TypeResolver.ModelName
-		}
-
-		tpe.SwaggerType = "object"
-		tpe.IsComplexObject = true
-		tpe.IsMap = false
-		tpe.IsAnonymous = false
-
-		item := sg.NewCompositionBranch(sg.Schema, 0)
-		if err := item.makeGenSchema(); err != nil {
-			return true, err
-		}
-		sg.GenSchema.resolvedType = tpe
-		sg.GenSchema.IsNullable = sg.GenSchema.IsNullable || nullableOverride
-		sg.MergeResult(item)
-		sg.GenSchema.AllOf = append(sg.GenSchema.AllOf, item.GenSchema)
-		return true, nil
+	if sg.RefHandled || !sg.Named || sg.Schema.Ref.GetURL() == nil {
+		return false, nil
 	}
-	return false, nil
+	nullableOverride := sg.GenSchema.IsNullable
+	tpe := resolvedType{}
+	tpe.GoType = sg.Name
+	if sg.TypeResolver.ModelsPackage != "" {
+		tpe.GoType = sg.TypeResolver.ModelsPackage + "." + sg.TypeResolver.ModelName
+	}
+
+	tpe.SwaggerType = "object"
+	tpe.IsComplexObject = true
+	tpe.IsMap = false
+	tpe.IsAnonymous = false
+
+	item := sg.NewCompositionBranch(sg.Schema, 0)
+	if err := item.makeGenSchema(); err != nil {
+		return true, err
+	}
+	sg.GenSchema.resolvedType = tpe
+	sg.GenSchema.IsNullable = sg.GenSchema.IsNullable || nullableOverride
+	sg.MergeResult(item)
+	sg.GenSchema.AllOf = append(sg.GenSchema.AllOf, item.GenSchema)
+	return true, nil
 }
 
 func (sg *schemaGenContext) liftSpecialAllOf() error {
 	// if there is only a $ref or a primitive and an x-isnullable schema then this is a nullable pointer
-	if len(sg.Schema.AllOf) > 0 {
-		var seenSchema int
-		var seenNullable bool
-		var schemaToLift spec.Schema
-
-		for _, sch := range sg.Schema.AllOf {
-			tpe, err := sg.TypeResolver.ResolveSchema(&sch, true)
-			if err != nil {
-				return err
-			}
-			if sg.TypeResolver.isNullable(&sch) {
-				seenNullable = true
-			}
-			if len(sch.Type) > 0 || sch.Ref.GetURL() != nil {
-				seenSchema++
-				if (!tpe.IsAnonymous && tpe.IsComplexObject) || tpe.IsPrimitive {
-					schemaToLift = sch
-				}
-			}
-		}
-
-		if seenSchema == 1 {
-			sg.Schema = schemaToLift
-			sg.GenSchema.IsNullable = seenNullable
-		}
+	// so this should not compose several objects, just 1
+	// if there is a ref with a discriminator then we look for x-class on the current definition to know
+	// the value of the discriminator to instantiate the class
+	if len(sg.Schema.AllOf) == 0 {
 		return nil
+	}
+	var seenSchema int
+	var seenNullable bool
+	var schemaToLift spec.Schema
+
+	for _, sch := range sg.Schema.AllOf {
+
+		tpe, err := sg.TypeResolver.ResolveSchema(&sch, true)
+		if err != nil {
+			return err
+		}
+		if sg.TypeResolver.isNullable(&sch) {
+			seenNullable = true
+		}
+		if len(sch.Type) > 0 || len(sch.Properties) > 0 || sch.Ref.GetURL() != nil {
+			seenSchema++
+			if (!tpe.IsAnonymous && tpe.IsComplexObject) || tpe.IsPrimitive {
+				schemaToLift = sch
+			}
+		}
+	}
+
+	if seenSchema == 1 {
+		sg.Schema = schemaToLift
+		sg.GenSchema.IsNullable = seenNullable
 	}
 	return nil
 }
@@ -806,6 +814,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.sharedValidations = sg.schemaValidations()
 	sg.GenSchema.ReadOnly = sg.Schema.ReadOnly
 
+	var err error
 	returns, err := sg.shortCircuitNamedRef()
 	if err != nil {
 		return err
