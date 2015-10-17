@@ -1,7 +1,12 @@
 #!/bin/sh
 
 go get -u -v github.com/alecthomas/gometalinter
-go get -u -v golang.org/x/tools/cmd/...
+go get -u -v golang.org/x/tools/cmd/goimports
+go get -u -v golang.org/x/tools/cmd/cover
+go get -u -v golang.org/x/tools/cmd/vet
+go get -u -v golang.org/x/tools/cmd/stringer
+go get -u -v golang.org/x/tools/cmd/gotype
+go get -u -v golang.org/x/tools/cmd/godoc
 go get -u -v github.com/tools/godep
 go get -u -v github.com/jteeuwen/go-bindata/...
 go get -u -v github.com/elazarl/go-bindata-assetfs/...
