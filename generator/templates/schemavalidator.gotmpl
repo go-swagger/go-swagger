@@ -75,7 +75,7 @@ for {{.IndexVar}} := 0; {{.IndexVar}} < len({{.ValueExpression}}); {{.IndexVar}}
 if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
   return err
 }
-{{ end }}{{ if .AdditionalProperties.HasValidations }}
+{{ end }}{{ if and .AdditionalProperties .AdditionalProperties.HasValidations }}
 for {{.AdditionalProperties.KeyVar}} := range {{ .ValueExpression }} {
   {{ with .AdditionalProperties }}
   {{ template "propertyvalidator" .}}
