@@ -68,7 +68,9 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response cl
       if err := result.readResponse(response, consumer, {{ $.ReceiverName }}.formats); err != nil {
         return nil, err
       }
-      return {{ if .IsSuccess }}&result, nil{{else}}nil, NewAPIError("{{ .Name }}", &result, response.Code()){{end}}{{ end }}{{ end }}
+      return {{ if .IsSuccess }}&result, nil{{else}}nil, NewAPIError("{{ .Name }}", &result, response.Code()){{end}}{{ end }}{{else}}
+    default:
+      return nil, NewAPIError("unknown error", nil, 0){{ end }}
   }
 }
 

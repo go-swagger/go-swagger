@@ -36,14 +36,14 @@ type Client struct {
 
 {{ .Description }}{{ end }}{{ else if .Description}}{{ .Description }}{{ else }}{{ pascalize .Name }} {{ humanize .Name }} API{{ end }}
 */
-func (a *Client) {{ pascalize .Name }}(params {{ pascalize .Name }}Params) {{ if .SuccessResponse }}{{ if .SuccessResponse.Schema }}({{ .SuccessResponse.Schema.GoType }}, {{ end }}error{{ if .SuccessResponse.Schema }}){{ end }}{{ end }} {
+func (a *Client) {{ pascalize .Name }}(params {{ pascalize .Name }}Params) {{ if .SuccessResponse }}{{ if .SuccessResponse.Schema }}(*{{ .SuccessResponse.Schema.GoType }}, {{ end }}error{{ if .SuccessResponse.Schema }}){{ end }}{{ end }} {
   // TODO: Validate the params before sending
 
-  {{ if .SuccessResponse }}result{{ else }}_{{ end }}, err := a.transport.Submit({{ printf "%q" .Name }}, &params, &{{ .Name }}Reader{formats: a.formats})
+  {{ if .SuccessResponse }}{{ if .SuccessResponse.Schema }}result{{ else }}_{{end}}{{ end }}, err := a.transport.Submit({{ printf "%q" .Name }}, &params, &{{ pascalize .Name }}Reader{formats: a.formats})
   if err != nil {
-    return {{ if .SuccessResponse }}nil, {{ end }}err
+    return {{ if .SuccessResponse }}{{ if .SuccessResponse.Schema }}nil, {{end}}{{ end }}err
   }
-  return {{ if .SuccessResponse }}{{ if .SuccessResponse.Schema }}result.({{ .SuccessResponse.Schema.GoType }}), {{ end }}{{ end }}nil
+  return {{ if .SuccessResponse }}{{ if .SuccessResponse.Schema }}result.(*{{ .SuccessResponse.Schema.GoType }}), {{ end }}{{ end }}nil
 }
 {{ end }}
 
