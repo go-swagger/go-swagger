@@ -501,6 +501,9 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 	addp := *sg.Schema.AdditionalProperties
 	wantsAdditional := addp.Allows || addp.Schema != nil
 	sg.GenSchema.HasAdditionalProperties = wantsAdditional
+	if !wantsAdditional {
+		return nil
+	}
 	// flag swap
 	if sg.GenSchema.IsComplexObject {
 		sg.GenSchema.IsAdditionalProperties = true

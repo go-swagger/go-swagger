@@ -307,6 +307,31 @@ func TestGenerateModel_NotaWithMeta(t *testing.T) {
 	}
 }
 
+func TestGenerateModel_RunParameters(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "RunParameters"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			assert.False(t, genModel.IsAdditionalProperties)
+			assert.True(t, genModel.IsComplexObject)
+			assert.False(t, genModel.IsMap)
+			assert.False(t, genModel.IsAnonymous)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				res := buf.String()
+				assertInCode(t, "type "+k+" struct {", res)
+				assertInCode(t, "BranchName string `json:\"branch_name,omitempty\"`", res)
+				assertInCode(t, "CommitSha string `json:\"commit_sha,omitempty\"`", res)
+				assertInCode(t, "Refs map[string]interface{} `json:\"refs,omitempty\"`", res)
+			}
+		}
+	}
+}
+
 func TestGenerateModel_NotaWithName(t *testing.T) {
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
