@@ -226,3 +226,35 @@ func TestEnum_ObjectThing(t *testing.T) {
 		}
 	}
 }
+
+func TestEnum_NewPrototype(t *testing.T) {
+	// ensure that the enum validation for the anonymous object under the delegate property
+	// is rendered.
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.enums.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "NewPrototype"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("object_thing.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					assertInCode(t, "ActivatingUser NewPrototypeActivatingUser `json:\"activating_user,omitempty\"`", res)
+					assertInCode(t, "Delegate NewPrototypeDelegate `json:\"delegate\"`", res)
+					assertInCode(t, "Role string `json:\"role\"`", res)
+					assertInCode(t, "var newPrototypeRoleEnum []interface{}", res)
+					assertInCode(t, "var newPrototypeDelegateKindEnum []interface{}", res)
+					assertInCode(t, "m.validateDelegate(formats)", res)
+					assertInCode(t, "m.validateRole(formats)", res)
+					assertInCode(t, "m.validateActivatingUser(formats)", res)
+					assertInCode(t, "m.Delegate.Validate(formats)", res)
+					assertInCode(t, "m.ActivatingUser.Validate(formats)", res)
+				}
+			}
+		}
+	}
+}

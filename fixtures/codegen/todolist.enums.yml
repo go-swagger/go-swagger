@@ -143,5 +143,45 @@ definitions:
           type: string
           enum: ["snow white", "tweetie", "bambi", "red riding hood"]
 
-
+  # provided as part of issue #72
+  # the enum of the anonymous schema under delegate comes out without a validation.
+  NewPrototype:
+    required:
+      - role
+      - delegate
+    type: object
+    description: Description of a new prototype
+    properties:
+      activating_user:
+        required:
+          - name
+        type: object
+        description: Repository creating user to whom the rule should apply
+        properties:
+          name:
+            type: string
+            description: The username for the activating_user
+      role:
+        enum:
+          - read
+          - write
+          - admin
+        type: string
+        description: Role that should be applied to the delegate
+      delegate:
+        required:
+          - name
+          - kind
+        type: object
+        description: Information about the user or team to which the rule grants access
+        properties:
+          kind:
+            enum:
+              - user
+              - team
+            type: string
+            description: Whether the delegate is a user or a team
+          name:
+            type: string
+            description: The name for the delegate team or user
 

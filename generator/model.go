@@ -352,9 +352,36 @@ func (sg *schemaGenContext) MergeResult(other *schemaGenContext) {
 
 func (sg *schemaGenContext) buildProperties() error {
 	for k, v := range sg.Schema.Properties {
-		emprop := sg.NewStructBranch(k, v)
+		// check if this requires de-anonymizing, if so lift this as a new struct and extra schema
+		tpe, err := sg.TypeResolver.ResolveSchema(&v, true)
+		if err != nil {
+			return err
+		}
+
+		vv := v
+		var hasValidations bool
+		if tpe.IsComplexObject && tpe.IsAnonymous && len(v.Properties) > 0 {
+			pg := sg.makeNewStruct(sg.Name+swag.ToGoName(k), v)
+			if sg.Path != "" {
+				pg.Path = sg.Path + "+ \".\"+" + fmt.Sprintf("%q", k)
+			} else {
+				pg.Path = fmt.Sprintf("%q", k)
+			}
+			if err := pg.makeGenSchema(); err != nil {
+				return err
+			}
+			vv = *spec.RefProperty("#/definitions/" + pg.Name)
+			hasValidations = pg.GenSchema.HasValidations
+			sg.MergeResult(pg)
+			sg.ExtraSchemas[pg.Name] = pg.GenSchema
+		}
+
+		emprop := sg.NewStructBranch(k, vv)
 		if err := emprop.makeGenSchema(); err != nil {
 			return err
+		}
+		if hasValidations || emprop.GenSchema.HasValidations {
+			emprop.GenSchema.HasValidations = true
 		}
 		sg.MergeResult(emprop)
 		sg.GenSchema.Properties = append(sg.GenSchema.Properties, emprop.GenSchema)
