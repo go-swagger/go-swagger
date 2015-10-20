@@ -31,7 +31,7 @@ func New{{ pascalize .Name }}API(spec *spec.Document) *{{ pascalize .Name }}API 
   return {{.ReceiverName}}
 }
 
-/* {{ pascalize .Name }}API {{.Info.Description}} */
+/* {{ pascalize .Name }}API {{ if .Info }}{{ if .Info.Description }}{{.Info.Description}}{{ end }}{{ end }} */
 type {{ pascalize .Name }}API struct {
   spec            *spec.Document
   context         *middleware.Context
