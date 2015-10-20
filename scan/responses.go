@@ -47,6 +47,7 @@ func (ht responseTypable) Items() swaggerTypable {
 
 func (ht responseTypable) SetRef(ref spec.Ref) {
 	// having trouble seeing the usefulness of this one here
+	ht.Schema().Ref = ref
 }
 
 func (ht responseTypable) Schema() *spec.Schema {

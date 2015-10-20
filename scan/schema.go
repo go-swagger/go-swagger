@@ -438,7 +438,6 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 			}
 		}
 	}
-
 	return nil
 }
 

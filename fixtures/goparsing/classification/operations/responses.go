@@ -117,3 +117,19 @@ type SomeResponse struct {
 		Notes string `json:"notes"`
 	} `json:"items"`
 }
+
+type user struct {
+	// ID of this some response instance.
+	// ids in this application start at 11 and are smaller than 1000
+	//
+	// required: true
+	UserName string `json:"id"`
+}
+
+// Resp a response for testing
+//
+// swagger:response resp
+type Resp struct {
+	// in: body
+	Body *user `json:"user"`
+}

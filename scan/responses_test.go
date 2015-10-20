@@ -22,7 +22,7 @@ func TestParseResponses(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Len(t, responses, 4)
+	assert.Len(t, responses, 5)
 	cr, ok := responses["complexerOne"]
 	assert.True(t, ok)
 	assert.Len(t, cr.Headers, 6)
@@ -143,4 +143,8 @@ func TestParseResponses(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "Notes to add to this item.\nThis can be used to add special instructions.", iprop.Description)
 
+	res, ok = responses["resp"]
+	assert.True(t, ok)
+	assert.NotNil(t, res.Schema)
+	assert.Equal(t, "#/definitions/user", res.Schema.Ref.String())
 }
