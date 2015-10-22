@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>go-swagger toolkit</title>
-    <link>http://goswagger.io/</link>
+    <link>http://go-swagger.github.io/</link>
     <description>Recent content on go-swagger toolkit</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>© 2015 go-swagger contributors</copyright>
     <lastBuildDate>Wed, 21 Oct 2015 22:46:51 -0700</lastBuildDate>
-    <atom:link href="http://goswagger.io/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://go-swagger.github.io/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>_index</title>
-      <link>http://goswagger.io/_index/</link>
+      <link>http://go-swagger.github.io/_index/</link>
       <pubDate>Wed, 21 Oct 2015 22:46:51 -0700</pubDate>
       
-      <guid>http://goswagger.io/_index/</guid>
+      <guid>http://go-swagger.github.io/_index/</guid>
       <description>
 
 &lt;h1 id=&#34;swagger-2-0-circle-ci-https-circleci-com-gh-go-swagger-go-swagger-tree-master-svg-style-svg-https-circleci-com-gh-go-swagger-go-swagger-tree-master-slack-status-https-slackin-goswagger-io-badge-svg-https-slackin-goswagger-io:3976528693a0108357f4928017600865&#34;&gt;Swagger 2.0 &lt;a href=&#34;https://circleci.com/gh/go-swagger/go-swagger/tree/master&#34;&gt;&lt;img src=&#34;https://circleci.com/gh/go-swagger/go-swagger/tree/master.svg?style=svg&#34; alt=&#34;Circle CI&#34; /&gt;
@@ -241,10 +241,10 @@ To learn about which annotations are available and how to use them for generatin
     
     <item>
       <title>about</title>
-      <link>http://goswagger.io/about/</link>
+      <link>http://go-swagger.github.io/about/</link>
       <pubDate>Wed, 21 Oct 2015 21:54:47 -0700</pubDate>
       
-      <guid>http://goswagger.io/about/</guid>
+      <guid>http://go-swagger.github.io/about/</guid>
       <description>
 
 &lt;h2 id=&#34;about:6083a88ee3411b0d17ce02d738f69d47&#34;&gt;About&lt;/h2&gt;

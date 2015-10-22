@@ -2,18 +2,18 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://goswagger.io/</loc>
+    <loc>http://go-swagger.github.io/</loc>
     <lastmod>2015-10-21T22:46:51-07:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://goswagger.io/_index/</loc>
+    <loc>http://go-swagger.github.io/_index/</loc>
     <lastmod>2015-10-21T22:46:51-07:00</lastmod>
   </url>
   
   <url>
-    <loc>http://goswagger.io/about/</loc>
+    <loc>http://go-swagger.github.io/about/</loc>
     <lastmod>2015-10-21T21:54:47-07:00</lastmod>
   </url>
   
