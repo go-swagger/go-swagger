@@ -1,0 +1,3 @@
+[submodule "docs/public"]
+	path = docs/public
+	url = git@github.com:go-swagger/go-swagger.github.io.git
