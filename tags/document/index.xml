@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Document on go-swagger toolkit</title>
+    <link>http://goswagger.io/tags/document/</link>
+    <description>Recent content in Document on go-swagger toolkit</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>© 2015 go-swagger contributors</copyright>
+    <lastBuildDate>Wed, 21 Oct 2015 22:46:51 -0700</lastBuildDate>
+    <atom:link href="http://goswagger.io/tags/document/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>_index</title>
+      <link>http://goswagger.io/_index/</link>
+      <pubDate>Wed, 21 Oct 2015 22:46:51 -0700</pubDate>
+      
+      <guid>http://goswagger.io/_index/</guid>
+      <description>
+
+&lt;h1 id=&#34;swagger-2-0-circle-ci-https-circleci-com-gh-go-swagger-go-swagger-tree-master-svg-style-svg-https-circleci-com-gh-go-swagger-go-swagger-tree-master-slack-status-https-slackin-goswagger-io-badge-svg-https-slackin-goswagger-io:3976528693a0108357f4928017600865&#34;&gt;Swagger 2.0 &lt;a href=&#34;https://circleci.com/gh/go-swagger/go-swagger/tree/master&#34;&gt;&lt;img src=&#34;https://circleci.com/gh/go-swagger/go-swagger/tree/master.svg?style=svg&#34; alt=&#34;Circle CI&#34; /&gt;
+&lt;/a&gt; &lt;a href=&#34;https://slackin.goswagger.io&#34;&gt;&lt;img src=&#34;https://slackin.goswagger.io/badge.svg&#34; alt=&#34;Slack Status&#34; /&gt;
+&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://raw.githubusercontent.com/swagger-api/swagger-spec/master/LICENSE&#34;&gt;&lt;img src=&#34;http://img.shields.io/badge/license-Apache%20v2-orange.svg&#34; alt=&#34;license&#34; /&gt;
+&lt;/a&gt; &lt;a href=&#34;http://godoc.org/github.com/go-swagger/go-swagger&#34;&gt;&lt;img src=&#34;https://godoc.org/github.com/go-swagger/go-swagger?status.svg&#34; alt=&#34;GoDoc&#34; /&gt;
+&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;This API is not stable yet, when it is stable it will be distributed over gopkg.in&lt;/p&gt;
+
+&lt;p&gt;There is a code coverage report available in the artifacts section of a build. Unfortunately using coveralls made the
+build unstable.&lt;/p&gt;
+
+&lt;p&gt;Contains an implementation of Swagger 2.0. It knows how to serialize and deserialize swagger specifications.&lt;/p&gt;
+
+&lt;p&gt;Swagger is a simple yet powerful representation of your RESTful API.&lt;br /&gt;
+With the largest ecosystem of API tooling on the planet, thousands of developers are supporting Swagger in almost every modern programming language and deployment environment.&lt;/p&gt;
+
+&lt;p&gt;With a Swagger-enabled API, you get interactive documentation, client SDK generation and discoverability. We created Swagger to help fulfill the promise of APIs.&lt;/p&gt;
+
+&lt;p&gt;Swagger helps companies like Apigee, Getty Images, Intuit, LivingSocial, McKesson, Microsoft, Morningstar, and PayPal build the best possible services with RESTful APIs. Now in version 2.0, Swagger is more enabling than ever. And it&amp;rsquo;s 100% open source software.&lt;/p&gt;
+
+&lt;h2 id=&#34;docs:3976528693a0108357f4928017600865&#34;&gt;Docs&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://godoc.org/github.com/go-swagger/go-swagger&#34;&gt;http://godoc.org/github.com/go-swagger/go-swagger&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Install:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;go get -u github.com/go-swagger/go-swagger/cmd/swagger
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The implementation also provides a number of command line tools to help working with swagger.&lt;/p&gt;
+
+&lt;p&gt;Currently there is a spec validator tool:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;    swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;To generate a server for a swagger spec document:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;    swagger generate server [-f ./swagger.json] -A [application-name [--principal [principal-name]]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;To generate a client for a swagger spec document:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;    swagger generate client [-f ./swagger.json] -A [application-name [--principal [principal-name]]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;To generate a swagger spec document for a go application:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;    swagger generate spec -o ./swagger.json
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Much improved documentation is in the works and will actually explain how to use this tool in much more depth.
+To learn about which annotations are available and how to use them for generating a spec from any go application
+(generating a spec is not opinionated), you can take a look at the files used for &lt;a href=&#34;https://github.com/go-swagger/go-swagger/tree/master/fixtures/goparsing/classification&#34;&gt;testing the parser&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;There are several other sub commands available for the generate command&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;    Sub command | Description
+    ------------|----------------------------------------------------------------------------------
+    operation   | generates one or more operations specified in the swagger definition
+    model       | generates model files for one or more models specified in the swagger definition
+    support     | generates the api builder and the main method
+    server      | generates an entire server application
+    client      | generates a client for a swagger specification
+    spec        | generates a swagger spec document based on go code
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;design:3976528693a0108357f4928017600865&#34;&gt;Design&lt;/h2&gt;
+
+&lt;p&gt;For now what exists of documentation on how all the pieces fit together, is described in this &lt;a href=&#34;design.md&#34;&gt;doc&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;what-s-inside:3976528693a0108357f4928017600865&#34;&gt;What&amp;rsquo;s inside?&lt;/h2&gt;
+
+&lt;p&gt;For a V1 I want to have this feature set completed:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;[ ] Documentation site&lt;/li&gt;
+&lt;li&gt;[x] Play nice with golint, go vet etc.&lt;/li&gt;
+&lt;li&gt;[x] An object model that serializes to swagger yaml or json&lt;/li&gt;
+&lt;li&gt;[x] A tool to work with swagger:
+
+&lt;ul&gt;
+&lt;li&gt;[x] validate a swagger spec document:&lt;/li&gt;
+&lt;li&gt;[x] validate against jsonschema&lt;/li&gt;
+&lt;li&gt;[ ] validate extra rules outlined &lt;a href=&#34;https://github.com/apigee-127/swagger-tools/blob/master/docs/Swagger_Validation.md&#34;&gt;here&lt;/a&gt;
+
+&lt;ul&gt;
+&lt;li&gt;[x] definition can&amp;rsquo;t declare a property that&amp;rsquo;s already defined by one of its ancestors (Error)&lt;/li&gt;
+&lt;li&gt;[x] definition&amp;rsquo;s ancestor can&amp;rsquo;t be a descendant of the same model (Error)&lt;/li&gt;
+&lt;li&gt;[x] each api path should be non-verbatim (account for path param names) unique per method (Error)&lt;/li&gt;
+&lt;li&gt;[ ] each security reference should contain only unique scopes (Warning)&lt;/li&gt;
+&lt;li&gt;[ ] each security scope in a security definition should be unique (Warning)&lt;/li&gt;
+&lt;li&gt;[x] each path parameter should correspond to a parameter placeholder and vice versa (Error)&lt;/li&gt;
+&lt;li&gt;[ ] each referencable definition must have references (Warning)&lt;/li&gt;
+&lt;li&gt;[x] each definition property listed in the required array must be defined in the properties of the model (Error)&lt;/li&gt;
+&lt;li&gt;[x] each parameter should have a unique &lt;code&gt;name&lt;/code&gt; and &lt;code&gt;type&lt;/code&gt; combination (Error)&lt;/li&gt;
+&lt;li&gt;[x] each operation should have only 1 parameter of type body (Error)&lt;/li&gt;
+&lt;li&gt;[x] each reference must point to a valid object (Error)&lt;/li&gt;
+&lt;li&gt;[ ] every default value that is specified must validate against the schema for that property (Error)&lt;/li&gt;
+&lt;li&gt;[ ] every example that is specified must validate against the schema for that property (Error)&lt;/li&gt;
+&lt;li&gt;[x] items property is required for all schemas/definitions of type &lt;code&gt;array&lt;/code&gt; (Error)&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;[x] serve swagger UI for any swagger spec file&lt;/li&gt;
+&lt;li&gt;[x] code generation&lt;/li&gt;
+&lt;li&gt;[x] generate api based on swagger spec&lt;/li&gt;
+&lt;li&gt;[x] generate go client from a swagger spec&lt;/li&gt;
+&lt;li&gt;[x] spec generation&lt;/li&gt;
+&lt;li&gt;[x] generate spec document based on the code
+
+&lt;ul&gt;
+&lt;li&gt;[x] generate meta data (top level swagger properties) from package docs&lt;/li&gt;
+&lt;li&gt;[x] generate definition entries for models&lt;/li&gt;
+&lt;li&gt;[x] support composed structs out of several embeds&lt;/li&gt;
+&lt;li&gt;[x] support allOf for composed structs&lt;/li&gt;
+&lt;li&gt;[x] generate path entries for routes&lt;/li&gt;
+&lt;li&gt;[x] generate responses from structs&lt;/li&gt;
+&lt;li&gt;[x] support composed structs out of several embeds&lt;/li&gt;
+&lt;li&gt;[x] generate parameters from structs&lt;/li&gt;
+&lt;li&gt;[x] support composed structs out of several embeds&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;[x] Middlewares:
+
+&lt;ul&gt;
+&lt;li&gt;[x] serve spec&lt;/li&gt;
+&lt;li&gt;[x] routing&lt;/li&gt;
+&lt;li&gt;[x] validation&lt;/li&gt;
+&lt;li&gt;[x] additional validation through an interface&lt;/li&gt;
+&lt;li&gt;[x] authorization
+
+&lt;ul&gt;
+&lt;li&gt;[x] basic auth&lt;/li&gt;
+&lt;li&gt;[x] api key auth&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;[x] swagger docs UI&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;[x] Typed JSON Schema implementation
+
+&lt;ul&gt;
+&lt;li&gt;[x] JSON Pointer that knows about structs&lt;/li&gt;
+&lt;li&gt;[x] JSON Reference that knows about structs&lt;/li&gt;
+&lt;li&gt;[x] Passes current json schema test suite&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;[x] extended string formats
+
+&lt;ul&gt;
+&lt;li&gt;[x] uuid, uuid3, uuid4, uuid5&lt;/li&gt;
+&lt;li&gt;[x] email&lt;/li&gt;
+&lt;li&gt;[x] uri (absolute)&lt;/li&gt;
+&lt;li&gt;[x] hostname&lt;/li&gt;
+&lt;li&gt;[x] ipv4&lt;/li&gt;
+&lt;li&gt;[x] ipv6&lt;/li&gt;
+&lt;li&gt;[x] credit card&lt;/li&gt;
+&lt;li&gt;[x] isbn, isbn10, isbn13&lt;/li&gt;
+&lt;li&gt;[x] social security number&lt;/li&gt;
+&lt;li&gt;[x] hexcolor&lt;/li&gt;
+&lt;li&gt;[x] rgbcolor&lt;/li&gt;
+&lt;li&gt;[x] date&lt;/li&gt;
+&lt;li&gt;[x] date-time&lt;/li&gt;
+&lt;li&gt;[x] duration&lt;/li&gt;
+&lt;li&gt;[x] password&lt;/li&gt;
+&lt;li&gt;[x] custom string formats&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;later:3976528693a0108357f4928017600865&#34;&gt;Later&lt;/h2&gt;
+
+&lt;p&gt;After the v1 implementation extra transports are on the roadmap.&lt;/p&gt;
+
+&lt;p&gt;Many of these fall under the maybe, perhaps, could be nice to have, might not happen bucket:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Formats:
+
+&lt;ul&gt;
+&lt;li&gt;[ ] custom serializer for XML to support namespaces and prefixes&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;Tools:
+
+&lt;ul&gt;
+&lt;li&gt;Code generation:&lt;/li&gt;
+&lt;li&gt;[ ] generate &amp;ldquo;sensible&amp;rdquo; random data based on swagger spec&lt;/li&gt;
+&lt;li&gt;[ ] generate tests based on swagger spec for client&lt;/li&gt;
+&lt;li&gt;[ ] generate tests based on swagger spec for server&lt;/li&gt;
+&lt;li&gt;[ ] generate markdown representation of swagger spec&lt;/li&gt;
+&lt;li&gt;[ ] watch swagger spec file and regenerate when modified&lt;/li&gt;
+&lt;li&gt;Spec generation:&lt;/li&gt;
+&lt;li&gt;[ ] watch application folders and regenerate the swagger document&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;Middlewares:
+
+&lt;ul&gt;
+&lt;li&gt;[ ] swagger editor&lt;/li&gt;
+&lt;li&gt;[ ] swagger UI&lt;/li&gt;
+&lt;li&gt;[ ] authorization:
+
+&lt;ul&gt;
+&lt;li&gt;[ ] oauth2
+
+&lt;ul&gt;
+&lt;li&gt;[ ] implicit&lt;/li&gt;
+&lt;li&gt;[ ] access code&lt;/li&gt;
+&lt;li&gt;[ ] password&lt;/li&gt;
+&lt;li&gt;[ ] application&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;Transports:
+
+&lt;ul&gt;
+&lt;li&gt;[ ] swagger socket (swagger over tcp sockets)&lt;/li&gt;
+&lt;li&gt;[ ] swagger websocket (swagger over websockets)&lt;/li&gt;
+&lt;li&gt;[ ] swagger proxy (assemble several backend apis into a single swagger spec and route the requests)&lt;/li&gt;
+&lt;li&gt;[ ] swagger discovery (repository for swagger specifications)&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

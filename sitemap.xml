@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  <url>
+    <loc>http://goswagger.io/</loc>
+    <lastmod>2015-10-21T22:46:51-07:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://goswagger.io/_index/</loc>
+    <lastmod>2015-10-21T22:46:51-07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://goswagger.io/about/</loc>
+    <lastmod>2015-10-21T21:54:47-07:00</lastmod>
+  </url>
+  
+</urlset>

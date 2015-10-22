@@ -1,0 +1,131 @@
+/*
+ * Globals
+ */
+
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #555;
+}
+
+h1, .h1,
+h2, .h2,
+h3, .h3,
+h4, .h4,
+h5, .h5,
+h6, .h6 {
+  margin-top: 0;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-weight: normal;
+  color: #333;
+}
+
+h1, .h1,
+h2, .h2 {
+  border-bottom: 1px solid #eee;
+}
+
+/*
+ * Override Bootstrap's default container.
+ */
+
+@media (min-width: 1200px) {
+  .container {
+    width: 970px;
+  }
+}
+
+/*
+ * Main column and sidebar layout
+ */
+
+.doc-main {
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.doc-main pre code {
+  font-size: 16px;
+}
+
+/* List items */
+.doc-list-header {
+}
+.doc-entry {
+  color: #666;
+}
+.doc-entry-title {
+  color: #666;
+}
+.doc-entry-meta {
+  font-style: italic;
+  text-align: right;
+  color: #999;
+}
+
+/* Sidebar modules for boxing content */
+.sidebar-module {
+  padding: 15px;
+  margin: 0 -15px 15px;
+}
+.sidebar-module-inset {
+  padding: 15px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+.sidebar-module-inset p:last-child,
+.sidebar-module-inset ul:last-child,
+.sidebar-module-inset ol:last-child {
+  margin-bottom: 0;
+}
+.sidebar-toc ul li {
+  list-style-type: none;
+  list-style-position: outside;
+  margin-left: -1.5em;
+  padding: 0;
+}
+
+.tag-box {
+  padding: 10px 15px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+}
+.tag-item {
+  margin: 5px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  line-height: 2;
+  background-color: #ffffff;
+}
+
+
+/* Pagination */
+.pager {
+  margin-bottom: 60px;
+  text-align: left;
+}
+.pager > li > a {
+  width: 140px;
+  padding: 10px 20px;
+  text-align: center;
+  border-radius: 30px;
+}
+
+/*
+ * Footer
+ */
+
+.doc-footer {
+  padding: 40px 0;
+  color: #999;
+  text-align: center;
+  background-color: #f9f9f9;
+  border-top: 1px solid #e5e5e5;
+}
+.doc-footer p:last-child {
+  margin-bottom: 0;
+}
+.doc-footer-em {
+  font-size: 16px;
+}
+
