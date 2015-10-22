@@ -1,4 +1,4 @@
-baseurl = "http://goswagger.io/"
+baseurl = "http://go-swagger.github.io/"
 languageCode = "en-us"
 title = "go-swagger toolkit"
 theme="bootie-docs"
@@ -19,7 +19,7 @@ copyright = "© 2015 go-swagger contributors"
   # googleAnalyticsUserID = "Your Analytics User Id" # optional
   withSitePosts = true
   mainMenu = ["about", "usage"]
-  # noCategoryLink = true
+  noCategoryLink = true
   repositoryUrl = "https://github.com/go-swagger/go-swagger"
 
 [permalinks]
