@@ -1,0 +1,16 @@
+{{ $baseurl := .Site.BaseURL }}
+{{ partial "header.html" . }}
+
+{{ $data := .Data }}
+<div class="container">
+  <div class="section">
+
+    <div class="collection">
+      {{ range $key, $value := .Data.Terms }}
+        <a href="{{$baseurl}}/{{ $data.Plural }}/{{ $key | urlize }}" class="collection-item">{{ if eq $data.Plural "tags"}}<i class="mdi-action-loyalty left"></i>{{else}}<i class="mdi-action-perm-media left"></i>{{end}}{{ $key }}<div class="secondary-content">{{ len $value }}</div></a>
+      {{ end }}
+    </div>
+
+  </div>
+</div>
+{{ partial "footer.html" . }}

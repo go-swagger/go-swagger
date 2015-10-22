@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="{{.Site.LanguageCode}}">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"/>
+  <title>{{ .Title }}</title>
+  <link href="{{.Site.BaseURL}}/css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="{{.Site.BaseURL}}/css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/default.min.css">
+  <style type="text/css">
+  {{if .Site.Params.footerCover}}
+    footer.page-footer{background-image: url({{.Site.BaseURL}}/{{.Site.Params.footerCover}});}
+  {{else}}
+    footer.page-footer{background-image: url({{.Site.BaseURL}}/images/default.png);}
+  {{end}}
+  </style>
+</head>
+<body>
+  <ul id="slide-out" class="side-nav">
+    <li><a href="{{.Site.BaseURL}}"><i class="mdi-action-home left"></i>Home<i class="mdi-hardware-keyboard-arrow-right right"></i></a></li>
+    <li><a href="{{.Site.BaseURL}}/categories"><i class="mdi-action-perm-media left"></i>Categories<i class="mdi-hardware-keyboard-arrow-right right"></i></a></li>
+    <li><a href="{{.Site.BaseURL}}/tags"><i class="mdi-action-loyalty left"></i>Tags<i class="mdi-hardware-keyboard-arrow-right right"></i></a></li>
+  </ul>
+  <div id="index-banner" class="parallax-container">
+  <a data-activates="slide-out" class="btn-floating button-collapse" style="top: 5px; left: 5px;"><i class="mdi-navigation-menu"></i></a>
+    <div class="section no-pad-bot">
+      <div class="container">
+        <!-- <h1 class="header center teal-text text-lighten-2"><a href="{{.Site.BaseURL}}">{{.Site.Title}}</a></h1> -->
+        <h1 class="header center teal-text text-lighten-2">{{.Site.Title}}</h1>
+        <div class="row center">
+          <h5 class="header col s12 light">{{.Site.Params.description}}</h5>
+        </div>
+        <div class="row center">
+        {{if .Site.Params.github}}
+          <a href="https://github.com/{{ .Site.Params.github }}"><img src="{{.Site.BaseURL}}/images/github2-dreamstale35.png"></a>
+        {{end}}
+        {{if .Site.Params.facebook}}
+          <a href="https://www.facebook.com/{{.Site.Params.facebook}}"><img src="{{.Site.BaseURL}}/images/facebook-dreamstale25.png"></a>
+        {{end}}
+        {{if .Site.Params.twitter}}
+          <a href="https://twitter.com/{{.Site.Params.twitter}}"><img src="{{.Site.BaseURL}}/images/twitter-dreamstale71.png"></a>
+        {{end}}
+        {{if .Site.Params.gplus}}
+          <a href="https://google.com/+{{.Site.Params.gplus}}"><img src="{{.Site.BaseURL}}/images/gplus48x48.png"></a>
+        {{end}}
+        {{if .Site.Params.linkedin}}
+          <a href="https://www.linkedin.com/in/{{.Site.Params.linkedin}}"><img src="{{.Site.BaseURL}}/images/linkedin-dreamstale45.png"></a>
+        {{end}}
+          <a href="{{.Site.BaseURL}}/index.xml"><img src="{{.Site.BaseURL}}/images/feed-dreamstale27.png"></a>
+        </div>
+      </div>
+    </div>
+    <div class="parallax">
+    {{if .Site.Params.headerCover}}
+      <img src="{{.Site.BaseURL}}/{{.Site.Params.headerCover}}">
+    {{else}}
+      <img src="{{.Site.BaseURL}}/images/default.png">
+    {{end}}
+    </div>
+  </div>

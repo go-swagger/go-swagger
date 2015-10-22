@@ -1,0 +1,13 @@
+name = "Material Design"
+license = "MIT"
+licenselink = "https://github.com/pdevty/material-design/blob/master/LICENSE.md"
+description = "Simple Material Design theme"
+homepage = "https://github.com/pdevty/material-design"
+tags = ["blog"]
+features = ["Simple Material Design","Google Analytics","Pagination",
+"Disqus","Tags","Categories","Highlighting source code","Cover image","Social links"]
+min_version = 0.14
+
+[author]
+  name = "pdevty"
+  homepage = "http://pdevty.github.io/blog/"

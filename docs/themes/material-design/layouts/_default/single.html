@@ -1,0 +1,54 @@
+{{ partial "header.html" . }}
+{{ $baseurl := .Site.BaseURL }}
+
+<div class="container">
+  <div class="section">
+
+    <div class="row">
+      <div class="col s12">
+        <div class="card-panel">
+          <h4>{{ .Title }}</h4>
+          <p>
+          {{if .Params.categories }}
+            {{ range $index, $category := .Params.categories }}
+              <a href="{{$baseurl}}/categories/{{ $category | urlize }}/">{{ $category }}</a>
+            {{ end }}
+          {{end}} 
+          </p>
+          <p>{{ .Content }}</p>
+          <p>{{ .Date.Format "2 Jan 2006" }}
+            {{if .Params.tags }}
+              {{ range $index, $tag := .Params.tags }}
+                <a href="{{$baseurl}}/tags/{{ $tag | urlize }}/">#{{ $tag }}</a>
+              {{ end }}
+            {{end}}
+          </p>
+          {{ with .Site.DisqusShortname }}
+            {{ partial "disqus.html" . }}
+          {{ end }}
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col s3 m1">
+      {{if .Prev}}
+        <a class="btn-floating btn-large waves-effect waves-light" href="{{ .Prev.Permalink }}"><i class="mdi-navigation-arrow-back"></i></a>
+      {{else}}
+        <a class="btn-floating btn-large disabled"><i class="mdi-navigation-arrow-back"></i></a>
+      {{end}}
+      </div>
+      <div class="col s6 m10 center">&nbsp</div>
+      <div class="col s3 m1">
+      {{if .Next}}
+        <a class="btn-floating btn-large waves-effect waves-light" href="{{ .Next.Permalink }}"><i class="mdi-navigation-arrow-forward"></i></a>
+      {{else}}
+        <a class="btn-floating btn-large disabled"><i class="mdi-navigation-arrow-forward"></i></a>
+      {{end}}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{{ partial "footer.html" . }}
