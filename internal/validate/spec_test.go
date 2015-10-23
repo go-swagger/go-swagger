@@ -7,6 +7,7 @@ import (
 	"github.com/go-swagger/go-swagger/internal/testing/petstore"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
+	"github.com/kr/pretty"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -89,7 +90,34 @@ func TestValidateDefaultValueAgainstSchema(t *testing.T) {
 	res := validator.validateDefaultValueValidAgainstSchema()
 	assert.Empty(t, res.Errors)
 
+	//tests := []string{
+	//"parameter",
+	//"parameter-items",
+	//"header",
+	//"header-items",
+	//"schema",
+	//"schema-items",
+	//}
+
 	// parameter values
+	doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "valid-default-value-parameter.json"))
+	if assert.NoError(t, err) {
+		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
+		validator.spec = doc
+		res := validator.validateDefaultValueValidAgainstSchema()
+		assert.Empty(t, res.Errors)
+	}
+
+	doc, err = spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-default-value-parameter.json"))
+	if assert.NoError(t, err) {
+		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
+		pretty.Println(doc)
+		validator.spec = doc
+		res := validator.validateDefaultValueValidAgainstSchema()
+		assert.NotEmpty(t, res.Errors)
+		assert.Len(t, res.Errors, 1)
+	}
+
 	// parameter item values
 	// header values
 	// header items values

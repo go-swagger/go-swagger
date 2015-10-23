@@ -434,13 +434,21 @@ func (s *SpecValidator) validateDefaultValueValidAgainstSchema() *Result {
 		for path := range pathItem {
 			// parameters
 			for _, param := range s.spec.ParamsFor(method, path) {
-				if param.Default != nil {
+				// check simple paramters first
+				if param.Default != nil && param.Schema == nil {
 					// check param valid
 					res.Merge(NewParamValidator(&param, s.KnownFormats).Validate(param.Default))
 				}
+
+				//if param.Default != nil && param.Schema != nil {
+				//res.Merge(NewSchemaValidator(param.Schema, nil, "", s.KnownFormats).Validate(param.Default))
+				//}
 			}
 		}
 	}
 
 	return res
+}
+
+func (s *SpecValidator) isSwaggerType(tpe, format string, value interface{}) {
 }

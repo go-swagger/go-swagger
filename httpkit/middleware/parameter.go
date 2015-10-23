@@ -61,9 +61,9 @@ func (p *untypedParamBinder) typeForSchema(tpe, format string, items *spec.Items
 	case "integer":
 		switch format {
 		case "int8":
-			return reflect.TypeOf(int32(0))
+			return reflect.TypeOf(int8(0))
 		case "int16":
-			return reflect.TypeOf(int64(0))
+			return reflect.TypeOf(int16(0))
 		case "int32":
 			return reflect.TypeOf(int32(0))
 		case "int64":
