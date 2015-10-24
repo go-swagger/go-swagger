@@ -3,8 +3,13 @@
   
   <url>
     <loc>http://go-swagger.github.io/</loc>
-    <lastmod>2015-10-21T22:46:51-07:00</lastmod>
+    <lastmod>2015-10-22T23:28:09-07:00</lastmod>
     <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://go-swagger.github.io/usage/validate/</loc>
+    <lastmod>2015-10-22T23:28:09-07:00</lastmod>
   </url>
   
   <url>
