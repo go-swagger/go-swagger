@@ -349,7 +349,7 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 
 	if _, code, ok := route.Operation.SuccessResponse(); ok {
 		rw.WriteHeader(code)
-		if code == 201 || code == 204 || r.Method == "HEAD" {
+		if code == 204 || r.Method == "HEAD" {
 			return
 		}
 
