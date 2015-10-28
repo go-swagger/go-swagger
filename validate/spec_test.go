@@ -59,3 +59,15 @@ func TestIssue53(t *testing.T) {
 		}
 	}
 }
+
+func TestIssue63(t *testing.T) {
+	fp := filepath.Join("..", "fixtures", "bugs", "63", "swagger.json")
+
+	// as swagger spec
+	doc, err := spec.JSONSpec(fp)
+	if assert.NoError(t, err) {
+		validator := intvalidate.NewSpecValidator(doc.Schema(), strfmt.Default)
+		res, _ := validator.Validate(doc)
+		assert.True(t, res.IsValid())
+	}
+}

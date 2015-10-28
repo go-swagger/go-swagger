@@ -14,6 +14,7 @@ import (
 type SpecValidator struct {
 	schema       *spec.Schema // swagger 2.0 schema
 	spec         *spec.Document
+	expanded     *spec.Document
 	KnownFormats strfmt.Registry
 }
 
@@ -373,7 +374,18 @@ func (s *SpecValidator) validateParameters() *Result {
 				}
 				pnames[pr.Name] = struct{}{}
 			}
-			for _, pr := range s.spec.ParamsFor(method, path) {
+			sw := s.spec.Spec()
+			for _, ppr := range s.spec.ParamsFor(method, path) {
+				pr := ppr
+				if ppr.Ref.String() != "" {
+					obj, _, err := ppr.Ref.GetPointer().Get(sw)
+					if err != nil {
+						res.AddErrors(err)
+						break
+					}
+					pr = obj.(spec.Parameter)
+				}
+
 				if pr.In == "body" {
 					if firstBodyParam != "" {
 						res.AddErrors(errors.New(422, "operation %q has more than 1 body param (accepted: %q, dropped: %q)", op.ID, firstBodyParam, pr.Name))
@@ -404,10 +416,11 @@ func parsePath(path string) (segments []string, params []int) {
 func (s *SpecValidator) validateReferencesValid() *Result {
 	// each reference must point to a valid object
 	res := new(Result)
-	_, err := s.spec.Expanded()
+	exp, err := s.spec.Expanded()
 	if err != nil {
 		res.AddErrors(err)
 	}
+	s.expanded = exp
 	return res
 }
 

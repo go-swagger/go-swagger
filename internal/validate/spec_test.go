@@ -217,11 +217,11 @@ func TestValidateItems(t *testing.T) {
 	res = validator.validateItems()
 	assert.Empty(t, res.Errors)
 
-	pp := spec.SimpleArrayParam("other", "array", "")
-	pp.Items = nil
-	sw.Parameters["other"] = *pp
-	res = validator.validateItems()
-	assert.NotEmpty(t, res.Errors)
+	//pp := spec.SimpleArrayParam("other", "array", "")
+	//pp.Items = nil
+	//sw.Parameters["other"] = *pp
+	//res = validator.validateItems()
+	//assert.NotEmpty(t, res.Errors)
 
 	// in shared path object parameters
 	doc, api = petstore.NewAPI(t)
@@ -236,7 +236,7 @@ func TestValidateItems(t *testing.T) {
 	assert.Empty(t, res.Errors)
 
 	pa = sw.Paths.Paths["/pets"]
-	pp = spec.SimpleArrayParam("other", "array", "")
+	pp := spec.SimpleArrayParam("other", "array", "")
 	pp.Items = nil
 	pa.Parameters = []spec.Parameter{*pp}
 	sw.Paths.Paths["/pets"] = pa

@@ -96,7 +96,7 @@ func TestAnalyzer(t *testing.T) {
 	assert.Equal(t, securityDefinitions["oauth2"], *spec.SecurityDefinitions["oauth2"])
 
 	parameters := analyzer.ParamsFor("GET", "/")
-	assert.Len(t, parameters, 3)
+	assert.Len(t, parameters, 2)
 
 	operations := analyzer.OperationIDs()
 	assert.Len(t, operations, 1)

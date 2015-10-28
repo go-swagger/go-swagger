@@ -157,9 +157,9 @@ func (s *specAnalyzer) paramsAsMap(parameters []Parameter, res map[string]Parame
 
 func (s *specAnalyzer) ParamsFor(method, path string) map[string]Parameter {
 	res := make(map[string]Parameter)
-	for _, param := range s.spec.Parameters {
-		res[fieldNameFromParam(&param)] = param
-	}
+	//for _, param := range s.spec.Parameters {
+	//res[fieldNameFromParam(&param)] = param
+	//}
 	if pi, ok := s.spec.Paths.Paths[path]; ok {
 		s.paramsAsMap(pi.Parameters, res)
 		s.paramsAsMap(s.operations[strings.ToUpper(method)][path].Parameters, res)
