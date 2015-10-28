@@ -31,6 +31,7 @@ type Runtime struct {
 func New(swaggerSpec *spec.Document) *Runtime {
 	var rt Runtime
 	rt.DefaultMediaType = httpkit.JSONMime
+	// TODO: actually infer this stuff from the spec
 	rt.Consumers = map[string]httpkit.Consumer{
 		httpkit.JSONMime: httpkit.JSONConsumer(),
 	}
@@ -40,6 +41,7 @@ func New(swaggerSpec *spec.Document) *Runtime {
 	rt.Spec = swaggerSpec
 	rt.Transport = http.DefaultTransport
 	rt.client = http.DefaultClient
+	rt.client.Transport = rt.Transport
 	rt.Host = swaggerSpec.Host()
 	rt.BasePath = swaggerSpec.BasePath()
 	rt.methodsAndPaths = make(map[string]methodAndPath)

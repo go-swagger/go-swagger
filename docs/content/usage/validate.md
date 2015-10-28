@@ -1,7 +1,7 @@
 +++
-categories = ["usage", "vallidate"]
+categories = ["vallidate"]
 date = "2015-10-22T23:28:09-07:00"
-tags = ["document", "usage"]
+tags = ["usage"]
 title = "Validate a swagger spec"
 
 +++
@@ -9,8 +9,8 @@ title = "Validate a swagger spec"
 ## Validate a swagger spec
 
 The toolkit has a command to validate swagger specifications for you.
-It includes a full json-schema validator and adds a bunch of extra validations on
-top of that to ensure the spec is as valid as possible.
+It includes a full json-schema validator and adds a bunch of extra validations on top of that to ensure the spec
+is as valid as possible, so that there are no surprises.
 
 ### Usage
 
