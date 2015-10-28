@@ -51,6 +51,7 @@ func TestNumberParameterValidation(t *testing.T) {
 		factorParam.WithMinimum(makeFloat(v[3]), false)
 		factorParam.WithMultipleOf(makeFloat(v[7]))
 		factorParam.WithEnum(v[3], v[6], v[8], v[1])
+		factorParam.Typed("number", "double")
 		validator := NewParamValidator(factorParam, strfmt.Default)
 
 		// MultipleOf
@@ -126,7 +127,7 @@ func enumFail(param *spec.Parameter, data interface{}) *errors.Validation {
 }
 
 func TestStringParameterValidation(t *testing.T) {
-	nameParam := spec.QueryParam("name").AsRequired().WithMinLength(3).WithMaxLength(5).WithPattern(`^[a-z]+$`)
+	nameParam := spec.QueryParam("name").AsRequired().WithMinLength(3).WithMaxLength(5).WithPattern(`^[a-z]+$`).Typed("string", "")
 	nameParam.WithEnum("aaa", "bbb", "ccc")
 	validator := NewParamValidator(nameParam, strfmt.Default)
 

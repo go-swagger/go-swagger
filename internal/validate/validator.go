@@ -254,6 +254,12 @@ type ParamValidator struct {
 func NewParamValidator(param *spec.Parameter, formats strfmt.Registry) *ParamValidator {
 	p := &ParamValidator{param: param, KnownFormats: formats}
 	p.validators = []valueValidator{
+		&typeValidator{
+			Type:   spec.StringOrArray([]string{param.Type}),
+			Format: param.Format,
+			In:     param.In,
+			Path:   param.Name,
+		},
 		p.stringValidator(),
 		p.formatValidator(),
 		p.numberValidator(),
@@ -269,6 +275,7 @@ func (p *ParamValidator) Validate(data interface{}) *Result {
 	tpe := reflect.TypeOf(data)
 	kind := tpe.Kind()
 
+	// TODO: validate type
 	for _, validator := range p.validators {
 		if validator.Applies(p.param, kind) {
 			if err := validator.Validate(data); err != nil {

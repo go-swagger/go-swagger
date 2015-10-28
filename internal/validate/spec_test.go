@@ -7,7 +7,6 @@ import (
 	"github.com/go-swagger/go-swagger/internal/testing/petstore"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
-	"github.com/kr/pretty"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -84,11 +83,11 @@ func TestValidateReferencesValid(t *testing.T) {
 }
 
 func TestValidateDefaultValueAgainstSchema(t *testing.T) {
-	doc, api := petstore.NewAPI(t)
-	validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
-	validator.spec = doc
-	res := validator.validateDefaultValueValidAgainstSchema()
-	assert.Empty(t, res.Errors)
+	//doc, api := petstore.NewAPI(t)
+	//validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
+	//validator.spec = doc
+	//res := validator.validateDefaultValueValidAgainstSchema()
+	//assert.Empty(t, res.Errors)
 
 	//tests := []string{
 	//"parameter",
@@ -111,7 +110,7 @@ func TestValidateDefaultValueAgainstSchema(t *testing.T) {
 	doc, err = spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-default-value-parameter.json"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
-		pretty.Println(doc)
+		//pretty.Println(doc)
 		validator.spec = doc
 		res := validator.validateDefaultValueValidAgainstSchema()
 		assert.NotEmpty(t, res.Errors)

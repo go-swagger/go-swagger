@@ -105,8 +105,9 @@ func (t *typeValidator) SetPath(path string) {
 }
 
 func (t *typeValidator) Applies(source interface{}, kind reflect.Kind) bool {
-	r := (len(t.Type) > 0 || t.Format != "") && reflect.TypeOf(source) == specSchemaType
-	// fmt.Printf("type validator for %q applies %t for %T (kind: %v)\n", t.Path, r, source, kind)
+	stpe := reflect.TypeOf(source)
+	r := (len(t.Type) > 0 || t.Format != "") && (stpe == specSchemaType || stpe == specParameterType)
+	//fmt.Printf("type validator for %q applies %t for %T (kind: %v)\n", t.Path, r, source, kind)
 	return r
 }
 
@@ -126,16 +127,16 @@ func (t *typeValidator) Validate(data interface{}) *Result {
 	schType, format := t.schemaInfoForType(data)
 	isLowerInt := t.Format == "int64" && format == "int32"
 	isLowerFloat := t.Format == "float64" && format == "float32"
+	isFloatInt := schType == "number" && swag.IsFloat64AJSONInteger(val.Float()) && t.Type.Contains("integer")
+	isIntFloat := schType == "integer" && t.Type.Contains("number")
 
-	if val.Kind() != reflect.String && t.Format != "" && !(format == t.Format || isLowerInt || isLowerFloat) {
+	if val.Kind() != reflect.String && t.Format != "" && !(t.Type.Contains(schType) || format == t.Format || isFloatInt || isIntFloat || isLowerInt || isLowerFloat) {
 		return sErr(errors.InvalidType(t.Path, t.In, t.Format, format))
 	}
 	if t.Format != "" && val.Kind() == reflect.String {
 		return result
 	}
 
-	isFloatInt := schType == "number" && swag.IsFloat64AJSONInteger(val.Float()) && t.Type.Contains("integer")
-	isIntFloat := schType == "integer" && t.Type.Contains("number")
 	if !(t.Type.Contains(schType) || isFloatInt || isIntFloat) {
 		return sErr(errors.InvalidType(t.Path, t.In, strings.Join(t.Type, ","), schType))
 	}

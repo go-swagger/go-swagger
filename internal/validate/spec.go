@@ -433,9 +433,20 @@ func (s *SpecValidator) validateDefaultValueValidAgainstSchema() *Result {
 	for method, pathItem := range s.spec.Operations() {
 		for path := range pathItem {
 			// parameters
-			for _, param := range s.spec.ParamsFor(method, path) {
+			for _, pr := range s.spec.ParamsFor(method, path) {
+				// expand ref is necessary
+				param := pr
+				if pr.Ref.String() != "" {
+					obj, _, err := pr.Ref.GetPointer().Get(s.spec.Spec())
+					if err != nil {
+						res.AddErrors(err)
+						break
+					}
+					param = obj.(spec.Parameter)
+				}
 				// check simple paramters first
 				if param.Default != nil && param.Schema == nil {
+					fmt.Println(param.Name, "in", param.In, "has a default without a schema")
 					// check param valid
 					res.Merge(NewParamValidator(&param, s.KnownFormats).Validate(param.Default))
 				}
