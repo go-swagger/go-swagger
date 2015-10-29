@@ -12,7 +12,7 @@ import (
 
 // Enum validates if the data is a member of the enum
 func Enum(path, in string, data interface{}, enum interface{}) *errors.Validation {
-	val := reflect.ValueOf(data)
+	val := reflect.ValueOf(enum)
 	if val.Kind() != reflect.Slice {
 		return nil
 	}

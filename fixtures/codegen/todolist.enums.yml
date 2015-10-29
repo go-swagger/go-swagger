@@ -185,3 +185,14 @@ definitions:
             type: string
             description: The name for the delegate team or user
 
+  ComputeInstance:
+    type: object
+    description: Description of the compute instance
+    properties:
+      id:
+        type: string
+      region:
+        type: string
+        enum:
+          - us-west-2
+          - us-east-1

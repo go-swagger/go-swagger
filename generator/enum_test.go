@@ -2,6 +2,7 @@ package generator
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	"github.com/go-swagger/go-swagger/spec"
@@ -221,6 +222,32 @@ func TestEnum_ObjectThing(t *testing.T) {
 					assertInCode(t, "m.validateP1Enum(\"P1\", \"body\", m.P1)", res)
 					assertInCode(t, "m.validateP0Enum(\"P0\", \"body\", m.P0)", res)
 					assertInCode(t, "m.validateObjectThingLionsTuple0ItemsEnum(strconv.Itoa(i), \"body\", m.ObjectThingLionsTuple0Items[i])", res)
+				}
+			}
+		}
+	}
+}
+
+func TestEnum_ComputeInstance(t *testing.T) {
+	// ensure that the enum validation for the anonymous object under the delegate property
+	// is rendered.
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.enums.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "ComputeInstance"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("object_thing.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					fmt.Println(res)
+					assertInCode(t, "Region string `json:\"region,omitempty\"`", res)
+					assertInCode(t, "var computeInstanceRegionEnum []interface{}", res)
+					assertInCode(t, "m.validateRegionEnum(\"region\", \"body\", m.Region)", res)
 				}
 			}
 		}
