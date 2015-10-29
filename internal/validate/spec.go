@@ -446,7 +446,7 @@ func (s *SpecValidator) validateDefaultValueValidAgainstSchema() *Result {
 				}
 				// check simple paramters first
 				if param.Default != nil && param.Schema == nil {
-					fmt.Println(param.Name, "in", param.In, "has a default without a schema")
+					//fmt.Println(param.Name, "in", param.In, "has a default without a schema")
 					// check param valid
 					res.Merge(NewParamValidator(&param, s.KnownFormats).Validate(param.Default))
 				}

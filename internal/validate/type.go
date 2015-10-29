@@ -123,17 +123,19 @@ func (t *typeValidator) Validate(data interface{}) *Result {
 
 	// check if the type matches, should be used in every validator chain as first item
 	val := reflect.Indirect(reflect.ValueOf(data))
+	kind := val.Kind()
 
 	schType, format := t.schemaInfoForType(data)
+	//fmt.Println("path:", t.Path, "schType:", schType, "format:", format, "expType:", t.Type, "expFmt:", t.Format, "kind:", val.Kind().String())
 	isLowerInt := t.Format == "int64" && format == "int32"
 	isLowerFloat := t.Format == "float64" && format == "float32"
 	isFloatInt := schType == "number" && swag.IsFloat64AJSONInteger(val.Float()) && t.Type.Contains("integer")
 	isIntFloat := schType == "integer" && t.Type.Contains("number")
 
-	if val.Kind() != reflect.String && t.Format != "" && !(t.Type.Contains(schType) || format == t.Format || isFloatInt || isIntFloat || isLowerInt || isLowerFloat) {
+	if kind != reflect.String && kind != reflect.Slice && t.Format != "" && !(t.Type.Contains(schType) || format == t.Format || isFloatInt || isIntFloat || isLowerInt || isLowerFloat) {
 		return sErr(errors.InvalidType(t.Path, t.In, t.Format, format))
 	}
-	if t.Format != "" && val.Kind() == reflect.String {
+	if !(t.Type.Contains("number") || t.Type.Contains("integer")) && t.Format != "" && (kind == reflect.String || kind == reflect.Slice) {
 		return result
 	}
 
