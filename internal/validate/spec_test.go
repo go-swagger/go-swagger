@@ -83,38 +83,38 @@ func TestValidateReferencesValid(t *testing.T) {
 }
 
 func TestValidateDefaultValueAgainstSchema(t *testing.T) {
-	//doc, api := petstore.NewAPI(t)
-	//validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
-	//validator.spec = doc
-	//res := validator.validateDefaultValueValidAgainstSchema()
-	//assert.Empty(t, res.Errors)
+	doc, api := petstore.NewAPI(t)
+	validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
+	validator.spec = doc
+	res := validator.validateDefaultValueValidAgainstSchema()
+	assert.Empty(t, res.Errors)
 
-	//tests := []string{
-	//"parameter",
-	//"parameter-items",
-	//"header",
-	//"header-items",
-	//"schema",
-	//"schema-items",
-	//}
-
-	// parameter values
-	doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "valid-default-value-parameter.json"))
-	if assert.NoError(t, err) {
-		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
-		validator.spec = doc
-		res := validator.validateDefaultValueValidAgainstSchema()
-		assert.Empty(t, res.Errors)
+	tests := []string{
+		"parameter",
+		"parameter-items",
+		"header",
+		"header-items",
+		"schema",
+		"schema-items",
 	}
 
-	doc, err = spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-default-value-parameter.json"))
-	if assert.NoError(t, err) {
-		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
-		//pretty.Println(doc)
-		validator.spec = doc
-		res := validator.validateDefaultValueValidAgainstSchema()
-		assert.NotEmpty(t, res.Errors)
-		assert.Len(t, res.Errors, 1)
+	for _, tt := range tests {
+		doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "valid-default-value-"+tt+".json"))
+		if assert.NoError(t, err) {
+			validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
+			validator.spec = doc
+			res := validator.validateDefaultValueValidAgainstSchema()
+			assert.Empty(t, res.Errors, tt+" should not have errors")
+		}
+
+		doc, err = spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-default-value-"+tt+".json"))
+		if assert.NoError(t, err) {
+			validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
+			validator.spec = doc
+			res := validator.validateDefaultValueValidAgainstSchema()
+			assert.NotEmpty(t, res.Errors, tt+" should have errors")
+			assert.Len(t, res.Errors, 1, tt+" should have 1 error")
+		}
 	}
 
 	// parameter item values

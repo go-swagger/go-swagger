@@ -10,6 +10,7 @@ import (
 
 var specSchemaType = reflect.TypeOf(&spec.Schema{})
 var specParameterType = reflect.TypeOf(&spec.Parameter{})
+var specItemsType = reflect.TypeOf(&spec.Items{})
 var specHeaderType = reflect.TypeOf(&spec.Header{})
 
 // SchemaValidator like param validator but for a full json schema

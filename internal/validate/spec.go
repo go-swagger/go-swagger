@@ -451,6 +451,10 @@ func (s *SpecValidator) validateDefaultValueValidAgainstSchema() *Result {
 					res.Merge(NewParamValidator(&param, s.KnownFormats).Validate(param.Default))
 				}
 
+				if param.Items != nil {
+					res.Merge(s.validateDefaultValueItemsAgainstSchema(param.Name, param.In, &param, param.Items))
+				}
+
 				//if param.Default != nil && param.Schema != nil {
 				//res.Merge(NewSchemaValidator(param.Schema, nil, "", s.KnownFormats).Validate(param.Default))
 				//}
@@ -458,6 +462,19 @@ func (s *SpecValidator) validateDefaultValueValidAgainstSchema() *Result {
 		}
 	}
 
+	return res
+}
+
+func (s *SpecValidator) validateDefaultValueItemsAgainstSchema(path, in string, root interface{}, items *spec.Items) *Result {
+	res := new(Result)
+	if items != nil {
+		if items.Default != nil {
+			res.Merge(newItemsValidator(path, in, items, root, s.KnownFormats).Validate(0, items.Default))
+		}
+		if items.Items != nil {
+			res.Merge(s.validateDefaultValueItemsAgainstSchema(path+"[0]", in, root, items.Items))
+		}
+	}
 	return res
 }
 

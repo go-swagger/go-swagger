@@ -24,6 +24,18 @@
             "tags": ["pet"],
             "summary": "list the pets",
             "operationId": "getPets",
+            "parameters": [{
+                "name": "limit",
+                "in": "query",
+                "description": "number of items to return in the result",
+                "type": "array",
+                "collectionFormat": "csv",
+                "items": {
+                  "type": "integer",
+                  "format": "int32",
+                  "default": "20"
+                }
+            }],
             "responses": {
               "default": {
                 "description": "Generic Error"

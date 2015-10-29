@@ -33,6 +33,12 @@ type itemsValidator struct {
 func newItemsValidator(path, in string, items *spec.Items, root interface{}, formats strfmt.Registry) *itemsValidator {
 	iv := &itemsValidator{path: path, in: in, items: items, root: root, KnownFormats: formats}
 	iv.validators = []valueValidator{
+		&typeValidator{
+			Type:   spec.StringOrArray([]string{items.Type}),
+			Format: items.Format,
+			In:     in,
+			Path:   path,
+		},
 		iv.stringValidator(),
 		iv.formatValidator(),
 		iv.numberValidator(),
