@@ -455,6 +455,10 @@ func (s *SpecValidator) validateDefaultValueValidAgainstSchema() *Result {
 					res.Merge(s.validateDefaultValueItemsAgainstSchema(param.Name, param.In, &param, param.Items))
 				}
 
+				if param.Schema != nil {
+					res.Merge(s.validateDefaultValueSchemaAgainstSchema(param.Name, param.In, param.Schema))
+				}
+
 				//if param.Default != nil && param.Schema != nil {
 				//res.Merge(NewSchemaValidator(param.Schema, nil, "", s.KnownFormats).Validate(param.Default))
 				//}
@@ -485,6 +489,44 @@ func (s *SpecValidator) validateDefaultValueValidAgainstSchema() *Result {
 		}
 	}
 
+	for nm, sch := range s.spec.Spec().Definitions {
+		res.Merge(s.validateDefaultValueSchemaAgainstSchema(fmt.Sprintf("definitions.%s", nm), "body", &sch))
+	}
+
+	return res
+}
+
+func (s *SpecValidator) validateDefaultValueSchemaAgainstSchema(path, in string, schema *spec.Schema) *Result {
+	res := new(Result)
+	if schema != nil {
+		if schema.Default != nil {
+			res.Merge(NewSchemaValidator(schema, s.spec.Spec(), path, s.KnownFormats).Validate(schema.Default))
+		}
+		if schema.Items != nil {
+			if schema.Items.Schema != nil {
+				res.Merge(s.validateDefaultValueSchemaAgainstSchema(path+".items", in, schema.Items.Schema))
+			}
+			for i, sch := range schema.Items.Schemas {
+				res.Merge(s.validateDefaultValueSchemaAgainstSchema(fmt.Sprintf("%s.items[%d]", path, i), in, &sch))
+			}
+		}
+		if schema.AdditionalItems != nil && schema.AdditionalItems.Schema != nil {
+			res.Merge(s.validateDefaultValueSchemaAgainstSchema(fmt.Sprintf("%s.additionalItems", path), in, schema.AdditionalItems.Schema))
+		}
+		for propName, prop := range schema.Properties {
+			res.Merge(s.validateDefaultValueSchemaAgainstSchema(path+"."+propName, in, &prop))
+		}
+		for propName, prop := range schema.PatternProperties {
+			res.Merge(s.validateDefaultValueSchemaAgainstSchema(path+"."+propName, in, &prop))
+		}
+		if schema.AdditionalProperties != nil && schema.AdditionalProperties.Schema != nil {
+			res.Merge(s.validateDefaultValueSchemaAgainstSchema(fmt.Sprintf("%s.additionalProperties", path), in, schema.AdditionalItems.Schema))
+		}
+		for i, aoSch := range schema.AllOf {
+			res.Merge(s.validateDefaultValueSchemaAgainstSchema(fmt.Sprintf("%s.allOf[%d]", path, i), in, &aoSch))
+		}
+
+	}
 	return res
 }
 

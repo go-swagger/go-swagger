@@ -117,9 +117,6 @@ func TestValidateDefaultValueAgainstSchema(t *testing.T) {
 		}
 	}
 
-	// parameter item values
-	// header values
-	// header items values
 	// schema property values
 	// schema allOf property values
 	// schema property items values
