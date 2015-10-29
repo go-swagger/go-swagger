@@ -199,7 +199,7 @@ func TestArrayParameterValidation(t *testing.T) {
 	assert.EqualError(t, enumFail(tagsParam, []string{"a", "b", "c"}), err.Errors[0].Error())
 
 	// Items
-	strItems := spec.NewItems().WithMinLength(3).WithMaxLength(5).WithPattern(`^[a-z]+$`)
+	strItems := spec.NewItems().WithMinLength(3).WithMaxLength(5).WithPattern(`^[a-z]+$`).Typed("string", "")
 	tagsParam = spec.QueryParam("tags").CollectionOf(strItems, "").WithMinItems(1).WithMaxItems(5).UniqueValues()
 	validator = NewParamValidator(tagsParam, strfmt.Default)
 	err = validator.Validate([]string{"aa", "bbb", "ccc"})

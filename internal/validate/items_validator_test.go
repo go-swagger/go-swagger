@@ -91,6 +91,7 @@ func TestNumberItemsValidation(t *testing.T) {
 		items.WithMinimum(makeFloat(v[3]), false)
 		items.WithMultipleOf(makeFloat(v[7]))
 		items.WithEnum(v[3], v[6], v[8], v[1])
+		items.Typed("integer", "int32")
 		parent := spec.QueryParam("factors").CollectionOf(items, "")
 		path := fmt.Sprintf("factors.%d", i)
 		validator := newItemsValidator(parent.Name, parent.In, items, parent, strfmt.Default)
@@ -143,7 +144,7 @@ func TestNumberItemsValidation(t *testing.T) {
 }
 
 func TestStringItemsValidation(t *testing.T) {
-	items := spec.NewItems().WithMinLength(3).WithMaxLength(5).WithPattern(`^[a-z]+$`)
+	items := spec.NewItems().WithMinLength(3).WithMaxLength(5).WithPattern(`^[a-z]+$`).Typed("string", "")
 	items.WithEnum("aaa", "bbb", "ccc")
 	parent := spec.QueryParam("tags").CollectionOf(items, "")
 	path := parent.Name + ".1"
@@ -205,7 +206,7 @@ func TestArrayItemsValidation(t *testing.T) {
 	assert.EqualError(t, enumFailItems(path, validator.in, items, []string{"a", "b", "c"}), err.Errors[0].Error())
 
 	// Items
-	strItems := spec.NewItems().WithMinLength(3).WithMaxLength(5).WithPattern(`^[a-z]+$`)
+	strItems := spec.NewItems().WithMinLength(3).WithMaxLength(5).WithPattern(`^[a-z]+$`).Typed("string", "")
 	items = spec.NewItems().CollectionOf(strItems, "").WithMinItems(1).WithMaxItems(5).UniqueValues()
 	validator = newItemsValidator(parent.Name, parent.In, items, parent, strfmt.Default)
 

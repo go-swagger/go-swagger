@@ -520,7 +520,7 @@ func (s *SpecValidator) validateDefaultValueSchemaAgainstSchema(path, in string,
 			res.Merge(s.validateDefaultValueSchemaAgainstSchema(path+"."+propName, in, &prop))
 		}
 		if schema.AdditionalProperties != nil && schema.AdditionalProperties.Schema != nil {
-			res.Merge(s.validateDefaultValueSchemaAgainstSchema(fmt.Sprintf("%s.additionalProperties", path), in, schema.AdditionalItems.Schema))
+			res.Merge(s.validateDefaultValueSchemaAgainstSchema(fmt.Sprintf("%s.additionalProperties", path), in, schema.AdditionalProperties.Schema))
 		}
 		for i, aoSch := range schema.AllOf {
 			res.Merge(s.validateDefaultValueSchemaAgainstSchema(fmt.Sprintf("%s.allOf[%d]", path, i), in, &aoSch))

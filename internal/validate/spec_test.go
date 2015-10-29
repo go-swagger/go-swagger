@@ -91,11 +91,16 @@ func TestValidateDefaultValueAgainstSchema(t *testing.T) {
 
 	tests := []string{
 		"parameter",
+		"parameter-ref",
 		"parameter-items",
 		"header",
 		"header-items",
 		"schema",
+		"schema-ref",
+		"schema-additionalProperties",
+		"schema-patternProperties",
 		"schema-items",
+		"schema-allOf",
 	}
 
 	for _, tt := range tests {
@@ -117,19 +122,7 @@ func TestValidateDefaultValueAgainstSchema(t *testing.T) {
 		}
 	}
 
-	// schema property values
 	// schema allOf property values
-	// schema property items values
-	// schema property additional items values
-	// schema pattern property values
-	// schema pattern property items values
-	// schema pattern property additional items values
-	// schema additional property values
-	// schema additional property items values
-	// schema additional property additional items values
-	// schema additional property values
-	// schema additional property items values
-	// schema additional property additional items values
 }
 
 func TestValidateRequiredDefinitions(t *testing.T) {
