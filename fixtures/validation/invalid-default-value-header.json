@@ -26,6 +26,13 @@
             "operationId": "getPets",
             "responses": {
               "default": {
+                "headers": {
+                  "X-Rate-Limit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "default": "20"
+                  }
+                },
                 "description": "Generic Error"
               },
               "200": {

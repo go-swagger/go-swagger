@@ -431,7 +431,7 @@ func (s *SpecValidator) validateDefaultValueValidAgainstSchema() *Result {
 	res := new(Result)
 
 	for method, pathItem := range s.spec.Operations() {
-		for path := range pathItem {
+		for path, op := range pathItem {
 			// parameters
 			for _, pr := range s.spec.ParamsFor(method, path) {
 				// expand ref is necessary
@@ -459,6 +459,29 @@ func (s *SpecValidator) validateDefaultValueValidAgainstSchema() *Result {
 				//res.Merge(NewSchemaValidator(param.Schema, nil, "", s.KnownFormats).Validate(param.Default))
 				//}
 			}
+
+			if op.Responses.Default != nil {
+				dr := op.Responses.Default
+				for nm, h := range dr.Headers {
+					if h.Default != nil {
+						res.Merge(NewHeaderValidator(nm, &h, s.KnownFormats).Validate(h.Default))
+					}
+					if h.Items != nil {
+						res.Merge(s.validateDefaultValueItemsAgainstSchema(nm, "header", &h, h.Items))
+					}
+				}
+			}
+			for _, r := range op.Responses.StatusCodeResponses {
+				for nm, h := range r.Headers {
+					if h.Default != nil {
+						res.Merge(NewHeaderValidator(nm, &h, s.KnownFormats).Validate(h.Default))
+					}
+					if h.Items != nil {
+						res.Merge(s.validateDefaultValueItemsAgainstSchema(nm, "header", &h, h.Items))
+					}
+				}
+			}
+
 		}
 	}
 

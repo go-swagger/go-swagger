@@ -163,6 +163,12 @@ type HeaderValidator struct {
 func NewHeaderValidator(name string, header *spec.Header, formats strfmt.Registry) *HeaderValidator {
 	p := &HeaderValidator{name: name, header: header, KnownFormats: formats}
 	p.validators = []valueValidator{
+		&typeValidator{
+			Type:   spec.StringOrArray([]string{header.Type}),
+			Format: header.Format,
+			In:     "header",
+			Path:   name,
+		},
 		p.stringValidator(),
 		p.formatValidator(),
 		p.numberValidator(),

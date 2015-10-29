@@ -106,7 +106,7 @@ func (t *typeValidator) SetPath(path string) {
 
 func (t *typeValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	stpe := reflect.TypeOf(source)
-	r := (len(t.Type) > 0 || t.Format != "") && (stpe == specSchemaType || stpe == specParameterType || stpe == specItemsType)
+	r := (len(t.Type) > 0 || t.Format != "") && (stpe == specSchemaType || stpe == specParameterType || stpe == specHeaderType)
 	//fmt.Printf("type validator for %q applies %t for %T (kind: %v)\n", t.Path, r, source, kind)
 	return r
 }
