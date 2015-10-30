@@ -15,8 +15,11 @@ func init() {
 
 // IsDateTime returns true when the string is a valid date-time
 func IsDateTime(str string) bool {
+	if len(str) < 4 {
+		return false
+	}
 	s := strings.Split(strings.ToLower(str), "t")
-	if !IsDate(s[0]) {
+	if len(s) < 2 || !IsDate(s[0]) {
 		return false
 	}
 

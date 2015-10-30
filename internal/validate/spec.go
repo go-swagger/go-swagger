@@ -59,7 +59,7 @@ func (s *SpecValidator) Validate(data interface{}) (errs *Result, warnings *Resu
 	errs.Merge(s.validateItems())                          // error -
 	errs.Merge(s.validateRequiredDefinitions())            // error -
 	errs.Merge(s.validateDefaultValueValidAgainstSchema()) // error -
-	errs.Merge(s.validateExamplesValidAgainstSchema())     // error
+	errs.Merge(s.validateExamplesValidAgainstSchema())     // error -
 
 	warnings.Merge(s.validateUniqueSecurityScopes())            // warning
 	warnings.Merge(s.validateUniqueScopesSecurityDefinitions()) // warning
