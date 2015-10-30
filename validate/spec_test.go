@@ -84,3 +84,16 @@ func TestIssue61_MultipleRefs(t *testing.T) {
 		assert.True(t, res.IsValid())
 	}
 }
+
+func TestIssue61_ResolvedRef(t *testing.T) {
+	fp := filepath.Join("..", "fixtures", "bugs", "61", "unresolved-ref-for-name.json")
+
+	// as swagger spec
+	doc, err := spec.JSONSpec(fp)
+	if assert.NoError(t, err) {
+		validator := intvalidate.NewSpecValidator(doc.Schema(), strfmt.Default)
+		res, _ := validator.Validate(doc)
+		assert.Empty(t, res.Errors)
+		assert.True(t, res.IsValid())
+	}
+}
