@@ -240,7 +240,7 @@ func TestGenerateModel_Primitives(t *testing.T) {
 		}
 		val.Name = "theType"
 		exp := v.Expected
-		tt.assertRender(val, "type TheType "+exp+"\n\n")
+		tt.assertRender(val, "type TheType "+exp+"\n\n\n")
 	}
 }
 

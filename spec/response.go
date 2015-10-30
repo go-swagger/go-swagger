@@ -7,10 +7,10 @@ import (
 )
 
 type responseProps struct {
-	Description string            `json:"description,omitempty"`
-	Schema      *Schema           `json:"schema,omitempty"`
-	Headers     map[string]Header `json:"headers,omitempty"`
-	Examples    interface{}       `json:"examples,omitempty"`
+	Description string                 `json:"description,omitempty"`
+	Schema      *Schema                `json:"schema,omitempty"`
+	Headers     map[string]Header      `json:"headers,omitempty"`
+	Examples    map[string]interface{} `json:"examples,omitempty"`
 }
 
 // Response describes a single response from an API Operation.

@@ -92,7 +92,7 @@ For a V1 I want to have this feature set completed:
       - [x] each operation should have only 1 parameter of type body (Error)
       - [x] each reference must point to a valid object (Error)
       - [x] every default value that is specified must validate against the schema for that property (Error)
-      - [ ] every example that is specified must validate against the schema for that property (Error)
+      - [x] every example that is specified must validate against the schema for that property (Error)
       - [x] items property is required for all schemas/definitions of type `array` (Error)
 	-	[x] serve swagger UI for any swagger spec file
   - [x] code generation

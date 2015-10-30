@@ -82,6 +82,32 @@ func TestValidateReferencesValid(t *testing.T) {
 	}
 }
 
+func TestValidatesExamplesAgainstSchema(t *testing.T) {
+	tests := []string{
+		"response",
+		"response-ref",
+	}
+
+	for _, tt := range tests {
+		doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "valid-example-"+tt+".json"))
+		if assert.NoError(t, err) {
+			validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
+			validator.spec = doc
+			res := validator.validateExamplesValidAgainstSchema()
+			assert.Empty(t, res.Errors, tt+" should not have errors")
+		}
+
+		doc, err = spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-example-"+tt+".json"))
+		if assert.NoError(t, err) {
+			validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
+			validator.spec = doc
+			res := validator.validateExamplesValidAgainstSchema()
+			assert.NotEmpty(t, res.Errors, tt+" should have errors")
+			assert.Len(t, res.Errors, 1, tt+" should have 1 error")
+		}
+	}
+}
+
 func TestValidateDefaultValueAgainstSchema(t *testing.T) {
 	doc, api := petstore.NewAPI(t)
 	validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
@@ -121,8 +147,6 @@ func TestValidateDefaultValueAgainstSchema(t *testing.T) {
 			assert.Len(t, res.Errors, 1, tt+" should have 1 error")
 		}
 	}
-
-	// schema allOf property values
 }
 
 func TestValidateRequiredDefinitions(t *testing.T) {

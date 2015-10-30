@@ -6,8 +6,7 @@
 {{ template "additionalPropertiesSerializer" . }}
 {{ end }}{{if .HasValidations }}
 {{ template "schemavalidator" . }}
-{{ else }}// Validate validates this {{ humanize .Name }}
+{{ else }}{{ if .IsComplexObject }}// Validate validates this {{ humanize .Name }}
 func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ pascalize .Name}}) Validate(formats strfmt.Registry) error {
   return nil
-}
-{{ end }}
+}{{ end }}{{ end }}

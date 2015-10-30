@@ -58,7 +58,8 @@ func (s *SpecValidator) Validate(data interface{}) (errs *Result, warnings *Resu
 	errs.Merge(s.validateParameters())                     // error -
 	errs.Merge(s.validateItems())                          // error -
 	errs.Merge(s.validateRequiredDefinitions())            // error -
-	errs.Merge(s.validateDefaultValueValidAgainstSchema()) // error
+	errs.Merge(s.validateDefaultValueValidAgainstSchema()) // error -
+	errs.Merge(s.validateExamplesValidAgainstSchema())     // error
 
 	warnings.Merge(s.validateUniqueSecurityScopes())            // warning
 	warnings.Merge(s.validateUniqueScopesSecurityDefinitions()) // warning
@@ -424,6 +425,48 @@ func (s *SpecValidator) validateReferencesValid() *Result {
 	return res
 }
 
+func (s *SpecValidator) validateResponseExample(path string, r *spec.Response) *Result {
+	res := new(Result)
+	if r.Ref.String() != "" {
+		nr, _, err := r.Ref.GetPointer().Get(s.spec.Spec())
+		if err != nil {
+			res.AddErrors(err)
+			return res
+		}
+		rr := nr.(spec.Response)
+		return s.validateResponseExample(path, &rr)
+	}
+
+	if r.Examples != nil {
+		if r.Schema != nil {
+			if example, ok := r.Examples["application/json"]; ok {
+				res.Merge(NewSchemaValidator(r.Schema, s.spec.Spec(), path, s.KnownFormats).Validate(example))
+			}
+
+			// TODO: validate other media types too
+		}
+	}
+	return res
+}
+
+func (s *SpecValidator) validateExamplesValidAgainstSchema() *Result {
+	res := new(Result)
+
+	for _, pathItem := range s.spec.Operations() {
+		for path, op := range pathItem {
+			if op.Responses.Default != nil {
+				dr := op.Responses.Default
+				res.Merge(s.validateResponseExample(path, dr))
+			}
+			for _, r := range op.Responses.StatusCodeResponses {
+				res.Merge(s.validateResponseExample(path, &r))
+			}
+		}
+	}
+
+	return res
+}
+
 func (s *SpecValidator) validateDefaultValueValidAgainstSchema() *Result {
 	// every default value that is specified must validate against the schema for that property
 	// headers, items, parameters, schema
@@ -458,10 +501,6 @@ func (s *SpecValidator) validateDefaultValueValidAgainstSchema() *Result {
 				if param.Schema != nil {
 					res.Merge(s.validateDefaultValueSchemaAgainstSchema(param.Name, param.In, param.Schema))
 				}
-
-				//if param.Default != nil && param.Schema != nil {
-				//res.Merge(NewSchemaValidator(param.Schema, nil, "", s.KnownFormats).Validate(param.Default))
-				//}
 			}
 
 			if op.Responses.Default != nil {
