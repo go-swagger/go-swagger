@@ -151,7 +151,15 @@ func fieldNameFromParam(param *Parameter) string {
 
 func (s *specAnalyzer) paramsAsMap(parameters []Parameter, res map[string]Parameter) {
 	for _, param := range parameters {
-		res[fieldNameFromParam(&param)] = param
+		pr := param
+		if pr.Ref.String() != "" {
+			obj, _, err := pr.Ref.GetPointer().Get(s.spec)
+			if err != nil {
+				panic(err)
+			}
+			pr = obj.(Parameter)
+		}
+		res[fieldNameFromParam(&pr)] = pr
 	}
 }
 

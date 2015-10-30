@@ -2,6 +2,7 @@ package validate
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 
@@ -360,9 +361,21 @@ func (s *SpecValidator) validateParameters() *Result {
 
 			ptypes := make(map[string]map[string]struct{})
 			var firstBodyParam string
-
+			sw := s.spec.Spec()
 			var paramNames []string
-			for _, pr := range op.Parameters {
+			for _, ppr := range op.Parameters {
+				pr := ppr
+				// pretty.Println("before", pr)
+				if pr.Ref.String() != "" {
+					obj, _, err := pr.Ref.GetPointer().Get(sw)
+					if err != nil {
+						log.Println(err)
+						res.AddErrors(err)
+						break
+					}
+					pr = obj.(spec.Parameter)
+				}
+				// pretty.Println("op resolved", pr)
 				pnames, ok := ptypes[pr.In]
 				if !ok {
 					pnames = make(map[string]struct{})
@@ -375,9 +388,10 @@ func (s *SpecValidator) validateParameters() *Result {
 				}
 				pnames[pr.Name] = struct{}{}
 			}
-			sw := s.spec.Spec()
+
 			for _, ppr := range s.spec.ParamsFor(method, path) {
 				pr := ppr
+				// pretty.Println("before", pr)
 				if ppr.Ref.String() != "" {
 					obj, _, err := ppr.Ref.GetPointer().Get(sw)
 					if err != nil {
@@ -386,6 +400,7 @@ func (s *SpecValidator) validateParameters() *Result {
 					}
 					pr = obj.(spec.Parameter)
 				}
+				// pretty.Println("resolved", pr)
 
 				if pr.In == "body" {
 					if firstBodyParam != "" {
