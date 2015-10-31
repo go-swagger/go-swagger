@@ -331,9 +331,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		bldr.Operation = o
 		bldr.Authed = len(a.SpecDoc.SecurityRequirementsFor(&o)) > 0
 		ap := a.APIPackage
-		if a.APIPackage == a.Package {
-			ap = ""
-		}
 		if len(o.Tags) > 0 {
 			for _, tag := range o.Tags {
 				tns[tag] = struct{}{}
