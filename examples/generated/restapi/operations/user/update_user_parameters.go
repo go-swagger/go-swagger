@@ -7,10 +7,9 @@ import (
 	"net/http"
 
 	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/models"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
 	"github.com/go-swagger/go-swagger/strfmt"
-
-	"github.com/go-swagger/go-swagger/examples/generated/models"
 )
 
 // UpdateUserParams contains all the bound params for the update user operation
@@ -19,7 +18,7 @@ type UpdateUserParams struct {
 	// name that need to be deleted
 	Username string
 	// Updated user object
-	Body models.User
+	Body *models.User
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -31,7 +30,7 @@ func (o *UpdateUserParams) BindRequest(r *http.Request, route *middleware.Matche
 		res = append(res, err)
 	}
 
-	if err := route.Consumer.Consume(r.Body, &o.Body); err != nil {
+	if err := route.Consumer.Consume(r.Body, o.Body); err != nil {
 		res = append(res, errors.NewParseError("body", "body", "", err))
 	} else {
 		if err := o.Body.Validate(route.Formats); err != nil {
@@ -49,15 +48,6 @@ func (o *UpdateUserParams) BindRequest(r *http.Request, route *middleware.Matche
 func (o *UpdateUserParams) bindUsername(raw string, formats strfmt.Registry) error {
 
 	o.Username = raw
-
-	if err := o.validateUsername(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *UpdateUserParams) validateUsername(formats strfmt.Registry) error {
 
 	return nil
 }

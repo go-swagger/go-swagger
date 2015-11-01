@@ -6,7 +6,7 @@ package pet
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/examples/generated/models"
+	"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/models"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
 )
 
@@ -27,7 +27,9 @@ func NewDeletePet(ctx *middleware.Context, handler DeletePetHandler) *DeletePet 
 	return &DeletePet{Context: ctx, Handler: handler}
 }
 
-// DeletePet
+/*
+Deletes a pet
+*/
 type DeletePet struct {
 	Context *middleware.Context
 	Params  DeletePetParams
@@ -44,7 +46,7 @@ func (o *DeletePet) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 	var principal *models.User
 	if uprinc != nil {
-		principal = uprinc.(*models.User) // it's ok this is really a models.User
+		principal = uprinc.(*models.User) // this is really a models.User, I promise
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &o.Params); err != nil { // bind params

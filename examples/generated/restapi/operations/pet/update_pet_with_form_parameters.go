@@ -50,15 +50,6 @@ func (o *UpdatePetWithFormParams) bindPetID(raw string, formats strfmt.Registry)
 
 	o.PetID = raw
 
-	if err := o.validatePetID(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *UpdatePetWithFormParams) validatePetID(formats strfmt.Registry) error {
-
 	return nil
 }
 
@@ -69,15 +60,6 @@ func (o *UpdatePetWithFormParams) bindName(raw string, formats strfmt.Registry) 
 
 	o.Name = raw
 
-	if err := o.validateName(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *UpdatePetWithFormParams) validateName(formats strfmt.Registry) error {
-
 	return nil
 }
 
@@ -87,15 +69,6 @@ func (o *UpdatePetWithFormParams) bindStatus(raw string, formats strfmt.Registry
 	}
 
 	o.Status = raw
-
-	if err := o.validateStatus(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *UpdatePetWithFormParams) validateStatus(formats strfmt.Registry) error {
 
 	return nil
 }

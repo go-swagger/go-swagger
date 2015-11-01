@@ -26,7 +26,11 @@ func NewUpdateUser(ctx *middleware.Context, handler UpdateUserHandler) *UpdateUs
 	return &UpdateUser{Context: ctx, Handler: handler}
 }
 
-// UpdateUser This can only be done by the logged in user.
+/*
+Updated user
+
+This can only be done by the logged in user.
+*/
 type UpdateUser struct {
 	Context *middleware.Context
 	Params  UpdateUserParams

@@ -26,7 +26,7 @@ type DeletePetParams struct {
 func (o *DeletePetParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 
-	if err := o.bindAPIKey(r.Header.Get("apiKey"), route.Formats); err != nil {
+	if err := o.bindAPIKey(r.Header.Get("api_key"), route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -41,20 +41,11 @@ func (o *DeletePetParams) BindRequest(r *http.Request, route *middleware.Matched
 }
 
 func (o *DeletePetParams) bindAPIKey(raw string, formats strfmt.Registry) error {
-	if err := validate.RequiredString("apiKey", "header", raw); err != nil {
+	if err := validate.RequiredString("api_key", "header", raw); err != nil {
 		return err
 	}
 
 	o.APIKey = raw
-
-	if err := o.validateAPIKey(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *DeletePetParams) validateAPIKey(formats strfmt.Registry) error {
 
 	return nil
 }
@@ -66,15 +57,6 @@ func (o *DeletePetParams) bindPetID(raw string, formats strfmt.Registry) error {
 		return errors.InvalidType("petId", "path", "int64", raw)
 	}
 	o.PetID = value
-
-	if err := o.validatePetID(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *DeletePetParams) validatePetID(formats strfmt.Registry) error {
 
 	return nil
 }

@@ -45,7 +45,7 @@ func (o *FindPetsByStatusParams) bindStatus(raw []string, formats strfmt.Registr
 	ic := raw
 	isz := size
 	var ir []string
-	iValidateElement := func(i int, value string) *errors.Validation {
+	iValidateElement := func(i int, statusI string) *errors.Validation {
 
 		return nil
 	}

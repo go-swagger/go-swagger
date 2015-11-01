@@ -26,7 +26,9 @@ func NewLogoutUser(ctx *middleware.Context, handler LogoutUserHandler) *LogoutUs
 	return &LogoutUser{Context: ctx, Handler: handler}
 }
 
-// LogoutUser
+/*
+Logs out current logged in user session
+*/
 type LogoutUser struct {
 	Context *middleware.Context
 	Handler LogoutUserHandler

@@ -7,16 +7,15 @@ import (
 	"net/http"
 
 	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/models"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
-
-	"github.com/go-swagger/go-swagger/examples/generated/models"
 )
 
 // CreateUserParams contains all the bound params for the create user operation
 // typically these are obtained from a http.Request
 type CreateUserParams struct {
 	// Created user object
-	Body models.User
+	Body *models.User
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -24,7 +23,7 @@ type CreateUserParams struct {
 func (o *CreateUserParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 
-	if err := route.Consumer.Consume(r.Body, &o.Body); err != nil {
+	if err := route.Consumer.Consume(r.Body, o.Body); err != nil {
 		res = append(res, errors.NewParseError("body", "body", "", err))
 	} else {
 		if err := o.Body.Validate(route.Formats); err != nil {

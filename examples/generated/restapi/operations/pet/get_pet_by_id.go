@@ -6,28 +6,32 @@ package pet
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/examples/generated/models"
+	"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/models"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
 )
 
-// GetPetByIDHandlerFunc turns a function with the right signature into a get pet by i d handler
+// GetPetByIDHandlerFunc turns a function with the right signature into a get pet by id handler
 type GetPetByIDHandlerFunc func(GetPetByIDParams, *models.User) (*models.Pet, error)
 
 func (fn GetPetByIDHandlerFunc) Handle(params GetPetByIDParams, principal *models.User) (*models.Pet, error) {
 	return fn(params, principal)
 }
 
-// GetPetByIDHandler interface for that can handle valid get pet by i d params
+// GetPetByIDHandler interface for that can handle valid get pet by id params
 type GetPetByIDHandler interface {
 	Handle(GetPetByIDParams, *models.User) (*models.Pet, error)
 }
 
-// NewGetPetByID creates a new http.Handler for the get pet by i d operation
+// NewGetPetByID creates a new http.Handler for the get pet by id operation
 func NewGetPetByID(ctx *middleware.Context, handler GetPetByIDHandler) *GetPetByID {
 	return &GetPetByID{Context: ctx, Handler: handler}
 }
 
-// GetPetByID Returns a pet when ID < 10.  ID > 10 or nonintegers will simulate API error conditions
+/*
+Find pet by ID
+
+Returns a pet when ID < 10.  ID > 10 or nonintegers will simulate API error conditions
+*/
 type GetPetByID struct {
 	Context *middleware.Context
 	Params  GetPetByIDParams
@@ -44,7 +48,7 @@ func (o *GetPetByID) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 	var principal *models.User
 	if uprinc != nil {
-		principal = uprinc.(*models.User) // it's ok this is really a models.User
+		principal = uprinc.(*models.User) // this is really a models.User, I promise
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &o.Params); err != nil { // bind params

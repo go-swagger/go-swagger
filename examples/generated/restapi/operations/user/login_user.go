@@ -10,15 +10,15 @@ import (
 )
 
 // LoginUserHandlerFunc turns a function with the right signature into a login user handler
-type LoginUserHandlerFunc func(LoginUserParams) (string, error)
+type LoginUserHandlerFunc func(LoginUserParams) (*string, error)
 
-func (fn LoginUserHandlerFunc) Handle(params LoginUserParams) (string, error) {
+func (fn LoginUserHandlerFunc) Handle(params LoginUserParams) (*string, error) {
 	return fn(params)
 }
 
 // LoginUserHandler interface for that can handle valid login user params
 type LoginUserHandler interface {
-	Handle(LoginUserParams) (string, error)
+	Handle(LoginUserParams) (*string, error)
 }
 
 // NewLoginUser creates a new http.Handler for the login user operation
@@ -26,7 +26,9 @@ func NewLoginUser(ctx *middleware.Context, handler LoginUserHandler) *LoginUser 
 	return &LoginUser{Context: ctx, Handler: handler}
 }
 
-// LoginUser
+/*
+Logs user into the system
+*/
 type LoginUser struct {
 	Context *middleware.Context
 	Params  LoginUserParams

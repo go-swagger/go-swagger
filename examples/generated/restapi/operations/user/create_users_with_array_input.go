@@ -26,7 +26,9 @@ func NewCreateUsersWithArrayInput(ctx *middleware.Context, handler CreateUsersWi
 	return &CreateUsersWithArrayInput{Context: ctx, Handler: handler}
 }
 
-// CreateUsersWithArrayInput
+/*
+Creates list of users with given input array
+*/
 type CreateUsersWithArrayInput struct {
 	Context *middleware.Context
 	Params  CreateUsersWithArrayInputParams

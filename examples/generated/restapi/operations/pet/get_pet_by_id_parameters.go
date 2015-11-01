@@ -12,7 +12,7 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
-// GetPetByIDParams contains all the bound params for the get pet by i d operation
+// GetPetByIDParams contains all the bound params for the get pet by id operation
 // typically these are obtained from a http.Request
 type GetPetByIDParams struct {
 	// ID of pet that needs to be fetched
@@ -41,15 +41,6 @@ func (o *GetPetByIDParams) bindPetID(raw string, formats strfmt.Registry) error 
 		return errors.InvalidType("petId", "path", "int64", raw)
 	}
 	o.PetID = value
-
-	if err := o.validatePetID(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *GetPetByIDParams) validatePetID(formats strfmt.Registry) error {
 
 	return nil
 }

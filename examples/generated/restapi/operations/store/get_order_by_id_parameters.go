@@ -11,7 +11,7 @@ import (
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 
-// GetOrderByIDParams contains all the bound params for the get order by i d operation
+// GetOrderByIDParams contains all the bound params for the get order by id operation
 // typically these are obtained from a http.Request
 type GetOrderByIDParams struct {
 	// ID of pet that needs to be fetched
@@ -36,15 +36,6 @@ func (o *GetOrderByIDParams) BindRequest(r *http.Request, route *middleware.Matc
 func (o *GetOrderByIDParams) bindOrderID(raw string, formats strfmt.Registry) error {
 
 	o.OrderID = raw
-
-	if err := o.validateOrderID(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *GetOrderByIDParams) validateOrderID(formats strfmt.Registry) error {
 
 	return nil
 }

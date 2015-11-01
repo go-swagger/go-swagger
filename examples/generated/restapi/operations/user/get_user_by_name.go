@@ -6,7 +6,7 @@ package user
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/examples/generated/models"
+	"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/models"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
 )
 
@@ -27,7 +27,9 @@ func NewGetUserByName(ctx *middleware.Context, handler GetUserByNameHandler) *Ge
 	return &GetUserByName{Context: ctx, Handler: handler}
 }
 
-// GetUserByName
+/*
+Get user by user name
+*/
 type GetUserByName struct {
 	Context *middleware.Context
 	Params  GetUserByNameParams

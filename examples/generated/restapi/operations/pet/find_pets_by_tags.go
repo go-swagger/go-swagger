@@ -6,20 +6,20 @@ package pet
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/examples/generated/models"
+	"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/models"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
 )
 
 // FindPetsByTagsHandlerFunc turns a function with the right signature into a find pets by tags handler
-type FindPetsByTagsHandlerFunc func(FindPetsByTagsParams, *models.User) ([]models.Pet, error)
+type FindPetsByTagsHandlerFunc func(FindPetsByTagsParams, *models.User) (*[]models.Pet, error)
 
-func (fn FindPetsByTagsHandlerFunc) Handle(params FindPetsByTagsParams, principal *models.User) ([]models.Pet, error) {
+func (fn FindPetsByTagsHandlerFunc) Handle(params FindPetsByTagsParams, principal *models.User) (*[]models.Pet, error) {
 	return fn(params, principal)
 }
 
 // FindPetsByTagsHandler interface for that can handle valid find pets by tags params
 type FindPetsByTagsHandler interface {
-	Handle(FindPetsByTagsParams, *models.User) ([]models.Pet, error)
+	Handle(FindPetsByTagsParams, *models.User) (*[]models.Pet, error)
 }
 
 // NewFindPetsByTags creates a new http.Handler for the find pets by tags operation
@@ -27,7 +27,11 @@ func NewFindPetsByTags(ctx *middleware.Context, handler FindPetsByTagsHandler) *
 	return &FindPetsByTags{Context: ctx, Handler: handler}
 }
 
-// FindPetsByTags Muliple tags can be provided with comma seperated strings. Use tag1, tag2, tag3 for testing.
+/*
+Finds Pets by tags
+
+Muliple tags can be provided with comma seperated strings. Use tag1, tag2, tag3 for testing.
+*/
 type FindPetsByTags struct {
 	Context *middleware.Context
 	Params  FindPetsByTagsParams
@@ -44,7 +48,7 @@ func (o *FindPetsByTags) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 	var principal *models.User
 	if uprinc != nil {
-		principal = uprinc.(*models.User) // it's ok this is really a models.User
+		principal = uprinc.(*models.User) // this is really a models.User, I promise
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &o.Params); err != nil { // bind params

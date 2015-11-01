@@ -6,7 +6,7 @@ package store
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/examples/generated/models"
+	"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/models"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
 )
 
@@ -27,7 +27,9 @@ func NewPlaceOrder(ctx *middleware.Context, handler PlaceOrderHandler) *PlaceOrd
 	return &PlaceOrder{Context: ctx, Handler: handler}
 }
 
-// PlaceOrder
+/*
+Place an order for a pet
+*/
 type PlaceOrder struct {
 	Context *middleware.Context
 	Params  PlaceOrderParams

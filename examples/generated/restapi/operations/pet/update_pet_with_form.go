@@ -6,7 +6,7 @@ package pet
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/examples/generated/models"
+	"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/models"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
 )
 
@@ -27,7 +27,9 @@ func NewUpdatePetWithForm(ctx *middleware.Context, handler UpdatePetWithFormHand
 	return &UpdatePetWithForm{Context: ctx, Handler: handler}
 }
 
-// UpdatePetWithForm
+/*
+Updates a pet in the store with form data
+*/
 type UpdatePetWithForm struct {
 	Context *middleware.Context
 	Params  UpdatePetWithFormParams
@@ -44,7 +46,7 @@ func (o *UpdatePetWithForm) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 	var principal *models.User
 	if uprinc != nil {
-		principal = uprinc.(*models.User) // it's ok this is really a models.User
+		principal = uprinc.(*models.User) // this is really a models.User, I promise
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &o.Params); err != nil { // bind params

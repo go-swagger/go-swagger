@@ -80,7 +80,7 @@ import (
 // typically these are obtained from a http.Request
 type {{ pascalize .Name }}Params struct {
   {{ range .Params }}{{ if .Description }}// {{ .Description }}{{ end }}
-  {{ pascalize .Name }} {{.GoType}}
+  {{ pascalize .Name }} {{ if .IsNullable }}*{{ end }}{{.GoType}}
   {{ end}}
 }
 
@@ -121,7 +121,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
   {{ end }}{{ end }}
 
   {{ if .IsBodyParam }}
-  if err := route.Consumer.Consume(r.Body, &{{ .ReceiverName }}.{{ pascalize .Name }}); err != nil {
+  if err := route.Consumer.Consume(r.Body, {{ if not .IsNullable }}&{{ end }}{{ .ReceiverName }}.{{ pascalize .Name }}); err != nil {
     res = append(res, errors.NewParseError("{{ camelize .Name }}", "{{ .Location }}", "", err))
   } else {
     {{ if .IsArray }}for _, {{ .IndexVar }}{{ .ReceiverName }} := range {{ .ReceiverName }}.{{ pascalize .Name }} {

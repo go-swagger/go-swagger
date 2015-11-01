@@ -26,7 +26,11 @@ func NewCreateUser(ctx *middleware.Context, handler CreateUserHandler) *CreateUs
 	return &CreateUser{Context: ctx, Handler: handler}
 }
 
-// CreateUser This can only be done by the logged in user.
+/*
+Create user
+
+This can only be done by the logged in user.
+*/
 type CreateUser struct {
 	Context *middleware.Context
 	Params  CreateUserParams

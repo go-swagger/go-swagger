@@ -37,8 +37,8 @@ func configureAPI(api *{{.Package}}.{{ pascalize .Name }}API) {
   }
   {{end}}
   {{end}}
-  {{range .Operations}}api.{{ pascalize .Name }}Handler = {{.Package}}.{{ pascalize .Name }}HandlerFunc(func({{if .Params}}params {{.Package}}.{{ pascalize .Name }}Params{{end}}{{if and .Authorized .Params}}, {{end}}{{if .Authorized}}principal *{{.Principal}}{{end}}) ({{if and .SuccessResponse .SuccessResponse.Schema }}*{{.SuccessResponse.Schema.GoType}}, {{end}}error) {
-    return {{if and .SuccessResponse .SuccessResponse.Schema }}nil, {{end}}errors.NotImplemented("operation {{.Name}} has not yet been implemented")
+  {{range .Operations}}api.{{ pascalize .Name }}Handler = {{.Package}}.{{ pascalize .Name }}HandlerFunc(func({{if .Params}}params {{.Package}}.{{ pascalize .Name }}Params{{end}}{{if and .Authorized .Params}}, {{end}}{{if .Authorized}}principal *{{.Principal}}{{end}}) ({{if and .SuccessResponse }}{{ if .SuccessResponse.Schema }}{{ if .SuccessResponse.Schema.IsNullable }}*{{ end }}{{.SuccessResponse.Schema.GoType}}, {{ end }}{{end}}error) {
+    return {{if .SuccessResponse}}{{ if .SuccessResponse.Schema }}nil, {{ end }}{{end}}errors.NotImplemented("operation {{.Name}} has not yet been implemented")
   })
   {{end}}
 }

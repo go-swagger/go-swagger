@@ -37,14 +37,5 @@ func (o *DeleteUserParams) bindUsername(raw string, formats strfmt.Registry) err
 
 	o.Username = raw
 
-	if err := o.validateUsername(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *DeleteUserParams) validateUsername(formats strfmt.Registry) error {
-
 	return nil
 }

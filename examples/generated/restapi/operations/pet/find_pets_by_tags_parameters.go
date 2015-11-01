@@ -45,7 +45,7 @@ func (o *FindPetsByTagsParams) bindTags(raw []string, formats strfmt.Registry) e
 	ic := raw
 	isz := size
 	var ir []string
-	iValidateElement := func(i int, value string) *errors.Validation {
+	iValidateElement := func(i int, tagsI string) *errors.Validation {
 
 		return nil
 	}

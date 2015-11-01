@@ -37,14 +37,5 @@ func (o *GetUserByNameParams) bindUsername(raw string, formats strfmt.Registry) 
 
 	o.Username = raw
 
-	if err := o.validateUsername(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *GetUserByNameParams) validateUsername(formats strfmt.Registry) error {
-
 	return nil
 }

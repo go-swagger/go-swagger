@@ -26,7 +26,11 @@ func NewDeleteUser(ctx *middleware.Context, handler DeleteUserHandler) *DeleteUs
 	return &DeleteUser{Context: ctx, Handler: handler}
 }
 
-// DeleteUser This can only be done by the logged in user.
+/*
+Delete user
+
+This can only be done by the logged in user.
+*/
 type DeleteUser struct {
 	Context *middleware.Context
 	Params  DeleteUserParams

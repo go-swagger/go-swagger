@@ -37,14 +37,5 @@ func (o *DeleteOrderParams) bindOrderID(raw string, formats strfmt.Registry) err
 
 	o.OrderID = raw
 
-	if err := o.validateOrderID(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *DeleteOrderParams) validateOrderID(formats strfmt.Registry) error {
-
 	return nil
 }

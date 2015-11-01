@@ -6,20 +6,20 @@ package pet
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/examples/generated/models"
+	"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/models"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
 )
 
 // FindPetsByStatusHandlerFunc turns a function with the right signature into a find pets by status handler
-type FindPetsByStatusHandlerFunc func(FindPetsByStatusParams, *models.User) ([]models.Pet, error)
+type FindPetsByStatusHandlerFunc func(FindPetsByStatusParams, *models.User) (*[]models.Pet, error)
 
-func (fn FindPetsByStatusHandlerFunc) Handle(params FindPetsByStatusParams, principal *models.User) ([]models.Pet, error) {
+func (fn FindPetsByStatusHandlerFunc) Handle(params FindPetsByStatusParams, principal *models.User) (*[]models.Pet, error) {
 	return fn(params, principal)
 }
 
 // FindPetsByStatusHandler interface for that can handle valid find pets by status params
 type FindPetsByStatusHandler interface {
-	Handle(FindPetsByStatusParams, *models.User) ([]models.Pet, error)
+	Handle(FindPetsByStatusParams, *models.User) (*[]models.Pet, error)
 }
 
 // NewFindPetsByStatus creates a new http.Handler for the find pets by status operation
@@ -27,7 +27,11 @@ func NewFindPetsByStatus(ctx *middleware.Context, handler FindPetsByStatusHandle
 	return &FindPetsByStatus{Context: ctx, Handler: handler}
 }
 
-// FindPetsByStatus Multiple status values can be provided with comma seperated strings
+/*
+Finds Pets by status
+
+Multiple status values can be provided with comma seperated strings
+*/
 type FindPetsByStatus struct {
 	Context *middleware.Context
 	Params  FindPetsByStatusParams
@@ -44,7 +48,7 @@ func (o *FindPetsByStatus) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 	var principal *models.User
 	if uprinc != nil {
-		principal = uprinc.(*models.User) // it's ok this is really a models.User
+		principal = uprinc.(*models.User) // this is really a models.User, I promise
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &o.Params); err != nil { // bind params

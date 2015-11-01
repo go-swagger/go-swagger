@@ -2,7 +2,6 @@ package generator
 
 import (
 	"bytes"
-	"fmt"
 	"testing"
 
 	"github.com/go-swagger/go-swagger/spec"
@@ -244,7 +243,6 @@ func TestEnum_ComputeInstance(t *testing.T) {
 				ff, err := formatGoFile("object_thing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
-					fmt.Println(res)
 					assertInCode(t, "Region string `json:\"region,omitempty\"`", res)
 					assertInCode(t, "var computeInstanceRegionEnum []interface{}", res)
 					assertInCode(t, "m.validateRegionEnum(\"region\", \"body\", m.Region)", res)

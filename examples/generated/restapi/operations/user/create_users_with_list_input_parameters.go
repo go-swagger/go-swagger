@@ -7,9 +7,8 @@ import (
 	"net/http"
 
 	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/models"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
-
-	"github.com/go-swagger/go-swagger/examples/generated/models"
 )
 
 // CreateUsersWithListInputParams contains all the bound params for the create users with list input operation
