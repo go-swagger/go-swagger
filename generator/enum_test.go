@@ -270,8 +270,8 @@ func TestEnum_NewPrototype(t *testing.T) {
 				ff, err := formatGoFile("object_thing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
-					assertInCode(t, "ActivatingUser NewPrototypeActivatingUser `json:\"activating_user,omitempty\"`", res)
-					assertInCode(t, "Delegate NewPrototypeDelegate `json:\"delegate\"`", res)
+					assertInCode(t, "ActivatingUser *NewPrototypeActivatingUser `json:\"activating_user,omitempty\"`", res)
+					assertInCode(t, "Delegate *NewPrototypeDelegate `json:\"delegate\"`", res)
 					assertInCode(t, "Role string `json:\"role\"`", res)
 					assertInCode(t, "var newPrototypeRoleEnum []interface{}", res)
 					assertInCode(t, "var newPrototypeDelegateKindEnum []interface{}", res)

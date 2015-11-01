@@ -644,7 +644,7 @@ func TestGenerateModel_WithRef(t *testing.T) {
 			tt.template.Execute(buf, genModel)
 			res := buf.String()
 			assertInCode(t, "type WithRef struct {", res)
-			assertInCode(t, "Notes Notable `json:\"notes,omitempty\"`", res)
+			assertInCode(t, "Notes *Notable `json:\"notes,omitempty\"`", res)
 		}
 	}
 }
@@ -877,7 +877,7 @@ func TestGenerateModel_WithItemsAndAdditional(t *testing.T) {
 					assertInCode(t, "type "+k+" struct {", res)
 					assertInCode(t, "type "+k+"TagsTuple0 struct {", res)
 					// this would fail if it accepts additionalItems because it would come out as []interface{}
-					assertInCode(t, "Tags "+k+"TagsTuple0 `json:\"tags,omitempty\"`", res)
+					assertInCode(t, "Tags *"+k+"TagsTuple0 `json:\"tags,omitempty\"`", res)
 					assertInCode(t, "P0 string `json:\"-\"`", res)
 					assertInCode(t, k+"TagsTuple0Items []interface{} `json:\"-\"`", res)
 				}
@@ -908,7 +908,7 @@ func TestGenerateModel_WithItemsAndAdditional2(t *testing.T) {
 					assertInCode(t, "type "+k+"TagsTuple0 struct {", res)
 					// this would fail if it accepts additionalItems because it would come out as []interface{}
 					assertInCode(t, "P0 string `json:\"-\"`", res)
-					assertInCode(t, "Tags "+k+"TagsTuple0 `json:\"tags,omitempty\"`", res)
+					assertInCode(t, "Tags *"+k+"TagsTuple0 `json:\"tags,omitempty\"`", res)
 					assertInCode(t, k+"TagsTuple0Items []int32 `json:\"-\"`", res)
 
 				}
@@ -937,9 +937,9 @@ func TestGenerateModel_WithComplexAdditional(t *testing.T) {
 					res := string(b)
 					assertInCode(t, "type WithComplexAdditional struct {", res)
 					assertInCode(t, "type WithComplexAdditionalTagsTuple0 struct {", res)
-					assertInCode(t, "Tags WithComplexAdditionalTagsTuple0 `json:\"tags,omitempty\"`", res)
+					assertInCode(t, "Tags *WithComplexAdditionalTagsTuple0 `json:\"tags,omitempty\"`", res)
 					assertInCode(t, "P0 string `json:\"-\"`", res)
-					assertInCode(t, "WithComplexAdditionalTagsTuple0Items []WithComplexAdditionalTagsItems `json:\"-\"`", res)
+					assertInCode(t, "WithComplexAdditionalTagsTuple0Items []*WithComplexAdditionalTagsItems `json:\"-\"`", res)
 				}
 			}
 		}
@@ -970,7 +970,7 @@ func TestGenerateModel_SimpleTuple(t *testing.T) {
 			assertInCode(t, "P0 int64 `json:\"-\"`", res)
 			assertInCode(t, "P1 string `json:\"-\"`", res)
 			assertInCode(t, "P2 strfmt.DateTime `json:\"-\"`", res)
-			assertInCode(t, "P3 Notable `json:\"-\"`", res)
+			assertInCode(t, "P3 *Notable `json:\"-\"`", res)
 			assertInCode(t, "P4 *Notable `json:\"-\"`", res)
 			assertInCode(t, k+") UnmarshalJSON", res)
 			assertInCode(t, k+") MarshalJSON", res)
@@ -1017,7 +1017,7 @@ func TestGenerateModel_TupleWithExtra(t *testing.T) {
 					assertInCode(t, "P0 int64 `json:\"-\"`", res)
 					assertInCode(t, "P1 string `json:\"-\"`", res)
 					assertInCode(t, "P2 strfmt.DateTime `json:\"-\"`", res)
-					assertInCode(t, "P3 Notable `json:\"-\"`", res)
+					assertInCode(t, "P3 *Notable `json:\"-\"`", res)
 					assertInCode(t, k+"Items []float64 `json:\"-\"`", res)
 					assertInCode(t, k+") UnmarshalJSON", res)
 					assertInCode(t, k+") MarshalJSON", res)
@@ -1071,8 +1071,8 @@ func TestGenerateModel_TupleWithComplex(t *testing.T) {
 					assertInCode(t, "P0 int64 `json:\"-\"`", res)
 					assertInCode(t, "P1 string `json:\"-\"`", res)
 					assertInCode(t, "P2 strfmt.DateTime `json:\"-\"`", res)
-					assertInCode(t, "P3 Notable `json:\"-\"`", res)
-					assertInCode(t, k+"Items []TupleWithComplexItems `json:\"-\"`", res)
+					assertInCode(t, "P3 *Notable `json:\"-\"`", res)
+					assertInCode(t, k+"Items []*TupleWithComplexItems `json:\"-\"`", res)
 					assertInCode(t, k+") UnmarshalJSON", res)
 					assertInCode(t, k+") MarshalJSON", res)
 
@@ -1086,7 +1086,7 @@ func TestGenerateModel_TupleWithComplex(t *testing.T) {
 						assertInCode(t, "P"+strconv.Itoa(i)+",", res)
 					}
 					assertInCode(t, "var lastIndex int", res)
-					assertInCode(t, "var toadd TupleWithComplexItems", res)
+					assertInCode(t, "var toadd *TupleWithComplexItems", res)
 					assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
 					assertInCode(t, "json.Unmarshal(val, &toadd)", res)
 					assertInCode(t, "json.Marshal(data)", res)
