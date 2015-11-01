@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/go-swagger/go-swagger/errors"
-	"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/models"
+	"github.com/go-swagger/go-swagger/examples/generated/models"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
 )
 

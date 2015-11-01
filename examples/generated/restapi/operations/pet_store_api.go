@@ -60,42 +60,42 @@ type PetStoreAPI struct {
 	// it performs authentication based on an api key api_key provided in the header
 	APIKeyAuth func(string) (*models.User, error)
 
-	// FindPetsByStatusHandler sets the operation handler for the find pets by status operation
-	FindPetsByStatusHandler pet.FindPetsByStatusHandler
-	// LoginUserHandler sets the operation handler for the login user operation
-	LoginUserHandler user.LoginUserHandler
-	// LogoutUserHandler sets the operation handler for the logout user operation
-	LogoutUserHandler user.LogoutUserHandler
 	// GetOrderByIDHandler sets the operation handler for the get order by id operation
 	GetOrderByIDHandler store.GetOrderByIDHandler
-	// DeletePetHandler sets the operation handler for the delete pet operation
-	DeletePetHandler pet.DeletePetHandler
-	// CreateUsersWithListInputHandler sets the operation handler for the create users with list input operation
-	CreateUsersWithListInputHandler user.CreateUsersWithListInputHandler
-	// UpdatePetWithFormHandler sets the operation handler for the update pet with form operation
-	UpdatePetWithFormHandler pet.UpdatePetWithFormHandler
-	// PlaceOrderHandler sets the operation handler for the place order operation
-	PlaceOrderHandler store.PlaceOrderHandler
-	// DeleteOrderHandler sets the operation handler for the delete order operation
-	DeleteOrderHandler store.DeleteOrderHandler
-	// UpdateUserHandler sets the operation handler for the update user operation
-	UpdateUserHandler user.UpdateUserHandler
-	// UpdatePetHandler sets the operation handler for the update pet operation
-	UpdatePetHandler pet.UpdatePetHandler
-	// AddPetHandler sets the operation handler for the add pet operation
-	AddPetHandler pet.AddPetHandler
-	// GetPetByIDHandler sets the operation handler for the get pet by id operation
-	GetPetByIDHandler pet.GetPetByIDHandler
-	// CreateUserHandler sets the operation handler for the create user operation
-	CreateUserHandler user.CreateUserHandler
 	// FindPetsByTagsHandler sets the operation handler for the find pets by tags operation
 	FindPetsByTagsHandler pet.FindPetsByTagsHandler
 	// GetUserByNameHandler sets the operation handler for the get user by name operation
 	GetUserByNameHandler user.GetUserByNameHandler
+	// UpdatePetHandler sets the operation handler for the update pet operation
+	UpdatePetHandler pet.UpdatePetHandler
+	// UpdateUserHandler sets the operation handler for the update user operation
+	UpdateUserHandler user.UpdateUserHandler
+	// DeleteOrderHandler sets the operation handler for the delete order operation
+	DeleteOrderHandler store.DeleteOrderHandler
+	// GetPetByIDHandler sets the operation handler for the get pet by id operation
+	GetPetByIDHandler pet.GetPetByIDHandler
+	// LogoutUserHandler sets the operation handler for the logout user operation
+	LogoutUserHandler user.LogoutUserHandler
+	// AddPetHandler sets the operation handler for the add pet operation
+	AddPetHandler pet.AddPetHandler
+	// LoginUserHandler sets the operation handler for the login user operation
+	LoginUserHandler user.LoginUserHandler
+	// UpdatePetWithFormHandler sets the operation handler for the update pet with form operation
+	UpdatePetWithFormHandler pet.UpdatePetWithFormHandler
 	// DeleteUserHandler sets the operation handler for the delete user operation
 	DeleteUserHandler user.DeleteUserHandler
+	// PlaceOrderHandler sets the operation handler for the place order operation
+	PlaceOrderHandler store.PlaceOrderHandler
 	// CreateUsersWithArrayInputHandler sets the operation handler for the create users with array input operation
 	CreateUsersWithArrayInputHandler user.CreateUsersWithArrayInputHandler
+	// CreateUsersWithListInputHandler sets the operation handler for the create users with list input operation
+	CreateUsersWithListInputHandler user.CreateUsersWithListInputHandler
+	// CreateUserHandler sets the operation handler for the create user operation
+	CreateUserHandler user.CreateUserHandler
+	// DeletePetHandler sets the operation handler for the delete pet operation
+	DeletePetHandler pet.DeletePetHandler
+	// FindPetsByStatusHandler sets the operation handler for the find pets by status operation
+	FindPetsByStatusHandler pet.FindPetsByStatusHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -156,60 +156,8 @@ func (o *PetStoreAPI) Validate() error {
 		unregistered = append(unregistered, "APIKeyAuth")
 	}
 
-	if o.FindPetsByStatusHandler == nil {
-		unregistered = append(unregistered, "FindPetsByStatusHandler")
-	}
-
-	if o.LoginUserHandler == nil {
-		unregistered = append(unregistered, "LoginUserHandler")
-	}
-
-	if o.LogoutUserHandler == nil {
-		unregistered = append(unregistered, "LogoutUserHandler")
-	}
-
 	if o.GetOrderByIDHandler == nil {
 		unregistered = append(unregistered, "GetOrderByIDHandler")
-	}
-
-	if o.DeletePetHandler == nil {
-		unregistered = append(unregistered, "DeletePetHandler")
-	}
-
-	if o.CreateUsersWithListInputHandler == nil {
-		unregistered = append(unregistered, "CreateUsersWithListInputHandler")
-	}
-
-	if o.UpdatePetWithFormHandler == nil {
-		unregistered = append(unregistered, "UpdatePetWithFormHandler")
-	}
-
-	if o.PlaceOrderHandler == nil {
-		unregistered = append(unregistered, "PlaceOrderHandler")
-	}
-
-	if o.DeleteOrderHandler == nil {
-		unregistered = append(unregistered, "DeleteOrderHandler")
-	}
-
-	if o.UpdateUserHandler == nil {
-		unregistered = append(unregistered, "UpdateUserHandler")
-	}
-
-	if o.UpdatePetHandler == nil {
-		unregistered = append(unregistered, "UpdatePetHandler")
-	}
-
-	if o.AddPetHandler == nil {
-		unregistered = append(unregistered, "AddPetHandler")
-	}
-
-	if o.GetPetByIDHandler == nil {
-		unregistered = append(unregistered, "GetPetByIDHandler")
-	}
-
-	if o.CreateUserHandler == nil {
-		unregistered = append(unregistered, "CreateUserHandler")
 	}
 
 	if o.FindPetsByTagsHandler == nil {
@@ -220,12 +168,64 @@ func (o *PetStoreAPI) Validate() error {
 		unregistered = append(unregistered, "GetUserByNameHandler")
 	}
 
+	if o.UpdatePetHandler == nil {
+		unregistered = append(unregistered, "UpdatePetHandler")
+	}
+
+	if o.UpdateUserHandler == nil {
+		unregistered = append(unregistered, "UpdateUserHandler")
+	}
+
+	if o.DeleteOrderHandler == nil {
+		unregistered = append(unregistered, "DeleteOrderHandler")
+	}
+
+	if o.GetPetByIDHandler == nil {
+		unregistered = append(unregistered, "GetPetByIDHandler")
+	}
+
+	if o.LogoutUserHandler == nil {
+		unregistered = append(unregistered, "LogoutUserHandler")
+	}
+
+	if o.AddPetHandler == nil {
+		unregistered = append(unregistered, "AddPetHandler")
+	}
+
+	if o.LoginUserHandler == nil {
+		unregistered = append(unregistered, "LoginUserHandler")
+	}
+
+	if o.UpdatePetWithFormHandler == nil {
+		unregistered = append(unregistered, "UpdatePetWithFormHandler")
+	}
+
 	if o.DeleteUserHandler == nil {
 		unregistered = append(unregistered, "DeleteUserHandler")
 	}
 
+	if o.PlaceOrderHandler == nil {
+		unregistered = append(unregistered, "PlaceOrderHandler")
+	}
+
 	if o.CreateUsersWithArrayInputHandler == nil {
 		unregistered = append(unregistered, "CreateUsersWithArrayInputHandler")
+	}
+
+	if o.CreateUsersWithListInputHandler == nil {
+		unregistered = append(unregistered, "CreateUsersWithListInputHandler")
+	}
+
+	if o.CreateUserHandler == nil {
+		unregistered = append(unregistered, "CreateUserHandler")
+	}
+
+	if o.DeletePetHandler == nil {
+		unregistered = append(unregistered, "DeletePetHandler")
+	}
+
+	if o.FindPetsByStatusHandler == nil {
+		unregistered = append(unregistered, "FindPetsByStatusHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -311,41 +311,41 @@ func (o *PetStoreAPI) initHandlerCache() {
 
 	o.handlers = make(map[string]http.Handler)
 
-	o.handlers["findPetsByStatus"] = pet.NewFindPetsByStatus(o.context, o.FindPetsByStatusHandler)
-
-	o.handlers["loginUser"] = user.NewLoginUser(o.context, o.LoginUserHandler)
-
-	o.handlers["logoutUser"] = user.NewLogoutUser(o.context, o.LogoutUserHandler)
-
 	o.handlers["getOrderById"] = store.NewGetOrderByID(o.context, o.GetOrderByIDHandler)
-
-	o.handlers["deletePet"] = pet.NewDeletePet(o.context, o.DeletePetHandler)
-
-	o.handlers["createUsersWithListInput"] = user.NewCreateUsersWithListInput(o.context, o.CreateUsersWithListInputHandler)
-
-	o.handlers["updatePetWithForm"] = pet.NewUpdatePetWithForm(o.context, o.UpdatePetWithFormHandler)
-
-	o.handlers["placeOrder"] = store.NewPlaceOrder(o.context, o.PlaceOrderHandler)
-
-	o.handlers["deleteOrder"] = store.NewDeleteOrder(o.context, o.DeleteOrderHandler)
-
-	o.handlers["updateUser"] = user.NewUpdateUser(o.context, o.UpdateUserHandler)
-
-	o.handlers["updatePet"] = pet.NewUpdatePet(o.context, o.UpdatePetHandler)
-
-	o.handlers["addPet"] = pet.NewAddPet(o.context, o.AddPetHandler)
-
-	o.handlers["getPetById"] = pet.NewGetPetByID(o.context, o.GetPetByIDHandler)
-
-	o.handlers["createUser"] = user.NewCreateUser(o.context, o.CreateUserHandler)
 
 	o.handlers["findPetsByTags"] = pet.NewFindPetsByTags(o.context, o.FindPetsByTagsHandler)
 
 	o.handlers["getUserByName"] = user.NewGetUserByName(o.context, o.GetUserByNameHandler)
 
+	o.handlers["updatePet"] = pet.NewUpdatePet(o.context, o.UpdatePetHandler)
+
+	o.handlers["updateUser"] = user.NewUpdateUser(o.context, o.UpdateUserHandler)
+
+	o.handlers["deleteOrder"] = store.NewDeleteOrder(o.context, o.DeleteOrderHandler)
+
+	o.handlers["getPetById"] = pet.NewGetPetByID(o.context, o.GetPetByIDHandler)
+
+	o.handlers["logoutUser"] = user.NewLogoutUser(o.context, o.LogoutUserHandler)
+
+	o.handlers["addPet"] = pet.NewAddPet(o.context, o.AddPetHandler)
+
+	o.handlers["loginUser"] = user.NewLoginUser(o.context, o.LoginUserHandler)
+
+	o.handlers["updatePetWithForm"] = pet.NewUpdatePetWithForm(o.context, o.UpdatePetWithFormHandler)
+
 	o.handlers["deleteUser"] = user.NewDeleteUser(o.context, o.DeleteUserHandler)
 
+	o.handlers["placeOrder"] = store.NewPlaceOrder(o.context, o.PlaceOrderHandler)
+
 	o.handlers["createUsersWithArrayInput"] = user.NewCreateUsersWithArrayInput(o.context, o.CreateUsersWithArrayInputHandler)
+
+	o.handlers["createUsersWithListInput"] = user.NewCreateUsersWithListInput(o.context, o.CreateUsersWithListInputHandler)
+
+	o.handlers["createUser"] = user.NewCreateUser(o.context, o.CreateUserHandler)
+
+	o.handlers["deletePet"] = pet.NewDeletePet(o.context, o.DeletePetHandler)
+
+	o.handlers["findPetsByStatus"] = pet.NewFindPetsByStatus(o.context, o.FindPetsByStatusHandler)
 
 }
 

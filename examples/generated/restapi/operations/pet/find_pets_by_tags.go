@@ -6,20 +6,20 @@ package pet
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/models"
+	"github.com/go-swagger/go-swagger/examples/generated/models"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
 )
 
 // FindPetsByTagsHandlerFunc turns a function with the right signature into a find pets by tags handler
-type FindPetsByTagsHandlerFunc func(FindPetsByTagsParams, *models.User) (*[]models.Pet, error)
+type FindPetsByTagsHandlerFunc func(FindPetsByTagsParams, *models.User) ([]models.Pet, error)
 
-func (fn FindPetsByTagsHandlerFunc) Handle(params FindPetsByTagsParams, principal *models.User) (*[]models.Pet, error) {
+func (fn FindPetsByTagsHandlerFunc) Handle(params FindPetsByTagsParams, principal *models.User) ([]models.Pet, error) {
 	return fn(params, principal)
 }
 
 // FindPetsByTagsHandler interface for that can handle valid find pets by tags params
 type FindPetsByTagsHandler interface {
-	Handle(FindPetsByTagsParams, *models.User) (*[]models.Pet, error)
+	Handle(FindPetsByTagsParams, *models.User) ([]models.Pet, error)
 }
 
 // NewFindPetsByTags creates a new http.Handler for the find pets by tags operation

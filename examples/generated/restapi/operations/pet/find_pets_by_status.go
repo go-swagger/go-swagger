@@ -6,20 +6,20 @@ package pet
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/models"
+	"github.com/go-swagger/go-swagger/examples/generated/models"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
 )
 
 // FindPetsByStatusHandlerFunc turns a function with the right signature into a find pets by status handler
-type FindPetsByStatusHandlerFunc func(FindPetsByStatusParams, *models.User) (*[]models.Pet, error)
+type FindPetsByStatusHandlerFunc func(FindPetsByStatusParams, *models.User) ([]models.Pet, error)
 
-func (fn FindPetsByStatusHandlerFunc) Handle(params FindPetsByStatusParams, principal *models.User) (*[]models.Pet, error) {
+func (fn FindPetsByStatusHandlerFunc) Handle(params FindPetsByStatusParams, principal *models.User) ([]models.Pet, error) {
 	return fn(params, principal)
 }
 
 // FindPetsByStatusHandler interface for that can handle valid find pets by status params
 type FindPetsByStatusHandler interface {
-	Handle(FindPetsByStatusParams, *models.User) (*[]models.Pet, error)
+	Handle(FindPetsByStatusParams, *models.User) ([]models.Pet, error)
 }
 
 // NewFindPetsByStatus creates a new http.Handler for the find pets by status operation
