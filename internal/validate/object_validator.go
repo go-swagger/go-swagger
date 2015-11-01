@@ -31,7 +31,7 @@ func (o *objectValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	// there is a problem in the type validator where it will be unhappy about null values
 	// so that requires more testing
 	r := reflect.TypeOf(source) == specSchemaType && (kind == reflect.Map || kind == reflect.Struct)
-	// fmt.Printf("object validator for %q applies %t for %T (kind: %v)\n", o.Path, r, source, kind)
+	//fmt.Printf("object validator for %q applies %t for %T (kind: %v)\n", o.Path, r, source, kind)
 	return r
 }
 
@@ -55,6 +55,7 @@ func (o *objectValidator) Validate(data interface{}) *Result {
 			}
 		}
 	}
+
 	if o.AdditionalProperties != nil && !o.AdditionalProperties.Allows {
 		for k := range val {
 			_, regularProperty := o.Properties[k]
@@ -66,7 +67,7 @@ func (o *objectValidator) Validate(data interface{}) *Result {
 					break
 				}
 			}
-			if !(regularProperty || k == "$schema" || k == "id" || matched) {
+			if !regularProperty && k != "$schema" && k != "id" && !matched {
 				res.AddErrors(errors.PropertyNotAllowed(o.Path, o.In, k))
 			}
 		}
@@ -89,12 +90,23 @@ func (o *objectValidator) Validate(data interface{}) *Result {
 		if o.Path != "" {
 			rName = o.Path + "." + pName
 		}
+
 		if v, ok := val[pName]; ok {
 			res.Merge(NewSchemaValidator(&pSchema, o.Root, rName, o.KnownFormats).Validate(v))
 		}
 	}
 
-	// Pattern Properties
+	for key, value := range val {
+		_, regularProperty := o.Properties[key]
+		matched, succeededOnce, patterns := o.validatePatternProperty(key, value, res)
+		if !regularProperty && (matched || succeededOnce) {
+			for _, pName := range patterns {
+				if v, ok := o.PatternProperties[pName]; ok {
+					res.Merge(NewSchemaValidator(&v, o.Root, o.Path+"."+key, o.KnownFormats).Validate(value))
+				}
+			}
+		}
+	}
 	return res
 }
 
@@ -104,8 +116,8 @@ func (o *objectValidator) validatePatternProperty(key string, value interface{},
 	var patterns []string
 
 	for k, schema := range o.PatternProperties {
-		patterns = append(patterns, k)
 		if match, _ := regexp.MatchString(k, key); match {
+			patterns = append(patterns, k)
 			matched = true
 			validator := NewSchemaValidator(&schema, o.Root, o.Path+"."+key, o.KnownFormats)
 

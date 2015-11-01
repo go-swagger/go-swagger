@@ -39,7 +39,6 @@ func NewSchemaValidator(schema *spec.Schema, rootSchema interface{}, root string
 			panic(err)
 		}
 	}
-
 	s := SchemaValidator{Path: root, in: "body", Schema: schema, Root: rootSchema, KnownFormats: formats}
 	s.validators = []valueValidator{
 		s.typeValidator(),

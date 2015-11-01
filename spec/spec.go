@@ -19,6 +19,11 @@ const (
 	JSONSchemaURL = "http://json-schema.org/draft-04/schema#"
 )
 
+var (
+	jsonSchema    = MustLoadJSONSchemaDraft04()
+	swaggerSchema = MustLoadSwagger20Schema()
+)
+
 // DocLoader represents a doc loader type
 type DocLoader func(string) (json.RawMessage, error)
 
@@ -94,14 +99,6 @@ type Document struct {
 	specAnalyzer
 	spec *Swagger
 	raw  json.RawMessage
-}
-
-var swaggerSchema *Schema
-var jsonSchema *Schema
-
-func init() {
-	jsonSchema = MustLoadJSONSchemaDraft04()
-	swaggerSchema = MustLoadSwagger20Schema()
 }
 
 // Load loads a new spec document

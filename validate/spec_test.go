@@ -60,6 +60,19 @@ func TestIssue53(t *testing.T) {
 	}
 }
 
+func TestIssue62(t *testing.T) {
+	fp := filepath.Join("..", "fixtures", "bugs", "62", "swagger.json")
+
+	// as swagger spec
+	doc, err := spec.JSONSpec(fp)
+	if assert.NoError(t, err) {
+		validator := intvalidate.NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
+		res, _ := validator.Validate(doc)
+		assert.NotEmpty(t, res.Errors)
+		assert.True(t, res.HasErrors())
+	}
+}
+
 func TestIssue63(t *testing.T) {
 	fp := filepath.Join("..", "fixtures", "bugs", "63", "swagger.json")
 

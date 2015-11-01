@@ -1,6 +1,7 @@
 package validate
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"regexp"
@@ -45,7 +46,12 @@ func (s *SpecValidator) Validate(data interface{}) (errs *Result, warnings *Resu
 	warnings = new(Result)
 
 	schv := NewSchemaValidator(s.schema, nil, "", s.KnownFormats)
-	errs.Merge(schv.Validate(sd.Spec())) // error -
+	var obj interface{}
+	if err := json.Unmarshal(sd.Raw(), &obj); err != nil {
+		errs.AddErrors(err)
+		return
+	}
+	errs.Merge(schv.Validate(obj)) // error -
 	if errs.HasErrors() {
 		return // no point in continuing
 	}
