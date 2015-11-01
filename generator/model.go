@@ -646,6 +646,9 @@ func (sg *schemaGenContext) buildArray() error {
 	sg.GenSchema.ItemsEnum = elProp.GenSchema.Enum
 	elProp.GenSchema.Suffix = "Items"
 	sg.GenSchema.GoType = "[]" + elProp.GenSchema.GoType
+	if elProp.GenSchema.IsNullable {
+		sg.GenSchema.GoType = "[]*" + elProp.GenSchema.GoType
+	}
 	sg.GenSchema.Items = &elProp.GenSchema
 	return nil
 }
@@ -778,6 +781,7 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 	tpe.IsComplexObject = true
 	tpe.IsMap = false
 	tpe.IsAnonymous = false
+	tpe.IsNullable = sg.TypeResolver.isNullable(&sg.Schema)
 
 	item := sg.NewCompositionBranch(sg.Schema, 0)
 	if err := item.makeGenSchema(); err != nil {

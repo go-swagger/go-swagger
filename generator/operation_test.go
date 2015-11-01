@@ -30,7 +30,7 @@ func TestMakeResponse(t *testing.T) {
 			assert.True(t, gO.Schema.IsArray)
 			assert.NotNil(t, gO.Schema.Items)
 			assert.False(t, gO.Schema.IsAnonymous)
-			assert.Equal(t, "[]models.Task", gO.Schema.GoType)
+			assert.Equal(t, "[]*models.Task", gO.Schema.GoType)
 		}
 	}
 }

@@ -586,7 +586,7 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := buf.String()
 					assertInCode(t, "type "+k+" struct {", res)
-					assertInCode(t, "Data "+k+"Data `json:\"data,omitempty\"`", res)
+					assertInCode(t, "Data *"+k+"Data `json:\"data,omitempty\"`", res)
 					assertInCode(t, "type "+k+"Data struct {", res)
 					assertInCode(t, k+"Data map[string]string `json:\"-\"`", res)
 					assertInCode(t, "Name string `json:\"name,omitempty\"`", res)
@@ -721,14 +721,14 @@ func TestGenerateModel_Notables(t *testing.T) {
 		k := "Notables"
 		schema := definitions[k]
 		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
-		if assert.NoError(t, err) {
+		if assert.NoError(t, err) && assert.Equal(t, "[]*Notable", genModel.GoType) {
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				ff, err := formatGoFile("notables.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
-					assertInCode(t, "type Notables []Notable", res)
+					assertInCode(t, "type Notables []*Notable", res)
 				}
 			}
 		}
@@ -749,7 +749,7 @@ func TestGenerateModel_Notablix(t *testing.T) {
 				ff, err := formatGoFile("notablix.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
-					assertInCode(t, "type Notablix [][][]Notable", res)
+					assertInCode(t, "type Notablix [][][]*Notable", res)
 				}
 			}
 		}
@@ -770,7 +770,7 @@ func TestGenerateModel_Stats(t *testing.T) {
 				ff, err := formatGoFile("stats.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
-					assertInCode(t, "type Stats []StatsItems0", res)
+					assertInCode(t, "type Stats []*StatsItems0", res)
 					assertInCode(t, "type StatsItems0 struct {", res)
 					assertInCode(t, "Points []int64 `json:\"points,omitempty\"`", res)
 				}
@@ -793,7 +793,7 @@ func TestGenerateModel_Statix(t *testing.T) {
 				ff, err := formatGoFile("statix.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
-					assertInCode(t, "type Statix [][][]StatixItems0", res)
+					assertInCode(t, "type Statix [][][]*StatixItems0", res)
 					assertInCode(t, "type StatixItems0 struct {", res)
 					assertInCode(t, "Points []int64 `json:\"points,omitempty\"`", res)
 				}
@@ -849,7 +849,7 @@ func TestGenerateModel_WithComplexItems(t *testing.T) {
 					res := string(b)
 					assertInCode(t, "type WithComplexItems struct {", res)
 					assertInCode(t, "type WithComplexItemsTagsItems0 struct {", res)
-					assertInCode(t, "Tags []WithComplexItemsTagsItems0 `json:\"tags,omitempty\"`", res)
+					assertInCode(t, "Tags []*WithComplexItemsTagsItems0 `json:\"tags,omitempty\"`", res)
 				}
 			}
 		}

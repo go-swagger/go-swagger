@@ -150,6 +150,7 @@ func TestTypeResolver_Refs(t *testing.T) {
 			if assert.NoError(t, err) {
 				assert.Equal(t, val.Expected, rt.GoType)
 				assert.False(t, rt.IsAnonymous)
+				assert.True(t, rt.IsNullable)
 				assert.Equal(t, "object", rt.SwaggerType)
 			}
 		}
@@ -162,6 +163,7 @@ func TestTypeResolver_Refs(t *testing.T) {
 			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(*sch), true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsArray)
+				assert.Equal(t, "[]*"+val.Expected, rt.GoType)
 			}
 		}
 		// for named objects
@@ -174,6 +176,7 @@ func TestTypeResolver_Refs(t *testing.T) {
 			if assert.NoError(t, err) {
 				assert.Equal(t, val.Expected, rt.GoType)
 				assert.False(t, rt.IsAnonymous)
+				assert.True(t, rt.IsNullable)
 				assert.Equal(t, "object", rt.SwaggerType)
 			}
 		}
@@ -186,6 +189,7 @@ func TestTypeResolver_Refs(t *testing.T) {
 			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(*sch), false)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsArray)
+				assert.Equal(t, "[]*"+val.Expected, rt.GoType)
 			}
 		}
 	}
@@ -310,6 +314,31 @@ func TestTypeResolver_AdditionalProperties(t *testing.T) {
 		}
 
 	}
+}
+
+func TestTypeResolver_Notables(t *testing.T) {
+	doc, resolver, err := specResolver(t, "../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		def := doc.Spec().Definitions["Notables"]
+		rest, err := resolver.ResolveSchema(&def, false)
+		if assert.NoError(t, err) {
+			assert.True(t, rest.IsArray)
+			assert.False(t, rest.IsAnonymous)
+			assert.False(t, rest.IsNullable)
+			assert.Equal(t, "[]*models.Notable", rest.GoType)
+		}
+	}
+}
+
+func specResolver(t testing.TB, path string) (*spec.Document, *typeResolver, error) {
+	tlb, err := spec.Load(path)
+	if err != nil {
+		return nil, nil, err
+	}
+	return tlb, &typeResolver{
+		Doc:           tlb,
+		ModelsPackage: "models",
+	}, nil
 }
 
 func basicTaskListResolver(t testing.TB) (*spec.Document, *typeResolver, error) {

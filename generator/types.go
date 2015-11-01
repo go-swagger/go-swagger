@@ -225,6 +225,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema) (returns bool, resu
 		}
 		result = res
 		result.GoType = tn
+		result.IsNullable = t.isNullable(ref)
 		if t.ModelsPackage != "" {
 			result.GoType = t.ModelsPackage + "." + tn
 		}
@@ -290,6 +291,9 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous bool) (resu
 		return
 	}
 	result.GoType = "[]" + rt.GoType
+	if rt.IsNullable {
+		result.GoType = "[]*" + rt.GoType
+	}
 	result.SwaggerType = "array"
 	return
 }
