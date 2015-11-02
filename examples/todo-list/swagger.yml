@@ -1,0 +1,84 @@
+swagger: '2.0'
+info:
+  version: 0.1.0
+  title: Simple To Do List API
+paths:
+  /:
+    get:
+      tags: ["todos"]
+      operationId: all
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/item"
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/error"
+    post:
+      tags: ["todos"]
+      operationId: create
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: "#/definitions/item"
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/error"
+  /{id}:
+    parameters:
+      - type: string
+        name: id
+        in: path
+        required: true
+    put:
+      tags: ["todos"]
+      operationId: update
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: "#/definitions/item"
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/error"
+    delete:
+      tags: ["todos"]
+      operationId: destroy
+      responses:
+        '204':
+          description: Deleted
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/error"
+definitions:
+  item:
+    type: object
+    required:
+      - description
+    properties:
+      id:
+        type: integer
+        format: int64
+        readOnly: true
+      description:
+        type: string
+      completed:
+        type: boolean
+  error:
+    type: object
+    required:
+      - message
+    properties:
+      code:
+        type: integer
+        format: int64
+      message:
+        type: string
