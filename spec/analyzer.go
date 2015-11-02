@@ -163,11 +163,46 @@ func (s *specAnalyzer) paramsAsMap(parameters []Parameter, res map[string]Parame
 	}
 }
 
+func (s *specAnalyzer) ParametersFor(operationID string) []Parameter {
+	gatherParams := func(pi *PathItem, op *Operation) []Parameter {
+		bag := make(map[string]Parameter)
+		s.paramsAsMap(pi.Parameters, bag)
+		s.paramsAsMap(op.Parameters, bag)
+
+		var res []Parameter
+		for _, v := range bag {
+			res = append(res, v)
+		}
+		return res
+	}
+	for _, pi := range s.spec.Paths.Paths {
+		if pi.Get != nil && pi.Get.ID == operationID {
+			return gatherParams(&pi, pi.Get)
+		}
+		if pi.Head != nil && pi.Head.ID == operationID {
+			return gatherParams(&pi, pi.Head)
+		}
+		if pi.Options != nil && pi.Options.ID == operationID {
+			return gatherParams(&pi, pi.Options)
+		}
+		if pi.Post != nil && pi.Post.ID == operationID {
+			return gatherParams(&pi, pi.Post)
+		}
+		if pi.Patch != nil && pi.Patch.ID == operationID {
+			return gatherParams(&pi, pi.Patch)
+		}
+		if pi.Put != nil && pi.Put.ID == operationID {
+			return gatherParams(&pi, pi.Put)
+		}
+		if pi.Delete != nil && pi.Delete.ID == operationID {
+			return gatherParams(&pi, pi.Delete)
+		}
+	}
+	return nil
+}
+
 func (s *specAnalyzer) ParamsFor(method, path string) map[string]Parameter {
 	res := make(map[string]Parameter)
-	//for _, param := range s.spec.Parameters {
-	//res[fieldNameFromParam(&param)] = param
-	//}
 	if pi, ok := s.spec.Paths.Paths[path]; ok {
 		s.paramsAsMap(pi.Parameters, res)
 		s.paramsAsMap(s.operations[strings.ToUpper(method)][path].Parameters, res)

@@ -143,14 +143,15 @@ func (o *operationGenerator) Generate() error {
 			log.Println("generated handler", op.Package+"."+o.cname)
 		}
 
-		if o.IncludeParameters && len(o.Operation.Parameters) > 0 {
+		opParams := o.Doc.ParametersFor(o.Operation.ID)
+		if o.IncludeParameters && len(opParams) > 0 {
 			if err := o.generateParameterModel(); err != nil {
 				return fmt.Errorf("parameters: %s", err)
 			}
 			log.Println("generated parameters", op.Package+"."+o.cname+"Parameters")
 		}
 
-		if len(o.Operation.Parameters) == 0 {
+		if len(opParams) == 0 {
 			log.Println("no parameters for operation", op.Package+"."+o.cname)
 		}
 	}
@@ -208,7 +209,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	operation := b.Operation
 	var params, qp, pp, hp, fp []GenParameter
 	var hasQueryParams bool
-	for _, p := range operation.Parameters {
+	for _, p := range b.Doc.ParametersFor(operation.ID) {
 		cp, err := b.MakeParameter(receiver, &resolver, p)
 		if err != nil {
 			return GenOperation{}, err
