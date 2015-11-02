@@ -1,7 +1,7 @@
 +++
 categories = ["usage", "generate"]
 date = "2015-10-21T22:46:51-07:00"
-tags = ["document"]
+tags = []
 title = "_index"
 
 +++
@@ -33,25 +33,35 @@ http://godoc.org/github.com/go-swagger/go-swagger
 
 Install:
 
-    go get -u github.com/go-swagger/go-swagger/cmd/swagger
+```
+go get -u github.com/go-swagger/go-swagger/cmd/swagger
+```
 
 The implementation also provides a number of command line tools to help working with swagger.
 
 Currently there is a spec validator tool:
 
-		swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
+```
+swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
+```
 
 To generate a server for a swagger spec document:
 
-		swagger generate server [-f ./swagger.json] -A [application-name [--principal [principal-name]]
+```
+swagger generate server [-f ./swagger.json] -A [application-name [--principal [principal-name]]
+```
 
 To generate a client for a swagger spec document:
 
-		swagger generate client [-f ./swagger.json] -A [application-name [--principal [principal-name]]
+```
+swagger generate client [-f ./swagger.json] -A [application-name [--principal [principal-name]]
+```
 
 To generate a swagger spec document for a go application:
 
-		swagger generate spec -o ./swagger.json
+```
+swagger generate spec -o ./swagger.json
+```
 
 Much improved documentation is in the works and will actually explain how to use this tool in much more depth.
 To learn about which annotations are available and how to use them for generating a spec from any go application
@@ -60,14 +70,14 @@ To learn about which annotations are available and how to use them for generatin
 
 There are several other sub commands available for the generate command
 
-		Sub command | Description
-		------------|----------------------------------------------------------------------------------
-		operation   | generates one or more operations specified in the swagger definition
-		model       | generates model files for one or more models specified in the swagger definition
-		support     | generates the api builder and the main method
-		server      | generates an entire server application
-		client      | generates a client for a swagger specification
-		spec        | generates a swagger spec document based on go code
+Sub command &nbsp;| Description
+--------------|----------------------------------------------------------------------------------
+operation     | generates one or more operations specified in the swagger definition
+model         | generates model files for one or more models specified in the swagger definition
+support       | generates the api builder and the main method
+server        | generates an entire server application
+client        | generates a client for a swagger specification
+spec          | generates a swagger spec document based on go code
 
 
 Design
@@ -99,8 +109,8 @@ For a V1 I want to have this feature set completed:
       - [x] each parameter should have a unique `name` and `type` combination (Error)
       - [x] each operation should have only 1 parameter of type body (Error)
       - [x] each reference must point to a valid object (Error)
-      - [ ] every default value that is specified must validate against the schema for that property (Error)
-      - [ ] every example that is specified must validate against the schema for that property (Error)
+      - [x] every default value that is specified must validate against the schema for that property (Error)
+      - [x] every example that is specified must validate against the schema for that property (Error)
       - [x] items property is required for all schemas/definitions of type `array` (Error)
 	-	[x] serve swagger UI for any swagger spec file
   - [x] code generation
