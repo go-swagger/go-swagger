@@ -37,10 +37,10 @@
 				
 				
 					
-					<li ><a href="http://go-swagger.github.io//about">About</a></li>
+					<li ><a href="http://go-swagger.github.io//usage">Usage</a></li>
 				
 					
-					<li ><a href="http://go-swagger.github.io//usage">Usage</a></li>
+					<li ><a href="http://go-swagger.github.io//generate">Generate</a></li>
 				
 			
 				
@@ -94,22 +94,22 @@ With the largest ecosystem of API tooling on the planet, thousands of developers
 
 <p>Currently there is a spec validator tool:</p>
 
-<pre><code>    swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
+<pre><code>swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
 </code></pre>
 
 <p>To generate a server for a swagger spec document:</p>
 
-<pre><code>    swagger generate server [-f ./swagger.json] -A [application-name [--principal [principal-name]]
+<pre><code>swagger generate server [-f ./swagger.json] -A [application-name [--principal [principal-name]]
 </code></pre>
 
 <p>To generate a client for a swagger spec document:</p>
 
-<pre><code>    swagger generate client [-f ./swagger.json] -A [application-name [--principal [principal-name]]
+<pre><code>swagger generate client [-f ./swagger.json] -A [application-name [--principal [principal-name]]
 </code></pre>
 
 <p>To generate a swagger spec document for a go application:</p>
 
-<pre><code>    swagger generate spec -o ./swagger.json
+<pre><code>swagger generate spec -o ./swagger.json
 </code></pre>
 
 <p>Much improved documentation is in the works and will actually explain how to use this tool in much more depth.
@@ -118,15 +118,46 @@ To learn about which annotations are available and how to use them for generatin
 
 <p>There are several other sub commands available for the generate command</p>
 
-<pre><code>    Sub command | Description
-    ------------|----------------------------------------------------------------------------------
-    operation   | generates one or more operations specified in the swagger definition
-    model       | generates model files for one or more models specified in the swagger definition
-    support     | generates the api builder and the main method
-    server      | generates an entire server application
-    client      | generates a client for a swagger specification
-    spec        | generates a swagger spec document based on go code
-</code></pre>
+<table>
+<thead>
+<tr>
+<th>Sub command &nbsp;</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>operation</td>
+<td>generates one or more operations specified in the swagger definition</td>
+</tr>
+
+<tr>
+<td>model</td>
+<td>generates model files for one or more models specified in the swagger definition</td>
+</tr>
+
+<tr>
+<td>support</td>
+<td>generates the api builder and the main method</td>
+</tr>
+
+<tr>
+<td>server</td>
+<td>generates an entire server application</td>
+</tr>
+
+<tr>
+<td>client</td>
+<td>generates a client for a swagger specification</td>
+</tr>
+
+<tr>
+<td>spec</td>
+<td>generates a swagger spec document based on go code</td>
+</tr>
+</tbody>
+</table>
 
 <h2 id="design:3976528693a0108357f4928017600865">Design</h2>
 
@@ -159,8 +190,8 @@ To learn about which annotations are available and how to use them for generatin
 <li>[x] each parameter should have a unique <code>name</code> and <code>type</code> combination (Error)</li>
 <li>[x] each operation should have only 1 parameter of type body (Error)</li>
 <li>[x] each reference must point to a valid object (Error)</li>
-<li>[ ] every default value that is specified must validate against the schema for that property (Error)</li>
-<li>[ ] every example that is specified must validate against the schema for that property (Error)</li>
+<li>[x] every default value that is specified must validate against the schema for that property (Error)</li>
+<li>[x] every example that is specified must validate against the schema for that property (Error)</li>
 <li>[x] items property is required for all schemas/definitions of type <code>array</code> (Error)</li>
 </ul></li>
 <li>[x] serve swagger UI for any swagger spec file</li>
@@ -308,7 +339,7 @@ To learn about which annotations are available and how to use them for generatin
 		<h4>Tags</h4>
 		<div class="tag-box">
 		
-			<a class="tag-item" href="http://go-swagger.github.io//tags/document">document</a>
+			<a class="tag-item" href="http://go-swagger.github.io//tags/generate">generate</a>
 		
 			<a class="tag-item" href="http://go-swagger.github.io//tags/usage">usage</a>
 		

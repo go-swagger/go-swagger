@@ -7,7 +7,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="alternate" href="/index.xml" type="application/rss+xml" title="go-swagger toolkit">
 		<link rel="icon" href="http://go-swagger.github.io//favicon.ico">
-		<title>about - go-swagger toolkit</title>
+		<title>Generate an API client - go-swagger toolkit</title>
 		
 		<link rel="stylesheet" href="http://go-swagger.github.io//css/highlight.js.min.css">
 		<link rel="stylesheet" href="http://go-swagger.github.io//css/bootstrap.min.css">
@@ -56,16 +56,57 @@
 		<main role="main">
 			<article>
 				<a id="title"></a>
-				<h1 class="doc-entry-title">about</h1>
+				<h1 class="doc-entry-title">Generate an API client</h1>
 				<div class="doc-entry-meta">
-					<span><time datetime="2015-10-21">October 21, 2015</time></span>
+					<span><time datetime="2015-10-23">October 23, 2015</time></span>
 				</div>
 				<section>
 					
 
-<h2 id="about:6083a88ee3411b0d17ce02d738f69d47">About</h2>
+<p>The toolkit has a command that will let you generate a client.</p>
 
-<p>Some content should go here.</p>
+<h2 id="usage:4bd4f30263398a45e38fc9edfc648efa">Usage</h2>
+
+<p>To generate a client:</p>
+
+<pre><code>swagger generate client -f [http-url|filepath] -A [application-name] [--principal [principal-name]]
+</code></pre>
+
+<p>To then use the client with a HTTP transport:</p>
+
+<pre><code class="language-go">import (
+  &quot;log&quot;
+
+  &quot;github.com/myproject/client/operations&quot;
+  &quot;github.com/go-swagger/go-swagger/strfmt&quot;
+  &quot;github.com/go-swagger/go-swagger/spec&quot;
+
+  apiclient &quot;github.com/myproject/client&quot;
+  httptransport &quot;github.com/go-swagger/go-swagger/httpkit/client&quot;
+)
+
+func main() {
+  // load the swagger spec from URL or local file
+  doc, err := spec.Load(&quot;https://raw.githubusercontent.com/go-swagger/go-swagger/master/examples/todo-list/swagger.yml&quot;)
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  // create the API client
+  client := apiclient.New(httptransport.New(doc), strfmt.Default)
+
+  // make the request to get all items
+  resp, err := client.Operations.All(operations.AllParams{})
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Printf(&quot;%#v\n&quot;, resp.Payload)
+}
+</code></pre>
+
+<h2 id="known-issues:4bd4f30263398a45e38fc9edfc648efa">Known Issues</h2>
+
+<p>At this moment the client does not quite support authentication <em>yet</em>.</p>
 
 				</section>
 			</article>
@@ -78,13 +119,14 @@
 		<div class="sidebar-toc">
 			<h4>Table of Contents</h4>
 			<ul>
-				<li><strong><a href="#title">about</a></strong></li>
+				<li><strong><a href="#title">Generate an API client</a></strong></li>
 			</ul>
 			<nav id="TableOfContents">
 <ul>
 <li>
 <ul>
-<li><a href="#about:6083a88ee3411b0d17ce02d738f69d47">About</a></li>
+<li><a href="#usage:4bd4f30263398a45e38fc9edfc648efa">Usage</a></li>
+<li><a href="#known-issues:4bd4f30263398a45e38fc9edfc648efa">Known Issues</a></li>
 </ul></li>
 </ul>
 </nav>

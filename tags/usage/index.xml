@@ -21,8 +21,8 @@
 &lt;h2 id=&#34;validate-a-swagger-spec:c64148e1a0d4f4de12bdfecb139d0588&#34;&gt;Validate a swagger spec&lt;/h2&gt;
 
 &lt;p&gt;The toolkit has a command to validate swagger specifications for you.
-It includes a full json-schema validator and adds a bunch of extra validations on
-top of that to ensure the spec is as valid as possible.&lt;/p&gt;
+It includes a full json-schema validator and adds a bunch of extra validations on top of that to ensure the spec
+is as valid as possible, so that there are no surprises.&lt;/p&gt;
 
 &lt;h3 id=&#34;usage:c64148e1a0d4f4de12bdfecb139d0588&#34;&gt;Usage&lt;/h3&gt;
 

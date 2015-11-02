@@ -7,57 +7,8 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>© 2015 go-swagger contributors</copyright>
-    <lastBuildDate>Thu, 22 Oct 2015 23:28:09 -0700</lastBuildDate>
+    <lastBuildDate>Wed, 21 Oct 2015 22:46:51 -0700</lastBuildDate>
     <atom:link href="http://go-swagger.github.io/categories/usage/index.xml" rel="self" type="application/rss+xml" />
-    
-    <item>
-      <title>Validate a swagger spec</title>
-      <link>http://go-swagger.github.io/usage/validate/</link>
-      <pubDate>Thu, 22 Oct 2015 23:28:09 -0700</pubDate>
-      
-      <guid>http://go-swagger.github.io/usage/validate/</guid>
-      <description>
-
-&lt;h2 id=&#34;validate-a-swagger-spec:c64148e1a0d4f4de12bdfecb139d0588&#34;&gt;Validate a swagger spec&lt;/h2&gt;
-
-&lt;p&gt;The toolkit has a command to validate swagger specifications for you.
-It includes a full json-schema validator and adds a bunch of extra validations on
-top of that to ensure the spec is as valid as possible.&lt;/p&gt;
-
-&lt;h3 id=&#34;usage:c64148e1a0d4f4de12bdfecb139d0588&#34;&gt;Usage&lt;/h3&gt;
-
-&lt;p&gt;To validate a specification:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;swagger validate [http-url|filepath]
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3 id=&#34;supported-rules:c64148e1a0d4f4de12bdfecb139d0588&#34;&gt;Supported rules&lt;/h3&gt;
-
-&lt;p&gt;All the rules the validator tool supports:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;validate against jsonschema&lt;/li&gt;
-&lt;li&gt;validate extra rules outlined &lt;a href=&#34;https://github.com/apigee-127/swagger-tools/blob/master/docs/Swagger_Validation.md&#34;&gt;here&lt;/a&gt;
-
-&lt;ul&gt;
-&lt;li&gt;definition can&amp;rsquo;t declare a property that&amp;rsquo;s already defined by one of its ancestors (Error)&lt;/li&gt;
-&lt;li&gt;definition&amp;rsquo;s ancestor can&amp;rsquo;t be a descendant of the same model (Error)&lt;/li&gt;
-&lt;li&gt;each api path should be non-verbatim (account for path param names) unique per method (Error)&lt;/li&gt;
-&lt;li&gt;each security reference should contain only unique scopes (Warning)&lt;/li&gt;
-&lt;li&gt;each security scope in a security definition should be unique (Warning)&lt;/li&gt;
-&lt;li&gt;each path parameter should correspond to a parameter placeholder and vice versa (Error)&lt;/li&gt;
-&lt;li&gt;each referencable definition must have references (Warning)&lt;/li&gt;
-&lt;li&gt;each definition property listed in the required array must be defined in the properties of the model (Error)&lt;/li&gt;
-&lt;li&gt;each parameter should have a unique &lt;code&gt;name&lt;/code&gt; and &lt;code&gt;type&lt;/code&gt; combination (Error)&lt;/li&gt;
-&lt;li&gt;each operation should have only 1 parameter of type body (Error)&lt;/li&gt;
-&lt;li&gt;each reference must point to a valid object (Error)&lt;/li&gt;
-&lt;li&gt;every default value that is specified must validate against the schema for that property (Error)&lt;/li&gt;
-&lt;li&gt;every example that is specified must validate against the schema for that property (Error)&lt;/li&gt;
-&lt;li&gt;items property is required for all schemas/definitions of type &lt;code&gt;array&lt;/code&gt; (Error)&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-    </item>
     
     <item>
       <title>_index</title>
@@ -98,22 +49,22 @@ With the largest ecosystem of API tooling on the planet, thousands of developers
 
 &lt;p&gt;Currently there is a spec validator tool:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;    swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
+&lt;pre&gt;&lt;code&gt;swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;To generate a server for a swagger spec document:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;    swagger generate server [-f ./swagger.json] -A [application-name [--principal [principal-name]]
+&lt;pre&gt;&lt;code&gt;swagger generate server [-f ./swagger.json] -A [application-name [--principal [principal-name]]
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;To generate a client for a swagger spec document:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;    swagger generate client [-f ./swagger.json] -A [application-name [--principal [principal-name]]
+&lt;pre&gt;&lt;code&gt;swagger generate client [-f ./swagger.json] -A [application-name [--principal [principal-name]]
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;To generate a swagger spec document for a go application:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;    swagger generate spec -o ./swagger.json
+&lt;pre&gt;&lt;code&gt;swagger generate spec -o ./swagger.json
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Much improved documentation is in the works and will actually explain how to use this tool in much more depth.
@@ -122,15 +73,46 @@ To learn about which annotations are available and how to use them for generatin
 
 &lt;p&gt;There are several other sub commands available for the generate command&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;    Sub command | Description
-    ------------|----------------------------------------------------------------------------------
-    operation   | generates one or more operations specified in the swagger definition
-    model       | generates model files for one or more models specified in the swagger definition
-    support     | generates the api builder and the main method
-    server      | generates an entire server application
-    client      | generates a client for a swagger specification
-    spec        | generates a swagger spec document based on go code
-&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Sub command &amp;nbsp;&lt;/th&gt;
+&lt;th&gt;Description&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;operation&lt;/td&gt;
+&lt;td&gt;generates one or more operations specified in the swagger definition&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;model&lt;/td&gt;
+&lt;td&gt;generates model files for one or more models specified in the swagger definition&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;support&lt;/td&gt;
+&lt;td&gt;generates the api builder and the main method&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;server&lt;/td&gt;
+&lt;td&gt;generates an entire server application&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;client&lt;/td&gt;
+&lt;td&gt;generates a client for a swagger specification&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;spec&lt;/td&gt;
+&lt;td&gt;generates a swagger spec document based on go code&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
 
 &lt;h2 id=&#34;design:3976528693a0108357f4928017600865&#34;&gt;Design&lt;/h2&gt;
 
@@ -163,8 +145,8 @@ To learn about which annotations are available and how to use them for generatin
 &lt;li&gt;[x] each parameter should have a unique &lt;code&gt;name&lt;/code&gt; and &lt;code&gt;type&lt;/code&gt; combination (Error)&lt;/li&gt;
 &lt;li&gt;[x] each operation should have only 1 parameter of type body (Error)&lt;/li&gt;
 &lt;li&gt;[x] each reference must point to a valid object (Error)&lt;/li&gt;
-&lt;li&gt;[ ] every default value that is specified must validate against the schema for that property (Error)&lt;/li&gt;
-&lt;li&gt;[ ] every example that is specified must validate against the schema for that property (Error)&lt;/li&gt;
+&lt;li&gt;[x] every default value that is specified must validate against the schema for that property (Error)&lt;/li&gt;
+&lt;li&gt;[x] every example that is specified must validate against the schema for that property (Error)&lt;/li&gt;
 &lt;li&gt;[x] items property is required for all schemas/definitions of type &lt;code&gt;array&lt;/code&gt; (Error)&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
 &lt;li&gt;[x] serve swagger UI for any swagger spec file&lt;/li&gt;
