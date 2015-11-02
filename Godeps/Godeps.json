@@ -17,7 +17,7 @@
 		},
 		{
 			"ImportPath": "github.com/golang/gddo/httputil",
-			"Rev": "19e2b0c5a3f2eeb82dd8bd33c348feaefb87478a"
+			"Rev": "a93040f23f0e66abb4997d7dd149623fe2bbaae7"
 		},
 		{
 			"ImportPath": "github.com/gorilla/context",
@@ -25,8 +25,8 @@
 		},
 		{
 			"ImportPath": "github.com/jessevdk/go-flags",
-			"Comment": "v1-321-g4047bd7",
-			"Rev": "4047bd797dd935ae2b557a79cc43f223066c9659"
+			"Comment": "v1-322-gfc93116",
+			"Rev": "fc93116606d0a71d7e9de0ad5734fdb4b8eae834"
 		},
 		{
 			"ImportPath": "github.com/jtolds/gls",
@@ -60,37 +60,37 @@
 		},
 		{
 			"ImportPath": "github.com/smartystreets/goconvey/convey",
-			"Comment": "1.5.0-441-gaa2f5dd",
-			"Rev": "aa2f5dd3546751f4d6be93cb58e906023324664c"
+			"Comment": "1.5.0-449-g530dd3d",
+			"Rev": "530dd3d2cafa09958178e8c557bc4abeea1651a5"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Comment": "v1.0-51-gf3960ab",
-			"Rev": "f3960ab1f9664ecc4e27c78af27cc9063d745a43"
+			"Comment": "v1.0-71-g0d5a14c",
+			"Rev": "0d5a14c5a477957864f3b747d95255ad4e34bcc0"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/ast/astutil",
-			"Rev": "5b9ecb9f68e2e1be33b663895c700aac9726378e"
+			"Rev": "823804e1ae08dbb14eb807afc7db9993bc9e3cc3"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/buildutil",
-			"Rev": "5b9ecb9f68e2e1be33b663895c700aac9726378e"
+			"Rev": "823804e1ae08dbb14eb807afc7db9993bc9e3cc3"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/exact",
-			"Rev": "5b9ecb9f68e2e1be33b663895c700aac9726378e"
+			"Rev": "823804e1ae08dbb14eb807afc7db9993bc9e3cc3"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/loader",
-			"Rev": "5b9ecb9f68e2e1be33b663895c700aac9726378e"
+			"Rev": "823804e1ae08dbb14eb807afc7db9993bc9e3cc3"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/types",
-			"Rev": "5b9ecb9f68e2e1be33b663895c700aac9726378e"
+			"Rev": "823804e1ae08dbb14eb807afc7db9993bc9e3cc3"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/imports",
-			"Rev": "5b9ecb9f68e2e1be33b663895c700aac9726378e"
+			"Rev": "823804e1ae08dbb14eb807afc7db9993bc9e3cc3"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
