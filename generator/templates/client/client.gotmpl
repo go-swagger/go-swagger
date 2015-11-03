@@ -23,9 +23,9 @@ func New(transport client.Transport, formats strfmt.Registry) *Client {
 }
 
 /*
-{{ if .Summary }}{{ .Summary }}{{ if .Description }}
+Client {{ if .Summary }}{{ .Summary }}{{ if .Description }}
 
-{{ .Description }}{{ end }}{{ else if .Description}}{{ .Description }}{{ else }}{{ pascalize .Name }} {{ humanize .Name }} API{{ end }}
+{{ .Description }}{{ end }}{{ else if .Description}}{{ .Description }}{{ else }}for {{ humanize .Name }} API{{ end }}
 */
 type Client struct {
   transport client.Transport
@@ -36,10 +36,15 @@ type Client struct {
 
 {{ .Description }}{{ end }}{{ else if .Description}}{{ .Description }}{{ else }}{{ pascalize .Name }} {{ humanize .Name }} API{{ end }}
 */
-func (a *Client) {{ pascalize .Name }}(params {{ pascalize .Name }}Params) {{ if .SuccessResponse }}{{ if .SuccessResponse.Schema }}({{ if .SuccessResponse.Schema.IsNullable }}*{{ end }}{{ .SuccessResponse.Schema.GoType }}, {{ end }}error{{ if .SuccessResponse.Schema }}){{ end }}{{ end }} {
+func (a *Client) {{ pascalize .Name }}(params {{ pascalize .Name }}Params{{ if .Authorized }}, authInfo client.AuthInfoWriter{{end}}) {{ if .SuccessResponse }}{{ if .SuccessResponse.Schema }}({{ if .SuccessResponse.Schema.IsNullable }}*{{ end }}{{ .SuccessResponse.Schema.GoType }}, {{ end }}error{{ if .SuccessResponse.Schema }}){{ end }}{{ end }} {
   // TODO: Validate the params before sending
 
-  {{ if .SuccessResponse }}{{ if .SuccessResponse.Schema }}result{{ else }}_{{end}}{{ end }}, err := a.transport.Submit({{ printf "%q" .Name }}, &params, &{{ pascalize .Name }}Reader{formats: a.formats})
+  {{ if .SuccessResponse }}{{ if .SuccessResponse.Schema }}result{{ else }}_{{end}}{{ end }}, err := a.transport.Submit(&client.Operation{
+    ID: {{ printf "%q" .Name }},
+    Params: &params,
+    Reader: &{{ pascalize .Name }}Reader{formats: a.formats},{{ if .Authorized }}
+    AuthInfo: authInfo,{{ end}}
+  })
   if err != nil {
     return {{ if .SuccessResponse }}{{ if .SuccessResponse.Schema }}nil, {{end}}{{ end }}err
   }

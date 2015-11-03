@@ -334,7 +334,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		if len(o.Tags) > 0 {
 			for _, tag := range o.Tags {
 				tns[tag] = struct{}{}
-				bldr.APIPackage = tag
+				bldr.APIPackage = swag.ToFileName(tag)
 				op, err := bldr.MakeOperation()
 				if err != nil {
 					return GenApp{}, err
@@ -343,7 +343,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 				genOps = append(genOps, op)
 			}
 		} else {
-			bldr.APIPackage = ap
+			bldr.APIPackage = swag.ToFileName(ap)
 			op, err := bldr.MakeOperation()
 			if err != nil {
 				return GenApp{}, err

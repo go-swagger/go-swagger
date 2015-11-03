@@ -2,6 +2,13 @@ swagger: '2.0'
 info:
   version: 0.1.0
   title: Simple To Do List API
+securityDefinitions:
+  key:
+    type: apiKey
+    in: header
+    name: x-petstore-token
+security:
+  - key: []
 paths:
   /:
     get:

@@ -17,11 +17,12 @@ type Runtime struct {
 	DefaultMediaType string
 	Consumers        map[string]httpkit.Consumer
 	Producers        map[string]httpkit.Producer
-	Transport        http.RoundTripper
-	Spec             *spec.Document
-	Host             string
-	BasePath         string
-	Formats          strfmt.Registry
+
+	Transport http.RoundTripper
+	Spec      *spec.Document
+	Host      string
+	BasePath  string
+	Formats   strfmt.Registry
 
 	client          *http.Client
 	methodsAndPaths map[string]methodAndPath
@@ -64,7 +65,8 @@ func New(swaggerSpec *spec.Document) *Runtime {
 
 // Submit a request and when there is a body on success it will turn that into the result
 // all other things are turned into an api error for swagger which retains the status code
-func (r *Runtime) Submit(operationID string, params client.RequestWriter, readResponse client.ResponseReader) (interface{}, error) {
+func (r *Runtime) Submit(context *client.Operation) (interface{}, error) {
+	operationID, params, readResponse, auth := context.ID, context.Params, context.Reader, context.AuthInfo
 	mthPth, ok := r.methodsAndPaths[operationID]
 	if !ok {
 		return nil, fmt.Errorf("unknown operation: %q", operationID)
@@ -81,6 +83,12 @@ func (r *Runtime) Submit(operationID string, params client.RequestWriter, readRe
 		accept = append(accept, k)
 	}
 	request.SetHeaderParam(httpkit.HeaderAccept, accept...)
+
+	if auth != nil {
+		if err := auth.AuthenticateRequest(request, r.Formats); err != nil {
+			return nil, err
+		}
+	}
 
 	req, err := request.BuildHTTP(r.Producers[r.DefaultMediaType], r.Formats)
 	req.URL.Scheme = "http"
