@@ -3,7 +3,6 @@ package client
 import (
 	"fmt"
 	"net/http"
-	"path/filepath"
 
 	"github.com/go-swagger/go-swagger/client"
 	"github.com/go-swagger/go-swagger/httpkit"
@@ -44,10 +43,18 @@ func New(swaggerSpec *spec.Document) *Runtime {
 	rt.client.Transport = rt.Transport
 	rt.Host = swaggerSpec.Host()
 	rt.BasePath = swaggerSpec.BasePath()
+	schemes := swaggerSpec.Spec().Schemes
+	if len(schemes) == 0 {
+		schemes = append(schemes, "http")
+	}
 	rt.methodsAndPaths = make(map[string]methodAndPath)
 	for mth, pathItem := range rt.Spec.Operations() {
 		for pth, op := range pathItem {
-			rt.methodsAndPaths[op.ID] = methodAndPath{mth, pth}
+			if len(op.Schemes) > 0 {
+				rt.methodsAndPaths[op.ID] = methodAndPath{mth, pth, op.Schemes}
+			} else {
+				rt.methodsAndPaths[op.ID] = methodAndPath{mth, pth, schemes}
+			}
 		}
 	}
 	return &rt
@@ -65,6 +72,7 @@ func (r *Runtime) Submit(operationID string, params client.RequestWriter, readRe
 		return nil, err
 	}
 
+	// TODO: infer most appropriate content type
 	request.SetHeaderParam(httpkit.HeaderContentType, r.DefaultMediaType)
 	var accept []string
 	for k := range r.Consumers {
@@ -73,10 +81,18 @@ func (r *Runtime) Submit(operationID string, params client.RequestWriter, readRe
 	request.SetHeaderParam(httpkit.HeaderAccept, accept...)
 
 	req, err := request.BuildHTTP(r.Producers[r.DefaultMediaType], r.Formats)
-	// TODO: work out scheme based on the operations and the default scheme
 	req.URL.Scheme = "http"
+	if len(mthPth.Schemes) > 0 {
+		scheme := mthPth.Schemes[0]
+		for _, sch := range mthPth.Schemes {
+			if sch == "https" {
+				scheme = sch
+				break
+			}
+		}
+		req.URL.Scheme = scheme
+	}
 	req.URL.Host = r.Host
-	req.URL.Path = filepath.Join(r.BasePath, req.URL.Host)
 	if err != nil {
 		return nil, err
 	}

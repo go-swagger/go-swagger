@@ -7,6 +7,7 @@ import "fmt"
 type methodAndPath struct {
 	Method      string
 	PathPattern string
+	Schemes     []string
 }
 
 // NewAPIError creates a new API error
