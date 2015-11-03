@@ -54,16 +54,20 @@ func TestRuntime_Canary(t *testing.T) {
 	if assert.NoError(t, err) {
 
 		runtime := New(specDoc)
-		res, err := runtime.Submit("getTasks", rwrtr, client.ResponseReaderFunc(func(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
-			if response.Code() == 200 {
-				var result []task
-				if err := consumer.Consume(response.Body(), &result); err != nil {
-					return nil, err
+		res, err := runtime.Submit(&client.Operation{
+			ID:     "getTasks",
+			Params: rwrtr,
+			Reader: client.ResponseReaderFunc(func(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+				if response.Code() == 200 {
+					var result []task
+					if err := consumer.Consume(response.Body(), &result); err != nil {
+						return nil, err
+					}
+					return result, nil
 				}
-				return result, nil
-			}
-			return nil, errors.New("Generic error")
-		}))
+				return nil, errors.New("Generic error")
+			}),
+		})
 
 		if assert.NoError(t, err) {
 			assert.IsType(t, []task{}, res)
