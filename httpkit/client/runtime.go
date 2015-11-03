@@ -3,6 +3,7 @@ package client
 import (
 	"fmt"
 	"net/http"
+	"path/filepath"
 
 	"github.com/go-swagger/go-swagger/client"
 	"github.com/go-swagger/go-swagger/httpkit"
@@ -30,6 +31,7 @@ type Runtime struct {
 func New(swaggerSpec *spec.Document) *Runtime {
 	var rt Runtime
 	rt.DefaultMediaType = httpkit.JSONMime
+
 	// TODO: actually infer this stuff from the spec
 	rt.Consumers = map[string]httpkit.Consumer{
 		httpkit.JSONMime: httpkit.JSONConsumer(),
@@ -93,6 +95,7 @@ func (r *Runtime) Submit(operationID string, params client.RequestWriter, readRe
 		req.URL.Scheme = scheme
 	}
 	req.URL.Host = r.Host
+	req.URL.Path = filepath.Join(r.BasePath, req.URL.Path)
 	if err != nil {
 		return nil, err
 	}
