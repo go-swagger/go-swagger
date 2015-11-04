@@ -127,7 +127,7 @@ func main() {
 
 func main() {
   // load the swagger spec from URL or local file
-  doc, err := spec.Load(&quot;https://raw.githubusercontent.com/go-swagger/go-swagger/master/examples/todo-list/swagger.yml&quot;)
+  doc, err := spec.Load(&quot;./swagger.yml&quot;)
   if err != nil {
     log.Fatal(err)
   }

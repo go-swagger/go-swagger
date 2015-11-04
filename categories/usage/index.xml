@@ -7,8 +7,100 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>© 2015 go-swagger contributors</copyright>
-    <lastBuildDate>Wed, 21 Oct 2015 22:46:51 -0700</lastBuildDate>
+    <lastBuildDate>Fri, 23 Oct 2015 22:11:54 -0700</lastBuildDate>
     <atom:link href="http://go-swagger.github.io/categories/usage/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Generate an API client</title>
+      <link>http://go-swagger.github.io/generate/client/</link>
+      <pubDate>Fri, 23 Oct 2015 22:11:54 -0700</pubDate>
+      
+      <guid>http://go-swagger.github.io/generate/client/</guid>
+      <description>
+
+&lt;p&gt;The toolkit has a command that will let you generate a client.&lt;/p&gt;
+
+&lt;h2 id=&#34;usage:4bd4f30263398a45e38fc9edfc648efa&#34;&gt;Usage&lt;/h2&gt;
+
+&lt;p&gt;To generate a client:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;swagger generate client -f [http-url|filepath] -A [application-name] [--principal [principal-name]]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;To then use the client with a HTTP transport:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;import (
+  &amp;quot;log&amp;quot;
+
+  &amp;quot;github.com/myproject/client/operations&amp;quot;
+  &amp;quot;github.com/go-swagger/go-swagger/strfmt&amp;quot;
+  &amp;quot;github.com/go-swagger/go-swagger/spec&amp;quot;
+
+  apiclient &amp;quot;github.com/myproject/client&amp;quot;
+  httptransport &amp;quot;github.com/go-swagger/go-swagger/httpkit/client&amp;quot;
+)
+
+func main() {
+  // load the swagger spec from URL or local file
+  doc, err := spec.Load(&amp;quot;https://raw.githubusercontent.com/go-swagger/go-swagger/master/examples/todo-list/swagger.yml&amp;quot;)
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  // create the API client
+  client := apiclient.New(httptransport.New(doc), strfmt.Default)
+
+  // make the request to get all items
+  resp, err := client.Operations.All(operations.AllParams{})
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Printf(&amp;quot;%#v\n&amp;quot;, resp.Payload)
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;authentication:4bd4f30263398a45e38fc9edfc648efa&#34;&gt;Authentication&lt;/h3&gt;
+
+&lt;p&gt;The client supports 3 authentication schemes:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Basic Auth&lt;/li&gt;
+&lt;li&gt;API key auth in header or query&lt;/li&gt;
+&lt;li&gt;Bearer token header for oauth2&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;import (
+  &amp;quot;log&amp;quot;
+
+  &amp;quot;github.com/myproject/client/operations&amp;quot;
+  &amp;quot;github.com/go-swagger/go-swagger/strfmt&amp;quot;
+  &amp;quot;github.com/go-swagger/go-swagger/spec&amp;quot;
+
+  apiclient &amp;quot;github.com/myproject/client&amp;quot;
+  httptransport &amp;quot;github.com/go-swagger/go-swagger/httpkit/client&amp;quot;
+)
+
+func main() {
+  // load the swagger spec from URL or local file
+  doc, err := spec.Load(&amp;quot;./swagger.yml&amp;quot;)
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  // create the API client
+  client := apiclient.New(httptransport.New(doc), strfmt.Default)
+
+  // make the authenticated request to get all items
+  bearerTokenAuth := httptransport.BearerToken(os.Getenv(&amp;quot;API_ACCESS_TOKEN&amp;quot;))
+  resp, err := client.Operations.All(operations.AllParams{}, bearerTokenAuth)
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Printf(&amp;quot;%#v\n&amp;quot;, resp.Payload)
+}
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
     
     <item>
       <title>_index</title>
