@@ -97,7 +97,9 @@ func (r *Runtime) Submit(context *client.Operation) (interface{}, error) {
 	req, err := request.BuildHTTP(r.Producers[r.DefaultMediaType], r.Formats)
 
 	// set the scheme
-	req.URL.Scheme = "http"
+	if req.URL.Scheme == "" {
+		req.URL.Scheme = "http"
+	}
 	schLen := len(mthPth.Schemes)
 	if schLen > 0 {
 		scheme := mthPth.Schemes[0]
@@ -119,6 +121,7 @@ func (r *Runtime) Submit(context *client.Operation) (interface{}, error) {
 		return nil, err
 	}
 
+	r.client.Transport = r.Transport
 	res, err := r.client.Do(req) // make requests, by default follows 10 redirects before failing
 	if err != nil {
 		return nil, err

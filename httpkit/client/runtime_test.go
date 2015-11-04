@@ -1,8 +1,10 @@
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -67,6 +69,120 @@ func TestRuntime_Canary(t *testing.T) {
 				}
 				return nil, errors.New("Generic error")
 			}),
+		})
+
+		if assert.NoError(t, err) {
+			assert.IsType(t, []task{}, res)
+			actual := res.([]task)
+			assert.EqualValues(t, result, actual)
+		}
+	}
+}
+
+type roundTripperFunc func(*http.Request) (*http.Response, error)
+
+func (fn roundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return fn(req)
+}
+
+func TestRuntime_CustomTransport(t *testing.T) {
+	rwrtr := client.RequestWriterFunc(func(req client.Request, _ strfmt.Registry) error {
+		return nil
+	})
+	result := []task{
+		{false, "task 1 content", 1},
+		{false, "task 2 content", 2},
+	}
+
+	specDoc, err := spec.Load("../../fixtures/codegen/todolist.simple.yml")
+	specDoc.Spec().BasePath = "/"
+	specDoc.Spec().Host = "localhost:3245"
+	specDoc.Spec().Schemes = []string{"ws", "wss", "https"}
+
+	if assert.NoError(t, err) {
+		runtime := New(specDoc)
+		runtime.Transport = roundTripperFunc(func(req *http.Request) (*http.Response, error) {
+			if req.URL.Scheme != "https" {
+				return nil, errors.New("this was not a https request")
+			}
+			var resp http.Response
+			resp.StatusCode = 200
+			resp.Header = make(http.Header)
+			resp.Header.Set("content-type", "application/json")
+			buf := bytes.NewBuffer(nil)
+			enc := json.NewEncoder(buf)
+			enc.Encode(result)
+			resp.Body = ioutil.NopCloser(buf)
+			return &resp, nil
+		})
+
+		res, err := runtime.Submit(&client.Operation{
+			ID:     "getTasks",
+			Params: rwrtr,
+			Reader: client.ResponseReaderFunc(func(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+				if response.Code() == 200 {
+					var result []task
+					if err := consumer.Consume(response.Body(), &result); err != nil {
+						return nil, err
+					}
+					return result, nil
+				}
+				return nil, errors.New("Generic error")
+			}),
+		})
+
+		if assert.NoError(t, err) {
+			assert.IsType(t, []task{}, res)
+			actual := res.([]task)
+			assert.EqualValues(t, result, actual)
+		}
+	}
+}
+
+func TestRuntime_AuthCanary(t *testing.T) {
+	// test that it can make a simple request
+	// and get the response for it.
+	// defaults all the way down
+	result := []task{
+		{false, "task 1 content", 1},
+		{false, "task 2 content", 2},
+	}
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.Header.Get("Authorization") != "Bearer the-super-secret-token" {
+			rw.WriteHeader(400)
+			return
+		}
+		rw.Header().Add(httpkit.HeaderContentType, httpkit.JSONMime)
+		rw.WriteHeader(http.StatusOK)
+		jsongen := json.NewEncoder(rw)
+		jsongen.Encode(result)
+	}))
+
+	rwrtr := client.RequestWriterFunc(func(req client.Request, _ strfmt.Registry) error {
+		return nil
+	})
+
+	specDoc, err := spec.Load("../../fixtures/codegen/todolist.simple.yml")
+	hu, _ := url.Parse(server.URL)
+	specDoc.Spec().Host = hu.Host
+	specDoc.Spec().BasePath = "/"
+	if assert.NoError(t, err) {
+
+		runtime := New(specDoc)
+		res, err := runtime.Submit(&client.Operation{
+			ID:     "getTasks",
+			Params: rwrtr,
+			Reader: client.ResponseReaderFunc(func(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+				if response.Code() == 200 {
+					var result []task
+					if err := consumer.Consume(response.Body(), &result); err != nil {
+						return nil, err
+					}
+					return result, nil
+				}
+				return nil, errors.New("Generic error")
+			}),
+			AuthInfo: BearerToken("the-super-secret-token"),
 		})
 
 		if assert.NoError(t, err) {
