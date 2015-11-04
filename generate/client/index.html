@@ -104,9 +104,46 @@ func main() {
 }
 </code></pre>
 
-<h2 id="known-issues:4bd4f30263398a45e38fc9edfc648efa">Known Issues</h2>
+<h3 id="authentication:4bd4f30263398a45e38fc9edfc648efa">Authentication</h3>
 
-<p>At this moment the client does not quite support authentication <em>yet</em>.</p>
+<p>The client supports 3 authentication schemes:</p>
+
+<ul>
+<li>Basic Auth</li>
+<li>API key auth in header or query</li>
+<li>Bearer token header for oauth2</li>
+</ul>
+
+<pre><code class="language-go">import (
+  &quot;log&quot;
+
+  &quot;github.com/myproject/client/operations&quot;
+  &quot;github.com/go-swagger/go-swagger/strfmt&quot;
+  &quot;github.com/go-swagger/go-swagger/spec&quot;
+
+  apiclient &quot;github.com/myproject/client&quot;
+  httptransport &quot;github.com/go-swagger/go-swagger/httpkit/client&quot;
+)
+
+func main() {
+  // load the swagger spec from URL or local file
+  doc, err := spec.Load(&quot;https://raw.githubusercontent.com/go-swagger/go-swagger/master/examples/todo-list/swagger.yml&quot;)
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  // create the API client
+  client := apiclient.New(httptransport.New(doc), strfmt.Default)
+
+  // make the authenticated request to get all items
+  bearerTokenAuth := httptransport.BearerToken(os.Getenv(&quot;API_ACCESS_TOKEN&quot;))
+  resp, err := client.Operations.All(operations.AllParams{}, bearerTokenAuth)
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Printf(&quot;%#v\n&quot;, resp.Payload)
+}
+</code></pre>
 
 				</section>
 			</article>
@@ -125,8 +162,10 @@ func main() {
 <ul>
 <li>
 <ul>
-<li><a href="#usage:4bd4f30263398a45e38fc9edfc648efa">Usage</a></li>
-<li><a href="#known-issues:4bd4f30263398a45e38fc9edfc648efa">Known Issues</a></li>
+<li><a href="#usage:4bd4f30263398a45e38fc9edfc648efa">Usage</a>
+<ul>
+<li><a href="#authentication:4bd4f30263398a45e38fc9edfc648efa">Authentication</a></li>
+</ul></li>
 </ul></li>
 </ul>
 </nav>
