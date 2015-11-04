@@ -14,9 +14,10 @@ import (
 // Runtime represents an API client that uses the transport
 // to make http requests based on a swagger specification.
 type Runtime struct {
-	DefaultMediaType string
-	Consumers        map[string]httpkit.Consumer
-	Producers        map[string]httpkit.Producer
+	DefaultMediaType      string
+	DefaultAuthentication client.AuthInfoWriter
+	Consumers             map[string]httpkit.Consumer
+	Producers             map[string]httpkit.Producer
 
 	Transport http.RoundTripper
 	Spec      *spec.Document
@@ -84,6 +85,9 @@ func (r *Runtime) Submit(context *client.Operation) (interface{}, error) {
 	}
 	request.SetHeaderParam(httpkit.HeaderAccept, accept...)
 
+	if auth == nil && r.DefaultAuthentication != nil {
+		auth = r.DefaultAuthentication
+	}
 	if auth != nil {
 		if err := auth.AuthenticateRequest(request, r.Formats); err != nil {
 			return nil, err
@@ -91,17 +95,24 @@ func (r *Runtime) Submit(context *client.Operation) (interface{}, error) {
 	}
 
 	req, err := request.BuildHTTP(r.Producers[r.DefaultMediaType], r.Formats)
+
+	// set the scheme
 	req.URL.Scheme = "http"
-	if len(mthPth.Schemes) > 0 {
+	schLen := len(mthPth.Schemes)
+	if schLen > 0 {
 		scheme := mthPth.Schemes[0]
-		for _, sch := range mthPth.Schemes {
-			if sch == "https" {
-				scheme = sch
-				break
+		// prefer https, but skip when not possible
+		if scheme != "https" && schLen > 1 {
+			for _, sch := range mthPth.Schemes {
+				if sch == "https" {
+					scheme = sch
+					break
+				}
 			}
 		}
 		req.URL.Scheme = scheme
 	}
+
 	req.URL.Host = r.Host
 	req.URL.Path = filepath.Join(r.BasePath, req.URL.Path)
 	if err != nil {
