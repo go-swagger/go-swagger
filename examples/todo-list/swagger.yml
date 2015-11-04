@@ -13,7 +13,7 @@ paths:
   /:
     get:
       tags: ["todos"]
-      operationId: all
+      operationId: find
       responses:
         '200':
           description: OK
@@ -27,7 +27,7 @@ paths:
             $ref: "#/definitions/error"
     post:
       tags: ["todos"]
-      operationId: create
+      operationId: addOne
       responses:
         '201':
           description: Created
@@ -45,7 +45,7 @@ paths:
         required: true
     put:
       tags: ["todos"]
-      operationId: update
+      operationId: updateOne
       responses:
         '200':
           description: OK
@@ -57,7 +57,7 @@ paths:
             $ref: "#/definitions/error"
     delete:
       tags: ["todos"]
-      operationId: destroy
+      operationId: destroyOne
       responses:
         '204':
           description: Deleted

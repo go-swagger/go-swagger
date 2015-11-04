@@ -133,7 +133,7 @@ func (r *request) SetHeaderParam(name string, values ...string) error {
 	if r.header == nil {
 		r.header = make(http.Header)
 	}
-	r.header[name] = values
+	r.header[http.CanonicalHeaderKey(name)] = values
 	return nil
 }
 

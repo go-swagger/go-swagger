@@ -72,7 +72,7 @@ import (
 
 func main() {
   // load the swagger spec from URL or local file
-  doc, err := spec.Load("https://raw.githubusercontent.com/go-swagger/go-swagger/master/examples/todo-list/swagger.yml")
+  doc, err := spec.Load("./swagger.yml")
   if err != nil {
     log.Fatal(err)
   }
