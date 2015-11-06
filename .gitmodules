@@ -1,6 +1,0 @@
-[submodule "docs/public"]
-	path = docs/public
-	url = https://github.com/go-swagger/go-swagger.github.io
-[submodule "docs/themes/bootie-docs"]
-	path = docs/themes/bootie-docs
-	url = https://github.com/key-amb/hugo-theme-bootie-docs
