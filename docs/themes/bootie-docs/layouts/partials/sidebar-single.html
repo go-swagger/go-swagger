@@ -1,0 +1,20 @@
+{{ $baseUrl := .Site.BaseURL }}
+<div class="col-sm-3 col-sm-offset-1 doc-sidebar">
+	<div class="sidebar-module">
+		<div class="sidebar-toc">
+			<h4>Table of Contents</h4>
+			<ul>
+				<li><strong><a href="#title">{{ .Title }}</a></strong></li>
+			</ul>
+			{{ .TableOfContents }}
+		</div>
+	</div>
+	<div class="sidebar-module">
+		<h4>Tags</h4>
+		<div class="tag-box">
+		{{ range $name, $taxonomy := .Site.Taxonomies.tags }}
+			<a class="tag-item" href="{{ $baseUrl }}/tags/{{ $name | urlize }}">{{ $name }}</a>
+		{{ end }}
+		</div>
+	</div>
+</div><!-- /.doc-sidebar -->

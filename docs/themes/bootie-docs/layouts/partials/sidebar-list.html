@@ -1,0 +1,19 @@
+{{ $baseUrl := .Site.BaseURL }}
+<div class="col-sm-3 col-sm-offset-1 doc-sidebar">
+	<div class="sidebar-module">
+		<h4>Categories</h4>
+		<ul class="list-unstyled">
+		{{ range $name, $taxonomy := .Site.Taxonomies.categories }}
+			<li><a class="tag-item" href="{{ $baseUrl }}/categories/{{ $name | urlize }}">{{ $name }}</a></li>
+		{{ end }}
+		</ul>
+	</div>
+	<div class="sidebar-module">
+		<h4>Tags</h4>
+		<div class="tag-box">
+		{{ range $name, $taxonomy := .Site.Taxonomies.tags }}
+			<a class="tag-item" href="{{ $baseUrl }}/tags/{{ $name | urlize }}">{{ $name }}</a>
+		{{ end }}
+		</div>
+	</div>
+</div><!-- /.doc-sidebar -->

@@ -1,0 +1,31 @@
+{{ $baseUrl := .Site.BaseURL }}
+{{ partial "header.html" . }}
+
+<main role="main">
+
+<div class="row">
+	<!-- Main jumbotron for a primary marketing message or call to action -->
+	<div class="jumbotron">
+		<h1>{{ .Site.Title }}</h1>
+		<p>{{ if isset .Site.Params "description" }}{{ .Site.Params.description }}{{ else }}You can customize this text by params "description" in your <code>config.toml</code>.{{ end }}</p>
+	</div>
+</div>
+
+{{ range where .Site.Pages "Title" "_index" }}
+	<div class="row doc-main">
+		<p class="doc-entry-meta"><time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "January 02, 2006" }}</time></p>
+		{{ .Content }}
+	</div>
+{{ end }}
+
+{{ if isset .Site.Params "withSitePosts" }}
+<hr />
+
+<div class="row doc-main text-center">
+	<a href="{{ $baseUrl }}/post">See posts for {{ .Site.Title }}</a>
+</div>
+{{ end }}
+
+</main>
+
+{{ partial "footer.html" . }}

@@ -1,0 +1,24 @@
+{{ partial "header.html" . }}
+
+<div class="row">
+	<div class="col-sm-8 doc-main">
+		<main role="main">
+			<div class="doc-list-header">
+				<h1>{{ .Title }}</h1>
+			</div>
+			<div class="doc-list-entry">
+	{{ range .Data.Pages }}
+				<a class="doc-entry" href="{{ .RelPermalink }}">
+					<h3 class="doc-entry-title">{{ .Title }}{{ if .Draft }} #Draft{{ end }}</h3>
+					<p class="doc-entry-meta"><time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "January 02, 2006" }}</time></p>
+				</a>
+	{{ end }}
+			</div>
+		</main>
+	</div> <!-- /.doc-main -->
+
+	{{ partial "sidebar-list.html" . }}
+
+</div> <!-- /.row -->
+
+{{ partial "footer.html" . }}

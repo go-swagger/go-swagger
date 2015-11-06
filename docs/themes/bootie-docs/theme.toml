@@ -1,0 +1,18 @@
+name = "Hugo Theme Bootie Docs"
+license = "MIT"
+licenselink = "https://github.com/key-amb/hugo-theme-bootie-docs/LICENSE.md"
+description = "A simple Hugo theme with Bootstrap for documentation"
+homepage = "http://key-amb.github.io/bootie-docs-demo/"
+tags = ["document", "bootstrap"]
+features = ["document", ""]
+min_version = 0.14
+
+[author]
+  name = "YASUTAKE Kiyoshi"
+  homepage = "https://github.com/key-amb"
+
+# If porting an existing theme
+[original]
+  name = ""
+  homepage = ""
+  repo = ""
