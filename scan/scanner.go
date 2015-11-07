@@ -33,7 +33,7 @@ const (
 	rxMinItemsFmt = "%s[Mm]in(?:imum)?(?:\\p{Zs}*|[\\p{Pd}\\p{Pc}]|\\.)?[Ii]tems\\p{Zs}*:\\p{Zs}*(\\p{N}+)$"
 	rxUniqueFmt   = "%s[Uu]nique\\p{Zs}*:\\p{Zs}*(true|false)$"
 
-	rxItemsPrefix = "(?:[Ii]tems[\\.\\p{Zs}]?)+"
+	rxItemsPrefixFmt = "(?:[Ii]tems[\\.\\p{Zs}]*){%d}"
 )
 
 var (
@@ -329,6 +329,7 @@ type swaggerTypable interface {
 	SetRef(spec.Ref)
 	Items() swaggerTypable
 	Schema() *spec.Schema
+	Level() int
 }
 
 func swaggerSchemaForType(typeName string, prop swaggerTypable) error {

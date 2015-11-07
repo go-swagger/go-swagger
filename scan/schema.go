@@ -15,6 +15,7 @@ import (
 
 type schemaTypable struct {
 	schema *spec.Schema
+	level  int
 }
 
 func (st schemaTypable) Typed(tpe, format string) {
@@ -38,8 +39,9 @@ func (st schemaTypable) Items() swaggerTypable {
 	}
 
 	st.schema.Typed("array", "")
-	return schemaTypable{st.schema.Items.Schema}
+	return schemaTypable{st.schema.Items.Schema, st.level + 1}
 }
+func (st schemaTypable) Level() int { return st.level }
 
 type schemaValidations struct {
 	current *spec.Schema
@@ -373,7 +375,7 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 				}
 
 				ps := schema.Properties[nm]
-				if err := parseProperty(scp, gofile, fld.Type, schemaTypable{&ps}); err != nil {
+				if err := parseProperty(scp, gofile, fld.Type, schemaTypable{&ps, 0}); err != nil {
 					return err
 				}
 
@@ -394,26 +396,43 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 						newSingleLineTagParser("readOnly", &setReadOnlySchema{&ps}),
 					}
 
+					itemsTaggers := func(items *spec.Schema, level int) []tagParser {
+						// the expression is 1-index based not 0-index
+						itemsPrefix := fmt.Sprintf(rxItemsPrefixFmt, level+1)
+						return []tagParser{
+							newSingleLineTagParser(fmt.Sprintf("items%dMaximum", level), &setMaximum{schemaValidations{items}, rxf(rxMaximumFmt, itemsPrefix)}),
+							newSingleLineTagParser(fmt.Sprintf("items%dMinimum", level), &setMinimum{schemaValidations{items}, rxf(rxMinimumFmt, itemsPrefix)}),
+							newSingleLineTagParser(fmt.Sprintf("items%dMultipleOf", level), &setMultipleOf{schemaValidations{items}, rxf(rxMultipleOfFmt, itemsPrefix)}),
+							newSingleLineTagParser(fmt.Sprintf("items%dMinLength", level), &setMinLength{schemaValidations{items}, rxf(rxMinLengthFmt, itemsPrefix)}),
+							newSingleLineTagParser(fmt.Sprintf("items%dMaxLength", level), &setMaxLength{schemaValidations{items}, rxf(rxMaxLengthFmt, itemsPrefix)}),
+							newSingleLineTagParser(fmt.Sprintf("items%dPattern", level), &setPattern{schemaValidations{items}, rxf(rxPatternFmt, itemsPrefix)}),
+							newSingleLineTagParser(fmt.Sprintf("items%dMinItems", level), &setMinItems{schemaValidations{items}, rxf(rxMinItemsFmt, itemsPrefix)}),
+							newSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{schemaValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
+							newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{schemaValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
+						}
+
+					}
 					// check if this is a primitive, if so parse the validations from the
 					// doc comments of the slice declaration.
-					if ftpe, ok := fld.Type.(*ast.ArrayType); ok {
-						if iftpe, ok := ftpe.Elt.(*ast.Ident); ok && iftpe.Obj == nil {
-							if ps.Items != nil && ps.Items.Schema != nil {
-								itemsTaggers := []tagParser{
-									newSingleLineTagParser("itemsMaximum", &setMaximum{schemaValidations{ps.Items.Schema}, rxf(rxMaximumFmt, rxItemsPrefix)}),
-									newSingleLineTagParser("itemsMinimum", &setMinimum{schemaValidations{ps.Items.Schema}, rxf(rxMinimumFmt, rxItemsPrefix)}),
-									newSingleLineTagParser("itemsMultipleOf", &setMultipleOf{schemaValidations{ps.Items.Schema}, rxf(rxMultipleOfFmt, rxItemsPrefix)}),
-									newSingleLineTagParser("itemsMinLength", &setMinLength{schemaValidations{ps.Items.Schema}, rxf(rxMinLengthFmt, rxItemsPrefix)}),
-									newSingleLineTagParser("itemsMaxLength", &setMaxLength{schemaValidations{ps.Items.Schema}, rxf(rxMaxLengthFmt, rxItemsPrefix)}),
-									newSingleLineTagParser("itemsPattern", &setPattern{schemaValidations{ps.Items.Schema}, rxf(rxPatternFmt, rxItemsPrefix)}),
-									newSingleLineTagParser("itemsMinItems", &setMinItems{schemaValidations{ps.Items.Schema}, rxf(rxMinItemsFmt, rxItemsPrefix)}),
-									newSingleLineTagParser("itemsMaxItems", &setMaxItems{schemaValidations{ps.Items.Schema}, rxf(rxMaxItemsFmt, rxItemsPrefix)}),
-									newSingleLineTagParser("itemsUnique", &setUnique{schemaValidations{ps.Items.Schema}, rxf(rxUniqueFmt, rxItemsPrefix)}),
+					if ftped, ok := fld.Type.(*ast.ArrayType); ok {
+						ftpe := ftped
+						items, level := ps.Items, 0
+						for items != nil && items.Schema != nil {
+							switch iftpe := ftpe.Elt.(type) {
+							case *ast.ArrayType:
+								eleTaggers := itemsTaggers(items.Schema, level)
+								sp.taggers = append(eleTaggers, sp.taggers...)
+								ftpe = iftpe
+							case *ast.Ident:
+								if iftpe.Obj == nil {
+									sp.taggers = append(itemsTaggers(items.Schema, level), sp.taggers...)
 								}
-
-								// items matchers should go before the default matchers so they match first
-								sp.taggers = append(itemsTaggers, sp.taggers...)
+								break
+								//default:
+								//return fmt.Errorf("unknown field type (%T) ele for %q", iftpe, nm)
 							}
+							items = items.Schema.Items
+							level = level + 1
 						}
 					}
 				} else {
@@ -648,7 +667,7 @@ func parseProperty(scp *schemaParser, gofile *ast.File, fld ast.Expr, prop swagg
 				if sch.AdditionalProperties.Schema == nil {
 					sch.AdditionalProperties.Schema = new(spec.Schema)
 				}
-				parseProperty(scp, gofile, ftpe.Value, schemaTypable{sch.AdditionalProperties.Schema})
+				parseProperty(scp, gofile, ftpe.Value, schemaTypable{sch.AdditionalProperties.Schema, 0})
 				sch.Typed("object", "")
 			}
 		}

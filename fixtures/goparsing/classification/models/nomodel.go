@@ -51,6 +51,22 @@ type NoModel struct {
 	// items.pattern: \w+
 	FooSlice []string `json:"foo_slice"`
 
+	// a BarSlice has bars which are strings
+	//
+	// min items: 3
+	// max items: 10
+	// unique: true
+	// items.minItems: 4
+	// items.maxItems: 9
+	// items.items.minItems: 5
+	// items.items.maxItems: 8
+	// items.items.items.minLength: 3
+	// items.items.items.maxLength: 10
+	// items.items.items.pattern: \w+
+	// collection format: pipe
+	// in: query
+	BarSlice [][][]string `json:"bar_slice"`
+
 	// the items for this order
 	Items []struct {
 		// ID of this no model instance.

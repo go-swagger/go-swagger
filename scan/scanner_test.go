@@ -561,11 +561,11 @@ func TestSchemaValueExtractors(t *testing.T) {
 	verifySwaggerMultiArgSwaggerTag(t, rxParametersOverride, parameters, validParams, invalidParams)
 
 	verifyMinMax(t, rxf(rxMinimumFmt, ""), "min", []string{"", ">", "="})
-	verifyMinMax(t, rxf(rxMinimumFmt, rxItemsPrefix), "items.min", []string{"", ">", "="})
+	verifyMinMax(t, rxf(rxMinimumFmt, fmt.Sprintf(rxItemsPrefixFmt, 1)), "items.min", []string{"", ">", "="})
 	verifyMinMax(t, rxf(rxMaximumFmt, ""), "max", []string{"", "<", "="})
-	verifyMinMax(t, rxf(rxMaximumFmt, rxItemsPrefix), "items.max", []string{"", "<", "="})
+	verifyMinMax(t, rxf(rxMaximumFmt, fmt.Sprintf(rxItemsPrefixFmt, 1)), "items.max", []string{"", "<", "="})
 	verifyNumeric2Words(t, rxf(rxMultipleOfFmt, ""), "multiple", "of")
-	verifyNumeric2Words(t, rxf(rxMultipleOfFmt, rxItemsPrefix), "items.multiple", "of")
+	verifyNumeric2Words(t, rxf(rxMultipleOfFmt, fmt.Sprintf(rxItemsPrefixFmt, 1)), "items.multiple", "of")
 
 	verifyIntegerMinMaxManyWords(t, rxf(rxMinLengthFmt, ""), "min", []string{"len", "length"})
 	// pattern

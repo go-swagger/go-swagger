@@ -51,7 +51,7 @@ func TestParseResponses(t *testing.T) {
 
 	res, ok := responses["someResponse"]
 	assert.True(t, ok)
-	assert.Len(t, res.Headers, 5)
+	assert.Len(t, res.Headers, 6)
 
 	for k, header := range res.Headers {
 		switch k {
@@ -102,6 +102,31 @@ func TestParseResponses(t *testing.T) {
 			assert.EqualValues(t, 3, *itprop.MinLength, "'foo_slice.items.minLength' should have been 3")
 			assert.EqualValues(t, 10, *itprop.MaxLength, "'foo_slice.items.maxLength' should have been 10")
 			assert.EqualValues(t, "\\w+", itprop.Pattern, "'foo_slice.items.pattern' should have \\w+")
+
+		case "bar_slice":
+			assert.Equal(t, "a BarSlice has bars which are strings", header.Description)
+			assert.Equal(t, "array", header.Type)
+			assert.True(t, header.UniqueItems)
+			assert.Equal(t, "pipe", header.CollectionFormat)
+			assert.NotNil(t, header.Items, "bar_slice should have had an items property")
+			assert.EqualValues(t, 3, *header.MinItems, "'bar_slice' should have had 3 min items")
+			assert.EqualValues(t, 10, *header.MaxItems, "'bar_slice' should have had 10 max items")
+			itprop := header.Items
+			if assert.NotNil(t, itprop) {
+				assert.EqualValues(t, 4, *itprop.MinItems, "'bar_slice.items.minItems' should have been 4")
+				assert.EqualValues(t, 9, *itprop.MaxItems, "'bar_slice.items.maxItems' should have been 9")
+				itprop2 := itprop.Items
+				if assert.NotNil(t, itprop2) {
+					assert.EqualValues(t, 5, *itprop2.MinItems, "'bar_slice.items.items.minItems' should have been 5")
+					assert.EqualValues(t, 8, *itprop2.MaxItems, "'bar_slice.items.items.maxItems' should have been 8")
+					itprop3 := itprop2.Items
+					if assert.NotNil(t, itprop3) {
+						assert.EqualValues(t, 3, *itprop3.MinLength, "'bar_slice.items.items.items.minLength' should have been 3")
+						assert.EqualValues(t, 10, *itprop3.MaxLength, "'bar_slice.items.items.items.maxLength' should have been 10")
+						assert.EqualValues(t, "\\w+", itprop3.Pattern, "'bar_slice.items.items.items.pattern' should have \\w+")
+					}
+				}
+			}
 
 		default:
 			assert.Fail(t, "unkown property: "+k)

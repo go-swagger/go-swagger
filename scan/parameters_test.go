@@ -60,7 +60,7 @@ func TestParamsParser(t *testing.T) {
 
 	op, ok := noParamOps["someOperation"]
 	assert.True(t, ok)
-	assert.Len(t, op.Parameters, 6)
+	assert.Len(t, op.Parameters, 7)
 
 	for _, param := range op.Parameters {
 		switch param.Name {
@@ -159,6 +159,34 @@ func TestParamsParser(t *testing.T) {
 			iprop, ok = itprop.Properties["notes"]
 			assert.True(t, ok)
 			assert.Equal(t, "Notes to add to this item.\nThis can be used to add special instructions.", iprop.Description)
+
+		case "bar_slice":
+			assert.Equal(t, "a BarSlice has bars which are strings", param.Description)
+			assert.Equal(t, "BarSlice", param.Extensions["x-go-name"])
+			assert.Equal(t, "query", param.In)
+			assert.Equal(t, "array", param.Type)
+			assert.False(t, param.Required)
+			assert.True(t, param.UniqueItems)
+			assert.Equal(t, "pipe", param.CollectionFormat)
+			assert.NotNil(t, param.Items, "bar_slice should have had an items property")
+			assert.EqualValues(t, 3, *param.MinItems, "'bar_slice' should have had 3 min items")
+			assert.EqualValues(t, 10, *param.MaxItems, "'bar_slice' should have had 10 max items")
+			itprop := param.Items
+			if assert.NotNil(t, itprop) {
+				assert.EqualValues(t, 4, *itprop.MinItems, "'bar_slice.items.minItems' should have been 4")
+				assert.EqualValues(t, 9, *itprop.MaxItems, "'bar_slice.items.maxItems' should have been 9")
+				itprop2 := itprop.Items
+				if assert.NotNil(t, itprop2) {
+					assert.EqualValues(t, 5, *itprop2.MinItems, "'bar_slice.items.items.minItems' should have been 5")
+					assert.EqualValues(t, 8, *itprop2.MaxItems, "'bar_slice.items.items.maxItems' should have been 8")
+					itprop3 := itprop2.Items
+					if assert.NotNil(t, itprop3) {
+						assert.EqualValues(t, 3, *itprop3.MinLength, "'bar_slice.items.items.items.minLength' should have been 3")
+						assert.EqualValues(t, 10, *itprop3.MaxLength, "'bar_slice.items.items.items.maxLength' should have been 10")
+						assert.EqualValues(t, "\\w+", itprop3.Pattern, "'bar_slice.items.items.items.pattern' should have \\w+")
+					}
+				}
+			}
 
 		default:
 			assert.Fail(t, "unkown property: "+param.Name)

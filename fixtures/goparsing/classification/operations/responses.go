@@ -85,6 +85,21 @@ type SomeResponse struct {
 	// collection format: pipe
 	FooSlice []string `json:"foo_slice"`
 
+	// a BarSlice has bars which are strings
+	//
+	// min items: 3
+	// max items: 10
+	// unique: true
+	// items.minItems: 4
+	// items.maxItems: 9
+	// items.items.minItems: 5
+	// items.items.maxItems: 8
+	// items.items.items.minLength: 3
+	// items.items.items.maxLength: 10
+	// items.items.items.pattern: \w+
+	// collection format: pipe
+	BarSlice [][][]string `json:"bar_slice"`
+
 	// the items for this order
 	//
 	// in: body

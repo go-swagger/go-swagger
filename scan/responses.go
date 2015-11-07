@@ -18,6 +18,8 @@ type responseTypable struct {
 	response *spec.Response
 }
 
+func (ht responseTypable) Level() int { return 0 }
+
 func (ht responseTypable) Typed(tpe, format string) {
 	ht.header.Typed(tpe, format)
 }
@@ -35,14 +37,14 @@ func (ht responseTypable) Items() swaggerTypable {
 			ht.response.Schema.Items.Schema = new(spec.Schema)
 		}
 		ht.response.Schema.Typed("array", "")
-		return schemaTypable{ht.response.Schema.Items.Schema}
+		return schemaTypable{ht.response.Schema.Items.Schema, 0}
 	}
 
 	if ht.header.Items == nil {
 		ht.header.Items = new(spec.Items)
 	}
 	ht.header.Type = "array"
-	return itemsTypable{ht.header.Items}
+	return itemsTypable{ht.header.Items, 1}
 }
 
 func (ht responseTypable) SetRef(ref spec.Ref) {
@@ -296,29 +298,45 @@ func (rp *responseParser) parseStructType(gofile *ast.File, response *spec.Respo
 					newSingleLineTagParser("maxItems", &setMaxItems{headerValidations{&ps}, rxf(rxMaxItemsFmt, "")}),
 					newSingleLineTagParser("unique", &setUnique{headerValidations{&ps}, rxf(rxUniqueFmt, "")}),
 				}
-				itemsTaggers := func() []tagParser {
+				itemsTaggers := func(items *spec.Items, level int) []tagParser {
+					// the expression is 1-index based not 0-index
+					itemsPrefix := fmt.Sprintf(rxItemsPrefixFmt, level+1)
+
 					return []tagParser{
-						newSingleLineTagParser("itemsMaximum", &setMaximum{itemsValidations{ps.Items}, rxf(rxMaximumFmt, rxItemsPrefix)}),
-						newSingleLineTagParser("itemsMinimum", &setMinimum{itemsValidations{ps.Items}, rxf(rxMinimumFmt, rxItemsPrefix)}),
-						newSingleLineTagParser("itemsMultipleOf", &setMultipleOf{itemsValidations{ps.Items}, rxf(rxMultipleOfFmt, rxItemsPrefix)}),
-						newSingleLineTagParser("itemsMinLength", &setMinLength{itemsValidations{ps.Items}, rxf(rxMinLengthFmt, rxItemsPrefix)}),
-						newSingleLineTagParser("itemsMaxLength", &setMaxLength{itemsValidations{ps.Items}, rxf(rxMaxLengthFmt, rxItemsPrefix)}),
-						newSingleLineTagParser("itemsPattern", &setPattern{itemsValidations{ps.Items}, rxf(rxPatternFmt, rxItemsPrefix)}),
-						newSingleLineTagParser("itemsCollectionFormat", &setCollectionFormat{itemsValidations{ps.Items}, rxf(rxCollectionFormatFmt, rxItemsPrefix)}),
-						newSingleLineTagParser("itemsMinItems", &setMinItems{itemsValidations{ps.Items}, rxf(rxMinItemsFmt, rxItemsPrefix)}),
-						newSingleLineTagParser("itemsMaxItems", &setMaxItems{itemsValidations{ps.Items}, rxf(rxMaxItemsFmt, rxItemsPrefix)}),
-						newSingleLineTagParser("itemsUnique", &setUnique{itemsValidations{ps.Items}, rxf(rxUniqueFmt, rxItemsPrefix)}),
+						newSingleLineTagParser(fmt.Sprintf("items%dMaximum", level), &setMaximum{itemsValidations{items}, rxf(rxMaximumFmt, itemsPrefix)}),
+						newSingleLineTagParser(fmt.Sprintf("items%dMinimum", level), &setMinimum{itemsValidations{items}, rxf(rxMinimumFmt, itemsPrefix)}),
+						newSingleLineTagParser(fmt.Sprintf("items%dMultipleOf", level), &setMultipleOf{itemsValidations{items}, rxf(rxMultipleOfFmt, itemsPrefix)}),
+						newSingleLineTagParser(fmt.Sprintf("items%dMinLength", level), &setMinLength{itemsValidations{items}, rxf(rxMinLengthFmt, itemsPrefix)}),
+						newSingleLineTagParser(fmt.Sprintf("items%dMaxLength", level), &setMaxLength{itemsValidations{items}, rxf(rxMaxLengthFmt, itemsPrefix)}),
+						newSingleLineTagParser(fmt.Sprintf("items%dPattern", level), &setPattern{itemsValidations{items}, rxf(rxPatternFmt, itemsPrefix)}),
+						newSingleLineTagParser(fmt.Sprintf("items%dCollectionFormat", level), &setCollectionFormat{itemsValidations{items}, rxf(rxCollectionFormatFmt, itemsPrefix)}),
+						newSingleLineTagParser(fmt.Sprintf("items%dMinItems", level), &setMinItems{itemsValidations{items}, rxf(rxMinItemsFmt, itemsPrefix)}),
+						newSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{itemsValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
+						newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{itemsValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
 					}
 				}
 
 				// check if this is a primitive, if so parse the validations from the
 				// doc comments of the slice declaration.
-				if ftpe, ok := fld.Type.(*ast.ArrayType); ok {
-					if iftpe, ok := ftpe.Elt.(*ast.Ident); ok && iftpe.Obj == nil {
-						if ps.Items != nil {
-							// items matchers should go before the default matchers so they match first
-							sp.taggers = append(itemsTaggers(), sp.taggers...)
+				if ftped, ok := fld.Type.(*ast.ArrayType); ok {
+					ftpe := ftped
+					items, level := ps.Items, 0
+					for items != nil {
+						switch iftpe := ftpe.Elt.(type) {
+						case *ast.ArrayType:
+							eleTaggers := itemsTaggers(items, level)
+							sp.taggers = append(eleTaggers, sp.taggers...)
+							ftpe = iftpe
+						case *ast.Ident:
+							if iftpe.Obj == nil {
+								sp.taggers = append(itemsTaggers(items, level), sp.taggers...)
+							}
+							break
+						default:
+							return fmt.Errorf("unknown field type ele for %q", nm)
 						}
+						items = items.Items
+						level = level + 1
 					}
 				}
 
