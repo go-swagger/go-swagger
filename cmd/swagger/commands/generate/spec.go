@@ -3,7 +3,7 @@ package generate
 import (
 	"encoding/json"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"os"
 
 	"github.com/go-swagger/go-swagger/scan"
@@ -52,17 +52,13 @@ func loadSpec(input string) (*spec.Swagger, error) {
 }
 
 func writeToFile(swspec *spec.Swagger, output string) error {
-	var wrtr io.WriteCloser = os.Stdout
-	if output != "" {
-		wrtr = os.Stdout
-		defer wrtr.Close()
-	}
-
 	b, err := json.Marshal(swspec)
 	if err != nil {
 		return err
 	}
-	wrtr.Write(b)
-	wrtr.Write(newLine)
-	return nil
+	if output == "" {
+		fmt.Println(string(b))
+		return nil
+	}
+	return ioutil.WriteFile(output, b, 0644)
 }
