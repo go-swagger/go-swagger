@@ -32,7 +32,7 @@ func New{{ pascalize .Name }}API(spec *spec.Document) *{{ pascalize .Name }}API 
   return {{.ReceiverName}}
 }
 
-/* {{ pascalize .Name }}API {{ if .Info }}{{ if .Info.Description }}{{.Info.Description}}{{ end }}{{ end }} */
+/*{{ pascalize .Name }}API {{ if .Info }}{{ if .Info.Description }}{{.Info.Description}}{{ else }}the {{ humanize .Name }} API{{ end }}{{ end }} */
 type {{ pascalize .Name }}API struct {
   spec            *spec.Document
   context         *middleware.Context
@@ -49,10 +49,10 @@ type {{ pascalize .Name }}API struct {
   {{range .SecurityDefinitions}}
   {{if .IsBasicAuth}}// {{ pascalize .Name }}Auth registers a function that takes username and password and returns a principal
   // it performs authentication with basic auth
-  {{ pascalize .Name }}Auth func(string, string) (*{{ .Principal }}, error)
+  {{ pascalize .Name }}Auth func(string, string) ({{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}, error)
   {{end}}{{if .IsAPIKeyAuth}}// {{ pascalize .Name }}Auth registers a function that takes a token and returns a principal
   // it performs authentication based on an api key {{ .Name }} provided in the {{.Source}}
-  {{ pascalize .Name }}Auth func(string) (*{{ .Principal }}, error)
+  {{ pascalize .Name }}Auth func(string) ({{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}, error)
   {{end}}
   {{end}}
   {{range .Operations}}// {{ pascalize .Name }}Handler sets the operation handler for the {{ humanize .Name }} operation

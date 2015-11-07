@@ -268,6 +268,10 @@ func (a *appGenerator) makeProduces() (produces []GenSerGroup, producesJSON bool
 
 func (a *appGenerator) makeSecuritySchemes() (security []GenSecurityScheme) {
 
+	prin := a.Principal
+	if prin == "" {
+		prin = "interface{}"
+	}
 	for _, scheme := range a.SpecDoc.RequiredSchemes() {
 		if req, ok := a.SpecDoc.Spec().SecurityDefinitions[scheme]; ok {
 			if req.Type == "basic" || req.Type == "apiKey" {
@@ -277,7 +281,7 @@ func (a *appGenerator) makeSecuritySchemes() (security []GenSecurityScheme) {
 					Name:         req.Name,
 					IsBasicAuth:  strings.ToLower(req.Type) == "basic",
 					IsAPIKeyAuth: strings.ToLower(req.Type) == "apikey",
-					Principal:    a.Principal,
+					Principal:    prin,
 					Source:       req.In,
 				})
 			}
@@ -297,6 +301,11 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	consumes, consumesJSON := a.makeConsumes()
 	produces, producesJSON := a.makeProduces()
+
+	prin := a.Principal
+	if prin == "" {
+		prin = "interface{}"
+	}
 	security := a.makeSecuritySchemes()
 
 	var genMods []GenDefinition
@@ -321,7 +330,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	tns := make(map[string]struct{})
 	var bldr codeGenOpBuilder
 	bldr.ModelsPackage = a.ModelsPackage
-	bldr.Principal = a.Principal
+	bldr.Principal = prin
 	bldr.Target = a.Target
 	bldr.DefaultImports = defaultImports
 	bldr.Doc = a.SpecDoc
@@ -383,7 +392,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		SecurityDefinitions: security,
 		Models:              genMods,
 		Operations:          genOps,
-		Principal:           a.Principal,
+		Principal:           prin,
 		SwaggerJSON:         fmt.Sprintf("%#v", jsonb),
 	}, nil
 }

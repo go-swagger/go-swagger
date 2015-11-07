@@ -28,16 +28,16 @@ func configureAPI(api *{{.Package}}.{{ pascalize .Name }}API) {
   {{end}}
   {{range .SecurityDefinitions}}
   {{if .IsBasicAuth}}
-  api.{{ pascalize .Name }}Auth = func(user string, pass string) (*{{.Principal}}, error) {
+  api.{{ pascalize .Name }}Auth = func(user string, pass string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
     return nil, errors.NotImplemented("basic auth has not yet been implemented")
   }
   {{end}}{{if .IsAPIKeyAuth}}
-  api.{{ pascalize .Name }}Auth = func(token string) (*{{.Principal}}, error) {
+  api.{{ pascalize .Name }}Auth = func(token string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
     return nil, errors.NotImplemented("api key auth {{.Name}} from {{.Source}} has not yet been implemented")
   }
   {{end}}
   {{end}}
-  {{range .Operations}}api.{{ pascalize .Name }}Handler = {{.Package}}.{{ pascalize .Name }}HandlerFunc(func({{if .Params}}params {{.Package}}.{{ pascalize .Name }}Params{{end}}{{if and .Authorized .Params}}, {{end}}{{if .Authorized}}principal *{{.Principal}}{{end}}) ({{if and .SuccessResponse }}{{ if .SuccessResponse.Schema }}{{ if .SuccessResponse.Schema.IsNullable }}*{{ end }}{{.SuccessResponse.Schema.GoType}}, {{ end }}{{end}}error) {
+  {{range .Operations}}api.{{ pascalize .Name }}Handler = {{.Package}}.{{ pascalize .Name }}HandlerFunc(func({{if .Params}}params {{.Package}}.{{ pascalize .Name }}Params{{end}}{{if and .Authorized .Params}}, {{end}}{{if .Authorized}}principal {{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}{{end}}) ({{if and .SuccessResponse }}{{ if .SuccessResponse.Schema }}{{ if .SuccessResponse.Schema.IsNullable }}*{{ end }}{{.SuccessResponse.Schema.GoType}}, {{ end }}{{end}}error) {
     return {{if .SuccessResponse}}{{ if .SuccessResponse.Schema }}nil, {{ end }}{{end}}errors.NotImplemented("operation {{.Name}} has not yet been implemented")
   })
   {{end}}
