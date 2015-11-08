@@ -66,7 +66,7 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	assert.Equal(t, "It is used to describe the animals available in the store.", mod.Description)
 	assert.Len(t, mod.Required, 2)
 
-	assertProperty(t, &mod, "number", "id", "int64", "ID")
+	assertProperty(t, &mod, "integer", "id", "int64", "ID")
 	prop, ok := mod.Properties["id"]
 	assert.True(t, ok, "should have had an 'id' property")
 	assert.Equal(t, "The id of the tag.", prop.Description)
@@ -82,7 +82,7 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	assert.Equal(t, "It is used to describe the animals available in the store.", mod.Description)
 	assert.Len(t, mod.Required, 2)
 
-	assertProperty(t, &mod, "number", "id", "int64", "ID")
+	assertProperty(t, &mod, "integer", "id", "int64", "ID")
 	prop, ok = mod.Properties["id"]
 	assert.True(t, ok, "should have had an 'id' property")
 	assert.Equal(t, "The id of the pet.", prop.Description)
@@ -115,12 +115,12 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	assert.Len(t, mod.Properties, 4)
 	assert.Len(t, mod.Required, 3)
 
-	assertProperty(t, &mod, "number", "id", "int64", "ID")
+	assertProperty(t, &mod, "integer", "id", "int64", "ID")
 	prop, ok = mod.Properties["id"]
 	assert.True(t, ok, "should have had an 'id' property")
 	assert.Equal(t, "the ID of the order", prop.Description)
 
-	assertProperty(t, &mod, "number", "userId", "int64", "UserID")
+	assertProperty(t, &mod, "integer", "userId", "int64", "UserID")
 	prop, ok = mod.Properties["userId"]
 	assert.True(t, ok, "should have had an 'userId' property")
 	assert.Equal(t, "the id of the user who placed the order.", prop.Description)
@@ -140,12 +140,12 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	assert.Len(t, itprop.Properties, 2)
 	assert.Len(t, itprop.Required, 2)
 
-	assertProperty(t, itprop, "number", "petId", "int64", "PetID")
+	assertProperty(t, itprop, "integer", "petId", "int64", "PetID")
 	iprop, ok := itprop.Properties["petId"]
 	assert.True(t, ok, "should have had a 'petId' property")
 	assert.Equal(t, "the id of the pet to order", iprop.Description)
 
-	assertProperty(t, itprop, "number", "qty", "int32", "Quantity")
+	assertProperty(t, itprop, "integer", "qty", "int32", "Quantity")
 	iprop, ok = itprop.Properties["qty"]
 	assert.True(t, ok, "should have had a 'qty' property")
 	assert.Equal(t, "the quantity of this pet to order", iprop.Description)
@@ -156,14 +156,14 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	assert.True(t, ok)
 	assert.NotNil(t, resp.Schema)
 	assert.Len(t, resp.Schema.Properties, 2)
-	assertProperty(t, resp.Schema, "number", "code", "int32", "Code")
+	assertProperty(t, resp.Schema, "integer", "code", "int32", "Code")
 	assertProperty(t, resp.Schema, "string", "message", "", "Message")
 
 	resp, ok = doc.Responses["validationError"]
 	assert.True(t, ok)
 	assert.NotNil(t, resp.Schema)
 	assert.Len(t, resp.Schema.Properties, 3)
-	assertProperty(t, resp.Schema, "number", "code", "int32", "Code")
+	assertProperty(t, resp.Schema, "integer", "code", "int32", "Code")
 	assertProperty(t, resp.Schema, "string", "message", "", "Message")
 	assertProperty(t, resp.Schema, "string", "field", "", "Field")
 
@@ -324,7 +324,7 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 func verifyIDParam(t testing.TB, param spec.Parameter, description string) {
 	assert.Equal(t, description, param.Description)
 	assert.Equal(t, "path", param.In)
-	assert.Equal(t, "number", param.Type)
+	assert.Equal(t, "integer", param.Type)
 	assert.Equal(t, "int64", param.Format)
 	assert.True(t, param.Required)
 	assert.Equal(t, "ID", param.Extensions["x-go-name"])

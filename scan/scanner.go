@@ -347,13 +347,13 @@ func swaggerSchemaForType(typeName string, prop swaggerTypable) error {
 	case "int", "int64":
 		prop.Typed("integer", "int64")
 	case "uint8":
-		prop.Typed("number", "uint8")
+		prop.Typed("integer", "uint8")
 	case "uint16":
-		prop.Typed("number", "uint16")
+		prop.Typed("integer", "uint16")
 	case "uint32":
-		prop.Typed("number", "uint32")
+		prop.Typed("integer", "uint32")
 	case "uint", "uint64":
-		prop.Typed("number", "uint64")
+		prop.Typed("integer", "uint64")
 	case "float32":
 		prop.Typed("number", "float")
 	case "float64":

@@ -29,13 +29,13 @@ func TestParseResponses(t *testing.T) {
 	for k, header := range cr.Headers {
 		switch k {
 		case "id":
-			assert.Equal(t, "number", header.Type)
+			assert.Equal(t, "integer", header.Type)
 			assert.Equal(t, "int64", header.Format)
 		case "name":
 			assert.Equal(t, "string", header.Type)
 			assert.Equal(t, "", header.Format)
 		case "age":
-			assert.Equal(t, "number", header.Type)
+			assert.Equal(t, "integer", header.Type)
 			assert.Equal(t, "int32", header.Format)
 		case "notes":
 			assert.Equal(t, "string", header.Type)
@@ -57,7 +57,7 @@ func TestParseResponses(t *testing.T) {
 		switch k {
 		case "id":
 			assert.Equal(t, "ID of this some response instance.\nids in this application start at 11 and are smaller than 1000", header.Description)
-			assert.Equal(t, "number", header.Type)
+			assert.Equal(t, "integer", header.Type)
 			assert.Equal(t, "int64", header.Format)
 			//assert.Equal(t, "ID", header.Extensions["x-go-name"])
 			assert.EqualValues(t, 1000, *header.Maximum)
@@ -67,7 +67,7 @@ func TestParseResponses(t *testing.T) {
 
 		case "score":
 			assert.Equal(t, "The Score of this model", header.Description)
-			assert.Equal(t, "number", header.Type)
+			assert.Equal(t, "integer", header.Type)
 			assert.Equal(t, "int32", header.Format)
 			//assert.Equal(t, "Score", header.Extensions["x-go-name"])
 			assert.EqualValues(t, 45, *header.Maximum)
@@ -141,7 +141,7 @@ func TestParseResponses(t *testing.T) {
 	itprop := aprop.Items.Schema
 	assert.Len(t, itprop.Properties, 4)
 	assert.Len(t, itprop.Required, 3)
-	assertProperty(t, itprop, "number", "id", "int32", "ID")
+	assertProperty(t, itprop, "integer", "id", "int32", "ID")
 	iprop, ok := itprop.Properties["id"]
 	assert.True(t, ok)
 	assert.Equal(t, "ID of this some response instance.\nids in this application start at 11 and are smaller than 1000", iprop.Description)
@@ -156,7 +156,7 @@ func TestParseResponses(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "The Pet to add to this NoModel items bucket.\nPets can appear more than once in the bucket", iprop.Description)
 
-	assertProperty(t, itprop, "number", "quantity", "int16", "Quantity")
+	assertProperty(t, itprop, "integer", "quantity", "int16", "Quantity")
 	iprop, ok = itprop.Properties["quantity"]
 	assert.True(t, ok)
 	assert.Equal(t, "The amount of pets to add to this bucket.", iprop.Description)

@@ -17,7 +17,7 @@ func TestSchemaParser(t *testing.T) {
 	assert.Equal(t, "NoModel exists in a package\nbut is not annotated with the swagger model annotations\nso it should now show up in a test.", schema.Description)
 	assert.Len(t, schema.Required, 3)
 
-	assertProperty(t, &schema, "number", "id", "int64", "ID")
+	assertProperty(t, &schema, "integer", "id", "int64", "ID")
 	prop, ok := schema.Properties["id"]
 	assert.Equal(t, "ID of this no model instance.\nids in this application start at 11 and are smaller than 1000", prop.Description)
 	assert.True(t, ok, "should have had an 'id' property")
@@ -27,7 +27,7 @@ func TestSchemaParser(t *testing.T) {
 	assert.EqualValues(t, 10, *prop.Minimum)
 	assert.True(t, prop.ExclusiveMinimum, "'id' should have had an exclusive minimum")
 
-	assertProperty(t, &schema, "number", "score", "int32", "Score")
+	assertProperty(t, &schema, "integer", "score", "int32", "Score")
 	prop, ok = schema.Properties["score"]
 	assert.Equal(t, "The Score of this model", prop.Description)
 	assert.True(t, ok, "should have had a 'score' property")
@@ -98,7 +98,7 @@ func TestSchemaParser(t *testing.T) {
 	itprop = prop.Items.Schema
 	assert.Len(t, itprop.Properties, 4)
 	assert.Len(t, itprop.Required, 3)
-	assertProperty(t, itprop, "number", "id", "int32", "ID")
+	assertProperty(t, itprop, "integer", "id", "int32", "ID")
 	iprop, ok := itprop.Properties["id"]
 	assert.True(t, ok)
 	assert.Equal(t, "ID of this no model instance.\nids in this application start at 11 and are smaller than 1000", iprop.Description)
@@ -113,7 +113,7 @@ func TestSchemaParser(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "The Pet to add to this NoModel items bucket.\nPets can appear more than once in the bucket", iprop.Description)
 
-	assertProperty(t, itprop, "number", "quantity", "int16", "Quantity")
+	assertProperty(t, itprop, "integer", "quantity", "int16", "Quantity")
 	iprop, ok = itprop.Properties["quantity"]
 	assert.True(t, ok)
 	assert.Equal(t, "The amount of pets to add to this bucket.", iprop.Description)
@@ -150,8 +150,8 @@ func TestSchemaParser(t *testing.T) {
 
 func TestEmbeddedTypes(t *testing.T) {
 	schema := noModelDefs["ComplexerOne"]
-	assertProperty(t, &schema, "number", "age", "int32", "Age")
-	assertProperty(t, &schema, "number", "id", "int64", "ID")
+	assertProperty(t, &schema, "integer", "age", "int32", "Age")
+	assertProperty(t, &schema, "integer", "id", "int64", "ID")
 	assertProperty(t, &schema, "string", "createdAt", "date-time", "CreatedAt")
 	assertProperty(t, &schema, "string", "extra", "", "Extra")
 	assertProperty(t, &schema, "string", "name", "", "Name")
@@ -163,8 +163,8 @@ func TestEmbeddedAllOf(t *testing.T) {
 
 	assert.Len(t, schema.AllOf, 3)
 	asch := schema.AllOf[0]
-	assertProperty(t, &asch, "number", "age", "int32", "Age")
-	assertProperty(t, &asch, "number", "id", "int64", "ID")
+	assertProperty(t, &asch, "integer", "age", "int32", "Age")
+	assertProperty(t, &asch, "integer", "id", "int64", "ID")
 	assertProperty(t, &asch, "string", "name", "", "Name")
 
 	asch = schema.AllOf[1]
@@ -172,47 +172,47 @@ func TestEmbeddedAllOf(t *testing.T) {
 
 	asch = schema.AllOf[2]
 	assertProperty(t, &asch, "string", "createdAt", "date-time", "CreatedAt")
-	assertProperty(t, &asch, "number", "did", "int64", "DID")
+	assertProperty(t, &asch, "integer", "did", "int64", "DID")
 	assertProperty(t, &asch, "string", "cat", "", "Cat")
 }
 
 func TestAliasedTypes(t *testing.T) {
 	schema := noModelDefs["OtherTypes"]
 	assertProperty(t, &schema, "string", "named", "", "Named")
-	assertProperty(t, &schema, "number", "numbered", "int64", "Numbered")
+	assertProperty(t, &schema, "integer", "numbered", "int64", "Numbered")
 	assertProperty(t, &schema, "string", "timed", "date-time", "Timed")
 	assertRef(t, &schema, "petted", "Petted", "#/definitions/pet")
 	assertRef(t, &schema, "somethinged", "Somethinged", "#/definitions/Something")
 	assertProperty(t, &schema, "string", "dated", "date-time", "Dated")
 
 	assertArrayProperty(t, &schema, "string", "manyNamed", "", "ManyNamed")
-	assertArrayProperty(t, &schema, "number", "manyNumbered", "int64", "ManyNumbered")
+	assertArrayProperty(t, &schema, "integer", "manyNumbered", "int64", "ManyNumbered")
 	assertArrayProperty(t, &schema, "string", "manyTimed", "date-time", "ManyTimed")
 	assertArrayRef(t, &schema, "manyPetted", "ManyPetted", "#/definitions/pet")
 	assertArrayRef(t, &schema, "manySomethinged", "ManySomethinged", "#/definitions/Something")
 	assertArrayProperty(t, &schema, "string", "manyDated", "date-time", "ManyDated")
 
 	assertArrayProperty(t, &schema, "string", "nameds", "", "Nameds")
-	assertArrayProperty(t, &schema, "number", "numbereds", "int64", "Numbereds")
+	assertArrayProperty(t, &schema, "integer", "numbereds", "int64", "Numbereds")
 	assertArrayProperty(t, &schema, "string", "timeds", "date-time", "Timeds")
 	assertArrayRef(t, &schema, "petteds", "Petteds", "#/definitions/pet")
 	assertArrayRef(t, &schema, "somethingeds", "Somethingeds", "#/definitions/Something")
 	assertArrayProperty(t, &schema, "string", "dateds", "date-time", "Dateds")
 
 	assertProperty(t, &schema, "string", "modsNamed", "", "ModsNamed")
-	assertProperty(t, &schema, "number", "modsNumbered", "int64", "ModsNumbered")
+	assertProperty(t, &schema, "integer", "modsNumbered", "int64", "ModsNumbered")
 	assertProperty(t, &schema, "string", "modsTimed", "date-time", "ModsTimed")
 	assertRef(t, &schema, "modsPetted", "ModsPetted", "#/definitions/pet")
 	assertProperty(t, &schema, "string", "modsDated", "date-time", "ModsDated")
 
 	assertArrayProperty(t, &schema, "string", "manyModsNamed", "", "ManyModsNamed")
-	assertArrayProperty(t, &schema, "number", "manyModsNumbered", "int64", "ManyModsNumbered")
+	assertArrayProperty(t, &schema, "integer", "manyModsNumbered", "int64", "ManyModsNumbered")
 	assertArrayProperty(t, &schema, "string", "manyModsTimed", "date-time", "ManyModsTimed")
 	assertArrayRef(t, &schema, "manyModsPetted", "ManyModsPetted", "#/definitions/pet")
 	assertArrayProperty(t, &schema, "string", "manyModsDated", "date-time", "ManyModsDated")
 
 	assertArrayProperty(t, &schema, "string", "modsNameds", "", "ModsNameds")
-	assertArrayProperty(t, &schema, "number", "modsNumbereds", "int64", "ModsNumbereds")
+	assertArrayProperty(t, &schema, "integer", "modsNumbereds", "int64", "ModsNumbereds")
 	assertArrayProperty(t, &schema, "string", "modsTimeds", "date-time", "ModsTimeds")
 	assertArrayRef(t, &schema, "modsPetteds", "ModsPetteds", "#/definitions/pet")
 	assertArrayProperty(t, &schema, "string", "modsDateds", "date-time", "ModsDateds")
@@ -223,16 +223,16 @@ func TestParsePrimitiveSchemaProperty(t *testing.T) {
 	assertProperty(t, &schema, "boolean", "a", "", "A")
 	assertProperty(t, &schema, "string", "b", "", "B")
 	assertProperty(t, &schema, "string", "c", "", "C")
-	assertProperty(t, &schema, "number", "d", "int64", "D")
-	assertProperty(t, &schema, "number", "e", "int8", "E")
-	assertProperty(t, &schema, "number", "f", "int16", "F")
-	assertProperty(t, &schema, "number", "g", "int32", "G")
-	assertProperty(t, &schema, "number", "h", "int64", "H")
-	assertProperty(t, &schema, "number", "i", "uint64", "I")
-	assertProperty(t, &schema, "number", "j", "uint8", "J")
-	assertProperty(t, &schema, "number", "k", "uint16", "K")
-	assertProperty(t, &schema, "number", "l", "uint32", "L")
-	assertProperty(t, &schema, "number", "m", "uint64", "M")
+	assertProperty(t, &schema, "integer", "d", "int64", "D")
+	assertProperty(t, &schema, "integer", "e", "int8", "E")
+	assertProperty(t, &schema, "integer", "f", "int16", "F")
+	assertProperty(t, &schema, "integer", "g", "int32", "G")
+	assertProperty(t, &schema, "integer", "h", "int64", "H")
+	assertProperty(t, &schema, "integer", "i", "uint64", "I")
+	assertProperty(t, &schema, "integer", "j", "uint8", "J")
+	assertProperty(t, &schema, "integer", "k", "uint16", "K")
+	assertProperty(t, &schema, "integer", "l", "uint32", "L")
+	assertProperty(t, &schema, "integer", "m", "uint64", "M")
 	assertProperty(t, &schema, "number", "n", "float", "N")
 	assertProperty(t, &schema, "number", "o", "double", "O")
 }
@@ -282,7 +282,7 @@ func TestParseStructFields(t *testing.T) {
 	schema := noModelDefs["SimpleComplexModel"]
 	assertProperty(t, &schema, "object", "emb", "", "Emb")
 	eSchema := schema.Properties["emb"]
-	assertProperty(t, &eSchema, "number", "cid", "int64", "CID")
+	assertProperty(t, &eSchema, "integer", "cid", "int64", "CID")
 	assertProperty(t, &eSchema, "string", "baz", "", "Baz")
 
 	assertRef(t, &schema, "top", "Top", "#/definitions/Something")
@@ -292,12 +292,12 @@ func TestParseStructFields(t *testing.T) {
 func TestParsePointerFields(t *testing.T) {
 	schema := noModelDefs["Pointdexter"]
 
-	assertProperty(t, &schema, "number", "id", "int64", "ID")
+	assertProperty(t, &schema, "integer", "id", "int64", "ID")
 	assertProperty(t, &schema, "string", "name", "", "Name")
 	assertProperty(t, &schema, "object", "emb", "", "Emb")
 	assertProperty(t, &schema, "string", "t", "uuid5", "T")
 	eSchema := schema.Properties["emb"]
-	assertProperty(t, &eSchema, "number", "cid", "int64", "CID")
+	assertProperty(t, &eSchema, "integer", "cid", "int64", "CID")
 	assertProperty(t, &eSchema, "string", "baz", "", "Baz")
 
 	assertRef(t, &schema, "top", "Top", "#/definitions/Something")
@@ -325,23 +325,23 @@ func assertArrayRef(t testing.TB, schema *spec.Schema, jsonName, goName, fragmen
 func TestParseSliceFields(t *testing.T) {
 	schema := noModelDefs["SliceAndDice"]
 
-	assertArrayProperty(t, &schema, "number", "ids", "int64", "IDs")
+	assertArrayProperty(t, &schema, "integer", "ids", "int64", "IDs")
 	assertArrayProperty(t, &schema, "string", "names", "", "Names")
 	assertArrayProperty(t, &schema, "string", "uuids", "uuid", "UUIDs")
 	assertArrayProperty(t, &schema, "object", "embs", "", "Embs")
 	eSchema := schema.Properties["embs"].Items.Schema
-	assertArrayProperty(t, eSchema, "number", "cid", "int64", "CID")
+	assertArrayProperty(t, eSchema, "integer", "cid", "int64", "CID")
 	assertArrayProperty(t, eSchema, "string", "baz", "", "Baz")
 
 	assertArrayRef(t, &schema, "tops", "Tops", "#/definitions/Something")
 	assertArrayRef(t, &schema, "notSels", "NotSels", "#/definitions/NotSelected")
 
-	assertArrayProperty(t, &schema, "number", "ptrIds", "int64", "PtrIDs")
+	assertArrayProperty(t, &schema, "integer", "ptrIds", "int64", "PtrIDs")
 	assertArrayProperty(t, &schema, "string", "ptrNames", "", "PtrNames")
 	assertArrayProperty(t, &schema, "string", "ptrUuids", "uuid", "PtrUUIDs")
 	assertArrayProperty(t, &schema, "object", "ptrEmbs", "", "PtrEmbs")
 	eSchema = schema.Properties["ptrEmbs"].Items.Schema
-	assertArrayProperty(t, eSchema, "number", "ptrCid", "int64", "PtrCID")
+	assertArrayProperty(t, eSchema, "integer", "ptrCid", "int64", "PtrCID")
 	assertArrayProperty(t, eSchema, "string", "ptrBaz", "", "PtrBaz")
 
 	assertArrayRef(t, &schema, "ptrTops", "PtrTops", "#/definitions/Something")
@@ -369,23 +369,23 @@ func assertMapRef(t testing.TB, schema *spec.Schema, jsonName, goName, fragment 
 func TestParseMapFields(t *testing.T) {
 	schema := noModelDefs["MapTastic"]
 
-	assertMapProperty(t, &schema, "number", "ids", "int64", "IDs")
+	assertMapProperty(t, &schema, "integer", "ids", "int64", "IDs")
 	assertMapProperty(t, &schema, "string", "names", "", "Names")
 	assertMapProperty(t, &schema, "string", "uuids", "uuid", "UUIDs")
 	assertMapProperty(t, &schema, "object", "embs", "", "Embs")
 	eSchema := schema.Properties["embs"].AdditionalProperties.Schema
-	assertMapProperty(t, eSchema, "number", "cid", "int64", "CID")
+	assertMapProperty(t, eSchema, "integer", "cid", "int64", "CID")
 	assertMapProperty(t, eSchema, "string", "baz", "", "Baz")
 
 	assertMapRef(t, &schema, "tops", "Tops", "#/definitions/Something")
 	assertMapRef(t, &schema, "notSels", "NotSels", "#/definitions/NotSelected")
 
-	assertMapProperty(t, &schema, "number", "ptrIds", "int64", "PtrIDs")
+	assertMapProperty(t, &schema, "integer", "ptrIds", "int64", "PtrIDs")
 	assertMapProperty(t, &schema, "string", "ptrNames", "", "PtrNames")
 	assertMapProperty(t, &schema, "string", "ptrUuids", "uuid", "PtrUUIDs")
 	assertMapProperty(t, &schema, "object", "ptrEmbs", "", "PtrEmbs")
 	eSchema = schema.Properties["ptrEmbs"].AdditionalProperties.Schema
-	assertMapProperty(t, eSchema, "number", "ptrCid", "int64", "PtrCID")
+	assertMapProperty(t, eSchema, "integer", "ptrCid", "int64", "PtrCID")
 	assertMapProperty(t, eSchema, "string", "ptrBaz", "", "PtrBaz")
 
 	assertMapRef(t, &schema, "ptrTops", "PtrTops", "#/definitions/Something")
