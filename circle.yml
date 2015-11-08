@@ -23,7 +23,7 @@ dependencies:
     - go get -t -v -u -f github.com/cee-dub/go-junit-report
 
     # get the dependencies etc
-    - go get -u -v github.com/tools/godep
+    - go get github.com/tools/godep
     - go get -u -v github.com/jteeuwen/go-bindata/...
   post:
     - godep restore
