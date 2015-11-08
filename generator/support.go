@@ -7,8 +7,10 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
+	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
 )
@@ -147,20 +149,19 @@ func (a *appGenerator) generateAPIBuilder(app *GenApp) error {
 	return writeToFile(filepath.Join(a.Target, a.ServerPackage, app.Package), swag.ToGoName(app.Name)+"Api", buf.Bytes())
 }
 
-var mediaTypeNames = map[string]string{
-	"application/json":        "json",
-	"application/x-yaml":      "yaml",
-	"application/x-protobuf":  "protobuf",
-	"application/x-capnproto": "capnproto",
-	"application/x-thrift":    "thrift",
-	"application/xml":         "xml",
-	"text/xml":                "xml",
-	"text/x-markdown":         "markdown",
-	"text/html":               "html",
-	"text/csv":                "csv",
-	"text/tsv":                "tsv",
-	"text/javascript":         "js",
-	"text/css":                "css",
+var mediaTypeNames = map[*regexp.Regexp]string{
+	regexp.MustCompile("application/.*json"):         "json",
+	regexp.MustCompile("application/.*yaml"):         "yaml",
+	regexp.MustCompile("application/.*protobuf"):     "protobuf",
+	regexp.MustCompile("application/.*capnproto"):    "capnproto",
+	regexp.MustCompile("application/.*thrift"):       "thrift",
+	regexp.MustCompile("(?:application|text)/.*xml"): "xml",
+	regexp.MustCompile("text/.*markdown"):            "markdown",
+	regexp.MustCompile("text/.*html"):                "html",
+	regexp.MustCompile("text/.*csv"):                 "csv",
+	regexp.MustCompile("text/.*tsv"):                 "tsv",
+	regexp.MustCompile("text/.*javascript"):          "js",
+	regexp.MustCompile("text/.*css"):                 "css",
 }
 
 var knownProducers = map[string]string{
@@ -183,9 +184,18 @@ func getSerializer(sers []GenSerGroup, ext string) (*GenSerGroup, bool) {
 	return nil, false
 }
 
+func mediaTypeName(tn string) (string, bool) {
+	for k, v := range mediaTypeNames {
+		if k.MatchString(tn) {
+			return v, true
+		}
+	}
+	return "", false
+}
+
 func (a *appGenerator) makeConsumes() (consumes []GenSerGroup, consumesJSON bool) {
 	for _, cons := range a.SpecDoc.RequiredConsumes() {
-		cn, ok := mediaTypeNames[cons]
+		cn, ok := mediaTypeName(cons)
 		if !ok {
 			continue
 		}
@@ -222,12 +232,29 @@ func (a *appGenerator) makeConsumes() (consumes []GenSerGroup, consumesJSON bool
 			Implementation: ser.Implementation,
 		})
 	}
+	if len(consumes) == 0 {
+		consumes = append(consumes, GenSerGroup{
+			AppName:      a.Name,
+			ReceiverName: a.Receiver,
+			Name:         "json",
+			MediaType:    httpkit.JSONMime,
+			AllSerializers: []GenSerializer{GenSerializer{
+				AppName:        a.Name,
+				ReceiverName:   a.Receiver,
+				Name:           "json",
+				MediaType:      httpkit.JSONMime,
+				Implementation: knownConsumers["json"],
+			}},
+			Implementation: knownConsumers["json"],
+		})
+		consumesJSON = true
+	}
 	return
 }
 
 func (a *appGenerator) makeProduces() (produces []GenSerGroup, producesJSON bool) {
 	for _, prod := range a.SpecDoc.RequiredProduces() {
-		pn, ok := mediaTypeNames[prod]
+		pn, ok := mediaTypeName(prod)
 		if !ok {
 			continue
 		}
@@ -261,6 +288,23 @@ func (a *appGenerator) makeProduces() (produces []GenSerGroup, producesJSON bool
 			Implementation: ser.Implementation,
 			AllSerializers: []GenSerializer{ser},
 		})
+	}
+	if len(produces) == 0 {
+		produces = append(produces, GenSerGroup{
+			AppName:      a.Name,
+			ReceiverName: a.Receiver,
+			Name:         "json",
+			MediaType:    httpkit.JSONMime,
+			AllSerializers: []GenSerializer{GenSerializer{
+				AppName:        a.Name,
+				ReceiverName:   a.Receiver,
+				Name:           "json",
+				MediaType:      httpkit.JSONMime,
+				Implementation: knownProducers["json"],
+			}},
+			Implementation: knownProducers["json"],
+		})
+		producesJSON = true
 	}
 
 	return
@@ -299,8 +343,8 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	jsonb, _ := json.MarshalIndent(sw, "", "  ")
 
-	consumes, consumesJSON := a.makeConsumes()
-	produces, producesJSON := a.makeProduces()
+	consumes, _ := a.makeConsumes()
+	produces, _ := a.makeProduces()
 
 	prin := a.Principal
 	if prin == "" {
@@ -368,13 +412,13 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	defaultConsumes := "application/json"
 	rc := a.SpecDoc.RequiredConsumes()
-	if !consumesJSON && len(rc) > 0 {
+	if len(rc) > 0 {
 		defaultConsumes = rc[0]
 	}
 
 	defaultProduces := "application/json"
 	rp := a.SpecDoc.RequiredProduces()
-	if !producesJSON && len(rp) > 0 {
+	if len(rp) > 0 {
 		defaultProduces = rp[0]
 	}
 

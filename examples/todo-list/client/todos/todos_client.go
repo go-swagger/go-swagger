@@ -23,40 +23,6 @@ type Client struct {
 	formats   strfmt.Registry
 }
 
-/*Find find API
- */
-func (a *Client) Find(params FindParams, authInfo client.AuthInfoWriter) (*FindOK, error) {
-	// TODO: Validate the params before sending
-
-	result, err := a.transport.Submit(&client.Operation{
-		ID:       "find",
-		Params:   &params,
-		Reader:   &FindReader{formats: a.formats},
-		AuthInfo: authInfo,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return result.(*FindOK), nil
-}
-
-/*AddOne add one API
- */
-func (a *Client) AddOne(params AddOneParams, authInfo client.AuthInfoWriter) (*AddOneCreated, error) {
-	// TODO: Validate the params before sending
-
-	result, err := a.transport.Submit(&client.Operation{
-		ID:       "addOne",
-		Params:   &params,
-		Reader:   &AddOneReader{formats: a.formats},
-		AuthInfo: authInfo,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return result.(*AddOneCreated), nil
-}
-
 /*UpdateOne update one API
  */
 func (a *Client) UpdateOne(params UpdateOneParams, authInfo client.AuthInfoWriter) (*UpdateOneOK, error) {
@@ -89,6 +55,40 @@ func (a *Client) DestroyOne(params DestroyOneParams, authInfo client.AuthInfoWri
 		return nil, err
 	}
 	return result.(*DestroyOneNoContent), nil
+}
+
+/*Find find API
+ */
+func (a *Client) Find(params FindParams, authInfo client.AuthInfoWriter) (*FindOK, error) {
+	// TODO: Validate the params before sending
+
+	result, err := a.transport.Submit(&client.Operation{
+		ID:       "find",
+		Params:   &params,
+		Reader:   &FindReader{formats: a.formats},
+		AuthInfo: authInfo,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*FindOK), nil
+}
+
+/*AddOne add one API
+ */
+func (a *Client) AddOne(params AddOneParams, authInfo client.AuthInfoWriter) (*AddOneCreated, error) {
+	// TODO: Validate the params before sending
+
+	result, err := a.transport.Submit(&client.Operation{
+		ID:       "addOne",
+		Params:   &params,
+		Reader:   &AddOneReader{formats: a.formats},
+		AuthInfo: authInfo,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*AddOneCreated), nil
 }
 
 // NewAPIError creates a new API error

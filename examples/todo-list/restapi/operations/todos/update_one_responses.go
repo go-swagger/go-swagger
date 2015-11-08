@@ -6,8 +6,9 @@ package todos
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/examples/todo-list/models"
 	"github.com/go-swagger/go-swagger/httpkit"
+
+	"github.com/go-swagger/go-swagger/examples/todo-list/models"
 )
 
 /*

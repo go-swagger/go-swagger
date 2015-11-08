@@ -16,13 +16,13 @@ import (
 func NewAPI(spec *spec.Document) *API {
 	return &API{
 		spec:            spec,
-		DefaultProduces: "application/json",
-		DefaultConsumes: "application/json",
+		DefaultProduces: httpkit.JSONMime,
+		DefaultConsumes: httpkit.JSONMime,
 		consumers: map[string]httpkit.Consumer{
-			"application/json": httpkit.JSONConsumer(),
+			httpkit.JSONMime: httpkit.JSONConsumer(),
 		},
 		producers: map[string]httpkit.Producer{
-			"application/json": httpkit.JSONProducer(),
+			httpkit.JSONMime: httpkit.JSONProducer(),
 		},
 		authenticators: make(map[string]httpkit.Authenticator),
 		operations:     make(map[string]httpkit.OperationHandler),
@@ -48,26 +48,41 @@ type API struct {
 
 // Formats returns the registered string formats
 func (d *API) Formats() strfmt.Registry {
+	if d.formats == nil {
+		d.formats = strfmt.NewFormats()
+	}
 	return d.formats
 }
 
 // RegisterFormat registers a custom format validator
 func (d *API) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
+	if d.formats == nil {
+		d.formats = strfmt.NewFormats()
+	}
 	d.formats.Add(name, format, validator)
 }
 
 // RegisterAuth registers an auth handler in this api
 func (d *API) RegisterAuth(scheme string, handler httpkit.Authenticator) {
+	if d.authenticators == nil {
+		d.authenticators = make(map[string]httpkit.Authenticator)
+	}
 	d.authenticators[scheme] = handler
 }
 
 // RegisterConsumer registers a consumer for a media type.
 func (d *API) RegisterConsumer(mediaType string, handler httpkit.Consumer) {
+	if d.consumers == nil {
+		d.consumers = map[string]httpkit.Consumer{httpkit.JSONMime: httpkit.JSONConsumer()}
+	}
 	d.consumers[strings.ToLower(mediaType)] = handler
 }
 
 // RegisterProducer registers a producer for a media type
 func (d *API) RegisterProducer(mediaType string, handler httpkit.Producer) {
+	if d.producers == nil {
+		d.producers = map[string]httpkit.Producer{httpkit.JSONMime: httpkit.JSONProducer()}
+	}
 	d.producers[strings.ToLower(mediaType)] = handler
 }
 

@@ -23,8 +23,8 @@ func NewToDoListAPI(spec *spec.Document) *ToDoListAPI {
 		spec:            spec,
 		handlers:        make(map[string]http.Handler),
 		formats:         strfmt.Default,
-		defaultConsumes: "application/json",
-		defaultProduces: "application/json",
+		defaultConsumes: "application/io.swagger.examples.todo-list.v1+json",
+		defaultProduces: "application/io.swagger.examples.todo-list.v1+json",
 	}
 
 	return o
@@ -38,6 +38,11 @@ type ToDoListAPI struct {
 	formats         strfmt.Registry
 	defaultConsumes string
 	defaultProduces string
+	// JSONConsumer registers a consumer for a "application/io.swagger.examples.todo-list.v1+json" mime type
+	JSONConsumer httpkit.Consumer
+
+	// JSONProducer registers a producer for a "application/io.swagger.examples.todo-list.v1+json" mime type
+	JSONProducer httpkit.Producer
 
 	// XPetstoreTokenAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key x-petstore-token provided in the header
@@ -91,6 +96,14 @@ func (o *ToDoListAPI) RegisterFormat(name string, format strfmt.Format, validato
 func (o *ToDoListAPI) Validate() error {
 	var unregistered []string
 
+	if o.JSONConsumer == nil {
+		unregistered = append(unregistered, "JSONConsumer")
+	}
+
+	if o.JSONProducer == nil {
+		unregistered = append(unregistered, "JSONProducer")
+	}
+
 	if o.XPetstoreTokenAuth == nil {
 		unregistered = append(unregistered, "XPetstoreTokenAuth")
 	}
@@ -143,14 +156,32 @@ func (o *ToDoListAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) 
 // ConsumersFor gets the consumers for the specified media types
 func (o *ToDoListAPI) ConsumersFor(mediaTypes []string) map[string]httpkit.Consumer {
 
-	return nil
+	result := make(map[string]httpkit.Consumer)
+	for _, mt := range mediaTypes {
+		switch mt {
+
+		case "application/io.swagger.examples.todo-list.v1+json":
+			result["application/io.swagger.examples.todo-list.v1+json"] = o.JSONConsumer
+
+		}
+	}
+	return result
 
 }
 
 // ProducersFor gets the producers for the specified media types
 func (o *ToDoListAPI) ProducersFor(mediaTypes []string) map[string]httpkit.Producer {
 
-	return nil
+	result := make(map[string]httpkit.Producer)
+	for _, mt := range mediaTypes {
+		switch mt {
+
+		case "application/io.swagger.examples.todo-list.v1+json":
+			result["application/io.swagger.examples.todo-list.v1+json"] = o.JSONProducer
+
+		}
+	}
+	return result
 
 }
 

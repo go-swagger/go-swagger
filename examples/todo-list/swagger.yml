@@ -9,6 +9,10 @@ securityDefinitions:
     name: x-petstore-token
 security:
   - key: []
+consumes:
+  - application/io.swagger.examples.todo-list.v1+json
+produces:
+  - application/io.swagger.examples.todo-list.v1+json
 paths:
   /:
     get:
