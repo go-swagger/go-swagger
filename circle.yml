@@ -24,7 +24,7 @@ dependencies:
 
     # get the dependencies etc
     - go get github.com/tools/godep
-    - go get -u -v github.com/jteeuwen/go-bindata/...
+    - go get github.com/jteeuwen/go-bindata/...
   post:
     - godep restore
 test:
