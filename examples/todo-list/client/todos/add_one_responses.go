@@ -11,37 +11,37 @@ import (
 	"github.com/go-swagger/go-swagger/examples/todo-list/models"
 )
 
-type UpdateReader struct {
+type AddOneReader struct {
 	formats strfmt.Registry
 }
 
-func (o *UpdateReader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+func (o *AddOneReader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
 	switch response.Code() {
 
-	case 200:
-		var result UpdateOK
+	case 201:
+		var result AddOneCreated
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return &result, nil
 
 	default:
-		var result UpdateDefault
+		var result AddOneDefault
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
-		return nil, NewAPIError("update default", &result, response.Code())
+		return nil, NewAPIError("addOne default", &result, response.Code())
 	}
 }
 
 /*
-OK
+Created
 */
-type UpdateOK struct {
+type AddOneCreated struct {
 	Payload *models.Item
 }
 
-func (o *UpdateOK) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
+func (o *AddOneCreated) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Item)
 
@@ -56,11 +56,11 @@ func (o *UpdateOK) readResponse(response client.Response, consumer httpkit.Consu
 /*
 error
 */
-type UpdateDefault struct {
+type AddOneDefault struct {
 	Payload *models.Error
 }
 
-func (o *UpdateDefault) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
+func (o *AddOneDefault) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Error)
 

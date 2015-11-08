@@ -11,42 +11,40 @@ import (
 	"github.com/go-swagger/go-swagger/examples/todo-list/models"
 )
 
-type CreateReader struct {
+type FindReader struct {
 	formats strfmt.Registry
 }
 
-func (o *CreateReader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+func (o *FindReader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
 	switch response.Code() {
 
-	case 201:
-		var result CreateCreated
+	case 200:
+		var result FindOK
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return &result, nil
 
 	default:
-		var result CreateDefault
+		var result FindDefault
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
-		return nil, NewAPIError("create default", &result, response.Code())
+		return nil, NewAPIError("find default", &result, response.Code())
 	}
 }
 
 /*
-Created
+OK
 */
-type CreateCreated struct {
-	Payload *models.Item
+type FindOK struct {
+	Payload []*models.Item
 }
 
-func (o *CreateCreated) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
-
-	o.Payload = new(models.Item)
+func (o *FindOK) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
 
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil {
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil {
 		return err
 	}
 
@@ -56,11 +54,11 @@ func (o *CreateCreated) readResponse(response client.Response, consumer httpkit.
 /*
 error
 */
-type CreateDefault struct {
+type FindDefault struct {
 	Payload *models.Error
 }
 
-func (o *CreateDefault) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
+func (o *FindDefault) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Error)
 

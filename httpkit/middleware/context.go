@@ -18,6 +18,12 @@ type RequestBinder interface {
 	BindRequest(*http.Request, *MatchedRoute) error
 }
 
+// Responder is an interface for types to implement
+// when they want to be considered for writing HTTP responses
+type Responder interface {
+	WriteResponse(http.ResponseWriter, httpkit.Producer)
+}
+
 // Context is a type safe wrapper around an untyped request context
 // used throughout to store request context with the gorilla context module
 type Context struct {
@@ -305,7 +311,7 @@ func (c *Context) BindAndValidate(request *http.Request, matched *MatchedRoute) 
 
 // NotFound the default not found responder for when no route has been matched yet
 func (c *Context) NotFound(rw http.ResponseWriter, r *http.Request) {
-	c.Respond(rw, r, []string{httpkit.JSONMime}, nil, errors.NotFound("not found"))
+	c.Respond(rw, r, []string{c.api.DefaultProduces()}, nil, errors.NotFound("not found"))
 }
 
 // Respond renders the response after doing some content negotiation
@@ -320,6 +326,16 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 	format := c.ResponseFormat(r, offers)
 	rw.Header().Set(httpkit.HeaderContentType, format)
 
+	if resp, ok := data.(Responder); ok {
+		producers := route.Producers
+		prod, ok := producers[format]
+		if !ok {
+			panic(errors.New(http.StatusInternalServerError, "can't find a producer for "+format))
+		}
+		resp.WriteResponse(rw, prod)
+		return
+	}
+
 	if err, ok := data.(error); ok {
 		if format == "" {
 			rw.Header().Set(httpkit.HeaderContentType, httpkit.JSONMime)
@@ -331,6 +347,7 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 		c.api.ServeErrorFor(route.Operation.ID)(rw, r, err)
 		return
 	}
+
 	if route == nil || route.Operation == nil {
 		rw.WriteHeader(200)
 		if r.Method == "HEAD" {
@@ -363,6 +380,7 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 		}
 		return
 	}
+
 	c.api.ServeErrorFor(route.Operation.ID)(rw, r, errors.New(http.StatusInternalServerError, "can't produce response"))
 }
 

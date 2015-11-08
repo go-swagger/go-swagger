@@ -46,6 +46,11 @@ paths:
     put:
       tags: ["todos"]
       operationId: updateOne
+      parameters:
+        - name: body
+          in: body
+          schema:
+            $ref: "#/definitions/item"
       responses:
         '200':
           description: OK

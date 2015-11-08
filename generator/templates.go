@@ -16,6 +16,7 @@ var (
 	modelValidatorTemplate *template.Template
 	operationTemplate      *template.Template
 	parameterTemplate      *template.Template
+	responsesTemplate      *template.Template
 	builderTemplate        *template.Template
 	mainTemplate           *template.Template
 	configureAPITemplate   *template.Template
@@ -42,6 +43,7 @@ var (
 	assetHeader                    = MustAsset("templates/header.gotmpl")
 
 	assetServerParameter    = MustAsset("templates/server/parameter.gotmpl")
+	assetServerResponses    = MustAsset("templates/server/responses.gotmpl")
 	assetServerOperation    = MustAsset("templates/server/operation.gotmpl")
 	assetServerBuilder      = MustAsset("templates/server/builder.gotmpl")
 	assetServerConfigureAPI = MustAsset("templates/server/configureapi.gotmpl")
@@ -83,6 +85,9 @@ func init() {
 	//parameterTemplate = template.Must(parameterTemplate.New("schType").Parse(string(assetSchemaType)))
 	//parameterTemplate = template.Must(parameterTemplate.New("body").Parse(string(assetSchemaBody)))
 	parameterTemplate = template.Must(parameterTemplate.New("parameter").Parse(string(assetServerParameter)))
+
+	responsesTemplate = makeModelTemplate()
+	responsesTemplate = template.Must(responsesTemplate.New("responses").Parse(string(assetServerResponses)))
 
 	operationTemplate = template.Must(template.New("operation").Funcs(FuncMap).Parse(string(assetServerOperation)))
 	builderTemplate = template.Must(template.New("builder").Funcs(FuncMap).Parse(string(assetServerBuilder)))

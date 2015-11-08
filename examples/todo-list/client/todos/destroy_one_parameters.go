@@ -10,15 +10,15 @@ import (
 )
 
 /*
-UpdateParams contains all the parameters to send to the API endpoint
-for the update operation typically these are written to a http.Request
+DestroyOneParams contains all the parameters to send to the API endpoint
+for the destroy one operation typically these are written to a http.Request
 */
-type UpdateParams struct {
+type DestroyOneParams struct {
 	ID string
 }
 
 // WriteToRequest writes these params to a swagger request
-func (o *UpdateParams) WriteToRequest(r client.Request, reg strfmt.Registry) error {
+func (o *DestroyOneParams) WriteToRequest(r client.Request, reg strfmt.Registry) error {
 
 	var res []error
 

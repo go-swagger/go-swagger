@@ -10,14 +10,14 @@ import (
 )
 
 /*
-AllParams contains all the parameters to send to the API endpoint
-for the all operation typically these are written to a http.Request
+AddOneParams contains all the parameters to send to the API endpoint
+for the add one operation typically these are written to a http.Request
 */
-type AllParams struct {
+type AddOneParams struct {
 }
 
 // WriteToRequest writes these params to a swagger request
-func (o *AllParams) WriteToRequest(r client.Request, reg strfmt.Registry) error {
+func (o *AddOneParams) WriteToRequest(r client.Request, reg strfmt.Registry) error {
 
 	var res []error
 

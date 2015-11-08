@@ -23,7 +23,7 @@ func TestSimpleResponses(t *testing.T) {
 				OpID: "updateTask",
 				Name: "default",
 			}
-			res, err := b.MakeResponse("a", defCtx.Name, false, resolver, resp)
+			res, err := b.MakeResponse("a", defCtx.Name, false, resolver, -1, resp)
 			if assert.NoError(t, err) {
 				if defCtx.Assert(t, resp, res) {
 					for code, response := range op.Responses.StatusCodeResponses {
@@ -32,7 +32,7 @@ func TestSimpleResponses(t *testing.T) {
 							Name:      "success",
 							IsSuccess: code/100 == 2,
 						}
-						res, err := b.MakeResponse("a", sucCtx.Name, sucCtx.IsSuccess, resolver, response)
+						res, err := b.MakeResponse("a", sucCtx.Name, sucCtx.IsSuccess, resolver, code, response)
 						if assert.NoError(t, err) {
 							if !sucCtx.Assert(t, response, res) {
 								return

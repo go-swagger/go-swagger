@@ -10,14 +10,14 @@ import (
 )
 
 /*
-CreateParams contains all the parameters to send to the API endpoint
-for the create operation typically these are written to a http.Request
+FindParams contains all the parameters to send to the API endpoint
+for the find operation typically these are written to a http.Request
 */
-type CreateParams struct {
+type FindParams struct {
 }
 
 // WriteToRequest writes these params to a swagger request
-func (o *CreateParams) WriteToRequest(r client.Request, reg strfmt.Registry) error {
+func (o *FindParams) WriteToRequest(r client.Request, reg strfmt.Registry) error {
 
 	var res []error
 

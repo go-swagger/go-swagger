@@ -11,42 +11,36 @@ import (
 	"github.com/go-swagger/go-swagger/examples/todo-list/models"
 )
 
-type AllReader struct {
+type DestroyOneReader struct {
 	formats strfmt.Registry
 }
 
-func (o *AllReader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+func (o *DestroyOneReader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
 	switch response.Code() {
 
-	case 200:
-		var result AllOK
+	case 204:
+		var result DestroyOneNoContent
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return &result, nil
 
 	default:
-		var result AllDefault
+		var result DestroyOneDefault
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
-		return nil, NewAPIError("all default", &result, response.Code())
+		return nil, NewAPIError("destroyOne default", &result, response.Code())
 	}
 }
 
 /*
-OK
+Deleted
 */
-type AllOK struct {
-	Payload []*models.Item
+type DestroyOneNoContent struct {
 }
 
-func (o *AllOK) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
-
-	// response payload
-	if err := consumer.Consume(response.Body(), &o.Payload); err != nil {
-		return err
-	}
+func (o *DestroyOneNoContent) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
 
 	return nil
 }
@@ -54,11 +48,11 @@ func (o *AllOK) readResponse(response client.Response, consumer httpkit.Consumer
 /*
 error
 */
-type AllDefault struct {
+type DestroyOneDefault struct {
 	Payload *models.Error
 }
 
-func (o *AllDefault) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
+func (o *DestroyOneDefault) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Error)
 

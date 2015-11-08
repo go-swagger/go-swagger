@@ -17,7 +17,7 @@ import (
 // GenerateServerOperation generates a parameter model, parameter validator, http handler implementations for a given operation
 // It also generates an operation handler interface that uses the parameter model for handling a valid request.
 // Allows for specifying a list of tags to include only certain tags for the generation
-func GenerateServerOperation(operationNames, tags []string, includeHandler, includeParameters bool, opts GenOpts) error {
+func GenerateServerOperation(operationNames, tags []string, includeHandler, includeParameters, includeResponses bool, opts GenOpts) error {
 	// Load the spec
 	specPath, specDoc, err := loadSpec(opts.Spec)
 	if err != nil {
@@ -47,6 +47,7 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 			Tags:                 tags,
 			IncludeHandler:       includeHandler,
 			IncludeParameters:    includeParameters,
+			IncludeResponses:     includeResponses,
 			DumpData:             opts.DumpData,
 			Doc:                  specDoc,
 		}
@@ -74,6 +75,7 @@ type operationGenerator struct {
 	cname                string
 	IncludeHandler       bool
 	IncludeParameters    bool
+	IncludeResponses     bool
 	DumpData             bool
 	Doc                  *spec.Document
 }
@@ -151,6 +153,13 @@ func (o *operationGenerator) Generate() error {
 			log.Println("generated parameters", op.Package+"."+o.cname+"Parameters")
 		}
 
+		if o.IncludeResponses && len(op.Responses) > 0 {
+			if err := o.generateResponses(); err != nil {
+				return fmt.Errorf("responses: %s", err)
+			}
+			log.Println("generated responses", op.Package+"."+o.cname+"Responses")
+		}
+
 		if len(opParams) == 0 {
 			log.Println("no parameters for operation", op.Package+"."+o.cname)
 		}
@@ -187,6 +196,21 @@ func (o *operationGenerator) generateParameterModel() error {
 		fp = filepath.Join(fp, o.pkg)
 	}
 	return writeToFile(fp, o.Name+"Parameters", buf.Bytes())
+}
+
+func (o *operationGenerator) generateResponses() error {
+	buf := bytes.NewBuffer(nil)
+
+	if err := responsesTemplate.Execute(buf, o.data); err != nil {
+		return err
+	}
+	log.Println("rendered responses template:", o.pkg+"."+o.cname+"Responses")
+
+	fp := filepath.Join(o.ServerPackage, o.Target)
+	if len(o.Operation.Tags) > 0 {
+		fp = filepath.Join(fp, o.pkg)
+	}
+	return writeToFile(fp, o.Name+"Responses", buf.Bytes())
 }
 
 type codeGenOpBuilder struct {
@@ -236,7 +260,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	if operation.Responses != nil {
 		for k, v := range operation.Responses.StatusCodeResponses {
 			isSuccess := k/100 == 2
-			gr, err := b.MakeResponse(receiver, swag.ToJSONName(b.Name+" "+httpkit.Statuses[k]), isSuccess, &resolver, v)
+			gr, err := b.MakeResponse(receiver, swag.ToJSONName(b.Name+" "+httpkit.Statuses[k]), isSuccess, &resolver, k, v)
 			if err != nil {
 				return GenOperation{}, err
 			}
@@ -250,7 +274,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		}
 
 		if operation.Responses.Default != nil {
-			gr, err := b.MakeResponse(receiver, b.Name+" default", false, &resolver, *operation.Responses.Default)
+			gr, err := b.MakeResponse(receiver, b.Name+" default", false, &resolver, -1, *operation.Responses.Default)
 			if err != nil {
 				return GenOperation{}, err
 			}
@@ -290,7 +314,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	}, nil
 }
 
-func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, resolver *typeResolver, resp spec.Response) (GenResponse, error) {
+func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, resolver *typeResolver, code int, resp spec.Response) (GenResponse, error) {
 
 	res := GenResponse{
 		Package:        b.APIPackage,
@@ -300,6 +324,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 		DefaultImports: nil,
 		Imports:        nil,
 		IsSuccess:      isSuccess,
+		Code:           code,
 	}
 
 	for hName, header := range resp.Headers {
@@ -737,6 +762,7 @@ type GenResponse struct {
 
 	IsSuccess bool
 
+	Code    int
 	Headers []GenHeader
 	Schema  *GenSchema
 

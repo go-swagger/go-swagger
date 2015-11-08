@@ -25,7 +25,7 @@ type {{ pascalize .Name }}Params struct {
   {{ range .Params }}{{if .Description }}/*
   {{ .Description }}
   */{{ end }}
-  {{ pascalize .Name }} {{ .GoType }}
+  {{ pascalize .Name }} {{ if or .IsBodyParam (not .Required) }}*{{ end }}{{ .GoType }}
   {{ end }}
 }
 
@@ -89,8 +89,10 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r client.
   {{ end }}
 
   {{if .IsBodyParam}}
-  if err := r.SetBodyParam({{ .ValueExpression }}); err != nil {
-    return err
+  if {{ .ValueExpression }} != nil {
+    if err := r.SetBodyParam({{ .ValueExpression }}); err != nil {
+      return err
+    }
   }
   {{end}}
   {{end}}

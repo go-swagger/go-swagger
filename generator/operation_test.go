@@ -23,7 +23,7 @@ func TestMakeResponse(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
 	if assert.NoError(t, err) {
 		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
-		gO, err := b.MakeResponse("a", "getTasksSuccess", true, resolver, b.Operation.Responses.StatusCodeResponses[200])
+		gO, err := b.MakeResponse("a", "getTasksSuccess", true, resolver, 200, b.Operation.Responses.StatusCodeResponses[200])
 		if assert.NoError(t, err) {
 			assert.Len(t, gO.Headers, 2)
 			assert.NotNil(t, gO.Schema)

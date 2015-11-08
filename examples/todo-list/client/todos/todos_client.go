@@ -23,72 +23,72 @@ type Client struct {
 	formats   strfmt.Registry
 }
 
-/*Destroy destroy API
+/*Find find API
  */
-func (a *Client) Destroy(params DestroyParams, authInfo client.AuthInfoWriter) (*DestroyNoContent, error) {
+func (a *Client) Find(params FindParams, authInfo client.AuthInfoWriter) (*FindOK, error) {
 	// TODO: Validate the params before sending
 
 	result, err := a.transport.Submit(&client.Operation{
-		ID:       "destroy",
+		ID:       "find",
 		Params:   &params,
-		Reader:   &DestroyReader{formats: a.formats},
+		Reader:   &FindReader{formats: a.formats},
 		AuthInfo: authInfo,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return result.(*DestroyNoContent), nil
+	return result.(*FindOK), nil
 }
 
-/*All all API
+/*AddOne add one API
  */
-func (a *Client) All(params AllParams, authInfo client.AuthInfoWriter) (*AllOK, error) {
+func (a *Client) AddOne(params AddOneParams, authInfo client.AuthInfoWriter) (*AddOneCreated, error) {
 	// TODO: Validate the params before sending
 
 	result, err := a.transport.Submit(&client.Operation{
-		ID:       "all",
+		ID:       "addOne",
 		Params:   &params,
-		Reader:   &AllReader{formats: a.formats},
+		Reader:   &AddOneReader{formats: a.formats},
 		AuthInfo: authInfo,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return result.(*AllOK), nil
+	return result.(*AddOneCreated), nil
 }
 
-/*Create create API
+/*UpdateOne update one API
  */
-func (a *Client) Create(params CreateParams, authInfo client.AuthInfoWriter) (*CreateCreated, error) {
+func (a *Client) UpdateOne(params UpdateOneParams, authInfo client.AuthInfoWriter) (*UpdateOneOK, error) {
 	// TODO: Validate the params before sending
 
 	result, err := a.transport.Submit(&client.Operation{
-		ID:       "create",
+		ID:       "updateOne",
 		Params:   &params,
-		Reader:   &CreateReader{formats: a.formats},
+		Reader:   &UpdateOneReader{formats: a.formats},
 		AuthInfo: authInfo,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return result.(*CreateCreated), nil
+	return result.(*UpdateOneOK), nil
 }
 
-/*Update update API
+/*DestroyOne destroy one API
  */
-func (a *Client) Update(params UpdateParams, authInfo client.AuthInfoWriter) (*UpdateOK, error) {
+func (a *Client) DestroyOne(params DestroyOneParams, authInfo client.AuthInfoWriter) (*DestroyOneNoContent, error) {
 	// TODO: Validate the params before sending
 
 	result, err := a.transport.Submit(&client.Operation{
-		ID:       "update",
+		ID:       "destroyOne",
 		Params:   &params,
-		Reader:   &UpdateReader{formats: a.formats},
+		Reader:   &DestroyOneReader{formats: a.formats},
 		AuthInfo: authInfo,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return result.(*UpdateOK), nil
+	return result.(*DestroyOneNoContent), nil
 }
 
 // NewAPIError creates a new API error
