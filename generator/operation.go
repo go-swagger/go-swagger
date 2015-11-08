@@ -44,6 +44,7 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 			SecurityRequirements: specDoc.SecurityRequirementsFor(operation),
 			Principal:            opts.Principal,
 			Target:               filepath.Join(opts.Target, opts.APIPackage),
+			Base:                 opts.Target,
 			Tags:                 tags,
 			IncludeHandler:       includeHandler,
 			IncludeParameters:    includeParameters,
@@ -69,6 +70,7 @@ type operationGenerator struct {
 	SecurityRequirements []spec.SecurityRequirement
 	Principal            string
 	Target               string
+	Base                 string
 	Tags                 []string
 	data                 interface{}
 	pkg                  string
@@ -95,7 +97,7 @@ func (o *operationGenerator) Generate() error {
 	bldr.Operation = o.Operation
 	bldr.Authed = authed
 	bldr.Doc = o.Doc
-	//bldr.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(o.Target), o.ModelsPackage))}
+	bldr.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(o.Base), o.ModelsPackage))}
 
 	for _, tag := range o.Operation.Tags {
 		if len(o.Tags) == 0 {
