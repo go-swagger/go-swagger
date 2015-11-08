@@ -16,15 +16,15 @@ dependencies:
     - go get -u -v golang.org/x/tools/cmd/godoc
 
     # code coverage
-    - go get github.com/axw/gocov/gocov
-    - go get gopkg.in/matm/v1/gocov-html
+    - go get -u -v github.com/axw/gocov/gocov
+    - go get -u -v gopkg.in/matm/v1/gocov-html
 
     # test output
     - go get -t -v -u -f github.com/cee-dub/go-junit-report
 
     # get the dependencies etc
-    - go get github.com/tools/godep
-    - go get github.com/jteeuwen/go-bindata/...
+    - go get -u -v github.com/tools/godep
+    - go get -u -v github.com/jteeuwen/go-bindata/...
   post:
     - godep restore
 test:

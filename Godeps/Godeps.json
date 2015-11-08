@@ -16,6 +16,10 @@
 			"Rev": "0b1c6756fe84d7fc34a1af0f6bc49bd25e40abcf"
 		},
 		{
+			"ImportPath": "github.com/davecgh/go-spew/spew",
+			"Rev": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d"
+		},
+		{
 			"ImportPath": "github.com/golang/gddo/httputil",
 			"Rev": "a93040f23f0e66abb4997d7dd149623fe2bbaae7"
 		},
@@ -54,6 +58,10 @@
 			"Rev": "5fa9ff0392746aeae1c4b37fcc42c65afa7a9587"
 		},
 		{
+			"ImportPath": "github.com/pmezard/go-difflib/difflib",
+			"Rev": "d8ed2627bdf02c080bf22230dbb337003b7aba2d"
+		},
+		{
 			"ImportPath": "github.com/smartystreets/assertions",
 			"Comment": "1.5.0-405-g01fedaa",
 			"Rev": "01fedaa993c0a9f9aa55111501cd7c81a49e812e"
@@ -65,32 +73,32 @@
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Comment": "v1.0-71-g0d5a14c",
-			"Rev": "0d5a14c5a477957864f3b747d95255ad4e34bcc0"
+			"Comment": "v1.0-79-ge7a1d88",
+			"Rev": "e7a1d8890c7638d7bb50e3e498de4a1e913a28cf"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/ast/astutil",
-			"Rev": "823804e1ae08dbb14eb807afc7db9993bc9e3cc3"
+			"Rev": "4b07c5ce8adfdbd352cff286306e3829499f6ebf"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/buildutil",
-			"Rev": "823804e1ae08dbb14eb807afc7db9993bc9e3cc3"
+			"Rev": "4b07c5ce8adfdbd352cff286306e3829499f6ebf"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/exact",
-			"Rev": "823804e1ae08dbb14eb807afc7db9993bc9e3cc3"
+			"Rev": "4b07c5ce8adfdbd352cff286306e3829499f6ebf"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/loader",
-			"Rev": "823804e1ae08dbb14eb807afc7db9993bc9e3cc3"
+			"Rev": "4b07c5ce8adfdbd352cff286306e3829499f6ebf"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/types",
-			"Rev": "823804e1ae08dbb14eb807afc7db9993bc9e3cc3"
+			"Rev": "4b07c5ce8adfdbd352cff286306e3829499f6ebf"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/imports",
-			"Rev": "823804e1ae08dbb14eb807afc7db9993bc9e3cc3"
+			"Rev": "4b07c5ce8adfdbd352cff286306e3829499f6ebf"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
