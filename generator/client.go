@@ -58,7 +58,7 @@ func (c *clientGenerator) Generate() error {
 		return nil
 	}
 
-	opsGroupedByTag := make(map[string][]GenOperation)
+	opsGroupedByTag := make(map[string]GenOperations)
 	for _, operation := range app.Operations {
 		if operation.Package == "" {
 			operation.Package = c.Package

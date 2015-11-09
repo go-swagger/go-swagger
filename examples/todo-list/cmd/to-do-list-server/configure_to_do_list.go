@@ -26,14 +26,14 @@ func configureAPI(api *operations.ToDoListAPI) {
 	api.AddOneHandler = todos.AddOneHandlerFunc(func(principal interface{}) middleware.Responder {
 		return middleware.NotImplemented("operation addOne has not yet been implemented")
 	})
-	api.UpdateOneHandler = todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams, principal interface{}) middleware.Responder {
-		return middleware.NotImplemented("operation updateOne has not yet been implemented")
-	})
 	api.DestroyOneHandler = todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams, principal interface{}) middleware.Responder {
 		return middleware.NotImplemented("operation destroyOne has not yet been implemented")
 	})
 	api.FindHandler = todos.FindHandlerFunc(func(principal interface{}) middleware.Responder {
 		return middleware.NotImplemented("operation find has not yet been implemented")
+	})
+	api.UpdateOneHandler = todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams, principal interface{}) middleware.Responder {
+		return middleware.NotImplemented("operation updateOne has not yet been implemented")
 	})
 
 }

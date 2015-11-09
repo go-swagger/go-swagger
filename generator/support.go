@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/go-swagger/go-swagger/httpkit"
@@ -370,7 +371,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		genMods = append(genMods, *mod)
 	}
 
-	var genOps []GenOperation
+	var genOps GenOperations
 	tns := make(map[string]struct{})
 	var bldr codeGenOpBuilder
 	bldr.ModelsPackage = a.ModelsPackage
@@ -409,6 +410,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage, k))
 		defaultImports = append(defaultImports, importPath)
 	}
+	sort.Sort(genOps)
 
 	defaultConsumes := "application/json"
 	rc := a.SpecDoc.RequiredConsumes()
@@ -458,7 +460,7 @@ type GenApp struct {
 	Produces            []GenSerGroup
 	SecurityDefinitions []GenSecurityScheme
 	Models              []GenDefinition
-	Operations          []GenOperation
+	Operations          GenOperations
 	OperationGroups     []GenOperationGroup
 	SwaggerJSON         string
 }

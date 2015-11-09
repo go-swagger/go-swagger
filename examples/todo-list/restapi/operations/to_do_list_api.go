@@ -50,12 +50,12 @@ type ToDoListAPI struct {
 
 	// AddOneHandler sets the operation handler for the add one operation
 	AddOneHandler todos.AddOneHandler
-	// UpdateOneHandler sets the operation handler for the update one operation
-	UpdateOneHandler todos.UpdateOneHandler
 	// DestroyOneHandler sets the operation handler for the destroy one operation
 	DestroyOneHandler todos.DestroyOneHandler
 	// FindHandler sets the operation handler for the find operation
 	FindHandler todos.FindHandler
+	// UpdateOneHandler sets the operation handler for the update one operation
+	UpdateOneHandler todos.UpdateOneHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -112,16 +112,16 @@ func (o *ToDoListAPI) Validate() error {
 		unregistered = append(unregistered, "AddOneHandler")
 	}
 
-	if o.UpdateOneHandler == nil {
-		unregistered = append(unregistered, "UpdateOneHandler")
-	}
-
 	if o.DestroyOneHandler == nil {
 		unregistered = append(unregistered, "DestroyOneHandler")
 	}
 
 	if o.FindHandler == nil {
 		unregistered = append(unregistered, "FindHandler")
+	}
+
+	if o.UpdateOneHandler == nil {
+		unregistered = append(unregistered, "UpdateOneHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -203,11 +203,11 @@ func (o *ToDoListAPI) initHandlerCache() {
 
 	o.handlers["addOne"] = todos.NewAddOne(o.context, o.AddOneHandler)
 
-	o.handlers["updateOne"] = todos.NewUpdateOne(o.context, o.UpdateOneHandler)
-
 	o.handlers["destroyOne"] = todos.NewDestroyOne(o.context, o.DestroyOneHandler)
 
 	o.handlers["find"] = todos.NewFind(o.context, o.FindHandler)
+
+	o.handlers["updateOne"] = todos.NewUpdateOne(o.context, o.UpdateOneHandler)
 
 }
 

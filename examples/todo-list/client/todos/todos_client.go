@@ -23,21 +23,21 @@ type Client struct {
 	formats   strfmt.Registry
 }
 
-/*UpdateOne update one API
+/*AddOne add one API
  */
-func (a *Client) UpdateOne(params UpdateOneParams, authInfo client.AuthInfoWriter) (*UpdateOneOK, error) {
+func (a *Client) AddOne(params AddOneParams, authInfo client.AuthInfoWriter) (*AddOneCreated, error) {
 	// TODO: Validate the params before sending
 
 	result, err := a.transport.Submit(&client.Operation{
-		ID:       "updateOne",
+		ID:       "addOne",
 		Params:   &params,
-		Reader:   &UpdateOneReader{formats: a.formats},
+		Reader:   &AddOneReader{formats: a.formats},
 		AuthInfo: authInfo,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return result.(*UpdateOneOK), nil
+	return result.(*AddOneCreated), nil
 }
 
 /*DestroyOne destroy one API
@@ -74,21 +74,21 @@ func (a *Client) Find(params FindParams, authInfo client.AuthInfoWriter) (*FindO
 	return result.(*FindOK), nil
 }
 
-/*AddOne add one API
+/*UpdateOne update one API
  */
-func (a *Client) AddOne(params AddOneParams, authInfo client.AuthInfoWriter) (*AddOneCreated, error) {
+func (a *Client) UpdateOne(params UpdateOneParams, authInfo client.AuthInfoWriter) (*UpdateOneOK, error) {
 	// TODO: Validate the params before sending
 
 	result, err := a.transport.Submit(&client.Operation{
-		ID:       "addOne",
+		ID:       "updateOne",
 		Params:   &params,
-		Reader:   &AddOneReader{formats: a.formats},
+		Reader:   &UpdateOneReader{formats: a.formats},
 		AuthInfo: authInfo,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return result.(*AddOneCreated), nil
+	return result.(*UpdateOneOK), nil
 }
 
 // NewAPIError creates a new API error

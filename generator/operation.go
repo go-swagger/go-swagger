@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/go-swagger/go-swagger/httpkit"
@@ -86,7 +87,7 @@ func (o *operationGenerator) Generate() error {
 	// Build a list of codegen operations based on the tags,
 	// the tag decides the actual package for an operation
 	// the user specified package serves as root for generating the directory structure
-	var operations []GenOperation
+	var operations GenOperations
 	authed := len(o.SecurityRequirements) > 0
 
 	var bldr codeGenOpBuilder
@@ -129,6 +130,7 @@ func (o *operationGenerator) Generate() error {
 		}
 		operations = append(operations, op)
 	}
+	sort.Sort(operations)
 
 	for _, op := range operations {
 		if o.DumpData {
@@ -870,12 +872,32 @@ type GenItems struct {
 // GenOperationGroup represents a named (tagged) group of operations
 type GenOperationGroup struct {
 	Name       string
-	Operations []GenOperation
+	Operations GenOperations
 
 	Summary        string
 	Description    string
 	Imports        map[string]string
 	DefaultImports []string
+}
+
+// GenOperations represents a list of operations to generate
+// this implements a sort by operation id
+type GenOperations []GenOperation
+
+// Len returns the amount of operations in this list
+func (g GenOperations) Len() int {
+	return len(g)
+}
+
+// Less returns true if the operation at index i should be before
+// the operation at index j
+func (g GenOperations) Less(i, j int) bool {
+	return g[i].Name < g[j].Name
+}
+
+// Swap the operation at index i with the operation at index j
+func (g GenOperations) Swap(i, j int) {
+	g[i], g[j] = g[j], g[i]
 }
 
 // GenOperation represents an operation for code generation
