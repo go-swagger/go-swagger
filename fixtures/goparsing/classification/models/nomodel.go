@@ -19,6 +19,9 @@ type NoModel struct {
 	// maximum: < 1000
 	ID int64 `json:"id"`
 
+	Ignored      string `json:"-"`
+	IgnoredOther string `json:"-,omitempty"`
+
 	// The Score of this model
 	//
 	// required: true
@@ -95,6 +98,8 @@ type NoModel struct {
 		//
 		// required: false
 		Notes string `json:"notes"`
+
+		AlsoIgnored string `json:"-"`
 	} `json:"items"`
 }
 

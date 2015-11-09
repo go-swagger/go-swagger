@@ -356,11 +356,18 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 		}
 		schema.Typed("object", "")
 		for _, fld := range tpe.Fields.List {
-			if len(fld.Names) > 0 && fld.Names[0] != nil && fld.Names[0].IsExported() {
+			var tag string
+			if fld.Tag != nil {
+				val, err := strconv.Unquote(fld.Tag.Value)
+				if err == nil {
+					tag = reflect.StructTag(val).Get("json")
+				}
+			}
+			if len(fld.Names) > 0 && fld.Names[0] != nil && fld.Names[0].IsExported() && (tag == "" || tag[0] != '-') {
 				var nm, gnm string
 				nm = fld.Names[0].Name
 				gnm = nm
-				if fld.Tag != nil && len(strings.TrimSpace(fld.Tag.Value)) > 0 {
+				if fld.Tag != nil && len(strings.TrimSpace(fld.Tag.Value)) > 0 /*&& fld.Tag.Value[0] != '-'*/ {
 					tv, err := strconv.Unquote(fld.Tag.Value)
 					if err != nil {
 						return err

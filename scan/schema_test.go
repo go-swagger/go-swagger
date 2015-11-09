@@ -16,6 +16,7 @@ func TestSchemaParser(t *testing.T) {
 	assert.Equal(t, "NoModel is a struct without an annotation.", schema.Title)
 	assert.Equal(t, "NoModel exists in a package\nbut is not annotated with the swagger model annotations\nso it should now show up in a test.", schema.Description)
 	assert.Len(t, schema.Required, 3)
+	assert.Len(t, schema.Properties, 7)
 
 	assertProperty(t, &schema, "integer", "id", "int64", "ID")
 	prop, ok := schema.Properties["id"]
