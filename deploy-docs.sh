@@ -1,10 +1,12 @@
 #!/bin/bash
 
 echo -e "\033[0;32mDeploying updates to GitHub...\033[0m"
+cd docs
 
 # Build the project.
 hugo # if using a theme, replace by `hugo -t <yourtheme>`
 
+cd ..
 # Add changes to git.
 git add -A
 
