@@ -84,7 +84,7 @@ package to produce a swagger specification.</p>
 
 <h4 id="swagger-meta:958e7270f96f5407d7d980f500805b1b">swagger:meta</h4>
 
-<p>The swagger:meta annotation flags a file as source for metadata about the API.
+<p>The <strong>swagger:meta</strong> annotation flags a file as source for metadata about the API.
 This is typically a doc.go file with your package documentation.</p>
 
 <p>You can specify a Consumes and Produces key which has a new content type on each line
@@ -96,24 +96,33 @@ they should get substituted when serving the swagger spec.</p>
 
 <p>Default parameters and responses are not supported at this stage, for those you can edit the template json.</p>
 
-<h4 id="swagger-strfmt-name:958e7270f96f5407d7d980f500805b1b">swagger:strfmt [name]</h4>
+<h4 id="swagger-strfmt:958e7270f96f5407d7d980f500805b1b">swagger:strfmt</h4>
 
-<p>A swagger:strfmt annotation names a type as a string formatter. The name is mandatory and that is
+<pre><code>swagger:strfmt [name]
+</code></pre>
+
+<p>A <strong>swagger:strfmt</strong> annotation names a type as a string formatter. The name is mandatory and that is
 what will be used as format name for this particular string format.
 String formats should only be used for very well known formats.</p>
 
-<h4 id="swagger-model-model-name:958e7270f96f5407d7d980f500805b1b">swagger:model [?model name]</h4>
+<h4 id="swagger-model:958e7270f96f5407d7d980f500805b1b">swagger:model</h4>
 
-<p>A swagger:model annotation optionally gets a model name as extra data on the line.
+<pre><code>swagger:model [?model name]
+</code></pre>
+
+<p>A <strong>swagger:model</strong> annotation optionally gets a model name as extra data on the line.
 when this appears anywhere in a comment for a struct, then that struct becomes a schema
 in the definitions object of swagger.</p>
 
 <p>The struct gets analyzed and all the collected models are added to the tree.
 The refs are tracked separately so that they can be renamed later on.</p>
 
-<h4 id="swagger-route-method-path-pattern-operation-id-tag1-tag2-tag3:958e7270f96f5407d7d980f500805b1b">swagger:route [method] [path pattern] [operation id] [?tag1 tag2 tag3]</h4>
+<h4 id="swagger-route:958e7270f96f5407d7d980f500805b1b">swagger:route</h4>
 
-<p>A swagger:route annotation links a path to a method.
+<pre><code>swagger:route [method] [path pattern] [operation id] [?tag1 tag2 tag3]
+</code></pre>
+
+<p>A <strong>swagger:route</strong> annotation links a path to a method.
 This operation gets a unique id, which is used in various places as method name.
 One such usage is in method names for client generation for example.</p>
 
@@ -121,21 +130,41 @@ One such usage is in method names for client generation for example.</p>
 you provided to your routing library of choice. So you have to specify your path pattern
 yourself in valid swagger syntax.</p>
 
-<h4 id="swagger-params-operationid1-operationid2:958e7270f96f5407d7d980f500805b1b">swagger:params [operationid1 operationid2]</h4>
+<h4 id="swagger-params:958e7270f96f5407d7d980f500805b1b">swagger:params</h4>
+
+<pre><code>swagger:params [operationid1 operationid2]
+</code></pre>
 
 <p>Links a struct to one or more operations. The params in the resulting swagger spec can be composed of several structs.
 There are no guarantees given on how property name overlaps are resolved when several structs apply to the same operation.
 This tag works very similar to the swagger:model tag except that it produces valid parameter objects instead of schema
 objects.</p>
 
-<h4 id="swagger-response-response-name:958e7270f96f5407d7d980f500805b1b">swagger:response [?response name]</h4>
+<h4 id="swagger-response:958e7270f96f5407d7d980f500805b1b">swagger:response</h4>
 
-<p>Reads a struct decorated with swagger:response and uses that information to fill up the headers and the schema for a response.
+<pre><code>swagger:response [?response name]
+</code></pre>
+
+<p>Reads a struct decorated with <strong>swagger:response</strong> and uses that information to fill up the headers and the schema for a response.
 A swagger:route can specify a response name for a status code and then the matching response will be used for that operation in the swagger definition.</p>
 
-<h4 id="swagger-strfmt-name-1:958e7270f96f5407d7d980f500805b1b">swagger:strfmt [name]</h4>
-
 <h4 id="swagger-allof:958e7270f96f5407d7d980f500805b1b">swagger:allOf</h4>
+
+<p>Marks an embedded type as  a member for allOf</p>
+
+<pre><code>// An AllOfModel is composed out of embedded structs but it should build
+// an allOf property
+type AllOfModel struct {
+	// swagger:allOf
+	SimpleOne
+	// swagger:allOf
+	mods.Notable
+
+	Something // not annotated with anything, so should be included
+
+	CreatedAt strfmt.DateTime `json:&quot;createdAt&quot;`
+}
+</code></pre>
 
 				</section>
 			</article>
@@ -159,12 +188,11 @@ A swagger:route can specify a response name for a status code and then the match
 <li><a href="#possible-annotations:958e7270f96f5407d7d980f500805b1b">Possible annotations</a>
 <ul>
 <li><a href="#swagger-meta:958e7270f96f5407d7d980f500805b1b">swagger:meta</a></li>
-<li><a href="#swagger-strfmt-name:958e7270f96f5407d7d980f500805b1b">swagger:strfmt [name]</a></li>
-<li><a href="#swagger-model-model-name:958e7270f96f5407d7d980f500805b1b">swagger:model [?model name]</a></li>
-<li><a href="#swagger-route-method-path-pattern-operation-id-tag1-tag2-tag3:958e7270f96f5407d7d980f500805b1b">swagger:route [method] [path pattern] [operation id] [?tag1 tag2 tag3]</a></li>
-<li><a href="#swagger-params-operationid1-operationid2:958e7270f96f5407d7d980f500805b1b">swagger:params [operationid1 operationid2]</a></li>
-<li><a href="#swagger-response-response-name:958e7270f96f5407d7d980f500805b1b">swagger:response [?response name]</a></li>
-<li><a href="#swagger-strfmt-name-1:958e7270f96f5407d7d980f500805b1b">swagger:strfmt [name]</a></li>
+<li><a href="#swagger-strfmt:958e7270f96f5407d7d980f500805b1b">swagger:strfmt</a></li>
+<li><a href="#swagger-model:958e7270f96f5407d7d980f500805b1b">swagger:model</a></li>
+<li><a href="#swagger-route:958e7270f96f5407d7d980f500805b1b">swagger:route</a></li>
+<li><a href="#swagger-params:958e7270f96f5407d7d980f500805b1b">swagger:params</a></li>
+<li><a href="#swagger-response:958e7270f96f5407d7d980f500805b1b">swagger:response</a></li>
 <li><a href="#swagger-allof:958e7270f96f5407d7d980f500805b1b">swagger:allOf</a></li>
 </ul></li>
 </ul></li>

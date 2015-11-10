@@ -39,7 +39,7 @@ package to produce a swagger specification.&lt;/p&gt;
 
 &lt;h4 id=&#34;swagger-meta:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:meta&lt;/h4&gt;
 
-&lt;p&gt;The swagger:meta annotation flags a file as source for metadata about the API.
+&lt;p&gt;The &lt;strong&gt;swagger:meta&lt;/strong&gt; annotation flags a file as source for metadata about the API.
 This is typically a doc.go file with your package documentation.&lt;/p&gt;
 
 &lt;p&gt;You can specify a Consumes and Produces key which has a new content type on each line
@@ -51,24 +51,33 @@ they should get substituted when serving the swagger spec.&lt;/p&gt;
 
 &lt;p&gt;Default parameters and responses are not supported at this stage, for those you can edit the template json.&lt;/p&gt;
 
-&lt;h4 id=&#34;swagger-strfmt-name:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:strfmt [name]&lt;/h4&gt;
+&lt;h4 id=&#34;swagger-strfmt:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:strfmt&lt;/h4&gt;
 
-&lt;p&gt;A swagger:strfmt annotation names a type as a string formatter. The name is mandatory and that is
+&lt;pre&gt;&lt;code&gt;swagger:strfmt [name]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;A &lt;strong&gt;swagger:strfmt&lt;/strong&gt; annotation names a type as a string formatter. The name is mandatory and that is
 what will be used as format name for this particular string format.
 String formats should only be used for very well known formats.&lt;/p&gt;
 
-&lt;h4 id=&#34;swagger-model-model-name:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:model [?model name]&lt;/h4&gt;
+&lt;h4 id=&#34;swagger-model:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:model&lt;/h4&gt;
 
-&lt;p&gt;A swagger:model annotation optionally gets a model name as extra data on the line.
+&lt;pre&gt;&lt;code&gt;swagger:model [?model name]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;A &lt;strong&gt;swagger:model&lt;/strong&gt; annotation optionally gets a model name as extra data on the line.
 when this appears anywhere in a comment for a struct, then that struct becomes a schema
 in the definitions object of swagger.&lt;/p&gt;
 
 &lt;p&gt;The struct gets analyzed and all the collected models are added to the tree.
 The refs are tracked separately so that they can be renamed later on.&lt;/p&gt;
 
-&lt;h4 id=&#34;swagger-route-method-path-pattern-operation-id-tag1-tag2-tag3:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:route [method] [path pattern] [operation id] [?tag1 tag2 tag3]&lt;/h4&gt;
+&lt;h4 id=&#34;swagger-route:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:route&lt;/h4&gt;
 
-&lt;p&gt;A swagger:route annotation links a path to a method.
+&lt;pre&gt;&lt;code&gt;swagger:route [method] [path pattern] [operation id] [?tag1 tag2 tag3]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;A &lt;strong&gt;swagger:route&lt;/strong&gt; annotation links a path to a method.
 This operation gets a unique id, which is used in various places as method name.
 One such usage is in method names for client generation for example.&lt;/p&gt;
 
@@ -76,21 +85,41 @@ One such usage is in method names for client generation for example.&lt;/p&gt;
 you provided to your routing library of choice. So you have to specify your path pattern
 yourself in valid swagger syntax.&lt;/p&gt;
 
-&lt;h4 id=&#34;swagger-params-operationid1-operationid2:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:params [operationid1 operationid2]&lt;/h4&gt;
+&lt;h4 id=&#34;swagger-params:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:params&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code&gt;swagger:params [operationid1 operationid2]
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Links a struct to one or more operations. The params in the resulting swagger spec can be composed of several structs.
 There are no guarantees given on how property name overlaps are resolved when several structs apply to the same operation.
 This tag works very similar to the swagger:model tag except that it produces valid parameter objects instead of schema
 objects.&lt;/p&gt;
 
-&lt;h4 id=&#34;swagger-response-response-name:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:response [?response name]&lt;/h4&gt;
+&lt;h4 id=&#34;swagger-response:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:response&lt;/h4&gt;
 
-&lt;p&gt;Reads a struct decorated with swagger:response and uses that information to fill up the headers and the schema for a response.
+&lt;pre&gt;&lt;code&gt;swagger:response [?response name]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Reads a struct decorated with &lt;strong&gt;swagger:response&lt;/strong&gt; and uses that information to fill up the headers and the schema for a response.
 A swagger:route can specify a response name for a status code and then the matching response will be used for that operation in the swagger definition.&lt;/p&gt;
 
-&lt;h4 id=&#34;swagger-strfmt-name-1:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:strfmt [name]&lt;/h4&gt;
-
 &lt;h4 id=&#34;swagger-allof:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:allOf&lt;/h4&gt;
+
+&lt;p&gt;Marks an embedded type as  a member for allOf&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;// An AllOfModel is composed out of embedded structs but it should build
+// an allOf property
+type AllOfModel struct {
+	// swagger:allOf
+	SimpleOne
+	// swagger:allOf
+	mods.Notable
+
+	Something // not annotated with anything, so should be included
+
+	CreatedAt strfmt.DateTime `json:&amp;quot;createdAt&amp;quot;`
+}
+&lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>
     
