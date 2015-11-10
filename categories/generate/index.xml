@@ -7,8 +7,92 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>© 2015 go-swagger contributors</copyright>
-    <lastBuildDate>Fri, 23 Oct 2015 22:11:54 -0700</lastBuildDate>
+    <lastBuildDate>Mon, 09 Nov 2015 18:58:47 -0800</lastBuildDate>
     <atom:link href="http://go-swagger.github.io/categories/generate/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>spec</title>
+      <link>http://go-swagger.github.io/generate/spec/</link>
+      <pubDate>Mon, 09 Nov 2015 18:58:47 -0800</pubDate>
+      
+      <guid>http://go-swagger.github.io/generate/spec/</guid>
+      <description>
+
+&lt;p&gt;The toolkit has a command that will let you generate a swagger spec document from your code.&lt;/p&gt;
+
+&lt;h2 id=&#34;usage:958e7270f96f5407d7d980f500805b1b&#34;&gt;Usage&lt;/h2&gt;
+
+&lt;p&gt;To generate a spec:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;swagger generate spec -o ./swagger.json
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You give it a main file and it will parse all the files that are required by that main
+package to produce a swagger specification.&lt;/p&gt;
+
+&lt;p&gt;To use you can add a go:generate comment to your main file for example:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;//go:generate swagger generate spec
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;possible-annotations:958e7270f96f5407d7d980f500805b1b&#34;&gt;Possible annotations&lt;/h3&gt;
+
+&lt;h4 id=&#34;swagger-meta:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:meta&lt;/h4&gt;
+
+&lt;p&gt;The swagger:meta annotation flags a file as source for metadata about the API.
+This is typically a doc.go file with your package documentation.&lt;/p&gt;
+
+&lt;p&gt;You can specify a Consumes and Produces key which has a new content type on each line
+Schemes is a tag that is required and allows for a comma separated string composed of:
+http, https, ws or wss&lt;/p&gt;
+
+&lt;p&gt;Host and BasePath can be specified but those values will be defaults,
+they should get substituted when serving the swagger spec.&lt;/p&gt;
+
+&lt;p&gt;Default parameters and responses are not supported at this stage, for those you can edit the template json.&lt;/p&gt;
+
+&lt;h4 id=&#34;swagger-strfmt-name:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:strfmt [name]&lt;/h4&gt;
+
+&lt;p&gt;A swagger:strfmt annotation names a type as a string formatter. The name is mandatory and that is
+what will be used as format name for this particular string format.
+String formats should only be used for very well known formats.&lt;/p&gt;
+
+&lt;h4 id=&#34;swagger-model-model-name:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:model [?model name]&lt;/h4&gt;
+
+&lt;p&gt;A swagger:model annotation optionally gets a model name as extra data on the line.
+when this appears anywhere in a comment for a struct, then that struct becomes a schema
+in the definitions object of swagger.&lt;/p&gt;
+
+&lt;p&gt;The struct gets analyzed and all the collected models are added to the tree.
+The refs are tracked separately so that they can be renamed later on.&lt;/p&gt;
+
+&lt;h4 id=&#34;swagger-route-method-path-pattern-operation-id-tag1-tag2-tag3:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:route [method] [path pattern] [operation id] [?tag1 tag2 tag3]&lt;/h4&gt;
+
+&lt;p&gt;A swagger:route annotation links a path to a method.
+This operation gets a unique id, which is used in various places as method name.
+One such usage is in method names for client generation for example.&lt;/p&gt;
+
+&lt;p&gt;Because there are many routers available, this tool does not try to parse the paths
+you provided to your routing library of choice. So you have to specify your path pattern
+yourself in valid swagger syntax.&lt;/p&gt;
+
+&lt;h4 id=&#34;swagger-params-operationid1-operationid2:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:params [operationid1 operationid2]&lt;/h4&gt;
+
+&lt;p&gt;Links a struct to one or more operations. The params in the resulting swagger spec can be composed of several structs.
+There are no guarantees given on how property name overlaps are resolved when several structs apply to the same operation.
+This tag works very similar to the swagger:model tag except that it produces valid parameter objects instead of schema
+objects.&lt;/p&gt;
+
+&lt;h4 id=&#34;swagger-response-response-name:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:response [?response name]&lt;/h4&gt;
+
+&lt;p&gt;Reads a struct decorated with swagger:response and uses that information to fill up the headers and the schema for a response.
+A swagger:route can specify a response name for a status code and then the matching response will be used for that operation in the swagger definition.&lt;/p&gt;
+
+&lt;h4 id=&#34;swagger-strfmt-name-1:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:strfmt [name]&lt;/h4&gt;
+
+&lt;h4 id=&#34;swagger-allof:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:allOf&lt;/h4&gt;
+</description>
+    </item>
     
     <item>
       <title>Generate an API client</title>
@@ -368,7 +452,32 @@ To learn about which annotations are available and how to use them for generatin
 
 &lt;h2 id=&#34;about:6083a88ee3411b0d17ce02d738f69d47&#34;&gt;About&lt;/h2&gt;
 
-&lt;p&gt;Some content should go here.&lt;/p&gt;
+&lt;p&gt;There are 3 axis along which your API and its documentation matter.
+The first one is an artefact of that first meeting where you hash out what your service will do. Hopefully you&amp;rsquo;ve come
+up with some document that services as a kind of contract for what the affected people/teams will need to do.
+At this stage you want to be able to generate a server, perhaps a client to talk to that server.
+It&amp;rsquo;s not inconceivable you want to have your frontend team use mock data for that server and that the backend team
+wants to be left in peace while they work on their part of the application.&lt;/p&gt;
+
+&lt;p&gt;This is the design first approach for swagger.&lt;/p&gt;
+
+&lt;p&gt;Now we&amp;rsquo;re moving on to the second iteration of the project and at this stage, there might be a design meeting for the
+new features, or they might just be refinements of the previous API&amp;rsquo;s. When no changes are required to the contract,
+all is great because people can keep doing what they were doing and everybody is happy.
+However it might be that there was a change that is required for the frontend, they need a boolean added to some model
+because they want to display an-accepted-terms-and-conditions-checkbox.
+The backend can decide to add this to the code, provide the necessary annotation and regenerate the swagger
+specification document.&lt;/p&gt;
+
+&lt;p&gt;This is the code first approach for swagger.&lt;/p&gt;
+
+&lt;p&gt;This toolkit aims to support both these modes, remove the repetitive nature of writing what is essentially boilerplate
+code. In doing so it tries to stay as close as possible to the go stdlib interfaces, it tries to have no opinons
+besides the fact that documentation is important. And it tries to integrate well with the rest of the go ecosystem as
+well as the swagger ecosystem.&lt;/p&gt;
+
+&lt;p&gt;A series of contrib projects will add higher level optional functionality so that you can use the generated code with
+confidence whether your application is your personal blog or is the next AWS.&lt;/p&gt;
 </description>
     </item>
     
