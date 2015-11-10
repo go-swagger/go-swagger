@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="alternate" href="/index.xml" type="application/rss+xml" title="go-swagger toolkit">
+		<link rel="icon" href="http://go-swagger.github.io//favicon.ico">
+		<title>spec - go-swagger toolkit</title>
+		
+		<link rel="stylesheet" href="http://go-swagger.github.io//css/highlight.js.min.css">
+		<link rel="stylesheet" href="http://go-swagger.github.io//css/bootstrap.min.css">
+		<link rel="stylesheet" href="http://go-swagger.github.io//css/bootstrap-theme.css">
+		<link rel="stylesheet" href="http://go-swagger.github.io//css/theme.css">
+		<link rel="stylesheet" href="http://go-swagger.github.io//css/bootie-docs.css">
+	</head>
+
+<body role="document">
+
+	
+	<nav class="navbar navbar-inverse navbar-fixed-top">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="http://go-swagger.github.io//">go-swagger toolkit</a>
+			</div>
+			<div id="navbar" class="navbar-collapse collapse">
+				<ul class="nav navbar-nav">
+					<li ><a href="http://go-swagger.github.io//">Home</a></li>
+			
+				
+				
+					
+					<li ><a href="http://go-swagger.github.io//usage">Usage</a></li>
+				
+					
+					<li ><a href="http://go-swagger.github.io//generate">Generate</a></li>
+				
+			
+				
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+<div class="container">
+
+<div class="row">
+	<div class="col-sm-8 doc-main">
+		<main role="main">
+			<article>
+				<a id="title"></a>
+				<h1 class="doc-entry-title">spec</h1>
+				<div class="doc-entry-meta">
+					<span><time datetime="2015-11-09">November 09, 2015</time></span>
+				</div>
+				<section>
+					
+
+<p>The toolkit has a command that will let you generate a swagger spec document from your code.</p>
+
+<h2 id="usage:958e7270f96f5407d7d980f500805b1b">Usage</h2>
+
+<p>To generate a spec:</p>
+
+<pre><code>swagger generate spec -o ./swagger.json
+</code></pre>
+
+<p>You give it a main file and it will parse all the files that are required by that main
+package to produce a swagger specification.</p>
+
+<p>To use you can add a go:generate comment to your main file for example:</p>
+
+<pre><code>//go:generate swagger generate spec
+</code></pre>
+
+<h3 id="possible-annotations:958e7270f96f5407d7d980f500805b1b">Possible annotations</h3>
+
+<h4 id="swagger-meta:958e7270f96f5407d7d980f500805b1b">swagger:meta</h4>
+
+<p>The swagger:meta annotation flags a file as source for metadata about the API.
+This is typically a doc.go file with your package documentation.</p>
+
+<p>You can specify a Consumes and Produces key which has a new content type on each line
+Schemes is a tag that is required and allows for a comma separated string composed of:
+http, https, ws or wss</p>
+
+<p>Host and BasePath can be specified but those values will be defaults,
+they should get substituted when serving the swagger spec.</p>
+
+<p>Default parameters and responses are not supported at this stage, for those you can edit the template json.</p>
+
+<h4 id="swagger-strfmt-name:958e7270f96f5407d7d980f500805b1b">swagger:strfmt [name]</h4>
+
+<p>A swagger:strfmt annotation names a type as a string formatter. The name is mandatory and that is
+what will be used as format name for this particular string format.
+String formats should only be used for very well known formats.</p>
+
+<h4 id="swagger-model-model-name:958e7270f96f5407d7d980f500805b1b">swagger:model [?model name]</h4>
+
+<p>A swagger:model annotation optionally gets a model name as extra data on the line.
+when this appears anywhere in a comment for a struct, then that struct becomes a schema
+in the definitions object of swagger.</p>
+
+<p>The struct gets analyzed and all the collected models are added to the tree.
+The refs are tracked separately so that they can be renamed later on.</p>
+
+<h4 id="swagger-route-method-path-pattern-operation-id-tag1-tag2-tag3:958e7270f96f5407d7d980f500805b1b">swagger:route [method] [path pattern] [operation id] [?tag1 tag2 tag3]</h4>
+
+<p>A swagger:route annotation links a path to a method.
+This operation gets a unique id, which is used in various places as method name.
+One such usage is in method names for client generation for example.</p>
+
+<p>Because there are many routers available, this tool does not try to parse the paths
+you provided to your routing library of choice. So you have to specify your path pattern
+yourself in valid swagger syntax.</p>
+
+<h4 id="swagger-params-operationid1-operationid2:958e7270f96f5407d7d980f500805b1b">swagger:params [operationid1 operationid2]</h4>
+
+<p>Links a struct to one or more operations. The params in the resulting swagger spec can be composed of several structs.
+There are no guarantees given on how property name overlaps are resolved when several structs apply to the same operation.
+This tag works very similar to the swagger:model tag except that it produces valid parameter objects instead of schema
+objects.</p>
+
+<h4 id="swagger-response-response-name:958e7270f96f5407d7d980f500805b1b">swagger:response [?response name]</h4>
+
+<p>Reads a struct decorated with swagger:response and uses that information to fill up the headers and the schema for a response.
+A swagger:route can specify a response name for a status code and then the matching response will be used for that operation in the swagger definition.</p>
+
+<h4 id="swagger-strfmt-name-1:958e7270f96f5407d7d980f500805b1b">swagger:strfmt [name]</h4>
+
+<h4 id="swagger-allof:958e7270f96f5407d7d980f500805b1b">swagger:allOf</h4>
+
+				</section>
+			</article>
+		</main>
+	</div> 
+
+	
+<div class="col-sm-3 col-sm-offset-1 doc-sidebar">
+	<div class="sidebar-module">
+		<div class="sidebar-toc">
+			<h4>Table of Contents</h4>
+			<ul>
+				<li><strong><a href="#title">spec</a></strong></li>
+			</ul>
+			<nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#usage:958e7270f96f5407d7d980f500805b1b">Usage</a>
+<ul>
+<li><a href="#possible-annotations:958e7270f96f5407d7d980f500805b1b">Possible annotations</a>
+<ul>
+<li><a href="#swagger-meta:958e7270f96f5407d7d980f500805b1b">swagger:meta</a></li>
+<li><a href="#swagger-strfmt-name:958e7270f96f5407d7d980f500805b1b">swagger:strfmt [name]</a></li>
+<li><a href="#swagger-model-model-name:958e7270f96f5407d7d980f500805b1b">swagger:model [?model name]</a></li>
+<li><a href="#swagger-route-method-path-pattern-operation-id-tag1-tag2-tag3:958e7270f96f5407d7d980f500805b1b">swagger:route [method] [path pattern] [operation id] [?tag1 tag2 tag3]</a></li>
+<li><a href="#swagger-params-operationid1-operationid2:958e7270f96f5407d7d980f500805b1b">swagger:params [operationid1 operationid2]</a></li>
+<li><a href="#swagger-response-response-name:958e7270f96f5407d7d980f500805b1b">swagger:response [?response name]</a></li>
+<li><a href="#swagger-strfmt-name-1:958e7270f96f5407d7d980f500805b1b">swagger:strfmt [name]</a></li>
+<li><a href="#swagger-allof:958e7270f96f5407d7d980f500805b1b">swagger:allOf</a></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+		</div>
+	</div>
+	<div class="sidebar-module">
+		<h4>Tags</h4>
+		<div class="tag-box">
+		
+			<a class="tag-item" href="http://go-swagger.github.io//tags/generate">generate</a>
+		
+			<a class="tag-item" href="http://go-swagger.github.io//tags/usage">usage</a>
+		
+		</div>
+	</div>
+</div>
+
+</div> 
+
+
+<hr />
+
+<div class="row">
+	<div class="col-sm-8">
+		<p class="doc-footer-em"><a href="#">Back to TOP</a></p>
+	</div>
+</div>
+
+</div> 
+
+<footer class="doc-footer">
+	<p class="doc-footer-em">Browse <strong><a href="https://github.com/go-swagger/go-swagger">Repository</a></strong></p>
+	<p>© 2015 go-swagger contributors</p>
+	<p>Powered by <strong><a href="https://github.com/key-amb/hugo-theme-bootie-docs">Bootie Docs</a></strong> - theme for <a href="http://gohugo.io/">Hugo</a> by <a href="https://github.com/key-amb/">key-amb</a>.</p>
+</footer>
+
+
+
+<script src="http://go-swagger.github.io//js/jquery-1.11.2.min.js"></script>
+<script src="http://go-swagger.github.io//js/bootstrap.min.js"></script>
+
+<script src="http://go-swagger.github.io//js/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="http://go-swagger.github.io//js/ie10-viewport-bug-workaround.js"></script>
+
+</body>
+</html>
