@@ -16,9 +16,9 @@ UpdateOneParams contains all the parameters to send to the API endpoint
 for the update one operation typically these are written to a http.Request
 */
 type UpdateOneParams struct {
-	ID string
-
 	Body *models.Item
+
+	ID string
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -26,15 +26,15 @@ func (o *UpdateOneParams) WriteToRequest(r client.Request, reg strfmt.Registry) 
 
 	var res []error
 
-	// path param id
-	if err := r.SetPathParam("id", o.ID); err != nil {
-		return err
-	}
-
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err
 		}
+	}
+
+	// path param id
+	if err := r.SetPathParam("id", o.ID); err != nil {
+		return err
 	}
 
 	if len(res) > 0 {

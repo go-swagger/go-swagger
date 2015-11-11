@@ -235,7 +235,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	receiver := "o"
 
 	operation := b.Operation
-	var params, qp, pp, hp, fp []GenParameter
+	var params, qp, pp, hp, fp GenParameters
 	var hasQueryParams bool
 	for _, p := range b.Doc.ParametersFor(operation.ID) {
 		cp, err := b.MakeParameter(receiver, &resolver, p)
@@ -257,6 +257,11 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		}
 		params = append(params, cp)
 	}
+	sort.Sort(params)
+	sort.Sort(qp)
+	sort.Sort(pp)
+	sort.Sort(hp)
+	sort.Sort(fp)
 
 	var responses map[int]GenResponse
 	var defaultResponse *GenResponse
@@ -334,6 +339,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 	for hName, header := range resp.Headers {
 		res.Headers = append(res.Headers, b.MakeHeader(receiver, hName, header))
 	}
+	sort.Sort(res.Headers)
 
 	if resp.Schema != nil {
 		sc := schemaGenContext{
@@ -767,7 +773,7 @@ type GenResponse struct {
 	IsSuccess bool
 
 	Code    int
-	Headers []GenHeader
+	Headers GenHeaders
 	Schema  *GenSchema
 
 	Imports        map[string]string
@@ -791,6 +797,13 @@ type GenHeader struct {
 	Converter string
 	Formatter string
 }
+
+// GenHeaders is a sorted collection of headers for codegen
+type GenHeaders []GenHeader
+
+func (g GenHeaders) Len() int           { return len(g) }
+func (g GenHeaders) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
+func (g GenHeaders) Less(i, j int) bool { return g[i].Name < g[j].Name }
 
 // GenParameter is used to represent
 // a parameter or a header for code generation.
@@ -851,6 +864,13 @@ func (g *GenParameter) IsBodyParam() bool {
 func (g *GenParameter) IsFileParam() bool {
 	return g.SwaggerType == "file"
 }
+
+// GenParameters represents a sorted parameter collection
+type GenParameters []GenParameter
+
+func (g GenParameters) Len() int           { return len(g) }
+func (g GenParameters) Less(i, j int) bool { return g[i].Name < g[j].Name }
+func (g GenParameters) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
 
 // GenItems represents the collection items for a collection parameter
 type GenItems struct {
@@ -919,11 +939,11 @@ type GenOperation struct {
 	Responses       map[int]GenResponse
 	DefaultResponse *GenResponse
 
-	Params         []GenParameter
-	QueryParams    []GenParameter
-	PathParams     []GenParameter
-	HeaderParams   []GenParameter
-	FormParams     []GenParameter
+	Params         GenParameters
+	QueryParams    GenParameters
+	PathParams     GenParameters
+	HeaderParams   GenParameters
+	FormParams     GenParameters
 	HasQueryParams bool
 	HasFormParams  bool
 	HasFileParams  bool

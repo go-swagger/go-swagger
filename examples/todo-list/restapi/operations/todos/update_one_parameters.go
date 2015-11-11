@@ -16,19 +16,15 @@ import (
 // UpdateOneParams contains all the bound params for the update one operation
 // typically these are obtained from a http.Request
 type UpdateOneParams struct {
-	ID string
-
 	Body *models.Item
+
+	ID string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls
 func (o *UpdateOneParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
-
-	if err := o.bindID(route.Params.Get("id"), route.Formats); err != nil {
-		res = append(res, err)
-	}
 
 	if err := route.Consumer.Consume(r.Body, o.Body); err != nil {
 		res = append(res, errors.NewParseError("body", "body", "", err))
@@ -37,6 +33,10 @@ func (o *UpdateOneParams) BindRequest(r *http.Request, route *middleware.Matched
 			res = append(res, err)
 		}
 
+	}
+
+	if err := o.bindID(route.Params.Get("id"), route.Formats); err != nil {
+		res = append(res, err)
 	}
 
 	if len(res) > 0 {
