@@ -34,45 +34,44 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r client.
 
   var res []error
   {{range .Params}}
+  {{ if not .Required }}if {{ .ValueExpression }} != nil {
+  {{ end}}
   {{if not .IsArray }}
 
   {{ if .IsQueryParam }}
   // query param {{ .Name }}
-  if err := r.SetQueryParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ .ValueExpression }}){{ else }}{{ .ValueExpression }}{{end}}); err != nil {
+  if err := r.SetQueryParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if not .Required }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if not .Required }}*{{end}}{{ .ValueExpression }}{{end}}); err != nil {
     return err
   }
   {{ else if .IsPathParam }}
   // path param {{ .Name }}
-  if err := r.SetPathParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ .ValueExpression }}){{ else }}{{ .ValueExpression }}{{end}}); err != nil {
+  if err := r.SetPathParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if not .Required }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if not .Required }}*{{end}}{{ .ValueExpression }}{{end}}); err != nil {
     return err
   }
   {{ else if .IsHeaderParam }}
   // header param {{ .Name }}
-  if err := r.SetHeaderParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ .ValueExpression }}){{ else }}{{ .ValueExpression }}{{end}}); err != nil {
+  if err := r.SetHeaderParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if not .Required }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if not .Required }}*{{end}}{{ .ValueExpression }}{{end}}); err != nil {
     return err
   }
   {{ else if .IsFormParam }}
   {{ if .IsFileParam }}
   // form file param {{ .Name }}
-  if err := r.SetFileParam({{ printf "%q" .Name }}, {{ .ValueExpression }}); err != nil {
+  if err := r.SetFileParam({{ printf "%q" .Name }}, {{ if not .Required }}*{{end}}{{ .ValueExpression }}); err != nil {
     return err
   }
   {{ else }}
   // form param {{ .Name }}
-  if err := r.SetFormParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ .ValueExpression }}){{ else }}{{ .ValueExpression }}{{end}}); err != nil {
+  if err := r.SetFormParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if not .Required }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if not .Required }}*{{end}}{{ .ValueExpression }}{{end}}); err != nil {
     return err
   }
   {{ end }}
-
-  {{ end }}
-
   {{else if .IsArray }}
 
   {{ if .Child.Formatter }}var values{{ pascalize .Name }} []string
-  for _, v := range {{ .ValueExpression }} {
+  for _, v := range {{ if not .Required }}*{{end}}{{ .ValueExpression }} {
     values{{ .ParamName }} = append(values{{ pascalize .Name }}, {{ .Child.Formatter }}(v))
   }
-  {{ else }}values{{ pascalize .Name }} := {{ .ValueExpression }}
+  {{ else }}values{{ pascalize .Name }} := {{ if not .Required }}*{{end}}{{ .ValueExpression }}
   {{ end }}
   {{ if .IsQueryParam }}
   // query array param {{ .Name }}
@@ -86,6 +85,10 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r client.
   }
   {{ end }}
 
+  {{ end }}
+
+  {{ if not .Required }}}
+  {{end}}
   {{ end }}
 
   {{if .IsBodyParam}}
