@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/go-swagger/go-swagger/swag"
 )
@@ -74,6 +75,7 @@ func (c *clientGenerator) Generate() error {
 	}
 
 	for k, v := range opsGroupedByTag {
+		sort.Sort(v)
 		opGroup := GenOperationGroup{
 			Name:           k,
 			Operations:     v,
@@ -85,6 +87,7 @@ func (c *clientGenerator) Generate() error {
 			return err
 		}
 	}
+	sort.Sort(app.OperationGroups)
 
 	if err := c.generateFacade(&app); err != nil {
 		return err

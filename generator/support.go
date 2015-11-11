@@ -461,7 +461,7 @@ type GenApp struct {
 	SecurityDefinitions []GenSecurityScheme
 	Models              []GenDefinition
 	Operations          GenOperations
-	OperationGroups     []GenOperationGroup
+	OperationGroups     GenOperationGroups
 	SwaggerJSON         string
 }
 

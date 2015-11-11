@@ -900,25 +900,12 @@ type GenOperationGroup struct {
 	DefaultImports []string
 }
 
-// GenOperations represents a list of operations to generate
-// this implements a sort by operation id
-type GenOperations []GenOperation
+// GenOperationGroups is a sorted collection of operation groups
+type GenOperationGroups []GenOperationGroup
 
-// Len returns the amount of operations in this list
-func (g GenOperations) Len() int {
-	return len(g)
-}
-
-// Less returns true if the operation at index i should be before
-// the operation at index j
-func (g GenOperations) Less(i, j int) bool {
-	return g[i].Name < g[j].Name
-}
-
-// Swap the operation at index i with the operation at index j
-func (g GenOperations) Swap(i, j int) {
-	g[i], g[j] = g[j], g[i]
-}
+func (g GenOperationGroups) Len() int           { return len(g) }
+func (g GenOperationGroups) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
+func (g GenOperationGroups) Less(i, j int) bool { return g[i].Name < g[j].Name }
 
 // GenOperation represents an operation for code generation
 type GenOperation struct {
@@ -948,3 +935,11 @@ type GenOperation struct {
 	HasFormParams  bool
 	HasFileParams  bool
 }
+
+// GenOperations represents a list of operations to generate
+// this implements a sort by operation id
+type GenOperations []GenOperation
+
+func (g GenOperations) Len() int           { return len(g) }
+func (g GenOperations) Less(i, j int) bool { return g[i].Name < g[j].Name }
+func (g GenOperations) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
