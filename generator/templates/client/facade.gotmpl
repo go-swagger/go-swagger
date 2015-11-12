@@ -20,7 +20,6 @@ import (
   {{ end }}
 )
 
-var swaggerJSON = json.RawMessage({{.SwaggerJSON}})
 
 // NewHTTPClient creates a new {{ humanize .Name }} HTTP client.
 func NewHTTPClient(formats strfmt.Registry) *{{ pascalize .Name }} {
@@ -50,3 +49,6 @@ type {{ pascalize .Name }} struct {
   {{ pascalize .Name }} *{{ camelize .Name }}.Client
   {{ end }}
 }
+
+var swaggerJSON = json.RawMessage([]byte(`{{ .SwaggerJSONString }}`))
+

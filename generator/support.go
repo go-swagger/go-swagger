@@ -342,7 +342,8 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	var defaultImports []string
 
-	jsonb, _ := json.MarshalIndent(sw, "", "  ")
+	jsons, _ := json.MarshalIndent(sw, "", "  ")
+	jsonb, _ := json.Marshal(sw)
 
 	consumes, _ := a.makeConsumes()
 	produces, _ := a.makeProduces()
@@ -440,6 +441,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		Operations:          genOps,
 		Principal:           prin,
 		SwaggerJSON:         fmt.Sprintf("%#v", jsonb),
+		SwaggerJSONString:   string(jsons),
 	}, nil
 }
 
@@ -463,6 +465,7 @@ type GenApp struct {
 	Operations          GenOperations
 	OperationGroups     GenOperationGroups
 	SwaggerJSON         string
+	SwaggerJSONString   string
 }
 
 // GenSerGroup represents a group of serializers, most likely this is a media type to a list of
