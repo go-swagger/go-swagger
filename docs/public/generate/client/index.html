@@ -72,6 +72,32 @@
 <pre><code>swagger generate client -f [http-url|filepath] -A [application-name] [--principal [principal-name]]
 </code></pre>
 
+<p>Use a default client, which has an HTTP transport:</p>
+
+<pre><code class="language-go">import (
+  &quot;log&quot;
+
+  &quot;github.com/myproject/client/operations&quot;
+  &quot;github.com/go-swagger/go-swagger/strfmt&quot;
+  &quot;github.com/go-swagger/go-swagger/spec&quot;
+
+  apiclient &quot;github.com/myproject/client&quot;
+  httptransport &quot;github.com/go-swagger/go-swagger/httpkit/client&quot;
+)
+
+func main() {
+  // create the API client
+  client := apiclient.NewHTTPClient(nil)
+
+  // make the request to get all items
+  resp, err := client.Operations.All(operations.AllParams{})
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Printf(&quot;%#v\n&quot;, resp.Payload)
+}
+</code></pre>
+
 <p>To then use the client with a HTTP transport:</p>
 
 <pre><code class="language-go">import (
