@@ -132,8 +132,13 @@ func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *spec.Docum
 		}
 	}
 	var extras []GenSchema
-	for _, v := range pg.ExtraSchemas {
-		extras = append(extras, v)
+	var extraKeys []string
+	for k := range pg.ExtraSchemas {
+		extraKeys = append(extraKeys, k)
+	}
+	sort.Strings(extraKeys)
+	for _, k := range extraKeys {
+		extras = append(extras, pg.ExtraSchemas[k])
 	}
 
 	return &GenDefinition{
