@@ -27,6 +27,10 @@ func (o *UpdateOneParams) WriteToRequest(r client.Request, reg strfmt.Registry) 
 	var res []error
 
 	if o.Body != nil {
+
+	}
+
+	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err
 		}

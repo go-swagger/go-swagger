@@ -7,8 +7,9 @@ package {{ .Package }}
 import (
   "net/http"
   "github.com/go-swagger/go-swagger/httpkit"
-  httpclient "github.com/go-swagger/go-swagger/httpkit/client"
+  httptransport "github.com/go-swagger/go-swagger/httpkit/client"
   "github.com/go-swagger/go-swagger/swag"
+  "github.com/go-swagger/go-swagger/spec"
   "github.com/go-swagger/go-swagger/errors"
   "github.com/go-swagger/go-swagger/httpkit/validate"
   "github.com/go-swagger/go-swagger/client"
@@ -18,6 +19,21 @@ import (
   {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
   {{ end }}
 )
+
+var swaggerJSON = json.RawMessage({{.SwaggerJSON}})
+
+// NewHTTPClient creates a new {{ humanize .Name }} HTTP client.
+func NewHTTPClient(formats strfmt.Registry) *{{ pascalize .Name }} {
+  swaggerSpec, err := spec.New(swaggerJSON, "")
+  if err != nil {
+    // the swagger spec is valid because it was used to generated this code.
+    panic(err)
+  }
+  if formats == nil {
+    formats = strfmt.Default
+  }
+  return New(httptransport.New(swaggerSpec), formats)
+}
 
 // New creates a new {{ humanize .Name }} client
 func New(transport client.Transport, formats strfmt.Registry) *{{ pascalize .Name }} {
