@@ -20,6 +20,8 @@ import (
   {{ end }}
 )
 
+// The Default {{ humanize .Name }} HTTP client.
+var Default = NewHTTPClient(nil)
 
 // NewHTTPClient creates a new {{ humanize .Name }} HTTP client.
 func NewHTTPClient(formats strfmt.Registry) *{{ pascalize .Name }} {
@@ -50,5 +52,4 @@ type {{ pascalize .Name }} struct {
   {{ end }}
 }
 
-var swaggerJSON = json.RawMessage([]byte(`{{ .SwaggerJSONString }}`))
 

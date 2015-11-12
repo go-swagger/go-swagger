@@ -89,6 +89,10 @@ func (c *clientGenerator) Generate() error {
 	}
 	sort.Sort(app.OperationGroups)
 
+	if err := c.generateEmbeddedSwaggerJSON(&app); err != nil {
+		return err
+	}
+
 	if err := c.generateFacade(&app); err != nil {
 		return err
 	}
@@ -148,4 +152,16 @@ func (c *clientGenerator) generateFacade(app *GenApp) error {
 
 	fp := filepath.Join(c.ClientPackage, c.Target)
 	return writeToFile(fp, swag.ToGoName(app.Name)+"Client", buf.Bytes())
+}
+
+func (c *clientGenerator) generateEmbeddedSwaggerJSON(app *GenApp) error {
+	buf := bytes.NewBuffer(nil)
+
+	if err := embeddedSpecTemplate.Execute(buf, app); err != nil {
+		return err
+	}
+	log.Println("rendered client embedded swagger JSON template:", c.ClientPackage+"."+swag.ToGoName(app.Name)+"Client")
+
+	fp := filepath.Join(c.ClientPackage, c.Target)
+	return writeToFile(fp, swag.ToGoName(app.Name)+"EmbeddedSpec", buf.Bytes())
 }

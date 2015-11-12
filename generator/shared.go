@@ -145,6 +145,7 @@ func formatGoFile(ffn string, content []byte) ([]byte, error) {
 
 func writeToFile(target, name string, content []byte) error {
 	ffn := swag.ToFileName(name) + ".go"
+
 	res, err := formatGoFile(ffn, content)
 	if err != nil {
 		log.Println(err)

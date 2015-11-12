@@ -19,6 +19,7 @@ var (
 	responsesTemplate      *template.Template
 	builderTemplate        *template.Template
 	mainTemplate           *template.Template
+	embeddedSpecTemplate   *template.Template
 	configureAPITemplate   *template.Template
 	clientTemplate         *template.Template
 	clientParamTemplate    *template.Template
@@ -41,6 +42,7 @@ var (
 	assetSchemaValidator           = MustAsset("templates/schemavalidator.gotmpl")
 	assetSchemaStruct              = MustAsset("templates/model.gotmpl")
 	assetHeader                    = MustAsset("templates/header.gotmpl")
+	assetEmbeddedSpec              = MustAsset("templates/swagger_json_embed.gotmpl")
 
 	assetServerParameter    = MustAsset("templates/server/parameter.gotmpl")
 	assetServerResponses    = MustAsset("templates/server/responses.gotmpl")
@@ -94,6 +96,8 @@ func init() {
 	configureAPITemplate = template.Must(template.New("configureapi").Funcs(FuncMap).Parse(string(assetServerConfigureAPI)))
 	mainTemplate = template.Must(template.New("main").Funcs(FuncMap).Parse(string(assetServerMain)))
 
+	embeddedSpecTemplate = template.Must(template.New("embedded_spec").Funcs(FuncMap).Parse(string(assetEmbeddedSpec)))
+
 	// Client templates
 	clientParamTemplate = makeModelTemplate()
 	//clientParamTemplate = template.Must(clientParamTemplate.New("docstring").Parse(string(assetDocString)))
@@ -120,6 +124,7 @@ func init() {
 	clientFacadeTemplate = template.Must(clientFacadeTemplate.New("schType").Parse(string(assetSchemaType)))
 	clientFacadeTemplate = template.Must(clientFacadeTemplate.New("body").Parse(string(assetSchemaBody)))
 	clientFacadeTemplate = template.Must(clientFacadeTemplate.New("facade").Parse(string(assetClientFacade)))
+
 }
 
 func makeModelTemplate() *template.Template {

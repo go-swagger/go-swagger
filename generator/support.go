@@ -105,6 +105,11 @@ func (a *appGenerator) Generate() error {
 
 	importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage))
 	app.DefaultImports = append(app.DefaultImports, importPath)
+
+	if err := a.generateEmbeddedSwaggerJSON(&app); err != nil {
+		return err
+	}
+
 	if err := a.generateConfigureAPI(&app); err != nil {
 		return err
 	}
@@ -139,6 +144,17 @@ func (a *appGenerator) generateMain(app *GenApp) error {
 	}
 	log.Println("rendered main template:", "server."+swag.ToGoName(app.Name))
 	return writeToFile(filepath.Join(a.Target, "cmd", swag.ToCommandName(swag.ToGoName(app.Name)+"Server")), "main", buf.Bytes())
+}
+
+func (a *appGenerator) generateEmbeddedSwaggerJSON(app *GenApp) error {
+	buf := bytes.NewBuffer(nil)
+	appc := *app
+	appc.Package = "main"
+	if err := embeddedSpecTemplate.Execute(buf, &appc); err != nil {
+		return err
+	}
+	log.Println("rendered embedded Swagger JSON template:", "server."+swag.ToGoName(app.Name))
+	return writeToFile(filepath.Join(a.Target, "cmd", swag.ToCommandName(swag.ToGoName(app.Name)+"Server")), "embedded_spec", buf.Bytes())
 }
 
 func (a *appGenerator) generateAPIBuilder(app *GenApp) error {
@@ -342,8 +358,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	var defaultImports []string
 
-	jsons, _ := json.MarshalIndent(sw, "", "  ")
-	jsonb, _ := json.Marshal(sw)
+	jsonb, _ := json.MarshalIndent(sw, "", "  ")
 
 	consumes, _ := a.makeConsumes()
 	produces, _ := a.makeProduces()
@@ -441,7 +456,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		Operations:          genOps,
 		Principal:           prin,
 		SwaggerJSON:         fmt.Sprintf("%#v", jsonb),
-		SwaggerJSONString:   string(jsons),
 	}, nil
 }
 
@@ -465,7 +479,6 @@ type GenApp struct {
 	Operations          GenOperations
 	OperationGroups     GenOperationGroups
 	SwaggerJSON         string
-	SwaggerJSONString   string
 }
 
 // GenSerGroup represents a group of serializers, most likely this is a media type to a list of
