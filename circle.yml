@@ -1,6 +1,7 @@
 machine:
   environment:
     GOCOVMODE: "mode: count"
+    GO15VENDOREXPERIMENT: 1
 general:
   branches:
     ignore:
