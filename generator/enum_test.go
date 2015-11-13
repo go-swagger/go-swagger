@@ -31,6 +31,30 @@ func TestEnum_StringThing(t *testing.T) {
 	}
 }
 
+func TestEnum_ComposedThing(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.enums.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "ComposedThing"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("composed_thing.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					assertInCode(t, "m.StringThing.Validate(formats)", res)
+					assertInCode(t, "var composedThingNameEnum []interface{}", res)
+					assertInCode(t, "m.validateNameEnum(\"name\", \"body\", m.Name)", res)
+					assertInCode(t, k+") validateNameEnum(path, location string, value string)", res)
+				}
+			}
+		}
+	}
+}
+
 func TestEnum_IntThing(t *testing.T) {
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.enums.yml")
 	if assert.NoError(t, err) {

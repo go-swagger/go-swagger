@@ -150,7 +150,6 @@ func ({{ .ReceiverName }} *{{ pascalize .Name}}) validate{{ pascalize .Name }}Va
 {{ end }}
 // Validate validates this {{ humanize .Name }}
 func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ pascalize .Name}}) Validate(formats strfmt.Registry) error {
-  {{if .HasValidations}}
   var res []error
   {{ range .AllOf }}
     {{ if .HasValidations }}
@@ -173,6 +172,10 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
     res = append(res, err)
   }
   {{end}}
+  {{ if not .IsAnonymous }}if err := {{ .ReceiverName }}.{{ pascalize .GoType }}.Validate(formats); err != nil {
+    res = append(res, err)
+  }
+  {{ end }}
   {{ end }}
   {{if .IsPrimitive }}{{ template "primitivefieldvalidator" .}}
   {{else if .IsCustomFormatter }}{{ template "customformatvalidator" .}}
@@ -201,7 +204,6 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
   if len(res) > 0 {
     return errors.CompositeValidationError(res...)
   }
-  {{end}}
   return nil
 }
 {{range .Properties}}
@@ -273,7 +275,63 @@ func ({{.ReceiverName}} *{{ pascalize $.Name }}) validate{{ pascalize .Name }}(f
 {{end}}
 {{range .AllOf}}
 {{range .Properties}}
-{{if .HasValidations}}
+{{if .HasValidations}}{{ if .Enum }}var {{ camelize $.Name }}{{ pascalize .Name }}Enum []interface{}
+func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "schemaType" . }}) error {
+  if {{ camelize $.Name }}{{ pascalize .Name }}Enum == nil {
+    var res []{{ template "schemaType" . }}
+    if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
+      return err
+    }
+    for _, v := range res {
+      {{ camelize $.Name }}{{ pascalize .Name }}Enum = append({{ camelize $.Name }}{{ pascalize .Name }}Enum, v)
+    }
+  }
+  return validate.Enum(path, location, value, {{ camelize $.Name}}{{ pascalize .Name}}Enum)
+}
+{{ end }}{{ if .ItemsEnum }}var {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum []interface{}
+func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ template "schemaType" .Items }}) error {
+  if {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum == nil {
+    var res []{{ template "schemaType" .Items }}
+    if err := json.Unmarshal([]byte(`{{ json .ItemsEnum }}`), &res); err != nil {
+      return err
+    }
+    for _, v := range res {
+      {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum, v)
+    }
+  }
+  return validate.Enum(path, location, value, {{ camelize $.Name}}{{ pascalize .Name}}ItemsEnum)
+}
+{{ end }}{{ if .AdditionalItems}}{{ if .AdditionalItems.Enum }}var {{ camelize $.Name }}{{ pascalize .Name }}Enum []interface{}
+func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "schemaType" .AdditionalItems }}) error {
+  if {{ camelize $.Name }}{{ pascalize .Name }}Enum == nil {
+    var res []{{ template "schemaType" .AdditionalItems }}
+    if err := json.Unmarshal([]byte(`{{ json .AdditionalItems.Enum }}`), &res); err != nil {
+      return err
+    }
+    for _, v := range res {
+      {{ camelize $.Name }}{{ pascalize .Name }}Enum = append({{ camelize $.Name }}{{ pascalize .Name }}Enum, v)
+    }
+  }
+  return validate.Enum(path, location, value, {{ camelize $.Name}}{{ pascalize .Name}}Enum)
+}
+{{ end }}{{ end }}{{ with .AdditionalProperties }}
+{{ if .Enum }}
+var {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum []interface{}
+func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}ValueEnum(path, location string, value {{ template "schemaType" . }}) error {
+  if {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum == nil {
+    var res []{{ template "schemaType" . }}
+    if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
+      return err
+    }
+    for _, v := range res {
+      {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ValueEnum, v)
+    }
+  }
+  return validate.Enum(path, location, value, {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum)
+}
+{{ end }}
+{{ end }}
+
 
 func ({{.ReceiverName}} *{{ pascalize $.Name }}) validate{{ pascalize .Name }}(formats strfmt.Registry) error {
   {{template "propertyvalidator" .}}

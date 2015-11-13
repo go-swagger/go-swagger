@@ -143,6 +143,19 @@ definitions:
           type: string
           enum: ["snow white", "tweetie", "bambi", "red riding hood"]
 
+  ComposedThing:
+    type: object
+    allOF:
+      - $ref: "#/definitions/StringThing"
+      - type: object
+        properties:
+          name:
+            type: string
+            enum:
+              - one
+              - two
+              - three
+
   # provided as part of issue #72
   # the enum of the anonymous schema under delegate comes out without a validation.
   NewPrototype:

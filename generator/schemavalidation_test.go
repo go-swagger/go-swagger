@@ -972,3 +972,30 @@ func TestSchemaValidation_AllOfProps(t *testing.T) {
 		}
 	}
 }
+
+func TestSchemaValidation_RefedAllOf(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "RefedAllOfValidations"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) && assert.Len(t, gm.AllOf, 2) {
+			//prop := gm.AllOf[0]
+			//if assertValidation(t, "\"meta\"", "m.Meta", prop) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, gm)
+			if assert.NoError(t, err) {
+				formatted, err := formatGoFile("all_of_validations.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(formatted)
+					assertInCode(t, k+") Validate(formats", res)
+					assertInCode(t, "m.NamedString.Validate(formats)", res)
+					assertInCode(t, "m.NamedNumber.Validate(formats)", res)
+					assertInCode(t, "errors.CompositeValidationError(res...)", res)
+				}
+			}
+			//}
+		}
+	}
+}
