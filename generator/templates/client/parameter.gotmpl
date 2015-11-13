@@ -25,7 +25,7 @@ type {{ pascalize .Name }}Params struct {
   {{ range .Params }}{{if .Description }}/*
   {{ .Description }}
   */{{ end }}
-  {{ pascalize .Name }} {{ if or .IsBodyParam (not .Required) }}*{{ end }}{{ .GoType }}
+  {{ pascalize .Name }} {{ if and (not .IsArray) (or .IsBodyParam (not .Required)) }}*{{ end }}{{ .GoType }}
   {{ end }}
 }
 
@@ -34,9 +34,9 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r client.
 
   var res []error
   {{range .Params}}
-  {{ if not .Required }}if {{ .ValueExpression }} != nil { {{ end}}
-  {{if not .IsArray }}
 
+  {{if not .IsArray }}
+  {{ if not .Required }}if {{ .ValueExpression }} != nil { {{ end}}
   {{ if .IsQueryParam }}
   // query param {{ .Name }}
   if err := r.SetQueryParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if not .Required }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if not .Required }}*{{end}}{{ .ValueExpression }}{{end}}); err != nil {
@@ -64,13 +64,15 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r client.
     return err
   }
   {{ end }}
+  {{ end }}
+  {{ if not .Required }}}{{end}}
   {{else if .IsArray }}
 
   {{ if .Child.Formatter }}var values{{ pascalize .Name }} []string
-  for _, v := range {{ if not .Required }}*{{end}}{{ .ValueExpression }} {
+  for _, v := range {{ if and (not .IsArray) (not .Required) }}*{{end}}{{ .ValueExpression }} {
     values{{ .ParamName }} = append(values{{ pascalize .Name }}, {{ .Child.Formatter }}(v))
   }
-  {{ else }}values{{ pascalize .Name }} := {{ if not .Required }}*{{end}}{{ .ValueExpression }}
+  {{ else }}values{{ pascalize .Name }} := {{ if and (not .IsArray) (not .Required) }}*{{end}}{{ .ValueExpression }}
   {{ end }}
   {{ if .IsQueryParam }}
   // query array param {{ .Name }}
@@ -84,9 +86,6 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r client.
   }
   {{ end }}
 
-  {{ end }}
-
-  {{ if not .Required }}}{{end}}
   {{ end }}
 
   {{if .IsBodyParam}}
