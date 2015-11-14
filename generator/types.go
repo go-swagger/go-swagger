@@ -341,17 +341,17 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 			err = er
 			return
 		}
-		result.GoType = "map[string]" + et.GoType
 		result.IsMap = !result.IsComplexObject
 		result.SwaggerType = "object"
 		result.IsNullable = false
+		result.GoType = "map[string]" + et.GoType
 		return
 	}
 
 	if len(schema.Properties) > 0 {
 		return
 	}
-	result.GoType = "map[string]interface{}"
+	result.GoType = "interface{}"
 	result.IsMap = true
 	result.IsMap = !result.IsComplexObject
 	result.SwaggerType = "object"

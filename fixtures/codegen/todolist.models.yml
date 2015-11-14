@@ -243,6 +243,16 @@ definitions:
         additionalProperties:
           $ref: "#/definitions/Notable"
 
+  WithMapInterface:
+    type: object
+    required: ["extraInfo"]
+    properties:
+      extraInfo:
+        type: object
+        additionalProperties:
+          type: object
+
+
   WithMapComplex:
     type: object
     properties:

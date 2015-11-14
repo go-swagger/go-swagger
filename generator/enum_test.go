@@ -293,8 +293,8 @@ func TestEnum_NewPrototype(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "ActivatingUser *NewPrototypeActivatingUser `json:\"activating_user,omitempty\"`", res)
-					assertInCode(t, "Delegate *NewPrototypeDelegate `json:\"delegate\"`", res)
-					assertInCode(t, "Role string `json:\"role\"`", res)
+					assertInCode(t, "Delegate *NewPrototypeDelegate `json:\"delegate,omitempty\"`", res)
+					assertInCode(t, "Role string `json:\"role,omitempty\"`", res)
 					assertInCode(t, "var newPrototypeRoleEnum []interface{}", res)
 					assertInCode(t, "var newPrototypeDelegateKindEnum []interface{}", res)
 					assertInCode(t, "m.validateDelegate(formats)", res)

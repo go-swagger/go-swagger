@@ -318,7 +318,7 @@ func (sg *schemaGenContext) schemaValidations() sharedValidations {
 	hasNumberValidation := model.Maximum != nil || model.Minimum != nil || model.MultipleOf != nil
 	hasStringValidation := model.MaxLength != nil || model.MinLength != nil || model.Pattern != ""
 	hasSliceValidations := model.MaxItems != nil || model.MinItems != nil || model.UniqueItems
-	hasValidations := isRequired || hasNumberValidation || hasStringValidation || hasSliceValidations
+	hasValidations := hasNumberValidation || hasStringValidation || hasSliceValidations
 
 	if len(sg.Schema.Enum) > 0 {
 		hasValidations = true
@@ -338,16 +338,36 @@ func (sg *schemaGenContext) schemaValidations() sharedValidations {
 		UniqueItems:         model.UniqueItems,
 		MultipleOf:          model.MultipleOf,
 		Enum:                sg.Schema.Enum,
-		HasValidations:      hasValidations,
+		HasValidations:      isRequired || hasValidations,
 		HasSliceValidations: hasSliceValidations,
+		NeedsValidation:     hasValidations,
+		NeedsRequired:       isRequired,
 	}
 }
-func (sg *schemaGenContext) MergeResult(other *schemaGenContext) {
+func (sg *schemaGenContext) MergeResult(other *schemaGenContext, liftsRequired bool) {
 	if other.GenSchema.AdditionalProperties != nil && other.GenSchema.AdditionalProperties.HasValidations {
 		sg.GenSchema.HasValidations = true
 	}
+	if other.GenSchema.AdditionalProperties != nil && other.GenSchema.AdditionalProperties.NeedsValidation {
+		sg.GenSchema.NeedsValidation = true
+	}
+	if liftsRequired && other.GenSchema.AdditionalProperties != nil && other.GenSchema.AdditionalProperties.NeedsRequired {
+		sg.GenSchema.NeedsRequired = true
+	}
+	if liftsRequired && other.GenSchema.AdditionalProperties != nil && other.GenSchema.AdditionalProperties.Required {
+		sg.GenSchema.Required = true
+	}
 	if other.GenSchema.HasValidations {
 		sg.GenSchema.HasValidations = other.GenSchema.HasValidations
+	}
+	if other.GenSchema.NeedsValidation {
+		sg.GenSchema.NeedsValidation = other.GenSchema.NeedsValidation
+	}
+	if liftsRequired && other.GenSchema.NeedsRequired {
+		sg.GenSchema.NeedsRequired = other.GenSchema.NeedsRequired
+	}
+	if liftsRequired && other.GenSchema.Required {
+		sg.GenSchema.Required = other.GenSchema.Required
 	}
 	sg.Dependencies = append(sg.Dependencies, other.Dependencies...)
 	for k, v := range other.ExtraSchemas {
@@ -365,6 +385,7 @@ func (sg *schemaGenContext) buildProperties() error {
 
 		vv := v
 		var hasValidations bool
+		var needsValidations bool
 		if tpe.IsComplexObject && tpe.IsAnonymous && len(v.Properties) > 0 {
 			pg := sg.makeNewStruct(sg.Name+swag.ToGoName(k), v)
 			if sg.Path != "" {
@@ -377,7 +398,8 @@ func (sg *schemaGenContext) buildProperties() error {
 			}
 			vv = *spec.RefProperty("#/definitions/" + pg.Name)
 			hasValidations = pg.GenSchema.HasValidations
-			sg.MergeResult(pg)
+			needsValidations = pg.GenSchema.NeedsValidation
+			sg.MergeResult(pg, false)
 			sg.ExtraSchemas[pg.Name] = pg.GenSchema
 		}
 
@@ -388,7 +410,10 @@ func (sg *schemaGenContext) buildProperties() error {
 		if hasValidations || emprop.GenSchema.HasValidations {
 			emprop.GenSchema.HasValidations = true
 		}
-		sg.MergeResult(emprop)
+		if needsValidations || emprop.GenSchema.NeedsValidation {
+			emprop.GenSchema.NeedsValidation = true
+		}
+		sg.MergeResult(emprop, false)
 		sg.GenSchema.Properties = append(sg.GenSchema.Properties, emprop.GenSchema)
 	}
 	sort.Sort(sg.GenSchema.Properties)
@@ -402,7 +427,7 @@ func (sg *schemaGenContext) buildAllOf() error {
 		if err := comprop.makeGenSchema(); err != nil {
 			return err
 		}
-		sg.MergeResult(comprop)
+		sg.MergeResult(comprop, true)
 		sg.GenSchema.AllOf = append(sg.GenSchema.AllOf, comprop.GenSchema)
 	}
 	return nil
@@ -456,7 +481,7 @@ func (mt *mapStack) Build() error {
 		if err := cp.makeGenSchema(); err != nil {
 			return err
 		}
-		mt.Context.MergeResult(cp)
+		mt.Context.MergeResult(cp, false)
 		mt.Context.GenSchema.AdditionalProperties = &cp.GenSchema
 		return nil
 	}
@@ -475,7 +500,7 @@ func (mt *mapStack) Build() error {
 		}
 
 		if cur.NewObj != nil {
-			cur.Context.MergeResult(cur.NewObj)
+			cur.Context.MergeResult(cur.NewObj, false)
 			cur.Context.ExtraSchemas[cur.NewObj.Name] = cur.NewObj.GenSchema
 		}
 
@@ -484,7 +509,8 @@ func (mt *mapStack) Build() error {
 				return err
 			}
 			cur.ValueRef.GenSchema.HasValidations = cur.NewObj.GenSchema.HasValidations
-			cur.Context.MergeResult(cur.ValueRef)
+			cur.ValueRef.GenSchema.NeedsValidation = cur.NewObj.GenSchema.NeedsValidation
+			cur.Context.MergeResult(cur.ValueRef, false)
 			cur.Context.GenSchema.AdditionalProperties = &cur.ValueRef.GenSchema
 		}
 
@@ -494,11 +520,11 @@ func (mt *mapStack) Build() error {
 			}
 		}
 		if cur.Next != nil {
-			cur.Context.MergeResult(cur.Next.Context)
+			cur.Context.MergeResult(cur.Next.Context, false)
 			cur.Context.GenSchema.AdditionalProperties = &cur.Next.Context.GenSchema
 		}
 		if cur.ValueRef != nil {
-			cur.Context.MergeResult(cur.ValueRef)
+			cur.Context.MergeResult(cur.ValueRef, false)
 			cur.Context.GenSchema.AdditionalProperties = &cur.ValueRef.GenSchema
 		}
 		cur = cur.Previous
@@ -553,7 +579,7 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 		if err := comprop.makeGenSchema(); err != nil {
 			return err
 		}
-		sg.MergeResult(comprop)
+		sg.MergeResult(comprop, false)
 		sg.GenSchema.AdditionalProperties = &comprop.GenSchema
 		return nil
 	}
@@ -589,10 +615,8 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 		if err := sg.makeGenSchema(); err != nil {
 			return err
 		}
-		sg.MergeResult(newObj)
-		if newObj.GenSchema.HasValidations {
-			sg.GenSchema.HasValidations = true
-		}
+		sg.MergeResult(newObj, false)
+		sg.GenSchema.HasValidations = newObj.GenSchema.HasValidations
 		sg.ExtraSchemas[newObj.Name] = newObj.GenSchema
 		return nil
 	}
@@ -635,7 +659,7 @@ func (sg *schemaGenContext) buildArray() error {
 		if err := pg.makeGenSchema(); err != nil {
 			return err
 		}
-		sg.MergeResult(pg)
+		sg.MergeResult(pg, false)
 		sg.ExtraSchemas[pg.Name] = pg.GenSchema
 		sg.Schema.Items.Schema = spec.RefProperty("#/definitions/" + pg.Name)
 		if err := sg.makeGenSchema(); err != nil {
@@ -647,7 +671,7 @@ func (sg *schemaGenContext) buildArray() error {
 	if err := elProp.makeGenSchema(); err != nil {
 		return err
 	}
-	sg.MergeResult(elProp)
+	sg.MergeResult(elProp, false)
 	sg.GenSchema.ItemsEnum = elProp.GenSchema.Enum
 	elProp.GenSchema.Suffix = "Items"
 	sg.GenSchema.GoType = "[]" + elProp.GenSchema.GoType
@@ -681,7 +705,7 @@ func (sg *schemaGenContext) buildItems() error {
 			if err := elProp.makeGenSchema(); err != nil {
 				return err
 			}
-			sg.MergeResult(elProp)
+			sg.MergeResult(elProp, false)
 			elProp.GenSchema.Name = "p" + strconv.Itoa(i)
 			sg.GenSchema.Properties = append(sg.GenSchema.Properties, elProp.GenSchema)
 		}
@@ -713,7 +737,7 @@ func (sg *schemaGenContext) buildItems() error {
 	if err := sg.makeGenSchema(); err != nil {
 		return err
 	}
-	sg.MergeResult(tup)
+	sg.MergeResult(tup, false)
 	return nil
 }
 
@@ -736,7 +760,7 @@ func (sg *schemaGenContext) buildAdditionalItems() error {
 			}
 			sg.Schema.AdditionalItems.Schema = spec.RefProperty("#/definitions/" + pg.Name)
 			pg.GenSchema.HasValidations = true
-			sg.MergeResult(pg)
+			sg.MergeResult(pg, false)
 			sg.ExtraSchemas[pg.Name] = pg.GenSchema
 		}
 
@@ -748,7 +772,7 @@ func (sg *schemaGenContext) buildAdditionalItems() error {
 		if err := it.makeGenSchema(); err != nil {
 			return err
 		}
-		sg.MergeResult(it)
+		sg.MergeResult(it, true)
 		sg.GenSchema.AdditionalItems = &it.GenSchema
 	}
 	return nil
@@ -794,7 +818,7 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 	}
 	sg.GenSchema.resolvedType = tpe
 	sg.GenSchema.IsNullable = sg.GenSchema.IsNullable || nullableOverride
-	sg.MergeResult(item)
+	sg.MergeResult(item, true)
 	sg.GenSchema.AllOf = append(sg.GenSchema.AllOf, item.GenSchema)
 	return true, nil
 }
@@ -975,4 +999,6 @@ type sharedValidations struct {
 	UniqueItems         bool
 	HasSliceValidations bool
 	NeedsSize           bool
+	NeedsValidation     bool
+	NeedsRequired       bool
 }

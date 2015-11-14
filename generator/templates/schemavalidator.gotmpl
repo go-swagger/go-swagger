@@ -63,7 +63,7 @@ if err := validate.UniqueItems({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ pr
 if err := {{.ReceiverName}}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{.ValueExpression}}); err != nil {
   return err
 }
-{{end}}{{ if .Items }}{{ if .Items.HasValidations }}
+{{end}}{{ if .Items }}{{ if or .Items.Required .Items.HasValidations }}
 for {{.IndexVar}} := 0; {{.IndexVar}} < len({{.ValueExpression}}); {{.IndexVar}}++ {
 {{with .Items}}
   {{template "propertyvalidator" .}}
@@ -75,17 +75,25 @@ for {{.IndexVar}} := 0; {{.IndexVar}} < len({{.ValueExpression}}); {{.IndexVar}}
 if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
   return err
 }
-{{ end }}{{ if .HasAdditionalProperties }}{{ if  .AdditionalProperties.HasValidations }}
+{{ end }}{{ if .HasAdditionalProperties }}
+{{ if  .AdditionalProperties.NeedsValidation }}
 for {{.AdditionalProperties.KeyVar}} := range {{ .ValueExpression }} {
   {{ with .AdditionalProperties }}
-  {{ template "propertyvalidator" .}}
+  {{ template "propertyvalidator" . }}
   {{ end }}
+}
+{{ end }}{{ if .AdditionalProperties.Required }}
+if err := validate.Required({{ .Path }}, {{ printf "%q" .Location }}, {{ if not .IsAnonymous }}{{ .GoType }}({{end}}{{.ValueExpression}}{{ if not .IsAnonymous }}){{end}}); err != nil {
+  return err
 }
 {{ end }}{{ end }}{{end}}
 {{define "objectvalidator"}}{{ if not .IsAnonymous }}
+{{ if .IsNullable }}if {{ .ValueExpression }} != nil {
+{{ end }}
 if err := {{.ValueExpression}}.Validate(formats); err != nil {
   return err
 }
+{{ if .IsNullable }}}{{ end }}
 {{ else }}
 {{ range .AllOf }}
 {{ range .Properties }}
@@ -152,7 +160,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name}}) validate{{ pascalize .Name }}Va
 func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ pascalize .Name}}) Validate(formats strfmt.Registry) error {
   var res []error
   {{ range .AllOf }}
-    {{ if .HasValidations }}
+    {{ if or .Required .HasValidations }}
     {{if .IsPrimitive }}{{ template "primitivefieldvalidator" .}}
     {{else if .IsCustomFormatter }}{{ template "customformatvalidator" .}}
     {{else if .IsArray }}{{ template "slicevalidator" .}}
@@ -160,7 +168,7 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
     {{ end }}
 
     {{range .Properties}}
-    {{if .HasValidations}}
+    {{if or .Required .HasValidations}}
     if err := {{.ReceiverName}}.validate{{ pascalize .Name }}(formats); err != nil {
       res = append(res, err)
     }
@@ -184,7 +192,7 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
   {{ end }}
 
   {{range .Properties}}
-  {{if .HasValidations}}
+  {{if or .Required .HasValidations}}
   if err := {{.ReceiverName}}.validate{{ pascalize .Name }}(formats); err != nil {
     res = append(res, err)
   }
@@ -207,7 +215,7 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
   return nil
 }
 {{range .Properties}}
-{{if .HasValidations}}{{ if .Enum }}var {{ camelize $.Name }}{{ pascalize .Name }}Enum []interface{}
+{{if or .Required .HasValidations}}{{ if .Enum }}var {{ camelize $.Name }}{{ pascalize .Name }}Enum []interface{}
 func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "schemaType" . }}) error {
   if {{ camelize $.Name }}{{ pascalize .Name }}Enum == nil {
     var res []{{ template "schemaType" . }}
@@ -275,7 +283,7 @@ func ({{.ReceiverName}} *{{ pascalize $.Name }}) validate{{ pascalize .Name }}(f
 {{end}}
 {{range .AllOf}}
 {{range .Properties}}
-{{if .HasValidations}}{{ if .Enum }}var {{ camelize $.Name }}{{ pascalize .Name }}Enum []interface{}
+{{if or .Required .HasValidations}}{{ if .Enum }}var {{ camelize $.Name }}{{ pascalize .Name }}Enum []interface{}
 func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "schemaType" . }}) error {
   if {{ camelize $.Name }}{{ pascalize .Name }}Enum == nil {
     var res []{{ template "schemaType" . }}
@@ -357,7 +365,7 @@ func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}I
 }
 {{ end }}
 func ({{.ReceiverName}} *{{ pascalize .Name }}) validate{{ pascalize .Name }}Items(formats strfmt.Registry) error {
-  {{ if .AdditionalItems.HasValidations }}
+  {{ if or .AdditionalItems.Required .AdditionalItems.HasValidations }}
   for {{ .IndexVar }} := range {{ .ValueExpression }}.{{ pascalize .Name }}Items {
     {{template "propertyvalidator" .AdditionalItems }}
   }

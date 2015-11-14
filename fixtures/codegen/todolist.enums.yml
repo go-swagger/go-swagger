@@ -145,7 +145,7 @@ definitions:
 
   ComposedThing:
     type: object
-    allOF:
+    allOf:
       - $ref: "#/definitions/StringThing"
       - type: object
         properties:

@@ -183,7 +183,7 @@ Max Items: 30
 Min Items: 30
 Unique: true
  */
-`+"SomeName string `json:\"some name\"`\n")
+`+"SomeName string `json:\"some name,omitempty\"`\n")
 }
 
 var schTypeGenDataSimple = []struct {
@@ -326,7 +326,7 @@ func TestGenerateModel_RunParameters(t *testing.T) {
 				assertInCode(t, "type "+k+" struct {", res)
 				assertInCode(t, "BranchName string `json:\"branch_name,omitempty\"`", res)
 				assertInCode(t, "CommitSha string `json:\"commit_sha,omitempty\"`", res)
-				assertInCode(t, "Refs map[string]interface{} `json:\"refs,omitempty\"`", res)
+				assertInCode(t, "Refs interface{} `json:\"refs,omitempty\"`", res)
 			}
 		}
 	}
@@ -432,6 +432,34 @@ func TestGenerateModel_WithMap(t *testing.T) {
 				res := buf.String()
 				assertInCode(t, "type WithMap struct {", res)
 				assertInCode(t, "Data map[string]string `json:\"data,omitempty\"`", res)
+			}
+		}
+	}
+}
+
+func TestGenerateModel_WithMapInterface(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["WithMapInterface"]
+		genModel, err := makeGenDefinition("WithMapInterface", "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			assert.False(t, genModel.HasAdditionalProperties)
+			prop := getDefinitionProperty(genModel, "extraInfo")
+			assert.True(t, prop.HasAdditionalProperties)
+			assert.True(t, prop.IsMap)
+			assert.False(t, prop.IsComplexObject)
+			assert.Equal(t, "map[string]interface{}", prop.GoType)
+			assert.True(t, prop.Required)
+			assert.True(t, prop.HasValidations)
+			assert.False(t, prop.NeedsValidation)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				res := buf.String()
+				//fmt.Println(res)
+				assertInCode(t, "type WithMapInterface struct {", res)
+				assertInCode(t, "ExtraInfo map[string]interface{} `json:\"extraInfo,omitempty\"`", res)
 			}
 		}
 	}
@@ -1240,7 +1268,7 @@ func TestGenerateModel_WithAllOfAndDiscriminator(t *testing.T) {
 					res := string(ct)
 					assertInCode(t, "type Cat struct {", res)
 					assertInCode(t, "Pet", res)
-					assertInCode(t, "HuntingSkill string `json:\"huntingSkill\"`", res)
+					assertInCode(t, "HuntingSkill string `json:\"huntingSkill,omitempty\"`", res)
 				}
 			}
 		}

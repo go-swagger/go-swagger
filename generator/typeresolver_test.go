@@ -424,7 +424,7 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsMap)
 				assert.False(t, rt.IsComplexObject)
-				assert.Equal(t, "map[string]interface{}", rt.GoType)
+				assert.Equal(t, "interface{}", rt.GoType)
 				assert.Equal(t, "object", rt.SwaggerType)
 			}
 
@@ -454,7 +454,7 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 		if assert.NoError(t, err) {
 			assert.True(t, rt.IsMap)
 			assert.False(t, rt.IsComplexObject)
-			assert.Equal(t, "map[string]interface{}", rt.GoType)
+			assert.Equal(t, "interface{}", rt.GoType)
 			assert.Equal(t, "object", rt.SwaggerType)
 
 		}
