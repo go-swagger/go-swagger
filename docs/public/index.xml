@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>go-swagger toolkit</title>
-    <link>http://localhost:1313/</link>
+    <link>http://go-swagger.github.io/</link>
     <description>Recent content on go-swagger toolkit</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>© 2015 go-swagger contributors</copyright>
     <lastBuildDate>Thu, 22 Oct 2015 23:28:09 -0700</lastBuildDate>
-    <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://go-swagger.github.io/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Validate a swagger spec</title>
-      <link>http://localhost:1313/usage/validate/</link>
+      <link>http://go-swagger.github.io/usage/validate/</link>
       <pubDate>Thu, 22 Oct 2015 23:28:09 -0700</pubDate>
       
-      <guid>http://localhost:1313/usage/validate/</guid>
+      <guid>http://go-swagger.github.io/usage/validate/</guid>
       <description>
 
 &lt;h2 id=&#34;validate-a-swagger-spec:c64148e1a0d4f4de12bdfecb139d0588&#34;&gt;Validate a swagger spec&lt;/h2&gt;
@@ -61,10 +61,10 @@ is as valid as possible, so that there are no surprises.&lt;/p&gt;
     
     <item>
       <title>swagger.json generation</title>
-      <link>http://localhost:1313/generate/spec/</link>
+      <link>http://go-swagger.github.io/generate/spec/</link>
       <pubDate>Mon, 09 Nov 2015 18:58:47 -0800</pubDate>
       
-      <guid>http://localhost:1313/generate/spec/</guid>
+      <guid>http://go-swagger.github.io/generate/spec/</guid>
       <description>
 
 &lt;p&gt;The toolkit has a command that will let you generate a swagger spec document from your code.
@@ -116,10 +116,10 @@ package to produce a swagger specification.&lt;/p&gt;
     
     <item>
       <title>Generate an API client</title>
-      <link>http://localhost:1313/generate/client/</link>
+      <link>http://go-swagger.github.io/generate/client/</link>
       <pubDate>Fri, 23 Oct 2015 22:11:54 -0700</pubDate>
       
-      <guid>http://localhost:1313/generate/client/</guid>
+      <guid>http://go-swagger.github.io/generate/client/</guid>
       <description>
 
 &lt;p&gt;The toolkit has a command that will let you generate a client.&lt;/p&gt;
@@ -232,10 +232,10 @@ func main() {
     
     <item>
       <title>What is go-swagger</title>
-      <link>http://localhost:1313/about/</link>
+      <link>http://go-swagger.github.io/about/</link>
       <pubDate>Wed, 21 Oct 2015 21:54:47 -0700</pubDate>
       
-      <guid>http://localhost:1313/about/</guid>
+      <guid>http://go-swagger.github.io/about/</guid>
       <description>&lt;p&gt;There are 3 axis along which your API and its documentation tend to evolve. This toolkit aims to support you along all 3
 axis and remove the repetitive nature of writing what is essentially boilerplate code for faster iteration times.&lt;/p&gt;
 
@@ -269,10 +269,10 @@ confidence whether your application is your personal blog or is the next AWS.&lt
     
     <item>
       <title>swagger:meta</title>
-      <link>http://localhost:1313/generate/spec/meta/</link>
+      <link>http://go-swagger.github.io/generate/spec/meta/</link>
       <pubDate>Sat, 14 Nov 2015 19:54:53 -0800</pubDate>
       
-      <guid>http://localhost:1313/generate/spec/meta/</guid>
+      <guid>http://go-swagger.github.io/generate/spec/meta/</guid>
       <description>
 
 &lt;p&gt;The &lt;strong&gt;swagger:meta&lt;/strong&gt; annotation flags a file as source for metadata about the API.
@@ -412,10 +412,10 @@ basePath: /v2
     
     <item>
       <title>swagger:route</title>
-      <link>http://localhost:1313/generate/spec/route/</link>
+      <link>http://go-swagger.github.io/generate/spec/route/</link>
       <pubDate>Sat, 14 Nov 2015 20:10:39 -0800</pubDate>
       
-      <guid>http://localhost:1313/generate/spec/route/</guid>
+      <guid>http://go-swagger.github.io/generate/spec/route/</guid>
       <description>&lt;p&gt;A &lt;strong&gt;swagger:route&lt;/strong&gt; annotation links a path to a method.
 This operation gets a unique id, which is used in various places as method name.
 One such usage is in method names for client generation for example.&lt;/p&gt;
@@ -431,10 +431,10 @@ yourself in valid swagger syntax.&lt;/p&gt;
     
     <item>
       <title>swagger:params</title>
-      <link>http://localhost:1313/generate/spec/params/</link>
+      <link>http://go-swagger.github.io/generate/spec/params/</link>
       <pubDate>Sat, 14 Nov 2015 20:10:43 -0800</pubDate>
       
-      <guid>http://localhost:1313/generate/spec/params/</guid>
+      <guid>http://go-swagger.github.io/generate/spec/params/</guid>
       <description>
 
 &lt;p&gt;The &lt;strong&gt;swagger:params&lt;/strong&gt; annotation links a struct to one or more operations. The params in the resulting swagger spec can be composed of several structs.
@@ -670,10 +670,10 @@ operations:
     
     <item>
       <title>swagger:response</title>
-      <link>http://localhost:1313/generate/spec/response/</link>
+      <link>http://go-swagger.github.io/generate/spec/response/</link>
       <pubDate>Sat, 14 Nov 2015 20:10:52 -0800</pubDate>
       
-      <guid>http://localhost:1313/generate/spec/response/</guid>
+      <guid>http://go-swagger.github.io/generate/spec/response/</guid>
       <description>&lt;p&gt;Reads a struct decorated with &lt;strong&gt;swagger:response&lt;/strong&gt; and uses that information to fill up the headers and the schema for a response.
 A swagger:route can specify a response name for a status code and then the matching response will be used for that operation in the swagger definition.&lt;/p&gt;
 
@@ -684,10 +684,10 @@ A swagger:route can specify a response name for a status code and then the match
     
     <item>
       <title>swagger:model</title>
-      <link>http://localhost:1313/generate/spec/model/</link>
+      <link>http://go-swagger.github.io/generate/spec/model/</link>
       <pubDate>Sat, 14 Nov 2015 20:10:32 -0800</pubDate>
       
-      <guid>http://localhost:1313/generate/spec/model/</guid>
+      <guid>http://go-swagger.github.io/generate/spec/model/</guid>
       <description>&lt;p&gt;A &lt;strong&gt;swagger:model&lt;/strong&gt; annotation optionally gets a model name as extra data on the line.
 when this appears anywhere in a comment for a struct, then that struct becomes a schema
 in the definitions object of swagger.&lt;/p&gt;
@@ -702,10 +702,10 @@ The refs are tracked separately so that they can be renamed later on.&lt;/p&gt;
     
     <item>
       <title>swagger:allOf</title>
-      <link>http://localhost:1313/generate/spec/allOf/</link>
+      <link>http://go-swagger.github.io/generate/spec/allOf/</link>
       <pubDate>Sat, 14 Nov 2015 20:10:58 -0800</pubDate>
       
-      <guid>http://localhost:1313/generate/spec/allOf/</guid>
+      <guid>http://go-swagger.github.io/generate/spec/allOf/</guid>
       <description>
 
 &lt;p&gt;Marks an embedded type as  a member for allOf&lt;/p&gt;
@@ -735,10 +735,10 @@ type AllOfModel struct {
     
     <item>
       <title>swagger:strfmt</title>
-      <link>http://localhost:1313/generate/spec/strfmt/</link>
+      <link>http://go-swagger.github.io/generate/spec/strfmt/</link>
       <pubDate>Sat, 14 Nov 2015 20:10:24 -0800</pubDate>
       
-      <guid>http://localhost:1313/generate/spec/strfmt/</guid>
+      <guid>http://go-swagger.github.io/generate/spec/strfmt/</guid>
       <description>&lt;p&gt;A &lt;strong&gt;swagger:strfmt&lt;/strong&gt; annotation names a type as a string formatter. The name is mandatory and that is
 what will be used as format name for this particular string format.
 String formats should only be used for very well known formats.&lt;/p&gt;
