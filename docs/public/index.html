@@ -56,28 +56,19 @@
   
   <div class="col m4 s12">
     <div class="card-panel">
-      <h4><a href="http://go-swagger.github.io/generate/spec/">spec</a></h4>
+      <h4><a href="http://go-swagger.github.io/generate/spec/allOf/">swagger:allOf</a></h4>
       <p>
       
-      </p>
-      <p>The toolkit has a command that will let you generate a swagger spec document from your code. The command integrates with go doc comments, and makes use of structs when it needs to know of types. Usage To generate a spec: swagger generate spec -o ./swagger.json You give it a main file and it will parse all the files that are required by that main package to produce a swagger specification.</p>
-      <p>
-      9 Nov 2015
+        
+          <a href="http://go-swagger.github.io/categories/spec/">spec</a>
+        
+          <a href="http://go-swagger.github.io/categories/generate/">generate</a>
+        
       
       </p>
-    </div>
-  </div>
-
-  
-  <div class="col m4 s12">
-    <div class="card-panel">
-      <h4><a href="http://go-swagger.github.io/generate/client/">Generate an API client</a></h4>
+      <p>Marks an embedded type as a member for allOf swagger:allOf Example: // An AllOfModel is composed out of embedded structs but it should build // an allOf property type AllOfModel struct { // swagger:allOf SimpleOne // swagger:allOf mods.Notable Something // not annotated with anything, so should be included CreatedAt strfmt.DateTime `json:&quot;createdAt&quot;` }</p>
       <p>
-      
-      </p>
-      <p>The toolkit has a command that will let you generate a client. Usage To generate a client: swagger generate client -f [http-url|filepath] -A [application-name] [--principal [principal-name]] Use a default client, which has an HTTP transport: import ( &quot;log&quot; &quot;github.com/myproject/client/operations&quot; &quot;github.com/go-swagger/go-swagger/strfmt&quot; &quot;github.com/go-swagger/go-swagger/spec&quot; apiclient &quot;github.com/myproject/client&quot; httptransport &quot;github.com/go-swagger/go-swagger/httpkit/client&quot; ) func main() { // create the API client client := apiclient.NewHTTPClient(nil) // make the request to get all items resp, err := client.Operations.All(operations.AllParams{}) if</p>
-      <p>
-      23 Oct 2015
+      14 Nov 2015
       
       </p>
     </div>
@@ -86,13 +77,40 @@
   
   <div class="col m4 s12">
     <div class="card-panel">
-      <h4><a href="http://go-swagger.github.io/usage/validate/">Validate a swagger spec</a></h4>
+      <h4><a href="http://go-swagger.github.io/generate/spec/response/">swagger:response</a></h4>
       <p>
       
+        
+          <a href="http://go-swagger.github.io/categories/spec/">spec</a>
+        
+          <a href="http://go-swagger.github.io/categories/generate/">generate</a>
+        
+      
       </p>
-      <p>Validate a swagger spec The toolkit has a command to validate swagger specifications for you. It includes a full json-schema validator and adds a bunch of extra validations on top of that to ensure the spec is as valid as possible, so that there are no surprises. Usage To validate a specification: swagger validate [http-url|filepath] Supported rules All the rules the validator tool supports: validate against jsonschema validate extra rules</p>
+      <p>Reads a struct decorated with swagger:response and uses that information to fill up the headers and the schema for a response. A swagger:route can specify a response name for a status code and then the matching response will be used for that operation in the swagger definition. swagger:response [?response name]</p>
       <p>
-      22 Oct 2015
+      14 Nov 2015
+      
+      </p>
+    </div>
+  </div>
+
+  
+  <div class="col m4 s12">
+    <div class="card-panel">
+      <h4><a href="http://go-swagger.github.io/generate/spec/params/">swagger:params</a></h4>
+      <p>
+      
+        
+          <a href="http://go-swagger.github.io/categories/spec/">spec</a>
+        
+          <a href="http://go-swagger.github.io/categories/generate/">generate</a>
+        
+      
+      </p>
+      <p>Links a struct to one or more operations. The params in the resulting swagger spec can be composed of several structs. There are no guarantees given on how property name overlaps are resolved when several structs apply to the same operation. This tag works very similar to the swagger:model tag except that it produces valid parameter objects instead of schema objects. swagger:params [operationid1 operationid2]</p>
+      <p>
+      14 Nov 2015
       
       </p>
     </div>

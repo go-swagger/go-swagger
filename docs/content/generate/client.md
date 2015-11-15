@@ -28,11 +28,9 @@ import (
 )
 
 func main() {
-  // create the API client
-  client := apiclient.NewHTTPClient(nil)
 
   // make the request to get all items
-  resp, err := client.Operations.All(operations.AllParams{})
+  resp, err := apiclient.Default.Operations.All(operations.AllParams{})
   if err != nil {
     log.Fatal(err)
   }

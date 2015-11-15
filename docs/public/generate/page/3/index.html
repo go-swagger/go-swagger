@@ -56,7 +56,7 @@
   
   <div class="col m4 s12">
     <div class="card-panel">
-      <h4><a href="http://go-swagger.github.io/generate/spec/allOf/">swagger:allOf</a></h4>
+      <h4><a href="http://go-swagger.github.io/generate/spec/meta/">swagger:meta</a></h4>
       <p>
       
         
@@ -66,7 +66,7 @@
         
       
       </p>
-      <p>Marks an embedded type as a member for allOf swagger:allOf Example: // An AllOfModel is composed out of embedded structs but it should build // an allOf property type AllOfModel struct { // swagger:allOf SimpleOne // swagger:allOf mods.Notable Something // not annotated with anything, so should be included CreatedAt strfmt.DateTime `json:&quot;createdAt&quot;` }</p>
+      <p>The swagger:meta annotation flags a file as source for metadata about the API. This is typically a doc.go file with your package documentation. You can specify a Consumes and Produces key which has a new content type on each line Schemes is a tag that is required and allows for a comma separated string composed of: http, https, ws or wss Host and BasePath can be specified but those values will be defaults, they should get substituted when serving the swagger spec.</p>
       <p>
       14 Nov 2015
       
@@ -77,19 +77,13 @@
   
   <div class="col m4 s12">
     <div class="card-panel">
-      <h4><a href="http://go-swagger.github.io/generate/spec/response/">swagger:response</a></h4>
+      <h4><a href="http://go-swagger.github.io/generate/spec/">Spec generation reference</a></h4>
       <p>
-      
-        
-          <a href="http://go-swagger.github.io/categories/spec/">spec</a>
-        
-          <a href="http://go-swagger.github.io/categories/generate/">generate</a>
-        
       
       </p>
-      <p>Reads a struct decorated with swagger:response and uses that information to fill up the headers and the schema for a response. A swagger:route can specify a response name for a status code and then the matching response will be used for that operation in the swagger definition. swagger:response [?response name]</p>
+      <p>The toolkit has a command that will let you generate a swagger spec document from your code. The command integrates with go doc comments, and makes use of structs when it needs to know of types. Based on the work from https://github.com/yvasiyarov/swagger It uses a similar approach but with expanded annotations and it produces a swagger 2.0 spec. The goal of the syntax is to make it look as a natural part of the documentation for the application code.</p>
       <p>
-      14 Nov 2015
+      9 Nov 2015
       
       </p>
     </div>
@@ -98,19 +92,13 @@
   
   <div class="col m4 s12">
     <div class="card-panel">
-      <h4><a href="http://go-swagger.github.io/generate/spec/params/">swagger:params</a></h4>
+      <h4><a href="http://go-swagger.github.io/generate/client/">Generate an API client</a></h4>
       <p>
-      
-        
-          <a href="http://go-swagger.github.io/categories/spec/">spec</a>
-        
-          <a href="http://go-swagger.github.io/categories/generate/">generate</a>
-        
       
       </p>
-      <p>Links a struct to one or more operations. The params in the resulting swagger spec can be composed of several structs. There are no guarantees given on how property name overlaps are resolved when several structs apply to the same operation. This tag works very similar to the swagger:model tag except that it produces valid parameter objects instead of schema objects. swagger:params [operationid1 operationid2]</p>
+      <p>The toolkit has a command that will let you generate a client. Usage To generate a client: swagger generate client -f [http-url|filepath] -A [application-name] [--principal [principal-name]] Use a default client, which has an HTTP transport: import ( &quot;log&quot; &quot;github.com/myproject/client/operations&quot; &quot;github.com/go-swagger/go-swagger/strfmt&quot; &quot;github.com/go-swagger/go-swagger/spec&quot; apiclient &quot;github.com/myproject/client&quot; httptransport &quot;github.com/go-swagger/go-swagger/httpkit/client&quot; ) func main() { // make the request to get all items resp, err := apiclient.Default.Operations.All(operations.AllParams{}) if err != nil { log.Fatal(err) } fmt.Printf(&quot;%#v\n&quot;, resp.Payload)</p>
       <p>
-      14 Nov 2015
+      23 Oct 2015
       
       </p>
     </div>
@@ -122,13 +110,13 @@
 <div class="row">
   <div class="col s3 m1">
   
-    <a class="btn-floating btn-large disabled"><i class="mdi-navigation-arrow-back"></i></a>
+    <a class="btn-floating btn-large waves-effect waves-light" href="/generate/page/2/"><i class="mdi-navigation-arrow-back"></i></a>
   
   </div>
   <div class="col s6 m10 center">&nbsp</div>
   <div class="col s3 m1">
   
-    <a class="btn-floating btn-large waves-effect waves-light" href="/generate/page/2/"><i class="mdi-navigation-arrow-forward"></i></a>
+    <a class="btn-floating btn-large disabled"><i class="mdi-navigation-arrow-forward"></i></a>
   
   </div>
 </div>
