@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Home on go-swagger toolkit</title>
-    <link>http://localhost:1313/series/home/</link>
+    <link>http://go-swagger.github.io/series/home/</link>
     <description>Recent content in Home on go-swagger toolkit</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>© 2015 go-swagger contributors</copyright>
     <lastBuildDate>Mon, 09 Nov 2015 18:58:47 -0800</lastBuildDate>
-    <atom:link href="http://localhost:1313/series/home/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://go-swagger.github.io/series/home/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>swagger.json generation</title>
-      <link>http://localhost:1313/generate/spec/</link>
+      <link>http://go-swagger.github.io/generate/spec/</link>
       <pubDate>Mon, 09 Nov 2015 18:58:47 -0800</pubDate>
       
-      <guid>http://localhost:1313/generate/spec/</guid>
+      <guid>http://go-swagger.github.io/generate/spec/</guid>
       <description>
 
 &lt;p&gt;The toolkit has a command that will let you generate a swagger spec document from your code.
@@ -67,10 +67,10 @@ package to produce a swagger specification.&lt;/p&gt;
     
     <item>
       <title>Generate an API client</title>
-      <link>http://localhost:1313/generate/client/</link>
+      <link>http://go-swagger.github.io/generate/client/</link>
       <pubDate>Fri, 23 Oct 2015 22:11:54 -0700</pubDate>
       
-      <guid>http://localhost:1313/generate/client/</guid>
+      <guid>http://go-swagger.github.io/generate/client/</guid>
       <description>
 
 &lt;p&gt;The toolkit has a command that will let you generate a client.&lt;/p&gt;
@@ -183,10 +183,10 @@ func main() {
     
     <item>
       <title>What is go-swagger</title>
-      <link>http://localhost:1313/about/</link>
+      <link>http://go-swagger.github.io/about/</link>
       <pubDate>Wed, 21 Oct 2015 21:54:47 -0700</pubDate>
       
-      <guid>http://localhost:1313/about/</guid>
+      <guid>http://go-swagger.github.io/about/</guid>
       <description>&lt;p&gt;There are 3 axis along which your API and its documentation tend to evolve. This toolkit aims to support you along all 3
 axis and remove the repetitive nature of writing what is essentially boilerplate code for faster iteration times.&lt;/p&gt;
 
