@@ -2,68 +2,68 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://go-swagger.github.io/</loc>
+    <loc>http://localhost:1313/</loc>
     <lastmod>2015-11-14T20:10:58-08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://go-swagger.github.io/generate/spec/allOf/</loc>
+    <loc>http://localhost:1313/generate/spec/allOf/</loc>
     <lastmod>2015-11-14T20:10:58-08:00</lastmod>
   </url>
   
   <url>
-    <loc>http://go-swagger.github.io/generate/spec/response/</loc>
+    <loc>http://localhost:1313/generate/spec/response/</loc>
     <lastmod>2015-11-14T20:10:52-08:00</lastmod>
   </url>
   
   <url>
-    <loc>http://go-swagger.github.io/generate/spec/params/</loc>
+    <loc>http://localhost:1313/generate/spec/params/</loc>
     <lastmod>2015-11-14T20:10:43-08:00</lastmod>
   </url>
   
   <url>
-    <loc>http://go-swagger.github.io/generate/spec/route/</loc>
+    <loc>http://localhost:1313/generate/spec/route/</loc>
     <lastmod>2015-11-14T20:10:39-08:00</lastmod>
   </url>
   
   <url>
-    <loc>http://go-swagger.github.io/generate/spec/model/</loc>
+    <loc>http://localhost:1313/generate/spec/model/</loc>
     <lastmod>2015-11-14T20:10:32-08:00</lastmod>
   </url>
   
   <url>
-    <loc>http://go-swagger.github.io/generate/spec/strfmt/</loc>
+    <loc>http://localhost:1313/generate/spec/strfmt/</loc>
     <lastmod>2015-11-14T20:10:24-08:00</lastmod>
   </url>
   
   <url>
-    <loc>http://go-swagger.github.io/generate/spec/meta/</loc>
+    <loc>http://localhost:1313/generate/spec/meta/</loc>
     <lastmod>2015-11-14T19:54:53-08:00</lastmod>
   </url>
   
   <url>
-    <loc>http://go-swagger.github.io/generate/spec/</loc>
+    <loc>http://localhost:1313/generate/spec/</loc>
     <lastmod>2015-11-09T18:58:47-08:00</lastmod>
   </url>
   
   <url>
-    <loc>http://go-swagger.github.io/generate/client/</loc>
+    <loc>http://localhost:1313/generate/client/</loc>
     <lastmod>2015-10-23T22:11:54-07:00</lastmod>
   </url>
   
   <url>
-    <loc>http://go-swagger.github.io/usage/validate/</loc>
+    <loc>http://localhost:1313/usage/validate/</loc>
     <lastmod>2015-10-22T23:28:09-07:00</lastmod>
   </url>
   
   <url>
-    <loc>http://go-swagger.github.io/_index/</loc>
+    <loc>http://localhost:1313/_index/</loc>
     <lastmod>2015-10-21T22:46:51-07:00</lastmod>
   </url>
   
   <url>
-    <loc>http://go-swagger.github.io/about/</loc>
+    <loc>http://localhost:1313/about/</loc>
     <lastmod>2015-10-21T21:54:47-07:00</lastmod>
   </url>
   
