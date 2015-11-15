@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"/>
-  <title>Spec generation reference</title>
+  <title>swagger:route</title>
   <link href="http://go-swagger.github.io/css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
   <link href="http://go-swagger.github.io/css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
   <link rel="stylesheet" href="http://go-swagger.github.io/css/prism.css" />
@@ -54,58 +54,28 @@
     <div class="row">
       <div class="col s12">
         <div class="card-panel">
-          <h2>Spec generation reference</h2>
+          <h2>swagger:route</h2>
           <p>
           
+            
+              <a href="http://go-swagger.github.io/categories/spec/">spec</a>
+            
+              <a href="http://go-swagger.github.io/categories/generate/">generate</a>
+            
+          
           </p>
-          <p>
+          <p><p>A <strong>swagger:route</strong> annotation links a path to a method.
+This operation gets a unique id, which is used in various places as method name.
+One such usage is in method names for client generation for example.</p>
 
-<p>The toolkit has a command that will let you generate a swagger spec document from your code.
-The command integrates with go doc comments, and makes use of structs when it needs to know of
-types.</p>
+<p>Because there are many routers available, this tool does not try to parse the paths
+you provided to your routing library of choice. So you have to specify your path pattern
+yourself in valid swagger syntax.</p>
 
-<p>Based on the work from <a href="https://github.com/yvasiyarov/swagger">https://github.com/yvasiyarov/swagger</a><br />
-It uses a similar approach but with expanded annotations and it produces a swagger 2.0 spec.</p>
-
-<p>The goal of the syntax is to make it look as a natural part of the documentation for the application code.</p>
-
-<p>The generator is passed a base path (defaults to current) and tries to extract a go package path from that.
-Once it has a go package path it will scan the package recursively, skipping the Godeps, files ending in test.go and
-directories that start with an underscore, it also skips file system entries that start with a dot.</p>
-
-<p>Once the parser has encountered a comment that matches on of its known tags, the parser will assume that the rest of
-the comment block is for swagger.</p>
-
-<h3 id="usage:958e7270f96f5407d7d980f500805b1b">Usage</h3>
-
-<p>To generate a spec:</p>
-
-<pre><code>swagger generate spec -o ./swagger.json
+<pre><code>swagger:route [method] [path pattern] [operation id] [?tag1 tag2 tag3]
 </code></pre>
-
-<p>You give it a main file and it will parse all the files that are required by that main
-package to produce a swagger specification.</p>
-
-<p>To use you can add a go:generate comment to your main file for example:</p>
-
-<pre><code>//go:generate swagger generate spec
-</code></pre>
-
-<h4 id="annotation-syntax:958e7270f96f5407d7d980f500805b1b">Annotation syntax</h4>
-
-<p>There are several annotations that mark a comment block as a participant for the swagger spec.</p>
-
-<ul>
-<li><a href="meta">swagger:meta</a></li>
-<li><a href="strfmt">swagger:strfmt</a></li>
-<li><a href="model">swagger:model</a></li>
-<li><a href="route">swagger:route</a></li>
-<li><a href="params">swagger:params</a></li>
-<li><a href="response">swagger:response</a></li>
-<li><a href="allOf">swagger:allOf</a></li>
-</ul>
 </p>
-          <p>9 Nov 2015
+          <p>14 Nov 2015
             
           </p>
           
@@ -116,13 +86,13 @@ package to produce a swagger specification.</p>
     <div class="row">
       <div class="col s3 m1">
       
-        <a class="btn-floating btn-large waves-effect waves-light" href="http://go-swagger.github.io/generate/spec/meta/"><i class="mdi-navigation-arrow-back"></i></a>
+        <a class="btn-floating btn-large waves-effect waves-light" href="http://go-swagger.github.io/generate/spec/params/"><i class="mdi-navigation-arrow-back"></i></a>
       
       </div>
       <div class="col s6 m10 center">&nbsp</div>
       <div class="col s3 m1">
       
-        <a class="btn-floating btn-large waves-effect waves-light" href="http://go-swagger.github.io/generate/client/"><i class="mdi-navigation-arrow-forward"></i></a>
+        <a class="btn-floating btn-large waves-effect waves-light" href="http://go-swagger.github.io/generate/spec/model/"><i class="mdi-navigation-arrow-forward"></i></a>
       
       </div>
     </div>

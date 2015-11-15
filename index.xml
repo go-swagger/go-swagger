@@ -7,11 +7,262 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>© 2015 go-swagger contributors</copyright>
-    <lastBuildDate>Mon, 09 Nov 2015 18:58:47 -0800</lastBuildDate>
+    <lastBuildDate>Sat, 14 Nov 2015 20:10:58 -0800</lastBuildDate>
     <atom:link href="http://go-swagger.github.io/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
-      <title>spec</title>
+      <title>swagger:allOf</title>
+      <link>http://go-swagger.github.io/generate/spec/allOf/</link>
+      <pubDate>Sat, 14 Nov 2015 20:10:58 -0800</pubDate>
+      
+      <guid>http://go-swagger.github.io/generate/spec/allOf/</guid>
+      <description>
+
+&lt;p&gt;Marks an embedded type as  a member for allOf&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;swagger:allOf
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&#34;example:9e114a42ed516fdef13f2ebb84a2eb20&#34;&gt;Example:&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;// An AllOfModel is composed out of embedded structs but it should build
+// an allOf property
+type AllOfModel struct {
+	// swagger:allOf
+	SimpleOne
+	// swagger:allOf
+	mods.Notable
+
+	Something // not annotated with anything, so should be included
+
+	CreatedAt strfmt.DateTime `json:&amp;quot;createdAt&amp;quot;`
+}
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>swagger:response</title>
+      <link>http://go-swagger.github.io/generate/spec/response/</link>
+      <pubDate>Sat, 14 Nov 2015 20:10:52 -0800</pubDate>
+      
+      <guid>http://go-swagger.github.io/generate/spec/response/</guid>
+      <description>&lt;p&gt;Reads a struct decorated with &lt;strong&gt;swagger:response&lt;/strong&gt; and uses that information to fill up the headers and the schema for a response.
+A swagger:route can specify a response name for a status code and then the matching response will be used for that operation in the swagger definition.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;swagger:response [?response name]
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>swagger:params</title>
+      <link>http://go-swagger.github.io/generate/spec/params/</link>
+      <pubDate>Sat, 14 Nov 2015 20:10:43 -0800</pubDate>
+      
+      <guid>http://go-swagger.github.io/generate/spec/params/</guid>
+      <description>&lt;p&gt;Links a struct to one or more operations. The params in the resulting swagger spec can be composed of several structs.
+There are no guarantees given on how property name overlaps are resolved when several structs apply to the same operation.
+This tag works very similar to the swagger:model tag except that it produces valid parameter objects instead of schema
+objects.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;swagger:params [operationid1 operationid2]
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>swagger:route</title>
+      <link>http://go-swagger.github.io/generate/spec/route/</link>
+      <pubDate>Sat, 14 Nov 2015 20:10:39 -0800</pubDate>
+      
+      <guid>http://go-swagger.github.io/generate/spec/route/</guid>
+      <description>&lt;p&gt;A &lt;strong&gt;swagger:route&lt;/strong&gt; annotation links a path to a method.
+This operation gets a unique id, which is used in various places as method name.
+One such usage is in method names for client generation for example.&lt;/p&gt;
+
+&lt;p&gt;Because there are many routers available, this tool does not try to parse the paths
+you provided to your routing library of choice. So you have to specify your path pattern
+yourself in valid swagger syntax.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;swagger:route [method] [path pattern] [operation id] [?tag1 tag2 tag3]
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>swagger:model</title>
+      <link>http://go-swagger.github.io/generate/spec/model/</link>
+      <pubDate>Sat, 14 Nov 2015 20:10:32 -0800</pubDate>
+      
+      <guid>http://go-swagger.github.io/generate/spec/model/</guid>
+      <description>&lt;p&gt;A &lt;strong&gt;swagger:model&lt;/strong&gt; annotation optionally gets a model name as extra data on the line.
+when this appears anywhere in a comment for a struct, then that struct becomes a schema
+in the definitions object of swagger.&lt;/p&gt;
+
+&lt;p&gt;The struct gets analyzed and all the collected models are added to the tree.
+The refs are tracked separately so that they can be renamed later on.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;swagger:model [?model name]
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>swagger:strfmt</title>
+      <link>http://go-swagger.github.io/generate/spec/strfmt/</link>
+      <pubDate>Sat, 14 Nov 2015 20:10:24 -0800</pubDate>
+      
+      <guid>http://go-swagger.github.io/generate/spec/strfmt/</guid>
+      <description>&lt;p&gt;A &lt;strong&gt;swagger:strfmt&lt;/strong&gt; annotation names a type as a string formatter. The name is mandatory and that is
+what will be used as format name for this particular string format.
+String formats should only be used for very well known formats.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;swagger:strfmt [name]
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>swagger:meta</title>
+      <link>http://go-swagger.github.io/generate/spec/meta/</link>
+      <pubDate>Sat, 14 Nov 2015 19:54:53 -0800</pubDate>
+      
+      <guid>http://go-swagger.github.io/generate/spec/meta/</guid>
+      <description>
+
+&lt;p&gt;The &lt;strong&gt;swagger:meta&lt;/strong&gt; annotation flags a file as source for metadata about the API.
+This is typically a doc.go file with your package documentation.&lt;/p&gt;
+
+&lt;p&gt;You can specify a Consumes and Produces key which has a new content type on each line
+Schemes is a tag that is required and allows for a comma separated string composed of:
+http, https, ws or wss&lt;/p&gt;
+
+&lt;p&gt;Host and BasePath can be specified but those values will be defaults,
+they should get substituted when serving the swagger spec.&lt;/p&gt;
+
+&lt;p&gt;The description property uses the rest of the comment block as description for the api when not explictily provided&lt;/p&gt;
+
+&lt;h5 id=&#34;properties:abb586ff2a6b4a7ae7b1b78324299d4e&#34;&gt;Properties:&lt;/h5&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Annotation&lt;/th&gt;
+&lt;th&gt;Format&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;TOS&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;allows for either a url or a free text definition describing the terms of services for the API&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Consumes&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;a list of default (global) mime type values, one per line, for the content the API receives&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Produces&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;a list of default (global) mime type values, one per line, for the conten the API sends&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Schemes&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;a list of default schemes the API accept (possible values: http, https, ws, wss) https is preferred as default when configured&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Version&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;the current version of the API&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Host&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;the host from where the spec is served&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;BasePath&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;the default base path for this API&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Contact&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;the name of for the person to contact concerning the API eg. John Doe&amp;nbsp;&amp;lt;john@blogs.com&amp;gt;&amp;nbsp;&lt;a href=&#34;http://john.blogs.com&#34;&gt;http://john.blogs.com&lt;/a&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;License&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;the name of the license followed by the URL of the license eg. MIT &lt;a href=&#34;http://opensource.org/license/MIT&#34;&gt;http://opensource.org/license/MIT&lt;/a&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h5 id=&#34;example:abb586ff2a6b4a7ae7b1b78324299d4e&#34;&gt;Example:&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;// Package classification Petstore API.
+//
+// the purpose of this application is to provide an application
+// that is using plain go code to define an API
+//
+// This should demonstrate all the possible comment annotations
+// that are available to turn go code into a fully compliant swagger 2.0 spec
+//
+// Terms Of Service:
+//
+// there are no TOS at this moment, use at your own risk we take no responsibility
+//
+//     Schemes: http, https
+//     Host: localhost
+//     BasePath: /v2
+//     Version: 0.0.1
+//     License: MIT http://opensource.org/licenses/MIT
+//     Contact: John Doe&amp;lt;john.doe@example.com&amp;gt; http://john.doe.com
+//
+//     Consumes:
+//     - application/json
+//     - application/xml
+//
+//     Produces:
+//     - application/json
+//     - application/xml
+//
+//
+// swagger:meta
+package classification
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&#34;result:abb586ff2a6b4a7ae7b1b78324299d4e&#34;&gt;Result&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;---
+swagger: &#39;2.0&#39;
+consumes:
+  - application/json
+  - application/xml
+produces:
+  - application/json
+  - application/xml
+schemes:
+  - http
+  - https
+info:
+  description: &amp;quot;the purpose of this application is to provide an application\nthat is using plain go code to define an API\n\nThis should demonstrate all the possible comment annotations\nthat are available to turn go code into a fully compliant swagger 2.0 spec&amp;quot;
+  title: &#39;Petstore API.&#39;
+  termsOfService: &#39;there are no TOS at this moment, use at your own risk we take no responsibility&#39;
+  contact: {name: &#39;John Doe&#39;, url: &#39;http://john.doe.com&#39;, email: john.doe@example.com}
+  license: {name: MIT, url: &#39;http://opensource.org/licenses/MIT&#39;}
+  version: 0.0.1
+host: localhost
+basePath: /v2
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Spec generation reference</title>
       <link>http://go-swagger.github.io/generate/spec/</link>
       <pubDate>Mon, 09 Nov 2015 18:58:47 -0800</pubDate>
       
@@ -21,6 +272,18 @@
 &lt;p&gt;The toolkit has a command that will let you generate a swagger spec document from your code.
 The command integrates with go doc comments, and makes use of structs when it needs to know of
 types.&lt;/p&gt;
+
+&lt;p&gt;Based on the work from &lt;a href=&#34;https://github.com/yvasiyarov/swagger&#34;&gt;https://github.com/yvasiyarov/swagger&lt;/a&gt;&lt;br /&gt;
+It uses a similar approach but with expanded annotations and it produces a swagger 2.0 spec.&lt;/p&gt;
+
+&lt;p&gt;The goal of the syntax is to make it look as a natural part of the documentation for the application code.&lt;/p&gt;
+
+&lt;p&gt;The generator is passed a base path (defaults to current) and tries to extract a go package path from that.
+Once it has a go package path it will scan the package recursively, skipping the Godeps, files ending in test.go and
+directories that start with an underscore, it also skips file system entries that start with a dot.&lt;/p&gt;
+
+&lt;p&gt;Once the parser has encountered a comment that matches on of its known tags, the parser will assume that the rest of
+the comment block is for swagger.&lt;/p&gt;
 
 &lt;h3 id=&#34;usage:958e7270f96f5407d7d980f500805b1b&#34;&gt;Usage&lt;/h3&gt;
 
@@ -37,94 +300,19 @@ package to produce a swagger specification.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;//go:generate swagger generate spec
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h3 id=&#34;possible-annotations:958e7270f96f5407d7d980f500805b1b&#34;&gt;Possible annotations&lt;/h3&gt;
+&lt;h4 id=&#34;annotation-syntax:958e7270f96f5407d7d980f500805b1b&#34;&gt;Annotation syntax&lt;/h4&gt;
 
-&lt;h4 id=&#34;swagger-meta:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:meta&lt;/h4&gt;
+&lt;p&gt;There are several annotations that mark a comment block as a participant for the swagger spec.&lt;/p&gt;
 
-&lt;p&gt;The &lt;strong&gt;swagger:meta&lt;/strong&gt; annotation flags a file as source for metadata about the API.
-This is typically a doc.go file with your package documentation.&lt;/p&gt;
-
-&lt;p&gt;You can specify a Consumes and Produces key which has a new content type on each line
-Schemes is a tag that is required and allows for a comma separated string composed of:
-http, https, ws or wss&lt;/p&gt;
-
-&lt;p&gt;Host and BasePath can be specified but those values will be defaults,
-they should get substituted when serving the swagger spec.&lt;/p&gt;
-
-&lt;p&gt;Default parameters and responses are not supported at this stage, for those you can edit the template json.&lt;/p&gt;
-
-&lt;h4 id=&#34;swagger-strfmt:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:strfmt&lt;/h4&gt;
-
-&lt;pre&gt;&lt;code&gt;swagger:strfmt [name]
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;A &lt;strong&gt;swagger:strfmt&lt;/strong&gt; annotation names a type as a string formatter. The name is mandatory and that is
-what will be used as format name for this particular string format.
-String formats should only be used for very well known formats.&lt;/p&gt;
-
-&lt;h4 id=&#34;swagger-model:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:model&lt;/h4&gt;
-
-&lt;pre&gt;&lt;code&gt;swagger:model [?model name]
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;A &lt;strong&gt;swagger:model&lt;/strong&gt; annotation optionally gets a model name as extra data on the line.
-when this appears anywhere in a comment for a struct, then that struct becomes a schema
-in the definitions object of swagger.&lt;/p&gt;
-
-&lt;p&gt;The struct gets analyzed and all the collected models are added to the tree.
-The refs are tracked separately so that they can be renamed later on.&lt;/p&gt;
-
-&lt;h4 id=&#34;swagger-route:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:route&lt;/h4&gt;
-
-&lt;pre&gt;&lt;code&gt;swagger:route [method] [path pattern] [operation id] [?tag1 tag2 tag3]
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;A &lt;strong&gt;swagger:route&lt;/strong&gt; annotation links a path to a method.
-This operation gets a unique id, which is used in various places as method name.
-One such usage is in method names for client generation for example.&lt;/p&gt;
-
-&lt;p&gt;Because there are many routers available, this tool does not try to parse the paths
-you provided to your routing library of choice. So you have to specify your path pattern
-yourself in valid swagger syntax.&lt;/p&gt;
-
-&lt;h4 id=&#34;swagger-params:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:params&lt;/h4&gt;
-
-&lt;pre&gt;&lt;code&gt;swagger:params [operationid1 operationid2]
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Links a struct to one or more operations. The params in the resulting swagger spec can be composed of several structs.
-There are no guarantees given on how property name overlaps are resolved when several structs apply to the same operation.
-This tag works very similar to the swagger:model tag except that it produces valid parameter objects instead of schema
-objects.&lt;/p&gt;
-
-&lt;h4 id=&#34;swagger-response:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:response&lt;/h4&gt;
-
-&lt;pre&gt;&lt;code&gt;swagger:response [?response name]
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Reads a struct decorated with &lt;strong&gt;swagger:response&lt;/strong&gt; and uses that information to fill up the headers and the schema for a response.
-A swagger:route can specify a response name for a status code and then the matching response will be used for that operation in the swagger definition.&lt;/p&gt;
-
-&lt;h4 id=&#34;swagger-allof:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:allOf&lt;/h4&gt;
-
-&lt;pre&gt;&lt;code&gt;swagger:allOf
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Marks an embedded type as  a member for allOf&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;// An AllOfModel is composed out of embedded structs but it should build
-// an allOf property
-type AllOfModel struct {
-	// swagger:allOf
-	SimpleOne
-	// swagger:allOf
-	mods.Notable
-
-	Something // not annotated with anything, so should be included
-
-	CreatedAt strfmt.DateTime `json:&amp;quot;createdAt&amp;quot;`
-}
-&lt;/code&gt;&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;meta&#34;&gt;swagger:meta&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;strfmt&#34;&gt;swagger:strfmt&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;model&#34;&gt;swagger:model&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;route&#34;&gt;swagger:route&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;params&#34;&gt;swagger:params&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;response&#34;&gt;swagger:response&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;allOf&#34;&gt;swagger:allOf&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 </description>
     </item>
     
@@ -159,11 +347,9 @@ type AllOfModel struct {
 )
 
 func main() {
-  // create the API client
-  client := apiclient.NewHTTPClient(nil)
 
   // make the request to get all items
-  resp, err := client.Operations.All(operations.AllParams{})
+  resp, err := apiclient.Default.Operations.All(operations.AllParams{})
   if err != nil {
     log.Fatal(err)
   }
