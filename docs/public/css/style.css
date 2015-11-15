@@ -46,3 +46,7 @@ p {
 footer.page-footer {
   margin: 0;
 }
+
+.header a {
+  color: #26a69a;
+}

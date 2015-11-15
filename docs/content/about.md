@@ -1,18 +1,22 @@
 +++
 date = "2015-10-21T21:54:47-07:00"
-title = "about"
+title = "What is go-swagger"
+series = "home"
+weight = 9
 +++
 
-## About
+There are 3 axis along which your API and its documentation tend to evolve. This toolkit aims to support you along all 3 
+axis and remove the repetitive nature of writing what is essentially boilerplate code for faster iteration times.
 
-There are 3 axis along which your API and its documentation matter.
+<!--more-->
+
 The first one is an artefact of that first meeting where you hash out what your service will do. Hopefully you've come
 up with some document that services as a kind of contract for what the affected people/teams will need to do.
 At this stage you want to be able to generate a server, perhaps a client to talk to that server.
 It's not inconceivable you want to have your frontend team use mock data for that server and that the backend team
 wants to be left in peace while they work on their part of the application.
 
-This is the design first approach for swagger. 
+This is the **design first** approach for swagger. 
 
 Now we're moving on to the second iteration of the project and at this stage, there might be a design meeting for the
 new features, or they might just be refinements of the previous API's. When no changes are required to the contract,
@@ -22,7 +26,7 @@ because they want to display an-accepted-terms-and-conditions-checkbox.
 The backend can decide to add this to the code, provide the necessary annotation and regenerate the swagger
 specification document.
 
-This is the code first approach for swagger.
+This is the **code first** approach for swagger.
 
 This toolkit aims to support both these modes, remove the repetitive nature of writing what is essentially boilerplate
 code. In doing so it tries to stay as close as possible to the go stdlib interfaces, it tries to have no opinons

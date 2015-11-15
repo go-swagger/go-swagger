@@ -18,11 +18,6 @@
   </url>
   
   <url>
-    <loc>http://go-swagger.github.io/about/</loc>
-    <lastmod>2015-10-21T21:54:47-07:00</lastmod>
-  </url>
-  
-  <url>
     <loc>http://go-swagger.github.io/generate/spec/</loc>
     <lastmod>2015-11-09T18:58:47-08:00</lastmod>
   </url>
@@ -30,6 +25,11 @@
   <url>
     <loc>http://go-swagger.github.io/generate/client/</loc>
     <lastmod>2015-10-23T22:11:54-07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://go-swagger.github.io/about/</loc>
+    <lastmod>2015-10-21T21:54:47-07:00</lastmod>
   </url>
   
   <url>
