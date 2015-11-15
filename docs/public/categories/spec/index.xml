@@ -903,10 +903,11 @@ definitions:
         description: the name for this user
         type: string
         minLength: 3
-      email:
+      login:
         description: the email address for this user
         type: string
         format: email
+        x-go-name: Email
       friends:
         description: the friends for this user
         type: array
@@ -933,7 +934,30 @@ definitions:
 
 &lt;h5 id=&#34;example:9e114a42ed516fdef13f2ebb84a2eb20&#34;&gt;Example:&lt;/h5&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;// An AllOfModel is composed out of embedded structs but it should build
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;// A SimpleOne is a model with a few simple fields
+type SimpleOne struct {
+	ID   int64  `json:&amp;quot;id&amp;quot;`
+	Name string `json:&amp;quot;name&amp;quot;`
+	Age  int32  `json:&amp;quot;age&amp;quot;`
+}
+
+// A Something struct is used by other structs
+type Something struct {
+	DID int64  `json:&amp;quot;did&amp;quot;`
+	Cat string `json:&amp;quot;cat&amp;quot;`
+}
+
+// Notable is a model in a transitive package.
+// it&#39;s used for embedding in another model
+//
+// swagger:model withNotes
+type Notable struct {
+	Notes string `json:&amp;quot;notes&amp;quot;`
+
+	Extra string `json:&amp;quot;extra&amp;quot;`
+}
+
+// An AllOfModel is composed out of embedded structs but it should build
 // an allOf property
 type AllOfModel struct {
 	// swagger:allOf
@@ -945,6 +969,50 @@ type AllOfModel struct {
 
 	CreatedAt strfmt.DateTime `json:&amp;quot;createdAt&amp;quot;`
 }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&#34;result:9e114a42ed516fdef13f2ebb84a2eb20&#34;&gt;Result:&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;---
+definitions:
+  SimpleOne:
+    title: A SimpleOne is a model with a few simple fields
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      name:
+        type: string
+      age:
+        type: integer
+        format: int32
+  Notable:
+    title: &amp;quot;Notable is a model in a transitive package.\nit&#39;s used for embedding in another model&amp;quot;
+    type: object
+    properties:
+      notes:
+        type: string
+      extra:
+        type: string
+  AllOfModel:
+    title: &amp;quot;An AllOfModel is composed out of embedded structs but it should build\nan allOf property&amp;quot;
+    allOf: 
+      - $ref: &amp;quot;#/definitions/SimpleOne&amp;quot;
+      - $ref: &amp;quot;#/definitions/Notable&amp;quot;
+      - title: A Something struct is used by other structs
+        type: object
+        properties:
+          did:
+            type: integer
+            format: int64
+          cat:
+            type: string
+      - type: object
+        properties:
+          createdAt:
+            type: string
+            format: date-time
 &lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>

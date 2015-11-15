@@ -258,10 +258,11 @@ definitions:
         description: the name for this user
         type: string
         minLength: 3
-      email:
+      login:
         description: the email address for this user
         type: string
         format: email
+        x-go-name: Email
       friends:
         description: the friends for this user
         type: array
