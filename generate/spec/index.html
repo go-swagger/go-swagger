@@ -94,6 +94,23 @@ package to produce a swagger specification.</p>
 <pre><code>//go:generate swagger generate spec
 </code></pre>
 
+<h4 id="parsing-rules:958e7270f96f5407d7d980f500805b1b">Parsing rules</h4>
+
+<p>This command relies heavily on the way godoc works! This means you should be very aware of all the things godoc
+supports.</p>
+
+<ul>
+<li><a href="https://godoc.org/golang.org/x/tools/cmd/godoc">godoc documentation</a></li>
+<li><a href="http://blog.golang.org/godoc-documenting-go-code">godoc documenting go code</a></li>
+<li><a href="https://golang.org/pkg/go/doc/#ToHTML">godoc ToHTML</a></li>
+</ul>
+
+<p>Single page which documents all the currently supported godoc rules:</p>
+
+<ul>
+<li><a href="https://godoc.org/github.com/fluhus/godoc-tricks">godoc tricks</a></li>
+</ul>
+
 <h4 id="annotation-syntax:958e7270f96f5407d7d980f500805b1b">Annotation syntax</h4>
 
 <p>There are several annotations that mark a comment block as a participant for the swagger spec.</p>
@@ -145,7 +162,6 @@ package to produce a swagger specification.</p>
   <script src="http://go-swagger.github.io/js/materialize.min.js"></script>
   <script src="http://go-swagger.github.io/js/init.js"></script>
   <script src="http://go-swagger.github.io/js/prism.js"></script>
-  <script>hljs.initHighlightingOnLoad();</script>
   
   <script>
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
