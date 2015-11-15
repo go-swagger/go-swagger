@@ -41,6 +41,11 @@ To use you can add a go:generate comment to your main file for example:
 //go:generate swagger generate spec
 ```
 
+The command requires a main package or file and it wants your code to compile. It uses the go tools loader to load an
+application and then scan all the packages that are in use by the code base.
+This means that for something to be discoverable it needs to be reachable by a codepath triggered through the main
+package.
+
 #### Parsing rules
 
 This command relies heavily on the way godoc works! This means you should be very aware of all the things godoc
@@ -56,6 +61,8 @@ Single page which documents all the currently supported godoc rules:
 
 
 #### Annotation syntax
+
+If you want to exclude something from the spec generation process you can try with the struct tag: `json:"-"`
 
 There are several annotations that mark a comment block as a participant for the swagger spec.
 

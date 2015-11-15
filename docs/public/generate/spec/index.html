@@ -94,6 +94,11 @@ package to produce a swagger specification.</p>
 <pre><code>//go:generate swagger generate spec
 </code></pre>
 
+<p>The command requires a main package or file and it wants your code to compile. It uses the go tools loader to load an
+application and then scan all the packages that are in use by the code base.
+This means that for something to be discoverable it needs to be reachable by a codepath triggered through the main
+package.</p>
+
 <h4 id="parsing-rules:958e7270f96f5407d7d980f500805b1b">Parsing rules</h4>
 
 <p>This command relies heavily on the way godoc works! This means you should be very aware of all the things godoc
@@ -112,6 +117,8 @@ supports.</p>
 </ul>
 
 <h4 id="annotation-syntax:958e7270f96f5407d7d980f500805b1b">Annotation syntax</h4>
+
+<p>If you want to exclude something from the spec generation process you can try with the struct tag: <code>json:&quot;-&quot;</code></p>
 
 <p>There are several annotations that mark a comment block as a participant for the swagger spec.</p>
 
