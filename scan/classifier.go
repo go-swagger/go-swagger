@@ -81,6 +81,7 @@ func (pc *programClassifier) Classify(prog *loader.Program) (*classifiedProgram,
 					case "model":
 						// models are discovered through parameters and responses
 						// no actual scanning for them is required
+						// TODO: check if this isn't also annotated with an incompatible marker
 					case "meta":
 						if !mt {
 							cp.Meta = append(cp.Meta, file)
@@ -91,11 +92,13 @@ func (pc *programClassifier) Classify(prog *loader.Program) (*classifiedProgram,
 							cp.Parameters = append(cp.Parameters, file)
 							pm = true
 						}
+						// TODO: check if this isn't also annotated with an incompatible marker
 					case "response":
 						if !rs {
 							cp.Responses = append(cp.Responses, file)
 							rs = true
 						}
+						// TODO: check if this isn't also annotated with an incompatible marker
 					case "strfmt":
 						// TODO: perhaps collect these and pass along to avoid lookups later on
 					case "allOf":
