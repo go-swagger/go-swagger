@@ -12,8 +12,8 @@
 		},
 		{
 			"ImportPath": "github.com/asaskevich/govalidator",
-			"Comment": "v2-35-g0b1c675",
-			"Rev": "0b1c6756fe84d7fc34a1af0f6bc49bd25e40abcf"
+			"Comment": "v2-37-gedd46cd",
+			"Rev": "edd46cdac249b001c7b7d88c6d43993ea875e8d8"
 		},
 		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
@@ -29,8 +29,8 @@
 		},
 		{
 			"ImportPath": "github.com/jessevdk/go-flags",
-			"Comment": "v1-322-gfc93116",
-			"Rev": "fc93116606d0a71d7e9de0ad5734fdb4b8eae834"
+			"Comment": "v1-324-g0a28dbe",
+			"Rev": "0a28dbe50f23d8fce6b016975b964cfe7b97a20a"
 		},
 		{
 			"ImportPath": "github.com/jtolds/gls",
@@ -73,32 +73,32 @@
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Comment": "v1.0-79-ge7a1d88",
-			"Rev": "e7a1d8890c7638d7bb50e3e498de4a1e913a28cf"
+			"Comment": "v1.0-80-g67106a5",
+			"Rev": "67106a5111a06241c8d84952c33214675f51a34a"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/ast/astutil",
-			"Rev": "4b07c5ce8adfdbd352cff286306e3829499f6ebf"
+			"Rev": "d94e6fe0fd36ddeac451f8ed1987b55db35bca35"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/buildutil",
-			"Rev": "4b07c5ce8adfdbd352cff286306e3829499f6ebf"
+			"Rev": "d94e6fe0fd36ddeac451f8ed1987b55db35bca35"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/exact",
-			"Rev": "4b07c5ce8adfdbd352cff286306e3829499f6ebf"
+			"Rev": "d94e6fe0fd36ddeac451f8ed1987b55db35bca35"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/loader",
-			"Rev": "4b07c5ce8adfdbd352cff286306e3829499f6ebf"
+			"Rev": "d94e6fe0fd36ddeac451f8ed1987b55db35bca35"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/types",
-			"Rev": "4b07c5ce8adfdbd352cff286306e3829499f6ebf"
+			"Rev": "d94e6fe0fd36ddeac451f8ed1987b55db35bca35"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/imports",
-			"Rev": "4b07c5ce8adfdbd352cff286306e3829499f6ebf"
+			"Rev": "d94e6fe0fd36ddeac451f8ed1987b55db35bca35"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",

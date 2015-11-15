@@ -1,0 +1,144 @@
+
+// Copyright 2015 go-swagger maintainers
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package flags
+
+import (
+	"fmt"
+)
+
+// ErrorType represents the type of error.
+type ErrorType uint
+
+const (
+	// ErrUnknown indicates a generic error.
+	ErrUnknown ErrorType = iota
+
+	// ErrExpectedArgument indicates that an argument was expected.
+	ErrExpectedArgument
+
+	// ErrUnknownFlag indicates an unknown flag.
+	ErrUnknownFlag
+
+	// ErrUnknownGroup indicates an unknown group.
+	ErrUnknownGroup
+
+	// ErrMarshal indicates a marshalling error while converting values.
+	ErrMarshal
+
+	// ErrHelp indicates that the built-in help was shown (the error
+	// contains the help message).
+	ErrHelp
+
+	// ErrNoArgumentForBool indicates that an argument was given for a
+	// boolean flag (which don't not take any arguments).
+	ErrNoArgumentForBool
+
+	// ErrRequired indicates that a required flag was not provided.
+	ErrRequired
+
+	// ErrShortNameTooLong indicates that a short flag name was specified,
+	// longer than one character.
+	ErrShortNameTooLong
+
+	// ErrDuplicatedFlag indicates that a short or long flag has been
+	// defined more than once
+	ErrDuplicatedFlag
+
+	// ErrTag indicates an error while parsing flag tags.
+	ErrTag
+
+	// ErrCommandRequired indicates that a command was required but not
+	// specified
+	ErrCommandRequired
+
+	// ErrUnknownCommand indicates that an unknown command was specified.
+	ErrUnknownCommand
+
+	// ErrInvalidChoice indicates an invalid option value which only allows
+	// a certain number of choices.
+	ErrInvalidChoice
+)
+
+func (e ErrorType) String() string {
+	switch e {
+	case ErrUnknown:
+		return "unknown"
+	case ErrExpectedArgument:
+		return "expected argument"
+	case ErrUnknownFlag:
+		return "unknown flag"
+	case ErrUnknownGroup:
+		return "unknown group"
+	case ErrMarshal:
+		return "marshal"
+	case ErrHelp:
+		return "help"
+	case ErrNoArgumentForBool:
+		return "no argument for bool"
+	case ErrRequired:
+		return "required"
+	case ErrShortNameTooLong:
+		return "short name too long"
+	case ErrDuplicatedFlag:
+		return "duplicated flag"
+	case ErrTag:
+		return "tag"
+	case ErrCommandRequired:
+		return "command required"
+	case ErrUnknownCommand:
+		return "unknown command"
+	case ErrInvalidChoice:
+		return "invalid choice"
+	}
+
+	return "unrecognized error type"
+}
+
+// Error represents a parser error. The error returned from Parse is of this
+// type. The error contains both a Type and Message.
+type Error struct {
+	// The type of error
+	Type ErrorType
+
+	// The error message
+	Message string
+}
+
+// Error returns the error's message
+func (e *Error) Error() string {
+	return e.Message
+}
+
+func newError(tp ErrorType, message string) *Error {
+	return &Error{
+		Type:    tp,
+		Message: message,
+	}
+}
+
+func newErrorf(tp ErrorType, format string, args ...interface{}) *Error {
+	return newError(tp, fmt.Sprintf(format, args...))
+}
+
+func wrapError(err error) *Error {
+	ret, ok := err.(*Error)
+
+	if !ok {
+		return newError(ErrUnknown, err.Error())
+	}
+
+	return ret
+}
