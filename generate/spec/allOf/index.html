@@ -72,7 +72,30 @@
 
 <h5 id="example:9e114a42ed516fdef13f2ebb84a2eb20">Example:</h5>
 
-<pre><code class="language-go">// An AllOfModel is composed out of embedded structs but it should build
+<pre><code class="language-go">// A SimpleOne is a model with a few simple fields
+type SimpleOne struct {
+	ID   int64  `json:&quot;id&quot;`
+	Name string `json:&quot;name&quot;`
+	Age  int32  `json:&quot;age&quot;`
+}
+
+// A Something struct is used by other structs
+type Something struct {
+	DID int64  `json:&quot;did&quot;`
+	Cat string `json:&quot;cat&quot;`
+}
+
+// Notable is a model in a transitive package.
+// it's used for embedding in another model
+//
+// swagger:model withNotes
+type Notable struct {
+	Notes string `json:&quot;notes&quot;`
+
+	Extra string `json:&quot;extra&quot;`
+}
+
+// An AllOfModel is composed out of embedded structs but it should build
 // an allOf property
 type AllOfModel struct {
 	// swagger:allOf
@@ -84,6 +107,50 @@ type AllOfModel struct {
 
 	CreatedAt strfmt.DateTime `json:&quot;createdAt&quot;`
 }
+</code></pre>
+
+<h5 id="result:9e114a42ed516fdef13f2ebb84a2eb20">Result:</h5>
+
+<pre><code class="language-yaml">---
+definitions:
+  SimpleOne:
+    title: A SimpleOne is a model with a few simple fields
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      name:
+        type: string
+      age:
+        type: integer
+        format: int32
+  Notable:
+    title: &quot;Notable is a model in a transitive package.\nit's used for embedding in another model&quot;
+    type: object
+    properties:
+      notes:
+        type: string
+      extra:
+        type: string
+  AllOfModel:
+    title: &quot;An AllOfModel is composed out of embedded structs but it should build\nan allOf property&quot;
+    allOf: 
+      - $ref: &quot;#/definitions/SimpleOne&quot;
+      - $ref: &quot;#/definitions/Notable&quot;
+      - title: A Something struct is used by other structs
+        type: object
+        properties:
+          did:
+            type: integer
+            format: int64
+          cat:
+            type: string
+      - type: object
+        properties:
+          createdAt:
+            type: string
+            format: date-time
 </code></pre>
 </p>
           <p>14 Nov 2015
