@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Generate on go-swagger toolkit</title>
-    <link>http://go-swagger.github.io/categories/generate/</link>
-    <description>Recent content in Generate on go-swagger toolkit</description>
+    <title>Home on go-swagger toolkit</title>
+    <link>http://go-swagger.github.io/series/home/</link>
+    <description>Recent content in Home on go-swagger toolkit</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>© 2015 go-swagger contributors</copyright>
     <lastBuildDate>Mon, 09 Nov 2015 18:58:47 -0800</lastBuildDate>
-    <atom:link href="http://go-swagger.github.io/categories/generate/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://go-swagger.github.io/series/home/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>swagger.json generation</title>

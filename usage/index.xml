@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Usages on go-swagger toolkit</title>
-    <link>http://localhost:1313/usage/</link>
+    <link>http://go-swagger.github.io/usage/</link>
     <description>Recent content in Usages on go-swagger toolkit</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>© 2015 go-swagger contributors</copyright>
     <lastBuildDate>Thu, 22 Oct 2015 23:28:09 -0700</lastBuildDate>
-    <atom:link href="http://localhost:1313/usage/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://go-swagger.github.io/usage/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Validate a swagger spec</title>
-      <link>http://localhost:1313/usage/validate/</link>
+      <link>http://go-swagger.github.io/usage/validate/</link>
       <pubDate>Thu, 22 Oct 2015 23:28:09 -0700</pubDate>
       
-      <guid>http://localhost:1313/usage/validate/</guid>
+      <guid>http://go-swagger.github.io/usage/validate/</guid>
       <description>
 
 &lt;h2 id=&#34;validate-a-swagger-spec:c64148e1a0d4f4de12bdfecb139d0588&#34;&gt;Validate a swagger spec&lt;/h2&gt;

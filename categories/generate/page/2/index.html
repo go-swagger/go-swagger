@@ -56,61 +56,22 @@
   
   <div class="col m4 s12">
     <div class="card-panel">
-      <h4><a href="http://localhost:1313/generate/spec/route/">swagger:route</a></h4>
+      <h4><a href="http://localhost:1313/generate/spec/">Spec generation reference</a></h4>
       <p>
       
-        
-          <a href="http://localhost:1313//categories/spec/">spec</a>
         
           <a href="http://localhost:1313//categories/generate/">generate</a>
         
-      
-      </p>
-      <p>A swagger:route annotation links a path to a method. This operation gets a unique id, which is used in various places as method name. One such usage is in method names for client generation for example. Because there are many routers available, this tool does not try to parse the paths you provided to your routing library of choice. So you have to specify your path pattern yourself in valid swagger syntax.</p>
-      <p>
-      14 Nov 2015
-      
-      </p>
-    </div>
-  </div>
-
-  
-  <div class="col m4 s12">
-    <div class="card-panel">
-      <h4><a href="http://localhost:1313/generate/spec/model/">swagger:model</a></h4>
-      <p>
-      
-        
           <a href="http://localhost:1313//categories/spec/">spec</a>
         
-          <a href="http://localhost:1313//categories/generate/">generate</a>
-        
       
       </p>
-      <p>A swagger:model annotation optionally gets a model name as extra data on the line. when this appears anywhere in a comment for a struct, then that struct becomes a schema in the definitions object of swagger. The struct gets analyzed and all the collected models are added to the tree. The refs are tracked separately so that they can be renamed later on. swagger:model [?model name]</p>
+      <p><p>The toolkit has a command that will let you generate a swagger spec document from your code.
+The command integrates with go doc comments, and makes use of structs when it needs to know of
+types.</p>
+</p>
       <p>
-      14 Nov 2015
-      
-      </p>
-    </div>
-  </div>
-
-  
-  <div class="col m4 s12">
-    <div class="card-panel">
-      <h4><a href="http://localhost:1313/generate/spec/strfmt/">swagger:strfmt</a></h4>
-      <p>
-      
-        
-          <a href="http://localhost:1313//categories/spec/">spec</a>
-        
-          <a href="http://localhost:1313//categories/generate/">generate</a>
-        
-      
-      </p>
-      <p>A swagger:strfmt annotation names a type as a string formatter. The name is mandatory and that is what will be used as format name for this particular string format. String formats should only be used for very well known formats. swagger:strfmt [name]</p>
-      <p>
-      14 Nov 2015
+      9 Nov 2015
       
       </p>
     </div>
@@ -128,7 +89,7 @@
   <div class="col s6 m10 center">&nbsp</div>
   <div class="col s3 m1">
   
-    <a class="btn-floating btn-large waves-effect waves-light" href="/categories/generate/page/3/"><i class="mdi-navigation-arrow-forward"></i></a>
+    <a class="btn-floating btn-large disabled"><i class="mdi-navigation-arrow-forward"></i></a>
   
   </div>
 </div>
