@@ -1,6 +1,6 @@
 +++
 categories = ["spec"]
-tags = []
+tags = ["meta data"]
 date = "2015-11-14T19:54:53-08:00"
 title = "swagger:meta"
 weight = 20
@@ -17,6 +17,12 @@ Host and BasePath can be specified but those values will be defaults,
 they should get substituted when serving the swagger spec.
 
 The description property uses the rest of the comment block as description for the api when not explictily provided
+
+##### Syntax:
+
+```
+swagger:meta
+```
 
 ##### Properties:
 

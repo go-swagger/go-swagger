@@ -1,6 +1,6 @@
 +++
 categories = ["spec"]
-tags = []
+tags = ["string formats"]
 date = "2015-11-14T20:10:24-08:00"
 title = "swagger:strfmt"
 weight = 30

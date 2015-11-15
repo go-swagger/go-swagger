@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Meta Data on go-swagger toolkit</title>
+    <link>http://localhost:1313/categories/meta-data/</link>
+    <description>Recent content in Meta Data on go-swagger toolkit</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>© 2015 go-swagger contributors</copyright>
+    <lastBuildDate>Sat, 14 Nov 2015 19:54:53 -0800</lastBuildDate>
+    <atom:link href="http://localhost:1313/categories/meta-data/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>swagger:meta</title>
+      <link>http://localhost:1313/generate/spec/meta/</link>
+      <pubDate>Sat, 14 Nov 2015 19:54:53 -0800</pubDate>
+      
+      <guid>http://localhost:1313/generate/spec/meta/</guid>
+      <description>
+
+&lt;p&gt;The &lt;strong&gt;swagger:meta&lt;/strong&gt; annotation flags a file as source for metadata about the API.
+This is typically a doc.go file with your package documentation.&lt;/p&gt;
+
+&lt;p&gt;You can specify a Consumes and Produces key which has a new content type on each line
+Schemes is a tag that is required and allows for a comma separated string composed of:
+http, https, ws or wss&lt;/p&gt;
+
+&lt;p&gt;Host and BasePath can be specified but those values will be defaults,
+they should get substituted when serving the swagger spec.&lt;/p&gt;
+
+&lt;p&gt;The description property uses the rest of the comment block as description for the api when not explictily provided&lt;/p&gt;
+
+&lt;h5 id=&#34;syntax:abb586ff2a6b4a7ae7b1b78324299d4e&#34;&gt;Syntax:&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code&gt;swagger:meta
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&#34;properties:abb586ff2a6b4a7ae7b1b78324299d4e&#34;&gt;Properties:&lt;/h5&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Annotation&lt;/th&gt;
+&lt;th&gt;Format&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Terms Of Service&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;allows for either a url or a free text definition describing the terms of services for the API&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Consumes&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;a list of default (global) mime type values, one per line, for the content the API receives&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Produces&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;a list of default (global) mime type values, one per line, for the conten the API sends&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Schemes&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;a list of default schemes the API accept (possible values: http, https, ws, wss) https is preferred as default when configured&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Version&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;the current version of the API&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Host&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;the host from where the spec is served&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Base path&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;the default base path for this API&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Contact&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;the name of for the person to contact concerning the API eg. John Doe&amp;nbsp;&amp;lt;john@blogs.com&amp;gt;&amp;nbsp;&lt;a href=&#34;http://john.blogs.com&#34;&gt;http://john.blogs.com&lt;/a&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;License&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;the name of the license followed by the URL of the license eg. MIT &lt;a href=&#34;http://opensource.org/license/MIT&#34;&gt;http://opensource.org/license/MIT&lt;/a&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h5 id=&#34;example:abb586ff2a6b4a7ae7b1b78324299d4e&#34;&gt;Example:&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;// Package classification Petstore API.
+//
+// the purpose of this application is to provide an application
+// that is using plain go code to define an API
+//
+// This should demonstrate all the possible comment annotations
+// that are available to turn go code into a fully compliant swagger 2.0 spec
+//
+// Terms Of Service:
+//
+// there are no TOS at this moment, use at your own risk we take no responsibility
+//
+//     Schemes: http, https
+//     Host: localhost
+//     BasePath: /v2
+//     Version: 0.0.1
+//     License: MIT http://opensource.org/licenses/MIT
+//     Contact: John Doe&amp;lt;john.doe@example.com&amp;gt; http://john.doe.com
+//
+//     Consumes:
+//     - application/json
+//     - application/xml
+//
+//     Produces:
+//     - application/json
+//     - application/xml
+//
+//
+// swagger:meta
+package classification
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&#34;result:abb586ff2a6b4a7ae7b1b78324299d4e&#34;&gt;Result&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;---
+swagger: &#39;2.0&#39;
+consumes:
+  - application/json
+  - application/xml
+produces:
+  - application/json
+  - application/xml
+schemes:
+  - http
+  - https
+info:
+  description: &amp;quot;the purpose of this application is to provide an application\nthat is using plain go code to define an API\n\nThis should demonstrate all the possible comment annotations\nthat are available to turn go code into a fully compliant swagger 2.0 spec&amp;quot;
+  title: &#39;Petstore API.&#39;
+  termsOfService: &#39;there are no TOS at this moment, use at your own risk we take no responsibility&#39;
+  contact: {name: &#39;John Doe&#39;, url: &#39;http://john.doe.com&#39;, email: john.doe@example.com}
+  license: {name: MIT, url: &#39;http://opensource.org/licenses/MIT&#39;}
+  version: 0.0.1
+host: localhost
+basePath: /v2
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

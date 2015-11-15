@@ -1,12 +1,16 @@
 +++
 categories = ["spec"]
-tags = []
+tags = ["polymorphism"]
 date = "2015-11-14T20:10:58-08:00"
 title = "swagger:allOf"
-weight = 30
+weight = 29
 +++
 
 Marks an embedded type as  a member for allOf
+
+<!--more-->
+
+##### Syntax:
 
 ```
 swagger:allOf

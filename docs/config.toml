@@ -16,7 +16,7 @@ copyright = "© 2015 go-swagger contributors"
   # linkedin = "Your LinkedIn Name" # optional
   headerCover = "images/default-gopher.png" # optional
   # footerCover = "images/footerCover.png" # optional
-   googleAnalyticsUserID = "UA-240612-10" # optional
+  googleAnalyticsUserID = "UA-240612-10" # optional
   repositoryUrl = "https://github.com/go-swagger/go-swagger"
 
 [permalinks]

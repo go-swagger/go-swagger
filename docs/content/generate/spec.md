@@ -46,9 +46,9 @@ To use you can add a go:generate comment to your main file for example:
 There are several annotations that mark a comment block as a participant for the swagger spec.
 
 * [swagger:meta](meta) 
-* [swagger:strfmt](strfmt)
-* [swagger:model](model)
 * [swagger:route](route)
 * [swagger:params](params)
 * [swagger:response](response)
+* [swagger:model](model)
 * [swagger:allOf](allOf)
+* [swagger:strfmt](strfmt)

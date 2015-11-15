@@ -1,10 +1,10 @@
 +++
 categories = ["spec"]
-tags = []
+tags = ["operations"]
 date = "2015-11-14T20:10:39-08:00"
 title = "swagger:route"
 
-weight = 20
+weight = 21
 +++
 
 A **swagger:route** annotation links a path to a method.
