@@ -49,6 +49,11 @@ package to produce a swagger specification.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;//go:generate swagger generate spec
 &lt;/code&gt;&lt;/pre&gt;
 
+&lt;p&gt;The command requires a main package or file and it wants your code to compile. It uses the go tools loader to load an
+application and then scan all the packages that are in use by the code base.
+This means that for something to be discoverable it needs to be reachable by a codepath triggered through the main
+package.&lt;/p&gt;
+
 &lt;h4 id=&#34;parsing-rules:958e7270f96f5407d7d980f500805b1b&#34;&gt;Parsing rules&lt;/h4&gt;
 
 &lt;p&gt;This command relies heavily on the way godoc works! This means you should be very aware of all the things godoc
@@ -67,6 +72,8 @@ supports.&lt;/p&gt;
 &lt;/ul&gt;
 
 &lt;h4 id=&#34;annotation-syntax:958e7270f96f5407d7d980f500805b1b&#34;&gt;Annotation syntax&lt;/h4&gt;
+
+&lt;p&gt;If you want to exclude something from the spec generation process you can try with the struct tag: &lt;code&gt;json:&amp;quot;-&amp;quot;&lt;/code&gt;&lt;/p&gt;
 
 &lt;p&gt;There are several annotations that mark a comment block as a participant for the swagger spec.&lt;/p&gt;
 
