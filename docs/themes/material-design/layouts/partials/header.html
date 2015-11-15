@@ -6,7 +6,7 @@
   <title>{{ .Title }}</title>
   <link href="{{.Site.BaseURL}}/css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
   <link href="{{.Site.BaseURL}}/css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/default.min.css">
+  <link rel="stylesheet" href="{{.Site.BaseURL}}/css/prism.css" />
   <style type="text/css">
   {{if .Site.Params.footerCover}}
     footer.page-footer{background-image: url({{.Site.BaseURL}}/{{.Site.Params.footerCover}});}
@@ -46,7 +46,6 @@
         {{if .Site.Params.linkedin}}
           <a href="https://www.linkedin.com/in/{{.Site.Params.linkedin}}"><img src="{{.Site.BaseURL}}/images/linkedin-dreamstale45.png"></a>
         {{end}}
-          <a href="{{.Site.BaseURL}}/index.xml"><img src="{{.Site.BaseURL}}/images/feed-dreamstale27.png"></a>
         </div>
       </div>
     </div>

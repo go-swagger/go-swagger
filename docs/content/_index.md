@@ -1,7 +1,5 @@
 +++
-categories = ["usage", "generate"]
 date = "2015-10-21T22:46:51-07:00"
-tags = []
 title = "_index"
 
 +++

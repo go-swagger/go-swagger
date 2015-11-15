@@ -1,9 +1,6 @@
 +++
-categories = ["generate", "usage"]
 date = "2015-10-23T22:11:54-07:00"
-tags = ["generate"]
 title = "Generate an API client"
-
 +++
 
 The toolkit has a command that will let you generate a client.

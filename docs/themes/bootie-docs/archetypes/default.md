@@ -1,4 +1,0 @@
-+++
-categories = ["general"]
-tags = ["document"]
-+++

@@ -18,9 +18,11 @@
       <guid>http://go-swagger.github.io/generate/spec/</guid>
       <description>
 
-&lt;p&gt;The toolkit has a command that will let you generate a swagger spec document from your code.&lt;/p&gt;
+&lt;p&gt;The toolkit has a command that will let you generate a swagger spec document from your code.
+The command integrates with go doc comments, and makes use of structs when it needs to know of
+types.&lt;/p&gt;
 
-&lt;h2 id=&#34;usage:958e7270f96f5407d7d980f500805b1b&#34;&gt;Usage&lt;/h2&gt;
+&lt;h3 id=&#34;usage:958e7270f96f5407d7d980f500805b1b&#34;&gt;Usage&lt;/h3&gt;
 
 &lt;p&gt;To generate a spec:&lt;/p&gt;
 
@@ -105,9 +107,12 @@ A swagger:route can specify a response name for a status code and then the match
 
 &lt;h4 id=&#34;swagger-allof:958e7270f96f5407d7d980f500805b1b&#34;&gt;swagger:allOf&lt;/h4&gt;
 
+&lt;pre&gt;&lt;code&gt;swagger:allOf
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;Marks an embedded type as  a member for allOf&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;// An AllOfModel is composed out of embedded structs but it should build
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;// An AllOfModel is composed out of embedded structs but it should build
 // an allOf property
 type AllOfModel struct {
 	// swagger:allOf

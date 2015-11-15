@@ -1,356 +1,138 @@
-
 <!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"/>
+  <title>go-swagger toolkit</title>
+  <link href="http://go-swagger.github.io/css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="http://go-swagger.github.io/css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link rel="stylesheet" href="http://go-swagger.github.io/css/prism.css" />
+  <style type="text/css">
+  
+    footer.page-footer{background-image: url(http://go-swagger.github.io/images/default.png);}
+  
+  </style>
+</head>
+<body>
+  <ul id="slide-out" class="side-nav">
+    <li><a href="http://go-swagger.github.io"><i class="mdi-action-home left"></i>Home</a></li>
+    <li><a href="http://go-swagger.github.io/categories"><i class="mdi-action-perm-media left"></i>Categories<i class="mdi-hardware-keyboard-arrow-right right"></i></a></li>
+    <li><a href="http://go-swagger.github.io/tags"><i class="mdi-action-loyalty left"></i>Tags<i class="mdi-hardware-keyboard-arrow-right right"></i></a></li>
+  </ul>
+  <div id="index-banner" class="parallax-container">
+  <a data-activates="slide-out" class="btn-floating button-collapse" style="top: 5px; left: 5px;"><i class="mdi-navigation-menu"></i></a>
+    <div class="section no-pad-bot">
+      <div class="container">
+        
+        <h1 class="header center teal-text text-lighten-2">go-swagger toolkit</h1>
+        <div class="row center">
+          <h5 class="header col s12 light">Swagger 2.0 describes your API&#39;s for you, so you don&#39;t have to</h5>
+        </div>
+        <div class="row center">
+        
+          <a href="https://github.com/go-swagger/go-swagger"><img src="http://go-swagger.github.io/images/github2-dreamstale35.png"></a>
+        
+        
+        
+        
+        
+        </div>
+      </div>
+    </div>
+    <div class="parallax">
+    
+      <img src="http://go-swagger.github.io/images/default.png">
+    
+    </div>
+  </div>
 
-
-<html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link rel="alternate" href="/index.xml" type="application/rss+xml" title="go-swagger toolkit">
-		<link rel="icon" href="http://go-swagger.github.io//favicon.ico">
-		<title>go-swagger toolkit</title>
-		
-		<link rel="stylesheet" href="http://go-swagger.github.io//css/highlight.js.min.css">
-		<link rel="stylesheet" href="http://go-swagger.github.io//css/bootstrap.min.css">
-		<link rel="stylesheet" href="http://go-swagger.github.io//css/bootstrap-theme.css">
-		<link rel="stylesheet" href="http://go-swagger.github.io//css/theme.css">
-		<link rel="stylesheet" href="http://go-swagger.github.io//css/bootie-docs.css">
-	</head>
-
-<body role="document">
-
-	
-	<nav class="navbar navbar-inverse navbar-fixed-top">
-		<div class="container">
-			<div class="navbar-header">
-				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-					<span class="sr-only">Toggle navigation</span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-				</button>
-				<a class="navbar-brand" href="http://go-swagger.github.io//">go-swagger toolkit</a>
-			</div>
-			<div id="navbar" class="navbar-collapse collapse">
-				<ul class="nav navbar-nav">
-					<li class="active"><a href="http://go-swagger.github.io//">Home</a></li>
-			
-				
-				
-					
-					<li ><a href="http://go-swagger.github.io//usage">Usage</a></li>
-				
-					
-					<li ><a href="http://go-swagger.github.io//generate">Generate</a></li>
-				
-			
-				
-				</ul>
-			</div>
-		</div>
-	</nav>
 
 <div class="container">
+  <div class="section">
 
-<main role="main">
 
 <div class="row">
-	
-	<div class="jumbotron">
-		<h1>go-swagger toolkit</h1>
-		<p>Swagger 2.0 describes your API&#39;s for you, so you don&#39;t have to</p>
-	</div>
+
+  
+  <div class="col m4 s12">
+    <div class="card-panel">
+      <h4><a href="http://go-swagger.github.io/generate/spec/">spec</a></h4>
+      <p>
+      
+      </p>
+      <p>The toolkit has a command that will let you generate a swagger spec document from your code. The command integrates with go doc comments, and makes use of structs when it needs to know of types. Usage To generate a spec: swagger generate spec -o ./swagger.json You give it a main file and it will parse all the files that are required by that main package to produce a swagger specification.</p>
+      <p>
+      9 Nov 2015
+      
+      </p>
+    </div>
+  </div>
+
+  
+  <div class="col m4 s12">
+    <div class="card-panel">
+      <h4><a href="http://go-swagger.github.io/generate/client/">Generate an API client</a></h4>
+      <p>
+      
+      </p>
+      <p>The toolkit has a command that will let you generate a client. Usage To generate a client: swagger generate client -f [http-url|filepath] -A [application-name] [--principal [principal-name]] Use a default client, which has an HTTP transport: import ( &quot;log&quot; &quot;github.com/myproject/client/operations&quot; &quot;github.com/go-swagger/go-swagger/strfmt&quot; &quot;github.com/go-swagger/go-swagger/spec&quot; apiclient &quot;github.com/myproject/client&quot; httptransport &quot;github.com/go-swagger/go-swagger/httpkit/client&quot; ) func main() { // create the API client client := apiclient.NewHTTPClient(nil) // make the request to get all items resp, err := client.Operations.All(operations.AllParams{}) if</p>
+      <p>
+      23 Oct 2015
+      
+      </p>
+    </div>
+  </div>
+
+  
+  <div class="col m4 s12">
+    <div class="card-panel">
+      <h4><a href="http://go-swagger.github.io/usage/validate/">Validate a swagger spec</a></h4>
+      <p>
+      
+      </p>
+      <p>Validate a swagger spec The toolkit has a command to validate swagger specifications for you. It includes a full json-schema validator and adds a bunch of extra validations on top of that to ensure the spec is as valid as possible, so that there are no surprises. Usage To validate a specification: swagger validate [http-url|filepath] Supported rules All the rules the validator tool supports: validate against jsonschema validate extra rules</p>
+      <p>
+      22 Oct 2015
+      
+      </p>
+    </div>
+  </div>
+
 </div>
 
-
-	<div class="row doc-main">
-		<p class="doc-entry-meta"><time datetime="2015-10-21">October 21, 2015</time></p>
-		
-
-<h1 id="swagger-2-0-circle-ci-https-circleci-com-gh-go-swagger-go-swagger-tree-master-svg-style-svg-https-circleci-com-gh-go-swagger-go-swagger-tree-master-slack-status-https-slackin-goswagger-io-badge-svg-https-slackin-goswagger-io:3976528693a0108357f4928017600865">Swagger 2.0 <a href="https://circleci.com/gh/go-swagger/go-swagger/tree/master"><img src="https://circleci.com/gh/go-swagger/go-swagger/tree/master.svg?style=svg" alt="Circle CI" /></a> <a href="https://slackin.goswagger.io"><img src="https://slackin.goswagger.io/badge.svg" alt="Slack Status" /></a></h1>
-
-<p><a href="https://raw.githubusercontent.com/swagger-api/swagger-spec/master/LICENSE"><img src="http://img.shields.io/badge/license-Apache%20v2-orange.svg" alt="license" /></a> <a href="http://godoc.org/github.com/go-swagger/go-swagger"><img src="https://godoc.org/github.com/go-swagger/go-swagger?status.svg" alt="GoDoc" /></a></p>
-
-<p>This API is not stable yet, when it is stable it will be distributed over gopkg.in</p>
-
-<p>There is a code coverage report available in the artifacts section of a build. Unfortunately using coveralls made the
-build unstable.</p>
-
-<p>Contains an implementation of Swagger 2.0. It knows how to serialize and deserialize swagger specifications.</p>
-
-<p>Swagger is a simple yet powerful representation of your RESTful API.<br />
-With the largest ecosystem of API tooling on the planet, thousands of developers are supporting Swagger in almost every modern programming language and deployment environment.</p>
-
-<p>With a Swagger-enabled API, you get interactive documentation, client SDK generation and discoverability. We created Swagger to help fulfill the promise of APIs.</p>
-
-<p>Swagger helps companies like Apigee, Getty Images, Intuit, LivingSocial, McKesson, Microsoft, Morningstar, and PayPal build the best possible services with RESTful APIs. Now in version 2.0, Swagger is more enabling than ever. And it&rsquo;s 100% open source software.</p>
-
-<h2 id="docs:3976528693a0108357f4928017600865">Docs</h2>
-
-<p><a href="http://godoc.org/github.com/go-swagger/go-swagger">http://godoc.org/github.com/go-swagger/go-swagger</a></p>
-
-<p>Install:</p>
-
-<pre><code>go get -u github.com/go-swagger/go-swagger/cmd/swagger
-</code></pre>
-
-<p>The implementation also provides a number of command line tools to help working with swagger.</p>
-
-<p>Currently there is a spec validator tool:</p>
-
-<pre><code>swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
-</code></pre>
-
-<p>To generate a server for a swagger spec document:</p>
-
-<pre><code>swagger generate server [-f ./swagger.json] -A [application-name [--principal [principal-name]]
-</code></pre>
-
-<p>To generate a client for a swagger spec document:</p>
-
-<pre><code>swagger generate client [-f ./swagger.json] -A [application-name [--principal [principal-name]]
-</code></pre>
-
-<p>To generate a swagger spec document for a go application:</p>
-
-<pre><code>swagger generate spec -o ./swagger.json
-</code></pre>
-
-<p>Much improved documentation is in the works and will actually explain how to use this tool in much more depth.
-To learn about which annotations are available and how to use them for generating a spec from any go application
-(generating a spec is not opinionated), you can take a look at the files used for <a href="https://github.com/go-swagger/go-swagger/tree/master/fixtures/goparsing/classification">testing the parser</a>.</p>
-
-<p>There are several other sub commands available for the generate command</p>
-
-<table>
-<thead>
-<tr>
-<th>Sub command &nbsp;</th>
-<th>Description</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>operation</td>
-<td>generates one or more operations specified in the swagger definition</td>
-</tr>
-
-<tr>
-<td>model</td>
-<td>generates model files for one or more models specified in the swagger definition</td>
-</tr>
-
-<tr>
-<td>support</td>
-<td>generates the api builder and the main method</td>
-</tr>
-
-<tr>
-<td>server</td>
-<td>generates an entire server application</td>
-</tr>
-
-<tr>
-<td>client</td>
-<td>generates a client for a swagger specification</td>
-</tr>
-
-<tr>
-<td>spec</td>
-<td>generates a swagger spec document based on go code</td>
-</tr>
-</tbody>
-</table>
-
-<h2 id="design:3976528693a0108357f4928017600865">Design</h2>
-
-<p>For now what exists of documentation on how all the pieces fit together, is described in this <a href="design.md">doc</a></p>
-
-<h2 id="what-s-inside:3976528693a0108357f4928017600865">What&rsquo;s inside?</h2>
-
-<p>For a V1 I want to have this feature set completed:</p>
-
-<ul>
-<li>[ ] Documentation site</li>
-<li>[x] Play nice with golint, go vet etc.</li>
-<li>[x] An object model that serializes to swagger yaml or json</li>
-<li>[x] A tool to work with swagger:
-
-<ul>
-<li>[x] validate a swagger spec document:</li>
-<li>[x] validate against jsonschema</li>
-<li>[ ] validate extra rules outlined <a href="https://github.com/apigee-127/swagger-tools/blob/master/docs/Swagger_Validation.md">here</a>
-
-<ul>
-<li>[x] definition can&rsquo;t declare a property that&rsquo;s already defined by one of its ancestors (Error)</li>
-<li>[x] definition&rsquo;s ancestor can&rsquo;t be a descendant of the same model (Error)</li>
-<li>[x] each api path should be non-verbatim (account for path param names) unique per method (Error)</li>
-<li>[ ] each security reference should contain only unique scopes (Warning)</li>
-<li>[ ] each security scope in a security definition should be unique (Warning)</li>
-<li>[x] each path parameter should correspond to a parameter placeholder and vice versa (Error)</li>
-<li>[ ] each referencable definition must have references (Warning)</li>
-<li>[x] each definition property listed in the required array must be defined in the properties of the model (Error)</li>
-<li>[x] each parameter should have a unique <code>name</code> and <code>type</code> combination (Error)</li>
-<li>[x] each operation should have only 1 parameter of type body (Error)</li>
-<li>[x] each reference must point to a valid object (Error)</li>
-<li>[x] every default value that is specified must validate against the schema for that property (Error)</li>
-<li>[x] every example that is specified must validate against the schema for that property (Error)</li>
-<li>[x] items property is required for all schemas/definitions of type <code>array</code> (Error)</li>
-</ul></li>
-<li>[x] serve swagger UI for any swagger spec file</li>
-<li>[x] code generation</li>
-<li>[x] generate api based on swagger spec</li>
-<li>[x] generate go client from a swagger spec</li>
-<li>[x] spec generation</li>
-<li>[x] generate spec document based on the code
-
-<ul>
-<li>[x] generate meta data (top level swagger properties) from package docs</li>
-<li>[x] generate definition entries for models</li>
-<li>[x] support composed structs out of several embeds</li>
-<li>[x] support allOf for composed structs</li>
-<li>[x] generate path entries for routes</li>
-<li>[x] generate responses from structs</li>
-<li>[x] support composed structs out of several embeds</li>
-<li>[x] generate parameters from structs</li>
-<li>[x] support composed structs out of several embeds</li>
-</ul></li>
-</ul></li>
-<li>[x] Middlewares:
-
-<ul>
-<li>[x] serve spec</li>
-<li>[x] routing</li>
-<li>[x] validation</li>
-<li>[x] additional validation through an interface</li>
-<li>[x] authorization
-
-<ul>
-<li>[x] basic auth</li>
-<li>[x] api key auth</li>
-</ul></li>
-<li>[x] swagger docs UI</li>
-</ul></li>
-<li>[x] Typed JSON Schema implementation
-
-<ul>
-<li>[x] JSON Pointer that knows about structs</li>
-<li>[x] JSON Reference that knows about structs</li>
-<li>[x] Passes current json schema test suite</li>
-</ul></li>
-<li>[x] extended string formats
-
-<ul>
-<li>[x] uuid, uuid3, uuid4, uuid5</li>
-<li>[x] email</li>
-<li>[x] uri (absolute)</li>
-<li>[x] hostname</li>
-<li>[x] ipv4</li>
-<li>[x] ipv6</li>
-<li>[x] credit card</li>
-<li>[x] isbn, isbn10, isbn13</li>
-<li>[x] social security number</li>
-<li>[x] hexcolor</li>
-<li>[x] rgbcolor</li>
-<li>[x] date</li>
-<li>[x] date-time</li>
-<li>[x] duration</li>
-<li>[x] password</li>
-<li>[x] custom string formats</li>
-</ul></li>
-</ul>
-
-<h2 id="later:3976528693a0108357f4928017600865">Later</h2>
-
-<p>After the v1 implementation extra transports are on the roadmap.</p>
-
-<p>Many of these fall under the maybe, perhaps, could be nice to have, might not happen bucket:</p>
-
-<ul>
-<li>Formats:
-
-<ul>
-<li>[ ] custom serializer for XML to support namespaces and prefixes</li>
-</ul></li>
-<li>Tools:
-
-<ul>
-<li>Code generation:</li>
-<li>[ ] generate &ldquo;sensible&rdquo; random data based on swagger spec</li>
-<li>[ ] generate tests based on swagger spec for client</li>
-<li>[ ] generate tests based on swagger spec for server</li>
-<li>[ ] generate markdown representation of swagger spec</li>
-<li>[ ] watch swagger spec file and regenerate when modified</li>
-<li>Spec generation:</li>
-<li>[ ] watch application folders and regenerate the swagger document</li>
-</ul></li>
-<li>Middlewares:
-
-<ul>
-<li>[ ] swagger editor</li>
-<li>[ ] swagger UI</li>
-<li>[ ] authorization:
-
-<ul>
-<li>[ ] oauth2
-
-<ul>
-<li>[ ] implicit</li>
-<li>[ ] access code</li>
-<li>[ ] password</li>
-<li>[ ] application</li>
-</ul></li>
-</ul></li>
-</ul></li>
-<li>Transports:
-
-<ul>
-<li>[ ] swagger socket (swagger over tcp sockets)</li>
-<li>[ ] swagger websocket (swagger over websockets)</li>
-<li>[ ] swagger proxy (assemble several backend apis into a single swagger spec and route the requests)</li>
-<li>[ ] swagger discovery (repository for swagger specifications)</li>
-</ul></li>
-</ul>
-
-	</div>
-
-
-
-<hr />
-
-<div class="row doc-main text-center">
-	<a href="http://go-swagger.github.io//post">See posts for go-swagger toolkit</a>
-</div>
-
-
-</main>
-
-
-<hr />
-
+  
 <div class="row">
-	<div class="col-sm-8">
-		<p class="doc-footer-em"><a href="#">Back to TOP</a></p>
-	</div>
+  <div class="col s3 m1">
+  
+    <a class="btn-floating btn-large disabled"><i class="mdi-navigation-arrow-back"></i></a>
+  
+  </div>
+  <div class="col s6 m10 center">&nbsp</div>
+  <div class="col s3 m1">
+  
+    <a class="btn-floating btn-large waves-effect waves-light" href="/page/2/"><i class="mdi-navigation-arrow-forward"></i></a>
+  
+  </div>
 </div>
 
-</div> 
 
-<footer class="doc-footer">
-	<p class="doc-footer-em">Browse <strong><a href="https://github.com/go-swagger/go-swagger">Repository</a></strong></p>
-	<p>© 2015 go-swagger contributors</p>
-	<p>Powered by <strong><a href="https://github.com/key-amb/hugo-theme-bootie-docs">Bootie Docs</a></strong> - theme for <a href="http://gohugo.io/">Hugo</a> by <a href="https://github.com/key-amb/">key-amb</a>.</p>
-</footer>
+  </div>
+</div>
 
+  <footer class="page-footer">
+    <div class="footer-copyright">
+      <div class="container">
+      © 2015 go-swagger contributors
+      <div class="right">Design <a class="grey-text text-lighten-4" href="http://pdevty.github.io/blog/">pdevty</a></div>
+      </div>
+    </div>
+  </footer>
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="http://go-swagger.github.io/js/materialize.min.js"></script>
+  <script src="http://go-swagger.github.io/js/init.js"></script>
+  <script src="http://go-swagger.github.io/js/prism.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  
 
-
-<script src="http://go-swagger.github.io//js/jquery-1.11.2.min.js"></script>
-<script src="http://go-swagger.github.io//js/bootstrap.min.js"></script>
-
-<script src="http://go-swagger.github.io//js/highlight.min.js"></script>
-<script>hljs.initHighlightingOnLoad();</script>
-<script src="http://go-swagger.github.io//js/ie10-viewport-bug-workaround.js"></script>
-
-</body>
+  </body>
 </html>

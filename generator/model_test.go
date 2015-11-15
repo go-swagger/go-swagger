@@ -460,6 +460,7 @@ func TestGenerateModel_WithMapInterface(t *testing.T) {
 				//fmt.Println(res)
 				assertInCode(t, "type WithMapInterface struct {", res)
 				assertInCode(t, "ExtraInfo map[string]interface{} `json:\"extraInfo,omitempty\"`", res)
+				assertInCode(t, "ExtraInfo map[string]interface{} `json:\"extraInfo,omitempty\"`", res)
 			}
 		}
 	}

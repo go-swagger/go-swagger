@@ -1,7 +1,5 @@
 +++
-categories = ["vallidate"]
 date = "2015-10-22T23:28:09-07:00"
-tags = ["usage"]
 title = "Validate a swagger spec"
 
 +++

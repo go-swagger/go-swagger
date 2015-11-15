@@ -7,13 +7,13 @@
     <div class="row">
       <div class="col s12">
         <div class="card-panel">
-          <h4>{{ .Title }}</h4>
+          <h2>{{ .Title }}</h2>
           <p>
           {{if .Params.categories }}
             {{ range $index, $category := .Params.categories }}
               <a href="{{$baseurl}}/categories/{{ $category | urlize }}/">{{ $category }}</a>
             {{ end }}
-          {{end}} 
+          {{end}}
           </p>
           <p>{{ .Content }}</p>
           <p>{{ .Date.Format "2 Jan 2006" }}

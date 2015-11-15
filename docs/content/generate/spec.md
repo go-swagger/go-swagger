@@ -1,13 +1,13 @@
 +++
-categories = ["generate"]
 date = "2015-11-09T18:58:47-08:00"
-tags = ["generate"]
 title = "spec"
 +++
 
-The toolkit has a command that will let you generate a swagger spec document from your code.
+The toolkit has a command that will let you generate a swagger spec document from your code. 
+The command integrates with go doc comments, and makes use of structs when it needs to know of
+types.
 
-## Usage
+### Usage
 
 To generate a spec:
 
@@ -99,9 +99,13 @@ A swagger:route can specify a response name for a status code and then the match
 
 #### swagger:allOf
 
+```
+swagger:allOf
+```
+
 Marks an embedded type as  a member for allOf
 
-```
+```go
 // An AllOfModel is composed out of embedded structs but it should build
 // an allOf property
 type AllOfModel struct {
