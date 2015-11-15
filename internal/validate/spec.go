@@ -80,7 +80,9 @@ func (s *SpecValidator) validateDuplicateOperationIDs() *Result {
 	res := new(Result)
 	known := make(map[string]int)
 	for _, v := range s.spec.OperationIDs() {
-		known[v]++
+		if v != "" {
+			known[v]++
+		}
 	}
 	for k, v := range known {
 		if v > 1 {
