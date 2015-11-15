@@ -21,7 +21,7 @@ Docs
 ----
 
 
-http://godoc.org/github.com/go-swagger/go-swagger
+https://go-swagger.github.io
 
 Install:
 
