@@ -21,7 +21,6 @@ swagger:response [?response name]
 
 Annotation | Description
 -----------|------------
-**In** | where to find the parameter
 **Collection Format** | when a slice the formatter for the collection when serialized on the request
 **Maximum** | specifies the maximum a number or integer value can have
 **Minimum** | specifies the minimum a number or integer value can have
@@ -72,7 +71,7 @@ type ValidationError struct {
 ```yaml
 ---
 responses:
-  ValidationError:
+  validationError:
     description: A validation error is an errot that is used whn the required input fails validation.
     schema:
       type: object

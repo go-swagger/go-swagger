@@ -66,8 +66,6 @@ type NoModel struct {
 	// items.items.items.minLength: 3
 	// items.items.items.maxLength: 10
 	// items.items.items.pattern: \w+
-	// collection format: pipe
-	// in: query
 	BarSlice [][][]string `json:"bar_slice"`
 
 	// the items for this order

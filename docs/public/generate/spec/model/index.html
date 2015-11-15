@@ -61,14 +61,212 @@
             
           
           </p>
-          <p><p>A <strong>swagger:model</strong> annotation optionally gets a model name as extra data on the line.
+          <p>
+
+<p>A <strong>swagger:model</strong> annotation optionally gets a model name as extra data on the line.
 when this appears anywhere in a comment for a struct, then that struct becomes a schema
 in the definitions object of swagger.</p>
 
 <p>The struct gets analyzed and all the collected models are added to the tree.
 The refs are tracked separately so that they can be renamed later on.</p>
 
+<p>Definitions only appear in the generated spec when they are actually used somewhere in the application (eg. on a params or response struct)</p>
+
+<h5 id="syntax:48ee0a3512ab0b5afa0cb3ef9950802a">Syntax:</h5>
+
 <pre><code>swagger:model [?model name]
+</code></pre>
+
+<h5 id="properties:48ee0a3512ab0b5afa0cb3ef9950802a">Properties:</h5>
+
+<table>
+<thead>
+<tr>
+<th>Annotation</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><strong>Maximum</strong></td>
+<td>specifies the maximum a number or integer value can have</td>
+</tr>
+
+<tr>
+<td><strong>Minimum</strong></td>
+<td>specifies the minimum a number or integer value can have</td>
+</tr>
+
+<tr>
+<td><strong>Multiple of</strong></td>
+<td>specifies a value a number or integer value must be a multiple of</td>
+</tr>
+
+<tr>
+<td><strong>Minimum length</strong></td>
+<td>the minimum length for a string value</td>
+</tr>
+
+<tr>
+<td><strong>Maximum length</strong></td>
+<td>the maximum length for a string value</td>
+</tr>
+
+<tr>
+<td><strong>Pattern</strong></td>
+<td>a regular expression a string value needs to match</td>
+</tr>
+
+<tr>
+<td><strong>Minimum items</strong></td>
+<td>the minimum number of items a slice needs to have</td>
+</tr>
+
+<tr>
+<td><strong>Maximum items</strong></td>
+<td>the maximum number of items a slice can have</td>
+</tr>
+
+<tr>
+<td><strong>Unique</strong></td>
+<td>when set to true the slice can only contain unique items</td>
+</tr>
+
+<tr>
+<td><strong>Required</strong></td>
+<td>when set to true this value needs to be set on the schema</td>
+</tr>
+
+<tr>
+<td><strong>Read Only</strong></td>
+<td>when set to true this value will be marked as read-only and is not required in request bodies</td>
+</tr>
+</tbody>
+</table>
+
+<p>For slice properties there are also items to be defined. This might be a nested collection, for indicating nesting
+level the value is a 0-based index, so items.minLength is the same as items.0.minLength</p>
+
+<table>
+<thead>
+<tr>
+<th>Annotation</th>
+<th>Format</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><strong>Items.<em>n</em>.Maximum</strong></td>
+<td>specifies the maximum a number or integer value can have at the level <em>n</em></td>
+</tr>
+
+<tr>
+<td><strong>Items.<em>n</em>.Minimum</strong></td>
+<td>specifies the minimum a number or integer value can have at the level <em>n</em></td>
+</tr>
+
+<tr>
+<td><strong>Items.<em>n</em>.Multiple of</strong></td>
+<td>specifies a value a number or integer value must be a multiple of</td>
+</tr>
+
+<tr>
+<td><strong>Items.<em>n</em>.Minimum length</strong></td>
+<td>the minimum length for a string value at the level <em>n</em></td>
+</tr>
+
+<tr>
+<td><strong>Items.<em>n</em>.Maximum length</strong></td>
+<td>the maximum length for a string value at the level <em>n</em></td>
+</tr>
+
+<tr>
+<td><strong>Items.<em>n</em>.Pattern</strong></td>
+<td>a regular expression a string value needs to match at the level <em>n</em></td>
+</tr>
+
+<tr>
+<td><strong>Items.<em>n</em>.Minimum items</strong></td>
+<td>the minimum number of items a slice needs to have at the level <em>n</em></td>
+</tr>
+
+<tr>
+<td><strong>Items.<em>n</em>.Maximum items</strong></td>
+<td>the maximum number of items a slice can have at the level <em>n</em></td>
+</tr>
+
+<tr>
+<td><strong>Items.<em>n</em>.Unique</strong></td>
+<td>when set to true the slice can only contain unique items at the level <em>n</em></td>
+</tr>
+</tbody>
+</table>
+
+<h5 id="example:48ee0a3512ab0b5afa0cb3ef9950802a">Example:</h5>
+
+<pre><code class="language-go">// User represents the user for this application
+//
+// A user is the security principal for this aplication.
+// It's also used as one of main axis for reporting.
+//
+// A user can have friends with whom they can share what they like.
+//
+// swagger:model
+type User struct {
+	// the id for this user
+	//
+	// required: true
+	// min: 1
+	ID int64 `json:&quot;id&quot;`
+
+	// the name for this user
+	// required: true
+	// min length: 3
+	Name string `json:&quot;name&quot;`
+
+	// the email address for this user
+	//
+	// required: true
+	Email strfmt.Email `json:&quot;login&quot;`
+
+	// the friends for this user
+	Friends []User `json:&quot;friends&quot;`
+}
+</code></pre>
+
+<h5 id="result:48ee0a3512ab0b5afa0cb3ef9950802a">Result:</h5>
+
+<pre><code class="language-yaml">---
+definitions:
+  User:
+    type: object
+    title: User represents the user for this application
+    description: &quot;A user is the security principal for this application.\nIt's also used as one of the main axis for reporting.\n\nA user can have friends with whom they can share what they like.&quot;
+    required: 
+      - id
+      - name
+      - login
+    properties:
+      id:
+        description: the id for this user
+        type: integer
+        format: int64
+        minimum: 1
+      name:
+        description: the name for this user
+        type: string
+        minLength: 3
+      email:
+        description: the email address for this user
+        type: string
+        format: email
+      friends:
+        description: the friends for this user
+        type: array
+        items:
+          $ref: &quot;#/definitions/User&quot;
 </code></pre>
 </p>
           <p>14 Nov 2015
@@ -112,7 +310,6 @@ The refs are tracked separately so that they can be renamed later on.</p>
   <script src="http://go-swagger.github.io/js/materialize.min.js"></script>
   <script src="http://go-swagger.github.io/js/init.js"></script>
   <script src="http://go-swagger.github.io/js/prism.js"></script>
-  <script>hljs.initHighlightingOnLoad();</script>
   
   <script>
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

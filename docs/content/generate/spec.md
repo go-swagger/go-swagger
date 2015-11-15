@@ -41,6 +41,20 @@ To use you can add a go:generate comment to your main file for example:
 //go:generate swagger generate spec
 ```
 
+#### Parsing rules
+
+This command relies heavily on the way godoc works! This means you should be very aware of all the things godoc
+supports.
+
+* [godoc documentation](https://godoc.org/golang.org/x/tools/cmd/godoc)
+* [godoc documenting go code](http://blog.golang.org/godoc-documenting-go-code)
+* [godoc ToHTML](https://golang.org/pkg/go/doc/#ToHTML)
+
+Single page which documents all the currently supported godoc rules:
+
+* [godoc tricks](https://godoc.org/github.com/fluhus/godoc-tricks)
+
+
 #### Annotation syntax
 
 There are several annotations that mark a comment block as a participant for the swagger spec.
