@@ -61,6 +61,7 @@ func (s *SpecValidator) Validate(data interface{}) (errs *Result, warnings *Resu
 		return // no point in continuing
 	}
 
+	errs.Merge(s.validateDuplicateOperationIDs())
 	errs.Merge(s.validateDuplicatePropertyNames())         // error -
 	errs.Merge(s.validateParameters())                     // error -
 	errs.Merge(s.validateItems())                          // error -
@@ -73,6 +74,20 @@ func (s *SpecValidator) Validate(data interface{}) (errs *Result, warnings *Resu
 	warnings.Merge(s.validateReferenced())                      // warning
 
 	return
+}
+
+func (s *SpecValidator) validateDuplicateOperationIDs() *Result {
+	res := new(Result)
+	known := make(map[string]int)
+	for _, v := range s.spec.OperationIDs() {
+		known[v]++
+	}
+	for k, v := range known {
+		if v > 1 {
+			res.AddErrors(errors.New(422, "%q is defined %d times", k, v))
+		}
+	}
+	return res
 }
 
 type dupProp struct {
