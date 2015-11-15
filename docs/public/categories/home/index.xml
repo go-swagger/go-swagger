@@ -1,76 +1,21 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Generate on go-swagger toolkit</title>
-    <link>http://go-swagger.github.io/categories/generate/</link>
-    <description>Recent content in Generate on go-swagger toolkit</description>
+    <title>Home on go-swagger toolkit</title>
+    <link>http://localhost:1313/categories/home/</link>
+    <description>Recent content in Home on go-swagger toolkit</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>© 2015 go-swagger contributors</copyright>
-    <lastBuildDate>Mon, 09 Nov 2015 18:58:47 -0800</lastBuildDate>
-    <atom:link href="http://go-swagger.github.io/categories/generate/index.xml" rel="self" type="application/rss+xml" />
-    
-    <item>
-      <title>swagger.json generation</title>
-      <link>http://go-swagger.github.io/generate/spec/</link>
-      <pubDate>Mon, 09 Nov 2015 18:58:47 -0800</pubDate>
-      
-      <guid>http://go-swagger.github.io/generate/spec/</guid>
-      <description>
-
-&lt;p&gt;The toolkit has a command that will let you generate a swagger spec document from your code.
-The command integrates with go doc comments, and makes use of structs when it needs to know of
-types.&lt;/p&gt;
-
-&lt;p&gt;Based on the work from &lt;a href=&#34;https://github.com/yvasiyarov/swagger&#34;&gt;https://github.com/yvasiyarov/swagger&lt;/a&gt;&lt;br /&gt;
-It uses a similar approach but with expanded annotations and it produces a swagger 2.0 spec.&lt;/p&gt;
-
-&lt;p&gt;The goal of the syntax is to make it look as a natural part of the documentation for the application code.&lt;/p&gt;
-
-&lt;p&gt;The generator is passed a base path (defaults to current) and tries to extract a go package path from that.
-Once it has a go package path it will scan the package recursively, skipping the Godeps, files ending in test.go and
-directories that start with an underscore, it also skips file system entries that start with a dot.&lt;/p&gt;
-
-&lt;p&gt;Once the parser has encountered a comment that matches on of its known tags, the parser will assume that the rest of
-the comment block is for swagger.&lt;/p&gt;
-
-&lt;h3 id=&#34;usage:958e7270f96f5407d7d980f500805b1b&#34;&gt;Usage&lt;/h3&gt;
-
-&lt;p&gt;To generate a spec:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;swagger generate spec -o ./swagger.json
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;You give it a main file and it will parse all the files that are required by that main
-package to produce a swagger specification.&lt;/p&gt;
-
-&lt;p&gt;To use you can add a go:generate comment to your main file for example:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;//go:generate swagger generate spec
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h4 id=&#34;annotation-syntax:958e7270f96f5407d7d980f500805b1b&#34;&gt;Annotation syntax&lt;/h4&gt;
-
-&lt;p&gt;There are several annotations that mark a comment block as a participant for the swagger spec.&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;meta&#34;&gt;swagger:meta&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;strfmt&#34;&gt;swagger:strfmt&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;model&#34;&gt;swagger:model&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;route&#34;&gt;swagger:route&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;params&#34;&gt;swagger:params&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;response&#34;&gt;swagger:response&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;allOf&#34;&gt;swagger:allOf&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-    </item>
+    <lastBuildDate>Fri, 23 Oct 2015 22:11:54 -0700</lastBuildDate>
+    <atom:link href="http://localhost:1313/categories/home/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Generate an API client</title>
-      <link>http://go-swagger.github.io/generate/client/</link>
+      <link>http://localhost:1313/generate/client/</link>
       <pubDate>Fri, 23 Oct 2015 22:11:54 -0700</pubDate>
       
-      <guid>http://go-swagger.github.io/generate/client/</guid>
+      <guid>http://localhost:1313/generate/client/</guid>
       <description>
 
 &lt;p&gt;The toolkit has a command that will let you generate a client.&lt;/p&gt;

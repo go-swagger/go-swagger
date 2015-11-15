@@ -1,9 +1,10 @@
 +++
-categories = ["spec", "generate"]
+categories = ["spec"]
 tags = []
 date = "2015-11-14T20:10:43-08:00"
 title = "swagger:params"
 
+weight = 20
 +++
 
 Links a struct to one or more operations. The params in the resulting swagger spec can be composed of several structs.

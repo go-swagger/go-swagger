@@ -1,9 +1,10 @@
 +++
-categories = ["spec", "generate"]
+categories = ["spec"]
 tags = []
 date = "2015-11-14T20:10:52-08:00"
 title = "swagger:response"
 
+weight = 20
 +++
 
 Reads a struct decorated with **swagger:response** and uses that information to fill up the headers and the schema for a response.

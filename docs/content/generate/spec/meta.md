@@ -1,15 +1,13 @@
 +++
-categories = ["spec", "generate"]
+categories = ["spec"]
 tags = []
 date = "2015-11-14T19:54:53-08:00"
 title = "swagger:meta"
-
+weight = 20
 +++
 
 The **swagger:meta** annotation flags a file as source for metadata about the API.
 This is typically a doc.go file with your package documentation.
-
-
 
 You can specify a Consumes and Produces key which has a new content type on each line
 Schemes is a tag that is required and allows for a comma separated string composed of:
@@ -24,13 +22,13 @@ The description property uses the rest of the comment block as description for t
 
 Annotation | Format
 -----------|--------
-**TOS** | allows for either a url or a free text definition describing the terms of services for the API
+**Terms Of Service** | allows for either a url or a free text definition describing the terms of services for the API
 **Consumes** | a list of default (global) mime type values, one per line, for the content the API receives
 **Produces** | a list of default (global) mime type values, one per line, for the conten the API sends
 **Schemes** | a list of default schemes the API accept (possible values: http, https, ws, wss) https is preferred as default when configured
 **Version** | the current version of the API
 **Host** | the host from where the spec is served
-**BasePath** | the default base path for this API
+**Base path** | the default base path for this API
 **Contact** | the name of for the person to contact concerning the API eg. John Doe&nbsp;&lt;john@blogs.com&gt;&nbsp;http://john.blogs.com
 **License** | the name of the license followed by the URL of the license eg. MIT http://opensource.org/license/MIT
 

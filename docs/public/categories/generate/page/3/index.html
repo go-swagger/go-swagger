@@ -56,19 +56,22 @@
   
   <div class="col m4 s12">
     <div class="card-panel">
-      <h4><a href="http://localhost:1313/generate/spec/meta/">swagger:meta</a></h4>
+      <h4><a href="http://localhost:1313/generate/spec/">Spec generation reference</a></h4>
       <p>
       
-        
-          <a href="http://localhost:1313//categories/spec/">spec</a>
         
           <a href="http://localhost:1313//categories/generate/">generate</a>
         
+          <a href="http://localhost:1313//categories/spec/">spec</a>
+        
       
       </p>
-      <p>The swagger:meta annotation flags a file as source for metadata about the API. This is typically a doc.go file with your package documentation. You can specify a Consumes and Produces key which has a new content type on each line Schemes is a tag that is required and allows for a comma separated string composed of: http, https, ws or wss Host and BasePath can be specified but those values will be defaults, they should get substituted when serving the swagger spec.</p>
+      <p><p>The toolkit has a command that will let you generate a swagger spec document from your code.
+The command integrates with go doc comments, and makes use of structs when it needs to know of
+types.</p>
+</p>
       <p>
-      14 Nov 2015
+      9 Nov 2015
       
       </p>
     </div>

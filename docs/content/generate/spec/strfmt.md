@@ -1,9 +1,9 @@
 +++
-categories = ["spec", "generate"]
+categories = ["spec"]
 tags = []
 date = "2015-11-14T20:10:24-08:00"
 title = "swagger:strfmt"
-
+weight = 30
 +++
 
 A **swagger:strfmt** annotation names a type as a string formatter. The name is mandatory and that is

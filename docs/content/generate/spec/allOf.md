@@ -1,9 +1,9 @@
 +++
-categories = ["spec", "generate"]
+categories = ["spec"]
 tags = []
 date = "2015-11-14T20:10:58-08:00"
 title = "swagger:allOf"
-
+weight = 30
 +++
 
 Marks an embedded type as  a member for allOf

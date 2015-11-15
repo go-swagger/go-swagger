@@ -1,9 +1,14 @@
 +++
+categories = ["generate", "client"]
 date = "2015-10-23T22:11:54-07:00"
 title = "Generate an API client"
+series = ["home"]
+weight = 2
 +++
 
 The toolkit has a command that will let you generate a client.
+
+<!--more-->
 
 ## Usage
 

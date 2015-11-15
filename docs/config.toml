@@ -21,3 +21,8 @@ copyright = "© 2015 go-swagger contributors"
 
 [permalinks]
   post = "/:year/:month/:day/:title/" # optional
+
+[taxonomies]
+  tag = "tags"
+  category = "categories"
+  series = "series"

@@ -1,11 +1,16 @@
 +++
+categories = ["generate"]
 date = "2015-11-09T18:58:47-08:00"
-title = "Spec generation reference"
+title = "swagger.json generation"
+weight = 1
+series = ["home"]
 +++
 
 The toolkit has a command that will let you generate a swagger spec document from your code. 
 The command integrates with go doc comments, and makes use of structs when it needs to know of
 types.
+
+<!--more-->
 
 Based on the work from https://github.com/yvasiyarov/swagger  
 It uses a similar approach but with expanded annotations and it produces a swagger 2.0 spec.

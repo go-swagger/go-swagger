@@ -1,9 +1,10 @@
 +++
-categories = ["spec", "generate"]
+categories = ["spec"]
 tags = []
 date = "2015-11-14T20:10:32-08:00"
 title = "swagger:model"
 
+weight = 20
 +++
 
 A **swagger:model** annotation optionally gets a model name as extra data on the line.
