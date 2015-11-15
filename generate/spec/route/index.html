@@ -61,7 +61,9 @@
             
           
           </p>
-          <p><p>A <strong>swagger:route</strong> annotation links a path to a method.
+          <p>
+
+<p>A <strong>swagger:route</strong> annotation links a path to a method.
 This operation gets a unique id, which is used in various places as method name.
 One such usage is in method names for client generation for example.</p>
 
@@ -69,7 +71,117 @@ One such usage is in method names for client generation for example.</p>
 you provided to your routing library of choice. So you have to specify your path pattern
 yourself in valid swagger syntax.</p>
 
+<h5 id="syntax:657749a60c6862d2709238cb94541743">Syntax:</h5>
+
 <pre><code>swagger:route [method] [path pattern] [operation id] [?tag1 tag2 tag3]
+</code></pre>
+
+<h5 id="properties:657749a60c6862d2709238cb94541743">Properties:</h5>
+
+<table>
+<thead>
+<tr>
+<th>Annotation</th>
+<th>Format</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><strong>Consumes</strong></td>
+<td>a list of operation specific mime type values, one per line, for the content the API receives</td>
+</tr>
+
+<tr>
+<td><strong>Produces</strong></td>
+<td>a list of operation specific mime type values, one per line, for the conten the API sends</td>
+</tr>
+
+<tr>
+<td><strong>Schemes</strong></td>
+<td>a list of operation specific schemes the API accept (possible values: http, https, ws, wss) https is preferred as default when configured</td>
+</tr>
+
+<tr>
+<td><strong>Security</strong></td>
+<td>a dictionary of key: []string{scopes}</td>
+</tr>
+
+<tr>
+<td><strong>Responses</strong></td>
+<td>a dictionary of status code to named response</td>
+</tr>
+</tbody>
+</table>
+
+<h5 id="example:657749a60c6862d2709238cb94541743">Example:</h5>
+
+<pre><code class="language-go">// ServeAPI serves the API for this record store
+func ServeAPI(host, basePath string, schemes []string) error {
+
+	// swagger:route GET /pets listPets pets users
+	//
+	// Lists pets filtered by some parameters.
+	//
+	// This will show all available pets by default.
+	// You can get the pets that are out of stock
+	//
+	//     Consumes:
+	//     - application/json
+	//     - application/x-protobuf
+	//
+	//     Produces:
+	//     - application/json
+	//     - application/x-protobuf
+	//
+	//     Schemes: http, https, ws, wss
+	//
+	//     Security:
+	//       api_key:
+	//       oauth: read, write
+	//
+	//     Responses:
+	//       default: genericError
+	//       200: someResponse
+	//       422: validationError
+	mountItem(&quot;GET&quot;, basePath+&quot;/pets&quot;, nil)
+}
+</code></pre>
+
+<h5 id="result:657749a60c6862d2709238cb94541743">Result:</h5>
+
+<pre><code class="language-yaml">---
+operations:
+  &quot;/&quot;:
+    get:
+      operationId: listPets
+      tags:
+      - pets
+      - users
+      consumes:
+      - application/json
+      - application/x-protobuf
+      produces:
+      - application/json
+      - application/x-protobuf
+      schemes:
+      - http
+      - https
+      - ws
+      - wss
+      security:
+        api_key: []
+        oauth: 
+        - read
+        - write
+      responses:
+        default: 
+          $ref: &quot;#/responses/genericError&quot;
+        200:
+          $ref: &quot;#/responses/someResponse&quot;
+        422:
+          $ref: &quot;#/responses/validationError&quot;
+        
 </code></pre>
 </p>
           <p>14 Nov 2015
