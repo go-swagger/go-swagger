@@ -700,10 +700,178 @@ operations:
       <pubDate>Sat, 14 Nov 2015 20:10:52 -0800</pubDate>
       
       <guid>http://go-swagger.github.io/generate/spec/response/</guid>
-      <description>&lt;p&gt;Reads a struct decorated with &lt;strong&gt;swagger:response&lt;/strong&gt; and uses that information to fill up the headers and the schema for a response.
+      <description>
+
+&lt;p&gt;Reads a struct decorated with &lt;strong&gt;swagger:response&lt;/strong&gt; and uses that information to fill up the headers and the schema for a response.
 A swagger:route can specify a response name for a status code and then the matching response will be used for that operation in the swagger definition.&lt;/p&gt;
 
+&lt;h5 id=&#34;syntax:7aaab65c33493a192d50f29765cc4ef3&#34;&gt;Syntax:&lt;/h5&gt;
+
 &lt;pre&gt;&lt;code&gt;swagger:response [?response name]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&#34;properties:7aaab65c33493a192d50f29765cc4ef3&#34;&gt;Properties:&lt;/h5&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Annotation&lt;/th&gt;
+&lt;th&gt;Description&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;In&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;where to find the parameter&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Collection Format&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;when a slice the formatter for the collection when serialized on the request&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Maximum&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;specifies the maximum a number or integer value can have&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Minimum&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;specifies the minimum a number or integer value can have&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Multiple of&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;specifies a value a number or integer value must be a multiple of&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Minimum length&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;the minimum length for a string value&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Maximum length&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;the maximum length for a string value&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Pattern&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;a regular expression a string value needs to match&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Minimum items&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;the minimum number of items a slice needs to have&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Maximum items&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;the maximum number of items a slice can have&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Unique&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;when set to true the slice can only contain unique items&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;For slice properties there are also items to be defined. This might be a nested collection, for indicating nesting
+level the value is a 0-based index, so items.minLength is the same as items.0.minLength&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Annotation&lt;/th&gt;
+&lt;th&gt;Format&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Items.&lt;em&gt;n&lt;/em&gt;.Maximum&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;specifies the maximum a number or integer value can have at the level &lt;em&gt;n&lt;/em&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Items.&lt;em&gt;n&lt;/em&gt;.Minimum&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;specifies the minimum a number or integer value can have at the level &lt;em&gt;n&lt;/em&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Items.&lt;em&gt;n&lt;/em&gt;.Multiple of&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;specifies a value a number or integer value must be a multiple of&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Items.&lt;em&gt;n&lt;/em&gt;.Minimum length&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;the minimum length for a string value at the level &lt;em&gt;n&lt;/em&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Items.&lt;em&gt;n&lt;/em&gt;.Maximum length&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;the maximum length for a string value at the level &lt;em&gt;n&lt;/em&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Items.&lt;em&gt;n&lt;/em&gt;.Pattern&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;a regular expression a string value needs to match at the level &lt;em&gt;n&lt;/em&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Items.&lt;em&gt;n&lt;/em&gt;.Minimum items&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;the minimum number of items a slice needs to have at the level &lt;em&gt;n&lt;/em&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Items.&lt;em&gt;n&lt;/em&gt;.Maximum items&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;the maximum number of items a slice can have at the level &lt;em&gt;n&lt;/em&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Items.&lt;em&gt;n&lt;/em&gt;.Unique&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;when set to true the slice can only contain unique items at the level &lt;em&gt;n&lt;/em&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h5 id=&#34;example:7aaab65c33493a192d50f29765cc4ef3&#34;&gt;Example:&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;// A ValidationError is an error that is used when the required input fails validation.
+// swagger:response validationError
+type ValidationError struct {
+	// The error message
+	// in: body
+	Body struct {
+		// The validation message
+		// 
+		// Required: true
+		Message string
+		// An optional field name to which this validation applies
+		FieldName string
+	}
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&#34;result:7aaab65c33493a192d50f29765cc4ef3&#34;&gt;Result:&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;---
+responses:
+  ValidationError:
+    description: A validation error is an errot that is used whn the required input fails validation.
+    schema:
+      type: object
+      required: 
+      - Message
+      properties:
+        Message:
+          type: string
+          description: The validation message
+        FieldName:
+          type: string
+          description: an optional field name to which this validation applies
 &lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>

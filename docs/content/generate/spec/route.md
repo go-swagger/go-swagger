@@ -33,7 +33,7 @@ Annotation | Format
 **Security** | a dictionary of key: []string{scopes}
 **Responses** | a dictionary of status code to named response
 
-##### Example:
+##### Example: 
 
 ```go
 // ServeAPI serves the API for this record store
