@@ -16,7 +16,7 @@ echo '
 // limitations under the License.
 ' > /tmp/copyright.txt
 
-for i in **/*.go # or whatever other pattern...
+for i in `git rev-parse --show-toplevel`/**/*.go # or whatever other pattern...
 do
   if ! grep -q Copyright $i
   then

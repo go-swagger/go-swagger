@@ -1,4 +1,3 @@
-
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +22,6 @@ import (
 	"testing"
 
 	"github.com/go-swagger/go-swagger/swag"
-	"github.com/kr/pretty"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -119,7 +117,6 @@ func TestAdditionalPropertiesWithObject(t *testing.T) {
 		err = json.Unmarshal(cb, &actual)
 		So(err, ShouldBeNil)
 		So(actual, ShouldBeEquivalentTo, expected)
-		pretty.Println(actual)
 	})
 }
 

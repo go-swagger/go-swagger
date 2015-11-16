@@ -2,6 +2,7 @@
 
 set -e -x
 
+cd `git rev-parse --show-toplevel`
 godep go test -v -race ./... | go-junit-report -dir $CIRCLE_TEST_REPORTS/go
 
 # Run test coverage on each subdirectories and merge the coverage profile.

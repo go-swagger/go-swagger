@@ -1,12 +1,13 @@
 #!/bin/bash
 
 echo -e "\033[0;32mDeploying updates to GitHub...\033[0m"
-cd docs
+wd=`git rev-parse --show-toplevel`
+cd "${wd}/docs"
 
 # Build the project.
 hugo # if using a theme, replace by `hugo -t <yourtheme>`
 
-cd ..
+cd "${wd}"
 # Add changes to git.
 git add -A
 
@@ -22,4 +23,4 @@ git subtree push --prefix=docs/public https://github.com/go-swagger/go-swagger.g
 git push
 
 # Come Back
-cd ..
+cd "${wd}"

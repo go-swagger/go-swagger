@@ -30,7 +30,7 @@ dependencies:
     - godep restore
 test:
   override:
-    - ./coverage.sh
+    - scripts/coverage.sh
 notify:
   webhooks:
     - url: https://webhooks.gitter.im/e/9df333473f609f62a215
