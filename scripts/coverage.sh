@@ -2,7 +2,7 @@
 
 set -e -x
 
-cd `git rev-parse --show-toplevel`
+cd $GOPATH/src/github.com/go-swagger/go-swagger
 godep go test -v -race ./... | go-junit-report -dir $CIRCLE_TEST_REPORTS/go
 
 # Run test coverage on each subdirectories and merge the coverage profile.
