@@ -2,7 +2,6 @@
 
 set -e -x
 
-cd $GOPATH/src/github.com/go-swagger/go-swagger
 godep go test -v -race ./... | go-junit-report -dir $CIRCLE_TEST_REPORTS/go
 
 # Run test coverage on each subdirectories and merge the coverage profile.
