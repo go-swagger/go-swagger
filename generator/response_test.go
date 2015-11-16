@@ -1,4 +1,3 @@
-
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +28,7 @@ func TestSimpleResponses(t *testing.T) {
 		t.FailNow()
 	}
 
-	op, ok := b.Doc.OperationForName("updateTask")
+	_, _, op, ok := b.Doc.OperationForName("updateTask")
 	if assert.True(t, ok) && assert.NotNil(t, op) && assert.NotNil(t, op.Responses) {
 		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
 		if assert.NotNil(t, op.Responses.Default) {

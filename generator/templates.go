@@ -1,4 +1,3 @@
-
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,6 +33,7 @@ var (
 	responsesTemplate      *template.Template
 	builderTemplate        *template.Template
 	mainTemplate           *template.Template
+	mainDocTemplate        *template.Template
 	embeddedSpecTemplate   *template.Template
 	configureAPITemplate   *template.Template
 	clientTemplate         *template.Template
@@ -65,6 +65,7 @@ var (
 	assetServerBuilder      = MustAsset("templates/server/builder.gotmpl")
 	assetServerConfigureAPI = MustAsset("templates/server/configureapi.gotmpl")
 	assetServerMain         = MustAsset("templates/server/main.gotmpl")
+	assetServerMainDoc      = MustAsset("templates/server/doc.gotmpl")
 
 	assetClientParameter = MustAsset("templates/client/parameter.gotmpl")
 	assetClientResponse  = MustAsset("templates/client/response.gotmpl")
@@ -110,6 +111,7 @@ func init() {
 	builderTemplate = template.Must(template.New("builder").Funcs(FuncMap).Parse(string(assetServerBuilder)))
 	configureAPITemplate = template.Must(template.New("configureapi").Funcs(FuncMap).Parse(string(assetServerConfigureAPI)))
 	mainTemplate = template.Must(template.New("main").Funcs(FuncMap).Parse(string(assetServerMain)))
+	mainDocTemplate = template.Must(template.New("meta").Funcs(FuncMap).Parse(string(assetServerMainDoc)))
 
 	embeddedSpecTemplate = template.Must(template.New("embedded_spec").Funcs(FuncMap).Parse(string(assetEmbeddedSpec)))
 

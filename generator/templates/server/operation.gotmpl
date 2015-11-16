@@ -31,10 +31,12 @@ func New{{ pascalize .Name }}(ctx *middleware.Context, handler {{ pascalize .Nam
   return &{{ pascalize .Name }}{Context: ctx, Handler: handler}
 }
 
-/*
+/*{{ pascalize .Name }} swagger:route {{ .Method }} {{ .Path }}{{ range .Tags }} {{ . }}{{ end }} {{ camelize .Name }}
+
 {{ if .Summary }}{{ .Summary }}{{ if .Description }}
 
 {{ .Description }}{{ end }}{{ else if .Description}}{{ .Description }}{{ else }}{{ pascalize .Name }} {{ humanize .Name }} API{{ end }}
+
 */
 type {{ pascalize .Name }} struct {
   Context *middleware.Context

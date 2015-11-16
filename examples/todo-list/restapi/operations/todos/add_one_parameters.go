@@ -8,28 +8,23 @@ import (
 
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
-	"github.com/go-swagger/go-swagger/strfmt"
 
 	"github.com/go-swagger/go-swagger/examples/todo-list/models"
 )
 
-// UpdateOneParams contains all the bound params for the update one operation
+// AddOneParams contains all the bound params for the add one operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters updateOne
-type UpdateOneParams struct {
+// swagger:parameters addOne
+type AddOneParams struct {
 
 	// In: body
 	Body *models.Item
-
-	// Required: true
-	// In: path
-	ID string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls
-func (o *UpdateOneParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
+func (o *AddOneParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 
 	if err := route.Consumer.Consume(r.Body, o.Body); err != nil {
@@ -41,19 +36,8 @@ func (o *UpdateOneParams) BindRequest(r *http.Request, route *middleware.Matched
 
 	}
 
-	if err := o.bindID(route.Params.Get("id"), route.Formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (o *UpdateOneParams) bindID(raw string, formats strfmt.Registry) error {
-
-	o.ID = raw
-
 	return nil
 }

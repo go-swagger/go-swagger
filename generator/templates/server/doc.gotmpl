@@ -6,8 +6,8 @@ Terms Of Service:
 
 {{ .Info.TermsOfService }}
 {{ end }}{{ if or .Schemes .Host .BasePath .Info }}
-
-    Schemes: {{ range .Schemes }}{{.}}{{ end }}{{ if .Host }}
+{{ if .Schemes }}
+    Schemes: {{ range .Schemes }}{{.}}{{ end }}{{ end }}{{ if .Host }}
     Host: {{ .Host }}{{ end }}{{ if .BasePath }}
     BasePath: {{ .BasePath }}{{ end}}{{ with .Info }}{{ if .Version }}
     Version: {{ .Version }}{{ end }}{{ if .License }}
@@ -15,14 +15,13 @@ Terms Of Service:
     Contact: {{ if .Contact.Name }}{{ .Contact.Name }}{{ end }}{{ if .Contact.Email }}<{{ .Contact.Email }}>{{ end }}{{ if .Contact.URL }} {{ .Contact.URL }}{{ end }}{{ end }}{{ end }}{{ if .Consumes }}
 
     Consumes:{{ range .Consumes }}
-    - {{ . }}
+    - {{ .MediaType }}
     {{ end }}{{ end }}{{ if .Produces }}
 
     Produces:{{ range .Produces }}
-    - {{ . }}
+    - {{ .MediaType }}
     {{ end }}{{ end }}
-
-
+{{ end }}
 swagger:meta
 */
 package main

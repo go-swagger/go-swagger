@@ -1,4 +1,3 @@
-
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -225,15 +224,15 @@ func (s *specAnalyzer) ParamsFor(method, path string) map[string]Parameter {
 	return res
 }
 
-func (s *specAnalyzer) OperationForName(operationID string) (*Operation, bool) {
-	for _, v := range s.operations {
-		for _, vv := range v {
-			if operationID == vv.ID {
-				return vv, true
+func (s *specAnalyzer) OperationForName(operationID string) (string, string, *Operation, bool) {
+	for method, pathItem := range s.operations {
+		for path, op := range pathItem {
+			if operationID == op.ID {
+				return method, path, op, true
 			}
 		}
 	}
-	return nil, false
+	return "", "", nil, false
 }
 
 func (s *specAnalyzer) OperationFor(method, path string) (*Operation, bool) {

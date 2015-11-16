@@ -1,4 +1,3 @@
-
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -129,6 +128,10 @@ func (a *appGenerator) Generate() error {
 		return err
 	}
 
+	if err := a.generateDoc(&app); err != nil {
+		return err
+	}
+
 	if err := a.generateMain(&app); err != nil {
 		return err
 	}
@@ -179,6 +182,15 @@ func (a *appGenerator) generateAPIBuilder(app *GenApp) error {
 	}
 	log.Println("rendered builder template:", app.Package+"."+swag.ToGoName(app.Name))
 	return writeToFile(filepath.Join(a.Target, a.ServerPackage, app.Package), swag.ToGoName(app.Name)+"Api", buf.Bytes())
+}
+
+func (a *appGenerator) generateDoc(app *GenApp) error {
+	buf := bytes.NewBuffer(nil)
+	if err := mainDocTemplate.Execute(buf, app); err != nil {
+		return err
+	}
+	log.Println("rendered doc template:", app.Package+"."+swag.ToGoName(app.Name))
+	return writeToFile(filepath.Join(a.Target, "cmd", swag.ToCommandName(swag.ToGoName(app.Name)+"Server")), "Doc", buf.Bytes())
 }
 
 var mediaTypeNames = map[*regexp.Regexp]string{
@@ -459,6 +471,9 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		Package:             a.Package,
 		ReceiverName:        receiver,
 		Name:                a.Name,
+		Host:                sw.Host,
+		BasePath:            sw.BasePath,
+		Schemes:             sw.Schemes,
 		ExternalDocs:        sw.ExternalDocs,
 		Info:                sw.Info,
 		Consumes:            consumes,
@@ -483,10 +498,13 @@ type GenApp struct {
 	Principal           string
 	DefaultConsumes     string
 	DefaultProduces     string
+	Host                string
+	BasePath            string
 	Info                *spec.Info
 	ExternalDocs        *spec.ExternalDocumentation
 	Imports             map[string]string
 	DefaultImports      []string
+	Schemes             []string
 	Consumes            []GenSerGroup
 	Produces            []GenSerGroup
 	SecurityDefinitions []GenSecurityScheme

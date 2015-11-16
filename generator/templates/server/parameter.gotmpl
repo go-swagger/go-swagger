@@ -78,8 +78,22 @@ import (
 
 // {{ pascalize .Name }}Params contains all the bound params for the {{ humanize .Name }} operation
 // typically these are obtained from a http.Request
+//
+// swagger:parameters {{ camelize .Name }}
 type {{ pascalize .Name }}Params struct {
-  {{ range .Params }}{{ if .Description }}// {{ .Description }}{{ end }}
+  {{ range .Params }}{{ if .Description }}// {{ .Description }}{{ end }}{{ if .Required }}
+  // Required: true{{ end }}{{ if .Maximum }}
+  // Maximum: {{ if .ExclusiveMaximum }}< {{ end }}{{ .Maximum }}{{ end }}{{ if .Minimum }}
+  // Minimum: {{ if .ExclusiveMinimum }}> {{ end }}{{ .Minimum }}{{ end }}{{ if .MultipleOf }}
+  // Multiple Of: {{ .MultipleOf }}{{ end }}{{ if .MaxLength }}
+  // Max Length: {{ .MaxLength }}{{ end }}{{ if .MinLength }}
+  // Min Length: {{ .MinLength }}{{ end }}{{ if .Pattern }}
+  // Pattern: {{ .Pattern }}{{ end }}{{ if .MaxItems }}
+  // Max Items: {{ .MaxItems }}{{ end }}{{ if .MinItems }}
+  // Min Items: {{ .MinItems }}{{ end }}{{ if .UniqueItems }}
+  // Unique: true{{ end }}{{ if .Location }}
+  // In: {{ .Location }}{{ end }}{{ if .CollectionFormat }}
+  // Collection Format: {{ .CollectionFormat }}{{ end }}
   {{ pascalize .Name }} {{ if .IsNullable }}*{{ end }}{{.GoType}}
   {{ end}}
 }

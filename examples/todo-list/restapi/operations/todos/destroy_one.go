@@ -27,8 +27,11 @@ func NewDestroyOne(ctx *middleware.Context, handler DestroyOneHandler) *DestroyO
 	return &DestroyOne{Context: ctx, Handler: handler}
 }
 
-/*
+/*DestroyOne swagger:route DELETE /{id} todos destroyOne
+
 DestroyOne destroy one API
+
+
 */
 type DestroyOne struct {
 	Context *middleware.Context

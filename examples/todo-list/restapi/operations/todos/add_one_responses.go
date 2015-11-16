@@ -11,13 +11,17 @@ import (
 	"github.com/go-swagger/go-swagger/examples/todo-list/models"
 )
 
-/*
-Created
+/*AddOneCreated Created
+
+swagger:response addOneCreated
 */
 type AddOneCreated struct {
-	Payload *models.Item
+
+	// In: body
+	Payload *models.Item `json:"body,omitempty"`
 }
 
+// WriteResponse to the client
 func (o *AddOneCreated) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
 	rw.WriteHeader(201)
@@ -28,13 +32,17 @@ func (o *AddOneCreated) WriteResponse(rw http.ResponseWriter, producer httpkit.P
 	}
 }
 
-/*
-error
+/*AddOneDefault error
+
+swagger:response addOneDefault
 */
 type AddOneDefault struct {
-	Payload *models.Error
+
+	// In: body
+	Payload *models.Error `json:"body,omitempty"`
 }
 
+// WriteResponse to the client
 func (o *AddOneDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
 	rw.WriteHeader(500)

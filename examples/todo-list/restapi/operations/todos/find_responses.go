@@ -11,13 +11,17 @@ import (
 	"github.com/go-swagger/go-swagger/examples/todo-list/models"
 )
 
-/*
-OK
+/*FindOK OK
+
+swagger:response findOK
 */
 type FindOK struct {
-	Payload []*models.Item
+
+	// In: body
+	Payload []*models.Item `json:"body,omitempty"`
 }
 
+// WriteResponse to the client
 func (o *FindOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
 	rw.WriteHeader(200)
@@ -27,13 +31,17 @@ func (o *FindOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer
 
 }
 
-/*
-error
+/*FindDefault error
+
+swagger:response findDefault
 */
 type FindDefault struct {
-	Payload *models.Error
+
+	// In: body
+	Payload *models.Error `json:"body,omitempty"`
 }
 
+// WriteResponse to the client
 func (o *FindDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
 	rw.WriteHeader(500)

@@ -23,7 +23,7 @@ func configureAPI(api *operations.ToDoListAPI) {
 		return nil, errors.NotImplemented("api key auth x-petstore-token from header has not yet been implemented")
 	}
 
-	api.AddOneHandler = todos.AddOneHandlerFunc(func(principal interface{}) middleware.Responder {
+	api.AddOneHandler = todos.AddOneHandlerFunc(func(params todos.AddOneParams, principal interface{}) middleware.Responder {
 		return middleware.NotImplemented("operation addOne has not yet been implemented")
 	})
 	api.DestroyOneHandler = todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams, principal interface{}) middleware.Responder {

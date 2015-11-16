@@ -32,6 +32,11 @@ paths:
     post:
       tags: ["todos"]
       operationId: addOne
+      parameters:
+        - name: body
+          in: body
+          schema:
+            $ref: "#/definitions/item"
       responses:
         '201':
           description: Created

@@ -13,7 +13,12 @@ import (
 
 // DestroyOneParams contains all the bound params for the destroy one operation
 // typically these are obtained from a http.Request
+//
+// swagger:parameters destroyOne
 type DestroyOneParams struct {
+
+	// Required: true
+	// In: path
 	ID string
 }
 

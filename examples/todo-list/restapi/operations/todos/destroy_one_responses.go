@@ -11,24 +11,30 @@ import (
 	"github.com/go-swagger/go-swagger/examples/todo-list/models"
 )
 
-/*
-Deleted
+/*DestroyOneNoContent Deleted
+
+swagger:response destroyOneNoContent
 */
 type DestroyOneNoContent struct {
 }
 
+// WriteResponse to the client
 func (o *DestroyOneNoContent) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
 	rw.WriteHeader(204)
 }
 
-/*
-error
+/*DestroyOneDefault error
+
+swagger:response destroyOneDefault
 */
 type DestroyOneDefault struct {
-	Payload *models.Error
+
+	// In: body
+	Payload *models.Error `json:"body,omitempty"`
 }
 
+// WriteResponse to the client
 func (o *DestroyOneDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
 	rw.WriteHeader(500)

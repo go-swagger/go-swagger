@@ -1,4 +1,3 @@
-
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -158,6 +157,7 @@ func newAppScanner(bp string, input *spec.Swagger, includes, excludes packageFil
 	}
 	if input == nil {
 		input = new(spec.Swagger)
+		input.Swagger = "2.0"
 	}
 
 	if input.Paths == nil {

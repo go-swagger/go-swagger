@@ -1,4 +1,3 @@
-
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,13 +44,15 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 	}
 
 	for _, operationName := range operationNames {
-		operation, ok := specDoc.OperationForName(operationName)
+		method, path, operation, ok := specDoc.OperationForName(operationName)
 		if !ok {
 			return fmt.Errorf("operation %q not found in %s", operationName, specPath)
 		}
 
 		generator := operationGenerator{
 			Name:                 operationName,
+			Method:               method,
+			Path:                 path,
 			APIPackage:           opts.APIPackage,
 			ModelsPackage:        opts.ModelPackage,
 			ClientPackage:        opts.ClientPackage,
@@ -77,6 +78,8 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 
 type operationGenerator struct {
 	Name                 string
+	Method               string
+	Path                 string
 	Authorized           bool
 	APIPackage           string
 	ModelsPackage        string
@@ -107,6 +110,8 @@ func (o *operationGenerator) Generate() error {
 
 	var bldr codeGenOpBuilder
 	bldr.Name = o.Name
+	bldr.Method = o.Method
+	bldr.Path = o.Path
 	bldr.ModelsPackage = o.ModelsPackage
 	bldr.Principal = o.Principal
 	bldr.Target = o.Target
@@ -234,6 +239,8 @@ func (o *operationGenerator) generateResponses() error {
 
 type codeGenOpBuilder struct {
 	Name           string
+	Method         string
+	Path           string
 	APIPackage     string
 	ModelsPackage  string
 	Principal      string
@@ -319,6 +326,9 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	return GenOperation{
 		Package:         b.APIPackage,
 		Name:            b.Name,
+		Method:          b.Method,
+		Path:            b.Path,
+		Tags:            operation.Tags[:],
 		Description:     operation.Description,
 		ReceiverName:    receiver,
 		DefaultImports:  b.DefaultImports,
@@ -929,6 +939,9 @@ type GenOperation struct {
 	Name         string
 	Summary      string
 	Description  string
+	Method       string
+	Path         string
+	Tags         []string
 
 	Imports        map[string]string
 	DefaultImports []string

@@ -1,4 +1,3 @@
-
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -81,6 +80,8 @@ func TestMakeOperation(t *testing.T) {
 		if assert.NoError(t, err) {
 			//pretty.Println(gO)
 			assert.Equal(t, "getTasks", gO.Name)
+			assert.Equal(t, "GET", gO.Method)
+			assert.Equal(t, "/tasks", gO.Path)
 			assert.Len(t, gO.Params, 2)
 			assert.Len(t, gO.Responses, 1)
 			assert.NotNil(t, gO.DefaultResponse)
@@ -101,13 +102,15 @@ func opBuilder(name, fname string) (codeGenOpBuilder, error) {
 		return codeGenOpBuilder{}, err
 	}
 
-	op, ok := specDoc.OperationForName(name)
+	method, path, op, ok := specDoc.OperationForName(name)
 	if !ok {
 		return codeGenOpBuilder{}, errors.New("No operation could be found for " + name)
 	}
 
 	return codeGenOpBuilder{
 		Name:          name,
+		Method:        method,
+		Path:          path,
 		APIPackage:    "restapi",
 		ModelsPackage: "models",
 		Principal:     "models.User",

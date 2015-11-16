@@ -1,4 +1,3 @@
-
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,7 +30,7 @@ func TestBodyParams(t *testing.T) {
 		t.FailNow()
 	}
 
-	op, ok := b.Doc.OperationForName("updateTask")
+	_, _, op, ok := b.Doc.OperationForName("updateTask")
 	if assert.True(t, ok) && assert.NotNil(t, op) {
 		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
 		for _, param := range op.Parameters {
@@ -55,7 +54,7 @@ func TestBodyParams(t *testing.T) {
 		t.FailNow()
 	}
 
-	op, ok = b.Doc.OperationForName("createTask")
+	_, _, op, ok = b.Doc.OperationForName("createTask")
 	if assert.True(t, ok) && assert.NotNil(t, op) {
 		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
 		for _, param := range op.Parameters {
@@ -253,7 +252,7 @@ type paramTestContext struct {
 }
 
 func (ctx *paramTestContext) assertParameter(t testing.TB) bool {
-	op, err := ctx.B.Doc.OperationForName(ctx.OpID)
+	_, _, op, err := ctx.B.Doc.OperationForName(ctx.OpID)
 	if assert.True(t, err) && assert.NotNil(t, op) {
 		resolver := &typeResolver{ModelsPackage: ctx.B.ModelsPackage, Doc: ctx.B.Doc}
 		for _, param := range op.Parameters {

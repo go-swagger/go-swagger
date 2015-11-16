@@ -1,4 +1,3 @@
-
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -220,7 +219,7 @@ func gatherOperations(specDoc *spec.Document, operationIDs []string) map[string]
 	operations := make(map[string]spec.Operation)
 	if len(operationIDs) == 0 {
 		for _, k := range specDoc.OperationIDs() {
-			if op, ok := specDoc.OperationForName(k); ok {
+			if _, _, op, ok := specDoc.OperationForName(k); ok {
 				operations[k] = *op
 			}
 		}
@@ -228,7 +227,7 @@ func gatherOperations(specDoc *spec.Document, operationIDs []string) map[string]
 		for _, k := range specDoc.OperationIDs() {
 			for _, nm := range operationIDs {
 				if k == nm {
-					if op, ok := specDoc.OperationForName(k); ok {
+					if _, _, op, ok := specDoc.OperationForName(k); ok {
 						operations[k] = *op
 					}
 				}
