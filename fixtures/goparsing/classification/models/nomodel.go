@@ -1,4 +1,3 @@
-
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -324,4 +323,9 @@ type MapTastic struct {
 		PtrCID map[string]*int64  `json:"ptrCid"`
 		PtrBaz map[string]*string `json:"ptrBaz"`
 	} `json:"ptrEmbs"`
+}
+
+// An Interfaced struct contains objects with interface definitions
+type Interfaced struct {
+	CustomData interface{} `json:"custom_data"`
 }

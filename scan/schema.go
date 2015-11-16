@@ -1,4 +1,3 @@
-
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -695,11 +694,7 @@ func parseProperty(scp *schemaParser, gofile *ast.File, fld ast.Expr, prop swagg
 		}
 
 	case *ast.InterfaceType:
-		// NOTE:
-		// what to do with an interface? support it?
-		// ignoring it for now
-		// I guess something can be done with a discriminator field
-		// but is it worth the trouble?
+		prop.Schema().Typed("object", "")
 	default:
 		return fmt.Errorf("%s is unsupported for a schema", ftpe)
 	}

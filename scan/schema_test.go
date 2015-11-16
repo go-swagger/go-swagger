@@ -1,4 +1,3 @@
-
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -281,8 +280,9 @@ func assertProperty(t testing.TB, schema *spec.Schema, typeName, jsonName, forma
 	if typeName == "" {
 		assert.Empty(t, schema.Properties[jsonName].Type)
 	} else {
-		assert.NotEmpty(t, schema.Properties[jsonName].Type)
-		assert.Equal(t, typeName, schema.Properties[jsonName].Type[0])
+		if assert.NotEmpty(t, schema.Properties[jsonName].Type) {
+			assert.Equal(t, typeName, schema.Properties[jsonName].Type[0])
+		}
 	}
 	assert.Equal(t, goName, schema.Properties[jsonName].Extensions["x-go-name"])
 	assert.Equal(t, format, schema.Properties[jsonName].Format)
@@ -406,4 +406,11 @@ func TestParseMapFields(t *testing.T) {
 
 	assertMapRef(t, &schema, "ptrTops", "PtrTops", "#/definitions/Something")
 	assertMapRef(t, &schema, "ptrNotSels", "PtrNotSels", "#/definitions/NotSelected")
+}
+
+func TestInterfaceField(t *testing.T) {
+
+	_ = classificationProg
+	schema := noModelDefs["Interfaced"]
+	assertProperty(t, &schema, "object", "custom_data", "", "CustomData")
 }
