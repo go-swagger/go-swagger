@@ -1,4 +1,3 @@
-
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -59,6 +58,30 @@ func classifierProgram() *loader.Program {
 		log.Fatal(err)
 	}
 	return prog
+}
+
+func invalidProgram(name string) *loader.Program {
+	var ldr loader.Config
+	ldr.ParserMode = goparser.ParseComments
+	ldr.Import("../fixtures/goparsing/" + name)
+	prog, err := ldr.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return prog
+}
+
+func testInvalidProgram(t testing.TB, name string) bool {
+	prog := invalidProgram(name)
+	classifier := &programClassifier{}
+	_, err := classifier.Classify(prog)
+	return assert.Error(t, err)
+}
+
+func TestDuplicateAnnotations(t *testing.T) {
+	for _, b := range []string{"model_param", "param_model", "model_response", "response_model"} {
+		testInvalidProgram(t, "invalid_"+b)
+	}
 }
 
 func TestClassifier(t *testing.T) {

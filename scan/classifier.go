@@ -1,4 +1,3 @@
-
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -85,40 +84,58 @@ func (pc *programClassifier) Classify(prog *loader.Program) (*classifiedProgram,
 		for _, file := range pkgInfo.Files {
 			var op, mt, pm, rs bool // only add a particular file once
 			for _, comments := range file.Comments {
-				matches := rxSwaggerAnnotation.FindStringSubmatch(comments.Text())
-				if len(matches) > 1 {
-					switch matches[1] {
-					case "route":
-						if !op {
-							cp.Operations = append(cp.Operations, file)
-							op = true
+				var seenStruct string
+				for _, cline := range comments.List {
+					if cline != nil {
+						matches := rxSwaggerAnnotation.FindStringSubmatch(cline.Text)
+						if len(matches) > 1 {
+							switch matches[1] {
+							case "route":
+								if !op {
+									cp.Operations = append(cp.Operations, file)
+									op = true
+								}
+							case "model":
+								// models are discovered through parameters and responses
+								// no actual scanning for them is required
+								if seenStruct == "" || seenStruct == matches[1] {
+									seenStruct = matches[1]
+								} else {
+									return nil, fmt.Errorf("classifier: already annotated as %s, can't also be %q", seenStruct, matches[1])
+								}
+							case "meta":
+								if !mt {
+									cp.Meta = append(cp.Meta, file)
+									mt = true
+								}
+							case "parameters":
+								if !pm {
+									cp.Parameters = append(cp.Parameters, file)
+									pm = true
+								}
+								if seenStruct == "" || seenStruct == matches[1] {
+									seenStruct = matches[1]
+								} else {
+									return nil, fmt.Errorf("classifier: already annotated as %s, can't also be %q", seenStruct, matches[1])
+								}
+							case "response":
+								if !rs {
+									cp.Responses = append(cp.Responses, file)
+									rs = true
+								}
+								if seenStruct == "" || seenStruct == matches[1] {
+									seenStruct = matches[1]
+								} else {
+									return nil, fmt.Errorf("classifier: already annotated as %s, can't also be %q", seenStruct, matches[1])
+								}
+							case "strfmt":
+								// TODO: perhaps collect these and pass along to avoid lookups later on
+							case "allOf":
+							default:
+								return nil, fmt.Errorf("classifier: unknown swagger annotation %q", matches[1])
+							}
 						}
-					case "model":
-						// models are discovered through parameters and responses
-						// no actual scanning for them is required
-						// TODO: check if this isn't also annotated with an incompatible marker
-					case "meta":
-						if !mt {
-							cp.Meta = append(cp.Meta, file)
-							mt = true
-						}
-					case "parameters":
-						if !pm {
-							cp.Parameters = append(cp.Parameters, file)
-							pm = true
-						}
-						// TODO: check if this isn't also annotated with an incompatible marker
-					case "response":
-						if !rs {
-							cp.Responses = append(cp.Responses, file)
-							rs = true
-						}
-						// TODO: check if this isn't also annotated with an incompatible marker
-					case "strfmt":
-						// TODO: perhaps collect these and pass along to avoid lookups later on
-					case "allOf":
-					default:
-						return nil, fmt.Errorf("classifier: unknown swagger annotation %q", matches[1])
+
 					}
 				}
 			}
