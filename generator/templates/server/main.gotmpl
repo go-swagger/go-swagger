@@ -20,7 +20,7 @@ import (
 
 
 func main() {
-  swaggerSpec, err := spec.New(swaggerJSON, "")
+  swaggerSpec, err := spec.New(SwaggerJSON, "")
   if err != nil {
     log.Fatalln(err)
   }
