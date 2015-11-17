@@ -31,7 +31,6 @@ func NewFind(ctx *middleware.Context, handler FindHandler) *Find {
 
 Find find API
 
-
 */
 type Find struct {
 	Context *middleware.Context

@@ -31,7 +31,6 @@ func NewDestroyOne(ctx *middleware.Context, handler DestroyOneHandler) *DestroyO
 
 DestroyOne destroy one API
 
-
 */
 type DestroyOne struct {
 	Context *middleware.Context

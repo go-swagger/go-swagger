@@ -31,7 +31,6 @@ func NewAddOne(ctx *middleware.Context, handler AddOneHandler) *AddOne {
 
 AddOne add one API
 
-
 */
 type AddOne struct {
 	Context *middleware.Context

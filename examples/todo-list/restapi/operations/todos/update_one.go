@@ -31,7 +31,6 @@ func NewUpdateOne(ctx *middleware.Context, handler UpdateOneHandler) *UpdateOne 
 
 UpdateOne update one API
 
-
 */
 type UpdateOne struct {
 	Context *middleware.Context
