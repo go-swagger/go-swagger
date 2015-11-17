@@ -1,4 +1,3 @@
-
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +17,8 @@ package client
 import (
 	"fmt"
 	"net/http"
+	"net/http/httputil"
+	"os"
 	"path/filepath"
 
 	"github.com/go-swagger/go-swagger/client"
@@ -39,6 +40,7 @@ type Runtime struct {
 	Host      string
 	BasePath  string
 	Formats   strfmt.Registry
+	Debug     bool
 
 	client          *http.Client
 	methodsAndPaths map[string]methodAndPath
@@ -62,6 +64,7 @@ func New(swaggerSpec *spec.Document) *Runtime {
 	rt.client.Transport = rt.Transport
 	rt.Host = swaggerSpec.Host()
 	rt.BasePath = swaggerSpec.BasePath()
+	rt.Debug = os.Getenv("DEBUG") == "1"
 	schemes := swaggerSpec.Spec().Schemes
 	if len(schemes) == 0 {
 		schemes = append(schemes, "http")
@@ -137,9 +140,23 @@ func (r *Runtime) Submit(context *client.Operation) (interface{}, error) {
 	}
 
 	r.client.Transport = r.Transport
+	if r.Debug {
+		b, err := httputil.DumpRequestOut(req, true)
+		if err != nil {
+			return nil, err
+		}
+		fmt.Println(string(b))
+	}
 	res, err := r.client.Do(req) // make requests, by default follows 10 redirects before failing
 	if err != nil {
 		return nil, err
+	}
+	if r.Debug {
+		b, err := httputil.DumpResponse(res, true)
+		if err != nil {
+			return nil, err
+		}
+		fmt.Println(string(b))
 	}
 	ct := res.Header.Get(httpkit.HeaderContentType)
 	if ct == "" { // this should really really never occur

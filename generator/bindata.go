@@ -189,7 +189,7 @@ func templatesClientResponseGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/client/response.gotmpl", size: 3165, mode: os.FileMode(420), modTime: time.Unix(1447802283, 0)}
+	info := bindataFileInfo{name: "templates/client/response.gotmpl", size: 3165, mode: os.FileMode(420), modTime: time.Unix(1447802315, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -409,7 +409,7 @@ func templatesServerDocGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/server/doc.gotmpl", size: 1105, mode: os.FileMode(420), modTime: time.Unix(1447802283, 0)}
+	info := bindataFileInfo{name: "templates/server/doc.gotmpl", size: 1105, mode: os.FileMode(420), modTime: time.Unix(1447802315, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -449,7 +449,7 @@ func templatesServerOperationGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/server/operation.gotmpl", size: 3629, mode: os.FileMode(420), modTime: time.Unix(1447802283, 0)}
+	info := bindataFileInfo{name: "templates/server/operation.gotmpl", size: 3629, mode: os.FileMode(420), modTime: time.Unix(1447802315, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -469,7 +469,7 @@ func templatesServerParameterGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/server/parameter.gotmpl", size: 9318, mode: os.FileMode(420), modTime: time.Unix(1447802283, 0)}
+	info := bindataFileInfo{name: "templates/server/parameter.gotmpl", size: 9318, mode: os.FileMode(420), modTime: time.Unix(1447802315, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -489,7 +489,7 @@ func templatesServerResponsesGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/server/responses.gotmpl", size: 2613, mode: os.FileMode(420), modTime: time.Unix(1447802283, 0)}
+	info := bindataFileInfo{name: "templates/server/responses.gotmpl", size: 2613, mode: os.FileMode(420), modTime: time.Unix(1447802315, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
