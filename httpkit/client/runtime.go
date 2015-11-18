@@ -20,6 +20,7 @@ import (
 	"net/http/httputil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/go-swagger/go-swagger/client"
 	"github.com/go-swagger/go-swagger/httpkit"
@@ -64,6 +65,9 @@ func New(swaggerSpec *spec.Document) *Runtime {
 	rt.client.Transport = rt.Transport
 	rt.Host = swaggerSpec.Host()
 	rt.BasePath = swaggerSpec.BasePath()
+	if !strings.HasPrefix(rt.BasePath, "/") {
+		rt.BasePath = "/" + rt.BasePath
+	}
 	rt.Debug = os.Getenv("DEBUG") == "1"
 	schemes := swaggerSpec.Spec().Schemes
 	if len(schemes) == 0 {

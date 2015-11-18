@@ -1,4 +1,3 @@
-
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -184,6 +183,7 @@ func TestRuntime_AuthCanary(t *testing.T) {
 	if assert.NoError(t, err) {
 
 		runtime := New(specDoc)
+		runtime.Debug = true
 		res, err := runtime.Submit(&client.Operation{
 			ID:     "getTasks",
 			Params: rwrtr,

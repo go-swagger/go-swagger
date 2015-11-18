@@ -1,4 +1,3 @@
-
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -135,8 +134,10 @@ func (r *request) BuildHTTP(producer httpkit.Producer, registry strfmt.Registry)
 
 	// write the form values as body
 	// if there is payload, use the producer to write the payload
-	if err := producer.Produce(body, r.payload); err != nil {
-		return nil, err
+	if r.payload != nil {
+		if err := producer.Produce(body, r.payload); err != nil {
+			return nil, err
+		}
 	}
 	return req, nil
 }
