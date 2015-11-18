@@ -59,6 +59,46 @@ func TestSimpleResponses(t *testing.T) {
 	}
 
 }
+func TestInlinedSchemaResponses(t *testing.T) {
+	b, err := opBuilder("getTasks", "../fixtures/codegen/todolist.responses.yml")
+
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+
+	_, _, op, ok := b.Doc.OperationForName("getTasks")
+	if assert.True(t, ok) && assert.NotNil(t, op) && assert.NotNil(t, op.Responses) {
+		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+		if assert.NotNil(t, op.Responses.Default) {
+			resp := *op.Responses.Default
+			defCtx := responseTestContext{
+				OpID: "getTasks",
+				Name: "default",
+			}
+			res, err := b.MakeResponse("a", defCtx.Name, false, resolver, -1, resp)
+			if assert.NoError(t, err) {
+				if defCtx.Assert(t, resp, res) {
+					for code, response := range op.Responses.StatusCodeResponses {
+						sucCtx := responseTestContext{
+							OpID:      "getTasks",
+							Name:      "success",
+							IsSuccess: code/100 == 2,
+						}
+						res, err := b.MakeResponse("a", sucCtx.Name, sucCtx.IsSuccess, resolver, code, response)
+						if assert.NoError(t, err) {
+							if !sucCtx.Assert(t, response, res) {
+								return
+							}
+						}
+						assert.Len(t, b.ExtraSchemas, 1)
+						assert.Equal(t, "[]*SuccessBodyItems0", res.Schema.GoType)
+					}
+				}
+			}
+		}
+	}
+
+}
 
 type responseTestContext struct {
 	OpID      string

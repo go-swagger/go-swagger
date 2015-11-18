@@ -61,3 +61,11 @@ import (
 {{ if .DefaultResponse }}
 {{ template "serverresponse" .DefaultResponse }}
 {{ end }}
+
+{{ range .ExtraSchemas }}
+/*
+{{ template "docstring" . }}
+swagger:model {{ .Name }}
+*/
+{{ template "schema" . }}
+{{ end }}

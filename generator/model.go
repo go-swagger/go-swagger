@@ -1,4 +1,3 @@
-
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -203,7 +202,9 @@ type schemaGenContext struct {
 	Untyped            bool
 	Named              bool
 	RefHandled         bool
-	Index              int
+	IsVirtual          bool
+
+	Index int
 
 	GenSchema    GenSchema
 	Dependencies []string
@@ -222,6 +223,9 @@ func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContex
 	pg.ValueExpr = pg.ValueExpr + "[" + indexVar + "]"
 	pg.Schema = *schema
 	pg.Required = false
+	if sg.IsVirtual {
+		pg.TypeResolver = &typeResolver{Doc: sg.TypeResolver.Doc, ModelName: sg.TypeResolver.ModelName}
+	}
 
 	// when this is an anonymous complex object, this needs to become a ref
 	return pg
@@ -653,9 +657,15 @@ func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *sche
 		ValueExpr:    "m",
 		Schema:       schema,
 		Required:     false,
-		TypeResolver: sg.TypeResolver,
 		Named:        true,
 		ExtraSchemas: make(map[string]GenSchema),
+	}
+	if schema.Ref.String() == "" {
+		pg.TypeResolver = &typeResolver{
+			Doc:           sg.TypeResolver.Doc,
+			ModelName:     sg.TypeResolver.ModelName,
+			ModelsPackage: "",
+		}
 	}
 	pg.GenSchema.IsVirtual = true
 
@@ -664,6 +674,8 @@ func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *sche
 }
 
 func (sg *schemaGenContext) buildArray() error {
+	//var tpe *resolvedType
+	//var err error
 	tpe, err := sg.TypeResolver.ResolveSchema(sg.Schema.Items.Schema, true)
 	if err != nil {
 		return err
@@ -677,6 +689,7 @@ func (sg *schemaGenContext) buildArray() error {
 		sg.MergeResult(pg, false)
 		sg.ExtraSchemas[pg.Name] = pg.GenSchema
 		sg.Schema.Items.Schema = spec.RefProperty("#/definitions/" + pg.Name)
+		sg.IsVirtual = true
 		if err := sg.makeGenSchema(); err != nil {
 			return err
 		}

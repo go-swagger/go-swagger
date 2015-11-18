@@ -83,3 +83,11 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response cl
 {{ if .DefaultResponse }}
 {{ template "clientresponse" .DefaultResponse }}
 {{ end }}
+
+{{ range .ExtraSchemas }}
+/*
+{{ template "docstring" . }}
+swagger:model {{ .Name }}
+*/
+{{ template "schema" . }}
+{{ end }}

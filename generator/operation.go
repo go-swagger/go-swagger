@@ -389,6 +389,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 
 		schema := sc.GenSchema
 		if schema.IsAnonymous {
+
 			schema.Name = swag.ToGoName(sc.Name + " Body")
 			nm := schema.Name
 			if b.ExtraSchemas == nil {

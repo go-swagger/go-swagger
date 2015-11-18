@@ -106,6 +106,7 @@ func (r *Runtime) Submit(context *client.Operation) (interface{}, error) {
 	for k := range r.Consumers {
 		accept = append(accept, k)
 	}
+
 	request.SetHeaderParam(httpkit.HeaderAccept, accept...)
 
 	if auth == nil && r.DefaultAuthentication != nil {
@@ -168,12 +169,12 @@ func (r *Runtime) Submit(context *client.Operation) (interface{}, error) {
 		ct = r.DefaultMediaType
 	}
 
+	// TODO: normalize this (ct) and only match on media type,
+	// skip the params like charset unless a tie breaker is needed
 	mt, _, err := mime.ParseMediaType(ct)
 	if err != nil {
 		return nil, fmt.Errorf("parse content type: %s", err)
 	}
-	// TODO: normalize this (ct) and only match on media type,
-	// skip the params like charset unless a tie breaker is needed
 	cons, ok := r.Consumers[mt]
 	if !ok {
 		// scream about not knowing what to do

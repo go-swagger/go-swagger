@@ -135,7 +135,8 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
   {{ end }}{{ end }}
 
   {{ if .IsBodyParam }}
-  if err := route.Consumer.Consume(r.Body, {{ if not .IsNullable }}&{{ end }}{{ .ReceiverName }}.{{ pascalize .Name }}); err != nil {
+  var body {{ .GoType }}
+  if err := route.Consumer.Consume(r.Body, &body); err != nil {
     res = append(res, errors.NewParseError("{{ camelize .Name }}", "{{ .Location }}", "", err))
   } else {
     {{ if .IsArray }}for _, {{ .IndexVar }}{{ .ReceiverName }} := range {{ .ReceiverName }}.{{ pascalize .Name }} {
@@ -148,6 +149,9 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
       res = append(res, err)
     }
     {{ end }}
+    if len(res) == 0 {
+      {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if not .IsNullable }}&{{ end }}body
+    }
   }
 
   {{ end }}

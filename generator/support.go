@@ -190,7 +190,7 @@ func (a *appGenerator) generateDoc(app *GenApp) error {
 		return err
 	}
 	log.Println("rendered doc template:", app.Package+"."+swag.ToGoName(app.Name))
-	return writeToFile(filepath.Join(a.Target, a.ServerPackage, app.Package), "Doc", buf.Bytes())
+	return writeToFile(filepath.Join(a.Target, "cmd", swag.ToCommandName(swag.ToGoName(app.Name)+"Server")), "Doc", buf.Bytes())
 }
 
 var mediaTypeNames = map[*regexp.Regexp]string{
