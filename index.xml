@@ -120,6 +120,10 @@ supports.&lt;/p&gt;
 &lt;li&gt;&lt;a href=&#34;https://godoc.org/github.com/fluhus/godoc-tricks&#34;&gt;godoc tricks&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
+&lt;p&gt;When an object has a title and a description field, it will use the go rules to parse those. So the first line of the
+comment block will become the title, or a header when rendered as godoc. The rest of the comment block will be treated
+as description up to either the end of the comment block, or a line that starts with a known annotation.&lt;/p&gt;
+
 &lt;h4 id=&#34;annotation-syntax:958e7270f96f5407d7d980f500805b1b&#34;&gt;Annotation syntax&lt;/h4&gt;
 
 &lt;p&gt;If you want to exclude something from the spec generation process you can try with the struct tag: &lt;code&gt;json:&amp;quot;-&amp;quot;&lt;/code&gt;&lt;/p&gt;
@@ -1134,7 +1138,7 @@ level the value is a 0-based index, so items.minLength is the same as items.0.mi
 
 &lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;// User represents the user for this application
 //
-// A user is the security principal for this aplication.
+// A user is the security principal for this application.
 // It&#39;s also used as one of main axis for reporting.
 //
 // A user can have friends with whom they can share what they like.
@@ -1170,7 +1174,7 @@ definitions:
     type: object
     title: User represents the user for this application
     description: &amp;quot;A user is the security principal for this application.\nIt&#39;s also used as one of the main axis for reporting.\n\nA user can have friends with whom they can share what they like.&amp;quot;
-    required: 
+    required:
       - id
       - name
       - login
