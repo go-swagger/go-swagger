@@ -1,4 +1,3 @@
-
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -177,7 +176,7 @@ func AssetNames() []string {
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
 	"jsonschema-draft-04.json": jsonschemaDraft04JSON,
-	"v2/schema.json": v2SchemaJSON,
+	"v2/schema.json":           v2SchemaJSON,
 }
 
 // AssetDir returns the file names below a certain
@@ -219,6 +218,7 @@ type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
+
 var _bintree = &bintree{nil, map[string]*bintree{
 	"jsonschema-draft-04.json": &bintree{jsonschemaDraft04JSON, map[string]*bintree{}},
 	"v2": &bintree{nil, map[string]*bintree{
@@ -272,4 +272,3 @@ func _filePath(dir, name string) string {
 	cannonicalName := strings.Replace(name, "\\", "/", -1)
 	return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
 }
-
