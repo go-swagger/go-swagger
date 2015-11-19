@@ -6,7 +6,7 @@ weight = 1
 series = ["home"]
 +++
 
-The toolkit has a command that will let you generate a swagger spec document from your code. 
+The toolkit has a command that will let you generate a swagger spec document from your code.
 The command integrates with go doc comments, and makes use of structs when it needs to know of
 types.
 
@@ -59,6 +59,9 @@ Single page which documents all the currently supported godoc rules:
 
 * [godoc tricks](https://godoc.org/github.com/fluhus/godoc-tricks)
 
+When an object has a title and a description field, it will use the go rules to parse those. So the first line of the
+comment block will become the title, or a header when rendered as godoc. The rest of the comment block will be treated
+as description up to either the end of the comment block, or a line that starts with a known annotation.
 
 #### Annotation syntax
 
@@ -66,7 +69,7 @@ If you want to exclude something from the spec generation process you can try wi
 
 There are several annotations that mark a comment block as a participant for the swagger spec.
 
-* [swagger:meta](meta) 
+* [swagger:meta](meta)
 * [swagger:route](route)
 * [swagger:params](params)
 * [swagger:response](response)

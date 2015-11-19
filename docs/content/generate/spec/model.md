@@ -60,7 +60,7 @@ Annotation | Format
 ```go
 // User represents the user for this application
 //
-// A user is the security principal for this aplication.
+// A user is the security principal for this application.
 // It's also used as one of main axis for reporting.
 //
 // A user can have friends with whom they can share what they like.
@@ -97,7 +97,7 @@ definitions:
     type: object
     title: User represents the user for this application
     description: "A user is the security principal for this application.\nIt's also used as one of the main axis for reporting.\n\nA user can have friends with whom they can share what they like."
-    required: 
+    required:
       - id
       - name
       - login
