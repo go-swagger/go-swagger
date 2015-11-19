@@ -853,7 +853,7 @@ level the value is a 0-based index, so items.minLength is the same as items.0.mi
 
 &lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;// User represents the user for this application
 //
-// A user is the security principal for this aplication.
+// A user is the security principal for this application.
 // It&#39;s also used as one of main axis for reporting.
 //
 // A user can have friends with whom they can share what they like.
@@ -889,7 +889,7 @@ definitions:
     type: object
     title: User represents the user for this application
     description: &amp;quot;A user is the security principal for this application.\nIt&#39;s also used as one of the main axis for reporting.\n\nA user can have friends with whom they can share what they like.&amp;quot;
-    required: 
+    required:
       - id
       - name
       - login

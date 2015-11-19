@@ -116,6 +116,10 @@ supports.</p>
 <li><a href="https://godoc.org/github.com/fluhus/godoc-tricks">godoc tricks</a></li>
 </ul>
 
+<p>When an object has a title and a description field, it will use the go rules to parse those. So the first line of the
+comment block will become the title, or a header when rendered as godoc. The rest of the comment block will be treated
+as description up to either the end of the comment block, or a line that starts with a known annotation.</p>
+
 <h4 id="annotation-syntax:958e7270f96f5407d7d980f500805b1b">Annotation syntax</h4>
 
 <p>If you want to exclude something from the spec generation process you can try with the struct tag: <code>json:&quot;-&quot;</code></p>
