@@ -44,11 +44,11 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts GenOpts
 		Operations:    operations,
 		Target:        opts.Target,
 		DumpData:      opts.DumpData,
-		Package:       mangleName(opts.APIPackage, "api"),
-		APIPackage:    mangleName(opts.APIPackage, "api"),
-		ModelsPackage: mangleName(opts.ModelPackage, "definitions"),
-		ServerPackage: mangleName(opts.ServerPackage, "server"),
-		ClientPackage: mangleName(opts.ClientPackage, "client"),
+		Package:       mangleName(swag.ToFileName(opts.APIPackage), "api"),
+		APIPackage:    mangleName(swag.ToFileName(opts.APIPackage), "api"),
+		ModelsPackage: mangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
+		ServerPackage: mangleName(swag.ToFileName(opts.ServerPackage), "server"),
+		ClientPackage: mangleName(swag.ToFileName(opts.ClientPackage), "client"),
 		Principal:     opts.Principal,
 	}
 	generator.Receiver = "o"

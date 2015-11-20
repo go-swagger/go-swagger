@@ -41,7 +41,7 @@ func GenerateSupport(name string, modelNames, operationIDs []string, opts GenOpt
 	models := gatherModels(specDoc, modelNames)
 	operations := gatherOperations(specDoc, operationIDs)
 
-	apiPackage := mangleName(opts.APIPackage, "api")
+	apiPackage := mangleName(swag.ToFileName(opts.APIPackage), "api")
 	generator := appGenerator{
 		Name:       appNameOrDefault(specDoc, name, "swagger"),
 		Receiver:   "o",
@@ -53,9 +53,9 @@ func GenerateSupport(name string, modelNames, operationIDs []string, opts GenOpt
 		DumpData:      opts.DumpData,
 		Package:       apiPackage,
 		APIPackage:    apiPackage,
-		ModelsPackage: mangleName(opts.ModelPackage, "definitions"),
-		ServerPackage: mangleName(opts.ServerPackage, "server"),
-		ClientPackage: mangleName(opts.ClientPackage, "client"),
+		ModelsPackage: mangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
+		ServerPackage: mangleName(swag.ToFileName(opts.ServerPackage), "server"),
+		ClientPackage: mangleName(swag.ToFileName(opts.ClientPackage), "client"),
 		Principal:     opts.Principal,
 	}
 

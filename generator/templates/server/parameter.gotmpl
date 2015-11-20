@@ -145,12 +145,12 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
         break
       }
     }
-    {{ else }}if err := {{ .ReceiverName }}.{{ pascalize .Name }}.Validate(route.Formats); err != nil {
+    {{ else }}if err := body.Validate(route.Formats); err != nil {
       res = append(res, err)
     }
     {{ end }}
     if len(res) == 0 {
-      {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if not .IsNullable }}&{{ end }}body
+      {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if .IsNullable }}&{{ end }}body
     }
   }
 
