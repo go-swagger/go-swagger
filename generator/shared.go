@@ -43,6 +43,22 @@ var defaultGoImports = []string{
 	"byte", "rune",
 }
 
+var reservedGoWordSet map[string]struct{}
+
+func init() {
+	reservedGoWordSet = make(map[string]struct{})
+	for _, gw := range reservedGoWords {
+		reservedGoWordSet[gw] = struct{}{}
+	}
+}
+
+func mangleName(name, suffix string) string {
+	if _, ok := reservedGoWordSet[swag.ToFileName(name)]; !ok {
+		return name
+	}
+	return strings.Join([]string{name, suffix}, "_")
+}
+
 func findSwaggerSpec(name string) (string, error) {
 	f, err := os.Stat(name)
 	if err != nil {

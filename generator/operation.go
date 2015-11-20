@@ -49,18 +49,19 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 			return fmt.Errorf("operation %q not found in %s", operationName, specPath)
 		}
 
+		apiPackage := mangleName(opts.APIPackage, "api")
 		generator := operationGenerator{
 			Name:                 operationName,
 			Method:               method,
 			Path:                 path,
-			APIPackage:           opts.APIPackage,
-			ModelsPackage:        opts.ModelPackage,
-			ClientPackage:        opts.ClientPackage,
-			ServerPackage:        opts.ServerPackage,
+			APIPackage:           apiPackage,
+			ModelsPackage:        mangleName(opts.ModelPackage, "definitions"),
+			ClientPackage:        mangleName(opts.ClientPackage, "client"),
+			ServerPackage:        mangleName(opts.ServerPackage, "server"),
 			Operation:            *operation,
 			SecurityRequirements: specDoc.SecurityRequirementsFor(operation),
 			Principal:            opts.Principal,
-			Target:               filepath.Join(opts.Target, opts.APIPackage),
+			Target:               filepath.Join(opts.Target, apiPackage),
 			Base:                 opts.Target,
 			Tags:                 tags,
 			IncludeHandler:       includeHandler,
@@ -122,7 +123,7 @@ func (o *operationGenerator) Generate() error {
 
 	for _, tag := range o.Operation.Tags {
 		if len(o.Tags) == 0 {
-			bldr.APIPackage = tag
+			bldr.APIPackage = mangleName(tag, o.APIPackage)
 			op, err := bldr.MakeOperation()
 			if err != nil {
 				return err
@@ -132,7 +133,7 @@ func (o *operationGenerator) Generate() error {
 		}
 		for _, ft := range o.Tags {
 			if ft == tag {
-				bldr.APIPackage = tag
+				bldr.APIPackage = mangleName(tag, o.APIPackage)
 				op, err := bldr.MakeOperation()
 				if err != nil {
 					return err

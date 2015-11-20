@@ -156,7 +156,7 @@ func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *spec.Docum
 	}
 
 	return &GenDefinition{
-		Package:        filepath.Base(pkg),
+		Package:        mangleName(filepath.Base(pkg), "definitions"),
 		GenSchema:      pg.GenSchema,
 		DependsOn:      pg.Dependencies,
 		DefaultImports: defaultImports,

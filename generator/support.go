@@ -41,6 +41,7 @@ func GenerateSupport(name string, modelNames, operationIDs []string, opts GenOpt
 	models := gatherModels(specDoc, modelNames)
 	operations := gatherOperations(specDoc, operationIDs)
 
+	apiPackage := mangleName(opts.APIPackage, "api")
 	generator := appGenerator{
 		Name:       appNameOrDefault(specDoc, name, "swagger"),
 		Receiver:   "o",
@@ -50,11 +51,11 @@ func GenerateSupport(name string, modelNames, operationIDs []string, opts GenOpt
 		Target:     opts.Target,
 		// Package:       filepath.Base(opts.Target),
 		DumpData:      opts.DumpData,
-		Package:       opts.APIPackage,
-		APIPackage:    opts.APIPackage,
-		ModelsPackage: opts.ModelPackage,
-		ServerPackage: opts.ServerPackage,
-		ClientPackage: opts.ClientPackage,
+		Package:       apiPackage,
+		APIPackage:    apiPackage,
+		ModelsPackage: mangleName(opts.ModelPackage, "definitions"),
+		ServerPackage: mangleName(opts.ServerPackage, "server"),
+		ClientPackage: mangleName(opts.ClientPackage, "client"),
 		Principal:     opts.Principal,
 	}
 
@@ -424,6 +425,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	bldr.Doc = a.SpecDoc
 
 	for on, o := range a.Operations {
+		// TODO: change operation name to something safe
 		bldr.Name = on
 		bldr.Operation = o
 		bldr.Authed = len(a.SpecDoc.SecurityRequirementsFor(&o)) > 0
@@ -431,7 +433,8 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		if len(o.Tags) > 0 {
 			for _, tag := range o.Tags {
 				tns[tag] = struct{}{}
-				bldr.APIPackage = swag.ToFileName(tag)
+				// TODO: change package name to something safe
+				bldr.APIPackage = mangleName(swag.ToFileName(tag), a.APIPackage)
 				op, err := bldr.MakeOperation()
 				if err != nil {
 					return GenApp{}, err
@@ -440,6 +443,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 				genOps = append(genOps, op)
 			}
 		} else {
+			// TOOD: change package name to something safe
 			bldr.APIPackage = swag.ToFileName(ap)
 			op, err := bldr.MakeOperation()
 			if err != nil {
