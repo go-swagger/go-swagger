@@ -35,7 +35,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r client.
   var res []error
   {{range .Params}}
 
-  {{if not .IsArray }}
+  {{if not (or .IsArray .IsBodyParam) }}
   {{ if not .Required }}if {{ .ValueExpression }} != nil { {{ end}}
   {{ if .IsQueryParam }}
   // query param {{ .Name }}
@@ -89,10 +89,11 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r client.
   {{ end }}
 
   {{if .IsBodyParam}}
-  if {{ .ValueExpression }} != nil {
-    if err := r.SetBodyParam({{ .ValueExpression }}); err != nil {
-      return err
-    }
+  if {{ .ValueExpression }} == nil {
+    {{ .ValueExpression }} = {{ .ZeroValue }}
+  }
+  if err := r.SetBodyParam({{ .ValueExpression }}); err != nil {
+    return err
   }
   {{end}}
   {{end}}

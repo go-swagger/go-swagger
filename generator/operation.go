@@ -533,6 +533,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		res.Schema = &schema
 		res.resolvedType = schema.resolvedType
 		res.sharedValidations = schema.sharedValidations
+		res.ZeroValue = schema.Zero()
 
 	} else {
 		res.resolvedType = simpleResolvedType(param.Type, param.Format, param.Items)
@@ -858,8 +859,9 @@ type GenParameter struct {
 
 	BodyParam *GenParameter
 
-	Default interface{}
-	Enum    []interface{}
+	Default   interface{}
+	Enum      []interface{}
+	ZeroValue string
 }
 
 // IsQueryParam returns true when this parameter is a query param

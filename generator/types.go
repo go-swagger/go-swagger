@@ -32,9 +32,11 @@ var goImports = map[string]string{
 var zeroes = map[string]string{
 	"string":            "\"\"",
 	"int8":              "0",
+	"int":               "0",
 	"int16":             "0",
 	"int32":             "0",
 	"int64":             "0",
+	"uint":              "0",
 	"uint8":             "0",
 	"uint16":            "0",
 	"uint32":            "0",
@@ -444,6 +446,26 @@ type resolvedType struct {
 	GoType        string
 	SwaggerType   string
 	SwaggerFormat string
+}
+
+func (rt *resolvedType) Zero() string {
+	if zr, ok := zeroes[rt.GoType]; ok {
+		return zr
+	}
+	if rt.IsMap || rt.IsArray {
+		return "make(" + rt.GoType + ")"
+	}
+	if rt.IsTuple || rt.IsComplexObject {
+		if rt.IsNullable {
+			return "new(" + rt.GoType + ")"
+		}
+		return rt.GoType + "{}"
+	}
+	if rt.IsInterface {
+		return "nil"
+	}
+
+	return ""
 }
 
 var primitives = map[string]struct{}{
