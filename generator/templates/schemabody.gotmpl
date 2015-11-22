@@ -8,7 +8,7 @@
   {{ pascalize .AdditionalItems.Name }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
   {{ end }}
   {{ else }}
-  {{if .IsNullable }}*{{ end }}{{ .GoType }}{{ end }}
+  {{ .GoType }}{{ end }}
   {{ end }}
   {{range .Properties}}
   {{ if $.IsTuple }}{{ template "tuplefield" . }}{{ else }}{{template "structfield" . }}{{ end }}
