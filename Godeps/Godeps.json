@@ -73,32 +73,41 @@
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Comment": "v1.0-80-g67106a5",
-			"Rev": "67106a5111a06241c8d84952c33214675f51a34a"
+			"Comment": "v1.0-83-gd797d25",
+			"Rev": "d797d25e0fa6d53be3b1a216d24e868d6a1912ef"
+		},
+		{
+			"ImportPath": "github.com/tylerb/graceful",
+			"Comment": "v1.2.3",
+			"Rev": "48afeb21e2fcbcff0f30bd5ad6b97747b0fae38e"
+		},
+		{
+			"ImportPath": "golang.org/x/net/netutil",
+			"Rev": "4f2fc6c1e69d41baf187332ee08fbd2b296f21ed"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/ast/astutil",
-			"Rev": "d94e6fe0fd36ddeac451f8ed1987b55db35bca35"
+			"Rev": "9cd799205e6fcf8628275ce5d7814bc09a22fff0"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/buildutil",
-			"Rev": "d94e6fe0fd36ddeac451f8ed1987b55db35bca35"
+			"Rev": "9cd799205e6fcf8628275ce5d7814bc09a22fff0"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/exact",
-			"Rev": "d94e6fe0fd36ddeac451f8ed1987b55db35bca35"
+			"Rev": "9cd799205e6fcf8628275ce5d7814bc09a22fff0"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/loader",
-			"Rev": "d94e6fe0fd36ddeac451f8ed1987b55db35bca35"
+			"Rev": "9cd799205e6fcf8628275ce5d7814bc09a22fff0"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/types",
-			"Rev": "d94e6fe0fd36ddeac451f8ed1987b55db35bca35"
+			"Rev": "9cd799205e6fcf8628275ce5d7814bc09a22fff0"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/imports",
-			"Rev": "d94e6fe0fd36ddeac451f8ed1987b55db35bca35"
+			"Rev": "9cd799205e6fcf8628275ce5d7814bc09a22fff0"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",

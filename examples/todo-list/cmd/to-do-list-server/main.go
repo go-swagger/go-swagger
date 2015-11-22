@@ -21,7 +21,6 @@ import (
 // It would only be overwritten if you explicitly specify --include-main for the generate all or support commands
 //go:generate swagger generate server -t ../.. -A ToDoList
 
-// []string{"https", "http"}
 var opts struct {
 	Host string `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
 	Port int    `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`

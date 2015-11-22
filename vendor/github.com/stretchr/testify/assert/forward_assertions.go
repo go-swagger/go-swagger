@@ -1,18 +1,3 @@
-
-// Copyright 2015 go-swagger maintainers
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package assert
 
 import "time"
@@ -96,7 +81,7 @@ func (a *Assertions) Nil(object interface{}, msgAndArgs ...interface{}) bool {
 // Empty asserts that the specified object is empty.  I.e. nil, "", false, 0 or a
 // slice with len == 0.
 //
-// assert.Empty(obj)
+//  assert.Empty(obj)
 //
 // Returns whether the assertion was successful (true) or not (false).
 func (a *Assertions) Empty(object interface{}, msgAndArgs ...interface{}) bool {
@@ -106,9 +91,9 @@ func (a *Assertions) Empty(object interface{}, msgAndArgs ...interface{}) bool {
 // NotEmpty asserts that the specified object is NOT empty.  I.e. not nil, "", false, 0 or a
 // slice with len == 0.
 //
-// if assert.NotEmpty(obj) {
-//   assert.Equal("two", obj[1])
-// }
+//  if assert.NotEmpty(obj) {
+//    assert.Equal("two", obj[1])
+//  }
 //
 // Returns whether the assertion was successful (true) or not (false).
 func (a *Assertions) NotEmpty(object interface{}, msgAndArgs ...interface{}) bool {

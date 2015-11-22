@@ -20,7 +20,6 @@ import (
 // It would only be overwritten if you explicitly specify --include-main for the generate all or support commands
 //go:generate swagger generate server -t ../.. -A {{ pascalize .Name }}{{ if .Principal }}{{if not ( eq .Principal "interface{}" )}} --principal {{.Principal}}{{end}}{{end}}
 
-// {{ printf "%#v" .Schemes }}
 var opts struct { {{ if (hasInsecure .Schemes) }}
 	Host string `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
 	Port int    `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`{{ end }}{{ if (hasSecure .Schemes) }}
