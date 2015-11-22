@@ -27,6 +27,7 @@ func (o *AddOneParams) WriteToRequest(r client.Request, reg strfmt.Registry) err
 	if o.Body == nil {
 		o.Body = new(models.Item)
 	}
+
 	if err := r.SetBodyParam(o.Body); err != nil {
 		return err
 	}

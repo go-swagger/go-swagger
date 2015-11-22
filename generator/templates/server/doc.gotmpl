@@ -7,7 +7,9 @@ Terms Of Service:
 {{ .Info.TermsOfService }}
 {{ end }}{{ if or .Schemes .Host .BasePath .Info }}
 {{ if .Schemes }}
-    Schemes: {{ range .Schemes }}{{.}}{{ end }}{{ end }}{{ if .Host }}
+    Schemes: {{ range .Schemes }}
+      {{.}}
+    {{ end }}{{ end }}{{ if .Host }}
     Host: {{ .Host }}{{ end }}{{ if .BasePath }}
     BasePath: {{ .BasePath }}{{ end}}{{ with .Info }}{{ if .Version }}
     Version: {{ .Version }}{{ end }}{{ if .License }}

@@ -25,7 +25,7 @@ type {{ pascalize .Name }}Params struct {
   {{ range .Params }}{{if .Description }}/*
   {{ .Description }}
   */{{ end }}
-  {{ pascalize .Name }} {{ if and (not .IsArray) (or .IsBodyParam (not .Required)) }}*{{ end }}{{ .GoType }}
+  {{ pascalize .Name }} {{ if and (not .IsArray) (or .IsNullable) }}*{{ end }}{{ .GoType }}
   {{ end }}
 }
 
@@ -36,43 +36,43 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r client.
   {{range .Params}}
 
   {{if not (or .IsArray .IsBodyParam) }}
-  {{ if not .Required }}if {{ .ValueExpression }} != nil { {{ end}}
+  {{ if .IsNullable }}if {{ .ValueExpression }} != nil { {{ end}}
   {{ if .IsQueryParam }}
   // query param {{ .Name }}
-  if err := r.SetQueryParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if not .Required }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if not .Required }}*{{end}}{{ .ValueExpression }}{{end}}); err != nil {
+  if err := r.SetQueryParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if .IsNullable }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if .IsNullable }}*{{end}}{{ .ValueExpression }}{{end}}); err != nil {
     return err
   }
   {{ else if .IsPathParam }}
   // path param {{ .Name }}
-  if err := r.SetPathParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if not .Required }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if not .Required }}*{{end}}{{ .ValueExpression }}{{end}}); err != nil {
+  if err := r.SetPathParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if .IsNullable }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if .IsNullable }}*{{end}}{{ .ValueExpression }}{{end}}); err != nil {
     return err
   }
   {{ else if .IsHeaderParam }}
   // header param {{ .Name }}
-  if err := r.SetHeaderParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if not .Required }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if not .Required }}*{{end}}{{ .ValueExpression }}{{end}}); err != nil {
+  if err := r.SetHeaderParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if .IsNullable }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if .IsNullable }}*{{end}}{{ .ValueExpression }}{{end}}); err != nil {
     return err
   }
   {{ else if .IsFormParam }}
   {{ if .IsFileParam }}
   // form file param {{ .Name }}
-  if err := r.SetFileParam({{ printf "%q" .Name }}, {{ if not .Required }}*{{end}}{{ .ValueExpression }}); err != nil {
+  if err := r.SetFileParam({{ printf "%q" .Name }}, {{ if .IsNullable }}*{{end}}{{ .ValueExpression }}); err != nil {
     return err
   }
   {{ else }}
   // form param {{ .Name }}
-  if err := r.SetFormParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if not .Required }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if not .Required }}*{{end}}{{ .ValueExpression }}{{end}}); err != nil {
+  if err := r.SetFormParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if .IsNullable }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if .IsNullable }}*{{end}}{{ .ValueExpression }}{{end}}); err != nil {
     return err
   }
   {{ end }}
   {{ end }}
-  {{ if not .Required }}}{{end}}
+  {{ if .IsNullable }}}{{end}}
   {{else if .IsArray }}
 
   {{ if .Child.Formatter }}var values{{ pascalize .Name }} []string
-  for _, v := range {{ if and (not .IsArray) (not .Required) }}*{{end}}{{ .ValueExpression }} {
+  for _, v := range {{ if and (not .IsArray) (.IsNullable) }}*{{end}}{{ .ValueExpression }} {
     values{{ .ParamName }} = append(values{{ pascalize .Name }}, {{ .Child.Formatter }}(v))
   }
-  {{ else }}values{{ pascalize .Name }} := {{ if and (not .IsArray) (not .Required) }}*{{end}}{{ .ValueExpression }}
+  {{ else }}values{{ pascalize .Name }} := {{ if and (not .IsArray) (.IsNullable) }}*{{end}}{{ .ValueExpression }}
   {{ end }}
   {{ if .IsQueryParam }}
   // query array param {{ .Name }}
@@ -89,9 +89,10 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r client.
   {{ end }}
 
   {{if .IsBodyParam}}
-  if {{ .ValueExpression }} == nil {
+  {{ if .Schema.IsComplexObject }}if {{ .ValueExpression }} == nil {
     {{ .ValueExpression }} = {{ .ZeroValue }}
-  }
+  }{{ end }}
+
   if err := r.SetBodyParam({{ .ValueExpression }}); err != nil {
     return err
   }
