@@ -148,6 +148,9 @@ func (r *Ref) Inherits(child Ref) (*Ref, error) {
 		return &child, nil
 	}
 
-	ref, _ := New(parentURL.ResolveReference(childURL).String())
+	ref, err := New(parentURL.ResolveReference(childURL).String())
+	if err != nil {
+		return nil, err
+	}
 	return &ref, nil
 }

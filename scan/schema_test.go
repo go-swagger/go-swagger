@@ -183,7 +183,7 @@ func TestEmbeddedAllOf(t *testing.T) {
 	assertProperty(t, &asch, "string", "name", "", "Name")
 
 	asch = schema.AllOf[1]
-	assert.Equal(t, "#/definitions/withNotes", asch.Ref.GetURL().String())
+	assert.Equal(t, "#/definitions/withNotes", asch.Ref.String())
 
 	asch = schema.AllOf[2]
 	assertProperty(t, &asch, "string", "createdAt", "date-time", "CreatedAt")

@@ -42,6 +42,29 @@
         }
     },
     "definitions": {
+        "Parent": {
+          "properties": {
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        "Circular1": {
+          "allOf": [{
+            "$ref": "#/definitions/Circular2"
+          }, {
+            "properties": {
+              "age": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          }]
+        },
         "Circular2": {
           "allOf": [{
             "$ref": "#/definitions/Circular1"
@@ -50,21 +73,6 @@
               "createdAt": {
                 "type": "string",
                 "format": "date-time"
-              }
-            }
-          }]
-        },
-        "Parent": {
-          "$ref": "#/definitions/Circular2"
-        },
-        "Circular1": {
-          "allOf": [{
-            "$ref": "#/definitions/Parent"
-          }, {
-            "properties": {
-              "age": {
-                "type": "integer",
-                "format": "int32"
               }
             }
           }]

@@ -342,7 +342,7 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 
 				sp := new(sectionedParser)
 				sp.setDescription = func(lines []string) { ps.Description = joinDropLast(lines) }
-				if ps.Ref.GetURL() == nil {
+				if ps.Ref.String() == "" {
 					sp.taggers = []tagParser{
 						newSingleLineTagParser("maximum", &setMaximum{paramValidations{&ps}, rxf(rxMaximumFmt, "")}),
 						newSingleLineTagParser("minimum", &setMinimum{paramValidations{&ps}, rxf(rxMinimumFmt, "")}),

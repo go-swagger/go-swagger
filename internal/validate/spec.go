@@ -123,6 +123,7 @@ func (s *SpecValidator) validateDuplicatePropertyNames() *Result {
 			"#/definitions/" + k: struct{}{},
 		}
 
+		fmt.Println("validating circular ancestry for", k)
 		ancs := s.validateCircularAncestry(k, sch, knownanc)
 		if len(ancs) > 0 {
 			res.AddErrors(errors.New(422, "definition %q has circular ancestry: %v", k, ancs))
@@ -148,7 +149,7 @@ func (s *SpecValidator) validateSchemaPropertyNames(nm string, sch spec.Schema, 
 
 	schn := nm
 	schc := &sch
-	if sch.Ref.GetURL() != nil {
+	if sch.Ref.String() != "" {
 		// gather property names
 		reso, err := spec.ResolveRef(s.spec.Spec(), &sch.Ref)
 		if err != nil {
@@ -182,28 +183,32 @@ func (s *SpecValidator) validateCircularAncestry(nm string, sch spec.Schema, kno
 
 	schn := nm
 	schc := &sch
-	if sch.Ref.GetURL() != nil {
+	if sch.Ref.String() != "" {
 		reso, err := spec.ResolveRef(s.spec.Spec(), &sch.Ref)
 		if err != nil {
 			panic(err)
 		}
 		schc = reso
-		schn = sch.Ref.String()
-		knowns[schn] = struct{}{}
+		schn = schc.Ref.String()
+		if schn != "" {
+			if _, ok := knowns[schn]; ok {
+				ancs = append(ancs, schn)
+			}
+		}
 	}
 
-	if _, ok := knowns[schn]; ok {
-		ancs = append(ancs, schn)
-	}
 	if len(ancs) > 0 {
 		return ancs
 	}
+	knowns[schn] = struct{}{}
 
 	if len(schc.AllOf) > 0 {
 		for _, chld := range schc.AllOf {
-			ancs = append(ancs, s.validateCircularAncestry(schn, chld, knowns)...)
-			if len(ancs) > 0 {
-				return ancs
+			if chld.Ref.String() != "" || len(chld.AllOf) > 0 {
+				ancs = append(ancs, s.validateCircularAncestry(nm, chld, knowns)...)
+				if len(ancs) > 0 {
+					return ancs
+				}
 			}
 		}
 	}

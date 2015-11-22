@@ -402,7 +402,7 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 
 				sp := new(sectionedParser)
 				sp.setDescription = func(lines []string) { ps.Description = joinDropLast(lines) }
-				if ps.Ref.GetURL() == nil {
+				if ps.Ref.String() == "" {
 					sp.taggers = []tagParser{
 						newSingleLineTagParser("maximum", &setMaximum{schemaValidations{&ps}, rxf(rxMaximumFmt, "")}),
 						newSingleLineTagParser("minimum", &setMinimum{schemaValidations{&ps}, rxf(rxMinimumFmt, "")}),

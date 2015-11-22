@@ -326,7 +326,7 @@ func ExpandSchema(schema *Schema, root interface{}, cache ResolutionCache) error
 
 	nrr, _ := NewRef(schema.ID)
 	var rrr *Ref
-	if nrr.GetURL() != nil {
+	if nrr.String() != "" {
 		switch root.(type) {
 		case *Schema:
 			rid, _ := NewRef(root.(*Schema).ID)

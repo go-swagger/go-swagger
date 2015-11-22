@@ -16,6 +16,7 @@ package validate
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
@@ -121,6 +122,20 @@ func TestIssue61_ResolvedRef(t *testing.T) {
 		validator := intvalidate.NewSpecValidator(doc.Schema(), strfmt.Default)
 		res, _ := validator.Validate(doc)
 		assert.Empty(t, res.Errors)
+		assert.True(t, res.IsValid())
+	}
+}
+func TestIssue123(t *testing.T) {
+	fp := filepath.Join("..", "fixtures", "bugs", "123", "swagger.yml")
+
+	// as swagger spec
+	doc, err := spec.YAMLSpec(fp)
+	if assert.NoError(t, err) {
+		validator := intvalidate.NewSpecValidator(doc.Schema(), strfmt.Default)
+		res, _ := validator.Validate(doc)
+		for _, e := range res.Errors {
+			fmt.Println(e)
+		}
 		assert.True(t, res.IsValid())
 	}
 }
