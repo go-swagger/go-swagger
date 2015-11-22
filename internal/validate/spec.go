@@ -123,7 +123,6 @@ func (s *SpecValidator) validateDuplicatePropertyNames() *Result {
 			"#/definitions/" + k: struct{}{},
 		}
 
-		fmt.Println("validating circular ancestry for", k)
 		ancs := s.validateCircularAncestry(k, sch, knownanc)
 		if len(ancs) > 0 {
 			res.AddErrors(errors.New(422, "definition %q has circular ancestry: %v", k, ancs))
@@ -149,9 +148,9 @@ func (s *SpecValidator) validateSchemaPropertyNames(nm string, sch spec.Schema, 
 
 	schn := nm
 	schc := &sch
-	if sch.Ref.String() != "" {
+	for schc.Ref.String() != "" {
 		// gather property names
-		reso, err := spec.ResolveRef(s.spec.Spec(), &sch.Ref)
+		reso, err := spec.ResolveRef(s.spec.Spec(), &schc.Ref)
 		if err != nil {
 			panic(err)
 		}
@@ -179,33 +178,37 @@ func (s *SpecValidator) validateSchemaPropertyNames(nm string, sch spec.Schema, 
 }
 
 func (s *SpecValidator) validateCircularAncestry(nm string, sch spec.Schema, knowns map[string]struct{}) []string {
+	if sch.Ref.String() == "" && len(sch.AllOf) == 0 {
+		return nil
+	}
 	var ancs []string
 
 	schn := nm
 	schc := &sch
-	if sch.Ref.String() != "" {
-		reso, err := spec.ResolveRef(s.spec.Spec(), &sch.Ref)
+	for schc.Ref.String() != "" {
+		reso, err := spec.ResolveRef(s.spec.Spec(), &schc.Ref)
 		if err != nil {
 			panic(err)
 		}
 		schc = reso
-		schn = schc.Ref.String()
-		if schn != "" {
-			if _, ok := knowns[schn]; ok {
-				ancs = append(ancs, schn)
-			}
-		}
+		schn = sch.Ref.String()
 	}
 
-	if len(ancs) > 0 {
-		return ancs
+	if schn != nm && schn != "" {
+		if _, ok := knowns[schn]; ok {
+			ancs = append(ancs, schn)
+		}
+		knowns[schn] = struct{}{}
+
+		if len(ancs) > 0 {
+			return ancs
+		}
 	}
-	knowns[schn] = struct{}{}
 
 	if len(schc.AllOf) > 0 {
 		for _, chld := range schc.AllOf {
 			if chld.Ref.String() != "" || len(chld.AllOf) > 0 {
-				ancs = append(ancs, s.validateCircularAncestry(nm, chld, knowns)...)
+				ancs = append(ancs, s.validateCircularAncestry(schn, chld, knowns)...)
 				if len(ancs) > 0 {
 					return ancs
 				}
@@ -405,19 +408,18 @@ func (s *SpecValidator) validateParameters() *Result {
 			var firstBodyParam string
 			sw := s.spec.Spec()
 			var paramNames []string
+		PARAMETERS:
 			for _, ppr := range op.Parameters {
 				pr := ppr
-				// pretty.Println("before", pr)
-				if pr.Ref.String() != "" {
+				for pr.Ref.String() != "" {
 					obj, _, err := pr.Ref.GetPointer().Get(sw)
 					if err != nil {
 						log.Println(err)
 						res.AddErrors(err)
-						break
+						break PARAMETERS
 					}
 					pr = obj.(spec.Parameter)
 				}
-				// pretty.Println("op resolved", pr)
 				pnames, ok := ptypes[pr.In]
 				if !ok {
 					pnames = make(map[string]struct{})
@@ -431,18 +433,17 @@ func (s *SpecValidator) validateParameters() *Result {
 				pnames[pr.Name] = struct{}{}
 			}
 
+		PARAMETERS2:
 			for _, ppr := range s.spec.ParamsFor(method, path) {
 				pr := ppr
-				// pretty.Println("before", pr)
-				if ppr.Ref.String() != "" {
-					obj, _, err := ppr.Ref.GetPointer().Get(sw)
+				for pr.Ref.String() != "" {
+					obj, _, err := pr.Ref.GetPointer().Get(sw)
 					if err != nil {
 						res.AddErrors(err)
-						break
+						break PARAMETERS2
 					}
 					pr = obj.(spec.Parameter)
 				}
-				// pretty.Println("resolved", pr)
 
 				if pr.In == "body" {
 					if firstBodyParam != "" {
@@ -533,14 +534,15 @@ func (s *SpecValidator) validateDefaultValueValidAgainstSchema() *Result {
 	for method, pathItem := range s.spec.Operations() {
 		for path, op := range pathItem {
 			// parameters
+		PARAMETERS:
 			for _, pr := range s.spec.ParamsFor(method, path) {
 				// expand ref is necessary
 				param := pr
-				if pr.Ref.String() != "" {
-					obj, _, err := pr.Ref.GetPointer().Get(s.spec.Spec())
+				for param.Ref.String() != "" {
+					obj, _, err := param.Ref.GetPointer().Get(s.spec.Spec())
 					if err != nil {
 						res.AddErrors(err)
-						break
+						break PARAMETERS
 					}
 					param = obj.(spec.Parameter)
 				}

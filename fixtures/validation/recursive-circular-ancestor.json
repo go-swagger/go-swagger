@@ -55,9 +55,7 @@
           }]
         },
         "Parent": {
-          "allOf": [{
-            "$ref": "#/definitions/Circular2"
-          }]
+          "$ref": "#/definitions/Circular2"
         },
         "Circular1": {
           "allOf": [{
