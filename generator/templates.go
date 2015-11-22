@@ -82,6 +82,12 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	"snakize":   swag.ToFileName,
 	"dasherize": swag.ToCommandName,
 	"json":      asJSON,
+	"hasInsecure": func(arg []string) bool {
+		return swag.ContainsStringsCI(arg, "http") || swag.ContainsStringsCI(arg, "ws")
+	},
+	"hasSecure": func(arg []string) bool {
+		return swag.ContainsStringsCI(arg, "https") || swag.ContainsStringsCI(arg, "wss")
+	},
 }
 
 func init() {

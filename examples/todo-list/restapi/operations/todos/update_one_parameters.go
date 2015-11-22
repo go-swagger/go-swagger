@@ -32,13 +32,17 @@ type UpdateOneParams struct {
 func (o *UpdateOneParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 
-	if err := route.Consumer.Consume(r.Body, o.Body); err != nil {
+	var body models.Item
+	if err := route.Consumer.Consume(r.Body, &body); err != nil {
 		res = append(res, errors.NewParseError("body", "body", "", err))
 	} else {
-		if err := o.Body.Validate(route.Formats); err != nil {
+		if err := body.Validate(route.Formats); err != nil {
 			res = append(res, err)
 		}
 
+		if len(res) == 0 {
+			o.Body = &body
+		}
 	}
 
 	if err := o.bindID(route.Params.Get("id"), route.Formats); err != nil {

@@ -1,5 +1,6 @@
 /*Package main Simple To Do List API
 
+    Schemes: httpshttp
     Version: 0.1.0
 
     Consumes:

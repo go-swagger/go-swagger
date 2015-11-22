@@ -186,7 +186,7 @@ func (d *API) validate() error {
 		return err
 	}
 
-	requiredAuths := d.spec.RequiredSchemes()
+	requiredAuths := d.spec.RequiredSecuritySchemes()
 	if err := d.verify("auth scheme", authenticators, requiredAuths); err != nil {
 		return err
 	}

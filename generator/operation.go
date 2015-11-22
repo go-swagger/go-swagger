@@ -346,7 +346,24 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		DefaultResponse: defaultResponse,
 		SuccessResponse: successResponse,
 		ExtraSchemas:    extra,
+		Schemes:         concatUnique(resolver.Doc.Spec().Schemes, operation.Schemes),
 	}, nil
+}
+
+func concatUnique(collections ...[]string) []string {
+	resultSet := make(map[string]struct{})
+	for _, c := range collections {
+		for _, i := range c {
+			if _, ok := resultSet[i]; !ok {
+				resultSet[i] = struct{}{}
+			}
+		}
+	}
+	var result []string
+	for k := range resultSet {
+		result = append(result, k)
+	}
+	return result
 }
 
 func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, resolver *typeResolver, code int, resp spec.Response) (GenResponse, error) {
@@ -966,6 +983,8 @@ type GenOperation struct {
 	HasQueryParams bool
 	HasFormParams  bool
 	HasFileParams  bool
+
+	Schemes []string
 }
 
 // GenOperations represents a list of operations to generate

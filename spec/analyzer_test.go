@@ -119,7 +119,7 @@ func TestAnalyzer(t *testing.T) {
 	assert.Len(t, producers, 2)
 	consumers := analyzer.RequiredConsumes()
 	assert.Len(t, consumers, 2)
-	authSchemes := analyzer.RequiredSchemes()
+	authSchemes := analyzer.RequiredSecuritySchemes()
 	assert.Len(t, authSchemes, 3)
 
 	ops := analyzer.Operations()

@@ -281,6 +281,6 @@ func (s *specAnalyzer) RequiredProduces() []string {
 	return s.structMapKeys(s.produces)
 }
 
-func (s *specAnalyzer) RequiredSchemes() []string {
+func (s *specAnalyzer) RequiredSecuritySchemes() []string {
 	return s.structMapKeys(s.authSchemes)
 }

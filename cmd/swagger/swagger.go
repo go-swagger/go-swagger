@@ -16,6 +16,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands"
 	"github.com/jessevdk/go-flags"
@@ -60,5 +61,7 @@ It aims to represent the contract of your API with a language agnostic descripti
 		}
 	}
 
-	parser.Parse()
+	if _, err := parser.Parse(); err != nil {
+		os.Exit(1)
+	}
 }

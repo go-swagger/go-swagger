@@ -361,7 +361,7 @@ func (a *appGenerator) makeSecuritySchemes() (security []GenSecurityScheme) {
 	if prin == "" {
 		prin = "interface{}"
 	}
-	for _, scheme := range a.SpecDoc.RequiredSchemes() {
+	for _, scheme := range a.SpecDoc.RequiredSecuritySchemes() {
 		if req, ok := a.SpecDoc.Spec().SecurityDefinitions[scheme]; ok {
 			if req.Type == "basic" || req.Type == "apiKey" {
 				security = append(security, GenSecurityScheme{
@@ -471,13 +471,18 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		defaultProduces = rp[0]
 	}
 
+	var collectedSchemes []string
+	for _, op := range genOps {
+		collectedSchemes = concatUnique(collectedSchemes, op.Schemes)
+	}
+
 	return GenApp{
 		Package:             a.Package,
 		ReceiverName:        receiver,
 		Name:                a.Name,
 		Host:                sw.Host,
 		BasePath:            sw.BasePath,
-		Schemes:             sw.Schemes,
+		Schemes:             collectedSchemes,
 		ExternalDocs:        sw.ExternalDocs,
 		Info:                sw.Info,
 		Consumes:            consumes,
