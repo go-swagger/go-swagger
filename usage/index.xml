@@ -18,8 +18,6 @@
       <guid>http://go-swagger.github.io/usage/validate/</guid>
       <description>
 
-&lt;h2 id=&#34;validate-a-swagger-spec:c64148e1a0d4f4de12bdfecb139d0588&#34;&gt;Validate a swagger spec&lt;/h2&gt;
-
 &lt;p&gt;The toolkit has a command to validate swagger specifications for you.
 It includes a full json-schema validator and adds a bunch of extra validations on top of that to ensure the spec
 is as valid as possible, so that there are no surprises.&lt;/p&gt;
@@ -31,25 +29,35 @@ is as valid as possible, so that there are no surprises.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;swagger validate [http-url|filepath]
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h3 id=&#34;supported-rules:c64148e1a0d4f4de12bdfecb139d0588&#34;&gt;Supported rules&lt;/h3&gt;
+&lt;h3 id=&#34;swagger-2-0-resources:c64148e1a0d4f4de12bdfecb139d0588&#34;&gt;Swagger 2.0 resources&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Specification Documentation: &lt;a href=&#34;https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md&#34;&gt;https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;JSON Schema: &lt;a href=&#34;https://github.com/swagger-api/swagger-spec/blob/master/schemas/v2.0/schema.json&#34;&gt;https://github.com/swagger-api/swagger-spec/blob/master/schemas/v2.0/schema.json&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;sematic-validation:c64148e1a0d4f4de12bdfecb139d0588&#34;&gt;Sematic Validation&lt;/h3&gt;
 
 &lt;p&gt;All the rules the validator tool supports:&lt;/p&gt;
 
 &lt;ul&gt;
 &lt;li&gt;validate against jsonschema&lt;/li&gt;
-&lt;li&gt;validate extra rules outlined &lt;a href=&#34;https://github.com/apigee-127/swagger-tools/blob/master/docs/Swagger_Validation.md&#34;&gt;here&lt;/a&gt;
+&lt;li&gt;validate extra rules outlined &lt;a href=&#34;https://github.com/apigee-127/sway/blob/master/docs/versions/2.0.md#semantic-validation&#34;&gt;here&lt;/a&gt;
 
 &lt;ul&gt;
 &lt;li&gt;definition can&amp;rsquo;t declare a property that&amp;rsquo;s already defined by one of its ancestors (Error)&lt;/li&gt;
 &lt;li&gt;definition&amp;rsquo;s ancestor can&amp;rsquo;t be a descendant of the same model (Error)&lt;/li&gt;
-&lt;li&gt;each api path should be non-verbatim (account for path param names) unique per method (Error)&lt;/li&gt;
 &lt;li&gt;each security reference should contain only unique scopes (Warning)&lt;/li&gt;
 &lt;li&gt;each security scope in a security definition should be unique (Warning)&lt;/li&gt;
+&lt;li&gt;path parameter declarations do not allow empty names &lt;em&gt;(&lt;code&gt;/path/{}&lt;/code&gt; is not valid)&lt;/em&gt; (Error)&lt;/li&gt;
+&lt;li&gt;each api path should be non-verbatim (account for path param names) unique per method (Error)&lt;/li&gt;
 &lt;li&gt;each path parameter should correspond to a parameter placeholder and vice versa (Error)&lt;/li&gt;
 &lt;li&gt;each referencable definition must have references (Warning)&lt;/li&gt;
 &lt;li&gt;each definition property listed in the required array must be defined in the properties of the model (Error)&lt;/li&gt;
-&lt;li&gt;each parameter should have a unique &lt;code&gt;name&lt;/code&gt; and &lt;code&gt;type&lt;/code&gt; combination (Error)&lt;/li&gt;
+&lt;li&gt;each parameter should have a unique &lt;code&gt;name&lt;/code&gt; and &lt;code&gt;in&lt;/code&gt; combination (Error)&lt;/li&gt;
+&lt;li&gt;each operation must have an unique &lt;code&gt;operationId&lt;/code&gt; (Error)&lt;/li&gt;
 &lt;li&gt;each operation should have only 1 parameter of type body (Error)&lt;/li&gt;
+&lt;li&gt;each operation cannot have both a body parameter and a formData parameter (Error)&lt;/li&gt;
 &lt;li&gt;each reference must point to a valid object (Error)&lt;/li&gt;
 &lt;li&gt;every default value that is specified must validate against the schema for that property (Error)&lt;/li&gt;
 &lt;li&gt;every example that is specified must validate against the schema for that property (Error)&lt;/li&gt;
