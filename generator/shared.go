@@ -82,6 +82,7 @@ type GenOpts struct {
 	TypeMapping   map[string]string
 	Imports       map[string]string
 	DumpData      bool
+	DefaultScheme string
 }
 
 type generatorOptions struct {

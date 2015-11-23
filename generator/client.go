@@ -37,6 +37,11 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts GenOpts
 	models := gatherModels(specDoc, modelNames)
 	operations := gatherOperations(specDoc, operationIDs)
 
+	defaultScheme := opts.DefaultScheme
+	if defaultScheme == "" {
+		defaultScheme = "http"
+	}
+
 	generator := appGenerator{
 		Name:          appNameOrDefault(specDoc, name, "swagger"),
 		SpecDoc:       specDoc,
@@ -50,6 +55,7 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts GenOpts
 		ServerPackage: mangleName(swag.ToFileName(opts.ServerPackage), "server"),
 		ClientPackage: mangleName(swag.ToFileName(opts.ClientPackage), "client"),
 		Principal:     opts.Principal,
+		DefaultScheme: defaultScheme,
 	}
 	generator.Receiver = "o"
 

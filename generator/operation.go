@@ -48,6 +48,10 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 		if !ok {
 			return fmt.Errorf("operation %q not found in %s", operationName, specPath)
 		}
+		defaultScheme := opts.DefaultScheme
+		if defaultScheme == "" {
+			defaultScheme = "http"
+		}
 
 		apiPackage := mangleName(swag.ToFileName(opts.APIPackage), "api")
 		generator := operationGenerator{
@@ -68,6 +72,7 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 			IncludeParameters:    includeParameters,
 			IncludeResponses:     includeResponses,
 			DumpData:             opts.DumpData,
+			DefaultScheme:        defaultScheme,
 			Doc:                  specDoc,
 		}
 		if err := generator.Generate(); err != nil {
@@ -99,6 +104,7 @@ type operationGenerator struct {
 	IncludeParameters    bool
 	IncludeResponses     bool
 	DumpData             bool
+	DefaultScheme        string
 	Doc                  *spec.Document
 }
 
@@ -119,6 +125,7 @@ func (o *operationGenerator) Generate() error {
 	bldr.Operation = o.Operation
 	bldr.Authed = authed
 	bldr.Doc = o.Doc
+	bldr.DefaultScheme = o.DefaultScheme
 	bldr.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(o.Base), o.ModelsPackage))}
 
 	for _, tag := range o.Operation.Tags {
@@ -250,6 +257,7 @@ type codeGenOpBuilder struct {
 	Doc            *spec.Document
 	Authed         bool
 	DefaultImports []string
+	DefaultScheme  string
 	ExtraSchemas   map[string]GenSchema
 }
 
@@ -324,6 +332,8 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		extra = append(extra, sch)
 	}
 
+	schemes := concatUnique(resolver.Doc.Spec().Schemes, operation.Schemes)
+
 	return GenOperation{
 		Package:         b.APIPackage,
 		Name:            b.Name,
@@ -346,8 +356,15 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		DefaultResponse: defaultResponse,
 		SuccessResponse: successResponse,
 		ExtraSchemas:    extra,
-		Schemes:         concatUnique(resolver.Doc.Spec().Schemes, operation.Schemes),
+		Schemes:         schemeOrDefault(schemes, b.DefaultScheme),
 	}, nil
+}
+
+func schemeOrDefault(schemes []string, defaultScheme string) []string {
+	if len(schemes) == 0 {
+		return []string{defaultScheme}
+	}
+	return schemes
 }
 
 func concatUnique(collections ...[]string) []string {

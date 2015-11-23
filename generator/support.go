@@ -41,6 +41,11 @@ func GenerateSupport(name string, modelNames, operationIDs []string, opts GenOpt
 	models := gatherModels(specDoc, modelNames)
 	operations := gatherOperations(specDoc, operationIDs)
 
+	defaultScheme := opts.DefaultScheme
+	if defaultScheme == "" {
+		defaultScheme = "http"
+	}
+
 	apiPackage := mangleName(swag.ToFileName(opts.APIPackage), "api")
 	generator := appGenerator{
 		Name:       appNameOrDefault(specDoc, name, "swagger"),
@@ -57,6 +62,7 @@ func GenerateSupport(name string, modelNames, operationIDs []string, opts GenOpt
 		ServerPackage: mangleName(swag.ToFileName(opts.ServerPackage), "server"),
 		ClientPackage: mangleName(swag.ToFileName(opts.ClientPackage), "client"),
 		Principal:     opts.Principal,
+		DefaultScheme: defaultScheme,
 	}
 
 	return generator.Generate()
@@ -76,6 +82,7 @@ type appGenerator struct {
 	Operations    map[string]spec.Operation
 	Target        string
 	DumpData      bool
+	DefaultScheme string
 }
 
 func baseImport(tgt string) string {
@@ -422,6 +429,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	bldr.Principal = prin
 	bldr.Target = a.Target
 	bldr.DefaultImports = defaultImports
+	bldr.DefaultScheme = a.DefaultScheme
 	bldr.Doc = a.SpecDoc
 
 	for on, o := range a.Operations {
@@ -482,7 +490,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		Name:                a.Name,
 		Host:                sw.Host,
 		BasePath:            sw.BasePath,
-		Schemes:             collectedSchemes,
+		Schemes:             schemeOrDefault(collectedSchemes, a.DefaultScheme),
 		ExternalDocs:        sw.ExternalDocs,
 		Info:                sw.Info,
 		Consumes:            consumes,

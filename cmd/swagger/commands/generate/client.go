@@ -24,6 +24,7 @@ type Client struct {
 	Tags           []string `long:"tags" description:"the tags to include, if not specified defaults to all"`
 	Principal      string   `long:"principal" short:"P" description:"the model to use for the security principal"`
 	Models         []string `long:"model" short:"M" description:"specify a model to include, repeat for multiple"`
+	DefaultScheme  string   `long:"default-scheme" description:"the default scheme for this client" default:"http"`
 	SkipModels     bool     `long:"skip-models" description:"no models will be generated when this flag is specified"`
 	SkipOperations bool     `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
 }
@@ -38,6 +39,7 @@ func (c *Client) Execute(args []string) error {
 		ServerPackage: c.ServerPackage,
 		ClientPackage: c.ClientPackage,
 		Principal:     c.Principal,
+		DefaultScheme: c.DefaultScheme,
 	}
 
 	if !c.SkipModels && (len(c.Models) > 0 || len(c.Operations) == 0) {

@@ -37,6 +37,7 @@ type Server struct {
 	Operations     []string `long:"operation" short:"O" description:"specify an operation to include, repeat for multiple"`
 	Tags           []string `long:"tags" description:"the tags to include, if not specified defaults to all"`
 	Principal      string   `long:"principal" short:"P" description:"the model to use for the security principal"`
+	DefaultScheme  string   `long:"default-scheme" description:"the default scheme for this API" default:"http"`
 	Models         []string `long:"model" short:"M" description:"specify a model to include, repeat for multiple"`
 	SkipModels     bool     `long:"skip-models" description:"no models will be generated when this flag is specified"`
 	SkipOperations bool     `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
@@ -53,6 +54,7 @@ func (s *Server) Execute(args []string) error {
 		ServerPackage: s.ServerPackage,
 		ClientPackage: s.ClientPackage,
 		Principal:     s.Principal,
+		DefaultScheme: s.DefaultScheme,
 	}
 
 	if !s.SkipModels && (len(s.Models) > 0 || len(s.Operations) == 0) {

@@ -19,11 +19,12 @@ import "github.com/go-swagger/go-swagger/generator"
 // Support generates the supporting files
 type Support struct {
 	shared
-	Name       string   `long:"name" short:"A" description:"the name of the application, defaults to a mangled value of info.title"`
-	Operations []string `long:"operation" short:"O" description:"specify an operation to include, repeat for multiple"`
-	Principal  string   `long:"principal" description:"the model to use for the security principal"`
-	Models     []string `long:"model" short:"M" description:"specify a model to include, repeat for multiple"`
-	DumpData   bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
+	Name          string   `long:"name" short:"A" description:"the name of the application, defaults to a mangled value of info.title"`
+	Operations    []string `long:"operation" short:"O" description:"specify an operation to include, repeat for multiple"`
+	Principal     string   `long:"principal" description:"the model to use for the security principal"`
+	Models        []string `long:"model" short:"M" description:"specify a model to include, repeat for multiple"`
+	DumpData      bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
+	DefaultScheme string   `long:"default-scheme" description:"the default scheme for this API" default:"http"`
 }
 
 // Execute generates the supporting files file
@@ -41,5 +42,6 @@ func (s *Support) Execute(args []string) error {
 			ClientPackage: s.ClientPackage,
 			Principal:     s.Principal,
 			DumpData:      s.DumpData,
+			DefaultScheme: s.DefaultScheme,
 		})
 }
