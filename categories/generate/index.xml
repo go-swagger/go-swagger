@@ -105,6 +105,8 @@ as description up to either the end of the comment block, or a line that starts 
 
 &lt;h2 id=&#34;usage:4bd4f30263398a45e38fc9edfc648efa&#34;&gt;Usage&lt;/h2&gt;
 
+&lt;p&gt;There is an example client in&lt;/p&gt;
+
 &lt;p&gt;To generate a client:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;swagger generate client -f [http-url|filepath] -A [application-name] [--principal [principal-name]]
@@ -134,9 +136,12 @@ func main() {
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;To then use the client with a HTTP transport:&lt;/p&gt;
+&lt;p&gt;The client runtime allows for a number of &lt;a href=&#34;https://godoc.org/github.com/go-swagger/go-swagger/httpkit/client#Runtime&#34;&gt;configuration
+options&lt;/a&gt; to be set.&lt;br /&gt;
+To then use the client, and override the host, with a HTTP transport:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;import (
+  &amp;quot;os&amp;quot;
   &amp;quot;log&amp;quot;
 
   &amp;quot;github.com/myproject/client/operations&amp;quot;
@@ -154,8 +159,18 @@ func main() {
     log.Fatal(err)
   }
 
-  // create the API client
-  client := apiclient.New(httptransport.New(doc), strfmt.Default)
+  // create the transport
+  transport := httptransport.New(doc)
+  // configure the host
+  if os.Getenv(&amp;quot;TODOLIST_HOST&amp;quot;) != &amp;quot;&amp;quot; {
+    transport.Host = os.Getenv(&amp;quot;TODOLIST_HOST&amp;quot;)
+  }
+
+  // create the API client, with the transport
+  client := apiclient.New(transport, strfmt.Default)
+
+  // to override the host for the default client
+  // apiclient.Default.SetTransport(transport)
 
   // make the request to get all items
   resp, err := client.Operations.All(operations.AllParams{})
@@ -171,12 +186,13 @@ func main() {
 &lt;p&gt;The client supports 3 authentication schemes:&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;Basic Auth&lt;/li&gt;
-&lt;li&gt;API key auth in header or query&lt;/li&gt;
-&lt;li&gt;Bearer token header for oauth2&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://godoc.org/github.com/go-swagger/go-swagger/httpkit/client#BasicAuth&#34;&gt;Basic Auth&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://godoc.org/github.com/go-swagger/go-swagger/httpkit/client#APIKeyAuth&#34;&gt;API key auth in header or query&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://godoc.org/github.com/go-swagger/go-swagger/httpkit/client#BearerToken&#34;&gt;Bearer token header for oauth2&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;import (
+  &amp;quot;os&amp;quot;
   &amp;quot;log&amp;quot;
 
   &amp;quot;github.com/myproject/client/operations&amp;quot;
@@ -199,7 +215,13 @@ func main() {
 
   // make the authenticated request to get all items
   bearerTokenAuth := httptransport.BearerToken(os.Getenv(&amp;quot;API_ACCESS_TOKEN&amp;quot;))
+  // basicAuth := httptransport.BasicAuth(os.Getenv(&amp;quot;API_USER&amp;quot;), os.Getenv(&amp;quot;API_PASSWORD&amp;quot;))
+  // apiKeyQueryAuth := httptransport.APIKeyAuth(&amp;quot;apiKey&amp;quot;, &amp;quot;query&amp;quot;, os.Getenv(&amp;quot;API_KEY&amp;quot;))
+  // apiKeyHeaderAuth := httptransport.APIKeyAuth(&amp;quot;X-API-TOKEN&amp;quot;, &amp;quot;header&amp;quot;, os.Getenv(&amp;quot;API_KEY&amp;quot;))
   resp, err := client.Operations.All(operations.AllParams{}, bearerTokenAuth)
+  // resp, err := client.Operations.All(operations.AllParams{}, basicAuth)
+  // resp, err := client.Operations.All(operations.AllParams{}, apiKeyQueryAuth)
+  // resp, err := client.Operations.All(operations.AllParams{}, apiKeyHeaderAuth)
   if err != nil {
     log.Fatal(err)
   }

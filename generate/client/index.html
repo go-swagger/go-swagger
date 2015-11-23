@@ -4,12 +4,12 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"/>
   <title>Generate an API client</title>
-  <link href="http://go-swagger.github.io/css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
-  <link href="http://go-swagger.github.io/css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
-  <link rel="stylesheet" href="http://go-swagger.github.io/css/prism.css" />
+  <link href="http://go-swagger.github.io//css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="http://go-swagger.github.io//css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link rel="stylesheet" href="http://go-swagger.github.io//css/prism.css" />
   <style type="text/css">
   
-    footer.page-footer{background-image: url(http://go-swagger.github.io/images/default.png);}
+    footer.page-footer{background-image: url(http://go-swagger.github.io//images/default.png);}
   
   </style>
 </head>
@@ -23,13 +23,13 @@
   
     <div class="section no-pad-bot">
       <div class="container">
-        <h1 class="header center teal-text text-lighten-2"><a href="http://go-swagger.github.io">go-swagger toolkit</a></h1>
+        <h1 class="header center teal-text text-lighten-2"><a href="http://go-swagger.github.io/">go-swagger toolkit</a></h1>
         <div class="row center">
           <h5 class="header col s12 light">Swagger 2.0 describes your API&#39;s for you, so you don&#39;t have to</h5>
         </div>
         <div class="row center">
         
-          <a href="https://github.com/go-swagger/go-swagger"><img src="http://go-swagger.github.io/images/github2-dreamstale35.png"></a>
+          <a href="https://github.com/go-swagger/go-swagger"><img src="http://go-swagger.github.io//images/github2-dreamstale35.png"></a>
         
         
         
@@ -40,7 +40,7 @@
     </div>
     <div class="parallax">
     
-      <img src="http://go-swagger.github.io/images/default-gopher.png">
+      <img src="http://go-swagger.github.io//images/default.png">
     
     </div>
   </div>
@@ -57,9 +57,9 @@
           <p>
           
             
-              <a href="http://go-swagger.github.io/categories/generate/">generate</a>
+              <a href="http://go-swagger.github.io//categories/generate/">generate</a>
             
-              <a href="http://go-swagger.github.io/categories/client/">client</a>
+              <a href="http://go-swagger.github.io//categories/client/">client</a>
             
           
           </p>
@@ -68,6 +68,8 @@
 <p>The toolkit has a command that will let you generate a client.</p>
 
 <h2 id="usage:4bd4f30263398a45e38fc9edfc648efa">Usage</h2>
+
+<p>There is an example client in</p>
 
 <p>To generate a client:</p>
 
@@ -98,9 +100,12 @@ func main() {
 }
 </code></pre>
 
-<p>To then use the client with a HTTP transport:</p>
+<p>The client runtime allows for a number of <a href="https://godoc.org/github.com/go-swagger/go-swagger/httpkit/client#Runtime">configuration
+options</a> to be set.<br />
+To then use the client, and override the host, with a HTTP transport:</p>
 
 <pre><code class="language-go">import (
+  &quot;os&quot;
   &quot;log&quot;
 
   &quot;github.com/myproject/client/operations&quot;
@@ -118,8 +123,18 @@ func main() {
     log.Fatal(err)
   }
 
-  // create the API client
-  client := apiclient.New(httptransport.New(doc), strfmt.Default)
+  // create the transport
+  transport := httptransport.New(doc)
+  // configure the host
+  if os.Getenv(&quot;TODOLIST_HOST&quot;) != &quot;&quot; {
+    transport.Host = os.Getenv(&quot;TODOLIST_HOST&quot;)
+  }
+
+  // create the API client, with the transport
+  client := apiclient.New(transport, strfmt.Default)
+
+  // to override the host for the default client
+  // apiclient.Default.SetTransport(transport)
 
   // make the request to get all items
   resp, err := client.Operations.All(operations.AllParams{})
@@ -135,12 +150,13 @@ func main() {
 <p>The client supports 3 authentication schemes:</p>
 
 <ul>
-<li>Basic Auth</li>
-<li>API key auth in header or query</li>
-<li>Bearer token header for oauth2</li>
+<li><a href="https://godoc.org/github.com/go-swagger/go-swagger/httpkit/client#BasicAuth">Basic Auth</a></li>
+<li><a href="https://godoc.org/github.com/go-swagger/go-swagger/httpkit/client#APIKeyAuth">API key auth in header or query</a></li>
+<li><a href="https://godoc.org/github.com/go-swagger/go-swagger/httpkit/client#BearerToken">Bearer token header for oauth2</a></li>
 </ul>
 
 <pre><code class="language-go">import (
+  &quot;os&quot;
   &quot;log&quot;
 
   &quot;github.com/myproject/client/operations&quot;
@@ -163,7 +179,13 @@ func main() {
 
   // make the authenticated request to get all items
   bearerTokenAuth := httptransport.BearerToken(os.Getenv(&quot;API_ACCESS_TOKEN&quot;))
+  // basicAuth := httptransport.BasicAuth(os.Getenv(&quot;API_USER&quot;), os.Getenv(&quot;API_PASSWORD&quot;))
+  // apiKeyQueryAuth := httptransport.APIKeyAuth(&quot;apiKey&quot;, &quot;query&quot;, os.Getenv(&quot;API_KEY&quot;))
+  // apiKeyHeaderAuth := httptransport.APIKeyAuth(&quot;X-API-TOKEN&quot;, &quot;header&quot;, os.Getenv(&quot;API_KEY&quot;))
   resp, err := client.Operations.All(operations.AllParams{}, bearerTokenAuth)
+  // resp, err := client.Operations.All(operations.AllParams{}, basicAuth)
+  // resp, err := client.Operations.All(operations.AllParams{}, apiKeyQueryAuth)
+  // resp, err := client.Operations.All(operations.AllParams{}, apiKeyHeaderAuth)
   if err != nil {
     log.Fatal(err)
   }
@@ -205,18 +227,9 @@ func main() {
     </div>
   </footer>
   <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-  <script src="http://go-swagger.github.io/js/materialize.min.js"></script>
-  <script src="http://go-swagger.github.io/js/init.js"></script>
-  <script src="http://go-swagger.github.io/js/prism.js"></script>
-  
-  <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-    ga('create', 'UA-240612-10', 'auto');
-    ga('send', 'pageview');
-  </script>
+  <script src="http://go-swagger.github.io//js/materialize.min.js"></script>
+  <script src="http://go-swagger.github.io//js/init.js"></script>
+  <script src="http://go-swagger.github.io//js/prism.js"></script>
   
 
   </body>
