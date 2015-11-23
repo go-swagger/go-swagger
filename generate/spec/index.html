@@ -86,7 +86,7 @@ the comment block is for swagger.</p>
 <pre><code>swagger generate spec -o ./swagger.json
 </code></pre>
 
-<p>You give it a main file and it will parse all the files that are required by that main
+<p>You give it a main file and it will parse all the files that are reachable by that main
 package to produce a swagger specification.</p>
 
 <p>To use you can add a go:generate comment to your main file for example:</p>
@@ -99,10 +99,16 @@ application and then scan all the packages that are in use by the code base.
 This means that for something to be discoverable it needs to be reachable by a codepath triggered through the main
 package.</p>
 
+<p>If an annotation is not yet supported or you want to merge with a pre-existing spec, you can use the -i parameter.</p>
+
+<pre><code>swagger generate spec -i ./swagger.yml -o ./swagger.json
+</code></pre>
+
 <h4 id="parsing-rules:958e7270f96f5407d7d980f500805b1b">Parsing rules</h4>
 
-<p>This command relies heavily on the way godoc works! This means you should be very aware of all the things godoc
-supports.</p>
+<p>:warning: This command relies heavily on the way godoc works. :warning:</p>
+
+<p>This means you should be very aware of all the things godoc supports.</p>
 
 <ul>
 <li><a href="https://godoc.org/golang.org/x/tools/cmd/godoc">godoc documentation</a></li>
@@ -147,7 +153,7 @@ as description up to either the end of the comment block, or a line that starts 
     <div class="row">
       <div class="col s3 m1">
       
-        <a class="btn-floating btn-large waves-effect waves-light" href="http://go-swagger.github.io/usage/validate/"><i class="mdi-navigation-arrow-back"></i></a>
+        <a class="btn-floating btn-large disabled"><i class="mdi-navigation-arrow-back"></i></a>
       
       </div>
       <div class="col s6 m10 center">&nbsp</div>

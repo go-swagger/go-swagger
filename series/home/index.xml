@@ -41,7 +41,7 @@ the comment block is for swagger.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;swagger generate spec -o ./swagger.json
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;You give it a main file and it will parse all the files that are required by that main
+&lt;p&gt;You give it a main file and it will parse all the files that are reachable by that main
 package to produce a swagger specification.&lt;/p&gt;
 
 &lt;p&gt;To use you can add a go:generate comment to your main file for example:&lt;/p&gt;
@@ -54,10 +54,16 @@ application and then scan all the packages that are in use by the code base.
 This means that for something to be discoverable it needs to be reachable by a codepath triggered through the main
 package.&lt;/p&gt;
 
+&lt;p&gt;If an annotation is not yet supported or you want to merge with a pre-existing spec, you can use the -i parameter.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;swagger generate spec -i ./swagger.yml -o ./swagger.json
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;h4 id=&#34;parsing-rules:958e7270f96f5407d7d980f500805b1b&#34;&gt;Parsing rules&lt;/h4&gt;
 
-&lt;p&gt;This command relies heavily on the way godoc works! This means you should be very aware of all the things godoc
-supports.&lt;/p&gt;
+&lt;p&gt;:warning: This command relies heavily on the way godoc works. :warning:&lt;/p&gt;
+
+&lt;p&gt;This means you should be very aware of all the things godoc supports.&lt;/p&gt;
 
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://godoc.org/golang.org/x/tools/cmd/godoc&#34;&gt;godoc documentation&lt;/a&gt;&lt;/li&gt;
@@ -228,6 +234,161 @@ func main() {
   fmt.Printf(&amp;quot;%#v\n&amp;quot;, resp.Payload)
 }
 &lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Generate a server for a swagger spec</title>
+      <link>http://go-swagger.github.io/generate/server/</link>
+      <pubDate>Sun, 22 Nov 2015 23:19:15 -0800</pubDate>
+      
+      <guid>http://go-swagger.github.io/generate/server/</guid>
+      <description>&lt;p&gt;The toolkit has a command that will let you generate a server.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Validate a swagger spec</title>
+      <link>http://go-swagger.github.io/usage/validate/</link>
+      <pubDate>Thu, 22 Oct 2015 23:28:09 -0700</pubDate>
+      
+      <guid>http://go-swagger.github.io/usage/validate/</guid>
+      <description>
+
+&lt;p&gt;The toolkit has a command to validate swagger specifications for you.
+It includes a full json-schema validator and adds a bunch of extra validations on top of that to ensure the spec
+is as valid as possible, so that there are no surprises.&lt;/p&gt;
+
+&lt;h3 id=&#34;usage:c64148e1a0d4f4de12bdfecb139d0588&#34;&gt;Usage&lt;/h3&gt;
+
+&lt;p&gt;To validate a specification:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;swagger validate [http-url|filepath]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;swagger-2-0-resources:c64148e1a0d4f4de12bdfecb139d0588&#34;&gt;Swagger 2.0 resources&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Specification Documentation: &lt;a href=&#34;https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md&#34;&gt;https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;JSON Schema: &lt;a href=&#34;https://github.com/swagger-api/swagger-spec/blob/master/schemas/v2.0/schema.json&#34;&gt;https://github.com/swagger-api/swagger-spec/blob/master/schemas/v2.0/schema.json&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;sematic-validation:c64148e1a0d4f4de12bdfecb139d0588&#34;&gt;Sematic Validation&lt;/h3&gt;
+
+&lt;p&gt;All the rules the validator tool supports:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;validate against jsonschema&lt;/li&gt;
+&lt;li&gt;validate extra rules outlined &lt;a href=&#34;https://github.com/apigee-127/sway/blob/master/docs/versions/2.0.md#semantic-validation&#34;&gt;here&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Rule&lt;/th&gt;
+&lt;th&gt;Severity&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;definition can&amp;rsquo;t declare a property that&amp;rsquo;s already defined by one of its ancestors&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;definition&amp;rsquo;s ancestor can&amp;rsquo;t be a descendant of the same model&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each security reference should contain only unique scopes&lt;/td&gt;
+&lt;td&gt;Warning&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each security scope in a security definition should be unique&lt;/td&gt;
+&lt;td&gt;Warning&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;path parameter declarations do not allow empty names &lt;em&gt;(&lt;code&gt;/path/{}&lt;/code&gt; is not valid)&lt;/em&gt;&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each api path should be non-verbatim (account for path param names) unique per method&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each path parameter should correspond to a parameter placeholder and vice versa&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each referencable definition must have references&lt;/td&gt;
+&lt;td&gt;Warning&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each definition property listed in the required array must be defined in the properties of the model&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each parameter should have a unique &lt;code&gt;name&lt;/code&gt; and &lt;code&gt;in&lt;/code&gt; combination&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each operation must have an unique &lt;code&gt;operationId&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each operation should have only 1 parameter of type body&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each operation cannot have both a body parameter and a formData parameter&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each reference must point to a valid object&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;every default value that is specified must validate against the schema for that property&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;every example that is specified must validate against the schema for that property&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;items property is required for all schemas/definitions of type &lt;code&gt;array&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Untyped API server</title>
+      <link>http://go-swagger.github.io/untyped/server/</link>
+      <pubDate>Sun, 22 Nov 2015 23:21:52 -0800</pubDate>
+      
+      <guid>http://go-swagger.github.io/untyped/server/</guid>
+      <description>&lt;p&gt;The toolkit supports serving a swagger spec with untyped data. This means that it uses mostly interface{} as params to
+each operation and as result type. It does allow you to serve a spec up quickly. This is one of the building blocks
+required to serve up stub API&amp;rsquo;s and to generate a test server with predictable responses.&lt;/p&gt;
 </description>
     </item>
     

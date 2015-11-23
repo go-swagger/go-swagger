@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Usages on go-swagger toolkit</title>
-    <link>http://go-swagger.github.io/usage/</link>
-    <description>Recent content in Usages on go-swagger toolkit</description>
+    <title>Validate on go-swagger toolkit</title>
+    <link>http://go-swagger.github.io/categories/validate/</link>
+    <description>Recent content in Validate on go-swagger toolkit</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>© 2015 go-swagger contributors</copyright>
     <lastBuildDate>Thu, 22 Oct 2015 23:28:09 -0700</lastBuildDate>
-    <atom:link href="http://go-swagger.github.io/usage/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://go-swagger.github.io/categories/validate/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Validate a swagger spec</title>
