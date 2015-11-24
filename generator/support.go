@@ -422,17 +422,16 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		genMods = append(genMods, *mod)
 	}
 
-	var genOps GenOperations
 	tns := make(map[string]struct{})
-	var bldr codeGenOpBuilder
-	bldr.ModelsPackage = a.ModelsPackage
-	bldr.Principal = prin
-	bldr.Target = a.Target
-	bldr.DefaultImports = defaultImports
-	bldr.DefaultScheme = a.DefaultScheme
-	bldr.Doc = a.SpecDoc
-
+	var genOps GenOperations
 	for on, o := range a.Operations {
+		var bldr codeGenOpBuilder
+		bldr.ModelsPackage = a.ModelsPackage
+		bldr.Principal = prin
+		bldr.Target = a.Target
+		bldr.DefaultImports = defaultImports
+		bldr.DefaultScheme = a.DefaultScheme
+		bldr.Doc = a.SpecDoc
 		// TODO: change operation name to something safe
 		bldr.Name = on
 		bldr.Operation = o
@@ -441,7 +440,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		if len(o.Tags) > 0 {
 			for _, tag := range o.Tags {
 				tns[tag] = struct{}{}
-				// TODO: change package name to something safe
 				bldr.APIPackage = mangleName(swag.ToFileName(tag), a.APIPackage)
 				op, err := bldr.MakeOperation()
 				if err != nil {
@@ -451,7 +449,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 				genOps = append(genOps, op)
 			}
 		} else {
-			// TOOD: change package name to something safe
 			bldr.APIPackage = swag.ToFileName(ap)
 			op, err := bldr.MakeOperation()
 			if err != nil {
