@@ -90,10 +90,16 @@ func flattenComposite(errs *CompositeError) *CompositeError {
 	for _, er := range errs.Errors {
 		switch e := er.(type) {
 		case *CompositeError:
-			flat := flattenComposite(e)
-			res = append(res, flat.Errors...)
+			if len(e.Errors) > 0 {
+				flat := flattenComposite(e)
+				if len(flat.Errors) > 0 {
+					res = append(res, flat.Errors...)
+				}
+			}
 		default:
-			res = append(res, e)
+			if e != nil {
+				res = append(res, e)
+			}
 		}
 	}
 	return CompositeValidationError(res...)
@@ -118,6 +124,11 @@ func ServeError(rw http.ResponseWriter, r *http.Request, err error) {
 			rw.Write(errorAsJSON(e))
 		}
 	case Error:
+		if e == nil {
+			rw.WriteHeader(http.StatusInternalServerError)
+			rw.Write(errorAsJSON(New(http.StatusInternalServerError, "Unknown error")))
+			return
+		}
 		rw.WriteHeader(int(e.Code()))
 		if r == nil || r.Method != "HEAD" {
 			rw.Write(errorAsJSON(e))

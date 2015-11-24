@@ -124,7 +124,10 @@ func ({{ .ReceiverName }} *{{ pascalize .Name}}) validate{{ pascalize .Name }}En
       {{ camelize .Name }}Enum = append({{ camelize .Name }}Enum, v)
     }
   }
-  return validate.Enum(path, location, value, {{ camelize .Name }}Enum)
+  if err := validate.Enum(path, location, value, {{ camelize .Name }}Enum); err != nil {
+    return err
+  }
+  return nil
 }
 {{ end }}{{ if .ItemsEnum }}var {{ camelize .Name }}ItemsEnum []interface{}
 func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ template "schemaType" .Items }}) error {
@@ -137,7 +140,10 @@ func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}I
       {{ camelize .Name }}ItemsEnum = append({{ camelize .Name }}ItemsEnum, v)
     }
   }
-  return validate.Enum(path, location, value, {{ camelize .Name}}ItemsEnum)
+  if err := validate.Enum(path, location, value, {{ camelize .Name}}ItemsEnum); err != nil {
+    return err
+  }
+  return nil
 }
 {{ end }}{{ with .AdditionalProperties }}
 {{ if .Enum }}
@@ -152,7 +158,10 @@ func ({{ .ReceiverName }} *{{ pascalize .Name}}) validate{{ pascalize .Name }}Va
       {{ camelize .Name }}ValueEnum = append({{ camelize .Name }}ValueEnum, v)
     }
   }
-  return validate.Enum(path, location, value, {{ camelize .Name }}ValueEnum)
+  if err := validate.Enum(path, location, value, {{ camelize .Name }}ValueEnum); err != nil {
+    return err
+  }
+  return nil
 }
 {{ end }}
 {{ end }}
@@ -226,7 +235,10 @@ func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}E
       {{ camelize $.Name }}{{ pascalize .Name }}Enum = append({{ camelize $.Name }}{{ pascalize .Name }}Enum, v)
     }
   }
-  return validate.Enum(path, location, value, {{ camelize $.Name}}{{ pascalize .Name}}Enum)
+  if err := validate.Enum(path, location, value, {{ camelize $.Name}}{{ pascalize .Name}}Enum); err != nil {
+    return err
+  }
+  return nil
 }
 {{ end }}{{ if .ItemsEnum }}var {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum []interface{}
 func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ template "schemaType" .Items }}) error {
@@ -239,7 +251,10 @@ func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}I
       {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum, v)
     }
   }
-  return validate.Enum(path, location, value, {{ camelize $.Name}}{{ pascalize .Name}}ItemsEnum)
+  if err := validate.Enum(path, location, value, {{ camelize $.Name}}{{ pascalize .Name}}ItemsEnum); err != nil {
+    return err
+  }
+  return nil
 }
 {{ end }}{{ if .AdditionalItems}}{{ if .AdditionalItems.Enum }}var {{ camelize $.Name }}{{ pascalize .Name }}Enum []interface{}
 func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "schemaType" .AdditionalItems }}) error {
@@ -252,7 +267,10 @@ func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}E
       {{ camelize $.Name }}{{ pascalize .Name }}Enum = append({{ camelize $.Name }}{{ pascalize .Name }}Enum, v)
     }
   }
-  return validate.Enum(path, location, value, {{ camelize $.Name}}{{ pascalize .Name}}Enum)
+  if err := validate.Enum(path, location, value, {{ camelize $.Name}}{{ pascalize .Name}}Enum); err != nil {
+    return err
+  }
+  return nil
 }
 {{ end }}{{ end }}{{ with .AdditionalProperties }}
 {{ if .Enum }}
@@ -267,7 +285,10 @@ func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}V
       {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ValueEnum, v)
     }
   }
-  return validate.Enum(path, location, value, {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum)
+  if err := validate.Enum(path, location, value, {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum); err != nil {
+    return err
+  }
+  return nil
 }
 {{ end }}
 {{ end }}
@@ -294,7 +315,10 @@ func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}E
       {{ camelize $.Name }}{{ pascalize .Name }}Enum = append({{ camelize $.Name }}{{ pascalize .Name }}Enum, v)
     }
   }
-  return validate.Enum(path, location, value, {{ camelize $.Name}}{{ pascalize .Name}}Enum)
+  if err := validate.Enum(path, location, value, {{ camelize $.Name}}{{ pascalize .Name}}Enum); err != nil {
+    return err
+  }
+  return nil
 }
 {{ end }}{{ if .ItemsEnum }}var {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum []interface{}
 func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ template "schemaType" .Items }}) error {
@@ -307,7 +331,10 @@ func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}I
       {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum, v)
     }
   }
-  return validate.Enum(path, location, value, {{ camelize $.Name}}{{ pascalize .Name}}ItemsEnum)
+  if err := validate.Enum(path, location, value, {{ camelize $.Name}}{{ pascalize .Name}}ItemsEnum); err != nil {
+    return err
+  }
+  return nil
 }
 {{ end }}{{ if .AdditionalItems}}{{ if .AdditionalItems.Enum }}var {{ camelize $.Name }}{{ pascalize .Name }}Enum []interface{}
 func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "schemaType" .AdditionalItems }}) error {
@@ -320,7 +347,10 @@ func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}E
       {{ camelize $.Name }}{{ pascalize .Name }}Enum = append({{ camelize $.Name }}{{ pascalize .Name }}Enum, v)
     }
   }
-  return validate.Enum(path, location, value, {{ camelize $.Name}}{{ pascalize .Name}}Enum)
+  if err := validate.Enum(path, location, value, {{ camelize $.Name}}{{ pascalize .Name}}Enum); err != nil {
+    return err
+  }
+  return nil
 }
 {{ end }}{{ end }}{{ with .AdditionalProperties }}
 {{ if .Enum }}
@@ -335,7 +365,10 @@ func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}V
       {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ValueEnum, v)
     }
   }
-  return validate.Enum(path, location, value, {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum)
+  if err := validate.Enum(path, location, value, {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum); err != nil {
+    return err
+  }
+  return nil
 }
 {{ end }}
 {{ end }}
@@ -361,7 +394,10 @@ func ({{ .ReceiverName }} *{{ pascalize $.Name}}) validate{{ pascalize .Name }}I
       {{ camelize .Name }}ItemsEnum = append({{ camelize .Name }}ItemsEnum, v)
     }
   }
-  return validate.Enum(path, location, value, {{ camelize .Name}}ItemsEnum)
+  if err := validate.Enum(path, location, value, {{ camelize .Name}}ItemsEnum); err != nil {
+    return err
+  }
+  return nil
 }
 {{ end }}
 func ({{.ReceiverName}} *{{ pascalize .Name }}) validate{{ pascalize .Name }}Items(formats strfmt.Registry) error {
