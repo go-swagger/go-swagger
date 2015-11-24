@@ -4,34 +4,32 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"/>
   <title>Generates</title>
-  <link href="http://localhost:1313//css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
-  <link href="http://localhost:1313//css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
-  <link rel="stylesheet" href="http://localhost:1313//css/prism.css" />
+  <link href="http://go-swagger.github.io//css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="http://go-swagger.github.io//css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link rel="stylesheet" href="http://go-swagger.github.io//css/prism.css" />
   <style type="text/css">
   
-    footer.page-footer{background-image: url(http://localhost:1313//images/default.png);}
+    footer.page-footer{background-image: url(http://go-swagger.github.io//images/default.png);}
   
   </style>
 </head>
 <body>
-  <ul id="slide-out" class="side-nav">
-    <li><a href="http://localhost:1313/"><i class="mdi-action-home left"></i>Home</a></li>
-    <li><a href="http://localhost:1313//categories"><i class="mdi-action-perm-media left"></i>Categories<i class="mdi-hardware-keyboard-arrow-right right"></i></a></li>
-    <li><a href="http://localhost:1313//tags"><i class="mdi-action-loyalty left"></i>Tags<i class="mdi-hardware-keyboard-arrow-right right"></i></a></li>
-  </ul>
+  
+    
+    
+    
+  
   <div id="index-banner" class="parallax-container">
-  <a data-activates="slide-out" class="btn-floating button-collapse" style="top: 5px; left: 5px;"><i class="mdi-navigation-menu"></i></a>
+  
     <div class="section no-pad-bot">
       <div class="container">
-        
-        <h1 class="header center teal-text text-lighten-2">go-swagger toolkit</h1>
-        
+        <h1 class="header center teal-text text-lighten-2"><a href="http://go-swagger.github.io/">go-swagger toolkit</a></h1>
         <div class="row center">
           <h5 class="header col s12 light">Swagger 2.0 describes your API&#39;s for you, so you don&#39;t have to</h5>
         </div>
         <div class="row center">
         
-          <a href="https://github.com/go-swagger/go-swagger"><img src="http://localhost:1313//images/github2-dreamstale35.png"></a>
+          <a href="https://github.com/go-swagger/go-swagger"><img src="http://go-swagger.github.io//images/github2-dreamstale35.png"></a>
         
         
         
@@ -42,7 +40,7 @@
     </div>
     <div class="parallax">
     
-      <img src="http://localhost:1313//images/default-gopher.png">
+      <img src="http://go-swagger.github.io//images/default.png">
     
     </div>
   </div>
@@ -57,55 +55,21 @@
   
   <div class="col m4 s12">
     <div class="card-panel">
-      <h4><a href="http://localhost:1313/generate/spec/params/">swagger:params</a></h4>
+      <h4><a href="http://go-swagger.github.io/generate/spec/strfmt/">swagger:strfmt</a></h4>
       <p>
       
         
-          <a href="http://localhost:1313//categories/spec/">spec</a>
+          <a href="http://go-swagger.github.io//categories/spec/">spec</a>
         
       
       </p>
-      <p>Links a struct to one or more operations. The params in the resulting swagger spec can be composed of several structs. There are no guarantees given on how property name overlaps are resolved when several structs apply to the same operation. This tag works very similar to the swagger:model tag except that it produces valid parameter objects instead of schema objects. swagger:params [operationid1 operationid2]</p>
+      <p>A swagger:strfmt annotation names a type as a string formatter. The name is mandatory and that is what will be used as format name for this particular string format. String formats should only be used for very well known formats. swagger:strfmt [name]</p>
       <p>
       14 Nov 2015
       
-      </p>
-    </div>
-  </div>
-
-  
-  <div class="col m4 s12">
-    <div class="card-panel">
-      <h4><a href="http://localhost:1313/generate/spec/route/">swagger:route</a></h4>
-      <p>
-      
         
-          <a href="http://localhost:1313//categories/spec/">spec</a>
+          <a href="http://go-swagger.github.io//tags/string-formats/">#string formats</a>
         
-      
-      </p>
-      <p>A swagger:route annotation links a path to a method. This operation gets a unique id, which is used in various places as method name. One such usage is in method names for client generation for example. Because there are many routers available, this tool does not try to parse the paths you provided to your routing library of choice. So you have to specify your path pattern yourself in valid swagger syntax.</p>
-      <p>
-      14 Nov 2015
-      
-      </p>
-    </div>
-  </div>
-
-  
-  <div class="col m4 s12">
-    <div class="card-panel">
-      <h4><a href="http://localhost:1313/generate/spec/model/">swagger:model</a></h4>
-      <p>
-      
-        
-          <a href="http://localhost:1313//categories/spec/">spec</a>
-        
-      
-      </p>
-      <p>A swagger:model annotation optionally gets a model name as extra data on the line. when this appears anywhere in a comment for a struct, then that struct becomes a schema in the definitions object of swagger. The struct gets analyzed and all the collected models are added to the tree. The refs are tracked separately so that they can be renamed later on. swagger:model [?model name]</p>
-      <p>
-      14 Nov 2015
       
       </p>
     </div>
@@ -123,7 +87,7 @@
   <div class="col s6 m10 center">&nbsp</div>
   <div class="col s3 m1">
   
-    <a class="btn-floating btn-large waves-effect waves-light" href="/generate/page/3/"><i class="mdi-navigation-arrow-forward"></i></a>
+    <a class="btn-floating btn-large disabled"><i class="mdi-navigation-arrow-forward"></i></a>
   
   </div>
 </div>
@@ -141,14 +105,10 @@
     </div>
   </footer>
   <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-  <script src="http://localhost:1313//js/materialize.min.js"></script>
-  <script src="http://localhost:1313//js/init.js"></script>
-  <script src="http://localhost:1313//js/prism.js"></script>
-  <script>hljs.initHighlightingOnLoad();</script>
+  <script src="http://go-swagger.github.io//js/materialize.min.js"></script>
+  <script src="http://go-swagger.github.io//js/init.js"></script>
+  <script src="http://go-swagger.github.io//js/prism.js"></script>
   
 
-  <script data-no-instant>document.write('<script src="http://'
-        + (location.host || 'localhost').split(':')[0]
-		+ ':1313/livereload.js?mindelay=10"></'
-        + 'script>')</script></body>
+  </body>
 </html>

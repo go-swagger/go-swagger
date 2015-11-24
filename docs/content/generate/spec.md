@@ -32,7 +32,7 @@ To generate a spec:
 swagger generate spec -o ./swagger.json
 ```
 
-You give it a main file and it will parse all the files that are required by that main
+You give it a main file and it will parse all the files that are reachable by that main
 package to produce a swagger specification.
 
 To use you can add a go:generate comment to your main file for example:
@@ -46,10 +46,17 @@ application and then scan all the packages that are in use by the code base.
 This means that for something to be discoverable it needs to be reachable by a codepath triggered through the main
 package.
 
+If an annotation is not yet supported or you want to merge with a pre-existing spec, you can use the -i parameter.
+
+```
+swagger generate spec -i ./swagger.yml -o ./swagger.json
+```
+
 #### Parsing rules
 
-This command relies heavily on the way godoc works! This means you should be very aware of all the things godoc
-supports.
+:warning: This command relies heavily on the way godoc works. :warning: 
+
+This means you should be very aware of all the things godoc supports.
 
 * [godoc documentation](https://godoc.org/golang.org/x/tools/cmd/godoc)
 * [godoc documenting go code](http://blog.golang.org/godoc-documenting-go-code)

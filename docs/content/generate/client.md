@@ -12,6 +12,8 @@ The toolkit has a command that will let you generate a client.
 
 ## Usage
 
+There is an example client in 
+
 To generate a client:
 
 ```
@@ -43,10 +45,13 @@ func main() {
 }
 ```
 
-To then use the client with a HTTP transport:
+The client runtime allows for a number of [configuration
+options](https://godoc.org/github.com/go-swagger/go-swagger/httpkit/client#Runtime) to be set.  
+To then use the client, and override the host, with a HTTP transport:
 
 ```go
 import (
+  "os"
   "log"
 
   "github.com/myproject/client/operations"
@@ -64,8 +69,18 @@ func main() {
     log.Fatal(err)
   }
 
-  // create the API client
-  client := apiclient.New(httptransport.New(doc), strfmt.Default)
+  // create the transport
+  transport := httptransport.New(doc)
+  // configure the host
+  if os.Getenv("TODOLIST_HOST") != "" {
+    transport.Host = os.Getenv("TODOLIST_HOST")
+  }
+
+  // create the API client, with the transport
+  client := apiclient.New(transport, strfmt.Default)
+
+  // to override the host for the default client
+  // apiclient.Default.SetTransport(transport)
 
   // make the request to get all items
   resp, err := client.Operations.All(operations.AllParams{})
@@ -81,12 +96,13 @@ func main() {
 
 The client supports 3 authentication schemes:
 
-* Basic Auth
-* API key auth in header or query
-* Bearer token header for oauth2
+* [Basic Auth](https://godoc.org/github.com/go-swagger/go-swagger/httpkit/client#BasicAuth)
+* [API key auth in header or query](https://godoc.org/github.com/go-swagger/go-swagger/httpkit/client#APIKeyAuth)
+* [Bearer token header for oauth2](https://godoc.org/github.com/go-swagger/go-swagger/httpkit/client#BearerToken)
 
 ```go
 import (
+  "os"
   "log"
 
   "github.com/myproject/client/operations"
@@ -109,7 +125,13 @@ func main() {
 
   // make the authenticated request to get all items
   bearerTokenAuth := httptransport.BearerToken(os.Getenv("API_ACCESS_TOKEN"))
+  // basicAuth := httptransport.BasicAuth(os.Getenv("API_USER"), os.Getenv("API_PASSWORD"))
+  // apiKeyQueryAuth := httptransport.APIKeyAuth("apiKey", "query", os.Getenv("API_KEY"))
+  // apiKeyHeaderAuth := httptransport.APIKeyAuth("X-API-TOKEN", "header", os.Getenv("API_KEY"))
   resp, err := client.Operations.All(operations.AllParams{}, bearerTokenAuth)
+  // resp, err := client.Operations.All(operations.AllParams{}, basicAuth)
+  // resp, err := client.Operations.All(operations.AllParams{}, apiKeyQueryAuth)
+  // resp, err := client.Operations.All(operations.AllParams{}, apiKeyHeaderAuth)
   if err != nil {
     log.Fatal(err)
   }

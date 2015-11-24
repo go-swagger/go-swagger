@@ -23,13 +23,13 @@ Docs
 
 https://go-swagger.github.io
 
-Install:
+Install or update:
 
     go get -u github.com/go-swagger/go-swagger/cmd/swagger
 
 The implementation also provides a number of command line tools to help working with swagger.
 
-Currently there is a spec validator tool:
+Currently there is a [spec validator tool](http://go-swagger.github.io/usage/validate/):
 
 		swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
 
@@ -37,11 +37,11 @@ To generate a server for a swagger spec document:
 
 		swagger generate server [-f ./swagger.json] -A [application-name [--principal [principal-name]]
 
-To generate a client for a swagger spec document:
+To generate a [client for a swagger spec](http://go-swagger.github.io/generate/client/) document:
 
 		swagger generate client [-f ./swagger.json] -A [application-name [--principal [principal-name]]
 
-To generate a swagger spec document for a go application:
+To generate a [swagger spec document for a go application](http://go-swagger.github.io/generate/spec/):
 
 		swagger generate spec -o ./swagger.json
 
@@ -79,18 +79,21 @@ For a V1 I want to have this feature set completed:
 -	[x] A tool to work with swagger:
 	-	[x] validate a swagger spec document:
     -	[x] validate against jsonschema
-    -	[ ] validate extra rules outlined [here](https://github.com/apigee-127/swagger-tools/blob/master/docs/Swagger_Validation.md)
+    -	[ ] validate extra rules outlined [here](https://github.com/apigee-127/sway/blob/master/docs/versions/2.0.md#semantic-validation)
       - [x] definition can't declare a property that's already defined by one of its ancestors (Error)
       - [x] definition's ancestor can't be a descendant of the same model (Error)
       - [x] each api path should be non-verbatim (account for path param names) unique per method (Error)
       - [ ] each security reference should contain only unique scopes (Warning)
       - [ ] each security scope in a security definition should be unique (Warning)
       - [x] each path parameter should correspond to a parameter placeholder and vice versa (Error)
-      - [ ] each referencable definition must have references (Warning)
+      - [ ] path parameter declarations do not allow empty names _(`/path/{}` is not valid)_ (Error)
       - [x] each definition property listed in the required array must be defined in the properties of the model (Error)
-      - [x] each parameter should have a unique `name` and `type` combination (Error)
-      - [x] each operation should have only 1 parameter of type body (Error)
+      - [x] each parameter should have a unique `name` and `in` combination (Error)
+      - [x] each operation should have at most 1 parameter of type body (Error)
+      - [ ] each operation cannot have both a body parameter and a formData parameter (Error)
+      - [x] each operation must have an unique `operationId` (Error)
       - [x] each reference must point to a valid object (Error)
+      - [ ] each referencable definition must have references (Warning)
       - [x] every default value that is specified must validate against the schema for that property (Error)
       - [x] every example that is specified must validate against the schema for that property (Error)
       - [x] items property is required for all schemas/definitions of type `array` (Error)
@@ -158,6 +161,7 @@ Many of these fall under the maybe, perhaps, could be nice to have, might not ha
     -	[ ] watch swagger spec file and regenerate when modified
   - Spec generation:
     -	[ ] watch application folders and regenerate the swagger document
+    - [ ] create fluent builder api
 - Middlewares:
 	- [ ] swagger editor
 	- [ ] swagger UI

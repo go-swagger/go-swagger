@@ -41,7 +41,7 @@ the comment block is for swagger.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;swagger generate spec -o ./swagger.json
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;You give it a main file and it will parse all the files that are required by that main
+&lt;p&gt;You give it a main file and it will parse all the files that are reachable by that main
 package to produce a swagger specification.&lt;/p&gt;
 
 &lt;p&gt;To use you can add a go:generate comment to your main file for example:&lt;/p&gt;
@@ -54,10 +54,16 @@ application and then scan all the packages that are in use by the code base.
 This means that for something to be discoverable it needs to be reachable by a codepath triggered through the main
 package.&lt;/p&gt;
 
+&lt;p&gt;If an annotation is not yet supported or you want to merge with a pre-existing spec, you can use the -i parameter.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;swagger generate spec -i ./swagger.yml -o ./swagger.json
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;h4 id=&#34;parsing-rules:958e7270f96f5407d7d980f500805b1b&#34;&gt;Parsing rules&lt;/h4&gt;
 
-&lt;p&gt;This command relies heavily on the way godoc works! This means you should be very aware of all the things godoc
-supports.&lt;/p&gt;
+&lt;p&gt;:warning: This command relies heavily on the way godoc works. :warning:&lt;/p&gt;
+
+&lt;p&gt;This means you should be very aware of all the things godoc supports.&lt;/p&gt;
 
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://godoc.org/golang.org/x/tools/cmd/godoc&#34;&gt;godoc documentation&lt;/a&gt;&lt;/li&gt;
@@ -105,6 +111,8 @@ as description up to either the end of the comment block, or a line that starts 
 
 &lt;h2 id=&#34;usage:4bd4f30263398a45e38fc9edfc648efa&#34;&gt;Usage&lt;/h2&gt;
 
+&lt;p&gt;There is an example client in&lt;/p&gt;
+
 &lt;p&gt;To generate a client:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;swagger generate client -f [http-url|filepath] -A [application-name] [--principal [principal-name]]
@@ -134,9 +142,12 @@ func main() {
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;To then use the client with a HTTP transport:&lt;/p&gt;
+&lt;p&gt;The client runtime allows for a number of &lt;a href=&#34;https://godoc.org/github.com/go-swagger/go-swagger/httpkit/client#Runtime&#34;&gt;configuration
+options&lt;/a&gt; to be set.&lt;br /&gt;
+To then use the client, and override the host, with a HTTP transport:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;import (
+  &amp;quot;os&amp;quot;
   &amp;quot;log&amp;quot;
 
   &amp;quot;github.com/myproject/client/operations&amp;quot;
@@ -154,8 +165,18 @@ func main() {
     log.Fatal(err)
   }
 
-  // create the API client
-  client := apiclient.New(httptransport.New(doc), strfmt.Default)
+  // create the transport
+  transport := httptransport.New(doc)
+  // configure the host
+  if os.Getenv(&amp;quot;TODOLIST_HOST&amp;quot;) != &amp;quot;&amp;quot; {
+    transport.Host = os.Getenv(&amp;quot;TODOLIST_HOST&amp;quot;)
+  }
+
+  // create the API client, with the transport
+  client := apiclient.New(transport, strfmt.Default)
+
+  // to override the host for the default client
+  // apiclient.Default.SetTransport(transport)
 
   // make the request to get all items
   resp, err := client.Operations.All(operations.AllParams{})
@@ -171,12 +192,13 @@ func main() {
 &lt;p&gt;The client supports 3 authentication schemes:&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;Basic Auth&lt;/li&gt;
-&lt;li&gt;API key auth in header or query&lt;/li&gt;
-&lt;li&gt;Bearer token header for oauth2&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://godoc.org/github.com/go-swagger/go-swagger/httpkit/client#BasicAuth&#34;&gt;Basic Auth&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://godoc.org/github.com/go-swagger/go-swagger/httpkit/client#APIKeyAuth&#34;&gt;API key auth in header or query&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://godoc.org/github.com/go-swagger/go-swagger/httpkit/client#BearerToken&#34;&gt;Bearer token header for oauth2&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;import (
+  &amp;quot;os&amp;quot;
   &amp;quot;log&amp;quot;
 
   &amp;quot;github.com/myproject/client/operations&amp;quot;
@@ -199,13 +221,174 @@ func main() {
 
   // make the authenticated request to get all items
   bearerTokenAuth := httptransport.BearerToken(os.Getenv(&amp;quot;API_ACCESS_TOKEN&amp;quot;))
+  // basicAuth := httptransport.BasicAuth(os.Getenv(&amp;quot;API_USER&amp;quot;), os.Getenv(&amp;quot;API_PASSWORD&amp;quot;))
+  // apiKeyQueryAuth := httptransport.APIKeyAuth(&amp;quot;apiKey&amp;quot;, &amp;quot;query&amp;quot;, os.Getenv(&amp;quot;API_KEY&amp;quot;))
+  // apiKeyHeaderAuth := httptransport.APIKeyAuth(&amp;quot;X-API-TOKEN&amp;quot;, &amp;quot;header&amp;quot;, os.Getenv(&amp;quot;API_KEY&amp;quot;))
   resp, err := client.Operations.All(operations.AllParams{}, bearerTokenAuth)
+  // resp, err := client.Operations.All(operations.AllParams{}, basicAuth)
+  // resp, err := client.Operations.All(operations.AllParams{}, apiKeyQueryAuth)
+  // resp, err := client.Operations.All(operations.AllParams{}, apiKeyHeaderAuth)
   if err != nil {
     log.Fatal(err)
   }
   fmt.Printf(&amp;quot;%#v\n&amp;quot;, resp.Payload)
 }
 &lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Generate a server for a swagger spec</title>
+      <link>http://go-swagger.github.io/generate/server/</link>
+      <pubDate>Sun, 22 Nov 2015 23:19:15 -0800</pubDate>
+      
+      <guid>http://go-swagger.github.io/generate/server/</guid>
+      <description>&lt;p&gt;The toolkit has a command that will let you generate a server.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Validate a swagger spec</title>
+      <link>http://go-swagger.github.io/usage/validate/</link>
+      <pubDate>Thu, 22 Oct 2015 23:28:09 -0700</pubDate>
+      
+      <guid>http://go-swagger.github.io/usage/validate/</guid>
+      <description>
+
+&lt;p&gt;The toolkit has a command to validate swagger specifications for you.
+It includes a full json-schema validator and adds a bunch of extra validations on top of that to ensure the spec
+is as valid as possible, so that there are no surprises.&lt;/p&gt;
+
+&lt;h3 id=&#34;usage:c64148e1a0d4f4de12bdfecb139d0588&#34;&gt;Usage&lt;/h3&gt;
+
+&lt;p&gt;To validate a specification:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;swagger validate [http-url|filepath]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;swagger-2-0-resources:c64148e1a0d4f4de12bdfecb139d0588&#34;&gt;Swagger 2.0 resources&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Specification Documentation: &lt;a href=&#34;https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md&#34;&gt;https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;JSON Schema: &lt;a href=&#34;https://github.com/swagger-api/swagger-spec/blob/master/schemas/v2.0/schema.json&#34;&gt;https://github.com/swagger-api/swagger-spec/blob/master/schemas/v2.0/schema.json&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;sematic-validation:c64148e1a0d4f4de12bdfecb139d0588&#34;&gt;Sematic Validation&lt;/h3&gt;
+
+&lt;p&gt;All the rules the validator tool supports:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;validate against jsonschema&lt;/li&gt;
+&lt;li&gt;validate extra rules outlined &lt;a href=&#34;https://github.com/apigee-127/sway/blob/master/docs/versions/2.0.md#semantic-validation&#34;&gt;here&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Rule&lt;/th&gt;
+&lt;th&gt;Severity&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;definition can&amp;rsquo;t declare a property that&amp;rsquo;s already defined by one of its ancestors&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;definition&amp;rsquo;s ancestor can&amp;rsquo;t be a descendant of the same model&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each security reference should contain only unique scopes&lt;/td&gt;
+&lt;td&gt;Warning&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each security scope in a security definition should be unique&lt;/td&gt;
+&lt;td&gt;Warning&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;path parameter declarations do not allow empty names &lt;em&gt;(&lt;code&gt;/path/{}&lt;/code&gt; is not valid)&lt;/em&gt;&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each api path should be non-verbatim (account for path param names) unique per method&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each path parameter should correspond to a parameter placeholder and vice versa&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each referencable definition must have references&lt;/td&gt;
+&lt;td&gt;Warning&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each definition property listed in the required array must be defined in the properties of the model&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each parameter should have a unique &lt;code&gt;name&lt;/code&gt; and &lt;code&gt;in&lt;/code&gt; combination&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each operation must have an unique &lt;code&gt;operationId&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each operation should have only 1 parameter of type body&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each operation cannot have both a body parameter and a formData parameter&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;each reference must point to a valid object&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;every default value that is specified must validate against the schema for that property&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;every example that is specified must validate against the schema for that property&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;items property is required for all schemas/definitions of type &lt;code&gt;array&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;Error&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Untyped API server</title>
+      <link>http://go-swagger.github.io/untyped/server/</link>
+      <pubDate>Sun, 22 Nov 2015 23:21:52 -0800</pubDate>
+      
+      <guid>http://go-swagger.github.io/untyped/server/</guid>
+      <description>&lt;p&gt;The toolkit supports serving a swagger spec with untyped data. This means that it uses mostly interface{} as params to
+each operation and as result type. It does allow you to serve a spec up quickly. This is one of the building blocks
+required to serve up stub API&amp;rsquo;s and to generate a test server with predictable responses.&lt;/p&gt;
 </description>
     </item>
     

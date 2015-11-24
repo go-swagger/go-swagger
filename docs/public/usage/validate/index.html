@@ -4,12 +4,12 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"/>
   <title>Validate a swagger spec</title>
-  <link href="http://go-swagger.github.io/css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
-  <link href="http://go-swagger.github.io/css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
-  <link rel="stylesheet" href="http://go-swagger.github.io/css/prism.css" />
+  <link href="http://go-swagger.github.io//css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="http://go-swagger.github.io//css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link rel="stylesheet" href="http://go-swagger.github.io//css/prism.css" />
   <style type="text/css">
   
-    footer.page-footer{background-image: url(http://go-swagger.github.io/images/default.png);}
+    footer.page-footer{background-image: url(http://go-swagger.github.io//images/default.png);}
   
   </style>
 </head>
@@ -23,13 +23,13 @@
   
     <div class="section no-pad-bot">
       <div class="container">
-        <h1 class="header center teal-text text-lighten-2"><a href="http://go-swagger.github.io">go-swagger toolkit</a></h1>
+        <h1 class="header center teal-text text-lighten-2"><a href="http://go-swagger.github.io/">go-swagger toolkit</a></h1>
         <div class="row center">
           <h5 class="header col s12 light">Swagger 2.0 describes your API&#39;s for you, so you don&#39;t have to</h5>
         </div>
         <div class="row center">
         
-          <a href="https://github.com/go-swagger/go-swagger"><img src="http://go-swagger.github.io/images/github2-dreamstale35.png"></a>
+          <a href="https://github.com/go-swagger/go-swagger"><img src="http://go-swagger.github.io//images/github2-dreamstale35.png"></a>
         
         
         
@@ -40,7 +40,7 @@
     </div>
     <div class="parallax">
     
-      <img src="http://go-swagger.github.io/images/default-gopher.png">
+      <img src="http://go-swagger.github.io//images/default.png">
     
     </div>
   </div>
@@ -56,10 +56,12 @@
           <h2>Validate a swagger spec</h2>
           <p>
           
+            
+              <a href="http://go-swagger.github.io//categories/validate/">validate</a>
+            
+          
           </p>
           <p>
-
-<h2 id="validate-a-swagger-spec:c64148e1a0d4f4de12bdfecb139d0588">Validate a swagger spec</h2>
 
 <p>The toolkit has a command to validate swagger specifications for you.
 It includes a full json-schema validator and adds a bunch of extra validations on top of that to ensure the spec
@@ -72,31 +74,117 @@ is as valid as possible, so that there are no surprises.</p>
 <pre><code>swagger validate [http-url|filepath]
 </code></pre>
 
-<h3 id="supported-rules:c64148e1a0d4f4de12bdfecb139d0588">Supported rules</h3>
+<h3 id="swagger-2-0-resources:c64148e1a0d4f4de12bdfecb139d0588">Swagger 2.0 resources</h3>
+
+<ul>
+<li>Specification Documentation: <a href="https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md">https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md</a></li>
+<li>JSON Schema: <a href="https://github.com/swagger-api/swagger-spec/blob/master/schemas/v2.0/schema.json">https://github.com/swagger-api/swagger-spec/blob/master/schemas/v2.0/schema.json</a></li>
+</ul>
+
+<h3 id="sematic-validation:c64148e1a0d4f4de12bdfecb139d0588">Sematic Validation</h3>
 
 <p>All the rules the validator tool supports:</p>
 
 <ul>
 <li>validate against jsonschema</li>
-<li>validate extra rules outlined <a href="https://github.com/apigee-127/swagger-tools/blob/master/docs/Swagger_Validation.md">here</a>
-
-<ul>
-<li>definition can&rsquo;t declare a property that&rsquo;s already defined by one of its ancestors (Error)</li>
-<li>definition&rsquo;s ancestor can&rsquo;t be a descendant of the same model (Error)</li>
-<li>each api path should be non-verbatim (account for path param names) unique per method (Error)</li>
-<li>each security reference should contain only unique scopes (Warning)</li>
-<li>each security scope in a security definition should be unique (Warning)</li>
-<li>each path parameter should correspond to a parameter placeholder and vice versa (Error)</li>
-<li>each referencable definition must have references (Warning)</li>
-<li>each definition property listed in the required array must be defined in the properties of the model (Error)</li>
-<li>each parameter should have a unique <code>name</code> and <code>type</code> combination (Error)</li>
-<li>each operation should have only 1 parameter of type body (Error)</li>
-<li>each reference must point to a valid object (Error)</li>
-<li>every default value that is specified must validate against the schema for that property (Error)</li>
-<li>every example that is specified must validate against the schema for that property (Error)</li>
-<li>items property is required for all schemas/definitions of type <code>array</code> (Error)</li>
-</ul></li>
+<li>validate extra rules outlined <a href="https://github.com/apigee-127/sway/blob/master/docs/versions/2.0.md#semantic-validation">here</a></li>
 </ul>
+
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Severity</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>definition can&rsquo;t declare a property that&rsquo;s already defined by one of its ancestors</td>
+<td>Error</td>
+</tr>
+
+<tr>
+<td>definition&rsquo;s ancestor can&rsquo;t be a descendant of the same model</td>
+<td>Error</td>
+</tr>
+
+<tr>
+<td>each security reference should contain only unique scopes</td>
+<td>Warning</td>
+</tr>
+
+<tr>
+<td>each security scope in a security definition should be unique</td>
+<td>Warning</td>
+</tr>
+
+<tr>
+<td>path parameter declarations do not allow empty names <em>(<code>/path/{}</code> is not valid)</em></td>
+<td>Error</td>
+</tr>
+
+<tr>
+<td>each api path should be non-verbatim (account for path param names) unique per method</td>
+<td>Error</td>
+</tr>
+
+<tr>
+<td>each path parameter should correspond to a parameter placeholder and vice versa</td>
+<td>Error</td>
+</tr>
+
+<tr>
+<td>each referencable definition must have references</td>
+<td>Warning</td>
+</tr>
+
+<tr>
+<td>each definition property listed in the required array must be defined in the properties of the model</td>
+<td>Error</td>
+</tr>
+
+<tr>
+<td>each parameter should have a unique <code>name</code> and <code>in</code> combination</td>
+<td>Error</td>
+</tr>
+
+<tr>
+<td>each operation must have an unique <code>operationId</code></td>
+<td>Error</td>
+</tr>
+
+<tr>
+<td>each operation should have only 1 parameter of type body</td>
+<td>Error</td>
+</tr>
+
+<tr>
+<td>each operation cannot have both a body parameter and a formData parameter</td>
+<td>Error</td>
+</tr>
+
+<tr>
+<td>each reference must point to a valid object</td>
+<td>Error</td>
+</tr>
+
+<tr>
+<td>every default value that is specified must validate against the schema for that property</td>
+<td>Error</td>
+</tr>
+
+<tr>
+<td>every example that is specified must validate against the schema for that property</td>
+<td>Error</td>
+</tr>
+
+<tr>
+<td>items property is required for all schemas/definitions of type <code>array</code></td>
+<td>Error</td>
+</tr>
+</tbody>
+</table>
 </p>
           <p>22 Oct 2015
             
@@ -109,13 +197,13 @@ is as valid as possible, so that there are no surprises.</p>
     <div class="row">
       <div class="col s3 m1">
       
-        <a class="btn-floating btn-large disabled"><i class="mdi-navigation-arrow-back"></i></a>
+        <a class="btn-floating btn-large waves-effect waves-light" href="http://go-swagger.github.io/generate/server/"><i class="mdi-navigation-arrow-back"></i></a>
       
       </div>
       <div class="col s6 m10 center">&nbsp</div>
       <div class="col s3 m1">
       
-        <a class="btn-floating btn-large waves-effect waves-light" href="http://go-swagger.github.io/generate/spec/"><i class="mdi-navigation-arrow-forward"></i></a>
+        <a class="btn-floating btn-large waves-effect waves-light" href="http://go-swagger.github.io/untyped/server/"><i class="mdi-navigation-arrow-forward"></i></a>
       
       </div>
     </div>
@@ -132,18 +220,9 @@ is as valid as possible, so that there are no surprises.</p>
     </div>
   </footer>
   <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-  <script src="http://go-swagger.github.io/js/materialize.min.js"></script>
-  <script src="http://go-swagger.github.io/js/init.js"></script>
-  <script src="http://go-swagger.github.io/js/prism.js"></script>
-  
-  <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-    ga('create', 'UA-240612-10', 'auto');
-    ga('send', 'pageview');
-  </script>
+  <script src="http://go-swagger.github.io//js/materialize.min.js"></script>
+  <script src="http://go-swagger.github.io//js/init.js"></script>
+  <script src="http://go-swagger.github.io//js/prism.js"></script>
   
 
   </body>
