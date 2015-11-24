@@ -129,11 +129,11 @@ func init() {
 	//clientParamTemplate = template.Must(clientParamTemplate.New("body").Parse(string(assetSchemaBody)))
 	clientParamTemplate = template.Must(clientParamTemplate.New("parameter").Parse(string(assetClientParameter)))
 
-	clientResponseTemplate = template.Must(validatorTempl.Clone())
-	clientResponseTemplate = template.Must(clientResponseTemplate.New("docstring").Parse(string(assetDocString)))
-	clientResponseTemplate = template.Must(clientResponseTemplate.New("validationDocString").Parse(string(assetStuctFieldValidation)))
-	clientResponseTemplate = template.Must(clientResponseTemplate.New("schType").Parse(string(assetSchemaType)))
-	clientResponseTemplate = template.Must(clientResponseTemplate.New("body").Parse(string(assetSchemaBody)))
+	clientResponseTemplate = makeModelTemplate() // template.Must(validatorTempl.Clone())
+	// clientResponseTemplate = template.Must(clientResponseTemplate.New("docstring").Parse(string(assetDocString)))
+	// clientResponseTemplate = template.Must(clientResponseTemplate.New("validationDocString").Parse(string(assetStuctFieldValidation)))
+	// clientResponseTemplate = template.Must(clientResponseTemplate.New("schType").Parse(string(assetSchemaType)))
+	// clientResponseTemplate = template.Must(clientResponseTemplate.New("body").Parse(string(assetSchemaBody)))
 	clientResponseTemplate = template.Must(clientResponseTemplate.New("response").Parse(string(assetClientResponse)))
 
 	clientTemplate = template.Must(template.New("docstring").Funcs(FuncMap).Parse(string(assetDocString)))
