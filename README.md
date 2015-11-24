@@ -3,6 +3,9 @@ Swagger 2.0 [![Circle CI](https://circleci.com/gh/go-swagger/go-swagger/tree/mas
 
 [![license](http://img.shields.io/badge/license-Apache%20v2-orange.svg)](https://raw.githubusercontent.com/swagger-api/swagger-spec/master/LICENSE) [![GoDoc](https://godoc.org/github.com/go-swagger/go-swagger?status.svg)](http://godoc.org/github.com/go-swagger/go-swagger)
 
+Development of this toolkit is sponsored by VMWare:  
+[![VMWare](https://avatars2.githubusercontent.com/u/473334?v=3&s=200)](https://vmware.github.io)  
+
 This API is not stable yet, when it is stable it will be distributed over gopkg.in
 
 There is a code coverage report available in the artifacts section of a build. Unfortunately using coveralls made the
