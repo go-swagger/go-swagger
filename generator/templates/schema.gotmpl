@@ -4,9 +4,10 @@
 {{ template "tupleSerializer" . }}
 {{ else if .IsAdditionalProperties }}
 {{ template "additionalPropertiesSerializer" . }}
-{{ end }}{{if or .Required .HasValidations }}
+{{ end }}{{if and (not .IsInterface) (gt (len .Properties) 0) (or .Required .HasValidations) }}
 {{ template "schemavalidator" . }}
 {{ else if gt (len .AllOf) 0 }}
+// because all of
 {{ template "schemavalidator" . }}
 {{ else }}{{ if or .IsComplexObject .IsTuple .IsAdditionalProperties }}// Validate validates this {{ humanize .Name }}
 func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ pascalize .Name}}) Validate(formats strfmt.Registry) error {
