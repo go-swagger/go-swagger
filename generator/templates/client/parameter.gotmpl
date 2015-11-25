@@ -17,14 +17,15 @@ import (
   {{ end }}
 )
 
-/*
-{{ pascalize .Name }}Params contains all the parameters to send to the API endpoint
+/*{{ pascalize .Name }}Params contains all the parameters to send to the API endpoint
 for the {{ humanize .Name }} operation typically these are written to a http.Request
 */
 type {{ pascalize .Name }}Params struct {
-  {{ range .Params }}{{if .Description }}/*
+
+  {{ range .Params }}/*{{ pascalize .Name }}{{if .Description }}
   {{ .Description }}
-  */{{ end }}
+
+  {{ end }}*/
   {{ pascalize .Name }} {{ if and (not .IsArray) (or .IsNullable) }}*{{ end }}{{ .GoType }}
   {{ end }}
 }
@@ -89,7 +90,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r client.
   {{ end }}
 
   {{if .IsBodyParam}}
-  {{ if .Schema.IsComplexObject }}if {{ .ValueExpression }} == nil {
+  {{ if and .Schema.IsComplexObject .Schema.IsNullable }}if {{ .ValueExpression }} == nil {
     {{ .ValueExpression }} = {{ .ZeroValue }}
   }{{ end }}
 

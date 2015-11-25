@@ -4,7 +4,7 @@
 {{ template "tupleSerializer" . }}
 {{ else if .IsAdditionalProperties }}
 {{ template "additionalPropertiesSerializer" . }}
-{{ end }}{{if and (not .IsInterface) (gt (len .Properties) 0) (or .Required .HasValidations) }}
+{{ end }}{{if and (not .IsInterface) (or .Required .HasValidations) }}
 {{ template "schemavalidator" . }}
 {{ else if gt (len .AllOf) 0 }}
 // because all of

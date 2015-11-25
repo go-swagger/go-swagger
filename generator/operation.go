@@ -554,15 +554,21 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 			nm := schema.Name
 			schema.GoType = nm
 			schema.IsAnonymous = false
-			if b.ExtraSchemas == nil {
-				b.ExtraSchemas = make(map[string]GenSchema)
+			if len(schema.Properties) > 0 {
+				if b.ExtraSchemas == nil {
+					b.ExtraSchemas = make(map[string]GenSchema)
+				}
+				b.ExtraSchemas[nm] = schema
 			}
-			b.ExtraSchemas[nm] = schema
 			schema = GenSchema{}
 			schema.IsAnonymous = false
 			schema.GoType = nm
 			schema.SwaggerType = nm
+			if len(schema.Properties) == 0 {
+				schema.GoType = "interface{}"
+			}
 			schema.IsComplexObject = true
+			schema.IsInterface = len(schema.Properties) == 0
 		}
 		res.Schema = &schema
 		res.resolvedType = schema.resolvedType

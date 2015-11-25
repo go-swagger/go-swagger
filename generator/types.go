@@ -372,6 +372,7 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 	result.IsMap = !result.IsComplexObject
 	result.SwaggerType = "object"
 	result.IsNullable = false
+	result.IsInterface = len(schema.Properties) == 0
 	return
 }
 
