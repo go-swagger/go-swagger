@@ -119,7 +119,7 @@ func isEnabled(nm string) bool {
 
 func TestJSONSchemaSuite(t *testing.T) {
 	go func() {
-		err := http.ListenAndServe(":1234", http.FileServer(http.Dir(jsonSchemaFixturesPath+"/remotes")))
+		err := http.ListenAndServe("localhost:1234", http.FileServer(http.Dir(jsonSchemaFixturesPath+"/remotes")))
 		if err != nil {
 			panic(err.Error())
 		}
