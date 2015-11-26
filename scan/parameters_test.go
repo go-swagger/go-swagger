@@ -39,7 +39,7 @@ func TestParamsParser(t *testing.T) {
 
 	cr, ok := noParamOps["yetAnotherOperation"]
 	assert.True(t, ok)
-	assert.Len(t, cr.Parameters, 6)
+	assert.Len(t, cr.Parameters, 7)
 	for _, param := range cr.Parameters {
 		switch param.Name {
 		case "id":
@@ -60,6 +60,9 @@ func TestParamsParser(t *testing.T) {
 		case "createdAt":
 			assert.Equal(t, "string", param.Type)
 			assert.Equal(t, "date-time", param.Format)
+		case "informity":
+			assert.Equal(t, "string", param.Type)
+			assert.Equal(t, "formData", param.In)
 		}
 	}
 

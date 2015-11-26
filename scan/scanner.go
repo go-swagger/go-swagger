@@ -74,7 +74,7 @@ var (
 	rxStripComments      = regexp.MustCompile("^[^\\w\\+]*")
 	rxStripTitleComments = regexp.MustCompile("^[^\\p{L}]*[Pp]ackage\\p{Zs}+[^\\p{Zs}]+\\p{Zs}*")
 
-	rxIn        = regexp.MustCompile("[Ii]n\\p{Zs}*:\\p{Zs}*(query|path|header|body)$")
+	rxIn        = regexp.MustCompile("[Ii]n\\p{Zs}*:\\p{Zs}*(query|path|header|body|formData)$")
 	rxRequired  = regexp.MustCompile("[Rr]equired\\p{Zs}*:\\p{Zs}*(true|false)$")
 	rxReadOnly  = regexp.MustCompile("[Rr]ead(?:\\p{Zs}*|[\\p{Pd}\\p{Pc}])?[Oo]nly\\p{Zs}*:\\p{Zs}*(true|false)$")
 	rxConsumes  = regexp.MustCompile("[Cc]onsumes\\p{Zs}*:")

@@ -39,6 +39,9 @@ type ComplexerOneParams struct {
 	mods.NotSelected
 	mods.Notable
 	CreatedAt strfmt.DateTime `json:"createdAt"`
+
+	// in: formData
+	Informity string `json:"informity"`
 }
 
 // NoParams is a struct that exists in a package
