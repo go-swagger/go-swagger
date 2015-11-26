@@ -560,11 +560,12 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 				}
 				b.ExtraSchemas[nm] = schema
 			}
+			prevSchema := schema
 			schema = GenSchema{}
 			schema.IsAnonymous = false
 			schema.GoType = nm
 			schema.SwaggerType = nm
-			if len(schema.Properties) == 0 {
+			if len(prevSchema.Properties) == 0 {
 				schema.GoType = "interface{}"
 			}
 			schema.IsComplexObject = true
