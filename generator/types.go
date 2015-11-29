@@ -421,7 +421,12 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous bool) (res
 		return
 
 	case "object":
-		return t.resolveObject(schema, isAnonymous)
+		rt, err := t.resolveObject(schema, isAnonymous)
+		if err != nil {
+			return resolvedType{}, err
+		}
+		rt.HasDiscriminator = schema.Discriminator != ""
+		return rt, nil
 
 	default:
 		err = fmt.Errorf("unresolvable: %v (format %q)", schema.Type, schema.Format)
