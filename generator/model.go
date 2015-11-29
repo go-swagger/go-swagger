@@ -739,6 +739,9 @@ func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *sche
 	if sg.TypeResolver.ModelName != sg.Name {
 		name = swag.ToGoName(sg.TypeResolver.ModelName + " " + name)
 	}
+	if sp.Definitions == nil {
+		sp.Definitions = make(spec.Definitions)
+	}
 	sp.Definitions[name] = schema
 	pg := schemaGenContext{
 		Path:           "",
