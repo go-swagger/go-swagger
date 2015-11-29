@@ -81,20 +81,21 @@ import (
 //
 // swagger:parameters {{ camelize .Name }}
 type {{ pascalize .Name }}Params struct {
-  {{ range .Params }}{{ if .Description }}// {{ .Description }}{{ end }}{{ if .Required }}
-  // Required: true{{ end }}{{ if .Maximum }}
-  // Maximum: {{ if .ExclusiveMaximum }}< {{ end }}{{ .Maximum }}{{ end }}{{ if .Minimum }}
-  // Minimum: {{ if .ExclusiveMinimum }}> {{ end }}{{ .Minimum }}{{ end }}{{ if .MultipleOf }}
-  // Multiple Of: {{ .MultipleOf }}{{ end }}{{ if .MaxLength }}
-  // Max Length: {{ .MaxLength }}{{ end }}{{ if .MinLength }}
-  // Min Length: {{ .MinLength }}{{ end }}{{ if .Pattern }}
-  // Pattern: {{ .Pattern }}{{ end }}{{ if .MaxItems }}
-  // Max Items: {{ .MaxItems }}{{ end }}{{ if .MinItems }}
-  // Min Items: {{ .MinItems }}{{ end }}{{ if .UniqueItems }}
-  // Unique: true{{ end }}{{ if .Location }}
-  // In: {{ .Location }}{{ end }}{{ if .CollectionFormat }}
-  // Collection Format: {{ .CollectionFormat }}{{ end }}
-  {{ pascalize .Name }} {{ if .IsNullable }}*{{ end }}{{.GoType}}
+  {{ range .Params }}{{ if .Description }}/* {{ .Description }}{{ end }}{{ if .Required }}
+  Required: true{{ end }}{{ if .Maximum }}
+  Maximum: {{ if .ExclusiveMaximum }}< {{ end }}{{ .Maximum }}{{ end }}{{ if .Minimum }}
+  Minimum: {{ if .ExclusiveMinimum }}> {{ end }}{{ .Minimum }}{{ end }}{{ if .MultipleOf }}
+  Multiple Of: {{ .MultipleOf }}{{ end }}{{ if .MaxLength }}
+  Max Length: {{ .MaxLength }}{{ end }}{{ if .MinLength }}
+  Min Length: {{ .MinLength }}{{ end }}{{ if .Pattern }}
+  Pattern: {{ .Pattern }}{{ end }}{{ if .MaxItems }}
+  Max Items: {{ .MaxItems }}{{ end }}{{ if .MinItems }}
+  Min Items: {{ .MinItems }}{{ end }}{{ if .UniqueItems }}
+  Unique: true{{ end }}{{ if .Location }}
+  In: {{ .Location }}{{ end }}{{ if .CollectionFormat }}
+  Collection Format: {{ .CollectionFormat }}{{ end }}
+  */
+  {{ if not .Schema }}{{ pascalize .Name }} {{ if .IsNullable }}*{{ end }}{{.GoType}}{{ else }}{{ pascalize .Name }} {{ if and (not .Schema.IsBaseType) .IsNullable }}*{{ end }}{{.GoType}}{{ end }}
   {{ end}}
 }
 
@@ -134,11 +135,14 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
   }
   {{ end }}{{ end }}
 
-  {{ if .IsBodyParam }}
-  var body {{ .GoType }}
+  {{ if and .IsBodyParam .Schema }}
+  {{ if and .Schema.IsBaseType .Schema.IsExported }}body, err := {{ .ModelsPackage }}.Unmarshal{{ stripPackage .GoType .ModelsPackage }}(r.Body, route.Consumer)
+  if err != nil {
+    res = append(res, err)
+  {{ else }}var body {{ .GoType }}
   if err := route.Consumer.Consume(r.Body, &body); err != nil {
     res = append(res, errors.NewParseError("{{ camelize .Name }}", "{{ .Location }}", "", err))
-  } else {
+  {{ end }}} else {
     {{ if .IsArray }}for _, {{ .IndexVar }}{{ .ReceiverName }} := range {{ .ReceiverName }}.{{ pascalize .Name }} {
       if err := {{ .IndexVar }}{{ .ReceiverName }}.Validate(route.Formats); err != nil {
         res = append(res, err)
@@ -150,7 +154,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     }
     {{ end }}
     if len(res) == 0 {
-      {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if .IsNullable }}&{{ end }}body
+      {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
     }
   }
 

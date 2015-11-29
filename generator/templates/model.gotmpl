@@ -1,15 +1,15 @@
 {{ template "header" . }}
 
-/*
-{{ template "docstring" . }}
-swagger:model {{ .Name }}
-*/
+{{ if .IsExported }}/*{{ template "docstring" . }}{{ if not .IsBaseType }}
+swagger:model {{ .Name }}{{ else }}
+swagger:discriminator {{ .Name }} {{ .DiscriminatorField }}{{ end }}
+*/{{ end }}
 {{ template "schema" . }}
 
-{{ range .ExtraSchemas }}
-/*
-{{ template "docstring" . }}
-swagger:model {{ .Name }}
-*/
+{{ range .ExtraSchemas }}{{ if .IsExported }}
+/*{{ template "docstring" . }}{{ if not .IsBaseType }}
+swagger:model {{ .Name }}{{ else }}
+swagger:discriminator {{ .Name }} {{ .DiscriminatorField }}{{ end }}
+*/{{ end}}
 {{ template "schema" . }}
 {{ end }}

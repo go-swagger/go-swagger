@@ -15,15 +15,19 @@
 package spec
 
 import (
+	"path/filepath"
+	"strconv"
 	"strings"
 
+	"github.com/go-swagger/go-swagger/jsonpointer"
 	"github.com/go-swagger/go-swagger/swag"
 )
 
-// type operationRef struct {
-// 	operation *Operation
-// 	parameter *Parameter
-// }
+type referenceAnalysis struct {
+	schemas    map[string]SchemaRef
+	responses  map[string]*Response
+	parameters map[string]*Parameter
+}
 
 // specAnalyzer takes a swagger spec object and turns it into a registry
 // with a bunch of utility methods to act on the information in the spec
@@ -33,6 +37,9 @@ type specAnalyzer struct {
 	produces    map[string]struct{}
 	authSchemes map[string]struct{}
 	operations  map[string]map[string]*Operation
+	referenced  referenceAnalysis
+	allSchemas  map[string]SchemaRef
+	allOfs      map[string]SchemaRef
 }
 
 func (s *specAnalyzer) initialize() {
@@ -50,6 +57,22 @@ func (s *specAnalyzer) initialize() {
 	for path, pathItem := range s.AllPaths() {
 		s.analyzeOperations(path, &pathItem)
 	}
+
+	for name, parameter := range s.spec.Parameters {
+		if parameter.In == "body" && parameter.Schema != nil {
+			s.analyzeSchema("schema", *parameter.Schema, filepath.Join("/parameters", jsonpointer.Escape(name)))
+		}
+	}
+
+	for name, response := range s.spec.Responses {
+		if response.Schema != nil {
+			s.analyzeSchema("schema", *response.Schema, filepath.Join("/responses", jsonpointer.Escape(name)))
+		}
+	}
+
+	for name, schema := range s.spec.Definitions {
+		s.analyzeSchema(name, schema, "/definitions")
+	}
 }
 
 func (s *specAnalyzer) analyzeOperations(path string, op *PathItem) {
@@ -60,25 +83,95 @@ func (s *specAnalyzer) analyzeOperations(path string, op *PathItem) {
 	s.analyzeOperation("DELETE", path, op.Delete)
 	s.analyzeOperation("HEAD", path, op.Head)
 	s.analyzeOperation("OPTIONS", path, op.Options)
+	for i, param := range op.Parameters {
+		if param.Schema != nil {
+			s.analyzeSchema("schema", *param.Schema, filepath.Join("/paths", jsonpointer.Escape(path), "parameters", strconv.Itoa(i)))
+		}
+	}
 }
 
 func (s *specAnalyzer) analyzeOperation(method, path string, op *Operation) {
-	if op != nil {
-		for _, c := range op.Consumes {
-			s.consumes[c] = struct{}{}
+	if op == nil {
+		return
+	}
+
+	for _, c := range op.Consumes {
+		s.consumes[c] = struct{}{}
+	}
+	for _, c := range op.Produces {
+		s.produces[c] = struct{}{}
+	}
+	for _, ss := range op.Security {
+		for k := range ss {
+			s.authSchemes[k] = struct{}{}
 		}
-		for _, c := range op.Produces {
-			s.produces[c] = struct{}{}
+	}
+	if _, ok := s.operations[method]; !ok {
+		s.operations[method] = make(map[string]*Operation)
+	}
+	s.operations[method][path] = op
+	prefix := filepath.Join("/paths", jsonpointer.Escape(path), strings.ToLower(method))
+	for i, param := range op.Parameters {
+		if param.In == "body" && param.Schema != nil {
+			s.analyzeSchema("schema", *param.Schema, filepath.Join(prefix, "parameters", strconv.Itoa(i)))
 		}
-		for _, ss := range op.Security {
-			for k := range ss {
-				s.authSchemes[k] = struct{}{}
+	}
+	if op.Responses != nil {
+		if op.Responses.Default != nil && op.Responses.Default.Schema != nil {
+			s.analyzeSchema("schema", *op.Responses.Default.Schema, filepath.Join(prefix, "responses", "default"))
+		}
+		for k, res := range op.Responses.StatusCodeResponses {
+			if res.Schema != nil {
+				s.analyzeSchema("schema", *res.Schema, filepath.Join(prefix, "responses", strconv.Itoa(k)))
 			}
 		}
-		if _, ok := s.operations[method]; !ok {
-			s.operations[method] = make(map[string]*Operation)
+	}
+}
+
+func (s *specAnalyzer) analyzeSchema(name string, schema Schema, prefix string) {
+	refURI := filepath.Join(prefix, jsonpointer.Escape(name))
+	s.allSchemas["#"+refURI] = SchemaRef{
+		Name:   name,
+		Schema: &schema,
+		Ref:    MustCreateRef("#" + refURI),
+	}
+	for k, v := range schema.Definitions {
+		s.analyzeSchema(k, v, filepath.Join(refURI, "definitions"))
+	}
+	for k, v := range schema.Properties {
+		s.analyzeSchema(k, v, filepath.Join(refURI, "properties"))
+	}
+	for k, v := range schema.PatternProperties {
+		s.analyzeSchema(k, v, filepath.Join(refURI, "patternProperties"))
+	}
+	for i, v := range schema.AllOf {
+		s.analyzeSchema(strconv.Itoa(i), v, filepath.Join(refURI, "allOf"))
+	}
+	if len(schema.AllOf) > 0 {
+		s.allOfs["#"+refURI] = SchemaRef{Name: name, Schema: &schema, Ref: MustCreateRef("#" + refURI)}
+	}
+	for i, v := range schema.AnyOf {
+		s.analyzeSchema(strconv.Itoa(i), v, filepath.Join(refURI, "anyOf"))
+	}
+	for i, v := range schema.OneOf {
+		s.analyzeSchema(strconv.Itoa(i), v, filepath.Join(refURI, "oneOf"))
+	}
+	if schema.Not != nil {
+		s.analyzeSchema("not", *schema.Not, refURI)
+	}
+	if schema.AdditionalProperties != nil && schema.AdditionalProperties.Schema != nil {
+		s.analyzeSchema("additionalProperties", *schema.AdditionalProperties.Schema, refURI)
+	}
+	if schema.AdditionalItems != nil && schema.AdditionalItems.Schema != nil {
+		s.analyzeSchema("additionalItems", *schema.AdditionalItems.Schema, refURI)
+	}
+	if schema.Items != nil {
+		if schema.Items.Schema != nil {
+			s.analyzeSchema("items", *schema.Items.Schema, refURI)
 		}
-		s.operations[method][path] = op
+		for i, sch := range schema.Items.Schemas {
+			s.analyzeSchema(strconv.Itoa(i), sch, filepath.Join(refURI, "items"))
+		}
 	}
 }
 
@@ -283,4 +376,25 @@ func (s *specAnalyzer) RequiredProduces() []string {
 
 func (s *specAnalyzer) RequiredSecuritySchemes() []string {
 	return s.structMapKeys(s.authSchemes)
+}
+
+// SchemaRef is a reference to a schema
+type SchemaRef struct {
+	Name   string
+	Ref    Ref
+	Schema *Schema
+}
+
+func (s *specAnalyzer) SchemasWithAllOf() (result []SchemaRef) {
+	for _, v := range s.allOfs {
+		result = append(result, v)
+	}
+	return
+}
+
+func (s *specAnalyzer) AllDefinitions() (result []SchemaRef) {
+	for _, v := range s.allSchemas {
+		result = append(result, v)
+	}
+	return
 }

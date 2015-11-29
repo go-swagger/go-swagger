@@ -1,4 +1,5 @@
-{{ define "clientresponse" }}/*
+{{ define "clientresponse" }}/*{{ pascalize .Name}}
+
 {{ if .Description }}{{ .Description }}{{else}}{{ pascalize .Name }} {{ humanize .Name }}{{end}}
 */
 type {{ pascalize .Name }} struct {
@@ -6,7 +7,7 @@ type {{ pascalize .Name }} struct {
   {{ pascalize .Name }} {{ .GoType }}
   {{ end }}
   {{ if .Schema }}
-  Payload {{ if .Schema.IsComplexObject }}*{{ end }}{{ .Schema.GoType }}
+  Payload {{ if and (not .Schema.IsBaseType) .Schema.IsComplexObject }}*{{ end }}{{ .Schema.GoType }}
   {{ end }}
 }
 
@@ -22,14 +23,21 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response client.R
   {{end}}
   {{ end }}
   {{ if .Schema }}
-  {{ if .Schema.IsComplexObject }}
+  {{ if .Schema.IsBaseType }}
+  // response payload as interface type
+  payload, err := {{ .ModelsPackage }}.Unmarshal{{ stripPackage .Schema.GoType .ModelsPackage }}(response.Body(), consumer)
+  if err != nil {
+    return err
+  }
+  {{ .ReceiverName }}.Payload = payload
+  {{ else if .Schema.IsComplexObject }}
   {{ .ReceiverName }}.Payload = new({{ .Schema.GoType }})
-  {{ end }}
+  {{ end }}{{ if not .Schema.IsBaseType }}
   // response payload
   if err := consumer.Consume(response.Body(), {{ if not .Schema.IsComplexObject }}&{{ end}}{{ .ReceiverName }}.Payload); err != nil {
     return err
   }
-  {{ end }}
+  {{ end }}{{ end }}
   return nil
 }
 {{ end }}package {{ .Package }}
@@ -85,8 +93,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response cl
 {{ end }}
 
 {{ range .ExtraSchemas }}
-/*
-{{ template "docstring" . }}
+/*{{ pascalize .Name }} {{ template "docstring" . }}
 swagger:model {{ .Name }}
 */
 {{ template "schema" . }}

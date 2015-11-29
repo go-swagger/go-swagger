@@ -15,7 +15,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-swagger/go-swagger/errors"
@@ -359,7 +358,6 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 			c.api.ServeErrorFor("")(rw, r, err)
 			return
 		}
-		fmt.Println("ERROR:", err)
 		c.api.ServeErrorFor(route.Operation.ID)(rw, r, err)
 		return
 	}

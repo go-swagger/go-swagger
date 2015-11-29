@@ -16,6 +16,7 @@ package generator
 
 import (
 	"encoding/json"
+	"strings"
 	"text/template"
 
 	"github.com/go-swagger/go-swagger/swag"
@@ -87,6 +88,9 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	},
 	"hasSecure": func(arg []string) bool {
 		return swag.ContainsStringsCI(arg, "https") || swag.ContainsStringsCI(arg, "wss")
+	},
+	"stripPackage": func(str, pkg string) string {
+		return strings.TrimPrefix(str, pkg+".")
 	},
 }
 

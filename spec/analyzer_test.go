@@ -15,6 +15,8 @@
 package spec
 
 import (
+	"fmt"
+	"path/filepath"
 	"sort"
 	"testing"
 
@@ -37,6 +39,13 @@ func newAnalyzer(spec *Swagger) *specAnalyzer {
 		produces:    make(map[string]struct{}),
 		authSchemes: make(map[string]struct{}),
 		operations:  make(map[string]map[string]*Operation),
+		referenced: referenceAnalysis{
+			schemas:    make(map[string]SchemaRef),
+			responses:  make(map[string]*Response),
+			parameters: make(map[string]*Parameter),
+		},
+		allSchemas: make(map[string]SchemaRef),
+		allOfs:     make(map[string]SchemaRef),
 	}
 	a.initialize()
 	return a
@@ -133,4 +142,50 @@ func TestAnalyzer(t *testing.T) {
 	op, ok = analyzer.OperationFor("delete", "/")
 	assert.False(t, ok)
 	assert.Nil(t, op)
+}
+
+func TestDefinitionAnalysis(t *testing.T) {
+	doc, err := Load(filepath.Join("..", "fixtures", "analysis", "definitions.yml"))
+	if assert.NoError(t, err) {
+		definitions := doc.allSchemas
+		// parameters
+		assertSchemaRefExists(t, definitions, "#/parameters/someParam/schema")
+		assertSchemaRefExists(t, definitions, "#/paths/~1some~1where~1{id}/parameters/1/schema")
+		assertSchemaRefExists(t, definitions, "#/paths/~1some~1where~1{id}/get/parameters/1/schema")
+		// responses
+		assertSchemaRefExists(t, definitions, "#/responses/someResponse/schema")
+		assertSchemaRefExists(t, definitions, "#/paths/~1some~1where~1{id}/get/responses/default/schema")
+		assertSchemaRefExists(t, definitions, "#/paths/~1some~1where~1{id}/get/responses/200/schema")
+		// definitions
+		assertSchemaRefExists(t, definitions, "#/definitions/tag")
+		assertSchemaRefExists(t, definitions, "#/definitions/tag/properties/id")
+		assertSchemaRefExists(t, definitions, "#/definitions/tag/properties/value")
+		assertSchemaRefExists(t, definitions, "#/definitions/tag/definitions/category")
+		assertSchemaRefExists(t, definitions, "#/definitions/tag/definitions/category/properties/id")
+		assertSchemaRefExists(t, definitions, "#/definitions/tag/definitions/category/properties/value")
+		assertSchemaRefExists(t, definitions, "#/definitions/withAdditionalProps")
+		assertSchemaRefExists(t, definitions, "#/definitions/withAdditionalProps/additionalProperties")
+		assertSchemaRefExists(t, definitions, "#/definitions/withAdditionalItems")
+		assertSchemaRefExists(t, definitions, "#/definitions/withAdditionalItems/items/0")
+		assertSchemaRefExists(t, definitions, "#/definitions/withAdditionalItems/items/1")
+		assertSchemaRefExists(t, definitions, "#/definitions/withAdditionalItems/additionalItems")
+		assertSchemaRefExists(t, definitions, "#/definitions/withNot")
+		assertSchemaRefExists(t, definitions, "#/definitions/withNot/not")
+		assertSchemaRefExists(t, definitions, "#/definitions/withAnyOf")
+		assertSchemaRefExists(t, definitions, "#/definitions/withAnyOf/anyOf/0")
+		assertSchemaRefExists(t, definitions, "#/definitions/withAnyOf/anyOf/1")
+		assertSchemaRefExists(t, definitions, "#/definitions/withAllOf")
+		assertSchemaRefExists(t, definitions, "#/definitions/withAllOf/allOf/0")
+		assertSchemaRefExists(t, definitions, "#/definitions/withAllOf/allOf/1")
+		assert.Len(t, doc.allOfs, 1)
+		_, hasAllOf := doc.allOfs["#/definitions/withAllOf"]
+		assert.True(t, hasAllOf)
+	}
+}
+
+func assertSchemaRefExists(t *testing.T, data map[string]SchemaRef, key string) bool {
+	if _, ok := data[key]; !ok {
+		return assert.Fail(t, fmt.Sprintf("expected %q to exist in schema ref bag", key))
+	}
+	return true
 }

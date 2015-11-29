@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
@@ -80,6 +81,7 @@ type definitionGenerator struct {
 }
 
 func (m *definitionGenerator) Generate() error {
+
 	mod, err := makeGenDefinition(m.Name, m.Target, m.Model, m.SpecDoc)
 	if err != nil {
 		return err
@@ -121,20 +123,87 @@ func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *spec.Docum
 		ModelName:     name,
 		Doc:           specDoc,
 	}
+
+	di := discriminatorInfo(specDoc)
+
 	pg := schemaGenContext{
-		Path:         "",
-		Name:         name,
-		Receiver:     receiver,
-		IndexVar:     "i",
-		ValueExpr:    receiver,
-		Schema:       schema,
-		Required:     false,
-		TypeResolver: resolver,
-		Named:        true,
-		ExtraSchemas: make(map[string]GenSchema),
+		Path:           "",
+		Name:           name,
+		Receiver:       receiver,
+		IndexVar:       "i",
+		ValueExpr:      receiver,
+		Schema:         schema,
+		Required:       false,
+		TypeResolver:   resolver,
+		Named:          true,
+		ExtraSchemas:   make(map[string]GenSchema),
+		Discrimination: di,
 	}
 	if err := pg.makeGenSchema(); err != nil {
 		return nil, err
+	}
+	dsi, ok := di.Discriminators["#/definitions/"+name]
+	if ok {
+		// when these 2 are true then the schema will render as an interface
+		pg.GenSchema.IsBaseType = true
+		pg.GenSchema.IsExported = true
+		pg.GenSchema.DiscriminatorField = dsi.FieldName
+		// clone schema and turn into IsExported false
+		//tpeImpl := newDiscriminatorImpl(pg.GenSchema)
+		//pg.ExtraSchemas[tpeImpl.Name] = tpeImpl
+
+		for _, v := range dsi.Children {
+			if pg.GenSchema.Discriminates == nil {
+				pg.GenSchema.Discriminates = make(map[string]string)
+			}
+			pg.GenSchema.Discriminates[v.FieldValue] = v.GoType
+		}
+	}
+	dse, ok := di.Discriminated["#/definitions/"+name]
+	if ok {
+		pg.GenSchema.DiscriminatorField = dse.FieldName
+		pg.GenSchema.DiscriminatorValue = dse.FieldValue
+		pg.GenSchema.IsSubType = true
+
+		// find the referenced definitions
+		// check if it has a discriminator defined
+		// when it has a discriminator get the schema and run makeGenSchema for it.
+		// replace the ref with this new genschema
+		swsp := specDoc.Spec()
+		for i, ss := range schema.AllOf {
+			ref := ss.Ref
+			for ref.String() != "" {
+				rsch, err := spec.ResolveRef(swsp, &ref)
+				if err != nil {
+					return nil, err
+				}
+				ref = rsch.Ref
+				if rsch != nil && rsch.Ref.String() != "" {
+					ref = rsch.Ref
+					continue
+				}
+				ref = spec.Ref{}
+				if rsch != nil && rsch.Discriminator != "" {
+					gs, err := makeGenDefinition(strings.TrimPrefix(ss.Ref.String(), "#/definitions/"), pkg, *rsch, specDoc)
+					if err != nil {
+						return nil, err
+					}
+					gs.GenSchema.IsBaseType = true
+					gs.GenSchema.IsExported = true
+					pg.GenSchema.AllOf[i] = gs.GenSchema
+					schPtr := &(pg.GenSchema.AllOf[i])
+					if schPtr.AdditionalItems != nil {
+						schPtr.AdditionalItems.IsBaseType = true
+					}
+					if schPtr.AdditionalProperties != nil {
+						schPtr.AdditionalProperties.IsBaseType = true
+					}
+					for j := range schPtr.Properties {
+						schPtr.Properties[j].IsBaseType = true
+					}
+				}
+			}
+		}
 	}
 
 	var defaultImports []string
@@ -206,9 +275,12 @@ type schemaGenContext struct {
 
 	Index int
 
-	GenSchema    GenSchema
-	Dependencies []string
-	ExtraSchemas map[string]GenSchema
+	GenSchema      GenSchema
+	Dependencies   []string
+	ExtraSchemas   map[string]GenSchema
+	Discriminator  *discor
+	Discriminated  *discee
+	Discrimination *discInfo
 }
 
 func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContext {
@@ -388,6 +460,9 @@ func (sg *schemaGenContext) MergeResult(other *schemaGenContext, liftsRequired b
 	if liftsRequired && other.GenSchema.Required {
 		sg.GenSchema.Required = other.GenSchema.Required
 	}
+	if other.GenSchema.HasBaseType {
+		sg.GenSchema.HasBaseType = other.GenSchema.HasBaseType
+	}
 	sg.Dependencies = append(sg.Dependencies, other.Dependencies...)
 	for k, v := range other.ExtraSchemas {
 		sg.ExtraSchemas[k] = v
@@ -415,6 +490,12 @@ func (sg *schemaGenContext) buildProperties() error {
 			if err := pg.makeGenSchema(); err != nil {
 				return err
 			}
+			if v.Discriminator != "" {
+				pg.GenSchema.IsBaseType = true
+				pg.GenSchema.IsExported = true
+				pg.GenSchema.HasBaseType = true
+			}
+
 			vv = *spec.RefProperty("#/definitions/" + pg.Name)
 			hasValidations = pg.GenSchema.HasValidations
 			needsValidations = pg.GenSchema.NeedsValidation
@@ -431,6 +512,16 @@ func (sg *schemaGenContext) buildProperties() error {
 		}
 		if needsValidations || emprop.GenSchema.NeedsValidation {
 			emprop.GenSchema.NeedsValidation = true
+		}
+		if emprop.Schema.Ref.String() != "" {
+			if _, ok := emprop.Discrimination.Discriminators[emprop.Schema.Ref.String()]; ok {
+				emprop.GenSchema.IsBaseType = true
+				emprop.GenSchema.IsNullable = false
+				emprop.GenSchema.HasBaseType = true
+			}
+			if _, ok := emprop.Discrimination.Discriminated[emprop.Schema.Ref.String()]; ok {
+				emprop.GenSchema.IsSubType = true
+			}
 		}
 		sg.MergeResult(emprop, false)
 		sg.GenSchema.Properties = append(sg.GenSchema.Properties, emprop.GenSchema)
@@ -650,15 +741,16 @@ func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *sche
 	}
 	sp.Definitions[name] = schema
 	pg := schemaGenContext{
-		Path:         "",
-		Name:         name,
-		Receiver:     "m",
-		IndexVar:     "i",
-		ValueExpr:    "m",
-		Schema:       schema,
-		Required:     false,
-		Named:        true,
-		ExtraSchemas: make(map[string]GenSchema),
+		Path:           "",
+		Name:           name,
+		Receiver:       "m",
+		IndexVar:       "i",
+		ValueExpr:      "m",
+		Schema:         schema,
+		Required:       false,
+		Named:          true,
+		ExtraSchemas:   make(map[string]GenSchema),
+		Discrimination: sg.Discrimination,
 	}
 	if schema.Ref.String() == "" {
 		pg.TypeResolver = &typeResolver{
@@ -824,7 +916,7 @@ func (sg *schemaGenContext) buildXMLName() error {
 func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 	// This if block ensures that a struct gets
 	// rendered with the ref as embedded ref.
-	if sg.RefHandled || !sg.Named || sg.Schema.Ref.GetURL() == nil {
+	if sg.RefHandled || !sg.Named || sg.Schema.Ref.String() == "" {
 		return false, nil
 	}
 	nullableOverride := sg.GenSchema.IsNullable
@@ -892,6 +984,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	if sg.Schema.Example != nil {
 		ex = fmt.Sprintf("%#v", sg.Schema.Example)
 	}
+	sg.GenSchema.IsExported = true
 	sg.GenSchema.Example = ex
 	sg.GenSchema.Path = sg.Path
 	sg.GenSchema.IndexVar = sg.IndexVar
@@ -952,6 +1045,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.IsComplexObject = prev.IsComplexObject
 	sg.GenSchema.IsMap = prev.IsMap
 	sg.GenSchema.IsAdditionalProperties = prev.IsAdditionalProperties
+	sg.GenSchema.IsBaseType = sg.GenSchema.HasDiscriminator
 
 	if err := sg.buildProperties(); err != nil {
 		return nil
@@ -970,6 +1064,14 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	}
 
 	return nil
+}
+
+func newDiscriminatorImpl(tpeImpl GenSchema) GenSchema {
+	tpeImpl.IsBaseType = true
+	tpeImpl.IsExported = false
+	tpeImpl.Name = swag.ToJSONName(tpeImpl.Name)
+	tpeImpl.GoType = swag.ToJSONName(tpeImpl.GoType)
+	return tpeImpl
 }
 
 // NOTE:
@@ -1007,6 +1109,14 @@ type GenSchema struct {
 	AdditionalProperties    *GenSchema
 	ReadOnly                bool
 	IsVirtual               bool
+	IsBaseType              bool
+	HasBaseType             bool
+	IsSubType               bool
+	IsExported              bool
+	DiscriminatorField      string
+	DiscriminatorValue      string
+	Discriminates           map[string]string
+	Parents                 []string
 }
 
 type sharedValidations struct {

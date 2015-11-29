@@ -387,6 +387,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 
 	res := GenResponse{
 		Package:        b.APIPackage,
+		ModelsPackage:  b.ModelsPackage,
 		ReceiverName:   receiver,
 		Name:           name,
 		Description:    resp.Description,
@@ -518,6 +519,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 	var child *GenItems
 	res := GenParameter{
 		Name:             param.Name,
+		ModelsPackage:    b.ModelsPackage,
 		Path:             fmt.Sprintf("%q", param.Name),
 		ValueExpression:  fmt.Sprintf("%s.%s", receiver, swag.ToGoName(param.Name)),
 		IndexVar:         "i",
@@ -834,10 +836,11 @@ func makeGenValidations(s commonValidations) sharedParam {
 
 // GenResponse represents a response object for code generation
 type GenResponse struct {
-	Package      string
-	ReceiverName string
-	Name         string
-	Description  string
+	Package       string
+	ModelsPackage string
+	ReceiverName  string
+	Name          string
+	Description   string
 
 	IsSuccess bool
 
@@ -881,6 +884,7 @@ type GenParameter struct {
 	sharedValidations
 
 	Name            string
+	ModelsPackage   string
 	Path            string
 	ValueExpression string
 	IndexVar        string

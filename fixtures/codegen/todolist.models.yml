@@ -478,6 +478,14 @@ definitions:
                     type: number
                     format: double
 
+  WithPet:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      pet:
+         $ref: "#/definitions/Pet"
   Pet:
     type: object
     discriminator: petType

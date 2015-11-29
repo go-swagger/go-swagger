@@ -219,7 +219,7 @@ type typeResolver struct {
 }
 
 func (t *typeResolver) resolveSchemaRef(schema *spec.Schema) (returns bool, result resolvedType, err error) {
-	if schema.Ref.GetURL() != nil {
+	if schema.Ref.String() != "" {
 		returns = true
 		ref, er := spec.ResolveRef(t.Doc.Spec(), &schema.Ref)
 		if er != nil {
@@ -241,6 +241,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema) (returns bool, resu
 		}
 		result = res
 		result.GoType = tn
+		result.HasDiscriminator = ref.Discriminator != ""
 		result.IsNullable = t.isNullable(ref)
 		if t.ModelsPackage != "" {
 			result.GoType = t.ModelsPackage + "." + tn
@@ -438,6 +439,7 @@ type resolvedType struct {
 	IsPrimitive       bool
 	IsCustomFormatter bool
 	IsNullable        bool
+	HasDiscriminator  bool
 
 	// A tuple gets rendered as an anonymous struct with P{index} as property name
 	IsTuple            bool

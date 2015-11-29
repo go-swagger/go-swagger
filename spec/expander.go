@@ -370,6 +370,7 @@ func expandSchema(schema *Schema, resolver *schemaLoader) error {
 		}
 		*schema = currentSchema
 	}
+
 	if schema.Items != nil {
 		if schema.Items.Schema != nil {
 			sch := schema.Items.Schema
@@ -491,6 +492,11 @@ func expandPathItem(pathItem *PathItem, resolver *schemaLoader) error {
 		return err
 	}
 
+	for idx := range pathItem.Parameters {
+		if err := expandParameter(&(pathItem.Parameters[idx]), resolver); err != nil {
+			return err
+		}
+	}
 	if err := expandOperation(pathItem.Get, resolver); err != nil {
 		return err
 	}
