@@ -458,13 +458,13 @@ func IsIP(str string) bool {
 // IsIPv4 check if the string is an IP version 4.
 func IsIPv4(str string) bool {
 	ip := net.ParseIP(str)
-	return ip != nil && ip.To4() != nil
+	return ip != nil && strings.Contains(str, ".")
 }
 
 // IsIPv6 check if the string is an IP version 6.
 func IsIPv6(str string) bool {
 	ip := net.ParseIP(str)
-	return ip != nil && ip.To4() == nil
+	return ip != nil && strings.Contains(str, ":")
 }
 
 // IsMAC check if a string is valid MAC address.

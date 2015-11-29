@@ -12,8 +12,8 @@
 		},
 		{
 			"ImportPath": "github.com/asaskevich/govalidator",
-			"Comment": "v2-37-gedd46cd",
-			"Rev": "edd46cdac249b001c7b7d88c6d43993ea875e8d8"
+			"Comment": "v2-39-g266f2b0",
+			"Rev": "266f2b090fb4deb9618b5779539872ecac650be2"
 		},
 		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
@@ -21,7 +21,7 @@
 		},
 		{
 			"ImportPath": "github.com/golang/gddo/httputil",
-			"Rev": "a93040f23f0e66abb4997d7dd149623fe2bbaae7"
+			"Rev": "61332c79e0494891db938a8032501c6fa49f7e00"
 		},
 		{
 			"ImportPath": "github.com/gorilla/context",
@@ -83,31 +83,31 @@
 		},
 		{
 			"ImportPath": "golang.org/x/net/netutil",
-			"Rev": "4f2fc6c1e69d41baf187332ee08fbd2b296f21ed"
+			"Rev": "62ac18b461605b4be188bbc7300e9aa2bc836cd4"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/ast/astutil",
-			"Rev": "9cd799205e6fcf8628275ce5d7814bc09a22fff0"
+			"Rev": "fff8fd7b194011cfedeafda246f0bfc275abb904"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/buildutil",
-			"Rev": "9cd799205e6fcf8628275ce5d7814bc09a22fff0"
+			"Rev": "fff8fd7b194011cfedeafda246f0bfc275abb904"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/exact",
-			"Rev": "9cd799205e6fcf8628275ce5d7814bc09a22fff0"
+			"Rev": "fff8fd7b194011cfedeafda246f0bfc275abb904"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/loader",
-			"Rev": "9cd799205e6fcf8628275ce5d7814bc09a22fff0"
+			"Rev": "fff8fd7b194011cfedeafda246f0bfc275abb904"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/types",
-			"Rev": "9cd799205e6fcf8628275ce5d7814bc09a22fff0"
+			"Rev": "fff8fd7b194011cfedeafda246f0bfc275abb904"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/imports",
-			"Rev": "9cd799205e6fcf8628275ce5d7814bc09a22fff0"
+			"Rev": "fff8fd7b194011cfedeafda246f0bfc275abb904"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
