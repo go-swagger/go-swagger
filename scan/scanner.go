@@ -54,8 +54,10 @@ var (
 	rxSwaggerAnnotation  = regexp.MustCompile("swagger:([\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)")
 	rxMeta               = regexp.MustCompile("swagger:meta")
 	rxStrFmt             = regexp.MustCompile("swagger:strfmt\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)$")
-	rxAllOf              = regexp.MustCompile("swagger:allOf")
+	rxName               = regexp.MustCompile("swagger:name\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\.]+)$")
+	rxAllOf              = regexp.MustCompile("swagger:allOf\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\.]+)?$")
 	rxModelOverride      = regexp.MustCompile("swagger:model\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)?$")
+	rxDiscriminated      = regexp.MustCompile("swagger:discriminated\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\p{Zs}]+)$")
 	rxResponseOverride   = regexp.MustCompile("swagger:response\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)?$")
 	rxParametersOverride = regexp.MustCompile("swagger:parameters\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\p{Zs}]+)$")
 	rxRoute              = regexp.MustCompile(
@@ -66,7 +68,7 @@ var (
 			"\\p{Zs}+" +
 			rxOpTags +
 			"\\p{Zs}+" +
-			rxOpID + "$")
+			rxOpID + "\\p{Zs}*$")
 
 	rxSpace              = regexp.MustCompile("\\p{Zs}+")
 	rxNotAlNumSpaceComma = regexp.MustCompile("[^\\p{L}\\p{N}\\p{Zs},]")
@@ -74,20 +76,21 @@ var (
 	rxStripComments      = regexp.MustCompile("^[^\\w\\+]*")
 	rxStripTitleComments = regexp.MustCompile("^[^\\p{L}]*[Pp]ackage\\p{Zs}+[^\\p{Zs}]+\\p{Zs}*")
 
-	rxIn        = regexp.MustCompile("[Ii]n\\p{Zs}*:\\p{Zs}*(query|path|header|body|formData)$")
-	rxRequired  = regexp.MustCompile("[Rr]equired\\p{Zs}*:\\p{Zs}*(true|false)$")
-	rxReadOnly  = regexp.MustCompile("[Rr]ead(?:\\p{Zs}*|[\\p{Pd}\\p{Pc}])?[Oo]nly\\p{Zs}*:\\p{Zs}*(true|false)$")
-	rxConsumes  = regexp.MustCompile("[Cc]onsumes\\p{Zs}*:")
-	rxProduces  = regexp.MustCompile("[Pp]roduces\\p{Zs}*:")
-	rxSecurity  = regexp.MustCompile("[Ss]ecurity\\p{Zs}*:")
-	rxResponses = regexp.MustCompile("[Rr]esponses\\p{Zs}*:")
-	rxSchemes   = regexp.MustCompile("[Ss]chemes\\p{Zs}*:\\p{Zs}*((?:(?:https?|HTTPS?|wss?|WSS?)[\\p{Zs},]*)+)$")
-	rxVersion   = regexp.MustCompile("[Vv]ersion\\p{Zs}*:\\p{Zs}*(.+)$")
-	rxHost      = regexp.MustCompile("[Hh]ost\\p{Zs}*:\\p{Zs}*(.+)$")
-	rxBasePath  = regexp.MustCompile("[Bb]ase\\p{Zs}*-*[Pp]ath\\p{Zs}*:\\p{Zs}*" + rxPath + "$")
-	rxLicense   = regexp.MustCompile("[Ll]icense\\p{Zs}*:\\p{Zs}*(.+)$")
-	rxContact   = regexp.MustCompile("[Cc]ontact\\p{Zs}*-?(?:[Ii]info\\p{Zs}*)?:\\p{Zs}*(.+)$")
-	rxTOS       = regexp.MustCompile("[Tt](:?erms)?\\p{Zs}*-?[Oo]f?\\p{Zs}*-?[Ss](?:ervice)?\\p{Zs}*:")
+	rxIn            = regexp.MustCompile("[Ii]n\\p{Zs}*:\\p{Zs}*(query|path|header|body|formData)$")
+	rxRequired      = regexp.MustCompile("[Rr]equired\\p{Zs}*:\\p{Zs}*(true|false)$")
+	rxDiscriminator = regexp.MustCompile("[Dd]iscriminator\\p{Zs}*:\\p{Zs}*(true|false)$")
+	rxReadOnly      = regexp.MustCompile("[Rr]ead(?:\\p{Zs}*|[\\p{Pd}\\p{Pc}])?[Oo]nly\\p{Zs}*:\\p{Zs}*(true|false)$")
+	rxConsumes      = regexp.MustCompile("[Cc]onsumes\\p{Zs}*:")
+	rxProduces      = regexp.MustCompile("[Pp]roduces\\p{Zs}*:")
+	rxSecurity      = regexp.MustCompile("[Ss]ecurity\\p{Zs}*:")
+	rxResponses     = regexp.MustCompile("[Rr]esponses\\p{Zs}*:")
+	rxSchemes       = regexp.MustCompile("[Ss]chemes\\p{Zs}*:\\p{Zs}*((?:(?:https?|HTTPS?|wss?|WSS?)[\\p{Zs},]*)+)$")
+	rxVersion       = regexp.MustCompile("[Vv]ersion\\p{Zs}*:\\p{Zs}*(.+)$")
+	rxHost          = regexp.MustCompile("[Hh]ost\\p{Zs}*:\\p{Zs}*(.+)$")
+	rxBasePath      = regexp.MustCompile("[Bb]ase\\p{Zs}*-*[Pp]ath\\p{Zs}*:\\p{Zs}*" + rxPath + "$")
+	rxLicense       = regexp.MustCompile("[Ll]icense\\p{Zs}*:\\p{Zs}*(.+)$")
+	rxContact       = regexp.MustCompile("[Cc]ontact\\p{Zs}*-?(?:[Ii]info\\p{Zs}*)?:\\p{Zs}*(.+)$")
+	rxTOS           = regexp.MustCompile("[Tt](:?erms)?\\p{Zs}*-?[Oo]f?\\p{Zs}*-?[Ss](?:ervice)?\\p{Zs}*:")
 )
 
 // Many thanks go to https://github.com/yvasiyarov/swagger

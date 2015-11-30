@@ -52,6 +52,12 @@ in the definitions object of swagger.
 The struct gets analyzed and all the collected models are added to the tree.
 The refs are tracked separately so that they can be renamed later on.
 
+When this annotation is found to be on an interface instead of a struct, the properties are provided
+through exported nullary methods.
+
+A property of an interface model can have a Discriminator: true annotation to mark that field as
+the field that will contain the discriminator value.
+
 swagger:route [method] [path pattern] [operation id] [?tag1 tag2 tag3]
 
 A swagger:route annotation links a path to a method.

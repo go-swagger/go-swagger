@@ -187,7 +187,7 @@ func (rp *routesParser) Parse(gofile *ast.File, target interface{}) error {
 		sp := new(sectionedParser)
 		sp.setTitle = func(lines []string) { op.Summary = joinDropLast(lines) }
 		sp.setDescription = func(lines []string) { op.Description = joinDropLast(lines) }
-		sr := newSetResponses2(rp.definitions, rp.responses, opResponsesSetter(op))
+		sr := newSetResponses(rp.definitions, rp.responses, opResponsesSetter(op))
 		sp.taggers = []tagParser{
 			newMultiLineTagParser("Consumes", newMultilineDropEmptyParser(rxConsumes, opConsumesSetter(op))),
 			newMultiLineTagParser("Produces", newMultilineDropEmptyParser(rxProduces, opProducesSetter(op))),

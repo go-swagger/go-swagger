@@ -162,11 +162,13 @@ func (sd *schemaDecl) inferNames() (goName string, name string) {
 type schemaParser struct {
 	program   *loader.Program
 	postDecls []schemaDecl
+	known     map[string]spec.Schema
 }
 
 func newSchemaParser(prog *loader.Program) *schemaParser {
 	scp := new(schemaParser)
 	scp.program = prog
+	scp.known = make(map[string]spec.Schema)
 	return scp
 }
 
@@ -215,11 +217,18 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl *sch
 	// * when the struct field points to a model it becomes a ref: #/definitions/ModelName
 	// * the first line of the comment is the title
 	// * the following lines are the description
-	if tpe, ok := decl.TypeSpec.Type.(*ast.StructType); ok {
+	switch tpe := decl.TypeSpec.Type.(type) {
+	case *ast.StructType:
 		if err := scp.parseStructType(decl.File, schPtr, tpe, make(map[string]struct{})); err != nil {
 			return err
 		}
+	case *ast.InterfaceType:
+		if err := scp.parseInterfaceType(decl.File, schPtr, tpe, make(map[string]struct{})); err != nil {
+			return err
+		}
+	default:
 	}
+
 	if decl.Name != decl.GoName {
 		schPtr.AddExtension("x-go-name", decl.GoName)
 	}
@@ -236,7 +245,7 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl *sch
 	return nil
 }
 
-func (scp *schemaParser) parseEmbeddedStruct(gofile *ast.File, schema *spec.Schema, expr ast.Expr, seenPreviously map[string]struct{}) error {
+func (scp *schemaParser) parseEmbeddedType(gofile *ast.File, schema *spec.Schema, expr ast.Expr, seenPreviously map[string]struct{}) error {
 	switch tpe := expr.(type) {
 	case *ast.Ident:
 		// do lookup of type
@@ -252,6 +261,9 @@ func (scp *schemaParser) parseEmbeddedStruct(gofile *ast.File, schema *spec.Sche
 		if st, ok := ts.Type.(*ast.StructType); ok {
 			return scp.parseStructType(file, schema, st, seenPreviously)
 		}
+		if st, ok := ts.Type.(*ast.InterfaceType); ok {
+			return scp.parseInterfaceType(file, schema, st, seenPreviously)
+		}
 
 	case *ast.SelectorExpr:
 		// look up package, file and then type
@@ -265,6 +277,9 @@ func (scp *schemaParser) parseEmbeddedStruct(gofile *ast.File, schema *spec.Sche
 		}
 		if st, ok := ts.Type.(*ast.StructType); ok {
 			return scp.parseStructType(file, schema, st, seenPreviously)
+		}
+		if st, ok := ts.Type.(*ast.InterfaceType); ok {
+			return scp.parseInterfaceType(file, schema, st, seenPreviously)
 		}
 	}
 	return fmt.Errorf("unable to resolve embedded struct for: %v\n", expr)
@@ -314,171 +329,310 @@ func (scp *schemaParser) parseAllOfMember(gofile *ast.File, schema *spec.Schema,
 		schema.Ref = ref
 		scp.postDecls = append(scp.postDecls, *sd)
 	} else {
-		if st, ok := ts.Type.(*ast.StructType); ok {
+		switch st := ts.Type.(type) {
+		case *ast.StructType:
 			return scp.parseStructType(file, schema, st, seenPreviously)
+		case *ast.InterfaceType:
+			return scp.parseInterfaceType(file, schema, st, seenPreviously)
 		}
 	}
 
 	return nil
 }
+func (scp *schemaParser) parseInterfaceType(gofile *ast.File, bschema *spec.Schema, tpe *ast.InterfaceType, seenPreviously map[string]struct{}) error {
+	if tpe.Methods == nil {
+		return nil
+	}
 
-func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema, tpe *ast.StructType, seenPreviously map[string]struct{}) error {
-	if tpe.Fields != nil {
-		var schema *spec.Schema
-		seenProperties := seenPreviously
+	// first check if this has embedded interfaces, if so make sure to refer to those by ref
+	// when they are decorated with an allOf annotation
+	// go over the method list again and this time collect the nullary methods and parse the comments
+	// as if they are properties on a struct
+	var schema *spec.Schema
+	seenProperties := seenPreviously
+	hasAllOf := false
 
-		for _, fld := range tpe.Fields.List {
-			if len(fld.Names) == 0 {
-				// if this created an allOf property then we have to rejig the schema var
-				// because all the fields collected that aren't from embedded structs should go in
-				// their own proper schema
-				// first process embedded structs in order of embedding
-				if allOfMember(fld.Doc) {
-					if schema == nil {
-						schema = new(spec.Schema)
-					}
-					var newSch spec.Schema
-					// when the embedded struct is annotated with swagger:allOf it will be used as allOf property
-					// otherwise the fields will just be included as normal properties
-					if err := scp.parseAllOfMember(gofile, &newSch, fld.Type, seenProperties); err != nil {
-						return err
-					}
-					bschema.AllOf = append(bschema.AllOf, newSch)
-					continue
-				}
+	for _, fld := range tpe.Methods.List {
+		if len(fld.Names) == 0 {
+			// if this created an allOf property then we have to rejig the schema var
+			// because all the fields collected that aren't from embedded structs should go in
+			// their own proper schema
+			// first process embedded structs in order of embedding
+			if allOfMember(fld.Doc) {
+				hasAllOf = true
 				if schema == nil {
-					schema = bschema
+					schema = new(spec.Schema)
 				}
-
+				var newSch spec.Schema
 				// when the embedded struct is annotated with swagger:allOf it will be used as allOf property
 				// otherwise the fields will just be included as normal properties
-				if err := scp.parseEmbeddedStruct(gofile, schema, fld.Type, seenProperties); err != nil {
-					return err
-				}
-			}
-		}
-		if schema != nil && len(bschema.AllOf) > 0 {
-			bschema.AllOf = append(bschema.AllOf, *schema)
-		}
-		if schema == nil {
-			schema = bschema
-		}
-
-		// then add and possibly override values
-		if schema.Properties == nil {
-			schema.Properties = make(map[string]spec.Schema)
-		}
-		schema.Typed("object", "")
-		for _, fld := range tpe.Fields.List {
-			var tag string
-			if fld.Tag != nil {
-				val, err := strconv.Unquote(fld.Tag.Value)
-				if err == nil {
-					tag = reflect.StructTag(val).Get("json")
-				}
-			}
-			if len(fld.Names) > 0 && fld.Names[0] != nil && fld.Names[0].IsExported() && (tag == "" || tag[0] != '-') {
-				var nm, gnm string
-				nm = fld.Names[0].Name
-				gnm = nm
-				if fld.Tag != nil && len(strings.TrimSpace(fld.Tag.Value)) > 0 /*&& fld.Tag.Value[0] != '-'*/ {
-					tv, err := strconv.Unquote(fld.Tag.Value)
-					if err != nil {
-						return err
-					}
-
-					if strings.TrimSpace(tv) != "" {
-						st := reflect.StructTag(tv)
-						if st.Get("json") != "" {
-							nm = strings.Split(st.Get("json"), ",")[0]
-						}
-					}
-				}
-
-				ps := schema.Properties[nm]
-				if err := parseProperty(scp, gofile, fld.Type, schemaTypable{&ps, 0}); err != nil {
+				if err := scp.parseAllOfMember(gofile, &newSch, fld.Type, seenProperties); err != nil {
 					return err
 				}
 
-				sp := new(sectionedParser)
-				sp.setDescription = func(lines []string) { ps.Description = joinDropLast(lines) }
-				if ps.Ref.String() == "" {
-					sp.taggers = []tagParser{
-						newSingleLineTagParser("maximum", &setMaximum{schemaValidations{&ps}, rxf(rxMaximumFmt, "")}),
-						newSingleLineTagParser("minimum", &setMinimum{schemaValidations{&ps}, rxf(rxMinimumFmt, "")}),
-						newSingleLineTagParser("multipleOf", &setMultipleOf{schemaValidations{&ps}, rxf(rxMultipleOfFmt, "")}),
-						newSingleLineTagParser("minLength", &setMinLength{schemaValidations{&ps}, rxf(rxMinLengthFmt, "")}),
-						newSingleLineTagParser("maxLength", &setMaxLength{schemaValidations{&ps}, rxf(rxMaxLengthFmt, "")}),
-						newSingleLineTagParser("pattern", &setPattern{schemaValidations{&ps}, rxf(rxPatternFmt, "")}),
-						newSingleLineTagParser("minItems", &setMinItems{schemaValidations{&ps}, rxf(rxMinItemsFmt, "")}),
-						newSingleLineTagParser("maxItems", &setMaxItems{schemaValidations{&ps}, rxf(rxMaxItemsFmt, "")}),
-						newSingleLineTagParser("unique", &setUnique{schemaValidations{&ps}, rxf(rxUniqueFmt, "")}),
-						newSingleLineTagParser("required", &setRequiredSchema{schema, nm}),
-						newSingleLineTagParser("readOnly", &setReadOnlySchema{&ps}),
-					}
-
-					itemsTaggers := func(items *spec.Schema, level int) []tagParser {
-						// the expression is 1-index based not 0-index
-						itemsPrefix := fmt.Sprintf(rxItemsPrefixFmt, level+1)
-						return []tagParser{
-							newSingleLineTagParser(fmt.Sprintf("items%dMaximum", level), &setMaximum{schemaValidations{items}, rxf(rxMaximumFmt, itemsPrefix)}),
-							newSingleLineTagParser(fmt.Sprintf("items%dMinimum", level), &setMinimum{schemaValidations{items}, rxf(rxMinimumFmt, itemsPrefix)}),
-							newSingleLineTagParser(fmt.Sprintf("items%dMultipleOf", level), &setMultipleOf{schemaValidations{items}, rxf(rxMultipleOfFmt, itemsPrefix)}),
-							newSingleLineTagParser(fmt.Sprintf("items%dMinLength", level), &setMinLength{schemaValidations{items}, rxf(rxMinLengthFmt, itemsPrefix)}),
-							newSingleLineTagParser(fmt.Sprintf("items%dMaxLength", level), &setMaxLength{schemaValidations{items}, rxf(rxMaxLengthFmt, itemsPrefix)}),
-							newSingleLineTagParser(fmt.Sprintf("items%dPattern", level), &setPattern{schemaValidations{items}, rxf(rxPatternFmt, itemsPrefix)}),
-							newSingleLineTagParser(fmt.Sprintf("items%dMinItems", level), &setMinItems{schemaValidations{items}, rxf(rxMinItemsFmt, itemsPrefix)}),
-							newSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{schemaValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
-							newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{schemaValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
-						}
-
-					}
-					// check if this is a primitive, if so parse the validations from the
-					// doc comments of the slice declaration.
-					if ftped, ok := fld.Type.(*ast.ArrayType); ok {
-						ftpe := ftped
-						items, level := ps.Items, 0
-						for items != nil && items.Schema != nil {
-							switch iftpe := ftpe.Elt.(type) {
-							case *ast.ArrayType:
-								eleTaggers := itemsTaggers(items.Schema, level)
-								sp.taggers = append(eleTaggers, sp.taggers...)
-								ftpe = iftpe
-							case *ast.Ident:
-								if iftpe.Obj == nil {
-									sp.taggers = append(itemsTaggers(items.Schema, level), sp.taggers...)
+				if fld.Doc != nil {
+					for _, cmt := range fld.Doc.List {
+						for _, ln := range strings.Split(cmt.Text, "\n") {
+							matches := rxAllOf.FindStringSubmatch(ln)
+							ml := len(matches)
+							if ml > 1 {
+								mv := matches[ml-1]
+								if mv != "" {
+									bschema.AddExtension("x-class", mv)
 								}
-								break
-								//default:
-								//return fmt.Errorf("unknown field type (%T) ele for %q", iftpe, nm)
 							}
-							items = items.Schema.Items
-							level = level + 1
 						}
 					}
-				} else {
-					sp.taggers = []tagParser{
-						newSingleLineTagParser("required", &setRequiredSchema{schema, nm}),
-					}
-				}
-				if err := sp.Parse(fld.Doc); err != nil {
-					return err
 				}
 
-				if nm != gnm {
-					ps.AddExtension("x-go-name", gnm)
-				}
-				seenProperties[nm] = struct{}{}
-				schema.Properties[nm] = ps
+				bschema.AllOf = append(bschema.AllOf, newSch)
+				continue
 			}
+
+			var newSch spec.Schema
+			// when the embedded struct is annotated with swagger:allOf it will be used as allOf property
+			// otherwise the fields will just be included as normal properties
+			if err := scp.parseEmbeddedType(gofile, &newSch, fld.Type, seenProperties); err != nil {
+				return err
+			}
+			bschema.AllOf = append(bschema.AllOf, newSch)
+			hasAllOf = true
 		}
-		for k := range schema.Properties {
-			if _, ok := seenProperties[k]; !ok {
-				delete(schema.Properties, k)
+	}
+	if schema == nil {
+		schema = bschema
+	}
+	// then add and possibly override values
+	if schema.Properties == nil {
+		schema.Properties = make(map[string]spec.Schema)
+	}
+	schema.Typed("object", "")
+	for _, fld := range tpe.Methods.List {
+		if mtpe, ok := fld.Type.(*ast.FuncType); ok && mtpe.Params.NumFields() == 0 && mtpe.Results.NumFields() == 1 {
+			gnm := fld.Names[0].Name
+			nm := gnm
+			if fld.Doc != nil {
+				for _, cmt := range fld.Doc.List {
+					for _, ln := range strings.Split(cmt.Text, "\n") {
+						matches := rxName.FindStringSubmatch(ln)
+						ml := len(matches)
+						if ml > 1 {
+							nm = matches[ml-1]
+						}
+					}
+				}
 			}
+
+			ps := schema.Properties[nm]
+			if err := parseProperty(scp, gofile, mtpe.Results.List[0].Type, schemaTypable{&ps, 0}); err != nil {
+				return err
+			}
+
+			if err := scp.createParser(nm, schema, &ps, fld).Parse(fld.Doc); err != nil {
+				return err
+			}
+
+			if nm != gnm {
+				ps.AddExtension("x-go-name", gnm)
+			}
+			seenProperties[nm] = struct{}{}
+			schema.Properties[nm] = ps
+		}
+
+	}
+	if schema != nil && hasAllOf {
+		bschema.AllOf = append(bschema.AllOf, *schema)
+	}
+	for k := range schema.Properties {
+		if _, ok := seenProperties[k]; !ok {
+			delete(schema.Properties, k)
 		}
 	}
 	return nil
+}
+
+func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema, tpe *ast.StructType, seenPreviously map[string]struct{}) error {
+	if tpe.Fields == nil {
+		return nil
+	}
+	var schema *spec.Schema
+	seenProperties := seenPreviously
+	hasAllOf := false
+
+	for _, fld := range tpe.Fields.List {
+		if len(fld.Names) == 0 {
+			// if this created an allOf property then we have to rejig the schema var
+			// because all the fields collected that aren't from embedded structs should go in
+			// their own proper schema
+			// first process embedded structs in order of embedding
+			if allOfMember(fld.Doc) {
+				hasAllOf = true
+				if schema == nil {
+					schema = new(spec.Schema)
+				}
+				var newSch spec.Schema
+				// when the embedded struct is annotated with swagger:allOf it will be used as allOf property
+				// otherwise the fields will just be included as normal properties
+				if err := scp.parseAllOfMember(gofile, &newSch, fld.Type, seenProperties); err != nil {
+					return err
+				}
+
+				if fld.Doc != nil {
+					for _, cmt := range fld.Doc.List {
+						for _, ln := range strings.Split(cmt.Text, "\n") {
+							matches := rxAllOf.FindStringSubmatch(ln)
+							ml := len(matches)
+							if ml > 1 {
+								mv := matches[ml-1]
+								if mv != "" {
+									bschema.AddExtension("x-class", mv)
+								}
+							}
+						}
+					}
+				}
+
+				bschema.AllOf = append(bschema.AllOf, newSch)
+				continue
+			}
+			if schema == nil {
+				schema = bschema
+			}
+
+			// when the embedded struct is annotated with swagger:allOf it will be used as allOf property
+			// otherwise the fields will just be included as normal properties
+			if err := scp.parseEmbeddedType(gofile, schema, fld.Type, seenProperties); err != nil {
+				return err
+			}
+		}
+	}
+	if schema == nil {
+		schema = bschema
+	}
+
+	// then add and possibly override values
+	if schema.Properties == nil {
+		schema.Properties = make(map[string]spec.Schema)
+	}
+	schema.Typed("object", "")
+	for _, fld := range tpe.Fields.List {
+		var tag string
+		if fld.Tag != nil {
+			val, err := strconv.Unquote(fld.Tag.Value)
+			if err == nil {
+				tag = reflect.StructTag(val).Get("json")
+			}
+		}
+		if len(fld.Names) > 0 && fld.Names[0] != nil && fld.Names[0].IsExported() && (tag == "" || tag[0] != '-') {
+			var nm, gnm string
+			nm = fld.Names[0].Name
+			gnm = nm
+			if fld.Tag != nil && len(strings.TrimSpace(fld.Tag.Value)) > 0 /*&& fld.Tag.Value[0] != '-'*/ {
+				tv, err := strconv.Unquote(fld.Tag.Value)
+				if err != nil {
+					return err
+				}
+
+				if strings.TrimSpace(tv) != "" {
+					st := reflect.StructTag(tv)
+					if st.Get("json") != "" {
+						nm = strings.Split(st.Get("json"), ",")[0]
+					}
+				}
+			}
+
+			ps := schema.Properties[nm]
+			if err := parseProperty(scp, gofile, fld.Type, schemaTypable{&ps, 0}); err != nil {
+				return err
+			}
+
+			if err := scp.createParser(nm, schema, &ps, fld).Parse(fld.Doc); err != nil {
+				return err
+			}
+
+			if nm != gnm {
+				ps.AddExtension("x-go-name", gnm)
+			}
+			seenProperties[nm] = struct{}{}
+			schema.Properties[nm] = ps
+		}
+	}
+	if schema != nil && hasAllOf {
+		bschema.AllOf = append(bschema.AllOf, *schema)
+	}
+	for k := range schema.Properties {
+		if _, ok := seenProperties[k]; !ok {
+			delete(schema.Properties, k)
+		}
+	}
+	return nil
+}
+
+func (scp *schemaParser) createParser(nm string, schema, ps *spec.Schema, fld *ast.Field) *sectionedParser {
+
+	sp := new(sectionedParser)
+	sp.setDescription = func(lines []string) { ps.Description = joinDropLast(lines) }
+	if ps.Ref.String() == "" {
+		sp.taggers = []tagParser{
+			newSingleLineTagParser("maximum", &setMaximum{schemaValidations{ps}, rxf(rxMaximumFmt, "")}),
+			newSingleLineTagParser("minimum", &setMinimum{schemaValidations{ps}, rxf(rxMinimumFmt, "")}),
+			newSingleLineTagParser("multipleOf", &setMultipleOf{schemaValidations{ps}, rxf(rxMultipleOfFmt, "")}),
+			newSingleLineTagParser("minLength", &setMinLength{schemaValidations{ps}, rxf(rxMinLengthFmt, "")}),
+			newSingleLineTagParser("maxLength", &setMaxLength{schemaValidations{ps}, rxf(rxMaxLengthFmt, "")}),
+			newSingleLineTagParser("pattern", &setPattern{schemaValidations{ps}, rxf(rxPatternFmt, "")}),
+			newSingleLineTagParser("minItems", &setMinItems{schemaValidations{ps}, rxf(rxMinItemsFmt, "")}),
+			newSingleLineTagParser("maxItems", &setMaxItems{schemaValidations{ps}, rxf(rxMaxItemsFmt, "")}),
+			newSingleLineTagParser("unique", &setUnique{schemaValidations{ps}, rxf(rxUniqueFmt, "")}),
+			newSingleLineTagParser("required", &setRequiredSchema{schema, nm}),
+			newSingleLineTagParser("readOnly", &setReadOnlySchema{ps}),
+			newSingleLineTagParser("discriminator", &setDiscriminator{schema, nm}),
+		}
+
+		itemsTaggers := func(items *spec.Schema, level int) []tagParser {
+			// the expression is 1-index based not 0-index
+			itemsPrefix := fmt.Sprintf(rxItemsPrefixFmt, level+1)
+			return []tagParser{
+				newSingleLineTagParser(fmt.Sprintf("items%dMaximum", level), &setMaximum{schemaValidations{items}, rxf(rxMaximumFmt, itemsPrefix)}),
+				newSingleLineTagParser(fmt.Sprintf("items%dMinimum", level), &setMinimum{schemaValidations{items}, rxf(rxMinimumFmt, itemsPrefix)}),
+				newSingleLineTagParser(fmt.Sprintf("items%dMultipleOf", level), &setMultipleOf{schemaValidations{items}, rxf(rxMultipleOfFmt, itemsPrefix)}),
+				newSingleLineTagParser(fmt.Sprintf("items%dMinLength", level), &setMinLength{schemaValidations{items}, rxf(rxMinLengthFmt, itemsPrefix)}),
+				newSingleLineTagParser(fmt.Sprintf("items%dMaxLength", level), &setMaxLength{schemaValidations{items}, rxf(rxMaxLengthFmt, itemsPrefix)}),
+				newSingleLineTagParser(fmt.Sprintf("items%dPattern", level), &setPattern{schemaValidations{items}, rxf(rxPatternFmt, itemsPrefix)}),
+				newSingleLineTagParser(fmt.Sprintf("items%dMinItems", level), &setMinItems{schemaValidations{items}, rxf(rxMinItemsFmt, itemsPrefix)}),
+				newSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{schemaValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
+				newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{schemaValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
+			}
+
+		}
+		// check if this is a primitive, if so parse the validations from the
+		// doc comments of the slice declaration.
+		if ftped, ok := fld.Type.(*ast.ArrayType); ok {
+			ftpe := ftped
+			items, level := ps.Items, 0
+			for items != nil && items.Schema != nil {
+				switch iftpe := ftpe.Elt.(type) {
+				case *ast.ArrayType:
+					eleTaggers := itemsTaggers(items.Schema, level)
+					sp.taggers = append(eleTaggers, sp.taggers...)
+					ftpe = iftpe
+				case *ast.Ident:
+					if iftpe.Obj == nil {
+						sp.taggers = append(itemsTaggers(items.Schema, level), sp.taggers...)
+					}
+					break
+					//default:
+					//return fmt.Errorf("unknown field type (%T) ele for %q", iftpe, nm)
+				}
+				items = items.Schema.Items
+				level = level + 1
+			}
+		}
+	} else {
+		sp.taggers = []tagParser{
+			newSingleLineTagParser("required", &setRequiredSchema{schema, nm}),
+		}
+	}
+	return sp
 }
 
 func (scp *schemaParser) packageForFile(gofile *ast.File) (*loader.PackageInfo, error) {

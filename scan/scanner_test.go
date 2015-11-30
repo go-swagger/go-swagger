@@ -543,6 +543,33 @@ func TestSchemaValueExtractors(t *testing.T) {
 		" swagger:model     ",
 		"swagger:model      ",
 	}
+
+	allOf := []string{
+		"// swagger:allOf ",
+		"* swagger:allOf ",
+		"* swagger:allOf ",
+		" swagger:allOf ",
+		"swagger:allOf ",
+		"// swagger:allOf    ",
+		"* swagger:allOf     ",
+		"* swagger:allOf    ",
+		" swagger:allOf     ",
+		"swagger:allOf      ",
+	}
+
+	discriminated := []string{
+		"// swagger:discriminated ",
+		"* swagger:discriminated ",
+		"* swagger:discriminated ",
+		" swagger:discriminated ",
+		"swagger:discriminated ",
+		"// swagger:discriminated    ",
+		"* swagger:discriminated     ",
+		"* swagger:discriminated    ",
+		" swagger:discriminated     ",
+		"swagger:discriminated      ",
+	}
+
 	parameters := []string{
 		"// swagger:parameters ",
 		"* swagger:parameters ",
@@ -572,6 +599,10 @@ func TestSchemaValueExtractors(t *testing.T) {
 
 	verifySwaggerOneArgSwaggerTag(t, rxStrFmt, strfmts, validParams, append(invalidParams, "", "  ", " "))
 	verifySwaggerOneArgSwaggerTag(t, rxModelOverride, models, append(validParams, "", "  ", " "), invalidParams)
+
+	verifySwaggerOneArgSwaggerTag(t, rxAllOf, allOf, append(validParams, "", "  ", " "), invalidParams)
+	verifySwaggerMultiArgSwaggerTag(t, rxDiscriminated, discriminated, validParams, invalidParams)
+
 	verifySwaggerMultiArgSwaggerTag(t, rxParametersOverride, parameters, validParams, invalidParams)
 
 	verifyMinMax(t, rxf(rxMinimumFmt, ""), "min", []string{"", ">", "="})
@@ -816,8 +847,9 @@ func verifySwaggerOneArgSwaggerTag(t *testing.T, matcher *regexp.Regexp, prefixe
 		for _, param := range validParams {
 			line := pref + param
 			matches := matcher.FindStringSubmatch(line)
-			assert.Len(t, matches, 2)
-			assert.Equal(t, strings.TrimSpace(param), matches[1])
+			if assert.Len(t, matches, 2) {
+				assert.Equal(t, strings.TrimSpace(param), matches[1])
+			}
 		}
 	}
 

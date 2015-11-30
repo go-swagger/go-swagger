@@ -414,3 +414,71 @@ func TestInterfaceField(t *testing.T) {
 	schema := noModelDefs["Interfaced"]
 	assertProperty(t, &schema, "object", "custom_data", "", "CustomData")
 }
+
+func TestStructDiscriminators(t *testing.T) {
+	_ = classificationProg
+	schema := noModelDefs["animal"]
+
+	assert.Equal(t, "BaseStruct", schema.Extensions["x-go-name"])
+	assert.Equal(t, schema.Discriminator, "jsonClass")
+
+	sch := noModelDefs["gazelle"]
+	assert.Len(t, sch.AllOf, 2)
+	cl, _ := sch.Extensions.GetString("x-class")
+	assert.Equal(t, "a.b.c.d.E", cl)
+	cl, _ = sch.Extensions.GetString("x-go-name")
+	assert.Equal(t, "Gazelle", cl)
+
+	sch = noModelDefs["giraffe"]
+	assert.Len(t, sch.AllOf, 2)
+	cl, _ = sch.Extensions.GetString("x-class")
+	assert.Equal(t, "", cl)
+	cl, _ = sch.Extensions.GetString("x-go-name")
+	assert.Equal(t, "Giraffe", cl)
+
+	//sch = noModelDefs["lion"]
+
+	//b, _ := json.MarshalIndent(sch, "", "  ")
+	//fmt.Println(string(b))
+
+}
+
+func TestInterfaceDiscriminators(t *testing.T) {
+	_ = classificationProg
+	schema, ok := noModelDefs["fish"]
+	if assert.True(t, ok) && assert.Len(t, schema.AllOf, 5) {
+		sch := schema.AllOf[0]
+		assert.Len(t, sch.Properties, 1)
+		assertProperty(t, &sch, "integer", "id", "int64", "ID")
+
+		sch = schema.AllOf[1]
+		assert.Equal(t, "#/definitions/water", sch.Ref.String())
+		sch = schema.AllOf[2]
+		assert.Equal(t, "#/definitions/extra", sch.Ref.String())
+
+		sch = schema.AllOf[3]
+		assert.Len(t, sch.Properties, 1)
+		assertProperty(t, &sch, "string", "colorName", "", "ColorName")
+
+		sch = schema.AllOf[4]
+		assert.Len(t, sch.Properties, 2)
+		assertProperty(t, &sch, "string", "name", "", "Name")
+		assertProperty(t, &sch, "string", "jsonClass", "", "StructType")
+		assert.Equal(t, "jsonClass", sch.Discriminator)
+	}
+
+	schema, ok = noModelDefs["modelS"]
+	if assert.True(t, ok) {
+		assert.Len(t, schema.AllOf, 2)
+		cl, _ := schema.Extensions.GetString("x-class")
+		assert.Equal(t, "com.tesla.models.ModelS", cl)
+		cl, _ = schema.Extensions.GetString("x-go-name")
+		assert.Equal(t, "ModelS", cl)
+
+		sch := schema.AllOf[0]
+		assert.Equal(t, "#/definitions/TeslaCar", sch.Ref.String())
+		sch = schema.AllOf[1]
+		assert.Len(t, sch.Properties, 1)
+		assertProperty(t, &sch, "string", "edition", "", "Edition")
+	}
+}

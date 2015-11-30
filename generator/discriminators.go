@@ -30,10 +30,13 @@ func discriminatorInfo(doc *spec.Document) *discInfo {
 	baseTypes := make(map[string]discor)
 	for _, sch := range doc.AllDefinitions() {
 		if sch.Schema.Discriminator != "" {
+			tpe, _ := sch.Schema.Extensions.GetString("x-go-name")
+			if tpe == "" {
+				tpe = swag.ToGoName(sch.Name)
+			}
 			baseTypes[sch.Ref.String()] = discor{
-				// TODO: more trickery to allow for name customization
 				FieldName: sch.Schema.Discriminator,
-				GoType:    swag.ToGoName(sch.Name),
+				GoType:    tpe,
 				JSONName:  sch.Name,
 			}
 		}
@@ -44,15 +47,24 @@ func discriminatorInfo(doc *spec.Document) *discInfo {
 		for _, ao := range sch.Schema.AllOf {
 			if ao.Ref.String() != "" {
 				if bt, ok := baseTypes[ao.Ref.String()]; ok {
+					name, _ := sch.Schema.Extensions.GetString("x-class")
+					if name == "" {
+						name, _ = sch.Schema.Extensions.GetString("x-go-name")
+					}
+					if name == "" {
+						name = swag.ToGoName(sch.Name)
+					}
+					tpe, _ := sch.Schema.Extensions.GetString("x-go-name")
+					if tpe == "" {
+						tpe = swag.ToGoName(sch.Name)
+					}
 					dce := discee{
-						FieldName: bt.FieldName,
-						// TODO: more trickery to allow for name customization
-						FieldValue: swag.ToGoName(sch.Name),
+						FieldName:  bt.FieldName,
+						FieldValue: name,
 						Ref:        sch.Ref,
 						ParentRef:  ao.Ref,
 						JSONName:   sch.Name,
-						// TODO: more trickery to allow for name customization
-						GoType: swag.ToGoName(sch.Name),
+						GoType:     tpe,
 					}
 					subTypes[sch.Ref.String()] = dce
 					bt.Children = append(bt.Children, dce)

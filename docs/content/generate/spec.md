@@ -43,7 +43,7 @@ To use you can add a go:generate comment to your main file for example:
 
 The command requires a main package or file and it wants your code to compile. It uses the go tools loader to load an
 application and then scan all the packages that are in use by the code base.
-This means that for something to be discoverable it needs to be reachable by a codepath triggered through the main
+This means that for something to be discoverable it needs to be reachable by a code path triggered through the main
 package.
 
 If an annotation is not yet supported or you want to merge with a pre-existing spec, you can use the -i parameter.
@@ -54,7 +54,7 @@ swagger generate spec -i ./swagger.yml -o ./swagger.json
 
 #### Parsing rules
 
-:warning: This command relies heavily on the way godoc works. :warning: 
+:warning: This command relies heavily on the way godoc works. :warning:
 
 This means you should be very aware of all the things godoc supports.
 
@@ -83,3 +83,18 @@ There are several annotations that mark a comment block as a participant for the
 * [swagger:model](model)
 * [swagger:allOf](allOf)
 * [swagger:strfmt](strfmt)
+* [swagger:discriminated](discriminated)
+
+#### Embedded types
+
+For the embedded schema's there are a set of rules for the spec generator to vary the definition it generates.
+When an embedded type isn't decorated with the `swagger:allOf` annotation, then the properties from the embedded value
+will be included in the generated definition as if they were defined on the definition.
+But when the embedded type is decorated with the `swagger:allOf` annotation then the all of element will be defined as
+a "$ref" property instead. For an annotated type there is also the possibility to specify an argument, the value of
+this argument will be used as the value for the `x-class` extension. This allows for generators that support the
+`x-class` extension to reliably build a serializer for a type with a discriminator
+
+#### Describe definitions
+
+#### Describe parameters

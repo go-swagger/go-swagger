@@ -333,6 +333,36 @@ func (su *setReadOnlySchema) Parse(lines []string) error {
 	return nil
 }
 
+type setDiscriminator struct {
+	schema *spec.Schema
+	field  string
+}
+
+func (su *setDiscriminator) Matches(line string) bool {
+	return rxDiscriminator.MatchString(line)
+}
+
+func (su *setDiscriminator) Parse(lines []string) error {
+	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+		return nil
+	}
+	matches := rxDiscriminator.FindStringSubmatch(lines[0])
+	if len(matches) > 1 && len(matches[1]) > 0 {
+		req, err := strconv.ParseBool(matches[1])
+		if err != nil {
+			return err
+		}
+		if req {
+			su.schema.Discriminator = su.field
+		} else {
+			if su.schema.Discriminator == su.field {
+				su.schema.Discriminator = ""
+			}
+		}
+	}
+	return nil
+}
+
 type setRequiredSchema struct {
 	schema *spec.Schema
 	field  string
@@ -472,18 +502,12 @@ func (ss *setSecurityDefinitions) Parse(lines []string) error {
 	return nil
 }
 
-func newSetResponses2(definitions map[string]spec.Schema, responses map[string]spec.Response, setter func(*spec.Response, map[int]spec.Response)) *setOpResponses {
+func newSetResponses(definitions map[string]spec.Schema, responses map[string]spec.Response, setter func(*spec.Response, map[int]spec.Response)) *setOpResponses {
 	return &setOpResponses{
 		set:         setter,
 		rx:          rxResponses,
 		definitions: definitions,
 		responses:   responses,
-	}
-}
-func newSetResponses(setter func(*spec.Response, map[int]spec.Response)) *setOpResponses {
-	return &setOpResponses{
-		set: setter,
-		rx:  rxResponses,
 	}
 }
 

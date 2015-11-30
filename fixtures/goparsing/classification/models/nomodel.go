@@ -329,3 +329,182 @@ type MapTastic struct {
 type Interfaced struct {
 	CustomData interface{} `json:"custom_data"`
 }
+
+// A BaseStruct is a struct that has subtypes.
+//
+// it should deserialize into one of the struct types that
+// enlist for being implementations of this struct
+//
+// swagger:model animal
+type BaseStruct struct {
+	// ID of this no model instance.
+	// ids in this application start at 11 and are smaller than 1000
+	//
+	// required: true
+	// minimum: > 10
+	// maximum: < 1000
+	ID int64 `json:"id"`
+
+	// Name of this no model instance
+	//
+	// min length: 4
+	// max length: 50
+	// pattern: [A-Za-z0-9-.]*
+	// required: true
+	Name string `json:"name"`
+
+	// StructType the type of this polymorphic model
+	//
+	// discriminator: true
+	StructType string `json:"jsonClass"`
+}
+
+/* TODO: implement this in the scanner
+
+// A Lion is a struct that "subtypes" the BaseStruct
+//
+// it does so because it included the fields in the struct body
+// The scanner assumes it will follow the rules and describes this type
+// as discriminated in the swagger spec based on the discriminator value
+// annotation.
+//
+// swagger:model lion
+// swagger:discriminatorValue animal org.horrible.java.fqpn.TheLionDataObjectFactoryInstanceServiceImpl
+type Lion struct {
+	// ID of this no model instance.
+	// ids in this application start at 11 and are smaller than 1000
+	//
+	// required: true
+	// minimum: > 10
+	// maximum: < 1000
+	ID int64 `json:"id"`
+
+	// Name of this no model instance
+	//
+	// min length: 4
+	// max length: 50
+	// pattern: [A-Za-z0-9-.]*
+	// required: true
+	Name string `json:"name"`
+
+	// StructType the type of this polymorphic model
+	StructType string `json:"jsonClass"`
+
+	// Leader is true when this is the leader of its group
+	//
+	// default value: false
+	Leader bool `json:"leader"`
+}
+*/
+
+// A Giraffe is a struct that embeds BaseStruct
+//
+// the annotation is not necessary here because of inclusion
+// of a discriminated type
+// it infers the name of the x-class value from its context
+//
+// swagger:model giraffe
+type Giraffe struct {
+	// swagger:allOf
+	BaseStruct
+
+	// NeckSize the size of the neck of this giraffe
+	NeckSize int64 `json:"neckSize"`
+}
+
+// A Gazelle is a struct is discriminated for BaseStruct.
+//
+// The struct includes the BaseStruct and that embedded value
+// is annotated with the discriminator value annotation so it
+// where it only requires 1 argument because it knows which
+// discriminator type this belongs to
+//
+// swagger:model gazelle
+type Gazelle struct {
+	// swagger:allOf a.b.c.d.E
+	BaseStruct
+
+	// The size of the horns
+	HornSize float32 `json:"hornSize"`
+}
+
+// Identifiable is an interface for things that have an ID
+type Identifiable interface {
+	// ID of this no model instance.
+	// ids in this application start at 11 and are smaller than 1000
+	//
+	// required: true
+	// minimum: > 10
+	// maximum: < 1000
+	// swagger:name id
+	ID() int64
+}
+
+// WaterType is an interface describing a water type
+//
+// swagger:model water
+type WaterType interface {
+	// swagger:name sweetWater
+	SweetWater() bool
+	// swagger:name saltWater
+	SaltWater() bool
+}
+
+// Fish represents a base type implemented as interface
+// the nullary methods of this interface will be included as
+//
+// swagger:model fish
+type Fish interface {
+	Identifiable // interfaces like this are included as if they were defined directly on this type
+
+	// embeds decorated with allOf are included as refs
+
+	// swagger:allOf
+	WaterType
+
+	// swagger:allOf
+	mods.ExtraInfo
+
+	mods.EmbeddedColor
+
+	Items(id, size int64) []string
+
+	// Name of this no model instance
+	//
+	// min length: 4
+	// max length: 50
+	// pattern: [A-Za-z0-9-.]*
+	// required: true
+	// swagger:name name
+	Name() string
+
+	// StructType the type of this polymorphic model
+	// Discriminator: true
+	// swagger:name jsonClass
+	StructType() string
+}
+
+// TeslaCar is a tesla car
+//
+// swagger:model
+type TeslaCar interface {
+	// The model of tesla car
+	//
+	// discriminated: true
+	// swagger:name model
+	Model() string
+
+	// AutoPilot returns true when it supports autopilot
+	// swagger:name autoPilot
+	AutoPilot() bool
+}
+
+// The ModelS version of the tesla car
+//
+// swagger:model modelS
+type ModelS struct {
+	// swagger:allOf com.tesla.models.ModelS
+	TeslaCar
+	// The edition of this Model S
+	Edition string `json:"edition"`
+}
