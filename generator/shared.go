@@ -138,9 +138,13 @@ type genValidations struct {
 
 func loadSpec(specFile string) (string, *spec.Document, error) {
 	// find swagger spec document, verify it exists
-	specPath, err := findSwaggerSpec(specFile)
-	if err != nil {
-		return "", nil, err
+	specPath := specFile
+	var err error
+	if !strings.HasPrefix(specPath, "http") {
+		specPath, err = findSwaggerSpec(specFile)
+		if err != nil {
+			return "", nil, err
+		}
 	}
 
 	// load swagger spec
