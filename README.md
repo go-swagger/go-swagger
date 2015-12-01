@@ -24,7 +24,7 @@ Docs
 ----
 
 
-https://goswagger.io
+http://goswagger.io
 
 Install or update:
 
