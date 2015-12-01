@@ -1,4 +1,4 @@
-baseurl = "http://go-swagger.github.io"
+baseurl = "http://goswagger.io"
 languageCode = "en-us"
 title = "go-swagger toolkit"
 theme="material-design"
