@@ -22,6 +22,28 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestUniqueOperationNames(t *testing.T) {
+	doc, err := spec.Load("../fixtures/codegen/todolist.simple.yml")
+	if assert.NoError(t, err) {
+		sp := doc.Spec()
+		sp.Paths.Paths["/tasks"].Post.ID = "saveTask"
+		sp.Paths.Paths["/tasks"].Post.AddExtension("origName", "createTask")
+		sp.Paths.Paths["/tasks/{id}"].Put.ID = "saveTask"
+		sp.Paths.Paths["/tasks/{id}"].Put.AddExtension("origName", "updateTask")
+
+		ops := gatherOperations(doc, nil)
+		assert.Len(t, ops, 4)
+		_, exists := ops["saveTask"]
+		assert.True(t, exists)
+		_, exists = ops["saveTask1"]
+		assert.True(t, exists)
+	}
+}
+
+func TestEmptyOperationNames(t *testing.T) {
+
+}
+
 func TestMakeResponseHeader(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
 	if assert.NoError(t, err) {

@@ -1,4 +1,5 @@
 // Copyright 2015 go-swagger maintainers
+
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -236,26 +237,41 @@ func appNameOrDefault(specDoc *spec.Document, name, defaultName string) string {
 	return swag.ToGoName(name)
 }
 
+var namesCounter int64
+
+func ensureUniqueName(key string, operations map[string]spec.Operation) string {
+	nm := key
+	if nm == "" {
+		nm = "Unnamed"
+	}
+	_, found := operations[nm]
+	if found {
+		namesCounter++
+		return fmt.Sprintf("%s%d", nm, namesCounter)
+	}
+	return nm
+}
+
+func containsString(names []string, name string) bool {
+	for _, nm := range names {
+		if nm == name {
+			return true
+		}
+	}
+	return false
+}
+
 func gatherOperations(specDoc *spec.Document, operationIDs []string) map[string]spec.Operation {
 	operations := make(map[string]spec.Operation)
-	if len(operationIDs) == 0 {
-		for _, k := range specDoc.OperationIDs() {
-			// rewrite k to be non-empty and unique
-			if _, _, op, ok := specDoc.OperationForName(k); ok {
-				operations[k] = *op
-			}
-		}
-	} else {
-		for _, k := range specDoc.OperationIDs() {
-			// rewrite k to be non-empty and unique
-			for _, nm := range operationIDs {
-				if k == nm {
-					if _, _, op, ok := specDoc.OperationForName(k); ok {
-						operations[k] = *op
-					}
-				}
+
+	for _, pathItem := range specDoc.Operations() {
+		for _, operation := range pathItem {
+			if len(operationIDs) == 0 || containsString(operationIDs, operation.ID) {
+				nm := ensureUniqueName(operation.ID, operations)
+				operations[nm] = *operation
 			}
 		}
 	}
+
 	return operations
 }
