@@ -41,7 +41,21 @@ func TestUniqueOperationNames(t *testing.T) {
 }
 
 func TestEmptyOperationNames(t *testing.T) {
+	doc, err := spec.Load("../fixtures/codegen/todolist.simple.yml")
+	if assert.NoError(t, err) {
+		sp := doc.Spec()
+		sp.Paths.Paths["/tasks"].Post.ID = ""
+		sp.Paths.Paths["/tasks"].Post.AddExtension("origName", "createTask")
+		sp.Paths.Paths["/tasks/{id}"].Put.ID = ""
+		sp.Paths.Paths["/tasks/{id}"].Put.AddExtension("origName", "updateTask")
 
+		ops := gatherOperations(doc, nil)
+		assert.Len(t, ops, 4)
+		_, exists := ops["Unnamed"]
+		assert.True(t, exists)
+		_, exists = ops["Unnamed"]
+		assert.True(t, exists)
+	}
 }
 
 func TestMakeResponseHeader(t *testing.T) {
