@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Generates on go-swagger toolkit</title>
-    <link>http://go-swagger.github.io/generate/</link>
+    <link>http://goswagger.io/generate/</link>
     <description>Recent content in Generates on go-swagger toolkit</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>© 2015 go-swagger contributors</copyright>
     <lastBuildDate>Mon, 09 Nov 2015 18:58:47 -0800</lastBuildDate>
-    <atom:link href="http://go-swagger.github.io/generate/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://goswagger.io/generate/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>swagger.json generation</title>
-      <link>http://go-swagger.github.io/generate/spec/</link>
+      <link>http://goswagger.io/generate/spec/</link>
       <pubDate>Mon, 09 Nov 2015 18:58:47 -0800</pubDate>
       
-      <guid>http://go-swagger.github.io/generate/spec/</guid>
+      <guid>http://goswagger.io/generate/spec/</guid>
       <description>
 
 &lt;p&gt;The toolkit has a command that will let you generate a swagger spec document from your code.
@@ -51,7 +51,7 @@ package to produce a swagger specification.&lt;/p&gt;
 
 &lt;p&gt;The command requires a main package or file and it wants your code to compile. It uses the go tools loader to load an
 application and then scan all the packages that are in use by the code base.
-This means that for something to be discoverable it needs to be reachable by a codepath triggered through the main
+This means that for something to be discoverable it needs to be reachable by a code path triggered through the main
 package.&lt;/p&gt;
 
 &lt;p&gt;If an annotation is not yet supported or you want to merge with a pre-existing spec, you can use the -i parameter.&lt;/p&gt;
@@ -95,16 +95,31 @@ as description up to either the end of the comment block, or a line that starts 
 &lt;li&gt;&lt;a href=&#34;model&#34;&gt;swagger:model&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;allOf&#34;&gt;swagger:allOf&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;strfmt&#34;&gt;swagger:strfmt&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;discriminated&#34;&gt;swagger:discriminated&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
+&lt;h4 id=&#34;embedded-types:958e7270f96f5407d7d980f500805b1b&#34;&gt;Embedded types&lt;/h4&gt;
+
+&lt;p&gt;For the embedded schema&amp;rsquo;s there are a set of rules for the spec generator to vary the definition it generates.
+When an embedded type isn&amp;rsquo;t decorated with the &lt;code&gt;swagger:allOf&lt;/code&gt; annotation, then the properties from the embedded value
+will be included in the generated definition as if they were defined on the definition.
+But when the embedded type is decorated with the &lt;code&gt;swagger:allOf&lt;/code&gt; annotation then the all of element will be defined as
+a &amp;ldquo;$ref&amp;rdquo; property instead. For an annotated type there is also the possibility to specify an argument, the value of
+this argument will be used as the value for the &lt;code&gt;x-class&lt;/code&gt; extension. This allows for generators that support the
+&lt;code&gt;x-class&lt;/code&gt; extension to reliably build a serializer for a type with a discriminator&lt;/p&gt;
+
+&lt;h4 id=&#34;describe-definitions:958e7270f96f5407d7d980f500805b1b&#34;&gt;Describe definitions&lt;/h4&gt;
+
+&lt;h4 id=&#34;describe-parameters:958e7270f96f5407d7d980f500805b1b&#34;&gt;Describe parameters&lt;/h4&gt;
 </description>
     </item>
     
     <item>
       <title>Generate an API client</title>
-      <link>http://go-swagger.github.io/generate/client/</link>
+      <link>http://goswagger.io/generate/client/</link>
       <pubDate>Fri, 23 Oct 2015 22:11:54 -0700</pubDate>
       
-      <guid>http://go-swagger.github.io/generate/client/</guid>
+      <guid>http://goswagger.io/generate/client/</guid>
       <description>
 
 &lt;p&gt;The toolkit has a command that will let you generate a client.&lt;/p&gt;
@@ -239,20 +254,20 @@ func main() {
     
     <item>
       <title>Generate a server for a swagger spec</title>
-      <link>http://go-swagger.github.io/generate/server/</link>
+      <link>http://goswagger.io/generate/server/</link>
       <pubDate>Sun, 22 Nov 2015 23:19:15 -0800</pubDate>
       
-      <guid>http://go-swagger.github.io/generate/server/</guid>
+      <guid>http://goswagger.io/generate/server/</guid>
       <description>&lt;p&gt;The toolkit has a command that will let you generate a server.&lt;/p&gt;
 </description>
     </item>
     
     <item>
       <title>swagger:meta</title>
-      <link>http://go-swagger.github.io/generate/spec/meta/</link>
+      <link>http://goswagger.io/generate/spec/meta/</link>
       <pubDate>Sat, 14 Nov 2015 19:54:53 -0800</pubDate>
       
-      <guid>http://go-swagger.github.io/generate/spec/meta/</guid>
+      <guid>http://goswagger.io/generate/spec/meta/</guid>
       <description>
 
 &lt;p&gt;The &lt;strong&gt;swagger:meta&lt;/strong&gt; annotation flags a file as source for metadata about the API.
@@ -392,10 +407,10 @@ basePath: /v2
     
     <item>
       <title>swagger:route</title>
-      <link>http://go-swagger.github.io/generate/spec/route/</link>
+      <link>http://goswagger.io/generate/spec/route/</link>
       <pubDate>Sat, 14 Nov 2015 20:10:39 -0800</pubDate>
       
-      <guid>http://go-swagger.github.io/generate/spec/route/</guid>
+      <guid>http://goswagger.io/generate/spec/route/</guid>
       <description>
 
 &lt;p&gt;A &lt;strong&gt;swagger:route&lt;/strong&gt; annotation links a path to a method.
@@ -523,10 +538,10 @@ operations:
     
     <item>
       <title>swagger:params</title>
-      <link>http://go-swagger.github.io/generate/spec/params/</link>
+      <link>http://goswagger.io/generate/spec/params/</link>
       <pubDate>Sat, 14 Nov 2015 20:10:43 -0800</pubDate>
       
-      <guid>http://go-swagger.github.io/generate/spec/params/</guid>
+      <guid>http://goswagger.io/generate/spec/params/</guid>
       <description>
 
 &lt;p&gt;The &lt;strong&gt;swagger:params&lt;/strong&gt; annotation links a struct to one or more operations. The params in the resulting swagger spec can be composed of several structs.
@@ -762,10 +777,10 @@ operations:
     
     <item>
       <title>swagger:response</title>
-      <link>http://go-swagger.github.io/generate/spec/response/</link>
+      <link>http://goswagger.io/generate/spec/response/</link>
       <pubDate>Sat, 14 Nov 2015 20:10:52 -0800</pubDate>
       
-      <guid>http://go-swagger.github.io/generate/spec/response/</guid>
+      <guid>http://goswagger.io/generate/spec/response/</guid>
       <description>
 
 &lt;p&gt;Reads a struct decorated with &lt;strong&gt;swagger:response&lt;/strong&gt; and uses that information to fill up the headers and the schema for a response.
@@ -939,10 +954,10 @@ responses:
     
     <item>
       <title>swagger:model</title>
-      <link>http://go-swagger.github.io/generate/spec/model/</link>
+      <link>http://goswagger.io/generate/spec/model/</link>
       <pubDate>Sat, 14 Nov 2015 20:10:32 -0800</pubDate>
       
-      <guid>http://go-swagger.github.io/generate/spec/model/</guid>
+      <guid>http://goswagger.io/generate/spec/model/</guid>
       <description>
 
 &lt;p&gt;A &lt;strong&gt;swagger:model&lt;/strong&gt; annotation optionally gets a model name as extra data on the line.
@@ -1156,10 +1171,10 @@ definitions:
     
     <item>
       <title>swagger:allOf</title>
-      <link>http://go-swagger.github.io/generate/spec/allOf/</link>
+      <link>http://goswagger.io/generate/spec/allOf/</link>
       <pubDate>Sat, 14 Nov 2015 20:10:58 -0800</pubDate>
       
-      <guid>http://go-swagger.github.io/generate/spec/allOf/</guid>
+      <guid>http://goswagger.io/generate/spec/allOf/</guid>
       <description>
 
 &lt;p&gt;Marks an embedded type as  a member for allOf&lt;/p&gt;
@@ -1256,10 +1271,10 @@ definitions:
     
     <item>
       <title>swagger:strfmt</title>
-      <link>http://go-swagger.github.io/generate/spec/strfmt/</link>
+      <link>http://goswagger.io/generate/spec/strfmt/</link>
       <pubDate>Sat, 14 Nov 2015 20:10:24 -0800</pubDate>
       
-      <guid>http://go-swagger.github.io/generate/spec/strfmt/</guid>
+      <guid>http://goswagger.io/generate/spec/strfmt/</guid>
       <description>&lt;p&gt;A &lt;strong&gt;swagger:strfmt&lt;/strong&gt; annotation names a type as a string formatter. The name is mandatory and that is
 what will be used as format name for this particular string format.
 String formats should only be used for very well known formats.&lt;/p&gt;
