@@ -4,12 +4,12 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"/>
   <title>swagger.json generation</title>
-  <link href="http://go-swagger.github.io//css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
-  <link href="http://go-swagger.github.io//css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
-  <link rel="stylesheet" href="http://go-swagger.github.io//css/prism.css" />
+  <link href="http://goswagger.io//css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="http://goswagger.io//css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link rel="stylesheet" href="http://goswagger.io//css/prism.css" />
   <style type="text/css">
   
-    footer.page-footer{background-image: url(http://go-swagger.github.io//images/default.png);}
+    footer.page-footer{background-image: url(http://goswagger.io//images/default.png);}
   
   </style>
 </head>
@@ -23,13 +23,13 @@
   
     <div class="section no-pad-bot">
       <div class="container">
-        <h1 class="header center teal-text text-lighten-2"><a href="http://go-swagger.github.io/">go-swagger toolkit</a></h1>
+        <h1 class="header center teal-text text-lighten-2"><a href="http://goswagger.io/">go-swagger toolkit</a></h1>
         <div class="row center">
           <h5 class="header col s12 light">Swagger 2.0 describes your API&#39;s for you, so you don&#39;t have to</h5>
         </div>
         <div class="row center">
         
-          <a href="https://github.com/go-swagger/go-swagger"><img src="http://go-swagger.github.io//images/github2-dreamstale35.png"></a>
+          <a href="https://github.com/go-swagger/go-swagger"><img src="http://goswagger.io//images/github2-dreamstale35.png"></a>
         
         
         
@@ -40,7 +40,7 @@
     </div>
     <div class="parallax">
     
-      <img src="http://go-swagger.github.io//images/default.png">
+      <img src="http://goswagger.io//images/default.png">
     
     </div>
   </div>
@@ -57,7 +57,7 @@
           <p>
           
             
-              <a href="http://go-swagger.github.io//categories/generate/">generate</a>
+              <a href="http://goswagger.io//categories/generate/">generate</a>
             
           
           </p>
@@ -96,7 +96,7 @@ package to produce a swagger specification.</p>
 
 <p>The command requires a main package or file and it wants your code to compile. It uses the go tools loader to load an
 application and then scan all the packages that are in use by the code base.
-This means that for something to be discoverable it needs to be reachable by a codepath triggered through the main
+This means that for something to be discoverable it needs to be reachable by a code path triggered through the main
 package.</p>
 
 <p>If an annotation is not yet supported or you want to merge with a pre-existing spec, you can use the -i parameter.</p>
@@ -140,7 +140,22 @@ as description up to either the end of the comment block, or a line that starts 
 <li><a href="model">swagger:model</a></li>
 <li><a href="allOf">swagger:allOf</a></li>
 <li><a href="strfmt">swagger:strfmt</a></li>
+<li><a href="discriminated">swagger:discriminated</a></li>
 </ul>
+
+<h4 id="embedded-types:958e7270f96f5407d7d980f500805b1b">Embedded types</h4>
+
+<p>For the embedded schema&rsquo;s there are a set of rules for the spec generator to vary the definition it generates.
+When an embedded type isn&rsquo;t decorated with the <code>swagger:allOf</code> annotation, then the properties from the embedded value
+will be included in the generated definition as if they were defined on the definition.
+But when the embedded type is decorated with the <code>swagger:allOf</code> annotation then the all of element will be defined as
+a &ldquo;$ref&rdquo; property instead. For an annotated type there is also the possibility to specify an argument, the value of
+this argument will be used as the value for the <code>x-class</code> extension. This allows for generators that support the
+<code>x-class</code> extension to reliably build a serializer for a type with a discriminator</p>
+
+<h4 id="describe-definitions:958e7270f96f5407d7d980f500805b1b">Describe definitions</h4>
+
+<h4 id="describe-parameters:958e7270f96f5407d7d980f500805b1b">Describe parameters</h4>
 </p>
           <p>9 Nov 2015
             
@@ -159,7 +174,7 @@ as description up to either the end of the comment block, or a line that starts 
       <div class="col s6 m10 center">&nbsp</div>
       <div class="col s3 m1">
       
-        <a class="btn-floating btn-large waves-effect waves-light" href="http://go-swagger.github.io/generate/client/"><i class="mdi-navigation-arrow-forward"></i></a>
+        <a class="btn-floating btn-large waves-effect waves-light" href="http://goswagger.io/generate/client/"><i class="mdi-navigation-arrow-forward"></i></a>
       
       </div>
     </div>
@@ -176,9 +191,9 @@ as description up to either the end of the comment block, or a line that starts 
     </div>
   </footer>
   <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-  <script src="http://go-swagger.github.io//js/materialize.min.js"></script>
-  <script src="http://go-swagger.github.io//js/init.js"></script>
-  <script src="http://go-swagger.github.io//js/prism.js"></script>
+  <script src="http://goswagger.io//js/materialize.min.js"></script>
+  <script src="http://goswagger.io//js/init.js"></script>
+  <script src="http://goswagger.io//js/prism.js"></script>
   
 
   </body>

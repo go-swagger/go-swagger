@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Spec on go-swagger toolkit</title>
-    <link>http://go-swagger.github.io/categories/spec/</link>
+    <link>http://goswagger.io/categories/spec/</link>
     <description>Recent content in Spec on go-swagger toolkit</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>© 2015 go-swagger contributors</copyright>
     <lastBuildDate>Sat, 14 Nov 2015 19:54:53 -0800</lastBuildDate>
-    <atom:link href="http://go-swagger.github.io/categories/spec/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://goswagger.io/categories/spec/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>swagger:meta</title>
-      <link>http://go-swagger.github.io/generate/spec/meta/</link>
+      <link>http://goswagger.io/generate/spec/meta/</link>
       <pubDate>Sat, 14 Nov 2015 19:54:53 -0800</pubDate>
       
-      <guid>http://go-swagger.github.io/generate/spec/meta/</guid>
+      <guid>http://goswagger.io/generate/spec/meta/</guid>
       <description>
 
 &lt;p&gt;The &lt;strong&gt;swagger:meta&lt;/strong&gt; annotation flags a file as source for metadata about the API.
@@ -155,10 +155,10 @@ basePath: /v2
     
     <item>
       <title>swagger:route</title>
-      <link>http://go-swagger.github.io/generate/spec/route/</link>
+      <link>http://goswagger.io/generate/spec/route/</link>
       <pubDate>Sat, 14 Nov 2015 20:10:39 -0800</pubDate>
       
-      <guid>http://go-swagger.github.io/generate/spec/route/</guid>
+      <guid>http://goswagger.io/generate/spec/route/</guid>
       <description>
 
 &lt;p&gt;A &lt;strong&gt;swagger:route&lt;/strong&gt; annotation links a path to a method.
@@ -286,10 +286,10 @@ operations:
     
     <item>
       <title>swagger:params</title>
-      <link>http://go-swagger.github.io/generate/spec/params/</link>
+      <link>http://goswagger.io/generate/spec/params/</link>
       <pubDate>Sat, 14 Nov 2015 20:10:43 -0800</pubDate>
       
-      <guid>http://go-swagger.github.io/generate/spec/params/</guid>
+      <guid>http://goswagger.io/generate/spec/params/</guid>
       <description>
 
 &lt;p&gt;The &lt;strong&gt;swagger:params&lt;/strong&gt; annotation links a struct to one or more operations. The params in the resulting swagger spec can be composed of several structs.
@@ -525,10 +525,10 @@ operations:
     
     <item>
       <title>swagger:response</title>
-      <link>http://go-swagger.github.io/generate/spec/response/</link>
+      <link>http://goswagger.io/generate/spec/response/</link>
       <pubDate>Sat, 14 Nov 2015 20:10:52 -0800</pubDate>
       
-      <guid>http://go-swagger.github.io/generate/spec/response/</guid>
+      <guid>http://goswagger.io/generate/spec/response/</guid>
       <description>
 
 &lt;p&gt;Reads a struct decorated with &lt;strong&gt;swagger:response&lt;/strong&gt; and uses that information to fill up the headers and the schema for a response.
@@ -702,10 +702,10 @@ responses:
     
     <item>
       <title>swagger:model</title>
-      <link>http://go-swagger.github.io/generate/spec/model/</link>
+      <link>http://goswagger.io/generate/spec/model/</link>
       <pubDate>Sat, 14 Nov 2015 20:10:32 -0800</pubDate>
       
-      <guid>http://go-swagger.github.io/generate/spec/model/</guid>
+      <guid>http://goswagger.io/generate/spec/model/</guid>
       <description>
 
 &lt;p&gt;A &lt;strong&gt;swagger:model&lt;/strong&gt; annotation optionally gets a model name as extra data on the line.
@@ -919,10 +919,10 @@ definitions:
     
     <item>
       <title>swagger:allOf</title>
-      <link>http://go-swagger.github.io/generate/spec/allOf/</link>
+      <link>http://goswagger.io/generate/spec/allOf/</link>
       <pubDate>Sat, 14 Nov 2015 20:10:58 -0800</pubDate>
       
-      <guid>http://go-swagger.github.io/generate/spec/allOf/</guid>
+      <guid>http://goswagger.io/generate/spec/allOf/</guid>
       <description>
 
 &lt;p&gt;Marks an embedded type as  a member for allOf&lt;/p&gt;
@@ -1019,10 +1019,10 @@ definitions:
     
     <item>
       <title>swagger:strfmt</title>
-      <link>http://go-swagger.github.io/generate/spec/strfmt/</link>
+      <link>http://goswagger.io/generate/spec/strfmt/</link>
       <pubDate>Sat, 14 Nov 2015 20:10:24 -0800</pubDate>
       
-      <guid>http://go-swagger.github.io/generate/spec/strfmt/</guid>
+      <guid>http://goswagger.io/generate/spec/strfmt/</guid>
       <description>&lt;p&gt;A &lt;strong&gt;swagger:strfmt&lt;/strong&gt; annotation names a type as a string formatter. The name is mandatory and that is
 what will be used as format name for this particular string format.
 String formats should only be used for very well known formats.&lt;/p&gt;
