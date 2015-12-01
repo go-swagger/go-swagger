@@ -1,48 +1,48 @@
 {{define "primitivefieldvalidator"}}
 {{if .Required}}
-if err := validate.Required({{ .Path }}, {{ printf "%q" .Location }}, {{ if not .IsAnonymous }}{{ .GoType }}({{end}}{{.ValueExpression}}{{ if not .IsAnonymous }}){{end}}); err != nil {
+if err := validate.Required({{ .Path }}, {{ printf "%q" .Location }}, {{ if not .IsAnonymous }}{{ .GoType }}({{end}}{{.ValueExpression}}{{ if .IsBaseType}}(){{ end }}{{ if not .IsAnonymous }}){{end}}); err != nil {
   return err
 }
 {{end}}
 {{if .MinLength}}
-if err := validate.MinLength({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, string({{.ValueExpression}}), {{.MinLength}}); err != nil {
+if err := validate.MinLength({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, string({{.ValueExpression}}{{ if .IsBaseType}}(){{ end }}), {{.MinLength}}); err != nil {
   return err
 }
 {{end}}
 {{if .MaxLength}}
-if err := validate.MaxLength({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, string({{.ValueExpression}}), {{.MaxLength}}); err != nil {
+if err := validate.MaxLength({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, string({{.ValueExpression}}{{ if .IsBaseType}}(){{ end }}), {{.MaxLength}}); err != nil {
   return err
 }
 {{end}}
 {{if .Pattern}}
-if err := validate.Pattern({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, string({{.ValueExpression}}), `{{.Pattern}}`); err != nil {
+if err := validate.Pattern({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, string({{.ValueExpression}}{{ if .IsBaseType}}(){{ end }}), `{{.Pattern}}`); err != nil {
   return err
 }
 {{end}}
 {{if .Minimum}}
-if err := validate.Minimum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, float64({{.ValueExpression}}), {{.Minimum}}, {{.ExclusiveMinimum}}); err != nil {
+if err := validate.Minimum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, float64({{.ValueExpression}}{{ if .IsBaseType}}(){{ end }}), {{.Minimum}}, {{.ExclusiveMinimum}}); err != nil {
   return err
 }
 {{end}}
 {{if .Maximum}}
-if err := validate.Maximum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, float64({{.ValueExpression}}), {{.Maximum}}, {{.ExclusiveMaximum}}); err != nil {
+if err := validate.Maximum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, float64({{.ValueExpression}}{{ if .IsBaseType}}(){{ end }}), {{.Maximum}}, {{.ExclusiveMaximum}}); err != nil {
   return err
 }
 {{end}}
 {{if .MultipleOf}}
-if err := validate.MultipleOf({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, float64({{.ValueExpression}}), {{.MultipleOf}}); err != nil {
+if err := validate.MultipleOf({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, float64({{.ValueExpression}}{{ if .IsBaseType}}(){{ end }}), {{.MultipleOf}}); err != nil {
   return err
 }
 {{end}}
 {{if .Enum}}
-if err := {{.ReceiverName}}.validate{{ pascalize .Name }}{{ pascalize .Suffix }}Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{.ValueExpression}}); err != nil {
+if err := {{.ReceiverName}}.validate{{ pascalize .Name }}{{ pascalize .Suffix }}Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{.ValueExpression}}{{ if .IsBaseType}}(){{ end }}); err != nil {
   return err
 }
 {{end}}
 {{end}}
 {{define "slicevalidator"}}
 {{if or .MinItems .MaxItems }}
-{{ .IndexVar }}{{ pascalize .Name }}Size := int64(len({{.ValueExpression}}))
+{{ .IndexVar }}{{ pascalize .Name }}Size := int64(len({{.ValueExpression}}{{ if .IsBaseType}}(){{ end }}))
 {{end}}
 {{if .MinItems}}
 if err := validate.MinItems({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ .IndexVar }}{{ pascalize .Name }}Size, {{.MinItems}}); err != nil {
@@ -55,16 +55,16 @@ if err := validate.MaxItems({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ print
 }
 {{end}}
 {{if .UniqueItems}}
-if err := validate.UniqueItems({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{.ValueExpression}}); err != nil {
+if err := validate.UniqueItems({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{.ValueExpression}}{{ if .IsBaseType}}(){{ end }}); err != nil {
   return err
 }
 {{end}}
 {{if .Enum}}
-if err := {{.ReceiverName}}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{.ValueExpression}}); err != nil {
+if err := {{.ReceiverName}}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{.ValueExpression}}{{ if .IsBaseType}}(){{ end }}); err != nil {
   return err
 }
 {{end}}{{ if .Items }}{{ if or .Items.Required .Items.HasValidations }}
-for {{.IndexVar}} := 0; {{.IndexVar}} < len({{.ValueExpression}}); {{.IndexVar}}++ {
+for {{.IndexVar}} := 0; {{.IndexVar}} < len({{.ValueExpression}}{{ if .IsBaseType}}(){{ end }}); {{.IndexVar}}++ {
 {{with .Items}}
   {{template "propertyvalidator" .}}
 {{end}}
@@ -83,14 +83,14 @@ for {{.AdditionalProperties.KeyVar}} := range {{ .ValueExpression }} {
   {{ end }}
 }
 {{ end }}{{ if .AdditionalProperties.Required }}
-if err := validate.Required({{ .Path }}, {{ printf "%q" .Location }}, {{ if not .IsAnonymous }}{{ .GoType }}({{end}}{{.ValueExpression}}{{ if not .IsAnonymous }}){{end}}); err != nil {
+if err := validate.Required({{ .Path }}, {{ printf "%q" .Location }}, {{ if not .IsAnonymous }}{{ .GoType }}({{end}}{{.ValueExpression}}{{ if .IsBaseType}}(){{ end }}{{ if not .IsAnonymous }}){{end}}); err != nil {
   return err
 }
 {{ end }}{{ end }}{{end}}
 {{define "objectvalidator"}}{{ if not .IsAnonymous }}
 {{ if .IsNullable }}if {{ .ValueExpression }} != nil {
 {{ end }}
-if err := {{.ValueExpression}}.Validate(formats); err != nil {
+if err := {{.ValueExpression}}{{ if .IsBaseType}}(){{ end }}.Validate(formats); err != nil {
   return err
 }
 {{ if .IsNullable }}}{{ end }}

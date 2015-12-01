@@ -240,12 +240,14 @@ func gatherOperations(specDoc *spec.Document, operationIDs []string) map[string]
 	operations := make(map[string]spec.Operation)
 	if len(operationIDs) == 0 {
 		for _, k := range specDoc.OperationIDs() {
+			// rewrite k to be non-empty and unique
 			if _, _, op, ok := specDoc.OperationForName(k); ok {
 				operations[k] = *op
 			}
 		}
 	} else {
 		for _, k := range specDoc.OperationIDs() {
+			// rewrite k to be non-empty and unique
 			for _, nm := range operationIDs {
 				if k == nm {
 					if _, _, op, ok := specDoc.OperationForName(k); ok {

@@ -42,6 +42,7 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 							assertInCode(t, "func (m *Dog) validatePackSize(formats strfmt.Registry) error {", res)
 							assertInCode(t, "if err := m.validatePackSize(formats); err != nil {", res)
 							assertInCode(t, "data.PackSize = m.PackSize", res)
+							assertInCode(t, "validate.Required(\"packSize\", \"body\", int32(m.PackSize))", res)
 						} else {
 							assertInCode(t, "func (m *Cat) validateHuntingSkill(formats strfmt.Registry) error {", res)
 							assertInCode(t, "if err := m.validateHuntingSkill(formats); err != nil {", res)
@@ -56,6 +57,7 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 
 						assertInCode(t, "func (m *"+k+") Name() string", res)
 						assertInCode(t, "func (m *"+k+") PetType() string", res)
+						assertInCode(t, "validate.Required(\"name\", \"body\", string(m.Name()))", res)
 					}
 				}
 			}
