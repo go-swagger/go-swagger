@@ -51,7 +51,7 @@ package to produce a swagger specification.&lt;/p&gt;
 
 &lt;p&gt;The command requires a main package or file and it wants your code to compile. It uses the go tools loader to load an
 application and then scan all the packages that are in use by the code base.
-This means that for something to be discoverable it needs to be reachable by a codepath triggered through the main
+This means that for something to be discoverable it needs to be reachable by a code path triggered through the main
 package.&lt;/p&gt;
 
 &lt;p&gt;If an annotation is not yet supported or you want to merge with a pre-existing spec, you can use the -i parameter.&lt;/p&gt;
@@ -95,7 +95,22 @@ as description up to either the end of the comment block, or a line that starts 
 &lt;li&gt;&lt;a href=&#34;model&#34;&gt;swagger:model&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;allOf&#34;&gt;swagger:allOf&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;strfmt&#34;&gt;swagger:strfmt&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;discriminated&#34;&gt;swagger:discriminated&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
+&lt;h4 id=&#34;embedded-types:958e7270f96f5407d7d980f500805b1b&#34;&gt;Embedded types&lt;/h4&gt;
+
+&lt;p&gt;For the embedded schema&amp;rsquo;s there are a set of rules for the spec generator to vary the definition it generates.
+When an embedded type isn&amp;rsquo;t decorated with the &lt;code&gt;swagger:allOf&lt;/code&gt; annotation, then the properties from the embedded value
+will be included in the generated definition as if they were defined on the definition.
+But when the embedded type is decorated with the &lt;code&gt;swagger:allOf&lt;/code&gt; annotation then the all of element will be defined as
+a &amp;ldquo;$ref&amp;rdquo; property instead. For an annotated type there is also the possibility to specify an argument, the value of
+this argument will be used as the value for the &lt;code&gt;x-class&lt;/code&gt; extension. This allows for generators that support the
+&lt;code&gt;x-class&lt;/code&gt; extension to reliably build a serializer for a type with a discriminator&lt;/p&gt;
+
+&lt;h4 id=&#34;describe-definitions:958e7270f96f5407d7d980f500805b1b&#34;&gt;Describe definitions&lt;/h4&gt;
+
+&lt;h4 id=&#34;describe-parameters:958e7270f96f5407d7d980f500805b1b&#34;&gt;Describe parameters&lt;/h4&gt;
 </description>
     </item>
     
