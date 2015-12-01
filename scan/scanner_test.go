@@ -57,6 +57,18 @@ func TestAppScanner_NewSpec(t *testing.T) {
 	}
 }
 
+func TestAppScanner_BookingCrossRepo(t *testing.T) {
+	scanner, err := newAppScanner("../fixtures/goparsing/bookings", nil, nil, nil)
+	assert.NoError(t, err)
+	assert.NotNil(t, scanner)
+	doc, err := scanner.Parse()
+	assert.NoError(t, err)
+	if assert.NotNil(t, doc) {
+		_, ok := doc.Definitions["BookingResponse"]
+		assert.False(t, ok)
+	}
+}
+
 func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	assert.EqualValues(t, []string{"application/json"}, doc.Consumes)
 	assert.EqualValues(t, []string{"application/json"}, doc.Produces)
@@ -70,7 +82,7 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 		assert.Len(t, doc.Paths.Paths, 4)
 	}
 	assert.Len(t, doc.Definitions, 3)
-	assert.Len(t, doc.Responses, 2)
+	assert.Len(t, doc.Responses, 3)
 
 	definitions := doc.Definitions
 	mod, ok := definitions["tag"]
@@ -285,9 +297,10 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	assert.Equal(t, "#/responses/genericError", op.Get.Responses.Default.Ref.String())
 	rs, ok = op.Get.Responses.StatusCodeResponses[200]
 	assert.True(t, ok)
-	assert.NotNil(t, rs.Schema)
-	aprop = rs.Schema
-	assert.Equal(t, "#/definitions/order", aprop.Ref.String())
+	assert.Equal(t, "#/responses/orderResponse", rs.Ref.String())
+	rsm := doc.Responses["orderResponse"]
+	assert.NotNil(t, rsm.Schema)
+	assert.Equal(t, "#/definitions/order", rsm.Schema.Ref.String())
 
 	// cancelOrder
 	assert.NotNil(t, op.Delete)
@@ -330,9 +343,10 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	assert.Equal(t, "#/responses/genericError", op.Post.Responses.Default.Ref.String())
 	rs, ok = op.Post.Responses.StatusCodeResponses[200]
 	assert.True(t, ok)
-	assert.NotNil(t, rs.Schema)
-	aprop = rs.Schema
-	assert.Equal(t, "#/definitions/order", aprop.Ref.String())
+	assert.Equal(t, "#/responses/orderResponse", rs.Ref.String())
+	rsm = doc.Responses["orderResponse"]
+	assert.NotNil(t, rsm.Schema)
+	assert.Equal(t, "#/definitions/order", rsm.Schema.Ref.String())
 }
 
 func verifyIDParam(t testing.TB, param spec.Parameter, description string) {

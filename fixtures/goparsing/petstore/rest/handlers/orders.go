@@ -45,13 +45,23 @@ type OrderBodyParams struct {
 	Order *models.Order `json:"order"`
 }
 
+// An OrderResponse response model
+//
+// This is used for returning a response with a single order as body
+//
+// swagger:response orderResponse
+type OrderResponse struct {
+	// in: body
+	Payload *models.Order `json:"order"`
+}
+
 // GetOrderDetails swagger:route GET /orders/{id} orders getOrderDetails
 //
 // Gets the details for an order.
 //
 // Responses:
 //    default: genericError
-//        200: order
+//        200: orderResponse
 func GetOrderDetails(rw http.ResponseWriter, req *http.Request, params denco.Params) {
 	// some actual stuff should happen in here
 }
@@ -85,7 +95,7 @@ func UpdateOrder(rw http.ResponseWriter, req *http.Request, params denco.Params)
 //
 // Responses:
 //    default: genericError
-//        200: order
+//        200: orderResponse
 //        422: validationError
 func CreateOrder(rw http.ResponseWriter, req *http.Request, params denco.Params) {
 	// some actual stuff should happen in here
