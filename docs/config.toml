@@ -1,4 +1,4 @@
-baseurl = "http://goswagger.io"
+baseurl = "//goswagger.io"
 languageCode = "en-us"
 title = "go-swagger toolkit"
 theme="material-design"
@@ -18,6 +18,8 @@ copyright = "© 2015 go-swagger contributors"
   # footerCover = "images/footerCover.png" # optional
   googleAnalyticsUserID = "UA-240612-10" # optional
   repositoryUrl = "https://github.com/go-swagger/go-swagger"
+
+  domain = "goswagger.io"
 
 [permalinks]
   post = "/:year/:month/:day/:title/" # optional

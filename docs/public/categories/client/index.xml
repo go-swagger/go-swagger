@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Client on go-swagger toolkit</title>
-    <link>http://goswagger.io/categories/client/</link>
+    <link>//goswagger.io/categories/client/</link>
     <description>Recent content in Client on go-swagger toolkit</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>© 2015 go-swagger contributors</copyright>
     <lastBuildDate>Fri, 23 Oct 2015 22:11:54 -0700</lastBuildDate>
-    <atom:link href="http://goswagger.io/categories/client/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="//goswagger.io/categories/client/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Generate an API client</title>
-      <link>http://goswagger.io/generate/client/</link>
+      <link>//goswagger.io/generate/client/</link>
       <pubDate>Fri, 23 Oct 2015 22:11:54 -0700</pubDate>
       
-      <guid>http://goswagger.io/generate/client/</guid>
+      <guid>//goswagger.io/generate/client/</guid>
       <description>
 
 &lt;p&gt;The toolkit has a command that will let you generate a client.&lt;/p&gt;
