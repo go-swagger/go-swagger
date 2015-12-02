@@ -38,6 +38,8 @@ paths:
 definitions:
   WithPet:
     type: object
+    required:
+      - pet
     properties:
       id:
         type: integer

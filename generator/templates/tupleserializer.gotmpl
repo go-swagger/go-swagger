@@ -75,8 +75,8 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
   if err := json.Unmarshal(raw, &data); err != nil {
     return err
   }
-  {{ range .AllOf }}{{ if .IsAnonymous }}{{ range $idx, $val := .Properties }}{{ if .IsBaseType }}allOf{{ $idx }}{{ pascalize $val.Name }}, err := Unmarshal{{ $val.GoType }}(bytes.NewBuffer(raw), httpkit.JSONConsumer)
-  {{ end }}{{ end }}{{ end }}{{ end}}{{ range .Properties }}{{ if .IsBaseType }}{{ camelize .Name }}, err := Unmarshal{{ .GoType }}(bytes.NewBuffer(raw), httpkit.JSONConsumer)
+  {{ range .AllOf }}{{ if .IsAnonymous }}{{ range $idx, $val := .Properties }}{{ if .IsBaseType }}allOf{{ $idx }}{{ pascalize $val.Name }}, err := Unmarshal{{ $val.GoType }}(bytes.NewBuffer(raw), httpkit.JSONConsumer())
+  {{ end }}{{ end }}{{ end }}{{ end}}{{ range .Properties }}{{ if .IsBaseType }}{{ camelize .Name }}, err := Unmarshal{{ .GoType }}(bytes.NewBuffer(raw), httpkit.JSONConsumer())
   if err != nil {
     return err
   }{{ end }}

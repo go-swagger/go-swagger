@@ -72,7 +72,7 @@ func Unmarshal{{ pascalize .Name }}(reader io.Reader, consumer httpkit.Consumer)
 {{ template "tupleSerializer" . }}
 {{ else if .IsAdditionalProperties }}
 {{ template "additionalPropertiesSerializer" . }}
-{{ end }}{{if and (not .IsInterface) (or .Required .HasValidations .HasBaseType .IsBaseType) }}
+{{ end }}{{if and (not .IsInterface) (not .IsBaseType) (or .Required .HasValidations .HasBaseType) }}
 {{ template "schemavalidator" . }}
 {{ else if gt (len .AllOf) 0 }}
 {{ template "schemavalidator" . }}

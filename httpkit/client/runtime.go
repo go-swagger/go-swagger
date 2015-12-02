@@ -157,6 +157,7 @@ func (r *Runtime) Submit(context *client.Operation) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer res.Body.Close()
 	if r.Debug {
 		b, err := httputil.DumpResponse(res, true)
 		if err != nil {
@@ -169,8 +170,6 @@ func (r *Runtime) Submit(context *client.Operation) (interface{}, error) {
 		ct = r.DefaultMediaType
 	}
 
-	// TODO: normalize this (ct) and only match on media type,
-	// skip the params like charset unless a tie breaker is needed
 	mt, _, err := mime.ParseMediaType(ct)
 	if err != nil {
 		return nil, fmt.Errorf("parse content type: %s", err)

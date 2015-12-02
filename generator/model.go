@@ -200,6 +200,7 @@ func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *spec.Docum
 					}
 					for j := range schPtr.Properties {
 						schPtr.Properties[j].IsBaseType = true
+						schPtr.Properties[j].ValueExpression += "()"
 					}
 				}
 			}

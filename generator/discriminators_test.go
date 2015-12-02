@@ -115,7 +115,7 @@ func TestGenerateModel_UsesDiscriminator(t *testing.T) {
 					assertInCode(t, "ID int64 `json:\"id,omitempty\"`", res)
 					assertInCode(t, "Pet Pet `json:\"-\"`", res)
 					assertInCode(t, "if err := m.Pet.Validate(formats); err != nil {", res)
-					assertNotInCode(t, "m.validatePet", res)
+					assertInCode(t, "m.validatePet", res)
 				}
 			}
 		}
