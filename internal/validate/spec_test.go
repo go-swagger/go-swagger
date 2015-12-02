@@ -48,6 +48,18 @@ func TestValidateDuplicatePropertyNames(t *testing.T) {
 	}
 }
 
+func TestValidateNonEmptyPathParameterNames(t *testing.T) {
+	doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "empty-path-param-name.json"))
+	if assert.NoError(t, err) {
+		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
+		validator.spec = doc
+		res := validator.validateNonEmptyPathParamNames()
+		assert.NotEmpty(t, res.Errors)
+		assert.Len(t, res.Errors, 1)
+
+	}
+}
+
 func TestValidateCircularAncestry(t *testing.T) {
 	doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "direct-circular-ancestor.json"))
 	if assert.NoError(t, err) {

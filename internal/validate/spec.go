@@ -82,12 +82,23 @@ func (s *SpecValidator) Validate(data interface{}) (errs *Result, warnings *Resu
 	errs.Merge(s.validateRequiredDefinitions())            // error -
 	errs.Merge(s.validateDefaultValueValidAgainstSchema()) // error -
 	errs.Merge(s.validateExamplesValidAgainstSchema())     // error -
+	errs.Merge(s.validateNonEmptyPathParamNames())
 
 	warnings.Merge(s.validateUniqueSecurityScopes())            // warning
 	warnings.Merge(s.validateUniqueScopesSecurityDefinitions()) // warning
 	warnings.Merge(s.validateReferenced())                      // warning
 
 	return
+}
+
+func (s *SpecValidator) validateNonEmptyPathParamNames() *Result {
+	res := new(Result)
+	for k := range s.spec.Spec().Paths.Paths {
+		if strings.Contains(k, "{}") {
+			res.AddErrors(errors.New(422, "%q contains an empty path parameter", k))
+		}
+	}
+	return res
 }
 
 func (s *SpecValidator) validateDuplicateOperationIDs() *Result {
