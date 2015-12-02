@@ -457,10 +457,10 @@ func (ss *setSchemes) Parse(lines []string) error {
 	return nil
 }
 
-func newSetSecurityDefinitions(setter func([]map[string][]string)) *setSecurityDefinitions {
+func newSetSecurityDefinitions(rx *regexp.Regexp, setter func([]map[string][]string)) *setSecurityDefinitions {
 	return &setSecurityDefinitions{
 		set: setter,
-		rx:  rxSecurity,
+		rx:  rx,
 	}
 }
 

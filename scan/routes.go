@@ -192,7 +192,7 @@ func (rp *routesParser) Parse(gofile *ast.File, target interface{}) error {
 			newMultiLineTagParser("Consumes", newMultilineDropEmptyParser(rxConsumes, opConsumesSetter(op))),
 			newMultiLineTagParser("Produces", newMultilineDropEmptyParser(rxProduces, opProducesSetter(op))),
 			newSingleLineTagParser("Schemes", newSetSchemes(opSchemeSetter(op))),
-			newMultiLineTagParser("Security", newSetSecurityDefinitions(opSecurityDefsSetter(op))),
+			newMultiLineTagParser("Security", newSetSecurityDefinitions(rxSecuritySchemes, opSecurityDefsSetter(op))),
 			newMultiLineTagParser("Responses", sr),
 		}
 		if err := sp.Parse(remaining); err != nil {

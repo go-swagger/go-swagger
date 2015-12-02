@@ -53,6 +53,10 @@ func metaSchemeSetter(meta *spec.Swagger) func([]string) {
 	return func(schemes []string) { meta.Schemes = schemes }
 }
 
+func metaSecuritySetter(meta *spec.Swagger) func([]map[string][]string) {
+	return func(secDefs []map[string][]string) { meta.Security = secDefs }
+}
+
 func newMetaParser(swspec *spec.Swagger) *sectionedParser {
 	sp := new(sectionedParser)
 	if swspec.Info == nil {
@@ -72,6 +76,7 @@ func newMetaParser(swspec *spec.Swagger) *sectionedParser {
 		newMultiLineTagParser("Consumes", newMultilineDropEmptyParser(rxConsumes, metaConsumesSetter(swspec))),
 		newMultiLineTagParser("Produces", newMultilineDropEmptyParser(rxProduces, metaProducesSetter(swspec))),
 		newSingleLineTagParser("Schemes", newSetSchemes(metaSchemeSetter(swspec))),
+		newSingleLineTagParser("SecurityDefinitions", newSetSecurityDefinitions(rxSecurity, metaSecuritySetter(swspec))),
 		newSingleLineTagParser("Version", &setMetaSingle{swspec, rxVersion, setInfoVersion}),
 		newSingleLineTagParser("Host", &setMetaSingle{swspec, rxHost, setSwaggerHost}),
 		newSingleLineTagParser("BasePath", &setMetaSingle{swspec, rxBasePath, setSwaggerBasePath}),
