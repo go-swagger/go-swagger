@@ -3,17 +3,18 @@
 swagger:response {{ camelize .Name }}
 */
 type {{ pascalize .Name }} struct {
-  {{ range .Headers }}{{if .Description }}// {{ .Description }}{{ end }}{{ if .Required }}
-  // Required: true{{ end }}{{ if .Maximum }}
-  // Maximum: {{ if .ExclusiveMaximum }}< {{ end }}{{ .Maximum }}{{ end }}{{ if .Minimum }}
-  // Minimum: {{ if .ExclusiveMinimum }}> {{ end }}{{ .Minimum }}{{ end }}{{ if .MultipleOf }}
-  // Multiple Of: {{ .MultipleOf }}{{ end }}{{ if .MaxLength }}
-  // Max Length: {{ .MaxLength }}{{ end }}{{ if .MinLength }}
-  // Min Length: {{ .MinLength }}{{ end }}{{ if .Pattern }}
-  // Pattern: {{ .Pattern }}{{ end }}{{ if .MaxItems }}
-  // Max Items: {{ .MaxItems }}{{ end }}{{ if .MinItems }}
-  // Min Items: {{ .MinItems }}{{ end }}{{ if .UniqueItems }}
-  // Unique: true{{ end }}
+  {{ range .Headers }}/*{{if .Description }}{{ .Description }}{{ end }}{{ if .Required }}
+  Required: true{{ end }}{{ if .Maximum }}
+  Maximum: {{ if .ExclusiveMaximum }}< {{ end }}{{ .Maximum }}{{ end }}{{ if .Minimum }}
+  Minimum: {{ if .ExclusiveMinimum }}> {{ end }}{{ .Minimum }}{{ end }}{{ if .MultipleOf }}
+  Multiple Of: {{ .MultipleOf }}{{ end }}{{ if .MaxLength }}
+  Max Length: {{ .MaxLength }}{{ end }}{{ if .MinLength }}
+  Min Length: {{ .MinLength }}{{ end }}{{ if .Pattern }}
+  Pattern: {{ .Pattern }}{{ end }}{{ if .MaxItems }}
+  Max Items: {{ .MaxItems }}{{ end }}{{ if .MinItems }}
+  Min Items: {{ .MinItems }}{{ end }}{{ if .UniqueItems }}
+  Unique: true{{ end }}
+  */
   {{ pascalize .Name }} {{ .GoType }} `json:"{{camelize .Name}},omitempty"`
   {{ end }}
   {{ if .Schema }}

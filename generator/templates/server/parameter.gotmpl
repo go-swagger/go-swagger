@@ -81,7 +81,7 @@ import (
 //
 // swagger:parameters {{ camelize .Name }}
 type {{ pascalize .Name }}Params struct {
-  {{ range .Params }}{{ if .Description }}/* {{ .Description }}{{ end }}{{ if .Required }}
+  {{ range .Params }}/*{{ if .Description }}{{ .Description }}{{ end }}{{ if .Required }}
   Required: true{{ end }}{{ if .Maximum }}
   Maximum: {{ if .ExclusiveMaximum }}< {{ end }}{{ .Maximum }}{{ end }}{{ if .Minimum }}
   Minimum: {{ if .ExclusiveMinimum }}> {{ end }}{{ .Minimum }}{{ end }}{{ if .MultipleOf }}
