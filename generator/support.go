@@ -373,6 +373,7 @@ func (a *appGenerator) makeSecuritySchemes() (security []GenSecurityScheme) {
 			if req.Type == "basic" || req.Type == "apiKey" {
 				security = append(security, GenSecurityScheme{
 					AppName:      a.Name,
+					ID:           scheme,
 					ReceiverName: a.Receiver,
 					Name:         req.Name,
 					IsBasicAuth:  strings.ToLower(req.Type) == "basic",
@@ -551,6 +552,7 @@ type GenSerializer struct {
 // GenSecurityScheme represents a security scheme for code generation
 type GenSecurityScheme struct {
 	AppName      string
+	ID           string
 	Name         string
 	ReceiverName string
 	IsBasicAuth  bool

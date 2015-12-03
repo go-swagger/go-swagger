@@ -47,12 +47,12 @@ type {{ pascalize .Name }}API struct {
   {{ pascalize .Name }}Producer httpkit.Producer
   {{end}}
   {{range .SecurityDefinitions}}
-  {{if .IsBasicAuth}}// {{ pascalize .Name }}Auth registers a function that takes username and password and returns a principal
+  {{if .IsBasicAuth}}// {{ pascalize .ID }}Auth registers a function that takes username and password and returns a principal
   // it performs authentication with basic auth
-  {{ pascalize .Name }}Auth func(string, string) ({{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}, error)
-  {{end}}{{if .IsAPIKeyAuth}}// {{ pascalize .Name }}Auth registers a function that takes a token and returns a principal
+  {{ pascalize .ID }}Auth func(string, string) ({{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}, error)
+  {{end}}{{if .IsAPIKeyAuth}}// {{ pascalize .ID }}Auth registers a function that takes a token and returns a principal
   // it performs authentication based on an api key {{ .Name }} provided in the {{.Source}}
-  {{ pascalize .Name }}Auth func(string) ({{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}, error)
+  {{ pascalize .ID }}Auth func(string) ({{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}, error)
   {{end}}
   {{end}}
   {{range .Operations}}// {{ pascalize .Name }}Handler sets the operation handler for the {{ humanize .Name }} operation
@@ -134,7 +134,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) AuthenticatorsFor(schemes map
   for name, scheme := range schemes {
     switch name {
       {{range .SecurityDefinitions}}
-      case "{{.Name}}":
+      case "{{.ID}}":
         {{if .IsBasicAuth}}result[name] = security.BasicAuth(func (u, p string) (interface{}, error) { return {{.ReceiverName}}.{{ pascalize .Name }}Auth(u, p)}){{end}}
         {{if .IsAPIKeyAuth}}result[name] = security.APIKeyAuth(scheme.Name, scheme.In, func(tok string) (interface{}, error) { return {{.ReceiverName}}.{{ pascalize .Name }}Auth(tok) }){{end}}
       {{end}}
