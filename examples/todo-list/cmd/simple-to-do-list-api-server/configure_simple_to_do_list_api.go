@@ -11,7 +11,7 @@ import (
 
 // This file is safe to edit. Once it exists it will not be overwritten
 
-func configureAPI(api *operations.ToDoListAPI) {
+func configureAPI(api *operations.SimpleToDoListAPIAPI) {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
@@ -19,8 +19,8 @@ func configureAPI(api *operations.ToDoListAPI) {
 
 	api.JSONProducer = httpkit.JSONProducer()
 
-	api.XPetstoreTokenAuth = func(token string) (interface{}, error) {
-		return nil, errors.NotImplemented("api key auth x-petstore-token from header has not yet been implemented")
+	api.KeyAuth = func(token string) (interface{}, error) {
+		return nil, errors.NotImplemented("api key auth (key) x-petstore-token from header has not yet been implemented")
 	}
 
 	api.AddOneHandler = todos.AddOneHandlerFunc(func(params todos.AddOneParams, principal interface{}) middleware.Responder {

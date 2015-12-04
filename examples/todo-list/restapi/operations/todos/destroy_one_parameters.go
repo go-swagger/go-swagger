@@ -16,9 +16,10 @@ import (
 //
 // swagger:parameters destroyOne
 type DestroyOneParams struct {
-
-	// Required: true
-	// In: path
+	/*
+	  Required: true
+	  In: path
+	*/
 	ID string
 }
 

@@ -9,8 +9,7 @@ import (
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 
-/*
-Error error
+/*Error error
 
 swagger:model error
 */
@@ -32,6 +31,7 @@ func (m *Error) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateMessage(formats); err != nil {
+		// prop
 		res = append(res, err)
 	}
 

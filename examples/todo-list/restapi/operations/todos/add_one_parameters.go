@@ -17,8 +17,9 @@ import (
 //
 // swagger:parameters addOne
 type AddOneParams struct {
-
-	// In: body
+	/*
+	  In: body
+	*/
 	Body *models.Item
 }
 

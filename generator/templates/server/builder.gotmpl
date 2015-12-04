@@ -107,7 +107,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) Validate() error {
   }
   {{end}}
   {{range .SecurityDefinitions}}
-  if {{.ReceiverName}}.{{ pascalize .Name }}Auth == nil {
+  if {{.ReceiverName}}.{{ pascalize .ID }}Auth == nil {
     unregistered = append(unregistered, "{{ pascalize .Name }}Auth")
   }
   {{end}}
@@ -135,8 +135,8 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) AuthenticatorsFor(schemes map
     switch name {
       {{range .SecurityDefinitions}}
       case "{{.ID}}":
-        {{if .IsBasicAuth}}result[name] = security.BasicAuth(func (u, p string) (interface{}, error) { return {{.ReceiverName}}.{{ pascalize .Name }}Auth(u, p)}){{end}}
-        {{if .IsAPIKeyAuth}}result[name] = security.APIKeyAuth(scheme.Name, scheme.In, func(tok string) (interface{}, error) { return {{.ReceiverName}}.{{ pascalize .Name }}Auth(tok) }){{end}}
+        {{if .IsBasicAuth}}result[name] = security.BasicAuth(func (u, p string) (interface{}, error) { return {{.ReceiverName}}.{{ pascalize .ID }}Auth(u, p)}){{end}}
+        {{if .IsAPIKeyAuth}}result[name] = security.APIKeyAuth(scheme.Name, scheme.In, func(tok string) (interface{}, error) { return {{.ReceiverName}}.{{ pascalize .ID }}Auth(tok) }){{end}}
       {{end}}
     }
   }

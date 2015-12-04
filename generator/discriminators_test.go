@@ -25,7 +25,7 @@ func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
 		k := "Kennel"
 		schema := definitions[k]
 		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
-		if assert.NoError(t, err) { //}&& assert.True(t, genModel.HasBaseType) {
+		if assert.NoError(t, err) {
 
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)

@@ -29,12 +29,12 @@ func configureAPI(api *{{.Package}}.{{ pascalize .Name }}API) {
   {{end}}
   {{range .SecurityDefinitions}}
   {{if .IsBasicAuth}}
-  api.{{ pascalize .Name }}Auth = func(user string, pass string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
-    return nil, errors.NotImplemented("basic auth has not yet been implemented")
+  api.{{ pascalize .ID }}Auth = func(user string, pass string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
+    return nil, errors.NotImplemented("basic auth  ({{ .ID }}) has not yet been implemented")
   }
   {{end}}{{if .IsAPIKeyAuth}}
-  api.{{ pascalize .Name }}Auth = func(token string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
-    return nil, errors.NotImplemented("api key auth {{.Name}} from {{.Source}} has not yet been implemented")
+  api.{{ pascalize .ID }}Auth = func(token string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
+    return nil, errors.NotImplemented("api key auth ({{ .ID }}) {{.Name}} from {{.Source}} has not yet been implemented")
   }
   {{end}}
   {{end}}

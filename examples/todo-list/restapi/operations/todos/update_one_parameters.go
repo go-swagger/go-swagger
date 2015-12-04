@@ -18,12 +18,14 @@ import (
 //
 // swagger:parameters updateOne
 type UpdateOneParams struct {
-
-	// In: body
+	/*
+	  In: body
+	*/
 	Body *models.Item
-
-	// Required: true
-	// In: path
+	/*
+	  Required: true
+	  In: path
+	*/
 	ID string
 }
 
