@@ -308,7 +308,7 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous bool) (resu
 		return
 	}
 	result.GoType = "[]" + rt.GoType
-	if rt.IsNullable {
+	if rt.IsNullable && !rt.HasDiscriminator {
 		result.GoType = "[]*" + rt.GoType
 	}
 	result.SwaggerType = "array"

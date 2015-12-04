@@ -799,7 +799,7 @@ func (sg *schemaGenContext) buildArray() error {
 	sg.GenSchema.ItemsEnum = elProp.GenSchema.Enum
 	elProp.GenSchema.Suffix = "Items"
 	sg.GenSchema.GoType = "[]" + elProp.GenSchema.GoType
-	if elProp.GenSchema.IsNullable {
+	if elProp.GenSchema.IsNullable && !elProp.GenSchema.HasDiscriminator {
 		sg.GenSchema.GoType = "[]*" + elProp.GenSchema.GoType
 	}
 	sg.GenSchema.Items = &elProp.GenSchema

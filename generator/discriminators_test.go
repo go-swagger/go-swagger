@@ -18,6 +18,32 @@ func TestBuildDiscriminatorMap(t *testing.T) {
 	}
 }
 
+func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.discriminators.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "Kennel"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) { //}&& assert.True(t, genModel.HasBaseType) {
+
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				b, err := formatGoFile("has_discriminator.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(b)
+					assertInCode(t, "type Kennel struct {", res)
+					assertInCode(t, "ID int64 `json:\"id,omitempty\"`", res)
+					assertInCode(t, "Pets []Pet `json:\"pets,omitempty\"`", res)
+					//assertInCode(t, "if err := m.Pet.Validate(formats); err != nil {", res)
+					assertInCode(t, "m.validatePet", res)
+				}
+			}
+		}
+	}
+}
+
 func TestGenerateModel_Discriminators(t *testing.T) {
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.discriminators.yml")
 	if assert.NoError(t, err) {

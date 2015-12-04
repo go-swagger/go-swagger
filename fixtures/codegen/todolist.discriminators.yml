@@ -14,6 +14,26 @@ consumes:
 
 paths:
   /models:
+    put:
+      operationId: listModels
+      summary: many model variations list
+      description: used to see if codegen can render slices with discriminators
+      tags:
+        - testcgen
+      parameters:
+        - name: pets
+          in: body
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Pet"
+      responses:
+        default:
+          descriptions: Generic out
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Pet"
     post:
       operationId: modelOp
       summary: many model variations
@@ -46,6 +66,18 @@ definitions:
         format: int64
       pet:
          $ref: "#/definitions/Pet"
+  Kennel:
+    type: object
+    required:
+      - pets
+    properties:
+      id:
+        type: integer
+        format: int64
+      pets:
+        type: array
+        items:
+          $ref: "#/definitions/Pet"    
   Pet:
     type: object
     discriminator: petType
