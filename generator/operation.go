@@ -54,6 +54,7 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 		}
 
 		apiPackage := mangleName(swag.ToFileName(opts.APIPackage), "api")
+		serverPackage := mangleName(swag.ToFileName(opts.ServerPackage), "server")
 		generator := operationGenerator{
 			Name:                 operationName,
 			Method:               method,
@@ -61,11 +62,11 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 			APIPackage:           apiPackage,
 			ModelsPackage:        mangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
 			ClientPackage:        mangleName(swag.ToFileName(opts.ClientPackage), "client"),
-			ServerPackage:        mangleName(swag.ToFileName(opts.ServerPackage), "server"),
+			ServerPackage:        serverPackage,
 			Operation:            *operation,
 			SecurityRequirements: specDoc.SecurityRequirementsFor(operation),
 			Principal:            opts.Principal,
-			Target:               filepath.Join(opts.Target, apiPackage),
+			Target:               filepath.Join(opts.Target, serverPackage),
 			Base:                 opts.Target,
 			Tags:                 tags,
 			IncludeHandler:       includeHandler,
@@ -208,10 +209,7 @@ func (o *operationGenerator) generateHandler() error {
 	}
 	log.Println("rendered handler template:", o.pkg+"."+o.cname)
 
-	fp := filepath.Join(o.ServerPackage, o.Target)
-	if len(o.Operation.Tags) > 0 {
-		fp = filepath.Join(fp, o.pkg)
-	}
+	fp := filepath.Join(o.Target, o.pkg)
 	return writeToFile(fp, o.Name, buf.Bytes())
 }
 
@@ -223,10 +221,7 @@ func (o *operationGenerator) generateParameterModel() error {
 	}
 	log.Println("rendered parameters template:", o.pkg+"."+o.cname+"Parameters")
 
-	fp := filepath.Join(o.ServerPackage, o.Target)
-	if len(o.Operation.Tags) > 0 {
-		fp = filepath.Join(fp, o.pkg)
-	}
+	fp := filepath.Join(o.Target, o.pkg)
 	return writeToFile(fp, o.Name+"Parameters", buf.Bytes())
 }
 
@@ -238,10 +233,7 @@ func (o *operationGenerator) generateResponses() error {
 	}
 	log.Println("rendered responses template:", o.pkg+"."+o.cname+"Responses")
 
-	fp := filepath.Join(o.ServerPackage, o.Target)
-	if len(o.Operation.Tags) > 0 {
-		fp = filepath.Join(fp, o.pkg)
-	}
+	fp := filepath.Join(o.Target, o.pkg)
 	return writeToFile(fp, o.Name+"Responses", buf.Bytes())
 }
 
