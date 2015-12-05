@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/go-swagger/go-swagger",
-	"GoVersion": "go1.5.1",
+	"GoVersion": "go1.5.2",
 	"Packages": [
 		"./..."
 	],
@@ -18,6 +18,10 @@
 		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
 			"Rev": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d"
+		},
+		{
+			"ImportPath": "github.com/go-swagger/scan-repo-boundary/makeplans",
+			"Rev": "196ec52cfa1c96b45dd793dfa0fa3f8877b299da"
 		},
 		{
 			"ImportPath": "github.com/golang/gddo/httputil",
@@ -68,13 +72,13 @@
 		},
 		{
 			"ImportPath": "github.com/smartystreets/goconvey/convey",
-			"Comment": "1.5.0-449-g530dd3d",
-			"Rev": "530dd3d2cafa09958178e8c557bc4abeea1651a5"
+			"Comment": "1.5.0-455-g8d46e6d",
+			"Rev": "8d46e6d51692cda11b447f0d01ce83a0ad84aeab"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Comment": "v1.0-83-gd797d25",
-			"Rev": "d797d25e0fa6d53be3b1a216d24e868d6a1912ef"
+			"Comment": "v1.0-85-ga1f9799",
+			"Rev": "a1f97990ddc16022ec7610326dd9bce31332c116"
 		},
 		{
 			"ImportPath": "github.com/tylerb/graceful",
@@ -83,35 +87,35 @@
 		},
 		{
 			"ImportPath": "golang.org/x/net/netutil",
-			"Rev": "62ac18b461605b4be188bbc7300e9aa2bc836cd4"
+			"Rev": "d5cd7348bfebdf7dbb6dbb18fa488525f9024293"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/ast/astutil",
-			"Rev": "fff8fd7b194011cfedeafda246f0bfc275abb904"
+			"Rev": "c0008c5889c0d5091cdfefd2bfb08bff96527879"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/buildutil",
-			"Rev": "fff8fd7b194011cfedeafda246f0bfc275abb904"
+			"Rev": "c0008c5889c0d5091cdfefd2bfb08bff96527879"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/exact",
-			"Rev": "fff8fd7b194011cfedeafda246f0bfc275abb904"
+			"Rev": "c0008c5889c0d5091cdfefd2bfb08bff96527879"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/loader",
-			"Rev": "fff8fd7b194011cfedeafda246f0bfc275abb904"
+			"Rev": "c0008c5889c0d5091cdfefd2bfb08bff96527879"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/types",
-			"Rev": "fff8fd7b194011cfedeafda246f0bfc275abb904"
+			"Rev": "c0008c5889c0d5091cdfefd2bfb08bff96527879"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/imports",
-			"Rev": "fff8fd7b194011cfedeafda246f0bfc275abb904"
+			"Rev": "c0008c5889c0d5091cdfefd2bfb08bff96527879"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
-			"Rev": "53feefa2559fb8dfa8d81baad31be332c97d6c77"
+			"Rev": "f7716cbe52baa25d2e9b0d0da546fcf909fc16b4"
 		}
 	]
 }
