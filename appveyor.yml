@@ -49,10 +49,10 @@ build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
   - echo %PATH%
   - echo %GOPATH%
+  - set PATH=C:\gopath\bin;%PATH%
   - godep restore
 
 test_script:
-  - set PATH=C:\gopath\bin;%PATH%
   - godep go test -v ./...
 
 #artifacts:
