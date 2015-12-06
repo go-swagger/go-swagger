@@ -5,7 +5,7 @@ branches:
     - gh-pages
 
 go:
-  - 1.5.2
+  - release
 
 env:
   GOCOVMODE: "mode: count"
