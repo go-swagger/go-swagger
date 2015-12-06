@@ -5,6 +5,8 @@ shallow_clone: true # for startup speed
 
 environment:
   GOPATH: C:\gopath
+  GO15VENDOREXPERIMENT: "1"
+  GOCOVMODE: "mode: count"
 
 platform:
   - x64
@@ -24,13 +26,34 @@ install:
   - set PATH=C:\Program Files (x86)\Bazaar;%PATH%
   - bzr --version
 
+  # install go tools
+  - go get -u -v golang.org/x/tools/cmd/goimports
+  - go get -u -v golang.org/x/tools/cmd/cover
+  - go get -u -v golang.org/x/tools/cmd/vet
+  - go get -u -v golang.org/x/tools/cmd/stringer
+  - go get -u -v golang.org/x/tools/cmd/gotype
+  - go get -u -v golang.org/x/tools/cmd/godoc
+
+  # code coverage
+  - go get github.com/axw/gocov/gocov
+  - go get gopkg.in/matm/v1/gocov-html
+
+  # test output
+  - go get -t -v -u -f github.com/cee-dub/go-junit-report
+
+  # get the dependencies etc
+  - go get github.com/tools/godep
+  - go get github.com/jteeuwen/go-bindata/...
+
 build_script:
-  - go install -v ./...
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - echo %PATH%
+  - echo %GOPATH%
+  - godep restore
 
 test_script:
   - set PATH=C:\gopath\bin;%PATH%
-  - gb help
-  - go test -v ./...
+  - godep go test -v ./...
 
 #artifacts:
 #  - path: '%GOPATH%\bin\*.exe'
