@@ -1,26 +1,28 @@
-version: build-{build}.{branch}
+version: "{build}"
+
+# Operating system (build VM template)
+os: Windows Server 2012 R2
 
 clone_folder: C:\gopath\src\github.com\go-swagger\go-swagger
 shallow_clone: true # for startup speed
 
 environment:
   GOPATH: C:\gopath
-  GO15VENDOREXPERIMENT: "1"
+  GO15VENDOREXPERIMENT: 1
   GOCOVMODE: "mode: count"
+  PATH: C:\gopath\bin;%PATH%
 
 platform:
   - x64
 
 # http://www.appveyor.com/docs/installed-software
 install:
-  # some helpful output for debugging builds
-  - go version
-  - go env
   # pre-installed MinGW at C:\MinGW is 32bit only
   # but MSYS2 at C:\msys64 has mingw64
   - set PATH=C:\msys64\mingw64\bin;%PATH%
   - gcc --version
   - g++ --version
+
   # need bzr for several tests
   - choco install bzr
   - set PATH=C:\Program Files (x86)\Bazaar;%PATH%
@@ -45,12 +47,15 @@ install:
   - go get github.com/tools/godep
   - go get github.com/jteeuwen/go-bindata/...
 
+  # some helpful output for debugging builds
+  - go version
+  - go env
+
+
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
   - echo %PATH%
   - echo %GOPATH%
-  - sset GOPATH=%GOPATH%;%APPVEYOR_BUILD_FOLDER%\vendor
-  - set PATH=C:\gopath\bin;%PATH%
 
 test_script:
   - godep go test -v ./...
