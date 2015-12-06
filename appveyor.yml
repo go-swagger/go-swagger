@@ -49,6 +49,7 @@ build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
   - echo %PATH%
   - echo %GOPATH%
+  - sset GOPATH=%GOPATH%;%APPVEYOR_BUILD_FOLDER%\vendor
   - set PATH=C:\gopath\bin;%PATH%
 
 test_script:
