@@ -20,7 +20,6 @@ install:
   - go get -u -v golang.org/x/tools/cmd/vet
   - go get -u -v golang.org/x/tools/cmd/stringer
   - go get -u -v golang.org/x/tools/cmd/gotype
-  - go get -u -v golang.org/x/tools/cmd/godoc
 
   # code coverage
   - go get -u -v github.com/axw/gocov/gocov
