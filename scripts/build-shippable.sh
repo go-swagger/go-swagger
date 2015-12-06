@@ -2,12 +2,11 @@
 
 set -e -x
 
-mkdir -p ./shippable/codecoverage
-godep go test -v -race $(go list ./... | grep -v vendor) | go-junit-report -dir ./shippable/codecoverage/coverage.xml
+go test -v -race $(go list ./... | grep -v vendor) | go-junit-report -dir ./shippable/testresults/junit.xml
 
 # Run test coverage on each subdirectories and merge the coverage profile.
-echo "mode: set" > profile.cov
-repo_pref="github.com/${USER-"$(basename `pwd`)"}/${REPO_NAME-"$(basename `pwd`)"}/"
+echo "mode: count" > profile.cov
+repo_pref="github.com/${REPO_NAME-"$(basename `pwd`)/$(basename `pwd`)"}/"
 # Standard go tooling behavior is to ignore dirs with leading underscores
 set -x
 for dir in $(go list ./... | grep -v -E 'vendor|generator')
@@ -21,7 +20,7 @@ do
   fi
 done
 
-#set +x
-#godep go tool cover -func profile.cov
-#gocov convert profile.cov | gocov report
-#gocov convert profile.cov | gocov-html > $CIRCLE_ARTIFACTS/coverage-$CIRCLE_BUILD_NUM.html
+set +x
+godep go tool cover -func profile.cov
+gocov convert profile.cov | gocov report
+gocov convert profile.cov | gocov-html > ./shippable/codecoverage/coverage-$BUILD_NUMBER.html

@@ -5,7 +5,7 @@ branches:
     - gh-pages
 
 go:
-  - 1.5
+  - 1.5.2
 
 env:
   GOCOVMODE: "mode: count"
@@ -23,8 +23,9 @@ install:
   - go get -u -v golang.org/x/tools/cmd/godoc
 
   # code coverage
-  - go get github.com/axw/gocov/gocov
-  - go get gopkg.in/matm/v1/gocov-html
+  - go get -u -v github.com/axw/gocov/gocov
+  - go get -u -v gopkg.in/matm/v1/gocov-html
+  - go get -u -v github.com/t-yuki/gocover-cobertura
 
   # test output
   - go get -t -v -u -f github.com/cee-dub/go-junit-report
@@ -36,5 +37,9 @@ install:
   # restore dependencies
   - godep restore
 
+before_script:
+  - mkdir -p shippable/testresults
+  - mkdir -p shippable/codecoverage
+
 script:
-  - ./scripts/shippable-build.sh
+  - ./scripts/build-shippable.sh
