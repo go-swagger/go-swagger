@@ -58,7 +58,7 @@ build_script:
   - echo %GOPATH%
 
 test_script:
-  - godep go test -v ./...
+  - go test -v ./...
 
 #artifacts:
 #  - path: '%GOPATH%\bin\*.exe'
