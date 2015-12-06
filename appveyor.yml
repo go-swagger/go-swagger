@@ -50,7 +50,6 @@ build_script:
   - echo %PATH%
   - echo %GOPATH%
   - set PATH=C:\gopath\bin;%PATH%
-  - godep restore
 
 test_script:
   - godep go test -v ./...
