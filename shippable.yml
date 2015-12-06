@@ -17,6 +17,11 @@ git:
 build_image: shippableimages/ubuntu1404_go
 
 before_install:
+  - source $HOME/.gvm/scripts/gvm;
+  - if [[ $SHIPPABLE_GO_VERSION == "tip" ]]; then gvm install tip; gvm use tip; fi
+  - if [[ $SHIPPABLE_GO_VERSION == *release* ]]; then gvm install release; gvm use release; fi
+  - if [[ $SHIPPABLE_GO_VERSION =~ [0-9].[0-9] ]]; then gvm install go$SHIPPABLE_GO_VERSION; gvm use go$SHIPPABLE_GO_VERSION; fi
+  - export GOPATH=$SHIPPABLE_GOPATH
   - go get -u -v golang.org/x/tools/cmd/goimports
   - go get -u -v golang.org/x/tools/cmd/cover
   - go get -u -v golang.org/x/tools/cmd/vet
