@@ -1,0 +1,40 @@
+language: go
+
+branches:
+  except:
+    - gh-pages
+
+go:
+  - 1.5
+
+env:
+  GOCOVMODE: "mode: count"
+  GO15VENDOREXPERIMENT: "1"
+
+git:
+  submodules: false
+
+install:
+  - go get -u -v golang.org/x/tools/cmd/goimports
+  - go get -u -v golang.org/x/tools/cmd/cover
+  - go get -u -v golang.org/x/tools/cmd/vet
+  - go get -u -v golang.org/x/tools/cmd/stringer
+  - go get -u -v golang.org/x/tools/cmd/gotype
+  - go get -u -v golang.org/x/tools/cmd/godoc
+
+  # code coverage
+  - go get github.com/axw/gocov/gocov
+  - go get gopkg.in/matm/v1/gocov-html
+
+  # test output
+  - go get -t -v -u -f github.com/cee-dub/go-junit-report
+
+  # get the dependencies etc
+  - go get github.com/tools/godep
+  - go get github.com/jteeuwen/go-bindata/...
+
+  # restore dependencies
+  - godep restore
+
+script:
+  - ./scripts/shippable-build.sh
