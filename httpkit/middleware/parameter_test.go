@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/stretchr/testify/assert"
@@ -54,7 +55,7 @@ func testCollectionFormat(t *testing.T, param *spec.Parameter, valid bool) {
 	binder := &untypedParamBinder{
 		parameter: param,
 	}
-	_, _, err := binder.readValue(url.Values(nil), reflect.ValueOf(nil))
+	_, _, _, err := binder.readValue(httpkit.Values(nil), reflect.ValueOf(nil))
 	if valid {
 		assert.NoError(t, err)
 	} else {
@@ -68,37 +69,73 @@ func requiredError(param *spec.Parameter) *errors.Validation {
 }
 
 func validateRequiredTest(t *testing.T, param *spec.Parameter, value reflect.Value) {
+
 	binder := np(param)
-	err := binder.bindValue([]string{}, value)
+	err := binder.bindValue([]string{}, true, value)
+	assert.Error(t, err)
+	assert.NotNil(t, param)
+	assert.EqualError(t, requiredError(param), err.Error())
+	err = binder.bindValue([]string{""}, true, value)
+	if assert.Error(t, err) {
+		assert.EqualError(t, requiredError(param), err.Error())
+	}
+
+	// should be impossible data, but let's go with it
+	err = binder.bindValue([]string{"a"}, false, value)
 	assert.Error(t, err)
 	assert.EqualError(t, requiredError(param), err.Error())
-	err = binder.bindValue([]string{""}, value)
+	err = binder.bindValue([]string{""}, false, value)
 	assert.Error(t, err)
 	assert.EqualError(t, requiredError(param), err.Error())
+}
+
+func validateRequiredAllowEmptyTest(t *testing.T, param *spec.Parameter, value reflect.Value) {
+	param.AllowEmptyValue = true
+	binder := np(param)
+	err := binder.bindValue([]string{}, true, value)
+	assert.NoError(t, err)
+	if assert.NotNil(t, param) {
+		err = binder.bindValue([]string{""}, true, value)
+		assert.NoError(t, err)
+		err = binder.bindValue([]string{"1"}, false, value)
+		assert.Error(t, err)
+		assert.EqualError(t, requiredError(param), err.Error())
+		err = binder.bindValue([]string{""}, false, value)
+		assert.Error(t, err)
+		assert.EqualError(t, requiredError(param), err.Error())
+	}
 }
 
 func TestRequiredValidation(t *testing.T) {
 	strParam := spec.QueryParam("name").Typed("string", "").AsRequired()
 	validateRequiredTest(t, strParam, reflect.ValueOf(""))
+	validateRequiredAllowEmptyTest(t, strParam, reflect.ValueOf(""))
 
 	intParam := spec.QueryParam("id").Typed("integer", "int32").AsRequired()
 	validateRequiredTest(t, intParam, reflect.ValueOf(int32(0)))
+	validateRequiredAllowEmptyTest(t, intParam, reflect.ValueOf(int32(0)))
 	longParam := spec.QueryParam("id").Typed("integer", "int64").AsRequired()
 	validateRequiredTest(t, longParam, reflect.ValueOf(int64(0)))
+	validateRequiredAllowEmptyTest(t, longParam, reflect.ValueOf(int64(0)))
 
 	floatParam := spec.QueryParam("score").Typed("number", "float").AsRequired()
 	validateRequiredTest(t, floatParam, reflect.ValueOf(float32(0)))
+	validateRequiredAllowEmptyTest(t, floatParam, reflect.ValueOf(float32(0)))
 	doubleParam := spec.QueryParam("score").Typed("number", "double").AsRequired()
 	validateRequiredTest(t, doubleParam, reflect.ValueOf(float64(0)))
+	validateRequiredAllowEmptyTest(t, doubleParam, reflect.ValueOf(float64(0)))
 
 	dateTimeParam := spec.QueryParam("registered").Typed("string", "date-time").AsRequired()
 	validateRequiredTest(t, dateTimeParam, reflect.ValueOf(strfmt.DateTime{}))
+	// validateRequiredAllowEmptyTest(t, dateTimeParam, reflect.ValueOf(strfmt.DateTime{}))
 
 	dateParam := spec.QueryParam("registered").Typed("string", "date").AsRequired()
-	validateRequiredTest(t, dateParam, reflect.ValueOf(strfmt.DateTime{}))
+	validateRequiredTest(t, dateParam, reflect.ValueOf(strfmt.Date{}))
+	// validateRequiredAllowEmptyTest(t, dateParam, reflect.ValueOf(strfmt.DateTime{}))
 
 	sliceParam := spec.QueryParam("tags").CollectionOf(stringItems, "").AsRequired()
-	validateRequiredTest(t, sliceParam, reflect.ValueOf([]string{}))
+	validateRequiredTest(t, sliceParam, reflect.MakeSlice(reflect.TypeOf([]string{}), 0, 0))
+	validateRequiredAllowEmptyTest(t, sliceParam, reflect.MakeSlice(reflect.TypeOf([]string{}), 0, 0))
 }
 
 func TestInvalidCollectionFormat(t *testing.T) {
@@ -126,7 +163,7 @@ func TestTypeValidation(t *testing.T) {
 		intParam := newParam("badInt").Typed("integer", "int32")
 		value := reflect.ValueOf(int32(0))
 		binder := np(intParam)
-		err := binder.bindValue([]string{"yada"}, value)
+		err := binder.bindValue([]string{"yada"}, true, value)
 		// fails for invalid string
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(intParam, "yada"), err)
@@ -136,14 +173,14 @@ func TestTypeValidation(t *testing.T) {
 		v := int32(0)
 		value = reflect.ValueOf(&v).Elem()
 		binder = np(intParam)
-		err = binder.bindValue([]string{str}, value)
+		err = binder.bindValue([]string{str}, true, value)
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(intParam, str), err)
 
 		longParam := newParam("badLong").Typed("integer", "int64")
 		value = reflect.ValueOf(int64(0))
 		binder = np(longParam)
-		err = binder.bindValue([]string{"yada"}, value)
+		err = binder.bindValue([]string{"yada"}, true, value)
 		// fails for invalid string
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(longParam, "yada"), err)
@@ -152,14 +189,14 @@ func TestTypeValidation(t *testing.T) {
 		v2 := int64(0)
 		vv2 := reflect.ValueOf(&v2).Elem()
 		binder = np(longParam)
-		err = binder.bindValue([]string{str2}, vv2)
+		err = binder.bindValue([]string{str2}, true, vv2)
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(longParam, str2), err)
 
 		floatParam := newParam("badFloat").Typed("number", "float")
 		value = reflect.ValueOf(float64(0))
 		binder = np(floatParam)
-		err = binder.bindValue([]string{"yada"}, value)
+		err = binder.bindValue([]string{"yada"}, true, value)
 		// fails for invalid string
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(floatParam, "yada"), err)
@@ -168,14 +205,14 @@ func TestTypeValidation(t *testing.T) {
 		v3 := reflect.TypeOf(float32(0))
 		value = reflect.New(v3).Elem()
 		binder = np(floatParam)
-		err = binder.bindValue([]string{str3}, value)
+		err = binder.bindValue([]string{str3}, true, value)
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(floatParam, str3), err)
 
 		doubleParam := newParam("badDouble").Typed("number", "double")
 		value = reflect.ValueOf(float64(0))
 		binder = np(doubleParam)
-		err = binder.bindValue([]string{"yada"}, value)
+		err = binder.bindValue([]string{"yada"}, true, value)
 		// fails for invalid string
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(doubleParam, "yada"), err)
@@ -184,14 +221,14 @@ func TestTypeValidation(t *testing.T) {
 		v4 := reflect.TypeOf(float64(0))
 		value = reflect.New(v4).Elem()
 		binder = np(doubleParam)
-		err = binder.bindValue([]string{str4}, value)
+		err = binder.bindValue([]string{str4}, true, value)
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(doubleParam, str4), err)
 
 		dateParam := newParam("badDate").Typed("string", "date")
 		value = reflect.ValueOf(strfmt.Date{})
 		binder = np(dateParam)
-		err = binder.bindValue([]string{"yada"}, value)
+		err = binder.bindValue([]string{"yada"}, true, value)
 		// fails for invalid string
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(dateParam, "yada"), err)
@@ -199,7 +236,7 @@ func TestTypeValidation(t *testing.T) {
 		dateTimeParam := newParam("badDateTime").Typed("string", "date-time")
 		value = reflect.ValueOf(strfmt.DateTime{})
 		binder = np(dateTimeParam)
-		err = binder.bindValue([]string{"yada"}, value)
+		err = binder.bindValue([]string{"yada"}, true, value)
 		// fails for invalid string
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(dateTimeParam, "yada"), err)
@@ -210,7 +247,7 @@ func TestTypeValidation(t *testing.T) {
 		v5 := []byte{}
 		value = reflect.ValueOf(&v5).Elem()
 		binder = np(byteParam)
-		err = binder.bindValue([]string{"yaüda"}, value)
+		err = binder.bindValue([]string{"yaüda"}, true, value)
 		// fails for invalid string
 		assert.Error(t, err)
 		assert.Equal(t, invalidTypeError(byteParam, "yaüda"), err)

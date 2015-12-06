@@ -12,11 +12,11 @@ import (
 	"github.com/go-swagger/go-swagger/examples/todo-list/client/todos"
 )
 
-// The Default to do list HTTP client.
+// The Default simple to do list API HTTP client.
 var Default = NewHTTPClient(nil)
 
-// NewHTTPClient creates a new to do list HTTP client.
-func NewHTTPClient(formats strfmt.Registry) *ToDoList {
+// NewHTTPClient creates a new simple to do list API HTTP client.
+func NewHTTPClient(formats strfmt.Registry) *SimpleToDoListAPI {
 	swaggerSpec, err := spec.New(SwaggerJSON, "")
 	if err != nil {
 		// the swagger spec is valid because it was used to generated this code.
@@ -28,9 +28,9 @@ func NewHTTPClient(formats strfmt.Registry) *ToDoList {
 	return New(httptransport.New(swaggerSpec), formats)
 }
 
-// New creates a new to do list client
-func New(transport client.Transport, formats strfmt.Registry) *ToDoList {
-	cli := new(ToDoList)
+// New creates a new simple to do list API client
+func New(transport client.Transport, formats strfmt.Registry) *SimpleToDoListAPI {
+	cli := new(SimpleToDoListAPI)
 	cli.Transport = transport
 
 	cli.Todos = todos.New(transport, formats)
@@ -38,15 +38,15 @@ func New(transport client.Transport, formats strfmt.Registry) *ToDoList {
 	return cli
 }
 
-// ToDoList is a client for to do list
-type ToDoList struct {
+// SimpleToDoListAPI is a client for simple to do list API
+type SimpleToDoListAPI struct {
 	Todos *todos.Client
 
 	Transport client.Transport
 }
 
 // SetTransport changes the transport on the client and all its subresources
-func (c *ToDoList) SetTransport(transport client.Transport) {
+func (c *SimpleToDoListAPI) SetTransport(transport client.Transport) {
 	c.Transport = transport
 
 	c.Todos.SetTransport(transport)

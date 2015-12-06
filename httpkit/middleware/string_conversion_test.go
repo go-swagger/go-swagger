@@ -70,15 +70,15 @@ func FloatParamTest(t *testing.T, fName, pName, format string, val reflect.Value
 		Name:      pName,
 	}
 
-	err := binder.setFieldValue(fld, defVal, "5")
+	err := binder.setFieldValue(fld, defVal, "5", true)
 	assert.NoError(t, err)
 	assert.EqualValues(t, 5, actual())
 
-	err = binder.setFieldValue(fld, defVal, "")
+	err = binder.setFieldValue(fld, defVal, "", true)
 	assert.NoError(t, err)
 	assert.EqualValues(t, expectedDef, actual())
 
-	err = binder.setFieldValue(fld, defVal, "yada")
+	err = binder.setFieldValue(fld, defVal, "yada", true)
 	assert.Error(t, err)
 }
 
@@ -89,15 +89,15 @@ func IntParamTest(t *testing.T, pName string, val reflect.Value, defVal, expecte
 		parameter: spec.QueryParam(pName).Typed("integer", "int64").WithDefault(defVal),
 		Name:      pName,
 	}
-	err := binder.setFieldValue(fld, defVal, "5")
+	err := binder.setFieldValue(fld, defVal, "5", true)
 	assert.NoError(t, err)
 	assert.EqualValues(t, 5, actual())
 
-	err = binder.setFieldValue(fld, defVal, "")
+	err = binder.setFieldValue(fld, defVal, "", true)
 	assert.NoError(t, err)
 	assert.EqualValues(t, expectedDef, actual())
 
-	err = binder.setFieldValue(fld, defVal, "yada")
+	err = binder.setFieldValue(fld, defVal, "yada", true)
 	assert.Error(t, err)
 }
 
@@ -113,11 +113,11 @@ func TestParamBinding(t *testing.T) {
 		Name:      pName,
 	}
 
-	err := binder.setFieldValue(fld, "some-name", "the name value")
+	err := binder.setFieldValue(fld, "some-name", "the name value", true)
 	assert.NoError(t, err)
 	assert.Equal(t, "the name value", actual.Name)
 
-	err = binder.setFieldValue(fld, "some-name", "")
+	err = binder.setFieldValue(fld, "some-name", "", true)
 	assert.NoError(t, err)
 	assert.Equal(t, "some-name", actual.Name)
 
@@ -155,16 +155,16 @@ func TestParamBinding(t *testing.T) {
 	}
 
 	for _, tv := range evaluatesAsTrue {
-		err = binder.setFieldValue(confirmedField, true, tv)
+		err = binder.setFieldValue(confirmedField, true, tv, true)
 		assert.NoError(t, err)
 		assert.True(t, actual.Confirmed)
 	}
 
-	err = binder.setFieldValue(confirmedField, true, "")
+	err = binder.setFieldValue(confirmedField, true, "", true)
 	assert.NoError(t, err)
 	assert.True(t, actual.Confirmed)
 
-	err = binder.setFieldValue(confirmedField, true, "0")
+	err = binder.setFieldValue(confirmedField, true, "0", true)
 	assert.NoError(t, err)
 	assert.False(t, actual.Confirmed)
 
@@ -177,15 +177,15 @@ func TestParamBinding(t *testing.T) {
 	}
 	exp := strfmt.DateTime{Time: time.Date(2014, 5, 14, 2, 9, 0, 0, time.UTC)}
 
-	err = binder.setFieldValue(timeField, dt, exp.String())
+	err = binder.setFieldValue(timeField, dt, exp.String(), true)
 	assert.NoError(t, err)
 	assert.Equal(t, exp, actual.Timestamp)
 
-	err = binder.setFieldValue(timeField, dt, "")
+	err = binder.setFieldValue(timeField, dt, "", true)
 	assert.NoError(t, err)
 	assert.Equal(t, dt, actual.Timestamp)
 
-	err = binder.setFieldValue(timeField, dt, "yada")
+	err = binder.setFieldValue(timeField, dt, "yada", true)
 	assert.Error(t, err)
 
 	ddt := strfmt.Date{Time: time.Date(2014, 3, 19, 0, 0, 0, 0, time.UTC)}
@@ -197,15 +197,15 @@ func TestParamBinding(t *testing.T) {
 	}
 	expd := strfmt.Date{Time: time.Date(2014, 5, 14, 0, 0, 0, 0, time.UTC)}
 
-	err = binder.setFieldValue(dateField, ddt, expd.String())
+	err = binder.setFieldValue(dateField, ddt, expd.String(), true)
 	assert.NoError(t, err)
 	assert.Equal(t, expd, actual.Birthdate)
 
-	err = binder.setFieldValue(dateField, ddt, "")
+	err = binder.setFieldValue(dateField, ddt, "", true)
 	assert.NoError(t, err)
 	assert.Equal(t, ddt, actual.Birthdate)
 
-	err = binder.setFieldValue(dateField, ddt, "yada")
+	err = binder.setFieldValue(dateField, ddt, "yada", true)
 	assert.Error(t, err)
 
 	fdt := &strfmt.DateTime{Time: time.Date(2014, 3, 19, 2, 9, 0, 0, time.UTC)}
@@ -217,20 +217,20 @@ func TestParamBinding(t *testing.T) {
 	}
 	fexp := &strfmt.DateTime{Time: time.Date(2014, 5, 14, 2, 9, 0, 0, time.UTC)}
 
-	err = binder.setFieldValue(ftimeField, fdt, fexp.String())
+	err = binder.setFieldValue(ftimeField, fdt, fexp.String(), true)
 	assert.NoError(t, err)
 	assert.Equal(t, fexp, actual.LastFailure)
 
-	err = binder.setFieldValue(ftimeField, fdt, "")
+	err = binder.setFieldValue(ftimeField, fdt, "", true)
 	assert.NoError(t, err)
 	assert.Equal(t, fdt, actual.LastFailure)
 
-	err = binder.setFieldValue(ftimeField, fdt, "")
+	err = binder.setFieldValue(ftimeField, fdt, "", true)
 	assert.NoError(t, err)
 	assert.Equal(t, fdt, actual.LastFailure)
 
 	actual.LastFailure = nil
-	err = binder.setFieldValue(ftimeField, fdt, "yada")
+	err = binder.setFieldValue(ftimeField, fdt, "yada", true)
 	assert.Error(t, err)
 	assert.Nil(t, actual.LastFailure)
 
@@ -240,7 +240,7 @@ func TestParamBinding(t *testing.T) {
 		parameter: spec.QueryParam(pName).Typed("string", ""),
 		Name:      pName,
 	}
-	err = binder.setFieldValue(unsupportedField, nil, "")
+	err = binder.setFieldValue(unsupportedField, nil, "", true)
 	assert.Error(t, err)
 }
 

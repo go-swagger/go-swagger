@@ -47,7 +47,8 @@ func (o *UpdateOneParams) BindRequest(r *http.Request, route *middleware.Matched
 		}
 	}
 
-	if err := o.bindID(route.Params.Get("id"), route.Formats); err != nil {
+	rID, rhkID, _ := route.Params.GetOK("id")
+	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -57,7 +58,11 @@ func (o *UpdateOneParams) BindRequest(r *http.Request, route *middleware.Matched
 	return nil
 }
 
-func (o *UpdateOneParams) bindID(raw string, formats strfmt.Registry) error {
+func (o *UpdateOneParams) bindID(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
 
 	o.ID = raw
 

@@ -3,32 +3,35 @@
 {{ camelize .Name }}Size := int64(len({{ .ValueExpression }}))
 {{ end }}
 {{ if .MinItems }}
-if err := validate.MinItems({{ .Path }}, "{{ .Location }}", {{ camelize .Name }}Size, {{ .MinItems }}); err != nil {
+if err := validate.MinItems({{ .Path }}, {{ printf "%q" .Location }}, {{ camelize .Name }}Size, {{ .MinItems }}); err != nil {
   return err
 }
 {{ end }}
 {{ if .MaxItems }}
-if err := validate.MaxItems({{ .Path }}, "{{ .Location }}", {{ camelize .Name }}Size, {{.MaxItems}}); err != nil {
+if err := validate.MaxItems({{ .Path }}, {{ printf "%q" .Location }}, {{ camelize .Name }}Size, {{.MaxItems}}); err != nil {
   return err
 }
 {{ end }}
 {{ if .UniqueItems }}
-if err := validate.UniqueItems({{ .Path }}, "{{ .Location }}", {{ .ValueExpression }}); err != nil {
+if err := validate.UniqueItems({{ .Path }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
   return err
 }
 {{ end }}
 {{ if .Enum }}
-if err := validate.Enum({{ .Path }}, "{{ .Location }}", {{ .ValueExpression }}, {{ .Enum }}); err != nil {
+if err := validate.Enum({{ .Path }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}, {{ .Enum }}); err != nil {
   return err
 }
 {{ end }}
 {{ end }}{{ define "propertyparamvalidator" }}
 {{ if .IsPrimitive }}{{ template "primitivevalidator" . }}{{ end }}
-{{ if .IsCustomFormatter }}{{ template "customformatparamvalidator" . }}{{ end }}
+{{ if .IsCustomFormatter }}
+if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", string({{.ValueExpression}}), formats); err != nil {
+  return err
+}{{ end }}
 {{ if .IsArray }}{{ template "sliceparamvalidator" . }}{{ end }}
 {{ end }}{{define "bindprimitiveparam" }}
 {{ end }}{{define "sliceparambinder" }}
-{{ if .Parent }}{{ .IndexVar }}c := swag.SplitByFormat({{ .Parent.IndexVar }}c[{{ .Parent.IndexVar }}], "{{ .CollectionFormat }}")
+{{ if .Parent }}{{ .IndexVar }}c := swag.SplitByFormat({{ .Parent.IndexVar }}c[{{ .Parent.IndexVar }}], {{ printf "%q" .CollectionFormat }})
 {{ else }}{{ .IndexVar }}c := raw{{ end }}
 {{ .IndexVar }}sz := size
 var {{ .IndexVar }}r {{ .GoType }}
@@ -40,7 +43,7 @@ var {{ .IndexVar }}r {{ .GoType }}
 for {{ .IndexVar }} := 0; {{ .IndexVar }} < {{ .IndexVar }}sz; {{ .IndexVar }}++ {
   {{ if or .Child.IsCustomFormatter .Child.IsPrimitive }}{{ if .Child.Converter }}value, err := {{ .Child.Converter }}({{ .IndexVar }}c[{{ .IndexVar }}])
   if err != nil {
-    return errors.InvalidType({{ .Child.Path }}, "{{ .Location }}", "{{ .Child.GoType }}", {{ .IndexVar }}c[{{ .IndexVar }}])
+    return errors.InvalidType({{ .Child.Path }}, {{ printf "%q" .Location }}, "{{ .Child.GoType }}", {{ .IndexVar }}c[{{ .IndexVar }}])
   }
 
   if err := {{ .IndexVar }}ValidateElement({{ .IndexVar }}, {{ .Child.ValueExpression }}); err != nil {
@@ -79,7 +82,7 @@ import (
 // {{ pascalize .Name }}Params contains all the bound params for the {{ humanize .Name }} operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters {{ camelize .Name }}
+// swagger:parameters {{ .Name }}
 type {{ pascalize .Name }}Params struct {
   {{ range .Params }}/*{{ if .Description }}{{ .Description }}{{ end }}{{ if .Required }}
   Required: true{{ end }}{{ if .Maximum }}
@@ -103,18 +106,23 @@ type {{ pascalize .Name }}Params struct {
 // for simple values it will use straight method calls
 func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
   var res []error
-  {{ if .HasQueryParams }}qs := r.URL.Query()
-  {{ else if .HasFormParams }}
+  {{ if .HasQueryParams }}qs := httpkit.Values(r.URL.Query())
+  {{ else if .HasFormParams }}if err := r.ParseMultipartForm(32 << 20); err != nil {
+		return err
+	}
+	fds := httpkit.Values(r.Form)
   {{ end }}
 
   {{ range .Params }}
-  {{ if not .IsArray }}{{ if .IsQueryParam }}if err := {{ .ReceiverName }}.bind{{ pascalize .Name }}(qs.Get({{ .Path }}), route.Formats); err != nil {
+  {{ if not .IsArray }}{{ if .IsQueryParam }}q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, _ := qs.GetOK({{ .Path }})
+  if err := {{ .ReceiverName }}.bind{{ pascalize .Name }}(q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, route.Formats); err != nil {
     res = append(res, err)
   }
-  {{ else if .IsPathParam }}if err := {{ .ReceiverName }}.bind{{ pascalize .Name }}(route.Params.Get({{ .Path }}), route.Formats); err != nil {
+  {{ else if .IsPathParam }}r{{ pascalize .Name }}, rhk{{ pascalize .Name }}, _ := route.Params.GetOK({{ .Path }})
+  if err := {{ .ReceiverName }}.bind{{ pascalize .Name }}(r{{ pascalize .Name }}, rhk{{ pascalize .Name }}, route.Formats); err != nil {
     res = append(res, err)
   }
-  {{ else if .IsHeaderParam }}if err := {{ .ReceiverName }}.bind{{ pascalize .Name }}(r.Header.Get({{ .Path }}), route.Formats); err != nil {
+  {{ else if .IsHeaderParam }}if err := {{ .ReceiverName }}.bind{{ pascalize .Name }}([]string{r.Header.Get({{ .Path }})}, true, route.Formats); err != nil {
     res = append(res, err)
   }
   {{ else if .IsFormParam }}{{if .IsFileParam }}{{ camelize .Name }}, {{ camelize .Name }}Header, err := r.FormFile({{ .Path }})
@@ -123,14 +131,17 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
   } else {
     {{ .ReceiverName }}.{{ pascalize .Name }} = httpkit.File{Data: {{ camelize .Name }}, Header: {{ camelize .Name }}Header}
   }
-  {{ else }}if err := {{ .ReceiverName }}.bind{{ pascalize .Name }}(r.FormValue({{ .Path }}), route.Formats); err != nil {
+  {{ else }}fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, _ := fds.GetOK({{ .Path }})
+  if err := {{ .ReceiverName }}.bind{{ pascalize .Name }}(fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, route.Formats); err != nil {
     res = append(res, err)
   }
   {{ end }}{{ end }}
-  {{ else if .IsArray }}{{ if .IsQueryParam }}if err := {{ .ReceiverName }}.bind{{ pascalize .Name }}(swag.SplitByFormat(qs.Get({{ .Path }}), "{{ .CollectionFormat }}"), route.Formats); err != nil {
+  {{ else if .IsArray }}{{ if .IsQueryParam }}q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, _ := qs.GetOK({{ .Path }})
+  if err := {{ .ReceiverName }}.bind{{ pascalize .Name }}(q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, route.Formats); err != nil {
     res = append(res, err)
   }
-  {{ else if and .IsFormParam }}if err := {{ .ReceiverName }}.bind{{ pascalize .Name }}(swag.SplitByFormat(r.FormValue({{ .Path }}), "{{ .CollectionFormat }}"), route.Formats); err != nil {
+  {{ else if and .IsFormParam }}fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, _ := fds.GetOK({{ .Path }})
+  if err := {{ .ReceiverName }}.bind{{ pascalize .Name }}(fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, route.Formats); err != nil {
     res = append(res, err)
   }
   {{ end }}{{ end }}
@@ -141,7 +152,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     res = append(res, err)
   {{ else }}var body {{ .GoType }}
   if err := route.Consumer.Consume(r.Body, &body); err != nil {
-    res = append(res, errors.NewParseError("{{ camelize .Name }}", "{{ .Location }}", "", err))
+    res = append(res, errors.NewParseError("{{ camelize .Name }}", {{ printf "%q" .Location }}, "", err))
   {{ end }}} else {
     {{ if .IsArray }}for _, {{ .IndexVar }}{{ .ReceiverName }} := range {{ .ReceiverName }}.{{ pascalize .Name }} {
       if err := {{ .IndexVar }}{{ .ReceiverName }}.Validate(route.Formats); err != nil {
@@ -170,19 +181,26 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
 {{ range .Params }}
 {{ if not .IsBodyParam }}
 {{ if or .IsPrimitive .IsCustomFormatter }}
-func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .Name }}(raw string, formats strfmt.Registry) error {
-  {{ if and (not .IsPathParam) .Required }}if err := validate.RequiredString({{ .Path }}, "{{ .Location }}", raw); err != nil {
+func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .Name }}(rawData []string, hasKey bool, formats strfmt.Registry) error {
+  {{ if and (not .IsPathParam) .Required }}if !hasKey {
+    return errors.Required({{ .Path }}, {{ printf "%q" .Location }})
+  }
+  {{ end }}var raw string
+  if len(rawData) > 0 {
+    raw = rawData[len(rawData)-1]
+  }
+  {{ if and (not .IsPathParam) .Required (not .AllowEmptyValue) }}if err := validate.RequiredString({{ .Path }}, {{ printf "%q" .Location }}, raw); err != nil {
     return err
   }
   {{ end }}
   {{ if .Converter }}value, err := {{ if .Converter }}{{ .Converter }}({{ end }}raw)
   if err != nil {
-    return errors.InvalidType({{ .Path }}, "{{ .Location }}", "{{ .GoType }}", raw)
+    return errors.InvalidType({{ .Path }}, {{ printf "%q" .Location }}, {{ printf "%q" .GoType }}, raw)
   }
   {{ .ValueExpression }} = value
   {{ else if .IsCustomFormatter }}value, err := formats.Parse({{ printf "%q" .SwaggerFormat }}, raw)
   if err != nil {
-    return errors.InvalidType({{ .Path }}, "{{ .Location }}", "{{ .GoType }}", raw)
+    return errors.InvalidType({{ .Path }}, {{ printf "%q" .Location }}, {{ printf "%q" .GoType }}, raw)
   }
   {{ .ValueExpression }} = *(value.(*{{ .GoType }}))
   {{else}}{{ .ValueExpression }} = raw
@@ -194,15 +212,25 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .Name }}(raw
   return nil
 }
 {{else if .IsArray}}
-func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .Name }}(raw []string, formats strfmt.Registry) error {
+func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .Name }}(rawData []string, hasKey bool, formats strfmt.Registry) error {
+  {{if .Required }}if !hasKey {
+    return errors.Required({{ .Path }}, {{ printf "%q" .Location }})
+  }
+  {{ end }}
+  {{ if eq .CollectionFormat "multi" }}raw := rawData{{ else }}var qv{{ pascalize .Name }} string
+  if len(rawData) > 0 {
+    qv{{ pascalize .Name }} = rawData[len(rawData) - 1]
+  }
+
+  raw := swag.SplitByFormat(qv{{ pascalize .Name }}, {{ printf "%q" .CollectionFormat }}){{ end }}
   size := len(raw)
 
-  {{if .Required }}if size == 0 {
-    return errors.Required({{ .Path }}, "{{ .Location }}")
+  {{if and .Required (not .AllowEmptyValue) }}if size == 0 {
+    return errors.Required({{ .Path }}, {{ printf "%q" .Location }})
   }
   {{ end }}
 
-  {{ if .Default }}defValue := swag.SplitByFormat({{ .Default }}, "{{ .CollectionFormat }}")
+  {{ if .Default }}defValue := swag.SplitByFormat({{ .Default }}, {{ printf "%q" .CollectionFormat }})
   if size == 0 && len(defValue) > 0 {
     {{ .ValueExpression }} = defValue
   {{ else }}if size == 0 {

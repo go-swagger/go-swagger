@@ -57,11 +57,12 @@ func SimpleArrayParam(name, tpe, fmt string) *Parameter {
 }
 
 type paramProps struct {
-	Description string  `json:"description,omitempty"`
-	Name        string  `json:"name,omitempty"`
-	In          string  `json:"in,omitempty"`
-	Required    bool    `json:"required,omitempty"`
-	Schema      *Schema `json:"schema,omitempty"` // when in == "body"
+	Description     string  `json:"description,omitempty"`
+	Name            string  `json:"name,omitempty"`
+	In              string  `json:"in,omitempty"`
+	Required        bool    `json:"required,omitempty"`
+	Schema          *Schema `json:"schema,omitempty"`          // when in == "body"
+	AllowEmptyValue bool    `json:"allowEmptyValue,omitempty"` // when in == "query" || "formData"
 }
 
 // Parameter a unique parameter is defined by a combination of a [name](#parameterName) and [location](#parameterIn).

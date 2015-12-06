@@ -39,14 +39,18 @@ func JSONRequest(method, urlStr string, body io.Reader) (*http.Request, error) {
 	return req, nil
 }
 
-// Gettable for things with a method Get(string) string
+// Gettable for things with a method GetOK(string) (data string, hasKey bool, hasValue bool)
 type Gettable interface {
-	Get(string) string
+	GetOK(string) ([]string, bool, bool)
 }
 
 // ReadSingleValue reads a single value from the source
 func ReadSingleValue(values Gettable, name string) string {
-	return values.Get(name)
+	vv, _, hv := values.GetOK(name)
+	if hv {
+		return vv[len(vv)-1]
+	}
+	return ""
 }
 
 // ReadCollectionValue reads a collection value from a string data source

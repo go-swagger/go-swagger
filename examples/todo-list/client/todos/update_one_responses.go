@@ -34,7 +34,8 @@ func (o *UpdateOneReader) ReadResponse(response client.Response, consumer httpki
 	}
 }
 
-/*
+/*UpdateOneOK
+
 OK
 */
 type UpdateOneOK struct {
@@ -53,7 +54,8 @@ func (o *UpdateOneOK) readResponse(response client.Response, consumer httpkit.Co
 	return nil
 }
 
-/*
+/*UpdateOneDefault
+
 error
 */
 type UpdateOneDefault struct {

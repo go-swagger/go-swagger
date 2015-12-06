@@ -157,6 +157,7 @@ func init() {
 func makeModelTemplate() *template.Template {
 	templ := template.Must(template.New("docstring").Funcs(FuncMap).Parse(string(assetDocString)))
 	templ = template.Must(templ.New("primitivevalidator").Parse(string(assetPrimitiveValidation)))
+	templ = template.Must(templ.New("customformatvalidator").Parse(string(assetCustomFormatValidation)))
 	templ = template.Must(templ.New("validationDocString").Parse(string(assetStuctFieldValidation)))
 	templ = template.Must(templ.New("schemaType").Parse(string(assetSchemaType)))
 	templ = template.Must(templ.New("body").Parse(string(assetSchemaBody)))

@@ -2,14 +2,14 @@
 
 set -e -x
 
-godep go test -v -race ./... | go-junit-report -dir $CIRCLE_TEST_REPORTS/go
+godep go test -v -race $(go list ./... | grep -v vendor) | go-junit-report -dir $CIRCLE_TEST_REPORTS/go
 
 # Run test coverage on each subdirectories and merge the coverage profile.
 echo "mode: set" > profile.cov
 repo_pref="github.com/${CIRCLE_PROJECT_USERNAME-"$(basename `pwd`)"}/${CIRCLE_PROJECT_REPONAME-"$(basename `pwd`)"}/"
 # Standard go tooling behavior is to ignore dirs with leading underscores
 set -x
-for dir in $(go list ./... | grep -v generator)
+for dir in $(go list ./... | grep -v -E 'vendor|generator')
 do
   pth="${dir//*$repo_pref}"
   godep go test -covermode=set -coverprofile=${pth}/profile.tmp $dir

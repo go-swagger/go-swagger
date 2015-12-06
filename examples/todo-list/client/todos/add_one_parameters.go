@@ -11,11 +11,12 @@ import (
 	"github.com/go-swagger/go-swagger/examples/todo-list/models"
 )
 
-/*
-AddOneParams contains all the parameters to send to the API endpoint
+/*AddOneParams contains all the parameters to send to the API endpoint
 for the add one operation typically these are written to a http.Request
 */
 type AddOneParams struct {
+
+	/*Body*/
 	Body *models.Item
 }
 

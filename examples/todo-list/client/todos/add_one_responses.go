@@ -34,7 +34,8 @@ func (o *AddOneReader) ReadResponse(response client.Response, consumer httpkit.C
 	}
 }
 
-/*
+/*AddOneCreated
+
 Created
 */
 type AddOneCreated struct {
@@ -53,7 +54,8 @@ func (o *AddOneCreated) readResponse(response client.Response, consumer httpkit.
 	return nil
 }
 
-/*
+/*AddOneDefault
+
 error
 */
 type AddOneDefault struct {

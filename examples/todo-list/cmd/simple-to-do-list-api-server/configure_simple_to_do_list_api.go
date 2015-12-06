@@ -29,7 +29,7 @@ func configureAPI(api *operations.SimpleToDoListAPIAPI) {
 	api.DestroyOneHandler = todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams, principal interface{}) middleware.Responder {
 		return middleware.NotImplemented("operation destroyOne has not yet been implemented")
 	})
-	api.FindHandler = todos.FindHandlerFunc(func(principal interface{}) middleware.Responder {
+	api.FindHandler = todos.FindHandlerFunc(func(params todos.FindParams, principal interface{}) middleware.Responder {
 		return middleware.NotImplemented("operation find has not yet been implemented")
 	})
 	api.UpdateOneHandler = todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams, principal interface{}) middleware.Responder {

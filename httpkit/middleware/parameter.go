@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"reflect"
 	"strconv"
 
@@ -115,32 +114,34 @@ func (p *untypedParamBinder) allowsMulti() bool {
 	return p.parameter.In == "query" || p.parameter.In == "formData"
 }
 
-func (p *untypedParamBinder) readValue(values interface{}, target reflect.Value) ([]string, bool, error) {
+func (p *untypedParamBinder) readValue(values httpkit.Gettable, target reflect.Value) ([]string, bool, bool, error) {
 	name, in, cf, tpe := p.parameter.Name, p.parameter.In, p.parameter.CollectionFormat, p.parameter.Type
 	if tpe == "array" {
 		if cf == "multi" {
 			if !p.allowsMulti() {
-				return nil, false, errors.InvalidCollectionFormat(name, in, cf)
+				return nil, false, false, errors.InvalidCollectionFormat(name, in, cf)
 			}
-			return values.(url.Values)[name], false, nil
+			vv, hasKey, _ := values.GetOK(name)
+			return vv, false, hasKey, nil
 		}
 
-		v := httpkit.ReadSingleValue(values.(httpkit.Gettable), name)
-		return p.readFormattedSliceFieldValue(v, target)
+		v, hk, hv := values.GetOK(name)
+		if !hv {
+			return nil, false, hk, nil
+		}
+		d, c, e := p.readFormattedSliceFieldValue(v[len(v)-1], target)
+		return d, c, hk, e
 	}
 
-	v := httpkit.ReadSingleValue(values.(httpkit.Gettable), name)
-	if v == "" {
-		return nil, false, nil
-	}
-	return []string{v}, false, nil
+	vv, hk, _ := values.GetOK(name)
+	return vv, false, hk, nil
 }
 
 func (p *untypedParamBinder) Bind(request *http.Request, routeParams RouteParams, consumer httpkit.Consumer, target reflect.Value) error {
 	// fmt.Println("binding", p.name, "as", p.Type())
 	switch p.parameter.In {
 	case "query":
-		data, custom, err := p.readValue(request.URL.Query(), target)
+		data, custom, hasKey, err := p.readValue(httpkit.Values(request.URL.Query()), target)
 		if err != nil {
 			return err
 		}
@@ -148,27 +149,27 @@ func (p *untypedParamBinder) Bind(request *http.Request, routeParams RouteParams
 			return nil
 		}
 
-		return p.bindValue(data, target)
+		return p.bindValue(data, hasKey, target)
 
 	case "header":
-		data, custom, err := p.readValue(request.Header, target)
+		data, custom, hasKey, err := p.readValue(httpkit.Values(request.Header), target)
 		if err != nil {
 			return err
 		}
 		if custom {
 			return nil
 		}
-		return p.bindValue(data, target)
+		return p.bindValue(data, hasKey, target)
 
 	case "path":
-		data, custom, err := p.readValue(routeParams, target)
+		data, custom, hasKey, err := p.readValue(routeParams, target)
 		if err != nil {
 			return err
 		}
 		if custom {
 			return nil
 		}
-		return p.bindValue(data, target)
+		return p.bindValue(data, hasKey, target)
 
 	case "formData":
 		var err error
@@ -209,23 +210,23 @@ func (p *untypedParamBinder) Bind(request *http.Request, routeParams RouteParams
 		}
 
 		if request.MultipartForm != nil {
-			data, custom, err := p.readValue(url.Values(request.MultipartForm.Value), target)
+			data, custom, hasKey, err := p.readValue(httpkit.Values(request.MultipartForm.Value), target)
 			if err != nil {
 				return err
 			}
 			if custom {
 				return nil
 			}
-			return p.bindValue(data, target)
+			return p.bindValue(data, hasKey, target)
 		}
-		data, custom, err := p.readValue(url.Values(request.PostForm), target)
+		data, custom, hasKey, err := p.readValue(httpkit.Values(request.PostForm), target)
 		if err != nil {
 			return err
 		}
 		if custom {
 			return nil
 		}
-		return p.bindValue(data, target)
+		return p.bindValue(data, hasKey, target)
 
 	case "body":
 		newValue := reflect.New(target.Type())
@@ -247,24 +248,24 @@ func (p *untypedParamBinder) Bind(request *http.Request, routeParams RouteParams
 	}
 }
 
-func (p *untypedParamBinder) bindValue(data []string, target reflect.Value) error {
+func (p *untypedParamBinder) bindValue(data []string, hasKey bool, target reflect.Value) error {
 	if p.parameter.Type == "array" {
-		return p.setSliceFieldValue(target, p.parameter.Default, data)
+		return p.setSliceFieldValue(target, p.parameter.Default, data, hasKey)
 	}
 	var d string
 	if len(data) > 0 {
-		d = data[0]
+		d = data[len(data)-1]
 	}
-	return p.setFieldValue(target, p.parameter.Default, d)
+	return p.setFieldValue(target, p.parameter.Default, d, hasKey)
 }
 
-func (p *untypedParamBinder) setFieldValue(target reflect.Value, defaultValue interface{}, data string) error {
+func (p *untypedParamBinder) setFieldValue(target reflect.Value, defaultValue interface{}, data string, hasKey bool) error {
 	tpe := p.parameter.Type
 	if p.parameter.Format != "" {
 		tpe = p.parameter.Format
 	}
 
-	if data == "" && p.parameter.Required && p.parameter.Default == nil {
+	if (!hasKey || (!p.parameter.AllowEmptyValue && data == "")) && p.parameter.Required && p.parameter.Default == nil {
 		return errors.Required(p.Name, p.parameter.In)
 	}
 
@@ -283,7 +284,9 @@ func (p *untypedParamBinder) setFieldValue(target reflect.Value, defaultValue in
 
 	if tpe == "byte" {
 		if data == "" {
-			target.SetBytes(defVal.Bytes())
+			if target.CanSet() {
+				target.SetBytes(defVal.Bytes())
+			}
 			return nil
 		}
 
@@ -294,25 +297,32 @@ func (p *untypedParamBinder) setFieldValue(target reflect.Value, defaultValue in
 				return errors.InvalidType(p.Name, p.parameter.In, tpe, data)
 			}
 		}
-		target.SetBytes(b)
+		if target.CanSet() {
+			target.SetBytes(b)
+		}
 		return nil
 	}
 
 	switch target.Kind() {
 	case reflect.Bool:
 		if data == "" {
-			target.SetBool(defVal.Bool())
+			if target.CanSet() {
+				target.SetBool(defVal.Bool())
+			}
 			return nil
 		}
 		b, err := swag.ConvertBool(data)
 		if err != nil {
 			return err
 		}
-		target.SetBool(b)
-
+		if target.CanSet() {
+			target.SetBool(b)
+		}
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		if data == "" {
-			target.SetInt(defVal.Int())
+			if target.CanSet() {
+				target.SetInt(defVal.Int())
+			}
 			return nil
 		}
 		i, err := strconv.ParseInt(data, 10, 64)
@@ -322,12 +332,15 @@ func (p *untypedParamBinder) setFieldValue(target reflect.Value, defaultValue in
 		if target.OverflowInt(i) {
 			return errors.InvalidType(p.Name, p.parameter.In, tpe, data)
 		}
-
-		target.SetInt(i)
+		if target.CanSet() {
+			target.SetInt(i)
+		}
 
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		if data == "" {
-			target.SetUint(defVal.Uint())
+			if target.CanSet() {
+				target.SetUint(defVal.Uint())
+			}
 			return nil
 		}
 		u, err := strconv.ParseUint(data, 10, 64)
@@ -337,11 +350,15 @@ func (p *untypedParamBinder) setFieldValue(target reflect.Value, defaultValue in
 		if target.OverflowUint(u) {
 			return errors.InvalidType(p.Name, p.parameter.In, tpe, data)
 		}
-		target.SetUint(u)
+		if target.CanSet() {
+			target.SetUint(u)
+		}
 
 	case reflect.Float32, reflect.Float64:
 		if data == "" {
-			target.SetFloat(defVal.Float())
+			if target.CanSet() {
+				target.SetFloat(defVal.Float())
+			}
 			return nil
 		}
 		f, err := strconv.ParseFloat(data, 64)
@@ -351,7 +368,9 @@ func (p *untypedParamBinder) setFieldValue(target reflect.Value, defaultValue in
 		if target.OverflowFloat(f) {
 			return errors.InvalidType(p.Name, p.parameter.In, tpe, data)
 		}
-		target.SetFloat(f)
+		if target.CanSet() {
+			target.SetFloat(f)
+		}
 
 	case reflect.String:
 		value := data
@@ -359,18 +378,24 @@ func (p *untypedParamBinder) setFieldValue(target reflect.Value, defaultValue in
 			value = defVal.String()
 		}
 		// validate string
-		target.SetString(value)
+		if target.CanSet() {
+			target.SetString(value)
+		}
 
 	case reflect.Ptr:
 		if data == "" && defVal.Kind() == reflect.Ptr {
-			target.Set(defVal)
+			if target.CanSet() {
+				target.Set(defVal)
+			}
 			return nil
 		}
 		newVal := reflect.New(target.Type().Elem())
-		if err := p.setFieldValue(reflect.Indirect(newVal), defVal, data); err != nil {
+		if err := p.setFieldValue(reflect.Indirect(newVal), defVal, data, hasKey); err != nil {
 			return err
 		}
-		target.Set(newVal)
+		if target.CanSet() {
+			target.Set(newVal)
+		}
 
 	default:
 		return errors.InvalidType(p.Name, p.parameter.In, tpe, data)
@@ -379,6 +404,9 @@ func (p *untypedParamBinder) setFieldValue(target reflect.Value, defaultValue in
 }
 
 func (p *untypedParamBinder) tryUnmarshaler(target reflect.Value, defaultValue interface{}, data string) (bool, error) {
+	if !target.CanSet() {
+		return false, nil
+	}
 	// When a type implements encoding.TextUnmarshaler we'll use that instead of reflecting some more
 	if reflect.PtrTo(target.Type()).Implements(textUnmarshalType) {
 		if defaultValue != nil && len(data) == 0 {
@@ -407,24 +435,29 @@ func (p *untypedParamBinder) readFormattedSliceFieldValue(data string, target re
 	return swag.SplitByFormat(data, p.parameter.CollectionFormat), false, nil
 }
 
-func (p *untypedParamBinder) setSliceFieldValue(target reflect.Value, defaultValue interface{}, data []string) error {
-	if len(data) == 0 && p.parameter.Required && p.parameter.Default == nil {
+func (p *untypedParamBinder) setSliceFieldValue(target reflect.Value, defaultValue interface{}, data []string, hasKey bool) error {
+	sz := len(data)
+	if (!hasKey || (!p.parameter.AllowEmptyValue && (sz == 0 || (sz == 1 && data[0] == "")))) && p.parameter.Required && defaultValue == nil {
 		return errors.Required(p.Name, p.parameter.In)
 	}
+
 	defVal := reflect.Zero(target.Type())
 	if defaultValue != nil {
 		defVal = reflect.ValueOf(defaultValue)
 	}
-	if len(data) == 0 {
+
+	if !target.CanSet() {
+		return nil
+	}
+	if sz == 0 {
 		target.Set(defVal)
 		return nil
 	}
 
-	sz := len(data)
 	value := reflect.MakeSlice(reflect.SliceOf(target.Type().Elem()), sz, sz)
 
 	for i := 0; i < sz; i++ {
-		if err := p.setFieldValue(value.Index(i), nil, data[i]); err != nil {
+		if err := p.setFieldValue(value.Index(i), nil, data[i], hasKey); err != nil {
 			return err
 		}
 	}

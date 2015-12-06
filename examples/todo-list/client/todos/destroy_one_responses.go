@@ -34,7 +34,8 @@ func (o *DestroyOneReader) ReadResponse(response client.Response, consumer httpk
 	}
 }
 
-/*
+/*DestroyOneNoContent
+
 Deleted
 */
 type DestroyOneNoContent struct {
@@ -45,7 +46,8 @@ func (o *DestroyOneNoContent) readResponse(response client.Response, consumer ht
 	return nil
 }
 
-/*
+/*DestroyOneDefault
+
 error
 */
 type DestroyOneDefault struct {

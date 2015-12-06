@@ -21,6 +21,28 @@ paths:
     get:
       tags: ["todos"]
       operationId: find
+      parameters:
+        - name: limit
+          in: formData
+          type: integer
+          format: int32
+          required: true
+          allowEmptyValue: true
+        - name: "X-Rate-Limit"
+          in: header
+          type: integer
+          format: int32
+          required: true
+        - name: tags
+          in: formData
+          type: array
+          collectionFormat: multi
+          allowEmptyValue: true
+          items:
+            type: string
+            format: int32
+            required: true
+          required: true
       responses:
         '200':
           description: OK

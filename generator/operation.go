@@ -259,7 +259,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 
 	operation := b.Operation
 	var params, qp, pp, hp, fp GenParameters
-	var hasQueryParams bool
+	var hasQueryParams, hasFormParams, hasFileParams bool
 	for _, p := range b.Doc.ParametersFor(operation.ID) {
 		cp, err := b.MakeParameter(receiver, &resolver, p)
 		if err != nil {
@@ -270,6 +270,10 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 			qp = append(qp, cp)
 		}
 		if cp.IsFormParam() {
+			if p.Type == "file" {
+				hasFileParams = true
+			}
+			hasFormParams = true
 			fp = append(fp, cp)
 		}
 		if cp.IsPathParam() {
@@ -342,6 +346,8 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		HeaderParams:    hp,
 		FormParams:      fp,
 		HasQueryParams:  hasQueryParams,
+		HasFormParams:   hasFormParams,
+		HasFileParams:   hasFileParams,
 		Authorized:      b.Authed,
 		Principal:       prin,
 		Responses:       responses,
@@ -472,7 +478,7 @@ func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) Ge
 	}
 }
 
-func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path, valueExpression string, resolver *typeResolver, items, parent *spec.Items) (GenItems, error) {
+func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path, valueExpression, location string, resolver *typeResolver, items, parent *spec.Items) (GenItems, error) {
 	var res GenItems
 	res.resolvedType = simpleResolvedType(items.Type, items.Format, items.Items)
 	res.sharedValidations = sharedValidations{
@@ -490,13 +496,15 @@ func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path
 		Enum:             items.Enum,
 	}
 	res.Name = paramName
+	res.Path = path
+	res.Location = location
 	res.ValueExpression = valueExpression
 	res.CollectionFormat = items.CollectionFormat
 	res.Converter = stringConverters[res.GoType]
 	res.Formatter = stringFormatters[res.GoType]
 
 	if items.Items != nil {
-		pi, err := b.MakeParameterItem(receiver, paramName+" "+indexVar, indexVar+"i", "fmt.Sprintf(\"%s.%v\", "+path+", "+indexVar+")", valueExpression+"["+indexVar+"]", resolver, items.Items, items)
+		pi, err := b.MakeParameterItem(receiver, paramName+" "+indexVar, indexVar+"[i]", "fmt.Sprintf(\"%s.%v\", "+path+", "+indexVar+")", valueExpression+"["+indexVar+"]", location, resolver, items.Items, items)
 		if err != nil {
 			return GenItems{}, err
 		}
@@ -523,6 +531,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		CollectionFormat: param.CollectionFormat,
 		Child:            child,
 		Location:         param.In,
+		AllowEmptyValue:  (param.In == "query" || param.In == "formData") && param.AllowEmptyValue,
 	}
 
 	if param.In == "body" {
@@ -589,12 +598,13 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		}
 
 		if param.Items != nil {
-			pi, err := b.MakeParameterItem(receiver, param.Name+" "+res.IndexVar, res.IndexVar+"i", "fmt.Sprintf(\"%s.%v\", "+res.Path+", "+res.IndexVar+")", res.ValueExpression+"["+res.IndexVar+"]", resolver, param.Items, nil)
+			pi, err := b.MakeParameterItem(receiver, param.Name+" "+res.IndexVar, res.IndexVar+"i", "fmt.Sprintf(\"%s.%v\", "+res.Path+", "+res.IndexVar+")", res.ValueExpression+"["+res.IndexVar+"]", param.In, resolver, param.Items, nil)
 			if err != nil {
 				return GenParameter{}, err
 			}
 			res.Child = &pi
 		}
+		res.IsNullable = !param.Required && param.AllowEmptyValue
 
 	}
 
@@ -896,9 +906,10 @@ type GenParameter struct {
 
 	BodyParam *GenParameter
 
-	Default   interface{}
-	Enum      []interface{}
-	ZeroValue string
+	Default         interface{}
+	Enum            []interface{}
+	ZeroValue       string
+	AllowEmptyValue bool
 }
 
 // IsQueryParam returns true when this parameter is a query param

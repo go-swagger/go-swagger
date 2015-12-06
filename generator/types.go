@@ -153,10 +153,11 @@ func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType)
 	_, result.IsPrimitive = primitives[tn]
 
 	if fmt != "" {
-		if tpe, ok := typeMapping[strings.Replace(fmt, "-", "", -1)]; ok {
+		fmtn := strings.Replace(fmt, "-", "", -1)
+		if tpe, ok := typeMapping[fmtn]; ok {
 			result.GoType = tpe
 			result.IsPrimitive = true
-			result.IsCustomFormatter = true
+			_, result.IsCustomFormatter = customFormatters[fmtn]
 			return
 		}
 	}

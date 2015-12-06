@@ -48,13 +48,28 @@ func TestCanHaveBody(t *testing.T) {
 func TestReadSingle(t *testing.T) {
 	values := url.Values(make(map[string][]string))
 	values.Add("something", "the thing")
-	assert.Equal(t, "the thing", ReadSingleValue(values, "something"))
-	assert.Empty(t, ReadSingleValue(values, "notthere"))
+	assert.Equal(t, "the thing", ReadSingleValue(tv(values), "something"))
+	assert.Empty(t, ReadSingleValue(tv(values), "notthere"))
 }
 
 func TestReadCollection(t *testing.T) {
 	values := url.Values(make(map[string][]string))
 	values.Add("something", "value1,value2")
-	assert.Equal(t, []string{"value1", "value2"}, ReadCollectionValue(values, "something", "csv"))
-	assert.Empty(t, ReadCollectionValue(values, "notthere", ""))
+	assert.Equal(t, []string{"value1", "value2"}, ReadCollectionValue(tv(values), "something", "csv"))
+	assert.Empty(t, ReadCollectionValue(tv(values), "notthere", ""))
+}
+
+type tv map[string][]string
+
+func (v tv) GetOK(key string) (value []string, hasKey bool, hasValue bool) {
+	value, hasKey = v[key]
+	if !hasKey {
+		return
+	}
+	if len(value) == 0 {
+		return
+	}
+	hasValue = true
+	return
+
 }

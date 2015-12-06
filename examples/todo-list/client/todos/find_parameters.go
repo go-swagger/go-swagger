@@ -7,19 +7,49 @@ import (
 	"github.com/go-swagger/go-swagger/client"
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/strfmt"
+	"github.com/go-swagger/go-swagger/swag"
 )
 
-/*
-FindParams contains all the parameters to send to the API endpoint
+/*FindParams contains all the parameters to send to the API endpoint
 for the find operation typically these are written to a http.Request
 */
 type FindParams struct {
+
+	/*XRateLimit*/
+	XRateLimit int32
+	/*Limit*/
+	Limit int32
+	/*Tags*/
+	Tags []int32
 }
 
 // WriteToRequest writes these params to a swagger request
 func (o *FindParams) WriteToRequest(r client.Request, reg strfmt.Registry) error {
 
 	var res []error
+
+	// header param X-Rate-Limit
+	if err := r.SetHeaderParam("X-Rate-Limit", swag.FormatInt32(o.XRateLimit)); err != nil {
+		return err
+	}
+
+	// form param limit
+	frLimit := o.Limit
+	fLimit := swag.FormatInt32(frLimit)
+	if err := r.SetFormParam("limit", fLimit); err != nil {
+		return err
+	}
+
+	var valuesTags []string
+	for _, v := range o.Tags {
+		valuesTags = append(valuesTags, swag.FormatInt32(v))
+	}
+
+	joinedTags := swag.JoinByFormat(valuesTags, "multi")
+	// form array param tags
+	if err := r.SetFormParam("tags", joinedTags...); err != nil {
+		return err
+	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)

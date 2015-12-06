@@ -10,16 +10,16 @@ import (
 )
 
 // FindHandlerFunc turns a function with the right signature into a find handler
-type FindHandlerFunc func(interface{}) middleware.Responder
+type FindHandlerFunc func(FindParams, interface{}) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn FindHandlerFunc) Handle(principal interface{}) middleware.Responder {
-	return fn(principal)
+func (fn FindHandlerFunc) Handle(params FindParams, principal interface{}) middleware.Responder {
+	return fn(params, principal)
 }
 
 // FindHandler interface for that can handle valid find params
 type FindHandler interface {
-	Handle(interface{}) middleware.Responder
+	Handle(FindParams, interface{}) middleware.Responder
 }
 
 // NewFind creates a new http.Handler for the find operation
@@ -34,6 +34,7 @@ Find find API
 */
 type Find struct {
 	Context *middleware.Context
+	Params  FindParams
 	Handler FindHandler
 }
 
@@ -50,12 +51,12 @@ func (o *Find) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		principal = uprinc
 	}
 
-	if err := o.Context.BindValidRequest(r, route, nil); err != nil { // bind params
+	if err := o.Context.BindValidRequest(r, route, &o.Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
-	res := o.Handler.Handle(principal) // actually handle the request
+	res := o.Handler.Handle(o.Params, principal) // actually handle the request
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 

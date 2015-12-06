@@ -37,12 +37,19 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r client.
   {{range .Params}}
 
   {{if not (or .IsArray .IsBodyParam) }}
-  {{ if .IsNullable }}if {{ .ValueExpression }} != nil { {{ end}}
+  {{ if and .IsNullable (not .AllowEmptyValue) }}if {{ .ValueExpression }} != nil { {{ end}}
   {{ if .IsQueryParam }}
   // query param {{ .Name }}
-  if err := r.SetQueryParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if .IsNullable }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if .IsNullable }}*{{end}}{{ .ValueExpression }}{{end}}); err != nil {
+  {{ if .IsNullable }}var qr{{ pascalize .Name }} {{ .GoType }}
+  if {{ .ValueExpression }} != nil {
+    qr{{ pascalize .Name }} = *{{ .ValueExpression }}
+  }{{ else }}qr{{ pascalize .Name }} := {{ .ValueExpression }}{{ end}}
+  q{{ pascalize .Name}} := {{ if .Formatter }}{{ .Formatter }}(qr{{ pascalize .Name }}){{ else }}qr{{ pascalize .Name }}{{end}}{{ if not .AllowEmptyValue }}
+  if q{{ pascalize .Name }} != "" { {{ end }}
+  if err := r.SetQueryParam({{ printf "%q" .Name }}, q{{ pascalize .Name }}); err != nil {
     return err
   }
+  {{ if not .AllowEmptyValue }}}{{ end }}
   {{ else if .IsPathParam }}
   // path param {{ .Name }}
   if err := r.SetPathParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if .IsNullable }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if .IsNullable }}*{{end}}{{ .ValueExpression }}{{end}}); err != nil {
@@ -61,28 +68,32 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r client.
   }
   {{ else }}
   // form param {{ .Name }}
-  if err := r.SetFormParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if .IsNullable }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if .IsNullable }}*{{end}}{{ .ValueExpression }}{{end}}); err != nil {
+  {{ if .IsNullable }}var fr{{ pascalize .Name }} {{ .GoType }}
+  if {{ .ValueExpression }} != nil {
+    fr{{ pascalize .Name }} = *{{ .ValueExpression }}
+  }{{ else }}fr{{ pascalize .Name }} := {{ .ValueExpression }}{{ end}}
+  f{{ pascalize .Name}} := {{ if .Formatter }}{{ .Formatter }}(fr{{ pascalize .Name }}){{ else }}fr{{ pascalize .Name }}{{end}}{{ if not .AllowEmptyValue }}
+  if f{{ pascalize .Name }} != "" { {{ end }}
+  if err := r.SetFormParam({{ printf "%q" .Name }}, f{{ pascalize .Name }}); err != nil {
     return err
   }
+  {{ if not .AllowEmptyValue }}}{{ end }}
   {{ end }}
   {{ end }}
-  {{ if .IsNullable }}}{{end}}
+  {{ if and .IsNullable (not .AllowEmptyValue) }}}{{end}}
   {{else if .IsArray }}
-
   {{ if .Child.Formatter }}var values{{ pascalize .Name }} []string
   for _, v := range {{ if and (not .IsArray) (.IsNullable) }}*{{end}}{{ .ValueExpression }} {
-    values{{ .ParamName }} = append(values{{ pascalize .Name }}, {{ .Child.Formatter }}(v))
+    values{{ pascalize .Name }} = append(values{{ pascalize .Name }}, {{ .Child.Formatter }}(v))
   }
-  {{ else }}values{{ pascalize .Name }} := {{ if and (not .IsArray) (.IsNullable) }}*{{end}}{{ .ValueExpression }}
-  {{ end }}
-  {{ if .IsQueryParam }}
-  // query array param {{ .Name }}
-  if err := r.SetQueryParam({{ printf "%q" .Name }}, swag.JoinByFormat(values{{ pascalize .Name }}, "{{.CollectionFormat}}")...); err != nil {
+  {{ else }}values{{ pascalize .Name }} := {{ if and (not .IsArray) (.IsNullable) }}*{{end}}{{ .ValueExpression }}{{ end }}
+  joined{{ pascalize .Name}} := swag.JoinByFormat(values{{ pascalize .Name }}, "{{.CollectionFormat}}")
+  {{ if .IsQueryParam }}// query array param {{ .Name }}
+  if err := r.SetQueryParam({{ printf "%q" .Name }}, joined{{ pascalize .Name }}...); err != nil {
     return err
   }
-  {{ else if and .IsFormParam }}
-  // form array param {{ .Name }}
-  if err := r.SetFormParam({{ printf "%q" .Name }}, swag.JoinByFormat(values{{ pascalize .Name }}, "{{.CollectionFormat}}")...); err != nil {
+  {{ else if and .IsFormParam }}// form array param {{ .Name }}
+  if err := r.SetFormParam({{ printf "%q" .Name }}, joined{{ pascalize .Name }}...); err != nil {
     return err
   }
   {{ end }}

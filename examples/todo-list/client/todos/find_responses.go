@@ -34,7 +34,8 @@ func (o *FindReader) ReadResponse(response client.Response, consumer httpkit.Con
 	}
 }
 
-/*
+/*FindOK
+
 OK
 */
 type FindOK struct {
@@ -51,7 +52,8 @@ func (o *FindOK) readResponse(response client.Response, consumer httpkit.Consume
 	return nil
 }
 
-/*
+/*FindDefault
+
 error
 */
 type FindDefault struct {

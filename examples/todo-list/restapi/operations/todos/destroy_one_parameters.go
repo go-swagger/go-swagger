@@ -28,7 +28,8 @@ type DestroyOneParams struct {
 func (o *DestroyOneParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 
-	if err := o.bindID(route.Params.Get("id"), route.Formats); err != nil {
+	rID, rhkID, _ := route.Params.GetOK("id")
+	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -38,7 +39,11 @@ func (o *DestroyOneParams) BindRequest(r *http.Request, route *middleware.Matche
 	return nil
 }
 
-func (o *DestroyOneParams) bindID(raw string, formats strfmt.Registry) error {
+func (o *DestroyOneParams) bindID(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
 
 	o.ID = raw
 

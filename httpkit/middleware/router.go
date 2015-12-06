@@ -40,12 +40,24 @@ type RouteParams []RouteParam
 
 // Get gets the value for the route param for the specified key
 func (r RouteParams) Get(name string) string {
-	for _, p := range r {
-		if p.Name == name {
-			return p.Value
-		}
+	vv, _, _ := r.GetOK(name)
+	if len(vv) > 0 {
+		return vv[len(vv)-1]
 	}
 	return ""
+}
+
+// GetOK gets the value but also returns booleans to indicate if a key or value
+// is present. This aids in validation and satisfies an interface in use there
+//
+// The returned values are: data, has key, has value
+func (r RouteParams) GetOK(name string) ([]string, bool, bool) {
+	for _, p := range r {
+		if p.Name == name {
+			return []string{p.Value}, true, p.Value != ""
+		}
+	}
+	return nil, false, false
 }
 
 func newRouter(ctx *Context, next http.Handler) http.Handler {

@@ -117,11 +117,12 @@ func (i *itemsValidator) numberValidator() valueValidator {
 
 func (i *itemsValidator) stringValidator() valueValidator {
 	return &stringValidator{
-		In:        i.in,
-		Default:   i.items.Default,
-		MaxLength: i.items.MaxLength,
-		MinLength: i.items.MinLength,
-		Pattern:   i.items.Pattern,
+		In:              i.in,
+		Default:         i.items.Default,
+		MaxLength:       i.items.MaxLength,
+		MinLength:       i.items.MinLength,
+		Pattern:         i.items.Pattern,
+		AllowEmptyValue: false,
 	}
 }
 
@@ -249,13 +250,14 @@ func (p *HeaderValidator) numberValidator() valueValidator {
 
 func (p *HeaderValidator) stringValidator() valueValidator {
 	return &stringValidator{
-		Path:      p.name,
-		In:        "response",
-		Default:   p.header.Default,
-		Required:  true,
-		MaxLength: p.header.MaxLength,
-		MinLength: p.header.MinLength,
-		Pattern:   p.header.Pattern,
+		Path:            p.name,
+		In:              "response",
+		Default:         p.header.Default,
+		Required:        true,
+		MaxLength:       p.header.MaxLength,
+		MinLength:       p.header.MinLength,
+		Pattern:         p.header.Pattern,
+		AllowEmptyValue: false,
 	}
 }
 
@@ -353,13 +355,14 @@ func (p *ParamValidator) numberValidator() valueValidator {
 
 func (p *ParamValidator) stringValidator() valueValidator {
 	return &stringValidator{
-		Path:      p.param.Name,
-		In:        p.param.In,
-		Default:   p.param.Default,
-		Required:  p.param.Required,
-		MaxLength: p.param.MaxLength,
-		MinLength: p.param.MinLength,
-		Pattern:   p.param.Pattern,
+		Path:            p.param.Name,
+		In:              p.param.In,
+		Default:         p.param.Default,
+		AllowEmptyValue: p.param.AllowEmptyValue,
+		Required:        p.param.Required,
+		MaxLength:       p.param.MaxLength,
+		MinLength:       p.param.MinLength,
+		Pattern:         p.param.Pattern,
 	}
 }
 
@@ -516,13 +519,14 @@ func (n *numberValidator) Validate(val interface{}) *Result {
 }
 
 type stringValidator struct {
-	Default   interface{}
-	Required  bool
-	MaxLength *int64
-	MinLength *int64
-	Pattern   string
-	Path      string
-	In        string
+	Default         interface{}
+	Required        bool
+	AllowEmptyValue bool
+	MaxLength       *int64
+	MinLength       *int64
+	Pattern         string
+	Path            string
+	In              string
 }
 
 func (s *stringValidator) SetPath(path string) {
@@ -543,7 +547,7 @@ func (s *stringValidator) Applies(source interface{}, kind reflect.Kind) bool {
 func (s *stringValidator) Validate(val interface{}) *Result {
 	data := val.(string)
 
-	if s.Required && (s.Default == nil || s.Default == "") {
+	if s.Required && !s.AllowEmptyValue && (s.Default == nil || s.Default == "") {
 		if err := validate.RequiredString(s.Path, s.In, data); err != nil {
 			return sErr(err)
 		}
