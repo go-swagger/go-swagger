@@ -14,12 +14,15 @@ env:
 git:
   submodules: false
 
-install:
+build_image: shippableimages/ubuntu1404_go
+
+before_install:
   - go get -u -v golang.org/x/tools/cmd/goimports
   - go get -u -v golang.org/x/tools/cmd/cover
   - go get -u -v golang.org/x/tools/cmd/vet
   - go get -u -v golang.org/x/tools/cmd/stringer
   - go get -u -v golang.org/x/tools/cmd/gotype
+  - go get -u -v golang.org/x/tools/cmd/godoc
 
   # code coverage
   - go get -u -v github.com/axw/gocov/gocov
@@ -27,11 +30,13 @@ install:
   - go get -u -v github.com/t-yuki/gocover-cobertura
 
   # test output
-  - go get -t -v -u -f github.com/cee-dub/go-junit-report
+  - go get -t -v -u  github.com/cee-dub/go-junit-report
 
   # get the dependencies etc
   - go get github.com/tools/godep
   - go get github.com/jteeuwen/go-bindata/...
+
+install:
 
   # restore dependencies
   - godep restore
