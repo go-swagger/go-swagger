@@ -1,38 +1,22 @@
 machine:
   environment:
     GOCOVMODE: "mode: count"
-    GO15VENDOREXPERIMENT: "1"
+    GO15VENDOREXPERIMENT: 1
+  services:
+    - docker
+
 general:
   branches:
     ignore:
       - gh-pages
+
 dependencies:
-  pre:
-    - mkdir -p $CIRCLE_TEST_REPORTS/go
-    - go get -u -v golang.org/x/tools/cmd/goimports
-    - go get -u -v golang.org/x/tools/cmd/cover
-    - go get -u -v golang.org/x/tools/cmd/vet
-    - go get -u -v golang.org/x/tools/cmd/stringer
-    - go get -u -v golang.org/x/tools/cmd/gotype
-    - go get -u -v golang.org/x/tools/cmd/godoc
+  override:
+    - docker info
+    - docker build -t go-swagger/go-swagger:ci-$CIRCLE_BUILD_NUM-$CIRCLE_SHA1 -f Dockerfile.ci .
 
-    # code coverage
-    - go get github.com/axw/gocov/gocov
-    - go get gopkg.in/matm/v1/gocov-html
-
-    # test output
-    - go get -t -v -u -f github.com/cee-dub/go-junit-report
-
-    # get the dependencies etc
-    - go get github.com/tools/godep
-    - go get github.com/jteeuwen/go-bindata/...
-  post:
-    - godep restore
 test:
   override:
-    - scripts/build-circle.sh
-notify:
-  webhooks:
-    - url: https://webhooks.gitter.im/e/9df333473f609f62a215
-## Notes
-  # Disabled coveralls reporting: build breaking sending coverage data to coveralls
+    - mkdir -p $CIRCLE_TEST_REPORTS/go
+    - mkdir -p $CIRCLE_ARTIFACTS/dist
+    - docker run --rm -it -v $CIRCLE_ARTIFACTS/dist:/usr/share/dist -v $CIRCLE_TEST_REPORTS/go:/usr/share/testresults -v $CIRCLE_ARTIFACTS:/usr/share/coverage -e CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM -e CIRCLE_PROJECT_USERNAME=$CIRCLE_PROJECT_USERNAME -e CIRCLE_PROJECT_REPONAME=$CIRCLE_PROJECT_REPONAME go-swagger/go-swagger:ci-$CIRCLE_BUILD_NUM-$CIRCLE_SHA1 ./hack/build-docker.sh
