@@ -14,8 +14,11 @@ RUN set -e -x \
   && go get -u github.com/axw/gocov/gocov \
   && go get -u gopkg.in/matm/v1/gocov-html \
   && go get -u -t github.com/cee-dub/go-junit-report \
-  && go get -u github.com/jteeuwen/go-bindata/...
+  && go get -u github.com/tools/godep \
+  && go get -u github.com/jteeuwen/go-bindata/... \
+  && godep restore
 
 VOLUME /usr/share/coverage
 VOLUME /usr/share/testresults
 VOLUME /usr/share/dist
+WORKDIR /go/src/github.com/go-swagger/go-swagger

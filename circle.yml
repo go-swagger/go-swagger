@@ -19,4 +19,4 @@ test:
   override:
     - mkdir -p $CIRCLE_TEST_REPORTS/go
     - mkdir -p $CIRCLE_ARTIFACTS/dist
-    - docker run --rm -it -v $CIRCLE_ARTIFACTS/dist:/usr/share/dist -v $CIRCLE_TEST_REPORTS/go:/usr/share/testresults -v $CIRCLE_ARTIFACTS:/usr/share/coverage -e CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM -e CIRCLE_PROJECT_USERNAME=$CIRCLE_PROJECT_USERNAME -e CIRCLE_PROJECT_REPONAME=$CIRCLE_PROJECT_REPONAME go-swagger/go-swagger:ci-$CIRCLE_BUILD_NUM-$CIRCLE_SHA1 ./hack/build-docker.sh
+    - docker run -v $CIRCLE_ARTIFACTS/dist:/usr/share/dist -v $CIRCLE_TEST_REPORTS/go:/usr/share/testresults -v $CIRCLE_ARTIFACTS:/usr/share/coverage -e CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM -e CIRCLE_PROJECT_USERNAME=$CIRCLE_PROJECT_USERNAME -e CIRCLE_PROJECT_REPONAME=$CIRCLE_PROJECT_REPONAME go-swagger/go-swagger:ci-$CIRCLE_BUILD_NUM-$CIRCLE_SHA1 ./hack/build-docker.sh
