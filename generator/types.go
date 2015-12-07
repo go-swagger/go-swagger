@@ -273,7 +273,11 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema) (returns bool, result 
 }
 
 func (t *typeResolver) isNullable(schema *spec.Schema) bool {
-	v, found := schema.Extensions["x-isnullable"]
+	return t.checkIsNullable("x-isnullable", schema) || t.checkIsNullable("x-nullable", schema)
+}
+
+func (t *typeResolver) checkIsNullable(extension string, schema *spec.Schema) bool {
+	v, found := schema.Extensions[extension]
 	nullable, cast := v.(bool)
 	return (found && cast && nullable) || len(schema.Properties) > 0
 }
