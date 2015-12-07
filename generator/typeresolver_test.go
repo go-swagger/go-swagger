@@ -132,6 +132,15 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 				assert.True(t, rt.IsNullable, "expected %q (%q) to be nullable", val.Type, val.Format)
 				assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, rt)
 			}
+
+			// Test x-nullable without x-isnullable
+			sch.Extensions["x-isnullable"] = false
+			sch.Extensions["x-nullable"] = true
+			rt, err = resolver.ResolveSchema(sch, true)
+			if assert.NoError(t, err) {
+				assert.True(t, rt.IsNullable, "expected %q (%q) to be nullable", val.Type, val.Format)
+				assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, rt)
+			}
 		}
 
 		// arrays of primitives and string formats
@@ -414,6 +423,17 @@ func TestTypeResolver_AnonymousStructs(t *testing.T) {
 
 		parent.Extensions = make(spec.Extensions)
 		parent.Extensions["x-isnullable"] = true
+
+		rt, err = resolver.ResolveSchema(parent, true)
+		if assert.NoError(t, err) {
+			assert.True(t, rt.IsNullable)
+			assert.True(t, rt.IsAnonymous)
+			assert.True(t, rt.IsComplexObject)
+		}
+
+		// Also test that it's nullable with just x-nullable
+		parent.Extensions["x-isnullable"] = false
+		parent.Extensions["x-nullable"] = false
 
 		rt, err = resolver.ResolveSchema(parent, true)
 		if assert.NoError(t, err) {

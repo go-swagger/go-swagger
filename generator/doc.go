@@ -30,8 +30,8 @@
 //    schema with all of => struct
 //      * all of schema with ref => embedded value
 //      * all of schema with properties => properties are included in struct
-//      * adding an all of schema with just "x-isnullable": true turns the schema into a pointer
-//        when there are only other extension properties provided
+//      * adding an all of schema with just "x-isnullable": true or "x-nullable": true turns
+//      the schema into a pointer when there are only other extension properties provided
 //
 // JSONSchema and by extension swagger allow for items that have a fixed size array
 // with schema's describing the items at each index. This can be combined with additional items
