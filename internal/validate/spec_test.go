@@ -99,6 +99,17 @@ func TestValidateUniqueScopesSecurityDefinitions(t *testing.T) {
 func TestValidateReferenced(t *testing.T) {
 }
 
+func TestValidateBodyFormDataParams(t *testing.T) {
+	doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-formdata-body-params.json"))
+	if assert.NoError(t, err) {
+		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
+		validator.spec = doc
+		res := validator.validateDefaultValueValidAgainstSchema()
+		assert.NotEmpty(t, res.Errors)
+		assert.Len(t, res.Errors, 1)
+	}
+}
+
 func TestValidateReferencesValid(t *testing.T) {
 	doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "valid-ref.json"))
 	if assert.NoError(t, err) {

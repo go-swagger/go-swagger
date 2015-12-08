@@ -545,6 +545,7 @@ func (s *SpecValidator) validateDefaultValueValidAgainstSchema() *Result {
 	for method, pathItem := range s.spec.Operations() {
 		for path, op := range pathItem {
 			// parameters
+			var hasForm, hasBody bool
 		PARAMETERS:
 			for _, pr := range s.spec.ParamsFor(method, path) {
 				// expand ref is necessary
@@ -556,6 +557,18 @@ func (s *SpecValidator) validateDefaultValueValidAgainstSchema() *Result {
 						break PARAMETERS
 					}
 					param = obj.(spec.Parameter)
+				}
+				if param.In == "formData" {
+					if hasBody && !hasForm {
+						res.AddErrors(errors.New(422, "operation %q has both formData and body parameters", op.ID))
+					}
+					hasForm = true
+				}
+				if param.In == "body" {
+					if hasForm && !hasBody {
+						res.AddErrors(errors.New(422, "operation %q has both body and formData parameters", op.ID))
+					}
+					hasBody = true
 				}
 				// check simple paramters first
 				if param.Default != nil && param.Schema == nil {
