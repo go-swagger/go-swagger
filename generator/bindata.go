@@ -289,7 +289,7 @@ func templatesSchemaGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/schema.gotmpl", size: 5040, mode: os.FileMode(420), modTime: time.Unix(1449555253, 0)}
+	info := bindataFileInfo{name: "templates/schema.gotmpl", size: 5040, mode: os.FileMode(420), modTime: time.Unix(1449556235, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -509,7 +509,7 @@ func templatesStructfieldGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/structfield.gotmpl", size: 1268, mode: os.FileMode(420), modTime: time.Unix(1449553271, 0)}
+	info := bindataFileInfo{name: "templates/structfield.gotmpl", size: 1268, mode: os.FileMode(420), modTime: time.Unix(1449556235, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
