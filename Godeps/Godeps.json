@@ -46,6 +46,11 @@
 			"Rev": "e6ac2fc51e89a3249e82157fa0bb7a18ef9dd5bb"
 		},
 		{
+			"ImportPath": "github.com/kr/pty",
+			"Comment": "release.r56-29-gf7ee69f",
+			"Rev": "f7ee69f31298ecbe5d2b349c711e2547a617d398"
+		},
+		{
 			"ImportPath": "github.com/kr/text",
 			"Rev": "bb797dc4fb8320488f47bf11de07a733d7233e1f"
 		},
@@ -63,7 +68,7 @@
 		},
 		{
 			"ImportPath": "github.com/pmezard/go-difflib/difflib",
-			"Rev": "d8ed2627bdf02c080bf22230dbb337003b7aba2d"
+			"Rev": "e8554b8641db39598be7f6342874b958f12ae1d4"
 		},
 		{
 			"ImportPath": "github.com/smartystreets/assertions",
@@ -77,8 +82,8 @@
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Comment": "v1.0-85-ga1f9799",
-			"Rev": "a1f97990ddc16022ec7610326dd9bce31332c116"
+			"Comment": "v1.0-88-ge3a8ff8",
+			"Rev": "e3a8ff8ce36581f87a15341206f205b1da467059"
 		},
 		{
 			"ImportPath": "github.com/tylerb/graceful",
@@ -86,8 +91,12 @@
 			"Rev": "48afeb21e2fcbcff0f30bd5ad6b97747b0fae38e"
 		},
 		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "fa33dc7b893a6db61a44637ced689a85ee5208c4"
+		},
+		{
 			"ImportPath": "golang.org/x/net/netutil",
-			"Rev": "d5cd7348bfebdf7dbb6dbb18fa488525f9024293"
+			"Rev": "fa33dc7b893a6db61a44637ced689a85ee5208c4"
 		},
 		{
 			"ImportPath": "golang.org/x/tools/go/ast/astutil",
