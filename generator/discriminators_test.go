@@ -82,7 +82,9 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 						assertInCode(t, "data.PetType = \""+k+"\"", res)
 
 						assertInCode(t, "func (m *"+k+") Name() string", res)
+						assertInCode(t, "func (m *"+k+") SetName(val string)", res)
 						assertInCode(t, "func (m *"+k+") PetType() string", res)
+						assertInCode(t, "func (m *"+k+") SetPetType(val string)", res)
 						assertInCode(t, "validate.Required(\"name\", \"body\", string(m.Name()))", res)
 					}
 				}
@@ -108,7 +110,9 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 					assertInCode(t, "type Pet interface {", res)
 					assertInCode(t, "httpkit.Validatable", res)
 					assertInCode(t, "Name() string", res)
+					assertInCode(t, "SetName(string)", res)
 					assertInCode(t, "PetType() string", res)
+					assertInCode(t, "SetPetType(string)", res)
 					assertInCode(t, "UnmarshalPet(reader io.Reader, consumer httpkit.Consumer) (Pet, error)", res)
 					assertInCode(t, "PetType string `json:\"petType\"`", res)
 					assertInCode(t, "validate.RequiredString(\"petType\"", res)

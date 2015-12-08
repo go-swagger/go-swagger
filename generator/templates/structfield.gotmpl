@@ -7,10 +7,12 @@
 {{ end }}
 {{ define "structfieldIface" }}{{ if not $.IsBaseType }}/* {{ template "docstring" . }}{{ template "propertyValidationDocString" .}} */
 {{ end }}{{ pascalize .Name}}() {{ template "schemaType" . }}
+Set{{ pascalize .Name}}({{ template "schemaType" . }})
 {{ end }}
 {{ define "tuplefieldIface" }}{{ if not $.IsBaseType }}
 /* {{ template "docstring" . }}{{ template "propertyValidationDocString" .}} */
 {{ end }}{{ pascalize .Name}}() {{ template "schemaType" . }}
+Set{{ pascalize .Name}}({{ template "schemaType" . }})
 {{ end }}
 {{ define "privstructfield" }}{{ camelize .Name}}Field {{ template "schemaType" . }}
 {{ end }}
