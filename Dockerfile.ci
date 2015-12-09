@@ -16,6 +16,7 @@ RUN set -e -x \
   && go get -u -t github.com/cee-dub/go-junit-report \
   && go get -u github.com/tools/godep \
   && go get -u github.com/jteeuwen/go-bindata/... \
+  && go get -u github.com/aktau/github-release \
   && go get -u github.com/asaskevich/govalidator \
   && go get -u github.com/naoina/denco \
   && go get -u github.com/go-swagger/scan-repo-boundary/makeplans

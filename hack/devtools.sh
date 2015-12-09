@@ -23,6 +23,8 @@ go get -u -v github.com/smartystreets/goconvey
 go get -u -v github.com/rogpeppe/godef
 go get -u -v github.com/pquerna/ffjson
 go get -u -v github.com/nathany/looper
+go get -u -v github.com/kylelemons/godebug/...
+go get -u -v github.com/aktau/github-release
 #go get -u -v github.com/clipperhouse/gen
 
 
