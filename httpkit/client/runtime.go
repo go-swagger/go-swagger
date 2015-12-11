@@ -20,7 +20,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
-	"path/filepath"
+	"path"
 	"strings"
 
 	"github.com/go-swagger/go-swagger/client"
@@ -140,7 +140,7 @@ func (r *Runtime) Submit(context *client.Operation) (interface{}, error) {
 	}
 
 	req.URL.Host = r.Host
-	req.URL.Path = filepath.Join(r.BasePath, req.URL.Path)
+	req.URL.Path = path.Join(r.BasePath, req.URL.Path)
 	if err != nil {
 		return nil, err
 	}
