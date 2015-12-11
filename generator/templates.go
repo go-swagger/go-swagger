@@ -16,6 +16,7 @@ package generator
 
 import (
 	"encoding/json"
+	"regexp"
 	"strings"
 	"text/template"
 
@@ -74,10 +75,20 @@ var (
 	assetClientFacade    = MustAsset("templates/client/facade.gotmpl")
 )
 
+var (
+	notNumberExp = regexp.MustCompile("[^0-9]")
+)
+
 // FuncMap is a map with default functions for use n the templates.
 // These are available in every template
 var FuncMap template.FuncMap = map[string]interface{}{
-	"pascalize": swag.ToGoName,
+	"pascalize": func(arg string) string {
+		if len(arg) == 0 || arg[0] > '9' {
+			return swag.ToGoName(arg)
+		}
+
+		return swag.ToGoName("Nr " + arg)
+	},
 	"camelize":  swag.ToJSONName,
 	"humanize":  swag.ToHumanNameLower,
 	"snakize":   swag.ToFileName,

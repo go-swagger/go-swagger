@@ -1345,3 +1345,23 @@ func findProperty(properties []GenSchema, name string) *GenSchema {
 func getDefinitionProperty(genModel *GenDefinition, name string) *GenSchema {
 	return findProperty(genModel.Properties, name)
 }
+
+func TestNumericKeys(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/bugs/162/swagger.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["AvatarUrls"]
+		genModel, err := makeGenDefinition("AvatarUrls", "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("all_of_schema.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, "Nr16x16 string `json:\"16x16,omitempty\"`", res)
+				}
+			}
+		}
+	}
+}
