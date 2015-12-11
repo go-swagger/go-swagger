@@ -339,6 +339,15 @@ func (ctx *paramTestContext) assertGenParam(t testing.TB, param spec.Parameter, 
 	if !assert.Equal(t, param.Format, gp.SwaggerFormat) {
 		return false
 	}
+	if _, ok := primitives[gp.GoType]; ok {
+		if !assert.True(t, gp.IsPrimitive) {
+			return false
+		}
+	} else {
+		if !assert.False(t, gp.IsPrimitive) {
+			return false
+		}
+	}
 	// verify rendered template
 	if param.In == "body" {
 		if !assertBodyParam(t, param, gp) {
@@ -419,4 +428,24 @@ func (ctx *paramItemsTestContext) Assert(t testing.TB, pItems *spec.Items, gpIte
 	}
 	return true
 
+}
+
+var bug163Properties = []paramTestContext{
+	{"stringTypeInQuery", "getSearch", "", "", codeGenOpBuilder{}, nil},
+	{"numberTypeInQuery", "getSearch", "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}, nil},
+	{"integerTypeInQuery", "getSearch", "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}, nil},
+	{"booleanTypeInQuery", "getSearch", "swag.FormatBool", "swag.ConvertBool", codeGenOpBuilder{}, nil},
+}
+
+func TestGenParameters_Simple(t *testing.T) {
+	b, err := opBuilder("getSearch", "../fixtures/bugs/163/swagger.yml")
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+	for _, v := range bug163Properties {
+		v.B = b
+		if !v.assertParameter(t) {
+			t.FailNow()
+		}
+	}
 }

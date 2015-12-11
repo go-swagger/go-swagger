@@ -150,7 +150,7 @@ func init() {
 func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType) {
 	result.SwaggerType = tn
 	result.SwaggerFormat = fmt
-	_, result.IsPrimitive = primitives[tn]
+	//_, result.IsPrimitive = primitives[tn]
 
 	if fmt != "" {
 		fmtn := strings.Replace(fmt, "-", "", -1)
@@ -164,6 +164,8 @@ func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType)
 
 	if tpe, ok := typeMapping[tn]; ok {
 		result.GoType = tpe
+		_, result.IsPrimitive = primitives[tpe]
+		result.IsPrimitive = ok
 		return
 	}
 
@@ -181,6 +183,7 @@ func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType)
 		return
 	}
 	result.GoType = tn
+	_, result.IsPrimitive = primitives[tn]
 	return
 }
 
