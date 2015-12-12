@@ -17,12 +17,10 @@ It uses a similar approach but with expanded annotations and it produces a swagg
 
 The goal of the syntax is to make it look as a natural part of the documentation for the application code.
 
-The generator is passed a base path (defaults to current) and tries to extract a go package path from that.
-Once it has a go package path it will scan the package recursively, skipping the Godeps, files ending in test.go and
-directories that start with an underscore, it also skips file system entries that start with a dot.
+The generator is passed a main package and it uses that to discover all the code in use.
+To do this it makes use of go's loader package. The same package that is used by tools like goimports to discover which files to format.
 
-Once the parser has encountered a comment that matches on of its known tags, the parser will assume that the rest of
-the comment block is for swagger.
+Once the parser has encountered a comment that matches on of its known tags, the parser will assume that the rest of the comment block is for swagger.
 
 ### Usage
 
@@ -41,16 +39,16 @@ To use you can add a go:generate comment to your main file for example:
 //go:generate swagger generate spec
 ```
 
-The command requires a main package or file and it wants your code to compile. It uses the go tools loader to load an
-application and then scan all the packages that are in use by the code base.
-This means that for something to be discoverable it needs to be reachable by a code path triggered through the main
-package.
+The command requires a main package or file and it wants your code to compile. It uses the go tools loader to load an application and then scans all the packages that are in use by the code base.
+This means that for something to be discoverable it needs to be reachable by a code path triggered through the main package.
 
 If an annotation is not yet supported or you want to merge with a pre-existing spec, you can use the -i parameter.
 
 ```
 swagger generate spec -i ./swagger.yml -o ./swagger.json
 ```
+
+The idea is that there are certain things that are more easily expressed by just using yaml, to
 
 #### Parsing rules
 
@@ -87,14 +85,6 @@ There are several annotations that mark a comment block as a participant for the
 
 #### Embedded types
 
-For the embedded schema's there are a set of rules for the spec generator to vary the definition it generates.
-When an embedded type isn't decorated with the `swagger:allOf` annotation, then the properties from the embedded value
-will be included in the generated definition as if they were defined on the definition.
-But when the embedded type is decorated with the `swagger:allOf` annotation then the all of element will be defined as
-a "$ref" property instead. For an annotated type there is also the possibility to specify an argument, the value of
-this argument will be used as the value for the `x-class` extension. This allows for generators that support the
+For the embedded schemas there are a set of rules for the spec generator to vary the definition it generates.  
+When an embedded type isn't decorated with the `swagger:allOf` annotation, then the properties from the embedded value will be included in the generated definition as if they were defined on the definition. But when the embedded type is decorated with the `swagger:allOf` annotation then the all of element will be defined as a "$ref" property instead. For an annotated type there is also the possibility to specify an argument, the value of this argument will be used as the value for the `x-class` extension. This allows for generators that support the
 `x-class` extension to reliably build a serializer for a type with a discriminator
-
-#### Describe definitions
-
-#### Describe parameters

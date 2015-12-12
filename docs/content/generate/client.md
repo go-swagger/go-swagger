@@ -12,7 +12,7 @@ The toolkit has a command that will let you generate a client.
 
 ## Usage
 
-There is an example client in 
+There is an example client in https://github.com/go-swagger/go-swagger/tree/master/examples/todo-list/client
 
 To generate a client:
 
