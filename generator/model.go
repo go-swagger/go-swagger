@@ -524,6 +524,9 @@ func (sg *schemaGenContext) buildProperties() error {
 				emprop.GenSchema.IsSubType = true
 			}
 		}
+		if emprop.GenSchema.IsBaseType {
+			sg.GenSchema.HasBaseType = true
+		}
 		sg.MergeResult(emprop, false)
 		sg.GenSchema.Properties = append(sg.GenSchema.Properties, emprop.GenSchema)
 	}
@@ -796,6 +799,7 @@ func (sg *schemaGenContext) buildArray() error {
 		return err
 	}
 	sg.MergeResult(elProp, false)
+	sg.GenSchema.IsBaseType = elProp.GenSchema.IsBaseType
 	sg.GenSchema.ItemsEnum = elProp.GenSchema.Enum
 	elProp.GenSchema.Suffix = "Items"
 	sg.GenSchema.GoType = "[]" + elProp.GenSchema.GoType

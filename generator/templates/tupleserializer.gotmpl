@@ -76,10 +76,27 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
     return err
   }
   {{ range .AllOf }}{{ if .IsAnonymous }}{{ range $idx, $val := .Properties }}{{ if .IsBaseType }}allOf{{ $idx }}{{ pascalize $val.Name }}, err := Unmarshal{{ $val.GoType }}(bytes.NewBuffer(raw), httpkit.JSONConsumer())
-  {{ end }}{{ end }}{{ end }}{{ end}}{{ range .Properties }}{{ if .IsBaseType }}{{ camelize .Name }}, err := Unmarshal{{ .GoType }}(bytes.NewBuffer(raw), httpkit.JSONConsumer())
+  {{ end }}{{ end }}{{ end }}{{ end}}{{ range .Properties }}{{ if and ( not .IsArray ) .IsBaseType }}{{ camelize .Name }}, err := Unmarshal{{ .GoType }}(bytes.NewBuffer(raw), httpkit.JSONConsumer())
   if err != nil {
     return err
-  }{{ end }}
+  }{{ else if and .IsArray .IsBaseType }}var {{ camelize .Name }} {{ .GoType }}
+  untypedObj := make(map[string]interface{})
+  if err := json.Unmarshal(raw, &untypedObj); err != nil {
+    return err
+  }
+  if untyped{{ pascalize .Name }}, ok := untypedObj[{{ printf "%q" .Name }}]; ok {
+    if slc{{ pascalize .Name}}, ok := untyped{{ pascalize .Name }}.([]interface{}); ok {
+      for _, slcEl := range slc{{ pascalize .Name }} {
+        slcJSON, _ := json.Marshal(slcEl)
+        slcObj, err := Unmarshal{{ .Items.GoType }}(bytes.NewBuffer(slcJSON), httpkit.JSONConsumer())
+        if err != nil {
+          return err
+        }
+        {{ camelize .Name }} = append({{ camelize .Name }}, slcObj)
+      }
+    }
+  }
+  {{ end }}
   {{ end }}
 
 

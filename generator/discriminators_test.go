@@ -2,6 +2,7 @@ package generator
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	"github.com/go-swagger/go-swagger/spec"
@@ -26,18 +27,21 @@ func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
 		schema := definitions[k]
 		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
 		if assert.NoError(t, err) {
-
+			assert.True(t, genModel.HasBaseType)
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				b, err := formatGoFile("has_discriminator.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(b)
+					fmt.Println(res)
 					assertInCode(t, "type Kennel struct {", res)
 					assertInCode(t, "ID int64 `json:\"id,omitempty\"`", res)
 					assertInCode(t, "Pets []Pet `json:\"pets,omitempty\"`", res)
-					//assertInCode(t, "if err := m.Pet.Validate(formats); err != nil {", res)
+					assertInCode(t, "if err := m.Pets[i].Validate(formats); err != nil {", res)
 					assertInCode(t, "m.validatePet", res)
+				} else {
+					fmt.Println(buf.String())
 				}
 			}
 		}
