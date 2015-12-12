@@ -62,7 +62,7 @@ The default implemenation of an interface just returns a not implemented api err
 When all the interfaces and default implementations are generated it will generate a swagger mux implementation.
 This swagger mux implemenation links all the interface implementations to operation names.
 
-The typed API avoids reflection as much as possible, there are 1 or 2 validations that require it.
+The typed API avoids reflection as much as possible, there are 1 or 2 validations that require it. For now it needs to include the swagger.json in the code for a few reasons.
 
 
 ### The request handler
