@@ -508,3 +508,13 @@ type ModelS struct {
 	// The edition of this Model S
 	Edition string `json:"edition"`
 }
+
+// The ModelX version of the tesla car
+//
+// swagger:model modelX
+type ModelX struct {
+	// swagger:allOf com.tesla.models.ModelX
+	TeslaCar
+	// The number of doors on this Model X
+	Doors int `json:"doors"`
+}

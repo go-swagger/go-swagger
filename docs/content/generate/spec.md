@@ -81,10 +81,24 @@ There are several annotations that mark a comment block as a participant for the
 * [swagger:model](model)
 * [swagger:allOf](allOf)
 * [swagger:strfmt](strfmt)
-* [swagger:discriminated](discriminated)
+* [swagger:discriminated](allOf)
 
 #### Embedded types
 
 For the embedded schemas there are a set of rules for the spec generator to vary the definition it generates.  
 When an embedded type isn't decorated with the `swagger:allOf` annotation, then the properties from the embedded value will be included in the generated definition as if they were defined on the definition. But when the embedded type is decorated with the `swagger:allOf` annotation then the all of element will be defined as a "$ref" property instead. For an annotated type there is also the possibility to specify an argument, the value of this argument will be used as the value for the `x-class` extension. This allows for generators that support the
 `x-class` extension to reliably build a serializer for a type with a discriminator
+
+#### Known vendor extensions
+
+There are a couple of commonly used vendor extensions that most frameworks support to add functionality to the swagger spec.
+
+For generating a swagger specification document this toolkit supports:
+
+Vendor extension | Description
+-----------------|-------------
+x-isnullable | makes a property value nullable, for go code that means a pointer
+x-nullable | makes a property value nullable, for go code that means a pointer
+x-go-name | the go name of a type
+x-go-package | the go package of a type
+x-class | this is used in conjunction with discriminators to give a full type name
