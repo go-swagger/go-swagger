@@ -253,7 +253,7 @@ in the definitions object of swagger.</p>
         
       
       </p>
-      <p>A swagger:strfmt annotation names a type as a string formatter. The name is mandatory and that is what will be used as format name for this particular string format. String formats should only be used for very well known formats. swagger:strfmt [name]</p>
+      <p>A swagger:strfmt annotation names a type as a string formatter. The name is mandatory and that is what will be used as format name for this particular string format. String formats should only be used for very well known formats. String formats are well-known items. These imply a common well-documented set of formats that can be validated. The toolkit allows for creating your own string formats too. To create a custom string format you need to create a type that implements the (Unm/M)arshalText interfaces and the sql Scan and sql Value interfaces.</p>
       <p>
       14 Nov 2015
       

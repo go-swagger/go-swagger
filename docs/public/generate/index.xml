@@ -93,7 +93,7 @@ as description up to either the end of the comment block, or a line that starts 
 &lt;li&gt;&lt;a href=&#34;model&#34;&gt;swagger:model&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;allOf&#34;&gt;swagger:allOf&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;strfmt&#34;&gt;swagger:strfmt&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;allOf&#34;&gt;swagger:discriminated&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;discriminated&#34;&gt;swagger:discriminated&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h4 id=&#34;embedded-types:958e7270f96f5407d7d980f500805b1b&#34;&gt;Embedded types&lt;/h4&gt;
@@ -1411,11 +1411,94 @@ definitions:
       <pubDate>Sat, 14 Nov 2015 20:10:24 -0800</pubDate>
       
       <guid>//goswagger.io/generate/spec/strfmt/</guid>
-      <description>&lt;p&gt;A &lt;strong&gt;swagger:strfmt&lt;/strong&gt; annotation names a type as a string formatter. The name is mandatory and that is
+      <description>
+
+&lt;p&gt;A &lt;strong&gt;swagger:strfmt&lt;/strong&gt; annotation names a type as a string formatter. The name is mandatory and that is
 what will be used as format name for this particular string format.
-String formats should only be used for very well known formats.&lt;/p&gt;
+String formats should only be used for &lt;strong&gt;very&lt;/strong&gt; well known formats.&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;String formats are well-known items. These imply a common well-documented set of formats that can be validated. The toolkit allows for creating your own string formats too.&lt;/p&gt;
+
+&lt;p&gt;To create a custom string format you need to create a type that implements the (Unm/M)arshalText interfaces and the sql Scan and sql Value interfaces.  The SQL interfaces are not strictly necessary but allow other people to use the string format in structs that are used with databases&lt;/p&gt;
+
+&lt;p&gt;The default string formats for this toolkit are:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;uuid, uuid3, uuid4, uuid5&lt;/li&gt;
+&lt;li&gt;email&lt;/li&gt;
+&lt;li&gt;uri (absolute)&lt;/li&gt;
+&lt;li&gt;hostname&lt;/li&gt;
+&lt;li&gt;ipv4&lt;/li&gt;
+&lt;li&gt;ipv6&lt;/li&gt;
+&lt;li&gt;credit card&lt;/li&gt;
+&lt;li&gt;isbn, isbn10, isbn13&lt;/li&gt;
+&lt;li&gt;social security number&lt;/li&gt;
+&lt;li&gt;hexcolor&lt;/li&gt;
+&lt;li&gt;rgbcolor&lt;/li&gt;
+&lt;li&gt;date&lt;/li&gt;
+&lt;li&gt;date-time&lt;/li&gt;
+&lt;li&gt;duration&lt;/li&gt;
+&lt;li&gt;password&lt;/li&gt;
+&lt;li&gt;custom string formats&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h5 id=&#34;syntax:2856515fe173bf6a903d614be856ef00&#34;&gt;Syntax:&lt;/h5&gt;
 
 &lt;pre&gt;&lt;code&gt;swagger:strfmt [name]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&#34;example:2856515fe173bf6a903d614be856ef00&#34;&gt;Example:&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;func init() {
+  eml := Email(&amp;quot;&amp;quot;)
+  Default.Add(&amp;quot;email&amp;quot;, &amp;amp;eml, govalidator.IsEmail)
+}
+
+// Email represents the email string format as specified by the json schema spec
+//
+// swagger:strfmt email
+type Email string
+
+// MarshalText turns this instance into text
+func (e Email) MarshalText() ([]byte, error) {
+	return []byte(string(e)), nil
+}
+
+// UnmarshalText hydrates this instance from text
+func (e *Email) UnmarshalText(data []byte) error { // validation is performed later on
+	*e = Email(string(data))
+	return nil
+}
+
+func (b *Email) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		*b = Email(string(v))
+	case string:
+		*b = Email(v)
+	default:
+		return fmt.Errorf(&amp;quot;cannot sql.Scan() strfmt.Email from: %#v&amp;quot;, v)
+	}
+
+	return nil
+}
+
+func (b Email) Value() (driver.Value, error) {
+	return driver.Value(string(b)), nil
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&#34;result:2856515fe173bf6a903d614be856ef00&#34;&gt;Result:&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;---
+definitions:
+  user:
+    properties:
+      email:
+        type: string
+        format: email
 &lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>

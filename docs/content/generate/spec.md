@@ -81,7 +81,7 @@ There are several annotations that mark a comment block as a participant for the
 * [swagger:model](model)
 * [swagger:allOf](allOf)
 * [swagger:strfmt](strfmt)
-* [swagger:discriminated](allOf)
+* [swagger:discriminated](discriminated)
 
 #### Embedded types
 

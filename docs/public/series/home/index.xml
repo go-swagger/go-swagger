@@ -93,7 +93,7 @@ as description up to either the end of the comment block, or a line that starts 
 &lt;li&gt;&lt;a href=&#34;model&#34;&gt;swagger:model&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;allOf&#34;&gt;swagger:allOf&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;strfmt&#34;&gt;swagger:strfmt&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;allOf&#34;&gt;swagger:discriminated&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;discriminated&#34;&gt;swagger:discriminated&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h4 id=&#34;embedded-types:958e7270f96f5407d7d980f500805b1b&#34;&gt;Embedded types&lt;/h4&gt;
