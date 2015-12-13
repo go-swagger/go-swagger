@@ -4,7 +4,8 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"/>
   <title>Generate a server for a swagger spec</title>
-  <link href="//goswagger.io//css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/css/materialize.min.css" type="text/css" media="screen,projection">
   <link href="//goswagger.io//css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
   <link rel="stylesheet" href="//goswagger.io//css/prism.css" />
   <style type="text/css">
@@ -68,7 +69,217 @@
             
           
           </p>
-          <p><p>The toolkit has a command that will let you generate a server.</p>
+          <p>
+
+<p>The toolkit has a command that will let you generate a docker friendly server with support for TLS.
+You can configure it through environment variables that are commonly used on PaaS services.</p>
+
+<p>A generated server uses <em>no reflection</em> except for an enum validation and the required validation. The server builds all the necessary plans and execution paths at startup time so that at runtime there is only the absolute minimum processing required to respond to requests.</p>
+
+<p>The default router for go-swagger is <a href="https://github.com/naoina/denco">naoina&rsquo;s denco</a> which is a <a href="https://github.com/julienschmidt/go-http-routing-benchmark#github"><strong>very</strong> fast</a> ternary search tree based router that allows for much greater flexibility than the trie based router implementation of julienschmidt at almost the same and sometimes lower cost.</p>
+
+<p>You can provide your own router implementation should you so desire it&rsquo;s abstracted through an interface with this use case in mind.</p>
+
+<h5 id="usage:3c3fb84840715ff4411349984ebc0a77">Usage</h5>
+
+<pre><code>swagger generate server [server-OPTIONS]
+
+[server command options]
+      -f, --spec=            the spec file to use (default: ./swagger.json)
+      -a, --api-package=     the package to save the operations (default: operations)
+      -m, --model-package=   the package to save the models (default: models)
+      -s, --server-package=  the package to save the server specific code (default: restapi)
+      -c, --client-package=  the package to save the client specific code (default: client)
+      -t, --target=          the base directory for generating the files (default: ./)
+      -A, --name=            the name of the application, defaults to a mangled value of info.title
+      -O, --operation=       specify an operation to include, repeat for multiple
+          --tags=            the tags to include, if not specified defaults to all
+      -P, --principal=       the model to use for the security principal
+          --default-scheme=  the default scheme for this API (default: http)
+      -M, --model=           specify a model to include, repeat for multiple
+          --skip-models      no models will be generated when this flag is specified
+          --skip-operations  no operations will be generated when this flag is specified
+          --skip-support     no supporting files will be generated when this flag is specified
+</code></pre>
+
+<p>The server application gets generated with all the handlers stubbed out with a not implemented handler. That means that you can start the API server immediately after generating it. It will respond to all valid requests with 501 Not Implemented. When a request is invalid it will most likely respond with an appropriate 4xx response.</p>
+
+<p>The generated server allows for a number of command line parameters to customize it.</p>
+
+<pre><code>--host=            the IP to listen on (default: localhost) [$HOST]
+--port=            the port to listen on for insecure connections, defaults to a random value [$PORT]
+--tls-host=        the IP to listen on for tls, when not specified it's the same as --host [$TLS_HOST]
+--tls-port=        the port to listen on for secure connections, defaults to a random value [$TLS_PORT]
+--tls-certificate= the certificate to use for secure connections [$TLS_CERTIFICATE]
+--tls-key=         the private key to use for secure conections [$TLS_PRIVATE_KEY]
+</code></pre>
+
+<p>The server takes care of a number of things when a request arrives:</p>
+
+<ul>
+<li>routing</li>
+<li>authentication</li>
+<li>input validation</li>
+<li>content negotiation</li>
+<li>parameter and body binding</li>
+</ul>
+
+<p>To illustrate this with a pseudo handler, this is what happens in a request.</p>
+
+<pre><code class="language-go">import (
+  &quot;net/http&quot;
+
+  &quot;github.com/go-swagger/go-swagger/errors&quot;
+  &quot;github.com/go-swagger/go-swagger/httpkit/middleware&quot;
+  &quot;github.com/gorilla/context&quot;
+)
+
+func newCompleteMiddleware(ctx *middleware.Context) http.Handler {
+  return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+    defer context.Clear(r)
+
+    // use context to lookup routes
+    if matched, ok := ctx.RouteInfo(r); ok {
+
+      if len(matched.Authenticators) &gt; 0 {
+        if _, err := ctx.Authorize(r, matched); err != nil {
+          ctx.Respond(rw, r, matched.Produces, matched, err)
+          return
+        }
+      }
+
+      bound, validation := ctx.BindAndValidate(r, matched)
+      if validation != nil {
+        ctx.Respond(rw, r, matched.Produces, matched, validation)
+        return
+      }
+
+      result, err := matched.Handler.Handle(bound)
+      if err != nil {
+        ctx.Respond(rw, r, matched.Produces, matched, err)
+        return
+      }
+
+      ctx.Respond(rw, r, matched.Produces, matched, result)
+      return
+    }
+
+    // Not found, check if it exists in the other methods first
+    if others := ctx.AllowedMethods(r); len(others) &gt; 0 {
+      ctx.Respond(rw, r, ctx.spec.RequiredProduces(), nil, errors.MethodNotAllowed(r.Method, others))
+      return
+    }
+    ctx.Respond(rw, r, ctx.spec.RequiredProduces(), nil, errors.NotFound(&quot;path %s was not found&quot;, r.URL.Path))
+  })
+}
+</code></pre>
+
+<p>Prior to handling requests however you probably want to configure the API with some actual implementations.  To do that you have to edit the configure_xxx_api.go file.  That file will only be generated the first time you generate a server application from a swagger spec. So the generated server uses this file to let you fill in the blanks.</p>
+
+<p>For the todolist application that file looks like:</p>
+
+<pre><code class="language-go">package main
+
+import (
+	&quot;github.com/go-swagger/go-swagger/errors&quot;
+	&quot;github.com/go-swagger/go-swagger/httpkit&quot;
+	&quot;github.com/go-swagger/go-swagger/httpkit/middleware&quot;
+
+	&quot;github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations&quot;
+	&quot;github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations/todos&quot;
+)
+
+// This file is safe to edit. Once it exists it will not be overwritten
+
+func configureAPI(api *operations.SimpleToDoListAPI) {
+	// configure the api here
+	api.JSONConsumer = httpkit.JSONConsumer()
+
+	api.JSONProducer = httpkit.JSONProducer()
+
+	api.KeyAuth = func(token string) (interface{}, error) {
+		return nil, errors.NotImplemented(&quot;api key auth (key) x-petstore-token from header has not yet been implemented&quot;)
+	}
+
+	api.AddOneHandler = todos.AddOneHandlerFunc(func(params todos.AddOneParams, principal interface{}) middleware.Responder {
+		return middleware.NotImplemented(&quot;operation addOne has not yet been implemented&quot;)
+	})
+	api.DestroyOneHandler = todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams, principal interface{}) middleware.Responder {
+		return middleware.NotImplemented(&quot;operation destroyOne has not yet been implemented&quot;)
+	})
+	api.FindHandler = todos.FindHandlerFunc(func(params todos.FindParams, principal interface{}) middleware.Responder {
+		return middleware.NotImplemented(&quot;operation find has not yet been implemented&quot;)
+	})
+	api.UpdateOneHandler = todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams, principal interface{}) middleware.Responder {
+		return middleware.NotImplemented(&quot;operation updateOne has not yet been implemented&quot;)
+	})
+
+}
+</code></pre>
+
+<p>When you look at the code for the configureAPI method then you&rsquo;ll notice that the api object has properties for consumers.
+A consumer is an object that can marshal things from a wireformat to an object.  Consumers and their counterpart producers who write objects get their names generated from the consumes and produces properties on a swagger specification.</p>
+
+<p>The interface definition of a consumer looks like this:</p>
+
+<pre><code class="language-go">// ConsumerFunc represents a function that can be used as a consumer
+type ConsumerFunc func(io.Reader, interface{}) error
+
+// Consume consumes the reader into the data parameter
+func (fn ConsumerFunc) Consume(reader io.Reader, data interface{}) error {
+	return fn(reader, data)
+}
+
+// Consumer implementations know how to bind the values on the provided interface to
+// data provided by the request body
+type Consumer interface {
+	// Consume performs the binding of request values
+	Consume(io.Reader, interface{}) error
+}
+
+// ProducerFunc represents a function that can be used as a producer
+type ProducerFunc func(io.Writer, interface{}) error
+
+// Produce produces the response for the provided data
+func (f ProducerFunc) Produce(writer io.Writer, data interface{}) error {
+	return f(writer, data)
+}
+
+// Producer implementations know how to turn the provided interface into a valid
+// HTTP response
+type Producer interface {
+	// Produce writes to the http response
+	Produce(io.Writer, interface{}) error
+}
+</code></pre>
+
+<p>So it&rsquo;s something that can turn a reader into a hydrated interface. A producer is the counterpart of a consumer and writes objects to an io.Writer.  When you configure an api with those you make sure it can marshal the types for the supported content types.</p>
+
+<p>The next thing that happens in the configureAPI method is setting up the authentication with a stub handler in this case. This particular swagger specification supports token based authentication and as such it wants you to configure a token auth handler.  Any error for an authentication handler is assumed to be an invalid authentication and will return the 401 status code.</p>
+
+<pre><code class="language-go">// UserPassAuthentication authentication function
+type UserPassAuthentication func(string, string) (interface{}, error)
+
+// TokenAuthentication authentication function
+type TokenAuthentication func(string) (interface{}, error)
+
+// AuthenticatorFunc turns a function into an authenticator
+type AuthenticatorFunc func(interface{}) (bool, interface{}, error)
+
+// Authenticate authenticates the request with the provided data
+func (f AuthenticatorFunc) Authenticate(params interface{}) (bool, interface{}, error) {
+	return f(params)
+}
+
+// Authenticator represents an authentication strategy
+// implementations of Authenticator know how to authenticate the
+// request data and translate that into a valid principal object or an error
+type Authenticator interface {
+	Authenticate(interface{}) (bool, interface{}, error)
+}
+</code></pre>
+
+<p>So we finally get to configuring our route handlers.</p>
 </p>
           <p>22 Nov 2015
             
@@ -103,10 +314,10 @@
       </div>
     </div>
   </footer>
-  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-  <script src="//goswagger.io//js/materialize.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/js/materialize.min.js"></script>
   <script src="//goswagger.io//js/init.js"></script>
-  <script src="//goswagger.io//js/prism.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/prism/0.0.1/prism.min.js"></script>
   
 
   </body>
