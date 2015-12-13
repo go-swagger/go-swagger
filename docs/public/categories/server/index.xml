@@ -16,7 +16,217 @@
       <pubDate>Sun, 22 Nov 2015 23:19:15 -0800</pubDate>
       
       <guid>//goswagger.io/generate/server/</guid>
-      <description>&lt;p&gt;The toolkit has a command that will let you generate a server.&lt;/p&gt;
+      <description>
+
+&lt;p&gt;The toolkit has a command that will let you generate a docker friendly server with support for TLS.
+You can configure it through environment variables that are commonly used on PaaS services.&lt;/p&gt;
+
+&lt;p&gt;A generated server uses &lt;em&gt;no reflection&lt;/em&gt; except for an enum validation and the required validation. The server builds all the necessary plans and execution paths at startup time so that at runtime there is only the absolute minimum processing required to respond to requests.&lt;/p&gt;
+
+&lt;p&gt;The default router for go-swagger is &lt;a href=&#34;https://github.com/naoina/denco&#34;&gt;naoina&amp;rsquo;s denco&lt;/a&gt; which is a &lt;a href=&#34;https://github.com/julienschmidt/go-http-routing-benchmark#github&#34;&gt;&lt;strong&gt;very&lt;/strong&gt; fast&lt;/a&gt; ternary search tree based router that allows for much greater flexibility than the trie based router implementation of julienschmidt at almost the same and sometimes lower cost.&lt;/p&gt;
+
+&lt;p&gt;You can provide your own router implementation should you so desire it&amp;rsquo;s abstracted through an interface with this use case in mind.&lt;/p&gt;
+
+&lt;h5 id=&#34;usage:3c3fb84840715ff4411349984ebc0a77&#34;&gt;Usage&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code&gt;swagger generate server [server-OPTIONS]
+
+[server command options]
+      -f, --spec=            the spec file to use (default: ./swagger.json)
+      -a, --api-package=     the package to save the operations (default: operations)
+      -m, --model-package=   the package to save the models (default: models)
+      -s, --server-package=  the package to save the server specific code (default: restapi)
+      -c, --client-package=  the package to save the client specific code (default: client)
+      -t, --target=          the base directory for generating the files (default: ./)
+      -A, --name=            the name of the application, defaults to a mangled value of info.title
+      -O, --operation=       specify an operation to include, repeat for multiple
+          --tags=            the tags to include, if not specified defaults to all
+      -P, --principal=       the model to use for the security principal
+          --default-scheme=  the default scheme for this API (default: http)
+      -M, --model=           specify a model to include, repeat for multiple
+          --skip-models      no models will be generated when this flag is specified
+          --skip-operations  no operations will be generated when this flag is specified
+          --skip-support     no supporting files will be generated when this flag is specified
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The server application gets generated with all the handlers stubbed out with a not implemented handler. That means that you can start the API server immediately after generating it. It will respond to all valid requests with 501 Not Implemented. When a request is invalid it will most likely respond with an appropriate 4xx response.&lt;/p&gt;
+
+&lt;p&gt;The generated server allows for a number of command line parameters to customize it.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;--host=            the IP to listen on (default: localhost) [$HOST]
+--port=            the port to listen on for insecure connections, defaults to a random value [$PORT]
+--tls-host=        the IP to listen on for tls, when not specified it&#39;s the same as --host [$TLS_HOST]
+--tls-port=        the port to listen on for secure connections, defaults to a random value [$TLS_PORT]
+--tls-certificate= the certificate to use for secure connections [$TLS_CERTIFICATE]
+--tls-key=         the private key to use for secure conections [$TLS_PRIVATE_KEY]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The server takes care of a number of things when a request arrives:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;routing&lt;/li&gt;
+&lt;li&gt;authentication&lt;/li&gt;
+&lt;li&gt;input validation&lt;/li&gt;
+&lt;li&gt;content negotiation&lt;/li&gt;
+&lt;li&gt;parameter and body binding&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;To illustrate this with a pseudo handler, this is what happens in a request.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;import (
+  &amp;quot;net/http&amp;quot;
+
+  &amp;quot;github.com/go-swagger/go-swagger/errors&amp;quot;
+  &amp;quot;github.com/go-swagger/go-swagger/httpkit/middleware&amp;quot;
+  &amp;quot;github.com/gorilla/context&amp;quot;
+)
+
+func newCompleteMiddleware(ctx *middleware.Context) http.Handler {
+  return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+    defer context.Clear(r)
+
+    // use context to lookup routes
+    if matched, ok := ctx.RouteInfo(r); ok {
+
+      if len(matched.Authenticators) &amp;gt; 0 {
+        if _, err := ctx.Authorize(r, matched); err != nil {
+          ctx.Respond(rw, r, matched.Produces, matched, err)
+          return
+        }
+      }
+
+      bound, validation := ctx.BindAndValidate(r, matched)
+      if validation != nil {
+        ctx.Respond(rw, r, matched.Produces, matched, validation)
+        return
+      }
+
+      result, err := matched.Handler.Handle(bound)
+      if err != nil {
+        ctx.Respond(rw, r, matched.Produces, matched, err)
+        return
+      }
+
+      ctx.Respond(rw, r, matched.Produces, matched, result)
+      return
+    }
+
+    // Not found, check if it exists in the other methods first
+    if others := ctx.AllowedMethods(r); len(others) &amp;gt; 0 {
+      ctx.Respond(rw, r, ctx.spec.RequiredProduces(), nil, errors.MethodNotAllowed(r.Method, others))
+      return
+    }
+    ctx.Respond(rw, r, ctx.spec.RequiredProduces(), nil, errors.NotFound(&amp;quot;path %s was not found&amp;quot;, r.URL.Path))
+  })
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Prior to handling requests however you probably want to configure the API with some actual implementations.  To do that you have to edit the configure_xxx_api.go file.  That file will only be generated the first time you generate a server application from a swagger spec. So the generated server uses this file to let you fill in the blanks.&lt;/p&gt;
+
+&lt;p&gt;For the todolist application that file looks like:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;package main
+
+import (
+	&amp;quot;github.com/go-swagger/go-swagger/errors&amp;quot;
+	&amp;quot;github.com/go-swagger/go-swagger/httpkit&amp;quot;
+	&amp;quot;github.com/go-swagger/go-swagger/httpkit/middleware&amp;quot;
+
+	&amp;quot;github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations&amp;quot;
+	&amp;quot;github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations/todos&amp;quot;
+)
+
+// This file is safe to edit. Once it exists it will not be overwritten
+
+func configureAPI(api *operations.SimpleToDoListAPI) {
+	// configure the api here
+	api.JSONConsumer = httpkit.JSONConsumer()
+
+	api.JSONProducer = httpkit.JSONProducer()
+
+	api.KeyAuth = func(token string) (interface{}, error) {
+		return nil, errors.NotImplemented(&amp;quot;api key auth (key) x-petstore-token from header has not yet been implemented&amp;quot;)
+	}
+
+	api.AddOneHandler = todos.AddOneHandlerFunc(func(params todos.AddOneParams, principal interface{}) middleware.Responder {
+		return middleware.NotImplemented(&amp;quot;operation addOne has not yet been implemented&amp;quot;)
+	})
+	api.DestroyOneHandler = todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams, principal interface{}) middleware.Responder {
+		return middleware.NotImplemented(&amp;quot;operation destroyOne has not yet been implemented&amp;quot;)
+	})
+	api.FindHandler = todos.FindHandlerFunc(func(params todos.FindParams, principal interface{}) middleware.Responder {
+		return middleware.NotImplemented(&amp;quot;operation find has not yet been implemented&amp;quot;)
+	})
+	api.UpdateOneHandler = todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams, principal interface{}) middleware.Responder {
+		return middleware.NotImplemented(&amp;quot;operation updateOne has not yet been implemented&amp;quot;)
+	})
+
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;When you look at the code for the configureAPI method then you&amp;rsquo;ll notice that the api object has properties for consumers.
+A consumer is an object that can marshal things from a wireformat to an object.  Consumers and their counterpart producers who write objects get their names generated from the consumes and produces properties on a swagger specification.&lt;/p&gt;
+
+&lt;p&gt;The interface definition of a consumer looks like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;// ConsumerFunc represents a function that can be used as a consumer
+type ConsumerFunc func(io.Reader, interface{}) error
+
+// Consume consumes the reader into the data parameter
+func (fn ConsumerFunc) Consume(reader io.Reader, data interface{}) error {
+	return fn(reader, data)
+}
+
+// Consumer implementations know how to bind the values on the provided interface to
+// data provided by the request body
+type Consumer interface {
+	// Consume performs the binding of request values
+	Consume(io.Reader, interface{}) error
+}
+
+// ProducerFunc represents a function that can be used as a producer
+type ProducerFunc func(io.Writer, interface{}) error
+
+// Produce produces the response for the provided data
+func (f ProducerFunc) Produce(writer io.Writer, data interface{}) error {
+	return f(writer, data)
+}
+
+// Producer implementations know how to turn the provided interface into a valid
+// HTTP response
+type Producer interface {
+	// Produce writes to the http response
+	Produce(io.Writer, interface{}) error
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;So it&amp;rsquo;s something that can turn a reader into a hydrated interface. A producer is the counterpart of a consumer and writes objects to an io.Writer.  When you configure an api with those you make sure it can marshal the types for the supported content types.&lt;/p&gt;
+
+&lt;p&gt;The next thing that happens in the configureAPI method is setting up the authentication with a stub handler in this case. This particular swagger specification supports token based authentication and as such it wants you to configure a token auth handler.  Any error for an authentication handler is assumed to be an invalid authentication and will return the 401 status code.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;// UserPassAuthentication authentication function
+type UserPassAuthentication func(string, string) (interface{}, error)
+
+// TokenAuthentication authentication function
+type TokenAuthentication func(string) (interface{}, error)
+
+// AuthenticatorFunc turns a function into an authenticator
+type AuthenticatorFunc func(interface{}) (bool, interface{}, error)
+
+// Authenticate authenticates the request with the provided data
+func (f AuthenticatorFunc) Authenticate(params interface{}) (bool, interface{}, error) {
+	return f(params)
+}
+
+// Authenticator represents an authentication strategy
+// implementations of Authenticator know how to authenticate the
+// request data and translate that into a valid principal object or an error
+type Authenticator interface {
+	Authenticate(interface{}) (bool, interface{}, error)
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;So we finally get to configuring our route handlers.&lt;/p&gt;
 </description>
     </item>
     

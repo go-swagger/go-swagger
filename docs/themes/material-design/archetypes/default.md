@@ -1,4 +1,4 @@
 +++
-Tags = []
-Categories = []
+tags = []
+categories = []
 +++

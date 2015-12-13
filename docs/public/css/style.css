@@ -50,3 +50,8 @@ footer.page-footer {
 .header a {
   color: #26a69a;
 }
+
+ul li {
+  list-style-type: square;
+  margin: 10;
+}
