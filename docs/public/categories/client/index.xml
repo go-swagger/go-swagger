@@ -22,7 +22,7 @@
 
 &lt;h2 id=&#34;usage:4bd4f30263398a45e38fc9edfc648efa&#34;&gt;Usage&lt;/h2&gt;
 
-&lt;p&gt;There is an example client in&lt;/p&gt;
+&lt;p&gt;There is an example client in &lt;a href=&#34;https://github.com/go-swagger/go-swagger/tree/master/examples/todo-list/client&#34;&gt;https://github.com/go-swagger/go-swagger/tree/master/examples/todo-list/client&lt;/a&gt;&lt;/p&gt;
 
 &lt;p&gt;To generate a client:&lt;/p&gt;
 

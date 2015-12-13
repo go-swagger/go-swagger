@@ -27,12 +27,10 @@ It uses a similar approach but with expanded annotations and it produces a swagg
 
 &lt;p&gt;The goal of the syntax is to make it look as a natural part of the documentation for the application code.&lt;/p&gt;
 
-&lt;p&gt;The generator is passed a base path (defaults to current) and tries to extract a go package path from that.
-Once it has a go package path it will scan the package recursively, skipping the Godeps, files ending in test.go and
-directories that start with an underscore, it also skips file system entries that start with a dot.&lt;/p&gt;
+&lt;p&gt;The generator is passed a main package and it uses that to discover all the code in use.
+To do this it makes use of go&amp;rsquo;s loader package. The same package that is used by tools like goimports to discover which files to format.&lt;/p&gt;
 
-&lt;p&gt;Once the parser has encountered a comment that matches on of its known tags, the parser will assume that the rest of
-the comment block is for swagger.&lt;/p&gt;
+&lt;p&gt;Once the parser has encountered a comment that matches on of its known tags, the parser will assume that the rest of the comment block is for swagger.&lt;/p&gt;
 
 &lt;h3 id=&#34;usage:958e7270f96f5407d7d980f500805b1b&#34;&gt;Usage&lt;/h3&gt;
 
@@ -49,15 +47,15 @@ package to produce a swagger specification.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;//go:generate swagger generate spec
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;The command requires a main package or file and it wants your code to compile. It uses the go tools loader to load an
-application and then scan all the packages that are in use by the code base.
-This means that for something to be discoverable it needs to be reachable by a code path triggered through the main
-package.&lt;/p&gt;
+&lt;p&gt;The command requires a main package or file and it wants your code to compile. It uses the go tools loader to load an application and then scans all the packages that are in use by the code base.
+This means that for something to be discoverable it needs to be reachable by a code path triggered through the main package.&lt;/p&gt;
 
 &lt;p&gt;If an annotation is not yet supported or you want to merge with a pre-existing spec, you can use the -i parameter.&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;swagger generate spec -i ./swagger.yml -o ./swagger.json
 &lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The idea is that there are certain things that are more easily expressed by just using yaml, to&lt;/p&gt;
 
 &lt;h4 id=&#34;parsing-rules:958e7270f96f5407d7d980f500805b1b&#34;&gt;Parsing rules&lt;/h4&gt;
 
@@ -95,22 +93,56 @@ as description up to either the end of the comment block, or a line that starts 
 &lt;li&gt;&lt;a href=&#34;model&#34;&gt;swagger:model&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;allOf&#34;&gt;swagger:allOf&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;strfmt&#34;&gt;swagger:strfmt&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;discriminated&#34;&gt;swagger:discriminated&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;allOf&#34;&gt;swagger:discriminated&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h4 id=&#34;embedded-types:958e7270f96f5407d7d980f500805b1b&#34;&gt;Embedded types&lt;/h4&gt;
 
-&lt;p&gt;For the embedded schema&amp;rsquo;s there are a set of rules for the spec generator to vary the definition it generates.
-When an embedded type isn&amp;rsquo;t decorated with the &lt;code&gt;swagger:allOf&lt;/code&gt; annotation, then the properties from the embedded value
-will be included in the generated definition as if they were defined on the definition.
-But when the embedded type is decorated with the &lt;code&gt;swagger:allOf&lt;/code&gt; annotation then the all of element will be defined as
-a &amp;ldquo;$ref&amp;rdquo; property instead. For an annotated type there is also the possibility to specify an argument, the value of
-this argument will be used as the value for the &lt;code&gt;x-class&lt;/code&gt; extension. This allows for generators that support the
+&lt;p&gt;For the embedded schemas there are a set of rules for the spec generator to vary the definition it generates.&lt;br /&gt;
+When an embedded type isn&amp;rsquo;t decorated with the &lt;code&gt;swagger:allOf&lt;/code&gt; annotation, then the properties from the embedded value will be included in the generated definition as if they were defined on the definition. But when the embedded type is decorated with the &lt;code&gt;swagger:allOf&lt;/code&gt; annotation then the all of element will be defined as a &amp;ldquo;$ref&amp;rdquo; property instead. For an annotated type there is also the possibility to specify an argument, the value of this argument will be used as the value for the &lt;code&gt;x-class&lt;/code&gt; extension. This allows for generators that support the
 &lt;code&gt;x-class&lt;/code&gt; extension to reliably build a serializer for a type with a discriminator&lt;/p&gt;
 
-&lt;h4 id=&#34;describe-definitions:958e7270f96f5407d7d980f500805b1b&#34;&gt;Describe definitions&lt;/h4&gt;
+&lt;h4 id=&#34;known-vendor-extensions:958e7270f96f5407d7d980f500805b1b&#34;&gt;Known vendor extensions&lt;/h4&gt;
 
-&lt;h4 id=&#34;describe-parameters:958e7270f96f5407d7d980f500805b1b&#34;&gt;Describe parameters&lt;/h4&gt;
+&lt;p&gt;There are a couple of commonly used vendor extensions that most frameworks support to add functionality to the swagger spec.&lt;/p&gt;
+
+&lt;p&gt;For generating a swagger specification document this toolkit supports:&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Vendor extension&lt;/th&gt;
+&lt;th&gt;Description&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;x-isnullable&lt;/td&gt;
+&lt;td&gt;makes a property value nullable, for go code that means a pointer&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;x-nullable&lt;/td&gt;
+&lt;td&gt;makes a property value nullable, for go code that means a pointer&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;x-go-name&lt;/td&gt;
+&lt;td&gt;the go name of a type&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;x-go-package&lt;/td&gt;
+&lt;td&gt;the go package of a type&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;x-class&lt;/td&gt;
+&lt;td&gt;this is used in conjunction with discriminators to give a full type name&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
 </description>
     </item>
     
@@ -126,7 +158,7 @@ this argument will be used as the value for the &lt;code&gt;x-class&lt;/code&gt;
 
 &lt;h2 id=&#34;usage:4bd4f30263398a45e38fc9edfc648efa&#34;&gt;Usage&lt;/h2&gt;
 
-&lt;p&gt;There is an example client in&lt;/p&gt;
+&lt;p&gt;There is an example client in &lt;a href=&#34;https://github.com/go-swagger/go-swagger/tree/master/examples/todo-list/client&#34;&gt;https://github.com/go-swagger/go-swagger/tree/master/examples/todo-list/client&lt;/a&gt;&lt;/p&gt;
 
 &lt;p&gt;To generate a client:&lt;/p&gt;
 
@@ -401,9 +433,7 @@ is as valid as possible, so that there are no surprises.&lt;/p&gt;
       <pubDate>Sun, 22 Nov 2015 23:21:52 -0800</pubDate>
       
       <guid>//goswagger.io/untyped/server/</guid>
-      <description>&lt;p&gt;The toolkit supports serving a swagger spec with untyped data. This means that it uses mostly interface{} as params to
-each operation and as result type. It does allow you to serve a spec up quickly. This is one of the building blocks
-required to serve up stub API&amp;rsquo;s and to generate a test server with predictable responses.&lt;/p&gt;
+      <description>&lt;p&gt;The toolkit supports serving a swagger spec with untyped data. This means that it uses mostly interface{} as params to each operation and as result type. It does allow you to serve a spec up quickly. This is one of the building blocks required to serve up stub API&amp;rsquo;s and to generate a test server with predictable responses.&lt;/p&gt;
 </description>
     </item>
     
@@ -1447,6 +1477,110 @@ definitions:
           createdAt:
             type: string
             format: date-time
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>swagger:discriminated</title>
+      <link>//goswagger.io/generate/spec/discriminated/</link>
+      <pubDate>Sat, 12 Dec 2015 20:24:52 -0800</pubDate>
+      
+      <guid>//goswagger.io/generate/spec/discriminated/</guid>
+      <description>
+
+&lt;p&gt;Marks an embedded type as  a member for allOf and sets the x-class value. On interface definitions there is another annotation on methods allowed &lt;em&gt;swagger:name&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;The swagger:allOf annotation can be followed by a string. This string will be the value for the &lt;code&gt;x-class&lt;/code&gt; vendor extension. This value is used as constant for the discriminator field.&lt;/p&gt;
+
+&lt;p&gt;An interface that is embedded expects to have 1 method that is commented with &lt;code&gt;Discriminator: true&lt;/code&gt;. That field will be used as discriminator field when marshalling/unmarshalling objects.&lt;/p&gt;
+
+&lt;p&gt;Because this is for use with interfaces we can&amp;rsquo;t make use of the json struct tag to allow for spec name overriding. So instead you can annotate method names on an interface with swagger:name and a value this will then provide the json field name.&lt;/p&gt;
+
+&lt;h5 id=&#34;syntax:776d526ac6d1462856c6cb3611676552&#34;&gt;Syntax:&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code&gt;swagger:allOf org.example.something.TypeName
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&#34;example:776d526ac6d1462856c6cb3611676552&#34;&gt;Example:&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;// TeslaCar is a tesla car
+//
+// swagger:model
+type TeslaCar interface {
+	// The model of tesla car
+	//
+	// discriminator: true
+	// swagger:name model
+	Model() string
+
+	// AutoPilot returns true when it supports autopilot
+	// swagger:name autoPilot
+	AutoPilot() bool
+}
+
+// The ModelS version of the tesla car
+//
+// swagger:model modelS
+type ModelS struct {
+	// swagger:allOf com.tesla.models.ModelS
+	TeslaCar
+	// The edition of this Model S
+	Edition string `json:&amp;quot;edition&amp;quot;`
+}
+
+// The ModelX version of the tesla car
+//
+// swagger:model modelX
+type ModelX struct {
+	// swagger:allOf com.tesla.models.ModelX
+	TeslaCar
+	// The number of doors on this Model X
+	Doors int32 `json:&amp;quot;doors&amp;quot;`
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&#34;result:776d526ac6d1462856c6cb3611676552&#34;&gt;Result:&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;---
+definitions:
+  TeslaCar:
+    title: TeslaCar is a tesla car
+    type: object
+    discriminator: &amp;quot;model&amp;quot;
+    properties:
+      model:
+        description: The model of tesla car
+        type: string
+        x-go-name: Model
+      autoPilot:
+        description: AutoPilot returns true when it supports autopilot
+        type: integer
+        format: int32
+        x-go-name: AutoPilot
+  modelS:
+    allOf:
+      - $ref: &amp;quot;#/definitions/TeslaCar&amp;quot;
+      - title: The ModelS version of the tesla car
+        properties:
+          edition:
+            description: &amp;quot;The edition of this model S&amp;quot;
+            type: string
+            x-go-name: Edition
+        x-class: &amp;quot;com.tesla.models.ModelS&amp;quot;
+        x-go-name: &amp;quot;ModelX&amp;quot;
+  modelX:
+    allOf:
+      - $ref: &amp;quot;#/definitions/TeslaCar&amp;quot;
+      - title: The ModelX version of the tesla car
+        properties:
+          doors:
+            description: &amp;quot;The number of doors on this Model X&amp;quot;
+            type: integer
+            format: int32
+            x-go-name: Doors
+        x-class: &amp;quot;com.tesla.models.ModelX&amp;quot;
+        x-go-name: ModelX
 &lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>
