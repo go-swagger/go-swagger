@@ -192,6 +192,10 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .Name }}(raw
   {{ if and (not .IsPathParam) .Required (not .AllowEmptyValue) }}if err := validate.RequiredString({{ .Path }}, {{ printf "%q" .Location }}, raw); err != nil {
     return err
   }
+  {{ else if and ( not .IsPathParam ) (or (not .Required) .AllowEmptyValue) }}if raw == "" { // empty values pass all other validations
+    {{ if .Default }}{{ .ValueExpression }} = {{ printf "%#v" .Default }}
+    {{ end }}return nil
+  }
   {{ end }}
   {{ if .Converter }}value, err := {{ if .Converter }}{{ .Converter }}({{ end }}raw)
   if err != nil {
@@ -225,10 +229,13 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .Name }}(raw
   raw := swag.SplitByFormat(qv{{ pascalize .Name }}, {{ printf "%q" .CollectionFormat }}){{ end }}
   size := len(raw)
 
-  {{if and .Required (not .AllowEmptyValue) }}if size == 0 {
-    return errors.Required({{ .Path }}, {{ printf "%q" .Location }})
+  if size == 0 {
+    {{if and .Required (not .AllowEmptyValue) }}return errors.Required({{ .Path }}, {{ printf "%q" .Location }})
+    {{ else }}{{ if .Default }}
+    {{ .ValueExpression }} = {{ printf "%#v" .Default }}
+    {{ end }}return nil
+    {{ end }}
   }
-  {{ end }}
 
   {{ if .Default }}defValue := swag.SplitByFormat({{ .Default }}, {{ printf "%q" .CollectionFormat }})
   if size == 0 && len(defValue) > 0 {

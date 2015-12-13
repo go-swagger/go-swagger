@@ -15,6 +15,7 @@
 package generator
 
 import (
+	"bytes"
 	"fmt"
 	"testing"
 
@@ -446,6 +447,23 @@ func TestGenParameters_Simple(t *testing.T) {
 		v.B = b
 		if !v.assertParameter(t) {
 			t.FailNow()
+		}
+	}
+}
+
+func TestGenParameter_Issue163(t *testing.T) {
+	b, err := opBuilder("getSearch", "../fixtures/bugs/163/swagger.yml")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := parameterTemplate.Execute(buf, op)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("get_search_parameters.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					fmt.Println(string(ff))
+				}
+			}
 		}
 	}
 }
