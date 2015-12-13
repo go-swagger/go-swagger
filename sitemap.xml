@@ -68,6 +68,11 @@
   </url>
   
   <url>
+    <loc>//goswagger.io/generate/spec/discriminated/</loc>
+    <lastmod>2015-12-12T20:24:52-08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>//goswagger.io/generate/spec/strfmt/</loc>
     <lastmod>2015-11-14T20:10:24-08:00</lastmod>
   </url>

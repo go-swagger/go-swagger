@@ -1018,6 +1018,110 @@ definitions:
     </item>
     
     <item>
+      <title>swagger:discriminated</title>
+      <link>//goswagger.io/generate/spec/discriminated/</link>
+      <pubDate>Sat, 12 Dec 2015 20:24:52 -0800</pubDate>
+      
+      <guid>//goswagger.io/generate/spec/discriminated/</guid>
+      <description>
+
+&lt;p&gt;Marks an embedded type as  a member for allOf and sets the x-class value. On interface definitions there is another annotation on methods allowed &lt;em&gt;swagger:name&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;The swagger:allOf annotation can be followed by a string. This string will be the value for the &lt;code&gt;x-class&lt;/code&gt; vendor extension. This value is used as constant for the discriminator field.&lt;/p&gt;
+
+&lt;p&gt;An interface that is embedded expects to have 1 method that is commented with &lt;code&gt;Discriminator: true&lt;/code&gt;. That field will be used as discriminator field when marshalling/unmarshalling objects.&lt;/p&gt;
+
+&lt;p&gt;Because this is for use with interfaces we can&amp;rsquo;t make use of the json struct tag to allow for spec name overriding. So instead you can annotate method names on an interface with swagger:name and a value this will then provide the json field name.&lt;/p&gt;
+
+&lt;h5 id=&#34;syntax:776d526ac6d1462856c6cb3611676552&#34;&gt;Syntax:&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code&gt;swagger:allOf org.example.something.TypeName
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&#34;example:776d526ac6d1462856c6cb3611676552&#34;&gt;Example:&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;// TeslaCar is a tesla car
+//
+// swagger:model
+type TeslaCar interface {
+	// The model of tesla car
+	//
+	// discriminator: true
+	// swagger:name model
+	Model() string
+
+	// AutoPilot returns true when it supports autopilot
+	// swagger:name autoPilot
+	AutoPilot() bool
+}
+
+// The ModelS version of the tesla car
+//
+// swagger:model modelS
+type ModelS struct {
+	// swagger:allOf com.tesla.models.ModelS
+	TeslaCar
+	// The edition of this Model S
+	Edition string `json:&amp;quot;edition&amp;quot;`
+}
+
+// The ModelX version of the tesla car
+//
+// swagger:model modelX
+type ModelX struct {
+	// swagger:allOf com.tesla.models.ModelX
+	TeslaCar
+	// The number of doors on this Model X
+	Doors int32 `json:&amp;quot;doors&amp;quot;`
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&#34;result:776d526ac6d1462856c6cb3611676552&#34;&gt;Result:&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;---
+definitions:
+  TeslaCar:
+    title: TeslaCar is a tesla car
+    type: object
+    discriminator: &amp;quot;model&amp;quot;
+    properties:
+      model:
+        description: The model of tesla car
+        type: string
+        x-go-name: Model
+      autoPilot:
+        description: AutoPilot returns true when it supports autopilot
+        type: integer
+        format: int32
+        x-go-name: AutoPilot
+  modelS:
+    allOf:
+      - $ref: &amp;quot;#/definitions/TeslaCar&amp;quot;
+      - title: The ModelS version of the tesla car
+        properties:
+          edition:
+            description: &amp;quot;The edition of this model S&amp;quot;
+            type: string
+            x-go-name: Edition
+        x-class: &amp;quot;com.tesla.models.ModelS&amp;quot;
+        x-go-name: &amp;quot;ModelX&amp;quot;
+  modelX:
+    allOf:
+      - $ref: &amp;quot;#/definitions/TeslaCar&amp;quot;
+      - title: The ModelX version of the tesla car
+        properties:
+          doors:
+            description: &amp;quot;The number of doors on this Model X&amp;quot;
+            type: integer
+            format: int32
+            x-go-name: Doors
+        x-class: &amp;quot;com.tesla.models.ModelX&amp;quot;
+        x-go-name: ModelX
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
       <title>swagger:strfmt</title>
       <link>//goswagger.io/generate/spec/strfmt/</link>
       <pubDate>Sat, 14 Nov 2015 20:10:24 -0800</pubDate>

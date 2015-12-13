@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"/>
-  <title>swagger:allOf</title>
+  <title>swagger:discriminated</title>
   <link href="//goswagger.io//css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
   <link href="//goswagger.io//css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
   <link rel="stylesheet" href="//goswagger.io//css/prism.css" />
@@ -58,7 +58,7 @@
     <div class="row">
       <div class="col s12">
         <div class="card-panel">
-          <h2>swagger:allOf</h2>
+          <h2>swagger:discriminated</h2>
           <p>
           
             
@@ -68,97 +68,101 @@
           </p>
           <p>
 
-<p>Marks an embedded type as  a member for allOf</p>
+<p>Marks an embedded type as  a member for allOf and sets the x-class value. On interface definitions there is another annotation on methods allowed <em>swagger:name</em></p>
 
-<h5 id="syntax:9e114a42ed516fdef13f2ebb84a2eb20">Syntax:</h5>
+<p>The swagger:allOf annotation can be followed by a string. This string will be the value for the <code>x-class</code> vendor extension. This value is used as constant for the discriminator field.</p>
 
-<pre><code>swagger:allOf
+<p>An interface that is embedded expects to have 1 method that is commented with <code>Discriminator: true</code>. That field will be used as discriminator field when marshalling/unmarshalling objects.</p>
+
+<p>Because this is for use with interfaces we can&rsquo;t make use of the json struct tag to allow for spec name overriding. So instead you can annotate method names on an interface with swagger:name and a value this will then provide the json field name.</p>
+
+<h5 id="syntax:776d526ac6d1462856c6cb3611676552">Syntax:</h5>
+
+<pre><code>swagger:allOf org.example.something.TypeName
 </code></pre>
 
-<h5 id="example:9e114a42ed516fdef13f2ebb84a2eb20">Example:</h5>
+<h5 id="example:776d526ac6d1462856c6cb3611676552">Example:</h5>
 
-<pre><code class="language-go">// A SimpleOne is a model with a few simple fields
-type SimpleOne struct {
-	ID   int64  `json:&quot;id&quot;`
-	Name string `json:&quot;name&quot;`
-	Age  int32  `json:&quot;age&quot;`
-}
-
-// A Something struct is used by other structs
-type Something struct {
-	DID int64  `json:&quot;did&quot;`
-	Cat string `json:&quot;cat&quot;`
-}
-
-// Notable is a model in a transitive package.
-// it's used for embedding in another model
+<pre><code class="language-go">// TeslaCar is a tesla car
 //
-// swagger:model withNotes
-type Notable struct {
-	Notes string `json:&quot;notes&quot;`
+// swagger:model
+type TeslaCar interface {
+	// The model of tesla car
+	//
+	// discriminator: true
+	// swagger:name model
+	Model() string
 
-	Extra string `json:&quot;extra&quot;`
+	// AutoPilot returns true when it supports autopilot
+	// swagger:name autoPilot
+	AutoPilot() bool
 }
 
-// An AllOfModel is composed out of embedded structs but it should build
-// an allOf property
-type AllOfModel struct {
-	// swagger:allOf
-	SimpleOne
-	// swagger:allOf
-	mods.Notable
+// The ModelS version of the tesla car
+//
+// swagger:model modelS
+type ModelS struct {
+	// swagger:allOf com.tesla.models.ModelS
+	TeslaCar
+	// The edition of this Model S
+	Edition string `json:&quot;edition&quot;`
+}
 
-	Something // not annotated with anything, so should be included
-
-	CreatedAt strfmt.DateTime `json:&quot;createdAt&quot;`
+// The ModelX version of the tesla car
+//
+// swagger:model modelX
+type ModelX struct {
+	// swagger:allOf com.tesla.models.ModelX
+	TeslaCar
+	// The number of doors on this Model X
+	Doors int32 `json:&quot;doors&quot;`
 }
 </code></pre>
 
-<h5 id="result:9e114a42ed516fdef13f2ebb84a2eb20">Result:</h5>
+<h5 id="result:776d526ac6d1462856c6cb3611676552">Result:</h5>
 
 <pre><code class="language-yaml">---
 definitions:
-  SimpleOne:
-    title: A SimpleOne is a model with a few simple fields
+  TeslaCar:
+    title: TeslaCar is a tesla car
     type: object
+    discriminator: &quot;model&quot;
     properties:
-      id:
-        type: integer
-        format: int64
-      name:
+      model:
+        description: The model of tesla car
         type: string
-      age:
+        x-go-name: Model
+      autoPilot:
+        description: AutoPilot returns true when it supports autopilot
         type: integer
         format: int32
-  Notable:
-    title: &quot;Notable is a model in a transitive package.\nit's used for embedding in another model&quot;
-    type: object
-    properties:
-      notes:
-        type: string
-      extra:
-        type: string
-  AllOfModel:
-    title: &quot;An AllOfModel is composed out of embedded structs but it should build\nan allOf property&quot;
-    allOf: 
-      - $ref: &quot;#/definitions/SimpleOne&quot;
-      - $ref: &quot;#/definitions/Notable&quot;
-      - title: A Something struct is used by other structs
-        type: object
+        x-go-name: AutoPilot
+  modelS:
+    allOf:
+      - $ref: &quot;#/definitions/TeslaCar&quot;
+      - title: The ModelS version of the tesla car
         properties:
-          did:
+          edition:
+            description: &quot;The edition of this model S&quot;
+            type: string
+            x-go-name: Edition
+        x-class: &quot;com.tesla.models.ModelS&quot;
+        x-go-name: &quot;ModelX&quot;
+  modelX:
+    allOf:
+      - $ref: &quot;#/definitions/TeslaCar&quot;
+      - title: The ModelX version of the tesla car
+        properties:
+          doors:
+            description: &quot;The number of doors on this Model X&quot;
             type: integer
-            format: int64
-          cat:
-            type: string
-      - type: object
-        properties:
-          createdAt:
-            type: string
-            format: date-time
+            format: int32
+            x-go-name: Doors
+        x-class: &quot;com.tesla.models.ModelX&quot;
+        x-go-name: ModelX
 </code></pre>
 </p>
-          <p>14 Nov 2015
+          <p>12 Dec 2015
             
               
                 <a href="//goswagger.io//tags/polymorphism/">#polymorphism</a>
@@ -173,13 +177,13 @@ definitions:
     <div class="row">
       <div class="col s3 m1">
       
-        <a class="btn-floating btn-large waves-effect waves-light" href="//goswagger.io/generate/spec/model/"><i class="mdi-navigation-arrow-back"></i></a>
+        <a class="btn-floating btn-large waves-effect waves-light" href="//goswagger.io/generate/spec/allOf/"><i class="mdi-navigation-arrow-back"></i></a>
       
       </div>
       <div class="col s6 m10 center">&nbsp</div>
       <div class="col s3 m1">
       
-        <a class="btn-floating btn-large waves-effect waves-light" href="//goswagger.io/generate/spec/discriminated/"><i class="mdi-navigation-arrow-forward"></i></a>
+        <a class="btn-floating btn-large waves-effect waves-light" href="//goswagger.io/generate/spec/strfmt/"><i class="mdi-navigation-arrow-forward"></i></a>
       
       </div>
     </div>
