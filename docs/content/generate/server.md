@@ -221,4 +221,168 @@ type Authenticator interface {
 }
 ```
 
-So we finally get to configuring our route handlers.
+So we finally get to configuring our route handlers. For each operation there exists an interface so that implementations have some freedom to provide alternative implentations. For example mocks in certain tests, automatic stubbing handlers, not implemented handlers. Let's look at the addOne handler in a bit more detail.
+
+```go
+// AddOneHandlerFunc turns a function with the right signature into a add one handler
+type AddOneHandlerFunc func(AddOneParams, interface{}) middleware.Responder
+
+// Handle executing the request and returning a response
+func (fn AddOneHandlerFunc) Handle(params AddOneParams, principal interface{}) middleware.Responder {
+	return fn(params, principal)
+}
+
+// AddOneHandler interface for that can handle valid add one params
+type AddOneHandler interface {
+	Handle(AddOneParams, interface{}) middleware.Responder
+}
+```
+
+Because the addOne operation requires authentication this interface defintion requires 2 arguments. The first argument is about the request paramters and the second parameter is the security principal for the request.  In this case it is of type interface{}, typically that is a type like Account, User, Session, ...
+
+It is your job to provide such a handler. Go swagger guarantees that by the time the request processing ends up at the handler, the parameters and security principal have been bound and validated.  So you can safely proceed with saving the request body to some persistence medium perhaps.
+
+There is a context that gets created where the handlers get wired up into a http.Handler. For the add one this looks like this:
+
+```go
+// NewAddOne creates a new http.Handler for the add one operation
+func NewAddOne(ctx *middleware.Context, handler AddOneHandler) *AddOne {
+	return &AddOne{Context: ctx, Handler: handler}
+}
+
+/*AddOne swagger:route POST / todos addOne
+
+AddOne add one API
+
+*/
+type AddOne struct {
+	Context *middleware.Context
+	Params  AddOneParams
+	Handler AddOneHandler
+}
+
+func (o *AddOne) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+	route, _ := o.Context.RouteInfo(r)
+
+	uprinc, err := o.Context.Authorize(r, route)
+	if err != nil {
+		o.Context.Respond(rw, r, route.Produces, route, err)
+		return
+	}
+	var principal interface{}
+	if uprinc != nil {
+		principal = uprinc
+	}
+
+	if err := o.Context.BindValidRequest(r, route, &o.Params); err != nil { // bind params
+		o.Context.Respond(rw, r, route.Produces, route, err)
+		return
+	}
+
+	res := o.Handler.Handle(o.Params, principal) // actually handle the request
+
+	o.Context.Respond(rw, r, route.Produces, route, res)
+
+}
+```
+
+The http.Handler implementation takes care of authentication, binding, user code execution and generating a response. For authentication this request would end up in the TokenAuthentication handler that was put on the api context object earlier.  When a request is authenticated it gets bound. This operation eventually requires an object that is an implementation of RequestBinder.  The AddOneParams are such an implementation:
+
+```go
+// RequestBinder is an interface for types to implement
+// when they want to be able to bind from a request
+type RequestBinder interface {
+	BindRequest(*http.Request, *MatchedRoute) error
+}
+
+// AddOneParams contains all the bound params for the add one operation
+// typically these are obtained from a http.Request
+//
+// swagger:parameters addOne
+type AddOneParams struct {
+	/*
+	  In: body
+	*/
+	Body *models.Item
+}
+
+// BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
+// for simple values it will use straight method calls
+func (o *AddOneParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
+	var res []error
+
+	var body models.Item
+	if err := route.Consumer.Consume(r.Body, &body); err != nil {
+		res = append(res, errors.NewParseError("body", "body", "", err))
+	} else {
+		if err := body.Validate(route.Formats); err != nil {
+			res = append(res, err)
+		}
+
+		if len(res) == 0 {
+			o.Body = &body
+		}
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+```
+
+In this example there is only a body parameter, so we make use of the selected consumer to read the request body and turn it into an instance of models.Item. When the body parameter is bound, it gets validated and when validation passes no error is returned and the body property is set.  After a request is bound and validated the parameters and security principal are passed to the request handler. For this configuration that would returen a 501 responder.
+
+Go swagger uses responders which are ann interface implementation for things that can write to a response. For the generated server there are status code response and a default response object generated for every entry in the spec. For the addOne operation that are 2 objects one for the success case (201) and one for an error (default).
+
+```go
+// Responder is an interface for types to implement
+// when they want to be considered for writing HTTP responses
+type Responder interface {
+	WriteResponse(http.ResponseWriter, httpkit.Producer)
+}
+
+/*AddOneCreated Created
+
+swagger:response addOneCreated
+*/
+type AddOneCreated struct {
+
+	// In: body
+	Payload *models.Item `json:"body,omitempty"`
+}
+
+// WriteResponse to the client
+func (o *AddOneCreated) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+
+	rw.WriteHeader(201)
+	if o.Payload != nil {
+		if err := producer.Produce(rw, o.Payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+/*AddOneDefault error
+
+swagger:response addOneDefault
+*/
+type AddOneDefault struct {
+
+	// In: body
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// WriteResponse to the client
+func (o *AddOneDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+
+	rw.WriteHeader(500)
+	if o.Payload != nil {
+		if err := producer.Produce(rw, o.Payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+```
+
+So an implementor of the AddOneHandler could return one of these 2 objects and go-swagger is able to respect the contract set forward by the spec document.
