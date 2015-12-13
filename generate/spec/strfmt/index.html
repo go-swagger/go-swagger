@@ -66,11 +66,94 @@
             
           
           </p>
-          <p><p>A <strong>swagger:strfmt</strong> annotation names a type as a string formatter. The name is mandatory and that is
+          <p>
+
+<p>A <strong>swagger:strfmt</strong> annotation names a type as a string formatter. The name is mandatory and that is
 what will be used as format name for this particular string format.
-String formats should only be used for very well known formats.</p>
+String formats should only be used for <strong>very</strong> well known formats.</p>
+
+<!-- more -->
+
+<p>String formats are well-known items. These imply a common well-documented set of formats that can be validated. The toolkit allows for creating your own string formats too.</p>
+
+<p>To create a custom string format you need to create a type that implements the (Unm/M)arshalText interfaces and the sql Scan and sql Value interfaces.  The SQL interfaces are not strictly necessary but allow other people to use the string format in structs that are used with databases</p>
+
+<p>The default string formats for this toolkit are:</p>
+
+<ul>
+<li>uuid, uuid3, uuid4, uuid5</li>
+<li>email</li>
+<li>uri (absolute)</li>
+<li>hostname</li>
+<li>ipv4</li>
+<li>ipv6</li>
+<li>credit card</li>
+<li>isbn, isbn10, isbn13</li>
+<li>social security number</li>
+<li>hexcolor</li>
+<li>rgbcolor</li>
+<li>date</li>
+<li>date-time</li>
+<li>duration</li>
+<li>password</li>
+<li>custom string formats</li>
+</ul>
+
+<h5 id="syntax:2856515fe173bf6a903d614be856ef00">Syntax:</h5>
 
 <pre><code>swagger:strfmt [name]
+</code></pre>
+
+<h5 id="example:2856515fe173bf6a903d614be856ef00">Example:</h5>
+
+<pre><code class="language-go">func init() {
+  eml := Email(&quot;&quot;)
+  Default.Add(&quot;email&quot;, &amp;eml, govalidator.IsEmail)
+}
+
+// Email represents the email string format as specified by the json schema spec
+//
+// swagger:strfmt email
+type Email string
+
+// MarshalText turns this instance into text
+func (e Email) MarshalText() ([]byte, error) {
+	return []byte(string(e)), nil
+}
+
+// UnmarshalText hydrates this instance from text
+func (e *Email) UnmarshalText(data []byte) error { // validation is performed later on
+	*e = Email(string(data))
+	return nil
+}
+
+func (b *Email) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		*b = Email(string(v))
+	case string:
+		*b = Email(v)
+	default:
+		return fmt.Errorf(&quot;cannot sql.Scan() strfmt.Email from: %#v&quot;, v)
+	}
+
+	return nil
+}
+
+func (b Email) Value() (driver.Value, error) {
+	return driver.Value(string(b)), nil
+}
+</code></pre>
+
+<h5 id="result:2856515fe173bf6a903d614be856ef00">Result:</h5>
+
+<pre><code class="language-yaml">---
+definitions:
+  user:
+    properties:
+      email:
+        type: string
+        format: email
 </code></pre>
 </p>
           <p>14 Nov 2015
