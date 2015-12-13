@@ -460,7 +460,7 @@ func True(t TestingT, value bool, msgAndArgs ...interface{}) bool {
 
 }
 
-// False asserts that the specified value is false.
+// False asserts that the specified value is true.
 //
 //    assert.False(t, myBool, "myBool should be false")
 //
