@@ -119,6 +119,19 @@ func TestRouterBuilder(t *testing.T) {
 	assert.Len(t, val.Parameters, 1)
 }
 
+func TestRouterCanonicalBasePath(t *testing.T) {
+	spec, api := petstore.NewAPI(t)
+	spec.Spec().BasePath = "/api///"
+	context := NewContext(spec, api, nil)
+	mw := newRouter(context, http.HandlerFunc(terminator))
+
+	recorder := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/api/pets", nil)
+
+	mw.ServeHTTP(recorder, request)
+	assert.Equal(t, 200, recorder.Code)
+}
+
 func TestRouterStruct(t *testing.T) {
 	spec, api := petstore.NewAPI(t)
 	router := DefaultRouter(spec, newRoutableUntypedAPI(spec, api, new(Context)))
