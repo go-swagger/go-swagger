@@ -131,7 +131,7 @@ import (
 
 // This file is safe to edit. Once it exists it will not be overwritten
 
-func configureAPI(api *operations.SimpleToDoListAPI) {
+func configureAPI(api *operations.ToDoListAPI) http.Handler {
 	// configure the api here
 	api.JSONConsumer = httpkit.JSONConsumer()
 
@@ -154,13 +154,14 @@ func configureAPI(api *operations.SimpleToDoListAPI) {
 		return middleware.NotImplemented("operation updateOne has not yet been implemented")
 	})
 
+	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
 }
 ```
 
 When you look at the code for the configureAPI method then you'll notice that the api object has properties for consumers.
 A consumer is an object that can marshal things from a wireformat to an object.  Consumers and their counterpart producers who write objects get their names generated from the consumes and produces properties on a swagger specification.
 
-The interface definition of a consumer looks like this:
+The interface definitions for consumers and producers look like this:
 
 ```go
 // ConsumerFunc represents a function that can be used as a consumer
@@ -238,11 +239,11 @@ type AddOneHandler interface {
 }
 ```
 
-Because the addOne operation requires authentication this interface defintion requires 2 arguments. The first argument is about the request paramters and the second parameter is the security principal for the request.  In this case it is of type interface{}, typically that is a type like Account, User, Session, ...
+Because the `addOne` operation requires authentication, this interface definition requires 2 arguments. The first argument is about the request parameters and the second parameter is the security principal for the request.  In this case it is of type `interface{}`, typically that is a type like Account, User, Session, ...
 
 It is your job to provide such a handler. Go swagger guarantees that by the time the request processing ends up at the handler, the parameters and security principal have been bound and validated.  So you can safely proceed with saving the request body to some persistence medium perhaps.
 
-There is a context that gets created where the handlers get wired up into a http.Handler. For the add one this looks like this:
+There is a context that gets created where the handlers get wired up into a `http.Handler`. For the add one this looks like this:
 
 ```go
 // NewAddOne creates a new http.Handler for the add one operation
@@ -286,7 +287,7 @@ func (o *AddOne) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 }
 ```
 
-The http.Handler implementation takes care of authentication, binding, user code execution and generating a response. For authentication this request would end up in the TokenAuthentication handler that was put on the api context object earlier.  When a request is authenticated it gets bound. This operation eventually requires an object that is an implementation of RequestBinder.  The AddOneParams are such an implementation:
+The `http.Handler` implementation takes care of authentication, binding, user code execution and generating a response. For authentication this request would end up in the `TokenAuthentication` handler that was put on the api context object earlier.  When a request is authenticated it gets bound. This operation eventually requires an object that is an implementation of `RequestBinder`.  The `AddOneParams` are such an implementation:
 
 ```go
 // RequestBinder is an interface for types to implement
@@ -331,9 +332,9 @@ func (o *AddOneParams) BindRequest(r *http.Request, route *middleware.MatchedRou
 }
 ```
 
-In this example there is only a body parameter, so we make use of the selected consumer to read the request body and turn it into an instance of models.Item. When the body parameter is bound, it gets validated and when validation passes no error is returned and the body property is set.  After a request is bound and validated the parameters and security principal are passed to the request handler. For this configuration that would returen a 501 responder.
+In this example there is only a body parameter, so we make use of the selected consumer to read the request body and turn it into an instance of models.Item. When the body parameter is bound, it gets validated and when validation passes no error is returned and the body property is set.  After a request is bound and validated the parameters and security principal are passed to the request handler. For this configuration that would return a 501 responder.
 
-Go swagger uses responders which are ann interface implementation for things that can write to a response. For the generated server there are status code response and a default response object generated for every entry in the spec. For the addOne operation that are 2 objects one for the success case (201) and one for an error (default).
+Go swagger uses responders which are an interface implementation for things that can write to a response. For the generated server there are status code response and a default response object generated for every entry in the spec. For the `addOne` operation that are 2 objects one for the success case (201) and one for an error (default).
 
 ```go
 // Responder is an interface for types to implement
@@ -385,4 +386,4 @@ func (o *AddOneDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.P
 }
 ```
 
-So an implementor of the AddOneHandler could return one of these 2 objects and go-swagger is able to respect the contract set forward by the spec document.
+So an implementer of the `AddOneHandler` could return one of these 2 objects and go-swagger is able to respect the contract set forward by the spec document.
