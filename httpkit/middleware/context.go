@@ -26,6 +26,12 @@ import (
 	"github.com/gorilla/context"
 )
 
+// A Builder can create middlewares
+type Builder func(http.Handler) http.Handler
+
+// PassthroughBuilder returns the handler, aka the builder identity function
+func PassthroughBuilder(handler http.Handler) http.Handler { return handler }
+
 // RequestBinder is an interface for types to implement
 // when they want to be able to bind from a request
 type RequestBinder interface {
@@ -149,8 +155,14 @@ func NewContext(spec *spec.Document, api *untyped.API, routes Router) *Context {
 
 // Serve serves the specified spec with the specified api registrations as a http.Handler
 func Serve(spec *spec.Document, api *untyped.API) http.Handler {
+	return ServeWithBuilder(spec, api, PassthroughBuilder)
+}
+
+// ServeWithBuilder serves the specified spec with the specified api registrations as a http.Handler that is decorated
+// by the Builder
+func ServeWithBuilder(spec *spec.Document, api *untyped.API, builder Builder) http.Handler {
 	context := NewContext(spec, api, nil)
-	return context.APIHandler()
+	return context.APIHandler(builder)
 }
 
 type contextKey int8
@@ -399,6 +411,10 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 }
 
 // APIHandler returns a handler to serve
-func (c *Context) APIHandler() http.Handler {
-	return specMiddleware(c, newRouter(c, newOperationExecutor(c)))
+func (c *Context) APIHandler(builder Builder) http.Handler {
+	b := builder
+	if b == nil {
+		b = PassthroughBuilder
+	}
+	return specMiddleware(c, newRouter(c, b(newOperationExecutor(c))))
 }

@@ -19,13 +19,15 @@ import (
 //
 // swagger:parameters putEventById
 type PutEventByIDParams struct {
-	// Existing event
-	// Required: true
-	// In: body
+	/*Existing event
+	  Required: true
+	  In: body
+	*/
 	Event *models.Event
-	// Existing event id.
-	// Required: true
-	// In: path
+	/*Existing event id.
+	  Required: true
+	  In: path
+	*/
 	ID int64
 }
 
@@ -34,16 +36,21 @@ type PutEventByIDParams struct {
 func (o *PutEventByIDParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 
-	if err := route.Consumer.Consume(r.Body, o.Event); err != nil {
+	var body models.Event
+	if err := route.Consumer.Consume(r.Body, &body); err != nil {
 		res = append(res, errors.NewParseError("event", "body", "", err))
 	} else {
-		if err := o.Event.Validate(route.Formats); err != nil {
+		if err := body.Validate(route.Formats); err != nil {
 			res = append(res, err)
 		}
 
+		if len(res) == 0 {
+			o.Event = &body
+		}
 	}
 
-	if err := o.bindID(route.Params.Get("id"), route.Formats); err != nil {
+	rID, rhkID, _ := route.Params.GetOK("id")
+	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -53,7 +60,11 @@ func (o *PutEventByIDParams) BindRequest(r *http.Request, route *middleware.Matc
 	return nil
 }
 
-func (o *PutEventByIDParams) bindID(raw string, formats strfmt.Registry) error {
+func (o *PutEventByIDParams) bindID(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
 
 	value, err := swag.ConvertInt64(raw)
 	if err != nil {

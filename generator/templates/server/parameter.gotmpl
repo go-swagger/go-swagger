@@ -228,15 +228,11 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .Name }}(raw
 
   raw := swag.SplitByFormat(qv{{ pascalize .Name }}, {{ printf "%q" .CollectionFormat }}){{ end }}
   size := len(raw)
-
+  {{if and .Required (not .AllowEmptyValue) }}
   if size == 0 {
-    {{if and .Required (not .AllowEmptyValue) }}return errors.Required({{ .Path }}, {{ printf "%q" .Location }})
-    {{ else }}{{ if .Default }}
-    {{ .ValueExpression }} = {{ printf "%#v" .Default }}
-    {{ end }}return nil
-    {{ end }}
+    return errors.Required({{ .Path }}, {{ printf "%q" .Location }})
   }
-
+  {{ end }}
   {{ if .Default }}defValue := swag.SplitByFormat({{ .Default }}, {{ printf "%q" .CollectionFormat }})
   if size == 0 && len(defValue) > 0 {
     {{ .ValueExpression }} = defValue

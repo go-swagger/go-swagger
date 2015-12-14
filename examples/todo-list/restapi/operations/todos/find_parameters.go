@@ -96,6 +96,9 @@ func (o *FindParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Reg
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
 
 	value, err := swag.ConvertInt32(raw)
 	if err != nil {

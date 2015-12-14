@@ -210,6 +210,9 @@ func (o *operationGenerator) generateHandler() error {
 	log.Println("rendered handler template:", o.pkg+"."+o.cname)
 
 	fp := filepath.Join(o.Target, o.pkg)
+	if o.pkg != o.APIPackage {
+		fp = filepath.Join(o.Target, o.APIPackage, o.pkg)
+	}
 	return writeToFile(fp, o.Name, buf.Bytes())
 }
 
@@ -222,6 +225,9 @@ func (o *operationGenerator) generateParameterModel() error {
 	log.Println("rendered parameters template:", o.pkg+"."+o.cname+"Parameters")
 
 	fp := filepath.Join(o.Target, o.pkg)
+	if o.pkg != o.APIPackage {
+		fp = filepath.Join(o.Target, o.APIPackage, o.pkg)
+	}
 	return writeToFile(fp, o.Name+"Parameters", buf.Bytes())
 }
 
@@ -234,6 +240,9 @@ func (o *operationGenerator) generateResponses() error {
 	log.Println("rendered responses template:", o.pkg+"."+o.cname+"Responses")
 
 	fp := filepath.Join(o.Target, o.pkg)
+	if o.pkg != o.APIPackage {
+		fp = filepath.Join(o.Target, o.APIPackage, o.pkg)
+	}
 	return writeToFile(fp, o.Name+"Responses", buf.Bytes())
 }
 

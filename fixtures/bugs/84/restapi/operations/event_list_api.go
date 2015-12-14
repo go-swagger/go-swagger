@@ -202,11 +202,11 @@ func (o *EventListAPI) initHandlerCache() {
 }
 
 // Serve creates a http handler to serve the API over HTTP
-// can be used directly in http.ListenAndServe(":8000", api.Serve())
-func (o *EventListAPI) Serve() http.Handler {
+// can be used directly in http.ListenAndServe(":8000", api.Serve(nil))
+func (o *EventListAPI) Serve(builder middleware.Builder) http.Handler {
 	if len(o.handlers) == 0 {
 		o.initHandlerCache()
 	}
 
-	return o.context.APIHandler()
+	return o.context.APIHandler(builder)
 }

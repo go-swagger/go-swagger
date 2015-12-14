@@ -17,9 +17,10 @@ import (
 //
 // swagger:parameters getEventById
 type GetEventByIDParams struct {
-	// Existing event id.
-	// Required: true
-	// In: path
+	/*Existing event id.
+	  Required: true
+	  In: path
+	*/
 	ID int64
 }
 
@@ -28,7 +29,8 @@ type GetEventByIDParams struct {
 func (o *GetEventByIDParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 
-	if err := o.bindID(route.Params.Get("id"), route.Formats); err != nil {
+	rID, rhkID, _ := route.Params.GetOK("id")
+	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -38,7 +40,11 @@ func (o *GetEventByIDParams) BindRequest(r *http.Request, route *middleware.Matc
 	return nil
 }
 
-func (o *GetEventByIDParams) bindID(raw string, formats strfmt.Registry) error {
+func (o *GetEventByIDParams) bindID(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
 
 	value, err := swag.ConvertInt64(raw)
 	if err != nil {

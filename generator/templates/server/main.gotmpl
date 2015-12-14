@@ -45,9 +45,7 @@ func main() {
 	}
 
   api := {{.Package}}.New{{ pascalize .Name }}API(swaggerSpec)
-  configureAPI(api)
-
-	handler := api.Serve()
+	handler := configureAPI(api)
 {{ if (hasInsecure .Schemes) }}
 	httpServer := &graceful.Server{Server: new(http.Server)}
 	httpServer.Handler = handler

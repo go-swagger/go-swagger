@@ -20,6 +20,7 @@ paths:
         - name: stringTypeInQuery
           type: string
           in: query
+          default: "qsValue"
         - name: numberTypeInQuery
           type: number
           in: query

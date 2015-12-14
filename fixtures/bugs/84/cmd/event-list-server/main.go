@@ -6,8 +6,11 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-swagger/go-swagger/spec"
+	"github.com/jessevdk/go-flags"
+	"github.com/tylerb/graceful"
 
 	"github.com/go-swagger/go-swagger/fixtures/bugs/84/restapi/operations"
 )
@@ -17,33 +20,59 @@ import (
 // It would only be overwritten if you explicitly specify --include-main for the generate all or support commands
 //go:generate swagger generate server -t ../.. -A EventList
 
+var opts struct {
+	Host string `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
+	Port int    `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`
+}
+
 func main() {
 	swaggerSpec, err := spec.New(SwaggerJSON, "")
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "0"
-	}
+	parser := flags.NewParser(&opts, flags.Default)
+	parser.ShortDescription = swaggerSpec.Spec().Info.Title
+	parser.LongDescription = swaggerSpec.Spec().Info.Description
 
-	host := os.Getenv("HOST")
-	if host == "" {
-		host = "localhost"
+	if _, err := parser.Parse(); err != nil {
+		os.Exit(1)
 	}
 
 	api := operations.NewEventListAPI(swaggerSpec)
-	configureAPI(api)
+	handler := configureAPI(api)
 
-	listener, err := net.Listen("tcp", host+":"+port)
+	httpServer := &graceful.Server{Server: new(http.Server)}
+	httpServer.Handler = handler
+
+	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", opts.Host, opts.Port))
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	fmt.Printf("serving event list at http://%s\n", listener.Addr())
-
-	if err := http.Serve(listener, api.Serve()); err != nil {
+	if err := httpServer.Serve(tcpKeepAliveListener{listener.(*net.TCPListener)}); err != nil {
 		log.Fatalln(err)
 	}
+
+}
+
+// tcpKeepAliveListener is copied from the stdlib net/http package
+
+// tcpKeepAliveListener sets TCP keep-alive timeouts on accepted
+// connections. It's used by ListenAndServe and ListenAndServeTLS so
+// dead TCP connections (e.g. closing laptop mid-download) eventually
+// go away.
+type tcpKeepAliveListener struct {
+	*net.TCPListener
+}
+
+func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
+	tc, err := ln.AcceptTCP()
+	if err != nil {
+		return
+	}
+	tc.SetKeepAlive(true)
+	tc.SetKeepAlivePeriod(3 * time.Minute)
+	return tc, nil
 }

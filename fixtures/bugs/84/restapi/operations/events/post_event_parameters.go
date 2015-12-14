@@ -17,9 +17,10 @@ import (
 //
 // swagger:parameters postEvent
 type PostEventParams struct {
-	// New events
-	// Required: true
-	// In: body
+	/*New events
+	  Required: true
+	  In: body
+	*/
 	Event *models.Event
 }
 
@@ -28,15 +29,17 @@ type PostEventParams struct {
 func (o *PostEventParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 
-	ev := new(models.Event)
-	if err := route.Consumer.Consume(r.Body, ev); err != nil {
+	var body models.Event
+	if err := route.Consumer.Consume(r.Body, &body); err != nil {
 		res = append(res, errors.NewParseError("event", "body", "", err))
 	} else {
-		if err := ev.Validate(route.Formats); err != nil {
+		if err := body.Validate(route.Formats); err != nil {
 			res = append(res, err)
 		}
-		o.Event = ev
 
+		if len(res) == 0 {
+			o.Event = &body
+		}
 	}
 
 	if len(res) > 0 {
