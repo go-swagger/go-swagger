@@ -18,6 +18,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"path"
 	"runtime"
 	"testing"
 
@@ -74,23 +75,23 @@ func TestFindPackage(t *testing.T) {
 		os.RemoveAll(pth2)
 	}()
 
-	searchPath := pth + ":" + pth2
+	searchPath := pth + string(filepath.ListSeparator)  + pth2
 	// finds package when real name mentioned
 	pkg := FindInSearchPath(searchPath, "foo/bar")
 	assert.NotEmpty(t, pkg)
-	assertPath(t, filepath.Join(pth, "src", "foo", "bar"), pkg)
+	assertPath(t, path.Join(pth, "src", "foo", "bar"), pkg)
 	// finds package when real name is mentioned in secondary
 	pkg = FindInSearchPath(searchPath, "fuu/bir")
 	assert.NotEmpty(t, pkg)
-	assertPath(t, filepath.Join(pth2, "src", "fuu", "bir"), pkg)
+	assertPath(t, path.Join(pth2, "src", "fuu", "bir"), pkg)
 	// finds package when symlinked
 	pkg = FindInSearchPath(searchPath, "baz/das")
 	assert.NotEmpty(t, pkg)
-	assertPath(t, filepath.Join(pth, "src", "foo", "bar"), pkg)
+	assertPath(t, path.Join(pth, "src", "foo", "bar"), pkg)
 	// finds package when symlinked in secondary
 	pkg = FindInSearchPath(searchPath, "biz/dis")
 	assert.NotEmpty(t, pkg)
-	assertPath(t, filepath.Join(pth2, "src", "fuu", "bir"), pkg)
+	assertPath(t, path.Join(pth2, "src", "fuu", "bir"), pkg)
 	// return empty string when nothing is found
 	pkg = FindInSearchPath(searchPath, "not/there")
 	assert.Empty(t, pkg)
