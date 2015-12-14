@@ -15,7 +15,7 @@
 package spec
 
 import (
-	"path/filepath"
+	slashpath "path"
 	"strconv"
 	"strings"
 
@@ -60,13 +60,13 @@ func (s *specAnalyzer) initialize() {
 
 	for name, parameter := range s.spec.Parameters {
 		if parameter.In == "body" && parameter.Schema != nil {
-			s.analyzeSchema("schema", *parameter.Schema, filepath.Join("/parameters", jsonpointer.Escape(name)))
+			s.analyzeSchema("schema", *parameter.Schema, slashpath.Join("/parameters", jsonpointer.Escape(name)))
 		}
 	}
 
 	for name, response := range s.spec.Responses {
 		if response.Schema != nil {
-			s.analyzeSchema("schema", *response.Schema, filepath.Join("/responses", jsonpointer.Escape(name)))
+			s.analyzeSchema("schema", *response.Schema, slashpath.Join("/responses", jsonpointer.Escape(name)))
 		}
 	}
 
@@ -85,7 +85,7 @@ func (s *specAnalyzer) analyzeOperations(path string, op *PathItem) {
 	s.analyzeOperation("OPTIONS", path, op.Options)
 	for i, param := range op.Parameters {
 		if param.Schema != nil {
-			s.analyzeSchema("schema", *param.Schema, filepath.Join("/paths", jsonpointer.Escape(path), "parameters", strconv.Itoa(i)))
+			s.analyzeSchema("schema", *param.Schema, slashpath.Join("/paths", jsonpointer.Escape(path), "parameters", strconv.Itoa(i)))
 		}
 	}
 }
@@ -110,51 +110,51 @@ func (s *specAnalyzer) analyzeOperation(method, path string, op *Operation) {
 		s.operations[method] = make(map[string]*Operation)
 	}
 	s.operations[method][path] = op
-	prefix := filepath.Join("/paths", jsonpointer.Escape(path), strings.ToLower(method))
+	prefix := slashpath.Join("/paths", jsonpointer.Escape(path), strings.ToLower(method))
 	for i, param := range op.Parameters {
 		if param.In == "body" && param.Schema != nil {
-			s.analyzeSchema("schema", *param.Schema, filepath.Join(prefix, "parameters", strconv.Itoa(i)))
+			s.analyzeSchema("schema", *param.Schema, slashpath.Join(prefix, "parameters", strconv.Itoa(i)))
 		}
 	}
 	if op.Responses != nil {
 		if op.Responses.Default != nil && op.Responses.Default.Schema != nil {
-			s.analyzeSchema("schema", *op.Responses.Default.Schema, filepath.Join(prefix, "responses", "default"))
+			s.analyzeSchema("schema", *op.Responses.Default.Schema, slashpath.Join(prefix, "responses", "default"))
 		}
 		for k, res := range op.Responses.StatusCodeResponses {
 			if res.Schema != nil {
-				s.analyzeSchema("schema", *res.Schema, filepath.Join(prefix, "responses", strconv.Itoa(k)))
+				s.analyzeSchema("schema", *res.Schema, slashpath.Join(prefix, "responses", strconv.Itoa(k)))
 			}
 		}
 	}
 }
 
 func (s *specAnalyzer) analyzeSchema(name string, schema Schema, prefix string) {
-	refURI := filepath.Join(prefix, jsonpointer.Escape(name))
+	refURI := slashpath.Join(prefix, jsonpointer.Escape(name))
 	s.allSchemas["#"+refURI] = SchemaRef{
 		Name:   name,
 		Schema: &schema,
 		Ref:    MustCreateRef("#" + refURI),
 	}
 	for k, v := range schema.Definitions {
-		s.analyzeSchema(k, v, filepath.Join(refURI, "definitions"))
+		s.analyzeSchema(k, v, slashpath.Join(refURI, "definitions"))
 	}
 	for k, v := range schema.Properties {
-		s.analyzeSchema(k, v, filepath.Join(refURI, "properties"))
+		s.analyzeSchema(k, v, slashpath.Join(refURI, "properties"))
 	}
 	for k, v := range schema.PatternProperties {
-		s.analyzeSchema(k, v, filepath.Join(refURI, "patternProperties"))
+		s.analyzeSchema(k, v, slashpath.Join(refURI, "patternProperties"))
 	}
 	for i, v := range schema.AllOf {
-		s.analyzeSchema(strconv.Itoa(i), v, filepath.Join(refURI, "allOf"))
+		s.analyzeSchema(strconv.Itoa(i), v, slashpath.Join(refURI, "allOf"))
 	}
 	if len(schema.AllOf) > 0 {
 		s.allOfs["#"+refURI] = SchemaRef{Name: name, Schema: &schema, Ref: MustCreateRef("#" + refURI)}
 	}
 	for i, v := range schema.AnyOf {
-		s.analyzeSchema(strconv.Itoa(i), v, filepath.Join(refURI, "anyOf"))
+		s.analyzeSchema(strconv.Itoa(i), v, slashpath.Join(refURI, "anyOf"))
 	}
 	for i, v := range schema.OneOf {
-		s.analyzeSchema(strconv.Itoa(i), v, filepath.Join(refURI, "oneOf"))
+		s.analyzeSchema(strconv.Itoa(i), v, slashpath.Join(refURI, "oneOf"))
 	}
 	if schema.Not != nil {
 		s.analyzeSchema("not", *schema.Not, refURI)
@@ -170,7 +170,7 @@ func (s *specAnalyzer) analyzeSchema(name string, schema Schema, prefix string) 
 			s.analyzeSchema("items", *schema.Items.Schema, refURI)
 		}
 		for i, sch := range schema.Items.Schemas {
-			s.analyzeSchema(strconv.Itoa(i), sch, filepath.Join(refURI, "items"))
+			s.analyzeSchema(strconv.Itoa(i), sch, slashpath.Join(refURI, "items"))
 		}
 	}
 }
