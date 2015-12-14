@@ -64,15 +64,23 @@ This means that for something to be discoverable it needs to be reachable by a c
 &lt;p&gt;This means you should be very aware of all the things godoc supports.&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://godoc.org/golang.org/x/tools/cmd/godoc&#34;&gt;godoc documentation&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;http://blog.golang.org/godoc-documenting-go-code&#34;&gt;godoc documenting go code&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://golang.org/pkg/go/doc/#ToHTML&#34;&gt;godoc ToHTML&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://golang.org/doc/effective_go.html#commentary&#34;&gt;commenting go effectively&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://godoc.org/golang.org/x/tools/cmd/godoc&#34;&gt;godoc documentation&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;Single page which documents all the currently supported godoc rules:&lt;/p&gt;
 
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://godoc.org/github.com/fluhus/godoc-tricks&#34;&gt;godoc tricks&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The generated code tries to avoid golint errors.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/golang/lint&#34;&gt;go lint&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/golang/go/wiki/CodeReviewComments&#34;&gt;go lint style guide&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;When an object has a title and a description field, it will use the go rules to parse those. So the first line of the
