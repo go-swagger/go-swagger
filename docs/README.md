@@ -11,4 +11,4 @@ hugo server -w
 
 To Deploy:
 
-From go-swagger repo root run ./deploy-docs.sh
+From go-swagger repo root run ./hack/deploy-docs.sh
