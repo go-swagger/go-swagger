@@ -56,13 +56,19 @@ The idea is that there are certain things that are more easily expressed by just
 
 This means you should be very aware of all the things godoc supports.
 
-* [godoc documentation](https://godoc.org/golang.org/x/tools/cmd/godoc)
 * [godoc documenting go code](http://blog.golang.org/godoc-documenting-go-code)
 * [godoc ToHTML](https://golang.org/pkg/go/doc/#ToHTML)
+* [commenting go effectively](https://golang.org/doc/effective_go.html#commentary)
+* [godoc documentation](https://godoc.org/golang.org/x/tools/cmd/godoc)
 
 Single page which documents all the currently supported godoc rules:
 
 * [godoc tricks](https://godoc.org/github.com/fluhus/godoc-tricks)
+
+The generated code tries to avoid golint errors.
+
+* [go lint](https://github.com/golang/lint)
+* [go lint style guide](https://github.com/golang/go/wiki/CodeReviewComments)
 
 When an object has a title and a description field, it will use the go rules to parse those. So the first line of the
 comment block will become the title, or a header when rendered as godoc. The rest of the comment block will be treated
