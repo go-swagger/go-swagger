@@ -1,0 +1,14 @@
+name = "Go Swagger"
+license = "ASL"
+licenselink = "https://github.com/pdevty/material-design/blob/master/LICENSE.md"
+description = "goswagger.io docsite theme"
+homepage = "https://github.com/go-swagger/go-swagger"
+tags = ["blog"]
+features = ["Simple Material Design","Google Analytics","Pagination",
+"Disqus","Tags","Categories","Highlighting source code","Cover image","Social links"]
+min_version = 0.1
+
+[author]
+  name = "casualjim"
+  homepage = "https://flanders.co.nz/"
+
