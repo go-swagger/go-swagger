@@ -387,3 +387,15 @@ func (o *AddOneDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.P
 ```
 
 So an implementer of the `AddOneHandler` could return one of these 2 objects and go-swagger is able to respect the contract set forward by the spec document.
+
+So to implement the AddOneHandler you could do something like this.
+
+```go
+todos.AddOneHandlerFunc(func(params todos.AddOneParams, principal interface{}) middleware.Responder {
+  created, err := database.Save(params.Body)
+  if err != nil {
+    return AddOneDefault{models.Error{500, err.Error()}}
+  }
+  return AddOneCreated{created}
+})
+```
