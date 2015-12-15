@@ -46,6 +46,20 @@ paths:
             X-Rate-Limit-Remaining:
               type: integer
               format: int32
+              default: 42
+            X-Rate-Limit-Reset:
+              type: integer
+              format: int32
+              default: "1449875311"
+            X-Rate-Limit-Reset-Human:
+              type: string
+              default: 3 days
+            X-Rate-Limit-Reset-Human-Number:
+              type: string
+              default: 3
+            Access-Control-Allow-Origin:
+              type: string
+              default: "*"
           schema:
             type: array
             items:

@@ -482,6 +482,7 @@ func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) Ge
 		Name:         name,
 		Path:         name,
 		Description:  hdr.Description,
+		Default:      hdr.Default,
 		Converter:    stringConverters[tpe.GoType],
 		Formatter:    stringFormatters[tpe.GoType],
 	}
@@ -876,6 +877,7 @@ type GenHeader struct {
 
 	Title       string
 	Description string
+	Default     interface{}
 
 	Converter string
 	Formatter string
