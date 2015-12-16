@@ -13,7 +13,8 @@ type {{ pascalize .Name }} struct {
   Pattern: {{ .Pattern }}{{ end }}{{ if .MaxItems }}
   Max Items: {{ .MaxItems }}{{ end }}{{ if .MinItems }}
   Min Items: {{ .MinItems }}{{ end }}{{ if .UniqueItems }}
-  Unique: true{{ end }}
+  Unique: true{{ end }}{{ if .Default }}
+  Default: {{ printf "%#v" .Default }}{{ end }}
   */
   {{ pascalize .Name }} {{ .GoType }} `json:"{{camelize .Name}},omitempty"`
   {{ end }}
@@ -21,6 +22,13 @@ type {{ pascalize .Name }} struct {
   // In: body
   Payload {{ if .Schema.IsComplexObject }}*{{ end }}{{ .Schema.GoType }} `json:"body,omitempty"`
   {{ end }}
+}
+
+// Create {{ pascalize .Name }} with default headers values
+func New{{ pascalize .Name }}() {{ pascalize .Name }} {
+  return {{ pascalize .Name }}{
+    {{ range .Headers }}{{ if .Default }}{{ pascalize .Name }}: {{ printf "%#v" .Default }},{{ end }}
+  {{ end }}}
 }
 
 // WriteResponse to the client

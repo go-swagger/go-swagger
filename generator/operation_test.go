@@ -69,13 +69,42 @@ func TestMakeResponseHeader(t *testing.T) {
 	}
 }
 
+func TestMakeResponseHeaderDefaultValues(t *testing.T) {
+	b, err := opBuilder("getTasks", "")
+	if assert.NoError(t, err) {
+		var testCases = []struct {
+			name         string      // input
+			typeStr      string      // expected type
+			defaultValue interface{} // expected result
+		}{
+			{"Access-Control-Allow-Origin", "string", "*"},
+			{"X-Rate-Limit", "int32", nil},
+			{"X-Rate-Limit-Remaining", "int32", float64(42)},
+			{"X-Rate-Limit-Reset", "int32", "1449875311"},
+			{"X-Rate-Limit-Reset-Human", "string", "3 days"},
+			{"X-Rate-Limit-Reset-Human-Number", "string", float64(3)},
+		}
+
+		for _, tc := range testCases {
+			t.Logf("tc: %+v", tc)
+			hdr := findResponseHeader(&b.Operation, 200, tc.name)
+			assert.NotNil(t, hdr)
+			gh := b.MakeHeader("a", tc.name, *hdr)
+			assert.True(t, gh.IsPrimitive)
+			assert.Equal(t, tc.typeStr, gh.GoType)
+			assert.Equal(t, tc.name, gh.Name)
+			assert.Exactly(t, tc.defaultValue, gh.Default)
+		}
+	}
+}
+
 func TestMakeResponse(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
 	if assert.NoError(t, err) {
 		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
 		gO, err := b.MakeResponse("a", "getTasksSuccess", true, resolver, 200, b.Operation.Responses.StatusCodeResponses[200])
 		if assert.NoError(t, err) {
-			assert.Len(t, gO.Headers, 2)
+			assert.Len(t, gO.Headers, 6)
 			assert.NotNil(t, gO.Schema)
 			assert.True(t, gO.Schema.IsArray)
 			assert.NotNil(t, gO.Schema.Items)
