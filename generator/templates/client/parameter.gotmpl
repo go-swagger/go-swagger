@@ -26,7 +26,7 @@ type {{ pascalize .Name }}Params struct {
   {{ .Description }}
 
   {{ end }}*/
-  {{ pascalize .Name }} {{ if and (not .IsArray) (or .IsNullable) }}*{{ end }}{{ .GoType }}
+  {{ pascalize .Name }} {{ if and (not .IsArray) (not .HasDiscriminator) (or .IsNullable  ) }}*{{ end }}{{ .GoType }}
   {{ end }}
 }
 
@@ -101,7 +101,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r client.
   {{ end }}
 
   {{if .IsBodyParam}}
-  {{ if and .Schema.IsComplexObject .Schema.IsNullable }}if {{ .ValueExpression }} == nil {
+  {{ if and .Schema.IsComplexObject .Schema.IsNullable (not .HasDiscriminator) }}if {{ .ValueExpression }} == nil {
     {{ .ValueExpression }} = {{ .ZeroValue }}
   }{{ end }}
 
