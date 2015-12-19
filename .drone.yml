@@ -1,0 +1,22 @@
+clone:
+  path: github.com/go-swagger/go-swagger
+
+build:
+  image: golang:1.5
+  pull: true
+  environment:
+    GOCOVMODE: "mode: count"
+    GO15VENDOREXPERIMENT: "1"
+  commands:
+    - go get -u github.com/FiloSottile/gvt
+    - go get -u golang.org/x/tools/cmd/...
+    - go get -u github.com/axw/gocov/gocov
+    - go get -u gopkg.in/matm/v1/gocov-html
+    - go get -u -t github.com/cee-dub/go-junit-report
+    - go get -u github.com/jteeuwen/go-bindata/...
+    - go get -u github.com/aktau/github-release
+    - go get -u github.com/asaskevich/govalidator
+    - go get -u github.com/naoina/denco
+    - go get -u github.com/go-swagger/scan-repo-boundary/makeplans
+    - ./hack/build-docker.sh
+
