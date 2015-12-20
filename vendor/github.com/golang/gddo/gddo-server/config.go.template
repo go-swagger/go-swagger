@@ -1,7 +1,0 @@
-package main
-
-func init() {
-	// Register an application at https://github.com/settings/applications/new
-	// and enter the client ID and client secret here.
-	gitHubCredentials = "client_id=<id>&client_secret=<secret>"
-}
