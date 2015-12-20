@@ -14,7 +14,7 @@ echo "mode: ${GOCOVMODE}" > profile.cov
 for dir in $(go list ./... | grep -v -E 'vendor|generator')
 do
   pth="${dir//*$repo_pref}"
-  go test -covermode=${COCOVMODE} -coverprofile=${pth}/profile.tmp $dir
+  go test -covermode=${GOCOVMODE} -coverprofile=${pth}/profile.tmp $dir
   if [ -f $pth/profile.tmp ]
   then
       cat $pth/profile.tmp | tail -n +2 >> profile.cov
