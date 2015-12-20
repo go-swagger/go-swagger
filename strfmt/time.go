@@ -108,17 +108,17 @@ func (t *DateTime) UnmarshalText(text []byte) error {
 }
 
 // Scan scans a DateTime value from database driver type.
-func (d *DateTime) Scan(raw interface{}) error {
+func (t *DateTime) Scan(raw interface{}) error {
 	// TODO: case int64: and case float64: ?
 	switch v := raw.(type) {
 	case []byte:
-		return d.UnmarshalText(v)
+		return t.UnmarshalText(v)
 	case string:
-		return d.UnmarshalText([]byte(v))
+		return t.UnmarshalText([]byte(v))
 	case time.Time:
-		*d = DateTime{v}
+		*t = DateTime{v}
 	case nil:
-		*d = DateTime{}
+		*t = DateTime{}
 	default:
 		return fmt.Errorf("cannot sql.Scan() strfmt.DateTime from: %#v", v)
 	}
@@ -127,6 +127,6 @@ func (d *DateTime) Scan(raw interface{}) error {
 }
 
 // Value converts DateTime to a primitive value ready to written to a database.
-func (d DateTime) Value() (driver.Value, error) {
-	return driver.Value(d.Time), nil
+func (t DateTime) Value() (driver.Value, error) {
+	return driver.Value(t.Time), nil
 }

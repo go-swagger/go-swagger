@@ -168,6 +168,7 @@ func (b *Base64) UnmarshalText(data []byte) error { // validation is performed l
 	return nil
 }
 
+// Scan read a value from a database driver
 func (b *Base64) Scan(raw interface{}) error {
 	switch v := raw.(type) {
 	case []byte:
@@ -181,6 +182,7 @@ func (b *Base64) Scan(raw interface{}) error {
 	return nil
 }
 
+// Value converts a value to a database driver value
 func (b Base64) Value() (driver.Value, error) {
 	return driver.Value(string(b)), nil
 }
@@ -201,12 +203,13 @@ func (u *URI) UnmarshalText(data []byte) error { // validation is performed late
 	return nil
 }
 
-func (b *URI) Scan(raw interface{}) error {
+// Scan read a value from a database driver
+func (u *URI) Scan(raw interface{}) error {
 	switch v := raw.(type) {
 	case []byte:
-		*b = URI(string(v))
+		*u = URI(string(v))
 	case string:
-		*b = URI(v)
+		*u = URI(v)
 	default:
 		return fmt.Errorf("cannot sql.Scan() strfmt.URI from: %#v", v)
 	}
@@ -214,8 +217,9 @@ func (b *URI) Scan(raw interface{}) error {
 	return nil
 }
 
-func (b URI) Value() (driver.Value, error) {
-	return driver.Value(string(b)), nil
+// Value converts a value to a database driver value
+func (u URI) Value() (driver.Value, error) {
+	return driver.Value(string(u)), nil
 }
 
 // Email represents the email string format as specified by the json schema spec
@@ -234,12 +238,13 @@ func (e *Email) UnmarshalText(data []byte) error { // validation is performed la
 	return nil
 }
 
-func (b *Email) Scan(raw interface{}) error {
+// Scan read a value from a database driver
+func (e *Email) Scan(raw interface{}) error {
 	switch v := raw.(type) {
 	case []byte:
-		*b = Email(string(v))
+		*e = Email(string(v))
 	case string:
-		*b = Email(v)
+		*e = Email(v)
 	default:
 		return fmt.Errorf("cannot sql.Scan() strfmt.Email from: %#v", v)
 	}
@@ -247,8 +252,9 @@ func (b *Email) Scan(raw interface{}) error {
 	return nil
 }
 
-func (b Email) Value() (driver.Value, error) {
-	return driver.Value(string(b)), nil
+// Value converts a value to a database driver value
+func (e Email) Value() (driver.Value, error) {
+	return driver.Value(string(e)), nil
 }
 
 // Hostname represents the hostname string format as specified by the json schema spec
@@ -267,12 +273,13 @@ func (h *Hostname) UnmarshalText(data []byte) error { // validation is performed
 	return nil
 }
 
-func (b *Hostname) Scan(raw interface{}) error {
+// Scan read a value from a database driver
+func (h *Hostname) Scan(raw interface{}) error {
 	switch v := raw.(type) {
 	case []byte:
-		*b = Hostname(string(v))
+		*h = Hostname(string(v))
 	case string:
-		*b = Hostname(v)
+		*h = Hostname(v)
 	default:
 		return fmt.Errorf("cannot sql.Scan() strfmt.Hostname from: %#v", v)
 	}
@@ -280,8 +287,9 @@ func (b *Hostname) Scan(raw interface{}) error {
 	return nil
 }
 
-func (b Hostname) Value() (driver.Value, error) {
-	return driver.Value(string(b)), nil
+// Value converts a value to a database driver value
+func (h Hostname) Value() (driver.Value, error) {
+	return driver.Value(string(h)), nil
 }
 
 // IPv4 represents an IP v4 address
@@ -300,12 +308,13 @@ func (u *IPv4) UnmarshalText(data []byte) error { // validation is performed lat
 	return nil
 }
 
-func (b *IPv4) Scan(raw interface{}) error {
+// Scan read a value from a database driver
+func (u *IPv4) Scan(raw interface{}) error {
 	switch v := raw.(type) {
 	case []byte:
-		*b = IPv4(string(v))
+		*u = IPv4(string(v))
 	case string:
-		*b = IPv4(v)
+		*u = IPv4(v)
 	default:
 		return fmt.Errorf("cannot sql.Scan() strfmt.IPv4 from: %#v", v)
 	}
@@ -313,8 +322,9 @@ func (b *IPv4) Scan(raw interface{}) error {
 	return nil
 }
 
-func (b IPv4) Value() (driver.Value, error) {
-	return driver.Value(string(b)), nil
+// Value converts a value to a database driver value
+func (u IPv4) Value() (driver.Value, error) {
+	return driver.Value(string(u)), nil
 }
 
 // IPv6 represents an IP v6 address
@@ -333,12 +343,13 @@ func (u *IPv6) UnmarshalText(data []byte) error { // validation is performed lat
 	return nil
 }
 
-func (b *IPv6) Scan(raw interface{}) error {
+// Scan read a value from a database driver
+func (u *IPv6) Scan(raw interface{}) error {
 	switch v := raw.(type) {
 	case []byte:
-		*b = IPv6(string(v))
+		*u = IPv6(string(v))
 	case string:
-		*b = IPv6(v)
+		*u = IPv6(v)
 	default:
 		return fmt.Errorf("cannot sql.Scan() strfmt.IPv6 from: %#v", v)
 	}
@@ -346,8 +357,9 @@ func (b *IPv6) Scan(raw interface{}) error {
 	return nil
 }
 
-func (b IPv6) Value() (driver.Value, error) {
-	return driver.Value(string(b)), nil
+// Value converts a value to a database driver value
+func (u IPv6) Value() (driver.Value, error) {
+	return driver.Value(string(u)), nil
 }
 
 // UUID represents a uuid string format
@@ -366,6 +378,7 @@ func (u *UUID) UnmarshalText(data []byte) error { // validation is performed lat
 	return nil
 }
 
+// Scan read a value from a database driver
 func (u *UUID) Scan(raw interface{}) error {
 	switch v := raw.(type) {
 	case []byte:
@@ -379,8 +392,9 @@ func (u *UUID) Scan(raw interface{}) error {
 	return nil
 }
 
-func (b UUID) Value() (driver.Value, error) {
-	return driver.Value(string(b)), nil
+// Value converts a value to a database driver value
+func (u UUID) Value() (driver.Value, error) {
+	return driver.Value(string(u)), nil
 }
 
 // UUID3 represents a uuid3 string format
@@ -399,6 +413,7 @@ func (u *UUID3) UnmarshalText(data []byte) error { // validation is performed la
 	return nil
 }
 
+// Scan read a value from a database driver
 func (u *UUID3) Scan(raw interface{}) error {
 	switch v := raw.(type) {
 	case []byte:
@@ -412,8 +427,9 @@ func (u *UUID3) Scan(raw interface{}) error {
 	return nil
 }
 
-func (b UUID3) Value() (driver.Value, error) {
-	return driver.Value(string(b)), nil
+// Value converts a value to a database driver value
+func (u UUID3) Value() (driver.Value, error) {
+	return driver.Value(string(u)), nil
 }
 
 // UUID4 represents a uuid4 string format
@@ -432,6 +448,7 @@ func (u *UUID4) UnmarshalText(data []byte) error { // validation is performed la
 	return nil
 }
 
+// Scan read a value from a database driver
 func (u *UUID4) Scan(raw interface{}) error {
 	switch v := raw.(type) {
 	case []byte:
@@ -445,8 +462,9 @@ func (u *UUID4) Scan(raw interface{}) error {
 	return nil
 }
 
-func (b UUID4) Value() (driver.Value, error) {
-	return driver.Value(string(b)), nil
+// Value converts a value to a database driver value
+func (u UUID4) Value() (driver.Value, error) {
+	return driver.Value(string(u)), nil
 }
 
 // UUID5 represents a uuid5 string format
@@ -465,6 +483,7 @@ func (u *UUID5) UnmarshalText(data []byte) error { // validation is performed la
 	return nil
 }
 
+// Scan read a value from a database driver
 func (u *UUID5) Scan(raw interface{}) error {
 	switch v := raw.(type) {
 	case []byte:
@@ -478,8 +497,9 @@ func (u *UUID5) Scan(raw interface{}) error {
 	return nil
 }
 
-func (b UUID5) Value() (driver.Value, error) {
-	return driver.Value(string(b)), nil
+// Value converts a value to a database driver value
+func (u UUID5) Value() (driver.Value, error) {
+	return driver.Value(string(u)), nil
 }
 
 // ISBN represents an isbn string format
@@ -498,12 +518,13 @@ func (u *ISBN) UnmarshalText(data []byte) error { // validation is performed lat
 	return nil
 }
 
-func (i *ISBN) Scan(raw interface{}) error {
+// Scan read a value from a database driver
+func (u *ISBN) Scan(raw interface{}) error {
 	switch v := raw.(type) {
 	case []byte:
-		*i = ISBN(string(v))
+		*u = ISBN(string(v))
 	case string:
-		*i = ISBN(v)
+		*u = ISBN(v)
 	default:
 		return fmt.Errorf("cannot sql.Scan() strfmt.ISBN from: %#v", v)
 	}
@@ -511,8 +532,9 @@ func (i *ISBN) Scan(raw interface{}) error {
 	return nil
 }
 
-func (i ISBN) Value() (driver.Value, error) {
-	return driver.Value(string(i)), nil
+// Value converts a value to a database driver value
+func (u ISBN) Value() (driver.Value, error) {
+	return driver.Value(string(u)), nil
 }
 
 // ISBN10 represents an isbn 10 string format
@@ -531,12 +553,13 @@ func (u *ISBN10) UnmarshalText(data []byte) error { // validation is performed l
 	return nil
 }
 
-func (i *ISBN10) Scan(raw interface{}) error {
+// Scan read a value from a database driver
+func (u *ISBN10) Scan(raw interface{}) error {
 	switch v := raw.(type) {
 	case []byte:
-		*i = ISBN10(string(v))
+		*u = ISBN10(string(v))
 	case string:
-		*i = ISBN10(v)
+		*u = ISBN10(v)
 	default:
 		return fmt.Errorf("cannot sql.Scan() strfmt.ISBN10 from: %#v", v)
 	}
@@ -544,8 +567,9 @@ func (i *ISBN10) Scan(raw interface{}) error {
 	return nil
 }
 
-func (i ISBN10) Value() (driver.Value, error) {
-	return driver.Value(string(i)), nil
+// Value converts a value to a database driver value
+func (u ISBN10) Value() (driver.Value, error) {
+	return driver.Value(string(u)), nil
 }
 
 // ISBN13 represents an isbn 13 string format
@@ -564,12 +588,13 @@ func (u *ISBN13) UnmarshalText(data []byte) error { // validation is performed l
 	return nil
 }
 
-func (i *ISBN13) Scan(raw interface{}) error {
+// Scan read a value from a database driver
+func (u *ISBN13) Scan(raw interface{}) error {
 	switch v := raw.(type) {
 	case []byte:
-		*i = ISBN13(string(v))
+		*u = ISBN13(string(v))
 	case string:
-		*i = ISBN13(v)
+		*u = ISBN13(v)
 	default:
 		return fmt.Errorf("cannot sql.Scan() strfmt.ISBN13 from: %#v", v)
 	}
@@ -577,8 +602,9 @@ func (i *ISBN13) Scan(raw interface{}) error {
 	return nil
 }
 
-func (i ISBN13) Value() (driver.Value, error) {
-	return driver.Value(string(i)), nil
+// Value converts a value to a database driver value
+func (u ISBN13) Value() (driver.Value, error) {
+	return driver.Value(string(u)), nil
 }
 
 // CreditCard represents a credit card string format
@@ -597,12 +623,13 @@ func (u *CreditCard) UnmarshalText(data []byte) error { // validation is perform
 	return nil
 }
 
-func (cc *CreditCard) Scan(raw interface{}) error {
+// Scan read a value from a database driver
+func (u *CreditCard) Scan(raw interface{}) error {
 	switch v := raw.(type) {
 	case []byte:
-		*cc = CreditCard(string(v))
+		*u = CreditCard(string(v))
 	case string:
-		*cc = CreditCard(v)
+		*u = CreditCard(v)
 	default:
 		return fmt.Errorf("cannot sql.Scan() strfmt.CreditCard from: %#v", v)
 	}
@@ -610,8 +637,9 @@ func (cc *CreditCard) Scan(raw interface{}) error {
 	return nil
 }
 
-func (cc CreditCard) Value() (driver.Value, error) {
-	return driver.Value(string(cc)), nil
+// Value converts a value to a database driver value
+func (u CreditCard) Value() (driver.Value, error) {
+	return driver.Value(string(u)), nil
 }
 
 // SSN represents a social security string format
@@ -630,12 +658,13 @@ func (u *SSN) UnmarshalText(data []byte) error { // validation is performed late
 	return nil
 }
 
-func (ssn *SSN) Scan(raw interface{}) error {
+// Scan read a value from a database driver
+func (u *SSN) Scan(raw interface{}) error {
 	switch v := raw.(type) {
 	case []byte:
-		*ssn = SSN(string(v))
+		*u = SSN(string(v))
 	case string:
-		*ssn = SSN(v)
+		*u = SSN(v)
 	default:
 		return fmt.Errorf("cannot sql.Scan() strfmt.SSN from: %#v", v)
 	}
@@ -643,8 +672,9 @@ func (ssn *SSN) Scan(raw interface{}) error {
 	return nil
 }
 
-func (ssn SSN) Value() (driver.Value, error) {
-	return driver.Value(string(ssn)), nil
+// Value converts a value to a database driver value
+func (u SSN) Value() (driver.Value, error) {
+	return driver.Value(string(u)), nil
 }
 
 // HexColor represents a hex color string format
@@ -663,6 +693,7 @@ func (h *HexColor) UnmarshalText(data []byte) error { // validation is performed
 	return nil
 }
 
+// Scan read a value from a database driver
 func (h *HexColor) Scan(raw interface{}) error {
 	switch v := raw.(type) {
 	case []byte:
@@ -676,6 +707,7 @@ func (h *HexColor) Scan(raw interface{}) error {
 	return nil
 }
 
+// Value converts a value to a database driver value
 func (h HexColor) Value() (driver.Value, error) {
 	return driver.Value(string(h)), nil
 }
@@ -696,6 +728,7 @@ func (r *RGBColor) UnmarshalText(data []byte) error { // validation is performed
 	return nil
 }
 
+// Scan read a value from a database driver
 func (r *RGBColor) Scan(raw interface{}) error {
 	switch v := raw.(type) {
 	case []byte:
@@ -709,6 +742,7 @@ func (r *RGBColor) Scan(raw interface{}) error {
 	return nil
 }
 
+// Value converts a value to a database driver value
 func (r RGBColor) Value() (driver.Value, error) {
 	return driver.Value(string(r)), nil
 }
@@ -730,12 +764,13 @@ func (r *Password) UnmarshalText(data []byte) error { // validation is performed
 	return nil
 }
 
-func (p *Password) Scan(raw interface{}) error {
+// Scan read a value from a database driver
+func (r *Password) Scan(raw interface{}) error {
 	switch v := raw.(type) {
 	case []byte:
-		*p = Password(string(v))
+		*r = Password(string(v))
 	case string:
-		*p = Password(v)
+		*r = Password(v)
 	default:
 		return fmt.Errorf("cannot sql.Scan() strfmt.Password from: %#v", v)
 	}
@@ -743,6 +778,7 @@ func (p *Password) Scan(raw interface{}) error {
 	return nil
 }
 
-func (p Password) Value() (driver.Value, error) {
-	return driver.Value(string(p)), nil
+// Value converts a value to a database driver value
+func (r Password) Value() (driver.Value, error) {
+	return driver.Value(string(r)), nil
 }
