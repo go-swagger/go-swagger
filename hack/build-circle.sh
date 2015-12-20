@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e -x
+set -e -x -o pipefail
 
 godep go test -v -race $(go list ./... | grep -v vendor) | go-junit-report -dir $CIRCLE_TEST_REPORTS/go
 
@@ -8,7 +8,6 @@ godep go test -v -race $(go list ./... | grep -v vendor) | go-junit-report -dir 
 echo "mode: set" > profile.cov
 repo_pref="github.com/${CIRCLE_PROJECT_USERNAME-"$(basename `pwd`)"}/${CIRCLE_PROJECT_REPONAME-"$(basename `pwd`)"}/"
 # Standard go tooling behavior is to ignore dirs with leading underscores
-set -x
 for dir in $(go list ./... | grep -v -E 'vendor|generator')
 do
   pth="${dir//*$repo_pref}"

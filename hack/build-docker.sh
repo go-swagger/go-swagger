@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -e -o pipefail
 export GO15VENDOREXPERIMENT=1
 go test -v -race $(go list ./... | grep -v vendor) | go-junit-report -dir /usr/share/testresults
 
