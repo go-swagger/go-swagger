@@ -46,13 +46,18 @@ func GenerateSupport(name string, modelNames, operationIDs []string, opts GenOpt
 		defaultScheme = "http"
 	}
 
+	ops := make(map[string]spec.Operation)
+	for k, v := range operations {
+		ops[k] = v.Op
+	}
+
 	apiPackage := mangleName(swag.ToFileName(opts.APIPackage), "api")
 	generator := appGenerator{
 		Name:       appNameOrDefault(specDoc, name, "swagger"),
 		Receiver:   "o",
 		SpecDoc:    specDoc,
 		Models:     models,
-		Operations: operations,
+		Operations: ops,
 		Target:     opts.Target,
 		// Package:       filepath.Base(opts.Target),
 		DumpData:      opts.DumpData,

@@ -34,7 +34,7 @@ import (
 // Allows for specifying a list of tags to include only certain tags for the generation
 func GenerateServerOperation(operationNames, tags []string, includeHandler, includeParameters, includeResponses bool, opts GenOpts) error {
 	// Load the spec
-	specPath, specDoc, err := loadSpec(opts.Spec)
+	_, specDoc, err := loadSpec(opts.Spec)
 	if err != nil {
 		return err
 	}
@@ -43,11 +43,10 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 		operationNames = specDoc.OperationIDs()
 	}
 
-	for _, operationName := range operationNames {
-		method, path, operation, ok := specDoc.OperationForName(operationName)
-		if !ok {
-			return fmt.Errorf("operation %q not found in %s", operationName, specPath)
-		}
+	ops := gatherOperations(specDoc, operationNames)
+
+	for operationName, opRef := range ops {
+		method, path, operation := opRef.Method, opRef.Path, opRef.Op
 		defaultScheme := opts.DefaultScheme
 		if defaultScheme == "" {
 			defaultScheme = "http"
@@ -63,8 +62,8 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 			ModelsPackage:        mangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
 			ClientPackage:        mangleName(swag.ToFileName(opts.ClientPackage), "client"),
 			ServerPackage:        serverPackage,
-			Operation:            *operation,
-			SecurityRequirements: specDoc.SecurityRequirementsFor(operation),
+			Operation:            operation,
+			SecurityRequirements: specDoc.SecurityRequirementsFor(&operation),
 			Principal:            opts.Principal,
 			Target:               filepath.Join(opts.Target, serverPackage),
 			Base:                 opts.Target,
@@ -410,6 +409,9 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 	sort.Sort(res.Headers)
 
 	if resp.Schema != nil {
+		if len(resp.Schema.AllOf) > 0 {
+			fmt.Println("all of", len(resp.Schema.AllOf) > 0)
+		}
 		sc := schemaGenContext{
 			Path:         fmt.Sprintf("%q", name),
 			Name:         name + "Body",
@@ -427,6 +429,9 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 		}
 
 		for k, v := range sc.ExtraSchemas {
+			if b.ExtraSchemas == nil {
+				b.ExtraSchemas = make(map[string]GenSchema)
+			}
 			b.ExtraSchemas[k] = v
 		}
 

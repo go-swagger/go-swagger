@@ -239,10 +239,10 @@ func appNameOrDefault(specDoc *spec.Document, name, defaultName string) string {
 
 var namesCounter int64
 
-func ensureUniqueName(key string, operations map[string]spec.Operation) string {
+func ensureUniqueName(key string, operations map[string]opRef) string {
 	nm := key
 	if nm == "" {
-		nm = "Unnamed"
+		nm = "Operation"
 	}
 	_, found := operations[nm]
 	if found {
@@ -261,14 +261,26 @@ func containsString(names []string, name string) bool {
 	return false
 }
 
-func gatherOperations(specDoc *spec.Document, operationIDs []string) map[string]spec.Operation {
-	operations := make(map[string]spec.Operation)
+type opRef struct {
+	Method string
+	Path   string
+	Op     spec.Operation
+}
 
-	for _, pathItem := range specDoc.Operations() {
-		for _, operation := range pathItem {
+func gatherOperations(specDoc *spec.Document, operationIDs []string) map[string]opRef {
+	operations := make(map[string]opRef)
+
+	for method, pathItem := range specDoc.Operations() {
+		for path, operation := range pathItem {
 			if len(operationIDs) == 0 || containsString(operationIDs, operation.ID) {
 				nm := ensureUniqueName(operation.ID, operations)
-				operations[nm] = *operation
+				vv := *operation
+				vv.ID = nm
+				operations[nm] = opRef{
+					Method: method,
+					Path:   path,
+					Op:     vv,
+				}
 			}
 		}
 	}

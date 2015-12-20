@@ -51,9 +51,9 @@ func TestEmptyOperationNames(t *testing.T) {
 
 		ops := gatherOperations(doc, nil)
 		assert.Len(t, ops, 4)
-		_, exists := ops["Unnamed"]
+		_, exists := ops["Operation"]
 		assert.True(t, exists)
-		_, exists = ops["Unnamed"]
+		_, exists = ops["Operation"]
 		assert.True(t, exists)
 	}
 }
@@ -112,6 +112,9 @@ func TestMakeResponse(t *testing.T) {
 			assert.Equal(t, "[]*models.Task", gO.Schema.GoType)
 		}
 	}
+}
+
+func TestMakeResponse_WithAllOfSchema(t *testing.T) {
 }
 
 func TestMakeOperationParam(t *testing.T) {

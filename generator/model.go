@@ -515,13 +515,15 @@ func (sg *schemaGenContext) buildProperties() error {
 			emprop.GenSchema.NeedsValidation = true
 		}
 		if emprop.Schema.Ref.String() != "" {
-			if _, ok := emprop.Discrimination.Discriminators[emprop.Schema.Ref.String()]; ok {
-				emprop.GenSchema.IsBaseType = true
-				emprop.GenSchema.IsNullable = false
-				emprop.GenSchema.HasBaseType = true
-			}
-			if _, ok := emprop.Discrimination.Discriminated[emprop.Schema.Ref.String()]; ok {
-				emprop.GenSchema.IsSubType = true
+			if emprop.Discrimination != nil {
+				if _, ok := emprop.Discrimination.Discriminators[emprop.Schema.Ref.String()]; ok {
+					emprop.GenSchema.IsBaseType = true
+					emprop.GenSchema.IsNullable = false
+					emprop.GenSchema.HasBaseType = true
+				}
+				if _, ok := emprop.Discrimination.Discriminated[emprop.Schema.Ref.String()]; ok {
+					emprop.GenSchema.IsSubType = true
+				}
 			}
 		}
 		if emprop.GenSchema.IsBaseType {
