@@ -458,13 +458,13 @@ func IsIP(str string) bool {
 // IsIPv4 check if the string is an IP version 4.
 func IsIPv4(str string) bool {
 	ip := net.ParseIP(str)
-	return ip != nil && ip.To4() != nil
+	return ip != nil && strings.Contains(str, ".")
 }
 
 // IsIPv6 check if the string is an IP version 6.
 func IsIPv6(str string) bool {
 	ip := net.ParseIP(str)
-	return ip != nil && ip.To4() == nil
+	return ip != nil && strings.Contains(str, ":")
 }
 
 // IsMAC check if a string is valid MAC address.
@@ -574,6 +574,15 @@ func ByteLength(str string, params ...string) bool {
 	return false
 }
 
+// StringMatches checks if a string matches a given pattern.
+func StringMatches(s string, params ...string) bool {
+	if len(params) == 1 {
+		pattern := params[0]
+		return Matches(s, pattern)
+	}
+	return false
+}
+
 // StringLength check string's length (including multi byte strings)
 func StringLength(str string, params ...string) bool {
 
@@ -667,7 +676,7 @@ func typeCheck(v reflect.Value, t reflect.StructField) (bool, error) {
 				negate = true
 			}
 			if ok := isValidTag(tagOpt); !ok {
-				err := fmt.Errorf("Unkown Validator %s", tagOpt)
+				err := fmt.Errorf("Unknown Validator %s", tagOpt)
 				return false, Error{t.Name, err}
 			}
 

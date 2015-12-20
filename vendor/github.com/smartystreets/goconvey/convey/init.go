@@ -34,14 +34,19 @@ func noStoryFlagProvided() bool {
 }
 
 func buildReporter() reporting.Reporter {
+	selectReporter := os.Getenv("GOCONVEY_REPORTER")
+
 	switch {
 	case testReporter != nil:
 		return testReporter
-	case json:
+	case json || selectReporter == "json":
 		return reporting.BuildJsonReporter()
-	case silent:
+	case silent || selectReporter == "silent":
 		return reporting.BuildSilentReporter()
-	case story:
+	case selectReporter == "dot":
+		// Story is turned on when verbose is set, so we need to check for dot reporter first.
+		return reporting.BuildDotReporter()
+	case story || selectReporter == "story":
 		return reporting.BuildStoryReporter()
 	default:
 		return reporting.BuildDotReporter()

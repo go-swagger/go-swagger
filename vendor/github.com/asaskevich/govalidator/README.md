@@ -32,6 +32,7 @@ func Abs(value float64) float64
 func BlackList(str, chars string) string
 func ByteLength(str string, params ...string) bool
 func StringLength(str string, params ...string) bool
+func StringMatches(s string, params ...string) bool
 func CamelCaseToUnderscore(str string) string
 func Contains(str, substring string) bool
 func Count(array []interface{}, iterator ConditionIterator) int
@@ -227,6 +228,7 @@ Validators with parameters
 
 ```go
 "length(min|max)": ByteLength,
+"matches(pattern)": StringMatches,
 ```
 
 And here is small example of usage:
