@@ -51,9 +51,7 @@ install:
   - go get -u -v github.com/tools/godep
   - go get -u -v github.com/jteeuwen/go-bindata/...
   - go get -u -v github.com/elazarl/go-bindata-assetfs/...
-  - go get -u -v github.com/asaskevich/govalidator
-  - go get -u -v github.com/naoina/denco
-  - go get -u -v github.com/go-swagger/scan-repo-boundary/makeplans
+  - go get -u ./...
 
 
   # some helpful output for debugging builds
