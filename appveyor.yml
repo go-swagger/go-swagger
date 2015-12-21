@@ -1,4 +1,4 @@
-version: "{build}"
+version: "0.1.{build}"
 
 # Operating system (build VM template)
 os: Windows Server 2012 R2
@@ -32,6 +32,8 @@ install:
   - bzr --version
 
   # get the dependencies etc
+  - go get -u -v golang.org/x/tools/go/loader
+  - go get -u -v golang.org/x/tools/go/imports
   - go get -u -v github.com/asaskevich/govalidator
   - go get -u -v github.com/naoina/denco
   - go get -u -v github.com/go-swagger/scan-repo-boundary/makeplans
