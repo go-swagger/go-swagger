@@ -5,6 +5,9 @@ os: Windows Server 2012 R2
 
 clone_folder: C:\gopath\src\github.com\go-swagger\go-swagger
 shallow_clone: true # for startup speed
+pull_requests:
+  do_not_increment_build_number: true
+
 
 environment:
   GOPATH: C:\gopath
@@ -28,38 +31,14 @@ install:
   - set PATH=C:\Program Files (x86)\Bazaar;%PATH%
   - bzr --version
 
-  # install go tools
-  - go get -u -v golang.org/x/tools/cmd/goimports
-  - go get -u -v golang.org/x/tools/cmd/cover
-  - go get -u -v golang.org/x/tools/cmd/vet
-  - go get -u -v golang.org/x/tools/cmd/stringer
-  - go get -u -v golang.org/x/tools/cmd/gotype
-  - go get -u -v golang.org/x/tools/cmd/godoc
-  - go get -u -v golang.org/x/net/context
-  - go get -u -v github.com/smartystreets/goconvey
-  - go get -u -v github.com/pquerna/ffjson
-  - go get -u -v github.com/kr/pretty
-
-  # code coverage
-  - go get github.com/axw/gocov/gocov
-  - go get gopkg.in/matm/v1/gocov-html
-
-  # test output
-  - go get -t -v -u -f github.com/cee-dub/go-junit-report
-
   # get the dependencies etc
-  - go get -u -v github.com/FiloSottile/gvt
-  - go get -u -v github.com/jteeuwen/go-bindata/...
-  - go get -u -v github.com/elazarl/go-bindata-assetfs/...
   - go get -u -v github.com/asaskevich/govalidator
   - go get -u -v github.com/naoina/denco
   - go get -u -v github.com/go-swagger/scan-repo-boundary/makeplans
 
-
   # some helpful output for debugging builds
   - go version
   - go env
-
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
@@ -72,3 +51,13 @@ test_script:
 #artifacts:
 #  - path: '%GOPATH%\bin\*.exe'
 deploy: off
+
+notifications:
+  - provider: Slack
+    incoming_webhook: https://hooks.slack.com/services/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
+    auth_token:
+      secure: J4Kd3fY4CoTI+5+zSXkStkTPqnycfxFfk74GcGxDUq02z2jHcdIpiLyDbkIiQM9Z
+    channel: general
+    on_build_success: false
+    on_build_failure: true
+    on_build_status_changed: true
