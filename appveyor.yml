@@ -32,8 +32,6 @@ install:
   - bzr --version
 
   # get the dependencies etc
-  - go get -u -v golang.org/x/tools/go/loader
-  - go get -u -v golang.org/x/tools/go/imports
   - go get -u -v github.com/asaskevich/govalidator
   - go get -u -v github.com/naoina/denco
   - go get -u -v github.com/go-swagger/scan-repo-boundary/makeplans

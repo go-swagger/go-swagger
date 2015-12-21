@@ -138,6 +138,48 @@
 			"path": "/netutil"
 		},
 		{
+			"importpath": "golang.org/x/tools/go/ast/astutil",
+			"repository": "https://go.googlesource.com/tools",
+			"revision": "9673333889cecd0170042cef4585f782e59c45da",
+			"branch": "master",
+			"path": "/go/ast/astutil"
+		},
+		{
+			"importpath": "golang.org/x/tools/go/buildutil",
+			"repository": "https://go.googlesource.com/tools",
+			"revision": "9673333889cecd0170042cef4585f782e59c45da",
+			"branch": "master",
+			"path": "/go/buildutil"
+		},
+		{
+			"importpath": "golang.org/x/tools/go/exact",
+			"repository": "https://go.googlesource.com/tools",
+			"revision": "9673333889cecd0170042cef4585f782e59c45da",
+			"branch": "master",
+			"path": "/go/exact"
+		},
+		{
+			"importpath": "golang.org/x/tools/go/loader",
+			"repository": "https://go.googlesource.com/tools",
+			"revision": "9673333889cecd0170042cef4585f782e59c45da",
+			"branch": "master",
+			"path": "/go/loader"
+		},
+		{
+			"importpath": "golang.org/x/tools/go/types",
+			"repository": "https://go.googlesource.com/tools",
+			"revision": "9673333889cecd0170042cef4585f782e59c45da",
+			"branch": "master",
+			"path": "/go/types"
+		},
+		{
+			"importpath": "golang.org/x/tools/imports",
+			"repository": "https://go.googlesource.com/tools",
+			"revision": "9673333889cecd0170042cef4585f782e59c45da",
+			"branch": "master",
+			"path": "/imports"
+		},
+		{
 			"importpath": "gopkg.in/yaml.v2",
 			"repository": "https://gopkg.in/yaml.v2",
 			"revision": "f7716cbe52baa25d2e9b0d0da546fcf909fc16b4",
