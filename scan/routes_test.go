@@ -23,6 +23,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestRouteExpression(t *testing.T) {
+	assert.Regexp(t, rxRoute, "swagger:route DELETE /orders/{id} deleteOrder")
+}
+
 func TestRoutesParser(t *testing.T) {
 	docFile := "../fixtures/goparsing/classification/operations/todo_operation.go"
 	fileTree, err := goparser.ParseFile(classificationProg.Fset, docFile, nil, goparser.ParseComments)
@@ -83,6 +87,7 @@ func TestRoutesParser(t *testing.T) {
 		"",
 		[]string{"orders"},
 	)
+
 	assertOperation(t,
 		po.Put,
 		"updateOrder",
@@ -90,12 +95,13 @@ func TestRoutesParser(t *testing.T) {
 		"When the order doesn't exist this will return an error.",
 		[]string{"orders"},
 	)
+
 	assertOperation(t,
 		po.Delete,
 		"deleteOrder",
 		"delete a particular order.",
 		"",
-		[]string{"orders"},
+		nil,
 	)
 }
 

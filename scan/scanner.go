@@ -65,9 +65,9 @@ var (
 			rxMethod +
 			"\\p{Zs}*" +
 			rxPath +
-			"\\p{Zs}+" +
+			"(?:\\p{Zs}+" +
 			rxOpTags +
-			"\\p{Zs}+" +
+			")?\\p{Zs}+" +
 			rxOpID + "\\p{Zs}*$")
 
 	rxSpace              = regexp.MustCompile("\\p{Zs}+")

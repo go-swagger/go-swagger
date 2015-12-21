@@ -76,9 +76,12 @@ func (rp *routesParser) Parse(gofile *ast.File, target interface{}) error {
 		for _, cmt := range comsec.List {
 			for _, line := range strings.Split(cmt.Text, "\n") {
 				matches := rxRoute.FindStringSubmatch(line)
-				if len(matches) > 3 && len(matches[3]) > 0 {
+				if len(matches) > 3 {
 					method, path, id = matches[1], matches[2], matches[len(matches)-1]
 					tags = rxSpace.Split(matches[3], -1)
+					if len(matches[3]) == 0 {
+						tags = nil
+					}
 					justMatched = true
 				} else if method != "" {
 					if remaining == nil {

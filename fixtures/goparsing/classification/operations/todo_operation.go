@@ -172,7 +172,7 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	// 422: validationError
 	mountItem("PUT", basePath+"/orders/:id", nil)
 
-	// swagger:route DELETE /orders/{id} orders deleteOrder
+	// swagger:route DELETE /orders/{id} deleteOrder
 	//
 	// delete a particular order.
 	//
