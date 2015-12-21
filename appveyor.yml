@@ -67,7 +67,7 @@ build_script:
   - echo %GOPATH%
 
 test_script:
-  - go test -v ./...
+  - ps: go test -v -race $(go list ./... | sls -n vendor)
 
 #artifacts:
 #  - path: '%GOPATH%\bin\*.exe'
