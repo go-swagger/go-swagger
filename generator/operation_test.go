@@ -17,7 +17,6 @@ package generator
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"testing"
 
 	"github.com/go-swagger/go-swagger/spec"
@@ -194,27 +193,7 @@ func TestMakeOperation(t *testing.T) {
 }
 
 func TestRenderOperation_InstagramSearch(t *testing.T) {
-	//b, err := methodPathOpBuilder("get", "/media/search", "../fixtures/codegen/instagram.yml")
-	//if assert.NoError(t, err) {
-	//gO, err := b.MakeOperation()
-	//if assert.NoError(t, err) {
-	//buf := bytes.NewBuffer(nil)
-	//err := responsesTemplate.Execute(buf, gO)
-	//if assert.NoError(t, err) {
-	//ff, err := formatGoFile("responses.go", buf.Bytes())
-	//if assert.NoError(t, err) {
-	//res := string(ff)
-	////fmt.Println(res)
-	//assertInCode(t, "Data []DataItems0 `json:\"data,omitempty\"`", res)
-	//assertInCode(t, "models.Media", res)
-	//}
-	//}
-	//}
-	//}
-	GenerateServerOperation(nil, nil, true, true, true, GenOpts{})
-
-	// POST /media/{media-id}/comments
-	b, err := methodPathOpBuilder("POST", "/media/{media-id}/comments", "../fixtures/codegen/instagram.yml")
+	b, err := methodPathOpBuilder("get", "/media/search", "../fixtures/codegen/instagram.yml")
 	if assert.NoError(t, err) {
 		gO, err := b.MakeOperation()
 		if assert.NoError(t, err) {
@@ -224,9 +203,9 @@ func TestRenderOperation_InstagramSearch(t *testing.T) {
 				ff, err := formatGoFile("responses.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
-					fmt.Println(res)
-					//assertInCode(t, "Data []DataItems0 `json:\"data,omitempty\"`", res)
-					//assertInCode(t, "models.Media", res)
+					//fmt.Println(res)
+					assertInCode(t, "Data []DataItems0 `json:\"data,omitempty\"`", res)
+					assertInCode(t, "models.Media", res)
 				}
 			}
 		}

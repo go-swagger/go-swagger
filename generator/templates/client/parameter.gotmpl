@@ -82,10 +82,11 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r client.
   {{ end }}
   {{ if and .IsNullable (not .AllowEmptyValue) }}}{{end}}
   {{else if .IsArray }}
-  {{ if .Child.Formatter }}var values{{ pascalize .Name }} []string
+  {{ if .Child }}{{ if .Child.Formatter }}var values{{ pascalize .Name }} []string
   for _, v := range {{ if and (not .IsArray) (.IsNullable) }}*{{end}}{{ .ValueExpression }} {
     values{{ pascalize .Name }} = append(values{{ pascalize .Name }}, {{ .Child.Formatter }}(v))
   }
+  {{ else }}values{{ pascalize .Name }} := {{ if and (not .IsArray) (.IsNullable) }}*{{end}}{{ .ValueExpression }}{{ end }}
   {{ else }}values{{ pascalize .Name }} := {{ if and (not .IsArray) (.IsNullable) }}*{{end}}{{ .ValueExpression }}{{ end }}
   joined{{ pascalize .Name}} := swag.JoinByFormat(values{{ pascalize .Name }}, "{{.CollectionFormat}}")
   {{ if .IsQueryParam }}// query array param {{ .Name }}
