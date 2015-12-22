@@ -49,10 +49,7 @@ func discriminatorInfo(doc *spec.Document) *discInfo {
 				if bt, ok := baseTypes[ao.Ref.String()]; ok {
 					name, _ := sch.Schema.Extensions.GetString("x-class")
 					if name == "" {
-						name, _ = sch.Schema.Extensions.GetString("x-go-name")
-					}
-					if name == "" {
-						name = swag.ToGoName(sch.Name)
+						name = sch.Name
 					}
 					tpe, _ := sch.Schema.Extensions.GetString("x-go-name")
 					if tpe == "" {

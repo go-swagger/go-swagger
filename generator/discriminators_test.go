@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/swag"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -53,7 +54,7 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 
-		for _, k := range []string{"Cat", "Dog"} {
+		for _, k := range []string{"cat", "Dog"} {
 			schema := definitions[k]
 			genModel, err := makeGenDefinition(k, "models", schema, specDoc)
 			if assert.NoError(t, err) {
@@ -85,10 +86,11 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 						assertInCode(t, "data.Name = m.nameField", res)
 						assertInCode(t, "data.PetType = \""+k+"\"", res)
 
-						assertInCode(t, "func (m *"+k+") Name() string", res)
-						assertInCode(t, "func (m *"+k+") SetName(val string)", res)
-						assertInCode(t, "func (m *"+k+") PetType() string", res)
-						assertInCode(t, "func (m *"+k+") SetPetType(val string)", res)
+						kk := swag.ToGoName(k)
+						assertInCode(t, "func (m *"+kk+") Name() string", res)
+						assertInCode(t, "func (m *"+kk+") SetName(val string)", res)
+						assertInCode(t, "func (m *"+kk+") PetType() string", res)
+						assertInCode(t, "func (m *"+kk+") SetPetType(val string)", res)
 						assertInCode(t, "validate.Required(\"name\", \"body\", string(m.Name()))", res)
 					}
 				}
@@ -103,7 +105,7 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 			assert.Equal(t, "petType", genModel.DiscriminatorField)
 			assert.Len(t, genModel.Discriminates, 2)
 			assert.Len(t, genModel.ExtraSchemas, 0)
-			assert.Equal(t, "Cat", genModel.Discriminates["Cat"])
+			assert.Equal(t, "Cat", genModel.Discriminates["cat"])
 			assert.Equal(t, "Dog", genModel.Discriminates["Dog"])
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)
