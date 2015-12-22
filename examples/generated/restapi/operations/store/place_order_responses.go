@@ -21,6 +21,11 @@ type PlaceOrderOK struct {
 	Payload *models.Order `json:"body,omitempty"`
 }
 
+// Create PlaceOrderOK with default headers values
+func NewPlaceOrderOK() PlaceOrderOK {
+	return PlaceOrderOK{}
+}
+
 // WriteResponse to the client
 func (o *PlaceOrderOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -37,6 +42,11 @@ func (o *PlaceOrderOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Pr
 swagger:response placeOrderBadRequest
 */
 type PlaceOrderBadRequest struct {
+}
+
+// Create PlaceOrderBadRequest with default headers values
+func NewPlaceOrderBadRequest() PlaceOrderBadRequest {
+	return PlaceOrderBadRequest{}
 }
 
 // WriteResponse to the client

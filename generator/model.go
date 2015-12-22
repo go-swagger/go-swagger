@@ -295,9 +295,7 @@ func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContex
 	pg.Required = false
 	if sg.IsVirtual {
 		resolver := newTypeResolver(sg.TypeResolver.ModelsPackage, sg.TypeResolver.Doc)
-		//resolver := newTypeResolver("", sg.TypeResolver.Doc)
 		resolver.ModelName = sg.TypeResolver.ModelName
-		//resolver.KnownDefs = sg.TypeResolver.KnownDefs
 		pg.TypeResolver = resolver
 	}
 
@@ -763,10 +761,8 @@ func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *sche
 		Discrimination: sg.Discrimination,
 	}
 	if schema.Ref.String() == "" {
-		//resolver := newTypeResolver("", sg.TypeResolver.Doc)
 		resolver := newTypeResolver(sg.TypeResolver.ModelsPackage, sg.TypeResolver.Doc)
 		resolver.ModelName = sg.TypeResolver.ModelName
-		//resolver.KnownDefs = sg.TypeResolver.KnownDefs
 		pg.TypeResolver = resolver
 	}
 	pg.GenSchema.IsVirtual = true
@@ -776,8 +772,6 @@ func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *sche
 }
 
 func (sg *schemaGenContext) buildArray() error {
-	//var tpe *resolvedType
-	//var err error
 	tpe, err := sg.TypeResolver.ResolveSchema(sg.Schema.Items.Schema, true)
 	if err != nil {
 		return err

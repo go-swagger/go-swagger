@@ -21,6 +21,11 @@ type GetPetByIDOK struct {
 	Payload *models.Pet `json:"body,omitempty"`
 }
 
+// Create GetPetByIDOK with default headers values
+func NewGetPetByIDOK() GetPetByIDOK {
+	return GetPetByIDOK{}
+}
+
 // WriteResponse to the client
 func (o *GetPetByIDOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -39,6 +44,11 @@ swagger:response getPetByIdBadRequest
 type GetPetByIDBadRequest struct {
 }
 
+// Create GetPetByIDBadRequest with default headers values
+func NewGetPetByIDBadRequest() GetPetByIDBadRequest {
+	return GetPetByIDBadRequest{}
+}
+
 // WriteResponse to the client
 func (o *GetPetByIDBadRequest) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -50,6 +60,11 @@ func (o *GetPetByIDBadRequest) WriteResponse(rw http.ResponseWriter, producer ht
 swagger:response getPetByIdNotFound
 */
 type GetPetByIDNotFound struct {
+}
+
+// Create GetPetByIDNotFound with default headers values
+func NewGetPetByIDNotFound() GetPetByIDNotFound {
+	return GetPetByIDNotFound{}
 }
 
 // WriteResponse to the client

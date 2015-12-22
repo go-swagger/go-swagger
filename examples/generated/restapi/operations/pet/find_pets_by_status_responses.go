@@ -21,6 +21,11 @@ type FindPetsByStatusOK struct {
 	Payload []*models.Pet `json:"body,omitempty"`
 }
 
+// Create FindPetsByStatusOK with default headers values
+func NewFindPetsByStatusOK() FindPetsByStatusOK {
+	return FindPetsByStatusOK{}
+}
+
 // WriteResponse to the client
 func (o *FindPetsByStatusOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -36,6 +41,11 @@ func (o *FindPetsByStatusOK) WriteResponse(rw http.ResponseWriter, producer http
 swagger:response findPetsByStatusBadRequest
 */
 type FindPetsByStatusBadRequest struct {
+}
+
+// Create FindPetsByStatusBadRequest with default headers values
+func NewFindPetsByStatusBadRequest() FindPetsByStatusBadRequest {
+	return FindPetsByStatusBadRequest{}
 }
 
 // WriteResponse to the client

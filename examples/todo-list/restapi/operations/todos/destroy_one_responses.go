@@ -18,6 +18,11 @@ swagger:response destroyOneNoContent
 type DestroyOneNoContent struct {
 }
 
+// Create DestroyOneNoContent with default headers values
+func NewDestroyOneNoContent() DestroyOneNoContent {
+	return DestroyOneNoContent{}
+}
+
 // WriteResponse to the client
 func (o *DestroyOneNoContent) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -32,6 +37,11 @@ type DestroyOneDefault struct {
 
 	// In: body
 	Payload *models.Error `json:"body,omitempty"`
+}
+
+// Create DestroyOneDefault with default headers values
+func NewDestroyOneDefault() DestroyOneDefault {
+	return DestroyOneDefault{}
 }
 
 // WriteResponse to the client

@@ -21,6 +21,11 @@ type AddOneCreated struct {
 	Payload *models.Item `json:"body,omitempty"`
 }
 
+// Create AddOneCreated with default headers values
+func NewAddOneCreated() AddOneCreated {
+	return AddOneCreated{}
+}
+
 // WriteResponse to the client
 func (o *AddOneCreated) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -40,6 +45,11 @@ type AddOneDefault struct {
 
 	// In: body
 	Payload *models.Error `json:"body,omitempty"`
+}
+
+// Create AddOneDefault with default headers values
+func NewAddOneDefault() AddOneDefault {
+	return AddOneDefault{}
 }
 
 // WriteResponse to the client

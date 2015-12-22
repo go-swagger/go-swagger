@@ -16,6 +16,11 @@ swagger:response deletePetBadRequest
 type DeletePetBadRequest struct {
 }
 
+// Create DeletePetBadRequest with default headers values
+func NewDeletePetBadRequest() DeletePetBadRequest {
+	return DeletePetBadRequest{}
+}
+
 // WriteResponse to the client
 func (o *DeletePetBadRequest) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 

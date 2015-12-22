@@ -39,7 +39,7 @@ type Client struct {
 func (a *Client) {{ pascalize .Name }}(params {{ pascalize .Name }}Params{{ if .Authorized }}, authInfo client.AuthInfoWriter{{end}}) {{ if .SuccessResponse }}(*{{ pascalize .SuccessResponse.Name }}, {{ end }}error{{ if .SuccessResponse }}){{ end }} {
   // TODO: Validate the params before sending
 
-  {{ if .SuccessResponse }}result,{{ end }} err := a.transport.Submit(&client.Operation{
+  {{ if .SuccessResponse }}result{{else}}_{{ end }}, err := a.transport.Submit(&client.Operation{
     ID: {{ printf "%q" .Name }},
     Params: &params,
     Reader: &{{ pascalize .Name }}Reader{formats: a.formats},{{ if .Authorized }}

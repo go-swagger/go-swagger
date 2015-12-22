@@ -16,6 +16,11 @@ swagger:response addPetMethodNotAllowed
 type AddPetMethodNotAllowed struct {
 }
 
+// Create AddPetMethodNotAllowed with default headers values
+func NewAddPetMethodNotAllowed() AddPetMethodNotAllowed {
+	return AddPetMethodNotAllowed{}
+}
+
 // WriteResponse to the client
 func (o *AddPetMethodNotAllowed) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 

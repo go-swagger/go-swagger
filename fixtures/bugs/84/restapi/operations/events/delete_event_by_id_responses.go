@@ -16,6 +16,11 @@ swagger:response deleteEventByIdNoContent
 type DeleteEventByIDNoContent struct {
 }
 
+// Create DeleteEventByIDNoContent with default headers values
+func NewDeleteEventByIDNoContent() DeleteEventByIDNoContent {
+	return DeleteEventByIDNoContent{}
+}
+
 // WriteResponse to the client
 func (o *DeleteEventByIDNoContent) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -27,6 +32,11 @@ func (o *DeleteEventByIDNoContent) WriteResponse(rw http.ResponseWriter, produce
 swagger:response deleteEventByIdDefault
 */
 type DeleteEventByIDDefault struct {
+}
+
+// Create DeleteEventByIDDefault with default headers values
+func NewDeleteEventByIDDefault() DeleteEventByIDDefault {
+	return DeleteEventByIDDefault{}
 }
 
 // WriteResponse to the client

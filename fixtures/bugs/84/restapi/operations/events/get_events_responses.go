@@ -21,6 +21,11 @@ type GetEventsOK struct {
 	Payload []*models.Event `json:"body,omitempty"`
 }
 
+// Create GetEventsOK with default headers values
+func NewGetEventsOK() GetEventsOK {
+	return GetEventsOK{}
+}
+
 // WriteResponse to the client
 func (o *GetEventsOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -36,6 +41,11 @@ func (o *GetEventsOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Pro
 swagger:response getEventsDefault
 */
 type GetEventsDefault struct {
+}
+
+// Create GetEventsDefault with default headers values
+func NewGetEventsDefault() GetEventsDefault {
+	return GetEventsDefault{}
 }
 
 // WriteResponse to the client

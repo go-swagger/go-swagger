@@ -21,6 +21,11 @@ type GetUserByNameOK struct {
 	Payload *models.User `json:"body,omitempty"`
 }
 
+// Create GetUserByNameOK with default headers values
+func NewGetUserByNameOK() GetUserByNameOK {
+	return GetUserByNameOK{}
+}
+
 // WriteResponse to the client
 func (o *GetUserByNameOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -39,6 +44,11 @@ swagger:response getUserByNameBadRequest
 type GetUserByNameBadRequest struct {
 }
 
+// Create GetUserByNameBadRequest with default headers values
+func NewGetUserByNameBadRequest() GetUserByNameBadRequest {
+	return GetUserByNameBadRequest{}
+}
+
 // WriteResponse to the client
 func (o *GetUserByNameBadRequest) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -50,6 +60,11 @@ func (o *GetUserByNameBadRequest) WriteResponse(rw http.ResponseWriter, producer
 swagger:response getUserByNameNotFound
 */
 type GetUserByNameNotFound struct {
+}
+
+// Create GetUserByNameNotFound with default headers values
+func NewGetUserByNameNotFound() GetUserByNameNotFound {
+	return GetUserByNameNotFound{}
 }
 
 // WriteResponse to the client

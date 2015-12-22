@@ -18,6 +18,11 @@ swagger:response postEventCreated
 type PostEventCreated struct {
 }
 
+// Create PostEventCreated with default headers values
+func NewPostEventCreated() PostEventCreated {
+	return PostEventCreated{}
+}
+
 // WriteResponse to the client
 func (o *PostEventCreated) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -29,6 +34,11 @@ func (o *PostEventCreated) WriteResponse(rw http.ResponseWriter, producer httpki
 swagger:response postEventDefault
 */
 type PostEventDefault struct {
+}
+
+// Create PostEventDefault with default headers values
+func NewPostEventDefault() PostEventDefault {
+	return PostEventDefault{}
 }
 
 // WriteResponse to the client

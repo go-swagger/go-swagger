@@ -20,7 +20,7 @@ import (
 func NewEventListAPI(spec *spec.Document) *EventListAPI {
 	o := &EventListAPI{
 		spec:            spec,
-		handlers:        make(map[string]http.Handler),
+		handlers:        make(map[string]map[string]http.Handler),
 		formats:         strfmt.Default,
 		defaultConsumes: "application/json",
 		defaultProduces: "application/json",
@@ -34,7 +34,7 @@ func NewEventListAPI(spec *spec.Document) *EventListAPI {
 type EventListAPI struct {
 	spec            *spec.Document
 	context         *middleware.Context
-	handlers        map[string]http.Handler
+	handlers        map[string]map[string]http.Handler
 	formats         strfmt.Registry
 	defaultConsumes string
 	defaultProduces string
@@ -44,16 +44,16 @@ type EventListAPI struct {
 	// JSONProducer registers a producer for a "application/json" mime type
 	JSONProducer httpkit.Producer
 
-	// DeleteEventByIDHandler sets the operation handler for the delete event by id operation
-	DeleteEventByIDHandler events.DeleteEventByIDHandler
-	// GetEventByIDHandler sets the operation handler for the get event by id operation
-	GetEventByIDHandler events.GetEventByIDHandler
-	// GetEventsHandler sets the operation handler for the get events operation
-	GetEventsHandler events.GetEventsHandler
-	// PostEventHandler sets the operation handler for the post event operation
-	PostEventHandler events.PostEventHandler
-	// PutEventByIDHandler sets the operation handler for the put event by id operation
-	PutEventByIDHandler events.PutEventByIDHandler
+	// EventsDeleteEventByIDHandler sets the operation handler for the delete event by id operation
+	EventsDeleteEventByIDHandler events.DeleteEventByIDHandler
+	// EventsGetEventByIDHandler sets the operation handler for the get event by id operation
+	EventsGetEventByIDHandler events.GetEventByIDHandler
+	// EventsGetEventsHandler sets the operation handler for the get events operation
+	EventsGetEventsHandler events.GetEventsHandler
+	// EventsPostEventHandler sets the operation handler for the post event operation
+	EventsPostEventHandler events.PostEventHandler
+	// EventsPutEventByIDHandler sets the operation handler for the put event by id operation
+	EventsPutEventByIDHandler events.PutEventByIDHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -102,24 +102,24 @@ func (o *EventListAPI) Validate() error {
 		unregistered = append(unregistered, "JSONProducer")
 	}
 
-	if o.DeleteEventByIDHandler == nil {
-		unregistered = append(unregistered, "DeleteEventByIDHandler")
+	if o.EventsDeleteEventByIDHandler == nil {
+		unregistered = append(unregistered, "events.DeleteEventByIDHandler")
 	}
 
-	if o.GetEventByIDHandler == nil {
-		unregistered = append(unregistered, "GetEventByIDHandler")
+	if o.EventsGetEventByIDHandler == nil {
+		unregistered = append(unregistered, "events.GetEventByIDHandler")
 	}
 
-	if o.GetEventsHandler == nil {
-		unregistered = append(unregistered, "GetEventsHandler")
+	if o.EventsGetEventsHandler == nil {
+		unregistered = append(unregistered, "events.GetEventsHandler")
 	}
 
-	if o.PostEventHandler == nil {
-		unregistered = append(unregistered, "PostEventHandler")
+	if o.EventsPostEventHandler == nil {
+		unregistered = append(unregistered, "events.PostEventHandler")
 	}
 
-	if o.PutEventByIDHandler == nil {
-		unregistered = append(unregistered, "PutEventByIDHandler")
+	if o.EventsPutEventByIDHandler == nil {
+		unregistered = append(unregistered, "events.PutEventByIDHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -173,12 +173,16 @@ func (o *EventListAPI) ProducersFor(mediaTypes []string) map[string]httpkit.Prod
 
 }
 
-// HandlerFor gets a http.Handler for the provided operation id
-func (o *EventListAPI) HandlerFor(operationID string) (http.Handler, bool) {
+// HandlerFor gets a http.Handler for the provided operation method and path
+func (o *EventListAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	if o.handlers == nil {
 		return nil, false
 	}
-	h, ok := o.handlers[operationID]
+	um := strings.ToUpper(method)
+	if _, ok := o.handlers[um]; !ok {
+		return nil, false
+	}
+	h, ok := o.handlers[um][path]
 	return h, ok
 }
 
@@ -187,17 +191,34 @@ func (o *EventListAPI) initHandlerCache() {
 		o.context = middleware.NewRoutableContext(o.spec, o, nil)
 	}
 
-	o.handlers = make(map[string]http.Handler)
+	if o.handlers == nil {
+		o.handlers = make(map[string]map[string]http.Handler)
+	}
 
-	o.handlers["deleteEventById"] = events.NewDeleteEventByID(o.context, o.DeleteEventByIDHandler)
+	if o.handlers["DELETE"] == nil {
+		o.handlers[strings.ToUpper("DELETE")] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/events/{id}"] = events.NewDeleteEventByID(o.context, o.EventsDeleteEventByIDHandler)
 
-	o.handlers["getEventById"] = events.NewGetEventByID(o.context, o.GetEventByIDHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/events/{id}"] = events.NewGetEventByID(o.context, o.EventsGetEventByIDHandler)
 
-	o.handlers["getEvents"] = events.NewGetEvents(o.context, o.GetEventsHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/events"] = events.NewGetEvents(o.context, o.EventsGetEventsHandler)
 
-	o.handlers["postEvent"] = events.NewPostEvent(o.context, o.PostEventHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers[strings.ToUpper("POST")] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/events"] = events.NewPostEvent(o.context, o.EventsPostEventHandler)
 
-	o.handlers["putEventById"] = events.NewPutEventByID(o.context, o.PutEventByIDHandler)
+	if o.handlers["PUT"] == nil {
+		o.handlers[strings.ToUpper("PUT")] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/events/{id}"] = events.NewPutEventByID(o.context, o.EventsPutEventByIDHandler)
 
 }
 

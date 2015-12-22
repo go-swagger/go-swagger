@@ -16,6 +16,11 @@ swagger:response updatePetBadRequest
 type UpdatePetBadRequest struct {
 }
 
+// Create UpdatePetBadRequest with default headers values
+func NewUpdatePetBadRequest() UpdatePetBadRequest {
+	return UpdatePetBadRequest{}
+}
+
 // WriteResponse to the client
 func (o *UpdatePetBadRequest) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -29,6 +34,11 @@ swagger:response updatePetNotFound
 type UpdatePetNotFound struct {
 }
 
+// Create UpdatePetNotFound with default headers values
+func NewUpdatePetNotFound() UpdatePetNotFound {
+	return UpdatePetNotFound{}
+}
+
 // WriteResponse to the client
 func (o *UpdatePetNotFound) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -40,6 +50,11 @@ func (o *UpdatePetNotFound) WriteResponse(rw http.ResponseWriter, producer httpk
 swagger:response updatePetMethodNotAllowed
 */
 type UpdatePetMethodNotAllowed struct {
+}
+
+// Create UpdatePetMethodNotAllowed with default headers values
+func NewUpdatePetMethodNotAllowed() UpdatePetMethodNotAllowed {
+	return UpdatePetMethodNotAllowed{}
 }
 
 // WriteResponse to the client

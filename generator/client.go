@@ -23,7 +23,6 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
 )
 
@@ -43,15 +42,11 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts GenOpts
 		defaultScheme = "http"
 	}
 
-	ops := make(map[string]spec.Operation)
-	for k, v := range operations {
-		ops[k] = v.Op
-	}
 	generator := appGenerator{
 		Name:          appNameOrDefault(specDoc, name, "swagger"),
 		SpecDoc:       specDoc,
 		Models:        models,
-		Operations:    ops,
+		Operations:    operations,
 		Target:        opts.Target,
 		DumpData:      opts.DumpData,
 		Package:       mangleName(swag.ToFileName(opts.APIPackage), "api"),

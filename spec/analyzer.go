@@ -15,6 +15,7 @@
 package spec
 
 import (
+	"fmt"
 	slashpath "path"
 	"strconv"
 	"strings"
@@ -358,9 +359,9 @@ func (s *specAnalyzer) AllPaths() map[string]PathItem {
 
 func (s *specAnalyzer) OperationIDs() []string {
 	var result []string
-	for _, v := range s.operations {
-		for _, vv := range v {
-			result = append(result, vv.ID)
+	for method, v := range s.operations {
+		for p := range v {
+			result = append(result, fmt.Sprintf("%s %s", strings.ToUpper(method), p))
 		}
 	}
 	return result

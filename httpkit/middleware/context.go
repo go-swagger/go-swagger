@@ -16,6 +16,7 @@ package middleware
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit"
@@ -55,26 +56,30 @@ type Context struct {
 
 type routableUntypedAPI struct {
 	api             *untyped.API
-	handlers        map[string]http.Handler
+	handlers        map[string]map[string]http.Handler
 	defaultConsumes string
 	defaultProduces string
 }
 
 func newRoutableUntypedAPI(spec *spec.Document, api *untyped.API, context *Context) *routableUntypedAPI {
-	var handlers map[string]http.Handler
+	var handlers map[string]map[string]http.Handler
 	if spec == nil || api == nil {
 		return nil
 	}
-	for _, hls := range spec.Operations() {
-		for _, op := range hls {
+	for method, hls := range spec.Operations() {
+		um := strings.ToUpper(method)
+		for path, op := range hls {
 			schemes := spec.SecurityDefinitionsFor(op)
 
-			if oh, ok := api.OperationHandlerFor(op.ID); ok {
+			if oh, ok := api.OperationHandlerFor(method, path); ok {
 				if handlers == nil {
-					handlers = make(map[string]http.Handler)
+					handlers = make(map[string]map[string]http.Handler)
+				}
+				if b, ok := handlers[um]; !ok || b == nil {
+					handlers[um] = make(map[string]http.Handler)
 				}
 
-				handlers[op.ID] = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				handlers[um][path] = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					// lookup route info in the context
 					route, _ := context.RouteInfo(r)
 
@@ -98,7 +103,7 @@ func newRoutableUntypedAPI(spec *spec.Document, api *untyped.API, context *Conte
 				})
 
 				if len(schemes) > 0 {
-					handlers[op.ID] = newSecureAPI(context, handlers[op.ID])
+					handlers[um][path] = newSecureAPI(context, handlers[um][path])
 				}
 			}
 		}
@@ -112,8 +117,12 @@ func newRoutableUntypedAPI(spec *spec.Document, api *untyped.API, context *Conte
 	}
 }
 
-func (r *routableUntypedAPI) HandlerFor(operationID string) (http.Handler, bool) {
-	handler, ok := r.handlers[operationID]
+func (r *routableUntypedAPI) HandlerFor(method, path string) (http.Handler, bool) {
+	paths, ok := r.handlers[strings.ToUpper(method)]
+	if !ok {
+		return nil, false
+	}
+	handler, ok := paths[path]
 	return handler, ok
 }
 func (r *routableUntypedAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {

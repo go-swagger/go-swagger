@@ -17,11 +17,11 @@ import (
 	"github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations/todos"
 )
 
-// NewToDoListAPI creates a new ToDoList instance
-func NewToDoListAPI(spec *spec.Document) *ToDoListAPI {
-	o := &ToDoListAPI{
+// NewTodoListAPI creates a new TodoList instance
+func NewTodoListAPI(spec *spec.Document) *TodoListAPI {
+	o := &TodoListAPI{
 		spec:            spec,
-		handlers:        make(map[string]http.Handler),
+		handlers:        make(map[string]map[string]http.Handler),
 		formats:         strfmt.Default,
 		defaultConsumes: "application/io.swagger.examples.todo-list.v1+json",
 		defaultProduces: "application/io.swagger.examples.todo-list.v1+json",
@@ -30,11 +30,11 @@ func NewToDoListAPI(spec *spec.Document) *ToDoListAPI {
 	return o
 }
 
-/*ToDoListAPI the to do list API */
-type ToDoListAPI struct {
+/*TodoListAPI the todo list API */
+type TodoListAPI struct {
 	spec            *spec.Document
 	context         *middleware.Context
-	handlers        map[string]http.Handler
+	handlers        map[string]map[string]http.Handler
 	formats         strfmt.Registry
 	defaultConsumes string
 	defaultProduces string
@@ -48,14 +48,14 @@ type ToDoListAPI struct {
 	// it performs authentication based on an api key x-petstore-token provided in the header
 	KeyAuth func(string) (interface{}, error)
 
-	// AddOneHandler sets the operation handler for the add one operation
-	AddOneHandler todos.AddOneHandler
-	// DestroyOneHandler sets the operation handler for the destroy one operation
-	DestroyOneHandler todos.DestroyOneHandler
-	// FindHandler sets the operation handler for the find operation
-	FindHandler todos.FindHandler
-	// UpdateOneHandler sets the operation handler for the update one operation
-	UpdateOneHandler todos.UpdateOneHandler
+	// TodosAddOneHandler sets the operation handler for the add one operation
+	TodosAddOneHandler todos.AddOneHandler
+	// TodosDestroyOneHandler sets the operation handler for the destroy one operation
+	TodosDestroyOneHandler todos.DestroyOneHandler
+	// TodosFindHandler sets the operation handler for the find operation
+	TodosFindHandler todos.FindHandler
+	// TodosUpdateOneHandler sets the operation handler for the update one operation
+	TodosUpdateOneHandler todos.UpdateOneHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -63,37 +63,37 @@ type ToDoListAPI struct {
 }
 
 // SetDefaultProduces sets the default produces media type
-func (o *ToDoListAPI) SetDefaultProduces(mediaType string) {
+func (o *TodoListAPI) SetDefaultProduces(mediaType string) {
 	o.defaultProduces = mediaType
 }
 
 // SetDefaultConsumes returns the default consumes media type
-func (o *ToDoListAPI) SetDefaultConsumes(mediaType string) {
+func (o *TodoListAPI) SetDefaultConsumes(mediaType string) {
 	o.defaultConsumes = mediaType
 }
 
 // DefaultProduces returns the default produces media type
-func (o *ToDoListAPI) DefaultProduces() string {
+func (o *TodoListAPI) DefaultProduces() string {
 	return o.defaultProduces
 }
 
 // DefaultConsumes returns the default consumes media type
-func (o *ToDoListAPI) DefaultConsumes() string {
+func (o *TodoListAPI) DefaultConsumes() string {
 	return o.defaultConsumes
 }
 
 // Formats returns the registered string formats
-func (o *ToDoListAPI) Formats() strfmt.Registry {
+func (o *TodoListAPI) Formats() strfmt.Registry {
 	return o.formats
 }
 
 // RegisterFormat registers a custom format validator
-func (o *ToDoListAPI) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
+func (o *TodoListAPI) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
 	o.formats.Add(name, format, validator)
 }
 
-// Validate validates the registrations in the ToDoListAPI
-func (o *ToDoListAPI) Validate() error {
+// Validate validates the registrations in the TodoListAPI
+func (o *TodoListAPI) Validate() error {
 	var unregistered []string
 
 	if o.JSONConsumer == nil {
@@ -108,20 +108,20 @@ func (o *ToDoListAPI) Validate() error {
 		unregistered = append(unregistered, "XPetstoreTokenAuth")
 	}
 
-	if o.AddOneHandler == nil {
-		unregistered = append(unregistered, "AddOneHandler")
+	if o.TodosAddOneHandler == nil {
+		unregistered = append(unregistered, "todos.AddOneHandler")
 	}
 
-	if o.DestroyOneHandler == nil {
-		unregistered = append(unregistered, "DestroyOneHandler")
+	if o.TodosDestroyOneHandler == nil {
+		unregistered = append(unregistered, "todos.DestroyOneHandler")
 	}
 
-	if o.FindHandler == nil {
-		unregistered = append(unregistered, "FindHandler")
+	if o.TodosFindHandler == nil {
+		unregistered = append(unregistered, "todos.FindHandler")
 	}
 
-	if o.UpdateOneHandler == nil {
-		unregistered = append(unregistered, "UpdateOneHandler")
+	if o.TodosUpdateOneHandler == nil {
+		unregistered = append(unregistered, "todos.UpdateOneHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -132,12 +132,12 @@ func (o *ToDoListAPI) Validate() error {
 }
 
 // ServeErrorFor gets a error handler for a given operation id
-func (o *ToDoListAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
+func (o *TodoListAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
 	return o.ServeError
 }
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
-func (o *ToDoListAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]httpkit.Authenticator {
+func (o *TodoListAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]httpkit.Authenticator {
 
 	result := make(map[string]httpkit.Authenticator)
 	for name, scheme := range schemes {
@@ -154,7 +154,7 @@ func (o *ToDoListAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) 
 }
 
 // ConsumersFor gets the consumers for the specified media types
-func (o *ToDoListAPI) ConsumersFor(mediaTypes []string) map[string]httpkit.Consumer {
+func (o *TodoListAPI) ConsumersFor(mediaTypes []string) map[string]httpkit.Consumer {
 
 	result := make(map[string]httpkit.Consumer)
 	for _, mt := range mediaTypes {
@@ -170,7 +170,7 @@ func (o *ToDoListAPI) ConsumersFor(mediaTypes []string) map[string]httpkit.Consu
 }
 
 // ProducersFor gets the producers for the specified media types
-func (o *ToDoListAPI) ProducersFor(mediaTypes []string) map[string]httpkit.Producer {
+func (o *TodoListAPI) ProducersFor(mediaTypes []string) map[string]httpkit.Producer {
 
 	result := make(map[string]httpkit.Producer)
 	for _, mt := range mediaTypes {
@@ -185,35 +185,53 @@ func (o *ToDoListAPI) ProducersFor(mediaTypes []string) map[string]httpkit.Produ
 
 }
 
-// HandlerFor gets a http.Handler for the provided operation id
-func (o *ToDoListAPI) HandlerFor(operationID string) (http.Handler, bool) {
+// HandlerFor gets a http.Handler for the provided operation method and path
+func (o *TodoListAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	if o.handlers == nil {
 		return nil, false
 	}
-	h, ok := o.handlers[operationID]
+	um := strings.ToUpper(method)
+	if _, ok := o.handlers[um]; !ok {
+		return nil, false
+	}
+	h, ok := o.handlers[um][path]
 	return h, ok
 }
 
-func (o *ToDoListAPI) initHandlerCache() {
+func (o *TodoListAPI) initHandlerCache() {
 	if o.context == nil {
 		o.context = middleware.NewRoutableContext(o.spec, o, nil)
 	}
 
-	o.handlers = make(map[string]http.Handler)
+	if o.handlers == nil {
+		o.handlers = make(map[string]map[string]http.Handler)
+	}
 
-	o.handlers["addOne"] = todos.NewAddOne(o.context, o.AddOneHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers[strings.ToUpper("POST")] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/"] = todos.NewAddOne(o.context, o.TodosAddOneHandler)
 
-	o.handlers["destroyOne"] = todos.NewDestroyOne(o.context, o.DestroyOneHandler)
+	if o.handlers["DELETE"] == nil {
+		o.handlers[strings.ToUpper("DELETE")] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/{id}"] = todos.NewDestroyOne(o.context, o.TodosDestroyOneHandler)
 
-	o.handlers["find"] = todos.NewFind(o.context, o.FindHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/"] = todos.NewFind(o.context, o.TodosFindHandler)
 
-	o.handlers["updateOne"] = todos.NewUpdateOne(o.context, o.UpdateOneHandler)
+	if o.handlers["PUT"] == nil {
+		o.handlers[strings.ToUpper("PUT")] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/{id}"] = todos.NewUpdateOne(o.context, o.TodosUpdateOneHandler)
 
 }
 
 // Serve creates a http handler to serve the API over HTTP
 // can be used directly in http.ListenAndServe(":8000", api.Serve(nil))
-func (o *ToDoListAPI) Serve(builder middleware.Builder) http.Handler {
+func (o *TodoListAPI) Serve(builder middleware.Builder) http.Handler {
 	if len(o.handlers) == 0 {
 		o.initHandlerCache()
 	}

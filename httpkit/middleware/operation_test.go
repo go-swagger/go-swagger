@@ -27,7 +27,7 @@ import (
 
 func TestOperationExecutor(t *testing.T) {
 	spec, api := petstore.NewAPI(t)
-	api.RegisterOperation("getAllPets", httpkit.OperationHandlerFunc(func(params interface{}) (interface{}, error) {
+	api.RegisterOperation("get", "/pets", httpkit.OperationHandlerFunc(func(params interface{}) (interface{}, error) {
 		return []interface{}{
 			map[string]interface{}{"id": 1, "name": "a dog"},
 		}, nil
@@ -46,7 +46,7 @@ func TestOperationExecutor(t *testing.T) {
 	assert.Equal(t, `[{"id":1,"name":"a dog"}]`+"\n", recorder.Body.String())
 
 	spec, api = petstore.NewAPI(t)
-	api.RegisterOperation("getAllPets", httpkit.OperationHandlerFunc(func(params interface{}) (interface{}, error) {
+	api.RegisterOperation("get", "/pets", httpkit.OperationHandlerFunc(func(params interface{}) (interface{}, error) {
 		return nil, errors.New(422, "expected")
 	}))
 

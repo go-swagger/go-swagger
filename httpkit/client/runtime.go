@@ -27,6 +27,7 @@ import (
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
+	"github.com/go-swagger/go-swagger/swag"
 )
 
 // Runtime represents an API client that uses the transport
@@ -77,14 +78,31 @@ func New(swaggerSpec *spec.Document) *Runtime {
 	rt.methodsAndPaths = make(map[string]methodAndPath)
 	for mth, pathItem := range rt.Spec.Operations() {
 		for pth, op := range pathItem {
+			nm := ensureUniqueName(op.ID, mth, pth, rt.methodsAndPaths)
+			op.ID = nm
 			if len(op.Schemes) > 0 {
-				rt.methodsAndPaths[op.ID] = methodAndPath{mth, pth, op.Schemes}
+				rt.methodsAndPaths[nm] = methodAndPath{mth, pth, op.Schemes}
 			} else {
-				rt.methodsAndPaths[op.ID] = methodAndPath{mth, pth, schemes}
+				rt.methodsAndPaths[nm] = methodAndPath{mth, pth, schemes}
 			}
 		}
 	}
 	return &rt
+}
+
+var namesCounter int64
+
+func ensureUniqueName(key, method, path string, operations map[string]methodAndPath) string {
+	nm := key
+	if nm == "" {
+		nm = swag.ToGoName(strings.ToLower(method) + " " + path)
+	}
+	_, found := operations[nm]
+	if found {
+		namesCounter++
+		return fmt.Sprintf("%s%d", nm, namesCounter)
+	}
+	return nm
 }
 
 // Submit a request and when there is a body on success it will turn that into the result

@@ -13,7 +13,7 @@ import (
 
 // This file is safe to edit. Once it exists it will not be overwritten
 
-func configureAPI(api *operations.ToDoListAPI) http.Handler {
+func configureAPI(api *operations.TodoListAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
@@ -25,17 +25,17 @@ func configureAPI(api *operations.ToDoListAPI) http.Handler {
 		return nil, errors.NotImplemented("api key auth (key) x-petstore-token from header has not yet been implemented")
 	}
 
-	api.AddOneHandler = todos.AddOneHandlerFunc(func(params todos.AddOneParams, principal interface{}) middleware.Responder {
-		return middleware.NotImplemented("operation addOne has not yet been implemented")
+	api.TodosAddOneHandler = todos.AddOneHandlerFunc(func(params todos.AddOneParams, principal interface{}) middleware.Responder {
+		return middleware.NotImplemented("operation todos.AddOne has not yet been implemented")
 	})
-	api.DestroyOneHandler = todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams, principal interface{}) middleware.Responder {
-		return middleware.NotImplemented("operation destroyOne has not yet been implemented")
+	api.TodosDestroyOneHandler = todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams, principal interface{}) middleware.Responder {
+		return middleware.NotImplemented("operation todos.DestroyOne has not yet been implemented")
 	})
-	api.FindHandler = todos.FindHandlerFunc(func(params todos.FindParams, principal interface{}) middleware.Responder {
-		return middleware.NotImplemented("operation find has not yet been implemented")
+	api.TodosFindHandler = todos.FindHandlerFunc(func(params todos.FindParams, principal interface{}) middleware.Responder {
+		return middleware.NotImplemented("operation todos.Find has not yet been implemented")
 	})
-	api.UpdateOneHandler = todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams, principal interface{}) middleware.Responder {
-		return middleware.NotImplemented("operation updateOne has not yet been implemented")
+	api.TodosUpdateOneHandler = todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams, principal interface{}) middleware.Responder {
+		return middleware.NotImplemented("operation todos.UpdateOne has not yet been implemented")
 	})
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))

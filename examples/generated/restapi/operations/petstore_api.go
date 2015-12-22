@@ -23,9 +23,9 @@ import (
 func NewPetstoreAPI(spec *spec.Document) *PetstoreAPI {
 	o := &PetstoreAPI{
 		spec:            spec,
-		handlers:        make(map[string]http.Handler),
+		handlers:        make(map[string]map[string]http.Handler),
 		formats:         strfmt.Default,
-		defaultConsumes: "application/json",
+		defaultConsumes: "application/xml",
 		defaultProduces: "application/json",
 	}
 
@@ -41,7 +41,7 @@ For this sample, you can use the api key `special-key` to test the authorization
 type PetstoreAPI struct {
 	spec            *spec.Document
 	context         *middleware.Context
-	handlers        map[string]http.Handler
+	handlers        map[string]map[string]http.Handler
 	formats         strfmt.Registry
 	defaultConsumes string
 	defaultProduces string
@@ -59,42 +59,42 @@ type PetstoreAPI struct {
 	// it performs authentication based on an api key api_key provided in the header
 	APIKeyAuth func(string) (interface{}, error)
 
-	// AddPetHandler sets the operation handler for the add pet operation
-	AddPetHandler pet.AddPetHandler
-	// CreateUserHandler sets the operation handler for the create user operation
-	CreateUserHandler user.CreateUserHandler
-	// CreateUsersWithArrayInputHandler sets the operation handler for the create users with array input operation
-	CreateUsersWithArrayInputHandler user.CreateUsersWithArrayInputHandler
-	// CreateUsersWithListInputHandler sets the operation handler for the create users with list input operation
-	CreateUsersWithListInputHandler user.CreateUsersWithListInputHandler
-	// DeleteOrderHandler sets the operation handler for the delete order operation
-	DeleteOrderHandler store.DeleteOrderHandler
-	// DeletePetHandler sets the operation handler for the delete pet operation
-	DeletePetHandler pet.DeletePetHandler
-	// DeleteUserHandler sets the operation handler for the delete user operation
-	DeleteUserHandler user.DeleteUserHandler
-	// FindPetsByStatusHandler sets the operation handler for the find pets by status operation
-	FindPetsByStatusHandler pet.FindPetsByStatusHandler
-	// FindPetsByTagsHandler sets the operation handler for the find pets by tags operation
-	FindPetsByTagsHandler pet.FindPetsByTagsHandler
-	// GetOrderByIDHandler sets the operation handler for the get order by id operation
-	GetOrderByIDHandler store.GetOrderByIDHandler
-	// GetPetByIDHandler sets the operation handler for the get pet by id operation
-	GetPetByIDHandler pet.GetPetByIDHandler
-	// GetUserByNameHandler sets the operation handler for the get user by name operation
-	GetUserByNameHandler user.GetUserByNameHandler
-	// LoginUserHandler sets the operation handler for the login user operation
-	LoginUserHandler user.LoginUserHandler
-	// LogoutUserHandler sets the operation handler for the logout user operation
-	LogoutUserHandler user.LogoutUserHandler
-	// PlaceOrderHandler sets the operation handler for the place order operation
-	PlaceOrderHandler store.PlaceOrderHandler
-	// UpdatePetHandler sets the operation handler for the update pet operation
-	UpdatePetHandler pet.UpdatePetHandler
-	// UpdatePetWithFormHandler sets the operation handler for the update pet with form operation
-	UpdatePetWithFormHandler pet.UpdatePetWithFormHandler
-	// UpdateUserHandler sets the operation handler for the update user operation
-	UpdateUserHandler user.UpdateUserHandler
+	// PetAddPetHandler sets the operation handler for the add pet operation
+	PetAddPetHandler pet.AddPetHandler
+	// UserCreateUserHandler sets the operation handler for the create user operation
+	UserCreateUserHandler user.CreateUserHandler
+	// UserCreateUsersWithArrayInputHandler sets the operation handler for the create users with array input operation
+	UserCreateUsersWithArrayInputHandler user.CreateUsersWithArrayInputHandler
+	// UserCreateUsersWithListInputHandler sets the operation handler for the create users with list input operation
+	UserCreateUsersWithListInputHandler user.CreateUsersWithListInputHandler
+	// StoreDeleteOrderHandler sets the operation handler for the delete order operation
+	StoreDeleteOrderHandler store.DeleteOrderHandler
+	// PetDeletePetHandler sets the operation handler for the delete pet operation
+	PetDeletePetHandler pet.DeletePetHandler
+	// UserDeleteUserHandler sets the operation handler for the delete user operation
+	UserDeleteUserHandler user.DeleteUserHandler
+	// PetFindPetsByStatusHandler sets the operation handler for the find pets by status operation
+	PetFindPetsByStatusHandler pet.FindPetsByStatusHandler
+	// PetFindPetsByTagsHandler sets the operation handler for the find pets by tags operation
+	PetFindPetsByTagsHandler pet.FindPetsByTagsHandler
+	// StoreGetOrderByIDHandler sets the operation handler for the get order by id operation
+	StoreGetOrderByIDHandler store.GetOrderByIDHandler
+	// PetGetPetByIDHandler sets the operation handler for the get pet by id operation
+	PetGetPetByIDHandler pet.GetPetByIDHandler
+	// UserGetUserByNameHandler sets the operation handler for the get user by name operation
+	UserGetUserByNameHandler user.GetUserByNameHandler
+	// UserLoginUserHandler sets the operation handler for the login user operation
+	UserLoginUserHandler user.LoginUserHandler
+	// UserLogoutUserHandler sets the operation handler for the logout user operation
+	UserLogoutUserHandler user.LogoutUserHandler
+	// StorePlaceOrderHandler sets the operation handler for the place order operation
+	StorePlaceOrderHandler store.PlaceOrderHandler
+	// PetUpdatePetHandler sets the operation handler for the update pet operation
+	PetUpdatePetHandler pet.UpdatePetHandler
+	// PetUpdatePetWithFormHandler sets the operation handler for the update pet with form operation
+	PetUpdatePetWithFormHandler pet.UpdatePetWithFormHandler
+	// UserUpdateUserHandler sets the operation handler for the update user operation
+	UserUpdateUserHandler user.UpdateUserHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -155,76 +155,76 @@ func (o *PetstoreAPI) Validate() error {
 		unregistered = append(unregistered, "APIKeyAuth")
 	}
 
-	if o.AddPetHandler == nil {
-		unregistered = append(unregistered, "AddPetHandler")
+	if o.PetAddPetHandler == nil {
+		unregistered = append(unregistered, "pet.AddPetHandler")
 	}
 
-	if o.CreateUserHandler == nil {
-		unregistered = append(unregistered, "CreateUserHandler")
+	if o.UserCreateUserHandler == nil {
+		unregistered = append(unregistered, "user.CreateUserHandler")
 	}
 
-	if o.CreateUsersWithArrayInputHandler == nil {
-		unregistered = append(unregistered, "CreateUsersWithArrayInputHandler")
+	if o.UserCreateUsersWithArrayInputHandler == nil {
+		unregistered = append(unregistered, "user.CreateUsersWithArrayInputHandler")
 	}
 
-	if o.CreateUsersWithListInputHandler == nil {
-		unregistered = append(unregistered, "CreateUsersWithListInputHandler")
+	if o.UserCreateUsersWithListInputHandler == nil {
+		unregistered = append(unregistered, "user.CreateUsersWithListInputHandler")
 	}
 
-	if o.DeleteOrderHandler == nil {
-		unregistered = append(unregistered, "DeleteOrderHandler")
+	if o.StoreDeleteOrderHandler == nil {
+		unregistered = append(unregistered, "store.DeleteOrderHandler")
 	}
 
-	if o.DeletePetHandler == nil {
-		unregistered = append(unregistered, "DeletePetHandler")
+	if o.PetDeletePetHandler == nil {
+		unregistered = append(unregistered, "pet.DeletePetHandler")
 	}
 
-	if o.DeleteUserHandler == nil {
-		unregistered = append(unregistered, "DeleteUserHandler")
+	if o.UserDeleteUserHandler == nil {
+		unregistered = append(unregistered, "user.DeleteUserHandler")
 	}
 
-	if o.FindPetsByStatusHandler == nil {
-		unregistered = append(unregistered, "FindPetsByStatusHandler")
+	if o.PetFindPetsByStatusHandler == nil {
+		unregistered = append(unregistered, "pet.FindPetsByStatusHandler")
 	}
 
-	if o.FindPetsByTagsHandler == nil {
-		unregistered = append(unregistered, "FindPetsByTagsHandler")
+	if o.PetFindPetsByTagsHandler == nil {
+		unregistered = append(unregistered, "pet.FindPetsByTagsHandler")
 	}
 
-	if o.GetOrderByIDHandler == nil {
-		unregistered = append(unregistered, "GetOrderByIDHandler")
+	if o.StoreGetOrderByIDHandler == nil {
+		unregistered = append(unregistered, "store.GetOrderByIDHandler")
 	}
 
-	if o.GetPetByIDHandler == nil {
-		unregistered = append(unregistered, "GetPetByIDHandler")
+	if o.PetGetPetByIDHandler == nil {
+		unregistered = append(unregistered, "pet.GetPetByIDHandler")
 	}
 
-	if o.GetUserByNameHandler == nil {
-		unregistered = append(unregistered, "GetUserByNameHandler")
+	if o.UserGetUserByNameHandler == nil {
+		unregistered = append(unregistered, "user.GetUserByNameHandler")
 	}
 
-	if o.LoginUserHandler == nil {
-		unregistered = append(unregistered, "LoginUserHandler")
+	if o.UserLoginUserHandler == nil {
+		unregistered = append(unregistered, "user.LoginUserHandler")
 	}
 
-	if o.LogoutUserHandler == nil {
-		unregistered = append(unregistered, "LogoutUserHandler")
+	if o.UserLogoutUserHandler == nil {
+		unregistered = append(unregistered, "user.LogoutUserHandler")
 	}
 
-	if o.PlaceOrderHandler == nil {
-		unregistered = append(unregistered, "PlaceOrderHandler")
+	if o.StorePlaceOrderHandler == nil {
+		unregistered = append(unregistered, "store.PlaceOrderHandler")
 	}
 
-	if o.UpdatePetHandler == nil {
-		unregistered = append(unregistered, "UpdatePetHandler")
+	if o.PetUpdatePetHandler == nil {
+		unregistered = append(unregistered, "pet.UpdatePetHandler")
 	}
 
-	if o.UpdatePetWithFormHandler == nil {
-		unregistered = append(unregistered, "UpdatePetWithFormHandler")
+	if o.PetUpdatePetWithFormHandler == nil {
+		unregistered = append(unregistered, "pet.UpdatePetWithFormHandler")
 	}
 
-	if o.UpdateUserHandler == nil {
-		unregistered = append(unregistered, "UpdateUserHandler")
+	if o.UserUpdateUserHandler == nil {
+		unregistered = append(unregistered, "user.UpdateUserHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -294,12 +294,16 @@ func (o *PetstoreAPI) ProducersFor(mediaTypes []string) map[string]httpkit.Produ
 
 }
 
-// HandlerFor gets a http.Handler for the provided operation id
-func (o *PetstoreAPI) HandlerFor(operationID string) (http.Handler, bool) {
+// HandlerFor gets a http.Handler for the provided operation method and path
+func (o *PetstoreAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	if o.handlers == nil {
 		return nil, false
 	}
-	h, ok := o.handlers[operationID]
+	um := strings.ToUpper(method)
+	if _, ok := o.handlers[um]; !ok {
+		return nil, false
+	}
+	h, ok := o.handlers[um][path]
 	return h, ok
 }
 
@@ -308,43 +312,99 @@ func (o *PetstoreAPI) initHandlerCache() {
 		o.context = middleware.NewRoutableContext(o.spec, o, nil)
 	}
 
-	o.handlers = make(map[string]http.Handler)
+	if o.handlers == nil {
+		o.handlers = make(map[string]map[string]http.Handler)
+	}
 
-	o.handlers["addPet"] = pet.NewAddPet(o.context, o.AddPetHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers[strings.ToUpper("POST")] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/pets"] = pet.NewAddPet(o.context, o.PetAddPetHandler)
 
-	o.handlers["createUser"] = user.NewCreateUser(o.context, o.CreateUserHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers[strings.ToUpper("POST")] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/users"] = user.NewCreateUser(o.context, o.UserCreateUserHandler)
 
-	o.handlers["createUsersWithArrayInput"] = user.NewCreateUsersWithArrayInput(o.context, o.CreateUsersWithArrayInputHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers[strings.ToUpper("POST")] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/users/createWithArray"] = user.NewCreateUsersWithArrayInput(o.context, o.UserCreateUsersWithArrayInputHandler)
 
-	o.handlers["createUsersWithListInput"] = user.NewCreateUsersWithListInput(o.context, o.CreateUsersWithListInputHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers[strings.ToUpper("POST")] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/users/createWithList"] = user.NewCreateUsersWithListInput(o.context, o.UserCreateUsersWithListInputHandler)
 
-	o.handlers["deleteOrder"] = store.NewDeleteOrder(o.context, o.DeleteOrderHandler)
+	if o.handlers["DELETE"] == nil {
+		o.handlers[strings.ToUpper("DELETE")] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/stores/order/{orderId}"] = store.NewDeleteOrder(o.context, o.StoreDeleteOrderHandler)
 
-	o.handlers["deletePet"] = pet.NewDeletePet(o.context, o.DeletePetHandler)
+	if o.handlers["DELETE"] == nil {
+		o.handlers[strings.ToUpper("DELETE")] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/pets/{petId}"] = pet.NewDeletePet(o.context, o.PetDeletePetHandler)
 
-	o.handlers["deleteUser"] = user.NewDeleteUser(o.context, o.DeleteUserHandler)
+	if o.handlers["DELETE"] == nil {
+		o.handlers[strings.ToUpper("DELETE")] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/users/{username}"] = user.NewDeleteUser(o.context, o.UserDeleteUserHandler)
 
-	o.handlers["findPetsByStatus"] = pet.NewFindPetsByStatus(o.context, o.FindPetsByStatusHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/pets/findByStatus"] = pet.NewFindPetsByStatus(o.context, o.PetFindPetsByStatusHandler)
 
-	o.handlers["findPetsByTags"] = pet.NewFindPetsByTags(o.context, o.FindPetsByTagsHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/pets/findByTags"] = pet.NewFindPetsByTags(o.context, o.PetFindPetsByTagsHandler)
 
-	o.handlers["getOrderById"] = store.NewGetOrderByID(o.context, o.GetOrderByIDHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/stores/order/{orderId}"] = store.NewGetOrderByID(o.context, o.StoreGetOrderByIDHandler)
 
-	o.handlers["getPetById"] = pet.NewGetPetByID(o.context, o.GetPetByIDHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/pets/{petId}"] = pet.NewGetPetByID(o.context, o.PetGetPetByIDHandler)
 
-	o.handlers["getUserByName"] = user.NewGetUserByName(o.context, o.GetUserByNameHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/users/{username}"] = user.NewGetUserByName(o.context, o.UserGetUserByNameHandler)
 
-	o.handlers["loginUser"] = user.NewLoginUser(o.context, o.LoginUserHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/users/login"] = user.NewLoginUser(o.context, o.UserLoginUserHandler)
 
-	o.handlers["logoutUser"] = user.NewLogoutUser(o.context, o.LogoutUserHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/users/logout"] = user.NewLogoutUser(o.context, o.UserLogoutUserHandler)
 
-	o.handlers["placeOrder"] = store.NewPlaceOrder(o.context, o.PlaceOrderHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers[strings.ToUpper("POST")] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/stores/order"] = store.NewPlaceOrder(o.context, o.StorePlaceOrderHandler)
 
-	o.handlers["updatePet"] = pet.NewUpdatePet(o.context, o.UpdatePetHandler)
+	if o.handlers["PUT"] == nil {
+		o.handlers[strings.ToUpper("PUT")] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/pets"] = pet.NewUpdatePet(o.context, o.PetUpdatePetHandler)
 
-	o.handlers["updatePetWithForm"] = pet.NewUpdatePetWithForm(o.context, o.UpdatePetWithFormHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers[strings.ToUpper("POST")] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/pets/{petId}"] = pet.NewUpdatePetWithForm(o.context, o.PetUpdatePetWithFormHandler)
 
-	o.handlers["updateUser"] = user.NewUpdateUser(o.context, o.UpdateUserHandler)
+	if o.handlers["PUT"] == nil {
+		o.handlers[strings.ToUpper("PUT")] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/users/{username}"] = user.NewUpdateUser(o.context, o.UserUpdateUserHandler)
 
 }
 

@@ -21,6 +21,11 @@ type FindOK struct {
 	Payload []*models.Item `json:"body,omitempty"`
 }
 
+// Create FindOK with default headers values
+func NewFindOK() FindOK {
+	return FindOK{}
+}
+
 // WriteResponse to the client
 func (o *FindOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -39,6 +44,11 @@ type FindDefault struct {
 
 	// In: body
 	Payload *models.Error `json:"body,omitempty"`
+}
+
+// Create FindDefault with default headers values
+func NewFindDefault() FindDefault {
+	return FindDefault{}
 }
 
 // WriteResponse to the client

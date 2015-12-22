@@ -59,7 +59,7 @@ func TestUntypedAPIRegistrations(t *testing.T) {
 
 	api.RegisterConsumer("application/yada", new(stubConsumer))
 	api.RegisterProducer("application/yada-2", new(stubProducer))
-	api.RegisterOperation("someId", new(stubOperationHandler))
+	api.RegisterOperation("get", "/{someId}", new(stubOperationHandler))
 	api.RegisterAuth("basic", stubAutenticator())
 
 	assert.NotEmpty(t, api.authenticators)
@@ -74,14 +74,14 @@ func TestUntypedAPIRegistrations(t *testing.T) {
 	assert.True(t, ok)
 	_, ok = api.producers["application/json"]
 	assert.True(t, ok)
-	_, ok = api.operations["someId"]
+	_, ok = api.operations["GET"]["/{someId}"]
 	assert.True(t, ok)
 
-	h, ok := api.OperationHandlerFor("someId")
+	h, ok := api.OperationHandlerFor("get", "/{someId}")
 	assert.True(t, ok)
 	assert.NotNil(t, h)
 
-	_, ok = api.OperationHandlerFor("doesntExist")
+	_, ok = api.OperationHandlerFor("doesntExist", "/{someId}")
 	assert.False(t, ok)
 }
 
@@ -196,8 +196,8 @@ func TestUntypedAppValidation(t *testing.T) {
 	api1.RegisterProducer("application/x-yaml", new(stubProducer))
 	err = api1.validate()
 	assert.Error(t, err)
-	assert.Equal(t, "missing [someOperation] operation registrations", err.Error())
-	api1.RegisterOperation("someOperation", new(stubOperationHandler))
+	assert.Equal(t, "missing [GET /] operation registrations", err.Error())
+	api1.RegisterOperation("get", "/", new(stubOperationHandler))
 	err = api1.validate()
 	assert.Error(t, err)
 	assert.Equal(t, "missing [apiKey, basic] auth scheme registrations", err.Error())
@@ -210,7 +210,7 @@ func TestUntypedAppValidation(t *testing.T) {
 	api3 := NewAPI(validSpec)
 	api3.RegisterConsumer("application/x-yaml", new(stubConsumer))
 	api3.RegisterProducer("application/x-yaml", new(stubProducer))
-	api3.RegisterOperation("someOperation", new(stubOperationHandler))
+	api3.RegisterOperation("get", "/", new(stubOperationHandler))
 	api3.RegisterAuth("basic", stubAutenticator())
 	api3.RegisterAuth("apiKey", stubAutenticator())
 	err = api3.validate()

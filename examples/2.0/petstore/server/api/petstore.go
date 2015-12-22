@@ -38,10 +38,10 @@ func NewPetstore() (http.Handler, error) {
 	}
 	api := untyped.NewAPI(spec)
 
-	api.RegisterOperation("getAllPets", getAllPets)
-	api.RegisterOperation("createPet", createPet)
-	api.RegisterOperation("deletePet", deletePet)
-	api.RegisterOperation("getPetById", getPetByID)
+	api.RegisterOperation("get", "/pets", getAllPets)
+	api.RegisterOperation("post", "/pets", createPet)
+	api.RegisterOperation("delete", "/pets/{id}", deletePet)
+	api.RegisterOperation("get", "/pets/{id}", getPetByID)
 
 	return middleware.Serve(spec, api), nil
 }

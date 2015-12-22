@@ -16,6 +16,11 @@ swagger:response deleteOrderBadRequest
 type DeleteOrderBadRequest struct {
 }
 
+// Create DeleteOrderBadRequest with default headers values
+func NewDeleteOrderBadRequest() DeleteOrderBadRequest {
+	return DeleteOrderBadRequest{}
+}
+
 // WriteResponse to the client
 func (o *DeleteOrderBadRequest) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -27,6 +32,11 @@ func (o *DeleteOrderBadRequest) WriteResponse(rw http.ResponseWriter, producer h
 swagger:response deleteOrderNotFound
 */
 type DeleteOrderNotFound struct {
+}
+
+// Create DeleteOrderNotFound with default headers values
+func NewDeleteOrderNotFound() DeleteOrderNotFound {
+	return DeleteOrderNotFound{}
 }
 
 // WriteResponse to the client

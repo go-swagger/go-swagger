@@ -21,6 +21,11 @@ type UpdateOneOK struct {
 	Payload *models.Item `json:"body,omitempty"`
 }
 
+// Create UpdateOneOK with default headers values
+func NewUpdateOneOK() UpdateOneOK {
+	return UpdateOneOK{}
+}
+
 // WriteResponse to the client
 func (o *UpdateOneOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -40,6 +45,11 @@ type UpdateOneDefault struct {
 
 	// In: body
 	Payload *models.Error `json:"body,omitempty"`
+}
+
+// Create UpdateOneDefault with default headers values
+func NewUpdateOneDefault() UpdateOneDefault {
+	return UpdateOneDefault{}
 }
 
 // WriteResponse to the client

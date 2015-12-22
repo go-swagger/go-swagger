@@ -178,7 +178,7 @@ func (o *operationGenerator) Generate() error {
 			log.Println("generated handler", op.Package+"."+o.cname)
 		}
 
-		opParams := o.Doc.ParametersFor(o.Operation.ID)
+		opParams := o.Doc.ParamsFor(o.Method, o.Path)
 		if o.IncludeParameters && len(opParams) > 0 {
 			if err := o.generateParameterModel(); err != nil {
 				return fmt.Errorf("parameters: %s", err)
@@ -270,7 +270,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	operation := b.Operation
 	var params, qp, pp, hp, fp GenParameters
 	var hasQueryParams, hasFormParams, hasFileParams bool
-	for _, p := range b.Doc.ParametersFor(operation.ID) {
+	for _, p := range b.Doc.ParamsFor(b.Method, b.Path) {
 		cp, err := b.MakeParameter(receiver, resolver, p)
 		if err != nil {
 			return GenOperation{}, err

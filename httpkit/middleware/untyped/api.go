@@ -39,7 +39,7 @@ func NewAPI(spec *spec.Document) *API {
 			httpkit.JSONMime: httpkit.JSONProducer(),
 		},
 		authenticators: make(map[string]httpkit.Authenticator),
-		operations:     make(map[string]httpkit.OperationHandler),
+		operations:     make(map[string]map[string]httpkit.OperationHandler),
 		ServeError:     errors.ServeError,
 		Models:         make(map[string]func() interface{}),
 		formats:        strfmt.NewFormats(),
@@ -54,7 +54,7 @@ type API struct {
 	consumers       map[string]httpkit.Consumer
 	producers       map[string]httpkit.Producer
 	authenticators  map[string]httpkit.Authenticator
-	operations      map[string]httpkit.OperationHandler
+	operations      map[string]map[string]httpkit.OperationHandler
 	ServeError      func(http.ResponseWriter, *http.Request, error)
 	Models          map[string]func() interface{}
 	formats         strfmt.Registry
@@ -101,14 +101,27 @@ func (d *API) RegisterProducer(mediaType string, handler httpkit.Producer) {
 }
 
 // RegisterOperation registers an operation handler for an operation name
-func (d *API) RegisterOperation(operationID string, handler httpkit.OperationHandler) {
-	d.operations[operationID] = handler
+func (d *API) RegisterOperation(method, path string, handler httpkit.OperationHandler) {
+	if d.operations == nil {
+		d.operations = make(map[string]map[string]httpkit.OperationHandler)
+	}
+	um := strings.ToUpper(method)
+	if b, ok := d.operations[um]; !ok || b == nil {
+		d.operations[um] = make(map[string]httpkit.OperationHandler)
+	}
+	d.operations[um][path] = handler
 }
 
 // OperationHandlerFor returns the operation handler for the specified id if it can be found
-func (d *API) OperationHandlerFor(operationID string) (httpkit.OperationHandler, bool) {
-	h, ok := d.operations[operationID]
-	return h, ok
+func (d *API) OperationHandlerFor(method, path string) (httpkit.OperationHandler, bool) {
+	if d.operations == nil {
+		return nil, false
+	}
+	if pi, ok := d.operations[strings.ToUpper(method)]; ok {
+		h, ok := pi[path]
+		return h, ok
+	}
+	return nil, false
 }
 
 // ConsumersFor gets the consumers for the specified media types
@@ -167,8 +180,10 @@ func (d *API) validate() error {
 	}
 
 	var operations []string
-	for k := range d.operations {
-		operations = append(operations, k)
+	for m, v := range d.operations {
+		for p := range v {
+			operations = append(operations, fmt.Sprintf("%s %s", strings.ToUpper(m), p))
+		}
 	}
 
 	var definedAuths []string

@@ -23,7 +23,7 @@ import (
 func New{{ pascalize .Name }}API(spec *spec.Document) *{{ pascalize .Name }}API {
   {{.ReceiverName}} := &{{ pascalize .Name }}API{
     spec:     spec,
-    handlers: make(map[string]http.Handler),
+    handlers: make(map[string]map[string]http.Handler),
     formats:  strfmt.Default,
     defaultConsumes: "{{ .DefaultConsumes }}",
     defaultProduces: "{{ .DefaultProduces }}",
@@ -36,7 +36,7 @@ func New{{ pascalize .Name }}API(spec *spec.Document) *{{ pascalize .Name }}API 
 type {{ pascalize .Name }}API struct {
   spec            *spec.Document
   context         *middleware.Context
-  handlers        map[string]http.Handler
+  handlers        map[string]map[string]http.Handler
   formats         strfmt.Registry
   defaultConsumes string
   defaultProduces string
@@ -186,12 +186,16 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) ProducersFor(mediaTypes []str
   {{end}}
 }
 
-// HandlerFor gets a http.Handler for the provided operation id
-func ({{.ReceiverName}} *{{ pascalize .Name }}API) HandlerFor(operationID string) (http.Handler, bool) {
+// HandlerFor gets a http.Handler for the provided operation method and path
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) HandlerFor(method, path string) (http.Handler, bool) {
   if {{.ReceiverName}}.handlers == nil {
     return nil, false
   }
-  h, ok := {{.ReceiverName}}.handlers[operationID]
+  um := strings.ToUpper(method)
+  if _, ok := {{.ReceiverName}}.handlers[um]; !ok {
+    return nil, false
+  }
+  h, ok := {{.ReceiverName}}.handlers[um][path]
   return h, ok
 }
 
@@ -200,9 +204,14 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) initHandlerCache() {
     {{.ReceiverName}}.context = middleware.NewRoutableContext({{.ReceiverName}}.spec, {{.ReceiverName}}, nil)
   }
   {{if .Operations}}
-  {{.ReceiverName}}.handlers = make(map[string]http.Handler)
+  if {{ .ReceiverName }}.handlers == nil {
+    {{.ReceiverName}}.handlers = make(map[string]map[string]http.Handler)
+  }
   {{range .Operations}}
-  {{.ReceiverName}}.handlers["{{if ne .Package $package}}{{.Package}}.{{end}}{{.Name}}"] = {{if ne .Package $package}}{{.Package}}.{{end}}New{{ pascalize .Name }}({{.ReceiverName}}.context, {{.ReceiverName}}.{{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{ pascalize .Name }}Handler)
+  if {{ .ReceiverName }}.handlers[{{ printf "%q" (upper .Method) }}] == nil {
+    {{ .ReceiverName }}.handlers[strings.ToUpper({{ printf "%q" (upper .Method) }})] = make(map[string]http.Handler)
+  }
+  {{.ReceiverName}}.handlers[{{ printf "%q" (upper .Method) }}][{{ printf "%q" .Path }}] = {{if ne .Package $package}}{{.Package}}.{{end}}New{{ pascalize .Name }}({{.ReceiverName}}.context, {{.ReceiverName}}.{{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{ pascalize .Name }}Handler)
   {{end}}
   {{end}}
 }

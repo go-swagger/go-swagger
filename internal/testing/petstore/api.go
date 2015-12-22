@@ -54,10 +54,10 @@ func NewAPI(t *gotest.T) (*spec.Document, *untyped.API) {
 		}
 		return nil, errors.Unauthenticated("token")
 	}))
-	api.RegisterOperation("getAllPets", new(stubOperationHandler))
-	api.RegisterOperation("createPet", new(stubOperationHandler))
-	api.RegisterOperation("deletePet", new(stubOperationHandler))
-	api.RegisterOperation("getPetById", new(stubOperationHandler))
+	api.RegisterOperation("get", "/pets", new(stubOperationHandler))
+	api.RegisterOperation("post", "/pets", new(stubOperationHandler))
+	api.RegisterOperation("delete", "/pets/{id}", new(stubOperationHandler))
+	api.RegisterOperation("get", "/pets/{id}", new(stubOperationHandler))
 
 	api.Models["pet"] = func() interface{} { return new(Pet) }
 	api.Models["newPet"] = func() interface{} { return new(Pet) }
@@ -93,10 +93,10 @@ func NewRootAPI(t *gotest.T) (*spec.Document, *untyped.API) {
 		}
 		return nil, errors.Unauthenticated("token")
 	}))
-	api.RegisterOperation("getAllPets", new(stubOperationHandler))
-	api.RegisterOperation("createPet", new(stubOperationHandler))
-	api.RegisterOperation("deletePet", new(stubOperationHandler))
-	api.RegisterOperation("getPetById", new(stubOperationHandler))
+	api.RegisterOperation("get", "/pets", new(stubOperationHandler))
+	api.RegisterOperation("post", "/pets", new(stubOperationHandler))
+	api.RegisterOperation("delete", "/pets/{id}", new(stubOperationHandler))
+	api.RegisterOperation("get", "/pets/{id}", new(stubOperationHandler))
 
 	api.Models["pet"] = func() interface{} { return new(Pet) }
 	api.Models["newPet"] = func() interface{} { return new(Pet) }

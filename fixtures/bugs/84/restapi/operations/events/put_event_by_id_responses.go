@@ -16,6 +16,11 @@ swagger:response putEventByIdNoContent
 type PutEventByIDNoContent struct {
 }
 
+// Create PutEventByIDNoContent with default headers values
+func NewPutEventByIDNoContent() PutEventByIDNoContent {
+	return PutEventByIDNoContent{}
+}
+
 // WriteResponse to the client
 func (o *PutEventByIDNoContent) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -27,6 +32,11 @@ func (o *PutEventByIDNoContent) WriteResponse(rw http.ResponseWriter, producer h
 swagger:response putEventByIdDefault
 */
 type PutEventByIDDefault struct {
+}
+
+// Create PutEventByIDDefault with default headers values
+func NewPutEventByIDDefault() PutEventByIDDefault {
+	return PutEventByIDDefault{}
 }
 
 // WriteResponse to the client

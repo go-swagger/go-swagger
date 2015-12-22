@@ -19,6 +19,11 @@ type LoginUserOK struct {
 	Payload string `json:"body,omitempty"`
 }
 
+// Create LoginUserOK with default headers values
+func NewLoginUserOK() LoginUserOK {
+	return LoginUserOK{}
+}
+
 // WriteResponse to the client
 func (o *LoginUserOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -34,6 +39,11 @@ func (o *LoginUserOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Pro
 swagger:response loginUserBadRequest
 */
 type LoginUserBadRequest struct {
+}
+
+// Create LoginUserBadRequest with default headers values
+func NewLoginUserBadRequest() LoginUserBadRequest {
+	return LoginUserBadRequest{}
 }
 
 // WriteResponse to the client

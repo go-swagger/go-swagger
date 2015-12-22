@@ -21,20 +21,20 @@ func configureAPI(api *operations.EventListAPI) http.Handler {
 
 	api.JSONProducer = httpkit.JSONProducer()
 
-	api.DeleteEventByIDHandler = events.DeleteEventByIDHandlerFunc(func(params events.DeleteEventByIDParams) middleware.Responder {
-		return middleware.NotImplemented("operation deleteEventById has not yet been implemented")
+	api.EventsDeleteEventByIDHandler = events.DeleteEventByIDHandlerFunc(func(params events.DeleteEventByIDParams) middleware.Responder {
+		return middleware.NotImplemented("operation events.DeleteEventByID has not yet been implemented")
 	})
-	api.GetEventByIDHandler = events.GetEventByIDHandlerFunc(func(params events.GetEventByIDParams) middleware.Responder {
-		return middleware.NotImplemented("operation getEventById has not yet been implemented")
+	api.EventsGetEventByIDHandler = events.GetEventByIDHandlerFunc(func(params events.GetEventByIDParams) middleware.Responder {
+		return middleware.NotImplemented("operation events.GetEventByID has not yet been implemented")
 	})
-	api.GetEventsHandler = events.GetEventsHandlerFunc(func() middleware.Responder {
-		return middleware.NotImplemented("operation getEvents has not yet been implemented")
+	api.EventsGetEventsHandler = events.GetEventsHandlerFunc(func() middleware.Responder {
+		return middleware.NotImplemented("operation events.GetEvents has not yet been implemented")
 	})
-	api.PostEventHandler = events.PostEventHandlerFunc(func(params events.PostEventParams) middleware.Responder {
-		return middleware.NotImplemented("operation postEvent has not yet been implemented")
+	api.EventsPostEventHandler = events.PostEventHandlerFunc(func(params events.PostEventParams) middleware.Responder {
+		return middleware.NotImplemented("operation events.PostEvent has not yet been implemented")
 	})
-	api.PutEventByIDHandler = events.PutEventByIDHandlerFunc(func(params events.PutEventByIDParams) middleware.Responder {
-		return middleware.NotImplemented("operation putEventById has not yet been implemented")
+	api.EventsPutEventByIDHandler = events.PutEventByIDHandlerFunc(func(params events.PutEventByIDParams) middleware.Responder {
+		return middleware.NotImplemented("operation events.PutEventByID has not yet been implemented")
 	})
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))

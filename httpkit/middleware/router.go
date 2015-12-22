@@ -100,7 +100,7 @@ func newRouter(ctx *Context, next http.Handler) http.Handler {
 // RoutableAPI represents an interface for things that can serve
 // as a provider of implementations for the swagger router
 type RoutableAPI interface {
-	HandlerFor(string) (http.Handler, bool)
+	HandlerFor(string, string) (http.Handler, bool)
 	ServeErrorFor(string) func(http.ResponseWriter, *http.Request, error)
 	ConsumersFor([]string) map[string]httpkit.Consumer
 	ProducersFor([]string) map[string]httpkit.Producer
@@ -206,7 +206,7 @@ var pathConverter = regexp.MustCompile(`{(\w+)}`)
 func (d *defaultRouteBuilder) AddRoute(method, path string, operation *spec.Operation) {
 	mn := strings.ToUpper(method)
 
-	if handler, ok := d.api.HandlerFor(operation.ID); ok {
+	if handler, ok := d.api.HandlerFor(method, path); ok {
 		consumes := d.spec.ConsumesFor(operation)
 		produces := d.spec.ProducesFor(operation)
 		parameters := d.spec.ParamsFor(method, path)

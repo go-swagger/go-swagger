@@ -111,6 +111,9 @@ var FuncMap template.FuncMap = map[string]interface{}{
 		}
 		return str
 	},
+	"upper": func(str string) string {
+		return strings.ToUpper(str)
+	},
 }
 
 func init() {

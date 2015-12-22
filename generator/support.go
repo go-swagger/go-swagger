@@ -17,6 +17,7 @@ package generator
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -40,15 +41,13 @@ func GenerateSupport(name string, modelNames, operationIDs []string, opts GenOpt
 
 	models := gatherModels(specDoc, modelNames)
 	operations := gatherOperations(specDoc, operationIDs)
+	if len(operations) == 0 {
+		return errors.New("no operations were selected")
+	}
 
 	defaultScheme := opts.DefaultScheme
 	if defaultScheme == "" {
 		defaultScheme = "http"
-	}
-
-	ops := make(map[string]spec.Operation)
-	for k, v := range operations {
-		ops[k] = v.Op
 	}
 
 	apiPackage := mangleName(swag.ToFileName(opts.APIPackage), "api")
@@ -57,7 +56,7 @@ func GenerateSupport(name string, modelNames, operationIDs []string, opts GenOpt
 		Receiver:   "o",
 		SpecDoc:    specDoc,
 		Models:     models,
-		Operations: ops,
+		Operations: operations,
 		Target:     opts.Target,
 		// Package:       filepath.Base(opts.Target),
 		DumpData:      opts.DumpData,
@@ -84,7 +83,7 @@ type appGenerator struct {
 	ClientPackage string
 	Principal     string
 	Models        map[string]spec.Schema
-	Operations    map[string]spec.Operation
+	Operations    map[string]opRef
 	Target        string
 	DumpData      bool
 	DefaultScheme string
@@ -430,7 +429,9 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	tns := make(map[string]struct{})
 	var genOps GenOperations
-	for on, o := range a.Operations {
+	for on, opp := range a.Operations {
+		o := opp.Op
+		o.ID = on
 		var bldr codeGenOpBuilder
 		bldr.ModelsPackage = a.ModelsPackage
 		bldr.Principal = prin
@@ -441,6 +442,8 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		// TODO: change operation name to something safe
 		bldr.Name = on
 		bldr.Operation = o
+		bldr.Method = opp.Method
+		bldr.Path = opp.Path
 		bldr.Authed = len(a.SpecDoc.SecurityRequirementsFor(&o)) > 0
 		ap := a.APIPackage
 		bldr.RootAPIPackage = swag.ToFileName(a.APIPackage)

@@ -16,6 +16,11 @@ swagger:response updateUserBadRequest
 type UpdateUserBadRequest struct {
 }
 
+// Create UpdateUserBadRequest with default headers values
+func NewUpdateUserBadRequest() UpdateUserBadRequest {
+	return UpdateUserBadRequest{}
+}
+
 // WriteResponse to the client
 func (o *UpdateUserBadRequest) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -27,6 +32,11 @@ func (o *UpdateUserBadRequest) WriteResponse(rw http.ResponseWriter, producer ht
 swagger:response updateUserNotFound
 */
 type UpdateUserNotFound struct {
+}
+
+// Create UpdateUserNotFound with default headers values
+func NewUpdateUserNotFound() UpdateUserNotFound {
+	return UpdateUserNotFound{}
 }
 
 // WriteResponse to the client
