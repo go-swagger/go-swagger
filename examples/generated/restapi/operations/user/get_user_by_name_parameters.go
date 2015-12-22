@@ -11,6 +11,12 @@ import (
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 
+// NewGetUserByNameParams creates a new GetUserByNameParams object
+// with the default values initialized.
+func NewGetUserByNameParams() GetUserByNameParams {
+	return GetUserByNameParams{}
+}
+
 // GetUserByNameParams contains all the bound params for the get user by name operation
 // typically these are obtained from a http.Request
 //

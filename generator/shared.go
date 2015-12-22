@@ -234,7 +234,7 @@ func appNameOrDefault(specDoc *spec.Document, name, defaultName string) string {
 			name = defaultName
 		}
 	}
-	return swag.ToGoName(name)
+	return strings.TrimSuffix(swag.ToGoName(name), "API")
 }
 
 var namesCounter int64

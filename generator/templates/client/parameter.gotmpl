@@ -17,6 +17,14 @@ import (
   {{ end }}
 )
 
+// New{{ pascalize .Name }}Params creates a new {{ pascalize .Name }}Params object
+// with the default values initialized.
+func New{{ pascalize .Name }}Params() *{{ pascalize .Name }}Params {
+  return &{{ pascalize .Name}}Params{ {{ range .Params }}{{ if .Default }}
+    {{ pascalize .Name}}: {{ printf "%#v" .Default }},
+  {{ end }}{{ end }} }
+}
+
 /*{{ pascalize .Name }}Params contains all the parameters to send to the API endpoint
 for the {{ humanize .Name }} operation typically these are written to a http.Request
 */

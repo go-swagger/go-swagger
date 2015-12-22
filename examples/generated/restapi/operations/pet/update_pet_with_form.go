@@ -40,6 +40,7 @@ type UpdatePetWithForm struct {
 
 func (o *UpdatePetWithForm) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, _ := o.Context.RouteInfo(r)
+	o.Params = NewUpdatePetWithFormParams()
 
 	uprinc, err := o.Context.Authorize(r, route)
 	if err != nil {

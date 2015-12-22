@@ -18,7 +18,7 @@ swagger:response postEventCreated
 type PostEventCreated struct {
 }
 
-// Create PostEventCreated with default headers values
+// NewPostEventCreated creates PostEventCreated with default headers values
 func NewPostEventCreated() PostEventCreated {
 	return PostEventCreated{}
 }
@@ -36,7 +36,7 @@ swagger:response postEventDefault
 type PostEventDefault struct {
 }
 
-// Create PostEventDefault with default headers values
+// NewPostEventDefault creates PostEventDefault with default headers values
 func NewPostEventDefault() PostEventDefault {
 	return PostEventDefault{}
 }

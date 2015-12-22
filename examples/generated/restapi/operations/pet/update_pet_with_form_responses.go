@@ -16,7 +16,7 @@ swagger:response updatePetWithFormMethodNotAllowed
 type UpdatePetWithFormMethodNotAllowed struct {
 }
 
-// Create UpdatePetWithFormMethodNotAllowed with default headers values
+// NewUpdatePetWithFormMethodNotAllowed creates UpdatePetWithFormMethodNotAllowed with default headers values
 func NewUpdatePetWithFormMethodNotAllowed() UpdatePetWithFormMethodNotAllowed {
 	return UpdatePetWithFormMethodNotAllowed{}
 }

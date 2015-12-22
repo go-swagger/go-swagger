@@ -16,7 +16,7 @@ swagger:response deletePetBadRequest
 type DeletePetBadRequest struct {
 }
 
-// Create DeletePetBadRequest with default headers values
+// NewDeletePetBadRequest creates DeletePetBadRequest with default headers values
 func NewDeletePetBadRequest() DeletePetBadRequest {
 	return DeletePetBadRequest{}
 }

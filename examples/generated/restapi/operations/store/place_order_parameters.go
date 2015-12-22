@@ -12,6 +12,12 @@ import (
 	"github.com/go-swagger/go-swagger/examples/generated/models"
 )
 
+// NewPlaceOrderParams creates a new PlaceOrderParams object
+// with the default values initialized.
+func NewPlaceOrderParams() PlaceOrderParams {
+	return PlaceOrderParams{}
+}
+
 // PlaceOrderParams contains all the bound params for the place order operation
 // typically these are obtained from a http.Request
 //

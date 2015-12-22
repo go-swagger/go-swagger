@@ -12,6 +12,12 @@ import (
 	"github.com/go-swagger/go-swagger/examples/generated/models"
 )
 
+// NewCreateUsersWithListInputParams creates a new CreateUsersWithListInputParams object
+// with the default values initialized.
+func NewCreateUsersWithListInputParams() CreateUsersWithListInputParams {
+	return CreateUsersWithListInputParams{}
+}
+
 // CreateUsersWithListInputParams contains all the bound params for the create users with list input operation
 // typically these are obtained from a http.Request
 //

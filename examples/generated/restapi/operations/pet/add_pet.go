@@ -40,6 +40,7 @@ type AddPet struct {
 
 func (o *AddPet) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, _ := o.Context.RouteInfo(r)
+	o.Params = NewAddPetParams()
 
 	uprinc, err := o.Context.Authorize(r, route)
 	if err != nil {

@@ -21,7 +21,7 @@ type FindOK struct {
 	Payload []*models.Item `json:"body,omitempty"`
 }
 
-// Create FindOK with default headers values
+// NewFindOK creates FindOK with default headers values
 func NewFindOK() FindOK {
 	return FindOK{}
 }
@@ -46,7 +46,7 @@ type FindDefault struct {
 	Payload *models.Error `json:"body,omitempty"`
 }
 
-// Create FindDefault with default headers values
+// NewFindDefault creates FindDefault with default headers values
 func NewFindDefault() FindDefault {
 	return FindDefault{}
 }

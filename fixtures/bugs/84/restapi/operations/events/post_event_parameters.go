@@ -12,6 +12,12 @@ import (
 	"github.com/go-swagger/go-swagger/fixtures/bugs/84/models"
 )
 
+// NewPostEventParams creates a new PostEventParams object
+// with the default values initialized.
+func NewPostEventParams() PostEventParams {
+	return PostEventParams{}
+}
+
 // PostEventParams contains all the bound params for the post event operation
 // typically these are obtained from a http.Request
 //

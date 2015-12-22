@@ -16,7 +16,7 @@ swagger:response updateUserBadRequest
 type UpdateUserBadRequest struct {
 }
 
-// Create UpdateUserBadRequest with default headers values
+// NewUpdateUserBadRequest creates UpdateUserBadRequest with default headers values
 func NewUpdateUserBadRequest() UpdateUserBadRequest {
 	return UpdateUserBadRequest{}
 }
@@ -34,7 +34,7 @@ swagger:response updateUserNotFound
 type UpdateUserNotFound struct {
 }
 
-// Create UpdateUserNotFound with default headers values
+// NewUpdateUserNotFound creates UpdateUserNotFound with default headers values
 func NewUpdateUserNotFound() UpdateUserNotFound {
 	return UpdateUserNotFound{}
 }

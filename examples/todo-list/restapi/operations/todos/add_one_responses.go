@@ -21,7 +21,7 @@ type AddOneCreated struct {
 	Payload *models.Item `json:"body,omitempty"`
 }
 
-// Create AddOneCreated with default headers values
+// NewAddOneCreated creates AddOneCreated with default headers values
 func NewAddOneCreated() AddOneCreated {
 	return AddOneCreated{}
 }
@@ -47,7 +47,7 @@ type AddOneDefault struct {
 	Payload *models.Error `json:"body,omitempty"`
 }
 
-// Create AddOneDefault with default headers values
+// NewAddOneDefault creates AddOneDefault with default headers values
 func NewAddOneDefault() AddOneDefault {
 	return AddOneDefault{}
 }

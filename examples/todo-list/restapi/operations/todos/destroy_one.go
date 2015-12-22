@@ -40,6 +40,7 @@ type DestroyOne struct {
 
 func (o *DestroyOne) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, _ := o.Context.RouteInfo(r)
+	o.Params = NewDestroyOneParams()
 
 	uprinc, err := o.Context.Authorize(r, route)
 	if err != nil {

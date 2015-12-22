@@ -19,19 +19,24 @@ func (o *FindReader) ReadResponse(response client.Response, consumer httpkit.Con
 	switch response.Code() {
 
 	case 200:
-		var result FindOK
+		result := NewFindOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
-		return &result, nil
+		return result, nil
 
 	default:
-		var result FindDefault
+		result := NewFindDefault()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
-		return nil, NewAPIError("find default", &result, response.Code())
+		return nil, NewAPIError("find default", result, response.Code())
 	}
+}
+
+// NewFindOK creates a FindOK with default headers values
+func NewFindOK() *FindOK {
+	return &FindOK{}
 }
 
 /*FindOK
@@ -50,6 +55,11 @@ func (o *FindOK) readResponse(response client.Response, consumer httpkit.Consume
 	}
 
 	return nil
+}
+
+// NewFindDefault creates a FindDefault with default headers values
+func NewFindDefault() *FindDefault {
+	return &FindDefault{}
 }
 
 /*FindDefault

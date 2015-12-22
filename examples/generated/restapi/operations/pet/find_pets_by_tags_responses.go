@@ -21,7 +21,7 @@ type FindPetsByTagsOK struct {
 	Payload []*models.Pet `json:"body,omitempty"`
 }
 
-// Create FindPetsByTagsOK with default headers values
+// NewFindPetsByTagsOK creates FindPetsByTagsOK with default headers values
 func NewFindPetsByTagsOK() FindPetsByTagsOK {
 	return FindPetsByTagsOK{}
 }
@@ -43,7 +43,7 @@ swagger:response findPetsByTagsBadRequest
 type FindPetsByTagsBadRequest struct {
 }
 
-// Create FindPetsByTagsBadRequest with default headers values
+// NewFindPetsByTagsBadRequest creates FindPetsByTagsBadRequest with default headers values
 func NewFindPetsByTagsBadRequest() FindPetsByTagsBadRequest {
 	return FindPetsByTagsBadRequest{}
 }

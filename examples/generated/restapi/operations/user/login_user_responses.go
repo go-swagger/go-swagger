@@ -19,7 +19,7 @@ type LoginUserOK struct {
 	Payload string `json:"body,omitempty"`
 }
 
-// Create LoginUserOK with default headers values
+// NewLoginUserOK creates LoginUserOK with default headers values
 func NewLoginUserOK() LoginUserOK {
 	return LoginUserOK{}
 }
@@ -41,7 +41,7 @@ swagger:response loginUserBadRequest
 type LoginUserBadRequest struct {
 }
 
-// Create LoginUserBadRequest with default headers values
+// NewLoginUserBadRequest creates LoginUserBadRequest with default headers values
 func NewLoginUserBadRequest() LoginUserBadRequest {
 	return LoginUserBadRequest{}
 }

@@ -19,19 +19,24 @@ func (o *UpdateOneReader) ReadResponse(response client.Response, consumer httpki
 	switch response.Code() {
 
 	case 200:
-		var result UpdateOneOK
+		result := NewUpdateOneOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
-		return &result, nil
+		return result, nil
 
 	default:
-		var result UpdateOneDefault
+		result := NewUpdateOneDefault()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
-		return nil, NewAPIError("updateOne default", &result, response.Code())
+		return nil, NewAPIError("updateOne default", result, response.Code())
 	}
+}
+
+// NewUpdateOneOK creates a UpdateOneOK with default headers values
+func NewUpdateOneOK() *UpdateOneOK {
+	return &UpdateOneOK{}
 }
 
 /*UpdateOneOK
@@ -52,6 +57,11 @@ func (o *UpdateOneOK) readResponse(response client.Response, consumer httpkit.Co
 	}
 
 	return nil
+}
+
+// NewUpdateOneDefault creates a UpdateOneDefault with default headers values
+func NewUpdateOneDefault() *UpdateOneDefault {
+	return &UpdateOneDefault{}
 }
 
 /*UpdateOneDefault

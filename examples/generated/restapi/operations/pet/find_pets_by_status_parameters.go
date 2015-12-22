@@ -12,6 +12,12 @@ import (
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 
+// NewFindPetsByStatusParams creates a new FindPetsByStatusParams object
+// with the default values initialized.
+func NewFindPetsByStatusParams() FindPetsByStatusParams {
+	return FindPetsByStatusParams{}
+}
+
 // FindPetsByStatusParams contains all the bound params for the find pets by status operation
 // typically these are obtained from a http.Request
 //

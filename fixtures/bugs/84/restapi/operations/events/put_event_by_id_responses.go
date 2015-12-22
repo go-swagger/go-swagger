@@ -16,7 +16,7 @@ swagger:response putEventByIdNoContent
 type PutEventByIDNoContent struct {
 }
 
-// Create PutEventByIDNoContent with default headers values
+// NewPutEventByIDNoContent creates PutEventByIDNoContent with default headers values
 func NewPutEventByIDNoContent() PutEventByIDNoContent {
 	return PutEventByIDNoContent{}
 }
@@ -34,7 +34,7 @@ swagger:response putEventByIdDefault
 type PutEventByIDDefault struct {
 }
 
-// Create PutEventByIDDefault with default headers values
+// NewPutEventByIDDefault creates PutEventByIDDefault with default headers values
 func NewPutEventByIDDefault() PutEventByIDDefault {
 	return PutEventByIDDefault{}
 }

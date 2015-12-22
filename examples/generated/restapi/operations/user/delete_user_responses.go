@@ -16,7 +16,7 @@ swagger:response deleteUserBadRequest
 type DeleteUserBadRequest struct {
 }
 
-// Create DeleteUserBadRequest with default headers values
+// NewDeleteUserBadRequest creates DeleteUserBadRequest with default headers values
 func NewDeleteUserBadRequest() DeleteUserBadRequest {
 	return DeleteUserBadRequest{}
 }
@@ -34,7 +34,7 @@ swagger:response deleteUserNotFound
 type DeleteUserNotFound struct {
 }
 
-// Create DeleteUserNotFound with default headers values
+// NewDeleteUserNotFound creates DeleteUserNotFound with default headers values
 func NewDeleteUserNotFound() DeleteUserNotFound {
 	return DeleteUserNotFound{}
 }

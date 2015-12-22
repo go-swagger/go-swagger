@@ -11,6 +11,12 @@ import (
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 
+// NewDeleteUserParams creates a new DeleteUserParams object
+// with the default values initialized.
+func NewDeleteUserParams() DeleteUserParams {
+	return DeleteUserParams{}
+}
+
 // DeleteUserParams contains all the bound params for the delete user operation
 // typically these are obtained from a http.Request
 //

@@ -25,12 +25,15 @@ type Client struct {
 
 /*AddOne add one API
  */
-func (a *Client) AddOne(params AddOneParams, authInfo client.AuthInfoWriter) (*AddOneCreated, error) {
+func (a *Client) AddOne(params *AddOneParams, authInfo client.AuthInfoWriter) (*AddOneCreated, error) {
 	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAddOneParams()
+	}
 
 	result, err := a.transport.Submit(&client.Operation{
 		ID:       "addOne",
-		Params:   &params,
+		Params:   params,
 		Reader:   &AddOneReader{formats: a.formats},
 		AuthInfo: authInfo,
 	})
@@ -42,12 +45,15 @@ func (a *Client) AddOne(params AddOneParams, authInfo client.AuthInfoWriter) (*A
 
 /*DestroyOne destroy one API
  */
-func (a *Client) DestroyOne(params DestroyOneParams, authInfo client.AuthInfoWriter) (*DestroyOneNoContent, error) {
+func (a *Client) DestroyOne(params *DestroyOneParams, authInfo client.AuthInfoWriter) (*DestroyOneNoContent, error) {
 	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDestroyOneParams()
+	}
 
 	result, err := a.transport.Submit(&client.Operation{
 		ID:       "destroyOne",
-		Params:   &params,
+		Params:   params,
 		Reader:   &DestroyOneReader{formats: a.formats},
 		AuthInfo: authInfo,
 	})
@@ -59,12 +65,15 @@ func (a *Client) DestroyOne(params DestroyOneParams, authInfo client.AuthInfoWri
 
 /*Find find API
  */
-func (a *Client) Find(params FindParams, authInfo client.AuthInfoWriter) (*FindOK, error) {
+func (a *Client) Find(params *FindParams, authInfo client.AuthInfoWriter) (*FindOK, error) {
 	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFindParams()
+	}
 
 	result, err := a.transport.Submit(&client.Operation{
 		ID:       "find",
-		Params:   &params,
+		Params:   params,
 		Reader:   &FindReader{formats: a.formats},
 		AuthInfo: authInfo,
 	})
@@ -76,12 +85,15 @@ func (a *Client) Find(params FindParams, authInfo client.AuthInfoWriter) (*FindO
 
 /*UpdateOne update one API
  */
-func (a *Client) UpdateOne(params UpdateOneParams, authInfo client.AuthInfoWriter) (*UpdateOneOK, error) {
+func (a *Client) UpdateOne(params *UpdateOneParams, authInfo client.AuthInfoWriter) (*UpdateOneOK, error) {
 	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUpdateOneParams()
+	}
 
 	result, err := a.transport.Submit(&client.Operation{
 		ID:       "updateOne",
-		Params:   &params,
+		Params:   params,
 		Reader:   &UpdateOneReader{formats: a.formats},
 		AuthInfo: authInfo,
 	})

@@ -11,6 +11,12 @@ import (
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 
+// NewGetOrderByIDParams creates a new GetOrderByIDParams object
+// with the default values initialized.
+func NewGetOrderByIDParams() GetOrderByIDParams {
+	return GetOrderByIDParams{}
+}
+
 // GetOrderByIDParams contains all the bound params for the get order by id operation
 // typically these are obtained from a http.Request
 //

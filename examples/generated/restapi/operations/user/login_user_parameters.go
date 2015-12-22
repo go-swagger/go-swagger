@@ -12,6 +12,12 @@ import (
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 
+// NewLoginUserParams creates a new LoginUserParams object
+// with the default values initialized.
+func NewLoginUserParams() LoginUserParams {
+	return LoginUserParams{}
+}
+
 // LoginUserParams contains all the bound params for the login user operation
 // typically these are obtained from a http.Request
 //

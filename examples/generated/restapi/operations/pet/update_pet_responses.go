@@ -16,7 +16,7 @@ swagger:response updatePetBadRequest
 type UpdatePetBadRequest struct {
 }
 
-// Create UpdatePetBadRequest with default headers values
+// NewUpdatePetBadRequest creates UpdatePetBadRequest with default headers values
 func NewUpdatePetBadRequest() UpdatePetBadRequest {
 	return UpdatePetBadRequest{}
 }
@@ -34,7 +34,7 @@ swagger:response updatePetNotFound
 type UpdatePetNotFound struct {
 }
 
-// Create UpdatePetNotFound with default headers values
+// NewUpdatePetNotFound creates UpdatePetNotFound with default headers values
 func NewUpdatePetNotFound() UpdatePetNotFound {
 	return UpdatePetNotFound{}
 }
@@ -52,7 +52,7 @@ swagger:response updatePetMethodNotAllowed
 type UpdatePetMethodNotAllowed struct {
 }
 
-// Create UpdatePetMethodNotAllowed with default headers values
+// NewUpdatePetMethodNotAllowed creates UpdatePetMethodNotAllowed with default headers values
 func NewUpdatePetMethodNotAllowed() UpdatePetMethodNotAllowed {
 	return UpdatePetMethodNotAllowed{}
 }

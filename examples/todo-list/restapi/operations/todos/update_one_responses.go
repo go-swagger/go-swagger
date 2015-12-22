@@ -21,7 +21,7 @@ type UpdateOneOK struct {
 	Payload *models.Item `json:"body,omitempty"`
 }
 
-// Create UpdateOneOK with default headers values
+// NewUpdateOneOK creates UpdateOneOK with default headers values
 func NewUpdateOneOK() UpdateOneOK {
 	return UpdateOneOK{}
 }
@@ -47,7 +47,7 @@ type UpdateOneDefault struct {
 	Payload *models.Error `json:"body,omitempty"`
 }
 
-// Create UpdateOneDefault with default headers values
+// NewUpdateOneDefault creates UpdateOneDefault with default headers values
 func NewUpdateOneDefault() UpdateOneDefault {
 	return UpdateOneDefault{}
 }

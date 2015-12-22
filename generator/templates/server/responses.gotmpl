@@ -24,7 +24,7 @@ type {{ pascalize .Name }} struct {
   {{ end }}
 }
 
-// Create {{ pascalize .Name }} with default headers values
+// New{{ pascalize .Name }} creates {{ pascalize .Name }} with default headers values
 func New{{ pascalize .Name }}() {{ pascalize .Name }} {
   return {{ pascalize .Name }}{
     {{ range .Headers }}{{ if .Default }}{{ pascalize .Name }}: {{ printf "%#v" .Default }},{{ end }}

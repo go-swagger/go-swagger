@@ -13,6 +13,12 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
+// NewDeletePetParams creates a new DeletePetParams object
+// with the default values initialized.
+func NewDeletePetParams() DeletePetParams {
+	return DeletePetParams{}
+}
+
 // DeletePetParams contains all the bound params for the delete pet operation
 // typically these are obtained from a http.Request
 //

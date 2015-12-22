@@ -12,6 +12,12 @@ import (
 	"github.com/go-swagger/go-swagger/examples/generated/models"
 )
 
+// NewAddPetParams creates a new AddPetParams object
+// with the default values initialized.
+func NewAddPetParams() AddPetParams {
+	return AddPetParams{}
+}
+
 // AddPetParams contains all the bound params for the add pet operation
 // typically these are obtained from a http.Request
 //

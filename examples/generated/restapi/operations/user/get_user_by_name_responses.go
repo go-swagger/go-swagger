@@ -21,7 +21,7 @@ type GetUserByNameOK struct {
 	Payload *models.User `json:"body,omitempty"`
 }
 
-// Create GetUserByNameOK with default headers values
+// NewGetUserByNameOK creates GetUserByNameOK with default headers values
 func NewGetUserByNameOK() GetUserByNameOK {
 	return GetUserByNameOK{}
 }
@@ -44,7 +44,7 @@ swagger:response getUserByNameBadRequest
 type GetUserByNameBadRequest struct {
 }
 
-// Create GetUserByNameBadRequest with default headers values
+// NewGetUserByNameBadRequest creates GetUserByNameBadRequest with default headers values
 func NewGetUserByNameBadRequest() GetUserByNameBadRequest {
 	return GetUserByNameBadRequest{}
 }
@@ -62,7 +62,7 @@ swagger:response getUserByNameNotFound
 type GetUserByNameNotFound struct {
 }
 
-// Create GetUserByNameNotFound with default headers values
+// NewGetUserByNameNotFound creates GetUserByNameNotFound with default headers values
 func NewGetUserByNameNotFound() GetUserByNameNotFound {
 	return GetUserByNameNotFound{}
 }

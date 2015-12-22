@@ -12,6 +12,12 @@ import (
 	"github.com/go-swagger/go-swagger/examples/generated/models"
 )
 
+// NewCreateUsersWithArrayInputParams creates a new CreateUsersWithArrayInputParams object
+// with the default values initialized.
+func NewCreateUsersWithArrayInputParams() CreateUsersWithArrayInputParams {
+	return CreateUsersWithArrayInputParams{}
+}
+
 // CreateUsersWithArrayInputParams contains all the bound params for the create users with array input operation
 // typically these are obtained from a http.Request
 //

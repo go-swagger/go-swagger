@@ -18,7 +18,7 @@ swagger:response destroyOneNoContent
 type DestroyOneNoContent struct {
 }
 
-// Create DestroyOneNoContent with default headers values
+// NewDestroyOneNoContent creates DestroyOneNoContent with default headers values
 func NewDestroyOneNoContent() DestroyOneNoContent {
 	return DestroyOneNoContent{}
 }
@@ -39,7 +39,7 @@ type DestroyOneDefault struct {
 	Payload *models.Error `json:"body,omitempty"`
 }
 
-// Create DestroyOneDefault with default headers values
+// NewDestroyOneDefault creates DestroyOneDefault with default headers values
 func NewDestroyOneDefault() DestroyOneDefault {
 	return DestroyOneDefault{}
 }

@@ -21,7 +21,7 @@ type GetEventByIDOK struct {
 	Payload *models.Event `json:"body,omitempty"`
 }
 
-// Create GetEventByIDOK with default headers values
+// NewGetEventByIDOK creates GetEventByIDOK with default headers values
 func NewGetEventByIDOK() GetEventByIDOK {
 	return GetEventByIDOK{}
 }
@@ -44,7 +44,7 @@ swagger:response getEventByIdDefault
 type GetEventByIDDefault struct {
 }
 
-// Create GetEventByIDDefault with default headers values
+// NewGetEventByIDDefault creates GetEventByIDDefault with default headers values
 func NewGetEventByIDDefault() GetEventByIDDefault {
 	return GetEventByIDDefault{}
 }

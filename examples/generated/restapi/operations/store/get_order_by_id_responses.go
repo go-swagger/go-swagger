@@ -21,7 +21,7 @@ type GetOrderByIDOK struct {
 	Payload *models.Order `json:"body,omitempty"`
 }
 
-// Create GetOrderByIDOK with default headers values
+// NewGetOrderByIDOK creates GetOrderByIDOK with default headers values
 func NewGetOrderByIDOK() GetOrderByIDOK {
 	return GetOrderByIDOK{}
 }
@@ -44,7 +44,7 @@ swagger:response getOrderByIdBadRequest
 type GetOrderByIDBadRequest struct {
 }
 
-// Create GetOrderByIDBadRequest with default headers values
+// NewGetOrderByIDBadRequest creates GetOrderByIDBadRequest with default headers values
 func NewGetOrderByIDBadRequest() GetOrderByIDBadRequest {
 	return GetOrderByIDBadRequest{}
 }
@@ -62,7 +62,7 @@ swagger:response getOrderByIdNotFound
 type GetOrderByIDNotFound struct {
 }
 
-// Create GetOrderByIDNotFound with default headers values
+// NewGetOrderByIDNotFound creates GetOrderByIDNotFound with default headers values
 func NewGetOrderByIDNotFound() GetOrderByIDNotFound {
 	return GetOrderByIDNotFound{}
 }

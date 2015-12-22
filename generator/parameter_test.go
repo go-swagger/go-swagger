@@ -475,6 +475,8 @@ func TestGenParameter_Issue163(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "o.StringTypeInQuery = \"qsValue\"", res)
+				} else {
+					fmt.Println(buf.String())
 				}
 			}
 		}

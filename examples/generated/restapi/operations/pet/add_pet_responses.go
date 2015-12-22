@@ -16,7 +16,7 @@ swagger:response addPetMethodNotAllowed
 type AddPetMethodNotAllowed struct {
 }
 
-// Create AddPetMethodNotAllowed with default headers values
+// NewAddPetMethodNotAllowed creates AddPetMethodNotAllowed with default headers values
 func NewAddPetMethodNotAllowed() AddPetMethodNotAllowed {
 	return AddPetMethodNotAllowed{}
 }

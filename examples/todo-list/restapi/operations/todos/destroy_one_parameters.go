@@ -11,6 +11,12 @@ import (
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 
+// NewDestroyOneParams creates a new DestroyOneParams object
+// with the default values initialized.
+func NewDestroyOneParams() DestroyOneParams {
+	return DestroyOneParams{}
+}
+
 // DestroyOneParams contains all the bound params for the destroy one operation
 // typically these are obtained from a http.Request
 //

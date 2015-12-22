@@ -40,6 +40,7 @@ type UpdateOne struct {
 
 func (o *UpdateOne) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, _ := o.Context.RouteInfo(r)
+	o.Params = NewUpdateOneParams()
 
 	uprinc, err := o.Context.Authorize(r, route)
 	if err != nil {

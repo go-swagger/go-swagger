@@ -1,4 +1,11 @@
-{{ define "clientresponse" }}/*{{ pascalize .Name}}
+{{ define "clientresponse" }}// New{{ pascalize .Name }} creates a {{ pascalize .Name }} with default headers values
+func New{{ pascalize .Name }}() *{{ pascalize .Name }} {
+  return &{{ pascalize .Name }}{
+    {{ range .Headers }}{{ if .Default }}{{ pascalize .Name }}: {{ printf "%#v" .Default }},{{ end }}
+  {{ end }}}
+}
+
+/*{{ pascalize .Name}}
 
 {{ if .Description }}{{ .Description }}{{else}}{{ pascalize .Name }} {{ humanize .Name }}{{end}}
 */
@@ -68,18 +75,18 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response cl
   switch response.Code() {
   {{ range $key, $value := .Responses }}
     case {{ $key }}:
-      var result {{ pascalize $value.Name }}
+      result := New{{ pascalize $value.Name }}()
       if err := result.readResponse(response, consumer, {{ $.ReceiverName }}.formats); err != nil {
         return nil, err
       }
-      return {{ if $value.IsSuccess }}&result, nil{{else}}nil, NewAPIError("{{ $value.Name }}", &result, response.Code()){{end}}
+      return {{ if $value.IsSuccess }}result, nil{{else}}nil, NewAPIError("{{ $value.Name }}", result, response.Code()){{end}}
   {{end}}{{ if .DefaultResponse }}{{ with .DefaultResponse }}
     default:
-      var result {{ pascalize .Name }}
+      result := New{{ pascalize .Name }}()
       if err := result.readResponse(response, consumer, {{ $.ReceiverName }}.formats); err != nil {
         return nil, err
       }
-      return {{ if .IsSuccess }}&result, nil{{else}}nil, NewAPIError("{{ .Name }}", &result, response.Code()){{end}}{{ end }}{{else}}
+      return {{ if .IsSuccess }}result, nil{{else}}nil, NewAPIError("{{ .Name }}", result, response.Code()){{end}}{{ end }}{{else}}
     default:
       return nil, NewAPIError("unknown error", response, response.Code()){{ end }}
   }

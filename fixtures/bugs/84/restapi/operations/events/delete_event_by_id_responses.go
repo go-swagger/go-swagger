@@ -16,7 +16,7 @@ swagger:response deleteEventByIdNoContent
 type DeleteEventByIDNoContent struct {
 }
 
-// Create DeleteEventByIDNoContent with default headers values
+// NewDeleteEventByIDNoContent creates DeleteEventByIDNoContent with default headers values
 func NewDeleteEventByIDNoContent() DeleteEventByIDNoContent {
 	return DeleteEventByIDNoContent{}
 }
@@ -34,7 +34,7 @@ swagger:response deleteEventByIdDefault
 type DeleteEventByIDDefault struct {
 }
 
-// Create DeleteEventByIDDefault with default headers values
+// NewDeleteEventByIDDefault creates DeleteEventByIDDefault with default headers values
 func NewDeleteEventByIDDefault() DeleteEventByIDDefault {
 	return DeleteEventByIDDefault{}
 }

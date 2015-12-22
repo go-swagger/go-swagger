@@ -19,19 +19,24 @@ func (o *AddOneReader) ReadResponse(response client.Response, consumer httpkit.C
 	switch response.Code() {
 
 	case 201:
-		var result AddOneCreated
+		result := NewAddOneCreated()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
-		return &result, nil
+		return result, nil
 
 	default:
-		var result AddOneDefault
+		result := NewAddOneDefault()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
-		return nil, NewAPIError("addOne default", &result, response.Code())
+		return nil, NewAPIError("addOne default", result, response.Code())
 	}
+}
+
+// NewAddOneCreated creates a AddOneCreated with default headers values
+func NewAddOneCreated() *AddOneCreated {
+	return &AddOneCreated{}
 }
 
 /*AddOneCreated
@@ -52,6 +57,11 @@ func (o *AddOneCreated) readResponse(response client.Response, consumer httpkit.
 	}
 
 	return nil
+}
+
+// NewAddOneDefault creates a AddOneDefault with default headers values
+func NewAddOneDefault() *AddOneDefault {
+	return &AddOneDefault{}
 }
 
 /*AddOneDefault

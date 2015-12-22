@@ -11,6 +11,12 @@ import (
 	"github.com/go-swagger/go-swagger/examples/todo-list/models"
 )
 
+// NewUpdateOneParams creates a new UpdateOneParams object
+// with the default values initialized.
+func NewUpdateOneParams() *UpdateOneParams {
+	return &UpdateOneParams{}
+}
+
 /*UpdateOneParams contains all the parameters to send to the API endpoint
 for the update one operation typically these are written to a http.Request
 */

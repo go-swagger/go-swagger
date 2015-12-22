@@ -39,10 +39,6 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 		return err
 	}
 
-	if len(operationNames) == 0 {
-		operationNames = specDoc.OperationIDs()
-	}
-
 	ops := gatherOperations(specDoc, operationNames)
 
 	for operationName, opRef := range ops {

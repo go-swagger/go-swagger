@@ -10,6 +10,12 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
+// NewFindParams creates a new FindParams object
+// with the default values initialized.
+func NewFindParams() *FindParams {
+	return &FindParams{}
+}
+
 /*FindParams contains all the parameters to send to the API endpoint
 for the find operation typically these are written to a http.Request
 */

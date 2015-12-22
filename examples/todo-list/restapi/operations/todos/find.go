@@ -40,6 +40,7 @@ type Find struct {
 
 func (o *Find) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, _ := o.Context.RouteInfo(r)
+	o.Params = NewFindParams()
 
 	uprinc, err := o.Context.Authorize(r, route)
 	if err != nil {

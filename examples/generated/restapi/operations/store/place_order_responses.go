@@ -21,7 +21,7 @@ type PlaceOrderOK struct {
 	Payload *models.Order `json:"body,omitempty"`
 }
 
-// Create PlaceOrderOK with default headers values
+// NewPlaceOrderOK creates PlaceOrderOK with default headers values
 func NewPlaceOrderOK() PlaceOrderOK {
 	return PlaceOrderOK{}
 }
@@ -44,7 +44,7 @@ swagger:response placeOrderBadRequest
 type PlaceOrderBadRequest struct {
 }
 
-// Create PlaceOrderBadRequest with default headers values
+// NewPlaceOrderBadRequest creates PlaceOrderBadRequest with default headers values
 func NewPlaceOrderBadRequest() PlaceOrderBadRequest {
 	return PlaceOrderBadRequest{}
 }

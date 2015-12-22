@@ -12,6 +12,12 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
+// NewDeleteEventByIDParams creates a new DeleteEventByIDParams object
+// with the default values initialized.
+func NewDeleteEventByIDParams() DeleteEventByIDParams {
+	return DeleteEventByIDParams{}
+}
+
 // DeleteEventByIDParams contains all the bound params for the delete event by id operation
 // typically these are obtained from a http.Request
 //

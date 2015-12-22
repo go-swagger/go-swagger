@@ -12,6 +12,12 @@ import (
 	"github.com/go-swagger/go-swagger/examples/generated/models"
 )
 
+// NewCreateUserParams creates a new CreateUserParams object
+// with the default values initialized.
+func NewCreateUserParams() CreateUserParams {
+	return CreateUserParams{}
+}
+
 // CreateUserParams contains all the bound params for the create user operation
 // typically these are obtained from a http.Request
 //

@@ -19,19 +19,24 @@ func (o *DestroyOneReader) ReadResponse(response client.Response, consumer httpk
 	switch response.Code() {
 
 	case 204:
-		var result DestroyOneNoContent
+		result := NewDestroyOneNoContent()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
-		return &result, nil
+		return result, nil
 
 	default:
-		var result DestroyOneDefault
+		result := NewDestroyOneDefault()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
-		return nil, NewAPIError("destroyOne default", &result, response.Code())
+		return nil, NewAPIError("destroyOne default", result, response.Code())
 	}
+}
+
+// NewDestroyOneNoContent creates a DestroyOneNoContent with default headers values
+func NewDestroyOneNoContent() *DestroyOneNoContent {
+	return &DestroyOneNoContent{}
 }
 
 /*DestroyOneNoContent
@@ -44,6 +49,11 @@ type DestroyOneNoContent struct {
 func (o *DestroyOneNoContent) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
 
 	return nil
+}
+
+// NewDestroyOneDefault creates a DestroyOneDefault with default headers values
+func NewDestroyOneDefault() *DestroyOneDefault {
+	return &DestroyOneDefault{}
 }
 
 /*DestroyOneDefault

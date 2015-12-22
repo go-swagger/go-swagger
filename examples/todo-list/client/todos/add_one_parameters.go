@@ -11,6 +11,12 @@ import (
 	"github.com/go-swagger/go-swagger/examples/todo-list/models"
 )
 
+// NewAddOneParams creates a new AddOneParams object
+// with the default values initialized.
+func NewAddOneParams() *AddOneParams {
+	return &AddOneParams{}
+}
+
 /*AddOneParams contains all the parameters to send to the API endpoint
 for the add one operation typically these are written to a http.Request
 */

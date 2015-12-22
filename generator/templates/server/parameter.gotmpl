@@ -79,6 +79,14 @@ import (
   {{ end }}
 )
 
+// New{{ pascalize .Name }}Params creates a new {{ pascalize .Name }}Params object
+// with the default values initialized.
+func New{{ pascalize .Name }}Params() {{ pascalize .Name }}Params {
+  return {{ pascalize .Name }}Params{ {{ range .Params }}{{ if .Default }}
+    {{ pascalize .Name}}: {{ printf "%#v" .Default }},
+  {{ end }}{{ end }} }
+}
+
 // {{ pascalize .Name }}Params contains all the bound params for the {{ humanize .Name }} operation
 // typically these are obtained from a http.Request
 //
@@ -96,7 +104,8 @@ type {{ pascalize .Name }}Params struct {
   Min Items: {{ .MinItems }}{{ end }}{{ if .UniqueItems }}
   Unique: true{{ end }}{{ if .Location }}
   In: {{ .Location }}{{ end }}{{ if .CollectionFormat }}
-  Collection Format: {{ .CollectionFormat }}{{ end }}
+  Collection Format: {{ .CollectionFormat }}{{ end }}{{ if .Default }}
+  Default: {{ printf "%#v" .Default }}{{ end }}
   */
   {{ if not .Schema }}{{ pascalize .Name }} {{ if .IsNullable }}*{{ end }}{{.GoType}}{{ else }}{{ pascalize .Name }} {{ if and (not .Schema.IsBaseType) .IsNullable }}*{{ end }}{{.GoType}}{{ end }}
   {{ end}}

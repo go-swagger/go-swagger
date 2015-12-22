@@ -12,6 +12,12 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
+// NewGetEventByIDParams creates a new GetEventByIDParams object
+// with the default values initialized.
+func NewGetEventByIDParams() GetEventByIDParams {
+	return GetEventByIDParams{}
+}
+
 // GetEventByIDParams contains all the bound params for the get event by id operation
 // typically these are obtained from a http.Request
 //

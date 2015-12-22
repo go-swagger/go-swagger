@@ -13,6 +13,12 @@ import (
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 
+// NewUpdatePetWithFormParams creates a new UpdatePetWithFormParams object
+// with the default values initialized.
+func NewUpdatePetWithFormParams() UpdatePetWithFormParams {
+	return UpdatePetWithFormParams{}
+}
+
 // UpdatePetWithFormParams contains all the bound params for the update pet with form operation
 // typically these are obtained from a http.Request
 //

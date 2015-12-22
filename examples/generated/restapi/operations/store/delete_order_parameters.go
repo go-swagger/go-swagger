@@ -11,6 +11,12 @@ import (
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 
+// NewDeleteOrderParams creates a new DeleteOrderParams object
+// with the default values initialized.
+func NewDeleteOrderParams() DeleteOrderParams {
+	return DeleteOrderParams{}
+}
+
 // DeleteOrderParams contains all the bound params for the delete order operation
 // typically these are obtained from a http.Request
 //

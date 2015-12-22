@@ -14,6 +14,12 @@ import (
 	"github.com/go-swagger/go-swagger/fixtures/bugs/84/models"
 )
 
+// NewPutEventByIDParams creates a new PutEventByIDParams object
+// with the default values initialized.
+func NewPutEventByIDParams() PutEventByIDParams {
+	return PutEventByIDParams{}
+}
+
 // PutEventByIDParams contains all the bound params for the put event by id operation
 // typically these are obtained from a http.Request
 //
