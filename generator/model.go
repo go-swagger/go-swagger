@@ -118,11 +118,8 @@ func (m *definitionGenerator) generateModel() error {
 
 func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *spec.Document) (*GenDefinition, error) {
 	receiver := "m"
-	resolver := &typeResolver{
-		ModelsPackage: "",
-		ModelName:     name,
-		Doc:           specDoc,
-	}
+	resolver := newTypeResolver("", specDoc)
+	resolver.ModelName = name
 
 	di := discriminatorInfo(specDoc)
 
@@ -297,7 +294,11 @@ func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContex
 	pg.Schema = *schema
 	pg.Required = false
 	if sg.IsVirtual {
-		pg.TypeResolver = &typeResolver{Doc: sg.TypeResolver.Doc, ModelName: sg.TypeResolver.ModelName}
+		resolver := newTypeResolver(sg.TypeResolver.ModelsPackage, sg.TypeResolver.Doc)
+		//resolver := newTypeResolver("", sg.TypeResolver.Doc)
+		resolver.ModelName = sg.TypeResolver.ModelName
+		//resolver.KnownDefs = sg.TypeResolver.KnownDefs
+		pg.TypeResolver = resolver
 	}
 
 	// when this is an anonymous complex object, this needs to become a ref
@@ -762,11 +763,11 @@ func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *sche
 		Discrimination: sg.Discrimination,
 	}
 	if schema.Ref.String() == "" {
-		pg.TypeResolver = &typeResolver{
-			Doc:           sg.TypeResolver.Doc,
-			ModelName:     sg.TypeResolver.ModelName,
-			ModelsPackage: "",
-		}
+		//resolver := newTypeResolver("", sg.TypeResolver.Doc)
+		resolver := newTypeResolver(sg.TypeResolver.ModelsPackage, sg.TypeResolver.Doc)
+		resolver.ModelName = sg.TypeResolver.ModelName
+		//resolver.KnownDefs = sg.TypeResolver.KnownDefs
+		pg.TypeResolver = resolver
 	}
 	pg.GenSchema.IsVirtual = true
 
@@ -826,10 +827,10 @@ func (sg *schemaGenContext) buildItems() error {
 	// This is a tuple, build a new model that represents this
 	if sg.Named {
 		sg.GenSchema.Name = sg.Name
-		sg.GenSchema.GoType = swag.ToGoName(sg.Name)
-		if sg.TypeResolver.ModelsPackage != "" {
-			sg.GenSchema.GoType = sg.TypeResolver.ModelsPackage + "." + sg.GenSchema.GoType
-		}
+		sg.GenSchema.GoType = sg.TypeResolver.goTypeName(sg.Name) // swag.ToGoName(sg.Name)
+		//if sg.TypeResolver.ModelsPackage != "" {
+		//sg.GenSchema.GoType = sg.TypeResolver.ModelsPackage + "." + sg.GenSchema.GoType
+		//}
 		for i, s := range sg.Schema.Items.Schemas {
 			elProp := sg.NewTupleElement(&s, i)
 			if err := elProp.makeGenSchema(); err != nil {
@@ -931,10 +932,7 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 	}
 	nullableOverride := sg.GenSchema.IsNullable
 	tpe := resolvedType{}
-	tpe.GoType = sg.Name
-	if sg.TypeResolver.ModelsPackage != "" {
-		tpe.GoType = sg.TypeResolver.ModelsPackage + "." + sg.TypeResolver.ModelName
-	}
+	tpe.GoType = sg.TypeResolver.goTypeName(sg.Name)
 
 	tpe.SwaggerType = "object"
 	tpe.IsComplexObject = true
@@ -1080,7 +1078,7 @@ func newDiscriminatorImpl(tpeImpl GenSchema) GenSchema {
 	tpeImpl.IsBaseType = true
 	tpeImpl.IsExported = false
 	tpeImpl.Name = swag.ToJSONName(tpeImpl.Name)
-	tpeImpl.GoType = swag.ToJSONName(tpeImpl.GoType)
+	tpeImpl.GoType = "disc" + swag.ToJSONName(tpeImpl.GoType)
 	return tpeImpl
 }
 

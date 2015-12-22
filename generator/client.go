@@ -105,6 +105,7 @@ func (c *clientGenerator) Generate() error {
 			Name:           k,
 			Operations:     v,
 			DefaultImports: []string{filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ModelsPackage))},
+			RootPackage:    c.APIPackage,
 		}
 		app.OperationGroups = append(app.OperationGroups, opGroup)
 		app.DefaultImports = append(app.DefaultImports, filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ClientPackage, k)))

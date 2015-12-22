@@ -103,6 +103,14 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	"stripPackage": func(str, pkg string) string {
 		return strings.TrimPrefix(str, pkg+".")
 	},
+	"dropPackage": func(str string) string {
+		parts := strings.Split(str, ".")
+		strlen := len(parts)
+		if strlen > 0 {
+			return parts[strlen-1]
+		}
+		return str
+	},
 }
 
 func init() {

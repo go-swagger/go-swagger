@@ -55,8 +55,8 @@ type {{ pascalize .Name }}API struct {
   {{ pascalize .ID }}Auth func(string) ({{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}, error)
   {{end}}
   {{end}}
-  {{range .Operations}}// {{ pascalize .Name }}Handler sets the operation handler for the {{ humanize .Name }} operation
-  {{ pascalize .Name }}Handler {{if ne .Package $package}}{{.Package}}.{{end}}{{ pascalize .Name }}Handler
+  {{range .Operations}}// {{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{ pascalize .Name }}Handler sets the operation handler for the {{ humanize .Name }} operation
+  {{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{ pascalize .Name }}Handler {{if ne .Package $package}}{{.Package}}.{{end}}{{ pascalize .Name }}Handler
   {{end}}
   // ServeError is called when an error is received, there is a default handler
   // but you can set your own with this
@@ -112,8 +112,8 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) Validate() error {
   }
   {{end}}
   {{range .Operations}}
-  if {{.ReceiverName}}.{{ pascalize .Name }}Handler == nil {
-    unregistered = append(unregistered, "{{ pascalize .Name }}Handler")
+  if {{.ReceiverName}}.{{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{ pascalize .Name }}Handler == nil {
+    unregistered = append(unregistered, "{{if ne .Package $package}}{{.Package}}.{{end}}{{ pascalize .Name }}Handler")
   }
   {{end}}
 
@@ -202,7 +202,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) initHandlerCache() {
   {{if .Operations}}
   {{.ReceiverName}}.handlers = make(map[string]http.Handler)
   {{range .Operations}}
-  {{.ReceiverName}}.handlers["{{.Name}}"] = {{if ne .Package $package}}{{.Package}}.{{end}}New{{ pascalize .Name }}({{.ReceiverName}}.context, {{.ReceiverName}}.{{ pascalize .Name }}Handler)
+  {{.ReceiverName}}.handlers["{{if ne .Package $package}}{{.Package}}.{{end}}{{.Name}}"] = {{if ne .Package $package}}{{.Package}}.{{end}}New{{ pascalize .Name }}({{.ReceiverName}}.context, {{.ReceiverName}}.{{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{ pascalize .Name }}Handler)
   {{end}}
   {{end}}
 }

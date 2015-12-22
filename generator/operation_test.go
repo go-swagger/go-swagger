@@ -15,7 +15,9 @@
 package generator
 
 import (
+	"bytes"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/go-swagger/go-swagger/spec"
@@ -51,9 +53,9 @@ func TestEmptyOperationNames(t *testing.T) {
 
 		ops := gatherOperations(doc, nil)
 		assert.Len(t, ops, 4)
-		_, exists := ops["Operation"]
+		_, exists := ops["PostTasks"]
 		assert.True(t, exists)
-		_, exists = ops["Operation"]
+		_, exists = ops["PutTasksID"]
 		assert.True(t, exists)
 	}
 }
@@ -102,6 +104,10 @@ func TestMakeResponse(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
 	if assert.NoError(t, err) {
 		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+		resolver.KnownDefs = make(map[string]struct{})
+		for k := range b.Doc.Spec().Definitions {
+			resolver.KnownDefs[k] = struct{}{}
+		}
 		gO, err := b.MakeResponse("a", "getTasksSuccess", true, resolver, 200, b.Operation.Responses.StatusCodeResponses[200])
 		if assert.NoError(t, err) {
 			assert.Len(t, gO.Headers, 6)
@@ -115,6 +121,33 @@ func TestMakeResponse(t *testing.T) {
 }
 
 func TestMakeResponse_WithAllOfSchema(t *testing.T) {
+	b, err := methodPathOpBuilder("get", "/media/search", "../fixtures/codegen/instagram.yml")
+	if assert.NoError(t, err) {
+		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+		resolver.KnownDefs = make(map[string]struct{})
+		for k := range b.Doc.Spec().Definitions {
+			resolver.KnownDefs[k] = struct{}{}
+		}
+		gO, err := b.MakeResponse("a", "get /media/search", true, resolver, 200, b.Operation.Responses.StatusCodeResponses[200])
+		if assert.NoError(t, err) {
+			if assert.NotNil(t, gO.Schema) {
+				assert.Equal(t, "GetMediaSearchBodyBody", gO.Schema.GoType)
+			}
+			if assert.NotEmpty(t, b.ExtraSchemas) {
+				body := b.ExtraSchemas["GetMediaSearchBodyBody"]
+				if assert.NotEmpty(t, body.Properties) {
+					prop := body.Properties[0]
+					assert.Equal(t, "data", prop.Name)
+					assert.Equal(t, "[]DataItems0", prop.GoType)
+				}
+				items := b.ExtraSchemas["DataItems0"]
+				if assert.NotEmpty(t, items.AllOf) {
+					media := items.AllOf[0]
+					assert.Equal(t, "models.Media", media.GoType)
+				}
+			}
+		}
+	}
 }
 
 func TestMakeOperationParam(t *testing.T) {
@@ -158,6 +191,76 @@ func TestMakeOperation(t *testing.T) {
 
 		// TODO: validate rendering of a complex operation
 	}
+}
+
+func TestRenderOperation_InstagramSearch(t *testing.T) {
+	//b, err := methodPathOpBuilder("get", "/media/search", "../fixtures/codegen/instagram.yml")
+	//if assert.NoError(t, err) {
+	//gO, err := b.MakeOperation()
+	//if assert.NoError(t, err) {
+	//buf := bytes.NewBuffer(nil)
+	//err := responsesTemplate.Execute(buf, gO)
+	//if assert.NoError(t, err) {
+	//ff, err := formatGoFile("responses.go", buf.Bytes())
+	//if assert.NoError(t, err) {
+	//res := string(ff)
+	////fmt.Println(res)
+	//assertInCode(t, "Data []DataItems0 `json:\"data,omitempty\"`", res)
+	//assertInCode(t, "models.Media", res)
+	//}
+	//}
+	//}
+	//}
+	GenerateServerOperation(nil, nil, true, true, true, GenOpts{})
+
+	// POST /media/{media-id}/comments
+	b, err := methodPathOpBuilder("POST", "/media/{media-id}/comments", "../fixtures/codegen/instagram.yml")
+	if assert.NoError(t, err) {
+		gO, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := responsesTemplate.Execute(buf, gO)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("responses.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					fmt.Println(res)
+					//assertInCode(t, "Data []DataItems0 `json:\"data,omitempty\"`", res)
+					//assertInCode(t, "models.Media", res)
+				}
+			}
+		}
+	}
+}
+
+func methodPathOpBuilder(method, path, fname string) (codeGenOpBuilder, error) {
+	if fname == "" {
+		fname = "../fixtures/codegen/todolist.simple.yml"
+	}
+
+	specDoc, err := spec.Load(fname)
+	if err != nil {
+		return codeGenOpBuilder{}, err
+	}
+
+	op, ok := specDoc.OperationFor(method, path)
+	if !ok {
+		return codeGenOpBuilder{}, errors.New("No operation could be found for " + method + " " + path)
+	}
+
+	return codeGenOpBuilder{
+		Name:          method + " " + path,
+		Method:        method,
+		Path:          path,
+		APIPackage:    "restapi",
+		ModelsPackage: "models",
+		Principal:     "models.User",
+		Target:        ".",
+		Operation:     *op,
+		Doc:           specDoc,
+		Authed:        false,
+		ExtraSchemas:  make(map[string]GenSchema),
+	}, nil
 }
 
 func opBuilder(name, fname string) (codeGenOpBuilder, error) {

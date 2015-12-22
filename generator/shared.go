@@ -239,10 +239,10 @@ func appNameOrDefault(specDoc *spec.Document, name, defaultName string) string {
 
 var namesCounter int64
 
-func ensureUniqueName(key string, operations map[string]opRef) string {
+func ensureUniqueName(key, method, path string, operations map[string]opRef) string {
 	nm := key
 	if nm == "" {
-		nm = "Operation"
+		nm = swag.ToGoName(strings.ToLower(method) + " " + path)
 	}
 	_, found := operations[nm]
 	if found {
@@ -273,7 +273,7 @@ func gatherOperations(specDoc *spec.Document, operationIDs []string) map[string]
 	for method, pathItem := range specDoc.Operations() {
 		for path, operation := range pathItem {
 			if len(operationIDs) == 0 || containsString(operationIDs, operation.ID) {
-				nm := ensureUniqueName(operation.ID, operations)
+				nm := ensureUniqueName(operation.ID, method, path, operations)
 				vv := *operation
 				vv.ID = nm
 				operations[nm] = opRef{

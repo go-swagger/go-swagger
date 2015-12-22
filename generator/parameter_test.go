@@ -34,6 +34,10 @@ func TestBodyParams(t *testing.T) {
 	_, _, op, ok := b.Doc.OperationForName("updateTask")
 	if assert.True(t, ok) && assert.NotNil(t, op) {
 		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+		resolver.KnownDefs = make(map[string]struct{})
+		for k := range b.Doc.Spec().Definitions {
+			resolver.KnownDefs[k] = struct{}{}
+		}
 		for _, param := range op.Parameters {
 			if param.Name == "body" {
 				gp, err := b.MakeParameter("a", resolver, param)
@@ -58,6 +62,10 @@ func TestBodyParams(t *testing.T) {
 	_, _, op, ok = b.Doc.OperationForName("createTask")
 	if assert.True(t, ok) && assert.NotNil(t, op) {
 		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+		resolver.KnownDefs = make(map[string]struct{})
+		for k := range b.Doc.Spec().Definitions {
+			resolver.KnownDefs[k] = struct{}{}
+		}
 		for _, param := range op.Parameters {
 			if param.Name == "body" {
 				gp, err := b.MakeParameter("a", resolver, param)
@@ -256,6 +264,10 @@ func (ctx *paramTestContext) assertParameter(t testing.TB) bool {
 	_, _, op, err := ctx.B.Doc.OperationForName(ctx.OpID)
 	if assert.True(t, err) && assert.NotNil(t, op) {
 		resolver := &typeResolver{ModelsPackage: ctx.B.ModelsPackage, Doc: ctx.B.Doc}
+		resolver.KnownDefs = make(map[string]struct{})
+		for k := range ctx.B.Doc.Spec().Definitions {
+			resolver.KnownDefs[k] = struct{}{}
+		}
 		for _, param := range op.Parameters {
 			if param.Name == ctx.Name {
 				gp, err := ctx.B.MakeParameter("a", resolver, param)

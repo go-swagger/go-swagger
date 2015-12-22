@@ -216,10 +216,24 @@ func resolveSimpleType(tn, fmt string, items *spec.Items) string {
 	return tn
 }
 
+func newTypeResolver(pkg string, doc *spec.Document) *typeResolver {
+	resolver := typeResolver{ModelsPackage: pkg, Doc: doc}
+	resolver.KnownDefs = make(map[string]struct{})
+	for k, sch := range doc.Pristine().Spec().Definitions {
+		resolver.KnownDefs[k] = struct{}{}
+		if nm, ok := sch.Extensions["x-go-name"]; ok {
+			resolver.KnownDefs[nm.(string)] = struct{}{}
+		}
+	}
+	return &resolver
+}
+
 type typeResolver struct {
 	Doc           *spec.Document
 	ModelsPackage string
 	ModelName     string
+	KnownDefs     map[string]struct{}
+	Inverted      bool
 }
 
 func (t *typeResolver) resolveSchemaRef(schema *spec.Schema) (returns bool, result resolvedType, err error) {
@@ -234,6 +248,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema) (returns bool, resu
 		var tn string
 		if gn, ok := ref.Extensions["x-go-name"]; ok {
 			tn = gn.(string)
+			nm = tn
 		} else {
 			tn = swag.ToGoName(nm)
 		}
@@ -244,12 +259,10 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema) (returns bool, resu
 			return
 		}
 		result = res
-		result.GoType = tn
+
+		result.GoType = t.goTypeName(nm)
 		result.HasDiscriminator = ref.Discriminator != ""
 		result.IsNullable = t.isNullable(ref)
-		if t.ModelsPackage != "" {
-			result.GoType = t.ModelsPackage + "." + tn
-		}
 		return
 
 	}
@@ -323,21 +336,25 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous bool) (resu
 	return
 }
 
+func (t *typeResolver) goTypeName(nm string) string {
+	if t.ModelsPackage == "" {
+		return swag.ToGoName(nm)
+	}
+	if _, ok := t.KnownDefs[nm]; ok {
+		return strings.Join([]string{t.ModelsPackage, swag.ToGoName(nm)}, ".")
+	}
+	return swag.ToGoName(nm)
+}
+
 func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (result resolvedType, err error) {
 	result.IsAnonymous = isAnonymous
 
 	if !isAnonymous {
 		result.SwaggerType = "object"
-		result.GoType = t.ModelName
-		if t.ModelsPackage != "" {
-			result.GoType = t.ModelsPackage + "." + t.ModelName
-		}
+		result.GoType = t.goTypeName(t.ModelName)
 	}
 	if len(schema.AllOf) > 0 {
-		result.GoType = t.ModelName
-		if t.ModelsPackage != "" {
-			result.GoType = t.ModelsPackage + "." + t.ModelName
-		}
+		result.GoType = t.goTypeName(t.ModelName)
 		result.IsComplexObject = true
 		var isNullable bool
 		for _, p := range schema.AllOf {
@@ -386,6 +403,10 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 }
 
 func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous bool) (result resolvedType, err error) {
+	//bbb, _ := json.MarshalIndent(schema, "", "  ")
+	//fmt.Println("resolving schema", string(bbb))
+	//tt, _ := json.MarshalIndent(t, "", "  ")
+	//fmt.Println("resolver", string(tt))
 	if schema == nil {
 		result.IsInterface = true
 		result.GoType = "interface{}"

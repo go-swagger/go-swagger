@@ -247,3 +247,9 @@ func (d *Document) Reload() *Document {
 	d.initialize()
 	return d
 }
+
+// Prisitine creates a new pristine document instance based on the input data
+func (d *Document) Pristine() *Document {
+	dd, _ := New(d.Raw(), d.Version())
+	return dd
+}

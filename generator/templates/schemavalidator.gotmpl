@@ -189,7 +189,7 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
     res = append(res, err)
   }
   {{end}}
-  {{ if not (or .IsAnonymous .IsBaseType) }}if err := {{ .ReceiverName }}.{{ pascalize .GoType }}.Validate(formats); err != nil {
+  {{ if not (or .IsAnonymous .IsBaseType) }}if err := {{ .ReceiverName }}.{{ pascalize (dropPackage .GoType) }}.Validate(formats); err != nil {
     res = append(res, err)
   }
   {{ end }}

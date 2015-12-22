@@ -109,7 +109,7 @@ func baseImport(tgt string) string {
 	}
 
 	if pth == "" {
-		log.Fatalln("target must reside inside a location in the GOPATH")
+		log.Fatalln("target must reside inside a location in the $GOPATH/src")
 	}
 	return pth
 }
@@ -437,12 +437,13 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		bldr.Target = a.Target
 		bldr.DefaultImports = defaultImports
 		bldr.DefaultScheme = a.DefaultScheme
-		bldr.Doc = a.SpecDoc
+		bldr.Doc = &(*a.SpecDoc)
 		// TODO: change operation name to something safe
 		bldr.Name = on
 		bldr.Operation = o
 		bldr.Authed = len(a.SpecDoc.SecurityRequirementsFor(&o)) > 0
 		ap := a.APIPackage
+		bldr.RootAPIPackage = swag.ToFileName(a.APIPackage)
 		if len(o.Tags) > 0 {
 			for _, tag := range o.Tags {
 				tns[tag] = struct{}{}
@@ -465,7 +466,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		}
 	}
 	for k := range tns {
-		importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage, k))
+		importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage, swag.ToFileName(k)))
 		defaultImports = append(defaultImports, importPath)
 	}
 	sort.Sort(genOps)

@@ -127,6 +127,7 @@ func (o *operationGenerator) Generate() error {
 	bldr.Doc = o.Doc
 	bldr.DefaultScheme = o.DefaultScheme
 	bldr.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(o.Base), o.ModelsPackage))}
+	bldr.RootAPIPackage = o.APIPackage
 
 	for _, tag := range o.Operation.Tags {
 		if len(o.Tags) == 0 {
@@ -250,6 +251,7 @@ type codeGenOpBuilder struct {
 	Method         string
 	Path           string
 	APIPackage     string
+	RootAPIPackage string
 	ModelsPackage  string
 	Principal      string
 	Target         string
@@ -262,14 +264,14 @@ type codeGenOpBuilder struct {
 }
 
 func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
-	resolver := typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+	resolver := newTypeResolver(b.ModelsPackage, b.Doc.Pristine())
 	receiver := "o"
 
 	operation := b.Operation
 	var params, qp, pp, hp, fp GenParameters
 	var hasQueryParams, hasFormParams, hasFileParams bool
 	for _, p := range b.Doc.ParametersFor(operation.ID) {
-		cp, err := b.MakeParameter(receiver, &resolver, p)
+		cp, err := b.MakeParameter(receiver, resolver, p)
 		if err != nil {
 			return GenOperation{}, err
 		}
@@ -304,7 +306,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	if operation.Responses != nil {
 		for k, v := range operation.Responses.StatusCodeResponses {
 			isSuccess := k/100 == 2
-			gr, err := b.MakeResponse(receiver, swag.ToJSONName(b.Name+" "+httpkit.Statuses[k]), isSuccess, &resolver, k, v)
+			gr, err := b.MakeResponse(receiver, swag.ToJSONName(b.Name+" "+httpkit.Statuses[k]), isSuccess, resolver, k, v)
 			if err != nil {
 				return GenOperation{}, err
 			}
@@ -318,7 +320,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		}
 
 		if operation.Responses.Default != nil {
-			gr, err := b.MakeResponse(receiver, b.Name+" default", false, &resolver, -1, *operation.Responses.Default)
+			gr, err := b.MakeResponse(receiver, b.Name+" default", false, resolver, -1, *operation.Responses.Default)
 			if err != nil {
 				return GenOperation{}, err
 			}
@@ -340,6 +342,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 
 	return GenOperation{
 		Package:         b.APIPackage,
+		RootPackage:     b.RootAPIPackage,
 		Name:            b.Name,
 		Method:          b.Method,
 		Path:            b.Path,
@@ -390,7 +393,6 @@ func concatUnique(collections ...[]string) []string {
 }
 
 func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, resolver *typeResolver, code int, resp spec.Response) (GenResponse, error) {
-
 	res := GenResponse{
 		Package:        b.APIPackage,
 		ModelsPackage:  b.ModelsPackage,
@@ -409,9 +411,6 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 	sort.Sort(res.Headers)
 
 	if resp.Schema != nil {
-		if len(resp.Schema.AllOf) > 0 {
-			fmt.Println("all of", len(resp.Schema.AllOf) > 0)
-		}
 		sc := schemaGenContext{
 			Path:         fmt.Sprintf("%q", name),
 			Name:         name + "Body",
@@ -446,7 +445,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 			b.ExtraSchemas[schema.Name] = schema
 			schema = GenSchema{}
 			schema.IsAnonymous = false
-			schema.GoType = nm
+			schema.GoType = resolver.goTypeName(nm)
 			schema.SwaggerType = nm
 		}
 
@@ -991,6 +990,7 @@ type GenOperationGroup struct {
 	Description    string
 	Imports        map[string]string
 	DefaultImports []string
+	RootPackage    string
 }
 
 // GenOperationGroups is a sorted collection of operation groups
@@ -1010,6 +1010,7 @@ type GenOperation struct {
 	Method       string
 	Path         string
 	Tags         []string
+	RootPackage  string
 
 	Imports        map[string]string
 	DefaultImports []string

@@ -393,7 +393,7 @@ func TestSchemaValidation_NestedObjectProps(t *testing.T) {
 						res := string(formatted)
 						assertInCode(t, k+") Validate(formats", res)
 						assertInCode(t, k+"Args) Validate(formats", res)
-						assertInCode(t, k+k+"ArgsMeta) Validate(formats", res)
+						assertInCode(t, k+"ArgsMeta) Validate(formats", res)
 						assertInCode(t, "m.validateArgs(formats", res)
 						assertInCode(t, "err := validate.MinLength(\"args\"+\".\"+\"meta\"+\".\"+\"first\",", res)
 						assertInCode(t, "err := validate.MaxLength(\"args\"+\".\"+\"meta\"+\".\"+\"first\",", res)

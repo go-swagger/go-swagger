@@ -358,10 +358,15 @@ func specResolver(t testing.TB, path string) (*spec.Document, *typeResolver, err
 	if err != nil {
 		return nil, nil, err
 	}
-	return tlb, &typeResolver{
+	resolver := &typeResolver{
 		Doc:           tlb,
 		ModelsPackage: "models",
-	}, nil
+	}
+	resolver.KnownDefs = make(map[string]struct{})
+	for k := range tlb.Spec().Definitions {
+		resolver.KnownDefs[k] = struct{}{}
+	}
+	return tlb, resolver, nil
 }
 
 func basicTaskListResolver(t testing.TB) (*spec.Document, *typeResolver, error) {
@@ -373,10 +378,19 @@ func basicTaskListResolver(t testing.TB) (*spec.Document, *typeResolver, error) 
 	uc := swsp.Definitions["UserCard"]
 	uc.AddExtension("x-go-name", "UserItem")
 	swsp.Definitions["UserCard"] = uc
-	return tlb, &typeResolver{
+	resolver := &typeResolver{
 		Doc:           tlb,
 		ModelsPackage: "models",
-	}, nil
+	}
+
+	resolver.KnownDefs = make(map[string]struct{})
+	for k, sch := range swsp.Definitions {
+		resolver.KnownDefs[k] = struct{}{}
+		if nm, ok := sch.Extensions["x-go-name"]; ok {
+			resolver.KnownDefs[nm.(string)] = struct{}{}
+		}
+	}
+	return tlb, resolver, nil
 }
 
 func TestTypeResolver_TupleTypes(t *testing.T) {
@@ -446,6 +460,7 @@ func TestTypeResolver_AnonymousStructs(t *testing.T) {
 func TestTypeResolver_ObjectType(t *testing.T) {
 	_, resolver, err := basicTaskListResolver(t)
 	resolver.ModelName = "TheModel"
+	resolver.KnownDefs["TheModel"] = struct{}{}
 	defer func() { resolver.ModelName = "" }()
 
 	if assert.NoError(t, err) {
