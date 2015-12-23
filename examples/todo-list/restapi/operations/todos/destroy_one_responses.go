@@ -34,6 +34,7 @@ func (o *DestroyOneNoContent) WriteResponse(rw http.ResponseWriter, producer htt
 swagger:response destroyOneDefault
 */
 type DestroyOneDefault struct {
+	_statusCode int `json:"-"`
 
 	// In: body
 	Payload *models.Error `json:"body,omitempty"`
@@ -41,13 +42,27 @@ type DestroyOneDefault struct {
 
 // NewDestroyOneDefault creates DestroyOneDefault with default headers values
 func NewDestroyOneDefault() DestroyOneDefault {
-	return DestroyOneDefault{}
+	return DestroyOneDefault{
+		_statusCode: 500,
+	}
+}
+
+// WithStatusCode adds the status to the destroy one default response
+func (o *DestroyOneDefault) WithStatusCode(code int) *DestroyOneDefault {
+	o._statusCode = code
+	return o
+}
+
+// WithPayload adds the payload to the destroy one default response
+func (o *DestroyOneDefault) WithPayload(payload *models.Error) *DestroyOneDefault {
+	o.Payload = payload
+	return o
 }
 
 // WriteResponse to the client
 func (o *DestroyOneDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
-	rw.WriteHeader(500)
+	rw.WriteHeader(o._statusCode)
 	if o.Payload != nil {
 		if err := producer.Produce(rw, o.Payload); err != nil {
 			panic(err) // let the recovery middleware deal with this

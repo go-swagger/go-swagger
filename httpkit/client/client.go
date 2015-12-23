@@ -35,6 +35,8 @@ func NewAPIError(opName string, payload []byte, code int) *APIError {
 
 // APIError wraps an error model and captures the status code
 type APIError struct {
+	Method        string
+	Path          string
 	OperationName string
 	Payload       []byte
 	Code          int

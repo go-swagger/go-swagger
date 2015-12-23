@@ -26,6 +26,12 @@ type AddOneParams struct {
 	Body *models.Item
 }
 
+// WithBody adds the body to the add one params
+func (o *AddOneParams) WithBody(body *models.Item) *AddOneParams {
+	o.Body = body
+	return o
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *AddOneParams) WriteToRequest(r client.Request, reg strfmt.Registry) error {
 

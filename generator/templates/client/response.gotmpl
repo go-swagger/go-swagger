@@ -1,7 +1,8 @@
 {{ define "clientresponse" }}// New{{ pascalize .Name }} creates a {{ pascalize .Name }} with default headers values
-func New{{ pascalize .Name }}() *{{ pascalize .Name }} {
+func New{{ pascalize .Name }}({{ if eq .Code -1 }}code int{{ end }}) *{{ pascalize .Name }} {
   return &{{ pascalize .Name }}{
-    {{ range .Headers }}{{ if .Default }}{{ pascalize .Name }}: {{ printf "%#v" .Default }},{{ end }}
+    {{ if eq .Code -1 }}_statusCode: code,
+    {{ end }}{{ range .Headers }}{{ if .Default }}{{ pascalize .Name }}: {{ printf "%#v" .Default }},{{ end }}
   {{ end }}}
 }
 
@@ -10,13 +11,29 @@ func New{{ pascalize .Name }}() *{{ pascalize .Name }} {
 {{ if .Description }}{{ .Description }}{{else}}{{ pascalize .Name }} {{ humanize .Name }}{{end}}
 */
 type {{ pascalize .Name }} struct {
-  {{ range .Headers }}{{if .Description }}// {{ .Description }}{{ end }}
+  {{ if eq .Code -1 }}
+  _statusCode int
+
+  {{ end }}{{ range .Headers }}{{ if .Description }}/*{{ .Description }}
+  */{{ end }}
   {{ pascalize .Name }} {{ .GoType }}
   {{ end }}
   {{ if .Schema }}
   Payload {{ if and (not .Schema.IsBaseType) .Schema.IsComplexObject }}*{{ end }}{{ .Schema.GoType }}
   {{ end }}
+}{{ if eq .Code -1 }}
+
+// Code gets the status code for the {{ humanize .Name }} response
+func ({{ .ReceiverName }} *{{ pascalize .Name }}) Code() int {
+  return {{ .ReceiverName }}._statusCode
 }
+{{ end }}
+
+
+func ({{ .ReceiverName }} *{{ pascalize .Name }}) Error() string {
+	return fmt.Sprintf("[{{ upper .Method }} {{ .Path }}][%d] {{ if .Name }}{{ .Name }} {{ else }}unknown error {{ end }}{{ if .Schema }} %+v{{ end }}", {{ if eq .Code -1 }}{{ .ReceiverName }}._statusCode{{ else }}{{ .Code }}{{ end }}{{ if .Schema }}, o.Payload{{ end }})
+}
+
 
 func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
   {{ range .Headers }}
@@ -79,14 +96,14 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response cl
       if err := result.readResponse(response, consumer, {{ $.ReceiverName }}.formats); err != nil {
         return nil, err
       }
-      return {{ if $value.IsSuccess }}result, nil{{else}}nil, NewAPIError("{{ $value.Name }}", result, response.Code()){{end}}
+      return {{ if $value.IsSuccess }}result, nil{{else}}nil, result{{end}}
   {{end}}{{ if .DefaultResponse }}{{ with .DefaultResponse }}
     default:
-      result := New{{ pascalize .Name }}()
+      result := New{{ pascalize .Name }}(response.Code())
       if err := result.readResponse(response, consumer, {{ $.ReceiverName }}.formats); err != nil {
         return nil, err
       }
-      return {{ if .IsSuccess }}result, nil{{else}}nil, NewAPIError("{{ .Name }}", result, response.Code()){{end}}{{ end }}{{else}}
+      return {{ if .IsSuccess }}result, nil{{else}}nil, result{{end}}{{ end }}{{else}}
     default:
       return nil, NewAPIError("unknown error", response, response.Code()){{ end }}
   }

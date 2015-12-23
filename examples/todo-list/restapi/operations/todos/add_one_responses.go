@@ -26,6 +26,12 @@ func NewAddOneCreated() AddOneCreated {
 	return AddOneCreated{}
 }
 
+// WithPayload adds the payload to the add one created response
+func (o *AddOneCreated) WithPayload(payload *models.Item) *AddOneCreated {
+	o.Payload = payload
+	return o
+}
+
 // WriteResponse to the client
 func (o *AddOneCreated) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -42,6 +48,7 @@ func (o *AddOneCreated) WriteResponse(rw http.ResponseWriter, producer httpkit.P
 swagger:response addOneDefault
 */
 type AddOneDefault struct {
+	_statusCode int `json:"-"`
 
 	// In: body
 	Payload *models.Error `json:"body,omitempty"`
@@ -49,13 +56,27 @@ type AddOneDefault struct {
 
 // NewAddOneDefault creates AddOneDefault with default headers values
 func NewAddOneDefault() AddOneDefault {
-	return AddOneDefault{}
+	return AddOneDefault{
+		_statusCode: 500,
+	}
+}
+
+// WithStatusCode adds the status to the add one default response
+func (o *AddOneDefault) WithStatusCode(code int) *AddOneDefault {
+	o._statusCode = code
+	return o
+}
+
+// WithPayload adds the payload to the add one default response
+func (o *AddOneDefault) WithPayload(payload *models.Error) *AddOneDefault {
+	o.Payload = payload
+	return o
 }
 
 // WriteResponse to the client
 func (o *AddOneDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
-	rw.WriteHeader(500)
+	rw.WriteHeader(o._statusCode)
 	if o.Payload != nil {
 		if err := producer.Produce(rw, o.Payload); err != nil {
 			panic(err) // let the recovery middleware deal with this

@@ -399,6 +399,8 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 		Imports:        nil,
 		IsSuccess:      isSuccess,
 		Code:           code,
+		Method:         b.Method,
+		Path:           b.Path,
 	}
 
 	for hName, header := range resp.Headers {
@@ -857,6 +859,8 @@ type GenResponse struct {
 	IsSuccess bool
 
 	Code    int
+	Method  string
+	Path    string
 	Headers GenHeaders
 	Schema  *GenSchema
 

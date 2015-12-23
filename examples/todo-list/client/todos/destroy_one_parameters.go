@@ -24,6 +24,12 @@ type DestroyOneParams struct {
 	ID string
 }
 
+// WithID adds the id to the destroy one params
+func (o *DestroyOneParams) WithID(id string) *DestroyOneParams {
+	o.ID = id
+	return o
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *DestroyOneParams) WriteToRequest(r client.Request, reg strfmt.Registry) error {
 

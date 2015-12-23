@@ -26,6 +26,12 @@ func NewFindOK() FindOK {
 	return FindOK{}
 }
 
+// WithPayload adds the payload to the find o k response
+func (o *FindOK) WithPayload(payload []*models.Item) *FindOK {
+	o.Payload = payload
+	return o
+}
+
 // WriteResponse to the client
 func (o *FindOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -41,6 +47,7 @@ func (o *FindOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer
 swagger:response findDefault
 */
 type FindDefault struct {
+	_statusCode int `json:"-"`
 
 	// In: body
 	Payload *models.Error `json:"body,omitempty"`
@@ -48,13 +55,27 @@ type FindDefault struct {
 
 // NewFindDefault creates FindDefault with default headers values
 func NewFindDefault() FindDefault {
-	return FindDefault{}
+	return FindDefault{
+		_statusCode: 500,
+	}
+}
+
+// WithStatusCode adds the status to the find default response
+func (o *FindDefault) WithStatusCode(code int) *FindDefault {
+	o._statusCode = code
+	return o
+}
+
+// WithPayload adds the payload to the find default response
+func (o *FindDefault) WithPayload(payload *models.Error) *FindDefault {
+	o.Payload = payload
+	return o
 }
 
 // WriteResponse to the client
 func (o *FindDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
-	rw.WriteHeader(500)
+	rw.WriteHeader(o._statusCode)
 	if o.Payload != nil {
 		if err := producer.Produce(rw, o.Payload); err != nil {
 			panic(err) // let the recovery middleware deal with this

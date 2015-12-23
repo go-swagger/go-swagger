@@ -4,6 +4,8 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"fmt"
+
 	"github.com/go-swagger/go-swagger/client"
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/strfmt"
@@ -26,11 +28,11 @@ func (o *UpdateOneReader) ReadResponse(response client.Response, consumer httpki
 		return result, nil
 
 	default:
-		result := NewUpdateOneDefault()
+		result := NewUpdateOneDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
-		return nil, NewAPIError("updateOne default", result, response.Code())
+		return nil, result
 	}
 }
 
@@ -47,6 +49,10 @@ type UpdateOneOK struct {
 	Payload *models.Item
 }
 
+func (o *UpdateOneOK) Error() string {
+	return fmt.Sprintf("[PUT /{id}][%d] updateOneOK  %+v", 200, o.Payload)
+}
+
 func (o *UpdateOneOK) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Item)
@@ -60,8 +66,10 @@ func (o *UpdateOneOK) readResponse(response client.Response, consumer httpkit.Co
 }
 
 // NewUpdateOneDefault creates a UpdateOneDefault with default headers values
-func NewUpdateOneDefault() *UpdateOneDefault {
-	return &UpdateOneDefault{}
+func NewUpdateOneDefault(code int) *UpdateOneDefault {
+	return &UpdateOneDefault{
+		_statusCode: code,
+	}
 }
 
 /*UpdateOneDefault
@@ -69,7 +77,18 @@ func NewUpdateOneDefault() *UpdateOneDefault {
 error
 */
 type UpdateOneDefault struct {
+	_statusCode int
+
 	Payload *models.Error
+}
+
+// Code gets the status code for the update one default response
+func (o *UpdateOneDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *UpdateOneDefault) Error() string {
+	return fmt.Sprintf("[PUT /{id}][%d] updateOne default  %+v", o._statusCode, o.Payload)
 }
 
 func (o *UpdateOneDefault) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {

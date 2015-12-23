@@ -4,6 +4,8 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"fmt"
+
 	"github.com/go-swagger/go-swagger/client"
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/strfmt"
@@ -26,11 +28,11 @@ func (o *FindReader) ReadResponse(response client.Response, consumer httpkit.Con
 		return result, nil
 
 	default:
-		result := NewFindDefault()
+		result := NewFindDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
-		return nil, NewAPIError("find default", result, response.Code())
+		return nil, result
 	}
 }
 
@@ -47,6 +49,10 @@ type FindOK struct {
 	Payload []*models.Item
 }
 
+func (o *FindOK) Error() string {
+	return fmt.Sprintf("[GET /][%d] findOK  %+v", 200, o.Payload)
+}
+
 func (o *FindOK) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
 
 	// response payload
@@ -58,8 +64,10 @@ func (o *FindOK) readResponse(response client.Response, consumer httpkit.Consume
 }
 
 // NewFindDefault creates a FindDefault with default headers values
-func NewFindDefault() *FindDefault {
-	return &FindDefault{}
+func NewFindDefault(code int) *FindDefault {
+	return &FindDefault{
+		_statusCode: code,
+	}
 }
 
 /*FindDefault
@@ -67,7 +75,18 @@ func NewFindDefault() *FindDefault {
 error
 */
 type FindDefault struct {
+	_statusCode int
+
 	Payload *models.Error
+}
+
+// Code gets the status code for the find default response
+func (o *FindDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *FindDefault) Error() string {
+	return fmt.Sprintf("[GET /][%d] find default  %+v", o._statusCode, o.Payload)
 }
 
 func (o *FindDefault) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {

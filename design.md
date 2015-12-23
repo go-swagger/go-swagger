@@ -154,3 +154,4 @@ A generated client needs to have support for uploading files as multipart entrie
 A generated client could implement validation on the client side for the request parameters and received response. The meat of the client is not actually implemented as generated code but a single submit function that knows how to perform all the shared operations and then issue the request.
 A client typically has only one consumer and producer registered. The content type for the request is the media type of the producer, the accept header is the media type of the consumer.
 
+https://engineering.gosquared.com/building-better-api-docs

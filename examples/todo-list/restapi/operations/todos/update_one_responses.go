@@ -26,6 +26,12 @@ func NewUpdateOneOK() UpdateOneOK {
 	return UpdateOneOK{}
 }
 
+// WithPayload adds the payload to the update one o k response
+func (o *UpdateOneOK) WithPayload(payload *models.Item) *UpdateOneOK {
+	o.Payload = payload
+	return o
+}
+
 // WriteResponse to the client
 func (o *UpdateOneOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -42,6 +48,7 @@ func (o *UpdateOneOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Pro
 swagger:response updateOneDefault
 */
 type UpdateOneDefault struct {
+	_statusCode int `json:"-"`
 
 	// In: body
 	Payload *models.Error `json:"body,omitempty"`
@@ -49,13 +56,27 @@ type UpdateOneDefault struct {
 
 // NewUpdateOneDefault creates UpdateOneDefault with default headers values
 func NewUpdateOneDefault() UpdateOneDefault {
-	return UpdateOneDefault{}
+	return UpdateOneDefault{
+		_statusCode: 500,
+	}
+}
+
+// WithStatusCode adds the status to the update one default response
+func (o *UpdateOneDefault) WithStatusCode(code int) *UpdateOneDefault {
+	o._statusCode = code
+	return o
+}
+
+// WithPayload adds the payload to the update one default response
+func (o *UpdateOneDefault) WithPayload(payload *models.Error) *UpdateOneDefault {
+	o.Payload = payload
+	return o
 }
 
 // WriteResponse to the client
 func (o *UpdateOneDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
-	rw.WriteHeader(500)
+	rw.WriteHeader(o._statusCode)
 	if o.Payload != nil {
 		if err := producer.Produce(rw, o.Payload); err != nil {
 			panic(err) // let the recovery middleware deal with this

@@ -4,6 +4,8 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"fmt"
+
 	"github.com/go-swagger/go-swagger/client"
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/strfmt"
@@ -26,11 +28,11 @@ func (o *DestroyOneReader) ReadResponse(response client.Response, consumer httpk
 		return result, nil
 
 	default:
-		result := NewDestroyOneDefault()
+		result := NewDestroyOneDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
-		return nil, NewAPIError("destroyOne default", result, response.Code())
+		return nil, result
 	}
 }
 
@@ -46,14 +48,20 @@ Deleted
 type DestroyOneNoContent struct {
 }
 
+func (o *DestroyOneNoContent) Error() string {
+	return fmt.Sprintf("[DELETE /{id}][%d] destroyOneNoContent ", 204)
+}
+
 func (o *DestroyOneNoContent) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
 
 	return nil
 }
 
 // NewDestroyOneDefault creates a DestroyOneDefault with default headers values
-func NewDestroyOneDefault() *DestroyOneDefault {
-	return &DestroyOneDefault{}
+func NewDestroyOneDefault(code int) *DestroyOneDefault {
+	return &DestroyOneDefault{
+		_statusCode: code,
+	}
 }
 
 /*DestroyOneDefault
@@ -61,7 +69,18 @@ func NewDestroyOneDefault() *DestroyOneDefault {
 error
 */
 type DestroyOneDefault struct {
+	_statusCode int
+
 	Payload *models.Error
+}
+
+// Code gets the status code for the destroy one default response
+func (o *DestroyOneDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *DestroyOneDefault) Error() string {
+	return fmt.Sprintf("[DELETE /{id}][%d] destroyOne default  %+v", o._statusCode, o.Payload)
 }
 
 func (o *DestroyOneDefault) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {

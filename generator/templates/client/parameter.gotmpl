@@ -38,6 +38,14 @@ type {{ pascalize .Name }}Params struct {
   {{ end }}
 }
 
+{{ range .Params }}
+// With{{ pascalize .Name }} adds the {{ camelize .Name  }} to the {{ humanize $.Name }} params
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) With{{ pascalize .Name }}({{ camelize .Name  }} {{ if and (not .IsArray) (not .HasDiscriminator) (or .IsNullable  ) }}*{{ end }}{{ .GoType }}) *{{ pascalize $.Name }}Params {
+  {{ $.ReceiverName }}.{{ pascalize .Name }} = {{ camelize .Name  }}
+  return {{ .ReceiverName }}
+}
+
+{{ end }}
 // WriteToRequest writes these params to a swagger request
 func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r client.Request, reg strfmt.Registry) error {
 

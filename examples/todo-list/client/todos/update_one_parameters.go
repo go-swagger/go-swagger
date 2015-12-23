@@ -28,6 +28,18 @@ type UpdateOneParams struct {
 	ID string
 }
 
+// WithBody adds the body to the update one params
+func (o *UpdateOneParams) WithBody(body *models.Item) *UpdateOneParams {
+	o.Body = body
+	return o
+}
+
+// WithID adds the id to the update one params
+func (o *UpdateOneParams) WithID(id string) *UpdateOneParams {
+	o.ID = id
+	return o
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *UpdateOneParams) WriteToRequest(r client.Request, reg strfmt.Registry) error {
 

@@ -3,7 +3,9 @@
 swagger:response {{ camelize .Name }}
 */
 type {{ pascalize .Name }} struct {
-  {{ range .Headers }}/*{{if .Description }}{{ .Description }}{{ end }}{{ if .Required }}
+  {{ if eq .Code -1 }}
+  _statusCode int `json:"-"`
+  {{ end }}{{ range .Headers }}/*{{if .Description }}{{ .Description }}{{ end }}{{ if .Required }}
   Required: true{{ end }}{{ if .Maximum }}
   Maximum: {{ if .ExclusiveMaximum }}< {{ end }}{{ .Maximum }}{{ end }}{{ if .Minimum }}
   Minimum: {{ if .ExclusiveMinimum }}> {{ end }}{{ .Minimum }}{{ end }}{{ if .MultipleOf }}
@@ -16,20 +18,41 @@ type {{ pascalize .Name }} struct {
   Unique: true{{ end }}{{ if .Default }}
   Default: {{ printf "%#v" .Default }}{{ end }}
   */
-  {{ pascalize .Name }} {{ .GoType }} `json:"{{camelize .Name}},omitempty"`
+  {{ pascalize .Name }} {{ .GoType }} `json:"{{.Name}},omitempty"`
   {{ end }}
   {{ if .Schema }}
   // In: body
-  Payload {{ if .Schema.IsComplexObject }}*{{ end }}{{ .Schema.GoType }} `json:"body,omitempty"`
+  Payload {{ if and (not .Schema.IsBaseType) .Schema.IsComplexObject }}*{{ end }}{{ .Schema.GoType }} `json:"body,omitempty"`
   {{ end }}
 }
 
 // New{{ pascalize .Name }} creates {{ pascalize .Name }} with default headers values
 func New{{ pascalize .Name }}() {{ pascalize .Name }} {
   return {{ pascalize .Name }}{
-    {{ range .Headers }}{{ if .Default }}{{ pascalize .Name }}: {{ printf "%#v" .Default }},{{ end }}
+    {{ if eq .Code -1 }}_statusCode: 500,
+    {{ end }}{{ range .Headers }}{{ if .Default }}{{ pascalize .Name }}: {{ printf "%#v" .Default }},{{ end }}
   {{ end }}}
 }
+
+{{ if eq .Code -1 }}
+// WithStatusCode adds the status to the {{ humanize .Name }} response
+func ({{ .ReceiverName }} *{{ pascalize .Name }}) WithStatusCode(code int) *{{ pascalize .Name }} {
+  {{ .ReceiverName }}._statusCode = code
+  return {{ .ReceiverName }}
+}
+{{ end }}{{ range .Headers }}
+// With{{ pascalize .Name }} adds the {{ camelize .Name  }} to the {{ humanize $.Name }} response
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}) With{{ pascalize .Name }}({{ camelize .Name  }} {{ .GoType}}) *{{ pascalize $.Name }} {
+  {{ $.ReceiverName }}.{{ pascalize .Name }} = {{ camelize .Name  }}
+  return {{ .ReceiverName }}
+}
+{{ end }}{{ if .Schema }}
+// WithPayload adds the payload to the {{ humanize .Name }} response
+func ({{ .ReceiverName }} *{{ pascalize .Name }}) WithPayload(payload {{ if .Schema.IsComplexObject }}*{{ end }}{{ .Schema.GoType }}) *{{ pascalize .Name }} {
+  {{ .ReceiverName }}.Payload = payload
+  return {{ .ReceiverName }}
+}
+{{ end }}
 
 // WriteResponse to the client
 func ({{ .ReceiverName }} *{{ pascalize .Name }}) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
@@ -37,7 +60,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) WriteResponse(rw http.Response
   // response header {{.Name}}
   rw.Header().Add({{ printf "%q" .Name }}, fmt.Sprintf("%v", {{ .ReceiverName }}.{{ pascalize .Name }}))
   {{ end }}
-  rw.WriteHeader({{ if eq .Code -1 }}500{{ else }}{{ .Code }}{{ end }}){{ if .Schema }}{{ if .Schema.IsComplexObject }}
+  rw.WriteHeader({{ if eq .Code -1 }}{{ .ReceiverName }}._statusCode{{ else }}{{ .Code }}{{ end }}){{ if .Schema }}{{ if .Schema.IsComplexObject }}
   if {{ .ReceiverName }}.Payload != nil { {{ end }}
     if err := producer.Produce(rw, {{ .ReceiverName }}.Payload); err != nil {
       panic(err) // let the recovery middleware deal with this

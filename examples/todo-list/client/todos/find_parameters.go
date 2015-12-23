@@ -29,6 +29,24 @@ type FindParams struct {
 	Tags []int32
 }
 
+// WithXRateLimit adds the xRateLimit to the find params
+func (o *FindParams) WithXRateLimit(xRateLimit int32) *FindParams {
+	o.XRateLimit = xRateLimit
+	return o
+}
+
+// WithLimit adds the limit to the find params
+func (o *FindParams) WithLimit(limit int32) *FindParams {
+	o.Limit = limit
+	return o
+}
+
+// WithTags adds the tags to the find params
+func (o *FindParams) WithTags(tags []int32) *FindParams {
+	o.Tags = tags
+	return o
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *FindParams) WriteToRequest(r client.Request, reg strfmt.Registry) error {
 

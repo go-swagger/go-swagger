@@ -4,6 +4,8 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"fmt"
+
 	"github.com/go-swagger/go-swagger/client"
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/strfmt"
@@ -26,11 +28,11 @@ func (o *AddOneReader) ReadResponse(response client.Response, consumer httpkit.C
 		return result, nil
 
 	default:
-		result := NewAddOneDefault()
+		result := NewAddOneDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
-		return nil, NewAPIError("addOne default", result, response.Code())
+		return nil, result
 	}
 }
 
@@ -47,6 +49,10 @@ type AddOneCreated struct {
 	Payload *models.Item
 }
 
+func (o *AddOneCreated) Error() string {
+	return fmt.Sprintf("[POST /][%d] addOneCreated  %+v", 201, o.Payload)
+}
+
 func (o *AddOneCreated) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Item)
@@ -60,8 +66,10 @@ func (o *AddOneCreated) readResponse(response client.Response, consumer httpkit.
 }
 
 // NewAddOneDefault creates a AddOneDefault with default headers values
-func NewAddOneDefault() *AddOneDefault {
-	return &AddOneDefault{}
+func NewAddOneDefault(code int) *AddOneDefault {
+	return &AddOneDefault{
+		_statusCode: code,
+	}
 }
 
 /*AddOneDefault
@@ -69,7 +77,18 @@ func NewAddOneDefault() *AddOneDefault {
 error
 */
 type AddOneDefault struct {
+	_statusCode int
+
 	Payload *models.Error
+}
+
+// Code gets the status code for the add one default response
+func (o *AddOneDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *AddOneDefault) Error() string {
+	return fmt.Sprintf("[POST /][%d] addOne default  %+v", o._statusCode, o.Payload)
 }
 
 func (o *AddOneDefault) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
