@@ -21,56 +21,88 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTime(t *testing.T) {
+var (
+	p, _ = time.Parse(time.RFC3339Nano, "2011-08-18T19:03:37.000000000+01:00")
 
-	p, _ := time.Parse(time.RFC3339Nano, "2011-08-18T19:03:37.000000000+01:00")
-	data := []struct {
-		in  string
-		out time.Time
-		str string
+	testCases = []struct {
+		in   []byte    // externally sourced data -- to be unmarshalled
+		time time.Time // its representation in time.Time
+		str  string    // its marshalled representation
 	}{
-		{"2014-12-15T08:00:00.000Z", time.Date(2014, 12, 15, 8, 0, 0, 0, time.UTC), "2014-12-15T08:00:00.000Z"},
-		{"2011-08-18T19:03:37.000000000+01:00", time.Date(2011, 8, 18, 19, 3, 37, 0, p.Location()), "2011-08-18T19:03:37.000+01:00"},
-		{"2014-12-15T19:30:20Z", time.Date(2014, 12, 15, 19, 30, 20, 0, time.UTC), "2014-12-15T19:30:20.000Z"},
+		{[]byte("2014-12-15T08:00:00.000Z"), time.Date(2014, 12, 15, 8, 0, 0, 0, time.UTC), "2014-12-15T08:00:00.000Z"},
+		{[]byte("2011-08-18T19:03:37.000000000+01:00"), time.Date(2011, 8, 18, 19, 3, 37, 0, p.Location()), "2011-08-18T19:03:37.000+01:00"},
+		{[]byte("2014-12-15T19:30:20Z"), time.Date(2014, 12, 15, 19, 30, 20, 0, time.UTC), "2014-12-15T19:30:20.000Z"},
+		{[]byte("0001-01-01T00:00:00Z"), time.Time{}.UTC(), "0001-01-01T00:00:00.000Z"},
+		{[]byte(""), time.Unix(0, 0).UTC(), "1970-01-01T00:00:00.000Z"},
+		{[]byte(nil), time.Unix(0, 0).UTC(), "1970-01-01T00:00:00.000Z"},
 	}
+)
 
-	for _, example := range data {
-		parsed, err := ParseDateTime(example.in)
+func TestNewDateTime(t *testing.T) {
+	assert.Equal(t, time.Unix(0, 0).UTC(), NewDateTime().Time)
+}
+
+func TestParseDateTime_errorCases(t *testing.T) {
+	_, err := ParseDateTime("yada")
+	assert.Error(t, err)
+}
+
+// TestParseDateTime tests the full cycle:
+// parsing -> marshalling -> unmarshalling / scanning
+func TestParseDateTime_fullCycle(t *testing.T) {
+	for caseNum, example := range testCases {
+		t.Logf("Case #%d", caseNum)
+		parsed, err := ParseDateTime(string(example.in))
 		assert.NoError(t, err)
-		assert.Equal(t, example.out.String(), parsed.Time.String(), "Failed to parse "+example.in)
-		assert.Equal(t, example.str, parsed.String())
+		assert.Equal(t, example.time, parsed.Time)
 		mt, err := parsed.MarshalText()
 		assert.NoError(t, err)
 		assert.Equal(t, []byte(example.str), mt)
-		pp := DateTime{}
+
+		pp := NewDateTime()
 		err = pp.UnmarshalText(mt)
 		assert.NoError(t, err)
-		assert.Equal(t, example.out.String(), pp.Time.String())
+		assert.Equal(t, example.time, pp.Time)
 
-		pp = DateTime{}
-		err = pp.Scan(example.in)
+		pp = NewDateTime()
+		err = pp.Scan(mt)
 		assert.NoError(t, err)
-		assert.Equal(t, DateTime{example.out}, pp)
+		assert.Equal(t, DateTime{example.time}, pp)
 	}
+}
 
-	_, err := ParseDateTime("yada")
+func TestDateTime_UnmarshalText_errorCases(t *testing.T) {
+	pp := NewDateTime()
+	err := pp.UnmarshalText([]byte("yada"))
 	assert.Error(t, err)
+}
 
-	parsed, err := ParseDateTime("")
-	assert.NoError(t, err)
-	assert.WithinDuration(t, time.Unix(0, 0), parsed.Time, 0)
+func TestDateTime_UnmarshalText(t *testing.T) {
+	for caseNum, example := range testCases {
+		t.Logf("Case #%d", caseNum)
+		pp := NewDateTime()
+		err := pp.UnmarshalText(example.in)
+		assert.NoError(t, err)
+		assert.Equal(t, example.time, pp.Time)
+	}
+}
 
-	pp := DateTime{}
-	err = pp.UnmarshalText([]byte{})
-	assert.NoError(t, err)
-	assert.WithinDuration(t, time.Unix(0, 0), pp.Time, 0)
-	err = pp.UnmarshalText([]byte("yada"))
-	assert.Error(t, err)
+func TestDateTime_MarshalText(t *testing.T) {
+	for caseNum, example := range testCases {
+		t.Logf("Case #%d", caseNum)
+		dt := DateTime{Time: example.time}
+		mt, err := dt.MarshalText()
+		assert.NoError(t, err)
+		assert.Equal(t, []byte(example.str), mt)
+	}
+}
 
-	pp = DateTime{}
-	err = pp.UnmarshalText([]byte(nil))
-	assert.NoError(t, err)
-	assert.WithinDuration(t, time.Unix(0, 0), pp.Time, 0)
-	err = pp.UnmarshalText([]byte("yada"))
-	assert.Error(t, err)
+func TestDateTime_Scan(t *testing.T) {
+	for caseNum, example := range testCases {
+		t.Logf("Case #%d", caseNum)
+		pp := NewDateTime()
+		err := pp.Scan(example.in)
+		assert.NoError(t, err)
+		assert.Equal(t, DateTime{example.time}, pp)
+	}
 }

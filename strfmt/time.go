@@ -61,7 +61,7 @@ var (
 // ParseDateTime parses a string that represents an ISO8601 time or a unix epoch
 func ParseDateTime(data string) (DateTime, error) {
 	if data == "" {
-		return DateTime{Time: time.Unix(0, 0).UTC()}, nil
+		return NewDateTime(), nil
 	}
 	var lastError error
 	for _, layout := range dateTimeFormats {
@@ -85,6 +85,11 @@ type DateTime struct {
 	time.Time
 }
 
+// NewDateTime is a representation of zero value for DateTime type
+func NewDateTime() DateTime {
+	return DateTime{Time: time.Unix(0, 0).UTC()}
+}
+
 func (t DateTime) String() string {
 	return t.Format(RFC3339Millis)
 }
@@ -96,10 +101,6 @@ func (t DateTime) MarshalText() ([]byte, error) {
 
 // UnmarshalText implements the text unmarshaller interface
 func (t *DateTime) UnmarshalText(text []byte) error {
-	if len(text) == 0 {
-		*t = DateTime{Time: time.Unix(0, 0).UTC()}
-		return nil
-	}
 	tt, err := ParseDateTime(string(text))
 	if err != nil {
 		return err
