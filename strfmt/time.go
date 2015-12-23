@@ -97,6 +97,7 @@ func (t DateTime) MarshalText() ([]byte, error) {
 // UnmarshalText implements the text unmarshaller interface
 func (t *DateTime) UnmarshalText(text []byte) error {
 	if len(text) == 0 {
+		*t = DateTime{Time: time.Unix(0, 0).UTC()}
 		return nil
 	}
 	tt, err := ParseDateTime(string(text))
