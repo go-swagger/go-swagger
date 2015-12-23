@@ -63,6 +63,15 @@ func TestTime(t *testing.T) {
 	pp := DateTime{}
 	err = pp.UnmarshalText([]byte{})
 	assert.NoError(t, err)
+	assert.WithinDuration(t, time.Unix(0, 0), pp.Time, 0)
 	err = pp.UnmarshalText([]byte("yada"))
 	assert.Error(t, err)
+
+	pp = DateTime{}
+	err = pp.UnmarshalText([]byte(nil))
+	assert.NoError(t, err)
+	assert.WithinDuration(t, time.Unix(0, 0), pp.Time, 0)
+	err = pp.UnmarshalText([]byte("yada"))
+	assert.Error(t, err)
+
 }
