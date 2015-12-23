@@ -54,9 +54,13 @@ type FindDefault struct {
 }
 
 // NewFindDefault creates FindDefault with default headers values
-func NewFindDefault() FindDefault {
+func NewFindDefault(code int) FindDefault {
+	if code <= 0 {
+		code = 500
+	}
+
 	return FindDefault{
-		_statusCode: 500,
+		_statusCode: code,
 	}
 }
 

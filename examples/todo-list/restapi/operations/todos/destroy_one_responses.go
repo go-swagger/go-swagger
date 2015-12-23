@@ -41,9 +41,13 @@ type DestroyOneDefault struct {
 }
 
 // NewDestroyOneDefault creates DestroyOneDefault with default headers values
-func NewDestroyOneDefault() DestroyOneDefault {
+func NewDestroyOneDefault(code int) DestroyOneDefault {
+	if code <= 0 {
+		code = 500
+	}
+
 	return DestroyOneDefault{
-		_statusCode: 500,
+		_statusCode: code,
 	}
 }
 

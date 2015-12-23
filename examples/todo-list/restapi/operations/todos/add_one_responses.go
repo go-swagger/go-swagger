@@ -55,9 +55,13 @@ type AddOneDefault struct {
 }
 
 // NewAddOneDefault creates AddOneDefault with default headers values
-func NewAddOneDefault() AddOneDefault {
+func NewAddOneDefault(code int) AddOneDefault {
+	if code <= 0 {
+		code = 500
+	}
+
 	return AddOneDefault{
-		_statusCode: 500,
+		_statusCode: code,
 	}
 }
 

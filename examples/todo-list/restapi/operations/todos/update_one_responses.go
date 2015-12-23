@@ -55,9 +55,13 @@ type UpdateOneDefault struct {
 }
 
 // NewUpdateOneDefault creates UpdateOneDefault with default headers values
-func NewUpdateOneDefault() UpdateOneDefault {
+func NewUpdateOneDefault(code int) UpdateOneDefault {
+	if code <= 0 {
+		code = 500
+	}
+
 	return UpdateOneDefault{
-		_statusCode: 500,
+		_statusCode: code,
 	}
 }
 
