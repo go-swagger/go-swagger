@@ -73,5 +73,4 @@ func TestTime(t *testing.T) {
 	assert.WithinDuration(t, time.Unix(0, 0), pp.Time, 0)
 	err = pp.UnmarshalText([]byte("yada"))
 	assert.Error(t, err)
-
 }
