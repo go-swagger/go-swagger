@@ -39,13 +39,8 @@ func newAnalyzer(spec *Swagger) *specAnalyzer {
 		produces:    make(map[string]struct{}),
 		authSchemes: make(map[string]struct{}),
 		operations:  make(map[string]map[string]*Operation),
-		referenced: referenceAnalysis{
-			schemas:    make(map[string]SchemaRef),
-			responses:  make(map[string]*Response),
-			parameters: make(map[string]*Parameter),
-		},
-		allSchemas: make(map[string]SchemaRef),
-		allOfs:     make(map[string]SchemaRef),
+		allSchemas:  make(map[string]SchemaRef),
+		allOfs:      make(map[string]SchemaRef),
 	}
 	a.initialize()
 	return a
@@ -183,7 +178,33 @@ func TestDefinitionAnalysis(t *testing.T) {
 	}
 }
 
-func assertSchemaRefExists(t *testing.T, data map[string]SchemaRef, key string) bool {
+func TestReferenceAnalysis(t *testing.T) {
+	doc, err := Load(filepath.Join("..", "fixtures", "analysis", "references.yml"))
+	if assert.NoError(t, err) {
+		definitions := doc.references
+
+		// parameters
+		assertRefExists(t, definitions.parameters, "#/paths/~1some~1where~1{id}/parameters/0")
+		assertRefExists(t, definitions.parameters, "#/paths/~1some~1where~1{id}/get/parameters/0")
+
+		// responses
+		assertRefExists(t, definitions.responses, "#/paths/~1some~1where~1{id}/get/responses/404")
+
+		//// definitions
+		assertRefExists(t, definitions.schemas, "#/responses/notFound/schema")
+		assertRefExists(t, definitions.schemas, "#/paths/~1some~1where~1{id}/get/responses/200/schema")
+		assertRefExists(t, definitions.schemas, "#/definitions/tag/properties/audit")
+	}
+}
+
+func assertRefExists(t testing.TB, data map[string]Ref, key string) bool {
+	if _, ok := data[key]; !ok {
+		return assert.Fail(t, fmt.Sprintf("expected %q to exist in the ref bag", key))
+	}
+	return true
+}
+
+func assertSchemaRefExists(t testing.TB, data map[string]SchemaRef, key string) bool {
 	if _, ok := data[key]; !ok {
 		return assert.Fail(t, fmt.Sprintf("expected %q to exist in schema ref bag", key))
 	}

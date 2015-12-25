@@ -151,13 +151,8 @@ func New(data json.RawMessage, version string) (*Document, error) {
 			produces:    make(map[string]struct{}),
 			authSchemes: make(map[string]struct{}),
 			operations:  make(map[string]map[string]*Operation),
-			referenced: referenceAnalysis{
-				schemas:    make(map[string]SchemaRef),
-				responses:  make(map[string]*Response),
-				parameters: make(map[string]*Parameter),
-			},
-			allSchemas: make(map[string]SchemaRef),
-			allOfs:     make(map[string]SchemaRef),
+			allSchemas:  make(map[string]SchemaRef),
+			allOfs:      make(map[string]SchemaRef),
 		},
 		spec: spec,
 		raw:  data,
@@ -183,13 +178,8 @@ func (d *Document) Expanded() (*Document, error) {
 			produces:    make(map[string]struct{}),
 			authSchemes: make(map[string]struct{}),
 			operations:  make(map[string]map[string]*Operation),
-			referenced: referenceAnalysis{
-				schemas:    make(map[string]SchemaRef),
-				responses:  make(map[string]*Response),
-				parameters: make(map[string]*Parameter),
-			},
-			allSchemas: make(map[string]SchemaRef),
-			allOfs:     make(map[string]SchemaRef),
+			allSchemas:  make(map[string]SchemaRef),
+			allOfs:      make(map[string]SchemaRef),
 		},
 		spec: spec,
 		raw:  d.raw,
@@ -236,19 +226,14 @@ func (d *Document) Reload() *Document {
 		produces:    make(map[string]struct{}),
 		authSchemes: make(map[string]struct{}),
 		operations:  make(map[string]map[string]*Operation),
-		referenced: referenceAnalysis{
-			schemas:    make(map[string]SchemaRef),
-			responses:  make(map[string]*Response),
-			parameters: make(map[string]*Parameter),
-		},
-		allSchemas: make(map[string]SchemaRef),
-		allOfs:     make(map[string]SchemaRef),
+		allSchemas:  make(map[string]SchemaRef),
+		allOfs:      make(map[string]SchemaRef),
 	}
 	d.initialize()
 	return d
 }
 
-// Prisitine creates a new pristine document instance based on the input data
+// Pristine creates a new pristine document instance based on the input data
 func (d *Document) Pristine() *Document {
 	dd, _ := New(d.Raw(), d.Version())
 	return dd

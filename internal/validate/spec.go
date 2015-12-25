@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-swagger/go-swagger/jsonpointer"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
 )
@@ -84,9 +85,8 @@ func (s *SpecValidator) Validate(data interface{}) (errs *Result, warnings *Resu
 	errs.Merge(s.validateExamplesValidAgainstSchema())     // error -
 	errs.Merge(s.validateNonEmptyPathParamNames())
 
-	warnings.Merge(s.validateUniqueSecurityScopes())            // warning
-	warnings.Merge(s.validateUniqueScopesSecurityDefinitions()) // warning
-	warnings.Merge(s.validateReferenced())                      // warning
+	warnings.Merge(s.validateUniqueSecurityScopes()) // warning
+	warnings.Merge(s.validateReferenced())           // warning
 
 	return
 }
@@ -312,11 +312,7 @@ func (s *SpecValidator) validateUniqueSecurityScopes() *Result {
 	// Each authorization/security reference should contain only unique scopes.
 	// (Example: For an oauth2 authorization/security requirement, when listing the required scopes,
 	// each scope should only be listed once.)
-	return nil
-}
 
-func (s *SpecValidator) validateUniqueScopesSecurityDefinitions() *Result {
-	// Each authorization/security scope in an authorization/security definition should be unique.
 	return nil
 }
 
@@ -354,8 +350,92 @@ func (s *SpecValidator) validatePathParamPresence(path string, fromPath, fromOpe
 }
 
 func (s *SpecValidator) validateReferenced() *Result {
+	var res Result
+	res.Merge(s.validateReferencedParameters())
+	res.Merge(s.validateReferencedResponses())
+	res.Merge(s.validateReferencedDefinitions())
+	return &res
+}
+
+func (s *SpecValidator) validateReferencedParameters() *Result {
 	// Each referenceable definition must have references.
-	return nil
+	params := s.spec.Spec().Parameters
+	if len(params) == 0 {
+		return nil
+	}
+
+	expected := make(map[string]struct{})
+	for k := range params {
+		expected["#/parameters/"+jsonpointer.Escape(k)] = struct{}{}
+	}
+	for _, k := range s.spec.AllParameterReferences() {
+		if _, ok := expected[k]; ok {
+			delete(expected, k)
+		}
+	}
+
+	if len(expected) == 0 {
+		return nil
+	}
+	var result Result
+	for k := range expected {
+		result.AddErrors(errors.New(422, "parameter %q is not used anywhere", k))
+	}
+	return &result
+}
+
+func (s *SpecValidator) validateReferencedResponses() *Result {
+	// Each referenceable definition must have references.
+	responses := s.spec.Spec().Responses
+	if len(responses) == 0 {
+		return nil
+	}
+
+	expected := make(map[string]struct{})
+	for k := range responses {
+		expected["#/responses/"+jsonpointer.Escape(k)] = struct{}{}
+	}
+	for _, k := range s.spec.AllResponseReferences() {
+		if _, ok := expected[k]; ok {
+			delete(expected, k)
+		}
+	}
+
+	if len(expected) == 0 {
+		return nil
+	}
+	var result Result
+	for k := range expected {
+		result.AddErrors(errors.New(422, "response %q is not used anywhere", k))
+	}
+	return &result
+}
+
+func (s *SpecValidator) validateReferencedDefinitions() *Result {
+	// Each referenceable definition must have references.
+	defs := s.spec.Spec().Definitions
+	if len(defs) == 0 {
+		return nil
+	}
+
+	expected := make(map[string]struct{})
+	for k := range defs {
+		expected["#/definitions/"+jsonpointer.Escape(k)] = struct{}{}
+	}
+	for _, k := range s.spec.AllDefinitionReferences() {
+		if _, ok := expected[k]; ok {
+			delete(expected, k)
+		}
+	}
+
+	if len(expected) == 0 {
+		return nil
+	}
+	var result Result
+	for k := range expected {
+		result.AddErrors(errors.New(422, "definition %q is not used anywhere", k))
+	}
+	return &result
 }
 
 func (s *SpecValidator) validateRequiredDefinitions() *Result {
@@ -663,7 +743,4 @@ func (s *SpecValidator) validateDefaultValueItemsAgainstSchema(path, in string, 
 		}
 	}
 	return res
-}
-
-func (s *SpecValidator) isSwaggerType(tpe, format string, value interface{}) {
 }

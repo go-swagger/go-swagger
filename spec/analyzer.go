@@ -25,9 +25,35 @@ import (
 )
 
 type referenceAnalysis struct {
-	schemas    map[string]SchemaRef
-	responses  map[string]*Response
-	parameters map[string]*Parameter
+	schemas    map[string]Ref
+	responses  map[string]Ref
+	parameters map[string]Ref
+	referenced struct {
+		schemas    map[string]SchemaRef
+		responses  map[string]*Response
+		parameters map[string]*Parameter
+	}
+}
+
+func (r *referenceAnalysis) addSchemaRef(key string, ref SchemaRef) {
+	if r.schemas == nil {
+		r.schemas = make(map[string]Ref)
+	}
+	r.schemas["#"+key] = ref.Schema.Ref
+}
+
+func (r *referenceAnalysis) addResponseRef(key string, resp *Response) {
+	if r.responses == nil {
+		r.responses = make(map[string]Ref)
+	}
+	r.responses["#"+key] = resp.Ref
+}
+
+func (r *referenceAnalysis) addParamRef(key string, param *Parameter) {
+	if r.parameters == nil {
+		r.parameters = make(map[string]Ref)
+	}
+	r.parameters["#"+key] = param.Ref
 }
 
 // specAnalyzer takes a swagger spec object and turns it into a registry
@@ -38,7 +64,7 @@ type specAnalyzer struct {
 	produces    map[string]struct{}
 	authSchemes map[string]struct{}
 	operations  map[string]map[string]*Operation
-	referenced  referenceAnalysis
+	references  referenceAnalysis
 	allSchemas  map[string]SchemaRef
 	allOfs      map[string]SchemaRef
 }
@@ -74,9 +100,14 @@ func (s *specAnalyzer) initialize() {
 	for name, schema := range s.spec.Definitions {
 		s.analyzeSchema(name, schema, "/definitions")
 	}
+	// TODO: after analyzing all things and flattening shemas etc
+	// resolve all the collected references to their final representations
+	// best put in a separate method because this could get expensive
 }
 
-func (s *specAnalyzer) analyzeOperations(path string, op *PathItem) {
+func (s *specAnalyzer) analyzeOperations(path string, pi *PathItem) {
+	// TODO: resolve refs here?
+	op := pi
 	s.analyzeOperation("GET", path, op.Get)
 	s.analyzeOperation("PUT", path, op.Put)
 	s.analyzeOperation("POST", path, op.Post)
@@ -85,8 +116,12 @@ func (s *specAnalyzer) analyzeOperations(path string, op *PathItem) {
 	s.analyzeOperation("HEAD", path, op.Head)
 	s.analyzeOperation("OPTIONS", path, op.Options)
 	for i, param := range op.Parameters {
+		refPref := slashpath.Join("/paths", jsonpointer.Escape(path), "parameters", strconv.Itoa(i))
+		if param.Ref.String() != "" {
+			s.references.addParamRef(refPref, &param)
+		}
 		if param.Schema != nil {
-			s.analyzeSchema("schema", *param.Schema, slashpath.Join("/paths", jsonpointer.Escape(path), "parameters", strconv.Itoa(i)))
+			s.analyzeSchema("schema", *param.Schema, refPref)
 		}
 	}
 }
@@ -113,17 +148,31 @@ func (s *specAnalyzer) analyzeOperation(method, path string, op *Operation) {
 	s.operations[method][path] = op
 	prefix := slashpath.Join("/paths", jsonpointer.Escape(path), strings.ToLower(method))
 	for i, param := range op.Parameters {
+		refPref := slashpath.Join(prefix, "parameters", strconv.Itoa(i))
+		if param.Ref.String() != "" {
+			s.references.addParamRef(refPref, &param)
+		}
 		if param.In == "body" && param.Schema != nil {
-			s.analyzeSchema("schema", *param.Schema, slashpath.Join(prefix, "parameters", strconv.Itoa(i)))
+			s.analyzeSchema("schema", *param.Schema, refPref)
 		}
 	}
 	if op.Responses != nil {
-		if op.Responses.Default != nil && op.Responses.Default.Schema != nil {
-			s.analyzeSchema("schema", *op.Responses.Default.Schema, slashpath.Join(prefix, "responses", "default"))
+		if op.Responses.Default != nil {
+			refPref := slashpath.Join(prefix, "responses", "default")
+			if op.Responses.Default.Ref.String() != "" {
+				s.references.addResponseRef(refPref, op.Responses.Default)
+			}
+			if op.Responses.Default.Schema != nil {
+				s.analyzeSchema("schema", *op.Responses.Default.Schema, refPref)
+			}
 		}
 		for k, res := range op.Responses.StatusCodeResponses {
+			refPref := slashpath.Join(prefix, "responses", strconv.Itoa(k))
+			if res.Ref.String() != "" {
+				s.references.addResponseRef(refPref, &res)
+			}
 			if res.Schema != nil {
-				s.analyzeSchema("schema", *res.Schema, slashpath.Join(prefix, "responses", strconv.Itoa(k)))
+				s.analyzeSchema("schema", *res.Schema, refPref)
 			}
 		}
 	}
@@ -131,10 +180,14 @@ func (s *specAnalyzer) analyzeOperation(method, path string, op *Operation) {
 
 func (s *specAnalyzer) analyzeSchema(name string, schema Schema, prefix string) {
 	refURI := slashpath.Join(prefix, jsonpointer.Escape(name))
-	s.allSchemas["#"+refURI] = SchemaRef{
+	schRef := SchemaRef{
 		Name:   name,
 		Schema: &schema,
 		Ref:    MustCreateRef("#" + refURI),
+	}
+	s.allSchemas["#"+refURI] = schRef
+	if schema.Ref.String() != "" {
+		s.references.addSchemaRef(refURI, schRef)
 	}
 	for k, v := range schema.Definitions {
 		s.analyzeSchema(k, v, slashpath.Join(refURI, "definitions"))
@@ -396,6 +449,27 @@ func (s *specAnalyzer) SchemasWithAllOf() (result []SchemaRef) {
 func (s *specAnalyzer) AllDefinitions() (result []SchemaRef) {
 	for _, v := range s.allSchemas {
 		result = append(result, v)
+	}
+	return
+}
+
+func (s *specAnalyzer) AllDefinitionReferences() (result []string) {
+	for _, v := range s.references.schemas {
+		result = append(result, v.String())
+	}
+	return
+}
+
+func (s *specAnalyzer) AllParameterReferences() (result []string) {
+	for _, v := range s.references.parameters {
+		result = append(result, v.String())
+	}
+	return
+}
+
+func (s *specAnalyzer) AllResponseReferences() (result []string) {
+	for _, v := range s.references.responses {
+		result = append(result, v.String())
 	}
 	return
 }

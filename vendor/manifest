@@ -137,6 +137,13 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "golang.org/x/net/context",
+			"repository": "https://go.googlesource.com/net",
+			"revision": "5d0a0f8cd486626821d2ba44d471ab1c9271d38f",
+			"branch": "master",
+			"path": "/context"
+		},
+		{
 			"importpath": "golang.org/x/net/netutil",
 			"repository": "https://go.googlesource.com/net",
 			"revision": "68a055e15f0ce90989da5564fd947fb72ce67513",

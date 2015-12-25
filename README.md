@@ -6,8 +6,6 @@ Swagger 2.0 [![Circle CI](https://circleci.com/gh/go-swagger/go-swagger/tree/mas
 Development of this toolkit is sponsored by VMware:  
 [![VMWare](https://avatars2.githubusercontent.com/u/473334?v=3&s=200)](https://vmware.github.io)  
 
-This API is not stable yet, when it is stable it will be distributed over gopkg.in
-
 There is a code coverage report available in the artifacts section of a build. Unfortunately using coveralls made the
 build unstable.
 
@@ -22,7 +20,6 @@ Swagger helps companies like Apigee, Getty Images, Intuit, LivingSocial, McKesso
 
 Docs
 ----
-
 
 https://goswagger.io
 
@@ -47,11 +44,6 @@ To generate a [client for a swagger spec](http://goswagger.io/generate/client/) 
 To generate a [swagger spec document for a go application](http://goswagger.io/generate/spec/):
 
 		swagger generate spec -o ./swagger.json
-
-Much improved documentation is in the works and will actually explain how to use this tool in much more depth.
-To learn about which annotations are available and how to use them for generating a spec from any go application
-(generating a spec is not opinionated), you can take a look at the files used for [testing the parser](https://github.com/go-swagger/go-swagger/tree/master/fixtures/goparsing/classification).
-
 
 There are several other sub commands available for the generate command
 
@@ -87,7 +79,6 @@ For a V1 I want to have this feature set completed:
       - [x] definition's ancestor can't be a descendant of the same model (Error)
       - [x] each api path should be non-verbatim (account for path param names) unique per method (Error)
       - [ ] each security reference should contain only unique scopes (Warning)
-      - [ ] each security scope in a security definition should be unique (Warning)
       - [x] each path parameter should correspond to a parameter placeholder and vice versa (Error)
       - [x] path parameter declarations do not allow empty names _(`/path/{}` is not valid)_ (Error)
       - [x] each definition property listed in the required array must be defined in the properties of the model (Error)

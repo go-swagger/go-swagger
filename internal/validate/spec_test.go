@@ -93,10 +93,23 @@ func TestValidateCircularAncestry(t *testing.T) {
 func TestValidateUniqueSecurityScopes(t *testing.T) {
 }
 
-func TestValidateUniqueScopesSecurityDefinitions(t *testing.T) {
-}
-
 func TestValidateReferenced(t *testing.T) {
+	doc, err := spec.YAMLSpec(filepath.Join("..", "..", "fixtures", "validation", "valid-referenced.yml"))
+	if assert.NoError(t, err) {
+		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
+		validator.spec = doc
+		res := validator.validateReferenced()
+		assert.Empty(t, res.Errors)
+	}
+
+	doc, err = spec.YAMLSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-referenced.yml"))
+	if assert.NoError(t, err) {
+		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
+		validator.spec = doc
+		res := validator.validateReferenced()
+		assert.NotEmpty(t, res.Errors)
+		assert.Len(t, res.Errors, 3)
+	}
 }
 
 func TestValidateBodyFormDataParams(t *testing.T) {
