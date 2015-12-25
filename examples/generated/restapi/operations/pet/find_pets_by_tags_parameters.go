@@ -10,7 +10,7 @@ import (
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
 	"github.com/go-swagger/go-swagger/strfmt"
-	"github.com/go-swagger/go-swagger/go-swagger/swag"
+	"github.com/go-swagger/go-swagger/swag"
 )
 
 // NewFindPetsByTagsParams creates a new FindPetsByTagsParams object
