@@ -81,7 +81,7 @@ func TestTypeResolver_AdditionalItems(t *testing.T) {
 			coll.AdditionalItems = new(spec.SchemaOrBool)
 			coll.AdditionalItems.Schema = &sch
 
-			rt, err := resolver.ResolveSchema(&coll, true)
+			rt, err := resolver.ResolveSchema(&coll, true, true)
 			if assert.NoError(t, err) && assert.True(t, rt.IsArray) {
 				assert.True(t, rt.HasAdditionalItems)
 				assert.False(t, rt.IsNullable)
@@ -103,7 +103,7 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 			sch := new(spec.Schema)
 			sch.Typed(val.Type, val.Format)
 
-			rt, err := resolver.ResolveSchema(sch, true)
+			rt, err := resolver.ResolveSchema(sch, true, true)
 			if assert.NoError(t, err) {
 				assert.False(t, rt.IsNullable)
 				assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, rt)
@@ -114,7 +114,7 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 		for _, val := range schTypeVals {
 			var sch spec.Schema
 			sch.Typed(val.Type, val.Format)
-			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(sch), true)
+			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(sch), true, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsArray)
 			}
@@ -127,7 +127,7 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 			sch.Extensions = make(spec.Extensions)
 			sch.Extensions["x-isnullable"] = true
 
-			rt, err := resolver.ResolveSchema(sch, true)
+			rt, err := resolver.ResolveSchema(sch, true, false)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsNullable, "expected %q (%q) to be nullable", val.Type, val.Format)
 				assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, rt)
@@ -136,7 +136,7 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 			// Test x-nullable without x-isnullable
 			sch.Extensions["x-isnullable"] = false
 			sch.Extensions["x-nullable"] = true
-			rt, err = resolver.ResolveSchema(sch, true)
+			rt, err = resolver.ResolveSchema(sch, true, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsNullable, "expected %q (%q) to be nullable", val.Type, val.Format)
 				assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, rt)
@@ -149,7 +149,7 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 			sch.Typed(val.Type, val.Format)
 			sch.AddExtension("x-isnullable", true)
 
-			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(sch), true)
+			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(sch), true, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsArray)
 			}
@@ -169,7 +169,7 @@ func TestTypeResolver_Refs(t *testing.T) {
 			sch := new(spec.Schema)
 			sch.Ref, _ = spec.NewRef("#/definitions/" + val.Type)
 
-			rt, err := resolver.ResolveSchema(sch, true)
+			rt, err := resolver.ResolveSchema(sch, true, true)
 			if assert.NoError(t, err) {
 				assert.Equal(t, val.Expected, rt.GoType)
 				assert.False(t, rt.IsAnonymous)
@@ -183,7 +183,7 @@ func TestTypeResolver_Refs(t *testing.T) {
 			sch := new(spec.Schema)
 			sch.Ref, _ = spec.NewRef("#/definitions/" + val.Type)
 
-			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(*sch), true)
+			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(*sch), true, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsArray)
 				assert.Equal(t, "[]*"+val.Expected, rt.GoType)
@@ -195,7 +195,7 @@ func TestTypeResolver_Refs(t *testing.T) {
 			sch := new(spec.Schema)
 			sch.Ref, _ = spec.NewRef("#/definitions/" + val.Type)
 
-			rt, err := resolver.ResolveSchema(sch, false)
+			rt, err := resolver.ResolveSchema(sch, false, true)
 			if assert.NoError(t, err) {
 				assert.Equal(t, val.Expected, rt.GoType)
 				assert.False(t, rt.IsAnonymous)
@@ -209,7 +209,7 @@ func TestTypeResolver_Refs(t *testing.T) {
 			sch := new(spec.Schema)
 			sch.Ref, _ = spec.NewRef("#/definitions/" + val.Type)
 
-			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(*sch), false)
+			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(*sch), false, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsArray)
 				assert.Equal(t, "[]*"+val.Expected, rt.GoType)
@@ -231,7 +231,7 @@ func TestTypeResolver_AdditionalProperties(t *testing.T) {
 			parent.AdditionalProperties = new(spec.SchemaOrBool)
 			parent.AdditionalProperties.Schema = sch
 
-			rt, err := resolver.ResolveSchema(parent, true)
+			rt, err := resolver.ResolveSchema(parent, true, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsMap)
 				assert.False(t, rt.IsComplexObject)
@@ -249,7 +249,7 @@ func TestTypeResolver_AdditionalProperties(t *testing.T) {
 			parent.AdditionalProperties = new(spec.SchemaOrBool)
 			parent.AdditionalProperties.Schema = new(spec.Schema).CollectionOf(*sch)
 
-			rt, err := resolver.ResolveSchema(parent, true)
+			rt, err := resolver.ResolveSchema(parent, true, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsMap)
 				assert.False(t, rt.IsComplexObject)
@@ -266,7 +266,7 @@ func TestTypeResolver_AdditionalProperties(t *testing.T) {
 			parent.AdditionalProperties = new(spec.SchemaOrBool)
 			parent.AdditionalProperties.Schema = sch
 
-			rt, err := resolver.ResolveSchema(parent, true)
+			rt, err := resolver.ResolveSchema(parent, true, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsMap)
 				assert.False(t, rt.IsComplexObject)
@@ -288,7 +288,7 @@ func TestTypeResolver_AdditionalProperties(t *testing.T) {
 			parent.AdditionalProperties = new(spec.SchemaOrBool)
 			parent.AdditionalProperties.Schema = sch
 
-			rt, err := resolver.ResolveSchema(parent, true)
+			rt, err := resolver.ResolveSchema(parent, true, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsComplexObject)
 				assert.False(t, rt.IsMap)
@@ -308,7 +308,7 @@ func TestTypeResolver_AdditionalProperties(t *testing.T) {
 			parent.AdditionalProperties = new(spec.SchemaOrBool)
 			parent.AdditionalProperties.Schema = new(spec.Schema).CollectionOf(*sch)
 
-			rt, err := resolver.ResolveSchema(parent, true)
+			rt, err := resolver.ResolveSchema(parent, true, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsComplexObject)
 				assert.False(t, rt.IsMap)
@@ -327,7 +327,7 @@ func TestTypeResolver_AdditionalProperties(t *testing.T) {
 			parent.AdditionalProperties = new(spec.SchemaOrBool)
 			parent.AdditionalProperties.Schema = sch
 
-			rt, err := resolver.ResolveSchema(parent, true)
+			rt, err := resolver.ResolveSchema(parent, true, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsComplexObject)
 				assert.False(t, rt.IsMap)
@@ -343,7 +343,7 @@ func TestTypeResolver_Notables(t *testing.T) {
 	doc, resolver, err := specResolver(t, "../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		def := doc.Spec().Definitions["Notables"]
-		rest, err := resolver.ResolveSchema(&def, false)
+		rest, err := resolver.ResolveSchema(&def, false, true)
 		if assert.NoError(t, err) {
 			assert.True(t, rest.IsArray)
 			assert.False(t, rest.IsAnonymous)
@@ -410,7 +410,7 @@ func TestTypeResolver_TupleTypes(t *testing.T) {
 			*spec.RefProperty("#/definitions/Comment"),
 		)
 
-		rt, err := resolver.ResolveSchema(parent, true)
+		rt, err := resolver.ResolveSchema(parent, true, true)
 		if assert.NoError(t, err) {
 			assert.False(t, rt.IsArray)
 			assert.True(t, rt.IsTuple)
@@ -428,7 +428,7 @@ func TestTypeResolver_AnonymousStructs(t *testing.T) {
 		parent.Properties["name"] = *spec.StringProperty()
 		parent.Properties["age"] = *spec.Int32Property()
 
-		rt, err := resolver.ResolveSchema(parent, true)
+		rt, err := resolver.ResolveSchema(parent, true, true)
 		if assert.NoError(t, err) {
 			assert.True(t, rt.IsNullable)
 			assert.True(t, rt.IsAnonymous)
@@ -438,7 +438,7 @@ func TestTypeResolver_AnonymousStructs(t *testing.T) {
 		parent.Extensions = make(spec.Extensions)
 		parent.Extensions["x-isnullable"] = true
 
-		rt, err = resolver.ResolveSchema(parent, true)
+		rt, err = resolver.ResolveSchema(parent, true, true)
 		if assert.NoError(t, err) {
 			assert.True(t, rt.IsNullable)
 			assert.True(t, rt.IsAnonymous)
@@ -449,7 +449,7 @@ func TestTypeResolver_AnonymousStructs(t *testing.T) {
 		parent.Extensions["x-isnullable"] = false
 		parent.Extensions["x-nullable"] = false
 
-		rt, err = resolver.ResolveSchema(parent, true)
+		rt, err = resolver.ResolveSchema(parent, true, true)
 		if assert.NoError(t, err) {
 			assert.True(t, rt.IsNullable)
 			assert.True(t, rt.IsAnonymous)
@@ -469,7 +469,7 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 		for _, tpe := range types {
 			sch := new(spec.Schema)
 			sch.Typed(tpe, "")
-			rt, err := resolver.ResolveSchema(sch, true)
+			rt, err := resolver.ResolveSchema(sch, true, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsMap)
 				assert.False(t, rt.IsComplexObject)
@@ -480,7 +480,7 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 			sch.Properties = make(map[string]spec.Schema)
 			var ss spec.Schema
 			sch.Properties["tags"] = *(&ss).CollectionOf(*spec.StringProperty())
-			rt, err = resolver.ResolveSchema(sch, false)
+			rt, err = resolver.ResolveSchema(sch, false, true)
 			assert.True(t, rt.IsComplexObject)
 			assert.False(t, rt.IsMap)
 			assert.Equal(t, "models.TheModel", rt.GoType)
@@ -490,7 +490,7 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 			nsch := new(spec.Schema)
 			nsch.Typed(tpe, "")
 			nsch.AllOf = []spec.Schema{*sch}
-			rt, err = resolver.ResolveSchema(nsch, false)
+			rt, err = resolver.ResolveSchema(nsch, false, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsComplexObject)
 				assert.False(t, rt.IsMap)
@@ -499,7 +499,7 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 			}
 		}
 		sch := new(spec.Schema)
-		rt, err := resolver.ResolveSchema(sch, true)
+		rt, err := resolver.ResolveSchema(sch, true, true)
 		if assert.NoError(t, err) {
 			assert.True(t, rt.IsMap)
 			assert.False(t, rt.IsComplexObject)
@@ -511,7 +511,7 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 		var sp spec.Schema
 		sp.Typed("object", "")
 		sch.AllOf = []spec.Schema{sp}
-		rt, err = resolver.ResolveSchema(sch, true)
+		rt, err = resolver.ResolveSchema(sch, true, true)
 		if assert.NoError(t, err) {
 			assert.True(t, rt.IsComplexObject)
 			assert.False(t, rt.IsMap)

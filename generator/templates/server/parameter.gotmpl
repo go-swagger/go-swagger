@@ -188,7 +188,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
 
 {{ $className := (pascalize .Name) }}
 {{ range .Params }}
-{{ if not .IsBodyParam }}
+{{ if not (or .IsBodyParam .IsFileParam) }}
 {{ if or .IsPrimitive .IsCustomFormatter }}
 func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .Name }}(rawData []string, hasKey bool, formats strfmt.Registry) error {
   {{ if and (not .IsPathParam) .Required }}if !hasKey {

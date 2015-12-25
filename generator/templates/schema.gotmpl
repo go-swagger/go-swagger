@@ -63,7 +63,7 @@ func Unmarshal{{ pascalize .Name }}(reader io.Reader, consumer httpkit.Consumer)
 }
 func ({{$.ReceiverName}} *{{ pascalize $.Name}}) Set{{ pascalize .Name}}(val {{ template "schemaType" . }}) *{{ pascalize $.Name}}{
   {{ if ne $.DiscriminatorField .Name }}{{ $.ReceiverName }}.{{camelize .Name}}Field = val{{end}}
-  return {{ pascalize $.ReceiverName}}
+  return {{ $.ReceiverName}}
 }
 {{ end }}{{ end }}{{ end }}
 {{ if .HasAdditionalProperties }}/* {{ template "docstring" .AdditionalProperties }}{{ template "propertyValidationDocString" .AdditionalProperties}} */

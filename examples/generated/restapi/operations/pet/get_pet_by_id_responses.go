@@ -26,6 +26,12 @@ func NewGetPetByIDOK() GetPetByIDOK {
 	return GetPetByIDOK{}
 }
 
+// WithPayload adds the payload to the get pet by id o k response
+func (o *GetPetByIDOK) WithPayload(payload *models.Pet) *GetPetByIDOK {
+	o.Payload = payload
+	return o
+}
+
 // WriteResponse to the client
 func (o *GetPetByIDOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 

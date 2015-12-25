@@ -173,6 +173,7 @@ definitions:
     type: object
     additionalProperties:
       type: object
+      required: ["comment"]
       properties:
         comment:
           type: string
@@ -182,6 +183,7 @@ definitions:
 
   NotaWithName:
     type: object
+    required: ["name"]
     properties:
       name:
         type: string
@@ -206,6 +208,7 @@ definitions:
         type: object
         additionalProperties:
           type: object
+          required: ["comment"]
           properties:
             comment:
               type: string
@@ -314,6 +317,7 @@ definitions:
     properties:
       data:
         type: object
+        required: ["name"]
         properties:
           name:
             type: string

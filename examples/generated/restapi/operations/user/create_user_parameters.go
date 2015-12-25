@@ -24,6 +24,7 @@ func NewCreateUserParams() CreateUserParams {
 // swagger:parameters createUser
 type CreateUserParams struct {
 	/*Created user object
+	  Required: true
 	  In: body
 	*/
 	Body *models.User

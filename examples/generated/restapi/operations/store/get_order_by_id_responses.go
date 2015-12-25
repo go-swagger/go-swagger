@@ -26,6 +26,12 @@ func NewGetOrderByIDOK() GetOrderByIDOK {
 	return GetOrderByIDOK{}
 }
 
+// WithPayload adds the payload to the get order by id o k response
+func (o *GetOrderByIDOK) WithPayload(payload *models.Order) *GetOrderByIDOK {
+	o.Payload = payload
+	return o
+}
+
 // WriteResponse to the client
 func (o *GetOrderByIDOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 

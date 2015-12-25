@@ -270,6 +270,7 @@ type schemaGenContext struct {
 	Named              bool
 	RefHandled         bool
 	IsVirtual          bool
+	IsTuple            bool
 
 	Index int
 
@@ -282,6 +283,7 @@ type schemaGenContext struct {
 }
 
 func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContext {
+	//log.Printf("new slice branch %s", sg.Name)
 	pg := sg.shallowClone()
 	indexVar := pg.IndexVar
 	if pg.Path == "" {
@@ -304,6 +306,8 @@ func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContex
 }
 
 func (sg *schemaGenContext) NewAdditionalItems(schema *spec.Schema) *schemaGenContext {
+	//_, file, pos, _ := runtime.Caller(1)
+	//log.Printf("[%s:%d] New additional items\n", filepath.Base(file), pos)
 	pg := sg.shallowClone()
 	indexVar := pg.IndexVar
 	pg.Name = sg.Name + " items"
@@ -331,6 +335,9 @@ func (sg *schemaGenContext) NewAdditionalItems(schema *spec.Schema) *schemaGenCo
 }
 
 func (sg *schemaGenContext) NewTupleElement(schema *spec.Schema, index int) *schemaGenContext {
+	//_, file, pos, _ := runtime.Caller(1)
+	//log.Printf("[%s:%d] New Tuple element\n", filepath.Base(file), pos)
+
 	pg := sg.shallowClone()
 	if pg.Path == "" {
 		pg.Path = "\"" + strconv.Itoa(index) + "\""
@@ -339,11 +346,13 @@ func (sg *schemaGenContext) NewTupleElement(schema *spec.Schema, index int) *sch
 	}
 	pg.ValueExpr = pg.ValueExpr + ".P" + strconv.Itoa(index)
 	pg.Required = true
+	pg.IsTuple = true
 	pg.Schema = *schema
 	return pg
 }
 
 func (sg *schemaGenContext) NewStructBranch(name string, schema spec.Schema) *schemaGenContext {
+	//log.Printf("new struct branch %s", sg.Name)
 	pg := sg.shallowClone()
 	if sg.Path == "" {
 		pg.Path = fmt.Sprintf("%q", name)
@@ -369,10 +378,12 @@ func (sg *schemaGenContext) shallowClone() *schemaGenContext {
 	pg.Dependencies = nil
 	pg.Named = false
 	pg.Index = 0
+	pg.IsTuple = false
 	return pg
 }
 
 func (sg *schemaGenContext) NewCompositionBranch(schema spec.Schema, index int) *schemaGenContext {
+	//log.Printf("new composition branch %s", sg.Name)
 	pg := sg.shallowClone()
 	pg.Schema = schema
 	pg.Name = "AO" + strconv.Itoa(index)
@@ -384,6 +395,7 @@ func (sg *schemaGenContext) NewCompositionBranch(schema spec.Schema, index int) 
 }
 
 func (sg *schemaGenContext) NewAdditionalProperty(schema spec.Schema) *schemaGenContext {
+	//log.Printf("new additional property %s", sg.Name)
 	pg := sg.shallowClone()
 	pg.Schema = schema
 	if pg.KeyVar == "" {
@@ -470,9 +482,17 @@ func (sg *schemaGenContext) MergeResult(other *schemaGenContext, liftsRequired b
 }
 
 func (sg *schemaGenContext) buildProperties() error {
+
 	for k, v := range sg.Schema.Properties {
+		//_, file, pos, _ := runtime.Caller(1)
+		//bbb, _ := json.MarshalIndent(sg.Schema, "", "  ")
+		//log.Printf("[%s:%d] building property %s[%q] (tup: %t) %s\n", filepath.Base(file), pos, sg.Name, k, sg.IsTuple, bbb)
+
 		// check if this requires de-anonymizing, if so lift this as a new struct and extra schema
-		tpe, err := sg.TypeResolver.ResolveSchema(&v, true)
+		tpe, err := sg.TypeResolver.ResolveSchema(&v, true, sg.IsTuple || containsString(sg.Schema.Required, k))
+		if sg.Schema.Discriminator == k {
+			tpe.IsNullable = false
+		}
 		if err != nil {
 			return err
 		}
@@ -482,6 +502,7 @@ func (sg *schemaGenContext) buildProperties() error {
 		var needsValidations bool
 		if tpe.IsComplexObject && tpe.IsAnonymous && len(v.Properties) > 0 {
 			pg := sg.makeNewStruct(sg.Name+swag.ToGoName(k), v)
+			pg.IsTuple = sg.IsTuple
 			if sg.Path != "" {
 				pg.Path = sg.Path + "+ \".\"+" + fmt.Sprintf("%q", k)
 			} else {
@@ -504,6 +525,7 @@ func (sg *schemaGenContext) buildProperties() error {
 		}
 
 		emprop := sg.NewStructBranch(k, vv)
+		emprop.IsTuple = sg.IsTuple
 		if err := emprop.makeGenSchema(); err != nil {
 			return err
 		}
@@ -524,6 +546,9 @@ func (sg *schemaGenContext) buildProperties() error {
 					emprop.GenSchema.IsSubType = true
 				}
 			}
+		}
+		if sg.Schema.Discriminator == k {
+			emprop.GenSchema.IsNullable = false
 		}
 		if emprop.GenSchema.IsBaseType {
 			sg.GenSchema.HasBaseType = true
@@ -565,7 +590,7 @@ func newMapStack(context *schemaGenContext) (first, last *mapStack, err error) {
 
 	l := ms
 	for l.HasMore() {
-		tpe, err := l.Context.TypeResolver.ResolveSchema(l.Type.AdditionalProperties.Schema, true)
+		tpe, err := l.Context.TypeResolver.ResolveSchema(l.Type.AdditionalProperties.Schema, true, true)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -593,6 +618,7 @@ func newMapStack(context *schemaGenContext) (first, last *mapStack, err error) {
 func (mt *mapStack) Build() error {
 	if mt.NewObj == nil && mt.ValueRef == nil && mt.Next == nil && mt.Previous == nil {
 		cp := mt.Context.NewAdditionalProperty(*mt.Type.AdditionalProperties.Schema)
+		cp.Required = true
 		if err := cp.makeGenSchema(); err != nil {
 			return err
 		}
@@ -691,6 +717,7 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 	if !sg.GenSchema.IsMap && (sg.GenSchema.IsAdditionalProperties && sg.Named) {
 		sg.GenSchema.ValueExpression += "." + sg.GenSchema.Name
 		comprop := sg.NewAdditionalProperty(*addp.Schema)
+		comprop.Required = true
 		if err := comprop.makeGenSchema(); err != nil {
 			return err
 		}
@@ -704,7 +731,6 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 		// descend, unwind and rewrite
 		// This needs to be depth first, so it first goes as deep as it can and then
 		// builds the result in reverse order.
-
 		_, ls, err := newMapStack(sg)
 		if err != nil {
 			return err
@@ -772,7 +798,7 @@ func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *sche
 }
 
 func (sg *schemaGenContext) buildArray() error {
-	tpe, err := sg.TypeResolver.ResolveSchema(sg.Schema.Items.Schema, true)
+	tpe, err := sg.TypeResolver.ResolveSchema(sg.Schema.Items.Schema, true, true)
 	if err != nil {
 		return err
 	}
@@ -792,6 +818,7 @@ func (sg *schemaGenContext) buildArray() error {
 		return nil
 	}
 	elProp := sg.NewSliceBranch(sg.Schema.Items.Schema)
+	elProp.Required = true
 	if err := elProp.makeGenSchema(); err != nil {
 		return err
 	}
@@ -800,7 +827,7 @@ func (sg *schemaGenContext) buildArray() error {
 	sg.GenSchema.ItemsEnum = elProp.GenSchema.Enum
 	elProp.GenSchema.Suffix = "Items"
 	sg.GenSchema.GoType = "[]" + elProp.GenSchema.GoType
-	if elProp.GenSchema.IsNullable && !elProp.GenSchema.HasDiscriminator {
+	if elProp.GenSchema.IsNullable && !elProp.GenSchema.HasDiscriminator && !elProp.GenSchema.IsPrimitive {
 		sg.GenSchema.GoType = "[]*" + elProp.GenSchema.GoType
 	}
 	sg.GenSchema.Items = &elProp.GenSchema
@@ -849,6 +876,7 @@ func (sg *schemaGenContext) buildItems() error {
 	}
 	sch.AdditionalItems = sg.Schema.AdditionalItems
 	tup := sg.makeNewStruct(sg.GenSchema.Name+"Tuple"+strconv.Itoa(sg.Index), sch)
+	tup.IsTuple = true
 	if err := tup.makeGenSchema(); err != nil {
 		return err
 	}
@@ -874,7 +902,7 @@ func (sg *schemaGenContext) buildAdditionalItems() error {
 	sg.GenSchema.HasAdditionalItems = wantsAdditionalItems
 	if wantsAdditionalItems {
 		// check if the element is a complex object, if so generate a new type for it
-		tpe, err := sg.TypeResolver.ResolveSchema(sg.Schema.AdditionalItems.Schema, true)
+		tpe, err := sg.TypeResolver.ResolveSchema(sg.Schema.AdditionalItems.Schema, true, true)
 		if err != nil {
 			return err
 		}
@@ -932,7 +960,7 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 	tpe.IsComplexObject = true
 	tpe.IsMap = false
 	tpe.IsAnonymous = false
-	tpe.IsNullable = sg.TypeResolver.isNullable(&sg.Schema)
+	tpe.IsNullable = sg.TypeResolver.IsNullable(&sg.Schema)
 
 	item := sg.NewCompositionBranch(sg.Schema, 0)
 	if err := item.makeGenSchema(); err != nil {
@@ -959,11 +987,11 @@ func (sg *schemaGenContext) liftSpecialAllOf() error {
 
 	for _, sch := range sg.Schema.AllOf {
 
-		tpe, err := sg.TypeResolver.ResolveSchema(&sch, true)
+		tpe, err := sg.TypeResolver.ResolveSchema(&sch, true, true)
 		if err != nil {
 			return err
 		}
-		if sg.TypeResolver.isNullable(&sch) {
+		if sg.TypeResolver.IsNullable(&sch) {
 			seenNullable = true
 		}
 		if len(sch.Type) > 0 || len(sch.Properties) > 0 || sch.Ref.GetURL() != nil {
@@ -982,6 +1010,9 @@ func (sg *schemaGenContext) liftSpecialAllOf() error {
 }
 
 func (sg *schemaGenContext) makeGenSchema() error {
+	//_, file, pos, _ := runtime.Caller(1)
+	//log.Printf("[%s:%d] making gen schema (anon: %t, req: %t, tuple: %t) %s\n", filepath.Base(file), pos, !sg.Named, sg.GenSchema.Required, sg.IsTuple [>bbb<], sg.Name)
+
 	ex := ""
 	if sg.Schema.Example != nil {
 		ex = fmt.Sprintf("%#v", sg.Schema.Example)
@@ -1019,9 +1050,9 @@ func (sg *schemaGenContext) makeGenSchema() error {
 
 	var tpe resolvedType
 	if sg.Untyped {
-		tpe, err = sg.TypeResolver.ResolveSchema(nil, !sg.Named)
+		tpe, err = sg.TypeResolver.ResolveSchema(nil, !sg.Named, sg.IsTuple || sg.Required || sg.GenSchema.Required)
 	} else {
-		tpe, err = sg.TypeResolver.ResolveSchema(&sg.Schema, !sg.Named)
+		tpe, err = sg.TypeResolver.ResolveSchema(&sg.Schema, !sg.Named, sg.IsTuple || sg.Required || sg.GenSchema.Required)
 	}
 	if err != nil {
 		return err
@@ -1035,9 +1066,9 @@ func (sg *schemaGenContext) makeGenSchema() error {
 
 	prev := sg.GenSchema
 	if sg.Untyped {
-		tpe, err = sg.TypeResolver.ResolveSchema(nil, !sg.Named)
+		tpe, err = sg.TypeResolver.ResolveSchema(nil, !sg.Named, sg.Named || sg.IsTuple || sg.Required || sg.GenSchema.Required)
 	} else {
-		tpe, err = sg.TypeResolver.ResolveSchema(&sg.Schema, !sg.Named)
+		tpe, err = sg.TypeResolver.ResolveSchema(&sg.Schema, !sg.Named, sg.Named || sg.IsTuple || sg.Required || sg.GenSchema.Required)
 	}
 	if err != nil {
 		return err
@@ -1065,6 +1096,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		return err
 	}
 
+	//log.Printf("finished gen schema for %q\n", sg.Name)
 	return nil
 }
 

@@ -9,6 +9,7 @@ import (
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
+	"github.com/go-swagger/go-swagger/httpkit/validate"
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 
@@ -24,10 +25,12 @@ func NewLoginUserParams() LoginUserParams {
 // swagger:parameters loginUser
 type LoginUserParams struct {
 	/*The password for login in clear text
+	  Required: true
 	  In: query
 	*/
 	Password string
 	/*The user name for login
+	  Required: true
 	  In: query
 	*/
 	Username string
@@ -56,12 +59,15 @@ func (o *LoginUserParams) BindRequest(r *http.Request, route *middleware.Matched
 }
 
 func (o *LoginUserParams) bindPassword(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("password", "query")
+	}
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
-	if raw == "" { // empty values pass all other validations
-		return nil
+	if err := validate.RequiredString("password", "query", raw); err != nil {
+		return err
 	}
 
 	o.Password = raw
@@ -70,12 +76,15 @@ func (o *LoginUserParams) bindPassword(rawData []string, hasKey bool, formats st
 }
 
 func (o *LoginUserParams) bindUsername(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("username", "query")
+	}
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
-	if raw == "" { // empty values pass all other validations
-		return nil
+	if err := validate.RequiredString("username", "query", raw); err != nil {
+		return err
 	}
 
 	o.Username = raw

@@ -26,6 +26,12 @@ func NewFindPetsByStatusOK() FindPetsByStatusOK {
 	return FindPetsByStatusOK{}
 }
 
+// WithPayload adds the payload to the find pets by status o k response
+func (o *FindPetsByStatusOK) WithPayload(payload []*models.Pet) *FindPetsByStatusOK {
+	o.Payload = payload
+	return o
+}
+
 // WriteResponse to the client
 func (o *FindPetsByStatusOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 

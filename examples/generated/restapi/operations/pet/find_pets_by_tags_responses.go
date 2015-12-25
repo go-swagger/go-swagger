@@ -26,6 +26,12 @@ func NewFindPetsByTagsOK() FindPetsByTagsOK {
 	return FindPetsByTagsOK{}
 }
 
+// WithPayload adds the payload to the find pets by tags o k response
+func (o *FindPetsByTagsOK) WithPayload(payload []*models.Pet) *FindPetsByTagsOK {
+	o.Payload = payload
+	return o
+}
+
 // WriteResponse to the client
 func (o *FindPetsByTagsOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 

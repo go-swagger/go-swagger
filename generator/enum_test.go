@@ -16,6 +16,7 @@ package generator
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	"github.com/go-swagger/go-swagger/spec"
@@ -213,6 +214,8 @@ func TestEnum_MapThing(t *testing.T) {
 					assertInCode(t, "var mapThingValueEnum []interface{}", res)
 					assertInCode(t, k+") validateMapThingValueEnum(path, location string, value string)", res)
 					assertInCode(t, "m.validateMapThingValueEnum(k, \"body\", m[k])", res)
+				} else {
+					fmt.Println(buf.String())
 				}
 			}
 		}

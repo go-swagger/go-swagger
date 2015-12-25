@@ -17,6 +17,7 @@ package generator
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"regexp"
 	"testing"
 
@@ -24,6 +25,10 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 	"github.com/stretchr/testify/assert"
 )
+
+func init() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+}
 
 func reqm(str string) *regexp.Regexp {
 	return regexp.MustCompile(regexp.QuoteMeta(str))
@@ -1014,6 +1019,59 @@ func TestSchemaValidation_RefedAllOf(t *testing.T) {
 				}
 			}
 			//}
+		}
+	}
+}
+
+func TestSchemaValidation_SimpleZeroAllowed(t *testing.T) {
+
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "SimpleZeroAllowed"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, gm)
+			if assert.NoError(t, err) {
+				formatted, err := formatGoFile("simple_zero_allowed.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(formatted)
+					assertInCode(t, k+") Validate(formats", res)
+					assertInCode(t, "swag.IsZero(m.ID)", res)
+					assertInCode(t, "validate.Required(\"name\", \"body\", string(m.Name))", res)
+					assertInCode(t, "validate.Required(\"urls\", \"body\", m.Urls)", res)
+					assertInCode(t, "errors.CompositeValidationError(res...)", res)
+				}
+			}
+		}
+	}
+}
+
+func TestSchemaValidation_Pet(t *testing.T) {
+
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "Pet"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, gm)
+			if assert.NoError(t, err) {
+				formatted, err := formatGoFile("pet.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(formatted)
+					assertInCode(t, k+") Validate(formats", res)
+					assertInCode(t, "swag.IsZero(m.Status)", res)
+					assertInCode(t, "swag.IsZero(m.Tags)", res)
+					assertInCode(t, "validate.Required(\"name\", \"body\", string(m.Name))", res)
+					assertInCode(t, "validate.Required(\"photoUrls\", \"body\", m.PhotoUrls)", res)
+					assertInCode(t, "errors.CompositeValidationError(res...)", res)
+				}
+			}
 		}
 	}
 }

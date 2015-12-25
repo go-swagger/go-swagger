@@ -26,6 +26,12 @@ func NewPlaceOrderOK() PlaceOrderOK {
 	return PlaceOrderOK{}
 }
 
+// WithPayload adds the payload to the place order o k response
+func (o *PlaceOrderOK) WithPayload(payload *models.Order) *PlaceOrderOK {
+	o.Payload = payload
+	return o
+}
+
 // WriteResponse to the client
 func (o *PlaceOrderOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 

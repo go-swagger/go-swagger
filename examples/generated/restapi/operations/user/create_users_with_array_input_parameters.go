@@ -24,6 +24,7 @@ func NewCreateUsersWithArrayInputParams() CreateUsersWithArrayInputParams {
 // swagger:parameters createUsersWithArrayInput
 type CreateUsersWithArrayInputParams struct {
 	/*List of user object
+	  Required: true
 	  In: body
 	*/
 	Body []*models.User

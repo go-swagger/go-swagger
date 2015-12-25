@@ -24,6 +24,7 @@ func NewPlaceOrderParams() PlaceOrderParams {
 // swagger:parameters placeOrder
 type PlaceOrderParams struct {
 	/*order placed for purchasing the pet
+	  Required: true
 	  In: body
 	*/
 	Body *models.Order

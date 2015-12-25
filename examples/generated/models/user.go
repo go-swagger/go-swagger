@@ -13,11 +13,11 @@ type User struct {
 
 	/* Email email
 	 */
-	Email string `json:"email,omitempty"`
+	Email *string `json:"email,omitempty"`
 
 	/* FirstName first name
 	 */
-	FirstName string `json:"firstName,omitempty"`
+	FirstName *string `json:"firstName,omitempty"`
 
 	/* ID id
 	 */
@@ -25,15 +25,15 @@ type User struct {
 
 	/* LastName last name
 	 */
-	LastName string `json:"lastName,omitempty"`
+	LastName *string `json:"lastName,omitempty"`
 
 	/* Password password
 	 */
-	Password string `json:"password,omitempty"`
+	Password *string `json:"password,omitempty"`
 
 	/* Phone phone
 	 */
-	Phone string `json:"phone,omitempty"`
+	Phone *string `json:"phone,omitempty"`
 
 	/* User Status
 	 */
@@ -41,7 +41,7 @@ type User struct {
 
 	/* Username username
 	 */
-	Username string `json:"username,omitempty"`
+	Username *string `json:"username,omitempty"`
 }
 
 // Validate validates this user

@@ -338,8 +338,8 @@ func TestGenerateModel_RunParameters(t *testing.T) {
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assertInCode(t, "type "+k+" struct {", res)
-				assertInCode(t, "BranchName string `json:\"branch_name,omitempty\"`", res)
-				assertInCode(t, "CommitSha string `json:\"commit_sha,omitempty\"`", res)
+				assertInCode(t, "BranchName *string `json:\"branch_name,omitempty\"`", res)
+				assertInCode(t, "CommitSha *string `json:\"commit_sha,omitempty\"`", res)
 				assertInCode(t, "Refs interface{} `json:\"refs,omitempty\"`", res)
 			}
 		}
@@ -1318,12 +1318,12 @@ func TestGenerateModel_WithAllOf(t *testing.T) {
 					assertInCode(t, "Notable", res)
 					assertInCode(t, "Title string `json:\"title,omitempty\"`", res)
 					assertInCode(t, "Body string `json:\"body,omitempty\"`", res)
-					assertInCode(t, "Name string `json:\"name,omitempty\"`", res)
+					assertInCode(t, "Name *string `json:\"name,omitempty\"`", res)
 					assertInCode(t, "P0 float32 `json:\"-\"`", res)
 					assertInCode(t, "P0 float64 `json:\"-\"`", res)
 					assertInCode(t, "P1 strfmt.DateTime `json:\"-\"`", res)
 					assertInCode(t, "P1 strfmt.Date `json:\"-\"`", res)
-					assertInCode(t, "Opinion string `json:\"opinion,omitempty\"`", res)
+					assertInCode(t, "Opinion *string `json:\"opinion,omitempty\"`", res)
 					assertInCode(t, "WithAllOfAO5Tuple5Items []strfmt.Password `json:\"-\"`", res)
 					assertInCode(t, "AO1 map[string]int32 `json:\"-\"`", res)
 					assertInCode(t, "WithAllOfAO2P2 map[string]int64 `json:\"-\"`", res)
@@ -1359,7 +1359,7 @@ func TestNumericKeys(t *testing.T) {
 				ct, err := formatGoFile("all_of_schema.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
-					assertInCode(t, "Nr16x16 string `json:\"16x16,omitempty\"`", res)
+					assertInCode(t, "Nr16x16 *string `json:\"16x16,omitempty\"`", res)
 				}
 			}
 		}

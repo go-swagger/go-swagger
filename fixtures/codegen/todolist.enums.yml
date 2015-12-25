@@ -84,6 +84,8 @@ definitions:
 
   ObjectThing:
     type: object
+    required:
+      - name
     properties:
       name:
         type: string
@@ -148,6 +150,7 @@ definitions:
     allOf:
       - $ref: "#/definitions/StringThing"
       - type: object
+        required: [ "name" ]
         properties:
           name:
             type: string
@@ -180,6 +183,7 @@ definitions:
           - write
           - admin
         type: string
+        minLength: 1
         description: Role that should be applied to the delegate
       delegate:
         required:
@@ -201,6 +205,9 @@ definitions:
   ComputeInstance:
     type: object
     description: Description of the compute instance
+    required:
+      - id
+      - region
     properties:
       id:
         type: string

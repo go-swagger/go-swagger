@@ -25,6 +25,7 @@ func NewUpdateUserParams() UpdateUserParams {
 // swagger:parameters updateUser
 type UpdateUserParams struct {
 	/*Updated user object
+	  Required: true
 	  In: body
 	*/
 	Body *models.User

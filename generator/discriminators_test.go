@@ -35,7 +35,6 @@ func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
 				b, err := formatGoFile("has_discriminator.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(b)
-					fmt.Println(res)
 					assertInCode(t, "type Kennel struct {", res)
 					assertInCode(t, "ID int64 `json:\"id,omitempty\"`", res)
 					assertInCode(t, "Pets []Pet `json:\"pets,omitempty\"`", res)

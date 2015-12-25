@@ -236,7 +236,12 @@ type typeResolver struct {
 	Inverted      bool
 }
 
-func (t *typeResolver) resolveSchemaRef(schema *spec.Schema) (returns bool, result resolvedType, err error) {
+func (t *typeResolver) IsNullable(schema *spec.Schema) bool {
+	nullable := t.isNullable(schema)
+	return nullable
+}
+
+func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (returns bool, result resolvedType, err error) {
 	if schema.Ref.String() != "" {
 		returns = true
 		ref, er := spec.ResolveRef(t.Doc.Spec(), &schema.Ref)
@@ -253,7 +258,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema) (returns bool, resu
 			tn = swag.ToGoName(nm)
 		}
 
-		res, er := t.ResolveSchema(ref, false)
+		res, er := t.ResolveSchema(ref, false, isRequired)
 		if er != nil {
 			err = er
 			return
@@ -262,7 +267,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema) (returns bool, resu
 
 		result.GoType = t.goTypeName(nm)
 		result.HasDiscriminator = ref.Discriminator != ""
-		result.IsNullable = t.isNullable(ref)
+		result.IsNullable = t.IsNullable(ref)
 		return
 
 	}
@@ -281,7 +286,7 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema) (returns bool, result 
 			result.SwaggerFormat = schema.Format
 			result.GoType = tpe
 			result.IsPrimitive = true
-			result.IsNullable = t.isNullable(schema)
+			result.IsNullable = t.IsNullable(schema)
 			_, result.IsCustomFormatter = customFormatters[tpe]
 			return
 		}
@@ -306,7 +311,7 @@ func (t *typeResolver) firstType(schema *spec.Schema) string {
 	return schema.Type[0]
 }
 
-func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous bool) (result resolvedType, err error) {
+func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired bool) (result resolvedType, err error) {
 	result.IsArray = true
 	result.IsNullable = false
 	if schema.AdditionalItems != nil {
@@ -323,7 +328,7 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous bool) (resu
 		result.SwaggerType = "array"
 		return
 	}
-	rt, er := t.ResolveSchema(schema.Items.Schema, true)
+	rt, er := t.ResolveSchema(schema.Items.Schema, true, isRequired)
 	if er != nil {
 		err = er
 		return
@@ -358,7 +363,7 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 		result.IsComplexObject = true
 		var isNullable bool
 		for _, p := range schema.AllOf {
-			if t.isNullable(&p) {
+			if t.IsNullable(&p) {
 				isNullable = true
 			}
 		}
@@ -371,14 +376,14 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 	// resolved type, this should also flag the object as anonymous,
 	// when a ref is found, the anonymous flag will be reset
 	if len(schema.Properties) > 0 {
-		result.IsNullable = t.isNullable(schema)
+		result.IsNullable = t.IsNullable(schema)
 		result.IsComplexObject = true
 		// no return here, still need to check for additional properties
 	}
 
 	// account for additional properties
 	if schema.AdditionalProperties != nil && schema.AdditionalProperties.Schema != nil {
-		et, er := t.ResolveSchema(schema.AdditionalProperties.Schema, true)
+		et, er := t.ResolveSchema(schema.AdditionalProperties.Schema, true, false)
 		if er != nil {
 			err = er
 			return
@@ -402,11 +407,19 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 	return
 }
 
-func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous bool) (result resolvedType, err error) {
+type resolverOpts struct {
+	Schema               *spec.Schema
+	IsAnonymous          bool
+	IsRequired           bool
+	IsDiscriminatorField bool
+}
+
+func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequired bool) (result resolvedType, err error) {
 	//bbb, _ := json.MarshalIndent(schema, "", "  ")
-	//fmt.Println("resolving schema", string(bbb))
+	//_, file, pos, _ := runtime.Caller(1)
+	//log.Printf("%s:%d: resolving schema (anon: %t, req: %t) %s\n", filepath.Base(file), pos, isAnonymous, isRequired, "") //, bbb)
 	//tt, _ := json.MarshalIndent(t, "", "  ")
-	//fmt.Println("resolver", string(tt))
+	// fmt.Println("resolver", string(tt))
 	if schema == nil {
 		result.IsInterface = true
 		result.GoType = "interface{}"
@@ -414,11 +427,12 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous bool) (res
 	}
 
 	var returns bool
-	returns, result, err = t.resolveSchemaRef(schema)
+	returns, result, err = t.resolveSchemaRef(schema, isRequired)
 	if returns {
 		if !isAnonymous {
 			result.IsMap = false
 			result.IsComplexObject = true
+			result.IsNullable = true
 		}
 		return
 	}
@@ -428,11 +442,11 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous bool) (res
 		return
 	}
 
-	result.IsNullable = t.isNullable(schema)
+	result.IsNullable = !isRequired || t.isNullable(schema)
 	tpe := t.firstType(schema)
 	switch tpe {
 	case "array":
-		return t.resolveArray(schema, isAnonymous)
+		return t.resolveArray(schema, isAnonymous, result.IsNullable)
 
 	case "file", "number", "integer", "boolean":
 		result.GoType = typeMapping[tpe]
@@ -440,6 +454,13 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous bool) (res
 		if tpe != "file" {
 			result.IsPrimitive = true
 			result.IsCustomFormatter = false
+			//bothNil := schema.Minimum == nil && schema.Maximum == nil
+			isMin := schema.Minimum != nil && *schema.Minimum > 0
+			isMax := schema.Minimum == nil && (schema.Maximum != nil && *schema.Maximum < 0) // || *schema.Minimum < 0) &&
+			isMinMax := (schema.Minimum != nil && schema.Maximum != nil && *schema.Minimum < 0 && *schema.Minimum < *schema.Maximum)
+			if tpe != "boolean" && (isMin || isMax || isMinMax) {
+				result.IsNullable = false
+			}
 		}
 		return
 
@@ -447,6 +468,10 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous bool) (res
 		result.GoType = "string"
 		result.SwaggerType = "string"
 		result.IsPrimitive = true
+		//log.Printf("this string is nullable beause (null: %t, req: %t)\n", result.IsNullable, isRequired)
+		if schema.MinLength != nil && *schema.MinLength > 0 {
+			result.IsNullable = false
+		}
 		return
 
 	case "object":

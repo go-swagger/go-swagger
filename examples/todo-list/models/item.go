@@ -17,7 +17,7 @@ type Item struct {
 
 	/* Completed completed
 	 */
-	Completed bool `json:"completed,omitempty"`
+	Completed *bool `json:"completed,omitempty"`
 
 	/* Description description
 

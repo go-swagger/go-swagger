@@ -1,9 +1,9 @@
 {{define "primitivefieldvalidator"}}
 {{if .Required}}
-if err := validate.Required({{ .Path }}, {{ printf "%q" .Location }}, {{ if not .IsAnonymous }}{{ .GoType }}({{end}}{{.ValueExpression}}{{ if not .IsAnonymous }}){{end}}); err != nil {
+if err := validate.Required({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if not .IsAnonymous }}{{ .GoType }}({{end}}{{.ValueExpression}}{{ if not .IsAnonymous }}){{end}}); err != nil {
   return err
 }
-{{end}}
+{{ end }}
 {{if .MinLength}}
 if err := validate.MinLength({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, string({{.ValueExpression}}), {{.MinLength}}); err != nil {
   return err
@@ -41,6 +41,11 @@ if err := {{.ReceiverName}}.validate{{ pascalize .Name }}{{ pascalize .Suffix }}
 {{end}}
 {{end}}
 {{define "slicevalidator"}}
+{{ if .Required }}
+if err := validate.Required({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
+  return err
+}
+{{ end }}
 {{if or .MinItems .MaxItems }}
 {{ .IndexVar }}{{ pascalize .Name }}Size := int64(len({{.ValueExpression}}))
 {{end}}
@@ -66,24 +71,37 @@ if err := {{.ReceiverName}}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{ .
 {{end}}{{ if .Items }}{{ if or .Items.Required .Items.HasValidations .Items.IsBaseType }}
 for {{.IndexVar}} := 0; {{.IndexVar}} < len({{.ValueExpression}}); {{.IndexVar}}++ {
 {{with .Items}}
+  {{ if not .Required }}
+  if swag.IsZero({{ .ValueExpression }}) { // not required
+    continue
+  }
+  {{end}}
   {{template "propertyvalidator" .}}
 {{end}}
 }{{end}}{{end}}
 {{end}}
 {{ define "mapvalidator" }}
-{{ if .Enum }}
-if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
+{{ if .HasAdditionalProperties }}{{ if .AdditionalProperties.Required }}
+if err := validate.Required({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if not .IsAnonymous }}{{ .GoType }}({{end}}{{.ValueExpression}}{{ if not .IsAnonymous }}){{end}}); err != nil {
   return err
 }
-{{ end }}{{ if .HasAdditionalProperties }}
-{{ if  .AdditionalProperties.NeedsValidation }}
+{{ else }}
+if swag.IsZero({{ .ValueExpression }}) { // not required
+  return nil
+}
+{{ end }}{{ if  .AdditionalProperties.NeedsValidation }}
 for {{.AdditionalProperties.KeyVar}} := range {{ .ValueExpression }} {
   {{ with .AdditionalProperties }}
+  {{ if not .Required }}
+  if swag.IsZero({{ .ValueExpression }}) { // not required
+    continue
+  }
+  {{end}}
   {{ template "propertyvalidator" . }}
   {{ end }}
 }
-{{ end }}{{ if .AdditionalProperties.Required }}
-if err := validate.Required({{ .Path }}, {{ printf "%q" .Location }}, {{ if not .IsAnonymous }}{{ .GoType }}({{end}}{{.ValueExpression}}{{ if not .IsAnonymous }}){{end}}); err != nil {
+{{ end }}{{ if .Enum }}
+if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
   return err
 }
 {{ end }}{{ end }}{{end}}
@@ -103,7 +121,8 @@ if err := {{.ValueExpression}}.Validate(formats); err != nil {
 {{ range .Properties }}
 {{ template "propertyvalidator" . }}
 {{ end }}{{end}}{{if and .IsTuple .AdditionalItems }}
-// validating additional items should go here
+// TODO: validating additional items should go here, if you see this raise an issue
+// at https://github.com/go-swagger/go-swagger/issues
 {{end}}{{end}}
 {{define "propertyvalidator"}}
 {{if .IsPrimitive }}{{ template "primitivefieldvalidator" .}}
@@ -297,6 +316,11 @@ func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{
 
 
 {{if and (ne $.DiscriminatorField .Name) (or .Required .HasValidations) }}func ({{.ReceiverName}} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}(formats strfmt.Registry) error {
+  {{ if not .Required }}
+  if swag.IsZero({{ .ValueExpression }}) { // not required
+    return nil
+  }
+  {{end}}
   {{template "propertyvalidator" .}}
 
   return nil

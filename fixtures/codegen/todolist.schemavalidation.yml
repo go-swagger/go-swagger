@@ -57,7 +57,7 @@ definitions:
     type: string
     minLength: 2
     maxLength: 50
-    Pattern: "[A-Za-z0-9][\\w- ]+"
+    pattern: "[A-Za-z0-9][\\w- ]+"
 
   StringValidations:
     type: "object"
@@ -66,7 +66,7 @@ definitions:
         type: string
         minLength: 2
         maxLength: 50
-        Pattern: "[A-Za-z0-9][\\w- ]+"
+        pattern: "[A-Za-z0-9][\\w- ]+"
 
   NamedNumber:
     type: integer
@@ -159,7 +159,7 @@ definitions:
             type: string
             minLength: 2
             maxLength: 50
-            Pattern: "^\\w+"
+            pattern: "^\\w+"
           second:
             type: number
             format: double
@@ -208,7 +208,7 @@ definitions:
                 type: string
                 minLength: 2
                 maxLength: 50
-                Pattern: "^\\w+"
+                pattern: "^\\w+"
               second:
                 type: number
                 format: double
@@ -469,7 +469,7 @@ definitions:
           type: string
           minLength: 2
           maxLength: 50
-          Pattern: "[A-Za-z0-9][\\w- ]+"
+          pattern: "[A-Za-z0-9][\\w- ]+"
     - type: object
       properties:
         age:
@@ -488,7 +488,7 @@ definitions:
             type: string
             minLength: 2
             maxLength: 50
-            Pattern: "[A-Za-z0-9][\\w- ]+"
+            pattern: "[A-Za-z0-9][\\w- ]+"
     - type: object
       properties:
         assoc:
@@ -507,7 +507,7 @@ definitions:
                 type: string
                 minLength: 2
                 maxLength: 50
-                Pattern: "[A-Za-z0-9][\\w- ]+"
+                pattern: "[A-Za-z0-9][\\w- ]+"
     - type: object
       properties:
         opts:
@@ -544,7 +544,7 @@ definitions:
                 type: string
                 minLength: 2
                 maxLength: 50
-                Pattern: "[A-Za-z0-9][\\w- ]+"
+                pattern: "[A-Za-z0-9][\\w- ]+"
           - type: object
             properties:
               age:
@@ -566,7 +566,7 @@ definitions:
               type: string
               minLength: 2
               maxLength: 50
-              Pattern: "[A-Za-z0-9][\\w- ]+"
+              pattern: "[A-Za-z0-9][\\w- ]+"
         - type: object
           properties:
             age:
@@ -585,7 +585,7 @@ definitions:
                 type: string
                 minLength: 2
                 maxLength: 50
-                Pattern: "[A-Za-z0-9][\\w- ]+"
+                pattern: "[A-Za-z0-9][\\w- ]+"
         - type: object
           properties:
             assoc:
@@ -604,7 +604,7 @@ definitions:
                     type: string
                     minLength: 2
                     maxLength: 50
-                    Pattern: "[A-Za-z0-9][\\w- ]+"
+                    pattern: "[A-Za-z0-9][\\w- ]+"
         - type: object
           properties:
             opts:
@@ -640,7 +640,7 @@ definitions:
                     type: string
                     minLength: 2
                     maxLength: 50
-                    Pattern: "[A-Za-z0-9][\\w- ]+"
+                    pattern: "[A-Za-z0-9][\\w- ]+"
               - type: object
                 properties:
                   age:
@@ -655,3 +655,84 @@ definitions:
     allOf:
       - $ref: "#/definitions/NamedString"
       - $ref: "#/definitions/NamedNumber"
+
+  SimpleZeroAllowed:
+    type: object
+    required: ["name", "urls"]
+    properties:
+      id:
+        type: string
+        minLength: 2
+        maxLength: 50
+        pattern: "[A-Za-z0-9][\\w- ]+"
+      name:
+        type: string
+        minLength: 2
+        maxLength: 50
+        pattern: "[A-Za-z0-9][\\w- ]+"
+      urls:
+        type: array
+        items:
+          type: string
+
+  Pet:
+    type: object
+    required:
+      - name
+      - photoUrls
+    properties:
+      id:
+        type: integer
+        format: int64
+      category:
+        $ref: "#/definitions/Category"
+      name:
+        type: string
+        example: doggie
+      photoUrls:
+        type: array
+        xml:
+          name: "photoUrl"
+          wrapped: true
+        items:
+          type: string
+      tags:
+        type: array
+        xml:
+          name: tag
+          wrapped: true
+        items:
+          $ref: "#/definitions/Tag"
+      status:
+        type: string
+        description: "pet status in the store"
+        enum:
+          - available
+          - pending
+          - sold
+    xml:
+      name: Pet
+
+  Tag:
+    type: object
+    xml:
+      name: Tag
+    properties:
+      id:
+        type: integer
+        format: int64
+      name:
+        type: string
+
+  Category:
+    type: object
+    xml:
+      name: Category
+    properties:
+      id:
+        type: integer
+        format: int64
+      name:
+        type: string
+
+
