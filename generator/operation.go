@@ -482,7 +482,7 @@ func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) Ge
 		Package:      b.APIPackage,
 		ReceiverName: receiver,
 		Name:         name,
-		Path:         name,
+		Path:         fmt.Sprintf("%q", name),
 		Description:  hdr.Description,
 		Default:      hdr.Default,
 		Converter:    stringConverters[tpe.GoType],

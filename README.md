@@ -87,7 +87,7 @@ For a V1 I want to have this feature set completed:
       - [x] each operation cannot have both a body parameter and a formData parameter (Error)
       - [x] each operation must have an unique `operationId` (Error)
       - [x] each reference must point to a valid object (Error)
-      - [ ] each referencable definition must have references (Warning)
+      - [x] each referencable definition must have references (Warning)
       - [x] every default value that is specified must validate against the schema for that property (Error)
       - [x] every example that is specified must validate against the schema for that property (Error)
       - [x] items property is required for all schemas/definitions of type `array` (Error)

@@ -61,9 +61,8 @@ func Unmarshal{{ pascalize .Name }}(reader io.Reader, consumer httpkit.Consumer)
 {{ if .IsBaseType }}func ({{$.ReceiverName}} *{{ pascalize $.Name}}) {{ pascalize .Name}}() {{ template "schemaType" . }}{
   {{ if eq $.DiscriminatorField .Name }}return {{ printf "%q" $.DiscriminatorValue }}{{ else }}return {{ $.ReceiverName }}.{{camelize .Name}}Field{{end}}
 }
-func ({{$.ReceiverName}} *{{ pascalize $.Name}}) Set{{ pascalize .Name}}(val {{ template "schemaType" . }}) *{{ pascalize $.Name}}{
+func ({{$.ReceiverName}} *{{ pascalize $.Name}}) Set{{ pascalize .Name}}(val {{ template "schemaType" . }}) {
   {{ if ne $.DiscriminatorField .Name }}{{ $.ReceiverName }}.{{camelize .Name}}Field = val{{end}}
-  return {{ $.ReceiverName}}
 }
 {{ end }}{{ end }}{{ end }}
 {{ if .HasAdditionalProperties }}/* {{ template "docstring" .AdditionalProperties }}{{ template "propertyValidationDocString" .AdditionalProperties}} */
