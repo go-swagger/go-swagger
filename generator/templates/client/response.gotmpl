@@ -37,19 +37,25 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) Error() string {
 
 func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
   {{ range .Headers }}
-  // response header {{.Name}}
-  {{if .Converter}}{{ camelize .Name }}, err := {{.Converter}}(response.GetHeader("{{ .Name }}"))
+  // response header {{.Name}} {{ printf "%#v" . }}
+  {{if .Converter }}{{ camelize .Name }}, err := {{ .Converter }}(response.GetHeader("{{ .Name }}"))
   if err != nil {
     return errors.InvalidType({{ .Path }}, "header", "{{ .GoType }}", response.GetHeader("{{ .Name }}"))
   }
   {{ .ReceiverName }}.{{ pascalize .Name }} = {{ camelize .Name }}
-  {{else}}{{ .ReceiverName }}.{{ pascalize .Name }} = response.GetHeader("{{ .Name }}")
+  {{ else if .IsCustomFormatter }}
+  {{ camelize .Name }}, err := formats.Parse({{ printf "%q" .SwaggerFormat }}, response.GetHeader("{{ .Name }}"))
+  if err != nil {
+    return errors.InvalidType({{ .Path }}, "header", "{{ .GoType }}", response.GetHeader("{{ .Name }}"))
+  }
+  {{ .ReceiverName }}.{{ pascalize .Name }} = *({{ camelize .Name }}.(*{{ .GoType }}))
+  {{ else}}{{ .ReceiverName }}.{{ pascalize .Name }} = response.GetHeader("{{ .Name }}")
   {{end}}
   {{ end }}
   {{ if .Schema }}
   {{ if .Schema.IsBaseType }}
   // response payload as interface type
-  payload, err := {{ .ModelsPackage }}.Unmarshal{{ stripPackage .Schema.GoType .ModelsPackage }}(response.Body(), consumer)
+  payload, err := {{ .ModelsPackage }}.Unmarshal{{ stripPackage .Schema.GoType .ModelsPackage }}{{ if .Schema.IsArray}}Slice{{ end }}(response.Body(), consumer)
   if err != nil {
     return err
   }

@@ -156,7 +156,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
   {{ end }}{{ end }}
 
   {{ if and .IsBodyParam .Schema }}
-  {{ if and .Schema.IsBaseType .Schema.IsExported }}body, err := {{ .ModelsPackage }}.Unmarshal{{ stripPackage .GoType .ModelsPackage }}(r.Body, route.Consumer)
+  {{ if and .Schema.IsBaseType .Schema.IsExported }}body, err := {{ .ModelsPackage }}.Unmarshal{{ stripPackage .GoType .ModelsPackage }}{{ if .IsArray }}Slice{{ end }}(r.Body, route.Consumer)
   if err != nil {
     res = append(res, err)
   {{ else }}var body {{ .GoType }}
@@ -206,7 +206,7 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .Name }}(raw
     {{ end }}return nil
   }
   {{ end }}
-  {{ if .Converter }}value, err := {{ if .Converter }}{{ .Converter }}({{ end }}raw)
+  {{ if .Converter }}value, err := {{ .Converter }}(raw)
   if err != nil {
     return errors.InvalidType({{ .Path }}, {{ printf "%q" .Location }}, {{ printf "%q" .GoType }}, raw)
   }

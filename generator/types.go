@@ -100,6 +100,7 @@ var typeMapping = map[string]string{
 	"byte":       "strfmt.Base64",
 	"date":       "strfmt.Date",
 	"datetime":   "strfmt.DateTime",
+	"date-time":  "strfmt.DateTime",
 	"uri":        "strfmt.URI",
 	"email":      "strfmt.Email",
 	"hostname":   "strfmt.Hostname",
@@ -157,7 +158,7 @@ func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType)
 		if tpe, ok := typeMapping[fmtn]; ok {
 			result.GoType = tpe
 			result.IsPrimitive = true
-			_, result.IsCustomFormatter = customFormatters[fmtn]
+			_, result.IsCustomFormatter = customFormatters[tpe]
 			return
 		}
 	}
@@ -187,8 +188,8 @@ func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType)
 	return
 }
 
-func typeForHeader(header spec.Header) string {
-	return resolveSimpleType(header.Type, header.Format, header.Items)
+func typeForHeader(header spec.Header) resolvedType {
+	return simpleResolvedType(header.Type, header.Format, header.Items)
 }
 
 func typeForParameter(param spec.Parameter) string {
@@ -553,8 +554,8 @@ var primitives = map[string]struct{}{
 }
 
 var customFormatters = map[string]struct{}{
-	// "strfmt.DateTime":   struct{}{},
-	// "strfmt.Date":       struct{}{},
+	"strfmt.DateTime":   struct{}{},
+	"strfmt.Date":       struct{}{},
 	"strfmt.URI":        struct{}{},
 	"strfmt.Email":      struct{}{},
 	"strfmt.Hostname":   struct{}{},
@@ -573,5 +574,5 @@ var customFormatters = map[string]struct{}{
 	"strfmt.HexColor":   struct{}{},
 	"strfmt.RGBColor":   struct{}{},
 	"strfmt.Base64":     struct{}{},
-	// "strfmt.Duration":   struct{}{},
+	"strfmt.Duration":   struct{}{},
 }
