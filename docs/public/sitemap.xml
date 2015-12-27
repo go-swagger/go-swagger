@@ -38,6 +38,11 @@
   </url>
   
   <url>
+    <loc>//goswagger.io/use/schemas/</loc>
+    <lastmod>2015-12-26T15:39:43-08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>//goswagger.io/untyped/server/</loc>
     <lastmod>2015-11-22T23:21:52-08:00</lastmod>
   </url>
