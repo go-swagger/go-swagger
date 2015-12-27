@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"/>
-  <title>Generates</title>
+  <title>Uses</title>
   <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/css/materialize.min.css" type="text/css" media="screen,projection">
   <link href="//goswagger.io/css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
@@ -61,22 +61,21 @@
   
   <div class="col m4 s12">
     <div class="card-panel">
-      <h4><a href="//goswagger.io/generate/spec/discriminated/">swagger:discriminated</a></h4>
+      <h4><a href="//goswagger.io/use/server/">Use the generated server</a></h4>
       <p>
       
         
-          <a href="//goswagger.io/categories/spec/">spec</a>
+          <a href="//goswagger.io/categories/use/">use</a>
+        
+          <a href="//goswagger.io/categories/server/">server</a>
         
       
       </p>
-      <p><p>Marks an embedded type as  a member for allOf and sets the x-class value. On interface definitions there is another annotation on methods allowed <em>swagger:name</em></p>
+      <p><p>The generated server serves the API but the default implementation returns 501 Not implemented for everything. Let&rsquo;s
+look into using the generated code.</p>
 </p>
       <p>
-      12 Dec 2015
-      
-        
-          <a href="//goswagger.io/tags/polymorphism/">#polymorphism</a>
-        
+      23 Dec 2015
       
       </p>
     </div>
@@ -85,21 +84,15 @@
   
   <div class="col m4 s12">
     <div class="card-panel">
-      <h4><a href="//goswagger.io/generate/spec/strfmt/">swagger:strfmt</a></h4>
+      <h4><a href="//goswagger.io/use/middleware/">BYO middleware</a></h4>
       <p>
-      
-        
-          <a href="//goswagger.io/categories/spec/">spec</a>
-        
       
       </p>
-      <p>A swagger:strfmt annotation names a type as a string formatter. The name is mandatory and that is what will be used as format name for this particular string format. String formats should only be used for very well known formats. String formats are well-known items. These imply a common well-documented set of formats that can be validated. The toolkit allows for creating your own string formats too. To create a custom string format you need to create a type that implements the (Unm/M)arshalText interfaces and the sql Scan and sql Value interfaces.</p>
+      <p><p>Go-swagger chose the golang <code>net/http</code> package as base abstraction. That means that for <em>any</em> supported transport by
+the toolkit you can reuse <em>any</em> middleware existing middlewares that following the stdlib middlware pattern.</p>
+</p>
       <p>
-      14 Nov 2015
-      
-        
-          <a href="//goswagger.io/tags/string-formats/">#string formats</a>
-        
+      26 Dec 2015
       
       </p>
     </div>
@@ -111,7 +104,7 @@
 <div class="row">
   <div class="col s3 m1">
   
-    <a class="btn-floating btn-large waves-effect waves-light" href="/generate/"><i class="mdi-navigation-arrow-back"></i></a>
+    <a class="btn-floating btn-large disabled"><i class="mdi-navigation-arrow-back"></i></a>
   
   </div>
   <div class="col s6 m10 center">&nbsp</div>

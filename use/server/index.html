@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"/>
+  <title>Use the generated server</title>
+  <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/css/materialize.min.css" type="text/css" media="screen,projection">
+  <link href="//goswagger.io/css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link rel="stylesheet" href="//goswagger.io/css/prism.css" />
+  <style type="text/css">
+  
+    footer.page-footer{background-image: url(//goswagger.io/images/default.png);}
+  
+  </style>
+</head>
+<body>
+  <ul id="slide-out" class="side-nav">
+    <li><a href="//goswagger.io"><i class="mdi-action-home left"></i>Home</a></li>
+    <li><a href="//goswagger.io/generate/spec/"><i class="mdi-action-loyalty left"></i>Swagger.json</a></li>
+    <li><a href="//goswagger.io/generate/client/"><i class="mdi-action-polymer left"></i>Generate Client</a></li>
+    <li><a href="//goswagger.io/generate/server/"><i class="mdi-action-perm-data-setting left"></i>Generate Server</a></li>
+    <li><a href="//goswagger.io/usage/validate/"><i class="mdi-action-perm-media left"></i>Validate Spec</a></li>
+
+    
+    
+  </ul>
+  <div id="index-banner" class="parallax-container">
+  <a data-activates="slide-out" class="btn-floating button-collapse" style="top: 5px; left: 5px;"><i class="mdi-navigation-menu"></i></a>
+    <div class="section no-pad-bot">
+      <div class="container">
+        <h1 class="header center teal-text text-lighten-2"><a href="//goswagger.io">go-swagger toolkit</a></h1>
+        <div class="row center">
+          <h5 class="header col s12 light">Swagger 2.0 describes your API&#39;s for you, so you don&#39;t have to</h5>
+        </div>
+        <div class="row center">
+        
+          <a href="https://github.com/go-swagger/go-swagger"><img src="//goswagger.io/images/github2-dreamstale35.png"></a>
+        
+        
+        
+        
+        
+        </div>
+      </div>
+    </div>
+    <div class="parallax">
+    
+      <img src="//goswagger.io/images/default-gopher.png">
+    
+    </div>
+  </div>
+
+
+
+<div class="container">
+  <div class="section">
+
+    <div class="row">
+      <div class="col s12">
+        <div class="card-panel">
+          <h2>Use the generated server</h2>
+          <p>
+          
+            
+              <a href="//goswagger.io/categories/use/">use</a>
+            
+              <a href="//goswagger.io/categories/server/">server</a>
+            
+          
+          </p>
+          <p>
+
+<p>The generated server serves the API but the default implementation returns 501 Not implemented for everything. Let&rsquo;s
+look into using the generated code.</p>
+
+<p>Go swagger primarily deals with HTTP and originally only supports the stdlib <code>net/http</code> interface. A typical HTTP
+request expects a response.  This is reflected in go-swagger where a handler is typically defined as a function of
+input parameters to a responder.</p>
+
+<pre><code class="language-go">type ListTravelsHandler interface {
+	Handle(ListTravelsParams) middleware.Responder
+}
+</code></pre>
+
+<p>The signature of this handler is one of 2 possible variations. When a handler doesn&rsquo;t use authentication then a handler
+interface consists out of input parameters and a responder.</p>
+
+<pre><code class="language-go">type AddOneAuthenticatedHandler interface {
+	Handle(AddOneParams, interface{}) middleware.Responder
+}
+</code></pre>
+
+<p>When a handler does use authentication then the second argument to the handler function represents the security
+principal for your application. You can specify the type name for this principal at generation time by specifying the
+-P or &ndash;principal flag.</p>
+
+<pre><code class="language-shell">swagger generate server -P models.User
+swagger generate client -P models.User
+</code></pre>
+
+<p>When you would execute the generate step with that parameter for the security principal then the
+AddOneAuthenticatedHandler would look a bit like this:</p>
+
+<pre><code class="language-go">type AddOneAuthenticatedHandler interface {
+	Handle(AddOneParams, *models.User) middleware.Responder
+}
+</code></pre>
+
+<h2 id="implement-handlers:3c3fb84840715ff4411349984ebc0a77">Implement handlers</h2>
+
+<p>A handler is an interface/contract that defines a statically typed representation of the input and output parameters of
+an operation on your API.
+The tool generates handlers that are stubbed with a NotImplemented response when you first generate the server.</p>
+
+<h3 id="the-not-implemented-handler:3c3fb84840715ff4411349984ebc0a77">The not implemented handler</h3>
+
+<p>The not implemented handler is actually a not implemented responder, it returns a responder that will always respond
+with status code 501 and a message that lets people know it&rsquo;s not the fault of the client that things don&rsquo;t work.</p>
+
+<pre><code class="language-go">middleware.NotImplemented(&quot;operation todos.AddOne has not yet been implemented&quot;)
+</code></pre>
+
+<h3 id="your-own-code:3c3fb84840715ff4411349984ebc0a77">Your own code</h3>
+
+<p>Each HTTP request expects a response of some sort, this response might have no data but it&rsquo;s a response none the less.</p>
+
+<p>Every incoming request is described as a bunch of input parameters which have been validated prior to calling the
+handler. So whenever your code is executed, the input parameters are guaranteed to be valid according to what the
+swagger specification prescribes.</p>
+
+<p>All the input parameters have been validated, and the request has been authenticated should it have triggered
+authentication.</p>
+
+<p>You probably want to return something a bit more useful to the users of your API than a not implemented response.</p>
+
+<p>A possible implementation of the <code>ListTravelsHandler</code> interface might look like this:</p>
+
+<pre><code class="language-go">type PublicListTravelsOK struct {
+  Body []models.Travel
+}
+func (m *PublicListTravelsOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer){
+  // generated code here
+}
+
+type PublicListTravelsError struct {
+  Body models.Error
+}
+func (m *PublicListTravelsOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer){
+  // generated code here
+}
+
+type PublicListTravelsHandler struct {
+  db interface {
+    FetchTravels(*PublicListTravelsParams) ([]models.Travel, error)
+  }
+}
+
+func (m *PublicListTravelsHandler) Handle(params ListTravelsParams) middleware.Responder {
+  travels, err := m.db.FetchTravels(&amp;params)
+  if err != nil {
+    return &amp;PublicListTravelsError{Body: models.Error{Message: err.Error()}}
+  }
+  return &amp;PublicListTravelsOK{Body: travels}
+}
+</code></pre>
+
+<p>In the example above we have a handler implementation with a hypothetical database fetch interface. When the handle
+method is executed there are 2 possible responses for the provided parameters. There can either be an error in which
+case the PublicListTravelsError will be returned, otherwise the PublicListTravelsOK will be returned.</p>
+
+<p>The code generator has written the remaining code to render that response with the headers etc.</p>
+</p>
+          <p>23 Dec 2015
+            
+          </p>
+          
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col s3 m1">
+      
+        <a class="btn-floating btn-large waves-effect waves-light" href="//goswagger.io/usage/validate/"><i class="mdi-navigation-arrow-back"></i></a>
+      
+      </div>
+      <div class="col s6 m10 center">&nbsp</div>
+      <div class="col s3 m1">
+      
+        <a class="btn-floating btn-large waves-effect waves-light" href="//goswagger.io/use/middleware/"><i class="mdi-navigation-arrow-forward"></i></a>
+      
+      </div>
+    </div>
+
+  </div>
+</div>
+
+  <footer class="page-footer">
+    <div class="footer-copyright">
+      <div class="container">
+      © 2015 go-swagger contributors
+      <div class="right">Design <a class="grey-text text-lighten-4" href="http://pdevty.github.io/blog/">pdevty</a></div>
+      </div>
+    </div>
+  </footer>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/js/materialize.min.js"></script>
+  <script src="//goswagger.io/js/init.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/prism/0.0.1/prism.min.js"></script>
+  
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-240612-10', 'auto');
+    ga('send', 'pageview');
+  </script>
+  
+
+  </body>
+</html>
+

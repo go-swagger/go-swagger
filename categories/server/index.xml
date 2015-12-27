@@ -403,6 +403,116 @@ func (o *AddOneDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.P
     </item>
     
     <item>
+      <title>Use the generated server</title>
+      <link>//goswagger.io/use/server/</link>
+      <pubDate>Wed, 23 Dec 2015 07:44:06 -0800</pubDate>
+      
+      <guid>//goswagger.io/use/server/</guid>
+      <description>
+
+&lt;p&gt;The generated server serves the API but the default implementation returns 501 Not implemented for everything. Let&amp;rsquo;s
+look into using the generated code.&lt;/p&gt;
+
+&lt;p&gt;Go swagger primarily deals with HTTP and originally only supports the stdlib &lt;code&gt;net/http&lt;/code&gt; interface. A typical HTTP
+request expects a response.  This is reflected in go-swagger where a handler is typically defined as a function of
+input parameters to a responder.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;type ListTravelsHandler interface {
+	Handle(ListTravelsParams) middleware.Responder
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The signature of this handler is one of 2 possible variations. When a handler doesn&amp;rsquo;t use authentication then a handler
+interface consists out of input parameters and a responder.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;type AddOneAuthenticatedHandler interface {
+	Handle(AddOneParams, interface{}) middleware.Responder
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;When a handler does use authentication then the second argument to the handler function represents the security
+principal for your application. You can specify the type name for this principal at generation time by specifying the
+-P or &amp;ndash;principal flag.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;swagger generate server -P models.User
+swagger generate client -P models.User
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;When you would execute the generate step with that parameter for the security principal then the
+AddOneAuthenticatedHandler would look a bit like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;type AddOneAuthenticatedHandler interface {
+	Handle(AddOneParams, *models.User) middleware.Responder
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;implement-handlers:3c3fb84840715ff4411349984ebc0a77&#34;&gt;Implement handlers&lt;/h2&gt;
+
+&lt;p&gt;A handler is an interface/contract that defines a statically typed representation of the input and output parameters of
+an operation on your API.
+The tool generates handlers that are stubbed with a NotImplemented response when you first generate the server.&lt;/p&gt;
+
+&lt;h3 id=&#34;the-not-implemented-handler:3c3fb84840715ff4411349984ebc0a77&#34;&gt;The not implemented handler&lt;/h3&gt;
+
+&lt;p&gt;The not implemented handler is actually a not implemented responder, it returns a responder that will always respond
+with status code 501 and a message that lets people know it&amp;rsquo;s not the fault of the client that things don&amp;rsquo;t work.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;middleware.NotImplemented(&amp;quot;operation todos.AddOne has not yet been implemented&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;your-own-code:3c3fb84840715ff4411349984ebc0a77&#34;&gt;Your own code&lt;/h3&gt;
+
+&lt;p&gt;Each HTTP request expects a response of some sort, this response might have no data but it&amp;rsquo;s a response none the less.&lt;/p&gt;
+
+&lt;p&gt;Every incoming request is described as a bunch of input parameters which have been validated prior to calling the
+handler. So whenever your code is executed, the input parameters are guaranteed to be valid according to what the
+swagger specification prescribes.&lt;/p&gt;
+
+&lt;p&gt;All the input parameters have been validated, and the request has been authenticated should it have triggered
+authentication.&lt;/p&gt;
+
+&lt;p&gt;You probably want to return something a bit more useful to the users of your API than a not implemented response.&lt;/p&gt;
+
+&lt;p&gt;A possible implementation of the &lt;code&gt;ListTravelsHandler&lt;/code&gt; interface might look like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;type PublicListTravelsOK struct {
+  Body []models.Travel
+}
+func (m *PublicListTravelsOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer){
+  // generated code here
+}
+
+type PublicListTravelsError struct {
+  Body models.Error
+}
+func (m *PublicListTravelsOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer){
+  // generated code here
+}
+
+type PublicListTravelsHandler struct {
+  db interface {
+    FetchTravels(*PublicListTravelsParams) ([]models.Travel, error)
+  }
+}
+
+func (m *PublicListTravelsHandler) Handle(params ListTravelsParams) middleware.Responder {
+  travels, err := m.db.FetchTravels(&amp;amp;params)
+  if err != nil {
+    return &amp;amp;PublicListTravelsError{Body: models.Error{Message: err.Error()}}
+  }
+  return &amp;amp;PublicListTravelsOK{Body: travels}
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;In the example above we have a handler implementation with a hypothetical database fetch interface. When the handle
+method is executed there are 2 possible responses for the provided parameters. There can either be an error in which
+case the PublicListTravelsError will be returned, otherwise the PublicListTravelsOK will be returned.&lt;/p&gt;
+
+&lt;p&gt;The code generator has written the remaining code to render that response with the headers etc.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
       <title>Untyped API server</title>
       <link>//goswagger.io/untyped/server/</link>
       <pubDate>Sun, 22 Nov 2015 23:21:52 -0800</pubDate>
