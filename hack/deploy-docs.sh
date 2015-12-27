@@ -9,7 +9,7 @@ hugo # if using a theme, replace by `hugo -t <yourtheme>`
 
 cd "${wd}"
 # Add changes to git.
-git add -A
+git add -A docs
 
 # Commit changes.
 msg="rebuilding site `date`"

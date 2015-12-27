@@ -1,5 +1,5 @@
 +++
-categories = []
+categories = ["use", "middleware", "server"]
 date = "2015-12-26T15:39:37-08:00"
 tags = []
 title = "BYO middleware"
