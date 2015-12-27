@@ -3,7 +3,7 @@ Categories = ["untyped", "server"]
 Tags = []
 date = "2015-11-22T23:21:52-08:00"
 title = "Untyped API server"
-weight = 5
+weight = 8
 series = ["home"]
 +++
 

@@ -7,8 +7,7 @@ series = ["home"]
 +++
 
 The toolkit has a command to validate swagger specifications for you.
-It includes a full json-schema validator and adds a bunch of extra validations on top of that to ensure the spec
-is as valid as possible, so that there are no surprises.
+It includes a full json-schema validator and adds some extra validations to ensure the spec is valid.
 
 <!--more-->
 

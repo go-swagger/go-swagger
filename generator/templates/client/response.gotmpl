@@ -37,7 +37,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) Error() string {
 
 func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
   {{ range .Headers }}
-  // response header {{.Name}} {{ printf "%#v" . }}
+  // response header {{.Name}}
   {{if .Converter }}{{ camelize .Name }}, err := {{ .Converter }}(response.GetHeader("{{ .Name }}"))
   if err != nil {
     return errors.InvalidType({{ .Path }}, "header", "{{ .GoType }}", response.GetHeader("{{ .Name }}"))

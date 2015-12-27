@@ -131,12 +131,12 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
   if err := {{ .ReceiverName }}.bind{{ pascalize .Name }}(r{{ pascalize .Name }}, rhk{{ pascalize .Name }}, route.Formats); err != nil {
     res = append(res, err)
   }
-  {{ else if .IsHeaderParam }}if err := {{ .ReceiverName }}.bind{{ pascalize .Name }}([]string{r.Header.Get({{ .Path }})}, true, route.Formats); err != nil {
+  {{ else if .IsHeaderParam }}if err := {{ .ReceiverName }}.bind{{ pascalize .Name }}(r.Header[{{ .Path }}], true, route.Formats); err != nil {
     res = append(res, err)
   }
   {{ else if .IsFormParam }}{{if .IsFileParam }}{{ camelize .Name }}, {{ camelize .Name }}Header, err := r.FormFile({{ .Path }})
   if err != nil {
-    res = append(res, errors.New(400, "reading file \"{{ camelize .Name }}\" failed: %v", err))
+    res = append(res, errors.New(400, "reading file {{ printf "%q" (camelize .Name) }} failed: %v", err))
   } else {
     {{ .ReceiverName }}.{{ pascalize .Name }} = httpkit.File{Data: {{ camelize .Name }}, Header: {{ camelize .Name }}Header}
   }
@@ -161,7 +161,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     res = append(res, err)
   {{ else }}var body {{ .GoType }}
   if err := route.Consumer.Consume(r.Body, &body); err != nil {
-    res = append(res, errors.NewParseError("{{ camelize .Name }}", {{ printf "%q" .Location }}, "", err))
+    res = append(res, errors.NewParseError({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}, "", err))
   {{ end }}} else {
     {{ if .IsArray }}for _, {{ .IndexVar }}{{ .ReceiverName }} := range {{ .ReceiverName }}.{{ pascalize .Name }} {
       if err := {{ .IndexVar }}{{ .ReceiverName }}.Validate(route.Formats); err != nil {
