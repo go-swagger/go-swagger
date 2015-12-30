@@ -32,7 +32,15 @@ Swagger tries to support you as best as possible when building API's.
 
 It aims to represent the contract of your API with a language agnostic description of your application in json or yaml.
 `
-	parser.AddCommand("validate", "validate the swagger document", "validate the provided swagger document against a swagger spec", &commands.ValidateSpec{})
+	_, err := parser.AddCommand("validate", "validate the swagger document", "validate the provided swagger document against a swagger spec", &commands.ValidateSpec{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = parser.AddCommand("init", "initialize a spec document", "initialize a swagger spec document", &commands.InitCmd{})
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	genpar, err := parser.AddCommand("generate", "genererate go code", "generate go code for the swagger spec file", &commands.Generate{})
 	if err != nil {

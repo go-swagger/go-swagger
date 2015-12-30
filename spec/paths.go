@@ -81,12 +81,10 @@ func (p Paths) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	var pths map[string]PathItem
+
+	pths := make(map[string]PathItem)
 	for k, v := range p.Paths {
 		if strings.HasPrefix(k, "/") {
-			if pths == nil {
-				pths = make(map[string]PathItem)
-			}
 			pths[k] = v
 		}
 	}

@@ -7,13 +7,11 @@ weight = 6
 series = ["home"]
 +++
 
-Go-swagger chose the golang `net/http` package as base abstraction. That means that for _any_ supported transport by
-the toolkit you can reuse _any_ middleware existing middlewares that following the stdlib middlware pattern.
+Go-swagger chose the golang `net/http` package as base abstraction. That means that for _any_ supported transport by the toolkit you can reuse _any_ middleware existing middlewares that following the stdlib middlware pattern.
 
 <!--more-->
 
-There are several projects providing middleware libraries for weaving all kinds of functionality into your request
-handling. None of those things are the job of go-swagger, go-swagger just serves your specs.
+There are several projects providing middleware libraries for weaving all kinds of functionality into your request handling. None of those things are the job of go-swagger, go-swagger just serves your specs.
 
 The server takes care of a number of things when a request arrives:
 
@@ -122,4 +120,3 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 ```
 
 And with this you've added rate limitting to your application.
-

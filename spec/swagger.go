@@ -55,8 +55,8 @@ type swaggerProps struct {
 	Info                *Info                  `json:"info,omitempty"`
 	Host                string                 `json:"host,omitempty"`
 	BasePath            string                 `json:"basePath,omitempty"` // must start with a leading "/"
-	Paths               *Paths                 `json:"paths,omitempty"`    // required
-	Definitions         Definitions            `json:"definitions,omitempty"`
+	Paths               *Paths                 `json:"paths"`              // required
+	Definitions         Definitions            `json:"definitions"`
 	Parameters          map[string]Parameter   `json:"parameters,omitempty"`
 	Responses           map[string]Response    `json:"responses,omitempty"`
 	SecurityDefinitions SecurityDefinitions    `json:"securityDefinitions,omitempty"`
