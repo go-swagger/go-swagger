@@ -260,6 +260,9 @@ type codeGenOpBuilder struct {
 }
 
 func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
+	if Debug {
+		log.Printf("[%s %s] parsing operation (id: %q)", b.Method, b.Path, b.Operation.ID)
+	}
 	resolver := newTypeResolver(b.ModelsPackage, b.Doc.Pristine())
 	receiver := "o"
 
@@ -389,6 +392,9 @@ func concatUnique(collections ...[]string) []string {
 }
 
 func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, resolver *typeResolver, code int, resp spec.Response) (GenResponse, error) {
+	if Debug {
+		log.Printf("[%s %s] making id %q", b.Method, b.Path, b.Operation.ID)
+	}
 	res := GenResponse{
 		Package:        b.APIPackage,
 		ModelsPackage:  b.ModelsPackage,
@@ -528,6 +534,9 @@ func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path
 }
 
 func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver, param spec.Parameter) (GenParameter, error) {
+	if Debug {
+		log.Printf("[%s %s] making parameter %q", b.Method, b.Path, param.Name)
+	}
 	var child *GenItems
 	res := GenParameter{
 		Name:             param.Name,

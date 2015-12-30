@@ -1,5 +1,4 @@
 // Copyright 2015 go-swagger maintainers
-
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,7 +27,10 @@ import (
 	"golang.org/x/tools/imports"
 )
 
-// TODO: actually use this in some of the naming methods (eg. camelize and snakize)
+// Debug when the env var DEBUG is not empty
+// the generators will be very noisy about what they are doing
+var Debug = os.Getenv("DEBUG") != ""
+
 var reservedGoWords = []string{
 	"break", "default", "func", "interface", "select",
 	"case", "defer", "go", "map", "struct",

@@ -149,9 +149,6 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		pg.GenSchema.IsBaseType = true
 		pg.GenSchema.IsExported = true
 		pg.GenSchema.DiscriminatorField = dsi.FieldName
-		// clone schema and turn into IsExported false
-		//tpeImpl := newDiscriminatorImpl(pg.GenSchema)
-		//pg.ExtraSchemas[tpeImpl.Name] = tpeImpl
 
 		for _, v := range dsi.Children {
 			if pg.GenSchema.Discriminates == nil {
@@ -288,7 +285,9 @@ type schemaGenContext struct {
 }
 
 func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContext {
-	//log.Printf("new slice branch %s (model: %s)", sg.Name, sg.TypeResolver.ModelName)
+	if Debug {
+		log.Printf("new slice branch %s (model: %s)", sg.Name, sg.TypeResolver.ModelName)
+	}
 	pg := sg.shallowClone()
 	indexVar := pg.IndexVar
 	if pg.Path == "" {
@@ -319,8 +318,9 @@ func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContex
 }
 
 func (sg *schemaGenContext) NewAdditionalItems(schema *spec.Schema) *schemaGenContext {
-	//_, file, pos, _ := runtime.Caller(1)
-	//log.Printf("[%s:%d] New additional items\n", filepath.Base(file), pos)
+	if Debug {
+		log.Printf("new additional items\n")
+	}
 	pg := sg.shallowClone()
 	indexVar := pg.IndexVar
 	pg.Name = sg.Name + " items"
@@ -348,8 +348,9 @@ func (sg *schemaGenContext) NewAdditionalItems(schema *spec.Schema) *schemaGenCo
 }
 
 func (sg *schemaGenContext) NewTupleElement(schema *spec.Schema, index int) *schemaGenContext {
-	//_, file, pos, _ := runtime.Caller(1)
-	//log.Printf("[%s:%d] New Tuple element\n", filepath.Base(file), pos)
+	if Debug {
+		log.Printf("New Tuple element\n")
+	}
 
 	pg := sg.shallowClone()
 	if pg.Path == "" {
@@ -365,7 +366,9 @@ func (sg *schemaGenContext) NewTupleElement(schema *spec.Schema, index int) *sch
 }
 
 func (sg *schemaGenContext) NewStructBranch(name string, schema spec.Schema) *schemaGenContext {
-	//log.Printf("new struct branch %s (parent %s)", sg.Name, sg.Container)
+	if Debug {
+		log.Printf("new struct branch %s (parent %s)", sg.Name, sg.Container)
+	}
 	pg := sg.shallowClone()
 	if sg.Path == "" {
 		pg.Path = fmt.Sprintf("%q", name)
@@ -381,13 +384,16 @@ func (sg *schemaGenContext) NewStructBranch(name string, schema spec.Schema) *sc
 			break
 		}
 	}
-	//log.Printf("made new struct branch %s (parent %s)", pg.Name, pg.Container)
+	if Debug {
+		log.Printf("made new struct branch %s (parent %s)", pg.Name, pg.Container)
+	}
 	return pg
 }
 
 func (sg *schemaGenContext) shallowClone() *schemaGenContext {
-	//_, file, pos, _ := runtime.Caller(1)
-	//log.Printf("[%s:%d] cloning %s\n", filepath.Base(file), pos, sg.Name)
+	if Debug {
+		log.Printf("cloning context %s\n", sg.Name)
+	}
 	pg := new(schemaGenContext)
 	*pg = *sg
 	if pg.Container == "" {
@@ -402,7 +408,9 @@ func (sg *schemaGenContext) shallowClone() *schemaGenContext {
 }
 
 func (sg *schemaGenContext) NewCompositionBranch(schema spec.Schema, index int) *schemaGenContext {
-	//log.Printf("new composition branch %s (parent: %s, index: %d)", sg.Name, sg.Container, index)
+	if Debug {
+		log.Printf("new composition branch %s (parent: %s, index: %d)", sg.Name, sg.Container, index)
+	}
 	pg := sg.shallowClone()
 	pg.Schema = schema
 	pg.Name = "AO" + strconv.Itoa(index)
@@ -410,12 +418,16 @@ func (sg *schemaGenContext) NewCompositionBranch(schema spec.Schema, index int) 
 		pg.Name = sg.Name + pg.Name
 	}
 	pg.Index = index
-	//log.Printf("made new composition branch %s (parent: %s)", pg.Name, pg.Container)
+	if Debug {
+		log.Printf("made new composition branch %s (parent: %s)", pg.Name, pg.Container)
+	}
 	return pg
 }
 
 func (sg *schemaGenContext) NewAdditionalProperty(schema spec.Schema) *schemaGenContext {
-	//log.Printf("new additional property %s", sg.Name)
+	if Debug {
+		log.Printf("new additional property %s", sg.Name)
+	}
 	pg := sg.shallowClone()
 	pg.Schema = schema
 	if pg.KeyVar == "" {
@@ -503,11 +515,14 @@ func (sg *schemaGenContext) MergeResult(other *schemaGenContext, liftsRequired b
 
 func (sg *schemaGenContext) buildProperties() error {
 
-	//log.Printf("building properties %s (parent: %s)", sg.Name, sg.Container)
+	if Debug {
+		log.Printf("building properties %s (parent: %s)", sg.Name, sg.Container)
+	}
 	for k, v := range sg.Schema.Properties {
-		//_, file, pos, _ := runtime.Caller(1)
-		//bbb, _ := json.MarshalIndent(sg.Schema, "", "  ")
-		//log.Printf("[%s:%d] building property %s[%q] (tup: %t) %s\n", filepath.Base(file), pos, sg.Name, k, sg.IsTuple, bbb)
+		if Debug {
+			bbb, _ := json.MarshalIndent(sg.Schema, "", "  ")
+			log.Printf("building property %s[%q] (tup: %t) %s\n", sg.Name, k, sg.IsTuple, bbb)
+		}
 
 		// check if this requires de-anonymizing, if so lift this as a new struct and extra schema
 		tpe, err := sg.TypeResolver.ResolveSchema(&v, true, sg.IsTuple || containsString(sg.Schema.Required, k))
@@ -1038,8 +1053,9 @@ func (sg *schemaGenContext) liftSpecialAllOf() error {
 }
 
 func (sg *schemaGenContext) makeGenSchema() error {
-	//_, file, pos, _ := runtime.Caller(1)
-	//log.Printf("[%s:%d] making gen schema (anon: %t, req: %t, tuple: %t) %s\n", filepath.Base(file), pos, !sg.Named, sg.GenSchema.Required, sg.IsTuple, sg.Name)
+	if Debug {
+		log.Printf("making gen schema (anon: %t, req: %t, tuple: %t) %s\n", !sg.Named, sg.GenSchema.Required, sg.IsTuple, sg.Name)
+	}
 
 	ex := ""
 	if sg.Schema.Example != nil {
@@ -1127,7 +1143,9 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		return err
 	}
 
-	//log.Printf("finished gen schema for %q\n", sg.Name)
+	if Debug {
+		log.Printf("finished gen schema for %q\n", sg.Name)
+	}
 	return nil
 }
 
