@@ -735,4 +735,18 @@ definitions:
       name:
         type: string
 
+  UpdateOrg:
+    type: object
+    description: "Description of updates for an existing organization"
+    properties:
+      invoice_email:
+        type: boolean
+        description: "Wheter the organization desires to receive emails for invoices"
+      email:
+        type: string
+        description: "Organization contact email"
+      tag_expiration:
+        minimum: 0
+        type: integer
+        maximum: 2592000
 

@@ -1050,7 +1050,6 @@ func TestSchemaValidation_SimpleZeroAllowed(t *testing.T) {
 }
 
 func TestSchemaValidation_Pet(t *testing.T) {
-
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "Pet"
@@ -1070,6 +1069,33 @@ func TestSchemaValidation_Pet(t *testing.T) {
 					assertInCode(t, "validate.Required(\"name\", \"body\", string(m.Name))", res)
 					assertInCode(t, "validate.Required(\"photoUrls\", \"body\", m.PhotoUrls)", res)
 					assertInCode(t, "errors.CompositeValidationError(res...)", res)
+				}
+			}
+		}
+	}
+}
+
+func TestSchemaValidation_UpdateOrg(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	if assert.NoError(t, err) {
+		k := "UpdateOrg"
+		schema := specDoc.Spec().Definitions[k]
+
+		gm, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, gm)
+			if assert.NoError(t, err) {
+				formatted, err := formatGoFile("pet.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(formatted)
+					assertInCode(t, k+") Validate(formats", res)
+					assertInCode(t, "swag.IsZero(m.TagExpiration)", res)
+					assertInCode(t, "validate.Minimum(\"tag_expiration\", \"body\", float64(*m.TagExpiration)", res)
+					assertInCode(t, "validate.Maximum(\"tag_expiration\", \"body\", float64(*m.TagExpiration)", res)
+					assertInCode(t, "errors.CompositeValidationError(res...)", res)
+				} else {
+					fmt.Println(buf.String())
 				}
 			}
 		}
