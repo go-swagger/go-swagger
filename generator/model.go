@@ -297,9 +297,12 @@ func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContex
 		pg.Path = pg.Path + "+ \".\" + strconv.Itoa(" + indexVar + ")"
 	}
 	// check who is parent, if it's a base type then rewrite the value expression
-	_, rewriteValueExpr := sg.Discrimination.Discriminators["#/definitions/"+sg.TypeResolver.ModelName]
-	if pg.IndexVar == "i" && rewriteValueExpr {
-		pg.ValueExpr = sg.Receiver + "." + swag.ToJSONName(sg.GenSchema.Name)
+	var rewriteValueExpr bool
+	if sg.Discrimination != nil && sg.Discrimination.Discriminators != nil {
+		_, rewriteValueExpr = sg.Discrimination.Discriminators["#/definitions/"+sg.TypeResolver.ModelName]
+		if pg.IndexVar == "i" && rewriteValueExpr {
+			pg.ValueExpr = sg.Receiver + "." + swag.ToJSONName(sg.GenSchema.Name)
+		}
 	}
 	pg.IndexVar = indexVar + "i"
 	pg.ValueExpr = pg.ValueExpr + "[" + indexVar + "]"
@@ -788,7 +791,7 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 }
 
 func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *schemaGenContext {
-	fmt.Println("making new struct", name, sg.Container)
+	//fmt.Println("making new struct", name, sg.Container)
 	sp := sg.TypeResolver.Doc.Spec()
 	name = swag.ToGoName(name)
 	if sg.TypeResolver.ModelName != sg.Name {
