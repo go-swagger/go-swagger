@@ -226,3 +226,26 @@ func TestGenerateServer_Parameters(t *testing.T) {
 		}
 	}
 }
+
+func TestGenerateModel_Discriminator_Billforward(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/billforward.discriminators.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "FlatPricingComponent"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) && assert.True(t, genModel.IsSubType) {
+
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				b, err := formatGoFile("has_discriminator.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(b)
+					//assertInCode(t, "err", res)
+					assertInCode(t, "err := validate.Required(\"priceExplanation\"+\".\"+strconv.Itoa(i), \"body\", string(m.priceExplanation[i]))", res)
+				}
+			}
+		}
+	}
+}

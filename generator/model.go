@@ -117,6 +117,9 @@ func (m *definitionGenerator) generateModel() error {
 }
 
 func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *spec.Document) (*GenDefinition, error) {
+	return makeGenDefinitionHierarchy(name, pkg, "", schema, specDoc)
+}
+func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema, specDoc *spec.Document) (*GenDefinition, error) {
 	receiver := "m"
 	resolver := newTypeResolver("", specDoc)
 	resolver.ModelName = name
@@ -135,6 +138,7 @@ func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *spec.Docum
 		Named:          true,
 		ExtraSchemas:   make(map[string]GenSchema),
 		Discrimination: di,
+		Container:      container,
 	}
 	if err := pg.makeGenSchema(); err != nil {
 		return nil, err
@@ -181,7 +185,7 @@ func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *spec.Docum
 				}
 				ref = spec.Ref{}
 				if rsch != nil && rsch.Discriminator != "" {
-					gs, err := makeGenDefinition(strings.TrimPrefix(ss.Ref.String(), "#/definitions/"), pkg, *rsch, specDoc)
+					gs, err := makeGenDefinitionHierarchy(strings.TrimPrefix(ss.Ref.String(), "#/definitions/"), pkg, pg.GenSchema.Name, *rsch, specDoc)
 					if err != nil {
 						return nil, err
 					}
@@ -276,6 +280,7 @@ type schemaGenContext struct {
 
 	GenSchema      GenSchema
 	Dependencies   []string
+	Container      string
 	ExtraSchemas   map[string]GenSchema
 	Discriminator  *discor
 	Discriminated  *discee
@@ -283,13 +288,18 @@ type schemaGenContext struct {
 }
 
 func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContext {
-	//log.Printf("new slice branch %s", sg.Name)
+	//log.Printf("new slice branch %s (model: %s)", sg.Name, sg.TypeResolver.ModelName)
 	pg := sg.shallowClone()
 	indexVar := pg.IndexVar
 	if pg.Path == "" {
 		pg.Path = "strconv.Itoa(" + indexVar + ")"
 	} else {
 		pg.Path = pg.Path + "+ \".\" + strconv.Itoa(" + indexVar + ")"
+	}
+	// check who is parent, if it's a base type then rewrite the value expression
+	_, rewriteValueExpr := sg.Discrimination.Discriminators["#/definitions/"+sg.TypeResolver.ModelName]
+	if pg.IndexVar == "i" && rewriteValueExpr {
+		pg.ValueExpr = sg.Receiver + "." + swag.ToJSONName(sg.GenSchema.Name)
 	}
 	pg.IndexVar = indexVar + "i"
 	pg.ValueExpr = pg.ValueExpr + "[" + indexVar + "]"
@@ -352,7 +362,7 @@ func (sg *schemaGenContext) NewTupleElement(schema *spec.Schema, index int) *sch
 }
 
 func (sg *schemaGenContext) NewStructBranch(name string, schema spec.Schema) *schemaGenContext {
-	//log.Printf("new struct branch %s", sg.Name)
+	//log.Printf("new struct branch %s (parent %s)", sg.Name, sg.Container)
 	pg := sg.shallowClone()
 	if sg.Path == "" {
 		pg.Path = fmt.Sprintf("%q", name)
@@ -368,12 +378,18 @@ func (sg *schemaGenContext) NewStructBranch(name string, schema spec.Schema) *sc
 			break
 		}
 	}
+	//log.Printf("made new struct branch %s (parent %s)", pg.Name, pg.Container)
 	return pg
 }
 
 func (sg *schemaGenContext) shallowClone() *schemaGenContext {
+	//_, file, pos, _ := runtime.Caller(1)
+	//log.Printf("[%s:%d] cloning %s\n", filepath.Base(file), pos, sg.Name)
 	pg := new(schemaGenContext)
 	*pg = *sg
+	if pg.Container == "" {
+		pg.Container = sg.Name
+	}
 	pg.GenSchema = GenSchema{}
 	pg.Dependencies = nil
 	pg.Named = false
@@ -383,7 +399,7 @@ func (sg *schemaGenContext) shallowClone() *schemaGenContext {
 }
 
 func (sg *schemaGenContext) NewCompositionBranch(schema spec.Schema, index int) *schemaGenContext {
-	//log.Printf("new composition branch %s", sg.Name)
+	//log.Printf("new composition branch %s (parent: %s, index: %d)", sg.Name, sg.Container, index)
 	pg := sg.shallowClone()
 	pg.Schema = schema
 	pg.Name = "AO" + strconv.Itoa(index)
@@ -391,6 +407,7 @@ func (sg *schemaGenContext) NewCompositionBranch(schema spec.Schema, index int) 
 		pg.Name = sg.Name + pg.Name
 	}
 	pg.Index = index
+	//log.Printf("made new composition branch %s (parent: %s)", pg.Name, pg.Container)
 	return pg
 }
 
@@ -483,6 +500,7 @@ func (sg *schemaGenContext) MergeResult(other *schemaGenContext, liftsRequired b
 
 func (sg *schemaGenContext) buildProperties() error {
 
+	//log.Printf("building properties %s (parent: %s)", sg.Name, sg.Container)
 	for k, v := range sg.Schema.Properties {
 		//_, file, pos, _ := runtime.Caller(1)
 		//bbb, _ := json.MarshalIndent(sg.Schema, "", "  ")
@@ -561,6 +579,11 @@ func (sg *schemaGenContext) buildProperties() error {
 }
 
 func (sg *schemaGenContext) buildAllOf() error {
+	if len(sg.Schema.AllOf) > 0 {
+		if sg.Container == "" {
+			sg.Container = sg.Name
+		}
+	}
 	for i, sch := range sg.Schema.AllOf {
 		var comprop *schemaGenContext
 		comprop = sg.NewCompositionBranch(sch, i)
@@ -765,6 +788,7 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 }
 
 func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *schemaGenContext {
+	fmt.Println("making new struct", name, sg.Container)
 	sp := sg.TypeResolver.Doc.Spec()
 	name = swag.ToGoName(name)
 	if sg.TypeResolver.ModelName != sg.Name {
@@ -785,6 +809,7 @@ func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *sche
 		Named:          true,
 		ExtraSchemas:   make(map[string]GenSchema),
 		Discrimination: sg.Discrimination,
+		Container:      sg.Container,
 	}
 	if schema.Ref.String() == "" {
 		resolver := newTypeResolver(sg.TypeResolver.ModelsPackage, sg.TypeResolver.Doc)
@@ -1011,7 +1036,7 @@ func (sg *schemaGenContext) liftSpecialAllOf() error {
 
 func (sg *schemaGenContext) makeGenSchema() error {
 	//_, file, pos, _ := runtime.Caller(1)
-	//log.Printf("[%s:%d] making gen schema (anon: %t, req: %t, tuple: %t) %s\n", filepath.Base(file), pos, !sg.Named, sg.GenSchema.Required, sg.IsTuple [>bbb<], sg.Name)
+	//log.Printf("[%s:%d] making gen schema (anon: %t, req: %t, tuple: %t) %s\n", filepath.Base(file), pos, !sg.Named, sg.GenSchema.Required, sg.IsTuple, sg.Name)
 
 	ex := ""
 	if sg.Schema.Example != nil {
@@ -1044,6 +1069,9 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	}
 	nullableOverride := sg.GenSchema.IsNullable
 
+	if sg.Container == "" {
+		sg.Container = sg.GenSchema.Name
+	}
 	if err := sg.buildAllOf(); err != nil {
 		return err
 	}

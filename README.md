@@ -52,12 +52,6 @@ The tookit itself is licensed as Apache Software License 2.0. Just like swagger,
 the toolkit. That code is entirely yours to license however you see fit.
 
 
-Design
-------
-
-For now what exists of documentation on how all the pieces fit together, is described in this [doc](design.md)
-
-
 What's inside?
 --------------
 
@@ -131,37 +125,3 @@ For a V1 I want to have this feature set completed:
 	-	[x] duration
   - [x] password
   -	[x] custom string formats
-
-Later
------
-
-After the v1 implementation extra transports are on the roadmap.
-
-Many of these fall under the maybe, perhaps, could be nice to have, might not happen bucket:
-
-- Formats:
-	- [ ] custom serializer for XML to support namespaces and prefixes
-- Tools:
-  - Code generation:
-    -	[ ] generate "sensible" random data based on swagger spec
-    -	[ ] generate tests based on swagger spec for client
-    -	[ ] generate tests based on swagger spec for server
-    - [ ] generate markdown representation of swagger spec
-    -	[ ] watch swagger spec file and regenerate when modified
-  - Spec generation:
-    -	[ ] watch application folders and regenerate the swagger document
-    - [ ] create fluent builder api
-- Middlewares:
-	- [ ] swagger editor
-	- [ ] swagger UI
-  - [ ] authorization:
-		-	[ ] oauth2
-			-	[ ] implicit
-			-	[ ] access code
-			-	[ ] password
-			-	[ ] application
--	Transports:
-	-	[ ] swagger socket (swagger over tcp sockets)
-	-	[ ] swagger websocket (swagger over websockets)
-	- [ ] swagger proxy (assemble several backend apis into a single swagger spec and route the requests)
-	- [ ] swagger discovery (repository for swagger specifications)
