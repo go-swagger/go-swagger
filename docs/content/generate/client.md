@@ -20,6 +20,10 @@ To generate a client:
 swagger generate client -f [http-url|filepath] -A [application-name] [--principal [principal-name]]
 ```
 
+If you want to debug what the client is sending and receiving you can set the environment value DEBUG to a non-empty
+value.
+
+
 Use a default client, which has an HTTP transport:
 
 ```go

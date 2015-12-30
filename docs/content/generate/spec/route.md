@@ -20,7 +20,7 @@ yourself in valid swagger syntax.
 ##### Syntax:
 
 ```
-swagger:route [method] [path pattern] [operation id] [?tag1 tag2 tag3]
+swagger:route [method] [path pattern] [?tag1 tag2 tag3] [operation id]
 ```
 
 ##### Properties:
@@ -92,15 +92,14 @@ operations:
       - wss
       security:
         api_key: []
-        oauth: 
+        oauth:
         - read
         - write
       responses:
-        default: 
+        default:
           $ref: "#/responses/genericError"
         200:
           $ref: "#/responses/someResponse"
         422:
           $ref: "#/responses/validationError"
-        
 ```
