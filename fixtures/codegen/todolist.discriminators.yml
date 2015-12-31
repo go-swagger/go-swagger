@@ -122,3 +122,25 @@ definitions:
           minimum: 0
       required:
       - packSize
+
+  BFWAccount:
+    type: object
+    description: account
+    xml:
+      name: account
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      billingEntity:
+        type: string
+        enum:
+          - notification
+          - organization
+          - product
+          - user
+        crmid:
+          type: string
+
+

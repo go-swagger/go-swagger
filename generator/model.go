@@ -518,6 +518,13 @@ func (sg *schemaGenContext) buildProperties() error {
 	if Debug {
 		log.Printf("building properties %s (parent: %s)", sg.Name, sg.Container)
 	}
+	//var discriminatorField string
+	//if sg.Discrimination != nil {
+	//dis, ok := sg.Discriminated["#/definitions/"+sg.Container]
+	//if ok {
+
+	//}
+	//}
 	for k, v := range sg.Schema.Properties {
 		if Debug {
 			bbb, _ := json.MarshalIndent(sg.Schema, "", "  ")
