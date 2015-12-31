@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e -x -o pipefail
+set -e -o pipefail
 
 godep go test -v -race $(go list ./... | grep -v vendor) | go-junit-report -dir $CIRCLE_TEST_REPORTS/go
 
@@ -19,7 +19,18 @@ do
   fi
 done
 
-set +x
 godep go tool cover -func profile.cov
 gocov convert profile.cov | gocov report
 gocov convert profile.cov | gocov-html > $CIRCLE_ARTIFACTS/coverage-$CIRCLE_BUILD_NUM.html
+
+go install ./cmd/swagger
+for dir in $(ls fixtures/canary)
+do
+  pushd $dir
+  rm -rf client models restapi cmd
+  swagger generate client
+  go test ./...
+  swagger generate server
+  go test ./...
+  popd
+done
