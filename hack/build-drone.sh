@@ -2,7 +2,7 @@
 set -e -x -o pipefail
 
 mkdir -p /usr/share/{testresults,coverage,dist}
-go test -v -race $(go list ./... | grep -v vendor) | go-junit-report -dir /usr/share/testresults
+go test -v -race $(glide nv) | go-junit-report -dir /usr/share/testresults
 
 # Run test coverage on each subdirectories and merge the coverage profile.
 echo "mode: ${GOCOVMODE}" > profile.cov

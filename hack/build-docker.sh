@@ -2,7 +2,7 @@
 
 set -e -o pipefail
 export GO15VENDOREXPERIMENT=1
-go test -v -race $(go list ./... | grep -v vendor) | go-junit-report -dir /usr/share/testresults
+go test -v -race $(glide nv) | go-junit-report -dir /usr/share/testresults
 
 # Run test coverage on each subdirectories and merge the coverage profile.
 echo "mode: count" > profile.cov

@@ -14,5 +14,5 @@ build:
     - go get -u github.com/asaskevich/govalidator
     - go get -u github.com/naoina/denco
     - go get -u github.com/go-swagger/scan-repo-boundary/makeplans
+    - ./hack/install-glide.sh
     - ./hack/build-drone.sh
-

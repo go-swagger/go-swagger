@@ -10,6 +10,7 @@ WORKDIR /go/src/github.com/go-swagger/go-swagger
 
 RUN set -e -x \
   && mkdir -p /usr/share/coverage /usr/share/testresults /usr/share/dist \
+  && ./hack/install-glide.sh \
   && go get -u golang.org/x/tools/cmd/... \
   && go get -u github.com/axw/gocov/gocov \
   && go get -u gopkg.in/matm/v1/gocov-html \

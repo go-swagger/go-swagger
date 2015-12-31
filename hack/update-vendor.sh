@@ -9,5 +9,4 @@ gvt update --all
 rm -rf vendor/**/*_test.go
 
 # remove some items that are problematic for a continuous build and not actually in use
-rm -rf vendor/github.com/kr/text/mc
 rm -rf vendor/github.com/tylerb/graceful/tests
