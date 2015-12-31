@@ -53,7 +53,7 @@ func (o *FindParams) BindRequest(r *http.Request, route *middleware.MatchedRoute
 	}
 	fds := httpkit.Values(r.Form)
 
-	if err := o.bindXRateLimit([]string{r.Header.Get("X-Rate-Limit")}, true, route.Formats); err != nil {
+	if err := o.bindXRateLimit(r.Header["X-Rate-Limit"], true, route.Formats); err != nil {
 		res = append(res, err)
 	}
 

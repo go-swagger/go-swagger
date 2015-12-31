@@ -22,6 +22,7 @@ type Item struct {
 	/* Description description
 
 	Required: true
+	Min Length: 1
 	*/
 	Description string `json:"description,omitempty"`
 
@@ -50,6 +51,10 @@ func (m *Item) Validate(formats strfmt.Registry) error {
 func (m *Item) validateDescription(formats strfmt.Registry) error {
 
 	if err := validate.Required("description", "body", string(m.Description)); err != nil {
+		return err
+	}
+
+	if err := validate.MinLength("description", "body", string(m.Description), 1); err != nil {
 		return err
 	}
 

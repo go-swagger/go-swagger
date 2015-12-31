@@ -116,6 +116,7 @@ definitions:
         readOnly: true
       description:
         type: string
+        minLength: 1
       completed:
         type: boolean
   error:
