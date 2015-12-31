@@ -16,7 +16,7 @@
 		{
 			"importpath": "github.com/asaskevich/govalidator",
 			"repository": "https://github.com/asaskevich/govalidator",
-			"revision": "1a4bf7e7a98e6a6484254ac41c52ef20ec30814e",
+			"revision": "129580890d97de923d9d9aec06cb1aa771812aff",
 			"branch": "master"
 		},
 		{
@@ -39,19 +39,6 @@
 			"branch": "master"
 		},
 		{
-			"importpath": "github.com/golang/gddo",
-			"repository": "https://github.com/golang/gddo",
-			"revision": "61332c79e0494891db938a8032501c6fa49f7e00",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/golang/gddo/httputil",
-			"repository": "https://github.com/golang/gddo",
-			"revision": "61332c79e0494891db938a8032501c6fa49f7e00",
-			"branch": "master",
-			"path": "/httputil"
-		},
-		{
 			"importpath": "github.com/gorilla/context",
 			"repository": "https://github.com/gorilla/context",
 			"revision": "1c83b3eabd45b6d76072b66b746c20815fb2872d",
@@ -60,7 +47,7 @@
 		{
 			"importpath": "github.com/jessevdk/go-flags",
 			"repository": "https://github.com/jessevdk/go-flags",
-			"revision": "aa34304f81c710f34c76e964a3d996ec1330711d",
+			"revision": "d91b7c5a5ce0b1d99d765ec3fb20ab590e52ddcb",
 			"branch": "master"
 		},
 		{
@@ -115,7 +102,7 @@
 		{
 			"importpath": "github.com/smartystreets/goconvey",
 			"repository": "https://github.com/smartystreets/goconvey",
-			"revision": "899ed5a77548ac0bc086467509ff3dc49c63a814",
+			"revision": "a2d5d788f3afbce0989463251ccc5492fad832df",
 			"branch": "master"
 		},
 		{
@@ -139,56 +126,56 @@
 		{
 			"importpath": "golang.org/x/net/context",
 			"repository": "https://go.googlesource.com/net",
-			"revision": "5d0a0f8cd486626821d2ba44d471ab1c9271d38f",
+			"revision": "0cb26f788dd4625d1956c6fd97ffc4c90669d129",
 			"branch": "master",
 			"path": "/context"
 		},
 		{
 			"importpath": "golang.org/x/net/netutil",
 			"repository": "https://go.googlesource.com/net",
-			"revision": "68a055e15f0ce90989da5564fd947fb72ce67513",
+			"revision": "0cb26f788dd4625d1956c6fd97ffc4c90669d129",
 			"branch": "master",
 			"path": "/netutil"
 		},
 		{
 			"importpath": "golang.org/x/tools/go/ast/astutil",
 			"repository": "https://go.googlesource.com/tools",
-			"revision": "9673333889cecd0170042cef4585f782e59c45da",
+			"revision": "2dff1e88eb92a374a989dd38e3402481f498ffa2",
 			"branch": "master",
 			"path": "/go/ast/astutil"
 		},
 		{
 			"importpath": "golang.org/x/tools/go/buildutil",
 			"repository": "https://go.googlesource.com/tools",
-			"revision": "9673333889cecd0170042cef4585f782e59c45da",
+			"revision": "2dff1e88eb92a374a989dd38e3402481f498ffa2",
 			"branch": "master",
 			"path": "/go/buildutil"
 		},
 		{
 			"importpath": "golang.org/x/tools/go/exact",
 			"repository": "https://go.googlesource.com/tools",
-			"revision": "9673333889cecd0170042cef4585f782e59c45da",
+			"revision": "2dff1e88eb92a374a989dd38e3402481f498ffa2",
 			"branch": "master",
 			"path": "/go/exact"
 		},
 		{
 			"importpath": "golang.org/x/tools/go/loader",
 			"repository": "https://go.googlesource.com/tools",
-			"revision": "9673333889cecd0170042cef4585f782e59c45da",
+			"revision": "2dff1e88eb92a374a989dd38e3402481f498ffa2",
 			"branch": "master",
 			"path": "/go/loader"
 		},
 		{
 			"importpath": "golang.org/x/tools/go/types",
 			"repository": "https://go.googlesource.com/tools",
-			"revision": "9673333889cecd0170042cef4585f782e59c45da",
+			"revision": "2dff1e88eb92a374a989dd38e3402481f498ffa2",
 			"branch": "master",
 			"path": "/go/types"
 		},
 		{
 			"importpath": "golang.org/x/tools/imports",
 			"repository": "https://go.googlesource.com/tools",
-			"revision": "9673333889cecd0170042cef4585f782e59c45da",
+			"revision": "2dff1e88eb92a374a989dd38e3402481f498ffa2",
 			"branch": "master",
 			"path": "/imports"
 		},

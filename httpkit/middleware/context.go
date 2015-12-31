@@ -23,7 +23,6 @@ import (
 	"github.com/go-swagger/go-swagger/httpkit/middleware/untyped"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
-	"github.com/golang/gddo/httputil"
 	"github.com/gorilla/context"
 )
 
@@ -223,7 +222,7 @@ func (c *Context) BindValidRequest(request *http.Request, route *MatchedRoute, b
 
 	// check and validate the response format
 	if len(res) == 0 {
-		if str := httputil.NegotiateContentType(request, route.Produces, ""); str == "" {
+		if str := NegotiateContentType(request, route.Produces, ""); str == "" {
 			res = append(res, errors.InvalidResponseFormat(request.Header.Get(httpkit.HeaderAccept), route.Produces))
 		}
 	}
@@ -291,7 +290,7 @@ func (c *Context) ResponseFormat(r *http.Request, offers []string) string {
 		}
 	}
 
-	format := httputil.NegotiateContentType(r, offers, "")
+	format := NegotiateContentType(r, offers, "")
 	if format != "" {
 		context.Set(r, ctxResponseFormat, format)
 	}

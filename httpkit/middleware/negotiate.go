@@ -4,12 +4,15 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd.
 
-package httputil
+// this file was taken from the github.com/golang/gddo repository
+
+package middleware
 
 import (
-	"github.com/golang/gddo/httputil/header"
 	"net/http"
 	"strings"
+
+	"github.com/go-swagger/go-swagger/httpkit/middleware/header"
 )
 
 // NegotiateContentEncoding returns the best offered content encoding for the

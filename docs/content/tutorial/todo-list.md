@@ -343,4 +343,4 @@ be generated:
 └── swagger.yml
 ```
 
-This shows the basic worflow for using the server generator of swagger.
+This shows the basic worflow for using the server generator of swagger. 

@@ -11,5 +11,5 @@ convey.config = {
 
 	// Path to the themes (end with forward-slash)
 	themePath: "/resources/css/themes/"
-	
+
 };

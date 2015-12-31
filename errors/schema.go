@@ -72,6 +72,7 @@ type CompositeError struct {
 	message string
 }
 
+// Code for this error
 func (c *CompositeError) Code() int32 {
 	return c.code
 }

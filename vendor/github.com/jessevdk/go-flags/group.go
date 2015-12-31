@@ -187,7 +187,7 @@ func (g *Group) scanStruct(realval reflect.Value, sfield *reflect.StructField, h
 		field := stype.Field(i)
 
 		// PkgName is set only for non-exported fields, which we ignore
-		if field.PkgPath != "" {
+		if field.PkgPath != "" && !field.Anonymous {
 			continue
 		}
 

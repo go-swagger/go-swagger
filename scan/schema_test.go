@@ -143,24 +143,25 @@ func TestSchemaParser(t *testing.T) {
 	definitions := make(map[string]spec.Schema)
 	sp := newSchemaParser(classificationProg)
 	pn := "github.com/go-swagger/go-swagger/fixtures/goparsing/classification/models"
-	pnr := "../fixtures/goparsing/classification/models"
-	pkg := classificationProg.Package(pnr)
-	assert.NotNil(t, pkg)
+	// pnr := "../fixtures/goparsing/classification/models"
+	pkg := classificationProg.Package(pn)
+	if assert.NotNil(t, pkg) {
 
-	fnd := false
-	for _, fil := range pkg.Files {
-		nm := filepath.Base(classificationProg.Fset.File(fil.Pos()).Name())
-		if nm == "order.go" {
-			fnd = true
-			sp.Parse(fil, definitions)
-			break
+		fnd := false
+		for _, fil := range pkg.Files {
+			nm := filepath.Base(classificationProg.Fset.File(fil.Pos()).Name())
+			if nm == "order.go" {
+				fnd = true
+				sp.Parse(fil, definitions)
+				break
+			}
 		}
+		assert.True(t, fnd)
+		msch, ok := definitions["order"]
+		assert.True(t, ok)
+		assert.Equal(t, pn, msch.Extensions["x-go-package"])
+		assert.Equal(t, "StoreOrder", msch.Extensions["x-go-name"])
 	}
-	assert.True(t, fnd)
-	msch, ok := definitions["order"]
-	assert.True(t, ok)
-	assert.Equal(t, pn, msch.Extensions["x-go-package"])
-	assert.Equal(t, "StoreOrder", msch.Extensions["x-go-name"])
 }
 
 func TestEmbeddedTypes(t *testing.T) {

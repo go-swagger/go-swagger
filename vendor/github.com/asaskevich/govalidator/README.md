@@ -86,6 +86,7 @@ func IsRGBcolor(str string) bool
 func IsRequestURI(rawurl string) bool
 func IsRequestURL(rawurl string) bool
 func IsSSN(str string) bool
+func IsSemver(str string) bool
 func IsURL(str string) bool
 func IsUTFDigit(str string) bool
 func IsUTFLetter(str string) bool
@@ -211,7 +212,8 @@ Here is a list of available validators for struct fields (validator - used funct
 "requri":         IsRequestURI,
 "requrl":         IsRequestURL,
 "rgbcolor":       IsRGBcolor,
-"ssn":            IsSSN
+"ssn":            IsSSN,
+"semver":         IsSemver,
 "uppercase":      IsUpperCase,
 "url":            IsURL,
 "utfdigit":       IsUTFDigit,

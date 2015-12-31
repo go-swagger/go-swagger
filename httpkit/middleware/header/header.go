@@ -4,6 +4,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd.
 
+// this file was taken from the github.com/golang/gddo repository
+
 // Package header provides functions for parsing HTTP headers.
 package header
 

@@ -563,6 +563,11 @@ func IsSSN(str string) bool {
 	return rxSSN.MatchString(str)
 }
 
+// IsSemver check if string is valid semantic version
+func IsSemver(str string) bool {
+	return rxSemver.MatchString(str)
+}
+
 // ByteLength check string's length
 func ByteLength(str string, params ...string) bool {
 	if len(params) == 2 {
