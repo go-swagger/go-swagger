@@ -38,6 +38,11 @@
   </url>
   
   <url>
+    <loc>//goswagger.io/tutorial/todo-list/</loc>
+    <lastmod>2015-12-30T11:56:40-08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>//goswagger.io/use/schemas/</loc>
     <lastmod>2015-12-26T15:39:43-08:00</lastmod>
   </url>
