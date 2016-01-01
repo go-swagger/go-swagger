@@ -79,7 +79,7 @@ yourself in valid swagger syntax.</p>
 
 <h5 id="syntax:657749a60c6862d2709238cb94541743">Syntax:</h5>
 
-<pre><code>swagger:route [method] [path pattern] [operation id] [?tag1 tag2 tag3]
+<pre><code>swagger:route [method] [path pattern] [?tag1 tag2 tag3] [operation id]
 </code></pre>
 
 <h5 id="properties:657749a60c6862d2709238cb94541743">Properties:</h5>
@@ -177,17 +177,16 @@ operations:
       - wss
       security:
         api_key: []
-        oauth: 
+        oauth:
         - read
         - write
       responses:
-        default: 
+        default:
           $ref: &quot;#/responses/genericError&quot;
         200:
           $ref: &quot;#/responses/someResponse&quot;
         422:
           $ref: &quot;#/responses/validationError&quot;
-        
 </code></pre>
 </p>
           <p>14 Nov 2015

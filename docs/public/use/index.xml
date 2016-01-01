@@ -128,11 +128,9 @@ case the PublicListTravelsError will be returned, otherwise the PublicListTravel
       <guid>//goswagger.io/use/middleware/</guid>
       <description>
 
-&lt;p&gt;Go-swagger chose the golang &lt;code&gt;net/http&lt;/code&gt; package as base abstraction. That means that for &lt;em&gt;any&lt;/em&gt; supported transport by
-the toolkit you can reuse &lt;em&gt;any&lt;/em&gt; middleware existing middlewares that following the stdlib middlware pattern.&lt;/p&gt;
+&lt;p&gt;Go-swagger chose the golang &lt;code&gt;net/http&lt;/code&gt; package as base abstraction. That means that for &lt;em&gt;any&lt;/em&gt; supported transport by the toolkit you can reuse &lt;em&gt;any&lt;/em&gt; middleware existing middlewares that following the stdlib middlware pattern.&lt;/p&gt;
 
-&lt;p&gt;There are several projects providing middleware libraries for weaving all kinds of functionality into your request
-handling. None of those things are the job of go-swagger, go-swagger just serves your specs.&lt;/p&gt;
+&lt;p&gt;There are several projects providing middleware libraries for weaving all kinds of functionality into your request handling. None of those things are the job of go-swagger, go-swagger just serves your specs.&lt;/p&gt;
 
 &lt;p&gt;The server takes care of a number of things when a request arrives:&lt;/p&gt;
 

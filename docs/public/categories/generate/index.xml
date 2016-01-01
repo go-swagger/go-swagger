@@ -173,6 +173,9 @@ When an embedded type isn&amp;rsquo;t decorated with the &lt;code&gt;swagger:all
 &lt;pre&gt;&lt;code&gt;swagger generate client -f [http-url|filepath] -A [application-name] [--principal [principal-name]]
 &lt;/code&gt;&lt;/pre&gt;
 
+&lt;p&gt;If you want to debug what the client is sending and receiving you can set the environment value DEBUG to a non-empty
+value.&lt;/p&gt;
+
 &lt;p&gt;Use a default client, which has an HTTP transport:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;import (

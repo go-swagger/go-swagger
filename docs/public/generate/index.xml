@@ -173,6 +173,9 @@ When an embedded type isn&amp;rsquo;t decorated with the &lt;code&gt;swagger:all
 &lt;pre&gt;&lt;code&gt;swagger generate client -f [http-url|filepath] -A [application-name] [--principal [principal-name]]
 &lt;/code&gt;&lt;/pre&gt;
 
+&lt;p&gt;If you want to debug what the client is sending and receiving you can set the environment value DEBUG to a non-empty
+value.&lt;/p&gt;
+
 &lt;p&gt;Use a default client, which has an HTTP transport:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;import (
@@ -845,7 +848,7 @@ yourself in valid swagger syntax.&lt;/p&gt;
 
 &lt;h5 id=&#34;syntax:657749a60c6862d2709238cb94541743&#34;&gt;Syntax:&lt;/h5&gt;
 
-&lt;pre&gt;&lt;code&gt;swagger:route [method] [path pattern] [operation id] [?tag1 tag2 tag3]
+&lt;pre&gt;&lt;code&gt;swagger:route [method] [path pattern] [?tag1 tag2 tag3] [operation id]
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;h5 id=&#34;properties:657749a60c6862d2709238cb94541743&#34;&gt;Properties:&lt;/h5&gt;
@@ -943,17 +946,16 @@ operations:
       - wss
       security:
         api_key: []
-        oauth: 
+        oauth:
         - read
         - write
       responses:
-        default: 
+        default:
           $ref: &amp;quot;#/responses/genericError&amp;quot;
         200:
           $ref: &amp;quot;#/responses/someResponse&amp;quot;
         422:
           $ref: &amp;quot;#/responses/validationError&amp;quot;
-        
 &lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>

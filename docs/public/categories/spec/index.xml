@@ -171,7 +171,7 @@ yourself in valid swagger syntax.&lt;/p&gt;
 
 &lt;h5 id=&#34;syntax:657749a60c6862d2709238cb94541743&#34;&gt;Syntax:&lt;/h5&gt;
 
-&lt;pre&gt;&lt;code&gt;swagger:route [method] [path pattern] [operation id] [?tag1 tag2 tag3]
+&lt;pre&gt;&lt;code&gt;swagger:route [method] [path pattern] [?tag1 tag2 tag3] [operation id]
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;h5 id=&#34;properties:657749a60c6862d2709238cb94541743&#34;&gt;Properties:&lt;/h5&gt;
@@ -269,17 +269,16 @@ operations:
       - wss
       security:
         api_key: []
-        oauth: 
+        oauth:
         - read
         - write
       responses:
-        default: 
+        default:
           $ref: &amp;quot;#/responses/genericError&amp;quot;
         200:
           $ref: &amp;quot;#/responses/someResponse&amp;quot;
         422:
           $ref: &amp;quot;#/responses/validationError&amp;quot;
-        
 &lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>
