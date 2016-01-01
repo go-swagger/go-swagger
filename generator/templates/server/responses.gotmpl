@@ -27,12 +27,12 @@ type {{ pascalize .Name }} struct {
 }
 
 // New{{ pascalize .Name }} creates {{ pascalize .Name }} with default headers values
-func New{{ pascalize .Name }}({{ if eq .Code -1 }}code int{{ end }}) {{ pascalize .Name }} { {{ if eq .Code -1 }}
+func New{{ pascalize .Name }}({{ if eq .Code -1 }}code int{{ end }}) *{{ pascalize .Name }} { {{ if eq .Code -1 }}
   if code <= 0 {
     code = 500
   }
 {{ end }}
-  return {{ pascalize .Name }}{
+  return &{{ pascalize .Name }}{
     {{ if eq .Code -1 }}_statusCode: code,
     {{ end }}{{ range .Headers }}{{ if .Default }}{{ pascalize .Name }}: {{ printf "%#v" .Default }},{{ end }}
   {{ end }}}

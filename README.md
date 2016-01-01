@@ -25,25 +25,35 @@ https://goswagger.io
 
 Install or update:
 
-    go get -u github.com/go-swagger/go-swagger/cmd/swagger
+```
+go get -u github.com/go-swagger/go-swagger/cmd/swagger
+```
 
 The implementation also provides a number of command line tools to help working with swagger.
 
 Currently there is a [spec validator tool](http://goswagger.io/usage/validate/):
 
-		swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
+```
+swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
+```
 
 To generate a server for a swagger spec document:
 
-		swagger generate server [-f ./swagger.json] -A [application-name [--principal [principal-name]]
+```
+swagger generate server [-f ./swagger.json] -A [application-name [--principal [principal-name]]
+```
 
 To generate a [client for a swagger spec](http://goswagger.io/generate/client/) document:
 
-		swagger generate client [-f ./swagger.json] -A [application-name [--principal [principal-name]]
+```
+swagger generate client [-f ./swagger.json] -A [application-name [--principal [principal-name]]
+```
 
 To generate a [swagger spec document for a go application](http://goswagger.io/generate/spec/):
 
-		swagger generate spec -o ./swagger.json
+```
+swagger generate spec -o ./swagger.json
+```
 
 Licensing
 ---------
