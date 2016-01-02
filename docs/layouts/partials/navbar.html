@@ -9,13 +9,23 @@
           </button>
         </div>
         <div class="navbar-collapse collapse" id="navbar-main">
-          <ul class="nav navbar-nav navbar-right">
-           <li class="dropdown">
-              <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="sections">Sections<span class="caret"></span></a>
+          <ul class="nav navbar-nav">
+            <li><a href="/about/">About</a></li>
+            <li class="dropdown">
+              <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="tutorials">Tutorials<span class="caret"></span></a>
               <ul class="dropdown-menu" aria-labelledby="download">
-              {{ range .Site.Pages.GroupBy "Section" }}
-                <li><a href="/{{ .Key }}">{{ .Key }}</a></li>
-              {{ end }}
+                <li><a href="/tutorial/todo-list/">Simple Server</a></li>
+                <li><a href="/use/middleware/">Middleware</a></li>
+              </ul>
+            </li>
+            <li><a href="/usage/validate/">Validate</a></li>
+            <li class="dropdown">
+              <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="generate">Generate<span class="caret"></span></a>
+              <ul class="dropdown-menu" aria-labelledby="download">
+                <li><a href="/generate/spec/">Swagger.json</a></li>
+                <li><a href="/generate/client/">API Client</a></li>
+                <li><a href="/generate/server/">API Server</a></li>
+                <li><a href="/use/schemas/">Schemas</a></li>
               </ul>
             </li>
           </ul>
