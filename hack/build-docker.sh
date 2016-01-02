@@ -26,7 +26,7 @@ go build -o /usr/share/dist/swagger ./cmd/swagger
 go install ./cmd/swagger
 for dir in $(ls fixtures/canary)
 do
-  pushd $dir
+  pushd fixtures/canary/$dir
   rm -rf client models restapi cmd
   swagger generate client
   go test ./...
