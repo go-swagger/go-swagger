@@ -58,3 +58,55 @@ func (r Response) MarshalJSON() ([]byte, error) {
 	}
 	return swag.ConcatJSON(b1, b2), nil
 }
+
+// NewResponse creates a new response instance
+func NewResponse() *Response {
+	return new(Response)
+}
+
+// ResponseRef creates a response as a json reference
+func ResponseRef(url string) *Response {
+	resp := NewResponse()
+	resp.Ref = MustCreateRef(url)
+	return resp
+}
+
+// WithDescription sets the description on this response, allows for chaining
+func (r *Response) WithDescription(description string) *Response {
+	r.Description = description
+	return r
+}
+
+// WithSchema sets the schema on this response, allows for chaining.
+// Passing a nil argument removes the schema from this response
+func (r *Response) WithSchema(schema *Schema) *Response {
+	r.Schema = schema
+	return r
+}
+
+// AddHeader adds a header to this response
+func (r *Response) AddHeader(name string, header *Header) *Response {
+	if header == nil {
+		return r.RemoveHeader(name)
+	}
+	if r.Headers == nil {
+		r.Headers = make(map[string]Header)
+	}
+	r.Headers[name] = *header
+	return r
+}
+
+// RemoveHeader removes a header from this response
+func (r *Response) RemoveHeader(name string) *Response {
+	delete(r.Headers, name)
+	return r
+}
+
+// AddExample adds an example to this response
+func (r *Response) AddExample(mediaType string, example interface{}) *Response {
+	if r.Examples == nil {
+		r.Examples = make(map[string]interface{})
+	}
+	r.Examples[mediaType] = example
+	return r
+}

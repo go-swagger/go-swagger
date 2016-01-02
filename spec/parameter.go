@@ -56,6 +56,13 @@ func SimpleArrayParam(name, tpe, fmt string) *Parameter {
 	return &Parameter{paramProps: paramProps{Name: name}, simpleSchema: simpleSchema{Type: "array", CollectionFormat: "csv", Items: &Items{simpleSchema: simpleSchema{Type: "string", Format: fmt}}}}
 }
 
+// ParamRef creates a parameter that's a json reference
+func ParamRef(uri string) *Parameter {
+	p := new(Parameter)
+	p.Ref = MustCreateRef(uri)
+	return p
+}
+
 type paramProps struct {
 	Description     string  `json:"description,omitempty"`
 	Name            string  `json:"name,omitempty"`
@@ -111,7 +118,25 @@ func (p Parameter) JSONLookup(token string) (interface{}, error) {
 	return r, err
 }
 
-// Typed a fluent builder method for the type of parameter
+// WithDescription a fluent builder method for the description of the parameter
+func (p *Parameter) WithDescription(description string) *Parameter {
+	p.Description = description
+	return p
+}
+
+// Named a fluent builder method to override the name of the parameter
+func (p *Parameter) Named(name string) *Parameter {
+	p.Name = name
+	return p
+}
+
+// WithLocation a fluent builder method to override the location of the parameter
+func (p *Parameter) WithLocation(in string) *Parameter {
+	p.In = in
+	return p
+}
+
+// Typed a fluent builder method for the type of the parameter value
 func (p *Parameter) Typed(tpe, format string) *Parameter {
 	p.Type = tpe
 	p.Format = format
@@ -130,6 +155,18 @@ func (p *Parameter) CollectionOf(items *Items, format string) *Parameter {
 func (p *Parameter) WithDefault(defaultValue interface{}) *Parameter {
 	p.AsOptional() // with default implies optional
 	p.Default = defaultValue
+	return p
+}
+
+// AllowsEmptyValues flags this parameter as being ok with empty values
+func (p *Parameter) AllowsEmptyValues() *Parameter {
+	p.AllowEmptyValue = true
+	return p
+}
+
+// NoEmptyValues flags this parameter as not liking empty values
+func (p *Parameter) NoEmptyValues() *Parameter {
+	p.AllowEmptyValue = false
 	return p
 }
 

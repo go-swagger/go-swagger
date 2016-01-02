@@ -33,6 +33,17 @@ type Header struct {
 	headerProps
 }
 
+// ResponseHeader creates a new header instance for use in a response
+func ResponseHeader() *Header {
+	return new(Header)
+}
+
+// WithDescription sets the description on this response, allows for chaining
+func (h *Header) WithDescription(description string) *Header {
+	h.Description = description
+	return h
+}
+
 // Typed a fluent builder method for the type of parameter
 func (h *Header) Typed(tpe, format string) *Header {
 	h.Type = tpe
@@ -45,6 +56,80 @@ func (h *Header) CollectionOf(items *Items, format string) *Header {
 	h.Type = "array"
 	h.Items = items
 	h.CollectionFormat = format
+	return h
+}
+
+// WithDefault sets the default value on this item
+func (h *Header) WithDefault(defaultValue interface{}) *Header {
+	h.Default = defaultValue
+	return h
+}
+
+// WithMaxLength sets a max length value
+func (h *Header) WithMaxLength(max int64) *Header {
+	h.MaxLength = &max
+	return h
+}
+
+// WithMinLength sets a min length value
+func (h *Header) WithMinLength(min int64) *Header {
+	h.MinLength = &min
+	return h
+}
+
+// WithPattern sets a pattern value
+func (h *Header) WithPattern(pattern string) *Header {
+	h.Pattern = pattern
+	return h
+}
+
+// WithMultipleOf sets a multiple of value
+func (h *Header) WithMultipleOf(number float64) *Header {
+	h.MultipleOf = &number
+	return h
+}
+
+// WithMaximum sets a maximum number value
+func (h *Header) WithMaximum(max float64, exclusive bool) *Header {
+	h.Maximum = &max
+	h.ExclusiveMaximum = exclusive
+	return h
+}
+
+// WithMinimum sets a minimum number value
+func (h *Header) WithMinimum(min float64, exclusive bool) *Header {
+	h.Minimum = &min
+	h.ExclusiveMinimum = exclusive
+	return h
+}
+
+// WithEnum sets a the enum values (replace)
+func (h *Header) WithEnum(values ...interface{}) *Header {
+	h.Enum = append([]interface{}{}, values...)
+	return h
+}
+
+// WithMaxItems sets the max items
+func (h *Header) WithMaxItems(size int64) *Header {
+	h.MaxItems = &size
+	return h
+}
+
+// WithMinItems sets the min items
+func (h *Header) WithMinItems(size int64) *Header {
+	h.MinItems = &size
+	return h
+}
+
+// UniqueValues dictates that this array can only have unique items
+func (h *Header) UniqueValues() *Header {
+	h.UniqueItems = true
+	return h
+}
+
+// AllowDuplicates this array can have duplicates
+func (h *Header) AllowDuplicates() *Header {
+	h.UniqueItems = false
 	return h
 }
 
