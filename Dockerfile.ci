@@ -1,7 +1,7 @@
 FROM golang:1.5
 MAINTAINER go-swagger contributors
 
-ENV GOCOVMODE mode:\ count
+ENV GOCOVMODE count
 ENV GO15VENDOREXPERIMENT 1
 
 ADD . /go/src/github.com/go-swagger/go-swagger
@@ -10,7 +10,7 @@ WORKDIR /go/src/github.com/go-swagger/go-swagger
 
 RUN set -e -x \
   && mkdir -p /usr/share/coverage /usr/share/testresults /usr/share/dist \
-  && ./hack/install-glide.sh \
+  && go get -u github.com/FiloSottile/gvt \
   && go get -u golang.org/x/tools/cmd/... \
   && go get -u github.com/axw/gocov/gocov \
   && go get -u gopkg.in/matm/v1/gocov-html \
