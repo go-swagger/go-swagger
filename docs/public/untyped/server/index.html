@@ -1,124 +1,85 @@
 <!DOCTYPE html>
-<html lang="en-us">
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"/>
-  <title>Untyped API server</title>
-  <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/css/materialize.min.css" type="text/css" media="screen,projection">
-  <link href="//goswagger.io/css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
-  <link rel="stylesheet" href="//goswagger.io/css/prism.css" />
-  <style type="text/css">
-  
-    footer.page-footer{background-image: url(//goswagger.io/images/default.png);}
-  
-  </style>
-</head>
-<body>
-  <ul id="slide-out" class="side-nav">
-    <li><a href="//goswagger.io"><i class="mdi-action-home left"></i>Home</a></li>
-    <li><a href="//goswagger.io/generate/spec/"><i class="mdi-action-loyalty left"></i>Swagger.json</a></li>
-    <li><a href="//goswagger.io/generate/client/"><i class="mdi-action-polymer left"></i>Generate Client</a></li>
-    <li><a href="//goswagger.io/generate/server/"><i class="mdi-action-perm-data-setting left"></i>Generate Server</a></li>
-    <li><a href="//goswagger.io/usage/validate/"><i class="mdi-action-perm-media left"></i>Validate Spec</a></li>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>go-swagger toolkit</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="/css/bootstrap.min.css" media="screen">
+    <link rel="stylesheet" href="/css/hugo-bootswatch.css">
+    <link rel="stylesheet" href="/css/prism.css">
+  </head>
+  <body>
 
-    
-    
-  </ul>
-  <div id="index-banner" class="parallax-container">
-  <a data-activates="slide-out" class="btn-floating button-collapse" style="top: 5px; left: 5px;"><i class="mdi-navigation-menu"></i></a>
-    <div class="section no-pad-bot">
+    <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="container">
-        <h1 class="header center teal-text text-lighten-2"><a href="//goswagger.io">go-swagger toolkit</a></h1>
-        <div class="row center">
-          <h5 class="header col s12 light">Swagger 2.0 describes your API&#39;s for you, so you don&#39;t have to</h5>
+        <div class="navbar-header">
+          <a href="/" class="navbar-brand">go-swagger toolkit</a>
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
         </div>
-        <div class="row center">
-        
-          <a href="https://github.com/go-swagger/go-swagger"><img src="//goswagger.io/images/github2-dreamstale35.png"></a>
-        
-        
-        
-        
-        
-        </div>
-      </div>
-    </div>
-    <div class="parallax">
-    
-      <img src="//goswagger.io/images/default-gopher.png">
-    
-    </div>
-  </div>
-
-
-
-<div class="container">
-  <div class="section">
-
-    <div class="row">
-      <div class="col s12">
-        <div class="card-panel">
-          <h2>Untyped API server</h2>
-          <p>
-          
-            
-              <a href="//goswagger.io/categories/untyped/">untyped</a>
-            
-              <a href="//goswagger.io/categories/server/">server</a>
-            
-          
-          </p>
-          <p><p>The toolkit supports serving a swagger spec with untyped data. This means that it uses mostly interface{} as params to each operation and as result type. It does allow you to serve a spec up quickly. This is one of the building blocks required to serve up stub API&rsquo;s and to generate a test server with predictable responses.</p>
-</p>
-          <p>22 Nov 2015
-            
-          </p>
-          
+        <div class="navbar-collapse collapse" id="navbar-main">
+          <ul class="nav navbar-nav navbar-right">
+           <li class="dropdown">
+              <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="sections">Sections<span class="caret"></span></a>
+              <ul class="dropdown-menu" aria-labelledby="download">
+              
+                <li><a href="/"></a></li>
+              
+                <li><a href="/generate">generate</a></li>
+              
+                <li><a href="/tutorial">tutorial</a></li>
+              
+                <li><a href="/untyped">untyped</a></li>
+              
+                <li><a href="/usage">usage</a></li>
+              
+                <li><a href="/use">use</a></li>
+              
+              </ul>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
 
-    <div class="row">
-      <div class="col s3 m1">
-      
-        <a class="btn-floating btn-large waves-effect waves-light" href="//goswagger.io/use/schemas/"><i class="mdi-navigation-arrow-back"></i></a>
-      
-      </div>
-      <div class="col s6 m10 center">&nbsp</div>
-      <div class="col s3 m1">
-      
-        <a class="btn-floating btn-large waves-effect waves-light" href="//goswagger.io/about/"><i class="mdi-navigation-arrow-forward"></i></a>
-      
-      </div>
-    </div>
 
-  </div>
-</div>
+    <div class="container">
+        <h1><a href="//goswagger.io/untyped/server/">Untyped API server</a></h1>
+        <span class="lead">Sun, Nov 22, 2015</span>
+        <div class="post">
+            <p>The toolkit supports serving a swagger spec with untyped data. This means that it uses mostly interface{} as params to each operation and as result type. It does allow you to serve a spec up quickly. This is one of the building blocks required to serve up stub API&rsquo;s and to generate a test server with predictable responses.</p>
 
-  <footer class="page-footer">
-    <div class="footer-copyright">
-      <div class="container">
-      © 2015 go-swagger contributors
-      <div class="right">Design <a class="grey-text text-lighten-4" href="http://pdevty.github.io/blog/">pdevty</a></div>
-      </div>
-    </div>
-  </footer>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/js/materialize.min.js"></script>
-  <script src="//goswagger.io/js/init.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/prism/0.0.1/prism.min.js"></script>
-  
-  <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-    ga('create', 'UA-240612-10', 'auto');
-    ga('send', 'pageview');
-  </script>
-  
+        </div>
 
-  </body>
+              <footer>
+        <nav class="navbar navbar-default">
+          <div class="container-fluid">
+            <div class="collapse navbar-collapse">
+              <ul class="nav navbar-nav">
+                <li><a href="http://gohugo.io">Hugo</a></li>
+                <li><a href="http://bootswatch.com">Bootswatch</a></li>
+                <li><a href="http://getbootstrap.com">Bootstrap</a></li>
+              </ul>
+              <ul class="nav navbar-nav navbar-right">
+                <li class="pull-right"><a href="#top">Back to top</a></li>
+              </ul>
+            </div>
+          </nav>
+        </div>
+      </footer>
+
+ 
+     </div>
+     
+        <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+        <script src="/js/bootstrap.min.js"></script>
+        <script src="/js/bootswatch.js"></script>
+        <script src="/js/prism.js"></script>
+    </body>
 </html>
+
 

@@ -3,7 +3,7 @@ categories = ["tutorial"]
 date = "2015-12-30T11:56:40-08:00"
 tags = ["todo app", "client", "server"]
 title = "Todo List Tutorial"
-weight = 7
+weight = 1
 series = ["tutorials", "home"]
 +++
 
@@ -344,6 +344,8 @@ And you can curl it:
 
 ```shellsession
 git:(master) ✗ !? » curl -i http://127.0.0.1:64637/
+```
+```http
 HTTP/1.1 501 Not Implemented
 Content-Type: application/io.goswagger.examples.todo-list.v1+json
 Date: Thu, 31 Dec 2015 22:42:10 GMT
@@ -627,13 +629,19 @@ You're all set now, with a spiffy new todo list api implemented, lets see if it 
 
 ```shellsession
 git:(master) ✗ -!? » curl -i localhost:8765
+```
+```http
 HTTP/1.1 200 OK
 Content-Type: application/io.goswagger.examples.todo-list.v1+json
 Date: Fri, 01 Jan 2016 19:56:01 GMT
 Content-Length: 3
 
 []
+```
+```shellsession
 ± ivan@aether:~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
+```
+```http
 git:(master) ✗ -!? » curl -i localhost:8765 -d "{\"description\":\"message $RANDOM\"}"
 HTTP/1.1 415 Unsupported Media Type
 Content-Type: application/io.goswagger.examples.todo-list.v1+json
@@ -641,61 +649,93 @@ Date: Fri, 01 Jan 2016 19:56:11 GMT
 Content-Length: 157
 
 {"code":415,"message":"unsupported media type \"application/x-www-form-urlencoded\", only [application/io.goswagger.examples.todo-list.v1+json] are allowed"}%                                                                                                      ± ivan@aether:~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
+```
+```shellsession
 git:(master) ✗ -!? » curl -i localhost:8765 -d "{\"description\":\"message $RANDOM\"}" -H 'Content-Type: application/io.goswagger.examples.todo-list.v1+json'
+```
+```http
 HTTP/1.1 201 Created
 Content-Type: application/io.goswagger.examples.todo-list.v1+json
 Date: Fri, 01 Jan 2016 19:56:20 GMT
 Content-Length: 39
 
 {"description":"message 30925","id":1}
+```
+```shellsession
 ± ivan@aether:~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
 git:(master) ✗ -!? » curl -i localhost:8765 -d "{\"description\":\"message $RANDOM\"}" -H 'Content-Type: application/io.goswagger.examples.todo-list.v1+json'
+```
+```http
 HTTP/1.1 201 Created
 Content-Type: application/io.goswagger.examples.todo-list.v1+json
 Date: Fri, 01 Jan 2016 19:56:23 GMT
 Content-Length: 37
 
 {"description":"message 104","id":2}
+```
+```shellsession
 ± ivan@aether:~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
 git:(master) ✗ -!? » curl -i localhost:8765 -d "{\"description\":\"message $RANDOM\"}" -H 'Content-Type: application/io.goswagger.examples.todo-list.v1+json'
+```
+```http
 HTTP/1.1 201 Created
 Content-Type: application/io.goswagger.examples.todo-list.v1+json
 Date: Fri, 01 Jan 2016 19:56:24 GMT
 Content-Length: 39
 
 {"description":"message 15225","id":3}
+```
+```shellsession
 ± ivan@aether:~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
 git:(master) ✗ -!? » curl -i localhost:8765
+```
+```http
 HTTP/1.1 200 OK
 Content-Type: application/io.goswagger.examples.todo-list.v1+json
 Date: Fri, 01 Jan 2016 19:56:26 GMT
 Content-Length: 117
 
 [{"description":"message 30925","id":1},{"description":"message 104","id":2},{"description":"message 15225","id":3}]
+```
+```shellsession
 ± ivan@aether:~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
 git:(master) ✗ -!? » curl -i localhost:8765/3 -X PUT -H 'Content-Type: application/io.goswagger.examples.todo-list.v1+json' -d '{"description":"go shopping"}'
+```
+```http
 HTTP/1.1 200 OK
 Content-Type: application/io.goswagger.examples.todo-list.v1+json
 Date: Fri, 01 Jan 2016 19:56:32 GMT
 Content-Length: 37
 
 {"description":"go shopping","id":3}
+```
+```shellsession
 ± ivan@aether:~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
 git:(master) ✗ -!? » curl -i localhost:8765
+```
+```http
 HTTP/1.1 200 OK
 Content-Type: application/io.goswagger.examples.todo-list.v1+json
 Date: Fri, 01 Jan 2016 19:56:34 GMT
 Content-Length: 115
 
 [{"description":"message 30925","id":1},{"description":"message 104","id":2},{"description":"go shopping","id":3}]
+```
+```shellsession
 ± ivan@aether:~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
 git:(master) ✗ -!? » curl -i localhost:8765/1 -X DELETE
+```
+```http
 HTTP/1.1 204 No Content
 Content-Type: application/io.goswagger.examples.todo-list.v1+json
 Date: Fri, 01 Jan 2016 19:57:04 GMT
 
+```
+```shellsession
 ± ivan@aether:~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
 git:(master) ✗ -!? » curl -i localhost:8765
+```
+```http
 HTTP/1.1 200 OK
 Content-Type: application/io.goswagger.examples.todo-list.v1+json
 Date: Fri, 01 Jan 2016 19:57:06 GMT
