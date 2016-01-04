@@ -300,7 +300,7 @@ func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContex
 	if sg.Discrimination != nil && sg.Discrimination.Discriminators != nil {
 		_, rewriteValueExpr = sg.Discrimination.Discriminators["#/definitions/"+sg.TypeResolver.ModelName]
 		if pg.IndexVar == "i" && rewriteValueExpr {
-			pg.ValueExpr = sg.Receiver + "." + swag.ToJSONName(sg.GenSchema.Name)
+			pg.ValueExpr = sg.Receiver + "." + swag.ToJSONName(sg.GenSchema.Name) + "Field"
 		}
 	}
 	pg.IndexVar = indexVar + "i"

@@ -460,6 +460,7 @@ func (a *appGenerator) makeSecuritySchemes() (security []GenSecurityScheme) {
 }
 
 func (a *appGenerator) makeCodegenApp() (GenApp, error) {
+	log.Println("building a plan for generation")
 	sw := a.SpecDoc.Spec()
 	receiver := a.Receiver
 
@@ -480,6 +481,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ModelsPackage))
 	defaultImports = append(defaultImports, importPath)
 
+	log.Println("planning definitions")
 	for mn, m := range a.Models {
 		mod, err := makeGenDefinition(
 			mn,
@@ -494,6 +496,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		genMods = append(genMods, *mod)
 	}
 
+	log.Println("planning operations")
 	tns := make(map[string]struct{})
 	var genOps GenOperations
 	for on, opp := range a.Operations {
@@ -541,6 +544,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	}
 	sort.Sort(genOps)
 
+	log.Println("grouping operations into packages")
 	opsGroupedByTag := make(map[string]GenOperations)
 	for _, operation := range genOps {
 		if operation.Package == "" {
@@ -563,6 +567,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	}
 	sort.Sort(opGroups)
 
+	log.Println("planning meta data and facades")
 	defaultConsumes := "application/json"
 	rc := a.SpecDoc.RequiredConsumes()
 	if len(rc) > 0 {

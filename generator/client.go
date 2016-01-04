@@ -79,10 +79,18 @@ func (c *clientGenerator) Generate() error {
 		return nil
 	}
 
-	//for _, v := range app.Models {
-	////v.IncludeValidator = c.IncludeValidator
-
-	//}
+	for _, mod := range app.Models {
+		mod.IncludeValidator = true // a.GenOpts.IncludeValidator
+		gen := &definitionGenerator{
+			Name:    mod.Name,
+			SpecDoc: c.SpecDoc,
+			Target:  filepath.Join(c.Target, c.ModelsPackage),
+			Data:    &mod,
+		}
+		if err := gen.generateModel(); err != nil {
+			return err
+		}
+	}
 
 	for i := range app.OperationGroups {
 		opGroup := app.OperationGroups[i]
