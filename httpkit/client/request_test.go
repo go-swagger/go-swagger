@@ -162,7 +162,6 @@ func TestBuildRequest_BuildHTTP_Files(t *testing.T) {
 	})
 	r, _ := newRequest("GET", "/flats/{id}/", reqWrtr)
 	r.SetHeaderParam(httpkit.HeaderContentType, httpkit.JSONMime)
-
 	req, err := r.BuildHTTP(httpkit.JSONProducer(), nil)
 	if assert.NoError(t, err) && assert.NotNil(t, req) {
 		assert.Equal(t, "200", req.Header.Get("x-rate-limit"))
@@ -173,11 +172,13 @@ func TestBuildRequest_BuildHTTP_Files(t *testing.T) {
 			assert.Equal(t, httpkit.MultipartFormMime, mediaType)
 			boundary := params["boundary"]
 			mr := multipart.NewReader(req.Body, boundary)
+			defer req.Body.Close()
 			frm, err := mr.ReadForm(1 << 20)
 			if assert.NoError(t, err) {
 				assert.Equal(t, "some value", frm.Value["something"][0])
 				mpff := frm.File["file"][0]
 				mpf, _ := mpff.Open()
+				defer mpf.Close()
 				assert.Equal(t, "client.go", mpff.Filename)
 				actual, _ := ioutil.ReadAll(mpf)
 				assert.Equal(t, cont, actual)

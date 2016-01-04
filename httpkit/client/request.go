@@ -18,6 +18,8 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -82,9 +84,15 @@ func (r *request) BuildHTTP(producer httpkit.Producer, registry strfmt.Registry)
 		path = strings.Replace(path, "{"+k+"}", v, -1)
 	}
 
-	// TODO: Support uploading huge bodies!
-	// Not too excited about the buffer here, but it keeps me going for now
-	body := bytes.NewBuffer(nil)
+	var body io.ReadCloser
+	var pr *io.PipeReader
+	var pw *io.PipeWriter
+	buf := bytes.NewBuffer(nil)
+	body = ioutil.NopCloser(buf)
+	if r.fileFields != nil {
+		pr, pw = io.Pipe()
+		body = pr
+	}
 	req, err := http.NewRequest(r.method, path, body)
 	if err != nil {
 		return nil, err
@@ -93,47 +101,56 @@ func (r *request) BuildHTTP(producer httpkit.Producer, registry strfmt.Registry)
 	req.Header = r.header
 
 	// check if this is a form type request
-	if r.formFields != nil {
+	if len(r.formFields) > 0 || len(r.fileFields) > 0 {
 		// check if this is multipart
-		if r.fileFields != nil {
-
-			mp := multipart.NewWriter(body)
-			defer mp.Close()
+		if len(r.fileFields) > 0 {
+			mp := multipart.NewWriter(pw)
 			req.Header.Set(httpkit.HeaderContentType, mp.FormDataContentType())
 
-			for fn, v := range r.formFields {
-				if len(v) > 0 {
-					if err := mp.WriteField(fn, v[0]); err != nil {
-						return nil, err
-					}
-				}
-			}
-
-			for fn, f := range r.fileFields {
-				wrtr, err := mp.CreateFormFile(fn, filepath.Base(f.Name()))
-				if err != nil {
-					return nil, err
-				}
+			go func() {
 				defer func() {
-					for _, ff := range r.fileFields {
-						ff.Close()
-					}
+					mp.Close()
+					pw.Close()
 				}()
-				if _, err := io.Copy(wrtr, f); err != nil {
-					return nil, err
-				}
-			}
 
+				for fn, v := range r.formFields {
+					if len(v) > 0 {
+						if err := mp.WriteField(fn, v[0]); err != nil {
+							pw.CloseWithError(err)
+							log.Fatal(err)
+						}
+					}
+				}
+
+				for fn, f := range r.fileFields {
+					wrtr, err := mp.CreateFormFile(fn, filepath.Base(f.Name()))
+					if err != nil {
+						pw.CloseWithError(err)
+						log.Fatal(err)
+					}
+					defer func() {
+						for _, ff := range r.fileFields {
+							ff.Close()
+						}
+
+					}()
+					if _, err := io.Copy(wrtr, f); err != nil {
+						pw.CloseWithError(err)
+						log.Fatal(err)
+					}
+				}
+
+			}()
 			return req, nil
 		}
-		body.WriteString(r.formFields.Encode())
+		buf.WriteString(r.formFields.Encode())
 		return req, nil
 	}
 
 	// write the form values as body
 	// if there is payload, use the producer to write the payload
 	if r.payload != nil {
-		if err := producer.Produce(body, r.payload); err != nil {
+		if err := producer.Produce(buf, r.payload); err != nil {
 			return nil, err
 		}
 	}
@@ -197,7 +214,7 @@ func (r *request) SetFileParam(name string, file *os.File) error {
 		r.fileFields = make(map[string]*os.File)
 	}
 	if r.formFields == nil {
-		r.formFields = url.Values(make(map[string][]string))
+		r.formFields = make(url.Values)
 	}
 
 	r.fileFields[name] = file
