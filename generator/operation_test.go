@@ -198,9 +198,9 @@ func TestRenderOperation_InstagramSearch(t *testing.T) {
 		gO, err := b.MakeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := responsesTemplate.Execute(buf, gO)
+			err := operationTemplate.Execute(buf, gO)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("responses.go", buf.Bytes())
+				ff, err := formatGoFile("operation.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					//fmt.Println(res)
