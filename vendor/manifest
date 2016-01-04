@@ -51,6 +51,12 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/manveru/faker",
+			"repository": "https://github.com/manveru/faker",
+			"revision": "46ac36661f0fdbc3a5316f24ea9bf9e401eb382d",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/naoina/denco",
 			"repository": "https://github.com/naoina/denco",
 			"revision": "9af2ba0e24214bac003821f4a501b131b2e04c75",
@@ -103,6 +109,12 @@
 			"importpath": "github.com/tylerb/graceful",
 			"repository": "https://github.com/tylerb/graceful",
 			"revision": "48afeb21e2fcbcff0f30bd5ad6b97747b0fae38e",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/zach-klippenstein/goregen",
+			"repository": "https://github.com/zach-klippenstein/goregen",
+			"revision": "a55a25e1740eb60f4c82c74c5e27b976839f7531",
 			"branch": "master"
 		},
 		{
