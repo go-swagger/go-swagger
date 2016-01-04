@@ -22,8 +22,8 @@ type GetUserByNameOK struct {
 }
 
 // NewGetUserByNameOK creates GetUserByNameOK with default headers values
-func NewGetUserByNameOK() GetUserByNameOK {
-	return GetUserByNameOK{}
+func NewGetUserByNameOK() *GetUserByNameOK {
+	return &GetUserByNameOK{}
 }
 
 // WithPayload adds the payload to the get user by name o k response
@@ -51,8 +51,8 @@ type GetUserByNameBadRequest struct {
 }
 
 // NewGetUserByNameBadRequest creates GetUserByNameBadRequest with default headers values
-func NewGetUserByNameBadRequest() GetUserByNameBadRequest {
-	return GetUserByNameBadRequest{}
+func NewGetUserByNameBadRequest() *GetUserByNameBadRequest {
+	return &GetUserByNameBadRequest{}
 }
 
 // WriteResponse to the client
@@ -69,8 +69,8 @@ type GetUserByNameNotFound struct {
 }
 
 // NewGetUserByNameNotFound creates GetUserByNameNotFound with default headers values
-func NewGetUserByNameNotFound() GetUserByNameNotFound {
-	return GetUserByNameNotFound{}
+func NewGetUserByNameNotFound() *GetUserByNameNotFound {
+	return &GetUserByNameNotFound{}
 }
 
 // WriteResponse to the client

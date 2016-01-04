@@ -7,15 +7,11 @@ import (
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
 
-	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete/models"
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete/restapi/operations"
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete/restapi/operations/todos"
 )
 
 // This file is safe to edit. Once it exists it will not be overwritten
-
-var store = make(map[int64]models.Item)
-var ids int64
 
 func configureAPI(api *operations.TodoListAPI) http.Handler {
 	// configure the api here
@@ -26,38 +22,16 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 	api.JSONProducer = httpkit.JSONProducer()
 
 	api.TodosAddOneHandler = todos.AddOneHandlerFunc(func(params todos.AddOneParams) middleware.Responder {
-		ids += 1
-		item := *params.Body
-		item.ID = ids
-		store[item.ID] = item
-		return todos.NewAddOneCreated().WithPayload(&item)
+		return middleware.NotImplemented("operation todos.AddOne has not yet been implemented")
 	})
-
 	api.TodosDestroyOneHandler = todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams) middleware.Responder {
-		delete(store, params.ID)
-		return todos.NewDestroyOneNoContent()
+		return middleware.NotImplemented("operation todos.DestroyOne has not yet been implemented")
 	})
-
 	api.TodosFindTodosHandler = todos.FindTodosHandlerFunc(func(params todos.FindTodosParams) middleware.Responder {
-		items := make([]*models.Item, 0, params.Limit)
-		for id := range store {
-			if id > params.Since {
-				item := store[id]
-				items = append(items, &item)
-				if len(items) == int(params.Limit) {
-					break
-				}
-			}
-		}
-
-		return todos.NewFindTodosOK().WithPayload(items)
+		return middleware.NotImplemented("operation todos.FindTodos has not yet been implemented")
 	})
-
 	api.TodosUpdateOneHandler = todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams) middleware.Responder {
-		params.Body.ID = params.ID
-		item := *params.Body
-		store[params.ID] = item
-		return todos.NewUpdateOneOK().WithPayload(&item)
+		return middleware.NotImplemented("operation todos.UpdateOne has not yet been implemented")
 	})
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))

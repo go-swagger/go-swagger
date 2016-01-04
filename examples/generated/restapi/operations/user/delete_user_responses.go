@@ -17,8 +17,8 @@ type DeleteUserBadRequest struct {
 }
 
 // NewDeleteUserBadRequest creates DeleteUserBadRequest with default headers values
-func NewDeleteUserBadRequest() DeleteUserBadRequest {
-	return DeleteUserBadRequest{}
+func NewDeleteUserBadRequest() *DeleteUserBadRequest {
+	return &DeleteUserBadRequest{}
 }
 
 // WriteResponse to the client
@@ -35,8 +35,8 @@ type DeleteUserNotFound struct {
 }
 
 // NewDeleteUserNotFound creates DeleteUserNotFound with default headers values
-func NewDeleteUserNotFound() DeleteUserNotFound {
-	return DeleteUserNotFound{}
+func NewDeleteUserNotFound() *DeleteUserNotFound {
+	return &DeleteUserNotFound{}
 }
 
 // WriteResponse to the client

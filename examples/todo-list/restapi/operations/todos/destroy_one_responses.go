@@ -19,8 +19,8 @@ type DestroyOneNoContent struct {
 }
 
 // NewDestroyOneNoContent creates DestroyOneNoContent with default headers values
-func NewDestroyOneNoContent() DestroyOneNoContent {
-	return DestroyOneNoContent{}
+func NewDestroyOneNoContent() *DestroyOneNoContent {
+	return &DestroyOneNoContent{}
 }
 
 // WriteResponse to the client
@@ -41,12 +41,12 @@ type DestroyOneDefault struct {
 }
 
 // NewDestroyOneDefault creates DestroyOneDefault with default headers values
-func NewDestroyOneDefault(code int) DestroyOneDefault {
+func NewDestroyOneDefault(code int) *DestroyOneDefault {
 	if code <= 0 {
 		code = 500
 	}
 
-	return DestroyOneDefault{
+	return &DestroyOneDefault{
 		_statusCode: code,
 	}
 }

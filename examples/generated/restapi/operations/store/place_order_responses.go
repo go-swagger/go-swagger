@@ -22,8 +22,8 @@ type PlaceOrderOK struct {
 }
 
 // NewPlaceOrderOK creates PlaceOrderOK with default headers values
-func NewPlaceOrderOK() PlaceOrderOK {
-	return PlaceOrderOK{}
+func NewPlaceOrderOK() *PlaceOrderOK {
+	return &PlaceOrderOK{}
 }
 
 // WithPayload adds the payload to the place order o k response
@@ -51,8 +51,8 @@ type PlaceOrderBadRequest struct {
 }
 
 // NewPlaceOrderBadRequest creates PlaceOrderBadRequest with default headers values
-func NewPlaceOrderBadRequest() PlaceOrderBadRequest {
-	return PlaceOrderBadRequest{}
+func NewPlaceOrderBadRequest() *PlaceOrderBadRequest {
+	return &PlaceOrderBadRequest{}
 }
 
 // WriteResponse to the client

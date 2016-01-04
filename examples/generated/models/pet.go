@@ -106,9 +106,9 @@ func (m *Pet) validatePhotoUrls(formats strfmt.Registry) error {
 
 var petStatusEnum []interface{}
 
-func (m *Pet) validateStatusEnum(path, location string, value *string) error {
+func (m *Pet) validateStatusEnum(path, location string, value string) error {
 	if petStatusEnum == nil {
-		var res []*string
+		var res []string
 		if err := json.Unmarshal([]byte(`["available","pending","sold"]`), &res); err != nil {
 			return err
 		}
@@ -128,7 +128,7 @@ func (m *Pet) validateStatus(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 

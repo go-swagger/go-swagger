@@ -17,8 +17,8 @@ type DeletePetBadRequest struct {
 }
 
 // NewDeletePetBadRequest creates DeletePetBadRequest with default headers values
-func NewDeletePetBadRequest() DeletePetBadRequest {
-	return DeletePetBadRequest{}
+func NewDeletePetBadRequest() *DeletePetBadRequest {
+	return &DeletePetBadRequest{}
 }
 
 // WriteResponse to the client

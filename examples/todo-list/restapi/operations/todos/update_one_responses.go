@@ -22,8 +22,8 @@ type UpdateOneOK struct {
 }
 
 // NewUpdateOneOK creates UpdateOneOK with default headers values
-func NewUpdateOneOK() UpdateOneOK {
-	return UpdateOneOK{}
+func NewUpdateOneOK() *UpdateOneOK {
+	return &UpdateOneOK{}
 }
 
 // WithPayload adds the payload to the update one o k response
@@ -55,12 +55,12 @@ type UpdateOneDefault struct {
 }
 
 // NewUpdateOneDefault creates UpdateOneDefault with default headers values
-func NewUpdateOneDefault(code int) UpdateOneDefault {
+func NewUpdateOneDefault(code int) *UpdateOneDefault {
 	if code <= 0 {
 		code = 500
 	}
 
-	return UpdateOneDefault{
+	return &UpdateOneDefault{
 		_statusCode: code,
 	}
 }

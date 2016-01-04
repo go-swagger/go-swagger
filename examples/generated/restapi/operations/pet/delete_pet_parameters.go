@@ -39,7 +39,7 @@ type DeletePetParams struct {
 func (o *DeletePetParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 
-	if err := o.bindAPIKey([]string{r.Header.Get("api_key")}, true, route.Formats); err != nil {
+	if err := o.bindAPIKey(r.Header["api_key"], true, route.Formats); err != nil {
 		res = append(res, err)
 	}
 

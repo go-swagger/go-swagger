@@ -22,8 +22,8 @@ type AddOneCreated struct {
 }
 
 // NewAddOneCreated creates AddOneCreated with default headers values
-func NewAddOneCreated() AddOneCreated {
-	return AddOneCreated{}
+func NewAddOneCreated() *AddOneCreated {
+	return &AddOneCreated{}
 }
 
 // WithPayload adds the payload to the add one created response
@@ -55,12 +55,12 @@ type AddOneDefault struct {
 }
 
 // NewAddOneDefault creates AddOneDefault with default headers values
-func NewAddOneDefault(code int) AddOneDefault {
+func NewAddOneDefault(code int) *AddOneDefault {
 	if code <= 0 {
 		code = 500
 	}
 
-	return AddOneDefault{
+	return &AddOneDefault{
 		_statusCode: code,
 	}
 }

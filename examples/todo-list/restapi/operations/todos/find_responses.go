@@ -22,8 +22,8 @@ type FindOK struct {
 }
 
 // NewFindOK creates FindOK with default headers values
-func NewFindOK() FindOK {
-	return FindOK{}
+func NewFindOK() *FindOK {
+	return &FindOK{}
 }
 
 // WithPayload adds the payload to the find o k response
@@ -54,12 +54,12 @@ type FindDefault struct {
 }
 
 // NewFindDefault creates FindDefault with default headers values
-func NewFindDefault(code int) FindDefault {
+func NewFindDefault(code int) *FindDefault {
 	if code <= 0 {
 		code = 500
 	}
 
-	return FindDefault{
+	return &FindDefault{
 		_statusCode: code,
 	}
 }

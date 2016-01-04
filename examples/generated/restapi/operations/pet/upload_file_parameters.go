@@ -55,7 +55,7 @@ func (o *UploadFileParams) BindRequest(r *http.Request, route *middleware.Matche
 
 	file, fileHeader, err := r.FormFile("file")
 	if err != nil {
-		res = append(res, errors.New(400, "reading file \"file\" failed: %v", err))
+		res = append(res, errors.New(400, "reading file %q failed: %v", "file", err))
 	} else {
 		o.File = httpkit.File{Data: file, Header: fileHeader}
 	}

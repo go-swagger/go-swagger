@@ -22,8 +22,8 @@ type FindPetsByStatusOK struct {
 }
 
 // NewFindPetsByStatusOK creates FindPetsByStatusOK with default headers values
-func NewFindPetsByStatusOK() FindPetsByStatusOK {
-	return FindPetsByStatusOK{}
+func NewFindPetsByStatusOK() *FindPetsByStatusOK {
+	return &FindPetsByStatusOK{}
 }
 
 // WithPayload adds the payload to the find pets by status o k response
@@ -50,8 +50,8 @@ type FindPetsByStatusBadRequest struct {
 }
 
 // NewFindPetsByStatusBadRequest creates FindPetsByStatusBadRequest with default headers values
-func NewFindPetsByStatusBadRequest() FindPetsByStatusBadRequest {
-	return FindPetsByStatusBadRequest{}
+func NewFindPetsByStatusBadRequest() *FindPetsByStatusBadRequest {
+	return &FindPetsByStatusBadRequest{}
 }
 
 // WriteResponse to the client

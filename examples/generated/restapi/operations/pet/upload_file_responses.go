@@ -22,8 +22,8 @@ type UploadFileOK struct {
 }
 
 // NewUploadFileOK creates UploadFileOK with default headers values
-func NewUploadFileOK() UploadFileOK {
-	return UploadFileOK{}
+func NewUploadFileOK() *UploadFileOK {
+	return &UploadFileOK{}
 }
 
 // WithPayload adds the payload to the upload file o k response

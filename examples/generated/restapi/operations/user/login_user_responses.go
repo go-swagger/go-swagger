@@ -30,8 +30,8 @@ type LoginUserOK struct {
 }
 
 // NewLoginUserOK creates LoginUserOK with default headers values
-func NewLoginUserOK() LoginUserOK {
-	return LoginUserOK{}
+func NewLoginUserOK() *LoginUserOK {
+	return &LoginUserOK{}
 }
 
 // WithXExpiresAfter adds the xExpiresAfter to the login user o k response
@@ -76,8 +76,8 @@ type LoginUserBadRequest struct {
 }
 
 // NewLoginUserBadRequest creates LoginUserBadRequest with default headers values
-func NewLoginUserBadRequest() LoginUserBadRequest {
-	return LoginUserBadRequest{}
+func NewLoginUserBadRequest() *LoginUserBadRequest {
+	return &LoginUserBadRequest{}
 }
 
 // WriteResponse to the client

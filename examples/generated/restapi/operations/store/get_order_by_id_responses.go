@@ -22,8 +22,8 @@ type GetOrderByIDOK struct {
 }
 
 // NewGetOrderByIDOK creates GetOrderByIDOK with default headers values
-func NewGetOrderByIDOK() GetOrderByIDOK {
-	return GetOrderByIDOK{}
+func NewGetOrderByIDOK() *GetOrderByIDOK {
+	return &GetOrderByIDOK{}
 }
 
 // WithPayload adds the payload to the get order by id o k response
@@ -51,8 +51,8 @@ type GetOrderByIDBadRequest struct {
 }
 
 // NewGetOrderByIDBadRequest creates GetOrderByIDBadRequest with default headers values
-func NewGetOrderByIDBadRequest() GetOrderByIDBadRequest {
-	return GetOrderByIDBadRequest{}
+func NewGetOrderByIDBadRequest() *GetOrderByIDBadRequest {
+	return &GetOrderByIDBadRequest{}
 }
 
 // WriteResponse to the client
@@ -69,8 +69,8 @@ type GetOrderByIDNotFound struct {
 }
 
 // NewGetOrderByIDNotFound creates GetOrderByIDNotFound with default headers values
-func NewGetOrderByIDNotFound() GetOrderByIDNotFound {
-	return GetOrderByIDNotFound{}
+func NewGetOrderByIDNotFound() *GetOrderByIDNotFound {
+	return &GetOrderByIDNotFound{}
 }
 
 // WriteResponse to the client

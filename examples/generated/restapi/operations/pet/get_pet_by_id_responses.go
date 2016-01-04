@@ -22,8 +22,8 @@ type GetPetByIDOK struct {
 }
 
 // NewGetPetByIDOK creates GetPetByIDOK with default headers values
-func NewGetPetByIDOK() GetPetByIDOK {
-	return GetPetByIDOK{}
+func NewGetPetByIDOK() *GetPetByIDOK {
+	return &GetPetByIDOK{}
 }
 
 // WithPayload adds the payload to the get pet by id o k response
@@ -51,8 +51,8 @@ type GetPetByIDBadRequest struct {
 }
 
 // NewGetPetByIDBadRequest creates GetPetByIDBadRequest with default headers values
-func NewGetPetByIDBadRequest() GetPetByIDBadRequest {
-	return GetPetByIDBadRequest{}
+func NewGetPetByIDBadRequest() *GetPetByIDBadRequest {
+	return &GetPetByIDBadRequest{}
 }
 
 // WriteResponse to the client
@@ -69,8 +69,8 @@ type GetPetByIDNotFound struct {
 }
 
 // NewGetPetByIDNotFound creates GetPetByIDNotFound with default headers values
-func NewGetPetByIDNotFound() GetPetByIDNotFound {
-	return GetPetByIDNotFound{}
+func NewGetPetByIDNotFound() *GetPetByIDNotFound {
+	return &GetPetByIDNotFound{}
 }
 
 // WriteResponse to the client

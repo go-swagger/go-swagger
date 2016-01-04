@@ -136,7 +136,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
   }
   {{ else if .IsFormParam }}{{if .IsFileParam }}{{ camelize .Name }}, {{ camelize .Name }}Header, err := r.FormFile({{ .Path }})
   if err != nil {
-    res = append(res, errors.New(400, "reading file {{ printf "%q" (camelize .Name) }} failed: %v", err))
+    res = append(res, errors.New(400, "reading file %q failed: %v", {{ printf "%q" (camelize .Name) }}, err))
   } else {
     {{ .ReceiverName }}.{{ pascalize .Name }} = httpkit.File{Data: {{ camelize .Name }}, Header: {{ camelize .Name }}Header}
   }

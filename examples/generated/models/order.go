@@ -60,9 +60,9 @@ func (m *Order) Validate(formats strfmt.Registry) error {
 
 var orderStatusEnum []interface{}
 
-func (m *Order) validateStatusEnum(path, location string, value *string) error {
+func (m *Order) validateStatusEnum(path, location string, value string) error {
 	if orderStatusEnum == nil {
-		var res []*string
+		var res []string
 		if err := json.Unmarshal([]byte(`["placed","approved","delivered"]`), &res); err != nil {
 			return err
 		}
@@ -82,7 +82,7 @@ func (m *Order) validateStatus(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 

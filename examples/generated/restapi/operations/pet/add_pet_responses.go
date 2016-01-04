@@ -17,8 +17,8 @@ type AddPetMethodNotAllowed struct {
 }
 
 // NewAddPetMethodNotAllowed creates AddPetMethodNotAllowed with default headers values
-func NewAddPetMethodNotAllowed() AddPetMethodNotAllowed {
-	return AddPetMethodNotAllowed{}
+func NewAddPetMethodNotAllowed() *AddPetMethodNotAllowed {
+	return &AddPetMethodNotAllowed{}
 }
 
 // WriteResponse to the client

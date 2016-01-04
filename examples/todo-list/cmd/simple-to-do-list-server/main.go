@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/go-swagger/go-swagger/spec"
-	"github.com/jessevdk/go-flags"
-	"github.com/tylerb/graceful"
+	flags "github.com/jessevdk/go-flags"
+	graceful "github.com/tylerb/graceful"
 
 	"github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations"
 )

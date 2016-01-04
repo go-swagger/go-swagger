@@ -23,8 +23,8 @@ type GetInventoryOK struct {
 }
 
 // NewGetInventoryOK creates GetInventoryOK with default headers values
-func NewGetInventoryOK() GetInventoryOK {
-	return GetInventoryOK{}
+func NewGetInventoryOK() *GetInventoryOK {
+	return &GetInventoryOK{}
 }
 
 // WithPayload adds the payload to the get inventory o k response
