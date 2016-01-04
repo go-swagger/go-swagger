@@ -270,7 +270,7 @@ func TestTypeResolver_AdditionalProperties(t *testing.T) {
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsMap)
 				assert.False(t, rt.IsComplexObject)
-				assert.Equal(t, "map[string]"+val.Expected, rt.GoType)
+				assert.Equal(t, "map[string]*"+val.Expected, rt.GoType)
 				assert.Equal(t, "object", rt.SwaggerType)
 			}
 		}
@@ -331,7 +331,7 @@ func TestTypeResolver_AdditionalProperties(t *testing.T) {
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsComplexObject)
 				assert.False(t, rt.IsMap)
-				assert.Equal(t, "map[string]"+val.Expected, rt.GoType)
+				assert.Equal(t, "map[string]*"+val.Expected, rt.GoType)
 				assert.Equal(t, "object", rt.SwaggerType)
 			}
 		}

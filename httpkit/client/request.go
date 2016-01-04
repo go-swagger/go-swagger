@@ -185,7 +185,7 @@ func (r *request) SetPathParam(name string, value string) error {
 
 // SetFileParam adds a file param to the request
 func (r *request) SetFileParam(name string, file *os.File) error {
-	fi, err := file.Stat()
+	fi, err := os.Stat(file.Name())
 	if err != nil {
 		return err
 	}

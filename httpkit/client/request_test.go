@@ -19,6 +19,7 @@ import (
 	"io/ioutil"
 	"mime"
 	"mime/multipart"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -73,19 +74,27 @@ func TestBuildRequest_SetFile(t *testing.T) {
 	// needs to convert form to multipart
 	r, _ := newRequest("POST", "/flats/{id}/image", nil)
 	// error if it isn't there
-	err := r.SetFileParam("not there", "./i-dont-exist")
+	err := r.SetFileParam("not there", os.NewFile(0, "./i-dont-exist"))
 	assert.Error(t, err)
 	// error if it isn't a file
-	err = r.SetFileParam("directory", "../client")
+	err = r.SetFileParam("directory", os.NewFile(0, "../client"))
 	assert.Error(t, err)
 	// success adds it to the map
-	err = r.SetFileParam("file", "./client.go")
+	err = r.SetFileParam("file", mustGetFile("./client.go"))
 	if assert.NoError(t, err) {
 		fl, ok := r.fileFields["file"]
 		if assert.True(t, ok) {
 			assert.Equal(t, "client.go", filepath.Base(fl.Name()))
 		}
 	}
+}
+
+func mustGetFile(path string) *os.File {
+	f, err := os.Open(path)
+	if err != nil {
+		panic(err)
+	}
+	return f
 }
 
 func TestBuildRequest_SetBody(t *testing.T) {
@@ -145,7 +154,7 @@ func TestBuildRequest_BuildHTTP_Files(t *testing.T) {
 	cont, _ := ioutil.ReadFile("./client.go")
 	reqWrtr := client.RequestWriterFunc(func(req client.Request, reg strfmt.Registry) error {
 		req.SetFormParam("something", "some value")
-		req.SetFileParam("file", "./client.go")
+		req.SetFileParam("file", mustGetFile("./client.go"))
 		req.SetQueryParam("hello", "world")
 		req.SetPathParam("id", "1234")
 		req.SetHeaderParam("X-Rate-Limit", "200")
