@@ -2,6 +2,12 @@
 	"version": 0,
 	"dependencies": [
 		{
+			"importpath": "github.com/Pallinder/go-randomdata",
+			"repository": "https://github.com/Pallinder/go-randomdata",
+			"revision": "bb2ec5ce70e0fb762ea90618c9d497fb36fe9113",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/PuerkitoBio/purell",
 			"repository": "https://github.com/PuerkitoBio/purell",
 			"revision": "d69616f51cdfcd7514d6a380847a152dfc2a749d",

@@ -1207,6 +1207,7 @@ type GenSchema struct {
 	DiscriminatorValue      string
 	Discriminates           map[string]string
 	Parents                 []string
+	Generator               string
 }
 
 type sharedValidations struct {
