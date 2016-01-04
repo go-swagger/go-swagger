@@ -34,7 +34,7 @@ func (o *DestroyOneNoContent) WriteResponse(rw http.ResponseWriter, producer htt
 swagger:response destroyOneDefault
 */
 type DestroyOneDefault struct {
-	_statusCode int `json:"-"`
+	_statusCode int
 
 	// In: body
 	Payload *models.Error `json:"body,omitempty"`

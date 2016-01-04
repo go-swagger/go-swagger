@@ -6,7 +6,10 @@ package store
 import (
 	"net/http"
 
+	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
+	"github.com/go-swagger/go-swagger/httpkit/validate"
+	"github.com/go-swagger/go-swagger/strfmt"
 )
 
 // GetInventoryHandlerFunc turns a function with the right signature into a get inventory handler
@@ -60,4 +63,24 @@ func (o *GetInventory) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
+}
+
+/*GetInventoryOKBodyBody GetInventoryOKBodyBody get inventory o k body body
+
+swagger:model GetInventoryOKBodyBody
+*/
+type GetInventoryOKBodyBody map[string]int32
+
+// Validate validates this get inventory o k body body
+func (o GetInventoryOKBodyBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := validate.Required("getInventoryOK", "body", o); err != nil {
+		return err
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
 }

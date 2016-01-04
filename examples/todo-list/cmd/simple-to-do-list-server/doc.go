@@ -1,8 +1,8 @@
 /*Package main Simple To Do List API
 
     Schemes:
-      https
       http
+      https
     Version: 0.1.0
 
     Consumes:

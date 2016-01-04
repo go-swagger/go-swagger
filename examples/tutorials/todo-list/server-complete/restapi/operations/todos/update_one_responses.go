@@ -48,7 +48,7 @@ func (o *UpdateOneOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Pro
 swagger:response updateOneDefault
 */
 type UpdateOneDefault struct {
-	_statusCode int `json:"-"`
+	_statusCode int
 
 	// In: body
 	Payload *models.Error `json:"body,omitempty"`

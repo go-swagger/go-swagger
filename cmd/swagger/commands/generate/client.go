@@ -32,27 +32,32 @@ type Client struct {
 // Execute runs this command
 func (c *Client) Execute(args []string) error {
 	opts := generator.GenOpts{
-		Spec:          string(c.Spec),
-		Target:        string(c.Target),
-		APIPackage:    c.APIPackage,
-		ModelPackage:  c.ModelPackage,
-		ServerPackage: c.ServerPackage,
-		ClientPackage: c.ClientPackage,
-		Principal:     c.Principal,
-		DefaultScheme: c.DefaultScheme,
+		Spec:              string(c.Spec),
+		Target:            string(c.Target),
+		APIPackage:        c.APIPackage,
+		ModelPackage:      c.ModelPackage,
+		ServerPackage:     c.ServerPackage,
+		ClientPackage:     c.ClientPackage,
+		Principal:         c.Principal,
+		DefaultScheme:     c.DefaultScheme,
+		IncludeModel:      !c.SkipModels,
+		IncludeValidator:  !c.SkipModels,
+		IncludeHandler:    !c.SkipOperations,
+		IncludeParameters: !c.SkipOperations,
+		IncludeResponses:  !c.SkipOperations,
 	}
 
-	if !c.SkipModels && (len(c.Models) > 0 || len(c.Operations) == 0) {
-		if err := generator.GenerateDefinition(c.Models, true, true, opts); err != nil {
-			return err
-		}
-	}
+	//if !c.SkipModels && (len(c.Models) > 0 || len(c.Operations) == 0) {
+	//if err := generator.GenerateDefinition(c.Models, true, true, opts); err != nil {
+	//return err
+	//}
+	//}
 
-	if !c.SkipOperations && (len(c.Operations) > 0 || len(c.Models) == 0) {
-		if err := generator.GenerateClient(c.Name, c.Models, c.Operations, opts); err != nil {
-			return err
-		}
+	//if !c.SkipOperations && (len(c.Operations) > 0 || len(c.Models) == 0) {
+	if err := generator.GenerateClient(c.Name, c.Models, c.Operations, opts); err != nil {
+		return err
 	}
+	//}
 
 	return nil
 }

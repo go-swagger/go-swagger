@@ -25,7 +25,7 @@ func NewPetstoreAPI(spec *spec.Document) *PetstoreAPI {
 		spec:            spec,
 		handlers:        make(map[string]map[string]http.Handler),
 		formats:         strfmt.Default,
-		defaultConsumes: "application/json",
+		defaultConsumes: "multipart/form-data",
 		defaultProduces: "application/xml",
 	}
 

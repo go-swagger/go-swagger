@@ -47,7 +47,7 @@ func (o *FindOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer
 swagger:response findDefault
 */
 type FindDefault struct {
-	_statusCode int `json:"-"`
+	_statusCode int
 
 	// In: body
 	Payload *models.Error `json:"body,omitempty"`

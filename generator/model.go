@@ -826,9 +826,9 @@ func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *sche
 	pg := schemaGenContext{
 		Path:           "",
 		Name:           name,
-		Receiver:       "m",
+		Receiver:       sg.Receiver,
 		IndexVar:       "i",
-		ValueExpr:      "m",
+		ValueExpr:      sg.Receiver,
 		Schema:         schema,
 		Required:       false,
 		Named:          true,

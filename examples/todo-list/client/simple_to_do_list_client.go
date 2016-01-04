@@ -12,7 +12,7 @@ import (
 	"github.com/go-swagger/go-swagger/examples/todo-list/client/todos"
 )
 
-// The Default simple to do list HTTP client.
+// Default simple to do list HTTP client.
 var Default = NewHTTPClient(nil)
 
 // NewHTTPClient creates a new simple to do list HTTP client.

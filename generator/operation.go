@@ -163,41 +163,65 @@ func (o *operationGenerator) Generate() error {
 			fmt.Fprintln(os.Stdout, string(bb))
 			continue
 		}
-		o.data = op
-		o.pkg = op.Package
-		o.cname = swag.ToGoName(op.Name)
-
-		if o.IncludeHandler {
-			if err := o.generateHandler(); err != nil {
-				return fmt.Errorf("handler: %s", err)
-			}
-			log.Println("generated handler", op.Package+"."+o.cname)
-		}
-
-		opParams := o.Doc.ParamsFor(o.Method, o.Path)
-		if o.IncludeParameters && len(opParams) > 0 {
-			if err := o.generateParameterModel(); err != nil {
-				return fmt.Errorf("parameters: %s", err)
-			}
-			log.Println("generated parameters", op.Package+"."+o.cname+"Parameters")
-		}
-
-		if o.IncludeResponses && len(op.Responses) > 0 {
-			if err := o.generateResponses(); err != nil {
-				return fmt.Errorf("responses: %s", err)
-			}
-			log.Println("generated responses", op.Package+"."+o.cname+"Responses")
-		}
-
-		if len(opParams) == 0 {
-			log.Println("no parameters for operation", op.Package+"."+o.cname)
-		}
+		og := new(opGen)
+		og.IncludeHandler = o.IncludeHandler
+		og.IncludeParameters = o.IncludeParameters
+		og.IncludeResponses = o.IncludeResponses
+		og.data = &op
+		og.pkg = op.Package
+		og.cname = swag.ToGoName(op.Name)
+		og.Doc = o.Doc
+		og.Target = o.Target
+		og.APIPackage = o.APIPackage
+		return og.Generate()
 	}
 
 	return nil
 }
 
-func (o *operationGenerator) generateHandler() error {
+type opGen struct {
+	data              *GenOperation
+	pkg               string
+	cname             string
+	IncludeHandler    bool
+	IncludeParameters bool
+	IncludeResponses  bool
+	Doc               *spec.Document
+	Target            string
+	APIPackage        string
+}
+
+func (o *opGen) Generate() error {
+
+	if o.IncludeHandler {
+		if err := o.generateHandler(); err != nil {
+			return fmt.Errorf("handler: %s", err)
+		}
+		log.Println("generated handler", o.data.Package+"."+o.cname)
+	}
+
+	opParams := o.Doc.ParamsFor(o.data.Method, o.data.Path)
+	if o.IncludeParameters && len(opParams) > 0 {
+		if err := o.generateParameterModel(); err != nil {
+			return fmt.Errorf("parameters: %s", err)
+		}
+		log.Println("generated parameters", o.data.Package+"."+o.cname+"Parameters")
+	}
+
+	if o.IncludeResponses && len(o.data.Responses) > 0 {
+		if err := o.generateResponses(); err != nil {
+			return fmt.Errorf("responses: %s", err)
+		}
+		log.Println("generated responses", o.data.Package+"."+o.cname+"Responses")
+	}
+
+	if len(opParams) == 0 {
+		log.Println("no parameters for operation", o.data.Package+"."+o.cname)
+	}
+	return nil
+}
+
+func (o *opGen) generateHandler() error {
 	buf := bytes.NewBuffer(nil)
 
 	if err := operationTemplate.Execute(buf, o.data); err != nil {
@@ -209,10 +233,10 @@ func (o *operationGenerator) generateHandler() error {
 	if o.pkg != o.APIPackage {
 		fp = filepath.Join(o.Target, o.APIPackage, o.pkg)
 	}
-	return writeToFile(fp, o.Name, buf.Bytes())
+	return writeToFile(fp, swag.ToGoName(o.data.Name), buf.Bytes())
 }
 
-func (o *operationGenerator) generateParameterModel() error {
+func (o *opGen) generateParameterModel() error {
 	buf := bytes.NewBuffer(nil)
 
 	if err := parameterTemplate.Execute(buf, o.data); err != nil {
@@ -224,10 +248,10 @@ func (o *operationGenerator) generateParameterModel() error {
 	if o.pkg != o.APIPackage {
 		fp = filepath.Join(o.Target, o.APIPackage, o.pkg)
 	}
-	return writeToFile(fp, o.Name+"Parameters", buf.Bytes())
+	return writeToFile(fp, swag.ToGoName(o.data.Name)+"Parameters", buf.Bytes())
 }
 
-func (o *operationGenerator) generateResponses() error {
+func (o *opGen) generateResponses() error {
 	buf := bytes.NewBuffer(nil)
 
 	if err := responsesTemplate.Execute(buf, o.data); err != nil {
@@ -239,7 +263,7 @@ func (o *operationGenerator) generateResponses() error {
 	if o.pkg != o.APIPackage {
 		fp = filepath.Join(o.Target, o.APIPackage, o.pkg)
 	}
-	return writeToFile(fp, o.Name+"Responses", buf.Bytes())
+	return writeToFile(fp, swag.ToGoName(o.data.Name)+"Responses", buf.Bytes())
 }
 
 type codeGenOpBuilder struct {
@@ -257,13 +281,14 @@ type codeGenOpBuilder struct {
 	DefaultImports []string
 	DefaultScheme  string
 	ExtraSchemas   map[string]GenSchema
+	origDefs       map[string]spec.Schema
 }
 
 func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	if Debug {
 		log.Printf("[%s %s] parsing operation (id: %q)", b.Method, b.Path, b.Operation.ID)
 	}
-	resolver := newTypeResolver(b.ModelsPackage, b.Doc.Pristine())
+	resolver := newTypeResolver(b.ModelsPackage, b.Doc.ResetDefinitions())
 	receiver := "o"
 
 	operation := b.Operation

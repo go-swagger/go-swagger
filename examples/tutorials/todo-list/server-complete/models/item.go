@@ -9,7 +9,7 @@ import (
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 
-/*Item item
+/*item Item item
 
 swagger:model item
 */

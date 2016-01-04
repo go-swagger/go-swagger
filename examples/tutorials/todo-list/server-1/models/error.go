@@ -9,7 +9,7 @@ import (
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 
-/*Error error
+/*error Error error
 
 swagger:model error
 */

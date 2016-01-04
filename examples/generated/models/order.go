@@ -12,7 +12,7 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
-/*Order order
+/*Order Order order
 
 swagger:model Order
 */

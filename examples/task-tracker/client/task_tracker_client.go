@@ -12,7 +12,7 @@ import (
 	"github.com/go-swagger/go-swagger/examples/task-tracker/client/tasks"
 )
 
-// The Default task tracker HTTP client.
+// Default task tracker HTTP client.
 var Default = NewHTTPClient(nil)
 
 // NewHTTPClient creates a new task tracker HTTP client.

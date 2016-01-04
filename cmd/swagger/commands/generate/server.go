@@ -47,33 +47,20 @@ type Server struct {
 // Execute runs this command
 func (s *Server) Execute(args []string) error {
 	opts := generator.GenOpts{
-		Spec:          string(s.Spec),
-		Target:        string(s.Target),
-		APIPackage:    s.APIPackage,
-		ModelPackage:  s.ModelPackage,
-		ServerPackage: s.ServerPackage,
-		ClientPackage: s.ClientPackage,
-		Principal:     s.Principal,
-		DefaultScheme: s.DefaultScheme,
+		Spec:              string(s.Spec),
+		Target:            string(s.Target),
+		APIPackage:        s.APIPackage,
+		ModelPackage:      s.ModelPackage,
+		ServerPackage:     s.ServerPackage,
+		ClientPackage:     s.ClientPackage,
+		Principal:         s.Principal,
+		DefaultScheme:     s.DefaultScheme,
+		IncludeModel:      !s.SkipModels,
+		IncludeValidator:  !s.SkipModels,
+		IncludeHandler:    !s.SkipOperations,
+		IncludeParameters: !s.SkipOperations,
+		IncludeResponses:  !s.SkipOperations,
 	}
 
-	if !s.SkipModels && (len(s.Models) > 0 || len(s.Operations) == 0) {
-		if err := generator.GenerateDefinition(s.Models, true, true, opts); err != nil {
-			return err
-		}
-	}
-
-	if !s.SkipOperations && (len(s.Operations) > 0 || len(s.Models) == 0) {
-		if err := generator.GenerateServerOperation(s.Operations, s.Tags, true, true, true, opts); err != nil {
-			return err
-		}
-	}
-
-	if !s.SkipSupport {
-		if err := generator.GenerateSupport(s.Name, s.Models, s.Operations, opts); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return generator.GenerateServer(s.Name, s.Models, s.Operations, opts)
 }

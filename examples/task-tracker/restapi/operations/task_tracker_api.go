@@ -23,7 +23,7 @@ func NewTaskTrackerAPI(spec *spec.Document) *TaskTrackerAPI {
 		spec:            spec,
 		handlers:        make(map[string]map[string]http.Handler),
 		formats:         strfmt.Default,
-		defaultConsumes: "multipart/form-data",
+		defaultConsumes: "application/vnd.goswagger.examples.task-tracker.v1+json",
 		defaultProduces: "application/vnd.goswagger.examples.task-tracker.v1+json",
 	}
 

@@ -113,6 +113,7 @@ type Document struct {
 	specAnalyzer
 	spec *Swagger
 	raw  json.RawMessage
+	orig *Document
 }
 
 // Load loads a new spec document
@@ -158,6 +159,8 @@ func New(data json.RawMessage, version string) (*Document, error) {
 		raw:  data,
 	}
 	d.initialize()
+	d.orig = &(*d)
+	d.orig.spec = &(*spec)
 	return d, nil
 }
 
@@ -185,6 +188,9 @@ func (d *Document) Expanded() (*Document, error) {
 		raw:  d.raw,
 	}
 	dd.initialize()
+	dd.orig = d.orig
+	dd.orig.spec = &(*d.orig.spec)
+
 	return dd, nil
 }
 
@@ -220,6 +226,7 @@ func (d *Document) Raw() json.RawMessage {
 
 // Reload reanalyzes the spec
 func (d *Document) Reload() *Document {
+	orig := d.orig
 	d.specAnalyzer = specAnalyzer{
 		spec:        d.spec,
 		consumes:    make(map[string]struct{}),
@@ -230,7 +237,23 @@ func (d *Document) Reload() *Document {
 		allOfs:      make(map[string]SchemaRef),
 	}
 	d.initialize()
+	d.orig = orig
 	return d
+}
+
+// ResetDefinitions gives a shallow copy with the models reset
+func (d *Document) ResetDefinitions() *Document {
+	defs := make(map[string]Schema)
+	for k, v := range d.orig.spec.Definitions {
+		defs[k] = v
+	}
+
+	dd := &(*d)
+	dd.spec = &(*d.orig.spec)
+	dd.spec.Definitions = defs
+	dd.initialize()
+	dd.orig = d.orig
+	return dd.Reload()
 }
 
 // Pristine creates a new pristine document instance based on the input data

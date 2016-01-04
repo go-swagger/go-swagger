@@ -13,7 +13,7 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
-/*Pet pet
+/*Pet Pet pet
 
 swagger:model Pet
 */

@@ -79,35 +79,35 @@ func (c *clientGenerator) Generate() error {
 		return nil
 	}
 
-	opsGroupedByTag := make(map[string]GenOperations)
-	for _, operation := range app.Operations {
-		if operation.Package == "" {
-			operation.Package = c.Package
-		}
-		if err := c.generateParameters(&operation); err != nil {
-			return err
-		}
+	//for _, v := range app.Models {
+	////v.IncludeValidator = c.IncludeValidator
 
-		if err := c.generateResponses(&operation); err != nil {
-			return err
-		}
-		opsGroupedByTag[operation.Package] = append(opsGroupedByTag[operation.Package], operation)
-	}
+	//}
 
-	for k, v := range opsGroupedByTag {
-		sort.Sort(v)
-		opGroup := GenOperationGroup{
-			Name:           k,
-			Operations:     v,
-			DefaultImports: []string{filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ModelsPackage))},
-			RootPackage:    c.APIPackage,
+	for i := range app.OperationGroups {
+		opGroup := app.OperationGroups[i]
+		opGroup.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ModelsPackage))}
+		opGroup.RootPackage = c.APIPackage
+		app.OperationGroups[i] = opGroup
+		sort.Sort(opGroup.Operations)
+		for _, op := range opGroup.Operations {
+			if op.Package == "" {
+				op.Package = c.Package
+			}
+			if err := c.generateParameters(&op); err != nil {
+				return err
+			}
+
+			if err := c.generateResponses(&op); err != nil {
+				return err
+			}
 		}
-		app.OperationGroups = append(app.OperationGroups, opGroup)
-		app.DefaultImports = append(app.DefaultImports, filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ClientPackage, k)))
+		app.DefaultImports = append(app.DefaultImports, filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ClientPackage, opGroup.Name)))
 		if err := c.generateGroupClient(opGroup); err != nil {
 			return err
 		}
 	}
+
 	sort.Sort(app.OperationGroups)
 
 	if err := c.generateEmbeddedSwaggerJSON(&app); err != nil {

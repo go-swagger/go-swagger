@@ -31,18 +31,35 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
+// GenerateServer generates a server application
+func GenerateServer(name string, modelNames, operationIDs []string, opts GenOpts) error {
+	generator, err := newAppGenerator(name, modelNames, operationIDs, &opts)
+	if err != nil {
+		return err
+	}
+	return generator.Generate()
+}
+
 // GenerateSupport generates the supporting files for an API
 func GenerateSupport(name string, modelNames, operationIDs []string, opts GenOpts) error {
+	generator, err := newAppGenerator(name, modelNames, operationIDs, &opts)
+	if err != nil {
+		return err
+	}
+	return generator.GenerateSupport(nil)
+}
+
+func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOpts) (*appGenerator, error) {
 	// Load the spec
 	_, specDoc, err := loadSpec(opts.Spec)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	models := gatherModels(specDoc, modelNames)
 	operations := gatherOperations(specDoc, operationIDs)
 	if len(operations) == 0 {
-		return errors.New("no operations were selected")
+		return nil, errors.New("no operations were selected")
 	}
 
 	defaultScheme := opts.DefaultScheme
@@ -51,7 +68,7 @@ func GenerateSupport(name string, modelNames, operationIDs []string, opts GenOpt
 	}
 
 	apiPackage := mangleName(swag.ToFileName(opts.APIPackage), "api")
-	generator := appGenerator{
+	return &appGenerator{
 		Name:       appNameOrDefault(specDoc, name, "swagger"),
 		Receiver:   "o",
 		SpecDoc:    specDoc,
@@ -67,9 +84,8 @@ func GenerateSupport(name string, modelNames, operationIDs []string, opts GenOpt
 		ClientPackage: mangleName(swag.ToFileName(opts.ClientPackage), "client"),
 		Principal:     opts.Principal,
 		DefaultScheme: defaultScheme,
-	}
-
-	return generator.Generate()
+		GenOpts:       opts,
+	}, nil
 }
 
 type appGenerator struct {
@@ -87,6 +103,7 @@ type appGenerator struct {
 	Target        string
 	DumpData      bool
 	DefaultScheme string
+	GenOpts       *GenOpts
 }
 
 func baseImport(tgt string) string {
@@ -125,26 +142,76 @@ func (a *appGenerator) Generate() error {
 		return nil
 	}
 
-	if err := a.generateAPIBuilder(&app); err != nil {
+	//if a.GenOpts.IncludeModel {
+	log.Printf("rendering %d models", len(app.Models))
+	for _, mod := range app.Models {
+		mod.IncludeValidator = true // a.GenOpts.IncludeValidator
+		gen := &definitionGenerator{
+			Name:    mod.Name,
+			SpecDoc: a.SpecDoc,
+			Target:  filepath.Join(a.Target, a.ModelsPackage),
+			Data:    &mod,
+		}
+		if err := gen.generateModel(); err != nil {
+			return err
+		}
+	}
+	//}
+
+	for _, opg := range app.OperationGroups {
+		for _, op := range opg.Operations {
+			gen := &opGen{
+				data:              &op,
+				pkg:               opg.Name,
+				cname:             swag.ToGoName(op.Name),
+				IncludeHandler:    a.GenOpts.IncludeHandler,
+				IncludeParameters: a.GenOpts.IncludeParameters,
+				IncludeResponses:  a.GenOpts.IncludeResponses,
+				Doc:               a.SpecDoc,
+				Target:            filepath.Join(a.Target, a.ServerPackage),
+				APIPackage:        a.APIPackage,
+			}
+
+			if err := gen.Generate(); err != nil {
+				return err
+			}
+		}
+	}
+
+	return a.GenerateSupport(&app)
+}
+
+func (a *appGenerator) GenerateSupport(ap *GenApp) error {
+	var app *GenApp
+	app = ap
+	if ap == nil {
+		ca, err := a.makeCodegenApp()
+		if err != nil {
+			return err
+		}
+		app = &ca
+	}
+
+	if err := a.generateAPIBuilder(app); err != nil {
 		return err
 	}
 
 	importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage))
 	app.DefaultImports = append(app.DefaultImports, importPath)
 
-	if err := a.generateEmbeddedSwaggerJSON(&app); err != nil {
+	if err := a.generateEmbeddedSwaggerJSON(app); err != nil {
 		return err
 	}
 
-	if err := a.generateConfigureAPI(&app); err != nil {
+	if err := a.generateConfigureAPI(app); err != nil {
 		return err
 	}
 
-	if err := a.generateDoc(&app); err != nil {
+	if err := a.generateDoc(app); err != nil {
 		return err
 	}
 
-	if err := a.generateMain(&app); err != nil {
+	if err := a.generateMain(app); err != nil {
 		return err
 	}
 
@@ -423,7 +490,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		if err != nil {
 			return GenApp{}, err
 		}
-		mod.ReceiverName = receiver
+		//mod.ReceiverName = receiver
 		genMods = append(genMods, *mod)
 	}
 
@@ -474,6 +541,28 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	}
 	sort.Sort(genOps)
 
+	opsGroupedByTag := make(map[string]GenOperations)
+	for _, operation := range genOps {
+		if operation.Package == "" {
+			operation.Package = a.Package
+		}
+		opsGroupedByTag[operation.Package] = append(opsGroupedByTag[operation.Package], operation)
+	}
+
+	var opGroups GenOperationGroups
+	for k, v := range opsGroupedByTag {
+		sort.Sort(v)
+		opGroup := GenOperationGroup{
+			Name:           k,
+			Operations:     v,
+			DefaultImports: []string{filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ModelsPackage))},
+			RootPackage:    a.APIPackage,
+		}
+		opGroups = append(opGroups, opGroup)
+		defaultImports = append(defaultImports, filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage, k)))
+	}
+	sort.Sort(opGroups)
+
 	defaultConsumes := "application/json"
 	rc := a.SpecDoc.RequiredConsumes()
 	if len(rc) > 0 {
@@ -508,6 +597,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		SecurityDefinitions: security,
 		Models:              genMods,
 		Operations:          genOps,
+		OperationGroups:     opGroups,
 		Principal:           prin,
 		SwaggerJSON:         fmt.Sprintf("%#v", jsonb),
 	}, nil

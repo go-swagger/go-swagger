@@ -75,17 +75,22 @@ func findSwaggerSpec(name string) (string, error) {
 
 // GenOpts the options for the generator
 type GenOpts struct {
-	Spec          string
-	APIPackage    string
-	ModelPackage  string
-	ServerPackage string
-	ClientPackage string
-	Principal     string
-	Target        string
-	TypeMapping   map[string]string
-	Imports       map[string]string
-	DumpData      bool
-	DefaultScheme string
+	Spec              string
+	APIPackage        string
+	ModelPackage      string
+	ServerPackage     string
+	ClientPackage     string
+	Principal         string
+	Target            string
+	TypeMapping       map[string]string
+	Imports           map[string]string
+	DumpData          bool
+	DefaultScheme     string
+	IncludeModel      bool
+	IncludeValidator  bool
+	IncludeHandler    bool
+	IncludeParameters bool
+	IncludeResponses  bool
 }
 
 type generatorOptions struct {
@@ -219,8 +224,11 @@ func commentedLines(str string) string {
 func gatherModels(specDoc *spec.Document, modelNames []string) map[string]spec.Schema {
 	models, mnc := make(map[string]spec.Schema), len(modelNames)
 	for k, v := range specDoc.Spec().Definitions {
+		if mnc == 0 {
+			models[k] = v
+		}
 		for _, nm := range modelNames {
-			if mnc == 0 || k == nm {
+			if k == nm {
 				models[k] = v
 			}
 		}

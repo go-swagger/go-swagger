@@ -6,10 +6,7 @@ package store
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit"
-	"github.com/go-swagger/go-swagger/httpkit/validate"
-	"github.com/go-swagger/go-swagger/strfmt"
 )
 
 /*GetInventoryOK successful operation
@@ -41,25 +38,4 @@ func (o *GetInventoryOK) WriteResponse(rw http.ResponseWriter, producer httpkit.
 		panic(err) // let the recovery middleware deal with this
 	}
 
-}
-
-/*
-GetInventoryOKBodyBody get inventory o k body body
-
-swagger:model GetInventoryOKBodyBody
-*/
-type GetInventoryOKBodyBody map[string]int32
-
-// Validate validates this get inventory o k body body
-func (o GetInventoryOKBodyBody) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := validate.Required("getInventoryOK", "body", o); err != nil {
-		return err
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
 }
