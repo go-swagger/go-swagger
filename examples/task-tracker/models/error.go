@@ -9,7 +9,7 @@ import (
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 
-/*Error Structure
+/*Error Error Structure
 
 Contains all the properties any error response from the API will contain.
 Some properties are optional so might be empty most of the time

@@ -144,7 +144,8 @@ func init() {
 	responsesTemplate = makeModelTemplate()
 	responsesTemplate = template.Must(responsesTemplate.New("responses").Parse(string(assetServerResponses)))
 
-	operationTemplate = template.Must(template.New("operation").Funcs(FuncMap).Parse(string(assetServerOperation)))
+	operationTemplate = makeModelTemplate()
+	operationTemplate = template.Must(operationTemplate.New("operation").Parse(string(assetServerOperation)))
 	builderTemplate = template.Must(template.New("builder").Funcs(FuncMap).Parse(string(assetServerBuilder)))
 	configureAPITemplate = template.Must(template.New("configureapi").Funcs(FuncMap).Parse(string(assetServerConfigureAPI)))
 	mainTemplate = template.Must(template.New("main").Funcs(FuncMap).Parse(string(assetServerMain)))

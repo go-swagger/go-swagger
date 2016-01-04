@@ -72,3 +72,10 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) ServeHTTP(rw http.ResponseWrit
   {{ .ReceiverName }}.Context.Respond(rw, r, route.Produces, route, res)
 
 }
+
+{{ range .ExtraSchemas }}
+/*{{ .Name }} {{ template "docstring" . }}
+swagger:model {{ .Name }}
+*/
+{{ template "schema" . }}
+{{ end }}

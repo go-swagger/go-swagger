@@ -10,7 +10,7 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
-/*A minimal representation of a user.
+/*UserCard A minimal representation of a user.
 
 This representation of a user is mainly meant for inclusion in other models, or for list views.
 

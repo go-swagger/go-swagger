@@ -267,10 +267,3 @@ func ({{ .ReceiverName }} *{{ $className }}Params) validate{{ pascalize .Name }}
 {{ end }}
 {{ end }}
 
-{{ range .ExtraSchemas }}
-/*
-{{ template "docstring" . }}
-swagger:model {{ .Name }}
-*/
-{{ template "schema" . }}
-{{ end }}

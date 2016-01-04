@@ -9,7 +9,7 @@ import (
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 
-/*A milestone is a particular goal that is important to the project for this issue tracker.
+/*Milestone A milestone is a particular goal that is important to the project for this issue tracker.
 
 Milestones can have a escription and due date.
 This can be useful for filters and such.
@@ -86,7 +86,7 @@ func (m *Milestone) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
-/*Some counters for this milestone.
+/*MilestoneStats Some counters for this milestone.
 
 This object contains counts for the remaining open issues and the amount of issues that have been closed.
 

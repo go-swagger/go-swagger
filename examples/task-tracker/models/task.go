@@ -10,7 +10,7 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
-/*a structure describing a complete task.
+/*Task a structure describing a complete task.
 
 A Task is the main entity in this application. Everything revolves around tasks and managing them.
 
@@ -117,7 +117,7 @@ func (m *Task) validateComments(formats strfmt.Registry) error {
 	return nil
 }
 
-/*TaskAttachmentsAnon task attachments anon
+/*TaskAttachmentsAnon TaskAttachmentsAnon task attachments anon
 
 swagger:model TaskAttachmentsAnon
 */

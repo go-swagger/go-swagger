@@ -1,13 +1,13 @@
 {{ template "header" . }}
 
-{{ if .IsExported }}/*{{ template "docstring" . }}{{ if not .IsBaseType }}
+{{ if .IsExported }}/*{{ .Name }} {{ template "docstring" . }}{{ if not .IsBaseType }}
 swagger:model {{ .Name }}{{ else }}
 swagger:discriminator {{ .Name }} {{ .DiscriminatorField }}{{ end }}
 */{{ end }}
 {{ template "schema" . }}
 
 {{ range .ExtraSchemas }}{{ if .IsExported }}
-/*{{ template "docstring" . }}{{ if not .IsBaseType }}
+/*{{ .Name }} {{ template "docstring" . }}{{ if not .IsBaseType }}
 swagger:model {{ .Name }}{{ else }}
 swagger:discriminator {{ .Name }} {{ .DiscriminatorField }}{{ end }}
 */{{ end}}

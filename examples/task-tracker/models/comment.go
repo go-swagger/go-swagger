@@ -9,7 +9,7 @@ import (
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 
-/*A comment for an issue.
+/*Comment A comment for an issue.
 
 Users can comment on issues to discuss plans for resolution etc.
 

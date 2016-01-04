@@ -4,7 +4,7 @@ swagger:response {{ camelize .Name }}
 */
 type {{ pascalize .Name }} struct {
   {{ if eq .Code -1 }}
-  _statusCode int `json:"-"`
+  _statusCode int
   {{ end }}{{ range .Headers }}/*{{if .Description }}{{ .Description }}{{ end }}{{ if .Required }}
   Required: true{{ end }}{{ if .Maximum }}
   Maximum: {{ if .ExclusiveMaximum }}< {{ end }}{{ .Maximum }}{{ end }}{{ if .Minimum }}
@@ -98,10 +98,3 @@ import (
 {{ template "serverresponse" .DefaultResponse }}
 {{ end }}
 
-{{ range .ExtraSchemas }}
-/*
-{{ template "docstring" . }}
-swagger:model {{ .Name }}
-*/
-{{ template "schema" . }}
-{{ end }}

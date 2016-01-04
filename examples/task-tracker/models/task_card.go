@@ -13,7 +13,7 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
-/*a card for a task
+/*TaskCard a card for a task
 
 A task card is a minimalistic representation of a task. Useful for display in list views, like a card list.
 
