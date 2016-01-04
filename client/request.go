@@ -14,7 +14,11 @@
 
 package client
 
-import "github.com/go-swagger/go-swagger/strfmt"
+import (
+	"os"
+
+	"github.com/go-swagger/go-swagger/strfmt"
+)
 
 // RequestWriterFunc converts a function to a request writer interface
 type RequestWriterFunc func(Request, strfmt.Registry) error
@@ -40,7 +44,7 @@ type Request interface {
 
 	SetPathParam(string, string) error
 
-	SetFileParam(string, string) error
+	SetFileParam(string, *os.File) error
 
 	SetBodyParam(interface{}) error
 }

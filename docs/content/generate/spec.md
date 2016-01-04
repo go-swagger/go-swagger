@@ -52,7 +52,7 @@ The idea is that there are certain things that are more easily expressed by just
 
 #### Parsing rules
 
-:warning: This command relies heavily on the way godoc works. :warning:
+<img class="emoji" title=":warning" alt=":warning" src="https://assets-cdn.github.com/images/icons/emoji/unicode/26a0.png?v5" width="20" height="20" align="absmiddle" />This command relies heavily on the way godoc works. <img class="emoji" title=":warning" alt=":warning" src="https://assets-cdn.github.com/images/icons/emoji/unicode/26a0.png?v5" width="20" height="20" align="absmiddle" />
 
 This means you should be very aware of all the things godoc supports.
 

@@ -393,6 +393,9 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 		result.SwaggerType = "object"
 		result.IsNullable = false
 		result.GoType = "map[string]" + et.GoType
+		if et.IsNullable {
+			result.GoType = "map[string]*" + et.GoType
+		}
 		return
 	}
 

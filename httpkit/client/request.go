@@ -119,8 +119,6 @@ func (r *request) BuildHTTP(producer httpkit.Producer, registry strfmt.Registry)
 						ff.Close()
 					}
 				}()
-				// TODO: Support uploading huge files!
-				// Stop this copy insanity!
 				if _, err := io.Copy(wrtr, f); err != nil {
 					return nil, err
 				}
@@ -186,17 +184,13 @@ func (r *request) SetPathParam(name string, value string) error {
 }
 
 // SetFileParam adds a file param to the request
-func (r *request) SetFileParam(name string, toSend string) error {
-	file, err := os.Open(toSend)
-	if err != nil {
-		return err
-	}
+func (r *request) SetFileParam(name string, file *os.File) error {
 	fi, err := file.Stat()
 	if err != nil {
 		return err
 	}
 	if fi.IsDir() {
-		return fmt.Errorf("%q is a directory, only files are supported", toSend)
+		return fmt.Errorf("%q is a directory, only files are supported", file.Name())
 	}
 
 	if r.fileFields == nil {

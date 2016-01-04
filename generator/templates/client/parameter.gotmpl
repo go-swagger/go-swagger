@@ -4,6 +4,7 @@ package {{ .Package }}
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+  "os"
   "net/http"
   "github.com/go-swagger/go-swagger/httpkit"
   "github.com/go-swagger/go-swagger/swag"
@@ -34,13 +35,13 @@ type {{ pascalize .Name }}Params struct {
   {{ .Description }}
 
   {{ end }}*/
-  {{ pascalize .Name }} {{ if and (not .IsArray) (not .HasDiscriminator) (or .IsNullable  ) }}*{{ end }}{{ .GoType }}
+  {{ pascalize .Name }} {{ if and (not .IsArray) (not .HasDiscriminator) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}*os.File{{end}}
   {{ end }}
 }
 
 {{ range .Params }}
 // With{{ pascalize .Name }} adds the {{ camelize .Name  }} to the {{ humanize $.Name }} params
-func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) With{{ pascalize .Name }}({{ camelize .Name  }} {{ if and (not .IsArray) (not .HasDiscriminator) (or .IsNullable  ) }}*{{ end }}{{ .GoType }}) *{{ pascalize $.Name }}Params {
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) With{{ pascalize .Name }}({{ camelize .Name  }} {{ if and (not .IsArray) (not .HasDiscriminator) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}*os.File{{ end }}) *{{ pascalize $.Name }}Params {
   {{ $.ReceiverName }}.{{ pascalize .Name }} = {{ camelize .Name  }}
   return {{ .ReceiverName }}
 }
@@ -60,7 +61,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r client.
   if {{ .ValueExpression }} != nil {
     qr{{ pascalize .Name }} = *{{ .ValueExpression }}
   }{{ else }}qr{{ pascalize .Name }} := {{ .ValueExpression }}{{ end}}
-  q{{ pascalize .Name}} := {{ if .Formatter }}{{ .Formatter }}(qr{{ pascalize .Name }}){{ else }}qr{{ pascalize .Name }}{{end}}{{ if not .AllowEmptyValue }}
+  q{{ pascalize .Name}} := {{ if .Formatter }}{{ .Formatter }}(qr{{ pascalize .Name }}){{ else }}qr{{ pascalize .Name }}{{ if .IsCustomFormatter }}.String(){{end}}{{end}}{{ if not .AllowEmptyValue }}
   if q{{ pascalize .Name }} != "" { {{ end }}
   if err := r.SetQueryParam({{ printf "%q" .Name }}, q{{ pascalize .Name }}); err != nil {
     return err
@@ -78,9 +79,11 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r client.
   }
   {{ else if .IsFormParam }}
   {{ if .IsFileParam }}
-  // form file param {{ .Name }}
-  if err := r.SetFileParam({{ printf "%q" .Name }}, {{ if .IsNullable }}*{{end}}{{ .ValueExpression }}); err != nil {
-    return err
+  if {{ .ValueExpression }} != nil {
+    // form file param {{ .Name }}
+    if err := r.SetFileParam({{ printf "%q" .Name }}, {{ .ValueExpression }}); err != nil {
+      return err
+    }
   }
   {{ else }}
   // form param {{ .Name }}
