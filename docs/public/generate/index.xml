@@ -59,7 +59,7 @@ This means that for something to be discoverable it needs to be reachable by a c
 
 &lt;h4 id=&#34;parsing-rules:958e7270f96f5407d7d980f500805b1b&#34;&gt;Parsing rules&lt;/h4&gt;
 
-&lt;p&gt;:warning: This command relies heavily on the way godoc works. :warning:&lt;/p&gt;
+&lt;p&gt;&lt;img class=&#34;emoji&#34; title=&#34;:warning&#34; alt=&#34;:warning&#34; src=&#34;https://assets-cdn.github.com/images/icons/emoji/unicode/26a0.png?v5&#34; width=&#34;20&#34; height=&#34;20&#34; align=&#34;absmiddle&#34; /&gt;This command relies heavily on the way godoc works. &lt;img class=&#34;emoji&#34; title=&#34;:warning&#34; alt=&#34;:warning&#34; src=&#34;https://assets-cdn.github.com/images/icons/emoji/unicode/26a0.png?v5&#34; width=&#34;20&#34; height=&#34;20&#34; align=&#34;absmiddle&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;This means you should be very aware of all the things godoc supports.&lt;/p&gt;
 
@@ -96,7 +96,7 @@ as description up to either the end of the comment block, or a line that starts 
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;meta&#34;&gt;swagger:meta&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;route&#34;&gt;swagger:route&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;params&#34;&gt;swagger:params&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;params&#34;&gt;swagger:parameters&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;response&#34;&gt;swagger:response&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;model&#34;&gt;swagger:model&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;allOf&#34;&gt;swagger:allOf&lt;/a&gt;&lt;/li&gt;
@@ -961,14 +961,14 @@ operations:
     </item>
     
     <item>
-      <title>swagger:params</title>
+      <title>swagger:parameters</title>
       <link>//goswagger.io/generate/spec/params/</link>
       <pubDate>Sat, 14 Nov 2015 20:10:43 -0800</pubDate>
       
       <guid>//goswagger.io/generate/spec/params/</guid>
       <description>
 
-&lt;p&gt;The &lt;strong&gt;swagger:params&lt;/strong&gt; annotation links a struct to one or more operations. The params in the resulting swagger spec can be composed of several structs.
+&lt;p&gt;The &lt;strong&gt;swagger:parameters&lt;/strong&gt; annotation links a struct to one or more operations. The parameters in the resulting swagger spec can be composed of several structs.
 There are no guarantees given on how property name overlaps are resolved when several structs apply to the same operation.
 This tag works very similar to the swagger:model tag except that it produces valid parameter objects instead of schema
 objects.&lt;/p&gt;
@@ -984,7 +984,7 @@ entries at this moment.&lt;/p&gt;
 
 &lt;h5 id=&#34;syntax:9db9435dae1c8dccdc174235ed54a579&#34;&gt;Syntax:&lt;/h5&gt;
 
-&lt;pre&gt;&lt;code&gt;swagger:params [operationid1 operationid2]
+&lt;pre&gt;&lt;code&gt;swagger:parameters [operationid1 operationid2]
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;h5 id=&#34;properties:9db9435dae1c8dccdc174235ed54a579&#34;&gt;Properties:&lt;/h5&gt;

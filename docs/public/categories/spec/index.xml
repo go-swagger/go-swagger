@@ -7,8 +7,27 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>© 2015 go-swagger contributors</copyright>
-    <lastBuildDate>Sat, 14 Nov 2015 19:54:53 -0800</lastBuildDate>
+    <lastBuildDate>Sun, 22 Nov 2015 23:21:52 -0800</lastBuildDate>
     <atom:link href="//goswagger.io/categories/spec/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Dynamic API definition</title>
+      <link>//goswagger.io/tutorial/dynamic/</link>
+      <pubDate>Sun, 22 Nov 2015 23:21:52 -0800</pubDate>
+      
+      <guid>//goswagger.io/tutorial/dynamic/</guid>
+      <description>&lt;p&gt;The toolkit supports building a swagger specification entirely with go code. It does allow you to serve a spec up quickly. This is one of the building blocks required to serve up stub API&amp;rsquo;s and to generate a test server with predictable responses, however this is not as bad as it sounds&amp;hellip;&lt;/p&gt;
+
+&lt;p&gt;This tutorial uses the todo list application to serve a swagger based API defined entirely in go code.
+Because we know what we want the spec to look like, first we&amp;rsquo;ll just build the entire spec with the interal dsl.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;doc := spec.NewSwagger(&amp;quot;&amp;quot;)
+doc
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now that we&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>swagger:meta</title>
@@ -284,14 +303,14 @@ operations:
     </item>
     
     <item>
-      <title>swagger:params</title>
+      <title>swagger:parameters</title>
       <link>//goswagger.io/generate/spec/params/</link>
       <pubDate>Sat, 14 Nov 2015 20:10:43 -0800</pubDate>
       
       <guid>//goswagger.io/generate/spec/params/</guid>
       <description>
 
-&lt;p&gt;The &lt;strong&gt;swagger:params&lt;/strong&gt; annotation links a struct to one or more operations. The params in the resulting swagger spec can be composed of several structs.
+&lt;p&gt;The &lt;strong&gt;swagger:parameters&lt;/strong&gt; annotation links a struct to one or more operations. The parameters in the resulting swagger spec can be composed of several structs.
 There are no guarantees given on how property name overlaps are resolved when several structs apply to the same operation.
 This tag works very similar to the swagger:model tag except that it produces valid parameter objects instead of schema
 objects.&lt;/p&gt;
@@ -307,7 +326,7 @@ entries at this moment.&lt;/p&gt;
 
 &lt;h5 id=&#34;syntax:9db9435dae1c8dccdc174235ed54a579&#34;&gt;Syntax:&lt;/h5&gt;
 
-&lt;pre&gt;&lt;code&gt;swagger:params [operationid1 operationid2]
+&lt;pre&gt;&lt;code&gt;swagger:parameters [operationid1 operationid2]
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;h5 id=&#34;properties:9db9435dae1c8dccdc174235ed54a579&#34;&gt;Properties:&lt;/h5&gt;

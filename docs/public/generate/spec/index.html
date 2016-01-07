@@ -26,7 +26,7 @@
             <li><a href="/about/">About</a></li>
             <li class="dropdown">
               <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="tutorials">Tutorials<span class="caret"></span></a>
-              <ul class="dropdown-menu" aria-labelledby="download">
+              <ul class="dropdown-menu" aria-labelledby="tutorials">
                 <li><a href="/tutorial/todo-list/">Simple Server</a></li>
                 <li><a href="/use/middleware/">Middleware</a></li>
               </ul>
@@ -34,11 +34,18 @@
             <li><a href="/usage/validate/">Validate</a></li>
             <li class="dropdown">
               <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="generate">Generate<span class="caret"></span></a>
-              <ul class="dropdown-menu" aria-labelledby="download">
+              <ul class="dropdown-menu" aria-labelledby="generate">
                 <li><a href="/generate/spec/">Swagger.json</a></li>
                 <li><a href="/generate/client/">API Client</a></li>
                 <li><a href="/generate/server/">API Server</a></li>
                 <li><a href="/use/schemas/">Schemas</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="use">Use<span class="caret"></span></a>
+              <ul class="dropdown-menu" aria-labelledby="usage">
+                <li><a href="/tutorial/dynamic/">Dynamic specification</a></li>
+                <li><a href="/untyped/server/">Dynamic server</a></li>
               </ul>
             </li>
           </ul>
@@ -49,7 +56,7 @@
 
     <div class="container">
         <h1><a href="//goswagger.io/generate/spec/">swagger.json generation</a></h1>
-        <span class="lead">Mon, Nov 9, 2015</span>
+        
         <div class="post">
             
 
@@ -94,7 +101,7 @@ This means that for something to be discoverable it needs to be reachable by a c
 
 <h4 id="parsing-rules:958e7270f96f5407d7d980f500805b1b">Parsing rules</h4>
 
-<p>:warning: This command relies heavily on the way godoc works. :warning:</p>
+<p><img class="emoji" title=":warning" alt=":warning" src="https://assets-cdn.github.com/images/icons/emoji/unicode/26a0.png?v5" width="20" height="20" align="absmiddle" />This command relies heavily on the way godoc works. <img class="emoji" title=":warning" alt=":warning" src="https://assets-cdn.github.com/images/icons/emoji/unicode/26a0.png?v5" width="20" height="20" align="absmiddle" /></p>
 
 <p>This means you should be very aware of all the things godoc supports.</p>
 
@@ -131,7 +138,7 @@ as description up to either the end of the comment block, or a line that starts 
 <ul>
 <li><a href="meta">swagger:meta</a></li>
 <li><a href="route">swagger:route</a></li>
-<li><a href="params">swagger:params</a></li>
+<li><a href="params">swagger:parameters</a></li>
 <li><a href="response">swagger:response</a></li>
 <li><a href="model">swagger:model</a></li>
 <li><a href="allOf">swagger:allOf</a></li>
@@ -206,9 +213,9 @@ When an embedded type isn&rsquo;t decorated with the <code>swagger:allOf</code> 
         </nav>
       </footer>
 
- 
+
      </div>
-     
+
         <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
         <script src="/js/bootstrap.min.js"></script>
         <script src="/js/bootswatch.js"></script>

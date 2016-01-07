@@ -730,5 +730,24 @@ Content-Length: 76
 </description>
     </item>
     
+    <item>
+      <title>Dynamic API definition</title>
+      <link>//goswagger.io/tutorial/dynamic/</link>
+      <pubDate>Sun, 22 Nov 2015 23:21:52 -0800</pubDate>
+      
+      <guid>//goswagger.io/tutorial/dynamic/</guid>
+      <description>&lt;p&gt;The toolkit supports building a swagger specification entirely with go code. It does allow you to serve a spec up quickly. This is one of the building blocks required to serve up stub API&amp;rsquo;s and to generate a test server with predictable responses, however this is not as bad as it sounds&amp;hellip;&lt;/p&gt;
+
+&lt;p&gt;This tutorial uses the todo list application to serve a swagger based API defined entirely in go code.
+Because we know what we want the spec to look like, first we&amp;rsquo;ll just build the entire spec with the interal dsl.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;doc := spec.NewSwagger(&amp;quot;&amp;quot;)
+doc
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now that we&lt;/p&gt;
+</description>
+    </item>
+    
   </channel>
 </rss>
