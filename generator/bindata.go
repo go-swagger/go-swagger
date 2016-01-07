@@ -149,7 +149,7 @@ func templatesClientFacadeGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/client/facade.gotmpl", size: 1978, mode: os.FileMode(420), modTime: time.Unix(1451938403, 0)}
+	info := bindataFileInfo{name: "templates/client/facade.gotmpl", size: 1978, mode: os.FileMode(420), modTime: time.Unix(1452016567, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

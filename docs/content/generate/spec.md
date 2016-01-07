@@ -82,7 +82,7 @@ There are several annotations that mark a comment block as a participant for the
 
 * [swagger:meta](meta)
 * [swagger:route](route)
-* [swagger:params](params)
+* [swagger:parameters](params)
 * [swagger:response](response)
 * [swagger:model](model)
 * [swagger:allOf](allOf)
