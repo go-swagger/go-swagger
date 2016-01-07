@@ -55,14 +55,21 @@
 
 
     <div class="container">
+        <h1><a href="//goswagger.io/tutorial/dynamic/">Dynamic API definition</a></h1>
         
-        <div>
-            <h2><a href="//goswagger.io/use/middleware/">BYO middleware</a></h2>
-            <span class="lead">Sat, Dec 26, 2015</span>
-            <p><p>Go-swagger chose the golang <code>net/http</code> package as base abstraction. That means that for <em>any</em> supported transport by the toolkit you can reuse <em>any</em> middleware existing middlewares that following the stdlib middlware pattern.</p>
-</p>
+        <div class="post">
+            <p>The toolkit supports building a swagger specification entirely with go code. It does allow you to serve a spec up quickly. This is one of the building blocks required to serve up stub API&rsquo;s and to generate a test server with predictable responses, however this is not as bad as it sounds&hellip;</p>
+
+<p>This tutorial uses the todo list application to serve a swagger based API defined entirely in go code.
+Because we know what we want the spec to look like, first we&rsquo;ll just build the entire spec with the interal dsl.</p>
+
+<pre><code class="language-go">doc := spec.NewSwagger(&quot;&quot;)
+doc
+</code></pre>
+
+<p>Now that we</p>
+
         </div>
-        
 
               <footer>
         <nav class="navbar navbar-default">
@@ -82,7 +89,7 @@
       </footer>
 
 
-    </div>
+     </div>
 
         <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
         <script src="/js/bootstrap.min.js"></script>

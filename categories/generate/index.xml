@@ -59,7 +59,7 @@ This means that for something to be discoverable it needs to be reachable by a c
 
 &lt;h4 id=&#34;parsing-rules:958e7270f96f5407d7d980f500805b1b&#34;&gt;Parsing rules&lt;/h4&gt;
 
-&lt;p&gt;:warning: This command relies heavily on the way godoc works. :warning:&lt;/p&gt;
+&lt;p&gt;&lt;img class=&#34;emoji&#34; title=&#34;:warning&#34; alt=&#34;:warning&#34; src=&#34;https://assets-cdn.github.com/images/icons/emoji/unicode/26a0.png?v5&#34; width=&#34;20&#34; height=&#34;20&#34; align=&#34;absmiddle&#34; /&gt;This command relies heavily on the way godoc works. &lt;img class=&#34;emoji&#34; title=&#34;:warning&#34; alt=&#34;:warning&#34; src=&#34;https://assets-cdn.github.com/images/icons/emoji/unicode/26a0.png?v5&#34; width=&#34;20&#34; height=&#34;20&#34; align=&#34;absmiddle&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;This means you should be very aware of all the things godoc supports.&lt;/p&gt;
 
@@ -96,7 +96,7 @@ as description up to either the end of the comment block, or a line that starts 
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;meta&#34;&gt;swagger:meta&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;route&#34;&gt;swagger:route&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;params&#34;&gt;swagger:params&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;params&#34;&gt;swagger:parameters&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;response&#34;&gt;swagger:response&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;model&#34;&gt;swagger:model&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;allOf&#34;&gt;swagger:allOf&lt;/a&gt;&lt;/li&gt;
