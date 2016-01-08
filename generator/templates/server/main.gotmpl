@@ -52,12 +52,14 @@ func main() {
 
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", opts.Host, opts.Port))
 	if err != nil {
+		api.ServerShutdown()
 		log.Fatalln(err)
 	}
 
 	fmt.Printf("serving {{ humanize .Name }} at http://%s\n", listener.Addr())
   {{ if (hasSecure .Schemes) }}go func() {
 		{{ end }}if err := httpServer.Serve(tcpKeepAliveListener{listener.(*net.TCPListener)}); err != nil {
+			api.ServerShutdown()
 			log.Fatalln(err)
 		}{{ if (hasSecure .Schemes) }}
   }(){{ end }}
@@ -71,6 +73,7 @@ func main() {
 	httpsServer.TLSConfig.Certificates = make([]tls.Certificate, 1)
 	httpsServer.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(string(opts.TLSCertificate), string(opts.TLSCertificateKey))
 	if err != nil {
+		api.ServerShutdown()
 		log.Fatal(err)
 	}
 {{ if (hasInsecure .Schemes) }}
@@ -79,6 +82,7 @@ func main() {
 	}{{ end }}
 	tlsListener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", opts.TLSHost, opts.TLSPort))
 	if err != nil {
+		api.ServerShutdown()
 		log.Fatalln(err)
 	}
 
@@ -86,8 +90,16 @@ func main() {
 
 	wrapped := tls.NewListener(tcpKeepAliveListener{tlsListener.(*net.TCPListener)}, httpsServer.TLSConfig)
 	if err := httpsServer.Serve(wrapped); err != nil {
+		api.ServerShutdown()
 		log.Fatalln(err)
 	}{{ end }}
+	go func() {
+{{ if (hasInsecure .Schemes) }}
+		<-httpServer.StopChan()
+{{ end }}{{ if (hasSecure .Schemes) }}
+		<-httpsServer.StopChan(){{ end }}
+		api.ServerShutdown()
+	}()
 }
 
 // tcpKeepAliveListener is copied from the stdlib net/http package
