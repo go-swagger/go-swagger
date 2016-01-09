@@ -249,12 +249,13 @@ func TestGenerateModel_Primitives(t *testing.T) {
 	tt := templateTest{t, modelTemplate.Lookup("schema")}
 	for _, v := range schTypeGenDataSimple {
 		val := v.Value
+		val.ReceiverName = "o"
 		if val.IsComplexObject {
 			continue
 		}
 		val.Name = "theType"
 		exp := v.Expected
-		tt.assertRender(val, "type TheType "+exp+"\n\n")
+		tt.assertRender(val, "type TheType "+exp+"\n// Validate validates this the type\nfunc (o theType) Validate(formats strfmt.Registry) error {\n  return nil\n}\n")
 	}
 }
 
@@ -1360,6 +1361,26 @@ func TestNumericKeys(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ct)
 					assertInCode(t, "Nr16x16 *string `json:\"16x16,omitempty\"`", res)
+				}
+			}
+		}
+	}
+}
+
+func TestGenModel_Issue196(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/bugs/196/swagger.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["Event"]
+		genModel, err := makeGenDefinition("Event", "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("primitive_event.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, "Event) Validate(formats strfmt.Registry) error", res)
 				}
 			}
 		}

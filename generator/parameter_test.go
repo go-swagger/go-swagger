@@ -502,3 +502,23 @@ func TestGenParameter_Issue195(t *testing.T) {
 		}
 	}
 }
+
+func TestGenParameter_Issue196(t *testing.T) {
+	b, err := opBuilder("postEvents", "../fixtures/bugs/196/swagger.yml")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := parameterTemplate.Execute(buf, op)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("post_events.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					assertInCode(t, "body.Validate", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
