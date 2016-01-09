@@ -16,6 +16,7 @@ package client
 
 import (
 	"fmt"
+	"io"
 	"mime"
 	"net/http"
 	"net/http/httputil"
@@ -189,7 +190,7 @@ func (r *Runtime) Submit(context *client.Operation) (interface{}, error) {
 	}
 
 	mt, _, err := mime.ParseMediaType(ct)
-	if err != nil {
+	if err != nil && err != io.EOF {
 		return nil, fmt.Errorf("parse content type: %s", err)
 	}
 	cons, ok := r.Consumers[mt]

@@ -17,6 +17,10 @@ package httpkit
 const (
 	// HeaderContentType represents a http content-type header, it's value is supposed to be a mime type
 	HeaderContentType = "Content-Type"
+
+	// HeaderTransferEncoding represents a http transfer-encoding header.
+	HeaderTransferEncoding = "Transfer-Encoding"
+
 	// HeaderAccept the Accept header
 	HeaderAccept = "Accept"
 
