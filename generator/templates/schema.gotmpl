@@ -3,8 +3,8 @@
   {{ range .AllOf }}
   {{ if .IsAnonymous }}{{ range .Properties }}
   {{ if $.IsTuple }}{{ template "tuplefieldIface" . }}{{ else }}{{template "structfieldIface" . }}{{ end }}
-  {{ end }}{{ if .HasAdditionalProperties }}/* {{ template "docstring" .AdditionalProperties }}{{ template "propertyValidationDocString" .AdditionalProperties}} */
-  {{ pascalize .AdditionalProperties.Name }}() map[string]{{ template "schemaType" .AdditionalProperties }}  {{end}}
+  {{ end }}{{ if .HasAdditionalProperties }}{{ if .AdditionalProperties }}/* {{ template "docstring" .AdditionalProperties }}{{ template "propertyValidationDocString" .AdditionalProperties}} */
+  {{ pascalize .AdditionalProperties.Name }}() map[string]{{ template "schemaType" .AdditionalProperties }}  {{end}}{{ end}}
   {{ if .AdditionalItems }}/* {{ template "docstring" .AdditionalItems }}{{ template "propertyValidationDocString" .AdditionalItems}} */
   {{ pascalize .AdditionalItems.Name }}() []{{ template "schemaType" .AdditionalItems }}
   {{ end }}
@@ -14,9 +14,9 @@
   {{range .Properties}}
   {{ if $.IsTuple }}{{ template "tuplefieldIface" . }}{{ else }}{{template "structfieldIface" . }}{{ end }}
   {{end}}
-  {{ if .HasAdditionalProperties }}/* {{ template "docstring" .AdditionalProperties }}{{ template "propertyValidationDocString" .AdditionalProperties}} */
+  {{ if .HasAdditionalProperties }}{{ if .AdditionalProperties }}/* {{ template "docstring" .AdditionalProperties }}{{ template "propertyValidationDocString" .AdditionalProperties}} */
   {{ pascalize .AdditionalProperties.Name }}() map[string]{{ template "schemaType" .AdditionalProperties }}
-  {{ end }}
+  {{ end }}{{ end }}
   {{ if .AdditionalItems }}/* {{ template "docstring" .AdditionalItems }}{{ template "propertyValidationDocString" .AdditionalItems}} */
   {{ pascalize .AdditionalItems.Name }}() []{{ template "schemaType" .AdditionalItems }}
   {{ end }}
@@ -89,8 +89,8 @@ func ({{$.ReceiverName}} *{{ pascalize $.Name}}) Set{{ pascalize .Name}}(val {{ 
   {{ if ne $.DiscriminatorField .Name }}{{ $.ReceiverName }}.{{camelize .Name}}Field = val{{end}}
 }
 {{ end }}{{ end }}{{ end }}
-{{ if .HasAdditionalProperties }}/* {{ template "docstring" .AdditionalProperties }}{{ template "propertyValidationDocString" .AdditionalProperties}} */
-{{ pascalize .AdditionalProperties.Name }}() map[string]{{ template "schemaType" .AdditionalProperties }}{{end}}
+{{ if .HasAdditionalProperties }}{{ if .AdditionalProperties }}/* {{ template "docstring" .AdditionalProperties }}{{ template "propertyValidationDocString" .AdditionalProperties}} */
+{{ pascalize .AdditionalProperties.Name }}() map[string]{{ template "schemaType" .AdditionalProperties }}{{end}}{{ end }}
 {{ if .AdditionalItems }}/* {{ template "docstring" .AdditionalItems }}{{ template "propertyValidationDocString" .AdditionalItems}} */
 {{ pascalize .AdditionalItems.Name }}() []{{ template "schemaType" .AdditionalItems }}
 {{ end }}

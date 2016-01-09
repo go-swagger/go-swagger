@@ -108,6 +108,11 @@ func (m *definitionGenerator) Generate() error {
 func (m *definitionGenerator) generateModel() error {
 	buf := bytes.NewBuffer(nil)
 
+	if Debug {
+		log.Printf("rendering model template: %s", m.Name)
+		bb, _ := json.MarshalIndent(swag.ToDynamicJSON(m.Data), "", " ")
+		fmt.Fprintln(os.Stdout, string(bb))
+	}
 	if err := modelTemplate.Execute(buf, m.Data); err != nil {
 		return err
 	}

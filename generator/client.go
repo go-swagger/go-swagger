@@ -95,7 +95,7 @@ func (c *clientGenerator) Generate() error {
 	for i := range app.OperationGroups {
 		opGroup := app.OperationGroups[i]
 		opGroup.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ModelsPackage))}
-		opGroup.RootPackage = c.APIPackage
+		opGroup.RootPackage = c.ClientPackage
 		app.OperationGroups[i] = opGroup
 		sort.Sort(opGroup.Operations)
 		for _, op := range opGroup.Operations {
