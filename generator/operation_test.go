@@ -17,6 +17,7 @@ package generator
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/go-swagger/go-swagger/spec"
@@ -291,4 +292,44 @@ func findResponseHeader(op *spec.Operation, code int, name string) *spec.Header 
 	}
 
 	return &hdr
+}
+
+func TestDateFormat_Spec1(t *testing.T) {
+	b, err := opBuilder("putTesting", "../fixtures/bugs/193/spec1.json")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := clientParamTemplate.Execute(buf, op)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("put_testing.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					assertInCode(t, "frTestingThis.String()", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestDateFormat_Spec2(t *testing.T) {
+	b, err := opBuilder("putTesting", "../fixtures/bugs/193/spec2.json")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := clientParamTemplate.Execute(buf, op)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("put_testing.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					assertInCode(t, "valuesTestingThis = append(valuesTestingThis, v.String())", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
 }

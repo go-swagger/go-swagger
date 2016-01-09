@@ -494,7 +494,6 @@ func TestGenParameter_Issue195(t *testing.T) {
 				ff, err := formatGoFile("get_testing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
-					fmt.Println(res)
 					assertInCode(t, "TestingThis *int64", res)
 				} else {
 					fmt.Println(buf.String())
