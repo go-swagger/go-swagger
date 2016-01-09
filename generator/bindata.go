@@ -169,7 +169,7 @@ func templatesClientParameterGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/client/parameter.gotmpl", size: 5933, mode: os.FileMode(420), modTime: time.Unix(1451868509, 0)}
+	info := bindataFileInfo{name: "templates/client/parameter.gotmpl", size: 5933, mode: os.FileMode(420), modTime: time.Unix(1452364131, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

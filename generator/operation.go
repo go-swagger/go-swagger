@@ -650,7 +650,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 			}
 			res.Child = &pi
 		}
-		res.IsNullable = !param.Required && param.AllowEmptyValue
+		res.IsNullable = !param.Required && !param.AllowEmptyValue
 
 	}
 
