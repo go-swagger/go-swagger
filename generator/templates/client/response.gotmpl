@@ -64,7 +64,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response client.R
   {{ .ReceiverName }}.Payload = new({{ .Schema.GoType }})
   {{ end }}{{ if not .Schema.IsBaseType }}
   // response payload
-  if err := consumer.Consume(response.Body(), {{ if not .Schema.IsComplexObject }}&{{ end}}{{ .ReceiverName }}.Payload); err != nil {
+  if err := consumer.Consume(response.Body(), {{ if not .Schema.IsComplexObject }}&{{ end}}{{ .ReceiverName }}.Payload); err != nil && err != io.EOF {
     return err
   }
   {{ end }}{{ end }}
@@ -77,7 +77,9 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response client.R
 
 
 import (
+  "io"
   "net/http"
+
   "github.com/go-swagger/go-swagger/httpkit"
   "github.com/go-swagger/go-swagger/swag"
   "github.com/go-swagger/go-swagger/errors"
