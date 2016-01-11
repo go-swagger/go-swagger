@@ -21,8 +21,12 @@ import (
 // New{{ pascalize .Name }}Params creates a new {{ pascalize .Name }}Params object
 // with the default values initialized.
 func New{{ pascalize .Name }}Params() *{{ pascalize .Name }}Params {
-  return &{{ pascalize .Name}}Params{ {{ range .Params }}{{ if .Default }}
-    {{ pascalize .Name}}: {{ printf "%#v" .Default }},
+  var (
+  {{ range .Params }}{{ if .Default }}{{ camelize .Name}}Default {{ if not .IsFileParam }}{{ .GoType }}{{ else }}*os.File{{end}} = {{ printf "%#v" .Default }}
+  {{ end }}{{ end }}
+  )
+  return &{{ pascalize .Name}}Params{
+  {{ range .Params }}{{ if .Default }}{{ pascalize .Name}}: {{ if and (not .IsArray) (not .HasDiscriminator) (or .IsNullable  ) }}&{{ end }}{{ camelize .Name }}Default,
   {{ end }}{{ end }} }
 }
 
