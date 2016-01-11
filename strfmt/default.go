@@ -187,6 +187,10 @@ func (b Base64) Value() (driver.Value, error) {
 	return driver.Value(string(b)), nil
 }
 
+func (b Base64) String() string {
+	return string(b)
+}
+
 // URI represents the uri string format as specified by the json schema spec
 //
 // swagger:strfmt uri
@@ -220,6 +224,10 @@ func (u *URI) Scan(raw interface{}) error {
 // Value converts a value to a database driver value
 func (u URI) Value() (driver.Value, error) {
 	return driver.Value(string(u)), nil
+}
+
+func (u URI) String() string {
+	return string(u)
 }
 
 // Email represents the email string format as specified by the json schema spec
@@ -257,6 +265,10 @@ func (e Email) Value() (driver.Value, error) {
 	return driver.Value(string(e)), nil
 }
 
+func (e Email) String() string {
+	return string(e)
+}
+
 // Hostname represents the hostname string format as specified by the json schema spec
 //
 // swagger:strfmt hostname
@@ -290,6 +302,10 @@ func (h *Hostname) Scan(raw interface{}) error {
 // Value converts a value to a database driver value
 func (h Hostname) Value() (driver.Value, error) {
 	return driver.Value(string(h)), nil
+}
+
+func (h Hostname) String() string {
+	return string(h)
 }
 
 // IPv4 represents an IP v4 address
@@ -327,6 +343,10 @@ func (u IPv4) Value() (driver.Value, error) {
 	return driver.Value(string(u)), nil
 }
 
+func (u IPv4) String() string {
+	return string(u)
+}
+
 // IPv6 represents an IP v6 address
 //
 // swagger:strfmt ipv6
@@ -360,6 +380,10 @@ func (u *IPv6) Scan(raw interface{}) error {
 // Value converts a value to a database driver value
 func (u IPv6) Value() (driver.Value, error) {
 	return driver.Value(string(u)), nil
+}
+
+func (u IPv6) String() string {
+	return string(u)
 }
 
 // UUID represents a uuid string format
@@ -397,6 +421,10 @@ func (u UUID) Value() (driver.Value, error) {
 	return driver.Value(string(u)), nil
 }
 
+func (u UUID) String() string {
+	return string(u)
+}
+
 // UUID3 represents a uuid3 string format
 //
 // swagger:strfmt uuid3
@@ -430,6 +458,10 @@ func (u *UUID3) Scan(raw interface{}) error {
 // Value converts a value to a database driver value
 func (u UUID3) Value() (driver.Value, error) {
 	return driver.Value(string(u)), nil
+}
+
+func (u UUID3) String() string {
+	return string(u)
 }
 
 // UUID4 represents a uuid4 string format
@@ -467,6 +499,10 @@ func (u UUID4) Value() (driver.Value, error) {
 	return driver.Value(string(u)), nil
 }
 
+func (u UUID4) String() string {
+	return string(u)
+}
+
 // UUID5 represents a uuid5 string format
 //
 // swagger:strfmt uuid5
@@ -500,6 +536,10 @@ func (u *UUID5) Scan(raw interface{}) error {
 // Value converts a value to a database driver value
 func (u UUID5) Value() (driver.Value, error) {
 	return driver.Value(string(u)), nil
+}
+
+func (u UUID5) String() string {
+	return string(u)
 }
 
 // ISBN represents an isbn string format
@@ -537,6 +577,10 @@ func (u ISBN) Value() (driver.Value, error) {
 	return driver.Value(string(u)), nil
 }
 
+func (u ISBN) String() string {
+	return string(u)
+}
+
 // ISBN10 represents an isbn 10 string format
 //
 // swagger:strfmt isbn10
@@ -570,6 +614,10 @@ func (u *ISBN10) Scan(raw interface{}) error {
 // Value converts a value to a database driver value
 func (u ISBN10) Value() (driver.Value, error) {
 	return driver.Value(string(u)), nil
+}
+
+func (u ISBN10) String() string {
+	return string(u)
 }
 
 // ISBN13 represents an isbn 13 string format
@@ -607,6 +655,10 @@ func (u ISBN13) Value() (driver.Value, error) {
 	return driver.Value(string(u)), nil
 }
 
+func (u ISBN13) String() string {
+	return string(u)
+}
+
 // CreditCard represents a credit card string format
 //
 // swagger:strfmt creditcard
@@ -640,6 +692,10 @@ func (u *CreditCard) Scan(raw interface{}) error {
 // Value converts a value to a database driver value
 func (u CreditCard) Value() (driver.Value, error) {
 	return driver.Value(string(u)), nil
+}
+
+func (u CreditCard) String() string {
+	return string(u)
 }
 
 // SSN represents a social security string format
@@ -677,6 +733,10 @@ func (u SSN) Value() (driver.Value, error) {
 	return driver.Value(string(u)), nil
 }
 
+func (u SSN) String() string {
+	return string(u)
+}
+
 // HexColor represents a hex color string format
 //
 // swagger:strfmt hexcolor
@@ -710,6 +770,10 @@ func (h *HexColor) Scan(raw interface{}) error {
 // Value converts a value to a database driver value
 func (h HexColor) Value() (driver.Value, error) {
 	return driver.Value(string(h)), nil
+}
+
+func (h HexColor) String() string {
+	return string(h)
 }
 
 // RGBColor represents a RGB color string format
@@ -747,6 +811,10 @@ func (r RGBColor) Value() (driver.Value, error) {
 	return driver.Value(string(r)), nil
 }
 
+func (r RGBColor) String() string {
+	return string(r)
+}
+
 // Password represents a password.
 // This has no validations and is mainly used as a marker for UI components.
 //
@@ -781,4 +849,8 @@ func (r *Password) Scan(raw interface{}) error {
 // Value converts a value to a database driver value
 func (r Password) Value() (driver.Value, error) {
 	return driver.Value(string(r)), nil
+}
+
+func (r Password) String() string {
+	return string(r)
 }

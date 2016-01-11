@@ -32,6 +32,10 @@ func (t *testFormat) UnmarshalText(b []byte) error {
 	return nil
 }
 
+func (t testFormat) String() string {
+	return string(t)
+}
+
 func isTestFormat(s string) bool {
 	return strings.HasPrefix(s, "tf")
 }
@@ -51,6 +55,10 @@ func istf2(s string) bool {
 	return strings.HasPrefix(s, "af")
 }
 
+func (t tf2) String() string {
+	return string(t)
+}
+
 type bf string
 
 func (t bf) MarshalText() ([]byte, error) {
@@ -60,6 +68,10 @@ func (t bf) MarshalText() ([]byte, error) {
 func (t *bf) UnmarshalText(b []byte) error {
 	*t = bf(string(b))
 	return nil
+}
+
+func (t bf) String() string {
+	return string(t)
 }
 
 func isbf(s string) bool {
