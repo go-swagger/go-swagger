@@ -31,6 +31,7 @@ type Validator func(string) bool
 
 // Format represents a string format
 type Format interface {
+	String() string
 	encoding.TextMarshaler
 	encoding.TextUnmarshaler
 }

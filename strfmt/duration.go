@@ -136,3 +136,8 @@ func (d *Duration) Scan(raw interface{}) error {
 func (d Duration) Value() (driver.Value, error) {
 	return driver.Value(int64(d)), nil
 }
+
+// String converts this duration to a string
+func (d Duration) String() string {
+	return time.Duration(d).String()
+}
