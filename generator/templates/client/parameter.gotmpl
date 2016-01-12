@@ -22,8 +22,8 @@ import (
 // with the default values initialized.
 func New{{ pascalize .Name }}Params() *{{ pascalize .Name }}Params {
   var (
-  {{ range .Params }}{{ if .Default }}{{ camelize .Name}}Default {{ if not .IsFileParam }}{{ .GoType }}{{ else }}*os.File{{end}} = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
-  {{ end }}{{ end }}
+  {{ range .Params }}{{ if .Default }}{{ if not .IsFileParam }}{{ camelize .Name}}Default {{ .GoType }} = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
+  {{ end }}{{ end }}{{end}}
   )
   return &{{ pascalize .Name}}Params{
   {{ range .Params }}{{ if .Default }}{{ pascalize .Name}}: {{ if and (not .IsArray) (not .HasDiscriminator) (or .IsNullable  ) }}&{{ end }}{{ camelize .Name }}Default,
@@ -39,13 +39,13 @@ type {{ pascalize .Name }}Params struct {
   {{ .Description }}
 
   {{ end }}*/
-  {{ pascalize .Name }} {{ if and (not .IsArray) (not .HasDiscriminator) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}*os.File{{end}}
+  {{ pascalize .Name }} {{ if and (not .IsArray) (not .HasDiscriminator) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{end}}
   {{ end }}
 }
 
 {{ range .Params }}
 // With{{ pascalize .Name }} adds the {{ camelize .Name  }} to the {{ humanize $.Name }} params
-func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) With{{ pascalize .Name }}({{ camelize .Name  }} {{ if and (not .IsArray) (not .HasDiscriminator) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}*os.File{{ end }}) *{{ pascalize $.Name }}Params {
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) With{{ pascalize .Name }}({{ camelize .Name  }} {{ if and (not .IsArray) (not .HasDiscriminator) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{ end }}) *{{ pascalize $.Name }}Params {
   {{ $.ReceiverName }}.{{ pascalize .Name }} = {{ camelize .Name  }}
   return {{ .ReceiverName }}
 }
