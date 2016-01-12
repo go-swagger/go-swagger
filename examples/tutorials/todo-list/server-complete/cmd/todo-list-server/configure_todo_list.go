@@ -72,8 +72,13 @@ func deleteItem(id int64) error {
 }
 
 func allItems(since int64, limit int32) (result []*models.Item) {
-	for _, v := range items {
-		result = append(result, v)
+	for id, item := range items {
+		if len(result) >= int(limit) {
+			return
+		}
+		if since > id {
+			result = append(result, item)
+		}
 	}
 	return
 }
