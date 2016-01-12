@@ -36,10 +36,13 @@ func (a *Client) AddCommentToTask(params *AddCommentToTaskParams, authInfo clien
 	}
 
 	result, err := a.transport.Submit(&client.Operation{
-		ID:       "addCommentToTask",
-		Params:   params,
-		Reader:   &AddCommentToTaskReader{formats: a.formats},
-		AuthInfo: authInfo,
+		ID:          "addCommentToTask",
+		Method:      "POST",
+		PathPattern: "/tasks/{id}/comments",
+		Schemes:     []string{"http", "https"},
+		Params:      params,
+		Reader:      &AddCommentToTaskReader{formats: a.formats},
+		AuthInfo:    authInfo,
 	})
 	if err != nil {
 		return nil, err
@@ -61,10 +64,13 @@ func (a *Client) CreateTask(params *CreateTaskParams, authInfo client.AuthInfoWr
 	}
 
 	result, err := a.transport.Submit(&client.Operation{
-		ID:       "createTask",
-		Params:   params,
-		Reader:   &CreateTaskReader{formats: a.formats},
-		AuthInfo: authInfo,
+		ID:          "createTask",
+		Method:      "POST",
+		PathPattern: "/tasks",
+		Schemes:     []string{"http", "https"},
+		Params:      params,
+		Reader:      &CreateTaskReader{formats: a.formats},
+		AuthInfo:    authInfo,
 	})
 	if err != nil {
 		return nil, err
@@ -84,10 +90,13 @@ func (a *Client) DeleteTask(params *DeleteTaskParams, authInfo client.AuthInfoWr
 	}
 
 	result, err := a.transport.Submit(&client.Operation{
-		ID:       "deleteTask",
-		Params:   params,
-		Reader:   &DeleteTaskReader{formats: a.formats},
-		AuthInfo: authInfo,
+		ID:          "deleteTask",
+		Method:      "DELETE",
+		PathPattern: "/tasks/{id}",
+		Schemes:     []string{"http", "https"},
+		Params:      params,
+		Reader:      &DeleteTaskReader{formats: a.formats},
+		AuthInfo:    authInfo,
 	})
 	if err != nil {
 		return nil, err
@@ -107,9 +116,12 @@ func (a *Client) GetTaskComments(params *GetTaskCommentsParams) (*GetTaskComment
 	}
 
 	result, err := a.transport.Submit(&client.Operation{
-		ID:     "getTaskComments",
-		Params: params,
-		Reader: &GetTaskCommentsReader{formats: a.formats},
+		ID:          "getTaskComments",
+		Method:      "GET",
+		PathPattern: "/tasks/{id}/comments",
+		Schemes:     []string{"http", "https"},
+		Params:      params,
+		Reader:      &GetTaskCommentsReader{formats: a.formats},
 	})
 	if err != nil {
 		return nil, err
@@ -132,9 +144,12 @@ func (a *Client) GetTaskDetails(params *GetTaskDetailsParams) (*GetTaskDetailsOK
 	}
 
 	result, err := a.transport.Submit(&client.Operation{
-		ID:     "getTaskDetails",
-		Params: params,
-		Reader: &GetTaskDetailsReader{formats: a.formats},
+		ID:          "getTaskDetails",
+		Method:      "GET",
+		PathPattern: "/tasks/{id}",
+		Schemes:     []string{"http", "https"},
+		Params:      params,
+		Reader:      &GetTaskDetailsReader{formats: a.formats},
 	})
 	if err != nil {
 		return nil, err
@@ -157,9 +172,12 @@ func (a *Client) ListTasks(params *ListTasksParams) (*ListTasksOK, error) {
 	}
 
 	result, err := a.transport.Submit(&client.Operation{
-		ID:     "listTasks",
-		Params: params,
-		Reader: &ListTasksReader{formats: a.formats},
+		ID:          "listTasks",
+		Method:      "GET",
+		PathPattern: "/tasks",
+		Schemes:     []string{"http", "https"},
+		Params:      params,
+		Reader:      &ListTasksReader{formats: a.formats},
 	})
 	if err != nil {
 		return nil, err
@@ -181,10 +199,13 @@ func (a *Client) UpdateTask(params *UpdateTaskParams, authInfo client.AuthInfoWr
 	}
 
 	result, err := a.transport.Submit(&client.Operation{
-		ID:       "updateTask",
-		Params:   params,
-		Reader:   &UpdateTaskReader{formats: a.formats},
-		AuthInfo: authInfo,
+		ID:          "updateTask",
+		Method:      "PUT",
+		PathPattern: "/tasks/{id}",
+		Schemes:     []string{"http", "https"},
+		Params:      params,
+		Reader:      &UpdateTaskReader{formats: a.formats},
+		AuthInfo:    authInfo,
 	})
 	if err != nil {
 		return nil, err
@@ -203,10 +224,13 @@ func (a *Client) UploadTaskFile(params *UploadTaskFileParams, authInfo client.Au
 	}
 
 	result, err := a.transport.Submit(&client.Operation{
-		ID:       "uploadTaskFile",
-		Params:   params,
-		Reader:   &UploadTaskFileReader{formats: a.formats},
-		AuthInfo: authInfo,
+		ID:          "uploadTaskFile",
+		Method:      "POST",
+		PathPattern: "/tasks/{id}/files",
+		Schemes:     []string{"http", "https"},
+		Params:      params,
+		Reader:      &UploadTaskFileReader{formats: a.formats},
+		AuthInfo:    authInfo,
 	})
 	if err != nil {
 		return nil, err

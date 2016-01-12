@@ -32,10 +32,13 @@ func (a *Client) AddOne(params *AddOneParams, authInfo client.AuthInfoWriter) (*
 	}
 
 	result, err := a.transport.Submit(&client.Operation{
-		ID:       "addOne",
-		Params:   params,
-		Reader:   &AddOneReader{formats: a.formats},
-		AuthInfo: authInfo,
+		ID:          "addOne",
+		Method:      "POST",
+		PathPattern: "/",
+		Schemes:     []string{"http", "https"},
+		Params:      params,
+		Reader:      &AddOneReader{formats: a.formats},
+		AuthInfo:    authInfo,
 	})
 	if err != nil {
 		return nil, err
@@ -52,10 +55,13 @@ func (a *Client) DestroyOne(params *DestroyOneParams, authInfo client.AuthInfoWr
 	}
 
 	result, err := a.transport.Submit(&client.Operation{
-		ID:       "destroyOne",
-		Params:   params,
-		Reader:   &DestroyOneReader{formats: a.formats},
-		AuthInfo: authInfo,
+		ID:          "destroyOne",
+		Method:      "DELETE",
+		PathPattern: "/{id}",
+		Schemes:     []string{"http", "https"},
+		Params:      params,
+		Reader:      &DestroyOneReader{formats: a.formats},
+		AuthInfo:    authInfo,
 	})
 	if err != nil {
 		return nil, err
@@ -72,10 +78,13 @@ func (a *Client) Find(params *FindParams, authInfo client.AuthInfoWriter) (*Find
 	}
 
 	result, err := a.transport.Submit(&client.Operation{
-		ID:       "find",
-		Params:   params,
-		Reader:   &FindReader{formats: a.formats},
-		AuthInfo: authInfo,
+		ID:          "find",
+		Method:      "GET",
+		PathPattern: "/",
+		Schemes:     []string{"http", "https"},
+		Params:      params,
+		Reader:      &FindReader{formats: a.formats},
+		AuthInfo:    authInfo,
 	})
 	if err != nil {
 		return nil, err
@@ -92,10 +101,13 @@ func (a *Client) UpdateOne(params *UpdateOneParams, authInfo client.AuthInfoWrit
 	}
 
 	result, err := a.transport.Submit(&client.Operation{
-		ID:       "updateOne",
-		Params:   params,
-		Reader:   &UpdateOneReader{formats: a.formats},
-		AuthInfo: authInfo,
+		ID:          "updateOne",
+		Method:      "PUT",
+		PathPattern: "/{id}",
+		Schemes:     []string{"http", "https"},
+		Params:      params,
+		Reader:      &UpdateOneReader{formats: a.formats},
+		AuthInfo:    authInfo,
 	})
 	if err != nil {
 		return nil, err

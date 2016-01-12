@@ -44,6 +44,9 @@ func (a *Client) {{ pascalize .Name }}(params *{{ pascalize .Name }}Params{{ if 
 
   {{ if .SuccessResponse }}result{{else}}_{{ end }}, err := a.transport.Submit(&client.Operation{
     ID: {{ printf "%q" .Name }},
+		Method: {{ printf "%q" .Method }},
+		PathPattern: {{ printf "%q" .Path }},
+		Schemes: {{ printf "%#v" .Schemes }},
     Params: params,
     Reader: &{{ pascalize .Name }}Reader{formats: a.formats},{{ if .Authorized }}
     AuthInfo: authInfo,{{ end}}

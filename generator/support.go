@@ -585,12 +585,22 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		collectedSchemes = concatUnique(collectedSchemes, op.Schemes)
 	}
 
+	host := "localhost"
+	if sw.Host != "" {
+		host = sw.Host
+	}
+
+	basePath := "/"
+	if sw.BasePath != "" {
+		basePath = "/"
+	}
+
 	return GenApp{
 		Package:             a.Package,
 		ReceiverName:        receiver,
 		Name:                a.Name,
-		Host:                sw.Host,
-		BasePath:            sw.BasePath,
+		Host:                host,
+		BasePath:            basePath,
 		Schemes:             schemeOrDefault(collectedSchemes, a.DefaultScheme),
 		ExternalDocs:        sw.ExternalDocs,
 		Info:                sw.Info,

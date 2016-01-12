@@ -26,7 +26,6 @@ import (
 
 	"github.com/go-swagger/go-swagger/client"
 	"github.com/go-swagger/go-swagger/httpkit"
-	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/stretchr/testify/assert"
 )
@@ -63,33 +62,29 @@ func TestRuntime_Canary(t *testing.T) {
 		return nil
 	})
 
-	specDoc, err := spec.Load("../../fixtures/codegen/todolist.simple.yml")
 	hu, _ := url.Parse(server.URL)
-	specDoc.Spec().Host = hu.Host
-	specDoc.Spec().BasePath = "/"
-	if assert.NoError(t, err) {
-
-		runtime := New(specDoc)
-		res, err := runtime.Submit(&client.Operation{
-			ID:     "getTasks",
-			Params: rwrtr,
-			Reader: client.ResponseReaderFunc(func(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
-				if response.Code() == 200 {
-					var result []task
-					if err := consumer.Consume(response.Body(), &result); err != nil {
-						return nil, err
-					}
-					return result, nil
+	runtime := New(hu.Host, "/", []string{"http"})
+	res, err := runtime.Submit(&client.Operation{
+		ID:          "getTasks",
+		Method:      "GET",
+		PathPattern: "/",
+		Params:      rwrtr,
+		Reader: client.ResponseReaderFunc(func(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+			if response.Code() == 200 {
+				var result []task
+				if err := consumer.Consume(response.Body(), &result); err != nil {
+					return nil, err
 				}
-				return nil, errors.New("Generic error")
-			}),
-		})
+				return result, nil
+			}
+			return nil, errors.New("Generic error")
+		}),
+	})
 
-		if assert.NoError(t, err) {
-			assert.IsType(t, []task{}, res)
-			actual := res.([]task)
-			assert.EqualValues(t, result, actual)
-		}
+	if assert.NoError(t, err) {
+		assert.IsType(t, []task{}, res)
+		actual := res.([]task)
+		assert.EqualValues(t, result, actual)
 	}
 }
 
@@ -108,48 +103,44 @@ func TestRuntime_CustomTransport(t *testing.T) {
 		{false, "task 2 content", 2},
 	}
 
-	specDoc, err := spec.Load("../../fixtures/codegen/todolist.simple.yml")
-	specDoc.Spec().BasePath = "/"
-	specDoc.Spec().Host = "localhost:3245"
-	specDoc.Spec().Schemes = []string{"ws", "wss", "https"}
+	runtime := New("localhost:3245", "/", []string{"ws", "wss", "https"})
+	runtime.Transport = roundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		if req.URL.Scheme != "https" {
+			return nil, errors.New("this was not a https request")
+		}
+		var resp http.Response
+		resp.StatusCode = 200
+		resp.Header = make(http.Header)
+		resp.Header.Set("content-type", "application/json")
+		buf := bytes.NewBuffer(nil)
+		enc := json.NewEncoder(buf)
+		enc.Encode(result)
+		resp.Body = ioutil.NopCloser(buf)
+		return &resp, nil
+	})
+
+	res, err := runtime.Submit(&client.Operation{
+		ID:          "getTasks",
+		Method:      "GET",
+		PathPattern: "/",
+		Schemes:     []string{"ws", "wss", "https"},
+		Params:      rwrtr,
+		Reader: client.ResponseReaderFunc(func(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+			if response.Code() == 200 {
+				var result []task
+				if err := consumer.Consume(response.Body(), &result); err != nil {
+					return nil, err
+				}
+				return result, nil
+			}
+			return nil, errors.New("Generic error")
+		}),
+	})
 
 	if assert.NoError(t, err) {
-		runtime := New(specDoc)
-		runtime.Transport = roundTripperFunc(func(req *http.Request) (*http.Response, error) {
-			if req.URL.Scheme != "https" {
-				return nil, errors.New("this was not a https request")
-			}
-			var resp http.Response
-			resp.StatusCode = 200
-			resp.Header = make(http.Header)
-			resp.Header.Set("content-type", "application/json")
-			buf := bytes.NewBuffer(nil)
-			enc := json.NewEncoder(buf)
-			enc.Encode(result)
-			resp.Body = ioutil.NopCloser(buf)
-			return &resp, nil
-		})
-
-		res, err := runtime.Submit(&client.Operation{
-			ID:     "getTasks",
-			Params: rwrtr,
-			Reader: client.ResponseReaderFunc(func(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
-				if response.Code() == 200 {
-					var result []task
-					if err := consumer.Consume(response.Body(), &result); err != nil {
-						return nil, err
-					}
-					return result, nil
-				}
-				return nil, errors.New("Generic error")
-			}),
-		})
-
-		if assert.NoError(t, err) {
-			assert.IsType(t, []task{}, res)
-			actual := res.([]task)
-			assert.EqualValues(t, result, actual)
-		}
+		assert.IsType(t, []task{}, res)
+		actual := res.([]task)
+		assert.EqualValues(t, result, actual)
 	}
 }
 
@@ -176,34 +167,29 @@ func TestRuntime_AuthCanary(t *testing.T) {
 		return nil
 	})
 
-	specDoc, err := spec.Load("../../fixtures/codegen/todolist.simple.yml")
 	hu, _ := url.Parse(server.URL)
-	specDoc.Spec().Host = hu.Host
-	specDoc.Spec().BasePath = "/"
-	if assert.NoError(t, err) {
 
-		runtime := New(specDoc)
-		res, err := runtime.Submit(&client.Operation{
-			ID:     "getTasks",
-			Params: rwrtr,
-			Reader: client.ResponseReaderFunc(func(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
-				if response.Code() == 200 {
-					var result []task
-					if err := consumer.Consume(response.Body(), &result); err != nil {
-						return nil, err
-					}
-					return result, nil
+	runtime := New(hu.Host, "/", []string{"http"})
+	res, err := runtime.Submit(&client.Operation{
+		ID:     "getTasks",
+		Params: rwrtr,
+		Reader: client.ResponseReaderFunc(func(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+			if response.Code() == 200 {
+				var result []task
+				if err := consumer.Consume(response.Body(), &result); err != nil {
+					return nil, err
 				}
-				return nil, errors.New("Generic error")
-			}),
-			AuthInfo: BearerToken("the-super-secret-token"),
-		})
+				return result, nil
+			}
+			return nil, errors.New("Generic error")
+		}),
+		AuthInfo: BearerToken("the-super-secret-token"),
+	})
 
-		if assert.NoError(t, err) {
-			assert.IsType(t, []task{}, res)
-			actual := res.([]task)
-			assert.EqualValues(t, result, actual)
-		}
+	if assert.NoError(t, err) {
+		assert.IsType(t, []task{}, res)
+		actual := res.([]task)
+		assert.EqualValues(t, result, actual)
 	}
 }
 
@@ -230,34 +216,31 @@ func TestRuntime_ContentTypeCanary(t *testing.T) {
 		return nil
 	})
 
-	specDoc, err := spec.Load("../../fixtures/codegen/todolist.simple.yml")
 	hu, _ := url.Parse(server.URL)
-	specDoc.Spec().Host = hu.Host
-	specDoc.Spec().BasePath = "/"
-	if assert.NoError(t, err) {
-
-		runtime := New(specDoc)
-		res, err := runtime.Submit(&client.Operation{
-			ID:     "getTasks",
-			Params: rwrtr,
-			Reader: client.ResponseReaderFunc(func(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
-				if response.Code() == 200 {
-					var result []task
-					if err := consumer.Consume(response.Body(), &result); err != nil {
-						return nil, err
-					}
-					return result, nil
+	runtime := New(hu.Host, "/", []string{"http"})
+	res, err := runtime.Submit(&client.Operation{
+		ID:          "getTasks",
+		Method:      "GET",
+		PathPattern: "/",
+		Schemes:     []string{"http"},
+		Params:      rwrtr,
+		Reader: client.ResponseReaderFunc(func(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+			if response.Code() == 200 {
+				var result []task
+				if err := consumer.Consume(response.Body(), &result); err != nil {
+					return nil, err
 				}
-				return nil, errors.New("Generic error")
-			}),
-			AuthInfo: BearerToken("the-super-secret-token"),
-		})
+				return result, nil
+			}
+			return nil, errors.New("Generic error")
+		}),
+		AuthInfo: BearerToken("the-super-secret-token"),
+	})
 
-		if assert.NoError(t, err) {
-			assert.IsType(t, []task{}, res)
-			actual := res.([]task)
-			assert.EqualValues(t, result, actual)
-		}
+	if assert.NoError(t, err) {
+		assert.IsType(t, []task{}, res)
+		actual := res.([]task)
+		assert.EqualValues(t, result, actual)
 	}
 }
 
@@ -285,33 +268,32 @@ func TestRuntime_ChunkedResponse(t *testing.T) {
 		return nil
 	})
 
-	specDoc, err := spec.Load("../../fixtures/codegen/todolist.simple.yml")
+	//specDoc, err := spec.Load("../../fixtures/codegen/todolist.simple.yml")
 	hu, _ := url.Parse(server.URL)
-	specDoc.Spec().Host = hu.Host
-	specDoc.Spec().BasePath = "/"
-	if assert.NoError(t, err) {
 
-		runtime := New(specDoc)
-		res, err := runtime.Submit(&client.Operation{
-			ID:     "getTasks",
-			Params: rwrtr,
-			Reader: client.ResponseReaderFunc(func(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
-				if response.Code() == 200 {
-					var result []task
-					if err := consumer.Consume(response.Body(), &result); err != nil {
-						return nil, err
-					}
-					return result, nil
+	runtime := New(hu.Host, "/", []string{"http"})
+	res, err := runtime.Submit(&client.Operation{
+		ID:          "getTasks",
+		Method:      "GET",
+		PathPattern: "/",
+		Schemes:     []string{"http"},
+		Params:      rwrtr,
+		Reader: client.ResponseReaderFunc(func(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+			if response.Code() == 200 {
+				var result []task
+				if err := consumer.Consume(response.Body(), &result); err != nil {
+					return nil, err
 				}
-				return nil, errors.New("Generic error")
-			}),
-			AuthInfo: BearerToken("the-super-secret-token"),
-		})
+				return result, nil
+			}
+			return nil, errors.New("Generic error")
+		}),
+		AuthInfo: BearerToken("the-super-secret-token"),
+	})
 
-		if assert.NoError(t, err) {
-			assert.IsType(t, []task{}, res)
-			actual := res.([]task)
-			assert.EqualValues(t, result, actual)
-		}
+	if assert.NoError(t, err) {
+		assert.IsType(t, []task{}, res)
+		actual := res.([]task)
+		assert.EqualValues(t, result, actual)
 	}
 }

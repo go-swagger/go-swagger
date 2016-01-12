@@ -9,8 +9,8 @@ swagger generate server -A Petstore
 
 cd "${examples}/todo-list"
 rm -rf client cmd models restapi
-swagger generate client -f ./swagger.yml
-swagger generate server -f ./swagger.yml
+swagger generate client -A TodoList -f ./swagger.yml
+swagger generate server -A TodoList -f ./swagger.yml
 
 cd "${examples}/task-tracker"
 rm -rf client cmd models restapi

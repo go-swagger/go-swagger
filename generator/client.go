@@ -118,10 +118,6 @@ func (c *clientGenerator) Generate() error {
 
 	sort.Sort(app.OperationGroups)
 
-	if err := c.generateEmbeddedSwaggerJSON(&app); err != nil {
-		return err
-	}
-
 	if err := c.generateFacade(&app); err != nil {
 		return err
 	}
