@@ -181,6 +181,65 @@ func IntValueMap(src map[string]*int) map[string]int {
 	return dst
 }
 
+// Int32 returns a pointer to of the int64 value passed in.
+func Int32(v int32) *int32 {
+	return &v
+}
+
+// Int32Value returns the value of the int64 pointer passed in or
+// 0 if the pointer is nil.
+func Int32Value(v *int32) int32 {
+	if v != nil {
+		return *v
+	}
+	return 0
+}
+
+// Int32Slice converts a slice of int64 values into a slice of
+// int32 pointers
+func Int32Slice(src []int32) []*int32 {
+	dst := make([]*int32, len(src))
+	for i := 0; i < len(src); i++ {
+		dst[i] = &(src[i])
+	}
+	return dst
+}
+
+// Int32ValueSlice converts a slice of int32 pointers into a slice of
+// int32 values
+func Int32ValueSlice(src []*int32) []int32 {
+	dst := make([]int32, len(src))
+	for i := 0; i < len(src); i++ {
+		if src[i] != nil {
+			dst[i] = *(src[i])
+		}
+	}
+	return dst
+}
+
+// Int32Map converts a string map of int32 values into a string
+// map of int32 pointers
+func Int32Map(src map[string]int32) map[string]*int32 {
+	dst := make(map[string]*int32)
+	for k, val := range src {
+		v := val
+		dst[k] = &v
+	}
+	return dst
+}
+
+// Int32ValueMap converts a string map of int32 pointers into a string
+// map of int32 values
+func Int32ValueMap(src map[string]*int32) map[string]int32 {
+	dst := make(map[string]int32)
+	for k, val := range src {
+		if val != nil {
+			dst[k] = *val
+		}
+	}
+	return dst
+}
+
 // Int64 returns a pointer to of the int64 value passed in.
 func Int64(v int64) *int64 {
 	return &v
