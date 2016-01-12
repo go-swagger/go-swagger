@@ -71,7 +71,7 @@ func ParseDateTime(data string) (DateTime, error) {
 			continue
 		}
 		lastError = nil
-		return DateTime{dd}, nil
+		return DateTime(dd), nil
 	}
 	return DateTime{}, lastError
 }
@@ -81,17 +81,15 @@ func ParseDateTime(data string) (DateTime, error) {
 // Most API's we encounter want either millisecond or second precision times. This just tries to make it worry-free.
 //
 // swagger:strfmt date-time
-type DateTime struct {
-	time.Time
-}
+type DateTime time.Time
 
 // NewDateTime is a representation of zero value for DateTime type
 func NewDateTime() DateTime {
-	return DateTime{Time: time.Unix(0, 0).UTC()}
+	return DateTime(time.Unix(0, 0).UTC())
 }
 
 func (t DateTime) String() string {
-	return t.Format(RFC3339Millis)
+	return time.Time(t).Format(RFC3339Millis)
 }
 
 // MarshalText implements the text marshaller interface
@@ -118,7 +116,7 @@ func (t *DateTime) Scan(raw interface{}) error {
 	case string:
 		return t.UnmarshalText([]byte(v))
 	case time.Time:
-		*t = DateTime{v}
+		*t = DateTime(v)
 	case nil:
 		*t = DateTime{}
 	default:
@@ -130,5 +128,5 @@ func (t *DateTime) Scan(raw interface{}) error {
 
 // Value converts DateTime to a primitive value ready to written to a database.
 func (t DateTime) Value() (driver.Value, error) {
-	return driver.Value(t.Time), nil
+	return driver.Value(t), nil
 }

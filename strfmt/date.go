@@ -51,13 +51,11 @@ var (
 // Date represents a date from the API
 //
 // swagger:strfmt date
-type Date struct {
-	time.Time
-}
+type Date time.Time
 
 // String converts this date into a string
 func (d Date) String() string {
-	return d.Format(RFC3339FullDate)
+	return time.Time(d).Format(RFC3339FullDate)
 }
 
 // UnmarshalText parses a text representation into a date type
@@ -69,7 +67,7 @@ func (d *Date) UnmarshalText(text []byte) error {
 	if err != nil {
 		return err
 	}
-	*d = Date{Time: dd}
+	*d = Date(dd)
 	return nil
 }
 
@@ -86,7 +84,7 @@ func (d *Date) Scan(raw interface{}) error {
 	case string:
 		return d.UnmarshalText([]byte(v))
 	case time.Time:
-		*d = Date{v}
+		*d = Date(v)
 		return nil
 	case nil:
 		*d = Date{}
@@ -98,5 +96,5 @@ func (d *Date) Scan(raw interface{}) error {
 
 // Value converts Date to a primitive value ready to written to a database.
 func (d Date) Value() (driver.Value, error) {
-	return driver.Value(d.Time), nil
+	return driver.Value(d), nil
 }
