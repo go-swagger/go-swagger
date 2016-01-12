@@ -12,6 +12,7 @@ import (
 // NewDestroyOneParams creates a new DestroyOneParams object
 // with the default values initialized.
 func NewDestroyOneParams() *DestroyOneParams {
+	var ()
 	return &DestroyOneParams{}
 }
 

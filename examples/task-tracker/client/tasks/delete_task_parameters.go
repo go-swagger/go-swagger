@@ -13,6 +13,7 @@ import (
 // NewDeleteTaskParams creates a new DeleteTaskParams object
 // with the default values initialized.
 func NewDeleteTaskParams() *DeleteTaskParams {
+	var ()
 	return &DeleteTaskParams{}
 }
 

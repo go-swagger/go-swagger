@@ -17,6 +17,7 @@ import (
 // NewUpdateOneParams creates a new UpdateOneParams object
 // with the default values initialized.
 func NewUpdateOneParams() UpdateOneParams {
+	var ()
 	return UpdateOneParams{}
 }
 

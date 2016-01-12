@@ -13,6 +13,7 @@ import (
 // NewAddCommentToTaskParams creates a new AddCommentToTaskParams object
 // with the default values initialized.
 func NewAddCommentToTaskParams() *AddCommentToTaskParams {
+	var ()
 	return &AddCommentToTaskParams{}
 }
 

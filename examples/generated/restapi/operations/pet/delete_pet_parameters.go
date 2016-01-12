@@ -15,6 +15,7 @@ import (
 // NewDeletePetParams creates a new DeletePetParams object
 // with the default values initialized.
 func NewDeletePetParams() DeletePetParams {
+	var ()
 	return DeletePetParams{}
 }
 
@@ -26,7 +27,7 @@ type DeletePetParams struct {
 	/*
 	  In: header
 	*/
-	APIKey string
+	APIKey *string
 	/*Pet id to delete
 	  Required: true
 	  In: path
@@ -63,7 +64,7 @@ func (o *DeletePetParams) bindAPIKey(rawData []string, hasKey bool, formats strf
 		return nil
 	}
 
-	o.APIKey = raw
+	o.APIKey = &raw
 
 	return nil
 }

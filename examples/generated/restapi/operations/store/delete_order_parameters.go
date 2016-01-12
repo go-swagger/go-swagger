@@ -15,6 +15,7 @@ import (
 // NewDeleteOrderParams creates a new DeleteOrderParams object
 // with the default values initialized.
 func NewDeleteOrderParams() DeleteOrderParams {
+	var ()
 	return DeleteOrderParams{}
 }
 

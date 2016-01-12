@@ -5,6 +5,7 @@ package todos
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/go-swagger/go-swagger/client"
 	"github.com/go-swagger/go-swagger/httpkit"
@@ -58,7 +59,7 @@ func (o *UpdateOneOK) readResponse(response client.Response, consumer httpkit.Co
 	o.Payload = new(models.Item)
 
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil {
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 
@@ -96,7 +97,7 @@ func (o *UpdateOneDefault) readResponse(response client.Response, consumer httpk
 	o.Payload = new(models.Error)
 
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil {
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

@@ -15,6 +15,7 @@ import (
 // NewCreateUsersWithListInputParams creates a new CreateUsersWithListInputParams object
 // with the default values initialized.
 func NewCreateUsersWithListInputParams() CreateUsersWithListInputParams {
+	var ()
 	return CreateUsersWithListInputParams{}
 }
 

@@ -15,6 +15,7 @@ import (
 // NewCreateUsersWithArrayInputParams creates a new CreateUsersWithArrayInputParams object
 // with the default values initialized.
 func NewCreateUsersWithArrayInputParams() CreateUsersWithArrayInputParams {
+	var ()
 	return CreateUsersWithArrayInputParams{}
 }
 

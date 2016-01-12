@@ -16,6 +16,7 @@ import (
 // NewUploadTaskFileParams creates a new UploadTaskFileParams object
 // with the default values initialized.
 func NewUploadTaskFileParams() UploadTaskFileParams {
+	var ()
 	return UploadTaskFileParams{}
 }
 
@@ -27,7 +28,7 @@ type UploadTaskFileParams struct {
 	/*Extra information describing the file
 	  In: formData
 	*/
-	Description string
+	Description *string
 	/*The file to upload
 	  In: formData
 	*/
@@ -80,7 +81,7 @@ func (o *UploadTaskFileParams) bindDescription(rawData []string, hasKey bool, fo
 		return nil
 	}
 
-	o.Description = raw
+	o.Description = &raw
 
 	return nil
 }

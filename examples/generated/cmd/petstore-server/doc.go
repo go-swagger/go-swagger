@@ -16,15 +16,15 @@ http://swagger.io/terms/
     Contact: <apiteam@swagger.io>
 
     Consumes:
-    - application/xml
-
     - application/json
+
+    - application/xml
 
 
     Produces:
-    - application/xml
-
     - application/json
+
+    - application/xml
 
 
 swagger:meta

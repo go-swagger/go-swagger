@@ -20,15 +20,17 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
+	api.JSONConsumer = httpkit.JSONConsumer()
+
 	api.XMLConsumer = httpkit.ConsumerFunc(func(r io.Reader, target interface{}) error {
 		return errors.NotImplemented("xml consumer has not yet been implemented")
 	})
-	api.JSONConsumer = httpkit.JSONConsumer()
+
+	api.JSONProducer = httpkit.JSONProducer()
 
 	api.XMLProducer = httpkit.ProducerFunc(func(w io.Writer, data interface{}) error {
 		return errors.NotImplemented("xml producer has not yet been implemented")
 	})
-	api.JSONProducer = httpkit.JSONProducer()
 
 	api.APIKeyAuth = func(token string) (interface{}, error) {
 		return nil, errors.NotImplemented("api key auth (api_key) api_key from header has not yet been implemented")
@@ -94,6 +96,8 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 	api.PetUploadFileHandler = pet.UploadFileHandlerFunc(func(params pet.UploadFileParams, principal interface{}) middleware.Responder {
 		return middleware.NotImplemented("operation pet.UploadFile has not yet been implemented")
 	})
+
+	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
 }

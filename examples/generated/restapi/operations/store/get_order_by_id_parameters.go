@@ -16,6 +16,7 @@ import (
 // NewGetOrderByIDParams creates a new GetOrderByIDParams object
 // with the default values initialized.
 func NewGetOrderByIDParams() GetOrderByIDParams {
+	var ()
 	return GetOrderByIDParams{}
 }
 

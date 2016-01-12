@@ -16,6 +16,7 @@ import (
 // NewUpdateUserParams creates a new UpdateUserParams object
 // with the default values initialized.
 func NewUpdateUserParams() UpdateUserParams {
+	var ()
 	return UpdateUserParams{}
 }
 

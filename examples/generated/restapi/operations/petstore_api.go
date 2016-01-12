@@ -25,8 +25,9 @@ func NewPetstoreAPI(spec *spec.Document) *PetstoreAPI {
 		spec:            spec,
 		handlers:        make(map[string]map[string]http.Handler),
 		formats:         strfmt.Default,
-		defaultConsumes: "multipart/form-data",
+		defaultConsumes: "application/xml",
 		defaultProduces: "application/xml",
+		ServerShutdown:  func() {},
 	}
 
 	return o
@@ -40,15 +41,15 @@ type PetstoreAPI struct {
 	formats         strfmt.Registry
 	defaultConsumes string
 	defaultProduces string
-	// XMLConsumer registers a consumer for a "application/xml" mime type
-	XMLConsumer httpkit.Consumer
 	// JSONConsumer registers a consumer for a "application/json" mime type
 	JSONConsumer httpkit.Consumer
+	// XMLConsumer registers a consumer for a "application/xml" mime type
+	XMLConsumer httpkit.Consumer
 
-	// XMLProducer registers a producer for a "application/xml" mime type
-	XMLProducer httpkit.Producer
 	// JSONProducer registers a producer for a "application/json" mime type
 	JSONProducer httpkit.Producer
+	// XMLProducer registers a producer for a "application/xml" mime type
+	XMLProducer httpkit.Producer
 
 	// APIKeyAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key api_key provided in the header
@@ -98,6 +99,10 @@ type PetstoreAPI struct {
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
+
+	// ServerShutdown is called when the HTTP(S) server is shut down and done
+	// handling all active connections and does not accept connections any more
+	ServerShutdown func()
 }
 
 // SetDefaultProduces sets the default produces media type
@@ -134,20 +139,20 @@ func (o *PetstoreAPI) RegisterFormat(name string, format strfmt.Format, validato
 func (o *PetstoreAPI) Validate() error {
 	var unregistered []string
 
-	if o.XMLConsumer == nil {
-		unregistered = append(unregistered, "XMLConsumer")
-	}
-
 	if o.JSONConsumer == nil {
 		unregistered = append(unregistered, "JSONConsumer")
 	}
 
-	if o.XMLProducer == nil {
-		unregistered = append(unregistered, "XMLProducer")
+	if o.XMLConsumer == nil {
+		unregistered = append(unregistered, "XMLConsumer")
 	}
 
 	if o.JSONProducer == nil {
 		unregistered = append(unregistered, "JSONProducer")
+	}
+
+	if o.XMLProducer == nil {
+		unregistered = append(unregistered, "XMLProducer")
 	}
 
 	if o.APIKeyAuth == nil {
@@ -270,11 +275,11 @@ func (o *PetstoreAPI) ConsumersFor(mediaTypes []string) map[string]httpkit.Consu
 	for _, mt := range mediaTypes {
 		switch mt {
 
-		case "application/xml":
-			result["application/xml"] = o.XMLConsumer
-
 		case "application/json":
 			result["application/json"] = o.JSONConsumer
+
+		case "application/xml":
+			result["application/xml"] = o.XMLConsumer
 
 		}
 	}
@@ -289,11 +294,11 @@ func (o *PetstoreAPI) ProducersFor(mediaTypes []string) map[string]httpkit.Produ
 	for _, mt := range mediaTypes {
 		switch mt {
 
-		case "application/xml":
-			result["application/xml"] = o.XMLProducer
-
 		case "application/json":
 			result["application/json"] = o.JSONProducer
+
+		case "application/xml":
+			result["application/xml"] = o.XMLProducer
 
 		}
 	}

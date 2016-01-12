@@ -14,6 +14,7 @@ import (
 // NewDeleteUserParams creates a new DeleteUserParams object
 // with the default values initialized.
 func NewDeleteUserParams() DeleteUserParams {
+	var ()
 	return DeleteUserParams{}
 }
 

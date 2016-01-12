@@ -15,6 +15,7 @@ import (
 // NewGetPetByIDParams creates a new GetPetByIDParams object
 // with the default values initialized.
 func NewGetPetByIDParams() GetPetByIDParams {
+	var ()
 	return GetPetByIDParams{}
 }
 

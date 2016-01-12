@@ -53,12 +53,14 @@ func main() {
 
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", opts.Host, opts.Port))
 	if err != nil {
+		api.ServerShutdown()
 		log.Fatalln(err)
 	}
 
 	fmt.Printf("serving task tracker at http://%s\n", listener.Addr())
 	go func() {
 		if err := httpServer.Serve(tcpKeepAliveListener{listener.(*net.TCPListener)}); err != nil {
+			api.ServerShutdown()
 			log.Fatalln(err)
 		}
 	}()
@@ -72,6 +74,7 @@ func main() {
 	httpsServer.TLSConfig.Certificates = make([]tls.Certificate, 1)
 	httpsServer.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(string(opts.TLSCertificate), string(opts.TLSCertificateKey))
 	if err != nil {
+		api.ServerShutdown()
 		log.Fatal(err)
 	}
 
@@ -80,6 +83,7 @@ func main() {
 	}
 	tlsListener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", opts.TLSHost, opts.TLSPort))
 	if err != nil {
+		api.ServerShutdown()
 		log.Fatalln(err)
 	}
 
@@ -87,8 +91,16 @@ func main() {
 
 	wrapped := tls.NewListener(tcpKeepAliveListener{tlsListener.(*net.TCPListener)}, httpsServer.TLSConfig)
 	if err := httpsServer.Serve(wrapped); err != nil {
+		api.ServerShutdown()
 		log.Fatalln(err)
 	}
+	go func() {
+
+		<-httpServer.StopChan()
+
+		<-httpsServer.StopChan()
+		api.ServerShutdown()
+	}()
 }
 
 // tcpKeepAliveListener is copied from the stdlib net/http package

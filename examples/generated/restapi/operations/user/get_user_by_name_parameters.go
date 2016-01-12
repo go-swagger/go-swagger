@@ -14,6 +14,7 @@ import (
 // NewGetUserByNameParams creates a new GetUserByNameParams object
 // with the default values initialized.
 func NewGetUserByNameParams() GetUserByNameParams {
+	var ()
 	return GetUserByNameParams{}
 }
 

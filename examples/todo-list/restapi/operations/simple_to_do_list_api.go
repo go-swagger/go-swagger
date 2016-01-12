@@ -25,6 +25,7 @@ func NewSimpleToDoListAPI(spec *spec.Document) *SimpleToDoListAPI {
 		formats:         strfmt.Default,
 		defaultConsumes: "application/io.swagger.examples.todo-list.v1+json",
 		defaultProduces: "application/io.swagger.examples.todo-list.v1+json",
+		ServerShutdown:  func() {},
 	}
 
 	return o
@@ -60,6 +61,10 @@ type SimpleToDoListAPI struct {
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
+
+	// ServerShutdown is called when the HTTP(S) server is shut down and done
+	// handling all active connections and does not accept connections any more
+	ServerShutdown func()
 }
 
 // SetDefaultProduces sets the default produces media type

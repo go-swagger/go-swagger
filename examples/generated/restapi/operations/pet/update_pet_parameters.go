@@ -15,6 +15,7 @@ import (
 // NewUpdatePetParams creates a new UpdatePetParams object
 // with the default values initialized.
 func NewUpdatePetParams() UpdatePetParams {
+	var ()
 	return UpdatePetParams{}
 }
 

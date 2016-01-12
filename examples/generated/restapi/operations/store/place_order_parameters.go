@@ -15,6 +15,7 @@ import (
 // NewPlaceOrderParams creates a new PlaceOrderParams object
 // with the default values initialized.
 func NewPlaceOrderParams() PlaceOrderParams {
+	var ()
 	return PlaceOrderParams{}
 }
 

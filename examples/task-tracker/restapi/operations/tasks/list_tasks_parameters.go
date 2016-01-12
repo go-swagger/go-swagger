@@ -18,8 +18,11 @@ import (
 // NewListTasksParams creates a new ListTasksParams object
 // with the default values initialized.
 func NewListTasksParams() ListTasksParams {
+	var (
+		pageSizeDefault int32 = int32(20)
+	)
 	return ListTasksParams{
-		PageSize: 20,
+		PageSize: &pageSizeDefault,
 	}
 }
 
@@ -32,11 +35,11 @@ type ListTasksParams struct {
 	  In: query
 	  Default: 20
 	*/
-	PageSize int32
+	PageSize *int32
 	/*The last id that was seen.
 	  In: query
 	*/
-	SinceID int64
+	SinceID *int64
 	/*the status to filter by
 	  Unique: true
 	  In: query
@@ -88,7 +91,8 @@ func (o *ListTasksParams) bindPageSize(rawData []string, hasKey bool, formats st
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
-		o.PageSize = 20
+		var pageSizeDefault int32 = int32(20)
+		o.PageSize = &pageSizeDefault
 		return nil
 	}
 
@@ -96,7 +100,7 @@ func (o *ListTasksParams) bindPageSize(rawData []string, hasKey bool, formats st
 	if err != nil {
 		return errors.InvalidType("pageSize", "query", "int32", raw)
 	}
-	o.PageSize = value
+	o.PageSize = &value
 
 	return nil
 }
@@ -114,7 +118,7 @@ func (o *ListTasksParams) bindSinceID(rawData []string, hasKey bool, formats str
 	if err != nil {
 		return errors.InvalidType("sinceId", "query", "int64", raw)
 	}
-	o.SinceID = value
+	o.SinceID = &value
 
 	return nil
 }

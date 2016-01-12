@@ -14,6 +14,7 @@ import (
 // NewCreateTaskParams creates a new CreateTaskParams object
 // with the default values initialized.
 func NewCreateTaskParams() *CreateTaskParams {
+	var ()
 	return &CreateTaskParams{}
 }
 

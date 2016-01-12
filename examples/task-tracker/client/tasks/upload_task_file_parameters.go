@@ -15,6 +15,7 @@ import (
 // NewUploadTaskFileParams creates a new UploadTaskFileParams object
 // with the default values initialized.
 func NewUploadTaskFileParams() *UploadTaskFileParams {
+	var ()
 	return &UploadTaskFileParams{}
 }
 
@@ -27,7 +28,7 @@ type UploadTaskFileParams struct {
 	  Extra information describing the file
 
 	*/
-	Description string
+	Description *string
 	/*File
 	  The file to upload
 
@@ -41,7 +42,7 @@ type UploadTaskFileParams struct {
 }
 
 // WithDescription adds the description to the upload task file params
-func (o *UploadTaskFileParams) WithDescription(description string) *UploadTaskFileParams {
+func (o *UploadTaskFileParams) WithDescription(description *string) *UploadTaskFileParams {
 	o.Description = description
 	return o
 }
@@ -63,20 +64,31 @@ func (o *UploadTaskFileParams) WriteToRequest(r client.Request, reg strfmt.Regis
 
 	var res []error
 
-	// form param description
-	frDescription := o.Description
-	fDescription := frDescription
-	if fDescription != "" {
-		if err := r.SetFormParam("description", fDescription); err != nil {
-			return err
+	if o.Description != nil {
+
+		// form param description
+		var frDescription string
+		if o.Description != nil {
+			frDescription = *o.Description
 		}
+		fDescription := frDescription
+		if fDescription != "" {
+			if err := r.SetFormParam("description", fDescription); err != nil {
+				return err
+			}
+		}
+
 	}
 
 	if o.File != nil {
-		// form file param file
-		if err := r.SetFileParam("file", o.File); err != nil {
-			return err
+
+		if o.File != nil {
+			// form file param file
+			if err := r.SetFileParam("file", o.File); err != nil {
+				return err
+			}
 		}
+
 	}
 
 	// path param id

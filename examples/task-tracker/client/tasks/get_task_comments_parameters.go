@@ -13,8 +13,11 @@ import (
 // NewGetTaskCommentsParams creates a new GetTaskCommentsParams object
 // with the default values initialized.
 func NewGetTaskCommentsParams() *GetTaskCommentsParams {
+	var (
+		pageSizeDefault int32 = int32(20)
+	)
 	return &GetTaskCommentsParams{
-		PageSize: 20,
+		PageSize: &pageSizeDefault,
 	}
 }
 
@@ -32,12 +35,12 @@ type GetTaskCommentsParams struct {
 	  Amount of items to return in a single page
 
 	*/
-	PageSize int32
+	PageSize *int32
 	/*Since
 	  The created time of the oldest seen comment
 
 	*/
-	Since strfmt.DateTime
+	Since *strfmt.DateTime
 }
 
 // WithID adds the id to the get task comments params
@@ -47,13 +50,13 @@ func (o *GetTaskCommentsParams) WithID(id int64) *GetTaskCommentsParams {
 }
 
 // WithPageSize adds the pageSize to the get task comments params
-func (o *GetTaskCommentsParams) WithPageSize(pageSize int32) *GetTaskCommentsParams {
+func (o *GetTaskCommentsParams) WithPageSize(pageSize *int32) *GetTaskCommentsParams {
 	o.PageSize = pageSize
 	return o
 }
 
 // WithSince adds the since to the get task comments params
-func (o *GetTaskCommentsParams) WithSince(since strfmt.DateTime) *GetTaskCommentsParams {
+func (o *GetTaskCommentsParams) WithSince(since *strfmt.DateTime) *GetTaskCommentsParams {
 	o.Since = since
 	return o
 }
@@ -68,22 +71,36 @@ func (o *GetTaskCommentsParams) WriteToRequest(r client.Request, reg strfmt.Regi
 		return err
 	}
 
-	// query param pageSize
-	qrPageSize := o.PageSize
-	qPageSize := swag.FormatInt32(qrPageSize)
-	if qPageSize != "" {
-		if err := r.SetQueryParam("pageSize", qPageSize); err != nil {
-			return err
+	if o.PageSize != nil {
+
+		// query param pageSize
+		var qrPageSize int32
+		if o.PageSize != nil {
+			qrPageSize = *o.PageSize
 		}
+		qPageSize := swag.FormatInt32(qrPageSize)
+		if qPageSize != "" {
+			if err := r.SetQueryParam("pageSize", qPageSize); err != nil {
+				return err
+			}
+		}
+
 	}
 
-	// query param since
-	qrSince := o.Since
-	qSince := qrSince.String()
-	if qSince != "" {
-		if err := r.SetQueryParam("since", qSince); err != nil {
-			return err
+	if o.Since != nil {
+
+		// query param since
+		var qrSince strfmt.DateTime
+		if o.Since != nil {
+			qrSince = *o.Since
 		}
+		qSince := qrSince.String()
+		if qSince != "" {
+			if err := r.SetQueryParam("since", qSince); err != nil {
+				return err
+			}
+		}
+
 	}
 
 	if len(res) > 0 {

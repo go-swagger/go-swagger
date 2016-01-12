@@ -38,6 +38,8 @@ func configureAPI(api *operations.SimpleToDoListAPI) http.Handler {
 		return middleware.NotImplemented("operation todos.UpdateOne has not yet been implemented")
 	})
 
+	api.ServerShutdown = func() {}
+
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
 }
 

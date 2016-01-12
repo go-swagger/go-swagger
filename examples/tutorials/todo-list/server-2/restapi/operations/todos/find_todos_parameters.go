@@ -16,8 +16,11 @@ import (
 // NewFindTodosParams creates a new FindTodosParams object
 // with the default values initialized.
 func NewFindTodosParams() FindTodosParams {
+	var (
+		limitDefault int32 = int32(20)
+	)
 	return FindTodosParams{
-		Limit: 20,
+		Limit: &limitDefault,
 	}
 }
 
@@ -30,11 +33,11 @@ type FindTodosParams struct {
 	  In: query
 	  Default: 20
 	*/
-	Limit int32
+	Limit *int32
 	/*
 	  In: query
 	*/
-	Since int64
+	Since *int64
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -65,7 +68,8 @@ func (o *FindTodosParams) bindLimit(rawData []string, hasKey bool, formats strfm
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
-		o.Limit = 20
+		var limitDefault int32 = int32(20)
+		o.Limit = &limitDefault
 		return nil
 	}
 
@@ -73,7 +77,7 @@ func (o *FindTodosParams) bindLimit(rawData []string, hasKey bool, formats strfm
 	if err != nil {
 		return errors.InvalidType("limit", "query", "int32", raw)
 	}
-	o.Limit = value
+	o.Limit = &value
 
 	return nil
 }
@@ -91,7 +95,7 @@ func (o *FindTodosParams) bindSince(rawData []string, hasKey bool, formats strfm
 	if err != nil {
 		return errors.InvalidType("since", "query", "int64", raw)
 	}
-	o.Since = value
+	o.Since = &value
 
 	return nil
 }

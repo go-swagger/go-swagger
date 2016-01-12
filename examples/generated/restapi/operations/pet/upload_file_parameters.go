@@ -16,6 +16,7 @@ import (
 // NewUploadFileParams creates a new UploadFileParams object
 // with the default values initialized.
 func NewUploadFileParams() UploadFileParams {
+	var ()
 	return UploadFileParams{}
 }
 
@@ -27,7 +28,7 @@ type UploadFileParams struct {
 	/*Additional data to pass to server
 	  In: formData
 	*/
-	AdditionalMetadata string
+	AdditionalMetadata *string
 	/*file to upload
 	  In: formData
 	*/
@@ -80,7 +81,7 @@ func (o *UploadFileParams) bindAdditionalMetadata(rawData []string, hasKey bool,
 		return nil
 	}
 
-	o.AdditionalMetadata = raw
+	o.AdditionalMetadata = &raw
 
 	return nil
 }

@@ -13,8 +13,11 @@ import (
 // NewListTasksParams creates a new ListTasksParams object
 // with the default values initialized.
 func NewListTasksParams() *ListTasksParams {
+	var (
+		pageSizeDefault int32 = int32(20)
+	)
 	return &ListTasksParams{
-		PageSize: 20,
+		PageSize: &pageSizeDefault,
 	}
 }
 
@@ -27,12 +30,12 @@ type ListTasksParams struct {
 	  Amount of items to return in a single page
 
 	*/
-	PageSize int32
+	PageSize *int32
 	/*SinceID
 	  The last id that was seen.
 
 	*/
-	SinceID int64
+	SinceID *int64
 	/*Status
 	  the status to filter by
 
@@ -46,13 +49,13 @@ type ListTasksParams struct {
 }
 
 // WithPageSize adds the pageSize to the list tasks params
-func (o *ListTasksParams) WithPageSize(pageSize int32) *ListTasksParams {
+func (o *ListTasksParams) WithPageSize(pageSize *int32) *ListTasksParams {
 	o.PageSize = pageSize
 	return o
 }
 
 // WithSinceID adds the sinceId to the list tasks params
-func (o *ListTasksParams) WithSinceID(sinceId int64) *ListTasksParams {
+func (o *ListTasksParams) WithSinceID(sinceId *int64) *ListTasksParams {
 	o.SinceID = sinceId
 	return o
 }
@@ -74,22 +77,36 @@ func (o *ListTasksParams) WriteToRequest(r client.Request, reg strfmt.Registry) 
 
 	var res []error
 
-	// query param pageSize
-	qrPageSize := o.PageSize
-	qPageSize := swag.FormatInt32(qrPageSize)
-	if qPageSize != "" {
-		if err := r.SetQueryParam("pageSize", qPageSize); err != nil {
-			return err
+	if o.PageSize != nil {
+
+		// query param pageSize
+		var qrPageSize int32
+		if o.PageSize != nil {
+			qrPageSize = *o.PageSize
 		}
+		qPageSize := swag.FormatInt32(qrPageSize)
+		if qPageSize != "" {
+			if err := r.SetQueryParam("pageSize", qPageSize); err != nil {
+				return err
+			}
+		}
+
 	}
 
-	// query param sinceId
-	qrSinceID := o.SinceID
-	qSinceID := swag.FormatInt64(qrSinceID)
-	if qSinceID != "" {
-		if err := r.SetQueryParam("sinceId", qSinceID); err != nil {
-			return err
+	if o.SinceID != nil {
+
+		// query param sinceId
+		var qrSinceID int64
+		if o.SinceID != nil {
+			qrSinceID = *o.SinceID
 		}
+		qSinceID := swag.FormatInt64(qrSinceID)
+		if qSinceID != "" {
+			if err := r.SetQueryParam("sinceId", qSinceID); err != nil {
+				return err
+			}
+		}
+
 	}
 
 	valuesStatus := o.Status

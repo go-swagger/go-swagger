@@ -15,6 +15,7 @@ import (
 // NewAddOneParams creates a new AddOneParams object
 // with the default values initialized.
 func NewAddOneParams() AddOneParams {
+	var ()
 	return AddOneParams{}
 }
 

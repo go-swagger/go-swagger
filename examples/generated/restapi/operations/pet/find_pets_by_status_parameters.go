@@ -18,6 +18,7 @@ import (
 // NewFindPetsByStatusParams creates a new FindPetsByStatusParams object
 // with the default values initialized.
 func NewFindPetsByStatusParams() FindPetsByStatusParams {
+	var ()
 	return FindPetsByStatusParams{}
 }
 

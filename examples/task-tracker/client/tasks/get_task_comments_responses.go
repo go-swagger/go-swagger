@@ -5,6 +5,7 @@ package tasks
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/go-swagger/go-swagger/client"
 	"github.com/go-swagger/go-swagger/httpkit"
@@ -56,7 +57,7 @@ func (o *GetTaskCommentsOK) Error() string {
 func (o *GetTaskCommentsOK) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
 
 	// response payload
-	if err := consumer.Consume(response.Body(), &o.Payload); err != nil {
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

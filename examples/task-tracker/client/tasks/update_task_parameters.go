@@ -15,6 +15,7 @@ import (
 // NewUpdateTaskParams creates a new UpdateTaskParams object
 // with the default values initialized.
 func NewUpdateTaskParams() *UpdateTaskParams {
+	var ()
 	return &UpdateTaskParams{}
 }
 

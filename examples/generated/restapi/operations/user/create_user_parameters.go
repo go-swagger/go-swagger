@@ -15,6 +15,7 @@ import (
 // NewCreateUserParams creates a new CreateUserParams object
 // with the default values initialized.
 func NewCreateUserParams() CreateUserParams {
+	var ()
 	return CreateUserParams{}
 }
 

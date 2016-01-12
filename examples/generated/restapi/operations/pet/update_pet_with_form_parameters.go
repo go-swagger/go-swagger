@@ -16,6 +16,7 @@ import (
 // NewUpdatePetWithFormParams creates a new UpdatePetWithFormParams object
 // with the default values initialized.
 func NewUpdatePetWithFormParams() UpdatePetWithFormParams {
+	var ()
 	return UpdatePetWithFormParams{}
 }
 
@@ -27,7 +28,7 @@ type UpdatePetWithFormParams struct {
 	/*Updated name of the pet
 	  In: formData
 	*/
-	Name string
+	Name *string
 	/*ID of pet that needs to be updated
 	  Required: true
 	  In: path
@@ -36,7 +37,7 @@ type UpdatePetWithFormParams struct {
 	/*Updated status of the pet
 	  In: formData
 	*/
-	Status string
+	Status *string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -78,7 +79,7 @@ func (o *UpdatePetWithFormParams) bindName(rawData []string, hasKey bool, format
 		return nil
 	}
 
-	o.Name = raw
+	o.Name = &raw
 
 	return nil
 }
@@ -107,7 +108,7 @@ func (o *UpdatePetWithFormParams) bindStatus(rawData []string, hasKey bool, form
 		return nil
 	}
 
-	o.Status = raw
+	o.Status = &raw
 
 	return nil
 }

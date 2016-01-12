@@ -16,6 +16,7 @@ import (
 // NewFindPetsByTagsParams creates a new FindPetsByTagsParams object
 // with the default values initialized.
 func NewFindPetsByTagsParams() FindPetsByTagsParams {
+	var ()
 	return FindPetsByTagsParams{}
 }
 

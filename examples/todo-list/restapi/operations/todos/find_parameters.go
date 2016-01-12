@@ -18,6 +18,7 @@ import (
 // NewFindParams creates a new FindParams object
 // with the default values initialized.
 func NewFindParams() FindParams {
+	var ()
 	return FindParams{}
 }
 

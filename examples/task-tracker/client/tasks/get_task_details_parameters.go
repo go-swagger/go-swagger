@@ -13,6 +13,7 @@ import (
 // NewGetTaskDetailsParams creates a new GetTaskDetailsParams object
 // with the default values initialized.
 func NewGetTaskDetailsParams() *GetTaskDetailsParams {
+	var ()
 	return &GetTaskDetailsParams{}
 }
 

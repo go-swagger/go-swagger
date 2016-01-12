@@ -16,8 +16,11 @@ import (
 // NewGetTaskCommentsParams creates a new GetTaskCommentsParams object
 // with the default values initialized.
 func NewGetTaskCommentsParams() GetTaskCommentsParams {
+	var (
+		pageSizeDefault int32 = int32(20)
+	)
 	return GetTaskCommentsParams{
-		PageSize: 20,
+		PageSize: &pageSizeDefault,
 	}
 }
 
@@ -35,11 +38,11 @@ type GetTaskCommentsParams struct {
 	  In: query
 	  Default: 20
 	*/
-	PageSize int32
+	PageSize *int32
 	/*The created time of the oldest seen comment
 	  In: query
 	*/
-	Since strfmt.DateTime
+	Since *strfmt.DateTime
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -90,7 +93,8 @@ func (o *GetTaskCommentsParams) bindPageSize(rawData []string, hasKey bool, form
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
-		o.PageSize = 20
+		var pageSizeDefault int32 = int32(20)
+		o.PageSize = &pageSizeDefault
 		return nil
 	}
 
@@ -98,7 +102,7 @@ func (o *GetTaskCommentsParams) bindPageSize(rawData []string, hasKey bool, form
 	if err != nil {
 		return errors.InvalidType("pageSize", "query", "int32", raw)
 	}
-	o.PageSize = value
+	o.PageSize = &value
 
 	return nil
 }
@@ -116,7 +120,7 @@ func (o *GetTaskCommentsParams) bindSince(rawData []string, hasKey bool, formats
 	if err != nil {
 		return errors.InvalidType("since", "query", "strfmt.DateTime", raw)
 	}
-	o.Since = *(value.(*strfmt.DateTime))
+	o.Since = (value.(*strfmt.DateTime))
 
 	return nil
 }

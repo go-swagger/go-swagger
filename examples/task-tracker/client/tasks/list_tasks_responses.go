@@ -5,6 +5,7 @@ package tasks
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/go-swagger/go-swagger/client"
 	"github.com/go-swagger/go-swagger/errors"
@@ -76,7 +77,7 @@ func (o *ListTasksOK) readResponse(response client.Response, consumer httpkit.Co
 	o.XLastTaskID = xLastTaskId
 
 	// response payload
-	if err := consumer.Consume(response.Body(), &o.Payload); err != nil {
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 
@@ -105,7 +106,7 @@ func (o *ListTasksUnprocessableEntity) readResponse(response client.Response, co
 	o.Payload = new(models.ValidationError)
 
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil {
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 
