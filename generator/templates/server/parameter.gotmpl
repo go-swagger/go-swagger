@@ -82,8 +82,12 @@ import (
 // New{{ pascalize .Name }}Params creates a new {{ pascalize .Name }}Params object
 // with the default values initialized.
 func New{{ pascalize .Name }}Params() {{ pascalize .Name }}Params {
+  var (
+  {{ range .Params }}{{ if .Default }}{{ camelize .Name}}Default {{ if not .IsFileParam }}{{ .GoType }}{{ else }}*os.File{{end}} = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
+  {{ end }}{{ end }}
+  )
   return {{ pascalize .Name }}Params{ {{ range .Params }}{{ if .Default }}
-    {{ pascalize .Name}}: {{ printf "%#v" .Default }},
+    {{ pascalize .Name}}: {{ if and (not .IsArray) (not .HasDiscriminator) (or .IsNullable  ) }}&{{ end }}{{ camelize .Name }}Default,
   {{ end }}{{ end }} }
 }
 
@@ -202,7 +206,8 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .Name }}(raw
     return err
   }
   {{ else if and ( not .IsPathParam ) (or (not .Required) .AllowEmptyValue) }}if raw == "" { // empty values pass all other validations
-    {{ if .Default }}{{ .ValueExpression }} = {{ printf "%#v" .Default }}
+    {{ if .Default }}var {{ camelize .Name}}Default {{ if not .IsFileParam }}{{ .GoType }}{{ else }}*os.File{{end}} = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
+    {{ .ValueExpression }} = {{ if and (not .IsArray) (not .HasDiscriminator) (or .IsNullable  ) }}&{{ end }}{{ camelize .Name }}Default
     {{ end }}return nil
   }
   {{ end }}
