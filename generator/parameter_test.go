@@ -474,7 +474,8 @@ func TestGenParameter_Issue163(t *testing.T) {
 				ff, err := formatGoFile("get_search_parameters.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
-					assertInCode(t, "o.StringTypeInQuery = \"qsValue\"", res)
+					assertInCode(t, "var stringTypeInQueryDefault string = string(\"qsValue\")", res)
+					assertInCode(t, "o.StringTypeInQuery = &stringTypeInQueryDefault", res)
 				} else {
 					fmt.Println(buf.String())
 				}
