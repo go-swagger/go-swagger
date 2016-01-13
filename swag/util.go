@@ -291,3 +291,10 @@ func IsZero(data interface{}) bool {
 	}
 	return false
 }
+
+// CommandLineOptionsGroup represents a group of user-defined command line options
+type CommandLineOptionsGroup struct {
+	ShortDescription string
+	LongDescription string
+	Options interface{}
+}

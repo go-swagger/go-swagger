@@ -47,6 +47,7 @@ func configureAPI(api *{{.Package}}.{{ pascalize .Name }}API) http.Handler {
   {{end}}
 
   api.ServerShutdown = func() {  }
+  // api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 
   return setupGlobalMiddleware(api.Serve(setupMiddlewares))
 }
