@@ -63,7 +63,7 @@ notifications:
     incoming_webhook: https://hooks.slack.com/services/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
     auth_token:
       secure: J4Kd3fY4CoTI+5+zSXkStkTPqnycfxFfk74GcGxDUq02z2jHcdIpiLyDbkIiQM9Z
-    channel: general
+    channel: bots
     on_build_success: false
     on_build_failure: true
     on_build_status_changed: true
