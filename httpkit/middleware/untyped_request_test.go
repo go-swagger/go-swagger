@@ -123,9 +123,9 @@ func TestUntypedBindingTypesForValid(t *testing.T) {
 	requestID := 19394858
 	tags := []string{"one", "two", "three"}
 	dt1 := time.Date(2014, 8, 9, 0, 0, 0, 0, time.UTC)
-	planned := strfmt.Date{Time: dt1}
+	planned := strfmt.Date(dt1)
 	dt2 := time.Date(2014, 10, 12, 8, 5, 5, 0, time.UTC)
-	delivered := strfmt.DateTime{Time: dt2}
+	delivered := strfmt.DateTime(dt2)
 	picture := base64.URLEncoding.EncodeToString([]byte("hello"))
 	uri, _ := url.Parse("http://localhost:8002/hello/7575")
 	qs := uri.Query()

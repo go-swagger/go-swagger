@@ -170,12 +170,12 @@ func TestParamBinding(t *testing.T) {
 
 	pName = "Timestamp"
 	timeField := val.FieldByName(pName)
-	dt := strfmt.DateTime{Time: time.Date(2014, 3, 19, 2, 9, 0, 0, time.UTC)}
+	dt := strfmt.DateTime(time.Date(2014, 3, 19, 2, 9, 0, 0, time.UTC))
 	binder = &untypedParamBinder{
 		parameter: spec.QueryParam(pName).Typed("string", "date-time").WithDefault(dt),
 		Name:      pName,
 	}
-	exp := strfmt.DateTime{Time: time.Date(2014, 5, 14, 2, 9, 0, 0, time.UTC)}
+	exp := strfmt.DateTime(time.Date(2014, 5, 14, 2, 9, 0, 0, time.UTC))
 
 	err = binder.setFieldValue(timeField, dt, exp.String(), true)
 	assert.NoError(t, err)
@@ -188,14 +188,14 @@ func TestParamBinding(t *testing.T) {
 	err = binder.setFieldValue(timeField, dt, "yada", true)
 	assert.Error(t, err)
 
-	ddt := strfmt.Date{Time: time.Date(2014, 3, 19, 0, 0, 0, 0, time.UTC)}
+	ddt := strfmt.Date(time.Date(2014, 3, 19, 0, 0, 0, 0, time.UTC))
 	pName = "Birthdate"
 	dateField := val.FieldByName(pName)
 	binder = &untypedParamBinder{
 		parameter: spec.QueryParam(pName).Typed("string", "date").WithDefault(ddt),
 		Name:      pName,
 	}
-	expd := strfmt.Date{Time: time.Date(2014, 5, 14, 0, 0, 0, 0, time.UTC)}
+	expd := strfmt.Date(time.Date(2014, 5, 14, 0, 0, 0, 0, time.UTC))
 
 	err = binder.setFieldValue(dateField, ddt, expd.String(), true)
 	assert.NoError(t, err)
@@ -208,14 +208,16 @@ func TestParamBinding(t *testing.T) {
 	err = binder.setFieldValue(dateField, ddt, "yada", true)
 	assert.Error(t, err)
 
-	fdt := &strfmt.DateTime{Time: time.Date(2014, 3, 19, 2, 9, 0, 0, time.UTC)}
+	dt = strfmt.DateTime(time.Date(2014, 3, 19, 2, 9, 0, 0, time.UTC))
+	fdt := &dt
 	pName = "LastFailure"
 	ftimeField := val.FieldByName(pName)
 	binder = &untypedParamBinder{
 		parameter: spec.QueryParam(pName).Typed("string", "date").WithDefault(fdt),
 		Name:      pName,
 	}
-	fexp := &strfmt.DateTime{Time: time.Date(2014, 5, 14, 2, 9, 0, 0, time.UTC)}
+	exp = strfmt.DateTime(time.Date(2014, 5, 14, 2, 9, 0, 0, time.UTC))
+	fexp := &exp
 
 	err = binder.setFieldValue(ftimeField, fdt, fexp.String(), true)
 	assert.NoError(t, err)

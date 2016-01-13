@@ -39,7 +39,7 @@ var (
 )
 
 func TestNewDateTime(t *testing.T) {
-	assert.Equal(t, time.Unix(0, 0).UTC(), NewDateTime().Time)
+	assert.EqualValues(t, time.Unix(0, 0).UTC(), NewDateTime())
 }
 
 func TestParseDateTime_errorCases(t *testing.T) {
@@ -54,7 +54,7 @@ func TestParseDateTime_fullCycle(t *testing.T) {
 		t.Logf("Case #%d", caseNum)
 		parsed, err := ParseDateTime(string(example.in))
 		assert.NoError(t, err)
-		assert.Equal(t, example.time, parsed.Time)
+		assert.EqualValues(t, example.time, parsed)
 		mt, err := parsed.MarshalText()
 		assert.NoError(t, err)
 		assert.Equal(t, []byte(example.str), mt)
@@ -62,12 +62,12 @@ func TestParseDateTime_fullCycle(t *testing.T) {
 		pp := NewDateTime()
 		err = pp.UnmarshalText(mt)
 		assert.NoError(t, err)
-		assert.Equal(t, example.time, pp.Time)
+		assert.EqualValues(t, example.time, pp)
 
 		pp = NewDateTime()
 		err = pp.Scan(mt)
 		assert.NoError(t, err)
-		assert.Equal(t, DateTime{example.time}, pp)
+		assert.Equal(t, DateTime(example.time), pp)
 	}
 }
 
@@ -83,14 +83,14 @@ func TestDateTime_UnmarshalText(t *testing.T) {
 		pp := NewDateTime()
 		err := pp.UnmarshalText(example.in)
 		assert.NoError(t, err)
-		assert.Equal(t, example.time, pp.Time)
+		assert.EqualValues(t, example.time, pp)
 	}
 }
 
 func TestDateTime_MarshalText(t *testing.T) {
 	for caseNum, example := range testCases {
 		t.Logf("Case #%d", caseNum)
-		dt := DateTime{Time: example.time}
+		dt := DateTime(example.time)
 		mt, err := dt.MarshalText()
 		assert.NoError(t, err)
 		assert.Equal(t, []byte(example.str), mt)
@@ -103,6 +103,6 @@ func TestDateTime_Scan(t *testing.T) {
 		pp := NewDateTime()
 		err := pp.Scan(example.in)
 		assert.NoError(t, err)
-		assert.Equal(t, DateTime{example.time}, pp)
+		assert.Equal(t, DateTime(example.time), pp)
 	}
 }

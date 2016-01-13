@@ -42,7 +42,7 @@ func TestDate(t *testing.T) {
 
 func TestDate_Scan(t *testing.T) {
 	ref := time.Now().Truncate(24 * time.Hour).UTC()
-	date, str := Date{ref}, ref.Format(RFC3339FullDate)
+	date, str := Date(ref), ref.Format(RFC3339FullDate)
 
 	values := []interface{}{str, []byte(str), ref}
 	for _, value := range values {
@@ -54,8 +54,8 @@ func TestDate_Scan(t *testing.T) {
 
 func TestDate_Value(t *testing.T) {
 	ref := time.Now().Truncate(24 * time.Hour).UTC()
-	date := Date{ref}
+	date := Date(ref)
 	dbv, err := date.Value()
 	assert.NoError(t, err)
-	assert.Equal(t, dbv, ref)
+	assert.EqualValues(t, dbv, ref)
 }
