@@ -563,7 +563,13 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			RootPackage:    a.APIPackage,
 		}
 		opGroups = append(opGroups, opGroup)
-		defaultImports = append(defaultImports, filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage, k)))
+		var importPath string
+		if k == a.APIPackage {
+			importPath = filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage))
+		} else {
+			importPath = filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage, k))
+		}
+		defaultImports = append(defaultImports, importPath)
 	}
 	sort.Sort(opGroups)
 
