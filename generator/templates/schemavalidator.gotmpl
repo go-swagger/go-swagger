@@ -1,6 +1,6 @@
 {{define "primitivefieldvalidator"}}
 {{if .Required}}
-if err := validate.Required{{ if eq .GoType "string" }}String{{ else if or (eq .SwaggerType "integer") (eq .SwaggerType "number") }}Number{{ end }}({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if not .IsAnonymous }}{{ .GoType }}({{end}}{{ if .IsNullable }}*{{ end }}{{.ValueExpression}}{{ if not .IsAnonymous }}){{end}}); err != nil {
+if err := validate.Required{{ if eq .GoType "string" }}String{{ end }}({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if not .IsAnonymous }}{{ .GoType }}({{end}}{{ if .IsNullable }}*{{ end }}{{.ValueExpression}}{{ if not .IsAnonymous }}){{end}}); err != nil {
   return err
 }
 {{ end }}
