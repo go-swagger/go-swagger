@@ -42,6 +42,7 @@ type Server struct {
 	SkipModels     bool     `long:"skip-models" description:"no models will be generated when this flag is specified"`
 	SkipOperations bool     `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
 	SkipSupport    bool     `long:"skip-support" description:"no supporting files will be generated when this flag is specified"`
+	IncludeMain    bool     `long:"include-main" description:"overwrite main even if it exists already"`
 }
 
 // Execute runs this command
@@ -60,6 +61,7 @@ func (s *Server) Execute(args []string) error {
 		IncludeHandler:    !s.SkipOperations,
 		IncludeParameters: !s.SkipOperations,
 		IncludeResponses:  !s.SkipOperations,
+		IncludeMain:       s.IncludeMain,
 	}
 
 	return generator.GenerateServer(s.Name, s.Models, s.Operations, opts)
