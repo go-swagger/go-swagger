@@ -91,6 +91,7 @@ type GenOpts struct {
 	IncludeHandler    bool
 	IncludeParameters bool
 	IncludeResponses  bool
+	IncludeMain       bool
 }
 
 type generatorOptions struct {

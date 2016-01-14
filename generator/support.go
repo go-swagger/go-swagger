@@ -235,12 +235,17 @@ func (a *appGenerator) generateConfigureAPI(app *GenApp) error {
 }
 
 func (a *appGenerator) generateMain(app *GenApp) error {
+	pth := filepath.Join(a.Target, "cmd", swag.ToCommandName(swag.ToGoName(app.Name)+"Server"))
+	if fileExists(pth, "main") && !a.GenOpts.IncludeMain {
+		log.Println("skipped (already exists) main template:", app.Package+".Main")
+		return nil
+	}
 	buf := bytes.NewBuffer(nil)
 	if err := mainTemplate.Execute(buf, app); err != nil {
 		return err
 	}
 	log.Println("rendered main template:", "server."+swag.ToGoName(app.Name))
-	return writeToFile(filepath.Join(a.Target, "cmd", swag.ToCommandName(swag.ToGoName(app.Name)+"Server")), "main", buf.Bytes())
+	return writeToFile(pth, "main", buf.Bytes())
 }
 
 func (a *appGenerator) generateEmbeddedSwaggerJSON(app *GenApp) error {
