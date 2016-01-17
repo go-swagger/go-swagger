@@ -20,6 +20,7 @@ import (
 	"strings"
 	"text/template"
 
+	"bitbucket.org/pkg/inflect"
 	"github.com/go-swagger/go-swagger/swag"
 )
 
@@ -93,7 +94,15 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	"humanize":  swag.ToHumanNameLower,
 	"snakize":   swag.ToFileName,
 	"dasherize": swag.ToCommandName,
-	"json":      asJSON,
+	"pluralizeFirstWord": func(arg string) string {
+		sentence := strings.Split(arg, " ")
+		if len(sentence) == 1 {
+			return inflect.Pluralize(arg)
+		}
+
+		return inflect.Pluralize(sentence[0]) + " " + strings.Join(sentence[1:], " ")
+	},
+	"json": asJSON,
 	"hasInsecure": func(arg []string) bool {
 		return swag.ContainsStringsCI(arg, "http") || swag.ContainsStringsCI(arg, "ws")
 	},
