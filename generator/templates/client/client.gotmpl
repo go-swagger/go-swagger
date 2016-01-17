@@ -32,7 +32,7 @@ type Client struct {
   formats strfmt.Registry
 }
 
-{{ range .Operations }}/*{{ if .Summary }}{{ .Summary }}{{ if .Description }}
+{{ range .Operations }}/* {{ if .Summary }}{{ pascalize .Name }}: {{ .Summary }}{{ if .Description }}
 
 {{ .Description }}{{ end }}{{ else if .Description}}{{ .Description }}{{ else }}{{ pascalize .Name }} {{ humanize .Name }} API{{ end }}
 */
