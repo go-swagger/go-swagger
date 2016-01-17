@@ -6,7 +6,7 @@ func New{{ pascalize .Name }}({{ if eq .Code -1 }}code int{{ end }}) *{{ pascali
   {{ end }}}
 }
 
-/*{{ pascalize .Name}}
+/*{{ pascalize .Name}} handles this case with default header values.
 
 {{ if .Description }}{{ .Description }}{{else}}{{ pascalize .Name }} {{ humanize .Name }}{{end}}
 */
@@ -92,10 +92,12 @@ import (
   {{ end }}
 )
 
+// {{ pascalize .Name }}Reader is a Reader for the {{ pascalize .Name }} structure.
 type {{ pascalize .Name }}Reader struct {
   formats strfmt.Registry
 }
 
+// ReadResponse reads a server response into the recieved {{ .ReceiverName }}.
 func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
   switch response.Code() {
   {{ range $key, $value := .Responses }}
