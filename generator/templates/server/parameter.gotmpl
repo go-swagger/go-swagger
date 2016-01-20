@@ -173,7 +173,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
         break
       }
     }
-    {{ else }}if err := body.Validate(route.Formats); err != nil {
+    {{ else if or .IsComplexObject .IsTuple }}if err := body.Validate(route.Formats); err != nil {
       res = append(res, err)
     }
     {{ end }}
