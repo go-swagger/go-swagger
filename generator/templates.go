@@ -155,7 +155,6 @@ func loadCustomTemplates(templatePath, prefix string) (bool, error) {
 
 			if _, exists := assets[templateName]; exists {
 				if data, err := ioutil.ReadFile(filepath.Join(templatePath, file.Name())); err == nil {
-					log.Printf("Using custom template for %s\n", templateName)
 					assets[templateName] = data
 					recompile = true
 				}
@@ -171,7 +170,7 @@ func loadCustomTemplates(templatePath, prefix string) (bool, error) {
 }
 
 func compileTemplates() {
-	log.Println("compiling templates")
+	
 	// partial templates
 	validatorTempl := template.Must(template.New("primitivevalidator").Funcs(FuncMap).Parse(string(assets["validation/primitive.gotmpl"])))
 	validatorTempl = template.Must(validatorTempl.New("customformatvalidator").Parse(string(assets["validation/customformat.gotmpl"])))
