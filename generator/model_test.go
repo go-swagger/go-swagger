@@ -78,7 +78,7 @@ func TestGenerateModel_Sanity(t *testing.T) {
 }
 
 func TestGenerateModel_DocString(t *testing.T) {
-	templ := template.Must(template.New("docstring").Funcs(FuncMap).Parse(string(assetDocString)))
+	templ := template.Must(template.New("docstring").Funcs(FuncMap).Parse(string(assets["DocString"])))
 	tt := templateTest{t, templ}
 
 	var gmp GenSchema
@@ -103,7 +103,7 @@ The description of the property
 }
 
 func TestGenerateModel_PropertyValidation(t *testing.T) {
-	templ := template.Must(template.New("propertyValidationDocString").Funcs(FuncMap).Parse(string(assetStuctFieldValidation)))
+	templ := template.Must(template.New("propertyValidationDocString").Funcs(FuncMap).Parse(string(assets["StuctFieldValidation"])))
 	tt := templateTest{t, templ}
 
 	var gmp GenSchema

@@ -45,36 +45,37 @@ var (
 	clientFacadeTemplate   *template.Template
 )
 
-var (
-	assetPrimitiveValidation       = MustAsset("templates/validation/primitive.gotmpl")
-	assetCustomFormatValidation    = MustAsset("templates/validation/customformat.gotmpl")
-	assetDocString                 = MustAsset("templates/docstring.gotmpl")
-	assetStuctFieldValidation      = MustAsset("templates/validation/structfield.gotmpl")
-	assetModelValidator            = MustAsset("templates/modelvalidator.gotmpl")
-	assetSchemaStructField         = MustAsset("templates/structfield.gotmpl")
-	assetSchemaTupleSerializer     = MustAsset("templates/tupleserializer.gotmpl")
-	assetAdditionalPropsSerializer = MustAsset("templates/additionalpropertiesserializer.gotmpl")
-	assetSchemaType                = MustAsset("templates/schematype.gotmpl")
-	assetSchemaBody                = MustAsset("templates/schemabody.gotmpl")
-	assetSchema                    = MustAsset("templates/schema.gotmpl")
-	assetSchemaValidator           = MustAsset("templates/schemavalidator.gotmpl")
-	assetSchemaStruct              = MustAsset("templates/model.gotmpl")
-	assetHeader                    = MustAsset("templates/header.gotmpl")
-	assetEmbeddedSpec              = MustAsset("templates/swagger_json_embed.gotmpl")
+var assets = map[string][]byte{
 
-	assetServerParameter    = MustAsset("templates/server/parameter.gotmpl")
-	assetServerResponses    = MustAsset("templates/server/responses.gotmpl")
-	assetServerOperation    = MustAsset("templates/server/operation.gotmpl")
-	assetServerBuilder      = MustAsset("templates/server/builder.gotmpl")
-	assetServerConfigureAPI = MustAsset("templates/server/configureapi.gotmpl")
-	assetServerMain         = MustAsset("templates/server/main.gotmpl")
-	assetServerMainDoc      = MustAsset("templates/server/doc.gotmpl")
+	"PrimitiveValidation":       MustAsset("templates/validation/primitive.gotmpl"),
+	"CustomFormatValidation":    MustAsset("templates/validation/customformat.gotmpl"),
+	"DocString":                 MustAsset("templates/docstring.gotmpl"),
+	"StuctFieldValidation":      MustAsset("templates/validation/structfield.gotmpl"),
+	"ModelValidator":            MustAsset("templates/modelvalidator.gotmpl"),
+	"SchemaStructField":         MustAsset("templates/structfield.gotmpl"),
+	"SchemaTupleSerializer":     MustAsset("templates/tupleserializer.gotmpl"),
+	"AdditionalPropsSerializer": MustAsset("templates/additionalpropertiesserializer.gotmpl"),
+	"SchemaType":                MustAsset("templates/schematype.gotmpl"),
+	"SchemaBody":                MustAsset("templates/schemabody.gotmpl"),
+	"Schema":                    MustAsset("templates/schema.gotmpl"),
+	"SchemaValidator":           MustAsset("templates/schemavalidator.gotmpl"),
+	"SchemaStruct":              MustAsset("templates/model.gotmpl"),
+	"Header":                    MustAsset("templates/header.gotmpl"),
+	"EmbeddedSpec":              MustAsset("templates/swagger_json_embed.gotmpl"),
 
-	assetClientParameter = MustAsset("templates/client/parameter.gotmpl")
-	assetClientResponse  = MustAsset("templates/client/response.gotmpl")
-	assetClientClient    = MustAsset("templates/client/client.gotmpl")
-	assetClientFacade    = MustAsset("templates/client/facade.gotmpl")
-)
+	"ServerParameter":    MustAsset("templates/server/parameter.gotmpl"),
+	"ServerResponses":    MustAsset("templates/server/responses.gotmpl"),
+	"ServerOperation":    MustAsset("templates/server/operation.gotmpl"),
+	"ServerBuilder":      MustAsset("templates/server/builder.gotmpl"),
+	"ServerConfigureAPI": MustAsset("templates/server/configureapi.gotmpl"),
+	"ServerMain":         MustAsset("templates/server/main.gotmpl"),
+	"ServerMainDoc":      MustAsset("templates/server/doc.gotmpl"),
+
+	"ClientParameter": MustAsset("templates/client/parameter.gotmpl"),
+	"ClientResponse":  MustAsset("templates/client/response.gotmpl"),
+	"ClientClient":    MustAsset("templates/client/client.gotmpl"),
+	"ClientFacade":    MustAsset("templates/client/facade.gotmpl"),
+}
 
 var (
 	notNumberExp = regexp.MustCompile("[^0-9]")
@@ -130,11 +131,15 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	},
 }
 
+func loadCustomTemplates(templatePath string) {
+
+}
+
 func init() {
 
 	// partial templates
-	validatorTempl := template.Must(template.New("primitivevalidator").Funcs(FuncMap).Parse(string(assetPrimitiveValidation)))
-	validatorTempl = template.Must(validatorTempl.New("customformatvalidator").Parse(string(assetCustomFormatValidation)))
+	validatorTempl := template.Must(template.New("primitivevalidator").Funcs(FuncMap).Parse(string(assets["PrimitiveValidation"])))
+	validatorTempl = template.Must(validatorTempl.New("customformatvalidator").Parse(string(assets["CustomFormatValidation"])))
 
 	modelTemplate = makeModelTemplate()
 	// common templates
@@ -144,67 +149,67 @@ func init() {
 
 	// server templates
 	parameterTemplate = makeModelTemplate()
-	//parameterTemplate = template.Must(parameterTemplate.New("docstring").Parse(string(assetDocString)))
-	//parameterTemplate = template.Must(parameterTemplate.New("validationDocString").Parse(string(assetStuctFieldValidation)))
-	//parameterTemplate = template.Must(parameterTemplate.New("schType").Parse(string(assetSchemaType)))
-	//parameterTemplate = template.Must(parameterTemplate.New("body").Parse(string(assetSchemaBody)))
-	parameterTemplate = template.Must(parameterTemplate.New("parameter").Parse(string(assetServerParameter)))
+	//parameterTemplate = template.Must(parameterTemplate.New("docstring").Parse(string(assets["DocString"])))
+	//parameterTemplate = template.Must(parameterTemplate.New("validationDocString").Parse(string(assets["StuctFieldValidation"])))
+	//parameterTemplate = template.Must(parameterTemplate.New("schType").Parse(string(assets["SchemaType"])))
+	//parameterTemplate = template.Must(parameterTemplate.New("body").Parse(string(assets["SchemaBody"])))
+	parameterTemplate = template.Must(parameterTemplate.New("parameter").Parse(string(assets["ServerParameter"])))
 
 	responsesTemplate = makeModelTemplate()
-	responsesTemplate = template.Must(responsesTemplate.New("responses").Parse(string(assetServerResponses)))
+	responsesTemplate = template.Must(responsesTemplate.New("responses").Parse(string(assets["ServerResponses"])))
 
 	operationTemplate = makeModelTemplate()
-	operationTemplate = template.Must(operationTemplate.New("operation").Parse(string(assetServerOperation)))
-	builderTemplate = template.Must(template.New("builder").Funcs(FuncMap).Parse(string(assetServerBuilder)))
-	configureAPITemplate = template.Must(template.New("configureapi").Funcs(FuncMap).Parse(string(assetServerConfigureAPI)))
-	mainTemplate = template.Must(template.New("main").Funcs(FuncMap).Parse(string(assetServerMain)))
-	mainDocTemplate = template.Must(template.New("meta").Funcs(FuncMap).Parse(string(assetServerMainDoc)))
+	operationTemplate = template.Must(operationTemplate.New("operation").Parse(string(assets["ServerOperation"])))
+	builderTemplate = template.Must(template.New("builder").Funcs(FuncMap).Parse(string(assets["ServerBuilder"])))
+	configureAPITemplate = template.Must(template.New("configureapi").Funcs(FuncMap).Parse(string(assets["ServerConfigureAPI"])))
+	mainTemplate = template.Must(template.New("main").Funcs(FuncMap).Parse(string(assets["ServerMain"])))
+	mainDocTemplate = template.Must(template.New("meta").Funcs(FuncMap).Parse(string(assets["ServerMainDoc"])))
 
-	embeddedSpecTemplate = template.Must(template.New("embedded_spec").Funcs(FuncMap).Parse(string(assetEmbeddedSpec)))
+	embeddedSpecTemplate = template.Must(template.New("embedded_spec").Funcs(FuncMap).Parse(string(assets["EmbeddedSpec"])))
 
 	// Client templates
 	clientParamTemplate = makeModelTemplate()
-	//clientParamTemplate = template.Must(clientParamTemplate.New("docstring").Parse(string(assetDocString)))
-	//clientParamTemplate = template.Must(clientParamTemplate.New("validationDocString").Parse(string(assetStuctFieldValidation)))
-	//clientParamTemplate = template.Must(clientParamTemplate.New("schType").Parse(string(assetSchemaType)))
-	//clientParamTemplate = template.Must(clientParamTemplate.New("body").Parse(string(assetSchemaBody)))
-	clientParamTemplate = template.Must(clientParamTemplate.New("parameter").Parse(string(assetClientParameter)))
+	//clientParamTemplate = template.Must(clientParamTemplate.New("docstring").Parse(string(assets["DocString"])))
+	//clientParamTemplate = template.Must(clientParamTemplate.New("validationDocString").Parse(string(assets["StuctFieldValidation"])))
+	//clientParamTemplate = template.Must(clientParamTemplate.New("schType").Parse(string(assets["SchemaType"])))
+	//clientParamTemplate = template.Must(clientParamTemplate.New("body").Parse(string(assets["SchemaBody"])))
+	clientParamTemplate = template.Must(clientParamTemplate.New("parameter").Parse(string(assets["ClientParameter"])))
 
 	clientResponseTemplate = makeModelTemplate() // template.Must(validatorTempl.Clone())
-	// clientResponseTemplate = template.Must(clientResponseTemplate.New("docstring").Parse(string(assetDocString)))
-	// clientResponseTemplate = template.Must(clientResponseTemplate.New("validationDocString").Parse(string(assetStuctFieldValidation)))
-	// clientResponseTemplate = template.Must(clientResponseTemplate.New("schType").Parse(string(assetSchemaType)))
-	// clientResponseTemplate = template.Must(clientResponseTemplate.New("body").Parse(string(assetSchemaBody)))
-	clientResponseTemplate = template.Must(clientResponseTemplate.New("response").Parse(string(assetClientResponse)))
+	// clientResponseTemplate = template.Must(clientResponseTemplate.New("docstring").Parse(string(assets["DocString"])))
+	// clientResponseTemplate = template.Must(clientResponseTemplate.New("validationDocString").Parse(string(assets["StuctFieldValidation"])))
+	// clientResponseTemplate = template.Must(clientResponseTemplate.New("schType").Parse(string(assets["SchemaType"])))
+	// clientResponseTemplate = template.Must(clientResponseTemplate.New("body").Parse(string(assets["SchemaBody"])))
+	clientResponseTemplate = template.Must(clientResponseTemplate.New("response").Parse(string(assets["ClientResponse"])))
 
-	clientTemplate = template.Must(template.New("docstring").Funcs(FuncMap).Parse(string(assetDocString)))
-	clientTemplate = template.Must(clientTemplate.New("validationDocString").Parse(string(assetStuctFieldValidation)))
-	clientTemplate = template.Must(clientTemplate.New("schType").Parse(string(assetSchemaType)))
-	clientTemplate = template.Must(clientTemplate.New("body").Parse(string(assetSchemaBody)))
-	clientTemplate = template.Must(clientTemplate.New("client").Parse(string(assetClientClient)))
+	clientTemplate = template.Must(template.New("docstring").Funcs(FuncMap).Parse(string(assets["DocString"])))
+	clientTemplate = template.Must(clientTemplate.New("validationDocString").Parse(string(assets["StuctFieldValidation"])))
+	clientTemplate = template.Must(clientTemplate.New("schType").Parse(string(assets["SchemaType"])))
+	clientTemplate = template.Must(clientTemplate.New("body").Parse(string(assets["SchemaBody"])))
+	clientTemplate = template.Must(clientTemplate.New("client").Parse(string(assets["ClientClient"])))
 
-	clientFacadeTemplate = template.Must(template.New("docstring").Funcs(FuncMap).Parse(string(assetDocString)))
-	clientFacadeTemplate = template.Must(clientFacadeTemplate.New("validationDocString").Parse(string(assetStuctFieldValidation)))
-	clientFacadeTemplate = template.Must(clientFacadeTemplate.New("schType").Parse(string(assetSchemaType)))
-	clientFacadeTemplate = template.Must(clientFacadeTemplate.New("body").Parse(string(assetSchemaBody)))
-	clientFacadeTemplate = template.Must(clientFacadeTemplate.New("facade").Parse(string(assetClientFacade)))
+	clientFacadeTemplate = template.Must(template.New("docstring").Funcs(FuncMap).Parse(string(assets["DocString"])))
+	clientFacadeTemplate = template.Must(clientFacadeTemplate.New("validationDocString").Parse(string(assets["StuctFieldValidation"])))
+	clientFacadeTemplate = template.Must(clientFacadeTemplate.New("schType").Parse(string(assets["SchemaType"])))
+	clientFacadeTemplate = template.Must(clientFacadeTemplate.New("body").Parse(string(assets["SchemaBody"])))
+	clientFacadeTemplate = template.Must(clientFacadeTemplate.New("facade").Parse(string(assets["ClientFacade"])))
 
 }
 
 func makeModelTemplate() *template.Template {
-	templ := template.Must(template.New("docstring").Funcs(FuncMap).Parse(string(assetDocString)))
-	templ = template.Must(templ.New("primitivevalidator").Parse(string(assetPrimitiveValidation)))
-	templ = template.Must(templ.New("customformatvalidator").Parse(string(assetCustomFormatValidation)))
-	templ = template.Must(templ.New("validationDocString").Parse(string(assetStuctFieldValidation)))
-	templ = template.Must(templ.New("schemaType").Parse(string(assetSchemaType)))
-	templ = template.Must(templ.New("body").Parse(string(assetSchemaBody)))
-	templ = template.Must(templ.New("schema").Parse(string(assetSchema)))
-	templ = template.Must(templ.New("schemavalidations").Parse(string(assetSchemaValidator)))
-	templ = template.Must(templ.New("header").Parse(string(assetHeader)))
-	templ = template.Must(templ.New("fields").Parse(string(assetSchemaStructField)))
-	templ = template.Must(templ.New("tupleSerializer").Parse(string(assetSchemaTupleSerializer)))
-	templ = template.Must(templ.New("additionalPropsSerializer").Parse(string(assetAdditionalPropsSerializer)))
-	templ = template.Must(templ.New("model").Parse(string(assetSchemaStruct)))
+	templ := template.Must(template.New("docstring").Funcs(FuncMap).Parse(string(assets["DocString"])))
+	templ = template.Must(templ.New("primitivevalidator").Parse(string(assets["PrimitiveValidation"])))
+	templ = template.Must(templ.New("customformatvalidator").Parse(string(assets["CustomFormatValidation"])))
+	templ = template.Must(templ.New("validationDocString").Parse(string(assets["StuctFieldValidation"])))
+	templ = template.Must(templ.New("schemaType").Parse(string(assets["SchemaType"])))
+	templ = template.Must(templ.New("body").Parse(string(assets["SchemaBody"])))
+	templ = template.Must(templ.New("schema").Parse(string(assets["Schema"])))
+	templ = template.Must(templ.New("schemavalidations").Parse(string(assets["SchemaValidator"])))
+	templ = template.Must(templ.New("header").Parse(string(assets["Header"])))
+	templ = template.Must(templ.New("fields").Parse(string(assets["SchemaStructField"])))
+	templ = template.Must(templ.New("tupleSerializer").Parse(string(assets["SchemaTupleSerializer"])))
+	templ = template.Must(templ.New("additionalPropsSerializer").Parse(string(assets["AdditionalPropsSerializer"])))
+	templ = template.Must(templ.New("model").Parse(string(assets["SchemaStruct"])))
 	return templ
 }
 
