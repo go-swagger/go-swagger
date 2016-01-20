@@ -1,0 +1,157 @@
+Swagger
+GolangSF, January 20, 2016
+
+Ivan Porto Carrero
+VMware
+https://github.com/casualjim
+@casualjim
+
+
+
+* About me
+
+Did a bunch of work on/with swagger:
+
+- Wrote scalatra
+- Worked at Reverb
+- Contributed async scala client to codegen
+- Wrote go-swagger
+
+* So you think you wanna microservice huh
+
+* Read the source!
+
+.image images/no-docs.jpg
+
+* Stale documentation
+
+.image images/stale-docs.jpg
+
+* Lots of communication required
+
+.image images/comm-failure.jpg
+
+* Bottlenecks
+
+.image images/staggered.jpg
+
+* Customers don't want to write your SDK
+
+.image images/burden.jpg
+
+* All too often...
+
+- conflicts
+- blame game
+- Cover Your Ass
+
+.image images/conflict.jpg
+
+
+* Some requirements
+
+Humans want _up_to_date_ documentation to read
+
+Consumers need an exhaustive contract
+Different teams, different programming languages
+
+Introspection would be a plus
+DRY at application level would be nice
+
+.image images/contract.jpg
+
+
+* More sadness
+
+- many deploys, all the time
+- distributed system complexity
+- tooling relatively primitive
+
+.image images/stoneage.jpg 400 _
+
+* Enter swagger
+
+Open standard on Linux Foundation
+
+An interface to your service, described in *JSON*
+
+A language/platform/deployment agnostic *contract* to your service
+
+Enables "bigotry-free" restful design with emphasis on Getting Things Done.
+
+Machine readable exhaustive contract of server abilities
+
+Server controlled documentation
+
+
+* You had me at tooling
+
+* Orthogonal toolkit
+
+- spec validator with extra semantic validations
+- client generation
+- server generation
+- spec generation for _any_ application
+- documentation lives with the code
+- go:generate integration
+
+
+* Client SDKs 
+
+- statically typed 
+- regenerated imported on contract change
+- frontend and mobile client teams 
+- other service clients
+- *30+* languages through swagger-codegen
+
+
+* Go Swagger server
+
+- Spec remains source of thruth
+- can be used as focal point of discussion/meetings
+- swagger meta data
+- routing
+- security
+- request validation
+- reuse `net/http` style middleware: `func(http.Handler) http.Handler`
+
+*You* fill in the blanks, aka business logic.
+
+* Spec generation 
+
+.image images/annotation.png
+.image images/param-annotation.png
+
+* Interaction with a Swagger API
+
+.link http://www.getpostman.com/ Postman
+.link https://www.soapui.org/ SoapUI
+.link https://github.com/tikalk/commandcar#invoking-apis-using-commandcar commandcar for instant CLI access
+
+.image images/postman.jpg
+
+* Some resources
+
+.link https://goswagger.io go-swagger documentation
+.link http://editor.swagger.io/ Swagger Editor
+.link http://petstore.swagger.io/ Swagger UI
+.link https://swaggerhub.com/ Swagger Hub (collaboration space)
+.link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md Specification
+.link https://openapis.org/ Open API Initiative
+.link https://any-api.com/ Documentation and testconsoles for 175 APIs
+
+
+* What's next?
+
+go-swagger going forward:
+
+- embrace http/2 entirely
+- integrate with swagger-codegen
+- stub generation
+- test generation
+- integration testing
+- httpie like CLI generation with optional syntax highlighting
+- more transports
+- scriptable handlers
+- more wireformats like protobuf, msgpack, ...
+
