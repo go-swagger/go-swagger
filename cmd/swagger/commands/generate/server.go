@@ -42,7 +42,6 @@ type Server struct {
 	SkipOperations bool     `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
 	SkipSupport    bool     `long:"skip-support" description:"no supporting files will be generated when this flag is specified"`
 	IncludeMain    bool     `long:"include-main" description:"overwrite main even if it exists already"`
-	// TemplateDir    flags.Filename `long:"template-dir" description:"load custom templates"`
 }
 
 // Execute runs this command
