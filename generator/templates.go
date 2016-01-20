@@ -61,7 +61,7 @@ var assets = map[string][]byte{
 	"schematype.gotmpl":                     MustAsset("templates/schematype.gotmpl"),
 	"schemabody.gotmpl":                     MustAsset("templates/schemabody.gotmpl"),
 	"schema.gotmpl":                         MustAsset("templates/schema.gotmpl"),
-	"schmeavalidator.gotmpl":                MustAsset("templates/schemavalidator.gotmpl"),
+	"schemavalidator.gotmpl":                MustAsset("templates/schemavalidator.gotmpl"),
 	"model.gotmpl":                          MustAsset("templates/model.gotmpl"),
 	"header.gotmpl":                         MustAsset("templates/header.gotmpl"),
 	"swagger_json_embed.gotmpl":             MustAsset("templates/swagger_json_embed.gotmpl"),
@@ -134,20 +134,25 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	},
 }
 
-func loadCustomTemplates(templatePath string) error {
+func loadCustomTemplates(templatePath, prefix string) (bool, error) {
 
 	recompile := false
 
 	files, err := ioutil.ReadDir(templatePath)
 
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	for _, file := range files {
+		templateName := file.Name()
+
+		if prefix != "" {
+			templateName = prefix + "/" + file.Name()
+		}
 
 		if !file.IsDir() {
-			templateName := strings.TrimRight(file.Name(), ".gotmpl")
+
 			if _, exists := assets[templateName]; exists {
 				if data, err := ioutil.ReadFile(filepath.Join(templatePath, file.Name())); err == nil {
 					log.Printf("Using custom template for %s\n", templateName)
@@ -156,14 +161,13 @@ func loadCustomTemplates(templatePath string) error {
 				}
 
 			}
+		} else {
+			recompile, _ = loadCustomTemplates(filepath.Join(templatePath, file.Name()), templateName)
 		}
+
 	}
 
-	if recompile {
-		compileTemplates()
-	}
-
-	return nil
+	return recompile, nil
 }
 
 func compileTemplates() {
@@ -240,7 +244,7 @@ func makeModelTemplate() *template.Template {
 	templ = template.Must(templ.New("schematype").Parse(string(assets["schematype.gotmpl"])))
 	templ = template.Must(templ.New("body").Parse(string(assets["schemabody.gotmpl"])))
 	templ = template.Must(templ.New("schema").Parse(string(assets["schema.gotmpl"])))
-	templ = template.Must(templ.New("schemavalidations").Parse(string(assets["schmeavalidator.gotmpl"])))
+	templ = template.Must(templ.New("schemavalidations").Parse(string(assets["schemavalidator.gotmpl"])))
 	templ = template.Must(templ.New("header").Parse(string(assets["header.gotmpl"])))
 	templ = template.Must(templ.New("fields").Parse(string(assets["structfield.gotmpl"])))
 	templ = template.Must(templ.New("tupleSerializer").Parse(string(assets["tupleserializer.gotmpl"])))
