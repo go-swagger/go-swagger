@@ -131,6 +131,15 @@ func baseImport(tgt string) string {
 }
 
 func (a *appGenerator) Generate() error {
+
+	log.Println(a.GenOpts)
+
+	if a.GenOpts.TemplateDir != "" {
+		if err := loadCustomTemplates(a.GenOpts.TemplateDir); err != nil {
+			return err
+		}
+	}
+
 	app, err := a.makeCodegenApp()
 	if err != nil {
 		return err

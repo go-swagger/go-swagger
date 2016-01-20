@@ -33,16 +33,17 @@ type shared struct {
 // Server the command to generate an entire server application
 type Server struct {
 	shared
-	Name           string   `long:"name" short:"A" description:"the name of the application, defaults to a mangled value of info.title"`
-	Operations     []string `long:"operation" short:"O" description:"specify an operation to include, repeat for multiple"`
-	Tags           []string `long:"tags" description:"the tags to include, if not specified defaults to all"`
-	Principal      string   `long:"principal" short:"P" description:"the model to use for the security principal"`
-	DefaultScheme  string   `long:"default-scheme" description:"the default scheme for this API" default:"http"`
-	Models         []string `long:"model" short:"M" description:"specify a model to include, repeat for multiple"`
-	SkipModels     bool     `long:"skip-models" description:"no models will be generated when this flag is specified"`
-	SkipOperations bool     `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
-	SkipSupport    bool     `long:"skip-support" description:"no supporting files will be generated when this flag is specified"`
-	IncludeMain    bool     `long:"include-main" description:"overwrite main even if it exists already"`
+	Name           string         `long:"name" short:"A" description:"the name of the application, defaults to a mangled value of info.title"`
+	Operations     []string       `long:"operation" short:"O" description:"specify an operation to include, repeat for multiple"`
+	Tags           []string       `long:"tags" description:"the tags to include, if not specified defaults to all"`
+	Principal      string         `long:"principal" short:"P" description:"the model to use for the security principal"`
+	DefaultScheme  string         `long:"default-scheme" description:"the default scheme for this API" default:"http"`
+	Models         []string       `long:"model" short:"M" description:"specify a model to include, repeat for multiple"`
+	SkipModels     bool           `long:"skip-models" description:"no models will be generated when this flag is specified"`
+	SkipOperations bool           `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
+	SkipSupport    bool           `long:"skip-support" description:"no supporting files will be generated when this flag is specified"`
+	IncludeMain    bool           `long:"include-main" description:"overwrite main even if it exists already"`
+	TemplateDir    flags.Filename `long:"template-dir" description:"load custom templates"`
 }
 
 // Execute runs this command
@@ -62,6 +63,7 @@ func (s *Server) Execute(args []string) error {
 		IncludeParameters: !s.SkipOperations,
 		IncludeResponses:  !s.SkipOperations,
 		IncludeMain:       s.IncludeMain,
+		TemplateDir:       string(s.TemplateDir),
 	}
 
 	return generator.GenerateServer(s.Name, s.Models, s.Operations, opts)
