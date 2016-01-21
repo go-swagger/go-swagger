@@ -17,7 +17,6 @@ package generator
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -170,7 +169,7 @@ func loadCustomTemplates(templatePath, prefix string) (bool, error) {
 }
 
 func compileTemplates() {
-	
+
 	// partial templates
 	validatorTempl := template.Must(template.New("primitivevalidator").Funcs(FuncMap).Parse(string(assets["validation/primitive.gotmpl"])))
 	validatorTempl = template.Must(validatorTempl.New("customformatvalidator").Parse(string(assets["validation/customformat.gotmpl"])))
