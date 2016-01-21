@@ -298,3 +298,11 @@ func gatherOperations(specDoc *spec.Document, operationIDs []string) map[string]
 
 	return operations
 }
+
+func pascalize(arg string) string {
+	if len(arg) == 0 || arg[0] > '9' {
+		return swag.ToGoName(arg)
+	}
+
+	return swag.ToGoName("Nr " + arg)
+}
