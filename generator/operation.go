@@ -567,7 +567,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		Name:             param.Name,
 		ModelsPackage:    b.ModelsPackage,
 		Path:             fmt.Sprintf("%q", param.Name),
-		ValueExpression:  fmt.Sprintf("%s.%s", receiver, swag.ToGoName(param.Name)),
+		ValueExpression:  fmt.Sprintf("%s.%s", receiver, pascalize(param.Name)),
 		IndexVar:         "i",
 		BodyParam:        nil,
 		Default:          param.Default,

@@ -381,7 +381,7 @@ func (sg *schemaGenContext) NewStructBranch(name string, schema spec.Schema) *sc
 		pg.Path = pg.Path + "+\".\"+" + fmt.Sprintf("%q", name)
 	}
 	pg.Name = name
-	pg.ValueExpr = pg.ValueExpr + "." + swag.ToGoName(name)
+	pg.ValueExpr = pg.ValueExpr + "." + pascalize(name)
 	pg.Schema = schema
 	for _, fn := range sg.Schema.Required {
 		if name == fn {
