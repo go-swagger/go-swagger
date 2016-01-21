@@ -25,7 +25,7 @@ import (
 // CanHaveBody returns true if this method can have a body
 func CanHaveBody(method string) bool {
 	mn := strings.ToUpper(method)
-	return mn == "POST" || mn == "PUT" || mn == "PATCH"
+	return mn == "POST" || mn == "PUT" || mn == "PATCH" || mn == "DELETE"
 }
 
 // JSONRequest creates a new http request with json headers set
