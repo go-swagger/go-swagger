@@ -33,6 +33,15 @@ import (
 
 // GenerateServer generates a server application
 func GenerateServer(name string, modelNames, operationIDs []string, opts GenOpts) error {
+
+	if opts.TemplateDir != "" {
+		if recompile, err := loadCustomTemplates(opts.TemplateDir, ""); err != nil {
+			return err
+		} else if recompile {
+			compileTemplates()
+		}
+	}
+
 	generator, err := newAppGenerator(name, modelNames, operationIDs, &opts)
 	if err != nil {
 		return err
@@ -42,6 +51,15 @@ func GenerateServer(name string, modelNames, operationIDs []string, opts GenOpts
 
 // GenerateSupport generates the supporting files for an API
 func GenerateSupport(name string, modelNames, operationIDs []string, opts GenOpts) error {
+
+	if opts.TemplateDir != "" {
+		if recompile, err := loadCustomTemplates(opts.TemplateDir, ""); err != nil {
+			return err
+		} else if recompile {
+			compileTemplates()
+		}
+	}
+
 	generator, err := newAppGenerator(name, modelNames, operationIDs, &opts)
 	if err != nil {
 		return err
@@ -131,6 +149,7 @@ func baseImport(tgt string) string {
 }
 
 func (a *appGenerator) Generate() error {
+
 	app, err := a.makeCodegenApp()
 	if err != nil {
 		return err

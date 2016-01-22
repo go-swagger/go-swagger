@@ -46,5 +46,6 @@ func (m *Model) Execute(args []string) error {
 			ServerPackage: m.ServerPackage,
 			ClientPackage: m.ClientPackage,
 			DumpData:      m.DumpData,
+			TemplateDir:   string(m.TemplateDir),
 		})
 }

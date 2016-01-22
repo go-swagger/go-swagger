@@ -43,5 +43,6 @@ func (s *Support) Execute(args []string) error {
 			Principal:     s.Principal,
 			DumpData:      s.DumpData,
 			DefaultScheme: s.DefaultScheme,
+			TemplateDir:   string(s.TemplateDir),
 		})
 }

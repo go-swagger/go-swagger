@@ -45,6 +45,7 @@ func (c *Client) Execute(args []string) error {
 		IncludeHandler:    !c.SkipOperations,
 		IncludeParameters: !c.SkipOperations,
 		IncludeResponses:  !c.SkipOperations,
+		TemplateDir:       string(c.TemplateDir),
 	}
 
 	//if !c.SkipModels && (len(c.Models) > 0 || len(c.Operations) == 0) {

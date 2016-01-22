@@ -31,6 +31,15 @@ import (
 
 // GenerateDefinition generates a model file for a schema defintion.
 func GenerateDefinition(modelNames []string, includeModel, includeValidator bool, opts GenOpts) error {
+
+	if opts.TemplateDir != "" {
+		if recompile, err := loadCustomTemplates(opts.TemplateDir, ""); err != nil {
+			return err
+		} else if recompile {
+			compileTemplates()
+		}
+	}
+
 	// Load the spec
 	specPath, specDoc, err := loadSpec(opts.Spec)
 	if err != nil {

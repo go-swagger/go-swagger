@@ -54,5 +54,6 @@ func (o *Operation) Execute(args []string) error {
 			Principal:     o.Principal,
 			DumpData:      o.DumpData,
 			DefaultScheme: o.DefaultScheme,
+			TemplateDir:   string(o.TemplateDir),
 		})
 }
