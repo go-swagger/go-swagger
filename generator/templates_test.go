@@ -23,24 +23,17 @@ import (
 
 func TestCustomTemplates(t *testing.T) {
 
-	recompile, err := loadCustomTemplates("../fixtures/templates/", "")
+	registry := NewTemplateRegistry()
+	registry.LoadDefaults()
+
+	err := registry.LoadDir("../fixtures/templates/")
 
 	assert.NoError(t, err)
-	assert.True(t, recompile)
 
-	for template, v := range assets {
+	for template, v := range registry.assets {
 		if string(v) != fmt.Sprintf("./%s\n", template) {
 			t.Errorf("Template %s wasn't loaded", template)
 		}
 	}
-
-}
-
-func TestCustomTemplatesEmptyDirectory(t *testing.T) {
-
-	recompile, err := loadCustomTemplates("../fixtures/doesntexist/", "")
-
-	assert.Error(t, err)
-	assert.False(t, recompile)
 
 }
