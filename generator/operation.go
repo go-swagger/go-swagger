@@ -623,10 +623,11 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 			schema.IsAnonymous = false
 			schema.GoType = nm
 			schema.SwaggerType = nm
+			schema.IsComplexObject = true
 			if len(prevSchema.Properties) == 0 {
 				schema.GoType = "interface{}"
+				schema.IsComplexObject = false
 			}
-			schema.IsComplexObject = true
 			schema.IsInterface = len(schema.Properties) == 0
 		}
 		res.Schema = &schema
