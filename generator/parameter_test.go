@@ -523,3 +523,32 @@ func TestGenParameter_Issue196(t *testing.T) {
 		}
 	}
 }
+
+func TestGenParameter_Issue217(t *testing.T) {
+	// Check for string
+
+	assertNoValidator(t, "postEcho", "../fixtures/bugs/217/string.yml")
+	assertNoValidator(t, "postEcho", "../fixtures/bugs/217/interface.yml")
+	assertNoValidator(t, "postEcho", "../fixtures/bugs/217/map.yml")
+	assertNoValidator(t, "postEcho", "../fixtures/bugs/217/array.yml")
+}
+
+func assertNoValidator(t testing.TB, opName, path string) {
+	b, err := opBuilder(opName, path)
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			var buf bytes.Buffer
+			err := parameterTemplate.Execute(&buf, op)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("post_echo.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					assertNotInCode(t, "body.Validate", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}

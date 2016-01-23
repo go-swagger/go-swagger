@@ -912,10 +912,7 @@ func (sg *schemaGenContext) buildItems() error {
 	// This is a tuple, build a new model that represents this
 	if sg.Named {
 		sg.GenSchema.Name = sg.Name
-		sg.GenSchema.GoType = sg.TypeResolver.goTypeName(sg.Name) // swag.ToGoName(sg.Name)
-		//if sg.TypeResolver.ModelsPackage != "" {
-		//sg.GenSchema.GoType = sg.TypeResolver.ModelsPackage + "." + sg.GenSchema.GoType
-		//}
+		sg.GenSchema.GoType = sg.TypeResolver.goTypeName(sg.Name)
 		for i, s := range sg.Schema.Items.Schemas {
 			elProp := sg.NewTupleElement(&s, i)
 			if err := elProp.makeGenSchema(); err != nil {
@@ -1073,6 +1070,25 @@ func (sg *schemaGenContext) liftSpecialAllOf() error {
 	return nil
 }
 
+func (sg *schemaGenContext) buildAliased() error {
+	if !sg.GenSchema.IsPrimitive && !sg.GenSchema.IsMap && !sg.GenSchema.IsArray && !sg.GenSchema.IsInterface {
+		return nil
+	}
+	if sg.GenSchema.IsPrimitive {
+		sg.GenSchema.IsAliased = sg.GenSchema.GoType != sg.GenSchema.SwaggerType
+	}
+	if sg.GenSchema.IsInterface {
+		sg.GenSchema.IsAliased = sg.GenSchema.GoType != "interface{}"
+	}
+	if sg.GenSchema.IsMap {
+		sg.GenSchema.IsAliased = !strings.HasPrefix(sg.GenSchema.GoType, "map[")
+	}
+	if sg.GenSchema.IsArray {
+		sg.GenSchema.IsAliased = !strings.HasPrefix(sg.GenSchema.GoType, "[]")
+	}
+	return nil
+}
+
 func (sg *schemaGenContext) makeGenSchema() error {
 	if Debug {
 		log.Printf("making gen schema (anon: %t, req: %t, tuple: %t) %s\n", !sg.Named, sg.GenSchema.Required, sg.IsTuple, sg.Name)
@@ -1149,7 +1165,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.IsBaseType = sg.GenSchema.HasDiscriminator
 
 	if err := sg.buildProperties(); err != nil {
-		return nil
+		return err
 	}
 
 	if err := sg.buildXMLName(); err != nil {
@@ -1164,6 +1180,9 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		return err
 	}
 
+	if err := sg.buildAliased(); err != nil {
+		return err
+	}
 	if Debug {
 		log.Printf("finished gen schema for %q\n", sg.Name)
 	}
@@ -1217,6 +1236,7 @@ type GenSchema struct {
 	HasBaseType             bool
 	IsSubType               bool
 	IsExported              bool
+	IsAliased               bool
 	DiscriminatorField      string
 	DiscriminatorValue      string
 	Discriminates           map[string]string

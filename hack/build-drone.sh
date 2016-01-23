@@ -12,7 +12,7 @@ repo_pref="${CI_BUILD_DIR##${GOPATH/%:*/}/src/}/"
 for dir in $(go list ./... | grep -v -E 'vendor|generator')
 do
   pth="${dir//*$repo_pref}"
-  go test -covermode=${GOCOVMODE} -coverprofile=${pth}/profile.tmp $dir
+  go test -covermode=${GOCOVMODE-count} -coverprofile=${pth}/profile.tmp $dir
   if [ -f $pth/profile.tmp ]
   then
       cat $pth/profile.tmp | tail -n +2 >> profile.cov
@@ -28,7 +28,7 @@ go build -o /usr/share/dist/swagger ./cmd/swagger
 go install ./cmd/swagger
 for dir in $(ls fixtures/canary)
 do
-  pushd $dir
+  pushd fixtures/canary/$dir
   rm -rf client models restapi cmd
   swagger generate client
   go test ./...
