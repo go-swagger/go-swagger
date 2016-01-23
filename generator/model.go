@@ -632,6 +632,9 @@ func (sg *schemaGenContext) buildAllOf() error {
 		sg.MergeResult(comprop, true)
 		sg.GenSchema.AllOf = append(sg.GenSchema.AllOf, comprop.GenSchema)
 	}
+	if len(sg.Schema.AllOf) > 0 {
+		sg.GenSchema.IsNullable = true
+	}
 	return nil
 }
 

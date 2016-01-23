@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e -o pipefail
+set +x -e -o pipefail
 
 mkdir -p /usr/share/{testresults,coverage,dist}
 go test -v -race $(go list ./... | grep -v vendor) | go-junit-report -dir /usr/share/testresults
@@ -36,3 +36,4 @@ do
   go test ./...
   popd
 done
+exit 0

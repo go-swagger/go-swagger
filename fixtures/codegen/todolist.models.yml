@@ -482,6 +482,11 @@ definitions:
                     type: number
                     format: double
 
+  RecursiveThing:
+    type: object
+    properties:
+      parent:
+        $ref: "#/definitions/RecursiveThing"
   WithPet:
     type: object
     properties:

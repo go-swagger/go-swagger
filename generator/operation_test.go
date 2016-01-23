@@ -138,7 +138,7 @@ func TestMakeResponse_WithAllOfSchema(t *testing.T) {
 				if assert.NotEmpty(t, body.Properties) {
 					prop := body.Properties[0]
 					assert.Equal(t, "data", prop.Name)
-					assert.Equal(t, "[]DataItems0", prop.GoType)
+					assert.Equal(t, "[]*DataItems0", prop.GoType)
 				}
 				items := b.ExtraSchemas["DataItems0"]
 				if assert.NotEmpty(t, items.AllOf) {
@@ -205,7 +205,7 @@ func TestRenderOperation_InstagramSearch(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					//fmt.Println(res)
-					assertInCode(t, "Data []DataItems0 `json:\"data,omitempty\"`", res)
+					assertInCode(t, "Data []*DataItems0 `json:\"data,omitempty\"`", res)
 					assertInCode(t, "models.Media", res)
 				}
 			}

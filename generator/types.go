@@ -239,7 +239,7 @@ type typeResolver struct {
 
 func (t *typeResolver) IsNullable(schema *spec.Schema) bool {
 	nullable := t.isNullable(schema)
-	return nullable
+	return nullable || len(schema.AllOf) > 0
 }
 
 func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (returns bool, result resolvedType, err error) {
