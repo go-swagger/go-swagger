@@ -94,8 +94,8 @@ func ({{$.ReceiverName}} *{{ pascalize $.Name}}) Set{{ pascalize .Name}}(val {{ 
 {{ pascalize .AdditionalProperties.Name }}() map[string]{{ template "schemaType" .AdditionalProperties }}{{end}}{{ end }}
 {{ if .AdditionalItems }}/* {{ template "docstring" .AdditionalItems }}{{ template "propertyValidationDocString" .AdditionalItems}} */
 {{ pascalize .AdditionalItems.Name }}() []{{ template "schemaType" .AdditionalItems }}
-{{ end }}
-{{ template "discriminatedSerializer" . }}
+{{ end }}{{ if not .HasBaseType }}
+{{ template "discriminatedSerializer" . }}{{ end}}
 {{ else if .IsTuple }}
 {{ template "tupleSerializer" . }}
 {{ else if .IsAdditionalProperties }}

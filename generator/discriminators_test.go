@@ -279,3 +279,24 @@ func TestGenerateModel_Bitbucket_Repository(t *testing.T) {
 		}
 	}
 }
+
+func TestGenerateModel_Bitbucket_WebhookSubscription(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/bitbucket.json")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "webhook_subscription"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				b, err := formatGoFile("webhook_subscription.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(b)
+					fmt.Println(res)
+				}
+			}
+		}
+	}
+}
