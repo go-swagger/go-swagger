@@ -167,13 +167,13 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
   if err := route.Consumer.Consume(r.Body, &body); err != nil {
     res = append(res, errors.NewParseError({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}, "", err))
   {{ end }}} else {
-    {{ if .IsArray }}for _, {{ .IndexVar }}{{ .ReceiverName }} := range {{ .ReceiverName }}.{{ pascalize .Name }} {
+    {{ if .IsArray }}{{ if .Child }}{{ if or .Child.IsAliased (and (not .Schema.IsInterface) .Child.IsComplexObject) }}for _, {{ .IndexVar }}{{ .ReceiverName }} := range {{ .ReceiverName }}.{{ pascalize .Name }} {
       if err := {{ .IndexVar }}{{ .ReceiverName }}.Validate(route.Formats); err != nil {
         res = append(res, err)
         break
       }
     }
-    {{ else }}if err := body.Validate(route.Formats); err != nil {
+    {{ end }}{{ end }}{{ else if or .Schema.IsAliased (and (not .Schema.IsInterface) .Schema.IsComplexObject) }}if err := body.Validate(route.Formats); err != nil {
       res = append(res, err)
     }
     {{ end }}

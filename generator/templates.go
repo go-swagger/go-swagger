@@ -48,7 +48,6 @@ var (
 )
 
 var assets = map[string][]byte{
-
 	"validation/primitive.gotmpl":           MustAsset("templates/validation/primitive.gotmpl"),
 	"validation/customformat.gotmpl":        MustAsset("templates/validation/customformat.gotmpl"),
 	"docstring.gotmpl":                      MustAsset("templates/docstring.gotmpl"),
