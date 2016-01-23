@@ -176,10 +176,6 @@ func compileTemplates() {
 
 	// server templates
 	parameterTemplate = makeModelTemplate()
-	//parameterTemplate = template.Must(parameterTemplate.New("docstring.gotmpl").Parse(string(assets["docstring.gotmpl"])))
-	//parameterTemplate = template.Must(parameterTemplate.New("validationDocString").Parse(string(assets["validation/structfield.gotmpl"])))
-	//parameterTemplate = template.Must(parameterTemplate.New("schType").Parse(string(assets["schematype.gotmpl"])))
-	//parameterTemplate = template.Must(parameterTemplate.New("body").Parse(string(assets["schemabody.gotmpl"])))
 	parameterTemplate = template.Must(parameterTemplate.New("parameter").Parse(string(assets["server/parameter.gotmpl"])))
 
 	responsesTemplate = makeModelTemplate()
@@ -196,17 +192,9 @@ func compileTemplates() {
 
 	// Client templates
 	clientParamTemplate = makeModelTemplate()
-	//clientParamTemplate = template.Must(clientParamTemplate.New("docstring.gotmpl").Parse(string(assets["docstring.gotmpl"])))
-	//clientParamTemplate = template.Must(clientParamTemplate.New("validationDocString").Parse(string(assets["validation/structfield.gotmpl"])))
-	//clientParamTemplate = template.Must(clientParamTemplate.New("schType").Parse(string(assets["schematype.gotmpl"])))
-	//clientParamTemplate = template.Must(clientParamTemplate.New("body").Parse(string(assets["schemabody.gotmpl"])))
 	clientParamTemplate = template.Must(clientParamTemplate.New("parameter").Parse(string(assets["client/parameter.gotmpl"])))
 
 	clientResponseTemplate = makeModelTemplate() // template.Must(validatorTempl.Clone())
-	// clientResponseTemplate = template.Must(clientResponseTemplate.New("docstring.gotmpl").Parse(string(assets["docstring.gotmpl"])))
-	// clientResponseTemplate = template.Must(clientResponseTemplate.New("validationDocString").Parse(string(assets["validation/structfield.gotmpl"])))
-	// clientResponseTemplate = template.Must(clientResponseTemplate.New("schType").Parse(string(assets["schematype.gotmpl"])))
-	// clientResponseTemplate = template.Must(clientResponseTemplate.New("body").Parse(string(assets["schemabody.gotmpl"])))
 	clientResponseTemplate = template.Must(clientResponseTemplate.New("response").Parse(string(assets["client/response.gotmpl"])))
 
 	clientTemplate = template.Must(template.New("docstring.gotmpl").Funcs(FuncMap).Parse(string(assets["docstring.gotmpl"])))

@@ -30,13 +30,6 @@ func TestContainingPackage(t *testing.T) {
 		{gopath + "/src/golang.org/x/tools/go/buildutil/util_test.go",
 			"golang.org/x/tools/go/buildutil"},
 	}
-	// TODO(adonovan): simplify after Go 1.6.
-	if buildutil.AllowVendor != 0 {
-		tests = append(tests, [2]string{
-			gopath + "/src/vendor/golang.org/x/net/http2/hpack/hpack.go",
-			"vendor/golang.org/x/net/http2/hpack",
-		})
-	}
 	for _, test := range tests {
 		file, want := test[0], test[1]
 		bp, err := buildutil.ContainingPackage(&build.Default, ".", file)
@@ -50,23 +43,4 @@ func TestContainingPackage(t *testing.T) {
 	}
 
 	// TODO(adonovan): test on virtualized GOPATH too.
-}
-
-func TestStripVendor(t *testing.T) {
-	for _, test := range []struct {
-		path, want string
-	}{
-		{"", ""},
-		{"a", "a"},
-		{"a/b", "a/b"},
-		{"a/vendor/b", "b"},
-		{"a/b/vendor/c/d", "c/d"},
-		{"vendor/a/b", "a/b"},
-		{"a/vendor", "a/vendor"},
-	} {
-		if got := buildutil.StripVendor(test.path); got != test.want {
-			t.Errorf("StripVendor(%q) = %q, want %q",
-				test.path, got, test.want)
-		}
-	}
 }

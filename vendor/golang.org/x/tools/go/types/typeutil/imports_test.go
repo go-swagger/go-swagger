@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build go1.5
+
 package typeutil_test
 
 import (
@@ -9,19 +11,20 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"go/types"
 	"testing"
 
-	"golang.org/x/tools/go/types"
 	"golang.org/x/tools/go/types/typeutil"
 )
+
+type closure map[string]*types.Package
+
+func (c closure) Import(path string) (*types.Package, error) { return c[path], nil }
 
 func TestDependencies(t *testing.T) {
 	packages := make(map[string]*types.Package)
 	conf := types.Config{
-		Packages: packages,
-		Import: func(_ map[string]*types.Package, path string) (*types.Package, error) {
-			return packages[path], nil
-		},
+		Importer: closure(packages),
 	}
 	fset := token.NewFileSet()
 
@@ -30,12 +33,12 @@ func TestDependencies(t *testing.T) {
 	// F    \_C_/
 	//  \__E_/
 	for i, content := range []string{
-		`package A`,
-		`package C; import (_ "A")`,
-		`package B; import (_ "A")`,
-		`package E; import (_ "C")`,
-		`package D; import (_ "B"; _ "C")`,
-		`package F; import (_ "D"; _ "E")`,
+		`package a`,
+		`package c; import (_ "a")`,
+		`package b; import (_ "a")`,
+		`package e; import (_ "c")`,
+		`package d; import (_ "b"; _ "c")`,
+		`package f; import (_ "d"; _ "e")`,
 	} {
 		f, err := parser.ParseFile(fset, fmt.Sprintf("%d.go", i), content, 0)
 		if err != nil {
@@ -51,22 +54,22 @@ func TestDependencies(t *testing.T) {
 	for _, test := range []struct {
 		roots, want string
 	}{
-		{"A", "A"},
-		{"B", "AB"},
-		{"C", "AC"},
-		{"D", "ABCD"},
-		{"E", "ACE"},
-		{"F", "ABCDEF"},
+		{"a", "a"},
+		{"b", "ab"},
+		{"c", "ac"},
+		{"d", "abcd"},
+		{"e", "ace"},
+		{"f", "abcdef"},
 
-		{"BE", "ABCE"},
-		{"EB", "ACEB"},
-		{"DE", "ABCDE"},
-		{"ED", "ACEBD"},
-		{"EF", "ACEBDF"},
+		{"be", "abce"},
+		{"eb", "aceb"},
+		{"de", "abcde"},
+		{"ed", "acebd"},
+		{"ef", "acebdf"},
 	} {
 		var pkgs []*types.Package
 		for _, r := range test.roots {
-			pkgs = append(pkgs, conf.Packages[string(r)])
+			pkgs = append(pkgs, packages[string(r)])
 		}
 		var got string
 		for _, p := range typeutil.Dependencies(pkgs...) {

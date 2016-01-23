@@ -303,12 +303,7 @@ func TestRuntime_ChunkedResponse(t *testing.T) {
 }
 
 func TestRuntime_OverrideScheme(t *testing.T) {
-	// test that it can make a simple request
-	// and get the response for it.
-	// defaults all the way down
-
-	hu, _ := url.Parse("http://localhost:1234")
-	runtime := New(hu.Host, "/", []string{"https"})
+	runtime := New("", "/", []string{"https"})
 	sch := runtime.pickScheme([]string{"http"})
 	assert.Equal(t, "https", sch)
 

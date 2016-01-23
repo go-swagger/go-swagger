@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build go1.5
+
 // No testdata on Android.
 
 // +build !android
@@ -21,6 +23,8 @@ import (
 	"golang.org/x/tools/go/buildutil"
 	"golang.org/x/tools/go/loader"
 )
+
+var go16 bool // Go version >= go1.6
 
 // TestFromArgs checks that conf.FromArgs populates conf correctly.
 // It does no I/O.
@@ -394,10 +398,9 @@ func TestCwd(t *testing.T) {
 }
 
 func TestLoad_vendor(t *testing.T) {
-	if buildutil.AllowVendor == 0 {
-		// Vendoring requires Go 1.6.
+	if !go16 {
 		// TODO(adonovan): delete in due course.
-		t.Skip()
+		t.Skipf("vendoring requires Go 1.6")
 	}
 	pkgs := map[string]string{
 		"a":          `package a; import _ "x"`,
@@ -427,6 +430,49 @@ func TestLoad_vendor(t *testing.T) {
 		if got.Name() != want {
 			t.Errorf("package %s import %q = %s, want %s",
 				name, "x", got.Name(), want)
+		}
+	}
+}
+
+func TestVendorCwd(t *testing.T) {
+	if !go16 {
+		// TODO(adonovan): delete in due course.
+		t.Skipf("vendoring requires Go 1.6")
+	}
+	// Test the interaction of cwd and vendor directories.
+	ctxt := fakeContext(map[string]string{
+		"net":          ``, // mkdir net
+		"net/http":     `package http; import _ "hpack"`,
+		"vendor":       ``, // mkdir vendor
+		"vendor/hpack": `package vendorhpack`,
+		"hpack":        `package hpack`,
+	})
+	for i, test := range []struct {
+		cwd, arg, want string
+	}{
+		{cwd: "/go/src/net", arg: "http"}, // not found
+		{cwd: "/go/src/net", arg: "./http", want: "net/http vendor/hpack"},
+		{cwd: "/go/src/net", arg: "hpack", want: "hpack"},
+		{cwd: "/go/src/vendor", arg: "hpack", want: "hpack"},
+		{cwd: "/go/src/vendor", arg: "./hpack", want: "vendor/hpack"},
+	} {
+		conf := loader.Config{
+			Cwd:   test.cwd,
+			Build: ctxt,
+		}
+		conf.Import(test.arg)
+
+		var got string
+		prog, err := conf.Load()
+		if prog != nil {
+			got = strings.Join(all(prog), " ")
+		}
+		if got != test.want {
+			t.Errorf("#%d: Load(%s) from %s: got %s, want %s",
+				i, test.arg, test.cwd, got, test.want)
+			if err != nil {
+				t.Errorf("Load failed: %v", err)
+			}
 		}
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"reflect"
+	"strings"
 	"sync"
 	"syscall"
 	"testing"
@@ -50,18 +51,26 @@ func checkErr(t *testing.T, err error, once *sync.Once) bool {
 		return true
 	}
 	var errno syscall.Errno
-	switch e := err.(*url.Error).Err.(*net.OpError).Err.(type) {
-	case syscall.Errno:
-		errno = e
-	case *os.SyscallError:
-		errno = e.Err.(syscall.Errno)
-	}
-	if errno == syscall.ECONNREFUSED {
-		return true
-	} else if err != nil {
-		once.Do(func() {
-			t.Fatal("Error on Get:", err)
-		})
+	switch oe := err.(*url.Error).Err.(type) {
+	case *net.OpError:
+		switch e := oe.Err.(type) {
+		case syscall.Errno:
+			errno = e
+		case *os.SyscallError:
+			errno = e.Err.(syscall.Errno)
+		}
+		if errno == syscall.ECONNREFUSED {
+			return true
+		} else if err != nil {
+			once.Do(func() {
+				t.Fatal("Error on Get:", err)
+			})
+		}
+	default:
+		if strings.Contains(err.Error(), "transport closed before response was received") {
+			return true
+		}
+		fmt.Printf("unknown err: %s, %#v\n", err, err)
 	}
 	return false
 }
@@ -73,10 +82,10 @@ func createListener(sleep time.Duration) (*http.Server, net.Listener, error) {
 		rw.WriteHeader(http.StatusOK)
 	})
 
+	time.Sleep(1 * time.Second)
 	server := &http.Server{Addr: ":9654", Handler: mux}
 	l, err := net.Listen("tcp", ":9654")
 	if err != nil {
-		fmt.Println(err)
 	}
 	return server, l, err
 }
@@ -118,6 +127,7 @@ func TestGracefulRun(t *testing.T) {
 		runServer(killTime, killTime/2, c)
 		wg.Done()
 	}()
+	time.Sleep(1 * time.Second)
 
 	wg.Add(1)
 	go launchTestQueries(t, &wg, c)
@@ -134,6 +144,7 @@ func TestGracefulRunTimesOut(t *testing.T) {
 		runServer(killTime, killTime*10, c)
 		wg.Done()
 	}()
+	time.Sleep(2 * time.Second)
 
 	var once sync.Once
 	wg.Add(1)
@@ -164,6 +175,7 @@ func TestGracefulRunDoesntTimeOut(t *testing.T) {
 		runServer(0, killTime*2, c)
 		wg.Done()
 	}()
+	time.Sleep(1 * time.Second)
 
 	wg.Add(1)
 	go launchTestQueries(t, &wg, c)
@@ -180,6 +192,7 @@ func TestGracefulRunNoRequests(t *testing.T) {
 		runServer(0, killTime*2, c)
 		wg.Done()
 	}()
+	time.Sleep(1 * time.Second)
 
 	c <- os.Interrupt
 
@@ -219,6 +232,7 @@ func TestGracefulForwardsConnState(t *testing.T) {
 
 		wg.Done()
 	}()
+	time.Sleep(2 * time.Second)
 
 	wg.Add(1)
 	go launchTestQueries(t, &wg, c)

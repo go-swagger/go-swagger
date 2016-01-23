@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
-
-	"github.com/smartystreets/goconvey/convey/reporting"
 )
 
 func TestSerializerCreatesSerializedVersionOfAssertionResult(t *testing.T) {
@@ -16,7 +14,7 @@ func TestSerializerCreatesSerializedVersionOfAssertionResult(t *testing.T) {
 
 	actualResult := serializer.serialize(thing1, thing2, message)
 
-	expectedResult, _ := json.Marshal(reporting.FailureView{
+	expectedResult, _ := json.Marshal(FailureView{
 		Message:  message,
 		Expected: fmt.Sprintf("%+v", thing1),
 		Actual:   fmt.Sprintf("%+v", thing2),
@@ -27,7 +25,7 @@ func TestSerializerCreatesSerializedVersionOfAssertionResult(t *testing.T) {
 	}
 
 	actualResult = serializer.serializeDetailed(thing1, thing2, message)
-	expectedResult, _ = json.Marshal(reporting.FailureView{
+	expectedResult, _ = json.Marshal(FailureView{
 		Message:  message,
 		Expected: fmt.Sprintf("%#v", thing1),
 		Actual:   fmt.Sprintf("%#v", thing2),
