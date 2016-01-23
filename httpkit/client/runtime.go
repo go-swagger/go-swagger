@@ -43,7 +43,8 @@ type Runtime struct {
 	Formats  strfmt.Registry
 	Debug    bool
 
-	client *http.Client
+	client  *http.Client
+	schemes []string
 }
 
 // New creates a new default runtime for a swagger api client.
@@ -66,10 +67,39 @@ func New(host, basePath string, schemes []string) *Runtime {
 		rt.BasePath = "/" + rt.BasePath
 	}
 	rt.Debug = os.Getenv("DEBUG") == "1"
-	if len(schemes) == 0 {
-		schemes = append(schemes, "http")
+	if len(schemes) > 0 {
+		rt.schemes = schemes
 	}
 	return &rt
+}
+
+func (r *Runtime) pickScheme(schemes []string) string {
+	if v := r.selectScheme(r.schemes); v != "" {
+		return v
+	}
+	if v := r.selectScheme(schemes); v != "" {
+		return v
+	}
+	return "http"
+}
+
+func (r *Runtime) selectScheme(schemes []string) string {
+	schLen := len(schemes)
+	if schLen == 0 {
+		return ""
+	}
+
+	scheme := schemes[0]
+	// prefer https, but skip when not possible
+	if scheme != "https" && schLen > 1 {
+		for _, sch := range schemes {
+			if sch == "https" {
+				scheme = sch
+				break
+			}
+		}
+	}
+	return scheme
 }
 
 // Submit a request and when there is a body on success it will turn that into the result
@@ -102,25 +132,7 @@ func (r *Runtime) Submit(context *client.Operation) (interface{}, error) {
 
 	req, err := request.BuildHTTP(r.Producers[r.DefaultMediaType], r.Formats)
 
-	// set the scheme
-	if req.URL.Scheme == "" {
-		req.URL.Scheme = "http"
-	}
-	schLen := len(context.Schemes)
-	if schLen > 0 {
-		scheme := context.Schemes[0]
-		// prefer https, but skip when not possible
-		if scheme != "https" && schLen > 1 {
-			for _, sch := range context.Schemes {
-				if sch == "https" {
-					scheme = sch
-					break
-				}
-			}
-		}
-		req.URL.Scheme = scheme
-	}
-
+	req.URL.Scheme = r.pickScheme(context.Schemes)
 	req.URL.Host = r.Host
 	req.URL.Path = path.Join(r.BasePath, req.URL.Path)
 	if err != nil {

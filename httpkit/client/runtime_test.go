@@ -57,6 +57,7 @@ func TestRuntime_Canary(t *testing.T) {
 		jsongen := json.NewEncoder(rw)
 		jsongen.Encode(result)
 	}))
+	defer server.Close()
 
 	rwrtr := client.RequestWriterFunc(func(req client.Request, _ strfmt.Registry) error {
 		return nil
@@ -162,6 +163,7 @@ func TestRuntime_AuthCanary(t *testing.T) {
 		jsongen := json.NewEncoder(rw)
 		jsongen.Encode(result)
 	}))
+	defer server.Close()
 
 	rwrtr := client.RequestWriterFunc(func(req client.Request, _ strfmt.Registry) error {
 		return nil
@@ -211,6 +213,7 @@ func TestRuntime_ContentTypeCanary(t *testing.T) {
 		jsongen := json.NewEncoder(rw)
 		jsongen.Encode(result)
 	}))
+	defer server.Close()
 
 	rwrtr := client.RequestWriterFunc(func(req client.Request, _ strfmt.Registry) error {
 		return nil
@@ -263,6 +266,7 @@ func TestRuntime_ChunkedResponse(t *testing.T) {
 		jsongen := json.NewEncoder(rw)
 		jsongen.Encode(result)
 	}))
+	defer server.Close()
 
 	rwrtr := client.RequestWriterFunc(func(req client.Request, _ strfmt.Registry) error {
 		return nil
@@ -296,4 +300,16 @@ func TestRuntime_ChunkedResponse(t *testing.T) {
 		actual := res.([]task)
 		assert.EqualValues(t, result, actual)
 	}
+}
+
+func TestRuntime_OverrideScheme(t *testing.T) {
+	// test that it can make a simple request
+	// and get the response for it.
+	// defaults all the way down
+
+	hu, _ := url.Parse("http://localhost:1234")
+	runtime := New(hu.Host, "/", []string{"https"})
+	sch := runtime.pickScheme([]string{"http"})
+	assert.Equal(t, "https", sch)
+
 }
