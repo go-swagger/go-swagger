@@ -15,6 +15,7 @@
 package generator
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -223,9 +224,18 @@ func commentedLines(str string) string {
 	return strings.Join(commented, "\n")
 }
 
-func gatherModels(specDoc *spec.Document, modelNames []string) map[string]spec.Schema {
+func gatherModels(specDoc *spec.Document, modelNames []string) (map[string]spec.Schema, error) {
 	models, mnc := make(map[string]spec.Schema), len(modelNames)
-	for k, v := range specDoc.Spec().Definitions {
+	defs := specDoc.Spec().Definitions
+	if mnc > 0 {
+		for _, m := range modelNames {
+			_, ok := defs[m]
+			if !ok {
+				return nil, errors.New("unknown model")
+			}
+		}
+	}
+	for k, v := range defs {
 		if mnc == 0 {
 			models[k] = v
 		}
@@ -235,7 +245,7 @@ func gatherModels(specDoc *spec.Document, modelNames []string) map[string]spec.S
 			}
 		}
 	}
-	return models
+	return models, nil
 }
 
 func appNameOrDefault(specDoc *spec.Document, name, defaultName string) string {

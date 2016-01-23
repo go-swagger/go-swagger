@@ -43,7 +43,10 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts GenOpts
 		return err
 	}
 
-	models := gatherModels(specDoc, modelNames)
+	models, err := gatherModels(specDoc, modelNames)
+	if err != nil {
+		return err
+	}
 	operations := gatherOperations(specDoc, operationIDs)
 
 	defaultScheme := opts.DefaultScheme
