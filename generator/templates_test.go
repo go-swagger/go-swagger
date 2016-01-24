@@ -30,7 +30,7 @@ func TestCustomTemplates(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	for template, v := range registry.assets {
+	for template, v := range registry.files {
 		if string(v) != fmt.Sprintf("./%s\n", template) {
 			t.Errorf("Template %s wasn't loaded", template)
 		}

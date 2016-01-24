@@ -65,30 +65,30 @@ var FuncMap template.FuncMap = map[string]interface{}{
 
 func NewTemplateRegistry() *TemplateRegistry {
 	return &TemplateRegistry{
-		funcs:     FuncMap,
-		assets:    make(map[string][]byte),
-		assetDeps: make(map[string][]string),
-		templates: make(map[string]TemplateDefinition),
-		compiled:  make(map[string]*template.Template),
+		funcs:            FuncMap,
+		files:            make(map[string][]byte),
+		fileDependencies: make(map[string][]string),
+		templates:        make(map[string]TemplateDefinition),
+		compiled:         make(map[string]*template.Template),
 	}
 }
 
 type TemplateDefinition struct {
 	Dependencies []string
-	Path         string
+	Files        []string
 }
 
 type TemplateRegistry struct {
-	funcs     template.FuncMap
-	assets    map[string][]byte
-	assetDeps map[string][]string
-	templates map[string]TemplateDefinition
-	compiled  map[string]*template.Template
+	funcs            template.FuncMap
+	files            map[string][]byte
+	fileDependencies map[string][]string
+	templates        map[string]TemplateDefinition
+	compiled         map[string]*template.Template
 }
 
 func (t *TemplateRegistry) LoadDefaults() {
 	for name, asset := range assets {
-		t.AddAsset(name, asset)
+		t.AddFile(name, asset)
 	}
 
 	for name, template := range builtinTemplates {
@@ -103,7 +103,7 @@ func (t *TemplateRegistry) LoadDir(templatePath string) error {
 		if strings.HasSuffix(path, ".gotmpl") {
 			assetName := strings.TrimPrefix(path, templatePath)
 			if data, err := ioutil.ReadFile(path); err == nil {
-				t.AddAsset(assetName, data)
+				t.AddFile(assetName, data)
 			}
 		}
 		return err
@@ -111,14 +111,14 @@ func (t *TemplateRegistry) LoadDir(templatePath string) error {
 
 }
 
-func (t *TemplateRegistry) AddAsset(name string, data []byte) {
-	if t.assets == nil {
-		t.assets = make(map[string][]byte)
+func (t *TemplateRegistry) AddFile(name string, data []byte) {
+	if t.files == nil {
+		t.files = make(map[string][]byte)
 	}
 
-	t.assets[name] = data
+	t.files[name] = data
 
-	assetDeps, found := t.assetDeps[name]
+	assetDeps, found := t.fileDependencies[name]
 
 	if !found {
 		return
@@ -131,8 +131,11 @@ func (t *TemplateRegistry) AddAsset(name string, data []byte) {
 
 func (t *TemplateRegistry) addAssetDependency(templateName string, definition TemplateDefinition) {
 
-	if definition.Path != "" {
-		t.assetDeps[definition.Path] = append(t.assetDeps[definition.Path], templateName)
+	if len(definition.Files) > 0 {
+		for _, file := range definition.Files {
+			t.fileDependencies[file] = append(t.fileDependencies[file], templateName)
+		}
+
 	}
 
 	if len(definition.Dependencies) > 0 {
@@ -162,12 +165,6 @@ func (t *TemplateRegistry) AddTemplate(name string, definition TemplateDefinitio
 
 func (t *TemplateRegistry) parseDep(name string, templ *template.Template) (*template.Template, error) {
 
-	if _, isAsset := t.assets[name]; isAsset {
-		log.Printf("parsing dep %s for %s", name, templ.Name())
-		return templ.Parse(string(t.assets[name]))
-
-	}
-
 	def, found := t.templates[name]
 
 	if !found {
@@ -176,6 +173,15 @@ func (t *TemplateRegistry) parseDep(name string, templ *template.Template) (*tem
 
 	log.Println("Creating template ", name)
 	templ = templ.New(name)
+	if len(def.Files) > 0 {
+		for _, file := range def.Files {
+			if _, found := t.files[file]; !found {
+				panic("Asset not loaded " + file)
+			}
+			templ = template.Must(templ.Parse(string(t.files[file])))
+		}
+
+	}
 	if len(def.Dependencies) > 0 {
 
 		for _, dep := range def.Dependencies {
@@ -209,12 +215,16 @@ func (t *TemplateRegistry) MustGet(name string) *template.Template {
 		templ = template.Must(t.parseDep(dep, templ))
 	}
 
-	if definition.Path != "" {
-		if _, found := t.assets[definition.Path]; !found {
-			panic("Asset not loaded " + definition.Path)
+	if len(definition.Files) > 0 {
+		for _, file := range definition.Files {
+			if _, found := t.files[file]; !found {
+				panic("Asset not loaded " + file)
+			}
+			templ = template.Must(templ.Parse(string(t.files[file])))
 		}
-		templ = template.Must(templ.New(name).Parse(string(t.assets[definition.Path])))
+
 	}
+
 	t.compiled[name] = templ
 
 	log.Println(name, templ.DefinedTemplates())

@@ -25,8 +25,8 @@ import (
 // fwiw, don't get attached to this, still requires a better abstraction
 
 var (
-	modelTemplate          *template.Template
-	modelValidatorTemplate *template.Template
+	modelTemplate *template.Template
+	// modelValidatorTemplate *template.Template
 	operationTemplate      *template.Template
 	parameterTemplate      *template.Template
 	responsesTemplate      *template.Template
@@ -82,10 +82,10 @@ var builtinTemplates = map[string]TemplateDefinition{
 	},
 
 	"primitivevalidator": {
-		Dependencies: []string{"validation/primitive.gotmpl"},
+		Files: []string{"validation/primitive.gotmpl"},
 	},
 	"customformatvalidator": {
-		Dependencies: []string{"validation/customformat.gotmpl"},
+		Files: []string{"validation/customformat.gotmpl"},
 	},
 
 	"modelValidatorTemplate": {
@@ -93,106 +93,125 @@ var builtinTemplates = map[string]TemplateDefinition{
 	},
 
 	"docstring": {
-		Dependencies: []string{"docstring.gotmpl"},
+		Files: []string{"docstring.gotmpl"},
 	},
 
-	"validationDocString": {
-		Dependencies: []string{"validation/structfield.gotmpl"},
+	"propertyValidationDocString": {
+		Files: []string{"validation/docstring.gotmpl"},
 	},
 	"schematype": {
-		Dependencies: []string{"schematype.gotmpl"},
+		Files: []string{"schematype.gotmpl"},
 	},
 	"body": {
-		Dependencies: []string{"schemabody.gotmpl"},
+		Files: []string{"schemabody.gotmpl"},
 	},
 	"schema": {
-		Dependencies: []string{"schema.gotmpl"},
+		Files: []string{"schema.gotmpl"},
 	},
 	"schemavalidations": {
-		Dependencies: []string{"schemavalidator.gotmpl"},
+		Files: []string{"schemavalidator.gotmpl"},
 	},
 	"header": {
-		Dependencies: []string{"header.gotmpl"},
+		Files: []string{"header.gotmpl"},
 	},
 	"fields": {
-		Dependencies: []string{"structfield.gotmpl"},
+		Files: []string{"structfield.gotmpl"},
+	},
+	"tupleserializer": {
+		Files: []string{"tupleserializer.gotmpl"},
+	},
+	"additionalpropertiesserializer": {
+		Files: []string{"additionalpropertiesserializer.gotmpl"},
 	},
 	"model": {
 		Dependencies: []string{
-			"model.gotmpl",
 			"docstring",
 			"primitivevalidator",
 			"customformatvalidator",
-			"validationDocString",
+			"propertyValidationDocString",
 			"schematype",
 			"body",
 			"schema",
 			"schemavalidations",
 			"header",
 			"fields",
-			"tupleserializer.gotmpl",
-			"additionalpropertiesserializer.gotmpl",
+			"tupleserializer",
+			"additionalpropertiesserializer",
+		},
+		Files: []string{
+			"model.gotmpl",
 		},
 	},
 
 	"parameterTemplate": {
-		Dependencies: []string{"server/parameter.gotmpl", "model"},
+		Dependencies: []string{"model"},
+		Files:        []string{"server/parameter.gotmpl"},
 	},
 
 	"responsesTemplate": {
-		Dependencies: []string{"server/responses.gotmpl", "model"},
+		Dependencies: []string{"model"},
+		Files:        []string{"server/responses.gotmpl"},
 	},
 
 	"operationTemplate": {
-		Dependencies: []string{"server/operation.gotmpl", "model"},
+		Dependencies: []string{"model"},
+		Files:        []string{"server/operation.gotmpl"},
 	},
 
 	"builderTemplate": {
-		Dependencies: []string{"server/builder.gotmpl"},
+		Files: []string{"server/builder.gotmpl"},
 	},
 
 	"configureAPITemplate": {
-		Dependencies: []string{"server/configureapi.gotmpl"},
+		Files: []string{"server/configureapi.gotmpl"},
 	},
 
 	"mainTemplate": {
-		Dependencies: []string{"server/main.gotmpl"},
+		Files: []string{"server/main.gotmpl"},
 	},
 
 	"mainDocTemplate": {
-		Dependencies: []string{"server/doc.gotmpl"},
+		Files: []string{"server/doc.gotmpl"},
 	},
 
 	"embeddedSpecTemplate": {
-		Dependencies: []string{"swagger_json_embed.gotmpl"},
+		Files: []string{"swagger_json_embed.gotmpl"},
 	},
 
 	// Client templates
 	"clientParamTemplate": {
-		Dependencies: []string{"client/parameter.gotmpl", "model"},
+		Dependencies: []string{"model"},
+		Files:        []string{"client/parameter.gotmpl"},
 	},
 
 	"clientResponseTemplate": {
-		Dependencies: []string{"client/response.gotmpl", "model"},
+		Dependencies: []string{"model"},
+		Files:        []string{"client/response.gotmpl"},
 	},
 
 	"clientTemplate": {
 		Dependencies: []string{
-			"client/client.gotmpl",
+
 			"docstring",
-			"validationDocString",
+			"propertyValidationDocString",
 			"schematype",
 			"body",
+		},
+		Files: []string{
+			"client/client.gotmpl",
 		},
 	},
 
 	"clientFacadeTemplate": {
 		Dependencies: []string{
-			"client/facade.gotmpl",
+
 			"docstring",
-			"validationDocString",
+			"propertyValidationDocString",
 			"schematype",
 			"body",
+		},
+		Files: []string{
+			"client/facade.gotmpl",
 		},
 	},
 }
@@ -206,7 +225,7 @@ var templates = NewTemplateRegistry()
 func init() {
 
 	for name, asset := range assets {
-		templates.AddAsset(name, asset)
+		templates.AddFile(name, asset)
 	}
 
 	for name, template := range builtinTemplates {
@@ -222,7 +241,7 @@ func compileTemplates() {
 
 	// common templates
 
-	modelValidatorTemplate = templates.MustGet("modelValidatorTemplate")
+	// modelValidatorTemplate = templates.MustGet("modelValidatorTemplate")
 
 	// server templates
 	parameterTemplate = templates.MustGet("parameterTemplate")
