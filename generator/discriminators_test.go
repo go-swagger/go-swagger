@@ -294,7 +294,8 @@ func TestGenerateModel_Bitbucket_WebhookSubscription(t *testing.T) {
 				b, err := formatGoFile("webhook_subscription.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(b)
-					fmt.Println(res)
+					assertInCode(t, "result.subjectField", res)
+					assertInCode(t, "Subject: m.subjectField", res)
 				}
 			}
 		}
