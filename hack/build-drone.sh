@@ -2,7 +2,7 @@
 set -x -e -o pipefail
 
 mkdir -p /usr/share/{testresults,coverage,dist}
-go test -timeout 20m -v -race $(go list ./... | grep -v vendor) | go-junit-report -dir /usr/share/testresults
+go test -timeout 20m -v $(go list ./... | grep -v vendor) | go-junit-report -dir /usr/share/testresults
 
 # Run test coverage on each subdirectories and merge the coverage profile.
 echo "mode: ${GOCOVMODE-count}" > profile.cov
@@ -12,7 +12,7 @@ repo_pref="${CI_BUILD_DIR##${GOPATH/%:*/}/src/}/"
 for dir in $(go list ./... | grep -v -E 'vendor|generator')
 do
   pth="${dir//*$repo_pref}"
-  go test -covermode=${GOCOVMODE-count} -coverprofile=${pth}/profile.tmp $dir
+  go test -race -covermode=${GOCOVMODE-count} -coverprofile=${pth}/profile.tmp $dir
   if [ -f $pth/profile.tmp ]
   then
       cat $pth/profile.tmp | tail -n +2 >> profile.cov
