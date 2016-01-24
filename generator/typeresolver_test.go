@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/stretchr/testify/assert"
 )
@@ -517,6 +518,28 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 			assert.False(t, rt.IsMap)
 			assert.Equal(t, "models.TheModel", rt.GoType)
 			assert.Equal(t, "object", rt.SwaggerType)
+		}
+	}
+}
+
+func TestTypeResolver_AliasTypes(t *testing.T) {
+	doc, resolver, err := basicTaskListResolver(t)
+	if assert.NoError(t, err) {
+		resolver.ModelsPackage = ""
+		resolver.ModelName = "Currency"
+		defer func() {
+			resolver.ModelName = ""
+			resolver.ModelsPackage = "models"
+		}()
+		defs := doc.Spec().Definitions[resolver.ModelName]
+		rt, err := resolver.ResolveSchema(&defs, false, true)
+		if assert.NoError(t, err) {
+			assert.False(t, rt.IsAnonymous)
+			assert.True(t, rt.IsAliased)
+			assert.True(t, rt.IsPrimitive)
+			assert.Equal(t, "Currency", rt.GoType)
+			assert.Equal(t, "string", rt.AliasedType)
+			spew.Dump(rt)
 		}
 	}
 }

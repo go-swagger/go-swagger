@@ -471,6 +471,14 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	case "string":
 		result.GoType = "string"
 		result.SwaggerType = "string"
+		if !isAnonymous && t.ModelName != "" {
+			result.AliasedType = result.GoType
+			result.IsAliased = true
+			result.GoType = t.ModelName
+			if t.ModelsPackage != "" {
+				result.GoType = t.ModelsPackage + "." + t.ModelName
+			}
+		}
 		result.IsPrimitive = true
 		//log.Printf("this string is nullable beause (null: %t, req: %t)\n", result.IsNullable, isRequired)
 		if schema.MinLength != nil && *schema.MinLength > 0 {
@@ -501,6 +509,7 @@ type resolvedType struct {
 	IsInterface       bool
 	IsPrimitive       bool
 	IsCustomFormatter bool
+	IsAliased         bool
 	IsNullable        bool
 	HasDiscriminator  bool
 
@@ -510,6 +519,7 @@ type resolvedType struct {
 	IsComplexObject    bool
 
 	GoType        string
+	AliasedType   string
 	SwaggerType   string
 	SwaggerFormat string
 }
