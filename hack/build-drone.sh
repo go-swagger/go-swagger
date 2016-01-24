@@ -1,5 +1,5 @@
 #!/bin/bash
-set +x -e -o pipefail
+set -x -e -o pipefail
 
 mkdir -p /usr/share/{testresults,coverage,dist}
 go test -v -race $(go list ./... | grep -v vendor) | go-junit-report -dir /usr/share/testresults
@@ -23,17 +23,16 @@ done
 go tool cover -func profile.cov
 gocov convert profile.cov | gocov report
 gocov convert profile.cov | gocov-html > /usr/share/coverage/coverage-${CI_BUILD_NUM-"0"}.html
+[ -f /usr/share/dist/swagger ] && rm /usr/share/dist/swagger
 go build -o /usr/share/dist/swagger ./cmd/swagger
 
-go install ./cmd/swagger
 for dir in $(ls fixtures/canary)
 do
   pushd fixtures/canary/$dir
   rm -rf client models restapi cmd
-  swagger generate client
+  /usr/share/dist/swagger generate client
   go test ./...
-  swagger generate server
+  /usr/share/dist/swagger generate server
   go test ./...
   popd
 done
-exit 0
