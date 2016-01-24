@@ -269,6 +269,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 		result.GoType = t.goTypeName(nm)
 		result.HasDiscriminator = ref.Discriminator != ""
 		result.IsNullable = t.IsNullable(ref)
+		result.IsAliased = true
 		return
 
 	}
@@ -436,8 +437,8 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		if !isAnonymous {
 			result.IsMap = false
 			result.IsComplexObject = true
-			result.IsNullable = true
 		}
+		result.IsNullable = true
 		return
 	}
 
@@ -483,6 +484,9 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		//log.Printf("this string is nullable beause (null: %t, req: %t)\n", result.IsNullable, isRequired)
 		if schema.MinLength != nil && *schema.MinLength > 0 {
 			result.IsNullable = false
+		}
+		if result.IsAliased {
+			result.IsNullable = true
 		}
 		return
 

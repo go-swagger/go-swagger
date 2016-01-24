@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/stretchr/testify/assert"
 )
@@ -539,7 +538,6 @@ func TestTypeResolver_AliasTypes(t *testing.T) {
 			assert.True(t, rt.IsPrimitive)
 			assert.Equal(t, "Currency", rt.GoType)
 			assert.Equal(t, "string", rt.AliasedType)
-			spew.Dump(rt)
 		}
 	}
 }
