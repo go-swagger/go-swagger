@@ -76,6 +76,9 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
     return err
   }
   {{ range .AllOf }}{{ if .IsAnonymous }}{{ range $idx, $val := .Properties }}{{ if .IsBaseType }}allOf{{ $idx }}{{ pascalize $val.Name }}, err := Unmarshal{{ $val.GoType }}(bytes.NewBuffer(raw), httpkit.JSONConsumer())
+  if err != nil {
+    return err
+  }
   {{ end }}{{ end }}{{ end }}{{ end}}{{ range .Properties }}{{ if and ( not .IsArray ) .IsBaseType }}{{ camelize .Name }}, err := Unmarshal{{ .GoType }}(bytes.NewBuffer(raw), httpkit.JSONConsumer())
   if err != nil {
     return err
@@ -101,7 +104,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
 
 
   var result {{ pascalize .Name }}
-  {{ range .AllOf }}{{ if .IsAnonymous }}{{ range $idx, $val := .Properties }}result.{{ pascalize $val.Name }} = {{ if $val.IsBaseType }}allOf{{ $idx}}{{ pascalize $val.Name }}{{ else }}data.{{ pascalize $val.Name}}{{ end }}
+  {{ range .AllOf }}{{ if .IsAnonymous }}{{ range $idx, $val := .Properties }}result.{{ if $val.IsBaseType}}{{ camelize $val.Name }}Field{{ else }}{{ pascalize $val.Name }}{{ end }} = {{ if $val.IsBaseType }}allOf{{ $idx}}{{ pascalize $val.Name }}{{ else }}data.{{ pascalize $val.Name}}{{ end }}
   {{ end }}{{ end }}{{ end}}{{ range .Properties }}result.{{ pascalize .Name }} = {{ if .IsBaseType }}{{ camelize .Name }}{{ else }}data.{{ pascalize .Name}}{{ end }}
   {{ end }}*{{ .ReceiverName }} = result
   return nil
@@ -124,9 +127,9 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) { {
   {{ end }}{{ end }}{{ end }}{{ end }}{{ range .Properties }}{{ if .IsBaseType }}
     {{ pascalize .Name }} {{ template "schemaType" . }} `json:"{{ .Name }},omitempty"`
   {{ end }}{{end}}}{ {{ range .AllOf }}{{ if .IsAnonymous }}{{ range .Properties }}{{ if .IsBaseType }}
-    {{ pascalize .Name }}: {{ $receiverName }}.{{ pascalize .Name }},
+    {{ pascalize .Name }}: {{ $receiverName }}.{{ if $.IsSubType}}{{ camelize .Name }}Field{{ else }}{{ pascalize .Name }}{{ end }},
   {{ end }}{{ end }}{{ end }}{{ end }}{{ range .Properties }}{{ if .IsBaseType }}
-    {{ pascalize .Name }}: {{ $receiverName }}.{{ pascalize .Name }},
+    {{ pascalize .Name }}: {{ $receiverName }}.{{ if $.IsSubType}}{{ camelize .Name }}Field{{ else }}{{ pascalize .Name }}{{ end }},
   {{end}}{{ end }}})
 	if err != nil {
 		return nil, err

@@ -239,7 +239,7 @@ type typeResolver struct {
 
 func (t *typeResolver) IsNullable(schema *spec.Schema) bool {
 	nullable := t.isNullable(schema)
-	return nullable
+	return nullable || len(schema.AllOf) > 0
 }
 
 func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (returns bool, result resolvedType, err error) {
@@ -335,7 +335,7 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 		return
 	}
 	result.GoType = "[]" + rt.GoType
-	if rt.IsNullable && !rt.HasDiscriminator {
+	if rt.IsNullable && !rt.HasDiscriminator && !strings.HasPrefix(rt.GoType, "*") {
 		result.GoType = "[]*" + rt.GoType
 	}
 	result.SwaggerType = "array"
