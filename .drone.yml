@@ -3,6 +3,7 @@ clone:
 
 build:
   image: golang:1.5
+  pull: true
   environment:
     GOCOVMODE: "count"
     GO15VENDOREXPERIMENT: "1"
