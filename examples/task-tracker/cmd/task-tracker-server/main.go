@@ -41,12 +41,16 @@ func main() {
 	parser.ShortDescription = swaggerSpec.Spec().Info.Title
 	parser.LongDescription = swaggerSpec.Spec().Info.Description
 
+	api := operations.NewTaskTrackerAPI(swaggerSpec)
+	handler := configureAPI(api)
+
+	for _, optsGroup := range api.CommandLineOptionsGroups {
+		parser.AddGroup(optsGroup.ShortDescription, optsGroup.LongDescription, optsGroup.Options)
+	}
+
 	if _, err := parser.Parse(); err != nil {
 		os.Exit(1)
 	}
-
-	api := operations.NewTaskTrackerAPI(swaggerSpec)
-	handler := configureAPI(api)
 
 	httpServer := &graceful.Server{Server: new(http.Server)}
 	httpServer.Handler = handler

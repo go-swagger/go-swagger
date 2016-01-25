@@ -67,7 +67,7 @@ func (m *Milestone) Validate(formats strfmt.Registry) error {
 
 func (m *Milestone) validateName(formats strfmt.Registry) error {
 
-	if err := validate.Required("name", "body", string(m.Name)); err != nil {
+	if err := validate.RequiredString("name", "body", string(m.Name)); err != nil {
 		return err
 	}
 

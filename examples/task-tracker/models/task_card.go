@@ -223,7 +223,7 @@ func (m *TaskCard) validateStatusEnum(path, location string, value string) error
 
 func (m *TaskCard) validateStatus(formats strfmt.Registry) error {
 
-	if err := validate.Required("status", "body", string(m.Status)); err != nil {
+	if err := validate.RequiredString("status", "body", string(m.Status)); err != nil {
 		return err
 	}
 
@@ -252,7 +252,7 @@ func (m *TaskCard) validateTags(formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Tags); i++ {
 
-		if err := validate.Required("tags"+"."+strconv.Itoa(i), "body", string(m.Tags[i])); err != nil {
+		if err := validate.RequiredString("tags"+"."+strconv.Itoa(i), "body", string(m.Tags[i])); err != nil {
 			return err
 		}
 
@@ -271,7 +271,7 @@ func (m *TaskCard) validateTags(formats strfmt.Registry) error {
 
 func (m *TaskCard) validateTitle(formats strfmt.Registry) error {
 
-	if err := validate.Required("title", "body", string(m.Title)); err != nil {
+	if err := validate.RequiredString("title", "body", string(m.Title)); err != nil {
 		return err
 	}
 

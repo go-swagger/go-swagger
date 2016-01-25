@@ -14,10 +14,12 @@ import (
 	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
 
+// GetTaskDetailsReader is a Reader for the GetTaskDetails structure.
 type GetTaskDetailsReader struct {
 	formats strfmt.Registry
 }
 
+// ReadResponse reads a server response into the recieved o.
 func (o *GetTaskDetailsReader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
 	switch response.Code() {
 
@@ -49,7 +51,7 @@ func NewGetTaskDetailsOK() *GetTaskDetailsOK {
 	return &GetTaskDetailsOK{}
 }
 
-/*GetTaskDetailsOK
+/*GetTaskDetailsOK handles this case with default header values.
 
 Task details
 */
@@ -78,7 +80,7 @@ func NewGetTaskDetailsUnprocessableEntity() *GetTaskDetailsUnprocessableEntity {
 	return &GetTaskDetailsUnprocessableEntity{}
 }
 
-/*GetTaskDetailsUnprocessableEntity
+/*GetTaskDetailsUnprocessableEntity handles this case with default header values.
 
 Validation error
 */
@@ -109,7 +111,7 @@ func NewGetTaskDetailsDefault(code int) *GetTaskDetailsDefault {
 	}
 }
 
-/*GetTaskDetailsDefault
+/*GetTaskDetailsDefault handles this case with default header values.
 
 GetTaskDetailsDefault get task details default
 */

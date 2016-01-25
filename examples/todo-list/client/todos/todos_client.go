@@ -23,8 +23,9 @@ type Client struct {
 	formats   strfmt.Registry
 }
 
-/*AddOne add one API
- */
+/*
+AddOne add one API
+*/
 func (a *Client) AddOne(params *AddOneParams, authInfo client.AuthInfoWriter) (*AddOneCreated, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
@@ -35,7 +36,7 @@ func (a *Client) AddOne(params *AddOneParams, authInfo client.AuthInfoWriter) (*
 		ID:          "addOne",
 		Method:      "POST",
 		PathPattern: "/",
-		Schemes:     []string{"http", "https"},
+		Schemes:     []string{"https", "http"},
 		Params:      params,
 		Reader:      &AddOneReader{formats: a.formats},
 		AuthInfo:    authInfo,
@@ -46,8 +47,9 @@ func (a *Client) AddOne(params *AddOneParams, authInfo client.AuthInfoWriter) (*
 	return result.(*AddOneCreated), nil
 }
 
-/*DestroyOne destroy one API
- */
+/*
+DestroyOne destroy one API
+*/
 func (a *Client) DestroyOne(params *DestroyOneParams, authInfo client.AuthInfoWriter) (*DestroyOneNoContent, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
@@ -69,8 +71,9 @@ func (a *Client) DestroyOne(params *DestroyOneParams, authInfo client.AuthInfoWr
 	return result.(*DestroyOneNoContent), nil
 }
 
-/*Find find API
- */
+/*
+Find find API
+*/
 func (a *Client) Find(params *FindParams, authInfo client.AuthInfoWriter) (*FindOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
@@ -92,8 +95,9 @@ func (a *Client) Find(params *FindParams, authInfo client.AuthInfoWriter) (*Find
 	return result.(*FindOK), nil
 }
 
-/*UpdateOne update one API
- */
+/*
+UpdateOne update one API
+*/
 func (a *Client) UpdateOne(params *UpdateOneParams, authInfo client.AuthInfoWriter) (*UpdateOneOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {

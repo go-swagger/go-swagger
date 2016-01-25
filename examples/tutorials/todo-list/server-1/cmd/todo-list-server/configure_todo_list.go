@@ -26,6 +26,7 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 	})
 
 	api.ServerShutdown = func() {}
+	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
 }

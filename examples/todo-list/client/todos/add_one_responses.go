@@ -14,10 +14,12 @@ import (
 	"github.com/go-swagger/go-swagger/examples/todo-list/models"
 )
 
+// AddOneReader is a Reader for the AddOne structure.
 type AddOneReader struct {
 	formats strfmt.Registry
 }
 
+// ReadResponse reads a server response into the recieved o.
 func (o *AddOneReader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
 	switch response.Code() {
 
@@ -42,7 +44,7 @@ func NewAddOneCreated() *AddOneCreated {
 	return &AddOneCreated{}
 }
 
-/*AddOneCreated
+/*AddOneCreated handles this case with default header values.
 
 Created
 */
@@ -73,7 +75,7 @@ func NewAddOneDefault(code int) *AddOneDefault {
 	}
 }
 
-/*AddOneDefault
+/*AddOneDefault handles this case with default header values.
 
 error
 */

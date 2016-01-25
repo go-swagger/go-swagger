@@ -289,7 +289,7 @@ func templatesSchemaGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/schema.gotmpl", size: 5981, mode: os.FileMode(420), modTime: time.Unix(1453614686, 0)}
+	info := bindataFileInfo{name: "templates/schema.gotmpl", size: 5981, mode: os.FileMode(420), modTime: time.Unix(1453705353, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -329,7 +329,7 @@ func templatesSchematypeGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/schematype.gotmpl", size: 603, mode: os.FileMode(420), modTime: time.Unix(1453615415, 0)}
+	info := bindataFileInfo{name: "templates/schematype.gotmpl", size: 603, mode: os.FileMode(420), modTime: time.Unix(1453705353, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -349,7 +349,7 @@ func templatesSchemavalidatorGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/schemavalidator.gotmpl", size: 18999, mode: os.FileMode(420), modTime: time.Unix(1453703072, 0)}
+	info := bindataFileInfo{name: "templates/schemavalidator.gotmpl", size: 18999, mode: os.FileMode(420), modTime: time.Unix(1453705353, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

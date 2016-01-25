@@ -30,7 +30,7 @@ type UpdateTaskParams struct {
 	  Required: true
 	  In: body
 	*/
-	Body models.Task
+	Body *models.Task
 	/*The id of the item
 	  Required: true
 	  In: path
@@ -52,7 +52,7 @@ func (o *UpdateTaskParams) BindRequest(r *http.Request, route *middleware.Matche
 		}
 
 		if len(res) == 0 {
-			o.Body = body
+			o.Body = &body
 		}
 	}
 

@@ -14,10 +14,12 @@ import (
 	"github.com/go-swagger/go-swagger/examples/todo-list/models"
 )
 
+// FindReader is a Reader for the Find structure.
 type FindReader struct {
 	formats strfmt.Registry
 }
 
+// ReadResponse reads a server response into the recieved o.
 func (o *FindReader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
 	switch response.Code() {
 
@@ -42,7 +44,7 @@ func NewFindOK() *FindOK {
 	return &FindOK{}
 }
 
-/*FindOK
+/*FindOK handles this case with default header values.
 
 OK
 */
@@ -71,7 +73,7 @@ func NewFindDefault(code int) *FindDefault {
 	}
 }
 
-/*FindDefault
+/*FindDefault handles this case with default header values.
 
 error
 */

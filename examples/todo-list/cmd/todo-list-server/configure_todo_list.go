@@ -13,7 +13,7 @@ import (
 
 // This file is safe to edit. Once it exists it will not be overwritten
 
-func configureAPI(api *operations.SimpleToDoListAPI) http.Handler {
+func configureAPI(api *operations.TodoListAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
@@ -39,6 +39,7 @@ func configureAPI(api *operations.SimpleToDoListAPI) http.Handler {
 	})
 
 	api.ServerShutdown = func() {}
+	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
 }

@@ -13,10 +13,12 @@ import (
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 
+// AddCommentToTaskReader is a Reader for the AddCommentToTask structure.
 type AddCommentToTaskReader struct {
 	formats strfmt.Registry
 }
 
+// ReadResponse reads a server response into the recieved o.
 func (o *AddCommentToTaskReader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
 	switch response.Code() {
 
@@ -41,7 +43,7 @@ func NewAddCommentToTaskCreated() *AddCommentToTaskCreated {
 	return &AddCommentToTaskCreated{}
 }
 
-/*AddCommentToTaskCreated
+/*AddCommentToTaskCreated handles this case with default header values.
 
 Comment added
 */
@@ -64,7 +66,7 @@ func NewAddCommentToTaskDefault(code int) *AddCommentToTaskDefault {
 	}
 }
 
-/*AddCommentToTaskDefault
+/*AddCommentToTaskDefault handles this case with default header values.
 
 AddCommentToTaskDefault add comment to task default
 */
@@ -130,7 +132,7 @@ func (o *AddCommentToTaskBody) Validate(formats strfmt.Registry) error {
 
 func (o *AddCommentToTaskBody) validateContent(formats strfmt.Registry) error {
 
-	if err := validate.Required("body"+"."+"content", "body", string(o.Content)); err != nil {
+	if err := validate.RequiredString("body"+"."+"content", "body", string(o.Content)); err != nil {
 		return err
 	}
 

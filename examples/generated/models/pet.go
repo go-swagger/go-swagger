@@ -80,7 +80,7 @@ func (m *Pet) Validate(formats strfmt.Registry) error {
 
 func (m *Pet) validateName(formats strfmt.Registry) error {
 
-	if err := validate.Required("name", "body", string(m.Name)); err != nil {
+	if err := validate.RequiredString("name", "body", string(m.Name)); err != nil {
 		return err
 	}
 
@@ -95,7 +95,7 @@ func (m *Pet) validatePhotoUrls(formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.PhotoUrls); i++ {
 
-		if err := validate.Required("photoUrls"+"."+strconv.Itoa(i), "body", string(m.PhotoUrls[i])); err != nil {
+		if err := validate.RequiredString("photoUrls"+"."+strconv.Itoa(i), "body", string(m.PhotoUrls[i])); err != nil {
 			return err
 		}
 

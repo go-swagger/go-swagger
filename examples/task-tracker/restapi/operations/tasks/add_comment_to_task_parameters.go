@@ -44,9 +44,6 @@ func (o *AddCommentToTaskParams) BindRequest(r *http.Request, route *middleware.
 	if err := route.Consumer.Consume(r.Body, &body); err != nil {
 		res = append(res, errors.NewParseError("body", "body", "", err))
 	} else {
-		if err := body.Validate(route.Formats); err != nil {
-			res = append(res, err)
-		}
 
 		if len(res) == 0 {
 			o.Body = body

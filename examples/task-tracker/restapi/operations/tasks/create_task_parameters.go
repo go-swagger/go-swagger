@@ -28,7 +28,7 @@ type CreateTaskParams struct {
 	  Required: true
 	  In: body
 	*/
-	Body models.Task
+	Body *models.Task
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -45,7 +45,7 @@ func (o *CreateTaskParams) BindRequest(r *http.Request, route *middleware.Matche
 		}
 
 		if len(res) == 0 {
-			o.Body = body
+			o.Body = &body
 		}
 	}
 

@@ -11,10 +11,12 @@ import (
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 
+// UploadTaskFileReader is a Reader for the UploadTaskFile structure.
 type UploadTaskFileReader struct {
 	formats strfmt.Registry
 }
 
+// ReadResponse reads a server response into the recieved o.
 func (o *UploadTaskFileReader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
 	switch response.Code() {
 
@@ -39,7 +41,7 @@ func NewUploadTaskFileCreated() *UploadTaskFileCreated {
 	return &UploadTaskFileCreated{}
 }
 
-/*UploadTaskFileCreated
+/*UploadTaskFileCreated handles this case with default header values.
 
 File added
 */
@@ -62,7 +64,7 @@ func NewUploadTaskFileDefault(code int) *UploadTaskFileDefault {
 	}
 }
 
-/*UploadTaskFileDefault
+/*UploadTaskFileDefault handles this case with default header values.
 
 UploadTaskFileDefault upload task file default
 */

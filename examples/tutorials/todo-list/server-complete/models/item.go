@@ -50,7 +50,7 @@ func (m *Item) Validate(formats strfmt.Registry) error {
 
 func (m *Item) validateDescription(formats strfmt.Registry) error {
 
-	if err := validate.Required("description", "body", string(m.Description)); err != nil {
+	if err := validate.RequiredString("description", "body", string(m.Description)); err != nil {
 		return err
 	}
 

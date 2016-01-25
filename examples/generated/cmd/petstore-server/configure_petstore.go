@@ -98,6 +98,7 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 	})
 
 	api.ServerShutdown = func() {}
+	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
 }

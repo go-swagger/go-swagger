@@ -14,10 +14,12 @@ import (
 	"github.com/go-swagger/go-swagger/examples/todo-list/models"
 )
 
+// DestroyOneReader is a Reader for the DestroyOne structure.
 type DestroyOneReader struct {
 	formats strfmt.Registry
 }
 
+// ReadResponse reads a server response into the recieved o.
 func (o *DestroyOneReader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
 	switch response.Code() {
 
@@ -42,7 +44,7 @@ func NewDestroyOneNoContent() *DestroyOneNoContent {
 	return &DestroyOneNoContent{}
 }
 
-/*DestroyOneNoContent
+/*DestroyOneNoContent handles this case with default header values.
 
 Deleted
 */
@@ -65,7 +67,7 @@ func NewDestroyOneDefault(code int) *DestroyOneDefault {
 	}
 }
 
-/*DestroyOneDefault
+/*DestroyOneDefault handles this case with default header values.
 
 error
 */

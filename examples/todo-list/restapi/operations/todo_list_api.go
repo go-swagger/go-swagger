@@ -13,13 +13,14 @@ import (
 	"github.com/go-swagger/go-swagger/httpkit/security"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
+	"github.com/go-swagger/go-swagger/swag"
 
 	"github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations/todos"
 )
 
-// NewSimpleToDoListAPI creates a new SimpleToDoList instance
-func NewSimpleToDoListAPI(spec *spec.Document) *SimpleToDoListAPI {
-	o := &SimpleToDoListAPI{
+// NewTodoListAPI creates a new TodoList instance
+func NewTodoListAPI(spec *spec.Document) *TodoListAPI {
+	o := &TodoListAPI{
 		spec:            spec,
 		handlers:        make(map[string]map[string]http.Handler),
 		formats:         strfmt.Default,
@@ -31,8 +32,8 @@ func NewSimpleToDoListAPI(spec *spec.Document) *SimpleToDoListAPI {
 	return o
 }
 
-/*SimpleToDoListAPI the simple to do list API */
-type SimpleToDoListAPI struct {
+/*TodoListAPI the todo list API */
+type TodoListAPI struct {
 	spec            *spec.Document
 	context         *middleware.Context
 	handlers        map[string]map[string]http.Handler
@@ -65,40 +66,43 @@ type SimpleToDoListAPI struct {
 	// ServerShutdown is called when the HTTP(S) server is shut down and done
 	// handling all active connections and does not accept connections any more
 	ServerShutdown func()
+
+	// Custom command line argument groups with their descriptions
+	CommandLineOptionsGroups []swag.CommandLineOptionsGroup
 }
 
 // SetDefaultProduces sets the default produces media type
-func (o *SimpleToDoListAPI) SetDefaultProduces(mediaType string) {
+func (o *TodoListAPI) SetDefaultProduces(mediaType string) {
 	o.defaultProduces = mediaType
 }
 
 // SetDefaultConsumes returns the default consumes media type
-func (o *SimpleToDoListAPI) SetDefaultConsumes(mediaType string) {
+func (o *TodoListAPI) SetDefaultConsumes(mediaType string) {
 	o.defaultConsumes = mediaType
 }
 
 // DefaultProduces returns the default produces media type
-func (o *SimpleToDoListAPI) DefaultProduces() string {
+func (o *TodoListAPI) DefaultProduces() string {
 	return o.defaultProduces
 }
 
 // DefaultConsumes returns the default consumes media type
-func (o *SimpleToDoListAPI) DefaultConsumes() string {
+func (o *TodoListAPI) DefaultConsumes() string {
 	return o.defaultConsumes
 }
 
 // Formats returns the registered string formats
-func (o *SimpleToDoListAPI) Formats() strfmt.Registry {
+func (o *TodoListAPI) Formats() strfmt.Registry {
 	return o.formats
 }
 
 // RegisterFormat registers a custom format validator
-func (o *SimpleToDoListAPI) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
+func (o *TodoListAPI) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
 	o.formats.Add(name, format, validator)
 }
 
-// Validate validates the registrations in the SimpleToDoListAPI
-func (o *SimpleToDoListAPI) Validate() error {
+// Validate validates the registrations in the TodoListAPI
+func (o *TodoListAPI) Validate() error {
 	var unregistered []string
 
 	if o.JSONConsumer == nil {
@@ -137,12 +141,12 @@ func (o *SimpleToDoListAPI) Validate() error {
 }
 
 // ServeErrorFor gets a error handler for a given operation id
-func (o *SimpleToDoListAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
+func (o *TodoListAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
 	return o.ServeError
 }
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
-func (o *SimpleToDoListAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]httpkit.Authenticator {
+func (o *TodoListAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]httpkit.Authenticator {
 
 	result := make(map[string]httpkit.Authenticator)
 	for name, scheme := range schemes {
@@ -159,7 +163,7 @@ func (o *SimpleToDoListAPI) AuthenticatorsFor(schemes map[string]spec.SecuritySc
 }
 
 // ConsumersFor gets the consumers for the specified media types
-func (o *SimpleToDoListAPI) ConsumersFor(mediaTypes []string) map[string]httpkit.Consumer {
+func (o *TodoListAPI) ConsumersFor(mediaTypes []string) map[string]httpkit.Consumer {
 
 	result := make(map[string]httpkit.Consumer)
 	for _, mt := range mediaTypes {
@@ -175,7 +179,7 @@ func (o *SimpleToDoListAPI) ConsumersFor(mediaTypes []string) map[string]httpkit
 }
 
 // ProducersFor gets the producers for the specified media types
-func (o *SimpleToDoListAPI) ProducersFor(mediaTypes []string) map[string]httpkit.Producer {
+func (o *TodoListAPI) ProducersFor(mediaTypes []string) map[string]httpkit.Producer {
 
 	result := make(map[string]httpkit.Producer)
 	for _, mt := range mediaTypes {
@@ -191,7 +195,7 @@ func (o *SimpleToDoListAPI) ProducersFor(mediaTypes []string) map[string]httpkit
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path
-func (o *SimpleToDoListAPI) HandlerFor(method, path string) (http.Handler, bool) {
+func (o *TodoListAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	if o.handlers == nil {
 		return nil, false
 	}
@@ -203,7 +207,7 @@ func (o *SimpleToDoListAPI) HandlerFor(method, path string) (http.Handler, bool)
 	return h, ok
 }
 
-func (o *SimpleToDoListAPI) initHandlerCache() {
+func (o *TodoListAPI) initHandlerCache() {
 	if o.context == nil {
 		o.context = middleware.NewRoutableContext(o.spec, o, nil)
 	}
@@ -236,7 +240,7 @@ func (o *SimpleToDoListAPI) initHandlerCache() {
 
 // Serve creates a http handler to serve the API over HTTP
 // can be used directly in http.ListenAndServe(":8000", api.Serve(nil))
-func (o *SimpleToDoListAPI) Serve(builder middleware.Builder) http.Handler {
+func (o *TodoListAPI) Serve(builder middleware.Builder) http.Handler {
 	if len(o.handlers) == 0 {
 		o.initHandlerCache()
 	}

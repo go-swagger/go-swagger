@@ -11,10 +11,12 @@ import (
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 
+// DeleteTaskReader is a Reader for the DeleteTask structure.
 type DeleteTaskReader struct {
 	formats strfmt.Registry
 }
 
+// ReadResponse reads a server response into the recieved o.
 func (o *DeleteTaskReader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
 	switch response.Code() {
 
@@ -39,7 +41,7 @@ func NewDeleteTaskNoContent() *DeleteTaskNoContent {
 	return &DeleteTaskNoContent{}
 }
 
-/*DeleteTaskNoContent
+/*DeleteTaskNoContent handles this case with default header values.
 
 Task deleted
 */
@@ -62,7 +64,7 @@ func NewDeleteTaskDefault(code int) *DeleteTaskDefault {
 	}
 }
 
-/*DeleteTaskDefault
+/*DeleteTaskDefault handles this case with default header values.
 
 DeleteTaskDefault delete task default
 */

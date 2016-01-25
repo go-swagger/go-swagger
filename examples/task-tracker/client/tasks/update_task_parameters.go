@@ -28,7 +28,7 @@ type UpdateTaskParams struct {
 	  The task to update
 
 	*/
-	Body models.Task
+	Body *models.Task
 	/*ID
 	  The id of the item
 
@@ -37,7 +37,7 @@ type UpdateTaskParams struct {
 }
 
 // WithBody adds the body to the update task params
-func (o *UpdateTaskParams) WithBody(body models.Task) *UpdateTaskParams {
+func (o *UpdateTaskParams) WithBody(body *models.Task) *UpdateTaskParams {
 	o.Body = body
 	return o
 }
@@ -52,6 +52,10 @@ func (o *UpdateTaskParams) WithID(id int64) *UpdateTaskParams {
 func (o *UpdateTaskParams) WriteToRequest(r client.Request, reg strfmt.Registry) error {
 
 	var res []error
+
+	if o.Body == nil {
+		o.Body = new(models.Task)
+	}
 
 	if err := r.SetBodyParam(o.Body); err != nil {
 		return err

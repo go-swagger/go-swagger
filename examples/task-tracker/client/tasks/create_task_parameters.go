@@ -27,11 +27,11 @@ type CreateTaskParams struct {
 	  The task to create
 
 	*/
-	Body models.Task
+	Body *models.Task
 }
 
 // WithBody adds the body to the create task params
-func (o *CreateTaskParams) WithBody(body models.Task) *CreateTaskParams {
+func (o *CreateTaskParams) WithBody(body *models.Task) *CreateTaskParams {
 	o.Body = body
 	return o
 }
@@ -40,6 +40,10 @@ func (o *CreateTaskParams) WithBody(body models.Task) *CreateTaskParams {
 func (o *CreateTaskParams) WriteToRequest(r client.Request, reg strfmt.Registry) error {
 
 	var res []error
+
+	if o.Body == nil {
+		o.Body = new(models.Task)
+	}
 
 	if err := r.SetBodyParam(o.Body); err != nil {
 		return err

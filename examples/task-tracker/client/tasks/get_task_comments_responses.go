@@ -14,10 +14,12 @@ import (
 	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
 
+// GetTaskCommentsReader is a Reader for the GetTaskComments structure.
 type GetTaskCommentsReader struct {
 	formats strfmt.Registry
 }
 
+// ReadResponse reads a server response into the recieved o.
 func (o *GetTaskCommentsReader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
 	switch response.Code() {
 
@@ -42,7 +44,7 @@ func NewGetTaskCommentsOK() *GetTaskCommentsOK {
 	return &GetTaskCommentsOK{}
 }
 
-/*GetTaskCommentsOK
+/*GetTaskCommentsOK handles this case with default header values.
 
 The list of comments
 */
@@ -71,7 +73,7 @@ func NewGetTaskCommentsDefault(code int) *GetTaskCommentsDefault {
 	}
 }
 
-/*GetTaskCommentsDefault
+/*GetTaskCommentsDefault handles this case with default header values.
 
 GetTaskCommentsDefault get task comments default
 */

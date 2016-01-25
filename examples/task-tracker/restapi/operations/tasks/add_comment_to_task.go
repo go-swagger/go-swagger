@@ -114,7 +114,7 @@ func (o *AddCommentToTaskBody) Validate(formats strfmt.Registry) error {
 
 func (o *AddCommentToTaskBody) validateContent(formats strfmt.Registry) error {
 
-	if err := validate.Required("body"+"."+"content", "body", string(o.Content)); err != nil {
+	if err := validate.RequiredString("body"+"."+"content", "body", string(o.Content)); err != nil {
 		return err
 	}
 

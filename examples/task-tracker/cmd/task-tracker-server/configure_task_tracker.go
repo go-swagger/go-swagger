@@ -55,6 +55,7 @@ func configureAPI(api *operations.TaskTrackerAPI) http.Handler {
 	})
 
 	api.ServerShutdown = func() {}
+	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
 }

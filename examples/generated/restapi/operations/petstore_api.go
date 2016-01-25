@@ -13,6 +13,7 @@ import (
 	"github.com/go-swagger/go-swagger/httpkit/security"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
+	"github.com/go-swagger/go-swagger/swag"
 
 	"github.com/go-swagger/go-swagger/examples/generated/restapi/operations/pet"
 	"github.com/go-swagger/go-swagger/examples/generated/restapi/operations/store"
@@ -25,8 +26,8 @@ func NewPetstoreAPI(spec *spec.Document) *PetstoreAPI {
 		spec:            spec,
 		handlers:        make(map[string]map[string]http.Handler),
 		formats:         strfmt.Default,
-		defaultConsumes: "application/xml",
-		defaultProduces: "application/xml",
+		defaultConsumes: "application/json",
+		defaultProduces: "application/json",
 		ServerShutdown:  func() {},
 	}
 
@@ -103,6 +104,9 @@ type PetstoreAPI struct {
 	// ServerShutdown is called when the HTTP(S) server is shut down and done
 	// handling all active connections and does not accept connections any more
 	ServerShutdown func()
+
+	// Custom command line argument groups with their descriptions
+	CommandLineOptionsGroups []swag.CommandLineOptionsGroup
 }
 
 // SetDefaultProduces sets the default produces media type

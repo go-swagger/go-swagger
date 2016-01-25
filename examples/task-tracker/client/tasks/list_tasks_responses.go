@@ -16,10 +16,12 @@ import (
 	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
 
+// ListTasksReader is a Reader for the ListTasks structure.
 type ListTasksReader struct {
 	formats strfmt.Registry
 }
 
+// ReadResponse reads a server response into the recieved o.
 func (o *ListTasksReader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
 	switch response.Code() {
 
@@ -51,7 +53,7 @@ func NewListTasksOK() *ListTasksOK {
 	return &ListTasksOK{}
 }
 
-/*ListTasksOK
+/*ListTasksOK handles this case with default header values.
 
 Successful response
 */
@@ -89,7 +91,7 @@ func NewListTasksUnprocessableEntity() *ListTasksUnprocessableEntity {
 	return &ListTasksUnprocessableEntity{}
 }
 
-/*ListTasksUnprocessableEntity
+/*ListTasksUnprocessableEntity handles this case with default header values.
 
 Validation error
 */
@@ -120,7 +122,7 @@ func NewListTasksDefault(code int) *ListTasksDefault {
 	}
 }
 
-/*ListTasksDefault
+/*ListTasksDefault handles this case with default header values.
 
 ListTasksDefault list tasks default
 */

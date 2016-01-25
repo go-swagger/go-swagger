@@ -40,12 +40,6 @@ func (o *CreateUsersWithListInputParams) BindRequest(r *http.Request, route *mid
 	if err := route.Consumer.Consume(r.Body, &body); err != nil {
 		res = append(res, errors.NewParseError("body", "body", "", err))
 	} else {
-		for _, io := range o.Body {
-			if err := io.Validate(route.Formats); err != nil {
-				res = append(res, err)
-				break
-			}
-		}
 
 		if len(res) == 0 {
 			o.Body = body

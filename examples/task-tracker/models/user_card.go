@@ -115,7 +115,7 @@ func (m *UserCard) validateID(formats strfmt.Registry) error {
 
 func (m *UserCard) validateScreenName(formats strfmt.Registry) error {
 
-	if err := validate.Required("screenName", "body", string(m.ScreenName)); err != nil {
+	if err := validate.RequiredString("screenName", "body", string(m.ScreenName)); err != nil {
 		return err
 	}
 

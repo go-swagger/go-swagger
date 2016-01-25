@@ -11,10 +11,12 @@ import (
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 
+// CreateTaskReader is a Reader for the CreateTask structure.
 type CreateTaskReader struct {
 	formats strfmt.Registry
 }
 
+// ReadResponse reads a server response into the recieved o.
 func (o *CreateTaskReader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
 	switch response.Code() {
 
@@ -39,7 +41,7 @@ func NewCreateTaskCreated() *CreateTaskCreated {
 	return &CreateTaskCreated{}
 }
 
-/*CreateTaskCreated
+/*CreateTaskCreated handles this case with default header values.
 
 Task created
 */
@@ -62,7 +64,7 @@ func NewCreateTaskDefault(code int) *CreateTaskDefault {
 	}
 }
 
-/*CreateTaskDefault
+/*CreateTaskDefault handles this case with default header values.
 
 CreateTaskDefault create task default
 */

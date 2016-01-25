@@ -14,10 +14,12 @@ import (
 	"github.com/go-swagger/go-swagger/examples/todo-list/models"
 )
 
+// UpdateOneReader is a Reader for the UpdateOne structure.
 type UpdateOneReader struct {
 	formats strfmt.Registry
 }
 
+// ReadResponse reads a server response into the recieved o.
 func (o *UpdateOneReader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
 	switch response.Code() {
 
@@ -42,7 +44,7 @@ func NewUpdateOneOK() *UpdateOneOK {
 	return &UpdateOneOK{}
 }
 
-/*UpdateOneOK
+/*UpdateOneOK handles this case with default header values.
 
 OK
 */
@@ -73,7 +75,7 @@ func NewUpdateOneDefault(code int) *UpdateOneDefault {
 	}
 }
 
-/*UpdateOneDefault
+/*UpdateOneDefault handles this case with default header values.
 
 error
 */

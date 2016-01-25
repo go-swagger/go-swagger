@@ -14,10 +14,12 @@ import (
 	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
 
+// UpdateTaskReader is a Reader for the UpdateTask structure.
 type UpdateTaskReader struct {
 	formats strfmt.Registry
 }
 
+// ReadResponse reads a server response into the recieved o.
 func (o *UpdateTaskReader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
 	switch response.Code() {
 
@@ -49,7 +51,7 @@ func NewUpdateTaskOK() *UpdateTaskOK {
 	return &UpdateTaskOK{}
 }
 
-/*UpdateTaskOK
+/*UpdateTaskOK handles this case with default header values.
 
 Task details
 */
@@ -78,7 +80,7 @@ func NewUpdateTaskUnprocessableEntity() *UpdateTaskUnprocessableEntity {
 	return &UpdateTaskUnprocessableEntity{}
 }
 
-/*UpdateTaskUnprocessableEntity
+/*UpdateTaskUnprocessableEntity handles this case with default header values.
 
 Validation error
 */
@@ -109,7 +111,7 @@ func NewUpdateTaskDefault(code int) *UpdateTaskDefault {
 	}
 }
 
-/*UpdateTaskDefault
+/*UpdateTaskDefault handles this case with default header values.
 
 UpdateTaskDefault update task default
 */
