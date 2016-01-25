@@ -38,7 +38,7 @@ func TestEnum_StringThing(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "var stringThingEnum []interface{}", res)
-					assertInCode(t, k+") validateStringThingEnum(path, location string, value string)", res)
+					assertInCode(t, k+") validateStringThingEnum(path, location string, value StringThing)", res)
 					assertInCode(t, "m.validateStringThingEnum(\"\", \"body\", m)", res)
 				}
 			}

@@ -9,10 +9,11 @@ echo "mode: ${GOCOVMODE-count}" > profile.cov
 
 repo_pref="${CI_BUILD_DIR##${GOPATH/%:*/}/src/}/"
 # Standard go tooling behavior is to ignore dirs with leading underscores
+# skip generator for race detection and coverage
 for dir in $(go list ./... | grep -v -E 'vendor|generator')
 do
   pth="${dir//*$repo_pref}"
-  go test -race -covermode=${GOCOVMODE-count} -coverprofile=${pth}/profile.tmp $dir
+  go test -covermode=${GOCOVMODE-count} -coverprofile=${pth}/profile.tmp $dir
   if [ -f $pth/profile.tmp ]
   then
       cat $pth/profile.tmp | tail -n +2 >> profile.cov

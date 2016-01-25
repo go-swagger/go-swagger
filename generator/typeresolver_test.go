@@ -521,6 +521,27 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 	}
 }
 
+func TestTypeResolver_AliasTypes(t *testing.T) {
+	doc, resolver, err := basicTaskListResolver(t)
+	if assert.NoError(t, err) {
+		resolver.ModelsPackage = ""
+		resolver.ModelName = "Currency"
+		defer func() {
+			resolver.ModelName = ""
+			resolver.ModelsPackage = "models"
+		}()
+		defs := doc.Spec().Definitions[resolver.ModelName]
+		rt, err := resolver.ResolveSchema(&defs, false, true)
+		if assert.NoError(t, err) {
+			assert.False(t, rt.IsAnonymous)
+			assert.True(t, rt.IsAliased)
+			assert.True(t, rt.IsPrimitive)
+			assert.Equal(t, "Currency", rt.GoType)
+			assert.Equal(t, "string", rt.AliasedType)
+		}
+	}
+}
+
 func assertPrimitiveResolve(t testing.TB, tpe, tfmt, exp string, tr resolvedType) {
 	assert.Equal(t, tpe, tr.SwaggerType, fmt.Sprintf("expected %q (%q, %q) to for the swagger type but got %q", tpe, tfmt, exp, tr.SwaggerType))
 	assert.Equal(t, tfmt, tr.SwaggerFormat, fmt.Sprintf("expected %q (%q, %q) to for the swagger format but got %q", tfmt, tpe, exp, tr.SwaggerFormat))

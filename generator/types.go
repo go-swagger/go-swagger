@@ -23,11 +23,11 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
-var goImports = map[string]string{
-	"inf.Dec":   "speter.net/go/exp/math/dec/inf",
-	"big.Int":   "math/big",
-	"swagger.*": "github.com/go-swagger/go-swagger/httpkit",
-}
+// var goImports = map[string]string{
+// 	"inf.Dec":   "speter.net/go/exp/math/dec/inf",
+// 	"big.Int":   "math/big",
+// 	"swagger.*": "github.com/go-swagger/go-swagger/httpkit",
+// }
 
 var zeroes = map[string]string{
 	"string":            "\"\"",
@@ -269,6 +269,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 		result.GoType = t.goTypeName(nm)
 		result.HasDiscriminator = ref.Discriminator != ""
 		result.IsNullable = t.IsNullable(ref)
+		//result.IsAliased = true
 		return
 
 	}
@@ -411,12 +412,12 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 	return
 }
 
-type resolverOpts struct {
-	Schema               *spec.Schema
-	IsAnonymous          bool
-	IsRequired           bool
-	IsDiscriminatorField bool
-}
+// type resolverOpts struct {
+// 	Schema               *spec.Schema
+// 	IsAnonymous          bool
+// 	IsRequired           bool
+// 	IsDiscriminatorField bool
+// }
 
 func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequired bool) (result resolvedType, err error) {
 	//bbb, _ := json.MarshalIndent(schema, "", "  ")
@@ -436,8 +437,8 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		if !isAnonymous {
 			result.IsMap = false
 			result.IsComplexObject = true
-			result.IsNullable = true
 		}
+		result.IsNullable = true
 		return
 	}
 
@@ -471,10 +472,21 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	case "string":
 		result.GoType = "string"
 		result.SwaggerType = "string"
+		if !isAnonymous && t.ModelName != "" {
+			result.AliasedType = result.GoType
+			result.IsAliased = true
+			result.GoType = t.ModelName
+			if t.ModelsPackage != "" {
+				result.GoType = t.ModelsPackage + "." + t.ModelName
+			}
+		}
 		result.IsPrimitive = true
 		//log.Printf("this string is nullable beause (null: %t, req: %t)\n", result.IsNullable, isRequired)
 		if schema.MinLength != nil && *schema.MinLength > 0 {
 			result.IsNullable = false
+		}
+		if result.IsAliased {
+			result.IsNullable = true
 		}
 		return
 
@@ -501,6 +513,7 @@ type resolvedType struct {
 	IsInterface       bool
 	IsPrimitive       bool
 	IsCustomFormatter bool
+	IsAliased         bool
 	IsNullable        bool
 	HasDiscriminator  bool
 
@@ -510,6 +523,7 @@ type resolvedType struct {
 	IsComplexObject    bool
 
 	GoType        string
+	AliasedType   string
 	SwaggerType   string
 	SwaggerFormat string
 }

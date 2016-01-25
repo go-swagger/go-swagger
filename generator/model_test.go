@@ -1386,3 +1386,25 @@ func TestGenModel_Issue196(t *testing.T) {
 		}
 	}
 }
+
+func TestGenModel_Issue222(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/tasklist.basic.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "Price"
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc)
+		if assert.NoError(t, err) && assert.True(t, genModel.HasValidations) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("price.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, "Price) Validate(formats strfmt.Registry) error", res)
+					assertInCode(t, "Currency *Currency `json:\"currency,omitempty\"`", res)
+					assertInCode(t, "m.Currency.Validate(formats); err != nil", res)
+				}
+			}
+		}
+	}
+}

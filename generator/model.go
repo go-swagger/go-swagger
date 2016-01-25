@@ -457,21 +457,24 @@ func (sg *schemaGenContext) NewAdditionalProperty(schema spec.Schema) *schemaGen
 	return pg
 }
 
+func hasValidations(model *spec.Schema, isRequired bool) (needsValidation bool, hasValidation bool) {
+	hasNumberValidation := model.Maximum != nil || model.Minimum != nil || model.MultipleOf != nil
+	hasStringValidation := model.MaxLength != nil || model.MinLength != nil || model.Pattern != ""
+	hasSliceValidations := model.MaxItems != nil || model.MinItems != nil || model.UniqueItems
+	needsValidation = hasNumberValidation || hasStringValidation || hasSliceValidations || len(model.Enum) > 0
+	hasValidation = isRequired || needsValidation
+	return
+}
+
 func (sg *schemaGenContext) schemaValidations() sharedValidations {
 	model := sg.Schema
 
 	isRequired := sg.Required
-	if sg.Schema.Default != nil || sg.Schema.ReadOnly {
+	if model.Default != nil || model.ReadOnly {
 		isRequired = false
 	}
-	hasNumberValidation := model.Maximum != nil || model.Minimum != nil || model.MultipleOf != nil
-	hasStringValidation := model.MaxLength != nil || model.MinLength != nil || model.Pattern != ""
 	hasSliceValidations := model.MaxItems != nil || model.MinItems != nil || model.UniqueItems
-	hasValidations := hasNumberValidation || hasStringValidation || hasSliceValidations
-
-	if len(sg.Schema.Enum) > 0 {
-		hasValidations = true
-	}
+	needsValidation, hasValidation := hasValidations(&model, isRequired)
 
 	return sharedValidations{
 		Required:            sg.Required,
@@ -486,10 +489,10 @@ func (sg *schemaGenContext) schemaValidations() sharedValidations {
 		MinItems:            model.MinItems,
 		UniqueItems:         model.UniqueItems,
 		MultipleOf:          model.MultipleOf,
-		Enum:                sg.Schema.Enum,
-		HasValidations:      isRequired || hasValidations,
+		Enum:                model.Enum,
+		HasValidations:      hasValidation,
 		HasSliceValidations: hasSliceValidations,
-		NeedsValidation:     hasValidations,
+		NeedsValidation:     needsValidation,
 		NeedsRequired:       isRequired,
 	}
 }
@@ -555,8 +558,8 @@ func (sg *schemaGenContext) buildProperties() error {
 		}
 
 		vv := v
-		var hasValidations bool
-		var needsValidations bool
+		var hasValidation bool
+		var needsValidation bool
 		if tpe.IsComplexObject && tpe.IsAnonymous && len(v.Properties) > 0 {
 			pg := sg.makeNewStruct(sg.Name+swag.ToGoName(k), v)
 			pg.IsTuple = sg.IsTuple
@@ -575,8 +578,8 @@ func (sg *schemaGenContext) buildProperties() error {
 			}
 
 			vv = *spec.RefProperty("#/definitions/" + pg.Name)
-			hasValidations = pg.GenSchema.HasValidations
-			needsValidations = pg.GenSchema.NeedsValidation
+			hasValidation = pg.GenSchema.HasValidations
+			needsValidation = pg.GenSchema.NeedsValidation
 			sg.MergeResult(pg, false)
 			sg.ExtraSchemas[pg.Name] = pg.GenSchema
 		}
@@ -586,13 +589,30 @@ func (sg *schemaGenContext) buildProperties() error {
 		if err := emprop.makeGenSchema(); err != nil {
 			return err
 		}
-		if hasValidations || emprop.GenSchema.HasValidations {
+		if hasValidation || emprop.GenSchema.HasValidations {
 			emprop.GenSchema.HasValidations = true
+			sg.GenSchema.HasValidations = true
 		}
-		if needsValidations || emprop.GenSchema.NeedsValidation {
+		if needsValidation || emprop.GenSchema.NeedsValidation {
 			emprop.GenSchema.NeedsValidation = true
+			sg.GenSchema.NeedsValidation = true
 		}
 		if emprop.Schema.Ref.String() != "" {
+			ref := emprop.Schema.Ref
+			var sch *spec.Schema
+			for ref.String() != "" {
+				rsch, err := spec.ResolveRef(sg.TypeResolver.Doc.Spec(), &ref)
+				if err != nil {
+					return err
+				}
+				ref = rsch.Ref
+				if rsch != nil && rsch.Ref.String() != "" {
+					ref = rsch.Ref
+					continue
+				}
+				ref = spec.Ref{}
+				sch = rsch
+			}
 			if emprop.Discrimination != nil {
 				if _, ok := emprop.Discrimination.Discriminators[emprop.Schema.Ref.String()]; ok {
 					emprop.GenSchema.IsBaseType = true
@@ -602,6 +622,31 @@ func (sg *schemaGenContext) buildProperties() error {
 				if _, ok := emprop.Discrimination.Discriminated[emprop.Schema.Ref.String()]; ok {
 					emprop.GenSchema.IsSubType = true
 				}
+			}
+			var nm = filepath.Base(emprop.Schema.Ref.GetURL().Fragment)
+			var tn string
+			if gn, ok := emprop.Schema.Extensions["x-go-name"]; ok {
+				tn = gn.(string)
+				nm = tn
+			} else {
+				tn = swag.ToGoName(nm)
+			}
+
+			tr := newTypeResolver(sg.TypeResolver.ModelsPackage, sg.TypeResolver.Doc)
+			tr.ModelName = tn
+			ttpe, err := tr.ResolveSchema(sch, false, true)
+			if err != nil {
+				return err
+			}
+			if ttpe.IsAliased {
+				emprop.GenSchema.IsAliased = true
+			}
+			nv, hv := hasValidations(sch, false)
+			if hv {
+				emprop.GenSchema.HasValidations = true
+			}
+			if nv {
+				emprop.GenSchema.NeedsValidation = true
 			}
 		}
 		if sg.Schema.Discriminator == k {
@@ -1077,9 +1122,13 @@ func (sg *schemaGenContext) buildAliased() error {
 	if !sg.GenSchema.IsPrimitive && !sg.GenSchema.IsMap && !sg.GenSchema.IsArray && !sg.GenSchema.IsInterface {
 		return nil
 	}
+
 	if sg.GenSchema.IsPrimitive {
-		sg.GenSchema.IsAliased = sg.GenSchema.GoType != sg.GenSchema.SwaggerType
+		if sg.GenSchema.SwaggerType == "string" && sg.GenSchema.SwaggerFormat == "" {
+			sg.GenSchema.IsAliased = sg.GenSchema.GoType != sg.GenSchema.SwaggerType
+		}
 	}
+
 	if sg.GenSchema.IsInterface {
 		sg.GenSchema.IsAliased = sg.GenSchema.GoType != "interface{}"
 	}
@@ -1192,14 +1241,6 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	return nil
 }
 
-func newDiscriminatorImpl(tpeImpl GenSchema) GenSchema {
-	tpeImpl.IsBaseType = true
-	tpeImpl.IsExported = false
-	tpeImpl.Name = swag.ToJSONName(tpeImpl.Name)
-	tpeImpl.GoType = "disc" + swag.ToJSONName(tpeImpl.GoType)
-	return tpeImpl
-}
-
 // NOTE:
 // untyped data requires a cast somehow to the inner type
 // I wonder if this is still a problem after adding support for tuples
@@ -1239,7 +1280,6 @@ type GenSchema struct {
 	HasBaseType             bool
 	IsSubType               bool
 	IsExported              bool
-	IsAliased               bool
 	DiscriminatorField      string
 	DiscriminatorValue      string
 	Discriminates           map[string]string

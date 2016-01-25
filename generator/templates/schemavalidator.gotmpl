@@ -125,11 +125,11 @@ if err := {{.ValueExpression}}.Validate(formats); err != nil {
 // at https://github.com/go-swagger/go-swagger/issues
 {{end}}{{end}}
 {{define "propertyvalidator"}}
-{{if .IsPrimitive }}{{ template "primitivefieldvalidator" .}}
+{{ if .IsPrimitive }}{{ if .IsAliased }}{{ template "objectvalidator" . }}{{ else }}{{ template "primitivefieldvalidator" .}}{{ end }}
 {{else if .IsCustomFormatter }}{{ template "customformatvalidator" .}}
 {{else if .IsArray }}{{ template "slicevalidator" .}}
 {{else if .IsMap}}{{ template "mapvalidator" . }}
-{{else if or .IsComplexObject .IsTuple .IsAdditionalProperties }}{{ template "objectvalidator" . }}{{end}}
+{{else if or .IsComplexObject .IsTuple .IsAdditionalProperties .IsAliased }}{{ template "objectvalidator" . }}{{end}}
 {{end}}
 {{define "schemavalidator" }}{{ if .Enum }}
 var {{ camelize .Name }}Enum []interface{}

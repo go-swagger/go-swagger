@@ -370,6 +370,23 @@ definitions:
             description: an optional field name to which this validation error applies
             type: string
 
+  Currency:
+    type: string
+    enum:
+      - EUR
+      - GBP
+      - JPY
+      - USD
+
+  Price:
+    type: object
+    properties:
+      amount:
+        type: integer
+        format: int32
+      currency:
+        $ref: "#/definitions/Currency"
+
   TaskCard:
     title: a card for a task
     description: |
