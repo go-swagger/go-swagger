@@ -1,13 +1,14 @@
 package generator
 
 import (
-	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
+	"text/template/parse"
 
 	"bitbucket.org/pkg/inflect"
 	"github.com/go-swagger/go-swagger/swag"
@@ -63,131 +64,149 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	},
 }
 
-func NewTemplateRegistry() *TemplateRegistry {
-	return &TemplateRegistry{
-		funcs:            FuncMap,
-		files:            make(map[string][]byte),
-		fileDependencies: make(map[string][]string),
-		templates:        make(map[string]TemplateDefinition),
-		compiled:         make(map[string]*template.Template),
-	}
-}
-
-type TemplateDefinition struct {
-	Dependencies []string
-	Files        []string
-}
-
-type TemplateRegistry struct {
-	funcs            template.FuncMap
-	files            map[string][]byte
-	fileDependencies map[string][]string
-	templates        map[string]TemplateDefinition
-	compiled         map[string]*template.Template
-}
-
-func (t *TemplateRegistry) LoadDefaults() {
-	for name, asset := range assets {
-		t.AddFile(name, asset)
+func NewRepository(funcs template.FuncMap) *Repository {
+	repo := Repository{
+		resolved:  make(map[string]bool),
+		templates: make(map[string]*template.Template),
+		funcs:     funcs,
 	}
 
-	for name, template := range builtinTemplates {
-		t.AddTemplate(name, template)
+	if repo.funcs == nil {
+
+		repo.funcs = make(template.FuncMap)
 	}
+
+	return &repo
 }
 
-func (t *TemplateRegistry) LoadDir(templatePath string) error {
+type Repository struct {
+	templates map[string]*template.Template
+	resolved  map[string]bool
+	funcs     template.FuncMap
+}
+
+func (t *Repository) LoadDir(templatePath string) error {
 
 	return filepath.Walk(templatePath, func(path string, info os.FileInfo, err error) error {
 
 		if strings.HasSuffix(path, ".gotmpl") {
 			assetName := strings.TrimPrefix(path, templatePath)
 			if data, err := ioutil.ReadFile(path); err == nil {
-				t.AddFile(assetName, data)
+				t.AddFile(assetName, string(data))
 			}
 		}
-		return err
+		if err != nil {
+			return err
+		}
+
+		return nil
 	})
 
 }
 
-func (t *TemplateRegistry) AddFile(name string, data []byte) {
-	if t.files == nil {
-		t.files = make(map[string][]byte)
+func (t *Repository) AddFile(name, data string) error {
+
+	name = strings.TrimSuffix(filepath.Base(name), ".gotmpl")
+
+	templ, err := template.New(name).Funcs(t.funcs).Parse(data)
+
+	if err != nil {
+		return err
 	}
 
-	t.files[name] = data
+	// Add each defined tempalte into the cache
+	for _, template := range templ.Templates() {
 
-	assetDeps, found := t.fileDependencies[name]
-
-	if !found {
-		return
+		t.templates[template.Name()] = template.Lookup(template.Name())
 	}
 
-	for _, v := range assetDeps {
-		delete(t.compiled, v)
-	}
+	log.Println(name, templ.DefinedTemplates())
+	return nil
 }
 
-func (t *TemplateRegistry) addAssetDependency(templateName string, definition TemplateDefinition) {
+func findDependencies(n parse.Node) []string {
 
-	if len(definition.Files) > 0 {
-		for _, file := range definition.Files {
-			t.fileDependencies[file] = append(t.fileDependencies[file], templateName)
-		}
+	var deps []string
 
+	if n == nil {
+		return deps
 	}
-
-	if len(definition.Dependencies) > 0 {
-		for _, dep := range definition.Dependencies {
-			t.addAssetDependency(dep, t.templates[dep])
-		}
-	}
-
-}
-
-func (t *TemplateRegistry) AddTemplate(name string, definition TemplateDefinition) {
-
-	if t.templates == nil {
-		t.templates = make(map[string]TemplateDefinition)
-	}
-
-	t.templates[name] = definition
-
-	t.addAssetDependency(name, definition)
-
-	if t.compiled == nil {
-		t.compiled = make(map[string]*template.Template)
-	}
-
-	delete(t.compiled, name)
-}
-
-func (t *TemplateRegistry) parseDep(name string, templ *template.Template) (*template.Template, error) {
-
-	def, found := t.templates[name]
-
-	if !found {
-		return templ, errors.New("Not found, " + name)
-	}
-
-	log.Println("Creating template ", name)
-	templ = templ.New(name)
-	if len(def.Files) > 0 {
-		for _, file := range def.Files {
-			if _, found := t.files[file]; !found {
-				panic("Asset not loaded " + file)
+	switch node := n.(type) {
+	case *parse.ListNode:
+		if node != nil && node.Nodes != nil {
+			for _, nn := range node.Nodes {
+				deps = append(deps, findDependencies(nn)...)
 			}
-			templ = template.Must(templ.Parse(string(t.files[file])))
 		}
-
+	case *parse.IfNode:
+		deps = append(deps, findDependencies(node.BranchNode.List)...)
+		deps = append(deps, findDependencies(node.BranchNode.ElseList)...)
+	case *parse.RangeNode:
+		deps = append(deps, findDependencies(node.BranchNode.List)...)
+		deps = append(deps, findDependencies(node.BranchNode.ElseList)...)
+	case *parse.WithNode:
+		deps = append(deps, findDependencies(node.BranchNode.List)...)
+		deps = append(deps, findDependencies(node.BranchNode.ElseList)...)
+	case *parse.TemplateNode:
+		deps = append(deps, node.Name)
 	}
-	if len(def.Dependencies) > 0 {
 
-		for _, dep := range def.Dependencies {
+	return deps
+
+}
+
+func (t *Repository) addDependencies(templ *template.Template) (*template.Template, error) {
+
+	deps := findDependencies(templ.Tree.Root)
+
+	t.resolved[templ.Name()] = true
+	log.Println("Adding dependencies", templ.Name(), deps)
+
+	for _, dep := range deps {
+
+		log.Printf("Checking %s from %s", dep, templ.Name())
+
+		if dep == "" {
+			continue
+		}
+		tt := templ.Lookup(dep)
+
+		// Check if we have it
+		if tt == nil {
+			tt = t.templates[dep]
+
+			// Still dont have it return an error
+			if tt == nil {
+				return templ, fmt.Errorf("Could not find template %s", dep)
+			}
+
+			if !t.resolved[tt.Name()] {
+				var err error
+				tt, err = t.addDependencies(tt)
+
+				if err != nil {
+					return templ, err
+				}
+			}
+
+			log.Println(dep, templ.DefinedTemplates(), tt.DefinedTemplates())
+			// Did it get resolved when loading deps?
+			if loaded := templ.Lookup(dep); loaded != nil {
+				continue
+			}
 
 			var err error
-			templ, err = t.parseDep(dep, templ)
+			templ, err = tt.AddParseTree(templ.Name(), templ.Tree)
+
+			if err != nil {
+				return templ, fmt.Errorf("Dependency Error: %v", err)
+			}
+
+		}
+
+		if !t.resolved[tt.Name()] {
+			var err error
+			tt, err = t.addDependencies(tt)
 
 			if err != nil {
 				return templ, err
@@ -195,48 +214,18 @@ func (t *TemplateRegistry) parseDep(name string, templ *template.Template) (*tem
 		}
 	}
 
+	log.Println("Loaded deps:", templ.Name(), templ.DefinedTemplates())
 	return templ, nil
 }
 
-func (t *TemplateRegistry) MustGet(name string) *template.Template {
+func (t *Repository) Get(name string) (*template.Template, error) {
 
-	if template, found := t.compiled[name]; found && template != nil {
-		return template
-	}
-
-	definition, found := t.templates[name]
+	log.Println("Getting", name)
+	templ, found := t.templates[name]
 
 	if !found {
-		panic("tried to load template " + name)
+		return templ, fmt.Errorf("Template doesn't exist", name)
 	}
 
-	templ := template.New(name).Funcs(t.funcs)
-	for _, dep := range definition.Dependencies {
-		templ = template.Must(t.parseDep(dep, templ))
-	}
-
-	if len(definition.Files) > 0 {
-		for _, file := range definition.Files {
-			if _, found := t.files[file]; !found {
-				panic("Asset not loaded " + file)
-			}
-			templ = template.Must(templ.Parse(string(t.files[file])))
-		}
-
-	}
-
-	t.compiled[name] = templ
-
-	log.Println(name, templ.DefinedTemplates())
-
-	return templ
-
-}
-
-func (t *TemplateRegistry) AddFunction(name string, f interface{}) {
-	if t.funcs == nil {
-		t.funcs = make(map[string]interface{})
-	}
-
-	t.funcs[name] = f
+	return t.addDependencies(templ)
 }

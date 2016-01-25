@@ -19,12 +19,14 @@ import (
 	"fmt"
 	"testing"
 
+	"text/template"
+
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestEnum_StringThing(t *testing.T) {
-	modelTemplate := templates.MustGet("model")
+	modelTemplate := template.Must(templates.Get("model"))
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.enums.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
@@ -48,7 +50,7 @@ func TestEnum_StringThing(t *testing.T) {
 }
 
 func TestEnum_ComposedThing(t *testing.T) {
-	modelTemplate := templates.MustGet("model")
+	modelTemplate := template.Must(templates.Get("model"))
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.enums.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
@@ -73,7 +75,7 @@ func TestEnum_ComposedThing(t *testing.T) {
 }
 
 func TestEnum_IntThing(t *testing.T) {
-	modelTemplate := templates.MustGet("model")
+	modelTemplate := template.Must(templates.Get("model"))
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.enums.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
@@ -97,7 +99,7 @@ func TestEnum_IntThing(t *testing.T) {
 }
 
 func TestEnum_FloatThing(t *testing.T) {
-	modelTemplate := templates.MustGet("model")
+	modelTemplate := template.Must(templates.Get("model"))
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.enums.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
@@ -121,7 +123,7 @@ func TestEnum_FloatThing(t *testing.T) {
 }
 
 func TestEnum_SliceThing(t *testing.T) {
-	modelTemplate := templates.MustGet("model")
+	modelTemplate := template.Must(templates.Get("model"))
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.enums.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
@@ -145,7 +147,7 @@ func TestEnum_SliceThing(t *testing.T) {
 }
 
 func TestEnum_SliceAndItemsThing(t *testing.T) {
-	modelTemplate := templates.MustGet("model")
+	modelTemplate := template.Must(templates.Get("model"))
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.enums.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
@@ -172,7 +174,7 @@ func TestEnum_SliceAndItemsThing(t *testing.T) {
 }
 
 func TestEnum_SliceAndAdditionalItemsThing(t *testing.T) {
-	modelTemplate := templates.MustGet("model")
+	modelTemplate := template.Must(templates.Get("model"))
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.enums.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
@@ -202,7 +204,7 @@ func TestEnum_SliceAndAdditionalItemsThing(t *testing.T) {
 }
 
 func TestEnum_MapThing(t *testing.T) {
-	modelTemplate := templates.MustGet("model")
+	modelTemplate := template.Must(templates.Get("model"))
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.enums.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
@@ -231,7 +233,7 @@ func TestEnum_MapThing(t *testing.T) {
 }
 
 func TestEnum_ObjectThing(t *testing.T) {
-	modelTemplate := templates.MustGet("model")
+	modelTemplate := template.Must(templates.Get("model"))
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.enums.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
@@ -278,7 +280,7 @@ func TestEnum_ObjectThing(t *testing.T) {
 }
 
 func TestEnum_ComputeInstance(t *testing.T) {
-	modelTemplate := templates.MustGet("model")
+	modelTemplate := template.Must(templates.Get("model"))
 	// ensure that the enum validation for the anonymous object under the delegate property
 	// is rendered.
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.enums.yml")
@@ -304,7 +306,7 @@ func TestEnum_ComputeInstance(t *testing.T) {
 }
 
 func TestEnum_NewPrototype(t *testing.T) {
-	modelTemplate := templates.MustGet("model")
+	modelTemplate := template.Must(templates.Get("model"))
 	// ensure that the enum validation for the anonymous object under the delegate property
 	// is rendered.
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.enums.yml")

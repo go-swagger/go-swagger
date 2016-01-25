@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"testing"
+	"text/template"
 
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
@@ -21,7 +22,7 @@ func TestBuildDiscriminatorMap(t *testing.T) {
 }
 
 func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
-	modelTemplate := templates.MustGet("model")
+	modelTemplate := template.Must(templates.Get("model"))
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.discriminators.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
@@ -50,7 +51,7 @@ func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
 }
 
 func TestGenerateModel_Discriminators(t *testing.T) {
-	modelTemplate := templates.MustGet("model")
+	modelTemplate := template.Must(templates.Get("model"))
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.discriminators.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
@@ -134,7 +135,7 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 }
 
 func TestGenerateModel_UsesDiscriminator(t *testing.T) {
-	modelTemplate := templates.MustGet("model")
+	modelTemplate := template.Must(templates.Get("model"))
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.discriminators.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
@@ -233,7 +234,7 @@ func TestGenerateServer_Parameters(t *testing.T) {
 }
 
 func TestGenerateModel_Discriminator_Billforward(t *testing.T) {
-	modelTemplate := templates.MustGet("model")
+	modelTemplate := template.Must(templates.Get("model"))
 	specDoc, err := spec.Load("../fixtures/codegen/billforward.discriminators.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions

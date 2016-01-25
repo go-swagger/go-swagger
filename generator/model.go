@@ -24,6 +24,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"text/template"
 
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
@@ -121,7 +122,7 @@ func (m *definitionGenerator) generateModel() error {
 		fmt.Fprintln(os.Stdout, string(bb))
 	}
 
-	modelTemplate := templates.MustGet("model")
+	modelTemplate := template.Must(templates.Get("model"))
 	if err := modelTemplate.Execute(buf, m.Data); err != nil {
 		return err
 	}

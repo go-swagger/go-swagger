@@ -72,198 +72,198 @@ var assets = map[string][]byte{
 	"client/facade.gotmpl":    MustAsset("templates/client/facade.gotmpl"),
 }
 
-var builtinTemplates = map[string]TemplateDefinition{
+// var builtinTemplates = map[string]TemplateDefinition{
 
-	"validatorTempl": {
-		Dependencies: []string{
-			"primitivevalidator",
-			"customformatvalidator",
-		},
-	},
+// 	"validatorTempl": {
+// 		Dependencies: []string{
+// 			"primitivevalidator",
+// 			"customformatvalidator",
+// 		},
+// 	},
 
-	"primitivevalidator": {
-		Files: []string{"validation/primitive.gotmpl"},
-	},
-	"customformatvalidator": {
-		Files: []string{"validation/customformat.gotmpl"},
-	},
+// 	"primitivevalidator": {
+// 		Files: []string{"validation/primitive.gotmpl"},
+// 	},
+// 	"customformatvalidator": {
+// 		Files: []string{"validation/customformat.gotmpl"},
+// 	},
 
-	"modelValidatorTemplate": {
-		Dependencies: []string{"validatorTempl"},
-	},
+// 	"modelValidatorTemplate": {
+// 		Dependencies: []string{"validatorTempl"},
+// 	},
 
-	"docstring": {
-		Files: []string{"docstring.gotmpl"},
-	},
+// 	"docstring": {
+// 		Files: []string{"docstring.gotmpl"},
+// 	},
 
-	"propertyValidationDocString": {
-		Files: []string{"validation/docstring.gotmpl"},
-	},
-	"schematype": {
-		Files: []string{"schematype.gotmpl"},
-	},
-	"body": {
-		Files: []string{"schemabody.gotmpl"},
-	},
-	"schema": {
-		Files: []string{"schema.gotmpl"},
-	},
-	"schemavalidations": {
-		Files: []string{"schemavalidator.gotmpl"},
-	},
-	"header": {
-		Files: []string{"header.gotmpl"},
-	},
-	"fields": {
-		Files: []string{"structfield.gotmpl"},
-	},
-	"tupleserializer": {
-		Files: []string{"tupleserializer.gotmpl"},
-	},
-	"additionalpropertiesserializer": {
-		Files: []string{"additionalpropertiesserializer.gotmpl"},
-	},
-	"model": {
-		Dependencies: []string{
-			"docstring",
-			"primitivevalidator",
-			"customformatvalidator",
-			"propertyValidationDocString",
-			"schematype",
-			"body",
-			"schema",
-			"schemavalidations",
-			"header",
-			"fields",
-			"tupleserializer",
-			"additionalpropertiesserializer",
-		},
-		Files: []string{
-			"model.gotmpl",
-		},
-	},
+// 	"propertyValidationDocString": {
+// 		Files: []string{"validation/docstring.gotmpl"},
+// 	},
+// 	"schematype": {
+// 		Files: []string{"schematype.gotmpl"},
+// 	},
+// 	"body": {
+// 		Files: []string{"schemabody.gotmpl"},
+// 	},
+// 	"schema": {
+// 		Files: []string{"schema.gotmpl"},
+// 	},
+// 	"schemavalidations": {
+// 		Files: []string{"schemavalidator.gotmpl"},
+// 	},
+// 	"header": {
+// 		Files: []string{"header.gotmpl"},
+// 	},
+// 	"fields": {
+// 		Files: []string{"structfield.gotmpl"},
+// 	},
+// 	"tupleserializer": {
+// 		Files: []string{"tupleserializer.gotmpl"},
+// 	},
+// 	"additionalpropertiesserializer": {
+// 		Files: []string{"additionalpropertiesserializer.gotmpl"},
+// 	},
+// 	"model": {
+// 		Dependencies: []string{
+// 			"docstring",
+// 			"primitivevalidator",
+// 			"customformatvalidator",
+// 			"propertyValidationDocString",
+// 			"schematype",
+// 			"body",
+// 			"schema",
+// 			"schemavalidations",
+// 			"header",
+// 			"fields",
+// 			"tupleserializer",
+// 			"additionalpropertiesserializer",
+// 		},
+// 		Files: []string{
+// 			"model.gotmpl",
+// 		},
+// 	},
 
-	"parameterTemplate": {
-		Dependencies: []string{"model"},
-		Files:        []string{"server/parameter.gotmpl"},
-	},
+// 	"parameterTemplate": {
+// 		Dependencies: []string{"model"},
+// 		Files:        []string{"server/parameter.gotmpl"},
+// 	},
 
-	"responsesTemplate": {
-		Dependencies: []string{"model"},
-		Files:        []string{"server/responses.gotmpl"},
-	},
+// 	"responsesTemplate": {
+// 		Dependencies: []string{"model"},
+// 		Files:        []string{"server/responses.gotmpl"},
+// 	},
 
-	"operationTemplate": {
-		Dependencies: []string{"model"},
-		Files:        []string{"server/operation.gotmpl"},
-	},
+// 	"operationTemplate": {
+// 		Dependencies: []string{"model"},
+// 		Files:        []string{"server/operation.gotmpl"},
+// 	},
 
-	"builderTemplate": {
-		Files: []string{"server/builder.gotmpl"},
-	},
+// 	"builderTemplate": {
+// 		Files: []string{"server/builder.gotmpl"},
+// 	},
 
-	"configureAPITemplate": {
-		Files: []string{"server/configureapi.gotmpl"},
-	},
+// 	"configureAPITemplate": {
+// 		Files: []string{"server/configureapi.gotmpl"},
+// 	},
 
-	"mainTemplate": {
-		Files: []string{"server/main.gotmpl"},
-	},
+// 	"mainTemplate": {
+// 		Files: []string{"server/main.gotmpl"},
+// 	},
 
-	"mainDocTemplate": {
-		Files: []string{"server/doc.gotmpl"},
-	},
+// 	"mainDocTemplate": {
+// 		Files: []string{"server/doc.gotmpl"},
+// 	},
 
-	"embeddedSpecTemplate": {
-		Files: []string{"swagger_json_embed.gotmpl"},
-	},
+// 	"embeddedSpecTemplate": {
+// 		Files: []string{"swagger_json_embed.gotmpl"},
+// 	},
 
-	// Client templates
-	"clientParamTemplate": {
-		Dependencies: []string{"model"},
-		Files:        []string{"client/parameter.gotmpl"},
-	},
+// 	// Client templates
+// 	"clientParamTemplate": {
+// 		Dependencies: []string{"model"},
+// 		Files:        []string{"client/parameter.gotmpl"},
+// 	},
 
-	"clientResponseTemplate": {
-		Dependencies: []string{"model"},
-		Files:        []string{"client/response.gotmpl"},
-	},
+// 	"clientResponseTemplate": {
+// 		Dependencies: []string{"model"},
+// 		Files:        []string{"client/response.gotmpl"},
+// 	},
 
-	"clientTemplate": {
-		Dependencies: []string{
+// 	"clientTemplate": {
+// 		Dependencies: []string{
 
-			"docstring",
-			"propertyValidationDocString",
-			"schematype",
-			"body",
-		},
-		Files: []string{
-			"client/client.gotmpl",
-		},
-	},
+// 			"docstring",
+// 			"propertyValidationDocString",
+// 			"schematype",
+// 			"body",
+// 		},
+// 		Files: []string{
+// 			"client/client.gotmpl",
+// 		},
+// 	},
 
-	"clientFacadeTemplate": {
-		Dependencies: []string{
+// 	"clientFacadeTemplate": {
+// 		Dependencies: []string{
 
-			"docstring",
-			"propertyValidationDocString",
-			"schematype",
-			"body",
-		},
-		Files: []string{
-			"client/facade.gotmpl",
-		},
-	},
-}
+// 			"docstring",
+// 			"propertyValidationDocString",
+// 			"schematype",
+// 			"body",
+// 		},
+// 		Files: []string{
+// 			"client/facade.gotmpl",
+// 		},
+// 	},
+// }
 
 var (
 	notNumberExp = regexp.MustCompile("[^0-9]")
 )
 
-var templates = NewTemplateRegistry()
+var templates = NewRepository(FuncMap)
 
 func init() {
 
 	for name, asset := range assets {
-		templates.AddFile(name, asset)
+		templates.AddFile(name, string(asset))
 	}
 
-	for name, template := range builtinTemplates {
-		templates.AddTemplate(name, template)
-	}
+	// for name, template := range builtinTemplates {
+	// 	templates.AddTemplate(name, template)
+	// }
 
 	compileTemplates()
 }
 
 func compileTemplates() {
 
-	modelTemplate = templates.MustGet("model")
+	modelTemplate = template.Must(templates.Get("model"))
 
 	// common templates
 
-	// modelValidatorTemplate = templates.MustGet("modelValidatorTemplate")
+	// modelValidatorTemplate = template.Must(templates.Get("modelValidatorTemplate"))
 
 	// server templates
-	parameterTemplate = templates.MustGet("parameterTemplate")
+	parameterTemplate = template.Must(templates.Get("parameterTemplate"))
 
-	responsesTemplate = templates.MustGet("responsesTemplate")
+	responsesTemplate = template.Must(templates.Get("responsesTemplate"))
 
-	operationTemplate = templates.MustGet("operationTemplate")
-	builderTemplate = templates.MustGet("builderTemplate")           //template.Must(template.New("builder").Funcs(FuncMap).Parse(string(assets["server/builder.gotmpl"])))
-	configureAPITemplate = templates.MustGet("configureAPITemplate") //template.Must(template.New("configureapi").Funcs(FuncMap).Parse(string(assets["server/configureapi.gotmpl"])))
-	mainTemplate = templates.MustGet("mainTemplate")                 //template.Must(template.New("main").Funcs(FuncMap).Parse(string(assets["server/main.gotmpl"])))
-	mainDocTemplate = templates.MustGet("mainDocTemplate")           //template.Must(template.New("meta").Funcs(FuncMap).Parse(string(assets["server/doc.gotmpl"])))
+	operationTemplate = template.Must(templates.Get("operationTemplate"))
+	builderTemplate = template.Must(templates.Get("builderTemplate"))           //template.Must(template.New("builder").Funcs(FuncMap).Parse(string(assets["server/builder.gotmpl"]))))
+	configureAPITemplate = template.Must(templates.Get("configureAPITemplate")) //template.Must(template.New("configureapi").Funcs(FuncMap).Parse(string(assets["server/configureapi.gotmpl"]))))
+	mainTemplate = template.Must(templates.Get("mainTemplate"))                 //template.Must(template.New("main").Funcs(FuncMap).Parse(string(assets["server/main.gotmpl"]))))
+	mainDocTemplate = template.Must(templates.Get("mainDocTemplate"))           //template.Must(template.New("meta").Funcs(FuncMap).Parse(string(assets["server/doc.gotmpl"]))))
 
-	embeddedSpecTemplate = templates.MustGet("embeddedSpecTemplate") //template.Must(template.New("embedded_spec").Funcs(FuncMap).Parse(string(assets["swagger_json_embed.gotmpl"])))
+	embeddedSpecTemplate = template.Must(templates.Get("embeddedSpecTemplate")) //template.Must(template.New("embedded_spec").Funcs(FuncMap).Parse(string(assets["swagger_json_embed.gotmpl"]))))
 
 	// Client templates
-	clientParamTemplate = templates.MustGet("clientParamTemplate")
+	clientParamTemplate = template.Must(templates.Get("clientParamTemplate"))
 
-	clientResponseTemplate = templates.MustGet("clientResponseTemplate")
+	clientResponseTemplate = template.Must(templates.Get("clientResponseTemplate"))
 
-	clientTemplate = templates.MustGet("clientTemplate")
+	clientTemplate = template.Must(templates.Get("clientTemplate"))
 
-	clientFacadeTemplate = templates.MustGet("clientFacadeTemplate")
+	clientFacadeTemplate = template.Must(templates.Get("clientFacadeTemplate"))
 
 }
 

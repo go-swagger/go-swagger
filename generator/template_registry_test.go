@@ -1,47 +1,144 @@
 package generator
 
 import (
+	"bytes"
+	"log"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRegistryOnlyCompilesOnce(t *testing.T) {
-	registry := NewTemplateRegistry()
+var (
+	singleTemplate      = `test`
+	multipleDefinitions = `{{ define "T1" }}T1{{end}}{{ define "T2" }}T2{{end}}`
+	dependantTemplate   = `{{ template "T1" }}D1`
+	cirularDeps1        = `{{ define "T1" }}{{ .Name }}: {{ range .Children }}{{ template "T2" . }}{{end}}{{end}}{{template "T1" . }}`
+	cirularDeps2        = `{{ define "T2" }}{{if .Recurse }}{{ template "T1" . }}{{ else }}Children{{end}}{{end}}`
+)
 
-	asset := []byte(`{{ define "test" }}{{ end }}`)
+func TestLoadingTemplates(t *testing.T) {
 
-	template := TemplateDefinition{
-		Files: []string{"test.gotmpl"},
-	}
-	registry.AddFile("test.gotmpl", asset)
+	repo := NewRepository()
 
-	registry.AddTemplate("test", template)
+	repo.AddFile("simple", singleTemplate)
 
-	compiled := registry.MustGet("test")
-	compiled2 := registry.MustGet("test")
+	templ, err := repo.Get("simple")
 
-	assert.Equal(t, compiled, compiled2)
+	assert.Nil(t, err)
+
+	var b bytes.Buffer
+
+	err = templ.Execute(&b, nil)
+
+	assert.Nil(t, err)
+
+	assert.Equal(t, "test", b.String())
 }
 
-func TestRegistryRecompilesIfAssetsChange(t *testing.T) {
-	registry := NewTemplateRegistry()
+func TestLoadsAllTemplatesDefined(t *testing.T) {
 
-	asset := []byte(`{{ define "test" }}{{ end }}`)
-	asset2 := []byte(`{{ define "test2" }}{{ end }}`)
-	template := TemplateDefinition{
-		Files: []string{"test.gotmpl"},
+	var b bytes.Buffer
+	repo := NewRepository()
+
+	repo.AddFile("multiple", multipleDefinitions)
+
+	templ, err := repo.Get("multiple")
+	assert.Nil(t, err)
+	err = templ.Execute(&b, nil)
+	assert.Nil(t, err)
+
+	assert.Equal(t, "", b.String())
+
+	templ, err = repo.Get("T1")
+	assert.Nil(t, err)
+	err = templ.Execute(&b, nil)
+	assert.Nil(t, err)
+
+	assert.Equal(t, "T1", b.String())
+}
+
+type testData struct {
+	Children []testData
+	Name     string
+	Recurse  bool
+}
+
+func TestLoadsAllDependantTemplates(t *testing.T) {
+
+	var b bytes.Buffer
+	repo := NewRepository()
+
+	repo.AddFile("multiple", multipleDefinitions)
+	repo.AddFile("dependant", dependantTemplate)
+
+	templ, err := repo.Get("dependant")
+	assert.Nil(t, err)
+
+	err = templ.Execute(&b, nil)
+
+	assert.Nil(t, err)
+
+	assert.Equal(t, "T1D1", b.String())
+
+}
+
+func TestRecursiveTemplates(t *testing.T) {
+
+	var b bytes.Buffer
+	repo := NewRepository()
+
+	repo.AddFile("c1", cirularDeps1)
+	repo.AddFile("c2", cirularDeps2)
+
+	for name, t := range repo.templates {
+		log.Println(name, t.Name(), t.DefinedTemplates())
 	}
-	registry.AddFile("test.gotmpl", asset)
+	templ, err := repo.Get("c1")
+	assert.Nil(t, err)
+	data := testData{
+		Name: "Root",
+		Children: []testData{
+			{Recurse: false},
+		},
+	}
+	expected := `Root: Children`
+	err = templ.Execute(&b, data)
 
-	registry.AddTemplate("test", template)
+	assert.Nil(t, err)
 
-	compiled := registry.MustGet("test")
+	assert.Equal(t, expected, b.String())
 
-	registry.AddFile("test.gotmpl", asset2)
+	data = testData{
+		Name: "Root",
+		Children: []testData{
+			{Name: "Child1", Recurse: true, Children: []testData{{Name: "Child2"}}},
+		},
+	}
 
-	compiled2 := registry.MustGet("test")
+	b.Reset()
 
-	assert.NotEqual(t, compiled, compiled2)
+	expected = `Root: Child1: Children`
 
+	err = templ.Execute(&b, data)
+
+	assert.Nil(t, err)
+
+	assert.Equal(t, expected, b.String())
+
+	data = testData{
+		Name: "Root",
+		Children: []testData{
+			{Name: "Child1", Recurse: false, Children: []testData{{Name: "Child2"}}},
+		},
+	}
+
+	b.Reset()
+
+	expected = `Root: Children`
+
+	err = templ.Execute(&b, data)
+
+	assert.Nil(t, err)
+
+	assert.Equal(t, expected, b.String())
 }
