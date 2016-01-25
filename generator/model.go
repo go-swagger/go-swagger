@@ -1122,9 +1122,13 @@ func (sg *schemaGenContext) buildAliased() error {
 	if !sg.GenSchema.IsPrimitive && !sg.GenSchema.IsMap && !sg.GenSchema.IsArray && !sg.GenSchema.IsInterface {
 		return nil
 	}
+
 	if sg.GenSchema.IsPrimitive {
-		sg.GenSchema.IsAliased = sg.GenSchema.GoType != sg.GenSchema.SwaggerType
+		if sg.GenSchema.SwaggerType == "string" && sg.GenSchema.SwaggerFormat == "" {
+			sg.GenSchema.IsAliased = sg.GenSchema.GoType != sg.GenSchema.SwaggerType
+		}
 	}
+
 	if sg.GenSchema.IsInterface {
 		sg.GenSchema.IsAliased = sg.GenSchema.GoType != "interface{}"
 	}
@@ -1235,14 +1239,6 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		log.Printf("finished gen schema for %q\n", sg.Name)
 	}
 	return nil
-}
-
-func newDiscriminatorImpl(tpeImpl GenSchema) GenSchema {
-	tpeImpl.IsBaseType = true
-	tpeImpl.IsExported = false
-	tpeImpl.Name = swag.ToJSONName(tpeImpl.Name)
-	tpeImpl.GoType = "disc" + swag.ToJSONName(tpeImpl.GoType)
-	return tpeImpl
 }
 
 // NOTE:

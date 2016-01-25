@@ -23,11 +23,11 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
-var goImports = map[string]string{
-	"inf.Dec":   "speter.net/go/exp/math/dec/inf",
-	"big.Int":   "math/big",
-	"swagger.*": "github.com/go-swagger/go-swagger/httpkit",
-}
+// var goImports = map[string]string{
+// 	"inf.Dec":   "speter.net/go/exp/math/dec/inf",
+// 	"big.Int":   "math/big",
+// 	"swagger.*": "github.com/go-swagger/go-swagger/httpkit",
+// }
 
 var zeroes = map[string]string{
 	"string":            "\"\"",
@@ -269,7 +269,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 		result.GoType = t.goTypeName(nm)
 		result.HasDiscriminator = ref.Discriminator != ""
 		result.IsNullable = t.IsNullable(ref)
-		result.IsAliased = true
+		//result.IsAliased = true
 		return
 
 	}
@@ -412,12 +412,12 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 	return
 }
 
-type resolverOpts struct {
-	Schema               *spec.Schema
-	IsAnonymous          bool
-	IsRequired           bool
-	IsDiscriminatorField bool
-}
+// type resolverOpts struct {
+// 	Schema               *spec.Schema
+// 	IsAnonymous          bool
+// 	IsRequired           bool
+// 	IsDiscriminatorField bool
+// }
 
 func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequired bool) (result resolvedType, err error) {
 	//bbb, _ := json.MarshalIndent(schema, "", "  ")
