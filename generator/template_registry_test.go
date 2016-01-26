@@ -16,9 +16,9 @@ var (
 	cirularDeps2        = `{{ define "T2" }}{{if .Recurse }}{{ template "T1" . }}{{ else }}Children{{end}}{{end}}`
 )
 
-func TestLoadingTemplates(t *testing.T) {
+func TestRepoLoadingTemplates(t *testing.T) {
 
-	repo := NewRepository()
+	repo := NewRepository(nil)
 
 	repo.AddFile("simple", singleTemplate)
 
@@ -35,10 +35,10 @@ func TestLoadingTemplates(t *testing.T) {
 	assert.Equal(t, "test", b.String())
 }
 
-func TestLoadsAllTemplatesDefined(t *testing.T) {
+func TestRepoLoadsAllTemplatesDefined(t *testing.T) {
 
 	var b bytes.Buffer
-	repo := NewRepository()
+	repo := NewRepository(nil)
 
 	repo.AddFile("multiple", multipleDefinitions)
 
@@ -63,10 +63,10 @@ type testData struct {
 	Recurse  bool
 }
 
-func TestLoadsAllDependantTemplates(t *testing.T) {
+func TestRepoLoadsAllDependantTemplates(t *testing.T) {
 
 	var b bytes.Buffer
-	repo := NewRepository()
+	repo := NewRepository(nil)
 
 	repo.AddFile("multiple", multipleDefinitions)
 	repo.AddFile("dependant", dependantTemplate)
@@ -82,10 +82,10 @@ func TestLoadsAllDependantTemplates(t *testing.T) {
 
 }
 
-func TestRecursiveTemplates(t *testing.T) {
+func TestRepoRecursiveTemplates(t *testing.T) {
 
 	var b bytes.Buffer
-	repo := NewRepository()
+	repo := NewRepository(nil)
 
 	repo.AddFile("c1", cirularDeps1)
 	repo.AddFile("c2", cirularDeps2)

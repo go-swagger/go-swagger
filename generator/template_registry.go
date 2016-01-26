@@ -87,7 +87,7 @@ type Repository struct {
 
 func (t *Repository) LoadDir(templatePath string) error {
 
-	return filepath.Walk(templatePath, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(templatePath, func(path string, info os.FileInfo, err error) error {
 
 		if strings.HasSuffix(path, ".gotmpl") {
 			assetName := strings.TrimPrefix(path, templatePath)
@@ -102,11 +102,16 @@ func (t *Repository) LoadDir(templatePath string) error {
 		return nil
 	})
 
+	for name, templ := range t.templates {
+		log.Printf("Template %s%s", name, templ.DefinedTemplates())
+	}
+
+	return err
 }
 
 func (t *Repository) AddFile(name, data string) error {
 
-	name = strings.TrimSuffix(filepath.Base(name), ".gotmpl")
+	name = swag.ToJSONName(strings.TrimSuffix(name, ".gotmpl"))
 
 	templ, err := template.New(name).Funcs(t.funcs).Parse(data)
 
@@ -155,20 +160,49 @@ func findDependencies(n parse.Node) []string {
 
 }
 
-func (t *Repository) addDependencies(templ *template.Template) (*template.Template, error) {
+func (t *Repository) flattenDependencies(templ *template.Template, dependencies map[string]bool) map[string]bool {
+	if dependencies == nil {
+		dependencies = make(map[string]bool)
+	}
 
 	deps := findDependencies(templ.Tree.Root)
 
-	t.resolved[templ.Name()] = true
-	log.Println("Adding dependencies", templ.Name(), deps)
+	for _, d := range deps {
+		if _, found := dependencies[d]; !found {
 
-	for _, dep := range deps {
+			dependencies[d] = true
 
-		log.Printf("Checking %s from %s", dep, templ.Name())
+			log.Println(d)
+			if tt := t.templates[d]; tt != nil {
+				dependencies = t.flattenDependencies(tt, dependencies)
+			}
+		}
+
+		dependencies[d] = true
+
+	}
+
+	return dependencies
+
+}
+
+func (t *Repository) addDependencies(templ *template.Template) (*template.Template, error) {
+
+	name := templ.Name()
+
+	deps := t.flattenDependencies(templ, nil)
+
+	t.resolved[name] = true
+	log.Println("Checking dependencies", name, deps)
+
+	for dep := range deps {
+
+		log.Printf("Checking %s of %s", dep, name)
 
 		if dep == "" {
 			continue
 		}
+
 		tt := templ.Lookup(dep)
 
 		// Check if we have it
@@ -179,43 +213,32 @@ func (t *Repository) addDependencies(templ *template.Template) (*template.Templa
 			if tt == nil {
 				return templ, fmt.Errorf("Could not find template %s", dep)
 			}
+			// // Did it get resolved when loading deps?
+			// if loaded := templ.Lookup(dep); loaded != nil {
+			// 	continue
+			// }
 
-			if !t.resolved[tt.Name()] {
-				var err error
-				tt, err = t.addDependencies(tt)
-
-				if err != nil {
-					return templ, err
-				}
-			}
-
-			log.Println(dep, templ.DefinedTemplates(), tt.DefinedTemplates())
-			// Did it get resolved when loading deps?
-			if loaded := templ.Lookup(dep); loaded != nil {
-				continue
-			}
+			// dt := tt
+			// log.Printf("Loading %s\nCurrent: %s%s\nInserting:%s%s\n", dep, templ.Name(), templ.DefinedTemplates(), dt.Name(), dt.DefinedTemplates())
 
 			var err error
-			templ, err = tt.AddParseTree(templ.Name(), templ.Tree)
+
+			log.Println(templ.DefinedTemplates())
+			templ, err = templ.AddParseTree(dep, tt.Tree)
+
+			log.Printf("Loaded dep %s for %s. (%s%s %v)", dep, name, tt.Name(), tt.DefinedTemplates(), err)
 
 			if err != nil {
 				return templ, fmt.Errorf("Dependency Error: %v", err)
 			}
 
-		}
-
-		if !t.resolved[tt.Name()] {
-			var err error
-			tt, err = t.addDependencies(tt)
-
-			if err != nil {
-				return templ, err
-			}
+		} else {
+			log.Printf("%s already loaded in %s", dep, name)
 		}
 	}
 
 	log.Println("Loaded deps:", templ.Name(), templ.DefinedTemplates())
-	return templ, nil
+	return templ.Lookup(name), nil
 }
 
 func (t *Repository) Get(name string) (*template.Template, error) {
