@@ -14,19 +14,10 @@
 
 package generator
 
-// func TestCustomTemplates(t *testing.T) {
+import "testing"
 
-// 	registry := NewRepository()
-// 	registry.LoadDefaults()
+func TestCustomTemplates(t *testing.T) {
 
-// 	err := registry.LoadDir("../fixtures/templates/")
+	templates.DumpTemplates()
 
-// 	assert.NoError(t, err)
-
-// 	for template, v := range registry.files {
-// 		if string(v) != fmt.Sprintf("./%s\n", template) {
-// 			t.Errorf("Template %s wasn't loaded", template)
-// 		}
-// 	}
-
-// }
+}

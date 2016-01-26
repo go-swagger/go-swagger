@@ -3,7 +3,6 @@ package generator
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -66,7 +65,7 @@ var FuncMap template.FuncMap = map[string]interface{}{
 
 func NewRepository(funcs template.FuncMap) *Repository {
 	repo := Repository{
-		resolved:  make(map[string]bool),
+		files:     make(map[string]string),
 		templates: make(map[string]*template.Template),
 		funcs:     funcs,
 	}
@@ -80,8 +79,8 @@ func NewRepository(funcs template.FuncMap) *Repository {
 }
 
 type Repository struct {
+	files     map[string]string
 	templates map[string]*template.Template
-	resolved  map[string]bool
 	funcs     template.FuncMap
 }
 
@@ -102,15 +101,11 @@ func (t *Repository) LoadDir(templatePath string) error {
 		return nil
 	})
 
-	for name, templ := range t.templates {
-		log.Printf("Template %s%s", name, templ.DefinedTemplates())
-	}
-
 	return err
 }
 
 func (t *Repository) AddFile(name, data string) error {
-
+	fileName := name
 	name = swag.ToJSONName(strings.TrimSuffix(name, ".gotmpl"))
 
 	templ, err := template.New(name).Funcs(t.funcs).Parse(data)
@@ -121,39 +116,61 @@ func (t *Repository) AddFile(name, data string) error {
 
 	// Add each defined tempalte into the cache
 	for _, template := range templ.Templates() {
-
+		t.files[template.Name()] = fileName
 		t.templates[template.Name()] = template.Lookup(template.Name())
 	}
 
-	log.Println(name, templ.DefinedTemplates())
 	return nil
 }
 
 func findDependencies(n parse.Node) []string {
 
 	var deps []string
+	depMap := make(map[string]bool)
 
 	if n == nil {
 		return deps
 	}
+
 	switch node := n.(type) {
 	case *parse.ListNode:
 		if node != nil && node.Nodes != nil {
 			for _, nn := range node.Nodes {
-				deps = append(deps, findDependencies(nn)...)
+				for _, dep := range findDependencies(nn) {
+					depMap[dep] = true
+				}
 			}
 		}
 	case *parse.IfNode:
-		deps = append(deps, findDependencies(node.BranchNode.List)...)
-		deps = append(deps, findDependencies(node.BranchNode.ElseList)...)
+		for _, dep := range findDependencies(node.BranchNode.List) {
+			depMap[dep] = true
+		}
+		for _, dep := range findDependencies(node.BranchNode.ElseList) {
+			depMap[dep] = true
+		}
+
 	case *parse.RangeNode:
-		deps = append(deps, findDependencies(node.BranchNode.List)...)
-		deps = append(deps, findDependencies(node.BranchNode.ElseList)...)
+		for _, dep := range findDependencies(node.BranchNode.List) {
+			depMap[dep] = true
+		}
+		for _, dep := range findDependencies(node.BranchNode.ElseList) {
+			depMap[dep] = true
+		}
+
 	case *parse.WithNode:
-		deps = append(deps, findDependencies(node.BranchNode.List)...)
-		deps = append(deps, findDependencies(node.BranchNode.ElseList)...)
+		for _, dep := range findDependencies(node.BranchNode.List) {
+			depMap[dep] = true
+		}
+		for _, dep := range findDependencies(node.BranchNode.ElseList) {
+			depMap[dep] = true
+		}
+
 	case *parse.TemplateNode:
-		deps = append(deps, node.Name)
+		depMap[node.Name] = true
+	}
+
+	for dep := range depMap {
+		deps = append(deps, dep)
 	}
 
 	return deps
@@ -172,7 +189,6 @@ func (t *Repository) flattenDependencies(templ *template.Template, dependencies 
 
 			dependencies[d] = true
 
-			log.Println(d)
 			if tt := t.templates[d]; tt != nil {
 				dependencies = t.flattenDependencies(tt, dependencies)
 			}
@@ -192,12 +208,7 @@ func (t *Repository) addDependencies(templ *template.Template) (*template.Templa
 
 	deps := t.flattenDependencies(templ, nil)
 
-	t.resolved[name] = true
-	log.Println("Checking dependencies", name, deps)
-
 	for dep := range deps {
-
-		log.Printf("Checking %s of %s", dep, name)
 
 		if dep == "" {
 			continue
@@ -213,37 +224,21 @@ func (t *Repository) addDependencies(templ *template.Template) (*template.Templa
 			if tt == nil {
 				return templ, fmt.Errorf("Could not find template %s", dep)
 			}
-			// // Did it get resolved when loading deps?
-			// if loaded := templ.Lookup(dep); loaded != nil {
-			// 	continue
-			// }
-
-			// dt := tt
-			// log.Printf("Loading %s\nCurrent: %s%s\nInserting:%s%s\n", dep, templ.Name(), templ.DefinedTemplates(), dt.Name(), dt.DefinedTemplates())
-
 			var err error
 
-			log.Println(templ.DefinedTemplates())
+			// Add it to the parse tree
 			templ, err = templ.AddParseTree(dep, tt.Tree)
-
-			log.Printf("Loaded dep %s for %s. (%s%s %v)", dep, name, tt.Name(), tt.DefinedTemplates(), err)
 
 			if err != nil {
 				return templ, fmt.Errorf("Dependency Error: %v", err)
 			}
 
-		} else {
-			log.Printf("%s already loaded in %s", dep, name)
 		}
 	}
-
-	log.Println("Loaded deps:", templ.Name(), templ.DefinedTemplates())
 	return templ.Lookup(name), nil
 }
 
 func (t *Repository) Get(name string) (*template.Template, error) {
-
-	log.Println("Getting", name)
 	templ, found := t.templates[name]
 
 	if !found {
@@ -251,4 +246,13 @@ func (t *Repository) Get(name string) (*template.Template, error) {
 	}
 
 	return t.addDependencies(templ)
+}
+
+func (t *Repository) DumpTemplates() {
+
+	for name, templ := range t.templates {
+		fmt.Printf("## %s\n", name)
+		fmt.Printf("Defined in %s\n", t.files[name])
+		fmt.Printf("requires %v\n\n\n", findDependencies(templ.Tree.Root))
+	}
 }
