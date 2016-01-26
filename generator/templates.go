@@ -72,150 +72,6 @@ var assets = map[string][]byte{
 	"client/facade.gotmpl":    MustAsset("templates/client/facade.gotmpl"),
 }
 
-// var builtinTemplates = map[string]TemplateDefinition{
-
-// 	"validatorTempl": {
-// 		Dependencies: []string{
-// 			"primitivevalidator",
-// 			"customformatvalidator",
-// 		},
-// 	},
-
-// 	"primitivevalidator": {
-// 		Files: []string{"validation/primitive.gotmpl"},
-// 	},
-// 	"customformatvalidator": {
-// 		Files: []string{"validation/customformat.gotmpl"},
-// 	},
-
-// 	"modelValidatorTemplate": {
-// 		Dependencies: []string{"validatorTempl"},
-// 	},
-
-// 	"docstring": {
-// 		Files: []string{"docstring.gotmpl"},
-// 	},
-
-// 	"propertyValidationDocString": {
-// 		Files: []string{"validation/docstring.gotmpl"},
-// 	},
-// 	"schematype": {
-// 		Files: []string{"schematype.gotmpl"},
-// 	},
-// 	"body": {
-// 		Files: []string{"schemabody.gotmpl"},
-// 	},
-// 	"schema": {
-// 		Files: []string{"schema.gotmpl"},
-// 	},
-// 	"schemavalidations": {
-// 		Files: []string{"schemavalidator.gotmpl"},
-// 	},
-// 	"header": {
-// 		Files: []string{"header.gotmpl"},
-// 	},
-// 	"fields": {
-// 		Files: []string{"structfield.gotmpl"},
-// 	},
-// 	"tupleserializer": {
-// 		Files: []string{"tupleserializer.gotmpl"},
-// 	},
-// 	"additionalpropertiesserializer": {
-// 		Files: []string{"additionalpropertiesserializer.gotmpl"},
-// 	},
-// 	"model": {
-// 		Dependencies: []string{
-// 			"docstring",
-// 			"primitivevalidator",
-// 			"customformatvalidator",
-// 			"propertyValidationDocString",
-// 			"schematype",
-// 			"body",
-// 			"schema",
-// 			"schemavalidations",
-// 			"header",
-// 			"fields",
-// 			"tupleserializer",
-// 			"additionalpropertiesserializer",
-// 		},
-// 		Files: []string{
-// 			"model.gotmpl",
-// 		},
-// 	},
-
-// 	"parameterTemplate": {
-// 		Dependencies: []string{"model"},
-// 		Files:        []string{"server/parameter.gotmpl"},
-// 	},
-
-// 	"responsesTemplate": {
-// 		Dependencies: []string{"model"},
-// 		Files:        []string{"server/responses.gotmpl"},
-// 	},
-
-// 	"operationTemplate": {
-// 		Dependencies: []string{"model"},
-// 		Files:        []string{"server/operation.gotmpl"},
-// 	},
-
-// 	"builderTemplate": {
-// 		Files: []string{"server/builder.gotmpl"},
-// 	},
-
-// 	"configureAPITemplate": {
-// 		Files: []string{"server/configureapi.gotmpl"},
-// 	},
-
-// 	"mainTemplate": {
-// 		Files: []string{"server/main.gotmpl"},
-// 	},
-
-// 	"mainDocTemplate": {
-// 		Files: []string{"server/doc.gotmpl"},
-// 	},
-
-// 	"embeddedSpecTemplate": {
-// 		Files: []string{"swagger_json_embed.gotmpl"},
-// 	},
-
-// 	// Client templates
-// 	"clientParamTemplate": {
-// 		Dependencies: []string{"model"},
-// 		Files:        []string{"client/parameter.gotmpl"},
-// 	},
-
-// 	"clientResponseTemplate": {
-// 		Dependencies: []string{"model"},
-// 		Files:        []string{"client/response.gotmpl"},
-// 	},
-
-// 	"clientTemplate": {
-// 		Dependencies: []string{
-
-// 			"docstring",
-// 			"propertyValidationDocString",
-// 			"schematype",
-// 			"body",
-// 		},
-// 		Files: []string{
-// 			"client/client.gotmpl",
-// 		},
-// 	},
-
-// 	"clientFacadeTemplate": {
-// 		Dependencies: []string{
-
-// 			"docstring",
-// 			"propertyValidationDocString",
-// 			"schematype",
-// 			"body",
-// 		},
-// 		Files: []string{
-// 			"client/facade.gotmpl",
-// 		},
-// 	},
-// }
-
 var (
 	notNumberExp = regexp.MustCompile("[^0-9]")
 )
@@ -226,20 +82,11 @@ func init() {
 
 	templates.LoadDefaults()
 
-	// for name, template := range builtinTemplates {
-	// 	templates.AddTemplate(name, template)
-	// }
-
-	compileTemplates()
 }
 
 func compileTemplates() {
 
 	modelTemplate = template.Must(templates.Get("model"))
-
-	// common templates
-
-	// modelValidatorTemplate = template.Must(templates.Get("modelValidatorTemplate"))
 
 	// server templates
 	parameterTemplate = template.Must(templates.Get("serverParameter"))
@@ -247,12 +94,12 @@ func compileTemplates() {
 	responsesTemplate = template.Must(templates.Get("serverResponses"))
 
 	operationTemplate = template.Must(templates.Get("serverOperation"))
-	builderTemplate = template.Must(templates.Get("serverBuilder"))           //template.Must(template.New("builder").Funcs(FuncMap).Parse(string(assets["server/builder.gotmpl"]))))
-	configureAPITemplate = template.Must(templates.Get("serverConfigureapi")) //template.Must(template.New("configureapi").Funcs(FuncMap).Parse(string(assets["server/configureapi.gotmpl"]))))
-	mainTemplate = template.Must(templates.Get("serverMain"))                 //template.Must(template.New("main").Funcs(FuncMap).Parse(string(assets["server/main.gotmpl"]))))
-	mainDocTemplate = template.Must(templates.Get("serverDoc"))               //template.Must(template.New("meta").Funcs(FuncMap).Parse(string(assets["server/doc.gotmpl"]))))
+	builderTemplate = template.Must(templates.Get("serverBuilder"))
+	configureAPITemplate = template.Must(templates.Get("serverConfigureapi"))
+	mainTemplate = template.Must(templates.Get("serverMain"))
+	mainDocTemplate = template.Must(templates.Get("serverDoc"))
 
-	embeddedSpecTemplate = template.Must(templates.Get("swaggerJsonEmbed")) //template.Must(template.New("embedded_spec").Funcs(FuncMap).Parse(string(assets["swagger_json_embed.gotmpl"]))))
+	embeddedSpecTemplate = template.Must(templates.Get("swaggerJsonEmbed"))
 
 	// Client templates
 	clientParamTemplate = template.Must(templates.Get("clientParameter"))
