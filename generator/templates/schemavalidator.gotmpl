@@ -125,11 +125,11 @@ if err := {{.ValueExpression}}.Validate(formats); err != nil {
 // at https://github.com/go-swagger/go-swagger/issues
 {{end}}{{end}}
 {{define "propertyvalidator"}}
-{{ if .IsPrimitive }}{{ if .IsAliased }}{{ template "objectvalidator" . }}{{ else }}{{ template "primitivefieldvalidator" .}}{{ end }}
-{{else if .IsCustomFormatter }}{{ template "customformatvalidator" .}}
+{{if .IsPrimitive }}{{ template "primitivefieldvalidator" .}}
+{{else if .IsCustomFormatter }}{{ template "validationCustomformat" .}}
 {{else if .IsArray }}{{ template "slicevalidator" .}}
 {{else if .IsMap}}{{ template "mapvalidator" . }}
-{{else if or .IsComplexObject .IsTuple .IsAdditionalProperties .IsAliased }}{{ template "objectvalidator" . }}{{end}}
+{{else if or .IsComplexObject .IsTuple .IsAdditionalProperties }}{{ template "objectvalidator" . }}{{end}}
 {{end}}
 {{define "schemavalidator" }}{{ if .Enum }}
 var {{ camelize .Name }}Enum []interface{}
@@ -190,7 +190,7 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
   {{ range .AllOf }}
     {{ if or .Required .HasValidations }}
     {{if .IsPrimitive }}{{ template "primitivefieldvalidator" .}}
-    {{else if .IsCustomFormatter }}{{ template "customformatvalidator" .}}
+    {{else if .IsCustomFormatter }}{{ template "validationCustomformat" .}}
     {{else if .IsArray }}{{ template "slicevalidator" .}}
     {{else if .IsMap}}{{ template "mapvalidator" . }}
     {{ end }}
@@ -214,7 +214,7 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
   {{ end }}
   {{ end }}
   {{if .IsPrimitive }}{{ template "primitivefieldvalidator" .}}
-  {{else if .IsCustomFormatter }}{{ template "customformatvalidator" .}}
+  {{else if .IsCustomFormatter }}{{ template "validationCustomformat" .}}
   {{else if .IsArray }}{{ template "slicevalidator" .}}
   {{else if .IsMap}}{{ template "mapvalidator" . }}
   {{ end }}

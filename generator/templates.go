@@ -244,26 +244,26 @@ func compileTemplates() {
 	// modelValidatorTemplate = template.Must(templates.Get("modelValidatorTemplate"))
 
 	// server templates
-	parameterTemplate = template.Must(templates.Get("parameterTemplate"))
+	parameterTemplate = template.Must(templates.Get("serverParameter"))
 
-	responsesTemplate = template.Must(templates.Get("responsesTemplate"))
+	responsesTemplate = template.Must(templates.Get("serverResponses"))
 
-	operationTemplate = template.Must(templates.Get("operationTemplate"))
-	builderTemplate = template.Must(templates.Get("builderTemplate"))           //template.Must(template.New("builder").Funcs(FuncMap).Parse(string(assets["server/builder.gotmpl"]))))
-	configureAPITemplate = template.Must(templates.Get("configureAPITemplate")) //template.Must(template.New("configureapi").Funcs(FuncMap).Parse(string(assets["server/configureapi.gotmpl"]))))
-	mainTemplate = template.Must(templates.Get("mainTemplate"))                 //template.Must(template.New("main").Funcs(FuncMap).Parse(string(assets["server/main.gotmpl"]))))
-	mainDocTemplate = template.Must(templates.Get("mainDocTemplate"))           //template.Must(template.New("meta").Funcs(FuncMap).Parse(string(assets["server/doc.gotmpl"]))))
+	operationTemplate = template.Must(templates.Get("serverOperation"))
+	builderTemplate = template.Must(templates.Get("serverBuilder"))           //template.Must(template.New("builder").Funcs(FuncMap).Parse(string(assets["server/builder.gotmpl"]))))
+	configureAPITemplate = template.Must(templates.Get("serverConfigureapi")) //template.Must(template.New("configureapi").Funcs(FuncMap).Parse(string(assets["server/configureapi.gotmpl"]))))
+	mainTemplate = template.Must(templates.Get("serverMain"))                 //template.Must(template.New("main").Funcs(FuncMap).Parse(string(assets["server/main.gotmpl"]))))
+	mainDocTemplate = template.Must(templates.Get("serverDoc"))               //template.Must(template.New("meta").Funcs(FuncMap).Parse(string(assets["server/doc.gotmpl"]))))
 
-	embeddedSpecTemplate = template.Must(templates.Get("embeddedSpecTemplate")) //template.Must(template.New("embedded_spec").Funcs(FuncMap).Parse(string(assets["swagger_json_embed.gotmpl"]))))
+	embeddedSpecTemplate = template.Must(templates.Get("swaggerJsonEmbed")) //template.Must(template.New("embedded_spec").Funcs(FuncMap).Parse(string(assets["swagger_json_embed.gotmpl"]))))
 
 	// Client templates
-	clientParamTemplate = template.Must(templates.Get("clientParamTemplate"))
+	clientParamTemplate = template.Must(templates.Get("clientParameter"))
 
-	clientResponseTemplate = template.Must(templates.Get("clientResponseTemplate"))
+	clientResponseTemplate = template.Must(templates.Get("clientResponse"))
 
-	clientTemplate = template.Must(templates.Get("clientTemplate"))
+	clientTemplate = template.Must(templates.Get("clientClient"))
 
-	clientFacadeTemplate = template.Must(templates.Get("clientFacadeTemplate"))
+	clientFacadeTemplate = template.Must(templates.Get("clientFacade"))
 
 }
 
