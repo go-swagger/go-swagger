@@ -1,4 +1,19 @@
-# Templates
+# Template Customization
+
+The `swagger` command allows you to specify a directory to load custom templates from. It will recursively read all the `.gotmpl` files
+in the directory and load them as templates.
+
+Each file will define a template that is the name of the file without the .gotmpl. If the file is in a subdirectory the directory name 
+will be included in the template name and the first character of the next path segment will be uppercased.
+
+ e.g. 
+ - template.gotmpl -> template
+ - validation/test.gotmpl -> validationTest
+
+Any templates defined in these files will also be included.
+ 
+# Available Templates:
+
 ## propertyValidationDocString
 Defined in `validation/structfield.gotmpl`
 
