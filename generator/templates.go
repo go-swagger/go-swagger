@@ -224,9 +224,7 @@ var templates = NewRepository(FuncMap)
 
 func init() {
 
-	for name, asset := range assets {
-		templates.AddFile(name, string(asset))
-	}
+	templates.LoadDefaults()
 
 	// for name, template := range builtinTemplates {
 	// 	templates.AddTemplate(name, template)

@@ -94,7 +94,7 @@ type Repository struct {
 func (t *Repository) LoadDefaults() {
 
 	for name, asset := range assets {
-		t.AddFile(name, string(asset))
+		t.addFile(name, string(asset), true)
 	}
 }
 
@@ -119,13 +119,7 @@ func (t *Repository) LoadDir(templatePath string) error {
 	return err
 }
 
-// AddFile adds a file to the repository. It will create a new template based on the filename.
-// It trims the .gotmpl from the end and converts the name using swag.ToJSONName. This will strip
-// directory separators and Camelcase the next letter.
-// e.g validation/primitive.gotmpl will become validationPrimitive
-//
-// If the file contains a definition for a template that is protected the whole file will not be added
-func (t *Repository) AddFile(name, data string) error {
+func (t *Repository) addFile(name, data string, allowOverride bool) error {
 	fileName := name
 	name = swag.ToJSONName(strings.TrimSuffix(name, ".gotmpl"))
 
@@ -136,10 +130,11 @@ func (t *Repository) AddFile(name, data string) error {
 	}
 
 	// check if any protected templates are defined
-
-	for _, template := range templ.Templates() {
-		if protectedTemplates[template.Name()] {
-			return fmt.Errorf("Cannot overwrite protected template %s", template.Name())
+	if !allowOverride {
+		for _, template := range templ.Templates() {
+			if protectedTemplates[template.Name()] {
+				return fmt.Errorf("Cannot overwrite protected template %s", template.Name())
+			}
 		}
 	}
 
@@ -151,6 +146,16 @@ func (t *Repository) AddFile(name, data string) error {
 	}
 
 	return nil
+}
+
+// AddFile adds a file to the repository. It will create a new template based on the filename.
+// It trims the .gotmpl from the end and converts the name using swag.ToJSONName. This will strip
+// directory separators and Camelcase the next letter.
+// e.g validation/primitive.gotmpl will become validationPrimitive
+//
+// If the file contains a definition for a template that is protected the whole file will not be added
+func (t *Repository) AddFile(name, data string) error {
+	return t.addFile(name, data, false)
 }
 
 func findDependencies(n parse.Node) []string {
