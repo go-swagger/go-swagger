@@ -14,20 +14,11 @@ Any templates defined in these files will also be included.
  
 # Available Templates:
 
-## propertyValidationDocString
-Defined in `validation/structfield.gotmpl`
-
----
 ## objectvalidator
 Defined in `schemavalidator.gotmpl`
 ####requires 
  - propertyvalidator
 
-
-
----
-## clientClient
-Defined in `client/client.gotmpl`
 
 ---
 ## structfieldIface
@@ -36,22 +27,6 @@ Defined in `structfield.gotmpl`
  - propertyValidationDocString
  - docstring
  - schemaType
-
-
-
----
-## clientResponse
-Defined in `client/response.gotmpl`
-####requires 
- - clientresponse
- - schema
- - docstring
-
-
-
----
-## serverMain
-Defined in `server/main.gotmpl`
 
 ---
 ## schemavalidator
@@ -107,24 +82,6 @@ Defined in `model.gotmpl`
  - schema
 
 
-
----
-## propertyparamvalidator
-Defined in `server/parameter.gotmpl`
-####requires 
- - validationPrimitive
- - sliceparamvalidator
-
-
-
----
-## bindprimitiveparam
-Defined in `server/parameter.gotmpl`
-
----
-## serverConfigureapi
-Defined in `server/configureapi.gotmpl`
-
 ---
 ## withBaseTypeBody
 Defined in `schemabody.gotmpl`
@@ -156,25 +113,10 @@ Defined in `structfield.gotmpl`
 
 
 ---
-## serverOperation
-Defined in `server/operation.gotmpl`
-####requires 
- - schema
- - docstring
-
-
-
----
-## clientresponse
-Defined in `client/response.gotmpl`
-
----
 ## tupleSerializer
 Defined in `tupleserializer.gotmpl`
 ####requires 
  - schemaType
-
-
 
 ---
 ## hasDiscriminatedSerializer
@@ -182,16 +124,6 @@ Defined in `tupleserializer.gotmpl`
 ####requires 
  - withoutBaseTypeBody
  - schemaType
-
-
-
----
-## serverBuilder
-Defined in `server/builder.gotmpl`
-
----
-## serverDoc
-Defined in `server/doc.gotmpl`
 
 ---
 ## primitivefieldvalidator
@@ -213,15 +145,11 @@ Defined in `schema.gotmpl`
  - schemaType
  - additionalPropertiesSerializer
 
-
-
 ---
 ## privstructfield
 Defined in `structfield.gotmpl`
 ####requires 
  - schemaType
-
-
 
 ---
 ## structfield
@@ -230,8 +158,6 @@ Defined in `structfield.gotmpl`
  - docstring
  - propertyValidationDocString
  - schemaType
-
-
 
 ---
 ## docstring
@@ -246,23 +172,6 @@ Defined in `header.gotmpl`
 Defined in `tupleserializer.gotmpl`
 
 ---
-## sliceparambinder
-Defined in `server/parameter.gotmpl`
-####requires 
- - propertyparamvalidator
- - sliceparambinder
-
-
-
----
-## serverresponse
-Defined in `server/responses.gotmpl`
-
----
-## validationCustomformat
-Defined in `validation/customformat.gotmpl`
-
----
 ## schemaBody
 Defined in `schemabody.gotmpl`
 ####requires 
@@ -273,37 +182,6 @@ Defined in `schemabody.gotmpl`
  - privstructfield
  - tuplefield
  - structfield
-
-
-
----
-## serverParameter
-Defined in `server/parameter.gotmpl`
-####requires 
- - propertyparamvalidator
- - sliceparambinder
-
-
-
----
-## sliceparamvalidator
-Defined in `server/parameter.gotmpl`
-
----
-## serverResponses
-Defined in `server/responses.gotmpl`
-####requires 
- - serverresponse
-
-
-
----
-## clientParameter
-Defined in `client/parameter.gotmpl`
-
----
-## validationPrimitive
-Defined in `validation/primitive.gotmpl`
 
 ---
 ## swaggerJsonEmbed
@@ -319,27 +197,11 @@ Defined in `schemavalidator.gotmpl`
  - primitivefieldvalidator
  - objectvalidator
 
-
-
----
-## validationStructfield
-Defined in `validation/structfield.gotmpl`
-
 ---
 ## additionalPropertiesSerializer
 Defined in `additionalpropertiesserializer.gotmpl`
 ####requires 
  - schemaType
-
-
-
----
-## additionalpropertiesserializer
-Defined in `additionalpropertiesserializer.gotmpl`
-
----
-## schemabody
-Defined in `schemabody.gotmpl`
 
 ---
 ## subTypeBody
@@ -351,8 +213,6 @@ Defined in `schemabody.gotmpl`
  - privtuplefield
  - privstructfield
 
-
-
 ---
 ## tuplefield
 Defined in `structfield.gotmpl`
@@ -361,23 +221,17 @@ Defined in `structfield.gotmpl`
  - propertyValidationDocString
  - schemaType
 
-
-
 ---
 ## dereffedSchemaType
 Defined in `schematype.gotmpl`
 ####requires 
  - schemaBody
 
-
-
 ---
 ## privtuplefield
 Defined in `structfield.gotmpl`
 ####requires 
  - schemaType
-
-
 
 ---
 ## withoutBaseTypeBody
@@ -390,15 +244,110 @@ Defined in `schemabody.gotmpl`
  - privstructfield
 
 
+# Validation Templates
+
+## validationStructfield
+Defined in `validation/structfield.gotmpl`
 
 ---
+## validationPrimitive
+Defined in `validation/primitive.gotmpl`
+
+---
+## propertyValidationDocString
+Defined in `validation/structfield.gotmpl`
+
+---
+
+## validationCustomformat
+Defined in `validation/customformat.gotmpl`
+
+# Client Templates
+
 ## clientFacade
 Defined in `client/facade.gotmpl`
 
 ---
-## schematype
-Defined in `schematype.gotmpl`
+## clientParameter
+Defined in `client/parameter.gotmpl`
 
 ---
-PASS
-ok  	github.com/go-swagger/go-swagger/generator	0.283s
+## clientResponse
+Defined in `client/response.gotmpl`
+####requires 
+ - clientresponse
+ - schema
+ - docstring
+
+---
+## clientresponse
+Defined in `client/response.gotmpl`
+
+---
+## clientClient
+Defined in `client/client.gotmpl`
+
+
+# Server Templates
+
+## serverParameter
+Defined in `server/parameter.gotmpl`
+####requires 
+ - propertyparamvalidator
+ - sliceparambinder
+
+---
+## sliceparamvalidator
+Defined in `server/parameter.gotmpl`
+
+---
+## serverResponses
+Defined in `server/responses.gotmpl`
+####requires 
+ - serverresponse
+
+---
+## sliceparambinder
+Defined in `server/parameter.gotmpl`
+####requires 
+ - propertyparamvalidator
+ - sliceparambinder
+
+---
+## serverresponse
+Defined in `server/responses.gotmpl`
+
+
+---
+## serverOperation
+Defined in `server/operation.gotmpl`
+####requires 
+ - schema
+ - docstring
+
+---
+## propertyparamvalidator
+Defined in `server/parameter.gotmpl`
+####requires 
+ - validationPrimitive
+ - sliceparamvalidator
+
+---
+## serverMain
+Defined in `server/main.gotmpl`
+
+---
+## bindprimitiveparam
+Defined in `server/parameter.gotmpl`
+
+---
+## serverConfigureapi
+Defined in `server/configureapi.gotmpl`
+
+---
+## serverBuilder
+Defined in `server/builder.gotmpl`
+
+---
+## serverDoc
+Defined in `server/doc.gotmpl`
