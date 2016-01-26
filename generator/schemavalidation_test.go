@@ -20,7 +20,6 @@ import (
 	"log"
 	"regexp"
 	"testing"
-	"text/template"
 
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
@@ -68,7 +67,6 @@ func TestSchemaValidation_RequiredProps(t *testing.T) {
 			for _, p := range gm.Properties {
 				if assert.True(t, p.Required) {
 					buf := bytes.NewBuffer(nil)
-					modelTemplate := template.Must(templates.Get("model"))
 					err := modelTemplate.Execute(buf, gm)
 					if assert.NoError(t, err) {
 						formatted, err := formatGoFile("required_props.go", buf.Bytes())
@@ -96,7 +94,6 @@ func TestSchemaValidation_Strings(t *testing.T) {
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("named_string.go", buf.Bytes())
@@ -125,7 +122,6 @@ func TestSchemaValidation_StringProps(t *testing.T) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"name\"", "m.Name", prop) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("string_validations.go", buf.Bytes())
@@ -154,7 +150,6 @@ func TestSchemaValidation_NamedNumber(t *testing.T) {
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("named_number.go", buf.Bytes())
@@ -184,7 +179,6 @@ func TestSchemaValidation_NumberProps(t *testing.T) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"age\"", "m.Age", prop) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("number_validations.go", buf.Bytes())
@@ -213,7 +207,6 @@ func TestSchemaValidation_NamedArray(t *testing.T) {
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("named_array.go", buf.Bytes())
@@ -244,7 +237,6 @@ func TestSchemaValidation_ArrayProps(t *testing.T) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"tags\"", "m.Tags", prop) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("array_validations.go", buf.Bytes())
@@ -275,7 +267,6 @@ func TestSchemaValidation_NamedNestedArray(t *testing.T) {
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("named_nested_array.go", buf.Bytes())
@@ -313,7 +304,6 @@ func TestSchemaValidation_NestedArrayProps(t *testing.T) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"tags\"", "m.Tags", prop) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("nested_array_validations.go", buf.Bytes())
@@ -351,7 +341,6 @@ func TestSchemaValidation_NamedNestedObject(t *testing.T) {
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("named_nested_object.go", buf.Bytes())
@@ -402,7 +391,6 @@ func TestSchemaValidation_NestedObjectProps(t *testing.T) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"args\"", "m.Args", prop) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("nested_object_validations.go", buf.Bytes())
@@ -452,7 +440,6 @@ func TestSchemaValidation_NamedArrayMulti(t *testing.T) {
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("named_array_multi.go", buf.Bytes())
@@ -488,7 +475,6 @@ func TestSchemaValidation_ArrayMultiProps(t *testing.T) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"args\"", "m.Args", prop) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("array_multi_validations.go", buf.Bytes())
@@ -522,7 +508,6 @@ func TestSchemaValidation_NamedArrayAdditional(t *testing.T) {
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("named_array_additional.go", buf.Bytes())
@@ -560,7 +545,6 @@ func TestSchemaValidation_ArrayAdditionalProps(t *testing.T) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"args\"", "m.Args", prop) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("array_additional_validations.go", buf.Bytes())
@@ -595,7 +579,6 @@ func TestSchemaValidation_NamedMap(t *testing.T) {
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("named_map.go", buf.Bytes())
@@ -625,7 +608,6 @@ func TestSchemaValidation_MapProps(t *testing.T) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"meta\"", "m.Meta", prop) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("map_validations.go", buf.Bytes())
@@ -655,7 +637,6 @@ func TestSchemaValidation_NamedMapComplex(t *testing.T) {
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("named_map_complex.go", buf.Bytes())
@@ -688,7 +669,6 @@ func TestSchemaValidation_MapComplexProps(t *testing.T) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"meta\"", "m.Meta", prop) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("map_complex_validations.go", buf.Bytes())
@@ -721,7 +701,6 @@ func TestSchemaValidation_NamedNestedMap(t *testing.T) {
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("named_nested_map.go", buf.Bytes())
@@ -753,7 +732,6 @@ func TestSchemaValidation_NestedMapProps(t *testing.T) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"meta\"", "m.Meta", prop) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("nested_map_validations.go", buf.Bytes())
@@ -877,7 +855,6 @@ func TestSchemaValidation_NamedNestedMapComplex(t *testing.T) {
 				if assert.True(t, gm.GenSchema.AdditionalProperties.HasValidations) {
 					if assert.True(t, gm.GenSchema.AdditionalProperties.AdditionalProperties.HasValidations) {
 						buf := bytes.NewBuffer(nil)
-						modelTemplate := template.Must(templates.Get("model"))
 						err := modelTemplate.Execute(buf, gm)
 						if assert.NoError(t, err) {
 							formatted, err := formatGoFile("named_nested_map_complex.go", buf.Bytes())
@@ -917,7 +894,6 @@ func TestSchemaValidation_NestedMapPropsComplex(t *testing.T) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"meta\"", "m.Meta", prop) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("nested_map_complex_validations.go", buf.Bytes())
@@ -953,7 +929,6 @@ func TestSchemaValidation_NamedAllOf(t *testing.T) {
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("named_all_of.go", buf.Bytes())
@@ -996,7 +971,6 @@ func TestSchemaValidation_AllOfProps(t *testing.T) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"meta\"", "m.Meta", prop) {
 				buf := bytes.NewBuffer(nil)
-				modelTemplate := template.Must(templates.Get("model"))
 				err := modelTemplate.Execute(buf, gm)
 				if assert.NoError(t, err) {
 					formatted, err := formatGoFile("all_of_validations.go", buf.Bytes())
@@ -1033,7 +1007,6 @@ func TestSchemaValidation_RefedAllOf(t *testing.T) {
 			//prop := gm.AllOf[0]
 			//if assertValidation(t, "\"meta\"", "m.Meta", prop) {
 			buf := bytes.NewBuffer(nil)
-			modelTemplate := template.Must(templates.Get("model"))
 			err := modelTemplate.Execute(buf, gm)
 			if assert.NoError(t, err) {
 				formatted, err := formatGoFile("all_of_validations.go", buf.Bytes())
@@ -1060,7 +1033,6 @@ func TestSchemaValidation_SimpleZeroAllowed(t *testing.T) {
 		gm, err := makeGenDefinition(k, "models", schema, specDoc)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			modelTemplate := template.Must(templates.Get("model"))
 			err := modelTemplate.Execute(buf, gm)
 			if assert.NoError(t, err) {
 				formatted, err := formatGoFile("simple_zero_allowed.go", buf.Bytes())
@@ -1086,7 +1058,6 @@ func TestSchemaValidation_Pet(t *testing.T) {
 		gm, err := makeGenDefinition(k, "models", schema, specDoc)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			modelTemplate := template.Must(templates.Get("model"))
 			err := modelTemplate.Execute(buf, gm)
 			if assert.NoError(t, err) {
 				formatted, err := formatGoFile("pet.go", buf.Bytes())
@@ -1113,7 +1084,6 @@ func TestSchemaValidation_UpdateOrg(t *testing.T) {
 		gm, err := makeGenDefinition(k, "models", schema, specDoc)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			modelTemplate := template.Must(templates.Get("model"))
 			err := modelTemplate.Execute(buf, gm)
 			if assert.NoError(t, err) {
 				formatted, err := formatGoFile("pet.go", buf.Bytes())

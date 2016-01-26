@@ -2,7 +2,6 @@ package generator
 
 import (
 	"bytes"
-	"log"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -90,9 +89,6 @@ func TestRepoRecursiveTemplates(t *testing.T) {
 	repo.AddFile("c1", cirularDeps1)
 	repo.AddFile("c2", cirularDeps2)
 
-	for name, t := range repo.templates {
-		log.Println(name, t.Name(), t.DefinedTemplates())
-	}
 	templ, err := repo.Get("c1")
 	assert.Nil(t, err)
 	data := testData{

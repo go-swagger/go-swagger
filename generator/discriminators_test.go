@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"testing"
-	"text/template"
 
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
@@ -22,7 +21,6 @@ func TestBuildDiscriminatorMap(t *testing.T) {
 }
 
 func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
-	modelTemplate := template.Must(templates.Get("model"))
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.discriminators.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
@@ -51,7 +49,6 @@ func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
 }
 
 func TestGenerateModel_Discriminators(t *testing.T) {
-	modelTemplate := template.Must(templates.Get("model"))
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.discriminators.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
@@ -135,7 +132,6 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 }
 
 func TestGenerateModel_UsesDiscriminator(t *testing.T) {
-	modelTemplate := template.Must(templates.Get("model"))
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.discriminators.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
@@ -162,7 +158,6 @@ func TestGenerateModel_UsesDiscriminator(t *testing.T) {
 }
 
 func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
-
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.discriminators.yml")
 	if assert.NoError(t, err) {
 		method, path, op, ok := specDoc.OperationForName("modelOp")
@@ -198,7 +193,6 @@ func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 }
 
 func TestGenerateServer_Parameters(t *testing.T) {
-
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.discriminators.yml")
 	if assert.NoError(t, err) {
 		method, path, op, ok := specDoc.OperationForName("modelOp")
@@ -234,7 +228,6 @@ func TestGenerateServer_Parameters(t *testing.T) {
 }
 
 func TestGenerateModel_Discriminator_Billforward(t *testing.T) {
-	modelTemplate := template.Must(templates.Get("model"))
 	specDoc, err := spec.Load("../fixtures/codegen/billforward.discriminators.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
