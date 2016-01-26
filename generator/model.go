@@ -24,7 +24,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"text/template"
 
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
@@ -34,7 +33,9 @@ import (
 func GenerateDefinition(modelNames []string, includeModel, includeValidator bool, opts GenOpts) error {
 
 	if opts.TemplateDir != "" {
-		templates.LoadDir(opts.TemplateDir)
+		if err := templates.LoadDir(opts.TemplateDir); err != nil {
+			return err
+		}
 	}
 
 	compileTemplates()
@@ -122,7 +123,6 @@ func (m *definitionGenerator) generateModel() error {
 		fmt.Fprintln(os.Stdout, string(bb))
 	}
 
-	modelTemplate := template.Must(templates.Get("model"))
 	if err := modelTemplate.Execute(buf, m.Data); err != nil {
 		return err
 	}

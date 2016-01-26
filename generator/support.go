@@ -54,7 +54,9 @@ func GenerateSupport(name string, modelNames, operationIDs []string, opts GenOpt
 func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOpts) (*appGenerator, error) {
 
 	if opts.TemplateDir != "" {
-		templates.LoadDir(opts.TemplateDir)
+		if err := templates.LoadDir(opts.TemplateDir); err != nil {
+			return nil, err
+		}
 	}
 
 	compileTemplates()

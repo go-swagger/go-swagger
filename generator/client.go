@@ -30,7 +30,9 @@ import (
 func GenerateClient(name string, modelNames, operationIDs []string, opts GenOpts) error {
 
 	if opts.TemplateDir != "" {
-		templates.LoadDir(opts.TemplateDir)
+		if err := templates.LoadDir(opts.TemplateDir); err != nil {
+			return err
+		}
 	}
 
 	compileTemplates()

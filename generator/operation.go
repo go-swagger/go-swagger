@@ -34,7 +34,9 @@ import (
 func GenerateServerOperation(operationNames, tags []string, includeHandler, includeParameters, includeResponses bool, opts GenOpts) error {
 
 	if opts.TemplateDir != "" {
-		templates.LoadDir(opts.TemplateDir)
+		if err := templates.LoadDir(opts.TemplateDir); err != nil {
+			return err
+		}
 	}
 
 	compileTemplates()
