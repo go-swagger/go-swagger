@@ -13,6 +13,10 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
+var protectedTemplates = map[string]bool{
+	"model": true,
+}
+
 // FuncMap is a map with default functions for use n the templates.
 // These are available in every template
 var FuncMap template.FuncMap = map[string]interface{}{
@@ -63,6 +67,7 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	},
 }
 
+// NewRepository creates a new template repository with the provided functions defined
 func NewRepository(funcs template.FuncMap) *Repository {
 	repo := Repository{
 		files:     make(map[string]string),
@@ -78,12 +83,22 @@ func NewRepository(funcs template.FuncMap) *Repository {
 	return &repo
 }
 
+// Repository is the repository for the generator templates.
 type Repository struct {
 	files     map[string]string
 	templates map[string]*template.Template
 	funcs     template.FuncMap
 }
 
+// LoadDefaults will load the embedded templates
+func (t *Repository) LoadDefaults() {
+
+	for name, asset := range assets {
+		t.AddFile(name, string(asset))
+	}
+}
+
+// LoadDir will walk the specified path and add each .gotmpl file it finds to the repository
 func (t *Repository) LoadDir(templatePath string) error {
 
 	err := filepath.Walk(templatePath, func(path string, info os.FileInfo, err error) error {
@@ -104,6 +119,12 @@ func (t *Repository) LoadDir(templatePath string) error {
 	return err
 }
 
+// AddFile adds a file to the repository. It will create a new template based on the filename.
+// It trims the .gotmpl from the end and converts the name using swag.ToJSONName. This will strip
+// directory separators and Camelcase the next letter.
+// e.g validation/primitive.gotmpl will become validationPrimitive
+//
+// If the file contains a definition for a template that is protected the whole file will not be added
 func (t *Repository) AddFile(name, data string) error {
 	fileName := name
 	name = swag.ToJSONName(strings.TrimSuffix(name, ".gotmpl"))
@@ -114,8 +135,17 @@ func (t *Repository) AddFile(name, data string) error {
 		return err
 	}
 
+	// check if any protected templates are defined
+
+	for _, template := range templ.Templates() {
+		if protectedTemplates[template.Name()] {
+			return fmt.Errorf("Cannot overwrite protected template %s", template.Name())
+		}
+	}
+
 	// Add each defined tempalte into the cache
 	for _, template := range templ.Templates() {
+
 		t.files[template.Name()] = fileName
 		t.templates[template.Name()] = template.Lookup(template.Name())
 	}
@@ -238,21 +268,30 @@ func (t *Repository) addDependencies(templ *template.Template) (*template.Templa
 	return templ.Lookup(name), nil
 }
 
+// Get will return the named template from the repository, ensuring that all dependent templates are loaded.
+// It will return an error if a dependent template is not defined in the repository.
 func (t *Repository) Get(name string) (*template.Template, error) {
 	templ, found := t.templates[name]
 
 	if !found {
-		return templ, fmt.Errorf("Template doesn't exist", name)
+		return templ, fmt.Errorf("Template doesn't exist %s", name)
 	}
 
 	return t.addDependencies(templ)
 }
 
+// DumpTemplates prints out a dump of all the defined templates, where they are defined and what their dependencies are.
 func (t *Repository) DumpTemplates() {
 
+	fmt.Println("# Templates")
 	for name, templ := range t.templates {
 		fmt.Printf("## %s\n", name)
-		fmt.Printf("Defined in %s\n", t.files[name])
-		fmt.Printf("requires %v\n\n\n", findDependencies(templ.Tree.Root))
+		fmt.Printf("Defined in `%s`\n", t.files[name])
+
+		if deps := findDependencies(templ.Tree.Root); len(deps) > 0 {
+
+			fmt.Printf("####requires \n - %v\n\n\n", strings.Join(deps, "\n - "))
+		}
+		fmt.Println("\n---")
 	}
 }

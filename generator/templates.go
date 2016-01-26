@@ -267,23 +267,6 @@ func compileTemplates() {
 
 }
 
-func makeModelTemplate() *template.Template {
-	templ := template.Must(template.New("docstring").Funcs(FuncMap).Parse(string(assets["docstring.gotmpl"])))
-	templ = template.Must(templ.New("primitivevalidator").Parse(string(assets["validation/primitive.gotmpl"])))
-	templ = template.Must(templ.New("customformatvalidator").Parse(string(assets["validation/customformat.gotmpl"])))
-	templ = template.Must(templ.New("validationDocString").Parse(string(assets["validation/structfield.gotmpl"])))
-	templ = template.Must(templ.New("schematype").Parse(string(assets["schematype.gotmpl"])))
-	templ = template.Must(templ.New("body").Parse(string(assets["schemabody.gotmpl"])))
-	templ = template.Must(templ.New("schema").Parse(string(assets["schema.gotmpl"])))
-	templ = template.Must(templ.New("schemavalidations").Parse(string(assets["schemavalidator.gotmpl"])))
-	templ = template.Must(templ.New("header").Parse(string(assets["header.gotmpl"])))
-	templ = template.Must(templ.New("fields").Parse(string(assets["structfield.gotmpl"])))
-	templ = template.Must(templ.New("tupleSerializer").Parse(string(assets["tupleserializer.gotmpl"])))
-	templ = template.Must(templ.New("additionalpropertiesserializer.gotmpl").Parse(string(assets["additionalpropertiesserializer.gotmpl"])))
-	templ = template.Must(templ.New("model").Parse(string(assets["model.gotmpl"])))
-	return templ
-}
-
 func asJSON(data interface{}) (string, error) {
 	b, err := json.Marshal(data)
 	if err != nil {
