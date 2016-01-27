@@ -16,10 +16,18 @@ package generator
 
 import (
 	"bytes"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+// We need to compile the templates because this is no longer done in init
+func TestMain(m *testing.M) {
+	compileTemplates()
+	retCode := m.Run()
+	os.Exit(retCode)
+}
 
 var customHeader = `custom header`
 var customMultiple = `{{define "validationPrimitive" }}custom primitive{{end}}`
