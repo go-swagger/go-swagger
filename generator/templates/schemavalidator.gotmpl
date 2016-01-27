@@ -126,7 +126,7 @@ if err := {{.ValueExpression}}.Validate(formats); err != nil {
 {{end}}{{end}}
 {{define "propertyvalidator"}}
 {{ if .IsPrimitive }}{{ if .IsAliased }}{{ template "objectvalidator" . }}{{ else }}{{ template "primitivefieldvalidator" .}}{{ end }}
-{{else if .IsCustomFormatter }}{{ template "customformatvalidator" .}}
+{{else if .IsCustomFormatter }}{{ template "validationCustomformat" .}}
 {{else if .IsArray }}{{ template "slicevalidator" .}}
 {{else if .IsMap}}{{ template "mapvalidator" . }}
 {{else if or .IsComplexObject .IsTuple .IsAdditionalProperties .IsAliased }}{{ template "objectvalidator" . }}{{end}}
@@ -190,7 +190,7 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
   {{ range .AllOf }}
     {{ if or .Required .HasValidations }}
     {{if .IsPrimitive }}{{ template "primitivefieldvalidator" .}}
-    {{else if .IsCustomFormatter }}{{ template "customformatvalidator" .}}
+    {{else if .IsCustomFormatter }}{{ template "validationCustomformat" .}}
     {{else if .IsArray }}{{ template "slicevalidator" .}}
     {{else if .IsMap}}{{ template "mapvalidator" . }}
     {{ end }}
@@ -214,7 +214,7 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
   {{ end }}
   {{ end }}
   {{if .IsPrimitive }}{{ template "primitivefieldvalidator" .}}
-  {{else if .IsCustomFormatter }}{{ template "customformatvalidator" .}}
+  {{else if .IsCustomFormatter }}{{ template "validationCustomformat" .}}
   {{else if .IsArray }}{{ template "slicevalidator" .}}
   {{else if .IsMap}}{{ template "mapvalidator" . }}
   {{ end }}

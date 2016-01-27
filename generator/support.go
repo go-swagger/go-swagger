@@ -34,14 +34,6 @@ import (
 // GenerateServer generates a server application
 func GenerateServer(name string, modelNames, operationIDs []string, opts GenOpts) error {
 
-	if opts.TemplateDir != "" {
-		if recompile, err := loadCustomTemplates(opts.TemplateDir, ""); err != nil {
-			return err
-		} else if recompile {
-			compileTemplates()
-		}
-	}
-
 	generator, err := newAppGenerator(name, modelNames, operationIDs, &opts)
 	if err != nil {
 		return err
@@ -52,14 +44,6 @@ func GenerateServer(name string, modelNames, operationIDs []string, opts GenOpts
 // GenerateSupport generates the supporting files for an API
 func GenerateSupport(name string, modelNames, operationIDs []string, opts GenOpts) error {
 
-	if opts.TemplateDir != "" {
-		if recompile, err := loadCustomTemplates(opts.TemplateDir, ""); err != nil {
-			return err
-		} else if recompile {
-			compileTemplates()
-		}
-	}
-
 	generator, err := newAppGenerator(name, modelNames, operationIDs, &opts)
 	if err != nil {
 		return err
@@ -68,6 +52,15 @@ func GenerateSupport(name string, modelNames, operationIDs []string, opts GenOpt
 }
 
 func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOpts) (*appGenerator, error) {
+
+	if opts.TemplateDir != "" {
+		if err := templates.LoadDir(opts.TemplateDir); err != nil {
+			return nil, err
+		}
+	}
+
+	compileTemplates()
+
 	// Load the spec
 	_, specDoc, err := loadSpec(opts.Spec)
 	if err != nil {

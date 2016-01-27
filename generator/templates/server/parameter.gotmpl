@@ -23,7 +23,7 @@ if err := validate.Enum({{ .Path }}, {{ printf "%q" .Location }}, {{ .ValueExpre
 }
 {{ end }}
 {{ end }}{{ define "propertyparamvalidator" }}
-{{ if .IsPrimitive }}{{ template "primitivevalidator" . }}{{ end }}
+{{ if .IsPrimitive }}{{ template "validationPrimitive" . }}{{ end }}
 {{ if .IsCustomFormatter }}
 if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", string({{.ValueExpression}}), formats); err != nil {
   return err

@@ -30,12 +30,12 @@ import (
 func GenerateClient(name string, modelNames, operationIDs []string, opts GenOpts) error {
 
 	if opts.TemplateDir != "" {
-		if recompile, err := loadCustomTemplates(opts.TemplateDir, ""); err != nil {
+		if err := templates.LoadDir(opts.TemplateDir); err != nil {
 			return err
-		} else if recompile {
-			compileTemplates()
 		}
 	}
+
+	compileTemplates()
 
 	// Load the spec
 	_, specDoc, err := loadSpec(opts.Spec)

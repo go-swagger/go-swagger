@@ -15,32 +15,81 @@
 package generator
 
 import (
-	"fmt"
+	"bytes"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
+// We need to compile the templates because this is no longer done in init
+func TestMain(m *testing.M) {
+	compileTemplates()
+	retCode := m.Run()
+	os.Exit(retCode)
+}
+
+var customHeader = `custom header`
+var customMultiple = `{{define "bindprimitiveparam" }}custom primitive{{end}}`
+var customNewTemplate = `new template`
+var customExistingUsesNew = `{{define "bindprimitiveparam" }}{{ template "newtemplate" }}{{end}}`
+
 func TestCustomTemplates(t *testing.T) {
 
-	recompile, err := loadCustomTemplates("../fixtures/templates/", "")
+	var buf bytes.Buffer
+	headerTempl, err := templates.Get("bindprimitiveparam")
 
-	assert.NoError(t, err)
-	assert.True(t, recompile)
+	assert.Nil(t, err)
 
-	for template, v := range assets {
-		if string(v) != fmt.Sprintf("./%s\n", template) {
-			t.Errorf("Template %s wasn't loaded", template)
-		}
-	}
+	err = headerTempl.Execute(&buf, nil)
+
+	assert.Nil(t, err)
+	assert.Equal(t, "\n", buf.String())
+
+	buf.Reset()
+	err = templates.AddFile("bindprimitiveparam", customHeader)
+
+	assert.Nil(t, err)
+	headerTempl, err = templates.Get("bindprimitiveparam")
+
+	assert.Nil(t, err)
+
+	err = headerTempl.Execute(&buf, nil)
+
+	assert.Nil(t, err)
+	assert.Equal(t, "custom header", buf.String())
 
 }
 
-func TestCustomTemplatesEmptyDirectory(t *testing.T) {
+func TestCustomTemplatesMultiple(t *testing.T) {
+	var buf bytes.Buffer
 
-	recompile, err := loadCustomTemplates("../fixtures/doesntexist/", "")
+	err := templates.AddFile("differentFileName", customMultiple)
 
-	assert.Error(t, err)
-	assert.False(t, recompile)
+	assert.Nil(t, err)
+	headerTempl, err := templates.Get("bindprimitiveparam")
 
+	assert.Nil(t, err)
+
+	err = headerTempl.Execute(&buf, nil)
+
+	assert.Nil(t, err)
+	assert.Equal(t, "custom primitive", buf.String())
+}
+
+func TestCustomNewTemplates(t *testing.T) {
+	var buf bytes.Buffer
+
+	err := templates.AddFile("newtemplate", customNewTemplate)
+	err = templates.AddFile("existingUsesNew", customExistingUsesNew)
+
+	assert.Nil(t, err)
+	headerTempl, err := templates.Get("bindprimitiveparam")
+
+	assert.Nil(t, err)
+
+	err = headerTempl.Execute(&buf, nil)
+
+	assert.Nil(t, err)
+	assert.Equal(t, "new template", buf.String())
 }

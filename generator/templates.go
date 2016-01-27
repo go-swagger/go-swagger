@@ -16,14 +16,8 @@ package generator
 
 import (
 	"encoding/json"
-	"io/ioutil"
-	"path/filepath"
 	"regexp"
-	"strings"
 	"text/template"
-
-	"bitbucket.org/pkg/inflect"
-	"github.com/go-swagger/go-swagger/swag"
 )
 
 //go:generate go-bindata -pkg=generator -ignore=.*\.sw? ./templates/...
@@ -31,8 +25,8 @@ import (
 // fwiw, don't get attached to this, still requires a better abstraction
 
 var (
-	modelTemplate          *template.Template
-	modelValidatorTemplate *template.Template
+	modelTemplate *template.Template
+	// modelValidatorTemplate *template.Template
 	operationTemplate      *template.Template
 	parameterTemplate      *template.Template
 	responsesTemplate      *template.Template
@@ -82,154 +76,40 @@ var (
 	notNumberExp = regexp.MustCompile("[^0-9]")
 )
 
-// FuncMap is a map with default functions for use n the templates.
-// These are available in every template
-var FuncMap template.FuncMap = map[string]interface{}{
-	"pascalize": pascalize,
-	"camelize":  swag.ToJSONName,
-	"humanize":  swag.ToHumanNameLower,
-	"snakize":   swag.ToFileName,
-	"dasherize": swag.ToCommandName,
-	"pluralizeFirstWord": func(arg string) string {
-		sentence := strings.Split(arg, " ")
-		if len(sentence) == 1 {
-			return inflect.Pluralize(arg)
-		}
+var templates = NewRepository(FuncMap)
 
-		return inflect.Pluralize(sentence[0]) + " " + strings.Join(sentence[1:], " ")
-	},
-	"json": asJSON,
-	"hasInsecure": func(arg []string) bool {
-		return swag.ContainsStringsCI(arg, "http") || swag.ContainsStringsCI(arg, "ws")
-	},
-	"hasSecure": func(arg []string) bool {
-		return swag.ContainsStringsCI(arg, "https") || swag.ContainsStringsCI(arg, "wss")
-	},
-	"stripPackage": func(str, pkg string) string {
-		parts := strings.Split(str, ".")
-		strlen := len(parts)
-		if strlen > 0 {
-			return parts[strlen-1]
-		}
-		return str
-	},
-	"dropPackage": func(str string) string {
-		parts := strings.Split(str, ".")
-		strlen := len(parts)
-		if strlen > 0 {
-			return parts[strlen-1]
-		}
-		return str
-	},
-	"upper": func(str string) string {
-		return strings.ToUpper(str)
-	},
-}
+func init() {
 
-func loadCustomTemplates(templatePath, prefix string) (bool, error) {
+	templates.LoadDefaults()
 
-	recompile := false
-
-	files, err := ioutil.ReadDir(templatePath)
-
-	if err != nil {
-		return false, err
-	}
-
-	for _, file := range files {
-		templateName := file.Name()
-
-		if prefix != "" {
-			templateName = prefix + "/" + file.Name()
-		}
-
-		if !file.IsDir() {
-
-			if _, exists := assets[templateName]; exists {
-				if data, err := ioutil.ReadFile(filepath.Join(templatePath, file.Name())); err == nil {
-					assets[templateName] = data
-					recompile = true
-				}
-
-			}
-		} else {
-			recompile, _ = loadCustomTemplates(filepath.Join(templatePath, file.Name()), templateName)
-		}
-
-	}
-
-	return recompile, nil
 }
 
 func compileTemplates() {
 
-	// partial templates
-	validatorTempl := template.Must(template.New("primitivevalidator").Funcs(FuncMap).Parse(string(assets["validation/primitive.gotmpl"])))
-	validatorTempl = template.Must(validatorTempl.New("customformatvalidator").Parse(string(assets["validation/customformat.gotmpl"])))
-
-	modelTemplate = makeModelTemplate()
-	// common templates
-	bv, _ := Asset("templates/modelvalidator.gotmpl") // about to be gobbled up by the model template
-	modelValidatorTemplate = template.Must(validatorTempl.Clone())
-	modelValidatorTemplate = template.Must(modelValidatorTemplate.New("modelvalidator.gotmpl").Parse(string(bv)))
+	modelTemplate = template.Must(templates.Get("model"))
 
 	// server templates
-	parameterTemplate = makeModelTemplate()
-	parameterTemplate = template.Must(parameterTemplate.New("parameter").Parse(string(assets["server/parameter.gotmpl"])))
+	parameterTemplate = template.Must(templates.Get("serverParameter"))
 
-	responsesTemplate = makeModelTemplate()
-	responsesTemplate = template.Must(responsesTemplate.New("responses").Parse(string(assets["server/responses.gotmpl"])))
+	responsesTemplate = template.Must(templates.Get("serverResponses"))
 
-	operationTemplate = makeModelTemplate()
-	operationTemplate = template.Must(operationTemplate.New("operation").Parse(string(assets["server/operation.gotmpl"])))
-	builderTemplate = template.Must(template.New("builder").Funcs(FuncMap).Parse(string(assets["server/builder.gotmpl"])))
-	configureAPITemplate = template.Must(template.New("configureapi").Funcs(FuncMap).Parse(string(assets["server/configureapi.gotmpl"])))
-	mainTemplate = template.Must(template.New("main").Funcs(FuncMap).Parse(string(assets["server/main.gotmpl"])))
-	mainDocTemplate = template.Must(template.New("meta").Funcs(FuncMap).Parse(string(assets["server/doc.gotmpl"])))
+	operationTemplate = template.Must(templates.Get("serverOperation"))
+	builderTemplate = template.Must(templates.Get("serverBuilder"))
+	configureAPITemplate = template.Must(templates.Get("serverConfigureapi"))
+	mainTemplate = template.Must(templates.Get("serverMain"))
+	mainDocTemplate = template.Must(templates.Get("serverDoc"))
 
-	embeddedSpecTemplate = template.Must(template.New("embedded_spec").Funcs(FuncMap).Parse(string(assets["swagger_json_embed.gotmpl"])))
+	embeddedSpecTemplate = template.Must(templates.Get("swaggerJsonEmbed"))
 
 	// Client templates
-	clientParamTemplate = makeModelTemplate()
-	clientParamTemplate = template.Must(clientParamTemplate.New("parameter").Parse(string(assets["client/parameter.gotmpl"])))
+	clientParamTemplate = template.Must(templates.Get("clientParameter"))
 
-	clientResponseTemplate = makeModelTemplate() // template.Must(validatorTempl.Clone())
-	clientResponseTemplate = template.Must(clientResponseTemplate.New("response").Parse(string(assets["client/response.gotmpl"])))
+	clientResponseTemplate = template.Must(templates.Get("clientResponse"))
 
-	clientTemplate = template.Must(template.New("docstring.gotmpl").Funcs(FuncMap).Parse(string(assets["docstring.gotmpl"])))
-	clientTemplate = template.Must(clientTemplate.New("validationDocString").Parse(string(assets["validation/structfield.gotmpl"])))
-	clientTemplate = template.Must(clientTemplate.New("schType").Parse(string(assets["schematype.gotmpl"])))
-	clientTemplate = template.Must(clientTemplate.New("body").Parse(string(assets["schemabody.gotmpl"])))
-	clientTemplate = template.Must(clientTemplate.New("client").Parse(string(assets["client/client.gotmpl"])))
+	clientTemplate = template.Must(templates.Get("clientClient"))
 
-	clientFacadeTemplate = template.Must(template.New("docstring.gotmpl").Funcs(FuncMap).Parse(string(assets["docstring.gotmpl"])))
-	clientFacadeTemplate = template.Must(clientFacadeTemplate.New("validationDocString").Parse(string(assets["validation/structfield.gotmpl"])))
-	clientFacadeTemplate = template.Must(clientFacadeTemplate.New("schType").Parse(string(assets["schematype.gotmpl"])))
-	clientFacadeTemplate = template.Must(clientFacadeTemplate.New("body").Parse(string(assets["schemabody.gotmpl"])))
-	clientFacadeTemplate = template.Must(clientFacadeTemplate.New("facade").Parse(string(assets["client/facade.gotmpl"])))
-}
+	clientFacadeTemplate = template.Must(templates.Get("clientFacade"))
 
-func init() {
-
-	compileTemplates()
-
-}
-
-func makeModelTemplate() *template.Template {
-	templ := template.Must(template.New("docstring").Funcs(FuncMap).Parse(string(assets["docstring.gotmpl"])))
-	templ = template.Must(templ.New("primitivevalidator").Parse(string(assets["validation/primitive.gotmpl"])))
-	templ = template.Must(templ.New("customformatvalidator").Parse(string(assets["validation/customformat.gotmpl"])))
-	templ = template.Must(templ.New("validationDocString").Parse(string(assets["validation/structfield.gotmpl"])))
-	templ = template.Must(templ.New("schematype").Parse(string(assets["schematype.gotmpl"])))
-	templ = template.Must(templ.New("body").Parse(string(assets["schemabody.gotmpl"])))
-	templ = template.Must(templ.New("schema").Parse(string(assets["schema.gotmpl"])))
-	templ = template.Must(templ.New("schemavalidations").Parse(string(assets["schemavalidator.gotmpl"])))
-	templ = template.Must(templ.New("header").Parse(string(assets["header.gotmpl"])))
-	templ = template.Must(templ.New("fields").Parse(string(assets["structfield.gotmpl"])))
-	templ = template.Must(templ.New("tupleSerializer").Parse(string(assets["tupleserializer.gotmpl"])))
-	templ = template.Must(templ.New("additionalpropertiesserializer.gotmpl").Parse(string(assets["additionalpropertiesserializer.gotmpl"])))
-	templ = template.Must(templ.New("model").Parse(string(assets["model.gotmpl"])))
-	return templ
 }
 
 func asJSON(data interface{}) (string, error) {

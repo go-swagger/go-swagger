@@ -33,12 +33,12 @@ import (
 func GenerateDefinition(modelNames []string, includeModel, includeValidator bool, opts GenOpts) error {
 
 	if opts.TemplateDir != "" {
-		if recompile, err := loadCustomTemplates(opts.TemplateDir, ""); err != nil {
+		if err := templates.LoadDir(opts.TemplateDir); err != nil {
 			return err
-		} else if recompile {
-			compileTemplates()
 		}
 	}
+
+	compileTemplates()
 
 	// Load the spec
 	specPath, specDoc, err := loadSpec(opts.Spec)
@@ -122,6 +122,7 @@ func (m *definitionGenerator) generateModel() error {
 		bb, _ := json.MarshalIndent(swag.ToDynamicJSON(m.Data), "", " ")
 		fmt.Fprintln(os.Stdout, string(bb))
 	}
+
 	if err := modelTemplate.Execute(buf, m.Data); err != nil {
 		return err
 	}
