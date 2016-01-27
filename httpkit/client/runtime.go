@@ -104,10 +104,10 @@ func (r *Runtime) selectScheme(schemes []string) string {
 
 // Submit a request and when there is a body on success it will turn that into the result
 // all other things are turned into an api error for swagger which retains the status code
-func (r *Runtime) Submit(context *client.Operation) (interface{}, error) {
-	params, readResponse, auth := context.Params, context.Reader, context.AuthInfo
+func (r *Runtime) Submit(operation *client.Operation) (interface{}, error) {
+	params, readResponse, auth := operation.Params, operation.Reader, operation.AuthInfo
 
-	request, err := newRequest(context.Method, context.PathPattern, params)
+	request, err := newRequest(operation.Method, operation.PathPattern, params)
 	if err != nil {
 		return nil, err
 	}
@@ -115,10 +115,9 @@ func (r *Runtime) Submit(context *client.Operation) (interface{}, error) {
 	// TODO: infer most appropriate content type
 	request.SetHeaderParam(httpkit.HeaderContentType, r.DefaultMediaType)
 	var accept []string
-	for k := range r.Consumers {
-		accept = append(accept, k)
+	for _, mimeType := range operation.ProducesMediaTypes {
+		accept = append(accept, mimeType)
 	}
-
 	request.SetHeaderParam(httpkit.HeaderAccept, accept...)
 
 	if auth == nil && r.DefaultAuthentication != nil {
@@ -132,7 +131,7 @@ func (r *Runtime) Submit(context *client.Operation) (interface{}, error) {
 
 	req, err := request.BuildHTTP(r.Producers[r.DefaultMediaType], r.Formats)
 
-	req.URL.Scheme = r.pickScheme(context.Schemes)
+	req.URL.Scheme = r.pickScheme(operation.Schemes)
 	req.URL.Host = r.Host
 	req.URL.Path = path.Join(r.BasePath, req.URL.Path)
 	if err != nil {

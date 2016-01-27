@@ -53,21 +53,26 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts GenOpts
 	if defaultScheme == "" {
 		defaultScheme = "http"
 	}
+	defaultProduces := opts.DefaultProduces
+	if defaultProduces == "" {
+		defaultProduces = "application/json"
+	}
 
 	generator := appGenerator{
-		Name:          appNameOrDefault(specDoc, name, "swagger"),
-		SpecDoc:       specDoc,
-		Models:        models,
-		Operations:    operations,
-		Target:        opts.Target,
-		DumpData:      opts.DumpData,
-		Package:       mangleName(swag.ToFileName(opts.APIPackage), "api"),
-		APIPackage:    mangleName(swag.ToFileName(opts.APIPackage), "api"),
-		ModelsPackage: mangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
-		ServerPackage: mangleName(swag.ToFileName(opts.ServerPackage), "server"),
-		ClientPackage: mangleName(swag.ToFileName(opts.ClientPackage), "client"),
-		Principal:     opts.Principal,
-		DefaultScheme: defaultScheme,
+		Name:            appNameOrDefault(specDoc, name, "swagger"),
+		SpecDoc:         specDoc,
+		Models:          models,
+		Operations:      operations,
+		Target:          opts.Target,
+		DumpData:        opts.DumpData,
+		Package:         mangleName(swag.ToFileName(opts.APIPackage), "api"),
+		APIPackage:      mangleName(swag.ToFileName(opts.APIPackage), "api"),
+		ModelsPackage:   mangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
+		ServerPackage:   mangleName(swag.ToFileName(opts.ServerPackage), "server"),
+		ClientPackage:   mangleName(swag.ToFileName(opts.ClientPackage), "client"),
+		Principal:       opts.Principal,
+		DefaultScheme:   defaultScheme,
+		DefaultProduces: defaultProduces,
 	}
 	generator.Receiver = "o"
 
