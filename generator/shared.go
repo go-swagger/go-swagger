@@ -87,6 +87,7 @@ type GenOpts struct {
 	Imports           map[string]string
 	DumpData          bool
 	DefaultScheme     string
+	DefaultProduces   string
 	IncludeModel      bool
 	IncludeValidator  bool
 	IncludeHandler    bool

@@ -19,14 +19,15 @@ import "github.com/go-swagger/go-swagger/generator"
 // Client the command to generate a swagger client
 type Client struct {
 	shared
-	Name           string   `long:"name" short:"A" description:"the name of the application, defaults to a mangled value of info.title"`
-	Operations     []string `long:"operation" short:"O" description:"specify an operation to include, repeat for multiple"`
-	Tags           []string `long:"tags" description:"the tags to include, if not specified defaults to all"`
-	Principal      string   `long:"principal" short:"P" description:"the model to use for the security principal"`
-	Models         []string `long:"model" short:"M" description:"specify a model to include, repeat for multiple"`
-	DefaultScheme  string   `long:"default-scheme" description:"the default scheme for this client" default:"http"`
-	SkipModels     bool     `long:"skip-models" description:"no models will be generated when this flag is specified"`
-	SkipOperations bool     `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
+	Name            string   `long:"name" short:"A" description:"the name of the application, defaults to a mangled value of info.title"`
+	Operations      []string `long:"operation" short:"O" description:"specify an operation to include, repeat for multiple"`
+	Tags            []string `long:"tags" description:"the tags to include, if not specified defaults to all"`
+	Principal       string   `long:"principal" short:"P" description:"the model to use for the security principal"`
+	Models          []string `long:"model" short:"M" description:"specify a model to include, repeat for multiple"`
+	DefaultScheme   string   `long:"default-scheme" description:"the default scheme for this client" default:"http"`
+	DefaultProduces string   `long:"default-consumes" description:"the default mime type that API operations produce" default:"application/json"`
+	SkipModels      bool     `long:"skip-models" description:"no models will be generated when this flag is specified"`
+	SkipOperations  bool     `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
 }
 
 // Execute runs this command
@@ -40,6 +41,7 @@ func (c *Client) Execute(args []string) error {
 		ClientPackage:     c.ClientPackage,
 		Principal:         c.Principal,
 		DefaultScheme:     c.DefaultScheme,
+		DefaultProduces:   c.DefaultProduces,
 		IncludeModel:      !c.SkipModels,
 		IncludeValidator:  !c.SkipModels,
 		IncludeHandler:    !c.SkipOperations,

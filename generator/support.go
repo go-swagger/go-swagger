@@ -80,6 +80,10 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 	if defaultScheme == "" {
 		defaultScheme = "http"
 	}
+	defaultProduces := opts.DefaultProduces
+	if defaultProduces == "" {
+		defaultProduces = "application/json"
+	}
 
 	apiPackage := mangleName(swag.ToFileName(opts.APIPackage), "api")
 	return &appGenerator{
@@ -90,34 +94,36 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 		Operations: operations,
 		Target:     opts.Target,
 		// Package:       filepath.Base(opts.Target),
-		DumpData:      opts.DumpData,
-		Package:       apiPackage,
-		APIPackage:    apiPackage,
-		ModelsPackage: mangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
-		ServerPackage: mangleName(swag.ToFileName(opts.ServerPackage), "server"),
-		ClientPackage: mangleName(swag.ToFileName(opts.ClientPackage), "client"),
-		Principal:     opts.Principal,
-		DefaultScheme: defaultScheme,
-		GenOpts:       opts,
+		DumpData:        opts.DumpData,
+		Package:         apiPackage,
+		APIPackage:      apiPackage,
+		ModelsPackage:   mangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
+		ServerPackage:   mangleName(swag.ToFileName(opts.ServerPackage), "server"),
+		ClientPackage:   mangleName(swag.ToFileName(opts.ClientPackage), "client"),
+		Principal:       opts.Principal,
+		DefaultScheme:   defaultScheme,
+		DefaultProduces: defaultProduces,
+		GenOpts:         opts,
 	}, nil
 }
 
 type appGenerator struct {
-	Name          string
-	Receiver      string
-	SpecDoc       *spec.Document
-	Package       string
-	APIPackage    string
-	ModelsPackage string
-	ServerPackage string
-	ClientPackage string
-	Principal     string
-	Models        map[string]spec.Schema
-	Operations    map[string]opRef
-	Target        string
-	DumpData      bool
-	DefaultScheme string
-	GenOpts       *GenOpts
+	Name            string
+	Receiver        string
+	SpecDoc         *spec.Document
+	Package         string
+	APIPackage      string
+	ModelsPackage   string
+	ServerPackage   string
+	ClientPackage   string
+	Principal       string
+	Models          map[string]spec.Schema
+	Operations      map[string]opRef
+	Target          string
+	DumpData        bool
+	DefaultScheme   string
+	DefaultProduces string
+	GenOpts         *GenOpts
 }
 
 func baseImport(tgt string) string {

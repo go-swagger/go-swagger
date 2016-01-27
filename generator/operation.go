@@ -55,6 +55,10 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 		if defaultScheme == "" {
 			defaultScheme = "http"
 		}
+		defaultProduces := opts.DefaultProduces
+		if defaultProduces == "" {
+			defaultProduces = "application/json"
+		}
 
 		apiPackage := mangleName(swag.ToFileName(opts.APIPackage), "api")
 		serverPackage := mangleName(swag.ToFileName(opts.ServerPackage), "server")
@@ -77,6 +81,7 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 			IncludeResponses:     includeResponses,
 			DumpData:             opts.DumpData,
 			DefaultScheme:        defaultScheme,
+			DefaultProduces:      defaultProduces,
 			Doc:                  specDoc,
 		}
 		if err := generator.Generate(); err != nil {
@@ -109,6 +114,7 @@ type operationGenerator struct {
 	IncludeResponses     bool
 	DumpData             bool
 	DefaultScheme        string
+	DefaultProduces      string
 	Doc                  *spec.Document
 }
 
@@ -130,6 +136,7 @@ func (o *operationGenerator) Generate() error {
 	bldr.Authed = authed
 	bldr.Doc = o.Doc
 	bldr.DefaultScheme = o.DefaultScheme
+	bldr.DefaultProduces = o.DefaultProduces
 	bldr.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(o.Base), o.ModelsPackage))}
 	bldr.RootAPIPackage = o.APIPackage
 
@@ -275,21 +282,22 @@ func (o *opGen) generateResponses() error {
 }
 
 type codeGenOpBuilder struct {
-	Name           string
-	Method         string
-	Path           string
-	APIPackage     string
-	RootAPIPackage string
-	ModelsPackage  string
-	Principal      string
-	Target         string
-	Operation      spec.Operation
-	Doc            *spec.Document
-	Authed         bool
-	DefaultImports []string
-	DefaultScheme  string
-	ExtraSchemas   map[string]GenSchema
-	origDefs       map[string]spec.Schema
+	Name            string
+	Method          string
+	Path            string
+	APIPackage      string
+	RootAPIPackage  string
+	ModelsPackage   string
+	Principal       string
+	Target          string
+	Operation       spec.Operation
+	Doc             *spec.Document
+	Authed          bool
+	DefaultImports  []string
+	DefaultScheme   string
+	DefaultProduces string
+	ExtraSchemas    map[string]GenSchema
+	origDefs        map[string]spec.Schema
 }
 
 func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
@@ -371,34 +379,45 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	}
 
 	schemes := concatUnique(resolver.Doc.Spec().Schemes, operation.Schemes)
+	sort.Strings(schemes)
+	produces := concatUnique(resolver.Doc.Spec().Produces, operation.Produces)
+	sort.Strings(produces)
 
 	return GenOperation{
-		Package:         b.APIPackage,
-		RootPackage:     b.RootAPIPackage,
-		Name:            b.Name,
-		Method:          b.Method,
-		Path:            b.Path,
-		Tags:            operation.Tags[:],
-		Description:     operation.Description,
-		ReceiverName:    receiver,
-		DefaultImports:  b.DefaultImports,
-		Params:          params,
-		Summary:         operation.Summary,
-		QueryParams:     qp,
-		PathParams:      pp,
-		HeaderParams:    hp,
-		FormParams:      fp,
-		HasQueryParams:  hasQueryParams,
-		HasFormParams:   hasFormParams,
-		HasFileParams:   hasFileParams,
-		Authorized:      b.Authed,
-		Principal:       prin,
-		Responses:       responses,
-		DefaultResponse: defaultResponse,
-		SuccessResponse: successResponse,
-		ExtraSchemas:    extra,
-		Schemes:         schemeOrDefault(schemes, b.DefaultScheme),
+		Package:            b.APIPackage,
+		RootPackage:        b.RootAPIPackage,
+		Name:               b.Name,
+		Method:             b.Method,
+		Path:               b.Path,
+		Tags:               operation.Tags[:],
+		Description:        operation.Description,
+		ReceiverName:       receiver,
+		DefaultImports:     b.DefaultImports,
+		Params:             params,
+		Summary:            operation.Summary,
+		QueryParams:        qp,
+		PathParams:         pp,
+		HeaderParams:       hp,
+		FormParams:         fp,
+		HasQueryParams:     hasQueryParams,
+		HasFormParams:      hasFormParams,
+		HasFileParams:      hasFileParams,
+		Authorized:         b.Authed,
+		Principal:          prin,
+		Responses:          responses,
+		DefaultResponse:    defaultResponse,
+		SuccessResponse:    successResponse,
+		ExtraSchemas:       extra,
+		Schemes:            schemeOrDefault(schemes, b.DefaultScheme),
+		ProducesMediaTypes: producesOrDefault(produces, b.DefaultProduces),
 	}, nil
+}
+
+func producesOrDefault(produces []string, defaultProduces string) []string {
+	if len(produces) == 0 {
+		return []string{defaultProduces}
+	}
+	return produces
 }
 
 func schemeOrDefault(schemes []string, defaultScheme string) []string {
@@ -858,7 +877,8 @@ type GenOperation struct {
 	HasFormParams  bool
 	HasFileParams  bool
 
-	Schemes []string
+	Schemes            []string
+	ProducesMediaTypes []string
 }
 
 // GenOperations represents a list of operations to generate
