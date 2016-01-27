@@ -29,6 +29,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var testProducers = map[string]httpkit.Producer{
+	httpkit.JSONMime: httpkit.JSONProducer(),
+}
+
 func TestBuildRequest_SetHeaders(t *testing.T) {
 	r, _ := newRequest("GET", "/flats/{id}/", nil)
 	// single value
@@ -117,7 +121,7 @@ func TestBuildRequest_BuildHTTP_Payload(t *testing.T) {
 	r, _ := newRequest("GET", "/flats/{id}/", reqWrtr)
 	r.SetHeaderParam(httpkit.HeaderContentType, httpkit.JSONMime)
 
-	req, err := r.BuildHTTP(httpkit.JSONProducer(), nil)
+	req, err := r.BuildHTTP(httpkit.JSONMime, testProducers, nil)
 	if assert.NoError(t, err) && assert.NotNil(t, req) {
 		assert.Equal(t, "200", req.Header.Get("x-rate-limit"))
 		assert.Equal(t, "world", req.URL.Query().Get("hello"))
@@ -139,7 +143,7 @@ func TestBuildRequest_BuildHTTP_Form(t *testing.T) {
 	r, _ := newRequest("GET", "/flats/{id}/", reqWrtr)
 	r.SetHeaderParam(httpkit.HeaderContentType, httpkit.JSONMime)
 
-	req, err := r.BuildHTTP(httpkit.JSONProducer(), nil)
+	req, err := r.BuildHTTP(httpkit.JSONMime, testProducers, nil)
 	if assert.NoError(t, err) && assert.NotNil(t, req) {
 		assert.Equal(t, "200", req.Header.Get("x-rate-limit"))
 		assert.Equal(t, "world", req.URL.Query().Get("hello"))
@@ -162,7 +166,7 @@ func TestBuildRequest_BuildHTTP_Files(t *testing.T) {
 	})
 	r, _ := newRequest("GET", "/flats/{id}/", reqWrtr)
 	r.SetHeaderParam(httpkit.HeaderContentType, httpkit.JSONMime)
-	req, err := r.BuildHTTP(httpkit.JSONProducer(), nil)
+	req, err := r.BuildHTTP(httpkit.JSONMime, testProducers, nil)
 	if assert.NoError(t, err) && assert.NotNil(t, req) {
 		assert.Equal(t, "200", req.Header.Get("x-rate-limit"))
 		assert.Equal(t, "world", req.URL.Query().Get("hello"))

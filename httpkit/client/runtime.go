@@ -112,8 +112,6 @@ func (r *Runtime) Submit(operation *client.Operation) (interface{}, error) {
 		return nil, err
 	}
 
-	// TODO: infer most appropriate content type
-	request.SetHeaderParam(httpkit.HeaderContentType, r.DefaultMediaType)
 	var accept []string
 	for _, mimeType := range operation.ProducesMediaTypes {
 		accept = append(accept, mimeType)
@@ -129,14 +127,13 @@ func (r *Runtime) Submit(operation *client.Operation) (interface{}, error) {
 		}
 	}
 
-	req, err := request.BuildHTTP(r.Producers[r.DefaultMediaType], r.Formats)
-
-	req.URL.Scheme = r.pickScheme(operation.Schemes)
-	req.URL.Host = r.Host
-	req.URL.Path = path.Join(r.BasePath, req.URL.Path)
+	req, err := request.BuildHTTP(r.DefaultMediaType, r.Producers, r.Formats)
 	if err != nil {
 		return nil, err
 	}
+	req.URL.Scheme = r.pickScheme(operation.Schemes)
+	req.URL.Host = r.Host
+	req.URL.Path = path.Join(r.BasePath, req.URL.Path)
 
 	r.client.Transport = r.Transport
 	if r.Debug {
