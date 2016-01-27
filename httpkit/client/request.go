@@ -56,7 +56,6 @@ type request struct {
 	pathPattern string
 	method      string
 	writer      client.RequestWriter
-	runtime     *Runtime
 
 	pathParams map[string]string
 	header     http.Header
@@ -72,7 +71,7 @@ var (
 )
 
 // BuildHTTP creates a new http request based on the data from the params
-func (r *request) BuildHTTP(producer httpkit.Producer, registry strfmt.Registry) (*http.Request, error) {
+func (r *request) BuildHTTP(mediaType string, producers map[string]httpkit.Producer, registry strfmt.Registry) (*http.Request, error) {
 	// build the data
 	if err := r.writer.WriteToRequest(r, registry); err != nil {
 		return nil, err
@@ -143,16 +142,21 @@ func (r *request) BuildHTTP(producer httpkit.Producer, registry strfmt.Registry)
 			}()
 			return req, nil
 		}
+		// write the form values as the body
 		buf.WriteString(r.formFields.Encode())
 		return req, nil
 	}
 
-	// write the form values as body
-	// if there is payload, use the producer to write the payload
+	// if there is payload, use the producer to write the payload, and then
+	// set the header to the content-type appropriate for the payload produced
 	if r.payload != nil {
+		// TODO: infer most appropriate content type based on the producer used,
+		// and the `consumers` section of the spec/operation
+		producer := producers[mediaType]
 		if err := producer.Produce(buf, r.payload); err != nil {
 			return nil, err
 		}
+		r.SetHeaderParam(httpkit.HeaderContentType, mediaType)
 	}
 	return req, nil
 }
