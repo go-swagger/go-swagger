@@ -40,13 +40,12 @@ func New{{ pascalize .Name }}(ctx *middleware.Context, handler {{ pascalize .Nam
 */
 type {{ pascalize .Name }} struct {
   Context *middleware.Context
-  {{ if .Params }}Params  {{ pascalize .Name }}Params
-  {{ end }}Handler {{ pascalize .Name }}Handler
+  Handler {{ pascalize .Name }}Handler
 }
 
 func ({{ .ReceiverName }} *{{ pascalize .Name }}) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
   route, _ := {{ .ReceiverName }}.Context.RouteInfo(r){{ if .Params }}
-  {{ .ReceiverName }}.Params = New{{ pascalize .Name }}Params()
+  var Params = New{{ pascalize .Name }}Params()
   {{ end }}
   {{ if .Authorized }}uprinc, err := {{ .ReceiverName }}.Context.Authorize(r, route)
   if err != nil {
@@ -59,15 +58,15 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) ServeHTTP(rw http.ResponseWrit
   }
 
   {{ end }}
-  if err := {{ .ReceiverName }}.Context.BindValidRequest(r, route, {{ if .Params }}&{{ .ReceiverName }}.Params{{ else }}nil{{ end }}); err != nil { // bind params
+  if err := {{ .ReceiverName }}.Context.BindValidRequest(r, route, {{ if .Params }}&Params{{ else }}nil{{ end }}); err != nil { // bind params
     {{ .ReceiverName }}.Context.Respond(rw, r, route.Produces, route, err)
     return
   }
 
   {{ if .Authorized }}
-  res := {{ .ReceiverName }}.Handler.Handle({{ if .Params }}{{ .ReceiverName }}.Params, {{ end }}principal) // actually handle the request
+  res := {{ .ReceiverName }}.Handler.Handle({{ if .Params }}Params, {{ end }}principal) // actually handle the request
   {{else}}
-  res := {{ .ReceiverName }}.Handler.Handle({{ if .Params }}{{ .ReceiverName }}.Params{{ end }}) // actually handle the request
+  res := {{ .ReceiverName }}.Handler.Handle({{ if .Params }}Params{{ end }}) // actually handle the request
   {{ end }}
   {{ .ReceiverName }}.Context.Respond(rw, r, route.Produces, route, res)
 
