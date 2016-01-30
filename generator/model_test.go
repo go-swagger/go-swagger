@@ -16,6 +16,7 @@ package generator
 
 import (
 	"bytes"
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -1403,6 +1404,28 @@ func TestGenModel_Issue222(t *testing.T) {
 					assertInCode(t, "Price) Validate(formats strfmt.Registry) error", res)
 					assertInCode(t, "Currency *Currency `json:\"currency,omitempty\"`", res)
 					assertInCode(t, "m.Currency.Validate(formats); err != nil", res)
+				}
+			}
+		}
+	}
+}
+
+func TestGenModel_Issue243(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "HasDynMeta"
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("has_dyn_meta.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					if !assertInCode(t, "Metadata DynamicMetaData `json:\"metadata,omitempty\"`", res) {
+						fmt.Println(res)
+					}
 				}
 			}
 		}

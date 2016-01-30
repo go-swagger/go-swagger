@@ -650,3 +650,13 @@ definitions:
                     allOf:
                       - $ref: "#/definitions/Tag"
                       - x-isnullable: true
+  DynamicMetaData:
+    type: object
+    additionalProperties:
+      type: object
+
+  HasDynMeta:
+    type: object
+    properties:
+      metadata:
+        $ref: "#/definitions/DynamicMetaData"
