@@ -22,6 +22,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 
 	"github.com/go-swagger/go-swagger/client"
 	"github.com/go-swagger/go-swagger/httpkit"
@@ -43,8 +44,9 @@ type Runtime struct {
 	Formats  strfmt.Registry
 	Debug    bool
 
-	client  *http.Client
-	schemes []string
+	clientOnce *sync.Once
+	client     *http.Client
+	schemes    []string
 }
 
 // New creates a new default runtime for a swagger api client.
@@ -60,7 +62,6 @@ func New(host, basePath string, schemes []string) *Runtime {
 		httpkit.JSONMime: httpkit.JSONProducer(),
 	}
 	rt.Transport = http.DefaultTransport
-	rt.client = http.DefaultClient
 	rt.Host = host
 	rt.BasePath = basePath
 	if !strings.HasPrefix(rt.BasePath, "/") {
@@ -135,7 +136,12 @@ func (r *Runtime) Submit(operation *client.Operation) (interface{}, error) {
 	req.URL.Host = r.Host
 	req.URL.Path = path.Join(r.BasePath, req.URL.Path)
 
-	r.client.Transport = r.Transport
+	r.clientOnce.Do(func() {
+		r.client = &http.Client{
+			Transport: r.Transport,
+		}
+	})
+
 	if r.Debug {
 		b, err := httputil.DumpRequestOut(req, true)
 		if err != nil {
