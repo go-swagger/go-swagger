@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"go/ast"
 	"reflect"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -26,10 +25,11 @@ import (
 	"golang.org/x/tools/go/loader"
 )
 
-type paramSetter func(*spec.Parameter, []string) error
-type itemsSetter func(*spec.Items, []string) error
-type matchingParamSetter func(*regexp.Regexp) paramSetter
-type matchingItemsSetter func(*regexp.Regexp) itemsSetter
+// type paramSetter func(*spec.Parameter, []string) error
+// type itemsSetter func(*spec.Items, []string) error
+
+// type matchingParamSetter func(*regexp.Regexp) paramSetter
+// type matchingItemsSetter func(*regexp.Regexp) itemsSetter
 
 type operationValidationBuilder interface {
 	validationBuilder
@@ -51,19 +51,10 @@ func (pt paramTypable) SetRef(ref spec.Ref) {
 }
 
 func (pt paramTypable) Items() swaggerTypable {
-	if pt.param.In == "body" {
-		// get the schema for items on the schema property
-		if pt.param.Schema == nil {
-			pt.param.Schema = new(spec.Schema)
-		}
-		if pt.param.Schema.Items == nil {
-			pt.param.Schema.Items = new(spec.SchemaOrArray)
-		}
-		if pt.param.Schema.Items.Schema == nil {
-			pt.param.Schema.Items.Schema = new(spec.Schema)
-		}
-		pt.param.Schema.Typed("array", "")
-		return schemaTypable{pt.param.Schema.Items.Schema, 0}
+	bdt, schema := bodyTypable(pt.param.In, pt.param.Schema)
+	if bdt != nil {
+		pt.param.Schema = schema
+		return bdt
 	}
 
 	if pt.param.Items == nil {

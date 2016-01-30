@@ -38,20 +38,29 @@ func (ht responseTypable) Typed(tpe, format string) {
 	ht.header.Typed(tpe, format)
 }
 
-func (ht responseTypable) Items() swaggerTypable {
-	if ht.in == "body" {
+func bodyTypable(in string, schema *spec.Schema) (swaggerTypable, *spec.Schema) {
+	if in == "body" {
 		// get the schema for items on the schema property
-		if ht.response.Schema == nil {
-			ht.response.Schema = new(spec.Schema)
+		if schema == nil {
+			schema = new(spec.Schema)
 		}
-		if ht.response.Schema.Items == nil {
-			ht.response.Schema.Items = new(spec.SchemaOrArray)
+		if schema.Items == nil {
+			schema.Items = new(spec.SchemaOrArray)
 		}
-		if ht.response.Schema.Items.Schema == nil {
-			ht.response.Schema.Items.Schema = new(spec.Schema)
+		if schema.Items.Schema == nil {
+			schema.Items.Schema = new(spec.Schema)
 		}
-		ht.response.Schema.Typed("array", "")
-		return schemaTypable{ht.response.Schema.Items.Schema, 0}
+		schema.Typed("array", "")
+		return schemaTypable{schema.Items.Schema, 0}, schema
+	}
+	return nil, nil
+}
+
+func (ht responseTypable) Items() swaggerTypable {
+	bdt, schema := bodyTypable(ht.in, ht.response.Schema)
+	if bdt != nil {
+		ht.response.Schema = schema
+		return bdt
 	}
 
 	if ht.header.Items == nil {
