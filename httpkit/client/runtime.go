@@ -64,6 +64,7 @@ func New(host, basePath string, schemes []string) *Runtime {
 	rt.Transport = http.DefaultTransport
 	rt.Host = host
 	rt.BasePath = basePath
+	rt.clientOnce = new(sync.Once)
 	if !strings.HasPrefix(rt.BasePath, "/") {
 		rt.BasePath = "/" + rt.BasePath
 	}
