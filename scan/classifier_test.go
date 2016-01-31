@@ -38,6 +38,8 @@ func TestAnnotationMatcher(t *testing.T) {
 		"parameters",
 		"strfmt",
 		"response",
+		"enum",
+		"default",
 	}
 
 	for _, variation := range variations {
