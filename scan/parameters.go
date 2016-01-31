@@ -349,8 +349,8 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 						newSingleLineTagParser("minItems", &setMinItems{paramValidations{&ps}, rxf(rxMinItemsFmt, "")}),
 						newSingleLineTagParser("maxItems", &setMaxItems{paramValidations{&ps}, rxf(rxMaxItemsFmt, "")}),
 						newSingleLineTagParser("unique", &setUnique{paramValidations{&ps}, rxf(rxUniqueFmt, "")}),
-						newSingleLineTagParser("enum", &setEnum{paramValidations{&ps}, rxf(rxPatternFmt, "")}),
-						newSingleLineTagParser("defaultValue", &setDefaultValue{paramValidations{&ps}, rxf(rxPatternFmt, "")}),
+						newSingleLineTagParser("enum", &setEnum{paramValidations{&ps}, rxf(rxEnumFmt, "")}),
+						newSingleLineTagParser("defaultValue", &setDefaultValue{paramValidations{&ps}, rxf(rxDefaultValueFmt, "")}),
 						newSingleLineTagParser("required", &setRequiredParam{&ps}),
 						newSingleLineTagParser("in", &matchOnlyParam{&ps, rxIn}),
 					}
