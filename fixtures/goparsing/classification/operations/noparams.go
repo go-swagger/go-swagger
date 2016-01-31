@@ -44,6 +44,14 @@ type ComplexerOneParams struct {
 	Informity string `json:"informity"`
 }
 
+var CategoryDefaultValue = "Slice"
+
+var CategoryEnum = []string{
+	"Bar",
+	"Slice",
+	"Foo",
+}
+
 // NoParams is a struct that exists in a package
 // but is not annotated with the swagger params annotations
 // so it should now show up in a test
