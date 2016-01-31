@@ -596,6 +596,32 @@ func TestSchemaValueExtractors(t *testing.T) {
 		" swagger:parameters     ",
 		"swagger:parameters      ",
 	}
+
+	enums := []string{
+		"// swagger:enum ",
+		"* swagger:enum ",
+		"* swagger:enum ",
+		" swagger:enum ",
+		"swagger:enum ",
+		"// swagger:enum    ",
+		"* swagger:enum     ",
+		"* swagger:enum    ",
+		" swagger:enum     ",
+		"swagger:enum      ",
+	}
+
+	defaults := []string{
+		"// swagger:default ",
+		"* swagger:default ",
+		"* swagger:default ",
+		" swagger:default ",
+		"swagger:default ",
+		"// swagger:default    ",
+		"* swagger:default     ",
+		"* swagger:default    ",
+		" swagger:default     ",
+		"swagger:default      ",
+	}
 	validParams := []string{
 		"yada123",
 		"date",
@@ -613,6 +639,8 @@ func TestSchemaValueExtractors(t *testing.T) {
 
 	verifySwaggerOneArgSwaggerTag(t, rxStrFmt, strfmts, validParams, append(invalidParams, "", "  ", " "))
 	verifySwaggerOneArgSwaggerTag(t, rxModelOverride, models, append(validParams, "", "  ", " "), invalidParams)
+	verifySwaggerOneArgSwaggerTag(t, rxEnum, enums, append(validParams, "", "  ", " "), invalidParams)
+	verifySwaggerOneArgSwaggerTag(t, rxDefault, defaults, append(validParams, "", "  ", " "), invalidParams)
 
 	verifySwaggerOneArgSwaggerTag(t, rxAllOf, allOf, append(validParams, "", "  ", " "), invalidParams)
 	verifySwaggerMultiArgSwaggerTag(t, rxDiscriminated, discriminated, validParams, invalidParams)

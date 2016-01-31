@@ -25,6 +25,7 @@ import (
 	"golang.org/x/tools/go/loader"
 
 	"github.com/go-swagger/go-swagger/spec"
+	"log"
 )
 
 type schemaTypable struct {
@@ -721,6 +722,16 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 		prop.Typed("string", strfmtName)
 		return nil
 	}
+
+	if enumName, ok := enumName(gd.Doc); ok {
+		log.Println(enumName)
+		return nil
+	}
+
+	if defaultName, ok := defaultName(gd.Doc); ok {
+		log.Println(defaultName)
+		return nil
+	}
 	switch tpe := ts.Type.(type) {
 	case *ast.ArrayType:
 		switch atpe := tpe.Elt.(type) {
@@ -799,6 +810,34 @@ func strfmtName(comments *ast.CommentGroup) (string, bool) {
 		for _, cmt := range comments.List {
 			for _, ln := range strings.Split(cmt.Text, "\n") {
 				matches := rxStrFmt.FindStringSubmatch(ln)
+				if len(matches) > 1 && len(strings.TrimSpace(matches[1])) > 0 {
+					return strings.TrimSpace(matches[1]), true
+				}
+			}
+		}
+	}
+	return "", false
+}
+
+func enumName(comments *ast.CommentGroup) (string, bool) {
+	if comments != nil {
+		for _, cmt := range comments.List {
+			for _, ln := range strings.Split(cmt.Text, "\n") {
+				matches := rxEnum.FindStringSubmatch(ln)
+				if len(matches) > 1 && len(strings.TrimSpace(matches[1])) > 0 {
+					return strings.TrimSpace(matches[1]), true
+				}
+			}
+		}
+	}
+	return "", false
+}
+
+func defaultName(comments *ast.CommentGroup) (string, bool) {
+	if comments != nil {
+		for _, cmt := range comments.List {
+			for _, ln := range strings.Split(cmt.Text, "\n") {
+				matches := rxDefault.FindStringSubmatch(ln)
 				if len(matches) > 1 && len(strings.TrimSpace(matches[1])) > 0 {
 					return strings.TrimSpace(matches[1]), true
 				}

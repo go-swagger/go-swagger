@@ -23,6 +23,7 @@ import (
 
 	"github.com/go-swagger/go-swagger/spec"
 	"golang.org/x/tools/go/loader"
+	"log"
 )
 
 // type paramSetter func(*spec.Parameter, []string) error
@@ -123,11 +124,13 @@ func (sv paramValidations) SetUnique(val bool)             { sv.current.UniqueIt
 func (sv paramValidations) SetCollectionFormat(val string) { sv.current.CollectionFormat = val }
 func (sv paramValidations) SetEnum(val string) {
 
+	log.Println(val)
 	// @todo: lookup enum value.
 	//sv.current.Enum = val
 }
 func (sv paramValidations) SetDefault(val string) {
 
+	log.Println(val)
 	// @todo: lookup default value.
 	//sv.current.Default = val
 }
@@ -154,11 +157,13 @@ func (sv itemsValidations) SetUnique(val bool)             { sv.current.UniqueIt
 func (sv itemsValidations) SetCollectionFormat(val string) { sv.current.CollectionFormat = val }
 func (sv itemsValidations) SetEnum(val string) {
 
+	log.Println(val)
 	// @todo: lookup enum value.
 	//sv.current.Enum = val
 }
 func (sv itemsValidations) SetDefault(val string) {
 
+	log.Println(val)
 	// @todo: lookup default value.
 	//sv.current.Default = val
 }

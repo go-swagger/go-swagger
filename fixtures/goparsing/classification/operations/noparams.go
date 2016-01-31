@@ -44,10 +44,10 @@ type ComplexerOneParams struct {
 	Informity string `json:"informity"`
 }
 
-// swagger:default
+// swagger:default CategoryDefault
 var CategoryDefault = "Slice"
 
-// swagger:enum
+// swagger:enum CategoryEnum
 var CategoryEnum = []string{
 	"Bar",
 	"Slice",
