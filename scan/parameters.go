@@ -113,14 +113,16 @@ func (sv paramValidations) SetMinimum(val float64, exclusive bool) {
 	sv.current.Minimum = &val
 	sv.current.ExclusiveMinimum = exclusive
 }
-func (sv paramValidations) SetMultipleOf(val float64)      { sv.current.MultipleOf = &val }
-func (sv paramValidations) SetMinItems(val int64)          { sv.current.MinItems = &val }
-func (sv paramValidations) SetMaxItems(val int64)          { sv.current.MaxItems = &val }
-func (sv paramValidations) SetMinLength(val int64)         { sv.current.MinLength = &val }
-func (sv paramValidations) SetMaxLength(val int64)         { sv.current.MaxLength = &val }
-func (sv paramValidations) SetPattern(val string)          { sv.current.Pattern = val }
-func (sv paramValidations) SetUnique(val bool)             { sv.current.UniqueItems = val }
-func (sv paramValidations) SetCollectionFormat(val string) { sv.current.CollectionFormat = val }
+func (sv paramValidations) SetMultipleOf(val float64)       { sv.current.MultipleOf = &val }
+func (sv paramValidations) SetMinItems(val int64)           { sv.current.MinItems = &val }
+func (sv paramValidations) SetMaxItems(val int64)           { sv.current.MaxItems = &val }
+func (sv paramValidations) SetMinLength(val int64)          { sv.current.MinLength = &val }
+func (sv paramValidations) SetMaxLength(val int64)          { sv.current.MaxLength = &val }
+func (sv paramValidations) SetPattern(val string)           { sv.current.Pattern = val }
+func (sv paramValidations) SetUnique(val bool)              { sv.current.UniqueItems = val }
+func (sv paramValidations) SetCollectionFormat(val string)  { sv.current.CollectionFormat = val }
+func (sv paramValidations) SetEnum(val []interface{})       { sv.current.Enum = val }
+func (sv paramValidations) SetDefaultValue(val interface{}) { sv.current.Default = val }
 
 type itemsValidations struct {
 	current *spec.Items
@@ -134,14 +136,16 @@ func (sv itemsValidations) SetMinimum(val float64, exclusive bool) {
 	sv.current.Minimum = &val
 	sv.current.ExclusiveMinimum = exclusive
 }
-func (sv itemsValidations) SetMultipleOf(val float64)      { sv.current.MultipleOf = &val }
-func (sv itemsValidations) SetMinItems(val int64)          { sv.current.MinItems = &val }
-func (sv itemsValidations) SetMaxItems(val int64)          { sv.current.MaxItems = &val }
-func (sv itemsValidations) SetMinLength(val int64)         { sv.current.MinLength = &val }
-func (sv itemsValidations) SetMaxLength(val int64)         { sv.current.MaxLength = &val }
-func (sv itemsValidations) SetPattern(val string)          { sv.current.Pattern = val }
-func (sv itemsValidations) SetUnique(val bool)             { sv.current.UniqueItems = val }
-func (sv itemsValidations) SetCollectionFormat(val string) { sv.current.CollectionFormat = val }
+func (sv itemsValidations) SetMultipleOf(val float64)       { sv.current.MultipleOf = &val }
+func (sv itemsValidations) SetMinItems(val int64)           { sv.current.MinItems = &val }
+func (sv itemsValidations) SetMaxItems(val int64)           { sv.current.MaxItems = &val }
+func (sv itemsValidations) SetMinLength(val int64)          { sv.current.MinLength = &val }
+func (sv itemsValidations) SetMaxLength(val int64)          { sv.current.MaxLength = &val }
+func (sv itemsValidations) SetPattern(val string)           { sv.current.Pattern = val }
+func (sv itemsValidations) SetUnique(val bool)              { sv.current.UniqueItems = val }
+func (sv itemsValidations) SetCollectionFormat(val string)  { sv.current.CollectionFormat = val }
+func (sv itemsValidations) SetEnum(val []interface{})       { sv.current.Enum = val }
+func (sv itemsValidations) SetDefaultValue(val interface{}) { sv.current.Default = val }
 
 type paramDecl struct {
 	File         *ast.File
@@ -345,6 +349,8 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 						newSingleLineTagParser("minItems", &setMinItems{paramValidations{&ps}, rxf(rxMinItemsFmt, "")}),
 						newSingleLineTagParser("maxItems", &setMaxItems{paramValidations{&ps}, rxf(rxMaxItemsFmt, "")}),
 						newSingleLineTagParser("unique", &setUnique{paramValidations{&ps}, rxf(rxUniqueFmt, "")}),
+						newSingleLineTagParser("enum", &setEnum{paramValidations{&ps}, rxf(rxPatternFmt, "")}),
+						newSingleLineTagParser("defaultValue", &setDefaultValue{paramValidations{&ps}, rxf(rxPatternFmt, "")}),
 						newSingleLineTagParser("required", &setRequiredParam{&ps}),
 						newSingleLineTagParser("in", &matchOnlyParam{&ps, rxIn}),
 					}
@@ -364,6 +370,8 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 							newSingleLineTagParser(fmt.Sprintf("items%dMinItems", level), &setMinItems{itemsValidations{items}, rxf(rxMinItemsFmt, itemsPrefix)}),
 							newSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{itemsValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
 							newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{itemsValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
+							newSingleLineTagParser(fmt.Sprintf("items%dEnum", level), &setEnum{itemsValidations{items}, rxf(rxEnumFmt, itemsPrefix)}),
+							newSingleLineTagParser(fmt.Sprintf("items%dDefaultValue", level), &setDefaultValue{itemsValidations{items}, rxf(rxDefaultValueFmt, itemsPrefix)}),
 						}
 					}
 

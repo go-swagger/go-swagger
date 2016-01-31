@@ -77,7 +77,7 @@ func TestParamsParser(t *testing.T) {
 
 	op, ok := noParamOps["someOperation"]
 	assert.True(t, ok)
-	assert.Len(t, op.Parameters, 7)
+	assert.Len(t, op.Parameters, 8)
 
 	for _, param := range op.Parameters {
 		switch param.Name {
@@ -122,6 +122,15 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, "date-time", param.Format)
 			assert.False(t, param.Required)
 			assert.Equal(t, "Created", param.Extensions["x-go-name"])
+
+		case "category":
+			assert.Equal(t, "The Category of this model", param.Description)
+			assert.Equal(t, "query", param.In)
+			assert.Equal(t, "string", param.Type)
+			assert.True(t, param.Required)
+			assert.Equal(t, "Category", param.Extensions["x-go-name"])
+			// @todo: do enum validation
+		  // @todo: do default value validation.
 
 		case "foo_slice":
 			assert.Equal(t, "a FooSlice has foos which are strings", param.Description)

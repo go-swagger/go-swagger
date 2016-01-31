@@ -101,14 +101,16 @@ func (sv headerValidations) SetMinimum(val float64, exclusive bool) {
 	sv.current.Minimum = &val
 	sv.current.ExclusiveMinimum = exclusive
 }
-func (sv headerValidations) SetMultipleOf(val float64)      { sv.current.MultipleOf = &val }
-func (sv headerValidations) SetMinItems(val int64)          { sv.current.MinItems = &val }
-func (sv headerValidations) SetMaxItems(val int64)          { sv.current.MaxItems = &val }
-func (sv headerValidations) SetMinLength(val int64)         { sv.current.MinLength = &val }
-func (sv headerValidations) SetMaxLength(val int64)         { sv.current.MaxLength = &val }
-func (sv headerValidations) SetPattern(val string)          { sv.current.Pattern = val }
-func (sv headerValidations) SetUnique(val bool)             { sv.current.UniqueItems = val }
-func (sv headerValidations) SetCollectionFormat(val string) { sv.current.CollectionFormat = val }
+func (sv headerValidations) SetMultipleOf(val float64)       { sv.current.MultipleOf = &val }
+func (sv headerValidations) SetMinItems(val int64)           { sv.current.MinItems = &val }
+func (sv headerValidations) SetMaxItems(val int64)           { sv.current.MaxItems = &val }
+func (sv headerValidations) SetMinLength(val int64)          { sv.current.MinLength = &val }
+func (sv headerValidations) SetMaxLength(val int64)          { sv.current.MaxLength = &val }
+func (sv headerValidations) SetPattern(val string)           { sv.current.Pattern = val }
+func (sv headerValidations) SetUnique(val bool)              { sv.current.UniqueItems = val }
+func (sv headerValidations) SetCollectionFormat(val string)  { sv.current.CollectionFormat = val }
+func (sv headerValidations) SetEnum(val []interface{})       { sv.current.Enum = val }
+func (sv headerValidations) SetDefaultValue(val interface{}) { sv.current.Default = val }
 
 func newResponseDecl(file *ast.File, decl *ast.GenDecl, ts *ast.TypeSpec) responseDecl {
 	var rd responseDecl

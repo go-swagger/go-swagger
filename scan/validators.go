@@ -35,6 +35,8 @@ type validationBuilder interface {
 	SetPattern(string)
 
 	SetUnique(bool)
+	SetEnum([]interface{})
+	SetDefaultValue(interface{})
 }
 
 type valueParser interface {
@@ -270,6 +272,55 @@ func (su *setUnique) Parse(lines []string) error {
 			return err
 		}
 		su.builder.SetUnique(req)
+	}
+	return nil
+}
+
+type setEnum struct {
+	builder validationBuilder
+	rx      *regexp.Regexp
+}
+
+func (se *setEnum) Matches(line string) bool {
+	return se.rx.MatchString(line)
+}
+
+func (se *setEnum) Parse(lines []string) error {
+	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+		return nil
+	}
+	matches := se.rx.FindStringSubmatch(lines[0])
+	if len(matches) > 1 && len(matches[1]) > 0 {
+
+		// @todo: parse Enum?
+		var enumValues = []string{"woep", "wap", "enum"}
+		newEnumValues := make([]interface{}, len(enumValues))
+		for i, v := range enumValues {
+			newEnumValues[i] = v
+		}
+		se.builder.SetEnum(newEnumValues)
+	}
+	return nil
+}
+
+type setDefaultValue struct {
+	builder validationBuilder
+	rx      *regexp.Regexp
+}
+
+func (sd *setDefaultValue) Matches(line string) bool {
+	return sd.rx.MatchString(line)
+}
+
+func (sd *setDefaultValue) Parse(lines []string) error {
+	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+		return nil
+	}
+	matches := sd.rx.FindStringSubmatch(lines[0])
+	if len(matches) > 1 && len(matches[1]) > 0 {
+
+		// @todo: parse thing?
+		sd.builder.SetDefaultValue("defaultvaluething")
 	}
 	return nil
 }
