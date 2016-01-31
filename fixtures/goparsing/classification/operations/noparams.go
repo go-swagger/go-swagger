@@ -83,6 +83,14 @@ type NoParams struct {
 	// in: query
 	Created strfmt.DateTime `json:"created"`
 
+	// The Category of this model
+	//
+	// required: true
+	// enum: CategoryEnum
+	// default: CategoryDefaultValue
+	// in: query
+	Category string `json:"category"`
+
 	// a FooSlice has foos which are strings
 	//
 	// min items: 3
