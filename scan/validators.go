@@ -35,8 +35,8 @@ type validationBuilder interface {
 	SetPattern(string)
 
 	SetUnique(bool)
-	SetEnum([]interface{})
-	SetDefault(interface{})
+	SetEnum(string)
+	SetDefault(string)
 }
 
 type valueParser interface {
@@ -291,14 +291,7 @@ func (se *setEnum) Parse(lines []string) error {
 	}
 	matches := se.rx.FindStringSubmatch(lines[0])
 	if len(matches) > 1 && len(matches[1]) > 0 {
-
-		// @todo: parse Enum?
-		var enumValues = []string{"woep", "wap", "enum"}
-		newEnumValues := make([]interface{}, len(enumValues))
-		for i, v := range enumValues {
-			newEnumValues[i] = v
-		}
-		se.builder.SetEnum(newEnumValues)
+		se.builder.SetEnum(matches[1])
 	}
 	return nil
 }
@@ -318,9 +311,7 @@ func (sd *setDefault) Parse(lines []string) error {
 	}
 	matches := sd.rx.FindStringSubmatch(lines[0])
 	if len(matches) > 1 && len(matches[1]) > 0 {
-
-		// @todo: parse thing?
-		sd.builder.SetDefault("defaultvaluething")
+		sd.builder.SetDefault(matches[1])
 	}
 	return nil
 }

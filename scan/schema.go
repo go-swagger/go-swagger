@@ -76,8 +76,16 @@ func (sv schemaValidations) SetMinLength(val int64)     { sv.current.MinLength =
 func (sv schemaValidations) SetMaxLength(val int64)     { sv.current.MaxLength = &val }
 func (sv schemaValidations) SetPattern(val string)      { sv.current.Pattern = val }
 func (sv schemaValidations) SetUnique(val bool)         { sv.current.UniqueItems = val }
-func (sv schemaValidations) SetEnum(val []interface{})  { sv.current.Enum = val }
-func (sv schemaValidations) SetDefault(val interface{}) { sv.current.Default = val }
+func (sv schemaValidations) SetEnum(val string) {
+
+	// @todo: lookup enum value.
+	//sv.current.Enum = val
+}
+func (sv schemaValidations) SetDefault(val string) {
+
+	// @todo: lookup default value.
+	//sv.current.Default = val
+}
 
 func newSchemaAnnotationParser(goName string) *schemaAnnotationParser {
 	return &schemaAnnotationParser{GoName: goName, rx: rxModelOverride}

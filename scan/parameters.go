@@ -121,8 +121,16 @@ func (sv paramValidations) SetMaxLength(val int64)         { sv.current.MaxLengt
 func (sv paramValidations) SetPattern(val string)          { sv.current.Pattern = val }
 func (sv paramValidations) SetUnique(val bool)             { sv.current.UniqueItems = val }
 func (sv paramValidations) SetCollectionFormat(val string) { sv.current.CollectionFormat = val }
-func (sv paramValidations) SetEnum(val []interface{})      { sv.current.Enum = val }
-func (sv paramValidations) SetDefault(val interface{})     { sv.current.Default = val }
+func (sv paramValidations) SetEnum(val string) {
+
+	// @todo: lookup enum value.
+	//sv.current.Enum = val
+}
+func (sv paramValidations) SetDefault(val string) {
+
+	// @todo: lookup default value.
+	//sv.current.Default = val
+}
 
 type itemsValidations struct {
 	current *spec.Items
@@ -144,8 +152,16 @@ func (sv itemsValidations) SetMaxLength(val int64)         { sv.current.MaxLengt
 func (sv itemsValidations) SetPattern(val string)          { sv.current.Pattern = val }
 func (sv itemsValidations) SetUnique(val bool)             { sv.current.UniqueItems = val }
 func (sv itemsValidations) SetCollectionFormat(val string) { sv.current.CollectionFormat = val }
-func (sv itemsValidations) SetEnum(val []interface{})      { sv.current.Enum = val }
-func (sv itemsValidations) SetDefault(val interface{})     { sv.current.Default = val }
+func (sv itemsValidations) SetEnum(val string) {
+
+	// @todo: lookup enum value.
+	//sv.current.Enum = val
+}
+func (sv itemsValidations) SetDefault(val string) {
+
+	// @todo: lookup default value.
+	//sv.current.Default = val
+}
 
 type paramDecl struct {
 	File         *ast.File
