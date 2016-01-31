@@ -41,3 +41,6 @@ Session.vim
 .netrwhist
 *~
 profile.cov
+
+# Editors
+.idea
