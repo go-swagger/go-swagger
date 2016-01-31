@@ -60,6 +60,8 @@ var (
 	rxDiscriminated      = regexp.MustCompile("swagger:discriminated\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\p{Zs}]+)$")
 	rxResponseOverride   = regexp.MustCompile("swagger:response\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)?$")
 	rxParametersOverride = regexp.MustCompile("swagger:parameters\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\p{Zs}]+)$")
+	rxEnum               = regexp.MustCompile("swagger:enum\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)$")
+	rxDefaultValue       = regexp.MustCompile("swagger:defaultValue\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)$")
 	rxRoute              = regexp.MustCompile(
 		"swagger:route\\p{Zs}*" +
 			rxMethod +
