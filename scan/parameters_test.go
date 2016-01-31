@@ -129,8 +129,10 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, "string", param.Type)
 			assert.True(t, param.Required)
 			assert.Equal(t, "Category", param.Extensions["x-go-name"])
+			log.Println(param.Default)
+			log.Println(param.Enum)
 			// @todo: do enum validation
-		  // @todo: do default value validation.
+			// @todo: do default value validation.
 
 		case "foo_slice":
 			assert.Equal(t, "a FooSlice has foos which are strings", param.Description)

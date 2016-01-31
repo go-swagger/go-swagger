@@ -69,15 +69,15 @@ func (sv schemaValidations) SetMinimum(val float64, exclusive bool) {
 	sv.current.Minimum = &val
 	sv.current.ExclusiveMinimum = exclusive
 }
-func (sv schemaValidations) SetMultipleOf(val float64)       { sv.current.MultipleOf = &val }
-func (sv schemaValidations) SetMinItems(val int64)           { sv.current.MinItems = &val }
-func (sv schemaValidations) SetMaxItems(val int64)           { sv.current.MaxItems = &val }
-func (sv schemaValidations) SetMinLength(val int64)          { sv.current.MinLength = &val }
-func (sv schemaValidations) SetMaxLength(val int64)          { sv.current.MaxLength = &val }
-func (sv schemaValidations) SetPattern(val string)           { sv.current.Pattern = val }
-func (sv schemaValidations) SetUnique(val bool)              { sv.current.UniqueItems = val }
-func (sv schemaValidations) SetEnum(val []interface{})       { sv.current.Enum = val }
-func (sv schemaValidations) SetDefaultValue(val interface{}) { sv.current.Default = val }
+func (sv schemaValidations) SetMultipleOf(val float64)  { sv.current.MultipleOf = &val }
+func (sv schemaValidations) SetMinItems(val int64)      { sv.current.MinItems = &val }
+func (sv schemaValidations) SetMaxItems(val int64)      { sv.current.MaxItems = &val }
+func (sv schemaValidations) SetMinLength(val int64)     { sv.current.MinLength = &val }
+func (sv schemaValidations) SetMaxLength(val int64)     { sv.current.MaxLength = &val }
+func (sv schemaValidations) SetPattern(val string)      { sv.current.Pattern = val }
+func (sv schemaValidations) SetUnique(val bool)         { sv.current.UniqueItems = val }
+func (sv schemaValidations) SetEnum(val []interface{})  { sv.current.Enum = val }
+func (sv schemaValidations) SetDefault(val interface{}) { sv.current.Default = val }
 
 func newSchemaAnnotationParser(goName string) *schemaAnnotationParser {
 	return &schemaAnnotationParser{GoName: goName, rx: rxModelOverride}

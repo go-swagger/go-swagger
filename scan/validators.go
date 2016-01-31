@@ -36,7 +36,7 @@ type validationBuilder interface {
 
 	SetUnique(bool)
 	SetEnum([]interface{})
-	SetDefaultValue(interface{})
+	SetDefault(interface{})
 }
 
 type valueParser interface {
@@ -303,16 +303,16 @@ func (se *setEnum) Parse(lines []string) error {
 	return nil
 }
 
-type setDefaultValue struct {
+type setDefault struct {
 	builder validationBuilder
 	rx      *regexp.Regexp
 }
 
-func (sd *setDefaultValue) Matches(line string) bool {
+func (sd *setDefault) Matches(line string) bool {
 	return sd.rx.MatchString(line)
 }
 
-func (sd *setDefaultValue) Parse(lines []string) error {
+func (sd *setDefault) Parse(lines []string) error {
 	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
 		return nil
 	}
@@ -320,7 +320,7 @@ func (sd *setDefaultValue) Parse(lines []string) error {
 	if len(matches) > 1 && len(matches[1]) > 0 {
 
 		// @todo: parse thing?
-		sd.builder.SetDefaultValue("defaultvaluething")
+		sd.builder.SetDefault("defaultvaluething")
 	}
 	return nil
 }
