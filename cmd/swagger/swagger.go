@@ -22,7 +22,9 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
-var opts struct{}
+var opts struct {
+	// Version bool `long:"version" short:"v" description:"print the version of the command"`
+}
 
 func main() {
 	parser := flags.NewParser(&opts, flags.Default)
@@ -38,6 +40,11 @@ It aims to represent the contract of your API with a language agnostic descripti
 	}
 
 	_, err = parser.AddCommand("init", "initialize a spec document", "initialize a swagger spec document", &commands.InitCmd{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = parser.AddCommand("version", "print the version", "print the version of the swagger command", &commands.PrintVersion{})
 	if err != nil {
 		log.Fatal(err)
 	}

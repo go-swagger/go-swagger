@@ -3,7 +3,10 @@ go generate ./generator
 git add ./generator/bindata.go
 
 GIT_DESCRIBED=`git describe`
-echo "
-package commands
-var Version=${GIT_DESCRIBED}
-"
+echo "package commands
+
+func init() {
+  Version = \"${GIT_DESCRIBED}\"
+}
+" > `git rev-parse --show-toplevel`/cmd/swagger/commands/version_number.go
+git add ./cmd/swagger/commands/version_number.go
