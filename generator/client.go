@@ -59,7 +59,7 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts GenOpts
 	}
 
 	generator := appGenerator{
-		Name:            appNameOrDefault(specDoc, name, "swagger"),
+		Name:            appNameOrDefault(specDoc, name, "rest"),
 		SpecDoc:         specDoc,
 		Models:          models,
 		Operations:      operations,
@@ -85,6 +85,10 @@ type clientGenerator struct {
 
 func (c *clientGenerator) Generate() error {
 	app, err := c.makeCodegenApp()
+	if app.Name == "" {
+		app.Name = "APIClient"
+		app.Package = "client"
+	}
 	app.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ModelsPackage))}
 	if err != nil {
 		return err

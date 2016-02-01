@@ -1,3 +1,9 @@
 #!/bin/sh
 go generate ./generator
 git add ./generator/bindata.go
+
+GIT_DESCRIBED=`git describe`
+echo "
+package commands
+var Version=${GIT_DESCRIBED}
+"

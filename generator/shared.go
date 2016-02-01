@@ -250,8 +250,8 @@ func gatherModels(specDoc *spec.Document, modelNames []string) (map[string]spec.
 }
 
 func appNameOrDefault(specDoc *spec.Document, name, defaultName string) string {
-	if name == "" {
-		if specDoc.Spec().Info != nil && specDoc.Spec().Info.Title != "" {
+	if strings.TrimSpace(name) == "" {
+		if specDoc.Spec().Info != nil && strings.TrimSpace(specDoc.Spec().Info.Title) != "" {
 			name = specDoc.Spec().Info.Title
 		} else {
 			name = defaultName
