@@ -33,7 +33,9 @@ do
   rm -rf client models restapi cmd
   /usr/share/dist/swagger generate client
   go test ./...
-  /usr/share/dist/swagger generate server
-  go test ./...
+  if [ $dir != 'kubernetes' ]; then
+    /usr/share/dist/swagger generate server
+    go test ./...
+  fi
   popd
 done

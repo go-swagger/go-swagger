@@ -256,6 +256,10 @@ func TestGenerateModel_Primitives(t *testing.T) {
 		}
 		val.Name = "theType"
 		exp := v.Expected
+		if val.IsInterface {
+			tt.assertRender(val, "type TheType "+exp+"\n\n")
+			continue
+		}
 		tt.assertRender(val, "type TheType "+exp+"\n// Validate validates this the type\nfunc (o theType) Validate(formats strfmt.Registry) error {\n  return nil\n}\n")
 	}
 }
