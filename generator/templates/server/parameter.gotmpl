@@ -87,7 +87,7 @@ func New{{ pascalize .Name }}Params() {{ pascalize .Name }}Params {
   {{ end }}{{ end }}{{end}}
   )
   return {{ pascalize .Name }}Params{ {{ range .Params }}{{ if .Default }}
-    {{ pascalize .Name}}: {{ if and (not .IsArray) (not .HasDiscriminator) .IsNullable }}&{{ end }}{{ camelize .Name }}Default,
+    {{ pascalize .Name}}: {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) .IsNullable }}&{{ end }}{{ camelize .Name }}Default,
   {{ end }}{{ end }} }
 }
 
@@ -111,7 +111,7 @@ type {{ pascalize .Name }}Params struct {
   Collection Format: {{ .CollectionFormat }}{{ end }}{{ if .Default }}
   Default: {{ printf "%#v" .Default }}{{ end }}
   */
-  {{ if not .Schema }}{{ pascalize .Name }} {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsFileParam) .IsNullable }}*{{ end }}{{.GoType}}{{ else }}{{ pascalize .Name }} {{ if and (not .Schema.IsBaseType) .IsNullable }}*{{ end }}{{.GoType}}{{ end }}
+  {{ if not .Schema }}{{ pascalize .Name }} {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsFileParam) .IsNullable }}*{{ end }}{{.GoType}}{{ else }}{{ pascalize .Name }} {{ if and (not .Schema.IsBaseType) .IsNullable }}*{{ end }}{{.GoType}}{{ end }}
   {{ end}}
 }
 
@@ -167,13 +167,13 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
   if err := route.Consumer.Consume(r.Body, &body); err != nil {
     res = append(res, errors.NewParseError({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}, "", err))
   {{ end }}} else {
-    {{ if .IsArray }}{{ if .Child }}{{ if or .Child.IsAliased (and (not .Schema.IsInterface) .Child.IsComplexObject) }}for _, {{ .IndexVar }}{{ .ReceiverName }} := range {{ .ReceiverName }}.{{ pascalize .Name }} {
+    {{ if .IsArray }}{{ if .Child }}{{ if (and (not .Schema.IsInterface) (or .Child.IsAliased .Child.IsComplexObject)) }}for _, {{ .IndexVar }}{{ .ReceiverName }} := range {{ .ReceiverName }}.{{ pascalize .Name }} {
       if err := {{ .IndexVar }}{{ .ReceiverName }}.Validate(route.Formats); err != nil {
         res = append(res, err)
         break
       }
     }
-    {{ end }}{{ end }}{{ else if or .Schema.IsAliased (and (not .Schema.IsInterface) .Schema.IsComplexObject) }}if err := body.Validate(route.Formats); err != nil {
+    {{ end }}{{ end }}{{ else if (and (not .Schema.IsInterface) (or .Schema.IsAliased .Schema.IsComplexObject)) }}if err := body.Validate(route.Formats); err != nil {
       res = append(res, err)
     }
     {{ end }}

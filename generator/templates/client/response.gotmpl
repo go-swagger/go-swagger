@@ -19,7 +19,7 @@ type {{ pascalize .Name }} struct {
   {{ pascalize .Name }} {{ .GoType }}
   {{ end }}
   {{ if .Schema }}
-  Payload {{ if and (not .Schema.IsBaseType) .Schema.IsComplexObject }}*{{ end }}{{ .Schema.GoType }}
+  Payload {{ if and (not .Schema.IsBaseType) (not .Schema.IsInterface) .Schema.IsComplexObject }}*{{ end }}{{ .Schema.GoType }}
   {{ end }}
 }{{ if eq .Code -1 }}
 
