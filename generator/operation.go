@@ -648,6 +648,24 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 			schema.IsInterface = len(schema.Properties) == 0
 		}
 		res.Schema = &schema
+		it := res.Schema.Items
+
+		items := new(GenItems)
+		var prev *GenItems
+		next := items
+		for it != nil {
+			next.resolvedType = it.resolvedType
+			next.sharedValidations = it.sharedValidations
+			next.Formatter = stringFormatters[it.SwaggerFormat]
+			_, next.IsCustomFormatter = customFormatters[it.SwaggerFormat]
+			it = it.Items
+			if prev != nil {
+				prev.Child = next
+			}
+			prev = next
+			next = new(GenItems)
+		}
+		res.Child = items
 		res.resolvedType = schema.resolvedType
 		res.sharedValidations = schema.sharedValidations
 		res.ZeroValue = schema.Zero()

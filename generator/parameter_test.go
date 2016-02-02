@@ -552,3 +552,23 @@ func assertNoValidator(t testing.TB, opName, path string) {
 		}
 	}
 }
+
+func TestGenParameter_Issue249(t *testing.T) {
+	b, err := opBuilder("putTesting", "../fixtures/bugs/249/swagger.json")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := clientParamTemplate.Execute(buf, op)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("put_testing.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					fmt.Println(res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
