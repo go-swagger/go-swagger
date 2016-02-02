@@ -1,6 +1,6 @@
 {{ define "sliceparamvalidator"}}
 {{ if .NeedsSize }}
-{{ camelize .Name }}Size := int64(len({{ .ValueExpression }}))
+{{ camelize .Name }}Size := int64(len({{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) .IsNullable }}*{{ end }}{{ .ValueExpression }}))
 {{ end }}
 {{ if .MinItems }}
 if err := validate.MinItems({{ .Path }}, {{ printf "%q" .Location }}, {{ camelize .Name }}Size, {{ .MinItems }}); err != nil {
@@ -13,12 +13,12 @@ if err := validate.MaxItems({{ .Path }}, {{ printf "%q" .Location }}, {{ cameliz
 }
 {{ end }}
 {{ if .UniqueItems }}
-if err := validate.UniqueItems({{ .Path }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
+if err := validate.UniqueItems({{ .Path }}, {{ printf "%q" .Location }}, {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) .IsNullable }}*{{ end }}{{ .ValueExpression }}); err != nil {
   return err
 }
 {{ end }}
 {{ if .Enum }}
-if err := validate.Enum({{ .Path }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}, {{ .Enum }}); err != nil {
+if err := validate.Enum({{ .Path }}, {{ printf "%q" .Location }}, {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) .IsNullable }}*{{ end }}{{ .ValueExpression }}, {{ .Enum }}); err != nil {
   return err
 }
 {{ end }}

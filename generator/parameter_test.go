@@ -572,3 +572,24 @@ func TestGenParameter_Issue249(t *testing.T) {
 		}
 	}
 }
+
+func TestGenParameter_Issue248(t *testing.T) {
+	b, err := opBuilder("CreateThing", "../fixtures/bugs/248/swagger.json")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := parameterTemplate.Execute(buf, op)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("create_thing.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					fmt.Println(res)
+					assertInCode(t, ", *o.OptionalQueryEnum", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
