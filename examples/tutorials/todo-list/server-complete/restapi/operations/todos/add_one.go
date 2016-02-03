@@ -34,20 +34,19 @@ AddOne add one API
 */
 type AddOne struct {
 	Context *middleware.Context
-	Params  AddOneParams
 	Handler AddOneHandler
 }
 
 func (o *AddOne) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, _ := o.Context.RouteInfo(r)
-	o.Params = NewAddOneParams()
+	var Params = NewAddOneParams()
 
-	if err := o.Context.BindValidRequest(r, route, &o.Params); err != nil { // bind params
+	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
-	res := o.Handler.Handle(o.Params) // actually handle the request
+	res := o.Handler.Handle(Params) // actually handle the request
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 

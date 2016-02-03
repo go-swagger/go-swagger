@@ -41,13 +41,12 @@ Fenced codeblocks etc are supported through pygments.
 */
 type AddCommentToTask struct {
 	Context *middleware.Context
-	Params  AddCommentToTaskParams
 	Handler AddCommentToTaskHandler
 }
 
 func (o *AddCommentToTask) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, _ := o.Context.RouteInfo(r)
-	o.Params = NewAddCommentToTaskParams()
+	var Params = NewAddCommentToTaskParams()
 
 	uprinc, err := o.Context.Authorize(r, route)
 	if err != nil {
@@ -59,12 +58,12 @@ func (o *AddCommentToTask) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		principal = uprinc
 	}
 
-	if err := o.Context.BindValidRequest(r, route, &o.Params); err != nil { // bind params
+	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
-	res := o.Handler.Handle(o.Params, principal) // actually handle the request
+	res := o.Handler.Handle(Params, principal) // actually handle the request
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 

@@ -34,20 +34,19 @@ Creates list of users with given input array
 */
 type CreateUsersWithArrayInput struct {
 	Context *middleware.Context
-	Params  CreateUsersWithArrayInputParams
 	Handler CreateUsersWithArrayInputHandler
 }
 
 func (o *CreateUsersWithArrayInput) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, _ := o.Context.RouteInfo(r)
-	o.Params = NewCreateUsersWithArrayInputParams()
+	var Params = NewCreateUsersWithArrayInputParams()
 
-	if err := o.Context.BindValidRequest(r, route, &o.Params); err != nil { // bind params
+	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
-	res := o.Handler.Handle(o.Params) // actually handle the request
+	res := o.Handler.Handle(Params) // actually handle the request
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
