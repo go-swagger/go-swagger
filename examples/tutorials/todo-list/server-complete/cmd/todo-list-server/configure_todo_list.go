@@ -17,7 +17,7 @@ import (
 
 // This file is safe to edit. Once it exists it will not be overwritten
 
-var items map[int64]*models.Item
+var items = make(map[int64]*models.Item)
 var lastID int64
 
 var itemsLock = &sync.Mutex{}
@@ -76,7 +76,7 @@ func allItems(since int64, limit int32) (result []*models.Item) {
 		if len(result) >= int(limit) {
 			return
 		}
-		if since > id {
+		if since == 0 || since > id {
 			result = append(result, item)
 		}
 	}
@@ -112,7 +112,7 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 		if params.Limit == nil {
 			params.Limit = swag.Int32(20)
 		}
-		return todos.NewFindTodosOK().WithPayload(allItems(*params.Since, *params.Limit))
+		return todos.NewFindTodosOK().WithPayload(allItems(0, 20))
 	})
 
 	api.TodosUpdateOneHandler = todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams) middleware.Responder {
