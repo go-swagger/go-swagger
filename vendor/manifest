@@ -143,7 +143,7 @@
 		{
 			"importpath": "golang.org/x/tools/go/loader",
 			"repository": "https://go.googlesource.com/tools",
-			"revision": "f3a63969dd29f8cfa913fdaea22f30c1ed537cb3",
+			"revision": "fe74a4186116b8d7dd38a723993e0d84f8834b34",
 			"branch": "master",
 			"path": "/go/loader"
 		},
