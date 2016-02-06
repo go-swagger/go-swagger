@@ -15,7 +15,6 @@
 package generator
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -228,12 +227,17 @@ func commentedLines(str string) string {
 func gatherModels(specDoc *spec.Document, modelNames []string) (map[string]spec.Schema, error) {
 	models, mnc := make(map[string]spec.Schema), len(modelNames)
 	defs := specDoc.Spec().Definitions
+
 	if mnc > 0 {
+		unknownModels := make([]string, 0)
 		for _, m := range modelNames {
 			_, ok := defs[m]
 			if !ok {
-				return nil, errors.New("unknown model")
+				unknownModels = append(unknownModels, m)
 			}
+		}
+		if len(unknownModels) != 0 {
+			return nil, fmt.Errorf("unknown models: %s", strings.Join(unknownModels, ", "))
 		}
 	}
 	for k, v := range defs {
