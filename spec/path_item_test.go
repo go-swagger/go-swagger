@@ -22,8 +22,8 @@ import (
 )
 
 var pathItem = PathItem{
-	refable: refable{Ref: MustCreateRef("Dog")},
-	vendorExtensible: vendorExtensible{
+	Refable: Refable{Ref: MustCreateRef("Dog")},
+	VendorExtensible: VendorExtensible{
 		Extensions: map[string]interface{}{
 			"x-framework": "go-swagger",
 		},
@@ -52,7 +52,7 @@ var pathItem = PathItem{
 		},
 		Parameters: []Parameter{
 			Parameter{
-				paramProps: paramProps{In: "path"},
+				ParamProps: ParamProps{In: "path"},
 			},
 		},
 	},

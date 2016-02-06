@@ -22,10 +22,10 @@ import (
 )
 
 var paths = Paths{
-	vendorExtensible: vendorExtensible{Extensions: map[string]interface{}{"x-framework": "go-swagger"}},
+	VendorExtensible: VendorExtensible{Extensions: map[string]interface{}{"x-framework": "go-swagger"}},
 	Paths: map[string]PathItem{
 		"/": PathItem{
-			refable: refable{Ref: MustCreateRef("cats")},
+			Refable: Refable{Ref: MustCreateRef("cats")},
 		},
 	},
 }

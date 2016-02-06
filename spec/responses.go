@@ -37,7 +37,7 @@ import (
 //
 // For more information: http://goo.gl/8us55a#responsesObject
 type Responses struct {
-	vendorExtensible
+	VendorExtensible
 	responsesProps
 }
 
@@ -62,7 +62,7 @@ func (r *Responses) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &r.responsesProps); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(data, &r.vendorExtensible); err != nil {
+	if err := json.Unmarshal(data, &r.VendorExtensible); err != nil {
 		return err
 	}
 	if reflect.DeepEqual(responsesProps{}, r.responsesProps) {
@@ -77,7 +77,7 @@ func (r Responses) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	b2, err := json.Marshal(r.vendorExtensible)
+	b2, err := json.Marshal(r.VendorExtensible)
 	if err != nil {
 		return nil, err
 	}

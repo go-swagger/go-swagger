@@ -69,7 +69,7 @@ func TestAnalyzer(t *testing.T) {
 	pi.Get = op
 
 	spec := &Swagger{
-		swaggerProps: swaggerProps{
+		SwaggerProps: SwaggerProps{
 			Consumes: []string{"application/json"},
 			Produces: []string{"application/json"},
 			Security: []map[string][]string{

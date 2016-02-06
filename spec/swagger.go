@@ -28,25 +28,25 @@ import (
 //
 // For more information: http://goo.gl/8us55a#swagger-object-
 type Swagger struct {
-	swaggerProps
+	SwaggerProps
 }
 
 // MarshalJSON marshals this swagger structure to json
 func (s Swagger) MarshalJSON() ([]byte, error) {
-	return json.Marshal(s.swaggerProps)
+	return json.Marshal(s.SwaggerProps)
 }
 
 // UnmarshalJSON unmarshals a swagger spec from json
 func (s *Swagger) UnmarshalJSON(data []byte) error {
 	var sw Swagger
-	if err := json.Unmarshal(data, &sw.swaggerProps); err != nil {
+	if err := json.Unmarshal(data, &sw.SwaggerProps); err != nil {
 		return err
 	}
 	*s = sw
 	return nil
 }
 
-type swaggerProps struct {
+type SwaggerProps struct {
 	ID                  string                 `json:"id,omitempty"`
 	Consumes            []string               `json:"consumes,omitempty"`
 	Produces            []string               `json:"produces,omitempty"`

@@ -1,4 +1,4 @@
-FROM golang:1.5
+FROM golang:1.6
 MAINTAINER go-swagger contributors
 
 ENV GOCOVMODE count

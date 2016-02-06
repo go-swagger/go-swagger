@@ -29,16 +29,16 @@ func int64Ptr(f int64) *int64 {
 }
 
 var header = Header{
-	headerProps: headerProps{Description: "the description of this header"},
-	simpleSchema: simpleSchema{
+	HeaderProps: HeaderProps{Description: "the description of this header"},
+	SimpleSchema: SimpleSchema{
 		Items: &Items{
-			refable: refable{Ref: MustCreateRef("Cat")},
+			Refable: Refable{Ref: MustCreateRef("Cat")},
 		},
 		Type:    "string",
 		Format:  "date",
 		Default: "8",
 	},
-	commonValidations: commonValidations{
+	CommonValidations: CommonValidations{
 		Maximum:          float64Ptr(100),
 		ExclusiveMaximum: true,
 		ExclusiveMinimum: true,

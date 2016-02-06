@@ -103,7 +103,7 @@ func (s *securitySchemeProps) AddScope(scope, description string) {
 //
 // For more information: http://goo.gl/8us55a#securitySchemeObject
 type SecurityScheme struct {
-	vendorExtensible
+	VendorExtensible
 	securitySchemeProps
 }
 
@@ -123,7 +123,7 @@ func (s SecurityScheme) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	b2, err := json.Marshal(s.vendorExtensible)
+	b2, err := json.Marshal(s.VendorExtensible)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +135,7 @@ func (s *SecurityScheme) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &s.securitySchemeProps); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(data, &s.vendorExtensible); err != nil {
+	if err := json.Unmarshal(data, &s.VendorExtensible); err != nil {
 		return err
 	}
 	return nil

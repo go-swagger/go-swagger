@@ -40,11 +40,11 @@ func (e Extensions) GetString(key string) (string, bool) {
 	return "", false
 }
 
-type vendorExtensible struct {
+type VendorExtensible struct {
 	Extensions Extensions
 }
 
-func (v *vendorExtensible) AddExtension(key string, value interface{}) {
+func (v *VendorExtensible) AddExtension(key string, value interface{}) {
 	if value == nil {
 		return
 	}
@@ -54,7 +54,7 @@ func (v *vendorExtensible) AddExtension(key string, value interface{}) {
 	v.Extensions.Add(key, value)
 }
 
-func (v vendorExtensible) MarshalJSON() ([]byte, error) {
+func (v VendorExtensible) MarshalJSON() ([]byte, error) {
 	toser := make(map[string]interface{})
 	for k, v := range v.Extensions {
 		lk := strings.ToLower(k)
@@ -65,7 +65,7 @@ func (v vendorExtensible) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toser)
 }
 
-func (v *vendorExtensible) UnmarshalJSON(data []byte) error {
+func (v *VendorExtensible) UnmarshalJSON(data []byte) error {
 	var d map[string]interface{}
 	if err := json.Unmarshal(data, &d); err != nil {
 		return err
@@ -82,7 +82,7 @@ func (v *vendorExtensible) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-type infoProps struct {
+type InfoProps struct {
 	Description    string       `json:"description,omitempty"`
 	Title          string       `json:"title,omitempty"`
 	TermsOfService string       `json:"termsOfService,omitempty"`
@@ -96,8 +96,8 @@ type infoProps struct {
 //
 // For more information: http://goo.gl/8us55a#infoObject
 type Info struct {
-	vendorExtensible
-	infoProps
+	VendorExtensible
+	InfoProps
 }
 
 // JSONLookup look up a value by the json property name
@@ -105,17 +105,17 @@ func (i Info) JSONLookup(token string) (interface{}, error) {
 	if ex, ok := i.Extensions[token]; ok {
 		return &ex, nil
 	}
-	r, _, err := jsonpointer.GetForToken(i.infoProps, token)
+	r, _, err := jsonpointer.GetForToken(i.InfoProps, token)
 	return r, err
 }
 
 // MarshalJSON marshal this to JSON
 func (i Info) MarshalJSON() ([]byte, error) {
-	b1, err := json.Marshal(i.infoProps)
+	b1, err := json.Marshal(i.InfoProps)
 	if err != nil {
 		return nil, err
 	}
-	b2, err := json.Marshal(i.vendorExtensible)
+	b2, err := json.Marshal(i.VendorExtensible)
 	if err != nil {
 		return nil, err
 	}
@@ -124,10 +124,10 @@ func (i Info) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON marshal this from JSON
 func (i *Info) UnmarshalJSON(data []byte) error {
-	if err := json.Unmarshal(data, &i.infoProps); err != nil {
+	if err := json.Unmarshal(data, &i.InfoProps); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(data, &i.vendorExtensible); err != nil {
+	if err := json.Unmarshal(data, &i.VendorExtensible); err != nil {
 		return err
 	}
 	return nil

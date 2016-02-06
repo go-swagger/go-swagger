@@ -20,7 +20,7 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
-type responseProps struct {
+type ResponseProps struct {
 	Description string                 `json:"description,omitempty"`
 	Schema      *Schema                `json:"schema,omitempty"`
 	Headers     map[string]Header      `json:"headers,omitempty"`
@@ -31,16 +31,16 @@ type responseProps struct {
 //
 // For more information: http://goo.gl/8us55a#responseObject
 type Response struct {
-	refable
-	responseProps
+	Refable
+	ResponseProps
 }
 
 // UnmarshalJSON hydrates this items instance with the data from JSON
 func (r *Response) UnmarshalJSON(data []byte) error {
-	if err := json.Unmarshal(data, &r.responseProps); err != nil {
+	if err := json.Unmarshal(data, &r.ResponseProps); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(data, &r.refable); err != nil {
+	if err := json.Unmarshal(data, &r.Refable); err != nil {
 		return err
 	}
 	return nil
@@ -48,11 +48,11 @@ func (r *Response) UnmarshalJSON(data []byte) error {
 
 // MarshalJSON converts this items object to JSON
 func (r Response) MarshalJSON() ([]byte, error) {
-	b1, err := json.Marshal(r.responseProps)
+	b1, err := json.Marshal(r.ResponseProps)
 	if err != nil {
 		return nil, err
 	}
-	b2, err := json.Marshal(r.refable)
+	b2, err := json.Marshal(r.Refable)
 	if err != nil {
 		return nil, err
 	}

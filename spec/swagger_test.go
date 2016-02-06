@@ -29,7 +29,7 @@ func IsZero(data reflect.Value) bool {
 }
 
 var spec = Swagger{
-	swaggerProps: swaggerProps{
+	SwaggerProps: SwaggerProps{
 		ID:          "http://localhost:3849/api-docs",
 		Swagger:     "2.0",
 		Consumes:    []string{"application/json", "application/x-yaml"},
@@ -39,13 +39,13 @@ var spec = Swagger{
 		Host:        "some.api.out.there",
 		BasePath:    "/",
 		Paths:       &paths,
-		Definitions: map[string]Schema{"Category": Schema{schemaProps: schemaProps{Type: []string{"string"}}}},
+		Definitions: map[string]Schema{"Category": Schema{SchemaProps: SchemaProps{Type: []string{"string"}}}},
 		Parameters: map[string]Parameter{
-			"categoryParam": Parameter{paramProps: paramProps{Name: "category", In: "query"}, simpleSchema: simpleSchema{Type: "string"}},
+			"categoryParam": Parameter{ParamProps: ParamProps{Name: "category", In: "query"}, SimpleSchema: SimpleSchema{Type: "string"}},
 		},
 		Responses: map[string]Response{
 			"EmptyAnswer": Response{
-				responseProps: responseProps{
+				ResponseProps: ResponseProps{
 					Description: "no data to return for this operation",
 				},
 			},

@@ -22,7 +22,7 @@ import (
 )
 
 var operation = Operation{
-	vendorExtensible: vendorExtensible{
+	VendorExtensible: VendorExtensible{
 		Extensions: map[string]interface{}{
 			"x-framework": "go-swagger",
 		},
@@ -42,12 +42,12 @@ var operation = Operation{
 			},
 		},
 		Parameters: []Parameter{
-			Parameter{refable: refable{Ref: MustCreateRef("Cat")}},
+			Parameter{Refable: Refable{Ref: MustCreateRef("Cat")}},
 		},
 		Responses: &Responses{
 			responsesProps: responsesProps{
 				Default: &Response{
-					responseProps: responseProps{
+					ResponseProps: ResponseProps{
 						Description: "void response",
 					},
 				},
