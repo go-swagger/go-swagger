@@ -91,6 +91,19 @@ func Run(addr string, timeout time.Duration, n http.Handler) {
 
 }
 
+// RunWithErr is an alternative version of Run function which can return error.
+//
+// Unlike Run this version will not exit the program if an error is encountered but will
+// return it instead.
+func RunWithErr(addr string, timeout time.Duration, n http.Handler) error {
+	srv := &Server{
+		Timeout: timeout,
+		Server:  &http.Server{Addr: addr, Handler: n},
+	}
+
+	return srv.ListenAndServe()
+}
+
 // ListenAndServe is equivalent to http.Server.ListenAndServe with graceful shutdown enabled.
 //
 // timeout is the duration to wait until killing active requests and stopping the server.

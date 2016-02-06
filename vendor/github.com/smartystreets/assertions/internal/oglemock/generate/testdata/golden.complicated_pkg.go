@@ -4,13 +4,13 @@
 //     https://github.com/smartystreets/assertions/internal/oglemock
 //
 
-package some_pkg
+package pkg
 
 import (
 	fmt "fmt"
 	oglemock "github.com/smartystreets/assertions/internal/oglemock"
-	complicated_pkg "github.com/smartystreets/assertions/internal/oglemock/generate/test_cases/complicated_pkg"
-	tony "github.com/smartystreets/assertions/internal/oglemock/generate/test_cases/renamed_pkg"
+	complicated_pkg "github.com/smartystreets/assertions/internal/oglemock/generate/testdata/complicated_pkg"
+	tony "github.com/smartystreets/assertions/internal/oglemock/generate/testdata/renamed_pkg"
 	image "image"
 	io "io"
 	net "net"
@@ -114,7 +114,7 @@ func (m *mockComplicatedThing) EmptyInterface(p0 interface{}) (o0 interface{}, o
 		panic(fmt.Sprintf("mockComplicatedThing.EmptyInterface: invalid return values: %v", retVals))
 	}
 
-	// o0 interface {}
+	// o0 interface {  }
 	if retVals[0] != nil {
 		o0 = retVals[0].(interface{})
 	}
@@ -143,7 +143,7 @@ func (m *mockComplicatedThing) Functions(p0 func(int, image.Image) int) (o0 func
 		panic(fmt.Sprintf("mockComplicatedThing.Functions: invalid return values: %v", retVals))
 	}
 
-	// o0 func(string, int) net.Conn
+	// o0 func(string, int) (net.Conn)
 	if retVals[0] != nil {
 		o0 = retVals[0].(func(string, int) net.Conn)
 	}

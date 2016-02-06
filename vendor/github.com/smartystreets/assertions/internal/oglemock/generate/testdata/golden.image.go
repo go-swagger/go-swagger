@@ -4,7 +4,7 @@
 //     https://github.com/smartystreets/assertions/internal/oglemock
 //
 
-package some_pkg
+package pkg
 
 import (
 	fmt "fmt"

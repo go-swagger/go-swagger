@@ -9,7 +9,9 @@ import (
 	"reflect"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
+
 	"unicode"
 	"unicode/utf8"
 )
@@ -450,9 +452,36 @@ func IsISO3166Alpha3(str string) bool {
 	return false
 }
 
+// IsDNSName will validate the given string as a DNS name
+func IsDNSName(str string) bool {
+	if str == "" || len(strings.Replace(str,".","",-1)) > 255 {
+		// constraints already violated
+		return false
+	}
+	return rxDNSName.MatchString(str)
+}
+
+// IsDialString validates the given string for usage with the various Dial() functions
+func IsDialString(str string) bool {
+
+	if h, p, err := net.SplitHostPort(str); err == nil && h != "" && p != "" && (IsDNSName(h) || IsIP(h)) && IsPort(p) {
+		return true
+	}
+
+	return false
+}
+
 // IsIP checks if a string is either IP version 4 or 6.
 func IsIP(str string) bool {
 	return net.ParseIP(str) != nil
+}
+
+// IsPort checks if a string represents a valid port
+func IsPort(str string) bool {
+	if i, err := strconv.Atoi(str); err == nil && i > 0 && i < 65536 {
+		return true
+	}
+	return false
 }
 
 // IsIPv4 check if the string is an IP version 4.
