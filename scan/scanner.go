@@ -154,11 +154,12 @@ type appScanner struct {
 func newAppScanner(bp string, input *spec.Swagger, includes, excludes packageFilters) (*appScanner, error) {
 	var ldr loader.Config
 	ldr.ParserMode = goparser.ParseComments
-	ldr.Import(bp)
+	ldr.ImportWithTests(bp)
 	prog, err := ldr.Load()
 	if err != nil {
 		return nil, err
 	}
+
 	if input == nil {
 		input = new(spec.Swagger)
 		input.Swagger = "2.0"

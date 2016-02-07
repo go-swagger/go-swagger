@@ -15,6 +15,7 @@
 package scan
 
 import (
+	gobuild "go/build"
 	goparser "go/parser"
 	"log"
 	"testing"
@@ -50,9 +51,10 @@ func TestAnnotationMatcher(t *testing.T) {
 func classifierProgram() *loader.Program {
 	var ldr loader.Config
 	ldr.ParserMode = goparser.ParseComments
-	ldr.Import("../fixtures/goparsing/classification")
-	ldr.Import("../fixtures/goparsing/classification/models")
-	ldr.Import("../fixtures/goparsing/classification/operations")
+	ldr.Build = &gobuild.Default
+	ldr.ImportWithTests("github.com/go-swagger/go-swagger/fixtures/goparsing/classification")
+	ldr.ImportWithTests("github.com/go-swagger/go-swagger/fixtures/goparsing/classification/models")
+	ldr.ImportWithTests("github.com/go-swagger/go-swagger/fixtures/goparsing/classification/operations")
 	prog, err := ldr.Load()
 	if err != nil {
 		log.Fatal(err)
@@ -63,7 +65,7 @@ func classifierProgram() *loader.Program {
 func invalidProgram(name string) *loader.Program {
 	var ldr loader.Config
 	ldr.ParserMode = goparser.ParseComments
-	ldr.Import("../fixtures/goparsing/" + name)
+	ldr.ImportWithTests("github.com/go-swagger/go-swagger/fixtures/goparsing/" + name)
 	prog, err := ldr.Load()
 	if err != nil {
 		log.Fatal(err)
