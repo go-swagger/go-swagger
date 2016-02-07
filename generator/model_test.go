@@ -1435,3 +1435,28 @@ func TestGenModel_Issue243(t *testing.T) {
 		}
 	}
 }
+
+func TestGenModel_Issue252(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/bugs/252/swagger.json")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "SodaBrand"
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc)
+		if assert.NoError(t, err) && assert.False(t, genModel.IsNullable) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("soda_brand.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					b1 := assertInCode(t, "type "+k+" string", res)
+					b2 := assertInCode(t, "(m "+k+") validateSodaBrand", res)
+					b3 := assertInCode(t, "(m "+k+") Validate", res)
+					if !(b1 && b2 && b3) {
+						fmt.Println(res)
+					}
+				}
+			}
+		}
+	}
+}
