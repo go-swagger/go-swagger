@@ -1128,6 +1128,7 @@ func (sg *schemaGenContext) buildAliased() error {
 		if sg.GenSchema.SwaggerType == "string" && sg.GenSchema.SwaggerFormat == "" {
 			sg.GenSchema.IsAliased = sg.GenSchema.GoType != sg.GenSchema.SwaggerType
 		}
+		sg.GenSchema.IsNullable = false
 	}
 
 	if sg.GenSchema.IsInterface {

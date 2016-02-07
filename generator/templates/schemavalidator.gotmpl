@@ -133,7 +133,7 @@ if err := {{.ValueExpression}}.Validate(formats); err != nil {
 {{end}}
 {{define "schemavalidator" }}{{ if .Enum }}
 var {{ camelize .Name }}Enum []interface{}
-func ({{ .ReceiverName }} *{{ if .IsExported }}{{ pascalize .Name}}{{ else }}{{ .Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "dereffedSchemaType" . }}) error {
+func ({{ .ReceiverName }} {{ if not .IsPrimitive }}*{{ end }}{{ if .IsExported }}{{ pascalize .Name}}{{ else }}{{ .Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "dereffedSchemaType" . }}) error {
   if {{ camelize .Name }}Enum == nil {
     var res []{{ template "dereffedSchemaType" . }}
     if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
