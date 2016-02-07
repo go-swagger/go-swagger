@@ -24,6 +24,7 @@ done
 go tool cover -func profile.cov
 gocov convert profile.cov | gocov report
 gocov convert profile.cov | gocov-html > /usr/share/coverage/coverage-${CI_BUILD_NUM-"0"}.html
+
 [ -f /usr/share/dist/swagger ] && rm /usr/share/dist/swagger
 go build -o /usr/share/dist/swagger ./cmd/swagger
 
