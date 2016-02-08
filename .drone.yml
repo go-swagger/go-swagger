@@ -3,7 +3,7 @@ clone:
 
 matrix:
   GO_VERSION:
-    - "1.5"
+    # - "1.5"
     - "1.6"
 
 build:
@@ -29,7 +29,7 @@ build:
       - apt-get install -yqq --no-install-recommends ruby-dev rubygems rpm
       - gem install --no-rdoc --no-ri fpm
       - go get -u github.com/mitchellh/gox
-      - ./hack/build-release.sh $$TAG
+      - ./hack/build-release.sh $${TAG=0.2.5}
     when:
       event: tag
       matrix:
@@ -44,8 +44,10 @@ notify:
 publish:
   github_release:
     api_key: $$GITHUB_TOKEN
-    files: /usr/share/dist/binaries/*
-    checksum: sha256
+    files:
+      - "/go/src/github.com/go-swagger/go-swagger/dist/binaries/swagger_*"
+    checksum:
+      - sha256
     when:
       event: tag
       matrix:
