@@ -50,34 +50,34 @@ publish:
       event: tag
       matrix:
         GO_VERSION: "1.6"
-  bintray:
-    username: $$BINTRAY_USERNAME
-    password: $$BINTRAY_PASSWORD
-    branch: $$BRANCH
-    artifacts:
-      - file: /usr/share/dist/swagger-$$TAG-1.x86_64.rpm
-        owner: go-swagger
-        type: rpm
-        repository: goswagger-rpm
-        package: swagger
-        version: $$TAG
-        target: swagger-$$TAG-1.x86_64.rpm
-        publish: true
-        override: true
-      - file: /usr/share/dist/swagger-$$TAG_amd64.deb
-        owner: go-swagger
-        type: Debian
-        repository: goswagger-debian
-        package: swagger
-        version: $$TAG
-        target: swagger-$$TAG_amd64.deb
-        distr: debian
-        component: main
-        arch:
-          - amd64
-        publish: true
-        override: true
-    when:
-      event: tag
-      matrix:
-        GO_VERSION: "1.6"
+  # bintray:
+  #   username: $$BINTRAY_USERNAME
+  #   password: $$BINTRAY_PASSWORD
+  #   branch: $$BRANCH
+  #   artifacts:
+  #     - file: /usr/share/dist/swagger-$$TAG-1.x86_64.rpm
+  #       owner: go-swagger
+  #       type: rpm
+  #       repository: goswagger-rpm
+  #       package: swagger
+  #       version: $$TAG
+  #       target: swagger-$$TAG-1.x86_64.rpm
+  #       publish: true
+  #       override: true
+  #     - file: /usr/share/dist/swagger-$$TAG_amd64.deb
+  #       owner: go-swagger
+  #       type: Debian
+  #       repository: goswagger-debian
+  #       package: swagger
+  #       version: $$TAG
+  #       target: swagger-$$TAG_amd64.deb
+  #       distr: debian
+  #       component: main
+  #       arch:
+  #         - amd64
+  #       publish: true
+  #       override: true
+  #   when:
+  #     event: tag
+  #     matrix:
+  #       GO_VERSION: "1.6"
