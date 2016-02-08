@@ -45,9 +45,7 @@ publish:
   github_release:
     api_key: $$GITHUB_TOKEN
     files:
-      - "/go/src/github.com/go-swagger/go-swagger/dist/binaries/swagger_*"
-    checksum:
-      - sha256
+      - dist/binaries/swagger_*
     when:
       event: tag
       matrix:
