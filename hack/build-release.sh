@@ -1,6 +1,6 @@
 #!/bin/bash
 version=$1
-mkdir -p /usr/share/dist/{binaries,packages}
+mkdir -p /usr/share/dist/binaries
 gox -os="linux darwin windows" -output="/usr/share/dist/binaries/{{.Dir}}_{{.OS}}_{{.Arch}}" ./cmd/swagger
 
 cd /usr/share/dist
