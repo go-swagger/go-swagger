@@ -1,5 +1,5 @@
 #!/bin/bash
-version=`git describe`
+version=$1
 mkdir -p /usr/share/dist/{binaries,packages}
 gox -os="linux darwin windows" -output="/usr/share/dist/binaries/{{.Dir}}_{{.OS}}_{{.Arch}}" ./cmd/swagger
 

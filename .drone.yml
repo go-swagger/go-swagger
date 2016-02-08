@@ -29,7 +29,7 @@ build:
       - apt-get install -yqq --no-install-recommends ruby-dev rubygems rpm
       - gem install --no-rdoc --no-ri fpm
       - go get -u github.com/mitchellh/gox
-      - ./hack/build-release.sh
+      - ./hack/build-release.sh $$TAG
     when:
       event: tag
       matrix:
