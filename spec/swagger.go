@@ -21,6 +21,7 @@ import (
 	"strconv"
 
 	"github.com/go-swagger/go-swagger/jsonpointer"
+	"github.com/go-swagger/go-swagger/swag"
 )
 
 // Swagger this is the root document object for the API specification.
@@ -28,18 +29,39 @@ import (
 //
 // For more information: http://goo.gl/8us55a#swagger-object-
 type Swagger struct {
+	VendorExtensible
 	SwaggerProps
+}
+
+// JSONLookup look up a value by the json property name
+func (s Swagger) JSONLookup(token string) (interface{}, error) {
+	if ex, ok := s.Extensions[token]; ok {
+		return &ex, nil
+	}
+	r, _, err := jsonpointer.GetForToken(s.SwaggerProps, token)
+	return r, err
 }
 
 // MarshalJSON marshals this swagger structure to json
 func (s Swagger) MarshalJSON() ([]byte, error) {
-	return json.Marshal(s.SwaggerProps)
+	b1, err := json.Marshal(s.SwaggerProps)
+	if err != nil {
+		return nil, err
+	}
+	b2, err := json.Marshal(s.VendorExtensible)
+	if err != nil {
+		return nil, err
+	}
+	return swag.ConcatJSON(b1, b2), nil
 }
 
 // UnmarshalJSON unmarshals a swagger spec from json
 func (s *Swagger) UnmarshalJSON(data []byte) error {
 	var sw Swagger
 	if err := json.Unmarshal(data, &sw.SwaggerProps); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(data, &sw.VendorExtensible); err != nil {
 		return err
 	}
 	*s = sw

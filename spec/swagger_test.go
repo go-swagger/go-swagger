@@ -39,12 +39,12 @@ var spec = Swagger{
 		Host:        "some.api.out.there",
 		BasePath:    "/",
 		Paths:       &paths,
-		Definitions: map[string]Schema{"Category": Schema{SchemaProps: SchemaProps{Type: []string{"string"}}}},
+		Definitions: map[string]Schema{"Category": {SchemaProps: SchemaProps{Type: []string{"string"}}}},
 		Parameters: map[string]Parameter{
-			"categoryParam": Parameter{ParamProps: ParamProps{Name: "category", In: "query"}, SimpleSchema: SimpleSchema{Type: "string"}},
+			"categoryParam": {ParamProps: ParamProps{Name: "category", In: "query"}, SimpleSchema: SimpleSchema{Type: "string"}},
 		},
 		Responses: map[string]Response{
-			"EmptyAnswer": Response{
+			"EmptyAnswer": {
 				ResponseProps: ResponseProps{
 					Description: "no data to return for this operation",
 				},
@@ -54,11 +54,12 @@ var spec = Swagger{
 			"internalApiKey": APIKeyAuth("api_key", "header"),
 		},
 		Security: []map[string][]string{
-			map[string][]string{"internalApiKey": []string{}},
+			{"internalApiKey": {}},
 		},
 		Tags:         []Tag{NewTag("pets", "", nil)},
 		ExternalDocs: &ExternalDocumentation{"the name", "the url"},
 	},
+	VendorExtensible: VendorExtensible{map[string]interface{}{"x-some-extension": "vendor"}},
 }
 
 var specJSON = `{
@@ -103,7 +104,8 @@ var specJSON = `{
 	},
 	"security": [{"internalApiKey":[]}],
 	"tags": [{"name":"pets"}],
-	"externalDocs": {"description":"the name","url":"the url"}
+	"externalDocs": {"description":"the name","url":"the url"},
+	"x-some-extension": "vendor"
 }`
 
 func verifySpecSerialize(specJSON []byte, spec Swagger) {
@@ -168,6 +170,7 @@ func compareSpecMaps(actual, expected map[string]interface{}) {
 	So(actual["securityDefinitions"], ShouldResemble, expected["securityDefinitions"])
 	So(actual["tags"], ShouldResemble, expected["tags"])
 	So(actual["externalDocs"], ShouldResemble, expected["externalDocs"])
+	So(actual["x-some-extension"], ShouldResemble, expected["x-some-extension"])
 }
 
 func compareSpecs(actual Swagger, spec Swagger) {
