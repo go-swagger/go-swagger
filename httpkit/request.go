@@ -28,6 +28,17 @@ func CanHaveBody(method string) bool {
 	return mn == "POST" || mn == "PUT" || mn == "PATCH" || mn == "DELETE"
 }
 
+// NeedsContentType returns true if this method needs a content-type
+func NeedsContentType(method string) bool {
+	mn := strings.ToUpper(method)
+	return mn == "POST" || mn == "PUT" || mn == "PATCH"
+}
+
+// IsDelete returns true if this method is DELETE
+func IsDelete(method string) bool {
+	return strings.ToUpper(method) == "DELETE"
+}
+
 // JSONRequest creates a new http request with json headers set
 func JSONRequest(method, urlStr string, body io.Reader) (*http.Request, error) {
 	req, err := http.NewRequest(method, urlStr, body)

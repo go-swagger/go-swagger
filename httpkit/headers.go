@@ -22,11 +22,14 @@ import (
 )
 
 // ContentType parses a content type header
-func ContentType(headers http.Header) (string, string, *errors.ParseError) {
+func ContentType(headers http.Header, optional bool) (string, string, *errors.ParseError) {
 	ct := headers.Get(HeaderContentType)
 	orig := ct
-	if ct == "" {
+	if ct == "" && !optional {
 		ct = DefaultMime
+	}
+	if ct == "" {
+		return "", "", nil
 	}
 
 	mt, opts, err := mime.ParseMediaType(ct)

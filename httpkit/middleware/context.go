@@ -209,7 +209,7 @@ func (c *Context) BindValidRequest(request *http.Request, route *MatchedRoute, b
 
 	// check and validate content type, select consumer
 	if httpkit.CanHaveBody(request.Method) {
-		ct, _, err := httpkit.ContentType(request.Header)
+		ct, _, err := httpkit.ContentType(request.Header, httpkit.IsDelete(request.Method))
 		if err != nil {
 			res = append(res, err)
 		} else {
@@ -221,7 +221,7 @@ func (c *Context) BindValidRequest(request *http.Request, route *MatchedRoute, b
 	}
 
 	// check and validate the response format
-	if len(res) == 0 {
+	if len(res) == 0 && httpkit.NeedsContentType(request.Method) {
 		if str := NegotiateContentType(request, route.Produces, ""); str == "" {
 			res = append(res, errors.InvalidResponseFormat(request.Header.Get(httpkit.HeaderAccept), route.Produces))
 		}
@@ -250,7 +250,7 @@ func (c *Context) ContentType(request *http.Request) (string, string, *errors.Pa
 		}
 	}
 
-	mt, cs, err := httpkit.ContentType(request.Header)
+	mt, cs, err := httpkit.ContentType(request.Header, httpkit.IsDelete(request.Method))
 	if err != nil {
 		return "", "", err
 	}
@@ -364,7 +364,12 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 		producers := route.Producers
 		prod, ok := producers[format]
 		if !ok {
-			panic(errors.New(http.StatusInternalServerError, "can't find a producer for "+format))
+			prods := c.api.ProducersFor([]string{c.api.DefaultProduces()})
+			pr, ok := prods[c.api.DefaultProduces()]
+			if !ok {
+				panic(errors.New(http.StatusInternalServerError, "can't find a producer for "+format))
+			}
+			prod = pr
 		}
 		resp.WriteResponse(rw, prod)
 		return
@@ -407,7 +412,14 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 		producers := route.Producers
 		prod, ok := producers[format]
 		if !ok {
-			panic(errors.New(http.StatusInternalServerError, "can't find a producer for "+format))
+			if !ok {
+				prods := c.api.ProducersFor([]string{c.api.DefaultProduces()})
+				pr, ok := prods[c.api.DefaultProduces()]
+				if !ok {
+					panic(errors.New(http.StatusInternalServerError, "can't find a producer for "+format))
+				}
+				prod = pr
+			}
 		}
 		if err := prod.Produce(rw, data); err != nil {
 			panic(err) // let the recovery middleware deal with this

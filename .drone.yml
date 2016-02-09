@@ -3,7 +3,7 @@ clone:
 
 matrix:
   GO_VERSION:
-    # - "1.5"
+    - "1.5"
     - "1.6"
 
 build:
@@ -45,7 +45,7 @@ publish:
   github_release:
     api_key: $$GITHUB_TOKEN
     files:
-      - dist/binaries/swagger_*
+      - /go/src/github.com/go-swagger/go-swagger/dist/binaries/swagger_*
     when:
       event: tag
       matrix:
