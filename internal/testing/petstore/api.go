@@ -28,7 +28,7 @@ import (
 )
 
 // NewAPI registers a stub api for the pet store
-func NewAPI(t *gotest.T) (*spec.Document, *untyped.API) {
+func NewAPI(t gotest.TB) (*spec.Document, *untyped.API) {
 	spec, err := spec.New(testingutil.PetStoreJSONMessage, "")
 	assert.NoError(t, err)
 	api := untyped.NewAPI(spec)
@@ -67,7 +67,7 @@ func NewAPI(t *gotest.T) (*spec.Document, *untyped.API) {
 }
 
 // NewRootAPI registers a stub api for the pet store
-func NewRootAPI(t *gotest.T) (*spec.Document, *untyped.API) {
+func NewRootAPI(t gotest.TB) (*spec.Document, *untyped.API) {
 	spec, err := spec.New(testingutil.RootPetStoreJSONMessage, "")
 	assert.NoError(t, err)
 	api := untyped.NewAPI(spec)

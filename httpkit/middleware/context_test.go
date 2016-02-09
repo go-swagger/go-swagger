@@ -21,10 +21,38 @@ import (
 	"testing"
 
 	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-swagger/go-swagger/httpkit/middleware/untyped"
 	"github.com/go-swagger/go-swagger/internal/testing/petstore"
+	"github.com/go-swagger/go-swagger/spec"
 	"github.com/gorilla/context"
 	"github.com/stretchr/testify/assert"
 )
+
+type stubOperationHandler struct {
+}
+
+func (s *stubOperationHandler) ParameterModel() interface{} {
+	return nil
+}
+
+func (s *stubOperationHandler) Handle(params interface{}) (interface{}, error) {
+	return nil, nil
+}
+func TestContentType_Issue264(t *testing.T) {
+	swspec, err := spec.Load("../../fixtures/bugs/264/swagger.yml")
+	if assert.NoError(t, err) {
+		api := untyped.NewAPI(swspec)
+		api.RegisterConsumer("application/json", httpkit.JSONConsumer())
+		api.RegisterProducer("application/json", httpkit.JSONProducer())
+		api.RegisterOperation("delete", "/key/{id}", new(stubOperationHandler))
+
+		handler := Serve(swspec, api)
+		request, _ := http.NewRequest("DELETE", "/key/1", nil)
+		recorder := httptest.NewRecorder()
+		handler.ServeHTTP(recorder, request)
+		assert.Equal(t, 200, recorder.Code)
+	}
+}
 
 func TestServe(t *testing.T) {
 	spec, api := petstore.NewAPI(t)
@@ -163,9 +191,9 @@ func TestContextRender(t *testing.T) {
 	recorder = httptest.NewRecorder()
 	assert.Panics(t, func() { ctx.Respond(recorder, request, []string{ct}, ri, map[int]interface{}{1: "hello"}) })
 
-	recorder = httptest.NewRecorder()
-	request, _ = http.NewRequest("GET", "/pets", nil)
-	assert.Panics(t, func() { ctx.Respond(recorder, request, []string{}, ri, map[string]interface{}{"name": "hello"}) })
+	// recorder = httptest.NewRecorder()
+	// request, _ = http.NewRequest("GET", "/pets", nil)
+	// assert.Panics(t, func() { ctx.Respond(recorder, request, []string{}, ri, map[string]interface{}{"name": "hello"}) })
 
 	recorder = httptest.NewRecorder()
 	request, _ = http.NewRequest("DELETE", "/pets/1", nil)

@@ -102,7 +102,7 @@ func (v *validation) contentType() {
 		ct, _, err := v.context.ContentType(v.request)
 		if err != nil {
 			v.result = append(v.result, err)
-		} else {
+		} else if httpkit.NeedsContentType(v.request.Method) {
 			if err := validateContentType(v.route.Consumes, ct); err != nil {
 				v.result = append(v.result, err)
 			}
@@ -112,7 +112,7 @@ func (v *validation) contentType() {
 }
 
 func (v *validation) responseFormat() {
-	if str := v.context.ResponseFormat(v.request, v.route.Produces); str == "" {
+	if str := v.context.ResponseFormat(v.request, v.route.Produces); str == "" && httpkit.NeedsContentType(v.request.Method) {
 		v.result = append(v.result, errors.InvalidResponseFormat(v.request.Header.Get(httpkit.HeaderAccept), v.route.Produces))
 	}
 }
