@@ -120,11 +120,17 @@ type {{ pascalize .Name }}Params struct {
 func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
   var res []error
   {{ if .HasQueryParams }}qs := httpkit.Values(r.URL.Query())
-  {{ else if .HasFormParams }}if err := r.ParseMultipartForm(32 << 20); err != nil {
-		return err
-	}
-	fds := httpkit.Values(r.Form)
-  {{ end }}
+  {{ else if .HasFormParams }}if r.Header.Get("Content-Type") == "multipart/form-data" {
+    if err := r.ParseMultipartForm(32 << 20); err != nil {
+ 		return err
+ 	}
+  } else {
+    if err := r.ParseForm(); err != nil {
+        return err
+    }
+  }
+  	fds := httpkit.Values(r.Form)
+
 
   {{ range .Params }}
   {{ if not .IsArray }}{{ if .IsQueryParam }}q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, _ := qs.GetOK({{ .Path }})
