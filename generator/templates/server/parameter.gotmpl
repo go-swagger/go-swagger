@@ -121,7 +121,11 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
   var res []error
   {{ if .HasQueryParams }}qs := httpkit.Values(r.URL.Query())
   {{ else if .HasFormParams }}if err := r.ParseMultipartForm(32 << 20); err != nil {
-		return err
+		if err != http.ErrNotMultiPart {
+            return err
+        } else if err := r.ParseForm(); err != nil {
+            return err
+        }
 	}
 	fds := httpkit.Values(r.Form)
   {{ end }}
