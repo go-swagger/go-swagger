@@ -1,8 +1,8 @@
 #!/bin/bash
 set -x -e -o pipefail
 
-# mkdir -p /usr/share/{testresults,coverage,dist}
-# go test -race -timeout 20m -v $(go list ./... | grep -v vendor) | go-junit-report -dir /usr/share/testresults
+mkdir -p /usr/share/{testresults,coverage,dist}
+go test -race -timeout 20m -v $(go list ./... | grep -v vendor) | go-junit-report -dir /usr/share/testresults
 
 # # Run test coverage on each subdirectories and merge the coverage profile.
 # echo "mode: ${GOCOVMODE-count}" > profile.cov
