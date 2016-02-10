@@ -152,8 +152,26 @@ func (r *request) BuildHTTP(mediaType string, producers map[string]httpkit.Produ
 	if r.payload != nil {
 		// TODO: infer most appropriate content type based on the producer used,
 		// and the `consumers` section of the spec/operation
+
+		// set the content length of the request or else a chunked transfer is
+		// declared, and this corrupts outgoing JSON payloads. the content's
+		// length must be set prior to the body being written per the spec at
+		// https://golang.org/pkg/net/http
+		//
+		//     If Body is present, Content-Length is <= 0 and TransferEncoding
+		//     hasn't been set to "identity", Write adds
+		//     "Transfer-Encoding: chunked" to the header. Body is closed
+		//     after it is sent.
+		//
+		// to that end a temporary buffer, b, is created to produce the payload
+		// body, and then its size is used to set the request's content length
+		b := &bytes.Buffer{}
 		producer := producers[mediaType]
-		if err := producer.Produce(buf, r.payload); err != nil {
+		if err := producer.Produce(b, r.payload); err != nil {
+			return nil, err
+		}
+		req.ContentLength = int64(b.Len())
+		if _, err := buf.Write(b.Bytes()); err != nil {
 			return nil, err
 		}
 		r.SetHeaderParam(httpkit.HeaderContentType, mediaType)
