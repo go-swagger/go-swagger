@@ -22,8 +22,8 @@ import (
 )
 
 var schema = Schema{
-	vendorExtensible: vendorExtensible{Extensions: map[string]interface{}{"x-framework": "go-swagger"}},
-	schemaProps: schemaProps{
+	VendorExtensible: VendorExtensible{Extensions: map[string]interface{}{"x-framework": "go-swagger"}},
+	SchemaProps: SchemaProps{
 		Ref:              MustCreateRef("Cat"),
 		Type:             []string{"string"},
 		Format:           "date",
@@ -45,18 +45,18 @@ var schema = Schema{
 		MaxProperties:    int64Ptr(5),
 		MinProperties:    int64Ptr(1),
 		Required:         []string{"id", "name"},
-		Items:            &SchemaOrArray{Schema: &Schema{schemaProps: schemaProps{Type: []string{"string"}}}},
-		AllOf:            []Schema{Schema{schemaProps: schemaProps{Type: []string{"string"}}}},
+		Items:            &SchemaOrArray{Schema: &Schema{SchemaProps: SchemaProps{Type: []string{"string"}}}},
+		AllOf:            []Schema{Schema{SchemaProps: SchemaProps{Type: []string{"string"}}}},
 		Properties: map[string]Schema{
-			"id":   Schema{schemaProps: schemaProps{Type: []string{"integer"}, Format: "int64"}},
-			"name": Schema{schemaProps: schemaProps{Type: []string{"string"}}},
+			"id":   Schema{SchemaProps: SchemaProps{Type: []string{"integer"}, Format: "int64"}},
+			"name": Schema{SchemaProps: SchemaProps{Type: []string{"string"}}},
 		},
-		AdditionalProperties: &SchemaOrBool{Allows: true, Schema: &Schema{schemaProps: schemaProps{
+		AdditionalProperties: &SchemaOrBool{Allows: true, Schema: &Schema{SchemaProps: SchemaProps{
 			Type:   []string{"integer"},
 			Format: "int32",
 		}}},
 	},
-	swaggerSchemaProps: swaggerSchemaProps{
+	SwaggerSchemaProps: SwaggerSchemaProps{
 		Discriminator: "not this",
 		ReadOnly:      true,
 		XML:           &XMLObject{"sch", "io", "sw", true, true},

@@ -22,8 +22,8 @@ import (
 )
 
 var items = Items{
-	refable: refable{Ref: MustCreateRef("Dog")},
-	commonValidations: commonValidations{
+	Refable: Refable{Ref: MustCreateRef("Dog")},
+	CommonValidations: CommonValidations{
 		Maximum:          float64Ptr(100),
 		ExclusiveMaximum: true,
 		ExclusiveMinimum: true,
@@ -37,11 +37,11 @@ var items = Items{
 		MultipleOf:       float64Ptr(5),
 		Enum:             []interface{}{"hello", "world"},
 	},
-	simpleSchema: simpleSchema{
+	SimpleSchema: SimpleSchema{
 		Type:   "string",
 		Format: "date",
 		Items: &Items{
-			refable: refable{Ref: MustCreateRef("Cat")},
+			Refable: Refable{Ref: MustCreateRef("Cat")},
 		},
 		CollectionFormat: "csv",
 		Default:          "8",

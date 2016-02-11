@@ -20,7 +20,7 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
-type headerProps struct {
+type HeaderProps struct {
 	Description string `json:"description,omitempty"`
 }
 
@@ -28,9 +28,9 @@ type headerProps struct {
 //
 // For more information: http://goo.gl/8us55a#headerObject
 type Header struct {
-	commonValidations
-	simpleSchema
-	headerProps
+	CommonValidations
+	SimpleSchema
+	HeaderProps
 }
 
 // ResponseHeader creates a new header instance for use in a response
@@ -135,15 +135,15 @@ func (h *Header) AllowDuplicates() *Header {
 
 // MarshalJSON marshal this to JSON
 func (h Header) MarshalJSON() ([]byte, error) {
-	b1, err := json.Marshal(h.commonValidations)
+	b1, err := json.Marshal(h.CommonValidations)
 	if err != nil {
 		return nil, err
 	}
-	b2, err := json.Marshal(h.simpleSchema)
+	b2, err := json.Marshal(h.SimpleSchema)
 	if err != nil {
 		return nil, err
 	}
-	b3, err := json.Marshal(h.headerProps)
+	b3, err := json.Marshal(h.HeaderProps)
 	if err != nil {
 		return nil, err
 	}
@@ -152,13 +152,13 @@ func (h Header) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON marshal this from JSON
 func (h *Header) UnmarshalJSON(data []byte) error {
-	if err := json.Unmarshal(data, &h.commonValidations); err != nil {
+	if err := json.Unmarshal(data, &h.CommonValidations); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(data, &h.simpleSchema); err != nil {
+	if err := json.Unmarshal(data, &h.SimpleSchema); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(data, &h.headerProps); err != nil {
+	if err := json.Unmarshal(data, &h.HeaderProps); err != nil {
 		return err
 	}
 	return nil

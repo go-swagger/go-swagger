@@ -81,6 +81,8 @@ func (p *untypedParamBinder) typeForSchema(tpe, format string, items *spec.Items
 			return reflect.TypeOf(int32(0))
 		case "int64":
 			return reflect.TypeOf(int64(0))
+		default:
+			return reflect.TypeOf(int64(0))
 		}
 
 	case "number":
@@ -175,7 +177,7 @@ func (p *untypedParamBinder) Bind(request *http.Request, routeParams RouteParams
 		var err error
 		var mt string
 
-		mt, _, e := httpkit.ContentType(request.Header)
+		mt, _, e := httpkit.ContentType(request.Header, httpkit.IsDelete(request.Method))
 		if e != nil {
 			// because of the interface conversion go thinks the error is not nil
 			// so we first check for nil and then set the err var if it's not nil

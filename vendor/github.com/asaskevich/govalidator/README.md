@@ -50,6 +50,8 @@ func IsBase64(str string) bool
 func IsByteLength(str string, min, max int) bool
 func IsCreditCard(str string) bool
 func IsDataURI(str string) bool
+func IsDialString(str string) bool
+func IsDNSName(str string) bool
 func IsDivisibleBy(str, num string) bool
 func IsEmail(str string) bool
 func IsFilePath(str string) (bool, int)
@@ -80,6 +82,7 @@ func IsNonNegative(value float64) bool
 func IsNonPositive(value float64) bool
 func IsNull(str string) bool
 func IsNumeric(str string) bool
+func IsPort(str string) bool
 func IsPositive(value float64) bool
 func IsPrintableASCII(str string) bool
 func IsRGBcolor(str string) bool
@@ -188,6 +191,8 @@ Here is a list of available validators for struct fields (validator - used funct
 "base64":         IsBase64,
 "creditcard":     IsCreditCard,
 "datauri":        IsDataURI,
+"dialstring":     IsDialString,
+"dns":            IsDNSName,
 "email":          IsEmail,
 "float":          IsFloat,
 "fullwidth":      IsFullWidth,
@@ -208,6 +213,7 @@ Here is a list of available validators for struct fields (validator - used funct
 "multibyte":      IsMultibyte,
 "null":           IsNull,
 "numeric":        IsNumeric,
+"port":           IsPort,
 "printableascii": IsPrintableASCII,
 "requri":         IsRequestURI,
 "requrl":         IsRequestURL,

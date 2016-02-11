@@ -18,10 +18,11 @@
 package complicated_pkg
 
 import (
-	"github.com/smartystreets/assertions/internal/oglemock/generate/test_cases/renamed_pkg"
 	"image"
 	"io"
 	"net"
+
+	"github.com/smartystreets/assertions/internal/oglemock/generate/testdata/renamed_pkg"
 )
 
 type Byte uint8

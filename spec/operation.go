@@ -40,7 +40,7 @@ type operationProps struct {
 //
 // For more information: http://goo.gl/8us55a#operationObject
 type Operation struct {
-	vendorExtensible
+	VendorExtensible
 	operationProps
 }
 
@@ -73,7 +73,7 @@ func (o *Operation) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &o.operationProps); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(data, &o.vendorExtensible); err != nil {
+	if err := json.Unmarshal(data, &o.VendorExtensible); err != nil {
 		return err
 	}
 	return nil
@@ -85,7 +85,7 @@ func (o Operation) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	b2, err := json.Marshal(o.vendorExtensible)
+	b2, err := json.Marshal(o.VendorExtensible)
 	if err != nil {
 		return nil, err
 	}

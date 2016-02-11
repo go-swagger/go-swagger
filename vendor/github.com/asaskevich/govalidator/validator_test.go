@@ -1443,6 +1443,88 @@ func TestIsIP(t *testing.T) {
 	}
 }
 
+func TestIsPort(t *testing.T) {
+	t.Parallel()
+
+	var tests = []struct {
+		param    string
+		expected bool
+	}{
+		{"1", true},
+		{"65535", true},
+		{"0", false},
+		{"65536", false},
+		{"65538", false},
+	}
+
+	for _, test := range tests {
+		actual := IsPort(test.param)
+		if actual != test.expected {
+			t.Errorf("Expected IsPort(%q) to be %v, got %v", test.param, test.expected, actual)
+		}
+	}
+}
+
+func TestIsDNSName(t *testing.T) {
+	t.Parallel()
+
+	var tests = []struct {
+		param    string
+		expected bool
+	}{
+		{"localhost", true},
+		{"localhost.local", true},
+		{"localhost.localdomain.intern", true},
+		{"-localhost", false},
+		{"localhost.-localdomain", false},
+		{"localhost.localdomain.-int", false},
+		{"_localhost", false},
+		{"localhost._localdomain", false},
+		{"localhost.localdomain._int", false},
+		{"lÖcalhost", false},
+		{"localhost.lÖcaldomain", false},
+		{"localhost.localdomain.üntern", false},
+		{"漢字汉字", false},
+		{"www.jubfvq1v3p38i51622y0dvmdk1mymowjyeu26gbtw9andgynj1gg8z3msb1kl5z6906k846pj3sulm4kiyk82ln5teqj9nsht59opr0cs5ssltx78lfyvml19lfq1wp4usbl0o36cmiykch1vywbttcus1p9yu0669h8fj4ll7a6bmop505908s1m83q2ec2qr9nbvql2589adma3xsq2o38os2z3dmfh2tth4is4ixyfasasasefqwe4t2ub2fz1rme.de", false},
+	}
+
+	for _, test := range tests {
+		actual := IsDNSName(test.param)
+		if actual != test.expected {
+			t.Errorf("Expected IsDNS(%q) to be %v, got %v", test.param, test.expected, actual)
+		}
+	}
+}
+
+func TestIsDialString(t *testing.T) {
+	t.Parallel()
+
+	var tests = []struct {
+		param    string
+		expected bool
+	}{
+		{"localhost.local:1", true},
+		{"localhost.localdomain:9090", true},
+		{"localhost.localdomain.intern:65535", true},
+		{"127.0.0.1:30000", true},
+		{"[::1]:80", true},
+		{"[1200::AB00:1234::2552:7777:1313]:22",false},
+		{"-localhost:1", false},
+		{"localhost.-localdomain:9090", false},
+		{"localhost.localdomain.-int:65535", false},
+		{"localhost.loc:100000", false},
+		{"漢字汉字:2", false},
+		{"www.jubfvq1v3p38i51622y0dvmdk1mymowjyeu26gbtw9andgynj1gg8z3msb1kl5z6906k846pj3sulm4kiyk82ln5teqj9nsht59opr0cs5ssltx78lfyvml19lfq1wp4usbl0o36cmiykch1vywbttcus1p9yu0669h8fj4ll7a6bmop505908s1m83q2ec2qr9nbvql2589adma3xsq2o38os2z3dmfh2tth4is4ixyfasasasefqwe4t2ub2fz1rme.de:20000", false},
+	}
+
+	for _, test := range tests {
+		actual := IsDialString(test.param)
+		if actual != test.expected {
+			t.Errorf("Expected IsDialString(%q) to be %v, got %v", test.param, test.expected, actual)
+		}
+	}
+}
+
 func TestIsMAC(t *testing.T) {
 	t.Parallel()
 

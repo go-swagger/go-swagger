@@ -133,10 +133,10 @@ func TestPropertySerialization(t *testing.T) {
 			So(`{"items":{"type":"string"},"type":"array"}`, ShouldParseJSON, prop)
 		})
 		Convey("a list of string array properties", func() {
-			prop := &Schema{schemaProps: schemaProps{
+			prop := &Schema{SchemaProps: SchemaProps{
 				Items: &SchemaOrArray{Schemas: []Schema{
-					Schema{schemaProps: schemaProps{Type: []string{"string"}}},
-					Schema{schemaProps: schemaProps{Type: []string{"string"}}},
+					Schema{SchemaProps: SchemaProps{Type: []string{"string"}}},
+					Schema{SchemaProps: SchemaProps{Type: []string{"string"}}},
 				}},
 			}}
 			So(`{"items":[{"type":"string"},{"type":"string"}]}`, ShouldParseJSON, prop)

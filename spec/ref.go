@@ -20,15 +20,15 @@ import (
 	"github.com/go-swagger/go-swagger/jsonreference"
 )
 
-type refable struct {
+type Refable struct {
 	Ref Ref
 }
 
-func (r refable) MarshalJSON() ([]byte, error) {
+func (r Refable) MarshalJSON() ([]byte, error) {
 	return r.Ref.MarshalJSON()
 }
 
-func (r *refable) UnmarshalJSON(d []byte) error {
+func (r *Refable) UnmarshalJSON(d []byte) error {
 	return json.Unmarshal(d, &r.Ref)
 }
 

@@ -26,6 +26,8 @@ import (
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/tools/go/loader"
+
+	_ "github.com/go-swagger/scan-repo-boundary/makeplans"
 )
 
 var classificationProg *loader.Program

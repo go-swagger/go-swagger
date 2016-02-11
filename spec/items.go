@@ -20,7 +20,7 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
-type simpleSchema struct {
+type SimpleSchema struct {
 	Type             string      `json:"type,omitempty"`
 	Format           string      `json:"format,omitempty"`
 	Items            *Items      `json:"items,omitempty"`
@@ -28,21 +28,21 @@ type simpleSchema struct {
 	Default          interface{} `json:"default,omitempty"`
 }
 
-func (s *simpleSchema) TypeName() string {
+func (s *SimpleSchema) TypeName() string {
 	if s.Format != "" {
 		return s.Format
 	}
 	return s.Type
 }
 
-func (s *simpleSchema) ItemsTypeName() string {
+func (s *SimpleSchema) ItemsTypeName() string {
 	if s.Items == nil {
 		return ""
 	}
 	return s.Items.TypeName()
 }
 
-type commonValidations struct {
+type CommonValidations struct {
 	Maximum          *float64      `json:"maximum,omitempty"`
 	ExclusiveMaximum bool          `json:"exclusiveMaximum,omitempty"`
 	Minimum          *float64      `json:"minimum,omitempty"`
@@ -62,9 +62,9 @@ type commonValidations struct {
 //
 // For more information: http://goo.gl/8us55a#items-object-
 type Items struct {
-	refable
-	commonValidations
-	simpleSchema
+	Refable
+	CommonValidations
+	SimpleSchema
 }
 
 // NewItems creates a new instance of items
@@ -163,35 +163,35 @@ func (i *Items) AllowDuplicates() *Items {
 
 // UnmarshalJSON hydrates this items instance with the data from JSON
 func (i *Items) UnmarshalJSON(data []byte) error {
-	var validations commonValidations
+	var validations CommonValidations
 	if err := json.Unmarshal(data, &validations); err != nil {
 		return err
 	}
-	var ref refable
+	var ref Refable
 	if err := json.Unmarshal(data, &ref); err != nil {
 		return err
 	}
-	var simpleSchema simpleSchema
+	var simpleSchema SimpleSchema
 	if err := json.Unmarshal(data, &simpleSchema); err != nil {
 		return err
 	}
-	i.refable = ref
-	i.commonValidations = validations
-	i.simpleSchema = simpleSchema
+	i.Refable = ref
+	i.CommonValidations = validations
+	i.SimpleSchema = simpleSchema
 	return nil
 }
 
 // MarshalJSON converts this items object to JSON
 func (i Items) MarshalJSON() ([]byte, error) {
-	b1, err := json.Marshal(i.commonValidations)
+	b1, err := json.Marshal(i.CommonValidations)
 	if err != nil {
 		return nil, err
 	}
-	b2, err := json.Marshal(i.simpleSchema)
+	b2, err := json.Marshal(i.SimpleSchema)
 	if err != nil {
 		return nil, err
 	}
-	b3, err := json.Marshal(i.refable)
+	b3, err := json.Marshal(i.Refable)
 	if err != nil {
 		return nil, err
 	}

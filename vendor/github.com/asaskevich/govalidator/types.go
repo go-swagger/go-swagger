@@ -46,6 +46,7 @@ var CustomTypeTagMap = map[string]CustomTypeValidator{}
 var TagMap = map[string]Validator{
 	"email":          IsEmail,
 	"url":            IsURL,
+	"dialstring":     IsDialString,
 	"requrl":         IsRequestURL,
 	"requri":         IsRequestURI,
 	"alpha":          IsAlpha,
@@ -80,8 +81,10 @@ var TagMap = map[string]Validator{
 	"base64":         IsBase64,
 	"datauri":        IsDataURI,
 	"ip":             IsIP,
+	"port":           IsPort,
 	"ipv4":           IsIPv4,
 	"ipv6":           IsIPv6,
+	"dns":            IsDNSName,
 	"mac":            IsMAC,
 	"latitude":       IsLatitude,
 	"longitude":      IsLongitude,

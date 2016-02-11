@@ -40,8 +40,8 @@ type pathItemProps struct {
 //
 // For more information: http://goo.gl/8us55a#pathItemObject
 type PathItem struct {
-	refable
-	vendorExtensible
+	Refable
+	VendorExtensible
 	pathItemProps
 }
 
@@ -59,10 +59,10 @@ func (p PathItem) JSONLookup(token string) (interface{}, error) {
 
 // UnmarshalJSON hydrates this items instance with the data from JSON
 func (p *PathItem) UnmarshalJSON(data []byte) error {
-	if err := json.Unmarshal(data, &p.refable); err != nil {
+	if err := json.Unmarshal(data, &p.Refable); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(data, &p.vendorExtensible); err != nil {
+	if err := json.Unmarshal(data, &p.VendorExtensible); err != nil {
 		return err
 	}
 	if err := json.Unmarshal(data, &p.pathItemProps); err != nil {
@@ -73,11 +73,11 @@ func (p *PathItem) UnmarshalJSON(data []byte) error {
 
 // MarshalJSON converts this items object to JSON
 func (p PathItem) MarshalJSON() ([]byte, error) {
-	b3, err := json.Marshal(p.refable)
+	b3, err := json.Marshal(p.Refable)
 	if err != nil {
 		return nil, err
 	}
-	b4, err := json.Marshal(p.vendorExtensible)
+	b4, err := json.Marshal(p.VendorExtensible)
 	if err != nil {
 		return nil, err
 	}

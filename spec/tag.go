@@ -37,7 +37,7 @@ func NewTag(name, description string, externalDocs *ExternalDocumentation) Tag {
 //
 // For more information: http://goo.gl/8us55a#tagObject
 type Tag struct {
-	vendorExtensible
+	VendorExtensible
 	tagProps
 }
 
@@ -57,7 +57,7 @@ func (t Tag) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	b2, err := json.Marshal(t.vendorExtensible)
+	b2, err := json.Marshal(t.VendorExtensible)
 	if err != nil {
 		return nil, err
 	}
@@ -69,5 +69,5 @@ func (t *Tag) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &t.tagProps); err != nil {
 		return err
 	}
-	return json.Unmarshal(data, &t.vendorExtensible)
+	return json.Unmarshal(data, &t.VendorExtensible)
 }

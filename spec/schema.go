@@ -26,7 +26,7 @@ import (
 
 // BooleanProperty creates a boolean property
 func BooleanProperty() *Schema {
-	return &Schema{schemaProps: schemaProps{Type: []string{"boolean"}}}
+	return &Schema{SchemaProps: SchemaProps{Type: []string{"boolean"}}}
 }
 
 // BoolProperty creates a boolean property
@@ -34,80 +34,80 @@ func BoolProperty() *Schema { return BooleanProperty() }
 
 // StringProperty creates a string property
 func StringProperty() *Schema {
-	return &Schema{schemaProps: schemaProps{Type: []string{"string"}}}
+	return &Schema{SchemaProps: SchemaProps{Type: []string{"string"}}}
 }
 
 // CharProperty creates a string property
 func CharProperty() *Schema {
-	return &Schema{schemaProps: schemaProps{Type: []string{"string"}}}
+	return &Schema{SchemaProps: SchemaProps{Type: []string{"string"}}}
 }
 
 // Float64Property creates a float64/double property
 func Float64Property() *Schema {
-	return &Schema{schemaProps: schemaProps{Type: []string{"number"}, Format: "double"}}
+	return &Schema{SchemaProps: SchemaProps{Type: []string{"number"}, Format: "double"}}
 }
 
 // Float32Property creates a float32/float property
 func Float32Property() *Schema {
-	return &Schema{schemaProps: schemaProps{Type: []string{"number"}, Format: "float"}}
+	return &Schema{SchemaProps: SchemaProps{Type: []string{"number"}, Format: "float"}}
 }
 
 // Int8Property creates an int8 property
 func Int8Property() *Schema {
-	return &Schema{schemaProps: schemaProps{Type: []string{"integer"}, Format: "int8"}}
+	return &Schema{SchemaProps: SchemaProps{Type: []string{"integer"}, Format: "int8"}}
 }
 
 // Int16Property creates an int16 property
 func Int16Property() *Schema {
-	return &Schema{schemaProps: schemaProps{Type: []string{"integer"}, Format: "int16"}}
+	return &Schema{SchemaProps: SchemaProps{Type: []string{"integer"}, Format: "int16"}}
 }
 
 // Int32Property creates an int32 property
 func Int32Property() *Schema {
-	return &Schema{schemaProps: schemaProps{Type: []string{"integer"}, Format: "int32"}}
+	return &Schema{SchemaProps: SchemaProps{Type: []string{"integer"}, Format: "int32"}}
 }
 
 // Int64Property creates an int64 property
 func Int64Property() *Schema {
-	return &Schema{schemaProps: schemaProps{Type: []string{"integer"}, Format: "int64"}}
+	return &Schema{SchemaProps: SchemaProps{Type: []string{"integer"}, Format: "int64"}}
 }
 
 // StrFmtProperty creates a property for the named string format
 func StrFmtProperty(format string) *Schema {
-	return &Schema{schemaProps: schemaProps{Type: []string{"string"}, Format: format}}
+	return &Schema{SchemaProps: SchemaProps{Type: []string{"string"}, Format: format}}
 }
 
 // DateProperty creates a date property
 func DateProperty() *Schema {
-	return &Schema{schemaProps: schemaProps{Type: []string{"string"}, Format: "date"}}
+	return &Schema{SchemaProps: SchemaProps{Type: []string{"string"}, Format: "date"}}
 }
 
 // DateTimeProperty creates a date time property
 func DateTimeProperty() *Schema {
-	return &Schema{schemaProps: schemaProps{Type: []string{"string"}, Format: "date-time"}}
+	return &Schema{SchemaProps: SchemaProps{Type: []string{"string"}, Format: "date-time"}}
 }
 
 // MapProperty creates a map property
 func MapProperty(property *Schema) *Schema {
-	return &Schema{schemaProps: schemaProps{Type: []string{"object"}, AdditionalProperties: &SchemaOrBool{Allows: true, Schema: property}}}
+	return &Schema{SchemaProps: SchemaProps{Type: []string{"object"}, AdditionalProperties: &SchemaOrBool{Allows: true, Schema: property}}}
 }
 
 // RefProperty creates a ref property
 func RefProperty(name string) *Schema {
-	return &Schema{schemaProps: schemaProps{Ref: MustCreateRef(name)}}
+	return &Schema{SchemaProps: SchemaProps{Ref: MustCreateRef(name)}}
 }
 
 // RefSchema creates a ref property
 func RefSchema(name string) *Schema {
-	return &Schema{schemaProps: schemaProps{Ref: MustCreateRef(name)}}
+	return &Schema{SchemaProps: SchemaProps{Ref: MustCreateRef(name)}}
 }
 
 // ArrayProperty creates an array property
 func ArrayProperty(items *Schema) *Schema {
 	if items == nil {
-		return &Schema{schemaProps: schemaProps{Type: []string{"array"}}}
+		return &Schema{SchemaProps: SchemaProps{Type: []string{"array"}}}
 	}
-	return &Schema{schemaProps: schemaProps{Items: &SchemaOrArray{Schema: items}, Type: []string{"array"}}}
+	return &Schema{SchemaProps: SchemaProps{Items: &SchemaOrArray{Schema: items}, Type: []string{"array"}}}
 }
 
 // ComposedSchema creates a schema with allOf
@@ -199,7 +199,7 @@ func (r *SchemaURL) UnmarshalJSON(data []byte) error {
 // 	return nil
 // }
 
-type schemaProps struct {
+type SchemaProps struct {
 	ID                   string            `json:"id,omitempty"`
 	Ref                  Ref               `json:"-,omitempty"`
 	Schema               SchemaURL         `json:"-,omitempty"`
@@ -236,7 +236,7 @@ type schemaProps struct {
 	Definitions          Definitions       `json:"definitions,omitempty"`
 }
 
-type swaggerSchemaProps struct {
+type SwaggerSchemaProps struct {
 	Discriminator string                 `json:"discriminator,omitempty"`
 	ReadOnly      bool                   `json:"readOnly,omitempty"`
 	XML           *XMLObject             `json:"xml,omitempty"`
@@ -252,9 +252,9 @@ type swaggerSchemaProps struct {
 //
 // For more information: http://goo.gl/8us55a#schemaObject
 type Schema struct {
-	vendorExtensible
-	schemaProps
-	swaggerSchemaProps
+	VendorExtensible
+	SchemaProps
+	SwaggerSchemaProps
 	ExtraProps map[string]interface{} `json:"-"`
 }
 
@@ -268,11 +268,11 @@ func (s Schema) JSONLookup(token string) (interface{}, error) {
 		return &ex, nil
 	}
 
-	r, _, err := jsonpointer.GetForToken(s.schemaProps, token)
+	r, _, err := jsonpointer.GetForToken(s.SchemaProps, token)
 	if r != nil || err != nil {
 		return r, err
 	}
-	r, _, err = jsonpointer.GetForToken(s.swaggerSchemaProps, token)
+	r, _, err = jsonpointer.GetForToken(s.SwaggerSchemaProps, token)
 	return r, err
 }
 
@@ -549,11 +549,11 @@ func (s *Schema) AsUnwrappedXML() *Schema {
 
 // MarshalJSON marshal this to JSON
 func (s Schema) MarshalJSON() ([]byte, error) {
-	b1, err := json.Marshal(s.schemaProps)
+	b1, err := json.Marshal(s.SchemaProps)
 	if err != nil {
 		return nil, fmt.Errorf("schema props %v", err)
 	}
-	b2, err := json.Marshal(s.vendorExtensible)
+	b2, err := json.Marshal(s.VendorExtensible)
 	if err != nil {
 		return nil, fmt.Errorf("vendor props %v", err)
 	}
@@ -565,7 +565,7 @@ func (s Schema) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("schema prop %v", err)
 	}
-	b5, err := json.Marshal(s.swaggerSchemaProps)
+	b5, err := json.Marshal(s.SwaggerSchemaProps)
 	if err != nil {
 		return nil, fmt.Errorf("common validations %v", err)
 	}
@@ -583,7 +583,7 @@ func (s Schema) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON marshal this from JSON
 func (s *Schema) UnmarshalJSON(data []byte) error {
 	var sch Schema
-	if err := json.Unmarshal(data, &sch.schemaProps); err != nil {
+	if err := json.Unmarshal(data, &sch.SchemaProps); err != nil {
 		return err
 	}
 	if err := json.Unmarshal(data, &sch.Ref); err != nil {
@@ -592,7 +592,7 @@ func (s *Schema) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &sch.Schema); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(data, &sch.swaggerSchemaProps); err != nil {
+	if err := json.Unmarshal(data, &sch.SwaggerSchemaProps); err != nil {
 		return err
 	}
 

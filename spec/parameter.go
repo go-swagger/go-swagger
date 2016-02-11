@@ -23,37 +23,37 @@ import (
 
 // QueryParam creates a query parameter
 func QueryParam(name string) *Parameter {
-	return &Parameter{paramProps: paramProps{Name: name, In: "query"}}
+	return &Parameter{ParamProps: ParamProps{Name: name, In: "query"}}
 }
 
 // HeaderParam creates a header parameter, this is always required by default
 func HeaderParam(name string) *Parameter {
-	return &Parameter{paramProps: paramProps{Name: name, In: "header", Required: true}}
+	return &Parameter{ParamProps: ParamProps{Name: name, In: "header", Required: true}}
 }
 
 // PathParam creates a path parameter, this is always required
 func PathParam(name string) *Parameter {
-	return &Parameter{paramProps: paramProps{Name: name, In: "path", Required: true}}
+	return &Parameter{ParamProps: ParamProps{Name: name, In: "path", Required: true}}
 }
 
 // BodyParam creates a body parameter
 func BodyParam(name string, schema *Schema) *Parameter {
-	return &Parameter{paramProps: paramProps{Name: name, In: "body", Schema: schema}, simpleSchema: simpleSchema{Type: "object"}}
+	return &Parameter{ParamProps: ParamProps{Name: name, In: "body", Schema: schema}, SimpleSchema: SimpleSchema{Type: "object"}}
 }
 
 // FormDataParam creates a body parameter
 func FormDataParam(name string) *Parameter {
-	return &Parameter{paramProps: paramProps{Name: name, In: "formData"}}
+	return &Parameter{ParamProps: ParamProps{Name: name, In: "formData"}}
 }
 
 // FileParam creates a body parameter
 func FileParam(name string) *Parameter {
-	return &Parameter{paramProps: paramProps{Name: name, In: "formData"}, simpleSchema: simpleSchema{Type: "file"}}
+	return &Parameter{ParamProps: ParamProps{Name: name, In: "formData"}, SimpleSchema: SimpleSchema{Type: "file"}}
 }
 
 // SimpleArrayParam creates a param for a simple array (string, int, date etc)
 func SimpleArrayParam(name, tpe, fmt string) *Parameter {
-	return &Parameter{paramProps: paramProps{Name: name}, simpleSchema: simpleSchema{Type: "array", CollectionFormat: "csv", Items: &Items{simpleSchema: simpleSchema{Type: "string", Format: fmt}}}}
+	return &Parameter{ParamProps: ParamProps{Name: name}, SimpleSchema: SimpleSchema{Type: "array", CollectionFormat: "csv", Items: &Items{SimpleSchema: SimpleSchema{Type: "string", Format: fmt}}}}
 }
 
 // ParamRef creates a parameter that's a json reference
@@ -63,7 +63,7 @@ func ParamRef(uri string) *Parameter {
 	return p
 }
 
-type paramProps struct {
+type ParamProps struct {
 	Description     string  `json:"description,omitempty"`
 	Name            string  `json:"name,omitempty"`
 	In              string  `json:"in,omitempty"`
@@ -85,11 +85,11 @@ type paramProps struct {
 //
 // For more information: http://goo.gl/8us55a#parameterObject
 type Parameter struct {
-	refable
-	commonValidations
-	simpleSchema
-	vendorExtensible
-	paramProps
+	Refable
+	CommonValidations
+	SimpleSchema
+	VendorExtensible
+	ParamProps
 }
 
 // JSONLookup look up a value by the json property name
@@ -100,21 +100,21 @@ func (p Parameter) JSONLookup(token string) (interface{}, error) {
 	if token == "$ref" {
 		return &p.Ref, nil
 	}
-	r, _, err := jsonpointer.GetForToken(p.commonValidations, token)
+	r, _, err := jsonpointer.GetForToken(p.CommonValidations, token)
 	if err != nil {
 		return nil, err
 	}
 	if r != nil {
 		return r, nil
 	}
-	r, _, err = jsonpointer.GetForToken(p.simpleSchema, token)
+	r, _, err = jsonpointer.GetForToken(p.SimpleSchema, token)
 	if err != nil {
 		return nil, err
 	}
 	if r != nil {
 		return r, nil
 	}
-	r, _, err = jsonpointer.GetForToken(p.paramProps, token)
+	r, _, err = jsonpointer.GetForToken(p.ParamProps, token)
 	return r, err
 }
 
@@ -255,19 +255,19 @@ func (p *Parameter) AllowDuplicates() *Parameter {
 
 // UnmarshalJSON hydrates this items instance with the data from JSON
 func (p *Parameter) UnmarshalJSON(data []byte) error {
-	if err := json.Unmarshal(data, &p.commonValidations); err != nil {
+	if err := json.Unmarshal(data, &p.CommonValidations); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(data, &p.refable); err != nil {
+	if err := json.Unmarshal(data, &p.Refable); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(data, &p.simpleSchema); err != nil {
+	if err := json.Unmarshal(data, &p.SimpleSchema); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(data, &p.vendorExtensible); err != nil {
+	if err := json.Unmarshal(data, &p.VendorExtensible); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(data, &p.paramProps); err != nil {
+	if err := json.Unmarshal(data, &p.ParamProps); err != nil {
 		return err
 	}
 	return nil
@@ -275,23 +275,23 @@ func (p *Parameter) UnmarshalJSON(data []byte) error {
 
 // MarshalJSON converts this items object to JSON
 func (p Parameter) MarshalJSON() ([]byte, error) {
-	b1, err := json.Marshal(p.commonValidations)
+	b1, err := json.Marshal(p.CommonValidations)
 	if err != nil {
 		return nil, err
 	}
-	b2, err := json.Marshal(p.simpleSchema)
+	b2, err := json.Marshal(p.SimpleSchema)
 	if err != nil {
 		return nil, err
 	}
-	b3, err := json.Marshal(p.refable)
+	b3, err := json.Marshal(p.Refable)
 	if err != nil {
 		return nil, err
 	}
-	b4, err := json.Marshal(p.vendorExtensible)
+	b4, err := json.Marshal(p.VendorExtensible)
 	if err != nil {
 		return nil, err
 	}
-	b5, err := json.Marshal(p.paramProps)
+	b5, err := json.Marshal(p.ParamProps)
 	if err != nil {
 		return nil, err
 	}

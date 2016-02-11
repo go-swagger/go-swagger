@@ -22,11 +22,11 @@ import (
 )
 
 var parameter = Parameter{
-	vendorExtensible: vendorExtensible{Extensions: map[string]interface{}{
+	VendorExtensible: VendorExtensible{Extensions: map[string]interface{}{
 		"x-framework": "swagger-go",
 	}},
-	refable: refable{Ref: MustCreateRef("Dog")},
-	commonValidations: commonValidations{
+	Refable: Refable{Ref: MustCreateRef("Dog")},
+	CommonValidations: CommonValidations{
 		Maximum:          float64Ptr(100),
 		ExclusiveMaximum: true,
 		ExclusiveMinimum: true,
@@ -40,20 +40,20 @@ var parameter = Parameter{
 		MultipleOf:       float64Ptr(5),
 		Enum:             []interface{}{"hello", "world"},
 	},
-	simpleSchema: simpleSchema{
+	SimpleSchema: SimpleSchema{
 		Type:             "string",
 		Format:           "date",
 		CollectionFormat: "csv",
 		Items: &Items{
-			refable: refable{Ref: MustCreateRef("Cat")},
+			Refable: Refable{Ref: MustCreateRef("Cat")},
 		},
 		Default: "8",
 	},
-	paramProps: paramProps{
+	ParamProps: ParamProps{
 		Name:        "param-name",
 		In:          "header",
 		Required:    true,
-		Schema:      &Schema{schemaProps: schemaProps{Type: []string{"string"}}},
+		Schema:      &Schema{SchemaProps: SchemaProps{Type: []string{"string"}}},
 		Description: "the description of this parameter",
 	},
 }
@@ -138,7 +138,7 @@ func TestParameterSerialization(t *testing.T) {
 
 	Convey("Parameters should serialize", t, func() {
 		items := &Items{
-			simpleSchema: simpleSchema{Type: "string"},
+			SimpleSchema: SimpleSchema{Type: "string"},
 		}
 		Convey("a query parameter", func() {
 			param := QueryParam("")
@@ -165,7 +165,7 @@ func TestParameterSerialization(t *testing.T) {
 
 		Convey("a path parameter with an int array", func() {
 			items = &Items{
-				simpleSchema: simpleSchema{Type: "int", Format: "int32"},
+				SimpleSchema: SimpleSchema{Type: "int", Format: "int32"},
 			}
 			param := PathParam("").CollectionOf(items, "multi")
 			So(param, ShouldSerializeJSON, `{"type":"array","items":{"type":"int","format":"int32"},"collectionFormat":"multi","in":"path","required":true}`)
@@ -182,9 +182,9 @@ func TestParameterSerialization(t *testing.T) {
 		})
 
 		Convey("a body parameter", func() {
-			schema := &Schema{schemaProps: schemaProps{
+			schema := &Schema{SchemaProps: SchemaProps{
 				Properties: map[string]Schema{
-					"name": Schema{schemaProps: schemaProps{
+					"name": Schema{SchemaProps: SchemaProps{
 						Type: []string{"string"},
 					}},
 				},
@@ -195,7 +195,7 @@ func TestParameterSerialization(t *testing.T) {
 
 		Convey("a ref body parameter", func() {
 			schema := &Schema{
-				schemaProps: schemaProps{Ref: MustCreateRef("Cat")},
+				SchemaProps: SchemaProps{Ref: MustCreateRef("Cat")},
 			}
 			param := BodyParam("", schema)
 			So(param, ShouldSerializeJSON, `{"type":"object","in":"body","schema":{"$ref":"Cat"}}`)

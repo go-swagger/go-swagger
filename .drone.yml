@@ -1,19 +1,83 @@
 clone:
   path: github.com/go-swagger/go-swagger
 
+matrix:
+  GO_VERSION:
+    - "1.5"
+    - "1.6"
+
 build:
-  image: golang:1.5
-  pull: true
-  environment:
-    GOCOVMODE: "count"
-    GO15VENDOREXPERIMENT: "1"
-  commands:
-    - go get -u github.com/FiloSottile/gvt
-    - go get -u github.com/axw/gocov/gocov
-    - go get -u gopkg.in/matm/v1/gocov-html
-    - go get -u github.com/cee-dub/go-junit-report
-    - go get -u github.com/aktau/github-release
-    - go get -u github.com/asaskevich/govalidator
-    - go get -u github.com/naoina/denco
-    - go get -u github.com/go-swagger/scan-repo-boundary/makeplans
-    - ./hack/build-drone.sh
+  integration:
+    image: golang:$$GO_VERSION
+    pull: true
+    environment:
+      GOCOVMODE: "count"
+      GO15VENDOREXPERIMENT: "1"
+    commands:
+      - go get -u github.com/axw/gocov/gocov
+      - go get -u gopkg.in/matm/v1/gocov-html
+      - go get -u github.com/cee-dub/go-junit-report
+      - go get -u github.com/asaskevich/govalidator
+      - go get -u github.com/naoina/denco
+      - go get -u github.com/go-swagger/scan-repo-boundary/makeplans
+      - ./hack/build-drone.sh
+  release:
+    image: golang:$$GO_VERSION
+    pull: true
+    commands:
+      - apt-get update -yqq
+      - apt-get install -yqq --no-install-recommends ruby-dev rubygems rpm
+      - gem install --no-rdoc --no-ri fpm
+      - go get -u github.com/mitchellh/gox
+      - ./hack/build-release.sh $${TAG=0.2.5}
+    when:
+      event: tag
+      matrix:
+        GO_VERSION: "1.6"
+
+notify:
+  slack:
+    channel: bots
+    webhook_url: https://hooks.slack.com/services/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
+    username: drone
+
+publish:
+  github_release:
+    api_key: $$GITHUB_TOKEN
+    files:
+      - /go/src/github.com/go-swagger/go-swagger/dist/binaries/swagger_*
+    when:
+      event: tag
+      matrix:
+        GO_VERSION: "1.6"
+  # bintray:
+  #   username: $$BINTRAY_USERNAME
+  #   password: $$BINTRAY_PASSWORD
+  #   branch: $$BRANCH
+  #   artifacts:
+  #     - file: /usr/share/dist/swagger-$$TAG-1.x86_64.rpm
+  #       owner: go-swagger
+  #       type: rpm
+  #       repository: goswagger-rpm
+  #       package: swagger
+  #       version: $$TAG
+  #       target: swagger-$$TAG-1.x86_64.rpm
+  #       publish: true
+  #       override: true
+  #     - file: /usr/share/dist/swagger-$$TAG_amd64.deb
+  #       owner: go-swagger
+  #       type: Debian
+  #       repository: goswagger-debian
+  #       package: swagger
+  #       version: $$TAG
+  #       target: swagger-$$TAG_amd64.deb
+  #       distr: debian
+  #       component: main
+  #       arch:
+  #         - amd64
+  #       publish: true
+  #       override: true
+  #   when:
+  #     event: tag
+  #     matrix:
+  #       GO_VERSION: "1.6"

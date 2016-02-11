@@ -4,12 +4,12 @@
 //     https://github.com/smartystreets/assertions/internal/oglemock
 //
 
-package some_pkg
+package pkg
 
 import (
 	fmt "fmt"
 	oglemock "github.com/smartystreets/assertions/internal/oglemock"
-	tony "github.com/smartystreets/assertions/internal/oglemock/generate/test_cases/renamed_pkg"
+	tony "github.com/smartystreets/assertions/internal/oglemock/generate/testdata/renamed_pkg"
 	runtime "runtime"
 	unsafe "unsafe"
 )

@@ -29,7 +29,7 @@ import (
 //
 // For more information: http://goo.gl/8us55a#pathsObject
 type Paths struct {
-	vendorExtensible
+	VendorExtensible
 	Paths map[string]PathItem `json:"-"` // custom serializer to flatten this, each entry must start with "/"
 }
 
@@ -77,7 +77,7 @@ func (p *Paths) UnmarshalJSON(data []byte) error {
 
 // MarshalJSON converts this items object to JSON
 func (p Paths) MarshalJSON() ([]byte, error) {
-	b1, err := json.Marshal(p.vendorExtensible)
+	b1, err := json.Marshal(p.VendorExtensible)
 	if err != nil {
 		return nil, err
 	}
