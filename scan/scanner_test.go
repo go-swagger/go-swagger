@@ -377,6 +377,17 @@ For go it will still make a difference though.
 The punctuation here does indeed matter. But it won't for go.
 `
 
+	text3 := `This has a title, and markdown in the description
+
+See how markdown works now, we can have lists:
+
++ first item
++ second item
++ third item
+
+[Links works too](http://localhost)
+`
+
 	st := &sectionedParser{}
 	st.setTitle = func(lines []string) {}
 	st.Parse(ascg(text))
@@ -390,6 +401,13 @@ The punctuation here does indeed matter. But it won't for go.
 
 	assert.EqualValues(t, []string{"This has a title without whitespace."}, st.Title())
 	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
+
+	st = &sectionedParser{}
+	st.setTitle = func(lines []string) {}
+	st.Parse(ascg(text3))
+
+	assert.EqualValues(t, []string{"This has a title, and markdown in the description"}, st.Title())
+	assert.EqualValues(t, []string{"See how markdown works now, we can have lists:", "", "+ first item", "+ second item", "+ third item", "", "[Links works too](http://localhost)"}, st.Description())
 }
 
 func dummyBuilder() schemaValidations {

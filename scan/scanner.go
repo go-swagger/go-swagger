@@ -441,7 +441,7 @@ func (st *sectionedParser) cleanup(lines []string) []string {
 	var lastContent int
 	var uncommented []string
 	for i, v := range lines {
-		str := regexp.MustCompile("^[^\\p{L}\\p{N}\\+]*").ReplaceAllString(v, "")
+		str := regexp.MustCompile(`^[\s/\*-]*`).ReplaceAllString(v, "")
 		uncommented = append(uncommented, str)
 		if str != "" {
 			if seenLine < 0 {
