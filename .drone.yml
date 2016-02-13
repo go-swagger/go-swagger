@@ -30,11 +30,15 @@ build:
   release:
     image: golang:$$GO_VERSION
     pull: true
+    environment:
+      GO15VENDOREXPERIMENT: "1"
+      GITHUB_TOKEN: $$GITHUB_TOKEN
     commands:
       - apt-get update -yqq
       - apt-get install -yqq --no-install-recommends ruby-dev rubygems rpm
       # - gem install --no-rdoc --no-ri fpm
       - go get -u github.com/mitchellh/gox
+      - go get -u github.com/aktau/github-release
       - ./hack/build-release.sh $${TAG=0.2.5}
     when:
       event: tag
@@ -52,6 +56,7 @@ publish:
     api_key: $$GITHUB_TOKEN
     files:
       - /drone/dist/binaries/swagger_*
+    checksum: sha1
     when:
       event: tag
       matrix:

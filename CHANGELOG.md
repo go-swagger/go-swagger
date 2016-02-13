@@ -1,8 +1,29 @@
 # Change Log
 
-## [Unreleased](https://github.com/go-swagger/go-swagger/tree/HEAD)
+## [0.2.7](https://github.com/go-swagger/go-swagger/tree/0.2.7) (2016-02-13)
+[Full Changelog](https://github.com/go-swagger/go-swagger/compare/0.2.6...0.2.7)
 
-[Full Changelog](https://github.com/go-swagger/go-swagger/compare/v0.2.0...HEAD)
+## [0.2.6](https://github.com/go-swagger/go-swagger/tree/0.2.6) (2016-02-13)
+[Full Changelog](https://github.com/go-swagger/go-swagger/compare/0.2.5...0.2.6)
+
+## [0.2.5](https://github.com/go-swagger/go-swagger/tree/0.2.5) (2016-02-13)
+[Full Changelog](https://github.com/go-swagger/go-swagger/compare/0.2.4...0.2.5)
+
+## [0.2.4](https://github.com/go-swagger/go-swagger/tree/0.2.4) (2016-02-13)
+[Full Changelog](https://github.com/go-swagger/go-swagger/compare/0.2.3...0.2.4)
+
+**Closed issues:**
+
+- spec generator strips out special characters in the beginning of lines [\#276](https://github.com/go-swagger/go-swagger/issues/276)
+
+## [0.2.3](https://github.com/go-swagger/go-swagger/tree/0.2.3) (2016-02-09)
+[Full Changelog](https://github.com/go-swagger/go-swagger/compare/0.2.2...0.2.3)
+
+## [0.2.2](https://github.com/go-swagger/go-swagger/tree/0.2.2) (2016-02-08)
+[Full Changelog](https://github.com/go-swagger/go-swagger/compare/0.2.1...0.2.2)
+
+## [0.2.1](https://github.com/go-swagger/go-swagger/tree/0.2.1) (2016-02-07)
+[Full Changelog](https://github.com/go-swagger/go-swagger/compare/v0.2.0...0.2.1)
 
 **Implemented enhancements:**
 
@@ -10,12 +31,22 @@
 
 **Fixed bugs:**
 
+- Kubernetes 2.0 Spec [\#239](https://github.com/go-swagger/go-swagger/issues/239)
 - Validation dereferencing non-pointer [\#186](https://github.com/go-swagger/go-swagger/issues/186)
 - Generated Validate method does not dereference pointer [\#182](https://github.com/go-swagger/go-swagger/issues/182)
 - Generated Validatator on slice from interface method incorrect [\#181](https://github.com/go-swagger/go-swagger/issues/181)
 
 **Closed issues:**
 
+- Nested references in definitions cause failure [\#254](https://github.com/go-swagger/go-swagger/issues/254)
+- array body parameters lead to uncompilable client code [\#249](https://github.com/go-swagger/go-swagger/issues/249)
+- Optional query param enums are not validated [\#248](https://github.com/go-swagger/go-swagger/issues/248)
+- Map as property created as pointer on objects [\#243](https://github.com/go-swagger/go-swagger/issues/243)
+- Make generated client use `consumes` in schema for Accept headers, rather than transport consumers [\#235](https://github.com/go-swagger/go-swagger/issues/235)
+- wrong identifier used  in generated code when validating parameter with not valid \(in golang\) identifier [\#223](https://github.com/go-swagger/go-swagger/issues/223)
+- Delete requests with bodies cause a runtime error [\#219](https://github.com/go-swagger/go-swagger/issues/219)
+- Generated server main is currently always overwritten [\#210](https://github.com/go-swagger/go-swagger/issues/210)
+- Invalid code client generated in Default Parameter constructor [\#201](https://github.com/go-swagger/go-swagger/issues/201)
 - Random model properties [\#180](https://github.com/go-swagger/go-swagger/issues/180)
 
 ## [v0.2.0](https://github.com/go-swagger/go-swagger/tree/v0.2.0) (2015-12-25)
