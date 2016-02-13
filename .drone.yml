@@ -20,14 +20,20 @@ build:
       - go get -u github.com/asaskevich/govalidator
       - go get -u github.com/naoina/denco
       - go get -u github.com/go-swagger/scan-repo-boundary/makeplans
-      - ./hack/build-drone.sh
+      - mkdir -p /drone/{testresults,coverage,dist}
+      # - go test $(go list ./... | grep -v vendor)
+      # - go test -race -timeout 20m -v $(go list ./... | grep -v vendor) | go-junit-report -dir /drone/testresults
+      # - ./hack/build-drone.sh
+      - go install ./cmd/swagger
+      # - ./hack/run-canary.sh
+
   release:
     image: golang:$$GO_VERSION
     pull: true
     commands:
       - apt-get update -yqq
       - apt-get install -yqq --no-install-recommends ruby-dev rubygems rpm
-      - gem install --no-rdoc --no-ri fpm
+      # - gem install --no-rdoc --no-ri fpm
       - go get -u github.com/mitchellh/gox
       - ./hack/build-release.sh $${TAG=0.2.5}
     when:
@@ -43,9 +49,10 @@ notify:
 
 publish:
   github_release:
+    image: casualjim/drone-github-release
     api_key: $$GITHUB_TOKEN
     files:
-      - /go/src/github.com/go-swagger/go-swagger/dist/binaries/swagger_*
+      - /drone/dist/binaries/swagger_*
     when:
       event: tag
       matrix:
@@ -55,7 +62,7 @@ publish:
   #   password: $$BINTRAY_PASSWORD
   #   branch: $$BRANCH
   #   artifacts:
-  #     - file: /usr/share/dist/swagger-$$TAG-1.x86_64.rpm
+  #     - file: /drone/dist/swagger-$$TAG-1.x86_64.rpm
   #       owner: go-swagger
   #       type: rpm
   #       repository: goswagger-rpm
@@ -64,7 +71,7 @@ publish:
   #       target: swagger-$$TAG-1.x86_64.rpm
   #       publish: true
   #       override: true
-  #     - file: /usr/share/dist/swagger-$$TAG_amd64.deb
+  #     - file: /drone/dist/swagger-$$TAG_amd64.deb
   #       owner: go-swagger
   #       type: Debian
   #       repository: goswagger-debian

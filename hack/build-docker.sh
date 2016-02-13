@@ -24,15 +24,5 @@ gocov convert profile.cov | gocov-html > /usr/share/coverage/coverage-${CIRCLE_B
 go build -o /usr/share/dist/swagger ./cmd/swagger
 
 go install ./cmd/swagger
-for dir in $(ls fixtures/canary)
-do
-  pushd fixtures/canary/$dir
-  rm -rf client models restapi cmd
-  swagger generate client
-  go test ./...
-  if [ $dir != 'kubernetes' ]; then
-    /usr/share/dist/swagger generate server
-    go test ./...
-  fi
-  popd
-done
+
+./hack/run-canary.sh

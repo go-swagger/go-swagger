@@ -24,15 +24,5 @@ gocov convert profile.cov | gocov report
 gocov convert profile.cov | gocov-html > $CIRCLE_ARTIFACTS/coverage-$CIRCLE_BUILD_NUM.html
 
 go install ./cmd/swagger
-for dir in $(ls fixtures/canary)
-do
-  pushd $dir
-  rm -rf client models restapi cmd
-  swagger generate client
-  go test ./...
-  if [ $dir != 'kubernetes' ]; then
-    /usr/share/dist/swagger generate server
-    go test ./...
-  fi
-  popd
-done
+
+./hack/run-canary.sh
