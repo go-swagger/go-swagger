@@ -68,6 +68,7 @@ publish:
       matrix:
         GO_VERSION: "1.6"
   docker:
+    image: casualjim/drone-docker
     registry: quay.io
     username: $$QUAY_USER
     password: $$QUAY_PASS
