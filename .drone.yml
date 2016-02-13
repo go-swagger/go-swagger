@@ -69,16 +69,18 @@ publish:
         GO_VERSION: "1.6"
   docker:
     image: casualjim/drone-docker
+    environment:
+      - DOCKER_LAUNCH_DEBUG=true
     username: $$DOCKER_USER
     password: $$DOCKER_PASS
     email: $$QUAY_EMAIL
     repo: goswagger/swagger
-    file: Dockerfile
+    # file: Dockerfile
     tag:
       - latest
       - $$TAG
     when:
-      event: tag
+      # event: tag
       matrix:
         GO_VERSION: "1.6"
   bintray:
