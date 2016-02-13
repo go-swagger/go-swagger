@@ -3,7 +3,7 @@ clone:
 
 matrix:
   GO_VERSION:
-    # - "1.5"
+    - "1.5"
     - "1.6"
 
 build:
@@ -37,20 +37,20 @@ build:
   #   commands:
   #     - apt-get update -yqq
   #     - apt-get install -yqq --no-install-recommends ruby-dev rubygems rpm
-  #     # - gem install --no-rdoc --no-ri fpm
+  #     - gem install --no-rdoc --no-ri fpm
   #     - go get -u github.com/mitchellh/gox
   #     - mkdir -p /drone/dist/binaries
   #     - "gox -os=\"linux darwin windows\" -output=\"/drone/dist/binaries/{{.Dir}}_{{.OS}}_{{.Arch}}\" ./cmd/swagger"
-  #     # - cd /drone/dist
-  #     # - mkdir -p /drone/dist/linux/amd64/usr/bin
-  #     # - cp /drone/dist/binaries/swagger_linux_amd64 /drone/dist/linux/amd64/usr/bin/swagger
-  #     # - "fpm -t deb -s dir -C /drone/dist/linux/amd64 -v $$TAG -n swagger --license \"ASL 2.0\" -a x86_64 -m \"ivan@flanders.co.nz\" --url \"https://goswagger.io\" usr"
-  #     # - "fpm -t rpm -s dir -C /drone/dist/linux/amd64 -v $$TAG -n swagger --license \"ASL 2.0\" -a x86_64 -m \"ivan@flanders.co.nz\" --url \"https://goswagger.io\" usr"
+  #     - cd /drone/dist
+  #     - mkdir -p /drone/dist/linux/amd64/usr/bin
+  #     - cp /drone/dist/binaries/swagger_linux_amd64 /drone/dist/linux/amd64/usr/bin/swagger
+  #     - "fpm -t deb -s dir -C /drone/dist/linux/amd64 -v $$TAG -n swagger --license \"ASL 2.0\" -a x86_64 -m \"ivan@flanders.co.nz\" --url \"https://goswagger.io\" usr"
+  #     - "fpm -t rpm -s dir -C /drone/dist/linux/amd64 -v $$TAG -n swagger --license \"ASL 2.0\" -a x86_64 -m \"ivan@flanders.co.nz\" --url \"https://goswagger.io\" usr"
   #   when:
   #     event: tag
   #     matrix:
   #       GO_VERSION: "1.6"
-
+#
 # notify:
 #   slack:
 #     channel: bots
@@ -70,8 +70,6 @@ publish:
   docker:
     image: casualjim/drone-docker
     privileged: true
-    environment:
-      - DOCKER_LAUNCH_DEBUG=true
     username: $$DOCKER_USER
     password: $$DOCKER_PASS
     email: $$QUAY_EMAIL
@@ -80,9 +78,9 @@ publish:
     storage_driver: overlay
     tag:
       - latest
-      - $$TAG
+      - "$$TAG"
     when:
-      # event: tag
+      event: tag
       matrix:
         GO_VERSION: "1.6"
   # bintray:
