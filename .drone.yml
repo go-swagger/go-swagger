@@ -21,11 +21,12 @@ build:
       - go get -u github.com/naoina/denco
       - go get -u github.com/go-swagger/scan-repo-boundary/makeplans
       - mkdir -p /drone/{testresults,coverage,dist}
-      # - go test $(go list ./... | grep -v vendor)
       # - go test -race -timeout 20m -v $(go list ./... | grep -v vendor) | go-junit-report -dir /drone/testresults
       # - ./hack/build-drone.sh
-      - go install ./cmd/swagger
+      # - go install ./cmd/swagger
       # - ./hack/run-canary.sh
+      - mkdir -p dist
+      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -x -tags netgo -installsuffix netgo -o dist/swagger ./cmd/swagger
 
   release:
     image: golang:$$GO_VERSION
@@ -45,7 +46,6 @@ build:
       - cp /drone/dist/binaries/swagger_linux_amd64 /drone/dist/linux/amd64/usr/bin/swagger
       - "fpm -t deb -s dir -C /drone/dist/linux/amd64 -v $$TAG -n swagger --license \"ASL 2.0\" -a x86_64 -m \"ivan@flanders.co.nz\" --url \"https://goswagger.io\" usr"
       - "fpm -t rpm -s dir -C /drone/dist/linux/amd64 -v $$TAG -n swagger --license \"ASL 2.0\" -a x86_64 -m \"ivan@flanders.co.nz\" --url \"https://goswagger.io\" usr"
-
     when:
       event: tag
       matrix:
@@ -63,6 +63,20 @@ publish:
     files:
       - /drone/dist/binaries/swagger_*
     checksum: sha1
+    when:
+      event: tag
+      matrix:
+        GO_VERSION: "1.6"
+  docker:
+    registry: quay.io
+    username: $$QUAY_USER
+    password: $$QUAY_PASS
+    email: $$QUAY_EMAIL
+    repo: goswagger/swagger
+    file: Dockerfile
+    tag:
+      - latest
+      - $$TAG
     when:
       event: tag
       matrix:

@@ -44,3 +44,4 @@ profile.cov
 
 # Drone
 secrets.yml
+dist
