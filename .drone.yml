@@ -88,7 +88,7 @@ publish:
         package: swagger
         version: $$TAG
         target: swagger_$$TAG_amd64.deb
-        distr: debian
+        distr: ubuntu
         component: main
         arch:
           - amd64
