@@ -36,7 +36,7 @@ build:
     commands:
       - apt-get update -yqq
       - apt-get install -yqq --no-install-recommends ruby-dev rubygems rpm
-      # - gem install --no-rdoc --no-ri fpm
+      - gem install --no-rdoc --no-ri fpm
       - go get -u github.com/mitchellh/gox
       - go get -u github.com/aktau/github-release
       - ./hack/build-release.sh $${TAG=0.2.5}
@@ -61,34 +61,34 @@ publish:
       event: tag
       matrix:
         GO_VERSION: "1.6"
-  # bintray:
-  #   username: $$BINTRAY_USERNAME
-  #   password: $$BINTRAY_PASSWORD
-  #   branch: $$BRANCH
-  #   artifacts:
-  #     - file: /drone/dist/swagger-$$TAG-1.x86_64.rpm
-  #       owner: go-swagger
-  #       type: rpm
-  #       repository: goswagger-rpm
-  #       package: swagger
-  #       version: $$TAG
-  #       target: swagger-$$TAG-1.x86_64.rpm
-  #       publish: true
-  #       override: true
-  #     - file: /drone/dist/swagger-$$TAG_amd64.deb
-  #       owner: go-swagger
-  #       type: Debian
-  #       repository: goswagger-debian
-  #       package: swagger
-  #       version: $$TAG
-  #       target: swagger-$$TAG_amd64.deb
-  #       distr: debian
-  #       component: main
-  #       arch:
-  #         - amd64
-  #       publish: true
-  #       override: true
-  #   when:
-  #     event: tag
-  #     matrix:
-  #       GO_VERSION: "1.6"
+  bintray:
+    username: $$BINTRAY_USERNAME
+    password: $$BINTRAY_PASSWORD
+    branch: $$BRANCH
+    artifacts:
+      - file: /drone/dist/swagger-$$TAG-1.x86_64.rpm
+        owner: go-swagger
+        type: rpm
+        repository: goswagger-rpm
+        package: swagger
+        version: $$TAG
+        target: swagger-$$TAG-1.x86_64.rpm
+        publish: true
+        override: true
+      - file: /drone/dist/swagger-$$TAG_amd64.deb
+        owner: go-swagger
+        type: Debian
+        repository: goswagger-debian
+        package: swagger
+        version: $$TAG
+        target: swagger-$$TAG_amd64.deb
+        distr: debian
+        component: main
+        arch:
+          - amd64
+        publish: true
+        override: true
+    when:
+      event: tag
+      matrix:
+        GO_VERSION: "1.6"
