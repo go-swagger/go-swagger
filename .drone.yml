@@ -49,7 +49,6 @@ notify:
 
 publish:
   github_release:
-    image: casualjim/drone-github-release
     api_key: $$GITHUB_TOKEN
     files:
       - /drone/dist/binaries/swagger_*
