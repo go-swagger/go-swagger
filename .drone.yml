@@ -38,8 +38,14 @@ build:
       - apt-get install -yqq --no-install-recommends ruby-dev rubygems rpm
       - gem install --no-rdoc --no-ri fpm
       - go get -u github.com/mitchellh/gox
-      - go get -u github.com/aktau/github-release
-      - ./hack/build-release.sh $${TAG=0.2.5}
+      - mkdir -p /drone/dist/binaries
+      - "gox -os=\"linux darwin windows\" -output=\"/drone/dist/binaries/{{.Dir}}_{{.OS}}_{{.Arch}}\" ./cmd/swagger"
+      - cd /drone/dist
+      - mkdir -p /drone/dist/linux/amd64/usr/bin
+      - cp /drone/dist/binaries/swagger_linux_amd64 /drone/dist/linux/amd64/usr/bin/swagger
+      - "fpm -t deb -s dir -C /drone/dist/linux/amd64 -v $$TAG -n swagger --license \"ASL 2.0\" -a x86_64 -m \"ivan@flanders.co.nz\" --url \"https://goswagger.io\" usr"
+      - "fpm -t rpm -s dir -C /drone/dist/linux/amd64 -v $$TAG -n swagger --license \"ASL 2.0\" -a x86_64 -m \"ivan@flanders.co.nz\" --url \"https://goswagger.io\" usr"
+
     when:
       event: tag
       matrix:
@@ -75,13 +81,13 @@ publish:
         target: swagger-$$TAG-1.x86_64.rpm
         publish: true
         override: true
-      - file: ../../../../dist/swagger-$$TAG_amd64.deb
+      - file: ../../../../dist/swagger_$$TAG_amd64.deb
         owner: go-swagger
         type: Debian
         repository: goswagger-debian
         package: swagger
         version: $$TAG
-        target: swagger-$$TAG_amd64.deb
+        target: swagger_$$TAG_amd64.deb
         distr: debian
         component: main
         arch:
