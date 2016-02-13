@@ -63,7 +63,7 @@ publish:
         GO_VERSION: "1.6"
   bintray:
     username: $$BINTRAY_USERNAME
-    password: $$BINTRAY_PASSWORD
+    api_key: $$BINTRAY_TOKEN
     branch: $$BRANCH
     artifacts:
       - file: ../../../../dist/swagger-$$TAG-1.x86_64.rpm
