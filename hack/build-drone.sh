@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x -e -o pipefail
+set -e -o pipefail
 
  mkdir -p /drone/{testresults,coverage,dist}
  go test -race -timeout 20m -v $(go list ./... | grep -v vendor) | go-junit-report -dir /drone/testresults
