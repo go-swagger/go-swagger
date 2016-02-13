@@ -68,6 +68,7 @@ publish:
       matrix:
         GO_VERSION: "1.6"
   bintray:
+    image: casualjim/drone-bintray
     username: $$BINTRAY_USERNAME
     api_key: $$BINTRAY_TOKEN
     branch: $$BRANCH
