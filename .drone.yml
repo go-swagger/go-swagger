@@ -69,9 +69,8 @@ publish:
         GO_VERSION: "1.6"
   docker:
     image: casualjim/drone-docker
-    registry: quay.io
-    username: $$QUAY_USER
-    password: $$QUAY_PASS
+    username: $$DOCKER_USER
+    password: $$DOCKER_PASS
     email: $$QUAY_EMAIL
     repo: goswagger/swagger
     file: Dockerfile
