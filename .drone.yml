@@ -20,8 +20,6 @@ build:
       - go get -u github.com/asaskevich/govalidator
       - go get -u github.com/naoina/denco
       - go get -u github.com/go-swagger/scan-repo-boundary/makeplans
-      - mkdir -p /drone/{testresults,coverage,dist}
-      - go test -race -timeout 20m -v $(go list ./... | grep -v vendor) | go-junit-report -dir /drone/testresults
       - ./hack/build-drone.sh
       - go install ./cmd/swagger
       - ./hack/run-canary.sh
