@@ -76,7 +76,8 @@ publish:
     password: $$DOCKER_PASS
     email: $$QUAY_EMAIL
     repo: goswagger/swagger
-    # file: Dockerfile
+    file: Dockerfile
+    storage_driver: overlay
     tag:
       - latest
       - $$TAG
