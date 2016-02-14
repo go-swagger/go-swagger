@@ -327,8 +327,12 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 				if in == "body" {
 					pty = schemaTypable{pty.Schema(), 0}
 				}
-				if err := parseProperty(pp.scp, gofile, fld.Type, pty); err != nil {
-					return err
+				if in == "formData" && fld.Doc != nil && fileParam(fld.Doc) {
+					pty.Typed("file", "")
+				} else {
+					if err := parseProperty(pp.scp, gofile, fld.Type, pty); err != nil {
+						return err
+					}
 				}
 
 				sp := new(sectionedParser)

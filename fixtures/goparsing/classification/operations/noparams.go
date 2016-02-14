@@ -15,10 +15,23 @@
 package operations
 
 import (
+	"bytes"
+
 	"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/models"
 	"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/transitive/mods"
 	"github.com/go-swagger/go-swagger/strfmt"
 )
+
+// MyFileParams contains the uploaded file data
+// swagger:parameters myOperation
+type MyFileParams struct {
+	// MyFormFile desc.
+	//
+	// in: formData
+	//
+	// swagger:file
+	MyFormFile *bytes.Buffer `json:"myFormFile"`
+}
 
 // An OrderBodyParams model.
 //
