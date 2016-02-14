@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"testing"
 
 	"github.com/go-swagger/go-swagger/spec"
@@ -335,7 +336,7 @@ func TestDateFormat_Spec2(t *testing.T) {
 }
 func TestBuilder_Issue287(t *testing.T) {
 	appGen, err := newAppGenerator("plainTexter", nil, nil, &GenOpts{
-		Spec:              "../fixtures/bugs/287/swagger.yml",
+		Spec:              filepath.FromSlash("../fixtures/bugs/287/swagger.yml"),
 		IncludeModel:      true,
 		IncludeValidator:  true,
 		IncludeHandler:    true,
