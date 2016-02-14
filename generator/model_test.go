@@ -24,6 +24,7 @@ import (
 	"text/template"
 
 	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/swag"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -320,7 +321,7 @@ func TestGenerateModel_NotaWithMeta(t *testing.T) {
 					assertInCode(t, "type NotaWithMeta map[string]*NotaWithMetaAnon", res)
 					assertInCode(t, "type NotaWithMetaAnon struct {", res)
 					assertInCode(t, "Comment string `json:\"comment,omitempty\"`", res)
-					assertInCode(t, "Count int32 `json:\"count,omitempty\"`", res)
+					assertInCode(t, "Count *int32 `json:\"count,omitempty\"`", res)
 				}
 			}
 		}
@@ -427,7 +428,7 @@ func TestGenerateModel_NotaWithMetaRegistry(t *testing.T) {
 					assertInCode(t, "type "+k+" map[string]map[string]map[string]*NotaWithMetaRegistryAnon", res)
 					assertInCode(t, "type NotaWithMetaRegistryAnon struct {", res)
 					assertInCode(t, "Comment string `json:\"comment,omitempty\"`", res)
-					assertInCode(t, "Count int32 `json:\"count,omitempty\"`", res)
+					assertInCode(t, "Count *int32 `json:\"count,omitempty\"`", res)
 				}
 			}
 		}
@@ -958,7 +959,7 @@ func TestGenerateModel_WithItemsAndAdditional2(t *testing.T) {
 					// this would fail if it accepts additionalItems because it would come out as []interface{}
 					assertInCode(t, "P0 string `json:\"-\"`", res)
 					assertInCode(t, "Tags *"+k+"TagsTuple0 `json:\"tags,omitempty\"`", res)
-					assertInCode(t, k+"TagsTuple0Items []int32 `json:\"-\"`", res)
+					assertInCode(t, k+"TagsTuple0Items []*int32 `json:\"-\"`", res)
 
 				}
 			}
@@ -1067,7 +1068,7 @@ func TestGenerateModel_TupleWithExtra(t *testing.T) {
 					assertInCode(t, "P1 string `json:\"-\"`", res)
 					assertInCode(t, "P2 strfmt.DateTime `json:\"-\"`", res)
 					assertInCode(t, "P3 *Notable `json:\"-\"`", res)
-					assertInCode(t, k+"Items []float64 `json:\"-\"`", res)
+					assertInCode(t, k+"Items []*float64 `json:\"-\"`", res)
 					assertInCode(t, k+") UnmarshalJSON", res)
 					assertInCode(t, k+") MarshalJSON", res)
 
@@ -1081,9 +1082,9 @@ func TestGenerateModel_TupleWithExtra(t *testing.T) {
 						assertInCode(t, "P"+strconv.Itoa(i)+",", res)
 					}
 					assertInCode(t, "var lastIndex int", res)
-					assertInCode(t, "var toadd float64", res)
+					assertInCode(t, "var toadd *float64", res)
 					assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
-					assertInCode(t, "json.Unmarshal(val, &toadd)", res)
+					assertInCode(t, "json.Unmarshal(val, toadd)", res)
 					assertInCode(t, "json.Marshal(data)", res)
 					assertInCode(t, "for _, v := range m."+k+"Items", res)
 				}
@@ -1137,7 +1138,7 @@ func TestGenerateModel_TupleWithComplex(t *testing.T) {
 					assertInCode(t, "var lastIndex int", res)
 					assertInCode(t, "var toadd *TupleWithComplexItems", res)
 					assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
-					assertInCode(t, "json.Unmarshal(val, &toadd)", res)
+					assertInCode(t, "json.Unmarshal(val, toadd)", res)
 					assertInCode(t, "json.Marshal(data)", res)
 					assertInCode(t, "for _, v := range m."+k+"Items", res)
 				}
@@ -1244,7 +1245,7 @@ func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
 					assertInCode(t, "type "+k+"FlagsTuple0 struct {", res)
 					assertInCode(t, "P0 int64 `json:\"-\"`", res)
 					assertInCode(t, "P1 string `json:\"-\"`", res)
-					assertInCode(t, k+"FlagsTuple0Items []float32 `json:\"-\"`", res)
+					assertInCode(t, k+"FlagsTuple0Items []*float32 `json:\"-\"`", res)
 					assertInCode(t, k+"FlagsTuple0) UnmarshalJSON", res)
 					assertInCode(t, k+"FlagsTuple0) MarshalJSON", res)
 					assertInCode(t, "json.Marshal(data)", res)
@@ -1260,9 +1261,9 @@ func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
 					}
 
 					assertInCode(t, "var lastIndex int", res)
-					assertInCode(t, "var toadd float32", res)
+					assertInCode(t, "var toadd *float32", res)
 					assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
-					assertInCode(t, "json.Unmarshal(val, &toadd)", res)
+					assertInCode(t, "json.Unmarshal(val, toadd)", res)
 					assertInCode(t, "json.Marshal(data)", res)
 					assertInCode(t, "for _, v := range m."+k+"FlagsTuple0Items", res)
 				}
@@ -1330,7 +1331,7 @@ func TestGenerateModel_WithAllOf(t *testing.T) {
 					assertInCode(t, "P1 strfmt.DateTime `json:\"-\"`", res)
 					assertInCode(t, "P1 strfmt.Date `json:\"-\"`", res)
 					assertInCode(t, "Opinion *string `json:\"opinion,omitempty\"`", res)
-					assertInCode(t, "WithAllOfAO5Tuple5Items []strfmt.Password `json:\"-\"`", res)
+					assertInCode(t, "WithAllOfAO5Tuple5Items []*strfmt.Password `json:\"-\"`", res)
 					assertInCode(t, "AO1 map[string]int32 `json:\"-\"`", res)
 					assertInCode(t, "WithAllOfAO2P2 map[string]int64 `json:\"-\"`", res)
 				}
@@ -1453,6 +1454,36 @@ func TestGenModel_Issue252(t *testing.T) {
 					b2 := assertInCode(t, "(m "+k+") validateSodaBrand", res)
 					b3 := assertInCode(t, "(m "+k+") Validate", res)
 					if !(b1 && b2 && b3) {
+						fmt.Println(res)
+					}
+				}
+			}
+		}
+	}
+}
+
+func TestGenModel_Issue251(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/bugs/251/swagger.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "example"
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("example.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+
+					b1 := assertInCode(t, "type "+swag.ToGoName(k)+" struct", res)
+					b2 := assertInCode(t, "Begin strfmt.DateTime `json:\"begin,omitempty\"`", res)
+					b3 := assertInCode(t, "End *strfmt.DateTime `json:\"end,omitempty\"`", res)
+					b4 := assertInCode(t, "Name *string `json:\"name,omitempty\"`", res)
+					b5 := assertInCode(t, "(m *"+swag.ToGoName(k)+") validateBegin", res)
+					//b6 := assertInCode(t, "(m *"+swag.ToGoName(k)+") validateEnd", res)
+					b7 := assertInCode(t, "(m *"+swag.ToGoName(k)+") Validate", res)
+					if !(b1 && b2 && b3 && b4 && b5 && b7) {
 						fmt.Println(res)
 					}
 				}

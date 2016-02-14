@@ -20,7 +20,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(data []byte) error
   if len(stage1) > lastIndex+1 {
     for _, val := range stage1[lastIndex+1:] {
       var toadd {{ template "schemaType" .AdditionalItems }}
-      if err := json.Unmarshal(val, &toadd); err != nil {
+      if err := json.Unmarshal(val, {{ if not .AdditionalItems.IsNullable }}&{{ end }}toadd); err != nil {
         return err
       }
       {{ .ValueExpression }} = append({{ .ValueExpression }}, toadd)

@@ -276,7 +276,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 	return
 }
 
-func (t *typeResolver) resolveFormat(schema *spec.Schema) (returns bool, result resolvedType, err error) {
+func (t *typeResolver) resolveFormat(schema *spec.Schema, isRequired bool) (returns bool, result resolvedType, err error) {
 	if schema.Format != "" {
 		schFmt := strings.Replace(schema.Format, "-", "", -1)
 		if tpe, ok := typeMapping[schFmt]; ok {
@@ -288,7 +288,7 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema) (returns bool, result 
 			result.SwaggerFormat = schema.Format
 			result.GoType = tpe
 			result.IsPrimitive = true
-			result.IsNullable = t.IsNullable(schema)
+			result.IsNullable = !isRequired || t.IsNullable(schema)
 			_, result.IsCustomFormatter = customFormatters[tpe]
 			return
 		}
@@ -442,7 +442,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		return
 	}
 
-	returns, result, err = t.resolveFormat(schema)
+	returns, result, err = t.resolveFormat(schema, isRequired)
 	if returns {
 		return
 	}

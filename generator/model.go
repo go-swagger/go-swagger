@@ -536,6 +536,7 @@ func (sg *schemaGenContext) buildProperties() error {
 	if Debug {
 		log.Printf("building properties %s (parent: %s)", sg.Name, sg.Container)
 	}
+
 	//var discriminatorField string
 	//if sg.Discrimination != nil {
 	//dis, ok := sg.Discriminated["#/definitions/"+sg.Container]
@@ -1145,7 +1146,7 @@ func (sg *schemaGenContext) buildAliased() error {
 
 func (sg *schemaGenContext) makeGenSchema() error {
 	if Debug {
-		log.Printf("making gen schema (anon: %t, req: %t, tuple: %t) %s\n", !sg.Named, sg.GenSchema.Required, sg.IsTuple, sg.Name)
+		log.Printf("making gen schema (anon: %t, req: %t, tuple: %t) %s\n", !sg.Named, sg.Required, sg.IsTuple, sg.Name)
 	}
 
 	ex := ""
@@ -1195,9 +1196,15 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	if err != nil {
 		return err
 	}
+	if Debug {
+		log.Println("gschema rrequired", sg.GenSchema.Required, "nullable", sg.GenSchema.IsNullable)
+	}
 	tpe.IsNullable = tpe.IsNullable || nullableOverride
 	sg.GenSchema.resolvedType = tpe
 
+	if Debug {
+		log.Println("gschema nullable", sg.GenSchema.IsNullable)
+	}
 	if err := sg.buildAdditionalProperties(); err != nil {
 		return err
 	}
@@ -1218,6 +1225,9 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.IsAdditionalProperties = prev.IsAdditionalProperties
 	sg.GenSchema.IsBaseType = sg.GenSchema.HasDiscriminator
 
+	if Debug {
+		log.Println("gschema nnullable", sg.GenSchema.IsNullable)
+	}
 	if err := sg.buildProperties(); err != nil {
 		return err
 	}
