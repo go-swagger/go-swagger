@@ -23,15 +23,15 @@ Docs
 
 https://goswagger.io
 
-### Docker image
+### Binary distribution
+
+go-swagger is distributed as binaries that are built of signed tags. It is published as github release, rpm, deb and docker image.
+
+##### Docker image
 
 ```shell
 docker pull quay.io/goswagger/swagger
 ```
-
-### Binary distribution
-
-go-swagger is distributed as binaries that are built of signed tags. It is published as github release, rpm, deb and docker image.
 
 ##### Static binary
 
