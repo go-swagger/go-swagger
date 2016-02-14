@@ -23,6 +23,30 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestScanFileParam(t *testing.T) {
+	docFile := "../fixtures/goparsing/classification/operations/noparams.go"
+	fileTree, err := goparser.ParseFile(classificationProg.Fset, docFile, nil, goparser.ParseComments)
+	if err != nil {
+		log.Fatal(err)
+	}
+	sp := newParameterParser(classificationProg)
+	noParamOps := make(map[string]*spec.Operation)
+	err = sp.Parse(fileTree, noParamOps)
+	if err != nil {
+		log.Fatal(err)
+	}
+	assert.Len(t, noParamOps, 6)
+
+	of, ok := noParamOps["myOperation"]
+	assert.True(t, ok)
+	assert.Len(t, of.Parameters, 1)
+	fileParam := of.Parameters[0]
+	assert.Equal(t, "MyFormFile desc.", fileParam.Description)
+	assert.Equal(t, "formData", fileParam.In)
+	assert.Equal(t, "file", fileParam.Type)
+	assert.False(t, fileParam.Required)
+}
+
 func TestParamsParser(t *testing.T) {
 	docFile := "../fixtures/goparsing/classification/operations/noparams.go"
 	fileTree, err := goparser.ParseFile(classificationProg.Fset, docFile, nil, goparser.ParseComments)
@@ -35,7 +59,7 @@ func TestParamsParser(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	assert.Len(t, noParamOps, 5)
+	assert.Len(t, noParamOps, 6)
 
 	cr, ok := noParamOps["yetAnotherOperation"]
 	assert.True(t, ok)
