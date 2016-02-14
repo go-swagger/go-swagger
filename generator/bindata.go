@@ -569,7 +569,7 @@ func templatesTupleserializerGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/tupleserializer.gotmpl", size: 6786, mode: os.FileMode(420), modTime: time.Unix(1455430155, 0)}
+	info := bindataFileInfo{name: "templates/tupleserializer.gotmpl", size: 6786, mode: os.FileMode(420), modTime: time.Unix(1455432365, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
