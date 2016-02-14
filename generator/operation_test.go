@@ -88,7 +88,7 @@ func TestMakeResponseHeaderDefaultValues(t *testing.T) {
 		}
 
 		for _, tc := range testCases {
-			t.Logf("tc: %+v", tc)
+			// t.Logf("tc: %+v", tc)
 			hdr := findResponseHeader(&b.Operation, 200, tc.name)
 			assert.NotNil(t, hdr)
 			gh := b.MakeHeader("a", tc.name, *hdr)
@@ -326,6 +326,34 @@ func TestDateFormat_Spec2(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "valuesTestingThis = append(valuesTestingThis, v.String())", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+func TestBuilder_Issue287(t *testing.T) {
+	appGen, err := newAppGenerator("plainTexter", nil, nil, &GenOpts{
+		Spec:              "../fixtures/bugs/287/swagger.yml",
+		IncludeModel:      true,
+		IncludeValidator:  true,
+		IncludeHandler:    true,
+		IncludeParameters: true,
+		IncludeResponses:  true,
+		IncludeMain:       true,
+		APIPackage:        "blah",
+	})
+	if assert.NoError(t, err) {
+		op, err := appGen.makeCodegenApp()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := builderTemplate.Execute(buf, op)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("put_testing.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					assertInCode(t, "case \"text/plain\":", res)
 				} else {
 					fmt.Println(buf.String())
 				}
