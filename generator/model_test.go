@@ -1491,3 +1491,29 @@ func TestGenModel_Issue251(t *testing.T) {
 		}
 	}
 }
+
+func TestGenModel_Issue257(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "HasSpecialCharProp"
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("example.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+
+					b1 := assertInCode(t, "type "+swag.ToGoName(k)+" struct", res)
+					b2 := assertInCode(t, "AtType *string `json:\"@type,omitempty\"`", res)
+					b3 := assertInCode(t, "Type *string `json:\"type,omitempty\"`", res)
+					if !(b1 && b2 && b3) {
+						fmt.Println(res)
+					}
+				}
+			}
+		}
+	}
+}
