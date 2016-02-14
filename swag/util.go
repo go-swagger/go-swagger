@@ -139,7 +139,16 @@ func (s byLength) Less(i, j int) bool {
 
 // Prepares strings by splitting by caps, spaces, dashes, and underscore
 func split(str string) (words []string) {
-	repl := strings.NewReplacer("@", "At ", "&", "And ", "|", "Or ", "$", "Dollar ", "-", " ", "_", " ")
+	repl := strings.NewReplacer(
+		"@", "At ",
+		"&", "And ",
+		"|", "Pipe ",
+		"$", "Dollar ",
+		"!", "Bang ",
+		"/", "Slash ",
+		"-", " ",
+		"_", " ",
+	)
 
 	rex1 := regexp.MustCompile(`(\p{Lu})`)
 	rex2 := regexp.MustCompile(`(\pL|\pM|\pN|\p{Pc})+`)
