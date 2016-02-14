@@ -343,7 +343,11 @@ func TestBuilder_Issue287(t *testing.T) {
 		IncludeParameters: true,
 		IncludeResponses:  true,
 		IncludeMain:       true,
-		APIPackage:        "blah",
+		APIPackage:        "restapi",
+		ModelPackage:      "model",
+		ServerPackage:     "server",
+		ClientPackage:     "client",
+		Target:            ".",
 	})
 	if assert.NoError(t, err) {
 		op, err := appGen.makeCodegenApp()
