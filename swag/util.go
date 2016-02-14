@@ -145,7 +145,6 @@ func split(str string) (words []string) {
 		"|", "Pipe ",
 		"$", "Dollar ",
 		"!", "Bang ",
-		"/", "Slash ",
 		"-", " ",
 		"_", " ",
 	)
