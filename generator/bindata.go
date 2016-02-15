@@ -349,7 +349,7 @@ func templatesSchemavalidatorGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/schemavalidator.gotmpl", size: 19036, mode: os.FileMode(420), modTime: time.Unix(1454822454, 0)}
+	info := bindataFileInfo{name: "templates/schemavalidator.gotmpl", size: 19036, mode: os.FileMode(420), modTime: time.Unix(1455497212, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

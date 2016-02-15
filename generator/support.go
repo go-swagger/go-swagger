@@ -311,6 +311,7 @@ var mediaTypeNames = map[*regexp.Regexp]string{
 	regexp.MustCompile("text/.*tsv"):                 "tsv",
 	regexp.MustCompile("text/.*javascript"):          "js",
 	regexp.MustCompile("text/.*css"):                 "css",
+	regexp.MustCompile("text/.*plain"):               "txt",
 }
 
 var knownProducers = map[string]string{
