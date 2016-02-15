@@ -21,6 +21,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"unicode"
 
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
@@ -267,15 +268,12 @@ func appNameOrDefault(specDoc *spec.Document, name, defaultName string) string {
 var namesCounter int64
 
 func ensureUniqueName(key, method, path string, operations map[string]opRef) string {
-	nm := key
-	if nm == "" {
-		nm = swag.ToGoName(strings.ToLower(method) + " " + path)
-	}
-	_, found := operations[nm]
-	if found {
-		namesCounter++
-		return fmt.Sprintf("%s%d", nm, namesCounter)
-	}
+	safeMethod := strings.ToLower(method)
+	tmpMethod := []rune(safeMethod)
+	tmpMethod[0] = unicode.ToUpper(tmpMethod[0])
+	safeMethod = string(tmpMethod)
+	nm := safeMethod + swag.ToGoName(path)
+
 	return nm
 }
 
