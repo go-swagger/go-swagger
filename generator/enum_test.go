@@ -17,6 +17,7 @@ package generator
 import (
 	"bytes"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/go-swagger/go-swagger/spec"
@@ -319,6 +320,27 @@ func TestEnum_NewPrototype(t *testing.T) {
 					assertInCode(t, "m.validateActivatingUser(formats)", res)
 					assertInCode(t, "m.Delegate.Validate(formats)", res)
 					assertInCode(t, "m.ActivatingUser.Validate(formats)", res)
+				}
+			}
+		}
+	}
+}
+
+func TestEnum_Issue265(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/sodabooth.json")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "SodaBrand"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("soda_brand.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					assert.Equal(t, 1, strings.Count(res, "m.validateSodaBrandEnum"))
 				}
 			}
 		}
