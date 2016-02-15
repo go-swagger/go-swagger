@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -334,7 +335,9 @@ func TestDateFormat_Spec2(t *testing.T) {
 		}
 	}
 }
+
 func TestBuilder_Issue287(t *testing.T) {
+	dr, _ := os.Getwd()
 	appGen, err := newAppGenerator("plainTexter", nil, nil, &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/287/swagger.yml"),
 		IncludeModel:      true,
@@ -347,7 +350,7 @@ func TestBuilder_Issue287(t *testing.T) {
 		ModelPackage:      "model",
 		ServerPackage:     "server",
 		ClientPackage:     "client",
-		Target:            ".",
+		Target:            dr,
 	})
 	if assert.NoError(t, err) {
 		op, err := appGen.makeCodegenApp()
