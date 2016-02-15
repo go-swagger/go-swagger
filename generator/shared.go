@@ -20,6 +20,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/go-swagger/go-swagger/spec"
@@ -264,25 +265,26 @@ func appNameOrDefault(specDoc *spec.Document, name, defaultName string) string {
 	return strings.TrimSuffix(swag.ToGoName(name), "API")
 }
 
-var namesCounter int64
-
-func ensureUniqueName(key, method, path string, operations map[string]opRef) string {
-	nm := key
-	if nm == "" {
-		nm = swag.ToGoName(strings.ToLower(method) + " " + path)
-	}
-
-	_, found := operations[nm]
-	if found {
-		nm = swag.ToGoName(strings.ToLower(method) + " " + path)
-	}
-	_, foundAgain := operations[nm]
-	if foundAgain {
-		namesCounter++
-		return fmt.Sprintf("%s%d", nm, namesCounter)
-	}
-	return nm
-}
+//
+// var namesCounter int64
+//
+// func ensureUniqueName(key, method, path string, operations map[string]opRef) string {
+// 	nm := key
+// 	if nm == "" {
+// 		nm = swag.ToGoName(strings.ToLower(method) + " " + path)
+// 	}
+//
+// 	_, found := operations[nm]
+// 	if found {
+// 		nm = swag.ToGoName(strings.ToLower(method) + " " + path)
+// 	}
+// 	_, foundAgain := operations[nm]
+// 	if foundAgain {
+// 		namesCounter++
+// 		return fmt.Sprintf("%s%d", nm, namesCounter)
+// 	}
+// 	return nm
+// }
 
 func containsString(names []string, name string) bool {
 	for _, nm := range names {
@@ -296,24 +298,51 @@ func containsString(names []string, name string) bool {
 type opRef struct {
 	Method string
 	Path   string
-	Op     spec.Operation
+	Key    string
+	ID     string
+	Op     *spec.Operation
 }
 
+type opRefs []opRef
+
+func (o opRefs) Len() int           { return len(o) }
+func (o opRefs) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o opRefs) Less(i, j int) bool { return o[i].Key < o[j].Key }
+
 func gatherOperations(specDoc *spec.Document, operationIDs []string) map[string]opRef {
-	operations := make(map[string]opRef)
+	var oprefs opRefs
 
 	for method, pathItem := range specDoc.Operations() {
 		for path, operation := range pathItem {
-			if len(operationIDs) == 0 || containsString(operationIDs, operation.ID) {
-				nm := ensureUniqueName(operation.ID, method, path, operations)
-				vv := *operation
-				vv.ID = nm
-				operations[nm] = opRef{
-					Method: method,
-					Path:   path,
-					Op:     vv,
-				}
-			}
+			// nm := ensureUniqueName(operation.ID, method, path, operations)
+			vv := *operation
+			oprefs = append(oprefs, opRef{
+				Key:    swag.ToGoName(strings.ToLower(method) + " " + path),
+				Method: method,
+				Path:   path,
+				ID:     vv.ID,
+				Op:     &vv,
+			})
+		}
+	}
+
+	sort.Sort(oprefs)
+
+	operations := make(map[string]opRef)
+	for _, opr := range oprefs {
+		nm := opr.ID
+		if nm == "" {
+			nm = opr.Key
+		}
+
+		_, found := operations[nm]
+		if found {
+			nm = opr.Key
+		}
+		if len(operationIDs) == 0 || containsString(operationIDs, opr.ID) || containsString(operationIDs, nm) {
+			opr.ID = nm
+			opr.Op.ID = nm
+			operations[nm] = opr
 		}
 	}
 
