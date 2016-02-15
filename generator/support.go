@@ -538,10 +538,10 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		bldr.Doc = &(*a.SpecDoc)
 		// TODO: change operation name to something safe
 		bldr.Name = on
-		bldr.Operation = o
+		bldr.Operation = *o
 		bldr.Method = opp.Method
 		bldr.Path = opp.Path
-		bldr.Authed = len(a.SpecDoc.SecurityRequirementsFor(&o)) > 0
+		bldr.Authed = len(a.SpecDoc.SecurityRequirementsFor(o)) > 0
 		ap := a.APIPackage
 		bldr.RootAPIPackage = swag.ToFileName(a.APIPackage)
 		if len(o.Tags) > 0 {
