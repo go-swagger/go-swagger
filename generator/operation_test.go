@@ -41,7 +41,7 @@ func TestUniqueOperationNames(t *testing.T) {
 		assert.Len(t, ops, 4)
 		_, exists := ops["saveTask"]
 		assert.True(t, exists)
-		_, exists = ops["saveTask1"]
+		_, exists = ops["PutTasksID"]
 		assert.True(t, exists)
 	}
 }

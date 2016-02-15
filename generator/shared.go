@@ -271,8 +271,13 @@ func ensureUniqueName(key, method, path string, operations map[string]opRef) str
 	if nm == "" {
 		nm = swag.ToGoName(strings.ToLower(method) + " " + path)
 	}
+
 	_, found := operations[nm]
 	if found {
+		nm = swag.ToGoName(strings.ToLower(method) + " " + path)
+	}
+	_, foundAgain := operations[nm]
+	if foundAgain {
 		namesCounter++
 		return fmt.Sprintf("%s%d", nm, namesCounter)
 	}
