@@ -12,31 +12,33 @@ schemes:
 paths:
   /:
     get:
-      tags: ["todos"]
+      tags:
+        - todos
       operationId: findTodos
       parameters:
-      - name: since
-        in: query
-        type: integer
-        format: int64
-      - name: limit
-        in: query
-        type: integer
-        format: int32
-        default: 20
+        - name: since
+          in: query
+          type: integer
+          format: int64
+        - name: limit
+          in: query
+          type: integer
+          format: int32
+          default: 20
       responses:
-        default:
-          description: generic error response
-          schema:
-            $ref: "#/definitions/error"
-        '200':
-          description: "list the todo operations"
+        200:
+          description: list the todo operations
           schema:
             type: array
             items:
               $ref: "#/definitions/item"
+        default:
+          description: generic error response
+          schema:
+            $ref: "#/definitions/error"
     post:
-      tags: ["todos"]
+      tags:
+        - todos
       operationId: addOne
       parameters:
         - name: body
@@ -44,7 +46,7 @@ paths:
           schema:
             $ref: "#/definitions/item"
       responses:
-        '201':
+        201:
           description: Created
           schema:
             $ref: "#/definitions/item"
@@ -60,7 +62,8 @@ paths:
         in: path
         required: true
     put:
-      tags: ["todos"]
+      tags:
+        - todos
       operationId: updateOne
       parameters:
         - name: body
@@ -68,7 +71,7 @@ paths:
           schema:
             $ref: "#/definitions/item"
       responses:
-        '200':
+        200:
           description: OK
           schema:
             $ref: "#/definitions/item"
@@ -77,10 +80,11 @@ paths:
           schema:
             $ref: "#/definitions/error"
     delete:
-      tags: ["todos"]
+      tags:
+        - todos
       operationId: destroyOne
       responses:
-        '204':
+        204:
           description: Deleted
         default:
           description: error
@@ -90,7 +94,7 @@ definitions:
   item:
     type: object
     required:
-    - description
+      - description
     properties:
       id:
         type: integer

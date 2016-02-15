@@ -72,11 +72,12 @@ func deleteItem(id int64) error {
 }
 
 func allItems(since int64, limit int32) (result []*models.Item) {
+	result = make([]*models.Item, 0)
 	for id, item := range items {
 		if len(result) >= int(limit) {
 			return
 		}
-		if since == 0 || since > id {
+		if since == 0 || id > since {
 			result = append(result, item)
 		}
 	}
@@ -106,13 +107,15 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 	})
 
 	api.TodosFindTodosHandler = todos.FindTodosHandlerFunc(func(params todos.FindTodosParams) middleware.Responder {
-		if params.Since == nil {
-			params.Since = swag.Int64(0)
+		mergedParams := todos.NewFindTodosParams()
+		mergedParams.Since = swag.Int64(0)
+		if params.Since != nil {
+			mergedParams.Since = params.Since
 		}
-		if params.Limit == nil {
-			params.Limit = swag.Int32(20)
+		if params.Limit != nil {
+			mergedParams.Limit = params.Limit
 		}
-		return todos.NewFindTodosOK().WithPayload(allItems(0, 20))
+		return todos.NewFindTodosOK().WithPayload(allItems(*mergedParams.Since, *mergedParams.Limit))
 	})
 
 	api.TodosUpdateOneHandler = todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams) middleware.Responder {
