@@ -614,8 +614,10 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	}
 
 	var collectedSchemes []string
+	var extraSchemes []string
 	for _, op := range genOps {
 		collectedSchemes = concatUnique(collectedSchemes, op.Schemes)
+		extraSchemes = concatUnique(extraSchemes, op.ExtraSchemes)
 	}
 
 	host := "localhost"
@@ -635,6 +637,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		Host:                host,
 		BasePath:            basePath,
 		Schemes:             schemeOrDefault(collectedSchemes, a.DefaultScheme),
+		ExtraSchemes:        extraSchemes,
 		ExternalDocs:        sw.ExternalDocs,
 		Info:                sw.Info,
 		Consumes:            consumes,
@@ -667,6 +670,7 @@ type GenApp struct {
 	Imports             map[string]string
 	DefaultImports      []string
 	Schemes             []string
+	ExtraSchemes        []string
 	Consumes            []GenSerGroup
 	Produces            []GenSerGroup
 	SecurityDefinitions []GenSecurityScheme
