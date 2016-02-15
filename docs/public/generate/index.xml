@@ -6,7 +6,7 @@
     <description>Recent content in Generates on go-swagger toolkit</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <copyright>© 2015 go-swagger contributors</copyright>
+    <copyright>© 2016 go-swagger contributors</copyright>
     <lastBuildDate>Mon, 09 Nov 2015 18:58:47 -0800</lastBuildDate>
     <atom:link href="//goswagger.io/generate/index.xml" rel="self" type="application/rss+xml" />
     
@@ -292,6 +292,151 @@ func main() {
   fmt.Printf(&amp;quot;%#v\n&amp;quot;, resp.Payload)
 }
 &lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Use custom tempaltes</title>
+      <link>//goswagger.io/generate/templates/</link>
+      <pubDate>Tue, 26 Jan 2016 19:32:00 -0500</pubDate>
+      
+      <guid>//goswagger.io/generate/templates/</guid>
+      <description>
+
+&lt;p&gt;When generating a server or client you can specify a directory to load custom templates from
+with &lt;code&gt;--template-dir&lt;/code&gt;. It will recursively read all the &lt;code&gt;.gotmpl&lt;/code&gt; files in the directory and
+load them as templates.&lt;/p&gt;
+
+&lt;p&gt;Each file will be loaded and define a template named the same as the file without the suffix. If
+the file is in a subdirectory the directory name will be included in the template name and the
+first character of the next path segment will be uppercased. e.g.
+ - template.gotmpl -&amp;gt; template
+ - server/test.gotmpl -&amp;gt; serverTest&lt;/p&gt;
+
+&lt;p&gt;You can override the following templates. Check go-swagger/generator/templates for the default
+definitions.&lt;/p&gt;
+
+&lt;h1 id=&#34;available-templates:9052f6ca659538a7ad23c7f4f43faadc&#34;&gt;Available Templates:&lt;/h1&gt;
+
+&lt;h1 id=&#34;client-templates:9052f6ca659538a7ad23c7f4f43faadc&#34;&gt;Client Templates&lt;/h1&gt;
+
+&lt;h2 id=&#34;clientfacade:9052f6ca659538a7ad23c7f4f43faadc&#34;&gt;clientFacade&lt;/h2&gt;
+
+&lt;p&gt;Defined in &lt;code&gt;client/facade.gotmpl&lt;/code&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&#34;clientparameter:9052f6ca659538a7ad23c7f4f43faadc&#34;&gt;clientParameter&lt;/h2&gt;
+
+&lt;p&gt;Defined in &lt;code&gt;client/parameter.gotmpl&lt;/code&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&#34;clientresponse:9052f6ca659538a7ad23c7f4f43faadc&#34;&gt;clientResponse&lt;/h2&gt;
+
+&lt;p&gt;Defined in &lt;code&gt;client/response.gotmpl&lt;/code&gt;
+####requires
+ - clientresponse
+ - schema
+ - docstring&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&#34;clientresponse-1:9052f6ca659538a7ad23c7f4f43faadc&#34;&gt;clientresponse&lt;/h2&gt;
+
+&lt;p&gt;Defined in &lt;code&gt;client/response.gotmpl&lt;/code&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&#34;clientclient:9052f6ca659538a7ad23c7f4f43faadc&#34;&gt;clientClient&lt;/h2&gt;
+
+&lt;p&gt;Defined in &lt;code&gt;client/client.gotmpl&lt;/code&gt;&lt;/p&gt;
+
+&lt;h1 id=&#34;server-templates:9052f6ca659538a7ad23c7f4f43faadc&#34;&gt;Server Templates&lt;/h1&gt;
+
+&lt;h2 id=&#34;serverparameter:9052f6ca659538a7ad23c7f4f43faadc&#34;&gt;serverParameter&lt;/h2&gt;
+
+&lt;p&gt;Defined in &lt;code&gt;server/parameter.gotmpl&lt;/code&gt;
+####requires
+ - propertyparamvalidator
+ - sliceparambinder&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&#34;sliceparamvalidator:9052f6ca659538a7ad23c7f4f43faadc&#34;&gt;sliceparamvalidator&lt;/h2&gt;
+
+&lt;p&gt;Defined in &lt;code&gt;server/parameter.gotmpl&lt;/code&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&#34;serverresponses:9052f6ca659538a7ad23c7f4f43faadc&#34;&gt;serverResponses&lt;/h2&gt;
+
+&lt;p&gt;Defined in &lt;code&gt;server/responses.gotmpl&lt;/code&gt;
+####requires
+ - serverresponse&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&#34;sliceparambinder:9052f6ca659538a7ad23c7f4f43faadc&#34;&gt;sliceparambinder&lt;/h2&gt;
+
+&lt;p&gt;Defined in &lt;code&gt;server/parameter.gotmpl&lt;/code&gt;
+####requires
+ - propertyparamvalidator
+ - sliceparambinder&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&#34;serverresponse:9052f6ca659538a7ad23c7f4f43faadc&#34;&gt;serverresponse&lt;/h2&gt;
+
+&lt;p&gt;Defined in &lt;code&gt;server/responses.gotmpl&lt;/code&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&#34;serveroperation:9052f6ca659538a7ad23c7f4f43faadc&#34;&gt;serverOperation&lt;/h2&gt;
+
+&lt;p&gt;Defined in &lt;code&gt;server/operation.gotmpl&lt;/code&gt;
+####requires
+ - schema
+ - docstring&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&#34;propertyparamvalidator:9052f6ca659538a7ad23c7f4f43faadc&#34;&gt;propertyparamvalidator&lt;/h2&gt;
+
+&lt;p&gt;Defined in &lt;code&gt;server/parameter.gotmpl&lt;/code&gt;
+####requires
+ - validationPrimitive
+ - sliceparamvalidator&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&#34;servermain:9052f6ca659538a7ad23c7f4f43faadc&#34;&gt;serverMain&lt;/h2&gt;
+
+&lt;p&gt;Defined in &lt;code&gt;server/main.gotmpl&lt;/code&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&#34;bindprimitiveparam:9052f6ca659538a7ad23c7f4f43faadc&#34;&gt;bindprimitiveparam&lt;/h2&gt;
+
+&lt;p&gt;Defined in &lt;code&gt;server/parameter.gotmpl&lt;/code&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&#34;serverconfigureapi:9052f6ca659538a7ad23c7f4f43faadc&#34;&gt;serverConfigureapi&lt;/h2&gt;
+
+&lt;p&gt;Defined in &lt;code&gt;server/configureapi.gotmpl&lt;/code&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&#34;serverbuilder:9052f6ca659538a7ad23c7f4f43faadc&#34;&gt;serverBuilder&lt;/h2&gt;
+
+&lt;p&gt;Defined in &lt;code&gt;server/builder.gotmpl&lt;/code&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&#34;serverdoc:9052f6ca659538a7ad23c7f4f43faadc&#34;&gt;serverDoc&lt;/h2&gt;
+
+&lt;p&gt;Defined in &lt;code&gt;server/doc.gotmpl&lt;/code&gt;&lt;/p&gt;
 </description>
     </item>
     

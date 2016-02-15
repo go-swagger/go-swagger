@@ -12,34 +12,35 @@ schemes:
 paths:
   /:
     get:
-      tags: ["todos"]
+      tags:
+        - todos
       operationId: findTodos
       parameters:
-      - name: since
-        in: query
-        type: integer
-        format: int64
-      - name: limit
-        in: query
-        type: integer
-        format: int32
-        default: 20
+        - name: since
+          in: query
+          type: integer
+          format: int64
+        - name: limit
+          in: query
+          type: integer
+          format: int32
+          default: 20
       responses:
-        default:
-          description: generic error response
-          schema:
-            $ref: "#/definitions/error"
-        '200':
-          description: "list the todo operations"
+        200:
+          description: list the todo operations
           schema:
             type: array
             items:
               $ref: "#/definitions/item"
+        default:
+          description: generic error response
+          schema:
+            $ref: "#/definitions/error"
 definitions:
   item:
     type: object
     required:
-    - description
+      - description
     properties:
       id:
         type: integer
