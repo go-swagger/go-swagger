@@ -35,7 +35,6 @@ if err := validate.MultipleOf({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ pri
 }
 {{end}}
 {{if .Enum}}
-// for primitive
 if err := {{.ReceiverName}}.validate{{ pascalize .Name }}{{ pascalize .Suffix }}Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if .IsNullable }}*{{ end }}{{.ValueExpression}}); err != nil {
   return err
 }

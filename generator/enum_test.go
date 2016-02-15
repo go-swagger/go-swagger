@@ -188,7 +188,7 @@ func TestEnum_SliceAndAdditionalItemsThing(t *testing.T) {
 					assertInCode(t, "m.validateP0Enum(\"0\", \"body\", m.P0)", res)
 					assertInCode(t, "var sliceAndAdditionalItemsThingItemsEnum []interface{}", res)
 					assertInCode(t, k+") validateSliceAndAdditionalItemsThingItemsEnum(path, location string, value float32)", res)
-					assertInCode(t, "m.validateSliceAndAdditionalItemsThingItemsEnum(strconv.Itoa(i+1), \"body\", m.SliceAndAdditionalItemsThingItems[i])", res)
+					assertInCode(t, "m.validateSliceAndAdditionalItemsThingItemsEnum(strconv.Itoa(i+1), \"body\", *m.SliceAndAdditionalItemsThingItems[i])", res)
 				}
 			}
 		}
@@ -255,14 +255,14 @@ func TestEnum_ObjectThing(t *testing.T) {
 					assertInCode(t, k+"LionsTuple0) validateObjectThingLionsTuple0ItemsEnum(path, location string, value float64)", res)
 					assertInCode(t, k+") validateCats(", res)
 					assertInCode(t, "m.validateNameEnum(\"name\", \"body\", m.Name)", res)
-					assertInCode(t, "m.validateFlowerEnum(\"flower\", \"body\", m.Flower)", res)
-					assertInCode(t, "m.validateFlourEnum(\"flour\", \"body\", m.Flour)", res)
+					assertInCode(t, "m.validateFlowerEnum(\"flower\", \"body\", *m.Flower)", res)
+					assertInCode(t, "m.validateFlourEnum(\"flour\", \"body\", *m.Flour)", res)
 					assertInCode(t, "m.validateWolvesEnum(\"wolves\", \"body\", m.Wolves)", res)
 					assertInCode(t, "m.validateWolvesValueEnum(\"wolves\"+\".\"+k, \"body\", m.Wolves[k])", res)
 					assertInCode(t, "m.validateCatsItemsEnum(\"cats\"+\".\"+strconv.Itoa(i), \"body\", m.Cats[i])", res)
 					assertInCode(t, "m.validateP1Enum(\"P1\", \"body\", m.P1)", res)
 					assertInCode(t, "m.validateP0Enum(\"P0\", \"body\", m.P0)", res)
-					assertInCode(t, "m.validateObjectThingLionsTuple0ItemsEnum(strconv.Itoa(i), \"body\", m.ObjectThingLionsTuple0Items[i])", res)
+					assertInCode(t, "m.validateObjectThingLionsTuple0ItemsEnum(strconv.Itoa(i), \"body\", *m.ObjectThingLionsTuple0Items[i])", res)
 				}
 			}
 		}
