@@ -21,15 +21,29 @@ build:
       - go get -u github.com/naoina/denco
       - go get -u github.com/go-swagger/scan-repo-boundary/makeplans
       - ./hack/build-drone.sh
+      - go install ./cmd/swagger
+      - ./hack/run-canary.sh
+      - mkdir -p dist
+      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -installsuffix netgo -o dist/swagger ./cmd/swagger
+
   release:
     image: golang:$$GO_VERSION
     pull: true
+    environment:
+      GO15VENDOREXPERIMENT: "1"
+      GITHUB_TOKEN: $$GITHUB_TOKEN
     commands:
       - apt-get update -yqq
       - apt-get install -yqq --no-install-recommends ruby-dev rubygems rpm
       - gem install --no-rdoc --no-ri fpm
       - go get -u github.com/mitchellh/gox
-      - ./hack/build-release.sh $${TAG=0.2.5}
+      - mkdir -p /drone/dist/binaries
+      - "gox -os=\"linux darwin windows\" -output=\"/drone/dist/binaries/{{.Dir}}_{{.OS}}_{{.Arch}}\" ./cmd/swagger"
+      - cd /drone/dist
+      - mkdir -p /drone/dist/linux/amd64/usr/bin
+      - cp /drone/dist/binaries/swagger_linux_amd64 /drone/dist/linux/amd64/usr/bin/swagger
+      - "fpm -t deb -s dir -C /drone/dist/linux/amd64 -v $$TAG -n swagger --license \"ASL 2.0\" -a x86_64 -m \"ivan@flanders.co.nz\" --url \"https://goswagger.io\" usr"
+      - "fpm -t rpm -s dir -C /drone/dist/linux/amd64 -v $$TAG -n swagger --license \"ASL 2.0\" -a x86_64 -m \"ivan@flanders.co.nz\" --url \"https://goswagger.io\" usr"
     when:
       event: tag
       matrix:
@@ -42,42 +56,69 @@ notify:
     username: drone
 
 publish:
+  # coverage:
+  #   server: https://coverage.vmware.run
+  #   token: $$GITHUB_TOKEN
+  #   threshold: 60
+  #   must_increase: true
+
   github_release:
     api_key: $$GITHUB_TOKEN
     files:
-      - /go/src/github.com/go-swagger/go-swagger/dist/binaries/swagger_*
+      - /drone/dist/binaries/swagger_*
+    checksum: sha1
     when:
       event: tag
       matrix:
         GO_VERSION: "1.6"
-  # bintray:
-  #   username: $$BINTRAY_USERNAME
-  #   password: $$BINTRAY_PASSWORD
-  #   branch: $$BRANCH
-  #   artifacts:
-  #     - file: /usr/share/dist/swagger-$$TAG-1.x86_64.rpm
-  #       owner: go-swagger
-  #       type: rpm
-  #       repository: goswagger-rpm
-  #       package: swagger
-  #       version: $$TAG
-  #       target: swagger-$$TAG-1.x86_64.rpm
-  #       publish: true
-  #       override: true
-  #     - file: /usr/share/dist/swagger-$$TAG_amd64.deb
-  #       owner: go-swagger
-  #       type: Debian
-  #       repository: goswagger-debian
-  #       package: swagger
-  #       version: $$TAG
-  #       target: swagger-$$TAG_amd64.deb
-  #       distr: debian
-  #       component: main
-  #       arch:
-  #         - amd64
-  #       publish: true
-  #       override: true
-  #   when:
-  #     event: tag
-  #     matrix:
-  #       GO_VERSION: "1.6"
+
+  docker:
+    image: casualjim/drone-docker
+    privileged: true
+    registry: quay.io
+    username: $$QUAY_USER
+    password: $$QUAY_PASS
+    email: $$QUAY_EMAIL
+    repo: goswagger/swagger
+    file: Dockerfile
+    storage_driver: overlay
+    tag:
+      - latest
+      - "$$TAG"
+    when:
+      event: tag
+      matrix:
+        GO_VERSION: "1.6"
+
+  bintray:
+    image: casualjim/drone-bintray
+    username: $$BINTRAY_USERNAME
+    api_key: $$BINTRAY_TOKEN
+    branch: $$BRANCH
+    artifacts:
+      - file: ../../../../dist/swagger-$$TAG-1.x86_64.rpm
+        owner: go-swagger
+        type: rpm
+        repository: goswagger-rpm
+        package: swagger
+        version: $$TAG
+        target: swagger-$$TAG-1.x86_64.rpm
+        publish: true
+        override: true
+      - file: ../../../../dist/swagger_$$TAG_amd64.deb
+        owner: go-swagger
+        type: Debian
+        repository: goswagger-debian
+        package: swagger
+        version: $$TAG
+        target: swagger_$$TAG_amd64.deb
+        distr: ubuntu
+        component: main
+        arch:
+          - amd64
+        publish: true
+        override: true
+    when:
+      event: tag
+      matrix:
+        GO_VERSION: "1.6"

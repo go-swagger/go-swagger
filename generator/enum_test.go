@@ -17,6 +17,7 @@ package generator
 import (
 	"bytes"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/go-swagger/go-swagger/spec"
@@ -187,7 +188,7 @@ func TestEnum_SliceAndAdditionalItemsThing(t *testing.T) {
 					assertInCode(t, "m.validateP0Enum(\"0\", \"body\", m.P0)", res)
 					assertInCode(t, "var sliceAndAdditionalItemsThingItemsEnum []interface{}", res)
 					assertInCode(t, k+") validateSliceAndAdditionalItemsThingItemsEnum(path, location string, value float32)", res)
-					assertInCode(t, "m.validateSliceAndAdditionalItemsThingItemsEnum(strconv.Itoa(i+1), \"body\", m.SliceAndAdditionalItemsThingItems[i])", res)
+					assertInCode(t, "m.validateSliceAndAdditionalItemsThingItemsEnum(strconv.Itoa(i+1), \"body\", *m.SliceAndAdditionalItemsThingItems[i])", res)
 				}
 			}
 		}
@@ -254,14 +255,14 @@ func TestEnum_ObjectThing(t *testing.T) {
 					assertInCode(t, k+"LionsTuple0) validateObjectThingLionsTuple0ItemsEnum(path, location string, value float64)", res)
 					assertInCode(t, k+") validateCats(", res)
 					assertInCode(t, "m.validateNameEnum(\"name\", \"body\", m.Name)", res)
-					assertInCode(t, "m.validateFlowerEnum(\"flower\", \"body\", m.Flower)", res)
-					assertInCode(t, "m.validateFlourEnum(\"flour\", \"body\", m.Flour)", res)
+					assertInCode(t, "m.validateFlowerEnum(\"flower\", \"body\", *m.Flower)", res)
+					assertInCode(t, "m.validateFlourEnum(\"flour\", \"body\", *m.Flour)", res)
 					assertInCode(t, "m.validateWolvesEnum(\"wolves\", \"body\", m.Wolves)", res)
 					assertInCode(t, "m.validateWolvesValueEnum(\"wolves\"+\".\"+k, \"body\", m.Wolves[k])", res)
 					assertInCode(t, "m.validateCatsItemsEnum(\"cats\"+\".\"+strconv.Itoa(i), \"body\", m.Cats[i])", res)
 					assertInCode(t, "m.validateP1Enum(\"P1\", \"body\", m.P1)", res)
 					assertInCode(t, "m.validateP0Enum(\"P0\", \"body\", m.P0)", res)
-					assertInCode(t, "m.validateObjectThingLionsTuple0ItemsEnum(strconv.Itoa(i), \"body\", m.ObjectThingLionsTuple0Items[i])", res)
+					assertInCode(t, "m.validateObjectThingLionsTuple0ItemsEnum(strconv.Itoa(i), \"body\", *m.ObjectThingLionsTuple0Items[i])", res)
 				}
 			}
 		}
@@ -319,6 +320,27 @@ func TestEnum_NewPrototype(t *testing.T) {
 					assertInCode(t, "m.validateActivatingUser(formats)", res)
 					assertInCode(t, "m.Delegate.Validate(formats)", res)
 					assertInCode(t, "m.ActivatingUser.Validate(formats)", res)
+				}
+			}
+		}
+	}
+}
+
+func TestEnum_Issue265(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/sodabooth.json")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "SodaBrand"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("soda_brand.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					assert.Equal(t, 1, strings.Count(res, "m.validateSodaBrandEnum"))
 				}
 			}
 		}

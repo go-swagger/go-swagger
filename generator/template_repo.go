@@ -102,6 +102,14 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	"upper": func(str string) string {
 		return strings.ToUpper(str)
 	},
+	"contains": func(coll []string, arg string) bool {
+		for _, v := range coll {
+			if v == arg {
+				return true
+			}
+		}
+		return false
+	},
 }
 
 // NewRepository creates a new template repository with the provided functions defined

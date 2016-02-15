@@ -40,6 +40,26 @@ func (e Extensions) GetString(key string) (string, bool) {
 	return "", false
 }
 
+// GetStringSlice gets a string value from the extensions
+func (e Extensions) GetStringSlice(key string) ([]string, bool) {
+	if v, ok := e[strings.ToLower(key)]; ok {
+		arr, ok := v.([]interface{})
+		if !ok {
+			return nil, false
+		}
+		var strs []string
+		for _, iface := range arr {
+			str, ok := iface.(string)
+			if !ok {
+				return nil, false
+			}
+			strs = append(strs, str)
+		}
+		return strs, ok
+	}
+	return nil, false
+}
+
 type VendorExtensible struct {
 	Extensions Extensions
 }

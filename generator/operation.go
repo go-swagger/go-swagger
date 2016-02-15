@@ -70,8 +70,8 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 			ModelsPackage:        mangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
 			ClientPackage:        mangleName(swag.ToFileName(opts.ClientPackage), "client"),
 			ServerPackage:        serverPackage,
-			Operation:            operation,
-			SecurityRequirements: specDoc.SecurityRequirementsFor(&operation),
+			Operation:            *operation,
+			SecurityRequirements: specDoc.SecurityRequirementsFor(operation),
 			Principal:            opts.Principal,
 			Target:               filepath.Join(opts.Target, serverPackage),
 			Base:                 opts.Target,
@@ -378,6 +378,15 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		extra = append(extra, sch)
 	}
 
+	var extraSchemes []string
+	if ess, ok := operation.Extensions.GetStringSlice("x-schemes"); ok {
+		extraSchemes = append(extraSchemes, ess...)
+	}
+
+	if ess1, ok := resolver.Doc.Spec().Extensions.GetStringSlice("x-schemes"); ok {
+		extraSchemes = concatUnique(ess1, extraSchemes)
+	}
+	sort.Strings(extraSchemes)
 	schemes := concatUnique(resolver.Doc.Spec().Schemes, operation.Schemes)
 	sort.Strings(schemes)
 	produces := concatUnique(resolver.Doc.Spec().Produces, operation.Produces)
@@ -410,6 +419,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		ExtraSchemas:       extra,
 		Schemes:            schemeOrDefault(schemes, b.DefaultScheme),
 		ProducesMediaTypes: producesOrDefault(produces, b.DefaultProduces),
+		ExtraSchemes:       extraSchemes,
 	}, nil
 }
 
@@ -896,6 +906,7 @@ type GenOperation struct {
 	HasFileParams  bool
 
 	Schemes            []string
+	ExtraSchemes       []string
 	ProducesMediaTypes []string
 }
 

@@ -20,7 +20,8 @@ import (
 // It would only be overwritten if you explicitly specify --include-main for the generate all or support commands
 //go:generate swagger generate server -t ../.. -A {{ pascalize .Name }}{{ if .Principal }}{{if not ( eq .Principal "interface{}" )}} --principal {{.Principal}}{{end}}{{end}}
 
-var opts struct { {{ if (hasInsecure .Schemes) }}
+var opts struct { {{ if (contains .ExtraSchemes "unix") }}
+  SocketPath flags.Filename `long:"socket-path" description:"the unix socket to listen on" default:"/var/run/{{ dasherize .Name }}.sock"`{{ end }}{{ if (hasInsecure .Schemes) }}
 	Host string `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
 	Port int    `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`{{ end }}{{ if (hasSecure .Schemes) }}
 
@@ -42,6 +43,7 @@ func main() {
 
   api := {{.Package}}.New{{ pascalize .Name }}API(swaggerSpec)
 	handler := configureAPI(api)
+  defer api.ServerShutdown()
 
   for _, optsGroup := range api.CommandLineOptionsGroups {
     parser.AddGroup(optsGroup.ShortDescription, optsGroup.LongDescription, optsGroup.Options)
@@ -50,23 +52,35 @@ func main() {
 	if _, err := parser.Parse(); err != nil {
 		os.Exit(1)
 	}
-{{ if (hasInsecure .Schemes) }}
+  {{ if (contains .ExtraSchemes "unix") }}
+  domainSocket := &graceful.Server{Server: new(http.Server)}
+  domainSocket.Handler = handler
+  domSockListener, err := net.Listen("unix", string(opts.SocketPath))
+  if err != nil {
+    log.Fatalln(err)
+  }
+
+  fmt.Printf("serving {{ humanize .Name }} at unix://%s\n", opts.SocketPath)
+  go func(){
+    if err := domainSocket.Serve(domSockListener); err != nil {
+      log.Fatalln(err)
+    }
+  }()
+  {{ end }}{{ if (hasInsecure .Schemes) }}
 	httpServer := &graceful.Server{Server: new(http.Server)}
 	httpServer.Handler = handler
 
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", opts.Host, opts.Port))
 	if err != nil {
-		api.ServerShutdown()
 		log.Fatalln(err)
 	}
 
 	fmt.Printf("serving {{ humanize .Name }} at http://%s\n", listener.Addr())
-  {{ if (hasSecure .Schemes) }}go func() {
-		{{ end }}if err := httpServer.Serve(tcpKeepAliveListener{listener.(*net.TCPListener)}); err != nil {
-			api.ServerShutdown()
+  go func() {
+		if err := httpServer.Serve(tcpKeepAliveListener{listener.(*net.TCPListener)}); err != nil {
 			log.Fatalln(err)
-		}{{ if (hasSecure .Schemes) }}
-  }(){{ end }}
+		}
+  }()
 {{ end }}{{ if (hasSecure .Schemes) }}
 	httpsServer := &graceful.Server{Server: new(http.Server)}
 	httpsServer.Handler = handler
@@ -77,7 +91,6 @@ func main() {
 	httpsServer.TLSConfig.Certificates = make([]tls.Certificate, 1)
 	httpsServer.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(string(opts.TLSCertificate), string(opts.TLSCertificateKey))
 	if err != nil {
-		api.ServerShutdown()
 		log.Fatal(err)
 	}
 {{ if (hasInsecure .Schemes) }}
@@ -86,24 +99,16 @@ func main() {
 	}{{ end }}
 	tlsListener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", opts.TLSHost, opts.TLSPort))
 	if err != nil {
-		api.ServerShutdown()
 		log.Fatalln(err)
 	}
 
 	fmt.Printf("serving {{ humanize .Name }} at https://%s\n", tlsListener.Addr())
-
-	wrapped := tls.NewListener(tcpKeepAliveListener{tlsListener.(*net.TCPListener)}, httpsServer.TLSConfig)
-	if err := httpsServer.Serve(wrapped); err != nil {
-		api.ServerShutdown()
-		log.Fatalln(err)
-	}{{ end }}
-	go func() {
-{{ if (hasInsecure .Schemes) }}
-		<-httpServer.StopChan()
-{{ end }}{{ if (hasSecure .Schemes) }}
-		<-httpsServer.StopChan(){{ end }}
-		api.ServerShutdown()
-	}()
+  wrapped := tls.NewListener(tcpKeepAliveListener{tlsListener.(*net.TCPListener)}, httpsServer.TLSConfig)
+  if err := httpsServer.Serve(wrapped); err != nil {
+    api.ServerShutdown()
+    log.Fatalln(err)
+  }
+  {{ end }}
 }
 
 // tcpKeepAliveListener is copied from the stdlib net/http package

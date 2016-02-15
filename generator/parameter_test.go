@@ -584,7 +584,6 @@ func TestGenParameter_Issue248(t *testing.T) {
 				ff, err := formatGoFile("create_thing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
-					fmt.Println(res)
 					assertInCode(t, ", *o.OptionalQueryEnum", res)
 				} else {
 					fmt.Println(buf.String())

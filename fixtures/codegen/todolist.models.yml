@@ -660,3 +660,11 @@ definitions:
     properties:
       metadata:
         $ref: "#/definitions/DynamicMetaData"
+
+  HasSpecialCharProp:
+    type: object
+    properties:
+      type:
+        type: string
+      '@type':
+        type: string

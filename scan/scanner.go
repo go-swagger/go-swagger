@@ -30,7 +30,7 @@ import (
 
 const (
 	rxMethod = "(\\p{L}+)"
-	rxPath   = "((?:/[\\p{L}\\p{N}\\p{Pd}\\p{Pc}{}]*)+/?)"
+	rxPath   = "((?:/[\\p{L}\\p{N}\\p{Pd}\\p{Pc}{}\\-\\._~%!$&'()*+,;=:@/]*)+/?)"
 	rxOpTags = "(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\p{Zs}]+)"
 	rxOpID   = "((?:\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)+)"
 
@@ -53,6 +53,7 @@ const (
 var (
 	rxSwaggerAnnotation  = regexp.MustCompile("swagger:([\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)")
 	rxMeta               = regexp.MustCompile("swagger:meta")
+	rxFileUpload         = regexp.MustCompile("swagger:file")
 	rxStrFmt             = regexp.MustCompile("swagger:strfmt\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)$")
 	rxName               = regexp.MustCompile("swagger:name\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\.]+)$")
 	rxAllOf              = regexp.MustCompile("swagger:allOf\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\.]+)?$")
@@ -73,7 +74,7 @@ var (
 	rxSpace              = regexp.MustCompile("\\p{Zs}+")
 	rxNotAlNumSpaceComma = regexp.MustCompile("[^\\p{L}\\p{N}\\p{Zs},]")
 	rxPunctuationEnd     = regexp.MustCompile("\\p{Po}$")
-	rxStripComments      = regexp.MustCompile("^[^\\w\\+]*")
+	rxStripComments      = regexp.MustCompile("^[^\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\+]*")
 	rxStripTitleComments = regexp.MustCompile("^[^\\p{L}]*[Pp]ackage\\p{Zs}+[^\\p{Zs}]+\\p{Zs}*")
 
 	rxIn              = regexp.MustCompile("[Ii]n\\p{Zs}*:\\p{Zs}*(query|path|header|body|formData)$")
@@ -441,7 +442,7 @@ func (st *sectionedParser) cleanup(lines []string) []string {
 	var lastContent int
 	var uncommented []string
 	for i, v := range lines {
-		str := regexp.MustCompile("^[^\\p{L}\\p{N}\\+]*").ReplaceAllString(v, "")
+		str := regexp.MustCompile(`^[\p{Zs}\t/\*-]*`).ReplaceAllString(v, "")
 		uncommented = append(uncommented, str)
 		if str != "" {
 			if seenLine < 0 {

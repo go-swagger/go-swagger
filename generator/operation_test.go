@@ -18,6 +18,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/go-swagger/go-swagger/spec"
@@ -37,7 +41,7 @@ func TestUniqueOperationNames(t *testing.T) {
 		assert.Len(t, ops, 4)
 		_, exists := ops["saveTask"]
 		assert.True(t, exists)
-		_, exists = ops["saveTask1"]
+		_, exists = ops["PutTasksID"]
 		assert.True(t, exists)
 	}
 }
@@ -88,7 +92,7 @@ func TestMakeResponseHeaderDefaultValues(t *testing.T) {
 		}
 
 		for _, tc := range testCases {
-			t.Logf("tc: %+v", tc)
+			// t.Logf("tc: %+v", tc)
 			hdr := findResponseHeader(&b.Operation, 200, tc.name)
 			assert.NotNil(t, hdr)
 			gh := b.MakeHeader("a", tc.name, *hdr)
@@ -326,6 +330,42 @@ func TestDateFormat_Spec2(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "valuesTestingThis = append(valuesTestingThis, v.String())", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestBuilder_Issue287(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stderr)
+	dr, _ := os.Getwd()
+	appGen, err := newAppGenerator("plainTexter", nil, nil, &GenOpts{
+		Spec:              filepath.FromSlash("../fixtures/bugs/287/swagger.yml"),
+		IncludeModel:      true,
+		IncludeValidator:  true,
+		IncludeHandler:    true,
+		IncludeParameters: true,
+		IncludeResponses:  true,
+		IncludeMain:       true,
+		APIPackage:        "restapi",
+		ModelPackage:      "model",
+		ServerPackage:     "server",
+		ClientPackage:     "client",
+		Target:            dr,
+	})
+	if assert.NoError(t, err) {
+		op, err := appGen.makeCodegenApp()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := builderTemplate.Execute(buf, op)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("put_testing.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					assertInCode(t, "case \"text/plain\":", res)
 				} else {
 					fmt.Println(buf.String())
 				}

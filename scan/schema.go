@@ -788,6 +788,19 @@ func allOfMember(comments *ast.CommentGroup) bool {
 	return false
 }
 
+func fileParam(comments *ast.CommentGroup) bool {
+	if comments != nil {
+		for _, cmt := range comments.List {
+			for _, ln := range strings.Split(cmt.Text, "\n") {
+				if rxFileUpload.MatchString(ln) {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
 func strfmtName(comments *ast.CommentGroup) (string, bool) {
 	if comments != nil {
 		for _, cmt := range comments.List {

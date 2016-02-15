@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 var infoJSON = `{
@@ -49,20 +49,17 @@ var info = Info{
 	VendorExtensible: VendorExtensible{map[string]interface{}{"x-framework": "go-swagger"}},
 }
 
-func TestIntegrationInfo(t *testing.T) {
-	Convey("all fields of info should", t, func() {
-		Convey("serialize to JSON", func() {
-			b, err := json.MarshalIndent(info, "", "\t")
-			So(err, ShouldBeNil)
-			So(string(b), ShouldEqual, infoJSON)
-		})
+func TestIntegrationInfo_Serialize(t *testing.T) {
+	b, err := json.MarshalIndent(info, "", "\t")
+	if assert.NoError(t, err) {
+		assert.Equal(t, infoJSON, string(b))
+	}
+}
 
-		Convey("deserialize from JSON", func() {
-			actual := Info{}
-			err := json.Unmarshal([]byte(infoJSON), &actual)
-			So(err, ShouldBeNil)
-			So(actual, ShouldBeEquivalentTo, info)
-		})
-
-	})
+func TestIntegrationInfo_Deserialize(t *testing.T) {
+	actual := Info{}
+	err := json.Unmarshal([]byte(infoJSON), &actual)
+	if assert.NoError(t, err) {
+		assert.EqualValues(t, info, actual)
+	}
 }

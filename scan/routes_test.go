@@ -25,6 +25,7 @@ import (
 
 func TestRouteExpression(t *testing.T) {
 	assert.Regexp(t, rxRoute, "swagger:route DELETE /orders/{id} deleteOrder")
+	assert.Regexp(t, rxRoute, "swagger:route GET /v1.2/something deleteOrder")
 }
 
 func TestRoutesParser(t *testing.T) {

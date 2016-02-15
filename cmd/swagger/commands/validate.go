@@ -17,6 +17,7 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"log"
 
 	swaggererrors "github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/spec"
@@ -39,7 +40,7 @@ func (c *ValidateSpec) Execute(args []string) error {
 	swaggerDoc := args[0]
 	specDoc, err := spec.Load(swaggerDoc)
 	if err != nil {
-		return nil
+		log.Fatalln(err)
 	}
 
 	result := validate.Spec(specDoc, strfmt.Default)

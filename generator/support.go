@@ -311,6 +311,7 @@ var mediaTypeNames = map[*regexp.Regexp]string{
 	regexp.MustCompile("text/.*tsv"):                 "tsv",
 	regexp.MustCompile("text/.*javascript"):          "js",
 	regexp.MustCompile("text/.*css"):                 "css",
+	regexp.MustCompile("text/.*plain"):               "txt",
 }
 
 var knownProducers = map[string]string{
@@ -537,10 +538,10 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		bldr.Doc = &(*a.SpecDoc)
 		// TODO: change operation name to something safe
 		bldr.Name = on
-		bldr.Operation = o
+		bldr.Operation = *o
 		bldr.Method = opp.Method
 		bldr.Path = opp.Path
-		bldr.Authed = len(a.SpecDoc.SecurityRequirementsFor(&o)) > 0
+		bldr.Authed = len(a.SpecDoc.SecurityRequirementsFor(o)) > 0
 		ap := a.APIPackage
 		bldr.RootAPIPackage = swag.ToFileName(a.APIPackage)
 		if len(o.Tags) > 0 {
@@ -613,8 +614,10 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	}
 
 	var collectedSchemes []string
+	var extraSchemes []string
 	for _, op := range genOps {
 		collectedSchemes = concatUnique(collectedSchemes, op.Schemes)
+		extraSchemes = concatUnique(extraSchemes, op.ExtraSchemes)
 	}
 
 	host := "localhost"
@@ -634,6 +637,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		Host:                host,
 		BasePath:            basePath,
 		Schemes:             schemeOrDefault(collectedSchemes, a.DefaultScheme),
+		ExtraSchemes:        extraSchemes,
 		ExternalDocs:        sw.ExternalDocs,
 		Info:                sw.Info,
 		Consumes:            consumes,
@@ -666,6 +670,7 @@ type GenApp struct {
 	Imports             map[string]string
 	DefaultImports      []string
 	Schemes             []string
+	ExtraSchemes        []string
 	Consumes            []GenSerGroup
 	Produces            []GenSerGroup
 	SecurityDefinitions []GenSecurityScheme
