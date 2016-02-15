@@ -385,3 +385,46 @@ func TestRuntime_OverrideScheme(t *testing.T) {
 	assert.Equal(t, "https", sch)
 
 }
+
+func TestRuntime_PreserveTrailingSlash(t *testing.T) {
+	var redirected bool
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.Header().Add(httpkit.HeaderContentType, httpkit.JSONMime+";charset=utf-8")
+
+		if req.URL.Path == "/api/tasks" {
+			redirected = true
+			return
+		}
+		if req.URL.Path == "/api/tasks/" {
+			rw.WriteHeader(http.StatusOK)
+		}
+	}))
+	defer server.Close()
+
+	hu, _ := url.Parse(server.URL)
+
+	runtime := New(hu.Host, "/", []string{"http"})
+
+	rwrtr := client.RequestWriterFunc(func(req client.Request, _ strfmt.Registry) error {
+		return nil
+	})
+
+	_, err := runtime.Submit(&client.Operation{
+		ID:          "getTasks",
+		Method:      "GET",
+		PathPattern: "/api/tasks/",
+		Params:      rwrtr,
+		Reader: client.ResponseReaderFunc(func(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+			if redirected {
+				return nil, errors.New("expected Submit to preserve trailing slashes - this caused a redirect")
+			}
+			if response.Code() == http.StatusOK {
+				return nil, nil
+			}
+			return nil, errors.New("Generic error")
+		}),
+	})
+
+	assert.NoError(t, err)
+}

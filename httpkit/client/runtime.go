@@ -135,7 +135,14 @@ func (r *Runtime) Submit(operation *client.Operation) (interface{}, error) {
 	}
 	req.URL.Scheme = r.pickScheme(operation.Schemes)
 	req.URL.Host = r.Host
+	var reinstateSlash bool
+	if req.URL.Path != "" && req.URL.Path[len(req.URL.Path)-1] == '/' {
+		reinstateSlash = true
+	}
 	req.URL.Path = path.Join(r.BasePath, req.URL.Path)
+	if reinstateSlash {
+		req.URL.Path = req.URL.Path + "/"
+	}
 
 	r.clientOnce.Do(func() {
 		r.client = &http.Client{
