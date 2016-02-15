@@ -65,6 +65,7 @@ if err := validate.UniqueItems({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ pr
 }
 {{end}}
 {{if .Enum}}
+// for slice
 if err := {{.ReceiverName}}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{.ValueExpression}}); err != nil {
   return err
 }
@@ -101,6 +102,7 @@ for {{.AdditionalProperties.KeyVar}} := range {{ .ValueExpression }} {
   {{ end }}
 }
 {{ end }}{{ if .Enum }}
+// from map
 if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
   return err
 }
@@ -132,6 +134,7 @@ if err := {{.ValueExpression}}.Validate(formats); err != nil {
 {{else if or .IsComplexObject .IsTuple .IsAdditionalProperties .IsAliased }}{{ template "objectvalidator" . }}{{end}}
 {{end}}
 {{define "schemavalidator" }}{{ if .Enum }}
+// for schema
 var {{ camelize .Name }}Enum []interface{}
 func ({{ .ReceiverName }} {{ if not .IsPrimitive }}*{{ end }}{{ if .IsExported }}{{ pascalize .Name}}{{ else }}{{ .Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "dereffedSchemaType" . }}) error {
   if {{ camelize .Name }}Enum == nil {
@@ -166,6 +169,7 @@ func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{
 }
 {{ end }}{{ with .AdditionalProperties }}
 {{ if .Enum }}
+// for additional props
 var {{ camelize .Name }}ValueEnum []interface{}
 func ({{ .ReceiverName }} *{{ if .IsExported }}{{ pascalize .Name}}{{ else }}{{ .Name }}{{ end }}) validate{{ pascalize .Name }}ValueEnum(path, location string, value {{ template "dereffedSchemaType" . }}) error {
   if {{ camelize .Name }}ValueEnum == nil {
@@ -232,7 +236,7 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
     res = append(res, err)
   }
   {{end}}
-  {{ if .Enum }}
+  {{ if and .Enum (not .IsPrimitive) }}
   if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Enum("", "body", {{ .ReceiverName }}); err != nil {
     res = append(res, err)
   }

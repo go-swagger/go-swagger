@@ -330,7 +330,7 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 		result.SwaggerType = "array"
 		return
 	}
-	rt, er := t.ResolveSchema(schema.Items.Schema, true, isRequired)
+	rt, er := t.ResolveSchema(schema.Items.Schema, true, true)
 	if er != nil {
 		err = er
 		return
