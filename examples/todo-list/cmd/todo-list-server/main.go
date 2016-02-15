@@ -22,8 +22,9 @@ import (
 //go:generate swagger generate server -t ../.. -A TodoList
 
 var opts struct {
-	Host string `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
-	Port int    `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`
+	SocketPath flags.Filename `long:"socket-path" description:"the unix socket to listen on" default:"/var/run/todo-list.sock"`
+	Host       string         `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
+	Port       int            `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`
 
 	TLSHost           string         `long:"tls-host" description:"the IP to listen on for tls, when not specified it's the same as --host" env:"TLS_HOST"`
 	TLSPort           int            `long:"tls-port" description:"the port to listen on for secure connections, defaults to a random value" env:"TLS_PORT"`
@@ -43,6 +44,7 @@ func main() {
 
 	api := operations.NewTodoListAPI(swaggerSpec)
 	handler := configureAPI(api)
+	defer api.ServerShutdown()
 
 	for _, optsGroup := range api.CommandLineOptionsGroups {
 		parser.AddGroup(optsGroup.ShortDescription, optsGroup.LongDescription, optsGroup.Options)
@@ -52,19 +54,31 @@ func main() {
 		os.Exit(1)
 	}
 
+	domainSocket := &graceful.Server{Server: new(http.Server)}
+	domainSocket.Handler = handler
+	domSockListener, err := net.Listen("unix", string(opts.SocketPath))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Printf("serving todo list at unix://%s\n", opts.SocketPath)
+	go func() {
+		if err := domainSocket.Serve(domSockListener); err != nil {
+			log.Fatalln(err)
+		}
+	}()
+
 	httpServer := &graceful.Server{Server: new(http.Server)}
 	httpServer.Handler = handler
 
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", opts.Host, opts.Port))
 	if err != nil {
-		api.ServerShutdown()
 		log.Fatalln(err)
 	}
 
 	fmt.Printf("serving todo list at http://%s\n", listener.Addr())
 	go func() {
 		if err := httpServer.Serve(tcpKeepAliveListener{listener.(*net.TCPListener)}); err != nil {
-			api.ServerShutdown()
 			log.Fatalln(err)
 		}
 	}()
@@ -78,7 +92,6 @@ func main() {
 	httpsServer.TLSConfig.Certificates = make([]tls.Certificate, 1)
 	httpsServer.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(string(opts.TLSCertificate), string(opts.TLSCertificateKey))
 	if err != nil {
-		api.ServerShutdown()
 		log.Fatal(err)
 	}
 
@@ -87,24 +100,16 @@ func main() {
 	}
 	tlsListener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", opts.TLSHost, opts.TLSPort))
 	if err != nil {
-		api.ServerShutdown()
 		log.Fatalln(err)
 	}
 
 	fmt.Printf("serving todo list at https://%s\n", tlsListener.Addr())
-
 	wrapped := tls.NewListener(tcpKeepAliveListener{tlsListener.(*net.TCPListener)}, httpsServer.TLSConfig)
 	if err := httpsServer.Serve(wrapped); err != nil {
 		api.ServerShutdown()
 		log.Fatalln(err)
 	}
-	go func() {
 
-		<-httpServer.StopChan()
-
-		<-httpsServer.StopChan()
-		api.ServerShutdown()
-	}()
 }
 
 // tcpKeepAliveListener is copied from the stdlib net/http package

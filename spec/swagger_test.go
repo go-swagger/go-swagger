@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 func IsZero(data reflect.Value) bool {
@@ -59,7 +60,10 @@ var spec = Swagger{
 		Tags:         []Tag{NewTag("pets", "", nil)},
 		ExternalDocs: &ExternalDocumentation{"the name", "the url"},
 	},
-	VendorExtensible: VendorExtensible{map[string]interface{}{"x-some-extension": "vendor"}},
+	VendorExtensible: VendorExtensible{map[string]interface{}{
+		"x-some-extension": "vendor",
+		"x-schemes":        []interface{}{"unix", "amqp"},
+	}},
 }
 
 var specJSON = `{
@@ -105,7 +109,8 @@ var specJSON = `{
 	"security": [{"internalApiKey":[]}],
 	"tags": [{"name":"pets"}],
 	"externalDocs": {"description":"the name","url":"the url"},
-	"x-some-extension": "vendor"
+	"x-some-extension": "vendor",
+	"x-schemes": ["unix","amqp"]
 }`
 
 func verifySpecSerialize(specJSON []byte, spec Swagger) {
@@ -147,7 +152,7 @@ func ShouldBeEquivalentTo(actual interface{}, expecteds ...interface{}) string {
 	if fmt.Sprintf("%#v", expected) == fmt.Sprintf("%#v", actual) {
 		return ""
 	}
-	errFmt := "Expected: '%T(%+v)'\nActual:   '%T(%+v)'\n(Should be equivalent)!"
+	errFmt := "Expected: '%T(%#v)'\nActual:   '%T(%#v)'\n(Should be equivalent)!"
 	return fmt.Sprintf(errFmt, expected, expected, actual, actual)
 
 }
@@ -171,6 +176,7 @@ func compareSpecMaps(actual, expected map[string]interface{}) {
 	So(actual["tags"], ShouldResemble, expected["tags"])
 	So(actual["externalDocs"], ShouldResemble, expected["externalDocs"])
 	So(actual["x-some-extension"], ShouldResemble, expected["x-some-extension"])
+	So(actual["x-schemes"], ShouldResemble, expected["x-schemes"])
 }
 
 func compareSpecs(actual Swagger, spec Swagger) {
@@ -206,17 +212,34 @@ func verifySpecJSON(specJSON []byte) {
 	compareSpecMaps(actual, expected)
 }
 
-func TestIntegrationSpec(t *testing.T) {
-	Convey("all fields of a spec should", t, func() {
-		Convey("serialize", func() {
-			verifySpecSerialize([]byte(specJSON), spec)
-		})
+func TestSwaggerSpec_Serialize(t *testing.T) {
+	expected := make(map[string]interface{})
+	json.Unmarshal([]byte(specJSON), &expected)
+	b, err := json.MarshalIndent(spec, "", "  ")
+	if assert.NoError(t, err) {
+		var actual map[string]interface{}
+		err := json.Unmarshal(b, &actual)
+		if assert.NoError(t, err) {
+			assert.EqualValues(t, actual, expected)
+		}
+	}
+}
 
-		Convey("deserialize", func() {
-			actual := Swagger{}
-			err := json.Unmarshal([]byte(specJSON), &actual)
-			So(err, ShouldBeNil)
-			compareSpecs(actual, spec)
-		})
-	})
+func TestSwaggerSpec_Deserialize(t *testing.T) {
+	var actual Swagger
+	err := json.Unmarshal([]byte(specJSON), &actual)
+	if assert.NoError(t, err) {
+		assert.EqualValues(t, actual, spec)
+	}
+}
+
+func TestVendorExtensionStringSlice(t *testing.T) {
+	var actual Swagger
+	err := json.Unmarshal([]byte(specJSON), &actual)
+	if assert.NoError(t, err) {
+		schemes, ok := actual.Extensions.GetStringSlice("x-schemes")
+		if assert.True(t, ok) {
+			assert.EqualValues(t, []string{"unix", "amqp"}, schemes)
+		}
+	}
 }

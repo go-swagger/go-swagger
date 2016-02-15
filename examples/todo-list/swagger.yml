@@ -16,6 +16,8 @@ produces:
 schemes:
   - http
   - https
+x-schemes:
+  - unix
 paths:
   /:
     get:
