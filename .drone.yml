@@ -61,6 +61,9 @@ publish:
     token: $$GITHUB_TOKEN
     threshold: 60
     must_increase: true
+    when:
+      matrix:
+        GO_VERSION: "1.6"
 
   github_release:
     api_key: $$GITHUB_TOKEN
