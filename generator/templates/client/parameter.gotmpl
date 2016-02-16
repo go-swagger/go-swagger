@@ -83,12 +83,16 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r client.
   }
   {{ else if .IsFormParam }}
   {{ if .IsFileParam }}
+  {{ if .IsNullable}}
   if {{ .ValueExpression }} != nil {
+  {{end}}
     // form file param {{ .Name }}
-    if err := r.SetFileParam({{ printf "%q" .Name }}, {{ .ValueExpression }}); err != nil {
+    if err := r.SetFileParam({{ printf "%q" .Name }}, {{ if not .IsNullable}}&{{end}}{{ .ValueExpression }}); err != nil {
       return err
     }
+  {{ if .IsNullable}}
   }
+  {{ end }}
   {{ else }}
   // form param {{ .Name }}
   {{ if .IsNullable }}var fr{{ pascalize .Name }} {{ .GoType }}
