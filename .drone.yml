@@ -56,11 +56,11 @@ notify:
     username: drone
 
 publish:
-  # coverage:
-  #   server: https://coverage.vmware.run
-  #   token: $$GITHUB_TOKEN
-  #   threshold: 60
-  #   must_increase: true
+  coverage:
+    server: https://coverage.vmware.run
+    token: $$GITHUB_TOKEN
+    threshold: 60
+    must_increase: true
 
   github_release:
     api_key: $$GITHUB_TOKEN
