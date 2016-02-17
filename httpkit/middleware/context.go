@@ -222,7 +222,7 @@ func (c *Context) BindValidRequest(request *http.Request, route *MatchedRoute, b
 
 	// check and validate the response format
 	if len(res) == 0 && httpkit.NeedsContentType(request.Method) {
-		if str := NegotiateContentType(request, route.Produces, ""); str == "" {
+		if str := NegotiateContentType(request, route.Produces, "*/*"); str == "" {
 			res = append(res, errors.InvalidResponseFormat(request.Header.Get(httpkit.HeaderAccept), route.Produces))
 		}
 	}
