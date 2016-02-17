@@ -38,6 +38,14 @@ func (s *stubOperationHandler) ParameterModel() interface{} {
 func (s *stubOperationHandler) Handle(params interface{}) (interface{}, error) {
 	return nil, nil
 }
+
+type testBinder struct {
+}
+
+func (t *testBinder) BindRequest(r *http.Request, m *MatchedRoute) error {
+	return nil
+}
+
 func TestContentType_Issue264(t *testing.T) {
 	swspec, err := spec.Load("../../fixtures/bugs/264/swagger.yml")
 	if assert.NoError(t, err) {
@@ -119,13 +127,35 @@ func TestContextAuthorize(t *testing.T) {
 	assert.Equal(t, err, rr)
 }
 
+func TestContextNegotiateContentType(t *testing.T) {
+	spec, api := petstore.NewAPI(t)
+	ctx := NewContext(spec, api, nil)
+	ctx.router = DefaultRouter(spec, ctx.api)
+
+	request, _ := http.NewRequest("POST", "/pets", nil)
+	// request.Header.Add("Accept", "*/*")
+	request.Header.Add("content-type", "text/html")
+
+	v, ok := context.GetOk(request, ctxBoundParams)
+	assert.False(t, ok)
+	assert.Nil(t, v)
+
+	ri, _ := ctx.RouteInfo(request)
+
+	res := NegotiateContentType(request, ri.Produces, "")
+	assert.Equal(t, "", res)
+
+	res2 := NegotiateContentType(request, ri.Produces, "text/plain")
+	assert.Equal(t, "text/plain", res2)
+}
+
 func TestContextBindAndValidate(t *testing.T) {
 	spec, api := petstore.NewAPI(t)
 	ctx := NewContext(spec, api, nil)
 	ctx.router = DefaultRouter(spec, ctx.api)
 
 	request, _ := http.NewRequest("POST", "/pets", nil)
-	request.Header.Add("Accept", "*/*")
+	// request.Header.Add("Accept", "*/*")
 	request.Header.Add("content-type", "text/html")
 
 	v, ok := context.GetOk(request, ctxBoundParams)

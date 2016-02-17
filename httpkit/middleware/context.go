@@ -207,6 +207,7 @@ func (c *Context) RequiredProduces() []string {
 func (c *Context) BindValidRequest(request *http.Request, route *MatchedRoute, binder RequestBinder) error {
 	var res []error
 
+	requestContentType := "*/*"
 	// check and validate content type, select consumer
 	if httpkit.CanHaveBody(request.Method) {
 		ct, _, err := httpkit.ContentType(request.Header, httpkit.IsDelete(request.Method))
@@ -217,12 +218,13 @@ func (c *Context) BindValidRequest(request *http.Request, route *MatchedRoute, b
 				res = append(res, err)
 			}
 			route.Consumer = route.Consumers[ct]
+			requestContentType = ct
 		}
 	}
 
 	// check and validate the response format
 	if len(res) == 0 && httpkit.NeedsContentType(request.Method) {
-		if str := NegotiateContentType(request, route.Produces, "*/*"); str == "" {
+		if str := NegotiateContentType(request, route.Produces, requestContentType); str == "" {
 			res = append(res, errors.InvalidResponseFormat(request.Header.Get(httpkit.HeaderAccept), route.Produces))
 		}
 	}
