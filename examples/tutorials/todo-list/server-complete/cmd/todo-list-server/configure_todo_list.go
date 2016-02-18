@@ -34,8 +34,9 @@ func addItem(item *models.Item) error {
 	itemsLock.Lock()
 	defer itemsLock.Unlock()
 
-	item.ID = newItemID()
-	items[item.ID] = item
+	newID := newItemID()
+	item.ID = &newID
+	items[newID] = item
 
 	return nil
 }
@@ -53,7 +54,7 @@ func updateItem(id int64, item *models.Item) error {
 		return errors.NotFound("not found: item %d", id)
 	}
 
-	item.ID = id
+	item.ID = &id
 	items[id] = item
 	return nil
 }
@@ -94,14 +95,14 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 
 	api.TodosAddOneHandler = todos.AddOneHandlerFunc(func(params todos.AddOneParams) middleware.Responder {
 		if err := addItem(params.Body); err != nil {
-			return todos.NewAddOneDefault(500).WithPayload(&models.Error{Code: 500, Message: err.Error()})
+			return todos.NewAddOneDefault(500).WithPayload(&models.Error{Code: swag.Int64(500), Message: err.Error()})
 		}
 		return todos.NewAddOneCreated().WithPayload(params.Body)
 	})
 
 	api.TodosDestroyOneHandler = todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams) middleware.Responder {
 		if err := deleteItem(params.ID); err != nil {
-			return todos.NewDestroyOneDefault(500).WithPayload(&models.Error{Code: 500, Message: err.Error()})
+			return todos.NewDestroyOneDefault(500).WithPayload(&models.Error{Code: swag.Int64(500), Message: err.Error()})
 		}
 		return todos.NewDestroyOneNoContent()
 	})
@@ -120,7 +121,7 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 
 	api.TodosUpdateOneHandler = todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams) middleware.Responder {
 		if err := updateItem(params.ID, params.Body); err != nil {
-			return todos.NewUpdateOneDefault(500).WithPayload(&models.Error{Code: 500, Message: err.Error()})
+			return todos.NewUpdateOneDefault(500).WithPayload(&models.Error{Code: swag.Int64(500), Message: err.Error()})
 		}
 		return todos.NewUpdateOneOK().WithPayload(params.Body)
 	})
