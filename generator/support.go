@@ -33,7 +33,6 @@ import (
 
 // GenerateServer generates a server application
 func GenerateServer(name string, modelNames, operationIDs []string, opts GenOpts) error {
-
 	generator, err := newAppGenerator(name, modelNames, operationIDs, &opts)
 	if err != nil {
 		return err
