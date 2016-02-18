@@ -31,7 +31,7 @@ type Milestone struct {
 	This property is optional, but when present it lets people know when they can expect this milestone to be completed.
 
 	*/
-	DueDate strfmt.Date `json:"dueDate,omitempty"`
+	DueDate *strfmt.Date `json:"dueDate,omitempty"`
 
 	/* The name of the milestone.
 
@@ -97,15 +97,15 @@ type MilestoneStats struct {
 
 	/* The closed issues.
 	 */
-	Closed int32 `json:"closed,omitempty"`
+	Closed *int32 `json:"closed,omitempty"`
 
 	/* The remaining open issues.
 	 */
-	Open int32 `json:"open,omitempty"`
+	Open *int32 `json:"open,omitempty"`
 
 	/* The total number of issues for this milestone.
 	 */
-	Total int32 `json:"total,omitempty"`
+	Total *int32 `json:"total,omitempty"`
 }
 
 // Validate validates this milestone stats

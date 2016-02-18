@@ -45,7 +45,11 @@ type UploadFileParams struct {
 func (o *UploadFileParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
-		return err
+		if err != http.ErrNotMultipart {
+			return err
+		} else if err := r.ParseForm(); err != nil {
+			return err
+		}
 	}
 	fds := httpkit.Values(r.Form)
 

@@ -83,10 +83,12 @@ func (o *UploadTaskFileParams) WriteToRequest(r client.Request, reg strfmt.Regis
 	if o.File != nil {
 
 		if o.File != nil {
+
 			// form file param file
 			if err := r.SetFileParam("file", o.File); err != nil {
 				return err
 			}
+
 		}
 
 	}

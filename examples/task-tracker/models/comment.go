@@ -33,7 +33,7 @@ type Comment struct {
 
 	Read Only: true
 	*/
-	CreatedAt strfmt.DateTime `json:"createdAt,omitempty"`
+	CreatedAt *strfmt.DateTime `json:"createdAt,omitempty"`
 
 	/* User user
 

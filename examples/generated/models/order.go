@@ -24,19 +24,19 @@ type Order struct {
 
 	/* ID id
 	 */
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	/* PetID pet id
 	 */
-	PetID int64 `json:"petId,omitempty"`
+	PetID *int64 `json:"petId,omitempty"`
 
 	/* Quantity quantity
 	 */
-	Quantity int32 `json:"quantity,omitempty"`
+	Quantity *int32 `json:"quantity,omitempty"`
 
 	/* ShipDate ship date
 	 */
-	ShipDate strfmt.DateTime `json:"shipDate,omitempty"`
+	ShipDate *strfmt.DateTime `json:"shipDate,omitempty"`
 
 	/* Order Status
 	 */

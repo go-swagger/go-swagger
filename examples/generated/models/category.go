@@ -13,7 +13,7 @@ type Category struct {
 
 	/* ID id
 	 */
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	/* Name name
 	 */

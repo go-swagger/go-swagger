@@ -44,7 +44,7 @@ type Task struct {
 
 	Read Only: true
 	*/
-	LastUpdated strfmt.DateTime `json:"lastUpdated,omitempty"`
+	LastUpdated *strfmt.DateTime `json:"lastUpdated,omitempty"`
 
 	/* LastUpdatedBy last updated by
 	 */
@@ -165,7 +165,7 @@ type TaskAttachmentsAnon struct {
 
 	Read Only: true
 	*/
-	URL strfmt.URI `json:"url,omitempty"`
+	URL *strfmt.URI `json:"url,omitempty"`
 }
 
 // Validate validates this task attachments anon

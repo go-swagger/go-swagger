@@ -27,7 +27,7 @@ type Error struct {
 
 	/* an optional url for getting more help about this error
 	 */
-	HelpURL strfmt.URI `json:"helpUrl,omitempty"`
+	HelpURL *strfmt.URI `json:"helpUrl,omitempty"`
 
 	/* a human readable version of the error
 

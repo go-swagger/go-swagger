@@ -10,7 +10,7 @@ type APIResponse struct {
 
 	/* Code code
 	 */
-	Code int32 `json:"code,omitempty"`
+	Code *int32 `json:"code,omitempty"`
 
 	/* Message message
 	 */

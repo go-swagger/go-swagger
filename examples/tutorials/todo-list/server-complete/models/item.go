@@ -30,7 +30,7 @@ type Item struct {
 
 	Read Only: true
 	*/
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 }
 
 // Validate validates this item

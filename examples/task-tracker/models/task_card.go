@@ -39,7 +39,7 @@ type TaskCard struct {
 	Maximum: 27
 	Multiple Of: 3
 	*/
-	Effort int32 `json:"effort,omitempty"`
+	Effort *int32 `json:"effort,omitempty"`
 
 	/* The id of the task.
 
@@ -47,7 +47,7 @@ type TaskCard struct {
 
 	Read Only: true
 	*/
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	/* the karma donated to this item.
 
@@ -71,14 +71,14 @@ type TaskCard struct {
 
 	Read Only: true
 	*/
-	ReportedAt strfmt.DateTime `json:"reportedAt,omitempty"`
+	ReportedAt *strfmt.DateTime `json:"reportedAt,omitempty"`
 
 	/* Severity severity
 
 	Maximum: 5
 	Minimum: 1
 	*/
-	Severity int32 `json:"severity,omitempty"`
+	Severity *int32 `json:"severity,omitempty"`
 
 	/* the status of the issue
 
@@ -158,11 +158,11 @@ func (m *TaskCard) validateEffort(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.Maximum("effort", "body", float64(m.Effort), 27, false); err != nil {
+	if err := validate.Maximum("effort", "body", float64(*m.Effort), 27, false); err != nil {
 		return err
 	}
 
-	if err := validate.MultipleOf("effort", "body", float64(m.Effort), 3); err != nil {
+	if err := validate.MultipleOf("effort", "body", float64(*m.Effort), 3); err != nil {
 		return err
 	}
 
@@ -192,11 +192,11 @@ func (m *TaskCard) validateSeverity(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.Minimum("severity", "body", float64(m.Severity), 1, false); err != nil {
+	if err := validate.Minimum("severity", "body", float64(*m.Severity), 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.Maximum("severity", "body", float64(m.Severity), 5, false); err != nil {
+	if err := validate.Maximum("severity", "body", float64(*m.Severity), 5, false); err != nil {
 		return err
 	}
 

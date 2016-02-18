@@ -21,7 +21,7 @@ type User struct {
 
 	/* ID id
 	 */
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	/* LastName last name
 	 */
@@ -37,7 +37,7 @@ type User struct {
 
 	/* User Status
 	 */
-	UserStatus int32 `json:"userStatus,omitempty"`
+	UserStatus *int32 `json:"userStatus,omitempty"`
 
 	/* Username username
 	 */

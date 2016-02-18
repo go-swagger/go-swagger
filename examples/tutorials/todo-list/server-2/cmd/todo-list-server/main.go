@@ -37,6 +37,7 @@ func main() {
 
 	api := operations.NewTodoListAPI(swaggerSpec)
 	handler := configureAPI(api)
+	defer api.ServerShutdown()
 
 	for _, optsGroup := range api.CommandLineOptionsGroups {
 		parser.AddGroup(optsGroup.ShortDescription, optsGroup.LongDescription, optsGroup.Options)
@@ -51,22 +52,14 @@ func main() {
 
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", opts.Host, opts.Port))
 	if err != nil {
-		api.ServerShutdown()
 		log.Fatalln(err)
 	}
 
 	fmt.Printf("serving todo list at http://%s\n", listener.Addr())
 	if err := httpServer.Serve(tcpKeepAliveListener{listener.(*net.TCPListener)}); err != nil {
-		api.ServerShutdown()
 		log.Fatalln(err)
 	}
 
-	go func() {
-
-		<-httpServer.StopChan()
-
-		api.ServerShutdown()
-	}()
 }
 
 // tcpKeepAliveListener is copied from the stdlib net/http package
