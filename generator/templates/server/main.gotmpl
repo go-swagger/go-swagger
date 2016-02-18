@@ -61,11 +61,11 @@ func main() {
   }
 
   fmt.Printf("serving {{ humanize .Name }} at unix://%s\n", opts.SocketPath)
-  go func(){
-    if err := domainSocket.Serve(domSockListener); err != nil {
+  {{ if or (hasInsecure .Schemes) (hasSecure .Schemes) }}go func(){
+  {{ end }}if err := domainSocket.Serve(domSockListener); err != nil {
       log.Fatalln(err)
     }
-  }()
+  {{ if or (hasInsecure .Schemes) (hasSecure .Schemes) }}}(){{ end }}
   {{ end }}{{ if (hasInsecure .Schemes) }}
 	httpServer := &graceful.Server{Server: new(http.Server)}
 	httpServer.Handler = handler
@@ -76,11 +76,11 @@ func main() {
 	}
 
 	fmt.Printf("serving {{ humanize .Name }} at http://%s\n", listener.Addr())
-  go func() {
-		if err := httpServer.Serve(tcpKeepAliveListener{listener.(*net.TCPListener)}); err != nil {
+  {{ if (hasSecure .Schemes) }}go func() {
+		{{ end }}if err := httpServer.Serve(tcpKeepAliveListener{listener.(*net.TCPListener)}); err != nil {
 			log.Fatalln(err)
 		}
-  }()
+  {{ if (hasSecure .Schemes) }}}(){{ end }}
 {{ end }}{{ if (hasSecure .Schemes) }}
 	httpsServer := &graceful.Server{Server: new(http.Server)}
 	httpsServer.Handler = handler
