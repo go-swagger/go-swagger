@@ -97,7 +97,6 @@ func compileTemplates() {
 
 	operationTemplate = template.Must(templates.Get("serverOperation"))
 	builderTemplate = template.Must(templates.Get("serverBuilder"))
-
 	serverTemplate = template.Must(templates.Get("serverServer"))
 
 	configureAPITemplate = template.Must(templates.Get("serverConfigureapi"))
