@@ -287,6 +287,7 @@ func (g GenOperations) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
 // GenApp represents all the meta data needed to generate an application
 // from a swagger spec
 type GenApp struct {
+	APIPackage          string
 	Package             string
 	ReceiverName        string
 	Name                string

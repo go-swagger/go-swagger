@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x -e -o pipefail
+set -e -o pipefail
 
 if [ ! -f `which swagger` ]; then
   echo "can't find swagger in the PATH"
