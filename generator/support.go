@@ -518,7 +518,11 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	var genMods []GenDefinition
 	importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ModelsPackage))
-	defaultImports = append(defaultImports, importPath)
+	defaultImports = append(
+		defaultImports,
+		importPath,
+		filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage)),
+	)
 
 	log.Println("planning definitions")
 	for mn, m := range a.Models {
