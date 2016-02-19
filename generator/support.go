@@ -242,16 +242,6 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 	return nil
 }
 
-func copyAppendToSlice(source []string, items ...string) (result []string) {
-	for _, v := range source {
-		result = append(result, v)
-	}
-	for _, v := range items {
-		result = append(result, v)
-	}
-	return
-}
-
 func (a *appGenerator) generateConfigureAPI(app *GenApp) error {
 	pth := filepath.Join(a.Target, app.APIPackage)
 	nm := "Configure" + swag.ToGoName(app.Name)
@@ -286,10 +276,6 @@ func (a *appGenerator) generateEmbeddedSwaggerJSON(app *GenApp) error {
 	buf := bytes.NewBuffer(nil)
 	appc := *app
 	appc.Package = app.APIPackage
-	appc.DefaultImports = copyAppendToSlice(
-		app.DefaultImports,
-		filepath.ToSlash(filepath.Join(a.Target, a.ServerPackage, a.APIPackage)),
-	)
 	if err := embeddedSpecTemplate.Execute(buf, &appc); err != nil {
 		return err
 	}
@@ -532,10 +518,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	var genMods []GenDefinition
 	importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ModelsPackage))
-	defaultImports = append(
-		defaultImports,
-		importPath,
-	)
+	defaultImports = append(defaultImports, importPath)
 
 	log.Println("planning definitions")
 	for mn, m := range a.Models {
