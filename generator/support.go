@@ -288,7 +288,7 @@ func (a *appGenerator) generateEmbeddedSwaggerJSON(app *GenApp) error {
 	appc.Package = app.APIPackage
 	appc.DefaultImports = copyAppendToSlice(
 		app.DefaultImports,
-		filepath.ToSlash(filepath.Join(a.Target, a.ServerPackage, a.APIPackage))
+		filepath.ToSlash(filepath.Join(a.Target, a.ServerPackage, a.APIPackage)),
 	)
 	if err := embeddedSpecTemplate.Execute(buf, &appc); err != nil {
 		return err
