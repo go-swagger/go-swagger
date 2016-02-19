@@ -1,4 +1,4 @@
-/*Package main {{ if .Info.Title }}{{ .Info.Title }}{{ else }}{{ humanize .Name }}{{end}}{{ if .Info.Description }}
+/*Package {{ .APIPackage }} {{ if .Info.Title }}{{ .Info.Title }}{{ else }}{{ humanize .Name }}{{end}}{{ if .Info.Description }}
 
 {{ .Info.Description }}
 {{ end }}{{ if .Info.TermsOfService }}
@@ -25,6 +25,4 @@ Terms Of Service:
 {{ end }}
 swagger:meta
 */
-package main
-
-
+package {{ .APIPackage }}
