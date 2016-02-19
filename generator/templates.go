@@ -31,7 +31,6 @@ var (
 	parameterTemplate      *template.Template
 	responsesTemplate      *template.Template
 	builderTemplate        *template.Template
-	serverTemplate         *template.Template
 	mainTemplate           *template.Template
 	mainDocTemplate        *template.Template
 	embeddedSpecTemplate   *template.Template
@@ -63,7 +62,6 @@ var assets = map[string][]byte{
 	"server/responses.gotmpl":    MustAsset("templates/server/responses.gotmpl"),
 	"server/operation.gotmpl":    MustAsset("templates/server/operation.gotmpl"),
 	"server/builder.gotmpl":      MustAsset("templates/server/builder.gotmpl"),
-	"server/server.gotmpl":       MustAsset("templates/server/server.gotmpl"),
 	"server/configureapi.gotmpl": MustAsset("templates/server/configureapi.gotmpl"),
 	"server/main.gotmpl":         MustAsset("templates/server/main.gotmpl"),
 	"server/doc.gotmpl":          MustAsset("templates/server/doc.gotmpl"),
@@ -97,8 +95,6 @@ func compileTemplates() {
 
 	operationTemplate = template.Must(templates.Get("serverOperation"))
 	builderTemplate = template.Must(templates.Get("serverBuilder"))
-	serverTemplate = template.Must(templates.Get("serverServer"))
-
 	configureAPITemplate = template.Must(templates.Get("serverConfigureapi"))
 	mainTemplate = template.Must(templates.Get("serverMain"))
 	mainDocTemplate = template.Must(templates.Get("serverDoc"))

@@ -216,10 +216,6 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 		return err
 	}
 
-	if err := a.generateAPIServer(app); err != nil {
-		return err
-	}
-
 	importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage))
 	app.DefaultImports = append(app.DefaultImports, importPath)
 
@@ -243,7 +239,7 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 }
 
 func (a *appGenerator) generateConfigureAPI(app *GenApp) error {
-	pth := filepath.Join(a.Target, app.APIPackage)
+	pth := filepath.Join(a.Target, "cmd", swag.ToCommandName(swag.ToGoName(app.Name)+"Server"))
 	nm := "Configure" + swag.ToGoName(app.Name)
 	if fileExists(pth, nm) {
 		log.Println("skipped (already exists) configure api template:", app.Package+".Configure"+swag.ToGoName(app.Name))
@@ -275,12 +271,12 @@ func (a *appGenerator) generateMain(app *GenApp) error {
 func (a *appGenerator) generateEmbeddedSwaggerJSON(app *GenApp) error {
 	buf := bytes.NewBuffer(nil)
 	appc := *app
-	appc.Package = app.APIPackage
+	appc.Package = "main"
 	if err := embeddedSpecTemplate.Execute(buf, &appc); err != nil {
 		return err
 	}
-	log.Println("rendered embedded Swagger JSON template:", app.APIPackage+"."+swag.ToGoName(app.Name))
-	return writeToFile(filepath.Join(a.Target, a.ServerPackage), "embedded_spec", buf.Bytes())
+	log.Println("rendered embedded Swagger JSON template:", "server."+swag.ToGoName(app.Name))
+	return writeToFile(filepath.Join(a.Target, "cmd", swag.ToCommandName(swag.ToGoName(app.Name)+"Server")), "embedded_spec", buf.Bytes())
 }
 
 func (a *appGenerator) generateAPIBuilder(app *GenApp) error {
@@ -292,22 +288,13 @@ func (a *appGenerator) generateAPIBuilder(app *GenApp) error {
 	return writeToFile(filepath.Join(a.Target, a.ServerPackage, app.Package), swag.ToGoName(app.Name)+"Api", buf.Bytes())
 }
 
-func (a *appGenerator) generateAPIServer(app *GenApp) error {
-	buf := bytes.NewBuffer(nil)
-	if err := serverTemplate.Execute(buf, app); err != nil {
-		return err
-	}
-	log.Println("rendered server template:", app.APIPackage+".Server")
-	return writeToFile(filepath.Join(a.Target, a.ServerPackage), "Server", buf.Bytes())
-}
-
 func (a *appGenerator) generateDoc(app *GenApp) error {
 	buf := bytes.NewBuffer(nil)
 	if err := mainDocTemplate.Execute(buf, app); err != nil {
 		return err
 	}
 	log.Println("rendered doc template:", app.Package+"."+swag.ToGoName(app.Name))
-	return writeToFile(filepath.Join(a.Target, a.ServerPackage), "Doc", buf.Bytes())
+	return writeToFile(filepath.Join(a.Target, "cmd", swag.ToCommandName(swag.ToGoName(app.Name)+"Server")), "Doc", buf.Bytes())
 }
 
 var mediaTypeNames = map[*regexp.Regexp]string{
@@ -643,7 +630,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	}
 
 	return GenApp{
-		APIPackage:          a.ServerPackage,
 		Package:             a.Package,
 		ReceiverName:        receiver,
 		Name:                a.Name,
@@ -670,7 +656,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 // GenApp represents all the meta data needed to generate an application
 // from a swagger spec
 type GenApp struct {
-	APIPackage          string
 	Package             string
 	ReceiverName        string
 	Name                string
