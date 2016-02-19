@@ -28,23 +28,23 @@ func NewServer(api *operations.{{ pascalize .Name }}API) *Server {
 }
 
 // Server for the {{ humanize .Name }} API
-type Server struct {
+type Server struct { {{ if (contains .ExtraSchemes "unix") }}
 	SocketPath flags.Filename `long:"socket-path" description:"the unix socket to listen on" default:"/var/run/{{ dasherize .Name }}.sock"`
-
+{{ end }}{{ if (hasInsecure .Schemes) }}
 	Host       string         `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
 	Port       int            `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`
-
+{{ end }}{{ if (hasSecure .Schemes) }}
 	TLSHost           string         `long:"tls-host" description:"the IP to listen on for tls, when not specified it's the same as --host" env:"TLS_HOST"`
 	TLSPort           int            `long:"tls-port" description:"the port to listen on for secure connections, defaults to a random value" env:"TLS_PORT"`
 	TLSCertificate    flags.Filename `long:"tls-certificate" description:"the certificate to use for secure connections" required:"true" env:"TLS_CERTIFICATE"`
 	TLSCertificateKey flags.Filename `long:"tls-key" description:"the private key to use for secure conections" required:"true" env:"TLS_PRIVATE_KEY"`
-
+{{ end }}
 	api               *operations.{{ pascalize .Name }}API
 	handler           http.Handler
 }
 
 // Serve the api
-func (s *Server) Serve() error {
+func (s *Server) Serve() error {{{ if (contains .ExtraSchemes "unix") }}
 	domainSocket := &graceful.Server{Server: new(http.Server)}
 	domainSocket.Handler = s.handler
 	domSockListener, err := net.Listen("unix", string(s.SocketPath))
@@ -53,12 +53,12 @@ func (s *Server) Serve() error {
 	}
 
 	log.Printf("serving {{ humanize .Name }} at unix://%s", s.SocketPath)
-	go func() {
-		if err := domainSocket.Serve(domSockListener); err != nil {
-			log.Fatalln(err)
+	{{ if or (hasInsecure .Schemes) (hasSecure .Schemes) }}go func() {
+	{{ end }}if err := domainSocket.Serve(domSockListener); err != nil {
+			{{ if or (hasInsecure .Schemes) (hasSecure .Schemes) }}log.Fatalln(err){{ else }}return err{{ end }}
 		}
-	}()
-
+	{{ if or (hasInsecure .Schemes) (hasSecure .Schemes) }} }(){{ end }}
+	{{ end }}{{ if (hasInsecure .Schemes) }}
 	httpServer := &graceful.Server{Server: new(http.Server)}
 	httpServer.Handler = s.handler
 
@@ -68,12 +68,12 @@ func (s *Server) Serve() error {
 	}
 
 	log.Printf("serving {{ humanize .Name }} at http://%s", listener.Addr())
-	go func() {
-		if err := httpServer.Serve(tcpKeepAliveListener{listener.(*net.TCPListener)}); err != nil {
-			log.Fatalln(err)
+	{{ if (hasSecure .Schemes) }}go func() {
+		{{ end }}if err := httpServer.Serve(tcpKeepAliveListener{listener.(*net.TCPListener)}); err != nil {
+			{{ if (hasSecure .Schemes) }}log.Fatalln(err){{ else }}return err{{ end }}
 		}
-	}()
-
+  {{ if (hasSecure .Schemes) }}}(){{ end }}
+	{{ end }}{{ if (hasSecure .Schemes) }}
 	httpsServer := &graceful.Server{Server: new(http.Server)}
 	httpsServer.Handler = s.handler
 	httpsServer.TLSConfig = new(tls.Config)
@@ -86,10 +86,11 @@ func (s *Server) Serve() error {
 		return err
 	}
 
+	{{ if (hasInsecure .Schemes) }}
 	if s.TLSHost == "" {
 		s.TLSHost = s.Host
 	}
-	tlsListener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.TLSHost, s.TLSPort))
+	{{ end}}tlsListener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.TLSHost, s.TLSPort))
 	if err != nil {
 		return err
 	}
@@ -99,6 +100,7 @@ func (s *Server) Serve() error {
 	if err := httpsServer.Serve(wrapped); err != nil {
 		return err
 	}
+	{{ end }}
 	return nil
 }
 
