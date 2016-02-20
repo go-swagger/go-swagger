@@ -20,6 +20,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"net/http/cookiejar"
 	"net/http/httptest"
 	"net/url"
 	"testing"
@@ -220,6 +221,62 @@ func TestRuntime_CustomTransport(t *testing.T) {
 		actual := res.([]task)
 		assert.EqualValues(t, result, actual)
 	}
+}
+
+func TestRuntime_CustomCookieJar(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		authenticated := false
+		for _, cookie := range req.Cookies() {
+			if cookie.Name == "sessionid" && cookie.Value == "abc" {
+				authenticated = true
+			}
+		}
+		if !authenticated {
+			username, password, ok := req.BasicAuth()
+			if ok && username == "username" && password == "password" {
+				authenticated = true
+				http.SetCookie(rw, &http.Cookie{Name: "sessionid", Value: "abc"})
+			}
+		}
+		if authenticated {
+			rw.Header().Add(httpkit.HeaderContentType, httpkit.JSONMime)
+			rw.WriteHeader(http.StatusOK)
+			jsongen := json.NewEncoder(rw)
+			jsongen.Encode([]task{})
+		} else {
+			rw.WriteHeader(http.StatusUnauthorized)
+		}
+	}))
+	defer server.Close()
+
+	rwrtr := client.RequestWriterFunc(func(req client.Request, _ strfmt.Registry) error {
+		return nil
+	})
+
+	hu, _ := url.Parse(server.URL)
+	runtime := New(hu.Host, "/", []string{"http"})
+	runtime.Jar, _ = cookiejar.New(nil)
+
+	submit := func(authInfo client.AuthInfoWriter) {
+		_, err := runtime.Submit(&client.Operation{
+			ID:          "getTasks",
+			Method:      "GET",
+			PathPattern: "/",
+			Params:      rwrtr,
+			AuthInfo:    authInfo,
+			Reader: client.ResponseReaderFunc(func(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+				if response.Code() == 200 {
+					return nil, nil
+				}
+				return nil, errors.New("Generic error")
+			}),
+		})
+
+		assert.NoError(t, err)
+	}
+
+	submit(BasicAuth("username", "password"))
+	submit(nil)
 }
 
 func TestRuntime_AuthCanary(t *testing.T) {
