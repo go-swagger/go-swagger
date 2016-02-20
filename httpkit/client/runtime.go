@@ -38,6 +38,7 @@ type Runtime struct {
 	Producers             map[string]httpkit.Producer
 
 	Transport http.RoundTripper
+	Jar       http.CookieJar
 	//Spec      *spec.Document
 	Host     string
 	BasePath string
@@ -62,6 +63,7 @@ func New(host, basePath string, schemes []string) *Runtime {
 		httpkit.JSONMime: httpkit.JSONProducer(),
 	}
 	rt.Transport = http.DefaultTransport
+	rt.Jar = nil
 	rt.Host = host
 	rt.BasePath = basePath
 	rt.clientOnce = new(sync.Once)
@@ -147,6 +149,7 @@ func (r *Runtime) Submit(operation *client.Operation) (interface{}, error) {
 	r.clientOnce.Do(func() {
 		r.client = &http.Client{
 			Transport: r.Transport,
+			Jar:       r.Jar,
 		}
 	})
 
