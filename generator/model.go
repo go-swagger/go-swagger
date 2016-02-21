@@ -247,27 +247,6 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 	}, nil
 }
 
-// GenDefinition contains all the properties to generate a
-// defintion from a swagger spec
-type GenDefinition struct {
-	GenSchema
-	Package          string
-	Imports          map[string]string
-	DefaultImports   []string
-	ExtraSchemas     []GenSchema
-	DependsOn        []string
-	IncludeValidator bool
-}
-
-// GenSchemaList is a list of schemas for generation.
-//
-// It can be sorted by name to get a stable struct layout for
-// version control and such
-type GenSchemaList []GenSchema
-
-func (g GenSchemaList) Len() int           { return len(g) }
-func (g GenSchemaList) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
-func (g GenSchemaList) Less(i, j int) bool { return g[i].Name < g[j].Name }
 
 type schemaGenContext struct {
 	Path               string
@@ -1253,71 +1232,4 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		log.Printf("finished gen schema for %q\n", sg.Name)
 	}
 	return nil
-}
-
-// NOTE:
-// untyped data requires a cast somehow to the inner type
-// I wonder if this is still a problem after adding support for tuples
-// and anonymous structs. At that point there is very little that would
-// end up being cast to interface, and if it does it truly is the best guess
-
-// GenSchema contains all the information needed to generate the code
-// for a schema
-type GenSchema struct {
-	resolvedType
-	sharedValidations
-	Example                 string
-	Name                    string
-	Suffix                  string
-	Path                    string
-	ValueExpression         string
-	IndexVar                string
-	KeyVar                  string
-	Title                   string
-	Description             string
-	Location                string
-	ReceiverName            string
-	Items                   *GenSchema
-	AllowsAdditionalItems   bool
-	HasAdditionalItems      bool
-	AdditionalItems         *GenSchema
-	Object                  *GenSchema
-	XMLName                 string
-	Properties              GenSchemaList
-	AllOf                   []GenSchema
-	HasAdditionalProperties bool
-	IsAdditionalProperties  bool
-	AdditionalProperties    *GenSchema
-	ReadOnly                bool
-	IsVirtual               bool
-	IsBaseType              bool
-	HasBaseType             bool
-	IsSubType               bool
-	IsExported              bool
-	DiscriminatorField      string
-	DiscriminatorValue      string
-	Discriminates           map[string]string
-	Parents                 []string
-}
-
-type sharedValidations struct {
-	Required            bool
-	MaxLength           *int64
-	MinLength           *int64
-	Pattern             string
-	MultipleOf          *float64
-	Minimum             *float64
-	Maximum             *float64
-	ExclusiveMinimum    bool
-	ExclusiveMaximum    bool
-	Enum                []interface{}
-	ItemsEnum           []interface{}
-	HasValidations      bool
-	MinItems            *int64
-	MaxItems            *int64
-	UniqueItems         bool
-	HasSliceValidations bool
-	NeedsSize           bool
-	NeedsValidation     bool
-	NeedsRequired       bool
 }

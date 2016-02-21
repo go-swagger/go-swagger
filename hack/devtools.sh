@@ -19,7 +19,7 @@ go get -u -v github.com/kylelemons/godebug/...
 go get -u -v github.com/aktau/github-release
 go get -u -v github.com/xoebus/anderson
 go get -u -v github.com/spf13/hugo
-
+go get -u -v github.com/sqs/goreturns
 
 # install all the linters
 gometalinter --install --update

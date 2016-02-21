@@ -31,7 +31,6 @@ build:
     pull: true
     environment:
       GO15VENDOREXPERIMENT: "1"
-      GITHUB_TOKEN: $$GITHUB_TOKEN
     commands:
       - apt-get update -yqq
       - apt-get install -yqq --no-install-recommends ruby-dev rubygems rpm
@@ -56,14 +55,14 @@ notify:
     username: drone
 
 publish:
-  coverage:
-    server: https://coverage.vmware.run
-    token: $$GITHUB_TOKEN
-    # threshold: 60
-    # must_increase: true
-    when:
-      matrix:
-        GO_VERSION: "1.6"
+  #coverage:
+    #server: https://coverage.vmware.run
+    #token: $$GITHUB_TOKEN
+    ## threshold: 60
+    ## must_increase: true
+    #when:
+      #matrix:
+        #GO_VERSION: "1.6"
 
   github_release:
     api_key: $$GITHUB_TOKEN
