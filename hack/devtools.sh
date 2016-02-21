@@ -20,6 +20,9 @@ go get -u -v github.com/aktau/github-release
 go get -u -v github.com/xoebus/anderson
 go get -u -v github.com/spf13/hugo
 go get -u -v github.com/sqs/goreturns
+go get -u -v github.com/tpng/gopkgs
+go get -u -v github.com/lukehoban/go-outline
+go get -u -v github.com/newhook/go-symbols
 
 # install all the linters
 gometalinter --install --update
