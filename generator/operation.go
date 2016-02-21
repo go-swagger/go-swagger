@@ -59,6 +59,10 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 		if defaultProduces == "" {
 			defaultProduces = "application/json"
 		}
+		defaultConsumes := opts.DefaultConsumes
+		if defaultConsumes == "" {
+			defaultConsumes = "application/json"
+		}
 
 		apiPackage := mangleName(swag.ToFileName(opts.APIPackage), "api")
 		serverPackage := mangleName(swag.ToFileName(opts.ServerPackage), "server")
@@ -296,6 +300,7 @@ type codeGenOpBuilder struct {
 	DefaultImports  []string
 	DefaultScheme   string
 	DefaultProduces string
+	DefaultConsumes string
 	ExtraSchemas    map[string]GenSchema
 	origDefs        map[string]spec.Schema
 }
@@ -378,19 +383,22 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		extra = append(extra, sch)
 	}
 
+	swsp := resolver.Doc.Spec()
 	var extraSchemes []string
 	if ess, ok := operation.Extensions.GetStringSlice("x-schemes"); ok {
 		extraSchemes = append(extraSchemes, ess...)
 	}
 
-	if ess1, ok := resolver.Doc.Spec().Extensions.GetStringSlice("x-schemes"); ok {
+	if ess1, ok := swsp.Extensions.GetStringSlice("x-schemes"); ok {
 		extraSchemes = concatUnique(ess1, extraSchemes)
 	}
 	sort.Strings(extraSchemes)
-	schemes := concatUnique(resolver.Doc.Spec().Schemes, operation.Schemes)
+	schemes := concatUnique(swsp.Schemes, operation.Schemes)
 	sort.Strings(schemes)
-	produces := concatUnique(resolver.Doc.Spec().Produces, operation.Produces)
+	produces := producesOrDefault(operation.Produces, swsp.Produces, b.DefaultProduces)
 	sort.Strings(produces)
+	consumes := producesOrDefault(operation.Consumes, swsp.Consumes, b.DefaultConsumes)
+	sort.Strings(consumes)
 
 	return GenOperation{
 		Package:            b.APIPackage,
@@ -418,16 +426,20 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		SuccessResponse:    successResponse,
 		ExtraSchemas:       extra,
 		Schemes:            schemeOrDefault(schemes, b.DefaultScheme),
-		ProducesMediaTypes: producesOrDefault(produces, b.DefaultProduces),
+		ProducesMediaTypes: produces,
+		ConsumesMediaTypes: consumes,
 		ExtraSchemes:       extraSchemes,
 	}, nil
 }
 
-func producesOrDefault(produces []string, defaultProduces string) []string {
-	if len(produces) == 0 {
-		return []string{defaultProduces}
+func producesOrDefault(produces []string, fallback []string, defaultProduces string) []string {
+	if len(produces) > 0 {
+		return produces
 	}
-	return produces
+	if len(fallback) > 0 {
+		return fallback
+	}
+	return []string{defaultProduces}
 }
 
 func schemeOrDefault(schemes []string, defaultScheme string) []string {

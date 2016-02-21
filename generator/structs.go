@@ -273,6 +273,7 @@ type GenOperation struct {
 	Schemes            []string
 	ExtraSchemes       []string
 	ProducesMediaTypes []string
+	ConsumesMediaTypes []string
 }
 
 // GenOperations represents a list of operations to generate
