@@ -20,10 +20,12 @@ import (
 //go:generate swagger generate server -t ../.. -A {{ pascalize .Name }} -f ./swagger.yml
 
 // NewServer creates a new api {{ humanize .Name }} server
-func NewServer(api *operations.{{ pascalize .Name }}API) *Server {
+func NewServer(api *{{ .Package }}.{{ pascalize .Name }}API) *Server {
 	s := new(Server)
 	s.api = api
-	s.handler = configureAPI(api)
+	if api != nil {
+		s.handler = configureAPI(api)
+	}
 	return s
 }
 
@@ -39,8 +41,20 @@ type Server struct { {{ if (contains .ExtraSchemes "unix") }}
 	TLSCertificate    flags.Filename `long:"tls-certificate" description:"the certificate to use for secure connections" required:"true" env:"TLS_CERTIFICATE"`
 	TLSCertificateKey flags.Filename `long:"tls-key" description:"the private key to use for secure conections" required:"true" env:"TLS_PRIVATE_KEY"` {{ end }}
 
+	{{ if .ExcludeSpec }}Spec flags.Filename `long:"spec" description:"the swagger specification to serve"`{{ end }}
 	api               *operations.{{ pascalize .Name }}API
 	handler           http.Handler
+}
+
+func (s *Server) SetAPI(api *{{ .Package }}.{{ pascalize .Name }}API) {
+	if api == nil {
+		s.api = nil
+		s.handler = nil
+		return
+	}
+	
+	s.api = api
+	s.handler = configureAPI(api)
 }
 
 // Serve the api

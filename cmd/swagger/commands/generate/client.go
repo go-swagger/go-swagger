@@ -49,18 +49,9 @@ func (c *Client) Execute(args []string) error {
 		IncludeResponses:  !c.SkipOperations,
 		TemplateDir:       string(c.TemplateDir),
 	}
-
-	//if !c.SkipModels && (len(c.Models) > 0 || len(c.Operations) == 0) {
-	//if err := generator.GenerateDefinition(c.Models, true, true, opts); err != nil {
-	//return err
-	//}
-	//}
-
-	//if !c.SkipOperations && (len(c.Operations) > 0 || len(c.Models) == 0) {
 	if err := generator.GenerateClient(c.Name, c.Models, c.Operations, opts); err != nil {
 		return err
 	}
-	//}
 
 	return nil
 }
