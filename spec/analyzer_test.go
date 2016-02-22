@@ -68,6 +68,13 @@ func TestAnalyzer(t *testing.T) {
 	op.Parameters = []Parameter{*skipParam}
 	pi.Get = op
 
+	pi2 := PathItem{}
+	pi2.Parameters = []Parameter{*limitParam}
+	op2 := &Operation{}
+	op2.ID = "anotherOperation"
+	op2.Parameters = []Parameter{*skipParam}
+	pi2.Get = op2
+
 	spec := &Swagger{
 		SwaggerProps: SwaggerProps{
 			Consumes: []string{"application/json"},
@@ -83,7 +90,8 @@ func TestAnalyzer(t *testing.T) {
 			Parameters: map[string]Parameter{"format": *formatParam},
 			Paths: &Paths{
 				Paths: map[string]PathItem{
-					"/": pi,
+					"/":      pi,
+					"/items": pi2,
 				},
 			},
 		},
@@ -95,13 +103,23 @@ func TestAnalyzer(t *testing.T) {
 	assert.Len(t, analyzer.operations, 1)
 	assert.Equal(t, analyzer.operations["GET"]["/"], spec.Paths.Paths["/"].Get)
 
-	expected := []string{"application/json", "application/x-yaml"}
+	expected := []string{"application/x-yaml"}
 	sort.Sort(sort.StringSlice(expected))
 	consumes := analyzer.ConsumesFor(spec.Paths.Paths["/"].Get)
 	sort.Sort(sort.StringSlice(consumes))
 	assert.Equal(t, expected, consumes)
 
 	produces := analyzer.ProducesFor(spec.Paths.Paths["/"].Get)
+	sort.Sort(sort.StringSlice(produces))
+	assert.Equal(t, expected, produces)
+
+	expected = []string{"application/json"}
+	sort.Sort(sort.StringSlice(expected))
+	consumes = analyzer.ConsumesFor(spec.Paths.Paths["/items"].Get)
+	sort.Sort(sort.StringSlice(consumes))
+	assert.Equal(t, expected, consumes)
+
+	produces = analyzer.ProducesFor(spec.Paths.Paths["/items"].Get)
 	sort.Sort(sort.StringSlice(produces))
 	assert.Equal(t, expected, produces)
 
@@ -117,7 +135,7 @@ func TestAnalyzer(t *testing.T) {
 	assert.Len(t, parameters, 2)
 
 	operations := analyzer.OperationIDs()
-	assert.Len(t, operations, 1)
+	assert.Len(t, operations, 2)
 
 	producers := analyzer.RequiredProduces()
 	assert.Len(t, producers, 2)
@@ -128,7 +146,7 @@ func TestAnalyzer(t *testing.T) {
 
 	ops := analyzer.Operations()
 	assert.Len(t, ops, 1)
-	assert.Len(t, ops["GET"], 1)
+	assert.Len(t, ops["GET"], 2)
 
 	op, ok := analyzer.OperationFor("get", "/")
 	assert.True(t, ok)
@@ -190,7 +208,7 @@ func TestReferenceAnalysis(t *testing.T) {
 		// responses
 		assertRefExists(t, definitions.responses, "#/paths/~1some~1where~1{id}/get/responses/404")
 
-		//// definitions
+		// definitions
 		assertRefExists(t, definitions.schemas, "#/responses/notFound/schema")
 		assertRefExists(t, definitions.schemas, "#/paths/~1some~1where~1{id}/get/responses/200/schema")
 		assertRefExists(t, definitions.schemas, "#/definitions/tag/properties/audit")

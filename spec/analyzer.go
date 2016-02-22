@@ -282,9 +282,14 @@ func (s *specAnalyzer) SecurityDefinitionsFor(operation *Operation) map[string]S
 // ConsumesFor gets the mediatypes for the operation
 func (s *specAnalyzer) ConsumesFor(operation *Operation) []string {
 	cons := make(map[string]struct{})
-	for k := range s.consumes {
-		cons[k] = struct{}{}
+
+	if len(operation.Consumes) == 0 {
+		for _, k := range s.spec.Consumes {
+			cons[k] = struct{}{}
+		}
+		return s.structMapKeys(cons)
 	}
+
 	for _, c := range operation.Consumes {
 		cons[c] = struct{}{}
 	}
@@ -294,9 +299,14 @@ func (s *specAnalyzer) ConsumesFor(operation *Operation) []string {
 // ProducesFor gets the mediatypes for the operation
 func (s *specAnalyzer) ProducesFor(operation *Operation) []string {
 	prod := make(map[string]struct{})
-	for k := range s.produces {
-		prod[k] = struct{}{}
+
+	if len(operation.Produces) == 0 {
+		for _, k := range s.spec.Produces {
+			prod[k] = struct{}{}
+		}
+		return s.structMapKeys(prod)
 	}
+
 	for _, c := range operation.Produces {
 		prod[c] = struct{}{}
 	}
