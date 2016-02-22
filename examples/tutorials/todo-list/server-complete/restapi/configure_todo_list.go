@@ -1,14 +1,14 @@
-package main
+package restapi
 
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/errors"
-	"github.com/go-swagger/go-swagger/httpkit"
-	"github.com/go-swagger/go-swagger/httpkit/middleware"
+	errors "github.com/go-swagger/go-swagger/errors"
+	httpkit "github.com/go-swagger/go-swagger/httpkit"
+	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
 
-	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-2/restapi/operations"
-	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-2/restapi/operations/todos"
+	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete/restapi/operations"
+	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete/restapi/operations/todos"
 )
 
 // This file is safe to edit. Once it exists it will not be overwritten

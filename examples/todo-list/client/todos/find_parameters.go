@@ -6,8 +6,9 @@ package todos
 import (
 	"github.com/go-swagger/go-swagger/client"
 	"github.com/go-swagger/go-swagger/errors"
-	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/go-swagger/go-swagger/swag"
+
+	strfmt "github.com/go-swagger/go-swagger/strfmt"
 )
 
 // NewFindParams creates a new FindParams object

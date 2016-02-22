@@ -11,23 +11,21 @@ import (
 	flags "github.com/jessevdk/go-flags"
 	graceful "github.com/tylerb/graceful"
 
-	"github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations"
+	"github.com/go-swagger/go-swagger/examples/task-tracker/restapi/operations"
 )
 
-//go:generate swagger generate server -t ../.. -A TodoList -f ./swagger.yml
+//go:generate swagger generate server -t ../.. -A TaskTracker -f ./swagger.yml
 
-// NewServer creates a new api todo list server
-func NewServer(api *operations.TodoListAPI) *Server {
+// NewServer creates a new api task tracker server
+func NewServer(api *operations.TaskTrackerAPI) *Server {
 	s := new(Server)
 	s.api = api
 	s.handler = configureAPI(api)
 	return s
 }
 
-// Server for the todo list API
+// Server for the task tracker API
 type Server struct {
-	SocketPath flags.Filename `long:"socket-path" description:"the unix socket to listen on" default:"/var/run/todo-list.sock"`
-
 	Host string `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
 	Port int    `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`
 
@@ -36,26 +34,12 @@ type Server struct {
 	TLSCertificate    flags.Filename `long:"tls-certificate" description:"the certificate to use for secure connections" required:"true" env:"TLS_CERTIFICATE"`
 	TLSCertificateKey flags.Filename `long:"tls-key" description:"the private key to use for secure conections" required:"true" env:"TLS_PRIVATE_KEY"`
 
-	api     *operations.TodoListAPI
+	api     *operations.TaskTrackerAPI
 	handler http.Handler
 }
 
 // Serve the api
 func (s *Server) Serve() (err error) {
-
-	domainSocket := &graceful.Server{Server: new(http.Server)}
-	domainSocket.Handler = s.handler
-	domSockListener, err := net.Listen("unix", string(s.SocketPath))
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("serving todo list at unix://%s\n", s.SocketPath)
-	go func() {
-		if err := domainSocket.Serve(domSockListener); err != nil {
-			log.Fatalln(err)
-		}
-	}()
 
 	httpServer := &graceful.Server{Server: new(http.Server)}
 	httpServer.Handler = s.handler
@@ -65,7 +49,7 @@ func (s *Server) Serve() (err error) {
 		return err
 	}
 
-	fmt.Printf("serving todo list at http://%s\n", listener.Addr())
+	fmt.Printf("serving task tracker at http://%s\n", listener.Addr())
 	go func() {
 		if err := httpServer.Serve(tcpKeepAliveListener{listener.(*net.TCPListener)}); err != nil {
 			log.Fatalln(err)
@@ -92,7 +76,7 @@ func (s *Server) Serve() (err error) {
 		return err
 	}
 
-	fmt.Printf("serving todo list at https://%s\n", tlsListener.Addr())
+	fmt.Printf("serving task tracker at https://%s\n", tlsListener.Addr())
 	wrapped := tls.NewListener(tcpKeepAliveListener{tlsListener.(*net.TCPListener)}, httpsServer.TLSConfig)
 	if err := httpsServer.Serve(wrapped); err != nil {
 		return err

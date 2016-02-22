@@ -8,7 +8,8 @@ import (
 
 	"github.com/go-swagger/go-swagger/client"
 	"github.com/go-swagger/go-swagger/httpkit"
-	"github.com/go-swagger/go-swagger/strfmt"
+
+	strfmt "github.com/go-swagger/go-swagger/strfmt"
 )
 
 // CreateTaskReader is a Reader for the CreateTask structure.

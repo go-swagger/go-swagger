@@ -6,7 +6,7 @@ package tasks
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/httpkit/middleware"
+	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
 )
 
 // GetTaskDetailsHandlerFunc turns a function with the right signature into a get task details handler

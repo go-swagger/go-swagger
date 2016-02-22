@@ -6,7 +6,8 @@ package todos
 import (
 	"github.com/go-swagger/go-swagger/client"
 	"github.com/go-swagger/go-swagger/errors"
-	"github.com/go-swagger/go-swagger/strfmt"
+
+	strfmt "github.com/go-swagger/go-swagger/strfmt"
 )
 
 // NewDestroyOneParams creates a new DestroyOneParams object

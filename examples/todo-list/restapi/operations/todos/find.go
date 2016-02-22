@@ -6,7 +6,7 @@ package todos
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/httpkit/middleware"
+	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
 )
 
 // FindHandlerFunc turns a function with the right signature into a find handler

@@ -7,7 +7,8 @@ import (
 	"fmt"
 
 	"github.com/go-swagger/go-swagger/client"
-	"github.com/go-swagger/go-swagger/strfmt"
+
+	strfmt "github.com/go-swagger/go-swagger/strfmt"
 )
 
 // New creates a new todos API client.

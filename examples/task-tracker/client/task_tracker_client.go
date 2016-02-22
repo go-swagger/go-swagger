@@ -6,7 +6,8 @@ package operations
 import (
 	"github.com/go-swagger/go-swagger/client"
 	httptransport "github.com/go-swagger/go-swagger/httpkit/client"
-	"github.com/go-swagger/go-swagger/strfmt"
+
+	strfmt "github.com/go-swagger/go-swagger/strfmt"
 
 	"github.com/go-swagger/go-swagger/examples/task-tracker/client/tasks"
 )
@@ -19,7 +20,7 @@ func NewHTTPClient(formats strfmt.Registry) *TaskTracker {
 	if formats == nil {
 		formats = strfmt.Default
 	}
-	transport := httptransport.New("localhost:8322", "/", []string{"https", "http"})
+	transport := httptransport.New("localhost:8322", "/", []string{"http", "https"})
 	return New(transport, formats)
 }
 

@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-swagger/go-swagger/httpkit"
-	"github.com/go-swagger/go-swagger/httpkit/middleware"
-	"github.com/go-swagger/go-swagger/spec"
-	"github.com/go-swagger/go-swagger/strfmt"
+	httpkit "github.com/go-swagger/go-swagger/httpkit"
+	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
+	spec "github.com/go-swagger/go-swagger/spec"
+	strfmt "github.com/go-swagger/go-swagger/strfmt"
 	"github.com/go-swagger/go-swagger/swag"
 
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-2/restapi/operations/todos"
