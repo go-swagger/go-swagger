@@ -309,6 +309,7 @@ type GenApp struct {
 	Operations          GenOperations
 	OperationGroups     GenOperationGroups
 	SwaggerJSON         string
+	ExcludeSpec         bool
 }
 
 // GenSerGroup represents a group of serializers, most likely this is a media type to a list of

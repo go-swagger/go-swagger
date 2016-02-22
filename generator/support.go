@@ -212,8 +212,10 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 		app = &ca
 	}
 
-	if err := a.generateEmbeddedSwaggerJSON(app); err != nil {
-		return err
+	if a.GenOpts == nil || !a.GenOpts.ExcludeSpec {
+		if err := a.generateEmbeddedSwaggerJSON(app); err != nil {
+			return err
+		}
 	}
 
 	importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage))
@@ -239,8 +241,10 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 		return err
 	}
 
-	if err := a.generateMain(app); err != nil {
-		return err
+	if a.GenOpts == nil || a.GenOpts.IncludeMain {
+		if err := a.generateMain(app); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -668,5 +672,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		OperationGroups:     opGroups,
 		Principal:           prin,
 		SwaggerJSON:         fmt.Sprintf("%#v", jsonb),
+		ExcludeSpec:         a.GenOpts != nil && a.GenOpts.ExcludeSpec,
 	}, nil
 }
