@@ -63,16 +63,16 @@ func TestResponseFormatValidation(t *testing.T) {
 	mw := newValidation(context, http.HandlerFunc(terminator))
 
 	recorder := httptest.NewRecorder()
-	request, _ := http.NewRequest("POST", "/pets", bytes.NewBuffer([]byte(`{"name":"Dog"}`)))
-	request.Header.Set(httpkit.HeaderContentType, "application/json")
-	request.Header.Set(httpkit.HeaderAccept, "application/json")
+	request, _ := http.NewRequest("POST", "/pets", bytes.NewBuffer([]byte(`name: Dog`)))
+	request.Header.Set(httpkit.HeaderContentType, "application/x-yaml")
+	request.Header.Set(httpkit.HeaderAccept, "application/x-yaml")
 
 	mw.ServeHTTP(recorder, request)
 	assert.Equal(t, 200, recorder.Code, recorder.Body.String())
 
 	recorder = httptest.NewRecorder()
-	request, _ = http.NewRequest("POST", "/pets", bytes.NewBuffer([]byte(`{"name":"Dog"}`)))
-	request.Header.Set(httpkit.HeaderContentType, "application/json")
+	request, _ = http.NewRequest("POST", "/pets", bytes.NewBuffer([]byte(`name: Dog`)))
+	request.Header.Set(httpkit.HeaderContentType, "application/x-yaml")
 	request.Header.Set(httpkit.HeaderAccept, "application/sml")
 
 	mw.ServeHTTP(recorder, request)

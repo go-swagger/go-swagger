@@ -181,7 +181,7 @@ func TestUntypedAppValidation(t *testing.T) {
 	assert.NotNil(t, spec)
 
 	cons := spec.ConsumesFor(spec.AllPaths()["/"].Get)
-	assert.Len(t, cons, 2)
+	assert.Len(t, cons, 1)
 	prods := spec.RequiredProduces()
 	assert.Len(t, prods, 2)
 
@@ -234,19 +234,19 @@ func TestUntypedAppValidation(t *testing.T) {
 	delete(api2.producers, "application/something")
 	api2.RegisterProducer("application/x-yaml", new(stubProducer))
 
-	expected := []string{"application/json", "application/x-yaml"}
+	expected := []string{"application/x-yaml"}
 	sort.Sort(sort.StringSlice(expected))
 	consumes := spec.ConsumesFor(spec.AllPaths()["/"].Get)
 	sort.Sort(sort.StringSlice(consumes))
 	assert.Equal(t, expected, consumes)
 	consumers := api1.ConsumersFor(consumes)
-	assert.Len(t, consumers, 2)
+	assert.Len(t, consumers, 1)
 
 	produces := spec.ProducesFor(spec.AllPaths()["/"].Get)
 	sort.Sort(sort.StringSlice(produces))
 	assert.Equal(t, expected, produces)
 	producers := api1.ProducersFor(produces)
-	assert.Len(t, producers, 2)
+	assert.Len(t, producers, 1)
 
 	definitions := validSpec.SecurityDefinitionsFor(validSpec.AllPaths()["/"].Get)
 	expectedSchemes := map[string]swaggerspec.SecurityScheme{"basic": *swaggerspec.BasicAuth()}

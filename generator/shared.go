@@ -88,6 +88,7 @@ type GenOpts struct {
 	DumpData          bool
 	DefaultScheme     string
 	DefaultProduces   string
+	DefaultConsumes   string
 	IncludeModel      bool
 	IncludeValidator  bool
 	IncludeHandler    bool

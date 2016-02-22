@@ -176,7 +176,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) ConsumersFor(mediaTypes []str
 
 // ProducersFor gets the producers for the specified media types
 func ({{.ReceiverName}} *{{ pascalize .Name }}API) ProducersFor(mediaTypes []string) map[string]httpkit.Producer {
-  {{if.Produces}}
+  {{if .Produces}}
   result := make(map[string]httpkit.Producer)
   for _, mt := range mediaTypes {
     switch mt {

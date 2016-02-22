@@ -111,12 +111,22 @@ func TestRouterBuilder(t *testing.T) {
 	rec := postRecords[0]
 	assert.Equal(t, rec.Key, "/pets")
 	val := rec.Value.(*routeEntry)
-	assert.Len(t, val.Consumers, 3)
-	assert.Len(t, val.Producers, 5)
-	assert.Len(t, val.Consumes, 3)
-	assert.Len(t, val.Produces, 5)
+	assert.Len(t, val.Consumers, 1)
+	assert.Len(t, val.Producers, 1)
+	assert.Len(t, val.Consumes, 1)
+	assert.Len(t, val.Produces, 1)
 
 	assert.Len(t, val.Parameters, 1)
+
+	recG := getRecords[0]
+	assert.Equal(t, recG.Key, "/pets")
+	valG := recG.Value.(*routeEntry)
+	assert.Len(t, valG.Consumers, 2)
+	assert.Len(t, valG.Producers, 4)
+	assert.Len(t, valG.Consumes, 2)
+	assert.Len(t, valG.Produces, 4)
+
+	assert.Len(t, valG.Parameters, 2)
 }
 
 func TestRouterCanonicalBasePath(t *testing.T) {
