@@ -1,4 +1,4 @@
-/*Package main A To Do list application
+/*Package restapi A To Do list application
 
 The product of a tutorial on goswagger.io
 
@@ -19,4 +19,4 @@ The product of a tutorial on goswagger.io
 
 swagger:meta
 */
-package main
+package restapi

@@ -1,4 +1,4 @@
-/*Package main Issue Tracker API
+/*Package restapi Issue Tracker API
 
 This application implements a very simple issue tracker.
 It's implemented as an API which is described by this swagger spec document.
@@ -32,4 +32,4 @@ Terms Of Service:
 
 swagger:meta
 */
-package main
+package restapi

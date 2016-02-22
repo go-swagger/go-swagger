@@ -1,4 +1,4 @@
-/*Package main Simple To Do List API
+/*Package restapi Simple To Do List API
 
     Schemes:
       https
@@ -17,4 +17,4 @@
 
 swagger:meta
 */
-package main
+package restapi
