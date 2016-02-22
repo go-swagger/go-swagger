@@ -21,10 +21,23 @@ build:
       - go get -u github.com/naoina/denco
       - go get -u github.com/go-swagger/scan-repo-boundary/makeplans
       - ./hack/build-drone.sh
-      - go install ./cmd/swagger
-      - ./hack/run-canary.sh
       - mkdir -p dist
       - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -installsuffix netgo -o dist/swagger ./cmd/swagger
+
+  canary:
+    image: golang:$$GO_VERSION
+    pull: true
+    environment:
+      GOCOVMODE: "count"
+      GO15VENDOREXPERIMENT: "1"
+    commands:
+      - go get -u github.com/asaskevich/govalidator
+      - go get -u github.com/naoina/denco
+      - go get -u github.com/go-swagger/scan-repo-boundary/makeplans
+      - go install ./cmd/swagger
+      - ./hack/run-canary.sh
+    when:
+      event: pull_request
 
   release:
     image: golang:$$GO_VERSION
@@ -59,7 +72,7 @@ publish:
     server: https://coverage.vmware.run
     token: $$GITHUB_TOKEN
     threshold: 70
-    #must_increase: true
+    # must_increase: true
     when:
       matrix:
         GO_VERSION: "1.6"

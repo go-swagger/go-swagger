@@ -1,5 +1,5 @@
 #!/bin/zsh
-
+setopt extended_glob
 echo '
 // Copyright 2015 go-swagger maintainers
 //
@@ -16,11 +16,11 @@ echo '
 // limitations under the License.
 ' > /tmp/copyright.txt
 
-for i in `git rev-parse --show-toplevel`/**/*.go # or whatever other pattern...
+for i in (^vendor/)#*.go # or whatever other pattern...
 do
   if ! grep -q Copyright $i
   then
-    cat /tmp/copyright.txt $i >$i.new && mv $i.new $i
+    echo "cat /tmp/copyright.txt $i >$i.new && mv $i.new $i"
   fi
 done
 
