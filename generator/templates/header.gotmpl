@@ -4,6 +4,8 @@ package {{.Package}}
 // Editing this file might prove futile when you re-run the swagger generate command
 
 {{if or .Imports .DefaultImports }}import (
+  strfmt "github.com/go-swagger/go-swagger/strfmt"
+
   {{range .DefaultImports }}{{ printf "%q" .}}
   {{end}}
   {{range $key, $value := .Imports}}{{ $key }} {{ printf "%q" $value}}

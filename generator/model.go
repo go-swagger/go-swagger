@@ -224,7 +224,6 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 	if pg.GenSchema.HasValidations {
 		defaultImports = []string{
 			"github.com/go-swagger/go-swagger/errors",
-			"github.com/go-swagger/go-swagger/strfmt",
 			"github.com/go-swagger/go-swagger/httpkit/validate",
 		}
 	}
@@ -246,7 +245,6 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		ExtraSchemas:   extras,
 	}, nil
 }
-
 
 type schemaGenContext struct {
 	Path               string

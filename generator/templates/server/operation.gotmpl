@@ -6,7 +6,7 @@ package {{ .Package }}
 import (
   "net/http"
 
-  "github.com/go-swagger/go-swagger/httpkit/middleware"
+  middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
   {{ range .DefaultImports }}{{ printf "%q" . }}
   {{ end }}
   {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
