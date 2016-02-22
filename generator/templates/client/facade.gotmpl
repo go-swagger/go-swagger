@@ -14,6 +14,8 @@ import (
   "github.com/go-swagger/go-swagger/httpkit/validate"
   "github.com/go-swagger/go-swagger/client"
 
+  strfmt "github.com/go-swagger/go-swagger/strfmt"
+
   {{ range .DefaultImports }}{{ printf "%q" .}}
   {{ end }}
   {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
