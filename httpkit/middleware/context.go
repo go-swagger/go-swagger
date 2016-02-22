@@ -44,6 +44,14 @@ type Responder interface {
 	WriteResponse(http.ResponseWriter, httpkit.Producer)
 }
 
+// ResponderFunc wraps a func as a Responder interface
+type ResponderFunc func(http.ResponseWriter, httpkit.Producer)
+
+// WriteResponse writes to the response
+func (fn ResponderFunc) WriteResponse(rw http.ResponseWriter, pr httpkit.Producer) {
+	fn(rw, pr)
+}
+
 // Context is a type safe wrapper around an untyped request context
 // used throughout to store request context with the gorilla context module
 type Context struct {
