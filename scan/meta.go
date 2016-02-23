@@ -186,7 +186,7 @@ func safeInfo(swspec *spec.Swagger) *spec.Info {
 }
 
 // httpFTPScheme matches http://, https://, ws://, wss://
-var httpFTPScheme = regexp.MustCompile("(?:ht|f)tps?://")
+var httpFTPScheme = regexp.MustCompile("(?:(?:ht|f)tp|ws)s?://")
 
 func splitURL(line string) (notURL, url string) {
 	str := strings.TrimSpace(line)

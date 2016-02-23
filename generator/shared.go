@@ -104,52 +104,6 @@ type generatorOptions struct {
 	TargetDirectory string
 }
 
-// on its way out
-type propertyDescriptor struct {
-	PropertyName      string
-	ParamName         string
-	Path              string
-	ValueExpression   string
-	IndexVar          string
-	IsPrimitive       bool
-	IsCustomFormatter bool
-	IsContainer       bool
-	IsMap             bool
-}
-
-// on its way out
-type commonValidations struct {
-	propertyDescriptor
-	sharedValidations
-	Type    string
-	Format  string
-	Items   *spec.Items
-	Default interface{}
-}
-
-// on its way out
-type genValidations struct {
-	Type                string
-	Required            bool
-	DefaultValue        string
-	MaxLength           int64
-	MinLength           int64
-	Pattern             string
-	MultipleOf          float64
-	Minimum             float64
-	Maximum             float64
-	ExclusiveMinimum    bool
-	ExclusiveMaximum    bool
-	Enum                string
-	HasValidations      bool
-	Format              string
-	MinItems            int64
-	MaxItems            int64
-	UniqueItems         bool
-	HasSliceValidations bool
-	NeedsSize           bool
-}
-
 func loadSpec(specFile string) (string, *spec.Document, error) {
 	// find swagger spec document, verify it exists
 	specPath := specFile
@@ -192,8 +146,32 @@ func formatGoFile(ffn string, content []byte) ([]byte, error) {
 	return imports.Process(ffn, content, opts)
 }
 
+func stripTestFromFileName(name string) string {
+	ffn := swag.ToFileName(name)
+	if strings.HasSuffix(ffn, "_test") {
+		ffn = ffn[:len(ffn)-5]
+	}
+	return ffn
+}
+
 func writeToFile(target, name string, content []byte) error {
-	ffn := swag.ToFileName(name) + ".go"
+	ffn := stripTestFromFileName(name) + ".go"
+
+	res, err := formatGoFile(ffn, content)
+	if err != nil {
+		log.Println(err)
+		return writeFile(target, ffn, content)
+	}
+
+	return writeFile(target, ffn, res)
+}
+
+func writeToTestFile(target, name string, content []byte) error {
+	ffn := swag.ToFileName(name)
+	if !strings.HasSuffix(ffn, "_test") {
+		ffn += "_test"
+	}
+	ffn += ".go"
 
 	res, err := formatGoFile(ffn, content)
 	if err != nil {
@@ -232,7 +210,7 @@ func gatherModels(specDoc *spec.Document, modelNames []string) (map[string]spec.
 	defs := specDoc.Spec().Definitions
 
 	if mnc > 0 {
-		unknownModels := make([]string, 0)
+		var unknownModels []string
 		for _, m := range modelNames {
 			_, ok := defs[m]
 			if !ok {
@@ -266,27 +244,6 @@ func appNameOrDefault(specDoc *spec.Document, name, defaultName string) string {
 	}
 	return strings.TrimSuffix(swag.ToGoName(name), "API")
 }
-
-//
-// var namesCounter int64
-//
-// func ensureUniqueName(key, method, path string, operations map[string]opRef) string {
-// 	nm := key
-// 	if nm == "" {
-// 		nm = swag.ToGoName(strings.ToLower(method) + " " + path)
-// 	}
-//
-// 	_, found := operations[nm]
-// 	if found {
-// 		nm = swag.ToGoName(strings.ToLower(method) + " " + path)
-// 	}
-// 	_, foundAgain := operations[nm]
-// 	if foundAgain {
-// 		namesCounter++
-// 		return fmt.Sprintf("%s%d", nm, namesCounter)
-// 	}
-// 	return nm
-// }
 
 func containsString(names []string, name string) bool {
 	for _, nm := range names {
