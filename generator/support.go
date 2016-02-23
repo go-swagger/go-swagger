@@ -332,16 +332,19 @@ var mediaTypeNames = map[*regexp.Regexp]string{
 	regexp.MustCompile("text/.*javascript"):          "js",
 	regexp.MustCompile("text/.*css"):                 "css",
 	regexp.MustCompile("text/.*plain"):               "txt",
+	regexp.MustCompile("application/.*octet-stream"): "bin",
 }
 
 var knownProducers = map[string]string{
 	"json": "httpkit.JSONProducer",
 	"yaml": "httpkit.YAMLProducer",
+	"bin":  "httpkit.ByteStreamProducer",
 }
 
 var knownConsumers = map[string]string{
 	"json": "httpkit.JSONConsumer",
 	"yaml": "httpkit.YAMLConsumer",
+	"bin":  "httpkit.ByteStreamConsumer",
 }
 
 func getSerializer(sers []GenSerGroup, ext string) (*GenSerGroup, bool) {
