@@ -8,16 +8,9 @@
   },
   "host": "localhost",
   "basePath": "/v1.21",
-  "schemes": [
-    "http",
-    "https"
-  ],
-  "produces": [
-    "application/json"
-  ],
-  "consumes": [
-    "application/json"
-  ],
+  "schemes": ["http", "https"],
+  "produces": ["application/json", "text/plain"],
+  "consumes": ["application/json", "text/plain"],
   "definitions": {
     "Version": {
       "type": "object",
@@ -1321,9 +1314,7 @@
             "description": "server error"
           }
         },
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       }
     },
     "/containers/create": {
@@ -1369,9 +1360,7 @@
             "description": "server error"
           }
         },
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       }
     },
     "/containers/{id}/json": {
@@ -1400,9 +1389,7 @@
           "description": "The container id or name",
           "type": "string"
         }],
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       }
     },
     "/containers/{id}/top": {
@@ -1436,9 +1423,7 @@
           "description": "ps arguments to use (e.g., aux)",
           "type": "string"
         }],
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       }
     },
     "/containers/{id}/logs": {
@@ -1508,9 +1493,7 @@
           "description": "Output specified number of lines at the end of logs: all or <number>. Default all.",
           "type": "string"
         }],
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       }
     },
     "/containers/{id}/changes": {
@@ -1548,9 +1531,7 @@
           "type": "integer",
           "enum": [0, 1, 2]
         }],
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       }
     },
     "/containers/{id}/export": {
@@ -1579,9 +1560,7 @@
           "description": "The container id or name",
           "type": "string"
         }],
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       }
     },
     "/containers/{id}/stats": {
@@ -1615,9 +1594,7 @@
           "description": "Stream stats",
           "type": "boolean"
         }],
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       }
     },
     "/containers/{id}/resize": {
@@ -1653,9 +1630,7 @@
           "description": "Width of the tty session",
           "type": "integer"
         }],
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       }
     },
     "/containers/{id}/start": {
@@ -1684,9 +1659,7 @@
           "description": "The container id or name",
           "type": "string"
         }],
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       }
     },
     "/containers/{id}/stop": {
@@ -1720,9 +1693,7 @@
           "description": "number of seconds to wait before killing the container",
           "type": "integer"
         }],
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       }
     },
     "/containers/{id}/restart": {
@@ -1753,9 +1724,7 @@
           "description": "number of seconds to wait before killing the container",
           "type": "integer"
         }],
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       }
     },
     "/containers/{id}/kill": {
@@ -1786,9 +1755,7 @@
           "description": "Signal to send to the container, integer or string like SIGINT, defaults to SIGKILL",
           "type": "string"
         }],
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       }
     },
     "/containers/{id}/rename": {
@@ -1823,9 +1790,7 @@
           "description": "New name for the container",
           "type": "string"
         }],
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       }
     },
     "/containers/{id}/pause": {
@@ -1851,9 +1816,7 @@
           "description": "The container id or name",
           "type": "string"
         }],
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       }
     },
     "/containers/{id}/unpause": {
@@ -1879,9 +1842,7 @@
           "description": "The container id or name",
           "type": "string"
         }],
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       }
     },
     "/containers/{id}/attach": {
@@ -1935,9 +1896,7 @@
           "description": "1/True/true or 0/False/false, if logs=true, return stderr log, if stream=true, attach to stderr. Default false.",
           "type": "string"
         }],
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       }
     },
     "/containers/{id}/attach/ws": {
@@ -1994,9 +1953,7 @@
           "description": "1/True/true or 0/False/false, if logs=true, return stderr log, if stream=true, attach to stderr. Default false.",
           "type": "string"
         }],
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       }
     },
     "/containers/{id}/wait": {
@@ -2025,9 +1982,7 @@
           "description": "The container id or name",
           "type": "string"
         }],
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       }
     },
     "/containers/{id}": {
@@ -2066,9 +2021,7 @@
           "description": "1/True/true or 0/False/false, Kill then remove the container. Default false.",
           "type": "string"
         }],
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       }
     },
     "/containers/{id}/archive": {
@@ -2100,9 +2053,7 @@
           "description": "Resource in the container’s filesystem to archive.",
           "type": "string"
         }],
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       },
       "get": {
         "summary": "Get an archive of a filesystem resource in a container",
@@ -2135,9 +2086,7 @@
           "description": "Resource in the container’s filesystem to archive.",
           "type": "string"
         }],
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       },
       "put": {
         "summary": "Extract an archive of files or folders to a directory in a container",
@@ -2186,9 +2135,7 @@
             "type": "string"
           }
         }],
-        "tags": [
-          "Container"
-        ]
+        "tags": ["Container"]
       }
     },
     "/images/json": {
@@ -2232,9 +2179,7 @@
           "description": "Show digest information, default to false",
           "type": "boolean"
         }],
-        "tags": [
-          "Image"
-        ]
+        "tags": ["Image"]
       }
     },
     "/build": {
@@ -2349,9 +2294,7 @@
             "description": "server error"
           }
         },
-        "tags": [
-          "Image"
-        ]
+        "tags": ["Image"]
       }
     },
     "/images/create": {
@@ -2359,6 +2302,7 @@
         "summary": "Create an image",
         "description": "Create an image either by pulling it from the registry or by importing it",
         "operationId": "create",
+        "consumes": ["application/octet-stream"],
         "responses": {
           "200": {
             "description": "no error"
@@ -2401,9 +2345,7 @@
           "description": "A base64-encoded AuthConfig object",
           "type": "string"
         }],
-        "tags": [
-          "Image"
-        ]
+        "tags": ["Image"]
       }
     },
     "/images/{name}/json": {
@@ -2432,9 +2374,7 @@
           "type": "string",
           "required": true
         }],
-        "tags": [
-          "Image"
-        ]
+        "tags": ["Image"]
       }
     },
     "/images/{name}/history": {
@@ -2466,9 +2406,7 @@
           "type": "string",
           "required": true
         }],
-        "tags": [
-          "Image"
-        ]
+        "tags": ["Image"]
       }
     },
     "/images/{name}/push": {
@@ -2505,9 +2443,7 @@
           "type": "string",
           "required": true
         }],
-        "tags": [
-          "Image"
-        ]
+        "tags": ["Image"]
       }
     },
     "/images/{name}/tag": {
@@ -2554,9 +2490,7 @@
           "description": "The new tag name.",
           "type": "string"
         }],
-        "tags": [
-          "Image"
-        ]
+        "tags": ["Image"]
       }
     },
     "/images/{name}": {
@@ -2595,9 +2529,7 @@
           "description": "1/True/true or 0/False/false, default false.",
           "type": "string"
         }],
-        "tags": [
-          "Image"
-        ]
+        "tags": ["Image"]
       }
     },
     "/images/search": {
@@ -2625,9 +2557,7 @@
           "description": "Term to search",
           "type": "string"
         }],
-        "tags": [
-          "Image"
-        ]
+        "tags": ["Image"]
       }
     },
     "/auth": {
@@ -2654,9 +2584,7 @@
             "$ref": "#/definitions/AuthConfig"
           }
         }],
-        "tags": [
-          "Misc"
-        ]
+        "tags": ["Misc"]
       }
     },
     "/info": {
@@ -2675,9 +2603,7 @@
             "description": "Server error"
           }
         },
-        "tags": [
-          "Misc"
-        ]
+        "tags": ["Misc"]
       }
     },
     "/version": {
@@ -2696,9 +2622,7 @@
             "description": "server error"
           }
         },
-        "tags": [
-          "Misc"
-        ]
+        "tags": ["Misc"]
       }
     },
     "/_ping": {
@@ -2706,17 +2630,19 @@
         "summary": "Ping the docker server",
         "description": "Ping the docker server",
         "operationId": "ping",
+        "produces": ["text/plain"],
         "responses": {
           "200": {
-            "description": "no error"
+            "description": "no error",
+            "schema": {
+              "type": "string"
+            }
           },
           "500": {
             "description": "server error"
           }
         },
-        "tags": [
-          "Misc"
-        ]
+        "tags": ["Misc"]
       }
     },
     "/commit": {
@@ -2778,9 +2704,7 @@
           "description": "Dockerfile instructions to apply while committing",
           "type": "string"
         }],
-        "tags": [
-          "Image"
-        ]
+        "tags": ["Image"]
       }
     },
     "/events": {
@@ -2812,9 +2736,7 @@
           "description": "A json encoded value of the filters (a map[string][]string) to process on the event list.",
           "type": "string"
         }],
-        "tags": [
-          "Misc"
-        ]
+        "tags": ["Misc"]
       }
     },
     "/images/{name}/get": {
@@ -2840,9 +2762,7 @@
           "type": "string",
           "required": true
         }],
-        "tags": [
-          "Image"
-        ]
+        "tags": ["Image"]
       }
     },
     "/images/get": {
@@ -2870,9 +2790,7 @@
             "type": "string"
           }
         }],
-        "tags": [
-          "Image"
-        ]
+        "tags": ["Image"]
       }
     },
     "/images/load": {
@@ -2896,9 +2814,7 @@
             "type": "string"
           }
         }],
-        "tags": [
-          "Image"
-        ]
+        "tags": ["Image"]
       }
     },
     "/containers/{id}/exec": {
@@ -2942,9 +2858,7 @@
           "type": "string",
           "required": true
         }],
-        "tags": [
-          "Exec"
-        ]
+        "tags": ["Exec"]
       }
     },
     "/exec/{id}/start": {
@@ -2987,9 +2901,7 @@
           "required": true,
           "type": "string"
         }],
-        "tags": [
-          "Exec"
-        ]
+        "tags": ["Exec"]
       }
     },
     "/exec/{id}/resize": {
@@ -3027,9 +2939,7 @@
           "type": "integer",
           "format": "int64"
         }],
-        "tags": [
-          "Exec"
-        ]
+        "tags": ["Exec"]
       }
     },
     "/exec/{id}/json": {
@@ -3058,9 +2968,7 @@
           "required": true,
           "type": "string"
         }],
-        "tags": [
-          "Exec"
-        ]
+        "tags": ["Exec"]
       }
     },
     "/volumes": {
@@ -3085,9 +2993,7 @@
           "description": "JSON encoded value of the filters (a map[string][]string) to process on the volumes list",
           "type": "string"
         }],
-        "tags": [
-          "Volume"
-        ]
+        "tags": ["Volume"]
       }
     },
     "/volumes/create": {
@@ -3115,9 +3021,7 @@
             "$ref": "#/definitions/VolumeConfig"
           }
         }],
-        "tags": [
-          "Volume"
-        ]
+        "tags": ["Volume"]
       }
     },
     "/volumes/{name}": {
@@ -3146,9 +3050,7 @@
           "description": "Volume name or id",
           "type": "string"
         }],
-        "tags": [
-          "Volume"
-        ]
+        "tags": ["Volume"]
       },
       "delete": {
         "summary": "Remove a volume",
@@ -3175,9 +3077,7 @@
           "description": "Volume name or id",
           "type": "string"
         }],
-        "tags": [
-          "Volume"
-        ]
+        "tags": ["Volume"]
       }
     },
     "/networks": {
@@ -3205,9 +3105,7 @@
           "description": "JSON encoded value of the filters (a map[string][]string) to process on the networks list.",
           "type": "string"
         }],
-        "tags": [
-          "Network"
-        ]
+        "tags": ["Network"]
       }
     },
     "/networks/{id}": {
@@ -3236,9 +3134,7 @@
           "required": true,
           "type": "string"
         }],
-        "tags": [
-          "Network"
-        ]
+        "tags": ["Network"]
       },
       "delete": {
         "summary": "Remove a network",
@@ -3262,9 +3158,7 @@
           "required": true,
           "type": "string"
         }],
-        "tags": [
-          "Network"
-        ]
+        "tags": ["Network"]
       }
     },
     "/networks/create": {
@@ -3295,9 +3189,7 @@
             "$ref": "#/definitions/NetworkCreateConfig"
           }
         }],
-        "tags": [
-          "Network"
-        ]
+        "tags": ["Network"]
       }
     },
     "/networks/{id}/connect": {
@@ -3331,9 +3223,7 @@
             "$ref": "#/definitions/ContainerConnect"
           }
         }],
-        "tags": [
-          "Network"
-        ]
+        "tags": ["Network"]
       }
     },
     "/networks/{id}/disconnect": {
@@ -3367,9 +3257,7 @@
             "$ref": "#/definitions/ContainerConnect"
           }
         }],
-        "tags": [
-          "Network"
-        ]
+        "tags": ["Network"]
       }
     }
   }
