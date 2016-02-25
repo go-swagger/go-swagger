@@ -157,7 +157,7 @@ func stripTestFromFileName(name string) string {
 func writeToFile(target, name string, content []byte) error {
 	ffn := stripTestFromFileName(name) + ".go"
 
-	res, err := formatGoFile(ffn, content)
+	res, err := formatGoFile(filepath.Join(target, ffn), content)
 	if err != nil {
 		log.Println(err)
 		return writeFile(target, ffn, content)
@@ -173,7 +173,7 @@ func writeToTestFile(target, name string, content []byte) error {
 	}
 	ffn += ".go"
 
-	res, err := formatGoFile(ffn, content)
+	res, err := formatGoFile(filepath.Join(target, ffn), content)
 	if err != nil {
 		log.Println(err)
 		return writeFile(target, ffn, content)
