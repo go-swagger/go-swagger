@@ -333,6 +333,9 @@ var mediaTypeNames = map[*regexp.Regexp]string{
 	regexp.MustCompile("text/.*css"):                 "css",
 	regexp.MustCompile("text/.*plain"):               "txt",
 	regexp.MustCompile("application/.*octet-stream"): "bin",
+	regexp.MustCompile("application/.*tar"):          "tar",
+	regexp.MustCompile("application/.*gzip"):         "gzip",
+	regexp.MustCompile("application/.*gz"):           "gzip",
 }
 
 var knownProducers = map[string]string{
