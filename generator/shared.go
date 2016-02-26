@@ -95,6 +95,7 @@ type GenOpts struct {
 	IncludeParameters bool
 	IncludeResponses  bool
 	IncludeMain       bool
+	IncludeSupport    bool
 	ExcludeSpec       bool
 	TemplateDir       string
 }

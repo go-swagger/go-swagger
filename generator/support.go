@@ -162,43 +162,48 @@ func (a *appGenerator) Generate() error {
 		return nil
 	}
 
-	//if a.GenOpts.IncludeModel {
-	log.Printf("rendering %d models", len(app.Models))
-	for _, mod := range app.Models {
-		mod.IncludeValidator = true // a.GenOpts.IncludeValidator
-		gen := &definitionGenerator{
-			Name:    mod.Name,
-			SpecDoc: a.SpecDoc,
-			Target:  filepath.Join(a.Target, a.ModelsPackage),
-			Data:    &mod,
-		}
-		if err := gen.generateModel(); err != nil {
-			return err
-		}
-	}
-	//}
-
-	for _, opg := range app.OperationGroups {
-		for _, op := range opg.Operations {
-			gen := &opGen{
-				data:              &op,
-				pkg:               opg.Name,
-				cname:             swag.ToGoName(op.Name),
-				IncludeHandler:    a.GenOpts.IncludeHandler,
-				IncludeParameters: a.GenOpts.IncludeParameters,
-				IncludeResponses:  a.GenOpts.IncludeResponses,
-				Doc:               a.SpecDoc,
-				Target:            filepath.Join(a.Target, a.ServerPackage),
-				APIPackage:        a.APIPackage,
+	if a.GenOpts.IncludeModel {
+		log.Printf("rendering %d models", len(app.Models))
+		for _, mod := range app.Models {
+			mod.IncludeValidator = true // a.GenOpts.IncludeValidator
+			gen := &definitionGenerator{
+				Name:    mod.Name,
+				SpecDoc: a.SpecDoc,
+				Target:  filepath.Join(a.Target, a.ModelsPackage),
+				Data:    &mod,
 			}
-
-			if err := gen.Generate(); err != nil {
+			if err := gen.generateModel(); err != nil {
 				return err
 			}
 		}
 	}
 
-	return a.GenerateSupport(&app)
+	if a.GenOpts.IncludeHandler {
+		for _, opg := range app.OperationGroups {
+			for _, op := range opg.Operations {
+				gen := &opGen{
+					data:              &op,
+					pkg:               opg.Name,
+					cname:             swag.ToGoName(op.Name),
+					IncludeHandler:    a.GenOpts.IncludeHandler,
+					IncludeParameters: a.GenOpts.IncludeParameters,
+					IncludeResponses:  a.GenOpts.IncludeResponses,
+					Doc:               a.SpecDoc,
+					Target:            filepath.Join(a.Target, a.ServerPackage),
+					APIPackage:        a.APIPackage,
+				}
+
+				if err := gen.Generate(); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	if a.GenOpts.IncludeSupport {
+		return a.GenerateSupport(&app)
+	}
+	return nil
 }
 
 func (a *appGenerator) GenerateSupport(ap *GenApp) error {
