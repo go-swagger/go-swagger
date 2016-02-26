@@ -87,7 +87,6 @@ func (c *clientGenerator) Generate() error {
 	app, err := c.makeCodegenApp()
 	if app.Name == "" {
 		app.Name = "APIClient"
-		app.Package = "client"
 	}
 	app.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ModelsPackage))}
 	if err != nil {

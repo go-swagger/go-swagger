@@ -658,7 +658,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	return GenApp{
 		APIPackage:          a.ServerPackage,
-		Package:             a.Package,
+		Package:             a.ClientPackage,
 		ReceiverName:        receiver,
 		Name:                a.Name,
 		Host:                host,
