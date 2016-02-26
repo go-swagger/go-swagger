@@ -24,8 +24,8 @@ func main() {
 	defer api.ServerShutdown()
 
 	parser := flags.NewParser(server, flags.Default)
-	parser.ShortDescription = swaggerSpec.Spec().Info.Title
-	parser.LongDescription = swaggerSpec.Spec().Info.Description
+	parser.ShortDescription = `A To Do list application`
+	parser.LongDescription = `The product of a tutorial on goswagger.io`
 
 	for _, optsGroup := range api.CommandLineOptionsGroups {
 		parser.AddGroup(optsGroup.ShortDescription, optsGroup.LongDescription, optsGroup.Options)

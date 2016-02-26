@@ -22,9 +22,9 @@ http://swagger.io/terms/
 
 
     Produces:
-    - application/json
-
     - application/xml
+
+    - application/json
 
 
 swagger:meta

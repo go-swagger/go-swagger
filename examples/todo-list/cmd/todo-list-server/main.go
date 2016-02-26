@@ -24,7 +24,7 @@ func main() {
 	defer api.ServerShutdown()
 
 	parser := flags.NewParser(server, flags.Default)
-	parser.ShortDescription = swaggerSpec.Spec().Info.Title
+	parser.ShortDescription = `Simple To Do List API`
 	parser.LongDescription = swaggerSpec.Spec().Info.Description
 
 	for _, optsGroup := range api.CommandLineOptionsGroups {
