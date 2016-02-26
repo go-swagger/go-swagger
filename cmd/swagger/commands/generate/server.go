@@ -62,6 +62,7 @@ func (s *Server) Execute(args []string) error {
 		IncludeParameters: !s.SkipOperations,
 		IncludeResponses:  !s.SkipOperations,
 		IncludeMain:       !s.ExcludeMain,
+		IncludeSupport:    !s.SkipSupport,
 		ExcludeSpec:       s.ExcludeSpec,
 		TemplateDir:       string(s.TemplateDir),
 	}
