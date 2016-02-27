@@ -356,6 +356,7 @@ func (t *typeResolver) goTypeName(nm string) string {
 func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (result resolvedType, err error) {
 	result.IsAnonymous = isAnonymous
 
+	result.IsBaseType = schema.Discriminator != ""
 	if !isAnonymous {
 		result.SwaggerType = "object"
 		result.GoType = t.goTypeName(t.ModelName)
@@ -394,7 +395,7 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 		result.SwaggerType = "object"
 		result.IsNullable = false
 		result.GoType = "map[string]" + et.GoType
-		if et.IsNullable && et.IsComplexObject {
+		if et.IsNullable && et.IsComplexObject && !et.IsBaseType {
 			result.GoType = "map[string]*" + et.GoType
 		}
 		return
@@ -521,6 +522,7 @@ type resolvedType struct {
 	IsTuple            bool
 	HasAdditionalItems bool
 	IsComplexObject    bool
+	IsBaseType         bool
 
 	GoType        string
 	AliasedType   string

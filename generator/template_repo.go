@@ -76,7 +76,8 @@ var FuncMap template.FuncMap = map[string]interface{}{
 
 		return inflect.Pluralize(sentence[0]) + " " + strings.Join(sentence[1:], " ")
 	},
-	"json": asJSON,
+	"json":       asJSON,
+	"prettyjson": asPrettyJSON,
 	"hasInsecure": func(arg []string) bool {
 		return swag.ContainsStringsCI(arg, "http") || swag.ContainsStringsCI(arg, "ws")
 	},

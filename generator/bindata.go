@@ -310,7 +310,7 @@ func templatesSchemabodyGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/schemabody.gotmpl", size: 7562, mode: os.FileMode(420), modTime: time.Unix(1455953094, 0)}
+	info := bindataFileInfo{name: "templates/schemabody.gotmpl", size: 7562, mode: os.FileMode(420), modTime: time.Unix(1456593931, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

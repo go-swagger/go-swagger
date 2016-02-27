@@ -124,3 +124,11 @@ func asJSON(data interface{}) (string, error) {
 	}
 	return string(b), nil
 }
+
+func asPrettyJSON(data interface{}) (string, error) {
+	b, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
