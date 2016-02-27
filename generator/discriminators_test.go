@@ -301,3 +301,24 @@ func TestGenerateModel_Bitbucket_WebhookSubscription(t *testing.T) {
 		}
 	}
 }
+
+func TestGenerateModel_Issue319(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/bugs/319/swagger.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "Container"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) && assert.Equal(t, "map[string]Base", genModel.Properties[0].GoType) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				b, err := formatGoFile("ifacedmap.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(b)
+					assertInCode(t, "MapNoWorky map[string]Base", res)
+				}
+			}
+		}
+	}
+}
