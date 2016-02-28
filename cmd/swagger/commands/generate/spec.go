@@ -27,9 +27,10 @@ import (
 
 // SpecFile command to generate a swagger spec from a go application
 type SpecFile struct {
-	BasePath string         `long:"base-path" short:"b" description:"the base path to use" default:"."`
-	Output   flags.Filename `long:"output" short:"o" description:"the file to write to"`
-	Input    flags.Filename `long:"input" short:"i" description:"the file to use as input"`
+	BasePath   string         `long:"base-path" short:"b" description:"the base path to use" default:"."`
+	ScanModels bool           `long:"scan-models" short:"m" description:"includes models that were annotated with 'swagger:model'"`
+	Output     flags.Filename `long:"output" short:"o" description:"the file to write to"`
+	Input      flags.Filename `long:"input" short:"i" description:"the file to use as input"`
 }
 
 // Execute runs this command
@@ -39,7 +40,11 @@ func (s *SpecFile) Execute(args []string) error {
 		return err
 	}
 
-	swspec, err := scan.Application(s.BasePath, input, nil, nil)
+	var opts scan.Opts
+	opts.BasePath = s.BasePath
+	opts.Input = input
+	opts.ScanModels = s.ScanModels
+	swspec, err := scan.Application(opts)
 	if err != nil {
 		return err
 	}

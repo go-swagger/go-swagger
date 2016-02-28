@@ -25,12 +25,6 @@ import (
 	"golang.org/x/tools/go/loader"
 )
 
-// type paramSetter func(*spec.Parameter, []string) error
-// type itemsSetter func(*spec.Items, []string) error
-
-// type matchingParamSetter func(*regexp.Regexp) paramSetter
-// type matchingItemsSetter func(*regexp.Regexp) itemsSetter
-
 type operationValidationBuilder interface {
 	validationBuilder
 	SetCollectionFormat(string)
