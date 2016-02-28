@@ -18,6 +18,8 @@ import (
 	gobuild "go/build"
 	goparser "go/parser"
 	"log"
+	"path/filepath"
+	"sort"
 	"testing"
 
 	"golang.org/x/tools/go/loader"
@@ -62,6 +64,20 @@ func classifierProgram() *loader.Program {
 	return prog
 }
 
+func petstoreProgram() *loader.Program {
+	var ldr loader.Config
+	ldr.ParserMode = goparser.ParseComments
+	ldr.Build = &gobuild.Default
+	ldr.ImportWithTests("github.com/go-swagger/go-swagger/fixtures/goparsing/petstore")
+	ldr.ImportWithTests("github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/models")
+	ldr.ImportWithTests("github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/rest/handlers")
+	prog, err := ldr.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return prog
+}
+
 func invalidProgram(name string) *loader.Program {
 	var ldr loader.Config
 	ldr.ParserMode = goparser.ParseComments
@@ -88,24 +104,24 @@ func TestDuplicateAnnotations(t *testing.T) {
 
 func TestClassifier(t *testing.T) {
 
-	prog := classificationProg
+	prog := petstoreProgram()
 	classifier := &programClassifier{}
 	classified, err := classifier.Classify(prog)
 	assert.NoError(t, err)
 
 	// ensure all the dependencies are there
 	assert.Len(t, classified.Meta, 1)
-	assert.Len(t, classified.Operations, 1)
+	assert.Len(t, classified.Operations, 2)
 
-	//var fNames []string
-	//for _, file := range classified.Models {
-	//fNames = append(
-	//fNames,
-	//filepath.Base(prog.Fset.File(file.Pos()).Name()))
-	//}
+	var fNames []string
+	for _, file := range classified.Models {
+		fNames = append(
+			fNames,
+			filepath.Base(prog.Fset.File(file.Pos()).Name()))
+	}
 
-	//sort.Sort(sort.StringSlice(fNames))
-	//assert.EqualValues(t, []string{"order.go", "pet.go", "user.go"}, fNames)
+	sort.Sort(sort.StringSlice(fNames))
+	assert.EqualValues(t, []string{"order.go", "pet.go", "tag.go", "user.go"}, fNames)
 }
 
 func TestClassifierInclude(t *testing.T) {

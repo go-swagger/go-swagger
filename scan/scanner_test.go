@@ -49,7 +49,7 @@ func init() {
 }
 
 func TestAppScanner_NewSpec(t *testing.T) {
-	scanner, err := newAppScanner("../fixtures/goparsing/petstore/petstore-fixture", nil, nil, nil)
+	scanner, err := newAppScanner(&Opts{BasePath: "../fixtures/goparsing/petstore/petstore-fixture"}, nil, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, scanner)
 	doc, err := scanner.Parse()
@@ -60,7 +60,7 @@ func TestAppScanner_NewSpec(t *testing.T) {
 }
 
 func TestAppScanner_BookingCrossRepo(t *testing.T) {
-	scanner, err := newAppScanner("../fixtures/goparsing/bookings", nil, nil, nil)
+	scanner, err := newAppScanner(&Opts{BasePath: "../fixtures/goparsing/bookings"}, nil, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, scanner)
 	doc, err := scanner.Parse()

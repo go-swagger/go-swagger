@@ -122,13 +122,20 @@ func rxf(rxp, ar string) *regexp.Regexp {
 	return regexp.MustCompile(fmt.Sprintf(rxp, ar))
 }
 
+// The Opts for the application scanner.
+type Opts struct {
+	BasePath   string
+	Input      *spec.Swagger
+	ScanModels bool
+}
+
 // Application scans the application and builds a swagger spec based on the information from the code files.
 // When there are includes provided, only those files are considered for the initial discovery.
 // Similarly the excludes will exclude an item from initial discovery through scanning for annotations.
 // When something in the discovered items requires a type that is contained in the includes or excludes it will still be
 // in the spec.
-func Application(bp string, input *spec.Swagger, includes, excludes packageFilters) (*spec.Swagger, error) {
-	parser, err := newAppScanner(bp, input, includes, excludes)
+func Application(opts Opts) (*spec.Swagger, error) {
+	parser, err := newAppScanner(&opts, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -146,21 +153,23 @@ type appScanner struct {
 	definitions map[string]spec.Schema
 	responses   map[string]spec.Response
 	operations  map[string]*spec.Operation
+	scanModels  bool
 
 	// MainPackage the path to find the main class in
 	MainPackage string
 }
 
 // newAppScanner creates a new api parser
-func newAppScanner(bp string, input *spec.Swagger, includes, excludes packageFilters) (*appScanner, error) {
+func newAppScanner(opts *Opts, includes, excludes packageFilters) (*appScanner, error) {
 	var ldr loader.Config
 	ldr.ParserMode = goparser.ParseComments
-	ldr.ImportWithTests(bp)
+	ldr.ImportWithTests(opts.BasePath)
 	prog, err := ldr.Load()
 	if err != nil {
 		return nil, err
 	}
 
+	input := opts.Input
 	if input == nil {
 		input = new(spec.Swagger)
 		input.Swagger = "2.0"
@@ -177,13 +186,14 @@ func newAppScanner(bp string, input *spec.Swagger, includes, excludes packageFil
 	}
 
 	return &appScanner{
-		MainPackage: bp,
+		MainPackage: opts.BasePath,
 		prog:        prog,
 		input:       input,
 		loader:      &ldr,
 		operations:  collectOperationsFromInput(input),
 		definitions: input.Definitions,
 		responses:   input.Responses,
+		scanModels:  opts.ScanModels,
 		classifier: &programClassifier{
 			Includes: includes,
 			Excludes: excludes,
@@ -227,6 +237,15 @@ func (a *appScanner) Parse() (*spec.Swagger, error) {
 	cp, err := a.classifier.Classify(a.prog)
 	if err != nil {
 		return nil, err
+	}
+
+	// build models dictionary
+	if a.scanModels {
+		for _, modelsFile := range cp.Models {
+			if err := a.parseSchema(modelsFile); err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	// build parameters dictionary

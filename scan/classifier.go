@@ -82,7 +82,7 @@ func (pc *programClassifier) Classify(prog *loader.Program) (*classifiedProgram,
 		}
 
 		for _, file := range pkgInfo.Files {
-			var op, mt, pm, rs bool // only add a particular file once
+			var op, mt, pm, rs, mm bool // only add a particular file once
 			for _, comments := range file.Comments {
 				var seenStruct string
 				for _, cline := range comments.List {
@@ -96,8 +96,10 @@ func (pc *programClassifier) Classify(prog *loader.Program) (*classifiedProgram,
 									op = true
 								}
 							case "model":
-								// models are discovered through parameters and responses
-								// no actual scanning for them is required
+								if !mm {
+									cp.Models = append(cp.Models, file)
+									mm = true
+								}
 								if seenStruct == "" || seenStruct == matches[1] {
 									seenStruct = matches[1]
 								} else {
