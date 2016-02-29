@@ -27,7 +27,7 @@ func NewPlaceOrder(ctx *middleware.Context, handler PlaceOrderHandler) *PlaceOrd
 	return &PlaceOrder{Context: ctx, Handler: handler}
 }
 
-/*PlaceOrder swagger:route POST /store/order store placeOrder
+/*PlaceOrder swagger:route POST /stores/order store placeOrder
 
 Place an order for a pet
 

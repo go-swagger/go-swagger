@@ -4,7 +4,6 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"encoding/json"
 	"strconv"
 
 	strfmt "github.com/go-swagger/go-swagger/strfmt"
@@ -38,7 +37,7 @@ type Pet struct {
 
 	Required: true
 	*/
-	PhotoUrls []string `json:"photoUrls,omitempty" xml:"photoUrl"`
+	PhotoUrls []string `json:"photoUrls,omitempty"`
 
 	/* pet status in the store
 	 */
@@ -46,7 +45,7 @@ type Pet struct {
 
 	/* Tags tags
 	 */
-	Tags []*Tag `json:"tags,omitempty" xml:"tag"`
+	Tags []*Tag `json:"tags,omitempty"`
 }
 
 // Validate validates this pet
@@ -59,11 +58,6 @@ func (m *Pet) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validatePhotoUrls(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateStatus(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -100,37 +94,6 @@ func (m *Pet) validatePhotoUrls(formats strfmt.Registry) error {
 			return err
 		}
 
-	}
-
-	return nil
-}
-
-var petStatusEnum []interface{}
-
-func (m *Pet) validateStatusEnum(path, location string, value string) error {
-	if petStatusEnum == nil {
-		var res []string
-		if err := json.Unmarshal([]byte(`["available","pending","sold"]`), &res); err != nil {
-			return err
-		}
-		for _, v := range res {
-			petStatusEnum = append(petStatusEnum, v)
-		}
-	}
-	if err := validate.Enum(path, location, value, petStatusEnum); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *Pet) validateStatus(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Status) { // not required
-		return nil
-	}
-
-	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
-		return err
 	}
 
 	return nil

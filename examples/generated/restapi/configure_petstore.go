@@ -26,11 +26,10 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 		return errors.NotImplemented("xml consumer has not yet been implemented")
 	})
 
-	api.JSONProducer = httpkit.JSONProducer()
-
 	api.XMLProducer = httpkit.ProducerFunc(func(w io.Writer, data interface{}) error {
 		return errors.NotImplemented("xml producer has not yet been implemented")
 	})
+	api.JSONProducer = httpkit.JSONProducer()
 
 	api.APIKeyAuth = func(token string) (interface{}, error) {
 		return nil, errors.NotImplemented("api key auth (api_key) api_key from header has not yet been implemented")
@@ -63,9 +62,6 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 	api.PetFindPetsByTagsHandler = pet.FindPetsByTagsHandlerFunc(func(params pet.FindPetsByTagsParams, principal interface{}) middleware.Responder {
 		return middleware.NotImplemented("operation pet.FindPetsByTags has not yet been implemented")
 	})
-	api.StoreGetInventoryHandler = store.GetInventoryHandlerFunc(func(principal interface{}) middleware.Responder {
-		return middleware.NotImplemented("operation store.GetInventory has not yet been implemented")
-	})
 	api.StoreGetOrderByIDHandler = store.GetOrderByIDHandlerFunc(func(params store.GetOrderByIDParams) middleware.Responder {
 		return middleware.NotImplemented("operation store.GetOrderByID has not yet been implemented")
 	})
@@ -92,9 +88,6 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 	})
 	api.UserUpdateUserHandler = user.UpdateUserHandlerFunc(func(params user.UpdateUserParams) middleware.Responder {
 		return middleware.NotImplemented("operation user.UpdateUser has not yet been implemented")
-	})
-	api.PetUploadFileHandler = pet.UploadFileHandlerFunc(func(params pet.UploadFileParams, principal interface{}) middleware.Responder {
-		return middleware.NotImplemented("operation pet.UploadFile has not yet been implemented")
 	})
 
 	api.ServerShutdown = func() {}

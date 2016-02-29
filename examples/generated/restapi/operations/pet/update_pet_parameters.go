@@ -25,7 +25,6 @@ func NewUpdatePetParams() UpdatePetParams {
 // swagger:parameters updatePet
 type UpdatePetParams struct {
 	/*Pet object that needs to be added to the store
-	  Required: true
 	  In: body
 	*/
 	Body *models.Pet

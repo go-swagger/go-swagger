@@ -21,11 +21,17 @@ func main() {
 
 	api := operations.NewTaskTrackerAPI(swaggerSpec)
 	server := restapi.NewServer(api)
-	defer api.ServerShutdown()
+	defer server.Shutdown()
 
 	parser := flags.NewParser(server, flags.Default)
-	parser.ShortDescription = swaggerSpec.Spec().Info.Title
-	parser.LongDescription = swaggerSpec.Spec().Info.Description
+	parser.ShortDescription = `Issue Tracker API`
+	parser.LongDescription = `This application implements a very simple issue tracker.
+It's implemented as an API which is described by this swagger spec document.
+
+The go-swagger project uses this specification to test the code generation.
+This document contains all possible values for a swagger definition.
+This means that it exercises the framework relatively well.
+`
 
 	for _, optsGroup := range api.CommandLineOptionsGroups {
 		parser.AddGroup(optsGroup.ShortDescription, optsGroup.LongDescription, optsGroup.Options)

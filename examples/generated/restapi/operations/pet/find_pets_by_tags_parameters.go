@@ -9,7 +9,6 @@ import (
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
-	"github.com/go-swagger/go-swagger/swag"
 
 	strfmt "github.com/go-swagger/go-swagger/strfmt"
 )
@@ -27,9 +26,8 @@ func NewFindPetsByTagsParams() FindPetsByTagsParams {
 // swagger:parameters findPetsByTags
 type FindPetsByTagsParams struct {
 	/*Tags to filter by
-	  Required: true
 	  In: query
-	  Collection Format: csv
+	  Collection Format: multi
 	*/
 	Tags []string
 }
@@ -52,21 +50,9 @@ func (o *FindPetsByTagsParams) BindRequest(r *http.Request, route *middleware.Ma
 }
 
 func (o *FindPetsByTagsParams) bindTags(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	if !hasKey {
-		return errors.Required("tags", "query")
-	}
 
-	var qvTags string
-	if len(rawData) > 0 {
-		qvTags = rawData[len(rawData)-1]
-	}
-
-	raw := swag.SplitByFormat(qvTags, "csv")
+	raw := rawData
 	size := len(raw)
-
-	if size == 0 {
-		return errors.Required("tags", "query")
-	}
 
 	if size == 0 {
 		return nil

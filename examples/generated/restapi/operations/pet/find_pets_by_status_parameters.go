@@ -4,14 +4,11 @@ package pet
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
-	"github.com/go-swagger/go-swagger/httpkit/validate"
-	"github.com/go-swagger/go-swagger/swag"
 
 	strfmt "github.com/go-swagger/go-swagger/strfmt"
 )
@@ -29,9 +26,8 @@ func NewFindPetsByStatusParams() FindPetsByStatusParams {
 // swagger:parameters findPetsByStatus
 type FindPetsByStatusParams struct {
 	/*Status values that need to be considered for filter
-	  Required: true
 	  In: query
-	  Collection Format: csv
+	  Collection Format: multi
 	*/
 	Status []string
 }
@@ -54,21 +50,9 @@ func (o *FindPetsByStatusParams) BindRequest(r *http.Request, route *middleware.
 }
 
 func (o *FindPetsByStatusParams) bindStatus(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	if !hasKey {
-		return errors.Required("status", "query")
-	}
 
-	var qvStatus string
-	if len(rawData) > 0 {
-		qvStatus = rawData[len(rawData)-1]
-	}
-
-	raw := swag.SplitByFormat(qvStatus, "csv")
+	raw := rawData
 	size := len(raw)
-
-	if size == 0 {
-		return errors.Required("status", "query")
-	}
 
 	if size == 0 {
 		return nil
@@ -78,10 +62,6 @@ func (o *FindPetsByStatusParams) bindStatus(rawData []string, hasKey bool, forma
 	isz := size
 	var ir []string
 	iValidateElement := func(i int, statusI string) *errors.Validation {
-
-		if err := validate.Enum(fmt.Sprintf("%s.%v", "status", i), "query", o.Status[i], []interface{}{"available", "pending", "sold"}); err != nil {
-			return err
-		}
 
 		return nil
 	}

@@ -27,7 +27,7 @@ func NewFindPetsByStatus(ctx *middleware.Context, handler FindPetsByStatusHandle
 	return &FindPetsByStatus{Context: ctx, Handler: handler}
 }
 
-/*FindPetsByStatus swagger:route GET /pet/findByStatus pet findPetsByStatus
+/*FindPetsByStatus swagger:route GET /pets/findByStatus pet findPetsByStatus
 
 Finds Pets by status
 

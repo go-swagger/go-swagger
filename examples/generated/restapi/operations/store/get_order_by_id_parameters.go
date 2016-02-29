@@ -8,8 +8,6 @@ import (
 
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
-	"github.com/go-swagger/go-swagger/httpkit/validate"
-	"github.com/go-swagger/go-swagger/swag"
 
 	strfmt "github.com/go-swagger/go-swagger/strfmt"
 )
@@ -28,11 +26,9 @@ func NewGetOrderByIDParams() GetOrderByIDParams {
 type GetOrderByIDParams struct {
 	/*ID of pet that needs to be fetched
 	  Required: true
-	  Maximum: 5
-	  Minimum: 1
 	  In: path
 	*/
-	OrderID int64
+	OrderID string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -57,28 +53,7 @@ func (o *GetOrderByIDParams) bindOrderID(rawData []string, hasKey bool, formats 
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("orderId", "path", "int64", raw)
-	}
-	o.OrderID = value
-
-	if err := o.validateOrderID(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *GetOrderByIDParams) validateOrderID(formats strfmt.Registry) error {
-
-	if err := validate.Minimum("orderId", "path", float64(o.OrderID), 1, false); err != nil {
-		return err
-	}
-
-	if err := validate.Maximum("orderId", "path", float64(o.OrderID), 5, false); err != nil {
-		return err
-	}
+	o.OrderID = raw
 
 	return nil
 }

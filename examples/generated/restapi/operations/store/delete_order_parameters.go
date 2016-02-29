@@ -8,7 +8,6 @@ import (
 
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
-	"github.com/go-swagger/go-swagger/httpkit/validate"
 
 	strfmt "github.com/go-swagger/go-swagger/strfmt"
 )
@@ -27,7 +26,6 @@ func NewDeleteOrderParams() DeleteOrderParams {
 type DeleteOrderParams struct {
 	/*ID of the order that needs to be deleted
 	  Required: true
-	  Min Length: 1
 	  In: path
 	*/
 	OrderID string
@@ -56,19 +54,6 @@ func (o *DeleteOrderParams) bindOrderID(rawData []string, hasKey bool, formats s
 	}
 
 	o.OrderID = raw
-
-	if err := o.validateOrderID(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *DeleteOrderParams) validateOrderID(formats strfmt.Registry) error {
-
-	if err := validate.MinLength("orderId", "path", string(o.OrderID), 1); err != nil {
-		return err
-	}
 
 	return nil
 }
