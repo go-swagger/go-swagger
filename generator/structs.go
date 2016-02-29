@@ -229,6 +229,7 @@ type GenOperationGroup struct {
 	Imports        map[string]string
 	DefaultImports []string
 	RootPackage    string
+	WithContext    bool
 }
 
 // GenOperationGroups is a sorted collection of operation groups
@@ -274,6 +275,7 @@ type GenOperation struct {
 	ExtraSchemes       []string
 	ProducesMediaTypes []string
 	ConsumesMediaTypes []string
+	WithContext        bool
 }
 
 // GenOperations represents a list of operations to generate
@@ -310,6 +312,7 @@ type GenApp struct {
 	OperationGroups     GenOperationGroups
 	SwaggerJSON         string
 	ExcludeSpec         bool
+	WithContext         bool
 }
 
 // GenSerGroup represents a group of serializers, most likely this is a media type to a list of

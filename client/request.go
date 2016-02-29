@@ -16,6 +16,7 @@ package client
 
 import (
 	"os"
+	"time"
 
 	"github.com/go-swagger/go-swagger/strfmt"
 )
@@ -47,4 +48,6 @@ type Request interface {
 	SetFileParam(string, *os.File) error
 
 	SetBodyParam(interface{}) error
+
+	SetTimeout(time.Duration) error
 }

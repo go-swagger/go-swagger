@@ -27,7 +27,7 @@ func main() { {{ if .ExcludeSpec }}
 
   api := {{.Package}}.New{{ pascalize .Name }}API(swaggerSpec)
 	server := {{ .APIPackage }}.NewServer(api)
-  defer api.ServerShutdown(){{ end }}
+  defer server.Shutdown(){{ end }}
 
   parser := flags.NewParser(server, flags.Default)
   parser.ShortDescription = {{ if .Info }}{{ if .Info.Title }}`{{ .Info.Title }}`{{ else }}{{ if .ExcludeSpec }}""{{ else }}swaggerSpec.Spec().Info.Title{{ end }}{{ end }}{{ else }}{{ if .ExcludeSpec }}""{{ else }}swaggerSpec.Spec().Info.Title{{ end }}{{ end}}
@@ -48,7 +48,7 @@ func main() { {{ if .ExcludeSpec }}
 
   api := {{.Package}}.New{{ pascalize .Name }}API(swaggerSpec)
   server.SetAPI(api)
-  defer api.ServerShutdown()
+  defer server.Shutdown()
   {{ end }}
   if err := server.Serve(); err != nil {
     log.Fatalln(err)

@@ -23,11 +23,18 @@ import (
 	"path"
 	"strings"
 	"sync"
+	"time"
+
+	"golang.org/x/net/context"
+	"golang.org/x/net/context/ctxhttp"
 
 	"github.com/go-swagger/go-swagger/client"
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/strfmt"
 )
+
+// DefaultTimeout the default request timeout
+var DefaultTimeout = 30 * time.Second
 
 // Runtime represents an API client that uses the transport
 // to make http requests based on a swagger specification.
@@ -44,6 +51,7 @@ type Runtime struct {
 	BasePath string
 	Formats  strfmt.Registry
 	Debug    bool
+	Context  context.Context
 
 	clientOnce *sync.Once
 	client     *http.Client
@@ -66,6 +74,7 @@ func New(host, basePath string, schemes []string) *Runtime {
 	rt.Jar = nil
 	rt.Host = host
 	rt.BasePath = basePath
+	rt.Context = context.Background()
 	rt.clientOnce = new(sync.Once)
 	if !strings.HasPrefix(rt.BasePath, "/") {
 		rt.BasePath = "/" + rt.BasePath
@@ -160,7 +169,15 @@ func (r *Runtime) Submit(operation *client.Operation) (interface{}, error) {
 		}
 		fmt.Println(string(b))
 	}
-	res, err := r.client.Do(req) // make requests, by default follows 10 redirects before failing
+
+	pctx := r.Context
+	if pctx == nil {
+		pctx = context.Background()
+	}
+	ctx, cancel := context.WithTimeout(pctx, request.timeout)
+	defer cancel()
+
+	res, err := ctxhttp.Do(ctx, r.client, req) // make requests, by default follows 10 redirects before failing
 	if err != nil {
 		return nil, err
 	}
