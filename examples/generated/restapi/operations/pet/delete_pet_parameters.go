@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
+	"github.com/go-swagger/go-swagger/httpkit/validate"
 	"github.com/go-swagger/go-swagger/swag"
 
 	strfmt "github.com/go-swagger/go-swagger/strfmt"
@@ -26,9 +27,10 @@ func NewDeletePetParams() DeletePetParams {
 // swagger:parameters deletePet
 type DeletePetParams struct {
 	/*
+	  Required: true
 	  In: header
 	*/
-	APIKey *string
+	APIKey string
 	/*Pet id to delete
 	  Required: true
 	  In: path
@@ -57,15 +59,18 @@ func (o *DeletePetParams) BindRequest(r *http.Request, route *middleware.Matched
 }
 
 func (o *DeletePetParams) bindAPIKey(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("api_key", "header")
+	}
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
-	if raw == "" { // empty values pass all other validations
-		return nil
+	if err := validate.RequiredString("api_key", "header", raw); err != nil {
+		return err
 	}
 
-	o.APIKey = &raw
+	o.APIKey = raw
 
 	return nil
 }

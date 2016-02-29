@@ -20,7 +20,9 @@ import (
 func NewServer(api *operations.TaskTrackerAPI) *Server {
 	s := new(Server)
 	s.api = api
-	s.handler = configureAPI(api)
+	if api != nil {
+		s.handler = configureAPI(api)
+	}
 	return s
 }
 
@@ -36,6 +38,18 @@ type Server struct {
 
 	api     *operations.TaskTrackerAPI
 	handler http.Handler
+}
+
+// SetAPI configures the server with the specified API. Needs to be called before Serve
+func (s *Server) SetAPI(api *operations.TaskTrackerAPI) {
+	if api == nil {
+		s.api = nil
+		s.handler = nil
+		return
+	}
+
+	s.api = api
+	s.handler = configureAPI(api)
 }
 
 // Serve the api

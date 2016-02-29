@@ -21,11 +21,16 @@ func main() {
 
 	api := operations.NewPetstoreAPI(swaggerSpec)
 	server := restapi.NewServer(api)
-	defer api.ServerShutdown()
+	defer server.Shutdown()
 
 	parser := flags.NewParser(server, flags.Default)
-	parser.ShortDescription = swaggerSpec.Spec().Info.Title
-	parser.LongDescription = swaggerSpec.Spec().Info.Description
+	parser.ShortDescription = `Swagger Petstore`
+	parser.LongDescription = `This is a sample server Petstore server.
+
+[Learn about Swagger](http://swagger.wordnik.com) or join the IRC channel '#swagger' on irc.freenode.net.
+
+For this sample, you can use the api key 'special-key' to test the authorization filters
+`
 
 	for _, optsGroup := range api.CommandLineOptionsGroups {
 		parser.AddGroup(optsGroup.ShortDescription, optsGroup.LongDescription, optsGroup.Options)

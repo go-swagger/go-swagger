@@ -21,12 +21,12 @@ func configureAPI(api *operations.TaskTrackerAPI) http.Handler {
 
 	api.JSONProducer = httpkit.JSONProducer()
 
-	api.APIKeyAuth = func(token string) (interface{}, error) {
-		return nil, errors.NotImplemented("api key auth (api_key) token from query has not yet been implemented")
-	}
-
 	api.TokenHeaderAuth = func(token string) (interface{}, error) {
 		return nil, errors.NotImplemented("api key auth (token_header) X-Token from header has not yet been implemented")
+	}
+
+	api.APIKeyAuth = func(token string) (interface{}, error) {
+		return nil, errors.NotImplemented("api key auth (api_key) token from query has not yet been implemented")
 	}
 
 	api.TasksAddCommentToTaskHandler = tasks.AddCommentToTaskHandlerFunc(func(params tasks.AddCommentToTaskParams, principal interface{}) middleware.Responder {

@@ -65,7 +65,7 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts GenOpts
 		Operations:      operations,
 		Target:          opts.Target,
 		DumpData:        opts.DumpData,
-		Package:         mangleName(swag.ToFileName(opts.APIPackage), "api"),
+		Package:         mangleName(swag.ToFileName(opts.ClientPackage), "client"),
 		APIPackage:      mangleName(swag.ToFileName(opts.APIPackage), "api"),
 		ModelsPackage:   mangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
 		ServerPackage:   mangleName(swag.ToFileName(opts.ServerPackage), "server"),
@@ -87,7 +87,6 @@ func (c *clientGenerator) Generate() error {
 	app, err := c.makeCodegenApp()
 	if app.Name == "" {
 		app.Name = "APIClient"
-		app.Package = "client"
 	}
 	app.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ModelsPackage))}
 	if err != nil {

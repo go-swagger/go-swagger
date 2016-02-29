@@ -46,13 +46,14 @@ type Server struct { {{ if (contains .ExtraSchemes "unix") }}
 	handler           http.Handler
 }
 
+// SetAPI configures the server with the specified API. Needs to be called before Serve
 func (s *Server) SetAPI(api *{{ .Package }}.{{ pascalize .Name }}API) {
 	if api == nil {
 		s.api = nil
 		s.handler = nil
 		return
 	}
-	
+
 	s.api = api
 	s.handler = configureAPI(api)
 }

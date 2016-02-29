@@ -21,10 +21,10 @@ func main() {
 
 	api := operations.NewTodoListAPI(swaggerSpec)
 	server := restapi.NewServer(api)
-	defer api.ServerShutdown()
+	defer server.Shutdown()
 
 	parser := flags.NewParser(server, flags.Default)
-	parser.ShortDescription = swaggerSpec.Spec().Info.Title
+	parser.ShortDescription = `Simple To Do List API`
 	parser.LongDescription = swaggerSpec.Spec().Info.Description
 
 	for _, optsGroup := range api.CommandLineOptionsGroups {

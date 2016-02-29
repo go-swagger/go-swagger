@@ -25,7 +25,7 @@ func NewGetPetByIDParams() GetPetByIDParams {
 //
 // swagger:parameters getPetById
 type GetPetByIDParams struct {
-	/*ID of pet to return
+	/*ID of pet that needs to be fetched
 	  Required: true
 	  In: path
 	*/

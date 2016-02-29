@@ -25,7 +25,6 @@ func NewCreateUsersWithListInputParams() CreateUsersWithListInputParams {
 // swagger:parameters createUsersWithListInput
 type CreateUsersWithListInputParams struct {
 	/*List of user object
-	  Required: true
 	  In: body
 	*/
 	Body []*models.User

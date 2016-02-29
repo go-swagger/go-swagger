@@ -27,7 +27,7 @@ func NewGetOrderByID(ctx *middleware.Context, handler GetOrderByIDHandler) *GetO
 	return &GetOrderByID{Context: ctx, Handler: handler}
 }
 
-/*GetOrderByID swagger:route GET /store/order/{orderId} store getOrderById
+/*GetOrderByID swagger:route GET /stores/order/{orderId} store getOrderById
 
 Find purchase order by ID
 

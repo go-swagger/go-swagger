@@ -4,11 +4,9 @@ package user
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-swagger/go-swagger/httpkit"
-	"github.com/go-swagger/go-swagger/strfmt"
 )
 
 /*LoginUserOK successful operation
@@ -16,14 +14,6 @@ import (
 swagger:response loginUserOK
 */
 type LoginUserOK struct {
-	/*date in UTC when toekn expires
-	  Required: true
-	*/
-	XExpiresAfter strfmt.DateTime `json:"X-Expires-After,omitempty"`
-	/*calls per hour allowed by the user
-	  Required: true
-	*/
-	XRateLimit int32 `json:"X-Rate-Limit,omitempty"`
 
 	// In: body
 	Payload string `json:"body,omitempty"`
@@ -34,18 +24,6 @@ func NewLoginUserOK() *LoginUserOK {
 	return &LoginUserOK{}
 }
 
-// WithXExpiresAfter adds the xExpiresAfter to the login user o k response
-func (o *LoginUserOK) WithXExpiresAfter(xExpiresAfter strfmt.DateTime) *LoginUserOK {
-	o.XExpiresAfter = xExpiresAfter
-	return o
-}
-
-// WithXRateLimit adds the xRateLimit to the login user o k response
-func (o *LoginUserOK) WithXRateLimit(xRateLimit int32) *LoginUserOK {
-	o.XRateLimit = xRateLimit
-	return o
-}
-
 // WithPayload adds the payload to the login user o k response
 func (o *LoginUserOK) WithPayload(payload string) *LoginUserOK {
 	o.Payload = payload
@@ -54,12 +32,6 @@ func (o *LoginUserOK) WithPayload(payload string) *LoginUserOK {
 
 // WriteResponse to the client
 func (o *LoginUserOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
-
-	// response header X-Expires-After
-	rw.Header().Add("X-Expires-After", fmt.Sprintf("%v", o.XExpiresAfter))
-
-	// response header X-Rate-Limit
-	rw.Header().Add("X-Rate-Limit", fmt.Sprintf("%v", o.XRateLimit))
 
 	rw.WriteHeader(200)
 	if err := producer.Produce(rw, o.Payload); err != nil {

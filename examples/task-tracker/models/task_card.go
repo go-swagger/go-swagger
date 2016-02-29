@@ -204,19 +204,19 @@ func (m *TaskCard) validateSeverity(formats strfmt.Registry) error {
 	return nil
 }
 
-var taskCardStatusEnum []interface{}
+var taskCardTypeStatusPropEnum []interface{}
 
 func (m *TaskCard) validateStatusEnum(path, location string, value string) error {
-	if taskCardStatusEnum == nil {
+	if taskCardTypeStatusPropEnum == nil {
 		var res []string
 		if err := json.Unmarshal([]byte(`["open","closed","ignored","rejected"]`), &res); err != nil {
 			return err
 		}
 		for _, v := range res {
-			taskCardStatusEnum = append(taskCardStatusEnum, v)
+			taskCardTypeStatusPropEnum = append(taskCardTypeStatusPropEnum, v)
 		}
 	}
-	if err := validate.Enum(path, location, value, taskCardStatusEnum); err != nil {
+	if err := validate.Enum(path, location, value, taskCardTypeStatusPropEnum); err != nil {
 		return err
 	}
 	return nil
