@@ -117,9 +117,15 @@ func AddNamedImport(fset *token.FileSet, f *ast.File, name, ipath string) (added
 	impDecl.Specs[insertAt] = newImport
 	pos := impDecl.Pos()
 	if insertAt > 0 {
-		// Assign same position as the previous import,
-		// so that the sorter sees it as being in the same block.
-		pos = impDecl.Specs[insertAt-1].Pos()
+		// If there is a comment after an existing import, preserve the comment
+		// position by adding the new import after the comment.
+		if spec, ok := impDecl.Specs[insertAt-1].(*ast.ImportSpec); ok && spec.Comment != nil {
+			pos = spec.Comment.End()
+		} else {
+			// Assign same position as the previous import,
+			// so that the sorter sees it as being in the same block.
+			pos = impDecl.Specs[insertAt-1].Pos()
+		}
 	}
 	if newImport.Name != nil {
 		newImport.Name.NamePos = pos
@@ -142,6 +148,11 @@ func AddNamedImport(fset *token.FileSet, f *ast.File, name, ipath string) (added
 
 // DeleteImport deletes the import path from the file f, if present.
 func DeleteImport(fset *token.FileSet, f *ast.File, path string) (deleted bool) {
+	return DeleteNamedImport(fset, f, "", path)
+}
+
+// DeleteNamedImport deletes the import with the given name and path from the file f, if present.
+func DeleteNamedImport(fset *token.FileSet, f *ast.File, name, path string) (deleted bool) {
 	var delspecs []*ast.ImportSpec
 
 	// Find the import nodes that import path, if any.
@@ -154,6 +165,12 @@ func DeleteImport(fset *token.FileSet, f *ast.File, path string) (deleted bool) 
 		for j := 0; j < len(gen.Specs); j++ {
 			spec := gen.Specs[j]
 			impspec := spec.(*ast.ImportSpec)
+			if impspec.Name == nil && name != "" {
+				continue
+			}
+			if impspec.Name != nil && impspec.Name.Name != name {
+				continue
+			}
 			if importPath(impspec) != path {
 				continue
 			}

@@ -1,6 +1,7 @@
 package flags
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
 	"strings"
@@ -411,4 +412,23 @@ func (option *Option) updateDefaultLiteral() {
 	}
 
 	option.defaultLiteral = def
+}
+
+func (option *Option) shortAndLongName() string {
+	ret := &bytes.Buffer{}
+
+	if option.ShortName != 0 {
+		ret.WriteRune(defaultShortOptDelimiter)
+		ret.WriteRune(option.ShortName)
+	}
+
+	if len(option.LongName) != 0 {
+		if option.ShortName != 0 {
+			ret.WriteRune('/')
+		}
+
+		ret.WriteString(option.LongName)
+	}
+
+	return ret.String()
 }

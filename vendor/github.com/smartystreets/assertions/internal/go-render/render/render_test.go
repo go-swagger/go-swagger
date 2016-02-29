@@ -1,4 +1,4 @@
-// Copyright 2015 Google Inc. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@ package render
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 	"regexp"
 	"runtime"
 	"testing"
@@ -81,7 +82,7 @@ func TestRenderList(t *testing.T) {
 		{struct {
 			a int
 			b string
-		}{123, "foo"}, `struct { a int; b string }{a:123, b:"foo"}`},
+		}{123, "foo"}, `struct { a int; b string }{123, "foo"}`},
 		{[]string{"foo", "foo", "bar", "baz", "qux", "qux"},
 			`[]string{"foo", "foo", "bar", "baz", "qux", "qux"}`},
 		{[...]int{1, 2, 3}, `[3]int{1, 2, 3}`},
@@ -133,12 +134,46 @@ func TestRenderRecursiveMap(t *testing.T) {
 	v := []map[string]interface{}{m, m}
 
 	assertRendersLike(t, "Recursive map", v,
-		`[]map[string]interface{}{map[string]interface{}{`+
+		`[]map[string]interface{}{{`+
 			`"bar":[]*string{(*string)("foo"), (*string)("foo")}, `+
-			`"foo":<REC(map[string]interface{})>}, `+
-			`map[string]interface{}{`+
+			`"foo":<REC(map[string]interface{})>}, {`+
 			`"bar":[]*string{(*string)("foo"), (*string)("foo")}, `+
 			`"foo":<REC(map[string]interface{})>}}`)
+}
+
+func TestRenderImplicitType(t *testing.T) {
+	type namedStruct struct{ a, b int }
+	type namedInt int
+
+	tcs := []struct {
+		in     interface{}
+		expect string
+	}{
+		{
+			[]struct{ a, b int }{{1, 2}},
+			"[]struct { a int; b int }{{1, 2}}",
+		},
+		{
+			map[string]struct{ a, b int }{"hi": {1, 2}},
+			`map[string]struct { a int; b int }{"hi":{1, 2}}`,
+		},
+		{
+			map[namedInt]struct{}{10: {}},
+			`map[render.namedInt]struct {}{10:{}}`,
+		},
+		{
+			struct{ a, b int }{1, 2},
+			`struct { a int; b int }{1, 2}`,
+		},
+		{
+			namedStruct{1, 2},
+			"render.namedStruct{a:1, b:2}",
+		},
+	}
+
+	for _, tc := range tcs {
+		assertRendersLike(t, reflect.TypeOf(tc.in).String(), tc.in, tc.expect)
+	}
 }
 
 func ExampleInReadme() {
@@ -167,4 +202,72 @@ var pointerRE = regexp.MustCompile(`\(0x[a-f0-9]+\)`)
 
 func sanitizePointer(s string) string {
 	return pointerRE.ReplaceAllString(s, "(0x600dd065)")
+}
+
+type chanList []chan int
+
+func (c chanList) Len() int      { return len(c) }
+func (c chanList) Swap(i, j int) { c[i], c[j] = c[j], c[i] }
+func (c chanList) Less(i, j int) bool {
+	return reflect.ValueOf(c[i]).Pointer() < reflect.ValueOf(c[j]).Pointer()
+}
+
+func TestMapSortRendering(t *testing.T) {
+	type namedMapType map[int]struct{ a int }
+	type mapKey struct{ a, b int }
+
+	chans := make(chanList, 5)
+	for i := range chans {
+		chans[i] = make(chan int)
+	}
+
+	tcs := []struct {
+		in     interface{}
+		expect string
+	}{
+		{
+			map[uint32]struct{}{1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {}, 8: {}},
+			"map[uint32]struct {}{1:{}, 2:{}, 3:{}, 4:{}, 5:{}, 6:{}, 7:{}, 8:{}}",
+		},
+		{
+			map[int8]struct{}{1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {}, 8: {}},
+			"map[int8]struct {}{1:{}, 2:{}, 3:{}, 4:{}, 5:{}, 6:{}, 7:{}, 8:{}}",
+		},
+		{
+			map[uintptr]struct{}{1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {}, 8: {}},
+			"map[uintptr]struct {}{1:{}, 2:{}, 3:{}, 4:{}, 5:{}, 6:{}, 7:{}, 8:{}}",
+		},
+		{
+			namedMapType{10: struct{ a int }{20}},
+			"render.namedMapType{10:struct { a int }{20}}",
+		},
+		{
+			map[mapKey]struct{}{mapKey{3, 1}: {}, mapKey{1, 3}: {}, mapKey{1, 2}: {}, mapKey{2, 1}: {}},
+			"map[render.mapKey]struct {}{render.mapKey{a:1, b:2}:{}, render.mapKey{a:1, b:3}:{}, render.mapKey{a:2, b:1}:{}, render.mapKey{a:3, b:1}:{}}",
+		},
+		{
+			map[float64]struct{}{10.5: {}, 10.15: {}, 1203: {}, 1: {}, 2: {}},
+			"map[float64]struct {}{1:{}, 2:{}, 10.15:{}, 10.5:{}, 1203:{}}",
+		},
+		{
+			map[bool]struct{}{true: {}, false: {}},
+			"map[bool]struct {}{false:{}, true:{}}",
+		},
+		{
+			map[interface{}]struct{}{1: {}, 2: {}, 3: {}, "foo": {}},
+			`map[interface{}]struct {}{1:{}, 2:{}, 3:{}, "foo":{}}`,
+		},
+		{
+			map[complex64]struct{}{1 + 2i: {}, 2 + 1i: {}, 3 + 1i: {}, 1 + 3i: {}},
+			"map[complex64]struct {}{(1+2i):{}, (1+3i):{}, (2+1i):{}, (3+1i):{}}",
+		},
+		{
+			map[chan int]string{nil: "a", chans[0]: "b", chans[1]: "c", chans[2]: "d", chans[3]: "e", chans[4]: "f"},
+			`map[(chan int)]string{(chan int)(PTR):"a", (chan int)(PTR):"b", (chan int)(PTR):"c", (chan int)(PTR):"d", (chan int)(PTR):"e", (chan int)(PTR):"f"}`,
+		},
+	}
+
+	for _, tc := range tcs {
+		assertRendersLike(t, reflect.TypeOf(tc.in).Name(), tc.in, tc.expect)
+	}
 }

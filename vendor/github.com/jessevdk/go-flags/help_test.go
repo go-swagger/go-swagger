@@ -53,8 +53,9 @@ type helpOptions struct {
 	} `command:"hidden-command" description:"A hidden command" hidden:"yes"`
 
 	Args struct {
-		Filename string `positional-arg-name:"filename" description:"A filename"`
-		Number   int    `positional-arg-name:"num" description:"A number"`
+		Filename     string  `positional-arg-name:"filename" description:"A filename"`
+		Number       int     `positional-arg-name:"num" description:"A number"`
+		HiddenInHelp float32 `positional-arg-name:"hidden-in-help" required:"yes"`
 	} `positional-args:"yes"`
 }
 
@@ -84,7 +85,8 @@ func TestHelp(t *testing.T) {
 
 		if runtime.GOOS == "windows" {
 			expected = `Usage:
-  TestHelp [OPTIONS] [filename] [num] <command>
+  TestHelp [OPTIONS] [filename] [num] [hidden-in-help] <command>
+
 
 Application Options:
   /v, /verbose                              Show verbose debug information
@@ -129,7 +131,7 @@ Available commands:
 `
 		} else {
 			expected = `Usage:
-  TestHelp [OPTIONS] [filename] [num] <command>
+  TestHelp [OPTIONS] [filename] [num] [hidden-in-help] <command>
 
 Application Options:
   -v, --verbose                             Show verbose debug information

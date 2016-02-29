@@ -21,7 +21,7 @@ func TestWriteIni(t *testing.T) {
 		expected string
 	}{
 		{
-			[]string{"-vv", "--intmap=a:2", "--intmap", "b:3", "filename", "0", "command"},
+			[]string{"-vv", "--intmap=a:2", "--intmap", "b:3", "filename", "0", "3.14", "command"},
 			IniDefault,
 			`[Application Options]
 ; Show verbose debug information
@@ -42,7 +42,7 @@ int-map = b:3
 `,
 		},
 		{
-			[]string{"-vv", "--intmap=a:2", "--intmap", "b:3", "filename", "0", "command"},
+			[]string{"-vv", "--intmap=a:2", "--intmap", "b:3", "filename", "0", "3.14", "command"},
 			IniDefault | IniIncludeDefaults,
 			`[Application Options]
 ; Show verbose debug information
@@ -104,7 +104,7 @@ Opt =
 `,
 		},
 		{
-			[]string{"filename", "0", "command"},
+			[]string{"filename", "0", "3.14", "command"},
 			IniDefault | IniIncludeDefaults | IniCommentDefaults,
 			`[Application Options]
 ; Show verbose debug information
@@ -164,7 +164,7 @@ EnvDefault2 = env-def
 `,
 		},
 		{
-			[]string{"--default=New value", "--default-array=New value", "--default-map=new:value", "filename", "0", "command"},
+			[]string{"--default=New value", "--default-array=New value", "--default-map=new:value", "filename", "0", "3.14", "command"},
 			IniDefault | IniIncludeDefaults | IniCommentDefaults,
 			`[Application Options]
 ; Show verbose debug information
@@ -245,6 +245,92 @@ EnvDefault2 = env-def
 
 		msg := fmt.Sprintf("with arguments %+v and ini options %b", test.args, test.options)
 		assertDiff(t, got, expected, msg)
+	}
+}
+
+func TestReadIni_flagEquivalent(t *testing.T) {
+	type options struct {
+		Opt1 bool `long:"opt1"`
+
+		Group1 struct {
+			Opt2 bool `long:"opt2"`
+		} `group:"group1"`
+
+		Group2 struct {
+			Opt3 bool `long:"opt3"`
+		} `group:"group2" namespace:"ns1"`
+
+		Cmd1 struct {
+			Opt4 bool `long:"opt4"`
+			Opt5 bool `long:"foo.opt5"`
+
+			Group1 struct {
+				Opt6 bool `long:"opt6"`
+				Opt7 bool `long:"foo.opt7"`
+			} `group:"group1"`
+
+			Group2 struct {
+				Opt8 bool `long:"opt8"`
+			} `group:"group2" namespace:"ns1"`
+		} `command:"cmd1"`
+	}
+
+	a := `
+opt1=true
+
+[group1]
+opt2=true
+
+[group2]
+ns1.opt3=true
+
+[cmd1]
+opt4=true
+foo.opt5=true
+
+[cmd1.group1]
+opt6=true
+foo.opt7=true
+
+[cmd1.group2]
+ns1.opt8=true
+`
+	b := `
+opt1=true
+opt2=true
+ns1.opt3=true
+
+[cmd1]
+opt4=true
+foo.opt5=true
+opt6=true
+foo.opt7=true
+ns1.opt8=true
+`
+
+	parse := func(readIni string) (opts options, writeIni string) {
+		p := NewNamedParser("TestIni", Default)
+		p.AddGroup("Application Options", "The application options", &opts)
+
+		inip := NewIniParser(p)
+		err := inip.Parse(strings.NewReader(readIni))
+
+		if err != nil {
+			t.Fatalf("Unexpected error: %s\n\nFile:\n%s", err, readIni)
+		}
+
+		var b bytes.Buffer
+		inip.Write(&b, Default)
+
+		return opts, b.String()
+	}
+
+	aOpt, aIni := parse(a)
+	bOpt, bIni := parse(b)
+
+	assertDiff(t, aIni, bIni, "")
+	if !reflect.DeepEqual(aOpt, bOpt) {
+		t.Errorf("not equal")
 	}
 }
 

@@ -430,14 +430,14 @@ func TestRequiredAllOnCommand(t *testing.T) {
 func TestDefaultOnCommand(t *testing.T) {
 	var opts = struct {
 		Command struct {
-			G bool `short:"g" default:"true"`
+			G string `short:"g" default:"value"`
 		} `command:"cmd"`
 	}{}
 
 	assertParseSuccess(t, &opts, "cmd")
 
-	if !opts.Command.G {
-		t.Errorf("Expected G to be true")
+	if opts.Command.G != "value" {
+		t.Errorf("Expected G to be \"value\"")
 	}
 }
 
@@ -470,14 +470,14 @@ func TestSubcommandsOptional(t *testing.T) {
 func TestCommandAlias(t *testing.T) {
 	var opts = struct {
 		Command struct {
-			G bool `short:"g" default:"true"`
+			G string `short:"g" default:"value"`
 		} `command:"cmd" alias:"cm"`
 	}{}
 
 	assertParseSuccess(t, &opts, "cm")
 
-	if !opts.Command.G {
-		t.Errorf("Expected G to be true")
+	if opts.Command.G != "value" {
+		t.Errorf("Expected G to be \"value\"")
 	}
 }
 

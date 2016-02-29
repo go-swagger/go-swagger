@@ -55,7 +55,7 @@ func TestShellCommandComposition(t *testing.T) {
 				So(result, ShouldResemble, Command{
 					directory:  "/directory",
 					executable: "go",
-					arguments:  []string{"test", "-v", "-coverprofile=reportsPath", "-tags=bob", "-covermode=set", "-timeout=5s", "-json", "-arg1", "-arg2"},
+					arguments:  []string{"test", "-v", "-coverprofile=reportsPath", "-tags=bob", "-covermode=set", "-timeout=5s", "-convey-json", "-arg1", "-arg2"},
 				})
 			})
 		})
@@ -154,7 +154,7 @@ func TestShellCommandComposition(t *testing.T) {
 				So(result, ShouldResemble, Command{
 					directory:  "/directory",
 					executable: "go",
-					arguments:  []string{"test", "-v", "-tags=", "-timeout=1s", "-json", "-arg1", "-arg2"},
+					arguments:  []string{"test", "-v", "-tags=", "-timeout=1s", "-convey-json", "-arg1", "-arg2"},
 				})
 			})
 		})
