@@ -32,6 +32,7 @@ type Server struct {
 	handler http.Handler
 }
 
+// SetAPI configures the server with the specified API. Needs to be called before Serve
 func (s *Server) SetAPI(api *operations.TodoListAPI) {
 	if api == nil {
 		s.api = nil
