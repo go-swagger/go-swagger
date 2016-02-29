@@ -62,7 +62,7 @@ func TestEnum_ComposedThing(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "m.StringThing.Validate(formats)", res)
-					assertInCode(t, "var composedThingNameEnum []interface{}", res)
+					assertInCode(t, "var composedThingTypeNamePropEnum []interface{}", res)
 					assertInCode(t, "m.validateNameEnum(\"name\", \"body\", m.Name)", res)
 					assertInCode(t, k+") validateNameEnum(path, location string, value string)", res)
 				}
@@ -183,7 +183,7 @@ func TestEnum_SliceAndAdditionalItemsThing(t *testing.T) {
 					assertInCode(t, "var sliceAndAdditionalItemsThingEnum []interface{}", res)
 					assertInCode(t, k+") validateSliceAndAdditionalItemsThingEnum(path, location string, value SliceAndAdditionalItemsThing)", res)
 					//assertInCode(t, "m.validateSliceAndAdditionalItemsThingEnum(\"\", \"body\", m)", res)
-					assertInCode(t, "var sliceAndAdditionalItemsThingP0Enum []interface{}", res)
+					assertInCode(t, "var sliceAndAdditionalItemsThingTypeP0PropEnum []interface{}", res)
 					assertInCode(t, k+") validateP0Enum(path, location string, value string)", res)
 					assertInCode(t, "m.validateP0Enum(\"0\", \"body\", m.P0)", res)
 					assertInCode(t, "var sliceAndAdditionalItemsThingItemsEnum []interface{}", res)
@@ -237,18 +237,20 @@ func TestEnum_ObjectThing(t *testing.T) {
 				ff, err := formatGoFile("object_thing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
-					assertInCode(t, "var objectThingNameEnum []interface{}", res)
-					assertInCode(t, "var objectThingFlowerEnum []interface{}", res)
-					assertInCode(t, "var objectThingFlourEnum []interface{}", res)
-					assertInCode(t, "var objectThingWolvesEnum []interface{}", res)
+					assertInCode(t, "var objectThingTypeNamePropEnum []interface{}", res)
+					assertInCode(t, "var objectThingTypeFlowerPropEnum []interface{}", res)
+					assertInCode(t, "var objectThingTypeLionsPropEnum []interface{}", res)
+					assertInCode(t, "var objectThingTypeFlourPropEnum []interface{}", res)
+					assertInCode(t, "var objectThingTypeWolvesPropEnum []interface{}", res)
 					assertInCode(t, "var objectThingWolvesValueEnum []interface{}", res)
 					assertInCode(t, "var objectThingCatsItemsEnum []interface{}", res)
-					assertInCode(t, "var objectThingLionsTuple0P0Enum []interface{}", res)
-					assertInCode(t, "var objectThingLionsTuple0P1Enum []interface{}", res)
+					assertInCode(t, "var objectThingLionsTuple0TypeP0PropEnum []interface{}", res)
+					assertInCode(t, "var objectThingLionsTuple0TypeP1PropEnum []interface{}", res)
 					assertInCode(t, "var objectThingLionsTuple0ItemsEnum []interface{}", res)
 					assertInCode(t, k+") validateNameEnum(path, location string, value string)", res)
 					assertInCode(t, k+") validateFlowerEnum(path, location string, value int32)", res)
 					assertInCode(t, k+") validateFlourEnum(path, location string, value float32)", res)
+					assertInCode(t, k+") validateLionsEnum(path, location string, value float64)", res)
 					assertInCode(t, k+") validateWolvesEnum(path, location string, value map[string]string)", res)
 					assertInCode(t, k+") validateWolvesValueEnum(path, location string, value string)", res)
 					assertInCode(t, k+") validateCatsItemsEnum(path, location string, value string)", res)
@@ -286,7 +288,7 @@ func TestEnum_ComputeInstance(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "Region string `json:\"region,omitempty\"`", res)
-					assertInCode(t, "var computeInstanceRegionEnum []interface{}", res)
+					assertInCode(t, "var computeInstanceTypeRegionPropEnum []interface{}", res)
 					assertInCode(t, "m.validateRegionEnum(\"region\", \"body\", m.Region)", res)
 				}
 			}
@@ -313,8 +315,8 @@ func TestEnum_NewPrototype(t *testing.T) {
 					assertInCode(t, "ActivatingUser *NewPrototypeActivatingUser `json:\"activating_user,omitempty\"`", res)
 					assertInCode(t, "Delegate *NewPrototypeDelegate `json:\"delegate,omitempty\"`", res)
 					assertInCode(t, "Role string `json:\"role,omitempty\"`", res)
-					assertInCode(t, "var newPrototypeRoleEnum []interface{}", res)
-					assertInCode(t, "var newPrototypeDelegateKindEnum []interface{}", res)
+					assertInCode(t, "var newPrototypeTypeRolePropEnum []interface{}", res)
+					assertInCode(t, "var newPrototypeDelegateTypeKindPropEnum []interface{}", res)
 					assertInCode(t, "m.validateDelegate(formats)", res)
 					assertInCode(t, "m.validateRole(formats)", res)
 					assertInCode(t, "m.validateActivatingUser(formats)", res)
@@ -341,6 +343,46 @@ func TestEnum_Issue265(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assert.Equal(t, 1, strings.Count(res, "m.validateSodaBrandEnum"))
+				}
+			}
+		}
+	}
+}
+
+func TestEnum_Issue325(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/sodabooths.json")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "SodaBrand"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("soda_brand.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					assertInCode(t, "var sodaBrandEnum []interface{}", res)
+					assertInCode(t, "err := validate.Enum(path, location, value, sodaBrandEnum)", res)
+					assert.Equal(t, 1, strings.Count(res, "m.validateSodaBrandEnum"))
+				}
+			}
+		}
+
+		k = "Soda"
+		schema = definitions[k]
+		genModel, err = makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("soda.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					assertInCode(t, "var sodaTypeBrandPropEnum []interface{}", res)
+					assertInCode(t, "err := validate.Enum(path, location, value, sodaTypeBrandPropEnum)", res)
+					assert.Equal(t, 1, strings.Count(res, "m.validateBrandEnum"))
 				}
 			}
 		}
