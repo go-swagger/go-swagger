@@ -41,13 +41,13 @@ type {{ pascalize .Name }}Params struct {
   {{ .Description }}
 
   {{ end }}*/
-  {{ pascalize .Name }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (not .IsInterface) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{end}}
+  {{ pascalize .Name }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{end}}
   {{ end }}
 }
 
 {{ range .Params }}
 // With{{ pascalize .Name }} adds the {{ camelize .Name  }} to the {{ humanize $.Name }} params
-func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) With{{ pascalize .Name }}({{ camelize .Name  }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{ end }}) *{{ pascalize $.Name }}Params {
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) With{{ pascalize .Name }}({{ camelize .Name  }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (not .IsStream) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{ end }}) *{{ pascalize $.Name }}Params {
   {{ $.ReceiverName }}.{{ pascalize .Name }} = {{ camelize .Name  }}
   return {{ .ReceiverName }}
 }
@@ -112,11 +112,11 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r client.
   {{ if and .IsNullable (not .AllowEmptyValue) }}}{{end}}
   {{else if .IsArray }}
   {{ if not .IsBodyParam }}{{ if .Child }}{{ if or .Child.Formatter .Child.IsCustomFormatter }}var values{{ pascalize .Name }} []string
-  for _, v := range {{ if and (not .IsArray) (not .IsMap) (.IsNullable) }}*{{end}}{{ .ValueExpression }} {
+  for _, v := range {{ if and (not .IsArray) (not .IsMap) (not .IsStream) (.IsNullable) }}*{{end}}{{ .ValueExpression }} {
     values{{ pascalize .Name }} = append(values{{ pascalize .Name }}, {{ .Child.Formatter }}{{ if .Child.Formatter }}({{ end }}v{{ if .Child.IsCustomFormatter }}.String(){{ end }}{{ if .Child.Formatter }}){{ end }})
   }
-  {{ else }}values{{ pascalize .Name }} := {{ if and (not .IsArray) (not .IsMap) (.IsNullable) }}*{{end}}{{ .ValueExpression }}{{ end }}
-  {{ else }}values{{ pascalize .Name }} := {{ if and (not .IsArray) (not .IsMap) (.IsNullable) }}*{{end}}{{ .ValueExpression }}{{ end }}
+  {{ else }}values{{ pascalize .Name }} := {{ if and (not .IsArray) (not .IsStream) (not .IsMap) (.IsNullable) }}*{{end}}{{ .ValueExpression }}{{ end }}
+  {{ else }}values{{ pascalize .Name }} := {{ if and (not .IsArray) (not .IsStream) (not .IsMap) (.IsNullable) }}*{{end}}{{ .ValueExpression }}{{ end }}
   joined{{ pascalize .Name}} := swag.JoinByFormat(values{{ pascalize .Name }}, "{{.CollectionFormat}}")
   {{ if .IsQueryParam }}// query array param {{ .Name }}
   if err := r.SetQueryParam({{ printf "%q" .Name }}, joined{{ pascalize .Name }}...); err != nil {

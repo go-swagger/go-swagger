@@ -15,6 +15,7 @@
 package client
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/go-swagger/go-swagger/httpkit"
@@ -41,4 +42,24 @@ func (read ResponseReaderFunc) ReadResponse(resp Response, consumer httpkit.Cons
 // An application of this is to create structs from response values
 type ResponseReader interface {
 	ReadResponse(Response, httpkit.Consumer) (interface{}, error)
+}
+
+// NewAPIError creates a new API error
+func NewAPIError(opName string, payload interface{}, code int) *APIError {
+	return &APIError{
+		OperationName: opName,
+		Response:      payload,
+		Code:          code,
+	}
+}
+
+// APIError wraps an error model and captures the status code
+type APIError struct {
+	OperationName string
+	Response      interface{}
+	Code          int
+}
+
+func (a *APIError) Error() string {
+	return fmt.Sprintf("%s (status %d): %+v ", a.OperationName, a.Code, a.Response)
 }

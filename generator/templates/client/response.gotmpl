@@ -117,7 +117,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response cl
       }
       return {{ if .IsSuccess }}result, nil{{else}}nil, result{{end}}{{ end }}{{else}}
     default:
-      return nil, NewAPIError("unknown error", response, response.Code()){{ end }}
+      return nil, client.NewAPIError("unknown error", response, response.Code()){{ end }}
   }
 }
 

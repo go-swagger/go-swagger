@@ -1,6 +1,6 @@
 {{ define "sliceparamvalidator"}}
 {{ if .NeedsSize }}
-{{ camelize .Name }}Size := int64(len({{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) .IsNullable }}*{{ end }}{{ .ValueExpression }}))
+{{ camelize .Name }}Size := int64(len({{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end }}{{ .ValueExpression }}))
 {{ end }}
 {{ if .MinItems }}
 if err := validate.MinItems({{ .Path }}, {{ printf "%q" .Location }}, {{ camelize .Name }}Size, {{ .MinItems }}); err != nil {
@@ -13,12 +13,12 @@ if err := validate.MaxItems({{ .Path }}, {{ printf "%q" .Location }}, {{ cameliz
 }
 {{ end }}
 {{ if .UniqueItems }}
-if err := validate.UniqueItems({{ .Path }}, {{ printf "%q" .Location }}, {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) .IsNullable }}*{{ end }}{{ .ValueExpression }}); err != nil {
+if err := validate.UniqueItems({{ .Path }}, {{ printf "%q" .Location }}, {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end }}{{ .ValueExpression }}); err != nil {
   return err
 }
 {{ end }}
 {{ if .Enum }}
-if err := validate.Enum({{ .Path }}, {{ printf "%q" .Location }}, {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) .IsNullable }}*{{ end }}{{ .ValueExpression }}, {{ .Enum }}); err != nil {
+if err := validate.Enum({{ .Path }}, {{ printf "%q" .Location }}, {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end }}{{ .ValueExpression }}, {{ .Enum }}); err != nil {
   return err
 }
 {{ end }}
@@ -68,7 +68,7 @@ for {{ .IndexVar }} := 0; {{ .IndexVar }} < {{ .IndexVar }}sz; {{ .IndexVar }}++
 
 import (
   "net/http"
-  
+
   "github.com/go-swagger/go-swagger/errors"
   "github.com/go-swagger/go-swagger/httpkit/validate"
   "github.com/go-swagger/go-swagger/httpkit"
@@ -90,7 +90,7 @@ func New{{ pascalize .Name }}Params() {{ pascalize .Name }}Params {
   {{ end }}{{ end }}{{end}}
   )
   return {{ pascalize .Name }}Params{ {{ range .Params }}{{ if .Default }}
-    {{ pascalize .Name}}: {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) .IsNullable }}&{{ end }}{{ camelize .Name }}Default,
+    {{ pascalize .Name}}: {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}&{{ end }}{{ camelize .Name }}Default,
   {{ end }}{{ end }} }
 }
 
@@ -114,7 +114,7 @@ type {{ pascalize .Name }}Params struct {
   Collection Format: {{ .CollectionFormat }}{{ end }}{{ if .Default }}
   Default: {{ printf "%#v" .Default }}{{ end }}
   */
-  {{ if not .Schema }}{{ pascalize .Name }} {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsFileParam) .IsNullable }}*{{ end }}{{.GoType}}{{ else }}{{ pascalize .Name }} {{ if and (not .Schema.IsBaseType) .IsNullable }}*{{ end }}{{.GoType}}{{ end }}
+  {{ if not .Schema }}{{ pascalize .Name }} {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsFileParam) (not .IsStream) .IsNullable }}*{{ end }}{{.GoType}}{{ else }}{{ pascalize .Name }} {{ if and (not .Schema.IsBaseType) .IsNullable (not .Schema.IsStream) }}*{{ end }}{{.GoType}}{{ end }}
   {{ end}}
 }
 
@@ -166,8 +166,9 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
   }
   {{ end }}{{ end }}
 
-  {{ if and .IsBodyParam .Schema }}
-  {{ if and .Schema.IsBaseType .Schema.IsExported }}body, err := {{ .ModelsPackage }}.Unmarshal{{ stripPackage .GoType .ModelsPackage }}{{ if .IsArray }}Slice{{ end }}(r.Body, route.Consumer)
+  {{ if and .IsBodyParam .Schema }}{{ if .Schema.IsStream }}
+  {{ .ReceiverName }}.{{ pascalize .Name }} = r.Body
+  {{ else }}{{ if and .Schema.IsBaseType .Schema.IsExported }}body, err := {{ .ModelsPackage }}.Unmarshal{{ stripPackage .GoType .ModelsPackage }}{{ if .IsArray }}Slice{{ end }}(r.Body, route.Consumer)
   if err != nil {
     res = append(res, err)
   {{ else }}var body {{ .GoType }}
@@ -188,7 +189,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
       {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
     }
   }
-
+  {{ end }}
   {{ end }}
   {{ end }}
   if len(res) > 0 {
@@ -214,7 +215,7 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .Name }}(raw
   }
   {{ else if and ( not .IsPathParam ) (or (not .Required) .AllowEmptyValue) }}if raw == "" { // empty values pass all other validations
     {{ if .Default }}var {{ camelize .Name}}Default {{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{end}} = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
-    {{ .ValueExpression }} = {{ if and (not .IsArray) (not .HasDiscriminator) (or .IsNullable  ) }}&{{ end }}{{ camelize .Name }}Default
+    {{ .ValueExpression }} = {{ if and (not .IsArray) (not .HasDiscriminator) (or .IsNullable  ) (not .IsStream) }}&{{ end }}{{ camelize .Name }}Default
     {{ end }}return nil
   }
   {{ end }}
@@ -227,7 +228,7 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .Name }}(raw
   if err != nil {
     return errors.InvalidType({{ .Path }}, {{ printf "%q" .Location }}, {{ printf "%q" .GoType }}, raw)
   }
-  {{ .ValueExpression }} = {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsFileParam) (not .IsNullable) }}*{{ end }}(value.(*{{ .GoType }}))
+  {{ .ValueExpression }} = {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsFileParam) (not .IsStream) (not .IsNullable) }}*{{ end }}(value.(*{{ .GoType }}))
   {{else}}{{ .ValueExpression }} = {{ if .IsNullable }}&{{ end }}raw
   {{ end }}
   {{if .HasValidations }}if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}(formats); err != nil {

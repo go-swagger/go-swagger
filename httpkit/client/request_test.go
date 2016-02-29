@@ -84,11 +84,11 @@ func TestBuildRequest_SetFile(t *testing.T) {
 	err = r.SetFileParam("directory", os.NewFile(0, "../client"))
 	assert.Error(t, err)
 	// success adds it to the map
-	err = r.SetFileParam("file", mustGetFile("./client.go"))
+	err = r.SetFileParam("file", mustGetFile("./runtime.go"))
 	if assert.NoError(t, err) {
 		fl, ok := r.fileFields["file"]
 		if assert.True(t, ok) {
-			assert.Equal(t, "client.go", filepath.Base(fl.Name()))
+			assert.Equal(t, "runtime.go", filepath.Base(fl.Name()))
 		}
 	}
 }
@@ -155,10 +155,10 @@ func TestBuildRequest_BuildHTTP_Form(t *testing.T) {
 }
 
 func TestBuildRequest_BuildHTTP_Files(t *testing.T) {
-	cont, _ := ioutil.ReadFile("./client.go")
+	cont, _ := ioutil.ReadFile("./runtime.go")
 	reqWrtr := client.RequestWriterFunc(func(req client.Request, reg strfmt.Registry) error {
 		req.SetFormParam("something", "some value")
-		req.SetFileParam("file", mustGetFile("./client.go"))
+		req.SetFileParam("file", mustGetFile("./runtime.go"))
 		req.SetQueryParam("hello", "world")
 		req.SetPathParam("id", "1234")
 		req.SetHeaderParam("X-Rate-Limit", "200")
@@ -183,7 +183,7 @@ func TestBuildRequest_BuildHTTP_Files(t *testing.T) {
 				mpff := frm.File["file"][0]
 				mpf, _ := mpff.Open()
 				defer mpf.Close()
-				assert.Equal(t, "client.go", mpff.Filename)
+				assert.Equal(t, "runtime.go", mpff.Filename)
 				actual, _ := ioutil.ReadAll(mpf)
 				assert.Equal(t, cont, actual)
 			}
