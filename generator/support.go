@@ -575,6 +575,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		bldr.Authed = len(a.SpecDoc.SecurityRequirementsFor(o)) > 0
 		ap := a.APIPackage
 		bldr.RootAPIPackage = swag.ToFileName(a.APIPackage)
+		bldr.WithContext = a.GenOpts != nil && a.GenOpts.WithContext
 		if len(o.Tags) > 0 {
 			for _, tag := range o.Tags {
 				tns[tag] = struct{}{}
@@ -619,6 +620,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			Operations:     v,
 			DefaultImports: []string{filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ModelsPackage))},
 			RootPackage:    a.APIPackage,
+			WithContext:    a.GenOpts != nil && a.GenOpts.WithContext,
 		}
 		opGroups = append(opGroups, opGroup)
 		var importPath string
@@ -684,5 +686,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		Principal:           prin,
 		SwaggerJSON:         fmt.Sprintf("%#v", jsonb),
 		ExcludeSpec:         a.GenOpts != nil && a.GenOpts.ExcludeSpec,
+		WithContext:         a.GenOpts != nil && a.GenOpts.WithContext,
 	}, nil
 }

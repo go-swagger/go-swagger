@@ -120,6 +120,7 @@ type operationGenerator struct {
 	DefaultScheme        string
 	DefaultProduces      string
 	Doc                  *spec.Document
+	WithContext          bool
 }
 
 func (o *operationGenerator) Generate() error {
@@ -143,6 +144,7 @@ func (o *operationGenerator) Generate() error {
 	bldr.DefaultProduces = o.DefaultProduces
 	bldr.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(o.Base), o.ModelsPackage))}
 	bldr.RootAPIPackage = o.APIPackage
+	bldr.WithContext = o.WithContext
 
 	for _, tag := range o.Operation.Tags {
 		if len(o.Tags) == 0 {
@@ -192,6 +194,7 @@ func (o *operationGenerator) Generate() error {
 		og.Doc = o.Doc
 		og.Target = o.Target
 		og.APIPackage = o.APIPackage
+		og.WithContext = o.WithContext
 		return og.Generate()
 	}
 
@@ -208,6 +211,7 @@ type opGen struct {
 	Doc               *spec.Document
 	Target            string
 	APIPackage        string
+	WithContext       bool
 }
 
 func (o *opGen) Generate() error {
@@ -294,6 +298,7 @@ type codeGenOpBuilder struct {
 	ModelsPackage   string
 	Principal       string
 	Target          string
+	WithContext     bool
 	Operation       spec.Operation
 	Doc             *spec.Document
 	Authed          bool
@@ -429,6 +434,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		ProducesMediaTypes: produces,
 		ConsumesMediaTypes: consumes,
 		ExtraSchemes:       extraSchemes,
+		WithContext:        b.WithContext,
 	}, nil
 }
 

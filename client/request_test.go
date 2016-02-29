@@ -18,6 +18,7 @@ import (
 	"net/http"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/stretchr/testify/assert"
@@ -46,6 +47,10 @@ func (t *trw) SetFileParam(_ string, _ *os.File) error { return nil }
 
 func (t *trw) SetBodyParam(body interface{}) error {
 	t.Body = body
+	return nil
+}
+
+func (t *trw) SetTimeout(timeout time.Duration) error {
 	return nil
 }
 

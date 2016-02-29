@@ -98,6 +98,7 @@ type GenOpts struct {
 	IncludeSupport    bool
 	ExcludeSpec       bool
 	TemplateDir       string
+	WithContext       bool
 }
 
 type generatorOptions struct {
