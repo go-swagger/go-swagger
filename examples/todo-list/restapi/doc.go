@@ -1,8 +1,8 @@
 /*Package restapi Simple To Do List API
 
     Schemes:
-      https
       http
+      https
     Host: localhost
     BasePath: /
     Version: 0.1.0
