@@ -152,6 +152,16 @@ func (r *request) BuildHTTP(mediaType string, producers map[string]httpkit.Produ
 	if r.payload != nil {
 		// TODO: infer most appropriate content type based on the producer used,
 		// and the `consumers` section of the spec/operation
+		req.Header.Set(httpkit.HeaderContentType, mediaType)
+		if rdr, ok := r.payload.(io.ReadCloser); ok {
+			req.Body = rdr
+			return req, nil
+		}
+
+		if rdr, ok := r.payload.(io.Reader); ok {
+			req.Body = ioutil.NopCloser(rdr)
+			return req, nil
+		}
 
 		// set the content length of the request or else a chunked transfer is
 		// declared, and this corrupts outgoing JSON payloads. the content's
@@ -165,16 +175,15 @@ func (r *request) BuildHTTP(mediaType string, producers map[string]httpkit.Produ
 		//
 		// to that end a temporary buffer, b, is created to produce the payload
 		// body, and then its size is used to set the request's content length
-		b := &bytes.Buffer{}
+		var b bytes.Buffer
 		producer := producers[mediaType]
-		if err := producer.Produce(b, r.payload); err != nil {
+		if err := producer.Produce(&b, r.payload); err != nil {
 			return nil, err
 		}
 		req.ContentLength = int64(b.Len())
 		if _, err := buf.Write(b.Bytes()); err != nil {
 			return nil, err
 		}
-		r.SetHeaderParam(httpkit.HeaderContentType, mediaType)
 	}
 	return req, nil
 }

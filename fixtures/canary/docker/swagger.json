@@ -2336,7 +2336,8 @@
           "in": "body",
           "description": "Image content if the value - has been specified in fromSrc query parameter",
           "schema": {
-            "type": "string"
+            "type": "string",
+            "format": "binary"
           },
           "required": false
         }, {

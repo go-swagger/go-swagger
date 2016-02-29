@@ -119,6 +119,7 @@ var typeMapping = map[string]string{
 	"rgbcolor":   "strfmt.RGBColor",
 	"duration":   "strfmt.Duration",
 	"password":   "strfmt.Password",
+	"binary":     "io.ReadCloser",
 	"char":       "rune",
 	"int":        "int64",
 	"int8":       "int8",
@@ -159,6 +160,7 @@ func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType)
 			result.GoType = tpe
 			result.IsPrimitive = true
 			_, result.IsCustomFormatter = customFormatters[tpe]
+			result.IsStream = fmt == "binary"
 			return
 		}
 	}
@@ -287,7 +289,8 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema, isRequired bool) (retu
 			}
 			result.SwaggerFormat = schema.Format
 			result.GoType = tpe
-			result.IsPrimitive = true
+			result.IsPrimitive = schFmt != "binary"
+			result.IsStream = schFmt == "binary"
 			result.IsNullable = !isRequired || t.IsNullable(schema)
 			_, result.IsCustomFormatter = customFormatters[tpe]
 			return
@@ -516,6 +519,7 @@ type resolvedType struct {
 	IsCustomFormatter bool
 	IsAliased         bool
 	IsNullable        bool
+	IsStream          bool
 	HasDiscriminator  bool
 
 	// A tuple gets rendered as an anonymous struct with P{index} as property name
@@ -594,4 +598,5 @@ var customFormatters = map[string]struct{}{
 	"strfmt.RGBColor":   struct{}{},
 	"strfmt.Base64":     struct{}{},
 	"strfmt.Duration":   struct{}{},
+	"io.ReadCloser":     struct{}{},
 }
