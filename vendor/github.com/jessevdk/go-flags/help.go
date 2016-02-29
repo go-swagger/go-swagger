@@ -412,7 +412,14 @@ func (p *Parser) WriteHelp(writer io.Writer) {
 			}
 		})
 
-		if len(c.args) > 0 {
+		var args []*Arg
+		for _, arg := range c.args {
+			if arg.Description != "" {
+				args = append(args, arg)
+			}
+		}
+
+		if len(args) > 0 {
 			if c == p.Command {
 				fmt.Fprintf(wr, "\nArguments:\n")
 			} else {
@@ -421,7 +428,7 @@ func (p *Parser) WriteHelp(writer io.Writer) {
 
 			maxlen := aligninfo.descriptionStart()
 
-			for _, arg := range c.args {
+			for _, arg := range args {
 				prefix := strings.Repeat(" ", paddingBeforeOption)
 				fmt.Fprintf(wr, "%s%s", prefix, arg.Name)
 
