@@ -28,8 +28,8 @@ import (
 type GenericError struct {
 	// in: body
 	Body struct {
-		Code    int32  `json:"code"`
-		Message string `json:"message"`
+		Code    int32 `json:"code"`
+		Message error `json:"message"`
 	} `json:"body"`
 }
 
