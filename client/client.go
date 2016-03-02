@@ -20,6 +20,7 @@ type Operation struct {
 	Method             string
 	PathPattern        string
 	ProducesMediaTypes []string
+	ConsumesMediaTypes []string
 	Schemes            []string
 	AuthInfo           AuthInfoWriter
 	Params             RequestWriter

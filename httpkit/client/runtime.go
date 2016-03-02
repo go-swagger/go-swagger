@@ -140,7 +140,12 @@ func (r *Runtime) Submit(operation *client.Operation) (interface{}, error) {
 		}
 	}
 
-	req, err := request.BuildHTTP(r.DefaultMediaType, r.Producers, r.Formats)
+	// TODO: pick appropriate media type
+	cmt := r.DefaultMediaType
+	if len(operation.ConsumesMediaTypes) > 0 {
+		cmt = operation.ConsumesMediaTypes[0]
+	}
+	req, err := request.BuildHTTP(cmt, r.Producers, r.Formats)
 	if err != nil {
 		return nil, err
 	}
