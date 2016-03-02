@@ -3,14 +3,22 @@
 func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(data []byte) error {
   // stage 1, get the array but just the array
   var stage1 []json.RawMessage
-  if err := json.Unmarshal(data, &stage1); err != nil {
+  buf := bytes.NewBuffer(raw)
+  dec := json.NewDecoder(buf)
+  dec.UseNumber()
+
+  if err := dec.Decode(&stage1); err != nil {
     return err
   }
+
   // stage 2{{ if .AdditionalItems }}
   var lastIndex int
   {{ end }}
   {{ range $idx, $val := .Properties }}if len(stage1) > {{ $idx }} {
-    if err := json.Unmarshal(stage1[{{ $idx }}], {{ if (not $val.IsNullable) }}&{{ end }}{{ $val.ReceiverName }}.{{ pascalize $val.Name }}); err != nil {
+    buf = bytes.NewBuffer(stage1[{{ $idx }}])
+    dec := json.NewDecoder(buf)
+    dec.UseNumber()
+    if err := dec.Decode({{ if (not $val.IsNullable) }}&{{ end }}{{ $val.ReceiverName }}.{{ pascalize $val.Name }}); err != nil {
       return err
     }{{ if $.AdditionalItems }}
     lastIndex = {{ $idx }}{{end}}
@@ -20,7 +28,10 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(data []byte) error
   if len(stage1) > lastIndex+1 {
     for _, val := range stage1[lastIndex+1:] {
       var toadd {{ template "schemaType" .AdditionalItems }}
-      if err := json.Unmarshal(val, {{ if not .AdditionalItems.IsNullable }}&{{ end }}toadd); err != nil {
+      buf = bytes.NewBuffer(val)
+      dec := json.NewDecoder(buf)
+      dec.UseNumber()
+      if err := dec.Decode({{ if not .AdditionalItems.IsNullable }}&{{ end }}toadd); err != nil {
         return err
       }
       {{ .ValueExpression }} = append({{ .ValueExpression }}, toadd)
@@ -47,7 +58,11 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
 func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error {
   var data {{ template "subTypeBody" . }}
 
-  if err := json.Unmarshal(raw, &data); err != nil {
+  buf := bytes.NewBuffer(raw)
+  dec := json.NewDecoder(buf)
+  dec.UseNumber()
+
+  if err := dec.Decode(&data); err != nil {
     return err
   }
 
@@ -91,9 +106,14 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
     {{ end }}
   }
 
-  if err := json.Unmarshal(raw, &data); err != nil {
-    return err
+  buf := bytes.NewBuffer(raw)
+  dec := json.NewDecoder(buf)
+  dec.UseNumber()
+  
+  if err := dec.Decode(&data); err != nil {
+  	return err
   }
+
   {{ range .AllOf }}{{ if .IsAnonymous }}{{ range $idx, $val := .Properties }}{{ if .IsBaseType }}allOf{{ $idx }}{{ pascalize $val.Name }}, err := Unmarshal{{ $val.GoType }}(bytes.NewBuffer(raw), httpkit.JSONConsumer())
   if err != nil {
     return err
@@ -102,8 +122,13 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
   if err != nil {
     return err
   }{{ else if and .IsArray .IsBaseType }}var {{ camelize .Name }} {{ .GoType }}
+
+  buf = bytes.NewBuffer(raw)
+  dec = json.NewDecoder(buf)
+  dec.UseNumber()
+  
   untypedObj := make(map[string]interface{})
-  if err := json.Unmarshal(raw, &untypedObj); err != nil {
+  if err := dec.Decode(&untypedObj); err != nil {
     return err
   }
   if untyped{{ pascalize .Name }}, ok := untypedObj[{{ printf "%q" .Name }}]; ok {
