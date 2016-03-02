@@ -376,7 +376,7 @@ func swaggerSchemaForType(typeName string, prop swaggerTypable) error {
 	switch typeName {
 	case "bool":
 		prop.Typed("boolean", "")
-	case "rune", "string":
+	case "error", "rune", "string":
 		prop.Typed("string", "")
 	case "int8":
 		prop.Typed("integer", "int8")
