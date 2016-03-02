@@ -50,6 +50,7 @@ func (a *Client) {{ pascalize .Name }}(params *{{ pascalize .Name }}Params{{ if 
     Method: {{ printf "%q" .Method }},
     PathPattern: {{ printf "%q" .Path }},
     ProducesMediaTypes: {{ printf "%#v" .ProducesMediaTypes }},
+    ConsumesMediaTypes: {{ printf "%#v" .ConsumesMediaTypes }},
     Schemes: {{ printf "%#v" .Schemes }},
     Params: params,
     Reader: &{{ pascalize .Name }}Reader{formats: a.formats},{{ if .Authorized }}

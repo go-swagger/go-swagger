@@ -329,6 +329,58 @@ func TestRuntime_AuthCanary(t *testing.T) {
 	}
 }
 
+func TestRuntime_PickConsumer(t *testing.T) {
+	result := []task{
+		{false, "task 1 content", 1},
+		{false, "task 2 content", 2},
+	}
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.Header.Get("Content-Type") != "application/octet-stream" {
+			rw.Header().Add(httpkit.HeaderContentType, httpkit.JSONMime+";charset=utf-8")
+			rw.WriteHeader(400)
+			return
+		}
+		rw.Header().Add(httpkit.HeaderContentType, httpkit.JSONMime+";charset=utf-8")
+		rw.WriteHeader(http.StatusOK)
+		jsongen := json.NewEncoder(rw)
+		jsongen.Encode(result)
+	}))
+	defer server.Close()
+
+	rwrtr := client.RequestWriterFunc(func(req client.Request, _ strfmt.Registry) error {
+		req.SetBodyParam(bytes.NewBufferString("hello"))
+		return nil
+	})
+
+	hu, _ := url.Parse(server.URL)
+	runtime := New(hu.Host, "/", []string{"http"})
+	res, err := runtime.Submit(&client.Operation{
+		ID:                 "getTasks",
+		Method:             "POST",
+		PathPattern:        "/",
+		Schemes:            []string{"http"},
+		ConsumesMediaTypes: []string{"application/octet-stream"},
+		Params:             rwrtr,
+		Reader: client.ResponseReaderFunc(func(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+			if response.Code() == 200 {
+				var result []task
+				if err := consumer.Consume(response.Body(), &result); err != nil {
+					return nil, err
+				}
+				return result, nil
+			}
+			return nil, errors.New("Generic error")
+		}),
+		AuthInfo: BearerToken("the-super-secret-token"),
+	})
+
+	if assert.NoError(t, err) {
+		assert.IsType(t, []task{}, res)
+		actual := res.([]task)
+		assert.EqualValues(t, result, actual)
+	}
+}
+
 func TestRuntime_ContentTypeCanary(t *testing.T) {
 	// test that it can make a simple request
 	// and get the response for it.
@@ -440,7 +492,6 @@ func TestRuntime_OverrideScheme(t *testing.T) {
 	runtime := New("", "/", []string{"https"})
 	sch := runtime.pickScheme([]string{"http"})
 	assert.Equal(t, "https", sch)
-
 }
 
 func TestRuntime_PreserveTrailingSlash(t *testing.T) {
