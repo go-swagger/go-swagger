@@ -219,6 +219,47 @@ func TestRuntime_XMLCanary(t *testing.T) {
 	}
 }
 
+func TestRuntime_TextCanary(t *testing.T) {
+	// test that it can make a simple text request
+	// and get the response for it.
+	result := "1: task 1 content; 2: task 2 content"
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.Header().Add(httpkit.HeaderContentType, httpkit.TextMime)
+		rw.WriteHeader(http.StatusOK)
+		rw.Write([]byte(result))
+	}))
+	defer server.Close()
+
+	rwrtr := client.RequestWriterFunc(func(req client.Request, _ strfmt.Registry) error {
+		return nil
+	})
+
+	hu, _ := url.Parse(server.URL)
+	runtime := New(hu.Host, "/", []string{"http"})
+	res, err := runtime.Submit(&client.Operation{
+		ID:          "getTasks",
+		Method:      "GET",
+		PathPattern: "/",
+		Params:      rwrtr,
+		Reader: client.ResponseReaderFunc(func(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+			if response.Code() == 200 {
+				var result string
+				if err := consumer.Consume(response.Body(), &result); err != nil {
+					return nil, err
+				}
+				return result, nil
+			}
+			return nil, errors.New("Generic error")
+		}),
+	})
+
+	if assert.NoError(t, err) {
+		assert.IsType(t, "", res)
+		actual := res.(string)
+		assert.EqualValues(t, result, actual)
+	}
+}
+
 type roundTripperFunc func(*http.Request) (*http.Response, error)
 
 func (fn roundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) {

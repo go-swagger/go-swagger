@@ -34,6 +34,8 @@ const (
 	YAMLMime = "application/x-yaml"
 	// XMLMime the xml mime type
 	XMLMime = "application/xml"
+	// TextMime the text mime type
+	TextMime = "text/plain"
 	// MultipartFormMime the multipart form mime type
 	MultipartFormMime = "multipart/form-data"
 )
