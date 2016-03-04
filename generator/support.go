@@ -346,12 +346,14 @@ var mediaTypeNames = map[*regexp.Regexp]string{
 var knownProducers = map[string]string{
 	"json": "httpkit.JSONProducer",
 	"yaml": "httpkit.YAMLProducer",
+	"xml":  "httpkit.XMLProducer",
 	"bin":  "httpkit.ByteStreamProducer",
 }
 
 var knownConsumers = map[string]string{
 	"json": "httpkit.JSONConsumer",
 	"yaml": "httpkit.YAMLConsumer",
+	"xml":  "httpkit.XMLConsumer",
 	"bin":  "httpkit.ByteStreamConsumer",
 }
 
