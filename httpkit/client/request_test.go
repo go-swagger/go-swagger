@@ -33,6 +33,7 @@ import (
 var testProducers = map[string]httpkit.Producer{
 	httpkit.JSONMime: httpkit.JSONProducer(),
 	httpkit.XMLMime:  httpkit.XMLProducer(),
+	httpkit.TextMime: httpkit.TextProducer(),
 }
 
 func TestBuildRequest_SetHeaders(t *testing.T) {
@@ -156,6 +157,29 @@ func TestBuildRequest_BuildHTTP_XMLPayload(t *testing.T) {
 		assert.Equal(t, "world", req.URL.Query().Get("hello"))
 		assert.Equal(t, "/flats/1234/", req.URL.Path)
 		expectedBody, _ := xml.Marshal(bd)
+		actualBody, _ := ioutil.ReadAll(req.Body)
+		assert.Equal(t, expectedBody, actualBody)
+	}
+}
+
+func TestBuildRequest_BuildHTTP_TextPayload(t *testing.T) {
+	bd := "Tom: Organ trail; John: Bird watching"
+	reqWrtr := client.RequestWriterFunc(func(req client.Request, reg strfmt.Registry) error {
+		req.SetBodyParam(bd)
+		req.SetQueryParam("hello", "world")
+		req.SetPathParam("id", "1234")
+		req.SetHeaderParam("X-Rate-Limit", "200")
+		return nil
+	})
+	r, _ := newRequest("GET", "/flats/{id}/", reqWrtr)
+	r.SetHeaderParam(httpkit.HeaderContentType, httpkit.TextMime)
+
+	req, err := r.BuildHTTP(httpkit.TextMime, testProducers, nil)
+	if assert.NoError(t, err) && assert.NotNil(t, req) {
+		assert.Equal(t, "200", req.Header.Get("x-rate-limit"))
+		assert.Equal(t, "world", req.URL.Query().Get("hello"))
+		assert.Equal(t, "/flats/1234/", req.URL.Path)
+		expectedBody := []byte(bd)
 		actualBody, _ := ioutil.ReadAll(req.Body)
 		assert.Equal(t, expectedBody, actualBody)
 	}

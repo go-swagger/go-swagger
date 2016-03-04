@@ -67,10 +67,12 @@ func New(host, basePath string, schemes []string) *Runtime {
 	rt.Consumers = map[string]httpkit.Consumer{
 		httpkit.JSONMime: httpkit.JSONConsumer(),
 		httpkit.XMLMime:  httpkit.XMLConsumer(),
+		httpkit.TextMime: httpkit.TextConsumer(),
 	}
 	rt.Producers = map[string]httpkit.Producer{
 		httpkit.JSONMime: httpkit.JSONProducer(),
 		httpkit.XMLMime:  httpkit.XMLProducer(),
+		httpkit.TextMime: httpkit.TextProducer(),
 	}
 	rt.Transport = http.DefaultTransport
 	rt.Jar = nil

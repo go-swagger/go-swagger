@@ -347,6 +347,7 @@ var knownProducers = map[string]string{
 	"json": "httpkit.JSONProducer",
 	"yaml": "httpkit.YAMLProducer",
 	"xml":  "httpkit.XMLProducer",
+	"txt":  "httpkit.TextProducer",
 	"bin":  "httpkit.ByteStreamProducer",
 }
 
@@ -354,6 +355,7 @@ var knownConsumers = map[string]string{
 	"json": "httpkit.JSONConsumer",
 	"yaml": "httpkit.YAMLConsumer",
 	"xml":  "httpkit.XMLConsumer",
+	"txt":  "httpkit.TextConsumer",
 	"bin":  "httpkit.ByteStreamConsumer",
 }
 
