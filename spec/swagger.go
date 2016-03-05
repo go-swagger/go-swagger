@@ -301,7 +301,7 @@ func (s SchemaOrArray) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON converts this schema object or array from a JSON structure
 func (s *SchemaOrArray) UnmarshalJSON(data []byte) error {
-	if len(data) < 3 {
+	if len(data) < 3 && string(data) != "{}" {
 		return nil
 	}
 	first := data[0]
@@ -310,9 +310,6 @@ func (s *SchemaOrArray) UnmarshalJSON(data []byte) error {
 		var sch Schema
 		if err := json.Unmarshal(data, &sch); err != nil {
 			return err
-		}
-		if reflect.DeepEqual(Schema{}, sch) {
-			return nil
 		}
 		nw.Schema = &sch
 	}
