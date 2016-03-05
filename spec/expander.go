@@ -533,8 +533,10 @@ func expandPathItem(pathItem *PathItem, resolver *schemaLoader) error {
 	if pathItem == nil {
 		return nil
 	}
-	if err := resolver.Resolve(&pathItem.Ref, &pathItem); err != nil {
-		return err
+	if pathItem.Ref.String() != "" {
+		if err := resolver.Resolve(&pathItem.Ref, &pathItem); err != nil {
+			return err
+		}
 	}
 
 	for idx := range pathItem.Parameters {
@@ -597,8 +599,10 @@ func expandResponse(response *Response, resolver *schemaLoader) error {
 		return nil
 	}
 
-	if err := resolver.Resolve(&response.Ref, response); err != nil {
-		return err
+	if response.Ref.String() != "" {
+		if err := resolver.Resolve(&response.Ref, response); err != nil {
+			return err
+		}
 	}
 
 	if response.Schema != nil {
@@ -613,8 +617,10 @@ func expandParameter(parameter *Parameter, resolver *schemaLoader) error {
 	if parameter == nil {
 		return nil
 	}
-	if err := resolver.Resolve(&parameter.Ref, parameter); err != nil {
-		return err
+	if parameter.Ref.String() != "" {
+		if err := resolver.Resolve(&parameter.Ref, parameter); err != nil {
+			return err
+		}
 	}
 	if parameter.Schema != nil {
 		if err := expandSchema(parameter.Schema, resolver); err != nil {
