@@ -513,8 +513,8 @@ definitions:
         opts:
           type: object
           additionalProperties:
-            type: integer
-            format: int32
+            type: number
+            format: float32
             minimum: 2
             maximum: 50
             multipleOf: 1.5

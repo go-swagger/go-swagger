@@ -268,6 +268,56 @@ func TooFewItems(name, in string, min int64) *Validation {
 	}
 }
 
+// ExceedsMaximumInt error for when maxinum validation fails
+func ExceedsMaximumInt(name, in string, max int64, exclusive bool) *Validation {
+	var message string
+	if in == "" {
+		m := maxIncFailNoIn
+		if exclusive {
+			m = maxExcFailNoIn
+		}
+		message = fmt.Sprintf(m, name, max)
+	} else {
+		m := maxIncFail
+		if exclusive {
+			m = maxExcFail
+		}
+		message = fmt.Sprintf(m, name, in, max)
+	}
+	return &Validation{
+		code:    422,
+		Name:    name,
+		In:      in,
+		Value:   max,
+		message: message,
+	}
+}
+
+// ExceedsMaximumUint error for when maxinum validation fails
+func ExceedsMaximumUint(name, in string, max uint64, exclusive bool) *Validation {
+	var message string
+	if in == "" {
+		m := maxIncFailNoIn
+		if exclusive {
+			m = maxExcFailNoIn
+		}
+		message = fmt.Sprintf(m, name, max)
+	} else {
+		m := maxIncFail
+		if exclusive {
+			m = maxExcFail
+		}
+		message = fmt.Sprintf(m, name, in, max)
+	}
+	return &Validation{
+		code:    422,
+		Name:    name,
+		In:      in,
+		Value:   max,
+		message: message,
+	}
+}
+
 // ExceedsMaximum error for when maxinum validation fails
 func ExceedsMaximum(name, in string, max float64, exclusive bool) *Validation {
 	var message string
@@ -289,6 +339,56 @@ func ExceedsMaximum(name, in string, max float64, exclusive bool) *Validation {
 		Name:    name,
 		In:      in,
 		Value:   max,
+		message: message,
+	}
+}
+
+// ExceedsMinimumInt error for when maxinum validation fails
+func ExceedsMinimumInt(name, in string, min int64, exclusive bool) *Validation {
+	var message string
+	if in == "" {
+		m := minIncFailNoIn
+		if exclusive {
+			m = minExcFailNoIn
+		}
+		message = fmt.Sprintf(m, name, min)
+	} else {
+		m := minIncFail
+		if exclusive {
+			m = minExcFail
+		}
+		message = fmt.Sprintf(m, name, in, min)
+	}
+	return &Validation{
+		code:    422,
+		Name:    name,
+		In:      in,
+		Value:   min,
+		message: message,
+	}
+}
+
+// ExceedsMinimumUint error for when maxinum validation fails
+func ExceedsMinimumUint(name, in string, min uint64, exclusive bool) *Validation {
+	var message string
+	if in == "" {
+		m := minIncFailNoIn
+		if exclusive {
+			m = minExcFailNoIn
+		}
+		message = fmt.Sprintf(m, name, min)
+	} else {
+		m := minIncFail
+		if exclusive {
+			m = minExcFail
+		}
+		message = fmt.Sprintf(m, name, in, min)
+	}
+	return &Validation{
+		code:    422,
+		Name:    name,
+		In:      in,
+		Value:   min,
 		message: message,
 	}
 }
