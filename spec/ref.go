@@ -25,7 +25,7 @@ type Refable struct {
 }
 
 func (r Refable) MarshalJSON() ([]byte, error) {
-	return r.Ref.MarshalJSON()
+	return json.Marshal(r.Ref)
 }
 
 func (r *Refable) UnmarshalJSON(d []byte) error {
