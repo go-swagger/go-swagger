@@ -20,14 +20,10 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/go-swagger/go-swagger/swag"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
 )
-
-func IsZero(data reflect.Value) bool {
-	tpe := data.Type()
-	return reflect.DeepEqual(data.Interface(), reflect.Zero(tpe).Interface())
-}
 
 var spec = Swagger{
 	SwaggerProps: SwaggerProps{
@@ -138,7 +134,7 @@ func ShouldBeEquivalentTo(actual interface{}, expecteds ...interface{}) string {
 	expectedType := reflect.TypeOf(expected)
 	if reflect.TypeOf(actual).ConvertibleTo(expectedType) {
 		expectedValue := reflect.ValueOf(expected)
-		if IsZero(expectedValue) && IsZero(reflect.ValueOf(actual)) {
+		if swag.IsZero(expectedValue) && swag.IsZero(reflect.ValueOf(actual)) {
 			return ""
 		}
 

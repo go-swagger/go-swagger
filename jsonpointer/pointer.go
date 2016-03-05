@@ -105,14 +105,6 @@ func GetForToken(document interface{}, decodedToken string) (interface{}, reflec
 	return getSingleImpl(document, decodedToken, swag.DefaultJSONNameProvider)
 }
 
-func isZero(data reflect.Value) bool {
-	if !data.CanInterface() {
-		return true
-	}
-	tpe := data.Type()
-	return reflect.DeepEqual(data.Interface(), reflect.Zero(tpe).Interface())
-}
-
 func getSingleImpl(node interface{}, decodedToken string, nameProvider *swag.NameProvider) (interface{}, reflect.Kind, error) {
 	kind := reflect.Invalid
 	rValue := reflect.Indirect(reflect.ValueOf(node))
@@ -137,7 +129,7 @@ func getSingleImpl(node interface{}, decodedToken string, nameProvider *swag.Nam
 	case reflect.Map:
 		kv := reflect.ValueOf(decodedToken)
 		mv := rValue.MapIndex(kv)
-		if mv.IsValid() && !isZero(mv) {
+		if mv.IsValid() && !swag.IsZero(mv) {
 			return mv.Interface(), kind, nil
 		}
 		return nil, kind, fmt.Errorf("object has no key %q", decodedToken)

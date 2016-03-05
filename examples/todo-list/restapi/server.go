@@ -12,6 +12,7 @@ import (
 	graceful "github.com/tylerb/graceful"
 
 	"github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations"
+	"github.com/go-swagger/go-swagger/swag"
 )
 
 //go:generate swagger generate server -t ../.. -A TodoList -f ./swagger.yml
@@ -38,8 +39,11 @@ type Server struct {
 	TLSCertificate    flags.Filename `long:"tls-certificate" description:"the certificate to use for secure connections" required:"true" env:"TLS_CERTIFICATE"`
 	TLSCertificateKey flags.Filename `long:"tls-key" description:"the private key to use for secure conections" required:"true" env:"TLS_PRIVATE_KEY"`
 
-	api     *operations.TodoListAPI
-	handler http.Handler
+	api           *operations.TodoListAPI
+	handler       http.Handler
+	domainSocketL net.Listener
+	httpServerL   net.Listener
+	httpsServerL  net.Listener
 }
 
 // SetAPI configures the server with the specified API. Needs to be called before Serve
@@ -57,34 +61,28 @@ func (s *Server) SetAPI(api *operations.TodoListAPI) {
 // Serve the api
 func (s *Server) Serve() (err error) {
 
-	domainSocket := &graceful.Server{Server: new(http.Server)}
-	domainSocket.Handler = s.handler
-	domSockListener, err := net.Listen("unix", string(s.SocketPath))
-	if err != nil {
+	if err := s.Listen(); err != nil {
 		return err
 	}
+	domainSocket := &graceful.Server{Server: new(http.Server)}
+	domainSocket.Handler = s.handler
 
 	fmt.Printf("serving todo list at unix://%s\n", s.SocketPath)
-	go func() {
-		if err := domainSocket.Serve(domSockListener); err != nil {
+	go func(l net.Listener) {
+		if err := domainSocket.Serve(l); err != nil {
 			log.Fatalln(err)
 		}
-	}()
+	}(s.domainSocketL)
 
 	httpServer := &graceful.Server{Server: new(http.Server)}
 	httpServer.Handler = s.handler
 
-	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.Host, s.Port))
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("serving todo list at http://%s\n", listener.Addr())
-	go func() {
-		if err := httpServer.Serve(tcpKeepAliveListener{listener.(*net.TCPListener)}); err != nil {
+	fmt.Printf("serving todo list at http://%s\n", s.httpServerL.Addr())
+	go func(l net.Listener) {
+		if err := httpServer.Serve(tcpKeepAliveListener{l.(*net.TCPListener)}); err != nil {
 			log.Fatalln(err)
 		}
-	}()
+	}(s.httpServerL)
 
 	httpsServer := &graceful.Server{Server: new(http.Server)}
 	httpsServer.Handler = s.handler
@@ -101,17 +99,52 @@ func (s *Server) Serve() (err error) {
 	if s.TLSHost == "" {
 		s.TLSHost = s.Host
 	}
+
+	fmt.Printf("serving todo list at https://%s\n", s.httpsServerL.Addr())
+	wrapped := tls.NewListener(tcpKeepAliveListener{s.httpsServerL.(*net.TCPListener)}, httpsServer.TLSConfig)
+	if err := httpsServer.Serve(wrapped); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Listen creates the listeners for the server
+func (s *Server) Listen() error {
+	domSockListener, err := net.Listen("unix", string(s.SocketPath))
+	if err != nil {
+		return err
+	}
+	s.domainSocketL = domSockListener
+
+	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.Host, s.Port))
+	if err != nil {
+		return err
+	}
+
+	h, p, err := swag.SplitHostPort(listener.Addr().String())
+	if err != nil {
+		return err
+	}
+	s.Host = h
+	s.Port = p
+	s.httpServerL = listener
+
+	if s.TLSHost == "" {
+		s.TLSHost = s.Host
+	}
 	tlsListener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.TLSHost, s.TLSPort))
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("serving todo list at https://%s\n", tlsListener.Addr())
-	wrapped := tls.NewListener(tcpKeepAliveListener{tlsListener.(*net.TCPListener)}, httpsServer.TLSConfig)
-	if err := httpsServer.Serve(wrapped); err != nil {
+	sh, sp, err := swag.SplitHostPort(tlsListener.Addr().String())
+	if err != nil {
 		return err
 	}
-
+	s.TLSHost = sh
+	s.TLSPort = sp
+	s.httpsServerL = tlsListener
 	return nil
 }
 
