@@ -180,12 +180,3 @@ func (s *schemaPropsValidator) Validate(data interface{}) *Result {
 	mainResult.Inc()
 	return mainResult
 }
-
-// IsZero returns true when the value is a zero for the type
-func isZero(data reflect.Value) bool {
-	if !data.CanInterface() {
-		return true
-	}
-	tpe := data.Type()
-	return reflect.DeepEqual(data.Interface(), reflect.Zero(tpe).Interface())
-}

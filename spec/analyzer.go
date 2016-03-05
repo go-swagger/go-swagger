@@ -334,6 +334,7 @@ func (s *specAnalyzer) paramsAsMap(parameters []Parameter, res map[string]Parame
 	}
 }
 
+// ParametersFor the specified operation id
 func (s *specAnalyzer) ParametersFor(operationID string) []Parameter {
 	gatherParams := func(pi *PathItem, op *Operation) []Parameter {
 		bag := make(map[string]Parameter)
@@ -449,6 +450,8 @@ type SchemaRef struct {
 	Schema *Schema
 }
 
+// SchemasWithAllOf returns schema references to all schemas that are defined
+// with an allOf key
 func (s *specAnalyzer) SchemasWithAllOf() (result []SchemaRef) {
 	for _, v := range s.allOfs {
 		result = append(result, v)
@@ -456,6 +459,7 @@ func (s *specAnalyzer) SchemasWithAllOf() (result []SchemaRef) {
 	return
 }
 
+// AllDefinitions returns schema references for all the definitions that were discovered
 func (s *specAnalyzer) AllDefinitions() (result []SchemaRef) {
 	for _, v := range s.allSchemas {
 		result = append(result, v)
@@ -463,6 +467,7 @@ func (s *specAnalyzer) AllDefinitions() (result []SchemaRef) {
 	return
 }
 
+// AllDefinitionReferences returns json refs for all the discovered schemas
 func (s *specAnalyzer) AllDefinitionReferences() (result []string) {
 	for _, v := range s.references.schemas {
 		result = append(result, v.String())
@@ -470,6 +475,7 @@ func (s *specAnalyzer) AllDefinitionReferences() (result []string) {
 	return
 }
 
+// AllParameterReferences returns json refs for all the discovered parameters
 func (s *specAnalyzer) AllParameterReferences() (result []string) {
 	for _, v := range s.references.parameters {
 		result = append(result, v.String())
@@ -477,6 +483,7 @@ func (s *specAnalyzer) AllParameterReferences() (result []string) {
 	return
 }
 
+// AllResponseReferences returns json refs for all the discovered responses
 func (s *specAnalyzer) AllResponseReferences() (result []string) {
 	for _, v := range s.references.responses {
 		result = append(result, v.String())
