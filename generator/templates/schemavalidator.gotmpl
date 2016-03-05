@@ -20,12 +20,12 @@ if err := validate.Pattern({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf
 }
 {{end}}
 {{if .Minimum}}
-if err := validate.Minimum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, float64({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), {{.Minimum}}, {{.ExclusiveMinimum}}); err != nil {
+if err := validate.Minimum{{ if eq .SwaggerType "integer" }}Int{{ end }}({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if eq .SwaggerType "integer" }}int{{ else }}float{{ end }}64({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), {{.Minimum}}, {{.ExclusiveMinimum}}); err != nil {
   return err
 }
 {{end}}
 {{if .Maximum}}
-if err := validate.Maximum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, float64({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), {{.Maximum}}, {{.ExclusiveMaximum}}); err != nil {
+if err := validate.Maximum{{ if eq .SwaggerType "integer" }}Int{{ end }}({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if eq .SwaggerType "integer" }}int{{ else }}float{{ end }}64({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), {{.Maximum}}, {{.ExclusiveMaximum}}); err != nil {
   return err
 }
 {{end}}

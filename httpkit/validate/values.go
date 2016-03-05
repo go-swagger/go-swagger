@@ -130,6 +130,22 @@ func Pattern(path, in, data, pattern string) *errors.Validation {
 	return nil
 }
 
+// MaximumIn validates if a number is smaller than a given maximum
+func MaximumInt(path, in string, data, max int64, exclusive bool) *errors.Validation {
+	if (!exclusive && data > max) || (exclusive && data >= max) {
+		return errors.ExceedsMaximumInt(path, in, max, exclusive)
+	}
+	return nil
+}
+
+// MaximumUint validates if a number is smaller than a given maximum
+func MaximumUin(path, in string, data, max uint64, exclusive bool) *errors.Validation {
+	if (!exclusive && data > max) || (exclusive && data >= max) {
+		return errors.ExceedsMaximumUint(path, in, max, exclusive)
+	}
+	return nil
+}
+
 // Maximum validates if a number is smaller than a given maximum
 func Maximum(path, in string, data, max float64, exclusive bool) *errors.Validation {
 	if (!exclusive && data > max) || (exclusive && data >= max) {
@@ -142,6 +158,22 @@ func Maximum(path, in string, data, max float64, exclusive bool) *errors.Validat
 func Minimum(path, in string, data, min float64, exclusive bool) *errors.Validation {
 	if (!exclusive && data < min) || (exclusive && data <= min) {
 		return errors.ExceedsMinimum(path, in, min, exclusive)
+	}
+	return nil
+}
+
+// MinimumInt validates if a number is smaller than a given minimum
+func MinimumInt(path, in string, data, min int64, exclusive bool) *errors.Validation {
+	if (!exclusive && data < min) || (exclusive && data <= min) {
+		return errors.ExceedsMinimumInt(path, in, min, exclusive)
+	}
+	return nil
+}
+
+// MinimumUint validates if a number is smaller than a given minimum
+func MinimumUint(path, in string, data, min uint64, exclusive bool) *errors.Validation {
+	if (!exclusive && data < min) || (exclusive && data <= min) {
+		return errors.ExceedsMinimumUint(path, in, min, exclusive)
 	}
 	return nil
 }

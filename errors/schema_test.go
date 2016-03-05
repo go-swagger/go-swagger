@@ -77,6 +77,46 @@ func TestSchemaErrors(t *testing.T) {
 	assert.EqualValues(t, 422, err.Code())
 	assert.Equal(t, "something should have at least 5 items", err.Error())
 
+	err = ExceedsMaximumInt("something", "query", 5, false)
+	assert.Error(t, err)
+	assert.EqualValues(t, 422, err.Code())
+	assert.Equal(t, "something in query should be less than or equal to 5", err.Error())
+
+	err = ExceedsMaximumInt("something", "", 5, false)
+	assert.Error(t, err)
+	assert.EqualValues(t, 422, err.Code())
+	assert.Equal(t, "something should be less than or equal to 5", err.Error())
+
+	err = ExceedsMaximumInt("something", "query", 5, true)
+	assert.Error(t, err)
+	assert.EqualValues(t, 422, err.Code())
+	assert.Equal(t, "something in query should be less than 5", err.Error())
+
+	err = ExceedsMaximumInt("something", "", 5, true)
+	assert.Error(t, err)
+	assert.EqualValues(t, 422, err.Code())
+	assert.Equal(t, "something should be less than 5", err.Error())
+
+	err = ExceedsMaximumUint("something", "query", 5, false)
+	assert.Error(t, err)
+	assert.EqualValues(t, 422, err.Code())
+	assert.Equal(t, "something in query should be less than or equal to 5", err.Error())
+
+	err = ExceedsMaximumUint("something", "", 5, false)
+	assert.Error(t, err)
+	assert.EqualValues(t, 422, err.Code())
+	assert.Equal(t, "something should be less than or equal to 5", err.Error())
+
+	err = ExceedsMaximumUint("something", "query", 5, true)
+	assert.Error(t, err)
+	assert.EqualValues(t, 422, err.Code())
+	assert.Equal(t, "something in query should be less than 5", err.Error())
+
+	err = ExceedsMaximumUint("something", "", 5, true)
+	assert.Error(t, err)
+	assert.EqualValues(t, 422, err.Code())
+	assert.Equal(t, "something should be less than 5", err.Error())
+
 	err = ExceedsMaximum("something", "query", 5, false)
 	assert.Error(t, err)
 	assert.EqualValues(t, 422, err.Code())
@@ -96,6 +136,46 @@ func TestSchemaErrors(t *testing.T) {
 	assert.Error(t, err)
 	assert.EqualValues(t, 422, err.Code())
 	assert.Equal(t, "something should be less than 5", err.Error())
+
+	err = ExceedsMinimumInt("something", "query", 5, false)
+	assert.Error(t, err)
+	assert.EqualValues(t, 422, err.Code())
+	assert.Equal(t, "something in query should be greater than or equal to 5", err.Error())
+
+	err = ExceedsMinimumInt("something", "", 5, false)
+	assert.Error(t, err)
+	assert.EqualValues(t, 422, err.Code())
+	assert.Equal(t, "something should be greater than or equal to 5", err.Error())
+
+	err = ExceedsMinimumInt("something", "query", 5, true)
+	assert.Error(t, err)
+	assert.EqualValues(t, 422, err.Code())
+	assert.Equal(t, "something in query should be greater than 5", err.Error())
+
+	err = ExceedsMinimumInt("something", "", 5, true)
+	assert.Error(t, err)
+	assert.EqualValues(t, 422, err.Code())
+	assert.Equal(t, "something should be greater than 5", err.Error())
+
+	err = ExceedsMinimumUint("something", "query", 5, false)
+	assert.Error(t, err)
+	assert.EqualValues(t, 422, err.Code())
+	assert.Equal(t, "something in query should be greater than or equal to 5", err.Error())
+
+	err = ExceedsMinimumUint("something", "", 5, false)
+	assert.Error(t, err)
+	assert.EqualValues(t, 422, err.Code())
+	assert.Equal(t, "something should be greater than or equal to 5", err.Error())
+
+	err = ExceedsMinimumUint("something", "query", 5, true)
+	assert.Error(t, err)
+	assert.EqualValues(t, 422, err.Code())
+	assert.Equal(t, "something in query should be greater than 5", err.Error())
+
+	err = ExceedsMinimumUint("something", "", 5, true)
+	assert.Error(t, err)
+	assert.EqualValues(t, 422, err.Code())
+	assert.Equal(t, "something should be greater than 5", err.Error())
 
 	err = ExceedsMinimum("something", "query", 5, false)
 	assert.Error(t, err)
