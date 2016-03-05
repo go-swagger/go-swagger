@@ -130,7 +130,7 @@ func Pattern(path, in, data, pattern string) *errors.Validation {
 	return nil
 }
 
-// MaximumIn validates if a number is smaller than a given maximum
+// MaximumInt validates if a number is smaller than a given maximum
 func MaximumInt(path, in string, data, max int64, exclusive bool) *errors.Validation {
 	if (!exclusive && data > max) || (exclusive && data >= max) {
 		return errors.ExceedsMaximumInt(path, in, max, exclusive)
@@ -139,7 +139,7 @@ func MaximumInt(path, in string, data, max int64, exclusive bool) *errors.Valida
 }
 
 // MaximumUint validates if a number is smaller than a given maximum
-func MaximumUin(path, in string, data, max uint64, exclusive bool) *errors.Validation {
+func MaximumUint(path, in string, data, max uint64, exclusive bool) *errors.Validation {
 	if (!exclusive && data > max) || (exclusive && data >= max) {
 		return errors.ExceedsMaximumUint(path, in, max, exclusive)
 	}
