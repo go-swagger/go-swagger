@@ -6,9 +6,6 @@ Swagger 2.0 [![Build Status](https://ci.vmware.run/api/badges/go-swagger/go-swag
 Development of this toolkit is sponsored by VMware:  
 [![VMWare](https://avatars2.githubusercontent.com/u/473334?v=3&s=200)](https://vmware.github.io)  
 
-There is a code coverage report available in the artifacts section of a build. Unfortunately using coveralls made the
-build unstable.
-
 Contains an implementation of Swagger 2.0. It knows how to serialize and deserialize swagger specifications.
 
 Swagger is a simple yet powerful representation of your RESTful API.  
