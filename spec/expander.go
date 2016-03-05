@@ -214,6 +214,9 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 	if refURL.Scheme != "" && refURL.Host != "" {
 		// most definitely take the red pill
 		data, _, _, err := r.load(refURL)
+		if err != nil {
+			return err
+		}
 
 		if ((oldRef == nil && currentRef != nil) ||
 			(oldRef != nil && currentRef == nil) ||
