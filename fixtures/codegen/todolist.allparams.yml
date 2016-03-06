@@ -121,6 +121,26 @@ paths:
         default:
           description: Generic Error
 
+  /withArray:
+    get:
+      operationId: withArray
+      tags:
+        - tasks
+      parameters:
+        - name: sha256
+          in: query
+          required: true
+          type: array
+          items:
+            type: string
+            minLength: 64
+            maxLength: 64
+          collectionFormat: multi
+      response:
+        default:
+          description: Generic Error
+
+
 definitions:
   Task:
     title: A Task object
