@@ -404,7 +404,6 @@ func TestEnum_Issue352(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, ", value SlpActionEnum", res)
-					fmt.Println(res)
 				}
 			}
 		}

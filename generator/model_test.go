@@ -99,7 +99,7 @@ The description of the property
 
 	gmp.Description = ""
 	gmp.Name = "theModel"
-	expected = `TheModel the model
+	expected = `the model
 `
 	tt.assertRender(gmp, expected)
 }
@@ -1408,7 +1408,7 @@ func TestGenModel_Issue222(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ct)
 					assertInCode(t, "Price) Validate(formats strfmt.Registry) error", res)
-					assertInCode(t, "Currency *Currency `json:\"currency,omitempty\"`", res)
+					assertInCode(t, "Currency Currency `json:\"currency,omitempty\"`", res)
 					assertInCode(t, "m.Currency.Validate(formats); err != nil", res)
 				}
 			}
@@ -1538,6 +1538,26 @@ func TestGenModel_Issue340(t *testing.T) {
 					if !(b1 && b2) {
 						fmt.Println(res)
 					}
+				}
+			}
+		}
+	}
+}
+
+func TestGenModel_Issue381(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "flags_list"
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("flags_list.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertNotInCode(t, "m[i] != nil", res)
 				}
 			}
 		}
