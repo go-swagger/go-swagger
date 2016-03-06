@@ -16,6 +16,7 @@ package httpkit
 
 import (
 	"bytes"
+	"io"
 	"net/http/httptest"
 	"testing"
 
@@ -24,6 +25,13 @@ import (
 
 var consProdJSON = `{"name":"Somebody","id":1}`
 
+type eofRdr struct {
+}
+
+func (r *eofRdr) Read(d []byte) (int, error) {
+	return 0, io.EOF
+}
+
 func TestJSONConsumer(t *testing.T) {
 	cons := JSONConsumer()
 	var data struct {
@@ -31,9 +39,13 @@ func TestJSONConsumer(t *testing.T) {
 		ID   int
 	}
 	err := cons.Consume(bytes.NewBuffer([]byte(consProdJSON)), &data)
-	assert.NoError(t, err)
-	assert.Equal(t, "Somebody", data.Name)
-	assert.Equal(t, 1, data.ID)
+	if assert.NoError(t, err) {
+		assert.Equal(t, "Somebody", data.Name)
+		assert.Equal(t, 1, data.ID)
+
+		err = cons.Consume(new(eofRdr), &data)
+		assert.Error(t, err)
+	}
 }
 
 func TestJSONProducer(t *testing.T) {
