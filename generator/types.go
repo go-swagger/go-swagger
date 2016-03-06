@@ -479,7 +479,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		if !isAnonymous && t.ModelName != "" {
 			result.AliasedType = result.GoType
 			result.IsAliased = true
-			result.GoType = t.ModelName
+			result.GoType = swag.ToGoName(t.ModelName)
 			if t.ModelsPackage != "" {
 				result.GoType = t.ModelsPackage + "." + t.ModelName
 			}
