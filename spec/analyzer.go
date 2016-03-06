@@ -28,6 +28,8 @@ type referenceAnalysis struct {
 	schemas    map[string]Ref
 	responses  map[string]Ref
 	parameters map[string]Ref
+	items      map[string]Ref
+	allRefs    map[string]Ref
 	referenced struct {
 		schemas    map[string]SchemaRef
 		responses  map[string]*Response
@@ -35,11 +37,27 @@ type referenceAnalysis struct {
 	}
 }
 
+func (r *referenceAnalysis) addRef(key string, ref Ref) {
+	if r.allRefs == nil {
+		r.allRefs = make(map[string]Ref)
+	}
+	r.allRefs["#"+key] = ref
+}
+
+func (r *referenceAnalysis) addItemsRef(key string, items *Items) {
+	if r.items == nil {
+		r.items = make(map[string]Ref)
+	}
+	r.items["#"+key] = items.Ref
+	r.addRef(key, items.Ref)
+}
+
 func (r *referenceAnalysis) addSchemaRef(key string, ref SchemaRef) {
 	if r.schemas == nil {
 		r.schemas = make(map[string]Ref)
 	}
 	r.schemas["#"+key] = ref.Schema.Ref
+	r.addRef(key, ref.Schema.Ref)
 }
 
 func (r *referenceAnalysis) addResponseRef(key string, resp *Response) {
@@ -47,6 +65,7 @@ func (r *referenceAnalysis) addResponseRef(key string, resp *Response) {
 		r.responses = make(map[string]Ref)
 	}
 	r.responses["#"+key] = resp.Ref
+	r.addRef(key, resp.Ref)
 }
 
 func (r *referenceAnalysis) addParamRef(key string, param *Parameter) {
@@ -54,6 +73,7 @@ func (r *referenceAnalysis) addParamRef(key string, param *Parameter) {
 		r.parameters = make(map[string]Ref)
 	}
 	r.parameters["#"+key] = param.Ref
+	r.addRef(key, param.Ref)
 }
 
 // specAnalyzer takes a swagger spec object and turns it into a registry
@@ -86,14 +106,24 @@ func (s *specAnalyzer) initialize() {
 	}
 
 	for name, parameter := range s.spec.Parameters {
+		refPref := slashpath.Join("/parameters", jsonpointer.Escape(name))
+		if parameter.Items != nil {
+			s.analyzeItems("items", parameter.Items, refPref)
+		}
 		if parameter.In == "body" && parameter.Schema != nil {
-			s.analyzeSchema("schema", *parameter.Schema, slashpath.Join("/parameters", jsonpointer.Escape(name)))
+			s.analyzeSchema("schema", *parameter.Schema, refPref)
 		}
 	}
 
 	for name, response := range s.spec.Responses {
+		refPref := slashpath.Join("/responses", jsonpointer.Escape(name))
+		for _, v := range response.Headers {
+			if v.Items != nil {
+				s.analyzeItems("items", v.Items, refPref)
+			}
+		}
 		if response.Schema != nil {
-			s.analyzeSchema("schema", *response.Schema, slashpath.Join("/responses", jsonpointer.Escape(name)))
+			s.analyzeSchema("schema", *response.Schema, refPref)
 		}
 	}
 
@@ -120,9 +150,25 @@ func (s *specAnalyzer) analyzeOperations(path string, pi *PathItem) {
 		if param.Ref.String() != "" {
 			s.references.addParamRef(refPref, &param)
 		}
+		if param.Items != nil {
+			s.analyzeItems("items", param.Items, refPref)
+		}
 		if param.Schema != nil {
 			s.analyzeSchema("schema", *param.Schema, refPref)
 		}
+	}
+}
+
+func (s *specAnalyzer) analyzeItems(name string, items *Items, prefix string) {
+	if items == nil {
+		return
+	}
+	refPref := slashpath.Join(prefix, name)
+	if items.Items != nil {
+		s.analyzeItems(name, items.Items, refPref)
+	}
+	if items.Ref.String() != "" {
+		s.references.addItemsRef(refPref, items)
 	}
 }
 
@@ -152,6 +198,9 @@ func (s *specAnalyzer) analyzeOperation(method, path string, op *Operation) {
 		if param.Ref.String() != "" {
 			s.references.addParamRef(refPref, &param)
 		}
+		if param.Items != nil {
+			s.analyzeItems("items", param.Items, refPref)
+		}
 		if param.In == "body" && param.Schema != nil {
 			s.analyzeSchema("schema", *param.Schema, refPref)
 		}
@@ -162,6 +211,11 @@ func (s *specAnalyzer) analyzeOperation(method, path string, op *Operation) {
 			if op.Responses.Default.Ref.String() != "" {
 				s.references.addResponseRef(refPref, op.Responses.Default)
 			}
+			for _, v := range op.Responses.Default.Headers {
+				if v.Items != nil {
+					s.analyzeItems("items", v.Items, refPref)
+				}
+			}
 			if op.Responses.Default.Schema != nil {
 				s.analyzeSchema("schema", *op.Responses.Default.Schema, refPref)
 			}
@@ -170,6 +224,11 @@ func (s *specAnalyzer) analyzeOperation(method, path string, op *Operation) {
 			refPref := slashpath.Join(prefix, "responses", strconv.Itoa(k))
 			if res.Ref.String() != "" {
 				s.references.addResponseRef(refPref, &res)
+			}
+			for _, v := range res.Headers {
+				if v.Items != nil {
+					s.analyzeItems("items", v.Items, refPref)
+				}
 			}
 			if res.Schema != nil {
 				s.analyzeSchema("schema", *res.Schema, refPref)
@@ -487,6 +546,38 @@ func (s *specAnalyzer) AllParameterReferences() (result []string) {
 func (s *specAnalyzer) AllResponseReferences() (result []string) {
 	for _, v := range s.references.responses {
 		result = append(result, v.String())
+	}
+	return
+}
+
+// AllItemsReferences returns the references for all the items
+func (s *specAnalyzer) AllItemsReferences() (result []string) {
+	for _, v := range s.references.items {
+		result = append(result, v.String())
+	}
+	return
+}
+
+// AllReferences returns all the references found in the document
+func (s *specAnalyzer) AllReferences() (result []string) {
+	for _, v := range s.references.allRefs {
+		result = append(result, v.String())
+	}
+	return
+}
+
+// AllRefs returns all the unique references found in the document
+func (s *specAnalyzer) AllRefs() (result []Ref) {
+	set := make(map[string]struct{})
+	for _, v := range s.references.allRefs {
+		a := v.String()
+		if a == "" {
+			continue
+		}
+		if _, ok := set[a]; !ok {
+			set[a] = struct{}{}
+			result = append(result, v)
+		}
 	}
 	return
 }

@@ -46,16 +46,15 @@ func defaultResolutionCache() ResolutionCache {
 
 func (s *simpleCache) Get(uri string) (interface{}, bool) {
 	s.lock.RLock()
-	defer s.lock.RUnlock()
 	v, ok := s.store[uri]
+	s.lock.RUnlock()
 	return v, ok
 }
 
 func (s *simpleCache) Set(uri string, data interface{}) {
 	s.lock.Lock()
-	defer s.lock.Unlock()
-
 	s.store[uri] = data
+	s.lock.Unlock()
 }
 
 // ResolveRef resolves a reference against a context root
@@ -547,6 +546,17 @@ func expandOperation(op *Operation, resolver *schemaLoader) error {
 	return nil
 }
 
+func expandItems(items *Items, resolver *schemaLoader) error {
+	if items == nil {
+		return nil
+	}
+
+	if err := resolver.Resolve(&items.Ref, items); err != nil {
+		return err
+	}
+	return nil
+}
+
 func expandResponse(response *Response, resolver *schemaLoader) error {
 	if response == nil {
 		return nil
@@ -554,6 +564,14 @@ func expandResponse(response *Response, resolver *schemaLoader) error {
 
 	if err := resolver.Resolve(&response.Ref, response); err != nil {
 		return err
+	}
+
+	for _, v := range response.Headers {
+		if v.Items != nil && v.Items.Ref.String() != "" {
+			if err := expandItems(v.Items, resolver); err != nil {
+				return err
+			}
+		}
 	}
 
 	if response.Schema != nil {
@@ -571,6 +589,13 @@ func expandParameter(parameter *Parameter, resolver *schemaLoader) error {
 	if err := resolver.Resolve(&parameter.Ref, parameter); err != nil {
 		return err
 	}
+
+	if parameter.Items != nil && parameter.Items.Ref.String() != "" {
+		if err := expandItems(parameter.Items, resolver); err != nil {
+			return err
+		}
+	}
+
 	if parameter.Schema != nil {
 		if err := expandSchema(parameter.Schema, resolver); err != nil {
 			return err
