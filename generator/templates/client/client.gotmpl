@@ -35,9 +35,9 @@ type Client struct {
 }
 
 {{ range .Operations }}/*
-{{ if .Summary }}{{ pascalize .Name }} {{ pluralizeFirstWord (humanize .Summary) }}{{ if .Description }}
+{{ pascalize .Name }} {{ if .Summary }}{{ pluralizeFirstWord (humanize .Summary) }}{{ if .Description }}
 
-{{ .Description }}{{ end }}{{ else if .Description}}{{ .Description }}{{ else }}{{ pascalize .Name }} {{ humanize .Name }} API{{ end }}
+{{ .Description }}{{ end }}{{ else if .Description}}{{ .Description }}{{ else }}{{ humanize .Name }} API{{ end }}
 */
 func (a *Client) {{ pascalize .Name }}(params *{{ pascalize .Name }}Params{{ if .Authorized }}, authInfo client.AuthInfoWriter{{end}}) {{ if .SuccessResponse }}(*{{ pascalize .SuccessResponse.Name }}, {{ end }}error{{ if .SuccessResponse }}){{ end }} {
   // TODO: Validate the params before sending
