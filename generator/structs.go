@@ -120,6 +120,7 @@ type GenHeader struct {
 	Title       string
 	Description string
 	Default     interface{}
+	HasDefault  bool
 
 	Converter string
 	Formatter string
@@ -160,6 +161,7 @@ type GenParameter struct {
 	BodyParam *GenParameter
 
 	Default         interface{}
+	HasDefault      bool
 	Enum            []interface{}
 	ZeroValue       string
 	AllowEmptyValue bool

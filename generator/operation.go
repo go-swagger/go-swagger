@@ -571,6 +571,7 @@ func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) Ge
 		Path:         fmt.Sprintf("%q", name),
 		Description:  hdr.Description,
 		Default:      hdr.Default,
+		HasDefault:   hdr.Default != nil,
 		Converter:    stringConverters[tpe.GoType],
 		Formatter:    stringFormatters[tpe.GoType],
 	}
@@ -626,6 +627,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		IndexVar:         "i",
 		BodyParam:        nil,
 		Default:          param.Default,
+		HasDefault:       param.Default != nil,
 		Enum:             param.Enum,
 		Description:      param.Description,
 		ReceiverName:     receiver,

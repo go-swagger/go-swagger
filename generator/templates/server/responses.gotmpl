@@ -15,7 +15,7 @@ type {{ pascalize .Name }} struct {
   Pattern: {{ .Pattern }}{{ end }}{{ if .MaxItems }}
   Max Items: {{ .MaxItems }}{{ end }}{{ if .MinItems }}
   Min Items: {{ .MinItems }}{{ end }}{{ if .UniqueItems }}
-  Unique: true{{ end }}{{ if .Default }}
+  Unique: true{{ end }}{{ if .HasDefault }}
   Default: {{ printf "%#v" .Default }}{{ end }}
   */
   {{ pascalize .Name }} {{ .GoType }} `json:"{{.Name}},omitempty"`
@@ -34,7 +34,7 @@ func New{{ pascalize .Name }}({{ if eq .Code -1 }}code int{{ end }}) *{{ pascali
 {{ end }}
   return &{{ pascalize .Name }}{
     {{ if eq .Code -1 }}_statusCode: code,
-    {{ end }}{{ range .Headers }}{{ if .Default }}{{ pascalize .Name }}: {{ printf "%#v" .Default }},{{ end }}
+    {{ end }}{{ range .Headers }}{{ if .HasDefault }}{{ pascalize .Name }}: {{ printf "%#v" .Default }},{{ end }}
   {{ end }}}
 }
 

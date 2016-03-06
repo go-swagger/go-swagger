@@ -86,10 +86,10 @@ import (
 // with the default values initialized.
 func New{{ pascalize .Name }}Params() {{ pascalize .Name }}Params {
   var (
-  {{ range .Params }}{{ if .Default }}{{ if not .IsFileParam }}{{ camelize .Name}}Default {{ .GoType }} = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
+  {{ range .Params }}{{ if .HasDefault }}{{ if not .IsFileParam }}{{ camelize .Name}}Default {{ .GoType }} = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
   {{ end }}{{ end }}{{end}}
   )
-  return {{ pascalize .Name }}Params{ {{ range .Params }}{{ if .Default }}
+  return {{ pascalize .Name }}Params{ {{ range .Params }}{{ if .HasDefault }}
     {{ pascalize .Name}}: {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}&{{ end }}{{ camelize .Name }}Default,
   {{ end }}{{ end }} }
 }
@@ -111,7 +111,7 @@ type {{ pascalize .Name }}Params struct {
   Min Items: {{ .MinItems }}{{ end }}{{ if .UniqueItems }}
   Unique: true{{ end }}{{ if .Location }}
   In: {{ .Location }}{{ end }}{{ if .CollectionFormat }}
-  Collection Format: {{ .CollectionFormat }}{{ end }}{{ if .Default }}
+  Collection Format: {{ .CollectionFormat }}{{ end }}{{ if .HasDefault }}
   Default: {{ printf "%#v" .Default }}{{ end }}
   */
   {{ if not .Schema }}{{ pascalize .Name }} {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsFileParam) (not .IsStream) .IsNullable }}*{{ end }}{{.GoType}}{{ else }}{{ pascalize .Name }} {{ if and (not .Schema.IsBaseType) .IsNullable (not .Schema.IsStream) }}*{{ end }}{{.GoType}}{{ end }}
@@ -214,7 +214,7 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .Name }}(raw
     return err
   }
   {{ else if and ( not .IsPathParam ) (or (not .Required) .AllowEmptyValue) }}if raw == "" { // empty values pass all other validations
-    {{ if .Default }}var {{ camelize .Name}}Default {{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{end}} = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
+    {{ if .HasDefault }}var {{ camelize .Name}}Default {{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{end}} = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
     {{ .ValueExpression }} = {{ if and (not .IsArray) (not .HasDiscriminator) (or .IsNullable  ) (not .IsStream) }}&{{ end }}{{ camelize .Name }}Default
     {{ end }}return nil
   }
@@ -255,7 +255,7 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .Name }}(raw
     return errors.Required({{ .Path }}, {{ printf "%q" .Location }})
   }
   {{ end }}
-  {{ if .Default }}defValue := swag.SplitByFormat({{ .Default }}, {{ printf "%q" .CollectionFormat }})
+  {{ if .HasDefault }}defValue := swag.SplitByFormat({{ .Default }}, {{ printf "%q" .CollectionFormat }})
   if size == 0 && len(defValue) > 0 {
     {{ .ValueExpression }} = defValue
   {{ else }}if size == 0 {
