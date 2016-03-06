@@ -139,3 +139,16 @@ func TestIssue123(t *testing.T) {
 		assert.True(t, res.IsValid())
 	}
 }
+
+func TestIssue159(t *testing.T) {
+	fp := filepath.Join("..", "fixtures", "bugs", "159", "swagger.yml")
+
+	// as swagger spec
+	doc, err := spec.YAMLSpec(fp)
+	if assert.NoError(t, err) {
+		validator := intvalidate.NewSpecValidator(doc.Schema(), strfmt.Default)
+		res, _ := validator.Validate(doc)
+		assert.False(t, res.IsValid())
+		assert.EqualError(t, res.Errors[0], "open InvalidFoo: no such file or directory")
+	}
+}
