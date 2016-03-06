@@ -24,6 +24,10 @@ paths:
         default:
           description: Generic Out
 definitions:
+  ImageTar:
+    type: string
+    format: binary
+    
   Tag:
     type: "object"
     required:

@@ -104,7 +104,7 @@ func ({{$.ReceiverName}} *{{ pascalize $.Name}}) Set{{ pascalize .Name}}(val {{ 
 {{ template "schemavalidator" . }}
 {{ else if gt (len .AllOf) 0 }}
 {{ template "schemavalidator" . }}
-{{ else if not .IsInterface }}// Validate validates this {{ humanize .Name }}
+{{ else if not (or .IsInterface .IsStream) }}// Validate validates this {{ humanize .Name }}
 func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ if not .IsExported }}{{ .Name }}{{ else }}{{ pascalize .Name }}{{ end }}) Validate(formats strfmt.Registry) error {
   return nil
 }{{ end }}{{ end }}{{ if .HasBaseType }}{{ template "hasDiscriminatedSerializer" . }}{{ end }}
