@@ -216,3 +216,8 @@ definitions:
         enum:
           - us-west-2
           - us-east-1
+
+  slp_action_enum:
+    type: string
+    enum:
+      - slp.action.STOP
