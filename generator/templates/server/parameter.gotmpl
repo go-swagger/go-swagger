@@ -46,7 +46,7 @@ for {{ .IndexVar }} := 0; {{ .IndexVar }} < {{ .IndexVar }}sz; {{ .IndexVar }}++
     return errors.InvalidType({{ .Child.Path }}, {{ printf "%q" .Location }}, "{{ .Child.GoType }}", {{ .IndexVar }}c[{{ .IndexVar }}])
   }
 
-  if err := {{ .IndexVar }}ValidateElement({{ .IndexVar }}, {{ .Child.ValueExpression }}); err != nil {
+  if err := {{ .IndexVar }}ValidateElement({{ .IndexVar }}, {{ if .Child.Converter }}value{{ else }}{{ .Child.ValueExpression }}{{ end }}); err != nil {
     return err
   }
   {{ .IndexVar }}r = append({{ .IndexVar }}r, value)
