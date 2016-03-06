@@ -168,12 +168,21 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
 
   {{ if and .IsBodyParam .Schema }}{{ if .Schema.IsStream }}
   {{ .ReceiverName }}.{{ pascalize .Name }} = r.Body
-  {{ else }}{{ if and .Schema.IsBaseType .Schema.IsExported }}body, err := {{ .ModelsPackage }}.Unmarshal{{ stripPackage .GoType .ModelsPackage }}{{ if .IsArray }}Slice{{ end }}(r.Body, route.Consumer)
-  if err != nil {
-    res = append(res, err)
+  {{ else }}defer r.Body.Close()
+  {{ if and .Schema.IsBaseType .Schema.IsExported }}body, err := {{ .ModelsPackage }}.Unmarshal{{ stripPackage .GoType .ModelsPackage }}{{ if .IsArray }}Slice{{ end }}(r.Body, route.Consumer)
+  if err != nil { {{ if .Required }}
+    if err == io.EOF {
+      err = errors.Required({{ .Path }}, {{ printf "%q" .Location }})
+    }
+    {{ end }}res = append(res, err)
   {{ else }}var body {{ .GoType }}
-  if err := route.Consumer.Consume(r.Body, &body); err != nil {
-    res = append(res, errors.NewParseError({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}, "", err))
+  if err := route.Consumer.Consume(r.Body, &body); err != nil { {{ if .Required }}
+    if err == io.EOF {
+      res = append(res, errors.Required({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}))
+    } else { {{ end }}
+    res = append(res, errors.NewParseError({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}, "", err)){{ if .Required }}
+    }
+    {{ end }}
   {{ end }}} else {
     {{ if .IsArray }}{{ if .Child }}{{ if (and (not .Schema.IsInterface) (or .Child.IsAliased .Child.IsComplexObject)) }}for _, {{ .IndexVar }}{{ .ReceiverName }} := range {{ .ReceiverName }}.{{ pascalize .Name }} {
       if err := {{ .IndexVar }}{{ .ReceiverName }}.Validate(route.Formats); err != nil {

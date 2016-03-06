@@ -23,6 +23,7 @@ import (
 func JSONConsumer() Consumer {
 	return ConsumerFunc(func(reader io.Reader, data interface{}) error {
 		dec := json.NewDecoder(reader)
+		dec.UseNumber() // preserve number formats
 		return dec.Decode(data)
 	})
 }
