@@ -566,11 +566,18 @@ func parsePath(path string) (segments []string, params []int) {
 func (s *SpecValidator) validateReferencesValid() *Result {
 	// each reference must point to a valid object
 	res := new(Result)
-	exp, err := s.spec.Expanded()
-	if err != nil {
-		res.AddErrors(err)
+	for _, r := range s.spec.AllRefs() {
+		if !r.IsValidURI() {
+			res.AddErrors(errors.New(404, "invalid ref %q", r.String()))
+		}
 	}
-	s.expanded = exp
+	if !res.HasErrors() {
+		exp, err := s.spec.Expanded()
+		if err != nil {
+			res.AddErrors(err)
+		}
+		s.expanded = exp
+	}
 	return res
 }
 

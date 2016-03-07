@@ -212,6 +212,9 @@ func TestReferenceAnalysis(t *testing.T) {
 		assertRefExists(t, definitions.schemas, "#/responses/notFound/schema")
 		assertRefExists(t, definitions.schemas, "#/paths/~1some~1where~1{id}/get/responses/200/schema")
 		assertRefExists(t, definitions.schemas, "#/definitions/tag/properties/audit")
+
+		// items
+		assertRefExists(t, definitions.allRefs, "#/paths/~1some~1where~1{id}/get/parameters/1/items")
 	}
 }
 
