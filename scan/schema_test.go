@@ -482,4 +482,18 @@ func TestInterfaceDiscriminators(t *testing.T) {
 		assert.Len(t, sch.Properties, 1)
 		assertProperty(t, &sch, "string", "edition", "", "Edition")
 	}
+
+	schema, ok = noModelDefs["modelA"]
+	if assert.True(t, ok) {
+
+		cl, _ := schema.Extensions.GetString("x-go-name")
+		assert.Equal(t, "ModelA", cl)
+
+		sch, ok := schema.Properties["Tesla"]
+		if assert.True(t, ok) {
+			assert.Equal(t, "#/definitions/TeslaCar", sch.Ref.String())
+		}
+
+		assertProperty(t, &schema, "integer", "doors", "int64", "Doors")
+	}
 }
