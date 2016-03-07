@@ -742,6 +742,17 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 	case *ast.SelectorExpr:
 		return scp.typeForSelector(file, tpe, prop)
 
+	case *ast.InterfaceType:
+		sd := newSchemaDecl(file, gd, ts)
+		sd.inferNames()
+		ref, err := spec.NewRef("#/definitions/" + sd.Name)
+		if err != nil {
+			return err
+		}
+		prop.SetRef(ref)
+		scp.postDecls = append(scp.postDecls, *sd)
+		return nil
+
 	default:
 		return swaggerSchemaForType(expr.Name, prop)
 	}
