@@ -29,6 +29,18 @@ import (
 // 	"swagger.*": "github.com/go-swagger/go-swagger/httpkit",
 // }
 
+const (
+	iface   = "interface{}"
+	array   = "array"
+	file    = "file"
+	number  = "number"
+	integer = "integer"
+	boolean = "boolean"
+	str     = "string"
+	object  = "object"
+	binary  = "binary"
+)
+
 var zeroes = map[string]string{
 	"string":            "\"\"",
 	"int8":              "0",
@@ -160,7 +172,7 @@ func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType)
 			result.GoType = tpe
 			result.IsPrimitive = true
 			_, result.IsCustomFormatter = customFormatters[tpe]
-			result.IsStream = fmt == "binary"
+			result.IsStream = fmt == binary
 			return
 		}
 	}
@@ -172,13 +184,13 @@ func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType)
 		return
 	}
 
-	if tn == "array" {
+	if tn == array {
 		result.IsArray = true
 		result.IsPrimitive = false
 		result.IsCustomFormatter = false
 		result.IsNullable = false
 		if items == nil {
-			result.GoType = "[]interface{}"
+			result.GoType = "[]" + iface
 			return
 		}
 		res := simpleResolvedType(items.Type, items.Format, items.Items)
@@ -194,9 +206,10 @@ func typeForHeader(header spec.Header) resolvedType {
 	return simpleResolvedType(header.Type, header.Format, header.Items)
 }
 
-func typeForParameter(param spec.Parameter) string {
-	return resolveSimpleType(param.Type, param.Format, param.Items)
-}
+//
+// func typeForParameter(param spec.Parameter) string {
+// 	return resolveSimpleType(param.Type, param.Format, param.Items)
+// }
 
 func resolveSimpleType(tn, fmt string, items *spec.Items) string {
 	if fmt != "" {
@@ -257,9 +270,9 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 		if gn, ok := ref.Extensions["x-go-name"]; ok {
 			tn = gn.(string)
 			nm = tn
-		} else {
+		} /*else {
 			tn = swag.ToGoName(nm)
-		}
+		}*/
 
 		res, er := t.ResolveSchema(ref, false, isRequired)
 		if er != nil {
@@ -283,14 +296,14 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema, isRequired bool) (retu
 		schFmt := strings.Replace(schema.Format, "-", "", -1)
 		if tpe, ok := typeMapping[schFmt]; ok {
 			returns = true
-			result.SwaggerType = "string"
+			result.SwaggerType = str
 			if len(schema.Type) > 0 {
 				result.SwaggerType = schema.Type[0]
 			}
 			result.SwaggerFormat = schema.Format
 			result.GoType = tpe
-			result.IsPrimitive = schFmt != "binary"
-			result.IsStream = schFmt == "binary"
+			result.IsPrimitive = schFmt != binary
+			result.IsStream = schFmt == binary
 			result.IsNullable = !isRequired || t.IsNullable(schema)
 			_, result.IsCustomFormatter = customFormatters[tpe]
 			return
@@ -311,7 +324,7 @@ func (t *typeResolver) checkIsNullable(extension string, schema *spec.Schema) bo
 
 func (t *typeResolver) firstType(schema *spec.Schema) string {
 	if len(schema.Type) == 0 || schema.Type[0] == "" {
-		return "object"
+		return object
 	}
 	return schema.Type[0]
 }
@@ -323,14 +336,14 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 		result.HasAdditionalItems = (schema.AdditionalItems.Allows || schema.AdditionalItems.Schema != nil)
 	}
 	if schema.Items == nil {
-		result.GoType = "[]interface{}"
-		result.SwaggerType = "array"
+		result.GoType = "[]" + iface
+		result.SwaggerType = array
 		return
 	}
 	if len(schema.Items.Schemas) > 0 {
 		result.IsArray = false
 		result.IsTuple = true
-		result.SwaggerType = "array"
+		result.SwaggerType = array
 		return
 	}
 	rt, er := t.ResolveSchema(schema.Items.Schema, true, true)
@@ -339,10 +352,10 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 		return
 	}
 	result.GoType = "[]" + rt.GoType
-	if rt.IsNullable && !rt.HasDiscriminator && !strings.HasPrefix(rt.GoType, "*") {
+	if (rt.IsNullable || rt.IsAliased) && !rt.HasDiscriminator && !strings.HasPrefix(rt.GoType, "*") {
 		result.GoType = "[]*" + rt.GoType
 	}
-	result.SwaggerType = "array"
+	result.SwaggerType = array
 	return
 }
 
@@ -361,7 +374,7 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 
 	result.IsBaseType = schema.Discriminator != ""
 	if !isAnonymous {
-		result.SwaggerType = "object"
+		result.SwaggerType = object
 		result.GoType = t.goTypeName(t.ModelName)
 	}
 	if len(schema.AllOf) > 0 {
@@ -374,7 +387,7 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 			}
 		}
 		result.IsNullable = isNullable
-		result.SwaggerType = "object"
+		result.SwaggerType = object
 		return
 	}
 
@@ -395,7 +408,7 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 			return
 		}
 		result.IsMap = !result.IsComplexObject
-		result.SwaggerType = "object"
+		result.SwaggerType = object
 		result.IsNullable = false
 		result.GoType = "map[string]" + et.GoType
 		if et.IsNullable && et.IsComplexObject && !et.IsBaseType {
@@ -407,10 +420,10 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 	if len(schema.Properties) > 0 {
 		return
 	}
-	result.GoType = "interface{}"
+	result.GoType = iface
 	result.IsMap = true
 	result.IsMap = !result.IsComplexObject
-	result.SwaggerType = "object"
+	result.SwaggerType = object
 	result.IsNullable = false
 	result.IsInterface = len(schema.Properties) == 0
 	return
@@ -431,7 +444,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	// fmt.Println("resolver", string(tt))
 	if schema == nil {
 		result.IsInterface = true
-		result.GoType = "interface{}"
+		result.GoType = iface
 		return
 	}
 
@@ -442,7 +455,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 			result.IsMap = false
 			result.IsComplexObject = true
 		}
-		result.IsNullable = true
+		// result.IsNullable = true //|| !result.IsPrimitive
 		return
 	}
 
@@ -454,32 +467,32 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	result.IsNullable = !isRequired || t.isNullable(schema)
 	tpe := t.firstType(schema)
 	switch tpe {
-	case "array":
+	case array:
 		return t.resolveArray(schema, isAnonymous, result.IsNullable)
 
-	case "file", "number", "integer", "boolean":
+	case file, number, integer, boolean:
 		result.GoType = typeMapping[tpe]
 		result.SwaggerType = tpe
-		if tpe != "file" {
+		if tpe != file {
 			result.IsPrimitive = true
 			result.IsCustomFormatter = false
 			//bothNil := schema.Minimum == nil && schema.Maximum == nil
 			isMin := schema.Minimum != nil && *schema.Minimum > 0
 			isMax := schema.Minimum == nil && (schema.Maximum != nil && *schema.Maximum < 0) // || *schema.Minimum < 0) &&
 			isMinMax := (schema.Minimum != nil && schema.Maximum != nil && *schema.Minimum < 0 && *schema.Minimum < *schema.Maximum)
-			if tpe != "boolean" && (isMin || isMax || isMinMax) {
+			if tpe != boolean && (isMin || isMax || isMinMax) {
 				result.IsNullable = false
 			}
 		}
 		return
 
-	case "string":
-		result.GoType = "string"
-		result.SwaggerType = "string"
+	case str:
+		result.GoType = str
+		result.SwaggerType = str
 		if !isAnonymous && t.ModelName != "" {
 			result.AliasedType = result.GoType
 			result.IsAliased = true
-			result.GoType = t.ModelName
+			result.GoType = swag.ToGoName(t.ModelName)
 			if t.ModelsPackage != "" {
 				result.GoType = t.ModelsPackage + "." + t.ModelName
 			}
@@ -494,10 +507,10 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		}
 		return
 
-	case "object":
-		rt, err := t.resolveObject(schema, isAnonymous)
-		if err != nil {
-			return resolvedType{}, err
+	case object:
+		rt, err2 := t.resolveObject(schema, isAnonymous)
+		if err2 != nil {
+			return resolvedType{}, err2
 		}
 		rt.HasDiscriminator = schema.Discriminator != ""
 		return rt, nil

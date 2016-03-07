@@ -225,8 +225,13 @@ func (c *Context) BindValidRequest(request *http.Request, route *MatchedRoute, b
 			if err := validateContentType(route.Consumes, ct); err != nil {
 				res = append(res, err)
 			}
-			route.Consumer = route.Consumers[ct]
-			requestContentType = ct
+			cons, ok := route.Consumers[ct]
+			if !ok {
+				res = append(res, err)
+			} else {
+				route.Consumer = cons
+				requestContentType = ct
+			}
 		}
 	}
 
@@ -242,7 +247,7 @@ func (c *Context) BindValidRequest(request *http.Request, route *MatchedRoute, b
 	// request is invalid
 	if binder != nil && len(res) == 0 {
 		if err := binder.BindRequest(request, route); err != nil {
-			res = append(res, err)
+			return err
 		}
 	}
 

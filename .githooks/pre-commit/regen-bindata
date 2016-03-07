@@ -1,0 +1,3 @@
+#!/bin/sh
+go generate ./generator
+git add ./generator/bindata.go

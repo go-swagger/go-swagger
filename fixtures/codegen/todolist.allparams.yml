@@ -107,6 +107,39 @@ paths:
       summary: all possible single value query parameters
       description: Used to see if a codegen can render all the possible parameter variations for a query param
 
+  /withBoolDefault:
+    get:
+      operationId: withBoolDefault
+      tags:
+        - tasks
+      parameters:
+        - name: verbose
+          in: query
+          type: boolean
+          default: false
+      responses:
+        default:
+          description: Generic Error
+
+  /withArray:
+    get:
+      operationId: withArray
+      tags:
+        - tasks
+      parameters:
+        - name: sha256
+          in: query
+          required: true
+          type: array
+          items:
+            type: string
+            minLength: 64
+            maxLength: 64
+          collectionFormat: multi
+      response:
+        default:
+          description: Generic Error
+
 
 definitions:
   Task:

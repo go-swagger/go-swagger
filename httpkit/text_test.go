@@ -15,23 +15,27 @@
 package httpkit
 
 import (
-	"encoding/json"
-	"io"
+	"bytes"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-// JSONConsumer creates a new JSON consumer
-func JSONConsumer() Consumer {
-	return ConsumerFunc(func(reader io.Reader, data interface{}) error {
-		dec := json.NewDecoder(reader)
-		dec.UseNumber() // preserve number formats
-		return dec.Decode(data)
-	})
+var consProdText = `The quick brown fox jumped over the lazy dog.`
+
+func TestTextConsumer(t *testing.T) {
+	cons := TextConsumer()
+	var data string
+	err := cons.Consume(bytes.NewBuffer([]byte(consProdText)), &data)
+	assert.NoError(t, err)
+	assert.Equal(t, consProdText, data)
 }
 
-// JSONProducer creates a new JSON producer
-func JSONProducer() Producer {
-	return ProducerFunc(func(writer io.Writer, data interface{}) error {
-		enc := json.NewEncoder(writer)
-		return enc.Encode(data)
-	})
+func TestTextProducer(t *testing.T) {
+	prod := TextProducer()
+	rw := httptest.NewRecorder()
+	err := prod.Produce(rw, consProdText)
+	assert.NoError(t, err)
+	assert.Equal(t, consProdText, rw.Body.String())
 }

@@ -23,7 +23,22 @@ paths:
       responses:
         default:
           description: Generic Out
+
 definitions:
+  flag:
+    type: string
+    minLength: 1
+    maxLength: 10
+
+  flags_list:
+    type: array
+    items:
+      $ref: "#/definitions/flag"
+
+  ImageTar:
+    type: string
+    format: binary
+
   Tag:
     type: "object"
     required:

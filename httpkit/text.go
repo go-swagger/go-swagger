@@ -15,23 +15,30 @@
 package httpkit
 
 import (
-	"encoding/json"
+	"bytes"
 	"io"
+	"unsafe"
 )
 
-// JSONConsumer creates a new JSON consumer
-func JSONConsumer() Consumer {
+// TextConsumer creates a new text consumer
+func TextConsumer() Consumer {
 	return ConsumerFunc(func(reader io.Reader, data interface{}) error {
-		dec := json.NewDecoder(reader)
-		dec.UseNumber() // preserve number formats
-		return dec.Decode(data)
+		buf := new(bytes.Buffer)
+		_, err := buf.ReadFrom(reader)
+		if err != nil {
+			return err
+		}
+		b := buf.Bytes()
+		*(data.(*string)) = *(*string)(unsafe.Pointer(&b))
+		return nil
 	})
 }
 
-// JSONProducer creates a new JSON producer
-func JSONProducer() Producer {
+// TextProducer creates a new text producer
+func TextProducer() Producer {
 	return ProducerFunc(func(writer io.Writer, data interface{}) error {
-		enc := json.NewEncoder(writer)
-		return enc.Encode(data)
+		buf := bytes.NewBufferString(data.(string))
+		_, err := buf.WriteTo(writer)
+		return err
 	})
 }

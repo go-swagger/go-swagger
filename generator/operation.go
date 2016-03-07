@@ -571,6 +571,7 @@ func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) Ge
 		Path:         fmt.Sprintf("%q", name),
 		Description:  hdr.Description,
 		Default:      hdr.Default,
+		HasDefault:   hdr.Default != nil,
 		Converter:    stringConverters[tpe.GoType],
 		Formatter:    stringFormatters[tpe.GoType],
 	}
@@ -602,7 +603,7 @@ func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path
 	res.Formatter = stringFormatters[res.GoType]
 
 	if items.Items != nil {
-		pi, err := b.MakeParameterItem(receiver, paramName+" "+indexVar, indexVar+"[i]", "fmt.Sprintf(\"%s.%v\", "+path+", "+indexVar+")", valueExpression+"["+indexVar+"]", location, resolver, items.Items, items)
+		pi, err := b.MakeParameterItem(receiver, paramName+" "+indexVar, indexVar+"i", "fmt.Sprintf(\"%s.%v\", "+path+", "+indexVar+")", valueExpression+"I", location, resolver, items.Items, items)
 		if err != nil {
 			return GenItems{}, err
 		}
@@ -626,6 +627,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		IndexVar:         "i",
 		BodyParam:        nil,
 		Default:          param.Default,
+		HasDefault:       param.Default != nil,
 		Enum:             param.Enum,
 		Description:      param.Description,
 		ReceiverName:     receiver,
@@ -717,7 +719,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		}
 
 		if param.Items != nil {
-			pi, err := b.MakeParameterItem(receiver, param.Name+" "+res.IndexVar, res.IndexVar+"i", "fmt.Sprintf(\"%s.%v\", "+res.Path+", "+res.IndexVar+")", res.ValueExpression+"["+res.IndexVar+"]", param.In, resolver, param.Items, nil)
+			pi, err := b.MakeParameterItem(receiver, param.Name+" "+res.IndexVar, res.IndexVar+"i", "fmt.Sprintf(\"%s.%v\", "+res.Path+", "+res.IndexVar+")", res.Name+"I", param.In, resolver, param.Items, nil)
 			if err != nil {
 				return GenParameter{}, err
 			}

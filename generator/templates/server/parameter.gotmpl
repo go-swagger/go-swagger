@@ -46,7 +46,7 @@ for {{ .IndexVar }} := 0; {{ .IndexVar }} < {{ .IndexVar }}sz; {{ .IndexVar }}++
     return errors.InvalidType({{ .Child.Path }}, {{ printf "%q" .Location }}, "{{ .Child.GoType }}", {{ .IndexVar }}c[{{ .IndexVar }}])
   }
 
-  if err := {{ .IndexVar }}ValidateElement({{ .IndexVar }}, {{ .Child.ValueExpression }}); err != nil {
+  if err := {{ .IndexVar }}ValidateElement({{ .IndexVar }}, {{ if .Child.Converter }}value{{ else }}{{ .Child.ValueExpression }}{{ end }}); err != nil {
     return err
   }
   {{ .IndexVar }}r = append({{ .IndexVar }}r, value)
@@ -86,10 +86,10 @@ import (
 // with the default values initialized.
 func New{{ pascalize .Name }}Params() {{ pascalize .Name }}Params {
   var (
-  {{ range .Params }}{{ if .Default }}{{ if not .IsFileParam }}{{ camelize .Name}}Default {{ .GoType }} = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
+  {{ range .Params }}{{ if .HasDefault }}{{ if not .IsFileParam }}{{ camelize .Name}}Default {{ .GoType }} = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
   {{ end }}{{ end }}{{end}}
   )
-  return {{ pascalize .Name }}Params{ {{ range .Params }}{{ if .Default }}
+  return {{ pascalize .Name }}Params{ {{ range .Params }}{{ if .HasDefault }}
     {{ pascalize .Name}}: {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}&{{ end }}{{ camelize .Name }}Default,
   {{ end }}{{ end }} }
 }
@@ -111,7 +111,7 @@ type {{ pascalize .Name }}Params struct {
   Min Items: {{ .MinItems }}{{ end }}{{ if .UniqueItems }}
   Unique: true{{ end }}{{ if .Location }}
   In: {{ .Location }}{{ end }}{{ if .CollectionFormat }}
-  Collection Format: {{ .CollectionFormat }}{{ end }}{{ if .Default }}
+  Collection Format: {{ .CollectionFormat }}{{ end }}{{ if .HasDefault }}
   Default: {{ printf "%#v" .Default }}{{ end }}
   */
   {{ if not .Schema }}{{ pascalize .Name }} {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsFileParam) (not .IsStream) .IsNullable }}*{{ end }}{{.GoType}}{{ else }}{{ pascalize .Name }} {{ if and (not .Schema.IsBaseType) .IsNullable (not .Schema.IsStream) }}*{{ end }}{{.GoType}}{{ end }}
@@ -168,12 +168,21 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
 
   {{ if and .IsBodyParam .Schema }}{{ if .Schema.IsStream }}
   {{ .ReceiverName }}.{{ pascalize .Name }} = r.Body
-  {{ else }}{{ if and .Schema.IsBaseType .Schema.IsExported }}body, err := {{ .ModelsPackage }}.Unmarshal{{ stripPackage .GoType .ModelsPackage }}{{ if .IsArray }}Slice{{ end }}(r.Body, route.Consumer)
-  if err != nil {
-    res = append(res, err)
+  {{ else }}defer r.Body.Close()
+  {{ if and .Schema.IsBaseType .Schema.IsExported }}body, err := {{ .ModelsPackage }}.Unmarshal{{ stripPackage .GoType .ModelsPackage }}{{ if .IsArray }}Slice{{ end }}(r.Body, route.Consumer)
+  if err != nil { {{ if .Required }}
+    if err == io.EOF {
+      err = errors.Required({{ .Path }}, {{ printf "%q" .Location }})
+    }
+    {{ end }}res = append(res, err)
   {{ else }}var body {{ .GoType }}
-  if err := route.Consumer.Consume(r.Body, &body); err != nil {
-    res = append(res, errors.NewParseError({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}, "", err))
+  if err := route.Consumer.Consume(r.Body, &body); err != nil { {{ if .Required }}
+    if err == io.EOF {
+      res = append(res, errors.Required({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}))
+    } else { {{ end }}
+    res = append(res, errors.NewParseError({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}, "", err)){{ if .Required }}
+    }
+    {{ end }}
   {{ end }}} else {
     {{ if .IsArray }}{{ if .Child }}{{ if (and (not .Schema.IsInterface) (or .Child.IsAliased .Child.IsComplexObject)) }}for _, {{ .IndexVar }}{{ .ReceiverName }} := range {{ .ReceiverName }}.{{ pascalize .Name }} {
       if err := {{ .IndexVar }}{{ .ReceiverName }}.Validate(route.Formats); err != nil {
@@ -214,7 +223,7 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .Name }}(raw
     return err
   }
   {{ else if and ( not .IsPathParam ) (or (not .Required) .AllowEmptyValue) }}if raw == "" { // empty values pass all other validations
-    {{ if .Default }}var {{ camelize .Name}}Default {{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{end}} = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
+    {{ if .HasDefault }}var {{ camelize .Name}}Default {{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{end}} = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
     {{ .ValueExpression }} = {{ if and (not .IsArray) (not .HasDiscriminator) (or .IsNullable  ) (not .IsStream) }}&{{ end }}{{ camelize .Name }}Default
     {{ end }}return nil
   }
@@ -255,7 +264,7 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .Name }}(raw
     return errors.Required({{ .Path }}, {{ printf "%q" .Location }})
   }
   {{ end }}
-  {{ if .Default }}defValue := swag.SplitByFormat({{ .Default }}, {{ printf "%q" .CollectionFormat }})
+  {{ if .HasDefault }}defValue := swag.SplitByFormat({{ .Default }}, {{ printf "%q" .CollectionFormat }})
   if size == 0 && len(defValue) > 0 {
     {{ .ValueExpression }} = defValue
   {{ else }}if size == 0 {

@@ -99,7 +99,7 @@ The description of the property
 
 	gmp.Description = ""
 	gmp.Name = "theModel"
-	expected = `TheModel the model
+	expected = `the model
 `
 	tt.assertRender(gmp, expected)
 }
@@ -234,6 +234,7 @@ var schTypeGenDataSimple = []struct {
 	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.RGBColor", IsPrimitive: true}}, "strfmt.RGBColor"},
 	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.Duration", IsPrimitive: true}}, "strfmt.Duration"},
 	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.Password", IsPrimitive: true}}, "strfmt.Password"},
+	{GenSchema{resolvedType: resolvedType{GoType: "io.ReadCloser", IsStream: true}}, "io.ReadCloser"},
 	{GenSchema{resolvedType: resolvedType{GoType: "interface{}", IsInterface: true}}, "interface{}"},
 	{GenSchema{resolvedType: resolvedType{GoType: "[]int32", IsArray: true}}, "[]int32"},
 	{GenSchema{resolvedType: resolvedType{GoType: "[]string", IsArray: true}}, "[]string"},
@@ -257,7 +258,7 @@ func TestGenerateModel_Primitives(t *testing.T) {
 		}
 		val.Name = "theType"
 		exp := v.Expected
-		if val.IsInterface {
+		if val.IsInterface || val.IsStream {
 			tt.assertRender(val, "type TheType "+exp+"\n\n")
 			continue
 		}
@@ -1407,7 +1408,7 @@ func TestGenModel_Issue222(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ct)
 					assertInCode(t, "Price) Validate(formats strfmt.Registry) error", res)
-					assertInCode(t, "Currency *Currency `json:\"currency,omitempty\"`", res)
+					assertInCode(t, "Currency Currency `json:\"currency,omitempty\"`", res)
 					assertInCode(t, "m.Currency.Validate(formats); err != nil", res)
 				}
 			}
@@ -1512,6 +1513,51 @@ func TestGenModel_Issue257(t *testing.T) {
 					if !(b1 && b2 && b3) {
 						fmt.Println(res)
 					}
+				}
+			}
+		}
+	}
+}
+
+func TestGenModel_Issue340(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "ImageTar"
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("image_tar.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+
+					b1 := assertInCode(t, "type "+swag.ToGoName(k)+" io.ReadCloser", res)
+					b2 := assertNotInCode(t, "func (m ImageTar) Validate(formats strfmt.Registry) error", res)
+					if !(b1 && b2) {
+						fmt.Println(res)
+					}
+				}
+			}
+		}
+	}
+}
+
+func TestGenModel_Issue381(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "flags_list"
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("flags_list.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertNotInCode(t, "m[i] != nil", res)
 				}
 			}
 		}

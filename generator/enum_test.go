@@ -388,3 +388,24 @@ func TestEnum_Issue325(t *testing.T) {
 		}
 	}
 }
+
+func TestEnum_Issue352(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.enums.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "slp_action_enum"
+		schema := definitions[k]
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("slp_action_enum.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					assertInCode(t, ", value SlpActionEnum", res)
+				}
+			}
+		}
+	}
+}

@@ -592,3 +592,43 @@ func TestGenParameter_Issue248(t *testing.T) {
 		}
 	}
 }
+
+func TestGenParameter_Issue350(t *testing.T) {
+	b, err := opBuilder("withBoolDefault", "../fixtures/codegen/todolist.allparams.yml")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := parameterTemplate.Execute(buf, op)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("with_bool_default.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					assertInCode(t, "Verbose: &verboseDefault", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestGenParameter_Issue351(t *testing.T) {
+	b, err := opBuilder("withArray", "../fixtures/codegen/todolist.allparams.yml")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := parameterTemplate.Execute(buf, op)
+			if assert.NoError(t, err) {
+				ff, err := formatGoFile("with_array.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					assertInCode(t, "validate.MinLength(fmt.Sprintf(\"%s.%v\", \"sha256\", i), \"query\", string(sha256I), 64)", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}

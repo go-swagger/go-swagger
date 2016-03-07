@@ -26,6 +26,7 @@ paths:
   "/some/where/{id}":
     parameters:
       - $ref: "#/parameters/idParam"
+
       - name: bodyId
         in: body
         schema:
@@ -33,6 +34,11 @@ paths:
     get:
       parameters:
       - $ref: "#/parameters/limitParam"
+      - name: other
+        in: query
+        type: array
+        items:
+          $ref: "#/definitions/named"
       - name: body
         in: body
         schema:
@@ -47,6 +53,8 @@ paths:
           schema:
             $ref: "#/definitions/tag"
 definitions:
+  named:
+    type: string
   tag:
     type: object
     properties:

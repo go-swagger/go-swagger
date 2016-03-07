@@ -16,47 +16,38 @@ package httpkit
 
 import (
 	"bytes"
-	"io"
+	"encoding/xml"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-var consProdJSON = `{"name":"Somebody","id":1}`
+var consProdXML = `<person><name>Somebody</name><id>1</id></person>`
 
-type eofRdr struct {
-}
-
-func (r *eofRdr) Read(d []byte) (int, error) {
-	return 0, io.EOF
-}
-
-func TestJSONConsumer(t *testing.T) {
-	cons := JSONConsumer()
+func TestXMLConsumer(t *testing.T) {
+	cons := XMLConsumer()
 	var data struct {
-		Name string
-		ID   int
+		XMLName xml.Name `xml:"person"`
+		Name    string   `xml:"name"`
+		ID      int      `xml:"id"`
 	}
-	err := cons.Consume(bytes.NewBuffer([]byte(consProdJSON)), &data)
-	if assert.NoError(t, err) {
-		assert.Equal(t, "Somebody", data.Name)
-		assert.Equal(t, 1, data.ID)
-
-		err = cons.Consume(new(eofRdr), &data)
-		assert.Error(t, err)
-	}
+	err := cons.Consume(bytes.NewBuffer([]byte(consProdXML)), &data)
+	assert.NoError(t, err)
+	assert.Equal(t, "Somebody", data.Name)
+	assert.Equal(t, 1, data.ID)
 }
 
-func TestJSONProducer(t *testing.T) {
-	prod := JSONProducer()
+func TestXMLProducer(t *testing.T) {
+	prod := XMLProducer()
 	data := struct {
-		Name string `json:"name"`
-		ID   int    `json:"id"`
+		XMLName xml.Name `xml:"person"`
+		Name    string   `xml:"name"`
+		ID      int      `xml:"id"`
 	}{Name: "Somebody", ID: 1}
 
 	rw := httptest.NewRecorder()
 	err := prod.Produce(rw, data)
 	assert.NoError(t, err)
-	assert.Equal(t, consProdJSON+"\n", rw.Body.String())
+	assert.Equal(t, consProdXML, rw.Body.String())
 }

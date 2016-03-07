@@ -17,6 +17,7 @@ package middleware
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
@@ -118,7 +119,7 @@ func TestUntypedBindingTypesForValid(t *testing.T) {
 
 	confirmed := true
 	name := "thomas"
-	friend := map[string]interface{}{"name": "toby", "age": float64(32)}
+	friend := map[string]interface{}{"name": "toby", "age": json.Number("32")}
 	id, age, score, factor := int64(7575), int32(348), float32(5.309), float64(37.403)
 	requestID := 19394858
 	tags := []string{"one", "two", "three"}
