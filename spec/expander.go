@@ -189,6 +189,7 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 		return nil
 	}
 
+	// Fragment processing
 	if strings.HasPrefix(refURL.String(), "#") {
 		res, _, err := ref.GetPointer().Get(node)
 		if err != nil {
@@ -210,10 +211,12 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 		return nil
 	}
 
-	if refURL.Scheme != "" && refURL.Host != "" {
-		// most definitely take the red pill
+	// Full remote URI processing
+	if (refURL.Scheme != "" && refURL.Host != "") || (refURL.Path != "") {
 		data, _, _, err := r.load(refURL)
-
+		if err != nil {
+			return err
+		}
 		if ((oldRef == nil && currentRef != nil) ||
 			(oldRef != nil && currentRef == nil) ||
 			oldRef.String() != currentRef.String()) &&

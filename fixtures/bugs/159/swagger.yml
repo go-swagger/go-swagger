@@ -1,0 +1,21 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: 'Test'
+schemes:
+  - http
+produces:
+  - application/json
+  - "text/plain"
+consumes:
+  - application/json
+paths:
+  /foo:
+    get:
+      summary: Some endpoint
+      responses:
+        200:
+          description: Just successful something.
+          schema:
+            $ref: 'InvalidFoo'
+
