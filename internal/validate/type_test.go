@@ -26,7 +26,7 @@ import (
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/go-swagger/go-swagger/swag"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 type schemaTestT struct {
@@ -72,35 +72,35 @@ var notNumbers = []interface{}{
 }
 
 var enabled = []string{
-	"minLength",
-	"maxLength",
-	"pattern",
-	"type",
-	"minimum",
-	"maximum",
-	"multipleOf",
-	"enum",
-	"default",
-	"dependencies",
-	"items",
-	"maxItems",
-	"maxProperties",
-	"minItems",
-	"minProperties",
-	"patternProperties",
-	"required",
-	"additionalItems",
-	"uniqueItems",
-	"properties",
-	"additionalProperties",
-	"allOf",
-	"not",
-	"oneOf",
-	"anyOf",
-	"ref",
-	"definitions",
+	//"minLength",
+	//"maxLength",
+	//"pattern",
+	//"type",
+	//"minimum",
+	//"maximum",
+	//"multipleOf",
+	//"enum",
+	//"default",
+	//"dependencies",
+	//"items",
+	//"maxItems",
+	//"maxProperties",
+	//"minItems",
+	//"minProperties",
+	//"patternProperties",
+	//"required",
+	//"additionalItems",
+	//"uniqueItems",
+	//"properties",
+	//"additionalProperties",
+	//"allOf",
+	//"not",
+	//"oneOf",
+	//"anyOf",
+	//"ref",
+	//"definitions",
 	"refRemote",
-	"format",
+	//"format",
 }
 
 type noopResCache struct {
@@ -124,53 +124,43 @@ func TestJSONSchemaSuite(t *testing.T) {
 			panic(err.Error())
 		}
 	}()
-	Convey("The JSON Schema test suite", t, func() {
-		files, err := ioutil.ReadDir(jsonSchemaFixturesPath)
-		if err != nil {
-			t.Fatal(err)
+	files, err := ioutil.ReadDir(jsonSchemaFixturesPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, f := range files {
+		if f.IsDir() {
+			continue
 		}
+		fileName := f.Name()
+		specName := strings.TrimSuffix(fileName, filepath.Ext(fileName))
+		if isEnabled(specName) {
 
-		for _, f := range files {
-			if f.IsDir() {
-				continue
-			}
-			fileName := f.Name()
-			specName := strings.TrimSuffix(fileName, filepath.Ext(fileName))
-			if isEnabled(specName) {
+			t.Log("Running " + specName)
+			b, _ := ioutil.ReadFile(filepath.Join(jsonSchemaFixturesPath, fileName))
 
-				Convey("for "+specName, func() {
-					b, _ := ioutil.ReadFile(filepath.Join(jsonSchemaFixturesPath, fileName))
+			var testDescriptions []schemaTestT
+			json.Unmarshal(b, &testDescriptions)
 
-					var testDescriptions []schemaTestT
-					json.Unmarshal(b, &testDescriptions)
+			for _, testDescription := range testDescriptions {
 
-					for _, testDescription := range testDescriptions {
+				err := spec.ExpandSchema(testDescription.Schema, nil, nil /*new(noopResCache)*/)
+				if assert.NoError(t, err, testDescription.Description+" should expand cleanly") {
 
-						Convey(testDescription.Description, func() {
+					validator := NewSchemaValidator(testDescription.Schema, nil, "data", strfmt.Default)
+					for _, test := range testDescription.Tests {
 
-							So(spec.ExpandSchema(testDescription.Schema, nil, nil /*new(noopResCache)*/), ShouldBeNil)
-
-							validator := NewSchemaValidator(testDescription.Schema, nil, "data", strfmt.Default)
-
-							for _, test := range testDescription.Tests {
-
-								Convey(test.Description, func() {
-
-									result := validator.Validate(test.Data)
-									So(result, ShouldNotBeNil)
-
-									if test.Valid {
-										So(result.Errors, ShouldBeEmpty)
-
-									} else {
-										So(result.Errors, ShouldNotBeEmpty)
-									}
-								})
-							}
-						})
+						result := validator.Validate(test.Data)
+						assert.NotNil(t, result, test.Description+" should validate")
+						if test.Valid {
+							assert.Empty(t, result.Errors, test.Description+" should not have errors")
+						} else {
+							assert.NotEmpty(t, result.Errors, test.Description+" should have errors")
+						}
 					}
-				})
+				}
 			}
 		}
-	})
+	}
 }

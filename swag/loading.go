@@ -50,6 +50,7 @@ func loadHTTPBytes(path string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("could not access document at %q [%s] ", path, resp.Status)
