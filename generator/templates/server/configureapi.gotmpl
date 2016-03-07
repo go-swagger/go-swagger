@@ -17,6 +17,10 @@ import (
 
 // This file is safe to edit. Once it exists it will not be overwritten
 
+func configureFlags(api *{{.Package}}.{{ pascalize .Name }}API) {
+  // api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
+}
+
 func configureAPI(api *{{.Package}}.{{ pascalize .Name }}API) http.Handler {
   // configure the api here
   api.ServeError = errors.ServeError
@@ -48,7 +52,6 @@ func configureAPI(api *{{.Package}}.{{ pascalize .Name }}API) http.Handler {
   {{end}}
 
   api.ServerShutdown = func() {  }
-  // api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 
   return setupGlobalMiddleware(api.Serve(setupMiddlewares))
 }

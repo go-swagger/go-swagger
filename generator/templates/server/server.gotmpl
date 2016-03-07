@@ -19,14 +19,25 @@ import (
 
 //go:generate swagger generate server -t ../.. -A {{ pascalize .Name }} -f ./swagger.yml
 
-// NewServer creates a new api {{ humanize .Name }} server
+// NewServer creates a new api {{ humanize .Name }} server but does not configure it
 func NewServer(api *{{ .Package }}.{{ pascalize .Name }}API) *Server {
 	s := new(Server)
 	s.api = api
-	if api != nil {
-		s.handler = configureAPI(api)
-	}
 	return s
+}
+
+// ConfigureAPI configures the API and handlers. Needs to be called before Serve
+func (s *Server) ConfigureAPI() {
+    if s.api != nil {
+        s.handler = configureAPI(s.api)
+    }
+}
+
+// ConfigureFlags configures the additional flags defined by the handlers. Needs to be called before the parser.Parse
+func (s *Server) ConfigureFlags() {
+    if s.api != nil {
+       configureFlags(s.api)
+    }
 }
 
 // Server for the {{ humanize .Name }} API

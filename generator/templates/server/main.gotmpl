@@ -33,7 +33,10 @@ func main() { {{ if .ExcludeSpec }}
   parser.ShortDescription = {{ if .Info }}{{ if .Info.Title }}`{{ .Info.Title }}`{{ else }}{{ if .ExcludeSpec }}""{{ else }}swaggerSpec.Spec().Info.Title{{ end }}{{ end }}{{ else }}{{ if .ExcludeSpec }}""{{ else }}swaggerSpec.Spec().Info.Title{{ end }}{{ end}}
   parser.LongDescription = {{ if .Info }}{{ if .Info.Description }}`{{ .Info.Description }}`{{ else }}{{ if .ExcludeSpec }}""{{ else }}swaggerSpec.Spec().Info.Description{{ end }}{{ end }}{{ else }}{{ if .ExcludeSpec }}""{{ else }}swaggerSpec.Spec().Info.Description{{ end }}{{ end}}
 
-  {{ if not .ExcludeSpec }}for _, optsGroup := range api.CommandLineOptionsGroups {
+
+  {{ if not .ExcludeSpec }}
+  server.ConfigureFlags()
+  for _, optsGroup := range api.CommandLineOptionsGroups {
     parser.AddGroup(optsGroup.ShortDescription, optsGroup.LongDescription, optsGroup.Options)
   }
   {{ end }}
@@ -50,6 +53,9 @@ func main() { {{ if .ExcludeSpec }}
   server.SetAPI(api)
   defer server.Shutdown()
   {{ end }}
+
+  server.ConfigureAPI()
+
   if err := server.Serve(); err != nil {
     log.Fatalln(err)
   }
