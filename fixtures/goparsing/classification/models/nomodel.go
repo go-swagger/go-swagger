@@ -518,3 +518,12 @@ type ModelX struct {
 	// The number of doors on this Model X
 	Doors int `json:"doors"`
 }
+
+// The ModelA version of the tesla car
+//
+// swagger:model modelA
+type ModelA struct {
+	Tesla TeslaCar
+	// The number of doors on this Model A
+	Doors int `json:"doors"`
+}
