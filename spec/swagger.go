@@ -122,19 +122,17 @@ func (s SchemaOrBool) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON converts this bool or schema object from a JSON structure
 func (s *SchemaOrBool) UnmarshalJSON(data []byte) error {
 	var nw SchemaOrBool
-	if len(data) < 4 {
-		return nil
-	}
-	if data[0] == '{' {
-		var sch Schema
-		if err := json.Unmarshal(data, &sch); err != nil {
-			return err
+	if len(data) >= 4 {
+		if data[0] == '{' {
+			var sch Schema
+			if err := json.Unmarshal(data, &sch); err != nil {
+				return err
+			}
+			nw.Schema = &sch
 		}
-		nw.Schema = &sch
+		nw.Allows = !(data[0] == 'f' && data[1] == 'a' && data[2] == 'l' && data[3] == 's' && data[4] == 'e')
 	}
-	nw.Allows = !(data[0] == 'f' && data[1] == 'a' && data[2] == 'l' && data[3] == 's' && data[4] == 'e')
 	*s = nw
-
 	return nil
 }
 
@@ -163,10 +161,10 @@ func (s SchemaOrStringArray) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON converts this schema object or array from a JSON structure
 func (s *SchemaOrStringArray) UnmarshalJSON(data []byte) error {
-	if len(data) < 3 {
-		return nil
+	var first byte
+	if len(data) > 1 {
+		first = data[0]
 	}
-	first := data[0]
 	var nw SchemaOrStringArray
 	if first == '{' {
 		var sch Schema
@@ -224,11 +222,12 @@ func (s SchemaOrArray) JSONLookup(token string) (interface{}, error) {
 
 // UnmarshalJSON unmarshals this string or array object from a JSON array or JSON string
 func (s *StringOrArray) UnmarshalJSON(data []byte) error {
-	if len(data) < 3 {
-		return nil
+	var first byte
+	if len(data) > 1 {
+		first = data[0]
 	}
 
-	if data[0] == '[' {
+	if first == '[' {
 		var parsed []string
 		if err := json.Unmarshal(data, &parsed); err != nil {
 			return err
@@ -294,11 +293,11 @@ func (s SchemaOrArray) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON converts this schema object or array from a JSON structure
 func (s *SchemaOrArray) UnmarshalJSON(data []byte) error {
-	if len(data) < 3 {
-		return nil
-	}
-	first := data[0]
 	var nw SchemaOrArray
+	var first byte
+	if len(data) > 1 {
+		first = data[0]
+	}
 	if first == '{' {
 		var sch Schema
 		if err := json.Unmarshal(data, &sch); err != nil {
