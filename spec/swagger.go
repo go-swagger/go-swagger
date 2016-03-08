@@ -17,7 +17,6 @@ package spec
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"strconv"
 
 	"github.com/go-swagger/go-swagger/jsonpointer"
@@ -131,9 +130,6 @@ func (s *SchemaOrBool) UnmarshalJSON(data []byte) error {
 		if err := json.Unmarshal(data, &sch); err != nil {
 			return err
 		}
-		if reflect.DeepEqual(Schema{}, sch) {
-			return nil
-		}
 		nw.Schema = &sch
 	}
 	nw.Allows = !(data[0] == 'f' && data[1] == 'a' && data[2] == 'l' && data[3] == 's' && data[4] == 'e')
@@ -176,9 +172,6 @@ func (s *SchemaOrStringArray) UnmarshalJSON(data []byte) error {
 		var sch Schema
 		if err := json.Unmarshal(data, &sch); err != nil {
 			return err
-		}
-		if reflect.DeepEqual(Schema{}, sch) {
-			return nil
 		}
 		nw.Schema = &sch
 	}
@@ -310,9 +303,6 @@ func (s *SchemaOrArray) UnmarshalJSON(data []byte) error {
 		var sch Schema
 		if err := json.Unmarshal(data, &sch); err != nil {
 			return err
-		}
-		if reflect.DeepEqual(Schema{}, sch) {
-			return nil
 		}
 		nw.Schema = &sch
 	}

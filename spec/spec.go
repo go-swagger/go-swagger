@@ -111,9 +111,10 @@ func Swagger20Schema() (*Schema, error) {
 // Document represents a swagger spec document
 type Document struct {
 	specAnalyzer
-	spec *Swagger
-	raw  json.RawMessage
-	orig *Document
+	spec   *Swagger
+	schema *Schema
+	raw    json.RawMessage
+	orig   *Document
 }
 
 // Load loads a new spec document
@@ -155,8 +156,9 @@ func New(data json.RawMessage, version string) (*Document, error) {
 			allSchemas:  make(map[string]SchemaRef),
 			allOfs:      make(map[string]SchemaRef),
 		},
-		spec: spec,
-		raw:  data,
+		schema: MustLoadSwagger20Schema(),
+		spec:   spec,
+		raw:    data,
 	}
 	d.initialize()
 	d.orig = &(*d)
@@ -184,8 +186,9 @@ func (d *Document) Expanded() (*Document, error) {
 			allSchemas:  make(map[string]SchemaRef),
 			allOfs:      make(map[string]SchemaRef),
 		},
-		spec: spec,
-		raw:  d.raw,
+		spec:   spec,
+		schema: MustLoadSwagger20Schema(),
+		raw:    d.raw,
 	}
 	dd.initialize()
 	dd.orig = d.orig
@@ -206,7 +209,7 @@ func (d *Document) Version() string {
 
 // Schema returns the swagger 2.0 schema
 func (d *Document) Schema() *Schema {
-	return swaggerSchema
+	return d.schema
 }
 
 // Spec returns the swagger spec object model
@@ -250,6 +253,7 @@ func (d *Document) ResetDefinitions() *Document {
 
 	dd := &(*d)
 	dd.spec = &(*d.orig.spec)
+	dd.schema = MustLoadSwagger20Schema()
 	dd.spec.Definitions = defs
 	dd.initialize()
 	dd.orig = d.orig
