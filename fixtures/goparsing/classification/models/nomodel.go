@@ -150,11 +150,12 @@ type OtherTypes struct {
 	ModsTimeds    []mods.SomeTimedType  `json:"modsTimeds"`
 	ModsPetteds   []mods.SomePettedType `json:"modsPetteds"`
 
-	ManyModsNamed    mods.SomeStringsType `json:"manyModsNamed"`
-	ManyModsNumbered mods.SomeIntsType    `json:"manyModsNumbered"`
-	ManyModsDated    mods.SomeTimesType   `json:"manyModsDated"`
-	ManyModsTimed    mods.SomeTimedsType  `json:"manyModsTimed"`
-	ManyModsPetted   mods.SomePettedsType `json:"manyModsPetted"`
+	ManyModsNamed     mods.SomeStringsType    `json:"manyModsNamed"`
+	ManyModsNumbered  mods.SomeIntsType       `json:"manyModsNumbered"`
+	ManyModsDated     mods.SomeTimesType      `json:"manyModsDated"`
+	ManyModsTimed     mods.SomeTimedsType     `json:"manyModsTimed"`
+	ManyModsPetted    mods.SomePettedsType    `json:"manyModsPetted"`
+	ManyModsPettedPtr mods.SomePettedsPtrType `json:"manyModsPettedPtr"`
 }
 
 // A SimpleOne is a model with a few simple fields

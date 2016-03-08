@@ -226,6 +226,7 @@ func TestAliasedTypes(t *testing.T) {
 	assertArrayProperty(t, &schema, "string", "manyModsTimed", "date-time", "ManyModsTimed")
 	assertArrayRef(t, &schema, "manyModsPetted", "ManyModsPetted", "#/definitions/pet")
 	assertArrayProperty(t, &schema, "string", "manyModsDated", "date-time", "ManyModsDated")
+	assertArrayRef(t, &schema, "manyModsPettedPtr", "ManyModsPettedPtr", "#/definitions/pet")
 
 	assertArrayProperty(t, &schema, "string", "modsNameds", "", "ModsNameds")
 	assertArrayProperty(t, &schema, "integer", "modsNumbereds", "int64", "ModsNumbereds")

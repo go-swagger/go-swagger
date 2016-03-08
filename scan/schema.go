@@ -722,8 +722,10 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 			return scp.parseIdentProperty(pkg, atpe, prop.Items())
 		case *ast.SelectorExpr:
 			return scp.typeForSelector(file, atpe, prop.Items())
+		case *ast.StarExpr:
+			return parseProperty(scp, file, atpe.X, prop.Items())
 		default:
-			return fmt.Errorf("unknown selector type: %#v", tpe)
+			return fmt.Errorf("unknown selector type: %#v", atpe)
 		}
 	case *ast.StructType:
 		sd := newSchemaDecl(file, gd, ts)
