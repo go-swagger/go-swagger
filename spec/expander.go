@@ -425,6 +425,11 @@ func expandSchema(schema *Schema, resolver *schemaLoader) error {
 		if err := expandSchema(&v, resolver); err != nil {
 			return err
 		}
+		if v.Type.Contains("array") {
+			if err := expandSchema(&v, resolver); err != nil {
+				return err
+			}
+		}
 		schema.Properties[k] = v
 	}
 	if schema.AdditionalProperties != nil && schema.AdditionalProperties.Schema != nil {
