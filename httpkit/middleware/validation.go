@@ -58,6 +58,9 @@ func (ub untypedBinder) BindRequest(r *http.Request, route *MatchedRoute, consum
 
 // ContentType validates the content type of a request
 func validateContentType(allowed []string, actual string) *errors.Validation {
+	if len(allowed) == 0 {
+		return nil
+	}
 	mt, _, err := mime.ParseMediaType(actual)
 	if err != nil {
 		return errors.InvalidContentType(actual, allowed)
