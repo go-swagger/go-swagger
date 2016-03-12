@@ -18,7 +18,7 @@ type {{ pascalize .Name }} struct {
   Unique: true{{ end }}{{ if .HasDefault }}
   Default: {{ printf "%#v" .Default }}{{ end }}
   */
-  {{ pascalize .Name }} {{ .GoType }} `json:"{{.Name}},omitempty"`
+  {{ pascalize .Name }} {{ .GoType }} `json:"{{.Name}}{{ if not .Required }},omitempty{{ end }}"`
   {{ end }}
   {{ if .Schema }}
   // In: body
@@ -112,4 +112,3 @@ import (
 {{ if .DefaultResponse }}
 {{ template "serverresponse" .DefaultResponse }}
 {{ end }}
-

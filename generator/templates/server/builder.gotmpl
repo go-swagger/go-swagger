@@ -144,7 +144,8 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) AuthenticatorsFor(schemes map
     switch name {
       {{range .SecurityDefinitions}}
       case "{{.ID}}":
-        {{if .IsBasicAuth}}result[name] = security.BasicAuth(func (u, p string) (interface{}, error) { return {{.ReceiverName}}.{{ pascalize .ID }}Auth(u, p)}){{end}}
+        {{if .IsBasicAuth}}_ = scheme
+        result[name] = security.BasicAuth(func (u, p string) (interface{}, error) { return {{.ReceiverName}}.{{ pascalize .ID }}Auth(u, p)}){{end}}
         {{if .IsAPIKeyAuth}}result[name] = security.APIKeyAuth(scheme.Name, scheme.In, func(tok string) (interface{}, error) { return {{.ReceiverName}}.{{ pascalize .ID }}Auth(tok) }){{end}}
       {{end}}
     }

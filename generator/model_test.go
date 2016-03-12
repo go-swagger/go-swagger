@@ -199,7 +199,7 @@ Max Items: 30
 Min Items: 30
 Unique: true
  */
-`+"SomeName string `json:\"some name,omitempty\"`\n")
+`+"SomeName string `json:\"some name\"`\n")
 }
 
 var schTypeGenDataSimple = []struct {
@@ -321,7 +321,7 @@ func TestGenerateModel_NotaWithMeta(t *testing.T) {
 					res := string(ff)
 					assertInCode(t, "type NotaWithMeta map[string]*NotaWithMetaAnon", res)
 					assertInCode(t, "type NotaWithMetaAnon struct {", res)
-					assertInCode(t, "Comment string `json:\"comment,omitempty\"`", res)
+					assertInCode(t, "Comment string `json:\"comment\"`", res)
 					assertInCode(t, "Count *int32 `json:\"count,omitempty\"`", res)
 				}
 			}
@@ -372,7 +372,7 @@ func TestGenerateModel_NotaWithName(t *testing.T) {
 				res := buf.String()
 				assertInCode(t, "type "+k+" struct {", res)
 				assertInCode(t, k+" map[string]int32 `json:\"-\"`", res)
-				assertInCode(t, "Name string `json:\"name,omitempty\"`", res)
+				assertInCode(t, "Name string `json:\"name\"`", res)
 				assertInCode(t, k+") UnmarshalJSON", res)
 				assertInCode(t, k+") MarshalJSON", res)
 				assertInCode(t, "json.Marshal(m)", res)
@@ -428,7 +428,7 @@ func TestGenerateModel_NotaWithMetaRegistry(t *testing.T) {
 					res := string(ff)
 					assertInCode(t, "type "+k+" map[string]map[string]map[string]*NotaWithMetaRegistryAnon", res)
 					assertInCode(t, "type NotaWithMetaRegistryAnon struct {", res)
-					assertInCode(t, "Comment string `json:\"comment,omitempty\"`", res)
+					assertInCode(t, "Comment string `json:\"comment\"`", res)
 					assertInCode(t, "Count *int32 `json:\"count,omitempty\"`", res)
 				}
 			}
@@ -481,8 +481,8 @@ func TestGenerateModel_WithMapInterface(t *testing.T) {
 				res := buf.String()
 				//fmt.Println(res)
 				assertInCode(t, "type WithMapInterface struct {", res)
-				assertInCode(t, "ExtraInfo map[string]interface{} `json:\"extraInfo,omitempty\"`", res)
-				assertInCode(t, "ExtraInfo map[string]interface{} `json:\"extraInfo,omitempty\"`", res)
+				assertInCode(t, "ExtraInfo map[string]interface{} `json:\"extraInfo\"`", res)
+				// assertInCode(t, "ExtraInfo map[string]interface{} `json:\"extraInfo,omitempty\"`", res)
 			}
 		}
 	}
@@ -640,7 +640,7 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 					assertInCode(t, "Data *"+k+"Data `json:\"data,omitempty\"`", res)
 					assertInCode(t, "type "+k+"Data struct {", res)
 					assertInCode(t, k+"Data map[string]string `json:\"-\"`", res)
-					assertInCode(t, "Name string `json:\"name,omitempty\"`", res)
+					assertInCode(t, "Name string `json:\"name\"`", res)
 					assertInCode(t, k+"Data) UnmarshalJSON", res)
 					assertInCode(t, k+"Data) MarshalJSON", res)
 					assertInCode(t, "json.Marshal(m)", res)
@@ -1291,7 +1291,7 @@ func TestGenerateModel_WithAllOfAndDiscriminator(t *testing.T) {
 					res := string(ct)
 					assertInCode(t, "type Cat struct {", res)
 					assertInCode(t, "Pet", res)
-					assertInCode(t, "HuntingSkill string `json:\"huntingSkill,omitempty\"`", res)
+					assertInCode(t, "HuntingSkill string `json:\"huntingSkill\"`", res)
 				}
 			}
 		}
@@ -1478,7 +1478,7 @@ func TestGenModel_Issue251(t *testing.T) {
 					res := string(ct)
 
 					b1 := assertInCode(t, "type "+swag.ToGoName(k)+" struct", res)
-					b2 := assertInCode(t, "Begin strfmt.DateTime `json:\"begin,omitempty\"`", res)
+					b2 := assertInCode(t, "Begin strfmt.DateTime `json:\"begin\"`", res)
 					b3 := assertInCode(t, "End *strfmt.DateTime `json:\"end,omitempty\"`", res)
 					b4 := assertInCode(t, "Name *string `json:\"name,omitempty\"`", res)
 					b5 := assertInCode(t, "(m *"+swag.ToGoName(k)+") validateBegin", res)
@@ -1558,6 +1558,28 @@ func TestGenModel_Issue381(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ct)
 					assertNotInCode(t, "m[i] != nil", res)
+				}
+			}
+		}
+	}
+}
+
+func TestGenModel_Issue300(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "ActionItem"
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("action_item.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, "Name ActionName `json:\"name\"`", res)
+				} else {
+					fmt.Println(buf.String())
 				}
 			}
 		}
