@@ -209,7 +209,7 @@ func TestRenderOperation_InstagramSearch(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					//fmt.Println(res)
-					assertInCode(t, "Data []*DataItems0 `json:\"data,omitempty\"`", res)
+					assertInCode(t, "Data []*DataItems0 `json:\"data\"`", res)
 					assertInCode(t, "models.Media", res)
 				}
 			}

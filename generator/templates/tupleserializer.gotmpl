@@ -123,9 +123,9 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) { {
 		return nil, err
 	}
 	b2, err = json.Marshal(struct{ {{ range .AllOf }}{{ if .IsAnonymous }}{{ range .Properties }}{{ if .IsBaseType }}
-    {{ pascalize .Name }} {{ template "schemaType" . }} `json:"{{ .Name }},omitempty"`
+    {{ pascalize .Name }} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if not .Required }},omitempty{{ end }}"`
   {{ end }}{{ end }}{{ end }}{{ end }}{{ range .Properties }}{{ if .IsBaseType }}
-    {{ pascalize .Name }} {{ template "schemaType" . }} `json:"{{ .Name }},omitempty"`
+    {{ pascalize .Name }} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if not .Required }},omitempty{{ end }}"`
   {{ end }}{{end}}}{ {{ range .AllOf }}{{ if .IsAnonymous }}{{ range .Properties }}{{ if .IsBaseType }}
     {{ pascalize .Name }}: {{ $receiverName }}.{{ if $.IsSubType}}{{ camelize .Name }}Field{{ else }}{{ pascalize .Name }}{{ end }},
   {{ end }}{{ end }}{{ end }}{{ end }}{{ range .Properties }}{{ if .IsBaseType }}
