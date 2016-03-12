@@ -287,7 +287,7 @@ func TestEnum_ComputeInstance(t *testing.T) {
 				ff, err := formatGoFile("object_thing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
-					assertInCode(t, "Region string `json:\"region,omitempty\"`", res)
+					assertInCode(t, "Region string `json:\"region\"`", res)
 					assertInCode(t, "var computeInstanceTypeRegionPropEnum []interface{}", res)
 					assertInCode(t, "m.validateRegionEnum(\"region\", \"body\", m.Region)", res)
 				}
@@ -313,8 +313,8 @@ func TestEnum_NewPrototype(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "ActivatingUser *NewPrototypeActivatingUser `json:\"activating_user,omitempty\"`", res)
-					assertInCode(t, "Delegate *NewPrototypeDelegate `json:\"delegate,omitempty\"`", res)
-					assertInCode(t, "Role string `json:\"role,omitempty\"`", res)
+					assertInCode(t, "Delegate *NewPrototypeDelegate `json:\"delegate\"`", res)
+					assertInCode(t, "Role string `json:\"role\"`", res)
 					assertInCode(t, "var newPrototypeTypeRolePropEnum []interface{}", res)
 					assertInCode(t, "var newPrototypeDelegateTypeKindPropEnum []interface{}", res)
 					assertInCode(t, "m.validateDelegate(formats)", res)

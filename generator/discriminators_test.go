@@ -37,7 +37,7 @@ func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
 					res := string(b)
 					assertInCode(t, "type Kennel struct {", res)
 					assertInCode(t, "ID *int64 `json:\"id,omitempty\"`", res)
-					assertInCode(t, "Pets []Pet `json:\"pets,omitempty\"`", res)
+					assertInCode(t, "Pets []Pet `json:\"pets\"`", res)
 					assertInCode(t, "if err := m.Pets[i].Validate(formats); err != nil {", res)
 					assertInCode(t, "m.validatePet", res)
 				} else {
@@ -79,8 +79,8 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 							assertInCode(t, "if err := m.validateHuntingSkillEnum(\"huntingSkill\", \"body\", m.HuntingSkill); err != nil {", res)
 							assertInCode(t, "data.HuntingSkill = m.HuntingSkill", res)
 						}
-						assertInCode(t, "Name string `json:\"name,omitempty\"`", res)
-						assertInCode(t, "PetType string `json:\"petType,omitempty\"`", res)
+						assertInCode(t, "Name string `json:\"name\"`", res)
+						assertInCode(t, "PetType string `json:\"petType\"`", res)
 
 						assertInCode(t, "data.Name = m.nameField", res)
 						assertInCode(t, "data.PetType = \""+k+"\"", res)
