@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 var items = Items{
@@ -49,7 +49,7 @@ var items = Items{
 }
 
 var itemsJSON = `{
-	"items": { 
+	"items": {
 		"$ref": "Cat"
 	},
   "$ref": "Dog",
@@ -72,25 +72,10 @@ var itemsJSON = `{
 }`
 
 func TestIntegrationItems(t *testing.T) {
+	var actual Items
+	if assert.NoError(t, json.Unmarshal([]byte(itemsJSON), &actual)) {
+		assert.EqualValues(t, actual, items)
+	}
 
-	Convey("all fields of items should", t, func() {
-
-		Convey("serialize", func() {
-			expected := map[string]interface{}{}
-			json.Unmarshal([]byte(itemsJSON), &expected)
-			b, err := json.Marshal(items)
-			So(err, ShouldBeNil)
-			var actual map[string]interface{}
-			err = json.Unmarshal(b, &actual)
-			So(err, ShouldBeNil)
-			So(actual, ShouldResemble, expected)
-		})
-
-		Convey("deserialize", func() {
-			actual := Items{}
-			err := json.Unmarshal([]byte(itemsJSON), &actual)
-			So(err, ShouldBeNil)
-			So(actual, ShouldBeEquivalentTo, items)
-		})
-	})
+	assertParsesJSON(t, itemsJSON, items)
 }

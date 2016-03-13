@@ -19,169 +19,92 @@ import (
 	"reflect"
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 )
 
-func ShouldSerializeJSON(actual interface{}, expected ...interface{}) string {
+func assertSerializeJSON(t testing.TB, actual interface{}, expected string) bool {
 	ser, err := json.Marshal(actual)
 	if err != nil {
-		return err.Error()
+		return assert.Fail(t, "unable to marshal to json (%s): %#v", err, actual)
 	}
-	exp := expected[0].(string)
-	return ShouldEqual(string(ser), exp)
+	return assert.Equal(t, string(ser), expected)
 }
 
-func ShouldParseJSON(actual interface{}, expected ...interface{}) string {
-	exp := expected[0]
-	tpe := reflect.TypeOf(exp)
+func assertParsesJSON(t testing.TB, actual string, expected interface{}) bool {
+	tpe := reflect.TypeOf(expected)
+	var pointed bool
 	if tpe.Kind() == reflect.Ptr {
 		tpe = tpe.Elem()
+		pointed = true
 	}
+
 	parsed := reflect.New(tpe)
-	err := json.Unmarshal([]byte(actual.(string)), parsed.Interface())
+	err := json.Unmarshal([]byte(actual), parsed.Interface())
 	if err != nil {
-		return err.Error()
+		return assert.Fail(t, "unable to unmarshal from json (%s): %s", err, actual)
 	}
-	return ShouldResemble(parsed.Interface(), exp)
+	act := parsed.Interface()
+	if !pointed {
+		act = reflect.Indirect(parsed).Interface()
+	}
+	return assert.Equal(t, act, expected)
 }
 
-func ShouldParseYAML(actual interface{}, expected ...interface{}) string {
-	exp := expected[0]
-	tpe := reflect.TypeOf(exp)
-	if tpe.Kind() == reflect.Ptr {
-		tpe = tpe.Elem()
-	}
-	parsed := reflect.New(tpe)
-	err := yaml.Unmarshal([]byte(actual.(string)), parsed.Interface())
-	if err != nil {
-		return err.Error()
-	}
-	return ShouldResemble(parsed.Interface(), exp)
-}
-
-func ShouldSerializeYAML(actual interface{}, expected ...interface{}) string {
+func assertSerializeYAML(t testing.TB, actual interface{}, expected string) bool {
 	ser, err := yaml.Marshal(actual)
 	if err != nil {
-		return err.Error()
+		return assert.Fail(t, "unable to marshal to yaml (%s): %#v", err, actual)
 	}
-	exp := expected[0].(string)
-	return ShouldEqual(string(ser), exp)
+	return assert.Equal(t, string(ser), expected)
 }
 
-func TestSerialization(t *testing.T) {
-	Convey("Swagger should serialize", t, func() {
+func assertParsesYAML(t testing.TB, actual string, expected interface{}) bool {
+	tpe := reflect.TypeOf(expected)
+	var pointed bool
+	if tpe.Kind() == reflect.Ptr {
+		tpe = tpe.Elem()
+		pointed = true
+	}
+	parsed := reflect.New(tpe)
+	err := yaml.Unmarshal([]byte(actual), parsed.Interface())
+	if err != nil {
+		return assert.Fail(t, "unable to unmarshal from yaml (%s): %s", err, actual)
+	}
+	act := parsed.Interface()
+	if !pointed {
+		act = reflect.Indirect(parsed).Interface()
+	}
+	return assert.EqualValues(t, act, expected)
+}
 
-		Convey("a string or array property", func() {
-			Convey("when string", func() {
-				obj := []string{"hello"}
+func TestSerialization_SerializeJSON(t *testing.T) {
+	assertSerializeJSON(t, []string{"hello"}, "[\"hello\"]")
+	assertSerializeJSON(t, []string{"hello", "world", "and", "stuff"}, "[\"hello\",\"world\",\"and\",\"stuff\"]")
+	assertSerializeJSON(t, StringOrArray(nil), "null")
+	assertSerializeJSON(t, SchemaOrArray{Schemas: []Schema{Schema{SchemaProps: SchemaProps{Type: []string{"string"}}}}}, "[{\"type\":\"string\"}]")
+	assertSerializeJSON(t, SchemaOrArray{
+		Schemas: []Schema{
+			Schema{SchemaProps: SchemaProps{Type: []string{"string"}}},
+			Schema{SchemaProps: SchemaProps{Type: []string{"string"}}},
+		}}, "[{\"type\":\"string\"},{\"type\":\"string\"}]")
+	assertSerializeJSON(t, SchemaOrArray{}, "null")
+}
 
-				Convey("for json returns quoted string", func() {
-					So(obj, ShouldSerializeJSON, "[\"hello\"]")
-				})
-			})
+func TestSerialization_DeserializeJSON(t *testing.T) {
+	// String
+	assertParsesJSON(t, "\"hello\"", StringOrArray([]string{"hello"}))
+	assertParsesJSON(t, "[\"hello\",\"world\",\"and\",\"stuff\"]", StringOrArray([]string{"hello", "world", "and", "stuff"}))
+	assertParsesJSON(t, "[\"hello\",\"world\",null,\"stuff\"]", StringOrArray([]string{"hello", "world", "", "stuff"}))
+	assertParsesJSON(t, "null", StringOrArray(nil))
 
-			Convey("when slice", func() {
-				obj := []string{"hello", "world", "and", "stuff"}
-				Convey("for json returns an array of strings", func() {
-					So(obj, ShouldSerializeJSON, "[\"hello\",\"world\",\"and\",\"stuff\"]")
-				})
-			})
-
-			Convey("when empty", func() {
-				obj := StringOrArray(nil)
-				Convey("for json returns an empty array", func() {
-					So(obj, ShouldSerializeJSON, "null")
-				})
-			})
-		})
-
-		Convey("a schema or array property", func() {
-			Convey("when string", func() {
-				obj := SchemaOrArray{Schemas: []Schema{Schema{SchemaProps: SchemaProps{Type: []string{"string"}}}}}
-
-				Convey("for json returns quoted string", func() {
-					So(obj, ShouldSerializeJSON, "[{\"type\":\"string\"}]")
-				})
-			})
-
-			Convey("when slice", func() {
-				obj := SchemaOrArray{
-					Schemas: []Schema{
-						Schema{SchemaProps: SchemaProps{Type: []string{"string"}}},
-						Schema{SchemaProps: SchemaProps{Type: []string{"string"}}},
-					}}
-				Convey("for json returns an array of strings", func() {
-					So(obj, ShouldSerializeJSON, "[{\"type\":\"string\"},{\"type\":\"string\"}]")
-				})
-			})
-
-			Convey("when empty", func() {
-				obj := SchemaOrArray{}
-				Convey("for json returns an empty array", func() {
-					So(obj, ShouldSerializeJSON, "null")
-				})
-			})
-		})
+	// Schema
+	assertParsesJSON(t, "{\"type\":\"string\"}", SchemaOrArray{Schema: &Schema{SchemaProps: SchemaProps{Type: []string{"string"}}}})
+	assertParsesJSON(t, "[{\"type\":\"string\"},{\"type\":\"string\"}]", &SchemaOrArray{
+		Schemas: []Schema{
+			Schema{SchemaProps: SchemaProps{Type: []string{"string"}}},
+			Schema{SchemaProps: SchemaProps{Type: []string{"string"}}},
+		},
 	})
-
-	Convey("Swagger should deserialize", t, func() {
-
-		Convey("a string or array property", func() {
-			Convey("when string", func() {
-				obj := StringOrArray([]string{"hello"})
-
-				Convey("for json returns quoted string", func() {
-					So("\"hello\"", ShouldParseJSON, &obj)
-				})
-			})
-
-			Convey("when slice", func() {
-				obj := StringOrArray([]string{"hello", "world", "and", "stuff"})
-				Convey("for json returns an array of strings", func() {
-					So("[\"hello\",\"world\",\"and\",\"stuff\"]", ShouldParseJSON, &obj)
-				})
-				Convey("for json returns an array of strings with nil", func() {
-					obj = StringOrArray([]string{"hello", "world", "", "stuff"})
-					So("[\"hello\",\"world\",null,\"stuff\"]", ShouldParseJSON, &obj)
-				})
-			})
-
-			Convey("when empty", func() {
-				obj := StringOrArray(nil)
-				Convey("for json returns an empty array", func() {
-					So("null", ShouldParseJSON, &obj)
-				})
-			})
-		})
-
-		Convey("a schema or array property", func() {
-			Convey("when string", func() {
-				obj := SchemaOrArray{Schema: &Schema{SchemaProps: SchemaProps{Type: []string{"string"}}}}
-
-				Convey("for json returns quoted string", func() {
-					So("{\"type\":\"string\"}", ShouldParseJSON, &obj)
-				})
-			})
-
-			Convey("when slice", func() {
-				obj := &SchemaOrArray{
-					Schemas: []Schema{
-						Schema{SchemaProps: SchemaProps{Type: []string{"string"}}},
-						Schema{SchemaProps: SchemaProps{Type: []string{"string"}}},
-					},
-				}
-				Convey("for json returns an array of strings", func() {
-					So("[{\"type\":\"string\"},{\"type\":\"string\"}]", ShouldParseJSON, obj)
-				})
-			})
-
-			Convey("when empty", func() {
-				Convey("for json returns an empty array", func() {
-					obj := SchemaOrArray{}
-					So("null", ShouldParseJSON, &obj)
-				})
-			})
-		})
-	})
+	assertParsesJSON(t, "null", SchemaOrArray{})
 }

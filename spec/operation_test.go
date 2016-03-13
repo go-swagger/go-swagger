@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 var operation = Operation{
@@ -76,38 +76,10 @@ var operationJSON = `{
 }`
 
 func TestIntegrationOperation(t *testing.T) {
+	var actual Operation
+	if assert.NoError(t, json.Unmarshal([]byte(operationJSON), &actual)) {
+		assert.EqualValues(t, actual, operation)
+	}
 
-	Convey("all fields of an operation should", t, func() {
-
-		Convey("serialize", func() {
-			expected := map[string]interface{}{}
-			json.Unmarshal([]byte(operationJSON), &expected)
-			b, err := json.Marshal(operation)
-			So(err, ShouldBeNil)
-			var actual map[string]interface{}
-			err = json.Unmarshal(b, &actual)
-			So(err, ShouldBeNil)
-			So(actual, ShouldResemble, expected)
-		})
-
-		Convey("deserialize", func() {
-			actual := Operation{}
-			err := json.Unmarshal([]byte(operationJSON), &actual)
-			So(err, ShouldBeNil)
-			So(actual.Description, ShouldEqual, operation.Description)
-			So(actual.Extensions, ShouldResemble, operation.Extensions)
-			So(actual.Consumes, ShouldResemble, operation.Consumes)
-			So(actual.Produces, ShouldResemble, operation.Produces)
-			So(actual.Tags, ShouldResemble, operation.Tags)
-			So(actual.Schemes, ShouldResemble, operation.Schemes)
-			So(actual.Summary, ShouldEqual, operation.Summary)
-			So(actual.ID, ShouldEqual, operation.ID)
-			So(actual.Deprecated, ShouldEqual, operation.Deprecated)
-			So(actual.Security, ShouldResemble, operation.Security)
-			So(actual.Parameters, ShouldResemble, operation.Parameters)
-			So(actual.Responses.Default, ShouldResemble, operation.Responses.Default)
-		})
-
-	})
-
+	assertParsesJSON(t, operationJSON, operation)
 }

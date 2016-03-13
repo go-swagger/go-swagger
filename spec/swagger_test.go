@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"github.com/go-swagger/go-swagger/swag"
-	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -109,15 +108,43 @@ var specJSON = `{
 	"x-schemes": ["unix","amqp"]
 }`
 
-func verifySpecSerialize(specJSON []byte, spec Swagger) {
-	expected := map[string]interface{}{}
-	json.Unmarshal(specJSON, &expected)
-	b, err := json.MarshalIndent(spec, "", "  ")
-	So(err, ShouldBeNil)
-	var actual map[string]interface{}
-	err = json.Unmarshal(b, &actual)
-	So(err, ShouldBeNil)
-	compareSpecMaps(actual, expected)
+//
+// func verifySpecSerialize(specJSON []byte, spec Swagger) {
+// 	expected := map[string]interface{}{}
+// 	json.Unmarshal(specJSON, &expected)
+// 	b, err := json.MarshalIndent(spec, "", "  ")
+// 	So(err, ShouldBeNil)
+// 	var actual map[string]interface{}
+// 	err = json.Unmarshal(b, &actual)
+// 	So(err, ShouldBeNil)
+// 	compareSpecMaps(actual, expected)
+// }
+
+func assertEquivalent(t testing.TB, actual, expected interface{}) bool {
+	if actual == nil || expected == nil || reflect.DeepEqual(actual, expected) {
+		return true
+	}
+
+	actualType := reflect.TypeOf(actual)
+	expectedType := reflect.TypeOf(expected)
+	if reflect.TypeOf(actual).ConvertibleTo(expectedType) {
+		expectedValue := reflect.ValueOf(expected)
+		if swag.IsZero(expectedValue) && swag.IsZero(reflect.ValueOf(actual)) {
+			return true
+		}
+
+		// Attempt comparison after type conversion
+		if reflect.DeepEqual(actual, expectedValue.Convert(actualType).Interface()) {
+			return true
+		}
+	}
+
+	// Last ditch effort
+	if fmt.Sprintf("%#v", expected) == fmt.Sprintf("%#v", actual) {
+		return true
+	}
+	errFmt := "Expected: '%T(%#v)'\nActual:   '%T(%#v)'\n(Should be equivalent)!"
+	return assert.Fail(t, errFmt, expected, expected, actual, actual)
 }
 
 func ShouldBeEquivalentTo(actual interface{}, expecteds ...interface{}) string {
@@ -153,60 +180,113 @@ func ShouldBeEquivalentTo(actual interface{}, expecteds ...interface{}) string {
 
 }
 
-func compareSpecMaps(actual, expected map[string]interface{}) {
+func assertSpecMaps(t testing.TB, actual, expected map[string]interface{}) bool {
+	res := true
 	if id, ok := expected["id"]; ok {
-		So(actual["id"], ShouldEqual, id)
+		res = assert.Equal(t, id, actual["id"])
 	}
-	//So(actual["$schema"], ShouldEqual, SwaggerSchemaURL)
-	So(actual["consumes"], ShouldResemble, expected["consumes"])
-	So(actual["produces"], ShouldResemble, expected["produces"])
-	So(actual["schemes"], ShouldResemble, expected["schemes"])
-	So(actual["swagger"], ShouldEqual, expected["swagger"])
-	So(actual["info"], ShouldResemble, expected["info"])
-	So(actual["host"], ShouldEqual, expected["host"])
-	So(actual["basePath"], ShouldEqual, expected["basePath"])
-	So(actual["paths"], ShouldBeEquivalentTo, expected["paths"])
-	So(actual["definitions"], ShouldBeEquivalentTo, expected["definitions"])
-	So(actual["responses"], ShouldBeEquivalentTo, expected["responses"])
-	So(actual["securityDefinitions"], ShouldResemble, expected["securityDefinitions"])
-	So(actual["tags"], ShouldResemble, expected["tags"])
-	So(actual["externalDocs"], ShouldResemble, expected["externalDocs"])
-	So(actual["x-some-extension"], ShouldResemble, expected["x-some-extension"])
-	So(actual["x-schemes"], ShouldResemble, expected["x-schemes"])
+	res = res && assert.Equal(t, expected["consumes"], actual["consumes"])
+	res = res && assert.Equal(t, expected["produces"], actual["produces"])
+	res = res && assert.Equal(t, expected["schemes"], actual["schemes"])
+	res = res && assert.Equal(t, expected["swagger"], actual["swagger"])
+	res = res && assert.Equal(t, expected["info"], actual["info"])
+	res = res && assert.Equal(t, expected["host"], actual["host"])
+	res = res && assert.Equal(t, expected["basePath"], actual["basePath"])
+	res = res && assert.Equal(t, expected["paths"], actual["paths"])
+	res = res && assert.Equal(t, expected["definitions"], actual["definitions"])
+	res = res && assert.Equal(t, expected["responses"], actual["responses"])
+	res = res && assert.Equal(t, expected["securityDefinitions"], actual["securityDefinitions"])
+	res = res && assert.Equal(t, expected["tags"], actual["tags"])
+	res = res && assert.Equal(t, expected["externalDocs"], actual["externalDocs"])
+	res = res && assert.Equal(t, expected["x-some-extension"], actual["x-some-extension"])
+	res = res && assert.Equal(t, expected["x-schemes"], actual["x-schemes"])
+
+	return res
 }
 
-func compareSpecs(actual Swagger, spec Swagger) {
-	spec.Swagger = "2.0"
-	So(actual, ShouldBeEquivalentTo, spec)
+//
+// func compareSpecMaps(actual, expected map[string]interface{}) {
+// 	if id, ok := expected["id"]; ok {
+// 		So(actual["id"], ShouldEqual, id)
+// 	}
+// 	//So(actual["$schema"], ShouldEqual, SwaggerSchemaURL)
+// 	So(actual["consumes"], ShouldResemble, expected["consumes"])
+// 	So(actual["produces"], ShouldResemble, expected["produces"])
+// 	So(actual["schemes"], ShouldResemble, expected["schemes"])
+// 	So(actual["swagger"], ShouldEqual, expected["swagger"])
+// 	So(actual["info"], ShouldResemble, expected["info"])
+// 	So(actual["host"], ShouldEqual, expected["host"])
+// 	So(actual["basePath"], ShouldEqual, expected["basePath"])
+// 	So(actual["paths"], ShouldBeEquivalentTo, expected["paths"])
+// 	So(actual["definitions"], ShouldBeEquivalentTo, expected["definitions"])
+// 	So(actual["responses"], ShouldBeEquivalentTo, expected["responses"])
+// 	So(actual["securityDefinitions"], ShouldResemble, expected["securityDefinitions"])
+// 	So(actual["tags"], ShouldResemble, expected["tags"])
+// 	So(actual["externalDocs"], ShouldResemble, expected["externalDocs"])
+// 	So(actual["x-some-extension"], ShouldResemble, expected["x-some-extension"])
+// 	So(actual["x-schemes"], ShouldResemble, expected["x-schemes"])
+// }
+
+func assertSpecs(t testing.TB, actual, expected Swagger) bool {
+	expected.Swagger = "2.0"
+	return assert.Equal(t, actual, expected)
 }
 
-func verifySpecJSON(specJSON []byte) {
-	//Println()
-	//Println("json to verify", string(specJson))
+//
+// func compareSpecs(actual Swagger, spec Swagger) {
+// 	spec.Swagger = "2.0"
+// 	So(actual, ShouldBeEquivalentTo, spec)
+// }
+
+func assertSpecJSON(t testing.TB, specJSON []byte) bool {
 	var expected map[string]interface{}
-	err := json.Unmarshal(specJSON, &expected)
-	So(err, ShouldBeNil)
+	if !assert.NoError(t, json.Unmarshal(specJSON, &expected)) {
+		return false
+	}
 
 	obj := Swagger{}
-	err = json.Unmarshal(specJSON, &obj)
-	So(err, ShouldBeNil)
-
-	//spew.Dump(obj)
+	if !assert.NoError(t, json.Unmarshal(specJSON, &obj)) {
+		return false
+	}
 
 	cb, err := json.MarshalIndent(obj, "", "  ")
-	So(err, ShouldBeNil)
-	//Println()
-	//Println("Marshalling to json returned", string(cb))
-
+	if assert.NoError(t, err) {
+		return false
+	}
 	var actual map[string]interface{}
-	err = json.Unmarshal(cb, &actual)
-	So(err, ShouldBeNil)
-	//Println()
-	//spew.Dump(expected)
-	//spew.Dump(actual)
-	//fmt.Printf("comparing %s\n\t%#v\nto\n\t%#+v\n", fileName, expected, actual)
-	compareSpecMaps(actual, expected)
+	if !assert.NoError(t, json.Unmarshal(cb, &actual)) {
+		return false
+	}
+	return assertSpecMaps(t, actual, expected)
 }
+
+// func verifySpecJSON(specJSON []byte) {
+// 	//Println()
+// 	//Println("json to verify", string(specJson))
+// 	var expected map[string]interface{}
+// 	err := json.Unmarshal(specJSON, &expected)
+// 	So(err, ShouldBeNil)
+//
+// 	obj := Swagger{}
+// 	err = json.Unmarshal(specJSON, &obj)
+// 	So(err, ShouldBeNil)
+//
+// 	//spew.Dump(obj)
+//
+// 	cb, err := json.MarshalIndent(obj, "", "  ")
+// 	So(err, ShouldBeNil)
+// 	//Println()
+// 	//Println("Marshalling to json returned", string(cb))
+//
+// 	var actual map[string]interface{}
+// 	err = json.Unmarshal(cb, &actual)
+// 	So(err, ShouldBeNil)
+// 	//Println()
+// 	//spew.Dump(expected)
+// 	//spew.Dump(actual)
+// 	//fmt.Printf("comparing %s\n\t%#v\nto\n\t%#+v\n", fileName, expected, actual)
+// 	compareSpecMaps(actual, expected)
+// }
 
 func TestSwaggerSpec_Serialize(t *testing.T) {
 	expected := make(map[string]interface{})

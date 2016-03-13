@@ -18,57 +18,48 @@ import (
 	"encoding/json"
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestXmlObject(t *testing.T) {
+func TestXmlObject_Serialize(t *testing.T) {
+	obj1 := XMLObject{}
+	actual, err := json.Marshal(obj1)
+	if assert.NoError(t, err) {
+		assert.Equal(t, "{}", string(actual))
+	}
 
-	Convey("an xml object should", t, func() {
-		Convey("serialize", func() {
-			Convey("an empty object", func() {
-				obj := XMLObject{}
-				expected := "{}"
-				actual, err := json.Marshal(obj)
-				So(err, ShouldBeNil)
-				So(string(actual), ShouldEqual, expected)
-			})
-			Convey("a completed object", func() {
-				obj := XMLObject{
-					Name:      "the name",
-					Namespace: "the namespace",
-					Prefix:    "the prefix",
-					Attribute: true,
-					Wrapped:   true,
-				}
-				actual, err := json.Marshal(obj)
-				So(err, ShouldBeNil)
-				var ad map[string]interface{}
-				err = json.Unmarshal(actual, &ad)
-				So(err, ShouldBeNil)
-				So(ad["name"], ShouldEqual, obj.Name)
-				So(ad["namespace"], ShouldEqual, obj.Namespace)
-				So(ad["prefix"], ShouldEqual, obj.Prefix)
-				So(ad["attribute"], ShouldBeTrue)
-				So(ad["wrapped"], ShouldBeTrue)
-			})
-		})
-		Convey("deserialize", func() {
-			Convey("an empty object", func() {
-				expected := XMLObject{}
-				actual := XMLObject{}
-				err := json.Unmarshal([]byte("{}"), &actual)
-				So(err, ShouldBeNil)
-				So(actual, ShouldResemble, expected)
-			})
-			Convey("a completed object", func() {
-				completed := `{"name":"the name","namespace":"the namespace","prefix":"the prefix","attribute":true,"wrapped":true}`
-				expected := XMLObject{"the name", "the namespace", "the prefix", true, true}
-				actual := XMLObject{}
-				err := json.Unmarshal([]byte(completed), &actual)
-				So(err, ShouldBeNil)
-				So(actual, ShouldResemble, expected)
-			})
-		})
-	})
+	obj2 := XMLObject{
+		Name:      "the name",
+		Namespace: "the namespace",
+		Prefix:    "the prefix",
+		Attribute: true,
+		Wrapped:   true,
+	}
 
+	actual, err = json.Marshal(obj2)
+	if assert.NoError(t, err) {
+		var ad map[string]interface{}
+		if assert.NoError(t, json.Unmarshal(actual, &ad)) {
+			assert.Equal(t, obj2.Name, ad["name"])
+			assert.Equal(t, obj2.Namespace, ad["namespace"])
+			assert.Equal(t, obj2.Prefix, ad["prefix"])
+			assert.True(t, ad["attribute"].(bool))
+			assert.True(t, ad["wrapped"].(bool))
+		}
+	}
+}
+
+func TestXmlObject_Deserialize(t *testing.T) {
+	expected := XMLObject{}
+	actual := XMLObject{}
+	if assert.NoError(t, json.Unmarshal([]byte("{}"), &actual)) {
+		assert.Equal(t, expected, actual)
+	}
+
+	completed := `{"name":"the name","namespace":"the namespace","prefix":"the prefix","attribute":true,"wrapped":true}`
+	expected = XMLObject{"the name", "the namespace", "the prefix", true, true}
+	actual = XMLObject{}
+	if assert.NoError(t, json.Unmarshal([]byte(completed), &actual)) {
+		assert.Equal(t, expected, actual)
+	}
 }

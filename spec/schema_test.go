@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 var schema = Schema{
@@ -100,16 +100,16 @@ var schemaJSON = `{
   "maxProperties": 5,
   "minProperties": 1,
   "required": ["id", "name"],
-  "items": { 
-    "type": "string" 
+  "items": {
+    "type": "string"
   },
   "allOf": [
-    { 
-      "type": "string" 
+    {
+      "type": "string"
     }
   ],
   "properties": {
-    "id": { 
+    "id": {
       "type": "integer",
       "format": "int64"
     },
@@ -135,7 +135,7 @@ var schemaJSON = `{
       "id": 1,
       "name": "a book"
     },
-    { 
+    {
       "id": 2,
       "name": "the thing"
     }
@@ -149,62 +149,57 @@ var schemaJSON = `{
 
 func TestSchema(t *testing.T) {
 
-	Convey("Schema should", t, func() {
+	expected := map[string]interface{}{}
+	json.Unmarshal([]byte(schemaJSON), &expected)
+	b, err := json.Marshal(schema)
+	if assert.NoError(t, err) {
+		var actual map[string]interface{}
+		json.Unmarshal(b, &actual)
+		assert.Equal(t, expected, actual)
+	}
 
-		Convey("serialize", func() {
-			expected := map[string]interface{}{}
-			json.Unmarshal([]byte(schemaJSON), &expected)
-			b, err := json.Marshal(schema)
-			So(err, ShouldBeNil)
-			var actual map[string]interface{}
-			json.Unmarshal(b, &actual)
-			So(actual, ShouldBeEquivalentTo, expected)
-		})
-		Convey("deserialize", func() {
-			actual := Schema{}
-			err := json.Unmarshal([]byte(schemaJSON), &actual)
-			So(err, ShouldBeNil)
-			So(actual.Ref, ShouldResemble, schema.Ref)
-			So(actual.Description, ShouldEqual, schema.Description)
-			So(actual.Maximum, ShouldResemble, schema.Maximum)
-			So(actual.Minimum, ShouldResemble, schema.Minimum)
-			So(actual.ExclusiveMinimum, ShouldEqual, schema.ExclusiveMinimum)
-			So(actual.ExclusiveMaximum, ShouldEqual, schema.ExclusiveMaximum)
-			So(actual.MaxLength, ShouldResemble, schema.MaxLength)
-			So(actual.MinLength, ShouldResemble, schema.MinLength)
-			So(actual.Pattern, ShouldEqual, schema.Pattern)
-			So(actual.MaxItems, ShouldResemble, schema.MaxItems)
-			So(actual.MinItems, ShouldResemble, schema.MinItems)
-			So(actual.UniqueItems, ShouldBeTrue)
-			So(actual.MultipleOf, ShouldResemble, schema.MultipleOf)
-			So(actual.Enum, ShouldResemble, schema.Enum)
-			So(actual.Type, ShouldResemble, schema.Type)
-			So(actual.Format, ShouldEqual, schema.Format)
-			So(actual.Title, ShouldEqual, schema.Title)
-			So(actual.Default, ShouldResemble, schema.Default)
-			So(actual.MaxProperties, ShouldResemble, schema.MaxProperties)
-			So(actual.MinProperties, ShouldResemble, schema.MinProperties)
-			So(actual.Required, ShouldResemble, schema.Required)
-			So(actual.Items, ShouldResemble, schema.Items)
-			So(actual.AllOf, ShouldResemble, schema.AllOf)
-			So(actual.Properties, ShouldResemble, schema.Properties)
-			So(actual.Discriminator, ShouldEqual, schema.Discriminator)
-			So(actual.ReadOnly, ShouldEqual, schema.ReadOnly)
-			So(actual.XML, ShouldResemble, schema.XML)
-			So(actual.ExternalDocs, ShouldResemble, schema.ExternalDocs)
-			examples := actual.Example.([]interface{})
-			expEx := schema.Example.([]interface{})
-			ex1 := examples[0].(map[string]interface{})
-			ex2 := examples[1].(map[string]interface{})
-			exp1 := expEx[0].(map[string]interface{})
-			exp2 := expEx[1].(map[string]interface{})
-			So(ex1["name"], ShouldEqual, exp1["name"])
-			So(ex1["id"], ShouldEqual, exp1["id"])
-			So(ex2["name"], ShouldEqual, exp2["name"])
-			So(ex2["id"], ShouldEqual, exp2["id"])
-			So(actual.AdditionalProperties, ShouldResemble, schema.AdditionalProperties)
-			So(actual.Extensions, ShouldBeEquivalentTo, schema.Extensions)
-		})
-	})
+	actual2 := Schema{}
+	if assert.NoError(t, json.Unmarshal([]byte(schemaJSON), &actual2)) {
+		assert.Equal(t, schema.Ref, actual2.Ref)
+		assert.Equal(t, schema.Description, actual2.Description)
+		assert.Equal(t, schema.Maximum, actual2.Maximum)
+		assert.Equal(t, schema.Minimum, actual2.Minimum)
+		assert.Equal(t, schema.ExclusiveMinimum, actual2.ExclusiveMinimum)
+		assert.Equal(t, schema.ExclusiveMaximum, actual2.ExclusiveMaximum)
+		assert.Equal(t, schema.MaxLength, actual2.MaxLength)
+		assert.Equal(t, schema.MinLength, actual2.MinLength)
+		assert.Equal(t, schema.Pattern, actual2.Pattern)
+		assert.Equal(t, schema.MaxItems, actual2.MaxItems)
+		assert.Equal(t, schema.MinItems, actual2.MinItems)
+		assert.True(t, actual2.UniqueItems)
+		assert.Equal(t, schema.MultipleOf, actual2.MultipleOf)
+		assert.Equal(t, schema.Enum, actual2.Enum)
+		assert.Equal(t, schema.Type, actual2.Type)
+		assert.Equal(t, schema.Format, actual2.Format)
+		assert.Equal(t, schema.Title, actual2.Title)
+		assert.Equal(t, schema.MaxProperties, actual2.MaxProperties)
+		assert.Equal(t, schema.MinProperties, actual2.MinProperties)
+		assert.Equal(t, schema.Required, actual2.Required)
+		assert.Equal(t, schema.Items, actual2.Items)
+		assert.Equal(t, schema.AllOf, actual2.AllOf)
+		assert.Equal(t, schema.Properties, actual2.Properties)
+		assert.Equal(t, schema.Discriminator, actual2.Discriminator)
+		assert.Equal(t, schema.ReadOnly, actual2.ReadOnly)
+		assert.Equal(t, schema.XML, actual2.XML)
+		assert.Equal(t, schema.ExternalDocs, actual2.ExternalDocs)
+		assert.Equal(t, schema.AdditionalProperties, actual2.AdditionalProperties)
+		assert.Equal(t, schema.Extensions, actual2.Extensions)
+		examples := actual2.Example.([]interface{})
+		expEx := schema.Example.([]interface{})
+		ex1 := examples[0].(map[string]interface{})
+		ex2 := examples[1].(map[string]interface{})
+		exp1 := expEx[0].(map[string]interface{})
+		exp2 := expEx[1].(map[string]interface{})
+
+		assert.EqualValues(t, exp1["id"], ex1["id"])
+		assert.Equal(t, exp1["name"], ex1["name"])
+		assert.EqualValues(t, exp2["id"], ex2["id"])
+		assert.Equal(t, exp2["name"], ex2["name"])
+	}
 
 }
