@@ -82,12 +82,6 @@
 			"branch": "master"
 		},
 		{
-			"importpath": "github.com/smartystreets/goconvey",
-			"repository": "https://github.com/smartystreets/goconvey",
-			"revision": "99f2b1e01343c8bc2d9d12f1194d2d68ce18b063",
-			"branch": "master"
-		},
-		{
 			"importpath": "github.com/stretchr/objx",
 			"repository": "https://github.com/stretchr/objx",
 			"revision": "1a9d0bb9f541897e62256577b352fdbc1fb4fd94",
