@@ -20,13 +20,6 @@
 			"branch": "master"
 		},
 		{
-			"importpath": "github.com/davecgh/go-spew/spew",
-			"repository": "https://github.com/davecgh/go-spew",
-			"revision": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d",
-			"branch": "master",
-			"path": "/spew"
-		},
-		{
 			"importpath": "github.com/go-swagger/scan-repo-boundary",
 			"repository": "https://github.com/go-swagger/scan-repo-boundary",
 			"revision": "196ec52cfa1c96b45dd793dfa0fa3f8877b299da",
@@ -96,6 +89,13 @@
 			"revision": "093d7650abf0a26882924de03a6c840a00356572",
 			"branch": "master",
 			"path": "/go/ast/astutil"
+		},
+		{
+			"importpath": "golang.org/x/tools/go/loader",
+			"repository": "https://go.googlesource.com/tools",
+			"revision": "093d7650abf0a26882924de03a6c840a00356572",
+			"branch": "master",
+			"path": "/go/loader"
 		},
 		{
 			"importpath": "golang.org/x/tools/imports",
