@@ -82,22 +82,11 @@ func createListener(sleep time.Duration) (*http.Server, net.Listener, error) {
 		rw.WriteHeader(http.StatusOK)
 	})
 
-	time.Sleep(1 * time.Second)
 	server := &http.Server{Addr: ":9654", Handler: mux}
 	l, err := net.Listen("tcp", ":9654")
 	if err != nil {
 	}
 	return server, l, err
-}
-
-func runServer(timeout, sleep time.Duration, c chan os.Signal) error {
-	server, l, err := createListener(sleep)
-	if err != nil {
-		return err
-	}
-
-	srv := &Server{Timeout: timeout, Server: server, interrupt: c}
-	return srv.Serve(l)
 }
 
 func launchTestQueries(t *testing.T, wg *sync.WaitGroup, c chan os.Signal) {
@@ -123,11 +112,16 @@ func TestGracefulRun(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
+	server, l, err := createListener(killTime / 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	go func() {
-		runServer(killTime, killTime/2, c)
+		srv := &Server{Timeout: killTime, Server: server, interrupt: c}
+		srv.Serve(l)
 		wg.Done()
 	}()
-	time.Sleep(1 * time.Second)
 
 	wg.Add(1)
 	go launchTestQueries(t, &wg, c)
@@ -140,11 +134,16 @@ func TestGracefulRunTimesOut(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
+	server, l, err := createListener(killTime * 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	go func() {
-		runServer(killTime, killTime*10, c)
+		srv := &Server{Timeout: killTime, Server: server, interrupt: c}
+		srv.Serve(l)
 		wg.Done()
 	}()
-	time.Sleep(2 * time.Second)
 
 	var once sync.Once
 	wg.Add(1)
@@ -171,11 +170,16 @@ func TestGracefulRunDoesntTimeOut(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
+	server, l, err := createListener(killTime * 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	go func() {
-		runServer(0, killTime*2, c)
+		srv := &Server{Timeout: 0, Server: server, interrupt: c}
+		srv.Serve(l)
 		wg.Done()
 	}()
-	time.Sleep(1 * time.Second)
 
 	wg.Add(1)
 	go launchTestQueries(t, &wg, c)
@@ -188,11 +192,16 @@ func TestGracefulRunNoRequests(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
+	server, l, err := createListener(killTime * 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	go func() {
-		runServer(0, killTime*2, c)
+		srv := &Server{Timeout: 0, Server: server, interrupt: c}
+		srv.Serve(l)
 		wg.Done()
 	}()
-	time.Sleep(1 * time.Second)
 
 	c <- os.Interrupt
 
@@ -220,8 +229,12 @@ func TestGracefulForwardsConnState(t *testing.T) {
 		http.StateClosed: 8,
 	}
 
+	server, l, err := createListener(killTime / 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	go func() {
-		server, l, _ := createListener(killTime / 2)
 		srv := &Server{
 			ConnState: connState,
 			Timeout:   killTime,
@@ -232,7 +245,6 @@ func TestGracefulForwardsConnState(t *testing.T) {
 
 		wg.Done()
 	}()
-	time.Sleep(2 * time.Second)
 
 	wg.Add(1)
 	go launchTestQueries(t, &wg, c)
@@ -290,6 +302,9 @@ func TestGracefulExplicitStopOverride(t *testing.T) {
 }
 
 func TestBeforeShutdownAndShutdownInitiatedCallbacks(t *testing.T) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+
 	server, l, err := createListener(1 * time.Millisecond)
 	if err != nil {
 		t.Fatal(err)
@@ -301,9 +316,11 @@ func TestBeforeShutdownAndShutdownInitiatedCallbacks(t *testing.T) {
 	cb2 := func() { close(shutdownInitiatedCalled) }
 
 	srv := &Server{Server: server, BeforeShutdown: cb1, ShutdownInitiated: cb2}
-
 	go func() {
-		go srv.Serve(l)
+		srv.Serve(l)
+		wg.Done()
+	}()
+	go func() {
 		time.Sleep(waitTime)
 		srv.Stop(killTime)
 	}()
@@ -329,7 +346,10 @@ func TestBeforeShutdownAndShutdownInitiatedCallbacks(t *testing.T) {
 	if !shutdownInitiated {
 		t.Fatal("shutdownInitiated should be true")
 	}
+
+	wg.Wait()
 }
+
 func hijackingListener(srv *Server) (*http.Server, net.Listener, error) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
