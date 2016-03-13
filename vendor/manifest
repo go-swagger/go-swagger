@@ -38,9 +38,9 @@
 			"branch": "master"
 		},
 		{
-			"importpath": "github.com/nu7hatch/gouuid",
-			"repository": "https://github.com/nu7hatch/gouuid",
-			"revision": "179d4d0c4d8d407a32af483c2354df1d2c91e6c3",
+			"importpath": "github.com/naoina/denco",
+			"repository": "https://github.com/naoina/denco",
+			"revision": "9af2ba0e24214bac003821f4a501b131b2e04c75",
 			"branch": "master"
 		},
 		{
