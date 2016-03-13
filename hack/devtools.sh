@@ -11,7 +11,6 @@ go get -u -v gopkg.in/matm/v1/gocov-html
 go get -u -v github.com/AlekSi/gocov-xml
 go get -u -v github.com/nsf/gocode
 go get -u -v github.com/jstemmer/gotags
-go get -u -v github.com/smartystreets/goconvey
 go get -u -v github.com/rogpeppe/godef
 go get -u -v github.com/pquerna/ffjson
 go get -u -v github.com/nathany/looper

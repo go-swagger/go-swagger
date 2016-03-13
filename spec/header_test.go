@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 func float64Ptr(f float64) *float64 {
@@ -55,9 +55,9 @@ var header = Header{
 }
 
 var headerJSON = `{
-	"items": { 
-		"$ref": "Cat"
-	},
+  "items": {
+    "$ref": "Cat"
+  },
   "description": "the description of this header",
   "maximum": 100,
   "minimum": 5,
@@ -73,29 +73,14 @@ var headerJSON = `{
   "enum": ["hello", "world"],
   "type": "string",
   "format": "date",
-	"default": "8"
+  "default": "8"
 }`
 
 func TestIntegrationHeader(t *testing.T) {
+	var actual Header
+	if assert.NoError(t, json.Unmarshal([]byte(headerJSON), &actual)) {
+		assert.EqualValues(t, actual, header)
+	}
 
-	Convey("all fields of header should", t, func() {
-
-		Convey("serialize", func() {
-			expected := map[string]interface{}{}
-			json.Unmarshal([]byte(headerJSON), &expected)
-			b, err := json.Marshal(header)
-			So(err, ShouldBeNil)
-			var actual map[string]interface{}
-			err = json.Unmarshal(b, &actual)
-			So(err, ShouldBeNil)
-			So(actual, ShouldResemble, expected)
-		})
-
-		Convey("deserialize", func() {
-			actual := Header{}
-			err := json.Unmarshal([]byte(headerJSON), &actual)
-			So(err, ShouldBeNil)
-			So(actual, ShouldBeEquivalentTo, header)
-		})
-	})
+	assertParsesJSON(t, headerJSON, header)
 }

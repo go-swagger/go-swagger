@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 var paths = Paths{
@@ -33,26 +33,11 @@ var paths = Paths{
 var pathsJSON = `{"x-framework":"go-swagger","/":{"$ref":"cats"}}`
 
 func TestIntegrationPaths(t *testing.T) {
-	Convey("all fields of paths should", t, func() {
+	var actual Paths
+	if assert.NoError(t, json.Unmarshal([]byte(pathsJSON), &actual)) {
+		assert.EqualValues(t, actual, paths)
+	}
 
-		Convey("serialize", func() {
-			expected := map[string]interface{}{}
-			json.Unmarshal([]byte(pathsJSON), &expected)
-			b, err := json.Marshal(paths)
-			So(err, ShouldBeNil)
-			var actual map[string]interface{}
-			err = json.Unmarshal(b, &actual)
-			So(err, ShouldBeNil)
-			So(actual, ShouldResemble, expected)
-		})
+	assertParsesJSON(t, pathsJSON, paths)
 
-		Convey("deserialize", func() {
-
-			actual := Paths{}
-			err := json.Unmarshal([]byte(pathsJSON), &actual)
-			So(err, ShouldBeNil)
-			So(actual, ShouldResemble, paths)
-		})
-
-	})
 }

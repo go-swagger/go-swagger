@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 var parameter = Parameter{
@@ -59,7 +59,7 @@ var parameter = Parameter{
 }
 
 var parameterJSON = `{
-	"items": { 
+	"items": {
 		"$ref": "Cat"
 	},
 	"x-framework": "swagger-go",
@@ -90,120 +90,67 @@ var parameterJSON = `{
 }`
 
 func TestIntegrationParameter(t *testing.T) {
-	Convey("for all properties a parameter should", t, func() {
-		Convey("serialize", func() {
-			expected := map[string]interface{}{}
-			json.Unmarshal([]byte(parameterJSON), &expected)
-			b, err := json.Marshal(parameter)
-			So(err, ShouldBeNil)
-			var actual map[string]interface{}
-			err = json.Unmarshal(b, &actual)
-			So(err, ShouldBeNil)
-			So(actual, ShouldResemble, expected)
-		})
+	var actual Parameter
+	if assert.NoError(t, json.Unmarshal([]byte(parameterJSON), &actual)) {
+		assert.EqualValues(t, actual, parameter)
+	}
 
-		Convey("deserialize", func() {
-			actual := Parameter{}
-			err := json.Unmarshal([]byte(parameterJSON), &actual)
-			So(err, ShouldBeNil)
-			So(actual.Items, ShouldResemble, parameter.Items)
-			So(actual.Extensions, ShouldResemble, parameter.Extensions)
-			So(actual.Ref, ShouldResemble, parameter.Ref)
-			So(actual.Description, ShouldEqual, parameter.Description)
-			So(actual.Maximum, ShouldResemble, parameter.Maximum)
-			So(actual.Minimum, ShouldResemble, parameter.Minimum)
-			So(actual.ExclusiveMinimum, ShouldEqual, parameter.ExclusiveMinimum)
-			So(actual.ExclusiveMaximum, ShouldEqual, parameter.ExclusiveMaximum)
-			So(actual.MaxLength, ShouldResemble, parameter.MaxLength)
-			So(actual.MinLength, ShouldResemble, parameter.MinLength)
-			So(actual.Pattern, ShouldEqual, parameter.Pattern)
-			So(actual.MaxItems, ShouldResemble, parameter.MaxItems)
-			So(actual.MinItems, ShouldResemble, parameter.MinItems)
-			So(actual.UniqueItems, ShouldBeTrue)
-			So(actual.MultipleOf, ShouldResemble, parameter.MultipleOf)
-			So(actual.Enum, ShouldResemble, parameter.Enum)
-			So(actual.Type, ShouldResemble, parameter.Type)
-			So(actual.Format, ShouldEqual, parameter.Format)
-			So(actual.Name, ShouldEqual, parameter.Name)
-			So(actual.In, ShouldEqual, parameter.In)
-			So(actual.Required, ShouldEqual, parameter.Required)
-			So(actual.Schema, ShouldResemble, parameter.Schema)
-			So(actual.CollectionFormat, ShouldEqual, parameter.CollectionFormat)
-			So(actual.Default, ShouldResemble, parameter.Default)
-		})
-	})
+	assertParsesJSON(t, parameterJSON, parameter)
 }
 
 func TestParameterSerialization(t *testing.T) {
+	items := &Items{
+		SimpleSchema: SimpleSchema{Type: "string"},
+	}
 
-	Convey("Parameters should serialize", t, func() {
-		items := &Items{
-			SimpleSchema: SimpleSchema{Type: "string"},
-		}
-		Convey("a query parameter", func() {
-			param := QueryParam("")
-			param.Type = "string"
-			So(param, ShouldSerializeJSON, `{"type":"string","in":"query"}`)
-		})
+	intItems := &Items{
+		SimpleSchema: SimpleSchema{Type: "int", Format: "int32"},
+	}
 
-		Convey("a query parameter with array", func() {
+	assertSerializeJSON(t, QueryParam("").Typed("string", ""), `{"type":"string","in":"query"}`)
 
-			param := QueryParam("").CollectionOf(items, "multi")
-			So(param, ShouldSerializeJSON, `{"type":"array","items":{"type":"string"},"collectionFormat":"multi","in":"query"}`)
-		})
+	assertSerializeJSON(t,
+		QueryParam("").CollectionOf(items, "multi"),
+		`{"type":"array","items":{"type":"string"},"collectionFormat":"multi","in":"query"}`)
 
-		Convey("a path parameter", func() {
-			param := PathParam("").Typed("string", "")
-			So(param, ShouldSerializeJSON, `{"type":"string","in":"path","required":true}`)
-		})
+	assertSerializeJSON(t, PathParam("").Typed("string", ""), `{"type":"string","in":"path","required":true}`)
 
-		Convey("a path parameter with string array", func() {
-			param := PathParam("").CollectionOf(items, "multi")
+	assertSerializeJSON(t,
+		PathParam("").CollectionOf(items, "multi"),
+		`{"type":"array","items":{"type":"string"},"collectionFormat":"multi","in":"path","required":true}`)
 
-			So(param, ShouldSerializeJSON, `{"type":"array","items":{"type":"string"},"collectionFormat":"multi","in":"path","required":true}`)
-		})
+	assertSerializeJSON(t,
+		PathParam("").CollectionOf(intItems, "multi"),
+		`{"type":"array","items":{"type":"int","format":"int32"},"collectionFormat":"multi","in":"path","required":true}`)
 
-		Convey("a path parameter with an int array", func() {
-			items = &Items{
-				SimpleSchema: SimpleSchema{Type: "int", Format: "int32"},
-			}
-			param := PathParam("").CollectionOf(items, "multi")
-			So(param, ShouldSerializeJSON, `{"type":"array","items":{"type":"int","format":"int32"},"collectionFormat":"multi","in":"path","required":true}`)
-		})
+	assertSerializeJSON(t, HeaderParam("").Typed("string", ""), `{"type":"string","in":"header","required":true}`)
 
-		Convey("a header parameter", func() {
-			param := HeaderParam("").Typed("string", "")
-			So(param, ShouldSerializeJSON, `{"type":"string","in":"header","required":true}`)
-		})
+	assertSerializeJSON(t,
+		HeaderParam("").CollectionOf(items, "multi"),
+		`{"type":"array","items":{"type":"string"},"collectionFormat":"multi","in":"header","required":true}`)
+	schema := &Schema{SchemaProps: SchemaProps{
+		Properties: map[string]Schema{
+			"name": Schema{SchemaProps: SchemaProps{
+				Type: []string{"string"},
+			}},
+		},
+	}}
 
-		Convey("a header parameter with string array", func() {
-			param := HeaderParam("").CollectionOf(items, "multi")
-			So(param, ShouldSerializeJSON, `{"type":"array","items":{"type":"string"},"collectionFormat":"multi","in":"header","required":true}`)
-		})
+	refSchema := &Schema{
+		SchemaProps: SchemaProps{Ref: MustCreateRef("Cat")},
+	}
 
-		Convey("a body parameter", func() {
-			schema := &Schema{SchemaProps: SchemaProps{
-				Properties: map[string]Schema{
-					"name": Schema{SchemaProps: SchemaProps{
-						Type: []string{"string"},
-					}},
-				},
-			}}
-			param := BodyParam("", schema)
-			So(param, ShouldSerializeJSON, `{"type":"object","in":"body","schema":{"properties":{"name":{"type":"string"}}}}`)
-		})
+	assertSerializeJSON(t,
+		BodyParam("", schema),
+		`{"type":"object","in":"body","schema":{"properties":{"name":{"type":"string"}}}}`)
 
-		Convey("a ref body parameter", func() {
-			schema := &Schema{
-				SchemaProps: SchemaProps{Ref: MustCreateRef("Cat")},
-			}
-			param := BodyParam("", schema)
-			So(param, ShouldSerializeJSON, `{"type":"object","in":"body","schema":{"$ref":"Cat"}}`)
-		})
+	assertSerializeJSON(t,
+		BodyParam("", refSchema),
+		`{"type":"object","in":"body","schema":{"$ref":"Cat"}}`)
 
-		Convey("serialize an array body parameter", func() {
-			param := BodyParam("", ArrayProperty(RefProperty("Cat")))
-			So(param, ShouldSerializeJSON, `{"type":"object","in":"body","schema":{"type":"array","items":{"$ref":"Cat"}}}`)
-		})
-	})
+	// array body param
+	assertSerializeJSON(t,
+		BodyParam("", ArrayProperty(RefProperty("Cat"))),
+		`{"type":"object","in":"body","schema":{"type":"array","items":{"$ref":"Cat"}}}`)
+
 }

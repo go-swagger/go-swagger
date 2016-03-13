@@ -38,6 +38,9 @@ install:
 
 
   # get the dependencies etc
+  - go get -u github.com/nu7hatch/gouuid
+  - go get -u github.com/stretchr/testify/assert
+  - go get -u github.com/davecgh/go-spew/spew
   - go get -u -v github.com/asaskevich/govalidator
   - go get -u -v github.com/naoina/denco
   - go get -u -v github.com/go-swagger/scan-repo-boundary/makeplans
