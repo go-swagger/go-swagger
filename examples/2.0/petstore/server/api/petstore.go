@@ -21,7 +21,6 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
@@ -48,12 +47,12 @@ func NewPetstore() (http.Handler, error) {
 
 var getAllPets = httpkit.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
 	fmt.Println("getAllPets")
-	spew.Println(data)
+	fmt.Printf("%#v\n", data)
 	return pets, nil
 })
 var createPet = httpkit.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
 	fmt.Println("createPet")
-	spew.Println(data)
+	fmt.Printf("%#v\n", data)
 	body := data.(map[string]interface{})["pet"]
 	var pet Pet
 	if err := swag.FromDynamicJSON(body, &pet); err != nil {
@@ -65,7 +64,7 @@ var createPet = httpkit.OperationHandlerFunc(func(data interface{}) (interface{}
 
 var deletePet = httpkit.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
 	fmt.Println("deletePet")
-	spew.Println(data)
+	fmt.Printf("%#v\n", data)
 	id := data.(map[string]interface{})["id"].(int64)
 	removePet(id)
 	return nil, nil
@@ -73,7 +72,7 @@ var deletePet = httpkit.OperationHandlerFunc(func(data interface{}) (interface{}
 
 var getPetByID = httpkit.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
 	fmt.Println("getPetByID")
-	spew.Println(data)
+	fmt.Printf("%#v\n", data)
 	id := data.(map[string]interface{})["id"].(int64)
 	return petByID(id)
 })
