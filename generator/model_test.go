@@ -1585,3 +1585,28 @@ func TestGenModel_Issue300(t *testing.T) {
 		}
 	}
 }
+
+// func TestGenModel_Issue398(t *testing.T) {
+// 	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+// 	if assert.NoError(t, err) {
+// 		definitions := specDoc.Spec().Definitions
+// 		k := "Property"
+// 		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc)
+// 		if assert.NoError(t, err) {
+// 			buf := bytes.NewBuffer(nil)
+// 			err := modelTemplate.Execute(buf, genModel)
+// 			if assert.NoError(t, err) {
+// 				ct, err := formatGoFile("action_item.go", buf.Bytes())
+// 				if assert.NoError(t, err) {
+// 					res := string(ct)
+// 					assertInCode(t, "Computed bool `json:\"computed\"`", res)
+// 					assertInCode(t, "Intval *int64 `json:\"intval,omitempty\"`", res)
+// 					assertInCode(t, "PropType *string `json:\"propType,omitempty\"`", res)
+// 					assertInCode(t, "Strval *string `json:\"strval,omitempty\"`", res)
+// 				} else {
+// 					fmt.Println(buf.String())
+// 				}
+// 			}
+// 		}
+// 	}
+// }

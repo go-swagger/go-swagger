@@ -30,15 +30,17 @@ import (
 // }
 
 const (
-	iface   = "interface{}"
-	array   = "array"
-	file    = "file"
-	number  = "number"
-	integer = "integer"
-	boolean = "boolean"
-	str     = "string"
-	object  = "object"
-	binary  = "binary"
+	iface       = "interface{}"
+	array       = "array"
+	file        = "file"
+	number      = "number"
+	integer     = "integer"
+	boolean     = "boolean"
+	str         = "string"
+	object      = "object"
+	binary      = "binary"
+	xNullable   = "x-nullable"
+	xIsNullable = "x-isnullable"
 )
 
 var zeroes = map[string]string{
@@ -476,10 +478,12 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		if tpe != file {
 			result.IsPrimitive = true
 			result.IsCustomFormatter = false
-			//bothNil := schema.Minimum == nil && schema.Maximum == nil
+
+			// bothNil := schema.Minimum == nil && schema.Maximum == nil
 			isMin := schema.Minimum != nil && *schema.Minimum > 0
 			isMax := schema.Minimum == nil && (schema.Maximum != nil && *schema.Maximum < 0) // || *schema.Minimum < 0) &&
 			isMinMax := (schema.Minimum != nil && schema.Maximum != nil && *schema.Minimum < 0 && *schema.Minimum < *schema.Maximum)
+
 			if tpe != boolean && (isMin || isMax || isMinMax) {
 				result.IsNullable = false
 			}

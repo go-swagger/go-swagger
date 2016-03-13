@@ -697,3 +697,22 @@ definitions:
     properties:
       name:
         $ref: "#/definitions/ActionName"
+
+  Property:
+    description: A property of a resource
+    properties:
+      propType:
+        type: string
+        description: discriminating type of the property
+      computed:
+        type: boolean
+        description: is property computed
+      intval:
+        type: integer
+        format: int64
+      strval:
+        type: string
+    required:
+      - propType
+      - intval
+      - strval

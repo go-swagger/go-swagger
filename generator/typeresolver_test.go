@@ -125,7 +125,7 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 			sch := new(spec.Schema)
 			sch.Typed(val.Type, val.Format)
 			sch.Extensions = make(spec.Extensions)
-			sch.Extensions["x-isnullable"] = true
+			sch.Extensions[xIsNullable] = true
 
 			rt, err := resolver.ResolveSchema(sch, true, false)
 			if assert.NoError(t, err) {
@@ -133,9 +133,18 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 				assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, rt)
 			}
 
+			// Test x-nullable overrides x-isnullable
+			sch.Extensions[xIsNullable] = false
+			sch.Extensions[xNullable] = true
+			rt, err = resolver.ResolveSchema(sch, true, true)
+			if assert.NoError(t, err) {
+				assert.True(t, rt.IsNullable, "expected %q (%q) to be nullable", val.Type, val.Format)
+				assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, rt)
+			}
+
 			// Test x-nullable without x-isnullable
-			sch.Extensions["x-isnullable"] = false
-			sch.Extensions["x-nullable"] = true
+			delete(sch.Extensions, xIsNullable)
+			sch.Extensions[xNullable] = true
 			rt, err = resolver.ResolveSchema(sch, true, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsNullable, "expected %q (%q) to be nullable", val.Type, val.Format)
@@ -147,7 +156,7 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 		for _, val := range schTypeVals {
 			var sch spec.Schema
 			sch.Typed(val.Type, val.Format)
-			sch.AddExtension("x-isnullable", true)
+			sch.AddExtension(xIsNullable, true)
 
 			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(sch), true, true)
 			if assert.NoError(t, err) {
@@ -436,7 +445,7 @@ func TestTypeResolver_AnonymousStructs(t *testing.T) {
 		}
 
 		parent.Extensions = make(spec.Extensions)
-		parent.Extensions["x-isnullable"] = true
+		parent.Extensions[xIsNullable] = true
 
 		rt, err = resolver.ResolveSchema(parent, true, true)
 		if assert.NoError(t, err) {
@@ -446,8 +455,8 @@ func TestTypeResolver_AnonymousStructs(t *testing.T) {
 		}
 
 		// Also test that it's nullable with just x-nullable
-		parent.Extensions["x-isnullable"] = false
-		parent.Extensions["x-nullable"] = false
+		parent.Extensions[xIsNullable] = false
+		parent.Extensions[xNullable] = false
 
 		rt, err = resolver.ResolveSchema(parent, true, true)
 		if assert.NoError(t, err) {
@@ -546,4 +555,20 @@ func assertPrimitiveResolve(t testing.TB, tpe, tfmt, exp string, tr resolvedType
 	assert.Equal(t, tpe, tr.SwaggerType, fmt.Sprintf("expected %q (%q, %q) to for the swagger type but got %q", tpe, tfmt, exp, tr.SwaggerType))
 	assert.Equal(t, tfmt, tr.SwaggerFormat, fmt.Sprintf("expected %q (%q, %q) to for the swagger format but got %q", tfmt, tpe, exp, tr.SwaggerFormat))
 	assert.Equal(t, exp, tr.GoType, fmt.Sprintf("expected %q (%q, %q) to for the go type but got %q", exp, tpe, tfmt, tr.GoType))
+}
+
+var builtinPointerVals = []struct {
+	Type, Format, Expected string
+	Default                interface{}
+	Required, ReadOnly     bool
+}{
+	{"boolean", "", "bool", nil, false, false},
+	{"boolean", "", "bool", true, false, false},
+	{"boolean", "", "*bool", nil, true, false},
+	{"boolean", "", "bool", nil, true, true},
+	{"boolean", "", "bool", true, true, true},
+}
+
+func TestTypeResolver_PointerLifting(t *testing.T) {
+
 }
