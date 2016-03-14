@@ -16,7 +16,6 @@ package generator
 
 import (
 	"encoding/json"
-	"regexp"
 	"text/template"
 )
 
@@ -74,9 +73,9 @@ var assets = map[string][]byte{
 	"client/facade.gotmpl":    MustAsset("templates/client/facade.gotmpl"),
 }
 
-var (
-	notNumberExp = regexp.MustCompile("[^0-9]")
-)
+// var (
+// 	notNumberExp = regexp.MustCompile("[^0-9]")
+// )
 
 var templates = NewRepository(FuncMap)
 

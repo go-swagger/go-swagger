@@ -53,7 +53,7 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 		method, path, operation := opRef.Method, opRef.Path, opRef.Op
 		defaultScheme := opts.DefaultScheme
 		if defaultScheme == "" {
-			defaultScheme = "http"
+			defaultScheme = sHTTP
 		}
 		defaultProduces := opts.DefaultProduces
 		if defaultProduces == "" {
@@ -86,6 +86,7 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 			DumpData:             opts.DumpData,
 			DefaultScheme:        defaultScheme,
 			DefaultProduces:      defaultProduces,
+			DefaultConsumes:      defaultConsumes,
 			Doc:                  specDoc,
 		}
 		if err := generator.Generate(); err != nil {
@@ -119,6 +120,7 @@ type operationGenerator struct {
 	DumpData             bool
 	DefaultScheme        string
 	DefaultProduces      string
+	DefaultConsumes      string
 	Doc                  *spec.Document
 	WithContext          bool
 }
@@ -145,6 +147,7 @@ func (o *operationGenerator) Generate() error {
 	bldr.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(o.Base), o.ModelsPackage))}
 	bldr.RootAPIPackage = o.APIPackage
 	bldr.WithContext = o.WithContext
+	bldr.DefaultConsumes = o.DefaultConsumes
 
 	for _, tag := range o.Operation.Tags {
 		if len(o.Tags) == 0 {

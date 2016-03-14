@@ -41,6 +41,7 @@ const (
 	binary      = "binary"
 	xNullable   = "x-nullable"
 	xIsNullable = "x-isnullable"
+	sHTTP       = "http"
 )
 
 var zeroes = map[string]string{
@@ -251,7 +252,6 @@ type typeResolver struct {
 	ModelsPackage string
 	ModelName     string
 	KnownDefs     map[string]struct{}
-	Inverted      bool
 }
 
 func (t *typeResolver) IsNullable(schema *spec.Schema) bool {
@@ -315,7 +315,7 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema, isRequired bool) (retu
 }
 
 func (t *typeResolver) isNullable(schema *spec.Schema) bool {
-	return t.checkIsNullable("x-isnullable", schema) || t.checkIsNullable("x-nullable", schema)
+	return t.checkIsNullable(xIsNullable, schema) || t.checkIsNullable(xNullable, schema)
 }
 
 func (t *typeResolver) checkIsNullable(extension string, schema *spec.Schema) bool {
@@ -438,6 +438,24 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 // 	IsDiscriminatorField bool
 // }
 
+func nullableBool(schema *spec.Schema, isRequired bool) bool {
+	required := isRequired && schema.Default == nil && !schema.ReadOnly
+	optional := !isRequired && (schema.Default != nil || schema.ReadOnly)
+	extension := boolExtension(schema.Extensions, xIsNullable) || boolExtension(schema.Extensions, xNullable)
+
+	return extension || required || optional
+}
+
+func boolExtension(ext spec.Extensions, key string) bool {
+	if v, ok := ext[key]; ok {
+		if bb, ok := v.(bool); ok {
+			return bb
+		}
+	}
+
+	return false
+}
+
 func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequired bool) (result resolvedType, err error) {
 	//bbb, _ := json.MarshalIndent(schema, "", "  ")
 	//_, file, pos, _ := runtime.Caller(1)
@@ -479,13 +497,15 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 			result.IsPrimitive = true
 			result.IsCustomFormatter = false
 
-			// bothNil := schema.Minimum == nil && schema.Maximum == nil
-			isMin := schema.Minimum != nil && *schema.Minimum > 0
-			isMax := schema.Minimum == nil && (schema.Maximum != nil && *schema.Maximum < 0) // || *schema.Minimum < 0) &&
-			isMinMax := (schema.Minimum != nil && schema.Maximum != nil && *schema.Minimum < 0 && *schema.Minimum < *schema.Maximum)
-
-			if tpe != boolean && (isMin || isMax || isMinMax) {
-				result.IsNullable = false
+			switch tpe {
+			case boolean:
+				result.IsNullable = nullableBool(schema, isRequired)
+			case number, integer:
+				isMin := schema.Minimum != nil && *schema.Minimum > 0
+				isMax := schema.Minimum == nil && (schema.Maximum != nil && *schema.Maximum < 0) // || *schema.Minimum < 0) &&
+				isMinMax := (schema.Minimum != nil && schema.Maximum != nil && *schema.Minimum < 0 && *schema.Minimum < *schema.Maximum)
+				result.IsNullable = result.IsNullable && !(isMin || isMax || isMinMax)
+			case file:
 			}
 		}
 		return

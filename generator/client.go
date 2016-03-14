@@ -52,7 +52,7 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts GenOpts
 
 	defaultScheme := opts.DefaultScheme
 	if defaultScheme == "" {
-		defaultScheme = "http"
+		defaultScheme = sHTTP
 	}
 
 	defaultConsumes := opts.DefaultConsumes

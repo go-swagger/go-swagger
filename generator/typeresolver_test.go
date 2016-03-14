@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/swag"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -557,18 +558,116 @@ func assertPrimitiveResolve(t testing.TB, tpe, tfmt, exp string, tr resolvedType
 	assert.Equal(t, exp, tr.GoType, fmt.Sprintf("expected %q (%q, %q) to for the go type but got %q", exp, tpe, tfmt, tr.GoType))
 }
 
-var builtinPointerVals = []struct {
+func assertBuiltinResolve(t testing.TB, tpe, tfmt, exp string, tr resolvedType, i int) {
+	assert.Equal(t, tpe, tr.SwaggerType, fmt.Sprintf("expected %q (%q, %q) at %d for the swagger type but got %q", tpe, tfmt, exp, i, tr.SwaggerType))
+	assert.Equal(t, tfmt, tr.SwaggerFormat, fmt.Sprintf("expected %q (%q, %q) at %d for the swagger format but got %q", tfmt, tpe, exp, i, tr.SwaggerFormat))
+	assert.Equal(t, exp, tr.GoType, fmt.Sprintf("expected %q (%q, %q) at %d for the go type but got %q", exp, tpe, tfmt, i, tr.GoType))
+}
+
+type builtinVal struct {
 	Type, Format, Expected string
 	Default                interface{}
-	Required, ReadOnly     bool
-}{
-	{"boolean", "", "bool", nil, false, false},
-	{"boolean", "", "bool", true, false, false},
-	{"boolean", "", "*bool", nil, true, false},
-	{"boolean", "", "bool", nil, true, true},
-	{"boolean", "", "bool", true, true, true},
+	Required               bool
+	ReadOnly               bool
+	Maximum                *float64
+	ExclusiveMaximum       bool
+	Minimum                *float64
+	ExclusiveMinimum       bool
+	MaxLength              *int64
+	MinLength              *int64
+	Pattern                string
+	MaxItems               *int64
+	MinItems               *int64
+	UniqueItems            bool
+	MultipleOf             *float64
+	Enum                   []interface{}
+	Nullable               bool
+	Extensions             spec.Extensions
+}
+
+func nullableExt() spec.Extensions {
+	return map[string]interface{}{"x-nullable": true}
+}
+func isNullableExt() spec.Extensions {
+	return map[string]interface{}{"x-isnullable": true}
+}
+func notNullableExt() spec.Extensions {
+	return map[string]interface{}{"x-nullable": false}
+}
+func isNotNullableExt() spec.Extensions {
+	return map[string]interface{}{"x-isnullable": false}
+}
+
+var builtinPointerVals = []builtinVal{
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: true, Required: false, ReadOnly: false},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: true, ReadOnly: false},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: false, ReadOnly: false},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: true, ReadOnly: true},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: true, Required: true, ReadOnly: true},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: true, Required: false, ReadOnly: false, Extensions: nullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: true, ReadOnly: false, Extensions: nullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: false, ReadOnly: false, Extensions: nullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: true, ReadOnly: true, Extensions: nullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: true, Required: true, ReadOnly: true, Extensions: nullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: true, Required: false, ReadOnly: false, Extensions: isNullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: true, ReadOnly: false, Extensions: isNullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: false, ReadOnly: false, Extensions: isNullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: true, ReadOnly: true, Extensions: isNullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: true, Required: true, ReadOnly: true, Extensions: isNullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: true, Required: false, ReadOnly: false, Extensions: notNullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: true, ReadOnly: false, Extensions: notNullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: false, ReadOnly: false, Extensions: notNullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: true, ReadOnly: true, Extensions: notNullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: true, Required: true, ReadOnly: true, Extensions: notNullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: true, Required: false, ReadOnly: false, Extensions: isNotNullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: true, ReadOnly: false, Extensions: isNotNullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: false, ReadOnly: false, Extensions: isNotNullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: true, ReadOnly: true, Extensions: isNotNullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: true, Required: true, ReadOnly: true, Extensions: isNotNullableExt()},
+}
+
+func generateIntPointerVals() (result []builtinVal) {
+	for _, v := range []string{"", "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64"} {
+		vv := v
+		if vv == "" {
+			vv = "int"
+		}
+		result = append(
+			result,
+			builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Default: 3, Required: false, ReadOnly: false},
+			builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Default: nil, Required: true, ReadOnly: false},
+			builtinVal{Type: "integer", Format: v, Expected: vv},
+			builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, Default: nil, Required: true, ReadOnly: true},
+			builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, Default: 3, Required: true, ReadOnly: true},
+			builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(2)},
+			builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Maximum: swag.Float64(2)},
+			builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, MultipleOf: swag.Float64(2)},
+		)
+	}
+	return
 }
 
 func TestTypeResolver_PointerLifting(t *testing.T) {
+	_, resolver, err := basicTaskListResolver(t)
+	if assert.NoError(t, err) {
 
+		// primitives and string formats
+		for i, val := range builtinPointerVals {
+			sch := new(spec.Schema)
+			sch.Typed(val.Type, val.Format)
+			sch.Default = val.Default
+			sch.ReadOnly = val.ReadOnly
+			sch.Extensions = val.Extensions
+
+			rt, err := resolver.ResolveSchema(sch, true, val.Required)
+			if assert.NoError(t, err) {
+				if val.Nullable {
+					assert.True(t, rt.IsNullable, "expected nullable for item at: %d", i)
+				} else {
+					assert.False(t, rt.IsNullable, "expected not nullable for item at: %d", i)
+				}
+				assertBuiltinResolve(t, val.Type, val.Format, val.Expected, rt, i)
+			}
+		}
+	}
 }
