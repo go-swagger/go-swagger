@@ -151,17 +151,17 @@ func (r *SchemaURL) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// type extraSchemaProps map[string]interface{}
+// type ExtraSchemaProps map[string]interface{}
 
 // // JSONSchema represents a structure that is a json schema draft 04
 // type JSONSchema struct {
-// 	schemaProps
-// 	extraSchemaProps
+// 	SchemaProps
+// 	ExtraSchemaProps
 // }
 
 // // MarshalJSON marshal this to JSON
 // func (s JSONSchema) MarshalJSON() ([]byte, error) {
-// 	b1, err := json.Marshal(s.schemaProps)
+// 	b1, err := json.Marshal(s.SchemaProps)
 // 	if err != nil {
 // 		return nil, err
 // 	}
@@ -173,17 +173,17 @@ func (r *SchemaURL) UnmarshalJSON(data []byte) error {
 // 	if err != nil {
 // 		return nil, err
 // 	}
-// 	b4, err := json.Marshal(s.extraSchemaProps)
+// 	b4, err := json.Marshal(s.ExtraSchemaProps)
 // 	if err != nil {
 // 		return nil, err
 // 	}
-// 	return util.ConcatJSON(b1, b2, b3, b4), nil
+// 	return swag.ConcatJSON(b1, b2, b3, b4), nil
 // }
 
 // // UnmarshalJSON marshal this from JSON
 // func (s *JSONSchema) UnmarshalJSON(data []byte) error {
 // 	var sch JSONSchema
-// 	if err := json.Unmarshal(data, &sch.schemaProps); err != nil {
+// 	if err := json.Unmarshal(data, &sch.SchemaProps); err != nil {
 // 		return err
 // 	}
 // 	if err := json.Unmarshal(data, &sch.Ref); err != nil {
@@ -192,7 +192,7 @@ func (r *SchemaURL) UnmarshalJSON(data []byte) error {
 // 	if err := json.Unmarshal(data, &sch.Schema); err != nil {
 // 		return err
 // 	}
-// 	if err := json.Unmarshal(data, &sch.extraSchemaProps); err != nil {
+// 	if err := json.Unmarshal(data, &sch.ExtraSchemaProps); err != nil {
 // 		return err
 // 	}
 // 	*s = sch
