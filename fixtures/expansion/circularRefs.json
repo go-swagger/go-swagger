@@ -35,7 +35,7 @@
           }
         },
         "notSimilar": {
-          "items": {
+          "additionalProperties": {
             "$ref": "#/definitions/car"
           }
         },

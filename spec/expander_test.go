@@ -150,6 +150,20 @@ func TestCircularRefsExpansion(t *testing.T) {
 	}, "Calling expand schema with circular refs, should not panic!")
 }
 
+func TestIssue415(t *testing.T) {
+	doc, err := swag.YAMLDoc("../fixtures/expansion/clickmeter.yaml")
+	assert.NoError(t, err)
+
+	spec := new(Swagger)
+	err = json.Unmarshal(doc, spec)
+	assert.NoError(t, err)
+
+	assert.NotPanics(t, func() {
+		err = expandSpec(spec)
+		assert.NoError(t, err)
+	}, "Calling expand spec with response schemas that have circular refs, should not panic!")
+}
+
 func TestCircularSpecExpansion(t *testing.T) {
 	doc, err := swag.YAMLDoc("../fixtures/expansion/circularSpec.yaml")
 	assert.NoError(t, err)
@@ -161,7 +175,7 @@ func TestCircularSpecExpansion(t *testing.T) {
 	assert.NotPanics(t, func() {
 		err = expandSpec(spec)
 		assert.NoError(t, err)
-	}, "Calling expand schema with circular refs, should not panic!")
+	}, "Calling expand spec with circular refs, should not panic!")
 }
 
 func TestItemsExpansion(t *testing.T) {
