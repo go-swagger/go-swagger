@@ -15,11 +15,32 @@
 package generator
 
 import (
+	"bytes"
+	"fmt"
 	"testing"
 
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestSimpleResponseRender(t *testing.T) {
+	b, err := opBuilder("updateTask", "../fixtures/codegen/todolist.responses.yml")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			var buf bytes.Buffer
+			if assert.NoError(t, responsesTemplate.Execute(&buf, op)) {
+				ff, err := formatGoFile("update_task_responses.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					assertInCode(t, "o.XErrorCode", string(ff))
+					assertInCode(t, "o.Payload", string(ff))
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
 
 func TestSimpleResponses(t *testing.T) {
 	b, err := opBuilder("updateTask", "../fixtures/codegen/todolist.responses.yml")

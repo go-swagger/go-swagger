@@ -475,6 +475,18 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 	if Debug {
 		log.Printf("[%s %s] making id %q", b.Method, b.Path, b.Operation.ID)
 	}
+
+	if resp.Ref.String() != "" {
+		resp2, err := spec.ResolveResponse(b.Doc.Spec(), resp.Ref)
+		if err != nil {
+			return GenResponse{}, err
+		}
+		if resp2 == nil {
+			return GenResponse{}, fmt.Errorf("could not resolve response ref: %s", resp.Ref.String())
+		}
+		resp = *resp2
+	}
+
 	res := GenResponse{
 		Package:        b.APIPackage,
 		ModelsPackage:  b.ModelsPackage,
@@ -618,6 +630,18 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 	if Debug {
 		log.Printf("[%s %s] making parameter %q", b.Method, b.Path, param.Name)
 	}
+
+	if param.Ref.String() != "" {
+		param2, err := spec.ResolveParameter(b.Doc.Spec(), param.Ref)
+		if err != nil {
+			return GenParameter{}, err
+		}
+		if param2 == nil {
+			return GenParameter{}, fmt.Errorf("could not resolve parameter ref: %s", param.Ref.String())
+		}
+		param = *param2
+	}
+
 	var child *GenItems
 	res := GenParameter{
 		Name:             param.Name,

@@ -72,6 +72,34 @@ func ResolveRef(root interface{}, ref *Ref) (*Schema, error) {
 	return result, nil
 }
 
+// ResolveParameter resolves a paramter reference against a context root
+func ResolveParameter(root interface{}, ref Ref) (*Parameter, error) {
+	resolver, err := defaultSchemaLoader(root, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := new(Parameter)
+	if err := resolver.Resolve(&ref, result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+// ResolveResponse resolves response a reference against a context root
+func ResolveResponse(root interface{}, ref Ref) (*Response, error) {
+	resolver, err := defaultSchemaLoader(root, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := new(Response)
+	if err := resolver.Resolve(&ref, result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 type schemaLoader struct {
 	loadingRef  *Ref
 	startingRef *Ref
