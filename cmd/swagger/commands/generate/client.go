@@ -28,6 +28,7 @@ type Client struct {
 	DefaultProduces string   `long:"default-consumes" description:"the default mime type that API operations produce" default:"application/json"`
 	SkipModels      bool     `long:"skip-models" description:"no models will be generated when this flag is specified"`
 	SkipOperations  bool     `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
+	DumpData        bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
 }
 
 // Execute runs this command
@@ -48,6 +49,7 @@ func (c *Client) Execute(args []string) error {
 		IncludeParameters: !c.SkipOperations,
 		IncludeResponses:  !c.SkipOperations,
 		TemplateDir:       string(c.TemplateDir),
+		DumpData:          c.DumpData,
 	}
 	if err := generator.GenerateClient(c.Name, c.Models, c.Operations, opts); err != nil {
 		return err

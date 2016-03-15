@@ -157,7 +157,10 @@ func (a *appGenerator) Generate() error {
 	}
 
 	if a.DumpData {
-		bb, _ := json.MarshalIndent(swag.ToDynamicJSON(app), "", "  ")
+		bb, err := json.MarshalIndent(app, "", "  ")
+		if err != nil {
+			return err
+		}
 		fmt.Fprintln(os.Stdout, string(bb))
 		return nil
 	}

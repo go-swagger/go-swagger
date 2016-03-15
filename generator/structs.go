@@ -1,6 +1,13 @@
 package generator
 
-import "github.com/go-swagger/go-swagger/spec"
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"strconv"
+
+	"github.com/go-swagger/go-swagger/spec"
+)
 
 // GenDefinition contains all the properties to generate a
 // defintion from a swagger spec
@@ -241,6 +248,53 @@ func (g GenOperationGroups) Len() int           { return len(g) }
 func (g GenOperationGroups) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
 func (g GenOperationGroups) Less(i, j int) bool { return g[i].Name < g[j].Name }
 
+// GenStatusCodeResponses a container for status code responses
+type GenStatusCodeResponses map[int]GenResponse
+
+// MarshalJSON marshals these responses to json
+func (g GenStatusCodeResponses) MarshalJSON() ([]byte, error) {
+	if g == nil {
+		return nil, nil
+	}
+	var buf bytes.Buffer
+	buf.WriteRune('{')
+	s := 0
+	for k, v := range g {
+		rb, err := json.Marshal(v)
+		if err != nil {
+			return nil, err
+		}
+		if s > 0 {
+			buf.WriteRune(',')
+		}
+		buf.WriteString(fmt.Sprintf("%q:", strconv.Itoa(k)))
+		buf.Write(rb)
+	}
+	buf.WriteRune('}')
+	return buf.Bytes(), nil
+}
+
+// UnmarshalJSON unmarshals this GenStatusCodeResponses from json
+func (g *GenStatusCodeResponses) UnmarshalJSON(data []byte) error {
+	var dd map[string]GenResponse
+	if err := json.Unmarshal(data, &dd); err != nil {
+		return err
+	}
+	var gg map[int]GenResponse
+	for k, v := range dd {
+		if gg == nil {
+			gg = make(map[int]GenResponse)
+		}
+		ii, err := strconv.Atoi(k)
+		if err != nil {
+			return err
+		}
+		gg[ii] = v
+	}
+	*g = GenStatusCodeResponses(gg)
+	return nil
+}
+
 // GenOperation represents an operation for code generation
 type GenOperation struct {
 	Package      string
@@ -261,7 +315,7 @@ type GenOperation struct {
 	Principal  string
 
 	SuccessResponse *GenResponse
-	Responses       map[int]GenResponse
+	Responses       GenStatusCodeResponses
 	DefaultResponse *GenResponse
 
 	Params         GenParameters
