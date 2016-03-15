@@ -53,24 +53,26 @@ func TestSimpleResponses(t *testing.T) {
 	if assert.True(t, ok) && assert.NotNil(t, op) && assert.NotNil(t, op.Responses) {
 		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
 		if assert.NotNil(t, op.Responses.Default) {
-			resp := *op.Responses.Default
-			defCtx := responseTestContext{
-				OpID: "updateTask",
-				Name: "default",
-			}
-			res, err := b.MakeResponse("a", defCtx.Name, false, resolver, -1, resp)
+			resp, err := spec.ResolveResponse(b.Doc.Spec(), op.Responses.Default.Ref)
 			if assert.NoError(t, err) {
-				if defCtx.Assert(t, resp, res) {
-					for code, response := range op.Responses.StatusCodeResponses {
-						sucCtx := responseTestContext{
-							OpID:      "updateTask",
-							Name:      "success",
-							IsSuccess: code/100 == 2,
-						}
-						res, err := b.MakeResponse("a", sucCtx.Name, sucCtx.IsSuccess, resolver, code, response)
-						if assert.NoError(t, err) {
-							if !sucCtx.Assert(t, response, res) {
-								return
+				defCtx := responseTestContext{
+					OpID: "updateTask",
+					Name: "default",
+				}
+				res, err := b.MakeResponse("a", defCtx.Name, false, resolver, -1, *resp)
+				if assert.NoError(t, err) {
+					if defCtx.Assert(t, *resp, res) {
+						for code, response := range op.Responses.StatusCodeResponses {
+							sucCtx := responseTestContext{
+								OpID:      "updateTask",
+								Name:      "success",
+								IsSuccess: code/100 == 2,
+							}
+							res, err := b.MakeResponse("a", sucCtx.Name, sucCtx.IsSuccess, resolver, code, response)
+							if assert.NoError(t, err) {
+								if !sucCtx.Assert(t, response, res) {
+									return
+								}
 							}
 						}
 					}
@@ -146,10 +148,20 @@ func (ctx *responseTestContext) Assert(t testing.TB, response spec.Response, res
 			for _, h := range res.Headers {
 				if h.Name == k {
 					found = true
-					hctx := &respHeaderTestContext{k, "swag.FormatInt64", "swag.ConvertInt64"}
-					if !hctx.Assert(t, v, h) {
-						return false
+					if k == "X-Last-Task-Id" {
+						hctx := &respHeaderTestContext{k, "swag.FormatInt64", "swag.ConvertInt64"}
+						if !hctx.Assert(t, v, h) {
+							return false
+						}
+						break
 					}
+					if k == "X-Error-Code" {
+						hctx := &respHeaderTestContext{k, "", ""}
+						if !hctx.Assert(t, v, h) {
+							return false
+						}
+					}
+
 					break
 				}
 			}
