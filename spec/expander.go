@@ -380,7 +380,6 @@ func expandSchema(schema *Schema, parentRef string, resolver *schemaLoader) erro
 		return nil
 	}
 
-	// oldParent := resolver.parentRef
 	if schema.Ref.String() != "" {
 		currentSchema := *schema
 		for currentSchema.Ref.String() != "" {
@@ -388,11 +387,12 @@ func expandSchema(schema *Schema, parentRef string, resolver *schemaLoader) erro
 			if currentSchema.Ref.String() == parentRef {
 				break
 			}
-			parentRef = currentSchema.Ref.String()
 
 			if err := resolver.Resolve(&currentSchema.Ref, &newSchema); err != nil {
 				return err
 			}
+			parentRef = currentSchema.Ref.String()
+
 			currentSchema = newSchema
 		}
 		*schema = currentSchema
@@ -546,7 +546,11 @@ func expandResponse(response *Response, resolver *schemaLoader) error {
 	}
 
 	if response.Schema != nil {
-		if err := expandSchema(response.Schema, "", resolver); err != nil {
+		parentRef := response.Schema.Ref.String()
+		if err := resolver.Resolve(&response.Schema.Ref, &response.Schema); err != nil {
+			return err
+		}
+		if err := expandSchema(response.Schema, parentRef, resolver); err != nil {
 			return err
 		}
 	}
@@ -563,7 +567,11 @@ func expandParameter(parameter *Parameter, resolver *schemaLoader) error {
 		}
 	}
 	if parameter.Schema != nil {
-		if err := expandSchema(parameter.Schema, "", resolver); err != nil {
+		parentRef := parameter.Schema.Ref.String()
+		if err := resolver.Resolve(&parameter.Schema.Ref, &parameter.Schema); err != nil {
+			return err
+		}
+		if err := expandSchema(parameter.Schema, parentRef, resolver); err != nil {
 			return err
 		}
 	}
