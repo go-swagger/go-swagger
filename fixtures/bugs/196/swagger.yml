@@ -22,7 +22,7 @@ paths:
             $ref: '#/definitions/Event'
       responses:
         '201':
-          $ref: '#/responses/Created'
+          $ref: '#/responses/CreatedEventResponse'
 
 definitions:
   Event:
