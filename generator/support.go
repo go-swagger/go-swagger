@@ -648,12 +648,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		defaultConsumes = rc[0]
 	}
 
-	defaultProduces := "application/json"
-	rp := a.SpecDoc.RequiredProduces()
-	if len(rp) > 0 {
-		defaultProduces = rp[0]
-	}
-
 	var collectedSchemes []string
 	var extraSchemes []string
 	for _, op := range genOps {
@@ -685,7 +679,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		Consumes:            consumes,
 		Produces:            produces,
 		DefaultConsumes:     defaultConsumes,
-		DefaultProduces:     defaultProduces,
+		DefaultProduces:     a.DefaultProduces,
 		DefaultImports:      defaultImports,
 		SecurityDefinitions: security,
 		Models:              genMods,
