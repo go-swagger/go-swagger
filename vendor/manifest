@@ -57,11 +57,29 @@
 			"path": "/difflib"
 		},
 		{
+			"importpath": "github.com/rs/cors",
+			"repository": "https://github.com/rs/cors",
+			"revision": "5950cf11d77f8a61b432a25dd4d444b4ced01379",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/rs/xhandler",
+			"repository": "https://github.com/rs/xhandler",
+			"revision": "d9d9599b6aaf6a058cb7b1f48291ded2cbd13390",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/stretchr/testify/assert",
 			"repository": "https://github.com/stretchr/testify",
 			"revision": "6fe211e493929a8aac0469b93f28b1d0688a9a3a",
 			"branch": "master",
 			"path": "/assert"
+		},
+		{
+			"importpath": "github.com/toqueteos/webbrowser",
+			"repository": "https://github.com/toqueteos/webbrowser",
+			"revision": "21fc9f95c83442fd164094666f7cb4f9fdd56cd6",
+			"branch": "master"
 		},
 		{
 			"importpath": "github.com/tylerb/graceful",
