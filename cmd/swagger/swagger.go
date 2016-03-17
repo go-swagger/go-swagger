@@ -39,6 +39,11 @@ It aims to represent the contract of your API with a language agnostic descripti
 		log.Fatal(err)
 	}
 
+	_, err = parser.AddCommand("serve-ui", "serve the swagger UI for a given swagger spec ", "serve the swagger UI for a given swagger spec", &commands.ServeUI{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	_, err = parser.AddCommand("init", "initialize a spec document", "initialize a swagger spec document", &commands.InitCmd{})
 	if err != nil {
 		log.Fatal(err)
