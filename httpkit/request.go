@@ -28,15 +28,21 @@ func CanHaveBody(method string) bool {
 	return mn == "POST" || mn == "PUT" || mn == "PATCH" || mn == "DELETE"
 }
 
-// NeedsContentType returns true if this method needs a content-type
-func NeedsContentType(method string) bool {
-	mn := strings.ToUpper(method)
-	return mn == "POST" || mn == "PUT" || mn == "PATCH"
+// IsSafe returns true if this is a request with a safe method
+func IsSafe(r *http.Request) bool {
+	mn := strings.ToUpper(r.Method)
+	return mn == "GET" || mn == "HEAD"
 }
 
-// IsDelete returns true if this method is DELETE
-func IsDelete(method string) bool {
-	return strings.ToUpper(method) == "DELETE"
+// AllowsBody returns true if the request allows for a body
+func AllowsBody(r *http.Request) bool {
+	mn := strings.ToUpper(r.Method)
+	return mn != "HEAD"
+}
+
+// HasBody returns true if this method needs a content-type
+func HasBody(r *http.Request) bool {
+	return len(r.TransferEncoding) > 0 || r.ContentLength > 0
 }
 
 // JSONRequest creates a new http request with json headers set
