@@ -166,8 +166,8 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
   }
   {{ end }}{{ end }}
 
-  {{ if and .IsBodyParam .Schema }}{{ if .Schema.IsStream }}
-  {{ .ReceiverName }}.{{ pascalize .Name }} = r.Body
+  {{ if and .IsBodyParam .Schema }}if httpkit.HasBody(r) {
+  {{ if .Schema.IsStream }}{{ .ReceiverName }}.{{ pascalize .Name }} = r.Body
   {{ else }}defer r.Body.Close()
   {{ if and .Schema.IsBaseType .Schema.IsExported }}body, err := {{ .ModelsPackage }}.Unmarshal{{ stripPackage .GoType .ModelsPackage }}{{ if .IsArray }}Slice{{ end }}(r.Body, route.Consumer)
   if err != nil { {{ if .Required }}
@@ -199,6 +199,10 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     }
   }
   {{ end }}
+  }{{ if .Required }} else {
+    res = append(res, errors.Required({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}))
+  }  {{ end }}
+
   {{ end }}
   {{ end }}
   if len(res) > 0 {
