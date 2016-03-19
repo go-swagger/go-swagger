@@ -880,7 +880,15 @@ func parseProperty(scp *schemaParser, gofile *ast.File, fld ast.Expr, prop swagg
 	case *ast.InterfaceType:
 		prop.Schema().Typed("object", "")
 	default:
-		return fmt.Errorf("%s is unsupported for a schema", ftpe)
+		pos := "unknown file:unknown position"
+		if scp != nil {
+			if scp.program != nil {
+				if scp.program.Fset != nil {
+					pos = scp.program.Fset.Position(fld.Pos()).String()
+				}
+			}
+		}
+		return fmt.Errorf("Expr (%s) is unsupported for a schema", pos)
 	}
 	return nil
 }
