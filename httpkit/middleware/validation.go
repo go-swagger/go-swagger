@@ -80,7 +80,9 @@ func validateRequest(ctx *Context, request *http.Request, route *MatchedRoute) *
 	}
 
 	validate.contentType()
-	validate.responseFormat()
+	if len(validate.result) == 0 {
+		validate.responseFormat()
+	}
 	if len(validate.result) == 0 {
 		validate.parameters()
 	}
@@ -101,21 +103,29 @@ func (v *validation) parameters() {
 }
 
 func (v *validation) contentType() {
-	if httpkit.CanHaveBody(v.request.Method) {
+	if len(v.result) == 0 && httpkit.HasBody(v.request) {
 		ct, _, err := v.context.ContentType(v.request)
 		if err != nil {
 			v.result = append(v.result, err)
-		} else if httpkit.NeedsContentType(v.request.Method) {
+		}
+		if len(v.result) == 0 {
 			if err := validateContentType(v.route.Consumes, ct); err != nil {
 				v.result = append(v.result, err)
 			}
-			v.route.Consumer = v.route.Consumers[ct]
+		}
+		if ct != "" && v.route.Consumer == nil {
+			cons, ok := v.route.Consumers[ct]
+			if !ok {
+				v.result = append(v.result, errors.New(500, "no consumer registered for %s", ct))
+			} else {
+				v.route.Consumer = cons
+			}
 		}
 	}
 }
 
 func (v *validation) responseFormat() {
-	if str := v.context.ResponseFormat(v.request, v.route.Produces); str == "" && httpkit.NeedsContentType(v.request.Method) {
+	if str := v.context.ResponseFormat(v.request, v.route.Produces); str == "" && httpkit.HasBody(v.request) {
 		v.result = append(v.result, errors.InvalidResponseFormat(v.request.Header.Get(httpkit.HeaderAccept), v.route.Produces))
 	}
 }
