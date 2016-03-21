@@ -306,8 +306,12 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema, isRequired bool) (retu
 			result.GoType = tpe
 			result.IsPrimitive = schFmt != binary
 			result.IsStream = schFmt == binary
-			result.IsNullable = !isRequired || t.IsNullable(schema)
+			result.IsNullable = t.IsNullable(schema)
 			_, result.IsCustomFormatter = customFormatters[tpe]
+
+			if result.SwaggerType == number || result.SwaggerType == integer {
+				result.IsNullable = nullableNumber(schema, isRequired)
+			}
 			return
 		}
 	}
@@ -348,7 +352,7 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 		result.SwaggerType = array
 		return
 	}
-	rt, er := t.ResolveSchema(schema.Items.Schema, true, true)
+	rt, er := t.ResolveSchema(schema.Items.Schema, true, false)
 	if er != nil {
 		err = er
 		return
@@ -431,19 +435,27 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 	return
 }
 
-// type resolverOpts struct {
-// 	Schema               *spec.Schema
-// 	IsAnonymous          bool
-// 	IsRequired           bool
-// 	IsDiscriminatorField bool
-// }
-
 func nullableBool(schema *spec.Schema, isRequired bool) bool {
 	required := isRequired && schema.Default == nil && !schema.ReadOnly
 	optional := !isRequired && (schema.Default != nil || schema.ReadOnly)
 	extension := boolExtension(schema.Extensions, xIsNullable) || boolExtension(schema.Extensions, xNullable)
 
 	return extension || required || optional
+}
+
+func nullableNumber(schema *spec.Schema, isRequired bool) bool {
+	extension := boolExtension(schema.Extensions, xIsNullable) || boolExtension(schema.Extensions, xNullable)
+	hasDefault := schema.Default != nil && !swag.IsZero(schema.Default)
+
+	isMin := schema.Minimum != nil && *schema.Minimum != 0
+	bcMin := schema.Minimum != nil && *schema.Minimum == 0
+	isMax := schema.Minimum == nil && (schema.Maximum != nil && *schema.Maximum != 0)
+	bcMax := schema.Maximum != nil && *schema.Maximum == 0
+	isMinMax := (schema.Minimum != nil && schema.Maximum != nil && *schema.Minimum < *schema.Maximum)
+	bcMinMax := (schema.Minimum != nil && schema.Maximum != nil && (*schema.Minimum < 0 && 0 < *schema.Maximum))
+
+	nullable := !schema.ReadOnly && (isRequired || (hasDefault && !(isMin || isMax || isMinMax)) || bcMin || bcMax || bcMinMax)
+	return extension || nullable
 }
 
 func boolExtension(ext spec.Extensions, key string) bool {
@@ -475,7 +487,6 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 			result.IsMap = false
 			result.IsComplexObject = true
 		}
-		// result.IsNullable = true //|| !result.IsPrimitive
 		return
 	}
 
@@ -484,29 +495,26 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		return
 	}
 
-	result.IsNullable = !isRequired || t.isNullable(schema)
+	result.IsNullable = t.isNullable(schema) || isRequired
 	tpe := t.firstType(schema)
 	switch tpe {
 	case array:
-		return t.resolveArray(schema, isAnonymous, result.IsNullable)
+		return t.resolveArray(schema, isAnonymous, false)
 
 	case file, number, integer, boolean:
 		result.GoType = typeMapping[tpe]
 		result.SwaggerType = tpe
-		if tpe != file {
+
+		switch tpe {
+		case boolean:
 			result.IsPrimitive = true
 			result.IsCustomFormatter = false
-
-			switch tpe {
-			case boolean:
-				result.IsNullable = nullableBool(schema, isRequired)
-			case number, integer:
-				isMin := schema.Minimum != nil && *schema.Minimum > 0
-				isMax := schema.Minimum == nil && (schema.Maximum != nil && *schema.Maximum < 0) // || *schema.Minimum < 0) &&
-				isMinMax := (schema.Minimum != nil && schema.Maximum != nil && *schema.Minimum < 0 && *schema.Minimum < *schema.Maximum)
-				result.IsNullable = result.IsNullable && !(isMin || isMax || isMinMax)
-			case file:
-			}
+			result.IsNullable = nullableBool(schema, isRequired)
+		case number, integer:
+			result.IsPrimitive = true
+			result.IsCustomFormatter = false
+			result.IsNullable = nullableNumber(schema, isRequired)
+		case file:
 		}
 		return
 

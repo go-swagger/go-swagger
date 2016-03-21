@@ -63,7 +63,7 @@ func TestEnum_ComposedThing(t *testing.T) {
 					res := string(ff)
 					assertInCode(t, "m.StringThing.Validate(formats)", res)
 					assertInCode(t, "var composedThingTypeNamePropEnum []interface{}", res)
-					assertInCode(t, "m.validateNameEnum(\"name\", \"body\", m.Name)", res)
+					assertInCode(t, "m.validateNameEnum(\"name\", \"body\", *m.Name)", res)
 					assertInCode(t, k+") validateNameEnum(path, location string, value string)", res)
 				}
 			}
@@ -159,7 +159,7 @@ func TestEnum_SliceAndItemsThing(t *testing.T) {
 					assertInCode(t, "m.validateSliceAndItemsThingEnum(\"\", \"body\", m)", res)
 					assertInCode(t, "var sliceAndItemsThingItemsEnum []interface{}", res)
 					assertInCode(t, k+") validateSliceAndItemsThingItemsEnum(path, location string, value string)", res)
-					assertInCode(t, "m.validateSliceAndItemsThingItemsEnum(strconv.Itoa(i), \"body\", m[i])", res)
+					assertInCode(t, "m.validateSliceAndItemsThingItemsEnum(strconv.Itoa(i), \"body\", *m[i])", res)
 				}
 			}
 		}
@@ -185,10 +185,10 @@ func TestEnum_SliceAndAdditionalItemsThing(t *testing.T) {
 					//assertInCode(t, "m.validateSliceAndAdditionalItemsThingEnum(\"\", \"body\", m)", res)
 					assertInCode(t, "var sliceAndAdditionalItemsThingTypeP0PropEnum []interface{}", res)
 					assertInCode(t, k+") validateP0Enum(path, location string, value string)", res)
-					assertInCode(t, "m.validateP0Enum(\"0\", \"body\", m.P0)", res)
+					assertInCode(t, "m.validateP0Enum(\"0\", \"body\", *m.P0)", res)
 					assertInCode(t, "var sliceAndAdditionalItemsThingItemsEnum []interface{}", res)
 					assertInCode(t, k+") validateSliceAndAdditionalItemsThingItemsEnum(path, location string, value float32)", res)
-					assertInCode(t, "m.validateSliceAndAdditionalItemsThingItemsEnum(strconv.Itoa(i+1), \"body\", *m.SliceAndAdditionalItemsThingItems[i])", res)
+					assertInCode(t, "m.validateSliceAndAdditionalItemsThingItemsEnum(strconv.Itoa(i+1), \"body\", m.SliceAndAdditionalItemsThingItems[i])", res)
 				}
 			}
 		}
@@ -214,7 +214,7 @@ func TestEnum_MapThing(t *testing.T) {
 					assertInCode(t, "m.validateMapThingEnum(\"\", \"body\", m)", res)
 					assertInCode(t, "var mapThingValueEnum []interface{}", res)
 					assertInCode(t, k+") validateMapThingValueEnum(path, location string, value string)", res)
-					assertInCode(t, "m.validateMapThingValueEnum(k, \"body\", m[k])", res)
+					assertInCode(t, "m.validateMapThingValueEnum(k, \"body\", *m[k])", res)
 				} else {
 					fmt.Println(buf.String())
 				}
@@ -256,15 +256,15 @@ func TestEnum_ObjectThing(t *testing.T) {
 					assertInCode(t, k+") validateCatsItemsEnum(path, location string, value string)", res)
 					assertInCode(t, k+"LionsTuple0) validateObjectThingLionsTuple0ItemsEnum(path, location string, value float64)", res)
 					assertInCode(t, k+") validateCats(", res)
-					assertInCode(t, "m.validateNameEnum(\"name\", \"body\", m.Name)", res)
-					assertInCode(t, "m.validateFlowerEnum(\"flower\", \"body\", *m.Flower)", res)
-					assertInCode(t, "m.validateFlourEnum(\"flour\", \"body\", *m.Flour)", res)
+					assertInCode(t, "m.validateNameEnum(\"name\", \"body\", *m.Name)", res)
+					assertInCode(t, "m.validateFlowerEnum(\"flower\", \"body\", m.Flower)", res)
+					assertInCode(t, "m.validateFlourEnum(\"flour\", \"body\", m.Flour)", res)
 					assertInCode(t, "m.validateWolvesEnum(\"wolves\", \"body\", m.Wolves)", res)
-					assertInCode(t, "m.validateWolvesValueEnum(\"wolves\"+\".\"+k, \"body\", m.Wolves[k])", res)
-					assertInCode(t, "m.validateCatsItemsEnum(\"cats\"+\".\"+strconv.Itoa(i), \"body\", m.Cats[i])", res)
-					assertInCode(t, "m.validateP1Enum(\"P1\", \"body\", m.P1)", res)
-					assertInCode(t, "m.validateP0Enum(\"P0\", \"body\", m.P0)", res)
-					assertInCode(t, "m.validateObjectThingLionsTuple0ItemsEnum(strconv.Itoa(i), \"body\", *m.ObjectThingLionsTuple0Items[i])", res)
+					assertInCode(t, "m.validateWolvesValueEnum(\"wolves\"+\".\"+k, \"body\", *m.Wolves[k])", res)
+					assertInCode(t, "m.validateCatsItemsEnum(\"cats\"+\".\"+strconv.Itoa(i), \"body\", *m.Cats[i])", res)
+					assertInCode(t, "m.validateP1Enum(\"P1\", \"body\", *m.P1)", res)
+					assertInCode(t, "m.validateP0Enum(\"P0\", \"body\", *m.P0)", res)
+					assertInCode(t, "m.validateObjectThingLionsTuple0ItemsEnum(strconv.Itoa(i), \"body\", m.ObjectThingLionsTuple0Items[i])", res)
 				}
 			}
 		}
@@ -287,9 +287,9 @@ func TestEnum_ComputeInstance(t *testing.T) {
 				ff, err := formatGoFile("object_thing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
-					assertInCode(t, "Region string `json:\"region\"`", res)
+					assertInCode(t, "Region *string `json:\"region\"`", res)
 					assertInCode(t, "var computeInstanceTypeRegionPropEnum []interface{}", res)
-					assertInCode(t, "m.validateRegionEnum(\"region\", \"body\", m.Region)", res)
+					assertInCode(t, "m.validateRegionEnum(\"region\", \"body\", *m.Region)", res)
 				}
 			}
 		}

@@ -1066,7 +1066,7 @@ func TestSchemaValidation_Pet(t *testing.T) {
 					assertInCode(t, k+") Validate(formats", res)
 					assertInCode(t, "swag.IsZero(m.Status)", res)
 					assertInCode(t, "swag.IsZero(m.Tags)", res)
-					assertInCode(t, "validate.RequiredString(\"name\", \"body\", string(m.Name))", res)
+					assertInCode(t, "validate.Required(\"name\", \"body\", m.Name)", res)
 					assertInCode(t, "validate.Required(\"photoUrls\", \"body\", m.PhotoUrls)", res)
 					assertInCode(t, "errors.CompositeValidationError(res...)", res)
 				}
