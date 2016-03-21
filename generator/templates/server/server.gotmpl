@@ -110,6 +110,9 @@ func (s *Server) Serve() (err error) {
 	httpsServer.TLSConfig.MinVersion = tls.VersionTLS11
 	httpsServer.TLSConfig.Certificates = make([]tls.Certificate, 1)
 	httpsServer.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(string(s.TLSCertificate), string(s.TLSCertificateKey))
+
+	configureTLS(httpsServer.TLSConfig)
+
 	if err != nil {
 		return err
 	}
