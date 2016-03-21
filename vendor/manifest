@@ -91,6 +91,13 @@
 			"path": "/go/ast/astutil"
 		},
 		{
+			"importpath": "golang.org/x/tools/go/buildutil",
+			"repository": "https://go.googlesource.com/tools",
+			"revision": "936084890addeb6a59af6777f071465fd149c9c8",
+			"branch": "master",
+			"path": "/go/buildutil"
+		},
+		{
 			"importpath": "golang.org/x/tools/go/loader",
 			"repository": "https://go.googlesource.com/tools",
 			"revision": "093d7650abf0a26882924de03a6c840a00356572",
