@@ -692,7 +692,7 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 	if err != nil {
 		err:= swaggerSchemaForType(expr.Name, prop)
 		if err != nil {
-			return fmt.Errorf("package %s, error is %v", pkg.String(), err)
+			return fmt.Errorf("package %s, error is: %v", pkg.String(), err)
 		}
 		return nil
 	}
@@ -762,7 +762,7 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 	default:
 		err:= swaggerSchemaForType(expr.Name, prop)
 		if err != nil {
-			return fmt.Errorf("package %s, error is %v", pkg.String(), err)
+			return fmt.Errorf("package %s, error is: %v", pkg.String(), err)
 		}
 		return nil
 	}
