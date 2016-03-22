@@ -177,7 +177,7 @@ func (p *untypedParamBinder) Bind(request *http.Request, routeParams RouteParams
 		var err error
 		var mt string
 
-		mt, _, e := httpkit.ContentType(request.Header, httpkit.IsDelete(request.Method))
+		mt, _, e := httpkit.ContentType(request.Header)
 		if e != nil {
 			// because of the interface conversion go thinks the error is not nil
 			// so we first check for nil and then set the err var if it's not nil
@@ -232,6 +232,13 @@ func (p *untypedParamBinder) Bind(request *http.Request, routeParams RouteParams
 
 	case "body":
 		newValue := reflect.New(target.Type())
+		if !httpkit.HasBody(request) {
+			if p.parameter.Default != nil {
+				target.Set(reflect.ValueOf(p.parameter.Default))
+			}
+
+			return nil
+		}
 		if err := consumer.Consume(request.Body, newValue.Interface()); err != nil {
 			if err == io.EOF && p.parameter.Default != nil {
 				target.Set(reflect.ValueOf(p.parameter.Default))
