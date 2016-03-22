@@ -690,7 +690,11 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 	// find the file this selector points to
 	file, gd, ts, err := findSourceFile(pkg, expr.Name)
 	if err != nil {
-		return swaggerSchemaForType(expr.Name, prop)
+		err:= swaggerSchemaForType(expr.Name, prop)
+		if err != nil {
+			return fmt.Errorf("package %s, error is: %v", pkg.String(), err)
+		}
+		return nil
 	}
 	if at, ok := ts.Type.(*ast.ArrayType); ok {
 		// the swagger spec defines strfmt base64 as []byte.
@@ -756,7 +760,11 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 		return nil
 
 	default:
-		return swaggerSchemaForType(expr.Name, prop)
+		err:= swaggerSchemaForType(expr.Name, prop)
+		if err != nil {
+			return fmt.Errorf("package %s, error is: %v", pkg.String(), err)
+		}
+		return nil
 	}
 
 }
