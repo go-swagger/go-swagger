@@ -19,8 +19,8 @@
 //
 // To do so there is set of mapping patterns that are applied to a spec to go types:
 //
-//    defintion of primitive => type alias/name
-//    defintion of array => type alias/name
+//    definition of primitive => type alias/name
+//    definition of array => type alias/name
 //    definition of map => type alias/name
 //    definition of object with properties => struct
 //    definition of ref => type alias/name
