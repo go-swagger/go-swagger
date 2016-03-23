@@ -10,7 +10,7 @@ import (
 )
 
 // GenDefinition contains all the properties to generate a
-// defintion from a swagger spec
+// definition from a swagger spec
 type GenDefinition struct {
 	GenSchema
 	Package          string

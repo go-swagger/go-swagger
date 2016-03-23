@@ -29,7 +29,7 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
-// GenerateDefinition generates a model file for a schema defintion.
+// GenerateDefinition generates a model file for a schema definition.
 func GenerateDefinition(modelNames []string, includeModel, includeValidator bool, opts GenOpts) error {
 
 	if opts.TemplateDir != "" {
