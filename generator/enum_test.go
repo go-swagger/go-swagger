@@ -314,7 +314,7 @@ func TestEnum_NewPrototype(t *testing.T) {
 					res := string(ff)
 					assertInCode(t, "ActivatingUser *NewPrototypeActivatingUser `json:\"activating_user,omitempty\"`", res)
 					assertInCode(t, "Delegate *NewPrototypeDelegate `json:\"delegate\"`", res)
-					assertInCode(t, "Role string `json:\"role\"`", res)
+					assertInCode(t, "Role *string `json:\"role\"`", res)
 					assertInCode(t, "var newPrototypeTypeRolePropEnum []interface{}", res)
 					assertInCode(t, "var newPrototypeDelegateTypeKindPropEnum []interface{}", res)
 					assertInCode(t, "m.validateDelegate(formats)", res)

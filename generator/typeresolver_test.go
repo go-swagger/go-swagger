@@ -770,6 +770,66 @@ func generateIntPointerVals(v string) (result []builtinVal) {
 	}
 }
 
+var stringPointerVals = []builtinVal{
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Extensions: isNullableExt()}, // 2
+
+	// plain vanilla readonly and defaults
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, ReadOnly: true},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, ReadOnly: true, Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, ReadOnly: true, Extensions: isNullableExt()},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Default: 3},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, Default: 3, ReadOnly: true},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 9
+
+	// required
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, Extensions: isNullableExt()}, // 12
+
+	// required, readonly and defaults
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, Required: true, ReadOnly: true},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, ReadOnly: true, Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, ReadOnly: true, Extensions: isNullableExt()},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, Default: 3},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, Required: true, Default: 3, ReadOnly: true},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 19
+
+	// minLength validation
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, MinLength: swag.Int64(2)},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, MinLength: swag.Int64(0)},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, MinLength: swag.Int64(2), Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, MinLength: swag.Int64(2), Extensions: isNullableExt()}, // 23
+
+	// minLength validation, readonly and defaults
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, ReadOnly: true, MinLength: swag.Int64(2)},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, ReadOnly: true, MinLength: swag.Int64(0)},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, ReadOnly: true, MinLength: swag.Int64(2), Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, ReadOnly: true, MinLength: swag.Int64(2), Extensions: isNullableExt()},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, Default: 3, MinLength: swag.Int64(2)},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, Default: 3, ReadOnly: true, MinLength: swag.Int64(2)},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Default: 3, ReadOnly: true, MinLength: swag.Int64(2), Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Default: 3, ReadOnly: true, MinLength: swag.Int64(2), Extensions: isNullableExt()}, // 31
+
+	// required, minLength validation
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2)},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(0)},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), Extensions: isNullableExt()}, // 35
+
+	// required, minLength validation, readonly and defaults
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, Required: true, MinLength: swag.Int64(2), ReadOnly: true},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), ReadOnly: true, Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), ReadOnly: true, Extensions: isNullableExt()},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), Default: 3},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, Required: true, MinLength: swag.Int64(2), Default: 3, ReadOnly: true},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), Default: 3, ReadOnly: true, Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 42
+}
+
 func TestTypeResolver_PointerLifting(t *testing.T) {
 	_, resolver, err := basicTaskListResolver(t)
 
@@ -790,6 +850,9 @@ func TestTypeResolver_PointerLifting(t *testing.T) {
 				break
 			}
 		}
+		for i, val := range stringPointerVals {
+			assertBuiltinVal(t, resolver, i, val)
+		}
 	}
 }
 
@@ -802,18 +865,20 @@ func assertBuiltinVal(t *testing.T, resolver *typeResolver, i int, val builtinVa
 	sch.Minimum = val.Minimum
 	sch.Maximum = val.Maximum
 	sch.MultipleOf = val.MultipleOf
+	sch.MinLength = val.MinLength
+	sch.MaxLength = val.MaxLength
 
 	rt, err := resolver.ResolveSchema(sch, true, val.Required)
 	if assert.NoError(t, err) {
 		if val.Nullable {
 			if !assert.True(t, rt.IsNullable, "expected nullable for item at: %d", i) {
-				fmt.Println("isRequired:", val.Required)
+				// fmt.Println("isRequired:", val.Required)
 				// pretty.Println(sch)
 				return false
 			}
 		} else {
 			if !assert.False(t, rt.IsNullable, "expected not nullable for item at: %d", i) {
-				fmt.Println("isRequired:", val.Required)
+				// fmt.Println("isRequired:", val.Required)
 				// pretty.Println(sch)
 				return false
 			}

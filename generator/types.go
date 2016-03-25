@@ -458,6 +458,18 @@ func nullableNumber(schema *spec.Schema, isRequired bool) bool {
 	return extension || nullable
 }
 
+func nullableString(schema *spec.Schema, isRequired bool) bool {
+	extension := boolExtension(schema.Extensions, xIsNullable) || boolExtension(schema.Extensions, xNullable)
+	hasDefault := schema.Default != nil && !swag.IsZero(schema.Default)
+
+	isMin := schema.MinLength != nil && *schema.MinLength != 0
+	bcMin := schema.MinLength != nil && *schema.MinLength == 0
+
+	// fmt.Printf("extension: %t, readOnly: %t, isRequired: %t, hasDefault: %t, bcMin: %t\n", extension, !schema.ReadOnly, isRequired, hasDefault, bcMin)
+	nullable := !schema.ReadOnly && (isRequired || (hasDefault && !isMin) || bcMin)
+	return extension || nullable
+}
+
 func boolExtension(ext spec.Extensions, key string) bool {
 	if v, ok := ext[key]; ok {
 		if bb, ok := v.(bool); ok {
@@ -531,12 +543,13 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		}
 		result.IsPrimitive = true
 		//log.Printf("this string is nullable beause (null: %t, req: %t)\n", result.IsNullable, isRequired)
-		if schema.MinLength != nil && *schema.MinLength > 0 {
-			result.IsNullable = false
-		}
-		if result.IsAliased {
-			result.IsNullable = true
-		}
+		// if schema.MinLength != nil && *schema.MinLength > 0 {
+		// 	result.IsNullable = false
+		// }
+		// if result.IsAliased {
+		// 	result.IsNullable = true
+		// }
+		result.IsNullable = nullableString(schema, isRequired)
 		return
 
 	case object:
