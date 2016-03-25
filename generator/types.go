@@ -306,11 +306,15 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema, isRequired bool) (retu
 			result.GoType = tpe
 			result.IsPrimitive = schFmt != binary
 			result.IsStream = schFmt == binary
-			result.IsNullable = t.IsNullable(schema)
 			_, result.IsCustomFormatter = customFormatters[tpe]
 
-			if result.SwaggerType == number || result.SwaggerType == integer {
+			switch result.SwaggerType {
+			case str:
+				result.IsNullable = nullableStrfmt(schema, isRequired)
+			case number, integer:
 				result.IsNullable = nullableNumber(schema, isRequired)
+			default:
+				result.IsNullable = t.IsNullable(schema)
 			}
 			return
 		}
@@ -465,9 +469,16 @@ func nullableString(schema *spec.Schema, isRequired bool) bool {
 	isMin := schema.MinLength != nil && *schema.MinLength != 0
 	bcMin := schema.MinLength != nil && *schema.MinLength == 0
 
-	// fmt.Printf("extension: %t, readOnly: %t, isRequired: %t, hasDefault: %t, bcMin: %t\n", extension, !schema.ReadOnly, isRequired, hasDefault, bcMin)
 	nullable := !schema.ReadOnly && (isRequired || (hasDefault && !isMin) || bcMin)
 	return extension || nullable
+}
+
+func nullableStrfmt(schema *spec.Schema, isRequired bool) bool {
+	extension := boolExtension(schema.Extensions, xIsNullable) || boolExtension(schema.Extensions, xNullable)
+	hasDefault := schema.Default != nil && !swag.IsZero(schema.Default)
+
+	nullable := !schema.ReadOnly && (isRequired || hasDefault)
+	return schema.Format != "binary" && (extension || nullable)
 }
 
 func boolExtension(ext spec.Extensions, key string) bool {

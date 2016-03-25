@@ -841,6 +841,63 @@ var stringPointerVals = []builtinVal{
 	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 42
 }
 
+var strfmtValues = []builtinVal{
+	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: false},
+	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Extensions: isNullableExt()}, // 2
+
+	// plain vanilla readonly and defaults
+	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: false, ReadOnly: true},
+	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, ReadOnly: true, Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, ReadOnly: true, Extensions: isNullableExt()},
+	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Default: 3},
+	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: false, Default: 3, ReadOnly: true},
+	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 9
+
+	// required
+	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true},
+	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true, Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true, Extensions: isNullableExt()}, // 12
+
+	// required, readonly and defaults
+	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: false, Required: true, ReadOnly: true},
+	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true, ReadOnly: true, Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true, ReadOnly: true, Extensions: isNullableExt()},
+	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true, Default: 3},
+	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: false, Required: true, Default: 3, ReadOnly: true},
+	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 19
+
+	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false},
+	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Extensions: isNullableExt()}, // 22
+
+	// plain vanilla readonly and defaults
+	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, ReadOnly: true},
+	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, ReadOnly: true, Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, ReadOnly: true, Extensions: isNullableExt()},
+	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Default: 3},
+	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Default: 3, ReadOnly: true},
+	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Default: 3, ReadOnly: true, Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 29
+
+	// required
+	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true},
+	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, Extensions: isNullableExt()}, // 32
+
+	// required, readonly and defaults
+	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, ReadOnly: true},
+	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, ReadOnly: true, Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, ReadOnly: true, Extensions: isNullableExt()},
+	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, Default: 3},
+	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, Default: 3, ReadOnly: true},
+	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
+	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 39
+
+}
+
 func TestTypeResolver_PointerLifting(t *testing.T) {
 	_, resolver, err := basicTaskListResolver(t)
 
@@ -874,6 +931,9 @@ func TestTypeResolver_PointerLifting(t *testing.T) {
 			}
 		}
 		for i, val := range stringPointerVals {
+			assertBuiltinVal(t, resolver, i, val)
+		}
+		for i, val := range strfmtValues {
 			assertBuiltinVal(t, resolver, i, val)
 		}
 	}
