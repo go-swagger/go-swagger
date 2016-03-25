@@ -293,7 +293,18 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 	return
 }
 
-func (t *typeResolver) resolveFormat(schema *spec.Schema, isRequired bool) (returns bool, result resolvedType, err error) {
+func (t *typeResolver) inferAliasing(result *resolvedType, schema *spec.Schema, isAnonymous bool, isRequired bool) {
+	if !isAnonymous && t.ModelName != "" {
+		result.AliasedType = result.GoType
+		result.IsAliased = true
+		result.GoType = swag.ToGoName(t.ModelName)
+		if t.ModelsPackage != "" {
+			result.GoType = t.ModelsPackage + "." + t.ModelName
+		}
+	}
+}
+
+func (t *typeResolver) resolveFormat(schema *spec.Schema, isAnonymous bool, isRequired bool) (returns bool, result resolvedType, err error) {
 	if schema.Format != "" {
 		schFmt := strings.Replace(schema.Format, "-", "", -1)
 		if tpe, ok := typeMapping[schFmt]; ok {
@@ -304,6 +315,7 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema, isRequired bool) (retu
 			}
 			result.SwaggerFormat = schema.Format
 			result.GoType = tpe
+			t.inferAliasing(&result, schema, isAnonymous, isRequired)
 			result.IsPrimitive = schFmt != binary
 			result.IsStream = schFmt == binary
 			_, result.IsCustomFormatter = customFormatters[tpe]
@@ -513,7 +525,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		return
 	}
 
-	returns, result, err = t.resolveFormat(schema, isRequired)
+	returns, result, err = t.resolveFormat(schema, isAnonymous, isRequired)
 	if returns {
 		return
 	}
@@ -527,6 +539,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	case file, number, integer, boolean:
 		result.GoType = typeMapping[tpe]
 		result.SwaggerType = tpe
+		t.inferAliasing(&result, schema, isAnonymous, isRequired)
 
 		switch tpe {
 		case boolean:
@@ -544,14 +557,8 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	case str:
 		result.GoType = str
 		result.SwaggerType = str
-		if !isAnonymous && t.ModelName != "" {
-			result.AliasedType = result.GoType
-			result.IsAliased = true
-			result.GoType = swag.ToGoName(t.ModelName)
-			if t.ModelsPackage != "" {
-				result.GoType = t.ModelsPackage + "." + t.ModelName
-			}
-		}
+		t.inferAliasing(&result, schema, isAnonymous, isRequired)
+
 		result.IsPrimitive = true
 		result.IsNullable = nullableString(schema, isRequired)
 		return

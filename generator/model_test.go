@@ -479,10 +479,8 @@ func TestGenerateModel_WithMapInterface(t *testing.T) {
 			err := modelTemplate.Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				res := buf.String()
-				//fmt.Println(res)
 				assertInCode(t, "type WithMapInterface struct {", res)
 				assertInCode(t, "ExtraInfo map[string]interface{} `json:\"extraInfo\"`", res)
-				// assertInCode(t, "ExtraInfo map[string]interface{} `json:\"extraInfo,omitempty\"`", res)
 			}
 		}
 	}
@@ -1316,7 +1314,6 @@ func TestGenerateModel_WithAllOf(t *testing.T) {
 				ct, err := formatGoFile("all_of_schema.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
-					//fmt.Println(res)
 					assertInCode(t, "type WithAllOf struct {", res)
 					assertInCode(t, "type WithAllOfAO2P2 struct {", res)
 					assertInCode(t, "type WithAllOfAO3P3 struct {", res)
