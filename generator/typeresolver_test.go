@@ -626,147 +626,158 @@ var boolPointerVals = []builtinVal{
 	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: true, Required: true, ReadOnly: true, Extensions: isNotNullableExt()},
 }
 
-func generateIntPointerVals(v string) (result []builtinVal) {
+func generateNumberPointerVals(t, v string) (result []builtinVal) {
 
 	vv := v
 	if vv == "" || vv == "int" {
-		vv = "int64"
+		if t == "integer" {
+			vv = "int64"
+		} else {
+			vv = "float64"
+		}
 	}
-	if vv == "uint" {
+	if vv == "uint" && t == "integer" {
 		vv = "uint64"
+	}
+	if t == "number" {
+		if v == "float" {
+			vv = "float32"
+		} else {
+			vv = "float64"
+		}
 	}
 	return []builtinVal{
 		// plain vanilla
-		builtinVal{Type: "integer", Format: v, Expected: vv},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Extensions: isNullableExt()}, // 2
+		builtinVal{Type: t, Format: v, Expected: vv},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Extensions: isNullableExt()}, // 2
 
 		// plain vanilla readonly and defaults
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, ReadOnly: true},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, ReadOnly: true, Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, ReadOnly: true, Extensions: isNullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Default: 3},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, Default: 3, ReadOnly: true},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 9
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Extensions: isNullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, ReadOnly: true},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 9
 
 		// required
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Extensions: isNullableExt()}, // 12
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Extensions: isNullableExt()}, // 12
 
 		// required, readonly and defaults
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, ReadOnly: true, Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, ReadOnly: true, Extensions: isNullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Default: 3},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, Required: true, Default: 3, ReadOnly: true},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 19
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, ReadOnly: true, Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, ReadOnly: true, Extensions: isNullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Default: 3, ReadOnly: true},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 19
 
 		// minimum validation
-		builtinVal{Type: "integer", Format: v, Expected: vv, Minimum: swag.Float64(2)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(0)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(2), Extensions: isNullableExt()}, // 23
+		builtinVal{Type: t, Format: v, Expected: vv, Minimum: swag.Float64(2)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(0)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(2), Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(2), Extensions: isNullableExt()}, // 23
 
 		// minimum validation, readonly and defaults
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(2)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(0)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, ReadOnly: true, Minimum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, ReadOnly: true, Minimum: swag.Float64(2), Extensions: isNullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: swag.Float64(2)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, Default: 3, ReadOnly: true, Minimum: swag.Float64(2)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(2), Extensions: isNullableExt()}, // 31
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(2)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(0)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Minimum: swag.Float64(2), Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Minimum: swag.Float64(2), Extensions: isNullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: swag.Float64(2)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, ReadOnly: true, Minimum: swag.Float64(2)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(2), Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(2), Extensions: isNullableExt()}, // 31
 
 		// required, minimum validation
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(0)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Extensions: isNullableExt()}, // 35
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(0)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Extensions: isNullableExt()}, // 35
 
 		// required, minimum validation, readonly and defaults
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, Required: true, Minimum: swag.Float64(2), ReadOnly: true},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), ReadOnly: true, Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), ReadOnly: true, Extensions: isNullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Default: 3},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, Required: true, Minimum: swag.Float64(2), Default: 3, ReadOnly: true},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Default: 3, ReadOnly: true, Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 42
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Minimum: swag.Float64(2), ReadOnly: true},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), ReadOnly: true, Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), ReadOnly: true, Extensions: isNullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Default: 3},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Minimum: swag.Float64(2), Default: 3, ReadOnly: true},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Default: 3, ReadOnly: true, Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 42
 
 		// maximum validation
-		builtinVal{Type: "integer", Format: v, Expected: vv, Maximum: swag.Float64(2)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Maximum: swag.Float64(0)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 46
+		builtinVal{Type: t, Format: v, Expected: vv, Maximum: swag.Float64(2)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Maximum: swag.Float64(0)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 46
 
 		// maximum validation, readonly and defaults
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, ReadOnly: true, Maximum: swag.Float64(2)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, ReadOnly: true, Maximum: swag.Float64(0)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: isNullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, Default: 3, Maximum: swag.Float64(2)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, Default: 3, ReadOnly: true, Maximum: swag.Float64(2)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 54
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Maximum: swag.Float64(2)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Maximum: swag.Float64(0)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: isNullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Maximum: swag.Float64(2)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, ReadOnly: true, Maximum: swag.Float64(2)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 54
 
 		// required, maximum validation
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(0)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 58
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(0)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 58
 
 		// required, maximum validation, readonly and defaults
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, Required: true, Maximum: swag.Float64(2), ReadOnly: true},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), ReadOnly: true, Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), ReadOnly: true, Extensions: isNullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Default: 3},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, Required: true, Maximum: swag.Float64(2), Default: 3, ReadOnly: true},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Default: 3, ReadOnly: true, Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 65
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Maximum: swag.Float64(2), ReadOnly: true},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), ReadOnly: true, Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), ReadOnly: true, Extensions: isNullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Default: 3},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Maximum: swag.Float64(2), Default: 3, ReadOnly: true},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Default: 3, ReadOnly: true, Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 65
 
 		// minimum and maximum validation
-		builtinVal{Type: "integer", Format: v, Expected: vv, Minimum: swag.Float64(2), Maximum: swag.Float64(5)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(1)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(0), Maximum: swag.Float64(1)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(0)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(2), Maximum: swag.Float64(6), Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(2), Maximum: swag.Float64(6), Extensions: isNullableExt()}, // 72
+		builtinVal{Type: t, Format: v, Expected: vv, Minimum: swag.Float64(2), Maximum: swag.Float64(5)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(1)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(0), Maximum: swag.Float64(1)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(0)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(2), Maximum: swag.Float64(6), Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(2), Maximum: swag.Float64(6), Extensions: isNullableExt()}, // 72
 
 		// minimum and maximum validation, readonly and defaults
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(0), Maximum: swag.Float64(3)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(0)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: swag.Float64(-1), ReadOnly: true, Maximum: swag.Float64(2)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: isNullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Default: 3, Minimum: swag.Float64(-1), Maximum: swag.Float64(6)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: swag.Float64(1), Maximum: swag.Float64(6)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: swag.Float64(-6), Maximum: swag.Float64(-1)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 83
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(0), Maximum: swag.Float64(3)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(0)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: swag.Float64(-1), ReadOnly: true, Maximum: swag.Float64(2)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: isNullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, Minimum: swag.Float64(-1), Maximum: swag.Float64(6)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: swag.Float64(1), Maximum: swag.Float64(6)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: swag.Float64(-6), Maximum: swag.Float64(-1)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2), Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 83
 
 		// required, minimum and maximum validation
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Maximum: swag.Float64(5)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(1)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(0), Maximum: swag.Float64(1)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(0)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Maximum: swag.Float64(6), Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Maximum: swag.Float64(6), Extensions: isNullableExt()}, // 89
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Maximum: swag.Float64(5)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(1)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(0), Maximum: swag.Float64(1)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(0)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Maximum: swag.Float64(6), Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Maximum: swag.Float64(6), Extensions: isNullableExt()}, // 89
 
 		// required, minimum and maximum validation, readonly and defaults
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true, Minimum: swag.Float64(0), Maximum: swag.Float64(3)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(0)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: false, Required: true, Default: 3, Minimum: swag.Float64(-1), ReadOnly: true, Maximum: swag.Float64(2)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: isNullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, Minimum: swag.Float64(-1), Maximum: swag.Float64(6)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, Minimum: swag.Float64(1), Maximum: swag.Float64(6)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, Minimum: swag.Float64(-6), Maximum: swag.Float64(-1)},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: "integer", Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 99
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true, Minimum: swag.Float64(0), Maximum: swag.Float64(3)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(0)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Default: 3, Minimum: swag.Float64(-1), ReadOnly: true, Maximum: swag.Float64(2)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: isNullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, Minimum: swag.Float64(-1), Maximum: swag.Float64(6)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, Minimum: swag.Float64(1), Maximum: swag.Float64(6)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, Minimum: swag.Float64(-6), Maximum: swag.Float64(-1)},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2), Extensions: nullableExt()},
+		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 99
 	}
 }
 
@@ -840,7 +851,19 @@ func TestTypeResolver_PointerLifting(t *testing.T) {
 		}
 		for _, v := range []string{"", "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64"} {
 			passed := true
-			for i, val := range generateIntPointerVals(v) {
+			for i, val := range generateNumberPointerVals("integer", v) {
+				//fmt.Println("trying", i)
+				if !assertBuiltinVal(t, resolver, i, val) {
+					passed = false
+				}
+			}
+			if !passed {
+				break
+			}
+		}
+		for _, v := range []string{"", "float", "double"} {
+			passed := true
+			for i, val := range generateNumberPointerVals("number", v) {
 				//fmt.Println("trying", i)
 				if !assertBuiltinVal(t, resolver, i, val) {
 					passed = false

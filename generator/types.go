@@ -542,13 +542,6 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 			}
 		}
 		result.IsPrimitive = true
-		//log.Printf("this string is nullable beause (null: %t, req: %t)\n", result.IsNullable, isRequired)
-		// if schema.MinLength != nil && *schema.MinLength > 0 {
-		// 	result.IsNullable = false
-		// }
-		// if result.IsAliased {
-		// 	result.IsNullable = true
-		// }
 		result.IsNullable = nullableString(schema, isRequired)
 		return
 
