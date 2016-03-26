@@ -29,6 +29,21 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 )
 
+/*
+Rewrite specification document first:
+
+* anonymous objects
+* tuples
+* extensible objects (properties + additionalProperties)
+* AllOfs when they match the rewrite criteria (not a nullable allOf)
+
+Find string enums and generate specialized idiomatic enum with them
+
+Every action that happens tracks the path which is a linked list of refs
+
+
+*/
+
 // GenerateDefinition generates a model file for a schema definition.
 func GenerateDefinition(modelNames []string, includeModel, includeValidator bool, opts GenOpts) error {
 
@@ -855,7 +870,9 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 }
 
 func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *schemaGenContext {
-	//fmt.Println("making new struct", name, sg.Container)
+	if Debug {
+		log.Println("making new struct", name, sg.Container)
+	}
 	sp := sg.TypeResolver.Doc.Spec()
 	name = swag.ToGoName(name)
 	if sg.TypeResolver.ModelName != sg.Name {
@@ -880,7 +897,7 @@ func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *sche
 	}
 	if schema.Ref.String() == "" {
 		resolver := newTypeResolver(sg.TypeResolver.ModelsPackage, sg.TypeResolver.Doc)
-		resolver.ModelName = sg.TypeResolver.ModelName
+		resolver.ModelName = name //sg.TypeResolver.ModelName
 		pg.TypeResolver = resolver
 	}
 	pg.GenSchema.IsVirtual = true
@@ -890,7 +907,7 @@ func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *sche
 }
 
 func (sg *schemaGenContext) buildArray() error {
-	tpe, err := sg.TypeResolver.ResolveSchema(sg.Schema.Items.Schema, true, true)
+	tpe, err := sg.TypeResolver.ResolveSchema(sg.Schema.Items.Schema, true, false)
 	if err != nil {
 		return err
 	}
@@ -909,6 +926,7 @@ func (sg *schemaGenContext) buildArray() error {
 		}
 		return nil
 	}
+
 	elProp := sg.NewSliceBranch(sg.Schema.Items.Schema)
 	elProp.Required = true
 	if err := elProp.makeGenSchema(); err != nil {
@@ -919,10 +937,14 @@ func (sg *schemaGenContext) buildArray() error {
 	sg.GenSchema.ItemsEnum = elProp.GenSchema.Enum
 	elProp.GenSchema.Suffix = "Items"
 	sg.GenSchema.GoType = "[]" + elProp.GenSchema.GoType
+	// TODO: this is probably not right. Should just respect what type resolvers said
 	if elProp.GenSchema.IsNullable && !elProp.GenSchema.HasDiscriminator && !elProp.GenSchema.IsPrimitive {
 		sg.GenSchema.GoType = "[]*" + elProp.GenSchema.GoType
 	}
 	sg.GenSchema.Items = &elProp.GenSchema
+	if sg.Named {
+		sg.GenSchema.AliasedType = sg.GenSchema.GoType
+	}
 	return nil
 }
 

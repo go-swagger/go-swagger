@@ -94,7 +94,7 @@ definitions:
         points:
           type: array
           items:
-            type: number
+            type: integer
             format: int64
 
   Statix:
@@ -109,7 +109,7 @@ definitions:
             points:
               type: array
               items:
-                type: number
+                type: integer
                 format: int64
 
   WithItems:
@@ -131,7 +131,7 @@ definitions:
             points:
               type: array
               items:
-                type: number
+                type: integer
                 format: int64
 
   WithItemsAndAdditional2:
@@ -158,7 +158,7 @@ definitions:
             points:
               type: array
               items:
-                type: number
+                type: integer
                 format: int64
 
   WithItemsAndAdditional:

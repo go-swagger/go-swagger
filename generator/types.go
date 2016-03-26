@@ -16,7 +16,9 @@ package generator
 
 import (
 	"fmt"
+	"log"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/go-swagger/go-swagger/spec"
@@ -261,7 +263,12 @@ func (t *typeResolver) IsNullable(schema *spec.Schema) bool {
 
 func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (returns bool, result resolvedType, err error) {
 	if schema.Ref.String() != "" {
+		if Debug {
+			_, file, pos, _ := runtime.Caller(1)
+			log.Printf("%s:%d: resolving ref (anon: %t, req: %t) %s\n", filepath.Base(file), pos, false, isRequired, schema.Ref.String())
+		}
 		returns = true
+
 		ref, er := spec.ResolveRef(t.Doc.Spec(), &schema.Ref)
 		if er != nil {
 			err = er
@@ -297,15 +304,17 @@ func (t *typeResolver) inferAliasing(result *resolvedType, schema *spec.Schema, 
 	if !isAnonymous && t.ModelName != "" {
 		result.AliasedType = result.GoType
 		result.IsAliased = true
-		result.GoType = swag.ToGoName(t.ModelName)
-		if t.ModelsPackage != "" {
-			result.GoType = t.ModelsPackage + "." + t.ModelName
-		}
+		result.GoType = t.goTypeName(t.ModelName)
 	}
 }
 
 func (t *typeResolver) resolveFormat(schema *spec.Schema, isAnonymous bool, isRequired bool) (returns bool, result resolvedType, err error) {
+
 	if schema.Format != "" {
+		if Debug {
+			_, file, pos, _ := runtime.Caller(1)
+			log.Printf("%s:%d: resolving format (anon: %t, req: %t)\n", filepath.Base(file), pos, isAnonymous, isRequired) //, bbb)
+		}
 		schFmt := strings.Replace(schema.Format, "-", "", -1)
 		if tpe, ok := typeMapping[schFmt]; ok {
 			returns = true
@@ -352,6 +361,11 @@ func (t *typeResolver) firstType(schema *spec.Schema) string {
 }
 
 func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired bool) (result resolvedType, err error) {
+	if Debug {
+		_, file, pos, _ := runtime.Caller(1)
+		log.Printf("%s:%d: resolving array (anon: %t, req: %t)\n", filepath.Base(file), pos, isAnonymous, isRequired) //, bbb)
+	}
+
 	result.IsArray = true
 	result.IsNullable = false
 	if schema.AdditionalItems != nil {
@@ -362,6 +376,8 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 		result.GoType = "[]" + iface
 		result.SwaggerType = array
 		result.SwaggerFormat = ""
+		t.inferAliasing(&result, schema, isAnonymous, isRequired)
+
 		return
 	}
 
@@ -370,6 +386,8 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 		result.IsTuple = true
 		result.SwaggerType = array
 		result.SwaggerFormat = ""
+		t.inferAliasing(&result, schema, isAnonymous, isRequired)
+
 		return
 	}
 
@@ -378,7 +396,8 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 		err = er
 		return
 	}
-	rt.IsNullable = t.isNullable(schema.Items.Schema)
+
+	rt.IsNullable = t.IsNullable(schema.Items.Schema)
 	result.GoType = "[]" + rt.GoType
 	if rt.IsNullable && !rt.HasDiscriminator && !strings.HasPrefix(rt.GoType, "*") {
 		result.GoType = "[]*" + rt.GoType
@@ -387,6 +406,8 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 	result.ElemType = &rt
 	result.SwaggerType = array
 	result.SwaggerFormat = ""
+	t.inferAliasing(&result, schema, isAnonymous, isRequired)
+
 	return
 }
 
@@ -401,6 +422,11 @@ func (t *typeResolver) goTypeName(nm string) string {
 }
 
 func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (result resolvedType, err error) {
+	if Debug {
+		_, file, pos, _ := runtime.Caller(1)
+		log.Printf("%s:%d: resolving object (anon: %t, req: %t)\n", filepath.Base(file), pos, isAnonymous, false) //, bbb)
+	}
+
 	result.IsAnonymous = isAnonymous
 
 	result.IsBaseType = schema.Discriminator != ""
@@ -440,11 +466,13 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 		}
 		result.IsMap = !result.IsComplexObject
 		result.SwaggerType = object
-		result.IsNullable = false
+		et.IsNullable = t.IsNullable(schema.AdditionalProperties.Schema)
 		result.GoType = "map[string]" + et.GoType
-		if et.IsNullable && et.IsComplexObject && !et.IsBaseType {
+		if et.IsNullable { //&& et.IsComplexObject && !et.IsBaseType {
 			result.GoType = "map[string]*" + et.GoType
 		}
+		t.inferAliasing(&result, schema, isAnonymous, false)
+		result.ElemType = &et
 		return
 	}
 
@@ -513,11 +541,13 @@ func boolExtension(ext spec.Extensions, key string) bool {
 }
 
 func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequired bool) (result resolvedType, err error) {
-	//bbb, _ := json.MarshalIndent(schema, "", "  ")
-	//_, file, pos, _ := runtime.Caller(1)
-	//log.Printf("%s:%d: resolving schema (anon: %t, req: %t) %s\n", filepath.Base(file), pos, isAnonymous, isRequired, "") //, bbb)
-	//tt, _ := json.MarshalIndent(t, "", "  ")
-	// fmt.Println("resolver", string(tt))
+	if Debug {
+		// bbb, _ := json.MarshalIndent(schema, "", "  ")
+		_, file, pos, _ := runtime.Caller(1)
+		log.Printf("%s:%d: resolving schema (anon: %t, req: %t) %s\n", filepath.Base(file), pos, isAnonymous, isRequired, t.ModelName /*bbb*/)
+		// tt, _ := json.MarshalIndent(t, "", "  ")
+		// log.Println("resolver", string(tt))
+	}
 	if schema == nil {
 		result.IsInterface = true
 		result.GoType = iface

@@ -210,7 +210,7 @@ func TestEnum_MapThing(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "var mapThingEnum []interface{}", res)
-					assertInCode(t, k+") validateMapThingEnum(path, location string, value map[string]string)", res)
+					assertInCode(t, k+") validateMapThingEnum(path, location string, value MapThing)", res)
 					assertInCode(t, "m.validateMapThingEnum(\"\", \"body\", m)", res)
 					assertInCode(t, "var mapThingValueEnum []interface{}", res)
 					assertInCode(t, k+") validateMapThingValueEnum(path, location string, value string)", res)

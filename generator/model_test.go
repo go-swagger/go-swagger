@@ -298,7 +298,7 @@ func TestGenerateModel_NotaWithRef(t *testing.T) {
 				ff, err := formatGoFile("nota_with_ref.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
-					assertInCode(t, "type NotaWithRef map[string]*Notable", res)
+					assertInCode(t, "type NotaWithRef map[string]Notable", res)
 				}
 			}
 		}
@@ -319,7 +319,7 @@ func TestGenerateModel_NotaWithMeta(t *testing.T) {
 				ff, err := formatGoFile("nota_with_meta.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
-					assertInCode(t, "type NotaWithMeta map[string]*NotaWithMetaAnon", res)
+					assertInCode(t, "type NotaWithMeta map[string]NotaWithMetaAnon", res)
 					assertInCode(t, "type NotaWithMetaAnon struct {", res)
 					assertInCode(t, "Comment *string `json:\"comment\"`", res)
 					assertInCode(t, "Count int32 `json:\"count,omitempty\"`", res)
@@ -405,7 +405,7 @@ func TestGenerateModel_NotaWithRefRegistry(t *testing.T) {
 				ff, err := formatGoFile("nota_with_ref_registry.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
-					assertInCode(t, "type "+k+" map[string]map[string]map[string]*Notable", res)
+					assertInCode(t, "type "+k+" map[string]map[string]map[string]Notable", res)
 				}
 			}
 		}
@@ -426,7 +426,7 @@ func TestGenerateModel_NotaWithMetaRegistry(t *testing.T) {
 				ff, err := formatGoFile("nota_with_meta_registry.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
-					assertInCode(t, "type "+k+" map[string]map[string]map[string]*NotaWithMetaRegistryAnon", res)
+					assertInCode(t, "type "+k+" map[string]map[string]map[string]NotaWithMetaRegistryAnon", res)
 					assertInCode(t, "type NotaWithMetaRegistryAnon struct {", res)
 					assertInCode(t, "Comment *string `json:\"comment\"`", res)
 					assertInCode(t, "Count int32 `json:\"count,omitempty\"`", res)
@@ -504,7 +504,7 @@ func TestGenerateModel_WithMapRef(t *testing.T) {
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assertInCode(t, "type "+k+" struct {", res)
-				assertInCode(t, "Data map[string]*Notable `json:\"data,omitempty\"`", res)
+				assertInCode(t, "Data map[string]Notable `json:\"data,omitempty\"`", res)
 			}
 		}
 	}
@@ -528,7 +528,7 @@ func TestGenerateModel_WithMapComplex(t *testing.T) {
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assertInCode(t, "type "+k+" struct {", res)
-				assertInCode(t, "Data map[string]*"+k+"DataAnon `json:\"data,omitempty\"`", res)
+				assertInCode(t, "Data map[string]"+k+"DataAnon `json:\"data,omitempty\"`", res)
 			}
 		}
 	}
@@ -575,7 +575,7 @@ func TestGenerateModel_WithMapRegistryRef(t *testing.T) {
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assertInCode(t, "type "+k+" struct {", res)
-				assertInCode(t, "Data map[string]map[string]map[string]*Notable `json:\"data,omitempty\"`", res)
+				assertInCode(t, "Data map[string]map[string]map[string]Notable `json:\"data,omitempty\"`", res)
 			}
 		}
 	}
@@ -599,7 +599,7 @@ func TestGenerateModel_WithMapComplexRegistry(t *testing.T) {
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assertInCode(t, "type "+k+" struct {", res)
-				assertInCode(t, "Data map[string]map[string]map[string]*"+k+"DataAnon `json:\"data,omitempty\"`", res)
+				assertInCode(t, "Data map[string]map[string]map[string]"+k+"DataAnon `json:\"data,omitempty\"`", res)
 			}
 		}
 	}
@@ -835,6 +835,7 @@ func TestGenerateModel_Statix(t *testing.T) {
 		k := "Statix"
 		schema := definitions[k]
 		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		// spew.Dump(genModel)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)
@@ -845,7 +846,9 @@ func TestGenerateModel_Statix(t *testing.T) {
 					assertInCode(t, "type Statix [][][]*StatixItems0", res)
 					assertInCode(t, "type StatixItems0 struct {", res)
 					assertInCode(t, "Points []int64 `json:\"points,omitempty\"`", res)
-				}
+				} /*else {
+					fmt.Println(buf.String())
+				}*/
 			}
 		}
 	}
