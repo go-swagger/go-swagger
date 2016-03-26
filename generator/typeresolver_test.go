@@ -195,7 +195,7 @@ func TestTypeResolver_Refs(t *testing.T) {
 			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(*sch), true, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsArray)
-				assert.Equal(t, "[]*"+val.Expected, rt.GoType)
+				assert.Equal(t, "[]"+val.Expected, rt.GoType)
 			}
 		}
 		// for named objects
@@ -221,7 +221,7 @@ func TestTypeResolver_Refs(t *testing.T) {
 			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(*sch), false, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsArray)
-				assert.Equal(t, "[]*"+val.Expected, rt.GoType)
+				assert.Equal(t, "[]"+val.Expected, rt.GoType)
 			}
 		}
 	}
@@ -357,7 +357,7 @@ func TestTypeResolver_Notables(t *testing.T) {
 			assert.True(t, rest.IsArray)
 			assert.False(t, rest.IsAnonymous)
 			assert.False(t, rest.IsNullable)
-			assert.Equal(t, "[]*models.Notable", rest.GoType)
+			assert.Equal(t, "[]models.Notable", rest.GoType)
 		}
 	}
 }

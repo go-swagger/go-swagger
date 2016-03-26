@@ -357,27 +357,36 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 	if schema.AdditionalItems != nil {
 		result.HasAdditionalItems = (schema.AdditionalItems.Allows || schema.AdditionalItems.Schema != nil)
 	}
+
 	if schema.Items == nil {
 		result.GoType = "[]" + iface
 		result.SwaggerType = array
+		result.SwaggerFormat = ""
 		return
 	}
+
 	if len(schema.Items.Schemas) > 0 {
 		result.IsArray = false
 		result.IsTuple = true
 		result.SwaggerType = array
+		result.SwaggerFormat = ""
 		return
 	}
+
 	rt, er := t.ResolveSchema(schema.Items.Schema, true, false)
 	if er != nil {
 		err = er
 		return
 	}
+	rt.IsNullable = t.isNullable(schema.Items.Schema)
 	result.GoType = "[]" + rt.GoType
-	if (rt.IsNullable || rt.IsAliased) && !rt.HasDiscriminator && !strings.HasPrefix(rt.GoType, "*") {
+	if rt.IsNullable && !rt.HasDiscriminator && !strings.HasPrefix(rt.GoType, "*") {
 		result.GoType = "[]*" + rt.GoType
 	}
+
+	result.ElemType = &rt
 	result.SwaggerType = array
+	result.SwaggerFormat = ""
 	return
 }
 
@@ -601,6 +610,8 @@ type resolvedType struct {
 	AliasedType   string
 	SwaggerType   string
 	SwaggerFormat string
+
+	ElemType *resolvedType
 }
 
 func (rt *resolvedType) Zero() string {

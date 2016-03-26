@@ -9,10 +9,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func assertBuiltinResolve(t testing.TB, tpe, tfmt, exp string, tr resolvedType, i int) bool {
-	return assert.Equal(t, tpe, tr.SwaggerType, fmt.Sprintf("expected %q (%q, %q) at %d for the swagger type but got %q", tpe, tfmt, exp, i, tr.SwaggerType)) &&
-		assert.Equal(t, tfmt, tr.SwaggerFormat, fmt.Sprintf("expected %q (%q, %q) at %d for the swagger format but got %q", tfmt, tpe, exp, i, tr.SwaggerFormat)) &&
-		assert.Equal(t, exp, tr.GoType, fmt.Sprintf("expected %q (%q, %q) at %d for the go type but got %q", exp, tpe, tfmt, i, tr.GoType))
+func TestTypeResolver_PointerLifting(t *testing.T) {
+	_, resolver, err := basicTaskListResolver(t)
+
+	if assert.NoError(t, err) {
+		testPointToPrimitives(t, *resolver)
+		testPointToAliasedPrimitives(t, *resolver)
+		testPointToSliceElements(t, *resolver)
+	}
 }
 
 type builtinVal struct {
@@ -352,101 +356,151 @@ var strfmtValues = []builtinVal{
 	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 39
 }
 
-func TestTypeResolver_PointerLifting(t *testing.T) {
-	_, resolver, err := basicTaskListResolver(t)
-
-	if assert.NoError(t, err) {
-		// primitives and string formats
-		for i, val := range boolPointerVals {
-			assertBuiltinVal(t, resolver, false, i, val)
+func testPointToSliceElements(t testing.TB, tr typeResolver) bool {
+	resolver := &tr
+	for i, val := range boolPointerVals {
+		if !assertBuiltinSliceElem(t, resolver, false, i, val) {
+			return false
 		}
-		for _, v := range []string{"", "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64"} {
-			passed := true
-			for i, val := range generateNumberPointerVals("integer", v) {
-				//fmt.Println("trying", i)
-				if !assertBuiltinVal(t, resolver, false, i, val) {
-					passed = false
-				}
-			}
-			if !passed {
-				break
-			}
-		}
-		for _, v := range []string{"", "float", "double"} {
-			passed := true
-			for i, val := range generateNumberPointerVals("number", v) {
-				//fmt.Println("trying", i)
-				if !assertBuiltinVal(t, resolver, false, i, val) {
-					passed = false
-				}
-			}
-			if !passed {
-				break
-			}
-		}
-		for i, val := range stringPointerVals {
-			assertBuiltinVal(t, resolver, false, i, val)
-		}
-		for i, val := range strfmtValues {
-			assertBuiltinVal(t, resolver, false, i, val)
-		}
-
-		resolver.ModelName = "MyAliasedThing"
-		for i, val := range boolPointerVals {
-			val.Aliased = true
-			val.AliasedType = val.Expected
-			val.Expected = "models.MyAliasedThing"
-			assertBuiltinVal(t, resolver, true, i, val)
-		}
-		for _, v := range []string{"", "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64"} {
-			passed := true
-			for i, val := range generateNumberPointerVals("integer", v) {
-				//fmt.Println("trying", i)
-				val.Aliased = true
-				val.AliasedType = val.Expected
-				val.Expected = "models.MyAliasedThing"
-				if !assertBuiltinVal(t, resolver, true, i, val) {
-					passed = false
-				}
-			}
-			if !passed {
-				break
-			}
-		}
-		for _, v := range []string{"", "float", "double"} {
-			passed := true
-			for i, val := range generateNumberPointerVals("number", v) {
-				//fmt.Println("trying", i)
-				val.Aliased = true
-				val.AliasedType = val.Expected
-				val.Expected = "models.MyAliasedThing"
-				if !assertBuiltinVal(t, resolver, true, i, val) {
-					passed = false
-				}
-			}
-			if !passed {
-				break
-			}
-		}
-
-		for i, val := range stringPointerVals {
-			val.Aliased = true
-			val.AliasedType = val.Expected
-			val.Expected = "models.MyAliasedThing"
-			assertBuiltinVal(t, resolver, true, i, val)
-		}
-
-		for i, val := range strfmtValues {
-			val.Aliased = true
-			val.AliasedType = val.Expected
-			val.Expected = "models.MyAliasedThing"
-			assertBuiltinVal(t, resolver, true, i, val)
-		}
-		resolver.ModelName = ""
 	}
+	for _, v := range []string{"", "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64"} {
+		passed := true
+		for i, val := range generateNumberPointerVals("integer", v) {
+			if !assertBuiltinSliceElem(t, resolver, false, i, val) {
+				passed = false
+			}
+		}
+		if !passed {
+			return false
+		}
+	}
+	for _, v := range []string{"", "float", "double"} {
+		passed := true
+		for i, val := range generateNumberPointerVals("number", v) {
+			if !assertBuiltinSliceElem(t, resolver, false, i, val) {
+				passed = false
+			}
+		}
+		if !passed {
+			return false
+		}
+	}
+	for i, val := range stringPointerVals {
+		if !assertBuiltinSliceElem(t, resolver, false, i, val) {
+			return false
+		}
+	}
+	for i, val := range strfmtValues {
+		if !assertBuiltinSliceElem(t, resolver, false, i, val) {
+			return false
+		}
+	}
+	return true
 }
 
-func assertBuiltinVal(t *testing.T, resolver *typeResolver, aliased bool, i int, val builtinVal) bool {
+func testPointToAliasedPrimitives(t testing.TB, tr typeResolver) bool {
+	tr.ModelName = "MyAliasedThing"
+	resolver := &tr
+	for i, val := range boolPointerVals {
+		val.Aliased = true
+		val.AliasedType = val.Expected
+		val.Expected = "models.MyAliasedThing"
+		if !assertBuiltinVal(t, resolver, true, i, val) {
+			return false
+		}
+	}
+	for _, v := range []string{"", "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64"} {
+		passed := true
+		for i, val := range generateNumberPointerVals("integer", v) {
+			val.Aliased = true
+			val.AliasedType = val.Expected
+			val.Expected = "models.MyAliasedThing"
+			if !assertBuiltinVal(t, resolver, true, i, val) {
+				passed = false
+			}
+		}
+		if !passed {
+			return false
+		}
+	}
+	for _, v := range []string{"", "float", "double"} {
+		passed := true
+		for i, val := range generateNumberPointerVals("number", v) {
+			val.Aliased = true
+			val.AliasedType = val.Expected
+			val.Expected = "models.MyAliasedThing"
+			if !assertBuiltinVal(t, resolver, true, i, val) {
+				passed = false
+			}
+		}
+		if !passed {
+			return false
+		}
+	}
+
+	for i, val := range stringPointerVals {
+		val.Aliased = true
+		val.AliasedType = val.Expected
+		val.Expected = "models.MyAliasedThing"
+		if !assertBuiltinVal(t, resolver, true, i, val) {
+			return false
+		}
+	}
+
+	for i, val := range strfmtValues {
+		val.Aliased = true
+		val.AliasedType = val.Expected
+		val.Expected = "models.MyAliasedThing"
+		if !assertBuiltinVal(t, resolver, true, i, val) {
+			return false
+		}
+	}
+	return true
+}
+
+func testPointToPrimitives(t testing.TB, tr typeResolver) bool {
+	resolver := &tr
+	for i, val := range boolPointerVals {
+		if !assertBuiltinVal(t, resolver, false, i, val) {
+			return false
+		}
+	}
+	for _, v := range []string{"", "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64"} {
+		passed := true
+		for i, val := range generateNumberPointerVals("integer", v) {
+			if !assertBuiltinVal(t, resolver, false, i, val) {
+				passed = false
+			}
+		}
+		if !passed {
+			return false
+		}
+	}
+	for _, v := range []string{"", "float", "double"} {
+		passed := true
+		for i, val := range generateNumberPointerVals("number", v) {
+			if !assertBuiltinVal(t, resolver, false, i, val) {
+				passed = false
+			}
+		}
+		if !passed {
+			return false
+		}
+	}
+	for i, val := range stringPointerVals {
+		if !assertBuiltinVal(t, resolver, false, i, val) {
+			return false
+		}
+	}
+	for i, val := range strfmtValues {
+		if !assertBuiltinVal(t, resolver, false, i, val) {
+			return false
+		}
+	}
+	return true
+}
+
+func assertBuiltinVal(t testing.TB, resolver *typeResolver, aliased bool, i int, val builtinVal) bool {
 	sch := new(spec.Schema)
 	sch.Typed(val.Type, val.Format)
 	sch.Default = val.Default
@@ -486,4 +540,69 @@ func assertBuiltinVal(t *testing.T, resolver *typeResolver, aliased bool, i int,
 		}
 	}
 	return true
+}
+
+func assertBuiltinSliceElem(t testing.TB, resolver *typeResolver, aliased bool, i int, val builtinVal) bool {
+	val.Nullable = val.Extensions != nil && (boolExtension(val.Extensions, xIsNullable) || boolExtension(val.Extensions, xNullable))
+
+	// fmt.Println("nullable:", val.Nullable)
+	items := new(spec.Schema)
+	items.Typed(val.Type, val.Format)
+	items.Default = val.Default
+	items.ReadOnly = val.ReadOnly
+	items.Extensions = val.Extensions
+	items.Minimum = val.Minimum
+	items.Maximum = val.Maximum
+	items.MultipleOf = val.MultipleOf
+	items.MinLength = val.MinLength
+	items.MaxLength = val.MaxLength
+
+	sch := spec.ArrayProperty(items)
+
+	rt, err := resolver.ResolveSchema(sch, !aliased, val.Required)
+	if assert.NoError(t, err) {
+		sliceType := "[]" + val.Expected
+		// pretty.Println(rt)
+		if val.Nullable {
+			sliceType = "[]*" + val.Expected
+			if !assert.True(t, rt.ElemType.IsNullable, "expected nullable for item at: %d", i) {
+				// fmt.Println("isRequired:", val.Required)
+				// pretty.Println(sch)
+				return false
+			}
+		} else {
+			if !assert.False(t, rt.ElemType != nil && rt.ElemType.IsNullable, "expected not nullable for item at: %d", i) {
+				// fmt.Println("isRequired:", val.Required)
+				// pretty.Println(sch)
+				return false
+			}
+		}
+
+		if !assert.Equal(t, val.Aliased, rt.IsAliased, "expected (%q, %q) to be an aliased type", val.Type, val.Format) {
+			return false
+		}
+
+		if val.Aliased {
+			if !assert.Equal(t, val.AliasedType, rt.AliasedType, "expected %q (%q, %q) to be aliased as %q, but got %q", val.Expected, val.Type, val.Format, val.AliasedType, rt.AliasedType) {
+				return false
+			}
+		}
+
+		if !assertBuiltinSliceElemnResolve(t, val.Type, val.Format, sliceType, rt, i) {
+			return false
+		}
+	}
+	return true
+}
+
+func assertBuiltinResolve(t testing.TB, tpe, tfmt, exp string, tr resolvedType, i int) bool {
+	return assert.Equal(t, tpe, tr.SwaggerType, fmt.Sprintf("expected %q (%q, %q) at %d for the swagger type but got %q", tpe, tfmt, exp, i, tr.SwaggerType)) &&
+		assert.Equal(t, tfmt, tr.SwaggerFormat, fmt.Sprintf("expected %q (%q, %q) at %d for the swagger format but got %q", tfmt, tpe, exp, i, tr.SwaggerFormat)) &&
+		assert.Equal(t, exp, tr.GoType, fmt.Sprintf("expected %q (%q, %q) at %d for the go type but got %q", exp, tpe, tfmt, i, tr.GoType))
+}
+
+func assertBuiltinSliceElemnResolve(t testing.TB, tpe, tfmt, exp string, tr resolvedType, i int) bool {
+	return assert.Equal(t, tpe, tr.ElemType.SwaggerType, fmt.Sprintf("expected %q (%q, %q) at %d for the swagger type but got %q", tpe, tfmt, exp, i, tr.SwaggerType)) &&
+		assert.Equal(t, tfmt, tr.ElemType.SwaggerFormat, fmt.Sprintf("expected %q (%q, %q) at %d for the swagger format but got %q", tfmt, tpe, exp, i, tr.SwaggerFormat)) &&
+		assert.Equal(t, exp, tr.GoType, fmt.Sprintf("expected %q (%q, %q) at %d for the go type but got %q", exp, tpe, tfmt, i, tr.GoType))
 }

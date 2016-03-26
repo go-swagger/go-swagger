@@ -86,7 +86,7 @@ func TestEnum_IntThing(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "var intThingEnum []interface{}", res)
-					assertInCode(t, k+") validateIntThingEnum(path, location string, value int32)", res)
+					assertInCode(t, k+") validateIntThingEnum(path, location string, value IntThing)", res)
 					assertInCode(t, "m.validateIntThingEnum(\"\", \"body\", m)", res)
 				}
 			}
@@ -109,7 +109,7 @@ func TestEnum_FloatThing(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "var floatThingEnum []interface{}", res)
-					assertInCode(t, k+") validateFloatThingEnum(path, location string, value float32)", res)
+					assertInCode(t, k+") validateFloatThingEnum(path, location string, value FloatThing)", res)
 					assertInCode(t, "m.validateFloatThingEnum(\"\", \"body\", m)", res)
 				}
 			}
