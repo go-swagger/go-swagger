@@ -94,7 +94,7 @@ func TestServer_UrlEncoded(t *testing.T) {
 }
 
 func TestServer_MultipartForm(t *testing.T) {
-	gen, err := testAppGenertor(t, "../fixtures/codegen/shipyard.yml", "search")
+	gen, err := testAppGenertor(t, "../fixtures/codegen/shipyard.yml", "shipyard")
 	if assert.NoError(t, err) {
 		app, err := gen.makeCodegenApp()
 		if assert.NoError(t, err) {
