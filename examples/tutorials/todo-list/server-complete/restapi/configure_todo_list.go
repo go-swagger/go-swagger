@@ -1,13 +1,13 @@
-package main
+package restapi
 
 import (
 	"net/http"
 	"sync"
 	"sync/atomic"
 
-	"github.com/go-swagger/go-swagger/errors"
-	"github.com/go-swagger/go-swagger/httpkit"
-	"github.com/go-swagger/go-swagger/httpkit/middleware"
+	errors "github.com/go-swagger/go-swagger/errors"
+	httpkit "github.com/go-swagger/go-swagger/httpkit"
+	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
 	"github.com/go-swagger/go-swagger/swag"
 
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete/models"
@@ -16,6 +16,10 @@ import (
 )
 
 // This file is safe to edit. Once it exists it will not be overwritten
+
+func configureFlags(api *operations.TodoListAPI) {
+
+}
 
 var items = make(map[int64]*models.Item)
 var lastID int64
@@ -35,7 +39,7 @@ func addItem(item *models.Item) error {
 	defer itemsLock.Unlock()
 
 	newID := newItemID()
-	item.ID = &newID
+	item.ID = newID
 	items[newID] = item
 
 	return nil
@@ -54,7 +58,7 @@ func updateItem(id int64, item *models.Item) error {
 		return errors.NotFound("not found: item %d", id)
 	}
 
-	item.ID = &id
+	item.ID = id
 	items[id] = item
 	return nil
 }
@@ -95,14 +99,14 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 
 	api.TodosAddOneHandler = todos.AddOneHandlerFunc(func(params todos.AddOneParams) middleware.Responder {
 		if err := addItem(params.Body); err != nil {
-			return todos.NewAddOneDefault(500).WithPayload(&models.Error{Code: swag.Int64(500), Message: err.Error()})
+			return todos.NewAddOneDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 		}
 		return todos.NewAddOneCreated().WithPayload(params.Body)
 	})
 
 	api.TodosDestroyOneHandler = todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams) middleware.Responder {
 		if err := deleteItem(params.ID); err != nil {
-			return todos.NewDestroyOneDefault(500).WithPayload(&models.Error{Code: swag.Int64(500), Message: err.Error()})
+			return todos.NewDestroyOneDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 		}
 		return todos.NewDestroyOneNoContent()
 	})
@@ -121,7 +125,7 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 
 	api.TodosUpdateOneHandler = todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams) middleware.Responder {
 		if err := updateItem(params.ID, params.Body); err != nil {
-			return todos.NewUpdateOneDefault(500).WithPayload(&models.Error{Code: swag.Int64(500), Message: err.Error()})
+			return todos.NewUpdateOneDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 		}
 		return todos.NewUpdateOneOK().WithPayload(params.Body)
 	})
