@@ -159,7 +159,7 @@ func TestEnum_SliceAndItemsThing(t *testing.T) {
 					assertInCode(t, "m.validateSliceAndItemsThingEnum(\"\", \"body\", m)", res)
 					assertInCode(t, "var sliceAndItemsThingItemsEnum []interface{}", res)
 					assertInCode(t, k+") validateSliceAndItemsThingItemsEnum(path, location string, value string)", res)
-					assertInCode(t, "m.validateSliceAndItemsThingItemsEnum(strconv.Itoa(i), \"body\", *m[i])", res)
+					assertInCode(t, "m.validateSliceAndItemsThingItemsEnum(strconv.Itoa(i), \"body\", m[i])", res)
 				}
 			}
 		}
@@ -261,7 +261,7 @@ func TestEnum_ObjectThing(t *testing.T) {
 					assertInCode(t, "m.validateFlourEnum(\"flour\", \"body\", m.Flour)", res)
 					assertInCode(t, "m.validateWolvesEnum(\"wolves\", \"body\", m.Wolves)", res)
 					assertInCode(t, "m.validateWolvesValueEnum(\"wolves\"+\".\"+k, \"body\", *m.Wolves[k])", res)
-					assertInCode(t, "m.validateCatsItemsEnum(\"cats\"+\".\"+strconv.Itoa(i), \"body\", *m.Cats[i])", res)
+					assertInCode(t, "m.validateCatsItemsEnum(\"cats\"+\".\"+strconv.Itoa(i), \"body\", m.Cats[i])", res)
 					assertInCode(t, "m.validateP1Enum(\"P1\", \"body\", *m.P1)", res)
 					assertInCode(t, "m.validateP0Enum(\"P0\", \"body\", *m.P0)", res)
 					assertInCode(t, "m.validateObjectThingLionsTuple0ItemsEnum(strconv.Itoa(i), \"body\", m.ObjectThingLionsTuple0Items[i])", res)

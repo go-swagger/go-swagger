@@ -99,7 +99,48 @@ for {{.AdditionalProperties.KeyVar}} := range {{ .ValueExpression }} {
     continue
   }
   {{end}}
-  {{ template "propertyvalidator" . }}
+  {{ if .IsPrimitive }}{{ if .IsAliased }}{{ if not .IsAnonymous }}
+{{ if .IsNullable }}if val, ok := {{ .ValueExpression }}; ok {
+{{ end }}
+if err := val.Validate(formats); err != nil {
+  return err
+}
+{{ if .IsNullable }}}{{ end }}
+{{ else }}
+{{ range .AllOf }}
+{{ range .Properties }}
+{{ template "propertyvalidator" . }}
+{{ end }}
+{{ end }}
+{{ range .Properties }}
+{{ template "propertyvalidator" . }}
+{{ end }}{{end}}{{if and .IsTuple .AdditionalItems }}
+// TODO: validating additional items should go here, if you see this raise an issue
+// at https://github.com/go-swagger/go-swagger/issues
+{{end}}{{ else }}{{ template "primitivefieldvalidator" .}}{{ end }}
+{{else if .IsCustomFormatter }}{{ template "validationCustomformat" .}}
+{{else if .IsArray }}{{ template "slicevalidator" .}}
+{{else if .IsMap}}{{ template "mapvalidator" . }}
+{{else if or .IsComplexObject .IsTuple .IsAdditionalProperties .IsAliased }}{{ if not .IsAnonymous }}
+{{ if .IsNullable }}if val, ok := {{ .ValueExpression }}; ok {
+{{ end }}
+if err := val.Validate(formats); err != nil {
+  return err
+}
+{{ if .IsNullable }}}{{ end }}
+{{ else }}
+{{ range .AllOf }}
+{{ range .Properties }}
+{{ template "propertyvalidator" . }}
+{{ end }}
+{{ end }}
+{{ range .Properties }}
+{{ template "propertyvalidator" . }}
+{{ end }}{{end}}{{if and .IsTuple .AdditionalItems }}
+// TODO: validating additional items should go here, if you see this raise an issue
+// at https://github.com/go-swagger/go-swagger/issues
+{{end}}{{end}}
+
   {{ end }}
 }
 {{ end }}{{ if .Enum }}

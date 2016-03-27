@@ -397,9 +397,9 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 		return
 	}
 
-	rt.IsNullable = t.IsNullable(schema.Items.Schema)
+	rt.IsNullable = t.IsNullable(schema.Items.Schema) && !rt.HasDiscriminator
 	result.GoType = "[]" + rt.GoType
-	if rt.IsNullable && !rt.HasDiscriminator && !strings.HasPrefix(rt.GoType, "*") {
+	if rt.IsNullable && !strings.HasPrefix(rt.GoType, "*") {
 		result.GoType = "[]*" + rt.GoType
 	}
 

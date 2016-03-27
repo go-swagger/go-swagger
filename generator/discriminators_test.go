@@ -243,7 +243,7 @@ func TestGenerateModel_Discriminator_Billforward(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(b)
 					//assertInCode(t, "err", res)
-					assertInCode(t, "err := validate.Required(\"priceExplanation\"+\".\"+strconv.Itoa(i), \"body\", m.priceExplanationField[i])", res)
+					assertInCode(t, "err := validate.RequiredString(\"priceExplanation\"+\".\"+strconv.Itoa(i), \"body\", string(m.priceExplanationField[i]))", res)
 				}
 			}
 		}
