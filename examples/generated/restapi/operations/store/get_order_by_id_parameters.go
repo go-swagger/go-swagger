@@ -19,7 +19,7 @@ func NewGetOrderByIDParams() GetOrderByIDParams {
 	return GetOrderByIDParams{}
 }
 
-// GetOrderByIDParams contains all the bound params for the get order by id operation
+// GetOrderByIDParams contains all the bound params for the get order by Id operation
 // typically these are obtained from a http.Request
 //
 // swagger:parameters getOrderById

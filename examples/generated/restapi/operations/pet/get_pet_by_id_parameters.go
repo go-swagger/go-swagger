@@ -20,7 +20,7 @@ func NewGetPetByIDParams() GetPetByIDParams {
 	return GetPetByIDParams{}
 }
 
-// GetPetByIDParams contains all the bound params for the get pet by id operation
+// GetPetByIDParams contains all the bound params for the get pet by Id operation
 // typically these are obtained from a http.Request
 //
 // swagger:parameters getPetById

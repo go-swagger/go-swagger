@@ -32,14 +32,14 @@ func NewListTasksOK() *ListTasksOK {
 }
 
 // WithXLastTaskID adds the xLastTaskId to the list tasks o k response
-func (o *ListTasksOK) WithXLastTaskID(xLastTaskId int64) *ListTasksOK {
-	o.XLastTaskID = xLastTaskId
+func (o *ListTasksOK) WithXLastTaskID(xLastTaskID int64) *ListTasksOK {
+	o.XLastTaskID = xLastTaskID
 	return o
 }
 
 // SetXLastTaskID sets the xLastTaskId to the list tasks o k response
-func (o *ListTasksOK) SetXLastTaskID(xLastTaskId int64) {
-	o.XLastTaskID = xLastTaskId
+func (o *ListTasksOK) SetXLastTaskID(xLastTaskID int64) {
+	o.XLastTaskID = xLastTaskID
 }
 
 // WithPayload adds the payload to the list tasks o k response

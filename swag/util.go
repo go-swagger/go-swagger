@@ -207,7 +207,7 @@ func ToCommandName(name string) string {
 func ToHumanNameLower(name string) string {
 	var out []string
 	for _, w := range split(name) {
-		if !commonInitialisms[w] {
+		if !commonInitialisms[upper(w)] {
 			out = append(out, lower(w))
 		} else {
 			out = append(out, w)
@@ -220,7 +220,8 @@ func ToHumanNameLower(name string) string {
 func ToHumanNameTitle(name string) string {
 	var out []string
 	for _, w := range split(name) {
-		if !commonInitialisms[w] {
+		uw := upper(w)
+		if !commonInitialisms[uw] {
 			out = append(out, upper(w[:1])+lower(w[1:]))
 		} else {
 			out = append(out, w)
@@ -240,6 +241,15 @@ func ToJSONName(name string) string {
 		out = append(out, upper(w[:1])+lower(w[1:]))
 	}
 	return strings.Join(out, "")
+}
+
+// ToVarName camelcases a name which can be underscored or pascal cased
+func ToVarName(name string) string {
+	res := ToGoName(name)
+	if len(res) <= 1 {
+		return lower(res)
+	}
+	return lower(res[:1]) + res[1:]
 }
 
 // ToGoName translates a swagger name which can be underscored or camel cased to a name that golint likes

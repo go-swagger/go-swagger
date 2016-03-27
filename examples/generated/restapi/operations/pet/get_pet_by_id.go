@@ -9,7 +9,7 @@ import (
 	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
 )
 
-// GetPetByIDHandlerFunc turns a function with the right signature into a get pet by id handler
+// GetPetByIDHandlerFunc turns a function with the right signature into a get pet by Id handler
 type GetPetByIDHandlerFunc func(GetPetByIDParams, interface{}) middleware.Responder
 
 // Handle executing the request and returning a response
@@ -17,12 +17,12 @@ func (fn GetPetByIDHandlerFunc) Handle(params GetPetByIDParams, principal interf
 	return fn(params, principal)
 }
 
-// GetPetByIDHandler interface for that can handle valid get pet by id params
+// GetPetByIDHandler interface for that can handle valid get pet by Id params
 type GetPetByIDHandler interface {
 	Handle(GetPetByIDParams, interface{}) middleware.Responder
 }
 
-// NewGetPetByID creates a new http.Handler for the get pet by id operation
+// NewGetPetByID creates a new http.Handler for the get pet by Id operation
 func NewGetPetByID(ctx *middleware.Context, handler GetPetByIDHandler) *GetPetByID {
 	return &GetPetByID{Context: ctx, Handler: handler}
 }

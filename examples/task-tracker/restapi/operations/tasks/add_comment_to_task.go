@@ -84,7 +84,7 @@ type AddCommentToTaskBody struct {
 	*/
 	Content *string `json:"content"`
 
-	/* user id
+	/* user Id
 
 	Required: true
 	*/

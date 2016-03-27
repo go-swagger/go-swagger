@@ -19,7 +19,7 @@ type Order struct {
 	 */
 	ID int64 `json:"id,omitempty"`
 
-	/* pet id
+	/* pet Id
 	 */
 	PetID int64 `json:"petId,omitempty"`
 
