@@ -32,6 +32,11 @@ func (o *GetOrderByIDOK) WithPayload(payload *models.Order) *GetOrderByIDOK {
 	return o
 }
 
+// SetPayload sets the payload to the get order by id o k response
+func (o *GetOrderByIDOK) SetPayload(payload *models.Order) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *GetOrderByIDOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 

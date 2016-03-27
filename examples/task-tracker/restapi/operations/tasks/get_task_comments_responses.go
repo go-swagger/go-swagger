@@ -4,6 +4,7 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/go-swagger/go-swagger/httpkit"
@@ -32,6 +33,11 @@ func (o *GetTaskCommentsOK) WithPayload(payload []*models.Comment) *GetTaskComme
 	return o
 }
 
+// SetPayload sets the payload to the get task comments o k response
+func (o *GetTaskCommentsOK) SetPayload(payload []*models.Comment) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *GetTaskCommentsOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -42,12 +48,19 @@ func (o *GetTaskCommentsOK) WriteResponse(rw http.ResponseWriter, producer httpk
 
 }
 
-/*GetTaskCommentsDefault get task comments default
+/*GetTaskCommentsDefault Error response
 
 swagger:response getTaskCommentsDefault
 */
 type GetTaskCommentsDefault struct {
 	_statusCode int
+	/*
+	  Required: true
+	*/
+	XErrorCode string `json:"X-Error-Code"`
+
+	// In: body
+	Payload *models.Error `json:"body,omitempty"`
 }
 
 // NewGetTaskCommentsDefault creates GetTaskCommentsDefault with default headers values
@@ -67,8 +80,43 @@ func (o *GetTaskCommentsDefault) WithStatusCode(code int) *GetTaskCommentsDefaul
 	return o
 }
 
+// SetStatusCode sets the status to the get task comments default response
+func (o *GetTaskCommentsDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithXErrorCode adds the xErrorCode to the get task comments default response
+func (o *GetTaskCommentsDefault) WithXErrorCode(xErrorCode string) *GetTaskCommentsDefault {
+	o.XErrorCode = xErrorCode
+	return o
+}
+
+// SetXErrorCode sets the xErrorCode to the get task comments default response
+func (o *GetTaskCommentsDefault) SetXErrorCode(xErrorCode string) {
+	o.XErrorCode = xErrorCode
+}
+
+// WithPayload adds the payload to the get task comments default response
+func (o *GetTaskCommentsDefault) WithPayload(payload *models.Error) *GetTaskCommentsDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the get task comments default response
+func (o *GetTaskCommentsDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *GetTaskCommentsDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
+	// response header X-Error-Code
+	rw.Header().Add("X-Error-Code", fmt.Sprintf("%v", o.XErrorCode))
+
 	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		if err := producer.Produce(rw, o.Payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }

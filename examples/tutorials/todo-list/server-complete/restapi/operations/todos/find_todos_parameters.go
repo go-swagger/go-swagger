@@ -30,6 +30,10 @@ func NewFindTodosParams() FindTodosParams {
 //
 // swagger:parameters findTodos
 type FindTodosParams struct {
+
+	// HTTP Request Object
+	HTTPRequest *http.Request
+
 	/*
 	  In: query
 	  Default: 20
@@ -45,6 +49,8 @@ type FindTodosParams struct {
 // for simple values it will use straight method calls
 func (o *FindTodosParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+	o.HTTPRequest = r
+
 	qs := httpkit.Values(r.URL.Query())
 
 	qLimit, qhkLimit, _ := qs.GetOK("limit")

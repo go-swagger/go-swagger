@@ -26,6 +26,10 @@ func NewDeletePetParams() DeletePetParams {
 //
 // swagger:parameters deletePet
 type DeletePetParams struct {
+
+	// HTTP Request Object
+	HTTPRequest *http.Request
+
 	/*
 	  Required: true
 	  In: header
@@ -42,6 +46,7 @@ type DeletePetParams struct {
 // for simple values it will use straight method calls
 func (o *DeletePetParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+	o.HTTPRequest = r
 
 	if err := o.bindAPIKey(r.Header["api_key"], true, route.Formats); err != nil {
 		res = append(res, err)

@@ -28,6 +28,10 @@ func NewFindParams() FindParams {
 //
 // swagger:parameters find
 type FindParams struct {
+
+	// HTTP Request Object
+	HTTPRequest *http.Request
+
 	/*
 	  Required: true
 	  In: header
@@ -50,6 +54,8 @@ type FindParams struct {
 // for simple values it will use straight method calls
 func (o *FindParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+	o.HTTPRequest = r
+
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		if err != http.ErrNotMultipart {
 			return err
@@ -147,7 +153,7 @@ func (o *FindParams) bindTags(rawData []string, hasKey bool, formats strfmt.Regi
 			return errors.InvalidType(fmt.Sprintf("%s.%v", "tags", i), "formData", "int32", ic[i])
 		}
 
-		if err := iValidateElement(i, o.Tags[i]); err != nil {
+		if err := iValidateElement(i, value); err != nil {
 			return err
 		}
 		ir = append(ir, value)

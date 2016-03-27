@@ -26,7 +26,7 @@ type Task struct {
 	An issue can have at most 20 files attached to it.
 
 	*/
-	Attachments map[string]*TaskAttachmentsAnon `json:"attachments,omitempty"`
+	Attachments map[string]TaskAttachmentsAnon `json:"attachments,omitempty"`
 
 	/* The 5 most recent items for this issue.
 
@@ -45,13 +45,13 @@ type Task struct {
 
 	Read Only: true
 	*/
-	LastUpdated *strfmt.DateTime `json:"lastUpdated,omitempty"`
+	LastUpdated strfmt.DateTime `json:"lastUpdated,omitempty"`
 
-	/* LastUpdatedBy last updated by
+	/* last updated by
 	 */
 	LastUpdatedBy *UserCard `json:"lastUpdatedBy,omitempty"`
 
-	/* ReportedBy reported by
+	/* reported by
 	 */
 	ReportedBy *UserCard `json:"reportedBy,omitempty"`
 }
@@ -90,9 +90,9 @@ func (m *Task) validateAttachments(formats strfmt.Registry) error {
 			continue
 		}
 
-		if m.Attachments[k] != nil {
+		if val, ok := m.Attachments[k]; ok {
 
-			if err := m.Attachments[k].Validate(formats); err != nil {
+			if err := val.Validate(formats); err != nil {
 				return err
 			}
 		}
@@ -106,11 +106,8 @@ func (m *Task) validateComments(formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Comments); i++ {
 
-		if m.Comments[i] != nil {
-
-			if err := m.Comments[i].Validate(formats); err != nil {
-				return err
-			}
+		if err := m.Comments[i].Validate(formats); err != nil {
+			return err
 		}
 
 	}
@@ -118,7 +115,7 @@ func (m *Task) validateComments(formats strfmt.Registry) error {
 	return nil
 }
 
-/*TaskAttachmentsAnon TaskAttachmentsAnon task attachments anon
+/*TaskAttachmentsAnon task attachments anon
 
 swagger:model TaskAttachmentsAnon
 */
@@ -131,7 +128,7 @@ type TaskAttachmentsAnon struct {
 
 	Read Only: true
 	*/
-	ContentType *string `json:"contentType,omitempty"`
+	ContentType string `json:"contentType,omitempty"`
 
 	/* Extra information to attach to the file.
 
@@ -149,7 +146,7 @@ type TaskAttachmentsAnon struct {
 
 	Read Only: true
 	*/
-	Name *string `json:"name,omitempty"`
+	Name string `json:"name,omitempty"`
 
 	/* The file size in bytes.
 
@@ -157,7 +154,7 @@ type TaskAttachmentsAnon struct {
 
 	Read Only: true
 	*/
-	Size *float64 `json:"size,omitempty"`
+	Size float64 `json:"size,omitempty"`
 
 	/* The url to download or view the file.
 
@@ -166,7 +163,7 @@ type TaskAttachmentsAnon struct {
 
 	Read Only: true
 	*/
-	URL *strfmt.URI `json:"url,omitempty"`
+	URL strfmt.URI `json:"url,omitempty"`
 }
 
 // Validate validates this task attachments anon

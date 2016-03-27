@@ -5,11 +5,14 @@ package tasks
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/go-swagger/go-swagger/client"
 	"github.com/go-swagger/go-swagger/httpkit"
 
 	strfmt "github.com/go-swagger/go-swagger/strfmt"
+
+	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
 
 // CreateTaskReader is a Reader for the CreateTask structure.
@@ -67,10 +70,14 @@ func NewCreateTaskDefault(code int) *CreateTaskDefault {
 
 /*CreateTaskDefault handles this case with default header values.
 
-CreateTaskDefault create task default
+Error response
 */
 type CreateTaskDefault struct {
 	_statusCode int
+
+	XErrorCode string
+
+	Payload *models.Error
 }
 
 // Code gets the status code for the create task default response
@@ -79,10 +86,20 @@ func (o *CreateTaskDefault) Code() int {
 }
 
 func (o *CreateTaskDefault) Error() string {
-	return fmt.Sprintf("[POST /tasks][%d] createTask default ", o._statusCode)
+	return fmt.Sprintf("[POST /tasks][%d] createTask default  %+v", o._statusCode, o.Payload)
 }
 
 func (o *CreateTaskDefault) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
+
+	// response header X-Error-Code
+	o.XErrorCode = response.GetHeader("X-Error-Code")
+
+	o.Payload = new(models.Error)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }

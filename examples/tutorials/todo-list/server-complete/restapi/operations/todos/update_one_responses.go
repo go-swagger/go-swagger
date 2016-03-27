@@ -32,6 +32,11 @@ func (o *UpdateOneOK) WithPayload(payload *models.Item) *UpdateOneOK {
 	return o
 }
 
+// SetPayload sets the payload to the update one o k response
+func (o *UpdateOneOK) SetPayload(payload *models.Item) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *UpdateOneOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -71,10 +76,20 @@ func (o *UpdateOneDefault) WithStatusCode(code int) *UpdateOneDefault {
 	return o
 }
 
+// SetStatusCode sets the status to the update one default response
+func (o *UpdateOneDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
 // WithPayload adds the payload to the update one default response
 func (o *UpdateOneDefault) WithPayload(payload *models.Error) *UpdateOneDefault {
 	o.Payload = payload
 	return o
+}
+
+// SetPayload sets the payload to the update one default response
+func (o *UpdateOneDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
 }
 
 // WriteResponse to the client

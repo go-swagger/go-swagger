@@ -23,7 +23,7 @@ swagger:model TaskCard
 */
 type TaskCard struct {
 
-	/* AssignedTo assigned to
+	/* assigned to
 	 */
 	AssignedTo *UserCard `json:"assignedTo,omitempty"`
 
@@ -33,14 +33,14 @@ type TaskCard struct {
 	Perhaps it even mentions steps to reproduce.
 
 	*/
-	Description *string `json:"description,omitempty"`
+	Description string `json:"description,omitempty"`
 
 	/* the level of effort required to get this task completed
 
 	Maximum: 27
 	Multiple Of: 3
 	*/
-	Effort *int32 `json:"effort,omitempty"`
+	Effort int32 `json:"effort,omitempty"`
 
 	/* The id of the task.
 
@@ -48,7 +48,7 @@ type TaskCard struct {
 
 	Read Only: true
 	*/
-	ID *int64 `json:"id,omitempty"`
+	ID int64 `json:"id,omitempty"`
 
 	/* the karma donated to this item.
 
@@ -61,7 +61,7 @@ type TaskCard struct {
 	*/
 	Karma *float64 `json:"karma,omitempty"`
 
-	/* Milestone milestone
+	/* milestone
 	 */
 	Milestone *Milestone `json:"milestone,omitempty"`
 
@@ -72,14 +72,14 @@ type TaskCard struct {
 
 	Read Only: true
 	*/
-	ReportedAt *strfmt.DateTime `json:"reportedAt,omitempty"`
+	ReportedAt strfmt.DateTime `json:"reportedAt,omitempty"`
 
-	/* Severity severity
+	/* severity
 
 	Maximum: 5
 	Minimum: 1
 	*/
-	Severity *int32 `json:"severity,omitempty"`
+	Severity int32 `json:"severity,omitempty"`
 
 	/* the status of the issue
 
@@ -89,7 +89,7 @@ type TaskCard struct {
 
 	Required: true
 	*/
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status"`
 
 	/* task tags.
 
@@ -110,7 +110,7 @@ type TaskCard struct {
 	Max Length: 150
 	Min Length: 5
 	*/
-	Title string `json:"title,omitempty"`
+	Title *string `json:"title"`
 }
 
 // Validate validates this task card
@@ -159,11 +159,11 @@ func (m *TaskCard) validateEffort(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.Maximum("effort", "body", float64(*m.Effort), 27, false); err != nil {
+	if err := validate.MaximumInt("effort", "body", int64(m.Effort), 27, false); err != nil {
 		return err
 	}
 
-	if err := validate.MultipleOf("effort", "body", float64(*m.Effort), 3); err != nil {
+	if err := validate.MultipleOf("effort", "body", float64(m.Effort), 3); err != nil {
 		return err
 	}
 
@@ -193,11 +193,11 @@ func (m *TaskCard) validateSeverity(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.Minimum("severity", "body", float64(*m.Severity), 1, false); err != nil {
+	if err := validate.MinimumInt("severity", "body", int64(m.Severity), 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.Maximum("severity", "body", float64(*m.Severity), 5, false); err != nil {
+	if err := validate.MaximumInt("severity", "body", int64(m.Severity), 5, false); err != nil {
 		return err
 	}
 
@@ -206,6 +206,7 @@ func (m *TaskCard) validateSeverity(formats strfmt.Registry) error {
 
 var taskCardTypeStatusPropEnum []interface{}
 
+// prop value enum
 func (m *TaskCard) validateStatusEnum(path, location string, value string) error {
 	if taskCardTypeStatusPropEnum == nil {
 		var res []string
@@ -224,11 +225,12 @@ func (m *TaskCard) validateStatusEnum(path, location string, value string) error
 
 func (m *TaskCard) validateStatus(formats strfmt.Registry) error {
 
-	if err := validate.RequiredString("status", "body", string(m.Status)); err != nil {
+	if err := validate.Required("status", "body", m.Status); err != nil {
 		return err
 	}
 
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	// value enum
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
@@ -272,15 +274,15 @@ func (m *TaskCard) validateTags(formats strfmt.Registry) error {
 
 func (m *TaskCard) validateTitle(formats strfmt.Registry) error {
 
-	if err := validate.RequiredString("title", "body", string(m.Title)); err != nil {
+	if err := validate.Required("title", "body", m.Title); err != nil {
 		return err
 	}
 
-	if err := validate.MinLength("title", "body", string(m.Title), 5); err != nil {
+	if err := validate.MinLength("title", "body", string(*m.Title), 5); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("title", "body", string(m.Title), 150); err != nil {
+	if err := validate.MaxLength("title", "body", string(*m.Title), 150); err != nil {
 		return err
 	}
 

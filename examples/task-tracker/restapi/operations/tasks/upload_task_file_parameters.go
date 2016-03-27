@@ -26,6 +26,10 @@ func NewUploadTaskFileParams() UploadTaskFileParams {
 //
 // swagger:parameters uploadTaskFile
 type UploadTaskFileParams struct {
+
+	// HTTP Request Object
+	HTTPRequest *http.Request
+
 	/*Extra information describing the file
 	  In: formData
 	*/
@@ -45,6 +49,8 @@ type UploadTaskFileParams struct {
 // for simple values it will use straight method calls
 func (o *UploadTaskFileParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+	o.HTTPRequest = r
+
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		if err != http.ErrNotMultipart {
 			return err

@@ -4,11 +4,10 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"bufio"
-	"io"
 	"net/http"
 
 	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
 
 	"github.com/go-swagger/go-swagger/examples/todo-list/models"
@@ -26,51 +25,37 @@ func NewAddOneParams() AddOneParams {
 //
 // swagger:parameters addOne
 type AddOneParams struct {
+
+	// HTTP Request Object
+	HTTPRequest *http.Request
+
 	/*
 	  In: body
 	*/
 	Body *models.Item
 }
 
-func newBufferingReadCloser(under io.ReadCloser) io.Reader {
-	return &bufferingReaderCloser{under: under, buf: nil}
-}
-
-type bufferingReaderCloser struct {
-	under io.ReadCloser
-	buf   *bufio.Reader
-}
-
-func (b *bufferingReaderCloser) HasData() bool {
-	if b.buf == nil {
-		b.buf = bufio.NewReader(b.under)
-	}
-	return false
-}
-
-func (b *bufferingReaderCloser) Read(tgt []byte) (int, error) {
-	return b.under.Read(tgt)
-}
-
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls
 func (o *AddOneParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+	o.HTTPRequest = r
 
-	rdr := newBufferingReadCloser(r.Body)
-	defer r.Body.Close()
+	if httpkit.HasBody(r) {
+		defer r.Body.Close()
+		var body models.Item
+		if err := route.Consumer.Consume(r.Body, &body); err != nil {
+			res = append(res, errors.NewParseError("body", "body", "", err))
+		} else {
+			if err := body.Validate(route.Formats); err != nil {
+				res = append(res, err)
+			}
 
-	var body models.Item
-	if err := route.Consumer.Consume(rdr, &body); err != nil {
-		res = append(res, errors.NewParseError("body", "body", "", err))
-	} else {
-		if err := body.Validate(route.Formats); err != nil {
-			res = append(res, err)
+			if len(res) == 0 {
+				o.Body = &body
+			}
 		}
 
-		if len(res) == 0 {
-			o.Body = &body
-		}
 	}
 
 	if len(res) > 0 {

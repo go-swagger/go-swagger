@@ -32,6 +32,10 @@ func NewListTasksParams() ListTasksParams {
 //
 // swagger:parameters listTasks
 type ListTasksParams struct {
+
+	// HTTP Request Object
+	HTTPRequest *http.Request
+
 	/*Amount of items to return in a single page
 	  In: query
 	  Default: 20
@@ -58,6 +62,8 @@ type ListTasksParams struct {
 // for simple values it will use straight method calls
 func (o *ListTasksParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+	o.HTTPRequest = r
+
 	qs := httpkit.Values(r.URL.Query())
 
 	qPageSize, qhkPageSize, _ := qs.GetOK("pageSize")
@@ -143,7 +149,7 @@ func (o *ListTasksParams) bindStatus(rawData []string, hasKey bool, formats strf
 	var ir []string
 	iValidateElement := func(i int, statusI string) *errors.Validation {
 
-		if err := validate.Enum(fmt.Sprintf("%s.%v", "status", i), "query", o.Status[i], []interface{}{"open", "closed", "ignored", "rejected"}); err != nil {
+		if err := validate.Enum(fmt.Sprintf("%s.%v", "status", i), "query", statusI, []interface{}{"open", "closed", "ignored", "rejected"}); err != nil {
 			return err
 		}
 

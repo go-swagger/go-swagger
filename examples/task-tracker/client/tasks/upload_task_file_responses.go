@@ -5,11 +5,14 @@ package tasks
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/go-swagger/go-swagger/client"
 	"github.com/go-swagger/go-swagger/httpkit"
 
 	strfmt "github.com/go-swagger/go-swagger/strfmt"
+
+	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
 
 // UploadTaskFileReader is a Reader for the UploadTaskFile structure.
@@ -67,10 +70,14 @@ func NewUploadTaskFileDefault(code int) *UploadTaskFileDefault {
 
 /*UploadTaskFileDefault handles this case with default header values.
 
-UploadTaskFileDefault upload task file default
+Error response
 */
 type UploadTaskFileDefault struct {
 	_statusCode int
+
+	XErrorCode string
+
+	Payload *models.Error
 }
 
 // Code gets the status code for the upload task file default response
@@ -79,10 +86,20 @@ func (o *UploadTaskFileDefault) Code() int {
 }
 
 func (o *UploadTaskFileDefault) Error() string {
-	return fmt.Sprintf("[POST /tasks/{id}/files][%d] uploadTaskFile default ", o._statusCode)
+	return fmt.Sprintf("[POST /tasks/{id}/files][%d] uploadTaskFile default  %+v", o._statusCode, o.Payload)
 }
 
 func (o *UploadTaskFileDefault) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
+
+	// response header X-Error-Code
+	o.XErrorCode = response.GetHeader("X-Error-Code")
+
+	o.Payload = new(models.Error)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }
