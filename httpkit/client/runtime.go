@@ -149,6 +149,7 @@ func (r *Runtime) Submit(operation *client.Operation) (interface{}, error) {
 	if len(operation.ConsumesMediaTypes) > 0 {
 		cmt = operation.ConsumesMediaTypes[0]
 	}
+
 	req, err := request.BuildHTTP(cmt, r.Producers, r.Formats)
 	if err != nil {
 		return nil, err
@@ -191,6 +192,7 @@ func (r *Runtime) Submit(operation *client.Operation) (interface{}, error) {
 		return nil, err
 	}
 	defer res.Body.Close()
+
 	if r.Debug {
 		b, err := httputil.DumpResponse(res, true)
 		if err != nil {
@@ -198,6 +200,7 @@ func (r *Runtime) Submit(operation *client.Operation) (interface{}, error) {
 		}
 		fmt.Println(string(b))
 	}
+
 	ct := res.Header.Get(httpkit.HeaderContentType)
 	if ct == "" { // this should really really never occur
 		ct = r.DefaultMediaType
@@ -207,6 +210,7 @@ func (r *Runtime) Submit(operation *client.Operation) (interface{}, error) {
 	if err != nil {
 		return nil, fmt.Errorf("parse content type: %s", err)
 	}
+
 	cons, ok := r.Consumers[mt]
 	if !ok {
 		// scream about not knowing what to do

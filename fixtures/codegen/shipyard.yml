@@ -1,0 +1,184 @@
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: APIs for building docker images.
+basePath: /beeswax/images/api/v1
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  '/{repository}/applications':
+    get:
+      description: Get all applications for this repository
+      operationId: getAllApplications
+      responses:
+        '200':
+          description: The request was for a repository and applications exist within that repository
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Application'
+        '404':
+          description: The request was for a repository that does not exist
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      description: Create an image of the specified revision
+      operationId: createApplication
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: The request was for a valid repo, application, and image.  The image was created
+          schema:
+            $ref: '#/definitions/Image'
+        '409':
+          description: Application and image already exists
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: The repository and application does not exist
+          schema:
+            $ref: '#/definitions/Error'
+      parameters:
+        - name: application
+          in: formData
+          description: The Application name
+          required: true
+          type: string
+        - name: revision
+          in: formData
+          description: The Revision of the image
+          required: true
+          type: string
+        - name: file
+          in: formData
+          description: The file data as a multipart
+          required: true
+          type: file
+        #   format: byte
+    parameters:
+      - $ref: '#/parameters/repository'
+  '/{repository}/apps/{application}/images':
+    get:
+      description: Get all built images for the application in the repository
+      operationId: getImageRevisions
+      responses:
+        '200':
+          description: The request was for a valid repository and application
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Image'
+        '404':
+          description: The request was for a repository or application that does not exist
+          schema:
+            $ref: '#/definitions/Error'
+    parameters:
+      - $ref: '#/parameters/repository'
+      - $ref: '#/parameters/application'
+  '/{repository}/apps/{application}/images/{revision}':
+    get:
+      description: Get the image for the specfied revision of the application within the repo
+      operationId: getImage
+      responses:
+        '200':
+          description: The request was for a valid repository and application and revision
+          schema:
+            $ref: '#/definitions/Image'
+        '404':
+          description: The request was for a repository or application that does not exist
+          schema:
+            $ref: '#/definitions/Error'
+    parameters:
+      - $ref: '#/parameters/repository'
+      - $ref: '#/parameters/application'
+      - $ref: '#/parameters/revision'
+definitions:
+  Image:
+    description: An image of an application and revision
+    allOf:
+      - $ref: '#/definitions/Links'
+      - type: object
+        properties:
+          created:
+            description: The timestamp the image was created
+            type: string
+            format: date-time
+          size:
+            description: 'The size of the image, in bytes'
+            type: integer
+          imageId:
+            description: The docker image id SHA
+            type: string
+        required:
+          - created
+          - size
+          - imageId
+  Application:
+    description: An application
+    allOf:
+      - $ref: '#/definitions/Links'
+      - type: object
+        properties:
+          name:
+            description: The name of the application
+            type: string
+        required:
+          - name
+  Error:
+    description: Object used for all API errors.
+    type: object
+    properties:
+      message:
+        type: string
+      logs:
+        type: array
+        items:
+          type: string
+    required:
+      - message
+  Links:
+    description: Object used to wrap resource links.
+    type: object
+    properties:
+      _links:
+        description: Container for any number of named resource links.
+        type: object
+        additionalProperties:
+          description: A resource link.
+          type: object
+          properties:
+            href:
+              description: The link to the resource.
+              format: uri
+              type: string
+          required:
+            - href
+    required:
+      - _links
+parameters:
+  repository:
+    name: repository
+    in: path
+    description: The Docker repository name
+    required: true
+    type: string
+  application:
+    name: application
+    in: path
+    description: The Application name
+    required: true
+    type: string
+  revision:
+    name: revision
+    in: path
+    description: The revision of the application
+    required: true
+    type: string
+tags:
+  - name: deploy
+    description: Deploy operation

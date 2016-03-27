@@ -57,11 +57,11 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 		}
 		defaultProduces := opts.DefaultProduces
 		if defaultProduces == "" {
-			defaultProduces = "application/json"
+			defaultProduces = httpkit.JSONMime
 		}
 		defaultConsumes := opts.DefaultConsumes
 		if defaultConsumes == "" {
-			defaultConsumes = "application/json"
+			defaultConsumes = httpkit.JSONMime
 		}
 
 		apiPackage := mangleName(swag.ToFileName(opts.APIPackage), "api")
