@@ -1,0 +1,33 @@
+#!/bin/sh
+
+git_root=`git rev-parse --show-toplevel`
+
+# skip if this was already the versioning run
+[ -f "$git_root/.git/VERSIONING_RUN" ] && exit 0
+
+# grab the version string, and write it to a file
+git_version=`git describe`
+echo "package commands
+
+func init() {
+	if Version == \"\" {
+		Version = \"$git_version\"
+	}
+}
+" > "$git_root/cmd/swagger/commands/version_number.go"
+
+# stage the updated file
+git add ./cmd/swagger/commands/version_number.go
+
+# create guard file
+touch "$git_root/.git/VERSIONING_RUN"
+
+# remove guard file
+function cleanup {
+  rm "$git_root/.git/VERSIONING_RUN"
+}
+trap cleanup EXIT
+
+# commit again, but skip pre-commit hooks this time
+commit_msg=`git log -1 --pretty=%B`
+git commit --no-verify --amend -m "$commit_msg" > /dev/null
