@@ -10,7 +10,9 @@ git_version=`git describe`
 echo "package commands
 
 func init() {
-  Version = \"${git_version}\"
+	if Version == "" {
+		Version = \"$git_version\"
+	}
 }
 " > "$git_root/cmd/swagger/commands/version_number.go"
 
