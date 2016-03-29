@@ -10,7 +10,7 @@ git_version=`git describe`
 echo "package commands
 
 func init() {
-	if Version == "" {
+	if Version == \"\" {
 		Version = \"$git_version\"
 	}
 }
