@@ -72,7 +72,6 @@ var (
 			rxOpID + "\\p{Zs}*$")
 
 	rxSpace              = regexp.MustCompile("\\p{Zs}+")
-	rxNotAlNumSpaceComma = regexp.MustCompile("[^\\p{L}\\p{N}\\p{Zs},]")
 	rxPunctuationEnd     = regexp.MustCompile("\\p{Po}$")
 	rxStripComments      = regexp.MustCompile("^[^\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\+]*")
 	rxStripTitleComments = regexp.MustCompile("^[^\\p{L}]*[Pp]ackage\\p{Zs}+[^\\p{Zs}]+\\p{Zs}*")
