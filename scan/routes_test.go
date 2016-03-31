@@ -51,6 +51,7 @@ func TestRoutesParser(t *testing.T) {
 		"Lists pets filtered by some parameters.",
 		"This will show all available pets by default.\nYou can get the pets that are out of stock",
 		[]string{"pets", "users"},
+		[]string{"read", "write"},
 	)
 	assertOperation(t,
 		po.Post,
@@ -58,6 +59,7 @@ func TestRoutesParser(t *testing.T) {
 		"Create a pet based on the parameters.",
 		"",
 		[]string{"pets", "users"},
+		[]string{"read", "write"},
 	)
 
 	po, ok = ops.Paths["/orders"]
@@ -69,6 +71,7 @@ func TestRoutesParser(t *testing.T) {
 		"lists orders filtered by some parameters.",
 		"",
 		[]string{"orders"},
+		[]string{"orders:read", "https://www.googleapis.com/auth/userinfo.email"},
 	)
 	assertOperation(t,
 		po.Post,
@@ -76,6 +79,7 @@ func TestRoutesParser(t *testing.T) {
 		"create an order based on the parameters.",
 		"",
 		[]string{"orders"},
+		[]string{"read", "write"},
 	)
 
 	po, ok = ops.Paths["/orders/{id}"]
@@ -87,6 +91,7 @@ func TestRoutesParser(t *testing.T) {
 		"gets the details for an order.",
 		"",
 		[]string{"orders"},
+		[]string{"read", "write"},
 	)
 
 	assertOperation(t,
@@ -95,6 +100,7 @@ func TestRoutesParser(t *testing.T) {
 		"Update the details for an order.",
 		"When the order doesn't exist this will return an error.",
 		[]string{"orders"},
+		[]string{"read", "write"},
 	)
 
 	assertOperation(t,
@@ -103,10 +109,11 @@ func TestRoutesParser(t *testing.T) {
 		"delete a particular order.",
 		"",
 		nil,
+		[]string{"read", "write"},
 	)
 }
 
-func assertOperation(t *testing.T, op *spec.Operation, id, summary, description string, tags []string) {
+func assertOperation(t *testing.T, op *spec.Operation, id, summary, description string, tags, scopes []string) {
 	assert.NotNil(t, op)
 	assert.Equal(t, summary, op.Summary)
 	assert.Equal(t, description, op.Description)
@@ -121,7 +128,7 @@ func assertOperation(t *testing.T, op *spec.Operation, id, summary, description 
 
 	vv, ok := op.Security[1]["oauth"]
 	assert.True(t, ok)
-	assert.EqualValues(t, []string{"read", "write"}, vv)
+	assert.EqualValues(t, scopes, vv)
 
 	assert.NotNil(t, op.Responses.Default)
 	assert.Equal(t, "#/responses/genericError", op.Responses.Default.Ref.String())
