@@ -49,6 +49,7 @@ func TestValidateUniqueItems(t *testing.T) {
 			"b":   2,
 			"ccc": 333,
 		},
+		nil,
 	}
 	for _, v := range itemsUnique {
 		err = UniqueItems("test", "body", v)
@@ -65,10 +66,10 @@ func TestValidateMinLength(t *testing.T) {
 }
 
 func TestValidateMaxLength(t *testing.T) {
-	var minLength int64 = 5
-	err := MaxLength("test", "body", "bbbbbb", minLength)
+	var maxLength int64 = 5
+	err := MaxLength("test", "body", "bbbbbb", maxLength)
 	assert.Error(t, err)
-	err = MaxLength("test", "body", "aa", minLength)
+	err = MaxLength("test", "body", "aa", maxLength)
 	assert.NoError(t, err)
 }
 
@@ -76,9 +77,11 @@ func TestValidateRequired(t *testing.T) {
 	var err error
 	path := "test"
 	in := "body"
+
 	RequiredFail := []interface{}{
 		"",
 		0,
+		nil,
 	}
 
 	for _, v := range RequiredFail {
