@@ -99,7 +99,7 @@ func MaxLength(path, in, data string, maxLength int64) *errors.Validation {
 // Required validates an interface for requiredness
 func Required(path, in string, data interface{}) *errors.Validation {
 	val := reflect.ValueOf(data)
-	if reflect.DeepEqual(reflect.Zero(val.Type()), val) {
+	if reflect.DeepEqual(reflect.Zero(val.Type()).Interface(), val.Interface()) {
 		return errors.Required(path, in)
 	}
 	return nil
