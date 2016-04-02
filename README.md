@@ -24,6 +24,9 @@ go-swagger is distributed as binaries that are built of signed tags. It is publi
 
 ```shell
 docker pull quay.io/goswagger/swagger
+
+alias swagger="docker run --rm -it -v $HOME:$HOME -w $(pwd) quay.io/goswagger/swagger"
+swagger version
 ```
 
 #### Homebrew/Linuxbrew

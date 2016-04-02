@@ -4,6 +4,7 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/go-swagger/go-swagger/httpkit"
@@ -30,6 +31,11 @@ func NewUpdateTaskOK() *UpdateTaskOK {
 func (o *UpdateTaskOK) WithPayload(payload *models.Task) *UpdateTaskOK {
 	o.Payload = payload
 	return o
+}
+
+// SetPayload sets the payload to the update task o k response
+func (o *UpdateTaskOK) SetPayload(payload *models.Task) {
+	o.Payload = payload
 }
 
 // WriteResponse to the client
@@ -64,6 +70,11 @@ func (o *UpdateTaskUnprocessableEntity) WithPayload(payload *models.ValidationEr
 	return o
 }
 
+// SetPayload sets the payload to the update task unprocessable entity response
+func (o *UpdateTaskUnprocessableEntity) SetPayload(payload *models.ValidationError) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *UpdateTaskUnprocessableEntity) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -75,12 +86,19 @@ func (o *UpdateTaskUnprocessableEntity) WriteResponse(rw http.ResponseWriter, pr
 	}
 }
 
-/*UpdateTaskDefault update task default
+/*UpdateTaskDefault Error response
 
 swagger:response updateTaskDefault
 */
 type UpdateTaskDefault struct {
 	_statusCode int
+	/*
+	  Required: true
+	*/
+	XErrorCode string `json:"X-Error-Code"`
+
+	// In: body
+	Payload *models.Error `json:"body,omitempty"`
 }
 
 // NewUpdateTaskDefault creates UpdateTaskDefault with default headers values
@@ -100,8 +118,43 @@ func (o *UpdateTaskDefault) WithStatusCode(code int) *UpdateTaskDefault {
 	return o
 }
 
+// SetStatusCode sets the status to the update task default response
+func (o *UpdateTaskDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithXErrorCode adds the xErrorCode to the update task default response
+func (o *UpdateTaskDefault) WithXErrorCode(xErrorCode string) *UpdateTaskDefault {
+	o.XErrorCode = xErrorCode
+	return o
+}
+
+// SetXErrorCode sets the xErrorCode to the update task default response
+func (o *UpdateTaskDefault) SetXErrorCode(xErrorCode string) {
+	o.XErrorCode = xErrorCode
+}
+
+// WithPayload adds the payload to the update task default response
+func (o *UpdateTaskDefault) WithPayload(payload *models.Error) *UpdateTaskDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the update task default response
+func (o *UpdateTaskDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *UpdateTaskDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
+	// response header X-Error-Code
+	rw.Header().Add("X-Error-Code", fmt.Sprintf("%v", o.XErrorCode))
+
 	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		if err := producer.Produce(rw, o.Payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }

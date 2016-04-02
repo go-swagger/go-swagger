@@ -76,10 +76,14 @@ func NewGetTaskCommentsDefault(code int) *GetTaskCommentsDefault {
 
 /*GetTaskCommentsDefault handles this case with default header values.
 
-GetTaskCommentsDefault get task comments default
+Error response
 */
 type GetTaskCommentsDefault struct {
 	_statusCode int
+
+	XErrorCode string
+
+	Payload *models.Error
 }
 
 // Code gets the status code for the get task comments default response
@@ -88,10 +92,20 @@ func (o *GetTaskCommentsDefault) Code() int {
 }
 
 func (o *GetTaskCommentsDefault) Error() string {
-	return fmt.Sprintf("[GET /tasks/{id}/comments][%d] getTaskComments default ", o._statusCode)
+	return fmt.Sprintf("[GET /tasks/{id}/comments][%d] getTaskComments default  %+v", o._statusCode, o.Payload)
 }
 
 func (o *GetTaskCommentsDefault) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
+
+	// response header X-Error-Code
+	o.XErrorCode = response.GetHeader("X-Error-Code")
+
+	o.Payload = new(models.Error)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }

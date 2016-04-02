@@ -57,10 +57,20 @@ func (o *DestroyOneDefault) WithStatusCode(code int) *DestroyOneDefault {
 	return o
 }
 
+// SetStatusCode sets the status to the destroy one default response
+func (o *DestroyOneDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
 // WithPayload adds the payload to the destroy one default response
 func (o *DestroyOneDefault) WithPayload(payload *models.Error) *DestroyOneDefault {
 	o.Payload = payload
 	return o
+}
+
+// SetPayload sets the payload to the destroy one default response
+func (o *DestroyOneDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
 }
 
 // WriteResponse to the client

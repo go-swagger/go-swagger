@@ -114,10 +114,14 @@ func NewUpdateTaskDefault(code int) *UpdateTaskDefault {
 
 /*UpdateTaskDefault handles this case with default header values.
 
-UpdateTaskDefault update task default
+Error response
 */
 type UpdateTaskDefault struct {
 	_statusCode int
+
+	XErrorCode string
+
+	Payload *models.Error
 }
 
 // Code gets the status code for the update task default response
@@ -126,10 +130,20 @@ func (o *UpdateTaskDefault) Code() int {
 }
 
 func (o *UpdateTaskDefault) Error() string {
-	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTask default ", o._statusCode)
+	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTask default  %+v", o._statusCode, o.Payload)
 }
 
 func (o *UpdateTaskDefault) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
+
+	// response header X-Error-Code
+	o.XErrorCode = response.GetHeader("X-Error-Code")
+
+	o.Payload = new(models.Error)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }

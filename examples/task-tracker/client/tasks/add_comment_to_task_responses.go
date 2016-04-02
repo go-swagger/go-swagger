@@ -5,6 +5,7 @@ package tasks
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/go-swagger/go-swagger/client"
 	"github.com/go-swagger/go-swagger/errors"
@@ -12,6 +13,8 @@ import (
 	"github.com/go-swagger/go-swagger/httpkit/validate"
 
 	strfmt "github.com/go-swagger/go-swagger/strfmt"
+
+	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
 
 // AddCommentToTaskReader is a Reader for the AddCommentToTask structure.
@@ -69,10 +72,14 @@ func NewAddCommentToTaskDefault(code int) *AddCommentToTaskDefault {
 
 /*AddCommentToTaskDefault handles this case with default header values.
 
-AddCommentToTaskDefault add comment to task default
+Error response
 */
 type AddCommentToTaskDefault struct {
 	_statusCode int
+
+	XErrorCode string
+
+	Payload *models.Error
 }
 
 // Code gets the status code for the add comment to task default response
@@ -81,10 +88,20 @@ func (o *AddCommentToTaskDefault) Code() int {
 }
 
 func (o *AddCommentToTaskDefault) Error() string {
-	return fmt.Sprintf("[POST /tasks/{id}/comments][%d] addCommentToTask default ", o._statusCode)
+	return fmt.Sprintf("[POST /tasks/{id}/comments][%d] addCommentToTask default  %+v", o._statusCode, o.Payload)
 }
 
 func (o *AddCommentToTaskDefault) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
+
+	// response header X-Error-Code
+	o.XErrorCode = response.GetHeader("X-Error-Code")
+
+	o.Payload = new(models.Error)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }
@@ -98,17 +115,17 @@ swagger:model AddCommentToTaskBody
 */
 type AddCommentToTaskBody struct {
 
-	/* Content content
+	/* content
 
 	Required: true
 	*/
-	Content string `json:"content,omitempty"`
+	Content *string `json:"content"`
 
-	/* UserID user id
+	/* user Id
 
 	Required: true
 	*/
-	UserID int64 `json:"userId,omitempty"`
+	UserID *int64 `json:"userId"`
 }
 
 // Validate validates this add comment to task body
@@ -133,7 +150,7 @@ func (o *AddCommentToTaskBody) Validate(formats strfmt.Registry) error {
 
 func (o *AddCommentToTaskBody) validateContent(formats strfmt.Registry) error {
 
-	if err := validate.RequiredString("body"+"."+"content", "body", string(o.Content)); err != nil {
+	if err := validate.Required("body"+"."+"content", "body", o.Content); err != nil {
 		return err
 	}
 
@@ -142,7 +159,7 @@ func (o *AddCommentToTaskBody) validateContent(formats strfmt.Registry) error {
 
 func (o *AddCommentToTaskBody) validateUserID(formats strfmt.Registry) error {
 
-	if err := validate.Required("body"+"."+"userId", "body", int64(o.UserID)); err != nil {
+	if err := validate.Required("body"+"."+"userId", "body", o.UserID); err != nil {
 		return err
 	}
 

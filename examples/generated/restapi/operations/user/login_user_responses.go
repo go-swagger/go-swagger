@@ -30,6 +30,11 @@ func (o *LoginUserOK) WithPayload(payload string) *LoginUserOK {
 	return o
 }
 
+// SetPayload sets the payload to the login user o k response
+func (o *LoginUserOK) SetPayload(payload string) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *LoginUserOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 

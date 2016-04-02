@@ -42,7 +42,7 @@ type UserCard struct {
 	Read Only: true
 	Maximum: < 1000
 	*/
-	AvailableKarma *float64 `json:"availableKarma,omitempty"`
+	AvailableKarma float64 `json:"availableKarma,omitempty"`
 
 	/* A unique identifier for a user.
 
@@ -52,7 +52,7 @@ type UserCard struct {
 	Required: true
 	Read Only: true
 	*/
-	ID int64 `json:"id,omitempty"`
+	ID int64 `json:"id"`
 
 	/* The screen name for the user.
 
@@ -64,7 +64,7 @@ type UserCard struct {
 	Min Length: 3
 	Pattern: \w[\w_-]+
 	*/
-	ScreenName string `json:"screenName,omitempty"`
+	ScreenName *string `json:"screenName"`
 }
 
 // Validate validates this user card
@@ -98,7 +98,7 @@ func (m *UserCard) validateAvailableKarma(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.Maximum("availableKarma", "body", float64(*m.AvailableKarma), 1000, true); err != nil {
+	if err := validate.Maximum("availableKarma", "body", float64(m.AvailableKarma), 1000, true); err != nil {
 		return err
 	}
 
@@ -116,19 +116,19 @@ func (m *UserCard) validateID(formats strfmt.Registry) error {
 
 func (m *UserCard) validateScreenName(formats strfmt.Registry) error {
 
-	if err := validate.RequiredString("screenName", "body", string(m.ScreenName)); err != nil {
+	if err := validate.Required("screenName", "body", m.ScreenName); err != nil {
 		return err
 	}
 
-	if err := validate.MinLength("screenName", "body", string(m.ScreenName), 3); err != nil {
+	if err := validate.MinLength("screenName", "body", string(*m.ScreenName), 3); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("screenName", "body", string(m.ScreenName), 255); err != nil {
+	if err := validate.MaxLength("screenName", "body", string(*m.ScreenName), 255); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("screenName", "body", string(m.ScreenName), `\w[\w_-]+`); err != nil {
+	if err := validate.Pattern("screenName", "body", string(*m.ScreenName), `\w[\w_-]+`); err != nil {
 		return err
 	}
 

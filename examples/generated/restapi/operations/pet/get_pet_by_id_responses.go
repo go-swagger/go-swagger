@@ -26,10 +26,15 @@ func NewGetPetByIDOK() *GetPetByIDOK {
 	return &GetPetByIDOK{}
 }
 
-// WithPayload adds the payload to the get pet by id o k response
+// WithPayload adds the payload to the get pet by Id o k response
 func (o *GetPetByIDOK) WithPayload(payload *models.Pet) *GetPetByIDOK {
 	o.Payload = payload
 	return o
+}
+
+// SetPayload sets the payload to the get pet by Id o k response
+func (o *GetPetByIDOK) SetPayload(payload *models.Pet) {
+	o.Payload = payload
 }
 
 // WriteResponse to the client

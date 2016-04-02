@@ -9,27 +9,41 @@ import (
 	graceful "github.com/tylerb/graceful"
 
 	"github.com/go-swagger/go-swagger/examples/generated/restapi/operations"
+	"github.com/go-swagger/go-swagger/swag"
 )
 
 //go:generate swagger generate server -t ../.. -A Petstore -f ./swagger.yml
 
-// NewServer creates a new api petstore server
+// NewServer creates a new api petstore server but does not configure it
 func NewServer(api *operations.PetstoreAPI) *Server {
 	s := new(Server)
 	s.api = api
-	if api != nil {
-		s.handler = configureAPI(api)
-	}
 	return s
+}
+
+// ConfigureAPI configures the API and handlers. Needs to be called before Serve
+func (s *Server) ConfigureAPI() {
+	if s.api != nil {
+		s.handler = configureAPI(s.api)
+	}
+}
+
+// ConfigureFlags configures the additional flags defined by the handlers. Needs to be called before the parser.Parse
+func (s *Server) ConfigureFlags() {
+	if s.api != nil {
+		configureFlags(s.api)
+	}
 }
 
 // Server for the petstore API
 type Server struct {
-	Host string `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
-	Port int    `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`
+	Host        string `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
+	Port        int    `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`
+	httpServerL net.Listener
 
-	api     *operations.PetstoreAPI
-	handler http.Handler
+	api          *operations.PetstoreAPI
+	handler      http.Handler
+	hasListeners bool
 }
 
 // SetAPI configures the server with the specified API. Needs to be called before Serve
@@ -46,20 +60,44 @@ func (s *Server) SetAPI(api *operations.PetstoreAPI) {
 
 // Serve the api
 func (s *Server) Serve() (err error) {
+	if !s.hasListeners {
+		if err := s.Listen(); err != nil {
+			return err
+		}
+	}
 
 	httpServer := &graceful.Server{Server: new(http.Server)}
 	httpServer.Handler = s.handler
+
+	fmt.Printf("serving petstore at http://%s\n", s.httpServerL.Addr())
+	l := s.httpServerL
+	if err := httpServer.Serve(tcpKeepAliveListener{l.(*net.TCPListener)}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Listen creates the listeners for the server
+func (s *Server) Listen() error {
+	if s.hasListeners { // already done this
+		return nil
+	}
 
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.Host, s.Port))
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("serving petstore at http://%s\n", listener.Addr())
-	if err := httpServer.Serve(tcpKeepAliveListener{listener.(*net.TCPListener)}); err != nil {
+	h, p, err := swag.SplitHostPort(listener.Addr().String())
+	if err != nil {
 		return err
 	}
+	s.Host = h
+	s.Port = p
+	s.httpServerL = listener
 
+	s.hasListeners = true
 	return nil
 }
 

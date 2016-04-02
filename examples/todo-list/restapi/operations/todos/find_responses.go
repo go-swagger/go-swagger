@@ -32,6 +32,11 @@ func (o *FindOK) WithPayload(payload []*models.Item) *FindOK {
 	return o
 }
 
+// SetPayload sets the payload to the find o k response
+func (o *FindOK) SetPayload(payload []*models.Item) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *FindOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
@@ -70,10 +75,20 @@ func (o *FindDefault) WithStatusCode(code int) *FindDefault {
 	return o
 }
 
+// SetStatusCode sets the status to the find default response
+func (o *FindDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
 // WithPayload adds the payload to the find default response
 func (o *FindDefault) WithPayload(payload *models.Error) *FindDefault {
 	o.Payload = payload
 	return o
+}
+
+// SetPayload sets the payload to the find default response
+func (o *FindDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
 }
 
 // WriteResponse to the client

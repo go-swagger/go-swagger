@@ -65,6 +65,7 @@ var FuncMap template.FuncMap = map[string]interface{}{
 		return swag.ToGoName("Nr " + arg)
 	},
 	"camelize":  swag.ToJSONName,
+	"varname":   swag.ToVarName,
 	"humanize":  swag.ToHumanNameLower,
 	"snakize":   swag.ToFileName,
 	"dasherize": swag.ToCommandName,

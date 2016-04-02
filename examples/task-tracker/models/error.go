@@ -24,17 +24,17 @@ type Error struct {
 
 	Required: true
 	*/
-	Code int32 `json:"code,omitempty"`
+	Code *int32 `json:"code"`
 
 	/* an optional url for getting more help about this error
 	 */
-	HelpURL *strfmt.URI `json:"helpUrl,omitempty"`
+	HelpURL strfmt.URI `json:"helpUrl,omitempty"`
 
 	/* a human readable version of the error
 
 	Required: true
 	*/
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message"`
 }
 
 // Validate validates this error
@@ -59,7 +59,7 @@ func (m *Error) Validate(formats strfmt.Registry) error {
 
 func (m *Error) validateCode(formats strfmt.Registry) error {
 
-	if err := validate.Required("code", "body", int32(m.Code)); err != nil {
+	if err := validate.Required("code", "body", m.Code); err != nil {
 		return err
 	}
 
@@ -68,7 +68,7 @@ func (m *Error) validateCode(formats strfmt.Registry) error {
 
 func (m *Error) validateMessage(formats strfmt.Registry) error {
 
-	if err := validate.RequiredString("message", "body", string(m.Message)); err != nil {
+	if err := validate.Required("message", "body", m.Message); err != nil {
 		return err
 	}
 

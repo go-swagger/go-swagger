@@ -40,12 +40,12 @@ var reservedGoWords = []string{
 	"continue", "for", "import", "return", "var",
 }
 
-var defaultGoImports = []string{
-	"bool", "int", "int8", "int16", "int32", "int64",
-	"uint", "uint8", "uint16", "uint32", "uint64",
-	"float32", "float64", "interface{}", "string",
-	"byte", "rune",
-}
+// var defaultGoImports = []string{
+// 	"bool", "int", "int8", "int16", "int32", "int64",
+// 	"uint", "uint8", "uint16", "uint32", "uint64",
+// 	"float32", "float64", "interface{}", "string",
+// 	"byte", "rune",
+// }
 
 var reservedGoWordSet map[string]struct{}
 
@@ -101,10 +101,10 @@ type GenOpts struct {
 	WithContext       bool
 }
 
-type generatorOptions struct {
-	ModelPackage    string
-	TargetDirectory string
-}
+// type generatorOptions struct {
+// 	ModelPackage    string
+// 	TargetDirectory string
+// }
 
 func loadSpec(specFile string) (string, *spec.Document, error) {
 	// find swagger spec document, verify it exists
@@ -168,21 +168,21 @@ func writeToFile(target, name string, content []byte) error {
 	return writeFile(target, ffn, res)
 }
 
-func writeToTestFile(target, name string, content []byte) error {
-	ffn := swag.ToFileName(name)
-	if !strings.HasSuffix(ffn, "_test") {
-		ffn += "_test"
-	}
-	ffn += ".go"
-
-	res, err := formatGoFile(filepath.Join(target, ffn), content)
-	if err != nil {
-		log.Println(err)
-		return writeFile(target, ffn, content)
-	}
-
-	return writeFile(target, ffn, res)
-}
+// func writeToTestFile(target, name string, content []byte) error {
+// 	ffn := swag.ToFileName(name)
+// 	if !strings.HasSuffix(ffn, "_test") {
+// 		ffn += "_test"
+// 	}
+// 	ffn += ".go"
+//
+// 	res, err := formatGoFile(filepath.Join(target, ffn), content)
+// 	if err != nil {
+// 		log.Println(err)
+// 		return writeFile(target, ffn, content)
+// 	}
+//
+// 	return writeFile(target, ffn, res)
+// }
 
 func writeFile(target, ffn string, content []byte) error {
 	if err := os.MkdirAll(target, 0755); err != nil {
@@ -190,21 +190,6 @@ func writeFile(target, ffn string, content []byte) error {
 	}
 
 	return ioutil.WriteFile(filepath.Join(target, ffn), content, 0644)
-}
-
-func commentedLines(str string) string {
-	lines := strings.Split(str, "\n")
-	var commented []string
-	for _, line := range lines {
-		if strings.TrimSpace(line) != "" {
-			if !strings.HasPrefix(strings.TrimSpace(line), "//") {
-				commented = append(commented, "// "+line)
-			} else {
-				commented = append(commented, line)
-			}
-		}
-	}
-	return strings.Join(commented, "\n")
 }
 
 func gatherModels(specDoc *spec.Document, modelNames []string) (map[string]spec.Schema, error) {

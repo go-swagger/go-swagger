@@ -26,7 +26,7 @@ type Comment struct {
 
 	Required: true
 	*/
-	Content string `json:"content,omitempty"`
+	Content *string `json:"content"`
 
 	/* The time at which this comment was created.
 
@@ -34,13 +34,13 @@ type Comment struct {
 
 	Read Only: true
 	*/
-	CreatedAt *strfmt.DateTime `json:"createdAt,omitempty"`
+	CreatedAt strfmt.DateTime `json:"createdAt,omitempty"`
 
-	/* User user
+	/* user
 
 	Required: true
 	*/
-	User *UserCard `json:"user,omitempty"`
+	User *UserCard `json:"user"`
 }
 
 // Validate validates this comment
@@ -65,7 +65,7 @@ func (m *Comment) Validate(formats strfmt.Registry) error {
 
 func (m *Comment) validateContent(formats strfmt.Registry) error {
 
-	if err := validate.RequiredString("content", "body", string(m.Content)); err != nil {
+	if err := validate.Required("content", "body", m.Content); err != nil {
 		return err
 	}
 

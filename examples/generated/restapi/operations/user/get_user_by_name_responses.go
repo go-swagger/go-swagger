@@ -32,6 +32,11 @@ func (o *GetUserByNameOK) WithPayload(payload *models.User) *GetUserByNameOK {
 	return o
 }
 
+// SetPayload sets the payload to the get user by name o k response
+func (o *GetUserByNameOK) SetPayload(payload *models.User) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *GetUserByNameOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 

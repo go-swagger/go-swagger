@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	spec "github.com/go-swagger/go-swagger/spec"
 	flags "github.com/jessevdk/go-flags"
@@ -33,13 +34,16 @@ This document contains all possible values for a swagger definition.
 This means that it exercises the framework relatively well.
 `
 
+	server.ConfigureFlags()
 	for _, optsGroup := range api.CommandLineOptionsGroups {
 		parser.AddGroup(optsGroup.ShortDescription, optsGroup.LongDescription, optsGroup.Options)
 	}
 
 	if _, err := parser.Parse(); err != nil {
-		log.Fatalln(err)
+		os.Exit(1)
 	}
+
+	server.ConfigureAPI()
 
 	if err := server.Serve(); err != nil {
 		log.Fatalln(err)

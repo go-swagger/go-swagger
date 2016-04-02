@@ -48,6 +48,7 @@ func (c *Client) Execute(args []string) error {
 		IncludeHandler:    !c.SkipOperations,
 		IncludeParameters: !c.SkipOperations,
 		IncludeResponses:  !c.SkipOperations,
+		IncludeSupport:    true,
 		TemplateDir:       string(c.TemplateDir),
 		DumpData:          c.DumpData,
 	}

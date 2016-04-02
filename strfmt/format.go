@@ -113,6 +113,8 @@ func (f *defaultFormats) Add(name string, strfmt Format, validator Validator) bo
 
 // GetType gets the type for the specified name
 func (f *defaultFormats) GetType(name string) (reflect.Type, bool) {
+	f.Lock()
+	defer f.Unlock()
 	nme := f.normalizeName(name)
 	for _, v := range f.data {
 		if v.Name == nme {
@@ -161,6 +163,8 @@ func (f *defaultFormats) DelByFormat(strfmt Format) bool {
 
 // ContainsName returns true if this registry contains the specified name
 func (f *defaultFormats) ContainsName(name string) bool {
+	f.Lock()
+	defer f.Unlock()
 	nme := f.normalizeName(name)
 	for _, v := range f.data {
 		if v.Name == nme {
@@ -172,6 +176,8 @@ func (f *defaultFormats) ContainsName(name string) bool {
 
 // ContainsFormat returns true if this registry contains the specified format
 func (f *defaultFormats) ContainsFormat(strfmt Format) bool {
+	f.Lock()
+	defer f.Unlock()
 	tpe := reflect.TypeOf(strfmt)
 	if tpe.Kind() == reflect.Ptr {
 		tpe = tpe.Elem()
@@ -186,6 +192,8 @@ func (f *defaultFormats) ContainsFormat(strfmt Format) bool {
 }
 
 func (f *defaultFormats) Validates(name, data string) bool {
+	f.Lock()
+	defer f.Unlock()
 	nme := f.normalizeName(name)
 	for _, v := range f.data {
 		if v.Name == nme {
@@ -196,6 +204,8 @@ func (f *defaultFormats) Validates(name, data string) bool {
 }
 
 func (f *defaultFormats) Parse(name, data string) (interface{}, error) {
+	f.Lock()
+	defer f.Unlock()
 	nme := f.normalizeName(name)
 	for _, v := range f.data {
 		if v.Name == nme {

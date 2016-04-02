@@ -114,10 +114,14 @@ func NewGetTaskDetailsDefault(code int) *GetTaskDetailsDefault {
 
 /*GetTaskDetailsDefault handles this case with default header values.
 
-GetTaskDetailsDefault get task details default
+Error response
 */
 type GetTaskDetailsDefault struct {
 	_statusCode int
+
+	XErrorCode string
+
+	Payload *models.Error
 }
 
 // Code gets the status code for the get task details default response
@@ -126,10 +130,20 @@ func (o *GetTaskDetailsDefault) Code() int {
 }
 
 func (o *GetTaskDetailsDefault) Error() string {
-	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetails default ", o._statusCode)
+	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetails default  %+v", o._statusCode, o.Payload)
 }
 
 func (o *GetTaskDetailsDefault) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
+
+	// response header X-Error-Code
+	o.XErrorCode = response.GetHeader("X-Error-Code")
+
+	o.Payload = new(models.Error)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }

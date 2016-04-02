@@ -40,6 +40,15 @@ func (e Extensions) GetString(key string) (string, bool) {
 	return "", false
 }
 
+// GetBool gets a string value from the extensions
+func (e Extensions) GetBool(key string) (bool, bool) {
+	if v, ok := e[strings.ToLower(key)]; ok {
+		str, ok := v.(bool)
+		return str, ok
+	}
+	return false, false
+}
+
 // GetStringSlice gets a string value from the extensions
 func (e Extensions) GetStringSlice(key string) ([]string, bool) {
 	if v, ok := e[strings.ToLower(key)]; ok {
@@ -60,10 +69,12 @@ func (e Extensions) GetStringSlice(key string) ([]string, bool) {
 	return nil, false
 }
 
+// VendorExtensible composition block.
 type VendorExtensible struct {
 	Extensions Extensions
 }
 
+// AddExtension adds an extension to this extensible object
 func (v *VendorExtensible) AddExtension(key string, value interface{}) {
 	if value == nil {
 		return
@@ -74,6 +85,7 @@ func (v *VendorExtensible) AddExtension(key string, value interface{}) {
 	v.Extensions.Add(key, value)
 }
 
+// MarshalJSON marshals the extensions to json
 func (v VendorExtensible) MarshalJSON() ([]byte, error) {
 	toser := make(map[string]interface{})
 	for k, v := range v.Extensions {
@@ -85,6 +97,7 @@ func (v VendorExtensible) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toser)
 }
 
+// UnmarshalJSON for this extensible object
 func (v *VendorExtensible) UnmarshalJSON(data []byte) error {
 	var d map[string]interface{}
 	if err := json.Unmarshal(data, &d); err != nil {
@@ -102,6 +115,7 @@ func (v *VendorExtensible) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// InfoProps the properties for an info definition
 type InfoProps struct {
 	Description    string       `json:"description,omitempty"`
 	Title          string       `json:"title,omitempty"`

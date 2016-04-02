@@ -26,10 +26,15 @@ func NewGetOrderByIDOK() *GetOrderByIDOK {
 	return &GetOrderByIDOK{}
 }
 
-// WithPayload adds the payload to the get order by id o k response
+// WithPayload adds the payload to the get order by Id o k response
 func (o *GetOrderByIDOK) WithPayload(payload *models.Order) *GetOrderByIDOK {
 	o.Payload = payload
 	return o
+}
+
+// SetPayload sets the payload to the get order by Id o k response
+func (o *GetOrderByIDOK) SetPayload(payload *models.Order) {
+	o.Payload = payload
 }
 
 // WriteResponse to the client

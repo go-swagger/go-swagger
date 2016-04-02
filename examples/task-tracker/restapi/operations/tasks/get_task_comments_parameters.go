@@ -30,6 +30,10 @@ func NewGetTaskCommentsParams() GetTaskCommentsParams {
 //
 // swagger:parameters getTaskComments
 type GetTaskCommentsParams struct {
+
+	// HTTP Request Object
+	HTTPRequest *http.Request
+
 	/*The id of the item
 	  Required: true
 	  In: path
@@ -50,6 +54,8 @@ type GetTaskCommentsParams struct {
 // for simple values it will use straight method calls
 func (o *GetTaskCommentsParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+	o.HTTPRequest = r
+
 	qs := httpkit.Values(r.URL.Query())
 
 	rID, rhkID, _ := route.Params.GetOK("id")

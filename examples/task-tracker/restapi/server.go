@@ -12,32 +12,47 @@ import (
 	graceful "github.com/tylerb/graceful"
 
 	"github.com/go-swagger/go-swagger/examples/task-tracker/restapi/operations"
+	"github.com/go-swagger/go-swagger/swag"
 )
 
 //go:generate swagger generate server -t ../.. -A TaskTracker -f ./swagger.yml
 
-// NewServer creates a new api task tracker server
+// NewServer creates a new api task tracker server but does not configure it
 func NewServer(api *operations.TaskTrackerAPI) *Server {
 	s := new(Server)
 	s.api = api
-	if api != nil {
-		s.handler = configureAPI(api)
-	}
 	return s
+}
+
+// ConfigureAPI configures the API and handlers. Needs to be called before Serve
+func (s *Server) ConfigureAPI() {
+	if s.api != nil {
+		s.handler = configureAPI(s.api)
+	}
+}
+
+// ConfigureFlags configures the additional flags defined by the handlers. Needs to be called before the parser.Parse
+func (s *Server) ConfigureFlags() {
+	if s.api != nil {
+		configureFlags(s.api)
+	}
 }
 
 // Server for the task tracker API
 type Server struct {
-	Host string `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
-	Port int    `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`
+	Host        string `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
+	Port        int    `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`
+	httpServerL net.Listener
 
 	TLSHost           string         `long:"tls-host" description:"the IP to listen on for tls, when not specified it's the same as --host" env:"TLS_HOST"`
 	TLSPort           int            `long:"tls-port" description:"the port to listen on for secure connections, defaults to a random value" env:"TLS_PORT"`
 	TLSCertificate    flags.Filename `long:"tls-certificate" description:"the certificate to use for secure connections" required:"true" env:"TLS_CERTIFICATE"`
 	TLSCertificateKey flags.Filename `long:"tls-key" description:"the private key to use for secure conections" required:"true" env:"TLS_PRIVATE_KEY"`
+	httpsServerL      net.Listener
 
-	api     *operations.TaskTrackerAPI
-	handler http.Handler
+	api          *operations.TaskTrackerAPI
+	handler      http.Handler
+	hasListeners bool
 }
 
 // SetAPI configures the server with the specified API. Needs to be called before Serve
@@ -54,21 +69,21 @@ func (s *Server) SetAPI(api *operations.TaskTrackerAPI) {
 
 // Serve the api
 func (s *Server) Serve() (err error) {
+	if !s.hasListeners {
+		if err := s.Listen(); err != nil {
+			return err
+		}
+	}
 
 	httpServer := &graceful.Server{Server: new(http.Server)}
 	httpServer.Handler = s.handler
 
-	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.Host, s.Port))
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("serving task tracker at http://%s\n", listener.Addr())
-	go func() {
-		if err := httpServer.Serve(tcpKeepAliveListener{listener.(*net.TCPListener)}); err != nil {
+	fmt.Printf("serving task tracker at http://%s\n", s.httpServerL.Addr())
+	go func(l net.Listener) {
+		if err := httpServer.Serve(tcpKeepAliveListener{l.(*net.TCPListener)}); err != nil {
 			log.Fatalln(err)
 		}
-	}()
+	}(s.httpServerL)
 
 	httpsServer := &graceful.Server{Server: new(http.Server)}
 	httpsServer.Handler = s.handler
@@ -78,9 +93,40 @@ func (s *Server) Serve() (err error) {
 	httpsServer.TLSConfig.MinVersion = tls.VersionTLS11
 	httpsServer.TLSConfig.Certificates = make([]tls.Certificate, 1)
 	httpsServer.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(string(s.TLSCertificate), string(s.TLSCertificateKey))
+
+	configureTLS(httpsServer.TLSConfig)
+
 	if err != nil {
 		return err
 	}
+
+	fmt.Printf("serving task tracker at https://%s\n", s.httpsServerL.Addr())
+	wrapped := tls.NewListener(tcpKeepAliveListener{s.httpsServerL.(*net.TCPListener)}, httpsServer.TLSConfig)
+	if err := httpsServer.Serve(wrapped); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Listen creates the listeners for the server
+func (s *Server) Listen() error {
+	if s.hasListeners { // already done this
+		return nil
+	}
+
+	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.Host, s.Port))
+	if err != nil {
+		return err
+	}
+
+	h, p, err := swag.SplitHostPort(listener.Addr().String())
+	if err != nil {
+		return err
+	}
+	s.Host = h
+	s.Port = p
+	s.httpServerL = listener
 
 	if s.TLSHost == "" {
 		s.TLSHost = s.Host
@@ -90,12 +136,14 @@ func (s *Server) Serve() (err error) {
 		return err
 	}
 
-	fmt.Printf("serving task tracker at https://%s\n", tlsListener.Addr())
-	wrapped := tls.NewListener(tcpKeepAliveListener{tlsListener.(*net.TCPListener)}, httpsServer.TLSConfig)
-	if err := httpsServer.Serve(wrapped); err != nil {
+	sh, sp, err := swag.SplitHostPort(tlsListener.Addr().String())
+	if err != nil {
 		return err
 	}
-
+	s.TLSHost = sh
+	s.TLSPort = sp
+	s.httpsServerL = tlsListener
+	s.hasListeners = true
 	return nil
 }
 

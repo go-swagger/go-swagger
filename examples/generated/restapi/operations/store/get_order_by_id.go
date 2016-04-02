@@ -9,7 +9,7 @@ import (
 	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
 )
 
-// GetOrderByIDHandlerFunc turns a function with the right signature into a get order by id handler
+// GetOrderByIDHandlerFunc turns a function with the right signature into a get order by Id handler
 type GetOrderByIDHandlerFunc func(GetOrderByIDParams) middleware.Responder
 
 // Handle executing the request and returning a response
@@ -17,12 +17,12 @@ func (fn GetOrderByIDHandlerFunc) Handle(params GetOrderByIDParams) middleware.R
 	return fn(params)
 }
 
-// GetOrderByIDHandler interface for that can handle valid get order by id params
+// GetOrderByIDHandler interface for that can handle valid get order by Id params
 type GetOrderByIDHandler interface {
 	Handle(GetOrderByIDParams) middleware.Responder
 }
 
-// NewGetOrderByID creates a new http.Handler for the get order by id operation
+// NewGetOrderByID creates a new http.Handler for the get order by Id operation
 func NewGetOrderByID(ctx *middleware.Context, handler GetOrderByIDHandler) *GetOrderByID {
 	return &GetOrderByID{Context: ctx, Handler: handler}
 }

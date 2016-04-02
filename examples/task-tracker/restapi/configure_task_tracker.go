@@ -1,6 +1,7 @@
 package restapi
 
 import (
+	"crypto/tls"
 	"net/http"
 
 	errors "github.com/go-swagger/go-swagger/errors"
@@ -13,6 +14,10 @@ import (
 
 // This file is safe to edit. Once it exists it will not be overwritten
 
+func configureFlags(api *operations.TaskTrackerAPI) {
+	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
+}
+
 func configureAPI(api *operations.TaskTrackerAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
@@ -21,12 +26,12 @@ func configureAPI(api *operations.TaskTrackerAPI) http.Handler {
 
 	api.JSONProducer = httpkit.JSONProducer()
 
-	api.TokenHeaderAuth = func(token string) (interface{}, error) {
-		return nil, errors.NotImplemented("api key auth (token_header) X-Token from header has not yet been implemented")
-	}
-
 	api.APIKeyAuth = func(token string) (interface{}, error) {
 		return nil, errors.NotImplemented("api key auth (api_key) token from query has not yet been implemented")
+	}
+
+	api.TokenHeaderAuth = func(token string) (interface{}, error) {
+		return nil, errors.NotImplemented("api key auth (token_header) X-Token from header has not yet been implemented")
 	}
 
 	api.TasksAddCommentToTaskHandler = tasks.AddCommentToTaskHandlerFunc(func(params tasks.AddCommentToTaskParams, principal interface{}) middleware.Responder {
@@ -55,9 +60,13 @@ func configureAPI(api *operations.TaskTrackerAPI) http.Handler {
 	})
 
 	api.ServerShutdown = func() {}
-	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
+}
+
+// The TLS configuration before HTTPS server starts.
+func configureTLS(tlsConfig *tls.Config) {
+	// Make all necessary changes to the TLS configuration here.
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
