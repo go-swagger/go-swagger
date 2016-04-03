@@ -552,13 +552,12 @@ func nullableExtension(ext spec.Extensions) *bool {
 }
 
 func boolExtension(ext spec.Extensions, key string) *bool {
-	var res *bool
 	if v, ok := ext[key]; ok {
 		if bb, ok := v.(bool); ok {
-			res = &bb
+			return &bb
 		}
 	}
-	return res
+	return nil
 }
 
 func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequired bool) (result resolvedType, err error) {
