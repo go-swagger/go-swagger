@@ -67,16 +67,16 @@ type builtinVal struct {
 }
 
 func nullableExt() spec.Extensions {
-	return map[string]interface{}{"x-nullable": true}
+	return spec.Extensions{"x-nullable": true}
 }
 func isNullableExt() spec.Extensions {
-	return map[string]interface{}{"x-isnullable": true}
+	return spec.Extensions{"x-isnullable": true}
 }
 func notNullableExt() spec.Extensions {
-	return map[string]interface{}{"x-nullable": false}
+	return spec.Extensions{"x-nullable": false}
 }
 func isNotNullableExt() spec.Extensions {
-	return map[string]interface{}{"x-isnullable": false}
+	return spec.Extensions{"x-isnullable": false}
 }
 
 var boolPointerVals = []builtinVal{
@@ -95,13 +95,13 @@ var boolPointerVals = []builtinVal{
 	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: false, ReadOnly: false, Extensions: isNullableExt()},
 	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: true, ReadOnly: true, Extensions: isNullableExt()},
 	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: true, Required: true, ReadOnly: true, Extensions: isNullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: true, Required: false, ReadOnly: false, Extensions: notNullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: true, ReadOnly: false, Extensions: notNullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: true, Required: false, ReadOnly: false, Extensions: notNullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: true, ReadOnly: false, Extensions: notNullableExt()},
 	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: false, ReadOnly: false, Extensions: notNullableExt()},
 	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: true, ReadOnly: true, Extensions: notNullableExt()},
 	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: true, Required: true, ReadOnly: true, Extensions: notNullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: true, Required: false, ReadOnly: false, Extensions: isNotNullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: true, ReadOnly: false, Extensions: isNotNullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: true, Required: false, ReadOnly: false, Extensions: isNotNullableExt()},
+	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: true, ReadOnly: false, Extensions: isNotNullableExt()},
 	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: false, ReadOnly: false, Extensions: isNotNullableExt()},
 	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: true, ReadOnly: true, Extensions: isNotNullableExt()},
 	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: true, Required: true, ReadOnly: true, Extensions: isNotNullableExt()},
@@ -566,7 +566,10 @@ func assertBuiltinVal(t testing.TB, resolver *typeResolver, aliased bool, i int,
 }
 
 func assertBuiltinSliceElem(t testing.TB, resolver *typeResolver, aliased bool, i int, val builtinVal) bool {
-	val.Nullable = val.Extensions != nil && (boolExtension(val.Extensions, xIsNullable) || boolExtension(val.Extensions, xNullable))
+	val.Nullable = false
+	if nullableExtension(val.Extensions) != nil {
+		val.Nullable = *nullableExtension(val.Extensions)
+	}
 	sliceType := "[]" + val.Expected
 	if val.Nullable {
 		sliceType = "[]*" + val.Expected
@@ -623,7 +626,10 @@ func assertBuiltinSliceElem(t testing.TB, resolver *typeResolver, aliased bool, 
 }
 
 func assertBuiltinAdditionalPropertiesElem(t testing.TB, resolver *typeResolver, aliased bool, i int, val builtinVal) bool {
-	val.Nullable = val.Extensions != nil && (boolExtension(val.Extensions, xIsNullable) || boolExtension(val.Extensions, xNullable))
+	val.Nullable = false
+	if nullableExtension(val.Extensions) != nil {
+		val.Nullable = *nullableExtension(val.Extensions)
+	}
 	sliceType := "map[string]" + val.Expected
 	if val.Nullable {
 		sliceType = "map[string]*" + val.Expected
