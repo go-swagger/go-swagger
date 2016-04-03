@@ -489,15 +489,19 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 }
 
 func nullableBool(schema *spec.Schema, isRequired bool) bool {
+	if nullable := nullableExtension(schema.Extensions); nullable != nil {
+		return *nullable
+	}
 	required := isRequired && schema.Default == nil && !schema.ReadOnly
 	optional := !isRequired && (schema.Default != nil || schema.ReadOnly)
-	extension := boolExtension(schema.Extensions, xIsNullable) || boolExtension(schema.Extensions, xNullable)
 
-	return extension || required || optional
+	return required || optional
 }
 
 func nullableNumber(schema *spec.Schema, isRequired bool) bool {
-	extension := boolExtension(schema.Extensions, xIsNullable) || boolExtension(schema.Extensions, xNullable)
+	if nullable := nullableExtension(schema.Extensions); nullable != nil {
+		return *nullable
+	}
 	hasDefault := schema.Default != nil && !swag.IsZero(schema.Default)
 
 	isMin := schema.Minimum != nil && *schema.Minimum != 0
@@ -508,36 +512,52 @@ func nullableNumber(schema *spec.Schema, isRequired bool) bool {
 	bcMinMax := (schema.Minimum != nil && schema.Maximum != nil && (*schema.Minimum < 0 && 0 < *schema.Maximum))
 
 	nullable := !schema.ReadOnly && (isRequired || (hasDefault && !(isMin || isMax || isMinMax)) || bcMin || bcMax || bcMinMax)
-	return extension || nullable
+	return nullable
 }
 
 func nullableString(schema *spec.Schema, isRequired bool) bool {
-	extension := boolExtension(schema.Extensions, xIsNullable) || boolExtension(schema.Extensions, xNullable)
+	if nullable := nullableExtension(schema.Extensions); nullable != nil {
+		return *nullable
+	}
 	hasDefault := schema.Default != nil && !swag.IsZero(schema.Default)
 
 	isMin := schema.MinLength != nil && *schema.MinLength != 0
 	bcMin := schema.MinLength != nil && *schema.MinLength == 0
 
 	nullable := !schema.ReadOnly && (isRequired || (hasDefault && !isMin) || bcMin)
-	return extension || nullable
+	return nullable
 }
 
 func nullableStrfmt(schema *spec.Schema, isRequired bool) bool {
-	extension := boolExtension(schema.Extensions, xIsNullable) || boolExtension(schema.Extensions, xNullable)
+	notBinary := schema.Format != binary
+	if nullable := nullableExtension(schema.Extensions); nullable != nil && notBinary {
+		return *nullable
+	}
 	hasDefault := schema.Default != nil && !swag.IsZero(schema.Default)
 
 	nullable := !schema.ReadOnly && (isRequired || hasDefault)
-	return schema.Format != "binary" && (extension || nullable)
+	return notBinary && nullable
 }
 
-func boolExtension(ext spec.Extensions, key string) bool {
-	if v, ok := ext[key]; ok {
-		if bb, ok := v.(bool); ok {
-			return bb
-		}
+func nullableExtension(ext spec.Extensions) *bool {
+	if ext == nil {
+		return nil
 	}
 
-	return false
+	if boolPtr := boolExtension(ext, xNullable); boolPtr != nil {
+		return boolPtr
+	}
+
+	return boolExtension(ext, xIsNullable)
+}
+
+func boolExtension(ext spec.Extensions, key string) *bool {
+	if v, ok := ext[key]; ok {
+		if bb, ok := v.(bool); ok {
+			return &bb
+		}
+	}
+	return nil
 }
 
 func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequired bool) (result resolvedType, err error) {
