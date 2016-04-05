@@ -110,7 +110,7 @@ func templatesAdditionalpropertiesserializerGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/additionalpropertiesserializer.gotmpl", size: 2080, mode: os.FileMode(420), modTime: time.Unix(1459867115, 0)}
+	info := bindataFileInfo{name: "templates/additionalpropertiesserializer.gotmpl", size: 2080, mode: os.FileMode(420), modTime: time.Unix(1459869015, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -310,7 +310,7 @@ func templatesSchemabodyGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/schemabody.gotmpl", size: 8544, mode: os.FileMode(420), modTime: time.Unix(1459748465, 0)}
+	info := bindataFileInfo{name: "templates/schemabody.gotmpl", size: 8544, mode: os.FileMode(420), modTime: time.Unix(1459869015, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

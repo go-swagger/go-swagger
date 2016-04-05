@@ -1613,6 +1613,29 @@ func TestGenModel_Issue398(t *testing.T) {
 	}
 }
 
+func TestGenModel_Issue458(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "newProfile"
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("action_item.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, "ID *int64 `json:\"id\"`", res)
+					assertInCode(t, "validate.Required(\"id\", \"body\", m.ID)", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
 func TestGenModel_Issue454(t *testing.T) {
 	specDoc, err := spec.Load("../fixtures/bugs/454/swagger.yml")
 	if assert.NoError(t, err) {

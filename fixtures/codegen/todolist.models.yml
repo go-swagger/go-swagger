@@ -25,6 +25,15 @@ paths:
           description: Generic Out
 
 definitions:
+  newProfile:
+    type: object
+    required:
+      - id
+    properties:
+      id:
+        type: integer
+        x-nullable: true
+
   flag:
     type: string
     minLength: 1
