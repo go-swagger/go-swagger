@@ -56,7 +56,7 @@ build_script:
   - echo %GOPATH%
 
 test_script:
-  - ps: go test -v $(go list ./... | sls -n vendor)
+  - ps: "go test -v $(go list ./... | sls -n vendor) 2>&1"
 
 #artifacts:
 #  - path: '%GOPATH%\bin\*.exe'
