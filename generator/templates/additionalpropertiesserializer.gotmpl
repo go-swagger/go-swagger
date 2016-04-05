@@ -40,8 +40,13 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(data []byte) error
 
 // MarshalJSON marshals this object with additional properties into a JSON object
 func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
+  var stage1 {{ template "withoutAdditionalBody" . }}
+  {{ range .Properties }}
+  stage1.{{ pascalize .Name }} = {{ .ValueExpression }}
+  {{ end }}
+
   // make JSON object for known properties
-  props, err := json.Marshal({{ .ReceiverName }})
+  props, err := json.Marshal(stage1)
   if err != nil {
     return nil, err
   }

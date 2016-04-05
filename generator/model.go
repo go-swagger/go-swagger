@@ -357,7 +357,7 @@ func (sg *schemaGenContext) NewAdditionalItems(schema *spec.Schema) *schemaGenCo
 
 func (sg *schemaGenContext) NewTupleElement(schema *spec.Schema, index int) *schemaGenContext {
 	if Debug {
-		log.Printf("New Tuple element\n")
+		log.Printf("New tuple element\n")
 	}
 
 	pg := sg.shallowClone()
@@ -434,7 +434,7 @@ func (sg *schemaGenContext) NewCompositionBranch(schema spec.Schema, index int) 
 
 func (sg *schemaGenContext) NewAdditionalProperty(schema spec.Schema) *schemaGenContext {
 	if Debug {
-		log.Printf("new additional property %s", sg.Name)
+		log.Printf("new additional property %s (expr: %s)", sg.Name, sg.ValueExpr)
 	}
 	pg := sg.shallowClone()
 	pg.Schema = schema
@@ -820,7 +820,7 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 	}
 
 	if !sg.GenSchema.IsMap && (sg.GenSchema.IsAdditionalProperties && sg.Named) {
-		sg.GenSchema.ValueExpression += "." + sg.GenSchema.Name
+		sg.GenSchema.ValueExpression += "." + swag.ToGoName(sg.GenSchema.Name)
 		comprop := sg.NewAdditionalProperty(*addp.Schema)
 		comprop.Required = true
 		if err := comprop.makeGenSchema(); err != nil {
