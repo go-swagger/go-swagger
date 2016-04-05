@@ -375,7 +375,8 @@ func TestGenerateModel_NotaWithName(t *testing.T) {
 				assertInCode(t, "Name *string `json:\"name\"`", res)
 				assertInCode(t, k+") UnmarshalJSON", res)
 				assertInCode(t, k+") MarshalJSON", res)
-				assertInCode(t, "json.Marshal(m)", res)
+				assertInCode(t, "json.Marshal(stage1)", res)
+				assertInCode(t, "stage1.Name = m.Name", res)
 				assertInCode(t, "json.Marshal(m."+k+")", res)
 				assertInCode(t, "json.Unmarshal(data, &stage1)", res)
 				assertInCode(t, "json.Unmarshal(data, &stage2)", res)
@@ -641,7 +642,8 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 					assertInCode(t, "Name *string `json:\"name\"`", res)
 					assertInCode(t, k+"Data) UnmarshalJSON", res)
 					assertInCode(t, k+"Data) MarshalJSON", res)
-					assertInCode(t, "json.Marshal(m)", res)
+					assertInCode(t, "json.Marshal(stage1)", res)
+					assertInCode(t, "stage1.Name = m.Name", res)
 					assertInCode(t, "json.Marshal(m."+k+"Data)", res)
 					assertInCode(t, "json.Unmarshal(data, &stage1)", res)
 					assertInCode(t, "json.Unmarshal(data, &stage2)", res)
@@ -1586,30 +1588,30 @@ func TestGenModel_Issue300(t *testing.T) {
 	}
 }
 
-// func TestGenModel_Issue398(t *testing.T) {
-// 	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
-// 	if assert.NoError(t, err) {
-// 		definitions := specDoc.Spec().Definitions
-// 		k := "Property"
-// 		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc)
-// 		if assert.NoError(t, err) {
-// 			buf := bytes.NewBuffer(nil)
-// 			err := modelTemplate.Execute(buf, genModel)
-// 			if assert.NoError(t, err) {
-// 				ct, err := formatGoFile("action_item.go", buf.Bytes())
-// 				if assert.NoError(t, err) {
-// 					res := string(ct)
-// 					assertInCode(t, "Computed bool `json:\"computed\"`", res)
-// 					assertInCode(t, "Intval *int64 `json:\"intval,omitempty\"`", res)
-// 					assertInCode(t, "PropType *string `json:\"propType,omitempty\"`", res)
-// 					assertInCode(t, "Strval *string `json:\"strval,omitempty\"`", res)
-// 				} else {
-// 					fmt.Println(buf.String())
-// 				}
-// 			}
-// 		}
-// 	}
-// }
+func TestGenModel_Issue398(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "Property"
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("action_item.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, "Computed bool `json:\"computed,omitempty\"`", res)
+					assertInCode(t, "Intval *int64 `json:\"intval\"`", res)
+					assertInCode(t, "PropType *string `json:\"propType\"`", res)
+					assertInCode(t, "Strval *string `json:\"strval\"`", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
 
 func TestGenModel_Issue454(t *testing.T) {
 	specDoc, err := spec.Load("../fixtures/bugs/454/swagger.yml")
@@ -1624,8 +1626,9 @@ func TestGenModel_Issue454(t *testing.T) {
 				ct, err := formatGoFile("generic_resource.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
+					assertInCode(t, "json.Marshal(stage1)", res)
+					assertInCode(t, "stage1.Meta = m.Meta", res)
 					assertInCode(t, "json.Marshal(m.GenericResource)", res)
-					// assertInCode(t, "Nr16x16 *string `json:\"16x16,omitempty\"`", res)
 				}
 			}
 		}
