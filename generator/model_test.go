@@ -1610,3 +1610,24 @@ func TestGenModel_Issue300(t *testing.T) {
 // 		}
 // 	}
 // }
+
+func TestGenModel_Issue454(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/bugs/454/swagger.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["genericResource"]
+		genModel, err := makeGenDefinition("genericResource", "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("generic_resource.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, "json.Marshal(m.GenericResource)", res)
+					// assertInCode(t, "Nr16x16 *string `json:\"16x16,omitempty\"`", res)
+				}
+			}
+		}
+	}
+}

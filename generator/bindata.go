@@ -130,7 +130,7 @@ func templatesClientClientGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/client/client.gotmpl", size: 2525, mode: os.FileMode(420), modTime: time.Unix(1458397471, 0)}
+	info := bindataFileInfo{name: "templates/client/client.gotmpl", size: 2525, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -150,7 +150,7 @@ func templatesClientFacadeGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/client/facade.gotmpl", size: 1964, mode: os.FileMode(420), modTime: time.Unix(1456115435, 0)}
+	info := bindataFileInfo{name: "templates/client/facade.gotmpl", size: 1964, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -170,7 +170,7 @@ func templatesClientParameterGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/client/parameter.gotmpl", size: 6841, mode: os.FileMode(420), modTime: time.Unix(1458397471, 0)}
+	info := bindataFileInfo{name: "templates/client/parameter.gotmpl", size: 6841, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -190,7 +190,7 @@ func templatesClientResponseGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/client/response.gotmpl", size: 5311, mode: os.FileMode(420), modTime: time.Unix(1458397471, 0)}
+	info := bindataFileInfo{name: "templates/client/response.gotmpl", size: 5311, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -210,7 +210,7 @@ func templatesDocstringGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/docstring.gotmpl", size: 190, mode: os.FileMode(420), modTime: time.Unix(1458397471, 0)}
+	info := bindataFileInfo{name: "templates/docstring.gotmpl", size: 190, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -230,7 +230,7 @@ func templatesHeaderGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/header.gotmpl", size: 400, mode: os.FileMode(420), modTime: time.Unix(1456115435, 0)}
+	info := bindataFileInfo{name: "templates/header.gotmpl", size: 400, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -250,7 +250,7 @@ func templatesModelGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/model.gotmpl", size: 639, mode: os.FileMode(420), modTime: time.Unix(1458397471, 0)}
+	info := bindataFileInfo{name: "templates/model.gotmpl", size: 639, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -290,12 +290,12 @@ func templatesSchemaGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/schema.gotmpl", size: 6016, mode: os.FileMode(420), modTime: time.Unix(1458397471, 0)}
+	info := bindataFileInfo{name: "templates/schema.gotmpl", size: 6016, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
 
-var _templatesSchemabodyGotmpl = []byte("\x1f\x8b\x08\x00\x00\x09\x6e\x88\x00\xff\xec\x58\x49\x6f\xd4\x30\x14\xbe\xf3\x2b\xac\xa8\x87\xb6\x82\xf4\xce\x6d\xaa\xb2\xcc\x05\x10\xad\xb8\x54\x48\x35\xb1\xa7\x35\x4a\xec\x60\x3b\xc0\x30\x9a\xff\x8e\x97\x2c\x8e\x27\x5b\x4b\x0e\x9d\xe0\x5b\x3a\x7e\x7e\xcb\xf7\xde\xfb\x3e\xab\xbb\x1d\x40\x78\x43\x28\x06\x91\x48\x1e\x70\x06\x2f\x19\xda\x46\x60\xbf\x17\x92\x17\x89\x04\xbb\x17\x00\x28\x1b\x0e\xe9\x3d\x06\xf1\x2a\x4d\x3f\x6e\xd4\xa1\xfd\x91\x6c\x00\xe3\xe0\x14\x52\x04\x4e\xe2\xb5\xb8\x2e\xbe\xdd\x6c\x73\x65\xb5\x16\x97\x50\xe0\xea\xfb\xcd\xef\x9c\x71\x89\xd1\x99\xfe\x63\x45\x19\xdd\x66\xac\x10\xca\x49\xe3\xf6\x13\x67\x39\xe6\x92\x60\xe1\xfa\x56\x39\x9d\xc4\x57\x44\x24\x9c\x64\x84\x42\xc9\xf8\x5b\x82\x53\x04\xe2\x0f\x30\xc3\xf6\x7e\x99\x01\x65\xd2\x64\xd0\x84\x1a\x4a\xea\xac\xbe\xab\x0d\x6e\x8a\x3c\x2d\xbd\x49\x9c\xe5\x29\x94\x0a\x8a\x9c\x93\x9f\x52\x1f\x6c\x74\xc4\x08\xc4\xd6\x00\xa7\xc2\x9a\xb6\x2d\x2d\x54\x9e\xa9\x8a\xdf\xbe\x33\x18\x70\x5a\xb0\xe1\x40\x14\x39\x3f\x58\x14\xeb\x43\x15\x3b\x7e\x0f\xc5\x0a\x21\x22\x09\xa3\x30\x6d\x41\x5e\x1a\xf4\x9c\x5e\x9c\x83\x56\xae\x88\x25\x2a\x11\x42\xef\xa3\xde\x2b\x1e\x98\xe6\x64\xfb\x05\xa6\x04\x41\x6d\x7d\xc5\x92\xeb\x21\x0f\xfb\x3d\x38\xbf\xa8\xe7\x40\xb7\xd2\x69\xae\x6d\x77\xd3\xda\xb2\x9d\x39\x14\x89\x0a\xf0\x07\x77\xbb\x74\x86\xa6\xe9\xc8\xa8\xa5\x81\x0f\x64\x30\xbf\xb5\x15\x7f\x6d\x15\x66\x17\x46\xe7\xd0\x8f\x04\xb8\xfb\x2e\x18\x7d\x1d\xbd\x8a\xee\x74\x3d\x4e\x93\x9c\x49\x77\x2e\xaf\x95\xfb\xe9\xa0\x57\xd6\x4f\xc2\xdb\x5c\x9e\x0d\x6a\xe3\x6d\x0c\xe5\x03\x23\x0b\xf0\xed\x24\x5c\xab\x62\x1d\x48\xdd\x29\x2f\xbf\x6d\xd8\x86\x44\x54\x01\xa7\x65\x59\xdd\xac\x64\x73\x7c\xc7\xcc\xc9\xc1\x4a\x79\xab\x64\xbe\x0f\x58\xcb\x23\xc4\x40\x47\xad\x09\xf7\x66\x3d\xd0\x90\xdf\x89\x89\x77\x8c\xfa\xcd\xce\x4a\x9e\x50\xb8\x23\xbf\x78\x66\x1a\x37\xf7\x30\x9f\x87\xa8\xf6\xd5\x4e\xb8\x8f\x2f\x5b\xc7\xd3\x5e\x5f\xb3\xbd\xb8\x3c\xe2\x5a\x3a\x33\xcd\xf3\x3e\x2a\x4f\x7d\xd8\x8e\xee\x41\x32\xb2\xf7\xdd\x7b\x18\x1e\x04\x23\x0f\x82\xff\x6d\xa7\x66\x52\xfb\xc7\x4e\xdb\x73\x96\xd8\xfe\xc1\x79\xd4\xaa\x1d\xb9\xe4\x55\x9f\x8e\xe8\xfd\x22\xf2\xa1\xda\xc1\xa0\x7c\xcf\x58\xf9\x8e\x58\xdb\x82\xa4\xcd\x25\x69\xf5\x2c\xd4\x31\xc6\x16\x68\xc2\x0e\x74\x11\x93\xc6\x4e\x41\xd0\x8f\x97\x03\x90\xae\xab\xf5\xff\x40\x43\x92\x9f\xf1\x8f\x82\x70\x93\xc5\x4b\x96\x11\xed\x46\x6e\xeb\x02\x2b\x46\x76\x15\xab\x83\x97\xc7\xb6\x62\x19\xe2\x14\x34\xe9\x50\x93\x58\x21\x83\x2c\x1d\x81\x2c\x2d\x56\xb4\xfe\x61\x23\x83\x7a\x0d\xa9\x57\x49\x57\x41\xc1\x82\x82\x2d\x4b\xc1\xfe\x06\x00\x00\xff\xff\x61\x16\xc7\xfe\xc8\x1d\x00\x00")
+var _templatesSchemabodyGotmpl = []byte("\x1f\x8b\x08\x00\x00\x09\x6e\x88\x00\xff\xec\x59\x4b\x6f\xd4\x30\x10\xbe\xf7\x57\x58\x51\x0f\x6d\x05\xe9\x9d\x5b\xab\xf2\xd8\x0b\x20\x5a\x71\xa9\x90\x6a\x62\x6f\x6b\x94\xd8\xc1\x76\x80\x65\x95\xff\x8e\x1f\x79\x38\xde\xcd\x26\x2d\x91\x68\x82\x6f\xee\x7a\x3c\xe3\xf9\x66\xe6\xfb\xac\x74\xbb\x05\x08\xaf\x09\xc5\x20\x12\xc9\x03\xce\xe0\x25\x43\x9b\x08\x94\xa5\x90\xbc\x48\x24\xd8\x1e\x01\xa0\x6c\x38\xa4\xf7\x18\xc4\x17\x69\xfa\x61\xad\x36\xed\x8f\x64\x0d\x18\x07\x27\x90\x22\x70\x1c\xaf\xc4\x75\xf1\xf5\x66\x93\x2b\xab\x95\xb8\x84\x02\xd7\xeb\xd7\xbf\x72\xc6\x25\x46\xa7\xfa\x8f\x0b\xca\xe8\x26\x63\x85\x50\x4e\x5a\xb7\x1f\x39\xcb\x31\x97\x04\x0b\xd7\xb7\xba\xd3\x71\x7c\x45\x44\xc2\x49\x46\x28\x94\x8c\xbf\x21\x38\x45\x20\x7e\x0f\x33\x6c\xcf\x57\x37\xa0\x4c\x9a\x1b\xb4\xa1\x0e\x5d\xea\xb4\x39\xab\x0d\x6e\x8a\x3c\xad\xbc\x49\x9c\xe5\x29\x94\x0a\x8a\x9c\x93\x1f\x52\x6f\xac\x75\xc4\x08\xc4\xd6\x00\xa7\xc2\x9a\x76\x2d\x2d\x54\x9e\xa9\x8a\xdf\x3d\x73\x30\xe0\xb8\x60\x87\x03\x51\xe4\xfc\x60\x51\x6c\x36\x55\xec\xf8\x1d\x14\x17\x08\x11\x49\x18\x85\x69\x07\xf2\xca\xa0\x67\xf7\xfc\x0c\x74\xee\x8a\x58\xa2\x2e\x42\xe8\x7d\xd4\x7b\xc4\x03\xd3\xec\x6c\x3e\xc3\x94\x20\xa8\xad\xaf\x58\x72\x7d\xc8\x43\x59\x82\xb3\xf3\xa6\x0f\x74\x29\x9d\xe2\xda\x72\xb7\xa5\xad\xca\x99\x43\x91\xa8\x00\xbf\xf1\x7e\x97\x4e\xd3\xb4\x15\x19\xb4\x34\xf0\x81\x0c\xe6\xb7\x36\xe3\x2f\x9d\xc4\xec\xc0\xe8\x3b\xf4\x23\x01\xee\xbe\x09\x46\x5f\x45\x2f\xa3\x3b\x9d\x8f\x53\x24\xa7\xd3\x9d\xc3\x2b\xe5\x7e\x3c\xe8\xb5\xf5\x93\xf0\x36\x87\x27\x83\xda\x78\x1b\x42\x79\xc7\xc8\x02\x7c\x3b\x0a\xd7\x3a\x59\x07\x52\xb7\xcb\xab\xb5\x0d\xdb\x92\x88\x4a\xe0\xa4\x4a\x6b\x3f\x2b\xd9\x3b\xbe\x65\x66\x67\x67\xa4\xbc\x51\x32\xeb\x1d\xd6\xf2\x08\x31\xd0\x51\xa7\xc3\xbd\x5e\x0f\x34\xe4\x57\x62\xe4\x19\xa3\x7e\x93\xb3\x92\x27\x14\x6e\xcb\x2f\x9e\x99\x86\xcd\x3d\xcc\xa7\x21\xaa\xb2\x9e\x09\xf7\xf1\x65\xf3\x78\xda\xeb\x6b\xb2\x17\x97\x47\x5c\x4b\x67\xa6\x69\xde\x47\xd5\xae\x0f\xdb\xec\x1e\x24\x03\x73\xbf\x7f\x0e\xc3\x83\x60\xe0\x41\xf0\xbf\xcd\xd4\x44\x6a\xff\xd8\x6e\x7b\xce\x12\xdb\xdf\x38\x8f\x1a\xb5\x99\x4b\x5e\xbd\x74\x44\xef\x27\x91\x0f\xf5\x0c\x06\xe5\x7b\xc6\xca\x37\x63\x6d\x0b\x92\x36\x95\xa4\x35\xbd\xd0\xc4\x18\x1a\xa0\x11\x33\xb0\x8f\x98\x34\x76\x0a\x82\x7e\xbc\x1c\x80\x74\x5e\x9d\xef\x81\x86\x24\x3f\xe1\xef\x05\xe1\xe6\x16\x2f\x58\x46\xb4\x1b\xb9\x69\x12\xac\x19\xd9\x55\xac\x3d\xbc\x3c\x34\x15\xcb\x10\xa7\xa0\x49\xbb\x9a\xc4\x0a\x19\x64\x69\x06\xb2\xb4\x58\xd1\xfa\x8b\x89\x0c\xea\x75\x48\xbd\x2a\xba\x0a\x0a\x16\x14\x6c\xe9\x0a\xd6\xba\x09\xff\xd2\x9d\xb3\x30\xf6\xb3\xdc\x3f\xff\xb6\x15\x0a\xd5\xf3\xf9\xab\xac\x17\x47\x7f\x02\x00\x00\xff\xff\xcb\xbc\xe1\xef\x60\x21\x00\x00")
 
 func templatesSchemabodyGotmplBytes() ([]byte, error) {
 	return bindataRead(
@@ -310,7 +310,7 @@ func templatesSchemabodyGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/schemabody.gotmpl", size: 7624, mode: os.FileMode(420), modTime: time.Unix(1459090680, 0)}
+	info := bindataFileInfo{name: "templates/schemabody.gotmpl", size: 8544, mode: os.FileMode(420), modTime: time.Unix(1459748465, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -330,7 +330,7 @@ func templatesSchematypeGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/schematype.gotmpl", size: 637, mode: os.FileMode(420), modTime: time.Unix(1457240526, 0)}
+	info := bindataFileInfo{name: "templates/schematype.gotmpl", size: 637, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -350,7 +350,7 @@ func templatesSchemavalidatorGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/schemavalidator.gotmpl", size: 21107, mode: os.FileMode(420), modTime: time.Unix(1459610033, 0)}
+	info := bindataFileInfo{name: "templates/schemavalidator.gotmpl", size: 21107, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -370,7 +370,7 @@ func templatesServerBuilderGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/server/builder.gotmpl", size: 9643, mode: os.FileMode(420), modTime: time.Unix(1459090680, 0)}
+	info := bindataFileInfo{name: "templates/server/builder.gotmpl", size: 9643, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -390,7 +390,7 @@ func templatesServerConfigureapiGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/server/configureapi.gotmpl", size: 3480, mode: os.FileMode(420), modTime: time.Unix(1459609784, 0)}
+	info := bindataFileInfo{name: "templates/server/configureapi.gotmpl", size: 3480, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -410,7 +410,7 @@ func templatesServerDocGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/server/doc.gotmpl", size: 1136, mode: os.FileMode(420), modTime: time.Unix(1456121199, 0)}
+	info := bindataFileInfo{name: "templates/server/doc.gotmpl", size: 1136, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -430,7 +430,7 @@ func templatesServerMainGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/server/main.gotmpl", size: 2027, mode: os.FileMode(420), modTime: time.Unix(1458397472, 0)}
+	info := bindataFileInfo{name: "templates/server/main.gotmpl", size: 2027, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -450,7 +450,7 @@ func templatesServerOperationGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/server/operation.gotmpl", size: 4048, mode: os.FileMode(420), modTime: time.Unix(1458397471, 0)}
+	info := bindataFileInfo{name: "templates/server/operation.gotmpl", size: 4048, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -470,7 +470,7 @@ func templatesServerParameterGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/server/parameter.gotmpl", size: 14226, mode: os.FileMode(420), modTime: time.Unix(1459263837, 0)}
+	info := bindataFileInfo{name: "templates/server/parameter.gotmpl", size: 14226, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -490,7 +490,7 @@ func templatesServerResponsesGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/server/responses.gotmpl", size: 4921, mode: os.FileMode(420), modTime: time.Unix(1459610075, 0)}
+	info := bindataFileInfo{name: "templates/server/responses.gotmpl", size: 4921, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -510,7 +510,7 @@ func templatesServerServerGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/server/server.gotmpl", size: 6648, mode: os.FileMode(420), modTime: time.Unix(1459263837, 0)}
+	info := bindataFileInfo{name: "templates/server/server.gotmpl", size: 6648, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -530,7 +530,7 @@ func templatesStructfieldGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/structfield.gotmpl", size: 1299, mode: os.FileMode(420), modTime: time.Unix(1459090680, 0)}
+	info := bindataFileInfo{name: "templates/structfield.gotmpl", size: 1299, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -590,7 +590,7 @@ func templatesTupleserializerGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/tupleserializer.gotmpl", size: 6848, mode: os.FileMode(420), modTime: time.Unix(1459090680, 0)}
+	info := bindataFileInfo{name: "templates/tupleserializer.gotmpl", size: 6848, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -610,7 +610,7 @@ func templatesValidationCustomformatGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/validation/customformat.gotmpl", size: 231, mode: os.FileMode(420), modTime: time.Unix(1455953094, 0)}
+	info := bindataFileInfo{name: "templates/validation/customformat.gotmpl", size: 231, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -630,7 +630,7 @@ func templatesValidationPrimitiveGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/validation/primitive.gotmpl", size: 1924, mode: os.FileMode(420), modTime: time.Unix(1458397471, 0)}
+	info := bindataFileInfo{name: "templates/validation/primitive.gotmpl", size: 1924, mode: os.FileMode(420), modTime: time.Unix(1459747654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

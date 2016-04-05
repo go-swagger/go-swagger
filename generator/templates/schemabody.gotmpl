@@ -74,3 +74,16 @@
   {{ if .AdditionalItems }}{{ if and .IsExported (not .IsSubType) }}{{ pascalize .AdditionalItems.Name }}{{ else }}{{ pascalize .AdditionalItems.Name }}Field{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
   {{ end }}
 }{{ end }}
+{{ define "withoutAdditionalBody" }}struct {
+  {{ range .AllOf }}
+  {{ if or (and $.IsSubType .IsBaseType .IsExported) .IsAnonymous }}{{ range .Properties }}
+  {{ if ne $.DiscriminatorField .Name }}{{ if or (not $.IsExported) (and $.IsSubType .IsBaseType) }}{{ if $.IsTuple }}{{ template "privtuplefield" . }}{{ else }}{{template "privstructfield" . }}{{ end }}{{ else }}{{ if $.IsTuple }}{{ template "tuplefield" . }}{{ else }}{{template "structfield" . }}{{ end }}{{ end}}{{ end }}
+  {{ end }}
+  {{ else }}
+  {{ if not (and .IsBaseType .IsExported) }}{{ .GoType }}{{ end }}{{ end }}
+  {{ end }}
+  {{range .Properties}}
+  {{ if or (not $.IsExported) (and $.IsSubType .IsBaseType) }}{{ if $.IsTuple }}{{ template "privtuplefield" . }}{{ else }}{{template "privstructfield" . }}{{ end }}{{ else }}{{ if $.IsTuple }}{{ template "tuplefield" . }}{{ else }}{{template "structfield" . }}{{ end }}{{ end}}
+  {{end}}
+}{{end}}
+
