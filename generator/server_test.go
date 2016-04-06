@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/go-swagger/go-swagger/httpkit"
@@ -75,6 +78,8 @@ func testAppGenertor(t testing.TB, specPath, name string) (*appGenerator, error)
 }
 
 func TestServer_UrlEncoded(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stderr)
 	gen, err := testAppGenertor(t, "../fixtures/codegen/simplesearch.yml", "search")
 	if assert.NoError(t, err) {
 		app, err := gen.makeCodegenApp()
@@ -94,6 +99,8 @@ func TestServer_UrlEncoded(t *testing.T) {
 }
 
 func TestServer_MultipartForm(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stderr)
 	gen, err := testAppGenertor(t, "../fixtures/codegen/shipyard.yml", "shipyard")
 	if assert.NoError(t, err) {
 		app, err := gen.makeCodegenApp()
