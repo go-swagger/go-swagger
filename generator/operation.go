@@ -53,15 +53,15 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 		method, path, operation := opRef.Method, opRef.Path, opRef.Op
 		defaultScheme := opts.DefaultScheme
 		if defaultScheme == "" {
-			defaultScheme = "http"
+			defaultScheme = sHTTP
 		}
 		defaultProduces := opts.DefaultProduces
 		if defaultProduces == "" {
-			defaultProduces = "application/json"
+			defaultProduces = httpkit.JSONMime
 		}
 		defaultConsumes := opts.DefaultConsumes
 		if defaultConsumes == "" {
-			defaultConsumes = "application/json"
+			defaultConsumes = httpkit.JSONMime
 		}
 
 		apiPackage := mangleName(swag.ToFileName(opts.APIPackage), "api")
@@ -86,6 +86,7 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 			DumpData:             opts.DumpData,
 			DefaultScheme:        defaultScheme,
 			DefaultProduces:      defaultProduces,
+			DefaultConsumes:      defaultConsumes,
 			Doc:                  specDoc,
 		}
 		if err := generator.Generate(); err != nil {
@@ -119,6 +120,7 @@ type operationGenerator struct {
 	DumpData             bool
 	DefaultScheme        string
 	DefaultProduces      string
+	DefaultConsumes      string
 	Doc                  *spec.Document
 	WithContext          bool
 }
@@ -145,6 +147,7 @@ func (o *operationGenerator) Generate() error {
 	bldr.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(o.Base), o.ModelsPackage))}
 	bldr.RootAPIPackage = o.APIPackage
 	bldr.WithContext = o.WithContext
+	bldr.DefaultConsumes = o.DefaultConsumes
 
 	for _, tag := range o.Operation.Tags {
 		if len(o.Tags) == 0 {
@@ -475,6 +478,18 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 	if Debug {
 		log.Printf("[%s %s] making id %q", b.Method, b.Path, b.Operation.ID)
 	}
+
+	if resp.Ref.String() != "" {
+		resp2, err := spec.ResolveResponse(b.Doc.Spec(), resp.Ref)
+		if err != nil {
+			return GenResponse{}, err
+		}
+		if resp2 == nil {
+			return GenResponse{}, fmt.Errorf("could not resolve response ref: %s", resp.Ref.String())
+		}
+		resp = *resp2
+	}
+
 	res := GenResponse{
 		Package:        b.APIPackage,
 		ModelsPackage:  b.ModelsPackage,
@@ -618,6 +633,18 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 	if Debug {
 		log.Printf("[%s %s] making parameter %q", b.Method, b.Path, param.Name)
 	}
+
+	if param.Ref.String() != "" {
+		param2, err := spec.ResolveParameter(b.Doc.Spec(), param.Ref)
+		if err != nil {
+			return GenParameter{}, err
+		}
+		if param2 == nil {
+			return GenParameter{}, fmt.Errorf("could not resolve parameter ref: %s", param.Ref.String())
+		}
+		param = *param2
+	}
+
 	var child *GenItems
 	res := GenParameter{
 		Name:             param.Name,

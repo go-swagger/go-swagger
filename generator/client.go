@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/swag"
 )
 
@@ -51,11 +52,17 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts GenOpts
 
 	defaultScheme := opts.DefaultScheme
 	if defaultScheme == "" {
-		defaultScheme = "http"
+		defaultScheme = sHTTP
 	}
+
+	defaultConsumes := opts.DefaultConsumes
+	if defaultConsumes == "" {
+		defaultConsumes = httpkit.JSONMime
+	}
+
 	defaultProduces := opts.DefaultProduces
 	if defaultProduces == "" {
-		defaultProduces = "application/json"
+		defaultProduces = httpkit.JSONMime
 	}
 
 	generator := appGenerator{
@@ -73,6 +80,8 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts GenOpts
 		Principal:       opts.Principal,
 		DefaultScheme:   defaultScheme,
 		DefaultProduces: defaultProduces,
+		DefaultConsumes: defaultConsumes,
+		GenOpts:         &opts,
 	}
 	generator.Receiver = "o"
 
@@ -99,47 +108,54 @@ func (c *clientGenerator) Generate() error {
 		return nil
 	}
 
-	for _, mod := range app.Models {
-		mod.IncludeValidator = true // a.GenOpts.IncludeValidator
-		gen := &definitionGenerator{
-			Name:    mod.Name,
-			SpecDoc: c.SpecDoc,
-			Target:  filepath.Join(c.Target, c.ModelsPackage),
-			Data:    &mod,
-		}
-		if err := gen.generateModel(); err != nil {
-			return err
-		}
-	}
-
-	for i := range app.OperationGroups {
-		opGroup := app.OperationGroups[i]
-		opGroup.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ModelsPackage))}
-		opGroup.RootPackage = c.ClientPackage
-		app.OperationGroups[i] = opGroup
-		sort.Sort(opGroup.Operations)
-		for _, op := range opGroup.Operations {
-			if op.Package == "" {
-				op.Package = c.Package
+	if c.GenOpts.IncludeModel {
+		for _, mod := range app.Models {
+			mod.IncludeValidator = true // a.GenOpts.IncludeValidator
+			gen := &definitionGenerator{
+				Name:    mod.Name,
+				SpecDoc: c.SpecDoc,
+				Target:  filepath.Join(c.Target, c.ModelsPackage),
+				Data:    &mod,
 			}
-			if err := c.generateParameters(&op); err != nil {
-				return err
-			}
-
-			if err := c.generateResponses(&op); err != nil {
+			if err := gen.generateModel(); err != nil {
 				return err
 			}
 		}
-		app.DefaultImports = append(app.DefaultImports, filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ClientPackage, opGroup.Name)))
-		if err := c.generateGroupClient(opGroup); err != nil {
-			return err
-		}
 	}
 
-	sort.Sort(app.OperationGroups)
+	if c.GenOpts.IncludeHandler {
 
-	if err := c.generateFacade(&app); err != nil {
-		return err
+		for i := range app.OperationGroups {
+			opGroup := app.OperationGroups[i]
+			opGroup.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ModelsPackage))}
+			opGroup.RootPackage = c.ClientPackage
+			app.OperationGroups[i] = opGroup
+			sort.Sort(opGroup.Operations)
+			for _, op := range opGroup.Operations {
+				if op.Package == "" {
+					op.Package = c.Package
+				}
+				if err := c.generateParameters(&op); err != nil {
+					return err
+				}
+
+				if err := c.generateResponses(&op); err != nil {
+					return err
+				}
+			}
+			app.DefaultImports = append(app.DefaultImports, filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ClientPackage, opGroup.Name)))
+			if err := c.generateGroupClient(opGroup); err != nil {
+				return err
+			}
+		}
+
+		sort.Sort(app.OperationGroups)
+	}
+
+	if c.GenOpts.IncludeSupport {
+		if err := c.generateFacade(&app); err != nil {
+			return err
+		}
 	}
 
 	return nil

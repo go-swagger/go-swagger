@@ -31,7 +31,7 @@ import (
 // 	- each security reference should contain only unique scopes
 // 	- each security scope in a security definition should be unique
 // 	- each path parameter should correspond to a parameter placeholder and vice versa
-// 	- each referencable defintion must have references
+// 	- each referencable definition must have references
 // 	- each definition property listed in the required array must be defined in the properties of the model
 // 	- each parameter should have a unique `name` and `type` combination
 // 	- each operation should have only 1 parameter of type body

@@ -690,7 +690,11 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 	// find the file this selector points to
 	file, gd, ts, err := findSourceFile(pkg, expr.Name)
 	if err != nil {
-		return swaggerSchemaForType(expr.Name, prop)
+		err:= swaggerSchemaForType(expr.Name, prop)
+		if err != nil {
+			return fmt.Errorf("package %s, error is: %v", pkg.String(), err)
+		}
+		return nil
 	}
 	if at, ok := ts.Type.(*ast.ArrayType); ok {
 		// the swagger spec defines strfmt base64 as []byte.
@@ -756,7 +760,11 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 		return nil
 
 	default:
-		return swaggerSchemaForType(expr.Name, prop)
+		err:= swaggerSchemaForType(expr.Name, prop)
+		if err != nil {
+			return fmt.Errorf("package %s, error is: %v", pkg.String(), err)
+		}
+		return nil
 	}
 
 }
@@ -880,7 +888,15 @@ func parseProperty(scp *schemaParser, gofile *ast.File, fld ast.Expr, prop swagg
 	case *ast.InterfaceType:
 		prop.Schema().Typed("object", "")
 	default:
-		return fmt.Errorf("%s is unsupported for a schema", ftpe)
+		pos := "unknown file:unknown position"
+		if scp != nil {
+			if scp.program != nil {
+				if scp.program.Fset != nil {
+					pos = scp.program.Fset.Position(fld.Pos()).String()
+				}
+			}
+		}
+		return fmt.Errorf("Expr (%s) is unsupported for a schema", pos)
 	}
 	return nil
 }

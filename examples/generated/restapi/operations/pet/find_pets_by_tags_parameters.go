@@ -25,6 +25,10 @@ func NewFindPetsByTagsParams() FindPetsByTagsParams {
 //
 // swagger:parameters findPetsByTags
 type FindPetsByTagsParams struct {
+
+	// HTTP Request Object
+	HTTPRequest *http.Request
+
 	/*Tags to filter by
 	  In: query
 	  Collection Format: multi
@@ -36,6 +40,8 @@ type FindPetsByTagsParams struct {
 // for simple values it will use straight method calls
 func (o *FindPetsByTagsParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+	o.HTTPRequest = r
+
 	qs := httpkit.Values(r.URL.Query())
 
 	qTags, qhkTags, _ := qs.GetOK("tags")

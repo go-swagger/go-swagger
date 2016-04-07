@@ -25,6 +25,10 @@ func NewGetTaskDetailsParams() GetTaskDetailsParams {
 //
 // swagger:parameters getTaskDetails
 type GetTaskDetailsParams struct {
+
+	// HTTP Request Object
+	HTTPRequest *http.Request
+
 	/*The id of the item
 	  Required: true
 	  In: path
@@ -36,6 +40,7 @@ type GetTaskDetailsParams struct {
 // for simple values it will use straight method calls
 func (o *GetTaskDetailsParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+	o.HTTPRequest = r
 
 	rID, rhkID, _ := route.Params.GetOK("id")
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {

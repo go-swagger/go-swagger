@@ -23,8 +23,8 @@ func NewTodoListAPI(spec *spec.Document) *TodoListAPI {
 		spec:            spec,
 		handlers:        make(map[string]map[string]http.Handler),
 		formats:         strfmt.Default,
-		defaultConsumes: "application/io.goswagger.examples.todo-list.v1+json",
-		defaultProduces: "application/io.goswagger.examples.todo-list.v1+json",
+		defaultConsumes: "",
+		defaultProduces: "application/json",
 		ServerShutdown:  func() {},
 	}
 

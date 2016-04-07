@@ -464,7 +464,7 @@ func (s *SpecValidator) validateRequiredDefinitions() *Result {
 				}
 			}
 
-			res.AddErrors(errors.New(422, "%q is present in required but not defined as property in defintion %q", pn, d))
+			res.AddErrors(errors.New(422, "%q is present in required but not defined as property in definition %q", pn, d))
 		}
 	}
 	return res

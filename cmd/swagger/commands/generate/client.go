@@ -25,9 +25,10 @@ type Client struct {
 	Principal       string   `long:"principal" short:"P" description:"the model to use for the security principal"`
 	Models          []string `long:"model" short:"M" description:"specify a model to include, repeat for multiple"`
 	DefaultScheme   string   `long:"default-scheme" description:"the default scheme for this client" default:"http"`
-	DefaultProduces string   `long:"default-consumes" description:"the default mime type that API operations produce" default:"application/json"`
+	DefaultProduces string   `long:"default-produces" description:"the default mime type that API operations produce" default:"application/json"`
 	SkipModels      bool     `long:"skip-models" description:"no models will be generated when this flag is specified"`
 	SkipOperations  bool     `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
+	DumpData        bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
 }
 
 // Execute runs this command
@@ -47,7 +48,9 @@ func (c *Client) Execute(args []string) error {
 		IncludeHandler:    !c.SkipOperations,
 		IncludeParameters: !c.SkipOperations,
 		IncludeResponses:  !c.SkipOperations,
+		IncludeSupport:    true,
 		TemplateDir:       string(c.TemplateDir),
+		DumpData:          c.DumpData,
 	}
 	if err := generator.GenerateClient(c.Name, c.Models, c.Operations, opts); err != nil {
 		return err

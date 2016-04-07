@@ -20,7 +20,7 @@ func NewHTTPClient(formats strfmt.Registry) *TodoList {
 	if formats == nil {
 		formats = strfmt.Default
 	}
-	transport := httptransport.New("localhost", "/", []string{"https", "http"})
+	transport := httptransport.New("localhost", "/", []string{"http", "https"})
 	return New(transport, formats)
 }
 

@@ -56,7 +56,7 @@ type Server struct { {{ if (contains .ExtraSchemes "unix") }}
 	httpsServerL  net.Listener{{ end }}
 
 	{{ if .ExcludeSpec }}Spec flags.Filename `long:"spec" description:"the swagger specification to serve"`{{ end }}
-	api               *operations.{{ pascalize .Name }}API
+	api               *{{ .Package }}.{{ pascalize .Name }}API
 	handler           http.Handler
   hasListeners bool
 }
@@ -110,6 +110,9 @@ func (s *Server) Serve() (err error) {
 	httpsServer.TLSConfig.MinVersion = tls.VersionTLS11
 	httpsServer.TLSConfig.Certificates = make([]tls.Certificate, 1)
 	httpsServer.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(string(s.TLSCertificate), string(s.TLSCertificateKey))
+
+	configureTLS(httpsServer.TLSConfig)
+
 	if err != nil {
 		return err
 	}

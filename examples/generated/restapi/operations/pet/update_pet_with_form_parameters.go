@@ -26,6 +26,10 @@ func NewUpdatePetWithFormParams() UpdatePetWithFormParams {
 //
 // swagger:parameters updatePetWithForm
 type UpdatePetWithFormParams struct {
+
+	// HTTP Request Object
+	HTTPRequest *http.Request
+
 	/*Updated name of the pet
 	  Required: true
 	  In: formData
@@ -47,6 +51,8 @@ type UpdatePetWithFormParams struct {
 // for simple values it will use straight method calls
 func (o *UpdatePetWithFormParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+	o.HTTPRequest = r
+
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		if err != http.ErrNotMultipart {
 			return err

@@ -26,7 +26,7 @@ func NewPetstoreAPI(spec *spec.Document) *PetstoreAPI {
 		spec:            spec,
 		handlers:        make(map[string]map[string]http.Handler),
 		formats:         strfmt.Default,
-		defaultConsumes: "application/x-www-form-urlencoded",
+		defaultConsumes: "",
 		defaultProduces: "application/json",
 		ServerShutdown:  func() {},
 	}
@@ -79,9 +79,9 @@ type PetstoreAPI struct {
 	PetFindPetsByStatusHandler pet.FindPetsByStatusHandler
 	// PetFindPetsByTagsHandler sets the operation handler for the find pets by tags operation
 	PetFindPetsByTagsHandler pet.FindPetsByTagsHandler
-	// StoreGetOrderByIDHandler sets the operation handler for the get order by id operation
+	// StoreGetOrderByIDHandler sets the operation handler for the get order by Id operation
 	StoreGetOrderByIDHandler store.GetOrderByIDHandler
-	// PetGetPetByIDHandler sets the operation handler for the get pet by id operation
+	// PetGetPetByIDHandler sets the operation handler for the get pet by Id operation
 	PetGetPetByIDHandler pet.GetPetByIDHandler
 	// UserGetUserByNameHandler sets the operation handler for the get user by name operation
 	UserGetUserByNameHandler user.GetUserByNameHandler

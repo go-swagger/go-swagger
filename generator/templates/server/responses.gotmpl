@@ -18,7 +18,7 @@ type {{ pascalize .Name }} struct {
   Unique: true{{ end }}{{ if .HasDefault }}
   Default: {{ printf "%#v" .Default }}{{ end }}
   */
-  {{ pascalize .Name }} {{ .GoType }} `json:"{{.Name}},omitempty"`
+  {{ pascalize .Name }} {{ .GoType }} `json:"{{.Name}}{{ if not .Required }},omitempty{{ end }}"`
   {{ end }}
   {{ if .Schema }}
   // In: body
@@ -44,17 +44,32 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) WithStatusCode(code int) *{{ p
   {{ .ReceiverName }}._statusCode = code
   return {{ .ReceiverName }}
 }
+
+// SetStatusCode sets the status to the {{ humanize .Name }} response
+func ({{ .ReceiverName }} *{{ pascalize .Name }}) SetStatusCode(code int) {
+  {{ .ReceiverName }}._statusCode = code
+}
 {{ end }}{{ range .Headers }}
 // With{{ pascalize .Name }} adds the {{ camelize .Name  }} to the {{ humanize $.Name }} response
-func ({{ $.ReceiverName }} *{{ pascalize $.Name }}) With{{ pascalize .Name }}({{ camelize .Name  }} {{ .GoType}}) *{{ pascalize $.Name }} {
-  {{ $.ReceiverName }}.{{ pascalize .Name }} = {{ camelize .Name  }}
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}) With{{ pascalize .Name }}({{ varname .Name  }} {{ .GoType}}) *{{ pascalize $.Name }} {
+  {{ $.ReceiverName }}.{{ pascalize .Name }} = {{ varname .Name  }}
   return {{ .ReceiverName }}
+}
+
+// Set{{ pascalize .Name }} sets the {{ camelize .Name  }} to the {{ humanize $.Name }} response
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}) Set{{ pascalize .Name }}({{ varname .Name  }} {{ .GoType}}) {
+  {{ $.ReceiverName }}.{{ pascalize .Name }} = {{ varname .Name  }}
 }
 {{ end }}{{ if .Schema }}
 // WithPayload adds the payload to the {{ humanize .Name }} response
 func ({{ .ReceiverName }} *{{ pascalize .Name }}) WithPayload(payload {{ if .Schema.IsComplexObject }}*{{ end }}{{ .Schema.GoType }}) *{{ pascalize .Name }} {
   {{ .ReceiverName }}.Payload = payload
   return {{ .ReceiverName }}
+}
+
+// SetPayload sets the payload to the {{ humanize .Name }} response
+func ({{ .ReceiverName }} *{{ pascalize .Name }}) SetPayload(payload {{ if .Schema.IsComplexObject }}*{{ end }}{{ .Schema.GoType }}) {
+  {{ .ReceiverName }}.Payload = payload
 }
 {{ end }}
 
@@ -97,4 +112,3 @@ import (
 {{ if .DefaultResponse }}
 {{ template "serverresponse" .DefaultResponse }}
 {{ end }}
-

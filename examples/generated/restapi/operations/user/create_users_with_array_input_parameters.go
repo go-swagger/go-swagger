@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
 
 	"github.com/go-swagger/go-swagger/examples/generated/models"
@@ -24,6 +25,10 @@ func NewCreateUsersWithArrayInputParams() CreateUsersWithArrayInputParams {
 //
 // swagger:parameters createUsersWithArrayInput
 type CreateUsersWithArrayInputParams struct {
+
+	// HTTP Request Object
+	HTTPRequest *http.Request
+
 	/*List of user object
 	  In: body
 	*/
@@ -34,21 +39,26 @@ type CreateUsersWithArrayInputParams struct {
 // for simple values it will use straight method calls
 func (o *CreateUsersWithArrayInputParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+	o.HTTPRequest = r
 
-	var body []*models.User
-	if err := route.Consumer.Consume(r.Body, &body); err != nil {
-		res = append(res, errors.NewParseError("body", "body", "", err))
-	} else {
-		for _, io := range o.Body {
-			if err := io.Validate(route.Formats); err != nil {
-				res = append(res, err)
-				break
+	if httpkit.HasBody(r) {
+		defer r.Body.Close()
+		var body []*models.User
+		if err := route.Consumer.Consume(r.Body, &body); err != nil {
+			res = append(res, errors.NewParseError("body", "body", "", err))
+		} else {
+			for _, io := range o.Body {
+				if err := io.Validate(route.Formats); err != nil {
+					res = append(res, err)
+					break
+				}
+			}
+
+			if len(res) == 0 {
+				o.Body = body
 			}
 		}
 
-		if len(res) == 0 {
-			o.Body = body
-		}
 	}
 
 	if len(res) > 0 {

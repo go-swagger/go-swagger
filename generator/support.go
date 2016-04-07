@@ -79,9 +79,15 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 	if defaultScheme == "" {
 		defaultScheme = "http"
 	}
+
 	defaultProduces := opts.DefaultProduces
 	if defaultProduces == "" {
-		defaultProduces = "application/json"
+		defaultProduces = httpkit.JSONMime
+	}
+
+	defaultConsumes := opts.DefaultConsumes
+	if defaultConsumes == "" {
+		defaultConsumes = httpkit.JSONMime
 	}
 
 	apiPackage := mangleName(swag.ToFileName(opts.APIPackage), "api")
@@ -102,6 +108,7 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 		Principal:       opts.Principal,
 		DefaultScheme:   defaultScheme,
 		DefaultProduces: defaultProduces,
+		DefaultConsumes: defaultConsumes,
 		GenOpts:         opts,
 	}, nil
 }
@@ -122,6 +129,7 @@ type appGenerator struct {
 	DumpData        bool
 	DefaultScheme   string
 	DefaultProduces string
+	DefaultConsumes string
 	GenOpts         *GenOpts
 }
 
@@ -157,7 +165,10 @@ func (a *appGenerator) Generate() error {
 	}
 
 	if a.DumpData {
-		bb, _ := json.MarshalIndent(swag.ToDynamicJSON(app), "", "  ")
+		bb, err := json.MarshalIndent(app, "", "  ")
+		if err != nil {
+			return err
+		}
 		fmt.Fprintln(os.Stdout, string(bb))
 		return nil
 	}
@@ -324,39 +335,46 @@ func (a *appGenerator) generateDoc(app *GenApp) error {
 }
 
 var mediaTypeNames = map[*regexp.Regexp]string{
-	regexp.MustCompile("application/.*json"):         "json",
-	regexp.MustCompile("application/.*yaml"):         "yaml",
-	regexp.MustCompile("application/.*protobuf"):     "protobuf",
-	regexp.MustCompile("application/.*capnproto"):    "capnproto",
-	regexp.MustCompile("application/.*thrift"):       "thrift",
-	regexp.MustCompile("(?:application|text)/.*xml"): "xml",
-	regexp.MustCompile("text/.*markdown"):            "markdown",
-	regexp.MustCompile("text/.*html"):                "html",
-	regexp.MustCompile("text/.*csv"):                 "csv",
-	regexp.MustCompile("text/.*tsv"):                 "tsv",
-	regexp.MustCompile("text/.*javascript"):          "js",
-	regexp.MustCompile("text/.*css"):                 "css",
-	regexp.MustCompile("text/.*plain"):               "txt",
-	regexp.MustCompile("application/.*octet-stream"): "bin",
-	regexp.MustCompile("application/.*tar"):          "tar",
-	regexp.MustCompile("application/.*gzip"):         "gzip",
-	regexp.MustCompile("application/.*gz"):           "gzip",
+	regexp.MustCompile("application/.*json"):                "json",
+	regexp.MustCompile("application/.*yaml"):                "yaml",
+	regexp.MustCompile("application/.*protobuf"):            "protobuf",
+	regexp.MustCompile("application/.*capnproto"):           "capnproto",
+	regexp.MustCompile("application/.*thrift"):              "thrift",
+	regexp.MustCompile("(?:application|text)/.*xml"):        "xml",
+	regexp.MustCompile("text/.*markdown"):                   "markdown",
+	regexp.MustCompile("text/.*html"):                       "html",
+	regexp.MustCompile("text/.*csv"):                        "csv",
+	regexp.MustCompile("text/.*tsv"):                        "tsv",
+	regexp.MustCompile("text/.*javascript"):                 "js",
+	regexp.MustCompile("text/.*css"):                        "css",
+	regexp.MustCompile("text/.*plain"):                      "txt",
+	regexp.MustCompile("application/.*octet-stream"):        "bin",
+	regexp.MustCompile("application/.*tar"):                 "tar",
+	regexp.MustCompile("application/.*gzip"):                "gzip",
+	regexp.MustCompile("application/.*gz"):                  "gzip",
+	regexp.MustCompile("application/.*raw-stream"):          "bin",
+	regexp.MustCompile("application/x-www-form-urlencoded"): "urlform",
+	regexp.MustCompile("multipart/form-data"):               "mulitpartform",
 }
 
 var knownProducers = map[string]string{
-	"json": "httpkit.JSONProducer",
-	"yaml": "httpkit.YAMLProducer",
-	"xml":  "httpkit.XMLProducer",
-	"txt":  "httpkit.TextProducer",
-	"bin":  "httpkit.ByteStreamProducer",
+	"json":          "httpkit.JSONProducer()",
+	"yaml":          "httpkit.YAMLProducer()",
+	"xml":           "httpkit.XMLProducer()",
+	"txt":           "httpkit.TextProducer()",
+	"bin":           "httpkit.ByteStreamProducer()",
+	"urlform":       "httpkit.DiscardProducer",
+	"mulitpartform": "httpkit.DiscardProducer",
 }
 
 var knownConsumers = map[string]string{
-	"json": "httpkit.JSONConsumer",
-	"yaml": "httpkit.YAMLConsumer",
-	"xml":  "httpkit.XMLConsumer",
-	"txt":  "httpkit.TextConsumer",
-	"bin":  "httpkit.ByteStreamConsumer",
+	"json":          "httpkit.JSONConsumer()",
+	"yaml":          "httpkit.YAMLConsumer()",
+	"xml":           "httpkit.XMLConsumer()",
+	"txt":           "httpkit.TextConsumer()",
+	"bin":           "httpkit.ByteStreamConsumer()",
+	"urlform":       "httpkit.DiscardConsumer",
+	"mulitpartform": "httpkit.DiscardConsumer",
 }
 
 func getSerializer(sers []GenSerGroup, ext string) (*GenSerGroup, bool) {
@@ -638,17 +656,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	sort.Sort(opGroups)
 
 	log.Println("planning meta data and facades")
-	defaultConsumes := "application/json"
-	rc := a.SpecDoc.RequiredConsumes()
-	if len(rc) > 0 {
-		defaultConsumes = rc[0]
-	}
-
-	defaultProduces := "application/json"
-	rp := a.SpecDoc.RequiredProduces()
-	if len(rp) > 0 {
-		defaultProduces = rp[0]
-	}
 
 	var collectedSchemes []string
 	var extraSchemes []string
@@ -664,7 +671,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	basePath := "/"
 	if sw.BasePath != "" {
-		basePath = "/"
+		basePath = sw.BasePath
 	}
 
 	return GenApp{
@@ -680,8 +687,8 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		Info:                sw.Info,
 		Consumes:            consumes,
 		Produces:            produces,
-		DefaultConsumes:     defaultConsumes,
-		DefaultProduces:     defaultProduces,
+		DefaultConsumes:     a.DefaultConsumes,
+		DefaultProduces:     a.DefaultProduces,
 		DefaultImports:      defaultImports,
 		SecurityDefinitions: security,
 		Models:              genMods,

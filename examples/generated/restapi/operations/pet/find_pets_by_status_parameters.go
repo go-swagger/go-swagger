@@ -25,6 +25,10 @@ func NewFindPetsByStatusParams() FindPetsByStatusParams {
 //
 // swagger:parameters findPetsByStatus
 type FindPetsByStatusParams struct {
+
+	// HTTP Request Object
+	HTTPRequest *http.Request
+
 	/*Status values that need to be considered for filter
 	  In: query
 	  Collection Format: multi
@@ -36,6 +40,8 @@ type FindPetsByStatusParams struct {
 // for simple values it will use straight method calls
 func (o *FindPetsByStatusParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+	o.HTTPRequest = r
+
 	qs := httpkit.Values(r.URL.Query())
 
 	qStatus, qhkStatus, _ := qs.GetOK("status")

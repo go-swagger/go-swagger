@@ -21,6 +21,53 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+/*
+type tstreadcloser struct {
+	closed bool
+}
+
+func (t *tstreadcloser) Read(p []byte) (int, error) { return 0, nil }
+func (t *tstreadcloser) Close() error {
+	t.closed = true
+	return nil
+}
+
+func TestPeekingReader(t *testing.T) {
+	// just passes to original reader when nothing called
+	exp1 := []byte("original")
+	pr1 := &peekingReader{rdr: ioutil.NopCloser(bytes.NewReader(exp1))}
+	b1, err := ioutil.ReadAll(pr1)
+	if assert.NoError(t, err) {
+		assert.Equal(t, exp1, b1)
+	}
+
+	// uses actual when there was some buffering
+	exp2 := []byte("actual")
+	pt1, pt2 := []byte("a"), []byte("ctual")
+	pr2 := &peekingReader{
+		rdr:    ioutil.NopCloser(bytes.NewReader(exp1)),
+		actual: io.MultiReader(bytes.NewReader(pt1), bytes.NewReader(pt2)),
+		peeked: pt1,
+	}
+	b2, err := ioutil.ReadAll(pr2)
+	if assert.NoError(t, err) {
+		assert.Equal(t, exp2, b2)
+	}
+
+	// closes original reader
+	tr := new(tstreadcloser)
+	pr3 := &peekingReader{
+		rdr:    tr,
+		actual: ioutil.NopCloser(bytes.NewBuffer(nil)),
+		peeked: pt1,
+	}
+
+
+	// returns true when peeked previously with data
+	// returns true when peeked with data
+}
+*/
+
 func TestJSONRequest(t *testing.T) {
 	req, err := JSONRequest("GET", "/swagger.json", nil)
 	assert.NoError(t, err)
@@ -33,17 +80,17 @@ func TestJSONRequest(t *testing.T) {
 	assert.Nil(t, req)
 }
 
-func TestCanHaveBody(t *testing.T) {
-	assert.True(t, CanHaveBody("put"))
-	assert.True(t, CanHaveBody("post"))
-	assert.True(t, CanHaveBody("patch"))
-	assert.True(t, CanHaveBody("delete"))
-	assert.False(t, CanHaveBody(""))
-	assert.False(t, CanHaveBody("get"))
-	assert.False(t, CanHaveBody("options"))
-	assert.False(t, CanHaveBody("head"))
-	assert.False(t, CanHaveBody("invalid"))
-}
+//func TestCanHaveBody(t *testing.T) {
+//assert.True(t, CanHaveBody("put"))
+//assert.True(t, CanHaveBody("post"))
+//assert.True(t, CanHaveBody("patch"))
+//assert.True(t, CanHaveBody("delete"))
+//assert.False(t, CanHaveBody(""))
+//assert.False(t, CanHaveBody("get"))
+//assert.False(t, CanHaveBody("options"))
+//assert.False(t, CanHaveBody("head"))
+//assert.False(t, CanHaveBody("invalid"))
+//}
 
 func TestReadSingle(t *testing.T) {
 	values := url.Values(make(map[string][]string))

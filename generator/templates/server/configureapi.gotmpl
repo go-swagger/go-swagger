@@ -1,6 +1,7 @@
 package {{ .APIPackage }}
 
 import (
+  "crypto/tls"
   "net/http"
 
   errors "github.com/go-swagger/go-swagger/errors"
@@ -25,12 +26,12 @@ func configureAPI(api *{{.Package}}.{{ pascalize .Name }}API) http.Handler {
   // configure the api here
   api.ServeError = errors.ServeError
 
-  {{ range .Consumes }}{{ if .Implementation }}api.{{ pascalize .Name }}Consumer = {{ .Implementation }}()
+  {{ range .Consumes }}{{ if .Implementation }}api.{{ pascalize .Name }}Consumer = {{ .Implementation }}
   {{else}}api.{{ pascalize .Name }}Consumer = httpkit.ConsumerFunc(func(r io.Reader, target interface{}) error {
     return errors.NotImplemented("{{.Name}} consumer has not yet been implemented")
   }){{end}}
   {{end}}
-  {{ range .Produces }}{{ if .Implementation }}api.{{ pascalize .Name }}Producer = {{ .Implementation }}()
+  {{ range .Produces }}{{ if .Implementation }}api.{{ pascalize .Name }}Producer = {{ .Implementation }}
   {{else}}api.{{ pascalize .Name }}Producer = httpkit.ProducerFunc(func(w io.Writer, data interface{}) error {
     return errors.NotImplemented("{{.Name}} producer has not yet been implemented")
   }){{end}}
@@ -54,6 +55,11 @@ func configureAPI(api *{{.Package}}.{{ pascalize .Name }}API) http.Handler {
   api.ServerShutdown = func() {  }
 
   return setupGlobalMiddleware(api.Serve(setupMiddlewares))
+}
+
+// The TLS configuration before HTTPS server starts.
+func configureTLS(tlsConfig *tls.Config) {
+  // Make all necessary changes to the TLS configuration here.
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.

@@ -36,8 +36,8 @@ func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(b)
 					assertInCode(t, "type Kennel struct {", res)
-					assertInCode(t, "ID *int64 `json:\"id,omitempty\"`", res)
-					assertInCode(t, "Pets []Pet `json:\"pets,omitempty\"`", res)
+					assertInCode(t, "ID int64 `json:\"id,omitempty\"`", res)
+					assertInCode(t, "Pets []Pet `json:\"pets\"`", res)
 					assertInCode(t, "if err := m.Pets[i].Validate(formats); err != nil {", res)
 					assertInCode(t, "m.validatePet", res)
 				} else {
@@ -72,25 +72,25 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 							assertInCode(t, "func (m *Dog) validatePackSize(formats strfmt.Registry) error {", res)
 							assertInCode(t, "if err := m.validatePackSize(formats); err != nil {", res)
 							assertInCode(t, "data.PackSize = m.PackSize", res)
-							assertInCode(t, "validate.Required(\"packSize\", \"body\", int32(m.PackSize))", res)
+							assertInCode(t, "validate.Required(\"packSize\", \"body\", m.PackSize)", res)
 						} else {
 							assertInCode(t, "func (m *Cat) validateHuntingSkill(formats strfmt.Registry) error {", res)
 							assertInCode(t, "if err := m.validateHuntingSkill(formats); err != nil {", res)
-							assertInCode(t, "if err := m.validateHuntingSkillEnum(\"huntingSkill\", \"body\", m.HuntingSkill); err != nil {", res)
+							assertInCode(t, "if err := m.validateHuntingSkillEnum(\"huntingSkill\", \"body\", *m.HuntingSkill); err != nil {", res)
 							assertInCode(t, "data.HuntingSkill = m.HuntingSkill", res)
 						}
-						assertInCode(t, "Name string `json:\"name,omitempty\"`", res)
-						assertInCode(t, "PetType string `json:\"petType,omitempty\"`", res)
+						assertInCode(t, "Name *string `json:\"name\"`", res)
+						assertInCode(t, "PetType string `json:\"petType\"`", res)
 
 						assertInCode(t, "data.Name = m.nameField", res)
 						assertInCode(t, "data.PetType = \""+k+"\"", res)
 
 						kk := swag.ToGoName(k)
-						assertInCode(t, "func (m *"+kk+") Name() string", res)
-						assertInCode(t, "func (m *"+kk+") SetName(val string)", res)
+						assertInCode(t, "func (m *"+kk+") Name() *string", res)
+						assertInCode(t, "func (m *"+kk+") SetName(val *string)", res)
 						assertInCode(t, "func (m *"+kk+") PetType() string", res)
 						assertInCode(t, "func (m *"+kk+") SetPetType(val string)", res)
-						assertInCode(t, "validate.RequiredString(\"name\", \"body\", string(m.Name()))", res)
+						assertInCode(t, "validate.Required(\"name\", \"body\", m.Name())", res)
 					}
 				}
 			}
@@ -114,8 +114,8 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 					res := string(b)
 					assertInCode(t, "type Pet interface {", res)
 					assertInCode(t, "httpkit.Validatable", res)
-					assertInCode(t, "Name() string", res)
-					assertInCode(t, "SetName(string)", res)
+					assertInCode(t, "Name() *string", res)
+					assertInCode(t, "SetName(*string)", res)
 					assertInCode(t, "PetType() string", res)
 					assertInCode(t, "SetPetType(string)", res)
 					assertInCode(t, "UnmarshalPet(reader io.Reader, consumer httpkit.Consumer) (Pet, error)", res)
@@ -147,7 +147,7 @@ func TestGenerateModel_UsesDiscriminator(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(b)
 					assertInCode(t, "type WithPet struct {", res)
-					assertInCode(t, "ID *int64 `json:\"id,omitempty\"`", res)
+					assertInCode(t, "ID int64 `json:\"id,omitempty\"`", res)
 					assertInCode(t, "Pet Pet `json:\"-\"`", res)
 					assertInCode(t, "if err := m.Pet.Validate(formats); err != nil {", res)
 					assertInCode(t, "m.validatePet", res)

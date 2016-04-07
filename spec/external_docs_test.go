@@ -15,39 +15,15 @@
 package spec
 
 import (
-	"encoding/json"
 	"testing"
-
-	. "github.com/smartystreets/goconvey/convey"
-	"gopkg.in/yaml.v2"
 )
 
 func TestIntegrationExternalDocs(t *testing.T) {
-	Convey("all fields of external docs should", t, func() {
-		Convey("serialize to JSON", func() {
-			b, err := json.Marshal(ExternalDocumentation{"the name", "the url"})
-			So(err, ShouldBeNil)
-			So(string(b), ShouldEqual, `{"description":"the name","url":"the url"}`)
-		})
-
-		Convey("serialize to YAML", func() {
-			b, err := yaml.Marshal(ExternalDocumentation{"the name", "the url"})
-			So(err, ShouldBeNil)
-			So(string(b), ShouldEqual, "description: the name\nurl: the url\n")
-		})
-
-		Convey("deserialize from JSON", func() {
-			actual := ExternalDocumentation{}
-			err := json.Unmarshal([]byte(`{"description":"the name","url":"the url"}`), &actual)
-			So(err, ShouldBeNil)
-			So(actual, ShouldResemble, ExternalDocumentation{"the name", "the url"})
-		})
-
-		Convey("deserialize from YAML", func() {
-			actual := ExternalDocumentation{}
-			err := yaml.Unmarshal([]byte("description: the name\nurl: the url\n"), &actual)
-			So(err, ShouldBeNil)
-			So(actual, ShouldResemble, ExternalDocumentation{"the name", "the url"})
-		})
-	})
+	var extDocs = ExternalDocumentation{"the name", "the url"}
+	const extDocsYAML = "description: the name\nurl: the url\n"
+	const extDocsJSON = `{"description":"the name","url":"the url"}`
+	assertSerializeJSON(t, extDocs, extDocsJSON)
+	assertSerializeYAML(t, extDocs, extDocsYAML)
+	assertParsesJSON(t, extDocsJSON, extDocs)
+	assertParsesYAML(t, extDocsYAML, extDocs)
 }

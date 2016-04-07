@@ -25,14 +25,14 @@ type Milestone struct {
 	A description is a free text field that allows for a more detailed explanation of what the milestone is trying to achieve.
 
 	*/
-	Description *string `json:"description,omitempty"`
+	Description string `json:"description,omitempty"`
 
 	/* An optional due date for this milestone.
 
 	This property is optional, but when present it lets people know when they can expect this milestone to be completed.
 
 	*/
-	DueDate *strfmt.Date `json:"dueDate,omitempty"`
+	DueDate strfmt.Date `json:"dueDate,omitempty"`
 
 	/* The name of the milestone.
 
@@ -44,9 +44,9 @@ type Milestone struct {
 	Min Length: 3
 	Pattern: [A-Za-z][\w- ]+
 	*/
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name"`
 
-	/* Stats stats
+	/* stats
 	 */
 	Stats *MilestoneStats `json:"stats,omitempty"`
 }
@@ -68,19 +68,19 @@ func (m *Milestone) Validate(formats strfmt.Registry) error {
 
 func (m *Milestone) validateName(formats strfmt.Registry) error {
 
-	if err := validate.RequiredString("name", "body", string(m.Name)); err != nil {
+	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}
 
-	if err := validate.MinLength("name", "body", string(m.Name), 3); err != nil {
+	if err := validate.MinLength("name", "body", string(*m.Name), 3); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", string(m.Name), 50); err != nil {
+	if err := validate.MaxLength("name", "body", string(*m.Name), 50); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("name", "body", string(m.Name), `[A-Za-z][\w- ]+`); err != nil {
+	if err := validate.Pattern("name", "body", string(*m.Name), `[A-Za-z][\w- ]+`); err != nil {
 		return err
 	}
 
@@ -98,15 +98,15 @@ type MilestoneStats struct {
 
 	/* The closed issues.
 	 */
-	Closed *int32 `json:"closed,omitempty"`
+	Closed int32 `json:"closed,omitempty"`
 
 	/* The remaining open issues.
 	 */
-	Open *int32 `json:"open,omitempty"`
+	Open int32 `json:"open,omitempty"`
 
 	/* The total number of issues for this milestone.
 	 */
-	Total *int32 `json:"total,omitempty"`
+	Total int32 `json:"total,omitempty"`
 }
 
 // Validate validates this milestone stats

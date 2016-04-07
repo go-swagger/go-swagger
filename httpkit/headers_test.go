@@ -46,7 +46,7 @@ func TestParseContentType(t *testing.T) {
 		} else {
 			headers.Del("content-type")
 		}
-		ct, cs, err := ContentType(headers, false)
+		ct, cs, err := ContentType(headers)
 		if v.err == nil {
 			assert.NoError(t, err, "input: %q", v.hdr)
 		} else {

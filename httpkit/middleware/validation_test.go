@@ -41,6 +41,7 @@ func TestContentTypeValidation(t *testing.T) {
 	recorder = httptest.NewRecorder()
 	request, _ = http.NewRequest("POST", "/pets", nil)
 	request.Header.Add("content-type", "application(")
+	request.ContentLength = 1
 
 	mw.ServeHTTP(recorder, request)
 	assert.Equal(t, 400, recorder.Code)
@@ -50,9 +51,29 @@ func TestContentTypeValidation(t *testing.T) {
 	request, _ = http.NewRequest("POST", "/pets", nil)
 	request.Header.Add("Accept", "application/json")
 	request.Header.Add("content-type", "text/html")
+	request.ContentLength = 1
 
 	mw.ServeHTTP(recorder, request)
 	assert.Equal(t, 415, recorder.Code)
+	assert.Equal(t, "application/json", recorder.Header().Get("content-type"))
+
+	recorder = httptest.NewRecorder()
+	request, _ = http.NewRequest("POST", "/pets", nil)
+	request.Header.Add("Accept", "application/json")
+	request.Header.Add("content-type", "text/html")
+	request.TransferEncoding = []string{"chunked"}
+
+	mw.ServeHTTP(recorder, request)
+	assert.Equal(t, 415, recorder.Code)
+	assert.Equal(t, "application/json", recorder.Header().Get("content-type"))
+
+	recorder = httptest.NewRecorder()
+	request, _ = http.NewRequest("POST", "/pets", nil)
+	request.Header.Add("Accept", "application/json")
+	request.Header.Add("content-type", "text/html")
+
+	mw.ServeHTTP(recorder, request)
+	assert.Equal(t, 422, recorder.Code)
 	assert.Equal(t, "application/json", recorder.Header().Get("content-type"))
 }
 

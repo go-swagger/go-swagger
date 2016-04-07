@@ -4,9 +4,11 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"io"
 	"net/http"
 
 	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
 	"github.com/go-swagger/go-swagger/swag"
 
@@ -27,6 +29,10 @@ func NewUpdateTaskParams() UpdateTaskParams {
 //
 // swagger:parameters updateTask
 type UpdateTaskParams struct {
+
+	// HTTP Request Object
+	HTTPRequest *http.Request
+
 	/*The task to update
 	  Required: true
 	  In: body
@@ -43,18 +49,30 @@ type UpdateTaskParams struct {
 // for simple values it will use straight method calls
 func (o *UpdateTaskParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+	o.HTTPRequest = r
 
-	var body models.Task
-	if err := route.Consumer.Consume(r.Body, &body); err != nil {
-		res = append(res, errors.NewParseError("body", "body", "", err))
+	if httpkit.HasBody(r) {
+		defer r.Body.Close()
+		var body models.Task
+		if err := route.Consumer.Consume(r.Body, &body); err != nil {
+			if err == io.EOF {
+				res = append(res, errors.Required("body", "body"))
+			} else {
+				res = append(res, errors.NewParseError("body", "body", "", err))
+			}
+
+		} else {
+			if err := body.Validate(route.Formats); err != nil {
+				res = append(res, err)
+			}
+
+			if len(res) == 0 {
+				o.Body = &body
+			}
+		}
+
 	} else {
-		if err := body.Validate(route.Formats); err != nil {
-			res = append(res, err)
-		}
-
-		if len(res) == 0 {
-			o.Body = &body
-		}
+		res = append(res, errors.Required("body", "body"))
 	}
 
 	rID, rhkID, _ := route.Params.GetOK("id")

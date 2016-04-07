@@ -155,8 +155,9 @@ func TestContextBindAndValidate(t *testing.T) {
 	ctx.router = DefaultRouter(spec, ctx.api)
 
 	request, _ := http.NewRequest("POST", "/pets", nil)
-	// request.Header.Add("Accept", "*/*")
+	request.Header.Add("Accept", "*/*")
 	request.Header.Add("content-type", "text/html")
+	request.ContentLength = 1
 
 	v, ok := context.GetOk(request, ctxBoundParams)
 	assert.False(t, ok)

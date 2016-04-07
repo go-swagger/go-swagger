@@ -94,7 +94,7 @@ definitions:
         points:
           type: array
           items:
-            type: number
+            type: integer
             format: int64
 
   Statix:
@@ -109,7 +109,7 @@ definitions:
             points:
               type: array
               items:
-                type: number
+                type: integer
                 format: int64
 
   WithItems:
@@ -131,7 +131,7 @@ definitions:
             points:
               type: array
               items:
-                type: number
+                type: integer
                 format: int64
 
   WithItemsAndAdditional2:
@@ -158,7 +158,7 @@ definitions:
             points:
               type: array
               items:
-                type: number
+                type: integer
                 format: int64
 
   WithItemsAndAdditional:
@@ -683,3 +683,36 @@ definitions:
         type: string
       '@type':
         type: string
+
+  ActionName:
+    type: string
+    minLength: 1
+    readOnly: true
+
+  ActionItem:
+    type: object
+    readOnly: true
+    required:
+      - name
+    properties:
+      name:
+        $ref: "#/definitions/ActionName"
+
+  Property:
+    description: A property of a resource
+    properties:
+      propType:
+        type: string
+        description: discriminating type of the property
+      computed:
+        type: boolean
+        description: is property computed
+      intval:
+        type: integer
+        format: int64
+      strval:
+        type: string
+    required:
+      - propType
+      - intval
+      - strval

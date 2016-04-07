@@ -16,6 +16,10 @@ RUN set -e -x \
   && go get -u gopkg.in/matm/v1/gocov-html \
   && go get -u -t github.com/cee-dub/go-junit-report \
   && go get -u github.com/aktau/github-release \
+  && go get -u golang.org/x/tools/go/buildutil \
+  && go get -u github.com/nu7hatch/gouuid \
+  && go get -u github.com/stretchr/testify/assert \
+  && go get -u github.com/davecgh/go-spew/spew \
   && go get -u github.com/asaskevich/govalidator \
   && go get -u github.com/naoina/denco \
   && go get -u github.com/go-swagger/scan-repo-boundary/makeplans

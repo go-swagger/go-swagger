@@ -1,0 +1,36 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: Private to-do list
+  description: |
+    A very simple api description that makes a json only API to submit to do's.
+
+produces:
+  - application/json
+
+consumes:
+  - application/json
+
+paths:
+  /models:
+    get:
+      operationId: modelOp
+      summary: many model variations
+      description: Used to see if a codegen can render all the possible parameter variations for a header param
+      tags:
+        - testcgen
+      responses:
+        default:
+          description: Generic Out
+
+definitions:
+  genericResource:
+    description: generic resource
+    properties:
+      meta:
+        type: string
+    required:
+      - meta
+    additionalProperties:
+      type: object

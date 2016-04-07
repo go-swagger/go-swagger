@@ -17,6 +17,9 @@ build:
       - go get -u github.com/axw/gocov/gocov
       - go get -u gopkg.in/matm/v1/gocov-html
       - go get -u github.com/cee-dub/go-junit-report
+      - go get -u github.com/nu7hatch/gouuid
+      - go get -u github.com/stretchr/testify/assert
+      - go get -u github.com/davecgh/go-spew/spew
       - go get -u github.com/asaskevich/govalidator
       - go get -u github.com/naoina/denco
       - go get -u github.com/go-swagger/scan-repo-boundary/makeplans
@@ -68,14 +71,14 @@ notify:
     username: drone
 
 publish:
-  coverage:
-    server: https://coverage.vmware.run
-    token: $$GITHUB_TOKEN
-    # threshold: 70
-    # must_increase: true
-    when:
-      matrix:
-        GO_VERSION: "1.6"
+  #coverage:
+    #server: https://coverage.vmware.run
+    #token: $$GITHUB_TOKEN
+    ## threshold: 70
+    ## must_increase: true
+    #when:
+      #matrix:
+        #GO_VERSION: "1.6"
 
   github_release:
     api_key: $$GITHUB_TOKEN

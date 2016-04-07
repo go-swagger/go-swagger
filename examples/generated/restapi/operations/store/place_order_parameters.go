@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
 
 	"github.com/go-swagger/go-swagger/examples/generated/models"
@@ -24,6 +25,10 @@ func NewPlaceOrderParams() PlaceOrderParams {
 //
 // swagger:parameters placeOrder
 type PlaceOrderParams struct {
+
+	// HTTP Request Object
+	HTTPRequest *http.Request
+
 	/*order placed for purchasing the pet
 	  In: body
 	*/
@@ -34,18 +39,23 @@ type PlaceOrderParams struct {
 // for simple values it will use straight method calls
 func (o *PlaceOrderParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+	o.HTTPRequest = r
 
-	var body models.Order
-	if err := route.Consumer.Consume(r.Body, &body); err != nil {
-		res = append(res, errors.NewParseError("body", "body", "", err))
-	} else {
-		if err := body.Validate(route.Formats); err != nil {
-			res = append(res, err)
+	if httpkit.HasBody(r) {
+		defer r.Body.Close()
+		var body models.Order
+		if err := route.Consumer.Consume(r.Body, &body); err != nil {
+			res = append(res, errors.NewParseError("body", "body", "", err))
+		} else {
+			if err := body.Validate(route.Formats); err != nil {
+				res = append(res, err)
+			}
+
+			if len(res) == 0 {
+				o.Body = &body
+			}
 		}
 
-		if len(res) == 0 {
-			o.Body = &body
-		}
 	}
 
 	if len(res) > 0 {

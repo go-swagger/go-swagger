@@ -17,33 +17,45 @@ import (
 
 //go:generate swagger generate server -t ../.. -A TodoList -f ./swagger.yml
 
-// NewServer creates a new api todo list server
+// NewServer creates a new api todo list server but does not configure it
 func NewServer(api *operations.TodoListAPI) *Server {
 	s := new(Server)
 	s.api = api
-	if api != nil {
-		s.handler = configureAPI(api)
-	}
 	return s
+}
+
+// ConfigureAPI configures the API and handlers. Needs to be called before Serve
+func (s *Server) ConfigureAPI() {
+	if s.api != nil {
+		s.handler = configureAPI(s.api)
+	}
+}
+
+// ConfigureFlags configures the additional flags defined by the handlers. Needs to be called before the parser.Parse
+func (s *Server) ConfigureFlags() {
+	if s.api != nil {
+		configureFlags(s.api)
+	}
 }
 
 // Server for the todo list API
 type Server struct {
-	SocketPath flags.Filename `long:"socket-path" description:"the unix socket to listen on" default:"/var/run/todo-list.sock"`
+	SocketPath    flags.Filename `long:"socket-path" description:"the unix socket to listen on" default:"/var/run/todo-list.sock"`
+	domainSocketL net.Listener
 
-	Host string `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
-	Port int    `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`
+	Host        string `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
+	Port        int    `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`
+	httpServerL net.Listener
 
 	TLSHost           string         `long:"tls-host" description:"the IP to listen on for tls, when not specified it's the same as --host" env:"TLS_HOST"`
 	TLSPort           int            `long:"tls-port" description:"the port to listen on for secure connections, defaults to a random value" env:"TLS_PORT"`
 	TLSCertificate    flags.Filename `long:"tls-certificate" description:"the certificate to use for secure connections" required:"true" env:"TLS_CERTIFICATE"`
 	TLSCertificateKey flags.Filename `long:"tls-key" description:"the private key to use for secure conections" required:"true" env:"TLS_PRIVATE_KEY"`
+	httpsServerL      net.Listener
 
-	api           *operations.TodoListAPI
-	handler       http.Handler
-	domainSocketL net.Listener
-	httpServerL   net.Listener
-	httpsServerL  net.Listener
+	api          *operations.TodoListAPI
+	handler      http.Handler
+	hasListeners bool
 }
 
 // SetAPI configures the server with the specified API. Needs to be called before Serve
@@ -60,10 +72,12 @@ func (s *Server) SetAPI(api *operations.TodoListAPI) {
 
 // Serve the api
 func (s *Server) Serve() (err error) {
-
-	if err := s.Listen(); err != nil {
-		return err
+	if !s.hasListeners {
+		if err := s.Listen(); err != nil {
+			return err
+		}
 	}
+
 	domainSocket := &graceful.Server{Server: new(http.Server)}
 	domainSocket.Handler = s.handler
 
@@ -92,12 +106,11 @@ func (s *Server) Serve() (err error) {
 	httpsServer.TLSConfig.MinVersion = tls.VersionTLS11
 	httpsServer.TLSConfig.Certificates = make([]tls.Certificate, 1)
 	httpsServer.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(string(s.TLSCertificate), string(s.TLSCertificateKey))
+
+	configureTLS(httpsServer.TLSConfig)
+
 	if err != nil {
 		return err
-	}
-
-	if s.TLSHost == "" {
-		s.TLSHost = s.Host
 	}
 
 	fmt.Printf("serving todo list at https://%s\n", s.httpsServerL.Addr())
@@ -111,12 +124,14 @@ func (s *Server) Serve() (err error) {
 
 // Listen creates the listeners for the server
 func (s *Server) Listen() error {
+	if s.hasListeners { // already done this
+		return nil
+	}
 	domSockListener, err := net.Listen("unix", string(s.SocketPath))
 	if err != nil {
 		return err
 	}
 	s.domainSocketL = domSockListener
-
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.Host, s.Port))
 	if err != nil {
 		return err
@@ -145,6 +160,7 @@ func (s *Server) Listen() error {
 	s.TLSHost = sh
 	s.TLSPort = sp
 	s.httpsServerL = tlsListener
+	s.hasListeners = true
 	return nil
 }
 

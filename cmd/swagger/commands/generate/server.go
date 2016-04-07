@@ -44,6 +44,7 @@ type Server struct {
 	ExcludeMain    bool     `long:"exclude-main" description:"exclude main function, so just generate the library"`
 	ExcludeSpec    bool     `long:"exclude-spec" description:"don't embed the swagger specification"`
 	WithContext    bool     `long:"with-context" description:"handlers get a context as first arg"`
+	DumpData       bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
 }
 
 // Execute runs this command
@@ -67,6 +68,7 @@ func (s *Server) Execute(args []string) error {
 		ExcludeSpec:       s.ExcludeSpec,
 		TemplateDir:       string(s.TemplateDir),
 		WithContext:       s.WithContext,
+		DumpData:          s.DumpData,
 	}
 
 	return generator.GenerateServer(s.Name, s.Models, s.Operations, opts)

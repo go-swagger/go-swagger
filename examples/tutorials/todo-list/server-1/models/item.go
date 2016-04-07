@@ -10,28 +10,28 @@ import (
 	"github.com/go-swagger/go-swagger/httpkit/validate"
 )
 
-/*item Item item
+/*Item item
 
 swagger:model item
 */
 type Item struct {
 
-	/* Completed completed
+	/* completed
 	 */
-	Completed *bool `json:"completed,omitempty"`
+	Completed bool `json:"completed,omitempty"`
 
-	/* Description description
+	/* description
 
 	Required: true
 	Min Length: 1
 	*/
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description"`
 
-	/* ID id
+	/* id
 
 	Read Only: true
 	*/
-	ID *int64 `json:"id,omitempty"`
+	ID int64 `json:"id,omitempty"`
 }
 
 // Validate validates this item
@@ -51,11 +51,11 @@ func (m *Item) Validate(formats strfmt.Registry) error {
 
 func (m *Item) validateDescription(formats strfmt.Registry) error {
 
-	if err := validate.RequiredString("description", "body", string(m.Description)); err != nil {
+	if err := validate.Required("description", "body", m.Description); err != nil {
 		return err
 	}
 
-	if err := validate.MinLength("description", "body", string(m.Description), 1); err != nil {
+	if err := validate.MinLength("description", "body", string(*m.Description), 1); err != nil {
 		return err
 	}
 

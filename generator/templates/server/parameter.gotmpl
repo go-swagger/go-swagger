@@ -99,6 +99,10 @@ func New{{ pascalize .Name }}Params() {{ pascalize .Name }}Params {
 //
 // swagger:parameters {{ .Name }}
 type {{ pascalize .Name }}Params struct {
+
+  // HTTP Request Object
+  HTTPRequest *http.Request
+
   {{ range .Params }}/*{{ if .Description }}{{ .Description }}{{ end }}{{ if .Required }}
   Required: true{{ end }}{{ if .Maximum }}
   Maximum: {{ if .ExclusiveMaximum }}< {{ end }}{{ .Maximum }}{{ end }}{{ if .Minimum }}
@@ -122,6 +126,8 @@ type {{ pascalize .Name }}Params struct {
 // for simple values it will use straight method calls
 func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
   var res []error
+  {{ .ReceiverName }}.HTTPRequest = r
+
   {{ if .HasQueryParams }}qs := httpkit.Values(r.URL.Query())
   {{ else if .HasFormParams }}if err := r.ParseMultipartForm(32 << 20); err != nil {
 		if err != http.ErrNotMultipart {
@@ -166,8 +172,8 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
   }
   {{ end }}{{ end }}
 
-  {{ if and .IsBodyParam .Schema }}{{ if .Schema.IsStream }}
-  {{ .ReceiverName }}.{{ pascalize .Name }} = r.Body
+  {{ if and .IsBodyParam .Schema }}if httpkit.HasBody(r) {
+  {{ if .Schema.IsStream }}{{ .ReceiverName }}.{{ pascalize .Name }} = r.Body
   {{ else }}defer r.Body.Close()
   {{ if and .Schema.IsBaseType .Schema.IsExported }}body, err := {{ .ModelsPackage }}.Unmarshal{{ stripPackage .GoType .ModelsPackage }}{{ if .IsArray }}Slice{{ end }}(r.Body, route.Consumer)
   if err != nil { {{ if .Required }}
@@ -199,6 +205,10 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     }
   }
   {{ end }}
+  }{{ if .Required }} else {
+    res = append(res, errors.Required({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}))
+  }  {{ end }}
+
   {{ end }}
   {{ end }}
   if len(res) > 0 {

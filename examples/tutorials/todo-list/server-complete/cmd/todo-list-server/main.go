@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	spec "github.com/go-swagger/go-swagger/spec"
 	flags "github.com/jessevdk/go-flags"
@@ -27,13 +28,16 @@ func main() {
 	parser.ShortDescription = `A To Do list application`
 	parser.LongDescription = `The product of a tutorial on goswagger.io`
 
+	server.ConfigureFlags()
 	for _, optsGroup := range api.CommandLineOptionsGroups {
 		parser.AddGroup(optsGroup.ShortDescription, optsGroup.LongDescription, optsGroup.Options)
 	}
 
 	if _, err := parser.Parse(); err != nil {
-		log.Fatalln(err)
+		os.Exit(1)
 	}
+
+	server.ConfigureAPI()
 
 	if err := server.Serve(); err != nil {
 		log.Fatalln(err)
