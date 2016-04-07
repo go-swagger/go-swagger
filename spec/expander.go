@@ -459,7 +459,7 @@ func expandSchema(schema *Schema, parentRef string, resolver *schemaLoader) erro
 			return err
 		}
 		if v.Type.Contains("array") {
-			if err := expandSchema(&v, resolver); err != nil {
+			if err := expandSchema(&v, parentRef, resolver); err != nil {
 				return err
 			}
 		}
