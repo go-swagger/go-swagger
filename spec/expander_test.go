@@ -407,7 +407,7 @@ func TestSchemaExpansion(t *testing.T) {
 
 func TestDefaultResolutionCache(t *testing.T) {
 
-	cache := defaultResolutionCache()
+	cache := initResolutionCache()
 
 	sch, ok := cache.Get("not there")
 	assert.False(t, ok)
@@ -526,7 +526,7 @@ func TestResolveRemoteRef_FromFragment(t *testing.T) {
 		var tgt Schema
 		ref, err := NewRef(server.URL + "/refed.json#/definitions/pet")
 		if assert.NoError(t, err) {
-			resolver := &schemaLoader{root: rootDoc, cache: defaultResolutionCache(), loadDoc: swag.JSONDoc}
+			resolver := &schemaLoader{root: rootDoc, cache: initResolutionCache(), loadDoc: swag.JSONDoc}
 			if assert.NoError(t, resolver.Resolve(&ref, &tgt)) {
 				assert.Equal(t, []string{"id", "name"}, tgt.Required)
 			}

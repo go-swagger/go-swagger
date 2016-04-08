@@ -33,29 +33,30 @@ type ResolutionCache interface {
 }
 
 type simpleCache struct {
-	lock  *sync.RWMutex
+	lock  sync.Mutex
 	store map[string]interface{}
 }
 
-func defaultResolutionCache() ResolutionCache {
-	return &simpleCache{lock: new(sync.RWMutex), store: map[string]interface{}{
+var resCache = initResolutionCache()
+
+func initResolutionCache() ResolutionCache {
+	return &simpleCache{store: map[string]interface{}{
 		"http://swagger.io/v2/schema.json":       MustLoadSwagger20Schema(),
 		"http://json-schema.org/draft-04/schema": MustLoadJSONSchemaDraft04(),
 	}}
 }
 
 func (s *simpleCache) Get(uri string) (interface{}, bool) {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
+	s.lock.Lock()
 	v, ok := s.store[uri]
+	s.lock.Unlock()
 	return v, ok
 }
 
 func (s *simpleCache) Set(uri string, data interface{}) {
 	s.lock.Lock()
-	defer s.lock.Unlock()
-
 	s.store[uri] = data
+	s.lock.Unlock()
 }
 
 // ResolveRef resolves a reference against a context root
@@ -115,7 +116,7 @@ var refPtr, _ = jsonpointer.New("/$ref")
 
 func defaultSchemaLoader(root interface{}, ref *Ref, cache ResolutionCache) (*schemaLoader, error) {
 	if cache == nil {
-		cache = defaultResolutionCache()
+		cache = resCache
 	}
 
 	var ptr *jsonpointer.Pointer
