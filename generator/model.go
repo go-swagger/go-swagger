@@ -948,6 +948,8 @@ func (sg *schemaGenContext) buildArray() error {
 
 	schemaCopy := elProp.GenSchema
 	schemaCopy.Required = false
+	hv, _ := hasValidations(sg.Schema.Items.Schema, false)
+	schemaCopy.HasValidations = elProp.GenSchema.IsNullable || hv
 	sg.GenSchema.Items = &schemaCopy
 	if sg.Named {
 		sg.GenSchema.AliasedType = sg.GenSchema.GoType

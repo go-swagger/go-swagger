@@ -243,7 +243,8 @@ func TestGenerateModel_Discriminator_Billforward(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(b)
 					//assertInCode(t, "err", res)
-					assertInCode(t, "swag.IsZero(m.priceExplanationField[i])", res)
+					assertNotInCode(t, "for i := 0; i < len(m.PriceExplanation()); i++", res)
+					// assertInCode(t, "swag.IsZero(m.priceExplanationField[i])", res)
 				}
 			}
 		}

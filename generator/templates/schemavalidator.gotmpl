@@ -73,7 +73,7 @@ if err := {{.ReceiverName}}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{ .
 {{end}}{{ if .Items }}{{ if or .Items.Required .Items.HasValidations .Items.IsBaseType }}
 for {{.IndexVar}} := 0; {{.IndexVar}} < len({{.ValueExpression}}); {{.IndexVar}}++ {
 {{with .Items}}
-  {{ if not .Required }}
+  {{ if and .IsNullable (not .Required) }}
   if swag.IsZero({{ .ValueExpression }}) { // not required
     continue
   }
