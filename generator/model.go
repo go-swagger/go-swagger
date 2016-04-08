@@ -932,18 +932,23 @@ func (sg *schemaGenContext) buildArray() error {
 	if err := elProp.makeGenSchema(); err != nil {
 		return err
 	}
+
 	sg.MergeResult(elProp, false)
 	sg.GenSchema.IsBaseType = elProp.GenSchema.IsBaseType
 	sg.GenSchema.ItemsEnum = elProp.GenSchema.Enum
 	elProp.GenSchema.Suffix = "Items"
 	sg.GenSchema.GoType = "[]" + elProp.GenSchema.GoType
+
 	// TODO: this is probably not right. Should just respect what type resolvers said
 	nn := elProp.GenSchema.IsNullable
 	elProp.GenSchema.IsNullable = sg.TypeResolver.IsNullable(sg.Schema.Items.Schema) && !elProp.GenSchema.HasDiscriminator
 	if nn && !elProp.GenSchema.HasDiscriminator && !elProp.GenSchema.IsPrimitive {
 		sg.GenSchema.GoType = "[]*" + elProp.GenSchema.GoType
 	}
-	sg.GenSchema.Items = &elProp.GenSchema
+
+	schemaCopy := elProp.GenSchema
+	schemaCopy.Required = false
+	sg.GenSchema.Items = &schemaCopy
 	if sg.Named {
 		sg.GenSchema.AliasedType = sg.GenSchema.GoType
 	}
