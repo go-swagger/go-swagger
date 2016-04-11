@@ -1626,6 +1626,7 @@ func TestGenModel_Issue454(t *testing.T) {
 				ct, err := formatGoFile("generic_resource.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
+					assertInCode(t, "rcv.Meta = stage1.Meta", res)
 					assertInCode(t, "json.Marshal(stage1)", res)
 					assertInCode(t, "stage1.Meta = m.Meta", res)
 					assertInCode(t, "json.Marshal(m.GenericResource)", res)
