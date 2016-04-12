@@ -1635,3 +1635,24 @@ func TestGenModel_Issue454(t *testing.T) {
 		}
 	}
 }
+
+func TestGenModel_Issue423(t *testing.T) {
+	specDoc, err := spec.Load("../fixtures/bugs/423/swagger.json")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["SRN"]
+		genModel, err := makeGenDefinition("SRN", "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("SRN.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, "Site json.RawMessage `json:\"site\"`", res)
+					assertInCode(t, "UnmarshalSite(bytes.NewBuffer(data.Site), httpkit.JSONConsumer())", res)
+				}
+			}
+		}
+	}
+}
