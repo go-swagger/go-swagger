@@ -1032,7 +1032,9 @@ func TestGenerateModel_SimpleTuple(t *testing.T) {
 				if !p.IsNullable {
 					r = "&" + r
 				}
-				assertInCode(t, "json.Unmarshal(stage1["+strconv.Itoa(i)+"], "+r+")", res)
+
+				assertInCode(t, fmt.Sprintf("buf = bytes.NewBuffer(stage1[%d])", i), res)
+				assertInCode(t, fmt.Sprintf("dec.Decode(%s)", r), res)
 				assertInCode(t, "P"+strconv.Itoa(i)+",", res)
 			}
 		}
@@ -1077,14 +1079,18 @@ func TestGenerateModel_TupleWithExtra(t *testing.T) {
 						if !p.IsNullable {
 							r = "&" + r
 						}
-						assertInCode(t, "lastIndex = "+strconv.Itoa(i), res)
-						assertInCode(t, "json.Unmarshal(stage1["+strconv.Itoa(i)+"], "+r+")", res)
+						assertInCode(t, fmt.Sprintf("lastIndex = %d", i), res)
+						assertInCode(t, fmt.Sprintf("buf = bytes.NewBuffer(stage1[%d])", i), res)
+						assertInCode(t, "dec := json.NewDecoder(buf)", res)
+						assertInCode(t, fmt.Sprintf("dec.Decode(%s)", r), res)
 						assertInCode(t, "P"+strconv.Itoa(i)+",", res)
 					}
 					assertInCode(t, "var lastIndex int", res)
 					assertInCode(t, "var toadd *float64", res)
 					assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
-					assertInCode(t, "json.Unmarshal(val, toadd)", res)
+					assertInCode(t, "buf = bytes.NewBuffer(val)", res)
+					assertInCode(t, "dec := json.NewDecoder(buf)", res)
+					assertInCode(t, "dec.Decode(toadd)", res)
 					assertInCode(t, "json.Marshal(data)", res)
 					assertInCode(t, "for _, v := range m."+k+"Items", res)
 				}
@@ -1131,14 +1137,19 @@ func TestGenerateModel_TupleWithComplex(t *testing.T) {
 						if !p.IsNullable {
 							r = "&" + r
 						}
-						assertInCode(t, "lastIndex = "+strconv.Itoa(i), res)
-						assertInCode(t, "json.Unmarshal(stage1["+strconv.Itoa(i)+"], "+r+")", res)
+						assertInCode(t, fmt.Sprintf("lastIndex = %d", i), res)
+						assertInCode(t, fmt.Sprintf("buf = bytes.NewBuffer(stage1[%d])", i), res)
+						assertInCode(t, "dec := json.NewDecoder(buf)", res)
+						assertInCode(t, fmt.Sprintf("dec.Decode(%s)", r), res)
 						assertInCode(t, "P"+strconv.Itoa(i)+",", res)
 					}
+
 					assertInCode(t, "var lastIndex int", res)
 					assertInCode(t, "var toadd *TupleWithComplexItems", res)
 					assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
-					assertInCode(t, "json.Unmarshal(val, toadd)", res)
+					assertInCode(t, "buf = bytes.NewBuffer(val)", res)
+					assertInCode(t, "dec := json.NewDecoder(buf)", res)
+					assertInCode(t, "dec.Decode(toadd)", res)
 					assertInCode(t, "json.Marshal(data)", res)
 					assertInCode(t, "for _, v := range m."+k+"Items", res)
 				}
@@ -1196,7 +1207,9 @@ func TestGenerateModel_WithTuple(t *testing.T) {
 						if !p.IsNullable {
 							r = "&" + r
 						}
-						assertInCode(t, "json.Unmarshal(stage1["+strconv.Itoa(i)+"], "+r+")", res)
+						assertInCode(t, fmt.Sprintf("buf = bytes.NewBuffer(stage1[%d])", i), res)
+						assertInCode(t, "dec := json.NewDecoder(buf)", res)
+						assertInCode(t, fmt.Sprintf("dec.Decode(%s)", r), res)
 						assertInCode(t, "P"+strconv.Itoa(i)+",", res)
 					}
 				}
@@ -1255,15 +1268,19 @@ func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
 						if !p.IsNullable {
 							r = "&" + r
 						}
-						assertInCode(t, "lastIndex = "+strconv.Itoa(i), res)
-						assertInCode(t, "json.Unmarshal(stage1["+strconv.Itoa(i)+"], "+r+")", res)
+						assertInCode(t, fmt.Sprintf("lastIndex = %d", i), res)
+						assertInCode(t, fmt.Sprintf("buf = bytes.NewBuffer(stage1[%d])", i), res)
+						assertInCode(t, "dec := json.NewDecoder(buf)", res)
+						assertInCode(t, fmt.Sprintf("dec.Decode(%s)", r), res)
 						assertInCode(t, "P"+strconv.Itoa(i)+",", res)
 					}
 
 					assertInCode(t, "var lastIndex int", res)
 					assertInCode(t, "var toadd *float32", res)
 					assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
-					assertInCode(t, "json.Unmarshal(val, toadd)", res)
+					assertInCode(t, "buf = bytes.NewBuffer(val)", res)
+					assertInCode(t, "dec := json.NewDecoder(buf)", res)
+					assertInCode(t, "dec.Decode(toadd)", res)
 					assertInCode(t, "json.Marshal(data)", res)
 					assertInCode(t, "for _, v := range m."+k+"FlagsTuple0Items", res)
 				}
