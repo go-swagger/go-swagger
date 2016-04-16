@@ -18,6 +18,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/internal/testing/petstore"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
@@ -98,6 +99,7 @@ func TestValidateReferenced(t *testing.T) {
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
+		validator.analyzer = analysis.New(doc.Spec())
 		res := validator.validateReferenced()
 		assert.Empty(t, res.Errors)
 	}
@@ -106,6 +108,7 @@ func TestValidateReferenced(t *testing.T) {
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
+		validator.analyzer = analysis.New(doc.Spec())
 		res := validator.validateReferenced()
 		assert.NotEmpty(t, res.Errors)
 		assert.Len(t, res.Errors, 3)
@@ -117,6 +120,7 @@ func TestValidateBodyFormDataParams(t *testing.T) {
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
+		validator.analyzer = analysis.New(doc.Spec())
 		res := validator.validateDefaultValueValidAgainstSchema()
 		assert.NotEmpty(t, res.Errors)
 		assert.Len(t, res.Errors, 1)
@@ -128,6 +132,7 @@ func TestValidateReferencesValid(t *testing.T) {
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
+		validator.analyzer = analysis.New(doc.Spec())
 		res := validator.validateReferencesValid()
 		assert.Empty(t, res.Errors)
 	}
@@ -136,6 +141,7 @@ func TestValidateReferencesValid(t *testing.T) {
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
+		validator.analyzer = analysis.New(doc.Spec())
 		res := validator.validateReferencesValid()
 		assert.NotEmpty(t, res.Errors)
 		assert.Len(t, res.Errors, 1)
@@ -153,6 +159,7 @@ func TestValidatesExamplesAgainstSchema(t *testing.T) {
 		if assert.NoError(t, err) {
 			validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 			validator.spec = doc
+			validator.analyzer = analysis.New(doc.Spec())
 			res := validator.validateExamplesValidAgainstSchema()
 			assert.Empty(t, res.Errors, tt+" should not have errors")
 		}
@@ -161,6 +168,7 @@ func TestValidatesExamplesAgainstSchema(t *testing.T) {
 		if assert.NoError(t, err) {
 			validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 			validator.spec = doc
+			validator.analyzer = analysis.New(doc.Spec())
 			res := validator.validateExamplesValidAgainstSchema()
 			assert.NotEmpty(t, res.Errors, tt+" should have errors")
 			assert.Len(t, res.Errors, 1, tt+" should have 1 error")
@@ -172,6 +180,7 @@ func TestValidateDefaultValueAgainstSchema(t *testing.T) {
 	doc, api := petstore.NewAPI(t)
 	validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	res := validator.validateDefaultValueValidAgainstSchema()
 	assert.Empty(t, res.Errors)
 
@@ -194,6 +203,7 @@ func TestValidateDefaultValueAgainstSchema(t *testing.T) {
 		if assert.NoError(t, err) {
 			validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 			validator.spec = doc
+			validator.analyzer = analysis.New(doc.Spec())
 			res := validator.validateDefaultValueValidAgainstSchema()
 			assert.Empty(t, res.Errors, tt+" should not have errors")
 		}
@@ -202,6 +212,7 @@ func TestValidateDefaultValueAgainstSchema(t *testing.T) {
 		if assert.NoError(t, err) {
 			validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 			validator.spec = doc
+			validator.analyzer = analysis.New(doc.Spec())
 			res := validator.validateDefaultValueValidAgainstSchema()
 			assert.NotEmpty(t, res.Errors, tt+" should have errors")
 			assert.Len(t, res.Errors, 1, tt+" should have 1 error")
@@ -213,6 +224,7 @@ func TestValidateRequiredDefinitions(t *testing.T) {
 	doc, api := petstore.NewAPI(t)
 	validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	res := validator.validateRequiredDefinitions()
 	assert.Empty(t, res.Errors)
 
@@ -254,6 +266,7 @@ func TestValidateParameters(t *testing.T) {
 	doc, api := petstore.NewAPI(t)
 	validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	res := validator.validateParameters()
 	assert.Empty(t, res.Errors)
 
@@ -267,6 +280,7 @@ func TestValidateParameters(t *testing.T) {
 	sw.Paths.Paths["/pets"].Post.Parameters = append(sw.Paths.Paths["/pets"].Post.Parameters, *spec.BodyParam("fake", spec.RefProperty("#/definitions/Pet")))
 	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	res = validator.validateParameters()
 	assert.NotEmpty(t, res.Errors)
 	assert.Len(t, res.Errors, 1)
@@ -288,6 +302,7 @@ func TestValidateParameters(t *testing.T) {
 	doc.Reload()
 	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	res = validator.validateParameters()
 	assert.NotEmpty(t, res.Errors)
 	assert.Len(t, res.Errors, 1)
@@ -296,6 +311,7 @@ func TestValidateParameters(t *testing.T) {
 	doc, api = petstore.NewAPI(t)
 	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	sw = doc.Spec()
 	pp = sw.Paths.Paths["/pets/{id}"]
 	pp.Delete = nil
@@ -314,6 +330,7 @@ func TestValidateItems(t *testing.T) {
 	doc, api := petstore.NewAPI(t)
 	validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	res := validator.validateItems()
 	assert.Empty(t, res.Errors)
 
@@ -351,6 +368,7 @@ func TestValidateItems(t *testing.T) {
 	doc, api = petstore.NewAPI(t)
 	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	sw = doc.Spec()
 
 	pa := sw.Paths.Paths["/pets"]
@@ -371,6 +389,7 @@ func TestValidateItems(t *testing.T) {
 	doc, api = petstore.NewAPI(t)
 	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	sw = doc.Spec()
 	pa = sw.Paths.Paths["/pets"]
 	pa.Post.Parameters[0].Schema = spec.ArrayProperty(nil)
@@ -381,6 +400,7 @@ func TestValidateItems(t *testing.T) {
 	doc, api = petstore.NewAPI(t)
 	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	sw = doc.Spec()
 	pa = sw.Paths.Paths["/pets"]
 	rp := pa.Post.Responses.StatusCodeResponses[200]
@@ -396,6 +416,7 @@ func TestValidateItems(t *testing.T) {
 	doc, api = petstore.NewAPI(t)
 	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	sw = doc.Spec()
 	pa = sw.Paths.Paths["/pets"]
 	rp = pa.Post.Responses.StatusCodeResponses[200]

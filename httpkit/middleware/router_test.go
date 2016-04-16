@@ -21,6 +21,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/httpkit/middleware/untyped"
 	"github.com/go-swagger/go-swagger/internal/testing/petstore"
 	"github.com/go-swagger/go-swagger/spec"
@@ -88,13 +89,14 @@ func TestRouterMiddleware(t *testing.T) {
 
 func TestRouterBuilder(t *testing.T) {
 	spec, api := petstore.NewAPI(t)
+	analyzed := analysis.New(spec.Spec())
 
-	assert.Len(t, spec.RequiredConsumes(), 3)
-	assert.Len(t, spec.RequiredProduces(), 5)
-	assert.Len(t, spec.OperationIDs(), 4)
+	assert.Len(t, analyzed.RequiredConsumes(), 3)
+	assert.Len(t, analyzed.RequiredProduces(), 5)
+	assert.Len(t, analyzed.OperationIDs(), 4)
 
 	// context := NewContext(spec, api)
-	builder := petAPIRouterBuilder(spec, api)
+	builder := petAPIRouterBuilder(spec, api, analyzed)
 	getRecords := builder.records["GET"]
 	postRecords := builder.records["POST"]
 	deleteRecords := builder.records["DELETE"]
@@ -162,12 +164,12 @@ func TestRouterStruct(t *testing.T) {
 	assert.False(t, ok)
 }
 
-func petAPIRouterBuilder(spec *spec.Document, api *untyped.API) *defaultRouteBuilder {
+func petAPIRouterBuilder(spec *spec.Document, api *untyped.API, analyzed *analysis.Spec) *defaultRouteBuilder {
 	builder := newDefaultRouteBuilder(spec, newRoutableUntypedAPI(spec, api, new(Context)))
-	builder.AddRoute("GET", "/pets", spec.AllPaths()["/pets"].Get)
-	builder.AddRoute("POST", "/pets", spec.AllPaths()["/pets"].Post)
-	builder.AddRoute("DELETE", "/pets/{id}", spec.AllPaths()["/pets/{id}"].Delete)
-	builder.AddRoute("GET", "/pets/{id}", spec.AllPaths()["/pets/{id}"].Get)
+	builder.AddRoute("GET", "/pets", analyzed.AllPaths()["/pets"].Get)
+	builder.AddRoute("POST", "/pets", analyzed.AllPaths()["/pets"].Post)
+	builder.AddRoute("DELETE", "/pets/{id}", analyzed.AllPaths()["/pets/{id}"].Delete)
+	builder.AddRoute("GET", "/pets/{id}", analyzed.AllPaths()["/pets/{id}"].Get)
 
 	return builder
 }

@@ -23,6 +23,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
 	"golang.org/x/tools/imports"
@@ -255,7 +256,7 @@ func (o opRefs) Len() int           { return len(o) }
 func (o opRefs) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
 func (o opRefs) Less(i, j int) bool { return o[i].Key < o[j].Key }
 
-func gatherOperations(specDoc *spec.Document, operationIDs []string) map[string]opRef {
+func gatherOperations(specDoc *analysis.Spec, operationIDs []string) map[string]opRef {
 	var oprefs opRefs
 
 	for method, pathItem := range specDoc.Operations() {

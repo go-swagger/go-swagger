@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/swag"
 )
@@ -43,12 +44,13 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts GenOpts
 	if err != nil {
 		return err
 	}
+	analyzed := analysis.New(specDoc.Spec())
 
 	models, err := gatherModels(specDoc, modelNames)
 	if err != nil {
 		return err
 	}
-	operations := gatherOperations(specDoc, operationIDs)
+	operations := gatherOperations(analyzed, operationIDs)
 
 	defaultScheme := opts.DefaultScheme
 	if defaultScheme == "" {
@@ -68,6 +70,7 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts GenOpts
 	generator := appGenerator{
 		Name:            appNameOrDefault(specDoc, name, "rest"),
 		SpecDoc:         specDoc,
+		Analyzed:        analyzed,
 		Models:          models,
 		Operations:      operations,
 		Target:          opts.Target,

@@ -110,7 +110,7 @@ func Swagger20Schema() (*Schema, error) {
 
 // Document represents a swagger spec document
 type Document struct {
-	specAnalyzer
+	// specAnalyzer
 	spec   *Swagger
 	schema *Schema
 	raw    json.RawMessage
@@ -147,20 +147,20 @@ func New(data json.RawMessage, version string) (*Document, error) {
 	}
 
 	d := &Document{
-		specAnalyzer: specAnalyzer{
-			spec:        spec,
-			consumes:    make(map[string]struct{}),
-			produces:    make(map[string]struct{}),
-			authSchemes: make(map[string]struct{}),
-			operations:  make(map[string]map[string]*Operation),
-			allSchemas:  make(map[string]SchemaRef),
-			allOfs:      make(map[string]SchemaRef),
-		},
+		// specAnalyzer: specAnalyzer{
+		// 	spec:        spec,
+		// 	consumes:    make(map[string]struct{}),
+		// 	produces:    make(map[string]struct{}),
+		// 	authSchemes: make(map[string]struct{}),
+		// 	operations:  make(map[string]map[string]*Operation),
+		// 	allSchemas:  make(map[string]SchemaRef),
+		// 	allOfs:      make(map[string]SchemaRef),
+		// },
 		schema: MustLoadSwagger20Schema(),
 		spec:   spec,
 		raw:    data,
 	}
-	d.initialize()
+	// d.initialize()
 	d.orig = &(*d)
 	d.orig.spec = &(*spec)
 	return d, nil
@@ -177,20 +177,20 @@ func (d *Document) Expanded() (*Document, error) {
 	}
 
 	dd := &Document{
-		specAnalyzer: specAnalyzer{
-			spec:        spec,
-			consumes:    make(map[string]struct{}),
-			produces:    make(map[string]struct{}),
-			authSchemes: make(map[string]struct{}),
-			operations:  make(map[string]map[string]*Operation),
-			allSchemas:  make(map[string]SchemaRef),
-			allOfs:      make(map[string]SchemaRef),
-		},
+		// specAnalyzer: specAnalyzer{
+		// 	spec:        spec,
+		// 	consumes:    make(map[string]struct{}),
+		// 	produces:    make(map[string]struct{}),
+		// 	authSchemes: make(map[string]struct{}),
+		// 	operations:  make(map[string]map[string]*Operation),
+		// 	allSchemas:  make(map[string]SchemaRef),
+		// 	allOfs:      make(map[string]SchemaRef),
+		// },
 		spec:   spec,
 		schema: MustLoadSwagger20Schema(),
 		raw:    d.raw,
 	}
-	dd.initialize()
+	// dd.initialize()
 	dd.orig = d.orig
 	dd.orig.spec = &(*d.orig.spec)
 
@@ -229,18 +229,18 @@ func (d *Document) Raw() json.RawMessage {
 
 // Reload reanalyzes the spec
 func (d *Document) Reload() *Document {
-	orig := d.orig
-	d.specAnalyzer = specAnalyzer{
-		spec:        d.spec,
-		consumes:    make(map[string]struct{}),
-		produces:    make(map[string]struct{}),
-		authSchemes: make(map[string]struct{}),
-		operations:  make(map[string]map[string]*Operation),
-		allSchemas:  make(map[string]SchemaRef),
-		allOfs:      make(map[string]SchemaRef),
-	}
-	d.initialize()
-	d.orig = orig
+	// orig := d.orig
+	// d.specAnalyzer = specAnalyzer{
+	// 	spec:        d.spec,
+	// 	consumes:    make(map[string]struct{}),
+	// 	produces:    make(map[string]struct{}),
+	// 	authSchemes: make(map[string]struct{}),
+	// 	operations:  make(map[string]map[string]*Operation),
+	// 	allSchemas:  make(map[string]SchemaRef),
+	// 	allOfs:      make(map[string]SchemaRef),
+	// }
+	// d.initialize()
+	// d.orig = orig
 	return d
 }
 
@@ -255,7 +255,7 @@ func (d *Document) ResetDefinitions() *Document {
 	dd.spec = &(*d.orig.spec)
 	dd.schema = MustLoadSwagger20Schema()
 	dd.spec.Definitions = defs
-	dd.initialize()
+	// dd.initialize()
 	dd.orig = d.orig
 	return dd.Reload()
 }

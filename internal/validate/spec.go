@@ -21,6 +21,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/jsonpointer"
 	"github.com/go-swagger/go-swagger/spec"
@@ -31,6 +32,7 @@ import (
 type SpecValidator struct {
 	schema       *spec.Schema // swagger 2.0 schema
 	spec         *spec.Document
+	analyzer     *analysis.Spec
 	expanded     *spec.Document
 	KnownFormats strfmt.Registry
 }
@@ -56,6 +58,7 @@ func (s *SpecValidator) Validate(data interface{}) (errs *Result, warnings *Resu
 		return
 	}
 	s.spec = sd
+	s.analyzer = analysis.New(sd.Spec())
 
 	errs = new(Result)
 	warnings = new(Result)
@@ -104,7 +107,7 @@ func (s *SpecValidator) validateNonEmptyPathParamNames() *Result {
 func (s *SpecValidator) validateDuplicateOperationIDs() *Result {
 	res := new(Result)
 	known := make(map[string]int)
-	for _, v := range s.spec.OperationIDs() {
+	for _, v := range s.analyzer.OperationIDs() {
 		if v != "" {
 			known[v]++
 		}
@@ -235,9 +238,9 @@ func (s *SpecValidator) validateItems() *Result {
 	res := new(Result)
 
 	// TODO: implement support for lookups of refs
-	for method, pi := range s.spec.Operations() {
+	for method, pi := range s.analyzer.Operations() {
 		for path, op := range pi {
-			for _, param := range s.spec.ParamsFor(method, path) {
+			for _, param := range s.analyzer.ParamsFor(method, path) {
 				if param.TypeName() == "array" && param.ItemsTypeName() == "" {
 					res.AddErrors(errors.New(422, "param %q for %q is a collection without an element type", param.Name, op.ID))
 					continue
@@ -368,7 +371,7 @@ func (s *SpecValidator) validateReferencedParameters() *Result {
 	for k := range params {
 		expected["#/parameters/"+jsonpointer.Escape(k)] = struct{}{}
 	}
-	for _, k := range s.spec.AllParameterReferences() {
+	for _, k := range s.analyzer.AllParameterReferences() {
 		if _, ok := expected[k]; ok {
 			delete(expected, k)
 		}
@@ -395,7 +398,7 @@ func (s *SpecValidator) validateReferencedResponses() *Result {
 	for k := range responses {
 		expected["#/responses/"+jsonpointer.Escape(k)] = struct{}{}
 	}
-	for _, k := range s.spec.AllResponseReferences() {
+	for _, k := range s.analyzer.AllResponseReferences() {
 		if _, ok := expected[k]; ok {
 			delete(expected, k)
 		}
@@ -422,7 +425,7 @@ func (s *SpecValidator) validateReferencedDefinitions() *Result {
 	for k := range defs {
 		expected["#/definitions/"+jsonpointer.Escape(k)] = struct{}{}
 	}
-	for _, k := range s.spec.AllDefinitionReferences() {
+	for _, k := range s.analyzer.AllDefinitionReferences() {
 		if _, ok := expected[k]; ok {
 			delete(expected, k)
 		}
@@ -475,7 +478,7 @@ func (s *SpecValidator) validateParameters() *Result {
 	// each operation should have only 1 parameter of type body
 	// each api path should be non-verbatim (account for path param names) unique per method
 	res := new(Result)
-	for method, pi := range s.spec.Operations() {
+	for method, pi := range s.analyzer.Operations() {
 		knownPaths := make(map[string]string)
 		for path, op := range pi {
 			segments, params := parsePath(path)
@@ -525,7 +528,7 @@ func (s *SpecValidator) validateParameters() *Result {
 			}
 
 		PARAMETERS2:
-			for _, ppr := range s.spec.ParamsFor(method, path) {
+			for _, ppr := range s.analyzer.ParamsFor(method, path) {
 				pr := ppr
 				for pr.Ref.String() != "" {
 					obj, _, err := pr.Ref.GetPointer().Get(sw)
@@ -566,7 +569,7 @@ func parsePath(path string) (segments []string, params []int) {
 func (s *SpecValidator) validateReferencesValid() *Result {
 	// each reference must point to a valid object
 	res := new(Result)
-	for _, r := range s.spec.AllRefs() {
+	for _, r := range s.analyzer.AllRefs() {
 		if !r.IsValidURI() {
 			res.AddErrors(errors.New(404, "invalid ref %q", r.String()))
 		}
@@ -608,7 +611,7 @@ func (s *SpecValidator) validateResponseExample(path string, r *spec.Response) *
 func (s *SpecValidator) validateExamplesValidAgainstSchema() *Result {
 	res := new(Result)
 
-	for _, pathItem := range s.spec.Operations() {
+	for _, pathItem := range s.analyzer.Operations() {
 		for path, op := range pathItem {
 			if op.Responses.Default != nil {
 				dr := op.Responses.Default
@@ -629,12 +632,12 @@ func (s *SpecValidator) validateDefaultValueValidAgainstSchema() *Result {
 
 	res := new(Result)
 
-	for method, pathItem := range s.spec.Operations() {
+	for method, pathItem := range s.analyzer.Operations() {
 		for path, op := range pathItem {
 			// parameters
 			var hasForm, hasBody bool
 		PARAMETERS:
-			for _, pr := range s.spec.ParamsFor(method, path) {
+			for _, pr := range s.analyzer.ParamsFor(method, path) {
 				// expand ref is necessary
 				param := pr
 				for param.Ref.String() != "" {

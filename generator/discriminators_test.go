@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
 	"github.com/stretchr/testify/assert"
@@ -13,7 +14,7 @@ import (
 func TestBuildDiscriminatorMap(t *testing.T) {
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.discriminators.yml")
 	if assert.NoError(t, err) {
-		di := discriminatorInfo(specDoc)
+		di := discriminatorInfo(analysis.New(specDoc.Spec()))
 		assert.Len(t, di.Discriminators, 1)
 		assert.Len(t, di.Discriminators["#/definitions/Pet"].Children, 2)
 		assert.Len(t, di.Discriminated, 2)
@@ -160,7 +161,7 @@ func TestGenerateModel_UsesDiscriminator(t *testing.T) {
 func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.discriminators.yml")
 	if assert.NoError(t, err) {
-		method, path, op, ok := specDoc.OperationForName("modelOp")
+		method, path, op, ok := analysis.New(specDoc.Spec()).OperationForName("modelOp")
 		if assert.True(t, ok) {
 			bldr := codeGenOpBuilder{
 				Name:          "modelOp",
@@ -171,6 +172,7 @@ func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 				Principal:     "",
 				Target:        ".",
 				Doc:           specDoc,
+				Analyzed:      analysis.New(specDoc.Spec()),
 				Operation:     *op,
 				Authed:        false,
 				DefaultScheme: "http",
@@ -195,7 +197,7 @@ func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 func TestGenerateServer_Parameters(t *testing.T) {
 	specDoc, err := spec.Load("../fixtures/codegen/todolist.discriminators.yml")
 	if assert.NoError(t, err) {
-		method, path, op, ok := specDoc.OperationForName("modelOp")
+		method, path, op, ok := analysis.New(specDoc.Spec()).OperationForName("modelOp")
 		if assert.True(t, ok) {
 			bldr := codeGenOpBuilder{
 				Name:          "modelOp",
@@ -206,6 +208,7 @@ func TestGenerateServer_Parameters(t *testing.T) {
 				Principal:     "",
 				Target:        ".",
 				Doc:           specDoc,
+				Analyzed:      analysis.New(specDoc.Spec()),
 				Operation:     *op,
 				Authed:        false,
 				DefaultScheme: "http",

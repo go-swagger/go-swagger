@@ -24,6 +24,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/stretchr/testify/assert"
 )
@@ -36,8 +37,9 @@ func TestUniqueOperationNames(t *testing.T) {
 		sp.Paths.Paths["/tasks"].Post.AddExtension("origName", "createTask")
 		sp.Paths.Paths["/tasks/{id}"].Put.ID = "saveTask"
 		sp.Paths.Paths["/tasks/{id}"].Put.AddExtension("origName", "updateTask")
+		analyzed := analysis.New(sp)
 
-		ops := gatherOperations(doc, nil)
+		ops := gatherOperations(analyzed, nil)
 		assert.Len(t, ops, 4)
 		_, exists := ops["saveTask"]
 		assert.True(t, exists)
@@ -54,8 +56,9 @@ func TestEmptyOperationNames(t *testing.T) {
 		sp.Paths.Paths["/tasks"].Post.AddExtension("origName", "createTask")
 		sp.Paths.Paths["/tasks/{id}"].Put.ID = ""
 		sp.Paths.Paths["/tasks/{id}"].Put.AddExtension("origName", "updateTask")
+		analyzed := analysis.New(sp)
 
-		ops := gatherOperations(doc, nil)
+		ops := gatherOperations(analyzed, nil)
 		assert.Len(t, ops, 4)
 		_, exists := ops["PostTasks"]
 		assert.True(t, exists)
@@ -227,7 +230,8 @@ func methodPathOpBuilder(method, path, fname string) (codeGenOpBuilder, error) {
 		return codeGenOpBuilder{}, err
 	}
 
-	op, ok := specDoc.OperationFor(method, path)
+	analyzed := analysis.New(specDoc.Spec())
+	op, ok := analyzed.OperationFor(method, path)
 	if !ok {
 		return codeGenOpBuilder{}, errors.New("No operation could be found for " + method + " " + path)
 	}
@@ -242,6 +246,7 @@ func methodPathOpBuilder(method, path, fname string) (codeGenOpBuilder, error) {
 		Target:        ".",
 		Operation:     *op,
 		Doc:           specDoc,
+		Analyzed:      analyzed,
 		Authed:        false,
 		ExtraSchemas:  make(map[string]GenSchema),
 	}, nil
@@ -256,8 +261,9 @@ func opBuilder(name, fname string) (codeGenOpBuilder, error) {
 	if err != nil {
 		return codeGenOpBuilder{}, err
 	}
+	analyzed := analysis.New(specDoc.Spec())
 
-	method, path, op, ok := specDoc.OperationForName(name)
+	method, path, op, ok := analyzed.OperationForName(name)
 	if !ok {
 		return codeGenOpBuilder{}, errors.New("No operation could be found for " + name)
 	}
@@ -272,6 +278,7 @@ func opBuilder(name, fname string) (codeGenOpBuilder, error) {
 		Target:        ".",
 		Operation:     *op,
 		Doc:           specDoc,
+		Analyzed:      analyzed,
 		Authed:        false,
 		ExtraSchemas:  make(map[string]GenSchema),
 	}, nil
@@ -342,6 +349,7 @@ func TestBuilder_Issue287(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stderr)
 	dr, _ := os.Getwd()
+
 	appGen, err := newAppGenerator("plainTexter", nil, nil, &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/287/swagger.yml"),
 		IncludeModel:      true,

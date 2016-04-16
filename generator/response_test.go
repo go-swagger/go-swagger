@@ -49,7 +49,7 @@ func TestSimpleResponses(t *testing.T) {
 		t.FailNow()
 	}
 
-	_, _, op, ok := b.Doc.OperationForName("updateTask")
+	_, _, op, ok := b.Analyzed.OperationForName("updateTask")
 	if assert.True(t, ok) && assert.NotNil(t, op) && assert.NotNil(t, op.Responses) {
 		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
 		if assert.NotNil(t, op.Responses.Default) {
@@ -89,7 +89,7 @@ func TestInlinedSchemaResponses(t *testing.T) {
 		t.FailNow()
 	}
 
-	_, _, op, ok := b.Doc.OperationForName("getTasks")
+	_, _, op, ok := b.Analyzed.OperationForName("getTasks")
 	if assert.True(t, ok) && assert.NotNil(t, op) && assert.NotNil(t, op.Responses) {
 		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
 		if assert.NotNil(t, op.Responses.Default) {

@@ -19,6 +19,7 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit"
 	swaggerspec "github.com/go-swagger/go-swagger/spec"
@@ -180,9 +181,11 @@ func TestUntypedAppValidation(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, spec)
 
-	cons := spec.ConsumesFor(spec.AllPaths()["/"].Get)
+	analyzed := analysis.New(spec.Spec())
+	analyzedValid := analysis.New(validSpec.Spec())
+	cons := analyzed.ConsumesFor(analyzed.AllPaths()["/"].Get)
 	assert.Len(t, cons, 1)
-	prods := spec.RequiredProduces()
+	prods := analyzed.RequiredProduces()
 	assert.Len(t, prods, 2)
 
 	api1 := NewAPI(spec)
@@ -236,19 +239,19 @@ func TestUntypedAppValidation(t *testing.T) {
 
 	expected := []string{"application/x-yaml"}
 	sort.Sort(sort.StringSlice(expected))
-	consumes := spec.ConsumesFor(spec.AllPaths()["/"].Get)
+	consumes := analyzed.ConsumesFor(analyzed.AllPaths()["/"].Get)
 	sort.Sort(sort.StringSlice(consumes))
 	assert.Equal(t, expected, consumes)
 	consumers := api1.ConsumersFor(consumes)
 	assert.Len(t, consumers, 1)
 
-	produces := spec.ProducesFor(spec.AllPaths()["/"].Get)
+	produces := analyzed.ProducesFor(analyzed.AllPaths()["/"].Get)
 	sort.Sort(sort.StringSlice(produces))
 	assert.Equal(t, expected, produces)
 	producers := api1.ProducersFor(produces)
 	assert.Len(t, producers, 1)
 
-	definitions := validSpec.SecurityDefinitionsFor(validSpec.AllPaths()["/"].Get)
+	definitions := analyzedValid.SecurityDefinitionsFor(analyzedValid.AllPaths()["/"].Get)
 	expectedSchemes := map[string]swaggerspec.SecurityScheme{"basic": *swaggerspec.BasicAuth()}
 	assert.Equal(t, expectedSchemes, definitions)
 	authenticators := api3.AuthenticatorsFor(definitions)
