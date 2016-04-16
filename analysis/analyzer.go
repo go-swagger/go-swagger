@@ -354,15 +354,16 @@ func (s *Spec) SecurityDefinitionsFor(operation *spec.Operation) map[string]spec
 
 // ConsumesFor gets the mediatypes for the operation
 func (s *Spec) ConsumesFor(operation *spec.Operation) []string {
-	cons := make(map[string]struct{})
 
 	if len(operation.Consumes) == 0 {
+		cons := make(map[string]struct{}, len(s.spec.Consumes))
 		for _, k := range s.spec.Consumes {
 			cons[k] = struct{}{}
 		}
 		return s.structMapKeys(cons)
 	}
 
+	cons := make(map[string]struct{}, len(operation.Consumes))
 	for _, c := range operation.Consumes {
 		cons[c] = struct{}{}
 	}
@@ -371,15 +372,15 @@ func (s *Spec) ConsumesFor(operation *spec.Operation) []string {
 
 // ProducesFor gets the mediatypes for the operation
 func (s *Spec) ProducesFor(operation *spec.Operation) []string {
-	prod := make(map[string]struct{})
-
 	if len(operation.Produces) == 0 {
+		prod := make(map[string]struct{}, len(s.spec.Produces))
 		for _, k := range s.spec.Produces {
 			prod[k] = struct{}{}
 		}
 		return s.structMapKeys(prod)
 	}
 
+	prod := make(map[string]struct{}, len(operation.Produces))
 	for _, c := range operation.Produces {
 		prod[c] = struct{}{}
 	}
@@ -484,7 +485,11 @@ func (s *Spec) Operations() map[string]map[string]*spec.Operation {
 }
 
 func (s *Spec) structMapKeys(mp map[string]struct{}) []string {
-	var result []string
+	if len(mp) == 0 {
+		return nil
+	}
+
+	result := make([]string, 0, len(mp))
 	for k := range mp {
 		result = append(result, k)
 	}
@@ -501,7 +506,10 @@ func (s *Spec) AllPaths() map[string]spec.PathItem {
 
 // OperationIDs gets all the operation ids based on method an dpath
 func (s *Spec) OperationIDs() []string {
-	var result []string
+	if len(s.operations) == 0 {
+		return nil
+	}
+	result := make([]string, 0, len(s.operations))
 	for method, v := range s.operations {
 		for p := range v {
 			result = append(result, fmt.Sprintf("%s %s", strings.ToUpper(method), p))

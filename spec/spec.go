@@ -147,15 +147,6 @@ func New(data json.RawMessage, version string) (*Document, error) {
 	}
 
 	d := &Document{
-		// specAnalyzer: specAnalyzer{
-		// 	spec:        spec,
-		// 	consumes:    make(map[string]struct{}),
-		// 	produces:    make(map[string]struct{}),
-		// 	authSchemes: make(map[string]struct{}),
-		// 	operations:  make(map[string]map[string]*Operation),
-		// 	allSchemas:  make(map[string]SchemaRef),
-		// 	allOfs:      make(map[string]SchemaRef),
-		// },
 		schema: MustLoadSwagger20Schema(),
 		spec:   spec,
 		raw:    data,
@@ -177,15 +168,6 @@ func (d *Document) Expanded() (*Document, error) {
 	}
 
 	dd := &Document{
-		// specAnalyzer: specAnalyzer{
-		// 	spec:        spec,
-		// 	consumes:    make(map[string]struct{}),
-		// 	produces:    make(map[string]struct{}),
-		// 	authSchemes: make(map[string]struct{}),
-		// 	operations:  make(map[string]map[string]*Operation),
-		// 	allSchemas:  make(map[string]SchemaRef),
-		// 	allOfs:      make(map[string]SchemaRef),
-		// },
 		spec:   spec,
 		schema: MustLoadSwagger20Schema(),
 		raw:    d.raw,
@@ -229,24 +211,13 @@ func (d *Document) Raw() json.RawMessage {
 
 // Reload reanalyzes the spec
 func (d *Document) Reload() *Document {
-	// orig := d.orig
-	// d.specAnalyzer = specAnalyzer{
-	// 	spec:        d.spec,
-	// 	consumes:    make(map[string]struct{}),
-	// 	produces:    make(map[string]struct{}),
-	// 	authSchemes: make(map[string]struct{}),
-	// 	operations:  make(map[string]map[string]*Operation),
-	// 	allSchemas:  make(map[string]SchemaRef),
-	// 	allOfs:      make(map[string]SchemaRef),
-	// }
-	// d.initialize()
-	// d.orig = orig
-	return d
+	// TODO: make use of analyzer again here
+	return d.Pristine()
 }
 
 // ResetDefinitions gives a shallow copy with the models reset
 func (d *Document) ResetDefinitions() *Document {
-	defs := make(map[string]Schema)
+	defs := make(map[string]Schema, len(d.orig.spec.Definitions))
 	for k, v := range d.orig.spec.Definitions {
 		defs[k] = v
 	}
