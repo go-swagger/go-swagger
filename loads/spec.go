@@ -20,6 +20,7 @@ import (
 	"net/url"
 	"path/filepath"
 
+	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
 )
@@ -50,10 +51,11 @@ func YAMLSpec(path string) (*Document, error) {
 // Document represents a swagger spec document
 type Document struct {
 	// specAnalyzer
-	spec   *spec.Swagger
-	schema *spec.Schema
-	raw    json.RawMessage
-	orig   *Document
+	Analyzer *analysis.Spec
+	spec     *spec.Swagger
+	schema   *spec.Schema
+	raw      json.RawMessage
+	orig     *Document
 }
 
 // Spec loads a new spec document
@@ -86,9 +88,10 @@ func Analyzed(data json.RawMessage, version string) (*Document, error) {
 	}
 
 	d := &Document{
-		schema: spec.MustLoadSwagger20Schema(),
-		spec:   swspec,
-		raw:    data,
+		Analyzer: analysis.New(swspec),
+		schema:   spec.MustLoadSwagger20Schema(),
+		spec:     swspec,
+		raw:      data,
 	}
 	// d.initialize()
 	d.orig = &(*d)
@@ -107,9 +110,10 @@ func (d *Document) Expanded() (*Document, error) {
 	}
 
 	dd := &Document{
-		spec:   swspec,
-		schema: spec.MustLoadSwagger20Schema(),
-		raw:    d.raw,
+		Analyzer: analysis.New(swspec),
+		spec:     swspec,
+		schema:   spec.MustLoadSwagger20Schema(),
+		raw:      d.raw,
 	}
 	// dd.initialize()
 	dd.orig = d.orig
@@ -150,8 +154,11 @@ func (d *Document) Raw() json.RawMessage {
 
 // Reload reanalyzes the spec
 func (d *Document) Reload() *Document {
-	// TODO: make use of analyzer again here
-	return d.Pristine()
+	orig := d.orig
+	sp := *d.orig.spec
+	d.Analyzer = analysis.New(&sp)
+	d.orig = orig
+	return d
 }
 
 // ResetDefinitions gives a shallow copy with the models reset
@@ -161,8 +168,9 @@ func (d *Document) ResetDefinitions() *Document {
 		defs[k] = v
 	}
 
-	dd := &(*d)
-	dd.spec = &(*d.orig.spec)
+	dd := *d
+	cp := *d.orig.spec
+	dd.spec = &cp
 	dd.schema = spec.MustLoadSwagger20Schema()
 	dd.spec.Definitions = defs
 	// dd.initialize()

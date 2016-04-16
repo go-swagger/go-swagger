@@ -21,11 +21,11 @@ http://helloreverb.com/terms/
     Contact: apiteam@wordnik.com
 
     Consumes:
-    - application/json
-
     - application/x-www-form-urlencoded
 
     - application/xml
+
+    - application/json
 
 
     Produces:

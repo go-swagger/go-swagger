@@ -15,13 +15,14 @@
 package analysis
 
 import (
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"sort"
 	"testing"
 
-	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/swag"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -146,9 +147,9 @@ func TestAnalyzer(t *testing.T) {
 }
 
 func TestDefinitionAnalysis(t *testing.T) {
-	doc, err := loads.Spec(filepath.Join("..", "fixtures", "analysis", "definitions.yml"))
+	doc, err := loadSpec(filepath.Join("..", "fixtures", "analysis", "definitions.yml"))
 	if assert.NoError(t, err) {
-		analyzer := New(doc.Spec())
+		analyzer := New(doc)
 		definitions := analyzer.allSchemas
 		// parameters
 		assertSchemaRefExists(t, definitions, "#/parameters/someParam/schema")
@@ -186,10 +187,23 @@ func TestDefinitionAnalysis(t *testing.T) {
 	}
 }
 
+func loadSpec(path string) (*spec.Swagger, error) {
+	data, err := swag.YAMLDoc(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var sw spec.Swagger
+	if err := json.Unmarshal(data, &sw); err != nil {
+		return nil, err
+	}
+	return &sw, nil
+}
+
 func TestReferenceAnalysis(t *testing.T) {
-	doc, err := loads.Spec(filepath.Join("..", "fixtures", "analysis", "references.yml"))
+	doc, err := loadSpec(filepath.Join("..", "fixtures", "analysis", "references.yml"))
 	if assert.NoError(t, err) {
-		definitions := New(doc.Spec()).references
+		definitions := New(doc).references
 
 		// parameters
 		assertRefExists(t, definitions.parameters, "#/paths/~1some~1where~1{id}/parameters/0")

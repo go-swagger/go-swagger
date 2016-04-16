@@ -24,11 +24,11 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
-	api.JSONConsumer = httpkit.JSONConsumer()
-
 	api.UrlformConsumer = httpkit.DiscardConsumer
 
 	api.XMLConsumer = httpkit.XMLConsumer()
+
+	api.JSONConsumer = httpkit.JSONConsumer()
 
 	api.XMLProducer = httpkit.XMLProducer()
 
