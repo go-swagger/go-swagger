@@ -39,40 +39,25 @@ type referenceAnalysis struct {
 }
 
 func (r *referenceAnalysis) addRef(key string, ref spec.Ref) {
-	if r.allRefs == nil {
-		r.allRefs = make(map[string]spec.Ref)
-	}
 	r.allRefs["#"+key] = ref
 }
 
 func (r *referenceAnalysis) addItemsRef(key string, items *spec.Items) {
-	if r.items == nil {
-		r.items = make(map[string]spec.Ref)
-	}
 	r.items["#"+key] = items.Ref
 	r.addRef(key, items.Ref)
 }
 
 func (r *referenceAnalysis) addSchemaRef(key string, ref SchemaRef) {
-	if r.schemas == nil {
-		r.schemas = make(map[string]spec.Ref)
-	}
 	r.schemas["#"+key] = ref.Schema.Ref
 	r.addRef(key, ref.Schema.Ref)
 }
 
 func (r *referenceAnalysis) addResponseRef(key string, resp *spec.Response) {
-	if r.responses == nil {
-		r.responses = make(map[string]spec.Ref)
-	}
 	r.responses["#"+key] = resp.Ref
 	r.addRef(key, resp.Ref)
 }
 
 func (r *referenceAnalysis) addParamRef(key string, param *spec.Parameter) {
-	if r.parameters == nil {
-		r.parameters = make(map[string]spec.Ref)
-	}
 	r.parameters["#"+key] = param.Ref
 	r.addRef(key, param.Ref)
 }
@@ -84,23 +69,23 @@ func (r *referenceAnalysis) addParamRef(key string, param *spec.Parameter) {
 func New(doc *spec.Swagger) *Spec {
 	a := &Spec{
 		spec:        doc,
-		consumes:    make(map[string]struct{}),
-		produces:    make(map[string]struct{}),
-		authSchemes: make(map[string]struct{}),
-		operations:  make(map[string]map[string]*spec.Operation),
-		allSchemas:  make(map[string]SchemaRef),
-		allOfs:      make(map[string]SchemaRef),
+		consumes:    make(map[string]struct{}, 150),
+		produces:    make(map[string]struct{}, 150),
+		authSchemes: make(map[string]struct{}, 150),
+		operations:  make(map[string]map[string]*spec.Operation, 150),
+		allSchemas:  make(map[string]SchemaRef, 150),
+		allOfs:      make(map[string]SchemaRef, 150),
 		references: referenceAnalysis{
-			schemas:    make(map[string]spec.Ref),
-			responses:  make(map[string]spec.Ref),
-			parameters: make(map[string]spec.Ref),
-			items:      make(map[string]spec.Ref),
-			allRefs:    make(map[string]spec.Ref),
+			schemas:    make(map[string]spec.Ref, 150),
+			responses:  make(map[string]spec.Ref, 150),
+			parameters: make(map[string]spec.Ref, 150),
+			items:      make(map[string]spec.Ref, 150),
+			allRefs:    make(map[string]spec.Ref, 150),
 		},
 	}
-	a.references.referenced.schemas = make(map[string]SchemaRef)
-	a.references.referenced.responses = make(map[string]*spec.Response)
-	a.references.referenced.parameters = make(map[string]*spec.Parameter)
+	a.references.referenced.schemas = make(map[string]SchemaRef, 150)
+	a.references.referenced.responses = make(map[string]*spec.Response, 150)
+	a.references.referenced.parameters = make(map[string]*spec.Parameter, 150)
 	a.initialize()
 	return a
 }
