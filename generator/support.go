@@ -593,8 +593,8 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		bldr.Target = a.Target
 		bldr.DefaultImports = defaultImports
 		bldr.DefaultScheme = a.DefaultScheme
-		bldr.Doc = &(*a.SpecDoc)
-		bldr.Analyzed = &(*a.Analyzed)
+		bldr.Doc = a.SpecDoc
+		bldr.Analyzed = a.Analyzed
 		// TODO: change operation name to something safe
 		bldr.Name = on
 		bldr.Operation = *o
