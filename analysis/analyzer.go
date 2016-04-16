@@ -77,7 +77,10 @@ func (r *referenceAnalysis) addParamRef(key string, param *spec.Parameter) {
 	r.addRef(key, param.Ref)
 }
 
-
+// New takes a swagger spec object and returns an analyzed spec document.
+// The analyzed document contains a number of indices that make it easier to
+// reason about semantics of a swagger specification for use in code generation
+// or validation etc.
 func New(doc *spec.Swagger) *Spec {
 	a := &Spec{
 		spec:        doc,
@@ -102,7 +105,7 @@ func New(doc *spec.Swagger) *Spec {
 	return a
 }
 
-// specAnalyzer takes a swagger spec object and turns it into a registry
+// Spec takes a swagger spec object and turns it into a registry
 // with a bunch of utility methods to act on the information in the spec
 type Spec struct {
 	spec        *spec.Swagger
@@ -458,6 +461,8 @@ func (s *Spec) ParametersFor(operationID string) []spec.Parameter {
 	return nil
 }
 
+// ParamsFor the specified method and path. Aggregates them with the defaults etc, so it's all the params that
+// apply for the method and path.
 func (s *Spec) ParamsFor(method, path string) map[string]spec.Parameter {
 	res := make(map[string]spec.Parameter)
 	if pi, ok := s.spec.Paths.Paths[path]; ok {
@@ -467,6 +472,7 @@ func (s *Spec) ParamsFor(method, path string) map[string]spec.Parameter {
 	return res
 }
 
+// OperationForName gets the operation for the given id
 func (s *Spec) OperationForName(operationID string) (string, string, *spec.Operation, bool) {
 	for method, pathItem := range s.operations {
 		for path, op := range pathItem {
@@ -478,6 +484,7 @@ func (s *Spec) OperationForName(operationID string) (string, string, *spec.Opera
 	return "", "", nil, false
 }
 
+// OperationFor the given method and path
 func (s *Spec) OperationFor(method, path string) (*spec.Operation, bool) {
 	if mp, ok := s.operations[strings.ToUpper(method)]; ok {
 		op, fn := mp[path]
@@ -486,6 +493,7 @@ func (s *Spec) OperationFor(method, path string) (*spec.Operation, bool) {
 	return nil, false
 }
 
+// Operations gathers all the operations specified in the spec document
 func (s *Spec) Operations() map[string]map[string]*spec.Operation {
 	return s.operations
 }
@@ -506,6 +514,7 @@ func (s *Spec) AllPaths() map[string]spec.PathItem {
 	return s.spec.Paths.Paths
 }
 
+// OperationIDs gets all the operation ids based on method an dpath
 func (s *Spec) OperationIDs() []string {
 	var result []string
 	for method, v := range s.operations {
@@ -516,14 +525,17 @@ func (s *Spec) OperationIDs() []string {
 	return result
 }
 
+// RequiredConsumes gets all the distinct consumes that are specified in the specification document
 func (s *Spec) RequiredConsumes() []string {
 	return s.structMapKeys(s.consumes)
 }
 
+// RequiredProduces gets all the distinct produces that are specified in the specification document
 func (s *Spec) RequiredProduces() []string {
 	return s.structMapKeys(s.produces)
 }
 
+// RequiredSecuritySchemes gets all the distinct security schemes that are specified in the swagger spec
 func (s *Spec) RequiredSecuritySchemes() []string {
 	return s.structMapKeys(s.authSchemes)
 }
