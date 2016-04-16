@@ -6,10 +6,10 @@ package events
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/httpkit/middleware"
+	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
 )
 
-// DeleteEventByIDHandlerFunc turns a function with the right signature into a delete event by id handler
+// DeleteEventByIDHandlerFunc turns a function with the right signature into a delete event by Id handler
 type DeleteEventByIDHandlerFunc func(DeleteEventByIDParams) middleware.Responder
 
 // Handle executing the request and returning a response
@@ -17,12 +17,12 @@ func (fn DeleteEventByIDHandlerFunc) Handle(params DeleteEventByIDParams) middle
 	return fn(params)
 }
 
-// DeleteEventByIDHandler interface for that can handle valid delete event by id params
+// DeleteEventByIDHandler interface for that can handle valid delete event by Id params
 type DeleteEventByIDHandler interface {
 	Handle(DeleteEventByIDParams) middleware.Responder
 }
 
-// NewDeleteEventByID creates a new http.Handler for the delete event by id operation
+// NewDeleteEventByID creates a new http.Handler for the delete event by Id operation
 func NewDeleteEventByID(ctx *middleware.Context, handler DeleteEventByIDHandler) *DeleteEventByID {
 	return &DeleteEventByID{Context: ctx, Handler: handler}
 }
@@ -34,20 +34,19 @@ Delete event by id.
 */
 type DeleteEventByID struct {
 	Context *middleware.Context
-	Params  DeleteEventByIDParams
 	Handler DeleteEventByIDHandler
 }
 
 func (o *DeleteEventByID) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, _ := o.Context.RouteInfo(r)
-	o.Params = NewDeleteEventByIDParams()
+	var Params = NewDeleteEventByIDParams()
 
-	if err := o.Context.BindValidRequest(r, route, &o.Params); err != nil { // bind params
+	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
-	res := o.Handler.Handle(o.Params) // actually handle the request
+	res := o.Handler.Handle(Params) // actually handle the request
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 

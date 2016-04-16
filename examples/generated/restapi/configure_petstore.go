@@ -26,11 +26,13 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 
 	api.JSONConsumer = httpkit.JSONConsumer()
 
+	api.UrlformConsumer = httpkit.DiscardConsumer
+
 	api.XMLConsumer = httpkit.XMLConsumer()
 
-	api.JSONProducer = httpkit.JSONProducer()
-
 	api.XMLProducer = httpkit.XMLProducer()
+
+	api.JSONProducer = httpkit.JSONProducer()
 
 	api.APIKeyAuth = func(token string) (interface{}, error) {
 		return nil, errors.NotImplemented("api key auth (api_key) api_key from header has not yet been implemented")

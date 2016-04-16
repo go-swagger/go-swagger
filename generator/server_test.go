@@ -11,7 +11,7 @@ import (
 
 	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/httpkit"
-	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/swag"
 	"github.com/stretchr/testify/assert"
 )
@@ -39,7 +39,7 @@ func testGenOpts() (g GenOpts) {
 }
 
 func testAppGenertor(t testing.TB, specPath, name string) (*appGenerator, error) {
-	specDoc, err := spec.Load(specPath)
+	specDoc, err := loads.Spec(specPath)
 	if !assert.NoError(t, err) {
 		return nil, err
 	}

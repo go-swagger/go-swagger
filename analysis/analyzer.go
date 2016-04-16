@@ -144,7 +144,7 @@ func (s *Spec) initialize() {
 	for name, schema := range s.spec.Definitions {
 		s.analyzeSchema(name, schema, "/definitions")
 	}
-	// TODO: after analyzing all things and flattening shemas etc
+	// TODO: after analyzing all things and flattening schemas etc
 	// resolve all the collected references to their final representations
 	// best put in a separate method because this could get expensive
 }
@@ -178,9 +178,7 @@ func (s *Spec) analyzeItems(name string, items *spec.Items, prefix string) {
 		return
 	}
 	refPref := slashpath.Join(prefix, name)
-	if items.Items != nil {
-		s.analyzeItems(name, items.Items, refPref)
-	}
+	s.analyzeItems(name, items.Items, refPref)
 	if items.Ref.String() != "" {
 		s.references.addItemsRef(refPref, items)
 	}
@@ -212,9 +210,7 @@ func (s *Spec) analyzeOperation(method, path string, op *spec.Operation) {
 		if param.Ref.String() != "" {
 			s.references.addParamRef(refPref, &param)
 		}
-		if param.Items != nil {
-			s.analyzeItems("items", param.Items, refPref)
-		}
+		s.analyzeItems("items", param.Items, refPref)
 		if param.In == "body" && param.Schema != nil {
 			s.analyzeSchema("schema", *param.Schema, refPref)
 		}
@@ -226,9 +222,7 @@ func (s *Spec) analyzeOperation(method, path string, op *spec.Operation) {
 				s.references.addResponseRef(refPref, op.Responses.Default)
 			}
 			for _, v := range op.Responses.Default.Headers {
-				if v.Items != nil {
-					s.analyzeItems("items", v.Items, refPref)
-				}
+				s.analyzeItems("items", v.Items, refPref)
 			}
 			if op.Responses.Default.Schema != nil {
 				s.analyzeSchema("schema", *op.Responses.Default.Schema, refPref)
@@ -240,9 +234,7 @@ func (s *Spec) analyzeOperation(method, path string, op *spec.Operation) {
 				s.references.addResponseRef(refPref, &res)
 			}
 			for _, v := range res.Headers {
-				if v.Items != nil {
-					s.analyzeItems("items", v.Items, refPref)
-				}
+				s.analyzeItems("items", v.Items, refPref)
 			}
 			if res.Schema != nil {
 				s.analyzeSchema("schema", *res.Schema, refPref)

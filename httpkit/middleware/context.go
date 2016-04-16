@@ -22,6 +22,7 @@ import (
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/httpkit/middleware/untyped"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/gorilla/context"
@@ -56,7 +57,7 @@ func (fn ResponderFunc) WriteResponse(rw http.ResponseWriter, pr httpkit.Produce
 // Context is a type safe wrapper around an untyped request context
 // used throughout to store request context with the gorilla context module
 type Context struct {
-	spec     *spec.Document
+	spec     *loads.Document
 	analyzer *analysis.Spec
 	api      RoutableAPI
 	router   Router
@@ -70,7 +71,7 @@ type routableUntypedAPI struct {
 	defaultProduces string
 }
 
-func newRoutableUntypedAPI(spec *spec.Document, api *untyped.API, context *Context) *routableUntypedAPI {
+func newRoutableUntypedAPI(spec *loads.Document, api *untyped.API, context *Context) *routableUntypedAPI {
 	var handlers map[string]map[string]http.Handler
 	if spec == nil || api == nil {
 		return nil
@@ -160,7 +161,7 @@ func (r *routableUntypedAPI) DefaultConsumes() string {
 }
 
 // NewRoutableContext creates a new context for a routable API
-func NewRoutableContext(spec *spec.Document, routableAPI RoutableAPI, routes Router) *Context {
+func NewRoutableContext(spec *loads.Document, routableAPI RoutableAPI, routes Router) *Context {
 	var an *analysis.Spec
 	if spec != nil {
 		an = analysis.New(spec.Spec())
@@ -170,7 +171,7 @@ func NewRoutableContext(spec *spec.Document, routableAPI RoutableAPI, routes Rou
 }
 
 // NewContext creates a new context wrapper
-func NewContext(spec *spec.Document, api *untyped.API, routes Router) *Context {
+func NewContext(spec *loads.Document, api *untyped.API, routes Router) *Context {
 	var an *analysis.Spec
 	if spec != nil {
 		an = analysis.New(spec.Spec())
@@ -181,13 +182,13 @@ func NewContext(spec *spec.Document, api *untyped.API, routes Router) *Context {
 }
 
 // Serve serves the specified spec with the specified api registrations as a http.Handler
-func Serve(spec *spec.Document, api *untyped.API) http.Handler {
+func Serve(spec *loads.Document, api *untyped.API) http.Handler {
 	return ServeWithBuilder(spec, api, PassthroughBuilder)
 }
 
 // ServeWithBuilder serves the specified spec with the specified api registrations as a http.Handler that is decorated
 // by the Builder
-func ServeWithBuilder(spec *spec.Document, api *untyped.API, builder Builder) http.Handler {
+func ServeWithBuilder(spec *loads.Document, api *untyped.API, builder Builder) http.Handler {
 	context := NewContext(spec, api, nil)
 	return context.APIHandler(builder)
 }

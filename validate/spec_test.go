@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	intvalidate "github.com/go-swagger/go-swagger/internal/validate"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/stretchr/testify/assert"
@@ -41,7 +42,7 @@ func TestIssue52(t *testing.T) {
 	}
 
 	// as swagger spec
-	doc, err := spec.JSONSpec(fp)
+	doc, err := loads.JSONSpec(fp)
 	if assert.NoError(t, err) {
 		validator := intvalidate.NewSpecValidator(doc.Schema(), strfmt.Default)
 		res, _ := validator.Validate(doc)
@@ -65,7 +66,7 @@ func TestIssue53(t *testing.T) {
 	}
 
 	// as swagger spec
-	doc, err := spec.JSONSpec(fp)
+	doc, err := loads.JSONSpec(fp)
 	if assert.NoError(t, err) {
 		validator := intvalidate.NewSpecValidator(doc.Schema(), strfmt.Default)
 		res, _ := validator.Validate(doc)
@@ -79,7 +80,7 @@ func TestIssue62(t *testing.T) {
 	fp := filepath.Join("..", "fixtures", "bugs", "62", "swagger.json")
 
 	// as swagger spec
-	doc, err := spec.JSONSpec(fp)
+	doc, err := loads.JSONSpec(fp)
 	if assert.NoError(t, err) {
 		validator := intvalidate.NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		res, _ := validator.Validate(doc)
@@ -92,7 +93,7 @@ func TestIssue63(t *testing.T) {
 	fp := filepath.Join("..", "fixtures", "bugs", "63", "swagger.json")
 
 	// as swagger spec
-	doc, err := spec.JSONSpec(fp)
+	doc, err := loads.JSONSpec(fp)
 	if assert.NoError(t, err) {
 		validator := intvalidate.NewSpecValidator(doc.Schema(), strfmt.Default)
 		res, _ := validator.Validate(doc)
@@ -104,7 +105,7 @@ func TestIssue61_MultipleRefs(t *testing.T) {
 	fp := filepath.Join("..", "fixtures", "bugs", "61", "multiple-refs.json")
 
 	// as swagger spec
-	doc, err := spec.JSONSpec(fp)
+	doc, err := loads.JSONSpec(fp)
 	if assert.NoError(t, err) {
 		validator := intvalidate.NewSpecValidator(doc.Schema(), strfmt.Default)
 		res, _ := validator.Validate(doc)
@@ -117,7 +118,7 @@ func TestIssue61_ResolvedRef(t *testing.T) {
 	fp := filepath.Join("..", "fixtures", "bugs", "61", "unresolved-ref-for-name.json")
 
 	// as swagger spec
-	doc, err := spec.JSONSpec(fp)
+	doc, err := loads.JSONSpec(fp)
 	if assert.NoError(t, err) {
 		validator := intvalidate.NewSpecValidator(doc.Schema(), strfmt.Default)
 		res, _ := validator.Validate(doc)
@@ -129,7 +130,7 @@ func TestIssue123(t *testing.T) {
 	fp := filepath.Join("..", "fixtures", "bugs", "123", "swagger.yml")
 
 	// as swagger spec
-	doc, err := spec.YAMLSpec(fp)
+	doc, err := loads.YAMLSpec(fp)
 	if assert.NoError(t, err) {
 		validator := intvalidate.NewSpecValidator(doc.Schema(), strfmt.Default)
 		res, _ := validator.Validate(doc)

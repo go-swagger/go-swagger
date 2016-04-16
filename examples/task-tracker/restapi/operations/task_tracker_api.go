@@ -11,6 +11,7 @@ import (
 	httpkit "github.com/go-swagger/go-swagger/httpkit"
 	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
 	security "github.com/go-swagger/go-swagger/httpkit/security"
+	loads "github.com/go-swagger/go-swagger/loads"
 	spec "github.com/go-swagger/go-swagger/spec"
 	strfmt "github.com/go-swagger/go-swagger/strfmt"
 	"github.com/go-swagger/go-swagger/swag"
@@ -19,12 +20,12 @@ import (
 )
 
 // NewTaskTrackerAPI creates a new TaskTracker instance
-func NewTaskTrackerAPI(spec *spec.Document) *TaskTrackerAPI {
+func NewTaskTrackerAPI(spec *loads.Document) *TaskTrackerAPI {
 	o := &TaskTrackerAPI{
 		spec:            spec,
 		handlers:        make(map[string]map[string]http.Handler),
 		formats:         strfmt.Default,
-		defaultConsumes: "",
+		defaultConsumes: "application/json",
 		defaultProduces: "application/json",
 		ServerShutdown:  func() {},
 	}
@@ -40,12 +41,14 @@ This document contains all possible values for a swagger definition.
 This means that it exercises the framework relatively well.
 */
 type TaskTrackerAPI struct {
-	spec            *spec.Document
+	spec            *loads.Document
 	context         *middleware.Context
 	handlers        map[string]map[string]http.Handler
 	formats         strfmt.Registry
 	defaultConsumes string
 	defaultProduces string
+	// MulitpartformConsumer registers a consumer for a "multipart/form-data" mime type
+	MulitpartformConsumer httpkit.Consumer
 	// JSONConsumer registers a consumer for a "application/vnd.goswagger.examples.task-tracker.v1+json" mime type
 	JSONConsumer httpkit.Consumer
 
@@ -122,6 +125,10 @@ func (o *TaskTrackerAPI) RegisterFormat(name string, format strfmt.Format, valid
 // Validate validates the registrations in the TaskTrackerAPI
 func (o *TaskTrackerAPI) Validate() error {
 	var unregistered []string
+
+	if o.MulitpartformConsumer == nil {
+		unregistered = append(unregistered, "MulitpartformConsumer")
+	}
 
 	if o.JSONConsumer == nil {
 		unregistered = append(unregistered, "JSONConsumer")
@@ -210,6 +217,9 @@ func (o *TaskTrackerAPI) ConsumersFor(mediaTypes []string) map[string]httpkit.Co
 	result := make(map[string]httpkit.Consumer)
 	for _, mt := range mediaTypes {
 		switch mt {
+
+		case "multipart/form-data":
+			result["multipart/form-data"] = o.MulitpartformConsumer
 
 		case "application/vnd.goswagger.examples.task-tracker.v1+json":
 			result["application/vnd.goswagger.examples.task-tracker.v1+json"] = o.JSONConsumer

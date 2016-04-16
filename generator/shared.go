@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	"github.com/go-swagger/go-swagger/analysis"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
 	"golang.org/x/tools/imports"
@@ -107,7 +108,7 @@ type GenOpts struct {
 // 	TargetDirectory string
 // }
 
-func loadSpec(specFile string) (string, *spec.Document, error) {
+func loadSpec(specFile string) (string, *loads.Document, error) {
 	// find swagger spec document, verify it exists
 	specPath := specFile
 	var err error
@@ -119,7 +120,7 @@ func loadSpec(specFile string) (string, *spec.Document, error) {
 	}
 
 	// load swagger spec
-	specDoc, err := spec.Load(specPath)
+	specDoc, err := loads.Spec(specPath)
 	if err != nil {
 		return "", nil, err
 	}
@@ -193,7 +194,7 @@ func writeFile(target, ffn string, content []byte) error {
 	return ioutil.WriteFile(filepath.Join(target, ffn), content, 0644)
 }
 
-func gatherModels(specDoc *spec.Document, modelNames []string) (map[string]spec.Schema, error) {
+func gatherModels(specDoc *loads.Document, modelNames []string) (map[string]spec.Schema, error) {
 	models, mnc := make(map[string]spec.Schema), len(modelNames)
 	defs := specDoc.Spec().Definitions
 
@@ -222,7 +223,7 @@ func gatherModels(specDoc *spec.Document, modelNames []string) (map[string]spec.
 	return models, nil
 }
 
-func appNameOrDefault(specDoc *spec.Document, name, defaultName string) string {
+func appNameOrDefault(specDoc *loads.Document, name, defaultName string) string {
 	if strings.TrimSpace(name) == "" {
 		if specDoc.Spec().Info != nil && strings.TrimSpace(specDoc.Spec().Info.Title) != "" {
 			name = specDoc.Spec().Info.Title

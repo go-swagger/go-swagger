@@ -22,6 +22,7 @@ import (
 	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/gorilla/context"
@@ -118,19 +119,19 @@ type Router interface {
 }
 
 type defaultRouteBuilder struct {
-	spec     *spec.Document
+	spec     *loads.Document
 	analyzer *analysis.Spec
 	api      RoutableAPI
 	records  map[string][]denco.Record
 }
 
 type defaultRouter struct {
-	spec    *spec.Document
+	spec    *loads.Document
 	api     RoutableAPI
 	routers map[string]*denco.Router
 }
 
-func newDefaultRouteBuilder(spec *spec.Document, api RoutableAPI) *defaultRouteBuilder {
+func newDefaultRouteBuilder(spec *loads.Document, api RoutableAPI) *defaultRouteBuilder {
 	return &defaultRouteBuilder{
 		spec:     spec,
 		analyzer: analysis.New(spec.Spec()),
@@ -140,7 +141,7 @@ func newDefaultRouteBuilder(spec *spec.Document, api RoutableAPI) *defaultRouteB
 }
 
 // DefaultRouter creates a default implemenation of the router
-func DefaultRouter(spec *spec.Document, api RoutableAPI) Router {
+func DefaultRouter(spec *loads.Document, api RoutableAPI) Router {
 	builder := newDefaultRouteBuilder(spec, api)
 	if spec != nil {
 		for method, paths := range builder.analyzer.Operations() {

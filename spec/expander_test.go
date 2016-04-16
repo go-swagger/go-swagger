@@ -32,7 +32,7 @@ func TestSpecExpansion(t *testing.T) {
 	// resolver, err := defaultSchemaLoader(spec, nil, nil)
 	// assert.NoError(t, err)
 
-	err := expandSpec(spec)
+	err := ExpandSpec(spec)
 	assert.NoError(t, err)
 
 	specDoc, err := swag.JSONDoc("../fixtures/expansion/all-the-things.json")
@@ -50,7 +50,7 @@ func TestSpecExpansion(t *testing.T) {
 	tagParam := spec.Parameters["tag"]
 	idParam := spec.Parameters["idParam"]
 
-	err = expandSpec(spec)
+	err = ExpandSpec(spec)
 	assert.NoError(t, err)
 
 	assert.Equal(t, tagParam, spec.Parameters["query"])
@@ -159,7 +159,7 @@ func TestIssue415(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.NotPanics(t, func() {
-		err = expandSpec(spec)
+		err = ExpandSpec(spec)
 		assert.NoError(t, err)
 	}, "Calling expand spec with response schemas that have circular refs, should not panic!")
 }
@@ -173,7 +173,7 @@ func TestCircularSpecExpansion(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.NotPanics(t, func() {
-		err = expandSpec(spec)
+		err = ExpandSpec(spec)
 		assert.NoError(t, err)
 	}, "Calling expand spec with circular refs, should not panic!")
 }

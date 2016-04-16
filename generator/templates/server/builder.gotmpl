@@ -9,6 +9,7 @@ import (
   "net/http"
 
   spec "github.com/go-swagger/go-swagger/spec"
+  loads "github.com/go-swagger/go-swagger/loads"
   strfmt "github.com/go-swagger/go-swagger/strfmt"
   httpkit "github.com/go-swagger/go-swagger/httpkit"
   middleware "github.com/go-swagger/go-swagger/httpkit/middleware"{{ if .SecurityDefinitions }}
@@ -21,7 +22,7 @@ import (
 )
 
 // New{{ pascalize .Name }}API creates a new {{ pascalize .Name }} instance
-func New{{ pascalize .Name }}API(spec *spec.Document) *{{ pascalize .Name }}API {
+func New{{ pascalize .Name }}API(spec *loads.Document) *{{ pascalize .Name }}API {
   {{.ReceiverName}} := &{{ pascalize .Name }}API{
     spec:     spec,
     handlers: make(map[string]map[string]http.Handler),
@@ -36,7 +37,7 @@ func New{{ pascalize .Name }}API(spec *spec.Document) *{{ pascalize .Name }}API 
 
 /*{{ pascalize .Name }}API {{ if .Info }}{{ if .Info.Description }}{{.Info.Description}}{{ else }}the {{ humanize .Name }} API{{ end }}{{ end }} */
 type {{ pascalize .Name }}API struct {
-  spec            *spec.Document
+  spec            *loads.Document
   context         *middleware.Context
   handlers        map[string]map[string]http.Handler
   formats         strfmt.Registry

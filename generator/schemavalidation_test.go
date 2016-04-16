@@ -21,7 +21,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/swag"
 	"github.com/stretchr/testify/assert"
 )
@@ -56,7 +56,7 @@ func assertValidation(t testing.TB, pth, expr string, gm GenSchema) bool {
 }
 
 func TestSchemaValidation_RequiredProps(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "RequiredProps"
 		schema := specDoc.Spec().Definitions[k]
@@ -85,7 +85,7 @@ func TestSchemaValidation_RequiredProps(t *testing.T) {
 }
 
 func TestSchemaValidation_Strings(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "NamedString"
 		schema := specDoc.Spec().Definitions[k]
@@ -112,7 +112,7 @@ func TestSchemaValidation_Strings(t *testing.T) {
 }
 
 func TestSchemaValidation_StringProps(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "StringValidations"
 		schema := specDoc.Spec().Definitions[k]
@@ -141,7 +141,7 @@ func TestSchemaValidation_StringProps(t *testing.T) {
 }
 
 func TestSchemaValidation_NamedNumber(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "NamedNumber"
 		schema := specDoc.Spec().Definitions[k]
@@ -169,7 +169,7 @@ func TestSchemaValidation_NamedNumber(t *testing.T) {
 }
 
 func TestSchemaValidation_NumberProps(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "NumberValidations"
 		schema := specDoc.Spec().Definitions[k]
@@ -198,7 +198,7 @@ func TestSchemaValidation_NumberProps(t *testing.T) {
 }
 
 func TestSchemaValidation_NamedArray(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "NamedArray"
 		schema := specDoc.Spec().Definitions[k]
@@ -227,7 +227,7 @@ func TestSchemaValidation_NamedArray(t *testing.T) {
 }
 
 func TestSchemaValidation_ArrayProps(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "ArrayValidations"
 		schema := specDoc.Spec().Definitions[k]
@@ -258,7 +258,7 @@ func TestSchemaValidation_ArrayProps(t *testing.T) {
 }
 
 func TestSchemaValidation_NamedNestedArray(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "NamedNestedArray"
 		schema := specDoc.Spec().Definitions[k]
@@ -294,7 +294,7 @@ func TestSchemaValidation_NamedNestedArray(t *testing.T) {
 }
 
 func TestSchemaValidation_NestedArrayProps(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "NestedArrayValidations"
 		schema := specDoc.Spec().Definitions[k]
@@ -332,7 +332,7 @@ func TestSchemaValidation_NestedArrayProps(t *testing.T) {
 }
 
 func TestSchemaValidation_NamedNestedObject(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "NamedNestedObject"
 		schema := specDoc.Spec().Definitions[k]
@@ -381,7 +381,7 @@ func TestSchemaValidation_NamedNestedObject(t *testing.T) {
 }
 
 func TestSchemaValidation_NestedObjectProps(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "NestedObjectValidations"
 		schema := specDoc.Spec().Definitions[k]
@@ -431,7 +431,7 @@ func TestSchemaValidation_NestedObjectProps(t *testing.T) {
 }
 
 func TestSchemaValidation_NamedArrayMulti(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "NamedArrayMulti"
 		schema := specDoc.Spec().Definitions[k]
@@ -465,7 +465,7 @@ func TestSchemaValidation_NamedArrayMulti(t *testing.T) {
 }
 
 func TestSchemaValidation_ArrayMultiProps(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "ArrayMultiValidations"
 		schema := specDoc.Spec().Definitions[k]
@@ -499,7 +499,7 @@ func TestSchemaValidation_ArrayMultiProps(t *testing.T) {
 }
 
 func TestSchemaValidation_NamedArrayAdditional(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "NamedArrayAdditional"
 		schema := specDoc.Spec().Definitions[k]
@@ -535,7 +535,7 @@ func TestSchemaValidation_NamedArrayAdditional(t *testing.T) {
 }
 
 func TestSchemaValidation_ArrayAdditionalProps(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "ArrayAdditionalValidations"
 		schema := specDoc.Spec().Definitions[k]
@@ -570,7 +570,7 @@ func TestSchemaValidation_ArrayAdditionalProps(t *testing.T) {
 }
 
 func TestSchemaValidation_NamedMap(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "NamedMap"
 		schema := specDoc.Spec().Definitions[k]
@@ -598,7 +598,7 @@ func TestSchemaValidation_NamedMap(t *testing.T) {
 }
 
 func TestSchemaValidation_MapProps(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "MapValidations"
 		schema := specDoc.Spec().Definitions[k]
@@ -628,7 +628,7 @@ func TestSchemaValidation_MapProps(t *testing.T) {
 }
 
 func TestSchemaValidation_NamedMapComplex(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "NamedMapComplex"
 		schema := specDoc.Spec().Definitions[k]
@@ -660,7 +660,7 @@ func TestSchemaValidation_NamedMapComplex(t *testing.T) {
 }
 
 func TestSchemaValidation_MapComplexProps(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "MapComplexValidations"
 		schema := specDoc.Spec().Definitions[k]
@@ -692,7 +692,7 @@ func TestSchemaValidation_MapComplexProps(t *testing.T) {
 }
 
 func TestSchemaValidation_NamedNestedMap(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "NamedNestedMap"
 		schema := specDoc.Spec().Definitions[k]
@@ -722,7 +722,7 @@ func TestSchemaValidation_NamedNestedMap(t *testing.T) {
 }
 
 func TestSchemaValidation_NestedMapProps(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "NestedMapValidations"
 		schema := specDoc.Spec().Definitions[k]
@@ -753,7 +753,7 @@ func TestSchemaValidation_NestedMapProps(t *testing.T) {
 	}
 }
 func TestAdditionalProperties_Simple(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "NamedMapComplex"
 		schema := specDoc.Spec().Definitions[k]
@@ -793,7 +793,7 @@ func TestAdditionalProperties_Simple(t *testing.T) {
 }
 
 func TestAdditionalProperties_Nested(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "NamedNestedMapComplex"
 		schema := specDoc.Spec().Definitions[k]
@@ -844,7 +844,7 @@ func TestAdditionalProperties_Nested(t *testing.T) {
 }
 
 func TestSchemaValidation_NamedNestedMapComplex(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "NamedNestedMapComplex"
 		schema := specDoc.Spec().Definitions[k]
@@ -884,7 +884,7 @@ func TestSchemaValidation_NamedNestedMapComplex(t *testing.T) {
 }
 
 func TestSchemaValidation_NestedMapPropsComplex(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "NestedMapComplexValidations"
 		schema := specDoc.Spec().Definitions[k]
@@ -920,7 +920,7 @@ func TestSchemaValidation_NestedMapPropsComplex(t *testing.T) {
 }
 
 func TestSchemaValidation_NamedAllOf(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "NamedAllOf"
 		schema := specDoc.Spec().Definitions[k]
@@ -961,7 +961,7 @@ func TestSchemaValidation_NamedAllOf(t *testing.T) {
 }
 
 func TestSchemaValidation_AllOfProps(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "AllOfValidations"
 		schema := specDoc.Spec().Definitions[k]
@@ -997,7 +997,7 @@ func TestSchemaValidation_AllOfProps(t *testing.T) {
 }
 
 func TestSchemaValidation_RefedAllOf(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "RefedAllOfValidations"
 		schema := specDoc.Spec().Definitions[k]
@@ -1025,7 +1025,7 @@ func TestSchemaValidation_RefedAllOf(t *testing.T) {
 
 func TestSchemaValidation_SimpleZeroAllowed(t *testing.T) {
 
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "SimpleZeroAllowed"
 		schema := specDoc.Spec().Definitions[k]
@@ -1051,7 +1051,7 @@ func TestSchemaValidation_SimpleZeroAllowed(t *testing.T) {
 }
 
 func TestSchemaValidation_Pet(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "Pet"
 		schema := specDoc.Spec().Definitions[k]
@@ -1077,7 +1077,7 @@ func TestSchemaValidation_Pet(t *testing.T) {
 }
 
 func TestSchemaValidation_UpdateOrg(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.schemavalidation.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
 		k := "UpdateOrg"
 		schema := specDoc.Spec().Definitions[k]

@@ -24,7 +24,7 @@ import (
 	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/httpkit/middleware/untyped"
 	"github.com/go-swagger/go-swagger/internal/testing/petstore"
-	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -164,7 +164,7 @@ func TestRouterStruct(t *testing.T) {
 	assert.False(t, ok)
 }
 
-func petAPIRouterBuilder(spec *spec.Document, api *untyped.API, analyzed *analysis.Spec) *defaultRouteBuilder {
+func petAPIRouterBuilder(spec *loads.Document, api *untyped.API, analyzed *analysis.Spec) *defaultRouteBuilder {
 	builder := newDefaultRouteBuilder(spec, newRoutableUntypedAPI(spec, api, new(Context)))
 	builder.AddRoute("GET", "/pets", analyzed.AllPaths()["/pets"].Get)
 	builder.AddRoute("POST", "/pets", analyzed.AllPaths()["/pets"].Post)

@@ -4,12 +4,15 @@ package events
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"io"
 	"net/http"
 
 	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
-	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/go-swagger/go-swagger/swag"
+
+	strfmt "github.com/go-swagger/go-swagger/strfmt"
 
 	"github.com/go-swagger/go-swagger/fixtures/bugs/84/models"
 )
@@ -17,14 +20,19 @@ import (
 // NewPutEventByIDParams creates a new PutEventByIDParams object
 // with the default values initialized.
 func NewPutEventByIDParams() PutEventByIDParams {
+	var ()
 	return PutEventByIDParams{}
 }
 
-// PutEventByIDParams contains all the bound params for the put event by id operation
+// PutEventByIDParams contains all the bound params for the put event by Id operation
 // typically these are obtained from a http.Request
 //
 // swagger:parameters putEventById
 type PutEventByIDParams struct {
+
+	// HTTP Request Object
+	HTTPRequest *http.Request
+
 	/*Existing event
 	  Required: true
 	  In: body
@@ -41,18 +49,30 @@ type PutEventByIDParams struct {
 // for simple values it will use straight method calls
 func (o *PutEventByIDParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+	o.HTTPRequest = r
 
-	var body models.Event
-	if err := route.Consumer.Consume(r.Body, &body); err != nil {
-		res = append(res, errors.NewParseError("event", "body", "", err))
+	if httpkit.HasBody(r) {
+		defer r.Body.Close()
+		var body models.Event
+		if err := route.Consumer.Consume(r.Body, &body); err != nil {
+			if err == io.EOF {
+				res = append(res, errors.Required("event", "body"))
+			} else {
+				res = append(res, errors.NewParseError("event", "body", "", err))
+			}
+
+		} else {
+			if err := body.Validate(route.Formats); err != nil {
+				res = append(res, err)
+			}
+
+			if len(res) == 0 {
+				o.Event = &body
+			}
+		}
+
 	} else {
-		if err := body.Validate(route.Formats); err != nil {
-			res = append(res, err)
-		}
-
-		if len(res) == 0 {
-			o.Event = &body
-		}
+		res = append(res, errors.Required("event", "body"))
 	}
 
 	rID, rhkID, _ := route.Params.GetOK("id")

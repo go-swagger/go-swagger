@@ -4,8 +4,6 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"strconv"
-
 	strfmt "github.com/go-swagger/go-swagger/strfmt"
 	"github.com/go-swagger/go-swagger/swag"
 
@@ -88,14 +86,6 @@ func (m *Pet) validatePhotoUrls(formats strfmt.Registry) error {
 		return err
 	}
 
-	for i := 0; i < len(m.PhotoUrls); i++ {
-
-		if err := validate.RequiredString("photoUrls"+"."+strconv.Itoa(i), "body", string(m.PhotoUrls[i])); err != nil {
-			return err
-		}
-
-	}
-
 	return nil
 }
 
@@ -103,14 +93,6 @@ func (m *Pet) validateTags(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.Tags) { // not required
 		return nil
-	}
-
-	for i := 0; i < len(m.Tags); i++ {
-
-		if err := m.Tags[i].Validate(formats); err != nil {
-			return err
-		}
-
 	}
 
 	return nil

@@ -28,6 +28,7 @@ import (
 
 	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
 )
@@ -119,7 +120,7 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 type appGenerator struct {
 	Name            string
 	Receiver        string
-	SpecDoc         *spec.Document
+	SpecDoc         *loads.Document
 	Analyzed        *analysis.Spec
 	Package         string
 	APIPackage      string

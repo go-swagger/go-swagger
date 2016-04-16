@@ -15,7 +15,7 @@ http://helloreverb.com/terms/
     Schemes:
       http
     Host: petstore.swagger.wordnik.com
-    BasePath: /
+    BasePath: /v2
     Version: 1.0.0
     License: Apache 2.0 http://www.apache.org/licenses/LICENSE-2.0.html
     Contact: apiteam@wordnik.com
@@ -23,13 +23,15 @@ http://helloreverb.com/terms/
     Consumes:
     - application/json
 
+    - application/x-www-form-urlencoded
+
     - application/xml
 
 
     Produces:
-    - application/json
-
     - application/xml
+
+    - application/json
 
 
 swagger:meta

@@ -6,13 +6,13 @@ import (
 	"testing"
 
 	"github.com/go-swagger/go-swagger/analysis"
-	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/swag"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestBuildDiscriminatorMap(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.discriminators.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.discriminators.yml")
 	if assert.NoError(t, err) {
 		di := discriminatorInfo(analysis.New(specDoc.Spec()))
 		assert.Len(t, di.Discriminators, 1)
@@ -22,7 +22,7 @@ func TestBuildDiscriminatorMap(t *testing.T) {
 }
 
 func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.discriminators.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.discriminators.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "Kennel"
@@ -50,7 +50,7 @@ func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
 }
 
 func TestGenerateModel_Discriminators(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.discriminators.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.discriminators.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 
@@ -133,7 +133,7 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 }
 
 func TestGenerateModel_UsesDiscriminator(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.discriminators.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.discriminators.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithPet"
@@ -159,7 +159,7 @@ func TestGenerateModel_UsesDiscriminator(t *testing.T) {
 }
 
 func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.discriminators.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.discriminators.yml")
 	if assert.NoError(t, err) {
 		method, path, op, ok := analysis.New(specDoc.Spec()).OperationForName("modelOp")
 		if assert.True(t, ok) {
@@ -195,7 +195,7 @@ func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 }
 
 func TestGenerateServer_Parameters(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.discriminators.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.discriminators.yml")
 	if assert.NoError(t, err) {
 		method, path, op, ok := analysis.New(specDoc.Spec()).OperationForName("modelOp")
 		if assert.True(t, ok) {
@@ -231,7 +231,7 @@ func TestGenerateServer_Parameters(t *testing.T) {
 }
 
 func TestGenerateModel_Discriminator_Billforward(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/billforward.discriminators.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/billforward.discriminators.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "FlatPricingComponent"
@@ -255,7 +255,7 @@ func TestGenerateModel_Discriminator_Billforward(t *testing.T) {
 }
 
 func TestGenerateModel_Bitbucket_Repository(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/bitbucket.json")
+	specDoc, err := loads.Spec("../fixtures/codegen/bitbucket.json")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "repository"
@@ -285,7 +285,7 @@ func TestGenerateModel_Bitbucket_Repository(t *testing.T) {
 }
 
 func TestGenerateModel_Bitbucket_WebhookSubscription(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/bitbucket.json")
+	specDoc, err := loads.Spec("../fixtures/codegen/bitbucket.json")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "webhook_subscription"
@@ -307,7 +307,7 @@ func TestGenerateModel_Bitbucket_WebhookSubscription(t *testing.T) {
 }
 
 func TestGenerateModel_Issue319(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/bugs/319/swagger.yml")
+	specDoc, err := loads.Spec("../fixtures/bugs/319/swagger.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "Container"

@@ -20,7 +20,7 @@ import (
 	"log"
 
 	swaggererrors "github.com/go-swagger/go-swagger/errors"
-	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/go-swagger/go-swagger/validate"
 )
@@ -38,7 +38,7 @@ func (c *ValidateSpec) Execute(args []string) error {
 	}
 
 	swaggerDoc := args[0]
-	specDoc, err := spec.Load(swaggerDoc)
+	specDoc, err := loads.Spec(swaggerDoc)
 	if err != nil {
 		log.Fatalln(err)
 	}

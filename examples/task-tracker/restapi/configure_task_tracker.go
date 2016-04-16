@@ -22,6 +22,8 @@ func configureAPI(api *operations.TaskTrackerAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
+	api.MulitpartformConsumer = httpkit.DiscardConsumer
+
 	api.JSONConsumer = httpkit.JSONConsumer()
 
 	api.JSONProducer = httpkit.JSONProducer()

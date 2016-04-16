@@ -20,6 +20,7 @@ import (
 
 	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/internal/testing/petstore"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/stretchr/testify/assert"
@@ -27,7 +28,7 @@ import (
 
 func TestValidateDuplicatePropertyNames(t *testing.T) {
 	// simple allOf
-	doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "duplicateprops.json"))
+	doc, err := loads.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "duplicateprops.json"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
@@ -38,7 +39,7 @@ func TestValidateDuplicatePropertyNames(t *testing.T) {
 	}
 
 	// nested allOf
-	doc, err = spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "nestedduplicateprops.json"))
+	doc, err = loads.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "nestedduplicateprops.json"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
@@ -50,7 +51,7 @@ func TestValidateDuplicatePropertyNames(t *testing.T) {
 }
 
 func TestValidateNonEmptyPathParameterNames(t *testing.T) {
-	doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "empty-path-param-name.json"))
+	doc, err := loads.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "empty-path-param-name.json"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
@@ -62,7 +63,7 @@ func TestValidateNonEmptyPathParameterNames(t *testing.T) {
 }
 
 func TestValidateCircularAncestry(t *testing.T) {
-	doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "direct-circular-ancestor.json"))
+	doc, err := loads.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "direct-circular-ancestor.json"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
@@ -71,7 +72,7 @@ func TestValidateCircularAncestry(t *testing.T) {
 		assert.Len(t, res.Errors, 1)
 	}
 
-	doc, err = spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "indirect-circular-ancestor.json"))
+	doc, err = loads.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "indirect-circular-ancestor.json"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
@@ -80,7 +81,7 @@ func TestValidateCircularAncestry(t *testing.T) {
 		assert.Len(t, res.Errors, 1)
 	}
 
-	doc, err = spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "recursive-circular-ancestor.json"))
+	doc, err = loads.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "recursive-circular-ancestor.json"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
@@ -95,7 +96,7 @@ func TestValidateUniqueSecurityScopes(t *testing.T) {
 }
 
 func TestValidateReferenced(t *testing.T) {
-	doc, err := spec.YAMLSpec(filepath.Join("..", "..", "fixtures", "validation", "valid-referenced.yml"))
+	doc, err := loads.YAMLSpec(filepath.Join("..", "..", "fixtures", "validation", "valid-referenced.yml"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
@@ -104,7 +105,7 @@ func TestValidateReferenced(t *testing.T) {
 		assert.Empty(t, res.Errors)
 	}
 
-	doc, err = spec.YAMLSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-referenced.yml"))
+	doc, err = loads.YAMLSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-referenced.yml"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
@@ -116,7 +117,7 @@ func TestValidateReferenced(t *testing.T) {
 }
 
 func TestValidateBodyFormDataParams(t *testing.T) {
-	doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-formdata-body-params.json"))
+	doc, err := loads.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-formdata-body-params.json"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
@@ -128,7 +129,7 @@ func TestValidateBodyFormDataParams(t *testing.T) {
 }
 
 func TestValidateReferencesValid(t *testing.T) {
-	doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "valid-ref.json"))
+	doc, err := loads.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "valid-ref.json"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
@@ -137,7 +138,7 @@ func TestValidateReferencesValid(t *testing.T) {
 		assert.Empty(t, res.Errors)
 	}
 
-	doc, err = spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-ref.json"))
+	doc, err = loads.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-ref.json"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
@@ -155,7 +156,7 @@ func TestValidatesExamplesAgainstSchema(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "valid-example-"+tt+".json"))
+		doc, err := loads.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "valid-example-"+tt+".json"))
 		if assert.NoError(t, err) {
 			validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 			validator.spec = doc
@@ -164,7 +165,7 @@ func TestValidatesExamplesAgainstSchema(t *testing.T) {
 			assert.Empty(t, res.Errors, tt+" should not have errors")
 		}
 
-		doc, err = spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-example-"+tt+".json"))
+		doc, err = loads.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-example-"+tt+".json"))
 		if assert.NoError(t, err) {
 			validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 			validator.spec = doc
@@ -199,7 +200,7 @@ func TestValidateDefaultValueAgainstSchema(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "valid-default-value-"+tt+".json"))
+		doc, err := loads.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "valid-default-value-"+tt+".json"))
 		if assert.NoError(t, err) {
 			validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 			validator.spec = doc
@@ -208,7 +209,7 @@ func TestValidateDefaultValueAgainstSchema(t *testing.T) {
 			assert.Empty(t, res.Errors, tt+" should not have errors")
 		}
 
-		doc, err = spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-default-value-"+tt+".json"))
+		doc, err = loads.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-default-value-"+tt+".json"))
 		if assert.NoError(t, err) {
 			validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 			validator.spec = doc

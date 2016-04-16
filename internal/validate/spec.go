@@ -24,6 +24,7 @@ import (
 	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/jsonpointer"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
 )
@@ -31,9 +32,9 @@ import (
 // SpecValidator validates a swagger spec
 type SpecValidator struct {
 	schema       *spec.Schema // swagger 2.0 schema
-	spec         *spec.Document
+	spec         *loads.Document
 	analyzer     *analysis.Spec
-	expanded     *spec.Document
+	expanded     *loads.Document
 	KnownFormats strfmt.Registry
 }
 
@@ -47,10 +48,10 @@ func NewSpecValidator(schema *spec.Schema, formats strfmt.Registry) *SpecValidat
 
 // Validate validates the swagger spec
 func (s *SpecValidator) Validate(data interface{}) (errs *Result, warnings *Result) {
-	var sd *spec.Document
+	var sd *loads.Document
 
 	switch v := data.(type) {
-	case *spec.Document:
+	case *loads.Document:
 		sd = v
 	}
 	if sd == nil {

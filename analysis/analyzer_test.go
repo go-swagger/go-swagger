@@ -20,6 +20,7 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/stretchr/testify/assert"
 )
@@ -145,7 +146,7 @@ func TestAnalyzer(t *testing.T) {
 }
 
 func TestDefinitionAnalysis(t *testing.T) {
-	doc, err := spec.Load(filepath.Join("..", "fixtures", "analysis", "definitions.yml"))
+	doc, err := loads.Spec(filepath.Join("..", "fixtures", "analysis", "definitions.yml"))
 	if assert.NoError(t, err) {
 		analyzer := New(doc.Spec())
 		definitions := analyzer.allSchemas
@@ -186,7 +187,7 @@ func TestDefinitionAnalysis(t *testing.T) {
 }
 
 func TestReferenceAnalysis(t *testing.T) {
-	doc, err := spec.Load(filepath.Join("..", "fixtures", "analysis", "references.yml"))
+	doc, err := loads.Spec(filepath.Join("..", "fixtures", "analysis", "references.yml"))
 	if assert.NoError(t, err) {
 		definitions := New(doc.Spec()).references
 

@@ -25,6 +25,7 @@ import (
 
 	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
 )
@@ -124,7 +125,7 @@ type operationGenerator struct {
 	DefaultScheme        string
 	DefaultProduces      string
 	DefaultConsumes      string
-	Doc                  *spec.Document
+	Doc                  *loads.Document
 	Analyzed             *analysis.Spec
 	WithContext          bool
 }
@@ -217,7 +218,7 @@ type opGen struct {
 	IncludeHandler    bool
 	IncludeParameters bool
 	IncludeResponses  bool
-	Doc               *spec.Document
+	Doc               *loads.Document
 	Analyzed          *analysis.Spec
 	Target            string
 	APIPackage        string
@@ -310,7 +311,7 @@ type codeGenOpBuilder struct {
 	Target          string
 	WithContext     bool
 	Operation       spec.Operation
-	Doc             *spec.Document
+	Doc             *loads.Document
 	Analyzed        *analysis.Spec
 	Authed          bool
 	DefaultImports  []string

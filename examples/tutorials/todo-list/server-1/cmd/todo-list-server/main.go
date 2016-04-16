@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	spec "github.com/go-swagger/go-swagger/spec"
+	loads "github.com/go-swagger/go-swagger/loads"
 	flags "github.com/jessevdk/go-flags"
 
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-1/restapi"
@@ -15,7 +15,7 @@ import (
 // Make sure not to overwrite this file after you generated it because all your edits would be lost!
 
 func main() {
-	swaggerSpec, err := spec.New(restapi.SwaggerJSON, "")
+	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
 	if err != nil {
 		log.Fatalln(err)
 	}

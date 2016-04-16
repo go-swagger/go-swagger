@@ -25,12 +25,13 @@ import (
 	"testing"
 
 	"github.com/go-swagger/go-swagger/analysis"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUniqueOperationNames(t *testing.T) {
-	doc, err := spec.Load("../fixtures/codegen/todolist.simple.yml")
+	doc, err := loads.Spec("../fixtures/codegen/todolist.simple.yml")
 	if assert.NoError(t, err) {
 		sp := doc.Spec()
 		sp.Paths.Paths["/tasks"].Post.ID = "saveTask"
@@ -49,7 +50,7 @@ func TestUniqueOperationNames(t *testing.T) {
 }
 
 func TestEmptyOperationNames(t *testing.T) {
-	doc, err := spec.Load("../fixtures/codegen/todolist.simple.yml")
+	doc, err := loads.Spec("../fixtures/codegen/todolist.simple.yml")
 	if assert.NoError(t, err) {
 		sp := doc.Spec()
 		sp.Paths.Paths["/tasks"].Post.ID = ""
@@ -225,7 +226,7 @@ func methodPathOpBuilder(method, path, fname string) (codeGenOpBuilder, error) {
 		fname = "../fixtures/codegen/todolist.simple.yml"
 	}
 
-	specDoc, err := spec.Load(fname)
+	specDoc, err := loads.Spec(fname)
 	if err != nil {
 		return codeGenOpBuilder{}, err
 	}
@@ -257,7 +258,7 @@ func opBuilder(name, fname string) (codeGenOpBuilder, error) {
 		fname = "../fixtures/codegen/todolist.simple.yml"
 	}
 
-	specDoc, err := spec.Load(fname)
+	specDoc, err := loads.Spec(fname)
 	if err != nil {
 		return codeGenOpBuilder{}, err
 	}

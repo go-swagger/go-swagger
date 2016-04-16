@@ -23,7 +23,7 @@ import (
 	"testing"
 	"text/template"
 
-	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/swag"
 	"github.com/stretchr/testify/assert"
 )
@@ -44,7 +44,7 @@ func (tt *templateTest) assertRender(data interface{}, expected string) bool {
 
 func TestGenerateModel_Sanity(t *testing.T) {
 	// just checks if it can render and format these things
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 
@@ -267,7 +267,7 @@ func TestGenerateModel_Primitives(t *testing.T) {
 }
 
 func TestGenerateModel_Nota(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "Nota"
@@ -285,7 +285,7 @@ func TestGenerateModel_Nota(t *testing.T) {
 }
 
 func TestGenerateModel_NotaWithRef(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "NotaWithRef"
@@ -306,7 +306,7 @@ func TestGenerateModel_NotaWithRef(t *testing.T) {
 }
 
 func TestGenerateModel_NotaWithMeta(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "NotaWithMeta"
@@ -330,7 +330,7 @@ func TestGenerateModel_NotaWithMeta(t *testing.T) {
 }
 
 func TestGenerateModel_RunParameters(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "RunParameters"
@@ -355,7 +355,7 @@ func TestGenerateModel_RunParameters(t *testing.T) {
 }
 
 func TestGenerateModel_NotaWithName(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "NotaWithName"
@@ -393,7 +393,7 @@ func TestGenerateModel_NotaWithName(t *testing.T) {
 }
 
 func TestGenerateModel_NotaWithRefRegistry(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "NotaWithRefRegistry"
@@ -414,7 +414,7 @@ func TestGenerateModel_NotaWithRefRegistry(t *testing.T) {
 }
 
 func TestGenerateModel_NotaWithMetaRegistry(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "NotaWithMetaRegistry"
@@ -438,7 +438,7 @@ func TestGenerateModel_NotaWithMetaRegistry(t *testing.T) {
 }
 
 func TestGenerateModel_WithMap(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithMap"]
@@ -461,7 +461,7 @@ func TestGenerateModel_WithMap(t *testing.T) {
 }
 
 func TestGenerateModel_WithMapInterface(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithMapInterface"]
@@ -488,7 +488,7 @@ func TestGenerateModel_WithMapInterface(t *testing.T) {
 }
 
 func TestGenerateModel_WithMapRef(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithMapRef"
@@ -512,7 +512,7 @@ func TestGenerateModel_WithMapRef(t *testing.T) {
 }
 
 func TestGenerateModel_WithMapComplex(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithMapComplex"
@@ -536,7 +536,7 @@ func TestGenerateModel_WithMapComplex(t *testing.T) {
 }
 
 func TestGenerateModel_WithMapRegistry(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithMapRegistry"]
@@ -559,7 +559,7 @@ func TestGenerateModel_WithMapRegistry(t *testing.T) {
 }
 
 func TestGenerateModel_WithMapRegistryRef(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithMapRegistryRef"
@@ -583,7 +583,7 @@ func TestGenerateModel_WithMapRegistryRef(t *testing.T) {
 }
 
 func TestGenerateModel_WithMapComplexRegistry(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithMapComplexRegistry"
@@ -607,7 +607,7 @@ func TestGenerateModel_WithMapComplexRegistry(t *testing.T) {
 }
 
 func TestGenerateModel_WithAdditional(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithAdditional"
@@ -661,7 +661,7 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 
 func TestGenerateModel_JustRef(t *testing.T) {
 	tt := templateTest{t, modelTemplate.Lookup("schema")}
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["JustRef"]
@@ -682,7 +682,7 @@ func TestGenerateModel_JustRef(t *testing.T) {
 
 func TestGenerateModel_WithRef(t *testing.T) {
 	tt := templateTest{t, modelTemplate.Lookup("schema")}
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithRef"]
@@ -702,7 +702,7 @@ func TestGenerateModel_WithRef(t *testing.T) {
 
 func TestGenerateModel_WithNullableRef(t *testing.T) {
 	tt := templateTest{t, modelTemplate.Lookup("schema")}
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithNullableRef"]
@@ -724,7 +724,7 @@ func TestGenerateModel_WithNullableRef(t *testing.T) {
 }
 
 func TestGenerateModel_Scores(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "Scores"
@@ -745,7 +745,7 @@ func TestGenerateModel_Scores(t *testing.T) {
 }
 
 func TestGenerateModel_JaggedScores(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "JaggedScores"
@@ -766,7 +766,7 @@ func TestGenerateModel_JaggedScores(t *testing.T) {
 }
 
 func TestGenerateModel_Notables(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "Notables"
@@ -787,7 +787,7 @@ func TestGenerateModel_Notables(t *testing.T) {
 }
 
 func TestGenerateModel_Notablix(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "Notablix"
@@ -808,7 +808,7 @@ func TestGenerateModel_Notablix(t *testing.T) {
 }
 
 func TestGenerateModel_Stats(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "Stats"
@@ -831,7 +831,7 @@ func TestGenerateModel_Stats(t *testing.T) {
 }
 
 func TestGenerateModel_Statix(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "Statix"
@@ -858,7 +858,7 @@ func TestGenerateModel_Statix(t *testing.T) {
 
 func TestGenerateModel_WithItems(t *testing.T) {
 	tt := templateTest{t, modelTemplate.Lookup("schema")}
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithItems"]
@@ -882,7 +882,7 @@ func TestGenerateModel_WithItems(t *testing.T) {
 }
 
 func TestGenerateModel_WithComplexItems(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithComplexItems"
@@ -911,7 +911,7 @@ func TestGenerateModel_WithComplexItems(t *testing.T) {
 }
 
 func TestGenerateModel_WithItemsAndAdditional(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithItemsAndAdditional"
@@ -941,7 +941,7 @@ func TestGenerateModel_WithItemsAndAdditional(t *testing.T) {
 }
 
 func TestGenerateModel_WithItemsAndAdditional2(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithItemsAndAdditional2"
@@ -972,7 +972,7 @@ func TestGenerateModel_WithItemsAndAdditional2(t *testing.T) {
 }
 
 func TestGenerateModel_WithComplexAdditional(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithComplexAdditional"
@@ -1002,7 +1002,7 @@ func TestGenerateModel_WithComplexAdditional(t *testing.T) {
 
 func TestGenerateModel_SimpleTuple(t *testing.T) {
 	tt := templateTest{t, modelTemplate}
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "SimpleTuple"
@@ -1046,7 +1046,7 @@ func TestGenerateModel_SimpleTuple(t *testing.T) {
 }
 
 func TestGenerateModel_TupleWithExtra(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "TupleWithExtra"
@@ -1104,7 +1104,7 @@ func TestGenerateModel_TupleWithExtra(t *testing.T) {
 }
 
 func TestGenerateModel_TupleWithComplex(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "TupleWithComplex"
@@ -1163,7 +1163,7 @@ func TestGenerateModel_TupleWithComplex(t *testing.T) {
 }
 
 func TestGenerateModel_WithTuple(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithTuple"
@@ -1224,7 +1224,7 @@ func TestGenerateModel_WithTuple(t *testing.T) {
 
 func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
 	tt := templateTest{t, modelTemplate}
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithTupleWithExtra"
@@ -1294,7 +1294,7 @@ func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
 }
 
 func TestGenerateModel_WithAllOfAndDiscriminator(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["Cat"]
@@ -1319,7 +1319,7 @@ func TestGenerateModel_WithAllOfAndDiscriminator(t *testing.T) {
 }
 
 func TestGenerateModel_WithAllOf(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithAllOf"]
@@ -1374,7 +1374,7 @@ func getDefinitionProperty(genModel *GenDefinition, name string) *GenSchema {
 }
 
 func TestNumericKeys(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/bugs/162/swagger.yml")
+	specDoc, err := loads.Spec("../fixtures/bugs/162/swagger.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["AvatarUrls"]
@@ -1394,7 +1394,7 @@ func TestNumericKeys(t *testing.T) {
 }
 
 func TestGenModel_Issue196(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/bugs/196/swagger.yml")
+	specDoc, err := loads.Spec("../fixtures/bugs/196/swagger.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["Event"]
@@ -1414,7 +1414,7 @@ func TestGenModel_Issue196(t *testing.T) {
 }
 
 func TestGenModel_Issue222(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/tasklist.basic.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/tasklist.basic.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "Price"
@@ -1436,7 +1436,7 @@ func TestGenModel_Issue222(t *testing.T) {
 }
 
 func TestGenModel_Issue243(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "HasDynMeta"
@@ -1458,7 +1458,7 @@ func TestGenModel_Issue243(t *testing.T) {
 }
 
 func TestGenModel_Issue252(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/bugs/252/swagger.json")
+	specDoc, err := loads.Spec("../fixtures/bugs/252/swagger.json")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "SodaBrand"
@@ -1483,7 +1483,7 @@ func TestGenModel_Issue252(t *testing.T) {
 }
 
 func TestGenModel_Issue251(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/bugs/251/swagger.yml")
+	specDoc, err := loads.Spec("../fixtures/bugs/251/swagger.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "example"
@@ -1513,7 +1513,7 @@ func TestGenModel_Issue251(t *testing.T) {
 }
 
 func TestGenModel_Issue257(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "HasSpecialCharProp"
@@ -1539,7 +1539,7 @@ func TestGenModel_Issue257(t *testing.T) {
 }
 
 func TestGenModel_Issue340(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "ImageTar"
@@ -1564,7 +1564,7 @@ func TestGenModel_Issue340(t *testing.T) {
 }
 
 func TestGenModel_Issue381(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "flags_list"
@@ -1584,7 +1584,7 @@ func TestGenModel_Issue381(t *testing.T) {
 }
 
 func TestGenModel_Issue300(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "ActionItem"
@@ -1606,7 +1606,7 @@ func TestGenModel_Issue300(t *testing.T) {
 }
 
 func TestGenModel_Issue398(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "Property"
@@ -1631,7 +1631,7 @@ func TestGenModel_Issue398(t *testing.T) {
 }
 
 func TestGenModel_Issue454(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/bugs/454/swagger.yml")
+	specDoc, err := loads.Spec("../fixtures/bugs/454/swagger.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["genericResource"]
@@ -1654,7 +1654,7 @@ func TestGenModel_Issue454(t *testing.T) {
 }
 
 func TestGenModel_Issue423(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/bugs/423/swagger.json")
+	specDoc, err := loads.Spec("../fixtures/bugs/423/swagger.json")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["SRN"]

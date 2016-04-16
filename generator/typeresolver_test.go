@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/stretchr/testify/assert"
 )
@@ -362,8 +363,8 @@ func TestTypeResolver_Notables(t *testing.T) {
 	}
 }
 
-func specResolver(t testing.TB, path string) (*spec.Document, *typeResolver, error) {
-	tlb, err := spec.Load(path)
+func specResolver(t testing.TB, path string) (*loads.Document, *typeResolver, error) {
+	tlb, err := loads.Spec(path)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -378,8 +379,8 @@ func specResolver(t testing.TB, path string) (*spec.Document, *typeResolver, err
 	return tlb, resolver, nil
 }
 
-func basicTaskListResolver(t testing.TB) (*spec.Document, *typeResolver, error) {
-	tlb, err := spec.Load("../fixtures/codegen/tasklist.basic.yml")
+func basicTaskListResolver(t testing.TB) (*loads.Document, *typeResolver, error) {
+	tlb, err := loads.Spec("../fixtures/codegen/tasklist.basic.yml")
 	if err != nil {
 		return nil, nil, err
 	}

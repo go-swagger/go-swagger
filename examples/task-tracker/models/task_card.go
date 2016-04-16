@@ -255,10 +255,6 @@ func (m *TaskCard) validateTags(formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Tags); i++ {
 
-		if err := validate.RequiredString("tags"+"."+strconv.Itoa(i), "body", string(m.Tags[i])); err != nil {
-			return err
-		}
-
 		if err := validate.MinLength("tags"+"."+strconv.Itoa(i), "body", string(m.Tags[i]), 3); err != nil {
 			return err
 		}

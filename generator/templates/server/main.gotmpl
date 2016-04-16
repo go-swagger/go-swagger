@@ -5,7 +5,7 @@ import (
   "os"
   "net/http"
 
-  spec "github.com/go-swagger/go-swagger/spec"
+  loads "github.com/go-swagger/go-swagger/loads"
 	flags "github.com/jessevdk/go-flags"
 	graceful "github.com/tylerb/graceful"
 
@@ -20,7 +20,7 @@ import (
 
 func main() { {{ if .ExcludeSpec }}
   server := {{ .APIPackage }}.NewServer(nil){{ else }}
-  swaggerSpec, err := spec.New({{ .APIPackage }}.SwaggerJSON, "")
+  swaggerSpec, err := loads.Analyzed({{ .APIPackage }}.SwaggerJSON, "")
   if err != nil {
     log.Fatalln(err)
   }
@@ -44,7 +44,7 @@ func main() { {{ if .ExcludeSpec }}
     os.Exit(1)
 	}
   {{ if .ExcludeSpec }}
-  swaggerSpec, err := spec.Load(string(server.Spec))
+  swaggerSpec, err := loads.Spec(string(server.Spec))
   if err != nil {
     log.Fatalln(err)
   }

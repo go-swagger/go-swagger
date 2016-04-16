@@ -22,6 +22,7 @@ import (
 	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-swagger/go-swagger/loads"
 	swaggerspec "github.com/go-swagger/go-swagger/spec"
 	"github.com/stretchr/testify/assert"
 )
@@ -56,7 +57,7 @@ func (s *stubOperationHandler) Handle(params interface{}) (interface{}, error) {
 }
 
 func TestUntypedAPIRegistrations(t *testing.T) {
-	api := NewAPI(new(swaggerspec.Document))
+	api := NewAPI(new(loads.Document))
 
 	api.RegisterConsumer("application/yada", new(stubConsumer))
 	api.RegisterProducer("application/yada-2", new(stubProducer))
@@ -173,11 +174,11 @@ func TestUntypedAppValidation(t *testing.T) {
 	  	}
 	  }
 	}`
-	validSpec, err := swaggerspec.New([]byte(specStr), "")
+	validSpec, err := loads.Analyzed([]byte(specStr), "")
 	assert.NoError(t, err)
 	assert.NotNil(t, validSpec)
 
-	spec, err := swaggerspec.New([]byte(invalidSpecStr), "")
+	spec, err := loads.Analyzed([]byte(invalidSpecStr), "")
 	assert.NoError(t, err)
 	assert.NotNil(t, spec)
 
