@@ -20,6 +20,14 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/davecgh/go-spew/spew",
+			"repository": "https://github.com/davecgh/go-spew",
+			"revision": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d",
+			"branch": "master",
+			"path": "/spew",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/go-openapi/analysis",
 			"repository": "https://github.com/go-openapi/analysis",
 			"revision": "d9e9bc2dcb13615876a9cc43050458ac6db527d5",
