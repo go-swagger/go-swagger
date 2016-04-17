@@ -21,9 +21,9 @@ http://helloreverb.com/terms/
     Contact: apiteam@wordnik.com
 
     Consumes:
-    - application/x-www-form-urlencoded
-
     - application/xml
+
+    - application/x-www-form-urlencoded
 
     - application/json
 

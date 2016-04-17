@@ -24,9 +24,9 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
-	api.UrlformConsumer = httpkit.DiscardConsumer
-
 	api.XMLConsumer = httpkit.XMLConsumer()
+
+	api.UrlformConsumer = httpkit.DiscardConsumer
 
 	api.JSONConsumer = httpkit.JSONConsumer()
 

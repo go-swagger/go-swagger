@@ -22,6 +22,7 @@ import (
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/httpkit/middleware/untyped"
 	"github.com/go-swagger/go-swagger/httpkit/security"
+	"github.com/go-swagger/go-swagger/httpkit/yamlpc"
 	testingutil "github.com/go-swagger/go-swagger/internal/testing"
 	"github.com/go-swagger/go-swagger/loads"
 	"github.com/stretchr/testify/assert"
@@ -39,8 +40,8 @@ func NewAPI(t gotest.TB) (*loads.Document, *untyped.API) {
 	api.RegisterProducer("application/xml", new(stubProducer))
 	api.RegisterProducer("text/plain", new(stubProducer))
 	api.RegisterProducer("text/html", new(stubProducer))
-	api.RegisterConsumer("application/x-yaml", httpkit.YAMLConsumer())
-	api.RegisterProducer("application/x-yaml", httpkit.YAMLProducer())
+	api.RegisterConsumer("application/x-yaml", yamlpc.YAMLConsumer())
+	api.RegisterProducer("application/x-yaml", yamlpc.YAMLProducer())
 
 	api.RegisterAuth("basic", security.BasicAuth(func(username, password string) (interface{}, error) {
 		if username == "admin" && password == "admin" {
@@ -78,8 +79,8 @@ func NewRootAPI(t gotest.TB) (*loads.Document, *untyped.API) {
 	api.RegisterProducer("application/xml", new(stubProducer))
 	api.RegisterProducer("text/plain", new(stubProducer))
 	api.RegisterProducer("text/html", new(stubProducer))
-	api.RegisterConsumer("application/x-yaml", httpkit.YAMLConsumer())
-	api.RegisterProducer("application/x-yaml", httpkit.YAMLProducer())
+	api.RegisterConsumer("application/x-yaml", yamlpc.YAMLConsumer())
+	api.RegisterProducer("application/x-yaml", yamlpc.YAMLProducer())
 
 	api.RegisterAuth("basic", security.BasicAuth(func(username, password string) (interface{}, error) {
 		if username == "admin" && password == "admin" {
