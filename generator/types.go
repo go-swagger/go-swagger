@@ -21,9 +21,9 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
-	"github.com/go-swagger/go-swagger/loads"
 )
 
 // var goImports = map[string]string{

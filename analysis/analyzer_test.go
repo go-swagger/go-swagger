@@ -21,8 +21,8 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
-	"github.com/go-swagger/go-swagger/loads/fmts"
 	"github.com/stretchr/testify/assert"
 )
 

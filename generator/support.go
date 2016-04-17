@@ -26,11 +26,11 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/httpkit"
-	"github.com/go-swagger/go-swagger/loads"
 )
 
 // GenerateServer generates a server application

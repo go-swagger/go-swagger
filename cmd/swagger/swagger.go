@@ -18,9 +18,9 @@ import (
 	"log"
 	"os"
 
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/loads/fmts"
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands"
-	"github.com/go-swagger/go-swagger/loads"
-	"github.com/go-swagger/go-swagger/loads/fmts"
 	"github.com/jessevdk/go-flags"
 )
 

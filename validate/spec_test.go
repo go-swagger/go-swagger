@@ -21,10 +21,10 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
 	intvalidate "github.com/go-swagger/go-swagger/internal/validate"
-	"github.com/go-swagger/go-swagger/loads"
-	"github.com/go-swagger/go-swagger/loads/fmts"
 	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/stretchr/testify/assert"
 )

@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
-	"github.com/go-swagger/go-swagger/loads"
 	"github.com/stretchr/testify/assert"
 )
 

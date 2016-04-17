@@ -12,17 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package api
+package simplepetstore
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"sync"
 	"sync/atomic"
 
 	"github.com/go-openapi/loads"
-	"github.com/go-openapi/swag"
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
@@ -46,33 +44,24 @@ func NewPetstore() (http.Handler, error) {
 }
 
 var getAllPets = httpkit.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
-	fmt.Println("getAllPets")
-	fmt.Printf("%#v\n", data)
 	return pets, nil
 })
+
 var createPet = httpkit.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
-	fmt.Println("createPet")
-	fmt.Printf("%#v\n", data)
-	body := data.(map[string]interface{})["pet"]
-	var pet Pet
-	if err := swag.FromDynamicJSON(body, &pet); err != nil {
-		return nil, err
-	}
-	addPet(pet)
-	return body, nil
+	body := data.(map[string]interface{})["pet"].(map[string]interface{})
+	return addPet(Pet{
+		Name:   body["name"].(string),
+		Status: body["status"].(string),
+	}), nil
 })
 
 var deletePet = httpkit.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
-	fmt.Println("deletePet")
-	fmt.Printf("%#v\n", data)
 	id := data.(map[string]interface{})["id"].(int64)
 	removePet(id)
 	return nil, nil
 })
 
 var getPetByID = httpkit.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
-	fmt.Println("getPetByID")
-	fmt.Printf("%#v\n", data)
 	id := data.(map[string]interface{})["id"].(int64)
 	return petByID(id)
 })
@@ -104,11 +93,12 @@ func newPetID() int64 {
 	return atomic.AddInt64(&lastPetID, 1)
 }
 
-func addPet(pet Pet) {
+func addPet(pet Pet) Pet {
 	petsLock.Lock()
 	defer petsLock.Unlock()
 	pet.ID = newPetID()
 	pets = append(pets, pet)
+	return pet
 }
 
 func removePet(id int64) {

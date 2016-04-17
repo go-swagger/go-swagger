@@ -20,8 +20,8 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
-	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/scan"
 	"github.com/jessevdk/go-flags"
 )
