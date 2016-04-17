@@ -27,6 +27,13 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/go-openapi/errors",
+			"repository": "https://github.com/go-openapi/errors",
+			"revision": "5998ddd5df28c97a95b3424cbc981e277314889c",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/go-openapi/jsonpointer",
 			"repository": "https://github.com/go-openapi/jsonpointer",
 			"revision": "b6f5daae698a561189ec184359ed9ae6eb3d63a5",
@@ -51,6 +58,13 @@
 			"importpath": "github.com/go-openapi/spec",
 			"repository": "https://github.com/go-openapi/spec",
 			"revision": "59736cd1f58eda5572a223c29d73f34ee80e9c13",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/go-openapi/strfmt",
+			"repository": "https://github.com/go-openapi/strfmt",
+			"revision": "957c950afa77eda44c1d80353c1b708ab984d98d",
 			"branch": "master",
 			"notests": true
 		},
