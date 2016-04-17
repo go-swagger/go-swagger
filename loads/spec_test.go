@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	testingutil "github.com/go-swagger/go-swagger/internal/testing"
+	"github.com/go-openapi/testingutil"
 	"github.com/stretchr/testify/assert"
 )
 

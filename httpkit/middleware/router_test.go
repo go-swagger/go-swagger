@@ -21,9 +21,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/go-openapi/testingutil/petstore"
 	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/httpkit/middleware/untyped"
-	"github.com/go-swagger/go-swagger/internal/testing/petstore"
 	"github.com/go-swagger/go-swagger/loads"
 	"github.com/stretchr/testify/assert"
 )

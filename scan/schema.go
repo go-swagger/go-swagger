@@ -24,7 +24,7 @@ import (
 
 	"golang.org/x/tools/go/loader"
 
-	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-openapi/spec"
 )
 
 type schemaTypable struct {
@@ -690,7 +690,7 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 	// find the file this selector points to
 	file, gd, ts, err := findSourceFile(pkg, expr.Name)
 	if err != nil {
-		err:= swaggerSchemaForType(expr.Name, prop)
+		err := swaggerSchemaForType(expr.Name, prop)
 		if err != nil {
 			return fmt.Errorf("package %s, error is: %v", pkg.String(), err)
 		}
@@ -760,7 +760,7 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 		return nil
 
 	default:
-		err:= swaggerSchemaForType(expr.Name, prop)
+		err := swaggerSchemaForType(expr.Name, prop)
 		if err != nil {
 			return fmt.Errorf("package %s, error is: %v", pkg.String(), err)
 		}

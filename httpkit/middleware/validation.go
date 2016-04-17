@@ -18,9 +18,9 @@ import (
 	"mime"
 	"net/http"
 
+	"github.com/go-openapi/swag"
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit"
-	"github.com/go-swagger/go-swagger/swag"
 )
 
 // NewValidation starts a new validation middleware

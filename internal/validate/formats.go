@@ -17,8 +17,8 @@ package validate
 import (
 	"reflect"
 
+	"github.com/go-openapi/spec"
 	"github.com/go-swagger/go-swagger/httpkit/validate"
-	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 

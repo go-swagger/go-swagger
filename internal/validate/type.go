@@ -18,11 +18,11 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/swag"
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit"
-	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
-	"github.com/go-swagger/go-swagger/swag"
 )
 
 type typeValidator struct {

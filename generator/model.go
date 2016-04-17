@@ -25,10 +25,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/swag"
 	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/loads"
-	"github.com/go-swagger/go-swagger/spec"
-	"github.com/go-swagger/go-swagger/swag"
 )
 
 /*

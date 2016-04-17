@@ -19,9 +19,9 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/swag"
 	"github.com/go-swagger/go-swagger/analysis"
-	"github.com/go-swagger/go-swagger/spec"
-	"github.com/go-swagger/go-swagger/swag"
 )
 
 // JSONDoc loads a json document from either a file or a remote url

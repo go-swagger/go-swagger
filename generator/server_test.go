@@ -9,10 +9,10 @@ import (
 	"os"
 	"testing"
 
+	"github.com/go-openapi/swag"
 	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/loads"
-	"github.com/go-swagger/go-swagger/swag"
 	"github.com/stretchr/testify/assert"
 )
 

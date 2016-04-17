@@ -19,7 +19,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-openapi/spec"
 )
 
 var allSwaggerTags = []string{

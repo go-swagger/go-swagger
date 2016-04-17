@@ -23,9 +23,9 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/go-openapi/swag"
 	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/httpkit"
-	"github.com/go-swagger/go-swagger/swag"
 )
 
 // GenerateClient generates a client library for a swagger spec document.

@@ -23,8 +23,8 @@ import (
 	"testing"
 	"text/template"
 
+	"github.com/go-openapi/swag"
 	"github.com/go-swagger/go-swagger/loads"
-	"github.com/go-swagger/go-swagger/swag"
 	"github.com/stretchr/testify/assert"
 )
 

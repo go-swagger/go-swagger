@@ -6,9 +6,9 @@ package events
 import (
 	"net/http"
 
+	"github.com/go-openapi/swag"
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
-	"github.com/go-swagger/go-swagger/swag"
 
 	strfmt "github.com/go-swagger/go-swagger/strfmt"
 )

@@ -8,13 +8,13 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/swag"
 	httpkit "github.com/go-swagger/go-swagger/httpkit"
 	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
 	security "github.com/go-swagger/go-swagger/httpkit/security"
 	loads "github.com/go-swagger/go-swagger/loads"
-	spec "github.com/go-swagger/go-swagger/spec"
 	strfmt "github.com/go-swagger/go-swagger/strfmt"
-	"github.com/go-swagger/go-swagger/swag"
 
 	"github.com/go-swagger/go-swagger/examples/generated/restapi/operations/pet"
 	"github.com/go-swagger/go-swagger/examples/generated/restapi/operations/store"

@@ -17,9 +17,9 @@ package validate
 import (
 	"reflect"
 
-	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/swag"
 	"github.com/go-swagger/go-swagger/strfmt"
-	"github.com/go-swagger/go-swagger/swag"
 )
 
 var specSchemaType = reflect.TypeOf(&spec.Schema{})
