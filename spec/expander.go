@@ -460,6 +460,11 @@ func expandSchema(schema *Schema, parentRef string, resolver *schemaLoader) erro
 		if err := expandSchema(&v, parentRef, resolver); err != nil {
 			return err
 		}
+		if v.Type.Contains("array") {
+			if err := expandSchema(&v, parentRef, resolver); err != nil {
+				return err
+			}
+		}
 		schema.Properties[k] = v
 	}
 	if schema.AdditionalProperties != nil && schema.AdditionalProperties.Schema != nil {
