@@ -18,15 +18,22 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/internal/testing/petstore"
+	"github.com/go-swagger/go-swagger/loads"
+	"github.com/go-swagger/go-swagger/loads/fmts"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/stretchr/testify/assert"
 )
 
+func init() {
+	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
+}
+
 func TestValidateDuplicatePropertyNames(t *testing.T) {
 	// simple allOf
-	doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "duplicateprops.json"))
+	doc, err := loads.Spec(filepath.Join("..", "..", "fixtures", "validation", "duplicateprops.json"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
@@ -37,7 +44,7 @@ func TestValidateDuplicatePropertyNames(t *testing.T) {
 	}
 
 	// nested allOf
-	doc, err = spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "nestedduplicateprops.json"))
+	doc, err = loads.Spec(filepath.Join("..", "..", "fixtures", "validation", "nestedduplicateprops.json"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
@@ -49,7 +56,7 @@ func TestValidateDuplicatePropertyNames(t *testing.T) {
 }
 
 func TestValidateNonEmptyPathParameterNames(t *testing.T) {
-	doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "empty-path-param-name.json"))
+	doc, err := loads.Spec(filepath.Join("..", "..", "fixtures", "validation", "empty-path-param-name.json"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
@@ -61,7 +68,7 @@ func TestValidateNonEmptyPathParameterNames(t *testing.T) {
 }
 
 func TestValidateCircularAncestry(t *testing.T) {
-	doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "direct-circular-ancestor.json"))
+	doc, err := loads.Spec(filepath.Join("..", "..", "fixtures", "validation", "direct-circular-ancestor.json"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
@@ -70,7 +77,7 @@ func TestValidateCircularAncestry(t *testing.T) {
 		assert.Len(t, res.Errors, 1)
 	}
 
-	doc, err = spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "indirect-circular-ancestor.json"))
+	doc, err = loads.Spec(filepath.Join("..", "..", "fixtures", "validation", "indirect-circular-ancestor.json"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
@@ -79,7 +86,7 @@ func TestValidateCircularAncestry(t *testing.T) {
 		assert.Len(t, res.Errors, 1)
 	}
 
-	doc, err = spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "recursive-circular-ancestor.json"))
+	doc, err = loads.Spec(filepath.Join("..", "..", "fixtures", "validation", "recursive-circular-ancestor.json"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
@@ -94,18 +101,20 @@ func TestValidateUniqueSecurityScopes(t *testing.T) {
 }
 
 func TestValidateReferenced(t *testing.T) {
-	doc, err := spec.YAMLSpec(filepath.Join("..", "..", "fixtures", "validation", "valid-referenced.yml"))
+	doc, err := loads.Spec(filepath.Join("..", "..", "fixtures", "validation", "valid-referenced.yml"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
+		validator.analyzer = analysis.New(doc.Spec())
 		res := validator.validateReferenced()
 		assert.Empty(t, res.Errors)
 	}
 
-	doc, err = spec.YAMLSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-referenced.yml"))
+	doc, err = loads.Spec(filepath.Join("..", "..", "fixtures", "validation", "invalid-referenced.yml"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
+		validator.analyzer = analysis.New(doc.Spec())
 		res := validator.validateReferenced()
 		assert.NotEmpty(t, res.Errors)
 		assert.Len(t, res.Errors, 3)
@@ -113,10 +122,11 @@ func TestValidateReferenced(t *testing.T) {
 }
 
 func TestValidateBodyFormDataParams(t *testing.T) {
-	doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-formdata-body-params.json"))
+	doc, err := loads.Spec(filepath.Join("..", "..", "fixtures", "validation", "invalid-formdata-body-params.json"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
+		validator.analyzer = analysis.New(doc.Spec())
 		res := validator.validateDefaultValueValidAgainstSchema()
 		assert.NotEmpty(t, res.Errors)
 		assert.Len(t, res.Errors, 1)
@@ -124,18 +134,20 @@ func TestValidateBodyFormDataParams(t *testing.T) {
 }
 
 func TestValidateReferencesValid(t *testing.T) {
-	doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "valid-ref.json"))
+	doc, err := loads.Spec(filepath.Join("..", "..", "fixtures", "validation", "valid-ref.json"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
+		validator.analyzer = analysis.New(doc.Spec())
 		res := validator.validateReferencesValid()
 		assert.Empty(t, res.Errors)
 	}
 
-	doc, err = spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-ref.json"))
+	doc, err = loads.Spec(filepath.Join("..", "..", "fixtures", "validation", "invalid-ref.json"))
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 		validator.spec = doc
+		validator.analyzer = analysis.New(doc.Spec())
 		res := validator.validateReferencesValid()
 		assert.NotEmpty(t, res.Errors)
 		assert.Len(t, res.Errors, 1)
@@ -149,18 +161,20 @@ func TestValidatesExamplesAgainstSchema(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "valid-example-"+tt+".json"))
+		doc, err := loads.Spec(filepath.Join("..", "..", "fixtures", "validation", "valid-example-"+tt+".json"))
 		if assert.NoError(t, err) {
 			validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 			validator.spec = doc
+			validator.analyzer = analysis.New(doc.Spec())
 			res := validator.validateExamplesValidAgainstSchema()
 			assert.Empty(t, res.Errors, tt+" should not have errors")
 		}
 
-		doc, err = spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-example-"+tt+".json"))
+		doc, err = loads.Spec(filepath.Join("..", "..", "fixtures", "validation", "invalid-example-"+tt+".json"))
 		if assert.NoError(t, err) {
 			validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 			validator.spec = doc
+			validator.analyzer = analysis.New(doc.Spec())
 			res := validator.validateExamplesValidAgainstSchema()
 			assert.NotEmpty(t, res.Errors, tt+" should have errors")
 			assert.Len(t, res.Errors, 1, tt+" should have 1 error")
@@ -172,6 +186,7 @@ func TestValidateDefaultValueAgainstSchema(t *testing.T) {
 	doc, api := petstore.NewAPI(t)
 	validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	res := validator.validateDefaultValueValidAgainstSchema()
 	assert.Empty(t, res.Errors)
 
@@ -190,18 +205,20 @@ func TestValidateDefaultValueAgainstSchema(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		doc, err := spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "valid-default-value-"+tt+".json"))
+		doc, err := loads.Spec(filepath.Join("..", "..", "fixtures", "validation", "valid-default-value-"+tt+".json"))
 		if assert.NoError(t, err) {
 			validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 			validator.spec = doc
+			validator.analyzer = analysis.New(doc.Spec())
 			res := validator.validateDefaultValueValidAgainstSchema()
 			assert.Empty(t, res.Errors, tt+" should not have errors")
 		}
 
-		doc, err = spec.JSONSpec(filepath.Join("..", "..", "fixtures", "validation", "invalid-default-value-"+tt+".json"))
+		doc, err = loads.Spec(filepath.Join("..", "..", "fixtures", "validation", "invalid-default-value-"+tt+".json"))
 		if assert.NoError(t, err) {
 			validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), strfmt.Default)
 			validator.spec = doc
+			validator.analyzer = analysis.New(doc.Spec())
 			res := validator.validateDefaultValueValidAgainstSchema()
 			assert.NotEmpty(t, res.Errors, tt+" should have errors")
 			assert.Len(t, res.Errors, 1, tt+" should have 1 error")
@@ -213,6 +230,7 @@ func TestValidateRequiredDefinitions(t *testing.T) {
 	doc, api := petstore.NewAPI(t)
 	validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	res := validator.validateRequiredDefinitions()
 	assert.Empty(t, res.Errors)
 
@@ -254,6 +272,7 @@ func TestValidateParameters(t *testing.T) {
 	doc, api := petstore.NewAPI(t)
 	validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	res := validator.validateParameters()
 	assert.Empty(t, res.Errors)
 
@@ -267,6 +286,7 @@ func TestValidateParameters(t *testing.T) {
 	sw.Paths.Paths["/pets"].Post.Parameters = append(sw.Paths.Paths["/pets"].Post.Parameters, *spec.BodyParam("fake", spec.RefProperty("#/definitions/Pet")))
 	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	res = validator.validateParameters()
 	assert.NotEmpty(t, res.Errors)
 	assert.Len(t, res.Errors, 1)
@@ -288,6 +308,7 @@ func TestValidateParameters(t *testing.T) {
 	doc.Reload()
 	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	res = validator.validateParameters()
 	assert.NotEmpty(t, res.Errors)
 	assert.Len(t, res.Errors, 1)
@@ -296,6 +317,7 @@ func TestValidateParameters(t *testing.T) {
 	doc, api = petstore.NewAPI(t)
 	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	sw = doc.Spec()
 	pp = sw.Paths.Paths["/pets/{id}"]
 	pp.Delete = nil
@@ -314,6 +336,7 @@ func TestValidateItems(t *testing.T) {
 	doc, api := petstore.NewAPI(t)
 	validator := NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	res := validator.validateItems()
 	assert.Empty(t, res.Errors)
 
@@ -351,6 +374,7 @@ func TestValidateItems(t *testing.T) {
 	doc, api = petstore.NewAPI(t)
 	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	sw = doc.Spec()
 
 	pa := sw.Paths.Paths["/pets"]
@@ -371,6 +395,7 @@ func TestValidateItems(t *testing.T) {
 	doc, api = petstore.NewAPI(t)
 	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	sw = doc.Spec()
 	pa = sw.Paths.Paths["/pets"]
 	pa.Post.Parameters[0].Schema = spec.ArrayProperty(nil)
@@ -381,6 +406,7 @@ func TestValidateItems(t *testing.T) {
 	doc, api = petstore.NewAPI(t)
 	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	sw = doc.Spec()
 	pa = sw.Paths.Paths["/pets"]
 	rp := pa.Post.Responses.StatusCodeResponses[200]
@@ -396,6 +422,7 @@ func TestValidateItems(t *testing.T) {
 	doc, api = petstore.NewAPI(t)
 	validator = NewSpecValidator(spec.MustLoadSwagger20Schema(), api.Formats())
 	validator.spec = doc
+	validator.analyzer = analysis.New(doc.Spec())
 	sw = doc.Spec()
 	pa = sw.Paths.Paths["/pets"]
 	rp = pa.Post.Responses.StatusCodeResponses[200]

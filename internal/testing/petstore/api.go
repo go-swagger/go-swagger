@@ -22,14 +22,15 @@ import (
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/httpkit/middleware/untyped"
 	"github.com/go-swagger/go-swagger/httpkit/security"
+	"github.com/go-swagger/go-swagger/httpkit/yamlpc"
 	testingutil "github.com/go-swagger/go-swagger/internal/testing"
-	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/stretchr/testify/assert"
 )
 
 // NewAPI registers a stub api for the pet store
-func NewAPI(t gotest.TB) (*spec.Document, *untyped.API) {
-	spec, err := spec.New(testingutil.PetStoreJSONMessage, "")
+func NewAPI(t gotest.TB) (*loads.Document, *untyped.API) {
+	spec, err := loads.Analyzed(testingutil.PetStoreJSONMessage, "")
 	assert.NoError(t, err)
 	api := untyped.NewAPI(spec)
 
@@ -39,8 +40,8 @@ func NewAPI(t gotest.TB) (*spec.Document, *untyped.API) {
 	api.RegisterProducer("application/xml", new(stubProducer))
 	api.RegisterProducer("text/plain", new(stubProducer))
 	api.RegisterProducer("text/html", new(stubProducer))
-	api.RegisterConsumer("application/x-yaml", httpkit.YAMLConsumer())
-	api.RegisterProducer("application/x-yaml", httpkit.YAMLProducer())
+	api.RegisterConsumer("application/x-yaml", yamlpc.YAMLConsumer())
+	api.RegisterProducer("application/x-yaml", yamlpc.YAMLProducer())
 
 	api.RegisterAuth("basic", security.BasicAuth(func(username, password string) (interface{}, error) {
 		if username == "admin" && password == "admin" {
@@ -67,8 +68,8 @@ func NewAPI(t gotest.TB) (*spec.Document, *untyped.API) {
 }
 
 // NewRootAPI registers a stub api for the pet store
-func NewRootAPI(t gotest.TB) (*spec.Document, *untyped.API) {
-	spec, err := spec.New(testingutil.RootPetStoreJSONMessage, "")
+func NewRootAPI(t gotest.TB) (*loads.Document, *untyped.API) {
+	spec, err := loads.Analyzed(testingutil.RootPetStoreJSONMessage, "")
 	assert.NoError(t, err)
 	api := untyped.NewAPI(spec)
 
@@ -78,8 +79,8 @@ func NewRootAPI(t gotest.TB) (*spec.Document, *untyped.API) {
 	api.RegisterProducer("application/xml", new(stubProducer))
 	api.RegisterProducer("text/plain", new(stubProducer))
 	api.RegisterProducer("text/html", new(stubProducer))
-	api.RegisterConsumer("application/x-yaml", httpkit.YAMLConsumer())
-	api.RegisterProducer("application/x-yaml", httpkit.YAMLProducer())
+	api.RegisterConsumer("application/x-yaml", yamlpc.YAMLConsumer())
+	api.RegisterProducer("application/x-yaml", yamlpc.YAMLProducer())
 
 	api.RegisterAuth("basic", security.BasicAuth(func(username, password string) (interface{}, error) {
 		if username == "admin" && password == "admin" {

@@ -8,31 +8,34 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-swagger/go-swagger/httpkit"
-	"github.com/go-swagger/go-swagger/httpkit/middleware"
-	"github.com/go-swagger/go-swagger/spec"
-	"github.com/go-swagger/go-swagger/strfmt"
+	httpkit "github.com/go-swagger/go-swagger/httpkit"
+	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
+	loads "github.com/go-swagger/go-swagger/loads"
+	spec "github.com/go-swagger/go-swagger/spec"
+	strfmt "github.com/go-swagger/go-swagger/strfmt"
+	"github.com/go-swagger/go-swagger/swag"
 
 	"github.com/go-swagger/go-swagger/fixtures/bugs/84/restapi/operations/events"
 )
 
-// NewEventListAPI creates a new EventList instance
-func NewEventListAPI(spec *spec.Document) *EventListAPI {
-	o := &EventListAPI{
+// NewAttendListAPI creates a new AttendList instance
+func NewAttendListAPI(spec *loads.Document) *AttendListAPI {
+	o := &AttendListAPI{
 		spec:            spec,
 		handlers:        make(map[string]map[string]http.Handler),
 		formats:         strfmt.Default,
 		defaultConsumes: "application/json",
 		defaultProduces: "application/json",
+		ServerShutdown:  func() {},
 	}
 
 	return o
 }
 
-/*EventListAPI AttendList service.
+/*AttendListAPI AttendList service.
  */
-type EventListAPI struct {
-	spec            *spec.Document
+type AttendListAPI struct {
+	spec            *loads.Document
 	context         *middleware.Context
 	handlers        map[string]map[string]http.Handler
 	formats         strfmt.Registry
@@ -44,54 +47,61 @@ type EventListAPI struct {
 	// JSONProducer registers a producer for a "application/json" mime type
 	JSONProducer httpkit.Producer
 
-	// EventsDeleteEventByIDHandler sets the operation handler for the delete event by id operation
+	// EventsDeleteEventByIDHandler sets the operation handler for the delete event by Id operation
 	EventsDeleteEventByIDHandler events.DeleteEventByIDHandler
-	// EventsGetEventByIDHandler sets the operation handler for the get event by id operation
+	// EventsGetEventByIDHandler sets the operation handler for the get event by Id operation
 	EventsGetEventByIDHandler events.GetEventByIDHandler
 	// EventsGetEventsHandler sets the operation handler for the get events operation
 	EventsGetEventsHandler events.GetEventsHandler
 	// EventsPostEventHandler sets the operation handler for the post event operation
 	EventsPostEventHandler events.PostEventHandler
-	// EventsPutEventByIDHandler sets the operation handler for the put event by id operation
+	// EventsPutEventByIDHandler sets the operation handler for the put event by Id operation
 	EventsPutEventByIDHandler events.PutEventByIDHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
+
+	// ServerShutdown is called when the HTTP(S) server is shut down and done
+	// handling all active connections and does not accept connections any more
+	ServerShutdown func()
+
+	// Custom command line argument groups with their descriptions
+	CommandLineOptionsGroups []swag.CommandLineOptionsGroup
 }
 
 // SetDefaultProduces sets the default produces media type
-func (o *EventListAPI) SetDefaultProduces(mediaType string) {
+func (o *AttendListAPI) SetDefaultProduces(mediaType string) {
 	o.defaultProduces = mediaType
 }
 
 // SetDefaultConsumes returns the default consumes media type
-func (o *EventListAPI) SetDefaultConsumes(mediaType string) {
+func (o *AttendListAPI) SetDefaultConsumes(mediaType string) {
 	o.defaultConsumes = mediaType
 }
 
 // DefaultProduces returns the default produces media type
-func (o *EventListAPI) DefaultProduces() string {
+func (o *AttendListAPI) DefaultProduces() string {
 	return o.defaultProduces
 }
 
 // DefaultConsumes returns the default consumes media type
-func (o *EventListAPI) DefaultConsumes() string {
+func (o *AttendListAPI) DefaultConsumes() string {
 	return o.defaultConsumes
 }
 
 // Formats returns the registered string formats
-func (o *EventListAPI) Formats() strfmt.Registry {
+func (o *AttendListAPI) Formats() strfmt.Registry {
 	return o.formats
 }
 
 // RegisterFormat registers a custom format validator
-func (o *EventListAPI) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
+func (o *AttendListAPI) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
 	o.formats.Add(name, format, validator)
 }
 
-// Validate validates the registrations in the EventListAPI
-func (o *EventListAPI) Validate() error {
+// Validate validates the registrations in the AttendListAPI
+func (o *AttendListAPI) Validate() error {
 	var unregistered []string
 
 	if o.JSONConsumer == nil {
@@ -130,19 +140,19 @@ func (o *EventListAPI) Validate() error {
 }
 
 // ServeErrorFor gets a error handler for a given operation id
-func (o *EventListAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
+func (o *AttendListAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
 	return o.ServeError
 }
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
-func (o *EventListAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]httpkit.Authenticator {
+func (o *AttendListAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]httpkit.Authenticator {
 
 	return nil
 
 }
 
 // ConsumersFor gets the consumers for the specified media types
-func (o *EventListAPI) ConsumersFor(mediaTypes []string) map[string]httpkit.Consumer {
+func (o *AttendListAPI) ConsumersFor(mediaTypes []string) map[string]httpkit.Consumer {
 
 	result := make(map[string]httpkit.Consumer)
 	for _, mt := range mediaTypes {
@@ -158,7 +168,7 @@ func (o *EventListAPI) ConsumersFor(mediaTypes []string) map[string]httpkit.Cons
 }
 
 // ProducersFor gets the producers for the specified media types
-func (o *EventListAPI) ProducersFor(mediaTypes []string) map[string]httpkit.Producer {
+func (o *AttendListAPI) ProducersFor(mediaTypes []string) map[string]httpkit.Producer {
 
 	result := make(map[string]httpkit.Producer)
 	for _, mt := range mediaTypes {
@@ -174,7 +184,7 @@ func (o *EventListAPI) ProducersFor(mediaTypes []string) map[string]httpkit.Prod
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path
-func (o *EventListAPI) HandlerFor(method, path string) (http.Handler, bool) {
+func (o *AttendListAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	if o.handlers == nil {
 		return nil, false
 	}
@@ -186,7 +196,7 @@ func (o *EventListAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	return h, ok
 }
 
-func (o *EventListAPI) initHandlerCache() {
+func (o *AttendListAPI) initHandlerCache() {
 	if o.context == nil {
 		o.context = middleware.NewRoutableContext(o.spec, o, nil)
 	}
@@ -224,7 +234,7 @@ func (o *EventListAPI) initHandlerCache() {
 
 // Serve creates a http handler to serve the API over HTTP
 // can be used directly in http.ListenAndServe(":8000", api.Serve(nil))
-func (o *EventListAPI) Serve(builder middleware.Builder) http.Handler {
+func (o *AttendListAPI) Serve(builder middleware.Builder) http.Handler {
 	if len(o.handlers) == 0 {
 		o.initHandlerCache()
 	}

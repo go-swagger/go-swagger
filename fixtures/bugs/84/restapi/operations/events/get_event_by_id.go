@@ -6,10 +6,10 @@ package events
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/httpkit/middleware"
+	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
 )
 
-// GetEventByIDHandlerFunc turns a function with the right signature into a get event by id handler
+// GetEventByIDHandlerFunc turns a function with the right signature into a get event by Id handler
 type GetEventByIDHandlerFunc func(GetEventByIDParams) middleware.Responder
 
 // Handle executing the request and returning a response
@@ -17,12 +17,12 @@ func (fn GetEventByIDHandlerFunc) Handle(params GetEventByIDParams) middleware.R
 	return fn(params)
 }
 
-// GetEventByIDHandler interface for that can handle valid get event by id params
+// GetEventByIDHandler interface for that can handle valid get event by Id params
 type GetEventByIDHandler interface {
 	Handle(GetEventByIDParams) middleware.Responder
 }
 
-// NewGetEventByID creates a new http.Handler for the get event by id operation
+// NewGetEventByID creates a new http.Handler for the get event by Id operation
 func NewGetEventByID(ctx *middleware.Context, handler GetEventByIDHandler) *GetEventByID {
 	return &GetEventByID{Context: ctx, Handler: handler}
 }
@@ -34,20 +34,19 @@ Get event by id.
 */
 type GetEventByID struct {
 	Context *middleware.Context
-	Params  GetEventByIDParams
 	Handler GetEventByIDHandler
 }
 
 func (o *GetEventByID) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, _ := o.Context.RouteInfo(r)
-	o.Params = NewGetEventByIDParams()
+	var Params = NewGetEventByIDParams()
 
-	if err := o.Context.BindValidRequest(r, route, &o.Params); err != nil { // bind params
+	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
-	res := o.Handler.Handle(o.Params) // actually handle the request
+	res := o.Handler.Handle(Params) // actually handle the request
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 

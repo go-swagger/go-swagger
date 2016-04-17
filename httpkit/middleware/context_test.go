@@ -23,7 +23,8 @@ import (
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/httpkit/middleware/untyped"
 	"github.com/go-swagger/go-swagger/internal/testing/petstore"
-	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/loads"
+	"github.com/go-swagger/go-swagger/loads/fmts"
 	"github.com/gorilla/context"
 	"github.com/stretchr/testify/assert"
 )
@@ -46,8 +47,12 @@ func (t *testBinder) BindRequest(r *http.Request, m *MatchedRoute) error {
 	return nil
 }
 
+func init() {
+	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
+}
+
 func TestContentType_Issue264(t *testing.T) {
-	swspec, err := spec.Load("../../fixtures/bugs/264/swagger.yml")
+	swspec, err := loads.Spec("../../fixtures/bugs/264/swagger.yml")
 	if assert.NoError(t, err) {
 		api := untyped.NewAPI(swspec)
 		api.RegisterConsumer("application/json", httpkit.JSONConsumer())

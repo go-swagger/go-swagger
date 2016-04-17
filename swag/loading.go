@@ -19,8 +19,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
-
-	"gopkg.in/yaml.v2"
 )
 
 // LoadFromFileOrHTTP loads the bytes from a file or a remote http server based on the path passed in
@@ -34,15 +32,6 @@ func LoadStrategy(path string, local, remote func(string) ([]byte, error)) func(
 		return remote
 	}
 	return local
-}
-
-func bytesToYAMLDoc(data []byte) (interface{}, error) {
-	var document map[interface{}]interface{}
-	if err := yaml.Unmarshal(data, &document); err != nil {
-		return nil, err
-	}
-
-	return document, nil
 }
 
 func loadHTTPBytes(path string) ([]byte, error) {

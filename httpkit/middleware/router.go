@@ -19,8 +19,10 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/gorilla/context"
@@ -89,11 +91,11 @@ func newRouter(ctx *Context, next http.Handler) http.Handler {
 		}
 		// Not found, check if it exists in the other methods first
 		if others := ctx.AllowedMethods(r); len(others) > 0 {
-			ctx.Respond(rw, r, ctx.spec.RequiredProduces(), nil, errors.MethodNotAllowed(r.Method, others))
+			ctx.Respond(rw, r, ctx.analyzer.RequiredProduces(), nil, errors.MethodNotAllowed(r.Method, others))
 			return
 		}
 
-		ctx.Respond(rw, r, ctx.spec.RequiredProduces(), nil, errors.NotFound("path %s was not found", r.URL.Path))
+		ctx.Respond(rw, r, ctx.analyzer.RequiredProduces(), nil, errors.NotFound("path %s was not found", r.URL.Path))
 	})
 }
 
@@ -117,30 +119,32 @@ type Router interface {
 }
 
 type defaultRouteBuilder struct {
-	spec    *spec.Document
-	api     RoutableAPI
-	records map[string][]denco.Record
+	spec     *loads.Document
+	analyzer *analysis.Spec
+	api      RoutableAPI
+	records  map[string][]denco.Record
 }
 
 type defaultRouter struct {
-	spec    *spec.Document
+	spec    *loads.Document
 	api     RoutableAPI
 	routers map[string]*denco.Router
 }
 
-func newDefaultRouteBuilder(spec *spec.Document, api RoutableAPI) *defaultRouteBuilder {
+func newDefaultRouteBuilder(spec *loads.Document, api RoutableAPI) *defaultRouteBuilder {
 	return &defaultRouteBuilder{
-		spec:    spec,
-		api:     api,
-		records: make(map[string][]denco.Record),
+		spec:     spec,
+		analyzer: analysis.New(spec.Spec()),
+		api:      api,
+		records:  make(map[string][]denco.Record),
 	}
 }
 
 // DefaultRouter creates a default implemenation of the router
-func DefaultRouter(spec *spec.Document, api RoutableAPI) Router {
+func DefaultRouter(spec *loads.Document, api RoutableAPI) Router {
 	builder := newDefaultRouteBuilder(spec, api)
 	if spec != nil {
-		for method, paths := range spec.Operations() {
+		for method, paths := range builder.analyzer.Operations() {
 			for path, operation := range paths {
 				builder.AddRoute(method, path, operation)
 			}
@@ -207,10 +211,10 @@ func (d *defaultRouteBuilder) AddRoute(method, path string, operation *spec.Oper
 	mn := strings.ToUpper(method)
 
 	if handler, ok := d.api.HandlerFor(method, path); ok {
-		consumes := d.spec.ConsumesFor(operation)
-		produces := d.spec.ProducesFor(operation)
-		parameters := d.spec.ParamsFor(method, path)
-		definitions := d.spec.SecurityDefinitionsFor(operation)
+		consumes := d.analyzer.ConsumesFor(operation)
+		produces := d.analyzer.ProducesFor(operation)
+		parameters := d.analyzer.ParamsFor(method, path)
+		definitions := d.analyzer.SecurityDefinitionsFor(operation)
 
 		record := denco.NewRecord(pathConverter.ReplaceAllString(path, ":$1"), &routeEntry{
 			Operation:      operation,

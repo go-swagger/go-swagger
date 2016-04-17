@@ -21,6 +21,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
 )
@@ -237,7 +238,7 @@ func resolveSimpleType(tn, fmt string, items *spec.Items) string {
 	return tn
 }
 
-func newTypeResolver(pkg string, doc *spec.Document) *typeResolver {
+func newTypeResolver(pkg string, doc *loads.Document) *typeResolver {
 	resolver := typeResolver{ModelsPackage: pkg, Doc: doc}
 	resolver.KnownDefs = make(map[string]struct{})
 	for k, sch := range doc.Pristine().Spec().Definitions {
@@ -250,7 +251,7 @@ func newTypeResolver(pkg string, doc *spec.Document) *typeResolver {
 }
 
 type typeResolver struct {
-	Doc           *spec.Document
+	Doc           *loads.Document
 	ModelsPackage string
 	ModelName     string
 	KnownDefs     map[string]struct{}

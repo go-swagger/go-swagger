@@ -11,6 +11,7 @@ import (
 	httpkit "github.com/go-swagger/go-swagger/httpkit"
 	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
 	security "github.com/go-swagger/go-swagger/httpkit/security"
+	loads "github.com/go-swagger/go-swagger/loads"
 	spec "github.com/go-swagger/go-swagger/spec"
 	strfmt "github.com/go-swagger/go-swagger/strfmt"
 	"github.com/go-swagger/go-swagger/swag"
@@ -19,12 +20,12 @@ import (
 )
 
 // NewTaskTrackerAPI creates a new TaskTracker instance
-func NewTaskTrackerAPI(spec *spec.Document) *TaskTrackerAPI {
+func NewTaskTrackerAPI(spec *loads.Document) *TaskTrackerAPI {
 	o := &TaskTrackerAPI{
 		spec:            spec,
 		handlers:        make(map[string]map[string]http.Handler),
 		formats:         strfmt.Default,
-		defaultConsumes: "",
+		defaultConsumes: "application/json",
 		defaultProduces: "application/json",
 		ServerShutdown:  func() {},
 	}
@@ -40,25 +41,27 @@ This document contains all possible values for a swagger definition.
 This means that it exercises the framework relatively well.
 */
 type TaskTrackerAPI struct {
-	spec            *spec.Document
+	spec            *loads.Document
 	context         *middleware.Context
 	handlers        map[string]map[string]http.Handler
 	formats         strfmt.Registry
 	defaultConsumes string
 	defaultProduces string
+	// MulitpartformConsumer registers a consumer for a "multipart/form-data" mime type
+	MulitpartformConsumer httpkit.Consumer
 	// JSONConsumer registers a consumer for a "application/vnd.goswagger.examples.task-tracker.v1+json" mime type
 	JSONConsumer httpkit.Consumer
 
 	// JSONProducer registers a producer for a "application/vnd.goswagger.examples.task-tracker.v1+json" mime type
 	JSONProducer httpkit.Producer
 
-	// APIKeyAuth registers a function that takes a token and returns a principal
-	// it performs authentication based on an api key token provided in the query
-	APIKeyAuth func(string) (interface{}, error)
-
 	// TokenHeaderAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key X-Token provided in the header
 	TokenHeaderAuth func(string) (interface{}, error)
+
+	// APIKeyAuth registers a function that takes a token and returns a principal
+	// it performs authentication based on an api key token provided in the query
+	APIKeyAuth func(string) (interface{}, error)
 
 	// TasksAddCommentToTaskHandler sets the operation handler for the add comment to task operation
 	TasksAddCommentToTaskHandler tasks.AddCommentToTaskHandler
@@ -123,6 +126,10 @@ func (o *TaskTrackerAPI) RegisterFormat(name string, format strfmt.Format, valid
 func (o *TaskTrackerAPI) Validate() error {
 	var unregistered []string
 
+	if o.MulitpartformConsumer == nil {
+		unregistered = append(unregistered, "MulitpartformConsumer")
+	}
+
 	if o.JSONConsumer == nil {
 		unregistered = append(unregistered, "JSONConsumer")
 	}
@@ -131,12 +138,12 @@ func (o *TaskTrackerAPI) Validate() error {
 		unregistered = append(unregistered, "JSONProducer")
 	}
 
-	if o.APIKeyAuth == nil {
-		unregistered = append(unregistered, "TokenAuth")
-	}
-
 	if o.TokenHeaderAuth == nil {
 		unregistered = append(unregistered, "XTokenAuth")
+	}
+
+	if o.APIKeyAuth == nil {
+		unregistered = append(unregistered, "TokenAuth")
 	}
 
 	if o.TasksAddCommentToTaskHandler == nil {
@@ -190,13 +197,13 @@ func (o *TaskTrackerAPI) AuthenticatorsFor(schemes map[string]spec.SecuritySchem
 	for name, scheme := range schemes {
 		switch name {
 
-		case "api_key":
-
-			result[name] = security.APIKeyAuth(scheme.Name, scheme.In, func(tok string) (interface{}, error) { return o.APIKeyAuth(tok) })
-
 		case "token_header":
 
 			result[name] = security.APIKeyAuth(scheme.Name, scheme.In, func(tok string) (interface{}, error) { return o.TokenHeaderAuth(tok) })
+
+		case "api_key":
+
+			result[name] = security.APIKeyAuth(scheme.Name, scheme.In, func(tok string) (interface{}, error) { return o.APIKeyAuth(tok) })
 
 		}
 	}
@@ -210,6 +217,9 @@ func (o *TaskTrackerAPI) ConsumersFor(mediaTypes []string) map[string]httpkit.Co
 	result := make(map[string]httpkit.Consumer)
 	for _, mt := range mediaTypes {
 		switch mt {
+
+		case "multipart/form-data":
+			result["multipart/form-data"] = o.MulitpartformConsumer
 
 		case "application/vnd.goswagger.examples.task-tracker.v1+json":
 			result["application/vnd.goswagger.examples.task-tracker.v1+json"] = o.JSONConsumer

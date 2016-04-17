@@ -26,7 +26,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
 )
@@ -65,12 +67,13 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 	if err != nil {
 		return nil, err
 	}
+	analyzed := analysis.New(specDoc.Spec())
 
 	models, err := gatherModels(specDoc, modelNames)
 	if err != nil {
 		return nil, err
 	}
-	operations := gatherOperations(specDoc, operationIDs)
+	operations := gatherOperations(analyzed, operationIDs)
 	if len(operations) == 0 {
 		return nil, errors.New("no operations were selected")
 	}
@@ -95,6 +98,7 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 		Name:       appNameOrDefault(specDoc, name, "swagger"),
 		Receiver:   "o",
 		SpecDoc:    specDoc,
+		Analyzed:   analyzed,
 		Models:     models,
 		Operations: operations,
 		Target:     opts.Target,
@@ -116,7 +120,8 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 type appGenerator struct {
 	Name            string
 	Receiver        string
-	SpecDoc         *spec.Document
+	SpecDoc         *loads.Document
+	Analyzed        *analysis.Spec
 	Package         string
 	APIPackage      string
 	ModelsPackage   string
@@ -200,6 +205,7 @@ func (a *appGenerator) Generate() error {
 					IncludeParameters: a.GenOpts.IncludeParameters,
 					IncludeResponses:  a.GenOpts.IncludeResponses,
 					Doc:               a.SpecDoc,
+					Analyzed:          a.Analyzed,
 					Target:            filepath.Join(a.Target, a.ServerPackage),
 					APIPackage:        a.APIPackage,
 				}
@@ -359,7 +365,7 @@ var mediaTypeNames = map[*regexp.Regexp]string{
 
 var knownProducers = map[string]string{
 	"json":          "httpkit.JSONProducer()",
-	"yaml":          "httpkit.YAMLProducer()",
+	"yaml":          "yamlpc.YAMLProducer()",
 	"xml":           "httpkit.XMLProducer()",
 	"txt":           "httpkit.TextProducer()",
 	"bin":           "httpkit.ByteStreamProducer()",
@@ -369,7 +375,7 @@ var knownProducers = map[string]string{
 
 var knownConsumers = map[string]string{
 	"json":          "httpkit.JSONConsumer()",
-	"yaml":          "httpkit.YAMLConsumer()",
+	"yaml":          "yamlpc.YAMLConsumer()",
 	"xml":           "httpkit.XMLConsumer()",
 	"txt":           "httpkit.TextConsumer()",
 	"bin":           "httpkit.ByteStreamConsumer()",
@@ -397,7 +403,7 @@ func mediaTypeName(tn string) (string, bool) {
 }
 
 func (a *appGenerator) makeConsumes() (consumes []GenSerGroup, consumesJSON bool) {
-	for _, cons := range a.SpecDoc.RequiredConsumes() {
+	for _, cons := range a.Analyzed.RequiredConsumes() {
 		cn, ok := mediaTypeName(cons)
 		if !ok {
 			continue
@@ -456,7 +462,7 @@ func (a *appGenerator) makeConsumes() (consumes []GenSerGroup, consumesJSON bool
 }
 
 func (a *appGenerator) makeProduces() (produces []GenSerGroup, producesJSON bool) {
-	for _, prod := range a.SpecDoc.RequiredProduces() {
+	for _, prod := range a.Analyzed.RequiredProduces() {
 		pn, ok := mediaTypeName(prod)
 		if !ok {
 			continue
@@ -519,7 +525,7 @@ func (a *appGenerator) makeSecuritySchemes() (security []GenSecurityScheme) {
 	if prin == "" {
 		prin = "interface{}"
 	}
-	for _, scheme := range a.SpecDoc.RequiredSecuritySchemes() {
+	for _, scheme := range a.Analyzed.RequiredSecuritySchemes() {
 		if req, ok := a.SpecDoc.Spec().SecurityDefinitions[scheme]; ok {
 			if req.Type == "basic" || req.Type == "apiKey" {
 				security = append(security, GenSecurityScheme{
@@ -588,13 +594,14 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		bldr.Target = a.Target
 		bldr.DefaultImports = defaultImports
 		bldr.DefaultScheme = a.DefaultScheme
-		bldr.Doc = &(*a.SpecDoc)
+		bldr.Doc = a.SpecDoc
+		bldr.Analyzed = a.Analyzed
 		// TODO: change operation name to something safe
 		bldr.Name = on
 		bldr.Operation = *o
 		bldr.Method = opp.Method
 		bldr.Path = opp.Path
-		bldr.Authed = len(a.SpecDoc.SecurityRequirementsFor(o)) > 0
+		bldr.Authed = len(a.Analyzed.SecurityRequirementsFor(o)) > 0
 		ap := a.APIPackage
 		bldr.RootAPIPackage = swag.ToFileName(a.APIPackage)
 		bldr.WithContext = a.GenOpts != nil && a.GenOpts.WithContext

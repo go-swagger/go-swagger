@@ -8,21 +8,27 @@ import (
 
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
-	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/go-swagger/go-swagger/swag"
+
+	strfmt "github.com/go-swagger/go-swagger/strfmt"
 )
 
 // NewGetEventByIDParams creates a new GetEventByIDParams object
 // with the default values initialized.
 func NewGetEventByIDParams() GetEventByIDParams {
+	var ()
 	return GetEventByIDParams{}
 }
 
-// GetEventByIDParams contains all the bound params for the get event by id operation
+// GetEventByIDParams contains all the bound params for the get event by Id operation
 // typically these are obtained from a http.Request
 //
 // swagger:parameters getEventById
 type GetEventByIDParams struct {
+
+	// HTTP Request Object
+	HTTPRequest *http.Request
+
 	/*Existing event id.
 	  Required: true
 	  In: path
@@ -34,6 +40,7 @@ type GetEventByIDParams struct {
 // for simple values it will use straight method calls
 func (o *GetEventByIDParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+	o.HTTPRequest = r
 
 	rID, rhkID, _ := route.Params.GetOK("id")
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {

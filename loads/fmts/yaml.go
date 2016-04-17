@@ -12,13 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package swag
+package fmts
 
 import (
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 	"strconv"
+
+	"github.com/go-swagger/go-swagger/swag"
+
+	"gopkg.in/yaml.v2"
 )
+
+// YAMLMatcher matches yaml
+func YAMLMatcher(path string) bool {
+	ext := filepath.Ext(path)
+	return ext == ".yaml" || ext == ".yml"
+}
 
 // YAMLToJSON converts YAML unmarshaled data into json compatible data
 func YAMLToJSON(data interface{}) (json.RawMessage, error) {
@@ -28,6 +39,15 @@ func YAMLToJSON(data interface{}) (json.RawMessage, error) {
 	}
 	b, err := json.Marshal(jm)
 	return json.RawMessage(b), err
+}
+
+func bytesToYAMLDoc(data []byte) (interface{}, error) {
+	var document map[interface{}]interface{}
+	if err := yaml.Unmarshal(data, &document); err != nil {
+		return nil, err
+	}
+
+	return document, nil
 }
 
 func transformData(in interface{}) (out interface{}, err error) {
@@ -83,7 +103,7 @@ func YAMLDoc(path string) (json.RawMessage, error) {
 
 // YAMLData loads a yaml document from either http or a file
 func YAMLData(path string) (interface{}, error) {
-	data, err := LoadFromFileOrHTTP(path)
+	data, err := swag.LoadFromFileOrHTTP(path)
 	if err != nil {
 		return nil, err
 	}

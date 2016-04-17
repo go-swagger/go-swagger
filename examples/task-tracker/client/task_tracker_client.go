@@ -20,7 +20,7 @@ func NewHTTPClient(formats strfmt.Registry) *TaskTracker {
 	if formats == nil {
 		formats = strfmt.Default
 	}
-	transport := httptransport.New("localhost:8322", "/", []string{"https", "http"})
+	transport := httptransport.New("localhost:8322", "/api", []string{"http", "https"})
 	return New(transport, formats)
 }
 

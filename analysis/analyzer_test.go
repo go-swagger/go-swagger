@@ -12,14 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package spec
+package analysis
 
 import (
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"sort"
 	"testing"
 
+	"github.com/go-swagger/go-swagger/loads/fmts"
+	"github.com/go-swagger/go-swagger/spec"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,32 +35,18 @@ func schemeNames(schemes []SecurityRequirement) []string {
 	return names
 }
 
-func newAnalyzer(spec *Swagger) *specAnalyzer {
-	a := &specAnalyzer{
-		spec:        spec,
-		consumes:    make(map[string]struct{}),
-		produces:    make(map[string]struct{}),
-		authSchemes: make(map[string]struct{}),
-		operations:  make(map[string]map[string]*Operation),
-		allSchemas:  make(map[string]SchemaRef),
-		allOfs:      make(map[string]SchemaRef),
-	}
-	a.initialize()
-	return a
-}
-
 func TestAnalyzer(t *testing.T) {
-	formatParam := QueryParam("format").Typed("string", "")
+	formatParam := spec.QueryParam("format").Typed("string", "")
 
-	limitParam := QueryParam("limit").Typed("integer", "int32")
-	limitParam.Extensions = Extensions(map[string]interface{}{})
+	limitParam := spec.QueryParam("limit").Typed("integer", "int32")
+	limitParam.Extensions = spec.Extensions(map[string]interface{}{})
 	limitParam.Extensions.Add("go-name", "Limit")
 
-	skipParam := QueryParam("skip").Typed("integer", "int32")
-	pi := PathItem{}
-	pi.Parameters = []Parameter{*limitParam}
+	skipParam := spec.QueryParam("skip").Typed("integer", "int32")
+	pi := spec.PathItem{}
+	pi.Parameters = []spec.Parameter{*limitParam}
 
-	op := &Operation{}
+	op := &spec.Operation{}
 	op.Consumes = []string{"application/x-yaml"}
 	op.Produces = []string{"application/x-yaml"}
 	op.Security = []map[string][]string{
@@ -65,38 +54,38 @@ func TestAnalyzer(t *testing.T) {
 		map[string][]string{"basic": nil},
 	}
 	op.ID = "someOperation"
-	op.Parameters = []Parameter{*skipParam}
+	op.Parameters = []spec.Parameter{*skipParam}
 	pi.Get = op
 
-	pi2 := PathItem{}
-	pi2.Parameters = []Parameter{*limitParam}
-	op2 := &Operation{}
+	pi2 := spec.PathItem{}
+	pi2.Parameters = []spec.Parameter{*limitParam}
+	op2 := &spec.Operation{}
 	op2.ID = "anotherOperation"
-	op2.Parameters = []Parameter{*skipParam}
+	op2.Parameters = []spec.Parameter{*skipParam}
 	pi2.Get = op2
 
-	spec := &Swagger{
-		SwaggerProps: SwaggerProps{
+	spec := &spec.Swagger{
+		SwaggerProps: spec.SwaggerProps{
 			Consumes: []string{"application/json"},
 			Produces: []string{"application/json"},
 			Security: []map[string][]string{
 				map[string][]string{"apikey": nil},
 			},
-			SecurityDefinitions: map[string]*SecurityScheme{
-				"basic":  BasicAuth(),
-				"apiKey": APIKeyAuth("api_key", "query"),
-				"oauth2": OAuth2AccessToken("http://authorize.com", "http://token.com"),
+			SecurityDefinitions: map[string]*spec.SecurityScheme{
+				"basic":  spec.BasicAuth(),
+				"apiKey": spec.APIKeyAuth("api_key", "query"),
+				"oauth2": spec.OAuth2AccessToken("http://authorize.com", "http://token.com"),
 			},
-			Parameters: map[string]Parameter{"format": *formatParam},
-			Paths: &Paths{
-				Paths: map[string]PathItem{
+			Parameters: map[string]spec.Parameter{"format": *formatParam},
+			Paths: &spec.Paths{
+				Paths: map[string]spec.PathItem{
 					"/":      pi,
 					"/items": pi2,
 				},
 			},
 		},
 	}
-	analyzer := newAnalyzer(spec)
+	analyzer := New(spec)
 
 	assert.Len(t, analyzer.consumes, 2)
 	assert.Len(t, analyzer.produces, 2)
@@ -158,9 +147,10 @@ func TestAnalyzer(t *testing.T) {
 }
 
 func TestDefinitionAnalysis(t *testing.T) {
-	doc, err := Load(filepath.Join("..", "fixtures", "analysis", "definitions.yml"))
+	doc, err := loadSpec(filepath.Join("..", "fixtures", "analysis", "definitions.yml"))
 	if assert.NoError(t, err) {
-		definitions := doc.allSchemas
+		analyzer := New(doc)
+		definitions := analyzer.allSchemas
 		// parameters
 		assertSchemaRefExists(t, definitions, "#/parameters/someParam/schema")
 		assertSchemaRefExists(t, definitions, "#/paths/~1some~1where~1{id}/parameters/1/schema")
@@ -190,16 +180,30 @@ func TestDefinitionAnalysis(t *testing.T) {
 		assertSchemaRefExists(t, definitions, "#/definitions/withAllOf")
 		assertSchemaRefExists(t, definitions, "#/definitions/withAllOf/allOf/0")
 		assertSchemaRefExists(t, definitions, "#/definitions/withAllOf/allOf/1")
-		assert.Len(t, doc.allOfs, 1)
-		_, hasAllOf := doc.allOfs["#/definitions/withAllOf"]
+		allOfs := analyzer.allOfs
+		assert.Len(t, allOfs, 1)
+		_, hasAllOf := allOfs["#/definitions/withAllOf"]
 		assert.True(t, hasAllOf)
 	}
 }
 
+func loadSpec(path string) (*spec.Swagger, error) {
+	data, err := fmts.YAMLDoc(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var sw spec.Swagger
+	if err := json.Unmarshal(data, &sw); err != nil {
+		return nil, err
+	}
+	return &sw, nil
+}
+
 func TestReferenceAnalysis(t *testing.T) {
-	doc, err := Load(filepath.Join("..", "fixtures", "analysis", "references.yml"))
+	doc, err := loadSpec(filepath.Join("..", "fixtures", "analysis", "references.yml"))
 	if assert.NoError(t, err) {
-		definitions := doc.references
+		definitions := New(doc).references
 
 		// parameters
 		assertRefExists(t, definitions.parameters, "#/paths/~1some~1where~1{id}/parameters/0")
@@ -218,7 +222,7 @@ func TestReferenceAnalysis(t *testing.T) {
 	}
 }
 
-func assertRefExists(t testing.TB, data map[string]Ref, key string) bool {
+func assertRefExists(t testing.TB, data map[string]spec.Ref, key string) bool {
 	if _, ok := data[key]; !ok {
 		return assert.Fail(t, fmt.Sprintf("expected %q to exist in the ref bag", key))
 	}

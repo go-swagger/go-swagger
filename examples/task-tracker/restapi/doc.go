@@ -14,15 +14,17 @@ Terms Of Service:
 
 
     Schemes:
-      http
       https
+      http
     Host: localhost:8322
-    BasePath: /
+    BasePath: /api
     Version: 1.0.0
     License: Apache 2.0 http://www.apache.org/licenses/LICENSE-2.0.html
     Contact: Issue Tracker API Team<nobody@nowhere.com> https://task-tracker.goswagger.io
 
     Consumes:
+    - multipart/form-data
+
     - application/vnd.goswagger.examples.task-tracker.v1+json
 
 

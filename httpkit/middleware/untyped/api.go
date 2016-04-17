@@ -20,16 +20,23 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
 )
 
 // NewAPI creates the default untyped API
-func NewAPI(spec *spec.Document) *API {
+func NewAPI(spec *loads.Document) *API {
+	var an *analysis.Spec
+	if spec != nil && spec.Spec() != nil {
+		an = analysis.New(spec.Spec())
+	}
 	return &API{
 		spec:            spec,
+		analyzer:        an,
 		DefaultProduces: httpkit.JSONMime,
 		DefaultConsumes: httpkit.JSONMime,
 		consumers: map[string]httpkit.Consumer{
@@ -48,7 +55,8 @@ func NewAPI(spec *spec.Document) *API {
 
 // API represents an untyped mux for a swagger spec
 type API struct {
-	spec            *spec.Document
+	spec            *loads.Document
+	analyzer        *analysis.Spec
 	DefaultProduces string
 	DefaultConsumes string
 	consumers       map[string]httpkit.Consumer
@@ -191,17 +199,17 @@ func (d *API) validate() error {
 		definedAuths = append(definedAuths, k)
 	}
 
-	if err := d.verify("consumes", consumes, d.spec.RequiredConsumes()); err != nil {
+	if err := d.verify("consumes", consumes, d.analyzer.RequiredConsumes()); err != nil {
 		return err
 	}
-	if err := d.verify("produces", produces, d.spec.RequiredProduces()); err != nil {
+	if err := d.verify("produces", produces, d.analyzer.RequiredProduces()); err != nil {
 		return err
 	}
-	if err := d.verify("operation", operations, d.spec.OperationIDs()); err != nil {
+	if err := d.verify("operation", operations, d.analyzer.OperationIDs()); err != nil {
 		return err
 	}
 
-	requiredAuths := d.spec.RequiredSecuritySchemes()
+	requiredAuths := d.analyzer.RequiredSecuritySchemes()
 	if err := d.verify("auth scheme", authenticators, requiredAuths); err != nil {
 		return err
 	}

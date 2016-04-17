@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTypeResolver_NestedAliasedSlice(t *testing.T) {
-	specDoc, err := spec.Load("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "Statix"

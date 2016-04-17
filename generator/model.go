@@ -25,6 +25,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-swagger/go-swagger/analysis"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
 )
@@ -96,7 +98,7 @@ func GenerateDefinition(modelNames []string, includeModel, includeValidator bool
 type definitionGenerator struct {
 	Name             string
 	Model            spec.Schema
-	SpecDoc          *spec.Document
+	SpecDoc          *loads.Document
 	Target           string
 	IncludeModel     bool
 	IncludeValidator bool
@@ -146,15 +148,16 @@ func (m *definitionGenerator) generateModel() error {
 	return writeToFile(m.Target, m.Name, buf.Bytes())
 }
 
-func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *spec.Document) (*GenDefinition, error) {
+func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *loads.Document) (*GenDefinition, error) {
 	return makeGenDefinitionHierarchy(name, pkg, "", schema, specDoc)
 }
-func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema, specDoc *spec.Document) (*GenDefinition, error) {
+func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema, specDoc *loads.Document) (*GenDefinition, error) {
 	receiver := "m"
 	resolver := newTypeResolver("", specDoc)
 	resolver.ModelName = name
+	analyzed := analysis.New(specDoc.Spec())
 
-	di := discriminatorInfo(specDoc)
+	di := discriminatorInfo(analyzed)
 
 	pg := schemaGenContext{
 		Path:           "",

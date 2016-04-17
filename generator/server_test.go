@@ -9,8 +9,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/httpkit"
-	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/swag"
 	"github.com/stretchr/testify/assert"
 )
@@ -38,17 +39,18 @@ func testGenOpts() (g GenOpts) {
 }
 
 func testAppGenertor(t testing.TB, specPath, name string) (*appGenerator, error) {
-	specDoc, err := spec.Load(specPath)
+	specDoc, err := loads.Spec(specPath)
 	if !assert.NoError(t, err) {
 		return nil, err
 	}
+	analyzed := analysis.New(specDoc.Spec())
 
 	models, err := gatherModels(specDoc, nil)
 	if !assert.NoError(t, err) {
 		return nil, err
 	}
 
-	operations := gatherOperations(specDoc, nil)
+	operations := gatherOperations(analyzed, nil)
 	if len(operations) == 0 {
 		return nil, errors.New("no operations were selected")
 	}
@@ -60,6 +62,7 @@ func testAppGenertor(t testing.TB, specPath, name string) (*appGenerator, error)
 		Name:            appNameOrDefault(specDoc, name, "swagger"),
 		Receiver:        "o",
 		SpecDoc:         specDoc,
+		Analyzed:        analyzed,
 		Models:          models,
 		Operations:      operations,
 		Target:          ".",

@@ -23,7 +23,9 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
 )
@@ -46,8 +48,9 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 	if err != nil {
 		return err
 	}
+	analyzed := analysis.New(specDoc.Spec())
 
-	ops := gatherOperations(specDoc, operationNames)
+	ops := gatherOperations(analyzed, operationNames)
 
 	for operationName, opRef := range ops {
 		method, path, operation := opRef.Method, opRef.Path, opRef.Op
@@ -75,7 +78,7 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 			ClientPackage:        mangleName(swag.ToFileName(opts.ClientPackage), "client"),
 			ServerPackage:        serverPackage,
 			Operation:            *operation,
-			SecurityRequirements: specDoc.SecurityRequirementsFor(operation),
+			SecurityRequirements: analyzed.SecurityRequirementsFor(operation),
 			Principal:            opts.Principal,
 			Target:               filepath.Join(opts.Target, serverPackage),
 			Base:                 opts.Target,
@@ -88,6 +91,7 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 			DefaultProduces:      defaultProduces,
 			DefaultConsumes:      defaultConsumes,
 			Doc:                  specDoc,
+			Analyzed:             analyzed,
 		}
 		if err := generator.Generate(); err != nil {
 			return err
@@ -106,7 +110,7 @@ type operationGenerator struct {
 	ServerPackage        string
 	ClientPackage        string
 	Operation            spec.Operation
-	SecurityRequirements []spec.SecurityRequirement
+	SecurityRequirements []analysis.SecurityRequirement
 	Principal            string
 	Target               string
 	Base                 string
@@ -121,7 +125,8 @@ type operationGenerator struct {
 	DefaultScheme        string
 	DefaultProduces      string
 	DefaultConsumes      string
-	Doc                  *spec.Document
+	Doc                  *loads.Document
+	Analyzed             *analysis.Spec
 	WithContext          bool
 }
 
@@ -142,6 +147,7 @@ func (o *operationGenerator) Generate() error {
 	bldr.Operation = o.Operation
 	bldr.Authed = authed
 	bldr.Doc = o.Doc
+	bldr.Analyzed = o.Analyzed
 	bldr.DefaultScheme = o.DefaultScheme
 	bldr.DefaultProduces = o.DefaultProduces
 	bldr.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(o.Base), o.ModelsPackage))}
@@ -195,6 +201,7 @@ func (o *operationGenerator) Generate() error {
 		og.pkg = op.Package
 		og.cname = swag.ToGoName(op.Name)
 		og.Doc = o.Doc
+		og.Analyzed = o.Analyzed
 		og.Target = o.Target
 		og.APIPackage = o.APIPackage
 		og.WithContext = o.WithContext
@@ -211,7 +218,8 @@ type opGen struct {
 	IncludeHandler    bool
 	IncludeParameters bool
 	IncludeResponses  bool
-	Doc               *spec.Document
+	Doc               *loads.Document
+	Analyzed          *analysis.Spec
 	Target            string
 	APIPackage        string
 	WithContext       bool
@@ -226,7 +234,7 @@ func (o *opGen) Generate() error {
 		log.Println("generated handler", o.data.Package+"."+o.cname)
 	}
 
-	opParams := o.Doc.ParamsFor(o.data.Method, o.data.Path)
+	opParams := o.Analyzed.ParamsFor(o.data.Method, o.data.Path)
 	if o.IncludeParameters && len(opParams) > 0 {
 		if err := o.generateParameterModel(); err != nil {
 			return fmt.Errorf("parameters: %s", err)
@@ -303,7 +311,8 @@ type codeGenOpBuilder struct {
 	Target          string
 	WithContext     bool
 	Operation       spec.Operation
-	Doc             *spec.Document
+	Doc             *loads.Document
+	Analyzed        *analysis.Spec
 	Authed          bool
 	DefaultImports  []string
 	DefaultScheme   string
@@ -323,7 +332,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	operation := b.Operation
 	var params, qp, pp, hp, fp GenParameters
 	var hasQueryParams, hasFormParams, hasFileParams bool
-	for _, p := range b.Doc.ParamsFor(b.Method, b.Path) {
+	for _, p := range b.Analyzed.ParamsFor(b.Method, b.Path) {
 		cp, err := b.MakeParameter(receiver, resolver, p)
 		if err != nil {
 			return GenOperation{}, err

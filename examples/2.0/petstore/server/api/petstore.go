@@ -25,13 +25,13 @@ import (
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
 	"github.com/go-swagger/go-swagger/httpkit/middleware/untyped"
-	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/swag"
 )
 
 // NewPetstore creates a new petstore api handler
 func NewPetstore() (http.Handler, error) {
-	spec, err := spec.New(json.RawMessage([]byte(swaggerJSON)), "")
+	spec, err := loads.Analyzed(json.RawMessage([]byte(swaggerJSON)), "")
 	if err != nil {
 		return nil, err
 	}

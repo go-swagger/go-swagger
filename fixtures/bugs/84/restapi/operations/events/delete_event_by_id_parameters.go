@@ -8,21 +8,27 @@ import (
 
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
-	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/go-swagger/go-swagger/swag"
+
+	strfmt "github.com/go-swagger/go-swagger/strfmt"
 )
 
 // NewDeleteEventByIDParams creates a new DeleteEventByIDParams object
 // with the default values initialized.
 func NewDeleteEventByIDParams() DeleteEventByIDParams {
+	var ()
 	return DeleteEventByIDParams{}
 }
 
-// DeleteEventByIDParams contains all the bound params for the delete event by id operation
+// DeleteEventByIDParams contains all the bound params for the delete event by Id operation
 // typically these are obtained from a http.Request
 //
 // swagger:parameters deleteEventById
 type DeleteEventByIDParams struct {
+
+	// HTTP Request Object
+	HTTPRequest *http.Request
+
 	/*Existing event id.
 	  Required: true
 	  In: path
@@ -34,6 +40,7 @@ type DeleteEventByIDParams struct {
 // for simple values it will use straight method calls
 func (o *DeleteEventByIDParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+	o.HTTPRequest = r
 
 	rID, rhkID, _ := route.Params.GetOK("id")
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {

@@ -6,7 +6,7 @@ package events
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/httpkit/middleware"
+	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
 )
 
 // GetEventsHandlerFunc turns a function with the right signature into a get events handler

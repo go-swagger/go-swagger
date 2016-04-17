@@ -12,18 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package httpkit
+package yamlpc
 
 import (
 	"io"
 	"io/ioutil"
 
+	"github.com/go-swagger/go-swagger/httpkit"
+
 	"gopkg.in/yaml.v2"
 )
 
 // YAMLConsumer creates a consumer for yaml data
-func YAMLConsumer() Consumer {
-	return ConsumerFunc(func(r io.Reader, v interface{}) error {
+func YAMLConsumer() httpkit.Consumer {
+	return httpkit.ConsumerFunc(func(r io.Reader, v interface{}) error {
 		buf, err := ioutil.ReadAll(r)
 		if err != nil {
 			return err
@@ -33,8 +35,8 @@ func YAMLConsumer() Consumer {
 }
 
 // YAMLProducer creates a producer for yaml data
-func YAMLProducer() Producer {
-	return ProducerFunc(func(w io.Writer, v interface{}) error {
+func YAMLProducer() httpkit.Producer {
+	return httpkit.ProducerFunc(func(w io.Writer, v interface{}) error {
 		b, _ := yaml.Marshal(v) // can't make this error come up
 		_, err := w.Write(b)
 		return err

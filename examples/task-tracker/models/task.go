@@ -104,14 +104,6 @@ func (m *Task) validateAttachments(formats strfmt.Registry) error {
 
 func (m *Task) validateComments(formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Comments); i++ {
-
-		if err := m.Comments[i].Validate(formats); err != nil {
-			return err
-		}
-
-	}
-
 	return nil
 }
 

@@ -17,6 +17,7 @@ package validate
 import (
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/internal/validate"
+	"github.com/go-swagger/go-swagger/loads"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/strfmt"
 )
@@ -38,7 +39,7 @@ import (
 // 	- each reference must point to a valid object
 // 	- every default value that is specified must validate against the schema for that property
 // 	- items property is required for all schemas/definitions of type `array`
-func Spec(doc *spec.Document, formats strfmt.Registry) error {
+func Spec(doc *loads.Document, formats strfmt.Registry) error {
 	errs, _ /*warns*/ := validate.NewSpecValidator(doc.Schema(), formats).Validate(doc)
 	if errs.HasErrors() {
 		return errors.CompositeValidationError(errs.Errors...)

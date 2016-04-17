@@ -107,7 +107,7 @@ type schemaLoader struct {
 	currentRef  *Ref
 	root        interface{}
 	cache       ResolutionCache
-	loadDoc     DocLoader
+	loadDoc     func(string) (json.RawMessage, error)
 }
 
 var idPtr, _ = jsonpointer.New("/id")
@@ -306,7 +306,8 @@ type specExpander struct {
 	resolver *schemaLoader
 }
 
-func expandSpec(spec *Swagger) error {
+// ExpandSpec expands the references in a swagger spec
+func ExpandSpec(spec *Swagger) error {
 	resolver, err := defaultSchemaLoader(spec, nil, nil)
 	if err != nil {
 		return err

@@ -17,8 +17,8 @@ type PutEventByIDNoContent struct {
 }
 
 // NewPutEventByIDNoContent creates PutEventByIDNoContent with default headers values
-func NewPutEventByIDNoContent() PutEventByIDNoContent {
-	return PutEventByIDNoContent{}
+func NewPutEventByIDNoContent() *PutEventByIDNoContent {
+	return &PutEventByIDNoContent{}
 }
 
 // WriteResponse to the client
@@ -32,15 +32,33 @@ func (o *PutEventByIDNoContent) WriteResponse(rw http.ResponseWriter, producer h
 swagger:response putEventByIdDefault
 */
 type PutEventByIDDefault struct {
+	_statusCode int
 }
 
 // NewPutEventByIDDefault creates PutEventByIDDefault with default headers values
-func NewPutEventByIDDefault() PutEventByIDDefault {
-	return PutEventByIDDefault{}
+func NewPutEventByIDDefault(code int) *PutEventByIDDefault {
+	if code <= 0 {
+		code = 500
+	}
+
+	return &PutEventByIDDefault{
+		_statusCode: code,
+	}
+}
+
+// WithStatusCode adds the status to the put event by Id default response
+func (o *PutEventByIDDefault) WithStatusCode(code int) *PutEventByIDDefault {
+	o._statusCode = code
+	return o
+}
+
+// SetStatusCode sets the status to the put event by Id default response
+func (o *PutEventByIDDefault) SetStatusCode(code int) {
+	o._statusCode = code
 }
 
 // WriteResponse to the client
 func (o *PutEventByIDDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
 
-	rw.WriteHeader(500)
+	rw.WriteHeader(o._statusCode)
 }
