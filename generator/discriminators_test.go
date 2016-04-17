@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/swag"
-	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/stretchr/testify/assert"
 )
 

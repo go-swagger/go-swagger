@@ -23,10 +23,10 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
-	"github.com/go-swagger/go-swagger/analysis"
 	"golang.org/x/tools/imports"
 )
 

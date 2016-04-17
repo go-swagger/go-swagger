@@ -19,9 +19,9 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	swaggerspec "github.com/go-openapi/spec"
-	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/stretchr/testify/assert"

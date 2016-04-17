@@ -23,8 +23,8 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/swag"
-	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/httpkit"
 )
 

@@ -18,10 +18,10 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
-	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/internal/testing/petstore"
 	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/stretchr/testify/assert"
