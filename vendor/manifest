@@ -20,6 +20,48 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/go-openapi/analysis",
+			"repository": "https://github.com/go-openapi/analysis",
+			"revision": "d9e9bc2dcb13615876a9cc43050458ac6db527d5",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/go-openapi/jsonpointer",
+			"repository": "https://github.com/go-openapi/jsonpointer",
+			"revision": "b6f5daae698a561189ec184359ed9ae6eb3d63a5",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/go-openapi/jsonreference",
+			"repository": "https://github.com/go-openapi/jsonreference",
+			"revision": "43d45dd77c14cb852f704495498cadd7b3a135c8",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/go-openapi/loads",
+			"repository": "https://github.com/go-openapi/loads",
+			"revision": "4e8d4d4f947aa3647a4c00c4b0443677e3f70002",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/go-openapi/spec",
+			"repository": "https://github.com/go-openapi/spec",
+			"revision": "59736cd1f58eda5572a223c29d73f34ee80e9c13",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/go-openapi/swag",
+			"repository": "https://github.com/go-openapi/swag",
+			"revision": "0fde69af886f1e8420c8c650279a6f920c0000d9",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/go-swagger/scan-repo-boundary",
 			"repository": "https://github.com/go-swagger/scan-repo-boundary",
 			"revision": "196ec52cfa1c96b45dd793dfa0fa3f8877b299da",
