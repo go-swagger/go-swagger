@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"net/http"
 
-	errors "github.com/go-swagger/go-swagger/errors"
+	"github.com/go-openapi/errors"
 	httpkit "github.com/go-swagger/go-swagger/httpkit"
 	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
 

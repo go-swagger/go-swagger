@@ -18,8 +18,8 @@ import (
 	"reflect"
 
 	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-swagger/go-swagger/httpkit/validate"
-	"github.com/go-swagger/go-swagger/strfmt"
 )
 
 type formatValidator struct {

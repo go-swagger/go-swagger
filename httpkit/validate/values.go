@@ -19,9 +19,9 @@ import (
 	"regexp"
 	"unicode/utf8"
 
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"github.com/go-swagger/go-swagger/errors"
-	"github.com/go-swagger/go-swagger/strfmt"
 )
 
 // Enum validates if the data is a member of the enum

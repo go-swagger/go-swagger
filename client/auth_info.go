@@ -14,7 +14,7 @@
 
 package client
 
-import "github.com/go-swagger/go-swagger/strfmt"
+import "github.com/go-openapi/strfmt"
 
 // AuthInfoWriterFunc converts a function to a request writer interface
 type AuthInfoWriterFunc func(Request, strfmt.Registry) error

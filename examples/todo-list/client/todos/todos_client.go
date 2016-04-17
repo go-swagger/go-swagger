@@ -6,7 +6,7 @@ package todos
 import (
 	"github.com/go-swagger/go-swagger/client"
 
-	strfmt "github.com/go-swagger/go-swagger/strfmt"
+	"github.com/go-openapi/strfmt"
 )
 
 // New creates a new todos API client.

@@ -23,12 +23,12 @@ import (
 	"reflect"
 	"strconv"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/internal/validate"
-	"github.com/go-swagger/go-swagger/strfmt"
 )
 
 const defaultMaxMemory = 32 << 20

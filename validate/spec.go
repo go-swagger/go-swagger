@@ -15,11 +15,11 @@
 package validate
 
 import (
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
-	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-swagger/go-swagger/internal/validate"
-	"github.com/go-swagger/go-swagger/strfmt"
 )
 
 // Spec validates a spec document

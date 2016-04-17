@@ -17,7 +17,7 @@ package client
 import (
 	"testing"
 
-	"github.com/go-swagger/go-swagger/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/stretchr/testify/assert"
 )
 

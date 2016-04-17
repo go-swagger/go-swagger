@@ -7,7 +7,7 @@ import (
 	"github.com/go-swagger/go-swagger/client"
 	httptransport "github.com/go-swagger/go-swagger/httpkit/client"
 
-	strfmt "github.com/go-swagger/go-swagger/strfmt"
+	"github.com/go-openapi/strfmt"
 
 	"github.com/go-swagger/go-swagger/examples/task-tracker/client/tasks"
 )

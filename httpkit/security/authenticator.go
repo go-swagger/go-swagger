@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-openapi/errors"
 	"github.com/go-swagger/go-swagger/httpkit"
 )
 

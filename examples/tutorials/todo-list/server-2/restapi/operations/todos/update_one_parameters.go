@@ -6,12 +6,12 @@ package todos
 import (
 	"net/http"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
-	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
 
-	strfmt "github.com/go-swagger/go-swagger/strfmt"
+	"github.com/go-openapi/strfmt"
 
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-2/models"
 )

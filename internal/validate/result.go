@@ -14,7 +14,7 @@
 
 package validate
 
-import "github.com/go-swagger/go-swagger/errors"
+import "github.com/go-openapi/errors"
 
 // Result represents a validation result
 type Result struct {

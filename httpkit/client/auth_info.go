@@ -17,8 +17,8 @@ package client
 import (
 	"encoding/base64"
 
+	"github.com/go-openapi/strfmt"
 	"github.com/go-swagger/go-swagger/client"
-	"github.com/go-swagger/go-swagger/strfmt"
 )
 
 // BasicAuth provides a basic auth info writer

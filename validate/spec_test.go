@@ -24,8 +24,8 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	intvalidate "github.com/go-swagger/go-swagger/internal/validate"
-	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/stretchr/testify/assert"
 )
 

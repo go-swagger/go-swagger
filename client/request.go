@@ -18,7 +18,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/go-swagger/go-swagger/strfmt"
+	"github.com/go-openapi/strfmt"
 )
 
 // RequestWriterFunc converts a function to a request writer interface

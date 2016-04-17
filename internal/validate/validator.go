@@ -18,10 +18,10 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/spec"
-	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-swagger/go-swagger/httpkit/validate"
-	"github.com/go-swagger/go-swagger/strfmt"
 )
 
 // An EntityValidator is an interface for things that can validate entities

@@ -21,11 +21,11 @@ import (
 	"strings"
 
 	"github.com/go-openapi/analysis"
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
-	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-swagger/go-swagger/httpkit"
-	"github.com/go-swagger/go-swagger/strfmt"
 )
 
 // NewAPI creates the default untyped API

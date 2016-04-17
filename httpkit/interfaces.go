@@ -18,7 +18,7 @@ import (
 	"io"
 	"mime/multipart"
 
-	"github.com/go-swagger/go-swagger/strfmt"
+	"github.com/go-openapi/strfmt"
 )
 
 // File represents an uploaded file.
