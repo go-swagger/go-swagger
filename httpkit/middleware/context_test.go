@@ -24,6 +24,7 @@ import (
 	"github.com/go-swagger/go-swagger/httpkit/middleware/untyped"
 	"github.com/go-swagger/go-swagger/internal/testing/petstore"
 	"github.com/go-swagger/go-swagger/loads"
+	"github.com/go-swagger/go-swagger/loads/fmts"
 	"github.com/gorilla/context"
 	"github.com/stretchr/testify/assert"
 )
@@ -44,6 +45,10 @@ type testBinder struct {
 
 func (t *testBinder) BindRequest(r *http.Request, m *MatchedRoute) error {
 	return nil
+}
+
+func init() {
+	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
 }
 
 func TestContentType_Issue264(t *testing.T) {

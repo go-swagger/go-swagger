@@ -27,6 +27,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func jsonDoc(path string) (json.RawMessage, error) {
+	data, err := swag.LoadFromFileOrHTTP(path)
+	if err != nil {
+		return nil, err
+	}
+	return json.RawMessage(data), nil
+}
+
 func TestSpecExpansion(t *testing.T) {
 	spec := new(Swagger)
 	// resolver, err := defaultSchemaLoader(spec, nil, nil)
@@ -35,7 +43,7 @@ func TestSpecExpansion(t *testing.T) {
 	err := ExpandSpec(spec)
 	assert.NoError(t, err)
 
-	specDoc, err := swag.JSONDoc("../fixtures/expansion/all-the-things.json")
+	specDoc, err := jsonDoc("../fixtures/expansion/all-the-things.json")
 	assert.NoError(t, err)
 
 	spec = new(Swagger)
@@ -74,7 +82,7 @@ func TestSpecExpansion(t *testing.T) {
 }
 
 func TestResponseExpansion(t *testing.T) {
-	specDoc, err := swag.JSONDoc("../fixtures/expansion/all-the-things.json")
+	specDoc, err := jsonDoc("../fixtures/expansion/all-the-things.json")
 	assert.NoError(t, err)
 
 	spec := new(Swagger)
@@ -107,7 +115,7 @@ func TestResponseExpansion(t *testing.T) {
 }
 
 func TestParameterExpansion(t *testing.T) {
-	paramDoc, err := swag.JSONDoc("../fixtures/expansion/params.json")
+	paramDoc, err := jsonDoc("../fixtures/expansion/params.json")
 	assert.NoError(t, err)
 
 	spec := new(Swagger)
@@ -133,7 +141,7 @@ func TestParameterExpansion(t *testing.T) {
 }
 
 func TestCircularRefsExpansion(t *testing.T) {
-	carsDoc, err := swag.JSONDoc("../fixtures/expansion/circularRefs.json")
+	carsDoc, err := jsonDoc("../fixtures/expansion/circularRefs.json")
 	assert.NoError(t, err)
 
 	spec := new(Swagger)
@@ -151,7 +159,7 @@ func TestCircularRefsExpansion(t *testing.T) {
 }
 
 func TestIssue415(t *testing.T) {
-	doc, err := swag.YAMLDoc("../fixtures/expansion/clickmeter.yaml")
+	doc, err := jsonDoc("../fixtures/expansion/clickmeter.json")
 	assert.NoError(t, err)
 
 	spec := new(Swagger)
@@ -165,7 +173,7 @@ func TestIssue415(t *testing.T) {
 }
 
 func TestCircularSpecExpansion(t *testing.T) {
-	doc, err := swag.YAMLDoc("../fixtures/expansion/circularSpec.yaml")
+	doc, err := jsonDoc("../fixtures/expansion/circularSpec.json")
 	assert.NoError(t, err)
 
 	spec := new(Swagger)
@@ -179,7 +187,7 @@ func TestCircularSpecExpansion(t *testing.T) {
 }
 
 func TestItemsExpansion(t *testing.T) {
-	carsDoc, err := swag.JSONDoc("../fixtures/expansion/schemas2.json")
+	carsDoc, err := jsonDoc("../fixtures/expansion/schemas2.json")
 	assert.NoError(t, err)
 
 	spec := new(Swagger)
@@ -292,7 +300,7 @@ func TestItemsExpansion(t *testing.T) {
 }
 
 func TestSchemaExpansion(t *testing.T) {
-	carsDoc, err := swag.JSONDoc("../fixtures/expansion/schemas1.json")
+	carsDoc, err := jsonDoc("../fixtures/expansion/schemas1.json")
 	assert.NoError(t, err)
 
 	spec := new(Swagger)
@@ -526,7 +534,7 @@ func TestResolveRemoteRef_FromFragment(t *testing.T) {
 		var tgt Schema
 		ref, err := NewRef(server.URL + "/refed.json#/definitions/pet")
 		if assert.NoError(t, err) {
-			resolver := &schemaLoader{root: rootDoc, cache: initResolutionCache(), loadDoc: swag.JSONDoc}
+			resolver := &schemaLoader{root: rootDoc, cache: initResolutionCache(), loadDoc: jsonDoc}
 			if assert.NoError(t, resolver.Resolve(&ref, &tgt)) {
 				assert.Equal(t, []string{"id", "name"}, tgt.Required)
 			}

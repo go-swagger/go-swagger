@@ -21,8 +21,8 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/go-swagger/go-swagger/loads/fmts"
 	"github.com/go-swagger/go-swagger/spec"
-	"github.com/go-swagger/go-swagger/swag"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -188,7 +188,7 @@ func TestDefinitionAnalysis(t *testing.T) {
 }
 
 func loadSpec(path string) (*spec.Swagger, error) {
-	data, err := swag.YAMLDoc(path)
+	data, err := fmts.YAMLDoc(path)
 	if err != nil {
 		return nil, err
 	}

@@ -18,34 +18,54 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"path/filepath"
 
 	"github.com/go-swagger/go-swagger/analysis"
 	"github.com/go-swagger/go-swagger/spec"
 	"github.com/go-swagger/go-swagger/swag"
 )
 
+// JSONDoc loads a json document from either a file or a remote url
+func JSONDoc(path string) (json.RawMessage, error) {
+	data, err := swag.LoadFromFileOrHTTP(path)
+	if err != nil {
+		return nil, err
+	}
+	return json.RawMessage(data), nil
+}
+
 // DocLoader represents a doc loader type
 type DocLoader func(string) (json.RawMessage, error)
 
+// DocMatcher represents a predicate to check if a loader matches
+type DocMatcher func(string) bool
+
+var loaders = &loader{Match: func(_ string) bool { return true }, Fn: JSONDoc}
+
+// AddLoader for a document
+func AddLoader(predicate DocMatcher, load DocLoader) {
+	prev := loaders
+	loaders = &loader{
+		Match: predicate,
+		Fn:    load,
+		Next:  prev,
+	}
+
+}
+
+type loader struct {
+	Fn    DocLoader
+	Match DocMatcher
+	Next  *loader
+}
+
 // JSONSpec loads a spec from a json document
 func JSONSpec(path string) (*Document, error) {
-	data, err := swag.JSONDoc(path)
+	data, err := JSONDoc(path)
 	if err != nil {
 		return nil, err
 	}
 	// convert to json
 	return Analyzed(json.RawMessage(data), "")
-}
-
-// YAMLSpec loads a swagger spec document
-func YAMLSpec(path string) (*Document, error) {
-	data, err := swag.YAMLDoc(path)
-	if err != nil {
-		return nil, err
-	}
-
-	return Analyzed(data, "")
 }
 
 // Document represents a swagger spec document
@@ -64,13 +84,20 @@ func Spec(path string) (*Document, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	ext := filepath.Ext(specURL.Path)
-	if ext == ".yaml" || ext == ".yml" {
-		return YAMLSpec(path)
+	for l := loaders.Next; l != nil; l = l.Next {
+		if loaders.Match(specURL.Path) {
+			b, err := loaders.Fn(path)
+			if err != nil {
+				return nil, err
+			}
+			return Analyzed(b, "")
+		}
 	}
-
-	return JSONSpec(path)
+	b, err := loaders.Fn(path)
+	if err != nil {
+		return nil, err
+	}
+	return Analyzed(b, "")
 }
 
 // Analyzed creates a new analyzed spec document

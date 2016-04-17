@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package loads
+package fmts
 
 import (
+	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -22,6 +24,96 @@ import (
 	"github.com/go-swagger/go-swagger/swag"
 	"github.com/stretchr/testify/assert"
 )
+
+type failJSONMarhal struct {
+}
+
+func (f failJSONMarhal) MarshalJSON() ([]byte, error) {
+	return nil, errors.New("expected")
+}
+
+func TestLoadHTTPBytes(t *testing.T) {
+	_, err := swag.LoadFromFileOrHTTP("httx://12394:abd")
+	assert.Error(t, err)
+
+	serv := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		rw.WriteHeader(http.StatusNotFound)
+	}))
+	defer serv.Close()
+
+	_, err = swag.LoadFromFileOrHTTP(serv.URL)
+	assert.Error(t, err)
+
+	ts2 := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		rw.WriteHeader(http.StatusOK)
+		rw.Write([]byte("the content"))
+	}))
+	defer ts2.Close()
+
+	d, err := swag.LoadFromFileOrHTTP(ts2.URL)
+	assert.NoError(t, err)
+	assert.Equal(t, []byte("the content"), d)
+}
+
+func TestYAMLToJSON(t *testing.T) {
+
+	data := make(map[interface{}]interface{})
+	data[1] = "the int key value"
+	data["name"] = "a string value"
+
+	d, err := YAMLToJSON(data)
+	assert.NoError(t, err)
+	assert.Equal(t, []byte(`{"1":"the int key value","name":"a string value"}`), []byte(d))
+
+	data[true] = "the bool value"
+	d, err = YAMLToJSON(data)
+	assert.Error(t, err)
+	assert.Nil(t, d)
+
+	delete(data, true)
+
+	tag := make(map[interface{}]interface{})
+	tag["name"] = "tag name"
+	data["tag"] = tag
+
+	d, err = YAMLToJSON(data)
+	assert.NoError(t, err)
+	assert.Equal(t, []byte(`{"1":"the int key value","name":"a string value","tag":{"name":"tag name"}}`), []byte(d))
+
+	tag = make(map[interface{}]interface{})
+	tag[true] = "bool tag name"
+	data["tag"] = tag
+
+	d, err = YAMLToJSON(data)
+	assert.Error(t, err)
+	assert.Nil(t, d)
+
+	var lst []interface{}
+	lst = append(lst, "hello")
+
+	d, err = YAMLToJSON(lst)
+	assert.NoError(t, err)
+	assert.Equal(t, []byte(`["hello"]`), []byte(d))
+
+	lst = append(lst, data)
+
+	d, err = YAMLToJSON(lst)
+	assert.Error(t, err)
+	assert.Nil(t, d)
+
+	// _, err := yamlToJSON(failJSONMarhal{})
+	// assert.Error(t, err)
+
+	_, err = bytesToYAMLDoc([]byte("- name: hello\n"))
+	assert.Error(t, err)
+
+	dd, err := bytesToYAMLDoc([]byte("description: 'object created'\n"))
+	assert.NoError(t, err)
+
+	d, err = YAMLToJSON(dd)
+	assert.NoError(t, err)
+	assert.Equal(t, json.RawMessage(`{"description":"object created"}`), d)
+}
 
 func TestLoadStrategy(t *testing.T) {
 
@@ -39,7 +131,7 @@ func TestLoadStrategy(t *testing.T) {
 	serv := httptest.NewServer(http.HandlerFunc(yamlPestoreServer))
 	defer serv.Close()
 
-	s, err := YAMLSpec(serv.URL)
+	s, err := YAMLDoc(serv.URL)
 	assert.NoError(t, err)
 	assert.NotNil(t, s)
 
@@ -48,7 +140,7 @@ func TestLoadStrategy(t *testing.T) {
 		rw.Write([]byte("\n"))
 	}))
 	defer ts2.Close()
-	_, err = YAMLSpec(ts2.URL)
+	_, err = YAMLDoc(ts2.URL)
 	assert.Error(t, err)
 }
 
