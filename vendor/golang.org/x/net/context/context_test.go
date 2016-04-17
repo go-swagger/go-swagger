@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build !go1.7
+
 package context
 
 import (
@@ -375,7 +377,7 @@ func TestAllocs(t *testing.T) {
 				<-c.Done()
 			},
 			limit:      8,
-			gccgoLimit: 15,
+			gccgoLimit: 16,
 		},
 		{
 			desc: "WithCancel(bg)",
