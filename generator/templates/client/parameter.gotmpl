@@ -47,8 +47,8 @@ type {{ pascalize .Name }}Params struct {
 
 {{ range .Params }}
 // With{{ pascalize .Name }} adds the {{ camelize .Name  }} to the {{ humanize $.Name }} params
-func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) With{{ pascalize .Name }}({{ camelize .Name  }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (not .IsStream) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{ end }}) *{{ pascalize $.Name }}Params {
-  {{ $.ReceiverName }}.{{ pascalize .Name }} = {{ camelize .Name  }}
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) With{{ pascalize .Name }}({{ pascalize .Name  }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (not .IsStream) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{ end }}) *{{ pascalize $.Name }}Params {
+  {{ $.ReceiverName }}.{{ pascalize .Name }} = {{ pascalize .Name  }}
   return {{ .ReceiverName }}
 }
 
