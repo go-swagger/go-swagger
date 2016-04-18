@@ -6,7 +6,7 @@ package pet
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-openapi/runtime"
 )
 
 /*UpdatePetBadRequest Invalid ID supplied
@@ -22,7 +22,7 @@ func NewUpdatePetBadRequest() *UpdatePetBadRequest {
 }
 
 // WriteResponse to the client
-func (o *UpdatePetBadRequest) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *UpdatePetBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(400)
 }
@@ -40,7 +40,7 @@ func NewUpdatePetNotFound() *UpdatePetNotFound {
 }
 
 // WriteResponse to the client
-func (o *UpdatePetNotFound) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *UpdatePetNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(404)
 }
@@ -58,7 +58,7 @@ func NewUpdatePetMethodNotAllowed() *UpdatePetMethodNotAllowed {
 }
 
 // WriteResponse to the client
-func (o *UpdatePetMethodNotAllowed) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *UpdatePetMethodNotAllowed) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(405)
 }

@@ -23,8 +23,8 @@ import (
 	"testing"
 	"text/template"
 
-	"github.com/go-swagger/go-swagger/loads"
-	"github.com/go-swagger/go-swagger/swag"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -1667,7 +1667,7 @@ func TestGenModel_Issue423(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ct)
 					assertInCode(t, "Site json.RawMessage `json:\"site\"`", res)
-					assertInCode(t, "UnmarshalSite(bytes.NewBuffer(data.Site), httpkit.JSONConsumer())", res)
+					assertInCode(t, "UnmarshalSite(bytes.NewBuffer(data.Site), runtime.JSONConsumer())", res)
 				}
 			}
 		}

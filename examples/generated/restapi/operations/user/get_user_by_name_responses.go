@@ -6,7 +6,7 @@ package user
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-openapi/runtime"
 
 	"github.com/go-swagger/go-swagger/examples/generated/models"
 )
@@ -38,7 +38,7 @@ func (o *GetUserByNameOK) SetPayload(payload *models.User) {
 }
 
 // WriteResponse to the client
-func (o *GetUserByNameOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *GetUserByNameOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
 	if o.Payload != nil {
@@ -61,7 +61,7 @@ func NewGetUserByNameBadRequest() *GetUserByNameBadRequest {
 }
 
 // WriteResponse to the client
-func (o *GetUserByNameBadRequest) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *GetUserByNameBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(400)
 }
@@ -79,7 +79,7 @@ func NewGetUserByNameNotFound() *GetUserByNameNotFound {
 }
 
 // WriteResponse to the client
-func (o *GetUserByNameNotFound) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *GetUserByNameNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(404)
 }

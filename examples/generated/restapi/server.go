@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-openapi/swag"
 	graceful "github.com/tylerb/graceful"
 
 	"github.com/go-swagger/go-swagger/examples/generated/restapi/operations"
-	"github.com/go-swagger/go-swagger/swag"
 )
 
 //go:generate swagger generate server -t ../.. -A Petstore -f ./swagger.yml

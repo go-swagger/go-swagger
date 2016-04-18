@@ -8,11 +8,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-openapi/swag"
 	flags "github.com/jessevdk/go-flags"
 	graceful "github.com/tylerb/graceful"
 
 	"github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations"
-	"github.com/go-swagger/go-swagger/swag"
 )
 
 //go:generate swagger generate server -t ../.. -A TodoList -f ./swagger.yml

@@ -26,11 +26,11 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/go-swagger/go-swagger/analysis"
-	"github.com/go-swagger/go-swagger/httpkit"
-	"github.com/go-swagger/go-swagger/loads"
-	"github.com/go-swagger/go-swagger/spec"
-	"github.com/go-swagger/go-swagger/swag"
+	"github.com/go-openapi/analysis"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/swag"
 )
 
 // GenerateServer generates a server application
@@ -85,12 +85,12 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 
 	defaultProduces := opts.DefaultProduces
 	if defaultProduces == "" {
-		defaultProduces = httpkit.JSONMime
+		defaultProduces = runtime.JSONMime
 	}
 
 	defaultConsumes := opts.DefaultConsumes
 	if defaultConsumes == "" {
-		defaultConsumes = httpkit.JSONMime
+		defaultConsumes = runtime.JSONMime
 	}
 
 	apiPackage := mangleName(swag.ToFileName(opts.APIPackage), "api")
@@ -364,23 +364,23 @@ var mediaTypeNames = map[*regexp.Regexp]string{
 }
 
 var knownProducers = map[string]string{
-	"json":          "httpkit.JSONProducer()",
+	"json":          "runtime.JSONProducer()",
 	"yaml":          "yamlpc.YAMLProducer()",
-	"xml":           "httpkit.XMLProducer()",
-	"txt":           "httpkit.TextProducer()",
-	"bin":           "httpkit.ByteStreamProducer()",
-	"urlform":       "httpkit.DiscardProducer",
-	"mulitpartform": "httpkit.DiscardProducer",
+	"xml":           "runtime.XMLProducer()",
+	"txt":           "runtime.TextProducer()",
+	"bin":           "runtime.ByteStreamProducer()",
+	"urlform":       "runtime.DiscardProducer",
+	"mulitpartform": "runtime.DiscardProducer",
 }
 
 var knownConsumers = map[string]string{
-	"json":          "httpkit.JSONConsumer()",
+	"json":          "runtime.JSONConsumer()",
 	"yaml":          "yamlpc.YAMLConsumer()",
-	"xml":           "httpkit.XMLConsumer()",
-	"txt":           "httpkit.TextConsumer()",
-	"bin":           "httpkit.ByteStreamConsumer()",
-	"urlform":       "httpkit.DiscardConsumer",
-	"mulitpartform": "httpkit.DiscardConsumer",
+	"xml":           "runtime.XMLConsumer()",
+	"txt":           "runtime.TextConsumer()",
+	"bin":           "runtime.ByteStreamConsumer()",
+	"urlform":       "runtime.DiscardConsumer",
+	"mulitpartform": "runtime.DiscardConsumer",
 }
 
 func getSerializer(sers []GenSerGroup, ext string) (*GenSerGroup, bool) {
@@ -446,12 +446,12 @@ func (a *appGenerator) makeConsumes() (consumes []GenSerGroup, consumesJSON bool
 			AppName:      a.Name,
 			ReceiverName: a.Receiver,
 			Name:         "json",
-			MediaType:    httpkit.JSONMime,
+			MediaType:    runtime.JSONMime,
 			AllSerializers: []GenSerializer{GenSerializer{
 				AppName:        a.Name,
 				ReceiverName:   a.Receiver,
 				Name:           "json",
-				MediaType:      httpkit.JSONMime,
+				MediaType:      runtime.JSONMime,
 				Implementation: knownConsumers["json"],
 			}},
 			Implementation: knownConsumers["json"],
@@ -503,12 +503,12 @@ func (a *appGenerator) makeProduces() (produces []GenSerGroup, producesJSON bool
 			AppName:      a.Name,
 			ReceiverName: a.Receiver,
 			Name:         "json",
-			MediaType:    httpkit.JSONMime,
+			MediaType:    runtime.JSONMime,
 			AllSerializers: []GenSerializer{GenSerializer{
 				AppName:        a.Name,
 				ReceiverName:   a.Receiver,
 				Name:           "json",
-				MediaType:      httpkit.JSONMime,
+				MediaType:      runtime.JSONMime,
 				Implementation: knownProducers["json"],
 			}},
 			Implementation: knownProducers["json"],

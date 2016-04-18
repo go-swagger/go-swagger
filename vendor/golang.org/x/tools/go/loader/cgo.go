@@ -112,14 +112,18 @@ var cgoRe = regexp.MustCompile(`[/\\:]`)
 //
 // runCgo is adapted from (*builder).cgo in
 // $GOROOT/src/cmd/go/build.go, but these features are unsupported:
-// pkg-config, Objective C, CGOPKGPATH, CGO_FLAGS.
+// Objective C, CGOPKGPATH, CGO_FLAGS.
 //
 func runCgo(bp *build.Package, pkgdir, tmpdir string) (files, displayFiles []string, err error) {
 	cgoCPPFLAGS, _, _, _ := cflags(bp, true)
 	_, cgoexeCFLAGS, _, _ := cflags(bp, false)
 
 	if len(bp.CgoPkgConfig) > 0 {
-		return nil, nil, fmt.Errorf("cgo pkg-config not supported")
+		pcCFLAGS, err := pkgConfigFlags(bp)
+		if err != nil {
+			return nil, nil, err
+		}
+		cgoCPPFLAGS = append(cgoCPPFLAGS, pcCFLAGS...)
 	}
 
 	// Allows including _cgo_export.h from .[ch] files in the package.

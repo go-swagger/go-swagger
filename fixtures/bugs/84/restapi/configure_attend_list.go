@@ -4,9 +4,9 @@ import (
 	"crypto/tls"
 	"net/http"
 
-	errors "github.com/go-swagger/go-swagger/errors"
-	httpkit "github.com/go-swagger/go-swagger/httpkit"
-	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
+	"github.com/go-openapi/errors"
+	httpkit "github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/go-swagger/go-swagger/fixtures/bugs/84/restapi/operations"
 	"github.com/go-swagger/go-swagger/fixtures/bugs/84/restapi/operations/events"

@@ -35,7 +35,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) Error() string {
 }
 
 
-func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
+func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
   {{ range .Headers }}
   // response header {{.Name}}
   {{if .Converter }}{{ camelize .Name }}, err := {{ .Converter }}(response.GetHeader("{{ .Name }}"))
@@ -80,13 +80,13 @@ import (
   "io"
   "net/http"
 
-  "github.com/go-swagger/go-swagger/httpkit"
-  "github.com/go-swagger/go-swagger/swag"
-  "github.com/go-swagger/go-swagger/errors"
-  "github.com/go-swagger/go-swagger/httpkit/validate"
-  "github.com/go-swagger/go-swagger/client"
+  "github.com/go-openapi/runtime"
+  "github.com/go-openapi/swag"
+  "github.com/go-openapi/errors"
+  "github.com/go-openapi/validate"
+  "github.com/go-openapi/runtime"
 
-  strfmt "github.com/go-swagger/go-swagger/strfmt"
+  strfmt "github.com/go-openapi/strfmt"
 
   {{ range .DefaultImports }}{{ printf "%q" .}}
   {{ end }}
@@ -100,7 +100,7 @@ type {{ pascalize .Name }}Reader struct {
 }
 
 // ReadResponse reads a server response into the recieved {{ .ReceiverName }}.
-func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
   switch response.Code() {
   {{ range $key, $value := .Responses }}
     case {{ $key }}:
@@ -117,7 +117,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response cl
       }
       return {{ if .IsSuccess }}result, nil{{else}}nil, result{{end}}{{ end }}{{else}}
     default:
-      return nil, client.NewAPIError("unknown error", response, response.Code()){{ end }}
+      return nil, runtime.NewAPIError("unknown error", response, response.Code()){{ end }}
   }
 }
 

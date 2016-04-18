@@ -1,9 +1,9 @@
 package generator
 
 import (
-	"github.com/go-swagger/go-swagger/analysis"
-	"github.com/go-swagger/go-swagger/spec"
-	"github.com/go-swagger/go-swagger/swag"
+	"github.com/go-openapi/analysis"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/swag"
 )
 
 type discInfo struct {

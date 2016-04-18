@@ -17,8 +17,8 @@ package models
 import (
 	"time"
 
+	"github.com/go-openapi/strfmt"
 	"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/transitive/mods"
-	"github.com/go-swagger/go-swagger/strfmt"
 )
 
 // A Something struct is used by other structs

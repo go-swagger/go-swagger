@@ -23,7 +23,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/tools/go/loader"
 

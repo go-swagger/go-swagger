@@ -23,7 +23,7 @@ import (
 
 	"golang.org/x/tools/go/loader"
 
-	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-openapi/spec"
 )
 
 type responseTypable struct {

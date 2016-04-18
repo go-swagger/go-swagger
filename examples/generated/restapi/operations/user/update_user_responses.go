@@ -6,7 +6,7 @@ package user
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-openapi/runtime"
 )
 
 /*UpdateUserBadRequest Invalid user supplied
@@ -22,7 +22,7 @@ func NewUpdateUserBadRequest() *UpdateUserBadRequest {
 }
 
 // WriteResponse to the client
-func (o *UpdateUserBadRequest) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *UpdateUserBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(400)
 }
@@ -40,7 +40,7 @@ func NewUpdateUserNotFound() *UpdateUserNotFound {
 }
 
 // WriteResponse to the client
-func (o *UpdateUserNotFound) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *UpdateUserNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(404)
 }

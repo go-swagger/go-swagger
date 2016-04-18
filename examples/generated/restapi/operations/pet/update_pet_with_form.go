@@ -6,7 +6,7 @@ package pet
 import (
 	"net/http"
 
-	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
+	middleware "github.com/go-openapi/runtime/middleware"
 )
 
 // UpdatePetWithFormHandlerFunc turns a function with the right signature into a update pet with form handler

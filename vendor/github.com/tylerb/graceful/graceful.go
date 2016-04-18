@@ -54,6 +54,13 @@ type Server struct {
 	// manually with Stop().
 	NoSignalHandling bool
 
+	// Logger used to notify of errors on startup and on stop.
+	Logger *log.Logger
+
+	// Interrupted is true if the server is handling a SIGINT or SIGTERM
+	// signal and is thus shutting down.
+	Interrupted bool
+
 	// interrupt signals the listener to stop serving connections,
 	// and the server to shut down.
 	interrupt chan os.Signal
@@ -80,12 +87,12 @@ func Run(addr string, timeout time.Duration, n http.Handler) {
 	srv := &Server{
 		Timeout: timeout,
 		Server:  &http.Server{Addr: addr, Handler: n},
+		Logger:  DefaultLogger(),
 	}
 
 	if err := srv.ListenAndServe(); err != nil {
 		if opErr, ok := err.(*net.OpError); !ok || (ok && opErr.Op != "accept") {
-			logger := log.New(os.Stdout, "[graceful] ", 0)
-			logger.Fatal(err)
+			srv.Logger.Fatal(err)
 		}
 	}
 
@@ -99,6 +106,7 @@ func RunWithErr(addr string, timeout time.Duration, n http.Handler) error {
 	srv := &Server{
 		Timeout: timeout,
 		Server:  &http.Server{Addr: addr, Handler: n},
+		Logger:  DefaultLogger(),
 	}
 
 	return srv.ListenAndServe()
@@ -109,7 +117,7 @@ func RunWithErr(addr string, timeout time.Duration, n http.Handler) error {
 // timeout is the duration to wait until killing active requests and stopping the server.
 // If timeout is 0, the server never times out. It waits for all active requests to finish.
 func ListenAndServe(server *http.Server, timeout time.Duration) error {
-	srv := &Server{Timeout: timeout, Server: server}
+	srv := &Server{Timeout: timeout, Server: server, Logger: DefaultLogger()}
 	return srv.ListenAndServe()
 }
 
@@ -133,7 +141,7 @@ func (srv *Server) ListenAndServe() error {
 // timeout is the duration to wait until killing active requests and stopping the server.
 // If timeout is 0, the server never times out. It waits for all active requests to finish.
 func ListenAndServeTLS(server *http.Server, certFile, keyFile string, timeout time.Duration) error {
-	srv := &Server{Timeout: timeout, Server: server}
+	srv := &Server{Timeout: timeout, Server: server, Logger: DefaultLogger()}
 	return srv.ListenAndServeTLS(certFile, keyFile)
 }
 
@@ -203,7 +211,7 @@ func (srv *Server) ListenAndServeTLSConfig(config *tls.Config) error {
 // timeout is the duration to wait until killing active requests and stopping the server.
 // If timeout is 0, the server never times out. It waits for all active requests to finish.
 func Serve(server *http.Server, l net.Listener, timeout time.Duration) error {
-	srv := &Server{Timeout: timeout, Server: server}
+	srv := &Server{Timeout: timeout, Server: server, Logger: DefaultLogger()}
 	return srv.Serve(l)
 }
 
@@ -272,10 +280,11 @@ func (srv *Server) Serve(listener net.Listener) error {
 // command to stop the server.
 func (srv *Server) Stop(timeout time.Duration) {
 	srv.stopLock.Lock()
+	defer srv.stopLock.Unlock()
+
 	srv.Timeout = timeout
 	interrupt := srv.interruptChan()
 	interrupt <- syscall.SIGINT
-	srv.stopLock.Unlock()
 }
 
 // StopChan gets the stop channel which will block until
@@ -283,11 +292,18 @@ func (srv *Server) Stop(timeout time.Duration) {
 // Callers should never close the stop channel.
 func (srv *Server) StopChan() <-chan struct{} {
 	srv.chanLock.Lock()
+	defer srv.chanLock.Unlock()
+
 	if srv.stopChan == nil {
 		srv.stopChan = make(chan struct{})
 	}
-	srv.chanLock.Unlock()
 	return srv.stopChan
+}
+
+// DefaultLogger returns the logger used by Run, RunWithErr, ListenAndServe, ListenAndServeTLS and Serve.
+// The logger outputs to STDERR by default.
+func DefaultLogger() *log.Logger {
+	return log.New(os.Stderr, "[graceful] ", 0)
 }
 
 func (srv *Server) manageConnections(add, remove chan net.Conn, shutdown chan chan struct{}, kill chan struct{}) {
@@ -310,7 +326,9 @@ func (srv *Server) manageConnections(add, remove chan net.Conn, shutdown chan ch
 			}
 		case <-kill:
 			for k := range srv.connections {
-				_ = k.Close() // nothing to do here if it errors
+				if err := k.Close(); err != nil {
+					srv.log("[ERROR] %s", err)
+				}
 			}
 			return
 		}
@@ -319,34 +337,43 @@ func (srv *Server) manageConnections(add, remove chan net.Conn, shutdown chan ch
 
 func (srv *Server) interruptChan() chan os.Signal {
 	srv.chanLock.Lock()
+	defer srv.chanLock.Unlock()
+
 	if srv.interrupt == nil {
 		srv.interrupt = make(chan os.Signal, 1)
 	}
-	srv.chanLock.Unlock()
 
 	return srv.interrupt
 }
 
 func (srv *Server) handleInterrupt(interrupt chan os.Signal, quitting chan struct{}, listener net.Listener) {
-	<-interrupt
+	for _ = range interrupt {
+		if srv.Interrupted {
+			srv.log("already shutting down")
+			continue
+		}
+		srv.log("shutdown initiated")
+		srv.Interrupted = true
+		if srv.BeforeShutdown != nil {
+			srv.BeforeShutdown()
+		}
 
-	if srv.BeforeShutdown != nil {
-		srv.BeforeShutdown()
+		close(quitting)
+		srv.SetKeepAlivesEnabled(false)
+		if err := listener.Close(); err != nil {
+			srv.log("[ERROR] %s", err)
+		}
+
+		if srv.ShutdownInitiated != nil {
+			srv.ShutdownInitiated()
+		}
 	}
+}
 
-	close(quitting)
-	srv.SetKeepAlivesEnabled(false)
-	_ = listener.Close() // we are shutting down anyway. ignore error.
-
-	if srv.ShutdownInitiated != nil {
-		srv.ShutdownInitiated()
+func (srv *Server) log(fmt string, v ...interface{}) {
+	if srv.Logger != nil {
+		srv.Logger.Printf(fmt, v...)
 	}
-
-	srv.stopLock.Lock()
-	signal.Stop(interrupt)
-	close(interrupt)
-	srv.interrupt = nil
-	srv.stopLock.Unlock()
 }
 
 func (srv *Server) shutdown(shutdown chan chan struct{}, kill chan struct{}) {

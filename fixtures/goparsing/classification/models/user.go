@@ -14,7 +14,7 @@
 
 package models
 
-import "github.com/go-swagger/go-swagger/strfmt"
+import "github.com/go-openapi/strfmt"
 
 // User represents the user for this application
 //

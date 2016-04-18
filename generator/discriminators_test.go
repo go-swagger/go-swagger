@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/go-swagger/go-swagger/analysis"
-	"github.com/go-swagger/go-swagger/loads"
-	"github.com/go-swagger/go-swagger/loads/fmts"
-	"github.com/go-swagger/go-swagger/swag"
+	"github.com/go-openapi/analysis"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/loads/fmts"
+	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -119,12 +119,12 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(b)
 					assertInCode(t, "type Pet interface {", res)
-					assertInCode(t, "httpkit.Validatable", res)
+					assertInCode(t, "runtime.Validatable", res)
 					assertInCode(t, "Name() *string", res)
 					assertInCode(t, "SetName(*string)", res)
 					assertInCode(t, "PetType() string", res)
 					assertInCode(t, "SetPetType(string)", res)
-					assertInCode(t, "UnmarshalPet(reader io.Reader, consumer httpkit.Consumer) (Pet, error)", res)
+					assertInCode(t, "UnmarshalPet(reader io.Reader, consumer runtime.Consumer) (Pet, error)", res)
 					assertInCode(t, "PetType string `json:\"petType\"`", res)
 					assertInCode(t, "validate.RequiredString(\"petType\"", res)
 					assertInCode(t, "switch getType.PetType {", res)

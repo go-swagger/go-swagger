@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-openapi/runtime"
 
 	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
@@ -39,7 +39,7 @@ func (o *UpdateTaskOK) SetPayload(payload *models.Task) {
 }
 
 // WriteResponse to the client
-func (o *UpdateTaskOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *UpdateTaskOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
 	if o.Payload != nil {
@@ -76,7 +76,7 @@ func (o *UpdateTaskUnprocessableEntity) SetPayload(payload *models.ValidationErr
 }
 
 // WriteResponse to the client
-func (o *UpdateTaskUnprocessableEntity) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *UpdateTaskUnprocessableEntity) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(422)
 	if o.Payload != nil {
@@ -146,7 +146,7 @@ func (o *UpdateTaskDefault) SetPayload(payload *models.Error) {
 }
 
 // WriteResponse to the client
-func (o *UpdateTaskDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *UpdateTaskDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	// response header X-Error-Code
 	rw.Header().Add("X-Error-Code", fmt.Sprintf("%v", o.XErrorCode))

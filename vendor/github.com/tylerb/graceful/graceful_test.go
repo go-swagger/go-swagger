@@ -1,8 +1,10 @@
 package graceful
 
 import (
+	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -456,4 +458,80 @@ func TestStopRace(t *testing.T) {
 	case <-time.After(timeoutTime):
 		t.Fatal("Timed out while waiting for explicit stop to complete")
 	}
+}
+
+func TestInterruptLog(t *testing.T) {
+	c := make(chan os.Signal, 1)
+
+	server, l, err := createListener(killTime * 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var buf bytes.Buffer
+	var tbuf bytes.Buffer
+	logger := log.New(&buf, "", 0)
+	expected := log.New(&tbuf, "", 0)
+
+	srv := &Server{Timeout: killTime, Server: server, Logger: logger, interrupt: c}
+	go func() { srv.Serve(l) }()
+
+	stop := srv.StopChan()
+	c <- os.Interrupt
+	expected.Print("shutdown initiated")
+
+	<-stop
+
+	if buf.String() != tbuf.String() {
+		t.Fatal("shutdown log incorrect - got '" + buf.String() + "'")
+	}
+}
+
+func TestMultiInterrupts(t *testing.T) {
+	c := make(chan os.Signal, 1)
+
+	server, l, err := createListener(killTime * 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var wg sync.WaitGroup
+	var bu bytes.Buffer
+	buf := SyncBuffer{&wg, &bu}
+	var tbuf bytes.Buffer
+	logger := log.New(&buf, "", 0)
+	expected := log.New(&tbuf, "", 0)
+
+	srv := &Server{Timeout: killTime, Server: server, Logger: logger, interrupt: c}
+	go func() { srv.Serve(l) }()
+
+	stop := srv.StopChan()
+	buf.Add(1 + 10) // Expecting 11 log calls
+	c <- os.Interrupt
+	expected.Printf("shutdown initiated")
+	for i := 0; i < 10; i++ {
+		c <- os.Interrupt
+		expected.Printf("already shutting down")
+	}
+
+	<-stop
+
+	wg.Wait()
+	bb, bt := buf.Bytes(), tbuf.Bytes()
+	for i, b := range bb {
+		if b != bt[i] {
+			t.Fatal(fmt.Sprintf("shutdown log incorrect - got '%s', expected '%s'", buf.String(), tbuf.String()))
+		}
+	}
+}
+
+// SyncBuffer calls Done on the embedded wait group after each call to Write.
+type SyncBuffer struct {
+	*sync.WaitGroup
+	*bytes.Buffer
+}
+
+func (buf *SyncBuffer) Write(b []byte) (int, error) {
+	defer buf.Done()
+	return buf.Buffer.Write(b)
 }

@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/go-swagger/go-swagger/loads"
-	"github.com/go-swagger/go-swagger/spec"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -59,7 +59,7 @@ var schTypeVals = []struct{ Type, Format, Expected string }{
 	{"string", "rgbcolor", "strfmt.RGBColor"},
 	{"string", "duration", "strfmt.Duration"},
 	{"string", "password", "strfmt.Password"},
-	{"file", "", "httpkit.File"},
+	{"file", "", "runtime.File"},
 }
 
 var schRefVals = []struct{ Type, GoType, Expected string }{

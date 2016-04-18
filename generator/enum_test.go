@@ -20,7 +20,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-swagger/go-swagger/loads"
+	"github.com/go-openapi/loads"
 	"github.com/stretchr/testify/assert"
 )
 

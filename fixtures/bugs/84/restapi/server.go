@@ -8,8 +8,8 @@ import (
 
 	graceful "github.com/tylerb/graceful"
 
+	"github.com/go-openapi/swag"
 	"github.com/go-swagger/go-swagger/fixtures/bugs/84/restapi/operations"
-	"github.com/go-swagger/go-swagger/swag"
 )
 
 //go:generate swagger generate server -t ../.. -A AttendList -f ./swagger.yml

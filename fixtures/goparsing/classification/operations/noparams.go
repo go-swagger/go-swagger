@@ -17,9 +17,9 @@ package operations
 import (
 	"bytes"
 
+	"github.com/go-openapi/strfmt"
 	"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/models"
 	"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/transitive/mods"
-	"github.com/go-swagger/go-swagger/strfmt"
 )
 
 // MyFileParams contains the uploaded file data

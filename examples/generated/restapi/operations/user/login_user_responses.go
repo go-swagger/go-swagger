@@ -6,7 +6,7 @@ package user
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-openapi/runtime"
 )
 
 /*LoginUserOK successful operation
@@ -36,7 +36,7 @@ func (o *LoginUserOK) SetPayload(payload string) {
 }
 
 // WriteResponse to the client
-func (o *LoginUserOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *LoginUserOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
 	if err := producer.Produce(rw, o.Payload); err != nil {
@@ -58,7 +58,7 @@ func NewLoginUserBadRequest() *LoginUserBadRequest {
 }
 
 // WriteResponse to the client
-func (o *LoginUserBadRequest) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *LoginUserBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(400)
 }

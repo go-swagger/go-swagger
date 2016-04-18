@@ -23,9 +23,9 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/go-swagger/go-swagger/analysis"
-	"github.com/go-swagger/go-swagger/httpkit"
-	"github.com/go-swagger/go-swagger/swag"
+	"github.com/go-openapi/analysis"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
 )
 
 // GenerateClient generates a client library for a swagger spec document.
@@ -59,12 +59,12 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts GenOpts
 
 	defaultConsumes := opts.DefaultConsumes
 	if defaultConsumes == "" {
-		defaultConsumes = httpkit.JSONMime
+		defaultConsumes = runtime.JSONMime
 	}
 
 	defaultProduces := opts.DefaultProduces
 	if defaultProduces == "" {
-		defaultProduces = httpkit.JSONMime
+		defaultProduces = runtime.JSONMime
 	}
 
 	generator := appGenerator{

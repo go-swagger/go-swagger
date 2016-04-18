@@ -4,11 +4,11 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"github.com/go-swagger/go-swagger/client"
-	"github.com/go-swagger/go-swagger/errors"
-	"github.com/go-swagger/go-swagger/swag"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
 
-	strfmt "github.com/go-swagger/go-swagger/strfmt"
+	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewDeleteTaskParams creates a new DeleteTaskParams object
@@ -37,7 +37,7 @@ func (o *DeleteTaskParams) WithID(id int64) *DeleteTaskParams {
 }
 
 // WriteToRequest writes these params to a swagger request
-func (o *DeleteTaskParams) WriteToRequest(r client.Request, reg strfmt.Registry) error {
+func (o *DeleteTaskParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
 	var res []error
 

@@ -10,7 +10,7 @@ import (
 	"text/template/parse"
 
 	"bitbucket.org/pkg/inflect"
-	"github.com/go-swagger/go-swagger/swag"
+	"github.com/go-openapi/swag"
 )
 
 var protectedTemplates = map[string]bool{

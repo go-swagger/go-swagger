@@ -8,7 +8,7 @@ import (
 
 	context "golang.org/x/net/context"
 
-  middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
+  middleware "github.com/go-openapi/runtime/middleware"
   {{ range .DefaultImports }}{{ printf "%q" . }}
   {{ end }}
   {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}

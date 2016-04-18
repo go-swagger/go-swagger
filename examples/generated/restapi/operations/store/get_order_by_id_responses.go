@@ -6,7 +6,7 @@ package store
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-openapi/runtime"
 
 	"github.com/go-swagger/go-swagger/examples/generated/models"
 )
@@ -38,7 +38,7 @@ func (o *GetOrderByIDOK) SetPayload(payload *models.Order) {
 }
 
 // WriteResponse to the client
-func (o *GetOrderByIDOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *GetOrderByIDOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
 	if o.Payload != nil {
@@ -61,7 +61,7 @@ func NewGetOrderByIDBadRequest() *GetOrderByIDBadRequest {
 }
 
 // WriteResponse to the client
-func (o *GetOrderByIDBadRequest) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *GetOrderByIDBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(400)
 }
@@ -79,7 +79,7 @@ func NewGetOrderByIDNotFound() *GetOrderByIDNotFound {
 }
 
 // WriteResponse to the client
-func (o *GetOrderByIDNotFound) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *GetOrderByIDNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(404)
 }

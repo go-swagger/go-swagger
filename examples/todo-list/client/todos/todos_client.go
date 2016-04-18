@@ -4,13 +4,13 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"github.com/go-swagger/go-swagger/client"
+	"github.com/go-openapi/runtime"
 
-	strfmt "github.com/go-swagger/go-swagger/strfmt"
+	strfmt "github.com/go-openapi/strfmt"
 )
 
 // New creates a new todos API client.
-func New(transport client.Transport, formats strfmt.Registry) *Client {
+func New(transport runtime.ClientTransport, formats strfmt.Registry) *Client {
 	return &Client{transport: transport, formats: formats}
 }
 
@@ -18,20 +18,20 @@ func New(transport client.Transport, formats strfmt.Registry) *Client {
 Client for todos API
 */
 type Client struct {
-	transport client.Transport
+	transport runtime.ClientTransport
 	formats   strfmt.Registry
 }
 
 /*
 AddOne add one API
 */
-func (a *Client) AddOne(params *AddOneParams, authInfo client.AuthInfoWriter) (*AddOneCreated, error) {
+func (a *Client) AddOne(params *AddOneParams, authInfo runtime.ClientAuthInfoWriter) (*AddOneCreated, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewAddOneParams()
 	}
 
-	result, err := a.transport.Submit(&client.Operation{
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addOne",
 		Method:             "POST",
 		PathPattern:        "/",
@@ -51,13 +51,13 @@ func (a *Client) AddOne(params *AddOneParams, authInfo client.AuthInfoWriter) (*
 /*
 DestroyOne destroy one API
 */
-func (a *Client) DestroyOne(params *DestroyOneParams, authInfo client.AuthInfoWriter) (*DestroyOneNoContent, error) {
+func (a *Client) DestroyOne(params *DestroyOneParams, authInfo runtime.ClientAuthInfoWriter) (*DestroyOneNoContent, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewDestroyOneParams()
 	}
 
-	result, err := a.transport.Submit(&client.Operation{
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "destroyOne",
 		Method:             "DELETE",
 		PathPattern:        "/{id}",
@@ -77,13 +77,13 @@ func (a *Client) DestroyOne(params *DestroyOneParams, authInfo client.AuthInfoWr
 /*
 Find find API
 */
-func (a *Client) Find(params *FindParams, authInfo client.AuthInfoWriter) (*FindOK, error) {
+func (a *Client) Find(params *FindParams, authInfo runtime.ClientAuthInfoWriter) (*FindOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewFindParams()
 	}
 
-	result, err := a.transport.Submit(&client.Operation{
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "find",
 		Method:             "GET",
 		PathPattern:        "/",
@@ -103,13 +103,13 @@ func (a *Client) Find(params *FindParams, authInfo client.AuthInfoWriter) (*Find
 /*
 UpdateOne update one API
 */
-func (a *Client) UpdateOne(params *UpdateOneParams, authInfo client.AuthInfoWriter) (*UpdateOneOK, error) {
+func (a *Client) UpdateOne(params *UpdateOneParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateOneOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateOneParams()
 	}
 
-	result, err := a.transport.Submit(&client.Operation{
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateOne",
 		Method:             "PUT",
 		PathPattern:        "/{id}",
@@ -127,6 +127,6 @@ func (a *Client) UpdateOne(params *UpdateOneParams, authInfo client.AuthInfoWrit
 }
 
 // SetTransport changes the transport on the client
-func (a *Client) SetTransport(transport client.Transport) {
+func (a *Client) SetTransport(transport runtime.ClientTransport) {
 	a.transport = transport
 }

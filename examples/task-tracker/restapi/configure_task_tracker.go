@@ -4,9 +4,9 @@ import (
 	"crypto/tls"
 	"net/http"
 
-	errors "github.com/go-swagger/go-swagger/errors"
-	httpkit "github.com/go-swagger/go-swagger/httpkit"
-	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
+	errors "github.com/go-openapi/errors"
+	runtime "github.com/go-openapi/runtime"
+	middleware "github.com/go-openapi/runtime/middleware"
 
 	"github.com/go-swagger/go-swagger/examples/task-tracker/restapi/operations"
 	"github.com/go-swagger/go-swagger/examples/task-tracker/restapi/operations/tasks"
@@ -22,18 +22,18 @@ func configureAPI(api *operations.TaskTrackerAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
-	api.MulitpartformConsumer = httpkit.DiscardConsumer
+	api.JSONConsumer = runtime.JSONConsumer()
 
-	api.JSONConsumer = httpkit.JSONConsumer()
+	api.MulitpartformConsumer = runtime.DiscardConsumer
 
-	api.JSONProducer = httpkit.JSONProducer()
-
-	api.TokenHeaderAuth = func(token string) (interface{}, error) {
-		return nil, errors.NotImplemented("api key auth (token_header) X-Token from header has not yet been implemented")
-	}
+	api.JSONProducer = runtime.JSONProducer()
 
 	api.APIKeyAuth = func(token string) (interface{}, error) {
 		return nil, errors.NotImplemented("api key auth (api_key) token from query has not yet been implemented")
+	}
+
+	api.TokenHeaderAuth = func(token string) (interface{}, error) {
+		return nil, errors.NotImplemented("api key auth (token_header) X-Token from header has not yet been implemented")
 	}
 
 	api.TasksAddCommentToTaskHandler = tasks.AddCommentToTaskHandlerFunc(func(params tasks.AddCommentToTaskParams, principal interface{}) middleware.Responder {

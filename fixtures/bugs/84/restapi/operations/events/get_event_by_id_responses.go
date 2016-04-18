@@ -6,7 +6,7 @@ package events
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-openapi/runtime"
 
 	"github.com/go-swagger/go-swagger/fixtures/bugs/84/models"
 )
@@ -38,7 +38,7 @@ func (o *GetEventByIDOK) SetPayload(payload *models.Event) {
 }
 
 // WriteResponse to the client
-func (o *GetEventByIDOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *GetEventByIDOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
 	if o.Payload != nil {
@@ -79,7 +79,7 @@ func (o *GetEventByIDDefault) SetStatusCode(code int) {
 }
 
 // WriteResponse to the client
-func (o *GetEventByIDDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *GetEventByIDDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(o._statusCode)
 }

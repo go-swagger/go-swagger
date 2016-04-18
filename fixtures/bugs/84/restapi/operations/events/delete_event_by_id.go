@@ -6,7 +6,7 @@ package events
 import (
 	"net/http"
 
-	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // DeleteEventByIDHandlerFunc turns a function with the right signature into a delete event by Id handler
