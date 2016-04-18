@@ -75,7 +75,7 @@
 			"importpath": "github.com/go-openapi/runtime",
 			"repository": "https://github.com/go-openapi/runtime",
 			"vcs": "git",
-			"revision": "dcb615acee62fc6bce61c8c398581e2afdbe296e",
+			"revision": "499b9bceffc59518b28ff84e0717692883137578",
 			"branch": "master",
 			"notests": true
 		},
