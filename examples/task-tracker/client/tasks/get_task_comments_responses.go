@@ -7,10 +7,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/go-swagger/go-swagger/client"
-	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-openapi/runtime"
 
-	"github.com/go-openapi/strfmt"
+	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
@@ -21,7 +20,7 @@ type GetTaskCommentsReader struct {
 }
 
 // ReadResponse reads a server response into the recieved o.
-func (o *GetTaskCommentsReader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+func (o *GetTaskCommentsReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
 
 	case 200:
@@ -57,7 +56,7 @@ func (o *GetTaskCommentsOK) Error() string {
 	return fmt.Sprintf("[GET /tasks/{id}/comments][%d] getTaskCommentsOK  %+v", 200, o.Payload)
 }
 
-func (o *GetTaskCommentsOK) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
+func (o *GetTaskCommentsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
@@ -95,7 +94,7 @@ func (o *GetTaskCommentsDefault) Error() string {
 	return fmt.Sprintf("[GET /tasks/{id}/comments][%d] getTaskComments default  %+v", o._statusCode, o.Payload)
 }
 
-func (o *GetTaskCommentsDefault) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
+func (o *GetTaskCommentsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// response header X-Error-Code
 	o.XErrorCode = response.GetHeader("X-Error-Code")

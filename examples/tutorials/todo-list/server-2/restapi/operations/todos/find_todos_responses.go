@@ -6,7 +6,7 @@ package todos
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-openapi/runtime"
 
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-2/models"
 )
@@ -38,7 +38,7 @@ func (o *FindTodosOK) SetPayload(payload []*models.Item) {
 }
 
 // WriteResponse to the client
-func (o *FindTodosOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *FindTodosOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
 	if err := producer.Produce(rw, o.Payload); err != nil {
@@ -92,7 +92,7 @@ func (o *FindTodosDefault) SetPayload(payload *models.Error) {
 }
 
 // WriteResponse to the client
-func (o *FindTodosDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *FindTodosDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(o._statusCode)
 	if o.Payload != nil {

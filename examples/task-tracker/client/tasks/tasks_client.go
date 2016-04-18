@@ -4,13 +4,13 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"github.com/go-swagger/go-swagger/client"
+	"github.com/go-openapi/runtime"
 
-	"github.com/go-openapi/strfmt"
+	strfmt "github.com/go-openapi/strfmt"
 )
 
 // New creates a new tasks API client.
-func New(transport client.Transport, formats strfmt.Registry) *Client {
+func New(transport runtime.ClientTransport, formats strfmt.Registry) *Client {
 	return &Client{transport: transport, formats: formats}
 }
 
@@ -18,7 +18,7 @@ func New(transport client.Transport, formats strfmt.Registry) *Client {
 Client for tasks API
 */
 type Client struct {
-	transport client.Transport
+	transport runtime.ClientTransport
 	formats   strfmt.Registry
 }
 
@@ -29,13 +29,13 @@ The comment can contain ___github markdown___ syntax.
 Fenced codeblocks etc are supported through pygments.
 
 */
-func (a *Client) AddCommentToTask(params *AddCommentToTaskParams, authInfo client.AuthInfoWriter) (*AddCommentToTaskCreated, error) {
+func (a *Client) AddCommentToTask(params *AddCommentToTaskParams, authInfo runtime.ClientAuthInfoWriter) (*AddCommentToTaskCreated, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewAddCommentToTaskParams()
 	}
 
-	result, err := a.transport.Submit(&client.Operation{
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addCommentToTask",
 		Method:             "POST",
 		PathPattern:        "/tasks/{id}/comments",
@@ -60,13 +60,13 @@ This operation requires authentication so that we know which user
 created the task.
 
 */
-func (a *Client) CreateTask(params *CreateTaskParams, authInfo client.AuthInfoWriter) (*CreateTaskCreated, error) {
+func (a *Client) CreateTask(params *CreateTaskParams, authInfo runtime.ClientAuthInfoWriter) (*CreateTaskCreated, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewCreateTaskParams()
 	}
 
-	result, err := a.transport.Submit(&client.Operation{
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "createTask",
 		Method:             "POST",
 		PathPattern:        "/tasks",
@@ -89,13 +89,13 @@ DeleteTask deletes a task
 This is a soft delete and changes the task status to ignored.
 
 */
-func (a *Client) DeleteTask(params *DeleteTaskParams, authInfo client.AuthInfoWriter) (*DeleteTaskNoContent, error) {
+func (a *Client) DeleteTask(params *DeleteTaskParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteTaskNoContent, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewDeleteTaskParams()
 	}
 
-	result, err := a.transport.Submit(&client.Operation{
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteTask",
 		Method:             "DELETE",
 		PathPattern:        "/tasks/{id}",
@@ -124,7 +124,7 @@ func (a *Client) GetTaskComments(params *GetTaskCommentsParams) (*GetTaskComment
 		params = NewGetTaskCommentsParams()
 	}
 
-	result, err := a.transport.Submit(&client.Operation{
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getTaskComments",
 		Method:             "GET",
 		PathPattern:        "/tasks/{id}/comments",
@@ -155,7 +155,7 @@ func (a *Client) GetTaskDetails(params *GetTaskDetailsParams) (*GetTaskDetailsOK
 		params = NewGetTaskDetailsParams()
 	}
 
-	result, err := a.transport.Submit(&client.Operation{
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getTaskDetails",
 		Method:             "GET",
 		PathPattern:        "/tasks/{id}",
@@ -186,7 +186,7 @@ func (a *Client) ListTasks(params *ListTasksParams) (*ListTasksOK, error) {
 		params = NewListTasksParams()
 	}
 
-	result, err := a.transport.Submit(&client.Operation{
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "listTasks",
 		Method:             "GET",
 		PathPattern:        "/tasks",
@@ -210,13 +210,13 @@ This operation requires authentication so that we know which user
 last updated the task.
 
 */
-func (a *Client) UpdateTask(params *UpdateTaskParams, authInfo client.AuthInfoWriter) (*UpdateTaskOK, error) {
+func (a *Client) UpdateTask(params *UpdateTaskParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateTaskOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateTaskParams()
 	}
 
-	result, err := a.transport.Submit(&client.Operation{
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateTask",
 		Method:             "PUT",
 		PathPattern:        "/tasks/{id}",
@@ -238,13 +238,13 @@ UploadTaskFile adds a file to a task
 
 The file can't be larger than **5MB**
 */
-func (a *Client) UploadTaskFile(params *UploadTaskFileParams, authInfo client.AuthInfoWriter) (*UploadTaskFileCreated, error) {
+func (a *Client) UploadTaskFile(params *UploadTaskFileParams, authInfo runtime.ClientAuthInfoWriter) (*UploadTaskFileCreated, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUploadTaskFileParams()
 	}
 
-	result, err := a.transport.Submit(&client.Operation{
+	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "uploadTaskFile",
 		Method:             "POST",
 		PathPattern:        "/tasks/{id}/files",
@@ -262,6 +262,6 @@ func (a *Client) UploadTaskFile(params *UploadTaskFileParams, authInfo client.Au
 }
 
 // SetTransport changes the transport on the client
-func (a *Client) SetTransport(transport client.Transport) {
+func (a *Client) SetTransport(transport runtime.ClientTransport) {
 	a.transport = transport
 }

@@ -7,9 +7,9 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/errors"
+	middleware "github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
-	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
-	"github.com/go-swagger/go-swagger/httpkit/validate"
+	"github.com/go-openapi/validate"
 )
 
 // AddCommentToTaskHandlerFunc turns a function with the right signature into a add comment to task handler

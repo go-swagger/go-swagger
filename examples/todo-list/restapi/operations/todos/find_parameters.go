@@ -8,12 +8,12 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	"github.com/go-swagger/go-swagger/httpkit"
-	"github.com/go-swagger/go-swagger/httpkit/middleware"
-	"github.com/go-swagger/go-swagger/httpkit/validate"
+	"github.com/go-openapi/validate"
 
-	"github.com/go-openapi/strfmt"
+	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewFindParams creates a new FindParams object
@@ -63,7 +63,7 @@ func (o *FindParams) BindRequest(r *http.Request, route *middleware.MatchedRoute
 			return err
 		}
 	}
-	fds := httpkit.Values(r.Form)
+	fds := runtime.Values(r.Form)
 
 	if err := o.bindXRateLimit(r.Header["X-Rate-Limit"], true, route.Formats); err != nil {
 		res = append(res, err)

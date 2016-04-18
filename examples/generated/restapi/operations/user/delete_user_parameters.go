@@ -7,9 +7,9 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/errors"
-	"github.com/go-swagger/go-swagger/httpkit/middleware"
+	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/go-openapi/strfmt"
+	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewDeleteUserParams creates a new DeleteUserParams object

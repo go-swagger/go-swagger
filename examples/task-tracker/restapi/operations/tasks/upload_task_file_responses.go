@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-openapi/runtime"
 
 	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
@@ -25,7 +25,7 @@ func NewUploadTaskFileCreated() *UploadTaskFileCreated {
 }
 
 // WriteResponse to the client
-func (o *UploadTaskFileCreated) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *UploadTaskFileCreated) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(201)
 }
@@ -90,7 +90,7 @@ func (o *UploadTaskFileDefault) SetPayload(payload *models.Error) {
 }
 
 // WriteResponse to the client
-func (o *UploadTaskFileDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *UploadTaskFileDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	// response header X-Error-Code
 	rw.Header().Add("X-Error-Code", fmt.Sprintf("%v", o.XErrorCode))

@@ -6,7 +6,7 @@ package tasks
 import (
 	"net/http"
 
-	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
+	middleware "github.com/go-openapi/runtime/middleware"
 )
 
 // GetTaskCommentsHandlerFunc turns a function with the right signature into a get task comments handler

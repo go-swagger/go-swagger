@@ -7,10 +7,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/go-swagger/go-swagger/client"
-	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-openapi/runtime"
 
-	"github.com/go-openapi/strfmt"
+	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
@@ -21,7 +20,7 @@ type DeleteTaskReader struct {
 }
 
 // ReadResponse reads a server response into the recieved o.
-func (o *DeleteTaskReader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+func (o *DeleteTaskReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
 
 	case 204:
@@ -56,7 +55,7 @@ func (o *DeleteTaskNoContent) Error() string {
 	return fmt.Sprintf("[DELETE /tasks/{id}][%d] deleteTaskNoContent ", 204)
 }
 
-func (o *DeleteTaskNoContent) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
+func (o *DeleteTaskNoContent) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	return nil
 }
@@ -89,7 +88,7 @@ func (o *DeleteTaskDefault) Error() string {
 	return fmt.Sprintf("[DELETE /tasks/{id}][%d] deleteTask default  %+v", o._statusCode, o.Payload)
 }
 
-func (o *DeleteTaskDefault) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
+func (o *DeleteTaskDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// response header X-Error-Code
 	o.XErrorCode = response.GetHeader("X-Error-Code")

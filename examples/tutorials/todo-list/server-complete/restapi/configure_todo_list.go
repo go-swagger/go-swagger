@@ -6,9 +6,9 @@ import (
 	"sync/atomic"
 
 	"github.com/go-openapi/errors"
+	httpkit "github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	httpkit "github.com/go-swagger/go-swagger/httpkit"
-	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
 
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete/models"
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete/restapi/operations"

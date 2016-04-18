@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-openapi/swag"
 	flags "github.com/jessevdk/go-flags"
 	graceful "github.com/tylerb/graceful"
 
-	"github.com/go-openapi/swag"
 	"github.com/go-swagger/go-swagger/examples/task-tracker/restapi/operations"
 )
 

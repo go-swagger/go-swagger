@@ -4,9 +4,9 @@ import (
 	"crypto/tls"
 	"net/http"
 
-	"github.com/go-openapi/errors"
-	httpkit "github.com/go-swagger/go-swagger/httpkit"
-	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
+	errors "github.com/go-openapi/errors"
+	runtime "github.com/go-openapi/runtime"
+	middleware "github.com/go-openapi/runtime/middleware"
 
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-2/restapi/operations"
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-2/restapi/operations/todos"
@@ -22,9 +22,9 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
-	api.JSONConsumer = httpkit.JSONConsumer()
+	api.JSONConsumer = runtime.JSONConsumer()
 
-	api.JSONProducer = httpkit.JSONProducer()
+	api.JSONProducer = runtime.JSONProducer()
 
 	api.TodosAddOneHandler = todos.AddOneHandlerFunc(func(params todos.AddOneParams) middleware.Responder {
 		return middleware.NotImplemented("operation todos.AddOne has not yet been implemented")

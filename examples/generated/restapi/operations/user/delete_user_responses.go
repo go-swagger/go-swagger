@@ -6,7 +6,7 @@ package user
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-openapi/runtime"
 )
 
 /*DeleteUserBadRequest Invalid username supplied
@@ -22,7 +22,7 @@ func NewDeleteUserBadRequest() *DeleteUserBadRequest {
 }
 
 // WriteResponse to the client
-func (o *DeleteUserBadRequest) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *DeleteUserBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(400)
 }
@@ -40,7 +40,7 @@ func NewDeleteUserNotFound() *DeleteUserNotFound {
 }
 
 // WriteResponse to the client
-func (o *DeleteUserNotFound) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *DeleteUserNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(404)
 }

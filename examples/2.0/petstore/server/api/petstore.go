@@ -23,10 +23,10 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware/untyped"
 	"github.com/go-openapi/swag"
-	"github.com/go-swagger/go-swagger/httpkit"
-	"github.com/go-swagger/go-swagger/httpkit/middleware"
-	"github.com/go-swagger/go-swagger/httpkit/middleware/untyped"
 )
 
 // NewPetstore creates a new petstore api handler
@@ -45,12 +45,12 @@ func NewPetstore() (http.Handler, error) {
 	return middleware.Serve(spec, api), nil
 }
 
-var getAllPets = httpkit.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
+var getAllPets = runtime.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
 	fmt.Println("getAllPets")
 	fmt.Printf("%#v\n", data)
 	return pets, nil
 })
-var createPet = httpkit.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
+var createPet = runtime.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
 	fmt.Println("createPet")
 	fmt.Printf("%#v\n", data)
 	body := data.(map[string]interface{})["pet"]
@@ -62,7 +62,7 @@ var createPet = httpkit.OperationHandlerFunc(func(data interface{}) (interface{}
 	return body, nil
 })
 
-var deletePet = httpkit.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
+var deletePet = runtime.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
 	fmt.Println("deletePet")
 	fmt.Printf("%#v\n", data)
 	id := data.(map[string]interface{})["id"].(int64)
@@ -70,7 +70,7 @@ var deletePet = httpkit.OperationHandlerFunc(func(data interface{}) (interface{}
 	return nil, nil
 })
 
-var getPetByID = httpkit.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
+var getPetByID = runtime.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
 	fmt.Println("getPetByID")
 	fmt.Printf("%#v\n", data)
 	id := data.(map[string]interface{})["id"].(int64)

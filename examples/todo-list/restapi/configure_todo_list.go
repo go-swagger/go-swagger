@@ -4,9 +4,9 @@ import (
 	"crypto/tls"
 	"net/http"
 
-	"github.com/go-openapi/errors"
-	httpkit "github.com/go-swagger/go-swagger/httpkit"
-	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
+	errors "github.com/go-openapi/errors"
+	runtime "github.com/go-openapi/runtime"
+	middleware "github.com/go-openapi/runtime/middleware"
 
 	"github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations"
 	"github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations/todos"
@@ -22,9 +22,9 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
-	api.JSONConsumer = httpkit.JSONConsumer()
+	api.JSONConsumer = runtime.JSONConsumer()
 
-	api.JSONProducer = httpkit.JSONProducer()
+	api.JSONProducer = runtime.JSONProducer()
 
 	api.KeyAuth = func(token string) (interface{}, error) {
 		return nil, errors.NotImplemented("api key auth (key) x-petstore-token from header has not yet been implemented")

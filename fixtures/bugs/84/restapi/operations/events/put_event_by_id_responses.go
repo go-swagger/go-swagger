@@ -6,7 +6,7 @@ package events
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-openapi/runtime"
 )
 
 /*PutEventByIDNoContent Successful response
@@ -22,7 +22,7 @@ func NewPutEventByIDNoContent() *PutEventByIDNoContent {
 }
 
 // WriteResponse to the client
-func (o *PutEventByIDNoContent) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *PutEventByIDNoContent) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(204)
 }
@@ -58,7 +58,7 @@ func (o *PutEventByIDDefault) SetStatusCode(code int) {
 }
 
 // WriteResponse to the client
-func (o *PutEventByIDDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *PutEventByIDDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(o._statusCode)
 }

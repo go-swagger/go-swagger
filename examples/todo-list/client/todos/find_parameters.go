@@ -5,10 +5,10 @@ package todos
 
 import (
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"
-	"github.com/go-swagger/go-swagger/client"
 
-	"github.com/go-openapi/strfmt"
+	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewFindParams creates a new FindParams object
@@ -50,7 +50,7 @@ func (o *FindParams) WithTags(tags []int32) *FindParams {
 }
 
 // WriteToRequest writes these params to a swagger request
-func (o *FindParams) WriteToRequest(r client.Request, reg strfmt.Registry) error {
+func (o *FindParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
 	var res []error
 

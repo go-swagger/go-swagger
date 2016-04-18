@@ -6,15 +6,14 @@ package {{ .Package }}
 
 import (
   "net/http"
-  "github.com/go-swagger/go-swagger/httpkit"
-  httptransport "github.com/go-swagger/go-swagger/httpkit/client"
-  "github.com/go-swagger/go-swagger/swag"
-  "github.com/go-swagger/go-swagger/spec"
-  "github.com/go-swagger/go-swagger/errors"
-  "github.com/go-swagger/go-swagger/httpkit/validate"
-  "github.com/go-swagger/go-swagger/client"
+  "github.com/go-openapi/runtime"
+  httptransport "github.com/go-openapi/runtime/client"
+  "github.com/go-openapi/swag"
+  "github.com/go-openapi/spec"
+  "github.com/go-openapi/errors"
+  "github.com/go-openapi/runtime"
 
-  strfmt "github.com/go-swagger/go-swagger/strfmt"
+  strfmt "github.com/go-openapi/strfmt"
 
   {{ range .DefaultImports }}{{ printf "%q" .}}
   {{ end }}
@@ -35,7 +34,7 @@ func NewHTTPClient(formats strfmt.Registry) *{{ pascalize .Name }} {
 }
 
 // New creates a new {{ humanize .Name }} client
-func New(transport client.Transport, formats strfmt.Registry) *{{ pascalize .Name }} {
+func New(transport runtime.ClientTransport, formats strfmt.Registry) *{{ pascalize .Name }} {
   cli := new({{ pascalize .Name }})
   cli.Transport = transport
   {{ range .OperationGroups }}
@@ -49,12 +48,12 @@ type {{ pascalize .Name }} struct {
   {{ range .OperationGroups }}
   {{ pascalize .Name }} *{{ snakize .Name }}.Client
   {{ end }}
-  Transport client.Transport
+  Transport runtime.ClientTransport
 }
 
 
 // SetTransport changes the transport on the client and all its subresources
-func (c *{{pascalize .Name}}) SetTransport(transport client.Transport) {
+func (c *{{pascalize .Name}}) SetTransport(transport runtime.ClientTransport) {
   c.Transport = transport
   {{ range .OperationGroups }}
   c.{{ pascalize .Name }}.SetTransport(transport)

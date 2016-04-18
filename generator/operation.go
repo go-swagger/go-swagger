@@ -25,9 +25,9 @@ import (
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
-	"github.com/go-swagger/go-swagger/httpkit"
 )
 
 // GenerateServerOperation generates a parameter model, parameter validator, http handler implementations for a given operation
@@ -60,11 +60,11 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 		}
 		defaultProduces := opts.DefaultProduces
 		if defaultProduces == "" {
-			defaultProduces = httpkit.JSONMime
+			defaultProduces = runtime.JSONMime
 		}
 		defaultConsumes := opts.DefaultConsumes
 		if defaultConsumes == "" {
-			defaultConsumes = httpkit.JSONMime
+			defaultConsumes = runtime.JSONMime
 		}
 
 		apiPackage := mangleName(swag.ToFileName(opts.APIPackage), "api")
@@ -368,7 +368,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	if operation.Responses != nil {
 		for k, v := range operation.Responses.StatusCodeResponses {
 			isSuccess := k/100 == 2
-			gr, err := b.MakeResponse(receiver, swag.ToJSONName(b.Name+" "+httpkit.Statuses[k]), isSuccess, resolver, k, v)
+			gr, err := b.MakeResponse(receiver, swag.ToJSONName(b.Name+" "+runtime.Statuses[k]), isSuccess, resolver, k, v)
 			if err != nil {
 				return GenOperation{}, err
 			}

@@ -7,10 +7,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/go-swagger/go-swagger/client"
-	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-openapi/runtime"
 
-	"github.com/go-openapi/strfmt"
+	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
@@ -21,7 +20,7 @@ type CreateTaskReader struct {
 }
 
 // ReadResponse reads a server response into the recieved o.
-func (o *CreateTaskReader) ReadResponse(response client.Response, consumer httpkit.Consumer) (interface{}, error) {
+func (o *CreateTaskReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
 
 	case 201:
@@ -56,7 +55,7 @@ func (o *CreateTaskCreated) Error() string {
 	return fmt.Sprintf("[POST /tasks][%d] createTaskCreated ", 201)
 }
 
-func (o *CreateTaskCreated) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
+func (o *CreateTaskCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	return nil
 }
@@ -89,7 +88,7 @@ func (o *CreateTaskDefault) Error() string {
 	return fmt.Sprintf("[POST /tasks][%d] createTask default  %+v", o._statusCode, o.Payload)
 }
 
-func (o *CreateTaskDefault) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
+func (o *CreateTaskDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// response header X-Error-Code
 	o.XErrorCode = response.GetHeader("X-Error-Code")

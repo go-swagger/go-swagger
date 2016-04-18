@@ -9,11 +9,11 @@ import (
 	"strings"
 
 	"github.com/go-openapi/loads"
+	httpkit "github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	httpkit "github.com/go-swagger/go-swagger/httpkit"
-	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
 
 	"github.com/go-swagger/go-swagger/fixtures/bugs/84/restapi/operations/events"
 )

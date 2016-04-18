@@ -6,7 +6,7 @@ package pet
 import (
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-openapi/runtime"
 )
 
 /*UpdatePetWithFormMethodNotAllowed Invalid input
@@ -22,7 +22,7 @@ func NewUpdatePetWithFormMethodNotAllowed() *UpdatePetWithFormMethodNotAllowed {
 }
 
 // WriteResponse to the client
-func (o *UpdatePetWithFormMethodNotAllowed) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *UpdatePetWithFormMethodNotAllowed) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(405)
 }

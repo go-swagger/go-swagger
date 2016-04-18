@@ -29,7 +29,7 @@ import (
 // var goImports = map[string]string{
 // 	"inf.Dec":   "speter.net/go/exp/math/dec/inf",
 // 	"big.Int":   "math/big",
-// 	"swagger.*": "github.com/go-swagger/go-swagger/httpkit",
+// 	"swagger.*": "github.com/go-openapi/runtime",
 // }
 
 const (
@@ -154,7 +154,7 @@ var typeMapping = map[string]string{
 	"number":     "float64",
 	"integer":    "int64",
 	"boolean":    "bool",
-	"file":       "httpkit.File",
+	"file":       "runtime.File",
 }
 
 // swaggerTypeMapping contains a mapping from go type to swagger type or format

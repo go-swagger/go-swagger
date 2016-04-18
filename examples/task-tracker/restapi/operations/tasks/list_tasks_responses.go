@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/go-swagger/go-swagger/httpkit"
+	"github.com/go-openapi/runtime"
 
 	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
@@ -54,7 +54,7 @@ func (o *ListTasksOK) SetPayload(payload []*models.TaskCard) {
 }
 
 // WriteResponse to the client
-func (o *ListTasksOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *ListTasksOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	// response header X-Last-Task-Id
 	rw.Header().Add("X-Last-Task-Id", fmt.Sprintf("%v", o.XLastTaskID))
@@ -93,7 +93,7 @@ func (o *ListTasksUnprocessableEntity) SetPayload(payload *models.ValidationErro
 }
 
 // WriteResponse to the client
-func (o *ListTasksUnprocessableEntity) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *ListTasksUnprocessableEntity) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(422)
 	if o.Payload != nil {
@@ -163,7 +163,7 @@ func (o *ListTasksDefault) SetPayload(payload *models.Error) {
 }
 
 // WriteResponse to the client
-func (o *ListTasksDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *ListTasksDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	// response header X-Error-Code
 	rw.Header().Add("X-Error-Code", fmt.Sprintf("%v", o.XErrorCode))

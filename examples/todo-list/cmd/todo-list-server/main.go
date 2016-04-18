@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/go-openapi/loads"
+	loads "github.com/go-openapi/loads"
 	flags "github.com/jessevdk/go-flags"
 
 	"github.com/go-swagger/go-swagger/examples/todo-list/restapi"

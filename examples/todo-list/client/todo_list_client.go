@@ -4,10 +4,10 @@ package client
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"github.com/go-swagger/go-swagger/client"
-	httptransport "github.com/go-swagger/go-swagger/httpkit/client"
+	"github.com/go-openapi/runtime"
+	httptransport "github.com/go-openapi/runtime/client"
 
-	"github.com/go-openapi/strfmt"
+	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-swagger/go-swagger/examples/todo-list/client/todos"
 )
@@ -25,7 +25,7 @@ func NewHTTPClient(formats strfmt.Registry) *TodoList {
 }
 
 // New creates a new todo list client
-func New(transport client.Transport, formats strfmt.Registry) *TodoList {
+func New(transport runtime.ClientTransport, formats strfmt.Registry) *TodoList {
 	cli := new(TodoList)
 	cli.Transport = transport
 
@@ -38,11 +38,11 @@ func New(transport client.Transport, formats strfmt.Registry) *TodoList {
 type TodoList struct {
 	Todos *todos.Client
 
-	Transport client.Transport
+	Transport runtime.ClientTransport
 }
 
 // SetTransport changes the transport on the client and all its subresources
-func (c *TodoList) SetTransport(transport client.Transport) {
+func (c *TodoList) SetTransport(transport runtime.ClientTransport) {
 	c.Transport = transport
 
 	c.Todos.SetTransport(transport)

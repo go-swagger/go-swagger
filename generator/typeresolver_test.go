@@ -59,7 +59,7 @@ var schTypeVals = []struct{ Type, Format, Expected string }{
 	{"string", "rgbcolor", "strfmt.RGBColor"},
 	{"string", "duration", "strfmt.Duration"},
 	{"string", "password", "strfmt.Password"},
-	{"file", "", "httpkit.File"},
+	{"file", "", "runtime.File"},
 }
 
 var schRefVals = []struct{ Type, GoType, Expected string }{

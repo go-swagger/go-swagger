@@ -114,11 +114,11 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
   	return err
   }
 
-  {{ range .AllOf }}{{ if .IsAnonymous }}{{ range $idx, $val := .Properties }}{{ if .IsBaseType }}allOf{{ $idx }}{{ pascalize $val.Name }}, err := Unmarshal{{ $val.GoType }}(bytes.NewBuffer(raw), httpkit.JSONConsumer())
+  {{ range .AllOf }}{{ if .IsAnonymous }}{{ range $idx, $val := .Properties }}{{ if .IsBaseType }}allOf{{ $idx }}{{ pascalize $val.Name }}, err := Unmarshal{{ $val.GoType }}(bytes.NewBuffer(raw), runtime.JSONConsumer())
   if err != nil {
     return err
   }
-  {{ end }}{{ end }}{{ end }}{{ end}}{{ range .Properties }}{{ if and ( not .IsArray ) .IsBaseType }}{{ camelize .Name }}, err := Unmarshal{{ .GoType }}(bytes.NewBuffer(data.{{ pascalize .Name}}), httpkit.JSONConsumer())
+  {{ end }}{{ end }}{{ end }}{{ end}}{{ range .Properties }}{{ if and ( not .IsArray ) .IsBaseType }}{{ camelize .Name }}, err := Unmarshal{{ .GoType }}(bytes.NewBuffer(data.{{ pascalize .Name}}), runtime.JSONConsumer())
   if err != nil {
     return err
   }{{ else if and .IsArray .IsBaseType }}var {{ camelize .Name }} {{ .GoType }}
@@ -135,7 +135,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
     if slc{{ pascalize .Name}}, ok := untyped{{ pascalize .Name }}.([]interface{}); ok {
       for _, slcEl := range slc{{ pascalize .Name }} {
         slcJSON, _ := json.Marshal(slcEl)
-        slcObj, err := Unmarshal{{ .Items.GoType }}(bytes.NewBuffer(slcJSON), httpkit.JSONConsumer())
+        slcObj, err := Unmarshal{{ .Items.GoType }}(bytes.NewBuffer(slcJSON), runtime.JSONConsumer())
         if err != nil {
           return err
         }

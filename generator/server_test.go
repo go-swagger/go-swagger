@@ -11,8 +11,8 @@ import (
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"
-	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -74,8 +74,8 @@ func testAppGenertor(t testing.TB, specPath, name string) (*appGenerator, error)
 		ClientPackage:   mangleName(swag.ToFileName(opts.ClientPackage), "client"),
 		Principal:       opts.Principal,
 		DefaultScheme:   "http",
-		DefaultProduces: httpkit.JSONMime,
-		DefaultConsumes: httpkit.JSONMime,
+		DefaultProduces: runtime.JSONMime,
+		DefaultConsumes: runtime.JSONMime,
 		GenOpts:         &opts,
 	}, nil
 }
@@ -92,7 +92,7 @@ func TestServer_UrlEncoded(t *testing.T) {
 				formatted, err := formatGoFile("configure_search_api.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(formatted)
-					assertInCode(t, "api.UrlformConsumer = httpkit.DiscardConsumer", res)
+					assertInCode(t, "api.UrlformConsumer = runtime.DiscardConsumer", res)
 				} else {
 					fmt.Println(buf.String())
 				}
@@ -113,7 +113,7 @@ func TestServer_MultipartForm(t *testing.T) {
 				formatted, err := formatGoFile("configure_shipyard_api.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(formatted)
-					assertInCode(t, "api.MulitpartformConsumer = httpkit.DiscardConsumer", res)
+					assertInCode(t, "api.MulitpartformConsumer = runtime.DiscardConsumer", res)
 				} else {
 					fmt.Println(buf.String())
 				}

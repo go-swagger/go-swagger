@@ -8,9 +8,9 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	"github.com/go-swagger/go-swagger/httpkit"
-	"github.com/go-swagger/go-swagger/httpkit/middleware"
 
 	"github.com/go-openapi/strfmt"
 
@@ -51,7 +51,7 @@ func (o *PutEventByIDParams) BindRequest(r *http.Request, route *middleware.Matc
 	var res []error
 	o.HTTPRequest = r
 
-	if httpkit.HasBody(r) {
+	if runtime.HasBody(r) {
 		defer r.Body.Close()
 		var body models.Event
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {

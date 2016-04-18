@@ -6,7 +6,7 @@ package user
 import (
 	"net/http"
 
-	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
+	middleware "github.com/go-openapi/runtime/middleware"
 )
 
 // CreateUsersWithArrayInputHandlerFunc turns a function with the right signature into a create users with array input handler

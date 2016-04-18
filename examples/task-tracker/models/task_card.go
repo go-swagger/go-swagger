@@ -7,11 +7,11 @@ import (
 	"encoding/json"
 	"strconv"
 
-	"github.com/go-openapi/strfmt"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
 	"github.com/go-openapi/errors"
-	"github.com/go-swagger/go-swagger/httpkit/validate"
+	"github.com/go-openapi/validate"
 )
 
 /*TaskCard a card for a task

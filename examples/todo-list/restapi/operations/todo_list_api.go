@@ -8,13 +8,13 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-openapi/loads"
-	"github.com/go-openapi/spec"
-	"github.com/go-openapi/strfmt"
+	loads "github.com/go-openapi/loads"
+	runtime "github.com/go-openapi/runtime"
+	middleware "github.com/go-openapi/runtime/middleware"
+	security "github.com/go-openapi/runtime/security"
+	spec "github.com/go-openapi/spec"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	httpkit "github.com/go-swagger/go-swagger/httpkit"
-	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
-	security "github.com/go-swagger/go-swagger/httpkit/security"
 
 	"github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations/todos"
 )
@@ -42,10 +42,10 @@ type TodoListAPI struct {
 	defaultConsumes string
 	defaultProduces string
 	// JSONConsumer registers a consumer for a "application/io.swagger.examples.todo-list.v1+json" mime type
-	JSONConsumer httpkit.Consumer
+	JSONConsumer runtime.Consumer
 
 	// JSONProducer registers a producer for a "application/io.swagger.examples.todo-list.v1+json" mime type
-	JSONProducer httpkit.Producer
+	JSONProducer runtime.Producer
 
 	// KeyAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key x-petstore-token provided in the header
@@ -147,9 +147,9 @@ func (o *TodoListAPI) ServeErrorFor(operationID string) func(http.ResponseWriter
 }
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
-func (o *TodoListAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]httpkit.Authenticator {
+func (o *TodoListAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
 
-	result := make(map[string]httpkit.Authenticator)
+	result := make(map[string]runtime.Authenticator)
 	for name, scheme := range schemes {
 		switch name {
 
@@ -164,9 +164,9 @@ func (o *TodoListAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) 
 }
 
 // ConsumersFor gets the consumers for the specified media types
-func (o *TodoListAPI) ConsumersFor(mediaTypes []string) map[string]httpkit.Consumer {
+func (o *TodoListAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
 
-	result := make(map[string]httpkit.Consumer)
+	result := make(map[string]runtime.Consumer)
 	for _, mt := range mediaTypes {
 		switch mt {
 
@@ -180,9 +180,9 @@ func (o *TodoListAPI) ConsumersFor(mediaTypes []string) map[string]httpkit.Consu
 }
 
 // ProducersFor gets the producers for the specified media types
-func (o *TodoListAPI) ProducersFor(mediaTypes []string) map[string]httpkit.Producer {
+func (o *TodoListAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
 
-	result := make(map[string]httpkit.Producer)
+	result := make(map[string]runtime.Producer)
 	for _, mt := range mediaTypes {
 		switch mt {
 

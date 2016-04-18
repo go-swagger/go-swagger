@@ -1667,7 +1667,7 @@ func TestGenModel_Issue423(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ct)
 					assertInCode(t, "Site json.RawMessage `json:\"site\"`", res)
-					assertInCode(t, "UnmarshalSite(bytes.NewBuffer(data.Site), httpkit.JSONConsumer())", res)
+					assertInCode(t, "UnmarshalSite(bytes.NewBuffer(data.Site), runtime.JSONConsumer())", res)
 				}
 			}
 		}

@@ -74,7 +74,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) SetPayload(payload {{ if .Sche
 {{ end }}
 
 // WriteResponse to the client
-func ({{ .ReceiverName }} *{{ pascalize .Name }}) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func ({{ .ReceiverName }} *{{ pascalize .Name }}) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
   {{ range .Headers }}
   // response header {{.Name}}
   rw.Header().Add({{ printf "%q" .Name }}, fmt.Sprintf("%v", {{ .ReceiverName }}.{{ pascalize .Name }}))
@@ -94,11 +94,11 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) WriteResponse(rw http.Response
 
 import (
   "net/http"
-  "github.com/go-swagger/go-swagger/httpkit"
-  "github.com/go-swagger/go-swagger/swag"
-  "github.com/go-swagger/go-swagger/errors"
-  "github.com/go-swagger/go-swagger/httpkit/validate"
-  "github.com/go-swagger/go-swagger/client"
+  "github.com/go-openapi/runtime"
+  "github.com/go-openapi/swag"
+  "github.com/go-openapi/errors"
+  "github.com/go-openapi/validate"
+  "github.com/go-openapi/runtime"
 
   {{ range .DefaultImports }}{{ printf "%q" .}}
   {{ end }}
