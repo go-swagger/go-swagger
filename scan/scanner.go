@@ -299,7 +299,7 @@ func (a *appScanner) processDiscovered() error {
 		}
 		a.discovered = nil
 		for _, sd := range queue {
-			if err := a.parseSchema(sd.File); err != nil {
+			if err := a.parseDiscoveredSchema(sd); err != nil {
 				return err
 			}
 		}
@@ -312,6 +312,17 @@ func (a *appScanner) processDiscovered() error {
 func (a *appScanner) parseSchema(file *ast.File) error {
 	sp := newSchemaParser(a.prog)
 	if err := sp.Parse(file, a.definitions); err != nil {
+		return err
+	}
+	a.discovered = append(a.discovered, sp.postDecls...)
+	return nil
+}
+
+func (a *appScanner) parseDiscoveredSchema(sd schemaDecl) error {
+	sp := newSchemaParser(a.prog)
+	sp.discovered = &sd
+
+	if err := sp.Parse(sd.File, a.definitions); err != nil {
 		return err
 	}
 	a.discovered = append(a.discovered, sp.postDecls...)

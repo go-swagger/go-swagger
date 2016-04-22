@@ -160,9 +160,10 @@ func (sd *schemaDecl) inferNames() (goName string, name string) {
 }
 
 type schemaParser struct {
-	program   *loader.Program
-	postDecls []schemaDecl
-	known     map[string]spec.Schema
+	program    *loader.Program
+	postDecls  []schemaDecl
+	known      map[string]spec.Schema
+	discovered *schemaDecl
 }
 
 func newSchemaParser(prog *loader.Program) *schemaParser {
@@ -197,6 +198,13 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl *sch
 	// the package and type are recorded in the extensions
 	// once type name is found convert it to a schema, by looking up the schema in the
 	// definitions dictionary that got passed into this parse method
+
+	// if our schemaParser is parsing a discovered schemaDecl and it does not match
+	// the current schemaDecl we can skip parsing.
+	if scp.discovered != nil && scp.discovered.Name != decl.Name {
+		return nil
+	}
+
 	decl.inferNames()
 	schema := definitions[decl.Name]
 	schPtr := &schema
