@@ -148,7 +148,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
   if err := {{ .ReceiverName }}.bind{{ pascalize .Name }}(r{{ pascalize .Name }}, rhk{{ pascalize .Name }}, route.Formats); err != nil {
     res = append(res, err)
   }
-  {{ else if .IsHeaderParam }}if err := {{ .ReceiverName }}.bind{{ pascalize .Name }}(r.Header[{{ .Path }}], true, route.Formats); err != nil {
+  {{ else if .IsHeaderParam }}if err := {{ .ReceiverName }}.bind{{ pascalize .Name }}(r.Header[http.CanonicalHeaderKey({{ .Path }})], true, route.Formats); err != nil {
     res = append(res, err)
   }
   {{ else if .IsFormParam }}{{if .IsFileParam }}{{ camelize .Name }}, {{ camelize .Name }}Header, err := r.FormFile({{ .Path }})
