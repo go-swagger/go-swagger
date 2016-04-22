@@ -24,6 +24,25 @@ import (
 	"github.com/go-swagger/scan-repo-boundary/makeplans"
 )
 
+// Customer of the site.
+//
+// swagger:model Customer
+type Customer struct {
+	Name string `json:"name"`
+}
+
+// IgnoreMe should not be added to definitions since it is not annotated.
+type IgnoreMe struct {
+	Name string `json:"name"`
+}
+
+// DateRange represents a scheduled appointments time
+// DateRange should be in definitions since it's being used in a response
+type DateRange struct {
+	Start string `json:"start"`
+	End   string `json:"end"`
+}
+
 // BookingResponse represents a scheduled appointment
 //
 // swagger:response BookingResponse
@@ -32,7 +51,11 @@ type BookingResponse struct {
 	//
 	// in: body
 	// required: true
-	Booking makeplans.Booking `json:"booking"`
+	Body struct {
+		Booking  makeplans.Booking `json:"booking"`
+		Customer Customer          `json:"customer"`
+		Dates    DateRange         `json:"dates"`
+	}
 }
 
 // Bookings swagger:route GET /admin/bookings/ booking Bookings

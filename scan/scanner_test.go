@@ -59,15 +59,23 @@ func TestAppScanner_NewSpec(t *testing.T) {
 	}
 }
 
-func TestAppScanner_BookingCrossRepo(t *testing.T) {
+func TestAppScanner_Definitions(t *testing.T) {
 	scanner, err := newAppScanner(&Opts{BasePath: "../fixtures/goparsing/bookings"}, nil, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, scanner)
 	doc, err := scanner.Parse()
 	assert.NoError(t, err)
 	if assert.NotNil(t, doc) {
-		_, ok := doc.Definitions["BookingResponse"]
-		assert.False(t, ok)
+		_, ok := doc.Definitions["Booking"]
+		assert.True(t, ok, "Should include cross repo structs")
+		_, ok = doc.Definitions["Customer"]
+		assert.True(t, ok, "Should include package structs with swagger:model")
+		_, ok = doc.Definitions["DateRange"]
+		assert.True(t, ok, "Should include package structs that are used in responses")
+		_, ok = doc.Definitions["BookingResponse"]
+		assert.False(t, ok, "Should not include responses")
+		_, ok = doc.Definitions["IgnoreMe"]
+		assert.False(t, ok, "Should not include un-annotated/un-referenced structs")
 	}
 }
 
