@@ -1,0 +1,46 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: 'Test'
+schemes:
+  - http
+basePath: /v1/fancyAPI
+produces:
+  - application/json
+consumes:
+  - application/json
+
+definitions:
+  in_object:
+    type: object
+    required: [test_id1, test_id2]
+    properties:
+      test_id1:
+        type: integer
+      test_id2:
+        type: integer
+
+  out_obj:
+    type: object
+    required: [fld1, fld2]
+    properties:
+      fld1:
+        type: integer
+        minimum: 0
+        maximim: 100
+      fld2:
+        $ref: "#/definitions/in_object"
+      fld3:
+        $ref: "#/definitions/in_object"
+
+paths:
+  '/key/{id}':
+    delete:
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          required: true
+      responses:
+        '200':
+          description: OK
