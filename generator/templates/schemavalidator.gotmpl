@@ -150,6 +150,11 @@ if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{
 }
 {{ end }}{{ end }}{{end}}
 {{define "objectvalidator"}}{{ if not .IsAnonymous }}
+{{if and .Required .IsNullable}}
+if err := validate.Required({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{.ValueExpression}}); err != nil {
+  return err
+}
+{{ end }}
 {{ if .IsNullable }}if {{ .ValueExpression }} != nil {
 {{ end }}
 if err := {{.ValueExpression}}.Validate(formats); err != nil {
@@ -396,6 +401,7 @@ func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{
   return nil
 }
 {{ end }}{{ if .ItemsEnum }}var {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum []interface{}
+
 func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ template "dereffedSchemaType" .Items }}) error {
   if {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum == nil {
     var res []{{ template "dereffedSchemaType" .Items }}
@@ -412,6 +418,7 @@ func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{
   return nil
 }
 {{ end }}{{ if .AdditionalItems}}{{ if .AdditionalItems.Enum }}var {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum []interface{}
+
 func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "dereffedSchemaType" .AdditionalItems }}) error {
   if {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum == nil {
     var res []{{ template "dereffedSchemaType" .AdditionalItems }}

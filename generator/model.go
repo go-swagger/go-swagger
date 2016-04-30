@@ -458,8 +458,10 @@ func hasValidations(model *spec.Schema, isRequired bool) (needsValidation bool, 
 	hasNumberValidation := model.Maximum != nil || model.Minimum != nil || model.MultipleOf != nil
 	hasStringValidation := model.MaxLength != nil || model.MinLength != nil || model.Pattern != ""
 	hasSliceValidations := model.MaxItems != nil || model.MinItems != nil || model.UniqueItems
+	simpleObject := len(model.Properties) > 0 && model.Discriminator == ""
+
 	needsValidation = hasNumberValidation || hasStringValidation || hasSliceValidations || len(model.Enum) > 0
-	hasValidation = isRequired || needsValidation
+	hasValidation = isRequired || needsValidation || simpleObject
 	return
 }
 
