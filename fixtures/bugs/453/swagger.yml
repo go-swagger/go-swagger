@@ -20,18 +20,32 @@ definitions:
       test_id2:
         type: integer
 
-  out_obj:
+  other_obj:
     type: object
-    required: [fld1, fld2]
+    required: [type]
+    discriminator: type
+    additionalProperties: true
+    description: some desc
     properties:
-      fld1:
-        type: integer
-        minimum: 0
-        maximim: 100
-      fld2:
-        $ref: "#/definitions/in_object"
-      fld3:
-        $ref: "#/definitions/in_object"
+      type:
+        type: string
+
+  out_obj:
+    allOf:
+      - $ref: "#/definitions/other_obj"
+      - type: object
+        additionalProperties: true
+        properties:
+          fld1:
+            type: integer
+            minimum: 0
+            maximim: 100
+          fld2:
+            $ref: "#/definitions/in_object"
+          fld3:
+            $ref: "#/definitions/in_object"
+          fld5:
+            $ref: "#/definitions/other_obj"
 
 paths:
   '/key/{id}':
