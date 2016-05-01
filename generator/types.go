@@ -240,8 +240,8 @@ func resolveSimpleType(tn, fmt string, items *spec.Items) string {
 
 func newTypeResolver(pkg string, doc *loads.Document) *typeResolver {
 	resolver := typeResolver{ModelsPackage: pkg, Doc: doc}
-	resolver.KnownDefs = make(map[string]struct{})
-	for k, sch := range doc.Pristine().Spec().Definitions {
+	resolver.KnownDefs = make(map[string]struct{}, 64)
+	for k, sch := range doc.OrigSpec().Definitions {
 		resolver.KnownDefs[k] = struct{}{}
 		if nm, ok := sch.Extensions["x-go-name"]; ok {
 			resolver.KnownDefs[nm.(string)] = struct{}{}
