@@ -102,6 +102,8 @@ func Spec(path string) (*Document, error) {
 
 var swag20Schema = spec.MustLoadSwagger20Schema()
 
+var count = 1
+
 // Analyzed creates a new analyzed spec document
 func Analyzed(data json.RawMessage, version string) (*Document, error) {
 	if version == "" {
@@ -137,10 +139,6 @@ func (d *Document) Expanded() (*Document, error) {
 	if err := json.Unmarshal(d.raw, swspec); err != nil {
 		return nil, err
 	}
-	origswspec := new(spec.Swagger)
-	if err := json.Unmarshal(d.raw, origswspec); err != nil {
-		return nil, err
-	}
 	if err := spec.ExpandSpec(swspec); err != nil {
 		return nil, err
 	}
@@ -150,7 +148,7 @@ func (d *Document) Expanded() (*Document, error) {
 		spec:     swspec,
 		schema:   swag20Schema,
 		raw:      d.raw,
-		origSpec: origswspec,
+		origSpec: d.origSpec,
 	}
 	return dd, nil
 }
