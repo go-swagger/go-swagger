@@ -73,9 +73,9 @@ type Document struct {
 	// specAnalyzer
 	Analyzer *analysis.Spec
 	spec     *spec.Swagger
+	origSpec *spec.Swagger
 	schema   *spec.Schema
 	raw      json.RawMessage
-	orig     *Document
 }
 
 // Spec loads a new spec document
@@ -100,6 +100,8 @@ func Spec(path string) (*Document, error) {
 	return Analyzed(b, "")
 }
 
+var swag20Schema = spec.MustLoadSwagger20Schema()
+
 // Analyzed creates a new analyzed spec document
 func Analyzed(data json.RawMessage, version string) (*Document, error) {
 	if version == "" {
@@ -114,15 +116,18 @@ func Analyzed(data json.RawMessage, version string) (*Document, error) {
 		return nil, err
 	}
 
+	origsqspec := new(spec.Swagger)
+	if err := json.Unmarshal(data, origsqspec); err != nil {
+		return nil, err
+	}
+
 	d := &Document{
 		Analyzer: analysis.New(swspec),
-		schema:   spec.MustLoadSwagger20Schema(),
+		schema:   swag20Schema,
 		spec:     swspec,
 		raw:      data,
+		origSpec: origsqspec,
 	}
-	// d.initialize()
-	d.orig = &(*d)
-	d.orig.spec = &(*swspec)
 	return d, nil
 }
 
@@ -132,6 +137,10 @@ func (d *Document) Expanded() (*Document, error) {
 	if err := json.Unmarshal(d.raw, swspec); err != nil {
 		return nil, err
 	}
+	origswspec := new(spec.Swagger)
+	if err := json.Unmarshal(d.raw, origswspec); err != nil {
+		return nil, err
+	}
 	if err := spec.ExpandSpec(swspec); err != nil {
 		return nil, err
 	}
@@ -139,13 +148,10 @@ func (d *Document) Expanded() (*Document, error) {
 	dd := &Document{
 		Analyzer: analysis.New(swspec),
 		spec:     swspec,
-		schema:   spec.MustLoadSwagger20Schema(),
+		schema:   swag20Schema,
 		raw:      d.raw,
+		origSpec: origswspec,
 	}
-	// dd.initialize()
-	dd.orig = d.orig
-	dd.orig.spec = &(*d.orig.spec)
-
 	return dd, nil
 }
 
@@ -179,30 +185,19 @@ func (d *Document) Raw() json.RawMessage {
 	return d.raw
 }
 
-// Reload reanalyzes the spec
-func (d *Document) Reload() *Document {
-	orig := d.orig
-	sp := *d.orig.spec
-	d.Analyzer = analysis.New(&sp)
-	d.orig = orig
-	return d
+func (d *Document) OrigSpec() *spec.Swagger {
+	return d.origSpec
 }
 
 // ResetDefinitions gives a shallow copy with the models reset
 func (d *Document) ResetDefinitions() *Document {
-	defs := make(map[string]spec.Schema, len(d.orig.spec.Definitions))
-	for k, v := range d.orig.spec.Definitions {
+	defs := make(map[string]spec.Schema, len(d.origSpec.Definitions))
+	for k, v := range d.origSpec.Definitions {
 		defs[k] = v
 	}
 
-	dd := *d
-	cp := *d.orig.spec
-	dd.spec = &cp
-	dd.schema = spec.MustLoadSwagger20Schema()
-	dd.spec.Definitions = defs
-	// dd.initialize()
-	dd.orig = d.orig
-	return dd.Reload()
+	d.spec.Definitions = defs
+	return d
 }
 
 // Pristine creates a new pristine document instance based on the input data
