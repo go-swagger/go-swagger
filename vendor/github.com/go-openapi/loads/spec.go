@@ -102,8 +102,6 @@ func Spec(path string) (*Document, error) {
 
 var swag20Schema = spec.MustLoadSwagger20Schema()
 
-var count = 1
-
 // Analyzed creates a new analyzed spec document
 func Analyzed(data json.RawMessage, version string) (*Document, error) {
 	if version == "" {
