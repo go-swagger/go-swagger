@@ -26,6 +26,7 @@ import (
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"
+	"github.com/vburenin/nsync"
 )
 
 // GenerateClient generates a client library for a swagger spec document.
@@ -111,23 +112,34 @@ func (c *clientGenerator) Generate() error {
 		return nil
 	}
 
+	errChan := make(chan error, 100)
+	wg := nsync.NewControlWaitGroup(20)
+
 	if c.GenOpts.IncludeModel {
 		for _, mod := range app.Models {
-			mod.IncludeValidator = true // a.GenOpts.IncludeValidator
-			gen := &definitionGenerator{
-				Name:    mod.Name,
-				SpecDoc: c.SpecDoc,
-				Target:  filepath.Join(c.Target, c.ModelsPackage),
-				Data:    &mod,
+			if len(errChan) > 0 {
+				wg.Wait()
+				return <-errChan
 			}
-			if err := gen.generateModel(); err != nil {
-				return err
-			}
+			modCopy := mod
+			wg.Do(func() {
+				modCopy.IncludeValidator = true // a.GenOpts.IncludeValidator
+				gen := &definitionGenerator{
+					Name:    modCopy.Name,
+					SpecDoc: c.SpecDoc,
+					Target:  filepath.Join(c.Target, c.ModelsPackage),
+					Data:    &modCopy,
+				}
+				if err := gen.generateModel(); err != nil {
+					errChan <- err
+				}
+			})
 		}
 	}
 
+	wg.Wait()
 	if c.GenOpts.IncludeHandler {
-
+		sort.Sort(app.OperationGroups)
 		for i := range app.OperationGroups {
 			opGroup := app.OperationGroups[i]
 			opGroup.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ModelsPackage))}
@@ -135,30 +147,43 @@ func (c *clientGenerator) Generate() error {
 			app.OperationGroups[i] = opGroup
 			sort.Sort(opGroup.Operations)
 			for _, op := range opGroup.Operations {
-				if op.Package == "" {
-					op.Package = c.Package
+				if len(errChan) > 0 {
+					wg.Wait()
+					return <-errChan
 				}
-				if err := c.generateParameters(&op); err != nil {
-					return err
+				opCopy := op
+				if opCopy.Package == "" {
+					opCopy.Package = c.Package
 				}
-
-				if err := c.generateResponses(&op); err != nil {
-					return err
-				}
+				wg.Do(func() {
+					if err := c.generateParameters(&opCopy); err != nil {
+						errChan <- err
+					}
+				})
+				wg.Do(func() {
+					if err := c.generateResponses(&opCopy); err != nil {
+						errChan <- err
+					}
+				})
 			}
 			app.DefaultImports = append(app.DefaultImports, filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ClientPackage, opGroup.Name)))
 			if err := c.generateGroupClient(opGroup); err != nil {
 				return err
 			}
 		}
-
-		sort.Sort(app.OperationGroups)
+		wg.Wait()
 	}
 
 	if c.GenOpts.IncludeSupport {
-		if err := c.generateFacade(&app); err != nil {
-			return err
-		}
+		wg.Do(func() {
+			if err := c.generateFacade(&app); err != nil {
+				errChan <- err
+			}
+		})
+	}
+
+	if len(errChan) > 0 {
+		return <-errChan
 	}
 
 	return nil
