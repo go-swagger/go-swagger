@@ -31,7 +31,6 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
-	"github.com/vburenin/nsync"
 )
 
 // GenerateServer generates a server application
@@ -179,74 +178,47 @@ func (a *appGenerator) Generate() error {
 		return nil
 	}
 
-	errChan := make(chan error, 100)
-	wg := nsync.NewControlWaitGroup(20)
-
 	if a.GenOpts.IncludeModel {
 		log.Printf("rendering %d models", len(app.Models))
 		for _, mod := range app.Models {
-			if len(errChan) > 0 {
-				wg.Wait()
-				return <-errChan
+			mod.IncludeValidator = true // a.GenOpts.IncludeValidator
+			gen := &definitionGenerator{
+				Name:    mod.Name,
+				SpecDoc: a.SpecDoc,
+				Target:  filepath.Join(a.Target, a.ModelsPackage),
+				Data:    &mod,
 			}
-			modCopy := mod
-			wg.Do(func() {
-				modCopy.IncludeValidator = true // a.GenOpts.IncludeValidator
-				gen := &definitionGenerator{
-					Name:    modCopy.Name,
-					SpecDoc: a.SpecDoc,
-					Target:  filepath.Join(a.Target, a.ModelsPackage),
-					Data:    &modCopy,
-				}
-				if err := gen.generateModel(); err != nil {
-					errChan <- err
-				}
-			})
+			if err := gen.generateModel(); err != nil {
+				return err
+			}
 		}
 	}
-	wg.Wait()
 
 	if a.GenOpts.IncludeHandler {
 		for _, opg := range app.OperationGroups {
-			opgCopy := opg
-			for _, op := range opgCopy.Operations {
-				if len(errChan) > 0 {
-					wg.Wait()
-					return <-errChan
+			for _, op := range opg.Operations {
+				gen := &opGen{
+					data:              &op,
+					pkg:               opg.Name,
+					cname:             swag.ToGoName(op.Name),
+					IncludeHandler:    a.GenOpts.IncludeHandler,
+					IncludeParameters: a.GenOpts.IncludeParameters,
+					IncludeResponses:  a.GenOpts.IncludeResponses,
+					Doc:               a.SpecDoc,
+					Analyzed:          a.Analyzed,
+					Target:            filepath.Join(a.Target, a.ServerPackage),
+					APIPackage:        a.APIPackage,
 				}
-				opCopy := op
-				wg.Do(func() {
-					gen := &opGen{
-						data:              &opCopy,
-						pkg:               opgCopy.Name,
-						cname:             swag.ToGoName(opCopy.Name),
-						IncludeHandler:    a.GenOpts.IncludeHandler,
-						IncludeParameters: a.GenOpts.IncludeParameters,
-						IncludeResponses:  a.GenOpts.IncludeResponses,
-						Doc:               a.SpecDoc,
-						Analyzed:          a.Analyzed,
-						Target:            filepath.Join(a.Target, a.ServerPackage),
-						APIPackage:        a.APIPackage,
-					}
 
-					if err := gen.Generate(); err != nil {
-						errChan <- err
-					}
-				})
+				if err := gen.Generate(); err != nil {
+					return err
+				}
 			}
 		}
 	}
 
 	if a.GenOpts.IncludeSupport {
-		wg.Do(func() {
-			if err := a.GenerateSupport(&app); err != nil {
-				errChan <- err
-			}
-		})
-	}
-	wg.Wait()
-	if len(errChan) > 0 {
-		return <-errChan
+		return a.GenerateSupport(&app)
 	}
 	return nil
 }
