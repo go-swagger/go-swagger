@@ -182,6 +182,8 @@ func (c *clientGenerator) Generate() error {
 		})
 	}
 
+	wg.Wait()
+
 	if len(errChan) > 0 {
 		return <-errChan
 	}
