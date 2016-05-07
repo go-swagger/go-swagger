@@ -45,3 +45,8 @@ profile.cov
 # Drone
 secrets.yml
 dist
+
+# Idea
+.idea
+go-swagger.iml
+

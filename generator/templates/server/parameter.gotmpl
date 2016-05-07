@@ -128,8 +128,9 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
   var res []error
   {{ .ReceiverName }}.HTTPRequest = r
 
-  {{ if .HasQueryParams }}qs := runtime.Values(r.URL.Query())
-  {{ else if .HasFormParams }}if err := r.ParseMultipartForm(32 << 20); err != nil {
+  {{ if .HasQueryParams }}qs := runtime.Values(r.URL.Query()){{ end }}
+
+  {{ if .HasFormParams }}if err := r.ParseMultipartForm(32 << 20); err != nil {
 		if err != http.ErrNotMultipart {
             return err
         } else if err := r.ParseForm(); err != nil {
