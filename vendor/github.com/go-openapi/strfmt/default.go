@@ -96,6 +96,9 @@ func init() {
 	ip6 := IPv6("")
 	Default.Add("ipv6", &ip6, govalidator.IsIPv6)
 
+	mac := MAC("")
+	Default.Add("mac", &mac, govalidator.IsMAC)
+
 	uid := UUID("")
 	Default.Add("uuid", &uid, govalidator.IsUUID)
 
@@ -383,6 +386,45 @@ func (u IPv6) Value() (driver.Value, error) {
 }
 
 func (u IPv6) String() string {
+	return string(u)
+}
+
+// MAC represents a 48 bit MAC address
+//
+// swagger:strfmt mac
+type MAC string
+
+// MarshalText turns this instance into text
+func (u MAC) MarshalText() ([]byte, error) {
+	return []byte(string(u)), nil
+}
+
+// UnmarshalText hydrates this instance from text
+func (u *MAC) UnmarshalText(data []byte) error { // validation is performed later on
+	*u = MAC(string(data))
+	return nil
+}
+
+// Scan read a value from a database driver
+func (u *MAC) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case []byte:
+		*u = MAC(string(v))
+	case string:
+		*u = MAC(v)
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.IPv4 from: %#v", v)
+	}
+
+	return nil
+}
+
+// Value converts a value to a database driver value
+func (u MAC) Value() (driver.Value, error) {
+	return driver.Value(string(u)), nil
+}
+
+func (u MAC) String() string {
 	return string(u)
 }
 

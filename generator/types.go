@@ -124,6 +124,7 @@ var typeMapping = map[string]string{
 	"hostname":   "strfmt.Hostname",
 	"ipv4":       "strfmt.IPv4",
 	"ipv6":       "strfmt.IPv6",
+	"mac":        "strfmt.MAC",
 	"uuid":       "strfmt.UUID",
 	"uuid3":      "strfmt.UUID3",
 	"uuid4":      "strfmt.UUID4",

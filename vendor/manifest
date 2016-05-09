@@ -91,7 +91,7 @@
 			"importpath": "github.com/go-openapi/strfmt",
 			"repository": "https://github.com/go-openapi/strfmt",
 			"vcs": "",
-			"revision": "f827e8cf30538b3983710c9fb4dd76ea04e3c8e0",
+			"revision": "66a99d45c3043d45d346b1c8db5dc2f76a004869",
 			"branch": "master",
 			"notests": true
 		},

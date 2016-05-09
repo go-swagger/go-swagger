@@ -46,6 +46,7 @@ var schTypeVals = []struct{ Type, Format, Expected string }{
 	{"string", "hostname", "strfmt.Hostname"},
 	{"string", "ipv4", "strfmt.IPv4"},
 	{"string", "ipv6", "strfmt.IPv6"},
+	{"string", "mac", "strfmt.MAC"},
 	{"string", "uuid", "strfmt.UUID"},
 	{"string", "uuid3", "strfmt.UUID3"},
 	{"string", "uuid4", "strfmt.UUID4"},

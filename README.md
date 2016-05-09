@@ -176,6 +176,7 @@ For a V1 I want to have this feature set completed:
   - [x] hostname
   - [x] ipv4
   - [x] ipv6
+  - [x] mac
   - [x] credit card
   - [x] isbn, isbn10, isbn13
   - [x] social security number

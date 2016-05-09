@@ -276,6 +276,7 @@ func TestParseStringFormatSchemaProperty(t *testing.T) {
 	assertProperty(t, &schema, "string", "r", "uuid3", "R")
 	assertProperty(t, &schema, "string", "s", "uuid4", "S")
 	assertProperty(t, &schema, "string", "t", "uuid5", "T")
+	assertProperty(t, &schema, "string", "u", "mac", "U")
 }
 
 func assertProperty(t testing.TB, schema *spec.Schema, typeName, jsonName, format, goName string) {
