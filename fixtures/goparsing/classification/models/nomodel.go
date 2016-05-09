@@ -242,6 +242,7 @@ type FormattedModel struct {
 	R strfmt.UUID3      `json:"r"`
 	S strfmt.UUID4      `json:"s"`
 	T strfmt.UUID5      `json:"t"`
+	U strfmt.MAC        `json:"u"`
 }
 
 // A SimpleComplexModel is a struct with only other struct types
