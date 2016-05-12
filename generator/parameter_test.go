@@ -632,3 +632,25 @@ func TestGenParameter_Issue351(t *testing.T) {
 		}
 	}
 }
+
+func TestGenParameter_Issue511(t *testing.T) {
+	assert := assert.New(t)
+
+	gen, err := opBuilder("postModels", "../fixtures/bugs/511/swagger.yml")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			err := parameterTemplate.Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := formatGoFile("post_models.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertNotInCode(t, "fds := runtime.Values(r.Form)", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
