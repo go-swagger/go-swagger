@@ -1,0 +1,52 @@
+swagger: '2.0'
+info:
+  title: MyAPI
+  description: some description
+  version: "1.0.0"
+schemes:
+  - http
+basePath: /v1
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /models:
+    post:
+      operationId: postModels
+      summary: creates a new model
+      description: |
+        Creates a model.....
+      tags:
+        - Deployment
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: slugFile
+          in: formData
+          description: Payload with the model configuration.
+          required: true
+          type: file
+      responses:
+        201:
+          description: Model successfully accepted.
+          headers:
+            Location:
+              description: Location header for the model
+              type: string
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+definitions:
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string

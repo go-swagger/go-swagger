@@ -137,7 +137,6 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
             return err
         }
 	}
-	fds := runtime.Values(r.Form)
   {{ end }}
 
   {{ range .Params }}
