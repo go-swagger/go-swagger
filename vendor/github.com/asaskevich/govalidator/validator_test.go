@@ -617,6 +617,9 @@ func TestIsURL(t *testing.T) {
 		{",foo.com", false},
 		// according to issues #62 #66
 		{"https://pbs.twimg.com/profile_images/560826135676588032/j8fWrmYY_normal.jpeg", true},
+		// according to #125
+		{"http://prometheus-alertmanager.service.q:9093", true},
+		{"https://www.logn-123-123.url.with.sigle.letter.d:12345/url/path/foo?bar=zzz#user", true},
 		{"http://me.example.com", true},
 		{"http://www.me.example.com", true},
 		{"https://farm6.static.flickr.com", true},

@@ -86,9 +86,9 @@ func Spec(path string) (*Document, error) {
 	}
 	for l := loaders.Next; l != nil; l = l.Next {
 		if loaders.Match(specURL.Path) {
-			b, err := loaders.Fn(path)
-			if err != nil {
-				return nil, err
+			b, err2 := loaders.Fn(path)
+			if err2 != nil {
+				return nil, err2
 			}
 			return Analyzed(b, "")
 		}
