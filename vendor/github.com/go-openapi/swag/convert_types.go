@@ -299,6 +299,183 @@ func Int64ValueMap(src map[string]*int64) map[string]int64 {
 	return dst
 }
 
+// Uint returns a pouinter to of the uint value passed in.
+func Uint(v uint) *uint {
+	return &v
+}
+
+// UintValue returns the value of the uint pouinter passed in or
+// 0 if the pouinter is nil.
+func UintValue(v *uint) uint {
+	if v != nil {
+		return *v
+	}
+	return 0
+}
+
+// UintSlice converts a slice of uint values uinto a slice of
+// uint pouinters
+func UintSlice(src []uint) []*uint {
+	dst := make([]*uint, len(src))
+	for i := 0; i < len(src); i++ {
+		dst[i] = &(src[i])
+	}
+	return dst
+}
+
+// UintValueSlice converts a slice of uint pouinters uinto a slice of
+// uint values
+func UintValueSlice(src []*uint) []uint {
+	dst := make([]uint, len(src))
+	for i := 0; i < len(src); i++ {
+		if src[i] != nil {
+			dst[i] = *(src[i])
+		}
+	}
+	return dst
+}
+
+// UintMap converts a string map of uint values uinto a string
+// map of uint pouinters
+func UintMap(src map[string]uint) map[string]*uint {
+	dst := make(map[string]*uint)
+	for k, val := range src {
+		v := val
+		dst[k] = &v
+	}
+	return dst
+}
+
+// UintValueMap converts a string map of uint pouinters uinto a string
+// map of uint values
+func UintValueMap(src map[string]*uint) map[string]uint {
+	dst := make(map[string]uint)
+	for k, val := range src {
+		if val != nil {
+			dst[k] = *val
+		}
+	}
+	return dst
+}
+
+// Uint32 returns a pouinter to of the uint64 value passed in.
+func Uint32(v uint32) *uint32 {
+	return &v
+}
+
+// Uint32Value returns the value of the uint64 pouinter passed in or
+// 0 if the pouinter is nil.
+func Uint32Value(v *uint32) uint32 {
+	if v != nil {
+		return *v
+	}
+	return 0
+}
+
+// Uint32Slice converts a slice of uint64 values uinto a slice of
+// uint32 pouinters
+func Uint32Slice(src []uint32) []*uint32 {
+	dst := make([]*uint32, len(src))
+	for i := 0; i < len(src); i++ {
+		dst[i] = &(src[i])
+	}
+	return dst
+}
+
+// Uint32ValueSlice converts a slice of uint32 pouinters uinto a slice of
+// uint32 values
+func Uint32ValueSlice(src []*uint32) []uint32 {
+	dst := make([]uint32, len(src))
+	for i := 0; i < len(src); i++ {
+		if src[i] != nil {
+			dst[i] = *(src[i])
+		}
+	}
+	return dst
+}
+
+// Uint32Map converts a string map of uint32 values uinto a string
+// map of uint32 pouinters
+func Uint32Map(src map[string]uint32) map[string]*uint32 {
+	dst := make(map[string]*uint32)
+	for k, val := range src {
+		v := val
+		dst[k] = &v
+	}
+	return dst
+}
+
+// Uint32ValueMap converts a string map of uint32 pouinters uinto a string
+// map of uint32 values
+func Uint32ValueMap(src map[string]*uint32) map[string]uint32 {
+	dst := make(map[string]uint32)
+	for k, val := range src {
+		if val != nil {
+			dst[k] = *val
+		}
+	}
+	return dst
+}
+
+// Uint64 returns a pouinter to of the uint64 value passed in.
+func Uint64(v uint64) *uint64 {
+	return &v
+}
+
+// Uint64Value returns the value of the uint64 pouinter passed in or
+// 0 if the pouinter is nil.
+func Uint64Value(v *uint64) uint64 {
+	if v != nil {
+		return *v
+	}
+	return 0
+}
+
+// Uint64Slice converts a slice of uint64 values uinto a slice of
+// uint64 pouinters
+func Uint64Slice(src []uint64) []*uint64 {
+	dst := make([]*uint64, len(src))
+	for i := 0; i < len(src); i++ {
+		dst[i] = &(src[i])
+	}
+	return dst
+}
+
+// Uint64ValueSlice converts a slice of uint64 pouinters uinto a slice of
+// uint64 values
+func Uint64ValueSlice(src []*uint64) []uint64 {
+	dst := make([]uint64, len(src))
+	for i := 0; i < len(src); i++ {
+		if src[i] != nil {
+			dst[i] = *(src[i])
+		}
+	}
+	return dst
+}
+
+// Uint64Map converts a string map of uint64 values uinto a string
+// map of uint64 pouinters
+func Uint64Map(src map[string]uint64) map[string]*uint64 {
+	dst := make(map[string]*uint64)
+	for k, val := range src {
+		v := val
+		dst[k] = &v
+	}
+	return dst
+}
+
+// Uint64ValueMap converts a string map of uint64 pouinters uinto a string
+// map of uint64 values
+func Uint64ValueMap(src map[string]*uint64) map[string]uint64 {
+	dst := make(map[string]uint64)
+	for k, val := range src {
+		if val != nil {
+			dst[k] = *val
+		}
+	}
+	return dst
+}
+
 // Float64 returns a pointer to of the float64 value passed in.
 func Float64(v float64) *float64 {
 	return &v

@@ -403,7 +403,7 @@ func TestAllocs(t *testing.T) {
 		limit := test.limit
 		if runtime.Compiler == "gccgo" {
 			// gccgo does not yet do escape analysis.
-			// TOOD(iant): Remove this when gccgo does do escape analysis.
+			// TODO(iant): Remove this when gccgo does do escape analysis.
 			limit = test.gccgoLimit
 		}
 		if n := testing.AllocsPerRun(100, test.f); n > limit {
