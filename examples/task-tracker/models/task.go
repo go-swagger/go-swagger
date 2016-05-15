@@ -72,6 +72,14 @@ func (m *Task) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateLastUpdatedBy(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateReportedBy(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -103,6 +111,30 @@ func (m *Task) validateAttachments(formats strfmt.Registry) error {
 }
 
 func (m *Task) validateComments(formats strfmt.Registry) error {
+
+	return nil
+}
+
+func (m *Task) validateLastUpdatedBy(formats strfmt.Registry) error {
+
+	if m.LastUpdatedBy != nil {
+
+		if err := m.LastUpdatedBy.Validate(formats); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Task) validateReportedBy(formats strfmt.Registry) error {
+
+	if m.ReportedBy != nil {
+
+		if err := m.ReportedBy.Validate(formats); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

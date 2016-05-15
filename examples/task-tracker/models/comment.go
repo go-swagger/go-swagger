@@ -74,6 +74,10 @@ func (m *Comment) validateContent(formats strfmt.Registry) error {
 
 func (m *Comment) validateUser(formats strfmt.Registry) error {
 
+	if err := validate.Required("user", "body", m.User); err != nil {
+		return err
+	}
+
 	if m.User != nil {
 
 		if err := m.User.Validate(formats); err != nil {

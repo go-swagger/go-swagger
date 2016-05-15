@@ -136,8 +136,9 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
         } else if err := r.ParseForm(); err != nil {
             return err
         }
-	}
-  {{ end }}
+	}{{ if .HasFormValueParams }}
+  fds := runtime.Values(r.Form)
+  {{ end }}{{ end }}
 
   {{ range .Params }}
   {{ if not .IsArray }}{{ if .IsQueryParam }}q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, _ := qs.GetOK({{ .Path }})

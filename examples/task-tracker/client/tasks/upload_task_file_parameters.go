@@ -43,20 +43,20 @@ type UploadTaskFileParams struct {
 }
 
 // WithDescription adds the description to the upload task file params
-func (o *UploadTaskFileParams) WithDescription(description *string) *UploadTaskFileParams {
-	o.Description = description
+func (o *UploadTaskFileParams) WithDescription(Description *string) *UploadTaskFileParams {
+	o.Description = Description
 	return o
 }
 
 // WithFile adds the file to the upload task file params
-func (o *UploadTaskFileParams) WithFile(file *os.File) *UploadTaskFileParams {
-	o.File = file
+func (o *UploadTaskFileParams) WithFile(File *os.File) *UploadTaskFileParams {
+	o.File = File
 	return o
 }
 
 // WithID adds the id to the upload task file params
-func (o *UploadTaskFileParams) WithID(id int64) *UploadTaskFileParams {
-	o.ID = id
+func (o *UploadTaskFileParams) WithID(ID int64) *UploadTaskFileParams {
+	o.ID = ID
 	return o
 }
 

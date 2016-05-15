@@ -50,6 +50,11 @@ type Pet struct {
 func (m *Pet) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateCategory(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if err := m.validateName(formats); err != nil {
 		// prop
 		res = append(res, err)
@@ -68,6 +73,22 @@ func (m *Pet) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *Pet) validateCategory(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Category) { // not required
+		return nil
+	}
+
+	if m.Category != nil {
+
+		if err := m.Category.Validate(formats); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

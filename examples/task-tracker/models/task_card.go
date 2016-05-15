@@ -117,12 +117,22 @@ type TaskCard struct {
 func (m *TaskCard) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateAssignedTo(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if err := m.validateEffort(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateKarma(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateMilestone(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -150,6 +160,22 @@ func (m *TaskCard) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *TaskCard) validateAssignedTo(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.AssignedTo) { // not required
+		return nil
+	}
+
+	if m.AssignedTo != nil {
+
+		if err := m.AssignedTo.Validate(formats); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -182,6 +208,22 @@ func (m *TaskCard) validateKarma(formats strfmt.Registry) error {
 
 	if err := validate.MultipleOf("karma", "body", float64(*m.Karma), 0.5); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *TaskCard) validateMilestone(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Milestone) { // not required
+		return nil
+	}
+
+	if m.Milestone != nil {
+
+		if err := m.Milestone.Validate(formats); err != nil {
+			return err
+		}
 	}
 
 	return nil

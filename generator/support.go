@@ -555,18 +555,26 @@ func (a *appGenerator) makeSecuritySchemes() (security []GenSecurityScheme) {
 	}
 	for _, scheme := range a.Analyzed.RequiredSecuritySchemes() {
 		if req, ok := a.SpecDoc.Spec().SecurityDefinitions[scheme]; ok {
-			if req.Type == "basic" || req.Type == "apiKey" {
-				security = append(security, GenSecurityScheme{
-					AppName:      a.Name,
-					ID:           scheme,
-					ReceiverName: a.Receiver,
-					Name:         req.Name,
-					IsBasicAuth:  strings.ToLower(req.Type) == "basic",
-					IsAPIKeyAuth: strings.ToLower(req.Type) == "apikey",
-					Principal:    prin,
-					Source:       req.In,
-				})
+			isOAuth2 := strings.ToLower(req.Type) == "oauth2"
+			var scopes []string
+			if isOAuth2 {
+				for k := range req.Scopes {
+					scopes = append(scopes, k)
+				}
 			}
+
+			security = append(security, GenSecurityScheme{
+				AppName:      a.Name,
+				ID:           scheme,
+				ReceiverName: a.Receiver,
+				Name:         req.Name,
+				IsBasicAuth:  strings.ToLower(req.Type) == "basic",
+				IsAPIKeyAuth: strings.ToLower(req.Type) == "apikey",
+				IsOAuth2:     isOAuth2,
+				Scopes:       scopes,
+				Principal:    prin,
+				Source:       req.In,
+			})
 		}
 	}
 

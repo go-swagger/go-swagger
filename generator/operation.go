@@ -331,7 +331,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 
 	operation := b.Operation
 	var params, qp, pp, hp, fp GenParameters
-	var hasQueryParams, hasFormParams, hasFileParams bool
+	var hasQueryParams, hasFormParams, hasFileParams, hasFormValueParams bool
 	for _, p := range b.Analyzed.ParamsFor(b.Method, b.Path) {
 		cp, err := b.MakeParameter(receiver, resolver, p)
 		if err != nil {
@@ -344,6 +344,9 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		if cp.IsFormParam() {
 			if p.Type == "file" {
 				hasFileParams = true
+			}
+			if p.Type != "file" {
+				hasFormValueParams = true
 			}
 			hasFormParams = true
 			fp = append(fp, cp)
@@ -435,6 +438,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		FormParams:         fp,
 		HasQueryParams:     hasQueryParams,
 		HasFormParams:      hasFormParams,
+		HasFormValueParams: hasFormValueParams,
 		HasFileParams:      hasFileParams,
 		Authorized:         b.Authed,
 		Principal:          prin,
