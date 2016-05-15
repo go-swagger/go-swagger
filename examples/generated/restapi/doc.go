@@ -29,9 +29,9 @@ http://helloreverb.com/terms/
 
 
     Produces:
-    - application/json
-
     - application/xml
+
+    - application/json
 
 
 swagger:meta

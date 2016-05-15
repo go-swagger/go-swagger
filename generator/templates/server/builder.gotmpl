@@ -121,7 +121,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) Validate() error {
   {{end}}
   {{range .SecurityDefinitions}}
   if {{.ReceiverName}}.{{ pascalize .ID }}Auth == nil {
-    unregistered = append(unregistered, "{{ pascalize .Name }}Auth")
+    unregistered = append(unregistered, "{{if .IsAPIKeyAuth }}{{ pascalize .Name }}{{ else }}{{ pascalize .ID }}{{ end }}Auth")
   }
   {{end}}
   {{range .Operations}}

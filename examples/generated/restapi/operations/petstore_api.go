@@ -55,10 +55,10 @@ type PetstoreAPI struct {
 	// JSONConsumer registers a consumer for a "application/json" mime type
 	JSONConsumer runtime.Consumer
 
-	// JSONProducer registers a producer for a "application/json" mime type
-	JSONProducer runtime.Producer
 	// XMLProducer registers a producer for a "application/xml" mime type
 	XMLProducer runtime.Producer
+	// JSONProducer registers a producer for a "application/json" mime type
+	JSONProducer runtime.Producer
 
 	// APIKeyAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key api_key provided in the header
@@ -163,12 +163,12 @@ func (o *PetstoreAPI) Validate() error {
 		unregistered = append(unregistered, "JSONConsumer")
 	}
 
-	if o.JSONProducer == nil {
-		unregistered = append(unregistered, "JSONProducer")
-	}
-
 	if o.XMLProducer == nil {
 		unregistered = append(unregistered, "XMLProducer")
+	}
+
+	if o.JSONProducer == nil {
+		unregistered = append(unregistered, "JSONProducer")
 	}
 
 	if o.APIKeyAuth == nil {
@@ -176,7 +176,7 @@ func (o *PetstoreAPI) Validate() error {
 	}
 
 	if o.PetstoreAuthAuth == nil {
-		unregistered = append(unregistered, "Auth")
+		unregistered = append(unregistered, "PetstoreAuthAuth")
 	}
 
 	if o.PetAddPetHandler == nil {
@@ -313,11 +313,11 @@ func (o *PetstoreAPI) ProducersFor(mediaTypes []string) map[string]runtime.Produ
 	for _, mt := range mediaTypes {
 		switch mt {
 
-		case "application/json":
-			result["application/json"] = o.JSONProducer
-
 		case "application/xml":
 			result["application/xml"] = o.XMLProducer
+
+		case "application/json":
+			result["application/json"] = o.JSONProducer
 
 		}
 	}
