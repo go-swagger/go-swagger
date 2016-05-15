@@ -19,7 +19,7 @@
 			"importpath": "github.com/asaskevich/govalidator",
 			"repository": "https://github.com/asaskevich/govalidator",
 			"vcs": "git",
-			"revision": "5b6e9375cbf581a9008064f7216e816b568d6daa",
+			"revision": "37d5f827499d1c346df42f2ad7fcb7f453833a57",
 			"branch": "master"
 		},
 		{
@@ -67,7 +67,7 @@
 			"importpath": "github.com/go-openapi/loads",
 			"repository": "https://github.com/go-openapi/loads",
 			"vcs": "git",
-			"revision": "1713bb237996758885e6c3cee6ed7981644abf41",
+			"revision": "3a4490f96e6ea1ba7d66602e70ffca0fc26aa6ca",
 			"branch": "master",
 			"notests": true
 		},
@@ -75,7 +75,7 @@
 			"importpath": "github.com/go-openapi/runtime",
 			"repository": "https://github.com/go-openapi/runtime",
 			"vcs": "git",
-			"revision": "ad736e5a94df13f128be7b5057606a537c020707",
+			"revision": "2c5be669b936d7250fa464dcbebabb69cb44f1e1",
 			"branch": "master",
 			"notests": true
 		},
@@ -173,7 +173,7 @@
 			"importpath": "golang.org/x/net/context",
 			"repository": "https://go.googlesource.com/net",
 			"vcs": "git",
-			"revision": "96dbb961a39ddccf16860cdd355bfa639c497f23",
+			"revision": "ef00b378c73f107bf44d5c9b69875255ce89b79a",
 			"branch": "master",
 			"path": "/context"
 		},
@@ -181,7 +181,7 @@
 			"importpath": "golang.org/x/net/netutil",
 			"repository": "https://go.googlesource.com/net",
 			"vcs": "git",
-			"revision": "96dbb961a39ddccf16860cdd355bfa639c497f23",
+			"revision": "ef00b378c73f107bf44d5c9b69875255ce89b79a",
 			"branch": "master",
 			"path": "/netutil"
 		},

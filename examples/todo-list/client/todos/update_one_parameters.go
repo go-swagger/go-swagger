@@ -31,14 +31,14 @@ type UpdateOneParams struct {
 }
 
 // WithBody adds the body to the update one params
-func (o *UpdateOneParams) WithBody(body *models.Item) *UpdateOneParams {
-	o.Body = body
+func (o *UpdateOneParams) WithBody(Body *models.Item) *UpdateOneParams {
+	o.Body = Body
 	return o
 }
 
 // WithID adds the id to the update one params
-func (o *UpdateOneParams) WithID(id string) *UpdateOneParams {
-	o.ID = id
+func (o *UpdateOneParams) WithID(ID string) *UpdateOneParams {
+	o.ID = ID
 	return o
 }
 

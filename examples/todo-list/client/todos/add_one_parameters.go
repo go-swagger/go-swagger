@@ -29,8 +29,8 @@ type AddOneParams struct {
 }
 
 // WithBody adds the body to the add one params
-func (o *AddOneParams) WithBody(body *models.Item) *AddOneParams {
-	o.Body = body
+func (o *AddOneParams) WithBody(Body *models.Item) *AddOneParams {
+	o.Body = Body
 	return o
 }
 

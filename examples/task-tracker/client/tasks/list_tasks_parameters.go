@@ -50,26 +50,26 @@ type ListTasksParams struct {
 }
 
 // WithPageSize adds the pageSize to the list tasks params
-func (o *ListTasksParams) WithPageSize(pageSize *int32) *ListTasksParams {
-	o.PageSize = pageSize
+func (o *ListTasksParams) WithPageSize(PageSize *int32) *ListTasksParams {
+	o.PageSize = PageSize
 	return o
 }
 
 // WithSinceID adds the sinceId to the list tasks params
-func (o *ListTasksParams) WithSinceID(sinceId *int64) *ListTasksParams {
-	o.SinceID = sinceId
+func (o *ListTasksParams) WithSinceID(SinceID *int64) *ListTasksParams {
+	o.SinceID = SinceID
 	return o
 }
 
 // WithStatus adds the status to the list tasks params
-func (o *ListTasksParams) WithStatus(status []string) *ListTasksParams {
-	o.Status = status
+func (o *ListTasksParams) WithStatus(Status []string) *ListTasksParams {
+	o.Status = Status
 	return o
 }
 
 // WithTags adds the tags to the list tasks params
-func (o *ListTasksParams) WithTags(tags []string) *ListTasksParams {
-	o.Tags = tags
+func (o *ListTasksParams) WithTags(Tags []string) *ListTasksParams {
+	o.Tags = Tags
 	return o
 }
 

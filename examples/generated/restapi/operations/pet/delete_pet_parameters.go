@@ -48,7 +48,7 @@ func (o *DeletePetParams) BindRequest(r *http.Request, route *middleware.Matched
 	var res []error
 	o.HTTPRequest = r
 
-	if err := o.bindAPIKey(r.Header["api_key"], true, route.Formats); err != nil {
+	if err := o.bindAPIKey(r.Header[http.CanonicalHeaderKey("api_key")], true, route.Formats); err != nil {
 		res = append(res, err)
 	}
 

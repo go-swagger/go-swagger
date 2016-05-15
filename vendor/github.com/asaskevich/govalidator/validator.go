@@ -529,7 +529,8 @@ func IsLongitude(str string) bool {
 	return rxLongitude.MatchString(str)
 }
 
-// ValidateStruct use tags for fields
+// ValidateStruct use tags for fields.
+// result will be equal to `false` if there are any errors.
 func ValidateStruct(s interface{}) (bool, error) {
 	if s == nil {
 		return true, nil

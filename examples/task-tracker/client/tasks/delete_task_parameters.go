@@ -31,8 +31,8 @@ type DeleteTaskParams struct {
 }
 
 // WithID adds the id to the delete task params
-func (o *DeleteTaskParams) WithID(id int64) *DeleteTaskParams {
-	o.ID = id
+func (o *DeleteTaskParams) WithID(ID int64) *DeleteTaskParams {
+	o.ID = ID
 	return o
 }
 

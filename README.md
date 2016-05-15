@@ -159,6 +159,7 @@ For a V1 I want to have this feature set completed:
 
     - [x] basic auth
     - [x] api key auth
+    - [x] oauth2 bearer auth
 
   - [x] swagger docs UI
 

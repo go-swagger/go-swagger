@@ -199,11 +199,11 @@ func (o *TaskTrackerAPI) AuthenticatorsFor(schemes map[string]spec.SecuritySchem
 
 		case "api_key":
 
-			result[name] = security.APIKeyAuth(scheme.Name, scheme.In, func(tok string) (interface{}, error) { return o.APIKeyAuth(tok) })
+			result[name] = security.APIKeyAuth(scheme.Name, scheme.In, o.APIKeyAuth)
 
 		case "token_header":
 
-			result[name] = security.APIKeyAuth(scheme.Name, scheme.In, func(tok string) (interface{}, error) { return o.TokenHeaderAuth(tok) })
+			result[name] = security.APIKeyAuth(scheme.Name, scheme.In, o.TokenHeaderAuth)
 
 		}
 	}

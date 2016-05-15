@@ -56,7 +56,10 @@ type {{ pascalize .Name }}API struct {
   {{end}}{{if .IsAPIKeyAuth}}// {{ pascalize .ID }}Auth registers a function that takes a token and returns a principal
   // it performs authentication based on an api key {{ .Name }} provided in the {{.Source}}
   {{ pascalize .ID }}Auth func(string) ({{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}, error)
-  {{end}}
+  {{end}}{{ if .IsOAuth2 }}// {{ pascalize .ID }}Auth registers a functin that takes an access token and a collection of required scopes and returns a principal
+  // it performs authentication based on an oauth2 bearer token provided in the request
+  {{ pascalize .ID }}Auth func(string, []string) ({{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}, error)
+  {{ end }}
   {{end}}
   {{range .Operations}}// {{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{ pascalize .Name }}Handler sets the operation handler for the {{ humanize .Name }} operation
   {{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{ pascalize .Name }}Handler {{if ne .Package $package}}{{.Package}}.{{end}}{{ pascalize .Name }}Handler
@@ -118,7 +121,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) Validate() error {
   {{end}}
   {{range .SecurityDefinitions}}
   if {{.ReceiverName}}.{{ pascalize .ID }}Auth == nil {
-    unregistered = append(unregistered, "{{ pascalize .Name }}Auth")
+    unregistered = append(unregistered, "{{if .IsAPIKeyAuth }}{{ pascalize .Name }}{{ else }}{{ pascalize .ID }}{{ end }}Auth")
   }
   {{end}}
   {{range .Operations}}
@@ -146,8 +149,9 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) AuthenticatorsFor(schemes map
       {{range .SecurityDefinitions}}
       case "{{.ID}}":
         {{if .IsBasicAuth}}_ = scheme
-        result[name] = security.BasicAuth(func (u, p string) (interface{}, error) { return {{.ReceiverName}}.{{ pascalize .ID }}Auth(u, p)}){{end}}
-        {{if .IsAPIKeyAuth}}result[name] = security.APIKeyAuth(scheme.Name, scheme.In, func(tok string) (interface{}, error) { return {{.ReceiverName}}.{{ pascalize .ID }}Auth(tok) }){{end}}
+        result[name] = security.BasicAuth({{.ReceiverName}}.{{ pascalize .ID }}Auth){{end}}
+        {{if .IsAPIKeyAuth}}result[name] = security.APIKeyAuth(scheme.Name, scheme.In, {{.ReceiverName}}.{{ pascalize .ID }}Auth){{end}}
+        {{if .IsOAuth2}}result[name] = security.BearerAuth(scheme.Name, {{.ReceiverName}}.{{ pascalize .ID }}Auth){{end}}
       {{end}}
     }
   }

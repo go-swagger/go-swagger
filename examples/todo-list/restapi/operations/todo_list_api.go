@@ -155,7 +155,7 @@ func (o *TodoListAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) 
 
 		case "key":
 
-			result[name] = security.APIKeyAuth(scheme.Name, scheme.In, func(tok string) (interface{}, error) { return o.KeyAuth(tok) })
+			result[name] = security.APIKeyAuth(scheme.Name, scheme.In, o.KeyAuth)
 
 		}
 	}

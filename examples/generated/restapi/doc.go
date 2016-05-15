@@ -23,15 +23,15 @@ http://helloreverb.com/terms/
     Consumes:
     - application/xml
 
-    - application/json
-
     - application/x-www-form-urlencoded
+
+    - application/json
 
 
     Produces:
-    - application/json
-
     - application/xml
+
+    - application/json
 
 
 swagger:meta

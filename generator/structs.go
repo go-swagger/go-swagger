@@ -318,14 +318,15 @@ type GenOperation struct {
 	Responses       GenStatusCodeResponses
 	DefaultResponse *GenResponse
 
-	Params         GenParameters
-	QueryParams    GenParameters
-	PathParams     GenParameters
-	HeaderParams   GenParameters
-	FormParams     GenParameters
-	HasQueryParams bool
-	HasFormParams  bool
-	HasFileParams  bool
+	Params             GenParameters
+	QueryParams        GenParameters
+	PathParams         GenParameters
+	HeaderParams       GenParameters
+	FormParams         GenParameters
+	HasQueryParams     bool
+	HasFormParams      bool
+	HasFormValueParams bool
+	HasFileParams      bool
 
 	Schemes            []string
 	ExtraSchemes       []string
@@ -399,6 +400,8 @@ type GenSecurityScheme struct {
 	ReceiverName string
 	IsBasicAuth  bool
 	IsAPIKeyAuth bool
+	IsOAuth2     bool
+	Scopes       []string
 	Source       string
 	Principal    string
 }
