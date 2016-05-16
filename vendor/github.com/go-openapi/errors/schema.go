@@ -29,7 +29,7 @@ const (
 	tooShortMessage           = "%s in %s should be at least %d chars long"
 	patternFail               = "%s in %s should match '%s'"
 	enumFail                  = "%s in %s should be one of %v"
-	mulitpleOfFail            = "%s in %s should be a multiple of %v"
+	multipleOfFail            = "%s in %s should be a multiple of %v"
 	maxIncFail                = "%s in %s should be less than or equal to %v"
 	maxExcFail                = "%s in %s should be less than %v"
 	minIncFail                = "%s in %s should be greater than or equal to %v"
@@ -45,7 +45,7 @@ const (
 	tooShortMessageNoIn       = "%s should be at least %d chars long"
 	patternFailNoIn           = "%s should match '%s'"
 	enumFailNoIn              = "%s should be one of %v"
-	mulitpleOfFailNoIn        = "%s should be a multiple of %v"
+	multipleOfFailNoIn        = "%s should be a multiple of %v"
 	maxIncFailNoIn            = "%s should be less than or equal to %v"
 	maxExcFailNoIn            = "%s should be less than %v"
 	minIncFailNoIn            = "%s should be greater than or equal to %v"
@@ -422,9 +422,9 @@ func ExceedsMinimum(name, in string, min float64, exclusive bool) *Validation {
 func NotMultipleOf(name, in string, multiple float64) *Validation {
 	var msg string
 	if in == "" {
-		msg = fmt.Sprintf(mulitpleOfFailNoIn, name, multiple)
+		msg = fmt.Sprintf(multipleOfFailNoIn, name, multiple)
 	} else {
-		msg = fmt.Sprintf(mulitpleOfFail, name, in, multiple)
+		msg = fmt.Sprintf(multipleOfFail, name, in, multiple)
 	}
 	return &Validation{
 		code:    422,

@@ -388,7 +388,7 @@ var mediaTypeNames = map[*regexp.Regexp]string{
 	regexp.MustCompile("application/.*gz"):                  "gzip",
 	regexp.MustCompile("application/.*raw-stream"):          "bin",
 	regexp.MustCompile("application/x-www-form-urlencoded"): "urlform",
-	regexp.MustCompile("multipart/form-data"):               "mulitpartform",
+	regexp.MustCompile("multipart/form-data"):               "multipartform",
 }
 
 var knownProducers = map[string]string{
@@ -398,7 +398,7 @@ var knownProducers = map[string]string{
 	"txt":           "runtime.TextProducer()",
 	"bin":           "runtime.ByteStreamProducer()",
 	"urlform":       "runtime.DiscardProducer",
-	"mulitpartform": "runtime.DiscardProducer",
+	"multipartform": "runtime.DiscardProducer",
 }
 
 var knownConsumers = map[string]string{
@@ -408,7 +408,7 @@ var knownConsumers = map[string]string{
 	"txt":           "runtime.TextConsumer()",
 	"bin":           "runtime.ByteStreamConsumer()",
 	"urlform":       "runtime.DiscardConsumer",
-	"mulitpartform": "runtime.DiscardConsumer",
+	"multipartform": "runtime.DiscardConsumer",
 }
 
 func getSerializer(sers []GenSerGroup, ext string) (*GenSerGroup, bool) {
