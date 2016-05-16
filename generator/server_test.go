@@ -113,7 +113,7 @@ func TestServer_MultipartForm(t *testing.T) {
 				formatted, err := formatGoFile("configure_shipyard_api.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(formatted)
-					assertInCode(t, "api.MulitpartformConsumer = runtime.DiscardConsumer", res)
+					assertInCode(t, "api.MultipartformConsumer = runtime.DiscardConsumer", res)
 				} else {
 					fmt.Println(buf.String())
 				}
