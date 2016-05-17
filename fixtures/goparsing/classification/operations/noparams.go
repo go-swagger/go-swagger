@@ -52,6 +52,7 @@ type ComplexerOneParams struct {
 	mods.NotSelected
 	mods.Notable
 	CreatedAt strfmt.DateTime `json:"createdAt"`
+	Secret    string          `json:"-"`
 
 	// in: formData
 	Informity string `json:"informity"`
