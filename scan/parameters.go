@@ -296,7 +296,10 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 					if strings.TrimSpace(tv) != "" {
 						st := reflect.StructTag(tv)
 						jsonTag := st.Get("json")
-						if jsonTag != "" && jsonTag != "-" {
+						if jsonTag == "-" {
+							continue
+						}
+						if jsonTag != "" {
 							nm = strings.Split(jsonTag, ",")[0]
 						}
 					}
