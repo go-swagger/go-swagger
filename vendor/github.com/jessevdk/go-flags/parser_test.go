@@ -494,7 +494,93 @@ func TestEmbedded(t *testing.T) {
 	}
 
 	assertParseSuccess(t, &opts, "-v")
+
 	if !opts.V {
 		t.Errorf("Expected V to be true")
 	}
+}
+
+type command struct {
+}
+
+func (c *command) Execute(args []string) error {
+	return nil
+}
+
+func TestCommandHandlerNoCommand(t *testing.T) {
+	var opts = struct {
+		Value bool `short:"v"`
+	}{}
+
+	parser := NewParser(&opts, Default&^PrintErrors)
+
+	var executedCommand Commander
+	var executedArgs []string
+
+	executed := false
+
+	parser.CommandHandler = func(command Commander, args []string) error {
+		executed = true
+
+		executedCommand = command
+		executedArgs = args
+
+		return nil
+	}
+
+	_, err := parser.ParseArgs([]string{"arg1", "arg2"})
+
+	if err != nil {
+		t.Fatalf("Unexpected parse error: %s", err)
+	}
+
+	if !executed {
+		t.Errorf("Expected command handler to be executed")
+	}
+
+	if executedCommand != nil {
+		t.Errorf("Did not exect an executed command")
+	}
+
+	assertStringArray(t, executedArgs, []string{"arg1", "arg2"})
+}
+
+func TestCommandHandler(t *testing.T) {
+	var opts = struct {
+		Value bool `short:"v"`
+
+		Command command `command:"cmd"`
+	}{}
+
+	parser := NewParser(&opts, Default&^PrintErrors)
+
+	var executedCommand Commander
+	var executedArgs []string
+
+	executed := false
+
+	parser.CommandHandler = func(command Commander, args []string) error {
+		executed = true
+
+		executedCommand = command
+		executedArgs = args
+
+		return nil
+	}
+
+	_, err := parser.ParseArgs([]string{"cmd", "arg1", "arg2"})
+
+	if err != nil {
+		t.Fatalf("Unexpected parse error: %s", err)
+	}
+
+	if !executed {
+		t.Errorf("Expected command handler to be executed")
+	}
+
+	if executedCommand == nil {
+		t.Errorf("Expected command handler to be executed")
+	}
+
+	assertStringArray(t, executedArgs, []string{"arg1", "arg2"})
 }

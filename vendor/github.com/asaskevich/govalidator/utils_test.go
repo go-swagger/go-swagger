@@ -395,6 +395,7 @@ func TestNormalizeEmail(t *testing.T) {
 		{`some.name.midd.lena.me.+extension@googlemail.com`, `somenamemiddlename@gmail.com`},
 		{`some.name+extension@unknown.com`, `some.name+extension@unknown.com`},
 		{`hans@m端ller.com`, `hans@m端ller.com`},
+		{`hans`, ``},
 	}
 	for _, test := range tests {
 		actual, err := NormalizeEmail(test.param)
@@ -416,6 +417,7 @@ func TestTruncate(t *testing.T) {
 		{`Lorem ipsum dolor sit amet, consectetur adipiscing elit.`, 25, `...`, `Lorem ipsum dolor sit amet...`},
 		{`Measuring programming progress by lines of code is like measuring aircraft building progress by weight.`, 35, ` new born babies!`, `Measuring programming progress by new born babies!`},
 		{`Testestestestestestestestestest testestestestestestestestest`, 7, `...`, `Testestestestestestestestestest...`},
+		{`Testing`, 7, `...`, `Testing`},
 	}
 	for _, test := range tests {
 		actual := Truncate(test.param1, test.param2, test.param3)

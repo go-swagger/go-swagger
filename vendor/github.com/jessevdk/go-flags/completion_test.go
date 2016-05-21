@@ -40,6 +40,7 @@ var completionTestOptions struct {
 	Debug    bool `short:"d" long:"debug" description:"Enable debug"`
 	Version  bool `long:"version" description:"Show version"`
 	Required bool `long:"required" required:"true" description:"This is required"`
+	Hidden   bool `long:"hidden" hidden:"true" description:"This is hidden"`
 
 	AddCommand struct {
 		Positional struct {

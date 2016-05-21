@@ -78,7 +78,7 @@ func TestFilter(t *testing.T) {
 		return value.(int)%2 == 0
 	}
 	result := Filter(data, fn)
-	for i, _ := range result {
+	for i := range result {
 		if result[i] != answer[i] {
 			t.Errorf("Expected Filter(..) to be %v, got %v", answer[i], result[i])
 		}

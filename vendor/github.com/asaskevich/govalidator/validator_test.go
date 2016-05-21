@@ -647,7 +647,7 @@ func TestIsRequestURL(t *testing.T) {
 		expected bool
 	}{
 		{"", false},
-		{"http://foo.bar#com", true},
+		{"http://foo.bar/#com", true},
 		{"http://foobar.com", true},
 		{"https://foobar.com", true},
 		{"foobar.com", false},
@@ -670,7 +670,7 @@ func TestIsRequestURL(t *testing.T) {
 		{"rtmp://foobar.com", true},
 		{"http://www.foo_bar.com/", true},
 		{"http://localhost:3000/", true},
-		{"http://foobar.com#baz=qux", true},
+		{"http://foobar.com/#baz=qux", true},
 		{"http://foobar.com/t$-_.+!*\\'(),", true},
 		{"http://www.foobar.com/~foobar", true},
 		{"http://www.-foobar.com/", true},
@@ -697,7 +697,7 @@ func TestIsRequestURI(t *testing.T) {
 		expected bool
 	}{
 		{"", false},
-		{"http://foo.bar#com", true},
+		{"http://foo.bar/#com", true},
 		{"http://foobar.com", true},
 		{"https://foobar.com", true},
 		{"foobar.com", false},
@@ -719,7 +719,7 @@ func TestIsRequestURI(t *testing.T) {
 		{"rtmp://foobar.com", true},
 		{"http://www.foo_bar.com/", true},
 		{"http://localhost:3000/", true},
-		{"http://foobar.com#baz=qux", true},
+		{"http://foobar.com/#baz=qux", true},
 		{"http://foobar.com/t$-_.+!*\\'(),", true},
 		{"http://www.foobar.com/~foobar", true},
 		{"http://www.-foobar.com/", true},
@@ -1797,7 +1797,7 @@ type UserValid struct {
 	Password string `valid:"required"`
 	Age      int    `valid:"required"`
 	Home     *Address
-	Work     []Address
+	Work     []Address `valid:"required"`
 }
 
 type PrivateStruct struct {
@@ -1833,7 +1833,7 @@ type Post struct {
 	AuthorIP string `valid:"ipv4"`
 }
 
-type MissingValidationDeclationStruct struct {
+type MissingValidationDeclarationStruct struct {
 	Name  string ``
 	Email string `valid:"required,email"`
 }
@@ -1853,13 +1853,13 @@ type MessageWithSeveralFieldsStruct struct {
 	Body  string `valid:"length(1|10)"`
 }
 
-func TestValidateMissingValidationDeclationStruct(t *testing.T) {
+func TestValidateMissingValidationDeclarationStruct(t *testing.T) {
 	var tests = []struct {
-		param    MissingValidationDeclationStruct
+		param    MissingValidationDeclarationStruct
 		expected bool
 	}{
-		{MissingValidationDeclationStruct{}, false},
-		{MissingValidationDeclationStruct{Name: "TEST", Email: "test@example.com"}, false},
+		{MissingValidationDeclarationStruct{}, false},
+		{MissingValidationDeclarationStruct{Name: "TEST", Email: "test@example.com"}, false},
 	}
 	SetFieldsRequiredByDefault(true)
 	for _, test := range tests {
@@ -1924,13 +1924,27 @@ func TestFieldsRequiredByDefaultButExemptOrOptionalStruct(t *testing.T) {
 type CustomByteArray [6]byte
 
 type StructWithCustomByteArray struct {
-	ID    CustomByteArray `valid:"customByteArrayValidator"`
-	Email string          `valid:"email"`
+	ID              CustomByteArray `valid:"customByteArrayValidator,customMinLengthValidator"`
+	Email           string          `valid:"email"`
+	CustomMinLength int             `valid:"-"`
 }
 
 func TestStructWithCustomByteArray(t *testing.T) {
+	t.Parallel()
+
 	// add our custom byte array validator that fails when the byte array is pristine (all zeroes)
-	CustomTypeTagMap["customByteArrayValidator"] = CustomTypeValidator(func(i interface{}) bool {
+	CustomTypeTagMap.Set("customByteArrayValidator", CustomTypeValidator(func(i interface{}, o interface{}) bool {
+		switch v := o.(type) {
+		case StructWithCustomByteArray:
+			if len(v.Email) > 0 {
+				if v.Email != "test@example.com" {
+					t.Errorf("v.Email should have been 'test@example.com' but was '%s'", v.Email)
+				}
+			}
+		default:
+			t.Errorf("Context object passed to custom validator should have been a StructWithCustomByteArray but was %T (%+v)", o, o)
+		}
+
 		switch v := i.(type) {
 		case CustomByteArray:
 			for _, e := range v { // check if v is empty, i.e. all zeroes
@@ -1940,7 +1954,14 @@ func TestStructWithCustomByteArray(t *testing.T) {
 			}
 		}
 		return false
-	})
+	}))
+	CustomTypeTagMap.Set("customMinLengthValidator", CustomTypeValidator(func(i interface{}, o interface{}) bool {
+		switch v := o.(type) {
+		case StructWithCustomByteArray:
+			return len(v.ID) >= v.CustomMinLength
+		}
+		return false
+	}))
 	testCustomByteArray := CustomByteArray{'1', '2', '3', '4', '5', '6'}
 	var tests = []struct {
 		param    StructWithCustomByteArray
@@ -1949,7 +1970,9 @@ func TestStructWithCustomByteArray(t *testing.T) {
 		{StructWithCustomByteArray{}, false},
 		{StructWithCustomByteArray{Email: "test@example.com"}, false},
 		{StructWithCustomByteArray{ID: testCustomByteArray, Email: "test@example.com"}, true},
+		{StructWithCustomByteArray{ID: testCustomByteArray, Email: "test@example.com", CustomMinLength: 7}, false},
 	}
+	SetFieldsRequiredByDefault(true)
 	for _, test := range tests {
 		actual, err := ValidateStruct(test.param)
 		if actual != test.expected {
@@ -1959,6 +1982,7 @@ func TestStructWithCustomByteArray(t *testing.T) {
 			}
 		}
 	}
+	SetFieldsRequiredByDefault(false)
 }
 
 func TestValidateNegationStruct(t *testing.T) {
@@ -2063,6 +2087,7 @@ func TestValidateStruct(t *testing.T) {
 		{User{"John", "john!yahoo.com", "12345678", 20, &Address{"Street", "ABC456D89"}, []Address{Address{"Street", "ABC456D89"}, Address{"Street", "123456"}}}, false},
 		{User{"John", "", "12345", 0, &Address{"Street", "123456789"}, []Address{Address{"Street", "ABC456D89"}, Address{"Street", "123456"}}}, false},
 		{UserValid{"John", "john@yahoo.com", "123G#678", 20, &Address{"Street", "123456"}, []Address{Address{"Street", "123456"}, Address{"Street", "123456"}}}, true},
+		{UserValid{"John", "john!yahoo.com", "12345678", 20, &Address{"Street", "ABC456D89"}, []Address{}}, false},
 		{UserValid{"John", "john!yahoo.com", "12345678", 20, &Address{"Street", "ABC456D89"}, []Address{Address{"Street", "ABC456D89"}, Address{"Street", "123456"}}}, false},
 		{UserValid{"John", "", "12345", 0, &Address{"Street", "123456789"}, []Address{Address{"Street", "ABC456D89"}, Address{"Street", "123456"}}}, false},
 		{nil, true},
