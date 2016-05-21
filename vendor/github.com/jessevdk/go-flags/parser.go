@@ -42,6 +42,16 @@ type Parser struct {
 	// You can override this default behavior by specifying a custom CompletionHandler.
 	CompletionHandler func(items []Completion)
 
+	// CommandHandler is a function that gets called to handle execution of a
+	// command. By default, the command will simply be executed. This can be
+	// overridden to perform certain actions (such as applying global flags)
+	// just before the command is executed. Note that if you override the
+	// handler it is your responsibility to call the command.Execute function.
+	//
+	// The command passed into CommandHandler may be nil in case there is no
+	// command to be executed when parsing has finished.
+	CommandHandler func(command Commander, args []string) error
+
 	internalError error
 }
 
@@ -298,7 +308,13 @@ func (p *Parser) ParseArgs(args []string) ([]string, error) {
 	} else if len(s.command.commands) != 0 && !s.command.SubcommandsOptional {
 		reterr = s.estimateCommand()
 	} else if cmd, ok := s.command.data.(Commander); ok {
-		reterr = cmd.Execute(s.retargs)
+		if p.CommandHandler != nil {
+			reterr = p.CommandHandler(cmd, s.retargs)
+		} else {
+			reterr = cmd.Execute(s.retargs)
+		}
+	} else if p.CommandHandler != nil {
+		reterr = p.CommandHandler(nil, s.retargs)
 	}
 
 	if reterr != nil {
@@ -604,10 +620,19 @@ func (p *Parser) parseNonOption(s *parseState) error {
 		return s.addArgs(s.arg)
 	}
 
-	if cmd := s.lookup.commands[s.arg]; cmd != nil {
-		s.command.Active = cmd
-		cmd.fillParseState(s)
-	} else if (p.Options & PassAfterNonOption) != None {
+	if len(s.command.commands) > 0 && len(s.retargs) == 0 {
+		if cmd := s.lookup.commands[s.arg]; cmd != nil {
+			s.command.Active = cmd
+			cmd.fillParseState(s)
+
+			return nil
+		} else if !s.command.SubcommandsOptional {
+			s.addArgs(s.arg)
+			return newErrorf(ErrUnknownCommand, "Unknown command `%s'", s.arg)
+		}
+	}
+
+	if (p.Options & PassAfterNonOption) != None {
 		// If PassAfterNonOption is set then all remaining arguments
 		// are considered positional
 		if err := s.addArgs(s.arg); err != nil {

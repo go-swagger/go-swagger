@@ -19,7 +19,7 @@ func TestAbs(t *testing.T) {
 	for _, test := range tests {
 		actual := Abs(test.param)
 		if actual != test.expected {
-			t.Errorf("Expected Abs(%q) to be %v, got %v", test.param, test.expected, actual)
+			t.Errorf("Expected Abs(%v) to be %v, got %v", test.param, test.expected, actual)
 		}
 	}
 }
@@ -41,7 +41,7 @@ func TestSign(t *testing.T) {
 	for _, test := range tests {
 		actual := Sign(test.param)
 		if actual != test.expected {
-			t.Errorf("Expected Sign(%q) to be %v, got %v", test.param, test.expected, actual)
+			t.Errorf("Expected Sign(%v) to be %v, got %v", test.param, test.expected, actual)
 		}
 	}
 }
@@ -63,7 +63,7 @@ func TestIsNegative(t *testing.T) {
 	for _, test := range tests {
 		actual := IsNegative(test.param)
 		if actual != test.expected {
-			t.Errorf("Expected IsNegative(%q) to be %v, got %v", test.param, test.expected, actual)
+			t.Errorf("Expected IsNegative(%v) to be %v, got %v", test.param, test.expected, actual)
 		}
 	}
 }
@@ -85,7 +85,7 @@ func TestIsNonNegative(t *testing.T) {
 	for _, test := range tests {
 		actual := IsNonNegative(test.param)
 		if actual != test.expected {
-			t.Errorf("Expected IsNonNegative(%q) to be %v, got %v", test.param, test.expected, actual)
+			t.Errorf("Expected IsNonNegative(%v) to be %v, got %v", test.param, test.expected, actual)
 		}
 	}
 }
@@ -107,7 +107,7 @@ func TestIsPositive(t *testing.T) {
 	for _, test := range tests {
 		actual := IsPositive(test.param)
 		if actual != test.expected {
-			t.Errorf("Expected IsPositive(%q) to be %v, got %v", test.param, test.expected, actual)
+			t.Errorf("Expected IsPositive(%v) to be %v, got %v", test.param, test.expected, actual)
 		}
 	}
 }
@@ -129,7 +129,7 @@ func TestIsNonPositive(t *testing.T) {
 	for _, test := range tests {
 		actual := IsNonPositive(test.param)
 		if actual != test.expected {
-			t.Errorf("Expected IsNonPositive(%q) to be %v, got %v", test.param, test.expected, actual)
+			t.Errorf("Expected IsNonPositive(%v) to be %v, got %v", test.param, test.expected, actual)
 		}
 	}
 }
@@ -151,7 +151,7 @@ func TestIsWhole(t *testing.T) {
 	for _, test := range tests {
 		actual := IsWhole(test.param)
 		if actual != test.expected {
-			t.Errorf("Expected IsWhole(%q) to be %v, got %v", test.param, test.expected, actual)
+			t.Errorf("Expected IsWhole(%v) to be %v, got %v", test.param, test.expected, actual)
 		}
 	}
 }
@@ -173,7 +173,7 @@ func TestIsNatural(t *testing.T) {
 	for _, test := range tests {
 		actual := IsNatural(test.param)
 		if actual != test.expected {
-			t.Errorf("Expected IsNatural(%q) to be %v, got %v", test.param, test.expected, actual)
+			t.Errorf("Expected IsNatural(%v) to be %v, got %v", test.param, test.expected, actual)
 		}
 	}
 }
@@ -198,7 +198,7 @@ func TestInRange(t *testing.T) {
 	for _, test := range tests {
 		actual := InRange(test.param, test.left, test.right)
 		if actual != test.expected {
-			t.Errorf("Expected InRange(%q, %q, %q) to be %v, got %v", test.param, test.left, test.right, test.expected, actual)
+			t.Errorf("Expected InRange(%v, %v, %v) to be %v, got %v", test.param, test.left, test.right, test.expected, actual)
 		}
 	}
 }

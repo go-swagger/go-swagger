@@ -23,10 +23,10 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware/denco"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/strfmt"
 	"github.com/gorilla/context"
-	"github.com/naoina/denco"
 )
 
 // RouteParam is a object to capture route params in a framework agnostic way.
@@ -81,7 +81,8 @@ func newRouter(ctx *Context, next http.Handler) http.Handler {
 				return
 			}
 		} else {
-			if p := strings.TrimPrefix(r.URL.Path, basePath); len(p) < len(r.URL.Path) {
+			ep := r.URL.EscapedPath()
+			if p := strings.TrimPrefix(ep, basePath); len(p) < len(ep) {
 				r.URL.Path = p
 				if _, ok := ctx.RouteInfo(r); ok {
 					next.ServeHTTP(rw, r)
