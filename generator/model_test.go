@@ -1717,3 +1717,25 @@ func TestGenModel_Issue455(t *testing.T) {
 		}
 	}
 }
+
+func TestGenModel_Issue524(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/524/swagger.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "m1"
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("out_obj.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, `for i := 0; i < len(m.F2); i++`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}

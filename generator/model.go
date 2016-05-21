@@ -946,8 +946,9 @@ func (sg *schemaGenContext) buildArray() error {
 
 	// TODO: this is probably not right. Should just respect what type resolvers said
 	nn := elProp.GenSchema.IsNullable
-	elProp.GenSchema.IsNullable = sg.TypeResolver.IsNullable(sg.Schema.Items.Schema) && !elProp.GenSchema.HasDiscriminator
-	if nn && !elProp.GenSchema.HasDiscriminator && !elProp.GenSchema.IsPrimitive {
+
+	elProp.GenSchema.IsNullable = tpe.IsNullable && !tpe.HasDiscriminator
+	if nn && !tpe.HasDiscriminator && !tpe.IsPrimitive {
 		sg.GenSchema.GoType = "[]*" + elProp.GenSchema.GoType
 	}
 
