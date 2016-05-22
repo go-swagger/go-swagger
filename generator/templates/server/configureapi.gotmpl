@@ -3,6 +3,7 @@ package {{ .APIPackage }}
 import (
   "crypto/tls"
   "net/http"
+  "log"
 
   errors "github.com/go-openapi/errors"
   runtime "github.com/go-openapi/runtime"
@@ -25,6 +26,12 @@ func configureFlags(api *{{.Package}}.{{ pascalize .Name }}API) {
 func configureAPI(api *{{.Package}}.{{ pascalize .Name }}API) http.Handler {
   // configure the api here
   api.ServeError = errors.ServeError
+
+  // Set your custom logger if needed. Default one is log.Printf
+  // Expected interface func(string, ...interface{})
+  //
+  // Example:
+  // s.api.Logger = log.Printf
 
   {{ range .Consumes }}{{ if .Implementation }}api.{{ pascalize .Name }}Consumer = {{ .Implementation }}
   {{else}}api.{{ pascalize .Name }}Consumer = runtime.ConsumerFunc(func(r io.Reader, target interface{}) error {
