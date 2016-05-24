@@ -731,4 +731,5 @@ var customFormatters = map[string]struct{}{
 	"strfmt.Base64":     struct{}{},
 	"strfmt.Duration":   struct{}{},
 	"io.ReadCloser":     struct{}{},
+	"io.Writer":         struct{}{},
 }
