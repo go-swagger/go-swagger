@@ -83,7 +83,7 @@
 			"importpath": "github.com/go-openapi/spec",
 			"repository": "https://github.com/go-openapi/spec",
 			"vcs": "git",
-			"revision": "1f40fcb077ed32379da3eeb494f76fb2285e31b8",
+			"revision": "2029f5179022b7e840b71a663b1fda7fb24e49a0",
 			"branch": "master",
 			"notests": true
 		},
@@ -129,7 +129,7 @@
 			"importpath": "github.com/jessevdk/go-flags",
 			"repository": "https://github.com/jessevdk/go-flags",
 			"vcs": "git",
-			"revision": "81d9c148df8d57633e8b14dd9e6a843fea243a28",
+			"revision": "b350cb1deecd3da4b80a29ccc4054abfd6329001",
 			"branch": "master"
 		},
 		{

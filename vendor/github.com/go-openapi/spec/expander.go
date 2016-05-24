@@ -320,7 +320,7 @@ func ExpandSpec(spec *Swagger) error {
 	}
 
 	for key, defintition := range spec.Definitions {
-		if err := expandSchema(&defintition, "#/definitions/"+key, resolver); err != nil {
+		if err := expandSchema(&defintition, []string{"#/definitions/" + key}, resolver); err != nil {
 			return err
 		}
 		spec.Definitions[key] = defintition
@@ -381,23 +381,27 @@ func ExpandSchema(schema *Schema, root interface{}, cache ResolutionCache) error
 		return err
 	}
 
-	if err := expandSchema(schema, "", resolver); err != nil {
+	refs := []string{""}
+	if rrr != nil {
+		refs[0] = rrr.String()
+	}
+	if err := expandSchema(schema, refs, resolver); err != nil {
 		return nil
 	}
 	return nil
 }
 
-func expandItems(schema *Schema, parentRef string, resolver *schemaLoader) error {
+func expandItems(schema *Schema, parentRefs []string, resolver *schemaLoader) error {
 	if schema.Items != nil {
 		if schema.Items.Schema != nil {
 			sch := schema.Items.Schema
-			if err := expandSchema(sch, parentRef, resolver); err != nil {
+			if err := expandSchema(sch, parentRefs, resolver); err != nil {
 				return err
 			}
 		}
 		for i := range schema.Items.Schemas {
 			sch := &(schema.Items.Schemas[i])
-			if err := expandSchema(sch, parentRef, resolver); err != nil {
+			if err := expandSchema(sch, parentRefs, resolver); err != nil {
 				return err
 			}
 		}
@@ -406,13 +410,14 @@ func expandItems(schema *Schema, parentRef string, resolver *schemaLoader) error
 	return nil
 }
 
-func expandSchema(schema *Schema, parentRef string, resolver *schemaLoader) error {
+func expandSchema(schema *Schema, parentRefs []string, resolver *schemaLoader) error {
 	if schema == nil {
 		return nil
 	}
 
 	if schema.Ref.String() == "" && schema.Ref.IsRoot() {
-		*schema = *resolver.root.(*Schema)
+		s := *resolver.root.(*Schema)
+		schema = &s
 		return nil
 	}
 
@@ -420,63 +425,69 @@ func expandSchema(schema *Schema, parentRef string, resolver *schemaLoader) erro
 		currentSchema := *schema
 		for currentSchema.Ref.String() != "" {
 			var newSchema Schema
-			if currentSchema.Ref.String() == parentRef {
+			pRefs := strings.Join(parentRefs, ",")
+			pRefs += ","
+			if strings.Contains(pRefs, currentSchema.Ref.String()+",") {
 				break
 			}
 
 			if err := resolver.Resolve(&currentSchema.Ref, &newSchema); err != nil {
 				return err
 			}
-			parentRef = currentSchema.Ref.String()
+
+			parentRefs = append(parentRefs, currentSchema.Ref.String())
 
 			currentSchema = newSchema
 		}
 		*schema = currentSchema
 	}
 
-	if err := expandItems(schema, parentRef, resolver); err != nil {
+	if err := expandItems(schema, parentRefs, resolver); err != nil {
 		return err
 	}
 
 	for i := range schema.AllOf {
 		sch := &(schema.AllOf[i])
-		if err := expandSchema(sch, parentRef, resolver); err != nil {
+		if err := expandSchema(sch, parentRefs, resolver); err != nil {
 			return err
 		}
+		schema.AllOf[i] = *sch
 	}
 	for i := range schema.AnyOf {
 		sch := &(schema.AnyOf[i])
-		if err := expandSchema(sch, parentRef, resolver); err != nil {
+		if err := expandSchema(sch, parentRefs, resolver); err != nil {
 			return err
 		}
+		schema.AnyOf[i] = *sch
 	}
 	for i := range schema.OneOf {
 		sch := &(schema.OneOf[i])
-		if err := expandSchema(sch, parentRef, resolver); err != nil {
+		if err := expandSchema(sch, parentRefs, resolver); err != nil {
 			return err
 		}
+		schema.OneOf[i] = *sch
 	}
 	if schema.Not != nil {
 		sch := schema.Not
-		if err := expandSchema(sch, parentRef, resolver); err != nil {
+		if err := expandSchema(sch, parentRefs, resolver); err != nil {
 			return err
 		}
 	}
 	for k, v := range schema.Properties {
-		if err := expandSchema(&v, parentRef, resolver); err != nil {
+		if err := expandSchema(&v, parentRefs, resolver); err != nil {
 			return err
 		}
 		schema.Properties[k] = v
 	}
 	if schema.AdditionalProperties != nil && schema.AdditionalProperties.Schema != nil {
 		sch := schema.AdditionalProperties.Schema
-		if err := expandSchema(sch, parentRef, resolver); err != nil {
+		if err := expandSchema(sch, parentRefs, resolver); err != nil {
 			return err
 		}
 	}
 	for k, v := range schema.PatternProperties {
 		vp := &v
-		if err := expandSchema(vp, parentRef, resolver); err != nil {
+		if err := expandSchema(vp, parentRefs, resolver); err != nil {
 			return err
 		}
 		schema.PatternProperties[k] = *vp
@@ -484,7 +495,7 @@ func expandSchema(schema *Schema, parentRef string, resolver *schemaLoader) erro
 	for k, v := range schema.Dependencies {
 		if v.Schema != nil {
 			sch := v.Schema
-			if err := expandSchema(sch, parentRef, resolver); err != nil {
+			if err := expandSchema(sch, parentRefs, resolver); err != nil {
 				return err
 			}
 			schema.Dependencies[k] = v
@@ -492,12 +503,12 @@ func expandSchema(schema *Schema, parentRef string, resolver *schemaLoader) erro
 	}
 	if schema.AdditionalItems != nil && schema.AdditionalItems.Schema != nil {
 		sch := schema.AdditionalItems.Schema
-		if err := expandSchema(sch, parentRef, resolver); err != nil {
+		if err := expandSchema(sch, parentRefs, resolver); err != nil {
 			return err
 		}
 	}
 	for k, v := range schema.Definitions {
-		if err := expandSchema(&v, parentRef, resolver); err != nil {
+		if err := expandSchema(&v, parentRefs, resolver); err != nil {
 			return err
 		}
 		schema.Definitions[k] = v
@@ -582,11 +593,11 @@ func expandResponse(response *Response, resolver *schemaLoader) error {
 	}
 
 	if response.Schema != nil {
-		parentRef := response.Schema.Ref.String()
+		parentRefs := []string{response.Schema.Ref.String()}
 		if err := resolver.Resolve(&response.Schema.Ref, &response.Schema); err != nil {
 			return err
 		}
-		if err := expandSchema(response.Schema, parentRef, resolver); err != nil {
+		if err := expandSchema(response.Schema, parentRefs, resolver); err != nil {
 			return err
 		}
 	}
@@ -603,11 +614,11 @@ func expandParameter(parameter *Parameter, resolver *schemaLoader) error {
 		}
 	}
 	if parameter.Schema != nil {
-		parentRef := parameter.Schema.Ref.String()
+		parentRefs := []string{parameter.Schema.Ref.String()}
 		if err := resolver.Resolve(&parameter.Schema.Ref, &parameter.Schema); err != nil {
 			return err
 		}
-		if err := expandSchema(parameter.Schema, parentRef, resolver); err != nil {
+		if err := expandSchema(parameter.Schema, parentRefs, resolver); err != nil {
 			return err
 		}
 	}

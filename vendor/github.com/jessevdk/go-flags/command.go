@@ -112,9 +112,9 @@ func (c *Command) Find(name string) *Command {
 	return nil
 }
 
-// Find an option that is part of the command, or any of its
-// parent commands, by matching its long name
-// (including the option namespace).
+// FindOptionByLongName finds an option that is part of the command, or any of
+// its parent commands, by matching its long name (including the option
+// namespace).
 func (c *Command) FindOptionByLongName(longName string) (option *Option) {
 	for option == nil && c != nil {
 		option = c.Group.FindOptionByLongName(longName)
@@ -125,9 +125,9 @@ func (c *Command) FindOptionByLongName(longName string) (option *Option) {
 	return option
 }
 
-// Find an option that is part of the command, or any of its
-// parent commands, by matching its long name
-// (including the option namespace).
+// FindOptionByShortName finds an option that is part of the command, or any of
+// its parent commands, by matching its long name (including the option
+// namespace).
 func (c *Command) FindOptionByShortName(shortName rune) (option *Option) {
 	for option == nil && c != nil {
 		option = c.Group.FindOptionByShortName(shortName)

@@ -17,7 +17,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/naoina/denco"
+	"github.com/go-openapi/runtime/middleware/denco"
 )
 
 // GetUsers handles the list users operation
