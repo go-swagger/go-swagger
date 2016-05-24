@@ -10,7 +10,7 @@ import (
   "github.com/go-openapi/swag"
   "github.com/go-openapi/errors"
   "github.com/go-openapi/validate"
-  "github.com/go-openapi/runtime"
+  cr "github.com/go-openapi/runtime/client"
 
   strfmt "github.com/go-openapi/strfmt"
 
@@ -30,7 +30,7 @@ func New{{ pascalize .Name }}Params() *{{ pascalize .Name }}Params {
   return &{{ pascalize .Name}}Params{
   {{ range .Params }}{{ if .HasDefault }}{{ pascalize .Name}}: {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (or .IsNullable  ) }}&{{ end }}{{ camelize .Name }}Default,
   {{ end }}{{ end }}
-    timeout: runtime.DefaultTimeout,
+    timeout: cr.DefaultTimeout,
   }
 }
 
