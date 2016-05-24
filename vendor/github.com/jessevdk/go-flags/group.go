@@ -110,16 +110,16 @@ func (g *Group) findOption(matcher func(*Option) bool) (option *Option) {
 	return option
 }
 
-// Find an option that is part of the group, or any of its subgroups,
-// by matching its long name (including the option namespace).
+// FindOptionByLongName finds an option that is part of the group, or any of its
+// subgroups, by matching its long name (including the option namespace).
 func (g *Group) FindOptionByLongName(longName string) *Option {
 	return g.findOption(func(option *Option) bool {
 		return option.LongNameWithNamespace() == longName
 	})
 }
 
-// Find an option that is part of the group, or any of its subgroups,
-// by matching its short name.
+// FindOptionByShortName finds an option that is part of the group, or any of
+// its subgroups, by matching its short name.
 func (g *Group) FindOptionByShortName(shortName rune) *Option {
 	return g.findOption(func(option *Option) bool {
 		return option.ShortName == shortName

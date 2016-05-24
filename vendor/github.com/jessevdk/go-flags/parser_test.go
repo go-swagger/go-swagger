@@ -215,28 +215,33 @@ func TestUnquoting(t *testing.T) {
 	}
 }
 
-// envRestorer keeps a copy of a set of env variables and can restore the env from them
-type envRestorer struct {
+// EnvRestorer keeps a copy of a set of env variables and can restore the env from them
+type EnvRestorer struct {
 	env map[string]string
 }
 
-func (r *envRestorer) Restore() {
+func (r *EnvRestorer) Restore() {
 	os.Clearenv()
+
 	for k, v := range r.env {
 		os.Setenv(k, v)
 	}
 }
 
 // EnvSnapshot returns a snapshot of the currently set env variables
-func EnvSnapshot() *envRestorer {
-	r := envRestorer{make(map[string]string)}
+func EnvSnapshot() *EnvRestorer {
+	r := EnvRestorer{make(map[string]string)}
+
 	for _, kv := range os.Environ() {
 		parts := strings.SplitN(kv, "=", 2)
+
 		if len(parts) != 2 {
 			panic("got a weird env variable: " + kv)
 		}
+
 		r.env[parts[0]] = parts[1]
 	}
+
 	return &r
 }
 
