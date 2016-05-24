@@ -22,6 +22,7 @@ build:
       # - go get -u github.com/davecgh/go-spew/spew
       # - go get -u github.com/asaskevich/govalidator
       # - go get -u github.com/naoina/denco
+      - go get -u github.com/go-openapi/runtime
       - go get -u github.com/go-openapi/strfmt
       - go get -u github.com/go-swagger/scan-repo-boundary/makeplans
       - ./hack/build-drone.sh
