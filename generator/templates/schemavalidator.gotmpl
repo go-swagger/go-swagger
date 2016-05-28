@@ -186,7 +186,7 @@ var {{ camelize .Name }}Enum []interface{}
 func init() {
   var res []{{ template "dereffedSchemaType" . }}
   if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
-    return err
+    panic(err)
   }
   for _, v := range res {
     {{ camelize .Name }}Enum = append({{ camelize .Name }}Enum, v)
@@ -202,7 +202,7 @@ func ({{ .ReceiverName }} {{ if not .IsPrimitive }}*{{ end }}{{ if .IsExported }
 func init() {
   var res []{{ template "dereffedSchemaType" .Items }}
   if err := json.Unmarshal([]byte(`{{ json .ItemsEnum }}`), &res); err != nil {
-    return err
+    panic(err)
   }
   for _, v := range res {
     {{ camelize .Name }}ItemsEnum = append({{ camelize .Name }}ItemsEnum, v)
@@ -221,7 +221,7 @@ var {{ camelize .Name }}ValueEnum []interface{}
 func init() {
   var res []{{ template "dereffedSchemaType" . }}
   if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
-    return err
+    panic(err)
   }
   for _, v := range res {
     {{ camelize .Name }}ValueEnum = append({{ camelize .Name }}ValueEnum, v)
@@ -300,7 +300,7 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
 func init() {
   var res []{{ template "dereffedSchemaType" . }}
   if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
-    return err
+    panic(err)
   }
   for _, v := range res {
     {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum = append({{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum, v)
@@ -317,7 +317,7 @@ func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{
 func init() {
   var res []{{ template "dereffedSchemaType" .Items }}
   if err := json.Unmarshal([]byte(`{{ json .ItemsEnum }}`), &res); err != nil {
-    return err
+    panic(err)
   }
   for _, v := range res {
     {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum, v)
@@ -333,7 +333,7 @@ func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{
 func init() {
   var res []{{ template "dereffedSchemaType" .AdditionalItems }}
   if err := json.Unmarshal([]byte(`{{ json .AdditionalItems.Enum }}`), &res); err != nil {
-    return err
+    panic(err)
   }
   for _, v := range res {
     {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum = append({{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum, v)
@@ -352,7 +352,7 @@ var {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum []interface{}
 func init() {
   var res []{{ template "dereffedSchemaType" . }}
   if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
-    return err
+    panic(err)
   }
   for _, v := range res {
     {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ValueEnum, v)
@@ -387,7 +387,7 @@ func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{
 func init() {
   var res []{{ template "dereffedSchemaType" . }}
   if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
-    return err
+    panic(err)
   }
   for _, v := range res {
     {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum = append({{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum, v)
@@ -404,7 +404,7 @@ func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{
 func init() {
   var res []{{ template "dereffedSchemaType" .Items }}
   if err := json.Unmarshal([]byte(`{{ json .ItemsEnum }}`), &res); err != nil {
-    return err
+    panic(err)
   }
   for _, v := range res {
     {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum, v)
@@ -420,7 +420,7 @@ func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{
 func init() {
   var res []{{ template "dereffedSchemaType" .AdditionalItems }}
   if err := json.Unmarshal([]byte(`{{ json .AdditionalItems.Enum }}`), &res); err != nil {
-    return err
+    panic(err)
   }
   for _, v := range res {
     {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum = append({{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum, v)
@@ -438,7 +438,7 @@ var {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum []interface{}
 func init() {
   var res []{{ template "dereffedSchemaType" . }}
   if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
-    return err
+    panic(err)
   }
   for _, v := range res {
     {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ValueEnum, v)
@@ -468,7 +468,7 @@ func ({{.ReceiverName}} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{{ 
 func init() {
   var res []{{ template "dereffedSchemaType" .AdditionalItems }}
   if err := json.Unmarshal([]byte(`{{ json .AdditionalItems.Enum }}`), &res); err != nil {
-    return err
+    panic(err)
   }
   for _, v := range res {
     {{ camelize .Name }}ItemsEnum = append({{ camelize .Name }}ItemsEnum, v)
