@@ -18,6 +18,7 @@ RUN set -e -x \
   && go get -u github.com/aktau/github-release \
   && go get -u golang.org/x/tools/go/buildutil \
   && go get -u github.com/go-openapi/strfmt \
+  && go get -u github.com/go-openapi/runtime \
   && go get -u github.com/stretchr/testify/assert \
   && go get -u -t github.com/cee-dub/go-junit-report \
   && go get -u github.com/go-swagger/scan-repo-boundary/makeplans
