@@ -215,6 +215,8 @@ TestMan \- Test manpage generation
 .SH DESCRIPTION
 This is a somewhat \fBlonger\fP description of what this does
 .SH OPTIONS
+.SS Application Options
+The application options
 .TP
 \fB\fB\-v\fR, \fB\-\-verbose\fR\fP
 Show verbose debug information
@@ -247,15 +249,18 @@ Option with named argument
 .TP
 \fB\fB\-\-opt-with-choices\fR \fIchoice\fR\fP
 Option with choices
+.SS Other Options
 .TP
 \fB\fB\-s\fR <default: \fI"some", "value"\fR>\fP
 A slice of strings
 .TP
 \fB\fB\-\-intmap\fR <default: \fI"a:1"\fR>\fP
 A map from string to int
+.SS Subgroup
 .TP
 \fB\fB\-\-sip.opt\fR\fP
 This is a subgroup option
+.SS Subsubgroup
 .TP
 \fB\fB\-\-sip.sap.opt\fR\fP
 This is a subsubgroup option
