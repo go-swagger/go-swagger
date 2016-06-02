@@ -133,6 +133,33 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/mailru/easyjson/buffer",
+			"repository": "https://github.com/mailru/easyjson",
+			"vcs": "git",
+			"revision": "cd72c97ec050da537393da76d6929cadcc2b5d1e",
+			"branch": "master",
+			"path": "/buffer",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mailru/easyjson/jlexer",
+			"repository": "https://github.com/mailru/easyjson",
+			"vcs": "git",
+			"revision": "cd72c97ec050da537393da76d6929cadcc2b5d1e",
+			"branch": "master",
+			"path": "/jlexer",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mailru/easyjson/jwriter",
+			"repository": "https://github.com/mailru/easyjson",
+			"vcs": "git",
+			"revision": "cd72c97ec050da537393da76d6929cadcc2b5d1e",
+			"branch": "master",
+			"path": "/jwriter",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/naoina/denco",
 			"repository": "https://github.com/naoina/denco",
 			"vcs": "git",
