@@ -71,6 +71,7 @@ type GenSchema struct {
 	JSONOut                 string
 	JSONIn                  string
 	ZeroValue               string
+	PropLen                 int
 }
 
 type sharedValidations struct {

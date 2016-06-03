@@ -1246,6 +1246,8 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.IsMap = prev.IsMap
 	sg.GenSchema.IsAdditionalProperties = prev.IsAdditionalProperties
 	sg.GenSchema.IsBaseType = sg.GenSchema.HasDiscriminator
+	sg.GenSchema.JSONIn = sg.jsonIn()
+	sg.GenSchema.JSONOut = sg.jsonOut()
 
 	if Debug {
 		log.Println("gschema nnullable", sg.GenSchema.IsNullable)
@@ -1269,9 +1271,61 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	if err := sg.buildAliased(); err != nil {
 		return err
 	}
-
+	sg.GenSchema.PropLen = noProperties(sg.GenSchema)
 	if Debug {
 		log.Printf("finished gen schema for %q\n", sg.Name)
 	}
 	return nil
+}
+
+var inEasyJSONMap map[string]string
+var outEasyJSONMap map[string]string
+
+func init() {
+	inEasyJSONMap = map[string]string{
+		"uint8":   "in.Uint8()",
+		"uint16":  "in.Uint16()",
+		"uint32":  "in.Uint32()",
+		"uint":    "in.Uint()",
+		"uint64":  "in.Uint64()",
+		"int8":    "in.Int8()",
+		"int16":   "in.Int16()",
+		"int32":   "in.Int32()",
+		"int":     "in.Int()",
+		"int64":   "in.Int64()",
+		"float32": "in.Float32()",
+		"float64": "in.Float64()",
+		"string":  "in.String()",
+		"bool":    "in.Bool()",
+	}
+	outEasyJSONMap = map[string]string{
+		"uint8":   "out.Uint8",
+		"uint16":  "out.Uint16",
+		"uint32":  "out.Uint32",
+		"uint":    "out.Uint",
+		"uint64":  "out.Uint64",
+		"int8":    "out.Int8",
+		"int16":   "out.Int16",
+		"int32":   "out.Int32",
+		"int":     "out.Int",
+		"int64":   "out.Int64",
+		"float32": "out.Float32",
+		"float64": "out.Float64",
+		"string":  "out.String",
+		"bool":    "out.Bool",
+	}
+}
+
+func (sg *schemaGenContext) jsonIn() string {
+	if v, ok := inEasyJSONMap[sg.GenSchema.GoType]; ok {
+		return v
+	}
+	return ""
+}
+
+func (sg *schemaGenContext) jsonOut() string {
+	if v, ok := outEasyJSONMap[sg.GenSchema.GoType]; ok {
+		return v
+	}
+	return ""
 }

@@ -1,13 +1,13 @@
 {{ define "schemaSerializer" }}
-var nullable{{ pascalize .Name }}Bitmap bitset.BitSet
-func init() {
-    nullable{{ pascalize .Name}}Bitmap := *bitset.New(noProperties .)
-}
-
+{{ if or .IsComplexObject .IsTuple .IsAdditionalProperties }}{{ template "schemaObjectSerializer" . }}
+{{ else if .IsArray }}// array serialization goes here
+{{ else }}// primitive object serializers go here
+{{ end }}{{ end }}
+{{ define "schemaObjectSerializer" }}
 // MarshalJSON marshals this object with additional properties into a JSON object
 func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
 	out := jwriter.Writer{}
-	m.MarshalEasyJSON(&out)
+	{{ .ReceiverName }}.MarshalEasyJSON(&out)
 	return out.BuildBytes()
 }
 
@@ -26,7 +26,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) MarshalEasyJSON(out *jwriter.Wri
 		{{ if $prop.IsNullable }}if {{ $.ReceiverName }}.__nulls.Test({{ $index }}) {
 			out.RawString("null")
 		} else {
-			{{ end }}out.{{ $prop.JSONOut }}({{ $prop.ValueExpression }}){{ if $prop.IsNullable }}
+			{{ end }}{{ $prop.JSONOut }}({{ $prop.ValueExpression }}){{ if $prop.IsNullable }}
 		}{{ end }}
   }
   {{ end }}{{ $propLen := (len .Properties) }}{{ range $index, $prop := .AllOf }}
@@ -38,7 +38,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) MarshalEasyJSON(out *jwriter.Wri
 		{{ if $prop.IsNullable }}if {{ $.ReceiverName }}.__nulls.Test({{ $index }} + {{ $propLen }}) {
 			out.RawString("null")
 		} else {
-			{{ end }}out.{{ $prop.JSONOut }}({{ $prop.ValueExpression }}){{ if $prop.IsNullable }}
+			{{ end }}{{ $prop.JSONOut }}({{ $prop.ValueExpression }}){{ if $prop.IsNullable }}
 		}{{ end }}
   }
   {{ end }}
@@ -47,8 +47,8 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) MarshalEasyJSON(out *jwriter.Wri
 
 // UnmarshalEasyJSON unmarshals this object with additional properties from JSON
 func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalEasyJSON(in *jlexer.Lexer) {
-  m.__nulls = *bitset.New({{ noProperties . }})
-	m.__setValues = *bitset.New({{ noProperties . }})
+  {{ .ReceiverName }}.__nulls = *bitset.New({{ noProperties . }})
+	{{ .ReceiverName }}.__setValues = *bitset.New({{ noProperties . }})
 	if in.IsNull() {
 		in.Skip()
 		return
@@ -61,15 +61,15 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalEasyJSON(in *jlexer.Lex
 			switch key {
       {{ $propLen := (noProperties .) }}{{ range $index, $prop := .Properties }}
       case {{ printf "%q" $prop.Name }}:
-        {{ $.ReceiverName }}.{{ pascalize $prop.Name }} = {{ $prop.ZeroValue }}
+        {{ $.ReceiverName }}.{{ pascalize $prop.Name }} = {{ $prop.Zero }}
         {{ $.ReceiverName }}.__setValues.Set({{ $index }})
         {{ $.ReceiverName }}.__nulls.Set({{ $index }})
       {{ end }}{{ if .AdditionalProperties }}
-        {{ $.ReceiverName }}.{{ pascalize .AdditionalProperties.Name }} = in.{{ .AdditionalProperties.JSONIn }}()
+        {{ $.ReceiverName }}.{{ pascalize .AdditionalProperties.Name }} = {{ .AdditionalProperties.JSONIn }}()
         {{ $.ReceiverName }}.__setValues.Set({{ $propLen }}{{ if .AdditionalItems }} - 1{{ end }})
         {{ $.ReceiverName }}.__nulls.Set({{ $propLen }}{{ if .AdditionalItems }} - 1{{ end }})
       {{ end }}{{ if .AdditionalItems }}
-        {{ $.ReceiverName }}.{{ pascalize .AdditionalItems.Name }} = in.{{ .AdditionalItems.JSONIn }}()
+        {{ $.ReceiverName }}.{{ pascalize .AdditionalItems.Name }} = {{ .AdditionalItems.JSONIn }}()
         {{ $.ReceiverName }}.__setValues.Set({{ $propLen }})
         {{ $.ReceiverName }}.__nulls.Set({{ $propLen }})
       {{ end }}
@@ -83,15 +83,15 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalEasyJSON(in *jlexer.Lex
 		switch key {
     {{ range $index, $prop := .Properties }}
     case {{ printf "%q" $prop.Name }}:
-      {{ $.ReceiverName }}.{{ pascalize $prop.Name }} = in.{{ $prop.JSONIn }}()
+      {{ $.ReceiverName }}.{{ pascalize $prop.Name }} = {{ $prop.JSONIn }}
       {{ $.ReceiverName }}.__setValues.Set({{ $index }})
       {{ $.ReceiverName }}.__nulls.Clear({{ $index }})
     {{ end }}{{ if .AdditionalProperties }}
-      {{ $.ReceiverName }}.{{ pascalize .AdditionalProperties.Name }} = in.{{ .AdditionalProperties.JSONIn }}()
+      {{ $.ReceiverName }}.{{ pascalize .AdditionalProperties.Name }} = {{ .AdditionalProperties.JSONIn }}
       {{ $.ReceiverName }}.__setValues.Set({{ $propLen }}{{ if .AdditionalItems }} - 1{{ end }})
       {{ $.ReceiverName }}.__nulls.Clear({{ $propLen }}{{ if .AdditionalItems }} - 1{{ end }})
     {{ end }}{{ if .AdditionalItems }}
-      {{ $.ReceiverName }}.{{ pascalize .AdditionalItems.Name }} = in.{{ .AdditionalItems.JSONIn }}()
+      {{ $.ReceiverName }}.{{ pascalize .AdditionalItems.Name }} = {{ .AdditionalItems.JSONIn }}
       {{ $.ReceiverName }}.__setValues.Set({{ $propLen }})
       {{ $.ReceiverName }}.__nulls.Clear({{ $propLen }})
     {{ end }}
@@ -106,7 +106,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalEasyJSON(in *jlexer.Lex
 // UnmarshalJSON unmarshals this object with additional properties from JSON
 func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(data []byte) error {
   in := jlexer.Lexer{Data: data}
-	m.UnmarshalEasyJSON(&in)
+	{{ .ReceiverName }}.UnmarshalEasyJSON(&in)
 	return in.Error()
 }
 {{ end }}

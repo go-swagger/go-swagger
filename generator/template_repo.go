@@ -136,6 +136,10 @@ func noProperties(value interface{}) int {
 		sch = &tpe
 	case *GenSchema:
 		sch = tpe
+	case GenDefinition:
+		sch = &tpe.GenSchema
+	case *GenDefinition:
+		sch = &tpe.GenSchema
 	case []GenSchema:
 		var i int
 		for _, v := range tpe {
@@ -160,8 +164,32 @@ func noProperties(value interface{}) int {
 			i += noProperties(v)
 		}
 		return i
+	case []GenDefinition:
+		var i int
+		for _, v := range tpe {
+			i += noProperties(v)
+		}
+		return i
+	case []*GenDefinition:
+		var i int
+		for _, v := range tpe {
+			i += noProperties(v)
+		}
+		return i
+	case map[string]GenDefinition:
+		var i int
+		for _, v := range tpe {
+			i += noProperties(v)
+		}
+		return i
+	case map[string]*GenDefinition:
+		var i int
+		for _, v := range tpe {
+			i += noProperties(v)
+		}
+		return i
 	default:
-		log.Printf("unknown schema type: %T", sch)
+		log.Printf("unknown schema type (%T)", tpe)
 	}
 	if sch == nil {
 		return 0
