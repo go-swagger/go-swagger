@@ -90,8 +90,22 @@ func wordsNeeded(i uint) int {
 }
 
 // New creates a new BitSet with a hint that length bits will be required
-func New(length uint) *BitSet {
-	return &BitSet{length, make([]uint64, wordsNeeded(length))}
+func New(length uint) (bset *BitSet) {
+	defer func() {
+		if r := recover(); r != nil {
+			bset = &BitSet{
+				0,
+				make([]uint64, 0),
+			}
+		}
+	}()
+
+	bset = &BitSet{
+		length,
+		make([]uint64, wordsNeeded(length)),
+	}
+
+	return bset
 }
 
 // Cap returns the total possible capicity, or number of bits

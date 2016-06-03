@@ -54,6 +54,7 @@ var assets = map[string][]byte{
 	"schemabody.gotmpl":                     MustAsset("templates/schemabody.gotmpl"),
 	"schema.gotmpl":                         MustAsset("templates/schema.gotmpl"),
 	"schemavalidator.gotmpl":                MustAsset("templates/schemavalidator.gotmpl"),
+	"schemaserializer.gotmpl":               MustAsset("templates/schemaserializer.gotmpl"),
 	"model.gotmpl":                          MustAsset("templates/model.gotmpl"),
 	"header.gotmpl":                         MustAsset("templates/header.gotmpl"),
 	"swagger_json_embed.gotmpl":             MustAsset("templates/swagger_json_embed.gotmpl"),
@@ -77,16 +78,19 @@ var assets = map[string][]byte{
 // 	notNumberExp = regexp.MustCompile("[^0-9]")
 // )
 
-var templates = NewRepository(FuncMap)
+var templates *Repository
 
 func init() {
-
+	templates = NewRepository(FuncMap)
 	templates.LoadDefaults()
 
 }
 
 func compileTemplates() {
 
+	if Debug {
+		templates.DumpTemplates()
+	}
 	modelTemplate = template.Must(templates.Get("model"))
 
 	// server templates

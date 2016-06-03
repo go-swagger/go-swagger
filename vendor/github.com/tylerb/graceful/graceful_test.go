@@ -17,13 +17,13 @@ import (
 	"time"
 )
 
-// The tests will run a test server on this port.
-const port = 9654
-
-var (
-	killTime    = 500 * time.Millisecond
-	timeoutTime = 1000 * time.Millisecond
-	waitTime    = 100 * time.Millisecond
+const (
+	// The tests will run a test server on this port.
+	port               = 9654
+	concurrentRequestN = 8
+	killTime           = 500 * time.Millisecond
+	timeoutTime        = 1000 * time.Millisecond
+	waitTime           = 100 * time.Millisecond
 )
 
 func runQuery(t *testing.T, expected int, shouldErr bool, wg *sync.WaitGroup, once *sync.Once) {
@@ -98,7 +98,7 @@ func launchTestQueries(t *testing.T, wg *sync.WaitGroup, c chan os.Signal) {
 	defer wg.Done()
 	var once sync.Once
 
-	for i := 0; i < 8; i++ {
+	for i := 0; i < concurrentRequestN; i++ {
 		wg.Add(1)
 		go runQuery(t, http.StatusOK, false, wg, &once)
 	}
@@ -107,7 +107,7 @@ func launchTestQueries(t *testing.T, wg *sync.WaitGroup, c chan os.Signal) {
 	c <- os.Interrupt
 	time.Sleep(waitTime)
 
-	for i := 0; i < 8; i++ {
+	for i := 0; i < concurrentRequestN; i++ {
 		wg.Add(1)
 		go runQuery(t, 0, true, wg, &once)
 	}
@@ -127,6 +127,33 @@ func TestGracefulRun(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		srv := &Server{Timeout: killTime, Server: server, interrupt: c}
+		srv.Serve(l)
+	}()
+
+	wg.Add(1)
+	go launchTestQueries(t, &wg, c)
+}
+
+func TestGracefulRunLimitKeepAliveListener(t *testing.T) {
+	var wg sync.WaitGroup
+	defer wg.Wait()
+
+	c := make(chan os.Signal, 1)
+	server, l, err := createListener(killTime / 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		srv := &Server{
+			Timeout:      killTime,
+			ListenLimit:  concurrentRequestN,
+			TCPKeepAlive: 1 * time.Second,
+			Server:       server,
+			interrupt:    c,
+		}
 		srv.Serve(l)
 	}()
 
@@ -156,7 +183,7 @@ func TestGracefulRunTimesOut(t *testing.T) {
 		defer wg.Done()
 		var once sync.Once
 
-		for i := 0; i < 8; i++ {
+		for i := 0; i < concurrentRequestN; i++ {
 			wg.Add(1)
 			go runQuery(t, 0, true, &wg, &once)
 		}
@@ -165,7 +192,7 @@ func TestGracefulRunTimesOut(t *testing.T) {
 		c <- os.Interrupt
 		time.Sleep(waitTime)
 
-		for i := 0; i < 8; i++ {
+		for i := 0; i < concurrentRequestN; i++ {
 			wg.Add(1)
 			go runQuery(t, 0, true, &wg, &once)
 		}
@@ -191,6 +218,49 @@ func TestGracefulRunDoesntTimeOut(t *testing.T) {
 
 	wg.Add(1)
 	go launchTestQueries(t, &wg, c)
+}
+
+func TestGracefulRunDoesntTimeOutAfterConnectionCreated(t *testing.T) {
+	var wg sync.WaitGroup
+	defer wg.Wait()
+
+	c := make(chan os.Signal, 1)
+	server, l, err := createListener(killTime)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		srv := &Server{Timeout: 0, Server: server, interrupt: c}
+		srv.Serve(l)
+	}()
+	time.Sleep(waitTime)
+
+	// Make a sample first request. The connection will be left idle.
+	resp, err := http.Get(fmt.Sprintf("http://localhost:%d", port))
+	if err != nil {
+		panic(fmt.Sprintf("first request failed: %v", err))
+	}
+	resp.Body.Close()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		// With idle connections improperly handled, the server doesn't wait for this
+		// to complete and the request fails. It should be allowed to complete successfully.
+		_, err := http.Get(fmt.Sprintf("http://localhost:%d", port))
+		if err != nil {
+			t.Errorf("Get failed: %v", err)
+		}
+	}()
+
+	// Ensure the request goes out
+	time.Sleep(waitTime)
+	c <- os.Interrupt
+	wg.Wait()
 }
 
 func TestGracefulRunNoRequests(t *testing.T) {
@@ -226,9 +296,9 @@ func TestGracefulForwardsConnState(t *testing.T) {
 	defer wg.Wait()
 
 	expected := map[http.ConnState]int{
-		http.StateNew:    8,
-		http.StateActive: 8,
-		http.StateClosed: 8,
+		http.StateNew:    concurrentRequestN,
+		http.StateActive: concurrentRequestN,
+		http.StateClosed: concurrentRequestN,
 	}
 
 	c := make(chan os.Signal, 1)
@@ -314,7 +384,7 @@ func TestBeforeShutdownAndShutdownInitiatedCallbacks(t *testing.T) {
 	}
 
 	beforeShutdownCalled := make(chan struct{})
-	cb1 := func() { close(beforeShutdownCalled) }
+	cb1 := func() bool { close(beforeShutdownCalled); return true }
 	shutdownInitiatedCalled := make(chan struct{})
 	cb2 := func() { close(shutdownInitiatedCalled) }
 
@@ -351,6 +421,63 @@ func TestBeforeShutdownAndShutdownInitiatedCallbacks(t *testing.T) {
 	if !shutdownInitiated {
 		t.Fatal("shutdownInitiated should be true")
 	}
+}
+
+func TestBeforeShutdownCanceled(t *testing.T) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	server, l, err := createListener(1 * time.Millisecond)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	beforeShutdownCalled := make(chan struct{})
+	cb1 := func() bool { close(beforeShutdownCalled); return false }
+	shutdownInitiatedCalled := make(chan struct{})
+	cb2 := func() { close(shutdownInitiatedCalled) }
+
+	srv := &Server{Server: server, BeforeShutdown: cb1, ShutdownInitiated: cb2}
+	go func() {
+		srv.Serve(l)
+		wg.Done()
+	}()
+	go func() {
+		time.Sleep(waitTime)
+		srv.Stop(killTime)
+	}()
+
+	beforeShutdown := false
+	shutdownInitiated := false
+	timeouted := false
+
+	for i := 0; i < 2; i++ {
+		select {
+		case <-beforeShutdownCalled:
+			beforeShutdownCalled = nil
+			beforeShutdown = true
+		case <-shutdownInitiatedCalled:
+			shutdownInitiatedCalled = nil
+			shutdownInitiated = true
+		case <-time.After(killTime):
+			timeouted = true
+		}
+	}
+
+	if !beforeShutdown {
+		t.Fatal("beforeShutdown should be true")
+	}
+	if !timeouted {
+		t.Fatal("timeouted should be true")
+	}
+	if shutdownInitiated {
+		t.Fatal("shutdownInitiated shouldn't be true")
+	}
+
+	srv.BeforeShutdown = func() bool { return true }
+	srv.Stop(killTime)
+
+	wg.Wait()
 }
 
 func hijackingListener(srv *Server) (*http.Server, net.Listener, error) {
@@ -393,7 +520,7 @@ func TestNotifyClosed(t *testing.T) {
 	}()
 
 	var once sync.Once
-	for i := 0; i < 8; i++ {
+	for i := 0; i < concurrentRequestN; i++ {
 		wg.Add(1)
 		runQuery(t, http.StatusOK, false, &wg, &once)
 	}

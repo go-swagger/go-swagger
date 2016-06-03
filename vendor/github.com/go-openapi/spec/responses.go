@@ -38,7 +38,7 @@ import (
 // For more information: http://goo.gl/8us55a#responsesObject
 type Responses struct {
 	VendorExtensible
-	responsesProps
+	ResponsesProps
 }
 
 // JSONLookup implements an interface to customize json pointer lookup
@@ -59,21 +59,21 @@ func (r Responses) JSONLookup(token string) (interface{}, error) {
 
 // UnmarshalJSON hydrates this items instance with the data from JSON
 func (r *Responses) UnmarshalJSON(data []byte) error {
-	if err := json.Unmarshal(data, &r.responsesProps); err != nil {
+	if err := json.Unmarshal(data, &r.ResponsesProps); err != nil {
 		return err
 	}
 	if err := json.Unmarshal(data, &r.VendorExtensible); err != nil {
 		return err
 	}
-	if reflect.DeepEqual(responsesProps{}, r.responsesProps) {
-		r.responsesProps = responsesProps{}
+	if reflect.DeepEqual(ResponsesProps{}, r.ResponsesProps) {
+		r.ResponsesProps = ResponsesProps{}
 	}
 	return nil
 }
 
 // MarshalJSON converts this items object to JSON
 func (r Responses) MarshalJSON() ([]byte, error) {
-	b1, err := json.Marshal(r.responsesProps)
+	b1, err := json.Marshal(r.ResponsesProps)
 	if err != nil {
 		return nil, err
 	}
@@ -85,12 +85,12 @@ func (r Responses) MarshalJSON() ([]byte, error) {
 	return concated, nil
 }
 
-type responsesProps struct {
+type ResponsesProps struct {
 	Default             *Response
 	StatusCodeResponses map[int]Response
 }
 
-func (r responsesProps) MarshalJSON() ([]byte, error) {
+func (r ResponsesProps) MarshalJSON() ([]byte, error) {
 	toser := map[string]Response{}
 	if r.Default != nil {
 		toser["default"] = *r.Default
@@ -101,7 +101,7 @@ func (r responsesProps) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toser)
 }
 
-func (r *responsesProps) UnmarshalJSON(data []byte) error {
+func (r *ResponsesProps) UnmarshalJSON(data []byte) error {
 	var res map[string]Response
 	if err := json.Unmarshal(data, &res); err != nil {
 		return nil

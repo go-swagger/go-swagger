@@ -1314,7 +1314,11 @@ func TestGenerateModel_WithAllOfAndDiscriminator(t *testing.T) {
 					assertInCode(t, "type Cat struct {", res)
 					assertInCode(t, "Pet", res)
 					assertInCode(t, "HuntingSkill *string `json:\"huntingSkill\"`", res)
+				} else {
+					fmt.Println(string(ct))
 				}
+			} else {
+				fmt.Println(buf.String())
 			}
 		}
 	}

@@ -12,9 +12,9 @@ import (
 
   strfmt "github.com/go-openapi/strfmt"
 
-  {{ range .DefaultImports }}{{ printf "%q" .}}
+  {{ range $key, $value := .DefaultImports }}{{ printf "%s %q" $key $value }}
   {{ end }}
-  {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
+  {{ range $key, $value := .Imports }}{{ printf "%s %q" $key $value }}
   {{ end }}
 )
 
@@ -52,7 +52,8 @@ func (a *Client) {{ pascalize .Name }}(params *{{ pascalize .Name }}Params{{ if 
     ConsumesMediaTypes: {{ printf "%#v" .ConsumesMediaTypes }},
     Schemes: {{ printf "%#v" .Schemes }},
     Params: params,
-    Reader: &{{ pascalize .Name }}Reader{formats: a.formats{{ if .HasStreamingResponse }}, writer: writer{{ end }}},{{ if .Authorized }}
+    Reader: &{{ pascalize .Name }}Reader{formats: a.formats{{ if .HasStreamingResponse }}, writer: writer{{ end }}},
+    Context: params.Context,{{ if .Authorized }}
     AuthInfo: authInfo,{{ end}}
   })
   if err != nil {

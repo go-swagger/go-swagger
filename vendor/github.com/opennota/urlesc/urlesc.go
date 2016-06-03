@@ -60,8 +60,8 @@ func shouldEscape(c byte, mode encoding) bool {
 
 		case encodeFragment: // §4.1
 			// The RFC text is silent but the grammar allows
-			// everything, so escape nothing.
-			return false
+			// everything, so escape nothing but #
+			return c == '#'
 		}
 	}
 

@@ -21,7 +21,7 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-type operationProps struct {
+type OperationProps struct {
 	Description  string                 `json:"description,omitempty"`
 	Consumes     []string               `json:"consumes,omitempty"`
 	Produces     []string               `json:"produces,omitempty"`
@@ -41,7 +41,7 @@ type operationProps struct {
 // For more information: http://goo.gl/8us55a#operationObject
 type Operation struct {
 	VendorExtensible
-	operationProps
+	OperationProps
 }
 
 // SuccessResponse gets a success response model
@@ -64,13 +64,13 @@ func (o Operation) JSONLookup(token string) (interface{}, error) {
 	if ex, ok := o.Extensions[token]; ok {
 		return &ex, nil
 	}
-	r, _, err := jsonpointer.GetForToken(o.operationProps, token)
+	r, _, err := jsonpointer.GetForToken(o.OperationProps, token)
 	return r, err
 }
 
 // UnmarshalJSON hydrates this items instance with the data from JSON
 func (o *Operation) UnmarshalJSON(data []byte) error {
-	if err := json.Unmarshal(data, &o.operationProps); err != nil {
+	if err := json.Unmarshal(data, &o.OperationProps); err != nil {
 		return err
 	}
 	if err := json.Unmarshal(data, &o.VendorExtensible); err != nil {
@@ -81,7 +81,7 @@ func (o *Operation) UnmarshalJSON(data []byte) error {
 
 // MarshalJSON converts this items object to JSON
 func (o Operation) MarshalJSON() ([]byte, error) {
-	b1, err := json.Marshal(o.operationProps)
+	b1, err := json.Marshal(o.OperationProps)
 	if err != nil {
 		return nil, err
 	}

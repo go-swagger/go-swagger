@@ -84,7 +84,7 @@ for {{.IndexVar}} := 0; {{.IndexVar}} < len({{.ValueExpression}}); {{.IndexVar}}
 {{end}}
 {{ define "mapvalidator" }}
 {{ if .HasAdditionalProperties }}{{ if .AdditionalProperties.Required }}
-if err := validate.Required({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if not .IsAnonymous }}{{ .GoType }}({{end}}{{.ValueExpression}}{{ if not .IsAnonymous }}){{end}}); err != nil {
+if err := validate.Required({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if (not .IsAnonymous) }}{{ if .IsMap }}{{ .AliasedType }}{{ else }}{{ .GoType }}{{ end }}({{end}}{{.ValueExpression}}{{ if (not .IsAnonymous) }}){{end}}); err != nil {
   return err
 }
 {{ else }}

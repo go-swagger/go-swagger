@@ -716,7 +716,7 @@ func runCase(tc *testCase, t *testing.T) {
 	if tc.parsed {
 		u, e := url.Parse(tc.src)
 		if e != nil {
-			t.Errorf("%s - FAIL : %s", e)
+			t.Errorf("%s - FAIL : %s", tc.nm, e)
 			return
 		} else {
 			NormalizeURL(u, tc.flgs)

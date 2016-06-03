@@ -4,15 +4,15 @@ package jwriter
 import (
 	"io"
 	"strconv"
+	"unicode/utf8"
 
 	"github.com/mailru/easyjson/buffer"
 )
 
 // Writer is a JSON writer.
 type Writer struct {
-	EscapeLtGt bool
-	Error      error
-	Buffer     buffer.Buffer
+	Error  error
+	Buffer buffer.Buffer
 }
 
 // Size returns the size of the data that was written out.
@@ -198,10 +198,7 @@ func (w *Writer) Bool(v bool) {
 	}
 }
 
-func hex(c byte) byte {
-	const chars = "0123456789abcdef"
-	return chars[c&0xf]
-}
+const chars = "0123456789abcdef"
 
 func (w *Writer) String(s string) {
 	w.Buffer.AppendByte('"')
@@ -211,41 +208,65 @@ func (w *Writer) String(s string) {
 
 	p := 0 // last non-escape symbol
 
-	for i := 0; i < len(s); i++ {
-		c := s[i]
-		var escape byte
-		switch c {
-		case '\t':
-			escape = 't'
-		case '\r':
-			escape = 'r'
-		case '\n':
-			escape = 'n'
-		case '\\':
-			escape = '\\'
-		case '"':
-			escape = '"'
-		case '<', '>':
-			if !w.EscapeLtGt {
-				continue
+	for i := 0; i < len(s); {
+		// single-with character
+		if c := s[i]; c < utf8.RuneSelf {
+			var escape byte
+			switch c {
+			case '\t':
+				escape = 't'
+			case '\r':
+				escape = 'r'
+			case '\n':
+				escape = 'n'
+			case '\\':
+				escape = '\\'
+			case '"':
+				escape = '"'
+			case '<', '>':
+				// do nothing
+			default:
+				if c >= 0x20 {
+					// no escaping is required
+					i++
+					continue
+				}
 			}
-		default:
-			if c >= 0x20 {
-				// no escaping is required
-				continue
+			if escape != 0 {
+				w.Buffer.AppendString(s[p:i])
+				w.Buffer.AppendByte('\\')
+				w.Buffer.AppendByte(escape)
+			} else {
+				w.Buffer.AppendString(s[p:i])
+				w.Buffer.AppendString(`\u00`)
+				w.Buffer.AppendByte(chars[c>>4])
+				w.Buffer.AppendByte(chars[c&0xf])
 			}
+			i++
+			p = i
+			continue
 		}
-		if escape != 0 {
+
+		// broken utf
+		runeValue, runeWidth := utf8.DecodeRuneInString(s[i:])
+		if runeValue == utf8.RuneError && runeWidth == 1 {
 			w.Buffer.AppendString(s[p:i])
-			w.Buffer.AppendByte('\\')
-			w.Buffer.AppendByte(escape)
-		} else {
-			w.Buffer.AppendString(s[p:i])
-			w.Buffer.AppendString(`\u00`)
-			w.Buffer.AppendByte(hex(c >> 4))
-			w.Buffer.AppendByte(hex(c))
+			w.Buffer.AppendString(`\ufffd`)
+			i++
+			p = i
+			continue
 		}
-		p = i + 1
+
+		// jsonp stuff - tab separator and line separator
+		if runeValue == '\u2028' || runeValue == '\u2029' {
+			w.Buffer.AppendString(s[p:i])
+			w.Buffer.AppendString(`\u202`)
+			w.Buffer.AppendByte(chars[runeValue&0xf])
+			i += runeWidth
+			p = i
+			continue
+		}
+		i += runeWidth
 	}
 	w.Buffer.AppendString(s[p:])
 	w.Buffer.AppendByte('"')
