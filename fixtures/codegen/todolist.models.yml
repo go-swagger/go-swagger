@@ -48,7 +48,8 @@ definitions:
         type: string
         minLength: 2
         maxLength: 50
-        Pattern: "[A-Za-z0-9][\\w- ]+"
+        pattern: "[A-Za-z0-9][\\w- ]+"
+
   Notable:
     type: object
     properties:

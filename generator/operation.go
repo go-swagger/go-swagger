@@ -150,7 +150,7 @@ func (o *operationGenerator) Generate() error {
 	bldr.Analyzed = o.Analyzed
 	bldr.DefaultScheme = o.DefaultScheme
 	bldr.DefaultProduces = o.DefaultProduces
-	bldr.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(o.Base), o.ModelsPackage))}
+	bldr.DefaultImports = map[string]string{o.ModelsPackage: filepath.ToSlash(filepath.Join(baseImport(o.Base), o.ModelsPackage))}
 	bldr.RootAPIPackage = o.APIPackage
 	bldr.WithContext = o.WithContext
 	bldr.DefaultConsumes = o.DefaultConsumes
@@ -314,7 +314,7 @@ type codeGenOpBuilder struct {
 	Doc             *loads.Document
 	Analyzed        *analysis.Spec
 	Authed          bool
-	DefaultImports  []string
+	DefaultImports  map[string]string
 	DefaultScheme   string
 	DefaultProduces string
 	DefaultConsumes string

@@ -168,13 +168,6 @@
 			"notests": true
 		},
 		{
-			"importpath": "github.com/naoina/denco",
-			"repository": "https://github.com/naoina/denco",
-			"vcs": "git",
-			"revision": "9af2ba0e24214bac003821f4a501b131b2e04c75",
-			"branch": "master"
-		},
-		{
 			"importpath": "github.com/opennota/urlesc",
 			"repository": "https://github.com/opennota/urlesc",
 			"vcs": "git",
@@ -201,7 +194,7 @@
 			"importpath": "github.com/tylerb/graceful",
 			"repository": "https://github.com/tylerb/graceful",
 			"vcs": "git",
-			"revision": "c1dac725c2aed547ac3cc94b1065abc84386951a",
+			"revision": "ecde8c8f16df93a994dda8936c8f60f0c26c28ab",
 			"branch": "master"
 		},
 		{
@@ -216,7 +209,7 @@
 			"importpath": "golang.org/x/net/context",
 			"repository": "https://go.googlesource.com/net",
 			"vcs": "git",
-			"revision": "8e573f4005aa312856df2ea97c32b9beac70dd89",
+			"revision": "e445b19913b9d40fdbdfe19ac5e3d314aafd6f63",
 			"branch": "master",
 			"path": "/context"
 		},
@@ -224,7 +217,7 @@
 			"importpath": "golang.org/x/net/netutil",
 			"repository": "https://go.googlesource.com/net",
 			"vcs": "git",
-			"revision": "8e573f4005aa312856df2ea97c32b9beac70dd89",
+			"revision": "e445b19913b9d40fdbdfe19ac5e3d314aafd6f63",
 			"branch": "master",
 			"path": "/netutil"
 		},

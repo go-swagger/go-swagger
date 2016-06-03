@@ -1,9 +1,14 @@
 {{ define "structfield" }}{{ if not $.IsBaseType }}/* {{ template "docstring" . }}{{ template "propertyValidationDocString" .}} */{{ end}}
 {{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ if $.HasBaseType }}-{{ else }}{{ .Name }}{{ if not .Required }},omitempty{{ end }}{{ end }}"{{ if .XMLName }} xml:"{{ .XMLName }}"{{ end }}`
-{{ end }}
+
+is{{ pascalize .Name }}FieldNil bool `json:"-"`
+is{{ pascalize .Name }}FieldSet bool `json:"-"`{{ end }}
 {{ define "tuplefield" }}
 {{ if not $.IsBaseType }}/* {{ template "docstring" . }}{{ template "propertyValidationDocString" .}} */
 {{ end }}{{ pascalize .Name}} {{ template "schemaType" . }} `json:"-"` // custom serializer
+
+is{{ pascalize .Name }}FieldNil bool `json:"-"`
+is{{ pascalize .Name }}FieldSet bool `json:"-"`
 {{ end }}
 {{ define "structfieldIface" }}{{ if not $.IsBaseType }}/* {{ template "docstring" . }}{{ template "propertyValidationDocString" .}} */
 {{ end }}{{ pascalize .Name}}() {{ template "schemaType" . }}
@@ -15,6 +20,12 @@ Set{{ pascalize .Name}}({{ template "schemaType" . }})
 Set{{ pascalize .Name}}({{ template "schemaType" . }})
 {{ end }}
 {{ define "privstructfield" }}{{ camelize .Name}}Field {{ template "schemaType" . }}
+
+is{{ pascalize .Name }}FieldNil bool `json:"-"`
+is{{ pascalize .Name }}FieldSet bool `json:"-"`
 {{ end }}
 {{ define "privtuplefield" }}{{ camelize .Name}}Field {{ template "schemaType" . }}
+
+is{{ pascalize .Name }}FieldNil bool `json:"-"`
+is{{ pascalize .Name }}FieldSet bool `json:"-"`
 {{ end }}

@@ -100,7 +100,7 @@ import (
   "github.com/go-openapi/validate"
   "github.com/go-openapi/runtime"
 
-  {{ range .DefaultImports }}{{ printf "%q" .}}
+  {{ range $key, $value := .DefaultImports }}{{ printf "%s %q" $key $value }}
   {{ end }}
   {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
   {{ end }}

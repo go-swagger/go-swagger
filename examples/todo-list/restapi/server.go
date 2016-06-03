@@ -43,14 +43,16 @@ type Server struct {
 	SocketPath    flags.Filename `long:"socket-path" description:"the unix socket to listen on" default:"/var/run/todo-list.sock"`
 	domainSocketL net.Listener
 
-	Host        string `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
-	Port        int    `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`
+	Host        string        `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
+	Port        int           `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`
+	KeepAlive   time.Duration `long:"keep-alive" description:"how long to keep tcp connections alive, put to 0 to disable (not recommended)" default:"3m"`
 	httpServerL net.Listener
 
 	TLSHost           string         `long:"tls-host" description:"the IP to listen on for tls, when not specified it's the same as --host" env:"TLS_HOST"`
 	TLSPort           int            `long:"tls-port" description:"the port to listen on for secure connections, defaults to a random value" env:"TLS_PORT"`
 	TLSCertificate    flags.Filename `long:"tls-certificate" description:"the certificate to use for secure connections" required:"true" env:"TLS_CERTIFICATE"`
 	TLSCertificateKey flags.Filename `long:"tls-key" description:"the private key to use for secure conections" required:"true" env:"TLS_PRIVATE_KEY"`
+	TLSKeepAlive      time.Duration  `long:"keep-alive" description:"how long to keep tcp connections alive, put to 0 to disable (not recommended)" default:"3m"`
 	httpsServerL      net.Listener
 
 	api          *operations.TodoListAPI
@@ -89,6 +91,12 @@ func (s *Server) Serve() (err error) {
 	}(s.domainSocketL)
 
 	httpServer := &graceful.Server{Server: new(http.Server)}
+	if s.KeepAlive > 0 {
+		httpServer.SetKeepAlivesEnabled(true)
+		httpServer.TCPKeepAlive = s.KeepAlive
+	} else {
+		httpServer.SetKeepAlivesEnabled(false)
+	}
 	httpServer.Handler = s.handler
 
 	fmt.Printf("serving todo list at http://%s\n", s.httpServerL.Addr())
@@ -99,6 +107,12 @@ func (s *Server) Serve() (err error) {
 	}(s.httpServerL)
 
 	httpsServer := &graceful.Server{Server: new(http.Server)}
+	if s.TLSKeepAlive > 0 {
+		httpsServer.SetKeepAlivesEnabled(true)
+		httpsServer.TCPKeepAlive = s.TLSKeepAlive
+	} else {
+		httpsServer.SetKeepAlivesEnabled(false)
+	}
 	httpsServer.Handler = s.handler
 	httpsServer.TLSConfig = new(tls.Config)
 	httpsServer.TLSConfig.NextProtos = []string{"http/1.1"}
@@ -168,24 +182,4 @@ func (s *Server) Listen() error {
 func (s *Server) Shutdown() error {
 	s.api.ServerShutdown()
 	return nil
-}
-
-// tcpKeepAliveListener is copied from the stdlib net/http package
-
-// tcpKeepAliveListener sets TCP keep-alive timeouts on accepted
-// connections. It's used by ListenAndServe and ListenAndServeTLS so
-// dead TCP connections (e.g. closing laptop mid-download) eventually
-// go away.
-type tcpKeepAliveListener struct {
-	*net.TCPListener
-}
-
-func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
-	tc, err := ln.AcceptTCP()
-	if err != nil {
-		return
-	}
-	tc.SetKeepAlive(true)
-	tc.SetKeepAlivePeriod(3 * time.Minute)
-	return tc, nil
 }

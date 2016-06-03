@@ -107,7 +107,7 @@ func (c *clientGenerator) Generate() error {
 	if app.Name == "" {
 		app.Name = "APIClient"
 	}
-	app.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ModelsPackage))}
+	app.DefaultImports = map[string]string{c.ModelsPackage: filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ModelsPackage))}
 	if err != nil {
 		return err
 	}
@@ -148,7 +148,7 @@ func (c *clientGenerator) Generate() error {
 		sort.Sort(app.OperationGroups)
 		for i := range app.OperationGroups {
 			opGroup := app.OperationGroups[i]
-			opGroup.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ModelsPackage))}
+			opGroup.DefaultImports = map[string]string{c.ModelsPackage: filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ModelsPackage))}
 			opGroup.RootPackage = c.ClientPackage
 			app.OperationGroups[i] = opGroup
 			sort.Sort(opGroup.Operations)
@@ -172,7 +172,7 @@ func (c *clientGenerator) Generate() error {
 					}
 				})
 			}
-			app.DefaultImports = append(app.DefaultImports, filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ClientPackage, opGroup.Name)))
+			app.DefaultImports[opGroup.Name] = filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ClientPackage, opGroup.Name))
 			if err := c.generateGroupClient(opGroup); err != nil {
 				return err
 			}

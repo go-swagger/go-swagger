@@ -12,7 +12,7 @@ pull_requests:
 environment:
   GOPATH: C:\gopath
   GO15VENDOREXPERIMENT: 1
-  GOCOVMODE: "mode: count"
+  GOCOVMODE: "mode: atomic"
   PATH: C:\gopath\bin;%PATH%
 
 platform:
@@ -27,15 +27,9 @@ install:
   - g++ --version
 
   # need bzr for several tests
-  # - choco install -y --force bzr jq unzip
-  # - ps: set latestv ((curl -Uri https://api.github.com/repos/Masterminds/glide/releases/latest).Content | jq -r .tag_name)
-  # - ps: curl -Uri "https://github.com/Masterminds/glide/releases/download/$latestv/glide-$latestv-windows-amd64.zip" -OutFile C:\glide.zip
-  # - unzip -j -d C:\glide C:\glide.zip
-  # - set PATH=C:\Program Files (x86)\Bazaar;C:\glide;%PATH%
   - choco install -y --force bzr
   - set PATH=C:\Program Files (x86)\Bazaar;%PATH%
   - bzr --version
-
 
   # get the dependencies etc
   - go get -u github.com/nu7hatch/gouuid
@@ -43,7 +37,6 @@ install:
   - go get -u github.com/davecgh/go-spew/spew
   - go get -u golang.org/x/tools/go/buildutil
   - go get -u -v github.com/asaskevich/govalidator
-  # - go get -u -v github.com/naoina/denco
   - go get -u -v github.com/go-swagger/scan-repo-boundary/makeplans
 
   # some helpful output for debugging builds

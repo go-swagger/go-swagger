@@ -2,7 +2,6 @@ FROM golang:1.6
 MAINTAINER go-swagger contributors
 
 ENV GOCOVMODE count
-# ENV GO15VENDOREXPERIMENT 1
 
 ADD . /go/src/github.com/go-swagger/go-swagger
 

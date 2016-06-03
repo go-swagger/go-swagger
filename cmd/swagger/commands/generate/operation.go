@@ -16,6 +16,9 @@ package generate
 
 import (
 	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/go-swagger/go-swagger/generator"
 )
@@ -38,22 +41,40 @@ func (o *Operation) Execute(args []string) error {
 	if o.DumpData && len(o.Name) > 1 {
 		return errors.New("only 1 operation at a time is supported for dumping data")
 	}
-	return generator.GenerateServerOperation(
-		o.Name,
-		o.Tags,
-		!o.NoHandler,
-		!o.NoStruct,
-		!o.NoResponses,
-		generator.GenOpts{
-			Spec:          string(o.Spec),
-			Target:        string(o.Target),
-			APIPackage:    o.APIPackage,
-			ModelPackage:  o.ModelPackage,
-			ServerPackage: o.ServerPackage,
-			ClientPackage: o.ClientPackage,
-			Principal:     o.Principal,
-			DumpData:      o.DumpData,
-			DefaultScheme: o.DefaultScheme,
-			TemplateDir:   string(o.TemplateDir),
-		})
+	opts := generator.GenOpts{
+		Spec:          string(o.Spec),
+		Target:        string(o.Target),
+		APIPackage:    o.APIPackage,
+		ModelPackage:  o.ModelPackage,
+		ServerPackage: o.ServerPackage,
+		ClientPackage: o.ClientPackage,
+		Principal:     o.Principal,
+		DumpData:      o.DumpData,
+		DefaultScheme: o.DefaultScheme,
+		TemplateDir:   string(o.TemplateDir),
+	}
+
+	if err := generator.GenerateServerOperation(o.Name, o.Tags, !o.NoHandler, !o.NoStruct, !o.NoResponses, opts); err != nil {
+		return err
+	}
+
+	rp, err := filepath.Rel(".", opts.Target)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(os.Stderr, `Generation completed!
+
+For this generation to compile you need to have some packages in your GOPATH:
+
+  * github.com/go-openapi/runtime
+	* github.com/mailru/easyjson/jlexer
+	* github.com/mailru/easyjson/jwriter
+	* github.com/willf/bitset
+	* golang.org/x/net/context
+
+You can get these now with: go get -u -f %s/....
+`, rp)
+
+	return nil
 }
