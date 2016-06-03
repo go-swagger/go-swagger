@@ -89,18 +89,11 @@ func unmarshal{{ pascalize .Name }}(data []byte, consumer runtime.Consumer) ({{ 
 func ({{$.ReceiverName}} *{{ pascalize $.Name}}) Set{{ pascalize .Name}}(val {{ template "schemaType" . }}) {
   {{ if ne $.DiscriminatorField .Name }}{{ $.ReceiverName }}.{{camelize .Name}}Field = val{{end}}
 }
-{{ end }}{{ end }}{{ end }}
-{{ if .HasAdditionalProperties }}{{ if .AdditionalProperties }}/* {{ template "docstring" .AdditionalProperties }}{{ template "propertyValidationDocString" .AdditionalProperties}} */
+{{ end }}{{ end }}{{ end }}{{ if .HasAdditionalProperties }}{{ if .AdditionalProperties }}/* {{ template "docstring" .AdditionalProperties }}{{ template "propertyValidationDocString" .AdditionalProperties}} */
 {{ pascalize .AdditionalProperties.Name }}() map[string]{{ template "schemaType" .AdditionalProperties }}{{end}}{{ end }}
 {{ if .AdditionalItems }}/* {{ template "docstring" .AdditionalItems }}{{ template "propertyValidationDocString" .AdditionalItems}} */
 {{ pascalize .AdditionalItems.Name }}() []{{ template "schemaType" .AdditionalItems }}
-{{ end }}{{ if not .HasBaseType }}
-{{ template "discriminatedSerializer" . }}{{ end}}
-{{ else if .IsTuple }}
-{{ template "tupleSerializer" . }}
-{{ else if .IsAdditionalProperties }}
-{{ template "additionalPropertiesSerializer" . }}
-{{ end }}{{ if .HasBaseType }}{{ template "hasDiscriminatedSerializer" . }}{{ end }}{{ if .IncludeValidator }}{{if and (not .IsInterface) (not .IsBaseType) (or .Required .HasValidations .HasBaseType) }}
+{{ end }}{{ end }}{{ template "schemaSerializer" . }}{{ if .IncludeValidator }}{{if and (not .IsInterface) (not .IsBaseType) (or .Required .HasValidations .HasBaseType) }}
 {{ template "schemavalidator" . }}
 {{ else if gt (len .AllOf) 0 }}
 {{ template "schemavalidator" . }}

@@ -5,16 +5,35 @@ package models
 
 import (
 	strfmt "github.com/go-openapi/strfmt"
+	jlexer "github.com/mailru/easyjson/jlexer"
+	jwriter "github.com/mailru/easyjson/jwriter"
+	"github.com/willf/bitset"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/validate"
 )
+
+var nullableItemBitmap bitset.BitSet
+
+func init() {
+	nullableItemBitmap = *bitset.New(3)
+	nullableItemBitmap.Set(1)
+}
+
+func NewItem() *Item {
+	return &Item{
+		__setValues: *bitset.New(3),
+		__nulls:     *bitset.New(3),
+	}
+}
 
 /*Item item
 
 swagger:model item
 */
 type Item struct {
+	__setValues bitset.BitSet
+	__nulls     bitset.BitSet
 
 	/* completed
 	 */
@@ -24,14 +43,115 @@ type Item struct {
 
 	Required: true
 	Min Length: 1
+	Nullable: true
 	*/
-	Description *string `json:"description"`
+	Description string `json:"description"`
 
 	/* id
 
 	Read Only: true
 	*/
 	ID int64 `json:"id,omitempty"`
+}
+
+func (m *Item) FlagCompletedSet() {
+	m.__setValues.Set(0)
+}
+
+func (m *Item) FlagCompletedUnset() {
+	m.__setValues.Clear(0)
+}
+
+func (m *Item) IsCompletedSet() bool {
+	return m.__setValues.Test(0) || m.Completed
+}
+
+func (m *Item) SetCompleted(value bool) {
+	m.FlagCompletedSet()
+	m.Completed = value
+}
+
+func (m *Item) ClearCompleted() {
+	m.FlagCompletedUnset()
+	m.__nulls.Clear(0)
+	m.Completed = false
+}
+
+func (m *Item) GetCompleted() (value bool, haskey bool) {
+	return m.Completed, m.IsCompletedSet()
+}
+
+func (m *Item) GetCompletedPtr() *bool {
+	if !m.IsCompletedSet() {
+		return nil
+	}
+	return &m.Completed
+}
+
+func (m *Item) FlagDescriptionSet() {
+	m.__setValues.Set(1)
+}
+
+func (m *Item) FlagDescriptionUnset() {
+	m.__setValues.Clear(1)
+}
+
+func (m *Item) FlagDescriptionNil() {
+	m.__nulls.Set(1)
+}
+
+func (m *Item) FlagDescriptionZero() {
+	m.__nulls.Clear(1)
+}
+
+func (m *Item) IsDescriptionNil() bool {
+	return nullableItemBitmap.Test(0) && m.__nulls.Test(0)
+}
+
+func (m *Item) IsDescriptionSet() bool {
+	return m.__setValues.Test(0) || m.Completed
+}
+
+func (m *Item) HasDescriptionValue() bool {
+	return m.IsDescriptionSet() && !m.IsDescriptionNil()
+}
+
+func (m *Item) SetDescription(value *string) {
+	m.FlagDescriptionSet()
+	if value == nil {
+		m.FlagDescriptionNil()
+		return
+	}
+	m.Description = *value
+}
+
+func (m *Item) ClearDescription() {
+	m.FlagDescriptionUnset()
+	m.Description = ""
+	m.FlagDescriptionNil()
+}
+
+func (m *Item) GetDescription() (value string, null bool, haskey bool) {
+	return m.Description, nullableItemBitmap.Test(0) && m.__nulls.Test(1), m.__setValues.Test(1) || len(m.Description) > 0
+}
+
+func (m *Item) GetDescriptionPtr() *string {
+	if !m.HasDescriptionValue() {
+		return nil
+	}
+	return &m.Description
+}
+
+func (m *Item) FlagIDSet() {
+	m.__setValues.Set(2)
+}
+
+func (m *Item) IsIDSet() bool {
+	return m.__setValues.Test(2) || m.ID > 0
+}
+func (m *Item) SetID(value int64) {
+	m.FlagDescriptionSet()
+	m.ID = value
 }
 
 // Validate validates this item
@@ -51,13 +171,151 @@ func (m *Item) Validate(formats strfmt.Registry) error {
 
 func (m *Item) validateDescription(formats strfmt.Registry) error {
 
-	if err := validate.Required("description", "body", m.Description); err != nil {
-		return err
+	if !m.HasDescriptionValue() {
+		return errors.Required("description", "body")
 	}
 
-	if err := validate.MinLength("description", "body", string(*m.Description), 1); err != nil {
+	if err := validate.MinLength("description", "body", m.Description, 1); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (m Item) MarshalEasyJSON(out *jwriter.Writer) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	if m.Completed || m.__setValues.Test(0) {
+		if !first {
+			out.RawByte(',')
+		}
+		first = false
+		out.RawString("\"completed\":")
+		if nullableItemBitmap.Test(0) && m.__nulls.Test(0) {
+			out.RawString("null")
+		} else {
+			out.Bool(m.Completed)
+		}
+	}
+	if m.Description != "" || m.__setValues.Test(1) {
+		if !first {
+			out.RawByte(',')
+		}
+		first = false
+		out.RawString("\"description\":")
+		if nullableItemBitmap.Test(1) && m.__nulls.Test(1) {
+			out.RawString("null")
+		} else {
+			out.String(m.Description)
+		}
+	}
+	if m.ID != 0 || m.__setValues.Test(2) {
+		if !first {
+			out.RawByte(',')
+		}
+		first = false
+		out.RawString("\"id\":")
+		if nullableItemBitmap.Test(1) && m.__nulls.Test(1) {
+			out.RawString("null")
+		} else {
+			out.Int64(m.ID)
+		}
+	}
+	out.RawByte('}')
+}
+
+func (m Item) MarshalJSON() ([]byte, error) {
+	out := jwriter.Writer{}
+	m.MarshalEasyJSON(&out)
+	return out.BuildBytes()
+}
+
+func (m *Item) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	m.__nulls = *bitset.New(3)
+	m.__setValues = *bitset.New(3)
+	if in.IsNull() {
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeString()
+		in.WantColon()
+		if in.IsNull() {
+			switch key {
+			case "id":
+				m.ID = 0
+				m.__setValues.Set(2)
+				m.__nulls.Set(2)
+			case "description":
+				m.Description = ""
+				m.__setValues.Set(1)
+				m.__nulls.Set(1)
+			case "completed":
+				m.Completed = false
+				m.__setValues.Set(0)
+				m.__nulls.Set(0)
+			default:
+				in.SkipRecursive()
+			}
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "id":
+			m.ID = in.Int64()
+			m.__setValues.Set(2)
+			m.__nulls.Clear(2)
+		case "description":
+			m.Description = in.String()
+			m.__setValues.Set(1)
+			m.__nulls.Clear(1)
+		case "completed":
+			m.Completed = in.Bool()
+			m.__setValues.Set(0)
+			m.__nulls.Clear(0)
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+}
+
+func (m *Item) UnmarshalJSON(data []byte) error {
+	in := jlexer.Lexer{Data: data}
+	m.UnmarshalEasyJSON(&in)
+	return in.Error()
+}
+
+func (m *Item) PatchWith(other *Item) error {
+	if other.IsCompletedSet() {
+		m.SetCompleted(other.Completed)
+	}
+
+	if other.IsDescriptionSet() {
+		if other.IsDescriptionNil() {
+			other.SetDescription(nil)
+		} else {
+			other.SetDescription(&other.Description)
+		}
+	}
+
+	if other.IsIDSet() {
+		if other.ID == 0 {
+			m.__setValues.Clear(2)
+			m.ID = 0
+		} else {
+			m.SetID(m.ID)
+		}
+	}
+	return nil
+}
+
+func (m *Item) Clone() *Item {
+	n := NewItem()
+	n.PatchWith(m)
+	return n
 }

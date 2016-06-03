@@ -4,7 +4,10 @@ package {{.Package}}
 // Editing this file might prove futile when you re-run the swagger generate command
 
 {{if or .Imports .DefaultImports }}import (
-  strfmt "github.com/go-openapi/strfmt"
+  strfmt  "github.com/go-openapi/strfmt"
+  jlexer  "github.com/mailru/easyjson/jlexer"
+	jwriter "github.com/mailru/easyjson/jwriter"
+	bitset  "github.com/willf/bitset"
 
   {{range .DefaultImports }}{{ printf "%q" .}}
   {{end}}

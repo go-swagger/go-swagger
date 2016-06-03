@@ -1,0 +1,121 @@
+{{ define "schemaSerializer" }}
+var nullable{{ pascalize .Name }}Bitmap bitset.BitSet
+func init() {
+    nullable{{ pascalize .Name}}Bitmap := *bitset.New(noProperties .)
+}
+
+// MarshalJSON marshals this object with additional properties into a JSON object
+func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
+	out := jwriter.Writer{}
+	m.MarshalEasyJSON(&out)
+	return out.BuildBytes()
+}
+
+// MarshalEasyJSON marshals this object with additional properties into a JSON object
+func ({{.ReceiverName}} *{{ pascalize .Name }}) MarshalEasyJSON(out *jwriter.Writer) {
+  out.RawByte('{')
+	first := true
+	_ = first
+  {{ range $index, $prop := .Properties }}
+  if !swag.IsZero({{ $prop.ValueExpression }}) || {{ $.ReceiverName }}.__setValues.Test({{ $index }}) {
+    if !first {
+      out.RawByte(',')
+    }
+    first = false
+		out.RawString("\"{{ $prop.Name }}\":")
+		{{ if $prop.IsNullable }}if {{ $.ReceiverName }}.__nulls.Test({{ $index }}) {
+			out.RawString("null")
+		} else {
+			{{ end }}out.{{ $prop.JSONOut }}({{ $prop.ValueExpression }}){{ if $prop.IsNullable }}
+		}{{ end }}
+  }
+  {{ end }}{{ $propLen := (len .Properties) }}{{ range $index, $prop := .AllOf }}
+  if !swag.IsZero({{ $prop.ValueExpression }}) || {{ $.ReceiverName }}.__setValues.Test({{ $index }} + {{ $propLen }}) {
+    if !first {
+      out.RawByte(',')
+    }
+    first = false
+		{{ if $prop.IsNullable }}if {{ $.ReceiverName }}.__nulls.Test({{ $index }} + {{ $propLen }}) {
+			out.RawString("null")
+		} else {
+			{{ end }}out.{{ $prop.JSONOut }}({{ $prop.ValueExpression }}){{ if $prop.IsNullable }}
+		}{{ end }}
+  }
+  {{ end }}
+  out.RawByte('}')
+}
+
+// UnmarshalEasyJSON unmarshals this object with additional properties from JSON
+func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalEasyJSON(in *jlexer.Lexer) {
+  m.__nulls = *bitset.New({{ noProperties . }})
+	m.__setValues = *bitset.New({{ noProperties . }})
+	if in.IsNull() {
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+  for !in.IsDelim('}') {
+		key := in.UnsafeString()
+		in.WantColon()
+		if in.IsNull() {
+			switch key {
+      {{ $propLen := (noProperties .) }}{{ range $index, $prop := .Properties }}
+      case {{ printf "%q" $prop.Name }}:
+        {{ $.ReceiverName }}.{{ pascalize $prop.Name }} = {{ $prop.ZeroValue }}
+        {{ $.ReceiverName }}.__setValues.Set({{ $index }})
+        {{ $.ReceiverName }}.__nulls.Set({{ $index }})
+      {{ end }}{{ if .AdditionalProperties }}
+        {{ $.ReceiverName }}.{{ pascalize .AdditionalProperties.Name }} = in.{{ .AdditionalProperties.JSONIn }}()
+        {{ $.ReceiverName }}.__setValues.Set({{ $propLen }}{{ if .AdditionalItems }} - 1{{ end }})
+        {{ $.ReceiverName }}.__nulls.Set({{ $propLen }}{{ if .AdditionalItems }} - 1{{ end }})
+      {{ end }}{{ if .AdditionalItems }}
+        {{ $.ReceiverName }}.{{ pascalize .AdditionalItems.Name }} = in.{{ .AdditionalItems.JSONIn }}()
+        {{ $.ReceiverName }}.__setValues.Set({{ $propLen }})
+        {{ $.ReceiverName }}.__nulls.Set({{ $propLen }})
+      {{ end }}
+			default:
+				in.SkipRecursive()
+			}
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+    {{ range $index, $prop := .Properties }}
+    case {{ printf "%q" $prop.Name }}:
+      {{ $.ReceiverName }}.{{ pascalize $prop.Name }} = in.{{ $prop.JSONIn }}()
+      {{ $.ReceiverName }}.__setValues.Set({{ $index }})
+      {{ $.ReceiverName }}.__nulls.Clear({{ $index }})
+    {{ end }}{{ if .AdditionalProperties }}
+      {{ $.ReceiverName }}.{{ pascalize .AdditionalProperties.Name }} = in.{{ .AdditionalProperties.JSONIn }}()
+      {{ $.ReceiverName }}.__setValues.Set({{ $propLen }}{{ if .AdditionalItems }} - 1{{ end }})
+      {{ $.ReceiverName }}.__nulls.Clear({{ $propLen }}{{ if .AdditionalItems }} - 1{{ end }})
+    {{ end }}{{ if .AdditionalItems }}
+      {{ $.ReceiverName }}.{{ pascalize .AdditionalItems.Name }} = in.{{ .AdditionalItems.JSONIn }}()
+      {{ $.ReceiverName }}.__setValues.Set({{ $propLen }})
+      {{ $.ReceiverName }}.__nulls.Clear({{ $propLen }})
+    {{ end }}
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+  in.Delim('}')
+}
+
+// UnmarshalJSON unmarshals this object with additional properties from JSON
+func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(data []byte) error {
+  in := jlexer.Lexer{Data: data}
+	m.UnmarshalEasyJSON(&in)
+	return in.Error()
+}
+{{ end }}
+{{ define "schemaSerializer2" }}{{ if .IsSubType }}
+{{ if not .HasBaseType }}{{ template "discriminatedSerializer" . }}{{ end}}
+{{ else if .IsTuple }}
+{{ template "tupleSerializer" . }}
+{{ else if .IsAdditionalProperties }}
+{{ template "additionalPropertiesSerializer" . }}
+{{ else if .HasBaseType }}
+{{ template "hasDiscriminatedSerializer" . }}
+{{ end }}{{ end }}
