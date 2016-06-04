@@ -21,6 +21,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/mailru/easyjson/jlexer"
+	"github.com/mailru/easyjson/jwriter"
 )
 
 func init() {
@@ -140,4 +143,31 @@ func (d Duration) Value() (driver.Value, error) {
 // String converts this duration to a string
 func (d Duration) String() string {
 	return time.Duration(d).String()
+}
+
+func (d Duration) MarshalJSON() ([]byte, error) {
+	var w jwriter.Writer
+	d.MarshalEasyJSON(&w)
+	return w.BuildBytes()
+}
+
+func (d Duration) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(time.Duration(d).String())
+}
+
+func (d *Duration) UnmarshalJSON(data []byte) error {
+	l := jlexer.Lexer{Data: data}
+	d.UnmarshalEasyJSON(&l)
+	return l.Error()
+}
+
+func (d *Duration) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	if data := in.String(); in.Ok() {
+		tt, err := ParseDuration(data)
+		if err != nil {
+			in.AddError(err)
+			return
+		}
+		*d = Duration(tt)
+	}
 }

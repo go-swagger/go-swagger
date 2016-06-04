@@ -32,4 +32,21 @@ definitions:
         type: integer
       name:
         type: string
+      url:
+        type: string
+        format: uri
+  Categories:
+    type: array
+    items:
+      $ref: "#/definitions/Category"
+  Product:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      categories:
+        $ref: "#/definitions/Categories"
+
 

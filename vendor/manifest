@@ -67,7 +67,7 @@
 			"importpath": "github.com/go-openapi/loads",
 			"repository": "https://github.com/go-openapi/loads",
 			"vcs": "git",
-			"revision": "3a4490f96e6ea1ba7d66602e70ffca0fc26aa6ca",
+			"revision": "0373f679067ace1c3c2847ed12a254da762eb134",
 			"branch": "master",
 			"notests": true
 		},
@@ -91,7 +91,7 @@
 			"importpath": "github.com/go-openapi/strfmt",
 			"repository": "https://github.com/go-openapi/strfmt",
 			"vcs": "git",
-			"revision": "66a99d45c3043d45d346b1c8db5dc2f76a004869",
+			"revision": "ee18223ddf9edc003ada64c20cbf0c59843f00b8",
 			"branch": "master",
 			"notests": true
 		},
@@ -99,7 +99,7 @@
 			"importpath": "github.com/go-openapi/swag",
 			"repository": "https://github.com/go-openapi/swag",
 			"vcs": "git",
-			"revision": "f8ab07bb33bb43a743eb65daf0588ab522e5160f",
+			"revision": "88b859f30eb606a72fbb0ff6b2cc5825a57c9ea3",
 			"branch": "master",
 			"notests": true
 		},
@@ -160,13 +160,6 @@
 			"notests": true
 		},
 		{
-			"importpath": "github.com/naoina/denco",
-			"repository": "https://github.com/naoina/denco",
-			"vcs": "git",
-			"revision": "9af2ba0e24214bac003821f4a501b131b2e04c75",
-			"branch": "master"
-		},
-		{
 			"importpath": "github.com/opennota/urlesc",
 			"repository": "https://github.com/opennota/urlesc",
 			"vcs": "git",
@@ -193,7 +186,7 @@
 			"importpath": "github.com/tylerb/graceful",
 			"repository": "https://github.com/tylerb/graceful",
 			"vcs": "git",
-			"revision": "bffe07886e519361228b315595ca8041f0733ce3",
+			"revision": "b7ee2e3bb6dd998011df0a6b0818106416419f84",
 			"branch": "master"
 		},
 		{
@@ -224,7 +217,7 @@
 			"importpath": "golang.org/x/tools/go/ast/astutil",
 			"repository": "https://go.googlesource.com/tools",
 			"vcs": "git",
-			"revision": "19c2ab042a80921dcba430d996ddfa7c0a53224c",
+			"revision": "b41cbfc0fac050e3a416b4f51df202a101cd2aa5",
 			"branch": "master",
 			"path": "/go/ast/astutil"
 		},
@@ -232,7 +225,7 @@
 			"importpath": "golang.org/x/tools/go/buildutil",
 			"repository": "https://go.googlesource.com/tools",
 			"vcs": "git",
-			"revision": "19c2ab042a80921dcba430d996ddfa7c0a53224c",
+			"revision": "b41cbfc0fac050e3a416b4f51df202a101cd2aa5",
 			"branch": "master",
 			"path": "/go/buildutil"
 		},
@@ -240,7 +233,7 @@
 			"importpath": "golang.org/x/tools/go/loader",
 			"repository": "https://go.googlesource.com/tools",
 			"vcs": "git",
-			"revision": "19c2ab042a80921dcba430d996ddfa7c0a53224c",
+			"revision": "b41cbfc0fac050e3a416b4f51df202a101cd2aa5",
 			"branch": "master",
 			"path": "/go/loader"
 		},
@@ -248,7 +241,7 @@
 			"importpath": "golang.org/x/tools/imports",
 			"repository": "https://go.googlesource.com/tools",
 			"vcs": "git",
-			"revision": "19c2ab042a80921dcba430d996ddfa7c0a53224c",
+			"revision": "b41cbfc0fac050e3a416b4f51df202a101cd2aa5",
 			"branch": "master",
 			"path": "/imports"
 		},
