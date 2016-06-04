@@ -48,5 +48,15 @@ definitions:
         type: string
       categories:
         $ref: "#/definitions/Categories"
+  ProductLine:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      category:
+        $ref: "#/definitions/Category"
+
 
 

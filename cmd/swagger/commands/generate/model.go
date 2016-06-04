@@ -18,6 +18,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/go-swagger/go-swagger/generator"
 )
@@ -51,7 +52,12 @@ func (m *Model) Execute(args []string) error {
 		return err
 	}
 
-	fmt.Fprintln(os.Stderr, `Generation completed!
+	rp, err := filepath.Rel(".", opts.Target)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(os.Stderr, `Generation completed!
 
 For this generation to compile you need to have some packages in your GOPATH:
 
@@ -60,7 +66,8 @@ For this generation to compile you need to have some packages in your GOPATH:
 	* github.com/mailru/easyjson/jwriter
 	* github.com/willf/bitset
 
-`)
+You can get these now with: go get -u -f %s/...
+`, rp)
 
 	return nil
 }

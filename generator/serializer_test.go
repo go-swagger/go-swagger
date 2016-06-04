@@ -151,3 +151,135 @@ func TestSerializer_Categories(t *testing.T) {
 		}
 	}
 }
+
+func TestSerializer_Product(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.serializers.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["Product"]
+		genModel, err := makeGenDefinition("Product", "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			assert.True(t, genModel.IsComplexObject)
+			assert.Equal(t, "Product", genModel.Name)
+			assert.Equal(t, "Product", genModel.GoType)
+			// pretty.Println(genModel)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, _ := formatGoFile("product.go", buf.Bytes())
+				// fmt.Println(string(ct))
+				if assert.NoError(t, err) {
+					res := string(ct)
+					// fmt.Println(res)
+					assertInCode(t, "type Product struct {", res)
+
+					assertInCode(t, "ID int64 `json:\"id,omitempty\"`", res)
+					assertInCode(t, "out.RawString(\"\\\"id\\\":\")", res)
+					assertInCode(t, "idWriteFn := func(value int64, out *jwriter.Writer) error", res)
+					assertInCode(t, "out.Int64(value)", res)
+					assertInCode(t, "if err := idWriteFn(m.ID, out); err != nil", res)
+					assertInCode(t, "m.ID = 0", res)
+					assertInCode(t, "idValueFn := func(in *jlexer.Lexer) (int64, error) {", res)
+					assertInCode(t, "return in.String(), nil", res)
+					assertInCode(t, "if idValue, err := idValueFn(in); err != nil", res)
+					assertInCode(t, "m.ID = idValue", res)
+
+					assertInCode(t, "Name string `json:\"name,omitempty\"`", res)
+					assertInCode(t, "out.RawString(\"\\\"name\\\":\")", res)
+					assertInCode(t, "nameWriteFn := func(value string, out *jwriter.Writer) error", res)
+					assertInCode(t, "out.String(value)", res)
+					assertInCode(t, "if err := nameWriteFn(m.Name, out); err != nil", res)
+					assertInCode(t, "m.Name = \"\"", res)
+					assertInCode(t, "nameValueFn := func(in *jlexer.Lexer) (string, error) {", res)
+					assertInCode(t, "return in.String(), nil", res)
+					assertInCode(t, "if nameValue, err := nameValueFn(in); err != nil", res)
+					assertInCode(t, "m.Name = nameValue", res)
+
+					assertInCode(t, "Categories Categories `json:\"categories,omitempty\"`", res)
+					assertInCode(t, "out.RawString(\"\\\"categories\\\":\")", res)
+					assertInCode(t, "categoriesWriteFn := func(value Categories, out *jwriter.Writer) error", res)
+					assertInCode(t, "b, err := swag.WriteJSON(value)", res)
+					assertInCode(t, "out.Raw(b, nil)", res)
+					assertInCode(t, "if err := categoriesWriteFn(m.Categories, out); err != nil", res)
+					assertInCode(t, "m.Categories = nil", res)
+					assertInCode(t, "categoriesValueFn := func(in *jlexer.Lexer) (Categories, error) {", res)
+					assertInCode(t, "var result Categories", res)
+					assertInCode(t, "if data := in.Raw(); in.Ok()", res)
+					assertInCode(t, "if err := swag.ReadJSON(data, &result)", res)
+					assertInCode(t, "if categoriesValue, err := categoriesValueFn(in); err != nil", res)
+					assertInCode(t, "m.Categories = categoriesValue", res)
+				} else {
+					fmt.Println(string(ct))
+				}
+			} else {
+				fmt.Println(buf.String())
+			}
+		}
+	}
+}
+
+func TestSerializer_ProductLine(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.serializers.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["ProductLine"]
+		genModel, err := makeGenDefinition("ProductLine", "models", schema, specDoc)
+		if assert.NoError(t, err) {
+			assert.True(t, genModel.IsComplexObject)
+			assert.Equal(t, "ProductLine", genModel.Name)
+			assert.Equal(t, "ProductLine", genModel.GoType)
+			// pretty.Println(genModel)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, _ := formatGoFile("product_line.go", buf.Bytes())
+				// fmt.Println(string(ct))
+				if assert.NoError(t, err) {
+					res := string(ct)
+					// fmt.Println(res)
+					assertInCode(t, "type ProductLine struct {", res)
+
+					assertInCode(t, "ID int64 `json:\"id,omitempty\"`", res)
+					assertInCode(t, "out.RawString(\"\\\"id\\\":\")", res)
+					assertInCode(t, "idWriteFn := func(value int64, out *jwriter.Writer) error", res)
+					assertInCode(t, "out.Int64(value)", res)
+					assertInCode(t, "if err := idWriteFn(m.ID, out); err != nil", res)
+					assertInCode(t, "m.ID = 0", res)
+					assertInCode(t, "idValueFn := func(in *jlexer.Lexer) (int64, error) {", res)
+					assertInCode(t, "return in.String(), nil", res)
+					assertInCode(t, "if idValue, err := idValueFn(in); err != nil", res)
+					assertInCode(t, "m.ID = idValue", res)
+
+					assertInCode(t, "Name string `json:\"name,omitempty\"`", res)
+					assertInCode(t, "out.RawString(\"\\\"name\\\":\")", res)
+					assertInCode(t, "nameWriteFn := func(value string, out *jwriter.Writer) error", res)
+					assertInCode(t, "out.String(value)", res)
+					assertInCode(t, "if err := nameWriteFn(m.Name, out); err != nil", res)
+					assertInCode(t, "m.Name = \"\"", res)
+					assertInCode(t, "nameValueFn := func(in *jlexer.Lexer) (string, error) {", res)
+					assertInCode(t, "return in.String(), nil", res)
+					assertInCode(t, "if nameValue, err := nameValueFn(in); err != nil", res)
+					assertInCode(t, "m.Name = nameValue", res)
+
+					assertInCode(t, "Category *Category `json:\"category,omitempty\"`", res)
+					assertInCode(t, "out.RawString(\"\\\"category\\\":\")", res)
+					assertInCode(t, "categoryWriteFn := func(value *Category, out *jwriter.Writer) error", res)
+					assertInCode(t, "b, err := swag.WriteJSON(value)", res)
+					assertInCode(t, "out.Raw(b, nil)", res)
+					assertInCode(t, "if err := categoryWriteFn(m.Category, out); err != nil", res)
+					assertInCode(t, "m.Category = nil", res)
+					assertInCode(t, "categoryValueFn := func(in *jlexer.Lexer) (*Category, error) {", res)
+					assertInCode(t, "var result Category", res)
+					assertInCode(t, "if data := in.Raw(); in.Ok()", res)
+					assertInCode(t, "if err := swag.ReadJSON(data, &result)", res)
+					assertInCode(t, "if categoryValue, err := categoryValueFn(in); err != nil", res)
+					assertInCode(t, "m.Category = categoryValue", res)
+				} else {
+					fmt.Println(string(ct))
+				}
+			} else {
+				fmt.Println(buf.String())
+			}
+		}
+	}
+}

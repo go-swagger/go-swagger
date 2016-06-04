@@ -73,19 +73,13 @@ in.Delim(']')
 {{ define "schemaSerializer" }}
 {{ if or .IsComplexObject .IsTuple .IsAdditionalProperties }}{{ template "schemaObjectSerializer" . }}
 {{ else if .IsArray }}{{ template "schemaSliceSerializer" . }}
-{{ else if .IsCustomFormatter }}{{ template "schemaStrfmtSerializer" . }}
-{{ else }}{{ .JSONOut }}
+{{ else if .IsCustomFormatter }}{{ else }}{{ .JSONOut }}
 {{ end }}{{ end }}
 {{ define "schemaDeserializer" }}
 {{ if or .IsComplexObject .IsTuple .IsAdditionalProperties }}{{ template "schemaObjectDeserializer" . }}
 {{ else if .IsArray }}{{ template "schemaSliceDeserializer" . }}
-{{ else if .IsCustomFormatter }}{{ template "schemaStrfmtDeserializer" . }}
-{{ else }}{{ .JSONIn }}
+{{ else if .IsCustomFormatter }}{{ else }}{{ .JSONIn }}
 {{ end }}{{ end }}
-{{ define "schemaStrfmtSerializer" }}
-{{ end }}
-{{ define "schemaStrfmtDeserializer" }}
-{{ end }}
 {{ define "schemaSliceSerializer" }}
 out.RawByte('[')
 {{ camelize .Name }}ItemsFn := {{ template "schemaValueSerializer" .Items }}
@@ -138,15 +132,15 @@ for !in.IsDelim('}') {
     switch key {
     {{ range $index, $prop := .Properties }}
     case {{ printf "%q" $prop.Name }}:
-      {{ $prop.ValueExpression }} = {{ $prop.Zero }}
+      {{ $prop.ValueExpression }} = {{ if or $prop.IsNullable $prop.IsArray }}nil{{ else }}{{ $prop.Zero }}{{ end }}
       {{ $.ReceiverName }}.__setValues.Set({{ $index }})
       {{ $.ReceiverName }}.__nulls.Set({{ $index }})
     {{ end }}{{ if .AdditionalProperties }}
-      {{ .AdditionalProperties.ValueExpression }} = {{ .AdditionalProperties.Zero }}
+      {{ .AdditionalProperties.ValueExpression }} = {{ if or .AdditionalProperties.IsNullable .AdditionalProperties.IsArray }}nil{{ else }}{{ .AdditionalProperties.Zero }}{{ end }}
       {{ $.ReceiverName }}.__setValues.Set({{ $propLen }}{{ if .AdditionalItems }} - 1{{ end }})
       {{ $.ReceiverName }}.__nulls.Set({{ $propLen }}{{ if .AdditionalItems }} - 1{{ end }})
     {{ end }}{{ if .AdditionalItems }}
-      {{ .AdditionalItems.ValueExpression }} = {{ .AdditionalItems.Zero }}
+      {{ .AdditionalItems.ValueExpression }} = {{ if or .AdditionalItems.IsNullable .AdditionalItems.IsArray }}nil{{ else }}{{ .AdditionalItems.Zero }}{{ end }}
       {{ $.ReceiverName }}.__setValues.Set({{ $propLen }})
       {{ $.ReceiverName }}.__nulls.Set({{ $propLen }})
     {{ end }}
