@@ -32,6 +32,7 @@ import (
 )
 
 /*
+
 Rewrite specification document first:
 
 * anonymous objects
@@ -42,7 +43,6 @@ Rewrite specification document first:
 Find string enums and generate specialized idiomatic enum with them
 
 Every action that happens tracks the path which is a linked list of refs
-
 
 */
 

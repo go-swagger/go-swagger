@@ -36,23 +36,21 @@ func (m *Model) Execute(args []string) error {
 	if m.DumpData && len(m.Name) > 1 {
 		return errors.New("only 1 model at a time is supported for dumping data")
 	}
-	err := generator.GenerateDefinition(
-		m.Name,
-		!m.NoStruct,
-		!m.NoValidator,
-		generator.GenOpts{
-			Spec:          string(m.Spec),
-			Target:        string(m.Target),
-			APIPackage:    m.APIPackage,
-			ModelPackage:  m.ModelPackage,
-			ServerPackage: m.ServerPackage,
-			ClientPackage: m.ClientPackage,
-			DumpData:      m.DumpData,
-			TemplateDir:   string(m.TemplateDir),
-		})
-	if err != nil {
+	opts := generator.GenOpts{
+		Spec:          string(m.Spec),
+		Target:        string(m.Target),
+		APIPackage:    m.APIPackage,
+		ModelPackage:  m.ModelPackage,
+		ServerPackage: m.ServerPackage,
+		ClientPackage: m.ClientPackage,
+		DumpData:      m.DumpData,
+		TemplateDir:   string(m.TemplateDir),
+	}
+
+	if err := generator.GenerateDefinition(m.Name, !m.NoStruct, !m.NoValidator, opts); err != nil {
 		return err
 	}
+
 	fmt.Fprintln(os.Stderr, `Generation completed!
 
 For this generation to compile you need to have some packages in your GOPATH:

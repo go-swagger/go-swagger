@@ -15,6 +15,9 @@
 package generate
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/go-swagger/go-swagger/generator"
 	"github.com/jessevdk/go-flags"
 )
@@ -71,5 +74,21 @@ func (s *Server) Execute(args []string) error {
 		DumpData:          s.DumpData,
 	}
 
-	return generator.GenerateServer(s.Name, s.Models, s.Operations, opts)
+	if err := generator.GenerateServer(s.Name, s.Models, s.Operations, opts); err != nil {
+		return err
+	}
+
+	fmt.Fprintln(os.Stderr, `Generation completed!
+
+For this generation to compile you need to have some packages in your GOPATH:
+
+  * github.com/go-openapi/runtime
+	* github.com/mailru/easyjson/jlexer
+	* github.com/mailru/easyjson/jwriter
+	* github.com/willf/bitset
+	* golang.org/x/net/context
+
+`)
+
+	return nil
 }

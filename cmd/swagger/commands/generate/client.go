@@ -14,7 +14,12 @@
 
 package generate
 
-import "github.com/go-swagger/go-swagger/generator"
+import (
+	"fmt"
+	"os"
+
+	"github.com/go-swagger/go-swagger/generator"
+)
 
 // Client the command to generate a swagger client
 type Client struct {
@@ -55,6 +60,19 @@ func (c *Client) Execute(args []string) error {
 	if err := generator.GenerateClient(c.Name, c.Models, c.Operations, opts); err != nil {
 		return err
 	}
+
+	fmt.Fprintln(os.Stderr, `Generation completed!
+
+For this generation to compile you need to have some packages in your GOPATH:
+
+  * github.com/go-openapi/runtime
+	* github.com/mailru/easyjson/jlexer
+	* github.com/mailru/easyjson/jwriter
+	* github.com/willf/bitset
+	* golang.org/x/net/context
+	* golang.org/x/net/context/ctxhttp
+
+`)
 
 	return nil
 }

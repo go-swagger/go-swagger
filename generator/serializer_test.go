@@ -61,6 +61,7 @@ func TestSerializer_Category(t *testing.T) {
 				ct, _ := formatGoFile("category.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
+					fmt.Println(res)
 					assertInCode(t, "type Category struct {", res)
 					assertInCode(t, "ID int64 `json:\"id,omitempty\"`", res)
 					assertInCode(t, "out.RawString(\"\\\"id\\\":\")", res)
