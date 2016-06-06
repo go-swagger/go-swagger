@@ -11,13 +11,11 @@ import (
 	flags "github.com/jessevdk/go-flags"
 	graceful "github.com/tylerb/graceful"
 
-  {{ range .DefaultImports }}{{ printf "%q" . }}
+  {{ range $key, $value := .DefaultImports }}{{ printf "%s %q" $key $value }}
   {{ end }}
   {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
   {{ end }}
 )
-
-//go:generate swagger generate server -t ../.. -A {{ pascalize .Name }} -f ./swagger.yml
 
 // NewServer creates a new api {{ humanize .Name }} server but does not configure it
 func NewServer(api *{{ .Package }}.{{ pascalize .Name }}API) *Server {

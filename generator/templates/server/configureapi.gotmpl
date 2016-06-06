@@ -10,7 +10,7 @@ import (
   middleware "github.com/go-openapi/runtime/middleware"
   "golang.org/x/net/context"
 
-  {{range .DefaultImports}}{{printf "%q" .}}
+  {{ range $key, $value := .DefaultImports }}{{ printf "%s %q" $key $value }}
   {{end}}
   {{range $key, $value := .Imports}}{{$key}} {{ printf "%q" $value}}
   {{end}}

@@ -122,6 +122,7 @@ func TestSerializer_Categories(t *testing.T) {
 			// pretty.Println(genModel)
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)
+			fmt.Println(buf.String())
 			if assert.NoError(t, err) {
 				ct, _ := formatGoFile("categories.go", buf.Bytes())
 				// fmt.Println(string(ct))

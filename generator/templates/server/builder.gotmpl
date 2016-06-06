@@ -15,7 +15,7 @@ import (
   middleware "github.com/go-openapi/runtime/middleware"{{ if .SecurityDefinitions }}
   security "github.com/go-openapi/runtime/security"{{ end }}
 
-  {{ range .DefaultImports }}{{ printf "%q" . }}
+  {{ range $key, $value := .DefaultImports }}{{ printf "%s %q" $key $value }}
   {{ end }}
   {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
   {{ end }}

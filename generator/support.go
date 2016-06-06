@@ -269,11 +269,8 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 	}
 
 	importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage))
-	app.DefaultImports = append(
-		app.DefaultImports,
-		filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage)),
-		importPath,
-	)
+	app.DefaultImports[a.ServerPackage] = filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage))
+	app.DefaultImports[a.APIPackage] = importPath
 
 	if err := a.generateAPIBuilder(app); err != nil {
 		return err
@@ -586,7 +583,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	sw := a.SpecDoc.Spec()
 	receiver := a.Receiver
 
-	var defaultImports []string
+	var defaultImports map[string]string
 
 	jsonb, _ := json.MarshalIndent(sw, "", "  ")
 
@@ -600,8 +597,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	security := a.makeSecuritySchemes()
 
 	var genMods []GenDefinition
-	importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ModelsPackage))
-	defaultImports = append(defaultImports, importPath)
+	defaultImports = map[string]string{a.ModelsPackage: filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ModelsPackage))}
 
 	log.Println("planning definitions")
 	for mn, m := range a.Models {
@@ -665,7 +661,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	}
 	for k := range tns {
 		importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage, swag.ToFileName(k)))
-		defaultImports = append(defaultImports, importPath)
+		defaultImports[swag.ToFileName(k)] = importPath
 	}
 	sort.Sort(genOps)
 
@@ -684,18 +680,16 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		opGroup := GenOperationGroup{
 			Name:           k,
 			Operations:     v,
-			DefaultImports: []string{filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ModelsPackage))},
+			DefaultImports: map[string]string{a.ModelsPackage: filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ModelsPackage))},
 			RootPackage:    a.APIPackage,
 			WithContext:    a.GenOpts != nil && a.GenOpts.WithContext,
 		}
 		opGroups = append(opGroups, opGroup)
-		var importPath string
 		if k == a.APIPackage {
-			importPath = filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage))
+			defaultImports[a.APIPackage] = filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage))
 		} else {
-			importPath = filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage, k))
+			defaultImports[k] = filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage, k))
 		}
-		defaultImports = append(defaultImports, importPath)
 	}
 	sort.Sort(opGroups)
 
