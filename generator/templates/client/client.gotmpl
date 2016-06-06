@@ -52,7 +52,8 @@ func (a *Client) {{ pascalize .Name }}(params *{{ pascalize .Name }}Params{{ if 
     ConsumesMediaTypes: {{ printf "%#v" .ConsumesMediaTypes }},
     Schemes: {{ printf "%#v" .Schemes }},
     Params: params,
-    Reader: &{{ pascalize .Name }}Reader{formats: a.formats{{ if .HasStreamingResponse }}, writer: writer{{ end }}},{{ if .Authorized }}
+    Reader: &{{ pascalize .Name }}Reader{formats: a.formats{{ if .HasStreamingResponse }}, writer: writer{{ end }}},
+    Context: params.Context,{{ if .Authorized }}
     AuthInfo: authInfo,{{ end}}
   })
   if err != nil {

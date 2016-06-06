@@ -216,6 +216,7 @@ func (m Item) MarshalEasyJSON(out *jwriter.Writer) {
 		}
 		first = false
 		out.RawString("\"id\":")
+		out.Float32
 		if nullableItemBitmap.Test(1) && m.__nulls.Test(1) {
 			out.RawString("null")
 		} else {

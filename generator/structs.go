@@ -35,19 +35,20 @@ func (g GenSchemaList) Less(i, j int) bool { return g[i].Name < g[j].Name }
 type GenSchema struct {
 	resolvedType
 	sharedValidations
-	Example                 string
-	Name                    string
-	Suffix                  string
-	Path                    string
-	ValueExpression         string
-	IndexVar                string
-	KeyVar                  string
-	Title                   string
-	Description             string
-	Location                string
-	ReceiverName            string
-	Items                   *GenSchema
-	AllowsAdditionalItems   bool
+	Example               string
+	Name                  string
+	Suffix                string
+	Path                  string
+	ValueExpression       string
+	IndexVar              string
+	KeyVar                string
+	Title                 string
+	Description           string
+	Location              string
+	ReceiverName          string
+	Items                 *GenSchema
+	AllowsAdditionalItems bool
+	// IsAdditionalItems       bool
 	HasAdditionalItems      bool
 	AdditionalItems         *GenSchema
 	Object                  *GenSchema
@@ -338,6 +339,22 @@ type GenOperation struct {
 	ProducesMediaTypes []string
 	ConsumesMediaTypes []string
 	WithContext        bool
+}
+
+// HasStreamingResponse returns true when this operation has a streaming response
+func (o *GenOperation) HasStreamingResponse() bool {
+	if o.DefaultResponse != nil && o.DefaultResponse.Schema != nil && o.DefaultResponse.Schema.IsStream {
+		return true
+	}
+	if o.SuccessResponse != nil && o.SuccessResponse.Schema != nil && o.SuccessResponse.Schema.IsStream {
+		return true
+	}
+	for _, k := range o.Responses {
+		if k.Schema != nil && k.Schema.IsStream {
+			return true
+		}
+	}
+	return false
 }
 
 // GenOperations represents a list of operations to generate

@@ -22,39 +22,67 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) MarshalEasyJSON(out *jwriter.Wri
 func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalEasyJSON(in *jlexer.Lexer) {
   {{ template "schemaDeserializer" . }}
 }
+{{ range .Properties }}
+func ({{ $.ReceiverName}} *{{ pascalize $.Name }}) {{ camelize .Name }}{{ pascalize .IndexVar }}WriteJSON(value {{ template "schemaType" . }}, out *jwriter.Writer) error {
+   {{ template "schemaValueSerializerBody" . }}
+}
+func ({{ $.ReceiverName}} *{{ pascalize $.Name }}) {{ camelize .Name }}{{ pascalize .IndexVar }}ReadJSON(in *jlexer.Lexer) ({{ template "schemaType" . }}, error) {
+   {{ template "schemaValueDeserializerBody" . }}
+}
+{{ end }}
+{{ if .AdditionalProperties }}
+func ({{ $.ReceiverName}} *{{ pascalize $.Name }}) {{ camelize .Name }}{{ pascalize .IndexVar }}WriteJSON(value {{ template "schemaType" . }}, out *jwriter.Writer) error {
+   {{ template "schemaValueSerializerBody" . }}
+}
+func ({{ $.ReceiverName}} *{{ pascalize $.Name }}) {{ camelize .Name }}{{ pascalize .IndexVar }}ReadJSON(in *jlexer.Lexer) ({{ template "schemaType" . }}, error) {
+   {{ template "schemaValueDeserializerBody" . }}
+}
+{{ end }}
+{{ if .AdditionalItems }}
+func ({{ $.ReceiverName}} *{{ pascalize $.Name }}) {{ camelize .AdditionalItems.Name }}{{ pascalize .AdditionalItems.IndexVar }}WriteJSON(value {{ template "schemaType" .AdditionalItems }}, out *jwriter.Writer) error {
+   {{ template "schemaValueSerializerBody" . }}
+}
+func ({{ $.ReceiverName}} *{{ pascalize $.Name }}) {{ camelize .Name }}{{ pascalize .IndexVar }}ReadJSON(in *jlexer.Lexer) ({{ template "schemaType" . }}, error) {
+   {{ template "schemaValueDeserializerBody" . }}
+}
+{{ end }}
 {{ end }}
 {{ define "schemaValueSerializer" }}func(value {{ template "schemaType" . }}, out *jwriter.Writer) error {
-  {{ if or .IsComplexObject .IsTuple .IsAdditionalProperties .IsAliased .IsCustomFormatter }}b, err := swag.WriteJSON(value)
-  if err != nil {
-    return error
-  }
-  out.Raw(b, nil){{ else if .IsArray }}out.RawByte('[')
-    for i, v := range {{ .ValueExpression }} {
+  {{ template "schemaValueSerializerBody" . }}
+}{{ end }}
+{{ define "schemaValueSerializerBody" }}
+{{ if or .IsComplexObject .IsTuple .IsAdditionalProperties .IsAliased .IsCustomFormatter }}out.Raw(swag.WriteJSON(value)){{ else if .IsArray }}out.RawByte('[')
+    for i, v := range value {
       if i > 0 {
         out.RawByte(',')
       }
-      {{ .IndexVar }}Fn := {{ template "schemaValueSerializer" .Items }}
+      {{ .IndexVar }}Fn :=  {{ if .AdditionalItems }}{{ template "schemaValueSerializer" .AdditionalItems }}{{ else }}{{ template "schemaValueSerializer" .Items }}{{ end }}
       if err := {{ .IndexVar }}Fn(v, out); err != nil {
         return err
       }
     }
     out.RawByte(']')
-  {{ else }}{{ .JSONOut }}(value){{ end }}
-  return nil
-}{{ end }}
+  {{ else }}{{ if .IsNullable }}if value == nil {
+    out.RawString("null")
+  } else {
+    {{ end }}{{ .JSONOut }}(value){{ if .IsNullable }}
+  }{{ end }}{{ end }}
+  return nil{{ end }}
 {{ define "schemaValueDeserializer" }}func(in *jlexer.Lexer) ({{ template "schemaType" . }}, error) {
-{{ if or .IsComplexObject .IsTuple .IsAdditionalProperties .IsAliased .IsCustomFormatter }}var result {{ template "dereffedSchemaType" . }}
+  {{ template "schemaValueDeserializerBody" . }}
+}{{ end }}
+{{ define "schemaValueDeserializerBody" }}{{ if or .IsComplexObject .IsTuple .IsAdditionalProperties .IsAliased .IsCustomFormatter }}var result {{ template "dereffedSchemaType" . }}
 if data := in.Raw(); in.Ok() {
   if err := swag.ReadJSON(data, &result); err != nil {
     return {{ if .IsNullable }}nil{{ else }}{{ .Zero }}{{ end }}, err
   }
 }
 return {{ if .IsNullable }}&{{ end }}result, nil
-{{ else if .IsArray }}var result []{{ template "schemaType" .Items }}
-{{ .IndexVar }}ReadFn := {{ template "schemaValueDeserializer" .Items }}
+{{ else if .IsArray }}{{ .IndexVar }}ReadFn := {{ if .AdditionalItems }}{{ template "schemaValueDeserializer" .AdditionalItems }}{{ else }}{{ template "schemaValueDeserializer" .Items }}{{ end }}
+var result []{{ if .AdditionalItems }}{{ template "schemaType" .AdditionalItems }}{{ else }}{{ template "schemaType" .Items }}{{ end }}
 in.Delim('[')
 if !in.IsDelim(']') {
-  result = make([]{{ template "schemaType" .Items }}, 0, 64)
+  result = make([]{{ if .AdditionalItems }}{{ template "schemaType" .AdditionalItems }}{{ else }}{{ template "schemaType" .Items }}{{ end }}, 0, 64)
 } else {
   result = nil
 }
@@ -68,8 +96,11 @@ for !in.IsDelim(']') {
   in.WantComma()
 }
 in.Delim(']')
-{{ else }}return {{ .JSONIn }}, nil{{ end }}
-}{{ end }}
+{{ else }}if in.IsNull() {
+		in.Skip()
+		return {{ if .IsNullable }}nil{{ else }}{{ .Zero }}{{ end }}, nil
+	}
+  return {{ if .IsNullable }}&{{ end }}{{ .JSONIn }}, nil{{ end }}{{ end }}
 {{ define "schemaSerializer" }}
 {{ if or .IsComplexObject .IsTuple .IsAdditionalProperties }}{{ template "schemaObjectSerializer" . }}
 {{ else if .IsArray }}{{ template "schemaSliceSerializer" . }}
@@ -97,8 +128,13 @@ for i, v := range {{ .ValueExpression }} {
 out.RawByte(']')
 {{ end }}
 {{ define "schemaSliceDeserializer" }}
-var result []{{ template "schemaType" .Items }}
+
 {{ .IndexVar }}ReadFn := {{ template "schemaValueDeserializer" .Items }}
+var result []{{ template "schemaType" .Items }}
+if in.IsNull() {
+  in.Skip()
+  return
+}
 in.Delim('[')
 if !in.IsDelim(']') {
   result = make([]{{ template "schemaType" .Items }}, 0, 64)
@@ -132,15 +168,17 @@ for !in.IsDelim('}') {
     switch key {
     {{ range $index, $prop := .Properties }}
     case {{ printf "%q" $prop.Name }}:
-      {{ $prop.ValueExpression }} = {{ if or $prop.IsNullable $prop.IsArray }}nil{{ else }}{{ $prop.Zero }}{{ end }}
+      {{ $prop.ValueExpression }} = {{ if or $prop.IsNullable $prop.IsArray $prop.IsAdditionalProperties }}nil{{ else }}{{ $prop.Zero }}{{ end }}
       {{ $.ReceiverName }}.__setValues.Set({{ $index }})
       {{ $.ReceiverName }}.__nulls.Set({{ $index }})
     {{ end }}{{ if .AdditionalProperties }}
-      {{ .AdditionalProperties.ValueExpression }} = {{ if or .AdditionalProperties.IsNullable .AdditionalProperties.IsArray }}nil{{ else }}{{ .AdditionalProperties.Zero }}{{ end }}
+    case {{ printf "%q" (pascalize .AdditionalProperties.Name)}}:
+      {{ $.ReceiverName }}.{{ pascalize .AdditionalProperties.Name }} = {{ if or .AdditionalProperties.IsNullable .AdditionalProperties.IsArray }}nil{{ else }}{{ .AdditionalProperties.Zero }}{{ end }}
       {{ $.ReceiverName }}.__setValues.Set({{ $propLen }}{{ if .AdditionalItems }} - 1{{ end }})
       {{ $.ReceiverName }}.__nulls.Set({{ $propLen }}{{ if .AdditionalItems }} - 1{{ end }})
     {{ end }}{{ if .AdditionalItems }}
-      {{ .AdditionalItems.ValueExpression }} = {{ if or .AdditionalItems.IsNullable .AdditionalItems.IsArray }}nil{{ else }}{{ .AdditionalItems.Zero }}{{ end }}
+    case {{ printf "%q" (pascalize .AdditionalItems.Name) }}:
+      {{ $.ReceiverName }}.{{ pascalize .AdditionalItems.Name }} = nil
       {{ $.ReceiverName }}.__setValues.Set({{ $propLen }})
       {{ $.ReceiverName }}.__nulls.Set({{ $propLen }})
     {{ end }}
@@ -154,9 +192,7 @@ for !in.IsDelim('}') {
   switch key {
   {{ range $index, $prop := .Properties }}
   case {{ printf "%q" $prop.Name }}:
-    {{ camelize $prop.Name }}ValueFn := {{ template "schemaValueDeserializer" $prop }}
-
-		if {{ camelize $prop.Name }}Value, err := {{ camelize $prop.Name }}ValueFn(in); err != nil {
+    if {{ camelize $prop.Name }}Value, err := {{ $.ReceiverName }}.{{ camelize $prop.Name }}{{ pascalize .IndexVar }}ReadJSON(in); err != nil {
       in.AddError(err)
     } else {
       {{ $prop.ValueExpression }} = {{ camelize $prop.Name }}Value
@@ -164,9 +200,8 @@ for !in.IsDelim('}') {
       {{ $.ReceiverName }}.__nulls.Clear({{ $index }})
     }
   {{ end }}{{ if .AdditionalProperties }}
-    {{ camelize .AdditionalProperties.Name }}ValueFn := {{ template "schemaValueDeserializer" .AdditionalProperties }}
-
-		if {{ camelize .AdditionalProperties.Name }}Value, err := {{ camelize .AdditionalProperties.Name }}ValueFn(in); err != nil {
+  case {{ printf "%q" (pascalize .AdditionalProperties.Name) }}:
+ 		if {{ camelize .AdditionalProperties.Name }}Value, err := {{ $.ReceiverName }}.{{ camelize .AdditionalProperties.Name }}{{ pascalize .IndexVar }}ReadJSON(in); err != nil {
       in.AddError(err)
     } else {
       {{ $.ReceiverName }}.{{ pascalize .AdditionalProperties.Name }} = {{ camelize .AdditionalProperties.Name }}Value
@@ -174,9 +209,8 @@ for !in.IsDelim('}') {
       {{ $.ReceiverName }}.__nulls.Clear({{ $propLen }}{{ if .AdditionalItems }} - 1{{ end }})
     }
   {{ end }}{{ if .AdditionalItems }}
-    {{ camelize .AdditionalItems.Name }}ValueFn := {{ template "schemaValueDeserializer" .AdditionalItems }}
-
-		if {{ camelize .AdditionalItems.Name }}Value, err := {{ camelize .AdditionalItems.Name }}ValueFn(in); err != nil {
+  case {{ printf "%q" (pascalize .AdditionalItems.Name) }}:
+ 		if {{ camelize .AdditionalItems.Name }}Value, err := {{ $.ReceiverName }}.{{ camelize .AdditionalItems.Name }}{{ pascalize .IndexVar }}ReadJSON(in); err != nil {
       in.AddError(err)
     } else {
       {{ $.ReceiverName }}.{{ pascalize .AdditionalItems.Name }} = {{ camelize .AdditionalItems.Name }}Value
@@ -204,8 +238,7 @@ if !swag.IsZero({{ $prop.ValueExpression }}) || {{ $.ReceiverName }}.__setValues
   {{ if $prop.IsNullable }}if {{ $.ReceiverName }}.__nulls.Test({{ $index }}) {
     out.RawString("null")
   } else {
-    {{ end }}{{ camelize $prop.Name }}WriteFn := {{ template "schemaValueSerializer" $prop }}
-    if err := {{ camelize $prop.Name }}WriteFn({{ $prop.ValueExpression }}, out); err != nil {
+    {{ end }}if err := {{ $.ReceiverName }}.{{ camelize $prop.Name }}{{ pascalize .IndexVar }}WriteJSON({{ $prop.ValueExpression }}, out); err != nil {
       if out.Error == nil {
         out.Error = err
         return
@@ -223,8 +256,7 @@ if !swag.IsZero({{ $prop.ValueExpression }}) || {{ $.ReceiverName }}.__setValues
   {{ if $prop.IsNullable }}if {{ $.ReceiverName }}.__nulls.Test({{ $index }}{{ if gt $aoLen 0 }} + {{ $aoLen }}{{ end}}) {
     out.RawString("null")
   } else {
-    {{ end }}{{ camelize $prop.Name }}WriteFn := {{ template "schemaValueSerializer" $prop }}
-    if err := {{ camelize $prop.Name }}WriteFn({{ $prop.ValueExpression }}, out); err != nil {
+    {{ end }}if err := {{ $.ReceiverName }}.{{ camelize $prop.Name }}{{ pascalize .IndexVar }}WriteJSON({{ $prop.ValueExpression }}, out); err != nil {
       if out.Error == nil {
         out.Error = err
         return

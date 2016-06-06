@@ -356,6 +356,7 @@ func (sg *schemaGenContext) NewAdditionalItems(schema *spec.Schema) *schemaGenCo
 		pg.Schema = *schema
 	}
 	pg.Required = false
+	// pg.GenSchema.IsAdditionalItems = true
 	return pg
 }
 
