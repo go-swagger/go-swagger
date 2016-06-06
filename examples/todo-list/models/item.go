@@ -97,7 +97,9 @@ func (m *Item) FlagDescriptionUnset() {
 }
 
 func (m *Item) FlagDescriptionNil() {
-	m.__nulls.Set(1)
+	if nullableItemBitmap.Test(1) {
+		m.__nulls.Set(1)
+	}
 }
 
 func (m *Item) FlagDescriptionZero() {
@@ -105,11 +107,11 @@ func (m *Item) FlagDescriptionZero() {
 }
 
 func (m *Item) IsDescriptionNil() bool {
-	return nullableItemBitmap.Test(0) && m.__nulls.Test(0)
+	return nullableItemBitmap.Test(1) && m.__nulls.Test(1)
 }
 
 func (m *Item) IsDescriptionSet() bool {
-	return m.__setValues.Test(0) || m.Completed
+	return m.__setValues.Test(1) || m.Completed
 }
 
 func (m *Item) HasDescriptionValue() bool {
@@ -120,6 +122,7 @@ func (m *Item) SetDescription(value *string) {
 	m.FlagDescriptionSet()
 	if value == nil {
 		m.FlagDescriptionNil()
+		m.Description = ""
 		return
 	}
 	m.Description = *value
@@ -132,7 +135,7 @@ func (m *Item) ClearDescription() {
 }
 
 func (m *Item) GetDescription() (value string, null bool, haskey bool) {
-	return m.Description, nullableItemBitmap.Test(0) && m.__nulls.Test(1), m.__setValues.Test(1) || len(m.Description) > 0
+	return m.Description, nullableItemBitmap.Test(1) && m.__nulls.Test(1), m.__setValues.Test(1) || len(m.Description) > 0
 }
 
 func (m *Item) GetDescriptionPtr() *string {
