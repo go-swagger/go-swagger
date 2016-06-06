@@ -235,14 +235,14 @@ func (o *opGen) Generate() error {
 	}
 
 	opParams := o.Analyzed.ParamsFor(o.data.Method, o.data.Path)
-	if o.IncludeParameters && len(opParams) > 0 {
+	if o.IncludeParameters {
 		if err := o.generateParameterModel(); err != nil {
 			return fmt.Errorf("parameters: %s", err)
 		}
 		log.Println("generated parameters", o.data.Package+"."+o.cname+"Parameters")
 	}
 
-	if o.IncludeResponses && len(o.data.Responses) > 0 {
+	if o.IncludeResponses {
 		if err := o.generateResponses(); err != nil {
 			return fmt.Errorf("responses: %s", err)
 		}

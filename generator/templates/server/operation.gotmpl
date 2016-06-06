@@ -16,16 +16,16 @@ import (
 )
 
 // {{ pascalize .Name }}HandlerFunc turns a function with the right signature into a {{ humanize .Name }} handler
-type {{ pascalize .Name }}HandlerFunc func({{ if .WithContext }}context.Context, {{ end }}{{ if .Params }}{{ pascalize .Name }}Params{{ end }}{{ if and .Authorized .Params }}, {{ end }}{{ if .Authorized }}{{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}{{ end }}) middleware.Responder
+type {{ pascalize .Name }}HandlerFunc func({{ if .WithContext }}context.Context, {{ end }}{{ pascalize .Name }}Params{{ if .Authorized }}, {{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}{{ end }}) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn {{ pascalize .Name }}HandlerFunc) Handle({{ if .WithContext }}ctx context.Context, {{ end }}{{if .Params}}params {{ pascalize .Name }}Params{{ end }}{{ if and .Authorized .Params }}, {{ end }}{{ if .Authorized }}principal {{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}{{ end }}) middleware.Responder {
-  return fn({{ if .WithContext }}ctx, {{ end }}{{ if .Params }}params{{ end }}{{ if and .Authorized .Params }}, {{ end }}{{ if .Authorized }}principal{{ end }})
+func (fn {{ pascalize .Name }}HandlerFunc) Handle({{ if .WithContext }}ctx context.Context, {{ end }}params {{ pascalize .Name }}Params{{ if .Authorized }}, principal {{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}{{ end }}) middleware.Responder {
+  return fn({{ if .WithContext }}ctx, {{ end }}params{{ if .Authorized }}, principal{{ end }})
 }
 
 // {{ pascalize .Name }}Handler interface for that can handle valid {{ humanize .Name }} params
 type {{ pascalize .Name }}Handler interface {
-  Handle({{ if .WithContext }}context.Context, {{ end }}{{ if .Params }}{{ pascalize .Name }}Params{{ end }}{{ if and .Authorized .Params }}, {{ end }}{{ if .Authorized }}{{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}{{ end }}) middleware.Responder
+  Handle({{ if .WithContext }}context.Context, {{ end }}{{ pascalize .Name }}Params{{ if .Authorized }}, {{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}{{ end }}) middleware.Responder
 }
 
 // New{{ pascalize .Name }} creates a new http.Handler for the {{ humanize .Name }} operation
@@ -46,9 +46,9 @@ type {{ pascalize .Name }} struct {
 }
 
 func ({{ .ReceiverName }} *{{ pascalize .Name }}) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-  route, _ := {{ .ReceiverName }}.Context.RouteInfo(r){{ if .Params }}
+  route, _ := {{ .ReceiverName }}.Context.RouteInfo(r)
   var Params = New{{ pascalize .Name }}Params()
-  {{ end }}
+
   {{ if .Authorized }}uprinc, err := {{ .ReceiverName }}.Context.Authorize(r, route)
   if err != nil {
     {{ .ReceiverName }}.Context.Respond(rw, r, route.Produces, route, err)
@@ -60,15 +60,15 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) ServeHTTP(rw http.ResponseWrit
   }
 
   {{ end }}
-  if err := {{ .ReceiverName }}.Context.BindValidRequest(r, route, {{ if .Params }}&Params{{ else }}nil{{ end }}); err != nil { // bind params
+  if err := {{ .ReceiverName }}.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
     {{ .ReceiverName }}.Context.Respond(rw, r, route.Produces, route, err)
     return
   }
 
   {{ if .Authorized }}
-  res := {{ .ReceiverName }}.Handler.Handle({{ if .WithContext }}context.Background(), {{ end }}{{ if .Params }}Params, {{ end }}principal) // actually handle the request
+  res := {{ .ReceiverName }}.Handler.Handle({{ if .WithContext }}context.Background(), {{ end }}Params, principal) // actually handle the request
   {{else}}
-  res := {{ .ReceiverName }}.Handler.Handle({{ if .WithContext }}context.Background(), {{ end }}{{ if .Params }}Params{{ end }}) // actually handle the request
+  res := {{ .ReceiverName }}.Handler.Handle({{ if .WithContext }}context.Background(), {{ end }}Params) // actually handle the request
   {{ end }}
   {{ .ReceiverName }}.Context.Respond(rw, r, route.Produces, route, res)
 
