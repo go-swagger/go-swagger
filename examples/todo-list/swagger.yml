@@ -41,9 +41,8 @@ paths:
           collectionFormat: multi
           allowEmptyValue: true
           items:
-            type: string
+            type: integer
             format: int32
-            required: true
           required: true
       responses:
         '200':
