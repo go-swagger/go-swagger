@@ -238,7 +238,7 @@ func TestAliasedTypes(t *testing.T) {
 func TestParsePrimitiveSchemaProperty(t *testing.T) {
 	schema := noModelDefs["PrimateModel"]
 	assertProperty(t, &schema, "boolean", "a", "", "A")
-	assertProperty(t, &schema, "string", "b", "", "B")
+	assertProperty(t, &schema, "integer", "b", "int32", "B")
 	assertProperty(t, &schema, "string", "c", "", "C")
 	assertProperty(t, &schema, "integer", "d", "int64", "D")
 	assertProperty(t, &schema, "integer", "e", "int8", "E")
@@ -252,6 +252,8 @@ func TestParsePrimitiveSchemaProperty(t *testing.T) {
 	assertProperty(t, &schema, "integer", "m", "uint64", "M")
 	assertProperty(t, &schema, "number", "n", "float", "N")
 	assertProperty(t, &schema, "number", "o", "double", "O")
+	assertProperty(t, &schema, "integer", "p", "uint8", "P")
+	assertProperty(t, &schema, "integer", "q", "uint64", "Q")
 }
 
 func TestParseStringFormatSchemaProperty(t *testing.T) {

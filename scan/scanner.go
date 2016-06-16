@@ -382,34 +382,53 @@ type swaggerTypable interface {
 	Level() int
 }
 
+// Map all Go builtin types that have Json representation to Swagger/Json types.
+// See https://golang.org/pkg/builtin/ and http://swagger.io/specification/
 func swaggerSchemaForType(typeName string, prop swaggerTypable) error {
 	switch typeName {
 	case "bool":
 		prop.Typed("boolean", "")
-	case "error", "rune", "string":
-		prop.Typed("string", "")
-	case "int8":
-		prop.Typed("integer", "int8")
-	case "int16":
-		prop.Typed("integer", "int16")
-	case "int32":
-		prop.Typed("integer", "int32")
-	case "int", "int64":
-		prop.Typed("integer", "int64")
-	case "uint8":
+	case "byte":
 		prop.Typed("integer", "uint8")
-	case "uint16":
-		prop.Typed("integer", "uint16")
-	case "uint32":
-		prop.Typed("integer", "uint32")
-	case "uint", "uint64":
-		prop.Typed("integer", "uint64")
+	case "complex128", "complex64":
+		return fmt.Errorf("unsupported builtin %q (no JSON marshaller)", typeName)
+	case "error":
+		// TODO: error is often marshalled into a string but not always (e.g. errors package creates
+		// errors that are marshalled into an empty object), this could be handled the same way
+		// custom JSON marshallers are handled (in future)
+		prop.Typed("string", "")
 	case "float32":
 		prop.Typed("number", "float")
 	case "float64":
 		prop.Typed("number", "double")
+	case "int":
+		prop.Typed("integer", "int64")
+	case "int16":
+		prop.Typed("integer", "int16")
+	case "int32":
+		prop.Typed("integer", "int32")
+	case "int64":
+		prop.Typed("integer", "int64")
+	case "int8":
+		prop.Typed("integer", "int8")
+	case "rune":
+		prop.Typed("integer", "int32")
+	case "string":
+		prop.Typed("string", "")
+	case "uint":
+		prop.Typed("integer", "uint64")
+	case "uint16":
+		prop.Typed("integer", "uint16")
+	case "uint32":
+		prop.Typed("integer", "uint32")
+	case "uint64":
+		prop.Typed("integer", "uint64")
+	case "uint8":
+		prop.Typed("integer", "uint8")
+	case "uintptr":
+		prop.Typed("integer", "uint64")
 	default:
-		return fmt.Errorf("unknown primitive %q", typeName)
+		return fmt.Errorf("unknown builtin %q", typeName)
 	}
 	return nil
 }

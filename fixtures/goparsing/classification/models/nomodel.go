@@ -192,7 +192,7 @@ type AllOfModel struct {
 	CreatedAt strfmt.DateTime `json:"createdAt"`
 }
 
-// A PrimateModel is a struct with nothing but primitives.
+// A PrimateModel is a struct with nothing but builtins.
 //
 // It only has values 1 level deep and each of those is of a very simple
 // builtin type.
@@ -216,6 +216,10 @@ type PrimateModel struct {
 
 	N float32 `json:"n"`
 	O float64 `json:"o"`
+
+	P byte `json:"p"`
+
+	Q uintptr `json:"q"`
 }
 
 // A FormattedModel is a struct with only strfmt types
