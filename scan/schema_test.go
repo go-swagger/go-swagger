@@ -192,6 +192,13 @@ func TestEmbeddedAllOf(t *testing.T) {
 	assertProperty(t, &asch, "string", "cat", "", "Cat")
 }
 
+func TestEmbeddedStarExpr(t *testing.T) {
+	schema := noModelDefs["EmbeddedStarExpr"]
+
+	assertProperty(t, &schema, "integer", "embeddedMember", "int64", "EmbeddedMember")
+	assertProperty(t, &schema, "integer", "notEmbedded", "int64", "NotEmbedded")
+}
+
 func TestAliasedTypes(t *testing.T) {
 	schema := noModelDefs["OtherTypes"]
 	assertProperty(t, &schema, "string", "named", "", "Named")

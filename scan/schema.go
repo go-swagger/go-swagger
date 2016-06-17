@@ -289,6 +289,14 @@ func (scp *schemaParser) parseEmbeddedType(gofile *ast.File, schema *spec.Schema
 		if st, ok := ts.Type.(*ast.InterfaceType); ok {
 			return scp.parseInterfaceType(file, schema, st, seenPreviously)
 		}
+	case *ast.StarExpr:
+		return scp.parseEmbeddedType(gofile, schema, tpe.X, seenPreviously)
+	default:
+		return fmt.Errorf(
+			"parseEmbeddedType: unsupported type %v at position %#v",
+			expr,
+			scp.program.Fset.Position(tpe.Pos()),
+		)
 	}
 	return fmt.Errorf("unable to resolve embedded struct for: %v\n", expr)
 }
