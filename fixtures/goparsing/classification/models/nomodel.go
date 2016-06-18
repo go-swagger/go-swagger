@@ -192,6 +192,17 @@ type AllOfModel struct {
 	CreatedAt strfmt.DateTime `json:"createdAt"`
 }
 
+// An Embedded is to be embedded in EmbeddedStarExpr
+type Embedded struct {
+	EmbeddedMember int64 `json:"embeddedMember"`
+}
+
+// An EmbeddedStarExpr for testing the embedded StarExpr
+type EmbeddedStarExpr struct {
+	*Embedded
+	NotEmbedded int64 `json:"notEmbedded"`
+}
+
 // A PrimateModel is a struct with nothing but builtins.
 //
 // It only has values 1 level deep and each of those is of a very simple
