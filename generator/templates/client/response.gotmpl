@@ -1,9 +1,9 @@
 {{ define "clientresponse" }}// New{{ pascalize .Name }} creates a {{ pascalize .Name }} with default headers values
-func New{{ pascalize .Name }}({{ if eq .Code -1 }}code int{{ end }}) *{{ pascalize .Name }} {
+func New{{ pascalize .Name }}({{ if eq .Code -1 }}code int{{ end }}{{ if .Schema }}{{ if and (eq .Code -1) .Schema.IsStream }},{{end}}{{ if .Schema.IsStream }}writer io.Writer{{ end }}{{ end }}) *{{ pascalize .Name }} {
   return &{{ pascalize .Name }}{
     {{ if eq .Code -1 }}_statusCode: code,
-    {{ end }}{{ range .Headers }}{{ if .HasDefault }}{{ pascalize .Name }}: {{ printf "%#v" .Default }},{{ end }}
-  {{ end }}}
+    {{ end }}{{ range .Headers }}{{ if .HasDefault }}{{ pascalize .Name }}: {{ printf "%#v" .Default }},{{ end }}{{ end }}{{ if .Schema }}{{ if .Schema.IsStream }}Payload: writer,
+    {{ end }}{{ end }}}
 }
 
 /*{{ pascalize .Name}} handles this case with default header values.
@@ -19,7 +19,7 @@ type {{ pascalize .Name }} struct {
   {{ pascalize .Name }} {{ .GoType }}
   {{ end }}
   {{ if .Schema }}
-  Payload {{ if and (not .Schema.IsBaseType) (not .Schema.IsInterface) .Schema.IsComplexObject }}*{{ end }}{{ .Schema.GoType }}
+  Payload {{ if and (not .Schema.IsBaseType) (not .Schema.IsInterface) .Schema.IsComplexObject (not .Schema.IsStream) }}*{{ end }}{{ if (not .Schema.IsStream) }}{{ .Schema.GoType }}{{ else }}io.Writer{{end}}
   {{ end }}
 }{{ if eq .Code -1 }}
 
@@ -64,7 +64,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response runtime.
   {{ .ReceiverName }}.Payload = new({{ .Schema.GoType }})
   {{ end }}{{ if not .Schema.IsBaseType }}
   // response payload
-  if err := consumer.Consume(response.Body(), {{ if not .Schema.IsComplexObject }}&{{ end}}{{ .ReceiverName }}.Payload); err != nil && err != io.EOF {
+  if err := consumer.Consume(response.Body(), {{ if not (or .Schema.IsComplexObject .Schema.IsStream) }}&{{ end}}{{ .ReceiverName }}.Payload); err != nil && err != io.EOF {
     return err
   }
   {{ end }}{{ end }}
@@ -96,7 +96,8 @@ import (
 
 // {{ pascalize .Name }}Reader is a Reader for the {{ pascalize .Name }} structure.
 type {{ pascalize .Name }}Reader struct {
-  formats strfmt.Registry
+  formats strfmt.Registry{{ if .HasStreamingResponse }}
+  writer  io.Writer{{ end }}
 }
 
 // ReadResponse reads a server response into the recieved {{ .ReceiverName }}.
@@ -104,14 +105,14 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response ru
   switch response.Code() {
   {{ range $key, $value := .Responses }}
     case {{ $key }}:
-      result := New{{ pascalize $value.Name }}()
+      result := New{{ pascalize $value.Name }}({{ if $value.Schema }}{{ if $value.Schema.IsStream }}{{ $.ReceiverName }}.writer{{ end }}{{ end }})
       if err := result.readResponse(response, consumer, {{ $.ReceiverName }}.formats); err != nil {
         return nil, err
       }
       return {{ if $value.IsSuccess }}result, nil{{else}}nil, result{{end}}
   {{end}}{{ if .DefaultResponse }}{{ with .DefaultResponse }}
     default:
-      result := New{{ pascalize .Name }}(response.Code())
+      result := New{{ pascalize .Name }}(response.Code(){{ if .Schema }}{{ if .Schema.IsStream }}, {{ $.ReceiverName }}.writer{{ end }}{{ end }})
       if err := result.readResponse(response, consumer, {{ $.ReceiverName }}.formats); err != nil {
         return nil, err
       }

@@ -1,6 +1,6 @@
 package commands
 
 func init() {
-  Version = "0.5.0-123-g4c40539"
+  Version = "0.5.0-127-ge553b06"
 }
 

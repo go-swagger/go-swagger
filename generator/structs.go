@@ -318,15 +318,16 @@ type GenOperation struct {
 	Responses       GenStatusCodeResponses
 	DefaultResponse *GenResponse
 
-	Params             GenParameters
-	QueryParams        GenParameters
-	PathParams         GenParameters
-	HeaderParams       GenParameters
-	FormParams         GenParameters
-	HasQueryParams     bool
-	HasFormParams      bool
-	HasFormValueParams bool
-	HasFileParams      bool
+	Params               GenParameters
+	QueryParams          GenParameters
+	PathParams           GenParameters
+	HeaderParams         GenParameters
+	FormParams           GenParameters
+	HasQueryParams       bool
+	HasFormParams        bool
+	HasFormValueParams   bool
+	HasFileParams        bool
+	HasStreamingResponse bool
 
 	Schemes            []string
 	ExtraSchemes       []string
