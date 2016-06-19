@@ -274,7 +274,7 @@ func (c *Context) BindValidRequest(request *http.Request, route *MatchedRoute, b
 }
 
 // ContentType gets the parsed value of a content type
-func (c *Context) ContentType(request *http.Request) (string, string, *errors.ParseError) {
+func (c *Context) ContentType(request *http.Request) (string, string, error) {
 	if v, ok := context.GetOk(request, ctxContentType); ok {
 		if val, ok := v.(*contentTypeValue); ok {
 			return val.MediaType, val.Charset, nil
