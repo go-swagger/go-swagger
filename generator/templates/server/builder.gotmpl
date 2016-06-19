@@ -152,9 +152,15 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) AuthenticatorsFor(schemes map
       {{range .SecurityDefinitions}}
       case "{{.ID}}":
         {{if .IsBasicAuth}}_ = scheme
-        result[name] = security.BasicAuth({{.ReceiverName}}.{{ pascalize .ID }}Auth){{end}}
-        {{if .IsAPIKeyAuth}}result[name] = security.APIKeyAuth(scheme.Name, scheme.In, {{.ReceiverName}}.{{ pascalize .ID }}Auth){{end}}
-        {{if .IsOAuth2}}result[name] = security.BearerAuth(scheme.Name, {{.ReceiverName}}.{{ pascalize .ID }}Auth){{end}}
+        result[name] = security.BasicAuth({{ if not ( eq .Principal "interface{}" ) }}func(username, password string) (interface{}, error) {
+          return {{ end }}{{.ReceiverName}}.{{ pascalize .ID }}Auth{{ if not ( eq .Principal "interface{}" ) }}(username, password)
+        }{{ end }}){{end}}
+        {{if .IsAPIKeyAuth}}result[name] = security.APIKeyAuth(scheme.Name, scheme.In, {{ if not ( eq .Principal "interface{}" ) }}func(token string) (interface{}, error) {
+          return {{ end }}{{.ReceiverName}}.{{ pascalize .ID }}Auth{{ if not ( eq .Principal "interface{}" ) }}(token)
+        }{{ end }}){{end}}
+        {{if .IsOAuth2}}result[name] = security.BearerAuth(scheme.Name, {{ if not ( eq .Principal "interface{}" ) }}func(token string, scopes []string) (interface{}, error) {
+          return {{ end }}{{.ReceiverName}}.{{ pascalize .ID }}Auth{{ if not ( eq .Principal "interface{}" ) }}(token, scopes)
+        }{{ end }}){{end}}
       {{end}}
     }
   }
