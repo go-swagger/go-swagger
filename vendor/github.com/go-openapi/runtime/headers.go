@@ -22,7 +22,7 @@ import (
 )
 
 // ContentType parses a content type header
-func ContentType(headers http.Header) (string, string, *errors.ParseError) {
+func ContentType(headers http.Header) (string, string, error) {
 	ct := headers.Get(HeaderContentType)
 	orig := ct
 	if ct == "" {

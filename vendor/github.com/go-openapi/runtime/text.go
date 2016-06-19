@@ -18,6 +18,8 @@ import (
 	"bytes"
 	"io"
 	"unsafe"
+
+	"github.com/go-openapi/swag"
 )
 
 // TextConsumer creates a new text consumer
@@ -37,7 +39,13 @@ func TextConsumer() Consumer {
 // TextProducer creates a new text producer
 func TextProducer() Producer {
 	return ProducerFunc(func(writer io.Writer, data interface{}) error {
-		buf := bytes.NewBufferString(data.(string))
+		var buf *bytes.Buffer
+		switch tped := data.(type) {
+		case *string:
+			buf = bytes.NewBufferString(swag.StringValue(tped))
+		case string:
+			buf = bytes.NewBufferString(tped)
+		}
 		_, err := buf.WriteTo(writer)
 		return err
 	})

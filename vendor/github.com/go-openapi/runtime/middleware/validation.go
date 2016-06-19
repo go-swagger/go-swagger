@@ -57,7 +57,7 @@ func (ub untypedBinder) BindRequest(r *http.Request, route *MatchedRoute, consum
 }
 
 // ContentType validates the content type of a request
-func validateContentType(allowed []string, actual string) *errors.Validation {
+func validateContentType(allowed []string, actual string) error {
 	if len(allowed) == 0 {
 		return nil
 	}
