@@ -420,37 +420,54 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	consumes := producesOrDefault(operation.Consumes, swsp.Consumes, b.DefaultConsumes)
 	sort.Strings(consumes)
 
+	var hasStreamingResponse bool
+	if defaultResponse != nil && defaultResponse.Schema != nil && defaultResponse.Schema.IsStream {
+		hasStreamingResponse = true
+	}
+	if !hasStreamingResponse && successResponse != nil && successResponse.Schema != nil && successResponse.Schema.IsStream {
+		hasStreamingResponse = true
+	}
+	if !hasStreamingResponse {
+		for _, r := range responses {
+			if r.Schema != nil && r.Schema.IsStream {
+				hasStreamingResponse = true
+				break
+			}
+		}
+	}
+
 	return GenOperation{
-		Package:            b.APIPackage,
-		RootPackage:        b.RootAPIPackage,
-		Name:               b.Name,
-		Method:             b.Method,
-		Path:               b.Path,
-		Tags:               operation.Tags[:],
-		Description:        operation.Description,
-		ReceiverName:       receiver,
-		DefaultImports:     b.DefaultImports,
-		Params:             params,
-		Summary:            operation.Summary,
-		QueryParams:        qp,
-		PathParams:         pp,
-		HeaderParams:       hp,
-		FormParams:         fp,
-		HasQueryParams:     hasQueryParams,
-		HasFormParams:      hasFormParams,
-		HasFormValueParams: hasFormValueParams,
-		HasFileParams:      hasFileParams,
-		Authorized:         b.Authed,
-		Principal:          prin,
-		Responses:          responses,
-		DefaultResponse:    defaultResponse,
-		SuccessResponse:    successResponse,
-		ExtraSchemas:       extra,
-		Schemes:            schemeOrDefault(schemes, b.DefaultScheme),
-		ProducesMediaTypes: produces,
-		ConsumesMediaTypes: consumes,
-		ExtraSchemes:       extraSchemes,
-		WithContext:        b.WithContext,
+		Package:              b.APIPackage,
+		RootPackage:          b.RootAPIPackage,
+		Name:                 b.Name,
+		Method:               b.Method,
+		Path:                 b.Path,
+		Tags:                 operation.Tags[:],
+		Description:          operation.Description,
+		ReceiverName:         receiver,
+		DefaultImports:       b.DefaultImports,
+		Params:               params,
+		Summary:              operation.Summary,
+		QueryParams:          qp,
+		PathParams:           pp,
+		HeaderParams:         hp,
+		FormParams:           fp,
+		HasQueryParams:       hasQueryParams,
+		HasFormParams:        hasFormParams,
+		HasFormValueParams:   hasFormValueParams,
+		HasFileParams:        hasFileParams,
+		HasStreamingResponse: hasStreamingResponse,
+		Authorized:           b.Authed,
+		Principal:            prin,
+		Responses:            responses,
+		DefaultResponse:      defaultResponse,
+		SuccessResponse:      successResponse,
+		ExtraSchemas:         extra,
+		Schemes:              schemeOrDefault(schemes, b.DefaultScheme),
+		ProducesMediaTypes:   produces,
+		ConsumesMediaTypes:   consumes,
+		ExtraSchemes:         extraSchemes,
+		WithContext:          b.WithContext,
 	}, nil
 }
 
