@@ -610,6 +610,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			a.ModelsPackage,
 			m,
 			a.SpecDoc,
+			true,
 		)
 		if err != nil {
 			return GenApp{}, err

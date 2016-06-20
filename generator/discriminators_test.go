@@ -32,7 +32,7 @@ func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "Kennel"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) {
 			assert.True(t, genModel.HasBaseType)
 			buf := bytes.NewBuffer(nil)
@@ -61,7 +61,7 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 
 		for _, k := range []string{"cat", "Dog"} {
 			schema := definitions[k]
-			genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+			genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 			if assert.NoError(t, err) {
 				assert.True(t, genModel.IsComplexObject)
 				assert.Equal(t, "petType", genModel.DiscriminatorField)
@@ -104,7 +104,7 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 
 		k := "Pet"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) {
 			assert.True(t, genModel.IsComplexObject)
 			assert.Equal(t, "petType", genModel.DiscriminatorField)
@@ -143,7 +143,7 @@ func TestGenerateModel_UsesDiscriminator(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithPet"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) && assert.True(t, genModel.HasBaseType) {
 
 			buf := bytes.NewBuffer(nil)
@@ -241,7 +241,7 @@ func TestGenerateModel_Discriminator_Billforward(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "FlatPricingComponent"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) && assert.True(t, genModel.IsSubType) {
 
 			buf := bytes.NewBuffer(nil)
@@ -265,7 +265,7 @@ func TestGenerateModel_Bitbucket_Repository(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "repository"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) {
 			assert.True(t, genModel.IsNullable)
 			for _, gm := range genModel.AllOf {
@@ -295,7 +295,7 @@ func TestGenerateModel_Bitbucket_WebhookSubscription(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "webhook_subscription"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)
@@ -317,7 +317,7 @@ func TestGenerateModel_Issue319(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "Container"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) && assert.Equal(t, "map[string]Base", genModel.Properties[0].GoType) {
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)

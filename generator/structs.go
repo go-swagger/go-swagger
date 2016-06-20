@@ -13,12 +13,11 @@ import (
 // definition from a swagger spec
 type GenDefinition struct {
 	GenSchema
-	Package          string
-	Imports          map[string]string
-	DefaultImports   []string
-	ExtraSchemas     []GenSchema
-	DependsOn        []string
-	IncludeValidator bool
+	Package        string
+	Imports        map[string]string
+	DefaultImports []string
+	ExtraSchemas   []GenSchema
+	DependsOn      []string
 }
 
 // GenSchemaList is a list of schemas for generation.
@@ -68,6 +67,7 @@ type GenSchema struct {
 	DiscriminatorValue      string
 	Discriminates           map[string]string
 	Parents                 []string
+	IncludeValidator        bool
 }
 
 type sharedValidations struct {
