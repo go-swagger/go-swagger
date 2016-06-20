@@ -108,7 +108,7 @@ type definitionGenerator struct {
 
 func (m *definitionGenerator) Generate() error {
 
-	mod, err := makeGenDefinition(m.Name, m.Target, m.Model, m.SpecDoc)
+	mod, err := makeGenDefinition(m.Name, m.Target, m.Model, m.SpecDoc, m.IncludeValidator)
 	if err != nil {
 		return err
 	}
@@ -148,10 +148,10 @@ func (m *definitionGenerator) generateModel() error {
 	return writeToFile(m.Target, m.Name, buf.Bytes())
 }
 
-func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *loads.Document) (*GenDefinition, error) {
-	return makeGenDefinitionHierarchy(name, pkg, "", schema, specDoc)
+func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *loads.Document, includeValidator bool) (*GenDefinition, error) {
+	return makeGenDefinitionHierarchy(name, pkg, "", schema, specDoc, includeValidator)
 }
-func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema, specDoc *loads.Document) (*GenDefinition, error) {
+func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema, specDoc *loads.Document, includeValidator bool) (*GenDefinition, error) {
 	receiver := "m"
 	resolver := newTypeResolver("", specDoc)
 	resolver.ModelName = name
@@ -160,18 +160,19 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 	di := discriminatorInfo(analyzed)
 
 	pg := schemaGenContext{
-		Path:           "",
-		Name:           name,
-		Receiver:       receiver,
-		IndexVar:       "i",
-		ValueExpr:      receiver,
-		Schema:         schema,
-		Required:       false,
-		TypeResolver:   resolver,
-		Named:          true,
-		ExtraSchemas:   make(map[string]GenSchema),
-		Discrimination: di,
-		Container:      container,
+		Path:             "",
+		Name:             name,
+		Receiver:         receiver,
+		IndexVar:         "i",
+		ValueExpr:        receiver,
+		Schema:           schema,
+		Required:         false,
+		TypeResolver:     resolver,
+		Named:            true,
+		ExtraSchemas:     make(map[string]GenSchema),
+		Discrimination:   di,
+		Container:        container,
+		IncludeValidator: includeValidator,
 	}
 	if err := pg.makeGenSchema(); err != nil {
 		return nil, err
@@ -215,7 +216,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 				}
 				ref = spec.Ref{}
 				if rsch != nil && rsch.Discriminator != "" {
-					gs, err := makeGenDefinitionHierarchy(strings.TrimPrefix(ss.Ref.String(), "#/definitions/"), pkg, pg.GenSchema.Name, *rsch, specDoc)
+					gs, err := makeGenDefinitionHierarchy(strings.TrimPrefix(ss.Ref.String(), "#/definitions/"), pkg, pg.GenSchema.Name, *rsch, specDoc, pg.IncludeValidator)
 					if err != nil {
 						return nil, err
 					}
@@ -286,13 +287,14 @@ type schemaGenContext struct {
 
 	Index int
 
-	GenSchema      GenSchema
-	Dependencies   []string
-	Container      string
-	ExtraSchemas   map[string]GenSchema
-	Discriminator  *discor
-	Discriminated  *discee
-	Discrimination *discInfo
+	GenSchema        GenSchema
+	Dependencies     []string
+	Container        string
+	ExtraSchemas     map[string]GenSchema
+	Discriminator    *discor
+	Discriminated    *discee
+	Discrimination   *discInfo
+	IncludeValidator bool
 }
 
 func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContext {
@@ -415,6 +417,7 @@ func (sg *schemaGenContext) shallowClone() *schemaGenContext {
 	pg.Named = false
 	pg.Index = 0
 	pg.IsTuple = false
+	pg.IncludeValidator = sg.IncludeValidator
 	return pg
 }
 
@@ -888,17 +891,18 @@ func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *sche
 	}
 	sp.Definitions[name] = schema
 	pg := schemaGenContext{
-		Path:           "",
-		Name:           name,
-		Receiver:       sg.Receiver,
-		IndexVar:       "i",
-		ValueExpr:      sg.Receiver,
-		Schema:         schema,
-		Required:       false,
-		Named:          true,
-		ExtraSchemas:   make(map[string]GenSchema),
-		Discrimination: sg.Discrimination,
-		Container:      sg.Container,
+		Path:             "",
+		Name:             name,
+		Receiver:         sg.Receiver,
+		IndexVar:         "i",
+		ValueExpr:        sg.Receiver,
+		Schema:           schema,
+		Required:         false,
+		Named:            true,
+		ExtraSchemas:     make(map[string]GenSchema),
+		Discrimination:   sg.Discrimination,
+		Container:        sg.Container,
+		IncludeValidator: sg.IncludeValidator,
 	}
 	if schema.Ref.String() == "" {
 		resolver := newTypeResolver(sg.TypeResolver.ModelsPackage, sg.TypeResolver.Doc)
@@ -1183,6 +1187,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.ReceiverName = sg.Receiver
 	sg.GenSchema.sharedValidations = sg.schemaValidations()
 	sg.GenSchema.ReadOnly = sg.Schema.ReadOnly
+	sg.GenSchema.IncludeValidator = sg.IncludeValidator
 
 	var err error
 	returns, err := sg.shortCircuitNamedRef()
@@ -1264,6 +1269,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	if err := sg.buildAliased(); err != nil {
 		return err
 	}
+
 	if Debug {
 		log.Printf("finished gen schema for %q\n", sg.Name)
 	}

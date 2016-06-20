@@ -30,7 +30,7 @@ func TestEnum_StringThing(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "StringThing"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)
@@ -53,7 +53,7 @@ func TestEnum_ComposedThing(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "ComposedThing"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)
@@ -77,7 +77,7 @@ func TestEnum_IntThing(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "IntThing"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)
@@ -100,7 +100,7 @@ func TestEnum_FloatThing(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "FloatThing"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)
@@ -123,7 +123,7 @@ func TestEnum_SliceThing(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "SliceThing"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)
@@ -146,7 +146,7 @@ func TestEnum_SliceAndItemsThing(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "SliceAndItemsThing"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)
@@ -172,7 +172,7 @@ func TestEnum_SliceAndAdditionalItemsThing(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "SliceAndAdditionalItemsThing"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)
@@ -201,7 +201,7 @@ func TestEnum_MapThing(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "MapThing"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)
@@ -229,7 +229,7 @@ func TestEnum_ObjectThing(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "ObjectThing"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)
@@ -279,7 +279,7 @@ func TestEnum_ComputeInstance(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "ComputeInstance"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)
@@ -304,7 +304,7 @@ func TestEnum_NewPrototype(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "NewPrototype"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)
@@ -334,7 +334,7 @@ func TestEnum_Issue265(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "SodaBrand"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)
@@ -355,7 +355,7 @@ func TestEnum_Issue325(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "SodaBrand"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)
@@ -372,7 +372,7 @@ func TestEnum_Issue325(t *testing.T) {
 
 		k = "Soda"
 		schema = definitions[k]
-		genModel, err = makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err = makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)
@@ -395,7 +395,7 @@ func TestEnum_Issue352(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "slp_action_enum"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc)
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := modelTemplate.Execute(buf, genModel)
