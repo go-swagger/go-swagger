@@ -1,5 +1,5 @@
 {{ define "sliceparamvalidator"}}
-{{ if .NeedsSize }}
+{{ if or .MinItems .MaxItems }}
 {{ camelize .Name }}Size := int64(len({{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end }}{{ .ValueExpression }}))
 {{ end }}
 {{ if .MinItems }}
