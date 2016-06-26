@@ -54,33 +54,41 @@ type Item struct {
 	ID int64 `json:"id,omitempty"`
 }
 
+// FlagCompletedSet flags the completed field as set
 func (m *Item) FlagCompletedSet() {
 	m.__setValues.Set(0)
 }
 
+// FlagCompletedUnset flag completed field as not set
 func (m *Item) FlagCompletedUnset() {
 	m.__setValues.Clear(0)
 }
 
+// IsCompletedSet returns true if the value for completed was set
 func (m *Item) IsCompletedSet() bool {
 	return m.__setValues.Test(0) || m.Completed
 }
 
+// SetCompleted set the value of the completed field
 func (m *Item) SetCompleted(value bool) {
 	m.FlagCompletedSet()
 	m.Completed = value
 }
 
+// ClearCompleted clears the value for the completed field
 func (m *Item) ClearCompleted() {
 	m.FlagCompletedUnset()
 	m.__nulls.Clear(0)
 	m.Completed = false
 }
 
+// GetCompleted returns the value for the completed field but also if it was set in the wire format.
 func (m *Item) GetCompleted() (value bool, haskey bool) {
 	return m.Completed, m.IsCompletedSet()
 }
 
+// GetCompletedPtr returns a pointer for the value of the completed field.
+// if completed was not set it will return nil
 func (m *Item) GetCompletedPtr() *bool {
 	if !m.IsCompletedSet() {
 		return nil
@@ -88,36 +96,44 @@ func (m *Item) GetCompletedPtr() *bool {
 	return &m.Completed
 }
 
+// FlagDescriptionSet flag the description field as set
 func (m *Item) FlagDescriptionSet() {
 	m.__setValues.Set(1)
 }
 
+// FlagDescriptionUnset flags the description field as unset
 func (m *Item) FlagDescriptionUnset() {
 	m.__setValues.Clear(1)
 }
 
+// FlagDescriptionNil flags the description field as nil
 func (m *Item) FlagDescriptionNil() {
 	if nullableItemBitmap.Test(1) {
 		m.__nulls.Set(1)
 	}
 }
 
+// FlagDescriptionZero flags the description field as zero
 func (m *Item) FlagDescriptionZero() {
 	m.__nulls.Clear(1)
 }
 
+// IsDescriptionNil returns true if the description field is nil
 func (m *Item) IsDescriptionNil() bool {
 	return nullableItemBitmap.Test(1) && m.__nulls.Test(1)
 }
 
+// IsDescriptionSet returns true if the description field is set
 func (m *Item) IsDescriptionSet() bool {
 	return m.__setValues.Test(1) || m.Completed
 }
 
+// HasDescriptionValue returns true if the description field has a value
 func (m *Item) HasDescriptionValue() bool {
 	return m.IsDescriptionSet() && !m.IsDescriptionNil()
 }
 
+// SetDescription sets the description of the field to the specified value
 func (m *Item) SetDescription(value *string) {
 	m.FlagDescriptionSet()
 	if value == nil {
@@ -128,16 +144,19 @@ func (m *Item) SetDescription(value *string) {
 	m.Description = *value
 }
 
+// ClearDescription clears the value of the description field
 func (m *Item) ClearDescription() {
 	m.FlagDescriptionUnset()
 	m.Description = ""
 	m.FlagDescriptionNil()
 }
 
+// GetDescription value with indication if it should be nil or unset
 func (m *Item) GetDescription() (value string, null bool, haskey bool) {
 	return m.Description, nullableItemBitmap.Test(1) && m.__nulls.Test(1), m.__setValues.Test(1) || len(m.Description) > 0
 }
 
+// GetDescriptionPtr gets the description field returns nil when unset
 func (m *Item) GetDescriptionPtr() *string {
 	if !m.HasDescriptionValue() {
 		return nil
@@ -145,13 +164,17 @@ func (m *Item) GetDescriptionPtr() *string {
 	return &m.Description
 }
 
+// FlagIDSet flags id field as set
 func (m *Item) FlagIDSet() {
 	m.__setValues.Set(2)
 }
 
+// IsIDSet returns true if the id is set
 func (m *Item) IsIDSet() bool {
 	return m.__setValues.Test(2) || m.ID > 0
 }
+
+// SetID sets the id field
 func (m *Item) SetID(value int64) {
 	m.FlagDescriptionSet()
 	m.ID = value
@@ -185,6 +208,7 @@ func (m *Item) validateDescription(formats strfmt.Registry) error {
 	return nil
 }
 
+// MarshalEasyJSON for this item
 func (m Item) MarshalEasyJSON(out *jwriter.Writer) {
 	out.RawByte('{')
 	first := true
@@ -219,7 +243,6 @@ func (m Item) MarshalEasyJSON(out *jwriter.Writer) {
 		}
 		first = false
 		out.RawString("\"id\":")
-		out.Float32
 		if nullableItemBitmap.Test(1) && m.__nulls.Test(1) {
 			out.RawString("null")
 		} else {
@@ -229,12 +252,14 @@ func (m Item) MarshalEasyJSON(out *jwriter.Writer) {
 	out.RawByte('}')
 }
 
+// MarshalJSON for this item
 func (m Item) MarshalJSON() ([]byte, error) {
 	out := jwriter.Writer{}
 	m.MarshalEasyJSON(&out)
 	return out.BuildBytes()
 }
 
+// UnmarshalEasyJSON set the correct bitmap fields etc when deserializing from JSON
 func (m *Item) UnmarshalEasyJSON(in *jlexer.Lexer) {
 	m.__nulls = *bitset.New(3)
 	m.__setValues = *bitset.New(3)
@@ -288,12 +313,14 @@ func (m *Item) UnmarshalEasyJSON(in *jlexer.Lexer) {
 	in.Delim('}')
 }
 
+// UnmarshalJSON read object from json
 func (m *Item) UnmarshalJSON(data []byte) error {
 	in := jlexer.Lexer{Data: data}
 	m.UnmarshalEasyJSON(&in)
 	return in.Error()
 }
 
+// PatchWith other object, only use the properties that were actually set
 func (m *Item) PatchWith(other *Item) error {
 	if other.IsCompletedSet() {
 		m.SetCompleted(other.Completed)
@@ -318,6 +345,7 @@ func (m *Item) PatchWith(other *Item) error {
 	return nil
 }
 
+// Clone creates a deep clone of the item
 func (m *Item) Clone() *Item {
 	n := NewItem()
 	n.PatchWith(m)
