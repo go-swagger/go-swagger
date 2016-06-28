@@ -115,6 +115,9 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	"add": func(x, y int) int {
 		return x + y
 	},
+	"capitalize": func(s string) string {
+		return strings.ToUpper(s[:1])+s[1:]
+	},
 }
 
 // NewRepository creates a new template repository with the provided functions defined
