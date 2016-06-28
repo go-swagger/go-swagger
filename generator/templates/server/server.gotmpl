@@ -10,6 +10,7 @@ import (
 
 	flags "github.com/jessevdk/go-flags"
 	graceful "github.com/tylerb/graceful"
+    {{ if (contains .ExtraSchemes "grpc") }}"google.golang.org/grpc"{{ end }}
 
   {{ range .DefaultImports }}{{ printf "%q" . }}
   {{ end }}
@@ -44,7 +45,11 @@ func (s *Server) ConfigureFlags() {
 type Server struct { {{ if (contains .ExtraSchemes "unix") }}
   SocketPath flags.Filename `long:"socket-path" description:"the unix socket to listen on" default:"/var/run/{{ dasherize .Name }}.sock"`
 	domainSocketL net.Listener
-	{{ end }}{{ if (hasInsecure .Schemes) }}
+	{{ end }}{{ if (contains .ExtraSchemes "grpc") }}
+    GRPCHost    string `long:"grpc-host" description:"the IP to listen on for gRPC, when not specified it's the same as --host" env:"GRPC_HOST"`
+    GRPCPort    int `long:"grpc-port" description:"the port to listen on for gRPC connections, defaults to a random value" env:"GRPC_PORT"`
+    gRPCServerL net.Listener
+    {{ end }}{{ if (hasInsecure .Schemes) }}
 	Host string `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
 	Port int    `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`
 	httpServerL   net.Listener{{ end }}{{ if (hasSecure .Schemes) }}
@@ -100,6 +105,18 @@ func (s *Server) Serve() (err error) {
       {{ if or (hasInsecure .Schemes) (hasSecure .Schemes) }}log.Fatalln(err){{ else }}return err{{ end }}
     }
   {{ if or (hasInsecure .Schemes) (hasSecure .Schemes) }}}(s.domainSocketL){{ end }}
+  {{ end }}{{ if (contains .ExtraSchemes "grpc") }}
+  grpcServer := &graceful.Server{Server: new(http.Server)}
+  grpcServer.Handler = s.handler
+
+  s.Logf("Serving {{ humanize .Name }} at grpc://%s", s.gRPCServerL.Addr())
+  {{ if or (hasInsecure .Schemes) (hasSecure .Schemes) }}go func(l net.Listener) {
+  {{ end }}  s := grpc.NewServer()
+
+    if err := s.Serve(l); err != nil {
+      {{ if or (hasInsecure .Schemes) (hasSecure .Schemes) }}log.Fatalln(err){{ else }}return err{{ end }}
+    }
+  {{ if or (hasInsecure .Schemes) (hasSecure .Schemes) }}}(s.gRPCServerL){{ end }}
   {{ end }}{{ if (hasInsecure .Schemes) }}
 	httpServer := &graceful.Server{Server: new(http.Server)}
 	httpServer.Handler = s.handler
@@ -146,6 +163,20 @@ func (s *Server) Listen() error {
 		return err
 	}
 	s.domainSocketL = domSockListener{{ end }}
+    {{ if (contains .ExtraSchemes "grpc") }}if s.GRPCHost == "" {
+        s.GRPCHost = s.Host
+    }
+    gRPCListener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.GRPCHost, s.GRPCPort))
+    if err != nil {
+        return err
+    }
+    gh, gp, err := swag.SplitHostPort(gRPCListener.Addr().String())
+    if err != nil {
+        return err
+    }
+    s.GRPCHost = gh
+    s.GRPCPort = gp
+    s.gRPCServerL = gRPCListener{{ end }}
 	{{ if (hasInsecure .Schemes) }}listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.Host, s.Port))
 	if err != nil {
 		return err

@@ -186,6 +186,17 @@ func (c *clientGenerator) Generate() error {
 				errChan <- err
 			}
 		})
+
+		for _, scheme := range app.ExtraSchemes {
+			if scheme == "grpc" {
+				if err := c.generateGRPCDefinition(&app); err != nil {
+					return err
+				}
+				if err := c.generateGRPCClientImpl(&app); err != nil {
+					return err
+				}
+			}
+		}
 	}
 
 	wg.Wait()
@@ -261,4 +272,15 @@ func (c *clientGenerator) generateEmbeddedSwaggerJSON(app *GenApp) error {
 
 	fp := filepath.Join(c.Target, c.ClientPackage)
 	return writeToFile(fp, swag.ToGoName(app.Name)+"EmbeddedSpec", buf.Bytes())
+}
+
+func (c *clientGenerator) generateGRPCClientImpl(app *GenApp) error {
+	buf := bytes.NewBuffer(nil)
+	if err := gRpcClientImplTemplate.Execute(buf, app); err != nil {
+		return err
+	}
+	log.Println("rendered gRPC client template:", app.Package+"."+swag.ToGoName(app.Name))
+
+	fp := filepath.Join(c.Target, c.ClientPackage, app.Package)
+	return writeToFile(fp, swag.ToGoName(app.Name) + "Grpc", buf.Bytes())
 }

@@ -39,6 +39,9 @@ var (
 	clientParamTemplate    *template.Template
 	clientResponseTemplate *template.Template
 	clientFacadeTemplate   *template.Template
+	gRpcDefTemplate		   *template.Template
+	gRpcServerImplTemplate *template.Template
+	gRpcClientImplTemplate *template.Template
 )
 
 var assets = map[string][]byte{
@@ -57,6 +60,7 @@ var assets = map[string][]byte{
 	"model.gotmpl":                          MustAsset("templates/model.gotmpl"),
 	"header.gotmpl":                         MustAsset("templates/header.gotmpl"),
 	"swagger_json_embed.gotmpl":             MustAsset("templates/swagger_json_embed.gotmpl"),
+	"grpcdef.gotmpl":      					 MustAsset("templates/grpcdef.gotmpl"),
 
 	"server/parameter.gotmpl":    MustAsset("templates/server/parameter.gotmpl"),
 	"server/responses.gotmpl":    MustAsset("templates/server/responses.gotmpl"),
@@ -66,11 +70,13 @@ var assets = map[string][]byte{
 	"server/configureapi.gotmpl": MustAsset("templates/server/configureapi.gotmpl"),
 	"server/main.gotmpl":         MustAsset("templates/server/main.gotmpl"),
 	"server/doc.gotmpl":          MustAsset("templates/server/doc.gotmpl"),
+	"server/grpcimpl.gotmpl":     MustAsset("templates/server/grpcimpl.gotmpl"),
 
 	"client/parameter.gotmpl": MustAsset("templates/client/parameter.gotmpl"),
 	"client/response.gotmpl":  MustAsset("templates/client/response.gotmpl"),
 	"client/client.gotmpl":    MustAsset("templates/client/client.gotmpl"),
 	"client/facade.gotmpl":    MustAsset("templates/client/facade.gotmpl"),
+	"client/grpcimpl.gotmpl":  MustAsset("templates/client/grpcimpl.gotmpl"),
 }
 
 // var (
@@ -102,6 +108,10 @@ func compileTemplates() {
 	configureAPITemplate = template.Must(templates.Get("serverConfigureapi"))
 	mainTemplate = template.Must(templates.Get("serverMain"))
 	mainDocTemplate = template.Must(templates.Get("serverDoc"))
+
+	gRpcDefTemplate = template.Must(templates.Get("grpcdef"))
+	gRpcServerImplTemplate = template.Must(templates.Get("serverGrpcimpl"))
+	gRpcClientImplTemplate = template.Must(templates.Get("clientGrpcimpl"))
 
 	embeddedSpecTemplate = template.Must(templates.Get("swaggerJsonEmbed"))
 

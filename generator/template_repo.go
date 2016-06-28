@@ -112,6 +112,9 @@ var FuncMap template.FuncMap = map[string]interface{}{
 		}
 		return false
 	},
+	"add": func(x, y int) int {
+		return x + y
+	},
 }
 
 // NewRepository creates a new template repository with the provided functions defined

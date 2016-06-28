@@ -297,6 +297,17 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 		}
 	}
 
+	for _, scheme := range app.ExtraSchemes {
+		if scheme == "grpc" {
+			if err := a.generateGRPCDefinition(app); err != nil {
+				return err
+			}
+			if err := a.generateGRPCServeImpl(app); err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -366,6 +377,27 @@ func (a *appGenerator) generateDoc(app *GenApp) error {
 	}
 	log.Println("rendered doc template:", app.Package+"."+swag.ToGoName(app.Name))
 	return writeToFile(filepath.Join(a.Target, a.ServerPackage), "Doc", buf.Bytes())
+}
+
+func (a *appGenerator) generateGRPCDefinition(app *GenApp) error {
+	buf := bytes.NewBuffer(nil)
+	appc := *app
+	appc.Package = "grpc"
+	if err := gRpcDefTemplate.Execute(buf, appc); err != nil {
+		return err
+	}
+	log.Println("rendered gRPC definition template:", appc.Package+"."+swag.ToGoName(appc.Name))
+	return writeFile(filepath.Join(a.Target, appc.Package),
+		swag.ToFileName(swag.ToGoName(appc.Name) + "Grpc")+".proto", buf.Bytes())
+}
+
+func (a *appGenerator) generateGRPCServeImpl(app *GenApp) error {
+	buf := bytes.NewBuffer(nil)
+	if err := gRpcServerImplTemplate.Execute(buf, app); err != nil {
+		return err
+	}
+	log.Println("rendered gRPC server template:", app.Package+"."+swag.ToGoName(app.Name))
+	return writeToFile(filepath.Join(a.Target, a.ServerPackage, app.Package), swag.ToGoName(app.Name) + "Grpc", buf.Bytes())
 }
 
 var mediaTypeNames = map[*regexp.Regexp]string{
