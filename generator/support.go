@@ -192,6 +192,7 @@ func (a *appGenerator) Generate() error {
 			modCopy := mod
 			wg.Do(func() {
 				modCopy.IncludeValidator = true // a.GenOpts.IncludeValidator
+				modCopy.IncludeModel = true
 				gen := &definitionGenerator{
 					Name:             modCopy.Name,
 					SpecDoc:          a.SpecDoc,
