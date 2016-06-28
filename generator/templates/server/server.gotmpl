@@ -10,7 +10,6 @@ import (
 
 	flags "github.com/jessevdk/go-flags"
 	graceful "github.com/tylerb/graceful"
-    {{ if (contains .ExtraSchemes "grpc") }}"google.golang.org/grpc"{{ end }}
 
   {{ range .DefaultImports }}{{ printf "%q" . }}
   {{ end }}
@@ -111,9 +110,12 @@ func (s *Server) Serve() (err error) {
 
   s.Logf("Serving {{ humanize .Name }} at grpc://%s", s.gRPCServerL.Addr())
   {{ if or (hasInsecure .Schemes) (hasSecure .Schemes) }}go func(l net.Listener) {
-  {{ end }}  s := grpc.NewServer()
+  {{ end }}  svc := {{ .Package }}.New{{ pascalize .Name }}GrpcServiceServer(s.api)
+    srv := grpc.NewServer()
 
-    if err := s.Serve(l); err != nil {
+    pb.Register{{ pascalize .Name }}ServiceServer(srv, svc)
+
+    if err := srv.Serve(l); err != nil {
       {{ if or (hasInsecure .Schemes) (hasSecure .Schemes) }}log.Fatalln(err){{ else }}return err{{ end }}
     }
   {{ if or (hasInsecure .Schemes) (hasSecure .Schemes) }}}(s.gRPCServerL){{ end }}

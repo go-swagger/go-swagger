@@ -81,6 +81,7 @@ type GenOpts struct {
 	Spec              string
 	APIPackage        string
 	ModelPackage      string
+	GrpcPackage	      string
 	ServerPackage     string
 	ClientPackage     string
 	Principal         string

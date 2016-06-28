@@ -85,6 +85,7 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts GenOpts
 		Package:         mangleName(swag.ToFileName(opts.ClientPackage), "client"),
 		APIPackage:      mangleName(swag.ToFileName(opts.APIPackage), "api"),
 		ModelsPackage:   mangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
+		GrpcPackage:     mangleName(swag.ToFileName(opts.GrpcPackage), "grpc"),
 		ServerPackage:   mangleName(swag.ToFileName(opts.ServerPackage), "server"),
 		ClientPackage:   mangleName(swag.ToFileName(opts.ClientPackage), "client"),
 		Principal:       opts.Principal,

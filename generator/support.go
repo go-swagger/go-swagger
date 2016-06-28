@@ -108,6 +108,7 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 		Package:         apiPackage,
 		APIPackage:      apiPackage,
 		ModelsPackage:   mangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
+		GrpcPackage:     mangleName(swag.ToFileName(opts.GrpcPackage), "grpc"),
 		ServerPackage:   mangleName(swag.ToFileName(opts.ServerPackage), "server"),
 		ClientPackage:   mangleName(swag.ToFileName(opts.ClientPackage), "client"),
 		Principal:       opts.Principal,
@@ -126,6 +127,7 @@ type appGenerator struct {
 	Package         string
 	APIPackage      string
 	ModelsPackage   string
+	GrpcPackage	    string
 	ServerPackage   string
 	ClientPackage   string
 	Principal       string
@@ -275,6 +277,17 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 		importPath,
 	)
 
+	for _, scheme := range app.ExtraSchemes {
+		if scheme == "grpc" {
+			app.DefaultImports = append(app.DefaultImports, "google.golang.org/grpc")
+
+			if app.Imports == nil {
+				app.Imports = make(map[string]string)
+			}
+			app.Imports["pb"] = filepath.ToSlash(filepath.Join(baseImport(a.Target), a.GrpcPackage))
+		}
+	}
+
 	if err := a.generateAPIBuilder(app); err != nil {
 		return err
 	}
@@ -382,7 +395,7 @@ func (a *appGenerator) generateDoc(app *GenApp) error {
 func (a *appGenerator) generateGRPCDefinition(app *GenApp) error {
 	buf := bytes.NewBuffer(nil)
 	appc := *app
-	appc.Package = "grpc"
+	appc.Package = a.GrpcPackage
 	if err := gRpcDefTemplate.Execute(buf, appc); err != nil {
 		return err
 	}
