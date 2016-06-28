@@ -43,6 +43,7 @@ func (m *Model) Execute(args []string) error {
 			Target:        string(m.Target),
 			APIPackage:    m.APIPackage,
 			ModelPackage:  m.ModelPackage,
+			GrpcPackage:   m.GrpcPackage,
 			ServerPackage: m.ServerPackage,
 			ClientPackage: m.ClientPackage,
 			DumpData:      m.DumpData,

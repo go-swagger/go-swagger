@@ -38,6 +38,7 @@ func (s *Support) Execute(args []string) error {
 			Target:        string(s.Target),
 			APIPackage:    s.APIPackage,
 			ModelPackage:  s.ModelPackage,
+			GrpcPackage:   s.GrpcPackage,
 			ServerPackage: s.ServerPackage,
 			ClientPackage: s.ClientPackage,
 			Principal:     s.Principal,

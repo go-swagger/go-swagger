@@ -23,6 +23,7 @@ type shared struct {
 	Spec          flags.Filename `long:"spec" short:"f" description:"the spec file to use" default:"./swagger.json"`
 	APIPackage    string         `long:"api-package" short:"a" description:"the package to save the operations" default:"operations"`
 	ModelPackage  string         `long:"model-package" short:"m" description:"the package to save the models" default:"models"`
+	GrpcPackage  string          `long:"grpc-package" short:"g" description:"the package to save the gRPC specific code" default:"grpc"`
 	ServerPackage string         `long:"server-package" short:"s" description:"the package to save the server specific code" default:"restapi"`
 	ClientPackage string         `long:"client-package" short:"c" description:"the package to save the client specific code" default:"client"`
 	Target        flags.Filename `long:"target" short:"t" default:"./" description:"the base directory for generating the files"`
@@ -54,6 +55,7 @@ func (s *Server) Execute(args []string) error {
 		Target:            string(s.Target),
 		APIPackage:        s.APIPackage,
 		ModelPackage:      s.ModelPackage,
+		GrpcPackage: 	   s.GrpcPackage,
 		ServerPackage:     s.ServerPackage,
 		ClientPackage:     s.ClientPackage,
 		Principal:         s.Principal,

@@ -38,6 +38,7 @@ func (c *Client) Execute(args []string) error {
 		Target:            string(c.Target),
 		APIPackage:        c.APIPackage,
 		ModelPackage:      c.ModelPackage,
+		GrpcPackage:	   c.GrpcPackage,
 		ServerPackage:     c.ServerPackage,
 		ClientPackage:     c.ClientPackage,
 		Principal:         c.Principal,

@@ -49,6 +49,7 @@ func (o *Operation) Execute(args []string) error {
 			Target:        string(o.Target),
 			APIPackage:    o.APIPackage,
 			ModelPackage:  o.ModelPackage,
+			GrpcPackage:   o.GrpcPackage,
 			ServerPackage: o.ServerPackage,
 			ClientPackage: o.ClientPackage,
 			Principal:     o.Principal,
