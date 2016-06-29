@@ -123,6 +123,9 @@ func (m *definitionGenerator) Generate() error {
 	mod.IncludeValidator = m.IncludeValidator
 	mod.IncludeModel = m.IncludeStruct
 	m.Data = mod
+	if !m.IncludeStruct {
+		m.Name += "_validator"
+	}
 
 	if m.IncludeModel {
 		if err := m.generateModel(); err != nil {
