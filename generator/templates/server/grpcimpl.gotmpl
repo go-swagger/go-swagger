@@ -7,50 +7,75 @@ package {{ .Package }}{{ $package := .Package }}
 // Editing this file might prove futile when you re-run the generate command
 
 import (
+  "encoding"
+
   "golang.org/x/net/context"
-  "google.golang.org/grpc"
 
   {{ range .DefaultImports }}{{ printf "%q" . }}
   {{ end }}
   {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
   {{ end }}
 )
-{{ range .Models }}
-func encode{{ pascalize .PbType }}(v *{{if ne .Package $package}}{{.Package}}.{{end}}{{ .GoType }}) *pb.{{ pascalize .PbType }} {
-    return &pb.{{ pascalize .PbType }} {
-{{ range $i, $param := .Properties }}    {{ camelize .Name | capitalize }}: {{ if and (not .IsMap) .IsNullable }}*{{ end }}v.{{ pascalize .Name }},
-{{ end }}
-    }
-}
-func decode{{ pascalize .PbType }}(v *pb.{{ pascalize .PbType }}) *{{if ne .Package $package}}{{.Package}}.{{end}}{{ .GoType }} {
-    return &{{if ne .Package $package}}{{.Package}}.{{end}}{{ .GoType }} {
-{{ range $i, $param := .Properties }}    {{ pascalize .Name }}: {{ if and (not .IsMap) .IsNullable }}&{{ end }}v.{{ camelize .Name | capitalize }},
-{{ end }}
-    }
-}
-{{ end }}
 {{ $serviceName := pascalize .Name | printf "%sGrpcServiceServer" }}
+{{ $receiver := .ReceiverName }}
 type {{ $serviceName }} struct {
     *{{ pascalize .Name }}API
 }
+
 func New{{ $serviceName }}(api *{{ pascalize .Name }}API) *{{ $serviceName }} {
     return &{{ $serviceName }} { api }
+}
+
+func ({{ .ReceiverName }} *{{ $serviceName }}) Encode(v interface{}) interface{} {
+    switch t := v.(type) { {{ range .Models }}
+    case *{{if ne .Package $package}}{{.Package}}.{{end}}{{ .GoType }}:
+        return &pb.{{ .PbType }} {
+        {{ range .Properties }}    {{ camelize .Name | capitalize }}: {{ if and .IsPrimitive (not .IsCustomFormatter) }}{{ if .IsNullable }}*{{ end }}t.{{ pascalize .Name }}{{ else }} {{ $receiver }}.Encode(t.{{ pascalize .Name }}).({{ if not .IsPrimitive }}*pb.{{ end }}{{ .PbType }}){{ end }},
+        {{ end }}}
+    {{ end }}
+    case encoding.TextMarshaler:
+        if s, err := t.MarshalText(); err == nil {
+            return s
+        }
+    }
+
+    return v
+}
+
+func ({{ .ReceiverName }} *{{ $serviceName }}) Decode(v interface{}) interface{} {
+    switch t := v.(type) { {{ range .Models }}
+    case *pb.{{ .PbType }}:
+        p := &{{if ne .Package $package}}{{.Package}}.{{end}}{{ .GoType }} {
+        {{ range .Properties }}{{ if not .IsCustomFormatter }}    {{ pascalize .Name }}: {{ if .IsPrimitive }}{{ if .IsNullable }}&{{ end }}t.{{ camelize .Name | capitalize }}{{ else }} {{$receiver}}.Decode(t.{{ camelize .Name | capitalize }}).(*{{ .GoType }}){{ end }},{{ end }}
+        {{ end }}}
+        {{ range .Properties }}
+        {{ if .IsCustomFormatter }}
+        if err := p.{{ pascalize .Name }}.UnmarshalText([]byte(t.{{ camelize .Name | capitalize }})); err != nil {
+            return err
+        }
+        {{ end }}
+        {{ end }}
+        return p
+    {{ end }}}
+
+    return v
 }
 {{ range .Operations }}
 func ({{.ReceiverName}} *{{ $serviceName }}) {{ pascalize .Name }}(ctx context.Context, req *pb.{{ pascalize .Name }}Request) (*pb.{{ pascalize .Name }}Response, error) {
     params := {{if ne .Package $package}}{{.Package}}.{{end}}{{ pascalize .Name }}Params {
-        {{ range .Params }}{{ pascalize .Name }}: {{ if .IsComplexObject }}decode{{ pascalize .PbType }}(req.{{ camelize .Name | capitalize }}){{ else }} req.{{ camelize .Name | capitalize }}{{ end }},
-        {{ end }}
-    }
+        {{ range .Params }}{{ if not .IsCustomFormatter }}{{ pascalize .Name }}: {{ if .IsComplexObject }}{{ $receiver }}.Decode(req.{{ camelize .Name | capitalize }}).(*{{ .GoType }}){{ else }} req.{{ camelize .Name | capitalize }}{{ end }}{{ end }},
+    {{ end }}}
+    {{ range .Params }}{{ if .IsCustomFormatter }}params.{{ pascalize .Name }}.UnmarshalText(req.{{ camelize .Name | capitalize }}){{ end }}{{ end }}
 
     res := {{ .ReceiverName }}.{{ if ne .Package $package }}{{ pascalize .Package }}{{ end }}{{ pascalize .Name }}Handler.Handle(params, nil)
+
     {{ $responseName := pascalize .Name | printf "%sResponse" }}
     switch resp := res.(type) {
     {{ range .Responses }}case *{{ if ne .Package $package }}{{ .Package }}.{{ end }}{{ pascalize .Name }}:
         return &pb.{{ $responseName }} {
             &pb.{{ $responseName }}_{{ pascalize .Name  }} {
                 &pb.{{ pascalize .Name  }}{
-                    {{ with .Schema }}{{ if .IsComplexObject }}encode{{ pascalize .PbType }}(resp.Payload){{ else }}resp.Payload{{ end }},{{ end }}
+                    {{ with .Schema }}{{ if .IsPrimitive }}{{ if .IsNullable }}*{{ end }}resp.Payload{{ else }} {{ $receiver }}.Encode(resp.Payload).(*pb.{{ pascalize .PbType }}){{ end }},{{ end }}
                 },
             },
         }, nil
@@ -60,12 +85,12 @@ func ({{.ReceiverName}} *{{ $serviceName }}) {{ pascalize .Name }}(ctx context.C
         return &pb.{{ $responseName }} {
             &pb.{{ $responseName }}_{{ pascalize .Name  }} {
                 &pb.{{ pascalize .Name  }}{
-                    {{ with .Schema }}{{ if .IsComplexObject }}encode{{ pascalize .PbType }}(resp.Payload){{ else }}resp.Payload{{ end }},{{ end }}
+                    {{ with .Schema }}{{ if .IsPrimitive }}{{ if .IsNullable }}*{{ end }}resp.Payload{{ else }} {{ $receiver }}.Encode(resp.Payload).(*pb.{{ pascalize .PbType }}){{ end }},{{ end }}
                 },
             },
         }, nil
     default:
-        return &pb.{{ $responseName }} { &pb.{{ $responseName }}_{{ pascalize .Name  }} { new(pb.{{ pascalize .Name }}) } }, nil
+        return &pb.{{ $responseName }} { &pb.{{ $responseName }}_{{ pascalize .Name  }} { &pb.{{ pascalize .Name }}{} } }, nil
     {{ end }}}
 }
 {{ end }}

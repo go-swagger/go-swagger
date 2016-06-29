@@ -279,8 +279,6 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 
 	for _, scheme := range app.ExtraSchemes {
 		if scheme == "grpc" {
-			app.DefaultImports = append(app.DefaultImports, "google.golang.org/grpc")
-
 			if app.Imports == nil {
 				app.Imports = make(map[string]string)
 			}
@@ -315,6 +313,9 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 			if err := a.generateGRPCDefinition(app); err != nil {
 				return err
 			}
+
+			app.DefaultImports = append(app.DefaultImports, "google.golang.org/grpc")
+
 			if err := a.generateGRPCServeImpl(app); err != nil {
 				return err
 			}
@@ -401,7 +402,7 @@ func (a *appGenerator) generateGRPCDefinition(app *GenApp) error {
 	}
 	log.Println("rendered gRPC definition template:", appc.Package+"."+swag.ToGoName(appc.Name))
 	return writeFile(filepath.Join(a.Target, appc.Package),
-		swag.ToFileName(swag.ToGoName(appc.Name) + "Grpc")+".proto", buf.Bytes())
+		swag.ToFileName(swag.ToGoName(appc.Name))+".proto", buf.Bytes())
 }
 
 func (a *appGenerator) generateGRPCServeImpl(app *GenApp) error {
