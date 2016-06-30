@@ -277,7 +277,7 @@ func (c *clientGenerator) generateEmbeddedSwaggerJSON(app *GenApp) error {
 
 func (c *clientGenerator) generateGRPCClientImpl(app *GenApp) error {
 	buf := bytes.NewBuffer(nil)
-	if err := gRpcClientImplTemplate.Execute(buf, app); err != nil {
+	if err := gRPCClientImplTemplate.Execute(buf, app); err != nil {
 		return err
 	}
 	log.Println("rendered gRPC client template:", app.Package+"."+swag.ToGoName(app.Name))

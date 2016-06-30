@@ -397,7 +397,7 @@ func (a *appGenerator) generateGRPCDefinition(app *GenApp) error {
 	buf := bytes.NewBuffer(nil)
 	appc := *app
 	appc.Package = a.GrpcPackage
-	if err := gRpcDefTemplate.Execute(buf, appc); err != nil {
+	if err := gRPCDefTemplate.Execute(buf, appc); err != nil {
 		return err
 	}
 	log.Println("rendered gRPC definition template:", appc.Package+"."+swag.ToGoName(appc.Name))
@@ -407,7 +407,7 @@ func (a *appGenerator) generateGRPCDefinition(app *GenApp) error {
 
 func (a *appGenerator) generateGRPCServeImpl(app *GenApp) error {
 	buf := bytes.NewBuffer(nil)
-	if err := gRpcServerImplTemplate.Execute(buf, app); err != nil {
+	if err := gRPCServerImplTemplate.Execute(buf, app); err != nil {
 		return err
 	}
 	log.Println("rendered gRPC server template:", app.Package+"."+swag.ToGoName(app.Name))

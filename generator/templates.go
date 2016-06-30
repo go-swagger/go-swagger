@@ -39,9 +39,9 @@ var (
 	clientParamTemplate    *template.Template
 	clientResponseTemplate *template.Template
 	clientFacadeTemplate   *template.Template
-	gRpcDefTemplate		   *template.Template
-	gRpcServerImplTemplate *template.Template
-	gRpcClientImplTemplate *template.Template
+	gRPCDefTemplate		   *template.Template
+	gRPCServerImplTemplate *template.Template
+	gRPCClientImplTemplate *template.Template
 )
 
 var assets = map[string][]byte{
@@ -111,9 +111,9 @@ func compileTemplates() {
 	mainTemplate = template.Must(templates.Get("serverMain"))
 	mainDocTemplate = template.Must(templates.Get("serverDoc"))
 
-	gRpcDefTemplate = template.Must(templates.Get("grpcdef"))
-	gRpcServerImplTemplate = template.Must(templates.Get("serverGrpcimpl"))
-	gRpcClientImplTemplate = template.Must(templates.Get("clientGrpcimpl"))
+	gRPCDefTemplate = template.Must(templates.Get("grpcdef"))
+	gRPCServerImplTemplate = template.Must(templates.Get("serverGrpcimpl"))
+	gRPCClientImplTemplate = template.Must(templates.Get("clientGrpcimpl"))
 
 	embeddedSpecTemplate = template.Must(templates.Get("swaggerJsonEmbed"))
 
