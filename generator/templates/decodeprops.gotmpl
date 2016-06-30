@@ -29,6 +29,8 @@
         {{- else -}}
         if r, err := {{ $receiverName }}.Decode(item); err != nil {
             return nil, err
+        } else if r == nil {
+            // skip empty parameter
         } else if e, ok := r.(*{{ .GoType }}); !ok {
             return nil, errors.New("wrong decoded type")
         } else {
@@ -40,6 +42,8 @@
     {{ else if not .IsPrimitive }}
     if r, err := {{ $receiverName }}.Decode({{ $varName }}.{{ camelize .Name | capitalize }}); err != nil {
         return nil, err
+    } else if r == nil {
+        // skip empty parameter
     } else if e, ok := r.(*{{ .GoType }}); !ok {
         return nil, errors.New("wrong decoded type")
     } else {

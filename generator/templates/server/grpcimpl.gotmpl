@@ -28,6 +28,10 @@ func New{{ $serviceName }}(api *{{ pascalize .Name }}API) *{{ $serviceName }} {
 }
 
 func ({{ .ReceiverName }} *{{ $serviceName }}) Encode(v interface{}) interface{} {
+    if v == nil {
+        return nil
+    }
+
     switch t := v.(type) {
     {{- range .Models }}
     case *{{if ne .Package $packageName}}{{.Package}}.{{end}}{{ .GoType }}:
@@ -54,6 +58,8 @@ func ({{ .ReceiverName }} *{{ $serviceName }}) Encode(v interface{}) interface{}
 func ({{ .ReceiverName }} *{{ $serviceName }}) Decode(v interface{}) (interface{}, error) {
     switch t := v.(type) { {{ range .Models }}
     case *pb.{{ .PbType }}:
+        if t == nil { return nil, nil }
+
         p := &{{if ne .Package $packageName}}{{.Package}}.{{end}}{{ .GoType }} {{ template "decodeprops" dict "values" .Properties "receiverName" .ReceiverName "varName" "t" "retName" "p" }}
         return p, nil
     {{ end }}}
