@@ -16,6 +16,14 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/PuerkitoBio/urlesc",
+			"repository": "https://github.com/PuerkitoBio/urlesc",
+			"vcs": "git",
+			"revision": "5fa9ff0392746aeae1c4b37fcc42c65afa7a9587",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/asaskevich/govalidator",
 			"repository": "https://github.com/asaskevich/govalidator",
 			"vcs": "git",

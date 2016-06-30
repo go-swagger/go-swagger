@@ -3,7 +3,6 @@ clone:
 
 matrix:
   GO_VERSION:
-    - "1.5"
     - "1.6"
 
 build:
@@ -18,13 +17,13 @@ build:
       - go get -u gopkg.in/matm/v1/gocov-html
       - go get -u github.com/cee-dub/go-junit-report
       # - go get -u github.com/nu7hatch/gouuid
-      - go get -u github.com/stretchr/testify/assert
+      # - go get -u github.com/stretchr/testify/assert
       # - go get -u github.com/davecgh/go-spew/spew
       # - go get -u github.com/asaskevich/govalidator
       # - go get -u github.com/naoina/denco
-      - go get -u github.com/go-openapi/runtime
-      - go get -u github.com/go-openapi/strfmt
-      - go get -u github.com/go-swagger/scan-repo-boundary/makeplans
+      # - go get -u github.com/go-openapi/runtime
+      # - go get -u github.com/go-openapi/strfmt
+      # - go get -u github.com/go-swagger/scan-repo-boundary/makeplans
       - ./hack/build-drone.sh
       - mkdir -p dist
       - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -installsuffix netgo -o dist/swagger ./cmd/swagger
@@ -36,8 +35,8 @@ build:
       GOCOVMODE: "count"
       GO15VENDOREXPERIMENT: "1"
     commands:
-      - go get -u github.com/asaskevich/govalidator
-      - go get -u github.com/go-openapi/runtime
+      # - go get -u github.com/asaskevich/govalidator
+      # - go get -u github.com/go-openapi/runtime
       - go get -u github.com/go-swagger/scan-repo-boundary/makeplans
       - go install ./cmd/swagger
       - ./hack/run-canary.sh
