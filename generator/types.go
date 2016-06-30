@@ -247,6 +247,7 @@ func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType)
 		result.IsNullable = false
 		if items == nil {
 			result.GoType = "[]" + iface
+			result.PbType = "[]" + pbAny
 			return
 		}
 		res := simpleResolvedType(items.Type, items.Format, items.Items)

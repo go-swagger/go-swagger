@@ -1,0 +1,31 @@
+{ {{ $varName := .varName }} {{ range .values }}{{ if and .IsPrimitive (not .IsCustomFormatter) }}{{ pascalize .Name }}: {{ if .IsNullable }}&{{ end }}{{ $varName }}.{{ camelize .Name | capitalize }},{{ end }}{{ end }}}
+    {{ $receiverName := .receiverName }}{{ $retName := .retName }}
+    {{ range .values }}{{ if .IsCustomFormatter }}
+    if err := {{ $retName }}.{{ pascalize .Name }}.UnmarshalText([]byte({{ $varName }}.{{ camelize .Name | capitalize }})); err != nil {
+        return nil, err
+    }
+    {{ else if .IsArray }}{{ $arrayName := printf "%s.%s" $retName (pascalize .Name) }}
+    for _, item := range {{ $varName }}.{{ camelize .Name | capitalize }} { {{ with .Child }}
+        {{ if .IsCustomFormatter }}var e {{ .GoType }}
+        if err := e.UnmarshalText([]byte({{ $varName }}.{{ camelize .Name | capitalize }})); err != nil {
+            return nil, err
+        } else {
+            {{ $arrayName }} = append({{ $arrayName }}, e)
+        }
+        {{ else if .IsPrimitive }}{{ $arrayName }} = append({{ $arrayName }}, {{ if .IsNullable }}&{{ end }}item){{ else }}if r, err := {{ $receiverName }}.Decode(item); err != nil {
+            return nil, err
+        } else if e, ok := r.(*{{ .GoType }}); !ok {
+            return nil, errors.New("wrong decoded type")
+        } else {
+            {{ $arrayName }} = append({{ $arrayName }}, e)
+        }{{ end }}
+    {{ end }}}
+    {{ else if not .IsPrimitive }}
+    if r, err := {{ $receiverName }}.Decode({{ $varName }}.{{ camelize .Name | capitalize }}); err != nil {
+        return nil, err
+    } else if e, ok := r.(*{{ .GoType }}); !ok {
+        return nil, errors.New("wrong decoded type")
+    } else {
+        {{ $retName }}.{{ pascalize .Name }} = e
+    }
+    {{ end }}{{ end }}

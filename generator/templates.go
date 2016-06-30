@@ -61,6 +61,7 @@ var assets = map[string][]byte{
 	"header.gotmpl":                         MustAsset("templates/header.gotmpl"),
 	"swagger_json_embed.gotmpl":             MustAsset("templates/swagger_json_embed.gotmpl"),
 	"grpcdef.gotmpl":      					 MustAsset("templates/grpcdef.gotmpl"),
+	"decodeprops.gotmpl":					 MustAsset("templates/decodeprops.gotmpl"),
 
 	"server/parameter.gotmpl":    MustAsset("templates/server/parameter.gotmpl"),
 	"server/responses.gotmpl":    MustAsset("templates/server/responses.gotmpl"),

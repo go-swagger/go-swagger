@@ -18,11 +18,11 @@ message {{ pascalize .Name }}Request {
 {{ end }}}
 
 {{ with .DefaultResponse }}message {{ pascalize .Name }} {
-  {{ with .Schema }}{{ .PbType }} {{ camelize .Name }} = 1;{{ end }}
+  {{ with .Schema }}{{ .PbType }}  {{ camelize .Name }} = 1;{{ end }}
 }
 {{ end }}
 {{ range .Responses }}message {{ pascalize .Name }} {
-  {{ with .Schema }}{{ .PbType }} {{ camelize .Name }} = 1;{{ end }}
+  {{ with .Schema }}{{ .PbType }}  {{ camelize .Name }} = 1;{{ end }}
 }
 {{ end }}
 message {{ pascalize .Name }}Response {
