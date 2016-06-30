@@ -1,0 +1,43 @@
+package main
+
+import (
+    "log"
+    "os"
+    "net/url"
+
+    "golang.org/x/net/context"
+    "google.golang.org/grpc"
+
+    {{range .DefaultImports}}{{printf "%q" .}}
+    {{end}}
+    {{range $key, $value := .Imports}}{{$key}} {{ printf "%q" $value}}
+    {{end}}
+)
+
+func main() {
+    if len(os.Args) < 2 {
+        log.Fatalf("missing server address")
+    }
+
+    conn, err := grpc.Dial(os.Args[1], grpc.WithInsecure())
+
+    if err != nil {
+        log.Fatalf("did not connect: %v", err)
+    }
+
+    defer conn.Close()
+
+    c := pb.New{{ .Name }}ServiceClient(conn)
+
+    {{ range .Operations }}
+    {
+        req := new(pb.{{ pascalize .Name }}Request)
+
+        if res, err := c.{{ pascalize .Name }}(context.Background(), req); err != nil {
+            log.Fatalf("call {{ pascalize .Name }} failed, %v", err)
+        } else {
+            log.Printf("{{ pascalize .Name }} response, %v", res)
+        }
+    }
+    {{ end }}
+}

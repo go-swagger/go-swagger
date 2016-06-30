@@ -190,11 +190,21 @@ func (c *clientGenerator) Generate() error {
 
 		for _, scheme := range app.ExtraSchemes {
 			if scheme == "grpc" {
+				if app.Imports == nil {
+					app.Imports = make(map[string]string)
+				}
+				app.Imports["pb"] = filepath.ToSlash(filepath.Join(baseImport(c.Target), c.GrpcPackage))
+
 				if err := c.generateGRPCDefinition(&app); err != nil {
 					return err
 				}
 				if err := c.generateGRPCClientImpl(&app); err != nil {
 					return err
+				}
+				if c.GenOpts == nil || c.GenOpts.IncludeMain {
+					if err := c.generateGRPCClientMain(&app); err != nil {
+						return err
+					}
 				}
 			}
 		}
@@ -284,4 +294,20 @@ func (c *clientGenerator) generateGRPCClientImpl(app *GenApp) error {
 
 	fp := filepath.Join(c.Target, c.ClientPackage, app.Package)
 	return writeToFile(fp, swag.ToGoName(app.Name) + "Grpc", buf.Bytes())
+}
+
+func (c *clientGenerator) generateGRPCClientMain(app *GenApp) error {
+	fp := filepath.Join(c.Target, "cmd", swag.ToCommandName(swag.ToGoName(app.Name)+"Client"))
+	if fileExists(fp, "main") && !c.GenOpts.IncludeMain {
+		log.Println("skipped (already exists) main template:", app.Package+".Main")
+		return nil
+	}
+
+	buf := bytes.NewBuffer(nil)
+	if err := gRPCClientMainTemplate.Execute(buf, app); err != nil {
+		return err
+	}
+	log.Println("rendered gRPC client main template:", app.Package+"."+swag.ToGoName(app.Name))
+
+	return writeToFile(fp, "main", buf.Bytes())
 }

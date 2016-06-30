@@ -42,6 +42,7 @@ var (
 	gRPCDefTemplate		   *template.Template
 	gRPCServerImplTemplate *template.Template
 	gRPCClientImplTemplate *template.Template
+	gRPCClientMainTemplate *template.Template
 )
 
 var assets = map[string][]byte{
@@ -79,6 +80,7 @@ var assets = map[string][]byte{
 	"client/client.gotmpl":    MustAsset("templates/client/client.gotmpl"),
 	"client/facade.gotmpl":    MustAsset("templates/client/facade.gotmpl"),
 	"client/grpcimpl.gotmpl":  MustAsset("templates/client/grpcimpl.gotmpl"),
+	"client/grpcmain.gotmpl":  MustAsset("templates/client/grpcmain.gotmpl"),
 }
 
 // var (
@@ -113,7 +115,6 @@ func compileTemplates() {
 
 	gRPCDefTemplate = template.Must(templates.Get("grpcdef"))
 	gRPCServerImplTemplate = template.Must(templates.Get("serverGrpcimpl"))
-	gRPCClientImplTemplate = template.Must(templates.Get("clientGrpcimpl"))
 
 	embeddedSpecTemplate = template.Must(templates.Get("swaggerJsonEmbed"))
 
@@ -126,6 +127,8 @@ func compileTemplates() {
 
 	clientFacadeTemplate = template.Must(templates.Get("clientFacade"))
 
+	gRPCClientImplTemplate = template.Must(templates.Get("clientGrpcimpl"))
+	gRPCClientMainTemplate = template.Must(templates.Get("clientGrpcmain"))
 }
 
 func asJSON(data interface{}) (string, error) {
