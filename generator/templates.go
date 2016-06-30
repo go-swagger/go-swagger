@@ -72,6 +72,7 @@ var assets = map[string][]byte{
 	"server/main.gotmpl":         MustAsset("templates/server/main.gotmpl"),
 	"server/doc.gotmpl":          MustAsset("templates/server/doc.gotmpl"),
 	"server/grpcimpl.gotmpl":     MustAsset("templates/server/grpcimpl.gotmpl"),
+	"server/encoderesp.gotmpl":   MustAsset("templates/server/encoderesponse.gotmpl"),
 
 	"client/parameter.gotmpl": MustAsset("templates/client/parameter.gotmpl"),
 	"client/response.gotmpl":  MustAsset("templates/client/response.gotmpl"),
