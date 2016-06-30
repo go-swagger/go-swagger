@@ -61,8 +61,13 @@ func ({{.ReceiverName}} *{{ $serviceName }}) {{ pascalize .Name }}(ctx context.C
     switch resp := res.(type) {
     {{ range .Responses }}{{ template "serverEncoderesp" dict "response" . "packageName" $packageName "receiverName" $receiverName "responseName" $responseName }}{{ end }}
     {{ with .DefaultResponse }}{{ template "serverEncoderesp" dict "response" . "packageName" $packageName "receiverName" $receiverName "responseName" $responseName }}
+
     default:
-        return &pb.{{ $responseName }} { &pb.{{ $responseName }}_{{ pascalize .Name  }} { &pb.{{ pascalize .Name }}{} } }, nil
+        return &pb.{{ $responseName }} {
+            &pb.{{ $responseName }}_{{ pascalize .Name  }} {
+                &pb.{{ pascalize .Name }}{},
+            },
+        }, nil
     {{ end }}}
 }
 {{ end }}

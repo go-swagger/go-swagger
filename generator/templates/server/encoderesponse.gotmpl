@@ -1,10 +1,21 @@
-{{ $packageName := .packageName }}{{ $responseName := .responseName }}{{ $receiverName := .receiverName }}
-{{ with .response }}case *{{ if ne .Package $packageName }}{{ .Package }}.{{ end }}{{ pascalize .Name }}:
+{{ $packageName := .packageName }}
+{{ $responseName := .responseName }}
+{{ $receiverName := .receiverName }}
+{{- with .response -}}
+case *{{ if ne .Package $packageName }}{{ .Package }}.{{ end }}{{ pascalize .Name }}:
+    {{- with .Schema }}
+        payload :=
+        {{- if .IsPrimitive -}}
+            {{ if .IsNullable }}*{{ end }}resp.Payload
+        {{- else -}}
+            {{ $receiverName }}.Encode(resp.Payload).(*pb.{{ pascalize .PbType }})
+        {{- end }}
+    {{ end }}
         return &pb.{{ $responseName }} {
             &pb.{{ $responseName }}_{{ pascalize .Name  }} {
                 &pb.{{ pascalize .Name  }}{
-                    {{ with .Schema }}{{ if .IsPrimitive }}{{ if .IsNullable }}*{{ end }}resp.Payload{{ else }} {{ $receiverName }}.Encode(resp.Payload).(*pb.{{ pascalize .PbType }}){{ end }},{{ end }}
+                    {{ with .Schema }}payload,{{ end }}
                 },
             },
         }, nil
-{{ end }}
+{{- end -}}
