@@ -10,8 +10,9 @@ import (
 
 // Writer is a JSON writer.
 type Writer struct {
-	Error  error
-	Buffer buffer.Buffer
+	EscapeLtGt bool
+	Error      error
+	Buffer     buffer.Buffer
 }
 
 // Size returns the size of the data that was written out.
@@ -224,6 +225,10 @@ func (w *Writer) String(s string) {
 			escape = '\\'
 		case '"':
 			escape = '"'
+		case '<', '>':
+			if !w.EscapeLtGt {
+				continue
+			}
 		default:
 			if c >= 0x20 {
 				// no escaping is required

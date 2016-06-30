@@ -53,7 +53,7 @@ type helpOptions struct {
 	} `command:"hidden-command" description:"A hidden command" hidden:"yes"`
 
 	Args struct {
-		Filename     string  `positional-arg-name:"filename" description:"A filename"`
+		Filename     string  `positional-arg-name:"filename" description:"A filename with a long description to trigger line wrapping"`
 		Number       int     `positional-arg-name:"num" description:"A number"`
 		HiddenInHelp float32 `positional-arg-name:"hidden-in-help" required:"yes"`
 	} `positional-args:"yes"`
@@ -167,7 +167,8 @@ Help Options:
   -h, --help                                Show this help message
 
 Arguments:
-  filename:                                 A filename
+  filename:                                 A filename with a long description
+                                            to trigger line wrapping
   num:                                      A number
 
 Available commands:
