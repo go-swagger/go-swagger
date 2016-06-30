@@ -4,11 +4,22 @@
 {{- with .response -}}
 case *{{ if ne .Package $packageName }}{{ .Package }}.{{ end }}{{ pascalize .Name }}:
     {{- with .Schema }}
-        payload :=
-        {{- if .IsPrimitive -}}
-            {{ if .IsNullable }}*{{ end }}resp.Payload
+        {{- if and .IsPrimitive (not .IsCustomFormatter) -}}
+            payload := {{ if .IsNullable }}*{{ end }}resp.Payload
+        {{- else if .IsArray -}}
+        {{- with .ElemType -}}
+            {{- if and .IsPrimitive (not .IsCustomFormatter) -}}
+            payload := {{ if .IsNullable }}*{{ end }}resp.Payload
+            {{- else -}}
+            var payload []*pb.{{ .PbType }}
+
+            for _, item := range resp.Payload {
+                payload = append(payload, {{ $receiverName }}.Encode(item).(*pb.{{ .PbType }}))
+            }
+            {{- end -}}
+        {{- end -}}
         {{- else -}}
-            {{ $receiverName }}.Encode(resp.Payload).(*pb.{{ pascalize .PbType }})
+            payload := {{ $receiverName }}.Encode(resp.Payload).(*pb.{{ .PbType }})
         {{- end }}
     {{ end }}
         return &pb.{{ $responseName }} {

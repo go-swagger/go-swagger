@@ -28,11 +28,19 @@ func New{{ $serviceName }}(api *{{ pascalize .Name }}API) *{{ $serviceName }} {
 }
 
 func ({{ .ReceiverName }} *{{ $serviceName }}) Encode(v interface{}) interface{} {
-    switch t := v.(type) { {{ range .Models }}
+    switch t := v.(type) {
+    {{- range .Models }}
     case *{{if ne .Package $packageName}}{{.Package}}.{{end}}{{ .GoType }}:
         return &pb.{{ .PbType }} {
-        {{ range .Properties }}    {{ camelize .Name | capitalize }}: {{ if and .IsPrimitive (not .IsCustomFormatter) }}{{ if .IsNullable }}*{{ end }}t.{{ pascalize .Name }}{{ else }} {{ $receiverName }}.Encode(t.{{ pascalize .Name }}).({{ if not .IsPrimitive }}*pb.{{ end }}{{ .PbType }}){{ end }},
-        {{ end }}}
+        {{- range .Properties }}
+            {{ camelize .Name | capitalize }}:
+                {{ if and .IsPrimitive (not .IsCustomFormatter) -}}
+                    {{ if .IsNullable }}*{{ end }}t.{{ pascalize .Name }}
+                {{- else -}}
+                    {{ $receiverName }}.Encode(t.{{ pascalize .Name }}).({{ if not .IsPrimitive }}*pb.{{ end }}{{ .PbType }})
+                {{- end }},
+        {{- end }}
+    }
     {{ end }}
     case encoding.TextMarshaler:
         if s, err := t.MarshalText(); err == nil {
@@ -54,13 +62,16 @@ func ({{ .ReceiverName }} *{{ $serviceName }}) Decode(v interface{}) (interface{
 }
 {{ range .Operations }}
 func ({{.ReceiverName}} *{{ $serviceName }}) {{ pascalize .Name }}(ctx context.Context, req *pb.{{ pascalize .Name }}Request) (*pb.{{ pascalize .Name }}Response, error) {
-    params := {{if ne .Package $packageName}}{{.Package}}.{{end}}{{ pascalize .Name }}Params {{ template "decodeprops" dict "values" .Params  "receiverName" $receiverName "varName" "req" "retName" "params" }}
+    params := {{ if ne .Package $packageName }}{{ .Package }}.{{ end }}{{ pascalize .Name }}Params {{ template "decodeprops" dict "values" .Params  "receiverName" $receiverName "varName" "req" "retName" "params" }}
 
     res := {{ .ReceiverName }}.{{ if ne .Package $packageName }}{{ pascalize .Package }}{{ end }}{{ pascalize .Name }}Handler.Handle(params, nil)
     {{ $responseName := pascalize .Name | printf "%sResponse" }}
     switch resp := res.(type) {
-    {{ range .Responses }}{{ template "serverEncoderesp" dict "response" . "packageName" $packageName "receiverName" $receiverName "responseName" $responseName }}{{ end }}
-    {{ with .DefaultResponse }}{{ template "serverEncoderesp" dict "response" . "packageName" $packageName "receiverName" $receiverName "responseName" $responseName }}
+    {{- range .Responses -}}
+        {{ template "serverEncoderesp" dict "response" . "packageName" $packageName "receiverName" $receiverName "responseName" $responseName }}
+    {{- end -}}
+    {{- with .DefaultResponse -}}
+        {{ template "serverEncoderesp" dict "response" . "packageName" $packageName "receiverName" $receiverName "responseName" $responseName }}
 
     default:
         return &pb.{{ $responseName }} {
@@ -68,6 +79,6 @@ func ({{.ReceiverName}} *{{ $serviceName }}) {{ pascalize .Name }}(ctx context.C
                 &pb.{{ pascalize .Name }}{},
             },
         }, nil
-    {{ end }}}
+    {{- end -}}}
 }
 {{ end }}
