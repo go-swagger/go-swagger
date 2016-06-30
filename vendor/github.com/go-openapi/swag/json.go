@@ -20,6 +20,9 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+
+	"github.com/mailru/easyjson/jlexer"
+	"github.com/mailru/easyjson/jwriter"
 )
 
 // DefaultJSONNameProvider the default cache for types
@@ -32,14 +35,50 @@ var closers = map[byte]byte{
 	'[': ']',
 }
 
+type ejMarshaler interface {
+	MarshalEasyJSON(w *jwriter.Writer)
+}
+
+type ejUnmarshaler interface {
+	UnmarshalEasyJSON(w *jlexer.Lexer)
+}
+
+// WriteJSON writes json data, prefers finding an appropriate interface to short-circuit the marshaller
+// so it takes the fastest option available.
+func WriteJSON(data interface{}) ([]byte, error) {
+	if d, ok := data.(ejMarshaler); ok {
+		jw := new(jwriter.Writer)
+		d.MarshalEasyJSON(jw)
+		return jw.BuildBytes()
+	}
+	if d, ok := data.(json.Marshaler); ok {
+		return d.MarshalJSON()
+	}
+	return json.Marshal(data)
+}
+
+// ReadJSON reads json data, prefers finding an appropriate interface to short-circuit the unmarshaller
+// so it takes the fastes option available
+func ReadJSON(data []byte, value interface{}) error {
+	if d, ok := value.(ejUnmarshaler); ok {
+		jl := &jlexer.Lexer{Data: data}
+		d.UnmarshalEasyJSON(jl)
+		return jl.Error()
+	}
+	if d, ok := value.(json.Unmarshaler); ok {
+		return d.UnmarshalJSON(data)
+	}
+	return json.Unmarshal(data, value)
+}
+
 // DynamicJSONToStruct converts an untyped json structure into a struct
 func DynamicJSONToStruct(data interface{}, target interface{}) error {
 	// TODO: convert straight to a json typed map  (mergo + iterate?)
-	b, err := json.Marshal(data)
+	b, err := WriteJSON(data)
 	if err != nil {
 		return err
 	}
-	if err := json.Unmarshal(b, target); err != nil {
+	if err := ReadJSON(b, target); err != nil {
 		return err
 	}
 	return nil
