@@ -12,6 +12,9 @@ import (
 
   "golang.org/x/net/context"
 
+  "github.com/go-openapi/strfmt"
+  "github.com/go-openapi/validate"
+
   {{ range .DefaultImports }}{{ printf "%q" . }}
   {{ end }}
   {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
@@ -19,6 +22,10 @@ import (
 )
 {{ $serviceName := pascalize .Name | printf "%sGrpcServiceServer" }}
 {{ $receiverName := .ReceiverName }}
+type ModelValidator interface {
+    Validate(formats strfmt.Registry) error
+}
+
 type {{ $serviceName }} struct {
     *{{ pascalize .Name }}API
 }
@@ -69,6 +76,50 @@ func ({{ .ReceiverName }} *{{ $serviceName }}) Decode(v interface{}) (interface{
 {{ range .Operations }}
 func ({{.ReceiverName}} *{{ $serviceName }}) {{ pascalize .Name }}(ctx context.Context, req *pb.{{ pascalize .Name }}Request) (*pb.{{ pascalize .Name }}Response, error) {
     params := {{ if ne .Package $packageName }}{{ .Package }}.{{ end }}{{ pascalize .Name }}Params {{ template "decodeprops" dict "values" .Params  "receiverName" $receiverName "varName" "req" "retName" "params" }}
+
+    {{ range .Params }}
+    {{if .Required}}
+    if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if not (or .IsAnonymous .IsNullable) }}{{ .GoType }}({{end}}params.{{ pascalize .Name }}{{ if not (or .IsAnonymous .IsNullable) }}){{end}}); err != nil {
+      return nil, err
+    }
+    {{ end }}
+    {{if .MinLength}}
+    if err := validate.MinLength({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, string({{ if .IsNullable }}*{{ end }}params.{{ pascalize .Name }}), {{.MinLength}}); err != nil {
+      return nil, err
+    }
+    {{end}}
+    {{if .MaxLength}}
+    if err := validate.MaxLength({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, string({{ if .IsNullable }}*{{ end }}params.{{ pascalize .Name }}), {{.MaxLength}}); err != nil {
+      return nil, err
+    }
+    {{end}}
+    {{if .Pattern}}
+    if err := validate.Pattern({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, string({{ if .IsNullable }}*{{ end }}params.{{ pascalize .Name }}), `{{.Pattern}}`); err != nil {
+      return nil, err
+    }
+    {{end}}
+    {{if .Minimum}}
+    if err := validate.Minimum{{ if eq .SwaggerType "integer" }}Int{{ end }}({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if eq .SwaggerType "integer" }}int{{ else }}float{{ end }}64({{ if .IsNullable }}*{{ end }}params.{{ pascalize .Name }}), {{.Minimum}}, {{.ExclusiveMinimum}}); err != nil {
+      return nil, err
+    }
+    {{end}}
+    {{if .Maximum}}
+    if err := validate.Maximum{{ if eq .SwaggerType "integer" }}Int{{ end }}({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if eq .SwaggerType "integer" }}int{{ else }}float{{ end }}64({{ if .IsNullable }}*{{ end }}params.{{ pascalize .Name }}), {{.Maximum}}, {{.ExclusiveMaximum}}); err != nil {
+      return nil, err
+    }
+    {{end}}
+    {{if .MultipleOf}}
+    if err := validate.MultipleOf({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, float64({{ if .IsNullable }}*{{ end }}params.{{ pascalize .Name }}), {{.MultipleOf}}); err != nil {
+      return nil, err
+    }
+    {{end}}
+    {{if .Enum}}
+    // value enum
+    if err := {{.ReceiverName}}.validate{{ pascalize .Name }}{{ pascalize .Suffix }}Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if .IsNullable }}*{{ end }}params.{{ pascalize .Name }}); err != nil {
+      return nil, err
+    }
+    {{end}}
+    {{ end }}
 
     res := {{ .ReceiverName }}.{{ if ne .Package $packageName }}{{ pascalize .Package }}{{ end }}{{ pascalize .Name }}Handler.Handle(params, nil)
     {{ $responseName := pascalize .Name | printf "%sResponse" }}

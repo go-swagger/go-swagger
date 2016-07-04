@@ -34,6 +34,12 @@
         } else if e, ok := r.(*{{ .GoType }}); !ok {
             return nil, errors.New("wrong decoded type")
         } else {
+            if v, ok := r.(ModelValidator); ok {
+                if err := v.Validate({{ $receiverName }}.formats); err != nil {
+                    return nil, err
+                }
+            }
+
             {{ $arrayName }} = append({{ $arrayName }}, e)
         }
         {{- end -}}
@@ -47,6 +53,12 @@
     } else if e, ok := r.(*{{ .GoType }}); !ok {
         return nil, errors.New("wrong decoded type")
     } else {
+        if v, ok := r.(ModelValidator); ok {
+            if err := v.Validate({{ $receiverName }}.formats); err != nil {
+                return nil, err
+            }
+        }
+
         {{ $retName }}.{{ pascalize .Name }} = e
     }
     {{ end }}
