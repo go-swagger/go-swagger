@@ -26,6 +26,7 @@ type Client struct {
     TLSCACertificate    flags.Filename `long:"tls-ca-certificate" description:"the CA certificate to use for secure connections" env:"TLS_CA_CERTIFICATE"`
 }
 
+// NewClient creates a new gRPC {{ humanize .Name }} client but does not configure it
 func NewClient() *Client {
     c := new(Client)
 
