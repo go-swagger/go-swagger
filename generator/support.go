@@ -194,11 +194,15 @@ func (a *appGenerator) Generate() error {
 			modCopy := mod
 			wg.Do(func() {
 				modCopy.IncludeValidator = true // a.GenOpts.IncludeValidator
+				modCopy.IncludeModel = true
 				gen := &definitionGenerator{
-					Name:    modCopy.Name,
-					SpecDoc: a.SpecDoc,
-					Target:  filepath.Join(a.Target, a.ModelsPackage),
-					Data:    &modCopy,
+					Name:             modCopy.Name,
+					SpecDoc:          a.SpecDoc,
+					Target:           filepath.Join(a.Target, a.ModelsPackage),
+					Data:             &modCopy,
+					IncludeModel:     true,
+					IncludeStruct:    true,
+					IncludeValidator: true,
 				}
 				if err := gen.generateModel(); err != nil {
 					errChan <- err
@@ -656,6 +660,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			a.ModelsPackage,
 			m,
 			a.SpecDoc,
+			true,
 			true,
 		)
 		if err != nil {
