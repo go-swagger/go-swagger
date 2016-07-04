@@ -9,8 +9,25 @@ import (
   "golang.org/x/net/context"
   "google.golang.org/grpc"
 
+  flags "github.com/jessevdk/go-flags"
+
   {{ range .DefaultImports }}{{ printf "%q" . }}
   {{ end }}
   {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
   {{ end }}
 )
+
+// Client for the {{ humanize .Name }} API
+type Client struct {
+    GRPCHost        string `long:"grpc-host" description:"the IP to connect to for gRPC" required:"true" env:"GRPC_HOST"`
+    GRPCPort        int `long:"grpc-port" description:"the port to connect to for gRPC connections" required:"true" env:"GRPC_PORT"`
+    GRPCServerName  string `long:"server-name" description:"The server name use to verify the hostname returned by TLS handshake" env:"GRPC_SERVER_NAME"`
+
+    TLSCACertificate    flags.Filename `long:"tls-ca-certificate" description:"the CA certificate to use for secure connections" env:"TLS_CA_CERTIFICATE"`
+}
+
+func NewClient() *Client {
+    c := new(Client)
+
+    return c
+}

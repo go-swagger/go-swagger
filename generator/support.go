@@ -314,7 +314,7 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 				return err
 			}
 
-			app.DefaultImports = append(app.DefaultImports, "google.golang.org/grpc")
+			app.DefaultImports = append(app.DefaultImports, "google.golang.org/grpc", "google.golang.org/grpc/credentials")
 
 			if err := a.generateGRPCServeImpl(app); err != nil {
 				return err

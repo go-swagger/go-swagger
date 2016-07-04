@@ -108,10 +108,20 @@ func (s *Server) Serve() (err error) {
   grpcServer := &graceful.Server{Server: new(http.Server)}
   grpcServer.Handler = s.handler
 
+  var opts []grpc.ServerOption
+
+  if len(s.TLSCertificate) > 0 && len(s.TLSCertificateKey) > 0 {
+    if creds, err := credentials.NewServerTLSFromFile(string(s.TLSCertificate), string(s.TLSCertificateKey)); err != nil {
+      return fmt.Errorf("Failed to generate credentials %v", err)
+    } else {
+      opts = append(opts, grpc.Creds(creds))
+    }
+  }
+
   s.Logf("Serving {{ humanize .Name }} at grpc://%s", s.gRPCServerL.Addr())
   {{ if or (hasInsecure .Schemes) (hasSecure .Schemes) }}go func(l net.Listener) {
-  {{ end }}  svc := {{ .Package }}.New{{ pascalize .Name }}GrpcServiceServer(s.api)
-    srv := grpc.NewServer()
+  {{ end }}    srv := grpc.NewServer(opts...)
+    svc := {{ .Package }}.New{{ pascalize .Name }}GrpcServiceServer(s.api)
 
     pb.Register{{ pascalize .Name }}ServiceServer(srv, svc)
 

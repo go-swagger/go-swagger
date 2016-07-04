@@ -190,6 +190,8 @@ func (c *clientGenerator) Generate() error {
 
 		for _, scheme := range app.ExtraSchemes {
 			if scheme == "grpc" {
+				app.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ClientPackage))}
+
 				if app.Imports == nil {
 					app.Imports = make(map[string]string)
 				}
@@ -292,7 +294,7 @@ func (c *clientGenerator) generateGRPCClientImpl(app *GenApp) error {
 	}
 	log.Println("rendered gRPC client template:", app.Package+"."+swag.ToGoName(app.Name))
 
-	fp := filepath.Join(c.Target, c.ClientPackage, app.Package)
+	fp := filepath.Join(c.Target, c.ClientPackage)
 	return writeToFile(fp, swag.ToGoName(app.Name) + "Grpc", buf.Bytes())
 }
 

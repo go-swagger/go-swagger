@@ -7,19 +7,48 @@ import (
 
     "golang.org/x/net/context"
     "google.golang.org/grpc"
-
+    "google.golang.org/grpc/credentials"
     {{range .DefaultImports}}{{printf "%q" .}}
+
+    flags "github.com/jessevdk/go-flags"
     {{end}}
     {{range $key, $value := .Imports}}{{$key}} {{ printf "%q" $value}}
     {{end}}
 )
 
 func main() {
-    if len(os.Args) < 2 {
-        log.Fatalf("missing server address")
+    clnt := client.NewClient()
+
+    parser := flags.NewParser(clnt, flags.Default)
+    parser.ShortDescription = {{ if .Info }}{{ if .Info.Title }}`{{ .Info.Title }}`{{ else }}{{ if .ExcludeSpec }}""{{ else }}swaggerSpec.Spec().Info.Title{{ end }}{{ end }}{{ else }}{{ if .ExcludeSpec }}""{{ else }}swaggerSpec.Spec().Info.Title{{ end }}{{ end}}
+
+    if _, err := parser.Parse(); err != nil {
+        os.Exit(-1)
     }
 
-    conn, err := grpc.Dial(os.Args[1], grpc.WithInsecure())
+    var opts []grpc.DialOption
+
+    if len(clnt.GRPCServerName) > 0 {
+        var creds credentials.TransportCredentials
+
+        if len(clnt.TLSCACertificate) > 0 {
+            var err error
+
+            creds, err = credentials.NewClientTLSFromFile(string(clnt.TLSCACertificate), clnt.GRPCServerName)
+
+            if err != nil {
+                log.Fatalf("Failed to create TLS credentials %v", err)
+            }
+        } else {
+            creds = credentials.NewClientTLSFromCert(nil, clnt.GRPCServerName)
+        }
+
+        opts = append(opts, grpc.WithTransportCredentials(creds))
+    } else {
+        opts = append(opts, grpc.WithInsecure())
+    }
+
+    conn, err := grpc.Dial(fmt.Sprintf("%s:%d", clnt.GRPCHost, clnt.GRPCPort), opts...)
 
     if err != nil {
         log.Fatalf("did not connect: %v", err)
