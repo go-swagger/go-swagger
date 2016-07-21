@@ -569,11 +569,20 @@ func (ss *setOpResponses) Parse(lines []string) error {
 			var ref spec.Ref
 			var err error
 			if arrays == 0 {
-				ref, err = spec.NewRef("#/responses/" + value)
+				if strings.HasPrefix(value, "body:") {
+					isDefinitionRef = true
+					ref, err = spec.NewRef("#/definitions/" + value[5:])
+				} else {
+					ref, err = spec.NewRef("#/responses/" + value)
+				}
 			} else {
 				isDefinitionRef = true
 				ref, err = spec.NewRef("#/definitions/" + value)
 			}
+			if err != nil {
+				return err
+			}
+
 			if _, ok := ss.responses[value]; !ok {
 				if _, ok := ss.definitions[value]; ok {
 					isDefinitionRef = true
