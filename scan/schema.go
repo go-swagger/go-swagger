@@ -19,6 +19,7 @@ import (
 	"go/ast"
 	"reflect"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -54,6 +55,18 @@ func (st schemaTypable) Items() swaggerTypable {
 
 	st.schema.Typed("array", "")
 	return schemaTypable{st.schema.Items.Schema, st.level + 1}
+}
+
+func (st schemaTypable) AdditionalProperties() swaggerTypable {
+	if st.schema.AdditionalProperties == nil {
+		st.schema.AdditionalProperties = new(spec.SchemaOrBool)
+	}
+	if st.schema.AdditionalProperties.Schema == nil {
+		st.schema.AdditionalProperties.Schema = new(spec.Schema)
+	}
+
+	st.schema.Typed("object", "")
+	return schemaTypable{st.schema.AdditionalProperties.Schema, st.level + 1}
 }
 func (st schemaTypable) Level() int { return st.level }
 
@@ -234,7 +247,46 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl *sch
 		if err := scp.parseInterfaceType(decl.File, schPtr, tpe, make(map[string]struct{})); err != nil {
 			return err
 		}
+	case *ast.Ident:
+		prop := &schemaTypable{schPtr, 0}
+		if strfmtName, ok := strfmtName(decl.Decl.Doc); ok {
+			prop.Typed("string", strfmtName)
+		} else {
+			if err := scp.parseNamedType(decl.File, tpe, prop); err != nil {
+				return err
+			}
+		}
+	case *ast.SelectorExpr:
+		prop := &schemaTypable{schPtr, 0}
+		if strfmtName, ok := strfmtName(decl.Decl.Doc); ok {
+			prop.Typed("string", strfmtName)
+		} else {
+			if err := scp.parseNamedType(decl.File, tpe, prop); err != nil {
+				return err
+			}
+		}
+
+	case *ast.ArrayType:
+		prop := &schemaTypable{schPtr, 0}
+		if strfmtName, ok := strfmtName(decl.Decl.Doc); ok {
+			prop.Items().Typed("string", strfmtName)
+		} else {
+			if err := scp.parseNamedType(decl.File, tpe, &schemaTypable{schPtr, 0}); err != nil {
+				return err
+			}
+		}
+
+	case *ast.MapType:
+		prop := &schemaTypable{schPtr, 0}
+		if strfmtName, ok := strfmtName(decl.Decl.Doc); ok {
+			prop.AdditionalProperties().Typed("string", strfmtName)
+		} else {
+			if err := scp.parseNamedType(decl.File, tpe, &schemaTypable{schPtr, 0}); err != nil {
+				return err
+			}
+		}
 	default:
+		return fmt.Errorf("this is a bug, missing parser for a %T: %+v", tpe, tpe)
 	}
 
 	if decl.Name != decl.GoName {
@@ -250,6 +302,71 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl *sch
 		}
 	}
 	definitions[decl.Name] = schema
+	return nil
+}
+
+func (scp *schemaParser) parseNamedType(gofile *ast.File, expr ast.Expr, prop swaggerTypable) error {
+	switch ftpe := expr.(type) {
+	case *ast.Ident: // simple value
+		pkg, err := scp.packageForFile(gofile)
+		if err != nil {
+			return err
+		}
+		return scp.parseIdentProperty(pkg, ftpe, prop)
+
+	case *ast.StarExpr: // pointer to something, optional by default
+		scp.parseNamedType(gofile, ftpe.X, prop)
+
+	case *ast.ArrayType: // slice type
+		if err := scp.parseNamedType(gofile, ftpe.Elt, prop.Items()); err != nil {
+			return err
+		}
+
+	case *ast.StructType:
+		schema := prop.Schema()
+		if schema == nil {
+			return fmt.Errorf("items doesn't support embedded structs")
+		}
+		return scp.parseStructType(gofile, prop.Schema(), ftpe, make(map[string]struct{}))
+
+	case *ast.SelectorExpr:
+		err := scp.typeForSelector(gofile, ftpe, prop)
+		return err
+
+	case *ast.MapType:
+		// check if key is a string type, if not print a message
+		// and skip the map property. Only maps with string keys can go into additional properties
+		sch := prop.Schema()
+		if sch == nil {
+			return fmt.Errorf("items doesn't support maps")
+		}
+		if keyIdent, ok := ftpe.Key.(*ast.Ident); sch != nil && ok {
+			if keyIdent.Name == "string" {
+				if sch.AdditionalProperties == nil {
+					sch.AdditionalProperties = new(spec.SchemaOrBool)
+				}
+				sch.AdditionalProperties.Allows = false
+				if sch.AdditionalProperties.Schema == nil {
+					sch.AdditionalProperties.Schema = new(spec.Schema)
+				}
+				scp.parseNamedType(gofile, ftpe.Value, schemaTypable{sch.AdditionalProperties.Schema, 0})
+				sch.Typed("object", "")
+			}
+		}
+
+	case *ast.InterfaceType:
+		prop.Schema().Typed("object", "")
+	default:
+		pos := "unknown file:unknown position"
+		if scp != nil {
+			if scp.program != nil {
+				if scp.program.Fset != nil {
+					pos = scp.program.Fset.Position(expr.Pos()).String()
+				}
+			}
+		}
+		return fmt.Errorf("Expr (%s) is unsupported for a schema", pos)
+	}
 	return nil
 }
 
@@ -702,6 +819,18 @@ func (scp *schemaParser) packageForSelector(gofile *ast.File, expr ast.Expr) (*l
 	return nil, fmt.Errorf("can't determine selector path from %v", expr)
 }
 
+func (scp *schemaParser) makeRef(file *ast.File, gd *ast.GenDecl, ts *ast.TypeSpec, prop swaggerTypable) error {
+	sd := newSchemaDecl(file, gd, ts)
+	sd.inferNames()
+	ref, err := spec.NewRef("#/definitions/" + sd.Name)
+	if err != nil {
+		return err
+	}
+	prop.SetRef(ref)
+	scp.postDecls = append(scp.postDecls, *sd)
+	return nil
+}
+
 func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.Ident, prop swaggerTypable) error {
 	// find the file this selector points to
 	file, gd, ts, err := findSourceFile(pkg, expr.Name)
@@ -712,6 +841,7 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 		}
 		return nil
 	}
+
 	if at, ok := ts.Type.(*ast.ArrayType); ok {
 		// the swagger spec defines strfmt base64 as []byte.
 		// in that case we don't actually want to turn it into an array
@@ -735,45 +865,25 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 		prop.Typed("string", strfmtName)
 		return nil
 	}
+
 	switch tpe := ts.Type.(type) {
 	case *ast.ArrayType:
-		switch atpe := tpe.Elt.(type) {
-		case *ast.Ident:
-			return scp.parseIdentProperty(pkg, atpe, prop.Items())
-		case *ast.SelectorExpr:
-			return scp.typeForSelector(file, atpe, prop.Items())
-		case *ast.StarExpr:
-			return parseProperty(scp, file, atpe.X, prop.Items())
-		default:
-			return fmt.Errorf("unknown selector type: %#v", atpe)
-		}
+		return scp.makeRef(file, gd, ts, prop)
 	case *ast.StructType:
-		sd := newSchemaDecl(file, gd, ts)
-		sd.inferNames()
-		ref, err := spec.NewRef("#/definitions/" + sd.Name)
-		if err != nil {
-			return err
-		}
-		prop.SetRef(ref)
-		scp.postDecls = append(scp.postDecls, *sd)
-		return nil
+		return scp.makeRef(file, gd, ts, prop)
 
 	case *ast.Ident:
-		return scp.parseIdentProperty(pkg, tpe, prop)
+		return scp.makeRef(file, gd, ts, prop)
+
+	case *ast.StarExpr:
+		return parseProperty(scp, file, tpe.X, prop)
 
 	case *ast.SelectorExpr:
-		return scp.typeForSelector(file, tpe, prop)
+		// return scp.refForSelector(file, gd, tpe, ts, prop)
+		return scp.makeRef(file, gd, ts, prop)
 
 	case *ast.InterfaceType:
-		sd := newSchemaDecl(file, gd, ts)
-		sd.inferNames()
-		ref, err := spec.NewRef("#/definitions/" + sd.Name)
-		if err != nil {
-			return err
-		}
-		prop.SetRef(ref)
-		scp.postDecls = append(scp.postDecls, *sd)
-		return nil
+		return scp.makeRef(file, gd, ts, prop)
 
 	default:
 		err := swaggerSchemaForType(expr.Name, prop)
@@ -785,10 +895,38 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 
 }
 
+func fName() string {
+	pc, _, _, _ := runtime.Caller(1)
+	return runtime.FuncForPC(pc).Name()
+}
+
 func (scp *schemaParser) typeForSelector(gofile *ast.File, expr *ast.SelectorExpr, prop swaggerTypable) error {
 	pkg, err := scp.packageForSelector(gofile, expr.X)
 	if err != nil {
 		return err
+	}
+
+	return scp.parseIdentProperty(pkg, expr.Sel, prop)
+}
+
+func (scp *schemaParser) schemaForSelector(gofile *ast.File, expr *ast.SelectorExpr, prop swaggerTypable) error {
+	pkg, err := scp.packageForSelector(gofile, expr.X)
+	if err != nil {
+		return err
+	}
+
+	_, gd, _, err := findSourceFile(pkg, expr.Sel.Name)
+	if err != nil {
+		err := swaggerSchemaForType(expr.Sel.Name, prop)
+		if err != nil {
+			return fmt.Errorf("package %s, error is: %v", pkg.String(), err)
+		}
+		return nil
+	}
+
+	if swfmt, ok := strfmtName(gd.Doc); ok {
+		prop.Typed("string", swfmt)
+		return nil
 	}
 
 	return scp.parseIdentProperty(pkg, expr.Sel, prop)

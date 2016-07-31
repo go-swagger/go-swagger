@@ -327,7 +327,7 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 				if in == "formData" && fld.Doc != nil && fileParam(fld.Doc) {
 					pty.Typed("file", "")
 				} else {
-					if err := parseProperty(pp.scp, gofile, fld.Type, pty); err != nil {
+					if err := pp.scp.parseNamedType(gofile, fld.Type, pty); err != nil {
 						return err
 					}
 				}

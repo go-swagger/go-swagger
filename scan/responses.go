@@ -303,7 +303,7 @@ func (rp *responseParser) parseStructType(gofile *ast.File, response *spec.Respo
 				}
 
 				ps := response.Headers[nm]
-				if err := parseProperty(rp.scp, gofile, fld.Type, responseTypable{in, &ps, response}); err != nil {
+				if err := rp.scp.parseNamedType(gofile, fld.Type, responseTypable{in, &ps, response}); err != nil {
 					return err
 				}
 
