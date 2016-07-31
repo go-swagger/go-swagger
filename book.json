@@ -1,4 +1,5 @@
 {
+  "root": "./docs",
   "plugins": [ "forkmegithub", "prism", "-highlight", "anchors" ],
   "pluginsConfig": {
     "forkmegithub": {

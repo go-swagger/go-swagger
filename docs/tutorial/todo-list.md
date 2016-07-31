@@ -20,6 +20,7 @@ swagger init spec \
 You can get started with a swagger.yml like this:
 
 ```yaml
+---
 consumes:
 - application/io.goswagger.examples.todo-list.v1+json
 definitions: {}
@@ -46,6 +47,7 @@ The swagger spec at "./swagger.yml" is valid against swagger specification 2.0
 So now you have an empty but valid specification document, time to get to declaring some models and endpoints for the API. You'll probably need a model to represent a todo item, you can define that in the definitions.
 
 ```yaml
+---
 definitions:
   item:
     type: object
@@ -64,11 +66,12 @@ definitions:
 ```
 
 In this model definition we say that the model `item` is an _object_ with a required property `description`. This item model has 3 properties: id, description and completed. The `id` property is an int64 value and is marked as _readOnly_, so that means that it will be provided by the API server and it will be ignored when the item is created.
-This document also says that the description must be at least 1 char long, this will result in a string property that's [not a pointer](http://goswagger.io/use/schemas/#nullability:176038017a790b96307b48b85dc07885).
+This document also says that the description must be at least 1 char long, this will result in a string property that's [not a pointer](/use/schemas.md#nullability).
 
 At this moment there is enough to get some actual code generated, but let's wait with that and continue defining the rest of the API so that the code generation later on will be more useful. Now you have a model so you probably want to add some endpoints to list the todo's.
 
 ```yaml
+---
 paths:
   /:
     get:
@@ -88,6 +91,7 @@ This snippet of yaml defines a `GET /` operation, and tags it with _todos_. Tagg
 But wait a minute, what if there are 100's of todo items, will we just return all of them for everybody?  It might be best to add a since and limit param here. The ids will have ordered for a since param to work but you're in control of that so that's fine.
 
 ```yaml
+---
 paths:
   /:
     get:
@@ -119,6 +123,7 @@ However  this definition is extremely optimistic and only defines a response for
 The error definition might look like this:
 
 ```yaml
+---
 definitions:
   error:
     type: object
@@ -135,6 +140,7 @@ definitions:
 For the extra response you can use the default response, because after all every successful response from your API is defying the odds.
 
 ```yaml
+---
 paths:
   /:
     get:
@@ -170,6 +176,7 @@ Perhaps validate the specification again, having a valid swagger document, is im
 So the completed spec should look like this:
 
 ```yaml
+---
 swagger: "2.0"
 info:
   description: The product of a tutorial on goswagger.io
@@ -359,6 +366,7 @@ So immediately after generating, the API has limited usability, but this can ser
 For adding a todo item you probably want to define a POST operation, for our purposes that might look like this:
 
 ```yaml
+---
 paths:
   /:
     post:
@@ -384,6 +392,7 @@ paths:
 So in this YAML snippet there is one new thing: you're defining that your API has a POST body and that that should be the item model defined earlier. Earlier the item schema was defined with a readOnly id, so that means it doesn't need to be included in the POST body. But the response to the POST request will include an id property. The next operation to define is the DELETE operation, where you delete a todo item from the list.
 
 ```yaml
+---
 paths:
   /{id}:
     delete:
@@ -408,6 +417,7 @@ paths:
 The new concept in the DELETE method is that this time around you're defining a path parameter. When you delete an item you need to provide an ID. This is typically done in the path of a resource, and that's how this operation will know which todo item to delete. Once you've deleted something you can't really return its data anymore, so the success response in this case is `204 No Content`. At this point all you still require is a means to update an item, which combines everything you've just learnt.
 
 ```yaml
+---
 paths:
   /{id}:
     parameters:
@@ -442,6 +452,7 @@ For updates there are 2 approaches that people typically take: PUT indicates rep
 At this point you should have a completed specification for the todo list API.
 
 ```yaml
+---
 swagger: "2.0"
 info:
   description: The product of a tutorial on goswagger.io

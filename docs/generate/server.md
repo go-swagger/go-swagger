@@ -61,8 +61,8 @@ To illustrate this with a pseudo handler, this is what happens in a request.
 import (
   "net/http"
 
-  "github.com/go-swagger/go-swagger/errors"
-  "github.com/go-swagger/go-swagger/httpkit/middleware"
+  "github.com/go-openapi/errors"
+  "github.com/go-openapi/runtime/middleware"
   "github.com/gorilla/context"
 )
 
@@ -114,12 +114,12 @@ For the todolist application that file looks like:
 package main
 
 import (
-	"github.com/go-swagger/go-swagger/errors"
-	"github.com/go-swagger/go-swagger/httpkit"
-	"github.com/go-swagger/go-swagger/httpkit/middleware"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations"
-	"github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations/todos"
+	"github.com/go-openapi/examples/todo-list/restapi/operations"
+	"github.com/go-openapi/examples/todo-list/restapi/operations/todos"
 )
 
 // This file is safe to edit. Once it exists it will not be overwritten
