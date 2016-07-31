@@ -15,7 +15,6 @@
 package scan
 
 import (
-	"encoding/json"
 	goparser "go/parser"
 	"log"
 	"testing"
@@ -245,8 +244,6 @@ func assertOperationBody(t *testing.T, op *spec.Operation, id, summary, descript
 	assert.EqualValues(t, scopes, vv)
 
 	assert.NotNil(t, op.Responses.Default)
-	data, _ := json.MarshalIndent(op.Responses.Default, "    ", "")
-	log.Println(string(data))
 	assert.Equal(t, "", op.Responses.Default.Ref.String())
 	assert.Equal(t, "#/definitions/genericError", op.Responses.Default.Schema.Ref.String())
 

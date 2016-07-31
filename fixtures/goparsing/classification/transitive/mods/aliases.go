@@ -21,36 +21,47 @@ import (
 )
 
 // SomeStringsType is a type that refines []string
+// swagger:model modsSomeStringsType
 type SomeStringsType []string
 
 // SomeIntsType is a type that refines []int64
+// swagger:model modsSomeIntsType
 type SomeIntsType []int64
 
 // SomeTimesType is a type that refines time.Time
 // swagger:strfmt date-time
+// swagger:model modsSomeTimesType
 type SomeTimesType []time.Time
 
 // SomeTimedsType is a type that refines strfmt.DateTime
+// swagger:model modsSomeTimedsType
 type SomeTimedsType []strfmt.DateTime
 
 // SomePettedsType is a type that refines mods.Pet
+// swagger:model modsSomePettedsType
 type SomePettedsType []Pet
 
 // SomePettedsPtrType is a type that refines array of mods.Pet pointers
+// swagger:model modsSomePettedsPtrType
 type SomePettedsPtrType []*Pet
 
 // SomeStringType is a type that refines string
+// swagger:model modsSomeStringType
 type SomeStringType string
 
 // SomeIntType is a type that refines int64
+// swagger:model modsSomeIntType
 type SomeIntType int64
 
 // SomeTimeType is a type that refines time.Time
 // swagger:strfmt date-time
+// swagger:model modsSomeTimeType
 type SomeTimeType time.Time
 
 // SomeTimedType is a type that refines strfmt.DateTime
+// swagger:model modsSomeTimedType
 type SomeTimedType strfmt.DateTime
 
 // SomePettedType is a type that refines Pet
+// swagger:model modsSomePettedType
 type SomePettedType Pet
