@@ -244,3 +244,22 @@ func (ctx *respHeaderTestContext) Assert(t testing.TB, header spec.Header, hdr G
 	}
 	return true
 }
+
+func TestGenResponses_Issue540(t *testing.T) {
+	b, err := opBuilder("postPet", "../fixtures/bugs/540/swagger.yml")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			var buf bytes.Buffer
+			if assert.NoError(t, responsesTemplate.Execute(&buf, op)) {
+				ff, err := formatGoFile("post_pet_responses.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					assertInCode(t, "func (o *PostPetOK) WithPayload(payload models.Pet) *PostPetOK {", string(ff))
+					assertInCode(t, "func (o *PostPetOK) SetPayload(payload models.Pet) {", string(ff))
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}

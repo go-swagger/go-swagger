@@ -62,13 +62,13 @@ func ({{ $.ReceiverName }} *{{ pascalize $.Name }}) Set{{ pascalize .Name }}({{ 
 }
 {{ end }}{{ if .Schema }}
 // WithPayload adds the payload to the {{ humanize .Name }} response
-func ({{ .ReceiverName }} *{{ pascalize .Name }}) WithPayload(payload {{ if .Schema.IsComplexObject }}*{{ end }}{{ .Schema.GoType }}) *{{ pascalize .Name }} {
+func ({{ .ReceiverName }} *{{ pascalize .Name }}) WithPayload(payload {{ if and .Schema.IsComplexObject (not .Schema.IsBaseType) }}*{{ end }}{{ .Schema.GoType }}) *{{ pascalize .Name }} {
   {{ .ReceiverName }}.Payload = payload
   return {{ .ReceiverName }}
 }
 
 // SetPayload sets the payload to the {{ humanize .Name }} response
-func ({{ .ReceiverName }} *{{ pascalize .Name }}) SetPayload(payload {{ if .Schema.IsComplexObject }}*{{ end }}{{ .Schema.GoType }}) {
+func ({{ .ReceiverName }} *{{ pascalize .Name }}) SetPayload(payload {{ if and .Schema.IsComplexObject (not .Schema.IsBaseType) }}*{{ end }}{{ .Schema.GoType }}) {
   {{ .ReceiverName }}.Payload = payload
 }
 {{ end }}
