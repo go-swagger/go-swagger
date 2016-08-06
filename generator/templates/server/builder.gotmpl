@@ -86,7 +86,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) SetDefaultConsumes(mediaType 
 	{{.ReceiverName}}.defaultConsumes = mediaType
 }
 
-// SetSpec sets the default produces media type
+// SetSpec sets a spec that will be served for the clients.
 func ({{.ReceiverName}} *{{ pascalize .Name }}API) SetSpec(spec *loads.Document) {
 	{{.ReceiverName}}.spec = spec
 }
