@@ -141,7 +141,9 @@ type Repository struct {
 func (t *Repository) LoadDefaults() {
 
 	for name, asset := range assets {
-		t.addFile(name, string(asset), true)
+		if err := t.addFile(name, string(asset), true); err != nil {
+			panic(err)
+		}
 	}
 }
 
@@ -153,7 +155,9 @@ func (t *Repository) LoadDir(templatePath string) error {
 		if strings.HasSuffix(path, ".gotmpl") {
 			assetName := strings.TrimPrefix(path, templatePath)
 			if data, err := ioutil.ReadFile(path); err == nil {
-				t.AddFile(assetName, string(data))
+				if err := t.AddFile(assetName, string(data)); err != nil {
+					panic(err)
+				}
 			}
 		}
 		if err != nil {
@@ -173,7 +177,7 @@ func (t *Repository) addFile(name, data string, allowOverride bool) error {
 	templ, err := template.New(name).Funcs(t.funcs).Parse(data)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to load template %s: %v", name, err)
 	}
 
 	// check if any protected templates are defined
