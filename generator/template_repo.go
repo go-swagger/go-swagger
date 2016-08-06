@@ -9,6 +9,8 @@ import (
 	"text/template"
 	"text/template/parse"
 
+	"log"
+
 	"bitbucket.org/pkg/inflect"
 	"github.com/go-openapi/swag"
 )
@@ -142,7 +144,7 @@ func (t *Repository) LoadDefaults() {
 
 	for name, asset := range assets {
 		if err := t.addFile(name, string(asset), true); err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	}
 }
@@ -156,7 +158,7 @@ func (t *Repository) LoadDir(templatePath string) error {
 			assetName := strings.TrimPrefix(path, templatePath)
 			if data, err := ioutil.ReadFile(path); err == nil {
 				if err := t.AddFile(assetName, string(data)); err != nil {
-					panic(err)
+					log.Fatal(err)
 				}
 			}
 		}
