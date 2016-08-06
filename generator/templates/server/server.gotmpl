@@ -131,7 +131,7 @@ func (s *Server) Serve() error {
 		httpsServer.TLSConfig.NextProtos = []string{"http/1.1"}
 
 		// https://www.owasp.org/index.php/Transport_Layer_Protection_Cheat_Sheet#Rule_-_Only_Support_Strong_Protocols
-		httpsServer.TLSConfig.MinVersion = tls.VersionTLS11
+		httpsServer.TLSConfig.MinVersion = tls.VersionTLS12
 		httpsServer.TLSConfig.Certificates = make([]tls.Certificate, 1)
 		httpsServer.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(string(s.HTTPSCert), string(s.HTTPSKey))
 
