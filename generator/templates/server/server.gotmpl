@@ -157,8 +157,8 @@ func (s *Server) Serve() error {
 		domainSocket.Handler = s.handler
 		wg.Add(1)
 		go func(l net.Listener) {
-			s.Logf("Serving rdb at unix://%s", s.SocketPath)
 			defer wg.Done()
+			s.Logf("Serving rdb at unix://%s", s.SocketPath)
 			if err := domainSocket.Serve(l); err != nil {
 				log.Fatalln(err)
 			}
