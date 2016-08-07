@@ -10,20 +10,11 @@ build:
     image: golang:$$GO_VERSION
     pull: true
     environment:
-      GOCOVMODE: "count"
-      GO15VENDOREXPERIMENT: "1"
+      GOCOVMODE: "atomic"
     commands:
       - go get -u github.com/axw/gocov/gocov
       - go get -u gopkg.in/matm/v1/gocov-html
       - go get -u github.com/cee-dub/go-junit-report
-      # - go get -u github.com/nu7hatch/gouuid
-      # - go get -u github.com/stretchr/testify/assert
-      # - go get -u github.com/davecgh/go-spew/spew
-      # - go get -u github.com/asaskevich/govalidator
-      # - go get -u github.com/naoina/denco
-      # - go get -u github.com/go-openapi/runtime
-      # - go get -u github.com/go-openapi/strfmt
-      # - go get -u github.com/go-swagger/scan-repo-boundary/makeplans
       - ./hack/build-drone.sh
       - mkdir -p dist
       - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -installsuffix netgo -o dist/swagger ./cmd/swagger
@@ -32,11 +23,8 @@ build:
     image: golang:$$GO_VERSION
     pull: true
     environment:
-      GOCOVMODE: "count"
-      GO15VENDOREXPERIMENT: "1"
+      GOCOVMODE: "atomic"
     commands:
-      # - go get -u github.com/asaskevich/govalidator
-      # - go get -u github.com/go-openapi/runtime
       - go get -u github.com/go-swagger/scan-repo-boundary/makeplans
       - go install ./cmd/swagger
       - ./hack/run-canary.sh
@@ -46,8 +34,6 @@ build:
   release:
     image: golang:$$GO_VERSION
     pull: true
-    environment:
-      GO15VENDOREXPERIMENT: "1"
     commands:
       - apt-get update -yqq
       - apt-get install -yqq --no-install-recommends ruby-dev rubygems rpm
@@ -62,13 +48,11 @@ build:
       - "fpm -t rpm -s dir -C /drone/dist/linux/amd64 -v $$TAG -n swagger --license \"ASL 2.0\" -a x86_64 -m \"ivan@flanders.co.nz\" --url \"https://goswagger.io\" usr"
     when:
       event: tag
-      matrix:
-        GO_VERSION: "1.6"
 
 notify:
   slack:
     channel: bots
-    webhook_url: https://hooks.slack.com/services/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
+    webhook_url: $$SLACK_URL
     username: drone
 
 publish:
@@ -77,9 +61,6 @@ publish:
     token: $$GITHUB_TOKEN
     # threshold: 70
     # must_increase: true
-    when:
-      matrix:
-        GO_VERSION: "1.6"
 
   github_release:
     api_key: $$GITHUB_TOKEN
@@ -88,8 +69,6 @@ publish:
     checksum: sha1
     when:
       event: tag
-      matrix:
-        GO_VERSION: "1.6"
 
   docker:
     image: casualjim/drone-docker
@@ -106,8 +85,6 @@ publish:
       - "$$TAG"
     when:
       event: tag
-      matrix:
-        GO_VERSION: "1.6"
 
   bintray:
     image: casualjim/drone-bintray
@@ -137,7 +114,3 @@ publish:
           - amd64
         publish: true
         override: true
-    when:
-      event: tag
-      matrix:
-        GO_VERSION: "1.6"
