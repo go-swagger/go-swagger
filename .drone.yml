@@ -114,3 +114,5 @@ publish:
           - amd64
         publish: true
         override: true
+    when:
+      event: tag
