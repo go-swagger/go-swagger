@@ -19,6 +19,7 @@ import (
 	"go/ast"
 	goparser "go/parser"
 	"log"
+	"os"
 	"regexp"
 	"strings"
 
@@ -128,6 +129,17 @@ type Opts struct {
 	ScanModels bool
 }
 
+func safeConvert(str string) bool {
+	b, err := swag.ConvertBool(str)
+	if err != nil {
+		return false
+	}
+	return b
+}
+
+// Debug is true when process is run with DEBUG=1 env var
+var Debug = safeConvert(os.Getenv("DEBUG"))
+
 // Application scans the application and builds a swagger spec based on the information from the code files.
 // When there are includes provided, only those files are considered for the initial discovery.
 // Similarly the excludes will exclude an item from initial discovery through scanning for annotations.
@@ -160,6 +172,9 @@ type appScanner struct {
 
 // newAppScanner creates a new api parser
 func newAppScanner(opts *Opts, includes, excludes packageFilters) (*appScanner, error) {
+	if Debug {
+		log.Println("scanning packages discovered through entrypoint @ ", opts.BasePath)
+	}
 	var ldr loader.Config
 	ldr.ParserMode = goparser.ParseComments
 	ldr.ImportWithTests(opts.BasePath)
