@@ -12,6 +12,10 @@ With a Swagger-enabled API, you get interactive documentation, client SDK genera
 
 Swagger helps companies like Apigee, Getty Images, Intuit, LivingSocial, McKesson, Microsoft, Morningstar, and PayPal build the best possible services with RESTful APIs. Now in version 2.0, Swagger is more enabling than ever. And it's 100% open source software.
 
+## Using 0.5.0
+
+Because 0.5.0 and master have diverged significantly, you should checkout the tag 0.5.0 for go-swagger when you use the currently released version.
+
 ## Migrating
 
 ### From 0.5.0 to 0.6.0
