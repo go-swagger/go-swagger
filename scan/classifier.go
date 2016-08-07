@@ -17,6 +17,7 @@ package scan
 import (
 	"fmt"
 	"go/ast"
+	"log"
 
 	"golang.org/x/tools/go/loader"
 )
@@ -71,6 +72,7 @@ type programClassifier struct {
 func (pc *programClassifier) Classify(prog *loader.Program) (*classifiedProgram, error) {
 	var cp classifiedProgram
 	for pkg, pkgInfo := range prog.AllPackages {
+		log.Printf("analyzing: %s\n", pkg.Path())
 		if pc.Includes.HasFilters() {
 			if !pc.Includes.Matches(pkg.Path()) {
 				continue
