@@ -30,7 +30,7 @@ func TestSchemaParser(t *testing.T) {
 	assert.Equal(t, "NoModel is a struct without an annotation.", schema.Title)
 	assert.Equal(t, "NoModel exists in a package\nbut is not annotated with the swagger model annotations\nso it should now show up in a test.", schema.Description)
 	assert.Len(t, schema.Required, 3)
-	assert.Len(t, schema.Properties, 7)
+	assert.Len(t, schema.Properties, 8)
 
 	assertProperty(t, &schema, "integer", "id", "int64", "ID")
 	prop, ok := schema.Properties["id"]
@@ -41,6 +41,11 @@ func TestSchemaParser(t *testing.T) {
 	assert.NotNil(t, prop.Minimum)
 	assert.EqualValues(t, 10, *prop.Minimum)
 	assert.True(t, prop.ExclusiveMinimum, "'id' should have had an exclusive minimum")
+
+	assertProperty(t, &schema, "string", "NoNameOmitEmpty", "", "")
+	prop, ok = schema.Properties["NoNameOmitEmpty"]
+	assert.Equal(t, "A field which has omitempty set but no name", prop.Description)
+	assert.True(t, ok, "should have had an 'NoNameOmitEmpty' property")
 
 	assertProperty(t, &schema, "integer", "score", "int32", "Score")
 	prop, ok = schema.Properties["score"]
@@ -296,7 +301,11 @@ func assertProperty(t testing.TB, schema *spec.Schema, typeName, jsonName, forma
 			assert.Equal(t, typeName, schema.Properties[jsonName].Type[0])
 		}
 	}
-	assert.Equal(t, goName, schema.Properties[jsonName].Extensions["x-go-name"])
+	if goName == "" {
+		assert.Equal(t, nil, schema.Properties[jsonName].Extensions["x-go-name"])
+	} else {
+		assert.Equal(t, goName, schema.Properties[jsonName].Extensions["x-go-name"])
+	}
 	assert.Equal(t, format, schema.Properties[jsonName].Format)
 }
 
