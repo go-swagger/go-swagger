@@ -669,7 +669,10 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 				if strings.TrimSpace(tv) != "" {
 					st := reflect.StructTag(tv)
 					if st.Get("json") != "" {
-						nm = strings.Split(st.Get("json"), ",")[0]
+						jnm := strings.Split(st.Get("json"), ",")[0]
+						if jnm != "" {
+							nm = jnm
+						}
 					}
 				}
 			}
