@@ -17,8 +17,6 @@ package scan
 import (
 	"fmt"
 	"go/ast"
-	"reflect"
-	"strconv"
 	"strings"
 
 	"github.com/go-openapi/spec"
@@ -283,26 +281,14 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 		}
 
 		for _, fld := range tpe.Fields.List {
-			var nm, gnm string
 			if len(fld.Names) > 0 && fld.Names[0] != nil && fld.Names[0].IsExported() {
-				nm = fld.Names[0].Name
-				gnm = nm
-				if fld.Tag != nil && len(strings.TrimSpace(fld.Tag.Value)) > 0 {
-					tv, err := strconv.Unquote(fld.Tag.Value)
-					if err != nil {
-						return err
-					}
-
-					if strings.TrimSpace(tv) != "" {
-						st := reflect.StructTag(tv)
-						jsonTag := st.Get("json")
-						if jsonTag == "-" {
-							continue
-						}
-						if jsonTag != "" {
-							nm = strings.Split(jsonTag, ",")[0]
-						}
-					}
+				gnm := fld.Names[0].Name
+				nm, ignore, err := parseJSONTag(fld)
+				if err != nil {
+					return err
+				}
+				if ignore {
+					continue
 				}
 
 				in := "query"
