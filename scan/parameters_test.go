@@ -63,7 +63,7 @@ func TestParamsParser(t *testing.T) {
 
 	cr, ok := noParamOps["yetAnotherOperation"]
 	assert.True(t, ok)
-	assert.Len(t, cr.Parameters, 7)
+	assert.Len(t, cr.Parameters, 8)
 	for _, param := range cr.Parameters {
 		switch param.Name {
 		case "id":
@@ -87,6 +87,11 @@ func TestParamsParser(t *testing.T) {
 		case "informity":
 			assert.Equal(t, "string", param.Type)
 			assert.Equal(t, "formData", param.In)
+		case "NoTagName":
+			assert.Equal(t, "string", param.Type)
+			assert.Equal(t, "", param.Format)
+		default:
+			assert.Fail(t, "unkown property: "+param.Name)
 		}
 	}
 

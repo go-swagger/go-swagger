@@ -649,32 +649,14 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 	}
 	schema.Typed("object", "")
 	for _, fld := range tpe.Fields.List {
-		var tag string
-		if fld.Tag != nil {
-			val, err := strconv.Unquote(fld.Tag.Value)
-			if err == nil {
-				tag = reflect.StructTag(val).Get("json")
+		if len(fld.Names) > 0 && fld.Names[0] != nil && fld.Names[0].IsExported() {
+			gnm := fld.Names[0].Name
+			nm, ignore, err := parseJSONTag(fld)
+			if err != nil {
+				return err
 			}
-		}
-		if len(fld.Names) > 0 && fld.Names[0] != nil && fld.Names[0].IsExported() && (tag == "" || tag[0] != '-') {
-			var nm, gnm string
-			nm = fld.Names[0].Name
-			gnm = nm
-			if fld.Tag != nil && len(strings.TrimSpace(fld.Tag.Value)) > 0 /*&& fld.Tag.Value[0] != '-'*/ {
-				tv, err := strconv.Unquote(fld.Tag.Value)
-				if err != nil {
-					return err
-				}
-
-				if strings.TrimSpace(tv) != "" {
-					st := reflect.StructTag(tv)
-					if st.Get("json") != "" {
-						jnm := strings.Split(st.Get("json"), ",")[0]
-						if jnm != "" {
-							nm = jnm
-						}
-					}
-				}
+			if ignore {
+				continue
 			}
 
 			ps := schema.Properties[nm]
@@ -1064,4 +1046,25 @@ func parseProperty(scp *schemaParser, gofile *ast.File, fld ast.Expr, prop swagg
 		return fmt.Errorf("Expr (%s) is unsupported for a schema", pos)
 	}
 	return nil
+}
+
+func parseJSONTag(field *ast.Field) (name string, ignore bool, err error) {
+	name = field.Names[0].Name
+	if field.Tag != nil && len(strings.TrimSpace(field.Tag.Value)) > 0 {
+		tv, err := strconv.Unquote(field.Tag.Value)
+		if err != nil {
+			return name, false, err
+		}
+
+		if strings.TrimSpace(tv) != "" {
+			st := reflect.StructTag(tv)
+			jsonName := strings.Split(st.Get("json"), ",")[0]
+			if jsonName == "-" {
+				return name, true, nil
+			} else if jsonName != "" {
+				return jsonName, false, nil
+			}
+		}
+	}
+	return name, false, nil
 }

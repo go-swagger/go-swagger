@@ -56,6 +56,8 @@ type ComplexerOneParams struct {
 
 	// in: formData
 	Informity string `json:"informity"`
+
+	NoTagName string `json:",omitempty"`
 }
 
 // NoParams is a struct that exists in a package

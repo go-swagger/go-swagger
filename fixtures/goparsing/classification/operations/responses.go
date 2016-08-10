@@ -56,6 +56,7 @@ type ComplexerOne struct {
 	mods.NotSelected
 	mods.Notable
 	CreatedAt strfmt.DateTime `json:"createdAt"`
+	NoTagName string          `json:",omitempty"`
 }
 
 // A SomeResponse is a dummy response object to test parsing.
