@@ -19,7 +19,7 @@ if err := validate.Minimum{{ if eq .SwaggerType "integer" }}Int{{ end }}({{ if .
 }
 {{end}}
 {{if .Maximum}}
-if err := validate.Maximum{{ if eq .SwaggerType "integer" }}Int{{ end }}({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if eq .SwaggerType "integer" }}int{{ else }}float{{ end }}64({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), {{.Maximum}}, {{.ExclusiveMaximum}}); err != nil {
+if err := validate.Maximum{{ if eq .SwaggerType "integer" }}Int{{ end }}({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if eq .SwaggerType "integer" }}int{{ else }}float{{ end }}64(len({{ if .IsNullable }}*{{ end }}{{.ValueExpression}})), {{.Maximum}}, {{.ExclusiveMaximum}}); err != nil {
   return err
 }
 {{end}}
