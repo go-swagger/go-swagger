@@ -524,22 +524,18 @@ func TestSerializer_WithItemsAndAdditional(t *testing.T) {
 					assertInCode(t, "func (m *WithItemsAndAdditional) tagsIWriteJSON(out *jwriter.Writer) error", res)
 					assertInCode(t, "out.Raw(swag.WriteJSON(m.Tags))", res)
 					assertInCode(t, "func (m *WithItemsAndAdditional) tagsIReadJSON(in *jlexer.Lexer) (*WithItemsAndAdditionalTagsTuple0, error)", res)
-					assertInCode(t, "var withItemsAndAdditionalTagsTuple0Value WithItemsAndAdditionalTagsTuple0", res)
+					assertInCode(t, "var tagsValue WithItemsAndAdditionalTagsTuple0", res)
 					assertInCode(t, "if data := in.Raw(); in.Ok()", res)
-					assertInCode(t, "if err := swag.ReadJSON(data, &withItemsAndAdditionalTagsTuple0Value); err != nil", res)
 					assertInCode(t, "type WithItemsAndAdditionalTagsTuple0 struct", res)
 					assertInCode(t, "P0 *string `json:\"-\"`", res)
 					assertInCode(t, "WithItemsAndAdditionalTagsTuple0Items []interface{} `json:\"-\"`", res)
 					assertInCode(t, "if err := m.p0IWriteJSON(out); err != nil", res)
-					assertInCode(t, "case \"P0\":", res)
 					assertInCode(t, "m.P0 = nil", res)
-					assertInCode(t, "case \"WithItemsAndAdditionalTagsTuple0Items\":", res)
 					assertInCode(t, "m.P0 = p0Value", res)
-					assertInCode(t, "m.withItemsAndAdditionalTagsTuple0ItemsIWriteJSON", res)
-					assertInCode(t, "withItemsAndAdditionalTagsTuple0ItemsValue, err := m.withItemsAndAdditionalTagsTuple0ItemsIReadJSON(in)", res)
-					assertInCode(t, "func (m *WithItemsAndAdditionalTagsTuple0) withItemsAndAdditionalTagsTuple0ItemsIWriteJSON(out *jwriter.Writer) error", res)
-					assertInCode(t, "func (m *WithItemsAndAdditionalTagsTuple0) withItemsAndAdditionalTagsTuple0IReadJSON(in *jlexer.Lexer) (*WithItemsAndAdditionalTagsTuple0, error)", res)
-					// assertInCode(t, "", res)
+					assertInCode(t, "var withItemsAndAdditionalTagsTuple0ItemsValue interface{}", res)
+					assertInCode(t, "err := swag.ReadJSON(data, &withItemsAndAdditionalTagsTuple0ItemsValue)", res)
+					assertInCode(t, "m.WithItemsAndAdditionalTagsTuple0Items = append(m.WithItemsAndAdditionalTagsTuple0Items, nil)", res)
+					assertInCode(t, "m.WithItemsAndAdditionalTagsTuple0Items = append(m.WithItemsAndAdditionalTagsTuple0Items, withItemsAndAdditionalTagsTuple0ItemsValue)", res)
 				} else {
 					fmt.Println(buf.String())
 				}
@@ -578,18 +574,20 @@ func TestSerializer_WithItemsAndAdditional2(t *testing.T) {
 					assertInCode(t, "func (m *WithItemsAndAdditional2) tagsIWriteJSON(out *jwriter.Writer) error", res)
 					assertInCode(t, "out.Raw(swag.WriteJSON(m.Tags))", res)
 					assertInCode(t, "func (m *WithItemsAndAdditional2) tagsIReadJSON(in *jlexer.Lexer) (*WithItemsAndAdditional2TagsTuple0, error)", res)
-					assertInCode(t, "var withItemsAndAdditional2TagsTuple0Value WithItemsAndAdditional2TagsTuple0", res)
 					assertInCode(t, "if data := in.Raw(); in.Ok()", res)
-					assertInCode(t, "if err := swag.ReadJSON(data, &withItemsAndAdditional2TagsTuple0Value); err != nil", res)
 					assertInCode(t, "type WithItemsAndAdditional2TagsTuple0 struct", res)
 					assertInCode(t, "P0 *string `json:\"-\"`", res)
 					assertInCode(t, "WithItemsAndAdditional2TagsTuple0Items []int32 `json:\"-\"`", res)
 					assertInCode(t, "if err := m.p0IWriteJSON(out); err != nil", res)
-					assertInCode(t, "case \"P0\":", res)
+					assertInCode(t, "for i := range m.WithItemsAndAdditional2TagsTuple0Items", res)
+					assertInCode(t, "out.Int32(m.WithItemsAndAdditional2TagsTuple0Items[i])", res)
 					assertInCode(t, "m.P0 = nil", res)
-					assertInCode(t, "case \"WithItemsAndAdditional2TagsTuple0Items\":", res)
+					assertInCode(t, "p0Value, err := m.p0IReadJSON(in)", res)
 					assertInCode(t, "m.P0 = p0Value", res)
-					// assertInCode(t, "", res)
+					assertInCode(t, "var withItemsAndAdditional2TagsTuple0ItemsValue int32", res)
+					assertInCode(t, "err := swag.ReadJSON(data, &withItemsAndAdditional2TagsTuple0ItemsValue)", res)
+					assertInCode(t, "m.WithItemsAndAdditional2TagsTuple0Items = append(m.WithItemsAndAdditional2TagsTuple0Items, 0)", res)
+					assertInCode(t, "m.WithItemsAndAdditional2TagsTuple0Items = append(m.WithItemsAndAdditional2TagsTuple0Items, withItemsAndAdditional2TagsTuple0ItemsValue)", res)
 				} else {
 					fmt.Println(buf.String())
 				}
@@ -641,11 +639,12 @@ func TestSerializer_WithComplexAdditional(t *testing.T) {
 					assertInCode(t, "P0 *string `json:\"-\"`", res)
 					assertInCode(t, "WithComplexAdditionalTagsTuple0Items []*WithComplexAdditionalTagsItems `json:\"-\"`", res)
 					assertInCode(t, "if err := m.p0IWriteJSON(out); err != nil", res)
-					assertInCode(t, "case \"P0\":", res)
 					assertInCode(t, "m.P0 = nil", res)
-					assertInCode(t, "case \"WithComplexAdditionalTagsTuple0Items\":", res)
 					assertInCode(t, "m.P0 = p0Value", res)
-					// assertInCode(t, "", res)
+					assertInCode(t, "var withComplexAdditionalTagsTuple0ItemsValue WithComplexAdditionalTagsItems", res)
+					assertInCode(t, "err := swag.ReadJSON(data, &withComplexAdditionalTagsTuple0ItemsValue)", res)
+					assertInCode(t, "m.WithComplexAdditionalTagsTuple0Items = append(m.WithComplexAdditionalTagsTuple0Items, nil)", res)
+					assertInCode(t, "m.WithComplexAdditionalTagsTuple0Items = append(m.WithComplexAdditionalTagsTuple0Items, &withComplexAdditionalTagsTuple0ItemsValue)", res)
 				} else {
 					fmt.Println(buf.String())
 				}
@@ -822,7 +821,7 @@ func TestSerializer_Tag(t *testing.T) {
 		genModel, err := makeGenDefinition("Tag", "models", schema, specDoc, true, true)
 		if assert.NoError(t, err) {
 			assert.True(t, genModel.IsComplexObject)
-			assert.False(t, genModel.IsAliased)
+			assert.True(t, genModel.IsAliased)
 			assert.Equal(t, "Tag", genModel.Name)
 			assert.Equal(t, "Tag", genModel.GoType)
 			// pretty.Println(genModel)
@@ -985,7 +984,7 @@ func TestSerializer_WithItems(t *testing.T) {
 		genModel, err := makeGenDefinition("WithItems", "models", schema, specDoc, true, true)
 		if assert.NoError(t, err) {
 			assert.True(t, genModel.IsComplexObject)
-			assert.False(t, genModel.IsAliased)
+			assert.True(t, genModel.IsAliased)
 			assert.Equal(t, "WithItems", genModel.Name)
 			assert.Equal(t, "WithItems", genModel.GoType)
 			// pretty.Println(genModel)
@@ -1305,6 +1304,57 @@ func TestSerializer_NotaWithMetaRegistry(t *testing.T) {
 					assertInCode(t, "m.Count = 0", res)
 					assertInCode(t, "commentValue, err := m.commentIReadJSON(in)", res)
 					assertInCode(t, "out.Int32(m.Count)", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			} else {
+				fmt.Println(buf.String())
+			}
+		}
+	}
+}
+
+func TestSerializer_WithRef(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["WithRef"]
+		genModel, err := makeGenDefinition("WithRef", "models", schema, specDoc, true, true)
+		if assert.NoError(t, err) {
+			assert.True(t, genModel.IsComplexObject)
+			assert.False(t, genModel.IsAdditionalProperties)
+			assert.False(t, genModel.HasAdditionalProperties)
+			assert.True(t, genModel.IsAliased)
+			assert.False(t, genModel.IsMap)
+			assert.Equal(t, "WithRef", genModel.Name)
+			assert.Equal(t, "WithRef", genModel.GoType)
+			// pretty.Println(genModel)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("with_ref.go", buf.Bytes())
+				// fmt.Println(buf.String())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					// fmt.Println(res)
+					assertInCode(t, "type WithRef struct", res)
+					assertInCode(t, "func (m WithRef) MarshalJSON() ([]byte, error)", res)
+					assertInCode(t, "func (m *WithRef) UnmarshalJSON(data []byte) error", res)
+					assertInCode(t, "func (m *WithRef) MarshalEasyJSON(out *jwriter.Writer)", res)
+					assertInCode(t, "func (m *WithRef) UnmarshalEasyJSON(in *jlexer.Lexer)", res)
+					assertInCode(t, "func (m *WithRef) Validate(formats strfmt.Registry)", res)
+					assertInCode(t, "Notes *Notable `json:\"notes,omitempty\"`", res)
+					assertInCode(t, "out.String(\"notes\")", res)
+					assertInCode(t, "func (m *WithRef) notesIWriteJSON(out *jwriter.Writer) error", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.Notes))", res)
+					assertInCode(t, "if err := m.notesIWriteJSON(out); err != nil", res)
+					assertInCode(t, "m.Notes = nil", res)
+					assertInCode(t, "func (m *WithRef) notesIReadJSON(in *jlexer.Lexer) (*Notable, error) {", res)
+					assertInCode(t, "var notesValue Notable", res)
+					assertInCode(t, "if data := in.Raw(); in.Ok()", res)
+					assertInCode(t, "if err := swag.ReadJSON(data, &notesValue)", res)
+					assertInCode(t, "if notesValue, err := m.notesIReadJSON(in); err != nil", res)
+					assertInCode(t, "m.Notes = notesValue", res)
 				} else {
 					fmt.Println(buf.String())
 				}

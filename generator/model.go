@@ -1161,6 +1161,7 @@ func (sg *schemaGenContext) liftSpecialAllOf() error {
 }
 
 func (sg *schemaGenContext) buildAliased() error {
+	sg.GenSchema.IsAliased = sg.Named
 	if !sg.GenSchema.IsPrimitive && !sg.GenSchema.IsMap && !sg.GenSchema.IsArray && !sg.GenSchema.IsInterface {
 		return nil
 	}
@@ -1173,7 +1174,6 @@ func (sg *schemaGenContext) buildAliased() error {
 			sg.GenSchema.IsNullable = false
 		}
 	}
-
 	if sg.GenSchema.IsInterface {
 		sg.GenSchema.IsAliased = sg.GenSchema.GoType != "interface{}"
 	}
@@ -1217,6 +1217,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.IncludeValidator = sg.IncludeValidator
 	sg.GenSchema.IncludeModel = sg.IncludeModel
 	sg.GenSchema.Default = sg.Schema.Default
+	sg.GenSchema.IsAliased = sg.Named
 
 	var err error
 	returns, err := sg.shortCircuitNamedRef()
