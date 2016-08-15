@@ -564,7 +564,7 @@ func (sg *schemaGenContext) buildProperties() error {
 		}
 
 		// check if this requires de-anonymizing, if so lift this as a new struct and extra schema
-		tpe, err := sg.TypeResolver.ResolveSchema(&v, true, sg.IsTuple || containsString(sg.Schema.Required, k))
+		tpe, err := sg.TypeResolver.ResolveSchema(&v, true, containsString(sg.Schema.Required, k))
 		if sg.Schema.Discriminator == k {
 			tpe.IsNullable = false
 		}
@@ -1010,6 +1010,7 @@ func (sg *schemaGenContext) buildItems() error {
 			}
 			sg.MergeResult(elProp, false)
 			elProp.GenSchema.Name = "p" + strconv.Itoa(i)
+			elProp.GenSchema.IsNullable = sg.TypeResolver.IsNullable(&s)
 			sg.GenSchema.Properties = append(sg.GenSchema.Properties, elProp.GenSchema)
 		}
 		return nil

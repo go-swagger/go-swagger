@@ -1196,10 +1196,9 @@ func TestSerializer_NotaWithName(t *testing.T) {
 					assertInCode(t, "return &in.String(), nil", res)
 					assertInCode(t, "m.NotaWithName != nil", res)
 					assertInCode(t, "out.Raw(swag.WriteJSON(m.NotaWithName))", res)
-					assertInCode(t, "var notaWithNameValue map[string]*int32", res)
-					assertInCode(t, "notaWithNameValue = make(map[string]*int32)", res)
-					assertInCode(t, "notaWithNameValue[key] = notaWithNameEntry", res)
-					assertInCode(t, "notaWithNameValue[key] = nil", res)
+					assertInCode(t, "m.NotaWithName = make(map[string]*int32)", res)
+					assertInCode(t, "m.NotaWithName[key] = notaWithNameEntry", res)
+					assertInCode(t, "m.NotaWithName[key] = nil", res)
 				} else {
 					fmt.Println(buf.String())
 				}
@@ -1791,6 +1790,481 @@ func TestSerializer_WithMapComplexRegistry(t *testing.T) {
 					assertInCode(t, "m.Count = 0", res)
 					assertInCode(t, "commentValue, err := m.commentIReadJSON(in)", res)
 					assertInCode(t, "out.Int32(m.Count)", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			} else {
+				fmt.Println(buf.String())
+			}
+		}
+	}
+}
+
+func TestSerializer_WithAdditional(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["WithAdditional"]
+		genModel, err := makeGenDefinition("WithAdditional", "models", schema, specDoc, true, true)
+		if assert.NoError(t, err) {
+			assert.True(t, genModel.IsComplexObject)
+			assert.False(t, genModel.IsAdditionalProperties)
+			assert.False(t, genModel.HasAdditionalProperties)
+			assert.True(t, genModel.IsAliased)
+			assert.False(t, genModel.IsMap)
+			assert.Equal(t, "WithAdditional", genModel.Name)
+			assert.Equal(t, "WithAdditional", genModel.GoType)
+			// pretty.Println(genModel)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("with_map.go", buf.Bytes())
+				// fmt.Println(buf.String())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					// fmt.Println(res)
+					assertInCode(t, "type WithAdditional struct", res)
+					assertInCode(t, "func (m WithAdditional) MarshalJSON() ([]byte, error)", res)
+					assertInCode(t, "func (m *WithAdditional) UnmarshalJSON(data []byte) error", res)
+					assertInCode(t, "func (m *WithAdditional) MarshalEasyJSON(out *jwriter.Writer)", res)
+					assertInCode(t, "func (m *WithAdditional) UnmarshalEasyJSON(in *jlexer.Lexer)", res)
+					assertInCode(t, "func (m *WithAdditional) Validate(formats strfmt.Registry)", res)
+					assertInCode(t, "Data *WithAdditionalData `json:\"data,omitempty\"`", res)
+					assertInCode(t, "out.String(\"data\")", res)
+					assertInCode(t, "func (m *WithAdditional) dataIWriteJSON(out *jwriter.Writer) error", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.Data))", res)
+					assertInCode(t, "if err := m.dataIWriteJSON(out); err != nil", res)
+					assertInCode(t, "m.Data = nil", res)
+					assertInCode(t, "func (m *WithAdditional) dataIReadJSON(in *jlexer.Lexer) (*WithAdditionalData, error) {", res)
+					assertInCode(t, "var dataValue WithAdditionalData", res)
+					assertInCode(t, "if data := in.Raw(); in.Ok()", res)
+					assertInCode(t, "if err := swag.ReadJSON(data, &dataValue)", res)
+					assertInCode(t, "if dataValue, err := m.dataIReadJSON(in); err != nil", res)
+					assertInCode(t, "m.Data = dataValue", res)
+					assertInCode(t, "return &dataValue, nil", res)
+
+					assertInCode(t, "Name *string `json:\"name\"`", res)
+					assertInCode(t, "WithAdditionalData map[string]*string `json:\"-\"`", res)
+					assertInCode(t, "out.String(\"name\")", res)
+					assertInCode(t, "out.String(m.Name)", res)
+					assertInCode(t, "return &in.String(), nil", res)
+					assertInCode(t, "m.WithAdditionalData != nil", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.WithAdditionalData))", res)
+					assertInCode(t, "m.WithAdditionalData = make(map[string]*string)", res)
+					assertInCode(t, "m.WithAdditionalData[key] = withAdditionalDataEntry", res)
+					assertInCode(t, "m.WithAdditionalData[key] = nil", res)
+
+				} else {
+					fmt.Println(buf.String())
+				}
+			} else {
+				fmt.Println(buf.String())
+			}
+		}
+	}
+}
+
+func TestSerializer_SimpleTuple(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["SimpleTuple"]
+		genModel, err := makeGenDefinition("SimpleTuple", "models", schema, specDoc, true, true)
+		if assert.NoError(t, err) {
+			assert.False(t, genModel.IsComplexObject)
+			assert.False(t, genModel.IsAdditionalProperties)
+			assert.False(t, genModel.HasAdditionalProperties)
+			assert.True(t, genModel.IsAliased)
+			assert.False(t, genModel.IsMap)
+			assert.True(t, genModel.IsTuple)
+			assert.Equal(t, "SimpleTuple", genModel.Name)
+			assert.Equal(t, "SimpleTuple", genModel.GoType)
+			// pretty.Println(genModel)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("with_tuple.go", buf.Bytes())
+				// fmt.Println(buf.String())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					// fmt.Println(res)
+					assertInCode(t, "type SimpleTuple struct", res)
+					assertInCode(t, "func (m SimpleTuple) MarshalJSON() ([]byte, error)", res)
+					assertInCode(t, "func (m *SimpleTuple) UnmarshalJSON(data []byte) error", res)
+					assertInCode(t, "func (m *SimpleTuple) MarshalEasyJSON(out *jwriter.Writer)", res)
+					assertInCode(t, "func (m *SimpleTuple) UnmarshalEasyJSON(in *jlexer.Lexer)", res)
+					assertInCode(t, "func (m *SimpleTuple) Validate(formats strfmt.Registry)", res)
+
+					assertInCode(t, "P0 int64 `json:\"-\"`", res)
+					assertInCode(t, "P1 string `json:\"-\"`", res)
+					assertInCode(t, "P2 strfmt.DateTime `json:\"-\"`", res)
+					assertInCode(t, "P3 Notable `json:\"-\"`", res)
+					assertInCode(t, "P4 *Notable `json:\"-\"`", res)
+
+					assertInCode(t, "err := m.p0IWriteJSON(out)", res)
+					assertInCode(t, "err := m.p1IWriteJSON(out)", res)
+					assertInCode(t, "err := m.p2IWriteJSON(out)", res)
+					assertInCode(t, "err := m.p3IWriteJSON(out)", res)
+					assertInCode(t, "err := m.p4IWriteJSON(out)", res)
+
+					assertInCode(t, "out.Int64(m.P0)", res)
+					assertInCode(t, "out.String(m.P1)", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.P2))", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.P3))", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.P4))", res)
+
+					assertInCode(t, "case 0:", res)
+					assertInCode(t, "case 1:", res)
+					assertInCode(t, "case 2:", res)
+					assertInCode(t, "case 3:", res)
+					assertInCode(t, "case 4:", res)
+
+					assertInCode(t, "p0Value, err := m.p0IReadJSON(in)", res)
+					assertInCode(t, "p1Value, err := m.p1IReadJSON(in)", res)
+					assertInCode(t, "p2Value, err := m.p2IReadJSON(in)", res)
+					assertInCode(t, "p3Value, err := m.p3IReadJSON(in)", res)
+					assertInCode(t, "p4Value, err := m.p4IReadJSON(in)", res)
+
+					assertInCode(t, "m.P0 = p0Value", res)
+					assertInCode(t, "m.P1 = p1Value", res)
+					assertInCode(t, "m.P2 = p2Value", res)
+					assertInCode(t, "m.P3 = p3Value", res)
+					assertInCode(t, "m.P4 = p4Value", res)
+
+					assertInCode(t, "return in.Int64(), nil", res)
+					assertInCode(t, "return in.String(), nil", res)
+					assertInCode(t, "err := swag.ReadJSON(data, &p2Value)", res)
+					assertInCode(t, "err := swag.ReadJSON(data, &p3Value)", res)
+					assertInCode(t, "err := swag.ReadJSON(data, &p4Value)", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			} else {
+				fmt.Println(buf.String())
+			}
+		}
+	}
+}
+
+func TestSerializer_TupleWithExtra(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["TupleWithExtra"]
+		genModel, err := makeGenDefinition("TupleWithExtra", "models", schema, specDoc, true, true)
+		if assert.NoError(t, err) {
+			assert.False(t, genModel.IsComplexObject)
+			assert.False(t, genModel.IsAdditionalProperties)
+			assert.False(t, genModel.HasAdditionalProperties)
+			assert.True(t, genModel.IsAliased)
+			assert.False(t, genModel.IsMap)
+			assert.True(t, genModel.IsTuple)
+			assert.Equal(t, "TupleWithExtra", genModel.Name)
+			assert.Equal(t, "TupleWithExtra", genModel.GoType)
+			// pretty.Println(genModel)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("with_tuple.go", buf.Bytes())
+				// fmt.Println(buf.String())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					// fmt.Println(res)
+					assertInCode(t, "type TupleWithExtra struct", res)
+					assertInCode(t, "func (m TupleWithExtra) MarshalJSON() ([]byte, error)", res)
+					assertInCode(t, "func (m *TupleWithExtra) UnmarshalJSON(data []byte) error", res)
+					assertInCode(t, "func (m *TupleWithExtra) MarshalEasyJSON(out *jwriter.Writer)", res)
+					assertInCode(t, "func (m *TupleWithExtra) UnmarshalEasyJSON(in *jlexer.Lexer)", res)
+					assertInCode(t, "func (m *TupleWithExtra) Validate(formats strfmt.Registry)", res)
+
+					assertInCode(t, "P0 int64 `json:\"-\"`", res)
+					assertInCode(t, "P1 string `json:\"-\"`", res)
+					assertInCode(t, "P2 strfmt.DateTime `json:\"-\"`", res)
+					assertInCode(t, "P3 Notable `json:\"-\"`", res)
+					assertInCode(t, "TupleWithExtraItems []float64 `json:\"-\"`", res)
+
+					assertInCode(t, "err := m.p0IWriteJSON(out)", res)
+					assertInCode(t, "err := m.p1IWriteJSON(out)", res)
+					assertInCode(t, "err := m.p2IWriteJSON(out)", res)
+					assertInCode(t, "err := m.p3IWriteJSON(out)", res)
+
+					assertInCode(t, "out.Int64(m.P0)", res)
+					assertInCode(t, "out.String(m.P1)", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.P2))", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.P3))", res)
+					assertInCode(t, "i := range m.TupleWithExtraItems", res)
+					assertInCode(t, "out.Float64(m.TupleWithExtraItems[i])", res)
+
+					assertInCode(t, "case 0:", res)
+					assertInCode(t, "case 1:", res)
+					assertInCode(t, "case 2:", res)
+					assertInCode(t, "case 3:", res)
+					assertInCode(t, "default:", res)
+
+					assertInCode(t, "p0Value, err := m.p0IReadJSON(in)", res)
+					assertInCode(t, "p1Value, err := m.p1IReadJSON(in)", res)
+					assertInCode(t, "p2Value, err := m.p2IReadJSON(in)", res)
+					assertInCode(t, "p3Value, err := m.p3IReadJSON(in)", res)
+					assertInCode(t, "err := swag.ReadJSON(data, &tupleWithExtraItemsValue)", res)
+
+					assertInCode(t, "m.P0 = p0Value", res)
+					assertInCode(t, "m.P1 = p1Value", res)
+					assertInCode(t, "m.P2 = p2Value", res)
+					assertInCode(t, "m.P3 = p3Value", res)
+					assertInCode(t, "m.TupleWithExtraItems = append(m.TupleWithExtraItems, 0)", res)
+
+					assertInCode(t, "return in.Int64(), nil", res)
+					assertInCode(t, "return in.String(), nil", res)
+					assertInCode(t, "err := swag.ReadJSON(data, &p2Value)", res)
+					assertInCode(t, "err := swag.ReadJSON(data, &p3Value)", res)
+					assertInCode(t, "m.TupleWithExtraItems = append(m.TupleWithExtraItems, tupleWithExtraItemsValue)", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			} else {
+				fmt.Println(buf.String())
+			}
+		}
+	}
+}
+
+func TestSerializer_TupleWithComplex(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["TupleWithComplex"]
+		genModel, err := makeGenDefinition("TupleWithComplex", "models", schema, specDoc, true, true)
+		if assert.NoError(t, err) {
+			assert.False(t, genModel.IsComplexObject)
+			assert.False(t, genModel.IsAdditionalProperties)
+			assert.False(t, genModel.HasAdditionalProperties)
+			assert.True(t, genModel.IsAliased)
+			assert.False(t, genModel.IsMap)
+			assert.True(t, genModel.IsTuple)
+			assert.Equal(t, "TupleWithComplex", genModel.Name)
+			assert.Equal(t, "TupleWithComplex", genModel.GoType)
+			// pretty.Println(genModel)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("with_tuple.go", buf.Bytes())
+				// fmt.Println(buf.String())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					// fmt.Println(res)
+					assertInCode(t, "type TupleWithComplex struct", res)
+					assertInCode(t, "func (m TupleWithComplex) MarshalJSON() ([]byte, error)", res)
+					assertInCode(t, "func (m *TupleWithComplex) UnmarshalJSON(data []byte) error", res)
+					assertInCode(t, "func (m *TupleWithComplex) MarshalEasyJSON(out *jwriter.Writer)", res)
+					assertInCode(t, "func (m *TupleWithComplex) UnmarshalEasyJSON(in *jlexer.Lexer)", res)
+					assertInCode(t, "func (m *TupleWithComplex) Validate(formats strfmt.Registry)", res)
+
+					assertInCode(t, "P0 int64 `json:\"-\"`", res)
+					assertInCode(t, "P1 string `json:\"-\"`", res)
+					assertInCode(t, "P2 strfmt.DateTime `json:\"-\"`", res)
+					assertInCode(t, "P3 Notable `json:\"-\"`", res)
+					assertInCode(t, "TupleWithComplexItems []*TupleWithComplexItems `json:\"-\"`", res)
+
+					assertInCode(t, "err := m.p0IWriteJSON(out)", res)
+					assertInCode(t, "err := m.p1IWriteJSON(out)", res)
+					assertInCode(t, "err := m.p2IWriteJSON(out)", res)
+					assertInCode(t, "err := m.p3IWriteJSON(out)", res)
+					assertInCode(t, "i := range m.TupleWithComplexItems", res)
+
+					assertInCode(t, "out.Int64(m.P0)", res)
+					assertInCode(t, "out.String(m.P1)", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.P2))", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.P3))", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.TupleWithComplexItems[i]))", res)
+
+					assertInCode(t, "case 0:", res)
+					assertInCode(t, "case 1:", res)
+					assertInCode(t, "case 2:", res)
+					assertInCode(t, "case 3:", res)
+					assertInCode(t, "default:", res)
+
+					assertInCode(t, "p0Value, err := m.p0IReadJSON(in)", res)
+					assertInCode(t, "p1Value, err := m.p1IReadJSON(in)", res)
+					assertInCode(t, "p2Value, err := m.p2IReadJSON(in)", res)
+					assertInCode(t, "p3Value, err := m.p3IReadJSON(in)", res)
+					assertInCode(t, "err := swag.ReadJSON(data, &tupleWithComplexItemsValue)", res)
+
+					assertInCode(t, "m.P0 = p0Value", res)
+					assertInCode(t, "m.P1 = p1Value", res)
+					assertInCode(t, "m.P2 = p2Value", res)
+					assertInCode(t, "m.P3 = p3Value", res)
+					assertInCode(t, "m.TupleWithComplexItems = append(m.TupleWithComplexItems, nil)", res)
+
+					assertInCode(t, "return in.Int64(), nil", res)
+					assertInCode(t, "return in.String(), nil", res)
+					assertInCode(t, "err := swag.ReadJSON(data, &p2Value)", res)
+					assertInCode(t, "err := swag.ReadJSON(data, &p3Value)", res)
+					assertInCode(t, "m.TupleWithComplexItems = append(m.TupleWithComplexItems, &tupleWithComplexItemsValue)", res)
+
+					assertInCode(t, "type TupleWithComplexItems struct", res)
+					assertInCode(t, "func (m TupleWithComplexItems) MarshalJSON() ([]byte, error)", res)
+					assertInCode(t, "func (m *TupleWithComplexItems) UnmarshalJSON(data []byte) error", res)
+					assertInCode(t, "func (m *TupleWithComplexItems) MarshalEasyJSON(out *jwriter.Writer)", res)
+					assertInCode(t, "func (m *TupleWithComplexItems) UnmarshalEasyJSON(in *jlexer.Lexer)", res)
+					assertInCode(t, "func (m *TupleWithComplexItems) Validate(formats strfmt.Registry)", res)
+
+					assertInCode(t, "Args *TupleWithComplexItemsArgsTuple0 `json:\"args,omitempty\"`", res)
+					assertInCode(t, "out.String(\"args\")", res)
+					assertInCode(t, "func (m *TupleWithComplexItems) argsIWriteJSON(out *jwriter.Writer) error", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.Args))", res)
+					assertInCode(t, "if err := m.argsIWriteJSON(out); err != nil", res)
+					assertInCode(t, "m.Args = nil", res)
+					assertInCode(t, "func (m *TupleWithComplexItems) argsIReadJSON(in *jlexer.Lexer) (*TupleWithComplexItemsArgsTuple0, error) {", res)
+					assertInCode(t, "var argsValue TupleWithComplexItemsArgsTuple0", res)
+					assertInCode(t, "if data := in.Raw(); in.Ok()", res)
+					assertInCode(t, "if err := swag.ReadJSON(data, &argsValue)", res)
+					assertInCode(t, "if argsValue, err := m.argsIReadJSON(in); err != nil", res)
+					assertInCode(t, "m.Args = argsValue", res)
+
+					assertInCode(t, "type TupleWithComplexItemsArgsTuple0 struct", res)
+					assertInCode(t, "func (m TupleWithComplexItemsArgsTuple0) MarshalJSON() ([]byte, error)", res)
+					assertInCode(t, "func (m *TupleWithComplexItemsArgsTuple0) UnmarshalJSON(data []byte) error", res)
+					assertInCode(t, "func (m *TupleWithComplexItemsArgsTuple0) MarshalEasyJSON(out *jwriter.Writer)", res)
+					assertInCode(t, "func (m *TupleWithComplexItemsArgsTuple0) UnmarshalEasyJSON(in *jlexer.Lexer)", res)
+					assertInCode(t, "func (m *TupleWithComplexItemsArgsTuple0) Validate(formats strfmt.Registry)", res)
+
+					assertInCode(t, "P0 *string `json:\"-\"`", res)
+					assertInCode(t, "for i := range m.TupleWithComplexItemsArgsTuple0Items", res)
+					assertInCode(t, "out.Float32(m.TupleWithComplexItemsArgsTuple0Items[i])", res)
+					assertInCode(t, "m.P0 = nil", res)
+					assertInCode(t, "p0Value, err := m.p0IReadJSON(in)", res)
+					assertInCode(t, "err := swag.ReadJSON(data, &tupleWithComplexItemsArgsTuple0ItemsValue)", res)
+					assertInCode(t, "m.TupleWithComplexItemsArgsTuple0Items = append(m.TupleWithComplexItemsArgsTuple0Items, 0)", res)
+					assertInCode(t, "m.TupleWithComplexItemsArgsTuple0Items = append(m.TupleWithComplexItemsArgsTuple0Items, tupleWithComplexItemsArgsTuple0ItemsValue)", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			} else {
+				fmt.Println(buf.String())
+			}
+		}
+	}
+}
+
+func TestSerializer_WithTuple(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["WithTuple"]
+		genModel, err := makeGenDefinition("WithTuple", "models", schema, specDoc, true, true)
+		if assert.NoError(t, err) {
+			assert.True(t, genModel.IsComplexObject)
+			assert.False(t, genModel.IsAdditionalProperties)
+			assert.False(t, genModel.HasAdditionalProperties)
+			assert.True(t, genModel.IsAliased)
+			assert.False(t, genModel.IsMap)
+			assert.False(t, genModel.IsTuple)
+			assert.Equal(t, "WithTuple", genModel.Name)
+			assert.Equal(t, "WithTuple", genModel.GoType)
+			// pretty.Println(genModel)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("with_tuple.go", buf.Bytes())
+				// fmt.Println(buf.String())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					// fmt.Println(res)
+					assertInCode(t, "type WithTuple struct", res)
+					assertInCode(t, "func (m WithTuple) MarshalJSON() ([]byte, error)", res)
+					assertInCode(t, "func (m *WithTuple) UnmarshalJSON(data []byte) error", res)
+					assertInCode(t, "func (m *WithTuple) MarshalEasyJSON(out *jwriter.Writer)", res)
+					assertInCode(t, "func (m *WithTuple) UnmarshalEasyJSON(in *jlexer.Lexer)", res)
+					assertInCode(t, "func (m *WithTuple) Validate(formats strfmt.Registry)", res)
+
+					assertInCode(t, "Flags *WithTupleFlagsTuple0 `json:\"flags,omitempty\"`", res)
+					assertInCode(t, "out.String(\"flags\")", res)
+					assertInCode(t, "out.RawString(\"null\")", res)
+					assertInCode(t, "err := m.flagsIWriteJSON(out)", res)
+					assertInCode(t, "flagsValue, err := m.flagsIReadJSON(in)", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.Flags))", res)
+					assertInCode(t, "err := swag.ReadJSON(data, &flagsValue)", res)
+
+					assertInCode(t, "type WithTupleFlagsTuple0 struct", res)
+					assertInCode(t, "P0 *int64 `json:\"-\"`", res)
+					assertInCode(t, "P1 *string `json:\"-\"`", res)
+					assertInCode(t, "err := m.p0IWriteJSON(out)", res)
+					assertInCode(t, "err := m.p1IWriteJSON(out)", res)
+					assertInCode(t, "p0Value, err := m.p0IReadJSON(in)", res)
+					assertInCode(t, "m.P0 = p0Value", res)
+					assertInCode(t, "out.Int64(m.P0)", res)
+					assertInCode(t, "return &in.Int64(), nil", res)
+					assertInCode(t, "p1Value, err := m.p1IReadJSON(in)", res)
+					assertInCode(t, "m.P1 = p1Value", res)
+					assertInCode(t, "out.String(m.P1)", res)
+					assertInCode(t, "return &in.String(), nil", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			} else {
+				fmt.Println(buf.String())
+			}
+		}
+	}
+}
+
+func TestSerializer_WithTupleWithExtra(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["WithTupleWithExtra"]
+		genModel, err := makeGenDefinition("WithTupleWithExtra", "models", schema, specDoc, true, true)
+		if assert.NoError(t, err) {
+			assert.True(t, genModel.IsComplexObject)
+			assert.False(t, genModel.IsAdditionalProperties)
+			assert.False(t, genModel.HasAdditionalProperties)
+			assert.True(t, genModel.IsAliased)
+			assert.False(t, genModel.IsMap)
+			assert.False(t, genModel.IsTuple)
+			assert.Equal(t, "WithTupleWithExtra", genModel.Name)
+			assert.Equal(t, "WithTupleWithExtra", genModel.GoType)
+			// pretty.Println(genModel)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("with_tuple.go", buf.Bytes())
+				// fmt.Println(buf.String())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					// fmt.Println(res)
+					assertInCode(t, "type WithTupleWithExtra struct", res)
+					assertInCode(t, "func (m WithTupleWithExtra) MarshalJSON() ([]byte, error)", res)
+					assertInCode(t, "func (m *WithTupleWithExtra) UnmarshalJSON(data []byte) error", res)
+					assertInCode(t, "func (m *WithTupleWithExtra) MarshalEasyJSON(out *jwriter.Writer)", res)
+					assertInCode(t, "func (m *WithTupleWithExtra) UnmarshalEasyJSON(in *jlexer.Lexer)", res)
+					assertInCode(t, "func (m *WithTupleWithExtra) Validate(formats strfmt.Registry)", res)
+
+					assertInCode(t, "Flags *WithTupleWithExtraFlagsTuple0 `json:\"flags,omitempty\"`", res)
+					assertInCode(t, "out.String(\"flags\")", res)
+					assertInCode(t, "out.RawString(\"null\")", res)
+					assertInCode(t, "err := m.flagsIWriteJSON(out)", res)
+					assertInCode(t, "flagsValue, err := m.flagsIReadJSON(in)", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.Flags))", res)
+					assertInCode(t, "err := swag.ReadJSON(data, &flagsValue)", res)
+
+					assertInCode(t, "type WithTupleWithExtraFlagsTuple0 struct", res)
+					assertInCode(t, "P0 *int64 `json:\"-\"`", res)
+					assertInCode(t, "P1 *string `json:\"-\"`", res)
+					assertInCode(t, "err := m.p0IWriteJSON(out)", res)
+					assertInCode(t, "err := m.p1IWriteJSON(out)", res)
+					assertInCode(t, "p0Value, err := m.p0IReadJSON(in)", res)
+					assertInCode(t, "m.P0 = p0Value", res)
+					assertInCode(t, "out.Int64(m.P0)", res)
+					assertInCode(t, "return &in.Int64(), nil", res)
+					assertInCode(t, "p1Value, err := m.p1IReadJSON(in)", res)
+					assertInCode(t, "m.P1 = p1Value", res)
+					assertInCode(t, "out.String(m.P1)", res)
+					assertInCode(t, "return &in.String(), nil", res)
+					assertInCode(t, "i := range m.WithTupleWithExtraFlagsTuple0Items", res)
+					assertInCode(t, "out.Float32(m.WithTupleWithExtraFlagsTuple0Items[i])", res)
+					assertInCode(t, "err := swag.ReadJSON(data, &withTupleWithExtraFlagsTuple0ItemsValue)", res)
+					assertInCode(t, "m.WithTupleWithExtraFlagsTuple0Items = append(m.WithTupleWithExtraFlagsTuple0Items, 0)", res)
+					assertInCode(t, "m.WithTupleWithExtraFlagsTuple0Items = append(m.WithTupleWithExtraFlagsTuple0Items, withTupleWithExtraFlagsTuple0ItemsValue)", res)
 				} else {
 					fmt.Println(buf.String())
 				}

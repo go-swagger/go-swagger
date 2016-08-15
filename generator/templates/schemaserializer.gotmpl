@@ -241,7 +241,8 @@ for !in.IsDelim(']') {
         {{ $.ReceiverName }}.is{{ pascalize $prop.Name }}FieldNil = {{ if or $prop.IsNullable $prop.IsArray $prop.IsMap }}{{ camelize $prop.Name }}Value == nil{{ else }}false{{ end }}
       }{{ if $prop.IsNullable }}
     }{{ end }}
-  {{ end }}}{{ if .HasAdditionalItems }}
+  {{ end }}{{ if .HasAdditionalItems }}
+  default:
     {{ if .AdditionalItems.IsNullable }}if in.IsNull() {
       in.Skip()
       {{ $.ReceiverName }}.{{ pascalize .AdditionalItems.Name }} = append({{ $.ReceiverName }}.{{ pascalize .AdditionalItems.Name }}, {{ if or .AdditionalItems.IsNullable .AdditionalItems.IsArray .AdditionalItems.IsAdditionalProperties }}nil{{ else }}{{ .AdditionalItems.Zero }}{{ end }})
@@ -257,6 +258,7 @@ for !in.IsDelim(']') {
       }{{ if .AdditionalItems.IsNullable }}
     }{{ end }}
   {{ end }}
+  }
   index++
   in.WantComma()
 }
@@ -269,8 +271,6 @@ if in.IsNull() {
 }
 
 in.Delim('{')
-{{ if .HasAdditionalProperties }}var {{ camelize .AdditionalProperties.Name }}Value map[string]{{ template "schemaType" .AdditionalProperties }}{{ end }}
-
 for !in.IsDelim('}') {
   key := in.UnsafeString()
   in.WantColon()
@@ -285,10 +285,10 @@ for !in.IsDelim('}') {
     {{ end -}}
     default:
       {{ if .AdditionalProperties }}{{ if .AdditionalProperties.IsNullable -}}
-      if {{ camelize .AdditionalProperties.Name }}Value == nil {
-        {{ camelize .AdditionalProperties.Name }}Value = make(map[string]{{ template "schemaType" .AdditionalProperties }})
+      if {{ .ReceiverName }}.{{ pascalize .AdditionalProperties.Name }} == nil {
+        {{ .ReceiverName }}.{{ pascalize .AdditionalProperties.Name }} = make(map[string]{{ template "schemaType" .AdditionalProperties }})
       }
-      {{ camelize .AdditionalProperties.Name }}Value[key] = nil
+      {{ .ReceiverName }}.{{ pascalize .AdditionalProperties.Name }}[key] = nil
       {{ end }}{{ else }}in.SkipRecursive(){{ end -}}
     }
     in.Skip()
@@ -313,19 +313,16 @@ for !in.IsDelim('}') {
       if in.Error() != nil {
         return
       }
-      if {{ camelize .AdditionalProperties.Name }}Value == nil {
-        {{ camelize .AdditionalProperties.Name }}Value = make(map[string]{{ template "schemaType" .AdditionalProperties }})
+      if {{ .ReceiverName }}.{{ pascalize .AdditionalProperties.Name }} == nil {
+        {{ .ReceiverName }}.{{ pascalize .AdditionalProperties.Name }} = make(map[string]{{ template "schemaType" .AdditionalProperties }})
       }
-      {{ camelize .AdditionalProperties.Name }}Value[key] = {{ camelize .AdditionalProperties.Name }}Entry
+      {{ .ReceiverName }}.{{ pascalize .AdditionalProperties.Name }}[key] = {{ camelize .AdditionalProperties.Name }}Entry
     }
     {{ else }}in.SkipRecursive()
     {{ end }}
   }
   in.WantComma()
 }
-
-{{ if .HasAdditionalProperties }}{{ .ReceiverName }}.{{ pascalize .AdditionalProperties.Name }} = {{ camelize .AdditionalProperties.Name }}Entry
-{{ end }}
 in.Delim('}')
 {{ end }}
 {{ define "schemaObjectSerializer" }}
