@@ -23,10 +23,10 @@ func ({{.ReceiverName}} {{ if not .IsMap }}*{{ end }}{{ pascalize .Name }}) Unma
   {{ template "schemaDeserializer" . }}
 }
 {{ range .Properties }}
-func ({{ $.ReceiverName}} {{ if not .IsMap }}*{{ end }}{{ pascalize $.Name }}) {{ camelize .Name }}{{ pascalize .IndexVar }}WriteJSON(out *jwriter.Writer) error {
+func ({{ $.ReceiverName}} {{ if not $.IsMap }}*{{ end }}{{ pascalize $.Name }}) {{ camelize .Name }}{{ pascalize .IndexVar }}WriteJSON(out *jwriter.Writer) error {
    {{ template "schemaValueSerializerBody" . }}
 }
-func ({{ $.ReceiverName}} {{ if not .IsMap }}*{{ end }}{{ pascalize $.Name }}) {{ camelize .Name }}{{ pascalize .IndexVar }}ReadJSON(in *jlexer.Lexer) ({{ template "schemaType" . }}, error) {
+func ({{ $.ReceiverName}} {{ if not $.IsMap }}*{{ end }}{{ pascalize $.Name }}) {{ camelize .Name }}{{ pascalize .IndexVar }}ReadJSON(in *jlexer.Lexer) ({{ template "schemaType" . }}, error) {
    {{ template "schemaValueDeserializerBody" . }}
 }
 {{ end }}
@@ -61,10 +61,10 @@ return nil{{ end }}{{ end }}
 {{ define "schemaValueDeserializer" }}
   {{ template "schemaValueDeserializerBody" . }}
 {{ end }}
-{{ define "schemaValueDeserializerBody" }}{{ if or .IsComplexObject .IsAdditionalProperties .IsAliased .IsCustomFormatter }}var {{ camelize .Name }}Value {{ template "dereffedSchemaType" . }}
+{{ define "schemaValueDeserializerBody" }}{{ if or .IsComplexObject .IsAdditionalProperties .IsMap .IsAliased .IsCustomFormatter }}var {{ camelize .Name }}Value {{ template "dereffedSchemaType" . }}
 if data := in.Raw(); in.Ok() {
   if err := swag.ReadJSON(data, &{{ camelize .Name }}Value); err != nil {
-    return {{ if .IsNullable }}nil{{ else }}{{ .Zero }}{{ end }}, err
+    return {{ if or .IsNullable .IsArray .IsMap .IsAdditionalProperties }}nil{{ else }}{{ .Zero }}{{ end }}, err
   }
 }
 return {{ if .IsNullable }}&{{ end }}{{ camelize .Name }}Value, nil
@@ -279,7 +279,7 @@ for !in.IsDelim('}') {
     switch key {
     {{ range $index, $prop := .Properties }}
     case {{ printf "%q" $prop.Name }}:
-      {{ $prop.ValueExpression }} = {{ if or $prop.IsNullable $prop.IsArray $prop.IsAdditionalProperties }}nil{{ else }}{{ $prop.Zero }}{{ end }}
+      {{ $prop.ValueExpression }} = {{ if or $prop.IsNullable $prop.IsArray $prop.IsMap $prop.IsAdditionalProperties }}nil{{ else }}{{ $prop.Zero }}{{ end }}
       {{ $.ReceiverName }}.is{{ pascalize $prop.Name }}FieldSet = true
       {{ $.ReceiverName }}.is{{ pascalize $prop.Name }}FieldNil = true
     {{ end -}}
@@ -289,8 +289,7 @@ for !in.IsDelim('}') {
         {{ camelize .AdditionalProperties.Name }}Value = make(map[string]{{ template "schemaType" .AdditionalProperties }})
       }
       {{ camelize .AdditionalProperties.Name }}Value[key] = nil
-      {{ else }}in.SkipRecursive()
-      {{ end }}{{ end -}}
+      {{ end }}{{ else }}in.SkipRecursive(){{ end -}}
     }
     in.Skip()
     in.WantComma()

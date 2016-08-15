@@ -1364,3 +1364,439 @@ func TestSerializer_WithRef(t *testing.T) {
 		}
 	}
 }
+
+func TestSerializer_WithNullableRef(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["WithNullableRef"]
+		genModel, err := makeGenDefinition("WithNullableRef", "models", schema, specDoc, true, true)
+		if assert.NoError(t, err) {
+			assert.True(t, genModel.IsComplexObject)
+			assert.False(t, genModel.IsAdditionalProperties)
+			assert.False(t, genModel.HasAdditionalProperties)
+			assert.True(t, genModel.IsAliased)
+			assert.False(t, genModel.IsMap)
+			assert.Equal(t, "WithNullableRef", genModel.Name)
+			assert.Equal(t, "WithNullableRef", genModel.GoType)
+			// pretty.Println(genModel)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("with_ref.go", buf.Bytes())
+				// fmt.Println(buf.String())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					// fmt.Println(res)
+					assertInCode(t, "type WithNullableRef struct", res)
+					assertInCode(t, "func (m WithNullableRef) MarshalJSON() ([]byte, error)", res)
+					assertInCode(t, "func (m *WithNullableRef) UnmarshalJSON(data []byte) error", res)
+					assertInCode(t, "func (m *WithNullableRef) MarshalEasyJSON(out *jwriter.Writer)", res)
+					assertInCode(t, "func (m *WithNullableRef) UnmarshalEasyJSON(in *jlexer.Lexer)", res)
+					assertInCode(t, "func (m *WithNullableRef) Validate(formats strfmt.Registry)", res)
+					assertInCode(t, "Notes *Notable `json:\"notes,omitempty\"`", res)
+					assertInCode(t, "out.String(\"notes\")", res)
+					assertInCode(t, "func (m *WithNullableRef) notesIWriteJSON(out *jwriter.Writer) error", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.Notes))", res)
+					assertInCode(t, "if err := m.notesIWriteJSON(out); err != nil", res)
+					assertInCode(t, "m.Notes = nil", res)
+					assertInCode(t, "func (m *WithNullableRef) notesIReadJSON(in *jlexer.Lexer) (*Notable, error) {", res)
+					assertInCode(t, "var notesValue Notable", res)
+					assertInCode(t, "if data := in.Raw(); in.Ok()", res)
+					assertInCode(t, "if err := swag.ReadJSON(data, &notesValue)", res)
+					assertInCode(t, "if notesValue, err := m.notesIReadJSON(in); err != nil", res)
+					assertInCode(t, "m.Notes = notesValue", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			} else {
+				fmt.Println(buf.String())
+			}
+		}
+	}
+}
+
+func TestSerializer_WithMap(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["WithMap"]
+		genModel, err := makeGenDefinition("WithMap", "models", schema, specDoc, true, true)
+		if assert.NoError(t, err) {
+			assert.True(t, genModel.IsComplexObject)
+			assert.False(t, genModel.IsAdditionalProperties)
+			assert.False(t, genModel.HasAdditionalProperties)
+			assert.True(t, genModel.IsAliased)
+			assert.False(t, genModel.IsMap)
+			assert.Equal(t, "WithMap", genModel.Name)
+			assert.Equal(t, "WithMap", genModel.GoType)
+			// pretty.Println(genModel)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("with_map.go", buf.Bytes())
+				// fmt.Println(buf.String())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					// fmt.Println(res)
+					assertInCode(t, "type WithMap struct", res)
+					assertInCode(t, "func (m WithMap) MarshalJSON() ([]byte, error)", res)
+					assertInCode(t, "func (m *WithMap) UnmarshalJSON(data []byte) error", res)
+					assertInCode(t, "func (m *WithMap) MarshalEasyJSON(out *jwriter.Writer)", res)
+					assertInCode(t, "func (m *WithMap) UnmarshalEasyJSON(in *jlexer.Lexer)", res)
+					assertInCode(t, "func (m *WithMap) Validate(formats strfmt.Registry)", res)
+					assertInCode(t, "Data map[string]string `json:\"data,omitempty\"`", res)
+					assertInCode(t, "out.String(\"data\")", res)
+					assertInCode(t, "func (m *WithMap) dataIWriteJSON(out *jwriter.Writer) error", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.Data))", res)
+					assertInCode(t, "if err := m.dataIWriteJSON(out); err != nil", res)
+					assertInCode(t, "m.Data = nil", res)
+					assertInCode(t, "func (m *WithMap) dataIReadJSON(in *jlexer.Lexer) (map[string]string, error) {", res)
+					assertInCode(t, "var dataValue map[string]string", res)
+					assertInCode(t, "if data := in.Raw(); in.Ok()", res)
+					assertInCode(t, "if err := swag.ReadJSON(data, &dataValue)", res)
+					assertInCode(t, "if dataValue, err := m.dataIReadJSON(in); err != nil", res)
+					assertInCode(t, "m.Data = dataValue", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			} else {
+				fmt.Println(buf.String())
+			}
+		}
+	}
+}
+
+func TestSerializer_WithMapRef(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["WithMapRef"]
+		genModel, err := makeGenDefinition("WithMapRef", "models", schema, specDoc, true, true)
+		if assert.NoError(t, err) {
+			assert.True(t, genModel.IsComplexObject)
+			assert.False(t, genModel.IsAdditionalProperties)
+			assert.False(t, genModel.HasAdditionalProperties)
+			assert.True(t, genModel.IsAliased)
+			assert.False(t, genModel.IsMap)
+			assert.Equal(t, "WithMapRef", genModel.Name)
+			assert.Equal(t, "WithMapRef", genModel.GoType)
+			// pretty.Println(genModel)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("with_map.go", buf.Bytes())
+				// fmt.Println(buf.String())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					// fmt.Println(res)
+					assertInCode(t, "type WithMapRef struct", res)
+					assertInCode(t, "func (m WithMapRef) MarshalJSON() ([]byte, error)", res)
+					assertInCode(t, "func (m *WithMapRef) UnmarshalJSON(data []byte) error", res)
+					assertInCode(t, "func (m *WithMapRef) MarshalEasyJSON(out *jwriter.Writer)", res)
+					assertInCode(t, "func (m *WithMapRef) UnmarshalEasyJSON(in *jlexer.Lexer)", res)
+					assertInCode(t, "func (m *WithMapRef) Validate(formats strfmt.Registry)", res)
+					assertInCode(t, "Data map[string]Notable `json:\"data,omitempty\"`", res)
+					assertInCode(t, "out.String(\"data\")", res)
+					assertInCode(t, "func (m *WithMapRef) dataIWriteJSON(out *jwriter.Writer) error", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.Data))", res)
+					assertInCode(t, "if err := m.dataIWriteJSON(out); err != nil", res)
+					assertInCode(t, "m.Data = nil", res)
+					assertInCode(t, "func (m *WithMapRef) dataIReadJSON(in *jlexer.Lexer) (map[string]Notable, error) {", res)
+					assertInCode(t, "var dataValue map[string]Notable", res)
+					assertInCode(t, "if data := in.Raw(); in.Ok()", res)
+					assertInCode(t, "if err := swag.ReadJSON(data, &dataValue)", res)
+					assertInCode(t, "if dataValue, err := m.dataIReadJSON(in); err != nil", res)
+					assertInCode(t, "m.Data = dataValue", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			} else {
+				fmt.Println(buf.String())
+			}
+		}
+	}
+}
+
+func TestSerializer_WithMapInterface(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["WithMapInterface"]
+		genModel, err := makeGenDefinition("WithMapInterface", "models", schema, specDoc, true, true)
+		if assert.NoError(t, err) {
+			assert.True(t, genModel.IsComplexObject)
+			assert.False(t, genModel.IsAdditionalProperties)
+			assert.False(t, genModel.HasAdditionalProperties)
+			assert.True(t, genModel.IsAliased)
+			assert.False(t, genModel.IsMap)
+			assert.Equal(t, "WithMapInterface", genModel.Name)
+			assert.Equal(t, "WithMapInterface", genModel.GoType)
+			// pretty.Println(genModel)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("with_map.go", buf.Bytes())
+				// fmt.Println(buf.String())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					// fmt.Println(res)
+					assertInCode(t, "type WithMapInterface struct", res)
+					assertInCode(t, "func (m WithMapInterface) MarshalJSON() ([]byte, error)", res)
+					assertInCode(t, "func (m *WithMapInterface) UnmarshalJSON(data []byte) error", res)
+					assertInCode(t, "func (m *WithMapInterface) MarshalEasyJSON(out *jwriter.Writer)", res)
+					assertInCode(t, "func (m *WithMapInterface) UnmarshalEasyJSON(in *jlexer.Lexer)", res)
+					assertInCode(t, "func (m *WithMapInterface) Validate(formats strfmt.Registry)", res)
+					assertInCode(t, "ExtraInfo map[string]interface{} `json:\"extraInfo\"`", res)
+					assertInCode(t, "out.String(\"extraInfo\")", res)
+					assertInCode(t, "func (m *WithMapInterface) extraInfoIWriteJSON(out *jwriter.Writer) error", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.ExtraInfo))", res)
+					assertInCode(t, "if err := m.extraInfoIWriteJSON(out); err != nil", res)
+					assertInCode(t, "m.ExtraInfo = nil", res)
+					assertInCode(t, "func (m *WithMapInterface) extraInfoIReadJSON(in *jlexer.Lexer) (map[string]interface{}, error) {", res)
+					assertInCode(t, "var extraInfoValue map[string]interface{}", res)
+					assertInCode(t, "if data := in.Raw(); in.Ok()", res)
+					assertInCode(t, "if err := swag.ReadJSON(data, &extraInfoValue)", res)
+					assertInCode(t, "if extraInfoValue, err := m.extraInfoIReadJSON(in); err != nil", res)
+					assertInCode(t, "m.ExtraInfo = extraInfoValue", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			} else {
+				fmt.Println(buf.String())
+			}
+		}
+	}
+}
+
+func TestSerializer_WithMapComplex(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["WithMapComplex"]
+		genModel, err := makeGenDefinition("WithMapComplex", "models", schema, specDoc, true, true)
+		if assert.NoError(t, err) {
+			assert.True(t, genModel.IsComplexObject)
+			assert.False(t, genModel.IsAdditionalProperties)
+			assert.False(t, genModel.HasAdditionalProperties)
+			assert.True(t, genModel.IsAliased)
+			assert.False(t, genModel.IsMap)
+			assert.Equal(t, "WithMapComplex", genModel.Name)
+			assert.Equal(t, "WithMapComplex", genModel.GoType)
+			// pretty.Println(genModel)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("with_map.go", buf.Bytes())
+				// fmt.Println(buf.String())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					// fmt.Println(res)
+					assertInCode(t, "type WithMapComplex struct", res)
+					assertInCode(t, "func (m WithMapComplex) MarshalJSON() ([]byte, error)", res)
+					assertInCode(t, "func (m *WithMapComplex) UnmarshalJSON(data []byte) error", res)
+					assertInCode(t, "func (m *WithMapComplex) MarshalEasyJSON(out *jwriter.Writer)", res)
+					assertInCode(t, "func (m *WithMapComplex) UnmarshalEasyJSON(in *jlexer.Lexer)", res)
+					assertInCode(t, "func (m *WithMapComplex) Validate(formats strfmt.Registry)", res)
+					assertInCode(t, "Data map[string]WithMapComplexDataAnon `json:\"data,omitempty\"`", res)
+					assertInCode(t, "out.String(\"data\")", res)
+					assertInCode(t, "func (m *WithMapComplex) dataIWriteJSON(out *jwriter.Writer) error", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.Data))", res)
+					assertInCode(t, "if err := m.dataIWriteJSON(out); err != nil", res)
+					assertInCode(t, "m.Data = nil", res)
+					assertInCode(t, "func (m *WithMapComplex) dataIReadJSON(in *jlexer.Lexer) (map[string]WithMapComplexDataAnon, error) {", res)
+					assertInCode(t, "var dataValue map[string]WithMapComplexDataAnon", res)
+					assertInCode(t, "if data := in.Raw(); in.Ok()", res)
+					assertInCode(t, "if err := swag.ReadJSON(data, &dataValue)", res)
+					assertInCode(t, "if dataValue, err := m.dataIReadJSON(in); err != nil", res)
+					assertInCode(t, "m.Data = dataValue", res)
+
+					assertInCode(t, "type WithMapComplexDataAnon struct", res)
+					assertInCode(t, "Comment string `json:\"comment,omitempty\"`", res)
+					assertInCode(t, "out.String(\"comment\")", res)
+					assertInCode(t, "m.Comment = \"\"", res)
+					assertInCode(t, "commentValue, err := m.commentIReadJSON(in)", res)
+					assertInCode(t, "err := m.commentIWriteJSON(out)", res)
+					assertInCode(t, "m.IsCommentNil()", res)
+					assertInCode(t, "out.String(m.Comment)", res)
+					assertInCode(t, "out.String(\"count\")", res)
+					assertInCode(t, "err := m.countIWriteJSON(out)", res)
+					assertInCode(t, "m.Count = 0", res)
+					assertInCode(t, "commentValue, err := m.commentIReadJSON(in)", res)
+					assertInCode(t, "out.Int32(m.Count)", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			} else {
+				fmt.Println(buf.String())
+			}
+		}
+	}
+}
+
+func TestSerializer_WithMapRegistry(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["WithMapRegistry"]
+		genModel, err := makeGenDefinition("WithMapRegistry", "models", schema, specDoc, true, true)
+		if assert.NoError(t, err) {
+			assert.True(t, genModel.IsComplexObject)
+			assert.False(t, genModel.IsAdditionalProperties)
+			assert.False(t, genModel.HasAdditionalProperties)
+			assert.True(t, genModel.IsAliased)
+			assert.False(t, genModel.IsMap)
+			assert.Equal(t, "WithMapRegistry", genModel.Name)
+			assert.Equal(t, "WithMapRegistry", genModel.GoType)
+			// pretty.Println(genModel)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("with_map.go", buf.Bytes())
+				// fmt.Println(buf.String())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					// fmt.Println(res)
+					assertInCode(t, "type WithMapRegistry struct", res)
+					assertInCode(t, "func (m WithMapRegistry) MarshalJSON() ([]byte, error)", res)
+					assertInCode(t, "func (m *WithMapRegistry) UnmarshalJSON(data []byte) error", res)
+					assertInCode(t, "func (m *WithMapRegistry) MarshalEasyJSON(out *jwriter.Writer)", res)
+					assertInCode(t, "func (m *WithMapRegistry) UnmarshalEasyJSON(in *jlexer.Lexer)", res)
+					assertInCode(t, "func (m *WithMapRegistry) Validate(formats strfmt.Registry)", res)
+					assertInCode(t, "Data map[string]map[string]map[string]string `json:\"data,omitempty\"`", res)
+					assertInCode(t, "out.String(\"data\")", res)
+					assertInCode(t, "func (m *WithMapRegistry) dataIWriteJSON(out *jwriter.Writer) error", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.Data))", res)
+					assertInCode(t, "if err := m.dataIWriteJSON(out); err != nil", res)
+					assertInCode(t, "m.Data = nil", res)
+					assertInCode(t, "func (m *WithMapRegistry) dataIReadJSON(in *jlexer.Lexer) (map[string]map[string]map[string]string, error) {", res)
+					assertInCode(t, "var dataValue map[string]map[string]map[string]string", res)
+					assertInCode(t, "if data := in.Raw(); in.Ok()", res)
+					assertInCode(t, "if err := swag.ReadJSON(data, &dataValue)", res)
+					assertInCode(t, "if dataValue, err := m.dataIReadJSON(in); err != nil", res)
+					assertInCode(t, "m.Data = dataValue", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			} else {
+				fmt.Println(buf.String())
+			}
+		}
+	}
+}
+
+func TestSerializer_WithMapRegistryRef(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["WithMapRegistryRef"]
+		genModel, err := makeGenDefinition("WithMapRegistryRef", "models", schema, specDoc, true, true)
+		if assert.NoError(t, err) {
+			assert.True(t, genModel.IsComplexObject)
+			assert.False(t, genModel.IsAdditionalProperties)
+			assert.False(t, genModel.HasAdditionalProperties)
+			assert.True(t, genModel.IsAliased)
+			assert.False(t, genModel.IsMap)
+			assert.Equal(t, "WithMapRegistryRef", genModel.Name)
+			assert.Equal(t, "WithMapRegistryRef", genModel.GoType)
+			// pretty.Println(genModel)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("with_map.go", buf.Bytes())
+				// fmt.Println(buf.String())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					// fmt.Println(res)
+					assertInCode(t, "type WithMapRegistryRef struct", res)
+					assertInCode(t, "func (m WithMapRegistryRef) MarshalJSON() ([]byte, error)", res)
+					assertInCode(t, "func (m *WithMapRegistryRef) UnmarshalJSON(data []byte) error", res)
+					assertInCode(t, "func (m *WithMapRegistryRef) MarshalEasyJSON(out *jwriter.Writer)", res)
+					assertInCode(t, "func (m *WithMapRegistryRef) UnmarshalEasyJSON(in *jlexer.Lexer)", res)
+					assertInCode(t, "func (m *WithMapRegistryRef) Validate(formats strfmt.Registry)", res)
+					assertInCode(t, "Data map[string]map[string]map[string]Notable `json:\"data,omitempty\"`", res)
+					assertInCode(t, "out.String(\"data\")", res)
+					assertInCode(t, "func (m *WithMapRegistryRef) dataIWriteJSON(out *jwriter.Writer) error", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.Data))", res)
+					assertInCode(t, "if err := m.dataIWriteJSON(out); err != nil", res)
+					assertInCode(t, "m.Data = nil", res)
+					assertInCode(t, "func (m *WithMapRegistryRef) dataIReadJSON(in *jlexer.Lexer) (map[string]map[string]map[string]Notable, error) {", res)
+					assertInCode(t, "var dataValue map[string]map[string]map[string]Notable", res)
+					assertInCode(t, "if data := in.Raw(); in.Ok()", res)
+					assertInCode(t, "if err := swag.ReadJSON(data, &dataValue)", res)
+					assertInCode(t, "if dataValue, err := m.dataIReadJSON(in); err != nil", res)
+					assertInCode(t, "m.Data = dataValue", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			} else {
+				fmt.Println(buf.String())
+			}
+		}
+	}
+}
+
+func TestSerializer_WithMapComplexRegistry(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["WithMapComplexRegistry"]
+		genModel, err := makeGenDefinition("WithMapComplexRegistry", "models", schema, specDoc, true, true)
+		if assert.NoError(t, err) {
+			assert.True(t, genModel.IsComplexObject)
+			assert.False(t, genModel.IsAdditionalProperties)
+			assert.False(t, genModel.HasAdditionalProperties)
+			assert.True(t, genModel.IsAliased)
+			assert.False(t, genModel.IsMap)
+			assert.Equal(t, "WithMapComplexRegistry", genModel.Name)
+			assert.Equal(t, "WithMapComplexRegistry", genModel.GoType)
+			// pretty.Println(genModel)
+			buf := bytes.NewBuffer(nil)
+			err := modelTemplate.Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := formatGoFile("with_map.go", buf.Bytes())
+				// fmt.Println(buf.String())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					// fmt.Println(res)
+					assertInCode(t, "type WithMapComplexRegistry struct", res)
+					assertInCode(t, "func (m WithMapComplexRegistry) MarshalJSON() ([]byte, error)", res)
+					assertInCode(t, "func (m *WithMapComplexRegistry) UnmarshalJSON(data []byte) error", res)
+					assertInCode(t, "func (m *WithMapComplexRegistry) MarshalEasyJSON(out *jwriter.Writer)", res)
+					assertInCode(t, "func (m *WithMapComplexRegistry) UnmarshalEasyJSON(in *jlexer.Lexer)", res)
+					assertInCode(t, "func (m *WithMapComplexRegistry) Validate(formats strfmt.Registry)", res)
+					assertInCode(t, "Data map[string]map[string]map[string]WithMapComplexRegistryDataAnon `json:\"data,omitempty\"`", res)
+					assertInCode(t, "out.String(\"data\")", res)
+					assertInCode(t, "func (m *WithMapComplexRegistry) dataIWriteJSON(out *jwriter.Writer) error", res)
+					assertInCode(t, "out.Raw(swag.WriteJSON(m.Data))", res)
+					assertInCode(t, "if err := m.dataIWriteJSON(out); err != nil", res)
+					assertInCode(t, "m.Data = nil", res)
+					assertInCode(t, "func (m *WithMapComplexRegistry) dataIReadJSON(in *jlexer.Lexer) (map[string]map[string]map[string]WithMapComplexRegistryDataAnon, error) {", res)
+					assertInCode(t, "var dataValue map[string]map[string]map[string]WithMapComplexRegistryDataAnon", res)
+					assertInCode(t, "if data := in.Raw(); in.Ok()", res)
+					assertInCode(t, "if err := swag.ReadJSON(data, &dataValue)", res)
+					assertInCode(t, "if dataValue, err := m.dataIReadJSON(in); err != nil", res)
+					assertInCode(t, "m.Data = dataValue", res)
+
+					assertInCode(t, "type WithMapComplexRegistryDataAnon struct", res)
+					assertInCode(t, "Comment string `json:\"comment,omitempty\"`", res)
+					assertInCode(t, "out.String(\"comment\")", res)
+					assertInCode(t, "m.Comment = \"\"", res)
+					assertInCode(t, "commentValue, err := m.commentIReadJSON(in)", res)
+					assertInCode(t, "err := m.commentIWriteJSON(out)", res)
+					assertInCode(t, "m.IsCommentNil()", res)
+					assertInCode(t, "out.String(m.Comment)", res)
+					assertInCode(t, "out.String(\"count\")", res)
+					assertInCode(t, "err := m.countIWriteJSON(out)", res)
+					assertInCode(t, "m.Count = 0", res)
+					assertInCode(t, "commentValue, err := m.commentIReadJSON(in)", res)
+					assertInCode(t, "out.Int32(m.Count)", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			} else {
+				fmt.Println(buf.String())
+			}
+		}
+	}
+}
