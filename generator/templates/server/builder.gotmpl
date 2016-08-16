@@ -22,13 +22,14 @@ import (
 )
 
 // New{{ pascalize .Name }}API creates a new {{ pascalize .Name }} instance
-func New{{ pascalize .Name }}API() *{{ pascalize .Name }}API {
+func New{{ pascalize .Name }}API(spec *loads.Document) *{{ pascalize .Name }}API {
   return &{{ pascalize .Name }}API{
     handlers: make(map[string]map[string]http.Handler),
     formats:  strfmt.Default,
     defaultConsumes: "{{ .DefaultConsumes }}",
     defaultProduces: "{{ .DefaultProduces }}",
     ServerShutdown:  func() {  },
+    spec: spec,
   }
 }
 
