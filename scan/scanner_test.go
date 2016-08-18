@@ -48,6 +48,22 @@ func init() {
 	}
 }
 
+func extraModelsClassifier(t testing.TB) (*loader.Program, map[string]spec.Schema) {
+	prog := classifierProgram()
+	docFile := "../fixtures/goparsing/classification/models/extranomodel.go"
+	fileTree, err := goparser.ParseFile(prog.Fset, docFile, nil, goparser.ParseComments)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sp := newSchemaParser(prog)
+	defs := make(map[string]spec.Schema)
+	err = sp.Parse(fileTree, defs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return prog, defs
+}
+
 func TestAppScanner_NewSpec(t *testing.T) {
 	scanner, err := newAppScanner(&Opts{BasePath: "../fixtures/goparsing/petstore/petstore-fixture"}, nil, nil)
 	assert.NoError(t, err)

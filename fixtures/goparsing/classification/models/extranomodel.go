@@ -64,3 +64,25 @@ type SomePettedsType []mods.Pet
 
 // SomethingsType is a type that refines a type contained in the same package
 type SomethingsType []Something
+
+// SomeObject is a type that refines an untyped map
+type SomeObject map[string]interface{}
+
+// SomeStringMap is a type that refines a string value map
+type SomeStringMap map[string]string
+
+// SomeIntMap is a type that refines an int value map
+type SomeIntMap map[string]int64
+
+// SomeTimeMap is a type that refines a time.Time value map
+// swagger:strfmt date-time
+type SomeTimeMap map[string]time.Time
+
+// SomeTimedMap is a type that refines an strfmt.DateTime value map
+type SomeTimedMap map[string]strfmt.DateTime
+
+// SomePettedMap is a type that refines a pet value map
+type SomePettedMap map[string]mods.Pet
+
+// SomeSomethingMap is a type that refines a Something value map
+type SomeSomethingMap map[string]Something

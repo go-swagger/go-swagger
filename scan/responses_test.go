@@ -39,7 +39,7 @@ func TestParseResponses(t *testing.T) {
 	assert.Len(t, responses, 5)
 	cr, ok := responses["complexerOne"]
 	assert.True(t, ok)
-	assert.Len(t, cr.Headers, 6)
+	assert.Len(t, cr.Headers, 7)
 	for k, header := range cr.Headers {
 		switch k {
 		case "id":
@@ -60,6 +60,11 @@ func TestParseResponses(t *testing.T) {
 		case "createdAt":
 			assert.Equal(t, "string", header.Type)
 			assert.Equal(t, "date-time", header.Format)
+		case "NoTagName":
+			assert.Equal(t, "string", header.Type)
+			assert.Equal(t, "", header.Format)
+		default:
+			assert.Fail(t, "unkown header: "+k)
 		}
 	}
 

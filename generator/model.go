@@ -82,7 +82,8 @@ func GenerateDefinition(modelNames []string, includeModel, includeValidator bool
 			Model:            model,
 			SpecDoc:          specDoc,
 			Target:           filepath.Join(opts.Target, opts.ModelPackage),
-			IncludeModel:     includeModel,
+			IncludeModel:     true,
+			IncludeStruct:    includeModel,
 			IncludeValidator: includeValidator,
 			DumpData:         opts.DumpData,
 		}
@@ -101,6 +102,7 @@ type definitionGenerator struct {
 	SpecDoc          *loads.Document
 	Target           string
 	IncludeModel     bool
+	IncludeStruct    bool
 	IncludeValidator bool
 	Data             interface{}
 	DumpData         bool
@@ -108,7 +110,7 @@ type definitionGenerator struct {
 
 func (m *definitionGenerator) Generate() error {
 
-	mod, err := makeGenDefinition(m.Name, m.Target, m.Model, m.SpecDoc, m.IncludeValidator)
+	mod, err := makeGenDefinition(m.Name, m.Target, m.Model, m.SpecDoc, m.IncludeValidator, m.IncludeStruct)
 	if err != nil {
 		return err
 	}
@@ -119,7 +121,11 @@ func (m *definitionGenerator) Generate() error {
 	}
 
 	mod.IncludeValidator = m.IncludeValidator
+	mod.IncludeModel = m.IncludeStruct
 	m.Data = mod
+	if !m.IncludeStruct {
+		m.Name += "_validator"
+	}
 
 	if m.IncludeModel {
 		if err := m.generateModel(); err != nil {
@@ -148,10 +154,10 @@ func (m *definitionGenerator) generateModel() error {
 	return writeToFile(m.Target, m.Name, buf.Bytes())
 }
 
-func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *loads.Document, includeValidator bool) (*GenDefinition, error) {
-	return makeGenDefinitionHierarchy(name, pkg, "", schema, specDoc, includeValidator)
+func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *loads.Document, includeValidator, includeModel bool) (*GenDefinition, error) {
+	return makeGenDefinitionHierarchy(name, pkg, "", schema, specDoc, includeValidator, includeModel)
 }
-func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema, specDoc *loads.Document, includeValidator bool) (*GenDefinition, error) {
+func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema, specDoc *loads.Document, includeValidator, includeModel bool) (*GenDefinition, error) {
 	receiver := "m"
 	resolver := newTypeResolver("", specDoc)
 	resolver.ModelName = name
@@ -173,6 +179,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		Discrimination:   di,
 		Container:        container,
 		IncludeValidator: includeValidator,
+		IncludeModel:     includeModel,
 	}
 	if err := pg.makeGenSchema(); err != nil {
 		return nil, err
@@ -216,7 +223,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 				}
 				ref = spec.Ref{}
 				if rsch != nil && rsch.Discriminator != "" {
-					gs, err := makeGenDefinitionHierarchy(strings.TrimPrefix(ss.Ref.String(), "#/definitions/"), pkg, pg.GenSchema.Name, *rsch, specDoc, pg.IncludeValidator)
+					gs, err := makeGenDefinitionHierarchy(strings.TrimPrefix(ss.Ref.String(), "#/definitions/"), pkg, pg.GenSchema.Name, *rsch, specDoc, pg.IncludeValidator, pg.IncludeModel)
 					if err != nil {
 						return nil, err
 					}
@@ -295,6 +302,7 @@ type schemaGenContext struct {
 	Discriminated    *discee
 	Discrimination   *discInfo
 	IncludeValidator bool
+	IncludeModel     bool
 }
 
 func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContext {
@@ -418,6 +426,7 @@ func (sg *schemaGenContext) shallowClone() *schemaGenContext {
 	pg.Index = 0
 	pg.IsTuple = false
 	pg.IncludeValidator = sg.IncludeValidator
+	pg.IncludeModel = sg.IncludeModel
 	return pg
 }
 
@@ -903,6 +912,7 @@ func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *sche
 		Discrimination:   sg.Discrimination,
 		Container:        sg.Container,
 		IncludeValidator: sg.IncludeValidator,
+		IncludeModel:     sg.IncludeModel,
 	}
 	if schema.Ref.String() == "" {
 		resolver := newTypeResolver(sg.TypeResolver.ModelsPackage, sg.TypeResolver.Doc)
@@ -1188,6 +1198,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.sharedValidations = sg.schemaValidations()
 	sg.GenSchema.ReadOnly = sg.Schema.ReadOnly
 	sg.GenSchema.IncludeValidator = sg.IncludeValidator
+	sg.GenSchema.IncludeModel = sg.IncludeModel
 
 	var err error
 	returns, err := sg.shortCircuitNamedRef()

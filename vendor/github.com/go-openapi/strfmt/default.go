@@ -23,6 +23,8 @@ import (
 	"strings"
 
 	"github.com/asaskevich/govalidator"
+	"github.com/mailru/easyjson/jlexer"
+	"github.com/mailru/easyjson/jwriter"
 )
 
 const (
@@ -194,6 +196,37 @@ func (b Base64) String() string {
 	return string(b)
 }
 
+func (b Base64) MarshalJSON() ([]byte, error) {
+	var w jwriter.Writer
+	b.MarshalEasyJSON(&w)
+	return w.BuildBytes()
+}
+
+func (b Base64) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(base64.StdEncoding.EncodeToString([]byte(b)))
+}
+
+func (b *Base64) UnmarshalJSON(data []byte) error {
+	l := jlexer.Lexer{Data: data}
+	b.UnmarshalEasyJSON(&l)
+	return l.Error()
+}
+
+func (b *Base64) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	if data := in.String(); in.Ok() {
+		enc := base64.StdEncoding
+		dbuf := make([]byte, enc.DecodedLen(len(data)))
+
+		n, err := enc.Decode(dbuf, []byte(data))
+		if err != nil {
+			in.AddError(err)
+			return
+		}
+
+		*b = dbuf[:n]
+	}
+}
+
 // URI represents the uri string format as specified by the json schema spec
 //
 // swagger:strfmt uri
@@ -231,6 +264,28 @@ func (u URI) Value() (driver.Value, error) {
 
 func (u URI) String() string {
 	return string(u)
+}
+
+func (u URI) MarshalJSON() ([]byte, error) {
+	var w jwriter.Writer
+	u.MarshalEasyJSON(&w)
+	return w.BuildBytes()
+}
+
+func (u URI) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(string(u))
+}
+
+func (u *URI) UnmarshalJSON(data []byte) error {
+	l := jlexer.Lexer{Data: data}
+	u.UnmarshalEasyJSON(&l)
+	return l.Error()
+}
+
+func (u *URI) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	if data := in.String(); in.Ok() {
+		*u = URI(data)
+	}
 }
 
 // Email represents the email string format as specified by the json schema spec
@@ -272,6 +327,28 @@ func (e Email) String() string {
 	return string(e)
 }
 
+func (e Email) MarshalJSON() ([]byte, error) {
+	var w jwriter.Writer
+	e.MarshalEasyJSON(&w)
+	return w.BuildBytes()
+}
+
+func (e Email) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(string(e))
+}
+
+func (e *Email) UnmarshalJSON(data []byte) error {
+	l := jlexer.Lexer{Data: data}
+	e.UnmarshalEasyJSON(&l)
+	return l.Error()
+}
+
+func (e *Email) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	if data := in.String(); in.Ok() {
+		*e = Email(data)
+	}
+}
+
 // Hostname represents the hostname string format as specified by the json schema spec
 //
 // swagger:strfmt hostname
@@ -309,6 +386,28 @@ func (h Hostname) Value() (driver.Value, error) {
 
 func (h Hostname) String() string {
 	return string(h)
+}
+
+func (h Hostname) MarshalJSON() ([]byte, error) {
+	var w jwriter.Writer
+	h.MarshalEasyJSON(&w)
+	return w.BuildBytes()
+}
+
+func (h Hostname) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(string(h))
+}
+
+func (h *Hostname) UnmarshalJSON(data []byte) error {
+	l := jlexer.Lexer{Data: data}
+	h.UnmarshalEasyJSON(&l)
+	return l.Error()
+}
+
+func (h *Hostname) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	if data := in.String(); in.Ok() {
+		*h = Hostname(data)
+	}
 }
 
 // IPv4 represents an IP v4 address
@@ -350,6 +449,28 @@ func (u IPv4) String() string {
 	return string(u)
 }
 
+func (u IPv4) MarshalJSON() ([]byte, error) {
+	var w jwriter.Writer
+	u.MarshalEasyJSON(&w)
+	return w.BuildBytes()
+}
+
+func (u IPv4) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(string(u))
+}
+
+func (u *IPv4) UnmarshalJSON(data []byte) error {
+	l := jlexer.Lexer{Data: data}
+	u.UnmarshalEasyJSON(&l)
+	return l.Error()
+}
+
+func (u *IPv4) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	if data := in.String(); in.Ok() {
+		*u = IPv4(data)
+	}
+}
+
 // IPv6 represents an IP v6 address
 //
 // swagger:strfmt ipv6
@@ -387,6 +508,28 @@ func (u IPv6) Value() (driver.Value, error) {
 
 func (u IPv6) String() string {
 	return string(u)
+}
+
+func (u IPv6) MarshalJSON() ([]byte, error) {
+	var w jwriter.Writer
+	u.MarshalEasyJSON(&w)
+	return w.BuildBytes()
+}
+
+func (u IPv6) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(string(u))
+}
+
+func (u *IPv6) UnmarshalJSON(data []byte) error {
+	l := jlexer.Lexer{Data: data}
+	u.UnmarshalEasyJSON(&l)
+	return l.Error()
+}
+
+func (u *IPv6) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	if data := in.String(); in.Ok() {
+		*u = IPv6(data)
+	}
 }
 
 // MAC represents a 48 bit MAC address
@@ -428,6 +571,28 @@ func (u MAC) String() string {
 	return string(u)
 }
 
+func (u MAC) MarshalJSON() ([]byte, error) {
+	var w jwriter.Writer
+	u.MarshalEasyJSON(&w)
+	return w.BuildBytes()
+}
+
+func (u MAC) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(string(u))
+}
+
+func (u *MAC) UnmarshalJSON(data []byte) error {
+	l := jlexer.Lexer{Data: data}
+	u.UnmarshalEasyJSON(&l)
+	return l.Error()
+}
+
+func (u *MAC) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	if data := in.String(); in.Ok() {
+		*u = MAC(data)
+	}
+}
+
 // UUID represents a uuid string format
 //
 // swagger:strfmt uuid
@@ -465,6 +630,28 @@ func (u UUID) Value() (driver.Value, error) {
 
 func (u UUID) String() string {
 	return string(u)
+}
+
+func (u UUID) MarshalJSON() ([]byte, error) {
+	var w jwriter.Writer
+	u.MarshalEasyJSON(&w)
+	return w.BuildBytes()
+}
+
+func (u UUID) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(string(u))
+}
+
+func (u *UUID) UnmarshalJSON(data []byte) error {
+	l := jlexer.Lexer{Data: data}
+	u.UnmarshalEasyJSON(&l)
+	return l.Error()
+}
+
+func (u *UUID) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	if data := in.String(); in.Ok() {
+		*u = UUID(data)
+	}
 }
 
 // UUID3 represents a uuid3 string format
@@ -506,6 +693,28 @@ func (u UUID3) String() string {
 	return string(u)
 }
 
+func (u UUID3) MarshalJSON() ([]byte, error) {
+	var w jwriter.Writer
+	u.MarshalEasyJSON(&w)
+	return w.BuildBytes()
+}
+
+func (u UUID3) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(string(u))
+}
+
+func (u *UUID3) UnmarshalJSON(data []byte) error {
+	l := jlexer.Lexer{Data: data}
+	u.UnmarshalEasyJSON(&l)
+	return l.Error()
+}
+
+func (u *UUID3) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	if data := in.String(); in.Ok() {
+		*u = UUID3(data)
+	}
+}
+
 // UUID4 represents a uuid4 string format
 //
 // swagger:strfmt uuid4
@@ -543,6 +752,28 @@ func (u UUID4) Value() (driver.Value, error) {
 
 func (u UUID4) String() string {
 	return string(u)
+}
+
+func (u UUID4) MarshalJSON() ([]byte, error) {
+	var w jwriter.Writer
+	u.MarshalEasyJSON(&w)
+	return w.BuildBytes()
+}
+
+func (u UUID4) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(string(u))
+}
+
+func (u *UUID4) UnmarshalJSON(data []byte) error {
+	l := jlexer.Lexer{Data: data}
+	u.UnmarshalEasyJSON(&l)
+	return l.Error()
+}
+
+func (u *UUID4) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	if data := in.String(); in.Ok() {
+		*u = UUID4(data)
+	}
 }
 
 // UUID5 represents a uuid5 string format
@@ -584,6 +815,28 @@ func (u UUID5) String() string {
 	return string(u)
 }
 
+func (u UUID5) MarshalJSON() ([]byte, error) {
+	var w jwriter.Writer
+	u.MarshalEasyJSON(&w)
+	return w.BuildBytes()
+}
+
+func (u UUID5) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(string(u))
+}
+
+func (u *UUID5) UnmarshalJSON(data []byte) error {
+	l := jlexer.Lexer{Data: data}
+	u.UnmarshalEasyJSON(&l)
+	return l.Error()
+}
+
+func (u *UUID5) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	if data := in.String(); in.Ok() {
+		*u = UUID5(data)
+	}
+}
+
 // ISBN represents an isbn string format
 //
 // swagger:strfmt isbn
@@ -621,6 +874,28 @@ func (u ISBN) Value() (driver.Value, error) {
 
 func (u ISBN) String() string {
 	return string(u)
+}
+
+func (u ISBN) MarshalJSON() ([]byte, error) {
+	var w jwriter.Writer
+	u.MarshalEasyJSON(&w)
+	return w.BuildBytes()
+}
+
+func (u ISBN) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(string(u))
+}
+
+func (u *ISBN) UnmarshalJSON(data []byte) error {
+	l := jlexer.Lexer{Data: data}
+	u.UnmarshalEasyJSON(&l)
+	return l.Error()
+}
+
+func (u *ISBN) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	if data := in.String(); in.Ok() {
+		*u = ISBN(data)
+	}
 }
 
 // ISBN10 represents an isbn 10 string format
@@ -662,6 +937,28 @@ func (u ISBN10) String() string {
 	return string(u)
 }
 
+func (u ISBN10) MarshalJSON() ([]byte, error) {
+	var w jwriter.Writer
+	u.MarshalEasyJSON(&w)
+	return w.BuildBytes()
+}
+
+func (u ISBN10) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(string(u))
+}
+
+func (u *ISBN10) UnmarshalJSON(data []byte) error {
+	l := jlexer.Lexer{Data: data}
+	u.UnmarshalEasyJSON(&l)
+	return l.Error()
+}
+
+func (u *ISBN10) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	if data := in.String(); in.Ok() {
+		*u = ISBN10(data)
+	}
+}
+
 // ISBN13 represents an isbn 13 string format
 //
 // swagger:strfmt isbn13
@@ -699,6 +996,28 @@ func (u ISBN13) Value() (driver.Value, error) {
 
 func (u ISBN13) String() string {
 	return string(u)
+}
+
+func (u ISBN13) MarshalJSON() ([]byte, error) {
+	var w jwriter.Writer
+	u.MarshalEasyJSON(&w)
+	return w.BuildBytes()
+}
+
+func (u ISBN13) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(string(u))
+}
+
+func (u *ISBN13) UnmarshalJSON(data []byte) error {
+	l := jlexer.Lexer{Data: data}
+	u.UnmarshalEasyJSON(&l)
+	return l.Error()
+}
+
+func (u *ISBN13) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	if data := in.String(); in.Ok() {
+		*u = ISBN13(data)
+	}
 }
 
 // CreditCard represents a credit card string format
@@ -740,6 +1059,28 @@ func (u CreditCard) String() string {
 	return string(u)
 }
 
+func (u CreditCard) MarshalJSON() ([]byte, error) {
+	var w jwriter.Writer
+	u.MarshalEasyJSON(&w)
+	return w.BuildBytes()
+}
+
+func (u CreditCard) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(string(u))
+}
+
+func (u *CreditCard) UnmarshalJSON(data []byte) error {
+	l := jlexer.Lexer{Data: data}
+	u.UnmarshalEasyJSON(&l)
+	return l.Error()
+}
+
+func (u *CreditCard) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	if data := in.String(); in.Ok() {
+		*u = CreditCard(data)
+	}
+}
+
 // SSN represents a social security string format
 //
 // swagger:strfmt ssn
@@ -777,6 +1118,28 @@ func (u SSN) Value() (driver.Value, error) {
 
 func (u SSN) String() string {
 	return string(u)
+}
+
+func (u SSN) MarshalJSON() ([]byte, error) {
+	var w jwriter.Writer
+	u.MarshalEasyJSON(&w)
+	return w.BuildBytes()
+}
+
+func (u SSN) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(string(u))
+}
+
+func (u *SSN) UnmarshalJSON(data []byte) error {
+	l := jlexer.Lexer{Data: data}
+	u.UnmarshalEasyJSON(&l)
+	return l.Error()
+}
+
+func (u *SSN) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	if data := in.String(); in.Ok() {
+		*u = SSN(data)
+	}
 }
 
 // HexColor represents a hex color string format
@@ -818,6 +1181,28 @@ func (h HexColor) String() string {
 	return string(h)
 }
 
+func (h HexColor) MarshalJSON() ([]byte, error) {
+	var w jwriter.Writer
+	h.MarshalEasyJSON(&w)
+	return w.BuildBytes()
+}
+
+func (h HexColor) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(string(h))
+}
+
+func (h *HexColor) UnmarshalJSON(data []byte) error {
+	l := jlexer.Lexer{Data: data}
+	h.UnmarshalEasyJSON(&l)
+	return l.Error()
+}
+
+func (h *HexColor) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	if data := in.String(); in.Ok() {
+		*h = HexColor(data)
+	}
+}
+
 // RGBColor represents a RGB color string format
 //
 // swagger:strfmt rgbcolor
@@ -855,6 +1240,28 @@ func (r RGBColor) Value() (driver.Value, error) {
 
 func (r RGBColor) String() string {
 	return string(r)
+}
+
+func (r RGBColor) MarshalJSON() ([]byte, error) {
+	var w jwriter.Writer
+	r.MarshalEasyJSON(&w)
+	return w.BuildBytes()
+}
+
+func (r RGBColor) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(string(r))
+}
+
+func (r *RGBColor) UnmarshalJSON(data []byte) error {
+	l := jlexer.Lexer{Data: data}
+	r.UnmarshalEasyJSON(&l)
+	return l.Error()
+}
+
+func (r *RGBColor) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	if data := in.String(); in.Ok() {
+		*r = RGBColor(data)
+	}
 }
 
 // Password represents a password.
@@ -895,4 +1302,26 @@ func (r Password) Value() (driver.Value, error) {
 
 func (r Password) String() string {
 	return string(r)
+}
+
+func (r Password) MarshalJSON() ([]byte, error) {
+	var w jwriter.Writer
+	r.MarshalEasyJSON(&w)
+	return w.BuildBytes()
+}
+
+func (r Password) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(string(r))
+}
+
+func (r *Password) UnmarshalJSON(data []byte) error {
+	l := jlexer.Lexer{Data: data}
+	r.UnmarshalEasyJSON(&l)
+	return l.Error()
+}
+
+func (r *Password) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	if data := in.String(); in.Ok() {
+		*r = Password(data)
+	}
 }

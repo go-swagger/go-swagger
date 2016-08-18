@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/opennota/urlesc"
+	"github.com/PuerkitoBio/urlesc"
 )
 
 // A set of normalization flags determines how a URL will

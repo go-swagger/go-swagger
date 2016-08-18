@@ -36,6 +36,9 @@ type NoModel struct {
 	Ignored      string `json:"-"`
 	IgnoredOther string `json:"-,omitempty"`
 
+	// A field which has omitempty set but no name
+	NoNameOmitEmpty string `json:",omitempty"`
+
 	// The Score of this model
 	//
 	// required: true

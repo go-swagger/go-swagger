@@ -17,8 +17,6 @@ package scan
 import (
 	"fmt"
 	"go/ast"
-	"reflect"
-	"strconv"
 	"strings"
 
 	"golang.org/x/tools/go/loader"
@@ -272,21 +270,13 @@ func (rp *responseParser) parseStructType(gofile *ast.File, response *spec.Respo
 		}
 
 		for _, fld := range tpe.Fields.List {
-			var nm string
 			if len(fld.Names) > 0 && fld.Names[0] != nil && fld.Names[0].IsExported() {
-				nm = fld.Names[0].Name
-				if fld.Tag != nil && len(strings.TrimSpace(fld.Tag.Value)) > 0 {
-					tv, err := strconv.Unquote(fld.Tag.Value)
-					if err != nil {
-						return err
-					}
-
-					if strings.TrimSpace(tv) != "" {
-						st := reflect.StructTag(tv)
-						if st.Get("json") != "" {
-							nm = strings.Split(st.Get("json"), ",")[0]
-						}
-					}
+				nm, ignore, err := parseJSONTag(fld)
+				if err != nil {
+					return err
+				}
+				if ignore {
+					continue
 				}
 
 				var in string
@@ -303,7 +293,7 @@ func (rp *responseParser) parseStructType(gofile *ast.File, response *spec.Respo
 				}
 
 				ps := response.Headers[nm]
-				if err := parseProperty(rp.scp, gofile, fld.Type, responseTypable{in, &ps, response}); err != nil {
+				if err := rp.scp.parseNamedType(gofile, fld.Type, responseTypable{in, &ps, response}); err != nil {
 					return err
 				}
 

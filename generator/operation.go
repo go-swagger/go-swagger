@@ -541,16 +541,18 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 
 	if resp.Schema != nil {
 		sc := schemaGenContext{
-			Path:         fmt.Sprintf("%q", name),
-			Name:         name + "Body",
-			Receiver:     receiver,
-			ValueExpr:    receiver,
-			IndexVar:     "i",
-			Schema:       *resp.Schema,
-			Required:     true,
-			TypeResolver: resolver,
-			Named:        false,
-			ExtraSchemas: make(map[string]GenSchema),
+			Path:             fmt.Sprintf("%q", name),
+			Name:             name + "Body",
+			Receiver:         receiver,
+			ValueExpr:        receiver,
+			IndexVar:         "i",
+			Schema:           *resp.Schema,
+			Required:         true,
+			TypeResolver:     resolver,
+			Named:            false,
+			ExtraSchemas:     make(map[string]GenSchema),
+			IncludeModel:     true,
+			IncludeValidator: true,
 		}
 		if err := sc.makeGenSchema(); err != nil {
 			return GenResponse{}, err
@@ -696,16 +698,18 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 
 	if param.In == "body" {
 		sc := schemaGenContext{
-			Path:         res.Path,
-			Name:         res.Name,
-			Receiver:     res.ReceiverName,
-			ValueExpr:    res.ReceiverName,
-			IndexVar:     res.IndexVar,
-			Schema:       *param.Schema,
-			Required:     param.Required,
-			TypeResolver: resolver,
-			Named:        false,
-			ExtraSchemas: make(map[string]GenSchema),
+			Path:             res.Path,
+			Name:             res.Name,
+			Receiver:         res.ReceiverName,
+			ValueExpr:        res.ReceiverName,
+			IndexVar:         res.IndexVar,
+			Schema:           *param.Schema,
+			Required:         param.Required,
+			TypeResolver:     resolver,
+			Named:            false,
+			IncludeModel:     true,
+			IncludeValidator: true,
+			ExtraSchemas:     make(map[string]GenSchema),
 		}
 		if err := sc.makeGenSchema(); err != nil {
 			return GenParameter{}, err

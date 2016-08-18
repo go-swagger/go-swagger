@@ -1,4 +1,4 @@
-{{ if and .IsBaseType .IsExported }}type {{ pascalize .Name }} interface {
+{{ if .IncludeModel }}{{ if and .IsBaseType .IsExported }}type {{ pascalize .Name }} interface {
   {{if and (not .IsInterface) (or .Required .HasValidations) }}runtime.Validatable{{ end }}
   {{ range .AllOf }}
   {{ if .IsAnonymous }}{{ range .Properties }}
@@ -100,11 +100,11 @@ func ({{$.ReceiverName}} *{{ pascalize $.Name}}) Set{{ pascalize .Name}}(val {{ 
 {{ template "tupleSerializer" . }}
 {{ else if .IsAdditionalProperties }}
 {{ template "additionalPropertiesSerializer" . }}
-{{ end }}{{ if .HasBaseType }}{{ template "hasDiscriminatedSerializer" . }}{{ end }}{{ if .IncludeValidator }}{{if and (not .IsInterface) (not .IsBaseType) (or .Required .HasValidations .HasBaseType) }}
+{{ end }}{{ if .HasBaseType }}{{ template "hasDiscriminatedSerializer" . }}{{ end }}{{ end }}{{ end }}{{ if .IncludeValidator }}{{if and (not .IsInterface) (not .IsBaseType) (or .Required .HasValidations .HasBaseType) }}
 {{ template "schemavalidator" . }}
 {{ else if gt (len .AllOf) 0 }}
 {{ template "schemavalidator" . }}
-{{ else if not (or .IsInterface .IsStream) }}// Validate validates this {{ humanize .Name }}
+{{ else if not (or .IsInterface .IsStream .IsBaseType) }}// Validate validates this {{ humanize .Name }}
 func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ if not .IsExported }}{{ .Name }}{{ else }}{{ pascalize .Name }}{{ end }}) Validate(formats strfmt.Registry) error {
   return nil
-}{{ end }}{{ end }}{{ end }}
+}{{ end }}{{ end }}

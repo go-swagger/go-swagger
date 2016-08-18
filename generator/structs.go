@@ -68,6 +68,7 @@ type GenSchema struct {
 	Discriminates           map[string]string
 	Parents                 []string
 	IncludeValidator        bool
+	IncludeModel            bool
 }
 
 type sharedValidations struct {

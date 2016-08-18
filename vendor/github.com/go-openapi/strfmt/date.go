@@ -19,6 +19,9 @@ import (
 	"fmt"
 	"regexp"
 	"time"
+
+	"github.com/mailru/easyjson/jlexer"
+	"github.com/mailru/easyjson/jwriter"
 )
 
 func init() {
@@ -97,4 +100,31 @@ func (d *Date) Scan(raw interface{}) error {
 // Value converts Date to a primitive value ready to written to a database.
 func (d Date) Value() (driver.Value, error) {
 	return driver.Value(d), nil
+}
+
+func (t Date) MarshalJSON() ([]byte, error) {
+	var w jwriter.Writer
+	t.MarshalEasyJSON(&w)
+	return w.BuildBytes()
+}
+
+func (t Date) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(time.Time(t).Format(RFC3339FullDate))
+}
+
+func (t *Date) UnmarshalJSON(data []byte) error {
+	l := jlexer.Lexer{Data: data}
+	t.UnmarshalEasyJSON(&l)
+	return l.Error()
+}
+
+func (t *Date) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	if data := in.String(); in.Ok() {
+		tt, err := time.Parse(RFC3339FullDate, data)
+		if err != nil {
+			in.AddError(err)
+			return
+		}
+		*t = Date(tt)
+	}
 }
