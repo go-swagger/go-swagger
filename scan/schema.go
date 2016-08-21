@@ -754,9 +754,13 @@ func (scp *schemaParser) createParser(nm string, schema, ps *spec.Schema, fld *a
 }
 
 func (scp *schemaParser) packageForFile(gofile *ast.File) (*loader.PackageInfo, error) {
-	for pkg, pkgInfo := range scp.program.AllPackages {
-		if pkg.Name() == gofile.Name.Name {
-			return pkgInfo, nil
+	for _, pkgInfo := range scp.program.AllPackages {
+		if pkgInfo.Importable {
+			for _, fil := range pkgInfo.Files {
+				if fil.Pos() == gofile.Pos() {
+					return pkgInfo, nil
+				}
+			}
 		}
 	}
 	fn := scp.program.Fset.File(gofile.Pos()).Name()
