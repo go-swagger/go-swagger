@@ -34,9 +34,9 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 
 	api.JSONConsumer = runtime.JSONConsumer()
 
-	api.XMLConsumer = runtime.XMLConsumer()
-
 	api.UrlformConsumer = runtime.DiscardConsumer
+
+	api.XMLConsumer = runtime.XMLConsumer()
 
 	api.XMLProducer = runtime.XMLProducer()
 

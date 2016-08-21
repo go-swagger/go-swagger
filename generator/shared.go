@@ -107,6 +107,7 @@ type GenOpts struct {
 	Name              string
 }
 
+// TargetPath returns the target path relative to the server package
 func (g *GenOpts) TargetPath() string {
 	tgtAbs, err := filepath.Abs(g.Target)
 	if err != nil {
@@ -123,6 +124,7 @@ func (g *GenOpts) TargetPath() string {
 	return tgtRel
 }
 
+// SpecPath returns the path to the spec relative to the server package
 func (g *GenOpts) SpecPath() string {
 	if strings.HasPrefix(g.Spec, "http://") || strings.HasPrefix(g.Spec, "https://") {
 		return g.Spec

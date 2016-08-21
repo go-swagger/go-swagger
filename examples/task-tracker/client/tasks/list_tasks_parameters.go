@@ -18,7 +18,7 @@ import (
 // with the default values initialized.
 func NewListTasksParams() *ListTasksParams {
 	var (
-		pageSizeDefault int32 = int32(20)
+		pageSizeDefault = int32(20)
 	)
 	return &ListTasksParams{
 		PageSize: &pageSizeDefault,

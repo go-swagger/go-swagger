@@ -48,10 +48,10 @@ type PetstoreAPI struct {
 	defaultProduces string
 	// JSONConsumer registers a consumer for a "application/json" mime type
 	JSONConsumer runtime.Consumer
-	// XMLConsumer registers a consumer for a "application/xml" mime type
-	XMLConsumer runtime.Consumer
 	// UrlformConsumer registers a consumer for a "application/x-www-form-urlencoded" mime type
 	UrlformConsumer runtime.Consumer
+	// XMLConsumer registers a consumer for a "application/xml" mime type
+	XMLConsumer runtime.Consumer
 
 	// XMLProducer registers a producer for a "application/xml" mime type
 	XMLProducer runtime.Producer
@@ -161,12 +161,12 @@ func (o *PetstoreAPI) Validate() error {
 		unregistered = append(unregistered, "JSONConsumer")
 	}
 
-	if o.XMLConsumer == nil {
-		unregistered = append(unregistered, "XMLConsumer")
-	}
-
 	if o.UrlformConsumer == nil {
 		unregistered = append(unregistered, "UrlformConsumer")
+	}
+
+	if o.XMLConsumer == nil {
+		unregistered = append(unregistered, "XMLConsumer")
 	}
 
 	if o.XMLProducer == nil {
@@ -300,11 +300,11 @@ func (o *PetstoreAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consu
 		case "application/json":
 			result["application/json"] = o.JSONConsumer
 
-		case "application/xml":
-			result["application/xml"] = o.XMLConsumer
-
 		case "application/x-www-form-urlencoded":
 			result["application/x-www-form-urlencoded"] = o.UrlformConsumer
+
+		case "application/xml":
+			result["application/xml"] = o.XMLConsumer
 
 		}
 	}

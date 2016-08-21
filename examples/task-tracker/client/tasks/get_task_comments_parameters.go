@@ -18,7 +18,7 @@ import (
 // with the default values initialized.
 func NewGetTaskCommentsParams() *GetTaskCommentsParams {
 	var (
-		pageSizeDefault int32 = int32(20)
+		pageSizeDefault = int32(20)
 	)
 	return &GetTaskCommentsParams{
 		PageSize: &pageSizeDefault,
