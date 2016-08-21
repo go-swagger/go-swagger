@@ -698,7 +698,10 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 	}
 
 	var child *GenItems
-	id := idMapping[param.In][param.Name]
+	id := param.Name
+	if len(idMapping) > 0 {
+		id = idMapping[param.In][param.Name]
+	}
 	res := GenParameter{
 		ID:               id,
 		Name:             param.Name,

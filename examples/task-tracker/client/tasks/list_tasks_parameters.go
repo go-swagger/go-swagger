@@ -75,9 +75,9 @@ func (o *ListTasksParams) WithPageSize(pageSize *int32) *ListTasksParams {
 	return o
 }
 
-// WithSinceID adds the sinceId to the list tasks params
-func (o *ListTasksParams) WithSinceID(sinceId *int64) *ListTasksParams {
-	o.SinceID = sinceId
+// WithSinceID adds the sinceID to the list tasks params
+func (o *ListTasksParams) WithSinceID(sinceID *int64) *ListTasksParams {
+	o.SinceID = sinceID
 	return o
 }
 

@@ -107,7 +107,7 @@
 			"importpath": "github.com/go-openapi/swag",
 			"repository": "https://github.com/go-openapi/swag",
 			"vcs": "git",
-			"revision": "1d0bd113de87027671077d3c71eb3ac5d7dbba72",
+			"revision": "0e04f5e499b19bf51031c01a00f098f25067d8dc",
 			"branch": "master",
 			"notests": true
 		},
