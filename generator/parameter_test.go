@@ -40,7 +40,7 @@ func TestBodyParams(t *testing.T) {
 		}
 		for _, param := range op.Parameters {
 			if param.Name == "body" {
-				gp, err := b.MakeParameter("a", resolver, param)
+				gp, err := b.MakeParameter("a", resolver, param, nil)
 				if assert.NoError(t, err) {
 					assert.True(t, gp.IsBodyParam())
 					if assert.NotNil(t, gp.Schema) {
@@ -68,7 +68,7 @@ func TestBodyParams(t *testing.T) {
 		}
 		for _, param := range op.Parameters {
 			if param.Name == "body" {
-				gp, err := b.MakeParameter("a", resolver, param)
+				gp, err := b.MakeParameter("a", resolver, param, nil)
 				if assert.NoError(t, err) {
 					assert.True(t, gp.IsBodyParam())
 					if assert.NotNil(t, gp.Schema) {
@@ -270,7 +270,7 @@ func (ctx *paramTestContext) assertParameter(t testing.TB) bool {
 		}
 		for _, param := range op.Parameters {
 			if param.Name == ctx.Name {
-				gp, err := ctx.B.MakeParameter("a", resolver, param)
+				gp, err := ctx.B.MakeParameter("a", resolver, param, nil)
 				if assert.NoError(t, err) {
 					return assert.True(t, ctx.assertGenParam(t, param, gp))
 				}

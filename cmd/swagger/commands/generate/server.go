@@ -26,7 +26,7 @@ type shared struct {
 	ServerPackage string         `long:"server-package" short:"s" description:"the package to save the server specific code" default:"restapi"`
 	ClientPackage string         `long:"client-package" short:"c" description:"the package to save the client specific code" default:"client"`
 	Target        flags.Filename `long:"target" short:"t" default:"./" description:"the base directory for generating the files"`
-	TemplateDir   flags.Filename `long:"template-dir"`
+	TemplateDir   flags.Filename `long:"template-dir" short:"T" description:"alternative template override directory"`
 }
 
 // Server the command to generate an entire server application
@@ -69,6 +69,10 @@ func (s *Server) Execute(args []string) error {
 		TemplateDir:       string(s.TemplateDir),
 		WithContext:       s.WithContext,
 		DumpData:          s.DumpData,
+		Models:            s.Models,
+		Operations:        s.Operations,
+		Tags:              s.Tags,
+		Name:              s.Name,
 	}
 
 	return generator.GenerateServer(s.Name, s.Models, s.Operations, opts)

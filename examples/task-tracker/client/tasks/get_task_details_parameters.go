@@ -4,8 +4,11 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"time"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
@@ -15,7 +18,20 @@ import (
 // with the default values initialized.
 func NewGetTaskDetailsParams() *GetTaskDetailsParams {
 	var ()
-	return &GetTaskDetailsParams{}
+	return &GetTaskDetailsParams{
+
+		timeout: cr.DefaultTimeout,
+	}
+}
+
+// NewGetTaskDetailsParamsWithTimeout creates a new GetTaskDetailsParams object
+// with the default values initialized, and the ability to set a timeout on a request
+func NewGetTaskDetailsParamsWithTimeout(timeout time.Duration) *GetTaskDetailsParams {
+	var ()
+	return &GetTaskDetailsParams{
+
+		timeout: timeout,
+	}
 }
 
 /*GetTaskDetailsParams contains all the parameters to send to the API endpoint
@@ -28,17 +44,20 @@ type GetTaskDetailsParams struct {
 
 	*/
 	ID int64
+
+	timeout time.Duration
 }
 
 // WithID adds the id to the get task details params
-func (o *GetTaskDetailsParams) WithID(ID int64) *GetTaskDetailsParams {
-	o.ID = ID
+func (o *GetTaskDetailsParams) WithID(id int64) *GetTaskDetailsParams {
+	o.ID = id
 	return o
 }
 
 // WriteToRequest writes these params to a swagger request
 func (o *GetTaskDetailsParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
+	r.SetTimeout(o.timeout)
 	var res []error
 
 	// path param id

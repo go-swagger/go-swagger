@@ -24,11 +24,11 @@ import (
 // with the default values initialized.
 func New{{ pascalize .Name }}Params() *{{ pascalize .Name }}Params {
   {{ if .Params }}var (
-  {{ range .Params }}{{ if .HasDefault }}{{ if not .IsFileParam }}{{ camelize .Name}}Default {{ .GoType }} = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
+  {{ range .Params }}{{ if .HasDefault }}{{ if not .IsFileParam }}{{ varname .ID}}Default = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
   {{ end }}{{ end }}{{end}}
   ){{ end }}
   return &{{ pascalize .Name}}Params{
-  {{ range .Params }}{{ if .HasDefault }}{{ pascalize .Name}}: {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (or .IsNullable  ) }}&{{ end }}{{ camelize .Name }}Default,
+  {{ range .Params }}{{ if .HasDefault }}{{ pascalize .Name}}: {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (or .IsNullable  ) }}&{{ end }}{{ varname .ID }}Default,
   {{ end }}{{ end }}
     timeout: cr.DefaultTimeout,
   }
@@ -38,11 +38,11 @@ func New{{ pascalize .Name }}Params() *{{ pascalize .Name }}Params {
 // with the default values initialized, and the ability to set a timeout on a request
 func New{{ pascalize .Name }}ParamsWithTimeout(timeout time.Duration) *{{ pascalize .Name }}Params {
   {{ if .Params }}var (
-  {{ range .Params }}{{ if .HasDefault }}{{ if not .IsFileParam }}{{ camelize .Name}}Default {{ .GoType }} = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
+  {{ range .Params }}{{ if .HasDefault }}{{ if not .IsFileParam }}{{ varname .ID}}Default {{ .GoType }} = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
   {{ end }}{{ end }}{{end}}
   ){{ end }}
   return &{{ pascalize .Name}}Params{
-  {{ range .Params }}{{ if .HasDefault }}{{ pascalize .Name}}: {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (or .IsNullable  ) }}&{{ end }}{{ camelize .Name }}Default,
+  {{ range .Params }}{{ if .HasDefault }}{{ pascalize .ID}}: {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (or .IsNullable  ) }}&{{ end }}{{ varname .ID }}Default,
   {{ end }}{{ end }}
     timeout: timeout,
   }
@@ -57,16 +57,16 @@ type {{ pascalize .Name }}Params struct {
   {{ .Description }}
 
   {{ end }}*/
-  {{ pascalize .Name }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{end}}
+  {{ pascalize .ID }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{end}}
   {{ end }}
 
   timeout time.Duration
 }
 
 {{ range .Params }}
-// With{{ pascalize .Name }} adds the {{ camelize .Name  }} to the {{ humanize $.Name }} params
-func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) With{{ pascalize .Name }}({{ pascalize .Name  }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (not .IsStream) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{ end }}) *{{ pascalize $.Name }}Params {
-  {{ $.ReceiverName }}.{{ pascalize .Name }} = {{ pascalize .Name  }}
+// With{{ pascalize .ID }} adds the {{ varname .Name  }} to the {{ humanize $.Name }} params
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) With{{ pascalize .ID }}({{ varname .Name  }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (not .IsStream) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{ end }}) *{{ pascalize $.Name }}Params {
+  {{ $.ReceiverName }}.{{ pascalize .ID }} = {{ varname .Name  }}
   return {{ .ReceiverName }}
 }
 

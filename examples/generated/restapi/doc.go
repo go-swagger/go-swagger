@@ -21,17 +21,17 @@ http://helloreverb.com/terms/
     Contact: apiteam@wordnik.com
 
     Consumes:
+    - application/json
+
     - application/xml
 
     - application/x-www-form-urlencoded
 
-    - application/json
-
 
     Produces:
-    - application/xml
-
     - application/json
+
+    - application/xml
 
 
 swagger:meta

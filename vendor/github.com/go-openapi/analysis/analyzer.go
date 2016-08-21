@@ -379,6 +379,10 @@ func (s *Spec) ProducesFor(operation *spec.Operation) []string {
 	return s.structMapKeys(prod)
 }
 
+func mapKeyFromParam(param *spec.Parameter) string {
+	return fmt.Sprintf("%s#%s", param.In, fieldNameFromParam(param))
+}
+
 func fieldNameFromParam(param *spec.Parameter) string {
 	if nm, ok := param.Extensions.GetString("go-name"); ok {
 		return nm
@@ -396,7 +400,7 @@ func (s *Spec) paramsAsMap(parameters []spec.Parameter, res map[string]spec.Para
 			}
 			pr = obj.(spec.Parameter)
 		}
-		res[fieldNameFromParam(&pr)] = pr
+		res[mapKeyFromParam(&pr)] = pr
 	}
 }
 
@@ -503,8 +507,12 @@ func (s *Spec) OperationIDs() []string {
 	}
 	result := make([]string, 0, len(s.operations))
 	for method, v := range s.operations {
-		for p := range v {
-			result = append(result, fmt.Sprintf("%s %s", strings.ToUpper(method), p))
+		for p, o := range v {
+			if o.ID != "" {
+				result = append(result, o.ID)
+			} else {
+				result = append(result, fmt.Sprintf("%s %s", strings.ToUpper(method), p))
+			}
 		}
 	}
 	return result

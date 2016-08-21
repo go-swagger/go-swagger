@@ -332,8 +332,28 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	operation := b.Operation
 	var params, qp, pp, hp, fp GenParameters
 	var hasQueryParams, hasFormParams, hasFileParams, hasFormValueParams bool
-	for _, p := range b.Analyzed.ParamsFor(b.Method, b.Path) {
-		cp, err := b.MakeParameter(receiver, resolver, p)
+	paramsForOperation := b.Analyzed.ParamsFor(b.Method, b.Path)
+
+	idMapping := map[string]map[string]string{
+		"query":    make(map[string]string, len(paramsForOperation)),
+		"path":     make(map[string]string, len(paramsForOperation)),
+		"formData": make(map[string]string, len(paramsForOperation)),
+		"header":   make(map[string]string, len(paramsForOperation)),
+		"body":     make(map[string]string, len(paramsForOperation)),
+	}
+	seenIds := make(map[string][]string, len(paramsForOperation))
+	for id, p := range paramsForOperation {
+		if _, ok := seenIds[p.Name]; ok {
+			idMapping[p.In][p.Name] = swag.ToGoName(id)
+		} else {
+			idMapping[p.In][p.Name] = swag.ToGoName(p.Name)
+		}
+		seenIds[p.Name] = append(seenIds[p.Name], p.In)
+	}
+
+	for _, p := range paramsForOperation {
+		cp, err := b.MakeParameter(receiver, resolver, p, idMapping)
+
 		if err != nil {
 			return GenOperation{}, err
 		}
@@ -661,7 +681,7 @@ func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path
 	return res, nil
 }
 
-func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver, param spec.Parameter) (GenParameter, error) {
+func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver, param spec.Parameter, idMapping map[string]map[string]string) (GenParameter, error) {
 	if Debug {
 		log.Printf("[%s %s] making parameter %q", b.Method, b.Path, param.Name)
 	}
@@ -678,11 +698,16 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 	}
 
 	var child *GenItems
+	id := swag.ToGoName(param.Name)
+	if len(idMapping) > 0 {
+		id = idMapping[param.In][param.Name]
+	}
 	res := GenParameter{
+		ID:               id,
 		Name:             param.Name,
 		ModelsPackage:    b.ModelsPackage,
 		Path:             fmt.Sprintf("%q", param.Name),
-		ValueExpression:  fmt.Sprintf("%s.%s", receiver, pascalize(param.Name)),
+		ValueExpression:  fmt.Sprintf("%s.%s", receiver, id),
 		IndexVar:         "i",
 		BodyParam:        nil,
 		Default:          param.Default,

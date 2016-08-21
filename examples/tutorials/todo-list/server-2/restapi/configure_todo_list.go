@@ -14,6 +14,8 @@ import (
 
 // This file is safe to edit. Once it exists it will not be overwritten
 
+//go:generate swagger generate server --target .. --name TodoList --spec ../swagger.yml
+
 func configureFlags(api *operations.TodoListAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
@@ -21,6 +23,12 @@ func configureFlags(api *operations.TodoListAPI) {
 func configureAPI(api *operations.TodoListAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
+
+	// Set your custom logger if needed. Default one is log.Printf
+	// Expected interface func(string, ...interface{})
+	//
+	// Example:
+	// s.api.Logger = log.Printf
 
 	api.JSONConsumer = runtime.JSONConsumer()
 

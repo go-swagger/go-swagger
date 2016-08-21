@@ -21,7 +21,7 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-type tagProps struct {
+type TagProps struct {
 	Description  string                 `json:"description,omitempty"`
 	Name         string                 `json:"name,omitempty"`
 	ExternalDocs *ExternalDocumentation `json:"externalDocs,omitempty"`
@@ -29,7 +29,7 @@ type tagProps struct {
 
 // NewTag creates a new tag
 func NewTag(name, description string, externalDocs *ExternalDocumentation) Tag {
-	return Tag{tagProps: tagProps{description, name, externalDocs}}
+	return Tag{TagProps: TagProps{description, name, externalDocs}}
 }
 
 // Tag allows adding meta data to a single tag that is used by the [Operation Object](http://goo.gl/8us55a#operationObject).
@@ -38,7 +38,7 @@ func NewTag(name, description string, externalDocs *ExternalDocumentation) Tag {
 // For more information: http://goo.gl/8us55a#tagObject
 type Tag struct {
 	VendorExtensible
-	tagProps
+	TagProps
 }
 
 // JSONLookup implements an interface to customize json pointer lookup
@@ -47,13 +47,13 @@ func (t Tag) JSONLookup(token string) (interface{}, error) {
 		return &ex, nil
 	}
 
-	r, _, err := jsonpointer.GetForToken(t.tagProps, token)
+	r, _, err := jsonpointer.GetForToken(t.TagProps, token)
 	return r, err
 }
 
 // MarshalJSON marshal this to JSON
 func (t Tag) MarshalJSON() ([]byte, error) {
-	b1, err := json.Marshal(t.tagProps)
+	b1, err := json.Marshal(t.TagProps)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (t Tag) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON marshal this from JSON
 func (t *Tag) UnmarshalJSON(data []byte) error {
-	if err := json.Unmarshal(data, &t.tagProps); err != nil {
+	if err := json.Unmarshal(data, &t.TagProps); err != nil {
 		return err
 	}
 	return json.Unmarshal(data, &t.VendorExtensible)

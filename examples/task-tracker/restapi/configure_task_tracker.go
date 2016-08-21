@@ -14,6 +14,8 @@ import (
 
 // This file is safe to edit. Once it exists it will not be overwritten
 
+//go:generate swagger generate server --target .. --name TaskTracker --spec ../swagger.yml
+
 func configureFlags(api *operations.TaskTrackerAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
@@ -22,18 +24,24 @@ func configureAPI(api *operations.TaskTrackerAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
+	// Set your custom logger if needed. Default one is log.Printf
+	// Expected interface func(string, ...interface{})
+	//
+	// Example:
+	// s.api.Logger = log.Printf
+
 	api.JSONConsumer = runtime.JSONConsumer()
 
-	api.MulitpartformConsumer = runtime.DiscardConsumer
+	api.MultipartformConsumer = runtime.DiscardConsumer
 
 	api.JSONProducer = runtime.JSONProducer()
 
-	api.APIKeyAuth = func(token string) (interface{}, error) {
-		return nil, errors.NotImplemented("api key auth (api_key) token from query has not yet been implemented")
-	}
-
 	api.TokenHeaderAuth = func(token string) (interface{}, error) {
 		return nil, errors.NotImplemented("api key auth (token_header) X-Token from header has not yet been implemented")
+	}
+
+	api.APIKeyAuth = func(token string) (interface{}, error) {
+		return nil, errors.NotImplemented("api key auth (api_key) token from query has not yet been implemented")
 	}
 
 	api.TasksAddCommentToTaskHandler = tasks.AddCommentToTaskHandlerFunc(func(params tasks.AddCommentToTaskParams, principal interface{}) middleware.Responder {

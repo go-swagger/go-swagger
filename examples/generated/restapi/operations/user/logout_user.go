@@ -10,16 +10,16 @@ import (
 )
 
 // LogoutUserHandlerFunc turns a function with the right signature into a logout user handler
-type LogoutUserHandlerFunc func() middleware.Responder
+type LogoutUserHandlerFunc func(LogoutUserParams) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn LogoutUserHandlerFunc) Handle() middleware.Responder {
-	return fn()
+func (fn LogoutUserHandlerFunc) Handle(params LogoutUserParams) middleware.Responder {
+	return fn(params)
 }
 
 // LogoutUserHandler interface for that can handle valid logout user params
 type LogoutUserHandler interface {
-	Handle() middleware.Responder
+	Handle(LogoutUserParams) middleware.Responder
 }
 
 // NewLogoutUser creates a new http.Handler for the logout user operation
@@ -39,13 +39,14 @@ type LogoutUser struct {
 
 func (o *LogoutUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, _ := o.Context.RouteInfo(r)
+	var Params = NewLogoutUserParams()
 
-	if err := o.Context.BindValidRequest(r, route, nil); err != nil { // bind params
+	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
-	res := o.Handler.Handle() // actually handle the request
+	res := o.Handler.Handle(Params) // actually handle the request
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 

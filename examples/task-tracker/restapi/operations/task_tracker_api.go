@@ -21,16 +21,14 @@ import (
 
 // NewTaskTrackerAPI creates a new TaskTracker instance
 func NewTaskTrackerAPI(spec *loads.Document) *TaskTrackerAPI {
-	o := &TaskTrackerAPI{
-		spec:            spec,
+	return &TaskTrackerAPI{
 		handlers:        make(map[string]map[string]http.Handler),
 		formats:         strfmt.Default,
 		defaultConsumes: "application/json",
 		defaultProduces: "application/json",
 		ServerShutdown:  func() {},
+		spec:            spec,
 	}
-
-	return o
 }
 
 /*TaskTrackerAPI This application implements a very simple issue tracker.
@@ -49,19 +47,19 @@ type TaskTrackerAPI struct {
 	defaultProduces string
 	// JSONConsumer registers a consumer for a "application/vnd.goswagger.examples.task-tracker.v1+json" mime type
 	JSONConsumer runtime.Consumer
-	// MulitpartformConsumer registers a consumer for a "multipart/form-data" mime type
-	MulitpartformConsumer runtime.Consumer
+	// MultipartformConsumer registers a consumer for a "multipart/form-data" mime type
+	MultipartformConsumer runtime.Consumer
 
 	// JSONProducer registers a producer for a "application/vnd.goswagger.examples.task-tracker.v1+json" mime type
 	JSONProducer runtime.Producer
 
-	// APIKeyAuth registers a function that takes a token and returns a principal
-	// it performs authentication based on an api key token provided in the query
-	APIKeyAuth func(string) (interface{}, error)
-
 	// TokenHeaderAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key X-Token provided in the header
 	TokenHeaderAuth func(string) (interface{}, error)
+
+	// APIKeyAuth registers a function that takes a token and returns a principal
+	// it performs authentication based on an api key token provided in the query
+	APIKeyAuth func(string) (interface{}, error)
 
 	// TasksAddCommentToTaskHandler sets the operation handler for the add comment to task operation
 	TasksAddCommentToTaskHandler tasks.AddCommentToTaskHandler
@@ -90,6 +88,9 @@ type TaskTrackerAPI struct {
 
 	// Custom command line argument groups with their descriptions
 	CommandLineOptionsGroups []swag.CommandLineOptionsGroup
+
+	// User defined logger function.
+	Logger func(string, ...interface{})
 }
 
 // SetDefaultProduces sets the default produces media type
@@ -100,6 +101,11 @@ func (o *TaskTrackerAPI) SetDefaultProduces(mediaType string) {
 // SetDefaultConsumes returns the default consumes media type
 func (o *TaskTrackerAPI) SetDefaultConsumes(mediaType string) {
 	o.defaultConsumes = mediaType
+}
+
+// SetSpec sets a spec that will be served for the clients.
+func (o *TaskTrackerAPI) SetSpec(spec *loads.Document) {
+	o.spec = spec
 }
 
 // DefaultProduces returns the default produces media type
@@ -130,20 +136,20 @@ func (o *TaskTrackerAPI) Validate() error {
 		unregistered = append(unregistered, "JSONConsumer")
 	}
 
-	if o.MulitpartformConsumer == nil {
-		unregistered = append(unregistered, "MulitpartformConsumer")
+	if o.MultipartformConsumer == nil {
+		unregistered = append(unregistered, "MultipartformConsumer")
 	}
 
 	if o.JSONProducer == nil {
 		unregistered = append(unregistered, "JSONProducer")
 	}
 
-	if o.APIKeyAuth == nil {
-		unregistered = append(unregistered, "TokenAuth")
-	}
-
 	if o.TokenHeaderAuth == nil {
 		unregistered = append(unregistered, "XTokenAuth")
+	}
+
+	if o.APIKeyAuth == nil {
+		unregistered = append(unregistered, "TokenAuth")
 	}
 
 	if o.TasksAddCommentToTaskHandler == nil {
@@ -197,13 +203,13 @@ func (o *TaskTrackerAPI) AuthenticatorsFor(schemes map[string]spec.SecuritySchem
 	for name, scheme := range schemes {
 		switch name {
 
-		case "api_key":
-
-			result[name] = security.APIKeyAuth(scheme.Name, scheme.In, o.APIKeyAuth)
-
 		case "token_header":
 
 			result[name] = security.APIKeyAuth(scheme.Name, scheme.In, o.TokenHeaderAuth)
+
+		case "api_key":
+
+			result[name] = security.APIKeyAuth(scheme.Name, scheme.In, o.APIKeyAuth)
 
 		}
 	}
@@ -222,7 +228,7 @@ func (o *TaskTrackerAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Co
 			result["application/vnd.goswagger.examples.task-tracker.v1+json"] = o.JSONConsumer
 
 		case "multipart/form-data":
-			result["multipart/form-data"] = o.MulitpartformConsumer
+			result["multipart/form-data"] = o.MultipartformConsumer
 
 		}
 	}

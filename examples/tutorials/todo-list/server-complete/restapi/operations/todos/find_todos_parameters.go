@@ -18,7 +18,7 @@ import (
 // with the default values initialized.
 func NewFindTodosParams() FindTodosParams {
 	var (
-		limitDefault int32 = int32(20)
+		limitDefault = int32(20)
 	)
 	return FindTodosParams{
 		Limit: &limitDefault,

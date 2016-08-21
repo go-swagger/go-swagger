@@ -162,7 +162,7 @@ func TestMakeOperationParam(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
 	if assert.NoError(t, err) {
 		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
-		gO, err := b.MakeParameter("a", resolver, b.Operation.Parameters[0])
+		gO, err := b.MakeParameter("a", resolver, b.Operation.Parameters[0], nil)
 		if assert.NoError(t, err) {
 			assert.Equal(t, "size", gO.Name)
 			assert.True(t, gO.IsPrimitive)

@@ -22,7 +22,7 @@ import (
 )
 
 // pathItemProps the path item specific properties
-type pathItemProps struct {
+type PathItemProps struct {
 	Get        *Operation  `json:"get,omitempty"`
 	Put        *Operation  `json:"put,omitempty"`
 	Post       *Operation  `json:"post,omitempty"`
@@ -42,7 +42,7 @@ type pathItemProps struct {
 type PathItem struct {
 	Refable
 	VendorExtensible
-	pathItemProps
+	PathItemProps
 }
 
 // JSONLookup look up a value by the json property name
@@ -53,7 +53,7 @@ func (p PathItem) JSONLookup(token string) (interface{}, error) {
 	if token == "$ref" {
 		return &p.Ref, nil
 	}
-	r, _, err := jsonpointer.GetForToken(p.pathItemProps, token)
+	r, _, err := jsonpointer.GetForToken(p.PathItemProps, token)
 	return r, err
 }
 
@@ -65,7 +65,7 @@ func (p *PathItem) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &p.VendorExtensible); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(data, &p.pathItemProps); err != nil {
+	if err := json.Unmarshal(data, &p.PathItemProps); err != nil {
 		return err
 	}
 	return nil
@@ -81,7 +81,7 @@ func (p PathItem) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	b5, err := json.Marshal(p.pathItemProps)
+	b5, err := json.Marshal(p.PathItemProps)
 	if err != nil {
 		return nil, err
 	}

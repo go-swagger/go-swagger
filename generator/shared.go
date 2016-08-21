@@ -101,6 +101,47 @@ type GenOpts struct {
 	ExcludeSpec       bool
 	TemplateDir       string
 	WithContext       bool
+	Operations        []string
+	Models            []string
+	Tags              []string
+	Name              string
+}
+
+// TargetPath returns the target path relative to the server package
+func (g *GenOpts) TargetPath() string {
+	tgtAbs, err := filepath.Abs(g.Target)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	srvrAbs, err := filepath.Abs(g.ServerPackage)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	tgtRel, err := filepath.Rel(srvrAbs, tgtAbs)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return tgtRel
+}
+
+// SpecPath returns the path to the spec relative to the server package
+func (g *GenOpts) SpecPath() string {
+	if strings.HasPrefix(g.Spec, "http://") || strings.HasPrefix(g.Spec, "https://") {
+		return g.Spec
+	}
+	specAbs, err := filepath.Abs(g.Spec)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	srvrAbs, err := filepath.Abs(g.ServerPackage)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	specRel, err := filepath.Rel(srvrAbs, specAbs)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return specRel
 }
 
 // type generatorOptions struct {
@@ -283,8 +324,8 @@ func gatherOperations(specDoc *analysis.Spec, operationIDs []string) map[string]
 			nm = opr.Key
 		}
 
-		_, found := operations[nm]
-		if found {
+		oo, found := operations[nm]
+		if found && oo.Method != opr.Method && oo.Path != opr.Path {
 			nm = opr.Key
 		}
 		if len(operationIDs) == 0 || containsString(operationIDs, opr.ID) || containsString(operationIDs, nm) {

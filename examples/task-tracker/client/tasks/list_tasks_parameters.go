@@ -4,8 +4,11 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"time"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
@@ -15,10 +18,25 @@ import (
 // with the default values initialized.
 func NewListTasksParams() *ListTasksParams {
 	var (
+		pageSizeDefault = int32(20)
+	)
+	return &ListTasksParams{
+		PageSize: &pageSizeDefault,
+
+		timeout: cr.DefaultTimeout,
+	}
+}
+
+// NewListTasksParamsWithTimeout creates a new ListTasksParams object
+// with the default values initialized, and the ability to set a timeout on a request
+func NewListTasksParamsWithTimeout(timeout time.Duration) *ListTasksParams {
+	var (
 		pageSizeDefault int32 = int32(20)
 	)
 	return &ListTasksParams{
 		PageSize: &pageSizeDefault,
+
+		timeout: timeout,
 	}
 }
 
@@ -47,35 +65,38 @@ type ListTasksParams struct {
 
 	*/
 	Tags []string
+
+	timeout time.Duration
 }
 
 // WithPageSize adds the pageSize to the list tasks params
-func (o *ListTasksParams) WithPageSize(PageSize *int32) *ListTasksParams {
-	o.PageSize = PageSize
+func (o *ListTasksParams) WithPageSize(pageSize *int32) *ListTasksParams {
+	o.PageSize = pageSize
 	return o
 }
 
-// WithSinceID adds the sinceId to the list tasks params
-func (o *ListTasksParams) WithSinceID(SinceID *int64) *ListTasksParams {
-	o.SinceID = SinceID
+// WithSinceID adds the sinceID to the list tasks params
+func (o *ListTasksParams) WithSinceID(sinceID *int64) *ListTasksParams {
+	o.SinceID = sinceID
 	return o
 }
 
 // WithStatus adds the status to the list tasks params
-func (o *ListTasksParams) WithStatus(Status []string) *ListTasksParams {
-	o.Status = Status
+func (o *ListTasksParams) WithStatus(status []string) *ListTasksParams {
+	o.Status = status
 	return o
 }
 
 // WithTags adds the tags to the list tasks params
-func (o *ListTasksParams) WithTags(Tags []string) *ListTasksParams {
-	o.Tags = Tags
+func (o *ListTasksParams) WithTags(tags []string) *ListTasksParams {
+	o.Tags = tags
 	return o
 }
 
 // WriteToRequest writes these params to a swagger request
 func (o *ListTasksParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
+	r.SetTimeout(o.timeout)
 	var res []error
 
 	if o.PageSize != nil {

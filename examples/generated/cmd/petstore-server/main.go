@@ -42,7 +42,13 @@ For this sample, you can use the api key 'special-key' to test the authorization
 	}
 
 	if _, err := parser.Parse(); err != nil {
-		os.Exit(1)
+		code := 1
+		if fe, ok := err.(*flags.Error); ok {
+			if fe.Type == flags.ErrHelp {
+				code = 0
+			}
+		}
+		os.Exit(code)
 	}
 
 	server.ConfigureAPI()

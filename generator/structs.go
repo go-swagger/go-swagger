@@ -147,6 +147,7 @@ type GenParameter struct {
 	resolvedType
 	sharedValidations
 
+	ID              string
 	Name            string
 	ModelsPackage   string
 	Path            string
@@ -372,6 +373,7 @@ type GenApp struct {
 	SwaggerJSON         string
 	ExcludeSpec         bool
 	WithContext         bool
+	GenOpts             *GenOpts
 }
 
 // GenSerGroup represents a group of serializers, most likely this is a media type to a list of

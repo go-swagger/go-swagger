@@ -74,6 +74,7 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 	if err != nil {
 		return nil, err
 	}
+
 	operations := gatherOperations(analyzed, operationIDs)
 	if len(operations) == 0 {
 		return nil, errors.New("no operations were selected")
@@ -747,5 +748,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		SwaggerJSON:         fmt.Sprintf("%#v", jsonb),
 		ExcludeSpec:         a.GenOpts != nil && a.GenOpts.ExcludeSpec,
 		WithContext:         a.GenOpts != nil && a.GenOpts.WithContext,
+		GenOpts:             a.GenOpts,
 	}, nil
 }
