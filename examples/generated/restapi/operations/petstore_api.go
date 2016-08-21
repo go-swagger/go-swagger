@@ -46,17 +46,17 @@ type PetstoreAPI struct {
 	formats         strfmt.Registry
 	defaultConsumes string
 	defaultProduces string
-	// UrlformConsumer registers a consumer for a "application/x-www-form-urlencoded" mime type
-	UrlformConsumer runtime.Consumer
-	// XMLConsumer registers a consumer for a "application/xml" mime type
-	XMLConsumer runtime.Consumer
 	// JSONConsumer registers a consumer for a "application/json" mime type
 	JSONConsumer runtime.Consumer
+	// XMLConsumer registers a consumer for a "application/xml" mime type
+	XMLConsumer runtime.Consumer
+	// UrlformConsumer registers a consumer for a "application/x-www-form-urlencoded" mime type
+	UrlformConsumer runtime.Consumer
 
-	// JSONProducer registers a producer for a "application/json" mime type
-	JSONProducer runtime.Producer
 	// XMLProducer registers a producer for a "application/xml" mime type
 	XMLProducer runtime.Producer
+	// JSONProducer registers a producer for a "application/json" mime type
+	JSONProducer runtime.Producer
 
 	// PetstoreAuthAuth registers a functin that takes an access token and a collection of required scopes and returns a principal
 	// it performs authentication based on an oauth2 bearer token provided in the request
@@ -157,24 +157,24 @@ func (o *PetstoreAPI) RegisterFormat(name string, format strfmt.Format, validato
 func (o *PetstoreAPI) Validate() error {
 	var unregistered []string
 
-	if o.UrlformConsumer == nil {
-		unregistered = append(unregistered, "UrlformConsumer")
+	if o.JSONConsumer == nil {
+		unregistered = append(unregistered, "JSONConsumer")
 	}
 
 	if o.XMLConsumer == nil {
 		unregistered = append(unregistered, "XMLConsumer")
 	}
 
-	if o.JSONConsumer == nil {
-		unregistered = append(unregistered, "JSONConsumer")
-	}
-
-	if o.JSONProducer == nil {
-		unregistered = append(unregistered, "JSONProducer")
+	if o.UrlformConsumer == nil {
+		unregistered = append(unregistered, "UrlformConsumer")
 	}
 
 	if o.XMLProducer == nil {
 		unregistered = append(unregistered, "XMLProducer")
+	}
+
+	if o.JSONProducer == nil {
+		unregistered = append(unregistered, "JSONProducer")
 	}
 
 	if o.PetstoreAuthAuth == nil {
@@ -297,14 +297,14 @@ func (o *PetstoreAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consu
 	for _, mt := range mediaTypes {
 		switch mt {
 
-		case "application/x-www-form-urlencoded":
-			result["application/x-www-form-urlencoded"] = o.UrlformConsumer
+		case "application/json":
+			result["application/json"] = o.JSONConsumer
 
 		case "application/xml":
 			result["application/xml"] = o.XMLConsumer
 
-		case "application/json":
-			result["application/json"] = o.JSONConsumer
+		case "application/x-www-form-urlencoded":
+			result["application/x-www-form-urlencoded"] = o.UrlformConsumer
 
 		}
 	}
@@ -319,11 +319,11 @@ func (o *PetstoreAPI) ProducersFor(mediaTypes []string) map[string]runtime.Produ
 	for _, mt := range mediaTypes {
 		switch mt {
 
-		case "application/json":
-			result["application/json"] = o.JSONProducer
-
 		case "application/xml":
 			result["application/xml"] = o.XMLProducer
+
+		case "application/json":
+			result["application/json"] = o.JSONProducer
 
 		}
 	}

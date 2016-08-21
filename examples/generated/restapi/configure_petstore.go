@@ -32,15 +32,15 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 	// Example:
 	// s.api.Logger = log.Printf
 
-	api.UrlformConsumer = runtime.DiscardConsumer
+	api.JSONConsumer = runtime.JSONConsumer()
 
 	api.XMLConsumer = runtime.XMLConsumer()
 
-	api.JSONConsumer = runtime.JSONConsumer()
-
-	api.JSONProducer = runtime.JSONProducer()
+	api.UrlformConsumer = runtime.DiscardConsumer
 
 	api.XMLProducer = runtime.XMLProducer()
+
+	api.JSONProducer = runtime.JSONProducer()
 
 	api.PetstoreAuthAuth = func(token string, scopes []string) (interface{}, error) {
 		return nil, errors.NotImplemented("oauth2 bearer auth (petstore_auth) has not yet been implemented")
