@@ -56,14 +56,14 @@ type UpdateTaskParams struct {
 }
 
 // WithBody adds the body to the update task params
-func (o *UpdateTaskParams) WithBody(Body *models.Task) *UpdateTaskParams {
-	o.Body = Body
+func (o *UpdateTaskParams) WithBody(body *models.Task) *UpdateTaskParams {
+	o.Body = body
 	return o
 }
 
 // WithID adds the id to the update task params
-func (o *UpdateTaskParams) WithID(ID int64) *UpdateTaskParams {
-	o.ID = ID
+func (o *UpdateTaskParams) WithID(id int64) *UpdateTaskParams {
+	o.ID = id
 	return o
 }
 

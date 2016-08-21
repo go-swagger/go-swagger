@@ -324,8 +324,8 @@ func gatherOperations(specDoc *analysis.Spec, operationIDs []string) map[string]
 			nm = opr.Key
 		}
 
-		_, found := operations[nm]
-		if found {
+		oo, found := operations[nm]
+		if found && oo.Method != opr.Method && oo.Path != opr.Path {
 			nm = opr.Key
 		}
 		if len(operationIDs) == 0 || containsString(operationIDs, opr.ID) || containsString(operationIDs, nm) {

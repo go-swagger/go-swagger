@@ -65,20 +65,20 @@ type GetTaskCommentsParams struct {
 }
 
 // WithID adds the id to the get task comments params
-func (o *GetTaskCommentsParams) WithID(ID int64) *GetTaskCommentsParams {
-	o.ID = ID
+func (o *GetTaskCommentsParams) WithID(id int64) *GetTaskCommentsParams {
+	o.ID = id
 	return o
 }
 
 // WithPageSize adds the pageSize to the get task comments params
-func (o *GetTaskCommentsParams) WithPageSize(PageSize *int32) *GetTaskCommentsParams {
-	o.PageSize = PageSize
+func (o *GetTaskCommentsParams) WithPageSize(pageSize *int32) *GetTaskCommentsParams {
+	o.PageSize = pageSize
 	return o
 }
 
 // WithSince adds the since to the get task comments params
-func (o *GetTaskCommentsParams) WithSince(Since *strfmt.DateTime) *GetTaskCommentsParams {
-	o.Since = Since
+func (o *GetTaskCommentsParams) WithSince(since *strfmt.DateTime) *GetTaskCommentsParams {
+	o.Since = since
 	return o
 }
 

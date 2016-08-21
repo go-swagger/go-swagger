@@ -74,6 +74,7 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 	if err != nil {
 		return nil, err
 	}
+
 	operations := gatherOperations(analyzed, operationIDs)
 	if len(operations) == 0 {
 		return nil, errors.New("no operations were selected")

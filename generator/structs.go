@@ -147,6 +147,7 @@ type GenParameter struct {
 	resolvedType
 	sharedValidations
 
+	ID              string
 	Name            string
 	ModelsPackage   string
 	Path            string

@@ -50,20 +50,20 @@ type FindParams struct {
 }
 
 // WithXRateLimit adds the xRateLimit to the find params
-func (o *FindParams) WithXRateLimit(XRateLimit int32) *FindParams {
-	o.XRateLimit = XRateLimit
+func (o *FindParams) WithXRateLimit(xRateLimit int32) *FindParams {
+	o.XRateLimit = xRateLimit
 	return o
 }
 
 // WithLimit adds the limit to the find params
-func (o *FindParams) WithLimit(Limit int32) *FindParams {
-	o.Limit = Limit
+func (o *FindParams) WithLimit(limit int32) *FindParams {
+	o.Limit = limit
 	return o
 }
 
 // WithTags adds the tags to the find params
-func (o *FindParams) WithTags(Tags []int32) *FindParams {
-	o.Tags = Tags
+func (o *FindParams) WithTags(tags []int32) *FindParams {
+	o.Tags = tags
 	return o
 }
 

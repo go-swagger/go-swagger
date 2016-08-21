@@ -14,8 +14,8 @@ Terms Of Service:
 
 
     Schemes:
-      https
       http
+      https
     Host: localhost:8322
     BasePath: /api
     Version: 1.0.0

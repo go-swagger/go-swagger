@@ -45,8 +45,8 @@ type DestroyOneParams struct {
 }
 
 // WithID adds the id to the destroy one params
-func (o *DestroyOneParams) WithID(ID string) *DestroyOneParams {
-	o.ID = ID
+func (o *DestroyOneParams) WithID(id string) *DestroyOneParams {
+	o.ID = id
 	return o
 }
 

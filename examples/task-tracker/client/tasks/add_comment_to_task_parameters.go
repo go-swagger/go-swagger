@@ -54,14 +54,14 @@ type AddCommentToTaskParams struct {
 }
 
 // WithBody adds the body to the add comment to task params
-func (o *AddCommentToTaskParams) WithBody(Body AddCommentToTaskBody) *AddCommentToTaskParams {
-	o.Body = Body
+func (o *AddCommentToTaskParams) WithBody(body AddCommentToTaskBody) *AddCommentToTaskParams {
+	o.Body = body
 	return o
 }
 
 // WithID adds the id to the add comment to task params
-func (o *AddCommentToTaskParams) WithID(ID int64) *AddCommentToTaskParams {
-	o.ID = ID
+func (o *AddCommentToTaskParams) WithID(id int64) *AddCommentToTaskParams {
+	o.ID = id
 	return o
 }
 

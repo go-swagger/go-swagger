@@ -49,8 +49,8 @@ type GetTaskDetailsParams struct {
 }
 
 // WithID adds the id to the get task details params
-func (o *GetTaskDetailsParams) WithID(ID int64) *GetTaskDetailsParams {
-	o.ID = ID
+func (o *GetTaskDetailsParams) WithID(id int64) *GetTaskDetailsParams {
+	o.ID = id
 	return o
 }
 

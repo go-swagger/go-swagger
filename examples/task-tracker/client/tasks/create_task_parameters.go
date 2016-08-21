@@ -50,8 +50,8 @@ type CreateTaskParams struct {
 }
 
 // WithBody adds the body to the create task params
-func (o *CreateTaskParams) WithBody(Body *models.Task) *CreateTaskParams {
-	o.Body = Body
+func (o *CreateTaskParams) WithBody(body *models.Task) *CreateTaskParams {
+	o.Body = body
 	return o
 }
 
