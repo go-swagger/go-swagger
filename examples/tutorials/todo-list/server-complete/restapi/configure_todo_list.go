@@ -1,6 +1,7 @@
 package restapi
 
 import (
+	"crypto/tls"
 	"net/http"
 	"sync"
 	"sync/atomic"
@@ -144,6 +145,11 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
+}
+
+// The TLS configuration before HTTPS server starts.
+func configureTLS(tlsConfig *tls.Config) {
+	// Make all necessary changes to the TLS configuration here.
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.

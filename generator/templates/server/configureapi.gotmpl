@@ -18,7 +18,26 @@ import (
 {{ $package := .Package }}
 
 // This file is safe to edit. Once it exists it will not be overwritten
-
+{{ with .GenOpts }}
+//go:generate swagger generate server --target {{ .TargetPath }} --name {{ .Name }} --spec {{ .SpecPath }}
+{{- if .APIPackage }}{{ if ne .APIPackage "operations" }} --api-package {{ .APIPackage }}{{ end }}{{ end }}
+{{- if .ModelPackage }}{{ if ne .ModelPackage "models" }} --model-package {{ .ModelPackage }}{{ end }}{{ end }}
+{{- if .ServerPackage }}{{ if ne .ServerPackage "restapi"}} --server-package {{ .ServerPackage }}{{ end }}{{ end }}
+{{- if .ClientPackage }}{{ if ne .ClientPackage "client" }} --client-package {{ .ClientPackage }}{{ end }}{{ end }}
+{{- if .TemplateDir }} --template-dir {{ .TemplateDir }}{{ end }}
+{{- range .Operations }} --operation {{ . }}{{ end }}
+{{- range .Tags }} --tags {{ . }}{{ end }}
+{{- if .Principal }} --principal {{ .Principal }}{{ end }}
+{{- if .DefaultScheme }}{{ if ne .DefaultScheme "http" }} --default-scheme {{ .DefaultScheme }}{{ end }}{{ end }}
+{{- range .Models }} --model {{ . }}{{ end }}
+{{- if or (not .IncludeModel) (not .IncludeValidator) }} --skip-models{{ end }}
+{{- if or (not .IncludeHandler) (not .IncludeParameters ) (not .IncludeResponses) }} --skip-operations{{ end }}
+{{- if not .IncludeSupport }} --skip-support{{ end }}
+{{- if not .IncludeMain }} --exclude-main{{ end }}
+{{- if .ExcludeSpec }} --exclude-spec{{ end }}
+{{- if .DumpData }} --dump-data{{ end }}
+{{- if .WithContext }} --with-context{{ end }}
+{{ end }}
 func configureFlags(api *{{.Package}}.{{ pascalize .Name }}API) {
   // api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }

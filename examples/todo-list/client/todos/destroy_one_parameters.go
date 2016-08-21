@@ -4,8 +4,11 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"time"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	cr "github.com/go-openapi/runtime/client"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -14,7 +17,20 @@ import (
 // with the default values initialized.
 func NewDestroyOneParams() *DestroyOneParams {
 	var ()
-	return &DestroyOneParams{}
+	return &DestroyOneParams{
+
+		timeout: cr.DefaultTimeout,
+	}
+}
+
+// NewDestroyOneParamsWithTimeout creates a new DestroyOneParams object
+// with the default values initialized, and the ability to set a timeout on a request
+func NewDestroyOneParamsWithTimeout(timeout time.Duration) *DestroyOneParams {
+	var ()
+	return &DestroyOneParams{
+
+		timeout: timeout,
+	}
 }
 
 /*DestroyOneParams contains all the parameters to send to the API endpoint
@@ -24,6 +40,8 @@ type DestroyOneParams struct {
 
 	/*ID*/
 	ID string
+
+	timeout time.Duration
 }
 
 // WithID adds the id to the destroy one params
@@ -35,6 +53,7 @@ func (o *DestroyOneParams) WithID(ID string) *DestroyOneParams {
 // WriteToRequest writes these params to a swagger request
 func (o *DestroyOneParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
+	r.SetTimeout(o.timeout)
 	var res []error
 
 	// path param id

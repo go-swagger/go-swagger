@@ -4,8 +4,11 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"time"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
@@ -15,7 +18,20 @@ import (
 // with the default values initialized.
 func NewFindParams() *FindParams {
 	var ()
-	return &FindParams{}
+	return &FindParams{
+
+		timeout: cr.DefaultTimeout,
+	}
+}
+
+// NewFindParamsWithTimeout creates a new FindParams object
+// with the default values initialized, and the ability to set a timeout on a request
+func NewFindParamsWithTimeout(timeout time.Duration) *FindParams {
+	var ()
+	return &FindParams{
+
+		timeout: timeout,
+	}
 }
 
 /*FindParams contains all the parameters to send to the API endpoint
@@ -29,6 +45,8 @@ type FindParams struct {
 	Limit int32
 	/*Tags*/
 	Tags []int32
+
+	timeout time.Duration
 }
 
 // WithXRateLimit adds the xRateLimit to the find params
@@ -52,6 +70,7 @@ func (o *FindParams) WithTags(Tags []int32) *FindParams {
 // WriteToRequest writes these params to a swagger request
 func (o *FindParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
+	r.SetTimeout(o.timeout)
 	var res []error
 
 	// header param X-Rate-Limit

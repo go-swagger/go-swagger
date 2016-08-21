@@ -20,16 +20,14 @@ import (
 
 // NewTodoListAPI creates a new TodoList instance
 func NewTodoListAPI(spec *loads.Document) *TodoListAPI {
-	o := &TodoListAPI{
-		spec:            spec,
+	return &TodoListAPI{
 		handlers:        make(map[string]map[string]http.Handler),
 		formats:         strfmt.Default,
 		defaultConsumes: "application/json",
 		defaultProduces: "application/json",
 		ServerShutdown:  func() {},
+		spec:            spec,
 	}
-
-	return o
 }
 
 /*TodoListAPI The product of a tutorial on goswagger.io */
@@ -59,6 +57,9 @@ type TodoListAPI struct {
 
 	// Custom command line argument groups with their descriptions
 	CommandLineOptionsGroups []swag.CommandLineOptionsGroup
+
+	// User defined logger function.
+	Logger func(string, ...interface{})
 }
 
 // SetDefaultProduces sets the default produces media type
@@ -69,6 +70,11 @@ func (o *TodoListAPI) SetDefaultProduces(mediaType string) {
 // SetDefaultConsumes returns the default consumes media type
 func (o *TodoListAPI) SetDefaultConsumes(mediaType string) {
 	o.defaultConsumes = mediaType
+}
+
+// SetSpec sets a spec that will be served for the clients.
+func (o *TodoListAPI) SetSpec(spec *loads.Document) {
+	o.spec = spec
 }
 
 // DefaultProduces returns the default produces media type

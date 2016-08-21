@@ -4,8 +4,11 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"time"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
@@ -19,6 +22,21 @@ func NewGetTaskCommentsParams() *GetTaskCommentsParams {
 	)
 	return &GetTaskCommentsParams{
 		PageSize: &pageSizeDefault,
+
+		timeout: cr.DefaultTimeout,
+	}
+}
+
+// NewGetTaskCommentsParamsWithTimeout creates a new GetTaskCommentsParams object
+// with the default values initialized, and the ability to set a timeout on a request
+func NewGetTaskCommentsParamsWithTimeout(timeout time.Duration) *GetTaskCommentsParams {
+	var (
+		pageSizeDefault int32 = int32(20)
+	)
+	return &GetTaskCommentsParams{
+		PageSize: &pageSizeDefault,
+
+		timeout: timeout,
 	}
 }
 
@@ -42,6 +60,8 @@ type GetTaskCommentsParams struct {
 
 	*/
 	Since *strfmt.DateTime
+
+	timeout time.Duration
 }
 
 // WithID adds the id to the get task comments params
@@ -65,6 +85,7 @@ func (o *GetTaskCommentsParams) WithSince(Since *strfmt.DateTime) *GetTaskCommen
 // WriteToRequest writes these params to a swagger request
 func (o *GetTaskCommentsParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
+	r.SetTimeout(o.timeout)
 	var res []error
 
 	// path param id

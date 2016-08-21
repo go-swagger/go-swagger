@@ -101,6 +101,45 @@ type GenOpts struct {
 	ExcludeSpec       bool
 	TemplateDir       string
 	WithContext       bool
+	Operations        []string
+	Models            []string
+	Tags              []string
+	Name              string
+}
+
+func (g *GenOpts) TargetPath() string {
+	tgtAbs, err := filepath.Abs(g.Target)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	srvrAbs, err := filepath.Abs(g.ServerPackage)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	tgtRel, err := filepath.Rel(srvrAbs, tgtAbs)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return tgtRel
+}
+
+func (g *GenOpts) SpecPath() string {
+	if strings.HasPrefix(g.Spec, "http://") || strings.HasPrefix(g.Spec, "https://") {
+		return g.Spec
+	}
+	specAbs, err := filepath.Abs(g.Spec)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	srvrAbs, err := filepath.Abs(g.ServerPackage)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	specRel, err := filepath.Rel(srvrAbs, specAbs)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return specRel
 }
 
 // type generatorOptions struct {

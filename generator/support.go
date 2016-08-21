@@ -747,5 +747,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		SwaggerJSON:         fmt.Sprintf("%#v", jsonb),
 		ExcludeSpec:         a.GenOpts != nil && a.GenOpts.ExcludeSpec,
 		WithContext:         a.GenOpts != nil && a.GenOpts.WithContext,
+		GenOpts:             a.GenOpts,
 	}, nil
 }

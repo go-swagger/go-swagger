@@ -4,8 +4,11 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"time"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
@@ -19,6 +22,21 @@ func NewListTasksParams() *ListTasksParams {
 	)
 	return &ListTasksParams{
 		PageSize: &pageSizeDefault,
+
+		timeout: cr.DefaultTimeout,
+	}
+}
+
+// NewListTasksParamsWithTimeout creates a new ListTasksParams object
+// with the default values initialized, and the ability to set a timeout on a request
+func NewListTasksParamsWithTimeout(timeout time.Duration) *ListTasksParams {
+	var (
+		pageSizeDefault int32 = int32(20)
+	)
+	return &ListTasksParams{
+		PageSize: &pageSizeDefault,
+
+		timeout: timeout,
 	}
 }
 
@@ -47,6 +65,8 @@ type ListTasksParams struct {
 
 	*/
 	Tags []string
+
+	timeout time.Duration
 }
 
 // WithPageSize adds the pageSize to the list tasks params
@@ -76,6 +96,7 @@ func (o *ListTasksParams) WithTags(Tags []string) *ListTasksParams {
 // WriteToRequest writes these params to a swagger request
 func (o *ListTasksParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
+	r.SetTimeout(o.timeout)
 	var res []error
 
 	if o.PageSize != nil {

@@ -16,6 +16,8 @@ import (
 
 // This file is safe to edit. Once it exists it will not be overwritten
 
+//go:generate swagger generate server --target .. --name Petstore --spec ../swagger.json
+
 func configureFlags(api *operations.PetstoreAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
@@ -24,22 +26,28 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
-	api.XMLConsumer = runtime.XMLConsumer()
+	// Set your custom logger if needed. Default one is log.Printf
+	// Expected interface func(string, ...interface{})
+	//
+	// Example:
+	// s.api.Logger = log.Printf
 
 	api.UrlformConsumer = runtime.DiscardConsumer
 
-	api.JSONConsumer = runtime.JSONConsumer()
+	api.XMLConsumer = runtime.XMLConsumer()
 
-	api.XMLProducer = runtime.XMLProducer()
+	api.JSONConsumer = runtime.JSONConsumer()
 
 	api.JSONProducer = runtime.JSONProducer()
 
-	api.APIKeyAuth = func(token string) (interface{}, error) {
-		return nil, errors.NotImplemented("api key auth (api_key) api_key from header has not yet been implemented")
-	}
+	api.XMLProducer = runtime.XMLProducer()
 
 	api.PetstoreAuthAuth = func(token string, scopes []string) (interface{}, error) {
 		return nil, errors.NotImplemented("oauth2 bearer auth (petstore_auth) has not yet been implemented")
+	}
+
+	api.APIKeyAuth = func(token string) (interface{}, error) {
+		return nil, errors.NotImplemented("api key auth (api_key) api_key from header has not yet been implemented")
 	}
 
 	api.PetAddPetHandler = pet.AddPetHandlerFunc(func(params pet.AddPetParams, principal interface{}) middleware.Responder {
@@ -81,7 +89,7 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 	api.UserLoginUserHandler = user.LoginUserHandlerFunc(func(params user.LoginUserParams) middleware.Responder {
 		return middleware.NotImplemented("operation user.LoginUser has not yet been implemented")
 	})
-	api.UserLogoutUserHandler = user.LogoutUserHandlerFunc(func() middleware.Responder {
+	api.UserLogoutUserHandler = user.LogoutUserHandlerFunc(func(params user.LogoutUserParams) middleware.Responder {
 		return middleware.NotImplemented("operation user.LogoutUser has not yet been implemented")
 	})
 	api.StorePlaceOrderHandler = store.PlaceOrderHandlerFunc(func(params store.PlaceOrderParams) middleware.Responder {
