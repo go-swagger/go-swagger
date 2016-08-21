@@ -698,7 +698,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 	}
 
 	var child *GenItems
-	id := param.Name
+	id := swag.ToGoName(param.Name)
 	if len(idMapping) > 0 {
 		id = idMapping[param.In][param.Name]
 	}
