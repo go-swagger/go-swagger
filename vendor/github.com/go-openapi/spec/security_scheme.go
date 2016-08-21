@@ -33,17 +33,17 @@ const (
 
 // BasicAuth creates a basic auth security scheme
 func BasicAuth() *SecurityScheme {
-	return &SecurityScheme{securitySchemeProps: securitySchemeProps{Type: basic}}
+	return &SecurityScheme{SecuritySchemeProps: SecuritySchemeProps{Type: basic}}
 }
 
 // APIKeyAuth creates an api key auth security scheme
 func APIKeyAuth(fieldName, valueSource string) *SecurityScheme {
-	return &SecurityScheme{securitySchemeProps: securitySchemeProps{Type: apiKey, Name: fieldName, In: valueSource}}
+	return &SecurityScheme{SecuritySchemeProps: SecuritySchemeProps{Type: apiKey, Name: fieldName, In: valueSource}}
 }
 
 // OAuth2Implicit creates an implicit flow oauth2 security scheme
 func OAuth2Implicit(authorizationURL string) *SecurityScheme {
-	return &SecurityScheme{securitySchemeProps: securitySchemeProps{
+	return &SecurityScheme{SecuritySchemeProps: SecuritySchemeProps{
 		Type:             oauth2,
 		Flow:             implicit,
 		AuthorizationURL: authorizationURL,
@@ -52,7 +52,7 @@ func OAuth2Implicit(authorizationURL string) *SecurityScheme {
 
 // OAuth2Password creates a password flow oauth2 security scheme
 func OAuth2Password(tokenURL string) *SecurityScheme {
-	return &SecurityScheme{securitySchemeProps: securitySchemeProps{
+	return &SecurityScheme{SecuritySchemeProps: SecuritySchemeProps{
 		Type:     oauth2,
 		Flow:     password,
 		TokenURL: tokenURL,
@@ -61,7 +61,7 @@ func OAuth2Password(tokenURL string) *SecurityScheme {
 
 // OAuth2Application creates an application flow oauth2 security scheme
 func OAuth2Application(tokenURL string) *SecurityScheme {
-	return &SecurityScheme{securitySchemeProps: securitySchemeProps{
+	return &SecurityScheme{SecuritySchemeProps: SecuritySchemeProps{
 		Type:     oauth2,
 		Flow:     application,
 		TokenURL: tokenURL,
@@ -70,7 +70,7 @@ func OAuth2Application(tokenURL string) *SecurityScheme {
 
 // OAuth2AccessToken creates an access token flow oauth2 security scheme
 func OAuth2AccessToken(authorizationURL, tokenURL string) *SecurityScheme {
-	return &SecurityScheme{securitySchemeProps: securitySchemeProps{
+	return &SecurityScheme{SecuritySchemeProps: SecuritySchemeProps{
 		Type:             oauth2,
 		Flow:             accessCode,
 		AuthorizationURL: authorizationURL,
@@ -78,7 +78,7 @@ func OAuth2AccessToken(authorizationURL, tokenURL string) *SecurityScheme {
 	}}
 }
 
-type securitySchemeProps struct {
+type SecuritySchemeProps struct {
 	Description      string            `json:"description,omitempty"`
 	Type             string            `json:"type"`
 	Name             string            `json:"name,omitempty"`             // api key
@@ -90,7 +90,7 @@ type securitySchemeProps struct {
 }
 
 // AddScope adds a scope to this security scheme
-func (s *securitySchemeProps) AddScope(scope, description string) {
+func (s *SecuritySchemeProps) AddScope(scope, description string) {
 	if s.Scopes == nil {
 		s.Scopes = make(map[string]string)
 	}
@@ -104,7 +104,7 @@ func (s *securitySchemeProps) AddScope(scope, description string) {
 // For more information: http://goo.gl/8us55a#securitySchemeObject
 type SecurityScheme struct {
 	VendorExtensible
-	securitySchemeProps
+	SecuritySchemeProps
 }
 
 // JSONLookup implements an interface to customize json pointer lookup
@@ -113,13 +113,13 @@ func (s SecurityScheme) JSONLookup(token string) (interface{}, error) {
 		return &ex, nil
 	}
 
-	r, _, err := jsonpointer.GetForToken(s.securitySchemeProps, token)
+	r, _, err := jsonpointer.GetForToken(s.SecuritySchemeProps, token)
 	return r, err
 }
 
 // MarshalJSON marshal this to JSON
 func (s SecurityScheme) MarshalJSON() ([]byte, error) {
-	b1, err := json.Marshal(s.securitySchemeProps)
+	b1, err := json.Marshal(s.SecuritySchemeProps)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ func (s SecurityScheme) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON marshal this from JSON
 func (s *SecurityScheme) UnmarshalJSON(data []byte) error {
-	if err := json.Unmarshal(data, &s.securitySchemeProps); err != nil {
+	if err := json.Unmarshal(data, &s.SecuritySchemeProps); err != nil {
 		return err
 	}
 	if err := json.Unmarshal(data, &s.VendorExtensible); err != nil {

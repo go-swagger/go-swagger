@@ -338,9 +338,9 @@ var urltests = []URLTest{
 		},
 		"",
 	},
-	// unescaped : / ? # [ ] @ ! $ & ' ( ) * + , ; = in fragment
+	// unescaped : / ? [ ] @ ! $ & ' ( ) * + , ; = in fragment
 	{
-		"http://example.com/#:/?#[]@!$&'()*+,;=",
+		"http://example.com/#:/?%23[]@!$&'()*+,;=",
 		&url.URL{
 			Scheme:   "http",
 			Host:     "example.com",

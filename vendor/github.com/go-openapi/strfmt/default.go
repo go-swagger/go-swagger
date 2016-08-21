@@ -48,10 +48,22 @@ const (
 	//  var subdomain = /^[a-zA-Z](([-0-9a-zA-Z]+)?[0-9a-zA-Z])?(\.[a-zA-Z](([-0-9a-zA-Z]+)?[0-9a-zA-Z])?)*$/;
 	//  <domain> ::= <subdomain> | " "
 	HostnamePattern = `^[a-zA-Z](([-0-9a-zA-Z]+)?[0-9a-zA-Z])?(\.[a-zA-Z](([-0-9a-zA-Z]+)?[0-9a-zA-Z])?)*$`
+	// UUIDPattern Regex for UUID that allows uppercase
+	UUIDPattern = `(?i)^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`
+	// UUID3Pattern Regex for UUID3 that allows uppercase
+	UUID3Pattern = `(?i)^[0-9a-f]{8}-[0-9a-f]{4}-3[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$`
+	// UUID4Pattern Regex for UUID4 that allows uppercase
+	UUID4Pattern = `(?i)^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`
+	// UUID5Pattern Regex for UUID5 that allows uppercase
+	UUID5Pattern = `(?i)^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`
 )
 
 var (
 	rxHostname = regexp.MustCompile(HostnamePattern)
+	rxUUID     = regexp.MustCompile(UUIDPattern)
+	rxUUID3    = regexp.MustCompile(UUID3Pattern)
+	rxUUID4    = regexp.MustCompile(UUID4Pattern)
+	rxUUID5    = regexp.MustCompile(UUID5Pattern)
 )
 
 // IsStrictURI returns true when the string is an absolute URI
@@ -82,6 +94,26 @@ func IsHostname(str string) bool {
 	return valid
 }
 
+// IsUUID returns true is the string matches a UUID, upper case is allowed
+func IsUUID(str string) bool {
+	return rxUUID.MatchString(str)
+}
+
+// IsUUID3 returns true is the string matches a UUID, upper case is allowed
+func IsUUID3(str string) bool {
+	return rxUUID3.MatchString(str)
+}
+
+// IsUUID4 returns true is the string matches a UUID, upper case is allowed
+func IsUUID4(str string) bool {
+	return rxUUID4.MatchString(str)
+}
+
+// IsUUID5 returns true is the string matches a UUID, upper case is allowed
+func IsUUID5(str string) bool {
+	return rxUUID5.MatchString(str)
+}
+
 func init() {
 	u := URI("")
 	Default.Add("uri", &u, IsStrictURI)
@@ -102,16 +134,16 @@ func init() {
 	Default.Add("mac", &mac, govalidator.IsMAC)
 
 	uid := UUID("")
-	Default.Add("uuid", &uid, govalidator.IsUUID)
+	Default.Add("uuid", &uid, IsUUID)
 
 	uid3 := UUID3("")
-	Default.Add("uuid3", &uid3, govalidator.IsUUIDv3)
+	Default.Add("uuid3", &uid3, IsUUID3)
 
 	uid4 := UUID4("")
-	Default.Add("uuid4", &uid4, govalidator.IsUUIDv4)
+	Default.Add("uuid4", &uid4, IsUUID4)
 
 	uid5 := UUID5("")
-	Default.Add("uuid5", &uid5, govalidator.IsUUIDv5)
+	Default.Add("uuid5", &uid5, IsUUID5)
 
 	isbn := ISBN("")
 	Default.Add("isbn", &isbn, func(str string) bool { return govalidator.IsISBN10(str) || govalidator.IsISBN13(str) })

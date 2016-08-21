@@ -3,7 +3,7 @@ clone:
 
 matrix:
   GO_VERSION:
-    - "1.6"
+    - "1.7"
 
 build:
   integration:

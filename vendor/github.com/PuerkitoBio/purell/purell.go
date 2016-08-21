@@ -14,6 +14,9 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/urlesc"
+	"golang.org/x/net/idna"
+	"golang.org/x/text/secure/precis"
+	"golang.org/x/text/unicode/norm"
 )
 
 // A set of normalization flags determines how a URL will
@@ -137,12 +140,11 @@ var flags = map[NormalizationFlags]func(*url.URL){
 // MustNormalizeURLString returns the normalized string, and panics if an error occurs.
 // It takes an URL string as input, as well as the normalization flags.
 func MustNormalizeURLString(u string, f NormalizationFlags) string {
-	if parsed, e := url.Parse(u); e != nil {
+	result, e := NormalizeURLString(u, f)
+	if e != nil {
 		panic(e)
-	} else {
-		return NormalizeURL(parsed, f)
 	}
-	panic("Unreachable code.")
+	return result
 }
 
 // NormalizeURLString returns the normalized string, or an error if it can't be parsed into an URL object.
@@ -151,6 +153,16 @@ func NormalizeURLString(u string, f NormalizationFlags) (string, error) {
 	if parsed, e := url.Parse(u); e != nil {
 		return "", e
 	} else {
+		options := make([]precis.Option, 1, 3)
+		options[0] = precis.IgnoreCase
+		if f&FlagLowercaseHost == FlagLowercaseHost {
+			options = append(options, precis.FoldCase())
+		}
+		options = append(options, precis.Norm(norm.NFC))
+		profile := precis.NewFreeform(options...)
+		if parsed.Host, e = idna.ToASCII(profile.NewTransformer().String(parsed.Host)); e != nil {
+			return "", e
+		}
 		return NormalizeURL(parsed, f), nil
 	}
 	panic("Unreachable code.")

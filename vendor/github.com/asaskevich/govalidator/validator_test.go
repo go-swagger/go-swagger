@@ -599,6 +599,7 @@ func TestIsURL(t *testing.T) {
 		{"http://www.foobar.com/~foobar", true},
 		{"http://www.-foobar.com/", false},
 		{"http://www.foo---bar.com/", false},
+		{"http://r6---snnvoxuioq6.googlevideo.com", true},
 		{"mailto:someone@example.com", true},
 		{"irc://irc.server.org/channel", false},
 		{"irc://#channel@network", true},
@@ -2083,13 +2084,13 @@ func TestValidateStruct(t *testing.T) {
 		param    interface{}
 		expected bool
 	}{
-		{User{"John", "john@yahoo.com", "123G#678", 20, &Address{"Street", "123456"}, []Address{Address{"Street", "123456"}, Address{"Street", "123456"}}}, false},
-		{User{"John", "john!yahoo.com", "12345678", 20, &Address{"Street", "ABC456D89"}, []Address{Address{"Street", "ABC456D89"}, Address{"Street", "123456"}}}, false},
-		{User{"John", "", "12345", 0, &Address{"Street", "123456789"}, []Address{Address{"Street", "ABC456D89"}, Address{"Street", "123456"}}}, false},
-		{UserValid{"John", "john@yahoo.com", "123G#678", 20, &Address{"Street", "123456"}, []Address{Address{"Street", "123456"}, Address{"Street", "123456"}}}, true},
+		{User{"John", "john@yahoo.com", "123G#678", 20, &Address{"Street", "123456"}, []Address{{"Street", "123456"}, {"Street", "123456"}}}, false},
+		{User{"John", "john!yahoo.com", "12345678", 20, &Address{"Street", "ABC456D89"}, []Address{{"Street", "ABC456D89"}, {"Street", "123456"}}}, false},
+		{User{"John", "", "12345", 0, &Address{"Street", "123456789"}, []Address{{"Street", "ABC456D89"}, {"Street", "123456"}}}, false},
+		{UserValid{"John", "john@yahoo.com", "123G#678", 20, &Address{"Street", "123456"}, []Address{{"Street", "123456"}, {"Street", "123456"}}}, true},
 		{UserValid{"John", "john!yahoo.com", "12345678", 20, &Address{"Street", "ABC456D89"}, []Address{}}, false},
-		{UserValid{"John", "john!yahoo.com", "12345678", 20, &Address{"Street", "ABC456D89"}, []Address{Address{"Street", "ABC456D89"}, Address{"Street", "123456"}}}, false},
-		{UserValid{"John", "", "12345", 0, &Address{"Street", "123456789"}, []Address{Address{"Street", "ABC456D89"}, Address{"Street", "123456"}}}, false},
+		{UserValid{"John", "john!yahoo.com", "12345678", 20, &Address{"Street", "ABC456D89"}, []Address{{"Street", "ABC456D89"}, {"Street", "123456"}}}, false},
+		{UserValid{"John", "", "12345", 0, &Address{"Street", "123456789"}, []Address{{"Street", "ABC456D89"}, {"Street", "123456"}}}, false},
 		{nil, true},
 		{User{"John", "john@yahoo.com", "123G#678", 0, &Address{"Street", "123456"}, []Address{}}, false},
 		{"im not a struct", false},
@@ -2107,8 +2108,8 @@ func TestValidateStruct(t *testing.T) {
 	TagMap["d_k"] = Validator(func(str string) bool {
 		return str == "d_k"
 	})
-	result, err := ValidateStruct(PrivateStruct{"d_k", 0, []int{1, 2}, []string{"hi", "super"}, [2]Address{Address{"Street", "123456"},
-		Address{"Street", "123456"}}, Address{"Street", "123456"}, map[string]Address{"address": Address{"Street", "123456"}}})
+	result, err := ValidateStruct(PrivateStruct{"d_k", 0, []int{1, 2}, []string{"hi", "super"}, [2]Address{{"Street", "123456"},
+		{"Street", "123456"}}, Address{"Street", "123456"}, map[string]Address{"address": {"Street", "123456"}}})
 	if result != true {
 		t.Log("Case ", 6, ": expected ", true, " when result is ", result)
 		t.Error(err)
@@ -2295,6 +2296,35 @@ func TestErrorsByField(t *testing.T) {
 
 	if len(errs) != 1 {
 		t.Errorf("There should only be 1 errors but got %v", len(errs))
+	}
+
+	for _, test := range tests {
+		if actual, ok := errs[test.param]; !ok || actual != test.expected {
+			t.Errorf("Expected ErrorsByField(%q) to be %v, got %v", test.param, test.expected, actual)
+		}
+	}
+
+	type StructWithCustomValidation struct {
+		Email string `valid:"email"`
+		ID    string `valid:"falseValidation"`
+	}
+
+	CustomTypeTagMap.Set("falseValidation", CustomTypeValidator(func(i interface{}, o interface{}) bool {
+		return false
+	}))
+
+	tests = []struct {
+		param    string
+		expected string
+	}{
+		{"Email", "My123 does not validate as email"},
+		{"ID", "duck13126 does not validate as falseValidation"},
+	}
+	s := &StructWithCustomValidation{Email: "My123", ID: "duck13126"}
+	_, err = ValidateStruct(s)
+	errs = ErrorsByField(err)
+	if len(errs) != 2 {
+		t.Errorf("There should only be 2 errors but got %v", len(errs))
 	}
 
 	for _, test := range tests {
