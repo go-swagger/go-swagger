@@ -758,12 +758,16 @@ func (scp *schemaParser) createParser(nm string, schema, ps *spec.Schema, fld *a
 
 func (scp *schemaParser) packageForFile(gofile *ast.File, tpe *ast.Ident) (*loader.PackageInfo, error) {
 	fn := scp.program.Fset.File(gofile.Pos()).Name()
-	log.Println("trying for", fn)
+	if Debug {
+		log.Println("trying for", fn)
+	}
 	fa, err := filepath.Abs(fn)
 	if err != nil {
 		return nil, err
 	}
-	log.Println("absolute path", fa)
+	if Debug {
+		log.Println("absolute path", fa)
+	}
 	var fgp string
 	for _, p := range append(filepath.SplitList(os.Getenv("GOPATH")), runtime.GOROOT()) {
 		pref := filepath.Join(p, "src")
@@ -772,9 +776,13 @@ func (scp *schemaParser) packageForFile(gofile *ast.File, tpe *ast.Ident) (*load
 			break
 		}
 	}
-	log.Println("package in gopath", fgp)
+	if Debug {
+		log.Println("package in gopath", fgp)
+	}
 	for pkg, pkgInfo := range scp.program.AllPackages {
-		log.Println("inferring for", tpe.Name, "at", pkg.Path(), "against", fgp)
+		if Debug {
+			log.Println("inferring for", tpe.Name, "at", pkg.Path(), "against", fgp)
+		}
 		if pkg.Name() == gofile.Name.Name && fgp == pkg.Path() {
 			return pkgInfo, nil
 		}
