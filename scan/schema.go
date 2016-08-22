@@ -17,6 +17,7 @@ package scan
 import (
 	"fmt"
 	"go/ast"
+	"log"
 	"reflect"
 	"regexp"
 	"runtime"
@@ -308,7 +309,7 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl *sch
 func (scp *schemaParser) parseNamedType(gofile *ast.File, expr ast.Expr, prop swaggerTypable) error {
 	switch ftpe := expr.(type) {
 	case *ast.Ident: // simple value
-		pkg, err := scp.packageForFile(gofile)
+		pkg, err := scp.packageForFile(gofile, ftpe)
 		if err != nil {
 			return err
 		}
@@ -375,7 +376,7 @@ func (scp *schemaParser) parseEmbeddedType(gofile *ast.File, schema *spec.Schema
 	case *ast.Ident:
 		// do lookup of type
 		// take primitives into account, they should result in an error for swagger
-		pkg, err := scp.packageForFile(gofile)
+		pkg, err := scp.packageForFile(gofile, tpe)
 		if err != nil {
 			return err
 		}
@@ -430,7 +431,7 @@ func (scp *schemaParser) parseAllOfMember(gofile *ast.File, schema *spec.Schema,
 	case *ast.Ident:
 		// do lookup of type
 		// take primitives into account, they should result in an error for swagger
-		pkg, err = scp.packageForFile(gofile)
+		pkg, err = scp.packageForFile(gofile, tpe)
 		if err != nil {
 			return err
 		}
@@ -753,8 +754,11 @@ func (scp *schemaParser) createParser(nm string, schema, ps *spec.Schema, fld *a
 	return sp
 }
 
-func (scp *schemaParser) packageForFile(gofile *ast.File) (*loader.PackageInfo, error) {
+func (scp *schemaParser) packageForFile(gofile *ast.File, tpe *ast.Ident) (*loader.PackageInfo, error) {
+	log.Printf("file: %+v", gofile)
+	log.Printf("tpe: %+v", tpe)
 	for pkg, pkgInfo := range scp.program.AllPackages {
+		log.Printf("pkg: %+v", pkg)
 		if pkg.Name() == gofile.Name.Name {
 			return pkgInfo, nil
 		}
@@ -986,7 +990,7 @@ func strfmtName(comments *ast.CommentGroup) (string, bool) {
 func parseProperty(scp *schemaParser, gofile *ast.File, fld ast.Expr, prop swaggerTypable) error {
 	switch ftpe := fld.(type) {
 	case *ast.Ident: // simple value
-		pkg, err := scp.packageForFile(gofile)
+		pkg, err := scp.packageForFile(gofile, ftpe)
 		if err != nil {
 			return err
 		}

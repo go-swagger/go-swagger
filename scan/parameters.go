@@ -238,7 +238,7 @@ func (pp *paramStructParser) parseEmbeddedStruct(gofile *ast.File, operation *sp
 	case *ast.Ident:
 		// do lookup of type
 		// take primitives into account, they should result in an error for swagger
-		pkg, err := pp.scp.packageForFile(gofile)
+		pkg, err := pp.scp.packageForFile(gofile, tpe)
 		if err != nil {
 			return fmt.Errorf("embedded struct: %v", err)
 		}

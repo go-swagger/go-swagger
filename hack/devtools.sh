@@ -17,7 +17,6 @@ go get -u -v github.com/pquerna/ffjson
 go get -u -v github.com/nathany/looper
 go get -u -v github.com/kylelemons/godebug/...
 go get -u -v github.com/aktau/github-release
-go get -u -v github.com/spf13/hugo
 go get -u -v github.com/sqs/goreturns
 go get -u -v github.com/tpng/gopkgs
 go get -u -v github.com/lukehoban/go-outline
