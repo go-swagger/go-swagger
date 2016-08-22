@@ -17,7 +17,8 @@ package scan
 import (
 	"fmt"
 	"go/ast"
-	"log"
+	"os"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"runtime"
@@ -755,15 +756,25 @@ func (scp *schemaParser) createParser(nm string, schema, ps *spec.Schema, fld *a
 }
 
 func (scp *schemaParser) packageForFile(gofile *ast.File, tpe *ast.Ident) (*loader.PackageInfo, error) {
-	log.Printf("file: %+v", gofile)
-	log.Printf("tpe: %+v", tpe)
+	fn := scp.program.Fset.File(gofile.Pos()).Name()
+	fa, err := filepath.Abs(fn)
+	if err != nil {
+		return nil, err
+	}
+	var fgp string
+	for _, p := range filepath.SplitList(os.Getenv("GOPATH")) {
+		pref := filepath.Join(p, "src")
+		if filepath.HasPrefix(fa, pref) {
+			fgp = filepath.Dir(strings.TrimPrefix(fa, pref))[1:]
+			break
+		}
+	}
 	for pkg, pkgInfo := range scp.program.AllPackages {
-		log.Printf("pkg: %+v", pkg)
-		if pkg.Name() == gofile.Name.Name {
+		if pkg.Name() == gofile.Name.Name && fgp == pkg.Path() {
 			return pkgInfo, nil
 		}
 	}
-	fn := scp.program.Fset.File(gofile.Pos()).Name()
+
 	return nil, fmt.Errorf("unable to determine package for %s", fn)
 }
 
