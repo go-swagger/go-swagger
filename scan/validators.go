@@ -481,7 +481,7 @@ func (ss *setSecurityDefinitions) Parse(lines []string) error {
 	var result []map[string][]string
 	for _, line := range lines {
 		kv := strings.SplitN(line, ":", 2)
-		var scopes []string
+		scopes := []string{}
 		var key string
 
 		if len(kv) > 1 {

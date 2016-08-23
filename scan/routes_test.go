@@ -208,8 +208,11 @@ func assertOperation(t *testing.T, op *spec.Operation, id, summary, description 
 	assert.EqualValues(t, []string{"application/json", "application/x-protobuf"}, op.Produces)
 	assert.EqualValues(t, []string{"http", "https", "ws", "wss"}, op.Schemes)
 	assert.Len(t, op.Security, 2)
-	_, ok := op.Security[0]["api_key"]
+	akv, ok := op.Security[0]["api_key"]
 	assert.True(t, ok)
+	// akv must be defined & not empty
+	assert.NotNil(t, akv)
+	assert.Empty(t, akv)
 
 	vv, ok := op.Security[1]["oauth"]
 	assert.True(t, ok)
@@ -236,8 +239,11 @@ func assertOperationBody(t *testing.T, op *spec.Operation, id, summary, descript
 	assert.EqualValues(t, []string{"application/json", "application/x-protobuf"}, op.Produces)
 	assert.EqualValues(t, []string{"http", "https", "ws", "wss"}, op.Schemes)
 	assert.Len(t, op.Security, 2)
-	_, ok := op.Security[0]["api_key"]
+	akv, ok := op.Security[0]["api_key"]
 	assert.True(t, ok)
+	// akv must be defined & not empty
+	assert.NotNil(t, akv)
+	assert.Empty(t, akv)
 
 	vv, ok := op.Security[1]["oauth"]
 	assert.True(t, ok)
