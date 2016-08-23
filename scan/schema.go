@@ -17,6 +17,9 @@ package scan
 import (
 	"fmt"
 	"go/ast"
+	"log"
+	"os"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"runtime"
@@ -308,7 +311,7 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl *sch
 func (scp *schemaParser) parseNamedType(gofile *ast.File, expr ast.Expr, prop swaggerTypable) error {
 	switch ftpe := expr.(type) {
 	case *ast.Ident: // simple value
-		pkg, err := scp.packageForFile(gofile)
+		pkg, err := scp.packageForFile(gofile, ftpe)
 		if err != nil {
 			return err
 		}
@@ -375,7 +378,7 @@ func (scp *schemaParser) parseEmbeddedType(gofile *ast.File, schema *spec.Schema
 	case *ast.Ident:
 		// do lookup of type
 		// take primitives into account, they should result in an error for swagger
-		pkg, err := scp.packageForFile(gofile)
+		pkg, err := scp.packageForFile(gofile, tpe)
 		if err != nil {
 			return err
 		}
@@ -430,7 +433,7 @@ func (scp *schemaParser) parseAllOfMember(gofile *ast.File, schema *spec.Schema,
 	case *ast.Ident:
 		// do lookup of type
 		// take primitives into account, they should result in an error for swagger
-		pkg, err = scp.packageForFile(gofile)
+		pkg, err = scp.packageForFile(gofile, tpe)
 		if err != nil {
 			return err
 		}
@@ -753,13 +756,38 @@ func (scp *schemaParser) createParser(nm string, schema, ps *spec.Schema, fld *a
 	return sp
 }
 
-func (scp *schemaParser) packageForFile(gofile *ast.File) (*loader.PackageInfo, error) {
+func (scp *schemaParser) packageForFile(gofile *ast.File, tpe *ast.Ident) (*loader.PackageInfo, error) {
+	fn := scp.program.Fset.File(gofile.Pos()).Name()
+	if Debug {
+		log.Println("trying for", fn)
+	}
+	fa, err := filepath.Abs(fn)
+	if err != nil {
+		return nil, err
+	}
+	if Debug {
+		log.Println("absolute path", fa)
+	}
+	var fgp string
+	for _, p := range append(filepath.SplitList(os.Getenv("GOPATH")), runtime.GOROOT()) {
+		pref := filepath.Join(p, "src")
+		if filepath.HasPrefix(fa, pref) {
+			fgp = filepath.Dir(strings.TrimPrefix(fa, pref))[1:]
+			break
+		}
+	}
+	if Debug {
+		log.Println("package in gopath", fgp)
+	}
 	for pkg, pkgInfo := range scp.program.AllPackages {
-		if pkg.Name() == gofile.Name.Name {
+		if Debug {
+			log.Println("inferring for", tpe.Name, "at", pkg.Path(), "against", fgp)
+		}
+		if pkg.Name() == gofile.Name.Name && fgp == pkg.Path() {
 			return pkgInfo, nil
 		}
 	}
-	fn := scp.program.Fset.File(gofile.Pos()).Name()
+
 	return nil, fmt.Errorf("unable to determine package for %s", fn)
 }
 
@@ -986,7 +1014,7 @@ func strfmtName(comments *ast.CommentGroup) (string, bool) {
 func parseProperty(scp *schemaParser, gofile *ast.File, fld ast.Expr, prop swaggerTypable) error {
 	switch ftpe := fld.(type) {
 	case *ast.Ident: // simple value
-		pkg, err := scp.packageForFile(gofile)
+		pkg, err := scp.packageForFile(gofile, ftpe)
 		if err != nil {
 			return err
 		}

@@ -226,7 +226,7 @@ func (rp *responseParser) parseEmbeddedStruct(gofile *ast.File, response *spec.R
 	case *ast.Ident:
 		// do lookup of type
 		// take primitives into account, they should result in an error for swagger
-		pkg, err := rp.scp.packageForFile(gofile)
+		pkg, err := rp.scp.packageForFile(gofile, tpe)
 		if err != nil {
 			return fmt.Errorf("embedded struct: %v", err)
 		}
