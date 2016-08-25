@@ -120,12 +120,14 @@ type NoModel struct {
 
 // A OtherTypes struct contains type aliases
 type OtherTypes struct {
-	Named       SomeStringType `json:"named"`
-	Numbered    SomeIntType    `json:"numbered"`
-	Dated       SomeTimeType   `json:"dated"`
-	Timed       SomeTimedType  `json:"timed"`
-	Petted      SomePettedType `json:"petted"`
-	Somethinged SomethingType  `json:"somethinged"`
+	Named       SomeStringType     `json:"named"`
+	Numbered    SomeIntType        `json:"numbered"`
+	Dated       SomeTimeType       `json:"dated"`
+	Timed       SomeTimedType      `json:"timed"`
+	Petted      SomePettedType     `json:"petted"`
+	Somethinged SomethingType      `json:"somethinged"`
+	StrMap      SomeStringMap      `json:"strMap"`
+	StrArrMap   SomeArrayStringMap `json:"strArrMap"`
 
 	ManyNamed       SomeStringsType `json:"manyNamed"`
 	ManyNumbered    SomeIntsType    `json:"manyNumbered"`
