@@ -71,6 +71,9 @@ type SomeObject map[string]interface{}
 // SomeStringMap is a type that refines a string value map
 type SomeStringMap map[string]string
 
+// SomeArrayStringMap is a type that refines a array of strings value map
+type SomeArrayStringMap map[string][]string
+
 // SomeIntMap is a type that refines an int value map
 type SomeIntMap map[string]int64
 

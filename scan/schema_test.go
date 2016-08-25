@@ -212,6 +212,8 @@ func TestAliasedTypes(t *testing.T) {
 	assertRef(t, &schema, "timed", "Timed", "#/definitions/SomeTimedType")
 	assertRef(t, &schema, "petted", "Petted", "#/definitions/SomePettedType")
 	assertRef(t, &schema, "somethinged", "Somethinged", "#/definitions/SomethingType")
+	assertRef(t, &schema, "strMap", "StrMap", "#/definitions/SomeStringMap")
+	assertRef(t, &schema, "strArrMap", "StrArrMap", "#/definitions/SomeArrayStringMap")
 
 	assertRef(t, &schema, "manyNamed", "ManyNamed", "#/definitions/SomeStringsType")
 	assertRef(t, &schema, "manyNumbered", "ManyNumbered", "#/definitions/SomeIntsType")
