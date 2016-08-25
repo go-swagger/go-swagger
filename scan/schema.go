@@ -906,6 +906,9 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 	case *ast.InterfaceType:
 		return scp.makeRef(file, gd, ts, prop)
 
+	case *ast.MapType:
+		return scp.makeRef(file, gd, ts, prop)
+
 	default:
 		err := swaggerSchemaForType(expr.Name, prop)
 		if err != nil {
