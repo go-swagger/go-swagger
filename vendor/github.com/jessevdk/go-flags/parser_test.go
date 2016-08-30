@@ -398,9 +398,30 @@ func TestOptionAsArgument(t *testing.T) {
 			args: []string{"-o", "-", "-"},
 			rest: []string{"-", "-"},
 		},
+		{
+			// Accept arguments which start with '-' if the next character is a digit, for number options only
+			args: []string{"--int-slice", "-3"},
+		},
+		{
+			// Accept arguments which start with '-' if the next character is a digit, for number options only
+			args: []string{"--int16", "-3"},
+		},
+		{
+			// Accept arguments which start with '-' if the next character is a digit, for number options only
+			args: []string{"--float32", "-3.2"},
+		},
+		{
+			// Accept arguments which start with '-' if the next character is a digit, for number options only
+			args: []string{"--float32ptr", "-3.2"},
+		},
 	}
+
 	var opts struct {
 		StringSlice []string `long:"string-slice"`
+		IntSlice    []int    `long:"int-slice"`
+		Int16       int16    `long:"int16"`
+		Float32     float32  `long:"float32"`
+		Float32Ptr  *float32 `long:"float32ptr"`
 		OtherOption bool     `long:"other-option" short:"o"`
 	}
 

@@ -802,7 +802,7 @@ func TestIniCliOverrides(t *testing.T) {
 	}
 
 	if opts.Values[1] != 222 {
-		t.Fatalf("Expected Values[0] to be 222, but got '%d'", opts.Values[1])
+		t.Fatalf("Expected Values[1] to be 222, but got '%d'", opts.Values[1])
 	}
 }
 
@@ -946,5 +946,76 @@ func TestOverwriteRequiredOptions(t *testing.T) {
 		if opts.Default != test.expected[1] {
 			t.Fatalf("Expected Default to be \"%s\" but was \"%s\" with args %+v", test.expected[1], opts.Default, test.args)
 		}
+	}
+}
+
+func TestIniOverwriteOptions(t *testing.T) {
+	var tests = []struct {
+		args     []string
+		expected string
+		toggled  bool
+	}{
+		{
+			args:     []string{},
+			expected: "from default",
+		},
+		{
+			args:     []string{"--value", "from CLI"},
+			expected: "from CLI",
+		},
+		{
+			args:     []string{"--config", "no file name"},
+			expected: "from INI",
+			toggled:  true,
+		},
+		{
+			args:     []string{"--value", "from CLI before", "--config", "no file name"},
+			expected: "from CLI before",
+			toggled:  true,
+		},
+		{
+			args:     []string{"--config", "no file name", "--value", "from CLI after"},
+			expected: "from CLI after",
+			toggled:  true,
+		},
+		{
+			args:     []string{"--toggle"},
+			toggled:  true,
+			expected: "from default",
+		},
+	}
+
+	for _, test := range tests {
+		var opts struct {
+			Config string `long:"config" no-ini:"true"`
+			Value  string `long:"value" default:"from default"`
+			Toggle bool   `long:"toggle"`
+		}
+
+		p := NewParser(&opts, Default)
+
+		_, err := p.ParseArgs(test.args)
+		if err != nil {
+			t.Fatalf("Unexpected error %s with args %+v", err, test.args)
+		}
+
+		if opts.Config != "" {
+			inip := NewIniParser(p)
+			inip.ParseAsDefaults = true
+
+			err = inip.Parse(bytes.NewBufferString("value = from INI\ntoggle = true"))
+			if err != nil {
+				t.Fatalf("Unexpected error %s with args %+v", err, test.args)
+			}
+		}
+
+		if opts.Value != test.expected {
+			t.Fatalf("Expected Value to be \"%s\" but was \"%s\" with args %+v", test.expected, opts.Value, test.args)
+		}
+
+		if opts.Toggle != test.toggled {
+			t.Fatalf("Expected Toggle to be \"%v\" but was \"%v\" with args %+v", test.toggled, opts.Toggle, test.args)
+		}
+
 	}
 }
