@@ -181,22 +181,36 @@ func (c *Command) scanSubcommandHandler(parentg *Group) scanHandler {
 					name = field.Name
 				}
 
-				var required int
+				required := -1
+				requiredMaximum := -1
 
 				sreq := m.Get("required")
 
 				if sreq != "" {
 					required = 1
 
-					if preq, err := strconv.ParseInt(sreq, 10, 32); err == nil {
-						required = int(preq)
+					rng := strings.SplitN(sreq, "-", 2)
+
+					if len(rng) > 1 {
+						if preq, err := strconv.ParseInt(rng[0], 10, 32); err == nil {
+							required = int(preq)
+						}
+
+						if preq, err := strconv.ParseInt(rng[1], 10, 32); err == nil {
+							requiredMaximum = int(preq)
+						}
+					} else {
+						if preq, err := strconv.ParseInt(sreq, 10, 32); err == nil {
+							required = int(preq)
+						}
 					}
 				}
 
 				arg := &Arg{
-					Name:        name,
-					Description: m.Get("description"),
-					Required:    required,
+					Name:            name,
+					Description:     m.Get("description"),
+					Required:        required,
+					RequiredMaximum: requiredMaximum,
 
 					value: realval.Field(i),
 					tag:   m,
