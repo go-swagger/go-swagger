@@ -386,11 +386,15 @@ func (scp *schemaParser) parseEmbeddedType(gofile *ast.File, schema *spec.Schema
 		if err != nil {
 			return err
 		}
-		if st, ok := ts.Type.(*ast.StructType); ok {
+
+		switch st := ts.Type.(type) {
+		case *ast.StructType:
 			return scp.parseStructType(file, schema, st, seenPreviously)
-		}
-		if st, ok := ts.Type.(*ast.InterfaceType); ok {
+		case *ast.InterfaceType:
 			return scp.parseInterfaceType(file, schema, st, seenPreviously)
+		default:
+			prop := &schemaTypable{schema, 0}
+			return scp.parseNamedType(gofile, st, prop)
 		}
 
 	case *ast.SelectorExpr:
