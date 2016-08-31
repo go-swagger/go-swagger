@@ -294,10 +294,10 @@ var swaggerJSON = `{
   },
   "definitions": {
     "pet": {
-      "required": [
-        "id",
-        "name"
-      ],
+			"required": [
+				"name",
+				"status"
+			],
       "properties": {
         "id": {
           "type": "integer",
@@ -306,20 +306,23 @@ var swaggerJSON = `{
         "name": {
           "type": "string"
         },
-        "tag": {
+        "status": {
           "type": "string"
-        }
+        },
+				"tags": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				}
       }
     },
     "petInput": {
       "allOf": [
         {
-          "$ref": "pet"
+          "$ref": "#/definitions/pet"
         },
         {
-          "required": [
-            "name"
-          ],
           "properties": {
             "id": {
               "type": "integer",

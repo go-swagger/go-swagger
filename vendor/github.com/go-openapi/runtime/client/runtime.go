@@ -64,14 +64,16 @@ func New(host, basePath string, schemes []string) *Runtime {
 
 	// TODO: actually infer this stuff from the spec
 	rt.Consumers = map[string]runtime.Consumer{
-		runtime.JSONMime: runtime.JSONConsumer(),
-		runtime.XMLMime:  runtime.XMLConsumer(),
-		runtime.TextMime: runtime.TextConsumer(),
+		runtime.JSONMime:    runtime.JSONConsumer(),
+		runtime.XMLMime:     runtime.XMLConsumer(),
+		runtime.TextMime:    runtime.TextConsumer(),
+		runtime.DefaultMime: runtime.ByteStreamConsumer(),
 	}
 	rt.Producers = map[string]runtime.Producer{
-		runtime.JSONMime: runtime.JSONProducer(),
-		runtime.XMLMime:  runtime.XMLProducer(),
-		runtime.TextMime: runtime.TextProducer(),
+		runtime.JSONMime:    runtime.JSONProducer(),
+		runtime.XMLMime:     runtime.XMLProducer(),
+		runtime.TextMime:    runtime.TextProducer(),
+		runtime.DefaultMime: runtime.ByteStreamProducer(),
 	}
 	rt.Transport = http.DefaultTransport
 	rt.Jar = nil

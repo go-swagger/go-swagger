@@ -2,6 +2,7 @@
 package jwriter
 
 import (
+	"encoding/base64"
 	"io"
 	"strconv"
 	"unicode/utf8"
@@ -57,6 +58,19 @@ func (w *Writer) Raw(data []byte, err error) {
 	default:
 		w.RawString("null")
 	}
+}
+
+// Base64Bytes appends data to the buffer after base64 encoding it
+func (w *Writer) Base64Bytes(data []byte) {
+	if data == nil {
+		w.Buffer.AppendString("null")
+		return
+	}
+	w.Buffer.AppendByte('"')
+	dst := make([]byte, base64.StdEncoding.EncodedLen(len(data)))
+	base64.StdEncoding.Encode(dst, data)
+	w.Buffer.AppendBytes(dst)
+	w.Buffer.AppendByte('"')
 }
 
 func (w *Writer) Uint8(n uint8) {

@@ -203,6 +203,7 @@ func (p *Parser) ParseArgs(args []string) ([]string, error) {
 
 	p.eachOption(func(c *Command, g *Group, option *Option) {
 		option.isSet = false
+		option.isSetDefault = false
 		option.updateDefaultLiteral()
 	})
 
@@ -377,7 +378,7 @@ func (p *parseState) checkRequired(parser *Parser) error {
 			var reqnames []string
 
 			for _, arg := range p.positional {
-				argRequired := (!arg.isRemaining() && p.command.ArgsRequired) || arg.Required != 0
+				argRequired := (!arg.isRemaining() && p.command.ArgsRequired) || arg.Required != -1 || arg.RequiredMaximum != -1
 
 				if !argRequired {
 					continue
@@ -394,6 +395,20 @@ func (p *parseState) checkRequired(parser *Parser) error {
 						}
 
 						reqnames = append(reqnames, "`"+arg.Name+" (at least "+fmt.Sprintf("%d", arg.Required)+" "+arguments+")`")
+					} else if arg.RequiredMaximum != -1 && arg.value.Len() > arg.RequiredMaximum {
+						if arg.RequiredMaximum == 0 {
+							reqnames = append(reqnames, "`"+arg.Name+" (zero arguments)`")
+						} else {
+							var arguments string
+
+							if arg.RequiredMaximum > 1 {
+								arguments = "arguments, but got " + fmt.Sprintf("%d", arg.value.Len())
+							} else {
+								arguments = "argument"
+							}
+
+							reqnames = append(reqnames, "`"+arg.Name+" (at most "+fmt.Sprintf("%d", arg.RequiredMaximum)+" "+arguments+")`")
+						}
 					}
 				} else {
 					reqnames = append(reqnames, "`"+arg.Name+"`")
@@ -499,7 +514,7 @@ func (p *Parser) parseOption(s *parseState, name string, option *Option, canarg 
 		} else {
 			arg = s.pop()
 
-			if argumentIsOption(arg) {
+			if argumentIsOption(arg) && !(option.isSignedNumber() && len(arg) > 1 && arg[0] == '-' && arg[1] >= '0' && arg[1] <= '9') {
 				return newErrorf(ErrExpectedArgument, "expected argument for flag `%s', but got option `%s'", option, arg)
 			} else if p.Options&PassDoubleDash != 0 && arg == "--" {
 				return newErrorf(ErrExpectedArgument, "expected argument for flag `%s', but got double dash `--'", option)
@@ -601,6 +616,7 @@ func (p *parseState) addArgs(args ...string) error {
 		arg := p.positional[0]
 
 		if err := convert(args[0], arg.value, arg.tag); err != nil {
+			p.err = err
 			return err
 		}
 

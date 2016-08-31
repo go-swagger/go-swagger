@@ -58,6 +58,8 @@ const (
 // IniParser is a utility to read and write flags options from and to ini
 // formatted strings.
 type IniParser struct {
+	ParseAsDefaults bool // override default flags
+
 	parser *Parser
 }
 
@@ -143,7 +145,7 @@ func (i *IniParser) Parse(reader io.Reader) error {
 	return i.parse(ini)
 }
 
-// WriteFile writes the flags as ini format into a file. See WriteIni
+// WriteFile writes the flags as ini format into a file. See Write
 // for more information. The returned error occurs when the specified file
 // could not be opened for writing.
 func (i *IniParser) WriteFile(filename string, options IniOptions) error {
@@ -536,6 +538,12 @@ func (i *IniParser) parse(ini *ini) error {
 					}
 				}
 
+				continue
+			}
+
+			// ini value is ignored if override is set and
+			// value was previously set from non default
+			if i.ParseAsDefaults && !opt.isSetDefault {
 				continue
 			}
 
