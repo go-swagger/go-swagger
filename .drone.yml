@@ -72,7 +72,6 @@ publish:
       event: tag
 
   docker:
-    image: casualjim/drone-docker
     privileged: true
     registry: quay.io
     username: $$QUAY_USER
@@ -87,8 +86,36 @@ publish:
     when:
       event: tag
 
+  docker:
+    privileged: true
+    registry: quay.io
+    username: $$QUAY_USER
+    password: $$QUAY_PASS
+    email: $$QUAY_EMAIL
+    repo: goswagger/swagger
+    file: Dockerfile
+    storage_driver: overlay
+    tag:
+      - "$$BRANCH"
+    when:
+      branch: "!master"
+
+  docker:
+    privileged: true
+    registry: quay.io
+    username: $$QUAY_USER
+    password: $$QUAY_PASS
+    email: $$QUAY_EMAIL
+    repo: goswagger/swagger
+    file: Dockerfile
+    storage_driver: overlay
+    tag:
+      - dev
+    when:
+      branch: "master"
+
+
   bintray:
-    image: casualjim/drone-bintray
     username: $$BINTRAY_USERNAME
     api_key: $$BINTRAY_TOKEN
     branch: $$BRANCH
