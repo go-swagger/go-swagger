@@ -61,18 +61,9 @@ import (
 )
 
 func main() {
-  // load the swagger spec from URL or local file
-  doc, err := spec.Load("https://raw.githubusercontent.com/go-swagger/go-swagger/master/examples/todo-list/swagger.yml")
-  if err != nil {
-    log.Fatal(err)
-  }
 
   // create the transport
-  transport := httptransport.New(doc)
-  // configure the host
-  if os.Getenv("TODOLIST_HOST") != "" {
-    transport.Host = os.Getenv("TODOLIST_HOST")
-  }
+  transport := httptransport.New(os.Getenv("TODOLIST_HOST"), "", nil)
 
   // create the API client, with the transport
   client := apiclient.New(transport, strfmt.Default)
@@ -112,14 +103,9 @@ import (
 )
 
 func main() {
-  // load the swagger spec from URL or local file
-  doc, err := spec.Load("./swagger.yml")
-  if err != nil {
-    log.Fatal(err)
-  }
 
   // create the API client
-  client := apiclient.New(httptransport.New(doc), strfmt.Default)
+  client := apiclient.New(httptransport.New("", "", nil), strfmt.Default)
 
   // make the authenticated request to get all items
   bearerTokenAuth := httptransport.BearerToken(os.Getenv("API_ACCESS_TOKEN"))

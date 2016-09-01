@@ -13,4 +13,8 @@ import (
 )
 
 // SwaggerJSON embedded version of the swagger document used at generation time
-var SwaggerJSON = json.RawMessage({{ .SwaggerJSON }})
+var SwaggerJSON json.RawMessage
+
+func init() {
+   SwaggerJSON = json.RawMessage({{ .SwaggerJSON }})
+}
