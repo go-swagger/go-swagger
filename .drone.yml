@@ -40,12 +40,13 @@ build:
       - gem install --no-rdoc --no-ri fpm
       - go get -u github.com/mitchellh/gox
       - mkdir -p /drone/dist/binaries
-      - "gox -os=\"linux darwin windows\" -output=\"/drone/dist/binaries/{{.Dir}}_{{.OS}}_{{.Arch}}\" ./cmd/swagger"
+      - "gox -os=\"linux darwin windows\" -arch=\"amd64 386\" -output=\"/drone/dist/binaries/{{.Dir}}_{{.OS}}_{{.Arch}}\" ./cmd/swagger"
+      - "gox -os=\"linux\" -arch=\"arm64 arm\" -output=\"/drone/dist/binaries/{{.Dir}}_{{.OS}}_{{.Arch}}\" ./cmd/swagger"
       - cd /drone/dist
       - mkdir -p /drone/dist/linux/amd64/usr/bin
       - cp /drone/dist/binaries/swagger_linux_amd64 /drone/dist/linux/amd64/usr/bin/swagger
-      - "fpm -t deb -s dir -C /drone/dist/linux/amd64 -v $$TAG -n swagger --license \"ASL 2.0\" -a x86_64 -m \"ivan@flanders.co.nz\" --url \"https://goswagger.io\" usr"
-      - "fpm -t rpm -s dir -C /drone/dist/linux/amd64 -v $$TAG -n swagger --license \"ASL 2.0\" -a x86_64 -m \"ivan@flanders.co.nz\" --url \"https://goswagger.io\" usr"
+      - "fpm -t deb -s dir -C /drone/dist/linux/amd64 -v $${TAG=dev} -n swagger --license \"ASL 2.0\" -a x86_64 -m \"ivan@flanders.co.nz\" --url \"https://goswagger.io\" usr"
+      - "fpm -t rpm -s dir -C /drone/dist/linux/amd64 -v $${TAG=dev} -n swagger --license \"ASL 2.0\" -a x86_64 -m \"ivan@flanders.co.nz\" --url \"https://goswagger.io\" usr"
     when:
       event: tag
 
@@ -82,7 +83,7 @@ publish:
     storage_driver: overlay
     tag:
       - latest
-      - "$$TAG"
+      - "$${TAG=dev}"
     when:
       event: tag
 
@@ -92,22 +93,22 @@ publish:
     api_key: $$BINTRAY_TOKEN
     branch: $$BRANCH
     artifacts:
-      - file: ../../../../dist/swagger-$$TAG-1.x86_64.rpm
+      - file: ../../../../dist/swagger-$${TAG=dev}-1.x86_64.rpm
         owner: go-swagger
         type: rpm
         repository: goswagger-rpm
         package: swagger
-        version: $$TAG
-        target: swagger-$$TAG-1.x86_64.rpm
+        version: $${TAG=dev}
+        target: swagger-$${TAG=dev}-1.x86_64.rpm
         publish: true
         override: true
-      - file: ../../../../dist/swagger_$$TAG_amd64.deb
+      - file: ../../../../dist/swagger_$${TAG=dev}_amd64.deb
         owner: go-swagger
         type: Debian
         repository: goswagger-debian
         package: swagger
-        version: $$TAG
-        target: swagger_$$TAG_amd64.deb
+        version: $${TAG=dev}
+        target: swagger_$${TAG=dev}_amd64.deb
         distr: ubuntu
         component: main
         arch:

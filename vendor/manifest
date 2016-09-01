@@ -86,7 +86,7 @@
 			"importpath": "github.com/go-openapi/runtime",
 			"repository": "https://github.com/go-openapi/runtime",
 			"vcs": "git",
-			"revision": "b5bd5f10b3ecfc154ac2bdf3cfe5119d313a81fb",
+			"revision": "18efe8c11921c0ddabc8e91554971d6db1f91c7c",
 			"branch": "master",
 			"notests": true
 		},
@@ -227,7 +227,7 @@
 			"importpath": "golang.org/x/net/context",
 			"repository": "https://go.googlesource.com/net",
 			"vcs": "git",
-			"revision": "6250b412798208e6c90b03b7c4f226de5aa299e2",
+			"revision": "9bc2a3340c92c17a20edcd0080e93851ed58f5d5",
 			"branch": "master",
 			"path": "/context",
 			"notests": true
@@ -236,7 +236,7 @@
 			"importpath": "golang.org/x/net/idna",
 			"repository": "https://go.googlesource.com/net",
 			"vcs": "git",
-			"revision": "6250b412798208e6c90b03b7c4f226de5aa299e2",
+			"revision": "9bc2a3340c92c17a20edcd0080e93851ed58f5d5",
 			"branch": "master",
 			"path": "/idna",
 			"notests": true
@@ -245,7 +245,7 @@
 			"importpath": "golang.org/x/net/netutil",
 			"repository": "https://go.googlesource.com/net",
 			"vcs": "git",
-			"revision": "6250b412798208e6c90b03b7c4f226de5aa299e2",
+			"revision": "9bc2a3340c92c17a20edcd0080e93851ed58f5d5",
 			"branch": "master",
 			"path": "/netutil",
 			"notests": true
@@ -254,7 +254,7 @@
 			"importpath": "golang.org/x/text/cases",
 			"repository": "https://go.googlesource.com/text",
 			"vcs": "git",
-			"revision": "d69c40b4be55797923cec7457fac7a244d91a9b6",
+			"revision": "09c7ea1fcb3345da09be5a32c9c52303acd1dc2c",
 			"branch": "master",
 			"path": "cases",
 			"notests": true
@@ -263,7 +263,7 @@
 			"importpath": "golang.org/x/text/internal/gen",
 			"repository": "https://go.googlesource.com/text",
 			"vcs": "git",
-			"revision": "d69c40b4be55797923cec7457fac7a244d91a9b6",
+			"revision": "09c7ea1fcb3345da09be5a32c9c52303acd1dc2c",
 			"branch": "master",
 			"path": "internal/gen",
 			"notests": true
@@ -272,7 +272,7 @@
 			"importpath": "golang.org/x/text/internal/tag",
 			"repository": "https://go.googlesource.com/text",
 			"vcs": "git",
-			"revision": "d69c40b4be55797923cec7457fac7a244d91a9b6",
+			"revision": "09c7ea1fcb3345da09be5a32c9c52303acd1dc2c",
 			"branch": "master",
 			"path": "internal/tag",
 			"notests": true
@@ -281,7 +281,7 @@
 			"importpath": "golang.org/x/text/internal/triegen",
 			"repository": "https://go.googlesource.com/text",
 			"vcs": "git",
-			"revision": "d69c40b4be55797923cec7457fac7a244d91a9b6",
+			"revision": "09c7ea1fcb3345da09be5a32c9c52303acd1dc2c",
 			"branch": "master",
 			"path": "internal/triegen",
 			"notests": true
@@ -290,7 +290,7 @@
 			"importpath": "golang.org/x/text/internal/ucd",
 			"repository": "https://go.googlesource.com/text",
 			"vcs": "git",
-			"revision": "d69c40b4be55797923cec7457fac7a244d91a9b6",
+			"revision": "09c7ea1fcb3345da09be5a32c9c52303acd1dc2c",
 			"branch": "master",
 			"path": "internal/ucd",
 			"notests": true
@@ -299,7 +299,7 @@
 			"importpath": "golang.org/x/text/language",
 			"repository": "https://go.googlesource.com/text",
 			"vcs": "git",
-			"revision": "d69c40b4be55797923cec7457fac7a244d91a9b6",
+			"revision": "09c7ea1fcb3345da09be5a32c9c52303acd1dc2c",
 			"branch": "master",
 			"path": "language",
 			"notests": true
@@ -308,7 +308,7 @@
 			"importpath": "golang.org/x/text/runes",
 			"repository": "https://go.googlesource.com/text",
 			"vcs": "git",
-			"revision": "d69c40b4be55797923cec7457fac7a244d91a9b6",
+			"revision": "09c7ea1fcb3345da09be5a32c9c52303acd1dc2c",
 			"branch": "master",
 			"path": "runes",
 			"notests": true
@@ -317,7 +317,7 @@
 			"importpath": "golang.org/x/text/secure/bidirule",
 			"repository": "https://go.googlesource.com/text",
 			"vcs": "git",
-			"revision": "d69c40b4be55797923cec7457fac7a244d91a9b6",
+			"revision": "09c7ea1fcb3345da09be5a32c9c52303acd1dc2c",
 			"branch": "master",
 			"path": "secure/bidirule",
 			"notests": true
@@ -326,7 +326,7 @@
 			"importpath": "golang.org/x/text/secure/precis",
 			"repository": "https://go.googlesource.com/text",
 			"vcs": "git",
-			"revision": "d69c40b4be55797923cec7457fac7a244d91a9b6",
+			"revision": "09c7ea1fcb3345da09be5a32c9c52303acd1dc2c",
 			"branch": "master",
 			"path": "/secure/precis",
 			"notests": true
@@ -335,7 +335,7 @@
 			"importpath": "golang.org/x/text/transform",
 			"repository": "https://go.googlesource.com/text",
 			"vcs": "git",
-			"revision": "d69c40b4be55797923cec7457fac7a244d91a9b6",
+			"revision": "09c7ea1fcb3345da09be5a32c9c52303acd1dc2c",
 			"branch": "master",
 			"path": "transform",
 			"notests": true
@@ -344,7 +344,7 @@
 			"importpath": "golang.org/x/text/unicode/bidi",
 			"repository": "https://go.googlesource.com/text",
 			"vcs": "git",
-			"revision": "d69c40b4be55797923cec7457fac7a244d91a9b6",
+			"revision": "09c7ea1fcb3345da09be5a32c9c52303acd1dc2c",
 			"branch": "master",
 			"path": "unicode/bidi",
 			"notests": true
@@ -353,7 +353,7 @@
 			"importpath": "golang.org/x/text/unicode/cldr",
 			"repository": "https://go.googlesource.com/text",
 			"vcs": "git",
-			"revision": "d69c40b4be55797923cec7457fac7a244d91a9b6",
+			"revision": "09c7ea1fcb3345da09be5a32c9c52303acd1dc2c",
 			"branch": "master",
 			"path": "unicode/cldr",
 			"notests": true
@@ -362,7 +362,7 @@
 			"importpath": "golang.org/x/text/unicode/norm",
 			"repository": "https://go.googlesource.com/text",
 			"vcs": "git",
-			"revision": "d69c40b4be55797923cec7457fac7a244d91a9b6",
+			"revision": "09c7ea1fcb3345da09be5a32c9c52303acd1dc2c",
 			"branch": "master",
 			"path": "unicode/norm",
 			"notests": true
@@ -371,7 +371,7 @@
 			"importpath": "golang.org/x/text/unicode/rangetable",
 			"repository": "https://go.googlesource.com/text",
 			"vcs": "git",
-			"revision": "d69c40b4be55797923cec7457fac7a244d91a9b6",
+			"revision": "09c7ea1fcb3345da09be5a32c9c52303acd1dc2c",
 			"branch": "master",
 			"path": "unicode/rangetable",
 			"notests": true
@@ -380,7 +380,7 @@
 			"importpath": "golang.org/x/text/width",
 			"repository": "https://go.googlesource.com/text",
 			"vcs": "git",
-			"revision": "d69c40b4be55797923cec7457fac7a244d91a9b6",
+			"revision": "09c7ea1fcb3345da09be5a32c9c52303acd1dc2c",
 			"branch": "master",
 			"path": "width",
 			"notests": true
