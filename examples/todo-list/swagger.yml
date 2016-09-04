@@ -6,7 +6,7 @@ securityDefinitions:
   key:
     type: apiKey
     in: header
-    name: x-petstore-token
+    name: x-todolist-token
 security:
   - key: []
 consumes:
