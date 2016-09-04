@@ -12,7 +12,7 @@ import (
 
 	"log"
 
-	"github.com/bep/inflect"
+	"github.com/go-openapi/inflect"
 	"github.com/go-openapi/swag"
 )
 

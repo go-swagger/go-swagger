@@ -320,7 +320,9 @@ func (g *GenOpts) EnsureDefaults(client bool) error {
 	if g.defaultsEnsured {
 		return nil
 	}
-	DefaultSectionOpts(g, client)
+	if swag.IsZero(g) {
+		DefaultSectionOpts(g, client)
+	}
 	if g.LanguageOpts == nil {
 		g.LanguageOpts = GoLangOpts()
 	}
