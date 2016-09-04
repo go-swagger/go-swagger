@@ -8,12 +8,76 @@ import (
 )
 
 var (
-	singleTemplate      = `test`
-	multipleDefinitions = `{{ define "T1" }}T1{{end}}{{ define "T2" }}T2{{end}}`
-	dependantTemplate   = `{{ template "T1" }}D1`
-	cirularDeps1        = `{{ define "T1" }}{{ .Name }}: {{ range .Children }}{{ template "T2" . }}{{end}}{{end}}{{template "T1" . }}`
-	cirularDeps2        = `{{ define "T2" }}{{if .Recurse }}{{ template "T1" . }}{{ else }}Children{{end}}{{end}}`
+	singleTemplate        = `test`
+	multipleDefinitions   = `{{ define "T1" }}T1{{end}}{{ define "T2" }}T2{{end}}`
+	dependantTemplate     = `{{ template "T1" }}D1`
+	cirularDeps1          = `{{ define "T1" }}{{ .Name }}: {{ range .Children }}{{ template "T2" . }}{{end}}{{end}}{{template "T1" . }}`
+	cirularDeps2          = `{{ define "T2" }}{{if .Recurse }}{{ template "T1" . }}{{ else }}Children{{end}}{{end}}`
+	customHeader          = `custom header`
+	customMultiple        = `{{define "bindprimitiveparam" }}custom primitive{{end}}`
+	customNewTemplate     = `new template`
+	customExistingUsesNew = `{{define "bindprimitiveparam" }}{{ template "newtemplate" }}{{end}}`
 )
+
+func TestCustomTemplates(t *testing.T) {
+
+	var buf bytes.Buffer
+	headerTempl, err := templates.Get("bindprimitiveparam")
+
+	assert.Nil(t, err)
+
+	err = headerTempl.Execute(&buf, nil)
+
+	assert.Nil(t, err)
+	assert.Equal(t, "\n", buf.String())
+
+	buf.Reset()
+	err = templates.AddFile("bindprimitiveparam", customHeader)
+
+	assert.Nil(t, err)
+	headerTempl, err = templates.Get("bindprimitiveparam")
+
+	assert.Nil(t, err)
+
+	err = headerTempl.Execute(&buf, nil)
+
+	assert.Nil(t, err)
+	assert.Equal(t, "custom header", buf.String())
+
+}
+
+func TestCustomTemplatesMultiple(t *testing.T) {
+	var buf bytes.Buffer
+
+	err := templates.AddFile("differentFileName", customMultiple)
+
+	assert.Nil(t, err)
+	headerTempl, err := templates.Get("bindprimitiveparam")
+
+	assert.Nil(t, err)
+
+	err = headerTempl.Execute(&buf, nil)
+
+	assert.Nil(t, err)
+	assert.Equal(t, "custom primitive", buf.String())
+}
+
+func TestCustomNewTemplates(t *testing.T) {
+	var buf bytes.Buffer
+
+	err := templates.AddFile("newtemplate", customNewTemplate)
+	err = templates.AddFile("existingUsesNew", customExistingUsesNew)
+
+	assert.Nil(t, err)
+	headerTempl, err := templates.Get("bindprimitiveparam")
+
+	assert.Nil(t, err)
+
+	err = headerTempl.Execute(&buf, nil)
+
+	assert.Nil(t, err)
+	assert.Equal(t, "new template", buf.String())
+}
 
 func TestRepoLoadingTemplates(t *testing.T) {
 

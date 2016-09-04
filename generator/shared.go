@@ -15,13 +15,16 @@
 package generator
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"strings"
+	"text/template"
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
@@ -30,40 +33,68 @@ import (
 	"golang.org/x/tools/imports"
 )
 
-// Debug when the env var DEBUG is not empty
-// the generators will be very noisy about what they are doing
-var Debug = os.Getenv("DEBUG") != ""
+//go:generate go-bindata -pkg=generator -ignore=.*\.sw? ./templates/...
 
-var reservedGoWords = []string{
-	"break", "default", "func", "interface", "select",
-	"case", "defer", "go", "map", "struct",
-	"chan", "else", "goto", "package", "switch",
-	"const", "fallthrough", "if", "range", "type",
-	"continue", "for", "import", "return", "var",
+// LanguageOpts to describe a language to the code generator
+type LanguageOpts struct {
+	ReservedWords    []string
+	reservedWordsSet map[string]struct{}
+	initialized      bool
+	formatFunc       func(string, []byte) ([]byte, error)
 }
 
-// var defaultGoImports = []string{
-// 	"bool", "int", "int8", "int16", "int32", "int64",
-// 	"uint", "uint8", "uint16", "uint32", "uint64",
-// 	"float32", "float64", "interface{}", "string",
-// 	"byte", "rune",
-// }
-
-var reservedGoWordSet map[string]struct{}
-
-func init() {
-	reservedGoWordSet = make(map[string]struct{})
-	for _, gw := range reservedGoWords {
-		reservedGoWordSet[gw] = struct{}{}
+// Init the language option
+func (l *LanguageOpts) Init() {
+	if !l.initialized {
+		l.initialized = true
+		l.reservedWordsSet = make(map[string]struct{})
+		for _, rw := range l.ReservedWords {
+			l.reservedWordsSet[rw] = struct{}{}
+		}
 	}
 }
 
-func mangleName(name, suffix string) string {
-	if _, ok := reservedGoWordSet[swag.ToFileName(name)]; !ok {
+// MangleName makes sure a reserved word gets a safe name
+func (l *LanguageOpts) MangleName(name, suffix string) string {
+	if _, ok := l.reservedWordsSet[swag.ToFileName(name)]; !ok {
 		return name
 	}
 	return strings.Join([]string{name, suffix}, "_")
 }
+
+// FormatContent formats a file with a language specific formatter
+func (l *LanguageOpts) FormatContent(name string, content []byte) ([]byte, error) {
+	if l.formatFunc != nil {
+		return l.formatFunc(name, content)
+	}
+	return content, nil
+}
+
+// GoLangOpts for rendering items as golang code
+func GoLangOpts() *LanguageOpts {
+	opts := new(LanguageOpts)
+	opts.ReservedWords = []string{
+		"break", "default", "func", "interface", "select",
+		"case", "defer", "go", "map", "struct",
+		"chan", "else", "goto", "package", "switch",
+		"const", "fallthrough", "if", "range", "type",
+		"continue", "for", "import", "return", "var",
+	}
+	opts.formatFunc = func(ffn string, content []byte) ([]byte, error) {
+		opts := new(imports.Options)
+		opts.TabIndent = true
+		opts.TabWidth = 2
+		opts.Fragment = true
+		opts.Comments = true
+		return imports.Process(ffn, content, opts)
+	}
+
+	return opts
+}
+
+// Debug when the env var DEBUG is not empty
+// the generators will be very noisy about what they are doing
+var Debug = os.Getenv("DEBUG") != ""
 
 func findSwaggerSpec(name string) (string, error) {
 	f, err := os.Stat(name)
@@ -76,6 +107,143 @@ func findSwaggerSpec(name string) (string, error) {
 	return name, nil
 }
 
+// DefaultSectionOpts for a given opts, this is used when no config file is passed
+// and uses the embedded templates when no local override can be found
+func DefaultSectionOpts(gen *GenOpts, client bool) {
+	sec := gen.Sections
+	if len(sec.Models) == 0 {
+		sec.Models = []TemplateOpts{
+			{
+				Name:     "definition",
+				Source:   "asset:model",
+				Target:   "{{ joinFilePath .Target .ModelPackage }}",
+				FileName: "{{ (snakize (pascalize .Name)) }}.go",
+			},
+		}
+	}
+
+	if len(sec.Operations) == 0 {
+		if client {
+			sec.Operations = []TemplateOpts{
+				{
+					Name:     "parameters",
+					Source:   "asset:clientParameter",
+					Target:   "{{ joinFilePath .Target .ClientPackage .Package }}",
+					FileName: "{{ (snakize (pascalize .Name)) }}_parameters.go",
+				},
+				{
+					Name:     "responses",
+					Source:   "asset:clientResponse",
+					Target:   "{{ joinFilePath .Target .ClientPackage .Package }}",
+					FileName: "{{ (snakize (pascalize .Name)) }}_responses.go",
+				},
+			}
+			sec.OperationGroups = []TemplateOpts{
+				{
+					Name:     "client",
+					Source:   "asset:clientClient",
+					Target:   "{{ joinFilePath .Target .ClientPackage .Name }}",
+					FileName: "{{ (snakize (pascalize .Name)) }}_client.go",
+				},
+			}
+		} else {
+			sec.Operations = []TemplateOpts{
+				{
+					Name:     "parameters",
+					Source:   "asset:serverParameter",
+					Target:   "{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}",
+					FileName: "{{ (snakize (pascalize .Name)) }}_parameters.go",
+				},
+				{
+					Name:     "responses",
+					Source:   "asset:serverResponses",
+					Target:   "{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}",
+					FileName: "{{ (snakize (pascalize .Name)) }}_responses.go",
+				},
+				{
+					Name:     "handler",
+					Source:   "asset:serverOperation",
+					Target:   "{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}",
+					FileName: "{{ (snakize (pascalize .Name)) }}.go",
+				},
+			}
+			sec.OperationGroups = []TemplateOpts{}
+		}
+	}
+
+	if len(sec.Application) == 0 {
+		if client {
+			sec.Application = []TemplateOpts{
+				{
+					Name:     "facade",
+					Source:   "asset:clientFacade",
+					Target:   "{{ joinFilePath .Target .ClientPackage }}",
+					FileName: "{{ .Name }}Client.go",
+				},
+			}
+		} else {
+			sec.Application = []TemplateOpts{
+				{
+					Name:       "configure",
+					Source:     "asset:serverConfigureapi",
+					Target:     "{{ joinFilePath .Target .ServerPackage }}",
+					FileName:   "configure_{{ (snakize (pascalize .Name)) }}.go",
+					SkipExists: true,
+				},
+				{
+					Name:     "main",
+					Source:   "asset:serverMain",
+					Target:   "{{ joinFilePath .Target \"cmd\" (dasherize (pascalize .Name)) }}-server",
+					FileName: "main.go",
+				},
+				{
+					Name:     "embedded_spec",
+					Source:   "asset:swaggerJsonEmbed",
+					Target:   "{{ joinFilePath .Target .ServerPackage }}",
+					FileName: "embedded_spec.go",
+				},
+				{
+					Name:     "server",
+					Source:   "asset:serverServer",
+					Target:   "{{ joinFilePath .Target .ServerPackage }}",
+					FileName: "server.go",
+				},
+				{
+					Name:     "builder",
+					Source:   "asset:serverBuilder",
+					Target:   "{{ joinFilePath .Target .ServerPackage .Package }}",
+					FileName: "{{ snakize (pascalize .Name) }}_api.go",
+				},
+				{
+					Name:     "doc",
+					Source:   "asset:serverDoc",
+					Target:   "{{ joinFilePath .Target .ServerPackage }}",
+					FileName: "doc.go",
+				},
+			}
+		}
+	}
+	gen.Sections = sec
+
+}
+
+// TemplateOpts allows
+type TemplateOpts struct {
+	Name       string
+	Source     string
+	Target     string
+	FileName   string
+	SkipExists bool
+}
+
+// SectionOpts allows for specifying options to customize the templates used for generation
+type SectionOpts struct {
+	Application     []TemplateOpts
+	Operations      []TemplateOpts
+	OperationGroups []TemplateOpts
+	Models          []TemplateOpts
+}
+
 // GenOpts the options for the generator
 type GenOpts struct {
 	Spec              string
@@ -85,6 +253,8 @@ type GenOpts struct {
 	ClientPackage     string
 	Principal         string
 	Target            string
+	Sections          SectionOpts
+	LanguageOpts      *LanguageOpts
 	TypeMapping       map[string]string
 	Imports           map[string]string
 	DumpData          bool
@@ -105,6 +275,7 @@ type GenOpts struct {
 	Models            []string
 	Tags              []string
 	Name              string
+	defaultsEnsured   bool
 }
 
 // TargetPath returns the target path relative to the server package
@@ -144,10 +315,201 @@ func (g *GenOpts) SpecPath() string {
 	return specRel
 }
 
-// type generatorOptions struct {
-// 	ModelPackage    string
-// 	TargetDirectory string
-// }
+// EnsureDefaults for these gen opts
+func (g *GenOpts) EnsureDefaults(client bool) error {
+	if g.defaultsEnsured {
+		return nil
+	}
+	DefaultSectionOpts(g, client)
+	if g.LanguageOpts == nil {
+		g.LanguageOpts = GoLangOpts()
+	}
+	g.defaultsEnsured = true
+	return nil
+}
+
+func (g *GenOpts) location(t *TemplateOpts, data interface{}) (string, string, error) {
+	v := reflect.Indirect(reflect.ValueOf(data))
+	fld := v.FieldByName("Name")
+	var name string
+	if fld.IsValid() {
+		log.Println("name field", fld.String())
+		name = fld.String()
+	}
+
+	fldpack := v.FieldByName("Package")
+	pkg := g.APIPackage
+	if fldpack.IsValid() {
+		log.Println("package field", fldpack.String())
+		pkg = fldpack.String()
+	}
+
+	pthTpl, err := template.New(t.Name + "-target").Funcs(FuncMap).Parse(t.Target)
+	if err != nil {
+		return "", "", err
+	}
+
+	fNameTpl, err := template.New(t.Name + "-filename").Funcs(FuncMap).Parse(t.FileName)
+	if err != nil {
+		return "", "", err
+	}
+
+	d := struct{ Name, Package, APIPackage, ServerPackage, ClientPackage, ModelPackage, Target string }{
+		Name:          name,
+		Package:       pkg,
+		APIPackage:    g.APIPackage,
+		ServerPackage: g.ServerPackage,
+		ClientPackage: g.ClientPackage,
+		ModelPackage:  g.ModelPackage,
+		Target:        g.Target,
+	}
+
+	// pretty.Println(data)
+	var pthBuf bytes.Buffer
+	if pthTpl.Execute(&pthBuf, d); err != nil {
+		return "", "", err
+	}
+
+	var fNameBuf bytes.Buffer
+	if fNameTpl.Execute(&fNameBuf, d); err != nil {
+		return "", "", err
+	}
+	return pthBuf.String(), fNameBuf.String(), nil
+}
+
+func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
+	var templ *template.Template
+	if strings.HasPrefix(strings.ToLower(t.Source), "asset:") {
+		tt, err := templates.Get(strings.TrimPrefix(t.Source, "asset:"))
+		if err != nil {
+			return nil, err
+		}
+		templ = tt
+	}
+
+	if templ == nil {
+		// try to load template from disk
+	}
+	if templ == nil {
+		return nil, fmt.Errorf("template %q not found", t.Source)
+	}
+
+	var tBuf bytes.Buffer
+	if err := templ.Execute(&tBuf, data); err != nil {
+		return nil, err
+	}
+
+	return tBuf.Bytes(), nil
+}
+
+func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
+	dir, fname, err := g.location(t, data)
+	if err != nil {
+		return err
+	}
+
+	if t.SkipExists && fileExists(dir, fname) {
+		log.Printf("skipping %s because it already exists", filepath.Join(dir, fname))
+		return nil
+	}
+
+	log.Printf("creating %q in %q as %s", fname, dir, t.Name)
+	content, err := g.render(t, data)
+	if err != nil {
+		return err
+	}
+
+	formatted, err := g.LanguageOpts.FormatContent(fname, content)
+	if err != nil {
+		log.Printf("format %q: %v", t.Name, err)
+	}
+
+	if dir != "" {
+		if Debug {
+			log.Printf("skipping creating directory %q for %s because it's an empty string", dir, t.Name)
+		}
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return err
+		}
+	}
+
+	return ioutil.WriteFile(filepath.Join(dir, fileName(fname)), formatted, 0644)
+}
+
+func fileName(in string) string {
+	ext := filepath.Ext(in)
+	return swag.ToFileName(strings.TrimSuffix(in, ext)) + ext
+}
+
+func (g *GenOpts) shouldRenderApp(t *TemplateOpts, app *GenApp) bool {
+	switch swag.ToFileName(swag.ToGoName(t.Name)) {
+	case "main":
+		return g.IncludeMain
+	case "embedded_spec":
+		return !g.ExcludeSpec
+	default:
+		return true
+	}
+}
+
+func (g *GenOpts) shouldRenderOperations() bool {
+	return g.IncludeHandler || g.IncludeParameters || g.IncludeResponses
+}
+
+func (g *GenOpts) renderApplication(app *GenApp) error {
+	log.Printf("rendering %d templates for application %s", len(g.Sections.Application), app.Name)
+	for _, templ := range g.Sections.Application {
+		if !g.shouldRenderApp(&templ, app) {
+			continue
+		}
+		if err := g.write(&templ, app); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (g *GenOpts) renderOperationGroup(gg *GenOperationGroup) error {
+	log.Printf("rendering %d templates for operation group %s", len(g.Sections.OperationGroups), g.Name)
+	for _, templ := range g.Sections.OperationGroups {
+		if !g.shouldRenderOperations() {
+			continue
+		}
+
+		if err := g.write(&templ, gg); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (g *GenOpts) renderOperation(gg *GenOperation) error {
+	log.Printf("rendering %d templates for operation %s", len(g.Sections.Operations), g.Name)
+	for _, templ := range g.Sections.Operations {
+		if !g.shouldRenderOperations() {
+			continue
+		}
+
+		if err := g.write(&templ, gg); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (g *GenOpts) renderDefinition(gg *GenDefinition) error {
+	log.Printf("rendering %d templates for model %s", len(g.Sections.Models), gg.Name)
+	for _, templ := range g.Sections.Models {
+		if !g.IncludeModel {
+			continue
+		}
+
+		if err := g.write(&templ, gg); err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 func loadSpec(specFile string) (string, *loads.Document, error) {
 	// find swagger spec document, verify it exists
@@ -169,70 +531,9 @@ func loadSpec(specFile string) (string, *loads.Document, error) {
 }
 
 func fileExists(target, name string) bool {
-	ffn := swag.ToFileName(name) + ".go"
+	ffn := swag.ToFileName(name)
 	_, err := os.Stat(filepath.Join(target, ffn))
 	return !os.IsNotExist(err)
-}
-
-func writeToFileIfNotExist(target, name string, content []byte) error {
-	if fileExists(target, name) {
-		return nil
-	}
-	return writeToFile(target, name, content)
-}
-
-func formatGoFile(ffn string, content []byte) ([]byte, error) {
-	opts := new(imports.Options)
-	opts.TabIndent = true
-	opts.TabWidth = 2
-	opts.Fragment = true
-	opts.Comments = true
-
-	return imports.Process(ffn, content, opts)
-}
-
-func stripTestFromFileName(name string) string {
-	ffn := swag.ToFileName(name)
-	if strings.HasSuffix(ffn, "_test") {
-		ffn = ffn[:len(ffn)-5]
-	}
-	return ffn
-}
-
-func writeToFile(target, name string, content []byte) error {
-	ffn := stripTestFromFileName(name) + ".go"
-
-	res, err := formatGoFile(filepath.Join(target, ffn), content)
-	if err != nil {
-		log.Println(err)
-		return writeFile(target, ffn, content)
-	}
-
-	return writeFile(target, ffn, res)
-}
-
-// func writeToTestFile(target, name string, content []byte) error {
-// 	ffn := swag.ToFileName(name)
-// 	if !strings.HasSuffix(ffn, "_test") {
-// 		ffn += "_test"
-// 	}
-// 	ffn += ".go"
-//
-// 	res, err := formatGoFile(filepath.Join(target, ffn), content)
-// 	if err != nil {
-// 		log.Println(err)
-// 		return writeFile(target, ffn, content)
-// 	}
-//
-// 	return writeFile(target, ffn, res)
-// }
-
-func writeFile(target, ffn string, content []byte) error {
-	if err := os.MkdirAll(target, 0755); err != nil {
-		return err
-	}
-
-	return ioutil.WriteFile(filepath.Join(target, ffn), content, 0644)
 }
 
 func gatherModels(specDoc *loads.Document, modelNames []string) (map[string]spec.Schema, error) {
@@ -272,7 +573,7 @@ func appNameOrDefault(specDoc *loads.Document, name, defaultName string) string 
 			name = defaultName
 		}
 	}
-	return strings.TrimSuffix(swag.ToGoName(name), "API")
+	return strings.TrimSuffix(strings.TrimSuffix(strings.TrimSuffix(swag.ToGoName(name), "Test"), "API"), "Test")
 }
 
 func containsString(names []string, name string) bool {

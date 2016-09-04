@@ -14,7 +14,13 @@
 
 package generate
 
-import "github.com/go-swagger/go-swagger/generator"
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+
+	"github.com/go-swagger/go-swagger/generator"
+)
 
 // Client the command to generate a swagger client
 type Client struct {
@@ -52,9 +58,25 @@ func (c *Client) Execute(args []string) error {
 		TemplateDir:       string(c.TemplateDir),
 		DumpData:          c.DumpData,
 	}
-	if err := generator.GenerateClient(c.Name, c.Models, c.Operations, opts); err != nil {
+	if err := generator.GenerateClient(c.Name, c.Models, c.Operations, &opts); err != nil {
 		return err
 	}
+
+	rp, err := filepath.Rel(".", opts.Target)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(os.Stderr, `Generation completed!
+
+For this generation to compile you need to have some packages in your GOPATH:
+
+  * github.com/go-openapi/runtime
+	* golang.org/x/net/context
+	* golang.org/x/net/context/ctxhttp
+
+You can get these now with: go get -u -f %s/...
+`, rp)
 
 	return nil
 }

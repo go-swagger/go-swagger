@@ -51,7 +51,8 @@ func TestGenerateModel_Sanity(t *testing.T) {
 		//k := "Comment"
 		//schema := definitions[k]
 		for k, schema := range definitions {
-			genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+			opts := opts()
+			genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 
 			// log.Printf("trying model: %s", k)
 			if assert.NoError(t, err) {
@@ -59,10 +60,10 @@ func TestGenerateModel_Sanity(t *testing.T) {
 				//fmt.Println(string(b))
 				rendered := bytes.NewBuffer(nil)
 
-				err := modelTemplate.Execute(rendered, genModel)
+				err := templates.MustGet("model").Execute(rendered, genModel)
 				if assert.NoError(t, err) {
 					if assert.NoError(t, err) {
-						_, err := formatGoFile(strings.ToLower(k)+".go", rendered.Bytes())
+						_, err := opts.LanguageOpts.FormatContent(strings.ToLower(k)+".go", rendered.Bytes())
 						assert.NoError(t, err)
 						//if assert.NoError(t, err) {
 						//fmt.Println(string(formatted))
@@ -156,7 +157,7 @@ Unique: true
 }
 
 func TestGenerateModel_SchemaField(t *testing.T) {
-	tt := templateTest{t, modelTemplate.Lookup("structfield")}
+	tt := templateTest{t, templates.MustGet("model").Lookup("structfield")}
 
 	var gmp GenSchema
 	gmp.Name = "some name"
@@ -243,13 +244,13 @@ var schTypeGenDataSimple = []struct {
 }
 
 func TestGenSchemaType(t *testing.T) {
-	tt := templateTest{t, modelTemplate.Lookup("schemaType")}
+	tt := templateTest{t, templates.MustGet("model").Lookup("schemaType")}
 	for _, v := range schTypeGenDataSimple {
 		tt.assertRender(v.Value, v.Expected)
 	}
 }
 func TestGenerateModel_Primitives(t *testing.T) {
-	tt := templateTest{t, modelTemplate.Lookup("schema")}
+	tt := templateTest{t, templates.MustGet("model").Lookup("schema")}
 	for _, v := range schTypeGenDataSimple {
 		v.Value.IncludeValidator = true
 		v.Value.IncludeModel = true
@@ -274,10 +275,11 @@ func TestGenerateModel_Nota(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "Nota"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assertInCode(t, "type Nota map[string]int32", res)
@@ -292,12 +294,13 @@ func TestGenerateModel_NotaWithRef(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "NotaWithRef"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("nota_with_ref.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("nota_with_ref.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "type NotaWithRef map[string]Notable", res)
@@ -313,12 +316,13 @@ func TestGenerateModel_NotaWithMeta(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "NotaWithMeta"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("nota_with_meta.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("nota_with_meta.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "type NotaWithMeta map[string]NotaWithMetaAnon", res)
@@ -337,14 +341,15 @@ func TestGenerateModel_RunParameters(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "RunParameters"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.False(t, genModel.IsAdditionalProperties)
 			assert.True(t, genModel.IsComplexObject)
 			assert.False(t, genModel.IsMap)
 			assert.False(t, genModel.IsAnonymous)
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assertInCode(t, "type "+k+" struct {", res)
@@ -362,14 +367,15 @@ func TestGenerateModel_NotaWithName(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "NotaWithName"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.True(t, genModel.IsAdditionalProperties)
 			assert.False(t, genModel.IsComplexObject)
 			assert.False(t, genModel.IsMap)
 			assert.False(t, genModel.IsAnonymous)
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assertInCode(t, "type "+k+" struct {", res)
@@ -400,12 +406,13 @@ func TestGenerateModel_NotaWithRefRegistry(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "NotaWithRefRegistry"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("nota_with_ref_registry.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("nota_with_ref_registry.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "type "+k+" map[string]map[string]map[string]Notable", res)
@@ -421,12 +428,13 @@ func TestGenerateModel_NotaWithMetaRegistry(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "NotaWithMetaRegistry"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("nota_with_meta_registry.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("nota_with_meta_registry.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "type "+k+" map[string]map[string]map[string]NotaWithMetaRegistryAnon", res)
@@ -444,7 +452,8 @@ func TestGenerateModel_WithMap(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithMap"]
-		genModel, err := makeGenDefinition("WithMap", "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition("WithMap", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.False(t, genModel.HasAdditionalProperties)
 			prop := getDefinitionProperty(genModel, "data")
@@ -452,7 +461,7 @@ func TestGenerateModel_WithMap(t *testing.T) {
 			assert.True(t, prop.IsMap)
 			assert.False(t, prop.IsComplexObject)
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assertInCode(t, "type WithMap struct {", res)
@@ -467,7 +476,8 @@ func TestGenerateModel_WithMapInterface(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithMapInterface"]
-		genModel, err := makeGenDefinition("WithMapInterface", "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition("WithMapInterface", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.False(t, genModel.HasAdditionalProperties)
 			prop := getDefinitionProperty(genModel, "extraInfo")
@@ -479,7 +489,7 @@ func TestGenerateModel_WithMapInterface(t *testing.T) {
 			assert.True(t, prop.HasValidations)
 			assert.False(t, prop.NeedsValidation)
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assertInCode(t, "type WithMapInterface struct {", res)
@@ -495,7 +505,8 @@ func TestGenerateModel_WithMapRef(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithMapRef"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.False(t, genModel.HasAdditionalProperties)
 			prop := getDefinitionProperty(genModel, "data")
@@ -503,7 +514,7 @@ func TestGenerateModel_WithMapRef(t *testing.T) {
 			assert.True(t, prop.IsMap)
 			assert.False(t, prop.IsComplexObject)
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assertInCode(t, "type "+k+" struct {", res)
@@ -519,7 +530,8 @@ func TestGenerateModel_WithMapComplex(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithMapComplex"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.False(t, genModel.HasAdditionalProperties)
 			prop := getDefinitionProperty(genModel, "data")
@@ -527,7 +539,7 @@ func TestGenerateModel_WithMapComplex(t *testing.T) {
 			assert.True(t, prop.IsMap)
 			assert.False(t, prop.IsComplexObject)
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assertInCode(t, "type "+k+" struct {", res)
@@ -542,7 +554,8 @@ func TestGenerateModel_WithMapRegistry(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithMapRegistry"]
-		genModel, err := makeGenDefinition("WithMap", "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition("WithMap", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.False(t, genModel.HasAdditionalProperties)
 			prop := getDefinitionProperty(genModel, "data")
@@ -550,7 +563,7 @@ func TestGenerateModel_WithMapRegistry(t *testing.T) {
 			assert.True(t, prop.IsMap)
 			assert.False(t, prop.IsComplexObject)
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assertInCode(t, "type WithMap struct {", res)
@@ -566,7 +579,8 @@ func TestGenerateModel_WithMapRegistryRef(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithMapRegistryRef"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.False(t, genModel.HasAdditionalProperties)
 			prop := getDefinitionProperty(genModel, "data")
@@ -574,7 +588,7 @@ func TestGenerateModel_WithMapRegistryRef(t *testing.T) {
 			assert.True(t, prop.IsMap)
 			assert.False(t, prop.IsComplexObject)
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assertInCode(t, "type "+k+" struct {", res)
@@ -590,7 +604,8 @@ func TestGenerateModel_WithMapComplexRegistry(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithMapComplexRegistry"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.False(t, genModel.HasAdditionalProperties)
 			prop := getDefinitionProperty(genModel, "data")
@@ -598,7 +613,7 @@ func TestGenerateModel_WithMapComplexRegistry(t *testing.T) {
 			assert.True(t, prop.IsMap)
 			assert.False(t, prop.IsComplexObject)
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assertInCode(t, "type "+k+" struct {", res)
@@ -614,7 +629,8 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithAdditional"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) && assert.NotEmpty(t, genModel.ExtraSchemas) {
 			assert.False(t, genModel.HasAdditionalProperties)
 			assert.False(t, genModel.IsMap)
@@ -634,7 +650,7 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 				assert.False(t, prop.IsAdditionalProperties)
 				assert.True(t, prop.IsComplexObject)
 				buf := bytes.NewBuffer(nil)
-				err := modelTemplate.Execute(buf, genModel)
+				err := templates.MustGet("model").Execute(buf, genModel)
 				if assert.NoError(t, err) {
 					res := buf.String()
 					assertInCode(t, "type "+k+" struct {", res)
@@ -662,12 +678,13 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 }
 
 func TestGenerateModel_JustRef(t *testing.T) {
-	tt := templateTest{t, modelTemplate.Lookup("schema")}
+	tt := templateTest{t, templates.MustGet("model").Lookup("schema")}
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["JustRef"]
-		genModel, err := makeGenDefinition("JustRef", "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition("JustRef", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.NotEmpty(t, genModel.AllOf)
 			assert.True(t, genModel.IsComplexObject)
@@ -683,12 +700,13 @@ func TestGenerateModel_JustRef(t *testing.T) {
 }
 
 func TestGenerateModel_WithRef(t *testing.T) {
-	tt := templateTest{t, modelTemplate.Lookup("schema")}
+	tt := templateTest{t, templates.MustGet("model").Lookup("schema")}
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithRef"]
-		genModel, err := makeGenDefinition("WithRef", "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition("WithRef", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.True(t, genModel.IsComplexObject)
 			assert.Equal(t, "WithRef", genModel.Name)
@@ -703,12 +721,13 @@ func TestGenerateModel_WithRef(t *testing.T) {
 }
 
 func TestGenerateModel_WithNullableRef(t *testing.T) {
-	tt := templateTest{t, modelTemplate.Lookup("schema")}
+	tt := templateTest{t, templates.MustGet("model").Lookup("schema")}
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithNullableRef"]
-		genModel, err := makeGenDefinition("WithNullableRef", "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition("WithNullableRef", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.True(t, genModel.IsComplexObject)
 			assert.Equal(t, "WithNullableRef", genModel.Name)
@@ -731,12 +750,13 @@ func TestGenerateModel_Scores(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "Scores"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("scores.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("scores.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "type Scores []float32", res)
@@ -752,12 +772,13 @@ func TestGenerateModel_JaggedScores(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "JaggedScores"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("jagged_scores.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("jagged_scores.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "type JaggedScores [][][]float32", res)
@@ -773,12 +794,13 @@ func TestGenerateModel_Notables(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "Notables"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) && assert.Equal(t, "[]*Notable", genModel.GoType) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("notables.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("notables.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "type Notables []*Notable", res)
@@ -794,12 +816,13 @@ func TestGenerateModel_Notablix(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "Notablix"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("notablix.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("notablix.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "type Notablix [][][]*Notable", res)
@@ -815,12 +838,13 @@ func TestGenerateModel_Stats(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "Stats"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("stats.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("stats.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "type Stats []*StatsItems0", res)
@@ -838,13 +862,14 @@ func TestGenerateModel_Statix(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "Statix"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		// spew.Dump(genModel)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("statix.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("statix.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "type Statix [][][]*StatixItems0", res)
@@ -859,12 +884,13 @@ func TestGenerateModel_Statix(t *testing.T) {
 }
 
 func TestGenerateModel_WithItems(t *testing.T) {
-	tt := templateTest{t, modelTemplate.Lookup("schema")}
+	tt := templateTest{t, templates.MustGet("model").Lookup("schema")}
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithItems"]
-		genModel, err := makeGenDefinition("WithItems", "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition("WithItems", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.Nil(t, genModel.Items)
 			assert.True(t, genModel.IsComplexObject)
@@ -889,7 +915,8 @@ func TestGenerateModel_WithComplexItems(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithComplexItems"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.Nil(t, genModel.Items)
 			assert.True(t, genModel.IsComplexObject)
@@ -898,9 +925,9 @@ func TestGenerateModel_WithComplexItems(t *testing.T) {
 			assert.True(t, prop.IsArray)
 			assert.False(t, prop.IsComplexObject)
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				b, err := formatGoFile("with_complex_items.go", buf.Bytes())
+				b, err := opts.LanguageOpts.FormatContent("with_complex_items.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(b)
 					assertInCode(t, "type WithComplexItems struct {", res)
@@ -918,16 +945,17 @@ func TestGenerateModel_WithItemsAndAdditional(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithItemsAndAdditional"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.Nil(t, genModel.Items)
 			assert.True(t, genModel.IsComplexObject)
 			prop := getDefinitionProperty(genModel, "tags")
 			assert.True(t, prop.IsComplexObject)
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				b, err := formatGoFile("with_complex_items.go", buf.Bytes())
+				b, err := opts.LanguageOpts.FormatContent("with_complex_items.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(b)
 					assertInCode(t, "type "+k+" struct {", res)
@@ -948,16 +976,17 @@ func TestGenerateModel_WithItemsAndAdditional2(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithItemsAndAdditional2"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.Nil(t, genModel.Items)
 			assert.True(t, genModel.IsComplexObject)
 			prop := getDefinitionProperty(genModel, "tags")
 			assert.True(t, prop.IsComplexObject)
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				b, err := formatGoFile("with_complex_items.go", buf.Bytes())
+				b, err := opts.LanguageOpts.FormatContent("with_complex_items.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(b)
 					assertInCode(t, "type "+k+" struct {", res)
@@ -979,16 +1008,17 @@ func TestGenerateModel_WithComplexAdditional(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithComplexAdditional"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.Nil(t, genModel.Items)
 			assert.True(t, genModel.IsComplexObject)
 			prop := getDefinitionProperty(genModel, "tags")
 			assert.True(t, prop.IsComplexObject)
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				b, err := formatGoFile("with_complex_additional.go", buf.Bytes())
+				b, err := opts.LanguageOpts.FormatContent("with_complex_additional.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(b)
 					assertInCode(t, "type WithComplexAdditional struct {", res)
@@ -1003,13 +1033,14 @@ func TestGenerateModel_WithComplexAdditional(t *testing.T) {
 }
 
 func TestGenerateModel_SimpleTuple(t *testing.T) {
-	tt := templateTest{t, modelTemplate}
+	tt := templateTest{t, templates.MustGet("model")}
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "SimpleTuple"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) && assert.Empty(t, genModel.ExtraSchemas) {
 			assert.True(t, genModel.IsTuple)
 			assert.False(t, genModel.IsComplexObject)
@@ -1053,7 +1084,8 @@ func TestGenerateModel_TupleWithExtra(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "TupleWithExtra"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) && assert.Empty(t, genModel.ExtraSchemas) {
 			assert.True(t, genModel.IsTuple)
 			assert.False(t, genModel.IsComplexObject)
@@ -1065,9 +1097,9 @@ func TestGenerateModel_TupleWithExtra(t *testing.T) {
 			assert.Equal(t, k, genModel.GoType)
 			assert.Len(t, genModel.Properties, 4)
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("tuple_with_extra.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("tuple_with_extra.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "swagger:model "+k, res)
@@ -1111,7 +1143,8 @@ func TestGenerateModel_TupleWithComplex(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "TupleWithComplex"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) { //&& assert.Empty(t, genModel.ExtraSchemas) {
 			assert.True(t, genModel.IsTuple)
 			assert.False(t, genModel.IsComplexObject)
@@ -1123,9 +1156,9 @@ func TestGenerateModel_TupleWithComplex(t *testing.T) {
 			assert.Equal(t, k, genModel.GoType)
 			assert.Len(t, genModel.Properties, 4)
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("tuple_with_extra.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("tuple_with_extra.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "swagger:model "+k, res)
@@ -1170,7 +1203,8 @@ func TestGenerateModel_WithTuple(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithTuple"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) && assert.NotEmpty(t, genModel.ExtraSchemas) && assert.NotEmpty(t, genModel.Properties) {
 			assert.False(t, genModel.IsTuple)
 			assert.True(t, genModel.IsComplexObject)
@@ -1194,9 +1228,9 @@ func TestGenerateModel_WithTuple(t *testing.T) {
 			assert.Equal(t, k+"FlagsTuple0", prop.GoType)
 			assert.Equal(t, "flags", prop.Name)
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("with_tuple.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("with_tuple.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "swagger:model "+k+"Flags", res)
@@ -1225,13 +1259,14 @@ func TestGenerateModel_WithTuple(t *testing.T) {
 }
 
 func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
-	tt := templateTest{t, modelTemplate}
+	tt := templateTest{t, templates.MustGet("model")}
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "WithTupleWithExtra"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) && assert.NotEmpty(t, genModel.ExtraSchemas) && assert.NotEmpty(t, genModel.Properties) {
 			assert.False(t, genModel.IsTuple)
 			assert.True(t, genModel.IsComplexObject)
@@ -1257,7 +1292,7 @@ func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			err := tt.template.Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("with_tuple.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("with_tuple.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "swagger:model "+k+"Flags", res)
@@ -1300,15 +1335,16 @@ func TestGenerateModel_WithAllOfAndDiscriminator(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["Cat"]
-		genModel, err := makeGenDefinition("Cat", "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition("Cat", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) && assert.Len(t, genModel.AllOf, 2) {
 			assert.True(t, genModel.IsComplexObject)
 			assert.Equal(t, "Cat", genModel.Name)
 			assert.Equal(t, "Cat", genModel.GoType)
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ct, err := formatGoFile("cat.go", buf.Bytes())
+				ct, err := opts.LanguageOpts.FormatContent("cat.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
 					assertInCode(t, "type Cat struct {", res)
@@ -1325,7 +1361,8 @@ func TestGenerateModel_WithAllOf(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithAllOf"]
-		genModel, err := makeGenDefinition("WithAllOf", "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition("WithAllOf", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.Len(t, genModel.AllOf, 7)
 			assert.True(t, genModel.AllOf[1].HasAdditionalProperties)
@@ -1333,9 +1370,9 @@ func TestGenerateModel_WithAllOf(t *testing.T) {
 			assert.Equal(t, "WithAllOf", genModel.Name)
 			assert.Equal(t, "WithAllOf", genModel.GoType)
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ct, err := formatGoFile("all_of_schema.go", buf.Bytes())
+				ct, err := opts.LanguageOpts.FormatContent("all_of_schema.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
 					assertInCode(t, "type WithAllOf struct {", res)
@@ -1380,12 +1417,13 @@ func TestNumericKeys(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["AvatarUrls"]
-		genModel, err := makeGenDefinition("AvatarUrls", "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition("AvatarUrls", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ct, err := formatGoFile("all_of_schema.go", buf.Bytes())
+				ct, err := opts.LanguageOpts.FormatContent("all_of_schema.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
 					assertInCode(t, "Nr16x16 string `json:\"16x16,omitempty\"`", res)
@@ -1400,12 +1438,13 @@ func TestGenModel_Issue196(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["Event"]
-		genModel, err := makeGenDefinition("Event", "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition("Event", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ct, err := formatGoFile("primitive_event.go", buf.Bytes())
+				ct, err := opts.LanguageOpts.FormatContent("primitive_event.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
 					assertInCode(t, "Event) Validate(formats strfmt.Registry) error", res)
@@ -1420,12 +1459,13 @@ func TestGenModel_Issue222(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "Price"
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 		if assert.NoError(t, err) && assert.True(t, genModel.HasValidations) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ct, err := formatGoFile("price.go", buf.Bytes())
+				ct, err := opts.LanguageOpts.FormatContent("price.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
 					assertInCode(t, "Price) Validate(formats strfmt.Registry) error", res)
@@ -1442,12 +1482,13 @@ func TestGenModel_Issue243(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "HasDynMeta"
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ct, err := formatGoFile("has_dyn_meta.go", buf.Bytes())
+				ct, err := opts.LanguageOpts.FormatContent("has_dyn_meta.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
 					if !assertInCode(t, "Metadata DynamicMetaData `json:\"metadata,omitempty\"`", res) {
@@ -1464,12 +1505,13 @@ func TestGenModel_Issue252(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "SodaBrand"
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 		if assert.NoError(t, err) && assert.False(t, genModel.IsNullable) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ct, err := formatGoFile("soda_brand.go", buf.Bytes())
+				ct, err := opts.LanguageOpts.FormatContent("soda_brand.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
 					b1 := assertInCode(t, "type "+k+" string", res)
@@ -1489,12 +1531,13 @@ func TestGenModel_Issue251(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "example"
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ct, err := formatGoFile("example.go", buf.Bytes())
+				ct, err := opts.LanguageOpts.FormatContent("example.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
 
@@ -1519,12 +1562,13 @@ func TestGenModel_Issue257(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "HasSpecialCharProp"
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ct, err := formatGoFile("example.go", buf.Bytes())
+				ct, err := opts.LanguageOpts.FormatContent("example.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
 
@@ -1545,12 +1589,13 @@ func TestGenModel_Issue340(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "ImageTar"
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ct, err := formatGoFile("image_tar.go", buf.Bytes())
+				ct, err := opts.LanguageOpts.FormatContent("image_tar.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
 
@@ -1570,12 +1615,13 @@ func TestGenModel_Issue381(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "flags_list"
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ct, err := formatGoFile("flags_list.go", buf.Bytes())
+				ct, err := opts.LanguageOpts.FormatContent("flags_list.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
 					assertNotInCode(t, "m[i] != nil", res)
@@ -1590,12 +1636,13 @@ func TestGenModel_Issue300(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "ActionItem"
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ct, err := formatGoFile("action_item.go", buf.Bytes())
+				ct, err := opts.LanguageOpts.FormatContent("action_item.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
 					assertInCode(t, "Name ActionName `json:\"name\"`", res)
@@ -1612,12 +1659,13 @@ func TestGenModel_Issue398(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "Property"
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ct, err := formatGoFile("action_item.go", buf.Bytes())
+				ct, err := opts.LanguageOpts.FormatContent("action_item.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
 					assertInCode(t, "Computed bool `json:\"computed,omitempty\"`", res)
@@ -1637,12 +1685,13 @@ func TestGenModel_Issue454(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["genericResource"]
-		genModel, err := makeGenDefinition("genericResource", "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition("genericResource", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ct, err := formatGoFile("generic_resource.go", buf.Bytes())
+				ct, err := opts.LanguageOpts.FormatContent("generic_resource.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
 					assertInCode(t, "rcv.Meta = stage1.Meta", res)
@@ -1660,12 +1709,13 @@ func TestGenModel_Issue423(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["SRN"]
-		genModel, err := makeGenDefinition("SRN", "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition("SRN", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ct, err := formatGoFile("SRN.go", buf.Bytes())
+				ct, err := opts.LanguageOpts.FormatContent("SRN.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
 					assertInCode(t, "Site json.RawMessage `json:\"site\"`", res)
@@ -1681,12 +1731,13 @@ func TestGenModel_Issue453(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "out_obj"
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ct, err := formatGoFile("out_obj.go", buf.Bytes())
+				ct, err := opts.LanguageOpts.FormatContent("out_obj.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
 					assertInCode(t, `func (m *OutObj) validateFld3(formats strfmt.Registry)`, res)
@@ -1703,12 +1754,13 @@ func TestGenModel_Issue455(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "out_obj"
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ct, err := formatGoFile("out_obj.go", buf.Bytes())
+				ct, err := opts.LanguageOpts.FormatContent("out_obj.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
 					assertInCode(t, `if err := validate.Required("fld2", "body", m.Fld2); err != nil {`, res)
@@ -1725,12 +1777,13 @@ func TestGenModel_Issue524(t *testing.T) {
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
 		k := "m1"
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ct, err := formatGoFile("out_obj.go", buf.Bytes())
+				ct, err := opts.LanguageOpts.FormatContent("out_obj.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
 					assertInCode(t, `for i := 0; i < len(m.F2); i++`, res)

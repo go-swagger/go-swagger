@@ -30,9 +30,9 @@ func configureAPI(api *operations.TaskTrackerAPI) http.Handler {
 	// Example:
 	// s.api.Logger = log.Printf
 
-	api.JSONConsumer = runtime.JSONConsumer()
-
 	api.MultipartformConsumer = runtime.DiscardConsumer
+
+	api.JSONConsumer = runtime.JSONConsumer()
 
 	api.JSONProducer = runtime.JSONProducer()
 

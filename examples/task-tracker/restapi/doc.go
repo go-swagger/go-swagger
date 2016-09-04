@@ -23,9 +23,9 @@ Terms Of Service:
     Contact: Issue Tracker API Team<nobody@nowhere.com> https://task-tracker.goswagger.io
 
     Consumes:
-    - application/vnd.goswagger.examples.task-tracker.v1+json
-
     - multipart/form-data
+
+    - application/vnd.goswagger.examples.task-tracker.v1+json
 
 
     Produces:

@@ -35,6 +35,7 @@ func testGenOpts() (g GenOpts) {
 	g.TemplateDir = ""
 	g.WithContext = false
 	g.DumpData = false
+	g.EnsureDefaults(false)
 	return
 }
 
@@ -57,7 +58,7 @@ func testAppGenertor(t testing.TB, specPath, name string) (*appGenerator, error)
 
 	opts := testGenOpts()
 	opts.Spec = specPath
-	apiPackage := mangleName(swag.ToFileName(opts.APIPackage), "api")
+	apiPackage := opts.LanguageOpts.MangleName(swag.ToFileName(opts.APIPackage), "api")
 
 	return &appGenerator{
 		Name:            appNameOrDefault(specDoc, name, "swagger"),
@@ -70,9 +71,9 @@ func testAppGenertor(t testing.TB, specPath, name string) (*appGenerator, error)
 		DumpData:        opts.DumpData,
 		Package:         apiPackage,
 		APIPackage:      apiPackage,
-		ModelsPackage:   mangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
-		ServerPackage:   mangleName(swag.ToFileName(opts.ServerPackage), "server"),
-		ClientPackage:   mangleName(swag.ToFileName(opts.ClientPackage), "client"),
+		ModelsPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
+		ServerPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ServerPackage), "server"),
+		ClientPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ClientPackage), "client"),
 		Principal:       opts.Principal,
 		DefaultScheme:   "http",
 		DefaultProduces: runtime.JSONMime,
@@ -89,8 +90,8 @@ func TestServer_UrlEncoded(t *testing.T) {
 		app, err := gen.makeCodegenApp()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			if assert.NoError(t, configureAPITemplate.Execute(buf, app)) {
-				formatted, err := formatGoFile("configure_search_api.go", buf.Bytes())
+			if assert.NoError(t, templates.MustGet("serverConfigureapi").Execute(buf, app)) {
+				formatted, err := app.GenOpts.LanguageOpts.FormatContent("configure_search_api.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(formatted)
 					assertInCode(t, "api.UrlformConsumer = runtime.DiscardConsumer", res)
@@ -110,8 +111,8 @@ func TestServer_MultipartForm(t *testing.T) {
 		app, err := gen.makeCodegenApp()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			if assert.NoError(t, configureAPITemplate.Execute(buf, app)) {
-				formatted, err := formatGoFile("configure_shipyard_api.go", buf.Bytes())
+			if assert.NoError(t, templates.MustGet("serverConfigureapi").Execute(buf, app)) {
+				formatted, err := app.GenOpts.LanguageOpts.FormatContent("configure_shipyard_api.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(formatted)
 					assertInCode(t, "api.MultipartformConsumer = runtime.DiscardConsumer", res)
