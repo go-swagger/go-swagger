@@ -88,7 +88,7 @@ func GoLangOpts() *LanguageOpts {
 		opts.Comments = true
 		return imports.Process(ffn, content, opts)
 	}
-
+	opts.Init()
 	return opts
 }
 
@@ -138,14 +138,7 @@ func DefaultSectionOpts(gen *GenOpts, client bool) {
 					FileName: "{{ (snakize (pascalize .Name)) }}_responses.go",
 				},
 			}
-			sec.OperationGroups = []TemplateOpts{
-				{
-					Name:     "client",
-					Source:   "asset:clientClient",
-					Target:   "{{ joinFilePath .Target .ClientPackage .Name }}",
-					FileName: "{{ (snakize (pascalize .Name)) }}_client.go",
-				},
-			}
+
 		} else {
 			sec.Operations = []TemplateOpts{
 				{
@@ -167,6 +160,21 @@ func DefaultSectionOpts(gen *GenOpts, client bool) {
 					FileName: "{{ (snakize (pascalize .Name)) }}.go",
 				},
 			}
+
+		}
+	}
+
+	if len(sec.OperationGroups) == 0 {
+		if client {
+			sec.OperationGroups = []TemplateOpts{
+				{
+					Name:     "client",
+					Source:   "asset:clientClient",
+					Target:   "{{ joinFilePath .Target .ClientPackage .Name }}",
+					FileName: "{{ (snakize (pascalize .Name)) }}_client.go",
+				},
+			}
+		} else {
 			sec.OperationGroups = []TemplateOpts{}
 		}
 	}
@@ -229,19 +237,19 @@ func DefaultSectionOpts(gen *GenOpts, client bool) {
 
 // TemplateOpts allows
 type TemplateOpts struct {
-	Name       string
-	Source     string
-	Target     string
-	FileName   string
-	SkipExists bool
+	Name       string `mapstructure:"name"`
+	Source     string `mapstructure:"source"`
+	Target     string `mapstructure:"target"`
+	FileName   string `mapstructure:"file_name"`
+	SkipExists bool   `mapstructure:"skip_exists"`
 }
 
 // SectionOpts allows for specifying options to customize the templates used for generation
 type SectionOpts struct {
-	Application     []TemplateOpts
-	Operations      []TemplateOpts
-	OperationGroups []TemplateOpts
-	Models          []TemplateOpts
+	Application     []TemplateOpts `mapstructure:"application"`
+	Operations      []TemplateOpts `mapstructure:"operations"`
+	OperationGroups []TemplateOpts `mapstructure:"operation_groups"`
+	Models          []TemplateOpts `mapstructure:"models"`
 }
 
 // GenOpts the options for the generator
@@ -320,9 +328,7 @@ func (g *GenOpts) EnsureDefaults(client bool) error {
 	if g.defaultsEnsured {
 		return nil
 	}
-	if swag.IsZero(g) {
-		DefaultSectionOpts(g, client)
-	}
+	DefaultSectionOpts(g, client)
 	if g.LanguageOpts == nil {
 		g.LanguageOpts = GoLangOpts()
 	}

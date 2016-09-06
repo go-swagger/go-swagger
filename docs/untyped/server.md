@@ -5,3 +5,5 @@ The toolkit supports serving a swagger spec with untyped data. This means that i
 <!--more-->
 
 In this document we'll use the todo list application to build a server that doesn't use any code generation. So we'll load a predefined swagger specification document and serve it up, while writing a minimal amount of code and try to avoid requiring a type cast.  
+
+Let's start with just 

@@ -108,14 +108,11 @@ func GenerateServerOperation(operationNames, tags []string, opts *GenOpts) error
 			Target:               filepath.Join(opts.Target, serverPackage),
 			Base:                 opts.Target,
 			Tags:                 tags,
-<<<<<<< HEAD
-			IncludeHandler:       includeHandler,
-			IncludeParameters:    includeParameters,
-			IncludeResponses:     includeResponses,
-			IncludeValidator:     includeValidator,
+			IncludeHandler:       opts.IncludeHandler,
+			IncludeParameters:    opts.IncludeParameters,
+			IncludeResponses:     opts.IncludeResponses,
+			IncludeValidator:     opts.IncludeValidator,
 			DumpData:             opts.DumpData,
-=======
->>>>>>> refactor template generation for customization
 			DefaultScheme:        defaultScheme,
 			DefaultProduces:      defaultProduces,
 			DefaultConsumes:      defaultConsumes,
@@ -148,14 +145,11 @@ type operationGenerator struct {
 	data                 interface{}
 	pkg                  string
 	cname                string
-<<<<<<< HEAD
 	IncludeHandler       bool
 	IncludeParameters    bool
 	IncludeResponses     bool
 	IncludeValidator     bool
 	DumpData             bool
-=======
->>>>>>> refactor template generation for customization
 	DefaultScheme        string
 	DefaultProduces      string
 	DefaultConsumes      string
@@ -340,7 +334,6 @@ func (o *operationGenerator) Generate() error {
 // }
 
 type codeGenOpBuilder struct {
-<<<<<<< HEAD
 	Name             string
 	Method           string
 	Path             string
@@ -361,28 +354,7 @@ type codeGenOpBuilder struct {
 	ExtraSchemas     map[string]GenSchema
 	origDefs         map[string]spec.Schema
 	IncludeValidator bool
-=======
-	Name            string
-	Method          string
-	Path            string
-	APIPackage      string
-	RootAPIPackage  string
-	ModelsPackage   string
-	Principal       string
-	Target          string
-	WithContext     bool
-	Operation       spec.Operation
-	Doc             *loads.Document
-	Analyzed        *analysis.Spec
-	Authed          bool
-	DefaultImports  []string
-	DefaultScheme   string
-	DefaultProduces string
-	DefaultConsumes string
-	ExtraSchemas    map[string]GenSchema
-	origDefs        map[string]spec.Schema
-	GenOpts         *GenOpts
->>>>>>> refactor template generation for customization
+	GenOpts          *GenOpts
 }
 
 func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {

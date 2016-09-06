@@ -62,11 +62,11 @@ func (s *Support) Execute(args []string) error {
 For this generation to compile you need to have some packages in your vendor or GOPATH:
 
   * github.com/go-openapi/runtime
-	* github.com/asaskevich/govalidator
-	* golang.org/x/net/context
-	* github.com/tylerb/graceful
-	* github.com/jessevdk/go-flags
-	* golang.org/x/net/context/ctxhttp
+  * github.com/asaskevich/govalidator
+  * golang.org/x/net/context
+  * github.com/tylerb/graceful
+  * github.com/jessevdk/go-flags
+  * golang.org/x/net/context/ctxhttp
 
 You can get these now with: go get -u -f %s/....
 `, rp)

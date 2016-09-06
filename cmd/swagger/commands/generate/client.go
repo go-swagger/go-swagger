@@ -20,6 +20,7 @@ import (
 	"path/filepath"
 
 	"github.com/go-swagger/go-swagger/generator"
+	"github.com/spf13/viper"
 )
 
 // Client the command to generate a swagger client
@@ -39,7 +40,16 @@ type Client struct {
 
 // Execute runs this command
 func (c *Client) Execute(args []string) error {
-	opts := generator.GenOpts{
+	var cfg *viper.Viper
+	if string(c.ConfigFile) != "" {
+		v, err := generator.ReadConfig(string(c.ConfigFile))
+		if err != nil {
+			return err
+		}
+		cfg = v
+	}
+
+	opts := &generator.GenOpts{
 		Spec:              string(c.Spec),
 		Target:            string(c.Target),
 		APIPackage:        c.APIPackage,
@@ -58,7 +68,20 @@ func (c *Client) Execute(args []string) error {
 		TemplateDir:       string(c.TemplateDir),
 		DumpData:          c.DumpData,
 	}
-	if err := generator.GenerateClient(c.Name, c.Models, c.Operations, &opts); err != nil {
+
+	if err := opts.EnsureDefaults(true); err != nil {
+		return err
+	}
+
+	if cfg != nil {
+		var def generator.LanguageDefinition
+		if err := cfg.Unmarshal(&def); err != nil {
+			return err
+		}
+		def.ConfigureOpts(opts)
+	}
+
+	if err := generator.GenerateClient(c.Name, c.Models, c.Operations, opts); err != nil {
 		return err
 	}
 
@@ -72,8 +95,8 @@ func (c *Client) Execute(args []string) error {
 For this generation to compile you need to have some packages in your GOPATH:
 
   * github.com/go-openapi/runtime
-	* golang.org/x/net/context
-	* golang.org/x/net/context/ctxhttp
+  * golang.org/x/net/context
+  * golang.org/x/net/context/ctxhttp
 
 You can get these now with: go get -u -f %s/...
 `, rp)

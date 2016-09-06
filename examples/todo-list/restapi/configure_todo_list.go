@@ -35,7 +35,7 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 	api.JSONProducer = runtime.JSONProducer()
 
 	api.KeyAuth = func(token string) (interface{}, error) {
-		return nil, errors.NotImplemented("api key auth (key) x-petstore-token from header has not yet been implemented")
+		return nil, errors.NotImplemented("api key auth (key) x-todolist-token from header has not yet been implemented")
 	}
 
 	api.TodosAddOneHandler = todos.AddOneHandlerFunc(func(params todos.AddOneParams, principal interface{}) middleware.Responder {

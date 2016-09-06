@@ -21,6 +21,7 @@ import (
 
 	"github.com/go-swagger/go-swagger/generator"
 	"github.com/jessevdk/go-flags"
+	"github.com/spf13/viper"
 )
 
 type shared struct {
@@ -31,6 +32,7 @@ type shared struct {
 	ClientPackage string         `long:"client-package" short:"c" description:"the package to save the client specific code" default:"client"`
 	Target        flags.Filename `long:"target" short:"t" default:"./" description:"the base directory for generating the files"`
 	TemplateDir   flags.Filename `long:"template-dir" short:"T" description:"alternative template override directory"`
+	ConfigFile    flags.Filename `long:"config-file" short:"C" description:"configuration file to use for overriding template options"`
 }
 
 // Server the command to generate an entire server application
@@ -53,7 +55,16 @@ type Server struct {
 
 // Execute runs this command
 func (s *Server) Execute(args []string) error {
-	opts := generator.GenOpts{
+	var cfg *viper.Viper
+	if string(s.ConfigFile) != "" {
+		v, err := generator.ReadConfig(string(s.ConfigFile))
+		if err != nil {
+			return err
+		}
+		cfg = v
+	}
+
+	opts := &generator.GenOpts{
 		Spec:              string(s.Spec),
 		Target:            string(s.Target),
 		APIPackage:        s.APIPackage,
@@ -79,7 +90,19 @@ func (s *Server) Execute(args []string) error {
 		Name:              s.Name,
 	}
 
-	if err := generator.GenerateServer(s.Name, s.Models, s.Operations, &opts); err != nil {
+	if err := opts.EnsureDefaults(false); err != nil {
+		return err
+	}
+
+	if cfg != nil {
+		var def generator.LanguageDefinition
+		if err := cfg.Unmarshal(&def); err != nil {
+			return err
+		}
+		def.ConfigureOpts(opts)
+	}
+
+	if err := generator.GenerateServer(s.Name, s.Models, s.Operations, opts); err != nil {
 		return err
 	}
 
@@ -93,9 +116,9 @@ func (s *Server) Execute(args []string) error {
 For this generation to compile you need to have some packages in your GOPATH:
 
   * github.com/go-openapi/runtime
-	* github.com/tylerb/graceful
-	* github.com/jessevdk/go-flags
-	* golang.org/x/net/context
+  * github.com/tylerb/graceful
+  * github.com/jessevdk/go-flags
+  * golang.org/x/net/context
 
 You can get these now with: go get -u -f %s/....
 `, rp)
