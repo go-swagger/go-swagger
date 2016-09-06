@@ -100,7 +100,7 @@ type {{ pascalize .Name }}Reader struct {
   writer  io.Writer{{ end }}
 }
 
-// ReadResponse reads a server response into the recieved {{ .ReceiverName }}.
+// ReadResponse reads a server response into the received {{ .ReceiverName }}.
 func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
   switch response.Code() {
   {{ range $key, $value := .Responses }}
