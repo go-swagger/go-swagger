@@ -7,7 +7,7 @@ This directory contains a project that shows how to generate a server with `go-s
 
 1. Generate the code: `$ swagger generate server -f swagger.yml`
 2. Install the project: `$ go install ./...`
-3. Run the server: `$ $GOPAHT/bin/countdown-server --port=8000`
+3. Run the server: `$ $GOPATH/bin/countdown-server --port=8000`
 
 ## See the streaming output
 In another terminal window, request some streaming output:
