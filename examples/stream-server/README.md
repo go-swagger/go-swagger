@@ -2,12 +2,15 @@
 This directory contains a project that shows how to generate a server with `go-swagger` that can return a stream of newline-delimited JSON bodies.
 
 # How To Use This Project
+## Build and Run
 (All following instructuctions are to be run in the directory paralle to this file.)
 
 1. Generate the code: `$ swagger generate server -f swagger.yml`
 2. Install the project: `$ go install ./...`
 3. Run the server: `$ $GOPAHT/bin/countdown-server --port=8000`
-4. In another terminal window, request some streaming output:
+
+## See the streaming output
+In another terminal window, request some streaming output:
 ```
 $ curl -v http://127.0.0.1:8000/elapse/5
 * About to connect() to 127.0.0.1 port 8000 (#0)
@@ -37,7 +40,8 @@ $ curl -v http://127.0.0.1:8000/elapse/5
 * Connection #0 to host 127.0.0.1 left intact
 $
 ```
-5. Also in another terminal window, see an error message (not streaming):
+## See an error condition
+Also in another terminal window, see an error message (not streaming):
 ```
 $ curl -v http://127.0.0.1:8000/elapse/11
 * About to connect() to 127.0.0.1 port 8000 (#0)
