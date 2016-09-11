@@ -1,3 +1,4 @@
 cmd
 restapi/*
+models/*
 !restapi/configure_countdown.go
