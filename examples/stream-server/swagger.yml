@@ -1,0 +1,51 @@
+---
+  swagger: "2.0"
+  info:
+    description: Example server for emitting newline delimited JSON
+    version: "1.0.0"
+    title: Countdown
+  basePath: /
+  schemes:
+    - "http"
+  consumes:
+    - "application/json"
+  produces:
+    - "application/json"
+  paths:
+    /elapse/{length}:
+      get:
+        summary: Count down the number of seconds
+        description: Count down the seconds remaining
+        operationId: elapse
+        parameters:
+        - name: length
+          in: path
+          description: How many seconds to count down
+          required: true
+          type: integer
+          minimum: 2
+          maximum: 30
+        responses:
+          200:
+            description: Secondly update on remaining time
+            # This is the best representation there is in Swagger 2.0 to
+            # say that this endpoint has a streaming response.
+            # In this implementation, it will be newline delimited JSON
+            # bodies, of the `Mark` type defined below
+            schema:
+              type: string
+              format: binary
+          403:
+            description: Contrived - thrown when length of 11 is chosen
+  definitions:
+    # Notice this is never directly used/referenced anywhere else in the
+    # Swagger document. However, the generated `models` object is used in
+    # the business logic (`package biz`), and is what is streamed out
+    # of the `elapse` endpoint
+    Mark:
+      type: object
+      properties:
+        remains:
+          type: integer
+      required:
+        - remains
