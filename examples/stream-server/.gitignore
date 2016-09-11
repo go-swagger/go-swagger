@@ -1,0 +1,3 @@
+cmd
+restapi/*
+!restapi/configure_countdown.go
