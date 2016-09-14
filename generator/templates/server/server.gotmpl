@@ -216,6 +216,11 @@ func (s *Server) Listen() error {
 		if s.TLSCertificateKey == "" {
 			s.Fatalf("the required flag `--tls-key` was not specified")
 		}
+
+    // Use http host if https host wasn't defined
+    if s.TLSHost == "" {
+      s.TLSHost = s.Host
+    }
   }
 
   if s.hasScheme(schemeUnix) {
@@ -242,9 +247,6 @@ func (s *Server) Listen() error {
   }
 
   if s.hasScheme(schemeHTTPS) {
-    if s.TLSHost == "" {
-      s.TLSHost = s.Host
-    }
     tlsListener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.TLSHost, s.TLSPort))
     if err != nil {
       return err
