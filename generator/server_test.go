@@ -56,6 +56,7 @@ func testAppGenertor(t testing.TB, specPath, name string) (*appGenerator, error)
 	}
 
 	opts := testGenOpts()
+	opts.Spec = specPath
 	apiPackage := mangleName(swag.ToFileName(opts.APIPackage), "api")
 
 	return &appGenerator{
