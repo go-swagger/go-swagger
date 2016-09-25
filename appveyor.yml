@@ -44,6 +44,7 @@ install:
   - 7z x go%GOVERSION%.windows-amd64.zip -y -oC:\ > NUL
 
   # some helpful output for debugging builds
+  - rmdir c:\gopath /s /q
   - mkdir c:\gopath
   - go version
   - go env
