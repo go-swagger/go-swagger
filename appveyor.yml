@@ -8,11 +8,13 @@ shallow_clone: true # for startup speed
 pull_requests:
   do_not_increment_build_number: true
 
+skip_tags: true
+skip_branch_with_pr: true
 
 environment:
   GOPATH: C:\gopath
-  GO15VENDOREXPERIMENT: 1
-  GOCOVMODE: "mode: count"
+  GOVERSION: 1.7
+  GOCOVMODE: "mode: atomic"
   PATH: C:\gopath\bin;%PATH%
 
 platform:
@@ -22,7 +24,7 @@ platform:
 install:
   # pre-installed MinGW at C:\MinGW is 32bit only
   # but MSYS2 at C:\msys64 has mingw64
-  - set PATH=C:\msys64\mingw64\bin;%PATH%
+  - set PATH=%GOPATH%\bin;c:\go\bin;C:\msys64\mingw64\bin;%PATH%
   - gcc --version
   - g++ --version
 
@@ -36,14 +38,22 @@ install:
   - set PATH=C:\Program Files (x86)\Bazaar;%PATH%
   - bzr --version
 
+  # upgrade go
+  - rmdir c:\go /s /q
+  - appveyor DownloadFile https://storage.googleapis.com/golang/go%GOVERSION%.windows-amd64.zip
+  - 7z x go%GOVERSION%.windows-amd64.zip -y -oC:\ > NUL
+
+  # some helpful output for debugging builds
+  - mkdir c:\gopath
+  - go version
+  - go env
 
   # get the dependencies etc
   - go get -u github.com/stretchr/testify/assert
   - go get -u github.com/davecgh/go-spew/spew
-
-  # some helpful output for debugging builds
-  - go version
-  - go env
+  - go get -u github.com/axw/gocov/gocov
+  - go get -u gopkg.in/matm/v1/gocov-html
+  - go get -u github.com/cee-dub/go-junit-report
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
