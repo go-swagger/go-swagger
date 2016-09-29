@@ -226,6 +226,14 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) HandlerFor(method, path strin
   return h, ok
 }
 
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) Context() *middleware.Context {
+  if {{.ReceiverName}}.context == nil {
+    {{.ReceiverName}}.context = middleware.NewRoutableContext({{.ReceiverName}}.spec, {{.ReceiverName}}, nil)
+  }
+
+  return {{ .ReceiverName }}.context
+}
+
 func ({{.ReceiverName}} *{{ pascalize .Name }}API) initHandlerCache() {
   if {{.ReceiverName}}.context == nil {
     {{.ReceiverName}}.context = middleware.NewRoutableContext({{.ReceiverName}}.spec, {{.ReceiverName}}, nil)

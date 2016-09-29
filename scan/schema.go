@@ -785,9 +785,9 @@ func (scp *schemaParser) packageForFile(gofile *ast.File, tpe *ast.Ident) (*load
 	}
 	for pkg, pkgInfo := range scp.program.AllPackages {
 		if Debug {
-			log.Println("inferring for", tpe.Name, "at", pkg.Path(), "against", fgp)
+			log.Println("inferring for", tpe.Name, "with", gofile.Name.Name, "at", pkg.Path(), "against", filepath.ToSlash(fgp))
 		}
-		if pkg.Name() == gofile.Name.Name && fgp == pkg.Path() {
+		if pkg.Name() == gofile.Name.Name && filepath.ToSlash(fgp) == pkg.Path() {
 			return pkgInfo, nil
 		}
 	}

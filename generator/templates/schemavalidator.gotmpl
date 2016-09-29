@@ -181,6 +181,11 @@ if err := {{.ValueExpression}}.Validate(formats); err != nil {
 {{else if or .IsComplexObject .IsTuple .IsAdditionalProperties .IsAliased }}{{ template "objectvalidator" . }}{{end}}
 {{end}}
 {{define "schemavalidator" }}{{ if .Enum }}
+{{ if (eq .SwaggerType "string") }}
+{{ $gotype := .GoType }}
+const ({{ range .Enum }}
+	{{ $gotype }}{{ pascalize . }} {{ $gotype }} = "{{ . }}"{{end}})
+{{ end }}
 // for schema
 var {{ camelize .Name }}Enum []interface{}
 func ({{ .ReceiverName }} {{ if not .IsPrimitive }}*{{ end }}{{ if .IsExported }}{{ pascalize .Name}}{{ else }}{{ .Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "dereffedSchemaType" . }}) error {

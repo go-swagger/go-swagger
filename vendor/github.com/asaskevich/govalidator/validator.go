@@ -62,7 +62,7 @@ func IsURL(str string) bool {
 }
 
 // IsRequestURL check if the string rawurl, assuming
-// it was recieved in an HTTP request, is a valid
+// it was received in an HTTP request, is a valid
 // URL confirm to RFC 3986
 func IsRequestURL(rawurl string) bool {
 	url, err := url.ParseRequestURI(rawurl)
@@ -76,7 +76,7 @@ func IsRequestURL(rawurl string) bool {
 }
 
 // IsRequestURI check if the string rawurl, assuming
-// it was recieved in an HTTP request, is an
+// it was received in an HTTP request, is an
 // absolute URI or an absolute path.
 func IsRequestURI(rawurl string) bool {
 	_, err := url.ParseRequestURI(rawurl)
