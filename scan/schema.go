@@ -601,6 +601,14 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 
 	for _, fld := range tpe.Fields.List {
 		if len(fld.Names) == 0 {
+			_, ignore, err := parseJSONTag(fld)
+			if err != nil {
+				return err
+			}
+			if ignore {
+				continue
+			}
+
 			// if this created an allOf property then we have to rejig the schema var
 			// because all the fields collected that aren't from embedded structs should go in
 			// their own proper schema
@@ -1084,7 +1092,9 @@ func parseProperty(scp *schemaParser, gofile *ast.File, fld ast.Expr, prop swagg
 }
 
 func parseJSONTag(field *ast.Field) (name string, ignore bool, err error) {
-	name = field.Names[0].Name
+	if len(field.Names) > 0 {
+		name = field.Names[0].Name
+	}
 	if field.Tag != nil && len(strings.TrimSpace(field.Tag.Value)) > 0 {
 		tv, err := strconv.Unquote(field.Tag.Value)
 		if err != nil {
