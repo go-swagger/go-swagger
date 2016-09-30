@@ -1,20 +1,40 @@
-{{ define "structfield" }}{{ if not $.IsBaseType }}/* {{ template "docstring" . }}{{ template "propertyValidationDocString" .}} */{{ end}}
-{{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ if $.HasBaseType }}-{{ else }}{{ .Name }}{{ if not .Required }},omitempty{{ end }}{{ end }}"{{ if .XMLName }} xml:"{{ .XMLName }}"{{ end }}`
+{{ define "structfield" }}
+  {{- if not $.IsBaseType -}}
+    /* {{ template "docstring" . }}{{ template "propertyValidationDocString" .}} */
+  {{- end}}
+{{ pascalize .Name}} {{ template "schemaType" . }} `json:"
+{{- if $.HasBaseType -}}
+  -
+{{- else }}
+  {{- .Name }}
+  {{- if not .Required }},omitempty{{ end }}
+{{- end }}"
+{{- if .XMLName }} xml:"{{ .XMLName }}"{{ end }}`
 {{ end }}
-{{ define "tuplefield" }}
-{{ if not $.IsBaseType }}/* {{ template "docstring" . }}{{ template "propertyValidationDocString" .}} */
-{{ end }}{{ pascalize .Name}} {{ template "schemaType" . }} `json:"-"` // custom serializer
+
+{{- define "tuplefield" }}
+  {{- if not $.IsBaseType }}/* {{ template "docstring" . }}{{ template "propertyValidationDocString" .}} */
 {{ end }}
-{{ define "structfieldIface" }}{{ if not $.IsBaseType }}/* {{ template "docstring" . }}{{ template "propertyValidationDocString" .}} */
-{{ end }}{{ pascalize .Name}}() {{ template "schemaType" . }}
+{{- pascalize .Name}} {{ template "schemaType" . }} `json:"-"` // custom serializer
+{{ end }}
+
+{{- define "structfieldIface" }}
+  {{- if not $.IsBaseType }}/* {{ template "docstring" . }}{{ template "propertyValidationDocString" .}} */
+  {{- end }}
+{{ pascalize .Name}}() {{ template "schemaType" . }}
 Set{{ pascalize .Name}}({{ template "schemaType" . }})
 {{ end }}
-{{ define "tuplefieldIface" }}{{ if not $.IsBaseType }}
+{{ define "tuplefieldIface" }}
+  {{- if not $.IsBaseType }}
 /* {{ template "docstring" . }}{{ template "propertyValidationDocString" .}} */
 {{ end }}{{ pascalize .Name}}() {{ template "schemaType" . }}
 Set{{ pascalize .Name}}({{ template "schemaType" . }})
 {{ end }}
-{{ define "privstructfield" }}{{ camelize .Name}}Field {{ template "schemaType" . }}
+
+{{- define "privstructfield" }}
+  {{- camelize .Name}}Field {{ template "schemaType" . }}
 {{ end }}
-{{ define "privtuplefield" }}{{ camelize .Name}}Field {{ template "schemaType" . }}
+
+{{- define "privtuplefield" }}
+  {{- camelize .Name}}Field {{ template "schemaType" . }}
 {{ end }}
