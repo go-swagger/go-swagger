@@ -14,7 +14,7 @@
 
 package runtime
 
-import "context"
+import "golang.org/x/net/context"
 
 // ClientOperation represents the context for a swagger operation to be submitted to the transport
 type ClientOperation struct {
