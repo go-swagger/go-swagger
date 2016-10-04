@@ -1,5 +1,15 @@
 ## Contribution Guidelines
 
+### Environment
+
+This project needs a few githooks to be set up.
+
+```
+git hooks --install
+```
+
+This will make sure the templates get regenerated as embedded data on every checkin.
+
 ### Pull requests are always welcome
 
 We are always thrilled to receive pull requests, and do our best to
