@@ -33,7 +33,7 @@ import (
 // GenerateServerOperation generates a parameter model, parameter validator, http handler implementations for a given operation
 // It also generates an operation handler interface that uses the parameter model for handling a valid request.
 // Allows for specifying a list of tags to include only certain tags for the generation
-func GenerateServerOperation(operationNames, tags []string, includeHandler, includeParameters, includeResponses bool, opts GenOpts) error {
+func GenerateServerOperation(operationNames, tags []string, includeHandler, includeParameters, includeResponses, includeValidator bool, opts GenOpts) error {
 
 	if opts.TemplateDir != "" {
 		if err := templates.LoadDir(opts.TemplateDir); err != nil {
@@ -86,6 +86,7 @@ func GenerateServerOperation(operationNames, tags []string, includeHandler, incl
 			IncludeHandler:       includeHandler,
 			IncludeParameters:    includeParameters,
 			IncludeResponses:     includeResponses,
+			IncludeValidator:     includeValidator,
 			DumpData:             opts.DumpData,
 			DefaultScheme:        defaultScheme,
 			DefaultProduces:      defaultProduces,
@@ -121,6 +122,7 @@ type operationGenerator struct {
 	IncludeHandler       bool
 	IncludeParameters    bool
 	IncludeResponses     bool
+	IncludeValidator     bool
 	DumpData             bool
 	DefaultScheme        string
 	DefaultProduces      string
@@ -154,6 +156,7 @@ func (o *operationGenerator) Generate() error {
 	bldr.RootAPIPackage = o.APIPackage
 	bldr.WithContext = o.WithContext
 	bldr.DefaultConsumes = o.DefaultConsumes
+	bldr.IncludeValidator = o.IncludeValidator
 
 	for _, tag := range o.Operation.Tags {
 		if len(o.Tags) == 0 {
@@ -301,25 +304,26 @@ func (o *opGen) generateResponses() error {
 }
 
 type codeGenOpBuilder struct {
-	Name            string
-	Method          string
-	Path            string
-	APIPackage      string
-	RootAPIPackage  string
-	ModelsPackage   string
-	Principal       string
-	Target          string
-	WithContext     bool
-	Operation       spec.Operation
-	Doc             *loads.Document
-	Analyzed        *analysis.Spec
-	Authed          bool
-	DefaultImports  []string
-	DefaultScheme   string
-	DefaultProduces string
-	DefaultConsumes string
-	ExtraSchemas    map[string]GenSchema
-	origDefs        map[string]spec.Schema
+	Name             string
+	Method           string
+	Path             string
+	APIPackage       string
+	RootAPIPackage   string
+	ModelsPackage    string
+	Principal        string
+	Target           string
+	WithContext      bool
+	Operation        spec.Operation
+	Doc              *loads.Document
+	Analyzed         *analysis.Spec
+	Authed           bool
+	DefaultImports   []string
+	DefaultScheme    string
+	DefaultProduces  string
+	DefaultConsumes  string
+	ExtraSchemas     map[string]GenSchema
+	origDefs         map[string]spec.Schema
+	IncludeValidator bool
 }
 
 func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
@@ -572,7 +576,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 			Named:            false,
 			ExtraSchemas:     make(map[string]GenSchema),
 			IncludeModel:     true,
-			IncludeValidator: true,
+			IncludeValidator: b.IncludeValidator,
 		}
 		if err := sc.makeGenSchema(); err != nil {
 			return GenResponse{}, err
@@ -733,7 +737,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 			TypeResolver:     resolver,
 			Named:            false,
 			IncludeModel:     true,
-			IncludeValidator: true,
+			IncludeValidator: b.IncludeValidator,
 			ExtraSchemas:     make(map[string]GenSchema),
 		}
 		if err := sc.makeGenSchema(); err != nil {
