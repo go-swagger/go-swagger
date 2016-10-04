@@ -32,7 +32,7 @@ func NewGetTaskCommentsParams() *GetTaskCommentsParams {
 // with the default values initialized, and the ability to set a timeout on a request
 func NewGetTaskCommentsParamsWithTimeout(timeout time.Duration) *GetTaskCommentsParams {
 	var (
-		pageSizeDefault int32 = int32(20)
+		pageSizeDefault = int32(20)
 	)
 	return &GetTaskCommentsParams{
 		PageSize: &pageSizeDefault,
@@ -45,7 +45,7 @@ func NewGetTaskCommentsParamsWithTimeout(timeout time.Duration) *GetTaskComments
 // with the default values initialized, and the ability to set a context for a request
 func NewGetTaskCommentsParamsWithContext(ctx context.Context) *GetTaskCommentsParams {
 	var (
-		pageSizeDefault int32 = int32(20)
+		pageSizeDefault = int32(20)
 	)
 	return &GetTaskCommentsParams{
 		PageSize: &pageSizeDefault,

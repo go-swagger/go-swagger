@@ -32,7 +32,7 @@ func NewListTasksParams() *ListTasksParams {
 // with the default values initialized, and the ability to set a timeout on a request
 func NewListTasksParamsWithTimeout(timeout time.Duration) *ListTasksParams {
 	var (
-		pageSizeDefault int32 = int32(20)
+		pageSizeDefault = int32(20)
 	)
 	return &ListTasksParams{
 		PageSize: &pageSizeDefault,
@@ -45,7 +45,7 @@ func NewListTasksParamsWithTimeout(timeout time.Duration) *ListTasksParams {
 // with the default values initialized, and the ability to set a context for a request
 func NewListTasksParamsWithContext(ctx context.Context) *ListTasksParams {
 	var (
-		pageSizeDefault int32 = int32(20)
+		pageSizeDefault = int32(20)
 	)
 	return &ListTasksParams{
 		PageSize: &pageSizeDefault,
