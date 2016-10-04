@@ -60,20 +60,24 @@ type GetTaskDetailsParams struct {
 	Context context.Context
 }
 
+// WithTimeout adds the timeout to the get task details params
 func (o *GetTaskDetailsParams) WithTimeout(timeout time.Duration) *GetTaskDetailsParams {
 	o.SetTimeout(timeout)
 	return o
 }
 
+// SetTimeout adds the timeout to the get task details params
 func (o *GetTaskDetailsParams) SetTimeout(timeout time.Duration) {
 	o.timeout = timeout
 }
 
+// WithContext adds the context to the get task details params
 func (o *GetTaskDetailsParams) WithContext(ctx context.Context) *GetTaskDetailsParams {
 	o.SetContext(ctx)
 	return o
 }
 
+// SetContext adds the context to the get task details params
 func (o *GetTaskDetailsParams) SetContext(ctx context.Context) {
 	o.Context = ctx
 }

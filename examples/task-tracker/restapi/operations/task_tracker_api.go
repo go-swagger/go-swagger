@@ -265,6 +265,7 @@ func (o *TaskTrackerAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	return h, ok
 }
 
+// Context returns the middleware context for the task tracker API
 func (o *TaskTrackerAPI) Context() *middleware.Context {
 	if o.context == nil {
 		o.context = middleware.NewRoutableContext(o.spec, o, nil)

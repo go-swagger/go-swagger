@@ -71,20 +71,24 @@ type UploadTaskFileParams struct {
 	Context context.Context
 }
 
+// WithTimeout adds the timeout to the upload task file params
 func (o *UploadTaskFileParams) WithTimeout(timeout time.Duration) *UploadTaskFileParams {
 	o.SetTimeout(timeout)
 	return o
 }
 
+// SetTimeout adds the timeout to the upload task file params
 func (o *UploadTaskFileParams) SetTimeout(timeout time.Duration) {
 	o.timeout = timeout
 }
 
+// WithContext adds the context to the upload task file params
 func (o *UploadTaskFileParams) WithContext(ctx context.Context) *UploadTaskFileParams {
 	o.SetContext(ctx)
 	return o
 }
 
+// SetContext adds the context to the upload task file params
 func (o *UploadTaskFileParams) SetContext(ctx context.Context) {
 	o.Context = ctx
 }

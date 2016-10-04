@@ -78,20 +78,24 @@ type {{ pascalize .Name }}Params struct {
   Context context.Context
 }
 
+// WithTimeout adds the timeout to the {{ humanize .Name }} params
 func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WithTimeout(timeout time.Duration) *{{ pascalize .Name }}Params {
   {{ .ReceiverName }}.SetTimeout(timeout)
   return {{ .ReceiverName }}
 }
 
+// SetTimeout adds the timeout to the {{ humanize .Name }} params
 func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) SetTimeout(timeout time.Duration) {
   {{ .ReceiverName }}.timeout = timeout
 }
 
+// WithContext adds the context to the {{ humanize .Name }} params
 func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WithContext(ctx context.Context) *{{ pascalize .Name }}Params {
   {{ .ReceiverName }}.SetContext(ctx)
   return {{ .ReceiverName }}
 }
 
+// SetContext adds the context to the {{ humanize .Name }} params
 func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) SetContext(ctx context.Context) {
   {{ .ReceiverName }}.Context = ctx
 }

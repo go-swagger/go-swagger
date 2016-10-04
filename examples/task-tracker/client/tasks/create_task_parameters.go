@@ -61,20 +61,24 @@ type CreateTaskParams struct {
 	Context context.Context
 }
 
+// WithTimeout adds the timeout to the create task params
 func (o *CreateTaskParams) WithTimeout(timeout time.Duration) *CreateTaskParams {
 	o.SetTimeout(timeout)
 	return o
 }
 
+// SetTimeout adds the timeout to the create task params
 func (o *CreateTaskParams) SetTimeout(timeout time.Duration) {
 	o.timeout = timeout
 }
 
+// WithContext adds the context to the create task params
 func (o *CreateTaskParams) WithContext(ctx context.Context) *CreateTaskParams {
 	o.SetContext(ctx)
 	return o
 }
 
+// SetContext adds the context to the create task params
 func (o *CreateTaskParams) SetContext(ctx context.Context) {
 	o.Context = ctx
 }

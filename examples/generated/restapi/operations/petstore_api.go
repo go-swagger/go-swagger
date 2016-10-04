@@ -46,25 +46,25 @@ type PetstoreAPI struct {
 	formats         strfmt.Registry
 	defaultConsumes string
 	defaultProduces string
-	// XMLConsumer registers a consumer for a "application/xml" mime type
-	XMLConsumer runtime.Consumer
-	// UrlformConsumer registers a consumer for a "application/x-www-form-urlencoded" mime type
-	UrlformConsumer runtime.Consumer
 	// JSONConsumer registers a consumer for a "application/json" mime type
 	JSONConsumer runtime.Consumer
+	// UrlformConsumer registers a consumer for a "application/x-www-form-urlencoded" mime type
+	UrlformConsumer runtime.Consumer
+	// XMLConsumer registers a consumer for a "application/xml" mime type
+	XMLConsumer runtime.Consumer
 
-	// JSONProducer registers a producer for a "application/json" mime type
-	JSONProducer runtime.Producer
 	// XMLProducer registers a producer for a "application/xml" mime type
 	XMLProducer runtime.Producer
-
-	// PetstoreAuthAuth registers a functin that takes an access token and a collection of required scopes and returns a principal
-	// it performs authentication based on an oauth2 bearer token provided in the request
-	PetstoreAuthAuth func(string, []string) (interface{}, error)
+	// JSONProducer registers a producer for a "application/json" mime type
+	JSONProducer runtime.Producer
 
 	// APIKeyAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key api_key provided in the header
 	APIKeyAuth func(string) (interface{}, error)
+
+	// PetstoreAuthAuth registers a functin that takes an access token and a collection of required scopes and returns a principal
+	// it performs authentication based on an oauth2 bearer token provided in the request
+	PetstoreAuthAuth func(string, []string) (interface{}, error)
 
 	// PetAddPetHandler sets the operation handler for the add pet operation
 	PetAddPetHandler pet.AddPetHandler
@@ -157,32 +157,32 @@ func (o *PetstoreAPI) RegisterFormat(name string, format strfmt.Format, validato
 func (o *PetstoreAPI) Validate() error {
 	var unregistered []string
 
-	if o.XMLConsumer == nil {
-		unregistered = append(unregistered, "XMLConsumer")
+	if o.JSONConsumer == nil {
+		unregistered = append(unregistered, "JSONConsumer")
 	}
 
 	if o.UrlformConsumer == nil {
 		unregistered = append(unregistered, "UrlformConsumer")
 	}
 
-	if o.JSONConsumer == nil {
-		unregistered = append(unregistered, "JSONConsumer")
-	}
-
-	if o.JSONProducer == nil {
-		unregistered = append(unregistered, "JSONProducer")
+	if o.XMLConsumer == nil {
+		unregistered = append(unregistered, "XMLConsumer")
 	}
 
 	if o.XMLProducer == nil {
 		unregistered = append(unregistered, "XMLProducer")
 	}
 
-	if o.PetstoreAuthAuth == nil {
-		unregistered = append(unregistered, "PetstoreAuthAuth")
+	if o.JSONProducer == nil {
+		unregistered = append(unregistered, "JSONProducer")
 	}
 
 	if o.APIKeyAuth == nil {
 		unregistered = append(unregistered, "APIKeyAuth")
+	}
+
+	if o.PetstoreAuthAuth == nil {
+		unregistered = append(unregistered, "PetstoreAuthAuth")
 	}
 
 	if o.PetAddPetHandler == nil {
@@ -276,13 +276,13 @@ func (o *PetstoreAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) 
 	for name, scheme := range schemes {
 		switch name {
 
-		case "petstore_auth":
-
-			result[name] = security.BearerAuth(scheme.Name, o.PetstoreAuthAuth)
-
 		case "api_key":
 
 			result[name] = security.APIKeyAuth(scheme.Name, scheme.In, o.APIKeyAuth)
+
+		case "petstore_auth":
+
+			result[name] = security.BearerAuth(scheme.Name, o.PetstoreAuthAuth)
 
 		}
 	}
@@ -297,14 +297,14 @@ func (o *PetstoreAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consu
 	for _, mt := range mediaTypes {
 		switch mt {
 
-		case "application/xml":
-			result["application/xml"] = o.XMLConsumer
+		case "application/json":
+			result["application/json"] = o.JSONConsumer
 
 		case "application/x-www-form-urlencoded":
 			result["application/x-www-form-urlencoded"] = o.UrlformConsumer
 
-		case "application/json":
-			result["application/json"] = o.JSONConsumer
+		case "application/xml":
+			result["application/xml"] = o.XMLConsumer
 
 		}
 	}
@@ -319,11 +319,11 @@ func (o *PetstoreAPI) ProducersFor(mediaTypes []string) map[string]runtime.Produ
 	for _, mt := range mediaTypes {
 		switch mt {
 
-		case "application/json":
-			result["application/json"] = o.JSONProducer
-
 		case "application/xml":
 			result["application/xml"] = o.XMLProducer
+
+		case "application/json":
+			result["application/json"] = o.JSONProducer
 
 		}
 	}
@@ -344,6 +344,7 @@ func (o *PetstoreAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	return h, ok
 }
 
+// Context returns the middleware context for the petstore API
 func (o *PetstoreAPI) Context() *middleware.Context {
 	if o.context == nil {
 		o.context = middleware.NewRoutableContext(o.spec, o, nil)

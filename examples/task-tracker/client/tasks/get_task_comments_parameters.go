@@ -79,20 +79,24 @@ type GetTaskCommentsParams struct {
 	Context context.Context
 }
 
+// WithTimeout adds the timeout to the get task comments params
 func (o *GetTaskCommentsParams) WithTimeout(timeout time.Duration) *GetTaskCommentsParams {
 	o.SetTimeout(timeout)
 	return o
 }
 
+// SetTimeout adds the timeout to the get task comments params
 func (o *GetTaskCommentsParams) SetTimeout(timeout time.Duration) {
 	o.timeout = timeout
 }
 
+// WithContext adds the context to the get task comments params
 func (o *GetTaskCommentsParams) WithContext(ctx context.Context) *GetTaskCommentsParams {
 	o.SetContext(ctx)
 	return o
 }
 
+// SetContext adds the context to the get task comments params
 func (o *GetTaskCommentsParams) SetContext(ctx context.Context) {
 	o.Context = ctx
 }

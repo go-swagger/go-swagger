@@ -56,20 +56,24 @@ type DestroyOneParams struct {
 	Context context.Context
 }
 
+// WithTimeout adds the timeout to the destroy one params
 func (o *DestroyOneParams) WithTimeout(timeout time.Duration) *DestroyOneParams {
 	o.SetTimeout(timeout)
 	return o
 }
 
+// SetTimeout adds the timeout to the destroy one params
 func (o *DestroyOneParams) SetTimeout(timeout time.Duration) {
 	o.timeout = timeout
 }
 
+// WithContext adds the context to the destroy one params
 func (o *DestroyOneParams) WithContext(ctx context.Context) *DestroyOneParams {
 	o.SetContext(ctx)
 	return o
 }
 
+// SetContext adds the context to the destroy one params
 func (o *DestroyOneParams) SetContext(ctx context.Context) {
 	o.Context = ctx
 }

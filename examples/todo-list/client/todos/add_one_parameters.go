@@ -58,20 +58,24 @@ type AddOneParams struct {
 	Context context.Context
 }
 
+// WithTimeout adds the timeout to the add one params
 func (o *AddOneParams) WithTimeout(timeout time.Duration) *AddOneParams {
 	o.SetTimeout(timeout)
 	return o
 }
 
+// SetTimeout adds the timeout to the add one params
 func (o *AddOneParams) SetTimeout(timeout time.Duration) {
 	o.timeout = timeout
 }
 
+// WithContext adds the context to the add one params
 func (o *AddOneParams) WithContext(ctx context.Context) *AddOneParams {
 	o.SetContext(ctx)
 	return o
 }
 
+// SetContext adds the context to the add one params
 func (o *AddOneParams) SetContext(ctx context.Context) {
 	o.Context = ctx
 }

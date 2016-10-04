@@ -60,20 +60,24 @@ type DeleteTaskParams struct {
 	Context context.Context
 }
 
+// WithTimeout adds the timeout to the delete task params
 func (o *DeleteTaskParams) WithTimeout(timeout time.Duration) *DeleteTaskParams {
 	o.SetTimeout(timeout)
 	return o
 }
 
+// SetTimeout adds the timeout to the delete task params
 func (o *DeleteTaskParams) SetTimeout(timeout time.Duration) {
 	o.timeout = timeout
 }
 
+// WithContext adds the context to the delete task params
 func (o *DeleteTaskParams) WithContext(ctx context.Context) *DeleteTaskParams {
 	o.SetContext(ctx)
 	return o
 }
 
+// SetContext adds the context to the delete task params
 func (o *DeleteTaskParams) SetContext(ctx context.Context) {
 	o.Context = ctx
 }

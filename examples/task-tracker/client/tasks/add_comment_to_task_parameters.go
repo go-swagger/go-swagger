@@ -65,20 +65,24 @@ type AddCommentToTaskParams struct {
 	Context context.Context
 }
 
+// WithTimeout adds the timeout to the add comment to task params
 func (o *AddCommentToTaskParams) WithTimeout(timeout time.Duration) *AddCommentToTaskParams {
 	o.SetTimeout(timeout)
 	return o
 }
 
+// SetTimeout adds the timeout to the add comment to task params
 func (o *AddCommentToTaskParams) SetTimeout(timeout time.Duration) {
 	o.timeout = timeout
 }
 
+// WithContext adds the context to the add comment to task params
 func (o *AddCommentToTaskParams) WithContext(ctx context.Context) *AddCommentToTaskParams {
 	o.SetContext(ctx)
 	return o
 }
 
+// SetContext adds the context to the add comment to task params
 func (o *AddCommentToTaskParams) SetContext(ctx context.Context) {
 	o.Context = ctx
 }

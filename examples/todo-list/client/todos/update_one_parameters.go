@@ -60,20 +60,24 @@ type UpdateOneParams struct {
 	Context context.Context
 }
 
+// WithTimeout adds the timeout to the update one params
 func (o *UpdateOneParams) WithTimeout(timeout time.Duration) *UpdateOneParams {
 	o.SetTimeout(timeout)
 	return o
 }
 
+// SetTimeout adds the timeout to the update one params
 func (o *UpdateOneParams) SetTimeout(timeout time.Duration) {
 	o.timeout = timeout
 }
 
+// WithContext adds the context to the update one params
 func (o *UpdateOneParams) WithContext(ctx context.Context) *UpdateOneParams {
 	o.SetContext(ctx)
 	return o
 }
 
+// SetContext adds the context to the update one params
 func (o *UpdateOneParams) SetContext(ctx context.Context) {
 	o.Context = ctx
 }

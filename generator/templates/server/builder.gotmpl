@@ -226,6 +226,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) HandlerFor(method, path strin
   return h, ok
 }
 
+// Context returns the middleware context for the {{ humanize .Name }} API
 func ({{.ReceiverName}} *{{ pascalize .Name }}API) Context() *middleware.Context {
   if {{.ReceiverName}}.context == nil {
     {{.ReceiverName}}.context = middleware.NewRoutableContext({{.ReceiverName}}.spec, {{.ReceiverName}}, nil)

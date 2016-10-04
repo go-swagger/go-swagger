@@ -61,20 +61,24 @@ type FindParams struct {
 	Context context.Context
 }
 
+// WithTimeout adds the timeout to the find params
 func (o *FindParams) WithTimeout(timeout time.Duration) *FindParams {
 	o.SetTimeout(timeout)
 	return o
 }
 
+// SetTimeout adds the timeout to the find params
 func (o *FindParams) SetTimeout(timeout time.Duration) {
 	o.timeout = timeout
 }
 
+// WithContext adds the context to the find params
 func (o *FindParams) WithContext(ctx context.Context) *FindParams {
 	o.SetContext(ctx)
 	return o
 }
 
+// SetContext adds the context to the find params
 func (o *FindParams) SetContext(ctx context.Context) {
 	o.Context = ctx
 }
