@@ -1,11 +1,7 @@
 FROM golang:1.7
 MAINTAINER go-swagger contributors
 
-ENV GOCOVMODE count
-
-ADD . /go/src/github.com/go-swagger/go-swagger
-
-WORKDIR /go/src/github.com/go-swagger/go-swagger
+ENV GOCOVMODE atomic
 
 RUN set -e -x \
   && mkdir -p /usr/share/coverage /usr/share/testresults /usr/share/dist \

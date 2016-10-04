@@ -4,6 +4,7 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-openapi/errors"
@@ -35,6 +36,16 @@ func NewUpdateOneParamsWithTimeout(timeout time.Duration) *UpdateOneParams {
 	}
 }
 
+// NewUpdateOneParamsWithContext creates a new UpdateOneParams object
+// with the default values initialized, and the ability to set a context for a request
+func NewUpdateOneParamsWithContext(ctx context.Context) *UpdateOneParams {
+	var ()
+	return &UpdateOneParams{
+
+		Context: ctx,
+	}
+}
+
 /*UpdateOneParams contains all the parameters to send to the API endpoint
 for the update one operation typically these are written to a http.Request
 */
@@ -46,18 +57,51 @@ type UpdateOneParams struct {
 	ID string
 
 	timeout time.Duration
+	Context context.Context
+}
+
+// WithTimeout adds the timeout to the update one params
+func (o *UpdateOneParams) WithTimeout(timeout time.Duration) *UpdateOneParams {
+	o.SetTimeout(timeout)
+	return o
+}
+
+// SetTimeout adds the timeout to the update one params
+func (o *UpdateOneParams) SetTimeout(timeout time.Duration) {
+	o.timeout = timeout
+}
+
+// WithContext adds the context to the update one params
+func (o *UpdateOneParams) WithContext(ctx context.Context) *UpdateOneParams {
+	o.SetContext(ctx)
+	return o
+}
+
+// SetContext adds the context to the update one params
+func (o *UpdateOneParams) SetContext(ctx context.Context) {
+	o.Context = ctx
 }
 
 // WithBody adds the body to the update one params
 func (o *UpdateOneParams) WithBody(body *models.Item) *UpdateOneParams {
-	o.Body = body
+	o.SetBody(body)
 	return o
+}
+
+// SetBody adds the body to the update one params
+func (o *UpdateOneParams) SetBody(body *models.Item) {
+	o.Body = body
 }
 
 // WithID adds the id to the update one params
 func (o *UpdateOneParams) WithID(id string) *UpdateOneParams {
-	o.ID = id
+	o.SetID(id)
 	return o
+}
+
+// SetID adds the id to the update one params
+func (o *UpdateOneParams) SetID(id string) {
+	o.ID = id
 }
 
 // WriteToRequest writes these params to a swagger request

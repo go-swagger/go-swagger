@@ -45,7 +45,7 @@ func (o *objectValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	// there is a problem in the type validator where it will be unhappy about null values
 	// so that requires more testing
 	r := reflect.TypeOf(source) == specSchemaType && (kind == reflect.Map || kind == reflect.Struct)
-	//fmt.Printf("object validator for %q applies %t for %T (kind: %v)\n", o.Path, r, source, kind)
+	// fmt.Printf("object validator for %q applies %t for %T (kind: %v)\n", o.Path, r, source, kind)
 	return r
 }
 

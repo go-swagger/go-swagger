@@ -177,6 +177,15 @@ func (o *TodoListAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	return h, ok
 }
 
+// Context returns the middleware context for the todo list API
+func (o *TodoListAPI) Context() *middleware.Context {
+	if o.context == nil {
+		o.context = middleware.NewRoutableContext(o.spec, o, nil)
+	}
+
+	return o.context
+}
+
 func (o *TodoListAPI) initHandlerCache() {
 	if o.context == nil {
 		o.context = middleware.NewRoutableContext(o.spec, o, nil)

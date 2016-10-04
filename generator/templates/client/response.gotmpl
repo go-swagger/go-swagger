@@ -1,8 +1,9 @@
 {{ define "clientresponse" }}// New{{ pascalize .Name }} creates a {{ pascalize .Name }} with default headers values
-func New{{ pascalize .Name }}({{ if eq .Code -1 }}code int{{ end }}{{ if .Schema }}{{ if and (eq .Code -1) .Schema.IsStream }},{{end}}{{ if .Schema.IsStream }}writer io.Writer{{ end }}{{ end }}) *{{ pascalize .Name }} {
+func New{{ pascalize .Name }}({{ if eq .Code -1 }}code int{{ end }}{{ if .Schema }}{{ if and (eq .Code -1) .Schema.IsStream }}, {{end}}{{ if .Schema.IsStream }}writer io.Writer{{ end }}{{ end }}) *{{ pascalize .Name }} {
   return &{{ pascalize .Name }}{
     {{ if eq .Code -1 }}_statusCode: code,
-    {{ end }}{{ range .Headers }}{{ if .HasDefault }}{{ pascalize .Name }}: {{ printf "%#v" .Default }},{{ end }}{{ end }}{{ if .Schema }}{{ if .Schema.IsStream }}Payload: writer,
+    {{ end }}{{ range .Headers }}{{ if .HasDefault }}{{ pascalize .Name }}: {{ printf "%#v" .Default }},
+    {{ end }}{{ end }}{{ if .Schema }}{{ if .Schema.IsStream }}Payload: writer,
     {{ end }}{{ end }}}
 }
 

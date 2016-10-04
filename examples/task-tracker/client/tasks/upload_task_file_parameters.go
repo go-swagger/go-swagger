@@ -4,6 +4,7 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"os"
 	"time"
 
@@ -35,6 +36,16 @@ func NewUploadTaskFileParamsWithTimeout(timeout time.Duration) *UploadTaskFilePa
 	}
 }
 
+// NewUploadTaskFileParamsWithContext creates a new UploadTaskFileParams object
+// with the default values initialized, and the ability to set a context for a request
+func NewUploadTaskFileParamsWithContext(ctx context.Context) *UploadTaskFileParams {
+	var ()
+	return &UploadTaskFileParams{
+
+		Context: ctx,
+	}
+}
+
 /*UploadTaskFileParams contains all the parameters to send to the API endpoint
 for the upload task file operation typically these are written to a http.Request
 */
@@ -57,24 +68,62 @@ type UploadTaskFileParams struct {
 	ID int64
 
 	timeout time.Duration
+	Context context.Context
+}
+
+// WithTimeout adds the timeout to the upload task file params
+func (o *UploadTaskFileParams) WithTimeout(timeout time.Duration) *UploadTaskFileParams {
+	o.SetTimeout(timeout)
+	return o
+}
+
+// SetTimeout adds the timeout to the upload task file params
+func (o *UploadTaskFileParams) SetTimeout(timeout time.Duration) {
+	o.timeout = timeout
+}
+
+// WithContext adds the context to the upload task file params
+func (o *UploadTaskFileParams) WithContext(ctx context.Context) *UploadTaskFileParams {
+	o.SetContext(ctx)
+	return o
+}
+
+// SetContext adds the context to the upload task file params
+func (o *UploadTaskFileParams) SetContext(ctx context.Context) {
+	o.Context = ctx
 }
 
 // WithDescription adds the description to the upload task file params
 func (o *UploadTaskFileParams) WithDescription(description *string) *UploadTaskFileParams {
-	o.Description = description
+	o.SetDescription(description)
 	return o
+}
+
+// SetDescription adds the description to the upload task file params
+func (o *UploadTaskFileParams) SetDescription(description *string) {
+	o.Description = description
 }
 
 // WithFile adds the file to the upload task file params
 func (o *UploadTaskFileParams) WithFile(file *os.File) *UploadTaskFileParams {
-	o.File = file
+	o.SetFile(file)
 	return o
+}
+
+// SetFile adds the file to the upload task file params
+func (o *UploadTaskFileParams) SetFile(file *os.File) {
+	o.File = file
 }
 
 // WithID adds the id to the upload task file params
 func (o *UploadTaskFileParams) WithID(id int64) *UploadTaskFileParams {
-	o.ID = id
+	o.SetID(id)
 	return o
+}
+
+// SetID adds the id to the upload task file params
+func (o *UploadTaskFileParams) SetID(id int64) {
+	o.ID = id
 }
 
 // WriteToRequest writes these params to a swagger request

@@ -4,6 +4,7 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-openapi/errors"
@@ -34,6 +35,16 @@ func NewDeleteTaskParamsWithTimeout(timeout time.Duration) *DeleteTaskParams {
 	}
 }
 
+// NewDeleteTaskParamsWithContext creates a new DeleteTaskParams object
+// with the default values initialized, and the ability to set a context for a request
+func NewDeleteTaskParamsWithContext(ctx context.Context) *DeleteTaskParams {
+	var ()
+	return &DeleteTaskParams{
+
+		Context: ctx,
+	}
+}
+
 /*DeleteTaskParams contains all the parameters to send to the API endpoint
 for the delete task operation typically these are written to a http.Request
 */
@@ -46,12 +57,40 @@ type DeleteTaskParams struct {
 	ID int64
 
 	timeout time.Duration
+	Context context.Context
+}
+
+// WithTimeout adds the timeout to the delete task params
+func (o *DeleteTaskParams) WithTimeout(timeout time.Duration) *DeleteTaskParams {
+	o.SetTimeout(timeout)
+	return o
+}
+
+// SetTimeout adds the timeout to the delete task params
+func (o *DeleteTaskParams) SetTimeout(timeout time.Duration) {
+	o.timeout = timeout
+}
+
+// WithContext adds the context to the delete task params
+func (o *DeleteTaskParams) WithContext(ctx context.Context) *DeleteTaskParams {
+	o.SetContext(ctx)
+	return o
+}
+
+// SetContext adds the context to the delete task params
+func (o *DeleteTaskParams) SetContext(ctx context.Context) {
+	o.Context = ctx
 }
 
 // WithID adds the id to the delete task params
 func (o *DeleteTaskParams) WithID(id int64) *DeleteTaskParams {
-	o.ID = id
+	o.SetID(id)
 	return o
+}
+
+// SetID adds the id to the delete task params
+func (o *DeleteTaskParams) SetID(id int64) {
+	o.ID = id
 }
 
 // WriteToRequest writes these params to a swagger request

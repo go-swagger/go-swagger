@@ -38,13 +38,27 @@ func New{{ pascalize .Name }}Params() *{{ pascalize .Name }}Params {
 // with the default values initialized, and the ability to set a timeout on a request
 func New{{ pascalize .Name }}ParamsWithTimeout(timeout time.Duration) *{{ pascalize .Name }}Params {
   {{ if .Params }}var (
-  {{ range .Params }}{{ if .HasDefault }}{{ if not .IsFileParam }}{{ varname .ID}}Default {{ .GoType }} = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
+  {{ range .Params }}{{ if .HasDefault }}{{ if not .IsFileParam }}{{ varname .ID}}Default = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
   {{ end }}{{ end }}{{end}}
   ){{ end }}
   return &{{ pascalize .Name}}Params{
   {{ range .Params }}{{ if .HasDefault }}{{ pascalize .ID}}: {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (or .IsNullable  ) }}&{{ end }}{{ varname .ID }}Default,
   {{ end }}{{ end }}
     timeout: timeout,
+  }
+}
+
+// New{{ pascalize .Name }}ParamsWithContext creates a new {{ pascalize .Name }}Params object
+// with the default values initialized, and the ability to set a context for a request
+func New{{ pascalize .Name }}ParamsWithContext(ctx context.Context) *{{ pascalize .Name }}Params {
+  {{ if .Params }}var (
+  {{ range .Params }}{{ if .HasDefault }}{{ if not .IsFileParam }}{{ camelize .Name}}Default = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
+  {{ end }}{{ end }}{{end}}
+  ){{ end }}
+  return &{{ pascalize .Name}}Params{
+  {{ range .Params }}{{ if .HasDefault }}{{ pascalize .Name}}: {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (or .IsNullable  ) }}&{{ end }}{{ camelize .Name }}Default,
+  {{ end }}{{ end }}
+    Context: ctx,
   }
 }
 
@@ -61,13 +75,42 @@ type {{ pascalize .Name }}Params struct {
   {{ end }}
 
   timeout time.Duration
+  Context context.Context
 }
+
+// WithTimeout adds the timeout to the {{ humanize .Name }} params
+func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WithTimeout(timeout time.Duration) *{{ pascalize .Name }}Params {
+  {{ .ReceiverName }}.SetTimeout(timeout)
+  return {{ .ReceiverName }}
+}
+
+// SetTimeout adds the timeout to the {{ humanize .Name }} params
+func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) SetTimeout(timeout time.Duration) {
+  {{ .ReceiverName }}.timeout = timeout
+}
+
+// WithContext adds the context to the {{ humanize .Name }} params
+func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WithContext(ctx context.Context) *{{ pascalize .Name }}Params {
+  {{ .ReceiverName }}.SetContext(ctx)
+  return {{ .ReceiverName }}
+}
+
+// SetContext adds the context to the {{ humanize .Name }} params
+func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) SetContext(ctx context.Context) {
+  {{ .ReceiverName }}.Context = ctx
+}
+
 
 {{ range .Params }}
 // With{{ pascalize .ID }} adds the {{ varname .Name  }} to the {{ humanize $.Name }} params
 func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) With{{ pascalize .ID }}({{ varname .Name  }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (not .IsStream) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{ end }}) *{{ pascalize $.Name }}Params {
-  {{ $.ReceiverName }}.{{ pascalize .ID }} = {{ varname .Name  }}
+  {{ $.ReceiverName }}.Set{{ pascalize .ID }}({{ varname .Name  }})
   return {{ .ReceiverName }}
+}
+
+// Set{{ pascalize .ID }} adds the {{ camelize .Name  }} to the {{ humanize $.Name }} params
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) Set{{ pascalize .ID }}({{ varname .Name  }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (not .IsStream) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{ end }}) {
+  {{ $.ReceiverName }}.{{ pascalize .ID }} = {{ varname .Name  }}
 }
 
 {{ end }}
