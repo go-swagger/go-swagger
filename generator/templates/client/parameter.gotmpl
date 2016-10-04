@@ -48,6 +48,20 @@ func New{{ pascalize .Name }}ParamsWithTimeout(timeout time.Duration) *{{ pascal
   }
 }
 
+// New{{ pascalize .Name }}ParamsWithContext creates a new {{ pascalize .Name }}Params object
+// with the default values initialized, and the ability to set a context for a request
+func New{{ pascalize .Name }}ParamsWithContext(ctx context.Context) *{{ pascalize .Name }}Params {
+  {{ if .Params }}var (
+  {{ range .Params }}{{ if .HasDefault }}{{ if not .IsFileParam }}{{ camelize .Name}}Default {{ .GoType }} = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
+  {{ end }}{{ end }}{{end}}
+  ){{ end }}
+  return &{{ pascalize .Name}}Params{
+  {{ range .Params }}{{ if .HasDefault }}{{ pascalize .Name}}: {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (or .IsNullable  ) }}&{{ end }}{{ camelize .Name }}Default,
+  {{ end }}{{ end }}
+    Context: ctx,
+  }
+}
+
 /*{{ pascalize .Name }}Params contains all the parameters to send to the API endpoint
 for the {{ humanize .Name }} operation typically these are written to a http.Request
 */
@@ -61,13 +75,38 @@ type {{ pascalize .Name }}Params struct {
   {{ end }}
 
   timeout time.Duration
+  Context context.Context
 }
+
+func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WithTimeout(timeout time.Duration) *{{ pascalize .Name }}Params {
+  {{ .ReceiverName }}.SetTimeout(timeout)
+  return {{ .ReceiverName }}
+}
+
+func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) SetTimeout(timeout time.Duration) {
+  {{ .ReceiverName }}.timeout = timeout
+}
+
+func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WithContext(ctx context.Context) *{{ pascalize .Name }}Params {
+  {{ .ReceiverName }}.SetContext(ctx)
+  return {{ .ReceiverName }}
+}
+
+func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) SetContext(ctx context.Context) {
+  {{ .ReceiverName }}.Context = ctx
+}
+
 
 {{ range .Params }}
 // With{{ pascalize .ID }} adds the {{ varname .Name  }} to the {{ humanize $.Name }} params
 func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) With{{ pascalize .ID }}({{ varname .Name  }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (not .IsStream) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{ end }}) *{{ pascalize $.Name }}Params {
-  {{ $.ReceiverName }}.{{ pascalize .ID }} = {{ varname .Name  }}
+  {{ $.ReceiverName }}.Set{{ pascalize .ID }}({{ varname .Name  }})
   return {{ .ReceiverName }}
+}
+
+// Set{{ pascalize .ID }} adds the {{ camelize .Name  }} to the {{ humanize $.Name }} params
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) Set{{ pascalize .ID }}({{ varname .Name  }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (not .IsStream) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{ end }}) {
+  {{ $.ReceiverName }}.{{ pascalize .ID }} = {{ varname .Name  }}
 }
 
 {{ end }}

@@ -32,11 +32,11 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 	// Example:
 	// s.api.Logger = log.Printf
 
-	api.JSONConsumer = runtime.JSONConsumer()
-
 	api.XMLConsumer = runtime.XMLConsumer()
 
 	api.UrlformConsumer = runtime.DiscardConsumer
+
+	api.JSONConsumer = runtime.JSONConsumer()
 
 	api.JSONProducer = runtime.JSONProducer()
 

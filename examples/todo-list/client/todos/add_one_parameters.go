@@ -4,6 +4,7 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-openapi/errors"
@@ -35,6 +36,16 @@ func NewAddOneParamsWithTimeout(timeout time.Duration) *AddOneParams {
 	}
 }
 
+// NewAddOneParamsWithContext creates a new AddOneParams object
+// with the default values initialized, and the ability to set a context for a request
+func NewAddOneParamsWithContext(ctx context.Context) *AddOneParams {
+	var ()
+	return &AddOneParams{
+
+		Context: ctx,
+	}
+}
+
 /*AddOneParams contains all the parameters to send to the API endpoint
 for the add one operation typically these are written to a http.Request
 */
@@ -44,12 +55,36 @@ type AddOneParams struct {
 	Body *models.Item
 
 	timeout time.Duration
+	Context context.Context
+}
+
+func (o *AddOneParams) WithTimeout(timeout time.Duration) *AddOneParams {
+	o.SetTimeout(timeout)
+	return o
+}
+
+func (o *AddOneParams) SetTimeout(timeout time.Duration) {
+	o.timeout = timeout
+}
+
+func (o *AddOneParams) WithContext(ctx context.Context) *AddOneParams {
+	o.SetContext(ctx)
+	return o
+}
+
+func (o *AddOneParams) SetContext(ctx context.Context) {
+	o.Context = ctx
 }
 
 // WithBody adds the body to the add one params
 func (o *AddOneParams) WithBody(body *models.Item) *AddOneParams {
-	o.Body = body
+	o.SetBody(body)
 	return o
+}
+
+// SetBody adds the body to the add one params
+func (o *AddOneParams) SetBody(body *models.Item) {
+	o.Body = body
 }
 
 // WriteToRequest writes these params to a swagger request

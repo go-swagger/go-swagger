@@ -4,6 +4,7 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-openapi/errors"
@@ -36,6 +37,16 @@ func NewUpdateTaskParamsWithTimeout(timeout time.Duration) *UpdateTaskParams {
 	}
 }
 
+// NewUpdateTaskParamsWithContext creates a new UpdateTaskParams object
+// with the default values initialized, and the ability to set a context for a request
+func NewUpdateTaskParamsWithContext(ctx context.Context) *UpdateTaskParams {
+	var ()
+	return &UpdateTaskParams{
+
+		Context: ctx,
+	}
+}
+
 /*UpdateTaskParams contains all the parameters to send to the API endpoint
 for the update task operation typically these are written to a http.Request
 */
@@ -53,18 +64,47 @@ type UpdateTaskParams struct {
 	ID int64
 
 	timeout time.Duration
+	Context context.Context
+}
+
+func (o *UpdateTaskParams) WithTimeout(timeout time.Duration) *UpdateTaskParams {
+	o.SetTimeout(timeout)
+	return o
+}
+
+func (o *UpdateTaskParams) SetTimeout(timeout time.Duration) {
+	o.timeout = timeout
+}
+
+func (o *UpdateTaskParams) WithContext(ctx context.Context) *UpdateTaskParams {
+	o.SetContext(ctx)
+	return o
+}
+
+func (o *UpdateTaskParams) SetContext(ctx context.Context) {
+	o.Context = ctx
 }
 
 // WithBody adds the body to the update task params
 func (o *UpdateTaskParams) WithBody(body *models.Task) *UpdateTaskParams {
-	o.Body = body
+	o.SetBody(body)
 	return o
+}
+
+// SetBody adds the body to the update task params
+func (o *UpdateTaskParams) SetBody(body *models.Task) {
+	o.Body = body
 }
 
 // WithID adds the id to the update task params
 func (o *UpdateTaskParams) WithID(id int64) *UpdateTaskParams {
-	o.ID = id
+	o.SetID(id)
 	return o
+}
+
+// SetID adds the id to the update task params
+func (o *UpdateTaskParams) SetID(id int64) {
+	o.ID = id
 }
 
 // WriteToRequest writes these params to a swagger request

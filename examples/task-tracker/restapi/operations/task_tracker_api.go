@@ -265,6 +265,14 @@ func (o *TaskTrackerAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	return h, ok
 }
 
+func (o *TaskTrackerAPI) Context() *middleware.Context {
+	if o.context == nil {
+		o.context = middleware.NewRoutableContext(o.spec, o, nil)
+	}
+
+	return o.context
+}
+
 func (o *TaskTrackerAPI) initHandlerCache() {
 	if o.context == nil {
 		o.context = middleware.NewRoutableContext(o.spec, o, nil)

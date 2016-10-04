@@ -4,6 +4,7 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-openapi/errors"
@@ -33,6 +34,16 @@ func NewDestroyOneParamsWithTimeout(timeout time.Duration) *DestroyOneParams {
 	}
 }
 
+// NewDestroyOneParamsWithContext creates a new DestroyOneParams object
+// with the default values initialized, and the ability to set a context for a request
+func NewDestroyOneParamsWithContext(ctx context.Context) *DestroyOneParams {
+	var ()
+	return &DestroyOneParams{
+
+		Context: ctx,
+	}
+}
+
 /*DestroyOneParams contains all the parameters to send to the API endpoint
 for the destroy one operation typically these are written to a http.Request
 */
@@ -42,12 +53,36 @@ type DestroyOneParams struct {
 	ID string
 
 	timeout time.Duration
+	Context context.Context
+}
+
+func (o *DestroyOneParams) WithTimeout(timeout time.Duration) *DestroyOneParams {
+	o.SetTimeout(timeout)
+	return o
+}
+
+func (o *DestroyOneParams) SetTimeout(timeout time.Duration) {
+	o.timeout = timeout
+}
+
+func (o *DestroyOneParams) WithContext(ctx context.Context) *DestroyOneParams {
+	o.SetContext(ctx)
+	return o
+}
+
+func (o *DestroyOneParams) SetContext(ctx context.Context) {
+	o.Context = ctx
 }
 
 // WithID adds the id to the destroy one params
 func (o *DestroyOneParams) WithID(id string) *DestroyOneParams {
-	o.ID = id
+	o.SetID(id)
 	return o
+}
+
+// SetID adds the id to the destroy one params
+func (o *DestroyOneParams) SetID(id string) {
+	o.ID = id
 }
 
 // WriteToRequest writes these params to a swagger request

@@ -4,6 +4,7 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-openapi/errors"
@@ -34,6 +35,16 @@ func NewGetTaskDetailsParamsWithTimeout(timeout time.Duration) *GetTaskDetailsPa
 	}
 }
 
+// NewGetTaskDetailsParamsWithContext creates a new GetTaskDetailsParams object
+// with the default values initialized, and the ability to set a context for a request
+func NewGetTaskDetailsParamsWithContext(ctx context.Context) *GetTaskDetailsParams {
+	var ()
+	return &GetTaskDetailsParams{
+
+		Context: ctx,
+	}
+}
+
 /*GetTaskDetailsParams contains all the parameters to send to the API endpoint
 for the get task details operation typically these are written to a http.Request
 */
@@ -46,12 +57,36 @@ type GetTaskDetailsParams struct {
 	ID int64
 
 	timeout time.Duration
+	Context context.Context
+}
+
+func (o *GetTaskDetailsParams) WithTimeout(timeout time.Duration) *GetTaskDetailsParams {
+	o.SetTimeout(timeout)
+	return o
+}
+
+func (o *GetTaskDetailsParams) SetTimeout(timeout time.Duration) {
+	o.timeout = timeout
+}
+
+func (o *GetTaskDetailsParams) WithContext(ctx context.Context) *GetTaskDetailsParams {
+	o.SetContext(ctx)
+	return o
+}
+
+func (o *GetTaskDetailsParams) SetContext(ctx context.Context) {
+	o.Context = ctx
 }
 
 // WithID adds the id to the get task details params
 func (o *GetTaskDetailsParams) WithID(id int64) *GetTaskDetailsParams {
-	o.ID = id
+	o.SetID(id)
 	return o
+}
+
+// SetID adds the id to the get task details params
+func (o *GetTaskDetailsParams) SetID(id int64) {
+	o.ID = id
 }
 
 // WriteToRequest writes these params to a swagger request

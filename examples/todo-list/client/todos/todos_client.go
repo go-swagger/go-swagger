@@ -41,6 +41,7 @@ func (a *Client) AddOne(params *AddOneParams, authInfo runtime.ClientAuthInfoWri
 		Params:             params,
 		Reader:             &AddOneReader{formats: a.formats},
 		AuthInfo:           authInfo,
+		Context:            params.Context,
 	})
 	if err != nil {
 		return nil, err
@@ -67,6 +68,7 @@ func (a *Client) DestroyOne(params *DestroyOneParams, authInfo runtime.ClientAut
 		Params:             params,
 		Reader:             &DestroyOneReader{formats: a.formats},
 		AuthInfo:           authInfo,
+		Context:            params.Context,
 	})
 	if err != nil {
 		return nil, err
@@ -93,6 +95,7 @@ func (a *Client) Find(params *FindParams, authInfo runtime.ClientAuthInfoWriter)
 		Params:             params,
 		Reader:             &FindReader{formats: a.formats},
 		AuthInfo:           authInfo,
+		Context:            params.Context,
 	})
 	if err != nil {
 		return nil, err
@@ -119,6 +122,7 @@ func (a *Client) UpdateOne(params *UpdateOneParams, authInfo runtime.ClientAuthI
 		Params:             params,
 		Reader:             &UpdateOneReader{formats: a.formats},
 		AuthInfo:           authInfo,
+		Context:            params.Context,
 	})
 	if err != nil {
 		return nil, err

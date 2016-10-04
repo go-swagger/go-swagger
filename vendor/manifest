@@ -111,7 +111,7 @@
 			"importpath": "github.com/go-openapi/runtime",
 			"repository": "https://github.com/go-openapi/runtime",
 			"vcs": "git",
-			"revision": "18efe8c11921c0ddabc8e91554971d6db1f91c7c",
+			"revision": "ce3f2781119ae104cdc0b2db0d76961a4929204c",
 			"branch": "master",
 			"notests": true
 		},
@@ -119,7 +119,7 @@
 			"importpath": "github.com/go-openapi/spec",
 			"repository": "https://github.com/go-openapi/spec",
 			"vcs": "git",
-			"revision": "6aced65f8501fe1217321abf0749d354824ba2ff",
+			"revision": "98bb9aa4969bd0b6228ad309844e0b3867e92748",
 			"branch": "master",
 			"notests": true
 		},
@@ -135,7 +135,7 @@
 			"importpath": "github.com/go-openapi/swag",
 			"repository": "https://github.com/go-openapi/swag",
 			"vcs": "git",
-			"revision": "0e04f5e499b19bf51031c01a00f098f25067d8dc",
+			"revision": "c98c5a1cc708d9860aeeceea6391da6f223d479c",
 			"branch": "master",
 			"notests": true
 		},
@@ -143,7 +143,7 @@
 			"importpath": "github.com/go-openapi/validate",
 			"repository": "https://github.com/go-openapi/validate",
 			"vcs": "git",
-			"revision": "deaf2c9013bc1a7f4c774662259a506ba874d80f",
+			"revision": "03d947b0268e1c2bb5c74ac4095447f140c9a112",
 			"branch": "master",
 			"notests": true
 		},

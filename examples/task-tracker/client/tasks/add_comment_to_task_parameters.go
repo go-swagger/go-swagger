@@ -4,6 +4,7 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-openapi/errors"
@@ -34,6 +35,16 @@ func NewAddCommentToTaskParamsWithTimeout(timeout time.Duration) *AddCommentToTa
 	}
 }
 
+// NewAddCommentToTaskParamsWithContext creates a new AddCommentToTaskParams object
+// with the default values initialized, and the ability to set a context for a request
+func NewAddCommentToTaskParamsWithContext(ctx context.Context) *AddCommentToTaskParams {
+	var ()
+	return &AddCommentToTaskParams{
+
+		Context: ctx,
+	}
+}
+
 /*AddCommentToTaskParams contains all the parameters to send to the API endpoint
 for the add comment to task operation typically these are written to a http.Request
 */
@@ -51,18 +62,47 @@ type AddCommentToTaskParams struct {
 	ID int64
 
 	timeout time.Duration
+	Context context.Context
+}
+
+func (o *AddCommentToTaskParams) WithTimeout(timeout time.Duration) *AddCommentToTaskParams {
+	o.SetTimeout(timeout)
+	return o
+}
+
+func (o *AddCommentToTaskParams) SetTimeout(timeout time.Duration) {
+	o.timeout = timeout
+}
+
+func (o *AddCommentToTaskParams) WithContext(ctx context.Context) *AddCommentToTaskParams {
+	o.SetContext(ctx)
+	return o
+}
+
+func (o *AddCommentToTaskParams) SetContext(ctx context.Context) {
+	o.Context = ctx
 }
 
 // WithBody adds the body to the add comment to task params
 func (o *AddCommentToTaskParams) WithBody(body AddCommentToTaskBody) *AddCommentToTaskParams {
-	o.Body = body
+	o.SetBody(body)
 	return o
+}
+
+// SetBody adds the body to the add comment to task params
+func (o *AddCommentToTaskParams) SetBody(body AddCommentToTaskBody) {
+	o.Body = body
 }
 
 // WithID adds the id to the add comment to task params
 func (o *AddCommentToTaskParams) WithID(id int64) *AddCommentToTaskParams {
-	o.ID = id
+	o.SetID(id)
 	return o
+}
+
+// SetID adds the id to the add comment to task params
+func (o *AddCommentToTaskParams) SetID(id int64) {
+	o.ID = id
 }
 
 // WriteToRequest writes these params to a swagger request

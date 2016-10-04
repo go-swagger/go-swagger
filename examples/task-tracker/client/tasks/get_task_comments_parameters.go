@@ -4,6 +4,7 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-openapi/errors"
@@ -40,6 +41,19 @@ func NewGetTaskCommentsParamsWithTimeout(timeout time.Duration) *GetTaskComments
 	}
 }
 
+// NewGetTaskCommentsParamsWithContext creates a new GetTaskCommentsParams object
+// with the default values initialized, and the ability to set a context for a request
+func NewGetTaskCommentsParamsWithContext(ctx context.Context) *GetTaskCommentsParams {
+	var (
+		pageSizeDefault int32 = int32(20)
+	)
+	return &GetTaskCommentsParams{
+		PageSize: &pageSizeDefault,
+
+		Context: ctx,
+	}
+}
+
 /*GetTaskCommentsParams contains all the parameters to send to the API endpoint
 for the get task comments operation typically these are written to a http.Request
 */
@@ -62,24 +76,58 @@ type GetTaskCommentsParams struct {
 	Since *strfmt.DateTime
 
 	timeout time.Duration
+	Context context.Context
+}
+
+func (o *GetTaskCommentsParams) WithTimeout(timeout time.Duration) *GetTaskCommentsParams {
+	o.SetTimeout(timeout)
+	return o
+}
+
+func (o *GetTaskCommentsParams) SetTimeout(timeout time.Duration) {
+	o.timeout = timeout
+}
+
+func (o *GetTaskCommentsParams) WithContext(ctx context.Context) *GetTaskCommentsParams {
+	o.SetContext(ctx)
+	return o
+}
+
+func (o *GetTaskCommentsParams) SetContext(ctx context.Context) {
+	o.Context = ctx
 }
 
 // WithID adds the id to the get task comments params
 func (o *GetTaskCommentsParams) WithID(id int64) *GetTaskCommentsParams {
-	o.ID = id
+	o.SetID(id)
 	return o
+}
+
+// SetID adds the id to the get task comments params
+func (o *GetTaskCommentsParams) SetID(id int64) {
+	o.ID = id
 }
 
 // WithPageSize adds the pageSize to the get task comments params
 func (o *GetTaskCommentsParams) WithPageSize(pageSize *int32) *GetTaskCommentsParams {
-	o.PageSize = pageSize
+	o.SetPageSize(pageSize)
 	return o
+}
+
+// SetPageSize adds the pageSize to the get task comments params
+func (o *GetTaskCommentsParams) SetPageSize(pageSize *int32) {
+	o.PageSize = pageSize
 }
 
 // WithSince adds the since to the get task comments params
 func (o *GetTaskCommentsParams) WithSince(since *strfmt.DateTime) *GetTaskCommentsParams {
-	o.Since = since
+	o.SetSince(since)
 	return o
+}
+
+// SetSince adds the since to the get task comments params
+func (o *GetTaskCommentsParams) SetSince(since *strfmt.DateTime) {
+	o.Since = since
 }
 
 // WriteToRequest writes these params to a swagger request

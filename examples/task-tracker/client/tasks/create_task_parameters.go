@@ -4,6 +4,7 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-openapi/errors"
@@ -35,6 +36,16 @@ func NewCreateTaskParamsWithTimeout(timeout time.Duration) *CreateTaskParams {
 	}
 }
 
+// NewCreateTaskParamsWithContext creates a new CreateTaskParams object
+// with the default values initialized, and the ability to set a context for a request
+func NewCreateTaskParamsWithContext(ctx context.Context) *CreateTaskParams {
+	var ()
+	return &CreateTaskParams{
+
+		Context: ctx,
+	}
+}
+
 /*CreateTaskParams contains all the parameters to send to the API endpoint
 for the create task operation typically these are written to a http.Request
 */
@@ -47,12 +58,36 @@ type CreateTaskParams struct {
 	Body *models.Task
 
 	timeout time.Duration
+	Context context.Context
+}
+
+func (o *CreateTaskParams) WithTimeout(timeout time.Duration) *CreateTaskParams {
+	o.SetTimeout(timeout)
+	return o
+}
+
+func (o *CreateTaskParams) SetTimeout(timeout time.Duration) {
+	o.timeout = timeout
+}
+
+func (o *CreateTaskParams) WithContext(ctx context.Context) *CreateTaskParams {
+	o.SetContext(ctx)
+	return o
+}
+
+func (o *CreateTaskParams) SetContext(ctx context.Context) {
+	o.Context = ctx
 }
 
 // WithBody adds the body to the create task params
 func (o *CreateTaskParams) WithBody(body *models.Task) *CreateTaskParams {
-	o.Body = body
+	o.SetBody(body)
 	return o
+}
+
+// SetBody adds the body to the create task params
+func (o *CreateTaskParams) SetBody(body *models.Task) {
+	o.Body = body
 }
 
 // WriteToRequest writes these params to a swagger request

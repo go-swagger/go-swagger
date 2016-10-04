@@ -15,6 +15,7 @@
 package validate
 
 import (
+	"encoding/json"
 	"reflect"
 
 	"github.com/go-openapi/spec"
@@ -96,6 +97,30 @@ func (s *SchemaValidator) Validate(data interface{}) *Result {
 	d := data
 	if kind == reflect.Struct {
 		d = swag.ToDynamicJSON(data)
+	}
+
+	isnumber := s.Schema.Type.Contains("number") || s.Schema.Type.Contains("integer")
+	if num, ok := data.(json.Number); ok && isnumber {
+		if s.Schema.Type.Contains("integer") { // avoid lossy conversion
+			in, erri := num.Int64()
+			if erri != nil {
+				result.AddErrors(erri)
+				result.Inc()
+				return result
+			}
+			d = in
+		} else {
+			nf, errf := num.Float64()
+			if errf != nil {
+				result.AddErrors(errf)
+				result.Inc()
+				return result
+			}
+			d = nf
+		}
+
+		tpe = reflect.TypeOf(d)
+		kind = tpe.Kind()
 	}
 
 	for _, v := range s.validators {

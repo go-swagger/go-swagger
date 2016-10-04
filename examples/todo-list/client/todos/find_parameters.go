@@ -4,6 +4,7 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-openapi/errors"
@@ -34,6 +35,16 @@ func NewFindParamsWithTimeout(timeout time.Duration) *FindParams {
 	}
 }
 
+// NewFindParamsWithContext creates a new FindParams object
+// with the default values initialized, and the ability to set a context for a request
+func NewFindParamsWithContext(ctx context.Context) *FindParams {
+	var ()
+	return &FindParams{
+
+		Context: ctx,
+	}
+}
+
 /*FindParams contains all the parameters to send to the API endpoint
 for the find operation typically these are written to a http.Request
 */
@@ -47,24 +58,58 @@ type FindParams struct {
 	Tags []int32
 
 	timeout time.Duration
+	Context context.Context
+}
+
+func (o *FindParams) WithTimeout(timeout time.Duration) *FindParams {
+	o.SetTimeout(timeout)
+	return o
+}
+
+func (o *FindParams) SetTimeout(timeout time.Duration) {
+	o.timeout = timeout
+}
+
+func (o *FindParams) WithContext(ctx context.Context) *FindParams {
+	o.SetContext(ctx)
+	return o
+}
+
+func (o *FindParams) SetContext(ctx context.Context) {
+	o.Context = ctx
 }
 
 // WithXRateLimit adds the xRateLimit to the find params
 func (o *FindParams) WithXRateLimit(xRateLimit int32) *FindParams {
-	o.XRateLimit = xRateLimit
+	o.SetXRateLimit(xRateLimit)
 	return o
+}
+
+// SetXRateLimit adds the xRateLimit to the find params
+func (o *FindParams) SetXRateLimit(xRateLimit int32) {
+	o.XRateLimit = xRateLimit
 }
 
 // WithLimit adds the limit to the find params
 func (o *FindParams) WithLimit(limit int32) *FindParams {
-	o.Limit = limit
+	o.SetLimit(limit)
 	return o
+}
+
+// SetLimit adds the limit to the find params
+func (o *FindParams) SetLimit(limit int32) {
+	o.Limit = limit
 }
 
 // WithTags adds the tags to the find params
 func (o *FindParams) WithTags(tags []int32) *FindParams {
-	o.Tags = tags
+	o.SetTags(tags)
 	return o
+}
+
+// SetTags adds the tags to the find params
+func (o *FindParams) SetTags(tags []int32) {
+	o.Tags = tags
 }
 
 // WriteToRequest writes these params to a swagger request
