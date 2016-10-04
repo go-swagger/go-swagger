@@ -1,6 +1,6 @@
 machine:
   environment:
-    GOCOVMODE: "mode: count"
+    GOCOVMODE: "mode: atomic"
   services:
     - docker
 
@@ -15,10 +15,11 @@ dependencies:
     - docker build -t go-swagger/go-swagger:ci-$CIRCLE_BUILD_NUM-$CIRCLE_SHA1 -f Dockerfile.ci .
 
 test:
+  post:
+    - bash <(curl -s https://codecov.io/bash)
+
   override:
     - mkdir -p $CIRCLE_TEST_REPORTS/go
     - mkdir -p $CIRCLE_ARTIFACTS/dist
-    - docker run -v `pwd`:/go/src/github.com/go-swagger/go-swagger -v $CIRCLE_ARTIFACTS/dist:/usr/share/dist -v $CIRCLE_TEST_REPORTS/go:/usr/share/testresults -v $CIRCLE_ARTIFACTS:/usr/share/coverage -e CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM -e CIRCLE_PROJECT_USERNAME=$CIRCLE_PROJECT_USERNAME -e CIRCLE_PROJECT_REPONAME=$CIRCLE_PROJECT_REPONAME -w /go/src/github.com/go-swagger/go-swagger go-swagger/go-swagger:ci-$CIRCLE_BUILD_NUM-$CIRCLE_SHA1 ./hack/build-docker.sh
+    - docker run -v `pwd`:/go/src/github.com/go-swagger/go-swagger -v $CIRCLE_ARTIFACTS/dist:/usr/share/dist -v $CIRCLE_TEST_REPORTS/go:/usr/share/testresults -v $CIRCLE_ARTIFACTS:/usr/share/coverage -e CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM -e CIRCLE_PROJECT_USERNAME=$CIRCLE_PROJECT_USERNAME -e CIRCLE_PROJECT_REPONAME=$CIRCLE_PROJECT_REPONAME -w /go/src/github.com/go-swagger/go-swagger go-swagger/go-swagger:ci-$CIRCLE_BUILD_NUM-$CIRCLE_SHA1 ./hack/build-docker.sh:
         timeout: 1800 # Fail if command has no output for 30 mins.  Probably doesn't need that long.
-  post:
-    - bash <(curl -s https://codecov.io/bash)
