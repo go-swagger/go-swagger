@@ -30,6 +30,7 @@ type Operation struct {
 	NoHandler     bool     `long:"skip-handler" description:"when present will not generate an operation handler"`
 	NoStruct      bool     `long:"skip-parameters" description:"when present will not generate the parameter model struct"`
 	NoResponses   bool     `long:"skip-responses" description:"when present will not generate the response model struct"`
+	NoValidator   bool     `long:"skip-validator" description:"when present will not generate a model validator"`
 	DumpData      bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
 }
 
@@ -44,6 +45,7 @@ func (o *Operation) Execute(args []string) error {
 		!o.NoHandler,
 		!o.NoStruct,
 		!o.NoResponses,
+		!o.NoValidator,
 		generator.GenOpts{
 			Spec:          string(o.Spec),
 			Target:        string(o.Target),
