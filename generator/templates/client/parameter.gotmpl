@@ -6,6 +6,9 @@ package {{ .Package }}
 import (
   "os"
   "net/http"
+
+  "golang.org/x/net/context"
+
   "github.com/go-openapi/runtime"
   "github.com/go-openapi/swag"
   "github.com/go-openapi/errors"
