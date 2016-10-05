@@ -462,7 +462,7 @@ func TestTypeResolver_AnonymousStructs(t *testing.T) {
 
 		rt, err = resolver.ResolveSchema(parent, true, true)
 		if assert.NoError(t, err) {
-			assert.True(t, rt.IsNullable)
+			assert.False(t, rt.IsNullable)
 			assert.True(t, rt.IsAnonymous)
 			assert.True(t, rt.IsComplexObject)
 		}
