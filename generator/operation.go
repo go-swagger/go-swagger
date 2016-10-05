@@ -564,9 +564,15 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 	sort.Sort(res.Headers)
 
 	if resp.Schema != nil {
+		var title string
+		if resp.Schema.Title != "" {
+			title = resp.Schema.Title
+		} else {
+			title = name + "Body"
+		}
 		sc := schemaGenContext{
 			Path:             fmt.Sprintf("%q", name),
-			Name:             name + "Body",
+			Name:             title,
 			Receiver:         receiver,
 			ValueExpr:        receiver,
 			IndexVar:         "i",
@@ -592,7 +598,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 		schema := sc.GenSchema
 		if schema.IsAnonymous {
 
-			schema.Name = swag.ToGoName(sc.Name + " Body")
+			schema.Name = swag.ToGoName(sc.Name)
 			nm := schema.Name
 			if b.ExtraSchemas == nil {
 				b.ExtraSchemas = make(map[string]GenSchema)
