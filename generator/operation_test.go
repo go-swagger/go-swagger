@@ -139,10 +139,10 @@ func TestMakeResponse_WithAllOfSchema(t *testing.T) {
 		gO, err := b.MakeResponse("a", "get /media/search", true, resolver, 200, b.Operation.Responses.StatusCodeResponses[200])
 		if assert.NoError(t, err) {
 			if assert.NotNil(t, gO.Schema) {
-				assert.Equal(t, "GetMediaSearchBodyBody", gO.Schema.GoType)
+				assert.Equal(t, "GetMediaSearchBody", gO.Schema.GoType)
 			}
 			if assert.NotEmpty(t, b.ExtraSchemas) {
-				body := b.ExtraSchemas["GetMediaSearchBodyBody"]
+				body := b.ExtraSchemas["GetMediaSearchBody"]
 				if assert.NotEmpty(t, body.Properties) {
 					prop := body.Properties[0]
 					assert.Equal(t, "data", prop.Name)
