@@ -114,6 +114,20 @@ var FuncMap template.FuncMap = map[string]interface{}{
 		}
 		return false
 	},
+	"padSurround": func(entry, padWith string, i, ln int) string {
+		var res []string
+		if i > 0 {
+			for j := 0; j < i; j++ {
+				res = append(res, padWith)
+			}
+		}
+		res = append(res, entry)
+		tot := ln - i - 1
+		for j := 0; j < tot; j++ {
+			res = append(res, padWith)
+		}
+		return strings.Join(res, ",")
+	},
 }
 
 // NewRepository creates a new template repository with the provided functions defined

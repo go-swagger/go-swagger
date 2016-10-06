@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strconv"
 
 	"github.com/go-openapi/spec"
@@ -251,7 +252,11 @@ func (g GenOperationGroups) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
 func (g GenOperationGroups) Less(i, j int) bool { return g[i].Name < g[j].Name }
 
 // GenStatusCodeResponses a container for status code responses
-type GenStatusCodeResponses map[int]GenResponse
+type GenStatusCodeResponses []GenResponse
+
+func (g GenStatusCodeResponses) Len() int           { return len(g) }
+func (g GenStatusCodeResponses) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
+func (g GenStatusCodeResponses) Less(i, j int) bool { return g[i].Code < g[j].Code }
 
 // MarshalJSON marshals these responses to json
 func (g GenStatusCodeResponses) MarshalJSON() ([]byte, error) {
@@ -261,7 +266,7 @@ func (g GenStatusCodeResponses) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	buf.WriteRune('{')
 	s := 0
-	for k, v := range g {
+	for _, v := range g {
 		rb, err := json.Marshal(v)
 		if err != nil {
 			return nil, err
@@ -269,7 +274,7 @@ func (g GenStatusCodeResponses) MarshalJSON() ([]byte, error) {
 		if s > 0 {
 			buf.WriteRune(',')
 		}
-		buf.WriteString(fmt.Sprintf("%q:", strconv.Itoa(k)))
+		buf.WriteString(fmt.Sprintf("%q:", strconv.Itoa(v.Code)))
 		buf.Write(rb)
 	}
 	buf.WriteRune('}')
@@ -282,18 +287,12 @@ func (g *GenStatusCodeResponses) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &dd); err != nil {
 		return err
 	}
-	var gg map[int]GenResponse
-	for k, v := range dd {
-		if gg == nil {
-			gg = make(map[int]GenResponse)
-		}
-		ii, err := strconv.Atoi(k)
-		if err != nil {
-			return err
-		}
-		gg[ii] = v
+	var gg GenStatusCodeResponses
+	for _, v := range dd {
+		gg = append(gg, v)
 	}
-	*g = GenStatusCodeResponses(gg)
+	sort.Sort(gg)
+	*g = gg
 	return nil
 }
 
@@ -316,9 +315,10 @@ type GenOperation struct {
 	Authorized bool
 	Principal  string
 
-	SuccessResponse *GenResponse
-	Responses       GenStatusCodeResponses
-	DefaultResponse *GenResponse
+	SuccessResponse  *GenResponse
+	SuccessResponses []GenResponse
+	Responses        GenStatusCodeResponses
+	DefaultResponse  *GenResponse
 
 	Params               GenParameters
 	QueryParams          GenParameters
