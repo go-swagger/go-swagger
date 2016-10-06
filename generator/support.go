@@ -435,7 +435,7 @@ func mediaTypeName(tn string) (string, bool) {
 	return "", false
 }
 
-func (a *appGenerator) makeConsumes() (consumes []GenSerGroup, consumesJSON bool) {
+func (a *appGenerator) makeConsumes() (consumes GenSerGroups, consumesJSON bool) {
 	for _, cons := range a.Analyzed.RequiredConsumes() {
 		cn, ok := mediaTypeName(cons)
 		if !ok {
@@ -494,7 +494,7 @@ func (a *appGenerator) makeConsumes() (consumes []GenSerGroup, consumesJSON bool
 	return
 }
 
-func (a *appGenerator) makeProduces() (produces []GenSerGroup, producesJSON bool) {
+func (a *appGenerator) makeProduces() (produces GenSerGroups, producesJSON bool) {
 	for _, prod := range a.Analyzed.RequiredProduces() {
 		pn, ok := mediaTypeName(prod)
 		if !ok {
@@ -513,8 +513,10 @@ func (a *appGenerator) makeProduces() (produces []GenSerGroup, producesJSON bool
 				MediaType:      prod,
 				Implementation: knownProducers[nm],
 			})
+			sort.Sort(ser.AllSerializers)
 			continue
 		}
+
 		ser := GenSerializer{
 			AppName:        a.Name,
 			ReceiverName:   a.Receiver,
@@ -552,7 +554,7 @@ func (a *appGenerator) makeProduces() (produces []GenSerGroup, producesJSON bool
 	return
 }
 
-func (a *appGenerator) makeSecuritySchemes() (security []GenSecurityScheme) {
+func (a *appGenerator) makeSecuritySchemes() (security GenSecuritySchemes) {
 
 	prin := a.Principal
 	if prin == "" {
@@ -582,7 +584,7 @@ func (a *appGenerator) makeSecuritySchemes() (security []GenSecurityScheme) {
 			})
 		}
 	}
-
+	sort.Sort(security)
 	return
 }
 
@@ -597,7 +599,8 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	consumes, _ := a.makeConsumes()
 	produces, _ := a.makeProduces()
-
+	sort.Sort(consumes)
+	sort.Sort(produces)
 	prin := a.Principal
 	if prin == "" {
 		prin = "interface{}"
@@ -713,6 +716,8 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		collectedSchemes = concatUnique(collectedSchemes, op.Schemes)
 		extraSchemes = concatUnique(extraSchemes, op.ExtraSchemes)
 	}
+	sort.Strings(collectedSchemes)
+	sort.Strings(extraSchemes)
 
 	host := "localhost"
 	if sw.Host != "" {

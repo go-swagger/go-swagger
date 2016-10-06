@@ -51,6 +51,7 @@ func (a *Client) AddCommentToTask(params *AddCommentToTaskParams, authInfo runti
 		return nil, err
 	}
 	return result.(*AddCommentToTaskCreated), nil
+
 }
 
 /*
@@ -83,6 +84,7 @@ func (a *Client) CreateTask(params *CreateTaskParams, authInfo runtime.ClientAut
 		return nil, err
 	}
 	return result.(*CreateTaskCreated), nil
+
 }
 
 /*
@@ -113,6 +115,7 @@ func (a *Client) DeleteTask(params *DeleteTaskParams, authInfo runtime.ClientAut
 		return nil, err
 	}
 	return result.(*DeleteTaskNoContent), nil
+
 }
 
 /*
@@ -142,6 +145,7 @@ func (a *Client) GetTaskComments(params *GetTaskCommentsParams) (*GetTaskComment
 		return nil, err
 	}
 	return result.(*GetTaskCommentsOK), nil
+
 }
 
 /*
@@ -174,6 +178,7 @@ func (a *Client) GetTaskDetails(params *GetTaskDetailsParams) (*GetTaskDetailsOK
 		return nil, err
 	}
 	return result.(*GetTaskDetailsOK), nil
+
 }
 
 /*
@@ -206,6 +211,7 @@ func (a *Client) ListTasks(params *ListTasksParams) (*ListTasksOK, error) {
 		return nil, err
 	}
 	return result.(*ListTasksOK), nil
+
 }
 
 /*
@@ -238,6 +244,7 @@ func (a *Client) UpdateTask(params *UpdateTaskParams, authInfo runtime.ClientAut
 		return nil, err
 	}
 	return result.(*UpdateTaskOK), nil
+
 }
 
 /*
@@ -267,6 +274,7 @@ func (a *Client) UploadTaskFile(params *UploadTaskFileParams, authInfo runtime.C
 		return nil, err
 	}
 	return result.(*UploadTaskFileCreated), nil
+
 }
 
 // SetTransport changes the transport on the client

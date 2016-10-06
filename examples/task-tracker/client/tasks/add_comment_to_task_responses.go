@@ -7,9 +7,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -125,42 +123,4 @@ type AddCommentToTaskBody struct {
 	Required: true
 	*/
 	UserID *int64 `json:"userId"`
-}
-
-// Validate validates this add comment to task body
-func (o *AddCommentToTaskBody) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := o.validateContent(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := o.validateUserID(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (o *AddCommentToTaskBody) validateContent(formats strfmt.Registry) error {
-
-	if err := validate.Required("body"+"."+"content", "body", o.Content); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *AddCommentToTaskBody) validateUserID(formats strfmt.Registry) error {
-
-	if err := validate.Required("body"+"."+"userId", "body", o.UserID); err != nil {
-		return err
-	}
-
-	return nil
 }

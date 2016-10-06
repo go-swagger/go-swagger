@@ -364,8 +364,8 @@ type GenApp struct {
 	DefaultImports      []string
 	Schemes             []string
 	ExtraSchemes        []string
-	Consumes            []GenSerGroup
-	Produces            []GenSerGroup
+	Consumes            GenSerGroups
+	Produces            GenSerGroups
 	SecurityDefinitions []GenSecurityScheme
 	Models              []GenDefinition
 	Operations          GenOperations
@@ -376,6 +376,13 @@ type GenApp struct {
 	GenOpts             *GenOpts
 }
 
+// GenSerGroups sorted representation of serializer groups
+type GenSerGroups []GenSerGroup
+
+func (g GenSerGroups) Len() int           { return len(g) }
+func (g GenSerGroups) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
+func (g GenSerGroups) Less(i, j int) bool { return g[i].MediaType < g[j].MediaType }
+
 // GenSerGroup represents a group of serializers, most likely this is a media type to a list of
 // prioritized serializers.
 type GenSerGroup struct {
@@ -384,8 +391,15 @@ type GenSerGroup struct {
 	Name           string
 	MediaType      string
 	Implementation string
-	AllSerializers []GenSerializer
+	AllSerializers GenSerializers
 }
+
+// GenSerializers sorted representation of serializers
+type GenSerializers []GenSerializer
+
+func (g GenSerializers) Len() int           { return len(g) }
+func (g GenSerializers) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
+func (g GenSerializers) Less(i, j int) bool { return g[i].MediaType < g[j].MediaType }
 
 // GenSerializer represents a single serializer for a particular media type
 type GenSerializer struct {
@@ -395,6 +409,13 @@ type GenSerializer struct {
 	MediaType      string
 	Implementation string
 }
+
+// GenSecuritySchemes sorted representation of serializers
+type GenSecuritySchemes []GenSecurityScheme
+
+func (g GenSecuritySchemes) Len() int           { return len(g) }
+func (g GenSecuritySchemes) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
+func (g GenSecuritySchemes) Less(i, j int) bool { return g[i].Name < g[j].Name }
 
 // GenSecurityScheme represents a security scheme for code generation
 type GenSecurityScheme struct {
