@@ -411,7 +411,10 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	sort.Sort(hp)
 	sort.Sort(fp)
 
-	srs := sortedResponses(operation.Responses.StatusCodeResponses)
+	var srs responses
+	if operation.Responses != nil {
+		srs = sortedResponses(operation.Responses.StatusCodeResponses)
+	}
 	responses := make([]GenResponse, 0, len(srs))
 	var defaultResponse *GenResponse
 	var successResponses []GenResponse

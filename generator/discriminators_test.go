@@ -185,7 +185,7 @@ func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 			}
 			genOp, err := bldr.MakeOperation()
 			if assert.NoError(t, err) {
-				assert.True(t, genOp.Responses[200].Schema.IsBaseType)
+				assert.True(t, genOp.Responses[0].Schema.IsBaseType)
 				var buf bytes.Buffer
 				err := clientResponseTemplate.Execute(&buf, genOp)
 				if assert.NoError(t, err) {
@@ -221,7 +221,7 @@ func TestGenerateServer_Parameters(t *testing.T) {
 			}
 			genOp, err := bldr.MakeOperation()
 			if assert.NoError(t, err) {
-				assert.True(t, genOp.Responses[200].Schema.IsBaseType)
+				assert.True(t, genOp.Responses[0].Schema.IsBaseType)
 				var buf bytes.Buffer
 				err := parameterTemplate.Execute(&buf, genOp)
 				if assert.NoError(t, err) {
