@@ -30,6 +30,28 @@ import (
 	"github.com/go-openapi/swag"
 )
 
+type respSort struct {
+	Code     int
+	Response spec.Response
+}
+
+type responses []respSort
+
+func (s responses) Len() int           { return len(s) }
+func (s responses) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+func (s responses) Less(i, j int) bool { return s[i].Code < s[j].Code }
+
+func sortedResponses(input map[int]spec.Response) responses {
+	var res responses
+	for k, v := range input {
+		if k > 0 {
+			res = append(res, respSort{k, v})
+		}
+	}
+	sort.Sort(res)
+	return res
+}
+
 // GenerateServerOperation generates a parameter model, parameter validator, http handler implementations for a given operation
 // It also generates an operation handler interface that uses the parameter model for handling a valid request.
 // Allows for specifying a list of tags to include only certain tags for the generation
@@ -389,23 +411,24 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	sort.Sort(hp)
 	sort.Sort(fp)
 
-	var responses map[int]GenResponse
-	var defaultResponse *GenResponse
-	var successResponse *GenResponse
+	var srs responses
 	if operation.Responses != nil {
-		for k, v := range operation.Responses.StatusCodeResponses {
-			isSuccess := k/100 == 2
-			gr, err := b.MakeResponse(receiver, swag.ToJSONName(b.Name+" "+runtime.Statuses[k]), isSuccess, resolver, k, v)
+		srs = sortedResponses(operation.Responses.StatusCodeResponses)
+	}
+	responses := make([]GenResponse, 0, len(srs))
+	var defaultResponse *GenResponse
+	var successResponses []GenResponse
+	if operation.Responses != nil {
+		for _, v := range srs {
+			isSuccess := v.Code/100 == 2
+			gr, err := b.MakeResponse(receiver, swag.ToJSONName(b.Name+" "+runtime.Statuses[v.Code]), isSuccess, resolver, v.Code, v.Response)
 			if err != nil {
 				return GenOperation{}, err
 			}
 			if isSuccess {
-				successResponse = &gr
+				successResponses = append(successResponses, gr)
 			}
-			if responses == nil {
-				responses = make(map[int]GenResponse)
-			}
-			responses[k] = gr
+			responses = append(responses, gr)
 		}
 
 		if operation.Responses.Default != nil {
@@ -448,8 +471,18 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	if defaultResponse != nil && defaultResponse.Schema != nil && defaultResponse.Schema.IsStream {
 		hasStreamingResponse = true
 	}
-	if !hasStreamingResponse && successResponse != nil && successResponse.Schema != nil && successResponse.Schema.IsStream {
-		hasStreamingResponse = true
+	var successResponse *GenResponse
+	for _, sr := range successResponses {
+		if sr.IsSuccess {
+			successResponse = &sr
+			break
+		}
+	}
+	for _, sr := range successResponses {
+		if !hasStreamingResponse && sr.Schema != nil && sr.Schema.IsStream {
+			hasStreamingResponse = true
+			break
+		}
 	}
 	if !hasStreamingResponse {
 		for _, r := range responses {
@@ -486,6 +519,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		Responses:            responses,
 		DefaultResponse:      defaultResponse,
 		SuccessResponse:      successResponse,
+		SuccessResponses:     successResponses,
 		ExtraSchemas:         extra,
 		Schemes:              schemeOrDefault(schemes, b.DefaultScheme),
 		ProducesMediaTypes:   produces,

@@ -38,12 +38,12 @@ type Client struct {
 
 {{ .Description }}{{ end }}{{ else if .Description}}{{ .Description }}{{ else }}{{ humanize .Name }} API{{ end }}
 */
-func (a *Client) {{ pascalize .Name }}(params *{{ pascalize .Name }}Params{{ if .Authorized }}, authInfo runtime.ClientAuthInfoWriter{{end}}{{ if .HasStreamingResponse }}, writer io.Writer{{ end }}) {{ if .SuccessResponse }}(*{{ pascalize .SuccessResponse.Name }}, {{ end }}error{{ if .SuccessResponse }}){{ end }} {
+func (a *Client) {{ pascalize .Name }}(params *{{ pascalize .Name }}Params{{ if .Authorized }}, authInfo runtime.ClientAuthInfoWriter{{end}}{{ if .HasStreamingResponse }}, writer io.Writer{{ end }}) {{ if .SuccessResponse }}({{ range .SuccessResponses }}*{{ pascalize .Name }}, {{ end }}{{ end }}error{{ if .SuccessResponse }}){{ end }} {
   // TODO: Validate the params before sending
   if params == nil {
     params = New{{ pascalize .Name }}Params()
   }
-
+  {{ $length := len .SuccessResponses }}
   {{ if .SuccessResponse }}result{{else}}_{{ end }}, err := a.transport.Submit(&runtime.ClientOperation{
     ID: {{ printf "%q" .Name }},
     Method: {{ printf "%q" .Method }},
@@ -57,9 +57,14 @@ func (a *Client) {{ pascalize .Name }}(params *{{ pascalize .Name }}Params{{ if 
     Context: params.Context,
   })
   if err != nil {
-    return {{ if .SuccessResponse }}nil, {{ end }}err
+    return {{ if .SuccessResponse }}{{ padSurround "nil" "nil" 0 $length }}, {{ end }}err
   }
-  return {{ if .SuccessResponse }}result.(*{{ pascalize .SuccessResponse.Name }}), {{ end }}nil
+  {{ if .SuccessResponse }}{{ if eq $length 1 }}return result.(*{{ pascalize .SuccessResponse.Name }}), nil{{ else }}switch value := result.(type) { {{ range $i, $v := .SuccessResponses }}
+    case *{{ pascalize $v.Name }}:
+      return {{ padSurround "value" "nil" $i $length }}, nil{{ end }} }
+  return {{ padSurround "nil" "nil" 0 $length }}, nil{{ end }}
+  {{ else }}return nil{{ end }}
+
 }
 {{ end }}
 

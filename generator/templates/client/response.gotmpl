@@ -104,13 +104,13 @@ type {{ pascalize .Name }}Reader struct {
 // ReadResponse reads a server response into the received {{ .ReceiverName }}.
 func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
   switch response.Code() {
-  {{ range $key, $value := .Responses }}
-    case {{ $key }}:
-      result := New{{ pascalize $value.Name }}({{ if $value.Schema }}{{ if $value.Schema.IsStream }}{{ $.ReceiverName }}.writer{{ end }}{{ end }})
+  {{ range .Responses }}
+    case {{ .Code }}:
+      result := New{{ pascalize .Name }}({{ if .Schema }}{{ if .Schema.IsStream }}{{ $.ReceiverName }}.writer{{ end }}{{ end }})
       if err := result.readResponse(response, consumer, {{ $.ReceiverName }}.formats); err != nil {
         return nil, err
       }
-      return {{ if $value.IsSuccess }}result, nil{{else}}nil, result{{end}}
+      return {{ if .IsSuccess }}result, nil{{else}}nil, result{{end}}
   {{end}}{{ if .DefaultResponse }}{{ with .DefaultResponse }}
     default:
       result := New{{ pascalize .Name }}(response.Code(){{ if .Schema }}{{ if .Schema.IsStream }}, {{ $.ReceiverName }}.writer{{ end }}{{ end }})
@@ -123,8 +123,8 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response ru
   }
 }
 
-{{ range $key, $value := .Responses }}
-{{ template "clientresponse" $value }}
+{{ range .Responses }}
+{{ template "clientresponse" . }}
 {{ end }}
 {{ if .DefaultResponse }}
 {{ template "clientresponse" .DefaultResponse }}

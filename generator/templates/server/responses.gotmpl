@@ -106,8 +106,8 @@ import (
   {{ end }}
 )
 
-{{ range $key, $value := .Responses }}
-{{ template "serverresponse" $value }}
+{{ range .Responses }}
+{{ template "serverresponse" . }}
 {{ end }}
 {{ if .DefaultResponse }}
 {{ template "serverresponse" .DefaultResponse }}
