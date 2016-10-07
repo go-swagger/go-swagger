@@ -16,6 +16,7 @@ package generate
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -42,11 +43,23 @@ type Client struct {
 func (c *Client) Execute(args []string) error {
 	var cfg *viper.Viper
 	if string(c.ConfigFile) != "" {
-		v, err := generator.ReadConfig(string(c.ConfigFile))
+		apt, err := filepath.Abs(string(c.ConfigFile))
+		if err != nil {
+			log.Fatalln(err)
+		}
+		log.Println("trying to read config from", apt)
+		v, err := generator.ReadConfig(apt)
 		if err != nil {
 			return err
 		}
 		cfg = v
+	}
+	if os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != "" {
+		if cfg != nil {
+			cfg.Debug()
+		} else {
+			log.Println("NO config read")
+		}
 	}
 
 	opts := &generator.GenOpts{

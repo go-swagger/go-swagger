@@ -35,6 +35,10 @@ joinFilePath | joins the arguments as a file path, cross platform
 
 ## Server generation
 
+```shell
+swagger generate server -A TodoList -f ./swagger.json -C default-server.yml
+```
+
 For the default server generator this config file would have the following content:
 
 ```yaml
@@ -88,6 +92,10 @@ layout:
 ```
 
 ## Client generation
+
+```shell
+swagger generate server -A TodoList -f ./swagger.json -C default-client.yml
+```
 
 For the default client generator this config file would have the following content.
 

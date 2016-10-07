@@ -16,6 +16,7 @@ package generate
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -57,11 +58,23 @@ type Server struct {
 func (s *Server) Execute(args []string) error {
 	var cfg *viper.Viper
 	if string(s.ConfigFile) != "" {
-		v, err := generator.ReadConfig(string(s.ConfigFile))
+		apt, err := filepath.Abs(string(s.ConfigFile))
+		if err != nil {
+			log.Fatalln(err)
+		}
+		log.Println("trying to read config from", apt)
+		v, err := generator.ReadConfig(apt)
 		if err != nil {
 			return err
 		}
 		cfg = v
+	}
+	if os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != "" {
+		if cfg != nil {
+			cfg.Debug()
+		} else {
+			log.Println("NO config read")
+		}
 	}
 
 	opts := &generator.GenOpts{
@@ -120,7 +133,7 @@ For this generation to compile you need to have some packages in your GOPATH:
   * github.com/jessevdk/go-flags
   * golang.org/x/net/context
 
-You can get these now with: go get -u -f %s/....
+You can get these now with: go get -u -f %s/...
 `, rp)
 
 	return nil

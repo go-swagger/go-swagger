@@ -3,6 +3,7 @@ package generator
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/viper"
 )
@@ -53,6 +54,11 @@ func ReadConfig(fpath string) (*viper.Viper, error) {
 			return nil, err
 		}
 		defer file.Close()
+		ext := filepath.Ext(fpath)
+		if len(ext) > 0 {
+			ext = ext[1:]
+		}
+		v.SetConfigType(ext)
 		if err := v.ReadConfig(file); err != nil {
 			return nil, err
 		}
