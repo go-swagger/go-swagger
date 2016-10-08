@@ -21,7 +21,8 @@ test:
   override:
     - mkdir -p $CIRCLE_TEST_REPORTS/go
     - mkdir -p $CIRCLE_ARTIFACTS/dist
-    - "docker run
+    - ? >-
+        docker run
         -v `pwd`:/go/src/github.com/go-swagger/go-swagger
         -v $CIRCLE_ARTIFACTS/dist:/usr/share/dist
         -v $CIRCLE_TEST_REPORTS/go:/usr/share/testresults
@@ -31,5 +32,6 @@ test:
         -e CIRCLE_PROJECT_REPONAME
         -w /go/src/github.com/go-swagger/go-swagger
         go-swagger/go-swagger:ci-$CIRCLE_BUILD_NUM-$CIRCLE_SHA1
-        ./hack/build-docker.sh":
+        ./hack/build-docker.sh
+      :
           timeout: 1800 # Fail if command has no output for 30 mins.  Probably doesn't need that long.
