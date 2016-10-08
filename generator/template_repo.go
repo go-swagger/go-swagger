@@ -272,6 +272,7 @@ func (t *Repository) addFile(name, data string, allowOverride bool) error {
 	return nil
 }
 
+// MustGet a template by name, panics when fails
 func (t *Repository) MustGet(name string) *template.Template {
 	tpl, err := t.Get(name)
 	if err != nil {
