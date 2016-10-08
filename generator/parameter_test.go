@@ -469,9 +469,10 @@ func TestGenParameter_Issue163(t *testing.T) {
 		op, err := b.MakeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := parameterTemplate.Execute(buf, op)
+			opts := opts()
+			err := templates.MustGet("serverParameter").Execute(buf, op)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("get_search_parameters.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("get_search_parameters.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "var stringTypeInQueryDefault string = string(\"qsValue\")", res)
@@ -490,9 +491,10 @@ func TestGenParameter_Issue195(t *testing.T) {
 		op, err := b.MakeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := clientParamTemplate.Execute(buf, op)
+			opts := opts()
+			err := templates.MustGet("clientParameter").Execute(buf, op)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("get_testing.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("get_testing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "TestingThis *int64", res)
@@ -510,9 +512,10 @@ func TestGenParameter_Issue196(t *testing.T) {
 		op, err := b.MakeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := parameterTemplate.Execute(buf, op)
+			opts := opts()
+			err := templates.MustGet("serverParameter").Execute(buf, op)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("post_events.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("post_events.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "body.Validate", res)
@@ -539,9 +542,10 @@ func assertNoValidator(t testing.TB, opName, path string) {
 		op, err := b.MakeOperation()
 		if assert.NoError(t, err) {
 			var buf bytes.Buffer
-			err := parameterTemplate.Execute(&buf, op)
+			opts := opts()
+			err := templates.MustGet("serverParameter").Execute(&buf, op)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("post_echo.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("post_echo.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertNotInCode(t, "body.Validate", res)
@@ -559,9 +563,10 @@ func TestGenParameter_Issue249(t *testing.T) {
 		op, err := b.MakeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := clientParamTemplate.Execute(buf, op)
+			opts := opts()
+			err := templates.MustGet("clientParameter").Execute(buf, op)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("put_testing.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertNotInCode(t, "valuesTestingThis := o.TestingThis", res)
@@ -579,9 +584,10 @@ func TestGenParameter_Issue248(t *testing.T) {
 		op, err := b.MakeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := parameterTemplate.Execute(buf, op)
+			opts := opts()
+			err := templates.MustGet("serverParameter").Execute(buf, op)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("create_thing.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("create_thing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, ", *o.OptionalQueryEnum", res)
@@ -599,9 +605,10 @@ func TestGenParameter_Issue350(t *testing.T) {
 		op, err := b.MakeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := parameterTemplate.Execute(buf, op)
+			opts := opts()
+			err := templates.MustGet("serverParameter").Execute(buf, op)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("with_bool_default.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("with_bool_default.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "Verbose: &verboseDefault", res)
@@ -619,9 +626,10 @@ func TestGenParameter_Issue351(t *testing.T) {
 		op, err := b.MakeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := parameterTemplate.Execute(buf, op)
+			opts := opts()
+			err := templates.MustGet("serverParameter").Execute(buf, op)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("with_array.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("with_array.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "validate.MinLength(fmt.Sprintf(\"%s.%v\", \"sha256\", i), \"query\", string(sha256I), 64)", res)
@@ -641,9 +649,10 @@ func TestGenParameter_Issue511(t *testing.T) {
 		op, err := gen.MakeOperation()
 		if assert.NoError(err) {
 			buf := bytes.NewBuffer(nil)
-			err := parameterTemplate.Execute(buf, op)
+			opts := opts()
+			err := templates.MustGet("serverParameter").Execute(buf, op)
 			if assert.NoError(err) {
-				ff, err := formatGoFile("post_models.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
 				if assert.NoError(err) {
 					res := string(ff)
 					assertNotInCode(t, "fds := runtime.Values(r.Form)", res)

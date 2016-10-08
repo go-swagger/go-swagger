@@ -16,6 +16,9 @@ package generate
 
 import (
 	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/go-swagger/go-swagger/generator"
 )
@@ -34,18 +37,34 @@ func (m *Model) Execute(args []string) error {
 	if m.DumpData && len(m.Name) > 1 {
 		return errors.New("only 1 model at a time is supported for dumping data")
 	}
-	return generator.GenerateDefinition(
-		m.Name,
-		!m.NoStruct,
-		!m.NoValidator,
-		generator.GenOpts{
-			Spec:          string(m.Spec),
-			Target:        string(m.Target),
-			APIPackage:    m.APIPackage,
-			ModelPackage:  m.ModelPackage,
-			ServerPackage: m.ServerPackage,
-			ClientPackage: m.ClientPackage,
-			DumpData:      m.DumpData,
-			TemplateDir:   string(m.TemplateDir),
-		})
+	opts := generator.GenOpts{
+		Spec:          string(m.Spec),
+		Target:        string(m.Target),
+		APIPackage:    m.APIPackage,
+		ModelPackage:  m.ModelPackage,
+		ServerPackage: m.ServerPackage,
+		ClientPackage: m.ClientPackage,
+		DumpData:      m.DumpData,
+		TemplateDir:   string(m.TemplateDir),
+	}
+
+	if err := generator.GenerateDefinition(m.Name, !m.NoStruct, !m.NoValidator, &opts); err != nil {
+		return err
+	}
+
+	rp, err := filepath.Rel(".", opts.Target)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(os.Stderr, `Generation completed!
+
+For this generation to compile you need to have some packages in your GOPATH:
+
+  * github.com/go-openapi/runtime
+
+You can get these now with: go get -u -f %s/...
+`, rp)
+
+	return nil
 }

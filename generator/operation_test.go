@@ -207,9 +207,10 @@ func TestRenderOperation_InstagramSearch(t *testing.T) {
 		gO, err := b.MakeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := operationTemplate.Execute(buf, gO)
+			opts := opts()
+			err := templates.MustGet("serverOperation").Execute(buf, gO)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("operation.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					//fmt.Println(res)
@@ -312,9 +313,12 @@ func TestDateFormat_Spec1(t *testing.T) {
 		op, err := b.MakeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := clientParamTemplate.Execute(buf, op)
+			opts := opts()
+			opts.defaultsEnsured = false
+			opts.EnsureDefaults(true)
+			err := templates.MustGet("clientParameter").Execute(buf, op)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("put_testing.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "frTestingThis.String()", res)
@@ -332,9 +336,12 @@ func TestDateFormat_Spec2(t *testing.T) {
 		op, err := b.MakeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := clientParamTemplate.Execute(buf, op)
+			opts := opts()
+			opts.defaultsEnsured = false
+			opts.EnsureDefaults(true)
+			err := templates.MustGet("clientParameter").Execute(buf, op)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("put_testing.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "valuesTestingThis = append(valuesTestingThis, v.String())", res)
@@ -351,7 +358,7 @@ func TestBuilder_Issue287(t *testing.T) {
 	defer log.SetOutput(os.Stderr)
 	dr, _ := os.Getwd()
 
-	appGen, err := newAppGenerator("plainTexter", nil, nil, &GenOpts{
+	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/287/swagger.yml"),
 		IncludeModel:      true,
 		IncludeValidator:  true,
@@ -364,14 +371,16 @@ func TestBuilder_Issue287(t *testing.T) {
 		ServerPackage:     "server",
 		ClientPackage:     "client",
 		Target:            dr,
-	})
+	}
+	opts.EnsureDefaults(false)
+	appGen, err := newAppGenerator("plainTexter", nil, nil, opts)
 	if assert.NoError(t, err) {
 		op, err := appGen.makeCodegenApp()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := builderTemplate.Execute(buf, op)
+			err := templates.MustGet("serverBuilder").Execute(buf, op)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("put_testing.go", buf.Bytes())
+				ff, err := appGen.GenOpts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "case \"text/plain\":", res)
@@ -387,7 +396,7 @@ func TestBuilder_Issue465(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stderr)
 	dr, _ := os.Getwd()
-	appGen, err := newAppGenerator("plainTexter", nil, nil, &GenOpts{
+	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/465/swagger.yml"),
 		IncludeModel:      true,
 		IncludeValidator:  true,
@@ -400,14 +409,16 @@ func TestBuilder_Issue465(t *testing.T) {
 		ServerPackage:     "server",
 		ClientPackage:     "client",
 		Target:            dr,
-	})
+	}
+	opts.EnsureDefaults(true)
+	appGen, err := newAppGenerator("plainTexter", nil, nil, opts)
 	if assert.NoError(t, err) {
 		op, err := appGen.makeCodegenApp()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := clientFacadeTemplate.Execute(buf, op)
+			err := templates.MustGet("clientFacade").Execute(buf, op)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("put_testing.go", buf.Bytes())
+				ff, err := appGen.GenOpts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "/v1/fancyAPI", res)

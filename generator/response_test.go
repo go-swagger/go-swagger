@@ -29,8 +29,9 @@ func TestSimpleResponseRender(t *testing.T) {
 		op, err := b.MakeOperation()
 		if assert.NoError(t, err) {
 			var buf bytes.Buffer
-			if assert.NoError(t, responsesTemplate.Execute(&buf, op)) {
-				ff, err := formatGoFile("update_task_responses.go", buf.Bytes())
+			opts := opts()
+			if assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op)) {
+				ff, err := opts.LanguageOpts.FormatContent("update_task_responses.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					assertInCode(t, "o.XErrorCode", string(ff))
 					assertInCode(t, "o.Payload", string(ff))
@@ -251,8 +252,9 @@ func TestGenResponses_Issue540(t *testing.T) {
 		op, err := b.MakeOperation()
 		if assert.NoError(t, err) {
 			var buf bytes.Buffer
-			if assert.NoError(t, responsesTemplate.Execute(&buf, op)) {
-				ff, err := formatGoFile("post_pet_responses.go", buf.Bytes())
+			opts := opts()
+			if assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op)) {
+				ff, err := opts.LanguageOpts.FormatContent("post_pet_responses.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					assertInCode(t, "func (o *PostPetOK) WithPayload(payload models.Pet) *PostPetOK {", string(ff))
 					assertInCode(t, "func (o *PostPetOK) SetPayload(payload models.Pet) {", string(ff))

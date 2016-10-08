@@ -15,8 +15,8 @@
 package generator
 
 import (
-	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -47,15 +47,19 @@ Every action that happens tracks the path which is a linked list of refs
 */
 
 // GenerateDefinition generates a model file for a schema definition.
-func GenerateDefinition(modelNames []string, includeModel, includeValidator bool, opts GenOpts) error {
+func GenerateDefinition(modelNames []string, includeModel, includeValidator bool, opts *GenOpts) error {
+	if opts == nil {
+		return errors.New("gen opts are required")
+	}
+	if err := opts.EnsureDefaults(false); err != nil {
+		return err
+	}
 
 	if opts.TemplateDir != "" {
 		if err := templates.LoadDir(opts.TemplateDir); err != nil {
 			return err
 		}
 	}
-
-	compileTemplates()
 
 	// Load the spec
 	specPath, specDoc, err := loadSpec(opts.Spec)
@@ -78,14 +82,11 @@ func GenerateDefinition(modelNames []string, includeModel, includeValidator bool
 
 		// generate files
 		generator := definitionGenerator{
-			Name:             modelName,
-			Model:            model,
-			SpecDoc:          specDoc,
-			Target:           filepath.Join(opts.Target, opts.ModelPackage),
-			IncludeModel:     true,
-			IncludeStruct:    includeModel,
-			IncludeValidator: includeValidator,
-			DumpData:         opts.DumpData,
+			Name:    modelName,
+			Model:   model,
+			SpecDoc: specDoc,
+			Target:  filepath.Join(opts.Target, opts.ModelPackage),
+			opts:    opts,
 		}
 
 		if err := generator.Generate(); err != nil {
@@ -97,38 +98,27 @@ func GenerateDefinition(modelNames []string, includeModel, includeValidator bool
 }
 
 type definitionGenerator struct {
-	Name             string
-	Model            spec.Schema
-	SpecDoc          *loads.Document
-	Target           string
-	IncludeModel     bool
-	IncludeStruct    bool
-	IncludeValidator bool
-	Data             interface{}
-	DumpData         bool
+	Name    string
+	Model   spec.Schema
+	SpecDoc *loads.Document
+	Target  string
+	opts    *GenOpts
 }
 
 func (m *definitionGenerator) Generate() error {
 
-	mod, err := makeGenDefinition(m.Name, m.Target, m.Model, m.SpecDoc, m.IncludeValidator, m.IncludeStruct)
+	mod, err := makeGenDefinition(m.Name, m.Target, m.Model, m.SpecDoc, m.opts)
 	if err != nil {
 		return err
 	}
-	if m.DumpData {
+	if m.opts.DumpData {
 		bb, _ := json.MarshalIndent(swag.ToDynamicJSON(mod), "", " ")
 		fmt.Fprintln(os.Stdout, string(bb))
 		return nil
 	}
 
-	mod.IncludeValidator = m.IncludeValidator
-	mod.IncludeModel = m.IncludeStruct
-	m.Data = mod
-	if !m.IncludeStruct {
-		m.Name += "_validator"
-	}
-
-	if m.IncludeModel {
-		if err := m.generateModel(); err != nil {
+	if m.opts.IncludeModel {
+		if err := m.generateModel(mod); err != nil {
 			return fmt.Errorf("model: %s", err)
 		}
 	}
@@ -137,27 +127,14 @@ func (m *definitionGenerator) Generate() error {
 	return nil
 }
 
-func (m *definitionGenerator) generateModel() error {
-	buf := bytes.NewBuffer(nil)
-
-	if Debug {
-		log.Printf("rendering model template: %s", m.Name)
-		bb, _ := json.MarshalIndent(swag.ToDynamicJSON(m.Data), "", " ")
-		fmt.Fprintln(os.Stdout, string(bb))
-	}
-
-	if err := modelTemplate.Execute(buf, m.Data); err != nil {
-		return err
-	}
-	log.Println("rendered model template:", m.Name)
-
-	return writeToFile(m.Target, m.Name, buf.Bytes())
+func (m *definitionGenerator) generateModel(g *GenDefinition) error {
+	return m.opts.renderDefinition(g)
 }
 
-func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *loads.Document, includeValidator, includeModel bool) (*GenDefinition, error) {
-	return makeGenDefinitionHierarchy(name, pkg, "", schema, specDoc, includeValidator, includeModel)
+func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts) (*GenDefinition, error) {
+	return makeGenDefinitionHierarchy(name, pkg, "", schema, specDoc, opts)
 }
-func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema, specDoc *loads.Document, includeValidator, includeModel bool) (*GenDefinition, error) {
+func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts) (*GenDefinition, error) {
 	receiver := "m"
 	resolver := newTypeResolver("", specDoc)
 	resolver.ModelName = name
@@ -178,8 +155,8 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		ExtraSchemas:     make(map[string]GenSchema),
 		Discrimination:   di,
 		Container:        container,
-		IncludeValidator: includeValidator,
-		IncludeModel:     includeModel,
+		IncludeValidator: opts.IncludeValidator,
+		IncludeModel:     opts.IncludeModel,
 	}
 	if err := pg.makeGenSchema(); err != nil {
 		return nil, err
@@ -223,7 +200,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 				}
 				ref = spec.Ref{}
 				if rsch != nil && rsch.Discriminator != "" {
-					gs, err := makeGenDefinitionHierarchy(strings.TrimPrefix(ss.Ref.String(), "#/definitions/"), pkg, pg.GenSchema.Name, *rsch, specDoc, pg.IncludeValidator, pg.IncludeModel)
+					gs, err := makeGenDefinitionHierarchy(strings.TrimPrefix(ss.Ref.String(), "#/definitions/"), pkg, pg.GenSchema.Name, *rsch, specDoc, opts)
 					if err != nil {
 						return nil, err
 					}
@@ -265,7 +242,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 	}
 
 	return &GenDefinition{
-		Package:        mangleName(filepath.Base(pkg), "definitions"),
+		Package:        opts.LanguageOpts.MangleName(filepath.Base(pkg), "definitions"),
 		GenSchema:      pg.GenSchema,
 		DependsOn:      pg.Dependencies,
 		DefaultImports: defaultImports,

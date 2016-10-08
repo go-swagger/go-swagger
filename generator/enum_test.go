@@ -30,12 +30,13 @@ func TestEnum_StringThing(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "StringThing"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("string_thing.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("string_thing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "var stringThingEnum []interface{}", res)
@@ -53,12 +54,13 @@ func TestEnum_ComposedThing(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "ComposedThing"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("composed_thing.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("composed_thing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "m.StringThing.Validate(formats)", res)
@@ -77,12 +79,13 @@ func TestEnum_IntThing(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "IntThing"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("int_thing.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("int_thing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "var intThingEnum []interface{}", res)
@@ -100,12 +103,13 @@ func TestEnum_FloatThing(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "FloatThing"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("float_thing.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("float_thing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "var floatThingEnum []interface{}", res)
@@ -123,12 +127,13 @@ func TestEnum_SliceThing(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "SliceThing"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("slice_thing.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("slice_thing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "var sliceThingEnum []interface{}", res)
@@ -146,12 +151,13 @@ func TestEnum_SliceAndItemsThing(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "SliceAndItemsThing"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("slice_and_items_thing.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("slice_and_items_thing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "var sliceAndItemsThingEnum []interface{}", res)
@@ -172,12 +178,13 @@ func TestEnum_SliceAndAdditionalItemsThing(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "SliceAndAdditionalItemsThing"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("slice_and_additional_items_thing.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("slice_and_additional_items_thing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "var sliceAndAdditionalItemsThingEnum []interface{}", res)
@@ -201,12 +208,13 @@ func TestEnum_MapThing(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "MapThing"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("map_thing.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("map_thing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "var mapThingEnum []interface{}", res)
@@ -229,12 +237,13 @@ func TestEnum_ObjectThing(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "ObjectThing"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("object_thing.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("object_thing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "var objectThingTypeNamePropEnum []interface{}", res)
@@ -279,12 +288,13 @@ func TestEnum_ComputeInstance(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "ComputeInstance"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("object_thing.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("object_thing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "Region *string `json:\"region\"`", res)
@@ -304,12 +314,13 @@ func TestEnum_NewPrototype(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "NewPrototype"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("object_thing.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("object_thing.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "ActivatingUser *NewPrototypeActivatingUser `json:\"activating_user,omitempty\"`", res)
@@ -334,12 +345,13 @@ func TestEnum_Issue265(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "SodaBrand"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("soda_brand.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("soda_brand.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assert.Equal(t, 1, strings.Count(res, "m.validateSodaBrandEnum"))
@@ -355,12 +367,13 @@ func TestEnum_Issue325(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "SodaBrand"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("soda_brand.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("soda_brand.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "var sodaBrandEnum []interface{}", res)
@@ -372,12 +385,12 @@ func TestEnum_Issue325(t *testing.T) {
 
 		k = "Soda"
 		schema = definitions[k]
-		genModel, err = makeGenDefinition(k, "models", schema, specDoc, true, true)
+		genModel, err = makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("soda.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("soda.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "var sodaTypeBrandPropEnum []interface{}", res)
@@ -395,12 +408,13 @@ func TestEnum_Issue352(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		k := "slp_action_enum"
 		schema := definitions[k]
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, true, true)
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := modelTemplate.Execute(buf, genModel)
+			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := formatGoFile("slp_action_enum.go", buf.Bytes())
+				ff, err := opts.LanguageOpts.FormatContent("slp_action_enum.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, ", value SlpActionEnum", res)

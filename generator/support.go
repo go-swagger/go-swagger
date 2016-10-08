@@ -15,7 +15,6 @@
 package generator
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -31,12 +30,11 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
-	"github.com/vburenin/nsync"
 )
 
 // GenerateServer generates a server application
-func GenerateServer(name string, modelNames, operationIDs []string, opts GenOpts) error {
-	generator, err := newAppGenerator(name, modelNames, operationIDs, &opts)
+func GenerateServer(name string, modelNames, operationIDs []string, opts *GenOpts) error {
+	generator, err := newAppGenerator(name, modelNames, operationIDs, opts)
 	if err != nil {
 		return err
 	}
@@ -44,9 +42,9 @@ func GenerateServer(name string, modelNames, operationIDs []string, opts GenOpts
 }
 
 // GenerateSupport generates the supporting files for an API
-func GenerateSupport(name string, modelNames, operationIDs []string, opts GenOpts) error {
+func GenerateSupport(name string, modelNames, operationIDs []string, opts *GenOpts) error {
 
-	generator, err := newAppGenerator(name, modelNames, operationIDs, &opts)
+	generator, err := newAppGenerator(name, modelNames, operationIDs, opts)
 	if err != nil {
 		return err
 	}
@@ -54,14 +52,18 @@ func GenerateSupport(name string, modelNames, operationIDs []string, opts GenOpt
 }
 
 func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOpts) (*appGenerator, error) {
+	if opts == nil {
+		return nil, errors.New("gen opts are required")
+	}
+	if err := opts.EnsureDefaults(false); err != nil {
+		return nil, err
+	}
 
 	if opts.TemplateDir != "" {
 		if err := templates.LoadDir(opts.TemplateDir); err != nil {
 			return nil, err
 		}
 	}
-
-	compileTemplates()
 
 	// Load the spec
 	_, specDoc, err := loadSpec(opts.Spec)
@@ -95,7 +97,7 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 		defaultConsumes = runtime.JSONMime
 	}
 
-	apiPackage := mangleName(swag.ToFileName(opts.APIPackage), "api")
+	apiPackage := opts.LanguageOpts.MangleName(swag.ToFileName(opts.APIPackage), "api")
 	return &appGenerator{
 		Name:       appNameOrDefault(specDoc, name, "swagger"),
 		Receiver:   "o",
@@ -108,9 +110,9 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 		DumpData:        opts.DumpData,
 		Package:         apiPackage,
 		APIPackage:      apiPackage,
-		ModelsPackage:   mangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
-		ServerPackage:   mangleName(swag.ToFileName(opts.ServerPackage), "server"),
-		ClientPackage:   mangleName(swag.ToFileName(opts.ClientPackage), "client"),
+		ModelsPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
+		ServerPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ServerPackage), "server"),
+		ClientPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ClientPackage), "client"),
 		Principal:       opts.Principal,
 		DefaultScheme:   defaultScheme,
 		DefaultProduces: defaultProduces,
@@ -180,79 +182,65 @@ func (a *appGenerator) Generate() error {
 		return nil
 	}
 
-	errChan := make(chan error, 100)
-	wg := nsync.NewControlWaitGroup(20)
+	// IPC removed concurrent execution because of the FuncMap that is being shared
+	// templates are now lazy loaded so there is concurrent map access I can't guard
+
+	// errChan := make(chan error, 100)
+	// wg := nsync.NewControlWaitGroup(20)
 
 	if a.GenOpts.IncludeModel {
 		log.Printf("rendering %d models", len(app.Models))
 		for _, mod := range app.Models {
-			if len(errChan) > 0 {
-				wg.Wait()
-				return <-errChan
-			}
+			// if len(errChan) > 0 {
+			// 	wg.Wait()
+			// 	return <-errChan
+			// }
 			modCopy := mod
-			wg.Do(func() {
-				modCopy.IncludeValidator = true // a.GenOpts.IncludeValidator
-				modCopy.IncludeModel = true
-				gen := &definitionGenerator{
-					Name:             modCopy.Name,
-					SpecDoc:          a.SpecDoc,
-					Target:           filepath.Join(a.Target, a.ModelsPackage),
-					Data:             &modCopy,
-					IncludeModel:     true,
-					IncludeStruct:    true,
-					IncludeValidator: true,
-				}
-				if err := gen.generateModel(); err != nil {
-					errChan <- err
-				}
-			})
+			// wg.Do(func() {
+			modCopy.IncludeValidator = true // a.GenOpts.IncludeValidator
+			modCopy.IncludeModel = true
+			if err := a.GenOpts.renderDefinition(&modCopy); err != nil {
+				return err
+			}
+			// })
 		}
 	}
-	wg.Wait()
+	// wg.Wait()
 
 	if a.GenOpts.IncludeHandler {
+		log.Printf("rendering %d operation groups (tags)", app.OperationGroups.Len())
 		for _, opg := range app.OperationGroups {
 			opgCopy := opg
+			log.Printf("rendering %d operations for %s", opg.Operations.Len(), opg.Name)
 			for _, op := range opgCopy.Operations {
-				if len(errChan) > 0 {
-					wg.Wait()
-					return <-errChan
-				}
+				// if len(errChan) > 0 {
+				// 	wg.Wait()
+				// 	return <-errChan
+				// }
 				opCopy := op
-				wg.Do(func() {
-					gen := &opGen{
-						data:              &opCopy,
-						pkg:               opgCopy.Name,
-						cname:             swag.ToGoName(opCopy.Name),
-						IncludeHandler:    a.GenOpts.IncludeHandler,
-						IncludeParameters: a.GenOpts.IncludeParameters,
-						IncludeResponses:  a.GenOpts.IncludeResponses,
-						Doc:               a.SpecDoc,
-						Analyzed:          a.Analyzed,
-						Target:            filepath.Join(a.Target, a.ServerPackage),
-						APIPackage:        a.APIPackage,
-					}
+				// wg.Do(func() {
 
-					if err := gen.Generate(); err != nil {
-						errChan <- err
-					}
-				})
+				if err := a.GenOpts.renderOperation(&opCopy); err != nil {
+					return err
+				}
+				// })
 			}
 		}
 	}
 
 	if a.GenOpts.IncludeSupport {
-		wg.Do(func() {
-			if err := a.GenerateSupport(&app); err != nil {
-				errChan <- err
-			}
-		})
+		log.Printf("rendering support")
+		// wg.Do(func() {
+		if err := a.GenerateSupport(&app); err != nil {
+			// errChan <- err
+			return err
+		}
+		// })
 	}
-	wg.Wait()
-	if len(errChan) > 0 {
-		return <-errChan
-	}
+	// wg.Wait()
+	// if len(errChan) > 0 {
+	// 	return <-errChan
+	// }
 	return nil
 }
 
@@ -267,12 +255,6 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 		app = &ca
 	}
 
-	if a.GenOpts == nil || !a.GenOpts.ExcludeSpec {
-		if err := a.generateEmbeddedSwaggerJSON(app); err != nil {
-			return err
-		}
-	}
-
 	importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage))
 	app.DefaultImports = append(
 		app.DefaultImports,
@@ -280,97 +262,7 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 		importPath,
 	)
 
-	if err := a.generateAPIBuilder(app); err != nil {
-		return err
-	}
-
-	if err := a.generateAPIServer(app); err != nil {
-		return err
-	}
-
-	if err := a.generateConfigureAPI(app); err != nil {
-		return err
-	}
-
-	if err := a.generateDoc(app); err != nil {
-		return err
-	}
-
-	if a.GenOpts == nil || a.GenOpts.IncludeMain {
-		if err := a.generateMain(app); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (a *appGenerator) generateConfigureAPI(app *GenApp) error {
-	pth := filepath.Join(a.Target, app.APIPackage)
-	nm := "Configure" + swag.ToGoName(app.Name)
-	if fileExists(pth, nm) {
-		log.Println("skipped (already exists) configure api template:", app.Package+".Configure"+swag.ToGoName(app.Name))
-		return nil
-	}
-
-	buf := bytes.NewBuffer(nil)
-	if err := configureAPITemplate.Execute(buf, app); err != nil {
-		return err
-	}
-	log.Println("rendered configure api template:", app.Package+".Configure"+swag.ToGoName(app.Name))
-	return writeToFileIfNotExist(pth, nm, buf.Bytes())
-}
-
-func (a *appGenerator) generateMain(app *GenApp) error {
-	pth := filepath.Join(a.Target, "cmd", swag.ToCommandName(swag.ToGoName(app.Name)+"Server"))
-	if fileExists(pth, "main") && !a.GenOpts.IncludeMain {
-		log.Println("skipped (already exists) main template:", app.Package+".Main")
-		return nil
-	}
-	buf := bytes.NewBuffer(nil)
-	if err := mainTemplate.Execute(buf, app); err != nil {
-		return err
-	}
-	log.Println("rendered main template:", "server."+swag.ToGoName(app.Name))
-	return writeToFile(pth, "main", buf.Bytes())
-}
-
-func (a *appGenerator) generateEmbeddedSwaggerJSON(app *GenApp) error {
-	buf := bytes.NewBuffer(nil)
-	appc := *app
-	appc.Package = app.APIPackage
-	if err := embeddedSpecTemplate.Execute(buf, &appc); err != nil {
-		return err
-	}
-	log.Println("rendered embedded Swagger JSON template:", app.APIPackage+"."+swag.ToGoName(app.Name))
-	return writeToFile(filepath.Join(a.Target, a.ServerPackage), "embedded_spec", buf.Bytes())
-}
-
-func (a *appGenerator) generateAPIBuilder(app *GenApp) error {
-	buf := bytes.NewBuffer(nil)
-	if err := builderTemplate.Execute(buf, app); err != nil {
-		return err
-	}
-	log.Println("rendered builder template:", app.Package+"."+swag.ToGoName(app.Name))
-	return writeToFile(filepath.Join(a.Target, a.ServerPackage, app.Package), swag.ToGoName(app.Name)+"Api", buf.Bytes())
-}
-
-func (a *appGenerator) generateAPIServer(app *GenApp) error {
-	buf := bytes.NewBuffer(nil)
-	if err := serverTemplate.Execute(buf, app); err != nil {
-		return err
-	}
-	log.Println("rendered server template:", app.APIPackage+".Server")
-	return writeToFile(filepath.Join(a.Target, a.ServerPackage), "Server", buf.Bytes())
-}
-
-func (a *appGenerator) generateDoc(app *GenApp) error {
-	buf := bytes.NewBuffer(nil)
-	if err := mainDocTemplate.Execute(buf, app); err != nil {
-		return err
-	}
-	log.Println("rendered doc template:", app.Package+"."+swag.ToGoName(app.Name))
-	return writeToFile(filepath.Join(a.Target, a.ServerPackage), "Doc", buf.Bytes())
+	return a.GenOpts.renderApplication(app)
 }
 
 var mediaTypeNames = map[*regexp.Regexp]string{
@@ -618,8 +510,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			a.ModelsPackage,
 			m,
 			a.SpecDoc,
-			true,
-			true,
+			a.GenOpts,
 		)
 		if err != nil {
 			return GenApp{}, err
@@ -633,6 +524,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	var genOps GenOperations
 	for on, opp := range a.Operations {
 		o := opp.Op
+		o.Tags = pruneEmpty(o.Tags)
 		o.ID = on
 		var bldr codeGenOpBuilder
 		bldr.ModelsPackage = a.ModelsPackage
@@ -642,28 +534,30 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		bldr.DefaultScheme = a.DefaultScheme
 		bldr.Doc = a.SpecDoc
 		bldr.Analyzed = a.Analyzed
+
 		// TODO: change operation name to something safe
 		bldr.Name = on
 		bldr.Operation = *o
 		bldr.Method = opp.Method
 		bldr.Path = opp.Path
 		bldr.Authed = len(a.Analyzed.SecurityRequirementsFor(o)) > 0
-		ap := a.APIPackage
 		bldr.RootAPIPackage = swag.ToFileName(a.APIPackage)
 		bldr.WithContext = a.GenOpts != nil && a.GenOpts.WithContext
+
 		if len(o.Tags) > 0 {
 			for _, tag := range o.Tags {
 				tns[tag] = struct{}{}
-				bldr.APIPackage = mangleName(swag.ToFileName(tag), a.APIPackage)
+				bldr.APIPackage = a.GenOpts.LanguageOpts.MangleName(swag.ToFileName(tag), a.APIPackage)
 				op, err := bldr.MakeOperation()
 				if err != nil {
 					return GenApp{}, err
 				}
+				op.Tags = o.Tags
 				op.ReceiverName = receiver
 				genOps = append(genOps, op)
 			}
 		} else {
-			bldr.APIPackage = swag.ToFileName(ap)
+			bldr.APIPackage = swag.ToFileName(a.APIPackage)
 			op, err := bldr.MakeOperation()
 			if err != nil {
 				return GenApp{}, err

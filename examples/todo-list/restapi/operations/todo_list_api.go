@@ -46,7 +46,7 @@ type TodoListAPI struct {
 	JSONProducer runtime.Producer
 
 	// KeyAuth registers a function that takes a token and returns a principal
-	// it performs authentication based on an api key x-petstore-token provided in the header
+	// it performs authentication based on an api key x-todolist-token provided in the header
 	KeyAuth func(string) (interface{}, error)
 
 	// TodosAddOneHandler sets the operation handler for the add one operation
@@ -121,7 +121,7 @@ func (o *TodoListAPI) Validate() error {
 	}
 
 	if o.KeyAuth == nil {
-		unregistered = append(unregistered, "XPetstoreTokenAuth")
+		unregistered = append(unregistered, "XTodolistTokenAuth")
 	}
 
 	if o.TodosAddOneHandler == nil {

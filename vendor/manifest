@@ -2,14 +2,6 @@
 	"version": 0,
 	"dependencies": [
 		{
-			"importpath": "bitbucket.org/pkg/inflect",
-			"repository": "https://bitbucket.org/pkg/inflect",
-			"vcs": "hg",
-			"revision": "8961c3750a47",
-			"branch": "default",
-			"notests": true
-		},
-		{
 			"importpath": "github.com/PuerkitoBio/purell",
 			"repository": "https://github.com/PuerkitoBio/purell",
 			"vcs": "git",
@@ -80,6 +72,14 @@
 			"repository": "https://github.com/go-openapi/errors",
 			"vcs": "git",
 			"revision": "4178436c9f2430cdd945c50301cfb61563b56573",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/go-openapi/inflect",
+			"repository": "https://github.com/go-openapi/inflect",
+			"vcs": "git",
+			"revision": "b1f6470ffb9c552dc105dd869f16e36ba86ba7d0",
 			"branch": "master",
 			"notests": true
 		},
