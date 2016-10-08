@@ -32,6 +32,7 @@ stripPackage | strips the package name from an identifier
 upper | converts the string to upper case
 contains | for use in conditions, returns true when the second argument is contained in the first argument, the first argument is a list of strings
 joinFilePath | joins the arguments as a file path, cross platform
+padSurround | surround an entry with a character n times before and m times after the entry
 
 ## Server generation
 
@@ -77,15 +78,15 @@ layout:
   operations:
     - name: parameters
       source: asset:serverParameter
-      target: "{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}"
+      target: "{{ if gt (len .Tags) 0 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}"
       file_name: "{{ (snakize (pascalize .Name)) }}_parameters.go"
     - name: responses
       source: asset:serverResponses
-      target: "{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}"
+      target: "{{ if gt (len .Tags) 0 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}"
       file_name: "{{ (snakize (pascalize .Name)) }}_responses.go"
     - name: handler
       source: asset:serverOperation
-      target: "{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}"
+      target: "{{ if gt (len .Tags) 0 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}"
       file_name: "{{ (snakize (pascalize .Name)) }}.go"
   operation_groups:
 

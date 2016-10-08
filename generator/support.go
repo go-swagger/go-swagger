@@ -524,6 +524,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	var genOps GenOperations
 	for on, opp := range a.Operations {
 		o := opp.Op
+		o.Tags = pruneEmpty(o.Tags)
 		o.ID = on
 		var bldr codeGenOpBuilder
 		bldr.ModelsPackage = a.ModelsPackage
@@ -551,6 +552,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 				if err != nil {
 					return GenApp{}, err
 				}
+				op.Tags = o.Tags
 				op.ReceiverName = receiver
 				genOps = append(genOps, op)
 			}

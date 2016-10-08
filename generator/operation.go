@@ -193,6 +193,7 @@ func (o *operationGenerator) Generate() error {
 			if err != nil {
 				return err
 			}
+
 			operations = append(operations, op)
 			continue
 		}
@@ -203,6 +204,7 @@ func (o *operationGenerator) Generate() error {
 				if err != nil {
 					return err
 				}
+				op.Tags = o.Tags
 				operations = append(operations, op)
 				break
 			}
@@ -224,7 +226,9 @@ func (o *operationGenerator) Generate() error {
 			fmt.Fprintln(os.Stdout, string(bb))
 			continue
 		}
-		return o.GenOpts.renderOperation(&op)
+		if err := o.GenOpts.renderOperation(&op); err != nil {
+			return err
+		}
 		// og := new(opGen)
 		// og.IncludeHandler = o.IncludeHandler
 		// og.IncludeParameters = o.IncludeParameters

@@ -144,19 +144,19 @@ func DefaultSectionOpts(gen *GenOpts, client bool) {
 				{
 					Name:     "parameters",
 					Source:   "asset:serverParameter",
-					Target:   "{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}",
+					Target:   "{{ if gt (len .Tags) 0 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_parameters.go",
 				},
 				{
 					Name:     "responses",
 					Source:   "asset:serverResponses",
-					Target:   "{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}",
+					Target:   "{{ if gt (len .Tags) 0 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_responses.go",
 				},
 				{
 					Name:     "handler",
 					Source:   "asset:serverOperation",
-					Target:   "{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}",
+					Target:   "{{ if gt (len .Tags) 0 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}.go",
 				},
 			}
@@ -352,6 +352,12 @@ func (g *GenOpts) location(t *TemplateOpts, data interface{}) (string, string, e
 		pkg = fldpack.String()
 	}
 
+	var tags []string
+	tagsF := v.FieldByName("Tags")
+	if tagsF.IsValid() {
+		tags = tagsF.Interface().([]string)
+	}
+
 	pthTpl, err := template.New(t.Name + "-target").Funcs(FuncMap).Parse(t.Target)
 	if err != nil {
 		return "", "", err
@@ -362,7 +368,10 @@ func (g *GenOpts) location(t *TemplateOpts, data interface{}) (string, string, e
 		return "", "", err
 	}
 
-	d := struct{ Name, Package, APIPackage, ServerPackage, ClientPackage, ModelPackage, Target string }{
+	d := struct {
+		Name, Package, APIPackage, ServerPackage, ClientPackage, ModelPackage, Target string
+		Tags                                                                          []string
+	}{
 		Name:          name,
 		Package:       pkg,
 		APIPackage:    g.APIPackage,
@@ -370,6 +379,7 @@ func (g *GenOpts) location(t *TemplateOpts, data interface{}) (string, string, e
 		ClientPackage: g.ClientPackage,
 		ModelPackage:  g.ModelPackage,
 		Target:        g.Target,
+		Tags:          tags,
 	}
 
 	// pretty.Println(data)
@@ -397,6 +407,15 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 
 	if templ == nil {
 		// try to load template from disk
+		content, err := ioutil.ReadFile(t.Source)
+		if err != nil {
+			return nil, err
+		}
+		tt, err := template.New(t.Source).Funcs(FuncMap).Parse(string(content))
+		if err != nil {
+			return nil, err
+		}
+		templ = tt
 	}
 	if templ == nil {
 		return nil, fmt.Errorf("template %q not found", t.Source)
@@ -653,4 +672,13 @@ func pascalize(arg string) string {
 	}
 
 	return swag.ToGoName("Nr " + arg)
+}
+
+func pruneEmpty(in []string) (out []string) {
+	for _, v := range in {
+		if v != "" {
+			out = append(out, v)
+		}
+	}
+	return
 }
