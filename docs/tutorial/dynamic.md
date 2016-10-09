@@ -482,10 +482,3 @@ git:(master) ✗ !? » go run main.go ./swagger.yml
 2016/10/09 09:02:19 received 'findTodos'
 2016/10/09 09:02:19 map[string]interface {}{"since":0, "limit":20}
 ```
-
-## Using typed models
-
-This tutorial is about a dynamic server, but the fact that the models and parameter objects are untyped, doesn't sit very well with me. It would be much nicer if we could provide our own structs and they would be used in the parameters.
-
-This last section of the tutorial, configures the server to do exactly that.
-
