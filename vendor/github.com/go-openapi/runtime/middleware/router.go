@@ -62,7 +62,8 @@ func (r RouteParams) GetOK(name string) ([]string, bool, bool) {
 	return nil, false, false
 }
 
-func newRouter(ctx *Context, next http.Handler) http.Handler {
+// NewRouter creates a new context aware router middleware
+func NewRouter(ctx *Context, next http.Handler) http.Handler {
 	if ctx.router == nil {
 		ctx.router = DefaultRouter(ctx.spec, ctx.api)
 	}

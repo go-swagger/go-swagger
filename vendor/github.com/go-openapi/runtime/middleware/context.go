@@ -17,6 +17,7 @@ package middleware
 import (
 	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/errors"
@@ -67,6 +68,7 @@ type Context struct {
 
 type routableUntypedAPI struct {
 	api             *untyped.API
+	hlock           *sync.Mutex
 	handlers        map[string]map[string]http.Handler
 	defaultConsumes string
 	defaultProduces string
@@ -91,7 +93,7 @@ func newRoutableUntypedAPI(spec *loads.Document, api *untyped.API, context *Cont
 					handlers[um] = make(map[string]http.Handler)
 				}
 
-				handlers[um][path] = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					// lookup route info in the context
 					route, _ := context.RouteInfo(r)
 
@@ -115,14 +117,16 @@ func newRoutableUntypedAPI(spec *loads.Document, api *untyped.API, context *Cont
 				})
 
 				if len(schemes) > 0 {
-					handlers[um][path] = newSecureAPI(context, handlers[um][path])
+					handler = newSecureAPI(context, handler)
 				}
+				handlers[um][path] = handler
 			}
 		}
 	}
 
 	return &routableUntypedAPI{
 		api:             api,
+		hlock:           new(sync.Mutex),
 		handlers:        handlers,
 		defaultProduces: api.DefaultProduces,
 		defaultConsumes: api.DefaultConsumes,
@@ -130,11 +134,14 @@ func newRoutableUntypedAPI(spec *loads.Document, api *untyped.API, context *Cont
 }
 
 func (r *routableUntypedAPI) HandlerFor(method, path string) (http.Handler, bool) {
+	r.hlock.Lock()
 	paths, ok := r.handlers[strings.ToUpper(method)]
 	if !ok {
+		r.hlock.Unlock()
 		return nil, false
 	}
 	handler, ok := paths[path]
+	r.hlock.Unlock()
 	return handler, ok
 }
 func (r *routableUntypedAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
@@ -467,11 +474,32 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 	c.api.ServeErrorFor(route.Operation.ID)(rw, r, errors.New(http.StatusInternalServerError, "can't produce response"))
 }
 
-// APIHandler returns a handler to serve
+// APIHandler returns a handler to serve the API, this includes a swagger spec, router and the contract defined in the swagger spec
 func (c *Context) APIHandler(builder Builder) http.Handler {
 	b := builder
 	if b == nil {
 		b = PassthroughBuilder
 	}
-	return specMiddleware(c, newRouter(c, b(newOperationExecutor(c))))
+
+	var title string
+	sp := c.spec.Spec()
+	if sp != nil && sp.Info != nil && sp.Info.Title != "" {
+		title = sp.Info.Title
+	}
+
+	redocOpts := RedocOpts{
+		BasePath: c.BasePath(),
+		Title:    title,
+	}
+
+	return Spec("", c.spec.Raw(), Redoc(redocOpts, c.RoutesHandler(builder)))
+}
+
+// RoutesHandler returns a handler to serve the API, just the routes and the contract defined in the swagger spec
+func (c *Context) RoutesHandler(builder Builder) http.Handler {
+	b := builder
+	if b == nil {
+		b = PassthroughBuilder
+	}
+	return NewRouter(c, b(NewOperationExecutor(c)))
 }

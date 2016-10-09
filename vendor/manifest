@@ -111,7 +111,7 @@
 			"importpath": "github.com/go-openapi/runtime",
 			"repository": "https://github.com/go-openapi/runtime",
 			"vcs": "git",
-			"revision": "f6c2edcf343b34428165fe02674524a1977cad9e",
+			"revision": "769cf695eae571cc4631968afe999720e5115e5b",
 			"branch": "master",
 			"notests": true
 		},
@@ -160,6 +160,14 @@
 			"repository": "https://github.com/gorilla/context",
 			"vcs": "git",
 			"revision": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/gorilla/handlers",
+			"repository": "https://github.com/gorilla/handlers",
+			"vcs": "git",
+			"revision": "a5775781a543af3c6b9f5baf10995e4d14168950",
 			"branch": "master",
 			"notests": true
 		},
@@ -334,6 +342,14 @@
 			"revision": "d77da356e56a7428ad25149ca77381849a6a5232",
 			"branch": "master",
 			"path": "/assert",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/toqueteos/webbrowser",
+			"repository": "https://github.com/toqueteos/webbrowser",
+			"vcs": "git",
+			"revision": "970743f85c21bbfe01b0b7464aff85669eb0eb46",
+			"branch": "master",
 			"notests": true
 		},
 		{

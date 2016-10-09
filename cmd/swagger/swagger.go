@@ -55,6 +55,11 @@ It aims to represent the contract of your API with a language agnostic descripti
 		log.Fatal(err)
 	}
 
+	_, err = parser.AddCommand("serve", "serve spec and docs", "serve a spec and swagger or redoc documentation ui", &commands.ServeCmd{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	genpar, err := parser.AddCommand("generate", "genererate go code", "generate go code for the swagger spec file", &commands.Generate{})
 	if err != nil {
 		log.Fatalln(err)
