@@ -24,7 +24,7 @@
     - [swagger:allOf](generate/spec/allOf.md)
     - [swagger:strfmt](generate/spec/strfmt.md)
     - [swagger:discriminated](generate/spec/discriminated.md)
-  - [Custom generation](use/templates_layout.md)
+  - [Custom generation](use/template_layout.md)
     - [Custom templates](generate/templates.md)
   
 
