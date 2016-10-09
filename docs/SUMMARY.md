@@ -7,6 +7,7 @@
     - [Middleware](use/middleware.md)
 
 - [Validate](usage/validate.md)
+- [UI](usage/serve_ui.md)
 
 - Generate
   

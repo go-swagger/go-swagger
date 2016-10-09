@@ -18,7 +18,7 @@ swagger validate [http-url|filepath]
 * Specification Documentation: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md
 * JSON Schema: https://github.com/swagger-api/swagger-spec/blob/master/schemas/v2.0/schema.json
 
-### Sematic Validation
+### Semantic Validation
 
 All the rules the validator tool supports:
 
