@@ -67,6 +67,11 @@ func ToSlice(i interface{}) []interface{} {
 	return v
 }
 
+func ToBoolSlice(i interface{}) []bool {
+	v, _ := ToBoolSliceE(i)
+	return v
+}
+
 func ToStringSlice(i interface{}) []string {
 	v, _ := ToStringSliceE(i)
 	return v

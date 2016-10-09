@@ -8,6 +8,8 @@ import (
 	"errors"
 	"unicode/utf8"
 
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"golang.org/x/text/runes"
 	"golang.org/x/text/secure/bidirule"
 	"golang.org/x/text/transform"
@@ -104,14 +106,14 @@ func (b *buffers) apply(t transform.Transformer) (err error) {
 	return err
 }
 
-func (b *buffers) enforce(p *Profile, src []byte) (str []byte, err error) {
+func (b *buffers) enforce(p *Profile, src []byte, comparing bool) (str []byte, err error) {
 	b.src = src
 
 	// These transforms are applied in the order defined in
 	// https://tools.ietf.org/html/rfc7564#section-7
 
 	// TODO: allow different width transforms options.
-	if p.options.foldWidth {
+	if p.options.foldWidth || (p.options.ignorecase && comparing) {
 		// TODO: use Span, once available.
 		if err = b.apply(width.Fold); err != nil {
 			return nil, err
@@ -124,6 +126,11 @@ func (b *buffers) enforce(p *Profile, src []byte) (str []byte, err error) {
 	}
 	if p.options.cases != nil {
 		if err = b.apply(p.options.cases); err != nil {
+			return nil, err
+		}
+	}
+	if comparing && p.options.ignorecase {
+		if err = b.apply(cases.Lower(language.Und, cases.HandleFinalSigma(false))); err != nil {
 			return nil, err
 		}
 	}
@@ -169,7 +176,7 @@ func (b *buffers) enforce(p *Profile, src []byte) (str []byte, err error) {
 func (p *Profile) Append(dst, src []byte) ([]byte, error) {
 	var buf buffers
 	buf.init(8 + len(src) + len(src)>>2)
-	b, err := buf.enforce(p, src)
+	b, err := buf.enforce(p, src, false)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +187,7 @@ func (p *Profile) Append(dst, src []byte) ([]byte, error) {
 func (p *Profile) Bytes(b []byte) ([]byte, error) {
 	var buf buffers
 	buf.init(8 + len(b) + len(b)>>2)
-	b, err := buf.enforce(p, b)
+	b, err := buf.enforce(p, b, false)
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +203,7 @@ func (p *Profile) Bytes(b []byte) ([]byte, error) {
 func (p *Profile) String(s string) (string, error) {
 	var buf buffers
 	buf.init(8 + len(s) + len(s)>>2)
-	b, err := buf.enforce(p, []byte(s))
+	b, err := buf.enforce(p, []byte(s), false)
 	if err != nil {
 		return "", err
 	}
@@ -207,22 +214,21 @@ func (p *Profile) String(s string) (string, error) {
 // (byte-for-byte equality). If either string cannot be enforced, the comparison
 // is false.
 func (p *Profile) Compare(a, b string) bool {
-	a, err := p.String(a)
-	if err != nil {
-		return false
-	}
-	b, err = p.String(b)
-	if err != nil {
-		return false
-	}
+	var buf buffers
 
-	// TODO: This is out of order. Need to extract the transformation logic and
-	// put this in where the normal case folding would go (but only for
-	// comparison).
-	if p.options.ignorecase {
-		a = width.Fold.String(a)
-		b = width.Fold.String(a)
+	buf.init(8 + len(a) + len(a)>>2)
+	str, err := buf.enforce(p, []byte(a), true)
+	if err != nil {
+		return false
 	}
+	a = string(str)
+
+	buf.init(8 + len(b) + len(b)>>2)
+	str, err = buf.enforce(p, []byte(b), true)
+	if err != nil {
+		return false
+	}
+	b = string(str)
 
 	return a == b
 }

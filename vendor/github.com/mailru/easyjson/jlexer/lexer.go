@@ -506,7 +506,7 @@ func (r *Lexer) SkipRecursive() {
 				return
 			}
 		case c == '\\' && inQuotes:
-			wasEscape = true
+			wasEscape = !wasEscape
 			continue
 		case c == '"' && inQuotes:
 			inQuotes = wasEscape
@@ -516,8 +516,11 @@ func (r *Lexer) SkipRecursive() {
 		wasEscape = false
 	}
 	r.pos = len(r.Data)
-	r.err = io.EOF
-}
+	r.err = &LexerError{
+		Reason: "EOF reached while skipping array/object or token",
+		Offset: r.pos,
+		Data: string(r.Data[r.pos:]),
+	}}
 
 // Raw fetches the next item recursively as a data slice
 func (r *Lexer) Raw() []byte {

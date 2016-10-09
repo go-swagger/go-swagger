@@ -32,7 +32,7 @@ var (
 	)
 	usernameCaseMap = NewIdentifier(
 		FoldWidth,
-		FoldCase(),
+		LowerCase(),
 		Norm(norm.NFC),
 		BidiRule,
 	)

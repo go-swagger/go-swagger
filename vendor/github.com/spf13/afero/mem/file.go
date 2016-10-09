@@ -59,7 +59,9 @@ type FileData struct {
 	modtime time.Time
 }
 
-func (d FileData) Name() string {
+func (d *FileData) Name() string {
+	d.Lock()
+	defer d.Unlock()
 	return d.name
 }
 
@@ -107,9 +109,7 @@ func (f *File) Close() error {
 }
 
 func (f *File) Name() string {
-	f.fileData.Lock()
-	defer f.fileData.Unlock()
-	return f.fileData.name
+	return f.fileData.Name()
 }
 
 func (f *File) Stat() (os.FileInfo, error) {

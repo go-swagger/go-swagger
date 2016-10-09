@@ -309,6 +309,9 @@ func (p *paragraph) determineExplicitEmbeddingLevels() {
 			}
 			if isIsolate {
 				p.resultLevels[i] = stack.lastEmbeddingLevel()
+				if stack.lastDirectionalOverrideStatus() != ON {
+					p.resultTypes[i] = stack.lastDirectionalOverrideStatus()
+				}
 			}
 
 			var newLevel level

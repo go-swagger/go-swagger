@@ -62,7 +62,7 @@ func IsURL(str string) bool {
 }
 
 // IsRequestURL check if the string rawurl, assuming
-// it was received in an HTTP request, is a valid
+// it was recieved in an HTTP request, is a valid
 // URL confirm to RFC 3986
 func IsRequestURL(rawurl string) bool {
 	url, err := url.ParseRequestURI(rawurl)
@@ -76,7 +76,7 @@ func IsRequestURL(rawurl string) bool {
 }
 
 // IsRequestURI check if the string rawurl, assuming
-// it was received in an HTTP request, is an
+// it was recieved in an HTTP request, is an
 // absolute URI or an absolute path.
 func IsRequestURI(rawurl string) bool {
 	_, err := url.ParseRequestURI(rawurl)
@@ -494,6 +494,12 @@ func IsIPv4(str string) bool {
 func IsIPv6(str string) bool {
 	ip := net.ParseIP(str)
 	return ip != nil && strings.Contains(str, ":")
+}
+
+// IsCIDR check if the string is an valid CIDR notiation (IPV4 & IPV6)
+func IsCIDR(str string) bool {
+	_, _, err := net.ParseCIDR(str)
+	return err == nil
 }
 
 // IsMAC check if a string is valid MAC address.

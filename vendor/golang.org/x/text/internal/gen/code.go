@@ -187,6 +187,7 @@ func (w *CodeWriter) writeValue(v reflect.Value) {
 
 // WriteString writes a string literal.
 func (w *CodeWriter) WriteString(s string) {
+	s = strings.Replace(s, `\`, `\\`, -1)
 	io.WriteString(w.Hash, s) // content hash
 	w.Size += len(s)
 

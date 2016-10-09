@@ -29,12 +29,12 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// Denotes failing to parse configuration file.
+// ConfigParseError denotes failing to parse configuration file.
 type ConfigParseError struct {
 	err error
 }
 
-// Returns the formatted configuration error.
+// Error returns the formatted configuration error.
 func (pe ConfigParseError) Error() string {
 	return fmt.Sprintf("While parsing config: %s", pe.err.Error())
 }
@@ -45,6 +45,10 @@ func insensitiviseMap(m map[string]interface{}) {
 		if key != lower {
 			delete(m, key)
 			m[lower] = val
+			if m2, ok := val.(map[string]interface{}); ok {
+				// nested map: recursively insensitivise
+				insensitiviseMap(m2)
+			}
 		}
 	}
 }
@@ -68,10 +72,10 @@ func absPathify(inPath string) string {
 	p, err := filepath.Abs(inPath)
 	if err == nil {
 		return filepath.Clean(p)
-	} else {
-		jww.ERROR.Println("Couldn't discover absolute path")
-		jww.ERROR.Println(err)
 	}
+
+	jww.ERROR.Println("Couldn't discover absolute path")
+	jww.ERROR.Println(err)
 	return ""
 }
 
@@ -105,29 +109,6 @@ func userHomeDir() string {
 		return home
 	}
 	return os.Getenv("HOME")
-}
-
-func findCWD() (string, error) {
-	serverFile, err := filepath.Abs(os.Args[0])
-
-	if err != nil {
-		return "", fmt.Errorf("Can't get absolute path for executable: %v", err)
-	}
-
-	path := filepath.Dir(serverFile)
-	realFile, err := filepath.EvalSymlinks(serverFile)
-
-	if err != nil {
-		if _, err = os.Stat(serverFile + ".exe"); err == nil {
-			realFile = filepath.Clean(serverFile + ".exe")
-		}
-	}
-
-	if err == nil && realFile != serverFile {
-		path = filepath.Dir(realFile)
-	}
-
-	return path, nil
 }
 
 func unmarshallConfigReader(in io.Reader, c map[string]interface{}, configType string) error {
@@ -172,7 +153,12 @@ func unmarshallConfigReader(in io.Reader, c map[string]interface{}, configType s
 		}
 		for _, key := range p.Keys() {
 			value, _ := p.Get(key)
-			c[key] = value
+			// recursively build nested maps
+			path := strings.Split(key, ".")
+			lastKey := strings.ToLower(path[len(path)-1])
+			deepestMap := deepSearch(c, path[0:len(path)-1])
+			// set innermost value
+			deepestMap[lastKey] = value
 		}
 	}
 
@@ -221,4 +207,35 @@ func parseSizeInBytes(sizeStr string) uint {
 	}
 
 	return safeMul(uint(size), multiplier)
+}
+
+// deepSearch scans deep maps, following the key indexes listed in the
+// sequence "path".
+// The last value is expected to be another map, and is returned.
+//
+// In case intermediate keys do not exist, or map to a non-map value,
+// a new map is created and inserted, and the search continues from there:
+// the initial map "m" may be modified!
+func deepSearch(m map[string]interface{}, path []string) map[string]interface{} {
+	for _, k := range path {
+		m2, ok := m[k]
+		if !ok {
+			// intermediate key does not exist
+			// => create it and continue from there
+			m3 := make(map[string]interface{})
+			m[k] = m3
+			m = m3
+			continue
+		}
+		m3, ok := m2.(map[string]interface{})
+		if !ok {
+			// intermediate key is a value
+			// => replace with a new map
+			m3 = make(map[string]interface{})
+			m[k] = m3
+		}
+		// continue search from here
+		m = m3
+	}
+	return m
 }

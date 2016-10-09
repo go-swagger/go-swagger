@@ -6,6 +6,7 @@ package precis
 
 import (
 	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
@@ -94,6 +95,20 @@ func Norm(f norm.Form) Option {
 func FoldCase(opts ...cases.Option) Option {
 	return func(o *options) {
 		o.cases = cases.Fold(opts...)
+	}
+}
+
+// The LowerCase option defines a Profile's case mapping rule. Options can be
+// provided to determine the type of case folding used.
+func LowerCase(opts ...cases.Option) Option {
+	return func(o *options) {
+		if len(opts) == 0 {
+			o.cases = cases.Lower(language.Und, cases.HandleFinalSigma(false))
+			return
+		}
+
+		opts = append([]cases.Option{cases.HandleFinalSigma(false)}, opts...)
+		o.cases = cases.Lower(language.Und, opts...)
 	}
 }
 

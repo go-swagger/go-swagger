@@ -416,7 +416,7 @@ func Set(name, value string) error {
 // otherwise, the default values of all defined flags in the set.
 func (f *FlagSet) PrintDefaults() {
 	usages := f.FlagUsages()
-	fmt.Fprintf(f.out(), "%s", usages)
+	fmt.Fprint(f.out(), usages)
 }
 
 // defaultIsZeroValue returns true if the default value for this flag represents
@@ -434,10 +434,20 @@ func (f *Flag) defaultIsZeroValue() bool {
 		return f.DefValue == ""
 	case *ipValue, *ipMaskValue, *ipNetValue:
 		return f.DefValue == "<nil>"
-	case *intSliceValue, *stringSliceValue:
+	case *intSliceValue, *stringSliceValue, *stringArrayValue:
 		return f.DefValue == "[]"
 	default:
-		return true
+		switch f.Value.String() {
+		case "false":
+			return true
+		case "<nil>":
+			return true
+		case "":
+			return true
+		case "0":
+			return true
+		}
+		return false
 	}
 }
 
