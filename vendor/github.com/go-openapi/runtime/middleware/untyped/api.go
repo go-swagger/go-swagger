@@ -34,23 +34,18 @@ func NewAPI(spec *loads.Document) *API {
 	if spec != nil && spec.Spec() != nil {
 		an = analysis.New(spec.Spec())
 	}
-	return &API{
-		spec:            spec,
-		analyzer:        an,
-		DefaultProduces: runtime.JSONMime,
-		DefaultConsumes: runtime.JSONMime,
-		consumers: map[string]runtime.Consumer{
-			runtime.JSONMime: runtime.JSONConsumer(),
-		},
-		producers: map[string]runtime.Producer{
-			runtime.JSONMime: runtime.JSONProducer(),
-		},
+	api := &API{
+		spec:           spec,
+		analyzer:       an,
+		consumers:      make(map[string]runtime.Consumer, 10),
+		producers:      make(map[string]runtime.Producer, 10),
 		authenticators: make(map[string]runtime.Authenticator),
 		operations:     make(map[string]map[string]runtime.OperationHandler),
 		ServeError:     errors.ServeError,
 		Models:         make(map[string]func() interface{}),
 		formats:        strfmt.NewFormats(),
 	}
+	return api.WithJSONDefaults()
 }
 
 // API represents an untyped mux for a swagger spec
@@ -66,6 +61,24 @@ type API struct {
 	ServeError      func(http.ResponseWriter, *http.Request, error)
 	Models          map[string]func() interface{}
 	formats         strfmt.Registry
+}
+
+// WithJSONDefaults loads the json defaults for this api
+func (d *API) WithJSONDefaults() *API {
+	d.DefaultConsumes = runtime.JSONMime
+	d.DefaultProduces = runtime.JSONMime
+	d.consumers[runtime.JSONMime] = runtime.JSONConsumer()
+	d.producers[runtime.JSONMime] = runtime.JSONProducer()
+	return d
+}
+
+// WithoutJSONDefaults clears the json defaults for this api
+func (d *API) WithoutJSONDefaults() *API {
+	d.DefaultConsumes = ""
+	d.DefaultProduces = ""
+	delete(d.consumers, runtime.JSONMime)
+	delete(d.producers, runtime.JSONMime)
+	return d
 }
 
 // Formats returns the registered string formats
@@ -95,7 +108,7 @@ func (d *API) RegisterAuth(scheme string, handler runtime.Authenticator) {
 // RegisterConsumer registers a consumer for a media type.
 func (d *API) RegisterConsumer(mediaType string, handler runtime.Consumer) {
 	if d.consumers == nil {
-		d.consumers = map[string]runtime.Consumer{runtime.JSONMime: runtime.JSONConsumer()}
+		d.consumers = make(map[string]runtime.Consumer, 10)
 	}
 	d.consumers[strings.ToLower(mediaType)] = handler
 }
@@ -103,7 +116,7 @@ func (d *API) RegisterConsumer(mediaType string, handler runtime.Consumer) {
 // RegisterProducer registers a producer for a media type
 func (d *API) RegisterProducer(mediaType string, handler runtime.Producer) {
 	if d.producers == nil {
-		d.producers = map[string]runtime.Producer{runtime.JSONMime: runtime.JSONProducer()}
+		d.producers = make(map[string]runtime.Producer, 10)
 	}
 	d.producers[strings.ToLower(mediaType)] = handler
 }
@@ -111,7 +124,7 @@ func (d *API) RegisterProducer(mediaType string, handler runtime.Producer) {
 // RegisterOperation registers an operation handler for an operation name
 func (d *API) RegisterOperation(method, path string, handler runtime.OperationHandler) {
 	if d.operations == nil {
-		d.operations = make(map[string]map[string]runtime.OperationHandler)
+		d.operations = make(map[string]map[string]runtime.OperationHandler, 30)
 	}
 	um := strings.ToUpper(method)
 	if b, ok := d.operations[um]; !ok || b == nil {
@@ -205,7 +218,7 @@ func (d *API) validate() error {
 	if err := d.verify("produces", produces, d.analyzer.RequiredProduces()); err != nil {
 		return err
 	}
-	if err := d.verify("operation", operations, d.analyzer.OperationIDs()); err != nil {
+	if err := d.verify("operation", operations, d.analyzer.OperationMethodPaths()); err != nil {
 		return err
 	}
 
@@ -213,7 +226,6 @@ func (d *API) validate() error {
 	if err := d.verify("auth scheme", authenticators, requiredAuths); err != nil {
 		return err
 	}
-	fmt.Printf("comparing %s with %s\n", strings.Join(definedAuths, ","), strings.Join(requiredAuths, ","))
 	if err := d.verify("security definitions", definedAuths, requiredAuths); err != nil {
 		return err
 	}

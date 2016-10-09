@@ -46,3 +46,7 @@ func (e *errorResp) WriteResponse(rw http.ResponseWriter, producer runtime.Produ
 func NotImplemented(message string) Responder {
 	return &errorResp{http.StatusNotImplemented, message, make(http.Header)}
 }
+
+func NoContent() Responder {
+	return &errorResp{code: http.StatusNoContent, response: nil}
+}

@@ -63,7 +63,7 @@
 			"importpath": "github.com/go-openapi/analysis",
 			"repository": "https://github.com/go-openapi/analysis",
 			"vcs": "git",
-			"revision": "b44dc874b601d9e4e2f6e19140e794ba24bead3b",
+			"revision": "7222828b8ce19afee3c595aef6643b9e42150120",
 			"branch": "master",
 			"notests": true
 		},
@@ -111,7 +111,7 @@
 			"importpath": "github.com/go-openapi/runtime",
 			"repository": "https://github.com/go-openapi/runtime",
 			"vcs": "git",
-			"revision": "769cf695eae571cc4631968afe999720e5115e5b",
+			"revision": "3969e1fbeb2c58cc2e539bf8d35f1448d278729f",
 			"branch": "master",
 			"notests": true
 		},

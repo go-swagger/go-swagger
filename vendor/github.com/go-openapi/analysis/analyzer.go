@@ -518,6 +518,20 @@ func (s *Spec) OperationIDs() []string {
 	return result
 }
 
+// OperationMethodPaths gets all the operation ids based on method an dpath
+func (s *Spec) OperationMethodPaths() []string {
+	if len(s.operations) == 0 {
+		return nil
+	}
+	result := make([]string, 0, len(s.operations))
+	for method, v := range s.operations {
+		for p := range v {
+			result = append(result, fmt.Sprintf("%s %s", strings.ToUpper(method), p))
+		}
+	}
+	return result
+}
+
 // RequiredConsumes gets all the distinct consumes that are specified in the specification document
 func (s *Spec) RequiredConsumes() []string {
 	return s.structMapKeys(s.consumes)

@@ -330,7 +330,8 @@ func (p *untypedParamBinder) setFieldValue(target reflect.Value, defaultValue in
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		if data == "" {
 			if target.CanSet() {
-				target.SetInt(defVal.Int())
+				rd := defVal.Convert(reflect.TypeOf(int64(0)))
+				target.SetInt(rd.Int())
 			}
 			return nil
 		}
@@ -348,7 +349,8 @@ func (p *untypedParamBinder) setFieldValue(target reflect.Value, defaultValue in
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		if data == "" {
 			if target.CanSet() {
-				target.SetUint(defVal.Uint())
+				rd := defVal.Convert(reflect.TypeOf(uint64(0)))
+				target.SetUint(rd.Uint())
 			}
 			return nil
 		}
@@ -366,7 +368,8 @@ func (p *untypedParamBinder) setFieldValue(target reflect.Value, defaultValue in
 	case reflect.Float32, reflect.Float64:
 		if data == "" {
 			if target.CanSet() {
-				target.SetFloat(defVal.Float())
+				rd := defVal.Convert(reflect.TypeOf(float64(0)))
+				target.SetFloat(rd.Float())
 			}
 			return nil
 		}

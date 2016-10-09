@@ -8,6 +8,7 @@
 
 - [Validate](usage/validate.md)
 - [UI](usage/serve_ui.md)
+- [Dynamic Server](tutorial/dynamic.md)
 
 - Generate
   
@@ -27,8 +28,4 @@
   - [Custom generation](use/template_layout.md)
     - [Custom templates](generate/templates.md)
   
-
-
-- Runtime
-
-  - [Dynamic Server](use/server.md)
+- [FAQ](https://github.com/go-swagger/go-swagger/issues?q=is%3Aissue+label%3Aquestion)
