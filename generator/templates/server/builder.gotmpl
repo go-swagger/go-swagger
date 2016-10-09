@@ -41,6 +41,7 @@ type {{ pascalize .Name }}API struct {
   formats         strfmt.Registry
   defaultConsumes string
   defaultProduces string
+  Middleware      func(middleware.Builder) http.Handler
   {{range .Consumes}}// {{ pascalize .Name }}Consumer registers a consumer for a "{{ .MediaType }}" mime type
   {{ pascalize .Name }}Consumer runtime.Consumer
   {{end}}
@@ -236,9 +237,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) Context() *middleware.Context
 }
 
 func ({{.ReceiverName}} *{{ pascalize .Name }}API) initHandlerCache() {
-  if {{.ReceiverName}}.context == nil {
-    {{.ReceiverName}}.context = middleware.NewRoutableContext({{.ReceiverName}}.spec, {{.ReceiverName}}, nil)
-  }
+  {{.ReceiverName}}.Context() // don't care about the result, just that the initialization happened
   {{if .Operations}}
   if {{ .ReceiverName }}.handlers == nil {
     {{.ReceiverName}}.handlers = make(map[string]map[string]http.Handler)
@@ -255,9 +254,16 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) initHandlerCache() {
 // Serve creates a http handler to serve the API over HTTP
 // can be used directly in http.ListenAndServe(":8000", api.Serve(nil))
 func ({{.ReceiverName}} *{{ pascalize .Name }}API) Serve(builder middleware.Builder) http.Handler {
+  {{ .ReceiverName }}.Init()
+
+  if {{ .ReceiverName}}.Middleware != nil {
+    return {{ .ReceiverName }}.Middleware(builder)
+  }
+  return {{.ReceiverName}}.context.APIHandler(builder)
+}
+
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) Init() {
   if len({{.ReceiverName}}.handlers) == 0 {
     {{.ReceiverName}}.initHandlerCache()
   }
-
-  return {{.ReceiverName}}.context.APIHandler(builder)
 }

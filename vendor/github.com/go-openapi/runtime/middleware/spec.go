@@ -15,44 +15,28 @@
 package middleware
 
 import (
-	"encoding/json"
 	"net/http"
-
-	"github.com/go-openapi/spec"
+	"path"
 )
-
-func specMiddleware(ctx *Context, next http.Handler) http.Handler {
-	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/swagger.json" {
-			rw.Header().Set("Content-Type", "application/json")
-			rw.WriteHeader(http.StatusOK)
-			rw.Write(ctx.spec.Raw())
-			return
-		}
-		if next == nil {
-			ctx.NotFound(rw, r)
-			return
-		}
-		next.ServeHTTP(rw, r)
-	})
-}
 
 // Spec creates a middleware to serve a swagger spec.
 // This allows for altering the spec before starting the http listener.
-// This can be useful
+// This can be useful if you want to serve the swagger spec from another path than /swagger.json
 //
-func Spec(basePath string, swsp *spec.Swagger, next http.Handler) http.Handler {
-	if basePath == "/" {
-		basePath = ""
+func Spec(basePath string, b []byte, next http.Handler) http.Handler {
+	if basePath == "" {
+		basePath = "/"
 	}
+	pth := path.Join(basePath, "swagger.json")
+
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == basePath+"/swagger.json" {
+		if r.URL.Path == pth {
 			rw.Header().Set("Content-Type", "application/json")
 			rw.WriteHeader(http.StatusOK)
-			dec := json.NewEncoder(rw)
-			dec.Encode(swsp)
+			rw.Write(b)
 			return
 		}
+
 		if next == nil {
 			rw.Header().Set("Content-Type", "application/json")
 			rw.WriteHeader(http.StatusNotFound)
