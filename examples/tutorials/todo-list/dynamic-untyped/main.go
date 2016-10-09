@@ -95,7 +95,7 @@ var destroyOne = runtime.OperationHandlerFunc(func(params interface{}) (interfac
 	log.Printf("%#v\n", params)
 
 	removeItem(params.(map[string]interface{})["id"].(int64))
-	return middleware.NoContent(), nil
+	return nil, nil
 })
 
 var items = []map[string]interface{}{
@@ -146,9 +146,6 @@ func removeItem(id int64) {
 }
 
 func itemByID(id int64) (map[string]interface{}, error) {
-	itemsLock.Lock()
-	defer itemsLock.Unlock()
-
 	for _, item := range items {
 		if item["id"].(int64) == id {
 			return item, nil

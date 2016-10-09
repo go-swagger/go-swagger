@@ -242,9 +242,6 @@ func removeItem(id int64) {
 }
 
 func itemByID(id int64) (map[string]interface{}, error) {
-	itemsLock.Lock()
-	defer itemsLock.Unlock()
-
 	for _, item := range items {
 		if item["id"].(int64) == id {
 			return item, nil
@@ -253,6 +250,8 @@ func itemByID(id int64) (map[string]interface{}, error) {
 	return nil, errors.NotFound("not found: item %d", id)
 }
 ```
+
+[see source of this code](https://github.com/go-swagger/go-swagger/blob/master/examples/tutorials/todo-list/dynamic-untyped/main.go)
 
 The backend code builds a todo-list-item store that's save for concurrent access buy guarding every operation with a lock. This is all in memory so as soon as you quit the process all your changes will be reset.
 
@@ -335,9 +334,158 @@ var destroyOne = runtime.OperationHandlerFunc(func(params interface{}) (interfac
 	log.Printf("%#v\n", params)
 
 	removeItem(params.(map[string]interface{})["id"].(int64))
-	return middleware.NoContent(), nil
+	return nil, nil
 })
+```
 
+[see source of this code](https://github.com/go-swagger/go-swagger/blob/master/examples/tutorials/todo-list/dynamic-untyped/main.go)
+
+With this set up we should be able to start a server, send it some requests and get some meaningful answers.
+
+#### List all
+
+```shellsession
+git:(master) ✗ !? » curl -i localhost:8000
+```
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/io.goswagger.examples.todo-list.v1+json
+Date: Sun, 09 Oct 2016 15:50:39 GMT
+Content-Length: 87
+
+[{"completed":true,"description":"feed dog","id":1},{"description":"feed cat","id":2}]
+```
+
+#### Create new
+
+The default curl POST request should fail because we only allow:  application/io.goswagger.examples.todo-list.v1+json
+
+```shellsession
+curl -i localhost:8000 -d '{"description":"item for the list"}'
+```
+
+```http
+HTTP/1.1 415 Unsupported Media Type
+Content-Type: application/io.goswagger.examples.todo-list.v1+json
+Date: Sun, 09 Oct 2016 15:55:43 GMT
+Content-Length: 157
+
+{"code":415,"message":"unsupported media type \"application/x-www-form-urlencoded\", only [application/io.goswagger.examples.todo-list.v1+json] are allowed"}
+```
+
+When the content type header is sent, we have a better result:
+
+```shellsession
+curl -i -H 'Content-Type: application/io.goswagger.examples.todo-list.v1+json' localhost:8000 -d '{"description":"a new item"}'
+```
+
+```http
+HTTP/1.1 201 Created
+Content-Type: application/io.goswagger.examples.todo-list.v1+json
+Date: Sun, 09 Oct 2016 15:56:28 GMT
+Content-Length: 36
+
+{"description":"a new item","id":3}
+```
+
+#### List again
+
+```shellsession
+git:(master) ✗ !? » curl -i localhost:8000
+```
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/io.goswagger.examples.todo-list.v1+json
+Date: Sun, 09 Oct 2016 15:58:06 GMT
+Content-Length: 123
+
+[{"completed":true,"description":"feed dog","id":1},{"description":"feed cat","id":2},{"description":"a new item","id":3}]
+```
+
+#### Update an item
+
+```shellsession
+curl -i -XPUT -H 'Content-Type: application/io.goswagger.examples.todo-list.v1+json' localhost:8000/3 -d '{"description":"an updated item"}'
+```
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/io.goswagger.examples.todo-list.v1+json
+Date: Sun, 09 Oct 2016 15:58:42 GMT
+Content-Length: 41
+
+{"description":"an updated item","id":3}
+```
+
+#### List to verify
+
+```shellsession
+git:(master) ✗ !? » curl -i localhost:8000
+```
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/io.goswagger.examples.todo-list.v1+json
+Date: Sun, 09 Oct 2016 15:58:42 GMT
+Content-Length: 41
+
+{"description":"an updated item","id":3}
+```
+
+#### Delete an item
+
+```shellsession
+curl -i -XDELETE localhost:8000/3
+```
+
+```http
+HTTP/1.1 204 No Content
+Content-Type: application/io.goswagger.examples.todo-list.v1+json
+Date: Sun, 09 Oct 2016 16:00:59 GMT
+```
+
+#### List to show start state again
+
+```shellsession
+curl -i localhost:8000
+```
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/io.goswagger.examples.todo-list.v1+json
+Date: Sun, 09 Oct 2016 16:02:19 GMT
+Content-Length: 87
+
+[{"completed":true,"description":"feed dog","id":1},{"description":"feed cat","id":2}]
+```
+
+At the end of the curl requests the server shows these outputs:
+
+```shellsession
+git:(master) ✗ !? » go run main.go ./swagger.yml
+2016/10/09 08:50:34 loading "./swagger.yml" as contract for the server
+2016/10/09 08:50:34 serving A To Do list application at http://localhost:8000
+2016/10/09 08:50:39 received 'findTodos'
+2016/10/09 08:50:39 map[string]interface {}{"since":0, "limit":20}
+2016/10/09 08:56:28 received 'addOne'
+2016/10/09 08:56:28 map[string]interface {}{"body":map[string]interface {}{"description":"a new item"}}
+2016/10/09 08:58:06 received 'findTodos'
+2016/10/09 08:58:06 map[string]interface {}{"limit":20, "since":0}
+2016/10/09 08:58:42 received 'updateOne'
+2016/10/09 08:58:42 map[string]interface {}{"id":3, "body":map[string]interface {}{"description":"an updated item"}}
+2016/10/09 09:00:07 received 'findTodos'
+2016/10/09 09:00:07 map[string]interface {}{"since":0, "limit":20}
+2016/10/09 09:00:59 received 'destroyOne'
+2016/10/09 09:00:59 map[string]interface {}{"id":3}
+2016/10/09 09:02:19 received 'findTodos'
+2016/10/09 09:02:19 map[string]interface {}{"since":0, "limit":20}
 ```
 
 ## Using typed models
+
+This tutorial is about a dynamic server, but the fact that the models and parameter objects are untyped, doesn't sit very well with me. It would be much nicer if we could provide our own structs and they would be used in the parameters.
+
+This last section of the tutorial, configures the server to do exactly that.
+
