@@ -12,6 +12,9 @@ general:
 dependencies:
   override:
     - docker info
+    - docker pull casualjim/fpm
+    - docker pull casualjim/gox
+    - docker pull casualjim/github-release
     - docker build -t go-swagger/go-swagger:ci-$CIRCLE_BUILD_NUM-$CIRCLE_SHA1 -f Dockerfile.ci .
 
 test:
@@ -35,3 +38,11 @@ test:
         ./hack/build-docker.sh
       :
           timeout: 1800 # Fail if command has no output for 30 mins.  Probably doesn't need that long.
+
+deployment:
+  release:
+    tag: /[0-9]+(\.[0-9]+)*/
+    owner: go-swagger
+    commands:
+      - mkdir -p dist
+      - ./hack/deploy.sh

@@ -1,5 +1,5 @@
-FROM golang:alpine
-MAINTAINER go-swagger <ivan+goswagger@flanders.co.nz>
+FROM golang:1.7-alpine
+MAINTAINER Ivan Porto Carrer <ivan@flanders.co.nz> (@casualjim)
 
 RUN apk --update add ca-certificates shared-mime-info mailcap git &&\
   go get -u github.com/go-openapi/runtime &&\
@@ -9,6 +9,7 @@ RUN apk --update add ca-certificates shared-mime-info mailcap git &&\
   go get -u github.com/jessevdk/go-flags &&\
   go get -u golang.org/x/net/context/ctxhttp
 
-ADD ./dist/swagger /usr/bin/swagger
+ADD ./dist/linux/amd64/usr/bin/swagger /usr/bin/swagger
 
 ENTRYPOINT ["/usr/bin/swagger"]
+CMD ["--help"]

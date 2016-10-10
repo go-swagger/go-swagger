@@ -5,6 +5,8 @@ import "fmt"
 var (
 	// Version for the swagger command
 	Version string
+	// Commit for the swagger command
+	Commit string
 )
 
 // PrintVersion the command
@@ -17,6 +19,8 @@ func (p *PrintVersion) Execute(args []string) error {
 		fmt.Println("dev")
 		return nil
 	}
-	fmt.Println(Version)
+	fmt.Println("version:", Version)
+	fmt.Println("commit:", Version)
+
 	return nil
 }
