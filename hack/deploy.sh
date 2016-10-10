@@ -64,7 +64,7 @@ upload_to_github() {
   cd $prjdir
 
   gh_release release
-  gh+release upload
+  gh_release upload
 }
 
 upload_to_bintray() {
