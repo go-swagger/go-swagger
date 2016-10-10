@@ -17,20 +17,13 @@ package spec
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/url"
-	"os"
 	"reflect"
 	"strings"
 	"sync"
 
 	"github.com/go-openapi/jsonpointer"
 	"github.com/go-openapi/swag"
-)
-
-var (
-	// Debug enables logging when SWAGGER_DEBUG env var is not empty
-	Debug = os.Getenv("SWAGGER_DEBUG") != ""
 )
 
 // ResolutionCache a cache for resolving urls
@@ -58,15 +51,8 @@ func initResolutionCache() ResolutionCache {
 }
 
 func (s *simpleCache) Get(uri string) (interface{}, bool) {
-	if Debug {
-		log.Printf("getting %q from resolution cache", uri)
-	}
 	s.lock.Lock()
 	v, ok := s.store[uri]
-	if Debug {
-		log.Printf("got %q from resolution cache: %t", uri, ok)
-	}
-
 	s.lock.Unlock()
 	return v, ok
 }
@@ -150,10 +136,6 @@ func defaultSchemaLoader(root interface{}, ref *Ref, cache ResolutionCache) (*sc
 		startingRef: ref,
 		cache:       cache,
 		loadDoc: func(path string) (json.RawMessage, error) {
-			if Debug {
-				log.Printf("fetching document at %q", path)
-			}
-
 			data, err := swag.LoadFromFileOrHTTP(path)
 			if err != nil {
 				return nil, err
@@ -219,7 +201,6 @@ func nextRef(startingNode interface{}, startingRef *Ref, ptr *jsonpointer.Pointe
 }
 
 func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}) error {
-
 	tgt := reflect.ValueOf(target)
 	if tgt.Kind() != reflect.Ptr {
 		return fmt.Errorf("resolve ref: target needs to be a pointer")
@@ -300,9 +281,6 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 		}
 
 	}
-
-	r.currentRef = currentRef
-
 	return nil
 }
 
@@ -382,6 +360,7 @@ func ExpandSpec(spec *Swagger) error {
 
 // ExpandSchema expands the refs in the schema object
 func ExpandSchema(schema *Schema, root interface{}, cache ResolutionCache) error {
+
 	if schema == nil {
 		return nil
 	}
@@ -414,7 +393,7 @@ func ExpandSchema(schema *Schema, root interface{}, cache ResolutionCache) error
 	}
 	var s *Schema
 	if s, err = expandSchema(*schema, refs, resolver); err != nil {
-		return err
+		return nil
 	}
 	*schema = *s
 	return nil
@@ -440,108 +419,101 @@ func expandItems(target Schema, parentRefs []string, resolver *schemaLoader) (*S
 	return &target, nil
 }
 
-func expandSchema(target Schema, parentRefs []string, resolver *schemaLoader) (*Schema, error) {
+func expandSchema(target Schema, parentRefs []string, resolver *schemaLoader) (schema *Schema, err error) {
+	defer func() {
+		schema = &target
+	}()
 	if target.Ref.String() == "" && target.Ref.IsRoot() {
-		if Debug {
-			log.Printf("skipping expand schema for no ref and root: %v", resolver.root)
-		}
-
-		return resolver.root.(*Schema), nil
+		target = *resolver.root.(*Schema)
+		return
 	}
 
 	// t is the new expanded schema
 	var t *Schema
 	for target.Ref.String() != "" {
-		if swag.ContainsStringsCI(parentRefs, target.Ref.String()) {
-			return &target, nil
+		// var newTarget Schema
+		pRefs := strings.Join(parentRefs, ",")
+		pRefs += ","
+		if strings.Contains(pRefs, target.Ref.String()+",") {
+			err = nil
+			return
 		}
 
-		if err := resolver.Resolve(&target.Ref, &t); err != nil {
-			return &target, err
+		if err = resolver.Resolve(&target.Ref, &t); err != nil {
+			return
 		}
 		parentRefs = append(parentRefs, target.Ref.String())
 		target = *t
 	}
 
-	t, err := expandItems(target, parentRefs, resolver)
-	if err != nil {
-		return &target, err
+	if t, err = expandItems(target, parentRefs, resolver); err != nil {
+		return
 	}
 	target = *t
 
 	for i := range target.AllOf {
-		t, err := expandSchema(target.AllOf[i], parentRefs, resolver)
-		if err != nil {
-			return &target, err
+		if t, err = expandSchema(target.AllOf[i], parentRefs, resolver); err != nil {
+			return
 		}
 		target.AllOf[i] = *t
 	}
 	for i := range target.AnyOf {
-		t, err := expandSchema(target.AnyOf[i], parentRefs, resolver)
-		if err != nil {
-			return &target, err
+		if t, err = expandSchema(target.AnyOf[i], parentRefs, resolver); err != nil {
+			return
 		}
 		target.AnyOf[i] = *t
 	}
 	for i := range target.OneOf {
-		t, err := expandSchema(target.OneOf[i], parentRefs, resolver)
-		if err != nil {
-			return &target, err
+		if t, err = expandSchema(target.OneOf[i], parentRefs, resolver); err != nil {
+			return
 		}
 		target.OneOf[i] = *t
 	}
 	if target.Not != nil {
-		t, err := expandSchema(*target.Not, parentRefs, resolver)
-		if err != nil {
-			return &target, err
+		if t, err = expandSchema(*target.Not, parentRefs, resolver); err != nil {
+			return
 		}
 		*target.Not = *t
 	}
 	for k := range target.Properties {
-		t, err := expandSchema(target.Properties[k], parentRefs, resolver)
-		if err != nil {
-			return &target, err
+		if t, err = expandSchema(target.Properties[k], parentRefs, resolver); err != nil {
+			return
 		}
 		target.Properties[k] = *t
 	}
 	if target.AdditionalProperties != nil && target.AdditionalProperties.Schema != nil {
-		t, err := expandSchema(*target.AdditionalProperties.Schema, parentRefs, resolver)
-		if err != nil {
-			return &target, err
+		if t, err = expandSchema(*target.AdditionalProperties.Schema, parentRefs, resolver); err != nil {
+			return
 		}
 		*target.AdditionalProperties.Schema = *t
 	}
 	for k := range target.PatternProperties {
-		t, err := expandSchema(target.PatternProperties[k], parentRefs, resolver)
-		if err != nil {
-			return &target, err
+		if t, err = expandSchema(target.PatternProperties[k], parentRefs, resolver); err != nil {
+			return
 		}
 		target.PatternProperties[k] = *t
 	}
 	for k := range target.Dependencies {
 		if target.Dependencies[k].Schema != nil {
-			t, err := expandSchema(*target.Dependencies[k].Schema, parentRefs, resolver)
-			if err != nil {
-				return &target, err
+			if t, err = expandSchema(*target.Dependencies[k].Schema, parentRefs, resolver); err != nil {
+				return
 			}
 			*target.Dependencies[k].Schema = *t
 		}
 	}
 	if target.AdditionalItems != nil && target.AdditionalItems.Schema != nil {
-		t, err := expandSchema(*target.AdditionalItems.Schema, parentRefs, resolver)
-		if err != nil {
-			return &target, err
+		if t, err = expandSchema(*target.AdditionalItems.Schema, parentRefs, resolver); err != nil {
+			return
 		}
 		*target.AdditionalItems.Schema = *t
 	}
 	for k := range target.Definitions {
-		t, err := expandSchema(target.Definitions[k], parentRefs, resolver)
-		if err != nil {
-			return &target, err
+		if t, err = expandSchema(target.Definitions[k], parentRefs, resolver); err != nil {
+			return
 		}
 		target.Definitions[k] = *t
 	}
-	return &target, nil
+	return
 }
 
 func expandPathItem(pathItem *PathItem, resolver *schemaLoader) error {

@@ -119,7 +119,7 @@
 			"importpath": "github.com/go-openapi/spec",
 			"repository": "https://github.com/go-openapi/spec",
 			"vcs": "git",
-			"revision": "451818a42c4560481c33bf592ca7665c928f7889",
+			"revision": "98bb9aa4969bd0b6228ad309844e0b3867e92748",
 			"branch": "master",
 			"notests": true
 		},
