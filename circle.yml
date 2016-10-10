@@ -45,4 +45,14 @@ deployment:
     owner: go-swagger
     commands:
       - mkdir -p dist
+      - go get -u github.com/aktau/github-release
       - ./hack/deploy.sh
+
+  dev_image:
+    branch: master
+    owner: go-swagger
+    commands:
+      - mkdir -p dist/linux/amd64/usr/bin
+      - docker login -u $API_USERNAME -p $QUAY_PASS https://quay.io
+      - docker build -t quay.io/goswagger/swagger:dev .
+      - docker push quay.io/goswagger/swagger

@@ -20,7 +20,7 @@ func (p *PrintVersion) Execute(args []string) error {
 		return nil
 	}
 	fmt.Println("version:", Version)
-	fmt.Println("commit:", Version)
+	fmt.Println("commit:", Commit)
 
 	return nil
 }

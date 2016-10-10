@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eu -o pipefail
+set -eux -o pipefail
 
 prjdir=`git rev-parse --show-toplevel`
 
@@ -42,29 +42,16 @@ build_linuxpkg() {
     casualjim/fpm -t $1 -p ./dist/build -s dir -C ./dist/linux/amd64 -v $CIRCLE_TAG -n swagger --license "ASL 2.0" -a x86_64 -m $API_EMAIL --url "https://goswagger.io" usr
 }
 
-gh_release() {
-    docker run \
-    --rm \
-    -v $prjdir/dist/bin:/dist \
-    -w /dist \
-    -e CIRCLE_TAG \
-    -e CIRCLE_SHA1 \
-    -e CIRCLE_PROJECT_USERNAME \
-    -e CIRCLE_PROJECT_REPONAME \
-    -e API_EMAIL \
-    -e API_USERNAME \
-    casualjim/github-release  -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -t $CIRCLE_TAG "$@"
-}
-
 upload_to_github() {
   echo "uploading to github"
   cd $prjdir/dist/bin
   sha1sum * > sha1sum.txt
   sha256sum * > sha256sum.txt
-  cd $prjdir
 
-  gh_release release
-  gh_release upload
+  github-release release -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -t $CIRCLE_TAG -d "$(cat $prjdir/notes/v${CIRCLE_TAG}.md)"
+  for f in $(ls .); do
+    github-release upload -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -t $CIRCLE_TAG -n $f -f $f
+  done
 }
 
 upload_to_bintray() {
@@ -84,6 +71,7 @@ upload_to_bintray() {
 }
 
 deploy_docker() {
+  docker run --rm -it -v `pwd`:/go/src/github.com/go-swagger/go-swagger -w /go/src/github.com/go-swagger/go-swagger golang:1.7-alpine go build -o ./dist/swagger-musl  -a -tags netgo -installsuffix netgo ./cmd/swagger
   docker build -t quay.io/goswagger/swagger:$CIRCLE_TAG .
   docker tag quay.io/goswagger/swagger:$CIRCLE_TAG quay.io/goswagger/swagger:latest
   docker login -u $API_USERNAME -p $QUAY_PASS https://quay.io
@@ -96,12 +84,12 @@ prepare
 build_binary -os="linux darwin windows" -arch="amd64 386"
 build_binary -os="linux" -arch="arm64 arm"
 
-# # build linux packages
+# build linux packages
 prepare_linuxpkg
 build_linuxpkg deb
 build_linuxpkg rpm
 
-upload binary packages
+# upload binary packages
 upload_to_github
 upload_to_bintray
 
