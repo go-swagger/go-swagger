@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eux -o pipefail
+set -eu -o pipefail
 
 prjdir=`git rev-parse --show-toplevel`
 
@@ -42,14 +42,29 @@ build_linuxpkg() {
     casualjim/fpm -t $1 -p ./dist/build -s dir -C ./dist/linux/amd64 -v $CIRCLE_TAG -n swagger --license "ASL 2.0" -a x86_64 -m $API_EMAIL --url "https://goswagger.io" usr
 }
 
+gh_release() {
+    docker run \
+    --rm \
+    -v $prjdir/dist/bin:/dist \
+    -w /dist \
+    -e CIRCLE_TAG \
+    -e CIRCLE_SHA1 \
+    -e CIRCLE_PROJECT_USERNAME \
+    -e CIRCLE_PROJECT_REPONAME \
+    -e API_EMAIL \
+    -e API_USERNAME \
+    casualjim/github-release  -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -t $CIRCLE_TAG "$@"
+}
+
 upload_to_github() {
   echo "uploading to github"
   cd $prjdir/dist/bin
-
   sha1sum * > sha1sum.txt
   sha256sum * > sha256sum.txt
-  github-release release -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -t $CIRCLE_TAG -c $CIRCLE_SHA1 -d "$(cat ./notes/v$CIRCLE_TAG.md)"
-  github-release upload -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -t $CIRCLE_TAG
+  cd $prjdir
+
+  gh_release release
+  gh+release upload
 }
 
 upload_to_bintray() {
