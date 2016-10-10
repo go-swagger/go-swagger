@@ -55,6 +55,7 @@ upload_to_github() {
 }
 
 upload_to_bintray() {
+  cd $prjdir
   curl \
     --retry 10 \
     --retry-delay 5 \
@@ -71,10 +72,11 @@ upload_to_bintray() {
 }
 
 deploy_docker() {
+  cd $prjdir
   docker run --rm -it -v `pwd`:/go/src/github.com/go-swagger/go-swagger -w /go/src/github.com/go-swagger/go-swagger golang:1.7-alpine go build -o ./dist/swagger-musl  -a -tags netgo -installsuffix netgo ./cmd/swagger
   docker build -t quay.io/goswagger/swagger:$CIRCLE_TAG .
   docker tag quay.io/goswagger/swagger:$CIRCLE_TAG quay.io/goswagger/swagger:latest
-  docker login -u $API_USERNAME -p $QUAY_PASS https://quay.io
+  docker login -u $API_USERNAME -e $API_EMAIL -p $QUAY_PASS https://quay.io
   docker push quay.io/goswagger/swagger
 }
 

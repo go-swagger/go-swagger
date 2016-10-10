@@ -53,6 +53,6 @@ deployment:
     owner: go-swagger
     commands:
       - mkdir -p dist/linux/amd64/usr/bin
-      - docker login -u $API_USERNAME -p $QUAY_PASS https://quay.io
+      - docker login -u $API_USERNAME -p $QUAY_PASS -e $API_EMAIL https://quay.io
       - docker build -t quay.io/goswagger/swagger:dev .
       - docker push quay.io/goswagger/swagger
