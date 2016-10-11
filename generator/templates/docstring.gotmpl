@@ -1,4 +1,13 @@
-{{define "docstring"}}{{ if .Title }}{{ .Title }}{{ if .Description }}
+{{define "docstring"}}
+  {{- if .Title }}
+    {{- .Title }}
+    {{- if .Description }}
 
-{{ .Description }}{{ end }}{{ else if .Description}}{{ .Description }}{{ else }}{{ humanize .Name }}{{ end }}
+{{ .Description }}
+{{- end }}
+{{- else if .Description}}
+  {{- .Description }}
+{{- else }}
+  {{- humanize .Name }}
+{{- end }}
 {{end}}
