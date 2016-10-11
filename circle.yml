@@ -52,7 +52,8 @@ deployment:
     branch: master
     owner: go-swagger
     commands:
-      - mkdir -p dist/linux/amd64/usr/bin
+      - mkdir -p dist
+      - docker run --rm -it -v `pwd`:/go/src/github.com/go-swagger/go-swagger -w /go/src/github.com/go-swagger/go-swagger golang:1.7-alpine go build -o ./dist/swagger-musl  -a -tags netgo -installsuffix netgo ./cmd/swagger
       - docker login -u $API_USERNAME -p $QUAY_PASS -e $API_EMAIL https://quay.io
       - docker build -t quay.io/goswagger/swagger:dev .
       - docker push quay.io/goswagger/swagger
