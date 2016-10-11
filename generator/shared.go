@@ -392,7 +392,7 @@ func (g *GenOpts) location(t *TemplateOpts, data interface{}) (string, string, e
 	if fNameTpl.Execute(&fNameBuf, d); err != nil {
 		return "", "", err
 	}
-	return pthBuf.String(), fNameBuf.String(), nil
+	return pthBuf.String(), fileName(fNameBuf.String()), nil
 }
 
 func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
@@ -460,7 +460,7 @@ func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
 		}
 	}
 
-	return ioutil.WriteFile(filepath.Join(dir, fileName(fname)), formatted, 0644)
+	return ioutil.WriteFile(filepath.Join(dir, fname), formatted, 0644)
 }
 
 func fileName(in string) string {
@@ -558,8 +558,7 @@ func loadSpec(specFile string) (string, *loads.Document, error) {
 }
 
 func fileExists(target, name string) bool {
-	ffn := swag.ToFileName(name)
-	_, err := os.Stat(filepath.Join(target, ffn))
+	_, err := os.Stat(filepath.Join(target, name))
 	return !os.IsNotExist(err)
 }
 
