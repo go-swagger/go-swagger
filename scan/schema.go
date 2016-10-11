@@ -690,7 +690,7 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 			schema.Properties[nm] = ps
 		}
 	}
-	if schema != nil && hasAllOf {
+	if schema != nil && hasAllOf && len(schema.Properties) > 0 {
 		bschema.AllOf = append(bschema.AllOf, *schema)
 	}
 	for k := range schema.Properties {
