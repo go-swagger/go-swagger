@@ -42,6 +42,7 @@ func (o *Operation) Execute(args []string) error {
 	if o.DumpData && len(o.Name) > 1 {
 		return errors.New("only 1 operation at a time is supported for dumping data")
 	}
+
 	opts := generator.GenOpts{
 		Spec:              string(o.Spec),
 		Target:            string(o.Target),

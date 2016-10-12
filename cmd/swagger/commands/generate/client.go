@@ -16,12 +16,10 @@ package generate
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/go-swagger/go-swagger/generator"
-	"github.com/spf13/viper"
 )
 
 // Client the command to generate a swagger client
@@ -41,26 +39,11 @@ type Client struct {
 
 // Execute runs this command
 func (c *Client) Execute(args []string) error {
-	var cfg *viper.Viper
-	if string(c.ConfigFile) != "" {
-		apt, err := filepath.Abs(string(c.ConfigFile))
-		if err != nil {
-			log.Fatalln(err)
-		}
-		log.Println("trying to read config from", apt)
-		v, err := generator.ReadConfig(apt)
-		if err != nil {
-			return err
-		}
-		cfg = v
+	cfg, err := readConfig(string(c.ConfigFile))
+	if err != nil {
+		return err
 	}
-	if os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != "" {
-		if cfg != nil {
-			cfg.Debug()
-		} else {
-			log.Println("NO config read")
-		}
-	}
+	setDebug(cfg)
 
 	opts := &generator.GenOpts{
 		Spec:              string(c.Spec),
@@ -86,12 +69,8 @@ func (c *Client) Execute(args []string) error {
 		return err
 	}
 
-	if cfg != nil {
-		var def generator.LanguageDefinition
-		if err := cfg.Unmarshal(&def); err != nil {
-			return err
-		}
-		def.ConfigureOpts(opts)
+	if err := configureOptsFromConfig(cfg, opts); err != nil {
+		return err
 	}
 
 	if err := generator.GenerateClient(c.Name, c.Models, c.Operations, opts); err != nil {
