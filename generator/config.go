@@ -10,28 +10,11 @@ import (
 
 // LanguageDefinition in the configuration file.
 type LanguageDefinition struct {
-	// Language       string            `mapstructure:"language"`
-	// ReservedWords  []string          `mapstructure:"reserved_words"`
-	// FormatScript   string            `mapstructure:"format_script"`
-	// DefaultImports map[string]string `mapstructure:"default_imports"`
 	Layout SectionOpts `mapstructure:"layout"`
 }
 
 // ConfigureOpts for generation
 func (d *LanguageDefinition) ConfigureOpts(opts *GenOpts) error {
-	// var lopts *LanguageOpts
-	// if d.Language == "go" {
-	// 	lopts = GoLangOpts()
-	// }
-	// if lopts == nil {
-	// 	lopts = new(LanguageOpts)
-	// }
-
-	// lopts.ReservedWords = append(lopts.ReservedWords, d.ReservedWords...)
-
-	// lopts.initialized = false
-	// lopts.Init()
-
 	opts.Sections = d.Layout
 	opts.LanguageOpts = GoLangOpts()
 	return nil

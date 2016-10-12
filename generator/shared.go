@@ -140,27 +140,32 @@ func DefaultSectionOpts(gen *GenOpts, client bool) {
 			}
 
 		} else {
-			sec.Operations = []TemplateOpts{
-				{
+			ops := []TemplateOpts{}
+			if gen.IncludeParameters {
+				ops = append(ops, TemplateOpts{
 					Name:     "parameters",
 					Source:   "asset:serverParameter",
 					Target:   "{{ if gt (len .Tags) 0 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_parameters.go",
-				},
-				{
+				})
+			}
+			if gen.IncludeResponses {
+				ops = append(ops, TemplateOpts{
 					Name:     "responses",
 					Source:   "asset:serverResponses",
 					Target:   "{{ if gt (len .Tags) 0 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_responses.go",
-				},
-				{
+				})
+			}
+			if gen.IncludeHandler {
+				ops = append(ops, TemplateOpts{
 					Name:     "handler",
 					Source:   "asset:serverOperation",
 					Target:   "{{ if gt (len .Tags) 0 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}.go",
-				},
+				})
 			}
-
+			sec.Operations = ops
 		}
 	}
 

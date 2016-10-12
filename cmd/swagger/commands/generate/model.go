@@ -37,6 +37,7 @@ func (m *Model) Execute(args []string) error {
 	if m.DumpData && len(m.Name) > 1 {
 		return errors.New("only 1 model at a time is supported for dumping data")
 	}
+
 	opts := generator.GenOpts{
 		Spec:          string(m.Spec),
 		Target:        string(m.Target),

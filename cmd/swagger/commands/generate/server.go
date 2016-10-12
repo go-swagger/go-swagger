@@ -16,25 +16,11 @@ package generate
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/go-swagger/go-swagger/generator"
-	"github.com/jessevdk/go-flags"
-	"github.com/spf13/viper"
 )
-
-type shared struct {
-	Spec          flags.Filename `long:"spec" short:"f" description:"the spec file to use" default:"./swagger.json"`
-	APIPackage    string         `long:"api-package" short:"a" description:"the package to save the operations" default:"operations"`
-	ModelPackage  string         `long:"model-package" short:"m" description:"the package to save the models" default:"models"`
-	ServerPackage string         `long:"server-package" short:"s" description:"the package to save the server specific code" default:"restapi"`
-	ClientPackage string         `long:"client-package" short:"c" description:"the package to save the client specific code" default:"client"`
-	Target        flags.Filename `long:"target" short:"t" default:"./" description:"the base directory for generating the files"`
-	TemplateDir   flags.Filename `long:"template-dir" short:"T" description:"alternative template override directory"`
-	ConfigFile    flags.Filename `long:"config-file" short:"C" description:"configuration file to use for overriding template options"`
-}
 
 // Server the command to generate an entire server application
 type Server struct {
@@ -56,26 +42,11 @@ type Server struct {
 
 // Execute runs this command
 func (s *Server) Execute(args []string) error {
-	var cfg *viper.Viper
-	if string(s.ConfigFile) != "" {
-		apt, err := filepath.Abs(string(s.ConfigFile))
-		if err != nil {
-			log.Fatalln(err)
-		}
-		log.Println("trying to read config from", apt)
-		v, err := generator.ReadConfig(apt)
-		if err != nil {
-			return err
-		}
-		cfg = v
+	cfg, err := readConfig(string(s.ConfigFile))
+	if err != nil {
+		return err
 	}
-	if os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != "" {
-		if cfg != nil {
-			cfg.Debug()
-		} else {
-			log.Println("NO config read")
-		}
-	}
+	setDebug(cfg)
 
 	opts := &generator.GenOpts{
 		Spec:              string(s.Spec),
@@ -107,12 +78,8 @@ func (s *Server) Execute(args []string) error {
 		return err
 	}
 
-	if cfg != nil {
-		var def generator.LanguageDefinition
-		if err := cfg.Unmarshal(&def); err != nil {
-			return err
-		}
-		def.ConfigureOpts(opts)
+	if err := configureOptsFromConfig(cfg, opts); err != nil {
+		return err
 	}
 
 	if err := generator.GenerateServer(s.Name, s.Models, s.Operations, opts); err != nil {
