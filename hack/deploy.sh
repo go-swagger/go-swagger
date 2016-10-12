@@ -63,12 +63,16 @@ upload_to_bintray() {
     -u${API_USERNAME}:${BINTRAY_TOKEN} \
     https://api.bintray.com/content/go-swagger/goswagger-rpm/swagger/${CIRCLE_TAG}/swagger-${CIRCLE_TAG//-/_}-1.x86_64.rpm
 
+  curl --retry 10 --retry-delay 5 -XPOST -u${API_USERNAME}:${BINTRAY_TOKEN} https://api.bintray.com/content/go-swagger/goswagger-rpm/swagger/${CIRCLE_TAG}/publish
+
   curl \
     --retry 10 \
     --retry-delay 5 \
     -T ./dist/build/swagger_${CIRCLE_TAG}_amd64.deb \
     -u${API_USERNAME}:${BINTRAY_TOKEN} \
     "https://api.bintray.com/content/go-swagger/goswagger-debian/swagger/${CIRCLE_TAG}/swagger_${CIRCLE_TAG}_amd64.deb;deb_distribution=ubuntu;deb_component=main;deb_architecture=amd64"
+
+    curl --retry 10 --retry-delay 5 -XPOST -u${API_USERNAME}:${BINTRAY_TOKEN} https://api.bintray.com/content/go-swagger/goswagger-debian/swagger/${CIRCLE_TAG}/publish
 }
 
 deploy_docker() {
