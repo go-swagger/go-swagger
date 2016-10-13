@@ -318,6 +318,10 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 					}
 				}
 
+				if strfmtName, ok := strfmtName(fld.Doc); ok {
+					ps.Typed("string", strfmtName)
+				}
+
 				sp := new(sectionedParser)
 				sp.setDescription = func(lines []string) { ps.Description = joinDropLast(lines) }
 				if ps.Ref.String() == "" {

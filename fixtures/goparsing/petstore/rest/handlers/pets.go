@@ -16,6 +16,7 @@ package handlers
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/go-openapi/runtime/middleware/denco"
 	"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/models"
@@ -49,7 +50,13 @@ type ValidationError struct {
 // A PetQueryFlags contains the query flags for things that list pets.
 // swagger:parameters listPets
 type PetQueryFlags struct {
+	// Status
 	Status string `json:"status"`
+
+	// Birthday
+	//
+	// swagger:strfmt date
+	Birthday time.Time `json:"birthday"`
 }
 
 // A PetID parameter model.

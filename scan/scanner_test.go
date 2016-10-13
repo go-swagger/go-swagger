@@ -237,13 +237,21 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	assert.Equal(t, "listPets", op.Get.ID)
 	assert.EqualValues(t, []string{"pets"}, op.Get.Tags)
 	sparam := op.Get.Parameters[0]
-	assert.Equal(t, "", sparam.Description)
+	assert.Equal(t, "Status", sparam.Description)
 	assert.Equal(t, "query", sparam.In)
 	assert.Equal(t, "string", sparam.Type)
 	assert.Equal(t, "", sparam.Format)
 	assert.False(t, sparam.Required)
 	assert.Equal(t, "Status", sparam.Extensions["x-go-name"])
 	assert.Equal(t, "#/responses/genericError", op.Get.Responses.Default.Ref.String())
+	assert.Len(t, op.Get.Parameters, 2)
+	sparam1 := op.Get.Parameters[1]
+	assert.Equal(t, "Birthday", sparam1.Description)
+	assert.Equal(t, "query", sparam1.In)
+	assert.Equal(t, "string", sparam1.Type)
+	assert.Equal(t, "date", sparam1.Format)
+	assert.False(t, sparam1.Required)
+	assert.Equal(t, "Birthday", sparam1.Extensions["x-go-name"])
 	rs, ok := op.Get.Responses.StatusCodeResponses[200]
 	assert.True(t, ok)
 	assert.NotNil(t, rs.Schema)
