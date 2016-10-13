@@ -307,7 +307,7 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
 {{ $gotype := .GoType }}
 {{ $propname := .Name }}
 const ({{ range .Enum }}
-	{{ $.Name }}{{ pascalize $propname }}{{ pascalize . }} {{ $gotype }} = "{{ . }}"{{end}})
+	{{ camelize $.Name }}{{ pascalize $propname }}{{ pascalize . }} {{ $gotype }} = "{{ . }}"{{end}})
 {{ end }}
 
 // prop value enum
