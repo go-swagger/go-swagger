@@ -451,11 +451,6 @@ func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
 		return err
 	}
 
-	formatted, err := g.LanguageOpts.FormatContent(fname, content)
-	if err != nil {
-		log.Printf("format %q: %v", t.Name, err)
-	}
-
 	if dir != "" {
 		if Debug {
 			log.Printf("skipping creating directory %q for %s because it's an empty string", dir, t.Name)
@@ -465,7 +460,17 @@ func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
 		}
 	}
 
-	return ioutil.WriteFile(filepath.Join(dir, fname), formatted, 0644)
+	formatted, err := g.LanguageOpts.FormatContent(fname, content)
+	if err != nil {
+		formatted = content
+		err = fmt.Errorf("format %q failed: %v", t.Name, err)
+	}
+
+	writeerr := ioutil.WriteFile(filepath.Join(dir, fname), formatted, 0644)
+	if writeerr != nil {
+		log.Printf("Failed to write %q: %s", fname, writeerr)
+	}
+	return err
 }
 
 func fileName(in string) string {
