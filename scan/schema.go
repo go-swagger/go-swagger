@@ -680,6 +680,7 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 			}
 			if strfmtName, ok := strfmtName(fld.Doc); ok {
 				ps.Typed("string", strfmtName)
+				ps.Ref = spec.Ref{}
 			}
 
 			if err := scp.createParser(nm, schema, &ps, fld).Parse(fld.Doc); err != nil {

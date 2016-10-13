@@ -320,6 +320,7 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 
 				if strfmtName, ok := strfmtName(fld.Doc); ok {
 					ps.Typed("string", strfmtName)
+					ps.Ref = spec.Ref{}
 				}
 
 				sp := new(sectionedParser)
