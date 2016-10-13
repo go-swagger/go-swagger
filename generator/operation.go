@@ -55,12 +55,9 @@ func sortedResponses(input map[int]spec.Response) responses {
 // GenerateServerOperation generates a parameter model, parameter validator, http handler implementations for a given operation
 // It also generates an operation handler interface that uses the parameter model for handling a valid request.
 // Allows for specifying a list of tags to include only certain tags for the generation
-func GenerateServerOperation(operationNames, tags []string, opts *GenOpts) error {
+func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 	if opts == nil {
 		return errors.New("gen opts are required")
-	}
-	if err := opts.EnsureDefaults(false); err != nil {
-		return err
 	}
 	if opts.TemplateDir != "" {
 		if err := templates.LoadDir(opts.TemplateDir); err != nil {
@@ -107,7 +104,7 @@ func GenerateServerOperation(operationNames, tags []string, opts *GenOpts) error
 			Principal:            opts.Principal,
 			Target:               filepath.Join(opts.Target, serverPackage),
 			Base:                 opts.Target,
-			Tags:                 tags,
+			Tags:                 opts.Tags,
 			IncludeHandler:       opts.IncludeHandler,
 			IncludeParameters:    opts.IncludeParameters,
 			IncludeResponses:     opts.IncludeResponses,

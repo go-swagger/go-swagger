@@ -34,22 +34,39 @@ type Model struct {
 
 // Execute generates a model file
 func (m *Model) Execute(args []string) error {
+
 	if m.DumpData && len(m.Name) > 1 {
 		return errors.New("only 1 model at a time is supported for dumping data")
 	}
 
-	opts := generator.GenOpts{
-		Spec:          string(m.Spec),
-		Target:        string(m.Target),
-		APIPackage:    m.APIPackage,
-		ModelPackage:  m.ModelPackage,
-		ServerPackage: m.ServerPackage,
-		ClientPackage: m.ClientPackage,
-		DumpData:      m.DumpData,
-		TemplateDir:   string(m.TemplateDir),
+	cfg, err := readConfig(string(m.ConfigFile))
+	if err != nil {
+		return err
+	}
+	setDebug(cfg)
+
+	opts := &generator.GenOpts{
+		Spec:             string(m.Spec),
+		Target:           string(m.Target),
+		APIPackage:       m.APIPackage,
+		ModelPackage:     m.ModelPackage,
+		ServerPackage:    m.ServerPackage,
+		ClientPackage:    m.ClientPackage,
+		DumpData:         m.DumpData,
+		TemplateDir:      string(m.TemplateDir),
+		IncludeValidator: !m.NoValidator,
+		IncludeModel:     !m.NoStruct,
 	}
 
-	if err := generator.GenerateDefinition(m.Name, !m.NoStruct, !m.NoValidator, &opts); err != nil {
+	if err := opts.EnsureDefaults(false); err != nil {
+		return err
+	}
+
+	if err := configureOptsFromConfig(cfg, opts); err != nil {
+		return err
+	}
+
+	if err := generator.GenerateDefinition(m.Name, opts); err != nil {
 		return err
 	}
 

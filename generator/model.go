@@ -47,12 +47,9 @@ Every action that happens tracks the path which is a linked list of refs
 */
 
 // GenerateDefinition generates a model file for a schema definition.
-func GenerateDefinition(modelNames []string, includeModel, includeValidator bool, opts *GenOpts) error {
+func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 	if opts == nil {
 		return errors.New("gen opts are required")
-	}
-	if err := opts.EnsureDefaults(false); err != nil {
-		return err
 	}
 
 	if opts.TemplateDir != "" {
@@ -111,6 +108,7 @@ func (m *definitionGenerator) Generate() error {
 	if err != nil {
 		return err
 	}
+
 	if m.opts.DumpData {
 		bb, _ := json.MarshalIndent(swag.ToDynamicJSON(mod), "", " ")
 		fmt.Fprintln(os.Stdout, string(bb))
