@@ -678,6 +678,9 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 			if err := parseProperty(scp, gofile, fld.Type, schemaTypable{&ps, 0}); err != nil {
 				return err
 			}
+			if strfmtName, ok := strfmtName(fld.Doc); ok {
+				ps.Typed("string", strfmtName)
+			}
 
 			if err := scp.createParser(nm, schema, &ps, fld).Parse(fld.Doc); err != nil {
 				return err

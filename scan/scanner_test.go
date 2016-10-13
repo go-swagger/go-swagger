@@ -157,6 +157,10 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	prop, ok = mod.Properties["status"]
 	assert.Equal(t, "The current status of the pet in the store.", prop.Description)
 
+	assertProperty(t, &mod, "string", "birthday", "date", "Birthday")
+	prop, ok = mod.Properties["birthday"]
+	assert.Equal(t, "The pet's birthday", prop.Description)
+
 	assertArrayRef(t, &mod, "tags", "Tags", "#/definitions/tag")
 	prop, ok = mod.Properties["tags"]
 	assert.True(t, ok)
