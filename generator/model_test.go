@@ -88,20 +88,17 @@ func TestGenerateModel_DocString(t *testing.T) {
 	gmp.Title = "The title of the property"
 	gmp.Description = "The description of the property"
 	var expected = `The title of the property
-
-The description of the property
-`
+//
+// The description of the property`
 	tt.assertRender(gmp, expected)
 
 	gmp.Title = ""
-	expected = `The description of the property
-`
+	expected = `The description of the property`
 	tt.assertRender(gmp, expected)
 
 	gmp.Description = ""
 	gmp.Name = "theModel"
-	expected = `the model
-`
+	expected = `the model`
 	tt.assertRender(gmp, expected)
 }
 
@@ -112,8 +109,7 @@ func TestGenerateModel_PropertyValidation(t *testing.T) {
 	var gmp GenSchema
 	gmp.Required = true
 	tt.assertRender(gmp, `
-Required: true
-`)
+// Required: true`)
 	var fl float64 = 10
 	var in1 int64 = 20
 	var in2 int64 = 30
@@ -129,30 +125,28 @@ Required: true
 	gmp.UniqueItems = true
 
 	tt.assertRender(gmp, `
-Required: true
-Maximum: < 10
-Minimum: > 10
-Max Length: 20
-Min Length: 20
-Pattern: \w[\w- ]+
-Max Items: 30
-Min Items: 30
-Unique: true
-`)
+// Required: true
+// Maximum: < 10
+// Minimum: > 10
+// Max Length: 20
+// Min Length: 20
+// Pattern: \w[\w- ]+
+// Max Items: 30
+// Min Items: 30
+// Unique: true`)
 
 	gmp.Required = false
 	gmp.ExclusiveMaximum = false
 	gmp.ExclusiveMinimum = false
 	tt.assertRender(gmp, `
-Maximum: 10
-Minimum: 10
-Max Length: 20
-Min Length: 20
-Pattern: \w[\w- ]+
-Max Items: 30
-Min Items: 30
-Unique: true
-`)
+// Maximum: 10
+// Minimum: 10
+// Max Length: 20
+// Min Length: 20
+// Pattern: \w[\w- ]+
+// Max Items: 30
+// Min Items: 30
+// Unique: true`)
 
 }
 
@@ -164,8 +158,7 @@ func TestGenerateModel_SchemaField(t *testing.T) {
 	gmp.resolvedType = resolvedType{GoType: "string", IsPrimitive: true}
 	gmp.Title = "The title of the property"
 
-	tt.assertRender(gmp, `/* The title of the property
- */
+	tt.assertRender(gmp, `// The title of the property
 `+"SomeName string `json:\"some name,omitempty\"`\n")
 
 	var fl float64 = 10
@@ -185,21 +178,19 @@ func TestGenerateModel_SchemaField(t *testing.T) {
 	gmp.MinItems = &in2
 	gmp.UniqueItems = true
 	gmp.ReadOnly = true
-	tt.assertRender(gmp, `/* The title of the property
-
-The description of the property
-
-Required: true
-Read Only: true
-Maximum: < 10
-Minimum: > 10
-Max Length: 20
-Min Length: 20
-Pattern: \w[\w- ]+
-Max Items: 30
-Min Items: 30
-Unique: true
- */
+	tt.assertRender(gmp, `// The title of the property
+//
+// The description of the property
+// Required: true
+// Read Only: true
+// Maximum: < 10
+// Minimum: > 10
+// Max Length: 20
+// Min Length: 20
+// Pattern: \w[\w- ]+
+// Max Items: 30
+// Min Items: 30
+// Unique: true
 `+"SomeName string `json:\"some name\"`\n")
 }
 

@@ -1,6 +1,7 @@
 {{ define "structfield" }}
   {{- if not $.IsBaseType -}}
-    /* {{ template "docstring" . }}{{ template "propertyValidationDocString" .}} */
+    // {{ template "docstring" . }}
+    {{- template "propertyValidationDocString" .}}
   {{- end}}
 {{ pascalize .Name}} {{ template "schemaType" . }} `json:"
 {{- if $.HasBaseType -}}
@@ -13,21 +14,27 @@
 {{ end }}
 
 {{- define "tuplefield" }}
-  {{- if not $.IsBaseType }}/* {{ template "docstring" . }}{{ template "propertyValidationDocString" .}} */
+  {{- if not $.IsBaseType -}}
+    // {{ template "docstring" . }}
+    {{- template "propertyValidationDocString" .}}
 {{ end }}
 {{- pascalize .Name}} {{ template "schemaType" . }} `json:"-"` // custom serializer
 {{ end }}
 
 {{- define "structfieldIface" }}
-  {{- if not $.IsBaseType }}/* {{ template "docstring" . }}{{ template "propertyValidationDocString" .}} */
+  {{- if not $.IsBaseType -}}
+    // {{ template "docstring" . }}
+    {{- template "propertyValidationDocString" .}}
   {{- end }}
 {{ pascalize .Name}}() {{ template "schemaType" . }}
 Set{{ pascalize .Name}}({{ template "schemaType" . }})
 {{ end }}
 {{ define "tuplefieldIface" }}
-  {{- if not $.IsBaseType }}
-/* {{ template "docstring" . }}{{ template "propertyValidationDocString" .}} */
-{{ end }}{{ pascalize .Name}}() {{ template "schemaType" . }}
+  {{- if not $.IsBaseType -}}
+    // {{ template "docstring" . }}
+    {{- template "propertyValidationDocString" . }}
+{{ end }}
+{{- pascalize .Name}}() {{ template "schemaType" . }}
 Set{{ pascalize .Name}}({{ template "schemaType" . }})
 {{ end }}
 

@@ -91,6 +91,10 @@ var FuncMap template.FuncMap = map[string]interface{}{
 		return strings.Join(res, ",")
 	},
 	"joinFilePath": filepath.Join,
+	"comment": func(str string) string {
+		lines := strings.Split(str, "\n")
+		return strings.Join(lines, "\n// ")
+	},
 }
 
 func init() {
