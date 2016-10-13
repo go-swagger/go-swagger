@@ -43,7 +43,13 @@ func (o *Operation) Execute(args []string) error {
 		return errors.New("only 1 operation at a time is supported for dumping data")
 	}
 
-	opts := generator.GenOpts{
+	cfg, err := readConfig(string(o.ConfigFile))
+	if err != nil {
+		return err
+	}
+	setDebug(cfg)
+
+	opts := &generator.GenOpts{
 		Spec:              string(o.Spec),
 		Target:            string(o.Target),
 		APIPackage:        o.APIPackage,
@@ -58,9 +64,18 @@ func (o *Operation) Execute(args []string) error {
 		IncludeResponses:  !o.NoResponses,
 		IncludeParameters: !o.NoStruct,
 		IncludeValidator:  !o.NoValidator,
+		Tags:              o.Tags,
 	}
 
-	if err := generator.GenerateServerOperation(o.Name, o.Tags, &opts); err != nil {
+	if err := opts.EnsureDefaults(false); err != nil {
+		return err
+	}
+
+	if err := configureOptsFromConfig(cfg, opts); err != nil {
+		return err
+	}
+
+	if err := generator.GenerateServerOperation(o.Name, opts); err != nil {
 		return err
 	}
 
