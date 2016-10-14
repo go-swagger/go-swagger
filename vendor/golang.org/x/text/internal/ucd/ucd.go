@@ -13,7 +13,6 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"regexp"
@@ -112,7 +111,6 @@ func (p *Parser) setError(err error) {
 
 func (p *Parser) getField(i int) []byte {
 	if i >= len(p.field) {
-		p.setError(fmt.Errorf("ucd: index of field %d out of bounds", i))
 		return nil
 	}
 	return p.field[i]

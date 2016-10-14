@@ -55,7 +55,7 @@
 			"importpath": "github.com/fsnotify/fsnotify",
 			"repository": "https://github.com/fsnotify/fsnotify",
 			"vcs": "git",
-			"revision": "944cff21b3baf3ced9a880365682152ba577d348",
+			"revision": "bd2828f9f176e52d7222e565abb2d338d3f3c103",
 			"branch": "master",
 			"notests": true
 		},
@@ -119,7 +119,7 @@
 			"importpath": "github.com/go-openapi/spec",
 			"repository": "https://github.com/go-openapi/spec",
 			"vcs": "git",
-			"revision": "98bb9aa4969bd0b6228ad309844e0b3867e92748",
+			"revision": "8f2b3d0e3aa15100eea0ab61dc6fa02f00f5e713",
 			"branch": "master",
 			"notests": true
 		},
@@ -207,7 +207,7 @@
 			"importpath": "github.com/mailru/easyjson/buffer",
 			"repository": "https://github.com/mailru/easyjson",
 			"vcs": "git",
-			"revision": "2ea6ed0ea8d20091ff80b30ab47e206e776e7c53",
+			"revision": "9dc3521db3580379d6cc493938ef9d2e9782ee7b",
 			"branch": "master",
 			"path": "/buffer",
 			"notests": true
@@ -216,7 +216,7 @@
 			"importpath": "github.com/mailru/easyjson/jlexer",
 			"repository": "https://github.com/mailru/easyjson",
 			"vcs": "git",
-			"revision": "2ea6ed0ea8d20091ff80b30ab47e206e776e7c53",
+			"revision": "9dc3521db3580379d6cc493938ef9d2e9782ee7b",
 			"branch": "master",
 			"path": "/jlexer",
 			"notests": true
@@ -225,7 +225,7 @@
 			"importpath": "github.com/mailru/easyjson/jwriter",
 			"repository": "https://github.com/mailru/easyjson",
 			"vcs": "git",
-			"revision": "2ea6ed0ea8d20091ff80b30ab47e206e776e7c53",
+			"revision": "9dc3521db3580379d6cc493938ef9d2e9782ee7b",
 			"branch": "master",
 			"path": "/jwriter",
 			"notests": true
@@ -323,7 +323,7 @@
 			"importpath": "github.com/spf13/pflag",
 			"repository": "https://github.com/spf13/pflag",
 			"vcs": "git",
-			"revision": "b83537d79690b75cac5e021b036ae16792bf0f20",
+			"revision": "bf8481a6aebc13a8aab52e699ffe2e79771f5a3f",
 			"branch": "master",
 			"notests": true
 		},
@@ -331,7 +331,7 @@
 			"importpath": "github.com/spf13/viper",
 			"repository": "https://github.com/spf13/viper",
 			"vcs": "git",
-			"revision": "ec4eb2fa8549869ae7a2accd4fcc83d1c0555c15",
+			"revision": "44208030b391907a5ec5c5658470bdb6e6169073",
 			"branch": "master",
 			"notests": true
 		},
@@ -408,7 +408,7 @@
 			"importpath": "golang.org/x/crypto/cast5",
 			"repository": "https://go.googlesource.com/crypto",
 			"vcs": "git",
-			"revision": "d172538b2cfce0c13cee31e647d0367aa8cd2486",
+			"revision": "5f31782cfb2b6373211f8f9fbf31283fa234b570",
 			"branch": "master",
 			"path": "cast5",
 			"notests": true
@@ -417,7 +417,7 @@
 			"importpath": "golang.org/x/crypto/curve25519",
 			"repository": "https://go.googlesource.com/crypto",
 			"vcs": "git",
-			"revision": "d172538b2cfce0c13cee31e647d0367aa8cd2486",
+			"revision": "5f31782cfb2b6373211f8f9fbf31283fa234b570",
 			"branch": "master",
 			"path": "curve25519",
 			"notests": true
@@ -426,7 +426,7 @@
 			"importpath": "golang.org/x/crypto/ed25519",
 			"repository": "https://go.googlesource.com/crypto",
 			"vcs": "git",
-			"revision": "d172538b2cfce0c13cee31e647d0367aa8cd2486",
+			"revision": "5f31782cfb2b6373211f8f9fbf31283fa234b570",
 			"branch": "master",
 			"path": "ed25519",
 			"notests": true
@@ -435,7 +435,7 @@
 			"importpath": "golang.org/x/crypto/openpgp",
 			"repository": "https://go.googlesource.com/crypto",
 			"vcs": "git",
-			"revision": "d172538b2cfce0c13cee31e647d0367aa8cd2486",
+			"revision": "5f31782cfb2b6373211f8f9fbf31283fa234b570",
 			"branch": "master",
 			"path": "openpgp",
 			"notests": true
@@ -444,7 +444,7 @@
 			"importpath": "golang.org/x/crypto/ssh",
 			"repository": "https://go.googlesource.com/crypto",
 			"vcs": "git",
-			"revision": "d172538b2cfce0c13cee31e647d0367aa8cd2486",
+			"revision": "5f31782cfb2b6373211f8f9fbf31283fa234b570",
 			"branch": "master",
 			"path": "/ssh",
 			"notests": true
@@ -453,7 +453,7 @@
 			"importpath": "golang.org/x/net/context",
 			"repository": "https://go.googlesource.com/net",
 			"vcs": "git",
-			"revision": "f4b625ec9b21d620bb5ce57f2dfc3e08ca97fce6",
+			"revision": "8b4af36cd21a1f85a7484b49feb7c79363106d8e",
 			"branch": "master",
 			"path": "/context",
 			"notests": true
@@ -462,7 +462,7 @@
 			"importpath": "golang.org/x/net/idna",
 			"repository": "https://go.googlesource.com/net",
 			"vcs": "git",
-			"revision": "f4b625ec9b21d620bb5ce57f2dfc3e08ca97fce6",
+			"revision": "8b4af36cd21a1f85a7484b49feb7c79363106d8e",
 			"branch": "master",
 			"path": "/idna",
 			"notests": true
@@ -471,7 +471,7 @@
 			"importpath": "golang.org/x/net/netutil",
 			"repository": "https://go.googlesource.com/net",
 			"vcs": "git",
-			"revision": "f4b625ec9b21d620bb5ce57f2dfc3e08ca97fce6",
+			"revision": "8b4af36cd21a1f85a7484b49feb7c79363106d8e",
 			"branch": "master",
 			"path": "/netutil",
 			"notests": true
@@ -480,7 +480,7 @@
 			"importpath": "golang.org/x/sys/unix",
 			"repository": "https://go.googlesource.com/sys",
 			"vcs": "git",
-			"revision": "8d1157a435470616f975ff9bb013bea8d0962067",
+			"revision": "9bb9f0998d48b31547d975974935ae9b48c7a03c",
 			"branch": "master",
 			"path": "/unix",
 			"notests": true
@@ -489,7 +489,7 @@
 			"importpath": "golang.org/x/text",
 			"repository": "https://go.googlesource.com/text",
 			"vcs": "git",
-			"revision": "ede1cb9f9f2f84c3bace9ca113fd740fc916cdd0",
+			"revision": "c745997bb18563e8788428768ce0f034f2b663df",
 			"branch": "master",
 			"notests": true
 		},
@@ -497,7 +497,7 @@
 			"importpath": "golang.org/x/tools/go/ast/astutil",
 			"repository": "https://go.googlesource.com/tools",
 			"vcs": "git",
-			"revision": "8453f27cc7e9bc769059b8eb7c88f61da9382d1e",
+			"revision": "69f6f5b782e1f090edb33f68be67d96673a8059e",
 			"branch": "master",
 			"path": "/go/ast/astutil",
 			"notests": true
@@ -506,7 +506,7 @@
 			"importpath": "golang.org/x/tools/go/buildutil",
 			"repository": "https://go.googlesource.com/tools",
 			"vcs": "git",
-			"revision": "8453f27cc7e9bc769059b8eb7c88f61da9382d1e",
+			"revision": "69f6f5b782e1f090edb33f68be67d96673a8059e",
 			"branch": "master",
 			"path": "/go/buildutil",
 			"notests": true
@@ -515,7 +515,7 @@
 			"importpath": "golang.org/x/tools/go/loader",
 			"repository": "https://go.googlesource.com/tools",
 			"vcs": "git",
-			"revision": "8453f27cc7e9bc769059b8eb7c88f61da9382d1e",
+			"revision": "69f6f5b782e1f090edb33f68be67d96673a8059e",
 			"branch": "master",
 			"path": "/go/loader",
 			"notests": true
@@ -524,7 +524,7 @@
 			"importpath": "golang.org/x/tools/imports",
 			"repository": "https://go.googlesource.com/tools",
 			"vcs": "git",
-			"revision": "8453f27cc7e9bc769059b8eb7c88f61da9382d1e",
+			"revision": "69f6f5b782e1f090edb33f68be67d96673a8059e",
 			"branch": "master",
 			"path": "/imports",
 			"notests": true
