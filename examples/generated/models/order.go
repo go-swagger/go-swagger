@@ -9,34 +9,26 @@ import (
 	"github.com/go-openapi/errors"
 )
 
-/*Order order
-
-swagger:model Order
-*/
+// Order order
+// swagger:model Order
 type Order struct {
 
-	/* complete
-	 */
+	// complete
 	Complete bool `json:"complete,omitempty"`
 
-	/* id
-	 */
+	// id
 	ID int64 `json:"id,omitempty"`
 
-	/* pet Id
-	 */
+	// pet Id
 	PetID int64 `json:"petId,omitempty"`
 
-	/* quantity
-	 */
+	// quantity
 	Quantity int32 `json:"quantity,omitempty"`
 
-	/* ship date
-	 */
+	// ship date
 	ShipDate strfmt.DateTime `json:"shipDate,omitempty"`
 
-	/* Order Status
-	 */
+	// Order Status
 	Status string `json:"status,omitempty"`
 }
 

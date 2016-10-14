@@ -9,15 +9,12 @@ import (
 	"github.com/go-openapi/errors"
 )
 
-/*ValidationError validation error
-
-swagger:model ValidationError
-*/
+// ValidationError validation error
+// swagger:model ValidationError
 type ValidationError struct {
 	Error
 
-	/* an optional field name to which this validation error applies
-	 */
+	// an optional field name to which this validation error applies
 	Field string `json:"field,omitempty"`
 }
 

@@ -10,27 +10,20 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-/*Item item
-
-swagger:model item
-*/
+// Item item
+// swagger:model item
 type Item struct {
 
-	/* completed
-	 */
+	// completed
 	Completed bool `json:"completed,omitempty"`
 
-	/* description
-
-	Required: true
-	Min Length: 1
-	*/
+	// description
+	// Required: true
+	// Min Length: 1
 	Description *string `json:"description"`
 
-	/* id
-
-	Read Only: true
-	*/
+	// id
+	// Read Only: true
 	ID int64 `json:"id,omitempty"`
 }
 

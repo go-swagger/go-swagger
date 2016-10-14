@@ -9,42 +9,32 @@ import (
 	"github.com/go-openapi/errors"
 )
 
-/*User user
-
-swagger:model User
-*/
+// User user
+// swagger:model User
 type User struct {
 
-	/* email
-	 */
+	// email
 	Email string `json:"email,omitempty"`
 
-	/* first name
-	 */
+	// first name
 	FirstName string `json:"firstName,omitempty"`
 
-	/* id
-	 */
+	// id
 	ID int64 `json:"id,omitempty"`
 
-	/* last name
-	 */
+	// last name
 	LastName string `json:"lastName,omitempty"`
 
-	/* password
-	 */
+	// password
 	Password string `json:"password,omitempty"`
 
-	/* phone
-	 */
+	// phone
 	Phone string `json:"phone,omitempty"`
 
-	/* User Status
-	 */
+	// User Status
 	UserStatus int32 `json:"userStatus,omitempty"`
 
-	/* username
-	 */
+	// username
 	Username string `json:"username,omitempty"`
 }
 

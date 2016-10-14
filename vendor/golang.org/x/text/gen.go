@@ -105,7 +105,7 @@ func main() {
 		_          = generate("./encoding/htmlindex", unicode, language)
 		_          = generate("./currency", unicode, cldr, language, internal)
 		_          = generate("./internal/number", unicode, cldr, language, internal)
-		_          = generate("./language/display", unicode, cldr, language)
+		_          = generate("./language/display", unicode, cldr, language, internal)
 		_          = generate("./collate", unicode, norm, cldr, language, rangetable)
 		_          = generate("./search", unicode, norm, cldr, language, rangetable)
 	)

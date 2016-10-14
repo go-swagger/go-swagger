@@ -9,18 +9,14 @@ import (
 	"github.com/go-openapi/errors"
 )
 
-/*Tag tag
-
-swagger:model Tag
-*/
+// Tag tag
+// swagger:model Tag
 type Tag struct {
 
-	/* id
-	 */
+	// id
 	ID int64 `json:"id,omitempty"`
 
-	/* name
-	 */
+	// name
 	Name string `json:"name,omitempty"`
 }
 

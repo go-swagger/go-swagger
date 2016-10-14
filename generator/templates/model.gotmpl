@@ -17,8 +17,7 @@
 
 {{ range .ExtraSchemas }}
   {{- if .IsExported }}
-{{ if .IncludeModel }}// {{ pascalize .Name }}
-  {{- template "docstring" . }}
+{{ if .IncludeModel }}// {{ pascalize .Name }} {{ template "docstring" . }}
   {{- if not .IsBaseType }}
 // swagger:model {{ .Name }}
   {{- else }}
