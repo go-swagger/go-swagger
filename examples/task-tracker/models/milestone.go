@@ -102,7 +102,7 @@ func (m *Milestone) validateStats(formats strfmt.Registry) error {
 	return nil
 }
 
-// MilestoneStatsSome counters for this milestone.
+// MilestoneStats Some counters for this milestone.
 //
 // This object contains counts for the remaining open issues and the amount of issues that have been closed.
 //

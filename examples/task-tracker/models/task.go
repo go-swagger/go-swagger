@@ -145,7 +145,7 @@ func (m *Task) validateReportedBy(formats strfmt.Registry) error {
 	return nil
 }
 
-// TaskAttachmentsAnontask attachments anon
+// TaskAttachmentsAnon task attachments anon
 // swagger:model TaskAttachmentsAnon
 type TaskAttachmentsAnon struct {
 
