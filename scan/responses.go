@@ -297,6 +297,10 @@ func (rp *responseParser) parseStructType(gofile *ast.File, response *spec.Respo
 					return err
 				}
 
+				if strfmtName, ok := strfmtName(fld.Doc); ok {
+					ps.Typed("string", strfmtName)
+				}
+
 				sp := new(sectionedParser)
 				sp.setDescription = func(lines []string) { ps.Description = joinDropLast(lines) }
 				sp.taggers = []tagParser{
