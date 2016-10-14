@@ -107,7 +107,11 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	if assert.NotNil(t, doc.Paths) {
 		assert.Len(t, doc.Paths.Paths, 4)
 	}
-	assert.Len(t, doc.Definitions, 3)
+	var keys []string
+	for k := range doc.Definitions {
+		keys = append(keys, k)
+	}
+	assert.Len(t, keys, 3)
 	assert.Len(t, doc.Responses, 3)
 
 	definitions := doc.Definitions

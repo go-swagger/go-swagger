@@ -461,7 +461,7 @@ func (scp *schemaParser) parseAllOfMember(gofile *ast.File, schema *spec.Schema,
 	}
 
 	sd := newSchemaDecl(file, gd, ts)
-	if sd.hasAnnotation() {
+	if sd.hasAnnotation() && pkg.String() != "time" && ts.Name.Name != "Time" {
 		ref, err := spec.NewRef("#/definitions/" + sd.Name)
 		if err != nil {
 			return err
@@ -856,9 +856,13 @@ func (scp *schemaParser) packageForSelector(gofile *ast.File, expr ast.Expr) (*l
 	return nil, fmt.Errorf("can't determine selector path from %v", expr)
 }
 
-func (scp *schemaParser) makeRef(file *ast.File, gd *ast.GenDecl, ts *ast.TypeSpec, prop swaggerTypable) error {
+func (scp *schemaParser) makeRef(file *ast.File, pkg *loader.PackageInfo, gd *ast.GenDecl, ts *ast.TypeSpec, prop swaggerTypable) error {
 	sd := newSchemaDecl(file, gd, ts)
 	sd.inferNames()
+	// make an exception for time.Time because this is a well-known string format
+	if sd.Name == "Time" && pkg.String() == "time" {
+		return nil
+	}
 	ref, err := spec.NewRef("#/definitions/" + sd.Name)
 	if err != nil {
 		return err
@@ -905,25 +909,25 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 
 	switch tpe := ts.Type.(type) {
 	case *ast.ArrayType:
-		return scp.makeRef(file, gd, ts, prop)
+		return scp.makeRef(file, pkg, gd, ts, prop)
 	case *ast.StructType:
-		return scp.makeRef(file, gd, ts, prop)
+		return scp.makeRef(file, pkg, gd, ts, prop)
 
 	case *ast.Ident:
-		return scp.makeRef(file, gd, ts, prop)
+		return scp.makeRef(file, pkg, gd, ts, prop)
 
 	case *ast.StarExpr:
 		return parseProperty(scp, file, tpe.X, prop)
 
 	case *ast.SelectorExpr:
 		// return scp.refForSelector(file, gd, tpe, ts, prop)
-		return scp.makeRef(file, gd, ts, prop)
+		return scp.makeRef(file, pkg, gd, ts, prop)
 
 	case *ast.InterfaceType:
-		return scp.makeRef(file, gd, ts, prop)
+		return scp.makeRef(file, pkg, gd, ts, prop)
 
 	case *ast.MapType:
-		return scp.makeRef(file, gd, ts, prop)
+		return scp.makeRef(file, pkg, gd, ts, prop)
 
 	default:
 		err := swaggerSchemaForType(expr.Name, prop)
