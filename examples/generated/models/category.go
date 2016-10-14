@@ -9,18 +9,14 @@ import (
 	"github.com/go-openapi/errors"
 )
 
-/*Category category
-
-swagger:model Category
-*/
+// Category category
+// swagger:model Category
 type Category struct {
 
-	/* id
-	 */
+	// id
 	ID int64 `json:"id,omitempty"`
 
-	/* name
-	 */
+	// name
 	Name string `json:"name,omitempty"`
 }
 

@@ -10,30 +10,23 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-/*Error Error Structure
-
-Contains all the properties any error response from the API will contain.
-Some properties are optional so might be empty most of the time
-
-
-swagger:model Error
-*/
+// Error Error Structure
+//
+// Contains all the properties any error response from the API will contain.
+// Some properties are optional so might be empty most of the time
+//
+// swagger:model Error
 type Error struct {
 
-	/* the error code, this is not necessarily the http status code
-
-	Required: true
-	*/
+	// the error code, this is not necessarily the http status code
+	// Required: true
 	Code *int32 `json:"code"`
 
-	/* an optional url for getting more help about this error
-	 */
+	// an optional url for getting more help about this error
 	HelpURL strfmt.URI `json:"helpUrl,omitempty"`
 
-	/* a human readable version of the error
-
-	Required: true
-	*/
+	// a human readable version of the error
+	// Required: true
 	Message *string `json:"message"`
 }
 

@@ -10,20 +10,15 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-/*Error error
-
-swagger:model error
-*/
+// Error error
+// swagger:model error
 type Error struct {
 
-	/* code
-	 */
+	// code
 	Code int64 `json:"code,omitempty"`
 
-	/* message
-
-	Required: true
-	*/
+	// message
+	// Required: true
 	Message *string `json:"message"`
 }
 

@@ -11,59 +11,49 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-/*UserCard A minimal representation of a user.
-
-This representation of a user is mainly meant for inclusion in other models, or for list views.
-
-
-swagger:model UserCard
-*/
+// UserCard A minimal representation of a user.
+//
+// This representation of a user is mainly meant for inclusion in other models, or for list views.
+//
+// swagger:model UserCard
 type UserCard struct {
 
-	/* When true this user is an admin.
-
-	Only employees of the owning company can be admins.
-	Admins are like project owners but have access to all the projects in the application.
-	There aren't many admins, and it's only used for extremly critical issues with the application.
-
-
-	Read Only: true
-	*/
+	// When true this user is an admin.
+	//
+	// Only employees of the owning company can be admins.
+	// Admins are like project owners but have access to all the projects in the application.
+	// There aren't many admins, and it's only used for extremly critical issues with the application.
+	//
+	// Read Only: true
 	Admin *bool `json:"admin,omitempty"`
 
-	/* The amount of karma this user has available.
-
-	In this application users get a cerain amount of karma alotted.
-	This karma can be donated to other users to show appreciation, or it can be used
-	by a user to vote on issues.
-	Once an issue is closed or rejected, the user gets his karma back.
-
-
-	Read Only: true
-	Maximum: < 1000
-	*/
+	// The amount of karma this user has available.
+	//
+	// In this application users get a cerain amount of karma alotted.
+	// This karma can be donated to other users to show appreciation, or it can be used
+	// by a user to vote on issues.
+	// Once an issue is closed or rejected, the user gets his karma back.
+	//
+	// Read Only: true
+	// Maximum: < 1000
 	AvailableKarma float64 `json:"availableKarma,omitempty"`
 
-	/* A unique identifier for a user.
-
-	This id is automatically generated on the server when a user is created.
-
-
-	Required: true
-	Read Only: true
-	*/
+	// A unique identifier for a user.
+	//
+	// This id is automatically generated on the server when a user is created.
+	//
+	// Required: true
+	// Read Only: true
 	ID int64 `json:"id"`
 
-	/* The screen name for the user.
-
-	This is used for vanity type urls as well as login credentials.
-
-
-	Required: true
-	Max Length: 255
-	Min Length: 3
-	Pattern: \w[\w_-]+
-	*/
+	// The screen name for the user.
+	//
+	// This is used for vanity type urls as well as login credentials.
+	//
+	// Required: true
+	// Max Length: 255
+	// Min Length: 3
+	// Pattern: \w[\w_-]+
 	ScreenName *string `json:"screenName"`
 }
 

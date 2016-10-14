@@ -14,102 +14,81 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-/*TaskCard a card for a task
-
-A task card is a minimalistic representation of a task. Useful for display in list views, like a card list.
-
-
-swagger:model TaskCard
-*/
+// TaskCard a card for a task
+//
+// A task card is a minimalistic representation of a task. Useful for display in list views, like a card list.
+//
+// swagger:model TaskCard
 type TaskCard struct {
 
-	/* assigned to
-	 */
+	// assigned to
 	AssignedTo *UserCard `json:"assignedTo,omitempty"`
 
-	/* The description of the task.
-
-	The task description is a longer, more detailed description of the issue.
-	Perhaps it even mentions steps to reproduce.
-
-	*/
+	// The description of the task.
+	//
+	// The task description is a longer, more detailed description of the issue.
+	// Perhaps it even mentions steps to reproduce.
+	//
 	Description string `json:"description,omitempty"`
 
-	/* the level of effort required to get this task completed
-
-	Maximum: 27
-	Multiple Of: 3
-	*/
+	// the level of effort required to get this task completed
+	// Maximum: 27
+	// Multiple Of: 3
 	Effort int32 `json:"effort,omitempty"`
 
-	/* The id of the task.
-
-	A unique identifier for the task. These are created in ascending order.
-
-	Read Only: true
-	*/
+	// The id of the task.
+	//
+	// A unique identifier for the task. These are created in ascending order.
+	// Read Only: true
 	ID int64 `json:"id,omitempty"`
 
-	/* the karma donated to this item.
-
-	Karma is a lot like voting.  Users can donate a certain amount or karma to an issue.
-	This is used to determine the weight users place on an issue. Not that +1 comments aren't great.
-
-
-	Minimum: > 0
-	Multiple Of: 0.5
-	*/
+	// the karma donated to this item.
+	//
+	// Karma is a lot like voting.  Users can donate a certain amount or karma to an issue.
+	// This is used to determine the weight users place on an issue. Not that +1 comments aren't great.
+	//
+	// Minimum: > 0
+	// Multiple Of: 0.5
 	Karma *float64 `json:"karma,omitempty"`
 
-	/* milestone
-	 */
+	// milestone
 	Milestone *Milestone `json:"milestone,omitempty"`
 
-	/* The time at which this issue was reported.
-
-	This field is read-only, so it's only sent as part of the response.
-
-
-	Read Only: true
-	*/
+	// The time at which this issue was reported.
+	//
+	// This field is read-only, so it's only sent as part of the response.
+	//
+	// Read Only: true
 	ReportedAt strfmt.DateTime `json:"reportedAt,omitempty"`
 
-	/* severity
-
-	Maximum: 5
-	Minimum: 1
-	*/
+	// severity
+	// Maximum: 5
+	// Minimum: 1
 	Severity int32 `json:"severity,omitempty"`
 
-	/* the status of the issue
-
-	There are 4 possible values for a status.
-	Ignored means as much as accepted but not now, perhaps later.
-
-
-	Required: true
-	*/
+	// the status of the issue
+	//
+	// There are 4 possible values for a status.
+	// Ignored means as much as accepted but not now, perhaps later.
+	//
+	// Required: true
 	Status *string `json:"status"`
 
-	/* task tags.
-
-	a task can be tagged with text blurbs.
-
-	Max Items: 5
-	Unique: true
-	*/
+	// task tags.
+	//
+	// a task can be tagged with text blurbs.
+	// Max Items: 5
+	// Unique: true
 	Tags []string `json:"tags,omitempty"`
 
-	/* The title of the task.
-
-	The title for a task, this needs to be at least 5 chars long.
-	Titles don't allow any formatting, besides emoji.
-
-
-	Required: true
-	Max Length: 150
-	Min Length: 5
-	*/
+	// The title of the task.
+	//
+	// The title for a task, this needs to be at least 5 chars long.
+	// Titles don't allow any formatting, besides emoji.
+	//
+	// Required: true
+	// Max Length: 150
+	// Min Length: 5
 	Title *string `json:"title"`
 }
 
@@ -247,6 +226,13 @@ func (m *TaskCard) validateSeverity(formats strfmt.Registry) error {
 }
 
 var taskCardTypeStatusPropEnum []interface{}
+
+const (
+	taskCardStatusOpen     string = "open"
+	taskCardStatusClosed   string = "closed"
+	taskCardStatusIgnored  string = "ignored"
+	taskCardStatusRejected string = "rejected"
+)
 
 // prop value enum
 func (m *TaskCard) validateStatusEnum(path, location string, value string) error {

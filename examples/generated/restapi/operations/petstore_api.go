@@ -46,6 +46,7 @@ type PetstoreAPI struct {
 	formats         strfmt.Registry
 	defaultConsumes string
 	defaultProduces string
+	Middleware      func(middleware.Builder) http.Handler
 	// JSONConsumer registers a consumer for a "application/json" mime type
 	JSONConsumer runtime.Consumer
 	// UrlformConsumer registers a consumer for a "application/x-www-form-urlencoded" mime type
@@ -354,9 +355,7 @@ func (o *PetstoreAPI) Context() *middleware.Context {
 }
 
 func (o *PetstoreAPI) initHandlerCache() {
-	if o.context == nil {
-		o.context = middleware.NewRoutableContext(o.spec, o, nil)
-	}
+	o.Context() // don't care about the result, just that the initialization happened
 
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
@@ -457,9 +456,16 @@ func (o *PetstoreAPI) initHandlerCache() {
 // Serve creates a http handler to serve the API over HTTP
 // can be used directly in http.ListenAndServe(":8000", api.Serve(nil))
 func (o *PetstoreAPI) Serve(builder middleware.Builder) http.Handler {
+	o.Init()
+
+	if o.Middleware != nil {
+		return o.Middleware(builder)
+	}
+	return o.context.APIHandler(builder)
+}
+
+func (o *PetstoreAPI) Init() {
 	if len(o.handlers) == 0 {
 		o.initHandlerCache()
 	}
-
-	return o.context.APIHandler(builder)
 }

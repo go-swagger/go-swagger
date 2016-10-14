@@ -104,23 +104,18 @@ func (o *AddCommentToTaskDefault) readResponse(response runtime.ClientResponse, 
 }
 
 /*AddCommentToTaskBody A comment to create
-
-These values can have github flavored markdown.
-
-
+//
+// These values can have github flavored markdown.
+//
 swagger:model AddCommentToTaskBody
 */
 type AddCommentToTaskBody struct {
 
-	/* content
-
-	Required: true
-	*/
+	// content
+	// Required: true
 	Content *string `json:"content"`
 
-	/* user Id
-
-	Required: true
-	*/
+	// user Id
+	// Required: true
 	UserID *int64 `json:"userId"`
 }
