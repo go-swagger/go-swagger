@@ -250,7 +250,7 @@ func templatesModelGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/model.gotmpl", size: 785, mode: os.FileMode(420), modTime: time.Unix(1476425091, 0)}
+	info := bindataFileInfo{name: "templates/model.gotmpl", size: 785, mode: os.FileMode(420), modTime: time.Unix(1476502014, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -370,7 +370,7 @@ func templatesServerBuilderGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/server/builder.gotmpl", size: 11546, mode: os.FileMode(420), modTime: time.Unix(1476424760, 0)}
+	info := bindataFileInfo{name: "templates/server/builder.gotmpl", size: 11546, mode: os.FileMode(420), modTime: time.Unix(1476502014, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
