@@ -15,6 +15,7 @@
 package validate
 
 import (
+	"log"
 	"reflect"
 
 	"github.com/go-openapi/errors"
@@ -80,7 +81,9 @@ func newSchemaPropsValidator(path string, in string, allOf, oneOf, anyOf []spec.
 
 func (s *schemaPropsValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	r := reflect.TypeOf(source) == specSchemaType
-	// fmt.Printf("schema props validator for %q applies %t for %T (kind: %v)\n", s.Path, r, source, kind)
+	if Debug {
+		log.Printf("schema props validator for %q applies %t for %T (kind: %v)\n", s.Path, r, source, kind)
+	}
 	return r
 }
 

@@ -118,7 +118,7 @@ func (r *request) BuildHTTP(mediaType string, producers map[string]runtime.Produ
 					if len(v) > 0 {
 						if err := mp.WriteField(fn, v[0]); err != nil {
 							pw.CloseWithError(err)
-							log.Fatal(err)
+							log.Println(err)
 						}
 					}
 				}
@@ -127,7 +127,7 @@ func (r *request) BuildHTTP(mediaType string, producers map[string]runtime.Produ
 					wrtr, err := mp.CreateFormFile(fn, filepath.Base(f.Name()))
 					if err != nil {
 						pw.CloseWithError(err)
-						log.Fatal(err)
+						log.Println(err)
 					}
 					defer func() {
 						for _, ff := range r.fileFields {
@@ -137,18 +137,18 @@ func (r *request) BuildHTTP(mediaType string, producers map[string]runtime.Produ
 					}()
 					if _, err := io.Copy(wrtr, f); err != nil {
 						pw.CloseWithError(err)
-						log.Fatal(err)
+						log.Println(err)
 					}
 				}
 
 			}()
 			return req, nil
-		} else {
-			req.Header.Set(runtime.HeaderContentType, mediaType)
-			// write the form values as the body
-			buf.WriteString(r.formFields.Encode())
-			return req, nil
 		}
+
+		req.Header.Set(runtime.HeaderContentType, mediaType)
+		// write the form values as the body
+		buf.WriteString(r.formFields.Encode())
+		return req, nil
 	}
 
 	// if there is payload, use the producer to write the payload, and then

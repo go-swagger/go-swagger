@@ -336,6 +336,7 @@ type GenOperation struct {
 	ProducesMediaTypes []string
 	ConsumesMediaTypes []string
 	WithContext        bool
+	TimeoutName        string
 }
 
 // GenOperations represents a list of operations to generate
