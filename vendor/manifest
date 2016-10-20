@@ -103,7 +103,7 @@
 			"importpath": "github.com/go-openapi/loads",
 			"repository": "https://github.com/go-openapi/loads",
 			"vcs": "git",
-			"revision": "18441dfa706d924a39a030ee2c3b1d8d81917b38",
+			"revision": "9168874c33ac10e241ee7767ed9f5d209c2a5ab0",
 			"branch": "master",
 			"notests": true
 		},
@@ -111,7 +111,7 @@
 			"importpath": "github.com/go-openapi/runtime",
 			"repository": "https://github.com/go-openapi/runtime",
 			"vcs": "git",
-			"revision": "3969e1fbeb2c58cc2e539bf8d35f1448d278729f",
+			"revision": "2faaf90bf67e0616db00094f2141f99b00a9ebc2",
 			"branch": "master",
 			"notests": true
 		},
@@ -143,7 +143,7 @@
 			"importpath": "github.com/go-openapi/validate",
 			"repository": "https://github.com/go-openapi/validate",
 			"vcs": "git",
-			"revision": "03d947b0268e1c2bb5c74ac4095447f140c9a112",
+			"revision": "027696d4b54399770f1cdcc6c6daa56975f9e14e",
 			"branch": "master",
 			"notests": true
 		},

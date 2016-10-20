@@ -544,7 +544,9 @@ func (s *SpecValidator) validateParameters() *Result {
 				for pr.Ref.String() != "" {
 					obj, _, err := pr.Ref.GetPointer().Get(sw)
 					if err != nil {
-						log.Println(err)
+						if Debug {
+							log.Println(err)
+						}
 						res.AddErrors(err)
 						break PARAMETERS
 					}
@@ -698,7 +700,9 @@ func (s *SpecValidator) validateDefaultValueValidAgainstSchema() *Result {
 				}
 				// check simple paramters first
 				if param.Default != nil && param.Schema == nil {
-					//fmt.Println(param.Name, "in", param.In, "has a default without a schema")
+					if Debug {
+						log.Println(param.Name, "in", param.In, "has a default without a schema")
+					}
 					// check param valid
 					res.Merge(NewParamValidator(&param, s.KnownFormats).Validate(param.Default))
 				}

@@ -22,6 +22,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
@@ -255,6 +256,28 @@ type codeGenOpBuilder struct {
 	GenOpts          *GenOpts
 }
 
+func renameTimeout(seenIds map[string][]string, current string) string {
+	var next string
+	switch strings.ToLower(current) {
+	case "timeout":
+		next = "requestTimeout"
+	case "requesttimeout":
+		next = "httpRequestTimeout"
+	case "httptrequesttimeout":
+		next = "swaggerTimeout"
+	case "swaggertimeout":
+		next = "operationTimeout"
+	case "operationtimeout":
+		next = "opTimeout"
+	case "optimeout":
+		next = "operTimeout"
+	}
+	if _, ok := seenIds[next]; ok {
+		return renameTimeout(seenIds, next)
+	}
+	return next
+}
+
 func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	if Debug {
 		log.Printf("[%s %s] parsing operation (id: %q)", b.Method, b.Path, b.Operation.ID)
@@ -266,6 +289,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	var params, qp, pp, hp, fp GenParameters
 	var hasQueryParams, hasFormParams, hasFileParams, hasFormValueParams bool
 	paramsForOperation := b.Analyzed.ParamsFor(b.Method, b.Path)
+	timeoutName := "timeout"
 
 	idMapping := map[string]map[string]string{
 		"query":    make(map[string]string, len(paramsForOperation)),
@@ -274,6 +298,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		"header":   make(map[string]string, len(paramsForOperation)),
 		"body":     make(map[string]string, len(paramsForOperation)),
 	}
+
 	seenIds := make(map[string][]string, len(paramsForOperation))
 	for id, p := range paramsForOperation {
 		if _, ok := seenIds[p.Name]; ok {
@@ -282,6 +307,9 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 			idMapping[p.In][p.Name] = swag.ToGoName(p.Name)
 		}
 		seenIds[p.Name] = append(seenIds[p.Name], p.In)
+		if strings.ToLower(p.Name) == strings.ToLower(timeoutName) {
+			timeoutName = renameTimeout(seenIds, timeoutName)
+		}
 	}
 
 	for _, p := range paramsForOperation {
@@ -433,6 +461,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		ConsumesMediaTypes:   consumes,
 		ExtraSchemes:         extraSchemes,
 		WithContext:          b.WithContext,
+		TimeoutName:          timeoutName,
 	}, nil
 }
 

@@ -14,7 +14,16 @@
 
 package validate
 
-import "github.com/go-openapi/errors"
+import (
+	"os"
+
+	"github.com/go-openapi/errors"
+)
+
+var (
+	// Debug is true when the SWAGGER_DEBUG env var is not empty
+	Debug = os.Getenv("SWAGGER_DEBUG") != ""
+)
 
 // Result represents a validation result
 type Result struct {

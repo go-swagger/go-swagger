@@ -16,6 +16,7 @@ package validate
 
 import (
 	"encoding/json"
+	"log"
 	"reflect"
 
 	"github.com/go-openapi/spec"
@@ -125,6 +126,9 @@ func (s *SchemaValidator) Validate(data interface{}) *Result {
 
 	for _, v := range s.validators {
 		if !v.Applies(s.Schema, kind) {
+			if Debug {
+				log.Printf("%T does not apply for %v", v, kind)
+			}
 			continue
 		}
 

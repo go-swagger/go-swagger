@@ -349,17 +349,25 @@ func (c *Context) Authorize(request *http.Request, route *MatchedRoute) (interfa
 		return v, nil
 	}
 
+	var lastError error
 	for scheme, authenticator := range route.Authenticators {
 		applies, usr, err := authenticator.Authenticate(&security.ScopedAuthRequest{
 			Request:        request,
 			RequiredScopes: route.Scopes[scheme],
 		})
 		if !applies || err != nil || usr == nil {
+			if err != nil {
+				lastError = err
+			}
 			continue
 		}
 		context.Set(request, ctxSecurityPrincipal, usr)
 		context.Set(request, ctxSecurityScopes, route.Scopes[scheme])
 		return usr, nil
+	}
+
+	if lastError != nil {
+		return nil, lastError
 	}
 
 	return nil, errors.Unauthenticated("invalid credentials")
