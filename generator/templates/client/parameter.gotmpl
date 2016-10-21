@@ -89,7 +89,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) With{{ pascalize .Timeou
 
 // Set{{ pascalize .TimeoutName }} adds the timeout to the {{ humanize .Name }} params
 func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) Set{{ pascalize .TimeoutName }}(timeout time.Duration) {
-  {{ .ReceiverName }}.{{ pascalize .TimeoutName }} = timeout
+  {{ .ReceiverName }}.{{ camelize .TimeoutName }} = timeout
 }
 
 // WithContext adds the context to the {{ humanize .Name }} params
@@ -120,7 +120,7 @@ func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) Set{{ pascalize .ID }}
 // WriteToRequest writes these params to a swagger request
 func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
-  r.SetTimeout({{ .ReceiverName }}.{{ pascalize .TimeoutName }})
+  r.SetTimeout({{ .ReceiverName }}.{{ camelize .TimeoutName }})
   var res []error
   {{range .Params}}
 
