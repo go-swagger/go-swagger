@@ -62,6 +62,15 @@ func (l *LanguageOpts) MangleName(name, suffix string) string {
 	return strings.Join([]string{name, suffix}, "_")
 }
 
+// MangleVarName makes sure a reserved word gets a safe name
+func (l *LanguageOpts) MangleVarName(name string) string {
+	nm := swag.ToVarName(name)
+	if _, ok := l.reservedWordsSet[nm]; !ok {
+		return nm
+	}
+	return nm + "Var"
+}
+
 // FormatContent formats a file with a language specific formatter
 func (l *LanguageOpts) FormatContent(name string, content []byte) ([]byte, error) {
 	if l.formatFunc != nil {
@@ -69,6 +78,8 @@ func (l *LanguageOpts) FormatContent(name string, content []byte) ([]byte, error
 	}
 	return content, nil
 }
+
+var golang = GoLangOpts()
 
 // GoLangOpts for rendering items as golang code
 func GoLangOpts() *LanguageOpts {
