@@ -663,3 +663,26 @@ func TestGenParameter_Issue511(t *testing.T) {
 		}
 	}
 }
+
+func TestGenParameter_Issue710(t *testing.T) {
+	assert := assert.New(t)
+
+	gen, err := opBuilder("createTask", "../fixtures/codegen/todolist.allparams.yml")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("clientParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("create_task_parameter.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertInCode(t, "(typeVar", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}

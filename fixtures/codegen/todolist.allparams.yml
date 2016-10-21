@@ -49,6 +49,10 @@ paths:
       description: |
         Validates the content property for length etc.
       parameters:
+        - name: type
+          in: query
+          required: false
+          type: string
         - name: body
           in: body
           schema:
