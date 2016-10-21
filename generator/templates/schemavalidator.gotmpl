@@ -188,32 +188,33 @@ const ({{ range .Enum }}
 {{ end }}
 // for schema
 var {{ camelize .Name }}Enum []interface{}
-func ({{ .ReceiverName }} {{ if not .IsPrimitive }}*{{ end }}{{ if .IsExported }}{{ pascalize .Name}}{{ else }}{{ .Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "dereffedSchemaType" . }}) error {
-  if {{ camelize .Name }}Enum == nil {
-    var res []{{ template "dereffedSchemaType" . }}
-    if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
-      return err
-    }
-    for _, v := range res {
-      {{ camelize .Name }}Enum = append({{ camelize .Name }}Enum, v)
-    }
+func init() {
+  var res []{{ template "dereffedSchemaType" . }}
+  if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
+    panic(err)
   }
+  for _, v := range res {
+    {{ camelize .Name }}Enum = append({{ camelize .Name }}Enum, v)
+  }
+}
+
+func ({{ .ReceiverName }} {{ if not .IsPrimitive }}*{{ end }}{{ if .IsExported }}{{ pascalize .Name}}{{ else }}{{ .Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "dereffedSchemaType" . }}) error {
   if err := validate.Enum(path, location, value, {{ camelize .Name }}Enum); err != nil {
     return err
   }
   return nil
 }
 {{ end }}{{ if .ItemsEnum }}var {{ camelize .Name }}ItemsEnum []interface{}
-func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ template "dereffedSchemaType" .Items }}) error {
-  if {{ camelize .Name }}ItemsEnum == nil {
-    var res []{{ template "dereffedSchemaType" .Items }}
-    if err := json.Unmarshal([]byte(`{{ json .ItemsEnum }}`), &res); err != nil {
-      return err
-    }
-    for _, v := range res {
-      {{ camelize .Name }}ItemsEnum = append({{ camelize .Name }}ItemsEnum, v)
-    }
+func init() {
+  var res []{{ template "dereffedSchemaType" .Items }}
+  if err := json.Unmarshal([]byte(`{{ json .ItemsEnum }}`), &res); err != nil {
+    panic(err)
   }
+  for _, v := range res {
+    {{ camelize .Name }}ItemsEnum = append({{ camelize .Name }}ItemsEnum, v)
+  }
+}
+func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ template "dereffedSchemaType" .Items }}) error {
   if err := validate.Enum(path, location, value, {{ camelize .Name}}ItemsEnum); err != nil {
     return err
   }
@@ -223,16 +224,18 @@ func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{
 {{ if .Enum }}
 // for additional props
 var {{ camelize .Name }}ValueEnum []interface{}
-func ({{ .ReceiverName }} *{{ if .IsExported }}{{ pascalize .Name}}{{ else }}{{ .Name }}{{ end }}) validate{{ pascalize .Name }}ValueEnum(path, location string, value {{ template "dereffedSchemaType" . }}) error {
-  if {{ camelize .Name }}ValueEnum == nil {
-    var res []{{ template "dereffedSchemaType" . }}
-    if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
-      return err
-    }
-    for _, v := range res {
-      {{ camelize .Name }}ValueEnum = append({{ camelize .Name }}ValueEnum, v)
-    }
+
+func init() {
+  var res []{{ template "dereffedSchemaType" . }}
+  if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
+    return err
   }
+  for _, v := range res {
+    {{ camelize .Name }}ValueEnum = append({{ camelize .Name }}ValueEnum, v)
+  }
+}
+
+func ({{ .ReceiverName }} *{{ if .IsExported }}{{ pascalize .Name}}{{ else }}{{ .Name }}{{ end }}) validate{{ pascalize .Name }}ValueEnum(path, location string, value {{ template "dereffedSchemaType" . }}) error {
   if err := validate.Enum(path, location, value, {{ camelize .Name }}ValueEnum); err != nil {
     return err
   }
@@ -302,6 +305,15 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
 }
 {{range .Properties}}
 {{if or .Required .HasValidations}}{{ if .Enum }}var {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum []interface{}
+func init() {
+  var res []{{ template "dereffedSchemaType" . }}
+  if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
+    panic(err)
+  }
+  for _, v := range res {
+    {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum = append({{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum, v)
+  }
+}
 
 {{ if (eq .SwaggerType "string") }}
 {{ $gotype := .GoType }}
@@ -312,47 +324,39 @@ const ({{ range .Enum }}
 
 // prop value enum
 func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "dereffedSchemaType" . }}) error {
-  if {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum == nil {
-    var res []{{ template "dereffedSchemaType" . }}
-    if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
-      return err
-    }
-    for _, v := range res {
-      {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum = append({{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum, v)
-    }
-  }
   if err := validate.Enum(path, location, value, {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum); err != nil {
     return err
   }
   return nil
 }
 {{ end }}{{ if .ItemsEnum }}var {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum []interface{}
-func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ template "dereffedSchemaType" .Items }}) error {
-  if {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum == nil {
-    var res []{{ template "dereffedSchemaType" .Items }}
-    if err := json.Unmarshal([]byte(`{{ json .ItemsEnum }}`), &res); err != nil {
-      return err
-    }
-    for _, v := range res {
-      {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum, v)
-    }
+func init() {
+  var res []{{ template "dereffedSchemaType" .Items }}
+  if err := json.Unmarshal([]byte(`{{ json .ItemsEnum }}`), &res); err != nil {
+    panic(err)
   }
+  for _, v := range res {
+    {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum, v)
+  }
+}
+
+func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ template "dereffedSchemaType" .Items }}) error {
   if err := validate.Enum(path, location, value, {{ camelize $.Name}}{{ pascalize .Name}}ItemsEnum); err != nil {
     return err
   }
   return nil
 }
 {{ end }}{{ if .AdditionalItems}}{{ if .AdditionalItems.Enum }}var {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum []interface{}
-func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "dereffedSchemaType" .AdditionalItems }}) error {
-  if {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum == nil {
-    var res []{{ template "dereffedSchemaType" .AdditionalItems }}
-    if err := json.Unmarshal([]byte(`{{ json .AdditionalItems.Enum }}`), &res); err != nil {
-      return err
-    }
-    for _, v := range res {
-      {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum = append({{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum, v)
-    }
+func init() {
+  var res []{{ template "dereffedSchemaType" .AdditionalItems }}
+  if err := json.Unmarshal([]byte(`{{ json .AdditionalItems.Enum }}`), &res); err != nil {
+    panic(err)
   }
+  for _, v := range res {
+    {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum = append({{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum, v)
+  }
+}
+func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "dereffedSchemaType" .AdditionalItems }}) error {
   if err := validate.Enum(path, location, value, {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum); err != nil {
     return err
   }
@@ -362,16 +366,16 @@ func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{
 {{ if .Enum }}
 // additional properties value enum
 var {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum []interface{}
-func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}ValueEnum(path, location string, value {{ template "dereffedSchemaType" . }}) error {
-  if {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum == nil {
-    var res []{{ template "dereffedSchemaType" . }}
-    if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
-      return err
-    }
-    for _, v := range res {
-      {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ValueEnum, v)
-    }
+func init() {
+  var res []{{ template "dereffedSchemaType" . }}
+  if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
+    panic(err)
   }
+  for _, v := range res {
+    {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ValueEnum, v)
+  }
+}
+func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}ValueEnum(path, location string, value {{ template "dereffedSchemaType" . }}) error {
   if err := validate.Enum(path, location, value, {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum); err != nil {
     return err
   }
@@ -397,51 +401,52 @@ func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{
 {{range .AllOf}}
 {{range .Properties}}
 {{if and (ne $.DiscriminatorField .Name) (or .Required .HasValidations) }}{{ if .Enum }}var {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum []interface{}
+func init() {
+  var res []{{ template "dereffedSchemaType" . }}
+  if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
+    panic(err)
+  }
+  for _, v := range res {
+    {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum = append({{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum, v)
+  }
+}
+
 // property enum
 func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "dereffedSchemaType" . }}) error {
-  if {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum == nil {
-    var res []{{ template "dereffedSchemaType" . }}
-    if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
-      return err
-    }
-    for _, v := range res {
-      {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum = append({{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum, v)
-    }
-  }
   if err := validate.Enum(path, location, value, {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum); err != nil {
     return err
   }
   return nil
 }
 {{ end }}{{ if .ItemsEnum }}var {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum []interface{}
+func init() {
+  var res []{{ template "dereffedSchemaType" .Items }}
+  if err := json.Unmarshal([]byte(`{{ json .ItemsEnum }}`), &res); err != nil {
+    panic(err)
+  }
+  for _, v := range res {
+    {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum, v)
+  }
+}
 
 func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ template "dereffedSchemaType" .Items }}) error {
-  if {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum == nil {
-    var res []{{ template "dereffedSchemaType" .Items }}
-    if err := json.Unmarshal([]byte(`{{ json .ItemsEnum }}`), &res); err != nil {
-      return err
-    }
-    for _, v := range res {
-      {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum, v)
-    }
-  }
   if err := validate.Enum(path, location, value, {{ camelize $.Name}}{{ pascalize .Name}}ItemsEnum); err != nil {
     return err
   }
   return nil
 }
 {{ end }}{{ if .AdditionalItems}}{{ if .AdditionalItems.Enum }}var {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum []interface{}
+func init() {
+  var res []{{ template "dereffedSchemaType" .AdditionalItems }}
+  if err := json.Unmarshal([]byte(`{{ json .AdditionalItems.Enum }}`), &res); err != nil {
+    panic(err)
+  }
+  for _, v := range res {
+    {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum = append({{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum, v)
+  }
+}
 
 func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "dereffedSchemaType" .AdditionalItems }}) error {
-  if {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum == nil {
-    var res []{{ template "dereffedSchemaType" .AdditionalItems }}
-    if err := json.Unmarshal([]byte(`{{ json .AdditionalItems.Enum }}`), &res); err != nil {
-      return err
-    }
-    for _, v := range res {
-      {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum = append({{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum, v)
-    }
-  }
   if err := validate.Enum(path, location, value, {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum); err != nil {
     return err
   }
@@ -450,17 +455,18 @@ func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{
 {{ end }}{{ end }}{{ with .AdditionalProperties }}
 {{ if .Enum }}
 var {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum []interface{}
+func init() {
+  var res []{{ template "dereffedSchemaType" . }}
+  if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
+    panic(err)
+  }
+  for _, v := range res {
+    {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ValueEnum, v)
+  }
+}
+
 // additional properties value enum
 func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}ValueEnum(path, location string, value {{ template "dereffedSchemaType" . }}) error {
-  if {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum == nil {
-    var res []{{ template "dereffedSchemaType" . }}
-    if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
-      return err
-    }
-    for _, v := range res {
-      {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ValueEnum, v)
-    }
-  }
   if err := validate.Enum(path, location, value, {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum); err != nil {
     return err
   }
@@ -480,16 +486,17 @@ func ({{.ReceiverName}} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{{ 
 {{end}}
 {{if .HasAdditionalItems }}
 {{ if .AdditionalItems.Enum }}var {{ camelize .Name }}ItemsEnum []interface{}
-func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ template "dereffedSchemaType" .AdditionalItems }}) error {
-  if {{ camelize .Name }}ItemsEnum == nil {
-    var res []{{ template "dereffedSchemaType" .AdditionalItems }}
-    if err := json.Unmarshal([]byte(`{{ json .AdditionalItems.Enum }}`), &res); err != nil {
-      return err
-    }
-    for _, v := range res {
-      {{ camelize .Name }}ItemsEnum = append({{ camelize .Name }}ItemsEnum, v)
-    }
+func init() {
+  var res []{{ template "dereffedSchemaType" .AdditionalItems }}
+  if err := json.Unmarshal([]byte(`{{ json .AdditionalItems.Enum }}`), &res); err != nil {
+    panic(err)
   }
+  for _, v := range res {
+    {{ camelize .Name }}ItemsEnum = append({{ camelize .Name }}ItemsEnum, v)
+  }
+}
+
+func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ template "dereffedSchemaType" .AdditionalItems }}) error {
   if err := validate.Enum(path, location, value, {{ camelize .Name}}ItemsEnum); err != nil {
     return err
   }
