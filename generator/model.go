@@ -522,13 +522,6 @@ func (sg *schemaGenContext) buildProperties() error {
 		log.Printf("building properties %s (parent: %s)", sg.Name, sg.Container)
 	}
 
-	//var discriminatorField string
-	//if sg.Discrimination != nil {
-	//dis, ok := sg.Discriminated["#/definitions/"+sg.Container]
-	//if ok {
-
-	//}
-	//}
 	for k, v := range sg.Schema.Properties {
 		if Debug {
 			bbb, _ := json.MarshalIndent(sg.Schema, "", "  ")
@@ -1150,6 +1143,14 @@ func (sg *schemaGenContext) buildAliased() error {
 	return nil
 }
 
+func (sg *schemaGenContext) GoName() string {
+	name, _ := sg.Schema.Extensions.GetString("x-go-name")
+	if name != "" {
+		return name
+	}
+	return sg.Name
+}
+
 func (sg *schemaGenContext) makeGenSchema() error {
 	if Debug {
 		log.Printf("making gen schema (anon: %t, req: %t, tuple: %t) %s\n", !sg.Named, sg.Required, sg.IsTuple, sg.Name)
@@ -1166,7 +1167,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.Location = "body"
 	sg.GenSchema.ValueExpression = sg.ValueExpr
 	sg.GenSchema.KeyVar = sg.KeyVar
-	sg.GenSchema.Name = sg.Name
+	sg.GenSchema.Name = sg.GoName()
 	sg.GenSchema.Title = sg.Schema.Title
 	sg.GenSchema.Description = sg.Schema.Description
 	sg.GenSchema.ReceiverName = sg.Receiver

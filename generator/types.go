@@ -570,11 +570,8 @@ func boolExtension(ext spec.Extensions, key string) *bool {
 
 func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequired bool) (result resolvedType, err error) {
 	if Debug {
-		// bbb, _ := json.MarshalIndent(schema, "", "  ")
 		_, file, pos, _ := runtime.Caller(1)
 		log.Printf("%s:%d: resolving schema (anon: %t, req: %t) %s\n", filepath.Base(file), pos, isAnonymous, isRequired, t.ModelName /*bbb*/)
-		// tt, _ := json.MarshalIndent(t, "", "  ")
-		// log.Println("resolver", string(tt))
 	}
 	if schema == nil {
 		result.IsInterface = true

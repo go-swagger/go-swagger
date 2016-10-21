@@ -534,15 +534,9 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 	sort.Sort(res.Headers)
 
 	if resp.Schema != nil {
-		var title string
-		if resp.Schema.Title != "" {
-			title = resp.Schema.Title
-		} else {
-			title = name + "Body"
-		}
 		sc := schemaGenContext{
 			Path:             fmt.Sprintf("%q", name),
-			Name:             title,
+			Name:             name + "Body",
 			Receiver:         receiver,
 			ValueExpr:        receiver,
 			IndexVar:         "i",
