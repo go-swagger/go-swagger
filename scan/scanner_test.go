@@ -20,6 +20,7 @@ import (
 	goparser "go/parser"
 	"log"
 	"regexp"
+	"sort"
 	"strings"
 	"testing"
 
@@ -32,6 +33,17 @@ import (
 
 var classificationProg *loader.Program
 var noModelDefs map[string]spec.Schema
+
+type namedParam struct {
+	Index int
+	Name  string
+}
+
+type namedParams []namedParam
+
+func (g namedParams) Len() int           { return len(g) }
+func (g namedParams) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
+func (g namedParams) Less(i, j int) bool { return g[i].Name < g[j].Name }
 
 func init() {
 	classificationProg = classifierProgram()
@@ -240,7 +252,12 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	assert.Equal(t, "By default it will only lists pets that are available for sale.\nThis can be changed with the status flag.", op.Get.Description)
 	assert.Equal(t, "listPets", op.Get.ID)
 	assert.EqualValues(t, []string{"pets"}, op.Get.Tags)
-	sparam := op.Get.Parameters[0]
+	var names namedParams
+	for i, v := range op.Get.Parameters {
+		names = append(names, namedParam{Index: i, Name: v.Name})
+	}
+	sort.Sort(names)
+	sparam := op.Get.Parameters[names[1].Index]
 	assert.Equal(t, "Status", sparam.Description)
 	assert.Equal(t, "query", sparam.In)
 	assert.Equal(t, "string", sparam.Type)
@@ -249,7 +266,7 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	assert.Equal(t, "Status", sparam.Extensions["x-go-name"])
 	assert.Equal(t, "#/responses/genericError", op.Get.Responses.Default.Ref.String())
 	assert.Len(t, op.Get.Parameters, 2)
-	sparam1 := op.Get.Parameters[1]
+	sparam1 := op.Get.Parameters[names[0].Index]
 	assert.Equal(t, "Birthday", sparam1.Description)
 	assert.Equal(t, "query", sparam1.In)
 	assert.Equal(t, "string", sparam1.Type)

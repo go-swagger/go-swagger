@@ -85,7 +85,11 @@ func CLDRVersion() string {
 
 // IsLocal reports whether data files are available locally.
 func IsLocal() bool {
-	if _, err := os.Stat(localReadmeFile()); err != nil {
+	dir, err := localReadmeFile()
+	if err != nil {
+		return false
+	}
+	if _, err = os.Stat(dir); err != nil {
 		return false
 	}
 	return true
@@ -130,19 +134,22 @@ var (
 
 const permissions = 0755
 
-func localReadmeFile() string {
+func localReadmeFile() (string, error) {
 	p, err := build.Import("golang.org/x/text", "", build.FindOnly)
 	if err != nil {
-		log.Fatalf("Could not locate package: %v", err)
+		return "", fmt.Errorf("Could not locate package: %v", err)
 	}
-	return filepath.Join(p.Dir, "DATA", "README")
+	return filepath.Join(p.Dir, "DATA", "README"), nil
 }
 
 func getLocalDir() string {
 	dirMutex.Lock()
 	defer dirMutex.Unlock()
 
-	readme := localReadmeFile()
+	readme, err := localReadmeFile()
+	if err != nil {
+		log.Fatal(err)
+	}
 	dir := filepath.Dir(readme)
 	if _, err := os.Stat(readme); err != nil {
 		if err := os.MkdirAll(dir, permissions); err != nil {
