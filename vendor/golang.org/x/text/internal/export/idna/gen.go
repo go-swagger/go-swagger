@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"unicode"
 	"unicode/utf8"
 
 	"golang.org/x/text/internal/gen"
@@ -29,8 +30,30 @@ func main() {
 	gen.Repackage("gen_common.go", "common_test.go", "idna")
 }
 
+var runes = map[rune]info{}
+
 func genTables() {
 	t := triegen.NewTrie("idna")
+
+	ucd.Parse(gen.OpenUCDFile("UnicodeData.txt"), func(p *ucd.Parser) {
+		r := p.Rune(0)
+
+		const cccVirama = 9
+		if p.Int(ucd.CanonicalCombiningClass) == cccVirama {
+			runes[p.Rune(0)] = viramaModifier
+		}
+		switch {
+		case unicode.In(r, unicode.Mark):
+			runes[r] |= modifier
+		}
+	})
+
+	ucd.Parse(gen.OpenUCDFile("extracted/DerivedJoiningType.txt"), func(p *ucd.Parser) {
+		switch v := p.String(1); v {
+		case "L", "D", "T", "R":
+			runes[p.Rune(0)] |= joinType[v] << joinShift
+		}
+	})
 
 	ucd.Parse(gen.OpenUnicodeFile("idna", "", "IdnaMappingTable.txt"), func(p *ucd.Parser) {
 		r := p.Rune(0)
@@ -41,9 +64,19 @@ func genTables() {
 		}
 
 		cat := catFromEntry(p)
+		isMapped := cat == mapped || cat == disallowedSTD3Mapped || cat == deviation
+		if !isMapped {
+			// Only include additional category information for non-mapped
+			// runes. The additional information is only used after mapping and
+			// the bits would clash with mapping information.
+			// TODO: it would be possible to inline this data and avoid
+			// additional lookups. This is quite tedious, though, so let's first
+			// see if we need this.
+			cat |= category(runes[r])
+		}
 
 		s := string(p.Runes(2))
-		if s != "" && cat != mapped && cat != disallowedSTD3Mapped && cat != deviation {
+		if s != "" && !isMapped {
 			log.Fatalf("%U: Mapping with non-mapping category %d", r, cat)
 		}
 		t.Insert(r, uint64(makeEntry(r, s))+uint64(cat))

@@ -651,14 +651,6 @@ func (d *Decoder) decodeStruct(name string, data interface{}, val reflect.Value)
 			fieldType := structType.Field(i)
 			fieldKind := fieldType.Type.Kind()
 
-			if fieldType.Anonymous {
-				if fieldKind != reflect.Struct {
-					errors = appendErrors(errors,
-						fmt.Errorf("%s: unsupported type: %s", fieldType.Name, fieldKind))
-					continue
-				}
-			}
-
 			// If "squash" is specified in the tag, we squash the field down.
 			squash := false
 			tagParts := strings.Split(fieldType.Tag.Get(d.config.TagName), ",")

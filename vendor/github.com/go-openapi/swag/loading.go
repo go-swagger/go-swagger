@@ -17,6 +17,7 @@ package swag
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -54,7 +55,9 @@ func loadHTTPBytes(timeout time.Duration) func(path string) ([]byte, error) {
 		resp, err := client.Do(req)
 		defer func() {
 			if resp != nil {
-				resp.Body.Close()
+				if e := resp.Body.Close(); e != nil {
+					log.Println(e)
+				}
 			}
 		}()
 		if err != nil {

@@ -22,11 +22,19 @@ package main
 // The per-rune values have the following format:
 //
 //   if mapped {
-//     15..3  index into xor or mapping table
+//     if inlinedXOR {
+//       15..13 inline XOR marker
+//       12..11 unused
+//       10..3  inline XOR mask
+//     } else {
+//       15..3  index into xor or mapping table
+//     }
 //   } else {
-//     15..13 inline XOR marker
-//     12..11 unused
-//     10..3  inline XOR mask
+//       15..13 unused
+//           12 modifier (including virama)
+//           11 virama modifier
+//       10..8  joining type
+//        7..3  category type
 //   }
 //      2  use xor pattern
 //   1..0  mapped category
@@ -41,6 +49,12 @@ const (
 	indexShift   = 3
 	xorBit       = 0x4    // interpret the index as an xor pattern
 	inlineXOR    = 0xE000 // These bits are set if the XOR pattern is inlined.
+
+	joinShift = 8
+	joinMask  = 0x07
+
+	viramaModifier = 0x0800
+	modifier       = 0x1000
 )
 
 // A category corresponds to a category defined in the IDNA mapping table.
@@ -62,6 +76,20 @@ const (
 	ignored             category = 0xC0
 )
 
+// join types and additional rune information
+const (
+	joiningL = (iota + 1)
+	joiningD
+	joiningT
+	joiningR
+
+	//the following types are derived during processing
+	joinZWJ
+	joinZWNJ
+	joinVirama
+	numJoinTypes
+)
+
 func (c info) isMapped() bool {
 	return c&0x3 != 0
 }
@@ -72,4 +100,19 @@ func (c info) category() category {
 		return category(small)
 	}
 	return category(c & catBigMask)
+}
+
+func (c info) joinType() info {
+	if c.isMapped() {
+		return 0
+	}
+	return (c >> joinShift) & joinMask
+}
+
+func (c info) isModifier() bool {
+	return c&(modifier|catSmallMask) == modifier
+}
+
+func (c info) isViramaModifier() bool {
+	return c&(viramaModifier|catSmallMask) == viramaModifier
 }
