@@ -8,7 +8,7 @@
   -
 {{- else }}
   {{- .Name }}
-  {{- if not .Required }},omitempty{{ end }}
+  {{- if not .Required }}{{ if not .IsArray }},omitempty{{ end }}{{ end }}
 {{- end }}"
 {{- if .XMLName }} xml:"{{ .XMLName }}"{{ end }}`
 {{ end }}

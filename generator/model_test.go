@@ -840,7 +840,7 @@ func TestGenerateModel_Stats(t *testing.T) {
 					res := string(ff)
 					assertInCode(t, "type Stats []*StatsItems0", res)
 					assertInCode(t, "type StatsItems0 struct {", res)
-					assertInCode(t, "Points []int64 `json:\"points,omitempty\"`", res)
+					assertInCode(t, "Points []int64 `json:\"points\"`", res)
 				}
 			}
 		}
@@ -865,7 +865,7 @@ func TestGenerateModel_Statix(t *testing.T) {
 					res := string(ff)
 					assertInCode(t, "type Statix [][][]*StatixItems0", res)
 					assertInCode(t, "type StatixItems0 struct {", res)
-					assertInCode(t, "Points []int64 `json:\"points,omitempty\"`", res)
+					assertInCode(t, "Points []int64 `json:\"points\"`", res)
 				} /*else {
 					fmt.Println(buf.String())
 				}*/
@@ -894,7 +894,7 @@ func TestGenerateModel_WithItems(t *testing.T) {
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assertInCode(t, "type WithItems struct {", res)
-				assertInCode(t, "Tags []string `json:\"tags,omitempty\"`", res)
+				assertInCode(t, "Tags []string `json:\"tags\"`", res)
 			}
 		}
 	}
@@ -923,7 +923,7 @@ func TestGenerateModel_WithComplexItems(t *testing.T) {
 					res := string(b)
 					assertInCode(t, "type WithComplexItems struct {", res)
 					assertInCode(t, "type WithComplexItemsTagsItems0 struct {", res)
-					assertInCode(t, "Tags []*WithComplexItemsTagsItems0 `json:\"tags,omitempty\"`", res)
+					assertInCode(t, "Tags []*WithComplexItemsTagsItems0 `json:\"tags\"`", res)
 				}
 			}
 		}
