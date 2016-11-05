@@ -10,8 +10,19 @@ import (
 	"github.com/mailru/easyjson/buffer"
 )
 
+// Flags describe various encoding options. The behavior may be actually implemented in the encoder, but
+// Flags field in Writer is used to set and pass them around.
+type Flags int
+
+const (
+	NilMapAsEmpty   Flags = 1 << iota // Encode nil map as '{}' rather than 'null'.
+	NilSliceAsEmpty                   // Encode nil slice as '[]' rather than 'null'.
+)
+
 // Writer is a JSON writer.
 type Writer struct {
+	Flags Flags
+
 	Error  error
 	Buffer buffer.Buffer
 }

@@ -18,7 +18,6 @@
 package idna // import "golang.org/x/text/internal/export/idna"
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"unicode/utf8"
@@ -27,16 +26,33 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
+// NOTE: Unlike common practice in Go APIs, the functions will return a
+// sanitized domain name in case of errors. Browsers sometimes use a partially
+// evaluated string as lookup.
+// TODO: the current error handling is, in my opinion, the least opinionated.
+// Other strategies are also viable, though:
+// Option 1) Return an empty string in case of error, but allow the user to
+//    specify explicitly which errors to ignore.
+// Option 2) Return the partially evaluated string if it is itself a valid
+//    string, otherwise return the empty string in case of error.
+// Option 3) Option 1 and 2.
+// Option 4) Always return an empty string for now and implement Option 1 as
+//    needed, and document that the return string may not be empty in case of
+//    error in the future.
+// I think Option 1 is best, but it is quite opinionated.
+
 // ToASCII converts a domain or domain label to its ASCII form. For example,
 // ToASCII("bücher.example.com") is "xn--bcher-kva.example.com", and
-// ToASCII("golang") is "golang".
+// ToASCII("golang") is "golang". If an error is encountered it will return
+// an error and a (partially) processed result.
 func ToASCII(s string) (string, error) {
 	return Resolve.process(s, true)
 }
 
 // ToUnicode converts a domain or domain label to its Unicode form. For example,
 // ToUnicode("xn--bcher-kva.example.com") is "bücher.example.com", and
-// ToUnicode("golang") is "golang".
+// ToUnicode("golang") is "golang". If an error is encountered it will return
+// an error and a (partially) processed result.
 func ToUnicode(s string) (string, error) {
 	return NonTransitional.process(s, false)
 }
@@ -45,20 +61,22 @@ func ToUnicode(s string) (string, error) {
 type Profile struct {
 	Transitional    bool
 	IgnoreSTD3Rules bool
-	IgnoreDNSLength bool
+	VerifyDNSLength bool
 	// ErrHandler      func(error)
 }
 
 // ToASCII converts a domain or domain label to its ASCII form. For example,
 // ToASCII("bücher.example.com") is "xn--bcher-kva.example.com", and
-// ToASCII("golang") is "golang".
+// ToASCII("golang") is "golang". If an error is encountered it will return
+// an error and a (partially) processed result.
 func (p *Profile) ToASCII(s string) (string, error) {
 	return p.process(s, true)
 }
 
 // ToUnicode converts a domain or domain label to its Unicode form. For example,
 // ToUnicode("xn--bcher-kva.example.com") is "bücher.example.com", and
-// ToUnicode("golang") is "golang".
+// ToUnicode("golang") is "golang". If an error is encountered it will return
+// an error and a (partially) processed result.
 func (p *Profile) ToUnicode(s string) (string, error) {
 	pp := *p
 	pp.Transitional = false
@@ -72,7 +90,7 @@ func (p *Profile) String() string {
 	if p.Transitional {
 		s = "Transitional"
 	} else {
-		s = "NonTraditional"
+		s = "NonTransitional"
 	}
 	if p.IgnoreSTD3Rules {
 		s += ":NoSTD3Rules"
@@ -108,15 +126,19 @@ var (
 	// bundle or block deviation characters.
 )
 
-// TODO: rethink error strategy
+type labelError struct{ label, code_ string }
 
-var (
-	// errDisallowed indicates a domain name contains a disallowed rune.
-	errDisallowed = errors.New("idna: disallowed rune")
+func (e labelError) code() string { return e.code_ }
+func (e labelError) Error() string {
+	return fmt.Sprintf("idna: invalid label %q", e.label)
+}
 
-	// errEmptyLabel indicates a label was empty.
-	errEmptyLabel = errors.New("idna: empty label")
-)
+type runeError rune
+
+func (e runeError) code() string { return "P1" }
+func (e runeError) Error() string {
+	return fmt.Sprintf("idna: disallowed rune %r", e)
+}
 
 // process implements the algorithm described in section 4 of UTS #46,
 // see http://www.unicode.org/reports/tr46.
@@ -136,7 +158,8 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 			continue
 		case disallowed:
 			if err == nil {
-				err = errDisallowed
+				r, _ := utf8.DecodeRuneInString(s[i:])
+				err = runeError(r)
 			}
 			continue
 		case mapped, deviation:
@@ -166,7 +189,7 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 	for ; len(s) > 0 && s[0] == '.'; s = s[1:] {
 	}
 	if s == "" {
-		return "", errors.New("idna: there are no labels")
+		return "", &labelError{s, "A4"}
 	}
 	labels := labelIter{orig: s}
 	for ; !labels.done(); labels.next() {
@@ -175,7 +198,7 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 			// Empty labels are not okay. The label iterator skips the last
 			// label if it is empty.
 			if err == nil {
-				err = errEmptyLabel
+				err = &labelError{s, "A4"}
 			}
 			continue
 		}
@@ -211,20 +234,20 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 				labels.set(a)
 			}
 			n := len(label)
-			if !p.IgnoreDNSLength && err == nil && (n == 0 || n > 63) {
-				err = fmt.Errorf("idna: label with invalid length %d", n)
+			if p.VerifyDNSLength && err == nil && (n == 0 || n > 63) {
+				err = &labelError{label, "A4"}
 			}
 		}
 	}
 	s = labels.result()
-	if toASCII && !p.IgnoreDNSLength && err == nil {
+	if toASCII && p.VerifyDNSLength && err == nil {
 		// Compute the length of the domain name minus the root label and its dot.
 		n := len(s)
 		if n > 0 && s[n-1] == '.' {
 			n--
 		}
 		if len(s) < 1 || n > 253 {
-			err = fmt.Errorf("idna: doman name with invalid length %d", n)
+			err = &labelError{s, "A4"}
 		}
 	}
 	return s, err
@@ -320,12 +343,12 @@ func (p *Profile) simplify(cat category) category {
 
 func (p *Profile) validateFromPunycode(s string) error {
 	if !norm.NFC.IsNormalString(s) {
-		return errors.New("idna: punycode is not normalized")
+		return &labelError{s, "V1"}
 	}
 	for i := 0; i < len(s); {
 		v, sz := trie.lookupString(s[i:])
 		if c := p.simplify(info(v).category()); c != valid && c != deviation {
-			return fmt.Errorf("idna: invalid character %+q in expanded punycode", s[i:i+sz])
+			return &labelError{s, "V6"}
 		}
 		i += sz
 	}
@@ -398,19 +421,19 @@ var joinStates = [][numJoinTypes]joinState{
 // already implicitly satisfied by the overall implementation.
 func (p *Profile) validate(s string) error {
 	if len(s) > 4 && s[2] == '-' && s[3] == '-' {
-		return errors.New("idna: label starts with ??--")
+		return &labelError{s, "V2"}
 	}
 	if s[0] == '-' || s[len(s)-1] == '-' {
-		return errors.New("idna: label may not start or end with '-'")
+		return &labelError{s, "V3"}
 	}
 	// TODO: merge the use of this in the trie.
 	v, sz := trie.lookupString(s)
 	x := info(v)
 	if x.isModifier() {
-		return fmt.Errorf("idna: label starts with modifier %U", []rune(s[:sz])[0])
+		return &labelError{s, "V5"}
 	}
 	if !bidirule.ValidString(s) {
-		return errors.New("idna: label violates Bidi Rule")
+		return &labelError{s, "B"}
 	}
 	// Quickly return in the absence of zero-width (non) joiners.
 	if strings.Index(s, zwj) == -1 && strings.Index(s, zwnj) == -1 {
@@ -435,7 +458,7 @@ func (p *Profile) validate(s string) error {
 		x = info(v)
 	}
 	if st == stateFAIL || st == stateAfter {
-		return errors.New("idna: label violates Context J rule")
+		return &labelError{s, "C"}
 	}
 	return nil
 }
