@@ -71,7 +71,7 @@
 			"importpath": "github.com/go-openapi/errors",
 			"repository": "https://github.com/go-openapi/errors",
 			"vcs": "git",
-			"revision": "4178436c9f2430cdd945c50301cfb61563b56573",
+			"revision": "49fe8b3a0e0d32a617d8d50c67f856ad6e45b28b",
 			"branch": "master",
 			"notests": true
 		},
@@ -87,7 +87,7 @@
 			"importpath": "github.com/go-openapi/jsonpointer",
 			"repository": "https://github.com/go-openapi/jsonpointer",
 			"vcs": "git",
-			"revision": "46af16f9f7b149af66e5d1bd010e3574dc06de98",
+			"revision": "8d96a2dc61536b690bd36b2e9df0b3c0b62825b2",
 			"branch": "master",
 			"notests": true
 		},
@@ -95,7 +95,7 @@
 			"importpath": "github.com/go-openapi/jsonreference",
 			"repository": "https://github.com/go-openapi/jsonreference",
 			"vcs": "git",
-			"revision": "13c6e3589ad90f49bd3e3bbe2c2cb3d7a4142272",
+			"revision": "36d33bfe519efae5632669801b180bf1a245da3b",
 			"branch": "master",
 			"notests": true
 		},
@@ -127,7 +127,7 @@
 			"importpath": "github.com/go-openapi/strfmt",
 			"repository": "https://github.com/go-openapi/strfmt",
 			"vcs": "git",
-			"revision": "0b340fc749dceec1f0800788854e17414e97bf6e",
+			"revision": "34fc3ba7c0f5fb615fda47a2b4fbd4c641b215f2",
 			"branch": "master",
 			"notests": true
 		},
