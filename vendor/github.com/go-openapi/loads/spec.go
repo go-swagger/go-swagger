@@ -22,6 +22,7 @@ import (
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
+	"path/filepath"
 )
 
 // JSONDoc loads a json document from either a file or a remote url
@@ -75,11 +76,12 @@ func JSONSpec(path string) (*Document, error) {
 // Document represents a swagger spec document
 type Document struct {
 	// specAnalyzer
-	Analyzer *analysis.Spec
-	spec     *spec.Swagger
-	origSpec *spec.Swagger
-	schema   *spec.Schema
-	raw      json.RawMessage
+	Analyzer     *analysis.Spec
+	spec         *spec.Swagger
+	specFilePath string
+	origSpec     *spec.Swagger
+	schema       *spec.Schema
+	raw          json.RawMessage
 }
 
 // Spec loads a new spec document
@@ -101,7 +103,13 @@ func Spec(path string) (*Document, error) {
 	if err != nil {
 		return nil, err
 	}
-	return Analyzed(b, "")
+
+	document, err := Analyzed(b, "")
+	if document != nil {
+		document.specFilePath = path
+	}
+
+	return document, err
 }
 
 // Analyzed creates a new analyzed spec document
@@ -134,12 +142,22 @@ func Analyzed(data json.RawMessage, version string) (*Document, error) {
 }
 
 // Expanded expands the ref fields in the spec document and returns a new spec document
-func (d *Document) Expanded() (*Document, error) {
+func (d *Document) Expanded(options... *spec.ExpandOptions) (*Document, error) {
 	swspec := new(spec.Swagger)
 	if err := json.Unmarshal(d.raw, swspec); err != nil {
 		return nil, err
 	}
-	if err := spec.ExpandSpec(swspec); err != nil {
+
+	var expandOptions *spec.ExpandOptions
+	if len(options) > 0 {
+		expandOptions = options[1]
+	} else {
+		expandOptions = &spec.ExpandOptions{
+			RelativeBase: filepath.Dir(d.specFilePath),
+		}
+	}
+
+	if err := spec.ExpandSpec(swspec, expandOptions); err != nil {
 		return nil, err
 	}
 

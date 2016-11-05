@@ -5,6 +5,7 @@
 package precis
 
 import (
+	"bytes"
 	"errors"
 	"unicode/utf8"
 
@@ -172,10 +173,9 @@ func (p *Profile) Append(dst, src []byte) ([]byte, error) {
 	return append(dst, b...), nil
 }
 
-// Bytes returns a new byte slice with the result of applying the profile to b.
-func (p *Profile) Bytes(b []byte) ([]byte, error) {
+func processBytes(p *Profile, b []byte, key bool) ([]byte, error) {
 	var buf buffers
-	b, err := buf.enforce(p, b, false)
+	b, err := buf.enforce(p, b, key)
 	if err != nil {
 		return nil, err
 	}
@@ -187,16 +187,42 @@ func (p *Profile) Bytes(b []byte) ([]byte, error) {
 	return b, nil
 }
 
-// String returns a string with the result of applying the profile to s.
-func (p *Profile) String(s string) (string, error) {
-	// TODO: ASCII fast path to reduce allocations, if options allow.
+// Bytes returns a new byte slice with the result of applying the profile to b.
+func (p *Profile) Bytes(b []byte) ([]byte, error) {
+	return processBytes(p, b, false)
+}
 
+// AppendCompareKey appends the result of applying p to src (including any
+// optional rules to make strings comparable or useful in a map key such as
+// applying lowercasing) writing the result to dst. It returns an error if the
+// input string is invalid.
+func (p *Profile) AppendCompareKey(dst, src []byte) ([]byte, error) {
 	var buf buffers
-	b, err := buf.enforce(p, []byte(s), false)
+	b, err := buf.enforce(p, src, true)
+	if err != nil {
+		return nil, err
+	}
+	return append(dst, b...), nil
+}
+
+func processString(p *Profile, s string, key bool) (string, error) {
+	var buf buffers
+	b, err := buf.enforce(p, []byte(s), key)
 	if err != nil {
 		return "", err
 	}
 	return string(b), nil
+}
+
+// String returns a string with the result of applying the profile to s.
+func (p *Profile) String(s string) (string, error) {
+	return processString(p, s, false)
+}
+
+// CompareKey returns a string that can be used for comparison, hashing, or
+// collation.
+func (p *Profile) CompareKey(s string) (string, error) {
+	return processString(p, s, true)
 }
 
 // Compare enforces both strings, and then compares them for bit-string identity
@@ -205,19 +231,18 @@ func (p *Profile) String(s string) (string, error) {
 func (p *Profile) Compare(a, b string) bool {
 	var buf buffers
 
-	str, err := buf.enforce(p, []byte(a), true)
+	akey, err := buf.enforce(p, []byte(a), true)
 	if err != nil {
 		return false
 	}
-	a = string(str)
 
-	str, err = buf.enforce(p, []byte(b), true)
+	buf = buffers{}
+	bkey, err := buf.enforce(p, []byte(b), true)
 	if err != nil {
 		return false
 	}
-	b = string(str)
 
-	return a == b
+	return bytes.Compare(akey, bkey) == 0
 }
 
 // Allowed returns a runes.Set containing every rune that is a member of the
