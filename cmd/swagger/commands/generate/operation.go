@@ -34,6 +34,7 @@ type Operation struct {
 	NoStruct      bool     `long:"skip-parameters" description:"when present will not generate the parameter model struct"`
 	NoResponses   bool     `long:"skip-responses" description:"when present will not generate the response model struct"`
 	NoValidator   bool     `long:"skip-validator" description:"when present will not generate a model validator"`
+	NoURLBuilder  bool     `long:"skip-url-builder" description:"when present will not generate a URL builder"`
 	DumpData      bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
 }
 
@@ -64,6 +65,7 @@ func (o *Operation) Execute(args []string) error {
 		IncludeResponses:  !o.NoResponses,
 		IncludeParameters: !o.NoStruct,
 		IncludeValidator:  !o.NoValidator,
+		IncludeURLBuilder: !o.NoURLBuilder,
 		Tags:              o.Tags,
 	}
 

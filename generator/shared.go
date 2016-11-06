@@ -160,6 +160,14 @@ func DefaultSectionOpts(gen *GenOpts, client bool) {
 					FileName: "{{ (snakize (pascalize .Name)) }}_parameters.go",
 				})
 			}
+			if gen.IncludeURLBuilder {
+				ops = append(ops, TemplateOpts{
+					Name:     "urlbuilder",
+					Source:   "asset:serverUrlbuilder",
+					Target:   "{{ if gt (len .Tags) 0 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}",
+					FileName: "{{ (snakize (pascalize .Name)) }}_urlbuilder.go",
+				})
+			}
 			if gen.IncludeResponses {
 				ops = append(ops, TemplateOpts{
 					Name:     "responses",
@@ -270,36 +278,38 @@ type SectionOpts struct {
 
 // GenOpts the options for the generator
 type GenOpts struct {
-	Spec              string
-	APIPackage        string
-	ModelPackage      string
-	ServerPackage     string
-	ClientPackage     string
-	Principal         string
-	Target            string
-	Sections          SectionOpts
-	LanguageOpts      *LanguageOpts
-	TypeMapping       map[string]string
-	Imports           map[string]string
-	DumpData          bool
-	DefaultScheme     string
-	DefaultProduces   string
-	DefaultConsumes   string
 	IncludeModel      bool
 	IncludeValidator  bool
 	IncludeHandler    bool
 	IncludeParameters bool
 	IncludeResponses  bool
+	IncludeURLBuilder bool
 	IncludeMain       bool
 	IncludeSupport    bool
 	ExcludeSpec       bool
-	TemplateDir       string
+	DumpData          bool
 	WithContext       bool
-	Operations        []string
-	Models            []string
-	Tags              []string
-	Name              string
 	defaultsEnsured   bool
+
+	Spec            string
+	APIPackage      string
+	ModelPackage    string
+	ServerPackage   string
+	ClientPackage   string
+	Principal       string
+	Target          string
+	Sections        SectionOpts
+	LanguageOpts    *LanguageOpts
+	TypeMapping     map[string]string
+	Imports         map[string]string
+	DefaultScheme   string
+	DefaultProduces string
+	DefaultConsumes string
+	TemplateDir     string
+	Operations      []string
+	Models          []string
+	Tags            []string
+	Name            string
 }
 
 // TargetPath returns the target path relative to the server package
@@ -400,13 +410,13 @@ func (g *GenOpts) location(t *TemplateOpts, data interface{}) (string, string, e
 
 	// pretty.Println(data)
 	var pthBuf bytes.Buffer
-	if pthTpl.Execute(&pthBuf, d); err != nil {
-		return "", "", err
+	if e := pthTpl.Execute(&pthBuf, d); e != nil {
+		return "", "", e
 	}
 
 	var fNameBuf bytes.Buffer
-	if fNameTpl.Execute(&fNameBuf, d); err != nil {
-		return "", "", err
+	if e := fNameTpl.Execute(&fNameBuf, d); e != nil {
+		return "", "", e
 	}
 	return pthBuf.String(), fileName(fNameBuf.String()), nil
 }
@@ -466,8 +476,8 @@ func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
 		if Debug {
 			log.Printf("skipping creating directory %q for %s because it's an empty string", dir, t.Name)
 		}
-		if err := os.MkdirAll(dir, 0755); err != nil {
-			return err
+		if e := os.MkdirAll(dir, 0700); e != nil {
+			return e
 		}
 	}
 

@@ -79,7 +79,7 @@ type TaskCard struct {
 	// a task can be tagged with text blurbs.
 	// Max Items: 5
 	// Unique: true
-	Tags []string `json:"tags,omitempty"`
+	Tags []string `json:"tags"`
 
 	// The title of the task.
 	//
@@ -227,6 +227,16 @@ func (m *TaskCard) validateSeverity(formats strfmt.Registry) error {
 
 var taskCardTypeStatusPropEnum []interface{}
 
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["open","closed","ignored","rejected"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		taskCardTypeStatusPropEnum = append(taskCardTypeStatusPropEnum, v)
+	}
+}
+
 const (
 	taskCardStatusOpen     string = "open"
 	taskCardStatusClosed   string = "closed"
@@ -236,15 +246,6 @@ const (
 
 // prop value enum
 func (m *TaskCard) validateStatusEnum(path, location string, value string) error {
-	if taskCardTypeStatusPropEnum == nil {
-		var res []string
-		if err := json.Unmarshal([]byte(`["open","closed","ignored","rejected"]`), &res); err != nil {
-			return err
-		}
-		for _, v := range res {
-			taskCardTypeStatusPropEnum = append(taskCardTypeStatusPropEnum, v)
-		}
-	}
 	if err := validate.Enum(path, location, value, taskCardTypeStatusPropEnum); err != nil {
 		return err
 	}

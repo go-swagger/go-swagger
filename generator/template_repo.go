@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-openapi/inflect"
 	"github.com/go-openapi/swag"
+	"github.com/kr/pretty"
 )
 
 var templates *Repository
@@ -95,6 +96,7 @@ var FuncMap template.FuncMap = map[string]interface{}{
 		lines := strings.Split(str, "\n")
 		return strings.Join(lines, "\n// ")
 	},
+	"inspect": pretty.Sprint,
 }
 
 func init() {
@@ -121,6 +123,7 @@ var assets = map[string][]byte{
 	"swagger_json_embed.gotmpl":             MustAsset("templates/swagger_json_embed.gotmpl"),
 
 	"server/parameter.gotmpl":    MustAsset("templates/server/parameter.gotmpl"),
+	"server/urlbuilder.gotmpl":   MustAsset("templates/server/urlbuilder.gotmpl"),
 	"server/responses.gotmpl":    MustAsset("templates/server/responses.gotmpl"),
 	"server/operation.gotmpl":    MustAsset("templates/server/operation.gotmpl"),
 	"server/builder.gotmpl":      MustAsset("templates/server/builder.gotmpl"),
@@ -231,9 +234,9 @@ func (t *Repository) LoadDir(templatePath string) error {
 
 		if strings.HasSuffix(path, ".gotmpl") {
 			assetName := strings.TrimPrefix(path, templatePath)
-			if data, err := ioutil.ReadFile(path); err == nil {
-				if err := t.AddFile(assetName, string(data)); err != nil {
-					log.Fatal(err)
+			if data, e := ioutil.ReadFile(path); e == nil {
+				if ee := t.AddFile(assetName, string(data)); ee != nil {
+					log.Fatal(ee)
 				}
 			}
 		}

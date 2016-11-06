@@ -62,6 +62,7 @@ func (s *Server) Execute(args []string) error {
 		IncludeHandler:    !s.SkipOperations,
 		IncludeParameters: !s.SkipOperations,
 		IncludeResponses:  !s.SkipOperations,
+		IncludeURLBuilder: !s.SkipOperations,
 		IncludeMain:       !s.ExcludeMain,
 		IncludeSupport:    !s.SkipSupport,
 		ExcludeSpec:       s.ExcludeSpec,
@@ -74,16 +75,16 @@ func (s *Server) Execute(args []string) error {
 		Name:              s.Name,
 	}
 
-	if err := opts.EnsureDefaults(false); err != nil {
-		return err
+	if e := opts.EnsureDefaults(false); e != nil {
+		return e
 	}
 
-	if err := configureOptsFromConfig(cfg, opts); err != nil {
-		return err
+	if e := configureOptsFromConfig(cfg, opts); e != nil {
+		return e
 	}
 
-	if err := generator.GenerateServer(s.Name, s.Models, s.Operations, opts); err != nil {
-		return err
+	if e := generator.GenerateServer(s.Name, s.Models, s.Operations, opts); e != nil {
+		return e
 	}
 
 	rp, err := filepath.Rel(".", opts.Target)

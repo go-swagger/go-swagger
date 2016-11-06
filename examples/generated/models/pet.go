@@ -33,7 +33,7 @@ type Pet struct {
 	Status string `json:"status,omitempty"`
 
 	// tags
-	Tags []*Tag `json:"tags,omitempty"`
+	Tags []*Tag `json:"tags"`
 }
 
 // Validate validates this pet

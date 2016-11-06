@@ -249,35 +249,35 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 }
 
 type schemaGenContext struct {
-	Path               string
-	Name               string
-	ParamName          string
-	Accessor           string
-	Receiver           string
-	IndexVar           string
-	KeyVar             string
-	ValueExpr          string
-	Schema             spec.Schema
 	Required           bool
 	AdditionalProperty bool
-	TypeResolver       *typeResolver
 	Untyped            bool
 	Named              bool
 	RefHandled         bool
 	IsVirtual          bool
 	IsTuple            bool
+	IncludeValidator   bool
+	IncludeModel       bool
+	Index              int
 
-	Index int
+	Path         string
+	Name         string
+	ParamName    string
+	Accessor     string
+	Receiver     string
+	IndexVar     string
+	KeyVar       string
+	ValueExpr    string
+	Container    string
+	Schema       spec.Schema
+	TypeResolver *typeResolver
 
-	GenSchema        GenSchema
-	Dependencies     []string
-	Container        string
-	ExtraSchemas     map[string]GenSchema
-	Discriminator    *discor
-	Discriminated    *discee
-	Discrimination   *discInfo
-	IncludeValidator bool
-	IncludeModel     bool
+	GenSchema      GenSchema
+	Dependencies   []string
+	ExtraSchemas   map[string]GenSchema
+	Discriminator  *discor
+	Discriminated  *discee
+	Discrimination *discInfo
 }
 
 func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContext {
@@ -317,6 +317,7 @@ func (sg *schemaGenContext) NewAdditionalItems(schema *spec.Schema) *schemaGenCo
 	if Debug {
 		log.Printf("new additional items\n")
 	}
+
 	pg := sg.shallowClone()
 	indexVar := pg.IndexVar
 	pg.Name = sg.Name + " items"
@@ -908,10 +909,7 @@ func (sg *schemaGenContext) buildArray() error {
 		sg.ExtraSchemas[pg.Name] = pg.GenSchema
 		sg.Schema.Items.Schema = spec.RefProperty("#/definitions/" + pg.Name)
 		sg.IsVirtual = true
-		if err := sg.makeGenSchema(); err != nil {
-			return err
-		}
-		return nil
+		return sg.makeGenSchema()
 	}
 
 	elProp := sg.NewSliceBranch(sg.Schema.Items.Schema)
@@ -1132,7 +1130,7 @@ func (sg *schemaGenContext) buildAliased() error {
 	}
 
 	if sg.GenSchema.IsInterface {
-		sg.GenSchema.IsAliased = sg.GenSchema.GoType != "interface{}"
+		sg.GenSchema.IsAliased = sg.GenSchema.GoType != iface
 	}
 	if sg.GenSchema.IsMap {
 		sg.GenSchema.IsAliased = !strings.HasPrefix(sg.GenSchema.GoType, "map[")
@@ -1164,7 +1162,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.Example = ex
 	sg.GenSchema.Path = sg.Path
 	sg.GenSchema.IndexVar = sg.IndexVar
-	sg.GenSchema.Location = "body"
+	sg.GenSchema.Location = body
 	sg.GenSchema.ValueExpression = sg.ValueExpr
 	sg.GenSchema.KeyVar = sg.KeyVar
 	sg.GenSchema.Name = sg.GoName()
@@ -1184,16 +1182,16 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	if returns {
 		return nil
 	}
-	if err := sg.liftSpecialAllOf(); err != nil {
-		return err
+	if e := sg.liftSpecialAllOf(); e != nil {
+		return e
 	}
 	nullableOverride := sg.GenSchema.IsNullable
 
 	if sg.Container == "" {
 		sg.Container = sg.GenSchema.Name
 	}
-	if err := sg.buildAllOf(); err != nil {
-		return err
+	if e := sg.buildAllOf(); e != nil {
+		return e
 	}
 
 	var tpe resolvedType
@@ -1214,8 +1212,8 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	if Debug {
 		log.Println("gschema nullable", sg.GenSchema.IsNullable)
 	}
-	if err := sg.buildAdditionalProperties(); err != nil {
-		return err
+	if e := sg.buildAdditionalProperties(); e != nil {
+		return e
 	}
 
 	prev := sg.GenSchema

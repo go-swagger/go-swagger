@@ -196,6 +196,30 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/kr/pretty",
+			"repository": "https://github.com/kr/pretty",
+			"vcs": "git",
+			"revision": "cfb55aafdaf3ec08f0db22699ab822c50091b1c4",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/kr/pty",
+			"repository": "https://github.com/kr/pty",
+			"vcs": "git",
+			"revision": "ce7fa45920dc37a92de8377972e52bc55ffa8d57",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/kr/text",
+			"repository": "https://github.com/kr/text",
+			"vcs": "git",
+			"revision": "7cafcd837844e784b526369c9bce262804aebc60",
+			"branch": "main",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/magiconair/properties",
 			"repository": "https://github.com/magiconair/properties",
 			"vcs": "git",
@@ -235,14 +259,6 @@
 			"repository": "https://github.com/mitchellh/mapstructure",
 			"vcs": "git",
 			"revision": "f3009df150dadf309fdee4a54ed65c124afad715",
-			"branch": "master",
-			"notests": true
-		},
-		{
-			"importpath": "github.com/naoina/denco",
-			"repository": "https://github.com/naoina/denco",
-			"vcs": "git",
-			"revision": "a2656d3ed566ac9912ba18fcfc942c562d9463c7",
 			"branch": "master",
 			"notests": true
 		},

@@ -346,6 +346,7 @@ func (a *appGenerator) makeConsumes() (consumes GenSerGroups, consumesJSON bool)
 				MediaType:      cons,
 				Implementation: knownConsumers[nm],
 			})
+			sort.Sort(ser.AllSerializers)
 			continue
 		}
 
@@ -383,6 +384,7 @@ func (a *appGenerator) makeConsumes() (consumes GenSerGroups, consumesJSON bool)
 		})
 		consumesJSON = true
 	}
+	sort.Sort(consumes)
 	return
 }
 
@@ -442,7 +444,7 @@ func (a *appGenerator) makeProduces() (produces GenSerGroups, producesJSON bool)
 		})
 		producesJSON = true
 	}
-
+	sort.Sort(produces)
 	return
 }
 

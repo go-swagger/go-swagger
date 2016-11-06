@@ -213,9 +213,11 @@ func TestRenderOperation_InstagramSearch(t *testing.T) {
 				ff, err := opts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
-					//fmt.Println(res)
+					// fmt.Println(res)
 					assertInCode(t, "Data []*DataItems0 `json:\"data\"`", res)
 					assertInCode(t, "models.Media", res)
+				} else {
+					fmt.Println(buf.String())
 				}
 			}
 		}
