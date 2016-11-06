@@ -122,7 +122,9 @@ type GenHeader struct {
 
 	Package      string
 	ReceiverName string
+	IndexVar     string
 
+	ID   string
 	Name string
 	Path string
 
@@ -131,8 +133,15 @@ type GenHeader struct {
 	Default     interface{}
 	HasDefault  bool
 
+	CollectionFormat string
+
+	Child  *GenItems
+	Parent *GenItems
+
 	Converter string
 	Formatter string
+
+	ZeroValue string
 }
 
 // GenHeaders is a sorted collection of headers for codegen
@@ -172,7 +181,6 @@ type GenParameter struct {
 
 	Default         interface{}
 	HasDefault      bool
-	Enum            []interface{}
 	ZeroValue       string
 	AllowEmptyValue bool
 }

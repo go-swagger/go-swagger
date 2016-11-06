@@ -72,10 +72,12 @@ func TestMakeResponseHeader(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
 	if assert.NoError(t, err) {
 		hdr := findResponseHeader(&b.Operation, 200, "X-Rate-Limit")
-		gh := b.MakeHeader("a", "X-Rate-Limit", *hdr)
-		assert.True(t, gh.IsPrimitive)
-		assert.Equal(t, "int32", gh.GoType)
-		assert.Equal(t, "X-Rate-Limit", gh.Name)
+		gh, er := b.MakeHeader("a", "X-Rate-Limit", *hdr)
+		if assert.NoError(t, er) {
+			assert.True(t, gh.IsPrimitive)
+			assert.Equal(t, "int32", gh.GoType)
+			assert.Equal(t, "X-Rate-Limit", gh.Name)
+		}
 	}
 }
 
@@ -99,11 +101,13 @@ func TestMakeResponseHeaderDefaultValues(t *testing.T) {
 			// t.Logf("tc: %+v", tc)
 			hdr := findResponseHeader(&b.Operation, 200, tc.name)
 			assert.NotNil(t, hdr)
-			gh := b.MakeHeader("a", tc.name, *hdr)
-			assert.True(t, gh.IsPrimitive)
-			assert.Equal(t, tc.typeStr, gh.GoType)
-			assert.Equal(t, tc.name, gh.Name)
-			assert.Exactly(t, tc.defaultValue, gh.Default)
+			gh, er := b.MakeHeader("a", tc.name, *hdr)
+			if assert.NoError(t, er) {
+				assert.True(t, gh.IsPrimitive)
+				assert.Equal(t, tc.typeStr, gh.GoType)
+				assert.Equal(t, tc.name, gh.Name)
+				assert.Exactly(t, tc.defaultValue, gh.Default)
+			}
 		}
 	}
 }

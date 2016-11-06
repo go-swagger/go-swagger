@@ -41,12 +41,17 @@ var {{ .IndexVar }}r {{ .GoType }}
 }
 
 for {{ .IndexVar }} := 0; {{ .IndexVar }} < {{ .IndexVar }}sz; {{ .IndexVar }}++ {
-  {{ if or .Child.IsCustomFormatter .Child.IsPrimitive }}{{ if .Child.Converter }}value, err := {{ .Child.Converter }}({{ .IndexVar }}c[{{ .IndexVar }}])
+  {{ if or .Child.IsCustomFormatter .Child.IsPrimitive -}}
+  {{ if or .Child.Converter .Child.IsCustomFormatter -}}
+  {{ if .Child.Converter  }}value, err := {{ .Child.Converter }}({{ .IndexVar }}c[{{ .IndexVar }}])
+  {{- else -}}
+  value, err := formats.Parse({{ .IndexVar }}c[{{ .IndexVar }}])
+  {{ end }}
   if err != nil {
     return errors.InvalidType({{ .Child.Path }}, {{ printf "%q" .Location }}, "{{ .Child.GoType }}", {{ .IndexVar }}c[{{ .IndexVar }}])
   }
 
-  if err := {{ .IndexVar }}ValidateElement({{ .IndexVar }}, {{ if .Child.Converter }}value{{ else }}{{ .Child.ValueExpression }}{{ end }}); err != nil {
+  if err := {{ .IndexVar }}ValidateElement({{ .IndexVar }}, {{ if or .Child.Converter .Child.IsCustomFormatter }}value{{ else }}{{ .Child.ValueExpression }}{{ end }}); err != nil {
     return err
   }
   {{ .IndexVar }}r = append({{ .IndexVar }}r, value)

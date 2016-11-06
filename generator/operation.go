@@ -527,7 +527,11 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 	}
 
 	for hName, header := range resp.Headers {
-		res.Headers = append(res.Headers, b.MakeHeader(receiver, hName, header))
+		hdr, err := b.MakeHeader(receiver, hName, header)
+		if err != nil {
+			return GenResponse{}, err
+		}
+		res.Headers = append(res.Headers, hdr)
 	}
 	sort.Sort(res.Headers)
 
@@ -577,7 +581,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 	return res, nil
 }
 
-func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) GenHeader {
+func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) (GenHeader, error) {
 	hasNumberValidation := hdr.Maximum != nil || hdr.Minimum != nil || hdr.MultipleOf != nil
 	hasStringValidation := hdr.MaxLength != nil || hdr.MinLength != nil || hdr.Pattern != ""
 	hasSliceValidations := hdr.MaxItems != nil || hdr.MinItems != nil || hdr.UniqueItems
@@ -585,7 +589,7 @@ func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) Ge
 
 	tpe := typeForHeader(hdr) //simpleResolvedType(hdr.Type, hdr.Format, hdr.Items)
 
-	return GenHeader{
+	res := GenHeader{
 		sharedValidations: sharedValidations{
 			Required:            true,
 			Maximum:             hdr.Maximum,
@@ -603,17 +607,68 @@ func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) Ge
 			HasValidations:      hasValidations,
 			HasSliceValidations: hasSliceValidations,
 		},
-		resolvedType: tpe,
-		Package:      b.APIPackage,
-		ReceiverName: receiver,
-		Name:         name,
-		Path:         fmt.Sprintf("%q", name),
-		Description:  hdr.Description,
-		Default:      hdr.Default,
-		HasDefault:   hdr.Default != nil,
-		Converter:    stringConverters[tpe.GoType],
-		Formatter:    stringFormatters[tpe.GoType],
+		resolvedType:     tpe,
+		Package:          b.APIPackage,
+		ReceiverName:     receiver,
+		ID:               swag.ToGoName(name),
+		Name:             name,
+		Path:             fmt.Sprintf("%q", name),
+		Description:      hdr.Description,
+		Default:          hdr.Default,
+		HasDefault:       hdr.Default != nil,
+		Converter:        stringConverters[tpe.GoType],
+		Formatter:        stringFormatters[tpe.GoType],
+		ZeroValue:        tpe.Zero(),
+		CollectionFormat: hdr.CollectionFormat,
+		IndexVar:         "i",
 	}
+
+	if hdr.Items != nil {
+		pi, err := b.MakeHeaderItem(receiver, name+" "+res.IndexVar, res.IndexVar+"i", "fmt.Sprintf(\"%s.%v\", \"header\", "+res.IndexVar+")", res.Name+"I", hdr.Items, nil)
+		if err != nil {
+			return GenHeader{}, err
+		}
+		res.Child = &pi
+	}
+
+	return res, nil
+}
+
+func (b *codeGenOpBuilder) MakeHeaderItem(receiver, paramName, indexVar, path, valueExpression string, items, parent *spec.Items) (GenItems, error) {
+	var res GenItems
+	res.resolvedType = simpleResolvedType(items.Type, items.Format, items.Items)
+	res.sharedValidations = sharedValidations{
+		Maximum:          items.Maximum,
+		ExclusiveMaximum: items.ExclusiveMaximum,
+		Minimum:          items.Minimum,
+		ExclusiveMinimum: items.ExclusiveMinimum,
+		MaxLength:        items.MaxLength,
+		MinLength:        items.MinLength,
+		Pattern:          items.Pattern,
+		MaxItems:         items.MaxItems,
+		MinItems:         items.MinItems,
+		UniqueItems:      items.UniqueItems,
+		MultipleOf:       items.MultipleOf,
+		Enum:             items.Enum,
+	}
+	res.Name = paramName
+	res.Path = path
+	res.Location = "header"
+	res.ValueExpression = valueExpression
+	res.CollectionFormat = items.CollectionFormat
+	res.Converter = stringConverters[res.GoType]
+	res.Formatter = stringFormatters[res.GoType]
+
+	if items.Items != nil {
+		hi, err := b.MakeHeaderItem(receiver, paramName+" "+indexVar, indexVar+"i", "fmt.Sprintf(\"%s.%v\", \"header\", "+indexVar+")", valueExpression+"I", items.Items, items)
+		if err != nil {
+			return GenItems{}, err
+		}
+		res.Child = &hi
+		hi.Parent = &res
+	}
+
+	return res, nil
 }
 
 func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path, valueExpression, location string, resolver *typeResolver, items, parent *spec.Items) (GenItems, error) {
@@ -684,7 +739,6 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		BodyParam:        nil,
 		Default:          param.Default,
 		HasDefault:       param.Default != nil,
-		Enum:             param.Enum,
 		Description:      param.Description,
 		ReceiverName:     receiver,
 		CollectionFormat: param.CollectionFormat,

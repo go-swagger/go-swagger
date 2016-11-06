@@ -664,6 +664,78 @@ func TestGenParameter_Issue511(t *testing.T) {
 	}
 }
 
+func TestGenParameter_Issue628_Collection(t *testing.T) {
+	assert := assert.New(t)
+
+	gen, err := opBuilder("collection", "../fixtures/bugs/628/swagger.yml")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("serverParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertInCode(t, `value, err := formats.Parse(ic[i])`, res)
+					assertInCode(t, `ir = append(ir, value)`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestGenParameter_Issue628_Single(t *testing.T) {
+	assert := assert.New(t)
+
+	gen, err := opBuilder("single", "../fixtures/bugs/628/swagger.yml")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("serverParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertInCode(t, `value, err := formats.Parse("uuid", raw)`, res)
+					assertInCode(t, `o.WorkspaceID = *(value.(*strfmt.UUID))`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestGenParameter_Issue628_Details(t *testing.T) {
+	assert := assert.New(t)
+
+	gen, err := opBuilder("details", "../fixtures/bugs/628/swagger.yml")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("serverParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertInCode(t, `value, err := formats.Parse("uuid", raw)`, res)
+					assertInCode(t, `o.ID = *(value.(*strfmt.UUID))`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
 func TestGenParameter_Issue710(t *testing.T) {
 	assert := assert.New(t)
 
