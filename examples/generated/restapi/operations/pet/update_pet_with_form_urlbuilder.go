@@ -21,15 +21,15 @@ type UpdatePetWithFormURL struct {
 func (o *UpdatePetWithFormURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var path = "/pets/{petId}"
+	var _path = "/pets/{petId}"
 
 	petID := o.PetID
 	if petID != "" {
-		path = strings.Replace(path, "{petId}", petID, -1)
+		_path = strings.Replace(_path, "{petId}", petID, -1)
 	} else {
 		return nil, errors.New("PetID is required on UpdatePetWithFormURL")
 	}
-	result.Path = path
+	result.Path = _path
 
 	return &result, nil
 }

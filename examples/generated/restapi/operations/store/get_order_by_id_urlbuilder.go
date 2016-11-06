@@ -21,15 +21,15 @@ type GetOrderByIDURL struct {
 func (o *GetOrderByIDURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var path = "/stores/order/{orderId}"
+	var _path = "/stores/order/{orderId}"
 
 	orderID := o.OrderID
 	if orderID != "" {
-		path = strings.Replace(path, "{orderId}", orderID, -1)
+		_path = strings.Replace(_path, "{orderId}", orderID, -1)
 	} else {
 		return nil, errors.New("OrderID is required on GetOrderByIDURL")
 	}
-	result.Path = path
+	result.Path = _path
 
 	return &result, nil
 }

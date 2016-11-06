@@ -16,9 +16,9 @@ type CreateTaskURL struct {
 func (o *CreateTaskURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var path = "/tasks"
+	var _path = "/tasks"
 
-	result.Path = path
+	result.Path = _path
 
 	return &result, nil
 }

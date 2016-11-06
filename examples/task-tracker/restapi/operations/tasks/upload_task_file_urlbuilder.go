@@ -23,15 +23,15 @@ type UploadTaskFileURL struct {
 func (o *UploadTaskFileURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var path = "/tasks/{id}/files"
+	var _path = "/tasks/{id}/files"
 
 	id := swag.FormatInt64(o.ID)
 	if id != "" {
-		path = strings.Replace(path, "{id}", id, -1)
+		_path = strings.Replace(_path, "{id}", id, -1)
 	} else {
 		return nil, errors.New("ID is required on UploadTaskFileURL")
 	}
-	result.Path = path
+	result.Path = _path
 
 	return &result, nil
 }

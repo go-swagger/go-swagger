@@ -23,15 +23,15 @@ type DeletePetURL struct {
 func (o *DeletePetURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var path = "/pets/{petId}"
+	var _path = "/pets/{petId}"
 
 	petID := swag.FormatInt64(o.PetID)
 	if petID != "" {
-		path = strings.Replace(path, "{petId}", petID, -1)
+		_path = strings.Replace(_path, "{petId}", petID, -1)
 	} else {
 		return nil, errors.New("PetID is required on DeletePetURL")
 	}
-	result.Path = path
+	result.Path = _path
 
 	return &result, nil
 }

@@ -23,9 +23,9 @@ type FindTodosURL struct {
 func (o *FindTodosURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var path = "/"
+	var _path = "/"
 
-	result.Path = path
+	result.Path = _path
 
 	qs := make(url.Values)
 

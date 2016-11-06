@@ -16,9 +16,9 @@ type AddPetURL struct {
 func (o *AddPetURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var path = "/pets"
+	var _path = "/pets"
 
-	result.Path = path
+	result.Path = _path
 
 	return &result, nil
 }

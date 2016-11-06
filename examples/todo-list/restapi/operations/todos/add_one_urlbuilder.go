@@ -16,9 +16,9 @@ type AddOneURL struct {
 func (o *AddOneURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var path = "/"
+	var _path = "/"
 
-	result.Path = path
+	result.Path = _path
 
 	return &result, nil
 }

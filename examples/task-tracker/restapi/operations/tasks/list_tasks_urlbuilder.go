@@ -25,9 +25,9 @@ type ListTasksURL struct {
 func (o *ListTasksURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var path = "/tasks"
+	var _path = "/tasks"
 
-	result.Path = path
+	result.Path = _path
 
 	qs := make(url.Values)
 

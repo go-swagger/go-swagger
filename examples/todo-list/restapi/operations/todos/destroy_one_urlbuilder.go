@@ -21,15 +21,15 @@ type DestroyOneURL struct {
 func (o *DestroyOneURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var path = "/{id}"
+	var _path = "/{id}"
 
 	id := o.ID
 	if id != "" {
-		path = strings.Replace(path, "{id}", id, -1)
+		_path = strings.Replace(_path, "{id}", id, -1)
 	} else {
 		return nil, errors.New("ID is required on DestroyOneURL")
 	}
-	result.Path = path
+	result.Path = _path
 
 	return &result, nil
 }

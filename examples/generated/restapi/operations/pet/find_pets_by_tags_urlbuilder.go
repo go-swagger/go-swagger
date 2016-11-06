@@ -22,9 +22,9 @@ type FindPetsByTagsURL struct {
 func (o *FindPetsByTagsURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var path = "/pets/findByTags"
+	var _path = "/pets/findByTags"
 
-	result.Path = path
+	result.Path = _path
 
 	qs := make(url.Values)
 
