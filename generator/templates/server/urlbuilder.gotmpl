@@ -88,17 +88,17 @@ type {{ pascalize .Name }}URL struct {
 func ({{ .ReceiverName }} *{{ pascalize .Name }}URL) Build() (*url.URL, error) {
   var result url.URL
 
-  var path = {{ printf "%q" .Path }}
+  var _path = {{ printf "%q" .Path }}
   {{ range .PathParams }}
   {{ varname .ID }} := {{ if .Formatter }}{{ .Formatter }}({{ .ReceiverName }}.{{ pascalize .ID }}){{ else }}{{ .ReceiverName }}.{{ pascalize .ID }}{{ if .IsCustomFormatter }}.String(){{end}}{{end}}
   if {{ varname .ID }} != "" {
-    path = strings.Replace(path, "{{ printf "{%s}" .Name }}", {{ varname .ID }}, -1)
+    _path = strings.Replace(_path, "{{ printf "{%s}" .Name }}", {{ varname .ID }}, -1)
   } else {
     return nil, errors.New("{{ pascalize .ID }} is required on {{ pascalize $.Name }}URL")
   }
 
   {{- end }}
-  result.Path = path
+  result.Path = _path
 
   {{ if gt (len .QueryParams) 0 -}}
   qs := make(url.Values)
