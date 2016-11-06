@@ -21,9 +21,9 @@ type LoginUserURL struct {
 func (o *LoginUserURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var path = "/users/login"
+	var _path = "/users/login"
 
-	result.Path = path
+	result.Path = _path
 
 	qs := make(url.Values)
 

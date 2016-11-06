@@ -16,9 +16,9 @@ type CreateUserURL struct {
 func (o *CreateUserURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var path = "/users"
+	var _path = "/users"
 
-	result.Path = path
+	result.Path = _path
 
 	return &result, nil
 }

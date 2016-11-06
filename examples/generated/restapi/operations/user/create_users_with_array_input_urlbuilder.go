@@ -16,9 +16,9 @@ type CreateUsersWithArrayInputURL struct {
 func (o *CreateUsersWithArrayInputURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var path = "/users/createWithArray"
+	var _path = "/users/createWithArray"
 
-	result.Path = path
+	result.Path = _path
 
 	return &result, nil
 }

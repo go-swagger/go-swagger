@@ -23,15 +23,15 @@ type GetTaskDetailsURL struct {
 func (o *GetTaskDetailsURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var path = "/tasks/{id}"
+	var _path = "/tasks/{id}"
 
 	id := swag.FormatInt64(o.ID)
 	if id != "" {
-		path = strings.Replace(path, "{id}", id, -1)
+		_path = strings.Replace(_path, "{id}", id, -1)
 	} else {
 		return nil, errors.New("ID is required on GetTaskDetailsURL")
 	}
-	result.Path = path
+	result.Path = _path
 
 	return &result, nil
 }

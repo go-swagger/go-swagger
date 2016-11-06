@@ -16,9 +16,9 @@ type LogoutUserURL struct {
 func (o *LogoutUserURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var path = "/users/logout"
+	var _path = "/users/logout"
 
-	result.Path = path
+	result.Path = _path
 
 	return &result, nil
 }

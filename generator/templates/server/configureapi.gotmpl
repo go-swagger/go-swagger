@@ -64,12 +64,14 @@ func configureAPI(api *{{.Package}}.{{ pascalize .Name }}API) http.Handler {
   {{end}}
   {{range .SecurityDefinitions}}
   {{if .IsBasicAuth}}
+  // Applies when the Authorization header is set with the Basic scheme
   api.{{ pascalize .ID }}Auth = func(user string, pass string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
     return nil, errors.NotImplemented("basic auth  ({{ .ID }}) has not yet been implemented")
   }
   {{end}}{{if .IsAPIKeyAuth}}
+  // Applies when the "{{ .Name }}" {{ .Source }} is set
   api.{{ pascalize .ID }}Auth = func(token string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
-    return nil, errors.NotImplemented("api key auth ({{ .ID }}) {{.Name}} from {{.Source}} has not yet been implemented")
+    return nil, errors.NotImplemented("api key auth ({{ .ID }}) {{.Name}} from {{.Source}} param [{{ .Name }}] has not yet been implemented")
   }
   {{end}}{{if .IsOAuth2}}
   api.{{ pascalize .ID }}Auth = func(token string, scopes []string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {

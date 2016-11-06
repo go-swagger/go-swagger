@@ -21,15 +21,15 @@ type DeleteUserURL struct {
 func (o *DeleteUserURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var path = "/users/{username}"
+	var _path = "/users/{username}"
 
 	username := o.Username
 	if username != "" {
-		path = strings.Replace(path, "{username}", username, -1)
+		_path = strings.Replace(_path, "{username}", username, -1)
 	} else {
 		return nil, errors.New("Username is required on DeleteUserURL")
 	}
-	result.Path = path
+	result.Path = _path
 
 	return &result, nil
 }

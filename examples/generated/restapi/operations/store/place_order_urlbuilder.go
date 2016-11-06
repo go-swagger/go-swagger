@@ -16,9 +16,9 @@ type PlaceOrderURL struct {
 func (o *PlaceOrderURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var path = "/stores/order"
+	var _path = "/stores/order"
 
-	result.Path = path
+	result.Path = _path
 
 	return &result, nil
 }

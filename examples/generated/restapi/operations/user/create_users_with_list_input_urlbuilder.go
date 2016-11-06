@@ -16,9 +16,9 @@ type CreateUsersWithListInputURL struct {
 func (o *CreateUsersWithListInputURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var path = "/users/createWithList"
+	var _path = "/users/createWithList"
 
-	result.Path = path
+	result.Path = _path
 
 	return &result, nil
 }

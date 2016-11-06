@@ -27,15 +27,15 @@ type GetTaskCommentsURL struct {
 func (o *GetTaskCommentsURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var path = "/tasks/{id}/comments"
+	var _path = "/tasks/{id}/comments"
 
 	id := swag.FormatInt64(o.ID)
 	if id != "" {
-		path = strings.Replace(path, "{id}", id, -1)
+		_path = strings.Replace(_path, "{id}", id, -1)
 	} else {
 		return nil, errors.New("ID is required on GetTaskCommentsURL")
 	}
-	result.Path = path
+	result.Path = _path
 
 	qs := make(url.Values)
 
