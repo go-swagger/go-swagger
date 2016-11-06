@@ -31,7 +31,7 @@ type Task struct {
 	// This field is read only, comments are added through a separate process.
 	//
 	// Read Only: true
-	Comments []*Comment `json:"comments,omitempty"`
+	Comments []*Comment `json:"comments"`
 
 	// The time at which this issue was last updated.
 	//

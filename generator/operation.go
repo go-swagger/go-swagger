@@ -126,34 +126,32 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 }
 
 type operationGenerator struct {
+	Authorized        bool
+	IncludeHandler    bool
+	IncludeParameters bool
+	IncludeResponses  bool
+	IncludeValidator  bool
+	DumpData          bool
+	WithContext       bool
+
+	Principal            string
+	Target               string
+	Base                 string
 	Name                 string
 	Method               string
 	Path                 string
-	Authorized           bool
 	APIPackage           string
 	ModelsPackage        string
 	ServerPackage        string
 	ClientPackage        string
 	Operation            spec.Operation
 	SecurityRequirements []analysis.SecurityRequirement
-	Principal            string
-	Target               string
-	Base                 string
 	Tags                 []string
-	data                 interface{}
-	pkg                  string
-	cname                string
-	IncludeHandler       bool
-	IncludeParameters    bool
-	IncludeResponses     bool
-	IncludeValidator     bool
-	DumpData             bool
 	DefaultScheme        string
 	DefaultProduces      string
 	DefaultConsumes      string
 	Doc                  *loads.Document
 	Analyzed             *analysis.Spec
-	WithContext          bool
 	GenOpts              *GenOpts
 }
 
@@ -233,27 +231,27 @@ func (o *operationGenerator) Generate() error {
 }
 
 type codeGenOpBuilder struct {
-	Name             string
-	Method           string
-	Path             string
-	APIPackage       string
-	RootAPIPackage   string
-	ModelsPackage    string
-	Principal        string
-	Target           string
 	WithContext      bool
-	Operation        spec.Operation
-	Doc              *loads.Document
-	Analyzed         *analysis.Spec
 	Authed           bool
-	DefaultImports   []string
-	DefaultScheme    string
-	DefaultProduces  string
-	DefaultConsumes  string
-	ExtraSchemas     map[string]GenSchema
-	origDefs         map[string]spec.Schema
 	IncludeValidator bool
-	GenOpts          *GenOpts
+
+	Name            string
+	Method          string
+	Path            string
+	APIPackage      string
+	RootAPIPackage  string
+	ModelsPackage   string
+	Principal       string
+	Target          string
+	Operation       spec.Operation
+	Doc             *loads.Document
+	Analyzed        *analysis.Spec
+	DefaultImports  []string
+	DefaultScheme   string
+	DefaultProduces string
+	DefaultConsumes string
+	ExtraSchemas    map[string]GenSchema
+	GenOpts         *GenOpts
 }
 
 func renameTimeout(seenIds map[string][]string, current string) string {
@@ -323,10 +321,10 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 			qp = append(qp, cp)
 		}
 		if cp.IsFormParam() {
-			if p.Type == "file" {
+			if p.Type == file {
 				hasFileParams = true
 			}
-			if p.Type != "file" {
+			if p.Type != file {
 				hasFormValueParams = true
 			}
 			hasFormParams = true
@@ -377,7 +375,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 
 	prin := b.Principal
 	if prin == "" {
-		prin = "interface{}"
+		prin = iface
 	}
 
 	var extra []GenSchema
@@ -732,7 +730,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 			schema.GoType = nm
 			schema.SwaggerType = nm
 			if len(prevSchema.Properties) == 0 {
-				schema.GoType = "interface{}"
+				schema.GoType = iface
 			}
 			schema.IsComplexObject = true
 			schema.IsInterface = len(schema.Properties) == 0

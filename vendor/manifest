@@ -239,14 +239,6 @@
 			"notests": true
 		},
 		{
-			"importpath": "github.com/naoina/denco",
-			"repository": "https://github.com/naoina/denco",
-			"vcs": "git",
-			"revision": "a2656d3ed566ac9912ba18fcfc942c562d9463c7",
-			"branch": "master",
-			"notests": true
-		},
-		{
 			"importpath": "github.com/opennota/urlesc",
 			"repository": "https://github.com/opennota/urlesc",
 			"vcs": "git",

@@ -45,6 +45,7 @@ const (
 	xNullable   = "x-nullable"
 	xIsNullable = "x-isnullable"
 	sHTTP       = "http"
+	body        = "body"
 )
 
 var zeroes = map[string]string{
