@@ -4,7 +4,6 @@ package pet
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-openapi/errors"
@@ -59,19 +58,14 @@ func (o *FindPetsByTagsParams) BindRequest(r *http.Request, route *middleware.Ma
 func (o *FindPetsByTagsParams) bindTags(rawData []string, hasKey bool, formats strfmt.Registry) error {
 
 	tagsIC := rawData
-	size := len(tagsIC)
 
-	if size == 0 {
+	if len(tagsIC) == 0 {
 		return nil
 	}
 
 	var tagsIR []string
-	for i, tagsIV := range tagsIC {
+	for _, tagsIV := range tagsIC {
 		tagsI := tagsIV
-
-		if err != nil {
-			return errors.InvalidType(fmt.Sprintf("%s.%v", "tags", i), "query", "string", tagsI)
-		}
 
 		tagsIR = append(tagsIR, tagsI)
 	}

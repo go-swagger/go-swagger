@@ -138,19 +138,14 @@ func (o *ListTasksParams) bindStatus(rawData []string, hasKey bool, formats strf
 	}
 
 	statusIC := swag.SplitByFormat(qvStatus, "pipes")
-	size := len(statusIC)
 
-	if size == 0 {
+	if len(statusIC) == 0 {
 		return nil
 	}
 
 	var statusIR []string
 	for i, statusIV := range statusIC {
 		statusI := statusIV
-
-		if err != nil {
-			return errors.InvalidType(fmt.Sprintf("%s.%v", "status", i), "query", "string", statusI)
-		}
 
 		if err := validate.Enum(fmt.Sprintf("%s.%v", "status", i), "query", statusI, []interface{}{"open", "closed", "ignored", "rejected"}); err != nil {
 			return err
@@ -184,19 +179,14 @@ func (o *ListTasksParams) bindTags(rawData []string, hasKey bool, formats strfmt
 	}
 
 	tagsIC := swag.SplitByFormat(qvTags, "")
-	size := len(tagsIC)
 
-	if size == 0 {
+	if len(tagsIC) == 0 {
 		return nil
 	}
 
 	var tagsIR []string
-	for i, tagsIV := range tagsIC {
+	for _, tagsIV := range tagsIC {
 		tagsI := tagsIV
-
-		if err != nil {
-			return errors.InvalidType(fmt.Sprintf("%s.%v", "tags", i), "query", "string", tagsI)
-		}
 
 		tagsIR = append(tagsIR, tagsI)
 	}

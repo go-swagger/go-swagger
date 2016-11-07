@@ -4,7 +4,6 @@ package pet
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-openapi/errors"
@@ -59,19 +58,14 @@ func (o *FindPetsByStatusParams) BindRequest(r *http.Request, route *middleware.
 func (o *FindPetsByStatusParams) bindStatus(rawData []string, hasKey bool, formats strfmt.Registry) error {
 
 	statusIC := rawData
-	size := len(statusIC)
 
-	if size == 0 {
+	if len(statusIC) == 0 {
 		return nil
 	}
 
 	var statusIR []string
-	for i, statusIV := range statusIC {
+	for _, statusIV := range statusIC {
 		statusI := statusIV
-
-		if err != nil {
-			return errors.InvalidType(fmt.Sprintf("%s.%v", "status", i), "query", "string", statusI)
-		}
 
 		statusIR = append(statusIR, statusI)
 	}

@@ -133,7 +133,6 @@ func (o *FindParams) bindTags(rawData []string, hasKey bool, formats strfmt.Regi
 	}
 
 	tagsIC := rawData
-	size := len(tagsIC)
 
 	var tagsIR []int32
 	for i, tagsIV := range tagsIC {
