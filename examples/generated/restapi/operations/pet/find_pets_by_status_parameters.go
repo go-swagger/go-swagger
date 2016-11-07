@@ -57,30 +57,20 @@ func (o *FindPetsByStatusParams) BindRequest(r *http.Request, route *middleware.
 
 func (o *FindPetsByStatusParams) bindStatus(rawData []string, hasKey bool, formats strfmt.Registry) error {
 
-	raw := rawData
-	size := len(raw)
+	statusIC := rawData
 
-	if size == 0 {
+	if len(statusIC) == 0 {
 		return nil
 	}
 
-	ic := raw
-	isz := size
-	var ir []string
-	iValidateElement := func(i int, statusI string) *errors.Validation {
+	var statusIR []string
+	for _, statusIV := range statusIC {
+		statusI := statusIV
 
-		return nil
+		statusIR = append(statusIR, statusI)
 	}
 
-	for i := 0; i < isz; i++ {
-
-		if err := iValidateElement(i, ic[i]); err != nil {
-			return err
-		}
-		ir = append(ir, ic[i])
-	}
-
-	o.Status = ir
+	o.Status = statusIR
 
 	return nil
 }

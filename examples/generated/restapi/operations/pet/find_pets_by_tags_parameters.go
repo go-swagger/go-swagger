@@ -57,30 +57,20 @@ func (o *FindPetsByTagsParams) BindRequest(r *http.Request, route *middleware.Ma
 
 func (o *FindPetsByTagsParams) bindTags(rawData []string, hasKey bool, formats strfmt.Registry) error {
 
-	raw := rawData
-	size := len(raw)
+	tagsIC := rawData
 
-	if size == 0 {
+	if len(tagsIC) == 0 {
 		return nil
 	}
 
-	ic := raw
-	isz := size
-	var ir []string
-	iValidateElement := func(i int, tagsI string) *errors.Validation {
+	var tagsIR []string
+	for _, tagsIV := range tagsIC {
+		tagsI := tagsIV
 
-		return nil
+		tagsIR = append(tagsIR, tagsI)
 	}
 
-	for i := 0; i < isz; i++ {
-
-		if err := iValidateElement(i, ic[i]); err != nil {
-			return err
-		}
-		ir = append(ir, ic[i])
-	}
-
-	o.Tags = ir
+	o.Tags = tagsIR
 
 	return nil
 }

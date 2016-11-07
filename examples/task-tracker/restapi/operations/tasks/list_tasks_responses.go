@@ -4,10 +4,10 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/swag"
 
 	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
@@ -57,7 +57,11 @@ func (o *ListTasksOK) SetPayload(payload []*models.TaskCard) {
 func (o *ListTasksOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	// response header X-Last-Task-Id
-	rw.Header().Add("X-Last-Task-Id", fmt.Sprintf("%v", o.XLastTaskID))
+
+	xLastTaskID := swag.FormatInt64(o.XLastTaskID)
+	if xLastTaskID != "" {
+		rw.Header().Set("X-Last-Task-Id", xLastTaskID)
+	}
 
 	rw.WriteHeader(200)
 	if err := producer.Produce(rw, o.Payload); err != nil {
@@ -166,7 +170,11 @@ func (o *ListTasksDefault) SetPayload(payload *models.Error) {
 func (o *ListTasksDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	// response header X-Error-Code
-	rw.Header().Add("X-Error-Code", fmt.Sprintf("%v", o.XErrorCode))
+
+	xErrorCode := o.XErrorCode
+	if xErrorCode != "" {
+		rw.Header().Set("X-Error-Code", xErrorCode)
+	}
 
 	rw.WriteHeader(o._statusCode)
 	if o.Payload != nil {

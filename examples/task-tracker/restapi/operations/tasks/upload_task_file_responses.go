@@ -4,7 +4,6 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-openapi/runtime"
@@ -93,7 +92,11 @@ func (o *UploadTaskFileDefault) SetPayload(payload *models.Error) {
 func (o *UploadTaskFileDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	// response header X-Error-Code
-	rw.Header().Add("X-Error-Code", fmt.Sprintf("%v", o.XErrorCode))
+
+	xErrorCode := o.XErrorCode
+	if xErrorCode != "" {
+		rw.Header().Set("X-Error-Code", xErrorCode)
+	}
 
 	rw.WriteHeader(o._statusCode)
 	if o.Payload != nil {

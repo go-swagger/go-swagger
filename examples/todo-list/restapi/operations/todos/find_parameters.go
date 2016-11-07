@@ -132,35 +132,19 @@ func (o *FindParams) bindTags(rawData []string, hasKey bool, formats strfmt.Regi
 		return errors.Required("tags", "formData")
 	}
 
-	raw := rawData
-	size := len(raw)
+	tagsIC := rawData
 
-	if size == 0 {
-		return nil
-	}
-
-	ic := raw
-	isz := size
-	var ir []int32
-	iValidateElement := func(i int, tagsI int32) *errors.Validation {
-
-		return nil
-	}
-
-	for i := 0; i < isz; i++ {
-		value, err := swag.ConvertInt32(ic[i])
+	var tagsIR []int32
+	for i, tagsIV := range tagsIC {
+		tagsI, err := swag.ConvertInt32(tagsIV)
 		if err != nil {
-			return errors.InvalidType(fmt.Sprintf("%s.%v", "tags", i), "formData", "int32", ic[i])
+			return errors.InvalidType(fmt.Sprintf("%s.%v", "tags", i), "formData", "int32", tagsI)
 		}
 
-		if err := iValidateElement(i, value); err != nil {
-			return err
-		}
-		ir = append(ir, value)
-
+		tagsIR = append(tagsIR, tagsI)
 	}
 
-	o.Tags = ir
+	o.Tags = tagsIR
 
 	return nil
 }

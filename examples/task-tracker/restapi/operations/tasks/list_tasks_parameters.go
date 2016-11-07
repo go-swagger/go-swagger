@@ -137,34 +137,24 @@ func (o *ListTasksParams) bindStatus(rawData []string, hasKey bool, formats strf
 		qvStatus = rawData[len(rawData)-1]
 	}
 
-	raw := swag.SplitByFormat(qvStatus, "pipes")
-	size := len(raw)
+	statusIC := swag.SplitByFormat(qvStatus, "pipes")
 
-	if size == 0 {
+	if len(statusIC) == 0 {
 		return nil
 	}
 
-	ic := raw
-	isz := size
-	var ir []string
-	iValidateElement := func(i int, statusI string) *errors.Validation {
+	var statusIR []string
+	for i, statusIV := range statusIC {
+		statusI := statusIV
 
 		if err := validate.Enum(fmt.Sprintf("%s.%v", "status", i), "query", statusI, []interface{}{"open", "closed", "ignored", "rejected"}); err != nil {
 			return err
 		}
 
-		return nil
+		statusIR = append(statusIR, statusI)
 	}
 
-	for i := 0; i < isz; i++ {
-
-		if err := iValidateElement(i, ic[i]); err != nil {
-			return err
-		}
-		ir = append(ir, ic[i])
-	}
-
-	o.Status = ir
+	o.Status = statusIR
 	if err := o.validateStatus(formats); err != nil {
 		return err
 	}
@@ -188,30 +178,20 @@ func (o *ListTasksParams) bindTags(rawData []string, hasKey bool, formats strfmt
 		qvTags = rawData[len(rawData)-1]
 	}
 
-	raw := swag.SplitByFormat(qvTags, "")
-	size := len(raw)
+	tagsIC := swag.SplitByFormat(qvTags, "")
 
-	if size == 0 {
+	if len(tagsIC) == 0 {
 		return nil
 	}
 
-	ic := raw
-	isz := size
-	var ir []string
-	iValidateElement := func(i int, tagsI string) *errors.Validation {
+	var tagsIR []string
+	for _, tagsIV := range tagsIC {
+		tagsI := tagsIV
 
-		return nil
+		tagsIR = append(tagsIR, tagsI)
 	}
 
-	for i := 0; i < isz; i++ {
-
-		if err := iValidateElement(i, ic[i]); err != nil {
-			return err
-		}
-		ir = append(ir, ic[i])
-	}
-
-	o.Tags = ir
+	o.Tags = tagsIR
 	if err := o.validateTags(formats); err != nil {
 		return err
 	}

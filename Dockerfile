@@ -9,7 +9,7 @@ RUN apk --update add ca-certificates shared-mime-info mailcap git &&\
   go get -u github.com/jessevdk/go-flags &&\
   go get -u golang.org/x/net/context/ctxhttp
 
-ADD ./dist/swagger-musl /usr/bin/swagger
+ADD ./swagger-musl /usr/bin/swagger
 
 ENTRYPOINT ["/usr/bin/swagger"]
 CMD ["--help"]

@@ -231,7 +231,7 @@ var simpleQueryParams = []paramTestContext{
 	{"siFloat64", "simpleQueryParams", "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}, nil},
 }
 
-func TestSimpleQueryParams(t *testing.T) {
+func TestSimpleQueryParamsAST(t *testing.T) {
 	b, err := opBuilder("simpleQueryParams", "../fixtures/codegen/todolist.simplequery.yml")
 
 	if !assert.NoError(t, err) {
@@ -632,7 +632,7 @@ func TestGenParameter_Issue351(t *testing.T) {
 				ff, err := opts.LanguageOpts.FormatContent("with_array.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
-					assertInCode(t, "validate.MinLength(fmt.Sprintf(\"%s.%v\", \"sha256\", i), \"query\", string(sha256I), 64)", res)
+					assertInCode(t, "validate.MinLength(fmt.Sprintf(\"%s.%v\", \"sha256\", i), \"query\", sha256I, 64)", res)
 				} else {
 					fmt.Println(buf.String())
 				}
@@ -664,6 +664,78 @@ func TestGenParameter_Issue511(t *testing.T) {
 	}
 }
 
+func TestGenParameter_Issue628_Collection(t *testing.T) {
+	assert := assert.New(t)
+
+	gen, err := opBuilder("collection", "../fixtures/bugs/628/swagger.yml")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("serverParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertInCode(t, `workspace_idI, err := formats.Parse(workspace_idIV)`, res)
+					assertInCode(t, `workspace_idIR = append(workspace_idIR, workspace_idI)`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestGenParameter_Issue628_Single(t *testing.T) {
+	assert := assert.New(t)
+
+	gen, err := opBuilder("single", "../fixtures/bugs/628/swagger.yml")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("serverParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertInCode(t, `value, err := formats.Parse("uuid", raw)`, res)
+					assertInCode(t, `o.WorkspaceID = *(value.(*strfmt.UUID))`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestGenParameter_Issue628_Details(t *testing.T) {
+	assert := assert.New(t)
+
+	gen, err := opBuilder("details", "../fixtures/bugs/628/swagger.yml")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("serverParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertInCode(t, `value, err := formats.Parse("uuid", raw)`, res)
+					assertInCode(t, `o.ID = *(value.(*strfmt.UUID))`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
 func TestGenParameter_Issue710(t *testing.T) {
 	assert := assert.New(t)
 
@@ -679,6 +751,153 @@ func TestGenParameter_Issue710(t *testing.T) {
 				if assert.NoError(err) {
 					res := string(ff)
 					assertInCode(t, "(typeVar", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestGenParameter_ArrayQueryParameters(t *testing.T) {
+	assert := assert.New(t)
+
+	gen, err := opBuilder("arrayQueryParams", "../fixtures/codegen/todolist.arrayquery.yml")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("serverParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("array_query_params.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertInCode(t, `siBoolIC := swag.SplitByFormat(qvSiBool, "ssv")`, res)
+					assertInCode(t, `var siBoolIR []bool`, res)
+					assertInCode(t, `for i, siBoolIV := range siBoolIC`, res)
+					assertInCode(t, `siBoolI, err := swag.ConvertBool(siBoolIV)`, res)
+					assertInCode(t, `siBoolIR = append(siBoolIR, siBoolI)`, res)
+					assertInCode(t, `o.SiBool = siBoolIR`, res)
+					assertInCode(t, `siBoolSize := int64(len(o.SiBool))`, res)
+					assertInCode(t, `err := validate.MinItems("siBool", "query", siBoolSize, 5)`, res)
+					assertInCode(t, `err := validate.MaxItems("siBool", "query", siBoolSize, 50)`, res)
+
+					assertInCode(t, `siFloatIC := rawData`, res)
+					assertInCode(t, `var siFloatIR []float64`, res)
+					assertInCode(t, `for i, siFloatIV := range siFloatIC`, res)
+					assertInCode(t, `siFloatI, err := swag.ConvertFloat64(siFloatIV)`, res)
+					assertInCode(t, `return errors.InvalidType(fmt.Sprintf("%s.%v", "siFloat", i), "query", "float64", siFloatI)`, res)
+					assertInCode(t, `err := validate.Minimum(fmt.Sprintf("%s.%v", "siFloat", i), "query", float64(siFloatI), 3, true)`, res)
+					assertInCode(t, `err := validate.Maximum(fmt.Sprintf("%s.%v", "siFloat", i), "query", float64(siFloatI), 100, true); err != nil`, res)
+					assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siFloat", i), "query", float64(siFloatI), 1.5)`, res)
+					assertInCode(t, `siFloatIR = append(siFloatIR, siFloatI)`, res)
+					assertInCode(t, `o.SiFloat = siFloatIR`, res)
+					assertInCode(t, `siFloatSize := int64(len(o.SiFloat))`, res)
+					assertInCode(t, `err := validate.MinItems("siFloat", "query", siFloatSize, 5)`, res)
+					assertInCode(t, `err := validate.MaxItems("siFloat", "query", siFloatSize, 50)`, res)
+
+					assertInCode(t, `siFloat32IC := swag.SplitByFormat(qvSiFloat32, "")`, res)
+					assertInCode(t, `var siFloat32IR []float32`, res)
+					assertInCode(t, `for i, siFloat32IV := range siFloat32IC`, res)
+					assertInCode(t, `siFloat32I, err := swag.ConvertFloat32(siFloat32IV)`, res)
+					assertInCode(t, `err := validate.Minimum(fmt.Sprintf("%s.%v", "siFloat32", i), "query", float64(siFloat32I), 3, true)`, res)
+					assertInCode(t, `err := validate.Maximum(fmt.Sprintf("%s.%v", "siFloat32", i), "query", float64(siFloat32I), 100, true)`, res)
+					assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siFloat32", i), "query", float64(siFloat32I), 1.5)`, res)
+					assertInCode(t, `siFloat32IR = append(siFloat32IR, siFloat32I)`, res)
+					assertInCode(t, `o.SiFloat32 = siFloat32IR`, res)
+
+					assertInCode(t, `siFloat64IC := swag.SplitByFormat(qvSiFloat64, "pipes")`, res)
+					assertInCode(t, `var siFloat64IR []float64`, res)
+					assertInCode(t, `for i, siFloat64IV := range siFloat64IC`, res)
+					assertInCode(t, `siFloat64I, err := swag.ConvertFloat64(siFloat64IV)`, res)
+					assertInCode(t, `err := validate.Minimum(fmt.Sprintf("%s.%v", "siFloat64", i), "query", float64(siFloat64I), 3, true)`, res)
+					assertInCode(t, `err := validate.Maximum(fmt.Sprintf("%s.%v", "siFloat64", i), "query", float64(siFloat64I), 100, true)`, res)
+					assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siFloat64", i), "query", float64(siFloat64I), 1.5)`, res)
+					assertInCode(t, `siFloat64IR = append(siFloat64IR, siFloat64I)`, res)
+					assertInCode(t, `o.SiFloat64 = siFloat64IR`, res)
+					assertInCode(t, `siFloat64Size := int64(len(o.SiFloat64))`, res)
+					assertInCode(t, `err := validate.MinItems("siFloat64", "query", siFloat64Size, 5)`, res)
+					assertInCode(t, `err := validate.MaxItems("siFloat64", "query", siFloat64Size, 50)`, res)
+
+					assertInCode(t, `siIntIC := swag.SplitByFormat(qvSiInt, "pipes")`, res)
+					assertInCode(t, `var siIntIR []int64`, res)
+					assertInCode(t, `for i, siIntIV := range siIntIC`, res)
+					assertInCode(t, `siIntI, err := swag.ConvertInt64(siIntIV)`, res)
+					assertInCode(t, `err := validate.MinimumInt(fmt.Sprintf("%s.%v", "siInt", i), "query", int64(siIntI), 8, true)`, res)
+					assertInCode(t, `err := validate.MaximumInt(fmt.Sprintf("%s.%v", "siInt", i), "query", int64(siIntI), 100, true)`, res)
+					assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siInt", i), "query", float64(siIntI), 2)`, res)
+					assertInCode(t, `siIntIR = append(siIntIR, siIntI)`, res)
+					assertInCode(t, `o.SiInt = siIntIR`, res)
+					assertInCode(t, `siIntSize := int64(len(o.SiInt))`, res)
+					assertInCode(t, `err := validate.MinItems("siInt", "query", siIntSize, 5)`, res)
+					assertInCode(t, `err := validate.MaxItems("siInt", "query", siIntSize, 50)`, res)
+
+					assertInCode(t, `siInt32IC := swag.SplitByFormat(qvSiInt32, "tsv")`, res)
+					assertInCode(t, `var siInt32IR []int32`, res)
+					assertInCode(t, `for i, siInt32IV := range siInt32IC`, res)
+					assertInCode(t, `siInt32I, err := swag.ConvertInt32(siInt32IV)`, res)
+					assertInCode(t, `err := validate.MinimumInt(fmt.Sprintf("%s.%v", "siInt32", i), "query", int64(siInt32I), 8, true)`, res)
+					assertInCode(t, `err := validate.MaximumInt(fmt.Sprintf("%s.%v", "siInt32", i), "query", int64(siInt32I), 100, true)`, res)
+					assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siInt32", i), "query", float64(siInt32I), 2)`, res)
+					assertInCode(t, `siInt32IR = append(siInt32IR, siInt32I)`, res)
+					assertInCode(t, `o.SiInt32 = siInt32IR`, res)
+					assertInCode(t, `siFloat32Size := int64(len(o.SiFloat32))`, res)
+					assertInCode(t, `err := validate.MinItems("siFloat32", "query", siFloat32Size, 5)`, res)
+					assertInCode(t, `err := validate.MaxItems("siFloat32", "query", siFloat32Size, 50)`, res)
+					assertInCode(t, `siInt32Size := int64(len(o.SiInt32))`, res)
+					assertInCode(t, `err := validate.MinItems("siInt32", "query", siInt32Size, 5)`, res)
+					assertInCode(t, `err := validate.MaxItems("siInt32", "query", siInt32Size, 50)`, res)
+
+					assertInCode(t, `siInt64IC := swag.SplitByFormat(qvSiInt64, "ssv")`, res)
+					assertInCode(t, `var siInt64IR []int64`, res)
+					assertInCode(t, `for i, siInt64IV := range siInt64IC`, res)
+					assertInCode(t, `siInt64I, err := swag.ConvertInt64(siInt64IV)`, res)
+					assertInCode(t, `err := validate.MinimumInt(fmt.Sprintf("%s.%v", "siInt64", i), "query", int64(siInt64I), 8, true)`, res)
+					assertInCode(t, `err := validate.MaximumInt(fmt.Sprintf("%s.%v", "siInt64", i), "query", int64(siInt64I), 100, true)`, res)
+					assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siInt64", i), "query", float64(siInt64I), 2)`, res)
+					assertInCode(t, `siInt64IR = append(siInt64IR, siInt64I)`, res)
+					assertInCode(t, `o.SiInt64 = siInt64IR`, res)
+					assertInCode(t, `siInt64Size := int64(len(o.SiInt64))`, res)
+					assertInCode(t, `err := validate.MinItems("siInt64", "query", siInt64Size, 5)`, res)
+					assertInCode(t, `err := validate.MaxItems("siInt64", "query", siInt64Size, 50)`, res)
+
+					assertInCode(t, `siStringIC := swag.SplitByFormat(qvSiString, "csv")`, res)
+					assertInCode(t, `var siStringIR []string`, res)
+					assertInCode(t, `for i, siStringIV := range siStringIC`, res)
+					assertInCode(t, `siStringI := siStringIV`, res)
+					assertInCode(t, `err := validate.MinLength(fmt.Sprintf("%s.%v", "siString", i), "query", siStringI, 5)`, res)
+					assertInCode(t, `err := validate.MaxLength(fmt.Sprintf("%s.%v", "siString", i), "query", siStringI, 50)`, res)
+					assertInCode(t, `err := validate.Pattern(fmt.Sprintf("%s.%v", "siString", i), "query", siStringI, `+"`"+`[A-Z][\w-]+`+"`"+`)`, res)
+					assertInCode(t, `siStringIR = append(siStringIR, siStringI)`, res)
+					assertInCode(t, `o.SiString = siStringIR`, res)
+					assertInCode(t, `siStringSize := int64(len(o.SiString))`, res)
+					assertInCode(t, `err := validate.MinItems("siString", "query", siStringSize, 5)`, res)
+					assertInCode(t, `err := validate.MaxItems("siString", "query", siStringSize, 50)`, res)
+
+					assertInCode(t, `siNestedIC := rawData`, res)
+					assertInCode(t, `var siNestedIR [][][]string`, res)
+					assertInCode(t, `for i, siNestedIV := range siNestedIC`, res)
+					assertInCode(t, `siNestedIIC := swag.SplitByFormat(siNestedIV, "pipes")`, res)
+					assertInCode(t, `var siNestedIIR [][]string`, res)
+					assertInCode(t, `for ii, siNestedIIV := range siNestedIIC {`, res)
+					assertInCode(t, `siNestedIIIC := swag.SplitByFormat(siNestedIIV, "csv")`, res)
+					assertInCode(t, `var siNestedIIIR []string`, res)
+					assertInCode(t, `for iii, siNestedIIIV := range siNestedIIIC`, res)
+					assertInCode(t, `siNestedIII := siNestedIIIV`, res)
+					assertInCode(t, `err := validate.MinLength(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "siNested", i), ii), iii), "query", siNestedIII, 5)`, res)
+					assertInCode(t, `err := validate.MaxLength(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "siNested", i), ii), iii), "query", siNestedIII, 50)`, res)
+					assertInCode(t, `err := validate.Pattern(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "siNested", i), ii), iii), "query", siNestedIII, `+"`"+`[A-Z][\w-]+`+"`"+`)`, res)
+					assertInCode(t, `siNestedIIIR = append(siNestedIIIR, siNestedIII)`, res)
+					assertInCode(t, `siNestedIIiSize := int64(len(siNestedII))`, res)
+					assertInCode(t, `err := validate.MinItems(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "siNested", i), ii), "query", siNestedIIiSize, 3)`, res)
+					assertInCode(t, `err := validate.MaxItems(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "siNested", i), ii), "query", siNestedIIiSize, 30)`, res)
+					assertInCode(t, `siNestedIIR = append(siNestedIIR, siNestedII)`, res)
+					assertInCode(t, `siNestedISize := int64(len(siNestedI))`, res)
+					assertInCode(t, `err := validate.MinItems(fmt.Sprintf("%s.%v", "siNested", i), "query", siNestedISize, 2)`, res)
+					assertInCode(t, `err := validate.MaxItems(fmt.Sprintf("%s.%v", "siNested", i), "query", siNestedISize, 20)`, res)
+					assertInCode(t, `siNestedIR = append(siNestedIR, siNestedI)`, res)
+					assertInCode(t, `o.SiNested = siNestedIR`, res)
 				} else {
 					fmt.Println(buf.String())
 				}
