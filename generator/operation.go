@@ -659,6 +659,12 @@ func (b *codeGenOpBuilder) MakeHeaderItem(receiver, paramName, indexVar, path, v
 	res.Converter = stringConverters[res.GoType]
 	res.Formatter = stringFormatters[res.GoType]
 	res.IndexVar = indexVar
+	hasNumberValidation := items.Maximum != nil || items.Minimum != nil || items.MultipleOf != nil
+	hasStringValidation := items.MaxLength != nil || items.MinLength != nil || items.Pattern != ""
+	hasSliceValidations := items.MaxItems != nil || items.MinItems != nil || items.UniqueItems
+	hasValidations := hasNumberValidation || hasStringValidation || hasSliceValidations || len(items.Enum) > 0
+	res.HasValidations = hasValidations
+	res.HasSliceValidations = hasSliceValidations
 
 	if items.Items != nil {
 		hi, err := b.MakeHeaderItem(receiver, paramName+" "+indexVar, indexVar+"i", "fmt.Sprintf(\"%s.%v\", \"header\", "+indexVar+")", valueExpression+"I", items.Items, items)
@@ -697,6 +703,12 @@ func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path
 	res.Converter = stringConverters[res.GoType]
 	res.Formatter = stringFormatters[res.GoType]
 	res.IndexVar = indexVar
+	hasNumberValidation := items.Maximum != nil || items.Minimum != nil || items.MultipleOf != nil
+	hasStringValidation := items.MaxLength != nil || items.MinLength != nil || items.Pattern != ""
+	hasSliceValidations := items.MaxItems != nil || items.MinItems != nil || items.UniqueItems
+	hasValidations := hasNumberValidation || hasStringValidation || hasSliceValidations || len(items.Enum) > 0
+	res.HasValidations = hasValidations
+	res.HasSliceValidations = hasSliceValidations
 
 	if items.Items != nil {
 		pi, err := b.MakeParameterItem(receiver, paramName+" "+indexVar, indexVar+"i", "fmt.Sprintf(\"%s.%v\", "+path+", "+indexVar+")", valueExpression+"I", location, resolver, items.Items, items)

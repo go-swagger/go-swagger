@@ -35,7 +35,7 @@ if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", {{
 {{ end }}
 {{ define "sliceparambinder" }}
 var {{ .Child.ValueExpression }}R {{ .GoType }}
-for {{ if or .Child.HasValidations .Child.Converter .Child.IsCustomFormatter .Child.Enum }}{{ .IndexVar }}{{ else }}_{{ end }}, {{ .Child.ValueExpression }}V := range {{ .Child.ValueExpression }}C {
+for {{ if or .Child.HasValidations .Child.Converter .Child.IsCustomFormatter }}{{ .IndexVar }}{{ else }}_{{ end }}, {{ .Child.ValueExpression }}V := range {{ .Child.ValueExpression }}C {
   {{ if or .Child.IsArray -}}
   {{ .Child.Child.ValueExpression }}C := swag.SplitByFormat({{ .Child.ValueExpression }}V, {{ printf "%q" .Child.CollectionFormat }})
   {{ template "sliceparambinder" .Child }}
