@@ -45,19 +45,25 @@ paths:
           in: query
           type: array
           items:
+            collectionFormat: pipes
             type: array
             items:
+              collectionFormat: csv
               type: array
               items:
                 minLength: 5
                 maxLength: 50
                 pattern: "[A-Z][\\w-]+"
                 type: string
+              minItems: 3
+              maxItems: 30
+            minItems: 2
+            maxItems: 20
           description: a simple string array
           required: true
           minItems: 5
           maxItems: 50
-          collectionFormat: csv
+          collectionFormat: multi
         - name: siInt
           in: query
           description: an integer array property

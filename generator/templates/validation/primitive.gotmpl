@@ -1,15 +1,15 @@
 {{if .MinLength}}
-if err := validate.MinLength({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, string({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), {{.MinLength}}); err != nil {
+if err := validate.MinLength({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if .IsNullable }}(*{{ end }}{{.ValueExpression}}{{ if .IsNullable }}){{ end }}{{ if .IsCustomFormatter }}.String(){{ end }}, {{.MinLength}}); err != nil {
   return err
 }
 {{end}}
 {{if .MaxLength}}
-if err := validate.MaxLength({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, string({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), {{.MaxLength}}); err != nil {
+if err := validate.MaxLength({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if .IsNullable }}(*{{ end }}{{.ValueExpression}}{{ if .IsNullable }}){{ end }}{{ if .IsCustomFormatter }}.String(){{ end }}, {{.MaxLength}}); err != nil {
   return err
 }
 {{end}}
 {{if .Pattern}}
-if err := validate.Pattern({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, string({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), `{{.Pattern}}`); err != nil {
+if err := validate.Pattern({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if .IsNullable }}(*{{ end }}{{.ValueExpression}}{{ if .IsNullable }}){{ end }}{{ if .IsCustomFormatter }}.String(){{ end }}, `{{.Pattern}}`); err != nil {
   return err
 }
 {{end}}
@@ -29,7 +29,7 @@ if err := validate.MultipleOf({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ pri
 }
 {{end}}
 {{if .Enum}}
-if err := validate.Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) .IsNullable }}*{{ end }}{{.ValueExpression}}, {{ printf "%#v" .Enum}}); err != nil {
+if err := validate.Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) .IsNullable }}*{{ end }}{{.ValueExpression}}{{ if .IsCustomFormatter }}.String(){{ end }}, {{ printf "%#v" .Enum}}); err != nil {
   return err
 }
 {{end}}

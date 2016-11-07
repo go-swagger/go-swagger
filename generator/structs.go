@@ -237,6 +237,7 @@ type GenItems struct {
 	Formatter        string
 
 	Location string
+	IndexVar string
 }
 
 // GenOperationGroup represents a named (tagged) group of operations

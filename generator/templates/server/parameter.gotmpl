@@ -22,15 +22,41 @@ if err := validate.Enum({{ .Path }}, {{ printf "%q" .Location }}, {{ if and (not
   return err
 }
 {{ end }}
-{{ end }}{{ define "propertyparamvalidator" }}
+{{ end }}
+{{ define "propertyparamvalidator" }}
 {{ if .IsPrimitive }}{{ template "validationPrimitive" . }}{{ end }}
 {{ if .IsCustomFormatter }}
-if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", string({{.ValueExpression}}), formats); err != nil {
+if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", {{.ValueExpression}}.String(), formats); err != nil {
   return err
 }{{ end }}
-{{ if .IsArray }}{{ template "sliceparamvalidator" . }}{{ end }}
-{{ end }}{{define "bindprimitiveparam" }}
-{{ end }}{{define "sliceparambinder" }}
+{{ if .IsArray }}{{ template "sliceparamvalidator" . }}{{ end -}}
+{{ end }}
+{{define "bindprimitiveparam" }}
+{{ end }}
+{{ define "sliceparambinder2" }}
+var {{ .Child.ValueExpression }}R {{ .GoType }}
+for {{ .IndexVar }}, {{ .Child.ValueExpression }}V := range {{ .Child.ValueExpression }}C {
+  {{ if or .Child.IsArray -}}
+  {{ .Child.Child.ValueExpression }}C := swag.SplitByFormat({{ .Child.ValueExpression }}V, {{ printf "%q" .Child.CollectionFormat }})
+  {{ template "sliceparambinder2" .Child }}
+  {{- else -}}
+  {{ if .Child.Converter -}}
+  {{ .Child.ValueExpression }}, err := {{ .Child.Converter }}({{ .Child.ValueExpression }}V)
+  {{- else if .Child.IsCustomFormatter -}}
+  {{ .Child.ValueExpression }}, err := formats.Parse({{ .Child.ValueExpression }}V)
+  {{- else -}}
+  {{ .Child.ValueExpression }} := {{ .Child.ValueExpression }}V
+  {{ end }}
+  if err != nil {
+    return errors.InvalidType({{ .Child.Path }}, {{ printf "%q" .Child.Location }}, "{{ .Child.GoType }}", {{ .Child.ValueExpression }})
+  }
+  {{- end }}
+
+  {{ template "propertyparamvalidator" .Child }}
+  {{ .Child.ValueExpression }}R = append({{ .Child.ValueExpression }}R, {{ .Child.ValueExpression }})
+}
+{{ end }}
+{{define "sliceparambinder" }}
 {{ if .Parent }}{{ .IndexVar }}c := swag.SplitByFormat({{ .Parent.IndexVar }}c[{{ .Parent.IndexVar }}], {{ printf "%q" .CollectionFormat }})
 {{ else }}{{ .IndexVar }}c := raw{{ end }}
 {{ .IndexVar }}sz := size
@@ -268,26 +294,26 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawDa
     return errors.Required({{ .Path }}, {{ printf "%q" .Location }})
   }
   {{ end }}
-  {{ if eq .CollectionFormat "multi" }}raw := rawData{{ else }}var qv{{ pascalize .Name }} string
+  {{ if eq .CollectionFormat "multi" }}{{ .Child.ValueExpression }}C := rawData{{ else }}var qv{{ pascalize .Name }} string
   if len(rawData) > 0 {
     qv{{ pascalize .Name }} = rawData[len(rawData) - 1]
   }
 
-  raw := swag.SplitByFormat(qv{{ pascalize .Name }}, {{ printf "%q" .CollectionFormat }}){{ end }}
-  size := len(raw)
+  {{ .Child.ValueExpression }}C := swag.SplitByFormat(qv{{ pascalize .Name }}, {{ printf "%q" .CollectionFormat }}){{ end }}
+  size := len({{ .Child.ValueExpression }}C)
   {{if and .Required (not .AllowEmptyValue) }}
   if size == 0 {
     return errors.Required({{ .Path }}, {{ printf "%q" .Location }})
   }
   {{ end }}
-  {{ if .HasDefault }}defValue := swag.SplitByFormat({{ .Default }}, {{ printf "%q" .CollectionFormat }})
+  {{ if not .Required }}{{ if .HasDefault }}defValue := swag.SplitByFormat({{ .Default }}, {{ printf "%q" .CollectionFormat }})
   if size == 0 && len(defValue) > 0 {
     {{ .ValueExpression }} = defValue
   {{ else }}if size == 0 {
     return nil{{ end }}
-  }
-  {{ template "sliceparambinder" . }}
-  {{ .ValueExpression }} = {{ .IndexVar }}r
+  }{{ end }}
+  {{ template "sliceparambinder2" . }}
+  {{ .ValueExpression }} = {{ .Child.ValueExpression }}R
   {{ if .HasSliceValidations }}if err := {{ .ReceiverName }}.validate{{ pascalize .ID }}(formats); err != nil {
     return err
   }

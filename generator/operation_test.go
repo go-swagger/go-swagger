@@ -178,7 +178,7 @@ func TestMakeOperationParamItem(t *testing.T) {
 	b, err := opBuilder("arrayQueryParams", "../fixtures/codegen/todolist.arrayquery.yml")
 	if assert.NoError(t, err) {
 		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
-		gO, err := b.MakeParameterItem("a", "siString", "i", "siString", "a.SiString", "query", resolver, b.Operation.Parameters[1].Items, nil)
+		gO, err := b.MakeParameterItem("a", "siString", "ii", "siString", "a.SiString", "query", resolver, b.Operation.Parameters[1].Items, nil)
 		if assert.NoError(t, err) {
 			assert.Nil(t, gO.Parent)
 			assert.True(t, gO.IsPrimitive)
