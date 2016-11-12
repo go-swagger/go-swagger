@@ -57,12 +57,54 @@ func ToUnicode(s string) (string, error) {
 	return NonTransitional.process(s, false)
 }
 
+// An Option configures a Profile at creation time.
+type Option func(*options)
+
+// Transitional sets a Profile to use the Transitional mapping as defined
+// in UTS #46.
+func Transitional(transitional bool) Option {
+	return func(o *options) { o.transitional = true }
+}
+
+// VerifyDNSLength sets whether a Profile should fail if any of the IDN parts
+// are longer than allowed by the RFC.
+func VerifyDNSLength(verify bool) Option {
+	return func(o *options) { o.verifyDNSLength = verify }
+}
+
+// IgnoreSTD3Rules sets whether ASCII characters outside the A-Z, a-z, 0-9 and
+// the hyphen should be allowed. By default this is not allowed, but IDNA2003,
+// and as a consequence UTS #46, allows this to be overridden to support
+// browsers that allow characters outside this range, for example a '_' (U+005F
+// LOW LINE). See http://www.rfc- editor.org/std/std3.txt for more details.
+func IgnoreSTD3Rules(ignore bool) Option {
+	return func(o *options) { o.ignoreSTD3Rules = ignore }
+}
+
+type options struct {
+	transitional    bool
+	ignoreSTD3Rules bool
+	verifyDNSLength bool
+}
+
 // A Profile defines the configuration of a IDNA mapper.
 type Profile struct {
-	Transitional    bool
-	IgnoreSTD3Rules bool
-	VerifyDNSLength bool
-	// ErrHandler      func(error)
+	options
+}
+
+func apply(o *options, opts []Option) {
+	for _, f := range opts {
+		f(o)
+	}
+}
+
+// New creates a new Profile.
+// With no options, the returned profile is the non-transitional profile as
+// defined in UTS #46.
+func New(o ...Option) *Profile {
+	p := &Profile{}
+	apply(&p.options, o)
+	return p
 }
 
 // ToASCII converts a domain or domain label to its ASCII form. For example,
@@ -79,7 +121,7 @@ func (p *Profile) ToASCII(s string) (string, error) {
 // an error and a (partially) processed result.
 func (p *Profile) ToUnicode(s string) (string, error) {
 	pp := *p
-	pp.Transitional = false
+	pp.transitional = false
 	return pp.process(s, false)
 }
 
@@ -87,12 +129,12 @@ func (p *Profile) ToUnicode(s string) (string, error) {
 // purposes. The string format may change with different versions.
 func (p *Profile) String() string {
 	s := ""
-	if p.Transitional {
+	if p.transitional {
 		s = "Transitional"
 	} else {
 		s = "NonTransitional"
 	}
-	if p.IgnoreSTD3Rules {
+	if p.ignoreSTD3Rules {
 		s += ":NoSTD3Rules"
 	}
 	return s
@@ -107,17 +149,12 @@ var (
 	// The configuration of this profile may change over time.
 	Display = display
 
-	// Transitional defines a profile that implements the Transitional mapping
-	// as defined in UTS #46 with no additional constraints.
-	Transitional = transitional
-
 	// NonTransitional defines a profile that implements the Transitional
 	// mapping as defined in UTS #46 with no additional constraints.
 	NonTransitional = nonTransitional
 
-	resolve         = &Profile{Transitional: true}
+	resolve         = &Profile{options{transitional: true}}
 	display         = &Profile{}
-	transitional    = &Profile{Transitional: true}
 	nonTransitional = &Profile{}
 
 	// TODO: profiles
@@ -137,7 +174,7 @@ type runeError rune
 
 func (e runeError) code() string { return "P1" }
 func (e runeError) Error() string {
-	return fmt.Sprintf("idna: disallowed rune %r", e)
+	return fmt.Sprintf("idna: disallowed rune %U", e)
 }
 
 // process implements the algorithm described in section 4 of UTS #46,
@@ -234,13 +271,13 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 				labels.set(a)
 			}
 			n := len(label)
-			if p.VerifyDNSLength && err == nil && (n == 0 || n > 63) {
+			if p.verifyDNSLength && err == nil && (n == 0 || n > 63) {
 				err = &labelError{label, "A4"}
 			}
 		}
 	}
 	s = labels.result()
-	if toASCII && p.VerifyDNSLength && err == nil {
+	if toASCII && p.verifyDNSLength && err == nil {
 		// Compute the length of the domain name minus the root label and its dot.
 		n := len(s)
 		if n > 0 && s[n-1] == '.' {
@@ -319,19 +356,19 @@ const acePrefix = "xn--"
 func (p *Profile) simplify(cat category) category {
 	switch cat {
 	case disallowedSTD3Mapped:
-		if !p.IgnoreSTD3Rules {
+		if !p.ignoreSTD3Rules {
 			cat = disallowed
 		} else {
 			cat = mapped
 		}
 	case disallowedSTD3Valid:
-		if !p.IgnoreSTD3Rules {
+		if !p.ignoreSTD3Rules {
 			cat = disallowed
 		} else {
 			cat = valid
 		}
 	case deviation:
-		if !p.Transitional {
+		if !p.transitional {
 			cat = valid
 		}
 	case validNV8, validXV8:

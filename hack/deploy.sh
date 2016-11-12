@@ -77,7 +77,9 @@ upload_to_bintray() {
 
 deploy_docker() {
   cd $prjdir
-  docker run --rm -it -v `pwd`:/go/src/github.com/go-swagger/go-swagger -w /go/src/github.com/go-swagger/go-swagger golang:1.7-alpine go build -o ./dist/swagger-musl  -a -tags netgo -installsuffix netgo ./cmd/swagger
+  docker run --rm -it \
+    -v `pwd`:/go/src/github.com/go-swagger/go-swagger \
+    -w /go/src/github.com/go-swagger/go-swagger golang:1.7-alpine go build -o ./dist/swagger-musl -ldflags "-X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Commit=${CIRCLE_SHA1} -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Version=${CIRCLE_TAG}" -a -tags netgo -installsuffix netgo ./cmd/swagger
   mkdir -p deploybuild
   cp Dockerfile ./dist/swagger-musl ./deploybuild
   docker build -t quay.io/goswagger/swagger:$CIRCLE_TAG ./deploybuild
