@@ -46,6 +46,7 @@ func (a *Client) AddCommentToTask(params *AddCommentToTaskParams, authInfo runti
 		Reader:             &AddCommentToTaskReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
+		Client:             params.HTTPClient,
 	})
 	if err != nil {
 		return nil, err
@@ -79,6 +80,7 @@ func (a *Client) CreateTask(params *CreateTaskParams, authInfo runtime.ClientAut
 		Reader:             &CreateTaskReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
+		Client:             params.HTTPClient,
 	})
 	if err != nil {
 		return nil, err
@@ -110,6 +112,7 @@ func (a *Client) DeleteTask(params *DeleteTaskParams, authInfo runtime.ClientAut
 		Reader:             &DeleteTaskReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
+		Client:             params.HTTPClient,
 	})
 	if err != nil {
 		return nil, err
@@ -140,6 +143,7 @@ func (a *Client) GetTaskComments(params *GetTaskCommentsParams) (*GetTaskComment
 		Params:             params,
 		Reader:             &GetTaskCommentsReader{formats: a.formats},
 		Context:            params.Context,
+		Client:             params.HTTPClient,
 	})
 	if err != nil {
 		return nil, err
@@ -173,6 +177,7 @@ func (a *Client) GetTaskDetails(params *GetTaskDetailsParams) (*GetTaskDetailsOK
 		Params:             params,
 		Reader:             &GetTaskDetailsReader{formats: a.formats},
 		Context:            params.Context,
+		Client:             params.HTTPClient,
 	})
 	if err != nil {
 		return nil, err
@@ -206,6 +211,7 @@ func (a *Client) ListTasks(params *ListTasksParams) (*ListTasksOK, error) {
 		Params:             params,
 		Reader:             &ListTasksReader{formats: a.formats},
 		Context:            params.Context,
+		Client:             params.HTTPClient,
 	})
 	if err != nil {
 		return nil, err
@@ -239,6 +245,7 @@ func (a *Client) UpdateTask(params *UpdateTaskParams, authInfo runtime.ClientAut
 		Reader:             &UpdateTaskReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
+		Client:             params.HTTPClient,
 	})
 	if err != nil {
 		return nil, err
@@ -269,6 +276,7 @@ func (a *Client) UploadTaskFile(params *UploadTaskFileParams, authInfo runtime.C
 		Reader:             &UploadTaskFileReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
+		Client:             params.HTTPClient,
 	})
 	if err != nil {
 		return nil, err

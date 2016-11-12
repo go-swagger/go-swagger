@@ -21,6 +21,13 @@ import (
 	"github.com/go-openapi/strfmt"
 )
 
+// PassThroughAuth never manipulates the request
+var PassThroughAuth runtime.ClientAuthInfoWriter
+
+func init() {
+	PassThroughAuth = runtime.ClientAuthInfoWriterFunc(func(_ runtime.ClientRequest, _ strfmt.Registry) error { return nil })
+}
+
 // BasicAuth provides a basic auth info writer
 func BasicAuth(username, password string) runtime.ClientAuthInfoWriter {
 	return runtime.ClientAuthInfoWriterFunc(func(r runtime.ClientRequest, _ strfmt.Registry) error {

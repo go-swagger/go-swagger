@@ -55,6 +55,7 @@ func (a *Client) {{ pascalize .Name }}(params *{{ pascalize .Name }}Params{{ if 
     Reader: &{{ pascalize .Name }}Reader{formats: a.formats{{ if .HasStreamingResponse }}, writer: writer{{ end }}},{{ if .Authorized }}
     AuthInfo: authInfo,{{ end}}
     Context: params.Context,
+    Client: params.HTTPClient,
   })
   if err != nil {
     return {{ if .SuccessResponse }}{{ padSurround "nil" "nil" 0 $length }}, {{ end }}err

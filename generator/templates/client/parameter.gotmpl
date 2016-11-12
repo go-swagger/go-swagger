@@ -79,6 +79,7 @@ type {{ pascalize .Name }}Params struct {
 
   {{ camelize .TimeoutName }} time.Duration
   Context context.Context
+  HTTPClient *http.Client
 }
 
 // With{{ pascalize .TimeoutName }} adds the timeout to the {{ humanize .Name }} params

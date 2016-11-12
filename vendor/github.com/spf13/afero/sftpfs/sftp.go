@@ -11,41 +11,43 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package afero
+package sftpfs
 
 import (
 	"os"
 	"time"
 
-	"github.com/spf13/afero/sftp"
-
 	"github.com/pkg/sftp"
+	"github.com/spf13/afero"
 )
 
-// SftpFs is a Fs implementation that uses functions provided by the sftp package.
+// Fs is a afero.Fs implementation that uses functions provided by the sftp package.
 //
 // For details in any method, check the documentation of the sftp package
 // (github.com/pkg/sftp).
-type SftpFs struct{
-	SftpClient  *sftp.Client
+type Fs struct {
+	client *sftp.Client
 }
 
-func (s SftpFs) Name() string { return "SftpFs" }
-
-func (s SftpFs) Create(name string) (File, error) {
-	f, err := sftpfs.FileCreate(s.SftpClient, name)
-	return f, err
+func New(client *sftp.Client) afero.Fs {
+	return &Fs{client: client}
 }
 
-func (s SftpFs) Mkdir(name string, perm os.FileMode) error {
-	err := s.SftpClient.Mkdir(name)
+func (s Fs) Name() string { return "sftpfs" }
+
+func (s Fs) Create(name string) (afero.File, error) {
+	return FileCreate(s.client, name)
+}
+
+func (s Fs) Mkdir(name string, perm os.FileMode) error {
+	err := s.client.Mkdir(name)
 	if err != nil {
 		return err
 	}
-	return s.SftpClient.Chmod(name, perm)
+	return s.client.Chmod(name, perm)
 }
 
-func (s SftpFs) MkdirAll(path string, perm os.FileMode) error {
+func (s Fs) MkdirAll(path string, perm os.FileMode) error {
 	// Fast path: if we can tell whether path is a directory or file, stop with success or error.
 	dir, err := s.Stat(path)
 	if err == nil {
@@ -88,41 +90,40 @@ func (s SftpFs) MkdirAll(path string, perm os.FileMode) error {
 	return nil
 }
 
-func (s SftpFs) Open(name string) (File, error) {
-	f, err := sftpfs.FileOpen(s.SftpClient, name)
-	return f, err
+func (s Fs) Open(name string) (afero.File, error) {
+	return FileOpen(s.client, name)
 }
 
-func (s SftpFs) OpenFile(name string, flag int, perm os.FileMode) (File, error) {
-	return nil,nil
+func (s Fs) OpenFile(name string, flag int, perm os.FileMode) (afero.File, error) {
+	return nil, nil
 }
 
-func (s SftpFs) Remove(name string) error {
-	return s.SftpClient.Remove(name)
+func (s Fs) Remove(name string) error {
+	return s.client.Remove(name)
 }
 
-func (s SftpFs) RemoveAll(path string) error {
+func (s Fs) RemoveAll(path string) error {
 	// TODO have a look at os.RemoveAll
 	// https://github.com/golang/go/blob/master/src/os/path.go#L66
 	return nil
 }
 
-func (s SftpFs) Rename(oldname, newname string) error {
-	return s.SftpClient.Rename(oldname, newname)
+func (s Fs) Rename(oldname, newname string) error {
+	return s.client.Rename(oldname, newname)
 }
 
-func (s SftpFs) Stat(name string) (os.FileInfo, error) {
-	return s.SftpClient.Stat(name)
+func (s Fs) Stat(name string) (os.FileInfo, error) {
+	return s.client.Stat(name)
 }
 
-func (s SftpFs) Lstat(p string) (os.FileInfo, error) {
-	return s.SftpClient.Lstat(p)
+func (s Fs) Lstat(p string) (os.FileInfo, error) {
+	return s.client.Lstat(p)
 }
 
-func (s SftpFs) Chmod(name string, mode os.FileMode) error {
-	return s.SftpClient.Chmod(name, mode)
+func (s Fs) Chmod(name string, mode os.FileMode) error {
+	return s.client.Chmod(name, mode)
 }
 
-func (s SftpFs) Chtimes(name string, atime time.Time, mtime time.Time) error {
-	return s.SftpClient.Chtimes(name, atime, mtime)
+func (s Fs) Chtimes(name string, atime time.Time, mtime time.Time) error {
+	return s.client.Chtimes(name, atime, mtime)
 }

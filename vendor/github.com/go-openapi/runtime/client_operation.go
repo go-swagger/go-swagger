@@ -14,7 +14,11 @@
 
 package runtime
 
-import "golang.org/x/net/context"
+import (
+	"net/http"
+
+	"golang.org/x/net/context"
+)
 
 // ClientOperation represents the context for a swagger operation to be submitted to the transport
 type ClientOperation struct {
@@ -28,6 +32,7 @@ type ClientOperation struct {
 	Params             ClientRequestWriter
 	Reader             ClientResponseReader
 	Context            context.Context
+	Client             *http.Client
 }
 
 // A ClientTransport implementor knows how to submit Request objects to some destination
