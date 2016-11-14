@@ -141,12 +141,12 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r runtime
   {{ if not .AllowEmptyValue }}}{{ end }}
   {{ else if .IsPathParam }}
   // path param {{ .Name }}
-  if err := r.SetPathParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if .IsNullable }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if .IsNullable }}*{{end}}{{ .ValueExpression }}{{end}}); err != nil {
+  if err := r.SetPathParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if .IsNullable }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if .IsNullable }}*{{end}}{{ .ValueExpression }}{{ if .IsCustomFormatter }}.String(){{end}}{{end}}); err != nil {
     return err
   }
   {{ else if .IsHeaderParam }}
   // header param {{ .Name }}
-  if err := r.SetHeaderParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if .IsNullable }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if .IsNullable }}*{{end}}{{ .ValueExpression }}{{end}}); err != nil {
+  if err := r.SetHeaderParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if .IsNullable }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if .IsNullable }}*{{end}}{{ .ValueExpression }}{{ if .IsCustomFormatter }}.String(){{end}}{{end}}); err != nil {
     return err
   }
   {{ else if .IsFormParam }}
