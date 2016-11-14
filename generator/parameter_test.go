@@ -736,6 +736,78 @@ func TestGenParameter_Issue628_Details(t *testing.T) {
 	}
 }
 
+func TestGenParameter_Issue731_Collection(t *testing.T) {
+	assert := assert.New(t)
+
+	gen, err := opBuilder("collection", "../fixtures/bugs/628/swagger.yml")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("clientParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertInCode(t, `for _, v := range o.WorkspaceID`, res)
+					assertInCode(t, `valuesWorkspaceID = append(valuesWorkspaceID, v.String())`, res)
+					assertInCode(t, `joinedWorkspaceID := swag.JoinByFormat(valuesWorkspaceID, "")`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestGenParameter_Issue731_Single(t *testing.T) {
+	assert := assert.New(t)
+
+	gen, err := opBuilder("single", "../fixtures/bugs/628/swagger.yml")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("clientParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertInCode(t, `qWorkspaceID := qrWorkspaceID.String()`, res)
+					assertInCode(t, `r.SetQueryParam("workspace_id", qWorkspaceID)`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestGenParameter_Issue731_Details(t *testing.T) {
+	assert := assert.New(t)
+
+	gen, err := opBuilder("details", "../fixtures/bugs/628/swagger.yml")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("clientParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertInCode(t, `r.SetPathParam("id", o.ID.String())`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
 func TestGenParameter_Issue710(t *testing.T) {
 	assert := assert.New(t)
 
