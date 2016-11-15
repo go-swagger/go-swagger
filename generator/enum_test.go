@@ -306,6 +306,37 @@ func TestEnum_ComputeInstance(t *testing.T) {
 	}
 }
 
+func TestEnum_Cluster(t *testing.T) {
+	// ensure that the enum validation for the anonymous object under the delegate property
+	// is rendered.
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.enums.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "Cluster"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ff, err := opts.LanguageOpts.FormatContent("object_thing.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					assertInCode(t, "Data *ClusterData `json:\"data\"`", res)
+					assertInCode(t, `ClusterDataStatusScheduled string = "scheduled"`, res)
+					assertInCode(t, `ClusterDataStatusBuilding  string = "building"`, res)
+					assertInCode(t, `ClusterDataStatusUp        string = "up"`, res)
+					assertInCode(t, `ClusterDataStatusDeleting  string = "deleting"`, res)
+					assertInCode(t, `ClusterDataStatusExited    string = "exited"`, res)
+					assertInCode(t, `ClusterDataStatusError     string = "error"`, res)
+
+				}
+			}
+		}
+	}
+}
+
 func TestEnum_NewPrototype(t *testing.T) {
 	// ensure that the enum validation for the anonymous object under the delegate property
 	// is rendered.

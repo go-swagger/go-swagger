@@ -221,3 +221,49 @@ definitions:
     type: string
     enum:
       - slp.action.STOP
+
+  Link:
+    type: string
+    format: uri
+
+  Cluster:
+    type: object
+    description: The cluster layout.
+    required:
+      - links
+      - data
+    properties:
+      links:
+        type: object
+        required:
+          - self
+        properties:
+          self:
+            $ref: "#/definitions/Link"
+      data:
+        type: object
+        required:
+          - status
+        properties:
+          noOfNodes:
+            type: integer
+            format: int32
+            description: Number of nodes the cluster has
+          scheduler:
+            type: string
+            description: The scheduler that needs to be used by the job scheduler.
+          status:
+            type: string
+            default: "scheduled"
+            description: The status of the cluster. It will be one of scheduled, building, up, deleting, exited or error.
+            enum:
+              - scheduled
+              - building
+              - up
+              - deleting
+              - exited
+              - error
+          clusterError:
+            type: string
+            description: Error associated with building or tearingdown the cluster.
+
