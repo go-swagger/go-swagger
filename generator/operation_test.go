@@ -280,6 +280,7 @@ func opBuilder(name, fname string) (codeGenOpBuilder, error) {
 		Name:          name,
 		Method:        method,
 		Path:          path,
+		BasePath:      specDoc.BasePath(),
 		APIPackage:    "restapi",
 		ModelsPackage: "models",
 		Principal:     "models.User",

@@ -6,10 +6,27 @@ package pet
 import (
 	"errors"
 	"net/url"
+	golangswaggerpaths "path"
 )
 
 // AddPetURL generates an URL for the add pet operation
 type AddPetURL struct {
+	_basePath string
+}
+
+// WithBasePath sets the base path for this url builder, only required when it's different from the
+// base path specified in the swagger spec.
+// When the value of the base path is an empty string
+func (o *AddPetURL) WithBasePath(bp string) *AddPetURL {
+	o.SetBasePath(bp)
+	return o
+}
+
+// SetBasePath sets the base path for this url builder, only required when it's different from the
+// base path specified in the swagger spec.
+// When the value of the base path is an empty string
+func (o *AddPetURL) SetBasePath(bp string) {
+	o._basePath = bp
 }
 
 // Build a url path and query string
@@ -18,7 +35,11 @@ func (o *AddPetURL) Build() (*url.URL, error) {
 
 	var _path = "/pets"
 
-	result.Path = _path
+	_basePath := o._basePath
+	if _basePath == "" {
+		_basePath = "/v2"
+	}
+	result.Path = golangswaggerpaths.Join(_basePath, _path)
 
 	return &result, nil
 }

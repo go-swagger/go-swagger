@@ -1,4 +1,5 @@
 swagger: '2.0'
+basePath: "/v1/api"
 info:
   version: "1.0.0"
   title: Private to-do list

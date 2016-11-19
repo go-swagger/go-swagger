@@ -96,6 +96,7 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 			Name:                 operationName,
 			Method:               method,
 			Path:                 path,
+			BasePath:             specDoc.BasePath(),
 			APIPackage:           apiPackage,
 			ModelsPackage:        opts.LanguageOpts.MangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
 			ClientPackage:        opts.LanguageOpts.MangleName(swag.ToFileName(opts.ClientPackage), "client"),
@@ -140,6 +141,7 @@ type operationGenerator struct {
 	Name                 string
 	Method               string
 	Path                 string
+	BasePath             string
 	APIPackage           string
 	ModelsPackage        string
 	ServerPackage        string
@@ -166,6 +168,7 @@ func (o *operationGenerator) Generate() error {
 	bldr.Name = o.Name
 	bldr.Method = o.Method
 	bldr.Path = o.Path
+	bldr.BasePath = o.BasePath
 	bldr.ModelsPackage = o.ModelsPackage
 	bldr.Principal = o.Principal
 	bldr.Target = o.Target
@@ -238,6 +241,7 @@ type codeGenOpBuilder struct {
 	Name            string
 	Method          string
 	Path            string
+	BasePath        string
 	APIPackage      string
 	RootAPIPackage  string
 	ModelsPackage   string
@@ -432,6 +436,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		Name:                 b.Name,
 		Method:               b.Method,
 		Path:                 b.Path,
+		BasePath:             b.BasePath,
 		Tags:                 operation.Tags[:],
 		Description:          operation.Description,
 		ReceiverName:         receiver,

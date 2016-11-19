@@ -314,6 +314,7 @@ type GenOperation struct {
 	Description  string
 	Method       string
 	Path         string
+	BasePath     string
 	Tags         []string
 	RootPackage  string
 

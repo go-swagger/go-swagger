@@ -6,10 +6,27 @@ package todos
 import (
 	"errors"
 	"net/url"
+	golangswaggerpaths "path"
 )
 
 // FindURL generates an URL for the find operation
 type FindURL struct {
+	_basePath string
+}
+
+// WithBasePath sets the base path for this url builder, only required when it's different from the
+// base path specified in the swagger spec.
+// When the value of the base path is an empty string
+func (o *FindURL) WithBasePath(bp string) *FindURL {
+	o.SetBasePath(bp)
+	return o
+}
+
+// SetBasePath sets the base path for this url builder, only required when it's different from the
+// base path specified in the swagger spec.
+// When the value of the base path is an empty string
+func (o *FindURL) SetBasePath(bp string) {
+	o._basePath = bp
 }
 
 // Build a url path and query string
@@ -18,7 +35,8 @@ func (o *FindURL) Build() (*url.URL, error) {
 
 	var _path = "/"
 
-	result.Path = _path
+	_basePath := o._basePath
+	result.Path = golangswaggerpaths.Join(_basePath, _path)
 
 	return &result, nil
 }

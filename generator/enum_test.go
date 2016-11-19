@@ -325,11 +325,11 @@ func TestEnum_Cluster(t *testing.T) {
 					res := string(ff)
 					assertInCode(t, "Data *ClusterData `json:\"data\"`", res)
 					assertInCode(t, `ClusterDataStatusScheduled string = "scheduled"`, res)
-					assertInCode(t, `ClusterDataStatusBuilding  string = "building"`, res)
-					assertInCode(t, `ClusterDataStatusUp        string = "up"`, res)
-					assertInCode(t, `ClusterDataStatusDeleting  string = "deleting"`, res)
-					assertInCode(t, `ClusterDataStatusExited    string = "exited"`, res)
-					assertInCode(t, `ClusterDataStatusError     string = "error"`, res)
+					assertInCode(t, `ClusterDataStatusBuilding string = "building"`, res)
+					assertInCode(t, `ClusterDataStatusUp string = "up"`, res)
+					assertInCode(t, `ClusterDataStatusDeleting string = "deleting"`, res)
+					assertInCode(t, `ClusterDataStatusExited string = "exited"`, res)
+					assertInCode(t, `ClusterDataStatusError string = "error"`, res)
 
 				}
 			}

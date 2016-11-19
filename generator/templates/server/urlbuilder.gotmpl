@@ -62,10 +62,11 @@ package {{ .Package }}
 // Editing this file might prove futile when you re-run the generate command
 
 import (
-  "net/url"
-  "strings"
   "fmt"
   "errors"
+  golangswaggerpaths "path"
+  "strings"
+  "net/url"
 )
 
 // {{ pascalize .Name }}URL generates an URL for the {{ humanize .Name }} operation
@@ -77,11 +78,28 @@ type {{ pascalize .Name }}URL struct {
   {{ pascalize .ID }} {{ if and (not .IsArray) .IsNullable }}*{{ end }}{{.GoType}}
   {{- end }}
 
+  _basePath string
   {{ if or (gt (len .PathParams ) 0) (gt (len .QueryParams) 0) -}}
   // avoid unkeyed usage
   _ struct{}
   {{- end }}
 
+}
+
+// WithBasePath sets the base path for this url builder, only required when it's different from the
+// base path specified in the swagger spec.
+// When the value of the base path is an empty string
+func ({{ .ReceiverName }} *{{ pascalize .Name }}URL) WithBasePath(bp string) *{{pascalize .Name}}URL {
+  {{ .ReceiverName }}.SetBasePath(bp)
+  return {{ .ReceiverName }}
+}
+
+
+// SetBasePath sets the base path for this url builder, only required when it's different from the
+// base path specified in the swagger spec.
+// When the value of the base path is an empty string
+func ({{ .ReceiverName }} *{{ pascalize .Name }}URL) SetBasePath(bp string) {
+  {{ .ReceiverName }}._basePath = bp
 }
 
 // Build a url path and query string
@@ -98,7 +116,12 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}URL) Build() (*url.URL, error) {
   }
 
   {{- end }}
-  result.Path = _path
+  _basePath := {{ .ReceiverName }}._basePath
+  {{ if .BasePath }}if _basePath == "" {
+    _basePath = {{ printf "%q" .BasePath }}
+  }
+  {{ end -}}
+  result.Path = golangswaggerpaths.Join(_basePath, _path)
 
   {{ if gt (len .QueryParams) 0 -}}
   qs := make(url.Values)

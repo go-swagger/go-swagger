@@ -54,7 +54,7 @@ func TestURLBuilder_SimplePathParams(t *testing.T) {
 					assertInCode(t, `if siString != ""`, res)
 					assertInCode(t, `_path = strings.Replace(_path, "{siString}", siString, -1)`, res)
 					assertInCode(t, `return nil, errors.New("SiString is required on SimplePathParamsURL")`, res)
-					assertInCode(t, `result.Path = _path`, res)
+					assertInCode(t, `result.Path = golangswaggerpaths.Join(_basePath, _path)`, res)
 					assertNotInCode(t, `result.RawQuery = qs.Encode()`, res)
 				} else {
 					fmt.Println(buf.String())
@@ -83,7 +83,7 @@ func TestURLBuilder_SimpleQueryParams(t *testing.T) {
 					assertInCode(t, `if id != ""`, res)
 					assertInCode(t, `_path = strings.Replace(_path, "{id}", id, -1)`, res)
 					assertInCode(t, `return nil, errors.New("ID is required on SimpleQueryParamsURL")`, res)
-					assertInCode(t, `result.Path = _path`, res)
+					assertInCode(t, `result.Path = golangswaggerpaths.Join(_basePath, _path)`, res)
 					assertInCode(t, `qs := make(url.Values)`, res)
 					assertInCode(t, `siBool := swag.FormatBool(o.SiBool)`, res)
 					assertInCode(t, `if siBool != ""`, res)
@@ -127,9 +127,17 @@ func TestURLBuilder_SimpleQueryParams(t *testing.T) {
 }
 
 func TestURLBuilder_ArrayQueryParams(t *testing.T) {
+	testArrayQueryParams(t, "../fixtures/codegen/todolist.url.simple.yml", "")
+}
+
+func TestURLBuilder_ArrayQueryParams_BasePath(t *testing.T) {
+	testArrayQueryParams(t, "../fixtures/codegen/todolist.url.basepath.yml", "/v1/api")
+}
+
+func testArrayQueryParams(t testing.TB, filePath, basePath string) {
 	assert := assert.New(t)
 
-	gen, err := opBuilder("arrayQueryParams", "../fixtures/codegen/todolist.url.simple.yml")
+	gen, err := opBuilder("arrayQueryParams", filePath)
 	if assert.NoError(err) {
 		op, err := gen.MakeOperation()
 		if assert.NoError(err) {
@@ -146,7 +154,14 @@ func TestURLBuilder_ArrayQueryParams(t *testing.T) {
 					assertInCode(t, `if id != ""`, res)
 					assertInCode(t, `_path = strings.Replace(_path, "{id}", id, -1)`, res)
 					assertInCode(t, `return nil, errors.New("ID is required on ArrayQueryParamsURL")`, res)
-					assertInCode(t, `result.Path = _path`, res)
+					assertInCode(t, "_basePath := o._basePath", res)
+					if basePath != "" {
+						assertInCode(t, `if _basePath == ""`, res)
+						assertInCode(t, `_basePath = "`+basePath+`"`, res)
+					} else {
+						assertNotInCode(t, `_basePath = "`+basePath+`"`, res)
+					}
+					assertInCode(t, `result.Path = golangswaggerpaths.Join(_basePath, _path)`, res)
 					assertInCode(t, `qs := make(url.Values)`, res)
 
 					assertInCode(t, `var siBoolIR []string`, res)

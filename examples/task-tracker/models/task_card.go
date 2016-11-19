@@ -238,10 +238,14 @@ func init() {
 }
 
 const (
-	taskCardStatusOpen     string = "open"
-	taskCardStatusClosed   string = "closed"
-	taskCardStatusIgnored  string = "ignored"
-	taskCardStatusRejected string = "rejected"
+	// TaskCardStatusOpen captures enum value "open"
+	TaskCardStatusOpen string = "open"
+	// TaskCardStatusClosed captures enum value "closed"
+	TaskCardStatusClosed string = "closed"
+	// TaskCardStatusIgnored captures enum value "ignored"
+	TaskCardStatusIgnored string = "ignored"
+	// TaskCardStatusRejected captures enum value "rejected"
+	TaskCardStatusRejected string = "rejected"
 )
 
 // prop value enum
