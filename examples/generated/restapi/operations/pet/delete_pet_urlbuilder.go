@@ -6,7 +6,7 @@ package pet
 import (
 	"errors"
 	"net/url"
-	"path"
+	golangswaggerpaths "path"
 	"strings"
 
 	"github.com/go-openapi/swag"
@@ -52,7 +52,7 @@ func (o *DeletePetURL) Build() (*url.URL, error) {
 	if _basePath == "" {
 		_basePath = "/v2"
 	}
-	result.Path = path.Join(_basePath, _path)
+	result.Path = golangswaggerpaths.Join(_basePath, _path)
 
 	return &result, nil
 }

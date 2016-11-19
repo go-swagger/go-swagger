@@ -54,7 +54,7 @@ func TestURLBuilder_SimplePathParams(t *testing.T) {
 					assertInCode(t, `if siString != ""`, res)
 					assertInCode(t, `_path = strings.Replace(_path, "{siString}", siString, -1)`, res)
 					assertInCode(t, `return nil, errors.New("SiString is required on SimplePathParamsURL")`, res)
-					assertInCode(t, `result.Path = path.Join(_basePath, _path)`, res)
+					assertInCode(t, `result.Path = golangswaggerpaths.Join(_basePath, _path)`, res)
 					assertNotInCode(t, `result.RawQuery = qs.Encode()`, res)
 				} else {
 					fmt.Println(buf.String())
@@ -83,7 +83,7 @@ func TestURLBuilder_SimpleQueryParams(t *testing.T) {
 					assertInCode(t, `if id != ""`, res)
 					assertInCode(t, `_path = strings.Replace(_path, "{id}", id, -1)`, res)
 					assertInCode(t, `return nil, errors.New("ID is required on SimpleQueryParamsURL")`, res)
-					assertInCode(t, `result.Path = path.Join(_basePath, _path)`, res)
+					assertInCode(t, `result.Path = golangswaggerpaths.Join(_basePath, _path)`, res)
 					assertInCode(t, `qs := make(url.Values)`, res)
 					assertInCode(t, `siBool := swag.FormatBool(o.SiBool)`, res)
 					assertInCode(t, `if siBool != ""`, res)
@@ -161,7 +161,7 @@ func testArrayQueryParams(t testing.TB, filePath, basePath string) {
 					} else {
 						assertNotInCode(t, `_basePath = "`+basePath+`"`, res)
 					}
-					assertInCode(t, `result.Path = path.Join(_basePath, _path)`, res)
+					assertInCode(t, `result.Path = golangswaggerpaths.Join(_basePath, _path)`, res)
 					assertInCode(t, `qs := make(url.Values)`, res)
 
 					assertInCode(t, `var siBoolIR []string`, res)

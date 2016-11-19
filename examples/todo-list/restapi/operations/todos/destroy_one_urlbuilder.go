@@ -6,7 +6,7 @@ package todos
 import (
 	"errors"
 	"net/url"
-	"path"
+	golangswaggerpaths "path"
 	"strings"
 )
 
@@ -47,7 +47,7 @@ func (o *DestroyOneURL) Build() (*url.URL, error) {
 		return nil, errors.New("ID is required on DestroyOneURL")
 	}
 	_basePath := o._basePath
-	result.Path = path.Join(_basePath, _path)
+	result.Path = golangswaggerpaths.Join(_basePath, _path)
 
 	return &result, nil
 }

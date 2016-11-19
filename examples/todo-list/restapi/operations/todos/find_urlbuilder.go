@@ -6,7 +6,7 @@ package todos
 import (
 	"errors"
 	"net/url"
-	"path"
+	golangswaggerpaths "path"
 )
 
 // FindURL generates an URL for the find operation
@@ -36,7 +36,7 @@ func (o *FindURL) Build() (*url.URL, error) {
 	var _path = "/"
 
 	_basePath := o._basePath
-	result.Path = path.Join(_basePath, _path)
+	result.Path = golangswaggerpaths.Join(_basePath, _path)
 
 	return &result, nil
 }

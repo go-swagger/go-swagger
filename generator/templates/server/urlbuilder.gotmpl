@@ -64,7 +64,7 @@ package {{ .Package }}
 import (
   "fmt"
   "errors"
-  "path"
+  golangswaggerpaths "path"
   "strings"
   "net/url"
 )
@@ -121,7 +121,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}URL) Build() (*url.URL, error) {
     _basePath = {{ printf "%q" .BasePath }}
   }
   {{ end -}}
-  result.Path = path.Join(_basePath, _path)
+  result.Path = golangswaggerpaths.Join(_basePath, _path)
 
   {{ if gt (len .QueryParams) 0 -}}
   qs := make(url.Values)

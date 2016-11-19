@@ -6,7 +6,7 @@ package todos
 import (
 	"errors"
 	"net/url"
-	"path"
+	golangswaggerpaths "path"
 
 	"github.com/go-openapi/swag"
 )
@@ -43,7 +43,7 @@ func (o *FindTodosURL) Build() (*url.URL, error) {
 	var _path = "/"
 
 	_basePath := o._basePath
-	result.Path = path.Join(_basePath, _path)
+	result.Path = golangswaggerpaths.Join(_basePath, _path)
 
 	qs := make(url.Values)
 

@@ -6,7 +6,7 @@ package user
 import (
 	"errors"
 	"net/url"
-	"path"
+	golangswaggerpaths "path"
 )
 
 // LoginUserURL generates an URL for the login user operation
@@ -44,7 +44,7 @@ func (o *LoginUserURL) Build() (*url.URL, error) {
 	if _basePath == "" {
 		_basePath = "/v2"
 	}
-	result.Path = path.Join(_basePath, _path)
+	result.Path = golangswaggerpaths.Join(_basePath, _path)
 
 	qs := make(url.Values)
 

@@ -6,7 +6,7 @@ package user
 import (
 	"errors"
 	"net/url"
-	"path"
+	golangswaggerpaths "path"
 )
 
 // CreateUserURL generates an URL for the create user operation
@@ -39,7 +39,7 @@ func (o *CreateUserURL) Build() (*url.URL, error) {
 	if _basePath == "" {
 		_basePath = "/v2"
 	}
-	result.Path = path.Join(_basePath, _path)
+	result.Path = golangswaggerpaths.Join(_basePath, _path)
 
 	return &result, nil
 }

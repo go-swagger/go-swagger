@@ -6,7 +6,7 @@ package pet
 import (
 	"errors"
 	"net/url"
-	"path"
+	golangswaggerpaths "path"
 
 	"github.com/go-openapi/swag"
 )
@@ -45,7 +45,7 @@ func (o *FindPetsByStatusURL) Build() (*url.URL, error) {
 	if _basePath == "" {
 		_basePath = "/v2"
 	}
-	result.Path = path.Join(_basePath, _path)
+	result.Path = golangswaggerpaths.Join(_basePath, _path)
 
 	qs := make(url.Values)
 

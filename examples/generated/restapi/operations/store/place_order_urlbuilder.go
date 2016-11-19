@@ -6,7 +6,7 @@ package store
 import (
 	"errors"
 	"net/url"
-	"path"
+	golangswaggerpaths "path"
 )
 
 // PlaceOrderURL generates an URL for the place order operation
@@ -39,7 +39,7 @@ func (o *PlaceOrderURL) Build() (*url.URL, error) {
 	if _basePath == "" {
 		_basePath = "/v2"
 	}
-	result.Path = path.Join(_basePath, _path)
+	result.Path = golangswaggerpaths.Join(_basePath, _path)
 
 	return &result, nil
 }
