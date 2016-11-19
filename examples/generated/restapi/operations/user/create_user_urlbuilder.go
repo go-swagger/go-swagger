@@ -6,10 +6,27 @@ package user
 import (
 	"errors"
 	"net/url"
+	"path"
 )
 
 // CreateUserURL generates an URL for the create user operation
 type CreateUserURL struct {
+	_basePath string
+}
+
+// WithBasePath sets the base path for this url builder, only required when it's different from the
+// base path specified in the swagger spec.
+// When the value of the base path is an empty string
+func (o *CreateUser) WithBasePath(bp string) *CreateUser {
+	o.SetBasePath(bp)
+	return o
+}
+
+// SetBasePath sets the base path for this url builder, only required when it's different from the
+// base path specified in the swagger spec.
+// When the value of the base path is an empty string
+func (o *CreateUser) SetBasePath(bp string) {
+	o._basePath = bp
 }
 
 // Build a url path and query string
@@ -18,7 +35,11 @@ func (o *CreateUserURL) Build() (*url.URL, error) {
 
 	var _path = "/users"
 
-	result.Path = _path
+	_basePath := o._basePath
+	if _basePath == "" {
+		_basePath = "/v2"
+	}
+	result.Path = path.Join(_basePath, _path)
 
 	return &result, nil
 }

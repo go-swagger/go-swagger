@@ -6,10 +6,27 @@ package user
 import (
 	"errors"
 	"net/url"
+	"path"
 )
 
 // LogoutUserURL generates an URL for the logout user operation
 type LogoutUserURL struct {
+	_basePath string
+}
+
+// WithBasePath sets the base path for this url builder, only required when it's different from the
+// base path specified in the swagger spec.
+// When the value of the base path is an empty string
+func (o *LogoutUser) WithBasePath(bp string) *LogoutUser {
+	o.SetBasePath(bp)
+	return o
+}
+
+// SetBasePath sets the base path for this url builder, only required when it's different from the
+// base path specified in the swagger spec.
+// When the value of the base path is an empty string
+func (o *LogoutUser) SetBasePath(bp string) {
+	o._basePath = bp
 }
 
 // Build a url path and query string
@@ -18,7 +35,11 @@ func (o *LogoutUserURL) Build() (*url.URL, error) {
 
 	var _path = "/users/logout"
 
-	result.Path = _path
+	_basePath := o._basePath
+	if _basePath == "" {
+		_basePath = "/v2"
+	}
+	result.Path = path.Join(_basePath, _path)
 
 	return &result, nil
 }

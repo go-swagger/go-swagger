@@ -6,10 +6,27 @@ package todos
 import (
 	"errors"
 	"net/url"
+	"path"
 )
 
 // AddOneURL generates an URL for the add one operation
 type AddOneURL struct {
+	_basePath string
+}
+
+// WithBasePath sets the base path for this url builder, only required when it's different from the
+// base path specified in the swagger spec.
+// When the value of the base path is an empty string
+func (o *AddOne) WithBasePath(bp string) *AddOne {
+	o.SetBasePath(bp)
+	return o
+}
+
+// SetBasePath sets the base path for this url builder, only required when it's different from the
+// base path specified in the swagger spec.
+// When the value of the base path is an empty string
+func (o *AddOne) SetBasePath(bp string) {
+	o._basePath = bp
 }
 
 // Build a url path and query string
@@ -18,7 +35,8 @@ func (o *AddOneURL) Build() (*url.URL, error) {
 
 	var _path = "/"
 
-	result.Path = _path
+	_basePath := o._basePath
+	result.Path = path.Join(_basePath, _path)
 
 	return &result, nil
 }

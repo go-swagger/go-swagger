@@ -536,6 +536,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		bldr.DefaultScheme = a.DefaultScheme
 		bldr.Doc = a.SpecDoc
 		bldr.Analyzed = a.Analyzed
+		bldr.BasePath = a.SpecDoc.BasePath()
 
 		// TODO: change operation name to something safe
 		bldr.Name = on

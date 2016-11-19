@@ -6,6 +6,7 @@ package todos
 import (
 	"errors"
 	"net/url"
+	"path"
 	"strings"
 )
 
@@ -13,8 +14,24 @@ import (
 type DestroyOneURL struct {
 	ID string
 
+	_basePath string
 	// avoid unkeyed usage
 	_ struct{}
+}
+
+// WithBasePath sets the base path for this url builder, only required when it's different from the
+// base path specified in the swagger spec.
+// When the value of the base path is an empty string
+func (o *DestroyOne) WithBasePath(bp string) *DestroyOne {
+	o.SetBasePath(bp)
+	return o
+}
+
+// SetBasePath sets the base path for this url builder, only required when it's different from the
+// base path specified in the swagger spec.
+// When the value of the base path is an empty string
+func (o *DestroyOne) SetBasePath(bp string) {
+	o._basePath = bp
 }
 
 // Build a url path and query string
@@ -29,7 +46,8 @@ func (o *DestroyOneURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("ID is required on DestroyOneURL")
 	}
-	result.Path = _path
+	_basePath := o._basePath
+	result.Path = path.Join(_basePath, _path)
 
 	return &result, nil
 }

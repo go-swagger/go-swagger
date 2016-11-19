@@ -6,6 +6,7 @@ package todos
 import (
 	"errors"
 	"net/url"
+	"path"
 
 	"github.com/go-openapi/swag"
 )
@@ -15,8 +16,24 @@ type FindTodosURL struct {
 	Limit *int32
 	Since *int64
 
+	_basePath string
 	// avoid unkeyed usage
 	_ struct{}
+}
+
+// WithBasePath sets the base path for this url builder, only required when it's different from the
+// base path specified in the swagger spec.
+// When the value of the base path is an empty string
+func (o *FindTodos) WithBasePath(bp string) *FindTodos {
+	o.SetBasePath(bp)
+	return o
+}
+
+// SetBasePath sets the base path for this url builder, only required when it's different from the
+// base path specified in the swagger spec.
+// When the value of the base path is an empty string
+func (o *FindTodos) SetBasePath(bp string) {
+	o._basePath = bp
 }
 
 // Build a url path and query string
@@ -25,7 +42,8 @@ func (o *FindTodosURL) Build() (*url.URL, error) {
 
 	var _path = "/"
 
-	result.Path = _path
+	_basePath := o._basePath
+	result.Path = path.Join(_basePath, _path)
 
 	qs := make(url.Values)
 

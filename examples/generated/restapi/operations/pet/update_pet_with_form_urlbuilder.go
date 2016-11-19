@@ -6,6 +6,7 @@ package pet
 import (
 	"errors"
 	"net/url"
+	"path"
 	"strings"
 )
 
@@ -13,8 +14,24 @@ import (
 type UpdatePetWithFormURL struct {
 	PetID string
 
+	_basePath string
 	// avoid unkeyed usage
 	_ struct{}
+}
+
+// WithBasePath sets the base path for this url builder, only required when it's different from the
+// base path specified in the swagger spec.
+// When the value of the base path is an empty string
+func (o *UpdatePetWithForm) WithBasePath(bp string) *UpdatePetWithForm {
+	o.SetBasePath(bp)
+	return o
+}
+
+// SetBasePath sets the base path for this url builder, only required when it's different from the
+// base path specified in the swagger spec.
+// When the value of the base path is an empty string
+func (o *UpdatePetWithForm) SetBasePath(bp string) {
+	o._basePath = bp
 }
 
 // Build a url path and query string
@@ -29,7 +46,11 @@ func (o *UpdatePetWithFormURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("PetID is required on UpdatePetWithFormURL")
 	}
-	result.Path = _path
+	_basePath := o._basePath
+	if _basePath == "" {
+		_basePath = "/v2"
+	}
+	result.Path = path.Join(_basePath, _path)
 
 	return &result, nil
 }
