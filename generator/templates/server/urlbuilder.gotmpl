@@ -89,7 +89,7 @@ type {{ pascalize .Name }}URL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func ({{ .ReceiverName }} *{{ pascalize .Name }}) WithBasePath(bp string) *{{pascalize .Name}} {
+func ({{ .ReceiverName }} *{{ pascalize .Name }}URL) WithBasePath(bp string) *{{pascalize .Name}}URL {
   {{ .ReceiverName }}.SetBasePath(bp)
   return {{ .ReceiverName }}
 }
@@ -98,7 +98,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) WithBasePath(bp string) *{{pas
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func ({{ .ReceiverName }} *{{ pascalize .Name }}) SetBasePath(bp string) {
+func ({{ .ReceiverName }} *{{ pascalize .Name }}URL) SetBasePath(bp string) {
   {{ .ReceiverName }}._basePath = bp
 }
 

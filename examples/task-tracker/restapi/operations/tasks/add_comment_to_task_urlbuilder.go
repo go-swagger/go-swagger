@@ -24,7 +24,7 @@ type AddCommentToTaskURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *AddCommentToTask) WithBasePath(bp string) *AddCommentToTask {
+func (o *AddCommentToTaskURL) WithBasePath(bp string) *AddCommentToTaskURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -32,7 +32,7 @@ func (o *AddCommentToTask) WithBasePath(bp string) *AddCommentToTask {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *AddCommentToTask) SetBasePath(bp string) {
+func (o *AddCommentToTaskURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 

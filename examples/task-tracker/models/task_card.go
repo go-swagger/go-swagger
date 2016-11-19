@@ -238,9 +238,13 @@ func init() {
 }
 
 const (
-	TaskCardStatusOpen     string = "open"
-	TaskCardStatusClosed   string = "closed"
-	TaskCardStatusIgnored  string = "ignored"
+	// TaskCardStatusOpen captures enum value "open"
+	TaskCardStatusOpen string = "open"
+	// TaskCardStatusClosed captures enum value "closed"
+	TaskCardStatusClosed string = "closed"
+	// TaskCardStatusIgnored captures enum value "ignored"
+	TaskCardStatusIgnored string = "ignored"
+	// TaskCardStatusRejected captures enum value "rejected"
 	TaskCardStatusRejected string = "rejected"
 )
 

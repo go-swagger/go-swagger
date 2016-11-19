@@ -22,7 +22,7 @@ type UpdateOneURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *UpdateOne) WithBasePath(bp string) *UpdateOne {
+func (o *UpdateOneURL) WithBasePath(bp string) *UpdateOneURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -30,7 +30,7 @@ func (o *UpdateOne) WithBasePath(bp string) *UpdateOne {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *UpdateOne) SetBasePath(bp string) {
+func (o *UpdateOneURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 

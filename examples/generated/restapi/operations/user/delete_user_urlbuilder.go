@@ -22,7 +22,7 @@ type DeleteUserURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *DeleteUser) WithBasePath(bp string) *DeleteUser {
+func (o *DeleteUserURL) WithBasePath(bp string) *DeleteUserURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -30,7 +30,7 @@ func (o *DeleteUser) WithBasePath(bp string) *DeleteUser {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *DeleteUser) SetBasePath(bp string) {
+func (o *DeleteUserURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 

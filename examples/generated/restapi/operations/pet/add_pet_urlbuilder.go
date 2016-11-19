@@ -17,7 +17,7 @@ type AddPetURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *AddPet) WithBasePath(bp string) *AddPet {
+func (o *AddPetURL) WithBasePath(bp string) *AddPetURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -25,7 +25,7 @@ func (o *AddPet) WithBasePath(bp string) *AddPet {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *AddPet) SetBasePath(bp string) {
+func (o *AddPetURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 

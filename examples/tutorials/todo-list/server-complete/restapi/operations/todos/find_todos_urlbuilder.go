@@ -24,7 +24,7 @@ type FindTodosURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *FindTodos) WithBasePath(bp string) *FindTodos {
+func (o *FindTodosURL) WithBasePath(bp string) *FindTodosURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -32,7 +32,7 @@ func (o *FindTodos) WithBasePath(bp string) *FindTodos {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *FindTodos) SetBasePath(bp string) {
+func (o *FindTodosURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 

@@ -17,7 +17,7 @@ type CreateUsersWithArrayInputURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *CreateUsersWithArrayInput) WithBasePath(bp string) *CreateUsersWithArrayInput {
+func (o *CreateUsersWithArrayInputURL) WithBasePath(bp string) *CreateUsersWithArrayInputURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -25,7 +25,7 @@ func (o *CreateUsersWithArrayInput) WithBasePath(bp string) *CreateUsersWithArra
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *CreateUsersWithArrayInput) SetBasePath(bp string) {
+func (o *CreateUsersWithArrayInputURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 

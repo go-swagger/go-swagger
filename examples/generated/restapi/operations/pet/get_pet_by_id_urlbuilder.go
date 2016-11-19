@@ -24,7 +24,7 @@ type GetPetByIDURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *GetPetByID) WithBasePath(bp string) *GetPetByID {
+func (o *GetPetByIDURL) WithBasePath(bp string) *GetPetByIDURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -32,7 +32,7 @@ func (o *GetPetByID) WithBasePath(bp string) *GetPetByID {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *GetPetByID) SetBasePath(bp string) {
+func (o *GetPetByIDURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 

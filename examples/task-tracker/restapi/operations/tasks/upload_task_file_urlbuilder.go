@@ -24,7 +24,7 @@ type UploadTaskFileURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *UploadTaskFile) WithBasePath(bp string) *UploadTaskFile {
+func (o *UploadTaskFileURL) WithBasePath(bp string) *UploadTaskFileURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -32,7 +32,7 @@ func (o *UploadTaskFile) WithBasePath(bp string) *UploadTaskFile {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *UploadTaskFile) SetBasePath(bp string) {
+func (o *UploadTaskFileURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 

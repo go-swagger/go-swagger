@@ -22,7 +22,7 @@ type GetUserByNameURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *GetUserByName) WithBasePath(bp string) *GetUserByName {
+func (o *GetUserByNameURL) WithBasePath(bp string) *GetUserByNameURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -30,7 +30,7 @@ func (o *GetUserByName) WithBasePath(bp string) *GetUserByName {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *GetUserByName) SetBasePath(bp string) {
+func (o *GetUserByNameURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 

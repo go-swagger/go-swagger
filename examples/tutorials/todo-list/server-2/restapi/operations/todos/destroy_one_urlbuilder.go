@@ -24,7 +24,7 @@ type DestroyOneURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *DestroyOne) WithBasePath(bp string) *DestroyOne {
+func (o *DestroyOneURL) WithBasePath(bp string) *DestroyOneURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -32,7 +32,7 @@ func (o *DestroyOne) WithBasePath(bp string) *DestroyOne {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *DestroyOne) SetBasePath(bp string) {
+func (o *DestroyOneURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 

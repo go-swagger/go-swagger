@@ -24,7 +24,7 @@ type GetTaskDetailsURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *GetTaskDetails) WithBasePath(bp string) *GetTaskDetails {
+func (o *GetTaskDetailsURL) WithBasePath(bp string) *GetTaskDetailsURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -32,7 +32,7 @@ func (o *GetTaskDetails) WithBasePath(bp string) *GetTaskDetails {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *GetTaskDetails) SetBasePath(bp string) {
+func (o *GetTaskDetailsURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 

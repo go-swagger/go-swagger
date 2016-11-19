@@ -22,7 +22,7 @@ type LoginUserURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *LoginUser) WithBasePath(bp string) *LoginUser {
+func (o *LoginUserURL) WithBasePath(bp string) *LoginUserURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -30,7 +30,7 @@ func (o *LoginUser) WithBasePath(bp string) *LoginUser {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *LoginUser) SetBasePath(bp string) {
+func (o *LoginUserURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 

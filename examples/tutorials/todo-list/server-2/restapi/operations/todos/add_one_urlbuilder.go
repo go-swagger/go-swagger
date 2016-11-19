@@ -17,7 +17,7 @@ type AddOneURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *AddOne) WithBasePath(bp string) *AddOne {
+func (o *AddOneURL) WithBasePath(bp string) *AddOneURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -25,7 +25,7 @@ func (o *AddOne) WithBasePath(bp string) *AddOne {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *AddOne) SetBasePath(bp string) {
+func (o *AddOneURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 

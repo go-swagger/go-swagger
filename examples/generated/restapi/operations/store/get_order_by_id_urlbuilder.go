@@ -22,7 +22,7 @@ type GetOrderByIDURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *GetOrderByID) WithBasePath(bp string) *GetOrderByID {
+func (o *GetOrderByIDURL) WithBasePath(bp string) *GetOrderByIDURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -30,7 +30,7 @@ func (o *GetOrderByID) WithBasePath(bp string) *GetOrderByID {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *GetOrderByID) SetBasePath(bp string) {
+func (o *GetOrderByIDURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 

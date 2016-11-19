@@ -17,7 +17,7 @@ type CreateUsersWithListInputURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *CreateUsersWithListInput) WithBasePath(bp string) *CreateUsersWithListInput {
+func (o *CreateUsersWithListInputURL) WithBasePath(bp string) *CreateUsersWithListInputURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -25,7 +25,7 @@ func (o *CreateUsersWithListInput) WithBasePath(bp string) *CreateUsersWithListI
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *CreateUsersWithListInput) SetBasePath(bp string) {
+func (o *CreateUsersWithListInputURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 

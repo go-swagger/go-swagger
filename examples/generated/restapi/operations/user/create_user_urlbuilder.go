@@ -17,7 +17,7 @@ type CreateUserURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *CreateUser) WithBasePath(bp string) *CreateUser {
+func (o *CreateUserURL) WithBasePath(bp string) *CreateUserURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -25,7 +25,7 @@ func (o *CreateUser) WithBasePath(bp string) *CreateUser {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *CreateUser) SetBasePath(bp string) {
+func (o *CreateUserURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 

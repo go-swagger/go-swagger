@@ -17,7 +17,7 @@ type FindURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *Find) WithBasePath(bp string) *Find {
+func (o *FindURL) WithBasePath(bp string) *FindURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -25,7 +25,7 @@ func (o *Find) WithBasePath(bp string) *Find {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *Find) SetBasePath(bp string) {
+func (o *FindURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 

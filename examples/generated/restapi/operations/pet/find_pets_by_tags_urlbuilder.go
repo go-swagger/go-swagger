@@ -23,7 +23,7 @@ type FindPetsByTagsURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *FindPetsByTags) WithBasePath(bp string) *FindPetsByTags {
+func (o *FindPetsByTagsURL) WithBasePath(bp string) *FindPetsByTagsURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -31,7 +31,7 @@ func (o *FindPetsByTags) WithBasePath(bp string) *FindPetsByTags {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *FindPetsByTags) SetBasePath(bp string) {
+func (o *FindPetsByTagsURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 

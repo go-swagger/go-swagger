@@ -17,7 +17,7 @@ type PlaceOrderURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *PlaceOrder) WithBasePath(bp string) *PlaceOrder {
+func (o *PlaceOrderURL) WithBasePath(bp string) *PlaceOrderURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -25,7 +25,7 @@ func (o *PlaceOrder) WithBasePath(bp string) *PlaceOrder {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *PlaceOrder) SetBasePath(bp string) {
+func (o *PlaceOrderURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 
