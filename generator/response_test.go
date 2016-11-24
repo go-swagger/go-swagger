@@ -265,3 +265,43 @@ func TestGenResponses_Issue540(t *testing.T) {
 		}
 	}
 }
+
+func TestGenResponses_Issue718_NotRequired(t *testing.T) {
+	b, err := opBuilder("doEmpty", "../fixtures/codegen/todolist.simple.yml")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			var buf bytes.Buffer
+			opts := opts()
+			if assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op)) {
+				ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					assertInCode(t, "if payload == nil", string(ff))
+					assertInCode(t, "payload = make([]models.Foo, 0, 50)", string(ff))
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestGenResponses_Issue718_Required(t *testing.T) {
+	b, err := opBuilder("doEmpty", "../fixtures/codegen/todolist.simple.yml")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			var buf bytes.Buffer
+			opts := opts()
+			if assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op)) {
+				ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					assertInCode(t, "if payload == nil", string(ff))
+					assertInCode(t, "payload = make([]models.Foo, 0, 50)", string(ff))
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}

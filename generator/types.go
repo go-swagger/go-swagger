@@ -675,7 +675,7 @@ func (rt *resolvedType) Zero() string {
 		return zr
 	}
 	if rt.IsMap || rt.IsArray {
-		return "make(" + rt.GoType + ")"
+		return "make(" + rt.GoType + ", 0, 50)"
 	}
 	if rt.IsTuple || rt.IsComplexObject {
 		if rt.IsNullable {
