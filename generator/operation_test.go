@@ -41,7 +41,7 @@ func TestUniqueOperationNames(t *testing.T) {
 		analyzed := analysis.New(sp)
 
 		ops := gatherOperations(analyzed, nil)
-		assert.Len(t, ops, 4)
+		assert.Len(t, ops, 6)
 		_, exists := ops["saveTask"]
 		assert.True(t, exists)
 		_, exists = ops["PutTasksID"]
@@ -60,7 +60,7 @@ func TestEmptyOperationNames(t *testing.T) {
 		analyzed := analysis.New(sp)
 
 		ops := gatherOperations(analyzed, nil)
-		assert.Len(t, ops, 4)
+		assert.Len(t, ops, 6)
 		_, exists := ops["PostTasks"]
 		assert.True(t, exists)
 		_, exists = ops["PutTasksID"]
