@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-openapi/runtime/flagext"
 	"github.com/go-openapi/swag"
 	flags "github.com/jessevdk/go-flags"
 	graceful "github.com/tylerb/graceful"
@@ -55,19 +56,29 @@ func (s *Server) ConfigureFlags() {
 
 // Server for the task tracker API
 type Server struct {
-	EnabledListeners []string `long:"scheme" description:"the listeners to enable, this can be repeated and defaults to the schemes in the swagger spec"`
+	EnabledListeners []string         `long:"scheme" description:"the listeners to enable, this can be repeated and defaults to the schemes in the swagger spec"`
+	CleanupTimeout   time.Duration    `long:"cleanup-timeout" description:"grace period for which to wait before shutting down the server" default:"10s"`
+	MaxHeaderSize    flagext.ByteSize `long:"max-header-size" description:"controls the maximum number of bytes the server will read parsing the request header's keys and values, including the request line. It does not limit the size of the request body." default:"1MiB"`
 
 	SocketPath    flags.Filename `long:"socket-path" description:"the unix socket to listen on" default:"/var/run/task-tracker.sock"`
 	domainSocketL net.Listener
 
-	Host        string `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
-	Port        int    `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`
-	httpServerL net.Listener
+	Host         string        `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
+	Port         int           `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`
+	ListenLimit  int           `long:"listen-limit" description:"limit the number of outstanding requests"`
+	KeepAlive    time.Duration `long:"keep-alive" description:"sets the TCP keep-alive timeouts on accepted connections. It prunes dead TCP connections ( e.g. closing laptop mid-download)" default:"3m"`
+	ReadTimeout  time.Duration `long:"read-timeout" description:"maximum duration before timing out read of the request" default:"30s"`
+	WriteTimeout time.Duration `long:"write-timeout" description:"maximum duration before timing out write of the response" default:"60s"`
+	httpServerL  net.Listener
 
 	TLSHost           string         `long:"tls-host" description:"the IP to listen on for tls, when not specified it's the same as --host" env:"TLS_HOST"`
 	TLSPort           int            `long:"tls-port" description:"the port to listen on for secure connections, defaults to a random value" env:"TLS_PORT"`
 	TLSCertificate    flags.Filename `long:"tls-certificate" description:"the certificate to use for secure connections" env:"TLS_CERTIFICATE"`
 	TLSCertificateKey flags.Filename `long:"tls-key" description:"the private key to use for secure conections" env:"TLS_PRIVATE_KEY"`
+	TLSListenLimit    int            `long:"tls-listen-limit" description:"limit the number of outstanding requests"`
+	TLSKeepAlive      time.Duration  `long:"tls-keep-alive" description:"sets the TCP keep-alive timeouts on accepted connections. It prunes dead TCP connections ( e.g. closing laptop mid-download)"`
+	TLSReadTimeout    time.Duration  `long:"tls-read-timeout" description:"maximum duration before timing out read of the request"`
+	TLSWriteTimeout   time.Duration  `long:"tls-write-timeout" description:"maximum duration before timing out write of the response"`
 	httpsServerL      net.Listener
 
 	api          *operations.TaskTrackerAPI
@@ -134,7 +145,12 @@ func (s *Server) Serve() (err error) {
 
 	if s.hasScheme(schemeUnix) {
 		domainSocket := &graceful.Server{Server: new(http.Server)}
+		domainSocket.MaxHeaderBytes = int(s.MaxHeaderSize)
 		domainSocket.Handler = s.handler
+		domainSocket.LogFunc = s.Logf
+		if int64(s.CleanupTimeout) > 0 {
+			domainSocket.Timeout = s.CleanupTimeout
+		}
 
 		wg.Add(1)
 		s.Logf("Serving task tracker at unix://%s", s.SocketPath)
@@ -149,9 +165,17 @@ func (s *Server) Serve() (err error) {
 
 	if s.hasScheme(schemeHTTP) {
 		httpServer := &graceful.Server{Server: new(http.Server)}
-		httpServer.SetKeepAlivesEnabled(true)
-		httpServer.TCPKeepAlive = 3 * time.Minute
+		httpServer.MaxHeaderBytes = int(s.MaxHeaderSize)
+		httpServer.SetKeepAlivesEnabled(int64(s.KeepAlive) > 0)
+		httpServer.TCPKeepAlive = s.KeepAlive
+		if s.ListenLimit > 0 {
+			httpServer.ListenLimit = s.ListenLimit
+		}
+		if int64(s.CleanupTimeout) > 0 {
+			httpServer.Timeout = s.CleanupTimeout
+		}
 		httpServer.Handler = s.handler
+		httpServer.LogFunc = s.Logf
 
 		wg.Add(1)
 		s.Logf("Serving task tracker at http://%s", s.httpServerL.Addr())
@@ -166,12 +190,22 @@ func (s *Server) Serve() (err error) {
 
 	if s.hasScheme(schemeHTTPS) {
 		httpsServer := &graceful.Server{Server: new(http.Server)}
-		httpsServer.SetKeepAlivesEnabled(true)
-		httpsServer.TCPKeepAlive = 3 * time.Minute
+		httpsServer.MaxHeaderBytes = int(s.MaxHeaderSize)
+		httpsServer.ReadTimeout = s.TLSReadTimeout
+		httpsServer.WriteTimeout = s.TLSWriteTimeout
+		httpsServer.SetKeepAlivesEnabled(int64(s.TLSKeepAlive) > 0)
+		httpsServer.TCPKeepAlive = s.TLSKeepAlive
+		if s.TLSListenLimit > 0 {
+			httpsServer.ListenLimit = s.TLSListenLimit
+		}
+		if int64(s.CleanupTimeout) > 0 {
+			httpsServer.Timeout = s.CleanupTimeout
+		}
 		httpsServer.Handler = s.handler
+		httpsServer.LogFunc = s.Logf
 
 		httpsServer.TLSConfig = new(tls.Config)
-		httpsServer.TLSConfig.NextProtos = []string{"http/1.1"}
+		httpsServer.TLSConfig.NextProtos = []string{"http/1.1", "h2"}
 		// https://www.owasp.org/index.php/Transport_Layer_Protection_Cheat_Sheet#Rule_-_Only_Support_Strong_Protocols
 		httpsServer.TLSConfig.MinVersion = tls.VersionTLS12
 		if s.TLSCertificate != "" && s.TLSCertificateKey != "" {
@@ -221,6 +255,22 @@ func (s *Server) Listen() error {
 		// Use http host if https host wasn't defined
 		if s.TLSHost == "" {
 			s.TLSHost = s.Host
+		}
+		// Use http listen limit if https listen limit wasn't defined
+		if s.TLSListenLimit == 0 {
+			s.TLSListenLimit = s.ListenLimit
+		}
+		// Use http tcp keep alive if https tcp keep alive wasn't defined
+		if int64(s.TLSKeepAlive) == 0 {
+			s.TLSKeepAlive = s.KeepAlive
+		}
+		// Use http read timeout if https read timeout wasn't defined
+		if int64(s.TLSReadTimeout) == 0 {
+			s.TLSReadTimeout = s.ReadTimeout
+		}
+		// Use http write timeout if https write timeout wasn't defined
+		if int64(s.TLSWriteTimeout) == 0 {
+			s.TLSWriteTimeout = s.WriteTimeout
 		}
 	}
 

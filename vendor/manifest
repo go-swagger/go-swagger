@@ -52,6 +52,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/docker/go-units",
+			"repository": "https://github.com/docker/go-units",
+			"vcs": "git",
+			"revision": "8a7beacffa3009a9ac66bad506b18ffdd110cf97",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/fsnotify/fsnotify",
 			"repository": "https://github.com/fsnotify/fsnotify",
 			"vcs": "git",
@@ -111,7 +119,7 @@
 			"importpath": "github.com/go-openapi/runtime",
 			"repository": "https://github.com/go-openapi/runtime",
 			"vcs": "git",
-			"revision": "12c07accf0687ab20b1e7b6293d8012ce282499c",
+			"revision": "14b161b40ece9dac8e244ab2fde2d209e108c6f5",
 			"branch": "master",
 			"notests": true
 		},
