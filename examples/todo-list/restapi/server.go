@@ -175,13 +175,26 @@ func (s *Server) Serve() (err error) {
 		httpsServer.TLSConfig.NextProtos = []string{"http/1.1"}
 		// https://www.owasp.org/index.php/Transport_Layer_Protection_Cheat_Sheet#Rule_-_Only_Support_Strong_Protocols
 		httpsServer.TLSConfig.MinVersion = tls.VersionTLS12
-		httpsServer.TLSConfig.Certificates = make([]tls.Certificate, 1)
-		httpsServer.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(string(s.TLSCertificate), string(s.TLSCertificateKey))
+		if s.TLSCertificate != "" && s.TLSCertificateKey != "" {
+			httpsServer.TLSConfig.Certificates = make([]tls.Certificate, 1)
+			httpsServer.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(string(s.TLSCertificate), string(s.TLSCertificateKey))
+		}
 
 		configureTLS(httpsServer.TLSConfig)
-
 		if err != nil {
 			return err
+		}
+
+		if len(httpsServer.TLSConfig.Certificates) == 0 {
+			if s.TLSCertificate == "" {
+				if s.TLSCertificateKey == "" {
+					s.Fatalf("the required flags `--tls-certificate` and `--tls-key` were not specified")
+				}
+				s.Fatalf("the required flag `--tls-certificate` was not specified")
+			}
+			if s.TLSCertificateKey == "" {
+				s.Fatalf("the required flag `--tls-key` was not specified")
+			}
 		}
 
 		wg.Add(1)
@@ -205,17 +218,7 @@ func (s *Server) Listen() error {
 		return nil
 	}
 
-	if s.hasScheme(schemeHTTPS) { // exit early on missing params
-		if s.TLSCertificate == "" {
-			if s.TLSCertificateKey == "" {
-				s.Fatalf("the required flags `--tls-certificate` and `--tls-key` were not specified")
-			}
-			s.Fatalf("the required flag `--tls-certificate` was not specified")
-		}
-		if s.TLSCertificateKey == "" {
-			s.Fatalf("the required flag `--tls-key` was not specified")
-		}
-
+	if s.hasScheme(schemeHTTPS) {
 		// Use http host if https host wasn't defined
 		if s.TLSHost == "" {
 			s.TLSHost = s.Host
