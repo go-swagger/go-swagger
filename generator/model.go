@@ -1167,7 +1167,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.KeyVar = sg.KeyVar
 	sg.GenSchema.Name = sg.GoName()
 	sg.GenSchema.Title = sg.Schema.Title
-	sg.GenSchema.Description = sg.Schema.Description
+	sg.GenSchema.Description = trimBOM(sg.Schema.Description)
 	sg.GenSchema.ReceiverName = sg.Receiver
 	sg.GenSchema.sharedValidations = sg.schemaValidations()
 	sg.GenSchema.ReadOnly = sg.Schema.ReadOnly

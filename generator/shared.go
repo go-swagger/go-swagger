@@ -712,3 +712,7 @@ func pruneEmpty(in []string) (out []string) {
 	}
 	return
 }
+
+func trimBOM(in string) string {
+	return strings.Trim(in, "\xef\xbb\xbf")
+}

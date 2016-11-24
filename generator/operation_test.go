@@ -436,3 +436,18 @@ func TestBuilder_Issue465(t *testing.T) {
 		}
 	}
 }
+
+func TestGenClient_IllegalBOM(t *testing.T) {
+	b, err := methodPathOpBuilder("get", "/v3/attachments/{attachmentId}", "../fixtures/bugs/727/swagger.json")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			opts.defaultsEnsured = false
+			opts.EnsureDefaults(true)
+			err := templates.MustGet("clientResponse").Execute(buf, op)
+			assert.NoError(t, err)
+		}
+	}
+}
