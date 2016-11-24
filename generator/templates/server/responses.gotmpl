@@ -72,8 +72,19 @@ type {{ pascalize .Name }} struct {
   */
   {{ pascalize .Name }} {{ .GoType }} `json:"{{.Name}}{{ if not .Required }},omitempty{{ end }}"`
   {{ end }}
-  {{ if .Schema }}
-  // In: body
+  {{ if .Schema }}{{ with .Schema }}
+  /*{{if .Description }}{{ .Description }}{{ end }}{{ if .Maximum }}
+  Maximum: {{ if .ExclusiveMaximum }}< {{ end }}{{ .Maximum }}{{ end }}{{ if .Minimum }}
+  Minimum: {{ if .ExclusiveMinimum }}> {{ end }}{{ .Minimum }}{{ end }}{{ if .MultipleOf }}
+  Multiple Of: {{ .MultipleOf }}{{ end }}{{ if .MaxLength }}
+  Max Length: {{ .MaxLength }}{{ end }}{{ if .MinLength }}
+  Min Length: {{ .MinLength }}{{ end }}{{ if .Pattern }}
+  Pattern: {{ .Pattern }}{{ end }}{{ if .MaxItems }}
+  Max Items: {{ .MaxItems }}{{ end }}{{ if .MinItems }}
+  Min Items: {{ .MinItems }}{{ end }}{{ if .UniqueItems }}
+  Unique: true{{ end }}
+  In: Body
+  */{{ end }}
   Payload {{ if and (not .Schema.IsBaseType) .Schema.IsComplexObject }}*{{ end }}{{ .Schema.GoType }} `json:"body,omitempty"`
   {{ end }}
 }
@@ -133,7 +144,12 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) WriteResponse(rw http.Response
   {{ end }}
   rw.WriteHeader({{ if eq .Code -1 }}{{ .ReceiverName }}._statusCode{{ else }}{{ .Code }}{{ end }}){{ if .Schema }}{{ if .Schema.IsComplexObject }}
   if {{ .ReceiverName }}.Payload != nil { {{ end }}
-    if err := producer.Produce(rw, {{ .ReceiverName }}.Payload); err != nil {
+  payload := {{ .ReceiverName }}.Payload{{ if .Schema.IsArray }}
+  if payload == nil {
+    payload = {{ .Schema.Zero }}
+  }
+  {{ end }}
+    if err := producer.Produce(rw, payload); err != nil {
       panic(err) // let the recovery middleware deal with this
     }
   {{ if .Schema.IsComplexObject }} } {{ end }}{{ end }}

@@ -124,8 +124,34 @@ paths:
         204:
           description: Task Deleted
 
+  /other/do-empty:
+    get:
+      operationId: doEmpty
+      summary: return empty list not nil
+      responses:
+        200:
+          description: list of foo
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Foo"
+
+  /other/do-empty-required:
+    get:
+      operationId: doEmptyRequired
+      summary: return empty list not nil
+      responses:
+        200:
+          description: list of foo
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Foo"
 
 definitions:
+  Foo:
+    type: string
   Task:
     title: A Task object
     description: |
