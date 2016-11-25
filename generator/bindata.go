@@ -491,7 +491,7 @@ func templatesServerResponsesGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/server/responses.gotmpl", size: 8059, mode: os.FileMode(420), modTime: time.Unix(1480027328, 0)}
+	info := bindataFileInfo{name: "templates/server/responses.gotmpl", size: 8059, mode: os.FileMode(420), modTime: time.Unix(1480030585, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
