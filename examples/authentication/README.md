@@ -56,10 +56,21 @@ Exercise auth:
 
 ```shellsession
 ± ivan@avalon:~  
- » curl -i -H 'Content-Type: application/keyauth.api.v1+json' -H 'X-Token: abcdefu' http://127.0.0.1:35307/api/customers
-curl: (7) Failed to connect to 127.0.0.1 port 35307: Connection refused
+ » curl -i -H 'Content-Type: application/keyauth.api.v1+json' -H 'X-Token: abcdefuvwxyz' http://127.0.0.1:35307/api/customers
+```
+```http
+HTTP/1.1 501 Not Implemented
+Content-Type: application/keyauth.api.v1+json
+Date: Fri, 25 Nov 2016 19:14:14 GMT
+Content-Length: 57
+
+"operation customers.GetID has not yet been implemented"
+```
+```shellsession
 ± ivan@avalon:~  
  » curl -i -H 'Content-Type: application/keyauth.api.v1+json' -H 'X-Token: abcdefu' http://127.0.0.1:35307/api/customers
+```
+```http
 HTTP/1.1 401 Unauthorized
 Content-Type: application/keyauth.api.v1+json
 Date: Fri, 25 Nov 2016 19:16:49 GMT
