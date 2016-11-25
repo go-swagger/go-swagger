@@ -1,0 +1,126 @@
+---
+
+swagger: '2.0'
+info:
+  title: keyauth debug
+  version: 0.3.0
+schemes:
+  - http
+basePath: /api
+consumes:
+  - application/keyauth.api.v1+json
+produces:
+  - application/keyauth.api.v1+json
+securityDefinitions:
+  key:
+    type: apiKey
+    in: header
+    name: x-token
+security:
+  - key: []
+paths:
+  /customers:
+    post:
+      tags: ["customers"]
+      operationId: create
+      summary: Create a new customer to track
+      parameters:
+        - name: info
+          in: body
+          schema:
+            $ref: "#/definitions/customer"
+      responses:
+        '201':
+          description: created
+          schema:
+            $ref: "#/definitions/customer"
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/error"
+    get:
+      tags: ["customers"]
+      operationId: getId
+      summary: Get a customerId given an SSN
+      parameters:
+        - name: info
+          in: body
+          schema:
+            $ref: "#/definitions/social_id"
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: "#/definitions/customer"
+        '401':
+          description: unauthorized
+          schema:
+            $ref: "#/definitions/error"
+        '404':
+          description: resource not found
+          schema:
+            $ref: "#/definitions/error"
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/error"
+definitions:
+  customer:
+    type: object
+    required:
+      - customerId
+      - name
+      - surname
+      - ssn
+      - fipsCode
+    properties:
+      customerId:
+        type: integer
+        format: int64
+        readOnly: true
+        description: internal identifier of a customer
+      name:
+        type: string
+        format: string
+        minLength: 1
+      surname:
+        type: string
+        format: string
+        minLength: 1
+      agentId:
+        type: integer
+        format: int32
+        description: agent associated with this customer
+      ssn:
+        type: string
+        format: string
+        minLength: 11
+        description: Lookup identifier to find a customer in the system
+      fipsCode:
+        type: string
+        format: string
+        minLength: 1
+  social_id:
+    type: object
+    required:
+      - ssn
+    properties:
+      ssn:
+        type: string
+        format: string
+        minLength: 11
+  error:
+    type: object
+    required:
+       - message
+    properties:
+      code:
+        type: integer
+        format: int64
+      message:
+        type: string
+      fields:
+        type: string
+  principal:
+    type: string
+
