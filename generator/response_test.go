@@ -43,6 +43,29 @@ func TestSimpleResponseRender(t *testing.T) {
 	}
 }
 
+func TestDefaultResponseRender(t *testing.T) {
+	b, err := opBuilder("getAllParameters", "../fixtures/codegen/todolist.responses.yml")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			var buf bytes.Buffer
+			opts := opts()
+			if assert.NoError(t, templates.MustGet("clientResponse").Execute(&buf, op)) {
+				ff, err := opts.LanguageOpts.FormatContent("get_all_parameters_responses.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					assertInCode(t, "type GetAllParametersDefault struct", res)
+					assertInCode(t, `if response.Code()/100 == 2`, res)
+					assertNotInCode(t, `switch response.Code()`, res)
+					assertNotInCode(t, "o.Payload", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
 func TestSimpleResponses(t *testing.T) {
 	b, err := opBuilder("updateTask", "../fixtures/codegen/todolist.responses.yml")
 

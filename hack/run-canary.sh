@@ -12,7 +12,7 @@ do
   rm -rf client models restapi cmd
   swagger generate client
   go test ./...
-  if [ $dir != 'kubernetes' ]; then
+  if [ $dir != 'kubernetes' ] && [ $dir != 'ms-cog-sci' ] ; then
     swagger generate server
     go test ./...
   fi

@@ -103,8 +103,8 @@ type {{ pascalize .Name }}Reader struct {
 
 // ReadResponse reads a server response into the received {{ .ReceiverName }}.
 func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
-  switch response.Code() {
-  {{ range .Responses }}
+  {{ if .Responses}}switch response.Code() {
+  {{ end }}{{ range .Responses }}
     case {{ .Code }}:
       result := New{{ pascalize .Name }}({{ if .Schema }}{{ if .Schema.IsStream }}{{ $.ReceiverName }}.writer{{ end }}{{ end }})
       if err := result.readResponse(response, consumer, {{ $.ReceiverName }}.formats); err != nil {
@@ -112,15 +112,19 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response ru
       }
       return {{ if .IsSuccess }}result, nil{{else}}nil, result{{end}}
   {{end}}{{ if .DefaultResponse }}{{ with .DefaultResponse }}
-    default:
-      result := New{{ pascalize .Name }}(response.Code(){{ if .Schema }}{{ if .Schema.IsStream }}, {{ $.ReceiverName }}.writer{{ end }}{{ end }})
+    {{ if $.Responses}}default:
+      {{ end }}result := New{{ pascalize .Name }}(response.Code(){{ if .Schema }}{{ if .Schema.IsStream }}, {{ $.ReceiverName }}.writer{{ end }}{{ end }})
       if err := result.readResponse(response, consumer, {{ $.ReceiverName }}.formats); err != nil {
         return nil, err
       }
-      return {{ if .IsSuccess }}result, nil{{else}}nil, result{{end}}{{ end }}{{else}}
-    default:
-      return nil, runtime.NewAPIError("unknown error", response, response.Code()){{ end }}
-  }
+      if response.Code() / 100 == 2 {
+        return result, nil
+      } else {
+        return nil, result
+      }{{ end }}{{else}}
+    {{ if $.Responses}}default:
+      {{ end }}return nil, runtime.NewAPIError("unknown error", response, response.Code()){{ end }}
+  {{ if .Responses}}}{{ end }}
 }
 
 {{ range .Responses }}
