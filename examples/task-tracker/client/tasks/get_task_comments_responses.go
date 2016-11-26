@@ -37,9 +37,8 @@ func (o *GetTaskCommentsReader) ReadResponse(response runtime.ClientResponse, co
 		}
 		if response.Code()/100 == 2 {
 			return result, nil
-		} else {
-			return nil, result
 		}
+		return nil, result
 	}
 }
 

@@ -37,9 +37,8 @@ func (o *FindReader) ReadResponse(response runtime.ClientResponse, consumer runt
 		}
 		if response.Code()/100 == 2 {
 			return result, nil
-		} else {
-			return nil, result
 		}
+		return nil, result
 	}
 }
 

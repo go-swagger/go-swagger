@@ -119,9 +119,8 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response ru
       }
       if response.Code() / 100 == 2 {
         return result, nil
-      } else {
-        return nil, result
-      }{{ end }}{{else}}
+      }
+      return nil, result{{ end }}{{else}}
     {{ if $.Responses}}default:
       {{ end }}return nil, runtime.NewAPIError("unknown error", response, response.Code()){{ end }}
   {{ if .Responses}}}{{ end }}

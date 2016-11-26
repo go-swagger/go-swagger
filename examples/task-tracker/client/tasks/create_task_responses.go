@@ -37,9 +37,8 @@ func (o *CreateTaskReader) ReadResponse(response runtime.ClientResponse, consume
 		}
 		if response.Code()/100 == 2 {
 			return result, nil
-		} else {
-			return nil, result
 		}
+		return nil, result
 	}
 }
 

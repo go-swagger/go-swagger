@@ -44,9 +44,8 @@ func (o *GetTaskDetailsReader) ReadResponse(response runtime.ClientResponse, con
 		}
 		if response.Code()/100 == 2 {
 			return result, nil
-		} else {
-			return nil, result
 		}
+		return nil, result
 	}
 }
 
