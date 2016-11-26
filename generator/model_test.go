@@ -1763,11 +1763,11 @@ func TestGenModel_Issue455(t *testing.T) {
 	}
 }
 
-func TestGenModel_Issue524(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/524/swagger.yml")
+func TestGenModel_Issue752_EOFErr(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/azure-text-analyis.json")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
-		k := "m1"
+		k := "OperationResult"
 		opts := opts()
 		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 		if assert.NoError(t, err) {
@@ -1777,7 +1777,7 @@ func TestGenModel_Issue524(t *testing.T) {
 				ct, err := opts.LanguageOpts.FormatContent("out_obj.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
-					assertInCode(t, `for i := 0; i < len(m.F2); i++`, res)
+					assertInCode(t, `&& err != io.EOF`, res)
 				} else {
 					fmt.Println(buf.String())
 				}

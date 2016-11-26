@@ -109,24 +109,24 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
   buf := bytes.NewBuffer(raw)
   dec := json.NewDecoder(buf)
   dec.UseNumber()
-  
+
   if err := dec.Decode(&data); err != nil {
   	return err
   }
 
   {{ range .AllOf }}{{ if .IsAnonymous }}{{ range $idx, $val := .Properties }}{{ if .IsBaseType }}allOf{{ $idx }}{{ pascalize $val.Name }}, err := Unmarshal{{ $val.GoType }}(bytes.NewBuffer(raw), runtime.JSONConsumer())
-  if err != nil {
+  if err != nil && err != io.EOF {
     return err
   }
   {{ end }}{{ end }}{{ end }}{{ end}}{{ range .Properties }}{{ if and ( not .IsArray ) .IsBaseType }}{{ camelize .Name }}, err := Unmarshal{{ .GoType }}(bytes.NewBuffer(data.{{ pascalize .Name}}), runtime.JSONConsumer())
-  if err != nil {
+  if err != nil && err != io.EOF {
     return err
   }{{ else if and .IsArray .IsBaseType }}var {{ camelize .Name }} {{ .GoType }}
 
   buf = bytes.NewBuffer(raw)
   dec = json.NewDecoder(buf)
   dec.UseNumber()
-  
+
   untypedObj := make(map[string]interface{})
   if err := dec.Decode(&untypedObj); err != nil {
     return err
@@ -136,7 +136,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
       for _, slcEl := range slc{{ pascalize .Name }} {
         slcJSON, _ := json.Marshal(slcEl)
         slcObj, err := Unmarshal{{ .Items.GoType }}(bytes.NewBuffer(slcJSON), runtime.JSONConsumer())
-        if err != nil {
+        if err != nil && err != io.EOF {
           return err
         }
         {{ camelize .Name }} = append({{ camelize .Name }}, slcObj)

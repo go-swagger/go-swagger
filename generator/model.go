@@ -178,6 +178,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		pg.GenSchema.DiscriminatorField = dse.FieldName
 		pg.GenSchema.DiscriminatorValue = dse.FieldValue
 		pg.GenSchema.IsSubType = true
+		knownProperties := make(map[string]struct{})
 
 		// find the referenced definitions
 		// check if it has a discriminator defined
@@ -215,10 +216,27 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 					for j := range schPtr.Properties {
 						schPtr.Properties[j].IsBaseType = true
 						schPtr.Properties[j].ValueExpression += "()"
+						knownProperties[schPtr.Properties[j].Name] = struct{}{}
 					}
 				}
 			}
 		}
+
+		// dedupe the fields
+		alreadySeen := make(map[string]struct{})
+		for i, ss := range pg.GenSchema.AllOf {
+			var remainingProperties GenSchemaList
+			for _, p := range ss.Properties {
+				if _, ok := knownProperties[p.Name]; !ok || ss.IsBaseType {
+					if _, seen := alreadySeen[p.Name]; !seen {
+						remainingProperties = append(remainingProperties, p)
+						alreadySeen[p.Name] = struct{}{}
+					}
+				}
+			}
+			pg.GenSchema.AllOf[i].Properties = remainingProperties
+		}
+
 	}
 
 	var defaultImports []string

@@ -376,6 +376,14 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 			defaultResponse = &gr
 		}
 	}
+	// Always render a default response, even when no responses were defined
+	if operation.Responses == nil || (operation.Responses.Default == nil && len(srs) == 0) {
+		gr, err := b.MakeResponse(receiver, b.Name+" default", false, resolver, -1, spec.Response{})
+		if err != nil {
+			return GenOperation{}, err
+		}
+		defaultResponse = &gr
+	}
 
 	prin := b.Principal
 	if prin == "" {
