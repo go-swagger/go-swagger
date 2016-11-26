@@ -44,7 +44,7 @@ const (
 // currency holds an alphabetically sorted list of canonical 3-letter currency
 // identifiers. Each identifier is followed by a byte of type currencyInfo,
 // defined in gen_common.go.
-var currency tag.Index = "" + // Size: 1200 bytes
+const currency tag.Index = "" + // Size: 1200 bytes
 	"\x00\x00\x00\x00ADP\x09AED\x00AFA\x00AFN\x09ALK\x00ALL\x09AMD\x09ANG\x00" +
 	"AOA\x00AOK\x00AON\x00AOR\x00ARA\x00ARL\x00ARM\x00ARP\x00ARS\x00ATS\x00AU" +
 	"D\x00AWG\x00AZM\x00AZN\x00BAD\x00BAM\x00BAN\x00BBD\x00BDT\x00BEC\x00BEF" +
@@ -846,7 +846,7 @@ var regionData = []regionInfo{ // 493 elements
 
 // symbols holds symbol data of the form <n> <str>, where n is the length of
 // the symbol string str.
-var symbols string = "" + // Size: 1396 bytes
+const symbols string = "" + // Size: 1396 bytes
 	"\x00\x02Kz\x01$\x02A$\x02KM\x03৳\x02Bs\x02R$\x01P\x03р.\x03CA$\x04CN¥" +
 	"\x02¥\x03₡\x03Kč\x02kr\x03E£\x03₧\x03€\x02£\x03₾\x02FG\x01Q\x03HK$\x01L" +
 	"\x02kn\x02Ft\x02Rp\x03₪\x03₹\x04JP¥\x03៛\x02CF\x03₩\x03₸\x03₭\x03L£\x02R" +
