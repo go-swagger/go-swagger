@@ -350,7 +350,7 @@ func TestGenerateModel_Issue319(t *testing.T) {
 	}
 }
 
-func TestGenerateModel_Issue541_Lion(t *testing.T) {
+func TestGenerateModel_Issue541(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/541/swagger.json")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
@@ -373,7 +373,33 @@ func TestGenerateModel_Issue541_Lion(t *testing.T) {
 	}
 }
 
-func TestGenerateModel_Issue740_Bar(t *testing.T) {
+func TestGenerateModel_Issue436(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/436/swagger.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "Image"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) && assert.NotEmpty(t, genModel.AllOf) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				b, err := opts.LanguageOpts.FormatContent("lion.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(b)
+					assertInCode(t, "Links", res)
+					assertInCode(t, "m.Links.Validate(formats)", res)
+					assertInCode(t, "Created *strfmt.DateTime `json:\"created\"`", res)
+					assertInCode(t, "ImageID *string `json:\"imageId\"`", res)
+					assertInCode(t, "Size *int64 `json:\"size\"`", res)
+				}
+			}
+		}
+	}
+}
+
+func TestGenerateModel_Issue740(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/740/swagger.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
@@ -385,7 +411,7 @@ func TestGenerateModel_Issue740_Bar(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				b, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+				b, err := opts.LanguageOpts.FormatContent("bar.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(b)
 					assertInCode(t, "Foo", res)

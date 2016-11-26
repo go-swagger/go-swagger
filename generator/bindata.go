@@ -191,7 +191,7 @@ func templatesClientResponseGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/client/response.gotmpl", size: 5904, mode: os.FileMode(420), modTime: time.Unix(1480140372, 0)}
+	info := bindataFileInfo{name: "templates/client/response.gotmpl", size: 5904, mode: os.FileMode(420), modTime: time.Unix(1480142561, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -611,7 +611,7 @@ func templatesTupleserializerGotmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/tupleserializer.gotmpl", size: 9229, mode: os.FileMode(420), modTime: time.Unix(1480130730, 0)}
+	info := bindataFileInfo{name: "templates/tupleserializer.gotmpl", size: 9229, mode: os.FileMode(420), modTime: time.Unix(1480142561, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
