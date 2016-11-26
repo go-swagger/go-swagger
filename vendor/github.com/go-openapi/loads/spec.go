@@ -19,10 +19,11 @@ import (
 	"fmt"
 	"net/url"
 
+	"path/filepath"
+
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
-	"path/filepath"
 )
 
 // JSONDoc loads a json document from either a file or a remote url
@@ -40,9 +41,13 @@ type DocLoader func(string) (json.RawMessage, error)
 // DocMatcher represents a predicate to check if a loader matches
 type DocMatcher func(string) bool
 
-var loaders *loader
+var (
+	loaders       *loader
+	defaultLoader *loader
+)
 
 func init() {
+	defaultLoader = &loader{Match: func(_ string) bool { return true }, Fn: JSONDoc}
 	loaders = &loader{Match: func(_ string) bool { return true }, Fn: JSONDoc}
 }
 
@@ -90,16 +95,21 @@ func Spec(path string) (*Document, error) {
 	if err != nil {
 		return nil, err
 	}
+	var lastErr error
 	for l := loaders.Next; l != nil; l = l.Next {
 		if loaders.Match(specURL.Path) {
 			b, err2 := loaders.Fn(path)
 			if err2 != nil {
-				return nil, err2
+				lastErr = err2
+				continue
 			}
 			return Analyzed(b, "")
 		}
 	}
-	b, err := loaders.Fn(path)
+	if lastErr != nil {
+		return nil, lastErr
+	}
+	b, err := defaultLoader.Fn(path)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +152,7 @@ func Analyzed(data json.RawMessage, version string) (*Document, error) {
 }
 
 // Expanded expands the ref fields in the spec document and returns a new spec document
-func (d *Document) Expanded(options... *spec.ExpandOptions) (*Document, error) {
+func (d *Document) Expanded(options ...*spec.ExpandOptions) (*Document, error) {
 	swspec := new(spec.Swagger)
 	if err := json.Unmarshal(d.raw, swspec); err != nil {
 		return nil, err
