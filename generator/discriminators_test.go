@@ -349,3 +349,26 @@ func TestGenerateModel_Issue319(t *testing.T) {
 		}
 	}
 }
+
+func TestGenerateModel_Issue541_Lion(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/541/swagger.json")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "Lion"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) && assert.NotEmpty(t, genModel.AllOf) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				b, err := opts.LanguageOpts.FormatContent("lion.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(b)
+					assertInCode(t, "Cat", res)
+					assertInCode(t, "m.Cat.Validate(formats)", res)
+				}
+			}
+		}
+	}
+}

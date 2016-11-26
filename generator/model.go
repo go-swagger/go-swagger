@@ -667,7 +667,16 @@ func (sg *schemaGenContext) buildAllOf() error {
 			sg.Container = sg.Name
 		}
 	}
+	if Debug {
+		log.Printf("building all of for %d entries", len(sg.Schema.AllOf))
+		b, _ := json.MarshalIndent(sg.Schema, "", "  ")
+		log.Println(string(b))
+	}
 	for i, sch := range sg.Schema.AllOf {
+		if Debug {
+			b, _ := json.MarshalIndent(sch, "", "  ")
+			log.Println("trying", string(b))
+		}
 		var comprop *schemaGenContext
 		comprop = sg.NewCompositionBranch(sch, i)
 		if err := comprop.makeGenSchema(); err != nil {
@@ -1076,6 +1085,12 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 	if sg.RefHandled || !sg.Named || sg.Schema.Ref.String() == "" {
 		return false, nil
 	}
+	if Debug {
+		log.Printf("short circuit named ref: %q", sg.Schema.Ref.String())
+		b, _ := json.MarshalIndent(sg.Schema, "", "  ")
+		log.Println(string(b))
+	}
+
 	nullableOverride := sg.GenSchema.IsNullable
 	tpe := resolvedType{}
 	tpe.GoType = sg.TypeResolver.goTypeName(sg.Name)
@@ -1102,7 +1117,7 @@ func (sg *schemaGenContext) liftSpecialAllOf() error {
 	// so this should not compose several objects, just 1
 	// if there is a ref with a discriminator then we look for x-class on the current definition to know
 	// the value of the discriminator to instantiate the class
-	if len(sg.Schema.AllOf) == 0 {
+	if len(sg.Schema.AllOf) < 2 {
 		return nil
 	}
 	var seenSchema int
@@ -1170,6 +1185,8 @@ func (sg *schemaGenContext) GoName() string {
 func (sg *schemaGenContext) makeGenSchema() error {
 	if Debug {
 		log.Printf("making gen schema (anon: %t, req: %t, tuple: %t) %s\n", !sg.Named, sg.Required, sg.IsTuple, sg.Name)
+		b, _ := json.MarshalIndent(sg.Schema, "", "  ")
+		log.Println(string(b))
 	}
 
 	ex := ""
@@ -1200,10 +1217,21 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	if returns {
 		return nil
 	}
+	if Debug {
+		log.Println("after shortcuit named ref")
+		b, _ := json.MarshalIndent(sg.Schema, "", "  ")
+		log.Println(string(b))
+	}
+
 	if e := sg.liftSpecialAllOf(); e != nil {
 		return e
 	}
 	nullableOverride := sg.GenSchema.IsNullable
+	if Debug {
+		log.Println("after lifting special all of")
+		b, _ := json.MarshalIndent(sg.Schema, "", "  ")
+		log.Println(string(b))
+	}
 
 	if sg.Container == "" {
 		sg.Container = sg.GenSchema.Name
