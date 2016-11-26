@@ -17,7 +17,9 @@ swagger:response getOrderByIdOK
 */
 type GetOrderByIDOK struct {
 
-	// In: body
+	/*
+	  In: Body
+	*/
 	Payload *models.Order `json:"body,omitempty"`
 }
 
@@ -42,7 +44,8 @@ func (o *GetOrderByIDOK) WriteResponse(rw http.ResponseWriter, producer runtime.
 
 	rw.WriteHeader(200)
 	if o.Payload != nil {
-		if err := producer.Produce(rw, o.Payload); err != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
 			panic(err) // let the recovery middleware deal with this
 		}
 	}

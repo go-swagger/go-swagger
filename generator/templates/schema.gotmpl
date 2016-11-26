@@ -91,7 +91,7 @@ func unmarshal{{ pascalize .Name }}(data []byte, consumer runtime.Consumer) ({{ 
 }
 {{ else }}{{ if or .IsComplexObject .IsTuple .IsAdditionalProperties }}{{ if .Name }}type {{ if not .IsExported }}{{ .Name }}{{ else }}{{ pascalize .Name }}{{ end }} {{ end }}{{ template "schemaBody" . }}
 {{ else }}type {{ pascalize .Name }} {{ template "typeSchemaType" . }}
-{{ end }}{{ if .IsSubType }}
+{{ end -}}{{ if .IsSubType }}
 {{ range .AllOf }}
 {{ range .Properties }}
 {{ if .IsBaseType }}func ({{$.ReceiverName}} *{{ pascalize $.Name}}) {{ pascalize .Name}}() {{ template "schemaType" . }}{
@@ -110,17 +110,11 @@ func ({{$.ReceiverName}} *{{ pascalize $.Name}}) Set{{ pascalize .Name}}(val {{ 
   // {{ template "docstring" .AdditionalItems }}
   {{- template "propertyValidationDocString" .AdditionalItems}}
 {{ pascalize .AdditionalItems.Name }}() []{{ template "schemaType" .AdditionalItems }}
-{{ end }}{{ if not .HasBaseType }}
-{{ template "discriminatedSerializer" . }}{{ end}}
-{{ else if .IsTuple }}
-{{ template "tupleSerializer" . }}
-{{ else if .IsAdditionalProperties }}
-{{ template "additionalPropertiesSerializer" . }}
-{{ end }}{{ if .HasBaseType }}{{ template "hasDiscriminatedSerializer" . }}{{ end }}{{ end }}{{ end }}{{ if .IncludeValidator }}{{if and (not .IsInterface) (not .IsBaseType) (or .Required .HasValidations .HasBaseType) }}
+{{ end }}{{ end }}{{ template "schemaSerializer" . }}{{ end }}{{ if .IncludeValidator }}{{if and (not .IsInterface) (not .IsBaseType) (or .Required .HasValidations .HasBaseType) }}
 {{ template "schemavalidator" . }}
 {{ else if gt (len .AllOf) 0 }}
 {{ template "schemavalidator" . }}
 {{ else if not (or .IsInterface .IsStream .IsBaseType) }}// Validate validates this {{ humanize .Name }}
 func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ if not .IsExported }}{{ .Name }}{{ else }}{{ pascalize .Name }}{{ end }}) Validate(formats strfmt.Registry) error {
   return nil
-}{{ end }}{{ end }}
+}{{ end }}{{ end }}{{ end }}

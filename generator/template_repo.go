@@ -160,6 +160,7 @@ var protectedTemplates = map[string]bool{
 	"tuplefieldIface":                true,
 	"tupleSerializer":                true,
 	"tupleserializer":                true,
+	"schemaSerializer":               true,
 	"propertyvalidator":              true,
 	"structfieldIface":               true,
 	"schemaBody":                     true,

@@ -36,7 +36,9 @@ swagger:response destroyOneDefault
 type DestroyOneDefault struct {
 	_statusCode int
 
-	// In: body
+	/*
+	  In: Body
+	*/
 	Payload *models.Error `json:"body,omitempty"`
 }
 
@@ -78,7 +80,8 @@ func (o *DestroyOneDefault) WriteResponse(rw http.ResponseWriter, producer runti
 
 	rw.WriteHeader(o._statusCode)
 	if o.Payload != nil {
-		if err := producer.Produce(rw, o.Payload); err != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
 			panic(err) // let the recovery middleware deal with this
 		}
 	}

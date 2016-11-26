@@ -17,7 +17,9 @@ swagger:response updateOneOK
 */
 type UpdateOneOK struct {
 
-	// In: body
+	/*
+	  In: Body
+	*/
 	Payload *models.Item `json:"body,omitempty"`
 }
 
@@ -42,7 +44,8 @@ func (o *UpdateOneOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pro
 
 	rw.WriteHeader(200)
 	if o.Payload != nil {
-		if err := producer.Produce(rw, o.Payload); err != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
 			panic(err) // let the recovery middleware deal with this
 		}
 	}
@@ -55,7 +58,9 @@ swagger:response updateOneDefault
 type UpdateOneDefault struct {
 	_statusCode int
 
-	// In: body
+	/*
+	  In: Body
+	*/
 	Payload *models.Error `json:"body,omitempty"`
 }
 
@@ -97,7 +102,8 @@ func (o *UpdateOneDefault) WriteResponse(rw http.ResponseWriter, producer runtim
 
 	rw.WriteHeader(o._statusCode)
 	if o.Payload != nil {
-		if err := producer.Produce(rw, o.Payload); err != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
 			panic(err) // let the recovery middleware deal with this
 		}
 	}

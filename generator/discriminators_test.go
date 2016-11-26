@@ -365,6 +365,7 @@ func TestGenerateModel_Issue541(t *testing.T) {
 				b, err := opts.LanguageOpts.FormatContent("lion.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(b)
+					// fmt.Println(res)
 					assertInCode(t, "Cat", res)
 					assertInCode(t, "m.Cat.Validate(formats)", res)
 				}
@@ -388,6 +389,7 @@ func TestGenerateModel_Issue436(t *testing.T) {
 				b, err := opts.LanguageOpts.FormatContent("lion.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(b)
+					// fmt.Println(res)
 					assertInCode(t, "Links", res)
 					assertInCode(t, "m.Links.Validate(formats)", res)
 					assertInCode(t, "Created *strfmt.DateTime `json:\"created\"`", res)
@@ -416,6 +418,39 @@ func TestGenerateModel_Issue740(t *testing.T) {
 					res := string(b)
 					assertInCode(t, "Foo", res)
 					assertInCode(t, "m.Foo.Validate(formats)", res)
+				}
+			}
+		}
+	}
+}
+
+func TestGenerateModel_Issue743(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/743/swagger.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "Awol"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) && assert.NotEmpty(t, genModel.AllOf) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				b, err := opts.LanguageOpts.FormatContent("awol.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(b)
+					// fmt.Println(res)
+					assertInCode(t, "Foo", res)
+					assertInCode(t, "Bar", res)
+					assertInCode(t, "m.Foo.Validate(formats)", res)
+					assertInCode(t, "m.Bar.Validate(formats)", res)
+					assertInCode(t, "swag.WriteJSON(m.Foo)", res)
+					assertInCode(t, "swag.WriteJSON(m.Bar)", res)
+					assertInCode(t, "swag.ReadJSON(raw, &aO0)", res)
+					assertInCode(t, "swag.ReadJSON(raw, &aO1)", res)
+					assertInCode(t, "m.Foo = aO0", res)
+					assertInCode(t, "m.Bar = aO1", res)
+
 				}
 			}
 		}

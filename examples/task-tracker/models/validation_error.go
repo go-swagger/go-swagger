@@ -5,6 +5,7 @@ package models
 
 import (
 	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 
 	"github.com/go-openapi/errors"
 )
@@ -16,6 +17,31 @@ type ValidationError struct {
 
 	// an optional field name to which this validation error applies
 	Field string `json:"field,omitempty"`
+}
+
+// UnmarshalJSON unmarshals this object from a JSON structure
+func (m *ValidationError) UnmarshalJSON(raw []byte) error {
+
+	var aO0 Error
+	if err := swag.ReadJSON(raw, &aO0); err != nil {
+		return err
+	}
+	m.Error = aO0
+
+	return nil
+}
+
+// MarshalJSON marshals this object to a JSON structure
+func (m ValidationError) MarshalJSON() ([]byte, error) {
+	var _parts [][]byte
+
+	aO0, err := swag.WriteJSON(m.Error)
+	if err != nil {
+		return nil, err
+	}
+	_parts = append(_parts, aO0)
+
+	return swag.ConcatJSON(_parts...), nil
 }
 
 // Validate validates this validation error

@@ -17,7 +17,9 @@ swagger:response findTodosOK
 */
 type FindTodosOK struct {
 
-	// In: body
+	/*
+	  In: Body
+	*/
 	Payload []*models.Item `json:"body,omitempty"`
 }
 
@@ -41,7 +43,12 @@ func (o *FindTodosOK) SetPayload(payload []*models.Item) {
 func (o *FindTodosOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
-	if err := producer.Produce(rw, o.Payload); err != nil {
+	payload := o.Payload
+	if payload == nil {
+		payload = make([]*models.Item, 0, 50)
+	}
+
+	if err := producer.Produce(rw, payload); err != nil {
 		panic(err) // let the recovery middleware deal with this
 	}
 
@@ -54,7 +61,9 @@ swagger:response findTodosDefault
 type FindTodosDefault struct {
 	_statusCode int
 
-	// In: body
+	/*
+	  In: Body
+	*/
 	Payload *models.Error `json:"body,omitempty"`
 }
 
@@ -96,7 +105,8 @@ func (o *FindTodosDefault) WriteResponse(rw http.ResponseWriter, producer runtim
 
 	rw.WriteHeader(o._statusCode)
 	if o.Payload != nil {
-		if err := producer.Produce(rw, o.Payload); err != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
 			panic(err) // let the recovery middleware deal with this
 		}
 	}

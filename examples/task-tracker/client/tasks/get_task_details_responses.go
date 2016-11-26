@@ -42,7 +42,11 @@ func (o *GetTaskDetailsReader) ReadResponse(response runtime.ClientResponse, con
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
-		return nil, result
+		if response.Code()/100 == 2 {
+			return result, nil
+		} else {
+			return nil, result
+		}
 	}
 }
 
