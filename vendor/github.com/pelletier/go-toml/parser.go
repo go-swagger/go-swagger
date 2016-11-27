@@ -211,7 +211,7 @@ func (p *tomlParser) parseAssign() tomlParserStateFn {
 	var toInsert interface{}
 
 	switch value.(type) {
-	case *TomlTree:
+	case *TomlTree, []*TomlTree:
 		toInsert = value
 	default:
 		toInsert = &tomlValue{value, key.Position}

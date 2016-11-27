@@ -11,7 +11,7 @@ import (
 )
 
 type shared struct {
-	Spec          flags.Filename `long:"spec" short:"f" description:"the spec file to use" default:"./swagger.json"`
+	Spec          flags.Filename `long:"spec" short:"f" description:"the spec file to use (default swagger.{json,yml,yaml})"`
 	APIPackage    string         `long:"api-package" short:"a" description:"the package to save the operations" default:"operations"`
 	ModelPackage  string         `long:"model-package" short:"m" description:"the package to save the models" default:"models"`
 	ServerPackage string         `long:"server-package" short:"s" description:"the package to save the server specific code" default:"restapi"`
@@ -20,7 +20,6 @@ type shared struct {
 	TemplateDir   flags.Filename `long:"template-dir" short:"T" description:"alternative template override directory"`
 	ConfigFile    flags.Filename `long:"config-file" short:"C" description:"configuration file to use for overriding template options"`
 }
-
 
 func readConfig(filename string) (*viper.Viper, error) {
 	if filename == "" {

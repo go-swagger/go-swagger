@@ -16,6 +16,7 @@ package generator
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -107,13 +108,28 @@ func GoLangOpts() *LanguageOpts {
 // the generators will be very noisy about what they are doing
 var Debug = os.Getenv("DEBUG") != ""
 
-func findSwaggerSpec(name string) (string, error) {
-	f, err := os.Stat(name)
-	if err != nil {
-		return "", err
+func findSwaggerSpec(nm string) (string, error) {
+	specs := []string{"swagger.json", "swagger.yml", "swagger.yaml"}
+	if nm != "" {
+		specs = []string{nm}
 	}
-	if f.IsDir() {
-		return "", fmt.Errorf("%s is a directory", name)
+	var name string
+	for _, nn := range specs {
+		f, err := os.Stat(nn)
+		if err != nil && !os.IsNotExist(err) {
+			return "", err
+		}
+		if err != nil && os.IsNotExist(err) {
+			continue
+		}
+		if f.IsDir() {
+			return "", fmt.Errorf("%s is a directory", nn)
+		}
+		name = nn
+		break
+	}
+	if name == "" {
+		return "", errors.New("couldn't find a swagger spec")
 	}
 	return name, nil
 }

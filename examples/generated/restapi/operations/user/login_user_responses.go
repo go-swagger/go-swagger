@@ -15,7 +15,9 @@ swagger:response loginUserOK
 */
 type LoginUserOK struct {
 
-	// In: body
+	/*
+	  In: Body
+	*/
 	Payload string `json:"body,omitempty"`
 }
 
@@ -39,7 +41,8 @@ func (o *LoginUserOK) SetPayload(payload string) {
 func (o *LoginUserOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
-	if err := producer.Produce(rw, o.Payload); err != nil {
+	payload := o.Payload
+	if err := producer.Produce(rw, payload); err != nil {
 		panic(err) // let the recovery middleware deal with this
 	}
 

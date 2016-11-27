@@ -17,7 +17,9 @@ swagger:response getPetByIdOK
 */
 type GetPetByIDOK struct {
 
-	// In: body
+	/*
+	  In: Body
+	*/
 	Payload *models.Pet `json:"body,omitempty"`
 }
 
@@ -42,7 +44,8 @@ func (o *GetPetByIDOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pr
 
 	rw.WriteHeader(200)
 	if o.Payload != nil {
-		if err := producer.Produce(rw, o.Payload); err != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
 			panic(err) // let the recovery middleware deal with this
 		}
 	}

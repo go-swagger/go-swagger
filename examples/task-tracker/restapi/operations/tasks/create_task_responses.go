@@ -40,7 +40,9 @@ type CreateTaskDefault struct {
 	*/
 	XErrorCode string `json:"X-Error-Code"`
 
-	// In: body
+	/*
+	  In: Body
+	*/
 	Payload *models.Error `json:"body,omitempty"`
 }
 
@@ -100,7 +102,8 @@ func (o *CreateTaskDefault) WriteResponse(rw http.ResponseWriter, producer runti
 
 	rw.WriteHeader(o._statusCode)
 	if o.Payload != nil {
-		if err := producer.Produce(rw, o.Payload); err != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
 			panic(err) // let the recovery middleware deal with this
 		}
 	}

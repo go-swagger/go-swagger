@@ -22,7 +22,9 @@ type ListTasksOK struct {
 	*/
 	XLastTaskID int64 `json:"X-Last-Task-Id"`
 
-	// In: body
+	/*
+	  In: Body
+	*/
 	Payload []*models.TaskCard `json:"body,omitempty"`
 }
 
@@ -64,7 +66,12 @@ func (o *ListTasksOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pro
 	}
 
 	rw.WriteHeader(200)
-	if err := producer.Produce(rw, o.Payload); err != nil {
+	payload := o.Payload
+	if payload == nil {
+		payload = make([]*models.TaskCard, 0, 50)
+	}
+
+	if err := producer.Produce(rw, payload); err != nil {
 		panic(err) // let the recovery middleware deal with this
 	}
 
@@ -76,7 +83,9 @@ swagger:response listTasksUnprocessableEntity
 */
 type ListTasksUnprocessableEntity struct {
 
-	// In: body
+	/*
+	  In: Body
+	*/
 	Payload *models.ValidationError `json:"body,omitempty"`
 }
 
@@ -101,7 +110,8 @@ func (o *ListTasksUnprocessableEntity) WriteResponse(rw http.ResponseWriter, pro
 
 	rw.WriteHeader(422)
 	if o.Payload != nil {
-		if err := producer.Produce(rw, o.Payload); err != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
 			panic(err) // let the recovery middleware deal with this
 		}
 	}
@@ -118,7 +128,9 @@ type ListTasksDefault struct {
 	*/
 	XErrorCode string `json:"X-Error-Code"`
 
-	// In: body
+	/*
+	  In: Body
+	*/
 	Payload *models.Error `json:"body,omitempty"`
 }
 
@@ -178,7 +190,8 @@ func (o *ListTasksDefault) WriteResponse(rw http.ResponseWriter, producer runtim
 
 	rw.WriteHeader(o._statusCode)
 	if o.Payload != nil {
-		if err := producer.Produce(rw, o.Payload); err != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
 			panic(err) // let the recovery middleware deal with this
 		}
 	}

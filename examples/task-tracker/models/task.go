@@ -47,6 +47,31 @@ type Task struct {
 	ReportedBy *UserCard `json:"reportedBy,omitempty"`
 }
 
+// UnmarshalJSON unmarshals this object from a JSON structure
+func (m *Task) UnmarshalJSON(raw []byte) error {
+
+	var aO0 TaskCard
+	if err := swag.ReadJSON(raw, &aO0); err != nil {
+		return err
+	}
+	m.TaskCard = aO0
+
+	return nil
+}
+
+// MarshalJSON marshals this object to a JSON structure
+func (m Task) MarshalJSON() ([]byte, error) {
+	var _parts [][]byte
+
+	aO0, err := swag.WriteJSON(m.TaskCard)
+	if err != nil {
+		return nil, err
+	}
+	_parts = append(_parts, aO0)
+
+	return swag.ConcatJSON(_parts...), nil
+}
+
 // Validate validates this task
 func (m *Task) Validate(formats strfmt.Registry) error {
 	var res []error

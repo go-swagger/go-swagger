@@ -94,55 +94,64 @@ func toTomlValue(item interface{}, indent int) string {
 // Recursive support function for ToString()
 // Outputs a tree, using the provided keyspace to prefix group names
 func (t *TomlTree) toToml(indent, keyspace string) string {
-	result := ""
+	resultChunks := []string{}
 	for k, v := range t.values {
 		// figure out the keyspace
 		combinedKey := k
 		if keyspace != "" {
 			combinedKey = keyspace + "." + combinedKey
 		}
+		resultChunk := ""
 		// output based on type
 		switch node := v.(type) {
 		case []*TomlTree:
 			for _, item := range node {
 				if len(item.Keys()) > 0 {
-					result += fmt.Sprintf("\n%s[[%s]]\n", indent, combinedKey)
+					resultChunk += fmt.Sprintf("\n%s[[%s]]\n", indent, combinedKey)
 				}
-				result += item.toToml(indent+"  ", combinedKey)
+				resultChunk += item.toToml(indent+"  ", combinedKey)
 			}
+			resultChunks = append(resultChunks, resultChunk)
 		case *TomlTree:
 			if len(node.Keys()) > 0 {
-				result += fmt.Sprintf("\n%s[%s]\n", indent, combinedKey)
+				resultChunk += fmt.Sprintf("\n%s[%s]\n", indent, combinedKey)
 			}
-			result += node.toToml(indent+"  ", combinedKey)
+			resultChunk += node.toToml(indent+"  ", combinedKey)
+			resultChunks = append(resultChunks, resultChunk)
 		case map[string]interface{}:
 			sub := TreeFromMap(node)
 
 			if len(sub.Keys()) > 0 {
-				result += fmt.Sprintf("\n%s[%s]\n", indent, combinedKey)
+				resultChunk += fmt.Sprintf("\n%s[%s]\n", indent, combinedKey)
 			}
-			result += sub.toToml(indent+"  ", combinedKey)
+			resultChunk += sub.toToml(indent+"  ", combinedKey)
+			resultChunks = append(resultChunks, resultChunk)
 		case map[string]string:
 			sub := TreeFromMap(convertMapStringString(node))
 
 			if len(sub.Keys()) > 0 {
-				result += fmt.Sprintf("\n%s[%s]\n", indent, combinedKey)
+				resultChunk += fmt.Sprintf("\n%s[%s]\n", indent, combinedKey)
 			}
-			result += sub.toToml(indent+"  ", combinedKey)
+			resultChunk += sub.toToml(indent+"  ", combinedKey)
+			resultChunks = append(resultChunks, resultChunk)
 		case map[interface{}]interface{}:
 			sub := TreeFromMap(convertMapInterfaceInterface(node))
 
 			if len(sub.Keys()) > 0 {
-				result += fmt.Sprintf("\n%s[%s]\n", indent, combinedKey)
+				resultChunk += fmt.Sprintf("\n%s[%s]\n", indent, combinedKey)
 			}
-			result += sub.toToml(indent+"  ", combinedKey)
+			resultChunk += sub.toToml(indent+"  ", combinedKey)
+			resultChunks = append(resultChunks, resultChunk)
 		case *tomlValue:
-			result += fmt.Sprintf("%s%s = %s\n", indent, k, toTomlValue(node.value, 0))
+			resultChunk = fmt.Sprintf("%s%s = %s\n", indent, k, toTomlValue(node.value, 0))
+			resultChunks = append([]string{resultChunk}, resultChunks...)
 		default:
-			result += fmt.Sprintf("%s%s = %s\n", indent, k, toTomlValue(v, 0))
+			resultChunk = fmt.Sprintf("%s%s = %s\n", indent, k, toTomlValue(v, 0))
+			resultChunks = append([]string{resultChunk}, resultChunks...)
 		}
+
 	}
-	return result
+	return strings.Join(resultChunks, "")
 }
 
 func convertMapStringString(in map[string]string) map[string]interface{} {

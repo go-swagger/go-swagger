@@ -17,7 +17,9 @@ swagger:response findPetsByTagsOK
 */
 type FindPetsByTagsOK struct {
 
-	// In: body
+	/*
+	  In: Body
+	*/
 	Payload []*models.Pet `json:"body,omitempty"`
 }
 
@@ -41,7 +43,12 @@ func (o *FindPetsByTagsOK) SetPayload(payload []*models.Pet) {
 func (o *FindPetsByTagsOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
-	if err := producer.Produce(rw, o.Payload); err != nil {
+	payload := o.Payload
+	if payload == nil {
+		payload = make([]*models.Pet, 0, 50)
+	}
+
+	if err := producer.Produce(rw, payload); err != nil {
 		panic(err) // let the recovery middleware deal with this
 	}
 
