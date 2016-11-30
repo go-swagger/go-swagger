@@ -35,7 +35,7 @@ func TestScanFileParam(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	assert.Len(t, noParamOps, 6)
+	assert.Len(t, noParamOps, 7)
 
 	of, ok := noParamOps["myOperation"]
 	assert.True(t, ok)
@@ -59,7 +59,7 @@ func TestParamsParser(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	assert.Len(t, noParamOps, 6)
+	assert.Len(t, noParamOps, 7)
 
 	cr, ok := noParamOps["yetAnotherOperation"]
 	assert.True(t, ok)
@@ -103,6 +103,16 @@ func TestParamsParser(t *testing.T) {
 	assert.Equal(t, "body", bodyParam.In)
 	assert.Equal(t, "#/definitions/order", bodyParam.Schema.Ref.String())
 	assert.True(t, bodyParam.Required)
+
+	mop, ok := noParamOps["getOrders"]
+	assert.True(t, ok)
+	assert.Len(t, mop.Parameters, 2)
+	ordersParam := mop.Parameters[0]
+	assert.Equal(t, "The orders", ordersParam.Description)
+	assert.True(t, ordersParam.Required)
+	assert.Equal(t, "array", ordersParam.Type)
+	otherParam := mop.Parameters[1]
+	assert.Equal(t, "And another thing", otherParam.Description)
 
 	op, ok := noParamOps["someOperation"]
 	assert.True(t, ok)

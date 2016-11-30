@@ -45,6 +45,22 @@ type OrderBodyParams struct {
 	Order *models.StoreOrder `json:"order"`
 }
 
+// An MultipleOrderParams model.
+//
+// This is used for operations that want multiple orders as the body
+// swagger:parameters getOrders
+type MultipleOrderParams struct {
+	// The orders
+	// required: true
+	Orders []*OrderBodyParams `json:"orders"`
+
+	// And another thing
+	// in: body
+	Another []struct {
+		That string `json:"that"`
+	} `json:"another"`
+}
+
 // A ComplexerOneParams is composed of a SimpleOne and some extra fields
 // swagger:parameters yetAnotherOperation
 type ComplexerOneParams struct {
