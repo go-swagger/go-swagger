@@ -49,6 +49,11 @@ type SimpleOne struct {
 	Age  int32  `json:"age"`
 }
 
+// swagger:response simpleOnes
+type SimpleOnes struct {
+	Ones []*SimpleOne `json:"ones"`
+}
+
 // A ComplexerOne is composed of a SimpleOne and some extra fields.
 // swagger:response complexerOne
 type ComplexerOne struct {

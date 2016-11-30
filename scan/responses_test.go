@@ -36,7 +36,7 @@ func TestParseResponses(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Len(t, responses, 5)
+	assert.Len(t, responses, 6)
 	cr, ok := responses["complexerOne"]
 	assert.True(t, ok)
 	assert.Len(t, cr.Headers, 7)
@@ -67,6 +67,10 @@ func TestParseResponses(t *testing.T) {
 			assert.Fail(t, "unkown header: "+k)
 		}
 	}
+
+	sos, ok := responses["simpleOnes"]
+	assert.True(t, ok)
+	assert.Len(t, sos.Headers, 1)
 
 	res, ok := responses["someResponse"]
 	assert.True(t, ok)
