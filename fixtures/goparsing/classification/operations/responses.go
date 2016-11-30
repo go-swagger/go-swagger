@@ -49,6 +49,7 @@ type SimpleOne struct {
 	Age  int32  `json:"age"`
 }
 
+// SimpleOnes is a collection of SimpleOne
 // swagger:response simpleOnes
 type SimpleOnes struct {
 	Ones []*SimpleOne `json:"ones"`

@@ -550,7 +550,7 @@ type ModelA struct {
 	Doors int `json:"doors"`
 }
 
-// Collection of cars
+// Cars is a collection of cars
 //
 // swagger:model cars
 type Cars struct {
