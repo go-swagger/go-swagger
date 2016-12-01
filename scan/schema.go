@@ -741,29 +741,51 @@ func (scp *schemaParser) createParser(nm string, schema, ps *spec.Schema, fld *a
 			}
 
 		}
+
+		var parseArrayTypes func(expr ast.Expr, items *spec.SchemaOrArray, level int) ([]tagParser, error)
+		parseArrayTypes = func(expr ast.Expr, items *spec.SchemaOrArray, level int) ([]tagParser, error) {
+			if items == nil || items.Schema == nil {
+				return []tagParser{}, nil
+			}
+			switch iftpe := expr.(type) {
+			case *ast.ArrayType:
+				eleTaggers := itemsTaggers(items.Schema, level)
+				sp.taggers = append(eleTaggers, sp.taggers...)
+				otherTaggers, err := parseArrayTypes(iftpe.Elt, items.Schema.Items, level+1)
+				if err != nil {
+					return nil, err
+				}
+				return otherTaggers, nil
+			case *ast.Ident:
+				taggers := []tagParser{}
+				if iftpe.Obj == nil {
+					taggers = itemsTaggers(items.Schema, level)
+				}
+				otherTaggers, err := parseArrayTypes(expr, items.Schema.Items, level+1)
+				if err != nil {
+					return nil, err
+				}
+				return append(taggers, otherTaggers...), nil
+			case *ast.StarExpr:
+				otherTaggers, err := parseArrayTypes(iftpe.X, items, level)
+				if err != nil {
+					return nil, err
+				}
+				return otherTaggers, nil
+			default:
+				return nil, fmt.Errorf("unknown field type ele for %q", nm)
+			}
+		}
 		// check if this is a primitive, if so parse the validations from the
 		// doc comments of the slice declaration.
 		if ftped, ok := fld.Type.(*ast.ArrayType); ok {
-			ftpe := ftped
-			items, level := ps.Items, 0
-			for items != nil && items.Schema != nil {
-				switch iftpe := ftpe.Elt.(type) {
-				case *ast.ArrayType:
-					eleTaggers := itemsTaggers(items.Schema, level)
-					sp.taggers = append(eleTaggers, sp.taggers...)
-					ftpe = iftpe
-				case *ast.Ident:
-					if iftpe.Obj == nil {
-						sp.taggers = append(itemsTaggers(items.Schema, level), sp.taggers...)
-					}
-					break
-					//default:
-					//return fmt.Errorf("unknown field type (%T) ele for %q", iftpe, nm)
-				}
-				items = items.Schema.Items
-				level = level + 1
+			taggers, err := parseArrayTypes(ftped.Elt, ps.Items, 0)
+			if err != nil {
+				return sp
 			}
+			sp.taggers = append(taggers, sp.taggers...)
 		}
+
 	} else {
 		sp.taggers = []tagParser{
 			newSingleLineTagParser("required", &setRequiredSchema{schema, nm}),

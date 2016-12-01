@@ -549,3 +549,10 @@ type ModelA struct {
 	// The number of doors on this Model A
 	Doors int `json:"doors"`
 }
+
+// Cars is a collection of cars
+//
+// swagger:model cars
+type Cars struct {
+	Cars []*TeslaCar `json:"cars"`
+}

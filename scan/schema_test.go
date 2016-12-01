@@ -179,6 +179,11 @@ func TestEmbeddedTypes(t *testing.T) {
 	assertProperty(t, &schema, "string", "notes", "", "Notes")
 }
 
+func TestArrayOfPointers(t *testing.T) {
+	schema := noModelDefs["cars"]
+	assertProperty(t, &schema, "array", "cars", "", "Cars")
+}
+
 func TestEmbeddedAllOf(t *testing.T) {
 	schema := noModelDefs["AllOfModel"]
 
