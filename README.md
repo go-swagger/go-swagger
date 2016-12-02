@@ -12,6 +12,27 @@ With a Swagger-enabled API, you get interactive documentation, client SDK genera
 
 Swagger helps companies like Apigee, Getty Images, Intuit, LivingSocial, McKesson, Microsoft, Morningstar, and PayPal build the best possible services with RESTful APIs. Now in version 2.0, Swagger is more enabling than ever. And it's 100% open source software.
 
+## How is this different from go generator in swagger-codegen
+
+tl;dr The main difference at this moment is that this one will actually work.
+
+The swagger-codegen project only generates a client and even there it will only support flat models.
+
+* This project supports most features offered by jsonschema including polymorphism.
+* It allows for generating a swagger specification from go code.
+* It allows for generating a server from a swagger definition and to generate an equivalent spec back from that codebase.
+* It allows for generating a client from a swagger definition.
+* It has support for several common swagger vendor extensions.
+
+Why is this not done in the swagger-codegen project? Because:
+
+* I don't really know java very well and so I'd be learning both java and the object model of the codegen which was in heavy flux as opposed to doing go and I really wanted to go experience of designing a large codebase with it.
+* Go's super limited type system makes it so that it doesn't fit well in the model of swagger-codegen
+* Go's idea of polymorphism doesn't reconcile very well with a solution designed for languages that actually have inheritance and so forth.
+* For supporting types like [][][]map[string][][]int64 I don't think it's possible with mustache
+* I gravely underestimated the amount of work that would be involved in making something useful out of it.
+* My personal mission: I want the jvm to go away, it was great way back when now it's just silly (vm in container on vm in vm in container)
+
 ## Using 0.5.0
 
 Because 0.5.0 and master have diverged significantly, you should checkout the tag 0.5.0 for go-swagger when you use the currently released version.
