@@ -16,16 +16,6 @@ package models
 
 import "github.com/go-swagger/go-swagger/fixtures/goparsing/classification/transitive/mods"
 
-// swagger:default CategoryDefault
-var CategoryDefault = "Slice"
-
-// swagger:enum CategoryEnum
-var CategoryEnum = []string{
-	"Bar",
-	"Slice",
-	"Foo",
-}
-
 // StoreOrder represents an order in this application.
 //
 // An order can either be created, processed or completed.
@@ -47,8 +37,8 @@ type StoreOrder struct {
 	// the category of this user
 	//
 	// required: true
-	// default: CategoryDefault
-	// enum: CategoryEnum
+	// default: bar
+	// enum: foo,bar,none
 	Category string `json:"category"`
 
 	// the items for this order

@@ -168,8 +168,8 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, "string", param.Type)
 			assert.True(t, param.Required)
 			assert.Equal(t, "Category", param.Extensions["x-go-name"])
-			// @todo: do enum validation
-			// @todo: do default value validation.
+            assert.EqualValues(t, []interface{}{"foo","bar","none"}, param.Enum, "%s enum values are incorrect", param.Name)
+            assert.Equal(t, "bar", param.Default, "%s default value is incorrect", param.Name)
 
 		case "foo_slice":
 			assert.Equal(t, "a FooSlice has foos which are strings", param.Description)
@@ -261,7 +261,7 @@ func TestParamsParser(t *testing.T) {
 	// assert that the order of the parameters is maintained
 	order, ok := noParamOps["anotherOperation"]
 	assert.True(t, ok)
-	assert.Len(t, order.Parameters, 7)
+	assert.Len(t, order.Parameters, 8)
 
 	for index, param := range order.Parameters {
 		switch param.Name {
@@ -273,12 +273,14 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, 2, index, "%s index incorrect", param.Name)
 		case "created":
 			assert.Equal(t, 3, index, "%s index incorrect", param.Name)
+        case "category":
+            assert.Equal(t, 4, index, "%s index incorrect", param.Name)
 		case "foo_slice":
-			assert.Equal(t, 4, index, "%s index incorrect", param.Name)
-		case "bar_slice":
 			assert.Equal(t, 5, index, "%s index incorrect", param.Name)
-		case "items":
+		case "bar_slice":
 			assert.Equal(t, 6, index, "%s index incorrect", param.Name)
+		case "items":
+			assert.Equal(t, 7, index, "%s index incorrect", param.Name)
 		default:
 			assert.Fail(t, "unkown property: "+param.Name)
 		}

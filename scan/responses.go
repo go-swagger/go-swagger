@@ -108,15 +108,14 @@ func (sv headerValidations) SetPattern(val string)          { sv.current.Pattern
 func (sv headerValidations) SetUnique(val bool)             { sv.current.UniqueItems = val }
 func (sv headerValidations) SetCollectionFormat(val string) { sv.current.CollectionFormat = val }
 func (sv headerValidations) SetEnum(val string) {
-
-	// @todo: lookup enum value.
-	//sv.current.Enum = val
+    list := strings.Split(val, ",")
+    interfaceSlice := make([]interface{}, len(list))
+    for i, d := range list {
+        interfaceSlice[i] = d
+    }
+    sv.current.Enum = interfaceSlice
 }
-func (sv headerValidations) SetDefault(val string) {
-
-	// @todo: lookup default value.
-	//sv.current.Default = val
-}
+func (sv headerValidations) SetDefault(val string)          { sv.current.Default = val }
 
 func newResponseDecl(file *ast.File, decl *ast.GenDecl, ts *ast.TypeSpec) responseDecl {
 	var rd responseDecl
