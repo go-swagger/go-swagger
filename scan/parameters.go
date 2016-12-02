@@ -280,6 +280,9 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 			}
 		}
 
+		// a slice used to keep track of the sequence of the map keys, as maps does not keep to any specific sequence (since Go-1.4)
+		sequence := []string{}
+
 		for _, fld := range tpe.Fields.List {
 			if len(fld.Names) > 0 && fld.Names[0] != nil && fld.Names[0].IsExported() {
 				gnm := fld.Names[0].Name
@@ -423,10 +426,12 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 					ps.AddExtension("x-go-name", gnm)
 				}
 				pt[nm] = ps
+				sequence = append(sequence, nm)
 			}
 		}
 
-		for k, p := range pt {
+		for _, k := range sequence {
+			p := pt[k]
 			for i, v := range operation.Parameters {
 				if v.Name == k {
 					operation.Parameters = append(operation.Parameters[:i], operation.Parameters[i+1:]...)
