@@ -248,4 +248,30 @@ func TestParamsParser(t *testing.T) {
 			assert.Fail(t, "unkown property: "+param.Name)
 		}
 	}
+
+	// assert that the order of the parameters is maintained
+	order, ok := noParamOps["anotherOperation"]
+	assert.True(t, ok)
+	assert.Len(t, order.Parameters, 7)
+
+	for index, param := range order.Parameters {
+		switch param.Name {
+		case "id":
+			assert.Equal(t, 0, index, "%s index incorrect", param.Name)
+		case "score":
+			assert.Equal(t, 1, index, "%s index incorrect", param.Name)
+		case "x-hdr-name":
+			assert.Equal(t, 2, index, "%s index incorrect", param.Name)
+		case "created":
+			assert.Equal(t, 3, index, "%s index incorrect", param.Name)
+		case "foo_slice":
+			assert.Equal(t, 4, index, "%s index incorrect", param.Name)
+		case "bar_slice":
+			assert.Equal(t, 5, index, "%s index incorrect", param.Name)
+		case "items":
+			assert.Equal(t, 6, index, "%s index incorrect", param.Name)
+		default:
+			assert.Fail(t, "unkown property: "+param.Name)
+		}
+	}
 }
