@@ -142,6 +142,8 @@ type NoParams struct {
 	// unique: true
 	// items.minItems: 4
 	// items.maxItems: 9
+    // items.enum: bar1,bar2,bar3
+    // items.default: bar2
 	// items.items.minItems: 5
 	// items.items.maxItems: 8
 	// items.items.items.minLength: 3
