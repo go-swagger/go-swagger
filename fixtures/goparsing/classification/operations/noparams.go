@@ -76,6 +76,16 @@ type ComplexerOneParams struct {
 	NoTagName string `json:",omitempty"`
 }
 
+// swagger:default CategoryDefault
+var CategoryDefault = "Slice"
+
+// swagger:enum CategoryEnum
+var CategoryEnum = []string{
+	"Bar",
+	"Slice",
+	"Foo",
+}
+
 // NoParams is a struct that exists in a package
 // but is not annotated with the swagger params annotations
 // so it should now show up in a test
@@ -114,6 +124,14 @@ type NoParams struct {
 	// required: false
 	// in: query
 	Created strfmt.DateTime `json:"created"`
+
+	// The Category of this model
+	//
+	// required: true
+	// enum: CategoryEnum
+	// default: CategoryDefault
+	// in: query
+	Category string `json:"category"`
 
 	// a FooSlice has foos which are strings
 	//

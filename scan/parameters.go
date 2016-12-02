@@ -21,6 +21,7 @@ import (
 
 	"github.com/go-openapi/spec"
 	"golang.org/x/tools/go/loader"
+	"log"
 )
 
 type operationValidationBuilder interface {
@@ -113,6 +114,18 @@ func (sv paramValidations) SetMaxLength(val int64)         { sv.current.MaxLengt
 func (sv paramValidations) SetPattern(val string)          { sv.current.Pattern = val }
 func (sv paramValidations) SetUnique(val bool)             { sv.current.UniqueItems = val }
 func (sv paramValidations) SetCollectionFormat(val string) { sv.current.CollectionFormat = val }
+func (sv paramValidations) SetEnum(val string) {
+
+	log.Println(val)
+	// @todo: lookup enum value.
+	//sv.current.Enum = val
+}
+func (sv paramValidations) SetDefault(val string) {
+
+	log.Println(val)
+	// @todo: lookup default value.
+	//sv.current.Default = val
+}
 
 type itemsValidations struct {
 	current *spec.Items
@@ -134,6 +147,18 @@ func (sv itemsValidations) SetMaxLength(val int64)         { sv.current.MaxLengt
 func (sv itemsValidations) SetPattern(val string)          { sv.current.Pattern = val }
 func (sv itemsValidations) SetUnique(val bool)             { sv.current.UniqueItems = val }
 func (sv itemsValidations) SetCollectionFormat(val string) { sv.current.CollectionFormat = val }
+func (sv itemsValidations) SetEnum(val string) {
+
+	log.Println(val)
+	// @todo: lookup enum value.
+	//sv.current.Enum = val
+}
+func (sv itemsValidations) SetDefault(val string) {
+
+	log.Println(val)
+	// @todo: lookup default value.
+	//sv.current.Default = val
+}
 
 type paramDecl struct {
 	File         *ast.File
@@ -340,6 +365,8 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 						newSingleLineTagParser("minItems", &setMinItems{paramValidations{&ps}, rxf(rxMinItemsFmt, "")}),
 						newSingleLineTagParser("maxItems", &setMaxItems{paramValidations{&ps}, rxf(rxMaxItemsFmt, "")}),
 						newSingleLineTagParser("unique", &setUnique{paramValidations{&ps}, rxf(rxUniqueFmt, "")}),
+						newSingleLineTagParser("enum", &setEnum{paramValidations{&ps}, rxf(rxEnumFmt, "")}),
+						newSingleLineTagParser("default", &setDefault{paramValidations{&ps}, rxf(rxDefaultFmt, "")}),
 						newSingleLineTagParser("required", &setRequiredParam{&ps}),
 						newSingleLineTagParser("in", &matchOnlyParam{&ps, rxIn}),
 					}
@@ -359,6 +386,8 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 							newSingleLineTagParser(fmt.Sprintf("items%dMinItems", level), &setMinItems{itemsValidations{items}, rxf(rxMinItemsFmt, itemsPrefix)}),
 							newSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{itemsValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
 							newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{itemsValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
+							newSingleLineTagParser(fmt.Sprintf("items%dEnum", level), &setEnum{itemsValidations{items}, rxf(rxEnumFmt, itemsPrefix)}),
+							newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{itemsValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
 						}
 					}
 

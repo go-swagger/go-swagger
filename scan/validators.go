@@ -35,6 +35,8 @@ type validationBuilder interface {
 	SetPattern(string)
 
 	SetUnique(bool)
+	SetEnum(string)
+	SetDefault(string)
 }
 
 type valueParser interface {
@@ -270,6 +272,46 @@ func (su *setUnique) Parse(lines []string) error {
 			return err
 		}
 		su.builder.SetUnique(req)
+	}
+	return nil
+}
+
+type setEnum struct {
+	builder validationBuilder
+	rx      *regexp.Regexp
+}
+
+func (se *setEnum) Matches(line string) bool {
+	return se.rx.MatchString(line)
+}
+
+func (se *setEnum) Parse(lines []string) error {
+	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+		return nil
+	}
+	matches := se.rx.FindStringSubmatch(lines[0])
+	if len(matches) > 1 && len(matches[1]) > 0 {
+		se.builder.SetEnum(matches[1])
+	}
+	return nil
+}
+
+type setDefault struct {
+	builder validationBuilder
+	rx      *regexp.Regexp
+}
+
+func (sd *setDefault) Matches(line string) bool {
+	return sd.rx.MatchString(line)
+}
+
+func (sd *setDefault) Parse(lines []string) error {
+	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+		return nil
+	}
+	matches := sd.rx.FindStringSubmatch(lines[0])
+	if len(matches) > 1 && len(matches[1]) > 0 {
+		sd.builder.SetDefault(matches[1])
 	}
 	return nil
 }
