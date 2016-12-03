@@ -85,13 +85,22 @@ func (sv schemaValidations) SetMinimum(val float64, exclusive bool) {
 	sv.current.Minimum = &val
 	sv.current.ExclusiveMinimum = exclusive
 }
-func (sv schemaValidations) SetMultipleOf(val float64) { sv.current.MultipleOf = &val }
-func (sv schemaValidations) SetMinItems(val int64)     { sv.current.MinItems = &val }
-func (sv schemaValidations) SetMaxItems(val int64)     { sv.current.MaxItems = &val }
-func (sv schemaValidations) SetMinLength(val int64)    { sv.current.MinLength = &val }
-func (sv schemaValidations) SetMaxLength(val int64)    { sv.current.MaxLength = &val }
-func (sv schemaValidations) SetPattern(val string)     { sv.current.Pattern = val }
-func (sv schemaValidations) SetUnique(val bool)        { sv.current.UniqueItems = val }
+func (sv schemaValidations) SetMultipleOf(val float64)  { sv.current.MultipleOf = &val }
+func (sv schemaValidations) SetMinItems(val int64)      { sv.current.MinItems = &val }
+func (sv schemaValidations) SetMaxItems(val int64)      { sv.current.MaxItems = &val }
+func (sv schemaValidations) SetMinLength(val int64)     { sv.current.MinLength = &val }
+func (sv schemaValidations) SetMaxLength(val int64)     { sv.current.MaxLength = &val }
+func (sv schemaValidations) SetPattern(val string)      { sv.current.Pattern = val }
+func (sv schemaValidations) SetUnique(val bool)         { sv.current.UniqueItems = val }
+func (sv schemaValidations) SetEnum(val string)         {
+    list := strings.Split(val, ",")
+    interfaceSlice := make([]interface{}, len(list))
+    for i, d := range list {
+        interfaceSlice[i] = d
+    }
+    sv.current.Enum = interfaceSlice
+}
+func (sv schemaValidations) SetDefault(val string)          { sv.current.Default = val }
 
 func newSchemaAnnotationParser(goName string) *schemaAnnotationParser {
 	return &schemaAnnotationParser{GoName: goName, rx: rxModelOverride}
@@ -720,6 +729,8 @@ func (scp *schemaParser) createParser(nm string, schema, ps *spec.Schema, fld *a
 			newSingleLineTagParser("minItems", &setMinItems{schemaValidations{ps}, rxf(rxMinItemsFmt, "")}),
 			newSingleLineTagParser("maxItems", &setMaxItems{schemaValidations{ps}, rxf(rxMaxItemsFmt, "")}),
 			newSingleLineTagParser("unique", &setUnique{schemaValidations{ps}, rxf(rxUniqueFmt, "")}),
+            newSingleLineTagParser("enum", &setEnum{schemaValidations{ps}, rxf(rxEnumFmt, "")}),
+            newSingleLineTagParser("default", &setDefault{schemaValidations{ps}, rxf(rxDefaultFmt, "")}),
 			newSingleLineTagParser("required", &setRequiredSchema{schema, nm}),
 			newSingleLineTagParser("readOnly", &setReadOnlySchema{ps}),
 			newSingleLineTagParser("discriminator", &setDiscriminator{schema, nm}),
@@ -738,6 +749,8 @@ func (scp *schemaParser) createParser(nm string, schema, ps *spec.Schema, fld *a
 				newSingleLineTagParser(fmt.Sprintf("items%dMinItems", level), &setMinItems{schemaValidations{items}, rxf(rxMinItemsFmt, itemsPrefix)}),
 				newSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{schemaValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
 				newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{schemaValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
+                newSingleLineTagParser(fmt.Sprintf("items%dEnum", level), &setEnum{schemaValidations{items}, rxf(rxEnumFmt, itemsPrefix)}),
+                newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{schemaValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
 			}
 
 		}
@@ -929,6 +942,16 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 		return nil
 	}
 
+	if enumName, ok := enumName(gd.Doc); ok {
+		log.Println(enumName)
+		return nil
+	}
+
+	if defaultName, ok := defaultName(gd.Doc); ok {
+		log.Println(defaultName)
+		return nil
+	}
+
 	switch tpe := ts.Type.(type) {
 	case *ast.ArrayType:
 		return scp.makeRef(file, pkg, gd, ts, prop)
@@ -1047,6 +1070,34 @@ func strfmtName(comments *ast.CommentGroup) (string, bool) {
 		for _, cmt := range comments.List {
 			for _, ln := range strings.Split(cmt.Text, "\n") {
 				matches := rxStrFmt.FindStringSubmatch(ln)
+				if len(matches) > 1 && len(strings.TrimSpace(matches[1])) > 0 {
+					return strings.TrimSpace(matches[1]), true
+				}
+			}
+		}
+	}
+	return "", false
+}
+
+func enumName(comments *ast.CommentGroup) (string, bool) {
+	if comments != nil {
+		for _, cmt := range comments.List {
+			for _, ln := range strings.Split(cmt.Text, "\n") {
+				matches := rxEnum.FindStringSubmatch(ln)
+				if len(matches) > 1 && len(strings.TrimSpace(matches[1])) > 0 {
+					return strings.TrimSpace(matches[1]), true
+				}
+			}
+		}
+	}
+	return "", false
+}
+
+func defaultName(comments *ast.CommentGroup) (string, bool) {
+	if comments != nil {
+		for _, cmt := range comments.List {
+			for _, ln := range strings.Split(cmt.Text, "\n") {
+				matches := rxDefault.FindStringSubmatch(ln)
 				if len(matches) > 1 && len(strings.TrimSpace(matches[1])) > 0 {
 					return strings.TrimSpace(matches[1]), true
 				}

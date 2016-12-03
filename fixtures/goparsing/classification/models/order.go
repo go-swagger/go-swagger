@@ -34,6 +34,13 @@ type StoreOrder struct {
 	// min length: 3
 	UserID int64 `json:"userId"`
 
+	// the category of this user
+	//
+	// required: true
+	// default: bar
+	// enum: foo,bar,none
+	Category string `json:"category"`
+
 	// the items for this order
 	Items []struct {
 		ID       int32    `json:"id"`

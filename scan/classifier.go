@@ -134,7 +134,7 @@ func (pc *programClassifier) Classify(prog *loader.Program) (*classifiedProgram,
 								} else {
 									return nil, fmt.Errorf("classifier: already annotated as %s, can't also be %q", seenStruct, matches[1])
 								}
-							case "strfmt", "name", "discriminated", "file":
+							case "strfmt", "name", "discriminated", "file", "enum", "default":
 								// TODO: perhaps collect these and pass along to avoid lookups later on
 							case "allOf":
 							default:

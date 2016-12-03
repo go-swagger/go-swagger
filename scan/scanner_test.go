@@ -673,6 +673,7 @@ func TestSchemaValueExtractors(t *testing.T) {
 		" swagger:parameters     ",
 		"swagger:parameters      ",
 	}
+
 	validParams := []string{
 		"yada123",
 		"date",

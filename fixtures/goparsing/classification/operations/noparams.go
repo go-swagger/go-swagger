@@ -115,6 +115,14 @@ type NoParams struct {
 	// in: query
 	Created strfmt.DateTime `json:"created"`
 
+	// The Category of this model
+	//
+	// required: true
+	// enum: foo,bar,none
+	// default: bar
+	// in: query
+	Category string `json:"category"`
+
 	// a FooSlice has foos which are strings
 	//
 	// min items: 3
@@ -134,6 +142,8 @@ type NoParams struct {
 	// unique: true
 	// items.minItems: 4
 	// items.maxItems: 9
+    // items.enum: bar1,bar2,bar3
+    // items.default: bar2
 	// items.items.minItems: 5
 	// items.items.maxItems: 8
 	// items.items.items.minLength: 3

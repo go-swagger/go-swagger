@@ -32,6 +32,11 @@ type GenericError struct {
 // A ValidationError is an error that is used when the required input fails validation.
 // swagger:response validationError
 type ValidationError struct {
+    // in: header
+    // enum: foo,bar
+    // default: foo
+    Code int `json:"code"`
+
 	// The error message
 	// in: body
 	Body struct {
