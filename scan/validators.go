@@ -628,27 +628,20 @@ func (ss *setOpResponses) Parse(lines []string) error {
 				isDefinitionRef = true
 				refTarget = value
 			}
-			if description == "" && isDefinitionRef {
-				//There was no description set, but this is a reference to a
-				//definition, so a description is required, so set one
-				description = refTarget
+			if _, ok := ss.responses[refTarget]; !ok {
+				if _, ok := ss.definitions[refTarget]; ok {
+					isDefinitionRef = true
+				}
 			}
+
 			var err error
 			if isDefinitionRef {
+				if description == "" {
+					description = refTarget
+				}
 				ref, err = spec.NewRef("#/definitions/" + refTarget)
 			} else {
 				ref, err = spec.NewRef("#/responses/" + refTarget)
-			}
-			if err != nil {
-				return err
-			}
-
-			if _, ok := ss.responses[value]; !ok {
-				if _, ok := ss.definitions[value]; ok {
-					isDefinitionRef = true
-					ref, err = spec.NewRef("#/definitions/" + value)
-				}
-			} else {
 			}
 			if err != nil {
 				return err
