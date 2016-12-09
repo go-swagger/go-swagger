@@ -36,12 +36,6 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 		return err
 	}
 
-	defer func() {
-		typeMapping["binary"] = "io.ReadCloser"
-	}()
-	typeMapping["binary"] = "io.Writer"
-	customFormatters["io.Writer"] = struct{}{}
-
 	if opts.TemplateDir != "" {
 		if err := templates.LoadDir(opts.TemplateDir); err != nil {
 			return err
