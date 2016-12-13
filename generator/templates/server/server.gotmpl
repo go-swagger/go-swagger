@@ -26,11 +26,11 @@ const (
 var defaultSchemes []string
 
 func init() {
-  defaultSchemes = []string{ {{ if (hasInsecure .Schemes) }}
-    schemeHTTP,{{ end}}{{ if (hasSecure .Schemes) }}
-    schemeHTTPS,{{ end }}{{ if (contains .ExtraSchemes "unix") }}
-    schemeUnix,{{ end }}
-  }
+	defaultSchemes = []string{ {{ if (hasInsecure .Schemes) }}
+		schemeHTTP,{{ end}}{{ if (hasSecure .Schemes) }}
+		schemeHTTPS,{{ end }}{{ if (contains .ExtraSchemes "unix") }}
+		schemeUnix,{{ end }}
+	}
 }
 
 // NewServer creates a new api {{ humanize .Name }} server but does not configure it
@@ -60,10 +60,10 @@ type Server struct {
 	CleanupTimeout   time.Duration    `long:"cleanup-timeout" description:"grace period for which to wait before shutting down the server" default:"10s"`
 	MaxHeaderSize    flagext.ByteSize `long:"max-header-size" description:"controls the maximum number of bytes the server will read parsing the request header's keys and values, including the request line. It does not limit the size of the request body." default:"1MiB"`
 
-  SocketPath flags.Filename `long:"socket-path" description:"the unix socket to listen on" default:"/var/run/{{ dasherize .Name }}.sock"`
+	SocketPath flags.Filename `long:"socket-path" description:"the unix socket to listen on" default:"/var/run/{{ dasherize .Name }}.sock"`
 	domainSocketL net.Listener
 
-  Host string `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
+	Host string `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
 	Port int    `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`
 	ListenLimit  int           `long:"listen-limit" description:"limit the number of outstanding requests"`
 	KeepAlive    time.Duration `long:"keep-alive" description:"sets the TCP keep-alive timeouts on accepted connections. It prunes dead TCP connections ( e.g. closing laptop mid-download)" default:"3m"`
@@ -84,7 +84,7 @@ type Server struct {
 	{{ if .ExcludeSpec }}Spec flags.Filename `long:"spec" description:"the swagger specification to serve"`{{ end }}
 	api               *{{ .Package }}.{{ pascalize .Name }}API
 	handler           http.Handler
-  hasListeners bool
+	hasListeners bool
 }
 
 // Logf logs message either via defined user logger or via system one if no user logger is defined.
@@ -121,7 +121,7 @@ func (s *Server) SetAPI(api *{{ .Package }}.{{ pascalize .Name }}API) {
 }
 
 func (s *Server) hasScheme(scheme string) bool {
-  schemes := s.EnabledListeners
+	schemes := s.EnabledListeners
 	if len(schemes) == 0 {
 		schemes = defaultSchemes
 	}
@@ -136,62 +136,68 @@ func (s *Server) hasScheme(scheme string) bool {
 
 // Serve the api
 func (s *Server) Serve() (err error) {
-  if !s.hasListeners {
-    if err := s.Listen(); err != nil {
-      return err
-    }
-  }
+	if !s.hasListeners {
+		if err := s.Listen(); err != nil {
+		  return err
+		}
+	}
 
-  var wg sync.WaitGroup
+	var wg sync.WaitGroup
 
-  if s.hasScheme(schemeUnix) {
-    domainSocket := &graceful.Server{Server: new(http.Server)}
-  	domainSocket.MaxHeaderBytes = int(s.MaxHeaderSize)
-    domainSocket.Handler = s.handler
+	if s.hasScheme(schemeUnix) {
+		domainSocket := &graceful.Server{Server: new(http.Server)}
+		domainSocket.MaxHeaderBytes = int(s.MaxHeaderSize)
+		domainSocket.Handler = s.handler
 		domainSocket.LogFunc = s.Logf
 		if int64(s.CleanupTimeout) > 0 {
 			domainSocket.Timeout = s.CleanupTimeout
 		}
 
-    wg.Add(1)
-    s.Logf("Serving {{ humanize .Name }} at unix://%s", s.SocketPath)
-    go func(l net.Listener){
-      defer wg.Done()
-      if err := domainSocket.Serve(l); err != nil {
-        s.Fatalf("%v", err)
-      }
-      s.Logf("Stopped serving {{ humanize .Name }} at unix://%s", s.SocketPath)
-    }(s.domainSocketL)
-  }
+		configureServer(domainSocket, "unix")
 
-  if s.hasScheme(schemeHTTP) {
-    httpServer := &graceful.Server{Server: new(http.Server)}
+		wg.Add(1)
+		s.Logf("Serving {{ humanize .Name }} at unix://%s", s.SocketPath)
+		go func(l net.Listener){
+		  defer wg.Done()
+		  if err := domainSocket.Serve(l); err != nil {
+			s.Fatalf("%v", err)
+		  }
+		  s.Logf("Stopped serving {{ humanize .Name }} at unix://%s", s.SocketPath)
+		}(s.domainSocketL)
+	}
+
+	if s.hasScheme(schemeHTTP) {
+		httpServer := &graceful.Server{Server: new(http.Server)}
 		httpServer.MaxHeaderBytes = int(s.MaxHeaderSize)
 		httpServer.SetKeepAlivesEnabled(int64(s.KeepAlive) > 0)
 		httpServer.TCPKeepAlive = s.KeepAlive
 		if s.ListenLimit > 0 {
 			httpServer.ListenLimit = s.ListenLimit
 		}
+
 		if int64(s.CleanupTimeout) > 0 {
 			httpServer.Timeout = s.CleanupTimeout
 		}
-    httpServer.Handler = s.handler
-    httpServer.LogFunc = s.Logf
 
-    wg.Add(1)
-    s.Logf("Serving {{ humanize .Name }} at http://%s", s.httpServerL.Addr())
-    go func(l net.Listener) {
-      defer wg.Done()
-      if err := httpServer.Serve(l); err != nil {
-        s.Fatalf("%v", err)
-      }
-      s.Logf("Stopped serving {{ humanize .Name }} at http://%s", l.Addr())
-    }(s.httpServerL)
-  }
+		httpServer.Handler = s.handler
+		httpServer.LogFunc = s.Logf
 
-  if s.hasScheme(schemeHTTPS) {
-    httpsServer := &graceful.Server{Server: new(http.Server)}
- 		httpsServer.MaxHeaderBytes = int(s.MaxHeaderSize)
+		configureServer(httpServer, "http")
+
+		wg.Add(1)
+		s.Logf("Serving {{ humanize .Name }} at http://%s", s.httpServerL.Addr())
+		go func(l net.Listener) {
+			defer wg.Done()
+			if err := httpServer.Serve(l); err != nil {
+				s.Fatalf("%v", err)
+			}
+			s.Logf("Stopped serving {{ humanize .Name }} at http://%s", l.Addr())
+		}(s.httpServerL)
+	}
+
+	if s.hasScheme(schemeHTTPS) {
+		httpsServer := &graceful.Server{Server: new(http.Server)}
+		httpsServer.MaxHeaderBytes = int(s.MaxHeaderSize)
 		httpsServer.ReadTimeout = s.TLSReadTimeout
 		httpsServer.WriteTimeout = s.TLSWriteTimeout
 		httpsServer.SetKeepAlivesEnabled(int64(s.TLSKeepAlive) > 0)
@@ -202,24 +208,24 @@ func (s *Server) Serve() (err error) {
 		if int64(s.CleanupTimeout) > 0 {
 			httpsServer.Timeout = s.CleanupTimeout
 		}
-    httpsServer.Handler = s.handler
+		httpsServer.Handler = s.handler
 		httpsServer.LogFunc = s.Logf
+		httpsServer.TLSConfig = new(tls.Config)
+		httpsServer.TLSConfig.NextProtos = []string{"http/1.1", "h2"}
+		// https://www.owasp.org/index.php/Transport_Layer_Protection_Cheat_Sheet#Rule_-_Only_Support_Strong_Protocols
+		httpsServer.TLSConfig.MinVersion = tls.VersionTLS12
+		if s.TLSCertificate != "" && s.TLSCertificateKey != "" {
+			httpsServer.TLSConfig.Certificates = make([]tls.Certificate, 1)
+			httpsServer.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(string(s.TLSCertificate), string(s.TLSCertificateKey))
+		}
 
-    httpsServer.TLSConfig = new(tls.Config)
-    httpsServer.TLSConfig.NextProtos = []string{"http/1.1", "h2"}
-    // https://www.owasp.org/index.php/Transport_Layer_Protection_Cheat_Sheet#Rule_-_Only_Support_Strong_Protocols
-    httpsServer.TLSConfig.MinVersion = tls.VersionTLS12
-    if s.TLSCertificate != "" && s.TLSCertificateKey != "" {
-      httpsServer.TLSConfig.Certificates = make([]tls.Certificate, 1)
-      httpsServer.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(string(s.TLSCertificate), string(s.TLSCertificateKey))
-    }
+		configureTLS(httpsServer.TLSConfig)
 
-    configureTLS(httpsServer.TLSConfig)
-    if err != nil {
-      return err
-    }
+		if err != nil {
+			return err
+		}
 
-    if len(httpsServer.TLSConfig.Certificates) == 0 {
+		if len(httpsServer.TLSConfig.Certificates) == 0 {
 			if s.TLSCertificate == "" {
 				if s.TLSCertificateKey == "" {
 					s.Fatalf("the required flags `--tls-certificate` and `--tls-key` were not specified")
@@ -231,15 +237,17 @@ func (s *Server) Serve() (err error) {
 			}
 		}
 
-    wg.Add(1)
-    s.Logf("Serving {{ humanize .Name }} at https://%s", s.httpsServerL.Addr())
-    go func(l net.Listener) {
-      defer wg.Done()
-      if err := httpsServer.Serve(l); err != nil {
-        s.Fatalf("%v", err)
-      }
-      s.Logf("Stopped serving {{ humanize .Name }} at https://%s", l.Addr())
-    }(tls.NewListener(s.httpsServerL, httpsServer.TLSConfig))
+		configureServer(httpsServer, "https")
+
+		wg.Add(1)
+		s.Logf("Serving {{ humanize .Name }} at https://%s", s.httpsServerL.Addr())
+		go func(l net.Listener) {
+			defer wg.Done()
+			if err := httpsServer.Serve(l); err != nil {
+				s.Fatalf("%v", err)
+			}
+			s.Logf("Stopped serving {{ humanize .Name }} at https://%s", l.Addr())
+		}(tls.NewListener(s.httpsServerL, httpsServer.TLSConfig))
   }
 
   wg.Wait()
