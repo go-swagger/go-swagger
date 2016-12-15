@@ -566,8 +566,13 @@ func (ss *setOpResponses) Matches(line string) bool {
 	return ss.rx.MatchString(line)
 }
 
+//Tag used when specifying a response to point to a defined swagger:response
 const ResponseTag = "response"
+
+//Tag used when specifying a response to point to a model/schema
 const BodyTag = "body"
+
+//Tag used when specifying a response that gives a description of the response
 const DescriptionTag = "description"
 
 func parseTags(line string) (modelOrResponse string, arrays int, isDefinitionRef bool, description string, err error) {
