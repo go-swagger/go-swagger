@@ -5,6 +5,7 @@ package {{.Package}}
 
 {{if or .Imports .DefaultImports }}import (
   strfmt "github.com/go-openapi/strfmt"
+  goruntime "runtime"
 
   {{range .DefaultImports }}{{ printf "%q" .}}
   {{end}}
