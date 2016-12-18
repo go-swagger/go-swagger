@@ -15,6 +15,7 @@
 package scan
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -565,6 +566,91 @@ func (ss *setOpResponses) Matches(line string) bool {
 	return ss.rx.MatchString(line)
 }
 
+//Tag used when specifying a response to point to a defined swagger:response
+const ResponseTag = "response"
+
+//Tag used when specifying a response to point to a model/schema
+const BodyTag = "body"
+
+//Tag used when specifying a response that gives a description of the response
+const DescriptionTag = "description"
+
+func parseTags(line string) (modelOrResponse string, arrays int, isDefinitionRef bool, description string, err error) {
+	tags := strings.Split(line, " ")
+	parsedModelOrResponse := false
+	parsedDescription := false
+
+	for i, tagAndValue := range tags {
+		tagValList := strings.SplitN(tagAndValue, ":", 2)
+		var tag, value string
+		if len(tagValList) > 1 {
+			tag = tagValList[0]
+			value = tagValList[1]
+		} else {
+			//TODO: Print a warning, and in the long term, do not support not tagged values
+			//Add a default tag if none is supplied
+			if i == 0 {
+				tag = ResponseTag
+			} else {
+				tag = DescriptionTag
+			}
+			value = tagValList[0]
+		}
+
+		foundModelOrResponse := false
+		if !parsedModelOrResponse {
+			if tag == BodyTag {
+				foundModelOrResponse = true
+				isDefinitionRef = true
+			}
+			if tag == ResponseTag {
+				foundModelOrResponse = true
+				isDefinitionRef = false
+			}
+		}
+		if foundModelOrResponse {
+			//Read the model or response tag
+			parsedModelOrResponse = true
+			//Check for nested arrays
+			arrays = 0
+			for strings.HasPrefix(value, "[]") {
+				arrays++
+				value = value[2:]
+			}
+			//What's left over is the model name
+			modelOrResponse = value
+		} else {
+			foundDescription := false
+			if !parsedDescription {
+				if tag == DescriptionTag {
+					foundDescription = true
+				}
+			}
+			if foundDescription {
+				//Descriptions are special, they make they read the rest of the line
+				descriptionWords := []string{value}
+				if i < len(tags)-1 {
+					descriptionWords = append(descriptionWords, tags[i+1:len(tags)]...)
+				}
+				description = strings.Join(descriptionWords, " ")
+				parsedDescription = true
+				break
+			} else {
+				if tag == ResponseTag || tag == BodyTag || tag == DescriptionTag {
+					err = fmt.Errorf("Found valid tag %s, but not in a valid position", tag)
+				} else {
+					err = fmt.Errorf("Found invalid tag: %s", tag)
+				}
+				//return error
+				return
+			}
+		}
+	}
+
+	//TODO: Maybe do, if !parsedModelOrResponse && !parsedDescription {return some error}
+	return
+}
+
 func (ss *setOpResponses) Parse(lines []string) error {
 	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
 		return nil
@@ -600,41 +686,18 @@ func (ss *setOpResponses) Parse(lines []string) error {
 				}
 				continue
 			}
-
-			var arrays int
-			for strings.HasPrefix(value, "[]") {
-				arrays++
-				value = value[2:]
+			refTarget, arrays, isDefinitionRef, description, err := parseTags(value)
+			if err != nil {
+				return err
 			}
-
-			valueAndDescription := strings.SplitN(value, " ", 2)
-			description := ""
-			if len(valueAndDescription) > 1 {
-				value = valueAndDescription[0]
-				description = valueAndDescription[1]
-			}
-
-			var isDefinitionRef bool
-			var ref spec.Ref
-			var refTarget string
-			if arrays == 0 {
-				if strings.HasPrefix(value, "body:") {
-					isDefinitionRef = true
-					refTarget = value[5:]
-				} else {
-					refTarget = value
-				}
-			} else {
-				isDefinitionRef = true
-				refTarget = value
-			}
+			//A possible exception for having a definition
 			if _, ok := ss.responses[refTarget]; !ok {
 				if _, ok := ss.definitions[refTarget]; ok {
 					isDefinitionRef = true
 				}
 			}
 
-			var err error
+			var ref spec.Ref
 			if isDefinitionRef {
 				if description == "" {
 					description = refTarget
