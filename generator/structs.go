@@ -401,6 +401,16 @@ func (g *GenApp) UsePFlags() bool {
 	return g.GenOpts != nil && strings.HasPrefix(g.GenOpts.FlagStrategy, "pflag")
 }
 
+// UseIntermediateMode for https://wiki.mozilla.org/Security/Server_Side_TLS#Intermediate_compatibility_.28default.29
+func (g *GenApp) UseIntermediateMode() bool {
+	return g.GenOpts != nil && g.GenOpts.CompatibilityMode == "intermediate"
+}
+
+// UseModernMode for https://wiki.mozilla.org/Security/Server_Side_TLS#Modern_compatibility
+func (g *GenApp) UseModernMode() bool {
+	return g.GenOpts == nil || g.GenOpts.CompatibilityMode == "" || g.GenOpts.CompatibilityMode == "modern"
+}
+
 // GenSerGroups sorted representation of serializer groups
 type GenSerGroups []GenSerGroup
 

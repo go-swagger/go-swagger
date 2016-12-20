@@ -26,20 +26,21 @@ import (
 // Server the command to generate an entire server application
 type Server struct {
 	shared
-	Name           string   `long:"name" short:"A" description:"the name of the application, defaults to a mangled value of info.title"`
-	Operations     []string `long:"operation" short:"O" description:"specify an operation to include, repeat for multiple"`
-	Tags           []string `long:"tags" description:"the tags to include, if not specified defaults to all"`
-	Principal      string   `long:"principal" short:"P" description:"the model to use for the security principal"`
-	DefaultScheme  string   `long:"default-scheme" description:"the default scheme for this API" default:"http"`
-	Models         []string `long:"model" short:"M" description:"specify a model to include, repeat for multiple"`
-	SkipModels     bool     `long:"skip-models" description:"no models will be generated when this flag is specified"`
-	SkipOperations bool     `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
-	SkipSupport    bool     `long:"skip-support" description:"no supporting files will be generated when this flag is specified"`
-	ExcludeMain    bool     `long:"exclude-main" description:"exclude main function, so just generate the library"`
-	ExcludeSpec    bool     `long:"exclude-spec" description:"don't embed the swagger specification"`
-	WithContext    bool     `long:"with-context" description:"handlers get a context as first arg"`
-	DumpData       bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
-	FlagStrategy   string   `long:"flag-strategy" description:"the strategy to provide flags for the server" default:"go-flags" choice:"go-flags" choice:"pflag"`
+	Name              string   `long:"name" short:"A" description:"the name of the application, defaults to a mangled value of info.title"`
+	Operations        []string `long:"operation" short:"O" description:"specify an operation to include, repeat for multiple"`
+	Tags              []string `long:"tags" description:"the tags to include, if not specified defaults to all"`
+	Principal         string   `long:"principal" short:"P" description:"the model to use for the security principal"`
+	DefaultScheme     string   `long:"default-scheme" description:"the default scheme for this API" default:"http"`
+	Models            []string `long:"model" short:"M" description:"specify a model to include, repeat for multiple"`
+	SkipModels        bool     `long:"skip-models" description:"no models will be generated when this flag is specified"`
+	SkipOperations    bool     `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
+	SkipSupport       bool     `long:"skip-support" description:"no supporting files will be generated when this flag is specified"`
+	ExcludeMain       bool     `long:"exclude-main" description:"exclude main function, so just generate the library"`
+	ExcludeSpec       bool     `long:"exclude-spec" description:"don't embed the swagger specification"`
+	WithContext       bool     `long:"with-context" description:"handlers get a context as first arg"`
+	DumpData          bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
+	FlagStrategy      string   `long:"flag-strategy" description:"the strategy to provide flags for the server" default:"go-flags" choice:"go-flags" choice:"pflag"`
+	CompatibilityMode string   `long:"compatibility-mode" description:"the compatibility mode for the tls server" default:"modern" choice:"modern" choice:"intermediate"`
 }
 
 // Execute runs this command
@@ -76,6 +77,7 @@ func (s *Server) Execute(args []string) error {
 		Tags:              s.Tags,
 		Name:              s.Name,
 		FlagStrategy:      s.FlagStrategy,
+		CompatibilityMode: s.CompatibilityMode,
 	}
 
 	if e := opts.EnsureDefaults(false); e != nil {

@@ -318,10 +318,26 @@ func (s *Server) Serve() (err error) {
 		}
 		httpsServer.Handler = s.handler
 		httpsServer.LogFunc = s.Logf
-		httpsServer.TLSConfig = new(tls.Config)
-		httpsServer.TLSConfig.NextProtos = []string{"http/1.1", "h2"}
-		// https://www.owasp.org/index.php/Transport_Layer_Protection_Cheat_Sheet#Rule_-_Only_Support_Strong_Protocols
-		httpsServer.TLSConfig.MinVersion = tls.VersionTLS12
+    // Inspired by https://blog.bracebin.com/achieving-perfect-ssl-labs-score-with-go
+		httpsServer.TLSConfig = &tls.Config{
+			// Causes servers to use Go's default ciphersuite preferences,
+			// which are tuned to avoid attacks. Does nothing on clients.
+			PreferServerCipherSuites: true,
+			// Only use curves which have assembly implementations
+			CurvePreferences: []tls.CurveID{
+				tls.CurveP256,
+			},{{ if .UseModernMode }}
+			NextProtos: []string{"http/1.1", "h2"},
+			// Use modern tls mode https://wiki.mozilla.org/Security/Server_Side_TLS#Modern_compatibility
+			// https://www.owasp.org/index.php/Transport_Layer_Protection_Cheat_Sheet#Rule_-_Only_Support_Strong_Protocols
+			MinVersion: tls.VersionTLS12,
+			CipherSuites: []uint16{
+				tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+				tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+			},{{ end }}
+		}
 		if s.TLSCertificate != "" && s.TLSCertificateKey != "" {
 			httpsServer.TLSConfig.Certificates = make([]tls.Certificate, 1)
 			httpsServer.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(string(s.TLSCertificate), string(s.TLSCertificateKey))
@@ -447,4 +463,34 @@ func (s *Server) GetHandler() http.Handler {
 // SetHandler allows for setting a http handler on this server
 func (s *Server) SetHandler(handler http.Handler) {
 	s.handler = handler
+}
+
+// UnixListener returns the domain socket listener
+func (s *Server) UnixListener() (net.Listener, error) {
+	if !s.hasListeners {
+		if err := s.Listen(); err != nil {
+			return nil, err
+		}
+	}
+	return s.domainSocketL, nil
+}
+
+// HTTPListener returns the http listener
+func (s *Server) HTTPListener() (net.Listener, error) {
+	if !s.hasListeners {
+		if err := s.Listen(); err != nil {
+			return nil, err
+		}
+	}
+	return s.httpServerL, nil
+}
+
+// TLSListener returns the https listener
+func (s *Server) TLSListener() (net.Listener, error) {
+	if !s.hasListeners {
+		if err := s.Listen(); err != nil {
+			return nil, err
+		}
+	}
+	return s.httpsServerL, nil
 }
