@@ -56,10 +56,10 @@ func main() {
   if err != nil {
     log.Fatalln(err)
   }
-  api := operations.NewTodoListAPI(swaggerSpec)
+  api := {{.Package}}.New{{ pascalize .Name }}API(swaggerSpec)
   server.SetAPI(api)
   {{ else }}
- 	api := operations.NewTodoListAPI(swaggerSpec)
+ 	api :={{.Package}}.New{{ pascalize .Name }}API(swaggerSpec)
 	// get server with flag values filled out
 	server = restapi.NewServer(api)
   {{ end }}
