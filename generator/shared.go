@@ -307,26 +307,27 @@ type GenOpts struct {
 	WithContext       bool
 	defaultsEnsured   bool
 
-	Spec            string
-	APIPackage      string
-	ModelPackage    string
-	ServerPackage   string
-	ClientPackage   string
-	Principal       string
-	Target          string
-	Sections        SectionOpts
-	LanguageOpts    *LanguageOpts
-	TypeMapping     map[string]string
-	Imports         map[string]string
-	DefaultScheme   string
-	DefaultProduces string
-	DefaultConsumes string
-	TemplateDir     string
-	Operations      []string
-	Models          []string
-	Tags            []string
-	Name            string
-	FlagStrategy    string
+	Spec              string
+	APIPackage        string
+	ModelPackage      string
+	ServerPackage     string
+	ClientPackage     string
+	Principal         string
+	Target            string
+	Sections          SectionOpts
+	LanguageOpts      *LanguageOpts
+	TypeMapping       map[string]string
+	Imports           map[string]string
+	DefaultScheme     string
+	DefaultProduces   string
+	DefaultConsumes   string
+	TemplateDir       string
+	Operations        []string
+	Models            []string
+	Tags              []string
+	Name              string
+	FlagStrategy      string
+	CompatibilityMode string
 }
 
 // TargetPath returns the target path relative to the server package
