@@ -207,7 +207,7 @@ func (r *request) SetHeaderParam(name string, values ...string) error {
 // when there is only 1 value provided for the varargs, it will set it.
 // when there are several values provided for the varargs it will add it (no overriding)
 func (r *request) SetQueryParam(name string, values ...string) error {
-	if r.header == nil {
+	if r.query == nil {
 		r.query = make(url.Values)
 	}
 	r.query[name] = values

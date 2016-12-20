@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/go-openapi/spec"
 )
@@ -385,6 +386,19 @@ type GenApp struct {
 	ExcludeSpec         bool
 	WithContext         bool
 	GenOpts             *GenOpts
+}
+
+// UseGoStructFlags returns true when no strategy is specified or it is set to "go-flags"
+func (g *GenApp) UseGoStructFlags() bool {
+	if g.GenOpts == nil {
+		return true
+	}
+	return g.GenOpts.FlagStrategy == "" || g.GenOpts.FlagStrategy == "go-flags"
+}
+
+// UsePFlags returns true when the flag strategy is set to pflag
+func (g *GenApp) UsePFlags() bool {
+	return g.GenOpts != nil && strings.HasPrefix(g.GenOpts.FlagStrategy, "pflag")
 }
 
 // GenSerGroups sorted representation of serializer groups

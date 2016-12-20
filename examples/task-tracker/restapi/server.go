@@ -36,6 +36,7 @@ func init() {
 // NewServer creates a new api task tracker server but does not configure it
 func NewServer(api *operations.TaskTrackerAPI) *Server {
 	s := new(Server)
+
 	s.api = api
 	return s
 }
@@ -152,6 +153,8 @@ func (s *Server) Serve() (err error) {
 			domainSocket.Timeout = s.CleanupTimeout
 		}
 
+		configureServer(domainSocket, "unix")
+
 		wg.Add(1)
 		s.Logf("Serving task tracker at unix://%s", s.SocketPath)
 		go func(l net.Listener) {
@@ -171,11 +174,15 @@ func (s *Server) Serve() (err error) {
 		if s.ListenLimit > 0 {
 			httpServer.ListenLimit = s.ListenLimit
 		}
+
 		if int64(s.CleanupTimeout) > 0 {
 			httpServer.Timeout = s.CleanupTimeout
 		}
+
 		httpServer.Handler = s.handler
 		httpServer.LogFunc = s.Logf
+
+		configureServer(httpServer, "http")
 
 		wg.Add(1)
 		s.Logf("Serving task tracker at http://%s", s.httpServerL.Addr())
@@ -203,7 +210,6 @@ func (s *Server) Serve() (err error) {
 		}
 		httpsServer.Handler = s.handler
 		httpsServer.LogFunc = s.Logf
-
 		httpsServer.TLSConfig = new(tls.Config)
 		httpsServer.TLSConfig.NextProtos = []string{"http/1.1", "h2"}
 		// https://www.owasp.org/index.php/Transport_Layer_Protection_Cheat_Sheet#Rule_-_Only_Support_Strong_Protocols
@@ -214,6 +220,7 @@ func (s *Server) Serve() (err error) {
 		}
 
 		configureTLS(httpsServer.TLSConfig)
+
 		if err != nil {
 			return err
 		}
@@ -229,6 +236,8 @@ func (s *Server) Serve() (err error) {
 				s.Fatalf("the required flag `--tls-key` was not specified")
 			}
 		}
+
+		configureServer(httpsServer, "https")
 
 		wg.Add(1)
 		s.Logf("Serving task tracker at https://%s", s.httpsServerL.Addr())

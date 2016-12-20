@@ -326,6 +326,7 @@ type GenOpts struct {
 	Models          []string
 	Tags            []string
 	Name            string
+	FlagStrategy    string
 }
 
 // TargetPath returns the target path relative to the server package

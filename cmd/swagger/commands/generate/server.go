@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/go-swagger/go-swagger/generator"
 )
@@ -38,6 +39,7 @@ type Server struct {
 	ExcludeSpec    bool     `long:"exclude-spec" description:"don't embed the swagger specification"`
 	WithContext    bool     `long:"with-context" description:"handlers get a context as first arg"`
 	DumpData       bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
+	FlagStrategy   string   `long:"flag-strategy" description:"the strategy to provide flags for the server" default:"go-flags" choice:"go-flags" choice:"pflag"`
 }
 
 // Execute runs this command
@@ -73,6 +75,7 @@ func (s *Server) Execute(args []string) error {
 		Operations:        s.Operations,
 		Tags:              s.Tags,
 		Name:              s.Name,
+		FlagStrategy:      s.FlagStrategy,
 	}
 
 	if e := opts.EnsureDefaults(false); e != nil {
@@ -91,6 +94,10 @@ func (s *Server) Execute(args []string) error {
 	if err != nil {
 		return err
 	}
+	flagsPackage := "github.com/jessevdk/go-flags"
+	if strings.HasPrefix(s.FlagStrategy, "pflag") {
+		flagsPackage = "github.com/spf13/pflag"
+	}
 
 	fmt.Fprintf(os.Stderr, `Generation completed!
 
@@ -98,7 +105,7 @@ For this generation to compile you need to have some packages in your GOPATH:
 
   * github.com/go-openapi/runtime
   * github.com/tylerb/graceful
-  * github.com/jessevdk/go-flags
+  * `+flagsPackage+`
   * golang.org/x/net/context
 
 You can get these now with: go get -u -f %s/...
