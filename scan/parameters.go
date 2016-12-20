@@ -38,6 +38,10 @@ func (pt paramTypable) Typed(tpe, format string) {
 	pt.param.Typed(tpe, format)
 }
 
+func (pt paramTypable) WithEnum(values ...interface{}) {
+	pt.param.WithEnum(values...);
+}
+
 func (pt paramTypable) SetRef(ref spec.Ref) {
 	pt.param.Ref = ref
 }
@@ -79,6 +83,10 @@ func (pt itemsTypable) Typed(tpe, format string) {
 
 func (pt itemsTypable) SetRef(ref spec.Ref) {
 	pt.items.Ref = ref
+}
+
+func (pt itemsTypable) WithEnum(values ...interface{}) {
+	pt.items.WithEnum(values...);
 }
 
 func (pt itemsTypable) Schema() *spec.Schema {

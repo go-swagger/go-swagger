@@ -430,6 +430,7 @@ type swaggerTypable interface {
 	Typed(string, string)
 	SetRef(spec.Ref)
 	Items() swaggerTypable
+	WithEnum(...interface{})
 	Schema() *spec.Schema
 	Level() int
 }
