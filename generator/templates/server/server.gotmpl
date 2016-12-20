@@ -8,8 +8,11 @@ import (
 	"strconv"
 	"time"
 
-	flags "github.com/jessevdk/go-flags"
-	graceful "github.com/tylerb/graceful"
+	{{ if .UseGoStructFlags }}flags "github.com/jessevdk/go-flags"
+  {{ end -}}
+  {{ if .UsePFlags }}flag "github.com/spf13/pflag"
+  {{ end -}}
+  graceful "github.com/tylerb/graceful"
 
   {{ range .DefaultImports }}{{ printf "%q" . }}
   {{ end }}
@@ -33,9 +36,114 @@ func init() {
 	}
 }
 
+{{ if .UsePFlags }}
+var (
+  specFile         string
+  enabledListeners []string
+  cleanupTimout    time.Duration
+  maxHeaderSize    flagext.ByteSize
+
+  socketPath string
+
+  host         string
+  port         int
+  listenLimit  int
+  keepAlive    time.Duration
+  readTimeout  time.Duration
+  writeTimeout time.Duration
+
+  tlsHost           string
+  tlsPort           int
+  tlsListenLimit    int
+  tlsKeepAlive      time.Duration
+  tlsReadTimeout    time.Duration
+  tlsWriteTimeout   time.Duration
+  tlsCertificate    string
+  tlsCertificateKey string
+)
+
+func init() {
+  maxHeaderSize = flagext.ByteSize(1000000){{ if .ExcludeSpec }}
+  flag.StringVarP(&specFile, "spec", "", "", "the swagger specification to serve")
+  {{ end }}
+
+	flag.StringSliceVarP(&enabledListeners, "scheme", "", defaultSchemes, "the listeners to enable, this can be repeated and defaults to the schemes in the swagger spec")
+	flag.DurationVarP(&cleanupTimout, "cleanup-timeout", "", 10*time.Second, "grace period for which to wait before shutting down the server")
+	flag.VarP(&maxHeaderSize, "max-header-size", "", "controls the maximum number of bytes the server will read parsing the request header's keys and values, including the request line. It does not limit the size of the request body")
+
+	flag.StringVarP(&socketPath, "socket-path", "", "/var/run/{{ dasherize .Name }}.sock", "the unix socket to listen on")
+
+	flag.StringVarP(&host, "host", "", "localhost", "the IP to listen on")
+	flag.IntVarP(&port, "port", "", 0, "the port to listen on for insecure connections, defaults to a random value")
+	flag.IntVarP(&listenLimit, "listen-limit", "", 0, "limit the number of outstanding requests")
+	flag.DurationVarP(&keepAlive, "keep-alive", "", 3*time.Minute, "sets the TCP keep-alive timeouts on accepted connections. It prunes dead TCP connections ( e.g. closing laptop mid-download)")
+	flag.DurationVarP(&readTimeout, "read-timeout", "", 30*time.Second, "maximum duration before timing out read of the request")
+	flag.DurationVarP(&writeTimeout, "write-timeout", "", 30*time.Second, "maximum duration before timing out write of the response")
+
+	flag.StringVarP(&tlsHost, "tls-host", "", "localhost", "the IP to listen on")
+	flag.IntVarP(&tlsPort, "tls-port", "", 0, "the port to listen on for insecure connections, defaults to a random value")
+	flag.StringVarP(&tlsCertificate, "tls-certificate", "", "", "the certificate to use for secure connections")
+	flag.StringVarP(&tlsCertificateKey, "tls-certificate-key", "", "", "the private key to use for secure conections")
+	flag.IntVarP(&tlsListenLimit, "tls-listen-limit", "", 0, "limit the number of outstanding requests")
+	flag.DurationVarP(&tlsKeepAlive, "tls-keep-alive", "", 3*time.Minute, "sets the TCP keep-alive timeouts on accepted connections. It prunes dead TCP connections ( e.g. closing laptop mid-download)")
+	flag.DurationVarP(&tlsReadTimeout, "tls-read-timeout", "", 30*time.Second, "maximum duration before timing out read of the request")
+	flag.DurationVarP(&tlsWriteTimeout, "tls-write-timeout", "", 30*time.Second, "maximum duration before timing out write of the response")
+}
+
+func stringEnvOverride(orig string, def string, keys ...string) string {
+	for _, k := range keys {
+		if os.Getenv(k) != "" {
+			return os.Getenv(k)
+		}
+	}
+	if def != "" && orig == "" {
+		return def
+	}
+	return orig
+}
+
+func intEnvOverride(orig int, def int, keys ...string) int {
+	for _, k := range keys {
+		if os.Getenv(k) != "" {
+			v, err := strconv.Atoi(os.Getenv(k))
+			if err != nil {
+				fmt.Fprintln(os.Stderr, k, "is not a valid number")
+				os.Exit(1)
+			}
+			return v
+		}
+	}
+	if def != 0 && orig == 0 {
+		return def
+	}
+	return orig
+}
+{{ end }}
+
 // NewServer creates a new api {{ humanize .Name }} server but does not configure it
 func NewServer(api *{{ .Package }}.{{ pascalize .Name }}API) *Server {
 	s := new(Server)
+  {{ if .UsePFlags }}
+  s.EnabledListeners = enabledListeners
+	s.CleanupTimeout = cleanupTimout
+	s.MaxHeaderSize = maxHeaderSize
+	s.SocketPath = socketPath
+	s.Host = stringEnvOverride(host, "", "HOST")
+	s.Port = intEnvOverride(port, 0, "PORT")
+	s.ListenLimit = listenLimit
+	s.KeepAlive = keepAlive
+	s.ReadTimeout = readTimeout
+	s.WriteTimeout = writeTimeout
+	s.TLSHost = stringEnvOverride(tlsHost, s.Host, "TLS_HOST", "HOST")
+	s.TLSPort = intEnvOverride(tlsPort, 0, "TLS_PORT")
+	s.TLSCertificate = stringEnvOverride(tlsCertificate, "", "TLS_CERTIFICATE")
+	s.TLSCertificateKey = stringEnvOverride(tlsCertificateKey, "", "TLS_PRIVATE_KEY")
+	s.TLSListenLimit = tlsListenLimit
+	s.TLSKeepAlive = tlsKeepAlive
+	s.TLSReadTimeout = tlsReadTimeout
+	s.TLSWriteTimeout = tlsWriteTimeout{{ if .ExcludeSpec }}
+  s.Spec = specFile
+  {{ end }}{{ end }}
 	s.api = api
 	return s
 }
@@ -56,32 +164,32 @@ func (s *Server) ConfigureFlags() {
 
 // Server for the {{ humanize .Name }} API
 type Server struct {
-	EnabledListeners []string `long:"scheme" description:"the listeners to enable, this can be repeated and defaults to the schemes in the swagger spec"`
-	CleanupTimeout   time.Duration    `long:"cleanup-timeout" description:"grace period for which to wait before shutting down the server" default:"10s"`
-	MaxHeaderSize    flagext.ByteSize `long:"max-header-size" description:"controls the maximum number of bytes the server will read parsing the request header's keys and values, including the request line. It does not limit the size of the request body." default:"1MiB"`
+	EnabledListeners []string{{ if .UseGoStructFlags }} `long:"scheme" description:"the listeners to enable, this can be repeated and defaults to the schemes in the swagger spec"`{{ end }}
+	CleanupTimeout   time.Duration{{ if .UseGoStructFlags }}    `long:"cleanup-timeout" description:"grace period for which to wait before shutting down the server" default:"10s"`{{ end }}
+	MaxHeaderSize    flagext.ByteSize{{ if .UseGoStructFlags }} `long:"max-header-size" description:"controls the maximum number of bytes the server will read parsing the request header's keys and values, including the request line. It does not limit the size of the request body." default:"1MiB"`{{ end }}
 
-	SocketPath flags.Filename `long:"socket-path" description:"the unix socket to listen on" default:"/var/run/{{ dasherize .Name }}.sock"`
+  SocketPath {{ if .UsePFlags }}string{{ else }}flags.Filename `long:"socket-path" description:"the unix socket to listen on" default:"/var/run/{{ dasherize .Name }}.sock"`{{ end }}
 	domainSocketL net.Listener
 
-	Host string `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
-	Port int    `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`
-	ListenLimit  int           `long:"listen-limit" description:"limit the number of outstanding requests"`
-	KeepAlive    time.Duration `long:"keep-alive" description:"sets the TCP keep-alive timeouts on accepted connections. It prunes dead TCP connections ( e.g. closing laptop mid-download)" default:"3m"`
-	ReadTimeout  time.Duration `long:"read-timeout" description:"maximum duration before timing out read of the request" default:"30s"`
-	WriteTimeout time.Duration `long:"write-timeout" description:"maximum duration before timing out write of the response" default:"60s"`
+	Host string{{ if .UseGoStructFlags }} `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`{{ end }}
+	Port int{{ if .UseGoStructFlags }}    `long:"port" description:"the port to listen on for insecure connections, defaults to a random value" env:"PORT"`{{ end }}
+	ListenLimit  int{{ if .UseGoStructFlags }}           `long:"listen-limit" description:"limit the number of outstanding requests"`{{ end }}
+	KeepAlive    time.Duration{{ if .UseGoStructFlags }} `long:"keep-alive" description:"sets the TCP keep-alive timeouts on accepted connections. It prunes dead TCP connections ( e.g. closing laptop mid-download)" default:"3m"`{{ end }}
+	ReadTimeout  time.Duration{{ if .UseGoStructFlags }} `long:"read-timeout" description:"maximum duration before timing out read of the request" default:"30s"`{{ end }}
+	WriteTimeout time.Duration{{ if .UseGoStructFlags }} `long:"write-timeout" description:"maximum duration before timing out write of the response" default:"60s"`{{ end }}
 	httpServerL   net.Listener
 
-	TLSHost           string         `long:"tls-host" description:"the IP to listen on for tls, when not specified it's the same as --host" env:"TLS_HOST"`
-	TLSPort           int            `long:"tls-port" description:"the port to listen on for secure connections, defaults to a random value" env:"TLS_PORT"`
-	TLSCertificate    flags.Filename `long:"tls-certificate" description:"the certificate to use for secure connections" env:"TLS_CERTIFICATE"`
-	TLSCertificateKey flags.Filename `long:"tls-key" description:"the private key to use for secure conections" env:"TLS_PRIVATE_KEY"`
-	TLSListenLimit    int            `long:"tls-listen-limit" description:"limit the number of outstanding requests"`
-	TLSKeepAlive      time.Duration  `long:"tls-keep-alive" description:"sets the TCP keep-alive timeouts on accepted connections. It prunes dead TCP connections ( e.g. closing laptop mid-download)"`
-	TLSReadTimeout    time.Duration  `long:"tls-read-timeout" description:"maximum duration before timing out read of the request"`
-	TLSWriteTimeout   time.Duration  `long:"tls-write-timeout" description:"maximum duration before timing out write of the response"`
+	TLSHost           string{{ if .UseGoStructFlags }}         `long:"tls-host" description:"the IP to listen on for tls, when not specified it's the same as --host" env:"TLS_HOST"`{{ end }}
+	TLSPort           int{{ if .UseGoStructFlags }}            `long:"tls-port" description:"the port to listen on for secure connections, defaults to a random value" env:"TLS_PORT"`{{ end }}
+	TLSCertificate    {{ if .UsePFlags }}string{{ else }}flags.Filename `long:"tls-certificate" description:"the certificate to use for secure connections" env:"TLS_CERTIFICATE"`{{ end }}
+	TLSCertificateKey {{ if .UsePFlags }}string{{ else }}flags.Filename `long:"tls-key" description:"the private key to use for secure conections" env:"TLS_PRIVATE_KEY"`{{ end }}
+	TLSListenLimit    int{{ if .UseGoStructFlags }}            `long:"tls-listen-limit" description:"limit the number of outstanding requests"`{{ end }}
+	TLSKeepAlive      time.Duration{{ if .UseGoStructFlags }}  `long:"tls-keep-alive" description:"sets the TCP keep-alive timeouts on accepted connections. It prunes dead TCP connections ( e.g. closing laptop mid-download)"`{{ end }}
+	TLSReadTimeout    time.Duration{{ if .UseGoStructFlags }}  `long:"tls-read-timeout" description:"maximum duration before timing out read of the request"`{{ end }}
+	TLSWriteTimeout   time.Duration{{ if .UseGoStructFlags }}  `long:"tls-write-timeout" description:"maximum duration before timing out write of the response"`{{ end }}
 	httpsServerL  net.Listener
 
-	{{ if .ExcludeSpec }}Spec flags.Filename `long:"spec" description:"the swagger specification to serve"`{{ end }}
+	{{ if .ExcludeSpec }}Spec {{ if .UsePFlags }}string{{ else }}flags.Filename `long:"spec" description:"the swagger specification to serve"`{{ end }}{{ end }}
 	api               *{{ .Package }}.{{ pascalize .Name }}API
 	handler           http.Handler
 	hasListeners bool

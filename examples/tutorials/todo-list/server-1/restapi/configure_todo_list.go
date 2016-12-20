@@ -7,6 +7,7 @@ import (
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
+	graceful "github.com/tylerb/graceful"
 
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-1/restapi/operations"
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-1/restapi/operations/todos"
@@ -46,6 +47,13 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 // The TLS configuration before HTTPS server starts.
 func configureTLS(tlsConfig *tls.Config) {
 	// Make all necessary changes to the TLS configuration here.
+}
+
+// As soon as server is initialized but not run yet, this function will be called.
+// If you need to modify a config, store server instance to stop it individually later, this is the place.
+// This function can be called multiple times, depending on the number of serving schemes.
+// scheme value will be set accordingly: "http", "https" or "unix"
+func configureServer(s *graceful.Server, scheme string) {
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
