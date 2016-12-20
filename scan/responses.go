@@ -38,6 +38,10 @@ func (ht responseTypable) Typed(tpe, format string) {
 	ht.header.Typed(tpe, format)
 }
 
+func (ht responseTypable) WithEnum(values ...interface{}) {
+	ht.header.WithEnum(values)
+}
+
 func bodyTypable(in string, schema *spec.Schema) (swaggerTypable, *spec.Schema) {
 	if in == "body" {
 		// get the schema for items on the schema property

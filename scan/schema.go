@@ -50,6 +50,10 @@ func (st schemaTypable) Typed(tpe, format string) {
 	st.schema.Typed(tpe, format)
 }
 
+func (st schemaTypable) WithEnum(values ...interface{}) {
+	st.schema.WithEnum(values...);
+}
+
 func (st schemaTypable) SetRef(ref spec.Ref) {
 	st.schema.Ref = ref
 }
@@ -246,6 +250,18 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl *sch
 		} else {
 			if err := scp.parseNamedType(decl.File, tpe, prop); err != nil {
 				return err
+			}
+		}
+		if enumName, ok := enumName(decl.Decl.Doc); ok {
+			var enumValues = getEnumValues(decl.File, enumName);
+			if (len(enumValues) > 0) {
+				var typeName = reflect.TypeOf(enumValues[0]).String()
+				prop.WithEnum(enumValues...);
+
+				err := swaggerSchemaForType(typeName, prop)
+				if err != nil {
+					return fmt.Errorf("file %s, error is: %v", decl.File.Name, err)
+				}
 			}
 		}
 	case *ast.SelectorExpr:
@@ -1025,7 +1041,15 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 	}
 
 	if enumName, ok := enumName(gd.Doc); ok {
-		log.Println(enumName)
+		var enumValues = getEnumValues(file, enumName);
+		if (len(enumValues) > 0) {
+			prop.WithEnum(enumValues...);
+			var typeName = reflect.TypeOf(enumValues[0]).String()
+			err := swaggerSchemaForType(typeName, prop)
+			if err != nil {
+				return fmt.Errorf("file %s, error is: %v", file.Name, err)
+			}
+		}
 		return nil
 	}
 
