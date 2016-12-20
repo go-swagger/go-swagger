@@ -33,7 +33,7 @@ func main() {
     log.Fatalln(err)
   }
   {{ end }}
-  var server *restapi.Server // make sure init is called
+  var server *{{ .APIPackage }}.Server // make sure init is called
 
 	flag.Usage = func() {
     fmt.Fprint(os.Stderr, "Usage:\n")
@@ -51,7 +51,7 @@ func main() {
 	flag.Parse()
 
   {{ if .ExcludeSpec }}
-  server = restapi.NewServer(nil)
+  server = {{ .APIPackage }}.NewServer(nil)
   swaggerSpec, err := loads.Spec(string(server.Spec))
   if err != nil {
     log.Fatalln(err)
@@ -61,7 +61,7 @@ func main() {
   {{ else }}
  	api :={{.Package}}.New{{ pascalize .Name }}API(swaggerSpec)
 	// get server with flag values filled out
-	server = restapi.NewServer(api)
+	server = {{ .APIPackage }}.NewServer(api)
   {{ end }}
 	defer server.Shutdown()
 
