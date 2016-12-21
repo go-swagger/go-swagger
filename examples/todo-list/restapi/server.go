@@ -2,7 +2,9 @@ package restapi
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -36,7 +38,6 @@ func init() {
 }
 
 var (
-	specFile         string
 	enabledListeners []string
 	cleanupTimout    time.Duration
 	maxHeaderSize    flagext.ByteSize
@@ -58,32 +59,34 @@ var (
 	tlsWriteTimeout   time.Duration
 	tlsCertificate    string
 	tlsCertificateKey string
+	tlsCACertificate  string
 )
 
 func init() {
 	maxHeaderSize = flagext.ByteSize(1000000)
 
-	flag.StringSliceVarP(&enabledListeners, "scheme", "", defaultSchemes, "the listeners to enable, this can be repeated and defaults to the schemes in the swagger spec")
-	flag.DurationVarP(&cleanupTimout, "cleanup-timeout", "", 10*time.Second, "grace period for which to wait before shutting down the server")
-	flag.VarP(&maxHeaderSize, "max-header-size", "", "controls the maximum number of bytes the server will read parsing the request header's keys and values, including the request line. It does not limit the size of the request body")
+	flag.StringSliceVar(&enabledListeners, "scheme", defaultSchemes, "the listeners to enable, this can be repeated and defaults to the schemes in the swagger spec")
+	flag.DurationVar(&cleanupTimout, "cleanup-timeout", 10*time.Second, "grace period for which to wait before shutting down the server")
+	flag.Var(&maxHeaderSize, "max-header-size", "controls the maximum number of bytes the server will read parsing the request header's keys and values, including the request line. It does not limit the size of the request body")
 
-	flag.StringVarP(&socketPath, "socket-path", "", "/var/run/todo-list.sock", "the unix socket to listen on")
+	flag.StringVar(&socketPath, "socket-path", "/var/run/todo-list.sock", "the unix socket to listen on")
 
-	flag.StringVarP(&host, "host", "", "localhost", "the IP to listen on")
-	flag.IntVarP(&port, "port", "", 0, "the port to listen on for insecure connections, defaults to a random value")
-	flag.IntVarP(&listenLimit, "listen-limit", "", 0, "limit the number of outstanding requests")
-	flag.DurationVarP(&keepAlive, "keep-alive", "", 3*time.Minute, "sets the TCP keep-alive timeouts on accepted connections. It prunes dead TCP connections ( e.g. closing laptop mid-download)")
-	flag.DurationVarP(&readTimeout, "read-timeout", "", 30*time.Second, "maximum duration before timing out read of the request")
-	flag.DurationVarP(&writeTimeout, "write-timeout", "", 30*time.Second, "maximum duration before timing out write of the response")
+	flag.StringVar(&host, "host", "localhost", "the IP to listen on")
+	flag.IntVar(&port, "port", 0, "the port to listen on for insecure connections, defaults to a random value")
+	flag.IntVar(&listenLimit, "listen-limit", 0, "limit the number of outstanding requests")
+	flag.DurationVar(&keepAlive, "keep-alive", 3*time.Minute, "sets the TCP keep-alive timeouts on accepted connections. It prunes dead TCP connections ( e.g. closing laptop mid-download)")
+	flag.DurationVar(&readTimeout, "read-timeout", 30*time.Second, "maximum duration before timing out read of the request")
+	flag.DurationVar(&writeTimeout, "write-timeout", 30*time.Second, "maximum duration before timing out write of the response")
 
-	flag.StringVarP(&tlsHost, "tls-host", "", "localhost", "the IP to listen on")
-	flag.IntVarP(&tlsPort, "tls-port", "", 0, "the port to listen on for insecure connections, defaults to a random value")
-	flag.StringVarP(&tlsCertificate, "tls-certificate", "", "", "the certificate to use for secure connections")
-	flag.StringVarP(&tlsCertificateKey, "tls-certificate-key", "", "", "the private key to use for secure conections")
-	flag.IntVarP(&tlsListenLimit, "tls-listen-limit", "", 0, "limit the number of outstanding requests")
-	flag.DurationVarP(&tlsKeepAlive, "tls-keep-alive", "", 3*time.Minute, "sets the TCP keep-alive timeouts on accepted connections. It prunes dead TCP connections ( e.g. closing laptop mid-download)")
-	flag.DurationVarP(&tlsReadTimeout, "tls-read-timeout", "", 30*time.Second, "maximum duration before timing out read of the request")
-	flag.DurationVarP(&tlsWriteTimeout, "tls-write-timeout", "", 30*time.Second, "maximum duration before timing out write of the response")
+	flag.StringVar(&tlsHost, "tls-host", "localhost", "the IP to listen on")
+	flag.IntVar(&tlsPort, "tls-port", 0, "the port to listen on for insecure connections, defaults to a random value")
+	flag.StringVar(&tlsCertificate, "tls-certificate", "", "the certificate to use for secure connections")
+	flag.StringVar(&tlsCertificateKey, "tls-certificate-key", "", "the private key to use for secure conections")
+	flag.StringVar(&tlsCACertificate, "tls-ca", "", "the certificate authority file to be used with mutual tls auth")
+	flag.IntVar(&tlsListenLimit, "tls-listen-limit", 0, "limit the number of outstanding requests")
+	flag.DurationVar(&tlsKeepAlive, "tls-keep-alive", 3*time.Minute, "sets the TCP keep-alive timeouts on accepted connections. It prunes dead TCP connections ( e.g. closing laptop mid-download)")
+	flag.DurationVar(&tlsReadTimeout, "tls-read-timeout", 30*time.Second, "maximum duration before timing out read of the request")
+	flag.DurationVar(&tlsWriteTimeout, "tls-write-timeout", 30*time.Second, "maximum duration before timing out write of the response")
 }
 
 func stringEnvOverride(orig string, def string, keys ...string) string {
@@ -133,6 +136,7 @@ func NewServer(api *operations.TodoListAPI) *Server {
 	s.TLSPort = intEnvOverride(tlsPort, 0, "TLS_PORT")
 	s.TLSCertificate = stringEnvOverride(tlsCertificate, "", "TLS_CERTIFICATE")
 	s.TLSCertificateKey = stringEnvOverride(tlsCertificateKey, "", "TLS_PRIVATE_KEY")
+	s.TLSCACertificate = stringEnvOverride(tlsCACertificate, "", "TLS_CA_CERTIFICATE")
 	s.TLSListenLimit = tlsListenLimit
 	s.TLSKeepAlive = tlsKeepAlive
 	s.TLSReadTimeout = tlsReadTimeout
@@ -176,6 +180,7 @@ type Server struct {
 	TLSPort           int
 	TLSCertificate    string
 	TLSCertificateKey string
+	TLSCACertificate  string
 	TLSListenLimit    int
 	TLSKeepAlive      time.Duration
 	TLSReadTimeout    time.Duration
@@ -310,19 +315,20 @@ func (s *Server) Serve() (err error) {
 		}
 		httpsServer.Handler = s.handler
 		httpsServer.LogFunc = s.Logf
+
 		// Inspired by https://blog.bracebin.com/achieving-perfect-ssl-labs-score-with-go
 		httpsServer.TLSConfig = &tls.Config{
 			// Causes servers to use Go's default ciphersuite preferences,
 			// which are tuned to avoid attacks. Does nothing on clients.
 			PreferServerCipherSuites: true,
 			// Only use curves which have assembly implementations
-			CurvePreferences: []tls.CurveID{
-				tls.CurveP256,
-			},
-			NextProtos: []string{"http/1.1", "h2"},
+			// https://github.com/golang/go/tree/master/src/crypto/elliptic
+			CurvePreferences: []tls.CurveID{tls.CurveP256},
 			// Use modern tls mode https://wiki.mozilla.org/Security/Server_Side_TLS#Modern_compatibility
+			NextProtos: []string{"http/1.1", "h2"},
 			// https://www.owasp.org/index.php/Transport_Layer_Protection_Cheat_Sheet#Rule_-_Only_Support_Strong_Protocols
 			MinVersion: tls.VersionTLS12,
+			// These ciphersuites support Forward Secrecy: https://en.wikipedia.org/wiki/Forward_secrecy
 			CipherSuites: []uint16{
 				tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
 				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
@@ -330,12 +336,25 @@ func (s *Server) Serve() (err error) {
 				tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
 			},
 		}
+
 		if s.TLSCertificate != "" && s.TLSCertificateKey != "" {
 			httpsServer.TLSConfig.Certificates = make([]tls.Certificate, 1)
-			httpsServer.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(string(s.TLSCertificate), string(s.TLSCertificateKey))
+			httpsServer.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(s.TLSCertificate, s.TLSCertificateKey)
+		}
+
+		if s.TLSCACertificate != "" {
+			caCert, err := ioutil.ReadFile(s.TLSCACertificate)
+			if err != nil {
+				log.Fatal(err)
+			}
+			caCertPool := x509.NewCertPool()
+			caCertPool.AppendCertsFromPEM(caCert)
+			httpsServer.TLSConfig.ClientCAs = caCertPool
+			httpsServer.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
 		}
 
 		configureTLS(httpsServer.TLSConfig)
+		httpsServer.TLSConfig.BuildNameToCertificate()
 
 		if err != nil {
 			return err
