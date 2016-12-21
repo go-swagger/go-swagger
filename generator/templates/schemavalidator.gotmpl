@@ -5,38 +5,38 @@ if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}S
 }
 {{ end }}
 {{if .MinLength}}
-if err := validate.MinLength({{ if .Path }}{{ .Path }}{{else}}propName{{end}}, {{ printf "%q" .Location }}, string({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), {{.MinLength}}); err != nil {
+if err := validate.MinLength({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, string({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), {{.MinLength}}); err != nil {
   return err
 }
 {{end}}
 {{if .MaxLength}}
-if err := validate.MaxLength({{ if .Path }}{{ .Path }}{{else}}propName{{end}}, {{ printf "%q" .Location }}, string({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), {{.MaxLength}}); err != nil {
+if err := validate.MaxLength({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, string({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), {{.MaxLength}}); err != nil {
   return err
 }
 {{end}}
 {{if .Pattern}}
-if err := validate.Pattern({{ if .Path }}{{ .Path }}{{else}}propName{{end}}, {{ printf "%q" .Location }}, string({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), `{{.Pattern}}`); err != nil {
+if err := validate.Pattern({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, string({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), `{{.Pattern}}`); err != nil {
   return err
 }
 {{end}}
 {{if .Minimum}}
-if err := validate.Minimum{{ if eq .SwaggerType "integer" }}Int{{ end }}({{ if .Path }}{{ .Path }}{{else}}propName{{end}}, {{ printf "%q" .Location }}, {{ if eq .SwaggerType "integer" }}int{{ else }}float{{ end }}64({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), {{.Minimum}}, {{.ExclusiveMinimum}}); err != nil {
+if err := validate.Minimum{{ if eq .SwaggerType "integer" }}Int{{ end }}({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if eq .SwaggerType "integer" }}int{{ else }}float{{ end }}64({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), {{.Minimum}}, {{.ExclusiveMinimum}}); err != nil {
   return err
 }
 {{end}}
 {{if .Maximum}}
-if err := validate.Maximum{{ if eq .SwaggerType "integer" }}Int{{ end }}({{ if .Path }}{{ .Path }}{{else}}propName{{end}}, {{ printf "%q" .Location }}, {{ if eq .SwaggerType "integer" }}int{{ else }}float{{ end }}64({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), {{.Maximum}}, {{.ExclusiveMaximum}}); err != nil {
+if err := validate.Maximum{{ if eq .SwaggerType "integer" }}Int{{ end }}({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if eq .SwaggerType "integer" }}int{{ else }}float{{ end }}64({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), {{.Maximum}}, {{.ExclusiveMaximum}}); err != nil {
   return err
 }
 {{end}}
 {{if .MultipleOf}}
-if err := validate.MultipleOf({{ if .Path }}{{ .Path }}{{else}}propName{{end}}, {{ printf "%q" .Location }}, float64({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), {{.MultipleOf}}); err != nil {
+if err := validate.MultipleOf({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, float64({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), {{.MultipleOf}}); err != nil {
   return err
 }
 {{end}}
 {{if .Enum}}
 // value enum
-if err := {{.ReceiverName}}.validate{{ pascalize .Name }}{{ pascalize .Suffix }}Enum({{ if .Path }}{{ .Path }}{{else}}propName{{end}}, {{ printf "%q" .Location }}, {{ if .IsNullable }}*{{ end }}{{.ValueExpression}}); err != nil {
+if err := {{.ReceiverName}}.validate{{ pascalize .Name }}{{ pascalize .Suffix }}Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if .IsNullable }}*{{ end }}{{.ValueExpression}}); err != nil {
   return err
 }
 {{end}}
