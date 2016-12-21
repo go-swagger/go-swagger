@@ -2,6 +2,8 @@ package restapi
 
 import (
 	"crypto/tls"
+	"crypto/x509"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -76,6 +78,7 @@ type Server struct {
 	TLSPort           int            `long:"tls-port" description:"the port to listen on for secure connections, defaults to a random value" env:"TLS_PORT"`
 	TLSCertificate    flags.Filename `long:"tls-certificate" description:"the certificate to use for secure connections" env:"TLS_CERTIFICATE"`
 	TLSCertificateKey flags.Filename `long:"tls-key" description:"the private key to use for secure conections" env:"TLS_PRIVATE_KEY"`
+	TLSCACertificate  flags.Filename `long:"tls-ca" description:"the certificate authority file to be used with mutual tls auth" env:"TLS_CA_CERTIFICATE"`
 	TLSListenLimit    int            `long:"tls-listen-limit" description:"limit the number of outstanding requests"`
 	TLSKeepAlive      time.Duration  `long:"tls-keep-alive" description:"sets the TCP keep-alive timeouts on accepted connections. It prunes dead TCP connections ( e.g. closing laptop mid-download)"`
 	TLSReadTimeout    time.Duration  `long:"tls-read-timeout" description:"maximum duration before timing out read of the request"`
@@ -210,16 +213,46 @@ func (s *Server) Serve() (err error) {
 		}
 		httpsServer.Handler = s.handler
 		httpsServer.LogFunc = s.Logf
-		httpsServer.TLSConfig = new(tls.Config)
-		httpsServer.TLSConfig.NextProtos = []string{"http/1.1", "h2"}
-		// https://www.owasp.org/index.php/Transport_Layer_Protection_Cheat_Sheet#Rule_-_Only_Support_Strong_Protocols
-		httpsServer.TLSConfig.MinVersion = tls.VersionTLS12
+
+		// Inspired by https://blog.bracebin.com/achieving-perfect-ssl-labs-score-with-go
+		httpsServer.TLSConfig = &tls.Config{
+			// Causes servers to use Go's default ciphersuite preferences,
+			// which are tuned to avoid attacks. Does nothing on clients.
+			PreferServerCipherSuites: true,
+			// Only use curves which have assembly implementations
+			// https://github.com/golang/go/tree/master/src/crypto/elliptic
+			CurvePreferences: []tls.CurveID{tls.CurveP256},
+			// Use modern tls mode https://wiki.mozilla.org/Security/Server_Side_TLS#Modern_compatibility
+			NextProtos: []string{"http/1.1", "h2"},
+			// https://www.owasp.org/index.php/Transport_Layer_Protection_Cheat_Sheet#Rule_-_Only_Support_Strong_Protocols
+			MinVersion: tls.VersionTLS12,
+			// These ciphersuites support Forward Secrecy: https://en.wikipedia.org/wiki/Forward_secrecy
+			CipherSuites: []uint16{
+				tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+				tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+			},
+		}
+
 		if s.TLSCertificate != "" && s.TLSCertificateKey != "" {
 			httpsServer.TLSConfig.Certificates = make([]tls.Certificate, 1)
 			httpsServer.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(string(s.TLSCertificate), string(s.TLSCertificateKey))
 		}
 
+		if s.TLSCACertificate != "" {
+			caCert, err := ioutil.ReadFile(string(s.TLSCACertificate))
+			if err != nil {
+				log.Fatal(err)
+			}
+			caCertPool := x509.NewCertPool()
+			caCertPool.AppendCertsFromPEM(caCert)
+			httpsServer.TLSConfig.ClientCAs = caCertPool
+			httpsServer.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
+		}
+
 		configureTLS(httpsServer.TLSConfig)
+		httpsServer.TLSConfig.BuildNameToCertificate()
 
 		if err != nil {
 			return err
@@ -339,4 +372,34 @@ func (s *Server) GetHandler() http.Handler {
 // SetHandler allows for setting a http handler on this server
 func (s *Server) SetHandler(handler http.Handler) {
 	s.handler = handler
+}
+
+// UnixListener returns the domain socket listener
+func (s *Server) UnixListener() (net.Listener, error) {
+	if !s.hasListeners {
+		if err := s.Listen(); err != nil {
+			return nil, err
+		}
+	}
+	return s.domainSocketL, nil
+}
+
+// HTTPListener returns the http listener
+func (s *Server) HTTPListener() (net.Listener, error) {
+	if !s.hasListeners {
+		if err := s.Listen(); err != nil {
+			return nil, err
+		}
+	}
+	return s.httpServerL, nil
+}
+
+// TLSListener returns the https listener
+func (s *Server) TLSListener() (net.Listener, error) {
+	if !s.hasListeners {
+		if err := s.Listen(); err != nil {
+			return nil, err
+		}
+	}
+	return s.httpsServerL, nil
 }

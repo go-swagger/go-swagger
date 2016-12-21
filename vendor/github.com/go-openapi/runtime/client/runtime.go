@@ -15,7 +15,10 @@
 package client
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"io/ioutil"
 	"mime"
 	"net/http"
 	"net/http/httputil"
@@ -31,6 +34,73 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 )
+
+// TLSClientOptions to configure client authentication with mutual TLS
+type TLSClientOptions struct {
+	Certificate        string
+	Key                string
+	CA                 string
+	ServerName         string
+	InsecureSkipVerify bool
+	_                  struct{}
+}
+
+// TLSClientAuth creates a tls.Config for mutual auth
+func TLSClientAuth(opts TLSClientOptions) (*tls.Config, error) {
+	// load client cert
+	cert, err := tls.LoadX509KeyPair(opts.Certificate, opts.Key)
+	if err != nil {
+		return nil, fmt.Errorf("tls client cert: %v", err)
+	}
+
+	// create client tls config
+	cfg := &tls.Config{}
+	cfg.Certificates = []tls.Certificate{cert}
+	cfg.InsecureSkipVerify = opts.InsecureSkipVerify
+
+	// When no CA certificate is provided, default to the system cert pool
+	// that way when a request is made to a server known by the system trust store,
+	// the name is still verified
+	if opts.CA != "" {
+		// load ca cert
+		caCert, err := ioutil.ReadFile(opts.CA)
+		if err != nil {
+			return nil, fmt.Errorf("tls client ca: %v", err)
+		}
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		cfg.RootCAs = caCertPool
+	}
+
+	// apply servername overrride
+	if opts.ServerName != "" {
+		cfg.InsecureSkipVerify = false
+		cfg.ServerName = opts.ServerName
+	}
+
+	cfg.BuildNameToCertificate()
+
+	return cfg, nil
+}
+
+// TLSTransport creates a http client transport suitable for mutual tls auth
+func TLSTransport(opts TLSClientOptions) (http.RoundTripper, error) {
+	cfg, err := TLSClientAuth(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	return &http.Transport{TLSClientConfig: cfg}, nil
+}
+
+// TLSClient creates a http.Client for mutual auth
+func TLSClient(opts TLSClientOptions) (*http.Client, error) {
+	transport, err := TLSTransport(opts)
+	if err != nil {
+		return nil, err
+	}
+	return &http.Client{Transport: transport}, nil
+}
 
 // DefaultTimeout the default request timeout
 var DefaultTimeout = 30 * time.Second
