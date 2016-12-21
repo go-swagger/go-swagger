@@ -157,7 +157,7 @@ if err := validate.Required({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ print
 {{ end }}
 {{ if .IsNullable }}if {{ .ValueExpression }} != nil {
 {{ end }}
-if err := {{.ValueExpression}}.Validate(formats); err != nil {
+if err := {{.ValueExpression}}.Validate(formats, "{{pascalize .Name}}"); err != nil {
   return err
 }
 {{ if .IsNullable }}}{{ end }}
@@ -245,20 +245,8 @@ func ({{ .ReceiverName }} *{{ if .IsExported }}{{ pascalize .Name}}{{ else }}{{ 
 {{ end }}
 {{ end }}
 // Validate validates this {{ humanize .Name }}
-func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ if .IsExported }}{{ pascalize .Name}}{{ else }}{{ .Name }}{{ end }}) Validate(formats strfmt.Registry) error {
+func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ if .IsExported }}{{ pascalize .Name}}{{ else }}{{ .Name }}{{ end }}) Validate(formats strfmt.Registry, propName string) error {
   var res []error
-
-  {{ if .IsPrimitive }}
-    var propName string
-    pc, _, _, ok := goruntime.Caller(1)
-    details := goruntime.FuncForPC(pc)
-    if ok && details != nil {
-      tmpAry := strings.Split(details.Name(), ".")
-      tmpStr := tmpAry[len(tmpAry)-1]
-      propName = tmpStr[len("validate"):len(tmpStr)]
-    }
-  {{ end }}
-
   {{ range .AllOf }}
     {{ if or .Required .HasValidations }}
     {{if .IsPrimitive }}{{ template "primitivefieldvalidator" .}}
