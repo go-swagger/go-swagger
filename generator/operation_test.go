@@ -451,3 +451,20 @@ func TestGenClient_IllegalBOM(t *testing.T) {
 		}
 	}
 }
+
+func TestGenClient_CustomFormatPath(t *testing.T) {
+	b, err := methodPathOpBuilder("get", "/mosaic/experimental/series/{SeriesId}/mosaics", "../fixtures/bugs/789/swagger.yml")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			opts.defaultsEnsured = false
+			opts.EnsureDefaults(true)
+			err := templates.MustGet("clientParameter").Execute(buf, op)
+			if assert.NoError(t, err) {
+				assertInCode(t, `if err := r.SetPathParam("SeriesId", o.SeriesID.String()); err != nil`, buf.String())
+			}
+		}
+	}
+}
