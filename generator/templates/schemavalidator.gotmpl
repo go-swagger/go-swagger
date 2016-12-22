@@ -70,7 +70,7 @@ if err := validate.UniqueItems({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ pr
 if err := {{.ReceiverName}}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{.ValueExpression}}); err != nil {
   return err
 }
-{{end}}{{ if .Items }}{{ if or .Items.Required .Items.HasValidations .Items.IsBaseType }}
+{{end}}{{ if .Items }}{{ if or .Items.Required .Items.HasValidations .Items.IsBaseType .Items.IsAliased }}
 for {{.IndexVar}} := 0; {{.IndexVar}} < len({{.ValueExpression}}); {{.IndexVar}}++ {
 {{with .Items}}
   {{ if and .IsNullable (not .Required) }}
