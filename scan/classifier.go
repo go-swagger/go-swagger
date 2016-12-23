@@ -49,6 +49,7 @@ type classifiedProgram struct {
 	prog       *loader.Program
 	Meta       []*ast.File
 	Models     []*ast.File
+	Routes     []*ast.File
 	Operations []*ast.File
 	Parameters []*ast.File
 	Responses  []*ast.File
@@ -86,7 +87,7 @@ func (pc *programClassifier) Classify(prog *loader.Program) (*classifiedProgram,
 		}
 
 		for _, file := range pkgInfo.Files {
-			var op, mt, pm, rs, mm bool // only add a particular file once
+			var ro, op, mt, pm, rs, mm bool // only add a particular file once
 			for _, comments := range file.Comments {
 				var seenStruct string
 				for _, cline := range comments.List {
@@ -95,6 +96,11 @@ func (pc *programClassifier) Classify(prog *loader.Program) (*classifiedProgram,
 						if len(matches) > 1 {
 							switch matches[1] {
 							case "route":
+								if !ro {
+									cp.Routes = append(cp.Routes, file)
+									ro = true
+								}
+							case "operation":
 								if !op {
 									cp.Operations = append(cp.Operations, file)
 									op = true

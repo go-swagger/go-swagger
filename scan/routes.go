@@ -17,7 +17,6 @@ package scan
 import (
 	"fmt"
 	"go/ast"
-	"strings"
 
 	"github.com/go-openapi/spec"
 
@@ -66,127 +65,19 @@ type routesParser struct {
 func (rp *routesParser) Parse(gofile *ast.File, target interface{}) error {
 	tgt := target.(*spec.Paths)
 	for _, comsec := range gofile.Comments {
+		content := parsePathAnnotation(rxRoute, comsec.List)
 
-		// check if this is a route comment section
-		var method, path, id string
-		var tags []string
-		var remaining *ast.CommentGroup
-		var justMatched bool
-
-		for _, cmt := range comsec.List {
-			for _, line := range strings.Split(cmt.Text, "\n") {
-				matches := rxRoute.FindStringSubmatch(line)
-				if len(matches) > 3 {
-					method, path, id = matches[1], matches[2], matches[len(matches)-1]
-					tags = rxSpace.Split(matches[3], -1)
-					if len(matches[3]) == 0 {
-						tags = nil
-					}
-					justMatched = true
-				} else if method != "" {
-					if remaining == nil {
-						remaining = new(ast.CommentGroup)
-					}
-					if !justMatched || strings.TrimSpace(rxStripComments.ReplaceAllString(line, "")) != "" {
-						cc := new(ast.Comment)
-						cc.Slash = cmt.Slash
-						cc.Text = line
-						remaining.List = append(remaining.List, cc)
-						justMatched = false
-					}
-				}
-			}
-		}
-
-		if method == "" {
+		if content.Method == "" {
 			continue // it's not, next!
 		}
 
-		pthObj := tgt.Paths[path]
-		op := rp.operations[id]
-		if op == nil {
-			op = new(spec.Operation)
-			op.ID = id
-		}
-		switch strings.ToUpper(method) {
-		case "GET":
-			if pthObj.Get != nil {
-				if id == pthObj.Get.ID {
-					op = pthObj.Get
-				} else {
-					pthObj.Get = op
-				}
-			} else {
-				pthObj.Get = op
-			}
+		pthObj := tgt.Paths[content.Path]
+		op := setPathOperation(
+			content.Method, content.ID,
+			&pthObj, rp.operations[content.ID])
 
-		case "POST":
-			if pthObj.Post != nil {
-				if id == pthObj.Post.ID {
-					op = pthObj.Post
-				} else {
-					pthObj.Post = op
-				}
-			} else {
-				pthObj.Post = op
-			}
+		op.Tags = content.Tags
 
-		case "PUT":
-			if pthObj.Put != nil {
-				if id == pthObj.Put.ID {
-					op = pthObj.Put
-				} else {
-					pthObj.Put = op
-				}
-			} else {
-				pthObj.Put = op
-			}
-
-		case "PATCH":
-			if pthObj.Patch != nil {
-				if id == pthObj.Patch.ID {
-					op = pthObj.Patch
-				} else {
-					pthObj.Patch = op
-				}
-			} else {
-				pthObj.Patch = op
-			}
-
-		case "HEAD":
-			if pthObj.Head != nil {
-				if id == pthObj.Head.ID {
-					op = pthObj.Head
-				} else {
-					pthObj.Head = op
-				}
-			} else {
-				pthObj.Head = op
-			}
-
-		case "DELETE":
-			if pthObj.Delete != nil {
-				if id == pthObj.Delete.ID {
-					op = pthObj.Delete
-				} else {
-					pthObj.Delete = op
-				}
-			} else {
-				pthObj.Delete = op
-			}
-
-		case "OPTIONS":
-			if pthObj.Options != nil {
-				if id == pthObj.Options.ID {
-					op = pthObj.Options
-				} else {
-					pthObj.Options = op
-				}
-			} else {
-				pthObj.Options = op
-			}
-		}
-		op.Tags = tags
 		sp := new(sectionedParser)
 		sp.setTitle = func(lines []string) { op.Summary = joinDropLast(lines) }
 		sp.setDescription = func(lines []string) { op.Description = joinDropLast(lines) }
@@ -198,14 +89,14 @@ func (rp *routesParser) Parse(gofile *ast.File, target interface{}) error {
 			newMultiLineTagParser("Security", newSetSecurityDefinitions(rxSecuritySchemes, opSecurityDefsSetter(op))),
 			newMultiLineTagParser("Responses", sr),
 		}
-		if err := sp.Parse(remaining); err != nil {
+		if err := sp.Parse(content.Remaining); err != nil {
 			return fmt.Errorf("operation (%s): %v", op.ID, err)
 		}
 
 		if tgt.Paths == nil {
 			tgt.Paths = make(map[string]spec.PathItem)
 		}
-		tgt.Paths[path] = pthObj
+		tgt.Paths[content.Path] = pthObj
 	}
 
 	return nil

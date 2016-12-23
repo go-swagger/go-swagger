@@ -24,7 +24,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/validate"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/tools/go/loader"
 
@@ -978,6 +981,30 @@ func verifySwaggerMultiArgSwaggerTag(t *testing.T, matcher *regexp.Regexp, prefi
 			line := pref + param
 			matches := matcher.FindStringSubmatch(line)
 			assert.Empty(t, matches)
+		}
+	}
+}
+
+func TestEnhancement793(t *testing.T) {
+	scanner, err := newAppScanner(&Opts{
+		BasePath:   "../fixtures/enhancements/793",
+		ScanModels: true,
+	}, nil, nil)
+	assert.NoError(t, err)
+	assert.NotNil(t, scanner)
+	doc, err := scanner.Parse()
+	assert.NoError(t, err)
+	if assert.NotNil(t, doc) {
+		bytes, err := doc.MarshalJSON()
+		assert.NoError(t, err)
+		assert.NotEmpty(t, bytes)
+
+		doc, err := loads.Analyzed(bytes, "")
+		if assert.NoError(t, err) {
+			validator := validate.NewSpecValidator(doc.Schema(), strfmt.Default)
+			res, _ := validator.Validate(doc)
+			assert.Empty(t, res.Errors)
+			assert.True(t, res.IsValid())
 		}
 	}
 }
