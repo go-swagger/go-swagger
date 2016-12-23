@@ -558,3 +558,52 @@ func assertPrimitiveResolve(t testing.TB, tpe, tfmt, exp string, tr resolvedType
 	assert.Equal(t, tfmt, tr.SwaggerFormat, fmt.Sprintf("expected %q (%q, %q) to for the swagger format but got %q", tfmt, tpe, exp, tr.SwaggerFormat))
 	assert.Equal(t, exp, tr.GoType, fmt.Sprintf("expected %q (%q, %q) to for the go type but got %q", exp, tpe, tfmt, tr.GoType))
 }
+
+func TestTypeResolver_ExistingModel(t *testing.T) {
+	doc, err := loads.Spec("../fixtures/codegen/existing-model.yml")
+	resolver := newTypeResolver("model", doc)
+	if assert.NoError(t, err) {
+		def := doc.Spec().Definitions["JsonWebKey"]
+		tpe, pkg, alias := knownDefGoType("JsonWebKey", def, nil)
+		assert.Equal(t, "jwk.Key", tpe)
+		assert.Equal(t, "github.com/user/package", pkg)
+		assert.Equal(t, "jwk", alias)
+		rest, err := resolver.ResolveSchema(&def, false, true)
+		if assert.NoError(t, err) {
+			assert.False(t, rest.IsMap)
+			assert.False(t, rest.IsArray)
+			assert.False(t, rest.IsTuple)
+			assert.False(t, rest.IsStream)
+			assert.False(t, rest.IsAliased)
+			assert.False(t, rest.IsBaseType)
+			assert.False(t, rest.IsInterface)
+			assert.True(t, rest.IsNullable)
+			assert.False(t, rest.IsPrimitive)
+			assert.False(t, rest.IsAnonymous)
+			assert.True(t, rest.IsComplexObject)
+			assert.False(t, rest.IsCustomFormatter)
+			assert.Equal(t, "jwk.Key", rest.GoType)
+			assert.Equal(t, "github.com/user/package", rest.Pkg)
+			assert.Equal(t, "jwk", rest.PkgAlias)
+		}
+		def = doc.Spec().Definitions["JsonWebKeySet"].Properties["keys"]
+		rest, err = resolver.ResolveSchema(&def, false, true)
+		if assert.NoError(t, err) {
+			assert.False(t, rest.IsMap)
+			assert.True(t, rest.IsArray)
+			assert.False(t, rest.IsTuple)
+			assert.False(t, rest.IsStream)
+			assert.False(t, rest.IsAliased)
+			assert.False(t, rest.IsBaseType)
+			assert.False(t, rest.IsInterface)
+			assert.False(t, rest.IsNullable)
+			assert.False(t, rest.IsPrimitive)
+			assert.False(t, rest.IsAnonymous)
+			assert.False(t, rest.IsComplexObject)
+			assert.False(t, rest.IsCustomFormatter)
+			assert.Equal(t, "[]jwk.Key", rest.GoType)
+			assert.Equal(t, "", rest.Pkg)
+			assert.Equal(t, "", rest.PkgAlias)
+		}
+	}
+}

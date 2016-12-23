@@ -517,8 +517,10 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		if err != nil {
 			return GenApp{}, err
 		}
-		//mod.ReceiverName = receiver
-		genMods = append(genMods, *mod)
+		if mod != nil {
+			//mod.ReceiverName = receiver
+			genMods = append(genMods, *mod)
+		}
 	}
 
 	log.Println("planning operations")
