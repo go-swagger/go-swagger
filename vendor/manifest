@@ -151,7 +151,7 @@
 			"importpath": "github.com/go-openapi/validate",
 			"repository": "https://github.com/go-openapi/validate",
 			"vcs": "git",
-			"revision": "027696d4b54399770f1cdcc6c6daa56975f9e14e",
+			"revision": "f31278a65160c50d1fff9bdf055a7b6863256f17",
 			"branch": "master",
 			"notests": true
 		},
