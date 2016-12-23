@@ -133,6 +133,12 @@ func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *loads.Docu
 	return makeGenDefinitionHierarchy(name, pkg, "", schema, specDoc, opts)
 }
 func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts) (*GenDefinition, error) {
+
+	_, ok := schema.Extensions["x-go-type"]
+	if ok {
+		return nil, nil
+	}
+
 	receiver := "m"
 	resolver := newTypeResolver("", specDoc)
 	resolver.ModelName = name
@@ -263,7 +269,57 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		DependsOn:      pg.Dependencies,
 		DefaultImports: defaultImports,
 		ExtraSchemas:   extras,
+		Imports:        findImports(&pg.GenSchema),
 	}, nil
+}
+
+func findImports(sch *GenSchema) map[string]string {
+	imp := map[string]string{}
+	t := sch.resolvedType
+	if t.Pkg != "" && t.PkgAlias != "" {
+		imp[t.PkgAlias] = t.Pkg
+	}
+	if sch.Items != nil {
+		sub := findImports(sch.Items)
+		for k, v := range sub {
+			imp[k] = v
+		}
+	}
+	if sch.AdditionalItems != nil {
+		sub := findImports(sch.AdditionalItems)
+		for k, v := range sub {
+			imp[k] = v
+		}
+	}
+	if sch.Object != nil {
+		sub := findImports(sch.Object)
+		for k, v := range sub {
+			imp[k] = v
+		}
+	}
+	if sch.Properties != nil {
+		for _, p := range sch.Properties {
+			sub := findImports(&p)
+			for k, v := range sub {
+				imp[k] = v
+			}
+		}
+	}
+	if sch.AdditionalProperties != nil {
+		sub := findImports(sch.AdditionalProperties)
+		for k, v := range sub {
+			imp[k] = v
+		}
+	}
+	if sch.AllOf != nil {
+		for _, p := range sch.AllOf {
+			sub := findImports(&p)
+			for k, v := range sub {
+				imp[k] = v
+			}
+		}
+	}
+	return imp
 }
 
 type schemaGenContext struct {

@@ -1785,3 +1785,23 @@ func TestGenModel_Issue752_EOFErr(t *testing.T) {
 		}
 	}
 }
+
+func TestImports_ExistingModel(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/existing-model.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "JsonWebKeySet"
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+		if assert.NoError(t, err) &&
+			assert.NotNil(t, genModel) &&
+			assert.NotNil(t, genModel.Imports) {
+			assert.Equal(t, "github.com/user/package", genModel.Imports["jwk"])
+		}
+		k = "JsonWebKey"
+		genModel, err = makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+		if assert.NoError(t, err) {
+			assert.Nil(t, genModel)
+		}
+	}
+}

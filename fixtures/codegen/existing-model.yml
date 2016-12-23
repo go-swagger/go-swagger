@@ -1,0 +1,88 @@
+swagger: "2.0"
+
+info:
+  version: "1.0"
+  title: "Existing model"
+  description: |
+      Sample API, which uses existing Go type to implement Swagger definition.
+
+produces:
+  - "application/json"
+
+consumes:
+  - "application/json"
+
+paths:
+  /keys:
+    get:
+      description: "Get a JSON Web Key Set"
+      tags:
+        - "jwk"
+      operationId: "GetJWKSet"
+      responses:
+        200:
+          description: "OK"
+          examples:
+            application/json:
+              keys:
+                - kid: ""
+                  kty: ""
+          schema:
+            $ref: "#/definitions/JsonWebKeySet"
+  /key:
+    get:
+      description: "Get JSON Web Key"
+      tags:
+        - "jwk"
+      operationId: "GetJWK"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/JsonWebKeySet"
+definitions:
+  JsonWebKeySet:
+    title: "JSON Web Key Set"
+    type: "object"
+    properties:
+      keys:
+        type: "array"
+        items:
+          $ref: "#/definitions/JsonWebKey"
+  JsonWebKey:
+    title: "JSON Web Key"
+    type: "object"
+    properties:
+      keys:
+        type: "array"
+        items:
+          $ref: "#/definitions/JsonWebKey"
+      kty:
+        type: "string"
+      use:
+        type: "string"
+      kid:
+        type: "string"
+      alg:
+        type: "string"
+      crv:
+        type: "string"
+      x:
+        type: "string"
+      "y":
+        type: "string"
+      d:
+        type: "string"
+      "n":
+        type: "string"
+      e:
+        type: "string"
+      k:
+        type: "string"
+    required:
+      - kty
+    x-go-type:
+      import:
+        package: "github.com/user/package"
+        alias: "jwk"
+      type: "Key"

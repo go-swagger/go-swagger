@@ -244,12 +244,40 @@ func newTypeResolver(pkg string, doc *loads.Document) *typeResolver {
 	resolver := typeResolver{ModelsPackage: pkg, Doc: doc}
 	resolver.KnownDefs = make(map[string]struct{}, 64)
 	for k, sch := range doc.OrigSpec().Definitions {
-		resolver.KnownDefs[k] = struct{}{}
-		if nm, ok := sch.Extensions["x-go-name"]; ok {
-			resolver.KnownDefs[nm.(string)] = struct{}{}
-		}
+		tpe, _, _ := knownDefGoType(k, sch, nil)
+		resolver.KnownDefs[tpe] = struct{}{}
 	}
 	return &resolver
+}
+
+// knownDefGoType returns go type, package and package alias for definition
+func knownDefGoType(def string, schema spec.Schema, clear func(string) string) (string, string, string) {
+	ext := schema.Extensions
+	if nm, ok := ext.GetString("x-go-name"); ok {
+		if clear == nil {
+			return nm, "", ""
+		}
+		return clear(nm), "", ""
+	}
+	v, ok := ext["x-go-type"]
+	if !ok {
+		if clear == nil {
+			return def, "", ""
+		}
+		return clear(def), "", ""
+	}
+	xt := v.(map[string]interface{})
+	t := xt["type"].(string)
+	imp := xt["import"].(map[string]interface{})
+	pkg := imp["package"].(string)
+	al, ok := imp["alias"]
+	var alias string
+	if ok {
+		alias = al.(string)
+	} else {
+		alias = filepath.Base(pkg)
+	}
+	return alias + "." + t, pkg, alias
 }
 
 type typeResolver struct {
@@ -277,15 +305,6 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 			err = er
 			return
 		}
-		var nm = filepath.Base(schema.Ref.GetURL().Fragment)
-		var tn string
-		if gn, ok := ref.Extensions["x-go-name"]; ok {
-			tn = gn.(string)
-			nm = tn
-		} /*else {
-			tn = swag.ToGoName(nm)
-		}*/
-
 		res, er := t.ResolveSchema(ref, false, isRequired)
 		if er != nil {
 			err = er
@@ -293,7 +312,10 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 		}
 		result = res
 
-		result.GoType = t.goTypeName(nm)
+		tpe, pkg, alias := knownDefGoType(filepath.Base(schema.Ref.GetURL().Fragment), *ref, t.goTypeName)
+		result.GoType = tpe
+		result.Pkg = pkg
+		result.PkgAlias = alias
 		result.HasDiscriminator = ref.Discriminator != ""
 		result.IsNullable = t.IsNullable(ref)
 		//result.IsAliased = true
@@ -441,7 +463,10 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 	result.IsBaseType = schema.Discriminator != ""
 	if !isAnonymous {
 		result.SwaggerType = object
-		result.GoType = t.goTypeName(t.ModelName)
+		tpe, pkg, alias := knownDefGoType(t.ModelName, *schema, t.goTypeName)
+		result.GoType = tpe
+		result.Pkg = pkg
+		result.PkgAlias = alias
 	}
 	if len(schema.AllOf) > 0 {
 		result.GoType = t.goTypeName(t.ModelName)
@@ -663,6 +688,8 @@ type resolvedType struct {
 	IsBaseType         bool
 
 	GoType        string
+	Pkg           string
+	PkgAlias      string
 	AliasedType   string
 	SwaggerType   string
 	SwaggerFormat string
