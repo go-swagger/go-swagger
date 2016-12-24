@@ -15,6 +15,8 @@
 package scan
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"go/ast"
 	goparser "go/parser"
@@ -23,8 +25,11 @@ import (
 	"regexp"
 	"strings"
 
+	yaml "gopkg.in/yaml.v2"
+
 	"golang.org/x/tools/go/loader"
 
+	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 )
@@ -68,6 +73,18 @@ var (
 	rxDefault            = regexp.MustCompile("swagger:default\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)$")
 	rxRoute              = regexp.MustCompile(
 		"swagger:route\\p{Zs}*" +
+			rxMethod +
+			"\\p{Zs}*" +
+			rxPath +
+			"(?:\\p{Zs}+" +
+			rxOpTags +
+			")?\\p{Zs}+" +
+			rxOpID + "\\p{Zs}*$")
+	rxBeginYAMLSpec    = regexp.MustCompile("---\\p{Zs}*$")
+	rxUncommentHeaders = regexp.MustCompile(`^[\p{Zs}\t/\*-]*`)
+	rxUncommentYAML    = regexp.MustCompile(`^[\p{Zs}\t]*/*`)
+	rxOperation        = regexp.MustCompile(
+		"swagger:operation\\p{Zs}*" +
 			rxMethod +
 			"\\p{Zs}*" +
 			rxPath +
@@ -286,8 +303,13 @@ func (a *appScanner) Parse() (*spec.Swagger, error) {
 	}
 
 	// build paths dictionary
-	for _, routeFile := range cp.Operations {
+	for _, routeFile := range cp.Routes {
 		if err := a.parseRoutes(routeFile); err != nil {
+			return nil, err
+		}
+	}
+	for _, operationFile := range cp.Operations {
+		if err := a.parseOperations(operationFile); err != nil {
 			return nil, err
 		}
 	}
@@ -354,6 +376,17 @@ func (a *appScanner) parseRoutes(file *ast.File) error {
 	rp.definitions = a.definitions
 	rp.responses = a.responses
 	if err := rp.Parse(file, a.input.Paths); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a *appScanner) parseOperations(file *ast.File) error {
+	op := newOperationsParser(a.prog)
+	op.operations = a.operations
+	op.definitions = a.definitions
+	op.responses = a.responses
+	if err := op.Parse(file, a.input.Paths); err != nil {
 		return err
 	}
 	return nil
@@ -483,6 +516,195 @@ func (st *tagParser) Parse(lines []string) error {
 	return st.Parser.Parse(lines)
 }
 
+// aggregates lines in header until it sees `---`,
+// the beginning of a YAML spec
+type yamlSpecScanner struct {
+	header         []string
+	yamlSpec       []string
+	setTitle       func([]string)
+	setDescription func([]string)
+	workedOutTitle bool
+	title          []string
+	description    []string
+	skipHeader     bool
+}
+
+func cleanupScannerLines(lines []string, ur *regexp.Regexp) []string {
+	// bail early when there is nothing to parse
+	if len(lines) == 0 {
+		return lines
+	}
+	seenLine := -1
+	var lastContent int
+	var uncommented []string
+	for i, v := range lines {
+		str := ur.ReplaceAllString(v, "")
+		uncommented = append(uncommented, str)
+		if str != "" {
+			if seenLine < 0 {
+				seenLine = i
+			}
+			lastContent = i
+		}
+	}
+	// fixes issue #50
+	if seenLine == -1 {
+		return nil
+	}
+	return uncommented[seenLine : lastContent+1]
+}
+
+// a shared function that can be used to split given headers
+// into a title and description
+func collectScannerTitleDescription(headers []string) (title, desc []string) {
+	hdrs := cleanupScannerLines(headers, rxUncommentHeaders)
+
+	idx := -1
+	for i, line := range hdrs {
+		if strings.TrimSpace(line) == "" {
+			idx = i
+			break
+		}
+	}
+
+	if idx > -1 {
+		title = hdrs[:idx]
+		if len(hdrs) > idx+1 {
+			desc = hdrs[idx+1:]
+		} else {
+			desc = nil
+		}
+		return
+	}
+
+	if len(hdrs) > 0 {
+		line := hdrs[0]
+		if rxPunctuationEnd.MatchString(line) {
+			title = []string{line}
+			desc = hdrs[1:]
+		} else {
+			desc = hdrs
+		}
+	}
+
+	return
+}
+
+func (sp *yamlSpecScanner) collectTitleDescription() {
+	if sp.workedOutTitle {
+		return
+	}
+	if sp.setTitle == nil {
+		sp.header = cleanupScannerLines(sp.header, rxUncommentHeaders)
+		return
+	}
+
+	sp.workedOutTitle = true
+	sp.title, sp.header = collectScannerTitleDescription(sp.header)
+}
+
+func (sp *yamlSpecScanner) Title() []string {
+	sp.collectTitleDescription()
+	return sp.title
+}
+
+func (sp *yamlSpecScanner) Description() []string {
+	sp.collectTitleDescription()
+	return sp.header
+}
+
+func (sp *yamlSpecScanner) Parse(doc *ast.CommentGroup) error {
+	if doc == nil {
+		return nil
+	}
+	var startedYAMLSpec bool
+COMMENTS:
+	for _, c := range doc.List {
+		for _, line := range strings.Split(c.Text, "\n") {
+			if rxSwaggerAnnotation.MatchString(line) {
+				break COMMENTS // a new swagger: annotation terminates this parser
+			}
+
+			if !startedYAMLSpec {
+				if rxBeginYAMLSpec.MatchString(line) {
+					startedYAMLSpec = true
+					sp.yamlSpec = append(sp.yamlSpec, line)
+					continue
+				}
+
+				if !sp.skipHeader {
+					sp.header = append(sp.header, line)
+				}
+
+				// no YAML spec yet, moving on
+				continue
+			}
+
+			sp.yamlSpec = append(sp.yamlSpec, line)
+		}
+	}
+	if sp.setTitle != nil {
+		sp.setTitle(sp.Title())
+	}
+	if sp.setDescription != nil {
+		sp.setDescription(sp.Description())
+	}
+
+	return nil
+}
+
+func (sp *yamlSpecScanner) UnmarshalSpec(u func([]byte) error) (err error) {
+	spec := cleanupScannerLines(sp.yamlSpec, rxUncommentYAML)
+	if len(spec) == 0 {
+		return errors.New("no spec available to unmarshal")
+	}
+
+	if !strings.Contains(spec[0], "---") {
+		return errors.New("yaml spec has to start with `---`")
+	}
+
+	// remove indention
+	indentLength := strings.Index(spec[0], "-")
+	if indentLength > 0 {
+		for i := range spec {
+			if len(spec[i]) >= indentLength {
+				spec[i] = spec[i][indentLength:]
+			}
+		}
+	}
+
+	// 1. parse yaml lines
+	yamlValue := make(map[interface{}]interface{})
+
+	yamlContent := strings.Join(spec, "\n")
+	err = yaml.Unmarshal([]byte(yamlContent), &yamlValue)
+	if err != nil {
+		return
+	}
+
+	// 2. convert to json
+	var jsonValue json.RawMessage
+	jsonValue, err = fmts.YAMLToJSON(yamlValue)
+	if err != nil {
+		return
+	}
+
+	// 3. unmarshal the json into an interface
+	var data []byte
+	data, err = jsonValue.MarshalJSON()
+	if err != nil {
+		return
+	}
+	err = u(data)
+	if err != nil {
+		return
+	}
+
+	// all parsed, returning...
+	sp.yamlSpec = nil // spec is now consumed, so let's erase the parsed lines
+	return
+}
+
 // aggregates lines in header until it sees a tag.
 type sectionedParser struct {
 	header     []string
@@ -500,70 +722,17 @@ type sectionedParser struct {
 	description    []string
 }
 
-func (st *sectionedParser) cleanup(lines []string) []string {
-	// bail early when there is nothing to parse
-	if len(lines) == 0 {
-		return lines
-	}
-	seenLine := -1
-	var lastContent int
-	var uncommented []string
-	for i, v := range lines {
-		str := regexp.MustCompile(`^[\p{Zs}\t/\*-]*`).ReplaceAllString(v, "")
-		uncommented = append(uncommented, str)
-		if str != "" {
-			if seenLine < 0 {
-				seenLine = i
-			}
-			lastContent = i
-		}
-	}
-	// fixes issue #50
-	if seenLine == -1 {
-		return nil
-	}
-	return uncommented[seenLine : lastContent+1]
-}
-
 func (st *sectionedParser) collectTitleDescription() {
 	if st.workedOutTitle {
 		return
 	}
 	if st.setTitle == nil {
-		st.header = st.cleanup(st.header)
+		st.header = cleanupScannerLines(st.header, rxUncommentHeaders)
 		return
 	}
-	hdrs := st.cleanup(st.header)
 
 	st.workedOutTitle = true
-	idx := -1
-	for i, line := range hdrs {
-		if strings.TrimSpace(line) == "" {
-			idx = i
-			break
-		}
-	}
-
-	if idx > -1 {
-
-		st.title = hdrs[:idx]
-		if len(hdrs) > idx+1 {
-			st.header = hdrs[idx+1:]
-		} else {
-			st.header = nil
-		}
-		return
-	}
-
-	if len(hdrs) > 0 {
-		line := hdrs[0]
-		if rxPunctuationEnd.MatchString(line) {
-			st.title = []string{line}
-			st.header = hdrs[1:]
-		} else {
-			st.header = hdrs
-		}
-	}
+	st.title, st.header = collectScannerTitleDescription(st.header)
 }
 
 func (st *sectionedParser) Title() []string {
@@ -640,7 +809,7 @@ COMMENTS:
 		st.setDescription(st.Description())
 	}
 	for _, mt := range st.matched {
-		if err := mt.Parse(st.cleanup(mt.Lines)); err != nil {
+		if err := mt.Parse(cleanupScannerLines(mt.Lines, rxUncommentHeaders)); err != nil {
 			return err
 		}
 	}

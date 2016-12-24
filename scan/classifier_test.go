@@ -113,7 +113,7 @@ func TestClassifier(t *testing.T) {
 
 	// ensure all the dependencies are there
 	assert.Len(t, classified.Meta, 1)
-	assert.Len(t, classified.Operations, 2)
+	assert.Len(t, classified.Routes, 2)
 
 	var fNames []string
 	for _, file := range classified.Models {
@@ -134,6 +134,7 @@ func TestClassifierInclude(t *testing.T) {
 			packageFilter{"github.com/go-swagger/go-swagger/fixtures/goparsing/classification"},
 			packageFilter{"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/transitive/mods"},
 			packageFilter{"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/operations"},
+			packageFilter{"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/operations_annotation"},
 		}),
 	}
 	classified, err := classifier.Classify(prog)
@@ -141,7 +142,7 @@ func TestClassifierInclude(t *testing.T) {
 
 	// ensure all the dependencies are there
 	assert.Len(t, classified.Meta, 1)
-	assert.Len(t, classified.Operations, 1)
+	assert.Len(t, classified.Routes, 1)
 
 	//var fNames []string
 	//for _, file := range classified.Models {
@@ -167,7 +168,7 @@ func TestClassifierExclude(t *testing.T) {
 
 	// ensure all the dependencies are there
 	assert.Len(t, classified.Meta, 1)
-	assert.Len(t, classified.Operations, 1)
+	assert.Len(t, classified.Routes, 1)
 
 	//var fNames []string
 	//for _, file := range classified.Models {
