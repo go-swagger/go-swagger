@@ -50,10 +50,8 @@ var (
 
 func init() {
 	defaultLoader = &loader{Match: func(_ string) bool { return true }, Fn: JSONDoc}
-	loaders = &loader{
-		Match: func(_ string) bool { return true },
-		Fn:    JSONDoc,
-	}
+	loaders = defaultLoader
+	spec.PathLoader = loaders.Fn
 	AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
 }
 
@@ -65,7 +63,7 @@ func AddLoader(predicate DocMatcher, load DocLoader) {
 		Fn:    load,
 		Next:  prev,
 	}
-
+	spec.PathLoader = loaders.Fn
 }
 
 type loader struct {
@@ -259,4 +257,9 @@ func (d *Document) ResetDefinitions() *Document {
 func (d *Document) Pristine() *Document {
 	dd, _ := Analyzed(d.Raw(), d.Version())
 	return dd
+}
+
+// SpecFilePath returns the file path of the spec if one is defined
+func (d *Document) SpecFilePath() string {
+	return d.specFilePath
 }

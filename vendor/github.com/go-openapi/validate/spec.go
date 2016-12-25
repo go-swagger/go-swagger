@@ -194,6 +194,13 @@ func (s *SpecValidator) validateDuplicatePropertyNames() *Result {
 	return res
 }
 
+func (s *SpecValidator) resolveRef(ref *spec.Ref) (*spec.Schema, error) {
+	if s.spec.SpecFilePath() != "" {
+		return spec.ResolveRefWithBase(s.spec.Spec(), ref, &spec.ExpandOptions{RelativeBase: s.spec.SpecFilePath()})
+	}
+	return spec.ResolveRef(s.spec.Spec(), ref)
+}
+
 func (s *SpecValidator) validateSchemaPropertyNames(nm string, sch spec.Schema, knowns map[string]struct{}) []dupProp {
 	var dups []dupProp
 
@@ -201,7 +208,7 @@ func (s *SpecValidator) validateSchemaPropertyNames(nm string, sch spec.Schema, 
 	schc := &sch
 	for schc.Ref.String() != "" {
 		// gather property names
-		reso, err := spec.ResolveRef(s.spec.Spec(), &schc.Ref)
+		reso, err := s.resolveRef(&schc.Ref)
 		if err != nil {
 			panic(err)
 		}
@@ -237,7 +244,7 @@ func (s *SpecValidator) validateCircularAncestry(nm string, sch spec.Schema, kno
 	schn := nm
 	schc := &sch
 	for schc.Ref.String() != "" {
-		reso, err := spec.ResolveRef(s.spec.Spec(), &schc.Ref)
+		reso, err := s.resolveRef(&schc.Ref)
 		if err != nil {
 			panic(err)
 		}
@@ -613,7 +620,7 @@ func (s *SpecValidator) validateReferencesValid() *Result {
 	// each reference must point to a valid object
 	res := new(Result)
 	for _, r := range s.analyzer.AllRefs() {
-		if !r.IsValidURI() {
+		if !r.IsValidURI(s.spec.SpecFilePath()) {
 			res.AddErrors(errors.New(404, "invalid ref %q", r.String()))
 		}
 	}

@@ -43,6 +43,7 @@ func (r *Result) Merge(other *Result) *Result {
 
 // AddErrors adds errors to this validation result
 func (r *Result) AddErrors(errors ...error) {
+	// TODO: filter already existing errors
 	r.Errors = append(r.Errors, errors...)
 }
 

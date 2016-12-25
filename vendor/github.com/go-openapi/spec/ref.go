@@ -55,7 +55,7 @@ func (r *Ref) RemoteURI() string {
 }
 
 // IsValidURI returns true when the url the ref points to can be found
-func (r *Ref) IsValidURI() bool {
+func (r *Ref) IsValidURI(basepaths ...string) bool {
 	if r.String() == "" {
 		return true
 	}
@@ -81,7 +81,11 @@ func (r *Ref) IsValidURI() bool {
 	// check for local file
 	pth := v
 	if r.HasURLPathOnly {
-		p, e := filepath.Abs(pth)
+		base := "."
+		if len(basepaths) > 0 {
+			base = filepath.Dir(filepath.Join(basepaths...))
+		}
+		p, e := filepath.Abs(filepath.Join(base, pth))
 		if e != nil {
 			return false
 		}

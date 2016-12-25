@@ -83,9 +83,9 @@ func (s *simpleCache) Set(uri string, data interface{}) {
 	s.lock.Unlock()
 }
 
-// ResolveRef resolves a reference against a context root
-func ResolveRef(root interface{}, ref *Ref) (*Schema, error) {
-	resolver, err := defaultSchemaLoader(root, nil, nil, nil)
+// ResolveRefWithBase resolves a reference against a context root with preservation of base path
+func ResolveRefWithBase(root interface{}, ref *Ref, opts *ExpandOptions) (*Schema, error) {
+	resolver, err := defaultSchemaLoader(root, nil, opts, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -95,6 +95,11 @@ func ResolveRef(root interface{}, ref *Ref) (*Schema, error) {
 		return nil, err
 	}
 	return result, nil
+}
+
+// ResolveRef resolves a reference against a context root
+func ResolveRef(root interface{}, ref *Ref) (*Schema, error) {
+	return ResolveRefWithBase(root, ref, nil)
 }
 
 // ResolveParameter resolves a paramter reference against a context root
@@ -139,6 +144,19 @@ var idPtr, _ = jsonpointer.New("/id")
 var schemaPtr, _ = jsonpointer.New("/$schema")
 var refPtr, _ = jsonpointer.New("/$ref")
 
+// PathLoader function to use when loading remote refs
+var PathLoader func(string) (json.RawMessage, error)
+
+func init() {
+	PathLoader = func(path string) (json.RawMessage, error) {
+		data, err := swag.LoadFromFileOrHTTP(path)
+		if err != nil {
+			return nil, err
+		}
+		return json.RawMessage(data), nil
+	}
+}
+
 func defaultSchemaLoader(
 	root interface{}, ref *Ref,
 	expandOptions *ExpandOptions, cache ResolutionCache) (*schemaLoader, error) {
@@ -165,12 +183,7 @@ func defaultSchemaLoader(
 			if Debug {
 				log.Printf("fetching document at %q", path)
 			}
-
-			data, err := swag.LoadFromFileOrHTTP(path)
-			if err != nil {
-				return nil, err
-			}
-			return json.RawMessage(data), nil
+			return PathLoader(path)
 		},
 	}, nil
 }
