@@ -1,0 +1,578 @@
+swagger: '2.0'
+
+info:
+  title: Markdown generator demo
+  version: 1.0.0
+  description: |
+    A spec to demonstrate the markdown generator.
+
+    All swagger fields supported by the doc generator are examplified below.
+  termsOfService: free to use
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  contact:
+    name: fred
+    url: https://github.com/go-swagger/go-swagger
+    email: fred@example.com
+
+externalDocs:
+  description: More information
+  url: https://goswagger.io
+
+tags:
+  - name: greeters
+    description: define several ways to greet someone
+    externalDocs:
+      url: https://welcome.example.com/greet
+  - name: ousters
+    description: define several ways to (tactfully) get rid of someone
+    externalDocs:
+      description: more about ousters
+      url: https://welcome.example.com/oust
+
+securityDefinitions:
+  api_key:
+    type: apiKey
+    description: Authentication via API key header
+    name: x-api-key
+    in: header
+
+  password:
+    type: basic
+    description: Authentication with password
+
+  token:
+    type: oauth2
+    description: Authentication with oauth2 token
+    flow: accessCode
+    authorizationUrl: https://app/auth/authorize
+    tokenUrl: https://app/auth/token
+    scopes:
+      'read:greeters': Scope to access all greeters
+      'write:greeters': Scope to create or modify greeters
+
+security:
+  - password: []
+  - api_key: []
+
+schemes:
+  - http
+  - https
+x-schemes:
+  - unix
+  - wss
+
+consumes:
+  - application/json
+produces:
+  - application/json
+
+paths:
+  /greetings:
+    parameters:
+      - in: query
+        name: filter
+        type: string
+        default: none
+      - in: query
+        name: since
+        type: string
+        format: date-time
+      - in: query
+        name: max
+        type: integer
+        default: 100
+      - in: query
+        name: offset
+        type: integer
+        format: int32
+        default: 0
+      - in: query
+        name: byID
+        type: string
+        format: uuid
+      - in: query
+        description: specifies multiple outputs
+        name: multi
+        type: array
+        collectionFormat: pipes
+        items:
+          type: string
+          format: byte
+    get:
+      tags: [greeters]
+      summary: |
+        Retrieve all ways to say hello
+      description: |
+        Retrieve greeters according to language or other optional filter
+      externalDocs:
+        description: More here
+        url: https://www.greetings.io/greeters
+      produces:
+        - application/json
+        - text/plain
+      parameters:
+        - in: query
+          description: a filter on the language
+          name: language
+          type: string
+      responses:
+        200:
+          description: A hello world collection
+          headers:
+            x-rate-limit:
+              description: The number of allowed requests in the current period
+              type: integer
+              default: 50
+            x-max-items:
+              description: The maximum number of returned items
+              type: integer
+              default: 1024
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/greeter'
+          examples:
+            application/json:
+              id: xyz
+              name: hello
+              language: en
+              strength: 3
+            text/plain: |
+              '{"id": "xyz", "name": "hello", "language": "en", "strength": 3}'
+
+    post:
+      tags: [greeters]
+      summary: Makes a greeter
+      description: |
+        Builds a new greeter from a description
+      parameters:
+        - in: body
+          name: greeterContent
+          description: The description of the new greeter
+          required: true
+          schema:
+            $ref: '#/definitions/greeter'
+      consumes:
+        - application/json
+        - text/plain
+      responses:
+        201:
+          description: Created
+
+    put:
+      tags: [greeters]
+      summary: Updates a greeter
+      schemes:
+        - https
+      x-schemes:
+        - unix
+      parameters:
+        - in: body
+          name: newGreeterContent
+          schema:
+            $ref: '#/definitions/greeter'
+      responses:
+        200:
+          description: Modified
+          schema:
+            description: |
+              When modifiying things, a report about the actual
+              updates performed is returned.
+            type: array
+            items:
+              description: Modification report item
+              externalDocs:
+                description: A modification report
+                url: https://www.greetings.io/reports
+              type: object
+              required: [id, modified]
+              properties:
+                id:
+                  type: string
+                modified:
+                  type: boolean
+        204:
+          description: Nothing done
+          schema:
+            externalDocs:
+              description: Inline reliased primitive test
+              url: https://www.greetings.io/realiased
+            type: array
+            items:
+              $ref: '#/definitions/realiased'
+
+  /oustings:
+    parameters:
+      - in: query
+        name: filters
+        type: array
+        items:
+          type: string
+        collectionFormat: pipes
+    get:
+      tags: [ousters]
+      summary: |
+        Retrieve all ways to say goodbye
+      description: |
+        Retrieve ousters according to language or other optional filter
+      externalDocs:
+        description: More here
+        url: https://www.greetings.io/ousters
+      consumes:
+        - application/json
+        - text/plain
+      produces:
+        - application/json
+        - text/plain
+      parameters:
+        - in: query
+          description: a filter on the harshness of the ousting
+          name: severity
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: Farewell messages
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ouster'
+
+  /all:
+    get:
+      summary: Retrieve all things
+      security:
+        - token: ['read:greeters']
+      responses:
+        200:
+          description: All in one
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/anyObject'
+  /some:
+    get:
+      summary: Retrieve some things
+      responses:
+        200:
+          description: some items
+          schema:
+            $ref: '#/definitions/aliasedArray'
+        203:
+          description:  nested items
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/aliasedArray'
+
+    post:
+      summary: Make some things
+      description: |
+        A more long-winded version on how to make things.
+
+      parameters:
+        - in: body
+          description: an inlined primitive body param
+          name: inlined body
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+      responses:
+        201:
+          description: uuid created
+          schema:
+            type: object
+            additionalProperties: true
+    put:
+      summary: Modify some things
+      parameters:
+        - in: body
+          name: inlined complex body
+          required: true
+          schema:
+            externalDocs:
+              description: an inlined complex body param
+              url: https://www.greetings.io/models/zzz
+            type: object
+            required: [z]
+            properties:
+              z:
+                type: string
+                format: uuid
+                example: c6bcc97c-a363-4bd0-9ded-8874e6616206
+              zz:
+                type: integer
+                format: int32
+                default: 15
+                example: 20
+
+      responses:
+        201:
+          description: additional properties
+          schema:
+            type: object
+            additionalProperties: true
+        default:
+          description: default response
+          schema:
+            type: array
+            items:
+              externalDocs:
+                description: generic error
+                url: https://www.greetings.io/models/errors-generic
+              type: object
+              required: [ code ]
+              properties:
+                code:
+                  type: integer
+                message:
+                  type: string
+              additionalProperties:
+                type: string
+
+  /more:
+    get:
+      summary: Retrieve more things
+      responses:
+        200:
+          description: more items
+          schema:
+            type: array
+            items:
+              type: string
+              format: byte
+
+    put:
+      parameters:
+        - in: body
+          name: inlined map body
+          required: true
+          schema:
+            description: define an inlined map
+            externalDocs:
+              description: an inlined map body param
+              url: https://www.greetings.io/models/map-uuid
+            type: object
+            additionalProperties:
+              type: string
+              format: uuid
+      responses:
+        201:
+          description: object with additional properties
+          schema:
+            type: object
+            description: define an inlined object with additionalProperties
+            required: [a]
+            properties:
+              a:
+                $ref: '#/definitions/greeter'
+            additionalProperties: true
+
+        204:
+          description: map of defined model
+          schema:
+            type: object
+            description: define a map of a model type
+            additionalProperties:
+              $ref: '#/definitions/greeter'
+
+        401:
+          description: map with additionalProperties
+          schema:
+            type: object
+            description: define a map of objects with additional properties
+            additionalProperties:
+              type: object
+              description: property of map container
+              properties:
+                b:
+                  type: integer
+              additionalProperties: true
+
+        403:
+          description: map with constrained additionalProperties
+          schema:
+            type: object
+            description: define a map of objects with constrained additional properties
+            additionalProperties:
+              type: object
+              description: property of constrained map container
+              properties:
+                b:
+                  type: integer
+              additionalProperties:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    c:
+                      type: integer
+                  additionalProperties: true
+
+    delete:
+      parameters:
+        - in: body
+          name: inlined map body
+          required: true
+          schema:
+            description: define an inlined map
+            externalDocs:
+              description: an inlined map body param, from model
+              url: https://www.greetings.io/models/map-model
+            type: object
+            additionalProperties:
+              $ref: '#/definitions/greeter'
+      responses:
+        204:
+          description: empty
+          schema:
+        401:
+          description: complex object
+          schema:
+            $ref: '#/definitions/objectWithComplexProps'
+
+definitions:
+  greeter:
+    externalDocs:
+      description: more about greeters
+      url: https://www.greetings.io/models/greeter
+    type: object
+    required: [id,name]
+    properties:
+      id:
+        type: string
+        externalDocs:
+          url: https://www.greetings.io/models/uniqueIDs
+        example: xyz
+      name:
+        type: string
+        example: hello
+      language:
+        type: string
+        example: "en"
+      strength:
+        type: integer
+        format: int32
+        default: 0
+        example: 3
+
+  ouster:
+    type: object
+    required: [uid,uname]
+    properties:
+      uid:
+        type: string
+        format: uuid
+      uname:
+        type: string
+
+  anyObject:
+    description: a type composition
+    externalDocs:
+      description: any kind of greeter or ouster
+      url: https://www.greetings.io/models/anyObject
+    allOf:
+      - $ref: '#/definitions/greeter'
+      - $ref: '#/definitions/ouster'
+
+  aliasedArray:
+    type: array
+    items:
+      type: string
+      format: uuid
+
+  anonymousAllOf:
+    allOf:
+      - type: object
+        properties:
+          a:
+            description: the first letter of the alphabet
+            type: string
+            default: "A"
+            example: "a"
+      - type: object
+        required: [b]
+        properties:
+          b:
+            type: string
+
+  primitiveAllOf:
+    allOf:
+      - type: string
+      - type: string
+        format: uuid
+
+  primitive:
+    type: string
+    enum: [a,b,c]
+
+  intPrimitive:
+    type: integer
+    format: int32
+    enum: [1, 2, 3]
+
+  realiased:
+    $ref: '#/definitions/primitive'
+
+  objectWithComplexProps:
+    type: object
+    required: [prop1, prop2]
+    properties:
+      prop1:
+        $ref: '#/definitions/greeter'
+      prop2:
+        $ref: '#/definitions/ouster'
+      prop3:
+        $ref: '#/definitions/realiased'
+      prop4:
+        type: object
+        properties:
+          a:
+            type: string
+        additionalProperties:
+          type: integer
+      prop5:
+        type: array
+        items:
+          type: object
+          properties:
+            b:
+              type: string
+              format: uuid
+          additionalProperties:
+            type: integer
+            default: 28
+            example: 14
+      prop6:
+        type: array
+        items:
+          - type: integer
+            description: first member integer
+            default: 15
+            example: 29
+          - type: string
+            description: second member string
+            default: xyz
+        additionalItems:
+          $ref: '#/definitions/greeter'
+      prop7:
+        type: array
+        items:
+          - $ref: '#/definitions/greeter'
+          - $ref: '#/definitions/ouster'
+        additionalItems:
+          type: string
+      prop8:
+        type: array
+        items:
+          - $ref: '#/definitions/greeter'
+          - $ref: '#/definitions/ouster'
+          - type: integer
+        additionalItems:
+          type: object
+          additionalProperties: true

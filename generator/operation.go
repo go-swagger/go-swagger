@@ -399,6 +399,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 			defaultResponse = &gr
 		}
 	}
+
 	// Always render a default response, even when no responses were defined
 	if operation.Responses == nil || (operation.Responses.Default == nil && len(srs) == 0) {
 		gr, err := b.MakeResponse(receiver, b.Name+" default", false, resolver, -1, spec.Response{})
@@ -409,26 +410,17 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	}
 
 	swsp := resolver.Doc.Spec()
-	var extraSchemes []string
-	if ess, ok := operation.Extensions.GetStringSlice(xSchemes); ok {
-		extraSchemes = append(extraSchemes, ess...)
-	}
 
-	if ess1, ok := swsp.Extensions.GetStringSlice(xSchemes); ok {
-		extraSchemes = concatUnique(ess1, extraSchemes)
-	}
-	sort.Strings(extraSchemes)
-	schemes := concatUnique(swsp.Schemes, operation.Schemes)
-	sort.Strings(schemes)
+	schemes, extraSchemes := gatherURISchemes(swsp, operation)
+	originalSchemes := operation.Schemes
+	originalExtraSchemes := getExtraSchemes(operation.Extensions)
+
 	produces := producesOrDefault(operation.Produces, swsp.Produces, b.DefaultProduces)
 	sort.Strings(produces)
+
 	consumes := producesOrDefault(operation.Consumes, swsp.Consumes, b.DefaultConsumes)
 	sort.Strings(consumes)
 
-	var hasStreamingResponse bool
-	if defaultResponse != nil && defaultResponse.Schema != nil && defaultResponse.Schema.IsStream {
-		hasStreamingResponse = true
-	}
 	var successResponse *GenResponse
 	for _, sr := range successResponses {
 		if sr.IsSuccess {
@@ -436,12 +428,21 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 			break
 		}
 	}
-	for _, sr := range successResponses {
-		if !hasStreamingResponse && sr.Schema != nil && sr.Schema.IsStream {
-			hasStreamingResponse = true
-			break
+
+	var hasStreamingResponse bool
+	if defaultResponse != nil && defaultResponse.Schema != nil && defaultResponse.Schema.IsStream {
+		hasStreamingResponse = true
+	}
+
+	if !hasStreamingResponse {
+		for _, sr := range successResponses {
+			if !hasStreamingResponse && sr.Schema != nil && sr.Schema.IsStream {
+				hasStreamingResponse = true
+				break
+			}
 		}
 	}
+
 	if !hasStreamingResponse {
 		for _, r := range responses {
 			if r.Schema != nil && r.Schema.IsStream {
@@ -484,8 +485,9 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		HasBodyParams:        hasBodyParams,
 		HasStreamingResponse: hasStreamingResponse,
 		Authorized:           b.Authed,
-		Security:             b.makeSecurityRequirements(receiver),
+		Security:             b.makeSecurityRequirements(receiver), // resolved security requirements, for codegen
 		SecurityDefinitions:  b.makeSecuritySchemes(receiver),
+		SecurityRequirements: securityRequirements(operation.Security), // raw security requirements, for doc
 		Principal:            b.Principal,
 		Responses:            responses,
 		DefaultResponse:      defaultResponse,
@@ -493,14 +495,19 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		SuccessResponses:     successResponses,
 		ExtraSchemas:         gatherExtraSchemas(b.ExtraSchemas),
 		Schemes:              schemeOrDefault(schemes, b.DefaultScheme),
-		ProducesMediaTypes:   produces,
-		ConsumesMediaTypes:   consumes,
-		ExtraSchemes:         extraSchemes,
+		SchemeOverrides:      originalSchemes,      // raw operation schemes, for doc
+		ProducesMediaTypes:   produces,             // resolved produces, for codegen
+		ConsumesMediaTypes:   consumes,             // resolved consumes, for codegen
+		Produces:             operation.Produces,   // for doc
+		Consumes:             operation.Consumes,   // for doc
+		ExtraSchemes:         extraSchemes,         // resolved schemes, for codegen
+		ExtraSchemeOverrides: originalExtraSchemes, // raw operation extra schemes, for doc
 		TimeoutName:          timeoutName,
 		Extensions:           operation.Extensions,
 		StrictResponders:     b.GenOpts.StrictResponders,
 
 		PrincipalIsNullable: b.GenOpts.PrincipalIsNullable(),
+		ExternalDocs:        trimExternalDoc(operation.ExternalDocs),
 	}, nil
 }
 
@@ -521,26 +528,15 @@ func schemeOrDefault(schemes []string, defaultScheme string) []string {
 	return schemes
 }
 
-func concatUnique(collections ...[]string) []string {
-	resultSet := make(map[string]struct{})
-	for _, c := range collections {
-		for _, i := range c {
-			if _, ok := resultSet[i]; !ok {
-				resultSet[i] = struct{}{}
-			}
-		}
-	}
-	var result []string
-	for k := range resultSet {
-		result = append(result, k)
-	}
-	return result
-}
-
 func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, resolver *typeResolver, code int, resp spec.Response) (GenResponse, error) {
 	debugLog("[%s %s] making id %q", b.Method, b.Path, b.Operation.ID)
 
 	// assume minimal flattening has been carried on, so there is not $ref in response (but some may remain in response schema)
+	examples := make(GenResponseExamples, 0, len(resp.Examples))
+	for k, v := range resp.Examples {
+		examples = append(examples, GenResponseExample{MediaType: k, Example: v})
+	}
+	sort.Sort(examples)
 
 	res := GenResponse{
 		Package:          b.GenOpts.LanguageOpts.ManglePackageName(b.APIPackage, defaultOperationsTarget),
@@ -557,6 +553,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 		Extensions:       resp.Extensions,
 		StrictResponders: b.GenOpts.StrictResponders,
 		OperationName:    b.Name,
+		Examples:         examples,
 	}
 
 	// prepare response headers

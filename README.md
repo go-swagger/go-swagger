@@ -176,6 +176,12 @@ Type ```swagger diff --help``` for info.
 swagger diff {spec1} {spec2}
 ```
 
+### Generate spec markdown spec
+
+```
+swagger generate markdown -f {spec} --output swagger.mode
+```
+
 ## Try it
 
 Try `go-swagger` in a free online workspace using Gitpod:

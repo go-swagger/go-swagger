@@ -20,6 +20,7 @@ import (
 	"log"
 
 	"github.com/go-openapi/inflect"
+	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"
 	"github.com/kr/pretty"
 )
@@ -32,6 +33,8 @@ var (
 	FuncMapFunc func(*LanguageOpts) template.FuncMap
 
 	templates *Repository
+
+	docFormat map[string]string
 )
 
 func initTemplateRepo() {
@@ -44,6 +47,11 @@ func initTemplateRepo() {
 	assets = defaultAssets()
 	protectedTemplates = defaultProtectedTemplates()
 	templates = NewRepository(FuncMapFunc(DefaultLanguageFunc()))
+
+	docFormat = map[string]string{
+		"binary": "binary (byte stream)",
+		"byte":   "byte (base64 string)",
+	}
 }
 
 // DefaultFuncMap yields a map with default functions for use n the templates.
@@ -76,9 +84,11 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		},
 		"dropPackage":      dropPackage,
 		"upper":            strings.ToUpper,
+		"lower":            strings.ToLower,
 		"contains":         swag.ContainsStrings,
 		"padSurround":      padSurround,
 		"joinFilePath":     filepath.Join,
+		"joinPath":         path.Join,
 		"comment":          padComment,
 		"blockcomment":     blockComment,
 		"inspect":          pretty.Sprint,
@@ -93,6 +103,38 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		"escapeBackticks": func(arg string) string {
 			return strings.ReplaceAll(arg, "`", "`+\"`\"+`")
 		},
+		"paramDocType": func(param GenParameter) string {
+			return resolvedDocType(param.SwaggerType, param.SwaggerFormat, param.Child)
+		},
+		"headerDocType": func(header GenHeader) string {
+			return resolvedDocType(header.SwaggerType, header.SwaggerFormat, header.Child)
+		},
+		"schemaDocType": func(in interface{}) string {
+			switch schema := in.(type) {
+			case GenSchema:
+				return resolvedDocSchemaType(schema.SwaggerType, schema.SwaggerFormat, schema.Items)
+			case *GenSchema:
+				if schema == nil {
+					return ""
+				}
+				return resolvedDocSchemaType(schema.SwaggerType, schema.SwaggerFormat, schema.Items)
+			case GenDefinition:
+				return resolvedDocSchemaType(schema.SwaggerType, schema.SwaggerFormat, schema.Items)
+			case *GenDefinition:
+				if schema == nil {
+					return ""
+				}
+				return resolvedDocSchemaType(schema.SwaggerType, schema.SwaggerFormat, schema.Items)
+			default:
+				panic("dev error: schemaDocType should be called with GenSchema or GenDefinition")
+			}
+		},
+		"schemaDocMapType": func(schema GenSchema) string {
+			return resolvedDocElemType("object", schema.SwaggerFormat, &schema.resolvedType)
+		},
+		"docCollectionFormat": resolvedDocCollectionFormat,
+		"trimSpace":           strings.TrimSpace,
+		"httpStatus":          httpStatus,
 	})
 }
 
@@ -146,6 +188,8 @@ func defaultAssets() map[string][]byte {
 		"client/response.gotmpl":  MustAsset("templates/client/response.gotmpl"),
 		"client/client.gotmpl":    MustAsset("templates/client/client.gotmpl"),
 		"client/facade.gotmpl":    MustAsset("templates/client/facade.gotmpl"),
+
+		"markdown/docs.gotmpl": MustAsset("templates/markdown/docs.gotmpl"),
 	}
 }
 
@@ -648,4 +692,96 @@ func isInteger(arg interface{}) bool {
 	default:
 		return false
 	}
+}
+
+func resolvedDocCollectionFormat(cf string, child *GenItems) string {
+	if child == nil {
+		return cf
+	}
+	ccf := cf
+	if ccf == "" {
+		ccf = "csv"
+	}
+	rcf := resolvedDocCollectionFormat(child.CollectionFormat, child.Child)
+	if rcf == "" {
+		return ccf
+	}
+	return ccf + "|" + rcf
+}
+
+func resolvedDocType(tn, ft string, child *GenItems) string {
+	if tn == "array" {
+		if child == nil {
+			return "[]any"
+		}
+		return "[]" + resolvedDocType(child.SwaggerType, child.SwaggerFormat, child.Child)
+	}
+
+	if ft != "" {
+		if doc, ok := docFormat[ft]; ok {
+			return doc
+		}
+		return fmt.Sprintf("%s (formatted %s)", ft, tn)
+	}
+
+	return tn
+}
+
+func resolvedDocSchemaType(tn, ft string, child *GenSchema) string {
+	if tn == "array" {
+		if child == nil {
+			return "[]any"
+		}
+		return "[]" + resolvedDocSchemaType(child.SwaggerType, child.SwaggerFormat, child.Items)
+	}
+
+	if tn == "object" {
+		if child == nil || child.ElemType == nil {
+			return "map of any"
+		}
+		if child.IsMap {
+			return "map of " + resolvedDocElemType(child.SwaggerType, child.SwaggerFormat, &child.resolvedType)
+		}
+
+		return child.GoType
+	}
+
+	if ft != "" {
+		if doc, ok := docFormat[ft]; ok {
+			return doc
+		}
+		return fmt.Sprintf("%s (formatted %s)", ft, tn)
+	}
+
+	return tn
+}
+
+func resolvedDocElemType(tn, ft string, schema *resolvedType) string {
+	if schema == nil {
+		return ""
+	}
+	if schema.IsMap {
+		return "map of " + resolvedDocElemType(schema.ElemType.SwaggerType, schema.ElemType.SwaggerFormat, schema.ElemType)
+	}
+
+	if schema.IsArray {
+		return "[]" + resolvedDocElemType(schema.ElemType.SwaggerType, schema.ElemType.SwaggerFormat, schema.ElemType)
+	}
+
+	if ft != "" {
+		if doc, ok := docFormat[ft]; ok {
+			return doc
+		}
+		return fmt.Sprintf("%s (formatted %s)", ft, tn)
+	}
+
+	return tn
+}
+
+func httpStatus(code int) string {
+	if name, ok := runtime.Statuses[code]; ok {
+		return name
+	}
+	// non-standard codes deserve some name
+	return fmt.Sprintf("Status %d", code)
 }
