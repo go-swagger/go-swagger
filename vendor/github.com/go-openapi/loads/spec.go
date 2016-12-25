@@ -15,6 +15,7 @@
 package loads
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -22,6 +23,7 @@ import (
 	"path/filepath"
 
 	"github.com/go-openapi/analysis"
+	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 )
@@ -48,7 +50,11 @@ var (
 
 func init() {
 	defaultLoader = &loader{Match: func(_ string) bool { return true }, Fn: JSONDoc}
-	loaders = &loader{Match: func(_ string) bool { return true }, Fn: JSONDoc}
+	loaders = &loader{
+		Match: func(_ string) bool { return true },
+		Fn:    JSONDoc,
+	}
+	AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
 }
 
 // AddLoader for a document
@@ -103,7 +109,14 @@ func Spec(path string) (*Document, error) {
 				lastErr = err2
 				continue
 			}
-			return Analyzed(b, "")
+			doc, err := Analyzed(b, "")
+			if err != nil {
+				return nil, err
+			}
+			if doc != nil {
+				doc.specFilePath = path
+			}
+			return doc, nil
 		}
 	}
 	if lastErr != nil {
@@ -131,13 +144,29 @@ func Analyzed(data json.RawMessage, version string) (*Document, error) {
 		return nil, fmt.Errorf("spec version %q is not supported", version)
 	}
 
+	raw := data
+	trimmed := bytes.TrimSpace(data)
+	if len(trimmed) > 0 {
+		if trimmed[0] != '{' && trimmed[0] != '[' {
+			yml, err := fmts.BytesToYAMLDoc(trimmed)
+			if err != nil {
+				return nil, fmt.Errorf("analyzed: %v", err)
+			}
+			d, err := fmts.YAMLToJSON(yml)
+			if err != nil {
+				return nil, fmt.Errorf("analyzed: %v", err)
+			}
+			raw = d
+		}
+	}
+
 	swspec := new(spec.Swagger)
-	if err := json.Unmarshal(data, swspec); err != nil {
+	if err := json.Unmarshal(raw, swspec); err != nil {
 		return nil, err
 	}
 
 	origsqspec := new(spec.Swagger)
-	if err := json.Unmarshal(data, origsqspec); err != nil {
+	if err := json.Unmarshal(raw, origsqspec); err != nil {
 		return nil, err
 	}
 
@@ -145,7 +174,7 @@ func Analyzed(data json.RawMessage, version string) (*Document, error) {
 		Analyzer: analysis.New(swspec),
 		schema:   spec.MustLoadSwagger20Schema(),
 		spec:     swspec,
-		raw:      data,
+		raw:      raw,
 		origSpec: origsqspec,
 	}
 	return d, nil

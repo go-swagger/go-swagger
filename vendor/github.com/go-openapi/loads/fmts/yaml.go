@@ -41,7 +41,7 @@ func YAMLToJSON(data interface{}) (json.RawMessage, error) {
 	return json.RawMessage(b), err
 }
 
-func bytesToYAMLDoc(data []byte) (interface{}, error) {
+func BytesToYAMLDoc(data []byte) (interface{}, error) {
 	var document map[interface{}]interface{}
 	if err := yaml.Unmarshal(data, &document); err != nil {
 		return nil, err
@@ -108,5 +108,5 @@ func YAMLData(path string) (interface{}, error) {
 		return nil, err
 	}
 
-	return bytesToYAMLDoc(data)
+	return BytesToYAMLDoc(data)
 }

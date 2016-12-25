@@ -111,7 +111,7 @@
 			"importpath": "github.com/go-openapi/loads",
 			"repository": "https://github.com/go-openapi/loads",
 			"vcs": "git",
-			"revision": "315567415dfd74b651f7a62cabfc82a57ed7b9ad",
+			"revision": "4a4c34c078fe47bdeb276985817a6810528185ce",
 			"branch": "master",
 			"notests": true
 		},
