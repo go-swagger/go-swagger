@@ -90,6 +90,16 @@ func TestServer_UrlEncoded(t *testing.T) {
 		app, err := gen.makeCodegenApp()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
+			if assert.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app)) {
+				formatted, err := app.GenOpts.LanguageOpts.FormatContent("search_api.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(formatted)
+					assert.Regexp(t, "UrlformConsumer:\\s+runtime\\.DiscardConsumer", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+			buf = bytes.NewBuffer(nil)
 			if assert.NoError(t, templates.MustGet("serverConfigureapi").Execute(buf, app)) {
 				formatted, err := app.GenOpts.LanguageOpts.FormatContent("configure_search_api.go", buf.Bytes())
 				if assert.NoError(t, err) {
@@ -111,6 +121,16 @@ func TestServer_MultipartForm(t *testing.T) {
 		app, err := gen.makeCodegenApp()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
+			if assert.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app)) {
+				formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(formatted)
+					assert.Regexp(t, "MultipartformConsumer:\\s+runtime\\.DiscardConsumer", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+			buf = bytes.NewBuffer(nil)
 			if assert.NoError(t, templates.MustGet("serverConfigureapi").Execute(buf, app)) {
 				formatted, err := app.GenOpts.LanguageOpts.FormatContent("configure_shipyard_api.go", buf.Bytes())
 				if assert.NoError(t, err) {
