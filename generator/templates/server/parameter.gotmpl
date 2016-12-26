@@ -296,3 +296,16 @@ func ({{ .ReceiverName }} *{{ $className }}Params) validate{{ pascalize .ID }}(f
 {{ end }}
 {{ end }}
 {{ end }}
+
+{{ range .ExtraSchemas }}
+  {{- if .IsExported }}
+{{ if .IncludeModel }}// {{ pascalize .Name }} {{ template "docstring" . }}
+  {{- if not .IsBaseType }}
+// swagger:model {{ .Name }}
+  {{- else }}
+// swagger:discriminator {{ .Name }} {{ .DiscriminatorField }}
+  {{- end }}
+{{- end}}
+{{- end }}
+{{ template "schema" . }}
+{{ end }}

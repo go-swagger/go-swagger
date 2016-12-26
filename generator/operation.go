@@ -549,19 +549,32 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 	sort.Sort(res.Headers)
 
 	if resp.Schema != nil {
+		var named bool
+		rslv := resolver
+		sch := resp.Schema
+		if resp.Schema.Ref.String() != "" && !resp.Schema.Ref.HasFragmentOnly {
+			ss, err := spec.ResolveRefWithBase(b.Doc.Spec(), &resp.Schema.Ref, &spec.ExpandOptions{RelativeBase: b.Doc.SpecFilePath()})
+			if err != nil {
+				return GenResponse{}, err
+			}
+			sch = ss
+			named = true
+			rslv = resolver.NewWithModelName(name + "Body")
+		}
+
 		sc := schemaGenContext{
 			Path:             fmt.Sprintf("%q", name),
 			Name:             name + "Body",
 			Receiver:         receiver,
 			ValueExpr:        receiver,
 			IndexVar:         "i",
-			Schema:           *resp.Schema,
-			Required:         true,
-			TypeResolver:     resolver,
-			Named:            false,
+			Schema:           *sch,
+			Required:         !named,
+			TypeResolver:     rslv,
+			Named:            named,
 			ExtraSchemas:     make(map[string]GenSchema),
 			IncludeModel:     true,
-			IncludeValidator: b.IncludeValidator,
+			IncludeValidator: true,
 		}
 		if err := sc.makeGenSchema(); err != nil {
 			return GenResponse{}, err
@@ -575,6 +588,12 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 		}
 
 		schema := sc.GenSchema
+		if named {
+			if b.ExtraSchemas == nil {
+				b.ExtraSchemas = make(map[string]GenSchema)
+			}
+			b.ExtraSchemas[schema.Name] = schema
+		}
 		if schema.IsAnonymous {
 
 			schema.Name = swag.ToGoName(sc.Name)
@@ -775,16 +794,29 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 	}
 
 	if param.In == "body" {
+		var named bool
+		rslv := resolver
+		sch := param.Schema
+		if sch.Ref.String() != "" && !sch.Ref.HasFragmentOnly {
+			ss, err := spec.ResolveRefWithBase(b.Doc.Spec(), &sch.Ref, &spec.ExpandOptions{RelativeBase: b.Doc.SpecFilePath()})
+			if err != nil {
+				return GenParameter{}, err
+			}
+			sch = ss
+			named = true
+			rslv = resolver.NewWithModelName(b.Operation.ID + "ParamsBody")
+		}
+
 		sc := schemaGenContext{
 			Path:             res.Path,
-			Name:             res.Name,
+			Name:             b.Operation.ID + "ParamsBody",
 			Receiver:         res.ReceiverName,
 			ValueExpr:        res.ReceiverName,
 			IndexVar:         res.IndexVar,
-			Schema:           *param.Schema,
+			Schema:           *sch,
 			Required:         param.Required,
-			TypeResolver:     resolver,
-			Named:            false,
+			TypeResolver:     rslv,
+			Named:            named,
 			IncludeModel:     true,
 			IncludeValidator: b.IncludeValidator,
 			ExtraSchemas:     make(map[string]GenSchema),
@@ -794,6 +826,12 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		}
 
 		schema := sc.GenSchema
+		if named {
+			if b.ExtraSchemas == nil {
+				b.ExtraSchemas = make(map[string]GenSchema)
+			}
+			b.ExtraSchemas[b.Operation.ID+"ParamsBody"] = schema
+		}
 		if schema.IsAnonymous {
 			schema.Name = swag.ToGoName(b.Operation.ID + " Body")
 			nm := schema.Name

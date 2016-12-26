@@ -20,6 +20,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -258,33 +259,48 @@ func nextRef(startingNode interface{}, startingRef *Ref, ptr *jsonpointer.Pointe
 	return ret
 }
 
+func debugLog(msg string, args ...interface{}) {
+	if Debug {
+		log.Printf(msg, args...)
+	}
+}
+
 func normalizeFileRef(ref *Ref, relativeBase string) *Ref {
 	refURL := ref.GetURL()
-
+	debugLog("normalizing %s against %s", refURL, relativeBase)
 	if strings.HasPrefix(refURL.String(), "#") {
 		return ref
 	}
 
 	if refURL.Scheme == "file" || (refURL.Scheme == "" && refURL.Host == "") {
 		filePath := refURL.Path
+		debugLog("normalizing file path: %s", filePath)
 
-		if !strings.HasPrefix(filePath, "/") {
-			if relativeBase != "" {
-				filePath = relativeBase + "/" + filePath
+		if !path.IsAbs(filePath) && len(relativeBase) != 0 {
+			debugLog("joining %s with %s", relativeBase, filePath)
+			if fi, err := os.Stat(relativeBase); err == nil {
+				if !fi.IsDir() {
+					relativeBase = path.Dir(relativeBase)
+				}
 			}
+			filePath = path.Join(relativeBase, filePath)
 		}
-		if !strings.HasPrefix(filePath, "/") {
+		if !path.IsAbs(filePath) {
 			pwd, err := os.Getwd()
 			if err == nil {
-				filePath = pwd + "/" + filePath
+				debugLog("joining cwd %s with %s", pwd, filePath)
+				filePath = path.Join(pwd, filePath)
 			}
 		}
 
+		debugLog("cleaning %s", filePath)
 		filePath = filepath.Clean(filePath)
 		_, err := os.Stat(filePath)
 		if err == nil {
+			debugLog("rewriting url to scheme \"\" path %s", filePath)
 			refURL.Scheme = ""
 			refURL.Path = filePath
+			*ref = MustCreateRef(refURL.String())
 		}
 	}
 
@@ -354,7 +370,7 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 	normalizeFileRef(currentRef, relativeBase)
 	normalizeFileRef(ref, relativeBase)
 
-	data, _, _, err := r.load(refURL)
+	data, _, _, err := r.load(currentRef.GetURL())
 	if err != nil {
 		return err
 	}
@@ -409,6 +425,7 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 }
 
 func (r *schemaLoader) load(refURL *url.URL) (interface{}, url.URL, bool, error) {
+	debugLog("loading schema from url: %s", refURL)
 	toFetch := *refURL
 	toFetch.Fragment = ""
 

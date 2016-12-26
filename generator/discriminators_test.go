@@ -7,14 +7,13 @@ import (
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
-	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
 )
 
-func init() {
-	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
-}
+// func init() {
+// 	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
+// }
 
 func TestBuildDiscriminatorMap(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.discriminators.yml")
