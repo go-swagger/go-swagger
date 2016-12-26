@@ -152,6 +152,7 @@ func init() {
 	PathLoader = func(path string) (json.RawMessage, error) {
 		data, err := swag.LoadFromFileOrHTTP(path)
 		if err != nil {
+			panic(err)
 			return nil, err
 		}
 		return json.RawMessage(data), nil
@@ -243,10 +244,11 @@ func nextRef(startingNode interface{}, startingRef *Ref, ptr *jsonpointer.Pointe
 			}
 			nwURL := nw.GetURL()
 			if nwURL.Scheme == "file" || (nwURL.Scheme == "" && nwURL.Host == "") {
-				if strings.HasPrefix(nwURL.Path, "/") {
-					_, err := os.Stat(nwURL.Path)
+				nwpt := filepath.ToSlash(nwURL.Path)
+				if filepath.IsAbs(nwpt) {
+					_, err := os.Stat(nwpt)
 					if err != nil {
-						nwURL.Path = "." + nwURL.Path
+						nwURL.Path = filepath.Join(".", nwpt)
 					}
 				}
 			}
@@ -267,7 +269,7 @@ func debugLog(msg string, args ...interface{}) {
 
 func normalizeFileRef(ref *Ref, relativeBase string) *Ref {
 	refURL := ref.GetURL()
-	debugLog("normalizing %s against %s", refURL, relativeBase)
+	debugLog("normalizing %s against %s", ref.String(), relativeBase)
 	if strings.HasPrefix(refURL.String(), "#") {
 		return ref
 	}
@@ -278,28 +280,29 @@ func normalizeFileRef(ref *Ref, relativeBase string) *Ref {
 
 		if !path.IsAbs(filePath) && len(relativeBase) != 0 {
 			debugLog("joining %s with %s", relativeBase, filePath)
-			if fi, err := os.Stat(relativeBase); err == nil {
+			if fi, err := os.Stat(filepath.FromSlash(relativeBase)); err == nil {
 				if !fi.IsDir() {
 					relativeBase = path.Dir(relativeBase)
 				}
 			}
-			filePath = path.Join(relativeBase, filePath)
+			filePath = filepath.Join(relativeBase, filepath.FromSlash(filePath))
 		}
 		if !path.IsAbs(filePath) {
 			pwd, err := os.Getwd()
 			if err == nil {
 				debugLog("joining cwd %s with %s", pwd, filePath)
-				filePath = path.Join(pwd, filePath)
+				filePath = filepath.Join(pwd, filePath)
 			}
 		}
 
 		debugLog("cleaning %s", filePath)
-		filePath = filepath.Clean(filePath)
-		_, err := os.Stat(filePath)
+		filePath = path.Clean(filePath)
+		_, err := os.Stat(filepath.FromSlash(filePath))
 		if err == nil {
 			debugLog("rewriting url to scheme \"\" path %s", filePath)
 			refURL.Scheme = ""
-			refURL.Path = filePath
+			refURL.Path = filepath.ToSlash(filePath)
+			debugLog("new url with joined filepath: %s", refURL.String())
 			*ref = MustCreateRef(refURL.String())
 		}
 	}
@@ -317,12 +320,14 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 	oldRef := currentRef
 
 	if currentRef != nil {
+		debugLog("resolve ref current %s new %s", currentRef.String(), ref.String())
 		nextRef := nextRef(node, ref, currentRef.GetPointer())
 		if nextRef == nil || nextRef.GetURL() == nil {
 			return nil
 		}
 		var err error
 		currentRef, err = currentRef.Inherits(*nextRef)
+		debugLog("resolved ref current %s", currentRef.String())
 		if err != nil {
 			return err
 		}
@@ -753,6 +758,7 @@ func expandResponse(response *Response, resolver *schemaLoader) error {
 
 	if response.Schema != nil {
 		parentRefs = append(parentRefs, response.Schema.Ref.String())
+		debugLog("response ref: %s", response.Schema.Ref)
 		if err := resolver.Resolve(&response.Schema.Ref, &response.Schema); err != nil {
 			return err
 		}

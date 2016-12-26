@@ -85,14 +85,14 @@ func (r *Ref) IsValidURI(basepaths ...string) bool {
 		if len(basepaths) > 0 {
 			base = filepath.Dir(filepath.Join(basepaths...))
 		}
-		p, e := filepath.Abs(filepath.Join(base, pth))
+		p, e := filepath.Abs(filepath.ToSlash(filepath.Join(base, pth)))
 		if e != nil {
 			return false
 		}
 		pth = p
 	}
 
-	fi, err := os.Stat(pth)
+	fi, err := os.Stat(filepath.ToSlash(pth))
 	if err != nil {
 		return false
 	}
