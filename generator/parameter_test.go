@@ -831,6 +831,36 @@ func TestGenParameter_Issue710(t *testing.T) {
 	}
 }
 
+func TestGenParameter_Issue776_LocalFileRef(t *testing.T) {
+	b, err := opBuilder("GetItem", "../fixtures/bugs/776/param.yaml")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			var buf bytes.Buffer
+			opts := opts()
+			if assert.NoError(t, templates.MustGet("serverParameter").Execute(&buf, op)) {
+				ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					assertInCode(t, "Body *GetItemParamsBody", string(ff))
+					assertNotInCode(t, "type GetItemParamsBody struct", string(ff))
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+			var buf2 bytes.Buffer
+			if assert.NoError(t, templates.MustGet("serverOperation").Execute(&buf2, op)) {
+				ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf2.Bytes())
+				if assert.NoError(t, err) {
+					assertInCode(t, "type GetItemParamsBody struct", string(ff))
+				} else {
+					fmt.Println(buf2.String())
+				}
+			}
+		}
+	}
+
+}
+
 func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 	assert := assert.New(t)
 

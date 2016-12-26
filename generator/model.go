@@ -132,6 +132,7 @@ func (m *definitionGenerator) generateModel(g *GenDefinition) error {
 func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts) (*GenDefinition, error) {
 	return makeGenDefinitionHierarchy(name, pkg, "", schema, specDoc, opts)
 }
+
 func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts) (*GenDefinition, error) {
 
 	_, ok := schema.Extensions["x-go-type"]
@@ -194,7 +195,13 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		for i, ss := range schema.AllOf {
 			ref := ss.Ref
 			for ref.String() != "" {
-				rsch, err := spec.ResolveRef(swsp, &ref)
+				var rsch *spec.Schema
+				var err error
+				if specDoc.SpecFilePath() != "" {
+					rsch, err = spec.ResolveRefWithBase(swsp, &ref, &spec.ExpandOptions{RelativeBase: specDoc.SpecFilePath()})
+				} else {
+					rsch, err = spec.ResolveRef(swsp, &ref)
+				}
 				if err != nil {
 					return nil, err
 				}
@@ -656,7 +663,14 @@ func (sg *schemaGenContext) buildProperties() error {
 			ref := emprop.Schema.Ref
 			var sch *spec.Schema
 			for ref.String() != "" {
-				rsch, err := spec.ResolveRef(sg.TypeResolver.Doc.Spec(), &ref)
+				var rsch *spec.Schema
+				var err error
+				specDoc := sg.TypeResolver.Doc
+				if specDoc.SpecFilePath() != "" {
+					rsch, err = spec.ResolveRefWithBase(specDoc.Spec(), &ref, &spec.ExpandOptions{RelativeBase: specDoc.SpecFilePath()})
+				} else {
+					rsch, err = spec.ResolveRef(specDoc.Spec(), &ref)
+				}
 				if err != nil {
 					return err
 				}

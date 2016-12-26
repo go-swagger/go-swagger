@@ -20,6 +20,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -151,6 +152,7 @@ func init() {
 	PathLoader = func(path string) (json.RawMessage, error) {
 		data, err := swag.LoadFromFileOrHTTP(path)
 		if err != nil {
+			panic(err)
 			return nil, err
 		}
 		return json.RawMessage(data), nil
@@ -242,10 +244,11 @@ func nextRef(startingNode interface{}, startingRef *Ref, ptr *jsonpointer.Pointe
 			}
 			nwURL := nw.GetURL()
 			if nwURL.Scheme == "file" || (nwURL.Scheme == "" && nwURL.Host == "") {
-				if strings.HasPrefix(nwURL.Path, "/") {
-					_, err := os.Stat(nwURL.Path)
+				nwpt := filepath.ToSlash(nwURL.Path)
+				if filepath.IsAbs(nwpt) {
+					_, err := os.Stat(nwpt)
 					if err != nil {
-						nwURL.Path = "." + nwURL.Path
+						nwURL.Path = filepath.Join(".", nwpt)
 					}
 				}
 			}
@@ -258,33 +261,49 @@ func nextRef(startingNode interface{}, startingRef *Ref, ptr *jsonpointer.Pointe
 	return ret
 }
 
+func debugLog(msg string, args ...interface{}) {
+	if Debug {
+		log.Printf(msg, args...)
+	}
+}
+
 func normalizeFileRef(ref *Ref, relativeBase string) *Ref {
 	refURL := ref.GetURL()
-
+	debugLog("normalizing %s against %s", ref.String(), relativeBase)
 	if strings.HasPrefix(refURL.String(), "#") {
 		return ref
 	}
 
 	if refURL.Scheme == "file" || (refURL.Scheme == "" && refURL.Host == "") {
 		filePath := refURL.Path
+		debugLog("normalizing file path: %s", filePath)
 
-		if !strings.HasPrefix(filePath, "/") {
-			if relativeBase != "" {
-				filePath = relativeBase + "/" + filePath
+		if !filepath.IsAbs(filepath.FromSlash(filePath)) && len(relativeBase) != 0 {
+			debugLog("joining %s with %s", relativeBase, filePath)
+			if fi, err := os.Stat(filepath.FromSlash(relativeBase)); err == nil {
+				if !fi.IsDir() {
+					relativeBase = path.Dir(relativeBase)
+				}
 			}
+			filePath = filepath.Join(filepath.FromSlash(relativeBase), filepath.FromSlash(filePath))
 		}
-		if !strings.HasPrefix(filePath, "/") {
+		if !filepath.IsAbs(filepath.FromSlash(filePath)) {
 			pwd, err := os.Getwd()
 			if err == nil {
-				filePath = pwd + "/" + filePath
+				debugLog("joining cwd %s with %s", pwd, filePath)
+				filePath = filepath.Join(pwd, filePath)
 			}
 		}
 
+		debugLog("cleaning %s", filePath)
 		filePath = filepath.Clean(filePath)
-		_, err := os.Stat(filePath)
+		_, err := os.Stat(filepath.FromSlash(filePath))
 		if err == nil {
+			debugLog("rewriting url to scheme \"\" path %s", filePath)
 			refURL.Scheme = ""
-			refURL.Path = filePath
+			refURL.Path = filepath.ToSlash(filePath)
+			debugLog("new url with joined filepath: %s", refURL.String())
+			*ref = MustCreateRef(refURL.String())
 		}
 	}
 
@@ -301,12 +320,14 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 	oldRef := currentRef
 
 	if currentRef != nil {
+		debugLog("resolve ref current %s new %s", currentRef.String(), ref.String())
 		nextRef := nextRef(node, ref, currentRef.GetPointer())
 		if nextRef == nil || nextRef.GetURL() == nil {
 			return nil
 		}
 		var err error
 		currentRef, err = currentRef.Inherits(*nextRef)
+		debugLog("resolved ref current %s", currentRef.String())
 		if err != nil {
 			return err
 		}
@@ -354,7 +375,7 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 	normalizeFileRef(currentRef, relativeBase)
 	normalizeFileRef(ref, relativeBase)
 
-	data, _, _, err := r.load(refURL)
+	data, _, _, err := r.load(currentRef.GetURL())
 	if err != nil {
 		return err
 	}
@@ -409,6 +430,7 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 }
 
 func (r *schemaLoader) load(refURL *url.URL) (interface{}, url.URL, bool, error) {
+	debugLog("loading schema from url: %s", refURL)
 	toFetch := *refURL
 	toFetch.Fragment = ""
 
@@ -736,6 +758,7 @@ func expandResponse(response *Response, resolver *schemaLoader) error {
 
 	if response.Schema != nil {
 		parentRefs = append(parentRefs, response.Schema.Ref.String())
+		debugLog("response ref: %s", response.Schema.Ref)
 		if err := resolver.Resolve(&response.Schema.Ref, &response.Schema); err != nil {
 			return err
 		}

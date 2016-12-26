@@ -127,7 +127,7 @@
 			"importpath": "github.com/go-openapi/spec",
 			"repository": "https://github.com/go-openapi/spec",
 			"vcs": "git",
-			"revision": "0348a3c80241cc32a0405a12c1c86f86b1564098",
+			"revision": "2b6b49e4af09051a736e3403b5df9b6ed151d0a3",
 			"branch": "master",
 			"notests": true
 		},
@@ -143,7 +143,7 @@
 			"importpath": "github.com/go-openapi/swag",
 			"repository": "https://github.com/go-openapi/swag",
 			"vcs": "git",
-			"revision": "3b6d86cd965820f968760d5d419cb4add096bdd7",
+			"revision": "96d7b9ebd181a1735a1c9ac87914f2b32fbf56c9",
 			"branch": "master",
 			"notests": true
 		},

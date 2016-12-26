@@ -250,20 +250,32 @@ func newTypeResolver(pkg string, doc *loads.Document) *typeResolver {
 	return &resolver
 }
 
+func debugLog(format string, args ...interface{}) {
+	if Debug {
+		_, file, pos, _ := runtime.Caller(2)
+		log.Printf("%s:%d: "+format, append([]interface{}{filepath.Base(file), pos}, args...)...)
+	}
+}
+
 // knownDefGoType returns go type, package and package alias for definition
 func knownDefGoType(def string, schema spec.Schema, clear func(string) string) (string, string, string) {
+	debugLog("known def type: %q", def)
 	ext := schema.Extensions
 	if nm, ok := ext.GetString("x-go-name"); ok {
 		if clear == nil {
+			debugLog("known def type x-go-name no clear: %q", nm)
 			return nm, "", ""
 		}
+		debugLog("known def type x-go-name clear: %q -> %q", nm, clear(nm))
 		return clear(nm), "", ""
 	}
 	v, ok := ext["x-go-type"]
 	if !ok {
 		if clear == nil {
+			debugLog("known def type no clear: %q", def)
 			return def, "", ""
 		}
+		debugLog("known def type clear: %q -> %q", def, clear(def))
 		return clear(def), "", ""
 	}
 	xt := v.(map[string]interface{})
@@ -277,6 +289,7 @@ func knownDefGoType(def string, schema spec.Schema, clear func(string) string) (
 	} else {
 		alias = filepath.Base(pkg)
 	}
+	debugLog("known def type x-go-type no clear: %q", alias+"."+t, pkg, alias)
 	return alias + "." + t, pkg, alias
 }
 
@@ -285,6 +298,15 @@ type typeResolver struct {
 	ModelsPackage string
 	ModelName     string
 	KnownDefs     map[string]struct{}
+}
+
+func (t *typeResolver) NewWithModelName(name string) *typeResolver {
+	return &typeResolver{
+		Doc:           t.Doc,
+		ModelsPackage: t.ModelsPackage,
+		ModelName:     name,
+		KnownDefs:     t.KnownDefs,
+	}
 }
 
 func (t *typeResolver) IsNullable(schema *spec.Schema) bool {
@@ -299,9 +321,20 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 			log.Printf("%s:%d: resolving ref (anon: %t, req: %t) %s\n", filepath.Base(file), pos, false, isRequired, schema.Ref.String())
 		}
 		returns = true
-
-		ref, er := spec.ResolveRef(t.Doc.Spec(), &schema.Ref)
+		var ref *spec.Schema
+		var er error
+		if t.Doc.SpecFilePath() != "" {
+			if Debug {
+				log.Printf("loading with base: %s", t.Doc.SpecFilePath())
+			}
+			ref, er = spec.ResolveRefWithBase(t.Doc.Spec(), &schema.Ref, &spec.ExpandOptions{RelativeBase: t.Doc.SpecFilePath()})
+		} else {
+			ref, er = spec.ResolveRef(t.Doc.Spec(), &schema.Ref)
+		}
 		if er != nil {
+			if Debug {
+				log.Printf("error resolving", er)
+			}
 			err = er
 			return
 		}
@@ -312,10 +345,16 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 		}
 		result = res
 
-		tpe, pkg, alias := knownDefGoType(filepath.Base(schema.Ref.GetURL().Fragment), *ref, t.goTypeName)
-		result.GoType = tpe
-		result.Pkg = pkg
-		result.PkgAlias = alias
+		tn := filepath.Base(schema.Ref.GetURL().Fragment)
+		tpe, pkg, alias := knownDefGoType(tn, *ref, t.goTypeName)
+		if Debug {
+			log.Printf("type name %s, package %s, alias %s", tpe, pkg, alias)
+		}
+		if tpe != "" {
+			result.GoType = tpe
+			result.Pkg = pkg
+			result.PkgAlias = alias
+		}
 		result.HasDiscriminator = ref.Discriminator != ""
 		result.IsNullable = t.IsNullable(ref)
 		//result.IsAliased = true
