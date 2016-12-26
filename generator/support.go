@@ -22,6 +22,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	goruntime "runtime"
 	"sort"
 	"strings"
 
@@ -150,8 +151,13 @@ func baseImport(tgt string) string {
 
 	var pth string
 	for _, gp := range filepath.SplitList(os.Getenv("GOPATH")) {
-		pp := filepath.Join(gp, "src")
-		if strings.HasPrefix(p, pp) {
+		pp := filepath.Join(filepath.Clean(gp), "src")
+		var np, npp string
+		if goruntime.GOOS == "windows" {
+			np = strings.ToLower(p)
+			npp = strings.ToLower(pp)
+		}
+		if strings.HasPrefix(np, npp) {
 			pth, err = filepath.Rel(pp, p)
 			if err != nil {
 				log.Fatalln(err)
