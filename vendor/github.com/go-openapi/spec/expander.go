@@ -278,16 +278,16 @@ func normalizeFileRef(ref *Ref, relativeBase string) *Ref {
 		filePath := refURL.Path
 		debugLog("normalizing file path: %s", filePath)
 
-		if !path.IsAbs(filePath) && len(relativeBase) != 0 {
+		if !filepath.IsAbs(filepath.FromSlash(filePath)) && len(relativeBase) != 0 {
 			debugLog("joining %s with %s", relativeBase, filePath)
 			if fi, err := os.Stat(filepath.FromSlash(relativeBase)); err == nil {
 				if !fi.IsDir() {
 					relativeBase = path.Dir(relativeBase)
 				}
 			}
-			filePath = filepath.Join(relativeBase, filepath.FromSlash(filePath))
+			filePath = filepath.Join(filepath.FromSlash(relativeBase), filepath.FromSlash(filePath))
 		}
-		if !path.IsAbs(filePath) {
+		if !filepath.IsAbs(filepath.FromSlash(filePath)) {
 			pwd, err := os.Getwd()
 			if err == nil {
 				debugLog("joining cwd %s with %s", pwd, filePath)
@@ -296,7 +296,7 @@ func normalizeFileRef(ref *Ref, relativeBase string) *Ref {
 		}
 
 		debugLog("cleaning %s", filePath)
-		filePath = path.Clean(filePath)
+		filePath = filepath.Clean(filePath)
 		_, err := os.Stat(filepath.FromSlash(filePath))
 		if err == nil {
 			debugLog("rewriting url to scheme \"\" path %s", filePath)
