@@ -207,7 +207,7 @@ func (p *printer) literalType(lit *ast.LiteralType) []byte {
 	case token.STRING:
 		// If this is a multiline string, poison lines 2+ so we don't
 		// indent them.
-		if bytes.ContainsRune(result, '\n') {
+		if bytes.IndexRune(result, '\n') >= 0 {
 			result = p.heredocIndent(result)
 		}
 	}

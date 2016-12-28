@@ -9,7 +9,7 @@ individual integers.
 But it also provides set intersection, union, difference,
 complement, and symmetric operations, as well as tests to
 check whether any, all, or no bits are set, and querying a
-bitset's current length and number of postive bits.
+bitset's current length and number of positive bits.
 
 BitSets are expanded to the size of the largest set bit; the
 memory allocation is approximately Max bits, where Max is
@@ -54,6 +54,9 @@ const wordSize = uint(64)
 
 // log2WordSize is lg(wordSize)
 const log2WordSize = uint(6)
+
+// allBits has every bit set
+const allBits uint64 = 0xffffffffffffffff
 
 // A BitSet is a set of bits. The zero value of a BitSet is an empty set of length 0.
 type BitSet struct {
@@ -227,6 +230,30 @@ func (b *BitSet) NextSet(i uint) (uint, bool) {
 	return 0, false
 }
 
+// NextClear returns the next clear bit from the specified index,
+// including possibly the current index
+// along with an error code (true = valid, false = no bit found i.e. all bits are set)
+func (b *BitSet) NextClear(i uint) (uint, bool) {
+	x := int(i >> log2WordSize)
+	if x >= len(b.set) {
+		return 0, false
+	}
+	w := b.set[x]
+	w = w >> (i & (wordSize - 1))
+	wA := allBits >> (i & (wordSize - 1))
+	if w != wA {
+		return i + trailingZeroes64(^w), true
+	}
+	x++
+	for x < len(b.set) {
+		if b.set[x] != allBits {
+			return uint(x)*wordSize + trailingZeroes64(^b.set[x]), true
+		}
+		x++
+	}
+	return 0, false
+}
+
 // ClearAll clears the entire BitSet
 func (b *BitSet) ClearAll() *BitSet {
 	if b != nil && b.set != nil {
@@ -239,7 +266,7 @@ func (b *BitSet) ClearAll() *BitSet {
 
 // wordCount returns the number of words used in a bit set
 func (b *BitSet) wordCount() int {
-	return wordsNeeded(b.length)
+	return len(b.set)
 }
 
 // Clone this BitSet
@@ -512,16 +539,14 @@ func (b *BitSet) InPlaceSymmetricDifference(compare *BitSet) {
 }
 
 // Is the length an exact multiple of word sizes?
-func (b *BitSet) isEven() bool {
+func (b *BitSet) isLenExactMultiple() bool {
 	return b.length%wordSize == 0
 }
 
 // Clean last word by setting unused bits to 0
 func (b *BitSet) cleanLastWord() {
-	if !b.isEven() {
-		// Mask for cleaning last word
-		const allBits uint64 = 0xffffffffffffffff
-		b.set[wordsNeeded(b.length)-1] &= allBits >> (wordSize - b.length%wordSize)
+	if !b.isLenExactMultiple() {
+		b.set[len(b.set)-1] &= allBits >> (wordSize - b.length%wordSize)
 	}
 }
 

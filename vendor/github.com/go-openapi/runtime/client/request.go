@@ -62,7 +62,7 @@ type request struct {
 	header     http.Header
 	query      url.Values
 	formFields url.Values
-	fileFields map[string]*os.File
+	fileFields map[string]runtime.NamedReadCloser
 	payload    interface{}
 	timeout    time.Duration
 }
@@ -236,17 +236,19 @@ func (r *request) SetPathParam(name string, value string) error {
 }
 
 // SetFileParam adds a file param to the request
-func (r *request) SetFileParam(name string, file *os.File) error {
-	fi, err := os.Stat(file.Name())
-	if err != nil {
-		return err
-	}
-	if fi.IsDir() {
-		return fmt.Errorf("%q is a directory, only files are supported", file.Name())
+func (r *request) SetFileParam(name string, file runtime.NamedReadCloser) error {
+	if actualFile, ok := file.(*os.File); ok {
+		fi, err := os.Stat(actualFile.Name())
+		if err != nil {
+			return err
+		}
+		if fi.IsDir() {
+			return fmt.Errorf("%q is a directory, only files are supported", file.Name())
+		}
 	}
 
 	if r.fileFields == nil {
-		r.fileFields = make(map[string]*os.File)
+		r.fileFields = make(map[string]runtime.NamedReadCloser)
 	}
 	if r.formFields == nil {
 		r.formFields = make(url.Values)

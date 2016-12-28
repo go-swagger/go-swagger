@@ -118,8 +118,48 @@ var (
 // TODO: make this a method on profile.
 
 func (b *buffers) enforce(p *Profile, src []byte, comparing bool) (str []byte, err error) {
-	// TODO: ASCII fast path, if options allow.
 	b.src = src
+
+	ascii := true
+	for _, c := range src {
+		if c >= utf8.RuneSelf {
+			ascii = false
+			break
+		}
+	}
+	// ASCII fast path.
+	if ascii {
+		for _, f := range p.options.additional {
+			if err = b.apply(f()); err != nil {
+				return nil, err
+			}
+		}
+		switch {
+		case p.options.asciiLower || (comparing && p.options.ignorecase):
+			for i, c := range b.src {
+				if 'A' <= c && c <= 'Z' {
+					b.src[i] = c ^ 1<<5
+				}
+			}
+		case p.options.cases != nil:
+			b.apply(p.options.cases)
+		}
+		c := checker{p: p}
+		if _, err := c.span(b.src, true); err != nil {
+			return nil, err
+		}
+		if p.disallow != nil {
+			for _, c := range b.src {
+				if p.disallow.Contains(rune(c)) {
+					return nil, errDisallowedRune
+				}
+			}
+		}
+		if p.options.disallowEmpty && len(b.src) == 0 {
+			return nil, errEmptyString
+		}
+		return b.src, nil
+	}
 
 	// These transforms are applied in the order defined in
 	// https://tools.ietf.org/html/rfc7564#section-7

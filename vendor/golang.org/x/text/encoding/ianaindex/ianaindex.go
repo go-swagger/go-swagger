@@ -5,6 +5,8 @@
 // Package ianaindex maps names to Encodings as specified by the IANA registry.
 // This includes both the MIME and IANA names.
 //
+// Status: this package is an incomplete API sketch, and isn't usable yet.
+//
 // See http://www.iana.org/assignments/character-sets/character-sets.xhtml for
 // more details.
 package ianaindex
@@ -13,6 +15,7 @@ import (
 	"golang.org/x/text/encoding"
 )
 
+// TODO: remove the "Status... incomplete" in the package doc comment.
 // TODO: allow users to specify their own aliases?
 // TODO: allow users to specify their own indexes?
 // TODO: allow canonicalizing names

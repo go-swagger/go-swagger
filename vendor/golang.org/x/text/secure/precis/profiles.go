@@ -19,35 +19,45 @@ var (
 	OpaqueString          *Profile = opaquestring      // Implements the OpaqueString profile defined in RFC 7613 for passwords and other secure labels.
 )
 
-// TODO: mvl: "Ultimately, I would manually define the structs for the internal
-// profiles. This avoid pulling in unneeded tables when they are not used."
 var (
-	nickname = NewFreeform(
-		AdditionalMapping(func() transform.Transformer {
-			return &nickAdditionalMapping{}
-		}),
-		IgnoreCase,
-		Norm(norm.NFKC),
-		DisallowEmpty,
-	)
-	usernameCaseMap = NewIdentifier(
-		FoldWidth,
-		LowerCase(),
-		Norm(norm.NFC),
-		BidiRule,
-	)
-	usernameNoCaseMap = NewIdentifier(
-		FoldWidth,
-		Norm(norm.NFC),
-		BidiRule,
-	)
-	opaquestring = NewFreeform(
-		AdditionalMapping(func() transform.Transformer {
-			return mapSpaces
-		}),
-		Norm(norm.NFC),
-		DisallowEmpty,
-	)
+	nickname = &Profile{
+		options: getOpts(
+			AdditionalMapping(func() transform.Transformer {
+				return &nickAdditionalMapping{}
+			}),
+			IgnoreCase,
+			Norm(norm.NFKC),
+			DisallowEmpty,
+		),
+		class: freeform,
+	}
+	usernameCaseMap = &Profile{
+		options: getOpts(
+			FoldWidth,
+			LowerCase(),
+			Norm(norm.NFC),
+			BidiRule,
+		),
+		class: identifier,
+	}
+	usernameNoCaseMap = &Profile{
+		options: getOpts(
+			FoldWidth,
+			Norm(norm.NFC),
+			BidiRule,
+		),
+		class: identifier,
+	}
+	opaquestring = &Profile{
+		options: getOpts(
+			AdditionalMapping(func() transform.Transformer {
+				return mapSpaces
+			}),
+			Norm(norm.NFC),
+			DisallowEmpty,
+		),
+		class: freeform,
+	}
 )
 
 // mapSpaces is a shared value of a runes.Map transformer.

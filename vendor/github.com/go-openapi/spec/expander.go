@@ -35,9 +35,10 @@ var (
 	Debug = os.Getenv("SWAGGER_DEBUG") != ""
 )
 
-//  ExpandOptions provides options for expand.
+// ExpandOptions provides options for expand.
 type ExpandOptions struct {
 	RelativeBase string
+	SkipSchemas  bool
 }
 
 // ResolutionCache a cache for resolving urls
@@ -105,7 +106,12 @@ func ResolveRef(root interface{}, ref *Ref) (*Schema, error) {
 
 // ResolveParameter resolves a paramter reference against a context root
 func ResolveParameter(root interface{}, ref Ref) (*Parameter, error) {
-	resolver, err := defaultSchemaLoader(root, nil, nil, nil)
+	return ResolveParameterWithBase(root, ref, nil)
+}
+
+// ResolveParameterWithBase resolves a paramter reference against a context root and base path
+func ResolveParameterWithBase(root interface{}, ref Ref, opts *ExpandOptions) (*Parameter, error) {
+	resolver, err := defaultSchemaLoader(root, nil, opts, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -119,12 +125,45 @@ func ResolveParameter(root interface{}, ref Ref) (*Parameter, error) {
 
 // ResolveResponse resolves response a reference against a context root
 func ResolveResponse(root interface{}, ref Ref) (*Response, error) {
-	resolver, err := defaultSchemaLoader(root, nil, nil, nil)
+	return ResolveResponseWithBase(root, ref, nil)
+}
+
+// ResolveResponseWithBase resolves response a reference against a context root and base path
+func ResolveResponseWithBase(root interface{}, ref Ref, opts *ExpandOptions) (*Response, error) {
+	resolver, err := defaultSchemaLoader(root, nil, opts, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	result := new(Response)
+	if err := resolver.Resolve(&ref, result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+// ResolveItems resolves header and parameter items reference against a context root and base path
+func ResolveItems(root interface{}, ref Ref, opts *ExpandOptions) (*Items, error) {
+	resolver, err := defaultSchemaLoader(root, nil, opts, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := new(Items)
+	if err := resolver.Resolve(&ref, result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+// ResolvePathItem resolves response a path item against a context root and base path
+func ResolvePathItem(root interface{}, ref Ref, opts *ExpandOptions) (*PathItem, error) {
+	resolver, err := defaultSchemaLoader(root, nil, opts, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := new(PathItem)
 	if err := resolver.Resolve(&ref, result); err != nil {
 		return nil, err
 	}
@@ -142,7 +181,6 @@ type schemaLoader struct {
 }
 
 var idPtr, _ = jsonpointer.New("/id")
-var schemaPtr, _ = jsonpointer.New("/$schema")
 var refPtr, _ = jsonpointer.New("/$ref")
 
 // PathLoader function to use when loading remote refs
@@ -152,7 +190,6 @@ func init() {
 	PathLoader = func(path string) (json.RawMessage, error) {
 		data, err := swag.LoadFromFileOrHTTP(path)
 		if err != nil {
-			panic(err)
 			return nil, err
 		}
 		return json.RawMessage(data), nil
@@ -165,6 +202,9 @@ func defaultSchemaLoader(
 
 	if cache == nil {
 		cache = resCache
+	}
+	if expandOptions == nil {
+		expandOptions = &ExpandOptions{}
 	}
 
 	var ptr *jsonpointer.Pointer
@@ -396,11 +436,11 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 		if err != nil {
 			if strings.HasPrefix(ref.String(), "#") {
 				if r.loadingRef != nil {
-					newUrl := r.loadingRef.GetURL().String()
-					refURL, err = url.Parse(newUrl + ref.String())
-					if err != nil {
-						return err
+					rr, er := r.loadingRef.Inherits(*ref)
+					if er != nil {
+						return er
 					}
+					refURL = rr.GetURL()
 
 					data, _, _, err = r.load(refURL)
 					if err != nil {
@@ -451,16 +491,7 @@ func (r *schemaLoader) load(refURL *url.URL) (interface{}, url.URL, bool, error)
 }
 
 func (r *schemaLoader) Resolve(ref *Ref, target interface{}) error {
-	if err := r.resolveRef(r.currentRef, ref, r.root, target); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-type specExpander struct {
-	spec     *Swagger
-	resolver *schemaLoader
+	return r.resolveRef(r.currentRef, ref, r.root, target)
 }
 
 // ExpandSpec expands the references in a swagger spec
@@ -470,13 +501,15 @@ func ExpandSpec(spec *Swagger, options *ExpandOptions) error {
 		return err
 	}
 
-	for key, definition := range spec.Definitions {
-		var def *Schema
-		var err error
-		if def, err = expandSchema(definition, []string{"#/definitions/" + key}, resolver); err != nil {
-			return err
+	if options == nil || !options.SkipSchemas {
+		for key, definition := range spec.Definitions {
+			var def *Schema
+			var err error
+			if def, err = expandSchema(definition, []string{"#/definitions/" + key}, resolver); err != nil {
+				return err
+			}
+			spec.Definitions[key] = *def
 		}
-		spec.Definitions[key] = *def
 	}
 
 	for key, parameter := range spec.Parameters {
@@ -507,6 +540,11 @@ func ExpandSpec(spec *Swagger, options *ExpandOptions) error {
 
 // ExpandSchema expands the refs in the schema object
 func ExpandSchema(schema *Schema, root interface{}, cache ResolutionCache) error {
+	return ExpandSchemaWithBasePath(schema, root, cache, nil)
+}
+
+// ExpandSchemaWithBasePath expands the refs in the schema object, base path configured through expand options
+func ExpandSchemaWithBasePath(schema *Schema, root interface{}, cache ResolutionCache, opts *ExpandOptions) error {
 	if schema == nil {
 		return nil
 	}
@@ -517,17 +555,17 @@ func ExpandSchema(schema *Schema, root interface{}, cache ResolutionCache) error
 	nrr, _ := NewRef(schema.ID)
 	var rrr *Ref
 	if nrr.String() != "" {
-		switch root.(type) {
+		switch rt := root.(type) {
 		case *Schema:
-			rid, _ := NewRef(root.(*Schema).ID)
+			rid, _ := NewRef(rt.ID)
 			rrr, _ = rid.Inherits(nrr)
 		case *Swagger:
-			rid, _ := NewRef(root.(*Swagger).ID)
+			rid, _ := NewRef(rt.ID)
 			rrr, _ = rid.Inherits(nrr)
 		}
 	}
 
-	resolver, err := defaultSchemaLoader(root, rrr, nil, cache)
+	resolver, err := defaultSchemaLoader(root, rrr, opts, cache)
 	if err != nil {
 		return err
 	}
@@ -756,7 +794,7 @@ func expandResponse(response *Response, resolver *schemaLoader) error {
 		}
 	}
 
-	if response.Schema != nil {
+	if !resolver.options.SkipSchemas && response.Schema != nil {
 		parentRefs = append(parentRefs, response.Schema.Ref.String())
 		debugLog("response ref: %s", response.Schema.Ref)
 		if err := resolver.Resolve(&response.Schema.Ref, &response.Schema); err != nil {
@@ -783,7 +821,7 @@ func expandParameter(parameter *Parameter, resolver *schemaLoader) error {
 			return err
 		}
 	}
-	if parameter.Schema != nil {
+	if !resolver.options.SkipSchemas && parameter.Schema != nil {
 		parentRefs = append(parentRefs, parameter.Schema.Ref.String())
 		if err := resolver.Resolve(&parameter.Schema.Ref, &parameter.Schema); err != nil {
 			return err

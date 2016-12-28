@@ -14,8 +14,8 @@
 package sftpfs
 
 import (
-	"os"
 	"github.com/pkg/sftp"
+	"os"
 )
 
 type File struct {
@@ -64,17 +64,17 @@ func (f *File) Read(b []byte) (n int, err error) {
 
 // TODO
 func (f *File) ReadAt(b []byte, off int64) (n int, err error) {
-	return 0,nil
+	return 0, nil
 }
 
 // TODO
 func (f *File) Readdir(count int) (res []os.FileInfo, err error) {
-	return nil,nil
+	return nil, nil
 }
 
 // TODO
 func (f *File) Readdirnames(n int) (names []string, err error) {
-	return nil,nil
+	return nil, nil
 }
 
 func (f *File) Seek(offset int64, whence int) (int64, error) {
@@ -87,7 +87,7 @@ func (f *File) Write(b []byte) (n int, err error) {
 
 // TODO
 func (f *File) WriteAt(b []byte, off int64) (n int, err error) {
-	return 0,nil
+	return 0, nil
 }
 
 func (f *File) WriteString(s string) (ret int, err error) {

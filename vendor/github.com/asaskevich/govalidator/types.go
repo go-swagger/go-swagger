@@ -37,7 +37,7 @@ var ParamTagMap = map[string]ParamValidator{
 var ParamTagRegexMap = map[string]*regexp.Regexp{
 	"length":       regexp.MustCompile("^length\\((\\d+)\\|(\\d+)\\)$"),
 	"stringlength": regexp.MustCompile("^stringlength\\((\\d+)\\|(\\d+)\\)$"),
-	"matches":      regexp.MustCompile(`matches\(([^)]+)\)`),
+	"matches":      regexp.MustCompile(`^matches\((.+)\)$`),
 }
 
 type customTypeTagMap struct {

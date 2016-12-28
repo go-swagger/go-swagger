@@ -129,7 +129,7 @@ func (l *tomlLexer) lexVoid() tomlLexStateFn {
 		next := l.peek()
 		switch next {
 		case '[':
-			return l.lexKeyGroup
+			return l.lexTableKey
 		case '#':
 			return l.lexComment
 		case '=':
@@ -516,21 +516,21 @@ func (l *tomlLexer) lexString() tomlLexStateFn {
 	return l.lexRvalue
 }
 
-func (l *tomlLexer) lexKeyGroup() tomlLexStateFn {
+func (l *tomlLexer) lexTableKey() tomlLexStateFn {
 	l.next()
 
 	if l.peek() == '[' {
-		// token '[[' signifies an array of anonymous key groups
+		// token '[[' signifies an array of tables
 		l.next()
 		l.emit(tokenDoubleLeftBracket)
-		return l.lexInsideKeyGroupArray
+		return l.lexInsideTableArrayKey
 	}
-	// vanilla key group
+	// vanilla table key
 	l.emit(tokenLeftBracket)
-	return l.lexInsideKeyGroup
+	return l.lexInsideTableKey
 }
 
-func (l *tomlLexer) lexInsideKeyGroupArray() tomlLexStateFn {
+func (l *tomlLexer) lexInsideTableArrayKey() tomlLexStateFn {
 	for r := l.peek(); r != eof; r = l.peek() {
 		switch r {
 		case ']':
@@ -545,15 +545,15 @@ func (l *tomlLexer) lexInsideKeyGroupArray() tomlLexStateFn {
 			l.emit(tokenDoubleRightBracket)
 			return l.lexVoid
 		case '[':
-			return l.errorf("group name cannot contain ']'")
+			return l.errorf("table array key cannot contain ']'")
 		default:
 			l.next()
 		}
 	}
-	return l.errorf("unclosed key group array")
+	return l.errorf("unclosed table array key")
 }
 
-func (l *tomlLexer) lexInsideKeyGroup() tomlLexStateFn {
+func (l *tomlLexer) lexInsideTableKey() tomlLexStateFn {
 	for r := l.peek(); r != eof; r = l.peek() {
 		switch r {
 		case ']':
@@ -564,12 +564,12 @@ func (l *tomlLexer) lexInsideKeyGroup() tomlLexStateFn {
 			l.emit(tokenRightBracket)
 			return l.lexVoid
 		case '[':
-			return l.errorf("group name cannot contain ']'")
+			return l.errorf("table key cannot contain ']'")
 		default:
 			l.next()
 		}
 	}
-	return l.errorf("unclosed key group")
+	return l.errorf("unclosed table key")
 }
 
 func (l *tomlLexer) lexRightBracket() tomlLexStateFn {
