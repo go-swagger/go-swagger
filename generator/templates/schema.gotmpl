@@ -94,7 +94,7 @@ func unmarshal{{ pascalize .Name }}(data []byte, consumer runtime.Consumer) ({{ 
 func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(b []byte) error {
   type {{ pascalize .Name }}Alias {{ pascalize .Name }}
   var t {{ pascalize .Name }}Alias
-  if err := json.Unmarshal([]byte(`{{json .Default}}`), &t); err != nil {
+  if err := json.Unmarshal([]byte({{printf "%q" (json .Default)}}), &t); err != nil {
     return err
   }
   if err := json.Unmarshal(b, &t); err != nil {
