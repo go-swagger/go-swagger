@@ -71,6 +71,7 @@ type GenSchema struct {
 	Parents                 []string
 	IncludeValidator        bool
 	IncludeModel            bool
+	Default                 interface{}
 }
 
 type sharedValidations struct {
