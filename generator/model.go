@@ -1278,6 +1278,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.ReadOnly = sg.Schema.ReadOnly
 	sg.GenSchema.IncludeValidator = sg.IncludeValidator
 	sg.GenSchema.IncludeModel = sg.IncludeModel
+	sg.GenSchema.Default = sg.Schema.Default
 
 	var err error
 	returns, err := sg.shortCircuitNamedRef()
