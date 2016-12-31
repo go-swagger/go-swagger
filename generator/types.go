@@ -554,7 +554,6 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 	}
 	result.GoType = iface
 	result.IsMap = true
-	result.IsMap = !result.IsComplexObject
 	result.SwaggerType = object
 	result.IsNullable = false
 	result.IsInterface = len(schema.Properties) == 0
@@ -699,6 +698,13 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		}
 		rt.HasDiscriminator = schema.Discriminator != ""
 		return rt, nil
+
+	case "null":
+		result.GoType = iface
+		result.SwaggerType = object
+		result.IsNullable = false
+		result.IsInterface = true
+		return
 
 	default:
 		err = fmt.Errorf("unresolvable: %v (format %q)", schema.Type, schema.Format)
