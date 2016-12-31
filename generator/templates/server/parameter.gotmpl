@@ -34,29 +34,29 @@ if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", {{
 {{define "bindprimitiveparam" }}
 {{ end }}
 {{ define "sliceparambinder" }}
-var {{ .Child.ValueExpression }}R {{ .GoType }}
-for {{ if or .Child.HasValidations .Child.Converter .Child.IsCustomFormatter }}{{ .IndexVar }}{{ else }}_{{ end }}, {{ .Child.ValueExpression }}V := range {{ .Child.ValueExpression }}C {
+var {{ varname .Child.ValueExpression }}R {{ .GoType }}
+for {{ if or .Child.HasValidations .Child.Converter .Child.IsCustomFormatter }}{{ .IndexVar }}{{ else }}_{{ end }}, {{ varname .Child.ValueExpression }}V := range {{ varname .Child.ValueExpression }}C {
   {{ if or .Child.IsArray -}}
-  {{ .Child.Child.ValueExpression }}C := swag.SplitByFormat({{ .Child.ValueExpression }}V, {{ printf "%q" .Child.CollectionFormat }})
+  {{ .Child.Child.ValueExpression }}C := swag.SplitByFormat({{ varname .Child.ValueExpression }}V, {{ printf "%q" .Child.CollectionFormat }})
   {{ template "sliceparambinder" .Child }}
   {{- else -}}
   {{ if .Child.Converter -}}
-  {{ .Child.ValueExpression }}, err := {{ .Child.Converter }}({{ .Child.ValueExpression }}V)
+  {{ varname .Child.ValueExpression }}, err := {{ .Child.Converter }}({{ varname .Child.ValueExpression }}V)
   if err != nil {
-    return errors.InvalidType({{ .Child.Path }}, {{ printf "%q" .Child.Location }}, "{{ .Child.GoType }}", {{ .Child.ValueExpression }})
+    return errors.InvalidType({{ .Child.Path }}, {{ printf "%q" .Child.Location }}, "{{ .Child.GoType }}", {{ varname .Child.ValueExpression }})
   }
   {{- else if .Child.IsCustomFormatter -}}
-  {{ .Child.ValueExpression }}, err := formats.Parse({{ .Child.ValueExpression }}V)
+  {{ varname .Child.ValueExpression }}, err := formats.Parse({{ varname .Child.ValueExpression }}V)
   if err != nil {
-    return errors.InvalidType({{ .Child.Path }}, {{ printf "%q" .Child.Location }}, "{{ .Child.GoType }}", {{ .Child.ValueExpression }})
+    return errors.InvalidType({{ .Child.Path }}, {{ printf "%q" .Child.Location }}, "{{ .Child.GoType }}", {{ varname .Child.ValueExpression }})
   }
   {{- else -}}
-  {{ .Child.ValueExpression }} := {{ .Child.ValueExpression }}V
+  {{ varname .Child.ValueExpression }} := {{ varname .Child.ValueExpression }}V
   {{ end }}
   {{- end }}
 
   {{ template "propertyparamvalidator" .Child }}
-  {{ .Child.ValueExpression }}R = append({{ .Child.ValueExpression }}R, {{ .Child.ValueExpression }})
+  {{ varname .Child.ValueExpression }}R = append({{ varname .Child.ValueExpression }}R, {{ varname .Child.ValueExpression }})
 }
 {{ end }}
 package {{ .Package }}
@@ -261,25 +261,25 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawDa
     return errors.Required({{ .Path }}, {{ printf "%q" .Location }})
   }
   {{ end }}
-  {{ if eq .CollectionFormat "multi" }}{{ .Child.ValueExpression }}C := rawData{{ else }}var qv{{ pascalize .Name }} string
+  {{ if eq .CollectionFormat "multi" }}{{ varname .Child.ValueExpression }}C := rawData{{ else }}var qv{{ pascalize .Name }} string
   if len(rawData) > 0 {
     qv{{ pascalize .Name }} = rawData[len(rawData) - 1]
   }
 
-  {{ .Child.ValueExpression }}C := swag.SplitByFormat(qv{{ pascalize .Name }}, {{ printf "%q" .CollectionFormat }}){{ end }}
+  {{ varname .Child.ValueExpression }}C := swag.SplitByFormat(qv{{ pascalize .Name }}, {{ printf "%q" .CollectionFormat }}){{ end }}
   {{if and .Required (not .AllowEmptyValue) }}
-  if len({{ .Child.ValueExpression }}C) == 0 {
+  if len({{ varname .Child.ValueExpression }}C) == 0 {
     return errors.Required({{ .Path }}, {{ printf "%q" .Location }})
   }
   {{ end }}
   {{ if not .Required }}{{ if .HasDefault }}defValue := swag.SplitByFormat({{ .Default }}, {{ printf "%q" .CollectionFormat }})
-  if len({{ .Child.ValueExpression }}C) == 0 && len(defValue) > 0 {
+  if len({{ varname .Child.ValueExpression }}C) == 0 && len(defValue) > 0 {
     {{ .ValueExpression }} = defValue
-  {{ else }}if len({{ .Child.ValueExpression }}C) == 0 {
+  {{ else }}if len({{ varname .Child.ValueExpression }}C) == 0 {
     return nil{{ end }}
   }{{ end }}
   {{ template "sliceparambinder" . }}
-  {{ .ValueExpression }} = {{ .Child.ValueExpression }}R
+  {{ .ValueExpression }} = {{ varname .Child.ValueExpression }}R
   {{ if .HasSliceValidations }}if err := {{ .ReceiverName }}.validate{{ pascalize .ID }}(formats); err != nil {
     return err
   }
