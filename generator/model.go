@@ -1021,11 +1021,8 @@ func (sg *schemaGenContext) buildArray() error {
 	elProp.GenSchema.Suffix = "Items"
 	sg.GenSchema.GoType = "[]" + elProp.GenSchema.GoType
 
-	// TODO: this is probably not right. Should just respect what type resolvers said
-	nn := elProp.GenSchema.IsNullable
-
 	elProp.GenSchema.IsNullable = tpe.IsNullable && !tpe.HasDiscriminator
-	if nn && !tpe.HasDiscriminator && !tpe.IsPrimitive {
+	if elProp.GenSchema.IsNullable {
 		sg.GenSchema.GoType = "[]*" + elProp.GenSchema.GoType
 	}
 

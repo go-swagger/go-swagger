@@ -468,3 +468,20 @@ func TestGenClient_CustomFormatPath(t *testing.T) {
 		}
 	}
 }
+
+func TestGenClient_Issue733(t *testing.T) {
+	b, err := opBuilder("get_characters_character_id_mail_mail_id", "../fixtures/bugs/733/swagger.json")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			opts.defaultsEnsured = false
+			opts.EnsureDefaults(true)
+			err := templates.MustGet("clientResponse").Execute(buf, op)
+			if assert.NoError(t, err) {
+				assertInCode(t, "Labels []*int64 `json:\"labels\"`", buf.String())
+			}
+		}
+	}
+}

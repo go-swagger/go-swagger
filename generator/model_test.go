@@ -1763,6 +1763,31 @@ func TestGenModel_Issue455(t *testing.T) {
 	}
 }
 
+func TestGenModel_Issue763(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/763/swagger.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "test_list"
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("test_list.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, "TheArray []*int32 `json:\"the_array\"`", res)
+					assertInCode(t, `validate.MinimumInt("the_array"+"."+strconv.Itoa(i), "body", int64(*m.TheArray[i]), 0, false)`, res)
+					assertInCode(t, `validate.MaximumInt("the_array"+"."+strconv.Itoa(i), "body", int64(*m.TheArray[i]), 10, false)`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
 func TestGenModel_Issue752_EOFErr(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/azure-text-analyis.json")
 	if assert.NoError(t, err) {
