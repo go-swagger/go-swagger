@@ -4,8 +4,6 @@
 
 //go:generate go run gen.go gen_trieval.go gen_common.go
 
-// http://www.unicode.org/reports/tr46
-
 // Package idna implements IDNA2008 using the compatibility processing
 // defined by UTS (Unicode Technical Standard) #46, which defines a standard to
 // deal with the transition from IDNA2003.
