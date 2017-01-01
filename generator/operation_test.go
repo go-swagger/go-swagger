@@ -437,6 +437,45 @@ func TestBuilder_Issue465(t *testing.T) {
 	}
 }
 
+func TestBuilder_Issue500(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stderr)
+	dr, _ := os.Getwd()
+	opts := &GenOpts{
+		Spec:              filepath.FromSlash("../fixtures/bugs/500/swagger.yml"),
+		IncludeModel:      true,
+		IncludeValidator:  true,
+		IncludeHandler:    true,
+		IncludeParameters: true,
+		IncludeResponses:  true,
+		IncludeMain:       true,
+		APIPackage:        "restapi",
+		ModelPackage:      "model",
+		ServerPackage:     "server",
+		ClientPackage:     "client",
+		Target:            dr,
+	}
+	opts.EnsureDefaults(false)
+	appGen, err := newAppGenerator("multiTags", nil, nil, opts)
+	if assert.NoError(t, err) {
+		op, err := appGen.makeCodegenApp()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("serverBuilder").Execute(buf, op)
+			if assert.NoError(t, err) {
+				ff, err := appGen.GenOpts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					assertNotInCode(t, `o.handlers["GET"]["/payment/{invoice_id}/payments/{payment_id}"] = invoices.NewGetPaymentByID(o.context, o.InvoicesGetPaymentByIDHandler)`, res)
+					assertInCode(t, `o.handlers["GET"]["/payment/{invoice_id}/payments/{payment_id}"] = NewGetPaymentByID(o.context, o.GetPaymentByIDHandler)`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
 func TestGenClient_IllegalBOM(t *testing.T) {
 	b, err := methodPathOpBuilder("get", "/v3/attachments/{attachmentId}", "../fixtures/bugs/727/swagger.json")
 	if assert.NoError(t, err) {
