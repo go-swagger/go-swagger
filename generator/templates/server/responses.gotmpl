@@ -27,13 +27,13 @@ if {{ .ValueExpression }}S != "" {
 }
 {{ end }}
 {{define "sliceserverheaderbuilder" }}
-var {{ .Child.ValueExpression }}R []string
-for _, {{ .Child.ValueExpression }} := range {{ .ValueExpression }} {
+var {{ varname .Child.ValueExpression }}R []string
+for _, {{ varname .Child.ValueExpression }} := range {{ .ValueExpression }} {
   {{- if not .Child.IsArray }}{{ template "sliceitemserverheaderbuilder" .Child }}{{ else }}{{ template "sliceserverheaderbuilder" .Child }}{{ end -}}
 }
 
 {{ if not .Child.Parent -}}
-{{ varname .ID }} := swag.JoinByFormat({{ .Child.ValueExpression }}R, {{ printf "%q" .CollectionFormat }})
+{{ varname .ID }} := swag.JoinByFormat({{ varname .Child.ValueExpression }}R, {{ printf "%q" .CollectionFormat }})
 if len({{ varname .ID }}) > 0 {
   hv := {{ varname .ID }}[0]
   if hv != "" {
@@ -41,7 +41,7 @@ if len({{ varname .ID }}) > 0 {
   }
 }
 {{ else -}}
-{{ .ValueExpression }}S := swag.JoinByFormat({{ .Child.ValueExpression }}R, {{ printf "%q" .CollectionFormat }})
+{{ .ValueExpression }}S := swag.JoinByFormat({{ varname .Child.ValueExpression }}R, {{ printf "%q" .CollectionFormat }})
 if len({{ .ValueExpression }}S) > 0 {
   {{ .ValueExpression }}Ss := {{ .ValueExpression }}S[0]
   if {{ .ValueExpression }}Ss != "" {

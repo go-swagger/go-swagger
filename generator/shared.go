@@ -718,6 +718,12 @@ func pascalize(arg string) string {
 	if len(arg) == 0 || arg[0] > '9' {
 		return swag.ToGoName(arg)
 	}
+	if arg[0] == '+' {
+		return swag.ToGoName("Plus " + arg[1:])
+	}
+	if arg[0] == '-' {
+		return swag.ToGoName("Minus " + arg[1:])
+	}
 
 	return swag.ToGoName("Nr " + arg)
 }

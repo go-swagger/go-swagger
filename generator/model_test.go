@@ -370,7 +370,7 @@ func TestGenerateModel_NotaWithName(t *testing.T) {
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assertInCode(t, "type "+k+" struct {", res)
-				assertInCode(t, k+" map[string]*int32 `json:\"-\"`", res)
+				assertInCode(t, k+" map[string]int32 `json:\"-\"`", res)
 				assertInCode(t, "Name *string `json:\"name\"`", res)
 				assertInCode(t, k+") UnmarshalJSON", res)
 				assertInCode(t, k+") MarshalJSON", res)
@@ -379,7 +379,7 @@ func TestGenerateModel_NotaWithName(t *testing.T) {
 				assertInCode(t, "json.Marshal(m."+k+")", res)
 				assertInCode(t, "json.Unmarshal(data, &stage1)", res)
 				assertInCode(t, "json.Unmarshal(data, &stage2)", res)
-				assertInCode(t, "json.Unmarshal(v, toadd)", res)
+				assertInCode(t, "json.Unmarshal(v, &toadd)", res)
 				assertInCode(t, "result[k] = toadd", res)
 				assertInCode(t, "m."+k+" = result", res)
 				for _, p := range genModel.Properties {
@@ -647,7 +647,7 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 					assertInCode(t, "type "+k+" struct {", res)
 					assertInCode(t, "Data *"+k+"Data `json:\"data,omitempty\"`", res)
 					assertInCode(t, "type "+k+"Data struct {", res)
-					assertInCode(t, k+"Data map[string]*string `json:\"-\"`", res)
+					assertInCode(t, k+"Data map[string]string `json:\"-\"`", res)
 					assertInCode(t, "Name *string `json:\"name\"`", res)
 					assertInCode(t, k+"Data) UnmarshalJSON", res)
 					assertInCode(t, k+"Data) MarshalJSON", res)
@@ -656,7 +656,7 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 					assertInCode(t, "json.Marshal(m."+k+"Data)", res)
 					assertInCode(t, "json.Unmarshal(data, &stage1)", res)
 					assertInCode(t, "json.Unmarshal(data, &stage2)", res)
-					assertInCode(t, "json.Unmarshal(v, toadd)", res)
+					assertInCode(t, "json.Unmarshal(v, &toadd)", res)
 					assertInCode(t, "result[k] = toadd", res)
 					assertInCode(t, "m."+k+"Data = result", res)
 					for _, p := range sch.Properties {
@@ -1382,8 +1382,8 @@ func TestGenerateModel_WithAllOf(t *testing.T) {
 					assertInCode(t, "P1 *strfmt.Date `json:\"-\"`", res)
 					assertInCode(t, "Opinion string `json:\"opinion,omitempty\"`", res)
 					assertInCode(t, "WithAllOfAO5Tuple5Items []strfmt.Password `json:\"-\"`", res)
-					assertInCode(t, "AO1 map[string]*int32 `json:\"-\"`", res)
-					assertInCode(t, "WithAllOfAO2P2 map[string]*int64 `json:\"-\"`", res)
+					assertInCode(t, "AO1 map[string]int32 `json:\"-\"`", res)
+					assertInCode(t, "WithAllOfAO2P2 map[string]int64 `json:\"-\"`", res)
 				}
 			}
 		}
@@ -1763,6 +1763,78 @@ func TestGenModel_Issue455(t *testing.T) {
 	}
 }
 
+func TestGenModel_Issue763(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/763/swagger.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "test_list"
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("test_list.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, "TheArray []*int32 `json:\"the_array\"`", res)
+					assertInCode(t, `validate.MinimumInt("the_array"+"."+strconv.Itoa(i), "body", int64(*m.TheArray[i]), 0, false)`, res)
+					assertInCode(t, `validate.MaximumInt("the_array"+"."+strconv.Itoa(i), "body", int64(*m.TheArray[i]), 10, false)`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestGenModel_Issue811_NullType(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/811/swagger.json")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "teamRepos"
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("team_repos.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, "Language interface{} `json:\"language,omitempty\"`", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestGenModel_Issue811_Emojis(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/811/swagger.json")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "emojis"
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("team_repos.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, "Plus1 string `json:\"+1,omitempty\"`", res)
+					assertInCode(t, "Minus1 string `json:\"-1,omitempty\"`", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
 func TestGenModel_Issue752_EOFErr(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/azure-text-analyis.json")
 	if assert.NoError(t, err) {
@@ -1802,6 +1874,55 @@ func TestImports_ExistingModel(t *testing.T) {
 		genModel, err = makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.Nil(t, genModel)
+		}
+	}
+}
+
+func TestGenModel_Issue786(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/786/swagger.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "MyFirstObject"
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+		if assert.NoError(t, err) && assert.False(t, genModel.Properties[0].AdditionalProperties.IsNullable) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("MyFirstObject.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, `m.validateEntreeChoiceValueEnum("entree_choice"+"."+k, "body", m.EntreeChoice[k])`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestGenModel_Issue822(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/822/swagger.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "Pet"
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+		ap := genModel.AdditionalProperties
+		if assert.NoError(t, err) && assert.True(t, genModel.HasAdditionalProperties) && assert.NotNil(t, ap) && assert.False(t, ap.IsNullable) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("pet.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, `PetAdditionalProperties map[string]interface{}`, res)
+					assertInCode(t, `m.PetAdditionalProperties = result`, res)
+					assertInCode(t, `additional, err := json.Marshal(m.PetAdditionalProperties)`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
 		}
 	}
 }

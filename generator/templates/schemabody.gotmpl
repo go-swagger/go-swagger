@@ -7,14 +7,18 @@
       {{- if .AdditionalProperties -}}
         // {{ template "docstring" .AdditionalProperties }}
         {{- template "propertyValidationDocString" .AdditionalProperties}}
-  {{ if and .IsExported (not .IsSubType) }}{{ pascalize .AdditionalProperties.Name }}{{ else }}{{ .AdditionalProperties.Name }}{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`  {{end}}{{ end}}
+  {{ if and .IsExported (not .IsSubType) -}}
+  {{ pascalize .AdditionalProperties.Name }}
+  {{- else -}}
+  {{ .AdditionalProperties.Name }}
+  {{- end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`  {{end}}{{ end}}
   {{ if .AdditionalItems -}}
     // {{ template "docstring" .AdditionalItems }}
     {{- template "propertyValidationDocString" .AdditionalItems}}
-  {{ if and .IsExported (not .IsSubType) }}{{ pascalize .AdditionalItems.Name }}{{ else }}{{ .AdditionalItems.Name }}{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
+  {{ if and .IsExported (not $.IsSubType) }}{{ pascalize .AdditionalItems.Name }}{{ else }}{{ .AdditionalItems.Name }}{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
   {{ end }}
   {{ else }}
-  {{ if not (and .IsBaseType .IsExported) }}{{ .GoType }}{{ end }}{{ end }}
+  {{ if not (and $.IsBaseType .IsExported) }}{{ .GoType }}{{ end }}{{ end }}
   {{ end }}
   {{range .Properties}}
   {{ if or (not $.IsExported) (and $.IsSubType .IsBaseType) }}{{ if $.IsTuple }}{{ template "privtuplefield" . }}{{ else }}{{template "privstructfield" . }}{{ end }}{{ else }}{{ if $.IsTuple }}{{ template "tuplefield" . }}{{ else }}{{template "structfield" . }}{{ end }}{{ end}}

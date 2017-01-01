@@ -71,7 +71,7 @@
 			"importpath": "github.com/go-openapi/analysis",
 			"repository": "https://github.com/go-openapi/analysis",
 			"vcs": "git",
-			"revision": "7222828b8ce19afee3c595aef6643b9e42150120",
+			"revision": "d5a75b7d751ca3f11ad5d93cfe97405f2c3f6a47",
 			"branch": "master",
 			"notests": true
 		},
@@ -127,7 +127,7 @@
 			"importpath": "github.com/go-openapi/spec",
 			"repository": "https://github.com/go-openapi/spec",
 			"vcs": "git",
-			"revision": "2303790e56f536fb2b212070f166c106b50ad6c2",
+			"revision": "458d9567eb968c160dd497b614b608186034edbc",
 			"branch": "master",
 			"notests": true
 		},
@@ -290,7 +290,7 @@
 			"importpath": "github.com/pelletier/go-toml",
 			"repository": "https://github.com/pelletier/go-toml",
 			"vcs": "git",
-			"revision": "017119f7a78a0b5fc0ea39ef6be09f03acf3345d",
+			"revision": "439fbba1f887c286024370cb4f281ba815c4c7d7",
 			"branch": "master",
 			"notests": true
 		},
@@ -477,7 +477,7 @@
 			"importpath": "golang.org/x/net/context",
 			"repository": "https://go.googlesource.com/net",
 			"vcs": "git",
-			"revision": "45e771701b814666a7eb299e6c7a57d0b1799e91",
+			"revision": "8fd7f25955530b92e73e9e1932a41b522b22ccd9",
 			"branch": "master",
 			"path": "/context",
 			"notests": true
@@ -486,7 +486,7 @@
 			"importpath": "golang.org/x/net/idna",
 			"repository": "https://go.googlesource.com/net",
 			"vcs": "git",
-			"revision": "45e771701b814666a7eb299e6c7a57d0b1799e91",
+			"revision": "8fd7f25955530b92e73e9e1932a41b522b22ccd9",
 			"branch": "master",
 			"path": "/idna",
 			"notests": true
@@ -495,7 +495,7 @@
 			"importpath": "golang.org/x/net/netutil",
 			"repository": "https://go.googlesource.com/net",
 			"vcs": "git",
-			"revision": "45e771701b814666a7eb299e6c7a57d0b1799e91",
+			"revision": "8fd7f25955530b92e73e9e1932a41b522b22ccd9",
 			"branch": "master",
 			"path": "/netutil",
 			"notests": true
@@ -513,7 +513,7 @@
 			"importpath": "golang.org/x/text",
 			"repository": "https://go.googlesource.com/text",
 			"vcs": "git",
-			"revision": "a49bea13b776691cb1b49873e5d8df96ec74831a",
+			"revision": "fd889fe3a20f4878f5f47672fd3ca5b86db005e2",
 			"branch": "master",
 			"notests": true
 		},

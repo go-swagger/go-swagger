@@ -157,6 +157,19 @@ type operationGenerator struct {
 	GenOpts              *GenOpts
 }
 
+func intersectTags(left, right []string) (filtered []string) {
+	if len(right) == 0 {
+		filtered = left[:]
+		return
+	}
+	for _, l := range left {
+		if containsString(right, l) {
+			filtered = append(filtered, l)
+		}
+	}
+	return
+}
+
 func (o *operationGenerator) Generate() error {
 	// Build a list of codegen operations based on the tags,
 	// the tag decides the actual package for an operation
@@ -185,38 +198,22 @@ func (o *operationGenerator) Generate() error {
 	bldr.DefaultConsumes = o.DefaultConsumes
 	bldr.IncludeValidator = o.IncludeValidator
 
-	for _, tag := range o.Operation.Tags {
-		if len(o.Tags) == 0 {
-			bldr.APIPackage = o.GenOpts.LanguageOpts.MangleName(swag.ToFileName(tag), o.APIPackage)
-			op, err := bldr.MakeOperation()
-			if err != nil {
-				return err
-			}
-
-			operations = append(operations, op)
-			continue
-		}
-		for _, ft := range o.Tags {
-			if ft == tag {
-				bldr.APIPackage = o.GenOpts.LanguageOpts.MangleName(swag.ToFileName(tag), o.APIPackage)
-				op, err := bldr.MakeOperation()
-				if err != nil {
-					return err
-				}
-				op.Tags = o.Tags
-				operations = append(operations, op)
-				break
-			}
-		}
+	bldr.APIPackage = bldr.RootAPIPackage
+	st := o.Tags
+	if o.GenOpts != nil {
+		st = o.GenOpts.Tags
 	}
-	if len(operations) == 0 {
-		bldr.APIPackage = o.APIPackage
-		op, err := bldr.MakeOperation()
-		if err != nil {
-			return err
-		}
-		operations = append(operations, op)
+	intersected := intersectTags(o.Operation.Tags, st)
+	if len(intersected) == 1 {
+		tag := intersected[0]
+		bldr.APIPackage = o.GenOpts.LanguageOpts.MangleName(swag.ToFileName(tag), o.APIPackage)
 	}
+	op, err := bldr.MakeOperation()
+	if err != nil {
+		return err
+	}
+	op.Tags = intersected
+	operations = append(operations, op)
 	sort.Sort(operations)
 
 	for _, op := range operations {

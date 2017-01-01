@@ -1,0 +1,39 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Test
+  description: "Test"
+  termsOfService: 'test.com/'
+host: api.test.com
+basePath: /v1
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /payment/{invoice_id}/payments/{payment_id}:
+    get:
+      description: Get payment info
+      tags:
+        - Invoices
+        - Payments
+        - Drama
+        - Failure
+        - HotMess
+      operationId: getPaymentByID
+      parameters:
+        - name: invoice_id
+          in: path
+          description: Invoice ID
+          required: true
+          type: string
+        - name: payment_id
+          in: path
+          description: Payment ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Simple response

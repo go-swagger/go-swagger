@@ -8,13 +8,17 @@ fi
 
 for dir in $(ls fixtures/canary)
 do
-  pushd fixtures/canary/$dir
-  rm -rf client models restapi cmd
-  swagger generate client
-  go test ./...
-  if [ $dir != 'kubernetes' ] && [ $dir != 'ms-cog-sci' ] ; then
-    swagger generate server
+  if [ $dir != "bitbucket.org" ]; then
+    pushd fixtures/canary/$dir
+    rm -rf client models restapi cmd
+    swagger generate client
     go test ./...
+    if [ $dir != 'kubernetes' ] && [ $dir != 'ms-cog-sci' ] ; then
+      swagger generate server
+      go test ./...
+    fi
+    popd
+  else
+    echo "$dir is disabled for now"
   fi
-  popd
 done

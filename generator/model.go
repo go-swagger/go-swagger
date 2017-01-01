@@ -805,13 +805,26 @@ func newMapStack(context *schemaGenContext) (first, last *mapStack, err error) {
 
 func (mt *mapStack) Build() error {
 	if mt.NewObj == nil && mt.ValueRef == nil && mt.Next == nil && mt.Previous == nil {
-		cp := mt.Context.NewAdditionalProperty(*mt.Type.AdditionalProperties.Schema)
-		cp.Required = true
+		csch := mt.Type.AdditionalProperties.Schema
+		cp := mt.Context.NewAdditionalProperty(*csch)
+		d := mt.Context.TypeResolver.Doc
+		asch, err := analysis.Schema(analysis.SchemaOpts{
+			Root:     d.Spec(),
+			BasePath: d.SpecFilePath(),
+			Schema:   csch,
+		})
+		if err != nil {
+			return err
+		}
+		cp.Required = !asch.IsSimpleSchema && !asch.IsMap
 		if err := cp.makeGenSchema(); err != nil {
 			return err
 		}
 		mt.Context.MergeResult(cp, false)
 		mt.Context.GenSchema.AdditionalProperties = &cp.GenSchema
+		if Debug {
+			log.Println("early mapstack exit, nullable:", cp.GenSchema.IsNullable)
+		}
 		return nil
 	}
 	cur := mt
@@ -863,7 +876,7 @@ func (mt *mapStack) Build() error {
 }
 
 func (mt *mapStack) HasMore() bool {
-	return mt.Type.AdditionalProperties != nil && (mt.Type.AdditionalProperties.Allows || mt.Type.AdditionalProperties.Schema != nil)
+	return mt.Type.AdditionalProperties != nil && (mt.Type.AdditionalProperties.Schema != nil || mt.Type.AdditionalProperties.Allows)
 }
 
 func (mt *mapStack) Dict() map[string]interface{} {
@@ -886,7 +899,7 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 		return nil
 	}
 	addp := *sg.Schema.AdditionalProperties
-	wantsAdditional := addp.Allows || addp.Schema != nil
+	wantsAdditional := addp.Schema != nil || addp.Allows
 	sg.GenSchema.HasAdditionalProperties = wantsAdditional
 	if !wantsAdditional {
 		return nil
@@ -899,13 +912,42 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 	}
 
 	if addp.Schema == nil {
+		if addp.Allows { // map with interface{} value
+			addp.Schema = &spec.Schema{}
+			addp.Schema.Typed("object", "")
+			sg.GenSchema.HasAdditionalProperties = true
+			sg.GenSchema.IsComplexObject = false
+			sg.GenSchema.IsMap = true
+
+			sg.GenSchema.ValueExpression += "." + swag.ToGoName(sg.Name+" additionalProperties")
+			cp := sg.NewAdditionalProperty(*addp.Schema)
+			cp.Name += "AdditionalProperties"
+			cp.Required = false
+			if err := cp.makeGenSchema(); err != nil {
+				return err
+			}
+			sg.MergeResult(cp, false)
+			sg.GenSchema.AdditionalProperties = &cp.GenSchema
+			if Debug {
+				log.Println("added interface{} schema for additionalProperties[allows == true]", cp.GenSchema.IsInterface)
+			}
+		}
 		return nil
 	}
 
 	if !sg.GenSchema.IsMap && (sg.GenSchema.IsAdditionalProperties && sg.Named) {
 		sg.GenSchema.ValueExpression += "." + swag.ToGoName(sg.GenSchema.Name)
 		comprop := sg.NewAdditionalProperty(*addp.Schema)
-		comprop.Required = true
+		d := sg.TypeResolver.Doc
+		asch, err := analysis.Schema(analysis.SchemaOpts{
+			Root:     d.Spec(),
+			BasePath: d.SpecFilePath(),
+			Schema:   addp.Schema,
+		})
+		if err != nil {
+			return err
+		}
+		comprop.Required = !asch.IsSimpleSchema && !asch.IsMap
 		if err := comprop.makeGenSchema(); err != nil {
 			return err
 		}
@@ -1021,11 +1063,8 @@ func (sg *schemaGenContext) buildArray() error {
 	elProp.GenSchema.Suffix = "Items"
 	sg.GenSchema.GoType = "[]" + elProp.GenSchema.GoType
 
-	// TODO: this is probably not right. Should just respect what type resolvers said
-	nn := elProp.GenSchema.IsNullable
-
 	elProp.GenSchema.IsNullable = tpe.IsNullable && !tpe.HasDiscriminator
-	if nn && !tpe.HasDiscriminator && !tpe.IsPrimitive {
+	if elProp.GenSchema.IsNullable {
 		sg.GenSchema.GoType = "[]*" + elProp.GenSchema.GoType
 	}
 
@@ -1335,13 +1374,24 @@ func (sg *schemaGenContext) makeGenSchema() error {
 
 	prev := sg.GenSchema
 	if sg.Untyped {
+		if Debug {
+			log.Println("untyped resolve", sg.Named || sg.IsTuple || sg.Required || sg.GenSchema.Required)
+			b, _ := json.MarshalIndent(sg.Schema, "", "  ")
+			log.Println(string(b))
+		}
 		tpe, err = sg.TypeResolver.ResolveSchema(nil, !sg.Named, sg.Named || sg.IsTuple || sg.Required || sg.GenSchema.Required)
 	} else {
+		if Debug {
+			log.Printf("typed resolve, isAnonymous(%t), n: %t, t: %t, sgr: %t, sr: %t, isRequired(%t)", !sg.Named, sg.Named, sg.IsTuple, sg.Required, sg.GenSchema.Required, sg.Named || sg.IsTuple || sg.Required || sg.GenSchema.Required)
+			b, _ := json.MarshalIndent(sg.Schema, "", "  ")
+			log.Println(string(b))
+		}
 		tpe, err = sg.TypeResolver.ResolveSchema(&sg.Schema, !sg.Named, sg.Named || sg.IsTuple || sg.Required || sg.GenSchema.Required)
 	}
 	if err != nil {
 		return err
 	}
+	otn := tpe.IsNullable
 	tpe.IsNullable = tpe.IsNullable || nullableOverride
 	sg.GenSchema.resolvedType = tpe
 	sg.GenSchema.IsComplexObject = prev.IsComplexObject
@@ -1350,7 +1400,9 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.IsBaseType = sg.GenSchema.HasDiscriminator
 
 	if Debug {
-		log.Println("gschema nnullable", sg.GenSchema.IsNullable)
+		log.Println("gschema nnullable", sg.GenSchema.IsNullable, otn, nullableOverride)
+		b, _ := json.MarshalIndent(sg.Schema, "", "  ")
+		log.Println(string(b))
 	}
 	if err := sg.buildProperties(); err != nil {
 		return err

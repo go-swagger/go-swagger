@@ -678,8 +678,8 @@ func TestGenParameter_Issue628_Collection(t *testing.T) {
 				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
 				if assert.NoError(err) {
 					res := string(ff)
-					assertInCode(t, `workspace_idI, err := formats.Parse(workspace_idIV)`, res)
-					assertInCode(t, `workspace_idIR = append(workspace_idIR, workspace_idI)`, res)
+					assertInCode(t, `workspaceIDI, err := formats.Parse(workspaceIDIV)`, res)
+					assertInCode(t, `workspaceIDIR = append(workspaceIDIR, workspaceIDI)`, res)
 				} else {
 					fmt.Println(buf.String())
 				}
@@ -800,6 +800,52 @@ func TestGenParameter_Issue731_Details(t *testing.T) {
 				if assert.NoError(err) {
 					res := string(ff)
 					assertInCode(t, `r.SetPathParam("id", o.ID.String())`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestGenParameter_Issue809_Client(t *testing.T) {
+	assert := assert.New(t)
+
+	gen, err := methodPathOpBuilder("get", "/foo", "../fixtures/bugs/809/swagger.yml")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("clientParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertInCode(t, "valuesGroups", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestGenParameter_Issue809_Server(t *testing.T) {
+	assert := assert.New(t)
+
+	gen, err := methodPathOpBuilder("get", "/foo", "../fixtures/bugs/809/swagger.yml")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("serverParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertInCode(t, "groupsIC := rawData", res)
 				} else {
 					fmt.Println(buf.String())
 				}

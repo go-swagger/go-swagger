@@ -555,27 +555,27 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		bldr.RootAPIPackage = swag.ToFileName(a.APIPackage)
 		bldr.WithContext = a.GenOpts != nil && a.GenOpts.WithContext
 
-		if len(o.Tags) > 0 {
-			for _, tag := range o.Tags {
-				tns[tag] = struct{}{}
-				bldr.APIPackage = a.GenOpts.LanguageOpts.MangleName(swag.ToFileName(tag), a.APIPackage)
-				op, err := bldr.MakeOperation()
-				if err != nil {
-					return GenApp{}, err
-				}
-				op.Tags = o.Tags
-				op.ReceiverName = receiver
-				genOps = append(genOps, op)
-			}
-		} else {
-			bldr.APIPackage = swag.ToFileName(a.APIPackage)
-			op, err := bldr.MakeOperation()
-			if err != nil {
-				return GenApp{}, err
-			}
-			op.ReceiverName = receiver
-			genOps = append(genOps, op)
+		bldr.APIPackage = bldr.RootAPIPackage
+		st := o.Tags
+		if a.GenOpts != nil {
+			st = a.GenOpts.Tags
 		}
+		intersected := intersectTags(o.Tags, st)
+		if len(intersected) == 1 {
+			tag := intersected[0]
+			bldr.APIPackage = a.GenOpts.LanguageOpts.MangleName(swag.ToFileName(tag), a.APIPackage)
+			for _, t := range intersected {
+				tns[t] = struct{}{}
+			}
+		}
+		op, err := bldr.MakeOperation()
+		if err != nil {
+			return GenApp{}, err
+		}
+		op.ReceiverName = receiver
+		op.Tags = intersected
+		genOps = append(genOps, op)
+
 	}
 	for k := range tns {
 		importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage, swag.ToFileName(k)))

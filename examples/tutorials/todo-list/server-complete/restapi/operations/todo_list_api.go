@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 
+	errors "github.com/go-openapi/errors"
 	loads "github.com/go-openapi/loads"
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
@@ -27,6 +28,21 @@ func NewTodoListAPI(spec *loads.Document) *TodoListAPI {
 		defaultProduces: "application/json",
 		ServerShutdown:  func() {},
 		spec:            spec,
+		ServeError:      errors.ServeError,
+		JSONConsumer:    runtime.JSONConsumer(),
+		JSONProducer:    runtime.JSONProducer(),
+		TodosAddOneHandler: todos.AddOneHandlerFunc(func(params todos.AddOneParams) middleware.Responder {
+			return middleware.NotImplemented("operation TodosAddOne has not yet been implemented")
+		}),
+		TodosDestroyOneHandler: todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams) middleware.Responder {
+			return middleware.NotImplemented("operation TodosDestroyOne has not yet been implemented")
+		}),
+		TodosFindTodosHandler: todos.FindTodosHandlerFunc(func(params todos.FindTodosParams) middleware.Responder {
+			return middleware.NotImplemented("operation TodosFindTodos has not yet been implemented")
+		}),
+		TodosUpdateOneHandler: todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams) middleware.Responder {
+			return middleware.NotImplemented("operation TodosUpdateOne has not yet been implemented")
+		}),
 	}
 }
 
