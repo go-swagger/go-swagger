@@ -919,9 +919,9 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 			sg.GenSchema.IsComplexObject = false
 			sg.GenSchema.IsMap = true
 
-			sg.GenSchema.ValueExpression += "." + swag.ToGoName("additionalProperties")
+			sg.GenSchema.ValueExpression += "." + swag.ToGoName(sg.Name+" additionalProperties")
 			cp := sg.NewAdditionalProperty(*addp.Schema)
-			cp.Name = "additionalProperties"
+			cp.Name += "AdditionalProperties"
 			cp.Required = false
 			if err := cp.makeGenSchema(); err != nil {
 				return err

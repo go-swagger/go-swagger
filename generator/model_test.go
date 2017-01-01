@@ -1916,10 +1916,9 @@ func TestGenModel_Issue822(t *testing.T) {
 				ct, err := opts.LanguageOpts.FormatContent("pet.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
-					fmt.Println(res)
-					assertInCode(t, `AdditionalProperties map[string]interface{}`, res)
-					assertInCode(t, `m.AdditionalProperties = result`, res)
-					assertInCode(t, `additional, err := json.Marshal(m.AdditionalProperties)`, res)
+					assertInCode(t, `PetAdditionalProperties map[string]interface{}`, res)
+					assertInCode(t, `m.PetAdditionalProperties = result`, res)
+					assertInCode(t, `additional, err := json.Marshal(m.PetAdditionalProperties)`, res)
 				} else {
 					fmt.Println(buf.String())
 				}
