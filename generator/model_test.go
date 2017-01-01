@@ -370,7 +370,7 @@ func TestGenerateModel_NotaWithName(t *testing.T) {
 			if assert.NoError(t, err) {
 				res := buf.String()
 				assertInCode(t, "type "+k+" struct {", res)
-				assertInCode(t, k+" map[string]*int32 `json:\"-\"`", res)
+				assertInCode(t, k+" map[string]int32 `json:\"-\"`", res)
 				assertInCode(t, "Name *string `json:\"name\"`", res)
 				assertInCode(t, k+") UnmarshalJSON", res)
 				assertInCode(t, k+") MarshalJSON", res)
@@ -379,7 +379,7 @@ func TestGenerateModel_NotaWithName(t *testing.T) {
 				assertInCode(t, "json.Marshal(m."+k+")", res)
 				assertInCode(t, "json.Unmarshal(data, &stage1)", res)
 				assertInCode(t, "json.Unmarshal(data, &stage2)", res)
-				assertInCode(t, "json.Unmarshal(v, toadd)", res)
+				assertInCode(t, "json.Unmarshal(v, &toadd)", res)
 				assertInCode(t, "result[k] = toadd", res)
 				assertInCode(t, "m."+k+" = result", res)
 				for _, p := range genModel.Properties {
@@ -647,7 +647,7 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 					assertInCode(t, "type "+k+" struct {", res)
 					assertInCode(t, "Data *"+k+"Data `json:\"data,omitempty\"`", res)
 					assertInCode(t, "type "+k+"Data struct {", res)
-					assertInCode(t, k+"Data map[string]*string `json:\"-\"`", res)
+					assertInCode(t, k+"Data map[string]string `json:\"-\"`", res)
 					assertInCode(t, "Name *string `json:\"name\"`", res)
 					assertInCode(t, k+"Data) UnmarshalJSON", res)
 					assertInCode(t, k+"Data) MarshalJSON", res)
@@ -656,7 +656,7 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 					assertInCode(t, "json.Marshal(m."+k+"Data)", res)
 					assertInCode(t, "json.Unmarshal(data, &stage1)", res)
 					assertInCode(t, "json.Unmarshal(data, &stage2)", res)
-					assertInCode(t, "json.Unmarshal(v, toadd)", res)
+					assertInCode(t, "json.Unmarshal(v, &toadd)", res)
 					assertInCode(t, "result[k] = toadd", res)
 					assertInCode(t, "m."+k+"Data = result", res)
 					for _, p := range sch.Properties {
@@ -1382,8 +1382,8 @@ func TestGenerateModel_WithAllOf(t *testing.T) {
 					assertInCode(t, "P1 *strfmt.Date `json:\"-\"`", res)
 					assertInCode(t, "Opinion string `json:\"opinion,omitempty\"`", res)
 					assertInCode(t, "WithAllOfAO5Tuple5Items []strfmt.Password `json:\"-\"`", res)
-					assertInCode(t, "AO1 map[string]*int32 `json:\"-\"`", res)
-					assertInCode(t, "WithAllOfAO2P2 map[string]*int64 `json:\"-\"`", res)
+					assertInCode(t, "AO1 map[string]int32 `json:\"-\"`", res)
+					assertInCode(t, "WithAllOfAO2P2 map[string]int64 `json:\"-\"`", res)
 				}
 			}
 		}
@@ -1874,6 +1874,29 @@ func TestImports_ExistingModel(t *testing.T) {
 		genModel, err = makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.Nil(t, genModel)
+		}
+	}
+}
+
+func TestGenModel_Issue786(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/786/swagger.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "MyFirstObject"
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+		if assert.NoError(t, err) && assert.False(t, genModel.Properties[0].AdditionalProperties.IsNullable) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("MyFirstObject.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, `m.validateEntreeChoiceValueEnum("entree_choice"+"."+k, "body", m.EntreeChoice[k])`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
 		}
 	}
 }
