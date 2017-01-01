@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 
+	errors "github.com/go-openapi/errors"
 	loads "github.com/go-openapi/loads"
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
@@ -28,6 +29,26 @@ func NewTodoListAPI(spec *loads.Document) *TodoListAPI {
 		defaultProduces: "application/json",
 		ServerShutdown:  func() {},
 		spec:            spec,
+		ServeError:      errors.ServeError,
+		JSONConsumer:    runtime.JSONConsumer(),
+		JSONProducer:    runtime.JSONProducer(),
+		TodosAddOneHandler: todos.AddOneHandlerFunc(func(params todos.AddOneParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation TodosAddOne has not yet been implemented")
+		}),
+		TodosDestroyOneHandler: todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation TodosDestroyOne has not yet been implemented")
+		}),
+		TodosFindHandler: todos.FindHandlerFunc(func(params todos.FindParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation TodosFind has not yet been implemented")
+		}),
+		TodosUpdateOneHandler: todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation TodosUpdateOne has not yet been implemented")
+		}),
+
+		// Applies when the "x-todolist-token" header is set
+		KeyAuth: func(token string) (interface{}, error) {
+			return nil, errors.NotImplemented("api key auth (key) x-todolist-token from header param [x-todolist-token] has not yet been implemented")
+		},
 	}
 }
 

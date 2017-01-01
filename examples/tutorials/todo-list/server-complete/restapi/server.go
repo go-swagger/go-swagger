@@ -3,6 +3,7 @@ package restapi
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"io/ioutil"
 	"log"
 	"net"
@@ -42,7 +43,7 @@ func NewServer(api *operations.TodoListAPI) *Server {
 	return s
 }
 
-// ConfigureAPI configures the API and handlers. Needs to be called before Serve
+// ConfigureAPI configures the API and handlers.
 func (s *Server) ConfigureAPI() {
 	if s.api != nil {
 		s.handler = configureAPI(s.api)
@@ -142,6 +143,15 @@ func (s *Server) Serve() (err error) {
 		if err := s.Listen(); err != nil {
 			return err
 		}
+	}
+
+	// set default handler, if none is set
+	if s.handler == nil {
+		if s.api == nil {
+			return errors.New("can't create the default handler, as no api is set")
+		}
+
+		s.SetHandler(s.api.Serve(nil))
 	}
 
 	var wg sync.WaitGroup
