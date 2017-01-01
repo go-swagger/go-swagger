@@ -1900,3 +1900,30 @@ func TestGenModel_Issue786(t *testing.T) {
 		}
 	}
 }
+
+func TestGenModel_Issue822(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/822/swagger.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "Pet"
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+		ap := genModel.AdditionalProperties
+		if assert.NoError(t, err) && assert.True(t, genModel.HasAdditionalProperties) && assert.NotNil(t, ap) && assert.False(t, ap.IsNullable) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("pet.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					fmt.Println(res)
+					assertInCode(t, `AdditionalProperties map[string]interface{}`, res)
+					assertInCode(t, `m.AdditionalProperties = result`, res)
+					assertInCode(t, `additional, err := json.Marshal(m.AdditionalProperties)`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}

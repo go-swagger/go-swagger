@@ -876,7 +876,7 @@ func (mt *mapStack) Build() error {
 }
 
 func (mt *mapStack) HasMore() bool {
-	return mt.Type.AdditionalProperties != nil && (mt.Type.AdditionalProperties.Allows || mt.Type.AdditionalProperties.Schema != nil)
+	return mt.Type.AdditionalProperties != nil && (mt.Type.AdditionalProperties.Schema != nil || mt.Type.AdditionalProperties.Allows)
 }
 
 func (mt *mapStack) Dict() map[string]interface{} {
@@ -912,6 +912,26 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 	}
 
 	if addp.Schema == nil {
+		if addp.Allows { // map with interface{} value
+			addp.Schema = &spec.Schema{}
+			addp.Schema.Typed("object", "")
+			sg.GenSchema.HasAdditionalProperties = true
+			sg.GenSchema.IsComplexObject = false
+			sg.GenSchema.IsMap = true
+
+			sg.GenSchema.ValueExpression += "." + swag.ToGoName("additionalProperties")
+			cp := sg.NewAdditionalProperty(*addp.Schema)
+			cp.Name = "additionalProperties"
+			cp.Required = false
+			if err := cp.makeGenSchema(); err != nil {
+				return err
+			}
+			sg.MergeResult(cp, false)
+			sg.GenSchema.AdditionalProperties = &cp.GenSchema
+			if Debug {
+				log.Println("added interface{} schema for additionalProperties[allows == true]", cp.GenSchema.IsInterface)
+			}
+		}
 		return nil
 	}
 
