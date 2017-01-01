@@ -157,6 +157,15 @@ type operationGenerator struct {
 	GenOpts              *GenOpts
 }
 
+func intersectTags(left, right []string) (filtered []string) {
+	for _, l := range left {
+		if containsString(right, l) {
+			filtered = append(filtered, l)
+		}
+	}
+	return
+}
+
 func (o *operationGenerator) Generate() error {
 	// Build a list of codegen operations based on the tags,
 	// the tag decides the actual package for an operation
@@ -186,27 +195,14 @@ func (o *operationGenerator) Generate() error {
 	bldr.IncludeValidator = o.IncludeValidator
 
 	for _, tag := range o.Operation.Tags {
-		if len(o.Tags) == 0 {
+		if len(o.Tags) == 0 || containsString(o.Tags, tag) {
 			bldr.APIPackage = o.GenOpts.LanguageOpts.MangleName(swag.ToFileName(tag), o.APIPackage)
 			op, err := bldr.MakeOperation()
 			if err != nil {
 				return err
 			}
-
-			operations = append(operations, op)
-			continue
-		}
-		for _, ft := range o.Tags {
-			if ft == tag {
-				bldr.APIPackage = o.GenOpts.LanguageOpts.MangleName(swag.ToFileName(tag), o.APIPackage)
-				op, err := bldr.MakeOperation()
-				if err != nil {
-					return err
-				}
-				op.Tags = o.Tags
-				operations = append(operations, op)
-				break
-			}
+			op.Tags = intersectTags(o.Operation.Tags, o.Tags)
+			break
 		}
 	}
 	if len(operations) == 0 {

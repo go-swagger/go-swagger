@@ -557,15 +557,26 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 		if len(o.Tags) > 0 {
 			for _, tag := range o.Tags {
-				tns[tag] = struct{}{}
+				if a.GenOpts != nil && (len(a.GenOpts.Tags) == 0 || !containsString(a.GenOpts.Tags, tag)) {
+					continue
+				}
+
 				bldr.APIPackage = a.GenOpts.LanguageOpts.MangleName(swag.ToFileName(tag), a.APIPackage)
 				op, err := bldr.MakeOperation()
 				if err != nil {
 					return GenApp{}, err
 				}
-				op.Tags = o.Tags
+				st := o.Tags
+				if a.GenOpts != nil {
+					st = a.GenOpts.Tags
+				}
+				op.Tags = intersectTags(o.Tags, st)
+				for _, t := range op.Tags {
+					tns[t] = struct{}{}
+				}
 				op.ReceiverName = receiver
 				genOps = append(genOps, op)
+				break
 			}
 		} else {
 			bldr.APIPackage = swag.ToFileName(a.APIPackage)
