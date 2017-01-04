@@ -79,7 +79,7 @@
 			"importpath": "github.com/go-openapi/errors",
 			"repository": "https://github.com/go-openapi/errors",
 			"vcs": "git",
-			"revision": "49fe8b3a0e0d32a617d8d50c67f856ad6e45b28b",
+			"revision": "fc3f73a224499b047eda7191e5d22e1e9631e86f",
 			"branch": "master",
 			"notests": true
 		},
