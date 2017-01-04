@@ -74,12 +74,3 @@ func InvalidResponseFormat(value string, allowed []string) *Validation {
 		message: fmt.Sprintf(responseFormatFail, allowed),
 	}
 }
-
-// Validate error message name for aliased property
-func (e *Validation) ValidateName(name string) *Validation {
-	if e.Name == "" && name != "" {
-		e.Name = name
-		e.message = name+e.message
-	}
-	return e
-}
