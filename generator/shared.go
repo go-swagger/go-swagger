@@ -38,7 +38,7 @@ import (
 	"golang.org/x/tools/imports"
 )
 
-//go:generate go-bindata -pkg=generator -ignore=.*\.sw? ./templates/...
+//go:generate go-bindata -mode 420 -modtime 1482416923 -pkg=generator -ignore=.*\.sw? ./templates/...
 
 // LanguageOpts to describe a language to the code generator
 type LanguageOpts struct {
