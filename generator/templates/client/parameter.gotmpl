@@ -65,6 +65,19 @@ func New{{ pascalize .Name }}ParamsWithContext(ctx context.Context) *{{ pascaliz
   }
 }
 
+// New{{ pascalize .Name }}ParamsWithHTTPClient creates a new {{ pascalize .Name }}Params object
+// with the default values initialized, and the ability to set a custom HTTPClient for a request
+func New{{ pascalize .Name }}ParamsWithHTTPClient(client *http.Client) *{{ pascalize .Name }}Params {
+  {{ if .Params }}var (
+  {{ range .Params }}{{ if .HasDefault }}{{ if not .IsFileParam }}{{ camelize .Name}}Default = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
+  {{ end }}{{ end }}{{end}}
+  ){{ end }}
+  return &{{ pascalize .Name}}Params{
+  {{ range .Params }}{{ if .HasDefault }}{{ pascalize .Name}}: {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (or .IsNullable  ) }}&{{ end }}{{ camelize .Name }}Default,
+  {{ end }}{{ end }}HTTPClient: client,
+  }
+}
+
 /*{{ pascalize .Name }}Params contains all the parameters to send to the API endpoint
 for the {{ humanize .Name }} operation typically these are written to a http.Request
 */
@@ -104,6 +117,16 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) SetContext(ctx context.C
   {{ .ReceiverName }}.Context = ctx
 }
 
+// WithHTTPClient adds the HTTPClient to the {{ humanize .Name }} params
+func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WithHTTPClient(client *http.Client) *{{ pascalize .Name }}Params {
+  {{ .ReceiverName }}.SetHTTPClient(client)
+  return {{ .ReceiverName }}
+}
+
+// SetHTTPClient adds the HTTPClient to the {{ humanize .Name }} params
+func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) SetHTTPClient(client *http.Client) {
+  {{ .ReceiverName }}.HTTPClient = client
+}
 
 {{ range .Params }}
 // With{{ pascalize .ID }} adds the {{ varname .Name  }} to the {{ humanize $.Name }} params
