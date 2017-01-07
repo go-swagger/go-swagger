@@ -387,10 +387,11 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		prin = iface
 	}
 
-	var extra []GenSchema
+	var extra GenSchemaList
 	for _, sch := range b.ExtraSchemas {
 		extra = append(extra, sch)
 	}
+	sort.Sort(extra)
 
 	swsp := resolver.Doc.Spec()
 	var extraSchemes []string
