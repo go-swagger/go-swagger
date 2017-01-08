@@ -26,9 +26,12 @@ type Client struct {
 AddOne add one API
 */
 func (a *Client) AddOne(params *AddOneParams, authInfo runtime.ClientAuthInfoWriter) (*AddOneCreated, error) {
-	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewAddOneParams()
+	}
+
+	if err := params.Validate(a.formats); err != nil {
+		return nil, err
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
@@ -55,9 +58,12 @@ func (a *Client) AddOne(params *AddOneParams, authInfo runtime.ClientAuthInfoWri
 DestroyOne destroy one API
 */
 func (a *Client) DestroyOne(params *DestroyOneParams, authInfo runtime.ClientAuthInfoWriter) (*DestroyOneNoContent, error) {
-	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewDestroyOneParams()
+	}
+
+	if err := params.Validate(a.formats); err != nil {
+		return nil, err
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
@@ -84,9 +90,12 @@ func (a *Client) DestroyOne(params *DestroyOneParams, authInfo runtime.ClientAut
 Find find API
 */
 func (a *Client) Find(params *FindParams, authInfo runtime.ClientAuthInfoWriter) (*FindOK, error) {
-	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewFindParams()
+	}
+
+	if err := params.Validate(a.formats); err != nil {
+		return nil, err
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
@@ -113,9 +122,12 @@ func (a *Client) Find(params *FindParams, authInfo runtime.ClientAuthInfoWriter)
 UpdateOne update one API
 */
 func (a *Client) UpdateOne(params *UpdateOneParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateOneOK, error) {
-	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateOneParams()
+	}
+
+	if err := params.Validate(a.formats); err != nil {
+		return nil, err
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{

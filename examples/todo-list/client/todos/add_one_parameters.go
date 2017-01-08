@@ -48,12 +48,23 @@ func NewAddOneParamsWithContext(ctx context.Context) *AddOneParams {
 	}
 }
 
+// NewAddOneParamsWithHTTPClient creates a new AddOneParams object
+// with the default values initialized, and the ability to set a custom HTTPClient for a request
+func NewAddOneParamsWithHTTPClient(client *http.Client) *AddOneParams {
+	var ()
+	return &AddOneParams{
+		HTTPClient: client,
+	}
+}
+
 /*AddOneParams contains all the parameters to send to the API endpoint
 for the add one operation typically these are written to a http.Request
 */
 type AddOneParams struct {
 
-	/*Body*/
+	/*Body
+	  In: body
+	*/
 	Body *models.Item
 
 	timeout    time.Duration
@@ -83,6 +94,17 @@ func (o *AddOneParams) SetContext(ctx context.Context) {
 	o.Context = ctx
 }
 
+// WithHTTPClient adds the HTTPClient to the add one params
+func (o *AddOneParams) WithHTTPClient(client *http.Client) *AddOneParams {
+	o.SetHTTPClient(client)
+	return o
+}
+
+// SetHTTPClient adds the HTTPClient to the add one params
+func (o *AddOneParams) SetHTTPClient(client *http.Client) {
+	o.HTTPClient = client
+}
+
 // WithBody adds the body to the add one params
 func (o *AddOneParams) WithBody(body *models.Item) *AddOneParams {
 	o.SetBody(body)
@@ -92,6 +114,18 @@ func (o *AddOneParams) WithBody(body *models.Item) *AddOneParams {
 // SetBody adds the body to the add one params
 func (o *AddOneParams) SetBody(body *models.Item) {
 	o.Body = body
+}
+
+// Validate these params
+func (o *AddOneParams) Validate(formats strfmt.Registry) error {
+
+	if o.Body != nil {
+		if err := o.Body.Validate(formats); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // WriteToRequest writes these params to a swagger request

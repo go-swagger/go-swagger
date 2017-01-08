@@ -48,6 +48,15 @@ func NewCreateTaskParamsWithContext(ctx context.Context) *CreateTaskParams {
 	}
 }
 
+// NewCreateTaskParamsWithHTTPClient creates a new CreateTaskParams object
+// with the default values initialized, and the ability to set a custom HTTPClient for a request
+func NewCreateTaskParamsWithHTTPClient(client *http.Client) *CreateTaskParams {
+	var ()
+	return &CreateTaskParams{
+		HTTPClient: client,
+	}
+}
+
 /*CreateTaskParams contains all the parameters to send to the API endpoint
 for the create task operation typically these are written to a http.Request
 */
@@ -55,7 +64,8 @@ type CreateTaskParams struct {
 
 	/*Body
 	  The task to create
-
+	  Required: true
+	  In: body
 	*/
 	Body *models.Task
 
@@ -86,6 +96,17 @@ func (o *CreateTaskParams) SetContext(ctx context.Context) {
 	o.Context = ctx
 }
 
+// WithHTTPClient adds the HTTPClient to the create task params
+func (o *CreateTaskParams) WithHTTPClient(client *http.Client) *CreateTaskParams {
+	o.SetHTTPClient(client)
+	return o
+}
+
+// SetHTTPClient adds the HTTPClient to the create task params
+func (o *CreateTaskParams) SetHTTPClient(client *http.Client) {
+	o.HTTPClient = client
+}
+
 // WithBody adds the body to the create task params
 func (o *CreateTaskParams) WithBody(body *models.Task) *CreateTaskParams {
 	o.SetBody(body)
@@ -95,6 +116,18 @@ func (o *CreateTaskParams) WithBody(body *models.Task) *CreateTaskParams {
 // SetBody adds the body to the create task params
 func (o *CreateTaskParams) SetBody(body *models.Task) {
 	o.Body = body
+}
+
+// Validate these params
+func (o *CreateTaskParams) Validate(formats strfmt.Registry) error {
+
+	if o.Body != nil {
+		if err := o.Body.Validate(formats); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // WriteToRequest writes these params to a swagger request

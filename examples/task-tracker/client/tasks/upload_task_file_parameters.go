@@ -48,6 +48,15 @@ func NewUploadTaskFileParamsWithContext(ctx context.Context) *UploadTaskFilePara
 	}
 }
 
+// NewUploadTaskFileParamsWithHTTPClient creates a new UploadTaskFileParams object
+// with the default values initialized, and the ability to set a custom HTTPClient for a request
+func NewUploadTaskFileParamsWithHTTPClient(client *http.Client) *UploadTaskFileParams {
+	var ()
+	return &UploadTaskFileParams{
+		HTTPClient: client,
+	}
+}
+
 /*UploadTaskFileParams contains all the parameters to send to the API endpoint
 for the upload task file operation typically these are written to a http.Request
 */
@@ -55,17 +64,18 @@ type UploadTaskFileParams struct {
 
 	/*Description
 	  Extra information describing the file
-
+	  In: formData
 	*/
 	Description *string
 	/*File
 	  The file to upload
-
+	  In: formData
 	*/
 	File *os.File
 	/*ID
 	  The id of the item
-
+	  Required: true
+	  In: path
 	*/
 	ID int64
 
@@ -94,6 +104,17 @@ func (o *UploadTaskFileParams) WithContext(ctx context.Context) *UploadTaskFileP
 // SetContext adds the context to the upload task file params
 func (o *UploadTaskFileParams) SetContext(ctx context.Context) {
 	o.Context = ctx
+}
+
+// WithHTTPClient adds the HTTPClient to the upload task file params
+func (o *UploadTaskFileParams) WithHTTPClient(client *http.Client) *UploadTaskFileParams {
+	o.SetHTTPClient(client)
+	return o
+}
+
+// SetHTTPClient adds the HTTPClient to the upload task file params
+func (o *UploadTaskFileParams) SetHTTPClient(client *http.Client) {
+	o.HTTPClient = client
 }
 
 // WithDescription adds the description to the upload task file params
@@ -127,6 +148,12 @@ func (o *UploadTaskFileParams) WithID(id int64) *UploadTaskFileParams {
 // SetID adds the id to the upload task file params
 func (o *UploadTaskFileParams) SetID(id int64) {
 	o.ID = id
+}
+
+// Validate these params
+func (o *UploadTaskFileParams) Validate(formats strfmt.Registry) error {
+
+	return nil
 }
 
 // WriteToRequest writes these params to a swagger request

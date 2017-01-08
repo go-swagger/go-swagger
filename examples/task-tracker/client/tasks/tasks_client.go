@@ -30,9 +30,12 @@ Fenced codeblocks etc are supported through pygments.
 
 */
 func (a *Client) AddCommentToTask(params *AddCommentToTaskParams, authInfo runtime.ClientAuthInfoWriter) (*AddCommentToTaskCreated, error) {
-	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewAddCommentToTaskParams()
+	}
+
+	if err := params.Validate(a.formats); err != nil {
+		return nil, err
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
@@ -64,9 +67,12 @@ created the task.
 
 */
 func (a *Client) CreateTask(params *CreateTaskParams, authInfo runtime.ClientAuthInfoWriter) (*CreateTaskCreated, error) {
-	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewCreateTaskParams()
+	}
+
+	if err := params.Validate(a.formats); err != nil {
+		return nil, err
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
@@ -96,9 +102,12 @@ This is a soft delete and changes the task status to ignored.
 
 */
 func (a *Client) DeleteTask(params *DeleteTaskParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteTaskNoContent, error) {
-	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewDeleteTaskParams()
+	}
+
+	if err := params.Validate(a.formats); err != nil {
+		return nil, err
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
@@ -128,9 +137,12 @@ The comments require a size parameter.
 
 */
 func (a *Client) GetTaskComments(params *GetTaskCommentsParams) (*GetTaskCommentsOK, error) {
-	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetTaskCommentsParams()
+	}
+
+	if err := params.Validate(a.formats); err != nil {
+		return nil, err
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
@@ -162,9 +174,12 @@ There are also comments for each issue.
 
 */
 func (a *Client) GetTaskDetails(params *GetTaskDetailsParams) (*GetTaskDetailsOK, error) {
-	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetTaskDetailsParams()
+	}
+
+	if err := params.Validate(a.formats); err != nil {
+		return nil, err
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
@@ -196,9 +211,12 @@ to page through large result sets.
 
 */
 func (a *Client) ListTasks(params *ListTasksParams) (*ListTasksOK, error) {
-	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewListTasksParams()
+	}
+
+	if err := params.Validate(a.formats); err != nil {
+		return nil, err
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
@@ -229,9 +247,12 @@ last updated the task.
 
 */
 func (a *Client) UpdateTask(params *UpdateTaskParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateTaskOK, error) {
-	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateTaskParams()
+	}
+
+	if err := params.Validate(a.formats); err != nil {
+		return nil, err
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
@@ -260,9 +281,12 @@ UploadTaskFile adds a file to a task
 The file can't be larger than **5MB**
 */
 func (a *Client) UploadTaskFile(params *UploadTaskFileParams, authInfo runtime.ClientAuthInfoWriter) (*UploadTaskFileCreated, error) {
-	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUploadTaskFileParams()
+	}
+
+	if err := params.Validate(a.formats); err != nil {
+		return nil, err
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{

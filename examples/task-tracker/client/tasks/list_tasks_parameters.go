@@ -13,6 +13,7 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -56,6 +57,18 @@ func NewListTasksParamsWithContext(ctx context.Context) *ListTasksParams {
 	}
 }
 
+// NewListTasksParamsWithHTTPClient creates a new ListTasksParams object
+// with the default values initialized, and the ability to set a custom HTTPClient for a request
+func NewListTasksParamsWithHTTPClient(client *http.Client) *ListTasksParams {
+	var (
+		pageSizeDefault = int32(20)
+	)
+	return &ListTasksParams{
+		PageSize:   &pageSizeDefault,
+		HTTPClient: client,
+	}
+}
+
 /*ListTasksParams contains all the parameters to send to the API endpoint
 for the list tasks operation typically these are written to a http.Request
 */
@@ -63,22 +76,26 @@ type ListTasksParams struct {
 
 	/*PageSize
 	  Amount of items to return in a single page
-
+	  In: query
+	  Default: 20
 	*/
 	PageSize *int32
 	/*SinceID
 	  The last id that was seen.
-
+	  In: query
 	*/
 	SinceID *int64
 	/*Status
 	  the status to filter by
-
+	  Unique: true
+	  In: query
+	  Collection Format: pipes
 	*/
 	Status []string
 	/*Tags
 	  the tags to filter by
-
+	  Unique: true
+	  In: query
 	*/
 	Tags []string
 
@@ -107,6 +124,17 @@ func (o *ListTasksParams) WithContext(ctx context.Context) *ListTasksParams {
 // SetContext adds the context to the list tasks params
 func (o *ListTasksParams) SetContext(ctx context.Context) {
 	o.Context = ctx
+}
+
+// WithHTTPClient adds the HTTPClient to the list tasks params
+func (o *ListTasksParams) WithHTTPClient(client *http.Client) *ListTasksParams {
+	o.SetHTTPClient(client)
+	return o
+}
+
+// SetHTTPClient adds the HTTPClient to the list tasks params
+func (o *ListTasksParams) SetHTTPClient(client *http.Client) {
+	o.HTTPClient = client
 }
 
 // WithPageSize adds the pageSize to the list tasks params
@@ -142,6 +170,16 @@ func (o *ListTasksParams) SetStatus(status []string) {
 	o.Status = status
 }
 
+// Validate the status param
+func (o *ListTasksParams) validateStatus(formats strfmt.Registry) error {
+
+	if err := validate.UniqueItems("status", "query", o.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // WithTags adds the tags to the list tasks params
 func (o *ListTasksParams) WithTags(tags []string) *ListTasksParams {
 	o.SetTags(tags)
@@ -151,6 +189,29 @@ func (o *ListTasksParams) WithTags(tags []string) *ListTasksParams {
 // SetTags adds the tags to the list tasks params
 func (o *ListTasksParams) SetTags(tags []string) {
 	o.Tags = tags
+}
+
+// Validate the tags param
+func (o *ListTasksParams) validateTags(formats strfmt.Registry) error {
+
+	if err := validate.UniqueItems("tags", "query", o.Tags); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Validate these params
+func (o *ListTasksParams) Validate(formats strfmt.Registry) error {
+
+	if err := o.validateStatus(formats); err != nil {
+		return err
+	}
+	if err := o.validateTags(formats); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // WriteToRequest writes these params to a swagger request

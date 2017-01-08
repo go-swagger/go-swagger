@@ -47,6 +47,15 @@ func NewAddCommentToTaskParamsWithContext(ctx context.Context) *AddCommentToTask
 	}
 }
 
+// NewAddCommentToTaskParamsWithHTTPClient creates a new AddCommentToTaskParams object
+// with the default values initialized, and the ability to set a custom HTTPClient for a request
+func NewAddCommentToTaskParamsWithHTTPClient(client *http.Client) *AddCommentToTaskParams {
+	var ()
+	return &AddCommentToTaskParams{
+		HTTPClient: client,
+	}
+}
+
 /*AddCommentToTaskParams contains all the parameters to send to the API endpoint
 for the add comment to task operation typically these are written to a http.Request
 */
@@ -54,12 +63,13 @@ type AddCommentToTaskParams struct {
 
 	/*Body
 	  The comment to add
-
+	  In: body
 	*/
 	Body AddCommentToTaskBody
 	/*ID
 	  The id of the item
-
+	  Required: true
+	  In: path
 	*/
 	ID int64
 
@@ -90,6 +100,17 @@ func (o *AddCommentToTaskParams) SetContext(ctx context.Context) {
 	o.Context = ctx
 }
 
+// WithHTTPClient adds the HTTPClient to the add comment to task params
+func (o *AddCommentToTaskParams) WithHTTPClient(client *http.Client) *AddCommentToTaskParams {
+	o.SetHTTPClient(client)
+	return o
+}
+
+// SetHTTPClient adds the HTTPClient to the add comment to task params
+func (o *AddCommentToTaskParams) SetHTTPClient(client *http.Client) {
+	o.HTTPClient = client
+}
+
 // WithBody adds the body to the add comment to task params
 func (o *AddCommentToTaskParams) WithBody(body AddCommentToTaskBody) *AddCommentToTaskParams {
 	o.SetBody(body)
@@ -110,6 +131,16 @@ func (o *AddCommentToTaskParams) WithID(id int64) *AddCommentToTaskParams {
 // SetID adds the id to the add comment to task params
 func (o *AddCommentToTaskParams) SetID(id int64) {
 	o.ID = id
+}
+
+// Validate these params
+func (o *AddCommentToTaskParams) Validate(formats strfmt.Registry) error {
+
+	if err := o.Body.Validate(formats); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // WriteToRequest writes these params to a swagger request

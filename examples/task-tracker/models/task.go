@@ -4,6 +4,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"strconv"
+
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
@@ -137,6 +139,9 @@ func (m *Task) validateComments(formats strfmt.Registry) error {
 		if m.Comments[i] != nil {
 
 			if err := m.Comments[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("comments" + "." + strconv.Itoa(i))
+				}
 				return err
 			}
 		}
@@ -151,6 +156,9 @@ func (m *Task) validateLastUpdatedBy(formats strfmt.Registry) error {
 	if m.LastUpdatedBy != nil {
 
 		if err := m.LastUpdatedBy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("lastUpdatedBy")
+			}
 			return err
 		}
 	}
@@ -163,6 +171,9 @@ func (m *Task) validateReportedBy(formats strfmt.Registry) error {
 	if m.ReportedBy != nil {
 
 		if err := m.ReportedBy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("reportedBy")
+			}
 			return err
 		}
 	}

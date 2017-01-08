@@ -49,6 +49,15 @@ func NewUpdateTaskParamsWithContext(ctx context.Context) *UpdateTaskParams {
 	}
 }
 
+// NewUpdateTaskParamsWithHTTPClient creates a new UpdateTaskParams object
+// with the default values initialized, and the ability to set a custom HTTPClient for a request
+func NewUpdateTaskParamsWithHTTPClient(client *http.Client) *UpdateTaskParams {
+	var ()
+	return &UpdateTaskParams{
+		HTTPClient: client,
+	}
+}
+
 /*UpdateTaskParams contains all the parameters to send to the API endpoint
 for the update task operation typically these are written to a http.Request
 */
@@ -56,12 +65,14 @@ type UpdateTaskParams struct {
 
 	/*Body
 	  The task to update
-
+	  Required: true
+	  In: body
 	*/
 	Body *models.Task
 	/*ID
 	  The id of the item
-
+	  Required: true
+	  In: path
 	*/
 	ID int64
 
@@ -92,6 +103,17 @@ func (o *UpdateTaskParams) SetContext(ctx context.Context) {
 	o.Context = ctx
 }
 
+// WithHTTPClient adds the HTTPClient to the update task params
+func (o *UpdateTaskParams) WithHTTPClient(client *http.Client) *UpdateTaskParams {
+	o.SetHTTPClient(client)
+	return o
+}
+
+// SetHTTPClient adds the HTTPClient to the update task params
+func (o *UpdateTaskParams) SetHTTPClient(client *http.Client) {
+	o.HTTPClient = client
+}
+
 // WithBody adds the body to the update task params
 func (o *UpdateTaskParams) WithBody(body *models.Task) *UpdateTaskParams {
 	o.SetBody(body)
@@ -112,6 +134,18 @@ func (o *UpdateTaskParams) WithID(id int64) *UpdateTaskParams {
 // SetID adds the id to the update task params
 func (o *UpdateTaskParams) SetID(id int64) {
 	o.ID = id
+}
+
+// Validate these params
+func (o *UpdateTaskParams) Validate(formats strfmt.Registry) error {
+
+	if o.Body != nil {
+		if err := o.Body.Validate(formats); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // WriteToRequest writes these params to a swagger request

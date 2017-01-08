@@ -48,14 +48,28 @@ func NewUpdateOneParamsWithContext(ctx context.Context) *UpdateOneParams {
 	}
 }
 
+// NewUpdateOneParamsWithHTTPClient creates a new UpdateOneParams object
+// with the default values initialized, and the ability to set a custom HTTPClient for a request
+func NewUpdateOneParamsWithHTTPClient(client *http.Client) *UpdateOneParams {
+	var ()
+	return &UpdateOneParams{
+		HTTPClient: client,
+	}
+}
+
 /*UpdateOneParams contains all the parameters to send to the API endpoint
 for the update one operation typically these are written to a http.Request
 */
 type UpdateOneParams struct {
 
-	/*Body*/
+	/*Body
+	  In: body
+	*/
 	Body *models.Item
-	/*ID*/
+	/*ID
+	  Required: true
+	  In: path
+	*/
 	ID string
 
 	timeout    time.Duration
@@ -85,6 +99,17 @@ func (o *UpdateOneParams) SetContext(ctx context.Context) {
 	o.Context = ctx
 }
 
+// WithHTTPClient adds the HTTPClient to the update one params
+func (o *UpdateOneParams) WithHTTPClient(client *http.Client) *UpdateOneParams {
+	o.SetHTTPClient(client)
+	return o
+}
+
+// SetHTTPClient adds the HTTPClient to the update one params
+func (o *UpdateOneParams) SetHTTPClient(client *http.Client) {
+	o.HTTPClient = client
+}
+
 // WithBody adds the body to the update one params
 func (o *UpdateOneParams) WithBody(body *models.Item) *UpdateOneParams {
 	o.SetBody(body)
@@ -105,6 +130,18 @@ func (o *UpdateOneParams) WithID(id string) *UpdateOneParams {
 // SetID adds the id to the update one params
 func (o *UpdateOneParams) SetID(id string) {
 	o.ID = id
+}
+
+// Validate these params
+func (o *UpdateOneParams) Validate(formats strfmt.Registry) error {
+
+	if o.Body != nil {
+		if err := o.Body.Validate(formats); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // WriteToRequest writes these params to a swagger request

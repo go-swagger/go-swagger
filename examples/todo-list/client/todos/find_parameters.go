@@ -47,16 +47,35 @@ func NewFindParamsWithContext(ctx context.Context) *FindParams {
 	}
 }
 
+// NewFindParamsWithHTTPClient creates a new FindParams object
+// with the default values initialized, and the ability to set a custom HTTPClient for a request
+func NewFindParamsWithHTTPClient(client *http.Client) *FindParams {
+	var ()
+	return &FindParams{
+		HTTPClient: client,
+	}
+}
+
 /*FindParams contains all the parameters to send to the API endpoint
 for the find operation typically these are written to a http.Request
 */
 type FindParams struct {
 
-	/*XRateLimit*/
+	/*XRateLimit
+	  Required: true
+	  In: header
+	*/
 	XRateLimit int32
-	/*Limit*/
+	/*Limit
+	  Required: true
+	  In: formData
+	*/
 	Limit int32
-	/*Tags*/
+	/*Tags
+	  Required: true
+	  In: formData
+	  Collection Format: multi
+	*/
 	Tags []int32
 
 	timeout    time.Duration
@@ -84,6 +103,17 @@ func (o *FindParams) WithContext(ctx context.Context) *FindParams {
 // SetContext adds the context to the find params
 func (o *FindParams) SetContext(ctx context.Context) {
 	o.Context = ctx
+}
+
+// WithHTTPClient adds the HTTPClient to the find params
+func (o *FindParams) WithHTTPClient(client *http.Client) *FindParams {
+	o.SetHTTPClient(client)
+	return o
+}
+
+// SetHTTPClient adds the HTTPClient to the find params
+func (o *FindParams) SetHTTPClient(client *http.Client) {
+	o.HTTPClient = client
 }
 
 // WithXRateLimit adds the xRateLimit to the find params
@@ -117,6 +147,12 @@ func (o *FindParams) WithTags(tags []int32) *FindParams {
 // SetTags adds the tags to the find params
 func (o *FindParams) SetTags(tags []int32) {
 	o.Tags = tags
+}
+
+// Validate these params
+func (o *FindParams) Validate(formats strfmt.Registry) error {
+
+	return nil
 }
 
 // WriteToRequest writes these params to a swagger request

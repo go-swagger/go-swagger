@@ -47,6 +47,15 @@ func NewDeleteTaskParamsWithContext(ctx context.Context) *DeleteTaskParams {
 	}
 }
 
+// NewDeleteTaskParamsWithHTTPClient creates a new DeleteTaskParams object
+// with the default values initialized, and the ability to set a custom HTTPClient for a request
+func NewDeleteTaskParamsWithHTTPClient(client *http.Client) *DeleteTaskParams {
+	var ()
+	return &DeleteTaskParams{
+		HTTPClient: client,
+	}
+}
+
 /*DeleteTaskParams contains all the parameters to send to the API endpoint
 for the delete task operation typically these are written to a http.Request
 */
@@ -54,7 +63,8 @@ type DeleteTaskParams struct {
 
 	/*ID
 	  The id of the item
-
+	  Required: true
+	  In: path
 	*/
 	ID int64
 
@@ -85,6 +95,17 @@ func (o *DeleteTaskParams) SetContext(ctx context.Context) {
 	o.Context = ctx
 }
 
+// WithHTTPClient adds the HTTPClient to the delete task params
+func (o *DeleteTaskParams) WithHTTPClient(client *http.Client) *DeleteTaskParams {
+	o.SetHTTPClient(client)
+	return o
+}
+
+// SetHTTPClient adds the HTTPClient to the delete task params
+func (o *DeleteTaskParams) SetHTTPClient(client *http.Client) {
+	o.HTTPClient = client
+}
+
 // WithID adds the id to the delete task params
 func (o *DeleteTaskParams) WithID(id int64) *DeleteTaskParams {
 	o.SetID(id)
@@ -94,6 +115,12 @@ func (o *DeleteTaskParams) WithID(id int64) *DeleteTaskParams {
 // SetID adds the id to the delete task params
 func (o *DeleteTaskParams) SetID(id int64) {
 	o.ID = id
+}
+
+// Validate these params
+func (o *DeleteTaskParams) Validate(formats strfmt.Registry) error {
+
+	return nil
 }
 
 // WriteToRequest writes these params to a swagger request

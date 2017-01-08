@@ -56,6 +56,18 @@ func NewGetTaskCommentsParamsWithContext(ctx context.Context) *GetTaskCommentsPa
 	}
 }
 
+// NewGetTaskCommentsParamsWithHTTPClient creates a new GetTaskCommentsParams object
+// with the default values initialized, and the ability to set a custom HTTPClient for a request
+func NewGetTaskCommentsParamsWithHTTPClient(client *http.Client) *GetTaskCommentsParams {
+	var (
+		pageSizeDefault = int32(20)
+	)
+	return &GetTaskCommentsParams{
+		PageSize:   &pageSizeDefault,
+		HTTPClient: client,
+	}
+}
+
 /*GetTaskCommentsParams contains all the parameters to send to the API endpoint
 for the get task comments operation typically these are written to a http.Request
 */
@@ -63,17 +75,19 @@ type GetTaskCommentsParams struct {
 
 	/*ID
 	  The id of the item
-
+	  Required: true
+	  In: path
 	*/
 	ID int64
 	/*PageSize
 	  Amount of items to return in a single page
-
+	  In: query
+	  Default: 20
 	*/
 	PageSize *int32
 	/*Since
 	  The created time of the oldest seen comment
-
+	  In: query
 	*/
 	Since *strfmt.DateTime
 
@@ -102,6 +116,17 @@ func (o *GetTaskCommentsParams) WithContext(ctx context.Context) *GetTaskComment
 // SetContext adds the context to the get task comments params
 func (o *GetTaskCommentsParams) SetContext(ctx context.Context) {
 	o.Context = ctx
+}
+
+// WithHTTPClient adds the HTTPClient to the get task comments params
+func (o *GetTaskCommentsParams) WithHTTPClient(client *http.Client) *GetTaskCommentsParams {
+	o.SetHTTPClient(client)
+	return o
+}
+
+// SetHTTPClient adds the HTTPClient to the get task comments params
+func (o *GetTaskCommentsParams) SetHTTPClient(client *http.Client) {
+	o.HTTPClient = client
 }
 
 // WithID adds the id to the get task comments params
@@ -135,6 +160,12 @@ func (o *GetTaskCommentsParams) WithSince(since *strfmt.DateTime) *GetTaskCommen
 // SetSince adds the since to the get task comments params
 func (o *GetTaskCommentsParams) SetSince(since *strfmt.DateTime) {
 	o.Since = since
+}
+
+// Validate these params
+func (o *GetTaskCommentsParams) Validate(formats strfmt.Registry) error {
+
+	return nil
 }
 
 // WriteToRequest writes these params to a swagger request
