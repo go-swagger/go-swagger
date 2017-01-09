@@ -79,7 +79,7 @@ type {{ pascalize .Name }}API struct {
   {{end}}{{if .IsAPIKeyAuth}}// {{ pascalize .ID }}Auth registers a function that takes a token and returns a principal
   // it performs authentication based on an api key {{ .Name }} provided in the {{.Source}}
   {{ pascalize .ID }}Auth func(string) ({{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}, error)
-  {{end}}{{ if .IsOAuth2 }}// {{ pascalize .ID }}Auth registers a functin that takes an access token and a collection of required scopes and returns a principal
+  {{end}}{{ if .IsOAuth2 }}// {{ pascalize .ID }}Auth registers a function that takes an access token and a collection of required scopes and returns a principal
   // it performs authentication based on an oauth2 bearer token provided in the request
   {{ pascalize .ID }}Auth func(string, []string) ({{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}, error)
   {{ end }}
