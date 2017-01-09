@@ -158,6 +158,9 @@ if err := validate.Required({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ print
 {{ if .IsNullable }}if {{ .ValueExpression }} != nil {
 {{ end }}
 if err := {{.ValueExpression}}.Validate(formats); err != nil {
+  if ve, ok := err.(*errors.Validation); ok {
+    return ve.ValidateName({{ if .Path }}{{ .Path }}{{else}}""{{end}})
+  }
   return err
 }
 {{ if .IsNullable }}}{{ end }}

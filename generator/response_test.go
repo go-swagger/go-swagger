@@ -376,3 +376,34 @@ func TestGenResponses_Issue776_SwaggerTemplate(t *testing.T) {
 		}
 	}
 }
+
+func TestIssue846(t *testing.T) {
+	// do it 8 times, to ensure it's always in the same order
+	for i := 0 ; i < 8 ; i++ {
+		b, err := opBuilder("getFoo", "../fixtures/bugs/846/swagger.yml")
+		if assert.NoError(t, err) {
+			op, err := b.MakeOperation()
+			if assert.NoError(t, err) {
+				var buf bytes.Buffer
+				opts := opts()
+				if assert.NoError(t, templates.MustGet("clientResponse").Execute(&buf, op)) {
+					ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						// sorted by code
+						assert.Regexp(t, "(?s)" +
+							"GetFooOK struct.+" +
+							"GetFooNotFound struct.+" +
+							"GetFooInternalServerError struct", string(ff))
+						// sorted by name
+						assert.Regexp(t, "(?s)" +
+							"GetFooInternalServerErrorBody struct.+" +
+							"GetFooNotFoundBody struct.+" +
+							"GetFooOKBody struct", string(ff))
+					} else {
+						fmt.Println(buf.String())
+					}
+				}
+			}
+		}
+	}
+}
