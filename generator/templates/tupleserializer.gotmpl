@@ -185,7 +185,7 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) { {
 // UnmarshalJSON unmarshals this object from a JSON structure
 func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error {
   {{ range .AllOf }}
-  {{ if .Properties }}var data struct {
+   {{ if .Properties }}var data struct {
     {{range .Properties}}{{ if not .IsBaseType }}
     {{ if not $.IsExported }}{{template "privstructfield" . }}{{ else }}{{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if not .Required }},omitempty{{ end }}"`{{ end}}
     {{else}}
@@ -195,23 +195,23 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
     {{ end }}
     {{ if .AdditionalItems }}{{ if and .IsExported (not .IsSubType) }}{{ pascalize .AdditionalItems.Name }}{{ else }}{{ pascalize .AdditionalItems.Name }}Field{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
     {{ end }}
-  }
+   }
    if err := swag.ReadJSON(raw, &data); err != nil {
      return err
    }
    {{ range .Properties }}
    {{ $receiverName }}.{{ pascalize .Name }} = data.{{ pascalize .Name }}
    {{ end }}
+
   {{ end }}
-  {{ end }}
-   {{ range .AllOf }}{{ if not .IsAnonymous }}
+  {{ if not .IsAnonymous }}
    var {{ varname .Name }} {{ .GoType }}
    if err := {{ if .IsBaseType}}Unmarshal{{ .GoType }}(bytes.NewBuffer(raw), &{{ varname .Name }}){{ else }} swag.ReadJSON(raw, &{{ varname .Name }}){{ end }}; err != nil {
      return err
    }
    {{ .ReceiverName }}.{{ .GoType }} = {{ varname .Name }}
-   {{ end }}
-   {{ end }}
+  {{ end }}
+  {{ end }}
   return nil
 }
 
@@ -239,8 +239,7 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
    }
    _parts = append(_parts, jsonData)
    {{ end }}
-  {{ end }}
-   {{ range .AllOf }}{{ if not .IsAnonymous }}
+   {{ if not .IsAnonymous }}
    {{ varname .Name }}, err := swag.WriteJSON({{ $receiverName }}.{{ .GoType }})
    if err != nil {
      return nil, err
