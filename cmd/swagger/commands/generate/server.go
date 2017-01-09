@@ -41,10 +41,18 @@ type Server struct {
 	DumpData          bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
 	FlagStrategy      string   `long:"flag-strategy" description:"the strategy to provide flags for the server" default:"go-flags" choice:"go-flags" choice:"pflag"`
 	CompatibilityMode string   `long:"compatibility-mode" description:"the compatibility mode for the tls server" default:"modern" choice:"modern" choice:"intermediate"`
+	SkipValidation    bool     `long:"skip-validation" description:"skips validation of spec prior to generation"`
 }
 
 // Execute runs this command
 func (s *Server) Execute(args []string) error {
+	// validate spec by default first
+	if !s.SkipValidation {
+		if err := validateSpec(string(s.Spec)); err != nil {
+			return err
+		}
+	}
+
 	cfg, err := readConfig(string(s.ConfigFile))
 	if err != nil {
 		return err

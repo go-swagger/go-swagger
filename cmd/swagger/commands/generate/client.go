@@ -35,10 +35,18 @@ type Client struct {
 	SkipModels      bool     `long:"skip-models" description:"no models will be generated when this flag is specified"`
 	SkipOperations  bool     `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
 	DumpData        bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
+	SkipValidation  bool     `long:"skip-validation" description:"skips validation of spec prior to generation"`
 }
 
 // Execute runs this command
 func (c *Client) Execute(args []string) error {
+	// validate spec by default first
+	if !c.SkipValidation {
+		if err := validateSpec(string(c.Spec)); err != nil {
+			return err
+		}
+	}
+
 	cfg, err := readConfig(string(c.ConfigFile))
 	if err != nil {
 		return err
