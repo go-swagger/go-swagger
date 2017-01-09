@@ -23,5 +23,6 @@ import (
 func TestClient_InvalidSpec(t *testing.T) {
 	opts := testGenOpts()
 	opts.Spec = "../fixtures/bugs/825/swagger.yml"
+	opts.ValidateSpec = true
 	assert.Error(t, GenerateClient("foo", nil, nil, &opts))
 }

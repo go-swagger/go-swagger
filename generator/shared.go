@@ -381,7 +381,6 @@ func (g *GenOpts) EnsureDefaults(client bool) error {
 	if g.LanguageOpts == nil {
 		g.LanguageOpts = GoLangOpts()
 	}
-	g.ValidateSpec = true
 	g.defaultsEnsured = true
 	return nil
 }
