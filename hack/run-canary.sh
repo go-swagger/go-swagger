@@ -11,10 +11,10 @@ do
   if [ $dir != "bitbucket.org" ]; then
     pushd fixtures/canary/$dir
     rm -rf client models restapi cmd
-    swagger generate client
+    swagger generate client --skip-validation
     go test ./...
     if [ $dir != 'kubernetes' ] && [ $dir != 'ms-cog-sci' ] ; then
-      swagger generate server
+      swagger generate server --skip-validation
       go test ./...
     fi
     popd

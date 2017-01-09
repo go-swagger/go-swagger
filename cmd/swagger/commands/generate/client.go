@@ -40,13 +40,6 @@ type Client struct {
 
 // Execute runs this command
 func (c *Client) Execute(args []string) error {
-	// validate spec by default first
-	if !c.SkipValidation {
-		if err := validateSpec(string(c.Spec)); err != nil {
-			return err
-		}
-	}
-
 	cfg, err := readConfig(string(c.ConfigFile))
 	if err != nil {
 		return err
@@ -54,7 +47,8 @@ func (c *Client) Execute(args []string) error {
 	setDebug(cfg)
 
 	opts := &generator.GenOpts{
-		Spec:              string(c.Spec),
+		Spec: string(c.Spec),
+
 		Target:            string(c.Target),
 		APIPackage:        c.APIPackage,
 		ModelPackage:      c.ModelPackage,
@@ -68,6 +62,7 @@ func (c *Client) Execute(args []string) error {
 		IncludeHandler:    !c.SkipOperations,
 		IncludeParameters: !c.SkipOperations,
 		IncludeResponses:  !c.SkipOperations,
+		ValidateSpec:      !c.SkipValidation,
 		Tags:              c.Tags,
 		IncludeSupport:    true,
 		TemplateDir:       string(c.TemplateDir),

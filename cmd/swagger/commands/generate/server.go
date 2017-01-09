@@ -46,13 +46,6 @@ type Server struct {
 
 // Execute runs this command
 func (s *Server) Execute(args []string) error {
-	// validate spec by default first
-	if !s.SkipValidation {
-		if err := validateSpec(string(s.Spec)); err != nil {
-			return err
-		}
-	}
-
 	cfg, err := readConfig(string(s.ConfigFile))
 	if err != nil {
 		return err
@@ -76,6 +69,7 @@ func (s *Server) Execute(args []string) error {
 		IncludeURLBuilder: !s.SkipOperations,
 		IncludeMain:       !s.ExcludeMain,
 		IncludeSupport:    !s.SkipSupport,
+		ValidateSpec:      !s.SkipValidation,
 		ExcludeSpec:       s.ExcludeSpec,
 		TemplateDir:       string(s.TemplateDir),
 		WithContext:       s.WithContext,

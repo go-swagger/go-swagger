@@ -24,6 +24,7 @@ import (
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/loads"
 	"github.com/go-openapi/swag"
 )
 
@@ -43,10 +44,20 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 	}
 
 	// Load the spec
-	_, specDoc, err := loadSpec(opts.Spec)
+	var err error
+	var specDoc *loads.Document
+	opts.Spec, specDoc, err = loadSpec(opts.Spec)
 	if err != nil {
 		return err
 	}
+
+	// Validate if needed
+	if opts.ValidateSpec {
+		if err = validateSpec(opts.Spec, specDoc); err != nil {
+			return err
+		}
+	}
+
 	analyzed := analysis.New(specDoc.Spec())
 
 	models, err := gatherModels(specDoc, modelNames)
