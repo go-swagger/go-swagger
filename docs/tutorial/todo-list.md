@@ -640,7 +640,7 @@ api.TodosDestroyOneHandler = todos.DestroyOneHandlerFunc(func(params todos.Destr
 })
 ```
 
-After deleting the item from the store, there is a responder that needs to be created. The code generator has generated responders for each response you defined in the the swagger specification. The other 3 handler implementations are pretty similar to this one, they are provided in the [source for this tutorial](https://github.com/go-swagger/go-swagger/blob/master/examples/tutorials/todo-list/server-complete/cmd/todo-list-server/configure_todo_list.go).
+After deleting the item from the store, there is a responder that needs to be created. The code generator has generated responders for each response you defined in the the swagger specification. The other 3 handler implementations are pretty similar to this one, they are provided in the [source for this tutorial](https://github.com/go-swagger/go-swagger/blob/master/examples/tutorials/todo-list/server-complete/restapi/configure_todo_list.go).
 
 You're all set now, with a spiffy new todo list api implemented, lets see if it actually works.
 
