@@ -15,6 +15,7 @@
 package generator
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -655,9 +656,25 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		Operations:          genOps,
 		OperationGroups:     opGroups,
 		Principal:           prin,
-		SwaggerJSON:         fmt.Sprintf("%#v", jsonb),
+		SwaggerJSON:         generateReadableSpec(jsonb),
 		ExcludeSpec:         a.GenOpts != nil && a.GenOpts.ExcludeSpec,
 		WithContext:         a.GenOpts != nil && a.GenOpts.WithContext,
 		GenOpts:             a.GenOpts,
 	}, nil
+}
+
+// generateReadableSpec makes swagger json spec as a string instead of bytes
+// the only character that needs to be escaped is '`' symbol, since it cannot be escaped in the GO string
+// that is quoted as `string data`. The function doesn't care about the beginning or the ending of the
+// string it escapes since all data that needs to be escaped is always in the middle of the swagger spec.
+func generateReadableSpec(spec []byte) string {
+	buf := &bytes.Buffer{}
+	for _, b := range string(spec) {
+		if b == '`' {
+			buf.WriteString("`+\"`\"+`")
+		} else {
+			buf.WriteRune(b)
+		}
+	}
+	return buf.String()
 }

@@ -16,5 +16,5 @@ import (
 var SwaggerJSON json.RawMessage
 
 func init() {
-   SwaggerJSON = json.RawMessage({{ .SwaggerJSON }})
+   SwaggerJSON = json.RawMessage([]byte(`{{ .SwaggerJSON }}`))
 }
