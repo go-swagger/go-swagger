@@ -27,7 +27,11 @@ import (
 	"strings"
 	"text/template"
 
+	swaggererrors "github.com/go-openapi/errors"
+
 	"github.com/go-openapi/analysis"
+	"github.com/go-openapi/validate"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
@@ -305,6 +309,7 @@ type GenOpts struct {
 	ExcludeSpec       bool
 	DumpData          bool
 	WithContext       bool
+	ValidateSpec      bool
 	defaultsEnsured   bool
 
 	Spec              string
@@ -585,6 +590,25 @@ func (g *GenOpts) renderDefinition(gg *GenDefinition) error {
 		}
 	}
 	return nil
+}
+
+func validateSpec(path string, doc *loads.Document) (err error) {
+	if doc == nil {
+		if path, doc, err = loadSpec(path); err != nil {
+			return err
+		}
+	}
+
+	result := validate.Spec(doc, strfmt.Default)
+	if result == nil {
+		return nil
+	}
+
+	str := fmt.Sprintf("The swagger spec at %q is invalid against swagger specification %s. see errors :\n", path, doc.Version())
+	for _, desc := range result.(*swaggererrors.CompositeError).Errors {
+		str += fmt.Sprintf("- %s\n", desc)
+	}
+	return errors.New(str)
 }
 
 func loadSpec(specFile string) (string, *loads.Document, error) {

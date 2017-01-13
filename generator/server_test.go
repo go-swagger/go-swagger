@@ -143,3 +143,10 @@ func TestServer_MultipartForm(t *testing.T) {
 		}
 	}
 }
+
+func TestServer_InvalidSpec(t *testing.T) {
+	opts := testGenOpts()
+	opts.Spec = "../fixtures/bugs/825/swagger.yml"
+	opts.ValidateSpec = true
+	assert.Error(t, GenerateServer("foo", nil, nil, &opts))
+}
