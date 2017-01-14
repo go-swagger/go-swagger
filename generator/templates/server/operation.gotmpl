@@ -8,9 +8,13 @@ import (
   "strings"
   "fmt"
 
-	context "golang.org/x/net/context"
+  context "golang.org/x/net/context"
 
+  errors "github.com/go-openapi/errors"
   middleware "github.com/go-openapi/runtime/middleware"
+  strfmt "github.com/go-openapi/strfmt"
+  validate "github.com/go-openapi/validate"
+
   {{ range .DefaultImports }}{{ printf "%q" . }}
   {{ end }}
   {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
