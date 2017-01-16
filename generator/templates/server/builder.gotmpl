@@ -271,7 +271,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) initHandlerCache() {
   if {{ .ReceiverName }}.handlers[{{ printf "%q" (upper .Method) }}] == nil {
     {{ .ReceiverName }}.handlers[strings.ToUpper({{ printf "%q" (upper .Method) }})] = make(map[string]http.Handler)
   }
-  {{.ReceiverName}}.handlers[{{ printf "%q" (upper .Method) }}][{{ printf "%q" .Path }}] = {{if ne .Package $package}}{{.Package}}.{{end}}New{{ pascalize .Name }}({{.ReceiverName}}.context, {{.ReceiverName}}.{{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{ pascalize .Name }}Handler)
+  {{.ReceiverName}}.handlers[{{ printf "%q" (upper .Method) }}][{{ if eq .Path "/" }}""{{ else }}{{ printf "%q" .Path }}{{ end }}] = {{if ne .Package $package}}{{.Package}}.{{end}}New{{ pascalize .Name }}({{.ReceiverName}}.context, {{.ReceiverName}}.{{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{ pascalize .Name }}Handler)
   {{end}}
   {{end}}
 }
