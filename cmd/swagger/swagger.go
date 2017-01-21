@@ -36,7 +36,7 @@ func main() {
 	parser := flags.NewParser(&opts, flags.Default)
 	parser.ShortDescription = "helps you keep your API well described"
 	parser.LongDescription = `
-Swagger tries to support you as best as possible when building API's.
+Swagger tries to support you as best as possible when building APIs.
 
 It aims to represent the contract of your API with a language agnostic description of your application in json or yaml.
 `

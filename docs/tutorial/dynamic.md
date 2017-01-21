@@ -1,6 +1,6 @@
 # Dynamic API definition
 
-The toolkit supports building a swagger specification entirely with go code. It does allow you to serve a spec up quickly. This is one of the building blocks required to serve up stub API's and to generate a test server with predictable responses, however this is not as bad as it sounds...
+The toolkit supports building a swagger specification entirely with go code. It does allow you to serve a spec up quickly. This is one of the building blocks required to serve up stub APIs and to generate a test server with predictable responses, however this is not as bad as it sounds...
 
 <!--more-->
 
@@ -189,7 +189,7 @@ Content-Length: 18
 ## Completely untyped
 
 At this point we're ready to actually implement some functionality for our Todo list. We'll create methods to add, update and delete an item.
-We'll also render a list of known items. Because http API's can get concurrent access we need to take care of this as well.
+We'll also render a list of known items. Because http APIs can get concurrent access we need to take care of this as well.
 
 The first thing we'll do is build our "backend", a very simple implementation based on a slice and maps.
 

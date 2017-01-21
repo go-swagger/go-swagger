@@ -52,7 +52,7 @@ get access to the full context that the go-swagger toolkit uses throughout the l
 
 #### Add logging and panic handling
 
-A very common requirement for HTTP API's is to include some form of logging. Another one is to handle panics from your
+A very common requirement for HTTP APIs is to include some form of logging. Another one is to handle panics from your
 API requests.  The example for a possible implementation of this uses [this community provided
 middleware](https://github.com/dre1080/recover) to catch panics.
 
