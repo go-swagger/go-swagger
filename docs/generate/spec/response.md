@@ -51,7 +51,7 @@ type ValidationError struct {
 	// in: body
 	Body struct {
 		// The validation message
-		// 
+		//
 		// Required: true
 		Message string
 		// An optional field name to which this validation applies
@@ -66,10 +66,11 @@ type ValidationError struct {
 ---
 responses:
   validationError:
-    description: A validation error is an errot that is used whn the required input fails validation.
+    description: A validation error is an error that is used when the required input fails validation.
     schema:
       type: object
-      required: 
+      description: The error message
+      required:
       - Message
       properties:
         Message:
