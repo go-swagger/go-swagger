@@ -32,7 +32,7 @@ Annotation | Format
 // ServeAPI serves the API for this record store
 func ServeAPI(host, basePath string, schemes []string) error {
 
-	// swagger:route GET /pets listPets pets users
+	// swagger:route GET /pets pets users listPets
 	//
 	// Lists pets filtered by some parameters.
 	//
@@ -66,9 +66,11 @@ func ServeAPI(host, basePath string, schemes []string) error {
 ```yaml
 ---
 paths:
-  "/":
+  "/pets":
     get:
       operationId: listPets
+      summary: Lists pets filtered by some parameters.
+      description: "This will show all available pets by default.\nYou can get the pets that are out of stock"
       tags:
       - pets
       - users
