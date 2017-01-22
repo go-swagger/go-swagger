@@ -7,6 +7,6 @@ Please remove the sections that don't apply
 ## Steps to reproduce
 
 ## Environment
-swagger version: x.x.x
-go version: x.x.x
-OS: 
+swagger version: x.x.x  
+go version: x.x.x  
+OS:   
