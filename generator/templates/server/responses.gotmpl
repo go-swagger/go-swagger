@@ -28,7 +28,7 @@ if {{ .ValueExpression }}S != "" {
 {{ end }}
 {{define "sliceserverheaderbuilder" }}
 var {{ varname .Child.ValueExpression }}R []string
-for _, {{ varname .Child.ValueExpression }} := range {{ .ValueExpression }} {
+for _, {{ varname .Child.ValueExpression }} := range {{ .Child.ValueExpression }} {
   {{- if not .Child.IsArray }}{{ template "sliceitemserverheaderbuilder" .Child }}{{ else }}{{ template "sliceserverheaderbuilder" .Child }}{{ end -}}
 }
 
@@ -180,4 +180,3 @@ import (
 {{ if .DefaultResponse }}
 {{ template "serverresponse" .DefaultResponse }}
 {{ end }}
-
