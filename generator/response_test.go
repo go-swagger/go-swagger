@@ -418,3 +418,14 @@ func TestIssue881(t *testing.T) {
 		}
 	}
 }
+
+func TestIssue881Deep(t *testing.T) {
+	b, err := opBuilder("getFoo", "../fixtures/bugs/881/deep.yml")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			var buf bytes.Buffer
+			assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+		}
+	}
+}
