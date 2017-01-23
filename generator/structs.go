@@ -126,9 +126,10 @@ type GenHeader struct {
 	ReceiverName string
 	IndexVar     string
 
-	ID   string
-	Name string
-	Path string
+	ID              string
+	Name            string
+	Path            string
+	ValueExpression string
 
 	Title       string
 	Description string

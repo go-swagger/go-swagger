@@ -619,6 +619,7 @@ func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) (G
 
 	tpe := typeForHeader(hdr) //simpleResolvedType(hdr.Type, hdr.Format, hdr.Items)
 
+	id := swag.ToGoName(name)
 	res := GenHeader{
 		sharedValidations: sharedValidations{
 			Required:            true,
@@ -640,9 +641,10 @@ func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) (G
 		resolvedType:     tpe,
 		Package:          b.APIPackage,
 		ReceiverName:     receiver,
-		ID:               swag.ToGoName(name),
+		ID:               id,
 		Name:             name,
 		Path:             fmt.Sprintf("%q", name),
+		ValueExpression:  fmt.Sprintf("%s.%s", receiver, id),
 		Description:      trimBOM(hdr.Description),
 		Default:          hdr.Default,
 		HasDefault:       hdr.Default != nil,
