@@ -280,6 +280,8 @@ func (pp *paramStructParser) parseEmbeddedStruct(gofile *ast.File, operation *sp
 		if st, ok := ts.Type.(*ast.StructType); ok {
 			return pp.parseStructType(file, operation, st, seenPreviously)
 		}
+	case *ast.StarExpr:
+		return pp.parseEmbeddedStruct(gofile, operation, tpe.X, seenPreviously)
 	}
 	return fmt.Errorf("unable to resolve embedded struct for: %v\n", expr)
 }

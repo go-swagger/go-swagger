@@ -259,6 +259,8 @@ func (rp *responseParser) parseEmbeddedStruct(gofile *ast.File, response *spec.R
 		if st, ok := ts.Type.(*ast.StructType); ok {
 			return rp.parseStructType(file, response, st, seenPreviously)
 		}
+	case *ast.StarExpr:
+		return rp.parseEmbeddedStruct(gofile, response, tpe.X, seenPreviously)
 	}
 	return fmt.Errorf("unable to resolve embedded struct for: %v\n", expr)
 }

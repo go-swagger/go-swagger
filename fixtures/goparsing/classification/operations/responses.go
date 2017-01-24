@@ -70,6 +70,13 @@ type ComplexerOne struct {
 	NoTagName string          `json:",omitempty"`
 }
 
+// A ComplexerPointerOne is composed of a *SimpleOne and some extra fields.
+// swagger:response complexerPointerOne
+type ComplexerPointerOne struct {
+	*SimpleOne
+	Extra int64 `json:"extra"`
+}
+
 // A SomeResponse is a dummy response object to test parsing.
 //
 // The properties are the same as the other structs used to test parsing.
