@@ -34,6 +34,15 @@ contains | for use in conditions, returns true when the second argument is conta
 joinFilePath | joins the arguments as a file path, cross platform
 padSurround | surround an entry with a character n times before and m times after the entry
 
+## Template Attributes
+
+The following modifiers can be applied to a template to modify code-generation behaviour:
+
+Attribute | Type | Description
+----------|------|-------------
+skip_exists|boolean|Skip generating content for a file if the specified target file already exists. Use this for files the user needs to customise.
+skip_format|boolean|Skip formatting code from the template according to the standard golang rules. This may be useful if you have your own coding conventions that custom templates already adhere to, or if you are generating non-golang code.
+
 ## Server generation
 
 ```shell
