@@ -36,7 +36,7 @@ func TestParseResponses(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Len(t, responses, 6)
+	assert.Len(t, responses, 7)
 	cr, ok := responses["complexerOne"]
 	assert.True(t, ok)
 	assert.Len(t, cr.Headers, 7)
@@ -65,6 +65,28 @@ func TestParseResponses(t *testing.T) {
 			assert.Equal(t, "", header.Format)
 		default:
 			assert.Fail(t, "unkown header: "+k)
+		}
+	}
+
+	cpr, ok := responses["complexerPointerOne"]
+	assert.True(t, ok)
+	assert.Len(t, cpr.Headers, 4)
+	for k, header := range cpr.Headers {
+		switch k {
+		case "id":
+			assert.Equal(t, "integer", header.Type)
+			assert.Equal(t, "int64", header.Format)
+		case "name":
+			assert.Equal(t, "string", header.Type)
+			assert.Equal(t, "", header.Format)
+		case "age":
+			assert.Equal(t, "integer", header.Type)
+			assert.Equal(t, "int32", header.Format)
+		case "extra":
+			assert.Equal(t, "integer", header.Type)
+			assert.Equal(t, "int64", header.Format)
+		default:
+			assert.Fail(t, "unknown header: "+k)
 		}
 	}
 

@@ -33,6 +33,17 @@ type MyFileParams struct {
 	MyFormFile *bytes.Buffer `json:"myFormFile"`
 }
 
+// EmbeddedFileParams embeds a *MyFileParams
+// swagger:parameters myOtherOperation
+type EmbeddedFileParams struct {
+	*MyFileParams
+
+	// ExtraParam desc.
+	// in: formData
+	// required: true
+	ExtraParam int `json:"extraParam"`
+}
+
 // An OrderBodyParams model.
 //
 // This is used for operations that want an Order as body of the request
