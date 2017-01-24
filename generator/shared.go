@@ -286,6 +286,7 @@ type TemplateOpts struct {
 	Target     string `mapstructure:"target"`
 	FileName   string `mapstructure:"file_name"`
 	SkipExists bool   `mapstructure:"skip_exists"`
+	SkipFormat bool   `mapstructure:"skip_format"`
 }
 
 // SectionOpts allows for specifying options to customize the templates used for generation
@@ -504,10 +505,13 @@ func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
 		}
 	}
 
-	formatted, err := g.LanguageOpts.FormatContent(fname, content)
-	if err != nil {
-		formatted = content
-		err = fmt.Errorf("format %q failed: %v", t.Name, err)
+	// Conditionally format the code, unless the user wants to skip
+	formatted := content
+	if t.SkipFormat == false {
+		formatted, err = g.LanguageOpts.FormatContent(fname, content)
+		if err != nil {
+			err = fmt.Errorf("format %q failed: %v", t.Name, err)
+		}
 	}
 
 	writeerr := ioutil.WriteFile(filepath.Join(dir, fname), formatted, 0644)
