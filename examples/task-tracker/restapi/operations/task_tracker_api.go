@@ -321,42 +321,42 @@ func (o *TaskTrackerAPI) initHandlerCache() {
 	}
 
 	if o.handlers["POST"] == nil {
-		o.handlers[strings.ToUpper("POST")] = make(map[string]http.Handler)
+		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/tasks/{id}/comments"] = tasks.NewAddCommentToTask(o.context, o.TasksAddCommentToTaskHandler)
 
 	if o.handlers["POST"] == nil {
-		o.handlers[strings.ToUpper("POST")] = make(map[string]http.Handler)
+		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/tasks"] = tasks.NewCreateTask(o.context, o.TasksCreateTaskHandler)
 
 	if o.handlers["DELETE"] == nil {
-		o.handlers[strings.ToUpper("DELETE")] = make(map[string]http.Handler)
+		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/tasks/{id}"] = tasks.NewDeleteTask(o.context, o.TasksDeleteTaskHandler)
 
 	if o.handlers["GET"] == nil {
-		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/tasks/{id}/comments"] = tasks.NewGetTaskComments(o.context, o.TasksGetTaskCommentsHandler)
 
 	if o.handlers["GET"] == nil {
-		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/tasks/{id}"] = tasks.NewGetTaskDetails(o.context, o.TasksGetTaskDetailsHandler)
 
 	if o.handlers["GET"] == nil {
-		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/tasks"] = tasks.NewListTasks(o.context, o.TasksListTasksHandler)
 
 	if o.handlers["PUT"] == nil {
-		o.handlers[strings.ToUpper("PUT")] = make(map[string]http.Handler)
+		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/tasks/{id}"] = tasks.NewUpdateTask(o.context, o.TasksUpdateTaskHandler)
 
 	if o.handlers["POST"] == nil {
-		o.handlers[strings.ToUpper("POST")] = make(map[string]http.Handler)
+		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/tasks/{id}/files"] = tasks.NewUploadTaskFile(o.context, o.TasksUploadTaskFileHandler)
 

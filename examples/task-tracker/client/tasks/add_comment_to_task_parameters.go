@@ -47,6 +47,15 @@ func NewAddCommentToTaskParamsWithContext(ctx context.Context) *AddCommentToTask
 	}
 }
 
+// NewAddCommentToTaskParamsWithHTTPClient creates a new AddCommentToTaskParams object
+// with the default values initialized, and the ability to set a custom HTTPClient for a request
+func NewAddCommentToTaskParamsWithHTTPClient(client *http.Client) *AddCommentToTaskParams {
+	var ()
+	return &AddCommentToTaskParams{
+		HTTPClient: client,
+	}
+}
+
 /*AddCommentToTaskParams contains all the parameters to send to the API endpoint
 for the add comment to task operation typically these are written to a http.Request
 */
@@ -88,6 +97,17 @@ func (o *AddCommentToTaskParams) WithContext(ctx context.Context) *AddCommentToT
 // SetContext adds the context to the add comment to task params
 func (o *AddCommentToTaskParams) SetContext(ctx context.Context) {
 	o.Context = ctx
+}
+
+// WithHTTPClient adds the HTTPClient to the add comment to task params
+func (o *AddCommentToTaskParams) WithHTTPClient(client *http.Client) *AddCommentToTaskParams {
+	o.SetHTTPClient(client)
+	return o
+}
+
+// SetHTTPClient adds the HTTPClient to the add comment to task params
+func (o *AddCommentToTaskParams) SetHTTPClient(client *http.Client) {
+	o.HTTPClient = client
 }
 
 // WithBody adds the body to the add comment to task params

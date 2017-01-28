@@ -48,6 +48,15 @@ func NewUploadTaskFileParamsWithContext(ctx context.Context) *UploadTaskFilePara
 	}
 }
 
+// NewUploadTaskFileParamsWithHTTPClient creates a new UploadTaskFileParams object
+// with the default values initialized, and the ability to set a custom HTTPClient for a request
+func NewUploadTaskFileParamsWithHTTPClient(client *http.Client) *UploadTaskFileParams {
+	var ()
+	return &UploadTaskFileParams{
+		HTTPClient: client,
+	}
+}
+
 /*UploadTaskFileParams contains all the parameters to send to the API endpoint
 for the upload task file operation typically these are written to a http.Request
 */
@@ -94,6 +103,17 @@ func (o *UploadTaskFileParams) WithContext(ctx context.Context) *UploadTaskFileP
 // SetContext adds the context to the upload task file params
 func (o *UploadTaskFileParams) SetContext(ctx context.Context) {
 	o.Context = ctx
+}
+
+// WithHTTPClient adds the HTTPClient to the upload task file params
+func (o *UploadTaskFileParams) WithHTTPClient(client *http.Client) *UploadTaskFileParams {
+	o.SetHTTPClient(client)
+	return o
+}
+
+// SetHTTPClient adds the HTTPClient to the upload task file params
+func (o *UploadTaskFileParams) SetHTTPClient(client *http.Client) {
+	o.HTTPClient = client
 }
 
 // WithDescription adds the description to the upload task file params

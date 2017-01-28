@@ -5,9 +5,9 @@ package models
 
 import (
 	strfmt "github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/swag"
 )
 
 // ValidationError validation error
@@ -28,6 +28,15 @@ func (m *ValidationError) UnmarshalJSON(raw []byte) error {
 	}
 	m.Error = aO0
 
+	var data struct {
+		Field string `json:"field,omitempty"`
+	}
+	if err := swag.ReadJSON(raw, &data); err != nil {
+		return err
+	}
+
+	m.Field = data.Field
+
 	return nil
 }
 
@@ -40,6 +49,18 @@ func (m ValidationError) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 	_parts = append(_parts, aO0)
+
+	var data struct {
+		Field string `json:"field,omitempty"`
+	}
+
+	data.Field = m.Field
+
+	jsonData, err := swag.WriteJSON(data)
+	if err != nil {
+		return nil, err
+	}
+	_parts = append(_parts, jsonData)
 
 	return swag.ConcatJSON(_parts...), nil
 }

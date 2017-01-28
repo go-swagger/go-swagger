@@ -4,10 +4,12 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"strconv"
+
 	strfmt "github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
@@ -56,6 +58,31 @@ func (m *Task) UnmarshalJSON(raw []byte) error {
 	}
 	m.TaskCard = aO0
 
+	var data struct {
+		Attachments map[string]TaskAttachmentsAnon `json:"attachments,omitempty"`
+
+		Comments []*Comment `json:"comments,omitempty"`
+
+		LastUpdated strfmt.DateTime `json:"lastUpdated,omitempty"`
+
+		LastUpdatedBy *UserCard `json:"lastUpdatedBy,omitempty"`
+
+		ReportedBy *UserCard `json:"reportedBy,omitempty"`
+	}
+	if err := swag.ReadJSON(raw, &data); err != nil {
+		return err
+	}
+
+	m.Attachments = data.Attachments
+
+	m.Comments = data.Comments
+
+	m.LastUpdated = data.LastUpdated
+
+	m.LastUpdatedBy = data.LastUpdatedBy
+
+	m.ReportedBy = data.ReportedBy
+
 	return nil
 }
 
@@ -68,6 +95,34 @@ func (m Task) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 	_parts = append(_parts, aO0)
+
+	var data struct {
+		Attachments map[string]TaskAttachmentsAnon `json:"attachments,omitempty"`
+
+		Comments []*Comment `json:"comments,omitempty"`
+
+		LastUpdated strfmt.DateTime `json:"lastUpdated,omitempty"`
+
+		LastUpdatedBy *UserCard `json:"lastUpdatedBy,omitempty"`
+
+		ReportedBy *UserCard `json:"reportedBy,omitempty"`
+	}
+
+	data.Attachments = m.Attachments
+
+	data.Comments = m.Comments
+
+	data.LastUpdated = m.LastUpdated
+
+	data.LastUpdatedBy = m.LastUpdatedBy
+
+	data.ReportedBy = m.ReportedBy
+
+	jsonData, err := swag.WriteJSON(data)
+	if err != nil {
+		return nil, err
+	}
+	_parts = append(_parts, jsonData)
 
 	return swag.ConcatJSON(_parts...), nil
 }
@@ -137,6 +192,9 @@ func (m *Task) validateComments(formats strfmt.Registry) error {
 		if m.Comments[i] != nil {
 
 			if err := m.Comments[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("comments" + "." + strconv.Itoa(i))
+				}
 				return err
 			}
 		}
@@ -151,6 +209,9 @@ func (m *Task) validateLastUpdatedBy(formats strfmt.Registry) error {
 	if m.LastUpdatedBy != nil {
 
 		if err := m.LastUpdatedBy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("lastUpdatedBy")
+			}
 			return err
 		}
 	}
@@ -163,6 +224,9 @@ func (m *Task) validateReportedBy(formats strfmt.Registry) error {
 	if m.ReportedBy != nil {
 
 		if err := m.ReportedBy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("reportedBy")
+			}
 			return err
 		}
 	}

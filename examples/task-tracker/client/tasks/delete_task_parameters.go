@@ -47,6 +47,15 @@ func NewDeleteTaskParamsWithContext(ctx context.Context) *DeleteTaskParams {
 	}
 }
 
+// NewDeleteTaskParamsWithHTTPClient creates a new DeleteTaskParams object
+// with the default values initialized, and the ability to set a custom HTTPClient for a request
+func NewDeleteTaskParamsWithHTTPClient(client *http.Client) *DeleteTaskParams {
+	var ()
+	return &DeleteTaskParams{
+		HTTPClient: client,
+	}
+}
+
 /*DeleteTaskParams contains all the parameters to send to the API endpoint
 for the delete task operation typically these are written to a http.Request
 */
@@ -83,6 +92,17 @@ func (o *DeleteTaskParams) WithContext(ctx context.Context) *DeleteTaskParams {
 // SetContext adds the context to the delete task params
 func (o *DeleteTaskParams) SetContext(ctx context.Context) {
 	o.Context = ctx
+}
+
+// WithHTTPClient adds the HTTPClient to the delete task params
+func (o *DeleteTaskParams) WithHTTPClient(client *http.Client) *DeleteTaskParams {
+	o.SetHTTPClient(client)
+	return o
+}
+
+// SetHTTPClient adds the HTTPClient to the delete task params
+func (o *DeleteTaskParams) SetHTTPClient(client *http.Client) {
+	o.HTTPClient = client
 }
 
 // WithID adds the id to the delete task params

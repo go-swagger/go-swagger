@@ -48,6 +48,15 @@ func NewCreateTaskParamsWithContext(ctx context.Context) *CreateTaskParams {
 	}
 }
 
+// NewCreateTaskParamsWithHTTPClient creates a new CreateTaskParams object
+// with the default values initialized, and the ability to set a custom HTTPClient for a request
+func NewCreateTaskParamsWithHTTPClient(client *http.Client) *CreateTaskParams {
+	var ()
+	return &CreateTaskParams{
+		HTTPClient: client,
+	}
+}
+
 /*CreateTaskParams contains all the parameters to send to the API endpoint
 for the create task operation typically these are written to a http.Request
 */
@@ -84,6 +93,17 @@ func (o *CreateTaskParams) WithContext(ctx context.Context) *CreateTaskParams {
 // SetContext adds the context to the create task params
 func (o *CreateTaskParams) SetContext(ctx context.Context) {
 	o.Context = ctx
+}
+
+// WithHTTPClient adds the HTTPClient to the create task params
+func (o *CreateTaskParams) WithHTTPClient(client *http.Client) *CreateTaskParams {
+	o.SetHTTPClient(client)
+	return o
+}
+
+// SetHTTPClient adds the HTTPClient to the create task params
+func (o *CreateTaskParams) SetHTTPClient(client *http.Client) {
+	o.HTTPClient = client
 }
 
 // WithBody adds the body to the create task params
