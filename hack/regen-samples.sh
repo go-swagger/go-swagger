@@ -25,5 +25,9 @@ cd "${examples}/tutorials/todo-list/server-2"
 rm -rf cmd models restapi
 swagger generate server -A TodoList -f ./swagger.yml
 
- cd "${examples}/tutorials/todo-list/server-complete"
- swagger generate server -A TodoList -f ./swagger.yml
+cd "${examples}/tutorials/todo-list/server-complete"
+swagger generate server -A TodoList -f ./swagger.yml
+
+cd "${examples}/tutorials/custom-server"
+rm -rf gen
+swagger generate server --exclude-main -A greeter -t gen -f ./swagger/swagger.yml

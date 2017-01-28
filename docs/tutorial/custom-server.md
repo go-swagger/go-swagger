@@ -13,7 +13,7 @@ using the OpenAPI 2.0 yaml specification format.
 Please consult [the official OpenAPI 2.0 specification][OpenAPI2.0]
 for more information in case you're new to OpenAPI (Also known as Swagger).
 
-The end product of this tutorial can be seen and downloaded at: https://github.com/GlenDC/custom-swagger-server
+The end product of this tutorial can be found as `./examples/tutorials/custom-server`.
 
 The server we'll be building, will be generated using the following spec:
 
