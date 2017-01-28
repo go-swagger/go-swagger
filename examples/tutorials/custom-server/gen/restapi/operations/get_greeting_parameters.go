@@ -29,7 +29,7 @@ type GetGreetingParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request
 
-	/*
+	/*defaults to World if not given
 	  In: query
 	*/
 	Name *string

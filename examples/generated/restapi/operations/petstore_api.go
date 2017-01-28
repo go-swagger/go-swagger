@@ -129,7 +129,7 @@ type PetstoreAPI struct {
 	// XMLProducer registers a producer for a "application/xml" mime type
 	XMLProducer runtime.Producer
 
-	// PetstoreAuthAuth registers a functin that takes an access token and a collection of required scopes and returns a principal
+	// PetstoreAuthAuth registers a function that takes an access token and a collection of required scopes and returns a principal
 	// it performs authentication based on an oauth2 bearer token provided in the request
 	PetstoreAuthAuth func(string, []string) (interface{}, error)
 
@@ -432,92 +432,92 @@ func (o *PetstoreAPI) initHandlerCache() {
 	}
 
 	if o.handlers["POST"] == nil {
-		o.handlers[strings.ToUpper("POST")] = make(map[string]http.Handler)
+		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/pets"] = pet.NewAddPet(o.context, o.PetAddPetHandler)
 
 	if o.handlers["POST"] == nil {
-		o.handlers[strings.ToUpper("POST")] = make(map[string]http.Handler)
+		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/users"] = user.NewCreateUser(o.context, o.UserCreateUserHandler)
 
 	if o.handlers["POST"] == nil {
-		o.handlers[strings.ToUpper("POST")] = make(map[string]http.Handler)
+		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/users/createWithArray"] = user.NewCreateUsersWithArrayInput(o.context, o.UserCreateUsersWithArrayInputHandler)
 
 	if o.handlers["POST"] == nil {
-		o.handlers[strings.ToUpper("POST")] = make(map[string]http.Handler)
+		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/users/createWithList"] = user.NewCreateUsersWithListInput(o.context, o.UserCreateUsersWithListInputHandler)
 
 	if o.handlers["DELETE"] == nil {
-		o.handlers[strings.ToUpper("DELETE")] = make(map[string]http.Handler)
+		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/stores/order/{orderId}"] = store.NewDeleteOrder(o.context, o.StoreDeleteOrderHandler)
 
 	if o.handlers["DELETE"] == nil {
-		o.handlers[strings.ToUpper("DELETE")] = make(map[string]http.Handler)
+		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/pets/{petId}"] = pet.NewDeletePet(o.context, o.PetDeletePetHandler)
 
 	if o.handlers["DELETE"] == nil {
-		o.handlers[strings.ToUpper("DELETE")] = make(map[string]http.Handler)
+		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/users/{username}"] = user.NewDeleteUser(o.context, o.UserDeleteUserHandler)
 
 	if o.handlers["GET"] == nil {
-		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/pets/findByStatus"] = pet.NewFindPetsByStatus(o.context, o.PetFindPetsByStatusHandler)
 
 	if o.handlers["GET"] == nil {
-		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/pets/findByTags"] = pet.NewFindPetsByTags(o.context, o.PetFindPetsByTagsHandler)
 
 	if o.handlers["GET"] == nil {
-		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/stores/order/{orderId}"] = store.NewGetOrderByID(o.context, o.StoreGetOrderByIDHandler)
 
 	if o.handlers["GET"] == nil {
-		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/pets/{petId}"] = pet.NewGetPetByID(o.context, o.PetGetPetByIDHandler)
 
 	if o.handlers["GET"] == nil {
-		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/{username}"] = user.NewGetUserByName(o.context, o.UserGetUserByNameHandler)
 
 	if o.handlers["GET"] == nil {
-		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/login"] = user.NewLoginUser(o.context, o.UserLoginUserHandler)
 
 	if o.handlers["GET"] == nil {
-		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/logout"] = user.NewLogoutUser(o.context, o.UserLogoutUserHandler)
 
 	if o.handlers["POST"] == nil {
-		o.handlers[strings.ToUpper("POST")] = make(map[string]http.Handler)
+		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/stores/order"] = store.NewPlaceOrder(o.context, o.StorePlaceOrderHandler)
 
 	if o.handlers["PUT"] == nil {
-		o.handlers[strings.ToUpper("PUT")] = make(map[string]http.Handler)
+		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/pets"] = pet.NewUpdatePet(o.context, o.PetUpdatePetHandler)
 
 	if o.handlers["POST"] == nil {
-		o.handlers[strings.ToUpper("POST")] = make(map[string]http.Handler)
+		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/pets/{petId}"] = pet.NewUpdatePetWithForm(o.context, o.PetUpdatePetWithFormHandler)
 
 	if o.handlers["PUT"] == nil {
-		o.handlers[strings.ToUpper("PUT")] = make(map[string]http.Handler)
+		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/users/{username}"] = user.NewUpdateUser(o.context, o.UserUpdateUserHandler)
 

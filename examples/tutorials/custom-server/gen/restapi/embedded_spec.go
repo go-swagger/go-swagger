@@ -25,6 +25,7 @@ func init() {
         "parameters": [
           {
             "type": "string",
+            "description": "defaults to World if not given",
             "name": "name",
             "in": "query"
           }

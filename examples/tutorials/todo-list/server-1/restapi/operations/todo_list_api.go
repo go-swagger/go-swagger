@@ -202,9 +202,9 @@ func (o *TodoListAPI) initHandlerCache() {
 	}
 
 	if o.handlers["GET"] == nil {
-		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/"] = todos.NewFindTodos(o.context, o.TodosFindTodosHandler)
+	o.handlers["GET"][""] = todos.NewFindTodos(o.context, o.TodosFindTodosHandler)
 
 }
 

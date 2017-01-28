@@ -48,6 +48,15 @@ func NewUpdateOneParamsWithContext(ctx context.Context) *UpdateOneParams {
 	}
 }
 
+// NewUpdateOneParamsWithHTTPClient creates a new UpdateOneParams object
+// with the default values initialized, and the ability to set a custom HTTPClient for a request
+func NewUpdateOneParamsWithHTTPClient(client *http.Client) *UpdateOneParams {
+	var ()
+	return &UpdateOneParams{
+		HTTPClient: client,
+	}
+}
+
 /*UpdateOneParams contains all the parameters to send to the API endpoint
 for the update one operation typically these are written to a http.Request
 */
@@ -83,6 +92,17 @@ func (o *UpdateOneParams) WithContext(ctx context.Context) *UpdateOneParams {
 // SetContext adds the context to the update one params
 func (o *UpdateOneParams) SetContext(ctx context.Context) {
 	o.Context = ctx
+}
+
+// WithHTTPClient adds the HTTPClient to the update one params
+func (o *UpdateOneParams) WithHTTPClient(client *http.Client) *UpdateOneParams {
+	o.SetHTTPClient(client)
+	return o
+}
+
+// SetHTTPClient adds the HTTPClient to the update one params
+func (o *UpdateOneParams) SetHTTPClient(client *http.Client) {
+	o.HTTPClient = client
 }
 
 // WithBody adds the body to the update one params

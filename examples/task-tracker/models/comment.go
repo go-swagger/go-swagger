@@ -73,6 +73,9 @@ func (m *Comment) validateUser(formats strfmt.Registry) error {
 	if m.User != nil {
 
 		if err := m.User.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("user")
+			}
 			return err
 		}
 	}

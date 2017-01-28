@@ -253,22 +253,22 @@ func (o *TodoListAPI) initHandlerCache() {
 	}
 
 	if o.handlers["POST"] == nil {
-		o.handlers[strings.ToUpper("POST")] = make(map[string]http.Handler)
+		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/"] = todos.NewAddOne(o.context, o.TodosAddOneHandler)
+	o.handlers["POST"][""] = todos.NewAddOne(o.context, o.TodosAddOneHandler)
 
 	if o.handlers["DELETE"] == nil {
-		o.handlers[strings.ToUpper("DELETE")] = make(map[string]http.Handler)
+		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/{id}"] = todos.NewDestroyOne(o.context, o.TodosDestroyOneHandler)
 
 	if o.handlers["GET"] == nil {
-		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/"] = todos.NewFind(o.context, o.TodosFindHandler)
+	o.handlers["GET"][""] = todos.NewFind(o.context, o.TodosFindHandler)
 
 	if o.handlers["PUT"] == nil {
-		o.handlers[strings.ToUpper("PUT")] = make(map[string]http.Handler)
+		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/{id}"] = todos.NewUpdateOne(o.context, o.TodosUpdateOneHandler)
 

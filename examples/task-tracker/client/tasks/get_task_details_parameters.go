@@ -47,6 +47,15 @@ func NewGetTaskDetailsParamsWithContext(ctx context.Context) *GetTaskDetailsPara
 	}
 }
 
+// NewGetTaskDetailsParamsWithHTTPClient creates a new GetTaskDetailsParams object
+// with the default values initialized, and the ability to set a custom HTTPClient for a request
+func NewGetTaskDetailsParamsWithHTTPClient(client *http.Client) *GetTaskDetailsParams {
+	var ()
+	return &GetTaskDetailsParams{
+		HTTPClient: client,
+	}
+}
+
 /*GetTaskDetailsParams contains all the parameters to send to the API endpoint
 for the get task details operation typically these are written to a http.Request
 */
@@ -83,6 +92,17 @@ func (o *GetTaskDetailsParams) WithContext(ctx context.Context) *GetTaskDetailsP
 // SetContext adds the context to the get task details params
 func (o *GetTaskDetailsParams) SetContext(ctx context.Context) {
 	o.Context = ctx
+}
+
+// WithHTTPClient adds the HTTPClient to the get task details params
+func (o *GetTaskDetailsParams) WithHTTPClient(client *http.Client) *GetTaskDetailsParams {
+	o.SetHTTPClient(client)
+	return o
+}
+
+// SetHTTPClient adds the HTTPClient to the get task details params
+func (o *GetTaskDetailsParams) SetHTTPClient(client *http.Client) {
+	o.HTTPClient = client
 }
 
 // WithID adds the id to the get task details params

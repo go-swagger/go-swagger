@@ -4,10 +4,12 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"strconv"
+
 	strfmt "github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
@@ -75,6 +77,9 @@ func (m *Pet) validateCategory(formats strfmt.Registry) error {
 	if m.Category != nil {
 
 		if err := m.Category.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("category")
+			}
 			return err
 		}
 	}
@@ -115,6 +120,9 @@ func (m *Pet) validateTags(formats strfmt.Registry) error {
 		if m.Tags[i] != nil {
 
 			if err := m.Tags[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("tags" + "." + strconv.Itoa(i))
+				}
 				return err
 			}
 		}

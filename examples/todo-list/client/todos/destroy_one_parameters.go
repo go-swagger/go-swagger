@@ -46,6 +46,15 @@ func NewDestroyOneParamsWithContext(ctx context.Context) *DestroyOneParams {
 	}
 }
 
+// NewDestroyOneParamsWithHTTPClient creates a new DestroyOneParams object
+// with the default values initialized, and the ability to set a custom HTTPClient for a request
+func NewDestroyOneParamsWithHTTPClient(client *http.Client) *DestroyOneParams {
+	var ()
+	return &DestroyOneParams{
+		HTTPClient: client,
+	}
+}
+
 /*DestroyOneParams contains all the parameters to send to the API endpoint
 for the destroy one operation typically these are written to a http.Request
 */
@@ -79,6 +88,17 @@ func (o *DestroyOneParams) WithContext(ctx context.Context) *DestroyOneParams {
 // SetContext adds the context to the destroy one params
 func (o *DestroyOneParams) SetContext(ctx context.Context) {
 	o.Context = ctx
+}
+
+// WithHTTPClient adds the HTTPClient to the destroy one params
+func (o *DestroyOneParams) WithHTTPClient(client *http.Client) *DestroyOneParams {
+	o.SetHTTPClient(client)
+	return o
+}
+
+// SetHTTPClient adds the HTTPClient to the destroy one params
+func (o *DestroyOneParams) SetHTTPClient(client *http.Client) {
+	o.HTTPClient = client
 }
 
 // WithID adds the id to the destroy one params

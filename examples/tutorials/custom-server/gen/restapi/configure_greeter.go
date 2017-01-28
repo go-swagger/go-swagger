@@ -9,7 +9,7 @@ import (
 	middleware "github.com/go-openapi/runtime/middleware"
 	graceful "github.com/tylerb/graceful"
 
-	"github.com/glendc/custom-swagger-server/gen/restapi/operations"
+	"github.com/go-swagger/go-swagger/examples/tutorials/custom-server/gen/restapi/operations"
 )
 
 // This file is safe to edit. Once it exists it will not be overwritten

@@ -17,7 +17,7 @@ import (
 
 // This file is safe to edit. Once it exists it will not be overwritten
 
-//go:generate swagger generate server --target .. --name Petstore --spec ..
+//go:generate swagger generate server --target .. --name Petstore --spec ../swagger.json
 
 func configureFlags(api *operations.PetstoreAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }

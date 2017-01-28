@@ -8,9 +8,9 @@ import (
 	"strconv"
 
 	strfmt "github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
@@ -151,6 +151,9 @@ func (m *TaskCard) validateAssignedTo(formats strfmt.Registry) error {
 	if m.AssignedTo != nil {
 
 		if err := m.AssignedTo.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("assignedTo")
+			}
 			return err
 		}
 	}
@@ -201,6 +204,9 @@ func (m *TaskCard) validateMilestone(formats strfmt.Registry) error {
 	if m.Milestone != nil {
 
 		if err := m.Milestone.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("milestone")
+			}
 			return err
 		}
 	}
