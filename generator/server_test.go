@@ -150,3 +150,24 @@ func TestServer_InvalidSpec(t *testing.T) {
 	opts.ValidateSpec = true
 	assert.Error(t, GenerateServer("foo", nil, nil, &opts))
 }
+
+func TestServer_TrailingSlash(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stderr)
+	gen, err := testAppGenertor(t, "../fixtures/bugs/899/swagger.yml", "trailing slash")
+	if assert.NoError(t, err) {
+		app, err := gen.makeCodegenApp()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			if assert.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app)) {
+				formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(formatted)
+					assertInCode(t, `o.handlers["GET"]["/trailingslashpath"]`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
