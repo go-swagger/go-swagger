@@ -13,10 +13,13 @@ import (
 	"flag"
 	"fmt"
 	"go/build"
+	"go/format"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"sync"
@@ -105,16 +108,19 @@ func main() {
 		_          = generate("./encoding/htmlindex", unicode, language)
 		_          = generate("./currency", unicode, cldr, language, internal)
 		_          = generate("./internal/number", unicode, cldr, language, internal)
+		_          = generate("./internal/export/idna", unicode, bidi, norm)
 		_          = generate("./language/display", unicode, cldr, language, internal)
 		_          = generate("./collate", unicode, norm, cldr, language, rangetable)
 		_          = generate("./search", unicode, norm, cldr, language, rangetable)
 	)
+	all.Wait()
+
+	// Copy exported packages to the destination golang.org repo.
+	copyExported("golang.org/x/net/idna")
 
 	if updateCore {
 		copyVendored()
-		generate("vendor/golang_org/x/net/idna", unicode, norm, width, cases)
 	}
-	all.Wait()
 
 	if hasErrors {
 		fmt.Println("FAIL")
@@ -187,23 +193,79 @@ func generate(pkg string, deps ...*dependency) *dependency {
 	return &wg
 }
 
+// copyExported copies a package in x/text/internal/export to the
+// destination repository.
+func copyExported(p string) {
+	copyPackage(
+		filepath.Join("internal", "export", path.Base(p)),
+		filepath.Join("..", filepath.FromSlash(p[len("golang.org/x"):])),
+		"golang.org/x/text/internal/export/"+path.Base(p),
+		p)
+}
+
+// copyVendored copies packages used by Go core into the vendored directory.
 func copyVendored() {
-	// Copy the vendored files. Some more may need to be copied in by hand.
-	dir := filepath.Join(build.Default.GOROOT, "src/vendor/golang_org/x/text")
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
-			return nil
-		}
-		b, err := ioutil.ReadFile(path[len(dir)+1:])
-		if err != nil {
+	root := filepath.Join(build.Default.GOROOT, filepath.FromSlash("src/vendor/golang_org/x"))
+
+	err := filepath.Walk(root, func(dir string, info os.FileInfo, err error) error {
+		if err != nil || !info.IsDir() || root == dir {
 			return err
 		}
-		vprintf("=== COPY %s\n", path)
-		b = bytes.Replace(b, []byte("golang.org"), []byte("golang_org"), -1)
-		return ioutil.WriteFile(path, b, 0666)
+		src := dir[len(root)+1:]
+		const slash = string(filepath.Separator)
+		if c := strings.Split(src, slash); c[0] == "text" {
+			// Copy a text repo package from its normal location.
+			src = strings.Join(c[1:], slash)
+		} else {
+			// Copy the vendored package if it exists in the export directory.
+			src = filepath.Join("internal", "export", filepath.Base(src))
+		}
+		copyPackage(src, dir, "golang.org", "golang_org")
+		return nil
 	})
 	if err != nil {
-		fmt.Println("Copying vendored files failed:", err)
+		fmt.Printf("Seeding directory %s has failed %v:", root, err)
+		os.Exit(1)
+	}
+}
+
+// goGenRE is used to remove go:generate lines.
+var goGenRE = regexp.MustCompile("//go:generate[^\n]*\n")
+
+// copyPackage copies relevant files from a directory in x/text to the
+// destination package directory. The destination package is assumed to have
+// the same name. For each copied file go:generate lines are removed and
+// and package comments are rewritten to the new path.
+func copyPackage(dirSrc, dirDst, search, replace string) {
+	err := filepath.Walk(dirSrc, func(file string, info os.FileInfo, err error) error {
+		base := filepath.Base(file)
+		if err != nil || info.IsDir() ||
+			!strings.HasSuffix(base, ".go") ||
+			strings.HasSuffix(base, "_test.go") ||
+			// Don't process subdirectories.
+			filepath.Dir(file) != dirSrc {
+			return nil
+		}
+		b, err := ioutil.ReadFile(file)
+		if err != nil || bytes.Contains(b, []byte("\n// +build ignore")) {
+			return err
+		}
+		// Fix paths.
+		b = bytes.Replace(b, []byte(search), []byte(replace), -1)
+		// Remove go:generate lines.
+		b = goGenRE.ReplaceAllLiteral(b, nil)
+		const comment = "// Copied from the golang.org/x/text repo; DO NOT EDIT\n\n"
+		b = append([]byte(comment), b...)
+		if b, err = format.Source(b); err != nil {
+			fmt.Println("Failed to format file:", err)
+			os.Exit(1)
+		}
+		file = filepath.Join(dirDst, base)
+		vprintf("=== COPY %s\n", file)
+		return ioutil.WriteFile(file, b, 0666)
+	})
+	if err != nil {
+		fmt.Println("Copying exported files failed:", err)
 		os.Exit(1)
 	}
 }

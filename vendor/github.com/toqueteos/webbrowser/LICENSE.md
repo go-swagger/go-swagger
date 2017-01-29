@@ -1,5 +1,5 @@
 The MIT License (MIT)
-Copyright (c) 2013-16 by Carlos Cobo and contributors.
+Copyright (c) 2013-17 by Carlos Cobo and contributors.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in

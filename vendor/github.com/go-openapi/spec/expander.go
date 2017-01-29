@@ -416,7 +416,6 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 
 	data, _, _, err := r.load(currentRef.GetURL())
 	if err != nil {
-		panic(err)
 		return err
 	}
 
@@ -444,7 +443,6 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 
 					data, _, _, err = r.load(refURL)
 					if err != nil {
-						panic(err)
 						return err
 					}
 				} else {
@@ -642,6 +640,10 @@ func expandSchema(target Schema, parentRefs []string, resolver *schemaLoader) (*
 			return &target, err
 		}
 
+		if swag.ContainsStringsCI(parentRefs, target.Ref.String()) {
+			debugLog("ref already exists in parent")
+			return &target, nil
+		}
 		parentRefs = append(parentRefs, target.Ref.String())
 		target = *t
 	}
