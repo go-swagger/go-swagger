@@ -41,7 +41,6 @@ func init() {
         }
       }
     }
-  },
-  "definitions": null
+  }
 }`))
 }
