@@ -11,15 +11,15 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-
+	"time"
 	"unicode"
 	"unicode/utf8"
 )
 
+var fieldsRequiredByDefault bool
+
 const maxURLRuneCount = 2083
 const minURLRuneCount = 3
-
-var fieldsRequiredByDefault bool
 
 // SetFieldsRequiredByDefault causes validation to fail when struct fields
 // do not include validations or are not explicitly marked as exempt (using `valid:"-"` or `valid:"email,optional"`).
@@ -47,9 +47,7 @@ func IsEmail(str string) bool {
 
 // IsURL check if the string is an URL.
 func IsURL(str string) bool {
-	characterLength := utf8.RuneCountInString(str)
-
-	if str == "" || characterLength >= maxURLRuneCount || characterLength <= minURLRuneCount || strings.HasPrefix(str, ".") {
+	if str == "" || utf8.RuneCountInString(str) >= maxURLRuneCount || len(str) <= minURLRuneCount || strings.HasPrefix(str, ".") {
 		return false
 	}
 	u, err := url.Parse(str)
@@ -599,7 +597,7 @@ func isValidTag(s string) bool {
 	}
 	for _, c := range s {
 		switch {
-		case strings.ContainsRune("\\'\"!#$%&()*+-./:<=>?@[]^_{|}~ ", c):
+		case strings.ContainsRune("!#$%&()*+-./:<=>?@[]^_{|}~ ", c):
 			// Backslash and quote chars are reserved, but
 			// otherwise any punctuation chars are allowed
 			// in a tag name.
@@ -625,6 +623,15 @@ func IsSemver(str string) bool {
 	return rxSemver.MatchString(str)
 }
 
+func IsTime(str string, format string) bool {
+	_, err := time.Parse(format, str)
+	return err == nil
+}
+
+func IsRFC3339(str string) bool {
+	return IsTime(str, time.RFC3339)
+}
+
 // ByteLength check string's length
 func ByteLength(str string, params ...string) bool {
 	if len(params) == 2 {
@@ -634,6 +641,12 @@ func ByteLength(str string, params ...string) bool {
 	}
 
 	return false
+}
+
+// RuneLength check string's length
+// Alias for StringLength
+func RuneLength(str string, params ...string) bool {
+	return StringLength(str, params...)
 }
 
 // StringMatches checks if a string matches a given pattern.
@@ -690,11 +703,6 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value) (bool, e
 	}
 
 	options := parseTagIntoMap(tag)
-	if isEmptyValue(v) {
-		// an empty value is not validated, check only required
-		return checkRequired(v, t, options)
-	}
-
 	var customTypeErrors Errors
 	var customTypeValidatorsExist bool
 	for validatorName, customErrorMessage := range options {
@@ -714,6 +722,11 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value) (bool, e
 			return false, customTypeErrors
 		}
 		return true, nil
+	}
+
+	if isEmptyValue(v) {
+		// an empty value is not validated, check only required
+		return checkRequired(v, t, options)
 	}
 
 	switch v.Kind() {

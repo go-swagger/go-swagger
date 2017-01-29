@@ -19,7 +19,7 @@ import "net/http"
 func newSecureAPI(ctx *Context, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		route, _ := ctx.RouteInfo(r)
-		if len(route.Authenticators) == 0 {
+		if route != nil && len(route.Authenticators) == 0 {
 			next.ServeHTTP(rw, r)
 			return
 		}

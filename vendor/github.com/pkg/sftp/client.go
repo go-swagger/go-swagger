@@ -640,9 +640,10 @@ func (f *File) Name() string {
 
 const maxConcurrentRequests = 64
 
-// Read reads up to len(b) bytes from the File. It returns the number of
-// bytes read and an error, if any. EOF is signaled by a zero count with
-// err set to io.EOF.
+// Read reads up to len(b) bytes from the File. It returns the number of bytes
+// read and an error, if any. Read follows io.Reader semantics, so when Read
+// encounters an error or EOF condition after successfully reading n > 0 bytes,
+// it returns the number of bytes read.
 func (f *File) Read(b []byte) (int, error) {
 	// Split the read into multiple maxPacket sized concurrent reads
 	// bounded by maxConcurrentRequests. This allows reads with a suitably

@@ -155,7 +155,7 @@ func New(host, basePath string, schemes []string) *Runtime {
 	if !strings.HasPrefix(rt.BasePath, "/") {
 		rt.BasePath = "/" + rt.BasePath
 	}
-	rt.Debug = os.Getenv("DEBUG") == "1"
+	rt.Debug = len(os.Getenv("DEBUG")) > 0
 	if len(schemes) > 0 {
 		rt.schemes = schemes
 	}

@@ -51,10 +51,10 @@ func (o *untypedRequestBinder) Bind(request *http.Request, routeParams RoutePara
 	val := reflect.Indirect(reflect.ValueOf(data))
 	isMap := val.Kind() == reflect.Map
 	var result []error
-
+	debugLog("binding %d parameters for %s %s", len(o.Parameters), request.Method, request.URL.EscapedPath())
 	for fieldName, param := range o.Parameters {
 		binder := o.paramBinders[fieldName]
-
+		debugLog("binding paramter %s for %s %s", fieldName, request.Method, request.URL.EscapedPath())
 		var target reflect.Value
 		if !isMap {
 			binder.Name = fieldName

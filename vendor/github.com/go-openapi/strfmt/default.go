@@ -18,7 +18,6 @@ import (
 	"database/sql/driver"
 	"encoding/base64"
 	"fmt"
-	"net/url"
 	"regexp"
 	"strings"
 
@@ -66,12 +65,6 @@ var (
 	rxUUID5    = regexp.MustCompile(UUID5Pattern)
 )
 
-// IsStrictURI returns true when the string is an absolute URI
-func IsStrictURI(str string) bool {
-	_, err := url.ParseRequestURI(str)
-	return err == nil
-}
-
 // IsHostname returns true when the string is a valid hostname
 func IsHostname(str string) bool {
 	if !rxHostname.MatchString(str) {
@@ -116,7 +109,7 @@ func IsUUID5(str string) bool {
 
 func init() {
 	u := URI("")
-	Default.Add("uri", &u, IsStrictURI)
+	Default.Add("uri", &u, govalidator.IsRequestURI)
 
 	eml := Email("")
 	Default.Add("email", &eml, govalidator.IsEmail)
