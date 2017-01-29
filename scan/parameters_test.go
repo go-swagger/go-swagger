@@ -182,8 +182,8 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, "string", param.Type)
 			assert.True(t, param.Required)
 			assert.Equal(t, "Category", param.Extensions["x-go-name"])
-            assert.EqualValues(t, []interface{}{"foo","bar","none"}, param.Enum, "%s enum values are incorrect", param.Name)
-            assert.Equal(t, "bar", param.Default, "%s default value is incorrect", param.Name)
+			assert.EqualValues(t, []interface{}{"foo", "bar", "none"}, param.Enum, "%s enum values are incorrect", param.Name)
+			assert.Equal(t, "bar", param.Default, "%s default value is incorrect", param.Name)
 
 		case "foo_slice":
 			assert.Equal(t, "a FooSlice has foos which are strings", param.Description)
@@ -287,8 +287,8 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, 2, index, "%s index incorrect", param.Name)
 		case "created":
 			assert.Equal(t, 3, index, "%s index incorrect", param.Name)
-        case "category":
-            assert.Equal(t, 4, index, "%s index incorrect", param.Name)
+		case "category":
+			assert.Equal(t, 4, index, "%s index incorrect", param.Name)
 		case "foo_slice":
 			assert.Equal(t, 5, index, "%s index incorrect", param.Name)
 		case "bar_slice":
