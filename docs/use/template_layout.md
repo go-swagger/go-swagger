@@ -1,7 +1,7 @@
 # Custom generation
 
 To completely customize the templates that are being considered, their file names and paths, go-swagger allows you to pass in a configuration file.
-There are basically 4 types of items that are being generated: 
+There are basically 4 types of items that are being generated:
 
   * [Models](https://godoc.org/github.com/go-swagger/go-swagger/generator#GenDefinition)
   * [Operations](https://godoc.org/github.com/go-swagger/go-swagger/generator#GenOperation)
@@ -13,7 +13,7 @@ You also provide the target directory and the file name. Directory and file name
 
 We use the viper library to read config values, this means you can provide the configuration file in whichever format you like: json, yaml, hcl or toml.
 
-## Available filters in templates 
+## Available filters in templates
 
 There are a number of filters you can use inside a template to manipulate values:
 
@@ -27,7 +27,7 @@ snakize | converts to lowercase and separates words with an underscore; someLong
 dasherize | convert to lowercase and separates words with a dash; someLongName becomes some-long-name
 pluralizeFirstWord | pluralizes the first word of a sentence
 json | converts the argument to compact json
-prettyjson | converts the argument to pretty printed json
+prettyjson | converts the argument to pretty-printed json
 stripPackage | strips the package name from an identifier
 upper | converts the string to upper case
 contains | for use in conditions, returns true when the second argument is contained in the first argument, the first argument is a list of strings
