@@ -13,8 +13,8 @@ import (
   "github.com/go-openapi/swag"
   {{ if .UseGoStructFlags }}flags "github.com/jessevdk/go-flags"
   {{ end -}}
-  {{ if .UsePFlags }}"github.com/go-openapi/runtime/flagext"
-  flag "github.com/spf13/pflag"
+  "github.com/go-openapi/runtime/flagext"
+  {{ if .UsePFlags }}flag "github.com/spf13/pflag"
   {{ end -}}
   graceful "github.com/tylerb/graceful"
 
