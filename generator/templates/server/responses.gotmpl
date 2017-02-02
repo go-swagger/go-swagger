@@ -50,7 +50,11 @@ if len({{ .ValueExpression }}S) > 0 {
 }
 {{ end -}}
 {{ end -}}
-{{ define "serverresponse" }}/*{{ if .Description }}{{ pascalize .Name }} {{ .Description }}{{else}}{{ pascalize .Name }} {{ humanize .Name }}{{end}}
+{{ define "serverresponse" }}
+{{ if ne .Code -1 }}// HTTP code for type {{ pascalize .Name}}
+const {{ pascalize .Name}}Code int = {{ .Code }}{{ end }}
+
+/*{{ if .Description }}{{ pascalize .Name }} {{ .Description }}{{else}}{{ pascalize .Name }} {{ humanize .Name }}{{end}}
 
 swagger:response {{ camelize .Name }}
 */
