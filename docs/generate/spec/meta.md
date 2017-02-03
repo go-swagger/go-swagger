@@ -24,7 +24,7 @@ Annotation | Format
 -----------|--------
 **Terms Of Service** | allows for either a url or a free text definition describing the terms of services for the API
 **Consumes** | a list of default (global) mime type values, one per line, for the content the API receives
-**Produces** | a list of default (global) mime type values, one per line, for the conten the API sends
+**Produces** | a list of default (global) mime type values, one per line, for the content the API sends
 **Schemes** | a list of default schemes the API accept (possible values: http, https, ws, wss) https is preferred as default when configured
 **Version** | the current version of the API
 **Host** | the host from where the spec is served
