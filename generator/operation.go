@@ -354,8 +354,13 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	var successResponses []GenResponse
 	if operation.Responses != nil {
 		for _, v := range srs {
+			name, ok := v.Response.Extensions.GetString("x-go-name")
+			if !ok {
+				name = runtime.Statuses[v.Code]
+			}
+			name = swag.ToJSONName(b.Name + " " + name)
 			isSuccess := v.Code/100 == 2
-			gr, err := b.MakeResponse(receiver, swag.ToJSONName(b.Name+" "+runtime.Statuses[v.Code]), isSuccess, resolver, v.Code, v.Response)
+			gr, err := b.MakeResponse(receiver, name, isSuccess, resolver, v.Code, v.Response)
 			if err != nil {
 				return GenOperation{}, err
 			}
