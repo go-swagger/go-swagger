@@ -379,7 +379,7 @@ func TestGenResponses_Issue776_SwaggerTemplate(t *testing.T) {
 
 func TestIssue846(t *testing.T) {
 	// do it 8 times, to ensure it's always in the same order
-	for i := 0 ; i < 8 ; i++ {
+	for i := 0; i < 8; i++ {
 		b, err := opBuilder("getFoo", "../fixtures/bugs/846/swagger.yml")
 		if assert.NoError(t, err) {
 			op, err := b.MakeOperation()
@@ -390,14 +390,14 @@ func TestIssue846(t *testing.T) {
 					ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
 					if assert.NoError(t, err) {
 						// sorted by code
-						assert.Regexp(t, "(?s)" +
-							"GetFooOK struct.+" +
-							"GetFooNotFound struct.+" +
+						assert.Regexp(t, "(?s)"+
+							"GetFooOK struct.+"+
+							"GetFooNotFound struct.+"+
 							"GetFooInternalServerError struct", string(ff))
 						// sorted by name
-						assert.Regexp(t, "(?s)" +
-							"GetFooInternalServerErrorBody struct.+" +
-							"GetFooNotFoundBody struct.+" +
+						assert.Regexp(t, "(?s)"+
+							"GetFooInternalServerErrorBody struct.+"+
+							"GetFooNotFoundBody struct.+"+
 							"GetFooOKBody struct", string(ff))
 					} else {
 						fmt.Println(buf.String())
@@ -426,6 +426,28 @@ func TestIssue881Deep(t *testing.T) {
 		if assert.NoError(t, err) {
 			var buf bytes.Buffer
 			assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+		}
+	}
+}
+
+func TestGenResponses_XGoName(t *testing.T) {
+	b, err := opBuilder("putTesting", "../fixtures/specs/response_name.json")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			var buf bytes.Buffer
+			opts := opts()
+			if assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op)) {
+				ff, err := opts.LanguageOpts.FormatContent("put_testing_responses.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					assertInCode(t, "const PutTestingAlternateNameCode int =", string(ff))
+					assertInCode(t, "type PutTestingAlternateName struct {", string(ff))
+					assertInCode(t, "func NewPutTestingAlternateName() *PutTestingAlternateName {", string(ff))
+					assertInCode(t, "func (o *PutTestingAlternateName) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {", string(ff))
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
 		}
 	}
 }
