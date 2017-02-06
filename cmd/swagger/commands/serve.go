@@ -48,9 +48,6 @@ func (s *ServeCmd) Execute(args []string) error {
 
 	basePath := s.BasePath
 	if basePath == "" {
-		basePath = s.BasePath
-	}
-	if basePath == "" {
 		basePath = "/"
 	}
 
