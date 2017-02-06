@@ -2,7 +2,7 @@
 
 The **swagger:parameters** annotation links a struct to one or more operations. The parameters in the resulting swagger spec can be composed of several structs.
 There are no guarantees given on how property name overlaps are resolved when several structs apply to the same operation.
-This tag works very similar to the swagger:model tag except that it produces valid parameter objects instead of schema
+This tag works very similarly to the swagger:model tag except that it produces valid parameter objects instead of schema
 objects.
 <!--more-->
 When this appears anywhere in a comment for a struct, then that struct becomes a schema

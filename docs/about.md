@@ -5,8 +5,8 @@ series = "home"
 weight = 9
 +++
 
-There are 2 axis along which your API and its documentation tend to evolve. This toolkit aims to support you along all
-axis and remove the repetitive nature of writing what is essentially boilerplate code for faster iteration times.
+There are 2 axes along which your API and its documentation tend to evolve. This toolkit aims to support you along all
+axes and remove the repetitive nature of writing what is essentially boilerplate code for faster iteration times.
 
 <!--more-->
 
