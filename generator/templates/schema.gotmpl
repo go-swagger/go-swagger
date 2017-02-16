@@ -35,7 +35,7 @@
 
 // Unmarshal{{ pascalize .Name }}Slice unmarshals polymorphic slices of {{ pascalize .Name }}
 func Unmarshal{{ pascalize .Name }}Slice(reader io.Reader, consumer runtime.Consumer) ([]{{ pascalize .Name }}, error) {
-  var elements [][]byte
+  var elements []json.RawMessage
   if err := consumer.Consume(reader, &elements); err != nil {
     return nil, err
   }
