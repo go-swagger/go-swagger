@@ -54,6 +54,7 @@ type GenSchema struct {
 	AdditionalItems         *GenSchema
 	Object                  *GenSchema
 	XMLName                 string
+	CustomTag               string
 	Properties              GenSchemaList
 	AllOf                   []GenSchema
 	HasAdditionalProperties bool

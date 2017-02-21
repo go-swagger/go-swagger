@@ -10,7 +10,8 @@
   {{- .Name }}
   {{- if not .Required }}{{ if not .IsArray }},omitempty{{ end }}{{ end }}
 {{- end }}"
-{{- if .XMLName }} xml:"{{ .XMLName }}"{{ end }}`
+{{- if .XMLName }} xml:"{{ .XMLName }}"{{ end }}
+{{- if .CustomTag }} {{ .CustomTag }}{{ end }}`
 {{ end }}
 
 {{- define "tuplefield" }}
@@ -18,7 +19,8 @@
     // {{ template "docstring" . }}
     {{- template "propertyValidationDocString" .}}
 {{ end }}
-{{- pascalize .Name}} {{ template "schemaType" . }} `json:"-"` // custom serializer
+{{- pascalize .Name}} {{ template "schemaType" . }} `json:"-"
+{{- if .CustomTag }} {{ .CustomTag }}{{ end }}` // custom serializer
 {{ end }}
 
 {{- define "structfieldIface" }}
