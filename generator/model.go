@@ -726,6 +726,10 @@ func (sg *schemaGenContext) buildProperties() error {
 			sg.GenSchema.HasBaseType = true
 		}
 		sg.MergeResult(emprop, false)
+
+		if customTag, found := emprop.Schema.Extensions["x-go-custom-tag"]; found {
+			emprop.GenSchema.CustomTag = customTag.(string)
+		}
 		sg.GenSchema.Properties = append(sg.GenSchema.Properties, emprop.GenSchema)
 	}
 	sort.Sort(sg.GenSchema.Properties)

@@ -157,9 +157,10 @@ func TestGenerateModel_SchemaField(t *testing.T) {
 	gmp.Name = "some name"
 	gmp.resolvedType = resolvedType{GoType: "string", IsPrimitive: true}
 	gmp.Title = "The title of the property"
+	gmp.CustomTag = "mytag:\"foobar,foobaz\""
 
 	tt.assertRender(gmp, `// The title of the property
-`+"SomeName string `json:\"some name,omitempty\"`\n")
+`+"SomeName string `json:\"some name,omitempty\" mytag:\"foobar,foobaz\"`\n")
 
 	var fl float64 = 10
 	var in1 int64 = 20
@@ -191,7 +192,7 @@ func TestGenerateModel_SchemaField(t *testing.T) {
 // Max Items: 30
 // Min Items: 30
 // Unique: true
-`+"SomeName string `json:\"some name\"`\n")
+`+"SomeName string `json:\"some name\" mytag:\"foobar,foobaz\"`\n")
 }
 
 var schTypeGenDataSimple = []struct {
@@ -408,6 +409,25 @@ func TestGenerateModel_NotaWithRefRegistry(t *testing.T) {
 					res := string(ff)
 					assertInCode(t, "type "+k+" map[string]map[string]map[string]Notable", res)
 				}
+			}
+		}
+	}
+}
+
+func TestGenerateModel_WithCustomTag(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "WithCustomTag"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				res := buf.String()
+				assertInCode(t, "mytag:\"foo,bar\"", res)
 			}
 		}
 	}

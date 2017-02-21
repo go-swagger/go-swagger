@@ -49,6 +49,7 @@ definitions:
         minLength: 2
         maxLength: 50
         Pattern: "[A-Za-z0-9][\\w- ]+"
+
   Notable:
     type: object
     properties:
@@ -675,6 +676,13 @@ definitions:
     properties:
       metadata:
         $ref: "#/definitions/DynamicMetaData"
+
+  WithCustomTag:
+    type: object
+    properties:
+      customtag:
+        type: string
+        x-go-custom-tag: mytag:"foo,bar"
 
   HasSpecialCharProp:
     type: object
