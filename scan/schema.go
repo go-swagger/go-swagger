@@ -298,7 +298,8 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl *sch
 			}
 		}
 	default:
-		return fmt.Errorf("this is a bug, missing parser for a %T: %+v", tpe, tpe)
+		fmt.Printf("WARNING: Missing parser for a %T, skipping model: %s\n", tpe, decl.Name)
+		return nil
 	}
 
 	if decl.Name != decl.GoName {
