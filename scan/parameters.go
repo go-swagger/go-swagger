@@ -400,6 +400,12 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 								return nil, err
 							}
 							return otherTaggers, nil
+						case *ast.SelectorExpr:
+							otherTaggers, err := parseArrayTypes(iftpe.Sel, items.Items, level+1)
+							if err != nil {
+								return nil, err
+							}
+							return otherTaggers, nil
 						case *ast.Ident:
 							taggers := []tagParser{}
 							if iftpe.Obj == nil {
