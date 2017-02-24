@@ -861,8 +861,9 @@ func (scp *schemaParser) packageForSelector(gofile *ast.File, expr ast.Expr) (*l
 				}
 			} else {
 				pkg := scp.program.Package(pv)
-				if pkg != nil {
+				if pkg != nil && pth.Name == pkg.Pkg.Name() {
 					selPath = pv
+					break
 				} else {
 					parts := strings.Split(pv, "/")
 					if len(parts) > 0 && parts[len(parts)-1] == pth.Name {
