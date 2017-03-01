@@ -561,9 +561,7 @@ func (ss *setSecurityDefinitions) Parse(lines []string) error {
 			continue
 		} else {
 			for _, p := range tp {
-				fmt.Println(p.Matches(lines[i]))
 				if p.Matches(lines[i]) {
-					fmt.Println(lines[i])
 					err := p.Parse([]string{lines[i]})
 					if err != nil {
 						return err
@@ -633,7 +631,6 @@ func (sf *setField) Parse(lines []string) error {
 	var value string
 	for _, line := range lines {
 		kv := strings.SplitN(line, ":", 2)
-		fmt.Println(kv)
 		if len(kv) > 1 {
 			value = strings.TrimSpace(kv[1])
 			break
