@@ -31,6 +31,8 @@ Annotation | Format
 **Base path** | the default base path for this API
 **Contact** | the name of for the person to contact concerning the API eg. John Doe&nbsp;&lt;john@blogs.com&gt;&nbsp;http://john.blogs.com
 **License** | the name of the license followed by the URL of the license eg. MIT http://opensource.org/license/MIT
+**Security** | a dictionary of key: []string{scopes}
+**SecurityDefinitions** | list of supported authorization types https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#securityDefinitionsObject
 
 ##### Example:
 
@@ -62,6 +64,14 @@ Annotation | Format
 //     - application/json
 //     - application/xml
 //
+//     Security:
+//     - api_key:
+//
+//     SecurityDefinitions:
+//     - api_key:
+//          type: apiKey
+//          name: KEY
+//          in: header
 //
 // swagger:meta
 package classification

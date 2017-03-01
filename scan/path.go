@@ -15,49 +15,48 @@
 package scan
 
 import (
+	"go/ast"
+	"regexp"
 	"strings"
-    "regexp"
-    "go/ast"
 
 	"github.com/go-openapi/spec"
 )
 
 type parsedPathContent struct {
-    Method, Path, ID string
-    Tags []string
-    Remaining *ast.CommentGroup
-
+	Method, Path, ID string
+	Tags             []string
+	Remaining        *ast.CommentGroup
 }
 
 func parsePathAnnotation(annotation *regexp.Regexp, lines []*ast.Comment) (cnt parsedPathContent) {
-    var justMatched bool
+	var justMatched bool
 
-    for _, cmt := range lines {
-        for _, line := range strings.Split(cmt.Text, "\n") {
-            matches := annotation.FindStringSubmatch(line)
-            if len(matches) > 3 {
-                cnt.Method, cnt.Path, cnt.ID = matches[1], matches[2], matches[len(matches)-1]
-                cnt.Tags = rxSpace.Split(matches[3], -1)
-                if len(matches[3]) == 0 {
-                    cnt.Tags = nil
-                }
-                justMatched = true
-            } else if cnt.Method != "" {
-                if cnt.Remaining == nil {
-                    cnt.Remaining = new(ast.CommentGroup)
-                }
-                if !justMatched || strings.TrimSpace(rxStripComments.ReplaceAllString(line, "")) != "" {
-                    cc := new(ast.Comment)
-                    cc.Slash = cmt.Slash
-                    cc.Text = line
-                    cnt.Remaining.List = append(cnt.Remaining.List, cc)
-                    justMatched = false
-                }
-            }
-        }
-    }
+	for _, cmt := range lines {
+		for _, line := range strings.Split(cmt.Text, "\n") {
+			matches := annotation.FindStringSubmatch(line)
+			if len(matches) > 3 {
+				cnt.Method, cnt.Path, cnt.ID = matches[1], matches[2], matches[len(matches)-1]
+				cnt.Tags = rxSpace.Split(matches[3], -1)
+				if len(matches[3]) == 0 {
+					cnt.Tags = nil
+				}
+				justMatched = true
+			} else if cnt.Method != "" {
+				if cnt.Remaining == nil {
+					cnt.Remaining = new(ast.CommentGroup)
+				}
+				if !justMatched || strings.TrimSpace(rxStripComments.ReplaceAllString(line, "")) != "" {
+					cc := new(ast.Comment)
+					cc.Slash = cmt.Slash
+					cc.Text = line
+					cnt.Remaining.List = append(cnt.Remaining.List, cc)
+					justMatched = false
+				}
+			}
+		}
+	}
 
-    return
+	return
 }
 
 func setPathOperation(method, id string, pthObj *spec.PathItem, op *spec.Operation) *spec.Operation {
