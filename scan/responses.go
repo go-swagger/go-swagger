@@ -108,14 +108,14 @@ func (sv headerValidations) SetPattern(val string)          { sv.current.Pattern
 func (sv headerValidations) SetUnique(val bool)             { sv.current.UniqueItems = val }
 func (sv headerValidations) SetCollectionFormat(val string) { sv.current.CollectionFormat = val }
 func (sv headerValidations) SetEnum(val string) {
-    list := strings.Split(val, ",")
-    interfaceSlice := make([]interface{}, len(list))
-    for i, d := range list {
-        interfaceSlice[i] = d
-    }
-    sv.current.Enum = interfaceSlice
+	list := strings.Split(val, ",")
+	interfaceSlice := make([]interface{}, len(list))
+	for i, d := range list {
+		interfaceSlice[i] = d
+	}
+	sv.current.Enum = interfaceSlice
 }
-func (sv headerValidations) SetDefault(val string)          { sv.current.Default = val }
+func (sv headerValidations) SetDefault(val string) { sv.current.Default = val }
 
 func newResponseDecl(file *ast.File, decl *ast.GenDecl, ts *ast.TypeSpec) responseDecl {
 	var rd responseDecl
@@ -325,8 +325,8 @@ func (rp *responseParser) parseStructType(gofile *ast.File, response *spec.Respo
 					newSingleLineTagParser("minItems", &setMinItems{headerValidations{&ps}, rxf(rxMinItemsFmt, "")}),
 					newSingleLineTagParser("maxItems", &setMaxItems{headerValidations{&ps}, rxf(rxMaxItemsFmt, "")}),
 					newSingleLineTagParser("unique", &setUnique{headerValidations{&ps}, rxf(rxUniqueFmt, "")}),
-                    newSingleLineTagParser("enum", &setEnum{headerValidations{&ps}, rxf(rxEnumFmt, "")}),
-                    newSingleLineTagParser("default", &setDefault{headerValidations{&ps}, rxf(rxDefaultFmt, "")}),
+					newSingleLineTagParser("enum", &setEnum{headerValidations{&ps}, rxf(rxEnumFmt, "")}),
+					newSingleLineTagParser("default", &setDefault{headerValidations{&ps}, rxf(rxDefaultFmt, "")}),
 				}
 				itemsTaggers := func(items *spec.Items, level int) []tagParser {
 					// the expression is 1-index based not 0-index
@@ -343,8 +343,8 @@ func (rp *responseParser) parseStructType(gofile *ast.File, response *spec.Respo
 						newSingleLineTagParser(fmt.Sprintf("items%dMinItems", level), &setMinItems{itemsValidations{items}, rxf(rxMinItemsFmt, itemsPrefix)}),
 						newSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{itemsValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
 						newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{itemsValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
-                        newSingleLineTagParser(fmt.Sprintf("items%dEnum", level), &setEnum{itemsValidations{items}, rxf(rxEnumFmt, itemsPrefix)}),
-                        newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{itemsValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
+						newSingleLineTagParser(fmt.Sprintf("items%dEnum", level), &setEnum{itemsValidations{items}, rxf(rxEnumFmt, itemsPrefix)}),
+						newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{itemsValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
 					}
 				}
 

@@ -61,7 +61,6 @@ func metaSecurityDefinitionsSetter(meta *spec.Swagger) func(spec.SecurityDefinit
 	return func(secDefs spec.SecurityDefinitions) { meta.SecurityDefinitions = secDefs }
 }
 
-
 func newMetaParser(swspec *spec.Swagger) *sectionedParser {
 	sp := new(sectionedParser)
 	if swspec.Info == nil {
