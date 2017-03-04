@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/spec"
 )
 
@@ -327,8 +328,10 @@ type GenOperation struct {
 	DefaultImports []string
 	ExtraSchemas   []GenSchema
 
-	Authorized bool
-	Principal  string
+	Authorized          bool
+	Security            []analysis.SecurityRequirement
+	SecurityDefinitions map[string]spec.SecurityScheme
+	Principal           string
 
 	SuccessResponse  *GenResponse
 	SuccessResponses []GenResponse
