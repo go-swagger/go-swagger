@@ -42,7 +42,8 @@ var idnaSparse = sparseBlocks{
 	offset: idnaSparseOffset[:],
 }
 
-var trie = newIdnaTrie(0)
+// Don't use newIdnaTrie to avoid unconditional linking in of the table.
+var trie = &idnaTrie{}
 
 // lookup determines the type of block n and looks up the value for b.
 // For n < t.cutoff, the block is a simple lookup table. Otherwise, the block

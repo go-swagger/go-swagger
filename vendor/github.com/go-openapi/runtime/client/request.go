@@ -146,8 +146,11 @@ func (r *request) BuildHTTP(mediaType string, producers map[string]runtime.Produ
 		}
 
 		req.Header.Set(runtime.HeaderContentType, mediaType)
+		formString := r.formFields.Encode()
+		// set content length before writing to the buffer
+		req.ContentLength = int64(len(formString))
 		// write the form values as the body
-		buf.WriteString(r.formFields.Encode())
+		buf.WriteString(formString)
 		return req, nil
 	}
 

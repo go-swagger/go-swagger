@@ -16,6 +16,7 @@ package middleware
 
 import (
 	"net/http"
+	"net/url"
 	fpath "path"
 	"regexp"
 	"strings"
@@ -183,7 +184,12 @@ func (d *defaultRouter) Lookup(method, path string) (*MatchedRoute, bool) {
 				debugLog("found a route for %s %s with %d parameters", method, path, len(entry.Parameters))
 				var params RouteParams
 				for _, p := range rp {
-					params = append(params, RouteParam{Name: p.Name, Value: p.Value})
+					v, err := url.QueryUnescape(p.Value)
+					if err != nil {
+						debugLog("failed to escape %q: %v", p.Value, err)
+						v = p.Value
+					}
+					params = append(params, RouteParam{Name: p.Name, Value: v})
 				}
 				return &MatchedRoute{routeEntry: *entry, Params: params}, true
 			}
@@ -210,7 +216,7 @@ func (d *defaultRouter) OtherMethods(method, path string) []string {
 	return methods
 }
 
-var pathConverter = regexp.MustCompile(`{(\w+)}`)
+var pathConverter = regexp.MustCompile(`{(.+?)}`)
 
 func (d *defaultRouteBuilder) AddRoute(method, path string, operation *spec.Operation) {
 	mn := strings.ToUpper(method)
@@ -232,6 +238,8 @@ func (d *defaultRouteBuilder) AddRoute(method, path string, operation *spec.Oper
 		}
 
 		record := denco.NewRecord(pathConverter.ReplaceAllString(path, ":$1"), &routeEntry{
+			BasePath:       bp,
+			PathPattern:    path,
 			Operation:      operation,
 			Handler:        handler,
 			Consumes:       consumes,

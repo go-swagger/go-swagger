@@ -241,7 +241,7 @@ func copyPackage(dirSrc, dirDst, search, replace string) {
 		base := filepath.Base(file)
 		if err != nil || info.IsDir() ||
 			!strings.HasSuffix(base, ".go") ||
-			strings.HasSuffix(base, "_test.go") ||
+			strings.HasSuffix(base, "_test.go") && !strings.HasPrefix(base, "example") ||
 			// Don't process subdirectories.
 			filepath.Dir(file) != dirSrc {
 			return nil

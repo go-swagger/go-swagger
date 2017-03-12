@@ -7,8 +7,7 @@
 //go:generate go run maketables.go -cldr=23 -unicode=6.2.0
 
 // Package collate contains types for comparing and sorting Unicode strings
-// according to a given collation order.  Package locale provides a high-level
-// interface to collation. Users should typically use that package instead.
+// according to a given collation order.
 package collate // import "golang.org/x/text/collate"
 
 import (
