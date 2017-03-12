@@ -288,6 +288,7 @@ func handlePacket(s *Server, p interface{}) error {
 			return s.sendError(p, err)
 		}
 		f = filepath.Clean(f)
+		f = filepath.ToSlash(f) // make path more Unix like on windows servers
 		return s.sendPacket(sshFxpNamePacket{
 			ID: p.ID,
 			NameAttrs: []sshFxpNameAttr{{

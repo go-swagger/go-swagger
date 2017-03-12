@@ -9,12 +9,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"reflect"
 	"strconv"
 	"unicode"
 	"unicode/utf16"
 	"unicode/utf8"
-	"unsafe"
 )
 
 // tokenKind determines type of a token.
@@ -203,17 +201,6 @@ func (r *Lexer) fetchFalse() {
 		r.pos -= 5
 		r.errSyntax()
 	}
-}
-
-// bytesToStr creates a string pointing at the slice to avoid copying.
-//
-// Warning: the string returned by the function should be used with care, as the whole input data
-// chunk may be either blocked from being freed by GC because of a single string or the buffer.Data
-// may be garbage-collected even when the string exists.
-func bytesToStr(data []byte) string {
-	h := (*reflect.SliceHeader)(unsafe.Pointer(&data))
-	shdr := reflect.StringHeader{h.Data, h.Len}
-	return *(*string)(unsafe.Pointer(&shdr))
 }
 
 // fetchNumber scans a number literal token.
@@ -589,7 +576,7 @@ func (r *Lexer) IsStart() bool {
 // Consumed reads all remaining bytes from the input, publishing an error if
 // there is anything but whitespace remaining.
 func (r *Lexer) Consumed() {
-	if r.pos > len(r.Data) {
+	if r.pos > len(r.Data) || !r.Ok() {
 		return
 	}
 
@@ -628,6 +615,12 @@ func (r *Lexer) unsafeString() (string, []byte) {
 // the input buffer. Intended pattern of usage is as an argument to a switch statement.
 func (r *Lexer) UnsafeString() string {
 	ret, _ := r.unsafeString()
+	return ret
+}
+
+// UnsafeBytes returns the byte slice if the token is a string literal.
+func (r *Lexer) UnsafeBytes() []byte {
+	_, ret := r.unsafeString()
 	return ret
 }
 
@@ -1024,6 +1017,14 @@ func (r *Lexer) AddError(e error) {
 	if r.fatalError == nil {
 		r.fatalError = e
 	}
+}
+
+func (r *Lexer) AddNonFatalError(e error) {
+	r.addNonfatalError(&LexerError{
+		Offset: r.start,
+		Data:   string(r.Data[r.start:r.pos]),
+		Reason: e.Error(),
+	})
 }
 
 func (r *Lexer) addNonfatalError(err *LexerError) {
