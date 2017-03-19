@@ -1314,7 +1314,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.Location = body
 	sg.GenSchema.ValueExpression = sg.ValueExpr
 	sg.GenSchema.KeyVar = sg.KeyVar
-	sg.GenSchema.Name = sg.GoName()
+	sg.GenSchema.Name = sg.Name //sg.GoName()
 	sg.GenSchema.Title = sg.Schema.Title
 	sg.GenSchema.Description = trimBOM(sg.Schema.Description)
 	sg.GenSchema.ReceiverName = sg.Receiver
