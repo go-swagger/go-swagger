@@ -483,6 +483,11 @@ func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{
 
 
 func ({{.ReceiverName}} *{{ if $.IsExported }}{{ pascalize $.Name}}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}(formats strfmt.Registry) error {
+  {{ if not .Required }}
+  if swag.IsZero({{ .ValueExpression }}) { // not required
+    return nil
+  }
+  {{end}}
   {{template "propertyvalidator" .}}
 
   return nil
