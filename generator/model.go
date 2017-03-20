@@ -252,14 +252,11 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 
 	}
 
-	var defaultImports []string
-	if pg.GenSchema.HasValidations {
-		defaultImports = []string{
-			"github.com/go-openapi/errors",
-			"github.com/go-openapi/runtime",
-			"github.com/go-openapi/swag",
-			"github.com/go-openapi/validate",
-		}
+	defaultImports := []string{
+		"github.com/go-openapi/errors",
+		"github.com/go-openapi/runtime",
+		"github.com/go-openapi/swag",
+		"github.com/go-openapi/validate",
 	}
 	var extras []GenSchema
 	var extraKeys []string
