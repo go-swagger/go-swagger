@@ -144,7 +144,9 @@ func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) Set{{ pascalize .ID }}
 // WriteToRequest writes these params to a swagger request
 func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
-  r.SetTimeout({{ .ReceiverName }}.{{ camelize .TimeoutName }})
+  if err := r.SetTimeout({{ .ReceiverName }}.{{ camelize .TimeoutName }}); err != nil {
+    return err
+  }
   var res []error
   {{range .Params}}
 
