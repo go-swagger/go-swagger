@@ -253,7 +253,7 @@ func (s *Server) hasScheme(scheme string) bool {
 // Serve the api
 func (s *Server) Serve() (err error) {
 	if !s.hasListeners {
-		if err := s.Listen(); err != nil {
+		if err = s.Listen(); err != nil {
 		  return err
 		}
 	}
