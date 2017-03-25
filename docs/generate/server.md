@@ -14,24 +14,38 @@ You can provide your own router implementation should you so desire it's abstrac
 ##### Usage
 
 ```
-swagger generate server [server-OPTIONS]
+swagger [OPTIONS] generate server [server-OPTIONS]
+
+generate all the files for a server application
+
+Help Options:
+  -h, --help                                         Show this help message
 
 [server command options]
-      -f, --spec=            the spec file to use (default: ./swagger.json)
-      -a, --api-package=     the package to save the operations (default: operations)
-      -m, --model-package=   the package to save the models (default: models)
-      -s, --server-package=  the package to save the server specific code (default: restapi)
-      -c, --client-package=  the package to save the client specific code (default: client)
-      -t, --target=          the base directory for generating the files (default: ./)
-      -A, --name=            the name of the application, defaults to a mangled value of info.title
-      -O, --operation=       specify an operation to include, repeat for multiple
-          --tags=            the tags to include, if not specified defaults to all
-      -P, --principal=       the model to use for the security principal
-          --default-scheme=  the default scheme for this API (default: http)
-      -M, --model=           specify a model to include, repeat for multiple
-          --skip-models      no models will be generated when this flag is specified
-          --skip-operations  no operations will be generated when this flag is specified
-          --skip-support     no supporting files will be generated when this flag is specified
+      -f, --spec=                                    the spec file to use (default swagger.{json,yml,yaml})
+      -a, --api-package=                             the package to save the operations (default: operations)
+      -m, --model-package=                           the package to save the models (default: models)
+      -s, --server-package=                          the package to save the server specific code (default: restapi)
+      -c, --client-package=                          the package to save the client specific code (default: client)
+      -t, --target=                                  the base directory for generating the files (default: ./)
+      -T, --template-dir=                            alternative template override directory
+      -C, --config-file=                             configuration file to use for overriding template options
+      -A, --name=                                    the name of the application, defaults to a mangled value of info.title
+      -O, --operation=                               specify an operation to include, repeat for multiple
+          --tags=                                    the tags to include, if not specified defaults to all
+      -P, --principal=                               the model to use for the security principal
+          --default-scheme=                          the default scheme for this API (default: http)
+      -M, --model=                                   specify a model to include, repeat for multiple
+          --skip-models                              no models will be generated when this flag is specified
+          --skip-operations                          no operations will be generated when this flag is specified
+          --skip-support                             no supporting files will be generated when this flag is specified
+          --exclude-main                             exclude main function, so just generate the library
+          --exclude-spec                             don't embed the swagger specification
+          --with-context                             handlers get a context as first arg
+          --dump-data                                when present dumps the json for the template generator instead of generating files
+          --flag-strategy=[go-flags|pflag]           the strategy to provide flags for the server (default: go-flags)
+          --compatibility-mode=[modern|intermediate] the compatibility mode for the tls server (default: modern)
+          --skip-validation                          skips validation of spec prior to generation
 ```
 
 The server application gets generated with all the handlers stubbed out with a not implemented handler. That means that you can start the API server immediately after generating it. It will respond to all valid requests with 501 Not Implemented. When a request is invalid it will most likely respond with an appropriate 4xx response.

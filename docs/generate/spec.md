@@ -6,7 +6,7 @@ types.
 
 <!--more-->
 
-Based on the work from https://github.com/yvasiyarov/swagger  
+Based on the work from https://github.com/yvasiyarov/swagger
 It uses a similar approach but with expanded annotations and it produces a swagger 2.0 spec.
 
 The goal of the syntax is to make it look as a natural part of the documentation for the application code.
@@ -85,7 +85,7 @@ There are several annotations that mark a comment block as a participant for the
 
 #### Embedded types
 
-For the embedded schemas there are a set of rules for the spec generator to vary the definition it generates.  
+For the embedded schemas there are a set of rules for the spec generator to vary the definition it generates.
 When an embedded type isn't decorated with the `swagger:allOf` annotation, then the properties from the embedded value will be included in the generated definition as if they were defined on the definition. But when the embedded type is decorated with the `swagger:allOf` annotation then the all of element will be defined as a "$ref" property instead. For an annotated type there is also the possibility to specify an argument, the value of this argument will be used as the value for the `x-class` extension. This allows for generators that support the
 `x-class` extension to reliably build a serializer for a type with a discriminator
 
