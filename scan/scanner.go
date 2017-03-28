@@ -32,6 +32,7 @@ import (
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
+	"go/build"
 )
 
 const (
@@ -148,6 +149,7 @@ type Opts struct {
 	BasePath   string
 	Input      *spec.Swagger
 	ScanModels bool
+	BuildTags  string
 }
 
 func safeConvert(str string) bool {
@@ -199,6 +201,10 @@ func newAppScanner(opts *Opts, includes, excludes packageFilters) (*appScanner, 
 	var ldr loader.Config
 	ldr.ParserMode = goparser.ParseComments
 	ldr.ImportWithTests(opts.BasePath)
+	if opts.BuildTags != "" {
+		ldr.Build = &build.Default
+		ldr.Build.BuildTags = strings.Split(opts.BuildTags, ",")
+	}
 	prog, err := ldr.Load()
 	if err != nil {
 		return nil, err
