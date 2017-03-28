@@ -19,20 +19,18 @@ import (
 	"errors"
 	"fmt"
 	"go/ast"
+	"go/build"
 	goparser "go/parser"
 	"log"
 	"os"
 	"regexp"
 	"strings"
 
-	yaml "gopkg.in/yaml.v2"
-
-	"golang.org/x/tools/go/loader"
-
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
-	"go/build"
+	"golang.org/x/tools/go/loader"
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (
