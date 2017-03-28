@@ -29,6 +29,7 @@ import (
 // SpecFile command to generate a swagger spec from a go application
 type SpecFile struct {
 	BasePath   string         `long:"base-path" short:"b" description:"the base path to use" default:"."`
+	BuildTags  string         `long:"tags" short:"t" description:"build tags" default:""`
 	ScanModels bool           `long:"scan-models" short:"m" description:"includes models that were annotated with 'swagger:model'"`
 	Compact    bool           `long:"compact" description:"when present, doesn't prettify the the json"`
 	Output     flags.Filename `long:"output" short:"o" description:"the file to write to"`
@@ -46,6 +47,7 @@ func (s *SpecFile) Execute(args []string) error {
 	opts.BasePath = s.BasePath
 	opts.Input = input
 	opts.ScanModels = s.ScanModels
+	opts.BuildTags = s.BuildTags
 	swspec, err := scan.Application(opts)
 	if err != nil {
 		return err

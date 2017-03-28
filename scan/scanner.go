@@ -19,19 +19,18 @@ import (
 	"errors"
 	"fmt"
 	"go/ast"
+	"go/build"
 	goparser "go/parser"
 	"log"
 	"os"
 	"regexp"
 	"strings"
 
-	yaml "gopkg.in/yaml.v2"
-
-	"golang.org/x/tools/go/loader"
-
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
+	"golang.org/x/tools/go/loader"
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (
@@ -148,6 +147,7 @@ type Opts struct {
 	BasePath   string
 	Input      *spec.Swagger
 	ScanModels bool
+	BuildTags  string
 }
 
 func safeConvert(str string) bool {
@@ -199,6 +199,10 @@ func newAppScanner(opts *Opts, includes, excludes packageFilters) (*appScanner, 
 	var ldr loader.Config
 	ldr.ParserMode = goparser.ParseComments
 	ldr.ImportWithTests(opts.BasePath)
+	if opts.BuildTags != "" {
+		ldr.Build = &build.Default
+		ldr.Build.BuildTags = strings.Split(opts.BuildTags, ",")
+	}
 	prog, err := ldr.Load()
 	if err != nil {
 		return nil, err
