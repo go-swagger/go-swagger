@@ -66,7 +66,7 @@ type ValidationError struct {
 ---
 responses:
   validationError:
-    description: A validation error is an error that is used when the required input fails validation.
+    description: A ValidationError is an error that is used when the required input fails validation.
     schema:
       type: object
       description: The error message
