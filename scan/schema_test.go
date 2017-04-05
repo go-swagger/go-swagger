@@ -131,7 +131,9 @@ func TestSchemaParser(t *testing.T) {
 	assertRef(t, itprop, "pet", "Pet", "#/definitions/pet")
 	iprop, ok = itprop.Properties["pet"]
 	assert.True(t, ok)
-	assert.Equal(t, "The Pet to add to this NoModel items bucket.\nPets can appear more than once in the bucket", iprop.Description)
+	if itprop.Ref.String() != "" {
+		assert.Equal(t, "The Pet to add to this NoModel items bucket.\nPets can appear more than once in the bucket", iprop.Description)
+	}
 
 	assertProperty(t, itprop, "integer", "quantity", "int16", "Quantity")
 	iprop, ok = itprop.Properties["quantity"]
@@ -317,8 +319,7 @@ func assertProperty(t testing.TB, schema *spec.Schema, typeName, jsonName, forma
 }
 
 func assertRef(t testing.TB, schema *spec.Schema, jsonName, goName, fragment string) {
-
-	assertProperty(t, schema, "", jsonName, "", goName)
+	assert.Empty(t, schema.Properties[jsonName].Type)
 	psch := schema.Properties[jsonName]
 	assert.Equal(t, fragment, psch.Ref.String())
 }
