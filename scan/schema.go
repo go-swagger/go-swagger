@@ -302,14 +302,16 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl *sch
 		return nil
 	}
 
-	if decl.Name != decl.GoName {
-		schPtr.AddExtension("x-go-name", decl.GoName)
-	}
-	for _, pkgInfo := range scp.program.AllPackages {
-		if pkgInfo.Importable {
-			for _, fil := range pkgInfo.Files {
-				if fil.Pos() == decl.File.Pos() {
-					schPtr.AddExtension("x-go-package", pkgInfo.Pkg.Path())
+	if schPtr.Ref.String() == "" {
+		if decl.Name != decl.GoName {
+			schPtr.AddExtension("x-go-name", decl.GoName)
+		}
+		for _, pkgInfo := range scp.program.AllPackages {
+			if pkgInfo.Importable {
+				for _, fil := range pkgInfo.Files {
+					if fil.Pos() == decl.File.Pos() {
+						schPtr.AddExtension("x-go-package", pkgInfo.Pkg.Path())
+					}
 				}
 			}
 		}
@@ -583,7 +585,7 @@ func (scp *schemaParser) parseInterfaceType(gofile *ast.File, bschema *spec.Sche
 				return err
 			}
 
-			if nm != gnm {
+			if ps.Ref.String() == "" && nm != gnm {
 				ps.AddExtension("x-go-name", gnm)
 			}
 			seenProperties[nm] = struct{}{}
@@ -698,7 +700,7 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 				return err
 			}
 
-			if nm != gnm {
+			if ps.Ref.String() == "" && nm != gnm {
 				ps.AddExtension("x-go-name", gnm)
 			}
 			seenProperties[nm] = struct{}{}
@@ -719,8 +721,9 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 func (scp *schemaParser) createParser(nm string, schema, ps *spec.Schema, fld *ast.Field) *sectionedParser {
 
 	sp := new(sectionedParser)
-	sp.setDescription = func(lines []string) { ps.Description = joinDropLast(lines) }
+
 	if ps.Ref.String() == "" {
+		sp.setDescription = func(lines []string) { ps.Description = joinDropLast(lines) }
 		sp.taggers = []tagParser{
 			newSingleLineTagParser("maximum", &setMaximum{schemaValidations{ps}, rxf(rxMaximumFmt, "")}),
 			newSingleLineTagParser("minimum", &setMinimum{schemaValidations{ps}, rxf(rxMinimumFmt, "")}),
