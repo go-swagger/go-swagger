@@ -107,7 +107,7 @@ wget https://bintray.com/go-swagger/goswagger-rpm/rpm -O bintray-go-swagger-gosw
 Install or update from source:
 
 ```
-go get -u github.com/go-swagger/go-swagger/cmd/swagger
+go get -u github.com/go-swagger/go-swagger
 ```
 
 The implementation also provides a number of command line tools to help working with swagger.
