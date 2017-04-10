@@ -17,7 +17,7 @@ The end product of this tutorial can be found as `./examples/tutorials/custom-se
 
 The server we'll be building, will be generated using the following spec:
 
-```
+```yaml
 ---
 swagger: '2.0'
 info:
@@ -54,7 +54,7 @@ but we'll store it as `./swagger/swagger.yml`, to keep our project's root folder
 Once we have our OpenAPI specification ready, it is time to generate our server.
 This can be done using the following command, from within our root folder:
 
-```
+```shellsession
 $ swagger generate server -t gen -f ./swagger/swagger.yml --exclude-main -A greeter
 ```
 
@@ -185,7 +185,7 @@ $ http get :3000/hello
 
 Sadly this gives us the following output:
 
-```
+```http
 HTTP/1.1 501 Not Implemented
 Connection: close
 Content-Length: 50
@@ -272,7 +272,7 @@ And now we're ready to test our greeter API once again:
 $ http get :3000/hello
 ```
 
-```
+```http
 HTTP/1.1 200 OK
 Connection: close
 Content-Length: 13
@@ -288,7 +288,7 @@ Hurray, let's now greet _Swagger_:
 $ http get :3000/hello name==Swagger
 ```
 
-```
+```http
 HTTP/1.1 200 OK
 Connection: close
 Content-Length: 15

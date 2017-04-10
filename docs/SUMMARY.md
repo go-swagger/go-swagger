@@ -5,6 +5,7 @@
 
     - [Simple Server](tutorial/todo-list.md)
     - [Middleware](use/middleware.md)
+    - [Custom Server](tutorial/custom-server.md)
 
 - [Validate](usage/validate.md)
 - [UI](usage/serve_ui.md)
@@ -20,6 +21,7 @@
     - [swagger:meta](generate/spec/meta.md)
     - [swagger:route](generate/spec/route.md)
     - [swagger:params](generate/spec/params.md)
+    - [swagger:operation](generate/spec/operation.md)
     - [swagger:response](generate/spec/response.md)
     - [swagger:model](generate/spec/model.md)
     - [swagger:allOf](generate/spec/allOf.md)

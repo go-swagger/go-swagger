@@ -1,4 +1,4 @@
-FROM golang:1.7-alpine
+FROM golang:1.8-alpine
 MAINTAINER Ivan Porto Carrer <ivan@flanders.co.nz> (@casualjim)
 
 RUN apk --update add ca-certificates shared-mime-info mailcap git &&\

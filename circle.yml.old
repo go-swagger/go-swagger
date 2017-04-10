@@ -15,7 +15,7 @@ dependencies:
     - docker pull casualjim/fpm
     - docker pull casualjim/gox
     - docker pull casualjim/github-release
-    - docker build -t go-swagger/go-swagger:ci-$CIRCLE_BUILD_NUM-$CIRCLE_SHA1 -f Dockerfile.ci .
+    - docker pull goswagger/go-swagger:ci
 
 test:
   post:
@@ -34,7 +34,7 @@ test:
         -e CIRCLE_PROJECT_USERNAME
         -e CIRCLE_PROJECT_REPONAME
         -w /go/src/github.com/go-swagger/go-swagger
-        go-swagger/go-swagger:ci-$CIRCLE_BUILD_NUM-$CIRCLE_SHA1
+        goswagger/go-swagger:ci
         ./hack/build-docker.sh
       :
           timeout: 1800 # Fail if command has no output for 30 mins.  Probably doesn't need that long.
@@ -53,7 +53,14 @@ deployment:
     owner: go-swagger
     commands:
       - mkdir -p dist
-      - docker run --rm -it -v `pwd`:/go/src/github.com/go-swagger/go-swagger -w /go/src/github.com/go-swagger/go-swagger golang:1.7-alpine go build -o ./dist/swagger-musl  -a -tags netgo -installsuffix netgo ./cmd/swagger
+      - ? >- 
+          docker run --rm -it 
+          -v `pwd`:/go/src/github.com/go-swagger/go-swagger 
+          -w /go/src/github.com/go-swagger/go-swagger 
+          golang:1.8-alpine 
+          go build -o ./dist/swagger-musl  -a -tags netgo -installsuffix netgo ./cmd/swagger
+        :
+            timeout: 600 # Fail if command has no output for 10 mins.  Probably doesn't need that long.
       - docker login -u $API_USERNAME -p $QUAY_PASS -e $API_EMAIL https://quay.io
       - mkdir -p dockerbuild
       - cp ./dist/swagger-musl Dockerfile ./dockerbuild

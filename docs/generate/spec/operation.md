@@ -76,6 +76,7 @@ func ServeAPI(host, basePath string, schemes []string) (err error) {
 
     return
 }
+```
 
 ##### Result:
 

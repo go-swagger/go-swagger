@@ -1,4 +1,4 @@
-# Swagger 2.0 [![Build Status](https://circleci.com/gh/go-swagger/go-swagger.svg?style=shield)](https://circleci.com/gh/go-swagger/go-swagger) [![Build status](https://ci.appveyor.com/api/projects/status/x377t5o9ennm847o/branch/master?svg=true)](https://ci.appveyor.com/project/casualjim/go-swagger/branch/master) [![Coverage](https://coverage.vmware.run/badges/go-swagger/go-swagger/coverage.svg)](https://coverage.vmware.run/go-swagger/go-swagger) [![Slack Status](https://slackin.goswagger.io/badge.svg)](https://slackin.goswagger.io)
+# Swagger 2.0 [![Build Status](https://circleci.com/gh/go-swagger/go-swagger.svg?style=shield)](https://circleci.com/gh/go-swagger/go-swagger) [![Build status](https://ci.appveyor.com/api/projects/status/x377t5o9ennm847o/branch/master?svg=true)](https://ci.appveyor.com/project/casualjim/go-swagger/branch/master) [![codecov](https://codecov.io/gh/go-swagger/go-swagger/branch/master/graph/badge.svg)](https://codecov.io/gh/go-swagger/go-swagger) [![Slack Status](https://slackin.goswagger.io/badge.svg)](https://slackin.goswagger.io)
 
 [![license](http://img.shields.io/badge/license-Apache%20v2-orange.svg)](https://raw.githubusercontent.com/swagger-api/swagger-spec/master/LICENSE) [![GoDoc](https://godoc.org/github.com/go-swagger/go-swagger?status.svg)](http://godoc.org/github.com/go-swagger/go-swagger) [![GitHub version](https://badge.fury.io/gh/go-swagger%2Fgo-swagger.svg)](https://badge.fury.io/gh/go-swagger%2Fgo-swagger) [![Docker Repository on Quay](https://quay.io/repository/goswagger/swagger/status "Docker Repository on Quay")](https://quay.io/repository/goswagger/swagger)
 
@@ -118,7 +118,7 @@ Currently there is a [spec validator tool](https://goswagger.io/usage/validate.h
 swagger validate https://raw.githubusercontent.com/swagger-api/swagger-spec/master/examples/v2.0/json/petstore-expanded.json
 ```
 
-To generate a server for a swagger spec document:
+To generate a [server for a swagger spec](https://goswagger.io/generate/server.html) document:
 
 ```
 swagger generate server [-f ./swagger.json] -A [application-name [--principal [principal-name]]
@@ -135,6 +135,47 @@ To generate a [swagger spec document for a go application](https://goswagger.io/
 ```
 swagger generate spec -o ./swagger.json
 ```
+
+### Bash Completion
+
+Bash completion is supported and can be activated as follows:
+
+```
+source ./cmd/swagger/completion/swagger.bash-completion
+```
+
+Note that this does require you already setup bash completion,
+which can be done in 2 simple steps:
+
+1) install `bash-completion` using your favourite package manager;
+
+2) run `source /etc/bash_completion` in bash;
+
+### Zsh Completion
+
+Zsh completion is supported and can be copied/soft-linked from:
+
+```
+./cmd/swagger/completion/swagger.zsh-completion
+```
+
+In case you're new to adding auto-completion to zsh completion,
+here is how you could enable swagger's zsh completion step by step:
+
+1) create a folder used to store your completions (eg. `$HOME/.zsh/completion`);
+
+2) append the following to your `$HOME/.zshrc` file:
+
+```
+# add auto-completion directory to zsh's fpath
+fpath=($HOME/.zsh/completion $fpath)
+
+# compsys initiatlization
+autoload -U compinit
+compinit
+```
+
+3) copy/soft-link `./cmd/swagger/completion/swagger.zsh-completion` to `$HOME/.zsh/completion/_swagger`;
 
 ## Licensing
 
