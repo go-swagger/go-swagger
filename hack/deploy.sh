@@ -88,19 +88,19 @@ deploy_docker() {
   docker push quay.io/goswagger/swagger
 }
 
-prepare
+# prepare
 
 # build binaries
-build_binary -os="linux darwin windows" -arch="amd64 386"
-build_binary -os="linux" -arch="arm64 arm"
+# build_binary -os="linux darwin windows" -arch="amd64 386"
+# build_binary -os="linux" -arch="arm64 arm"
 
-# build linux packages
-prepare_linuxpkg
-build_linuxpkg deb
-build_linuxpkg rpm
+# # build linux packages
+# prepare_linuxpkg
+# build_linuxpkg deb
+# build_linuxpkg rpm
 
-# upload binary packages
-upload_to_github
-upload_to_bintray
+# # upload binary packages
+# upload_to_github
+# upload_to_bintray
 
-deploy_docker
+# deploy_docker

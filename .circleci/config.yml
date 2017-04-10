@@ -8,23 +8,33 @@ jobs:
       - checkout
       
       - run: 
-          name: Run the build
-          command: ./hack/build-docker.sh
+          name: Run the tests
+          command: |
+            ./hack/build-docker.sh
           no_output_timeout: 30m
       
       - run:
           name: Submit coverage results
           command: bash <(curl -s https://codecov.io/bash)
-      
-      - setup_remote_docker
 
-      - deploy:
+      - run:
+          name: Prepare release
           command: |
             if echo $CIRCLE_TAG | grep -q -E "[0-9]+(\\.[0-9]+)*"; then
-              ./hack/deploy.sh
+              . ./hack/deploy.sh
+
+              prepare 
+
+              build_binary -os="linux darwin windows" -arch="amd64 386"
+              build_binary -os="linux" -arch="arm64 arm"
+              
+              prepare_linuxpkg
+              build_linuxpkg deb
+              build_linuxpkg rpm
             fi
-      
-      - deploy:
+
+      - run:
+          name: Build musl static binary
           command: |
             if [ $CIRCLE_BRANCH = "master" ]; then
               mkdir -p dist
@@ -34,10 +44,28 @@ jobs:
                 -w /go/src/github.com/go-swagger/go-swagger \
                 golang:1.8-alpine \
                 go build -o ./dist/swagger-musl  -a -tags netgo -installsuffix netgo ./cmd/swagger
-
+   
               mkdir -p dockerbuild
               cp ./dist/swagger-musl Dockerfile ./dockerbuild
-              
+
+            fi
+
+      - setup_remote_docker
+
+      - deploy:
+          name: Deploy release
+          command: |
+            if echo $CIRCLE_TAG | grep -q -E "[0-9]+(\\.[0-9]+)*"; then
+              . ./hack/deploy.sh
+              upload_to_github
+              upload_to_bintray
+
+              deploy_docker
+            fi
+      
+      - deploy:
+          command: |
+            if [ $CIRCLE_BRANCH = "master" ]; then
               docker build --pull -t quay.io/goswagger/swagger:dev ./dockerbuild
               docker login -u $API_USERNAME -p $QUAY_PASS -e $API_EMAIL https://quay.io
               docker push quay.io/goswagger/swagger
