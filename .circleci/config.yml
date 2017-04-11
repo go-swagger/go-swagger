@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: /go/src/github.com/go-swagger/go-swagger
     docker:
-      - image: goswagger/go-swagger:ci
+      - image: goswagger/builder:20170410
     steps:
       - checkout
       
@@ -39,11 +39,9 @@ jobs:
             if [ $CIRCLE_BRANCH = "master" ]; then
               mkdir -p dist
 
-              docker run --rm -it \
-                -v `pwd`:/go/src/github.com/go-swagger/go-swagger \
-                -w /go/src/github.com/go-swagger/go-swagger \
-                golang:1.8-alpine \
-                go build -o ./dist/swagger-musl  -a -tags netgo -installsuffix netgo ./cmd/swagger
+              go build -o ./dist/swagger-musl \
+                -ldflags "-X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Commit=${CIRCLE_SHA1} -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Version=dev" \
+                -a -tags netgo -installsuffix netgo ./cmd/swagger
    
               mkdir -p dockerbuild
               cp ./dist/swagger-musl Dockerfile ./dockerbuild

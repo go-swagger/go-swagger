@@ -1,15 +1,10 @@
-FROM golang:1.8
+FROM golang:1.8-alpine
 MAINTAINER go-swagger contributors
 
 ENV GOCOVMODE atomic
 
-RUN apt-get update -q &&\
-    apt-get install -yqq apt-transport-https ca-certificates curl software-properties-common &&\
-    curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - &&\
-    apt-key fingerprint 0EBFCD88 &&\
-    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" &&\
-    apt-get update -q &&\
-    apt-get install -yqq docker-ce
+RUN apk add -U --no-cache tar gzip xz procps git curl &&\
+    curl -sSL https://get.docker.com/builds/Linux/x86_64/docker-17.04.0-ce.tgz | tar -C /usr/bin --strip-components=1 -xzf - 
 
 RUN set -e -x \
   && mkdir -p /usr/share/coverage /usr/share/testresults /usr/share/dist \
