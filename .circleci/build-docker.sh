@@ -6,7 +6,7 @@ set -e -o pipefail
 echo "mode: ${GOCOVMODE-atomic}" > coverage.txt
 repo_pref="github.com/${CIRCLE_PROJECT_USERNAME-"$(basename `pwd`)"}/${CIRCLE_PROJECT_REPONAME-"$(basename `pwd`)"}/"
 # Standard go tooling behavior is to ignore dirs with leading underscores
-for dir in $(go list ./... | grep -v -E 'vendor')
+for dir in $(go list ./... | grep -v -E 'vendor|fixtures|examples')
 do
   pth="${dir//*$repo_pref}"
   go test -tags netgo -installsuffix netgo -covermode=${GOCOVMODE-atomic} -coverprofile=${pth}/profile.tmp $dir
