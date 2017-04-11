@@ -5,17 +5,9 @@ set -eu -o pipefail
 prjdir=`git rev-parse --show-toplevel`
 
 build_binary() {
-  docker run \
-    --rm \
-    -v $prjdir:/go/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME \
-    -w /go/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME \
-    -e CIRCLE_TAG \
-    -e CIRCLE_SHA1 \
-    -e CIRCLE_PROJECT_USERNAME \
-    -e CIRCLE_PROJECT_REPONAME \
-    -e API_EMAIL \
-    -e API_USERNAME \
-    casualjim/gox -ldflags "-X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Commit=${CIRCLE_SHA1} -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Version=${CIRCLE_TAG}" -output "./dist/bin/{{.Dir}}_{{.OS}}_{{.Arch}}" "$@" ./cmd/swagger
+  LDFLAGS="-s -w -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Commit=${CIRCLE_SHA1}"
+  LDFLAGS="$LDFLAGS -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Version=${CIRCLE_TAG-dev}"
+  gox -ldflags "$LDFLAGS" -tags netgo -installsuffix netgo -output "./dist/bin/{{.Dir}}_{{.OS}}_{{.Arch}}" "$@" ./cmd/swagger
 }
 
 prepare() {
@@ -29,17 +21,7 @@ prepare_linuxpkg() {
 }
 
 build_linuxpkg() {
-  docker run \
-    --rm \
-    -v $prjdir:/go/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME \
-    -w /go/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME \
-    -e CIRCLE_TAG \
-    -e CIRCLE_SHA1 \
-    -e CIRCLE_PROJECT_USERNAME \
-    -e CIRCLE_PROJECT_REPONAME \
-    -e API_EMAIL \
-    -e API_USERNAME \
-    casualjim/fpm -t $1 -p ./dist/build -s dir -C ./dist/linux/amd64 -v $CIRCLE_TAG -n swagger --license "ASL 2.0" -a x86_64 -m $API_EMAIL --url "https://goswagger.io" usr
+  fpm -t $1 -p ./dist/build -s dir -C ./dist/linux/amd64 -v $CIRCLE_TAG -n swagger --license "ASL 2.0" -a x86_64 -m $API_EMAIL --url "https://goswagger.io" usr
 }
 
 upload_to_github() {
@@ -77,9 +59,10 @@ upload_to_bintray() {
 
 deploy_docker() {
   cd $prjdir
-  docker run --rm -it \
-    -v `pwd`:/go/src/github.com/go-swagger/go-swagger \
-    -w /go/src/github.com/go-swagger/go-swagger golang:1.8-alpine go build -o ./dist/swagger-musl -ldflags "-X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Commit=${CIRCLE_SHA1} -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Version=${CIRCLE_TAG}" -a -tags netgo -installsuffix netgo ./cmd/swagger
+  LDFLAGS="-s -w -linkmode external -extldflags \"-static\""
+  LDFLAGS="$LDFLAGS -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Commit=${CIRCLE_SHA1}"
+  LDFLAGS="$LDFLAGS -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Version=${CIRCLE_TAG-dev}"
+  go build -o ./dist/swagger-musl -ldflags "$LDFLAGS" -a  ./cmd/swagger
   mkdir -p deploybuild
   cp Dockerfile ./dist/swagger-musl ./deploybuild
   docker build -t quay.io/goswagger/swagger:$CIRCLE_TAG ./deploybuild
