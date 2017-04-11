@@ -6,13 +6,13 @@ jobs:
       - image: goswagger/builder:20170410
     steps:
       - checkout
-      
-      - run: 
+
+      - run:
           name: Run the tests
           command: |
-            ./hack/build-docker.sh
+            hack/build-docker.sh
           no_output_timeout: 30m
-      
+
       - run:
           name: Submit coverage results
           command: bash <(curl -s https://codecov.io/bash)
@@ -23,11 +23,11 @@ jobs:
             if echo $CIRCLE_TAG | grep -q -E "[0-9]+(\\.[0-9]+)*"; then
               . ./hack/deploy.sh
 
-              prepare 
+              prepare
 
               build_binary -os="linux darwin windows" -arch="amd64 386"
               build_binary -os="linux" -arch="arm64 arm"
-              
+
               prepare_linuxpkg
               build_linuxpkg deb
               build_linuxpkg rpm
@@ -42,7 +42,7 @@ jobs:
               go build -o ./dist/swagger-musl \
                 -ldflags "-X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Commit=${CIRCLE_SHA1} -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Version=dev" \
                 -a -tags netgo -installsuffix netgo ./cmd/swagger
-   
+
               mkdir -p dockerbuild
               cp ./dist/swagger-musl Dockerfile ./dockerbuild
 
@@ -60,7 +60,7 @@ jobs:
 
               deploy_docker
             fi
-      
+
       - deploy:
           command: |
             if [ $CIRCLE_BRANCH = "master" ]; then
@@ -68,9 +68,9 @@ jobs:
               docker login -u $API_USERNAME -p $QUAY_PASS -e $API_EMAIL https://quay.io
               docker push quay.io/goswagger/swagger
             fi
-      
+
       - store_artifacts:
           path: /usr/share/dist
-      
+
       - store_test_results:
           path: /usr/share/testresults
