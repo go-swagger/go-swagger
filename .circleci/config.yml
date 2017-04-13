@@ -48,6 +48,7 @@ jobs:
       - deploy:
           command: |
             if [ $CIRCLE_BRANCH = "master" ]; then
+              export CIRCLE_TAG=dev
               . ./hack/deploy.sh
               deploy_docker
             fi
