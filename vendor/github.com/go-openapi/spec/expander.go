@@ -280,11 +280,11 @@ func nextRef(startingNode interface{}, startingRef *Ref, ptr *jsonpointer.Pointe
 			}
 			nwURL := nw.GetURL()
 			if nwURL.Scheme == "file" || (nwURL.Scheme == "" && nwURL.Host == "") {
-				nwpt := filepath.ToSlash(nwURL.Path)
+				nwpt := filepath.FromSlash(nwURL.Path)
 				if filepath.IsAbs(nwpt) {
 					_, err := os.Stat(nwpt)
 					if err != nil {
-						nwURL.Path = filepath.Join(".", nwpt)
+						nwURL.Path = filepath.ToSlash(filepath.Join(".", nwpt))
 					}
 				}
 			}
@@ -323,7 +323,7 @@ func normalizeFileRef(ref *Ref, relativeBase string) *Ref {
 			}
 			filePath = filepath.Join(filepath.FromSlash(relativeBase), filepath.FromSlash(filePath))
 		}
-		if !filepath.IsAbs(filepath.FromSlash(filePath)) {
+		if !filepath.IsAbs(filepath.Clean(filepath.FromSlash(filePath))) {
 			pwd, err := os.Getwd()
 			if err == nil {
 				debugLog("joining cwd %s with %s", pwd, filePath)
