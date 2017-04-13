@@ -248,7 +248,7 @@ func (r *readCloser) Read(p []byte) (n int, err error) {
 }
 
 func (r *readCloser) Close() error {
-	// Release all remainig buffers.
+	// Release all remaining buffers.
 	for _, buf := range r.bufs {
 		putBuf(buf)
 	}

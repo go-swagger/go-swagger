@@ -163,7 +163,7 @@ func writeIndex(w *gen.CodeWriter, x *indexInfo) {
 			if x > maxMIMENameLen {
 				log.Fatalf("MIME name length (%d) > %d", x, maxMIMENameLen)
 			}
-			n = string() + names[1] + names[0]
+			n = string(x) + names[1] + names[0]
 		}
 		ianaNames = append(ianaNames, n)
 		mibNames = append(mibNames, names[2])

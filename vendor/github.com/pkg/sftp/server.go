@@ -29,7 +29,8 @@ type Server struct {
 	serverConn
 	debugStream   io.Writer
 	readOnly      bool
-	pktChan       chan rxPacket
+	pktChan       chan requestPacket
+	pktMgr        packetManager
 	openFiles     map[string]*os.File
 	openFilesLock sync.RWMutex
 	handleCount   int
@@ -75,15 +76,17 @@ type serverRespondablePacket interface {
 //
 // A subsequent call to Serve() is required to begin serving files over SFTP.
 func NewServer(rwc io.ReadWriteCloser, options ...ServerOption) (*Server, error) {
-	s := &Server{
-		serverConn: serverConn{
-			conn: conn{
-				Reader:      rwc,
-				WriteCloser: rwc,
-			},
+	svrConn := serverConn{
+		conn: conn{
+			Reader:      rwc,
+			WriteCloser: rwc,
 		},
+	}
+	s := &Server{
+		serverConn:  svrConn,
 		debugStream: ioutil.Discard,
-		pktChan:     make(chan rxPacket, sftpServerWorkerCount),
+		pktChan:     make(chan requestPacket, sftpServerWorkerCount),
+		pktMgr:      newPktMgr(&svrConn),
 		openFiles:   make(map[string]*os.File),
 		maxTxPacket: 1 << 15,
 	}
@@ -123,71 +126,13 @@ type rxPacket struct {
 
 // Up to N parallel servers
 func (svr *Server) sftpServerWorker() error {
-	for p := range svr.pktChan {
-		var pkt interface {
-			encoding.BinaryUnmarshaler
-			id() uint32
-		}
-		var readonly = true
-		switch p.pktType {
-		case ssh_FXP_INIT:
-			pkt = &sshFxInitPacket{}
-		case ssh_FXP_LSTAT:
-			pkt = &sshFxpLstatPacket{}
-		case ssh_FXP_OPEN:
-			pkt = &sshFxpOpenPacket{}
-			// readonly handled specially below
-		case ssh_FXP_CLOSE:
-			pkt = &sshFxpClosePacket{}
-		case ssh_FXP_READ:
-			pkt = &sshFxpReadPacket{}
-		case ssh_FXP_WRITE:
-			pkt = &sshFxpWritePacket{}
-			readonly = false
-		case ssh_FXP_FSTAT:
-			pkt = &sshFxpFstatPacket{}
-		case ssh_FXP_SETSTAT:
-			pkt = &sshFxpSetstatPacket{}
-			readonly = false
-		case ssh_FXP_FSETSTAT:
-			pkt = &sshFxpFsetstatPacket{}
-			readonly = false
-		case ssh_FXP_OPENDIR:
-			pkt = &sshFxpOpendirPacket{}
-		case ssh_FXP_READDIR:
-			pkt = &sshFxpReaddirPacket{}
-		case ssh_FXP_REMOVE:
-			pkt = &sshFxpRemovePacket{}
-			readonly = false
-		case ssh_FXP_MKDIR:
-			pkt = &sshFxpMkdirPacket{}
-			readonly = false
-		case ssh_FXP_RMDIR:
-			pkt = &sshFxpRmdirPacket{}
-			readonly = false
-		case ssh_FXP_REALPATH:
-			pkt = &sshFxpRealpathPacket{}
-		case ssh_FXP_STAT:
-			pkt = &sshFxpStatPacket{}
-		case ssh_FXP_RENAME:
-			pkt = &sshFxpRenamePacket{}
-			readonly = false
-		case ssh_FXP_READLINK:
-			pkt = &sshFxpReadlinkPacket{}
-		case ssh_FXP_SYMLINK:
-			pkt = &sshFxpSymlinkPacket{}
-			readonly = false
-		case ssh_FXP_EXTENDED:
-			pkt = &sshFxpExtendedPacket{}
-		default:
-			return errors.Errorf("unhandled packet type: %s", p.pktType)
-		}
-		if err := pkt.UnmarshalBinary(p.pktBytes); err != nil {
-			return err
-		}
+	for pkt := range svr.pktChan {
 
-		// handle FXP_OPENDIR specially
+		// readonly checks
+		readonly := true
 		switch pkt := pkt.(type) {
+		case notReadOnly:
+			readonly = false
 		case *sshFxpOpenPacket:
 			readonly = pkt.readonly()
 		case *sshFxpExtendedPacket:
@@ -350,6 +295,7 @@ func (svr *Server) Serve() error {
 	}
 
 	var err error
+	var pkt requestPacket
 	var pktType uint8
 	var pktBytes []byte
 	for {
@@ -357,11 +303,21 @@ func (svr *Server) Serve() error {
 		if err != nil {
 			break
 		}
-		svr.pktChan <- rxPacket{fxp(pktType), pktBytes}
+
+		pkt, err = makePacket(rxPacket{fxp(pktType), pktBytes})
+		if err != nil {
+			debug("makePacket err: %v", err)
+			svr.conn.Close() // shuts down recvPacket
+			break
+		}
+
+		svr.pktMgr.incomingPacket(pkt)
+		svr.pktChan <- pkt
 	}
 
 	close(svr.pktChan) // shuts down sftpServerWorkers
 	wg.Wait()          // wait for all workers to exit
+	svr.pktMgr.close() // shuts down packetManager
 
 	// close any still-open files
 	for handle, file := range svr.openFiles {
@@ -371,7 +327,21 @@ func (svr *Server) Serve() error {
 	return err // error from recvPacket
 }
 
-type id interface {
+// Wrap underlying connection methods to use packetManager
+func (svr *Server) sendPacket(m encoding.BinaryMarshaler) error {
+	if pkt, ok := m.(responsePacket); ok {
+		svr.pktMgr.readyPacket(pkt)
+	} else {
+		return errors.Errorf("unexpected packet type %T", m)
+	}
+	return nil
+}
+
+func (svr *Server) sendError(p ider, err error) error {
+	return svr.sendPacket(statusFromError(p, err))
+}
+
+type ider interface {
 	id() uint32
 }
 
@@ -566,7 +536,7 @@ func translateErrno(errno syscall.Errno) uint32 {
 	return ssh_FX_FAILURE
 }
 
-func statusFromError(p id, err error) sshFxpStatusPacket {
+func statusFromError(p ider, err error) sshFxpStatusPacket {
 	ret := sshFxpStatusPacket{
 		ID: p.id(),
 		StatusError: StatusError{

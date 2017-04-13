@@ -160,8 +160,13 @@ func baseImport(tgt string) string {
 		log.Fatalln(err)
 	}
 
+	gopath := os.Getenv("GOPATH")
+	if gopath == "" {
+		gopath = filepath.Join(os.Getenv("HOME"), "go")
+	}
+
 	var pth string
-	for _, gp := range filepath.SplitList(os.Getenv("GOPATH")) {
+	for _, gp := range filepath.SplitList(gopath) {
 		pp := filepath.Join(filepath.Clean(gp), "src")
 		var np, npp string
 		if goruntime.GOOS == "windows" {

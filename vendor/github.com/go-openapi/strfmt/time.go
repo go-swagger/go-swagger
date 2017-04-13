@@ -135,7 +135,7 @@ func (t *DateTime) Scan(raw interface{}) error {
 
 // Value converts DateTime to a primitive value ready to written to a database.
 func (t DateTime) Value() (driver.Value, error) {
-	return driver.Value(t), nil
+	return driver.Value(t.String()), nil
 }
 
 func (t DateTime) MarshalJSON() ([]byte, error) {

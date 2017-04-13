@@ -825,7 +825,11 @@ func (scp *schemaParser) packageForFile(gofile *ast.File, tpe *ast.Ident) (*load
 		log.Println("absolute path", fa)
 	}
 	var fgp string
-	for _, p := range append(filepath.SplitList(os.Getenv("GOPATH")), runtime.GOROOT()) {
+	gopath := os.Getenv("GOPATH")
+	if gopath == "" {
+		gopath = filepath.Join(os.Getenv("HOME"), "go")
+	}
+	for _, p := range append(filepath.SplitList(gopath), runtime.GOROOT()) {
 		pref := filepath.Join(p, "src")
 		if filepath.HasPrefix(fa, pref) {
 			fgp = filepath.Dir(strings.TrimPrefix(fa, pref))[1:]
