@@ -332,7 +332,7 @@ func normalizeFileRef(ref *Ref, relativeBase string) *Ref {
 		}
 
 		debugLog("cleaning %s", filePath)
-		filePath = filepath.Clean(filePath)
+		filePath = filepath.Clean(filepath.FromSlash(filePath))
 		_, err := os.Stat(filepath.FromSlash(filePath))
 		if err == nil {
 			debugLog("rewriting url to scheme \"\" path %s", filePath)
