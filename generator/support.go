@@ -267,8 +267,7 @@ func (a *appGenerator) Generate() error {
 }
 
 func (a *appGenerator) GenerateSupport(ap *GenApp) error {
-	var app *GenApp
-	app = ap
+	app := ap
 	if ap == nil {
 		ca, err := a.makeCodegenApp()
 		if err != nil {

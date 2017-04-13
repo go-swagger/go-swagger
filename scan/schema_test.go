@@ -59,6 +59,7 @@ func TestSchemaParser(t *testing.T) {
 
 	assertProperty(t, &schema, "string", "name", "", "Name")
 	prop, ok = schema.Properties["name"]
+	assert.True(t, ok)
 	assert.Equal(t, "Name of this no model instance", prop.Description)
 	assert.EqualValues(t, 4, *prop.MinLength)
 	assert.EqualValues(t, 50, *prop.MaxLength)
@@ -159,7 +160,8 @@ func TestSchemaParser(t *testing.T) {
 			nm := filepath.Base(classificationProg.Fset.File(fil.Pos()).Name())
 			if nm == "order.go" {
 				fnd = true
-				sp.Parse(fil, definitions)
+				err := sp.Parse(fil, definitions)
+				assert.NoError(t, err)
 				break
 			}
 		}

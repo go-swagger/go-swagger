@@ -363,10 +363,7 @@ func (ctx *paramTestContext) assertGenParam(t testing.TB, param spec.Parameter, 
 	}
 	// verify rendered template
 	if param.In == "body" {
-		if !assertBodyParam(t, param, gp) {
-			return false
-		}
-		return true
+		return assertBodyParam(t, param, gp)
 	}
 
 	if ctx.Items != nil {

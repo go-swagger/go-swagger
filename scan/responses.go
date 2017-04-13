@@ -262,7 +262,7 @@ func (rp *responseParser) parseEmbeddedStruct(gofile *ast.File, response *spec.R
 	case *ast.StarExpr:
 		return rp.parseEmbeddedStruct(gofile, response, tpe.X, seenPreviously)
 	}
-	return fmt.Errorf("unable to resolve embedded struct for: %v\n", expr)
+	return fmt.Errorf("unable to resolve embedded struct for: %v", expr)
 }
 
 func (rp *responseParser) parseStructType(gofile *ast.File, response *spec.Response, tpe *ast.StructType, seenPreviously map[string]struct{}) error {

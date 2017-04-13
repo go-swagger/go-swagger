@@ -58,18 +58,18 @@ const (
 )
 
 var (
-	rxSwaggerAnnotation  = regexp.MustCompile("swagger:([\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)")
+	rxSwaggerAnnotation  = regexp.MustCompile(`swagger:([\p{L}\p{N}\p{Pd}\p{Pc}]+)`)
 	rxMeta               = regexp.MustCompile("swagger:meta")
 	rxFileUpload         = regexp.MustCompile("swagger:file")
-	rxStrFmt             = regexp.MustCompile("swagger:strfmt\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)$")
-	rxName               = regexp.MustCompile("swagger:name\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\.]+)$")
-	rxAllOf              = regexp.MustCompile("swagger:allOf\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\.]+)?$")
-	rxModelOverride      = regexp.MustCompile("swagger:model\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)?$")
-	rxDiscriminated      = regexp.MustCompile("swagger:discriminated\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\p{Zs}]+)$")
-	rxResponseOverride   = regexp.MustCompile("swagger:response\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)?$")
-	rxParametersOverride = regexp.MustCompile("swagger:parameters\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\p{Zs}]+)$")
-	rxEnum               = regexp.MustCompile("swagger:enum\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)$")
-	rxDefault            = regexp.MustCompile("swagger:default\\p{Zs}*(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)$")
+	rxStrFmt             = regexp.MustCompile(`swagger:strfmt\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}]+)$`)
+	rxName               = regexp.MustCompile(`swagger:name\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}\.]+)$`)
+	rxAllOf              = regexp.MustCompile(`swagger:allOf\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}\.]+)?$`)
+	rxModelOverride      = regexp.MustCompile(`swagger:model\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}]+)?$`)
+	rxDiscriminated      = regexp.MustCompile(`swagger:discriminated\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}\p{Zs}]+)$`)
+	rxResponseOverride   = regexp.MustCompile(`swagger:response\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}]+)?$`)
+	rxParametersOverride = regexp.MustCompile(`swagger:parameters\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}\p{Zs}]+)$`)
+	rxEnum               = regexp.MustCompile(`swagger:enum\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}]+)$`)
+	rxDefault            = regexp.MustCompile(`swagger:default\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}]+)$`)
 	rxRoute              = regexp.MustCompile(
 		"swagger:route\\p{Zs}*" +
 			rxMethod +
@@ -79,7 +79,7 @@ var (
 			rxOpTags +
 			")?\\p{Zs}+" +
 			rxOpID + "\\p{Zs}*$")
-	rxBeginYAMLSpec    = regexp.MustCompile("---\\p{Zs}*$")
+	rxBeginYAMLSpec    = regexp.MustCompile(`---\p{Zs}*$`)
 	rxUncommentHeaders = regexp.MustCompile(`^[\p{Zs}\t/\*-]*`)
 	rxUncommentYAML    = regexp.MustCompile(`^[\p{Zs}\t]*/*`)
 	rxOperation        = regexp.MustCompile(
@@ -92,27 +92,27 @@ var (
 			")?\\p{Zs}+" +
 			rxOpID + "\\p{Zs}*$")
 
-	rxSpace              = regexp.MustCompile("\\p{Zs}+")
-	rxPunctuationEnd     = regexp.MustCompile("\\p{Po}$")
-	rxStripComments      = regexp.MustCompile("^[^\\p{L}\\p{N}\\p{Pd}\\p{Pc}\\+]*")
-	rxStripTitleComments = regexp.MustCompile("^[^\\p{L}]*[Pp]ackage\\p{Zs}+[^\\p{Zs}]+\\p{Zs}*")
+	rxSpace              = regexp.MustCompile(`\p{Zs}+`)
+	rxPunctuationEnd     = regexp.MustCompile(`\p{Po}$`)
+	rxStripComments      = regexp.MustCompile(`^[^\p{L}\p{N}\p{Pd}\p{Pc}\+]*`)
+	rxStripTitleComments = regexp.MustCompile(`^[^\p{L}]*[Pp]ackage\p{Zs}+[^\p{Zs}]+\p{Zs}*`)
 
-	rxIn              = regexp.MustCompile("[Ii]n\\p{Zs}*:\\p{Zs}*(query|path|header|body|formData)$")
-	rxRequired        = regexp.MustCompile("[Rr]equired\\p{Zs}*:\\p{Zs}*(true|false)$")
-	rxDiscriminator   = regexp.MustCompile("[Dd]iscriminator\\p{Zs}*:\\p{Zs}*(true|false)$")
-	rxReadOnly        = regexp.MustCompile("[Rr]ead(?:\\p{Zs}*|[\\p{Pd}\\p{Pc}])?[Oo]nly\\p{Zs}*:\\p{Zs}*(true|false)$")
-	rxConsumes        = regexp.MustCompile("[Cc]onsumes\\p{Zs}*:")
-	rxProduces        = regexp.MustCompile("[Pp]roduces\\p{Zs}*:")
-	rxSecuritySchemes = regexp.MustCompile("[Ss]ecurity\\p{Zs}*:")
-	rxSecurity        = regexp.MustCompile("[Ss]ecurity\\p{Zs}*[Dd]efinitions:")
-	rxResponses       = regexp.MustCompile("[Rr]esponses\\p{Zs}*:")
-	rxSchemes         = regexp.MustCompile("[Ss]chemes\\p{Zs}*:\\p{Zs}*((?:(?:https?|HTTPS?|wss?|WSS?)[\\p{Zs},]*)+)$")
-	rxVersion         = regexp.MustCompile("[Vv]ersion\\p{Zs}*:\\p{Zs}*(.+)$")
-	rxHost            = regexp.MustCompile("[Hh]ost\\p{Zs}*:\\p{Zs}*(.+)$")
+	rxIn              = regexp.MustCompile(`[Ii]n\p{Zs}*:\p{Zs}*(query|path|header|body|formData)$`)
+	rxRequired        = regexp.MustCompile(`[Rr]equired\p{Zs}*:\p{Zs}*(true|false)$`)
+	rxDiscriminator   = regexp.MustCompile(`[Dd]iscriminator\p{Zs}*:\p{Zs}*(true|false)$`)
+	rxReadOnly        = regexp.MustCompile(`[Rr]ead(?:\p{Zs}*|[\p{Pd}\p{Pc}])?[Oo]nly\p{Zs}*:\p{Zs}*(true|false)$`)
+	rxConsumes        = regexp.MustCompile(`[Cc]onsumes\p{Zs}*:`)
+	rxProduces        = regexp.MustCompile(`[Pp]roduces\p{Zs}*:`)
+	rxSecuritySchemes = regexp.MustCompile(`[Ss]ecurity\p{Zs}*:`)
+	rxSecurity        = regexp.MustCompile(`[Ss]ecurity\p{Zs}*[Dd]efinitions:`)
+	rxResponses       = regexp.MustCompile(`[Rr]esponses\p{Zs}*:`)
+	rxSchemes         = regexp.MustCompile(`[Ss]chemes\p{Zs}*:\p{Zs}*((?:(?:https?|HTTPS?|wss?|WSS?)[\p{Zs},]*)+)$`)
+	rxVersion         = regexp.MustCompile(`[Vv]ersion\p{Zs}*:\p{Zs}*(.+)$`)
+	rxHost            = regexp.MustCompile(`[Hh]ost\p{Zs}*:\p{Zs}*(.+)$`)
 	rxBasePath        = regexp.MustCompile("[Bb]ase\\p{Zs}*-*[Pp]ath\\p{Zs}*:\\p{Zs}*" + rxPath + "$")
-	rxLicense         = regexp.MustCompile("[Ll]icense\\p{Zs}*:\\p{Zs}*(.+)$")
-	rxContact         = regexp.MustCompile("[Cc]ontact\\p{Zs}*-?(?:[Ii]info\\p{Zs}*)?:\\p{Zs}*(.+)$")
-	rxTOS             = regexp.MustCompile("[Tt](:?erms)?\\p{Zs}*-?[Oo]f?\\p{Zs}*-?[Ss](?:ervice)?\\p{Zs}*:")
+	rxLicense         = regexp.MustCompile(`[Ll]icense\p{Zs}*:\p{Zs}*(.+)$`)
+	rxContact         = regexp.MustCompile(`[Cc]ontact\p{Zs}*-?(?:[Ii]info\p{Zs}*)?:\p{Zs}*(.+)$`)
+	rxTOS             = regexp.MustCompile(`[Tt](:?erms)?\p{Zs}*-?[Oo]f?\p{Zs}*-?[Ss](?:ervice)?\p{Zs}*:`)
 )
 
 // Many thanks go to https://github.com/yvasiyarov/swagger
@@ -379,10 +379,7 @@ func (a *appScanner) parseRoutes(file *ast.File) error {
 	rp.operations = a.operations
 	rp.definitions = a.definitions
 	rp.responses = a.responses
-	if err := rp.Parse(file, a.input.Paths); err != nil {
-		return err
-	}
-	return nil
+	return rp.Parse(file, a.input.Paths)
 }
 
 func (a *appScanner) parseOperations(file *ast.File) error {
@@ -390,10 +387,7 @@ func (a *appScanner) parseOperations(file *ast.File) error {
 	op.operations = a.operations
 	op.definitions = a.definitions
 	op.responses = a.responses
-	if err := op.Parse(file, a.input.Paths); err != nil {
-		return err
-	}
-	return nil
+	return op.Parse(file, a.input.Paths)
 }
 
 func (a *appScanner) parseParameters(file *ast.File) error {
@@ -761,7 +755,7 @@ COMMENTS:
 					break COMMENTS // a new swagger: annotation terminates this parser
 				}
 
-				st.annotation.Parse([]string{line})
+				_ = st.annotation.Parse([]string{line})
 				if len(st.header) > 0 {
 					st.seenTag = true
 				}

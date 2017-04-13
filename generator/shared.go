@@ -30,11 +30,11 @@ import (
 	swaggererrors "github.com/go-openapi/errors"
 
 	"github.com/go-openapi/analysis"
-	"github.com/go-openapi/validate"
-	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 	"golang.org/x/tools/imports"
 )
 
@@ -507,7 +507,7 @@ func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
 
 	// Conditionally format the code, unless the user wants to skip
 	formatted := content
-	if t.SkipFormat == false {
+	if !t.SkipFormat {
 		formatted, err = g.LanguageOpts.FormatContent(fname, content)
 		if err != nil {
 			err = fmt.Errorf("format %q failed: %v", t.Name, err)

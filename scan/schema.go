@@ -330,7 +330,9 @@ func (scp *schemaParser) parseNamedType(gofile *ast.File, expr ast.Expr, prop sw
 		return scp.parseIdentProperty(pkg, ftpe, prop)
 
 	case *ast.StarExpr: // pointer to something, optional by default
-		scp.parseNamedType(gofile, ftpe.X, prop)
+		if err := scp.parseNamedType(gofile, ftpe.X, prop); err != nil {
+			return err
+		}
 
 	case *ast.ArrayType: // slice type
 		if err := scp.parseNamedType(gofile, ftpe.Elt, prop.Items()); err != nil {
@@ -364,7 +366,9 @@ func (scp *schemaParser) parseNamedType(gofile *ast.File, expr ast.Expr, prop sw
 				if sch.AdditionalProperties.Schema == nil {
 					sch.AdditionalProperties.Schema = new(spec.Schema)
 				}
-				scp.parseNamedType(gofile, ftpe.Value, schemaTypable{sch.AdditionalProperties.Schema, 0})
+				if err := scp.parseNamedType(gofile, ftpe.Value, schemaTypable{sch.AdditionalProperties.Schema, 0}); err != nil {
+					return err
+				}
 				sch.Typed("object", "")
 			}
 		}
@@ -380,7 +384,7 @@ func (scp *schemaParser) parseNamedType(gofile *ast.File, expr ast.Expr, prop sw
 				}
 			}
 		}
-		return fmt.Errorf("Expr (%s) is unsupported for a schema", pos)
+		return fmt.Errorf("expr (%s) is unsupported for a schema", pos)
 	}
 	return nil
 }
@@ -434,7 +438,7 @@ func (scp *schemaParser) parseEmbeddedType(gofile *ast.File, schema *spec.Schema
 			scp.program.Fset.Position(tpe.Pos()),
 		)
 	}
-	return fmt.Errorf("unable to resolve embedded struct for: %v\n", expr)
+	return fmt.Errorf("unable to resolve embedded struct for: %v", expr)
 }
 
 func (scp *schemaParser) parseAllOfMember(gofile *ast.File, schema *spec.Schema, expr ast.Expr, seenPreviously map[string]struct{}) error {
@@ -469,7 +473,7 @@ func (scp *schemaParser) parseAllOfMember(gofile *ast.File, schema *spec.Schema,
 			return fmt.Errorf("embedded struct: %v", err)
 		}
 	default:
-		return fmt.Errorf("unable to resolve allOf member for: %v\n", expr)
+		return fmt.Errorf("unable to resolve allOf member for: %v", expr)
 	}
 
 	sd := newSchemaDecl(file, gd, ts)
@@ -999,10 +1003,11 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 
 }
 
-func fName() string {
-	pc, _, _, _ := runtime.Caller(1)
-	return runtime.FuncForPC(pc).Name()
-}
+// unused
+// func fName() string {
+// 	pc, _, _, _ := runtime.Caller(1)
+// 	return runtime.FuncForPC(pc).Name()
+// }
 
 func (scp *schemaParser) typeForSelector(gofile *ast.File, expr *ast.SelectorExpr, prop swaggerTypable) error {
 	pkg, err := scp.packageForSelector(gofile, expr.X)
@@ -1132,7 +1137,9 @@ func parseProperty(scp *schemaParser, gofile *ast.File, fld ast.Expr, prop swagg
 		return scp.parseIdentProperty(pkg, ftpe, prop)
 
 	case *ast.StarExpr: // pointer to something, optional by default
-		parseProperty(scp, gofile, ftpe.X, prop)
+		if err := parseProperty(scp, gofile, ftpe.X, prop); err != nil {
+			return err
+		}
 
 	case *ast.ArrayType: // slice type
 		if err := parseProperty(scp, gofile, ftpe.Elt, prop.Items()); err != nil {
@@ -1166,7 +1173,9 @@ func parseProperty(scp *schemaParser, gofile *ast.File, fld ast.Expr, prop swagg
 				if sch.AdditionalProperties.Schema == nil {
 					sch.AdditionalProperties.Schema = new(spec.Schema)
 				}
-				parseProperty(scp, gofile, ftpe.Value, schemaTypable{sch.AdditionalProperties.Schema, 0})
+				if err := parseProperty(scp, gofile, ftpe.Value, schemaTypable{sch.AdditionalProperties.Schema, 0}); err != nil {
+					return err
+				}
 				sch.Typed("object", "")
 			}
 		}

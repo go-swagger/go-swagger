@@ -22,19 +22,6 @@ import (
 	"github.com/go-openapi/spec"
 )
 
-var allSwaggerTags = []string{
-	"Consumes",
-	"Produces",
-	"Schemes",
-	"Host",
-	"BasePath",
-	"Tags",
-	"TOS",
-	"Version",
-	"License",
-	"Contact",
-}
-
 func metaTOSSetter(meta *spec.Info) func([]string) {
 	return func(lines []string) {
 		meta.TermsOfService = joinDropLast(lines)
