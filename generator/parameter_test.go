@@ -878,6 +878,8 @@ func TestGenParameter_Issue710(t *testing.T) {
 }
 
 func TestGenParameter_Issue776_LocalFileRef(t *testing.T) {
+	spec.Debug = true
+	defer func() { spec.Debug = false }()
 	b, err := opBuilder("GetItem", "../fixtures/bugs/776/param.yaml")
 	if assert.NoError(t, err) {
 		op, err := b.MakeOperation()

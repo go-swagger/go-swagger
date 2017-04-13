@@ -19,6 +19,6 @@ import (
 // may be garbage-collected even when the string exists.
 func bytesToStr(data []byte) string {
 	h := (*reflect.SliceHeader)(unsafe.Pointer(&data))
-	shdr := reflect.StringHeader{h.Data, h.Len}
+	shdr := reflect.StringHeader{Data: h.Data, Len: h.Len}
 	return *(*string)(unsafe.Pointer(&shdr))
 }

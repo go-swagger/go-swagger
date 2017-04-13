@@ -7,29 +7,34 @@ import (
 )
 
 // all incoming packets
-type packet interface {
+type requestPacket interface {
 	encoding.BinaryUnmarshaler
 	id() uint32
 }
 
 type responsePacket interface {
 	encoding.BinaryMarshaler
+	id() uint32
 }
 
 // interfaces to group types
 type hasPath interface {
-	packet
+	requestPacket
 	getPath() string
 }
 
 type hasHandle interface {
-	packet
+	requestPacket
 	getHandle() string
 }
 
 type isOpener interface {
 	hasPath
 	isOpener()
+}
+
+type notReadOnly interface {
+	notReadOnly()
 }
 
 //// define types by adding methods
@@ -59,6 +64,16 @@ func (p sshFxpReadPacket) getHandle() string     { return p.Handle }
 func (p sshFxpWritePacket) getHandle() string    { return p.Handle }
 func (p sshFxpReaddirPacket) getHandle() string  { return p.Handle }
 
+// notReadOnly
+func (p sshFxpWritePacket) notReadOnly()    {}
+func (p sshFxpSetstatPacket) notReadOnly()  {}
+func (p sshFxpFsetstatPacket) notReadOnly() {}
+func (p sshFxpRemovePacket) notReadOnly()   {}
+func (p sshFxpMkdirPacket) notReadOnly()    {}
+func (p sshFxpRmdirPacket) notReadOnly()    {}
+func (p sshFxpRenamePacket) notReadOnly()   {}
+func (p sshFxpSymlinkPacket) notReadOnly()  {}
+
 // this has a handle, but is only used for close
 func (p sshFxpClosePacket) getHandle() string { return p.Handle }
 
@@ -67,10 +82,12 @@ func (p sshFxpDataPacket) id() uint32   { return p.ID }
 func (p sshFxpStatusPacket) id() uint32 { return p.ID }
 func (p sshFxpStatResponse) id() uint32 { return p.ID }
 func (p sshFxpNamePacket) id() uint32   { return p.ID }
+func (p sshFxpHandlePacket) id() uint32 { return p.ID }
+func (p sshFxVersionPacket) id() uint32 { return 0 }
 
 // take raw incoming packet data and build packet objects
-func makePacket(p rxPacket) (packet, error) {
-	var pkt packet
+func makePacket(p rxPacket) (requestPacket, error) {
+	var pkt requestPacket
 	switch p.pktType {
 	case ssh_FXP_INIT:
 		pkt = &sshFxInitPacket{}

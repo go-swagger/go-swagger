@@ -330,6 +330,9 @@ func TestGenResponses_Issue718_Required(t *testing.T) {
 }
 
 func TestGenResponses_Issue776_Spec(t *testing.T) {
+	spec.Debug = true
+	defer func() { spec.Debug = false }()
+
 	b, err := opBuilder("GetItem", "../fixtures/bugs/776/spec.yaml")
 	if assert.NoError(t, err) {
 		op, err := b.MakeOperation()
@@ -359,6 +362,9 @@ func TestGenResponses_Issue776_Spec(t *testing.T) {
 }
 
 func TestGenResponses_Issue776_SwaggerTemplate(t *testing.T) {
+	spec.Debug = true
+	defer func() { spec.Debug = false }()
+
 	b, err := opBuilder("getHealthy", "../fixtures/bugs/776/swagger-template.yml")
 	if assert.NoError(t, err) {
 		op, err := b.MakeOperation()

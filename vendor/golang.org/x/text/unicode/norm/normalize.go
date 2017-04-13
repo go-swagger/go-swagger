@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// Note: the file data_test.go that is generated should not be checked in.
 //go:generate go run maketables.go triegen.go
-//go:generate go run maketables.go triegen.go -test
+//go:generate go test -tags test
 
 // Package norm contains types and functions for normalizing Unicode strings.
 package norm // import "golang.org/x/text/unicode/norm"

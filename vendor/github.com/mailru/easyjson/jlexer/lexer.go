@@ -48,8 +48,8 @@ type Lexer struct {
 	wantSep      byte // A comma or a colon character, which need to occur before a token.
 
 	UseMultipleErrors bool          // If we want to use multiple errors.
-	fatalError        error         // Fatal error occured during lexing. It is usually a syntax error.
-	multipleErrors    []*LexerError // Semantic errors occured during lexing. Marshalling will be continued after finding this errors.
+	fatalError        error         // Fatal error occurred during lexing. It is usually a syntax error.
+	multipleErrors    []*LexerError // Semantic errors occurred during lexing. Marshalling will be continued after finding this errors.
 }
 
 // FetchToken scans the input for the next token.

@@ -1,6 +1,7 @@
 package sftp
 
 import (
+	"encoding"
 	"io"
 	"os"
 	"path/filepath"
@@ -27,7 +28,8 @@ type Handlers struct {
 type RequestServer struct {
 	serverConn
 	Handlers        Handlers
-	pktChan         chan packet
+	pktChan         chan requestPacket
+	pktMgr          packetManager
 	openRequests    map[string]Request
 	openRequestLock sync.RWMutex
 	handleCount     int
@@ -36,15 +38,17 @@ type RequestServer struct {
 // NewRequestServer creates/allocates/returns new RequestServer.
 // Normally there there will be one server per user-session.
 func NewRequestServer(rwc io.ReadWriteCloser, h Handlers) *RequestServer {
-	return &RequestServer{
-		serverConn: serverConn{
-			conn: conn{
-				Reader:      rwc,
-				WriteCloser: rwc,
-			},
+	svrConn := serverConn{
+		conn: conn{
+			Reader:      rwc,
+			WriteCloser: rwc,
 		},
+	}
+	return &RequestServer{
+		serverConn:   svrConn,
 		Handlers:     h,
-		pktChan:      make(chan packet, sftpServerWorkerCount),
+		pktChan:      make(chan requestPacket, sftpServerWorkerCount),
+		pktMgr:       newPktMgr(&svrConn),
 		openRequests: make(map[string]Request),
 	}
 }
@@ -91,6 +95,7 @@ func (rs *RequestServer) Serve() error {
 	}
 
 	var err error
+	var pkt requestPacket
 	var pktType uint8
 	var pktBytes []byte
 	for {
@@ -98,15 +103,19 @@ func (rs *RequestServer) Serve() error {
 		if err != nil {
 			break
 		}
-		pkt, err := makePacket(rxPacket{fxp(pktType), pktBytes})
+		pkt, err = makePacket(rxPacket{fxp(pktType), pktBytes})
 		if err != nil {
+			debug("makePacket err: %v", err)
+			rs.conn.Close() // shuts down recvPacket
 			break
 		}
+		rs.pktMgr.incomingPacket(pkt)
 		rs.pktChan <- pkt
 	}
 
 	close(rs.pktChan) // shuts down sftpServerWorkers
 	wg.Wait()         // wait for all workers to exit
+	rs.pktMgr.close() // shuts down packetManager
 	return err
 }
 
@@ -166,7 +175,7 @@ func cleanPath(pkt *sshFxpRealpathPacket) responsePacket {
 	}
 }
 
-func (rs *RequestServer) handle(request Request, pkt packet) responsePacket {
+func (rs *RequestServer) handle(request Request, pkt requestPacket) responsePacket {
 	// fmt.Println("Request Method: ", request.Method)
 	rpkt, err := request.handle(rs.Handlers)
 	if err != nil {
@@ -174,6 +183,20 @@ func (rs *RequestServer) handle(request Request, pkt packet) responsePacket {
 		rpkt = statusFromError(pkt, err)
 	}
 	return rpkt
+}
+
+// Wrap underlying connection methods to use packetManager
+func (rs *RequestServer) sendPacket(m encoding.BinaryMarshaler) error {
+	if pkt, ok := m.(responsePacket); ok {
+		rs.pktMgr.readyPacket(pkt)
+	} else {
+		return errors.Errorf("unexpected packet type %T", m)
+	}
+	return nil
+}
+
+func (rs *RequestServer) sendError(p ider, err error) error {
+	return rs.sendPacket(statusFromError(p, err))
 }
 
 // os.ErrNotExist should convert to ssh_FX_NO_SUCH_FILE, but is not recognized

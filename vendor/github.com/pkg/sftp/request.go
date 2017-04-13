@@ -143,7 +143,7 @@ func fileget(h FileReader, r Request) (responsePacket, error) {
 	if reader == nil {
 		reader, err = h.Fileread(r)
 		if err != nil {
-			return nil, syscall.EBADF
+			return nil, err
 		}
 		r.setState(reader)
 	}
@@ -168,7 +168,7 @@ func fileput(h FileWriter, r Request) (responsePacket, error) {
 	if writer == nil {
 		writer, err = h.Filewrite(r)
 		if err != nil {
-			return nil, syscall.EBADF
+			return nil, err
 		}
 		r.setState(writer)
 	}

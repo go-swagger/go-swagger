@@ -102,7 +102,7 @@ func (d *Date) Scan(raw interface{}) error {
 
 // Value converts Date to a primitive value ready to written to a database.
 func (d Date) Value() (driver.Value, error) {
-	return driver.Value(d), nil
+	return driver.Value(d.String()), nil
 }
 
 func (t Date) MarshalJSON() ([]byte, error) {
