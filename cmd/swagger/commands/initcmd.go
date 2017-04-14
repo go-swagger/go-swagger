@@ -7,6 +7,7 @@ type InitCmd struct {
 	Model *initcmd.Spec `command:"spec"`
 }
 
+// Execute provides default empty implementation
 func (i *InitCmd) Execute(args []string) error {
 	return nil
 }

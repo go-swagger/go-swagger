@@ -144,6 +144,7 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 
 	assertProperty(t, &mod, "string", "value", "", "Value")
 	prop, ok = mod.Properties["value"]
+	assert.True(t, ok)
 	assert.Equal(t, "The value of the tag.", prop.Description)
 
 	mod, ok = definitions["pet"]
@@ -160,6 +161,7 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 
 	assertProperty(t, &mod, "string", "name", "", "Name")
 	prop, ok = mod.Properties["name"]
+	assert.True(t, ok)
 	assert.Equal(t, "The name of the pet.", prop.Description)
 	assert.EqualValues(t, 3, *prop.MinLength)
 	assert.EqualValues(t, 50, *prop.MaxLength)
@@ -167,6 +169,7 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 
 	assertArrayProperty(t, &mod, "string", "photoUrls", "", "PhotoURLs")
 	prop, ok = mod.Properties["photoUrls"]
+	assert.True(t, ok)
 	assert.Equal(t, "The photo urls for the pet.\nThis only accepts jpeg or png images.", prop.Description)
 	if assert.NotNil(t, prop.Items) && assert.NotNil(t, prop.Items.Schema) {
 		assert.Equal(t, "\\.(jpe?g|png)$", prop.Items.Schema.Pattern)
@@ -174,10 +177,12 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 
 	assertProperty(t, &mod, "string", "status", "", "Status")
 	prop, ok = mod.Properties["status"]
+	assert.True(t, ok)
 	assert.Equal(t, "The current status of the pet in the store.", prop.Description)
 
 	assertProperty(t, &mod, "string", "birthday", "date", "Birthday")
 	prop, ok = mod.Properties["birthday"]
+	assert.True(t, ok)
 	assert.Equal(t, "The pet's birthday", prop.Description)
 
 	assertArrayRef(t, &mod, "tags", "Tags", "#/definitions/tag")
@@ -448,23 +453,28 @@ See how markdown works now, we can have lists:
 [Links works too](http://localhost)
 `
 
+	var err error
+
 	st := &sectionedParser{}
 	st.setTitle = func(lines []string) {}
-	st.Parse(ascg(text))
+	err = st.Parse(ascg(text))
+	assert.NoError(t, err)
 
 	assert.EqualValues(t, []string{"This has a title, separated by a whitespace line"}, st.Title())
 	assert.EqualValues(t, []string{"In this example the punctuation for the title should not matter for swagger.", "For go it will still make a difference though."}, st.Description())
 
 	st = &sectionedParser{}
 	st.setTitle = func(lines []string) {}
-	st.Parse(ascg(text2))
+	err = st.Parse(ascg(text2))
+	assert.NoError(t, err)
 
 	assert.EqualValues(t, []string{"This has a title without whitespace."}, st.Title())
 	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
 
 	st = &sectionedParser{}
 	st.setTitle = func(lines []string) {}
-	st.Parse(ascg(text3))
+	err = st.Parse(ascg(text3))
+	assert.NoError(t, err)
 
 	assert.EqualValues(t, []string{"This has a title, and markdown in the description"}, st.Title())
 	assert.EqualValues(t, []string{"See how markdown works now, we can have lists:", "", "+ first item", "+ second item", "+ third item", "", "[Links works too](http://localhost)"}, st.Description())
@@ -487,6 +497,8 @@ minimum: 10
 maximum: 20
 `
 
+	var err error
+
 	st := &sectionedParser{}
 	st.setTitle = func(lines []string) {}
 	st.taggers = []tagParser{
@@ -495,7 +507,8 @@ maximum: 20
 		{"MultipleOf", false, nil, &setMultipleOf{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMultipleOfFmt, ""))}},
 	}
 
-	st.Parse(ascg(block))
+	err = st.Parse(ascg(block))
+	assert.NoError(t, err)
 	assert.EqualValues(t, []string{"This has a title without whitespace."}, st.Title())
 	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
 	assert.Len(t, st.matched, 2)
@@ -512,7 +525,8 @@ maximum: 20
 		{"MultipleOf", false, nil, &setMultipleOf{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMultipleOfFmt, ""))}},
 	}
 
-	st.Parse(ascg(block2))
+	err = st.Parse(ascg(block2))
+	assert.NoError(t, err)
 	assert.EqualValues(t, []string{"This has a title without whitespace."}, st.Title())
 	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
 	assert.Len(t, st.matched, 2)
@@ -525,13 +539,16 @@ maximum: 20
 func TestSectionedParser_Empty(t *testing.T) {
 	block := `swagger:response someResponse`
 
+	var err error
+
 	st := &sectionedParser{}
 	st.setTitle = func(lines []string) {}
 	ap := newSchemaAnnotationParser("SomeResponse")
 	ap.rx = rxResponseOverride
 	st.annotation = ap
 
-	st.Parse(ascg(block))
+	err = st.Parse(ascg(block))
+	assert.NoError(t, err)
 	assert.Empty(t, st.Title())
 	assert.Empty(t, st.Description())
 	assert.Empty(t, st.taggers)
@@ -548,6 +565,8 @@ The punctuation here does indeed matter. But it won't for go.
 minimum: 10
 maximum: 20
 `
+	var err error
+
 	st := &sectionedParser{}
 	st.setTitle = func(lines []string) {}
 	ap := newSchemaAnnotationParser("SomeModel")
@@ -558,7 +577,8 @@ maximum: 20
 		{"MultipleOf", false, nil, &setMultipleOf{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMultipleOfFmt, ""))}},
 	}
 
-	st.Parse(ascg(block))
+	err = st.Parse(ascg(block))
+	assert.NoError(t, err)
 	assert.EqualValues(t, []string{"This has a title without whitespace."}, st.Title())
 	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
 	assert.Len(t, st.matched, 2)
@@ -580,6 +600,8 @@ minimum: 10
 swagger:meta
 maximum: 20
 `
+	var err error
+
 	st := &sectionedParser{}
 	st.setTitle = func(lines []string) {}
 	ap := newSchemaAnnotationParser("SomeModel")
@@ -590,7 +612,8 @@ maximum: 20
 		{"MultipleOf", false, nil, &setMultipleOf{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMultipleOfFmt, ""))}},
 	}
 
-	st.Parse(ascg(block))
+	err = st.Parse(ascg(block))
+	assert.NoError(t, err)
 	assert.EqualValues(t, []string{"This has a title without whitespace."}, st.Title())
 	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
 	assert.Len(t, st.matched, 1)

@@ -302,7 +302,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 		}
 		if er != nil {
 			if Debug {
-				log.Printf("error resolving", er)
+				log.Print("error resolving", er)
 			}
 			err = er
 			return

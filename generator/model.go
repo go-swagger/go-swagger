@@ -694,7 +694,6 @@ func (sg *schemaGenContext) buildProperties() error {
 			var tn string
 			if gn, ok := emprop.Schema.Extensions["x-go-name"]; ok {
 				tn = gn.(string)
-				nm = tn
 			} else {
 				tn = swag.ToGoName(nm)
 			}
@@ -749,8 +748,7 @@ func (sg *schemaGenContext) buildAllOf() error {
 			b, _ := json.MarshalIndent(sch, "", "  ")
 			log.Println("trying", string(b))
 		}
-		var comprop *schemaGenContext
-		comprop = sg.NewCompositionBranch(sch, i)
+		comprop := sg.NewCompositionBranch(sch, i)
 		if err := comprop.makeGenSchema(); err != nil {
 			return err
 		}

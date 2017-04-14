@@ -56,10 +56,6 @@ func (s *SpecFile) Execute(args []string) error {
 	return writeToFile(swspec, !s.Compact, string(s.Output))
 }
 
-var (
-	newLine = []byte("\n")
-)
-
 func loadSpec(input string) (*spec.Swagger, error) {
 	if fi, err := os.Stat(input); err == nil {
 		if fi.IsDir() {

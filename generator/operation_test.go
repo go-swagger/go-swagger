@@ -322,8 +322,9 @@ func TestDateFormat_Spec1(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
 			opts.defaultsEnsured = false
-			opts.EnsureDefaults(true)
-			err := templates.MustGet("clientParameter").Execute(buf, op)
+			err = opts.EnsureDefaults(true)
+			assert.NoError(t, err)
+			err = templates.MustGet("clientParameter").Execute(buf, op)
 			if assert.NoError(t, err) {
 				ff, err := opts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
 				if assert.NoError(t, err) {
@@ -345,8 +346,9 @@ func TestDateFormat_Spec2(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
 			opts.defaultsEnsured = false
-			opts.EnsureDefaults(true)
-			err := templates.MustGet("clientParameter").Execute(buf, op)
+			err = opts.EnsureDefaults(true)
+			assert.NoError(t, err)
+			err = templates.MustGet("clientParameter").Execute(buf, op)
 			if assert.NoError(t, err) {
 				ff, err := opts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
 				if assert.NoError(t, err) {
@@ -379,7 +381,8 @@ func TestBuilder_Issue287(t *testing.T) {
 		ClientPackage:     "client",
 		Target:            dr,
 	}
-	opts.EnsureDefaults(false)
+	err := opts.EnsureDefaults(false)
+	assert.NoError(t, err)
 	appGen, err := newAppGenerator("plainTexter", nil, nil, opts)
 	if assert.NoError(t, err) {
 		op, err := appGen.makeCodegenApp()
@@ -417,7 +420,8 @@ func TestBuilder_Issue465(t *testing.T) {
 		ClientPackage:     "client",
 		Target:            dr,
 	}
-	opts.EnsureDefaults(true)
+	err := opts.EnsureDefaults(true)
+	assert.NoError(t, err)
 	appGen, err := newAppGenerator("plainTexter", nil, nil, opts)
 	if assert.NoError(t, err) {
 		op, err := appGen.makeCodegenApp()
@@ -455,7 +459,8 @@ func TestBuilder_Issue500(t *testing.T) {
 		ClientPackage:     "client",
 		Target:            dr,
 	}
-	opts.EnsureDefaults(false)
+	err := opts.EnsureDefaults(false)
+	assert.NoError(t, err)
 	appGen, err := newAppGenerator("multiTags", nil, nil, opts)
 	if assert.NoError(t, err) {
 		op, err := appGen.makeCodegenApp()
@@ -484,8 +489,9 @@ func TestGenClient_IllegalBOM(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
 			opts.defaultsEnsured = false
-			opts.EnsureDefaults(true)
-			err := templates.MustGet("clientResponse").Execute(buf, op)
+			err = opts.EnsureDefaults(true)
+			assert.NoError(t, err)
+			err = templates.MustGet("clientResponse").Execute(buf, op)
 			assert.NoError(t, err)
 		}
 	}
@@ -499,8 +505,9 @@ func TestGenClient_CustomFormatPath(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
 			opts.defaultsEnsured = false
-			opts.EnsureDefaults(true)
-			err := templates.MustGet("clientParameter").Execute(buf, op)
+			err = opts.EnsureDefaults(true)
+			assert.NoError(t, err)
+			err = templates.MustGet("clientParameter").Execute(buf, op)
 			if assert.NoError(t, err) {
 				assertInCode(t, `if err := r.SetPathParam("SeriesId", o.SeriesID.String()); err != nil`, buf.String())
 			}
@@ -516,8 +523,9 @@ func TestGenClient_Issue733(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
 			opts.defaultsEnsured = false
-			opts.EnsureDefaults(true)
-			err := templates.MustGet("clientResponse").Execute(buf, op)
+			err = opts.EnsureDefaults(true)
+			assert.NoError(t, err)
+			err = templates.MustGet("clientResponse").Execute(buf, op)
 			if assert.NoError(t, err) {
 				assertInCode(t, "Labels []*int64 `json:\"labels\"`", buf.String())
 			}

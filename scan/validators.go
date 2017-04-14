@@ -517,13 +517,13 @@ func (ss *setSecurityDefinitions) Matches(line string) bool {
 }
 
 var (
-	rxSecuritySchemeType          = regexp.MustCompile("[Tt]ype\\p{Zs}*:")
-	rxSecuritySchemeName          = regexp.MustCompile("[Nn]ame\\p{Zs}*:")
-	rxSecuritySchemeIn            = regexp.MustCompile("[Ii]n\\p{Zs}*:")
-	rxSecuritySchemeFlow          = regexp.MustCompile("[Ff]low\\p{Zs}*:")
-	rxSecuritySchemeDescription   = regexp.MustCompile("[Dd]escription\\p{Zs}*:")
-	rxSecuritySchemeAuthorization = regexp.MustCompile("[Aa]uthorizationUrl\\p{Zs}*:")
-	rxSecuritySchemeToken         = regexp.MustCompile("[Tt]okenUrl\\p{Zs}*:")
+	rxSecuritySchemeType          = regexp.MustCompile(`[Tt]ype\p{Zs}*:`)
+	rxSecuritySchemeName          = regexp.MustCompile(`[Nn]ame\p{Zs}*:`)
+	rxSecuritySchemeIn            = regexp.MustCompile(`[Ii]n\p{Zs}*:`)
+	rxSecuritySchemeFlow          = regexp.MustCompile(`[Ff]low\p{Zs}*:`)
+	rxSecuritySchemeDescription   = regexp.MustCompile(`[Dd]escription\p{Zs}*:`)
+	rxSecuritySchemeAuthorization = regexp.MustCompile(`[Aa]uthorizationUrl\p{Zs}*:`)
+	rxSecuritySchemeToken         = regexp.MustCompile(`[Tt]okenUrl\p{Zs}*:`)
 )
 
 func (ss *setSecurityDefinitions) Parse(lines []string) error {
@@ -708,19 +708,18 @@ func (ss *setOpResponses) Matches(line string) bool {
 	return ss.rx.MatchString(line)
 }
 
-//Tag used when specifying a response to point to a defined swagger:response
+//ResponseTag used when specifying a response to point to a defined swagger:response
 const ResponseTag = "response"
 
-//Tag used when specifying a response to point to a model/schema
+//BodyTag used when specifying a response to point to a model/schema
 const BodyTag = "body"
 
-//Tag used when specifying a response that gives a description of the response
+//DescriptionTag used when specifying a response that gives a description of the response
 const DescriptionTag = "description"
 
 func parseTags(line string) (modelOrResponse string, arrays int, isDefinitionRef bool, description string, err error) {
 	tags := strings.Split(line, " ")
 	parsedModelOrResponse := false
-	parsedDescription := false
 
 	for i, tagAndValue := range tags {
 		tagValList := strings.SplitN(tagAndValue, ":", 2)
@@ -763,19 +762,16 @@ func parseTags(line string) (modelOrResponse string, arrays int, isDefinitionRef
 			modelOrResponse = value
 		} else {
 			foundDescription := false
-			if !parsedDescription {
-				if tag == DescriptionTag {
-					foundDescription = true
-				}
+			if tag == DescriptionTag {
+				foundDescription = true
 			}
 			if foundDescription {
 				//Descriptions are special, they make they read the rest of the line
 				descriptionWords := []string{value}
 				if i < len(tags)-1 {
-					descriptionWords = append(descriptionWords, tags[i+1:len(tags)]...)
+					descriptionWords = append(descriptionWords, tags[i+1:]...)
 				}
 				description = strings.Join(descriptionWords, " ")
-				parsedDescription = true
 				break
 			} else {
 				if tag == ResponseTag || tag == BodyTag || tag == DescriptionTag {
@@ -789,7 +785,7 @@ func parseTags(line string) (modelOrResponse string, arrays int, isDefinitionRef
 		}
 	}
 
-	//TODO: Maybe do, if !parsedModelOrResponse && !parsedDescription {return some error}
+	//TODO: Maybe do, if !parsedModelOrResponse {return some error}
 	return
 }
 

@@ -402,7 +402,7 @@ func TestEnum_Issue325(t *testing.T) {
 		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
+			err = templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				ff, err := opts.LanguageOpts.FormatContent("soda_brand.go", buf.Bytes())
 				if assert.NoError(t, err) {

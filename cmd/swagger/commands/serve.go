@@ -100,7 +100,7 @@ func (s *ServeCmd) Execute(args []string) error {
 	}()
 
 	if !s.NoOpen && !s.NoUI {
-		webbrowser.Open(visit)
+		_ = webbrowser.Open(visit)
 	}
 	log.Println("serving docs at", visit)
 	return <-errFuture

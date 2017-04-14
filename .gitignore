@@ -52,3 +52,7 @@ go-swagger.iml
 
 node_modules
 _book
+
+tmp/
+cover/
+bin/

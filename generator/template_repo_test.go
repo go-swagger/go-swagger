@@ -66,16 +66,17 @@ func TestCustomNewTemplates(t *testing.T) {
 	var buf bytes.Buffer
 
 	err := templates.AddFile("newtemplate", customNewTemplate)
-	err = templates.AddFile("existingUsesNew", customExistingUsesNew)
-
 	assert.Nil(t, err)
-	headerTempl, err := templates.Get("bindprimitiveparam")
 
+	err = templates.AddFile("existingUsesNew", customExistingUsesNew)
+	assert.Nil(t, err)
+
+	headerTempl, err := templates.Get("bindprimitiveparam")
 	assert.Nil(t, err)
 
 	err = headerTempl.Execute(&buf, nil)
-
 	assert.Nil(t, err)
+
 	assert.Equal(t, "new template", buf.String())
 }
 
@@ -83,7 +84,8 @@ func TestRepoLoadingTemplates(t *testing.T) {
 
 	repo := NewRepository(nil)
 
-	repo.AddFile("simple", singleTemplate)
+	err := repo.AddFile("simple", singleTemplate)
+	assert.NoError(t, err)
 
 	templ, err := repo.Get("simple")
 
@@ -103,7 +105,8 @@ func TestRepoLoadsAllTemplatesDefined(t *testing.T) {
 	var b bytes.Buffer
 	repo := NewRepository(nil)
 
-	repo.AddFile("multiple", multipleDefinitions)
+	err := repo.AddFile("multiple", multipleDefinitions)
+	assert.NoError(t, err)
 
 	templ, err := repo.Get("multiple")
 	assert.Nil(t, err)
@@ -131,8 +134,10 @@ func TestRepoLoadsAllDependantTemplates(t *testing.T) {
 	var b bytes.Buffer
 	repo := NewRepository(nil)
 
-	repo.AddFile("multiple", multipleDefinitions)
-	repo.AddFile("dependant", dependantTemplate)
+	err := repo.AddFile("multiple", multipleDefinitions)
+	assert.NoError(t, err)
+	err = repo.AddFile("dependant", dependantTemplate)
+	assert.NoError(t, err)
 
 	templ, err := repo.Get("dependant")
 	assert.Nil(t, err)
@@ -150,8 +155,10 @@ func TestRepoRecursiveTemplates(t *testing.T) {
 	var b bytes.Buffer
 	repo := NewRepository(nil)
 
-	repo.AddFile("c1", cirularDeps1)
-	repo.AddFile("c2", cirularDeps2)
+	err := repo.AddFile("c1", cirularDeps1)
+	assert.NoError(t, err)
+	err = repo.AddFile("c2", cirularDeps2)
+	assert.NoError(t, err)
 
 	templ, err := repo.Get("c1")
 	assert.Nil(t, err)

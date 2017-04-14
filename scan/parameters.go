@@ -283,7 +283,7 @@ func (pp *paramStructParser) parseEmbeddedStruct(gofile *ast.File, operation *sp
 	case *ast.StarExpr:
 		return pp.parseEmbeddedStruct(gofile, operation, tpe.X, seenPreviously)
 	}
-	return fmt.Errorf("unable to resolve embedded struct for: %v\n", expr)
+	return fmt.Errorf("unable to resolve embedded struct for: %v", expr)
 }
 
 func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.Operation, tpe *ast.StructType, seenPreviously map[string]spec.Parameter) error {

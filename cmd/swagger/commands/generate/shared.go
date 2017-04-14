@@ -43,8 +43,7 @@ func configureOptsFromConfig(cfg *viper.Viper, opts *generator.GenOpts) error {
 	if err := cfg.Unmarshal(&def); err != nil {
 		return err
 	}
-	def.ConfigureOpts(opts)
-	return nil
+	return def.ConfigureOpts(opts)
 }
 
 func setDebug(cfg *viper.Viper) {

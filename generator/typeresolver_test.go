@@ -492,6 +492,7 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 			var ss spec.Schema
 			sch.Properties["tags"] = *(&ss).CollectionOf(*spec.StringProperty())
 			rt, err = resolver.ResolveSchema(sch, false, true)
+			assert.NoError(t, err)
 			assert.True(t, rt.IsComplexObject)
 			assert.False(t, rt.IsMap)
 			assert.Equal(t, "models.TheModel", rt.GoType)
