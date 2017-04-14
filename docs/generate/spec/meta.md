@@ -33,6 +33,7 @@ Annotation | Format
 **License** | the name of the license followed by the URL of the license eg. MIT http://opensource.org/license/MIT
 **Security** | a dictionary of key: []string{scopes}
 **SecurityDefinitions** | list of supported authorization types https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#securityDefinitionsObject
+**Extensions** | list of extensions to Swagger Schema. The field name MUST begin with x-, for example, x-internal-id. The value can be null, a primitive, an array or an object.
 
 ##### Example:
 
@@ -73,6 +74,17 @@ Annotation | Format
 //          name: KEY
 //          in: header
 //
+//     Extensions:
+//     ---
+//     x-meta-value: value
+//     x-meta-array:
+//       - value1
+//       - value2
+//     x-meta-array-obj:
+//       - name: obj
+//         value: field
+//     ---
+//
 // swagger:meta
 package classification
 ```
@@ -100,4 +112,11 @@ info:
   version: 0.0.1
 host: localhost
 basePath: /v2
+x-meta-value: value
+x-meta-array:
+  - value1
+  - value2
+x-meta-array-obj:
+  - name: obj
+    value: field
 ```

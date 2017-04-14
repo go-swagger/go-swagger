@@ -93,9 +93,24 @@ func verifyMeta(t testing.TB, doc *spec.Swagger) {
 			Name: "KEY",
 		},
 	}
+	expectedExtensions := spec.Extensions{
+		"x-meta-array": []interface{}{
+			"value1",
+			"value2",
+		},
+		"x-meta-array-obj": []interface{}{
+			map[string]interface{}{
+				"name":  "obj",
+				"value": "field",
+			},
+		},
+		"x-meta-value": "value",
+	}
 	assert.EqualValues(t, map[string]*spec.SecurityScheme{"api_key": &expectedSecuritySchema}, doc.SecurityDefinitions)
+	assert.EqualValues(t, expectedExtensions, doc.Extensions)
 	assert.Equal(t, "localhost", doc.Host)
 	assert.Equal(t, "/v2", doc.BasePath)
+
 }
 
 func verifyInfo(t testing.TB, info *spec.Info) {
