@@ -15,12 +15,15 @@
 package scan
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
 
+	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
+	"gopkg.in/yaml.v2"
 )
 
 type validationBuilder interface {
@@ -496,6 +499,57 @@ func (ss *setSchemes) Parse(lines []string) error {
 			}
 		}
 		ss.set(schemes)
+	}
+	return nil
+}
+
+func newYAMLBlockParser(rx *regexp.Regexp, setter func(interface{}) error) *yamlBlockParser {
+	return &yamlBlockParser{
+		set: setter,
+		rx:  rx,
+	}
+}
+
+type yamlBlockParser struct {
+	set func(interface{}) error
+	rx  *regexp.Regexp
+}
+
+func (se *yamlBlockParser) Matches(line string) bool {
+	return se.rx.MatchString(line)
+}
+
+func (se *yamlBlockParser) Parse(lines []string) error {
+	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+		return nil
+	}
+
+	if lines[0] != "---" {
+		lines = append([]string{"---"}, lines...)
+	}
+
+	yamlContent := strings.Join(lines, "\n")
+	var yamlValue interface{}
+	err := yaml.Unmarshal([]byte(yamlContent), &yamlValue)
+	if err != nil {
+		return err
+	}
+
+	var jsonValue json.RawMessage
+	jsonValue, err = fmts.YAMLToJSON(yamlValue)
+	if err != nil {
+		return err
+	}
+
+	var jsonData interface{}
+	err = json.Unmarshal(jsonValue, &jsonData)
+	if err != nil {
+		return err
+	}
+
+	err = se.set(jsonData)
+	if err != nil {
+		return err
 	}
 	return nil
 }

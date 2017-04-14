@@ -39,6 +39,17 @@
 //     - application/json
 //     - application/xml
 //
+//     Extensions:
+//     ---
+//     x-meta-value: value
+//     x-meta-array:
+//       - value1
+//       - value2
+//     x-meta-array-obj:
+//       - name: obj
+//         value: field
+//     ---
+//
 //     Security:
 //     - api_key:
 //

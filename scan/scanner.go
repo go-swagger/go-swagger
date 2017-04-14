@@ -93,9 +93,11 @@ var (
 			rxOpID + "\\p{Zs}*$")
 
 	rxSpace              = regexp.MustCompile(`\p{Zs}+`)
+	rxIndent             = regexp.MustCompile("\\p{Zs}*/*\\p{Zs}*[^\\p{Zs}]")
 	rxPunctuationEnd     = regexp.MustCompile(`\p{Po}$`)
 	rxStripComments      = regexp.MustCompile(`^[^\p{L}\p{N}\p{Pd}\p{Pc}\+]*`)
 	rxStripTitleComments = regexp.MustCompile(`^[^\p{L}]*[Pp]ackage\p{Zs}+[^\p{Zs}]+\p{Zs}*`)
+	rxAllowedExtensions  = regexp.MustCompile("^[Xx]-")
 
 	rxIn              = regexp.MustCompile(`[Ii]n\p{Zs}*:\p{Zs}*(query|path|header|body|formData)$`)
 	rxRequired        = regexp.MustCompile(`[Rr]equired\p{Zs}*:\p{Zs}*(true|false)$`)
@@ -113,6 +115,7 @@ var (
 	rxLicense         = regexp.MustCompile(`[Ll]icense\p{Zs}*:\p{Zs}*(.+)$`)
 	rxContact         = regexp.MustCompile(`[Cc]ontact\p{Zs}*-?(?:[Ii]info\p{Zs}*)?:\p{Zs}*(.+)$`)
 	rxTOS             = regexp.MustCompile(`[Tt](:?erms)?\p{Zs}*-?[Oo]f?\p{Zs}*-?[Ss](?:ervice)?\p{Zs}*:`)
+	rxExtensions      = regexp.MustCompile("[Ee]xtensions\\p{Zs}*:")
 )
 
 // Many thanks go to https://github.com/yvasiyarov/swagger
@@ -222,6 +225,9 @@ func newAppScanner(opts *Opts, includes, excludes packageFilters) (*appScanner, 
 	}
 	if input.Responses == nil {
 		input.Responses = make(map[string]spec.Response)
+	}
+	if input.Extensions == nil {
+		input.Extensions = make(spec.Extensions)
 	}
 
 	return &appScanner{
@@ -527,7 +533,7 @@ type yamlSpecScanner struct {
 	skipHeader     bool
 }
 
-func cleanupScannerLines(lines []string, ur *regexp.Regexp) []string {
+func cleanupScannerLines(lines []string, ur *regexp.Regexp, yamlBlock *regexp.Regexp) []string {
 	// bail early when there is nothing to parse
 	if len(lines) == 0 {
 		return lines
@@ -535,7 +541,31 @@ func cleanupScannerLines(lines []string, ur *regexp.Regexp) []string {
 	seenLine := -1
 	var lastContent int
 	var uncommented []string
+	var startBlock bool
+	var yaml []string
 	for i, v := range lines {
+		if yamlBlock != nil && yamlBlock.MatchString(v) && !startBlock {
+			startBlock = true
+			if seenLine < 0 {
+				seenLine = i
+			}
+			continue
+		}
+		if startBlock {
+			if yamlBlock.MatchString(v) {
+				startBlock = false
+				uncommented = append(uncommented, removeIndent(yaml)...)
+				continue
+			}
+			yaml = append(yaml, v)
+			if v != "" {
+				if seenLine < 0 {
+					seenLine = i
+				}
+				lastContent = i
+			}
+			continue
+		}
 		str := ur.ReplaceAllString(v, "")
 		uncommented = append(uncommented, str)
 		if str != "" {
@@ -545,6 +575,7 @@ func cleanupScannerLines(lines []string, ur *regexp.Regexp) []string {
 			lastContent = i
 		}
 	}
+
 	// fixes issue #50
 	if seenLine == -1 {
 		return nil
@@ -555,7 +586,7 @@ func cleanupScannerLines(lines []string, ur *regexp.Regexp) []string {
 // a shared function that can be used to split given headers
 // into a title and description
 func collectScannerTitleDescription(headers []string) (title, desc []string) {
-	hdrs := cleanupScannerLines(headers, rxUncommentHeaders)
+	hdrs := cleanupScannerLines(headers, rxUncommentHeaders, nil)
 
 	idx := -1
 	for i, line := range hdrs {
@@ -593,7 +624,7 @@ func (sp *yamlSpecScanner) collectTitleDescription() {
 		return
 	}
 	if sp.setTitle == nil {
-		sp.header = cleanupScannerLines(sp.header, rxUncommentHeaders)
+		sp.header = cleanupScannerLines(sp.header, rxUncommentHeaders, nil)
 		return
 	}
 
@@ -647,12 +678,11 @@ COMMENTS:
 	if sp.setDescription != nil {
 		sp.setDescription(sp.Description())
 	}
-
 	return nil
 }
 
 func (sp *yamlSpecScanner) UnmarshalSpec(u func([]byte) error) (err error) {
-	spec := cleanupScannerLines(sp.yamlSpec, rxUncommentYAML)
+	spec := cleanupScannerLines(sp.yamlSpec, rxUncommentYAML, nil)
 	if len(spec) == 0 {
 		return errors.New("no spec available to unmarshal")
 	}
@@ -662,14 +692,7 @@ func (sp *yamlSpecScanner) UnmarshalSpec(u func([]byte) error) (err error) {
 	}
 
 	// remove indention
-	indentLength := strings.Index(spec[0], "-")
-	if indentLength > 0 {
-		for i := range spec {
-			if len(spec[i]) >= indentLength {
-				spec[i] = spec[i][indentLength:]
-			}
-		}
-	}
+	spec = removeIndent(spec)
 
 	// 1. parse yaml lines
 	yamlValue := make(map[interface{}]interface{})
@@ -703,6 +726,19 @@ func (sp *yamlSpecScanner) UnmarshalSpec(u func([]byte) error) (err error) {
 	return
 }
 
+// removes indent base on the first line
+func removeIndent(spec []string) []string {
+	loc := rxIndent.FindStringIndex(spec[0])
+	if loc[1] > 0 {
+		for i := range spec {
+			if len(spec[i]) >= loc[1] {
+				spec[i] = spec[i][loc[1]-1:]
+			}
+		}
+	}
+	return spec
+}
+
 // aggregates lines in header until it sees a tag.
 type sectionedParser struct {
 	header     []string
@@ -725,7 +761,7 @@ func (st *sectionedParser) collectTitleDescription() {
 		return
 	}
 	if st.setTitle == nil {
-		st.header = cleanupScannerLines(st.header, rxUncommentHeaders)
+		st.header = cleanupScannerLines(st.header, rxUncommentHeaders, nil)
 		return
 	}
 
@@ -807,7 +843,7 @@ COMMENTS:
 		st.setDescription(st.Description())
 	}
 	for _, mt := range st.matched {
-		if err := mt.Parse(cleanupScannerLines(mt.Lines, rxUncommentHeaders)); err != nil {
+		if err := mt.Parse(cleanupScannerLines(mt.Lines, rxUncommentHeaders, rxBeginYAMLSpec)); err != nil {
 			return err
 		}
 	}
