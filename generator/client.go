@@ -56,6 +56,10 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 		if err = validateSpec(opts.Spec, specDoc); err != nil {
 			return err
 		}
+		// Restore spec to original
+		if err != nil {
+			return err
+		}
 	}
 
 	analyzed := analysis.New(specDoc.Spec())

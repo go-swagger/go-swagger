@@ -80,6 +80,11 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 		if err = validateSpec(opts.Spec, specDoc); err != nil {
 			return nil, err
 		}
+		// Restore spec to original
+		opts.Spec, specDoc, err = loadSpec(opts.Spec)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	analyzed := analysis.New(specDoc.Spec())
