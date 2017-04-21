@@ -553,6 +553,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 		Code:           code,
 		Method:         b.Method,
 		Path:           b.Path,
+		Extensions:     resp.Extensions,
 	}
 
 	for hName, header := range resp.Headers {
