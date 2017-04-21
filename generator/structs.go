@@ -355,6 +355,8 @@ type GenOperation struct {
 	ConsumesMediaTypes []string
 	WithContext        bool
 	TimeoutName        string
+
+	Extensions         map[string]interface{}
 }
 
 // GenOperations represents a list of operations to generate

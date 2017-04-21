@@ -488,6 +488,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		ExtraSchemes:         extraSchemes,
 		WithContext:          b.WithContext,
 		TimeoutName:          timeoutName,
+		Extensions:           operation.Extensions,
 	}, nil
 }
 
