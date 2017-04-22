@@ -11,6 +11,9 @@ import (
 	"github.com/go-swagger/go-swagger/examples/generated/models"
 )
 
+// GetUserByNameOKCode is the HTTP code returned for type GetUserByNameOK
+const GetUserByNameOKCode int = 200
+
 /*GetUserByNameOK successful operation
 
 swagger:response getUserByNameOK
@@ -51,6 +54,9 @@ func (o *GetUserByNameOK) WriteResponse(rw http.ResponseWriter, producer runtime
 	}
 }
 
+// GetUserByNameBadRequestCode is the HTTP code returned for type GetUserByNameBadRequest
+const GetUserByNameBadRequestCode int = 400
+
 /*GetUserByNameBadRequest Invalid username supplied
 
 swagger:response getUserByNameBadRequest
@@ -68,6 +74,9 @@ func (o *GetUserByNameBadRequest) WriteResponse(rw http.ResponseWriter, producer
 
 	rw.WriteHeader(400)
 }
+
+// GetUserByNameNotFoundCode is the HTTP code returned for type GetUserByNameNotFound
+const GetUserByNameNotFoundCode int = 404
 
 /*GetUserByNameNotFound User not found
 

@@ -248,6 +248,9 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) HandlerFor(method, path strin
   if _, ok := {{.ReceiverName}}.handlers[um]; !ok {
     return nil, false
   }
+  if path == "/" {
+    path = ""
+  }
   h, ok := {{.ReceiverName}}.handlers[um][path]
   return h, ok
 }

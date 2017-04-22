@@ -11,6 +11,9 @@ import (
 	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
 
+// UploadTaskFileCreatedCode is the HTTP code returned for type UploadTaskFileCreated
+const UploadTaskFileCreatedCode int = 201
+
 /*UploadTaskFileCreated File added
 
 swagger:response uploadTaskFileCreated

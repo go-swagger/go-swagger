@@ -140,7 +140,7 @@ func (s *Server) hasScheme(scheme string) bool {
 // Serve the api
 func (s *Server) Serve() (err error) {
 	if !s.hasListeners {
-		if err := s.Listen(); err != nil {
+		if err = s.Listen(); err != nil {
 			return err
 		}
 	}
@@ -181,6 +181,8 @@ func (s *Server) Serve() (err error) {
 	if s.hasScheme(schemeHTTP) {
 		httpServer := &graceful.Server{Server: new(http.Server)}
 		httpServer.MaxHeaderBytes = int(s.MaxHeaderSize)
+		httpServer.ReadTimeout = s.ReadTimeout
+		httpServer.WriteTimeout = s.WriteTimeout
 		httpServer.SetKeepAlivesEnabled(int64(s.KeepAlive) > 0)
 		httpServer.TCPKeepAlive = s.KeepAlive
 		if s.ListenLimit > 0 {

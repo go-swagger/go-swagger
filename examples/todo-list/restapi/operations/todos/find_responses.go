@@ -11,6 +11,9 @@ import (
 	"github.com/go-swagger/go-swagger/examples/todo-list/models"
 )
 
+// FindOKCode is the HTTP code returned for type FindOK
+const FindOKCode int = 200
+
 /*FindOK OK
 
 swagger:response findOK

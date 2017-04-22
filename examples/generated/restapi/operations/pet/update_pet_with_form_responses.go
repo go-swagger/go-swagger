@@ -9,6 +9,9 @@ import (
 	"github.com/go-openapi/runtime"
 )
 
+// UpdatePetWithFormMethodNotAllowedCode is the HTTP code returned for type UpdatePetWithFormMethodNotAllowed
+const UpdatePetWithFormMethodNotAllowedCode int = 405
+
 /*UpdatePetWithFormMethodNotAllowed Invalid input
 
 swagger:response updatePetWithFormMethodNotAllowed

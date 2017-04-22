@@ -11,6 +11,9 @@ import (
 	"github.com/go-swagger/go-swagger/examples/generated/models"
 )
 
+// GetPetByIDOKCode is the HTTP code returned for type GetPetByIDOK
+const GetPetByIDOKCode int = 200
+
 /*GetPetByIDOK successful operation
 
 swagger:response getPetByIdOK
@@ -51,6 +54,9 @@ func (o *GetPetByIDOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pr
 	}
 }
 
+// GetPetByIDBadRequestCode is the HTTP code returned for type GetPetByIDBadRequest
+const GetPetByIDBadRequestCode int = 400
+
 /*GetPetByIDBadRequest Invalid ID supplied
 
 swagger:response getPetByIdBadRequest
@@ -68,6 +74,9 @@ func (o *GetPetByIDBadRequest) WriteResponse(rw http.ResponseWriter, producer ru
 
 	rw.WriteHeader(400)
 }
+
+// GetPetByIDNotFoundCode is the HTTP code returned for type GetPetByIDNotFound
+const GetPetByIDNotFoundCode int = 404
 
 /*GetPetByIDNotFound Pet not found
 

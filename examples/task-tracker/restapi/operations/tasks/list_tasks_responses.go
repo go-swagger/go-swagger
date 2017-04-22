@@ -12,6 +12,9 @@ import (
 	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
 
+// ListTasksOKCode is the HTTP code returned for type ListTasksOK
+const ListTasksOKCode int = 200
+
 /*ListTasksOK Successful response
 
 swagger:response listTasksOK
@@ -76,6 +79,9 @@ func (o *ListTasksOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pro
 	}
 
 }
+
+// ListTasksUnprocessableEntityCode is the HTTP code returned for type ListTasksUnprocessableEntity
+const ListTasksUnprocessableEntityCode int = 422
 
 /*ListTasksUnprocessableEntity Validation error
 

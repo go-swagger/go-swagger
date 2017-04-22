@@ -11,6 +11,9 @@ import (
 	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
 
+// AddCommentToTaskCreatedCode is the HTTP code returned for type AddCommentToTaskCreated
+const AddCommentToTaskCreatedCode int = 201
+
 /*AddCommentToTaskCreated Comment added
 
 swagger:response addCommentToTaskCreated

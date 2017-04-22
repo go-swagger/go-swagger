@@ -163,6 +163,10 @@ func (m *Task) validateAttachments(formats strfmt.Registry) error {
 		return nil
 	}
 
+	if swag.IsZero(m.Attachments) { // not required
+		return nil
+	}
+
 	for k := range m.Attachments {
 
 		if swag.IsZero(m.Attachments[k]) { // not required
@@ -182,6 +186,10 @@ func (m *Task) validateAttachments(formats strfmt.Registry) error {
 }
 
 func (m *Task) validateComments(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Comments) { // not required
+		return nil
+	}
 
 	for i := 0; i < len(m.Comments); i++ {
 
@@ -206,6 +214,10 @@ func (m *Task) validateComments(formats strfmt.Registry) error {
 
 func (m *Task) validateLastUpdatedBy(formats strfmt.Registry) error {
 
+	if swag.IsZero(m.LastUpdatedBy) { // not required
+		return nil
+	}
+
 	if m.LastUpdatedBy != nil {
 
 		if err := m.LastUpdatedBy.Validate(formats); err != nil {
@@ -220,6 +232,10 @@ func (m *Task) validateLastUpdatedBy(formats strfmt.Registry) error {
 }
 
 func (m *Task) validateReportedBy(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ReportedBy) { // not required
+		return nil
+	}
 
 	if m.ReportedBy != nil {
 
