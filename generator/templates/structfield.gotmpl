@@ -7,7 +7,7 @@
 {{- if $.HasBaseType -}}
   -
 {{- else }}
-  {{- .Name }}
+  {{- .OriginalName }}
   {{- if not .Required }}{{ if not .IsArray }},omitempty{{ end }}{{ end }}
 {{- end }}"
 {{- if .XMLName }} xml:"{{ .XMLName }}"{{ end }}
