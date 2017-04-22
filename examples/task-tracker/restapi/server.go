@@ -166,7 +166,7 @@ func (s *Server) Serve() (err error) {
 			domainSocket.Timeout = s.CleanupTimeout
 		}
 
-		configureServer(domainSocket, "unix")
+		configureServer(domainSocket, "unix", s.SocketPath)
 
 		wg.Add(1)
 		s.Logf("Serving task tracker at unix://%s", s.SocketPath)
@@ -197,7 +197,7 @@ func (s *Server) Serve() (err error) {
 		httpServer.Handler = s.handler
 		httpServer.LogFunc = s.Logf
 
-		configureServer(httpServer, "http")
+		configureServer(httpServer, "http", s.httpServerL.Addr().String())
 
 		wg.Add(1)
 		s.Logf("Serving task tracker at http://%s", s.httpServerL.Addr())
@@ -282,7 +282,7 @@ func (s *Server) Serve() (err error) {
 			}
 		}
 
-		configureServer(httpsServer, "https")
+		configureServer(httpsServer, "https", s.httpsServerL.Addr().String())
 
 		wg.Add(1)
 		s.Logf("Serving task tracker at https://%s", s.httpsServerL.Addr())

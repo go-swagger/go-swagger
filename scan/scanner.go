@@ -59,8 +59,8 @@ const (
 
 var (
 	rxSwaggerAnnotation  = regexp.MustCompile(`swagger:([\p{L}\p{N}\p{Pd}\p{Pc}]+)`)
-	rxMeta               = regexp.MustCompile("swagger:meta")
-	rxFileUpload         = regexp.MustCompile("swagger:file")
+	rxMeta               = regexp.MustCompile(`swagger:meta`)
+	rxFileUpload         = regexp.MustCompile(`swagger:file`)
 	rxStrFmt             = regexp.MustCompile(`swagger:strfmt\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}]+)$`)
 	rxName               = regexp.MustCompile(`swagger:name\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}\.]+)$`)
 	rxAllOf              = regexp.MustCompile(`swagger:allOf\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}\.]+)?$`)
@@ -111,7 +111,7 @@ var (
 	rxSchemes         = regexp.MustCompile(`[Ss]chemes\p{Zs}*:\p{Zs}*((?:(?:https?|HTTPS?|wss?|WSS?)[\p{Zs},]*)+)$`)
 	rxVersion         = regexp.MustCompile(`[Vv]ersion\p{Zs}*:\p{Zs}*(.+)$`)
 	rxHost            = regexp.MustCompile(`[Hh]ost\p{Zs}*:\p{Zs}*(.+)$`)
-	rxBasePath        = regexp.MustCompile(`[Bb]ase\p{Zs}*-*[Pp]ath\p{Zs}*:\p{Zs}*" + rxPath + "$`)
+	rxBasePath        = regexp.MustCompile(`[Bb]ase\p{Zs}*-*[Pp]ath\p{Zs}*:\p{Zs}*` + rxPath + "$")
 	rxLicense         = regexp.MustCompile(`[Ll]icense\p{Zs}*:\p{Zs}*(.+)$`)
 	rxContact         = regexp.MustCompile(`[Cc]ontact\p{Zs}*-?(?:[Ii]info\p{Zs}*)?:\p{Zs}*(.+)$`)
 	rxTOS             = regexp.MustCompile(`[Tt](:?erms)?\p{Zs}*-?[Oo]f?\p{Zs}*-?[Ss](?:ervice)?\p{Zs}*:`)
