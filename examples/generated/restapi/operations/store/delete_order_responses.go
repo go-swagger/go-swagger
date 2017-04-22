@@ -9,6 +9,9 @@ import (
 	"github.com/go-openapi/runtime"
 )
 
+// DeleteOrderBadRequestCode is the HTTP code returned for type DeleteOrderBadRequest
+const DeleteOrderBadRequestCode int = 400
+
 /*DeleteOrderBadRequest Invalid ID supplied
 
 swagger:response deleteOrderBadRequest
@@ -26,6 +29,9 @@ func (o *DeleteOrderBadRequest) WriteResponse(rw http.ResponseWriter, producer r
 
 	rw.WriteHeader(400)
 }
+
+// DeleteOrderNotFoundCode is the HTTP code returned for type DeleteOrderNotFound
+const DeleteOrderNotFoundCode int = 404
 
 /*DeleteOrderNotFound Order not found
 

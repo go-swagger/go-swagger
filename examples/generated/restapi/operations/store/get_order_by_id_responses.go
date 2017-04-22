@@ -11,6 +11,9 @@ import (
 	"github.com/go-swagger/go-swagger/examples/generated/models"
 )
 
+// GetOrderByIDOKCode is the HTTP code returned for type GetOrderByIDOK
+const GetOrderByIDOKCode int = 200
+
 /*GetOrderByIDOK successful operation
 
 swagger:response getOrderByIdOK
@@ -51,6 +54,9 @@ func (o *GetOrderByIDOK) WriteResponse(rw http.ResponseWriter, producer runtime.
 	}
 }
 
+// GetOrderByIDBadRequestCode is the HTTP code returned for type GetOrderByIDBadRequest
+const GetOrderByIDBadRequestCode int = 400
+
 /*GetOrderByIDBadRequest Invalid ID supplied
 
 swagger:response getOrderByIdBadRequest
@@ -68,6 +74,9 @@ func (o *GetOrderByIDBadRequest) WriteResponse(rw http.ResponseWriter, producer 
 
 	rw.WriteHeader(400)
 }
+
+// GetOrderByIDNotFoundCode is the HTTP code returned for type GetOrderByIDNotFound
+const GetOrderByIDNotFoundCode int = 404
 
 /*GetOrderByIDNotFound Order not found
 

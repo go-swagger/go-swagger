@@ -11,6 +11,9 @@ import (
 	"github.com/go-swagger/go-swagger/examples/todo-list/models"
 )
 
+// DestroyOneNoContentCode is the HTTP code returned for type DestroyOneNoContent
+const DestroyOneNoContentCode int = 204
+
 /*DestroyOneNoContent Deleted
 
 swagger:response destroyOneNoContent

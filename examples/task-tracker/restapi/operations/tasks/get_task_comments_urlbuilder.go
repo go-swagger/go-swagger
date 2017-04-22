@@ -9,7 +9,6 @@ import (
 	golangswaggerpaths "path"
 	"strings"
 
-	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 

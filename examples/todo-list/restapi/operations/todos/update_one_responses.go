@@ -11,6 +11,9 @@ import (
 	"github.com/go-swagger/go-swagger/examples/todo-list/models"
 )
 
+// UpdateOneOKCode is the HTTP code returned for type UpdateOneOK
+const UpdateOneOKCode int = 200
+
 /*UpdateOneOK OK
 
 swagger:response updateOneOK

@@ -11,6 +11,9 @@ import (
 	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
 
+// GetTaskDetailsOKCode is the HTTP code returned for type GetTaskDetailsOK
+const GetTaskDetailsOKCode int = 200
+
 /*GetTaskDetailsOK Task details
 
 swagger:response getTaskDetailsOK
@@ -50,6 +53,9 @@ func (o *GetTaskDetailsOK) WriteResponse(rw http.ResponseWriter, producer runtim
 		}
 	}
 }
+
+// GetTaskDetailsUnprocessableEntityCode is the HTTP code returned for type GetTaskDetailsUnprocessableEntity
+const GetTaskDetailsUnprocessableEntityCode int = 422
 
 /*GetTaskDetailsUnprocessableEntity Validation error
 

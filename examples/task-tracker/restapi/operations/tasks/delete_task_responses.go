@@ -11,6 +11,9 @@ import (
 	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
 
+// DeleteTaskNoContentCode is the HTTP code returned for type DeleteTaskNoContent
+const DeleteTaskNoContentCode int = 204
+
 /*DeleteTaskNoContent Task deleted
 
 swagger:response deleteTaskNoContent

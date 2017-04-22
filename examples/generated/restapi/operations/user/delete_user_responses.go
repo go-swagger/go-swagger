@@ -9,6 +9,9 @@ import (
 	"github.com/go-openapi/runtime"
 )
 
+// DeleteUserBadRequestCode is the HTTP code returned for type DeleteUserBadRequest
+const DeleteUserBadRequestCode int = 400
+
 /*DeleteUserBadRequest Invalid username supplied
 
 swagger:response deleteUserBadRequest
@@ -26,6 +29,9 @@ func (o *DeleteUserBadRequest) WriteResponse(rw http.ResponseWriter, producer ru
 
 	rw.WriteHeader(400)
 }
+
+// DeleteUserNotFoundCode is the HTTP code returned for type DeleteUserNotFound
+const DeleteUserNotFoundCode int = 404
 
 /*DeleteUserNotFound User not found
 

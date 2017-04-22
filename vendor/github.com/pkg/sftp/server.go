@@ -29,7 +29,6 @@ type Server struct {
 	serverConn
 	debugStream   io.Writer
 	readOnly      bool
-	pktChan       chan requestPacket
 	pktMgr        packetManager
 	openFiles     map[string]*os.File
 	openFilesLock sync.RWMutex
@@ -85,7 +84,6 @@ func NewServer(rwc io.ReadWriteCloser, options ...ServerOption) (*Server, error)
 	s := &Server{
 		serverConn:  svrConn,
 		debugStream: ioutil.Discard,
-		pktChan:     make(chan requestPacket, sftpServerWorkerCount),
 		pktMgr:      newPktMgr(&svrConn),
 		openFiles:   make(map[string]*os.File),
 		maxTxPacket: 1 << 15,
@@ -125,8 +123,8 @@ type rxPacket struct {
 }
 
 // Up to N parallel servers
-func (svr *Server) sftpServerWorker() error {
-	for pkt := range svr.pktChan {
+func (svr *Server) sftpServerWorker(pktChan chan requestPacket) error {
+	for pkt := range pktChan {
 
 		// readonly checks
 		readonly := true
@@ -280,19 +278,58 @@ func handlePacket(s *Server, p interface{}) error {
 	}
 }
 
+type requestChan chan requestPacket
+
+func (svr *Server) sftpServerWorkers(worker func(requestChan)) requestChan {
+
+	rwChan := make(chan requestPacket, sftpServerWorkerCount)
+	for i := 0; i < sftpServerWorkerCount; i++ {
+		go worker(rwChan)
+	}
+
+	cmdChan := make(chan requestPacket)
+	go worker(cmdChan)
+
+	pktChan := make(chan requestPacket, sftpServerWorkerCount)
+	go func() {
+		// start with cmdChan
+		curChan := cmdChan
+		for pkt := range pktChan {
+			// on file open packet, switch to rwChan
+			switch pkt.(type) {
+			case *sshFxpOpenPacket:
+				curChan = rwChan
+			// on file close packet, switch back to cmdChan
+			// after waiting for any reads/writes to finish
+			case *sshFxpClosePacket:
+				// wait for rwChan to finish
+				svr.pktMgr.working.Wait()
+				// stop using rwChan
+				curChan = cmdChan
+			}
+			svr.pktMgr.incomingPacket(pkt)
+			curChan <- pkt
+		}
+		close(rwChan)
+		close(cmdChan)
+	}()
+
+	return pktChan
+}
+
 // Serve serves SFTP connections until the streams stop or the SFTP subsystem
 // is stopped.
 func (svr *Server) Serve() error {
 	var wg sync.WaitGroup
-	wg.Add(sftpServerWorkerCount)
-	for i := 0; i < sftpServerWorkerCount; i++ {
-		go func() {
-			defer wg.Done()
-			if err := svr.sftpServerWorker(); err != nil {
-				svr.conn.Close() // shuts down recvPacket
-			}
-		}()
+	wg.Add(1)
+	workerFunc := func(ch requestChan) {
+		wg.Add(1)
+		defer wg.Done()
+		if err := svr.sftpServerWorker(ch); err != nil {
+			svr.conn.Close() // shuts down recvPacket
+		}
 	}
+	pktChan := svr.sftpServerWorkers(workerFunc)
 
 	var err error
 	var pkt requestPacket
@@ -311,11 +348,11 @@ func (svr *Server) Serve() error {
 			break
 		}
 
-		svr.pktMgr.incomingPacket(pkt)
-		svr.pktChan <- pkt
+		pktChan <- pkt
 	}
+	wg.Done()
 
-	close(svr.pktChan) // shuts down sftpServerWorkers
+	close(pktChan)     // shuts down sftpServerWorkers
 	wg.Wait()          // wait for all workers to exit
 	svr.pktMgr.close() // shuts down packetManager
 

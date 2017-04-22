@@ -11,6 +11,9 @@ import (
 	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
 
+// GetTaskCommentsOKCode is the HTTP code returned for type GetTaskCommentsOK
+const GetTaskCommentsOKCode int = 200
+
 /*GetTaskCommentsOK The list of comments
 
 swagger:response getTaskCommentsOK

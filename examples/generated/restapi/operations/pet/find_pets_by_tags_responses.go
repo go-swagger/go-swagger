@@ -11,6 +11,9 @@ import (
 	"github.com/go-swagger/go-swagger/examples/generated/models"
 )
 
+// FindPetsByTagsOKCode is the HTTP code returned for type FindPetsByTagsOK
+const FindPetsByTagsOKCode int = 200
+
 /*FindPetsByTagsOK successful operation
 
 swagger:response findPetsByTagsOK
@@ -53,6 +56,9 @@ func (o *FindPetsByTagsOK) WriteResponse(rw http.ResponseWriter, producer runtim
 	}
 
 }
+
+// FindPetsByTagsBadRequestCode is the HTTP code returned for type FindPetsByTagsBadRequest
+const FindPetsByTagsBadRequestCode int = 400
 
 /*FindPetsByTagsBadRequest Invalid tag value
 

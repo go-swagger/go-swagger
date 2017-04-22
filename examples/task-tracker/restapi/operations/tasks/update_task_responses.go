@@ -11,6 +11,9 @@ import (
 	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
 
+// UpdateTaskOKCode is the HTTP code returned for type UpdateTaskOK
+const UpdateTaskOKCode int = 200
+
 /*UpdateTaskOK Task details
 
 swagger:response updateTaskOK
@@ -50,6 +53,9 @@ func (o *UpdateTaskOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pr
 		}
 	}
 }
+
+// UpdateTaskUnprocessableEntityCode is the HTTP code returned for type UpdateTaskUnprocessableEntity
+const UpdateTaskUnprocessableEntityCode int = 422
 
 /*UpdateTaskUnprocessableEntity Validation error
 

@@ -11,6 +11,9 @@ import (
 	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
 
+// CreateTaskCreatedCode is the HTTP code returned for type CreateTaskCreated
+const CreateTaskCreatedCode int = 201
+
 /*CreateTaskCreated Task created
 
 swagger:response createTaskCreated
