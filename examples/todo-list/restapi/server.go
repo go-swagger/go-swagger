@@ -268,7 +268,7 @@ func (s *Server) Serve() (err error) {
 			domainSocket.Timeout = s.CleanupTimeout
 		}
 
-		configureServer(domainSocket, "unix", s.SocketPath)
+		configureServer(domainSocket, "unix", string(s.SocketPath))
 
 		wg.Add(1)
 		s.Logf("Serving todo list at unix://%s", s.SocketPath)
