@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"fmt"
+
 	"github.com/go-openapi/spec"
 )
 

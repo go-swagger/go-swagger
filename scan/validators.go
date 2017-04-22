@@ -547,11 +547,7 @@ func (se *yamlBlockParser) Parse(lines []string) error {
 		return err
 	}
 
-	err = se.set(jsonData)
-	if err != nil {
-		return err
-	}
-	return nil
+	return se.set(jsonData)
 }
 
 func newSetSecurityDefinitions(rx *regexp.Regexp, setter func(spec.SecurityDefinitions)) *setSecurityDefinitions {

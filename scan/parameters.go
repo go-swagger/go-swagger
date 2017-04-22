@@ -160,7 +160,7 @@ type paramDecl struct {
 	OperationIDs []string
 }
 
-func (sd paramDecl) inferOperationIDs() (opids []string) {
+func (sd *paramDecl) inferOperationIDs() (opids []string) {
 	if len(sd.OperationIDs) > 0 {
 		opids = sd.OperationIDs
 		return

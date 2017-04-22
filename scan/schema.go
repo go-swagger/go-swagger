@@ -816,6 +816,30 @@ func (scp *schemaParser) createParser(nm string, schema, ps *spec.Schema, fld *a
 	return sp
 }
 
+// hasFilePathPrefix reports whether the filesystem path s begins with the
+// elements in prefix.
+//
+// taken from: https://github.com/golang/go/blob/c87520c5981ecdeaa99e7ba636a6088f900c0c75/src/cmd/go/internal/load/path.go#L60-L80
+func hasFilePathPrefix(s, prefix string) bool {
+	sv := strings.ToUpper(filepath.VolumeName(s))
+	pv := strings.ToUpper(filepath.VolumeName(prefix))
+	s = s[len(sv):]
+	prefix = prefix[len(pv):]
+	switch {
+	default:
+		return false
+	case sv != pv:
+		return false
+	case len(s) == len(prefix):
+		return s == prefix
+	case len(s) > len(prefix):
+		if prefix != "" && prefix[len(prefix)-1] == filepath.Separator {
+			return strings.HasPrefix(s, prefix)
+		}
+		return s[len(prefix)] == filepath.Separator && s[:len(prefix)] == prefix
+	}
+}
+
 func (scp *schemaParser) packageForFile(gofile *ast.File, tpe *ast.Ident) (*loader.PackageInfo, error) {
 	fn := scp.program.Fset.File(gofile.Pos()).Name()
 	if Debug {
@@ -835,7 +859,7 @@ func (scp *schemaParser) packageForFile(gofile *ast.File, tpe *ast.Ident) (*load
 	}
 	for _, p := range append(filepath.SplitList(gopath), runtime.GOROOT()) {
 		pref := filepath.Join(p, "src")
-		if filepath.HasPrefix(fa, pref) {
+		if hasFilePathPrefix(fa, pref) {
 			fgp = filepath.Dir(strings.TrimPrefix(fa, pref))[1:]
 			break
 		}

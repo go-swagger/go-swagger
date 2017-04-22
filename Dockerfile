@@ -1,7 +1,7 @@
 FROM golang:1.8-alpine
-MAINTAINER Ivan Porto Carrer <ivan@flanders.co.nz> (@casualjim)
+MAINTAINER Ivan Porto Carrero <ivan@flanders.co.nz> (@casualjim)
 
-RUN apk --update add ca-certificates shared-mime-info mailcap git &&\
+RUN apk --no-cache add ca-certificates shared-mime-info mailcap git build-base &&\
   go get -u github.com/go-openapi/runtime &&\
   go get -u github.com/asaskevich/govalidator &&\
   go get -u golang.org/x/net/context &&\
