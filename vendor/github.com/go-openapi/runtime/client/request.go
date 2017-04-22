@@ -89,10 +89,12 @@ func (r *request) BuildHTTP(mediaType string, producers map[string]runtime.Produ
 	var pr *io.PipeReader
 	var pw *io.PipeWriter
 	buf := bytes.NewBuffer(nil)
-	body = ioutil.NopCloser(buf)
-	if r.fileFields != nil {
-		pr, pw = io.Pipe()
-		body = pr
+	if r.payload != nil || len(r.formFields) > 0 || len(r.fileFields) > 0 {
+		body = ioutil.NopCloser(buf)
+		if r.fileFields != nil {
+			pr, pw = io.Pipe()
+			body = pr
+		}
 	}
 	req, err := http.NewRequest(r.method, path, body)
 	if err != nil {
@@ -192,6 +194,11 @@ func (r *request) BuildHTTP(mediaType string, producers map[string]runtime.Produ
 			return nil, err
 		}
 	}
+
+	if runtime.CanHaveBody(req.Method) && req.Body == nil && req.Header.Get(runtime.HeaderContentType) == "" {
+		req.Header.Set(runtime.HeaderContentType, mediaType)
+	}
+
 	return req, nil
 }
 

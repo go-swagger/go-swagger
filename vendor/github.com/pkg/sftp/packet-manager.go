@@ -1,6 +1,9 @@
 package sftp
 
-import "encoding"
+import (
+	"encoding"
+	"sync"
+)
 
 // The goal of the packetManager is to keep the outgoing packets in the same
 // order as the incoming. This is due to some sftp clients requiring this
@@ -17,6 +20,7 @@ type packetManager struct {
 	incoming  requestPacketIDs
 	outgoing  responsePackets
 	sender    packetSender // connection object
+	working   *sync.WaitGroup
 }
 
 func newPktMgr(sender packetSender) packetManager {
@@ -27,6 +31,7 @@ func newPktMgr(sender packetSender) packetManager {
 		incoming:  make([]uint32, 0, sftpServerWorkerCount),
 		outgoing:  make([]responsePacket, 0, sftpServerWorkerCount),
 		sender:    sender,
+		working:   &sync.WaitGroup{},
 	}
 	go s.worker()
 	return s
@@ -35,12 +40,14 @@ func newPktMgr(sender packetSender) packetManager {
 // register incoming packets to be handled
 // send id of 0 for packets without id
 func (s packetManager) incomingPacket(pkt requestPacket) {
+	s.working.Add(1)
 	s.requests <- pkt // buffer == sftpServerWorkerCount
 }
 
 // register outgoing packets as being ready
 func (s packetManager) readyPacket(pkt responsePacket) {
 	s.responses <- pkt
+	s.working.Done()
 }
 
 // shut down packetManager worker

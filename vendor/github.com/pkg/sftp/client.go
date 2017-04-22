@@ -203,7 +203,7 @@ func (c *Client) opendir(path string) (string, error) {
 		handle, _ := unmarshalString(data)
 		return handle, nil
 	case ssh_FXP_STATUS:
-		return "", unmarshalStatus(id, data)
+		return "", normaliseError(unmarshalStatus(id, data))
 	default:
 		return "", unimplementedPacketErr(typ)
 	}
@@ -284,7 +284,7 @@ func (c *Client) ReadLink(p string) (string, error) {
 		filename, _ := unmarshalString(data) // ignore dummy attributes
 		return filename, nil
 	case ssh_FXP_STATUS:
-		return "", unmarshalStatus(id, data)
+		return "", normaliseError(unmarshalStatus(id, data))
 	default:
 		return "", unimplementedPacketErr(typ)
 	}
@@ -439,7 +439,7 @@ func (c *Client) fstat(handle string) (*FileStat, error) {
 		attr, _ := unmarshalAttrs(data)
 		return attr, nil
 	case ssh_FXP_STATUS:
-		return nil, unmarshalStatus(id, data)
+		return nil, normaliseError(unmarshalStatus(id, data))
 	default:
 		return nil, unimplementedPacketErr(typ)
 	}
