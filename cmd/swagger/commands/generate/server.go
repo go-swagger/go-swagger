@@ -37,7 +37,7 @@ type Server struct {
 	SkipSupport       bool     `long:"skip-support" description:"no supporting files will be generated when this flag is specified"`
 	ExcludeMain       bool     `long:"exclude-main" description:"exclude main function, so just generate the library"`
 	ExcludeSpec       bool     `long:"exclude-spec" description:"don't embed the swagger specification"`
-	WithContext       bool     `long:"with-context" description:"handlers get a context as first arg"`
+	WithContext       bool     `long:"with-context" description:"handlers get a context as first arg (deprecated)"`
 	DumpData          bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
 	FlagStrategy      string   `long:"flag-strategy" description:"the strategy to provide flags for the server" default:"go-flags" choice:"go-flags" choice:"pflag"`
 	CompatibilityMode string   `long:"compatibility-mode" description:"the compatibility mode for the tls server" default:"modern" choice:"modern" choice:"intermediate"`
@@ -51,6 +51,10 @@ func (s *Server) Execute(args []string) error {
 		return err
 	}
 	setDebug(cfg)
+
+	if s.WithContext {
+		fmt.Fprintf(os.Stderr, "--with-context is deprecated because recent go versions now include the context on the request object to which you have access on the params.HTTPRequest property")
+	}
 
 	opts := &generator.GenOpts{
 		Spec:              string(s.Spec),
