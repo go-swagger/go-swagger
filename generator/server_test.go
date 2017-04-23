@@ -39,7 +39,7 @@ func testGenOpts() (g GenOpts) {
 	return
 }
 
-func testAppGenertor(t testing.TB, specPath, name string) (*appGenerator, error) {
+func testAppGenerator(t testing.TB, specPath, name string) (*appGenerator, error) {
 	specDoc, err := loads.Spec(specPath)
 	if !assert.NoError(t, err) {
 		return nil, err
@@ -85,7 +85,7 @@ func testAppGenertor(t testing.TB, specPath, name string) (*appGenerator, error)
 func TestServer_UrlEncoded(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stderr)
-	gen, err := testAppGenertor(t, "../fixtures/codegen/simplesearch.yml", "search")
+	gen, err := testAppGenerator(t, "../fixtures/codegen/simplesearch.yml", "search")
 	if assert.NoError(t, err) {
 		app, err := gen.makeCodegenApp()
 		if assert.NoError(t, err) {
@@ -116,7 +116,7 @@ func TestServer_UrlEncoded(t *testing.T) {
 func TestServer_MultipartForm(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stderr)
-	gen, err := testAppGenertor(t, "../fixtures/codegen/shipyard.yml", "shipyard")
+	gen, err := testAppGenerator(t, "../fixtures/codegen/shipyard.yml", "shipyard")
 	if assert.NoError(t, err) {
 		app, err := gen.makeCodegenApp()
 		if assert.NoError(t, err) {
@@ -154,7 +154,7 @@ func TestServer_InvalidSpec(t *testing.T) {
 func TestServer_TrailingSlash(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stderr)
-	gen, err := testAppGenertor(t, "../fixtures/bugs/899/swagger.yml", "trailing slash")
+	gen, err := testAppGenerator(t, "../fixtures/bugs/899/swagger.yml", "trailing slash")
 	if assert.NoError(t, err) {
 		app, err := gen.makeCodegenApp()
 		if assert.NoError(t, err) {
@@ -164,6 +164,30 @@ func TestServer_TrailingSlash(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(formatted)
 					assertInCode(t, `o.handlers["GET"]["/trailingslashpath"]`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestServer_Issue987(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stderr)
+	gen, err := testAppGenerator(t, "../fixtures/bugs/987/swagger.yml", "deeper consumes produces")
+	if assert.NoError(t, err) {
+		app, err := gen.makeCodegenApp()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			if assert.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app)) {
+				formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(formatted)
+					assertInCode(t, `JSONConsumer:    runtime.JSONConsumer()`, res)
+					assertInCode(t, `JSONProducer:    runtime.JSONProducer()`, res)
+					assertInCode(t, `result["application/json"] = o.JSONConsumer`, res)
+					assertInCode(t, `result["application/json"] = o.JSONProducer`, res)
 				} else {
 					fmt.Println(buf.String())
 				}
