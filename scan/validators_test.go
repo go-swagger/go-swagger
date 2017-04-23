@@ -63,6 +63,13 @@ func TestParseResponseInfo(t *testing.T) {
 	assert.Equal(t, arr, 0)
 	assert.False(t, isDef)
 	assert.Equal(t, desc, "desc response:myModel28")
+	//Parse just description
+	ref, arr, isDef, desc, err = parseTags("description:desc")
+	assert.NoError(t, err)
+	assert.Equal(t, ref, "")
+	assert.Equal(t, arr, 0)
+	assert.False(t, isDef)
+	assert.Equal(t, desc, "desc")
 	//Parse unrecognized tags
 	_, _, _, _, err = parseTags("body:good woah:desc response:myModel28")
 	assert.NotNil(t, err)
