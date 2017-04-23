@@ -51,7 +51,7 @@ func (s *ServeCmd) Execute(args []string) error {
 		basePath = "/"
 	}
 
-	listener, err := net.Listen("tcp", net.JoinHostPort(s.Host, strconv.Itoa(s.Port)))
+	listener, err := net.Listen("tcp4", net.JoinHostPort(s.Host, strconv.Itoa(s.Port)))
 	if err != nil {
 		return err
 	}
