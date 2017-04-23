@@ -716,6 +716,7 @@ func (b *codeGenOpBuilder) MakeHeaderItem(receiver, paramName, indexVar, path, v
 }
 
 func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path, valueExpression, location string, resolver *typeResolver, items, parent *spec.Items) (GenItems, error) {
+	debugLog("making parameter item recv=%s param=%s index=%s valueExpr=%s path=%s location=%s", receiver, paramName, indexVar, valueExpression, path, location)
 	var res GenItems
 	res.resolvedType = simpleResolvedType(items.Type, items.Format, items.Items)
 	res.sharedValidations = sharedValidations{
@@ -735,7 +736,7 @@ func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path
 	res.Name = paramName
 	res.Path = path
 	res.Location = location
-	res.ValueExpression = valueExpression
+	res.ValueExpression = swag.ToVarName(valueExpression)
 	res.CollectionFormat = items.CollectionFormat
 	res.Converter = stringConverters[res.GoType]
 	res.Formatter = stringFormatters[res.GoType]
