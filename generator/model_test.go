@@ -155,6 +155,7 @@ func TestGenerateModel_SchemaField(t *testing.T) {
 
 	var gmp GenSchema
 	gmp.Name = "some name"
+	gmp.OriginalName = "some name"
 	gmp.resolvedType = resolvedType{GoType: "string", IsPrimitive: true}
 	gmp.Title = "The title of the property"
 	gmp.CustomTag = "mytag:\"foobar,foobaz\""
@@ -1949,4 +1950,33 @@ func TestGenModel_Issue822(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestGenModel_Issue981(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/981/swagger.json")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "User"
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("user.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					fmt.Println(res)
+					assertInCode(t, "FirstName string `json:\"first_name,omitempty\"`", res)
+					assertInCode(t, "LastName string `json:\"last_name,omitempty\"`", res)
+					assertInCode(t, "if swag.IsZero(m.Type)", res)
+					assertInCode(t, `validate.MinimumInt("user_type", "body", int64(m.Type), 1, false)`, res)
+					assertInCode(t, `validate.MaximumInt("user_type", "body", int64(m.Type), 5, false)`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+
 }

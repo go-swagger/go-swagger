@@ -414,7 +414,7 @@ func (sg *schemaGenContext) NewAdditionalItems(schema *spec.Schema) *schemaGenCo
 		pg.Path = pg.Path + "+ \".\" + strconv.Itoa(" + indexVar + mod + ")"
 	}
 	pg.IndexVar = indexVar
-	pg.ValueExpr = sg.ValueExpr + "." + swag.ToGoName(sg.Name) + "Items[" + indexVar + "]"
+	pg.ValueExpr = sg.ValueExpr + "." + sg.GoName() + "Items[" + indexVar + "]"
 	pg.Schema = spec.Schema{}
 	if schema != nil {
 		pg.Schema = *schema
@@ -452,7 +452,7 @@ func (sg *schemaGenContext) NewStructBranch(name string, schema spec.Schema) *sc
 		pg.Path = pg.Path + "+\".\"+" + fmt.Sprintf("%q", name)
 	}
 	pg.Name = name
-	pg.ValueExpr = pg.ValueExpr + "." + pascalize(name)
+	pg.ValueExpr = pg.ValueExpr + "." + pascalize(goName(&schema, name))
 	pg.Schema = schema
 	for _, fn := range sg.Schema.Required {
 		if name == fn {
@@ -1284,11 +1284,15 @@ func (sg *schemaGenContext) buildAliased() error {
 }
 
 func (sg *schemaGenContext) GoName() string {
-	name, _ := sg.Schema.Extensions.GetString("x-go-name")
+	return goName(&sg.Schema, sg.Name)
+}
+
+func goName(sch *spec.Schema, orig string) string {
+	name, _ := sch.Extensions.GetString("x-go-name")
 	if name != "" {
 		return name
 	}
-	return sg.Name
+	return orig
 }
 
 func (sg *schemaGenContext) makeGenSchema() error {
@@ -1309,7 +1313,8 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.Location = body
 	sg.GenSchema.ValueExpression = sg.ValueExpr
 	sg.GenSchema.KeyVar = sg.KeyVar
-	sg.GenSchema.Name = sg.Name //sg.GoName()
+	sg.GenSchema.OriginalName = sg.Name
+	sg.GenSchema.Name = sg.GoName()
 	sg.GenSchema.Title = sg.Schema.Title
 	sg.GenSchema.Description = trimBOM(sg.Schema.Description)
 	sg.GenSchema.ReceiverName = sg.Receiver

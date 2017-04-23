@@ -457,3 +457,22 @@ func TestGenResponses_XGoName(t *testing.T) {
 		}
 	}
 }
+
+func TestGenResponses_Issue892(t *testing.T) {
+	b, err := methodPathOpBuilder("get", "/media/search", "../fixtures/bugs/982/swagger.yaml")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			var buf bytes.Buffer
+			opts := opts()
+			if assert.NoError(t, templates.MustGet("clientResponse").Execute(&buf, op)) {
+				ff, err := opts.LanguageOpts.FormatContent("get_media_search_responses.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					assertInCode(t, "o.Media = aO0", string(ff))
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}

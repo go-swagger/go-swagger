@@ -38,6 +38,7 @@ type GenSchema struct {
 	resolvedType
 	sharedValidations
 	Example                 string
+	OriginalName            string
 	Name                    string
 	Suffix                  string
 	Path                    string
