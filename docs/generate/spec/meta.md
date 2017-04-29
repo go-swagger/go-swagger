@@ -23,8 +23,8 @@ swagger:meta
 Annotation | Format
 -----------|--------
 **Terms Of Service** | allows for either a url or a free text definition describing the terms of services for the API
-**Consumes** | a list of default (global) mime type values, one per line, for the content the API receives
-**Produces** | a list of default (global) mime type values, one per line, for the content the API sends
+**Consumes** | a list of default (global) mime type values, one per line, for the content the API receives.<br>[List of supported mime types](#supported-mime-types)
+**Produces** | a list of default (global) mime type values, one per line, for the content the API sends.<br>[List of supported mime types](#supported-mime-types)
 **Schemes** | a list of default schemes the API accept (possible values: http, https, ws, wss) https is preferred as default when configured
 **Version** | the current version of the API
 **Host** | the host from where the spec is served
@@ -120,3 +120,17 @@ x-meta-array-obj:
   - name: obj
     value: field
 ```
+
+##### Supported MIME types
+
+Consumes      | Produces
+--------------|---------
+json          | json
+yaml          | yaml
+xml           | xml
+txt           | txt
+bin           | bin
+urlform       | urlform
+multipartform | multipartform
+
+[Source](https://github.com/go-swagger/go-swagger/blob/7485a982b539bedd870bd56a487e37c8decd7f2c/generator/support.go#L317-L335)
