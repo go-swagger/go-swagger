@@ -71,7 +71,7 @@
 			"importpath": "github.com/go-openapi/analysis",
 			"repository": "https://github.com/go-openapi/analysis",
 			"vcs": "git",
-			"revision": "d5a75b7d751ca3f11ad5d93cfe97405f2c3f6a47",
+			"revision": "0473cb67199f68b8b7d90e641afd9e79ad36b851",
 			"branch": "master",
 			"notests": true
 		},

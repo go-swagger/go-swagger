@@ -70,6 +70,11 @@ It aims to represent the contract of your API with a language agnostic descripti
 		log.Fatal(err)
 	}
 
+	_, err = parser.AddCommand("mixin", "merge swagger documents", "merge additional specs into first/primary spec by copying their paths and definitions", &commands.MixinSpec{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	genpar, err := parser.AddCommand("generate", "genererate go code", "generate go code for the swagger spec file", &commands.Generate{})
 	if err != nil {
 		log.Fatalln(err)
