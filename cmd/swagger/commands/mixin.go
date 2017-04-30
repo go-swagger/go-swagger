@@ -11,11 +11,15 @@ import (
 	"github.com/go-openapi/spec"
 )
 
+// MixinSpec holds command line flag definitions specific to the mixin
+// command. The flags are defined using struct field tags with the
+// "github.com/jessevdk/go-flags" format.
 type MixinSpec struct {
 	ExpectedCollisionCount uint `short:"c" description:"expected # of rejected mixin paths, defs, etc due to existing key. Non-zero exit if does not match actual."`
 }
 
-// mixin provides functions to merge Swagger 2.0 specs into one spec
+// Execute runs the mixin command which merges Swagger 2.0 specs into
+// one spec
 //
 // Use cases include adding independently versioned metadata APIs to
 // application APIs for microservices.
