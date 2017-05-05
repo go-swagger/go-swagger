@@ -574,6 +574,7 @@ var (
 	rxSecuritySchemeDescription   = regexp.MustCompile(`[Dd]escription\p{Zs}*:`)
 	rxSecuritySchemeAuthorization = regexp.MustCompile(`[Aa]uthorizationUrl\p{Zs}*:`)
 	rxSecuritySchemeToken         = regexp.MustCompile(`[Tt]okenUrl\p{Zs}*:`)
+	rxSecuritySchemeScopes        = regexp.MustCompile(`[Ss]copes\p{Zs}*:`)
 )
 
 func (ss *setSecurityDefinitions) Parse(lines []string) error {
@@ -582,9 +583,11 @@ func (ss *setSecurityDefinitions) Parse(lines []string) error {
 	}
 
 	result := spec.SecurityDefinitions{}
-	var scheme spec.SecurityScheme
+	var scheme *spec.SecurityScheme
 	var key string
 	var tp []tagParser
+	var groupedLines []string
+	var groupParser *tagParser
 	for i := 0; i < len(lines); i++ {
 		kv := strings.SplitN(lines[i], ":", 2)
 		if len(kv) <= 1 {
@@ -593,36 +596,64 @@ func (ss *setSecurityDefinitions) Parse(lines []string) error {
 
 		k, v := kv[0], strings.TrimSpace(kv[1])
 
-		if v == "" {
-			if key != "" {
-				result[key] = &scheme
+		if v == "" && !rxSecuritySchemeScopes.MatchString(lines[i]) {
+			if len(groupedLines) > 0 {
+				err := groupParser.Parse(groupedLines)
+				if err != nil {
+					return err
+				}
+				groupedLines = []string{}
 			}
-			scheme = spec.SecurityScheme{}
+			if key != "" {
+				result[key] = scheme
+			}
+			scheme = new(spec.SecurityScheme)
 			key = k
 			tp = []tagParser{
-				newSingleLineTagParser("type", newSetField(rxSecuritySchemeType, setSecuritySchemeType(&scheme))),
-				newSingleLineTagParser("name", newSetField(rxSecuritySchemeName, setSecuritySchemeName(&scheme))),
-				newSingleLineTagParser("in", newSetField(rxSecuritySchemeIn, setSecuritySchemeIn(&scheme))),
-				newSingleLineTagParser("flow", newSetField(rxSecuritySchemeFlow, setSecuritySchemeFlow(&scheme))),
-				newSingleLineTagParser("description", newSetField(rxSecuritySchemeDescription, setSecuritySchemeDescription(&scheme))),
-				newSingleLineTagParser("authorizationUrl", newSetField(rxSecuritySchemeAuthorization, setSecuritySchemeAuthorizationURL(&scheme))),
-				newSingleLineTagParser("tokenUrl", newSetField(rxSecuritySchemeToken, setSecuritySchemeTokenURL(&scheme))),
+				newSingleLineTagParser("type", newSetField(rxSecuritySchemeType, setSecuritySchemeType(scheme))),
+				newSingleLineTagParser("name", newSetField(rxSecuritySchemeName, setSecuritySchemeName(scheme))),
+				newSingleLineTagParser("in", newSetField(rxSecuritySchemeIn, setSecuritySchemeIn(scheme))),
+				newSingleLineTagParser("flow", newSetField(rxSecuritySchemeFlow, setSecuritySchemeFlow(scheme))),
+				newSingleLineTagParser("description", newSetField(rxSecuritySchemeDescription, setSecuritySchemeDescription(scheme))),
+				newSingleLineTagParser("authorizationUrl", newSetField(rxSecuritySchemeAuthorization, setSecuritySchemeAuthorizationURL(scheme))),
+				newSingleLineTagParser("tokenUrl", newSetField(rxSecuritySchemeToken, setSecuritySchemeTokenURL(scheme))),
+				newMultiLineTagParser("scopes", newSetMapStringString(rxSecuritySchemeScopes, setSecuritySchemeScopes(scheme))),
 			}
 			continue
 		} else {
+			matched := false
 			for _, p := range tp {
 				if p.Matches(lines[i]) {
-					err := p.Parse([]string{lines[i]})
-					if err != nil {
-						return err
+					if len(groupedLines) > 0 {
+						err := groupParser.Parse(groupedLines)
+						if err != nil {
+							return err
+						}
+						groupedLines = []string{}
+					}
+					groupParser = &p
+					matched = true
+					if !p.MultiLine {
+						groupedLines = append(groupedLines, lines[i])
 					}
 					break
 				}
 			}
+			if !matched && groupParser != nil && groupParser.MultiLine {
+				groupedLines = append(groupedLines, lines[i])
+			}
+		}
+
+	}
+	if len(groupedLines) > 0 {
+		err := groupParser.Parse(groupedLines)
+		if err != nil {
+			return err
 		}
 	}
+
 	if _, ok := result[key]; !ok && key != "" {
-		result[key] = &scheme
+		result[key] = scheme
 	}
 
 	ss.set(result)
@@ -655,6 +686,45 @@ func setSecuritySchemeAuthorizationURL(scheme *spec.SecurityScheme) func(string)
 
 func setSecuritySchemeTokenURL(scheme *spec.SecurityScheme) func(string) {
 	return func(val string) { scheme.TokenURL = val }
+}
+
+func setSecuritySchemeScopes(scheme *spec.SecurityScheme) func(map[string]string) {
+	return func(val map[string]string) { scheme.Scopes = val }
+}
+
+func newSetMapStringString(rx *regexp.Regexp, setter func(map[string]string)) *setMapStringString {
+	return &setMapStringString{
+		rx:  rx,
+		set: setter,
+	}
+}
+
+type setMapStringString struct {
+	set func(map[string]string)
+	rx  *regexp.Regexp
+}
+
+func (sf *setMapStringString) Matches(line string) bool {
+	return sf.rx.MatchString(line)
+}
+
+func (sf *setMapStringString) Parse(lines []string) error {
+	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+		return nil
+	}
+
+	values := map[string]string{}
+	for _, line := range lines {
+		kv := strings.SplitN(line, ":", 2)
+		if len(kv) > 1 {
+			values[strings.TrimSpace(kv[0])] = strings.TrimSpace(kv[1])
+			break
+		} else {
+			return fmt.Errorf("expecting `key: value`, got key only for string: %s", line)
+		}
+	}
+	sf.set(values)
+	return nil
 }
 
 func newSetField(rx *regexp.Regexp, setter func(string)) *setField {
