@@ -31,6 +31,7 @@ func (m *Category) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
+// MarshalBinary interface implementation
 func (m *Category) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
@@ -38,6 +39,7 @@ func (m *Category) MarshalBinary() ([]byte, error) {
 	return swag.WriteJSON(m)
 }
 
+// UnmarshalBinary interface implementation
 func (m *Category) UnmarshalBinary(b []byte) error {
 	var res Category
 	if err := swag.ReadJSON(b, &res); err != nil {

@@ -324,6 +324,7 @@ func (m *TaskCard) validateTitle(formats strfmt.Registry) error {
 	return nil
 }
 
+// MarshalBinary interface implementation
 func (m *TaskCard) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
@@ -331,6 +332,7 @@ func (m *TaskCard) MarshalBinary() ([]byte, error) {
 	return swag.WriteJSON(m)
 }
 
+// UnmarshalBinary interface implementation
 func (m *TaskCard) UnmarshalBinary(b []byte) error {
 	var res TaskCard
 	if err := swag.ReadJSON(b, &res); err != nil {

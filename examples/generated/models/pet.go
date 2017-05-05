@@ -132,6 +132,7 @@ func (m *Pet) validateTags(formats strfmt.Registry) error {
 	return nil
 }
 
+// MarshalBinary interface implementation
 func (m *Pet) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
@@ -139,6 +140,7 @@ func (m *Pet) MarshalBinary() ([]byte, error) {
 	return swag.WriteJSON(m)
 }
 
+// UnmarshalBinary interface implementation
 func (m *Pet) UnmarshalBinary(b []byte) error {
 	var res Pet
 	if err := swag.ReadJSON(b, &res); err != nil {

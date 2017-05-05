@@ -83,6 +83,7 @@ type AddCommentToTaskBody struct {
 	UserID *int64 `json:"userId"`
 }
 
+// MarshalBinary interface implementation
 func (o *AddCommentToTaskBody) MarshalBinary() ([]byte, error) {
 	if o == nil {
 		return nil, nil
@@ -90,6 +91,7 @@ func (o *AddCommentToTaskBody) MarshalBinary() ([]byte, error) {
 	return swag.WriteJSON(o)
 }
 
+// UnmarshalBinary interface implementation
 func (o *AddCommentToTaskBody) UnmarshalBinary(b []byte) error {
 	var res AddCommentToTaskBody
 	if err := swag.ReadJSON(b, &res); err != nil {

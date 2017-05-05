@@ -125,6 +125,7 @@ func (m *UserCard) validateScreenName(formats strfmt.Registry) error {
 	return nil
 }
 
+// MarshalBinary interface implementation
 func (m *UserCard) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
@@ -132,6 +133,7 @@ func (m *UserCard) MarshalBinary() ([]byte, error) {
 	return swag.WriteJSON(m)
 }
 
+// UnmarshalBinary interface implementation
 func (m *UserCard) UnmarshalBinary(b []byte) error {
 	var res UserCard
 	if err := swag.ReadJSON(b, &res); err != nil {

@@ -132,6 +132,7 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
   return nil
 }{{ end }}{{ end }}{{ end }}
 
+// MarshalBinary interface implementation
 func ({{.ReceiverName}} *{{ pascalize .Name }}) MarshalBinary() ([]byte, error) {
   if {{ .ReceiverName }} == nil {
     return nil, nil
@@ -139,6 +140,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) MarshalBinary() ([]byte, error) 
   return swag.WriteJSON({{ .ReceiverName }})
 }
 
+// UnmarshalBinary interface implementation
 func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalBinary(b []byte) error {
   var res {{ pascalize .Name }}
   if err := swag.ReadJSON(b, &res); err != nil {

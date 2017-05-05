@@ -79,6 +79,7 @@ func (m *ValidationError) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
+// MarshalBinary interface implementation
 func (m *ValidationError) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
@@ -86,6 +87,7 @@ func (m *ValidationError) MarshalBinary() ([]byte, error) {
 	return swag.WriteJSON(m)
 }
 
+// UnmarshalBinary interface implementation
 func (m *ValidationError) UnmarshalBinary(b []byte) error {
 	var res ValidationError
 	if err := swag.ReadJSON(b, &res); err != nil {
