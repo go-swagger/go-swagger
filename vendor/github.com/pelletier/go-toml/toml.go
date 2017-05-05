@@ -52,9 +52,11 @@ func (t *TomlTree) HasPath(keys []string) bool {
 // Keys returns the keys of the toplevel tree.
 // Warning: this is a costly operation.
 func (t *TomlTree) Keys() []string {
-	var keys []string
+	keys := make([]string, len(t.values))
+	i := 0
 	for k := range t.values {
-		keys = append(keys, k)
+		keys[i] = k
+		i++
 	}
 	return keys
 }
@@ -169,14 +171,14 @@ func (t *TomlTree) GetDefault(key string, def interface{}) interface{} {
 
 // Set an element in the tree.
 // Key is a dot-separated path (e.g. a.b.c).
-// Creates all necessary intermediates trees, if needed.
+// Creates all necessary intermediate trees, if needed.
 func (t *TomlTree) Set(key string, value interface{}) {
 	t.SetPath(strings.Split(key, "."), value)
 }
 
 // SetPath sets an element in the tree.
 // Keys is an array of path elements (e.g. {"a","b","c"}).
-// Creates all necessary intermediates trees, if needed.
+// Creates all necessary intermediate trees, if needed.
 func (t *TomlTree) SetPath(keys []string, value interface{}) {
 	subtree := t
 	for _, intermediateKey := range keys[:len(keys)-1] {

@@ -33,7 +33,7 @@ func newPktMgr(sender packetSender) packetManager {
 		sender:    sender,
 		working:   &sync.WaitGroup{},
 	}
-	go s.worker()
+	go s.controller()
 	return s
 }
 
@@ -50,13 +50,57 @@ func (s packetManager) readyPacket(pkt responsePacket) {
 	s.working.Done()
 }
 
-// shut down packetManager worker
+// shut down packetManager controller
 func (s packetManager) close() {
+	// pause until current packets are processed
+	s.working.Wait()
 	close(s.fini)
 }
 
+// Passed a worker function, returns a channel for incoming packets.
+// The goal is to process packets in the order they are received as is
+// requires by section 7 of the RFC, while maximizing throughput of file
+// transfers.
+func (s *packetManager) workerChan(worker func(requestChan)) requestChan {
+
+	rwChan := make(chan requestPacket, sftpServerWorkerCount)
+	for i := 0; i < sftpServerWorkerCount; i++ {
+		go worker(rwChan)
+	}
+
+	cmdChan := make(chan requestPacket)
+	go worker(cmdChan)
+
+	pktChan := make(chan requestPacket, sftpServerWorkerCount)
+	go func() {
+		// start with cmdChan
+		curChan := cmdChan
+		for pkt := range pktChan {
+			// on file open packet, switch to rwChan
+			switch pkt.(type) {
+			case *sshFxpOpenPacket:
+				curChan = rwChan
+			// on file close packet, switch back to cmdChan
+			// after waiting for any reads/writes to finish
+			case *sshFxpClosePacket:
+				// wait for rwChan to finish
+				s.working.Wait()
+				// stop using rwChan
+				curChan = cmdChan
+			}
+			s.incomingPacket(pkt)
+			curChan <- pkt
+		}
+		close(rwChan)
+		close(cmdChan)
+		s.close()
+	}()
+
+	return pktChan
+}
+
 // process packets
-func (s *packetManager) worker() {
+func (s *packetManager) controller() {
 	for {
 		select {
 		case pkt := <-s.requests:

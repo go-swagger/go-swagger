@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/swag"
 )
 
 // AddCommentToTaskHandlerFunc turns a function with the right signature into a add comment to task handler
@@ -80,4 +81,22 @@ type AddCommentToTaskBody struct {
 	// user Id
 	// Required: true
 	UserID *int64 `json:"userId"`
+}
+
+// MarshalBinary interface implementation
+func (o *AddCommentToTaskBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *AddCommentToTaskBody) UnmarshalBinary(b []byte) error {
+	var res AddCommentToTaskBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
 }

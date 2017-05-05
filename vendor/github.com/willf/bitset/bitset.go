@@ -87,8 +87,8 @@ func (b *BitSet) Bytes() []uint64 {
 
 // wordsNeeded calculates the number of words needed for i bits
 func wordsNeeded(i uint) int {
-	if i > ((^uint(0)) - wordSize + 1) {
-		return int((^uint(0)) >> log2WordSize)
+	if i > (Cap() - wordSize + 1) {
+		return int(Cap() >> log2WordSize)
 	}
 	return int((i + (wordSize - 1)) >> log2WordSize)
 }
@@ -112,7 +112,7 @@ func New(length uint) (bset *BitSet) {
 	return bset
 }
 
-// Cap returns the total possible capicity, or number of bits
+// Cap returns the total possible capacity, or number of bits
 func Cap() uint {
 	return ^uint(0)
 }
@@ -241,13 +241,15 @@ func (b *BitSet) NextClear(i uint) (uint, bool) {
 	w := b.set[x]
 	w = w >> (i & (wordSize - 1))
 	wA := allBits >> (i & (wordSize - 1))
-	if w != wA {
-		return i + trailingZeroes64(^w), true
+	index := i + trailingZeroes64(^w)
+	if w != wA && index < b.length {
+		return index, true
 	}
 	x++
 	for x < len(b.set) {
-		if b.set[x] != allBits {
-			return uint(x)*wordSize + trailingZeroes64(^b.set[x]), true
+		index = uint(x)*wordSize + trailingZeroes64(^b.set[x])
+		if b.set[x] != allBits && index < b.length {
+			return index, true
 		}
 		x++
 	}

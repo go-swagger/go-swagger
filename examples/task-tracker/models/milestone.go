@@ -105,6 +105,24 @@ func (m *Milestone) validateStats(formats strfmt.Registry) error {
 	return nil
 }
 
+// MarshalBinary interface implementation
+func (m *Milestone) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *Milestone) UnmarshalBinary(b []byte) error {
+	var res Milestone
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // MilestoneStats Some counters for this milestone.
 //
 // This object contains counts for the remaining open issues and the amount of issues that have been closed.
@@ -129,5 +147,23 @@ func (m *MilestoneStats) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *MilestoneStats) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *MilestoneStats) UnmarshalBinary(b []byte) error {
+	var res MilestoneStats
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
 	return nil
 }

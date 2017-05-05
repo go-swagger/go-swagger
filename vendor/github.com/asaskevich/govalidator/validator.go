@@ -461,7 +461,7 @@ func IsDNSName(str string) bool {
 		// constraints already violated
 		return false
 	}
-	return rxDNSName.MatchString(str)
+	return !IsIP(str) && rxDNSName.MatchString(str)
 }
 
 // IsDialString validates the given string for usage with the various Dial() functions
@@ -538,6 +538,17 @@ func IsLongitude(str string) bool {
 	return rxLongitude.MatchString(str)
 }
 
+func toJSONName(tag string) string {
+	if tag == "" {
+		return ""
+	}
+
+	// JSON name always comes first. If there's no options then split[0] is
+	// JSON name, if JSON name is not set, then split[0] is an empty string.
+	split := strings.SplitN(tag, ",", 2)
+	return split[0]
+}
+
 // ValidateStruct use tags for fields.
 // result will be equal to `false` if there are any errors.
 func ValidateStruct(s interface{}) (bool, error) {
@@ -565,7 +576,7 @@ func ValidateStruct(s interface{}) (bool, error) {
 		if err2 != nil {
 
 			// Replace structure name with JSON name if there is a tag on the variable
-			jsonTag := typeField.Tag.Get("json")
+			jsonTag := toJSONName(typeField.Tag.Get("json"))
 			if jsonTag != "" {
 				switch jsonError := err2.(type) {
 				case Error:
@@ -650,6 +661,16 @@ func IsTime(str string, format string) bool {
 
 func IsRFC3339(str string) bool {
 	return IsTime(str, time.RFC3339)
+}
+
+func IsISO4217(str string) bool {
+	for _, currency := range ISO4217List {
+		if str == currency {
+			return true
+		}
+	}
+
+	return false
 }
 
 // ByteLength check string's length
@@ -749,8 +770,8 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 	if options == nil {
 		isRootType = true
 		options = parseTagIntoMap(tag)
-  }
-  
+	}
+
 	if isEmptyValue(v) {
 		// an empty value is not validated, check only required
 		return checkRequired(v, t, options)

@@ -694,13 +694,13 @@ func (f *File) Read(b []byte) (int, error) {
 		inFlight--
 		if res.err != nil {
 			firstErr = offsetErr{offset: 0, err: res.err}
-			break
+			continue
 		}
 		reqID, data := unmarshalUint32(res.data)
 		req, ok := reqs[reqID]
 		if !ok {
 			firstErr = offsetErr{offset: 0, err: errors.Errorf("sid: %v not found", reqID)}
-			break
+			continue
 		}
 		delete(reqs, reqID)
 		switch res.typ {
@@ -710,7 +710,6 @@ func (f *File) Read(b []byte) (int, error) {
 					offset: req.offset,
 					err:    normaliseError(unmarshalStatus(reqID, res.data)),
 				}
-				break
 			}
 		case ssh_FXP_DATA:
 			l, data := unmarshalUint32(data)
@@ -724,7 +723,6 @@ func (f *File) Read(b []byte) (int, error) {
 			}
 		default:
 			firstErr = offsetErr{offset: 0, err: unimplementedPacketErr(res.typ)}
-			break
 		}
 	}
 	// If the error is anything other than EOF, then there
@@ -798,20 +796,19 @@ func (f *File) WriteTo(w io.Writer) (int64, error) {
 		inFlight--
 		if res.err != nil {
 			firstErr = offsetErr{offset: 0, err: res.err}
-			break
+			continue
 		}
 		reqID, data := unmarshalUint32(res.data)
 		req, ok := reqs[reqID]
 		if !ok {
 			firstErr = offsetErr{offset: 0, err: errors.Errorf("sid: %v not found", reqID)}
-			break
+			continue
 		}
 		delete(reqs, reqID)
 		switch res.typ {
 		case ssh_FXP_STATUS:
 			if firstErr.err == nil || req.offset < firstErr.offset {
 				firstErr = offsetErr{offset: req.offset, err: normaliseError(unmarshalStatus(reqID, res.data))}
-				break
 			}
 		case ssh_FXP_DATA:
 			l, data := unmarshalUint32(data)
@@ -864,7 +861,6 @@ func (f *File) WriteTo(w io.Writer) (int64, error) {
 			}
 		default:
 			firstErr = offsetErr{offset: 0, err: unimplementedPacketErr(res.typ)}
-			break
 		}
 	}
 	if firstErr.err != io.EOF {
@@ -921,7 +917,7 @@ func (f *File) Write(b []byte) (int, error) {
 		inFlight--
 		if res.err != nil {
 			firstErr = res.err
-			break
+			continue
 		}
 		switch res.typ {
 		case ssh_FXP_STATUS:
@@ -936,7 +932,6 @@ func (f *File) Write(b []byte) (int, error) {
 			}
 		default:
 			firstErr = unimplementedPacketErr(res.typ)
-			break
 		}
 	}
 	// If error is non-nil, then there may be gaps in the data written to
@@ -986,7 +981,7 @@ func (f *File) ReadFrom(r io.Reader) (int64, error) {
 		inFlight--
 		if res.err != nil {
 			firstErr = res.err
-			break
+			continue
 		}
 		switch res.typ {
 		case ssh_FXP_STATUS:
@@ -1001,7 +996,6 @@ func (f *File) ReadFrom(r io.Reader) (int64, error) {
 			}
 		default:
 			firstErr = unimplementedPacketErr(res.typ)
-			break
 		}
 	}
 	if firstErr == io.EOF {

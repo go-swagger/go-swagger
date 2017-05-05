@@ -13,10 +13,11 @@ import (
 
 // Request contains the data and state for the incoming service request.
 type Request struct {
-	// Get, Put, SetStat, Stat, Rename, Remove
+	// Get, Put, Setstat, Stat, Rename, Remove
 	// Rmdir, Mkdir, List, Readlink, Symlink
 	Method   string
 	Filepath string
+	Flags    uint32
 	Attrs    []byte // convert to sub-struct
 	Target   string // for renames and sym-links
 	// packet data
@@ -47,6 +48,7 @@ func requestFromPacket(pkt hasPath) Request {
 	request.pkt_id = pkt.id()
 	switch p := pkt.(type) {
 	case *sshFxpSetstatPacket:
+		request.Flags = p.Flags
 		request.Attrs = p.Attrs.([]byte)
 	case *sshFxpRenamePacket:
 		request.Target = filepath.Clean(p.Newpath)
@@ -128,10 +130,12 @@ func (r Request) handle(handlers Handlers) (responsePacket, error) {
 		rpkt, err = fileget(handlers.FileGet, r)
 	case "Put": // add "Append" to this to handle append only file writes
 		rpkt, err = fileput(handlers.FilePut, r)
-	case "SetStat", "Rename", "Rmdir", "Mkdir", "Symlink", "Remove":
+	case "Setstat", "Rename", "Rmdir", "Mkdir", "Symlink", "Remove":
 		rpkt, err = filecmd(handlers.FileCmd, r)
 	case "List", "Stat", "Readlink":
 		rpkt, err = fileinfo(handlers.FileInfo, r)
+	default:
+		return rpkt, errors.Errorf("unexpected method: %s", r.Method)
 	}
 	return rpkt, err
 }
@@ -266,11 +270,6 @@ func (r *Request) update(p hasHandle) error {
 		pd.offset = int64(p.Offset)
 	case *sshFxpReaddirPacket:
 		r.Method = "List"
-	case *sshFxpFsetstatPacket:
-		r.Method = "Setstat"
-		r.Attrs = p.Attrs.([]byte)
-	case *sshFxpFstatPacket:
-		r.Method = "Stat"
 	default:
 		return errors.Errorf("unexpected packet type %T", p)
 	}

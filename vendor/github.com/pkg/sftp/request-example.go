@@ -62,7 +62,7 @@ func (fs *root) Filecmd(r Request) error {
 	fs.filesLock.Lock()
 	defer fs.filesLock.Unlock()
 	switch r.Method {
-	case "SetStat":
+	case "Setstat":
 		return nil
 	case "Rename":
 		file, err := fs.fetch(r.Filepath)

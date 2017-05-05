@@ -250,6 +250,24 @@ func (m *Task) validateReportedBy(formats strfmt.Registry) error {
 	return nil
 }
 
+// MarshalBinary interface implementation
+func (m *Task) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *Task) UnmarshalBinary(b []byte) error {
+	var res Task
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // TaskAttachmentsAnon task attachments anon
 // swagger:model TaskAttachmentsAnon
 type TaskAttachmentsAnon struct {
@@ -314,5 +332,23 @@ func (m *TaskAttachmentsAnon) validateDescription(formats strfmt.Registry) error
 		return err
 	}
 
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *TaskAttachmentsAnon) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *TaskAttachmentsAnon) UnmarshalBinary(b []byte) error {
+	var res TaskAttachmentsAnon
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
 	return nil
 }
