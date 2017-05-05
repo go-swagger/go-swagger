@@ -7,6 +7,7 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/swag"
 )
 
 // User user
@@ -45,5 +46,21 @@ func (m *User) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *User) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+func (m *User) UnmarshalBinary(b []byte) error {
+	var res User
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
 	return nil
 }

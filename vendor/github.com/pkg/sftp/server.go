@@ -278,45 +278,6 @@ func handlePacket(s *Server, p interface{}) error {
 	}
 }
 
-type requestChan chan requestPacket
-
-func (svr *Server) sftpServerWorkers(worker func(requestChan)) requestChan {
-
-	rwChan := make(chan requestPacket, sftpServerWorkerCount)
-	for i := 0; i < sftpServerWorkerCount; i++ {
-		go worker(rwChan)
-	}
-
-	cmdChan := make(chan requestPacket)
-	go worker(cmdChan)
-
-	pktChan := make(chan requestPacket, sftpServerWorkerCount)
-	go func() {
-		// start with cmdChan
-		curChan := cmdChan
-		for pkt := range pktChan {
-			// on file open packet, switch to rwChan
-			switch pkt.(type) {
-			case *sshFxpOpenPacket:
-				curChan = rwChan
-			// on file close packet, switch back to cmdChan
-			// after waiting for any reads/writes to finish
-			case *sshFxpClosePacket:
-				// wait for rwChan to finish
-				svr.pktMgr.working.Wait()
-				// stop using rwChan
-				curChan = cmdChan
-			}
-			svr.pktMgr.incomingPacket(pkt)
-			curChan <- pkt
-		}
-		close(rwChan)
-		close(cmdChan)
-	}()
-
-	return pktChan
-}
-
 // Serve serves SFTP connections until the streams stop or the SFTP subsystem
 // is stopped.
 func (svr *Server) Serve() error {
@@ -329,7 +290,7 @@ func (svr *Server) Serve() error {
 			svr.conn.Close() // shuts down recvPacket
 		}
 	}
-	pktChan := svr.sftpServerWorkers(workerFunc)
+	pktChan := svr.pktMgr.workerChan(workerFunc)
 
 	var err error
 	var pkt requestPacket
@@ -352,9 +313,8 @@ func (svr *Server) Serve() error {
 	}
 	wg.Done()
 
-	close(pktChan)     // shuts down sftpServerWorkers
-	wg.Wait()          // wait for all workers to exit
-	svr.pktMgr.close() // shuts down packetManager
+	close(pktChan) // shuts down sftpServerWorkers
+	wg.Wait()      // wait for all workers to exit
 
 	// close any still-open files
 	for handle, file := range svr.openFiles {

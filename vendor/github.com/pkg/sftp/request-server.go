@@ -28,7 +28,6 @@ type Handlers struct {
 type RequestServer struct {
 	serverConn
 	Handlers        Handlers
-	pktChan         chan requestPacket
 	pktMgr          packetManager
 	openRequests    map[string]Request
 	openRequestLock sync.RWMutex
@@ -47,7 +46,6 @@ func NewRequestServer(rwc io.ReadWriteCloser, h Handlers) *RequestServer {
 	return &RequestServer{
 		serverConn:   svrConn,
 		Handlers:     h,
-		pktChan:      make(chan requestPacket, sftpServerWorkerCount),
 		pktMgr:       newPktMgr(&svrConn),
 		openRequests: make(map[string]Request),
 	}
@@ -84,15 +82,15 @@ func (rs *RequestServer) Close() error { return rs.conn.Close() }
 // Serve requests for user session
 func (rs *RequestServer) Serve() error {
 	var wg sync.WaitGroup
-	wg.Add(sftpServerWorkerCount)
-	for i := 0; i < sftpServerWorkerCount; i++ {
-		go func() {
-			defer wg.Done()
-			if err := rs.packetWorker(); err != nil {
-				rs.conn.Close() // shuts down recvPacket
-			}
-		}()
+	wg.Add(1)
+	workerFunc := func(ch requestChan) {
+		wg.Add(1)
+		defer wg.Done()
+		if err := rs.packetWorker(ch); err != nil {
+			rs.conn.Close() // shuts down recvPacket
+		}
 	}
+	pktChan := rs.pktMgr.workerChan(workerFunc)
 
 	var err error
 	var pkt requestPacket
@@ -103,24 +101,26 @@ func (rs *RequestServer) Serve() error {
 		if err != nil {
 			break
 		}
+
 		pkt, err = makePacket(rxPacket{fxp(pktType), pktBytes})
 		if err != nil {
 			debug("makePacket err: %v", err)
 			rs.conn.Close() // shuts down recvPacket
 			break
 		}
-		rs.pktMgr.incomingPacket(pkt)
-		rs.pktChan <- pkt
-	}
 
-	close(rs.pktChan) // shuts down sftpServerWorkers
-	wg.Wait()         // wait for all workers to exit
-	rs.pktMgr.close() // shuts down packetManager
+		pktChan <- pkt
+	}
+	wg.Done()
+
+	close(pktChan) // shuts down sftpServerWorkers
+	wg.Wait()      // wait for all workers to exit
+
 	return err
 }
 
-func (rs *RequestServer) packetWorker() error {
-	for pkt := range rs.pktChan {
+func (rs *RequestServer) packetWorker(pktChan chan requestPacket) error {
+	for pkt := range pktChan {
 		var rpkt responsePacket
 		switch pkt := pkt.(type) {
 		case *sshFxInitPacket:
@@ -134,6 +134,28 @@ func (rs *RequestServer) packetWorker() error {
 		case isOpener:
 			handle := rs.nextRequest(requestFromPacket(pkt))
 			rpkt = sshFxpHandlePacket{pkt.id(), handle}
+		case *sshFxpFstatPacket:
+			handle := pkt.getHandle()
+			request, ok := rs.getRequest(handle)
+			if !ok {
+				rpkt = statusFromError(pkt, syscall.EBADF)
+			} else {
+				request = requestFromPacket(
+					&sshFxpStatPacket{ID: pkt.id(), Path: request.Filepath})
+				rpkt = rs.handle(request, pkt)
+			}
+		case *sshFxpFsetstatPacket:
+			handle := pkt.getHandle()
+			request, ok := rs.getRequest(handle)
+			if !ok {
+				rpkt = statusFromError(pkt, syscall.EBADF)
+			} else {
+				request = requestFromPacket(
+					&sshFxpSetstatPacket{ID: pkt.id(), Path: request.Filepath,
+						Flags: pkt.Flags, Attrs: pkt.Attrs,
+					})
+				rpkt = rs.handle(request, pkt)
+			}
 		case hasHandle:
 			handle := pkt.getHandle()
 			request, ok := rs.getRequest(handle)
