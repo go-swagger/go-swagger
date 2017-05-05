@@ -131,7 +131,7 @@ func ({{$.ReceiverName}} *{{ pascalize $.Name}}) Set{{ pascalize .Name}}(val {{ 
 func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ if not .IsExported }}{{ .Name }}{{ else }}{{ pascalize .Name }}{{ end }}) Validate(formats strfmt.Registry) error {
   return nil
 }{{ end }}{{ end }}{{ end }}
-
+{{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}
 // MarshalBinary interface implementation
 func ({{.ReceiverName}} *{{ pascalize .Name }}) MarshalBinary() ([]byte, error) {
   if {{ .ReceiverName }} == nil {
@@ -149,4 +149,5 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalBinary(b []byte) error 
   *{{ .ReceiverName }} = res
   return nil
 }
+{{ end -}}
 
