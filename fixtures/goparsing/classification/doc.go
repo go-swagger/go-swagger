@@ -58,6 +58,14 @@
 //          type: apiKey
 //          name: KEY
 //          in: header
+//     - oauth2:
+//         type: oauth2
+//         authorizationUrl: /oauth2/auth
+//         tokenUrl: /oauth2/token
+//         in: header
+//         scopes:
+//           bla: foo
+//         flow: accessCode
 //
 // swagger:meta
 package classification
