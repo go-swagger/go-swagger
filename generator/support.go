@@ -528,7 +528,11 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	security := a.makeSecuritySchemes()
 
 	var genMods []GenDefinition
-	importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ModelsPackage))
+	importPath := a.GenOpts.ExistingModels
+	if a.GenOpts.ExistingModels == "" {
+		importPath = filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ModelsPackage))
+	}
+
 	defaultImports = append(defaultImports, importPath)
 
 	log.Println("planning definitions")
@@ -610,6 +614,11 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			operation.Package = a.Package
 		}
 		opsGroupedByTag[operation.Package] = append(opsGroupedByTag[operation.Package], operation)
+	}
+
+	modelsPackage := a.GenOpts.ExistingModels
+	if modelsPackage == "" {
+		modelsPackage = filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ModelsPackage))
 	}
 
 	var opGroups GenOperationGroups

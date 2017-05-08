@@ -46,6 +46,10 @@ func (c *Client) Execute(args []string) error {
 	}
 	setDebug(cfg)
 
+	if c.ExistingModels != "" {
+		c.SkipModels = true
+	}
+
 	opts := &generator.GenOpts{
 		Spec: string(c.Spec),
 

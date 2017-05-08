@@ -11,14 +11,15 @@ import (
 )
 
 type shared struct {
-	Spec          flags.Filename `long:"spec" short:"f" description:"the spec file to use (default swagger.{json,yml,yaml})"`
-	APIPackage    string         `long:"api-package" short:"a" description:"the package to save the operations" default:"operations"`
-	ModelPackage  string         `long:"model-package" short:"m" description:"the package to save the models" default:"models"`
-	ServerPackage string         `long:"server-package" short:"s" description:"the package to save the server specific code" default:"restapi"`
-	ClientPackage string         `long:"client-package" short:"c" description:"the package to save the client specific code" default:"client"`
-	Target        flags.Filename `long:"target" short:"t" default:"./" description:"the base directory for generating the files"`
-	TemplateDir   flags.Filename `long:"template-dir" short:"T" description:"alternative template override directory"`
-	ConfigFile    flags.Filename `long:"config-file" short:"C" description:"configuration file to use for overriding template options"`
+	Spec           flags.Filename `long:"spec" short:"f" description:"the spec file to use (default swagger.{json,yml,yaml})"`
+	APIPackage     string         `long:"api-package" short:"a" description:"the package to save the operations" default:"operations"`
+	ModelPackage   string         `long:"model-package" short:"m" description:"the package to save the models" default:"models"`
+	ServerPackage  string         `long:"server-package" short:"s" description:"the package to save the server specific code" default:"restapi"`
+	ClientPackage  string         `long:"client-package" short:"c" description:"the package to save the client specific code" default:"client"`
+	Target         flags.Filename `long:"target" short:"t" default:"./" description:"the base directory for generating the files"`
+	TemplateDir    flags.Filename `long:"template-dir" short:"T" description:"alternative template override directory"`
+	ConfigFile     flags.Filename `long:"config-file" short:"C" description:"configuration file to use for overriding template options"`
+	ExistingModels string         `long:"existing-models" description:"use pre-generated models e.g. github.com/foobar/model"`
 }
 
 func readConfig(filename string) (*viper.Viper, error) {
