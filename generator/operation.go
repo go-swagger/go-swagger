@@ -191,12 +191,16 @@ func (o *operationGenerator) Generate() error {
 	bldr.Analyzed = o.Analyzed
 	bldr.DefaultScheme = o.DefaultScheme
 	bldr.DefaultProduces = o.DefaultProduces
-	bldr.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(o.Base), o.ModelsPackage))}
 	bldr.RootAPIPackage = o.APIPackage
 	bldr.WithContext = o.WithContext
 	bldr.GenOpts = o.GenOpts
 	bldr.DefaultConsumes = o.DefaultConsumes
 	bldr.IncludeValidator = o.IncludeValidator
+
+	bldr.DefaultImports = []string{o.GenOpts.ExistingModels}
+	if o.GenOpts.ExistingModels == "" {
+		bldr.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(o.Base), o.ModelsPackage))}
+	}
 
 	bldr.APIPackage = bldr.RootAPIPackage
 	st := o.Tags

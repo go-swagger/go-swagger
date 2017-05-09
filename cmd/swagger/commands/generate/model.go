@@ -17,6 +17,7 @@ package generate
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -37,6 +38,10 @@ func (m *Model) Execute(args []string) error {
 
 	if m.DumpData && len(m.Name) > 1 {
 		return errors.New("only 1 model at a time is supported for dumping data")
+	}
+
+	if m.ExistingModels != "" {
+		log.Println("Warning: Ignoring existing-models flag when generating models.")
 	}
 
 	cfg, err := readConfig(string(m.ConfigFile))
