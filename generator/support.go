@@ -576,6 +576,8 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		bldr.Method = opp.Method
 		bldr.Path = opp.Path
 		bldr.Authed = len(a.Analyzed.SecurityRequirementsFor(o)) > 0
+		bldr.Security = a.Analyzed.SecurityRequirementsFor(o)
+		bldr.SecurityDefinitions = a.Analyzed.SecurityDefinitionsFor(o)
 		bldr.RootAPIPackage = swag.ToFileName(a.APIPackage)
 		bldr.WithContext = a.GenOpts != nil && a.GenOpts.WithContext
 

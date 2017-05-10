@@ -103,6 +103,7 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 			ServerPackage:        serverPackage,
 			Operation:            *operation,
 			SecurityRequirements: analyzed.SecurityRequirementsFor(operation),
+			SecurityDefinitions:  analyzed.SecurityDefinitionsFor(operation),
 			Principal:            opts.Principal,
 			Target:               filepath.Join(opts.Target, serverPackage),
 			Base:                 opts.Target,
@@ -148,6 +149,7 @@ type operationGenerator struct {
 	ClientPackage        string
 	Operation            spec.Operation
 	SecurityRequirements []analysis.SecurityRequirement
+	SecurityDefinitions  map[string]spec.SecurityScheme
 	Tags                 []string
 	DefaultScheme        string
 	DefaultProduces      string
@@ -187,6 +189,8 @@ func (o *operationGenerator) Generate() error {
 	bldr.Target = o.Target
 	bldr.Operation = o.Operation
 	bldr.Authed = authed
+	bldr.Security = o.SecurityRequirements
+	bldr.SecurityDefinitions = o.SecurityDefinitions
 	bldr.Doc = o.Doc
 	bldr.Analyzed = o.Analyzed
 	bldr.DefaultScheme = o.DefaultScheme
@@ -239,24 +243,26 @@ type codeGenOpBuilder struct {
 	Authed           bool
 	IncludeValidator bool
 
-	Name            string
-	Method          string
-	Path            string
-	BasePath        string
-	APIPackage      string
-	RootAPIPackage  string
-	ModelsPackage   string
-	Principal       string
-	Target          string
-	Operation       spec.Operation
-	Doc             *loads.Document
-	Analyzed        *analysis.Spec
-	DefaultImports  []string
-	DefaultScheme   string
-	DefaultProduces string
-	DefaultConsumes string
-	ExtraSchemas    map[string]GenSchema
-	GenOpts         *GenOpts
+	Name                string
+	Method              string
+	Path                string
+	BasePath            string
+	APIPackage          string
+	RootAPIPackage      string
+	ModelsPackage       string
+	Principal           string
+	Target              string
+	Operation           spec.Operation
+	Doc                 *loads.Document
+	Analyzed            *analysis.Spec
+	DefaultImports      []string
+	DefaultScheme       string
+	DefaultProduces     string
+	DefaultConsumes     string
+	Security            []analysis.SecurityRequirement
+	SecurityDefinitions map[string]spec.SecurityScheme
+	ExtraSchemas        map[string]GenSchema
+	GenOpts             *GenOpts
 }
 
 func renameTimeout(seenIds map[string][]string, current string) string {
@@ -468,6 +474,8 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		HasFileParams:        hasFileParams,
 		HasStreamingResponse: hasStreamingResponse,
 		Authorized:           b.Authed,
+		Security:             b.Security,
+		SecurityDefinitions:  b.SecurityDefinitions,
 		Principal:            prin,
 		Responses:            responses,
 		DefaultResponse:      defaultResponse,
