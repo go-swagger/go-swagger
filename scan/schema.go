@@ -85,14 +85,14 @@ func (sv schemaValidations) SetMinimum(val float64, exclusive bool) {
 	sv.current.Minimum = &val
 	sv.current.ExclusiveMinimum = exclusive
 }
-func (sv schemaValidations) SetMultipleOf(val float64) { sv.current.MultipleOf = &val }
-func (sv schemaValidations) SetMinItems(val int64)     { sv.current.MinItems = &val }
-func (sv schemaValidations) SetMaxItems(val int64)     { sv.current.MaxItems = &val }
-func (sv schemaValidations) SetMinLength(val int64)    { sv.current.MinLength = &val }
-func (sv schemaValidations) SetMaxLength(val int64)    { sv.current.MaxLength = &val }
-func (sv schemaValidations) SetPattern(val string)     { sv.current.Pattern = val }
-func (sv schemaValidations) SetUnique(val bool)        { sv.current.UniqueItems = val }
-func (sv schemaValidations) SetDefault(val string)     { sv.current.Default = val }
+func (sv schemaValidations) SetMultipleOf(val float64)  { sv.current.MultipleOf = &val }
+func (sv schemaValidations) SetMinItems(val int64)      { sv.current.MinItems = &val }
+func (sv schemaValidations) SetMaxItems(val int64)      { sv.current.MaxItems = &val }
+func (sv schemaValidations) SetMinLength(val int64)     { sv.current.MinLength = &val }
+func (sv schemaValidations) SetMaxLength(val int64)     { sv.current.MaxLength = &val }
+func (sv schemaValidations) SetPattern(val string)      { sv.current.Pattern = val }
+func (sv schemaValidations) SetUnique(val bool)         { sv.current.UniqueItems = val }
+func (sv schemaValidations) SetDefault(val interface{}) { sv.current.Default = val }
 func (sv schemaValidations) SetEnum(val string) {
 	list := strings.Split(val, ",")
 	interfaceSlice := make([]interface{}, len(list))
@@ -723,8 +723,12 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 }
 
 func (scp *schemaParser) createParser(nm string, schema, ps *spec.Schema, fld *ast.Field) *sectionedParser {
-
 	sp := new(sectionedParser)
+
+	schemeType, err := ps.Type.MarshalJSON()
+	if err != nil {
+		return nil
+	}
 
 	if ps.Ref.String() == "" {
 		sp.setDescription = func(lines []string) { ps.Description = joinDropLast(lines) }
@@ -739,13 +743,17 @@ func (scp *schemaParser) createParser(nm string, schema, ps *spec.Schema, fld *a
 			newSingleLineTagParser("maxItems", &setMaxItems{schemaValidations{ps}, rxf(rxMaxItemsFmt, "")}),
 			newSingleLineTagParser("unique", &setUnique{schemaValidations{ps}, rxf(rxUniqueFmt, "")}),
 			newSingleLineTagParser("enum", &setEnum{schemaValidations{ps}, rxf(rxEnumFmt, "")}),
-			newSingleLineTagParser("default", &setDefault{schemaValidations{ps}, rxf(rxDefaultFmt, "")}),
+			newSingleLineTagParser("default", &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxDefaultFmt, "")}),
 			newSingleLineTagParser("required", &setRequiredSchema{schema, nm}),
 			newSingleLineTagParser("readOnly", &setReadOnlySchema{ps}),
 			newSingleLineTagParser("discriminator", &setDiscriminator{schema, nm}),
 		}
 
 		itemsTaggers := func(items *spec.Schema, level int) []tagParser {
+			schemeType, err := items.Type.MarshalJSON()
+			if err != nil {
+				return nil
+			}
 			// the expression is 1-index based not 0-index
 			itemsPrefix := fmt.Sprintf(rxItemsPrefixFmt, level+1)
 			return []tagParser{
@@ -759,9 +767,8 @@ func (scp *schemaParser) createParser(nm string, schema, ps *spec.Schema, fld *a
 				newSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{schemaValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
 				newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{schemaValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
 				newSingleLineTagParser(fmt.Sprintf("items%dEnum", level), &setEnum{schemaValidations{items}, rxf(rxEnumFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{schemaValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
+				newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
 			}
-
 		}
 
 		var parseArrayTypes func(expr ast.Expr, items *spec.SchemaOrArray, level int) ([]tagParser, error)

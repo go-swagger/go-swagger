@@ -41,6 +41,7 @@ func TestSchemaParser(t *testing.T) {
 	assert.NotNil(t, prop.Minimum)
 	assert.EqualValues(t, 10, *prop.Minimum)
 	assert.True(t, prop.ExclusiveMinimum, "'id' should have had an exclusive minimum")
+	assert.Equal(t, 11, prop.Default, "ID default value is incorrect")
 
 	assertProperty(t, &schema, "string", "NoNameOmitEmpty", "", "")
 	prop, ok = schema.Properties["NoNameOmitEmpty"]
@@ -128,6 +129,7 @@ func TestSchemaParser(t *testing.T) {
 	assert.NotNil(t, iprop.Minimum)
 	assert.EqualValues(t, 10, *iprop.Minimum)
 	assert.True(t, iprop.ExclusiveMinimum, "'id' should have had an exclusive minimum")
+	assert.Equal(t, 11, iprop.Default, "ID default value is incorrect")
 
 	assertRef(t, itprop, "pet", "Pet", "#/definitions/pet")
 	iprop, ok = itprop.Properties["pet"]

@@ -40,7 +40,7 @@ type validationBuilder interface {
 
 	SetUnique(bool)
 	SetEnum(string)
-	SetDefault(string)
+	SetDefault(interface{})
 }
 
 type valueParser interface {
@@ -301,6 +301,7 @@ func (se *setEnum) Parse(lines []string) error {
 }
 
 type setDefault struct {
+	scheme  *spec.SimpleSchema
 	builder validationBuilder
 	rx      *regexp.Regexp
 }
@@ -315,7 +316,32 @@ func (sd *setDefault) Parse(lines []string) error {
 	}
 	matches := sd.rx.FindStringSubmatch(lines[0])
 	if len(matches) > 1 && len(matches[1]) > 0 {
-		sd.builder.SetDefault(matches[1])
+		if sd.scheme != nil {
+			switch strings.Trim(sd.scheme.TypeName(), "\"") {
+			case "integer", "int", "int64", "int32", "int16":
+				d, err := strconv.Atoi(matches[1])
+				if err != nil {
+					return err
+				}
+				sd.builder.SetDefault(d)
+			case "bool", "boolean":
+				b, err := strconv.ParseBool(matches[1])
+				if err != nil {
+					return err
+				}
+				sd.builder.SetDefault(b)
+			case "number", "float64", "float32":
+				b, err := strconv.ParseFloat(matches[1], 64)
+				if err != nil {
+					return err
+				}
+				sd.builder.SetDefault(b)
+			default:
+				sd.builder.SetDefault(matches[1])
+			}
+		} else {
+			sd.builder.SetDefault(matches[1])
+		}
 	}
 	return nil
 }

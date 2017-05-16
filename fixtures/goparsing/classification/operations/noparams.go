@@ -100,6 +100,7 @@ type NoParams struct {
 	// minimum: > 10
 	// maximum: < 1000
 	// in: path
+	// default: 1
 	ID int64 `json:"id"`
 
 	// The Score of this model
@@ -109,6 +110,7 @@ type NoParams struct {
 	// maximum: 45
 	// multiple of: 3
 	// in: query
+	// default: 2
 	Score int32 `json:"score"`
 
 	// Name of this no model instance
@@ -143,6 +145,7 @@ type NoParams struct {
 	// items.maxLength: 10
 	// items.pattern: \w+
 	// collection format: pipe
+	// items.default: bar
 	// in: query
 	FooSlice []string `json:"foo_slice"`
 
@@ -153,8 +156,8 @@ type NoParams struct {
 	// unique: true
 	// items.minItems: 4
 	// items.maxItems: 9
-    // items.enum: bar1,bar2,bar3
-    // items.default: bar2
+	// items.enum: bar1,bar2,bar3
+	// items.default: bar2
 	// items.items.minItems: 5
 	// items.items.maxItems: 8
 	// items.items.items.minLength: 3
@@ -174,6 +177,7 @@ type NoParams struct {
 		// required: true
 		// minimum: > 10
 		// maximum: < 1000
+		// default: 3
 		ID int32 `json:"id"`
 
 		// The Pet to add to this NoModel items bucket.

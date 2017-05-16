@@ -64,7 +64,7 @@ func TestParseResponses(t *testing.T) {
 			assert.Equal(t, "string", header.Type)
 			assert.Equal(t, "", header.Format)
 		default:
-			assert.Fail(t, "unkown header: "+k)
+			assert.Fail(t, "unknown header: "+k)
 		}
 	}
 
@@ -96,7 +96,7 @@ func TestParseResponses(t *testing.T) {
 
 	res, ok := responses["someResponse"]
 	assert.True(t, ok)
-	assert.Len(t, res.Headers, 6)
+	assert.Len(t, res.Headers, 7)
 
 	for k, header := range res.Headers {
 		switch k {
@@ -109,6 +109,7 @@ func TestParseResponses(t *testing.T) {
 			assert.True(t, header.ExclusiveMaximum)
 			assert.EqualValues(t, 10, *header.Minimum)
 			assert.True(t, header.ExclusiveMinimum)
+			assert.Equal(t, 11, header.Default, "ID default value is incorrect")
 
 		case "score":
 			assert.Equal(t, "The Score of this model", header.Description)
@@ -127,6 +128,11 @@ func TestParseResponses(t *testing.T) {
 			assert.EqualValues(t, 4, *header.MinLength)
 			assert.EqualValues(t, 50, *header.MaxLength)
 			assert.Equal(t, "[A-Za-z0-9-.]*", header.Pattern)
+
+		case "active":
+			assert.Equal(t, "Active state of the record", header.Description)
+			assert.Equal(t, "boolean", header.Type)
+			assert.Equal(t, true, header.Default)
 
 		case "created":
 			assert.Equal(t, "Created holds the time when this entry was created", header.Description)
