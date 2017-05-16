@@ -121,7 +121,7 @@ func (sv paramValidations) SetEnum(val string) {
 	}
 	sv.current.Enum = interfaceSlice
 }
-func (sv paramValidations) SetDefault(val string) { sv.current.Default = val }
+func (sv paramValidations) SetDefault(val interface{}) { sv.current.Default = val }
 
 type itemsValidations struct {
 	current *spec.Items
@@ -151,7 +151,7 @@ func (sv itemsValidations) SetEnum(val string) {
 	}
 	sv.current.Enum = interfaceSlice
 }
-func (sv itemsValidations) SetDefault(val string) { sv.current.Default = val }
+func (sv itemsValidations) SetDefault(val interface{}) { sv.current.Default = val }
 
 type paramDecl struct {
 	File         *ast.File
@@ -362,7 +362,7 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 						newSingleLineTagParser("maxItems", &setMaxItems{paramValidations{&ps}, rxf(rxMaxItemsFmt, "")}),
 						newSingleLineTagParser("unique", &setUnique{paramValidations{&ps}, rxf(rxUniqueFmt, "")}),
 						newSingleLineTagParser("enum", &setEnum{paramValidations{&ps}, rxf(rxEnumFmt, "")}),
-						newSingleLineTagParser("default", &setDefault{paramValidations{&ps}, rxf(rxDefaultFmt, "")}),
+						newSingleLineTagParser("default", &setDefault{&ps.SimpleSchema, paramValidations{&ps}, rxf(rxDefaultFmt, "")}),
 						newSingleLineTagParser("required", &setRequiredParam{&ps}),
 					}
 
@@ -382,7 +382,7 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 							newSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{itemsValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
 							newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{itemsValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
 							newSingleLineTagParser(fmt.Sprintf("items%dEnum", level), &setEnum{itemsValidations{items}, rxf(rxEnumFmt, itemsPrefix)}),
-							newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{itemsValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
+							newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{&items.SimpleSchema, itemsValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
 						}
 					}
 

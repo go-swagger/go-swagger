@@ -145,6 +145,7 @@ func TestParamsParser(t *testing.T) {
 			assert.True(t, param.ExclusiveMaximum)
 			assert.EqualValues(t, 10, *param.Minimum)
 			assert.True(t, param.ExclusiveMinimum)
+			assert.Equal(t, 1, param.Default, "%s default value is incorrect", param.Name)
 
 		case "score":
 			assert.Equal(t, "The Score of this model", param.Description)
@@ -157,6 +158,7 @@ func TestParamsParser(t *testing.T) {
 			assert.False(t, param.ExclusiveMaximum)
 			assert.EqualValues(t, 3, *param.Minimum)
 			assert.False(t, param.ExclusiveMinimum)
+			assert.Equal(t, 2, param.Default, "%s default value is incorrect", param.Name)
 
 		case "x-hdr-name":
 			assert.Equal(t, "Name of this no model instance", param.Description)
@@ -193,13 +195,13 @@ func TestParamsParser(t *testing.T) {
 			assert.False(t, param.Required)
 			assert.True(t, param.UniqueItems)
 			assert.Equal(t, "pipe", param.CollectionFormat)
-			assert.NotNil(t, param.Items, "foo_slice should have had an items property")
 			assert.EqualValues(t, 3, *param.MinItems, "'foo_slice' should have had 3 min items")
 			assert.EqualValues(t, 10, *param.MaxItems, "'foo_slice' should have had 10 max items")
 			itprop := param.Items
 			assert.EqualValues(t, 3, *itprop.MinLength, "'foo_slice.items.minLength' should have been 3")
 			assert.EqualValues(t, 10, *itprop.MaxLength, "'foo_slice.items.maxLength' should have been 10")
 			assert.EqualValues(t, "\\w+", itprop.Pattern, "'foo_slice.items.pattern' should have \\w+")
+			assert.EqualValues(t, "bar", itprop.Default, "'foo_slice.items.default' should have bar default value")
 
 		case "items":
 			assert.Equal(t, "Items", param.Extensions["x-go-name"])
@@ -221,6 +223,7 @@ func TestParamsParser(t *testing.T) {
 			assert.NotNil(t, iprop.Minimum)
 			assert.EqualValues(t, 10, *iprop.Minimum)
 			assert.True(t, iprop.ExclusiveMinimum, "'id' should have had an exclusive minimum")
+			assert.Equal(t, 3, iprop.Default, "Items.ID default value is incorrect")
 
 			assertRef(t, itprop, "pet", "Pet", "#/definitions/pet")
 			iprop, ok = itprop.Properties["pet"]
