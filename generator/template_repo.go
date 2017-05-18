@@ -176,6 +176,12 @@ var protectedTemplates = map[string]bool{
 	"discriminatedSerializer":        true,
 }
 
+// AddFile adds a file to the default repository. It will create a new template based on the filename.
+// It trims the .gotmpl from the end and converts the name using swag.ToJSONName. This will strip
+// directory separators and Camelcase the next letter.
+// e.g validation/primitive.gotmpl will become validationPrimitive
+//
+// If the file contains a definition for a template that is protected the whole file will not be added
 func AddFile(name, data string) error {
 	return templates.addFile(name, data, false)
 }
