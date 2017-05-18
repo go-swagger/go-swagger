@@ -176,6 +176,10 @@ var protectedTemplates = map[string]bool{
 	"discriminatedSerializer":        true,
 }
 
+func AddFile(name, data string) error {
+	return templates.addFile(name, data, false)
+}
+
 func asJSON(data interface{}) (string, error) {
 	b, err := json.Marshal(data)
 	if err != nil {
