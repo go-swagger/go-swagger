@@ -34,6 +34,7 @@ func New{{ pascalize .Name }}API(spec *loads.Document) *{{ pascalize .Name }}API
     ServerShutdown:  func() {  },
     spec:            spec,
     ServeError:      errors.ServeError,
+    APIKeyAuth:      security.APIKeyAuth,
     {{ range .Consumes }}{{ if .Implementation }}{{ pascalize .Name }}Consumer: {{ .Implementation }},{{else}}{{ pascalize .Name }}Consumer: runtime.ConsumerFunc(func(r io.Reader, target interface{}) error {
       return errors.NotImplemented("{{.Name}} consumer has not yet been implemented")
     }),{{end}}
@@ -68,6 +69,11 @@ type {{ pascalize .Name }}API struct {
   defaultConsumes string
   defaultProduces string
   Middleware      func(middleware.Builder) http.Handler
+
+  // APIKeyAuth generates a runtime.Authenticator from the supplied token auth function.
+  // It has a default implemention in the security package, however you can replace it for your particular usage.
+  APIKeyAuth func(string, string, security.TokenAuthentication) runtime.Authenticator
+
   {{range .Consumes}}// {{ pascalize .Name }}Consumer registers a consumer for a "{{ .MediaType }}" mime type
   {{ pascalize .Name }}Consumer runtime.Consumer
   {{end}}
@@ -185,7 +191,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) AuthenticatorsFor(schemes map
         result[name] = security.BasicAuth({{ if not ( eq .Principal "interface{}" ) }}func(username, password string) (interface{}, error) {
           return {{ end }}{{.ReceiverName}}.{{ pascalize .ID }}Auth{{ if not ( eq .Principal "interface{}" ) }}(username, password)
         }{{ end }}){{end}}
-        {{if .IsAPIKeyAuth}}result[name] = security.APIKeyAuth(scheme.Name, scheme.In, {{ if not ( eq .Principal "interface{}" ) }}func(token string) (interface{}, error) {
+        {{if .IsAPIKeyAuth}}result[name] = {{.ReceiverName}}.APIKeyAuth(scheme.Name, scheme.In, {{ if not ( eq .Principal "interface{}" ) }}func(token string) (interface{}, error) {
           return {{ end }}{{.ReceiverName}}.{{ pascalize .ID }}Auth{{ if not ( eq .Principal "interface{}" ) }}(token)
         }{{ end }}){{end}}
         {{if .IsOAuth2}}result[name] = security.BearerAuth(scheme.Name, {{ if not ( eq .Principal "interface{}" ) }}func(token string, scopes []string) (interface{}, error) {
