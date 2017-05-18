@@ -32,10 +32,10 @@ type GenericError struct {
 // A ValidationError is an error that is used when the required input fails validation.
 // swagger:response validationError
 type ValidationError struct {
-    // in: header
-    // enum: foo,bar
-    // default: foo
-    Code int `json:"code"`
+	// in: header
+	// enum: foo,bar
+	// default: 400
+	Code int `json:"code"`
 
 	// The error message
 	// in: body
@@ -88,6 +88,7 @@ type SomeResponse struct {
 	//
 	// minimum: > 10
 	// maximum: < 1000
+	// default: 11
 	ID int64 `json:"id"`
 
 	// The Score of this model
@@ -96,6 +97,11 @@ type SomeResponse struct {
 	// maximum: 45
 	// multiple of: 3
 	Score int32 `json:"score"`
+
+	// Active state of the record
+	//
+	// default: true
+	Active bool `json:"active"`
 
 	// Name of this some response instance
 	//

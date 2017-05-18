@@ -31,6 +31,7 @@ type NoModel struct {
 	// required: true
 	// minimum: > 10
 	// maximum: < 1000
+	// default: 11
 	ID int64 `json:"id"`
 
 	Ignored      string `json:"-"`
@@ -93,6 +94,7 @@ type NoModel struct {
 		// required: true
 		// minimum: > 10
 		// maximum: < 1000
+		// default: 11
 		ID int32 `json:"id"`
 
 		// The Pet to add to this NoModel items bucket.
