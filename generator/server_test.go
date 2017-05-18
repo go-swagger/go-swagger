@@ -184,8 +184,8 @@ func TestServer_Issue987(t *testing.T) {
 				formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(formatted)
-					assertInCode(t, `JSONConsumer:    runtime.JSONConsumer()`, res)
-					assertInCode(t, `JSONProducer:    runtime.JSONProducer()`, res)
+					assertRegexpInCode(t, `JSONConsumer:\s+runtime.JSONConsumer()`, res)
+					assertRegexpInCode(t, `JSONProducer:\s+runtime.JSONProducer()`, res)
 					assertInCode(t, `result["application/json"] = o.JSONConsumer`, res)
 					assertInCode(t, `result["application/json"] = o.JSONProducer`, res)
 				} else {
