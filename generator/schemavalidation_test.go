@@ -34,8 +34,16 @@ func reqm(str string) *regexp.Regexp {
 	return regexp.MustCompile(regexp.QuoteMeta(str))
 }
 
+func reqOri(str string) *regexp.Regexp {
+	return regexp.MustCompile(str)
+}
+
 func assertInCode(t testing.TB, expr, code string) bool {
 	return assert.Regexp(t, reqm(expr), code)
+}
+
+func assertRegexpInCode(t testing.TB, expr, code string) bool {
+	return assert.Regexp(t, reqOri(expr), code)
 }
 
 func assertNotInCode(t testing.TB, expr, code string) bool {
