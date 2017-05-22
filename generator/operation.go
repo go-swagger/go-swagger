@@ -811,6 +811,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		Child:            child,
 		Location:         param.In,
 		AllowEmptyValue:  (param.In == "query" || param.In == "formData") && param.AllowEmptyValue,
+		Extensions:       param.Extensions,
 	}
 
 	if param.In == "body" {
