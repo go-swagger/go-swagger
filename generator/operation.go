@@ -488,6 +488,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		ExtraSchemes:         extraSchemes,
 		WithContext:          b.WithContext,
 		TimeoutName:          timeoutName,
+		Extensions:           operation.Extensions,
 	}, nil
 }
 
@@ -552,6 +553,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 		Code:           code,
 		Method:         b.Method,
 		Path:           b.Path,
+		Extensions:     resp.Extensions,
 	}
 
 	for hName, header := range resp.Headers {
@@ -809,6 +811,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		Child:            child,
 		Location:         param.In,
 		AllowEmptyValue:  (param.In == "query" || param.In == "formData") && param.AllowEmptyValue,
+		Extensions:       param.Extensions,
 	}
 
 	if param.In == "body" {

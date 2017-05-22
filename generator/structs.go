@@ -118,6 +118,8 @@ type GenResponse struct {
 
 	Imports        map[string]string
 	DefaultImports []string
+
+	Extensions map[string]interface{}
 }
 
 // GenHeader represents a header on a response for code generation
@@ -189,6 +191,8 @@ type GenParameter struct {
 	HasDefault      bool
 	ZeroValue       string
 	AllowEmptyValue bool
+
+	Extensions map[string]interface{}
 }
 
 // IsQueryParam returns true when this parameter is a query param
@@ -355,6 +359,8 @@ type GenOperation struct {
 	ConsumesMediaTypes []string
 	WithContext        bool
 	TimeoutName        string
+
+	Extensions map[string]interface{}
 }
 
 // GenOperations represents a list of operations to generate
