@@ -240,10 +240,11 @@ func (t *Repository) LoadDir(templatePath string) error {
 	err := filepath.Walk(templatePath, func(path string, info os.FileInfo, err error) error {
 
 		if strings.HasSuffix(path, ".gotmpl") {
-			assetName := strings.TrimPrefix(path, templatePath)
-			if data, e := ioutil.ReadFile(path); e == nil {
-				if ee := t.AddFile(assetName, string(data)); ee != nil {
-					log.Fatal(ee)
+			if assetName, e := filepath.Rel(templatePath, path); e == nil {
+				if data, e := ioutil.ReadFile(path); e == nil {
+					if ee := t.AddFile(assetName, string(data)); ee != nil {
+						log.Fatal(ee)
+					}
 				}
 			}
 		}
