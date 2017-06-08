@@ -489,27 +489,30 @@ func swaggerSchemaForType(typeName string, prop swaggerTypable) error {
 	return nil
 }
 
-func newMultiLineTagParser(name string, parser valueParser) tagParser {
+func newMultiLineTagParser(name string, parser valueParser, skipCleanUp bool) tagParser {
 	return tagParser{
-		Name:      name,
-		MultiLine: true,
-		Parser:    parser,
+		Name:        name,
+		MultiLine:   true,
+		SkipCleanUp: skipCleanUp,
+		Parser:      parser,
 	}
 }
 
 func newSingleLineTagParser(name string, parser valueParser) tagParser {
 	return tagParser{
-		Name:      name,
-		MultiLine: false,
-		Parser:    parser,
+		Name:        name,
+		MultiLine:   false,
+		SkipCleanUp: false,
+		Parser:      parser,
 	}
 }
 
 type tagParser struct {
-	Name      string
-	MultiLine bool
-	Lines     []string
-	Parser    valueParser
+	Name        string
+	MultiLine   bool
+	SkipCleanUp bool
+	Lines       []string
+	Parser      valueParser
 }
 
 func (st *tagParser) Matches(line string) bool {
@@ -518,6 +521,47 @@ func (st *tagParser) Matches(line string) bool {
 
 func (st *tagParser) Parse(lines []string) error {
 	return st.Parser.Parse(lines)
+}
+
+func newYamlParser(rx *regexp.Regexp, setter func(json.RawMessage) error) valueParser {
+	return &yamlParser{
+		set: setter,
+		rx:  rx,
+	}
+}
+
+type yamlParser struct {
+	set    func(json.RawMessage) error
+	rx     *regexp.Regexp
+	target interface{}
+}
+
+func (y *yamlParser) Parse(lines []string) error {
+	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+		return nil
+	}
+
+	var uncommented []string
+	uncommented = append(uncommented, removeYamlIndent(lines)...)
+
+	yamlContent := strings.Join(uncommented, "\n")
+	var yamlValue interface{}
+	err := yaml.Unmarshal([]byte(yamlContent), &yamlValue)
+	if err != nil {
+		return err
+	}
+
+	var jsonValue json.RawMessage
+	jsonValue, err = fmts.YAMLToJSON(yamlValue)
+	if err != nil {
+		return err
+	}
+
+	return y.set(jsonValue)
+}
+
+func (y *yamlParser) Matches(line string) bool {
+	return y.rx.MatchString(line)
 }
 
 // aggregates lines in header until it sees `---`,
@@ -739,6 +783,20 @@ func removeIndent(spec []string) []string {
 	return spec
 }
 
+// removes indent base on the first line
+func removeYamlIndent(spec []string) []string {
+	loc := rxIndent.FindStringIndex(spec[0])
+	var s []string
+	if loc[1] > 0 {
+		for i := range spec {
+			if len(spec[i]) >= loc[1] {
+				s = append(s, spec[i][loc[1]-1:])
+			}
+		}
+	}
+	return s
+}
+
 // aggregates lines in header until it sees a tag.
 type sectionedParser struct {
 	header     []string
@@ -843,7 +901,10 @@ COMMENTS:
 		st.setDescription(st.Description())
 	}
 	for _, mt := range st.matched {
-		if err := mt.Parse(cleanupScannerLines(mt.Lines, rxUncommentHeaders, rxBeginYAMLSpec)); err != nil {
+		if !mt.SkipCleanUp {
+			mt.Lines = cleanupScannerLines(mt.Lines, rxUncommentHeaders, nil)
+		}
+		if err := mt.Parse(mt.Lines); err != nil {
 			return err
 		}
 	}
