@@ -83,11 +83,11 @@ func (rp *routesParser) Parse(gofile *ast.File, target interface{}) error {
 		sp.setDescription = func(lines []string) { op.Description = joinDropLast(lines) }
 		sr := newSetResponses(rp.definitions, rp.responses, opResponsesSetter(op))
 		sp.taggers = []tagParser{
-			newMultiLineTagParser("Consumes", newMultilineDropEmptyParser(rxConsumes, opConsumesSetter(op))),
-			newMultiLineTagParser("Produces", newMultilineDropEmptyParser(rxProduces, opProducesSetter(op))),
+			newMultiLineTagParser("Consumes", newMultilineDropEmptyParser(rxConsumes, opConsumesSetter(op)), false),
+			newMultiLineTagParser("Produces", newMultilineDropEmptyParser(rxProduces, opProducesSetter(op)), false),
 			newSingleLineTagParser("Schemes", newSetSchemes(opSchemeSetter(op))),
-			newMultiLineTagParser("Security", newSetSecurity(rxSecuritySchemes, opSecurityDefsSetter(op))),
-			newMultiLineTagParser("Responses", sr),
+			newMultiLineTagParser("Security", newSetSecurity(rxSecuritySchemes, opSecurityDefsSetter(op)), false),
+			newMultiLineTagParser("Responses", sr, false),
 		}
 		if err := sp.Parse(content.Remaining); err != nil {
 			return fmt.Errorf("operation (%s): %v", op.ID, err)

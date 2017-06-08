@@ -262,6 +262,7 @@ func (rp *responseParser) parseEmbeddedStruct(gofile *ast.File, response *spec.R
 	case *ast.StarExpr:
 		return rp.parseEmbeddedStruct(gofile, response, tpe.X, seenPreviously)
 	}
+	fmt.Printf("1%#v\n", expr)
 	return fmt.Errorf("unable to resolve embedded struct for: %v", expr)
 }
 

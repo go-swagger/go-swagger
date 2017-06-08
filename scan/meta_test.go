@@ -101,7 +101,8 @@ func verifyMeta(t testing.TB, doc *spec.Swagger) {
 			TokenURL:         "/oauth2/token",
 			Flow:             "accessCode",
 			Scopes: map[string]string{
-				"bla": "foo",
+				"bla1": "foo1",
+				"bla2": "foo2",
 			},
 		},
 	}
