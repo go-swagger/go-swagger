@@ -423,10 +423,6 @@ func (scp *schemaParser) parseEmbeddedType(gofile *ast.File, schema *spec.Schema
 		if err != nil {
 			return fmt.Errorf("embedded struct: %v", err)
 		}
-		if st, ok := ts.Type.(*ast.ArrayType); ok {
-			prop := &schemaTypable{schema, 0}
-			return parseProperty(scp, file, st, prop)
-		}
 		if st, ok := ts.Type.(*ast.StructType); ok {
 			return scp.parseStructType(file, schema, st, seenPreviously)
 		}
@@ -444,10 +440,6 @@ func (scp *schemaParser) parseEmbeddedType(gofile *ast.File, schema *spec.Schema
 	}
 	return fmt.Errorf("unable to resolve embedded struct for: %v", expr)
 }
-
-//func (scp *schemaParser) parseArrayType(gofile *ast.File, schema *spec.Schema, expr *ast.ArrayType, seenPreviously map[string]struct{}) error {
-//
-//}
 
 func (scp *schemaParser) parseAllOfMember(gofile *ast.File, schema *spec.Schema, expr ast.Expr, seenPreviously map[string]struct{}) error {
 	// TODO: check if struct is annotated with swagger:model or known in the definitions otherwise
