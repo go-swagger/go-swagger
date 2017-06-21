@@ -57,7 +57,7 @@ func (c *MixinSpec) Execute(args []string) error {
 		if len(collisions) != 0 {
 			// use bash $? to get actual # collisions
 			// (but has to be non-zero)
-			os.Exit(int(len(collisions)))
+			os.Exit(len(collisions))
 		}
 		os.Exit(254)
 	}
@@ -95,7 +95,7 @@ func MixinFiles(primaryFile string, mixinFiles []string, w io.Writer) ([]string,
 		return collisions, err
 	}
 
-	w.Write(bs)
+	_, _ = w.Write(bs)
 
 	return collisions, nil
 }
