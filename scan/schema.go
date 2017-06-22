@@ -925,7 +925,7 @@ func (scp *schemaParser) packageForSelector(gofile *ast.File, expr ast.Expr) (*l
 			return pkg, nil
 		}
 		// TODO: I must admit this made me cry, it's not even a great solution.
-		pkg = scp.program.Package("github.com/go-swagger/go-swagger/vendor/" + selPath)
+		pkg = scp.program.Package("github.com/eatigo/go-swagger/vendor/" + selPath)
 		if pkg != nil {
 			return pkg, nil
 		}

@@ -16,7 +16,7 @@ package operations
 
 import (
 	"github.com/go-openapi/strfmt"
-	"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/transitive/mods"
+	"github.com/eatigo/go-swagger/fixtures/goparsing/classification/transitive/mods"
 )
 
 // A GenericError is an error that is used when no other error is appropriate

@@ -531,7 +531,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 	}
 
 	if resp.Ref.String() != "" {
-		resp2, err := spec.ResolveResponse(b.Doc.Spec(), resp.Ref)
+		resp2, err := spec.ResolveResponseWithBase(b.Doc.Spec(), resp.Ref, b.Doc.SpecFilePath())
 		if err != nil {
 			return GenResponse{}, err
 		}

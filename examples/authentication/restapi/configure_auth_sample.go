@@ -9,9 +9,9 @@ import (
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
 
-	"github.com/go-swagger/go-swagger/examples/authentication/models"
-	"github.com/go-swagger/go-swagger/examples/authentication/restapi/operations"
-	"github.com/go-swagger/go-swagger/examples/authentication/restapi/operations/customers"
+	"github.com/eatigo/go-swagger/examples/authentication/models"
+	"github.com/eatigo/go-swagger/examples/authentication/restapi/operations"
+	"github.com/eatigo/go-swagger/examples/authentication/restapi/operations/customers"
 )
 
 // This file is safe to edit. Once it exists it will not be overwritten

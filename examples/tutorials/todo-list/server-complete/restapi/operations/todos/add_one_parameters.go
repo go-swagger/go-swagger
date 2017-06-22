@@ -10,7 +10,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete/models"
+	"github.com/eatigo/go-swagger/examples/tutorials/todo-list/server-complete/models"
 )
 
 // NewAddOneParams creates a new AddOneParams object

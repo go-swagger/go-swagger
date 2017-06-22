@@ -12,9 +12,9 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/tylerb/graceful"
 
-	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete/models"
-	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete/restapi/operations"
-	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete/restapi/operations/todos"
+	"github.com/eatigo/go-swagger/examples/tutorials/todo-list/server-complete/models"
+	"github.com/eatigo/go-swagger/examples/tutorials/todo-list/server-complete/restapi/operations"
+	"github.com/eatigo/go-swagger/examples/tutorials/todo-list/server-complete/restapi/operations/todos"
 )
 
 // This file is safe to edit. Once it exists it will not be overwritten

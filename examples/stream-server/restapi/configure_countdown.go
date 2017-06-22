@@ -9,8 +9,8 @@ import (
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
 
-	"github.com/go-swagger/go-swagger/examples/stream-server/biz"
-	"github.com/go-swagger/go-swagger/examples/stream-server/restapi/operations"
+	"github.com/eatigo/go-swagger/examples/stream-server/biz"
+	"github.com/eatigo/go-swagger/examples/stream-server/restapi/operations"
 )
 
 // This file is safe to edit. Once it exists it will not be overwritten

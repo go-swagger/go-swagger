@@ -10,7 +10,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/go-swagger/go-swagger/examples/generated/models"
+	"github.com/eatigo/go-swagger/examples/generated/models"
 )
 
 // NewAddPetParams creates a new AddPetParams object

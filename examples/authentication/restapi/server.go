@@ -15,7 +15,7 @@ import (
 	flags "github.com/jessevdk/go-flags"
 	graceful "github.com/tylerb/graceful"
 
-	"github.com/go-swagger/go-swagger/examples/authentication/restapi/operations"
+	"github.com/eatigo/go-swagger/examples/authentication/restapi/operations"
 )
 
 const (

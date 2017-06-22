@@ -11,7 +11,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	"github.com/go-swagger/go-swagger/examples/todo-list/models"
+	"github.com/eatigo/go-swagger/examples/todo-list/models"
 )
 
 // UpdateOneReader is a Reader for the UpdateOne structure.

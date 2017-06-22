@@ -22,7 +22,7 @@ import (
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
-	"github.com/go-swagger/go-swagger/scan"
+	"github.com/eatigo/go-swagger/scan"
 	"github.com/jessevdk/go-flags"
 )
 
