@@ -11,8 +11,8 @@ RUN apk --no-cache add git &&\
   go get -u github.com/jessevdk/go-flags &&\
   go get -u golang.org/x/net/context/ctxhttp
 
-ADD . /go/src/github.com/go-swagger/go-swagger
-WORKDIR /go/src/github.com/go-swagger/go-swagger
+ADD . /go/src/github.com/eatigo/go-swagger
+WORKDIR /go/src/github.com/eatigo/go-swagger
 
 RUN go build -o /usr/bin/swagger ./cmd/swagger
 
