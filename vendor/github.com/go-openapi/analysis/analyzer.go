@@ -505,7 +505,6 @@ func fieldNameFromParam(param *spec.Parameter) string {
 func (s *Spec) paramsAsMap(parameters []spec.Parameter, res map[string]spec.Parameter) {
 	for _, param := range parameters {
 		pr := param
-		fmt.Println("pr.Ref.String() = ", pr.Ref.String())
 		if pr.Ref.String() != "" {
 			p, err := spec.ResolveParameterWithBase(s.spec, &pr.Ref, &spec.ExpandOptions{RelativeBase: s.specFilePath})
 			if err != nil {
