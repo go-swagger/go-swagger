@@ -19,10 +19,10 @@ import (
 	slashpath "path"
 	"strconv"
 	"strings"
+
 	"github.com/go-openapi/jsonpointer"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
-	"encoding/json"
 )
 
 type referenceAnalysis struct {
