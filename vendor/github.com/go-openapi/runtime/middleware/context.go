@@ -90,7 +90,7 @@ func newRoutableUntypedAPI(spec *loads.Document, api *untyped.API, context *Cont
 	if spec == nil || api == nil {
 		return nil
 	}
-	analyzer := analysis.New(spec.Spec())
+	analyzer := analysis.New(spec.Spec(), spec.SpecFilePath())
 	for method, hls := range analyzer.Operations() {
 		um := strings.ToUpper(method)
 		for path, op := range hls {
@@ -183,7 +183,7 @@ func (r *routableUntypedAPI) DefaultConsumes() string {
 func NewRoutableContext(spec *loads.Document, routableAPI RoutableAPI, routes Router) *Context {
 	var an *analysis.Spec
 	if spec != nil {
-		an = analysis.New(spec.Spec())
+		an = analysis.New(spec.Spec(), spec.SpecFilePath())
 	}
 	ctx := &Context{spec: spec, api: routableAPI, analyzer: an}
 	return ctx
@@ -193,7 +193,7 @@ func NewRoutableContext(spec *loads.Document, routableAPI RoutableAPI, routes Ro
 func NewContext(spec *loads.Document, api *untyped.API, routes Router) *Context {
 	var an *analysis.Spec
 	if spec != nil {
-		an = analysis.New(spec.Spec())
+		an = analysis.New(spec.Spec(), spec.SpecFilePath())
 	}
 	ctx := &Context{spec: spec, analyzer: an}
 	ctx.api = newRoutableUntypedAPI(spec, api, ctx)

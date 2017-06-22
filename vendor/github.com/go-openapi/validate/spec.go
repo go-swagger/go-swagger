@@ -95,7 +95,7 @@ func (s *SpecValidator) Validate(data interface{}) (errs *Result, warnings *Resu
 		return
 	}
 	s.spec = sd
-	s.analyzer = analysis.New(sd.Spec())
+	s.analyzer = analysis.New(sd.Spec(), sd.SpecFilePath())
 
 	errs = new(Result)
 	warnings = new(Result)

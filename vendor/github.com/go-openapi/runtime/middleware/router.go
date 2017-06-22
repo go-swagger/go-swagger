@@ -122,7 +122,7 @@ type defaultRouter struct {
 func newDefaultRouteBuilder(spec *loads.Document, api RoutableAPI) *defaultRouteBuilder {
 	return &defaultRouteBuilder{
 		spec:     spec,
-		analyzer: analysis.New(spec.Spec()),
+		analyzer: analysis.New(spec.Spec(), spec.SpecFilePath()),
 		api:      api,
 		records:  make(map[string][]denco.Record),
 	}

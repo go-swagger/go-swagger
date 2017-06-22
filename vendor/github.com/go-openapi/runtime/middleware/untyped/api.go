@@ -32,7 +32,7 @@ import (
 func NewAPI(spec *loads.Document) *API {
 	var an *analysis.Spec
 	if spec != nil && spec.Spec() != nil {
-		an = analysis.New(spec.Spec())
+		an = analysis.New(spec.Spec(), spec.SpecFilePath())
 	}
 	api := &API{
 		spec:           spec,

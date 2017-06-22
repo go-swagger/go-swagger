@@ -141,19 +141,19 @@ func ResolveRef(root interface{}, ref *Ref) (*Schema, error) {
 }
 
 // ResolveParameter resolves a paramter reference against a context root
-func ResolveParameter(root interface{}, ref Ref) (*Parameter, error) {
+func ResolveParameter(root interface{}, ref *Ref) (*Parameter, error) {
 	return ResolveParameterWithBase(root, ref, nil)
 }
 
 // ResolveParameterWithBase resolves a paramter reference against a context root and base path
-func ResolveParameterWithBase(root interface{}, ref Ref, opts *ExpandOptions) (*Parameter, error) {
+func ResolveParameterWithBase(root interface{}, ref *Ref, opts *ExpandOptions) (*Parameter, error) {
 	resolver, err := defaultSchemaLoader(root, nil, opts, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	result := new(Parameter)
-	if err := resolver.Resolve(&ref, result); err != nil {
+	if err := resolver.Resolve(ref, result); err != nil {
 		return nil, err
 	}
 	return result, nil

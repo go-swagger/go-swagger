@@ -56,3 +56,5 @@ _book
 tmp/
 cover/
 bin/
+
+example/
