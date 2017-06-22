@@ -86,7 +86,7 @@ func init() {
 	flag.DurationVar(&writeTimeout, "write-timeout", 30*time.Second, "maximum duration before timing out write of the response")
 
 	flag.StringVar(&tlsHost, "tls-host", "localhost", "the IP to listen on")
-	flag.IntVar(&tlsPort, "tls-port", 0, "the port to listen on for insecure connections, defaults to a random value")
+	flag.IntVar(&tlsPort, "tls-port", 0, "the port to listen on for secure connections, defaults to a random value")
 	flag.StringVar(&tlsCertificate, "tls-certificate", "", "the certificate to use for secure connections")
 	flag.StringVar(&tlsCertificateKey, "tls-key", "", "the private key to use for secure conections")
 	flag.StringVar(&tlsCACertificate, "tls-ca", "", "the certificate authority file to be used with mutual tls auth")
