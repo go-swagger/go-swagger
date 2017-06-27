@@ -748,6 +748,7 @@ func (sg *schemaGenContext) buildAllOf() error {
 			b, _ := json.MarshalIndent(sch, "", "  ")
 			log.Println("trying", string(b))
 		}
+		sch.Required = sg.Schema.Required
 		comprop := sg.NewCompositionBranch(sch, i)
 		if err := comprop.makeGenSchema(); err != nil {
 			return err
