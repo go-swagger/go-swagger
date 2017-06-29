@@ -173,13 +173,16 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		pg.GenSchema.IsExported = true
 		pg.GenSchema.DiscriminatorField = dsi.FieldName
 
+		if pg.GenSchema.Discriminates == nil {
+			pg.GenSchema.Discriminates = make(map[string]string)
+		}
+		pg.GenSchema.Discriminates[name] = dsi.GoType
+
 		for _, v := range dsi.Children {
-			if pg.GenSchema.Discriminates == nil {
-				pg.GenSchema.Discriminates = make(map[string]string)
-			}
 			pg.GenSchema.Discriminates[v.FieldValue] = v.GoType
 		}
 	}
+
 	dse, ok := di.Discriminated["#/definitions/"+name]
 	if ok {
 		pg.GenSchema.DiscriminatorField = dse.FieldName
