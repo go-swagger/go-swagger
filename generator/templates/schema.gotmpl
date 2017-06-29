@@ -64,7 +64,7 @@ func Unmarshal{{ pascalize .Name }}(reader io.Reader, consumer runtime.Consumer)
 
 func unmarshal{{ pascalize .Name }}(data []byte, consumer runtime.Consumer) ({{ pascalize .Name }}, error) {
   buf := bytes.NewBuffer(data)
-  buf2 := bytes.NewBuffer(data)
+  {{ if .Discriminates }} buf2 := bytes.NewBuffer(data) {{ end }}
 
   // the first time this is read is to fetch the value of the {{ .DiscriminatorField }} property.
   var getType struct { {{ pascalize .DiscriminatorField }} string `json:{{ printf "%q" .DiscriminatorField }}` }
