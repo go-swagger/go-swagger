@@ -120,8 +120,9 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 		if assert.NoError(t, err) {
 			assert.True(t, genModel.IsComplexObject)
 			assert.Equal(t, "petType", genModel.DiscriminatorField)
-			assert.Len(t, genModel.Discriminates, 2)
+			assert.Len(t, genModel.Discriminates, 3)
 			assert.Len(t, genModel.ExtraSchemas, 0)
+			assert.Equal(t, "Pet", genModel.Discriminates["Pet"])
 			assert.Equal(t, "Cat", genModel.Discriminates["cat"])
 			assert.Equal(t, "Dog", genModel.Discriminates["Dog"])
 			buf := bytes.NewBuffer(nil)
