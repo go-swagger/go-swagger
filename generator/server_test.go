@@ -195,3 +195,26 @@ func TestServer_Issue987(t *testing.T) {
 		}
 	}
 }
+
+func TestServer_FilterByTag(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stderr)
+	gen, err := testAppGenerator(t, "../fixtures/codegen/simplesearch.yml", "search")
+	if assert.NoError(t, err) {
+		gen.GenOpts.Tags = []string{"search"}
+		app, err := gen.makeCodegenApp()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			if assert.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app)) {
+				formatted, err := app.GenOpts.LanguageOpts.FormatContent("search_api.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(formatted)
+					assertInCode(t, `o.handlers["POST"]["/search"]`, res)
+					assertNotInCode(t, `o.handlers["POST"]["/tasks"]`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}

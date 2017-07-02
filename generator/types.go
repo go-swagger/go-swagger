@@ -547,10 +547,10 @@ func nullableNumber(schema *spec.Schema, isRequired bool) bool {
 	}
 	hasDefault := schema.Default != nil && !swag.IsZero(schema.Default)
 
-	isMin := schema.Minimum != nil && *schema.Minimum != 0
-	bcMin := schema.Minimum != nil && *schema.Minimum == 0
-	isMax := schema.Minimum == nil && (schema.Maximum != nil && *schema.Maximum != 0)
-	bcMax := schema.Maximum != nil && *schema.Maximum == 0
+	isMin := schema.Minimum != nil && (*schema.Minimum != 0 || schema.ExclusiveMinimum)
+	bcMin := schema.Minimum != nil && *schema.Minimum == 0 && !schema.ExclusiveMinimum
+	isMax := schema.Minimum == nil && (schema.Maximum != nil && (*schema.Maximum != 0 || schema.ExclusiveMaximum))
+	bcMax := schema.Maximum != nil && *schema.Maximum == 0 && !schema.ExclusiveMaximum
 	isMinMax := (schema.Minimum != nil && schema.Maximum != nil && *schema.Minimum < *schema.Maximum)
 	bcMinMax := (schema.Minimum != nil && schema.Maximum != nil && (*schema.Minimum < 0 && 0 < *schema.Maximum))
 

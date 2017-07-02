@@ -6,6 +6,10 @@ info:
   description: |
     A very simple api description that makes a x-www-form-urlencoded only API to submit searches.
 
+tags:
+  - name: search
+  - name: tasks
+
 produces:
   - application/json
 
@@ -20,6 +24,8 @@ paths:
       description: searches the task titles and descriptions for a match
       consumes:
         - application/x-www-form-urlencoded
+      tags:
+        - search
       parameters:
         - name: q
           in: formData

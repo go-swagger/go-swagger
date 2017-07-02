@@ -23,7 +23,7 @@ swagger validate [http-url|filepath]
 All the rules the validator tool supports:
 
 *	validate against jsonschema
-*	validate extra rules outlined [here](https://github.com/apigee-127/sway/blob/master/docs/versions/2.0.md#semantic-validation)
+*	validate extra rules [here](https://github.com/apigee-127/sway/tree/master/docs#semantic-validation)
 
 Rule | Severity
 -----|---------
