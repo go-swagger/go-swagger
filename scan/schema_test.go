@@ -217,8 +217,8 @@ func TestEmbeddedStarExpr(t *testing.T) {
 
 func TestAliasedTypes(t *testing.T) {
 	schema := noModelDefs["OtherTypes"]
-	assertRef(t, &schema, "named", "Named", "#/definitions/SomeStringType")
-	assertRef(t, &schema, "numbered", "Numbered", "#/definitions/SomeIntType")
+	assertProperty(t, &schema, "string", "named", "", "Named")
+	assertProperty(t, &schema, "integer", "numbered", "int64", "Numbered")
 	assertProperty(t, &schema, "string", "dated", "date-time", "Dated")
 	assertRef(t, &schema, "timed", "Timed", "#/definitions/SomeTimedType")
 	assertRef(t, &schema, "petted", "Petted", "#/definitions/SomePettedType")
@@ -233,21 +233,21 @@ func TestAliasedTypes(t *testing.T) {
 	assertRef(t, &schema, "manyPetted", "ManyPetted", "#/definitions/SomePettedsType")
 	assertRef(t, &schema, "manySomethinged", "ManySomethinged", "#/definitions/SomethingsType")
 
-	assertArrayRef(t, &schema, "nameds", "Nameds", "#/definitions/SomeStringType")
-	assertArrayRef(t, &schema, "numbereds", "Numbereds", "#/definitions/SomeIntType")
+	assertArrayProperty(t, &schema, "string", "nameds", "", "Nameds")
+	assertArrayProperty(t, &schema, "integer", "numbereds", "int64", "Numbereds")
 	assertArrayProperty(t, &schema, "string", "dateds", "date-time", "Dateds")
 	assertArrayRef(t, &schema, "timeds", "Timeds", "#/definitions/SomeTimedType")
 	assertArrayRef(t, &schema, "petteds", "Petteds", "#/definitions/SomePettedType")
 	assertArrayRef(t, &schema, "somethingeds", "Somethingeds", "#/definitions/SomethingType")
 
-	assertRef(t, &schema, "modsNamed", "ModsNamed", "#/definitions/modsSomeStringType")
-	assertRef(t, &schema, "modsNumbered", "ModsNumbered", "#/definitions/modsSomeIntType")
+	assertProperty(t, &schema, "string", "modsNamed", "", "ModsNamed")
+	assertProperty(t, &schema, "integer", "modsNumbered", "int64", "ModsNumbered")
 	assertProperty(t, &schema, "string", "modsDated", "date-time", "ModsDated")
 	assertRef(t, &schema, "modsTimed", "ModsTimed", "#/definitions/modsSomeTimedType")
 	assertRef(t, &schema, "modsPetted", "ModsPetted", "#/definitions/modsSomePettedType")
 
-	assertArrayRef(t, &schema, "modsNameds", "ModsNameds", "#/definitions/modsSomeStringType")
-	assertArrayRef(t, &schema, "modsNumbereds", "ModsNumbereds", "#/definitions/modsSomeIntType")
+	assertArrayProperty(t, &schema, "string", "modsNameds", "", "ModsNameds")
+	assertArrayProperty(t, &schema, "integer", "modsNumbereds", "int64", "ModsNumbereds")
 	assertArrayProperty(t, &schema, "string", "modsDateds", "date-time", "ModsDateds")
 	assertArrayRef(t, &schema, "modsTimeds", "ModsTimeds", "#/definitions/modsSomeTimedType")
 	assertArrayRef(t, &schema, "modsPetteds", "ModsPetteds", "#/definitions/modsSomePettedType")

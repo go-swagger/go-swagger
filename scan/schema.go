@@ -1002,6 +1002,15 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 		return nil
 	}
 
+	// check for aliases
+	itype, ok := ts.Type.(*ast.Ident)
+	if ok {
+		err := swaggerSchemaForType(itype.Name, prop)
+		if err == nil {
+			return nil
+		}
+	}
+
 	switch tpe := ts.Type.(type) {
 	case *ast.ArrayType:
 		return scp.makeRef(file, pkg, gd, ts, prop)
