@@ -33,6 +33,19 @@
   {{ end }}
 }
 
+type {{ camelize .Name }} {{ template "schemaBody" . }}
+{{ range .Properties }}
+func ({{ $.ReceiverName}} *{{ camelize $.Name}}) {{ pascalize .Name}}() {{ template "schemaType" . }}{
+  {{ if eq $.DiscriminatorField .Name }}return {{ printf "%q" $.DiscriminatorValue }}{{ else }}return {{ $.ReceiverName }}.{{camelize .Name}}Field{{end}}
+}
+func ({{ $.ReceiverName}} *{{ camelize $.Name}}) Set{{ pascalize .Name}}(val {{ template "schemaType" . }}) {
+  {{ if ne $.DiscriminatorField .Name }}{{ $.ReceiverName }}.{{camelize .Name}}Field = val{{end}}
+}
+{{ end }}
+{{if and (not .IsInterface) (or .Required .HasValidations) }}
+{{ template "schemavalidator" . }}
+{{ end }}
+
 // Unmarshal{{ pascalize .Name }}Slice unmarshals polymorphic slices of {{ pascalize .Name }}
 func Unmarshal{{ pascalize .Name }}Slice(reader io.Reader, consumer runtime.Consumer) ([]{{ pascalize .Name }}, error) {
   var elements []json.RawMessage
@@ -79,7 +92,7 @@ func unmarshal{{ pascalize .Name }}(data []byte, consumer runtime.Consumer) ({{ 
   // The value of {{ .DiscriminatorField }} is used to determine which type to create and unmarshal the data into
   switch getType.{{ pascalize .DiscriminatorField }} { {{ range $k, $v := .Discriminates }}
     case {{ printf "%q" $k }}:
-      var result {{ $v }}
+      var result {{ if eq $.Name $v }}{{ camelize $.Name }}{{ else }}{{ $v }}{{ end }}
       if err := consumer.Consume(buf2, &result); err != nil {
         return nil, err
       }
