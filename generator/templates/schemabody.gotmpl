@@ -21,7 +21,7 @@
   {{ if not (and $.IsBaseType .IsExported) }}{{ .GoType }}{{ end }}{{ end }}
   {{ end }}
   {{range .Properties}}
-  {{ if or (not $.IsExported) (and $.IsSubType .IsBaseType) }}{{ if $.IsTuple }}{{ template "privtuplefield" . }}{{ else }}{{template "privstructfield" . }}{{ end }}{{ else }}{{ if $.IsTuple }}{{ template "tuplefield" . }}{{ else }}{{template "structfield" . }}{{ end }}{{ end}}
+  {{ if or (not $.IsExported) (and $.IsSubType .IsBaseType) ( $.Discriminates ) }}{{ if $.IsTuple }}{{ template "privtuplefield" . }}{{ else }}{{template "privstructfield" . }}{{ end }}{{ else }}{{ if $.IsTuple }}{{ template "tuplefield" . }}{{ else }}{{template "structfield" . }}{{ end }}{{ end}}
   {{end}}
   {{ if .HasAdditionalProperties }}
     {{- if .AdditionalProperties -}}
