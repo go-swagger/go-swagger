@@ -25,18 +25,21 @@ import (
 // NewPetstoreAPI creates a new Petstore instance
 func NewPetstoreAPI(spec *loads.Document) *PetstoreAPI {
 	return &PetstoreAPI{
-		handlers:        make(map[string]map[string]http.Handler),
-		formats:         strfmt.Default,
-		defaultConsumes: "application/json",
-		defaultProduces: "application/json",
-		ServerShutdown:  func() {},
-		spec:            spec,
-		ServeError:      errors.ServeError,
-		JSONConsumer:    runtime.JSONConsumer(),
-		UrlformConsumer: runtime.DiscardConsumer,
-		XMLConsumer:     runtime.XMLConsumer(),
-		JSONProducer:    runtime.JSONProducer(),
-		XMLProducer:     runtime.XMLProducer(),
+		handlers:            make(map[string]map[string]http.Handler),
+		formats:             strfmt.Default,
+		defaultConsumes:     "application/json",
+		defaultProduces:     "application/json",
+		ServerShutdown:      func() {},
+		spec:                spec,
+		ServeError:          errors.ServeError,
+		BasicAuthenticator:  security.BasicAuth,
+		APIKeyAuthenticator: security.APIKeyAuth,
+		BearerAuthenticator: security.BearerAuth,
+		JSONConsumer:        runtime.JSONConsumer(),
+		UrlformConsumer:     runtime.DiscardConsumer,
+		XMLConsumer:         runtime.XMLConsumer(),
+		JSONProducer:        runtime.JSONProducer(),
+		XMLProducer:         runtime.XMLProducer(),
 		PetAddPetHandler: pet.AddPetHandlerFunc(func(params pet.AddPetParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation PetAddPet has not yet been implemented")
 		}),
@@ -117,6 +120,17 @@ type PetstoreAPI struct {
 	defaultConsumes string
 	defaultProduces string
 	Middleware      func(middleware.Builder) http.Handler
+
+	// BasicAuthenticator generates a runtime.Authenticator from the supplied basic auth function.
+	// It has a default implemention in the security package, however you can replace it for your particular usage.
+	BasicAuthenticator func(security.UserPassAuthentication) runtime.Authenticator
+	// APIKeyAuthenticator generates a runtime.Authenticator from the supplied token auth function.
+	// It has a default implemention in the security package, however you can replace it for your particular usage.
+	APIKeyAuthenticator func(string, string, security.TokenAuthentication) runtime.Authenticator
+	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
+	// It has a default implemention in the security package, however you can replace it for your particular usage.
+	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
+
 	// JSONConsumer registers a consumer for a "application/json" mime type
 	JSONConsumer runtime.Consumer
 	// UrlformConsumer registers a consumer for a "application/x-www-form-urlencoded" mime type
@@ -349,11 +363,11 @@ func (o *PetstoreAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) 
 
 		case "petstore_auth":
 
-			result[name] = security.BearerAuth(scheme.Name, o.PetstoreAuthAuth)
+			result[name] = o.BearerAuthenticator(scheme.Name, o.PetstoreAuthAuth)
 
 		case "api_key":
 
-			result[name] = security.APIKeyAuth(scheme.Name, scheme.In, o.APIKeyAuth)
+			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, o.APIKeyAuth)
 
 		}
 	}

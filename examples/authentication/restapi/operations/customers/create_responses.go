@@ -11,6 +11,9 @@ import (
 	"github.com/go-swagger/go-swagger/examples/authentication/models"
 )
 
+// CreateCreatedCode is the HTTP code returned for type CreateCreated
+const CreateCreatedCode int = 201
+
 /*CreateCreated created
 
 swagger:response createCreated

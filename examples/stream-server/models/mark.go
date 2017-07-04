@@ -7,19 +7,16 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
-/*Mark mark
-
-swagger:model Mark
-*/
+// Mark mark
+// swagger:model Mark
 type Mark struct {
 
-	/* remains
-
-	Required: true
-	*/
+	// remains
+	// Required: true
 	Remains *int64 `json:"remains"`
 }
 
@@ -44,5 +41,23 @@ func (m *Mark) validateRemains(formats strfmt.Registry) error {
 		return err
 	}
 
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *Mark) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *Mark) UnmarshalBinary(b []byte) error {
+	var res Mark
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
 	return nil
 }

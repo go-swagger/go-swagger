@@ -49,7 +49,7 @@ type TaskCard struct {
 	//
 	// Minimum: > 0
 	// Multiple Of: 0.5
-	Karma *float64 `json:"karma,omitempty"`
+	Karma float64 `json:"karma,omitempty"`
 
 	// milestone
 	Milestone *Milestone `json:"milestone,omitempty"`
@@ -184,11 +184,11 @@ func (m *TaskCard) validateKarma(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.Minimum("karma", "body", float64(*m.Karma), 0, true); err != nil {
+	if err := validate.Minimum("karma", "body", float64(m.Karma), 0, true); err != nil {
 		return err
 	}
 
-	if err := validate.MultipleOf("karma", "body", float64(*m.Karma), 0.5); err != nil {
+	if err := validate.MultipleOf("karma", "body", float64(m.Karma), 0.5); err != nil {
 		return err
 	}
 
