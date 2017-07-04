@@ -1,3 +1,8 @@
+// Tomljson reads TOML and converts to JSON.
+//
+// Usage:
+//   cat file.toml | tomljson > file.json
+//   tomljson file1.toml > file.json
 package main
 
 import (
@@ -57,7 +62,7 @@ func reader(r io.Reader) (string, error) {
 	return mapToJSON(tree)
 }
 
-func mapToJSON(tree *toml.TomlTree) (string, error) {
+func mapToJSON(tree *toml.Tree) (string, error) {
 	treeMap := tree.ToMap()
 	bytes, err := json.MarshalIndent(treeMap, "", "  ")
 	if err != nil {

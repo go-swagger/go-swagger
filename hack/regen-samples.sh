@@ -12,10 +12,19 @@ rm -rf client cmd models restapi
 swagger generate client -A TodoList -f ./swagger.yml
 swagger generate server -A TodoList -f ./swagger.yml --flag-strategy pflag
 
+cd "${examples}/authentication"
+rm -rf client cmd models restapi
+swagger generate client -A AuthSample -f ./swagger.yml -P 'models.Principal'
+swagger generate server -A AuthSample -f ./swagger.yml -P 'models.Principal'
+
 cd "${examples}/task-tracker"
 rm -rf client cmd models restapi
 swagger generate client -A TaskTracker -f ./swagger.yml
 swagger generate server -A TaskTracker -f ./swagger.yml
+
+cd "${examples}/stream-server"
+rm -rf cmd models restapi
+swagger generate server -A Countdown -f ./swagger.yml
 
 cd "${examples}/tutorials/todo-list/server-1"
 rm -rf cmd models restapi

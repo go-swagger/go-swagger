@@ -10,13 +10,18 @@ import (
 	"github.com/go-openapi/runtime"
 )
 
+// ElapseOKCode is the HTTP code returned for type ElapseOK
+const ElapseOKCode int = 200
+
 /*ElapseOK Secondly update on remaining time
 
 swagger:response elapseOK
 */
 type ElapseOK struct {
 
-	// In: body
+	/*
+	  In: Body
+	*/
 	Payload io.ReadCloser `json:"body,omitempty"`
 }
 
@@ -40,11 +45,15 @@ func (o *ElapseOK) SetPayload(payload io.ReadCloser) {
 func (o *ElapseOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
-	if err := producer.Produce(rw, o.Payload); err != nil {
+	payload := o.Payload
+	if err := producer.Produce(rw, payload); err != nil {
 		panic(err) // let the recovery middleware deal with this
 	}
 
 }
+
+// ElapseForbiddenCode is the HTTP code returned for type ElapseForbidden
+const ElapseForbiddenCode int = 403
 
 /*ElapseForbidden Contrived - thrown when length of 11 is chosen
 

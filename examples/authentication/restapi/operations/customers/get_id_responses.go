@@ -11,6 +11,9 @@ import (
 	"github.com/go-swagger/go-swagger/examples/authentication/models"
 )
 
+// GetIDOKCode is the HTTP code returned for type GetIDOK
+const GetIDOKCode int = 200
+
 /*GetIDOK OK
 
 swagger:response getIdOK
@@ -51,6 +54,9 @@ func (o *GetIDOK) WriteResponse(rw http.ResponseWriter, producer runtime.Produce
 	}
 }
 
+// GetIDUnauthorizedCode is the HTTP code returned for type GetIDUnauthorized
+const GetIDUnauthorizedCode int = 401
+
 /*GetIDUnauthorized unauthorized
 
 swagger:response getIdUnauthorized
@@ -90,6 +96,9 @@ func (o *GetIDUnauthorized) WriteResponse(rw http.ResponseWriter, producer runti
 		}
 	}
 }
+
+// GetIDNotFoundCode is the HTTP code returned for type GetIDNotFound
+const GetIDNotFoundCode int = 404
 
 /*GetIDNotFound resource not found
 

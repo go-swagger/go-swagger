@@ -40,7 +40,10 @@ type CreateUser struct {
 }
 
 func (o *CreateUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	route, _ := o.Context.RouteInfo(r)
+	route, rCtx, _ := o.Context.RouteInfo(r)
+	if rCtx != nil {
+		r = rCtx
+	}
 	var Params = NewCreateUserParams()
 
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params

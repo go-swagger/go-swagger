@@ -8,9 +8,11 @@ import (
 	"net/http"
 	"strings"
 
+	errors "github.com/go-openapi/errors"
 	loads "github.com/go-openapi/loads"
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
 	spec "github.com/go-openapi/spec"
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -19,12 +21,21 @@ import (
 // NewCountdownAPI creates a new Countdown instance
 func NewCountdownAPI(spec *loads.Document) *CountdownAPI {
 	return &CountdownAPI{
-		handlers:        make(map[string]map[string]http.Handler),
-		formats:         strfmt.Default,
-		defaultConsumes: "application/json",
-		defaultProduces: "application/json",
-		ServerShutdown:  func() {},
-		spec:            spec,
+		handlers:            make(map[string]map[string]http.Handler),
+		formats:             strfmt.Default,
+		defaultConsumes:     "application/json",
+		defaultProduces:     "application/json",
+		ServerShutdown:      func() {},
+		spec:                spec,
+		ServeError:          errors.ServeError,
+		BasicAuthenticator:  security.BasicAuth,
+		APIKeyAuthenticator: security.APIKeyAuth,
+		BearerAuthenticator: security.BearerAuth,
+		JSONConsumer:        runtime.JSONConsumer(),
+		JSONProducer:        runtime.JSONProducer(),
+		ElapseHandler: ElapseHandlerFunc(func(params ElapseParams) middleware.Responder {
+			return middleware.NotImplemented("operation Elapse has not yet been implemented")
+		}),
 	}
 }
 
@@ -36,6 +47,18 @@ type CountdownAPI struct {
 	formats         strfmt.Registry
 	defaultConsumes string
 	defaultProduces string
+	Middleware      func(middleware.Builder) http.Handler
+
+	// BasicAuthenticator generates a runtime.Authenticator from the supplied basic auth function.
+	// It has a default implemention in the security package, however you can replace it for your particular usage.
+	BasicAuthenticator func(security.UserPassAuthentication) runtime.Authenticator
+	// APIKeyAuthenticator generates a runtime.Authenticator from the supplied token auth function.
+	// It has a default implemention in the security package, however you can replace it for your particular usage.
+	APIKeyAuthenticator func(string, string, security.TokenAuthentication) runtime.Authenticator
+	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
+	// It has a default implemention in the security package, however you can replace it for your particular usage.
+	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
+
 	// JSONConsumer registers a consumer for a "application/json" mime type
 	JSONConsumer runtime.Consumer
 
@@ -171,21 +194,31 @@ func (o *CountdownAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	if _, ok := o.handlers[um]; !ok {
 		return nil, false
 	}
+	if path == "/" {
+		path = ""
+	}
 	h, ok := o.handlers[um][path]
 	return h, ok
 }
 
-func (o *CountdownAPI) initHandlerCache() {
+// Context returns the middleware context for the countdown API
+func (o *CountdownAPI) Context() *middleware.Context {
 	if o.context == nil {
 		o.context = middleware.NewRoutableContext(o.spec, o, nil)
 	}
+
+	return o.context
+}
+
+func (o *CountdownAPI) initHandlerCache() {
+	o.Context() // don't care about the result, just that the initialization happened
 
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
 
 	if o.handlers["GET"] == nil {
-		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/elapse/{length}"] = NewElapse(o.context, o.ElapseHandler)
 
@@ -194,9 +227,17 @@ func (o *CountdownAPI) initHandlerCache() {
 // Serve creates a http handler to serve the API over HTTP
 // can be used directly in http.ListenAndServe(":8000", api.Serve(nil))
 func (o *CountdownAPI) Serve(builder middleware.Builder) http.Handler {
+	o.Init()
+
+	if o.Middleware != nil {
+		return o.Middleware(builder)
+	}
+	return o.context.APIHandler(builder)
+}
+
+// Init allows you to just initialize the handler cache, you can then recompose the middelware as you see fit
+func (o *CountdownAPI) Init() {
 	if len(o.handlers) == 0 {
 		o.initHandlerCache()
 	}
-
-	return o.context.APIHandler(builder)
 }
