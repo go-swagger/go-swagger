@@ -1002,12 +1002,13 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 		return nil
 	}
 
-	// check for aliases
-	itype, ok := ts.Type.(*ast.Ident)
-	if ok {
-		err := swaggerSchemaForType(itype.Name, prop)
-		if err == nil {
-			return nil
+	if aliasParam(gd.Doc) {
+		itype, ok := ts.Type.(*ast.Ident)
+		if ok {
+			err := swaggerSchemaForType(itype.Name, prop)
+			if err == nil {
+				return nil
+			}
 		}
 	}
 
@@ -1151,6 +1152,19 @@ func enumName(comments *ast.CommentGroup) (string, bool) {
 		}
 	}
 	return "", false
+}
+
+func aliasParam(comments *ast.CommentGroup) bool {
+	if comments != nil {
+		for _, cmt := range comments.List {
+			for _, ln := range strings.Split(cmt.Text, "\n") {
+				if rxAlias.MatchString(ln) {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 func defaultName(comments *ast.CommentGroup) (string, bool) {
