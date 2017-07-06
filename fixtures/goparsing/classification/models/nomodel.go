@@ -163,6 +163,11 @@ type OtherTypes struct {
 	ManyModsTimed     mods.SomeTimedsType     `json:"manyModsTimed"`
 	ManyModsPetted    mods.SomePettedsType    `json:"manyModsPetted"`
 	ManyModsPettedPtr mods.SomePettedsPtrType `json:"manyModsPettedPtr"`
+
+	NamedAlias     SomeStringTypeAlias   `json:"namedAlias"`
+	NumberedAlias  SomeIntTypeAlias      `json:"numberedAlias"`
+	NamedsAlias    []SomeStringTypeAlias `json:"namedsAlias"`
+	NumberedsAlias []SomeIntTypeAlias    `json:"numberedsAlias"`
 }
 
 // A SimpleOne is a model with a few simple fields
