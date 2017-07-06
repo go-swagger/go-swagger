@@ -478,3 +478,13 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 
 	return nil
 }
+
+func isAliasParam(prop swaggerTypable) bool {
+	var isParam bool
+	if param, ok := prop.(paramTypable); ok {
+		isParam = param.param.In == "query" ||
+			param.param.In == "path" ||
+			param.param.In == "formData"
+	}
+	return isParam
+}

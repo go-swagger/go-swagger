@@ -1002,7 +1002,7 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 		return nil
 	}
 
-	if aliasParam(gd.Doc) {
+	if isAliasParam(prop) || aliasParam(gd.Doc) {
 		itype, ok := ts.Type.(*ast.Ident)
 		if ok {
 			err := swaggerSchemaForType(itype.Name, prop)
