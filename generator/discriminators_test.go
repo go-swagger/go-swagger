@@ -137,10 +137,12 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 					assertInCode(t, "SetName(*string)", res)
 					assertInCode(t, "PetType() string", res)
 					assertInCode(t, "SetPetType(string)", res)
+					assertInCode(t, "type pet struct {", res)
 					assertInCode(t, "UnmarshalPet(reader io.Reader, consumer runtime.Consumer) (Pet, error)", res)
 					assertInCode(t, "PetType string `json:\"petType\"`", res)
 					assertInCode(t, "validate.RequiredString(\"petType\"", res)
 					assertInCode(t, "switch getType.PetType {", res)
+					assertInCode(t, "var result pet", res)
 					assertInCode(t, "var result Cat", res)
 					assertInCode(t, "var result Dog", res)
 				}

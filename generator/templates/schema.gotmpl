@@ -92,7 +92,7 @@ func unmarshal{{ pascalize .Name }}(data []byte, consumer runtime.Consumer) ({{ 
   // The value of {{ .DiscriminatorField }} is used to determine which type to create and unmarshal the data into
   switch getType.{{ pascalize .DiscriminatorField }} { {{ range $k, $v := .Discriminates }}
     case {{ printf "%q" $k }}:
-      var result {{ if eq $.Name $v }}{{ camelize $.Name }}{{ else }}{{ $v }}{{ end }}
+      var result {{ if eq (upper $.Name) (upper $v) }}{{ camelize $.Name }}{{ else }}{{ $v }}{{ end }}
       if err := consumer.Consume(buf2, &result); err != nil {
         return nil, err
       }
