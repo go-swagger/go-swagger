@@ -224,6 +224,7 @@ func (d *defaultRouteBuilder) AddRoute(method, path string, operation *spec.Oper
 		bp = bp[:len(bp)-1]
 	}
 
+	debugLog("operation: %#v", *operation)
 	if handler, ok := d.api.HandlerFor(method, strings.TrimPrefix(path, bp)); ok {
 		consumes := d.analyzer.ConsumesFor(operation)
 		produces := d.analyzer.ProducesFor(operation)
@@ -242,8 +243,8 @@ func (d *defaultRouteBuilder) AddRoute(method, path string, operation *spec.Oper
 			Handler:        handler,
 			Consumes:       consumes,
 			Produces:       produces,
-			Consumers:      d.api.ConsumersFor(consumes),
-			Producers:      d.api.ProducersFor(produces),
+			Consumers:      d.api.ConsumersFor(normalizeOffers(consumes)),
+			Producers:      d.api.ProducersFor(normalizeOffers(produces)),
 			Parameters:     parameters,
 			Formats:        d.api.Formats(),
 			Binder:         newUntypedRequestBinder(parameters, d.spec.Spec(), d.api.Formats()),

@@ -5,7 +5,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"unsafe"
 )
 
 // Command represents an application command. Commands can be added to the
@@ -229,7 +228,17 @@ func (c *Command) scanSubcommandHandler(parentg *Group) scanHandler {
 		subcommand := mtag.Get("command")
 
 		if len(subcommand) != 0 {
-			ptrval := reflect.NewAt(realval.Type(), unsafe.Pointer(realval.UnsafeAddr()))
+			var ptrval reflect.Value
+
+			if realval.Kind() == reflect.Ptr {
+				ptrval = realval
+
+				if ptrval.IsNil() {
+					ptrval.Set(reflect.New(ptrval.Type().Elem()))
+				}
+			} else {
+				ptrval = realval.Addr()
+			}
 
 			shortDescription := mtag.Get("description")
 			longDescription := mtag.Get("long-description")
@@ -237,6 +246,7 @@ func (c *Command) scanSubcommandHandler(parentg *Group) scanHandler {
 			aliases := mtag.GetMany("alias")
 
 			subc, err := c.AddCommand(subcommand, shortDescription, longDescription, ptrval.Interface())
+
 			if err != nil {
 				return true, err
 			}

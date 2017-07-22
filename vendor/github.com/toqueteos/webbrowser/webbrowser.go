@@ -82,6 +82,7 @@ var (
 		"openbsd": &browserCommand{"xdg-open", nil}, // It may be open instead
 		"windows": &browserCommand{"cmd", []string{"/c", "start"}},
 	}
+	winSchemes = [3]string{"https", "http", "file"}
 )
 
 type browserCommand struct {
@@ -111,11 +112,18 @@ func (b browserCommand) Open(s string) error {
 	return cmd.Run()
 }
 
+func ensureScheme(u *url.URL) {
+	for _, s := range winSchemes {
+		if u.Scheme == s {
+			return
+		}
+	}
+	u.Scheme = "http"
+}
+
 func ensureValidURL(u *url.URL) string {
 	// Enforce a scheme (windows requires scheme to be set to work properly).
-	if u.Scheme != "https" {
-		u.Scheme = "http"
-	}
+	ensureScheme(u)
 	s := u.String()
 
 	// Escape characters not allowed by cmd/bash
