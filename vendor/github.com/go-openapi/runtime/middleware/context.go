@@ -352,13 +352,16 @@ func (c *Context) ResponseFormat(r *http.Request, offers []string) (string, *htt
 	var rCtx = r.Context()
 
 	if v, ok := rCtx.Value(ctxResponseFormat).(string); ok {
+		debugLog("[%s %s] found response format %q in context", r.Method, r.URL.Path, v)
 		return v, r
 	}
 
 	format := NegotiateContentType(r, offers, "")
 	if format != "" {
+		debugLog("[%s %s] set response format %q in context", r.Method, r.URL.Path, format)
 		r = r.WithContext(stdContext.WithValue(rCtx, ctxResponseFormat, format))
 	}
+	debugLog("[%s %s] negotiated response format %q", r.Method, r.URL.Path, format)
 	return format, r
 }
 
@@ -436,6 +439,7 @@ func (c *Context) NotFound(rw http.ResponseWriter, r *http.Request) {
 
 // Respond renders the response after doing some content negotiation
 func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []string, route *MatchedRoute, data interface{}) {
+	debugLog("responding to %s %s with produces: %v", r.Method, r.URL.Path, produces)
 	offers := []string{}
 	for _, mt := range produces {
 		if mt != c.api.DefaultProduces() {
@@ -444,6 +448,7 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 	}
 	// the default producer is last so more specific producers take precedence
 	offers = append(offers, c.api.DefaultProduces())
+	debugLog("offers: %v", offers)
 
 	var format string
 	format, r = c.ResponseFormat(r, offers)
@@ -453,7 +458,7 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 		producers := route.Producers
 		prod, ok := producers[format]
 		if !ok {
-			prods := c.api.ProducersFor([]string{c.api.DefaultProduces()})
+			prods := c.api.ProducersFor(normalizeOffers([]string{c.api.DefaultProduces()}))
 			pr, ok := prods[c.api.DefaultProduces()]
 			if !ok {
 				panic(errors.New(http.StatusInternalServerError, "can't find a producer for "+format))
@@ -481,7 +486,7 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 		if r.Method == "HEAD" {
 			return
 		}
-		producers := c.api.ProducersFor(offers)
+		producers := c.api.ProducersFor(normalizeOffers(offers))
 		prod, ok := producers[format]
 		if !ok {
 			panic(errors.New(http.StatusInternalServerError, "can't find a producer for "+format))
@@ -502,7 +507,7 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 		prod, ok := producers[format]
 		if !ok {
 			if !ok {
-				prods := c.api.ProducersFor([]string{c.api.DefaultProduces()})
+				prods := c.api.ProducersFor(normalizeOffers([]string{c.api.DefaultProduces()}))
 				pr, ok := prods[c.api.DefaultProduces()]
 				if !ok {
 					panic(errors.New(http.StatusInternalServerError, "can't find a producer for "+format))

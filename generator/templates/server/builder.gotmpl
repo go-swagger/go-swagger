@@ -71,7 +71,7 @@ type {{ pascalize .Name }}API struct {
   defaultConsumes string
   defaultProduces string
   Middleware      func(middleware.Builder) http.Handler
-  
+
   // BasicAuthenticator generates a runtime.Authenticator from the supplied basic auth function.
   // It has a default implemention in the security package, however you can replace it for your particular usage.
   BasicAuthenticator func(security.UserPassAuthentication) runtime.Authenticator
@@ -222,8 +222,8 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) ConsumersFor(mediaTypes []str
     switch mt {
       {{range .Consumes}}
       {{range .AllSerializers}}
-      case "{{ .MediaType }}":
-        result["{{ .MediaType }}"] = {{.ReceiverName}}.{{ pascalize .Name }}Consumer
+      case "{{ mediaTypeName .MediaType }}":
+        result["{{ mediaTypeName .MediaType }}"] = {{.ReceiverName}}.{{ pascalize .Name }}Consumer
       {{end}}
       {{end}}
     }
@@ -242,8 +242,8 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) ProducersFor(mediaTypes []str
     switch mt {
       {{range .Produces}}
       {{range .AllSerializers}}
-      case "{{ .MediaType }}":
-        result["{{ .MediaType }}"] = {{.ReceiverName}}.{{ pascalize .Name }}Producer
+      case "{{ mediaTypeName .MediaType }}":
+        result["{{ mediaTypeName .MediaType }}"] = {{.ReceiverName}}.{{ pascalize .Name }}Producer
       {{end}}
       {{end}}
     }

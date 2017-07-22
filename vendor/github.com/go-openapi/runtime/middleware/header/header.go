@@ -134,9 +134,12 @@ func ParseList(header http.Header, key string) []string {
 // ParseValueAndParams parses a comma separated list of values with optional
 // semicolon separated name-value pairs. Content-Type and Content-Disposition
 // headers are in this format.
-func ParseValueAndParams(header http.Header, key string) (value string, params map[string]string) {
+func ParseValueAndParams(header http.Header, key string) (string, map[string]string) {
+	return parseValueAndParams(header.Get(key))
+}
+
+func parseValueAndParams(s string) (value string, params map[string]string) {
 	params = make(map[string]string)
-	s := header.Get(key)
 	value, s = expectTokenSlash(s)
 	if value == "" {
 		return
@@ -169,6 +172,26 @@ type AcceptSpec struct {
 	Q     float64
 }
 
+func ParseAccept2(header http.Header, key string) (specs []AcceptSpec) {
+	for _, en := range ParseList(header, key) {
+		v, p := parseValueAndParams(en)
+		var spec AcceptSpec
+		spec.Value = v
+		spec.Q = 1.0
+		if p != nil {
+			if q, ok := p["q"]; ok {
+				spec.Q, _ = expectQuality(q)
+			}
+		}
+		if spec.Q < 0.0 {
+			continue
+		}
+		specs = append(specs, spec)
+	}
+
+	return
+}
+
 // ParseAccept parses Accept* headers.
 func ParseAccept(header http.Header, key string) (specs []AcceptSpec) {
 loop:
@@ -183,12 +206,14 @@ loop:
 			s = skipSpace(s)
 			if strings.HasPrefix(s, ";") {
 				s = skipSpace(s[1:])
-				if !strings.HasPrefix(s, "q=") {
-					continue loop
+				for !strings.HasPrefix(s, "q=") && s != "" && !strings.HasPrefix(s, ",") {
+					s = skipSpace(s[1:])
 				}
-				spec.Q, s = expectQuality(s[2:])
-				if spec.Q < 0.0 {
-					continue loop
+				if strings.HasPrefix(s, "q=") {
+					spec.Q, s = expectQuality(s[2:])
+					if spec.Q < 0.0 {
+						continue loop
+					}
 				}
 			}
 			specs = append(specs, spec)
@@ -282,14 +307,14 @@ func expectTokenOrQuoted(s string) (value string, rest string) {
 				case escape:
 					escape = false
 					p[j] = b
-					j += 1
+					j++
 				case b == '\\':
 					escape = true
 				case b == '"':
 					return string(p[:j]), s[i+1:]
 				default:
 					p[j] = b
-					j += 1
+					j++
 				}
 			}
 			return "", ""
