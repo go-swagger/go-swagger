@@ -215,6 +215,14 @@ func TestEmbeddedStarExpr(t *testing.T) {
 	assertProperty(t, &schema, "integer", "notEmbedded", "int64", "NotEmbedded")
 }
 
+func TestOverridingOneIgnore(t *testing.T) {
+	schema := noModelDefs["OverridingOneIgnore"]
+
+	assertProperty(t, &schema, "integer", "id", "int64", "ID")
+	assertProperty(t, &schema, "string", "name", "", "Name")
+	assert.Len(t, schema.Properties, 2)
+}
+
 func TestAliasedTypes(t *testing.T) {
 	schema := noModelDefs["OtherTypes"]
 	assertRef(t, &schema, "named", "Named", "#/definitions/SomeStringType")

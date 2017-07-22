@@ -191,6 +191,12 @@ type OverridingOne struct {
 	Age int64
 }
 
+// An OverridingOneIgnore is composed of a SimpleOne and overrides a field to ignore it
+type OverridingOneIgnore struct {
+	SimpleOne
+	Age int32 `json:"-"`
+}
+
 // An AllOfModel is composed out of embedded structs but it should build
 // an allOf property
 type AllOfModel struct {
