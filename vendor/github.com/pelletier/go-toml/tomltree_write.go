@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"math"
 	"reflect"
 	"sort"
 	"strconv"
@@ -14,34 +13,33 @@ import (
 
 // encodes a string to a TOML-compliant string value
 func encodeTomlString(value string) string {
-	var b bytes.Buffer
-
+	result := ""
 	for _, rr := range value {
 		switch rr {
 		case '\b':
-			b.WriteString(`\b`)
+			result += "\\b"
 		case '\t':
-			b.WriteString(`\t`)
+			result += "\\t"
 		case '\n':
-			b.WriteString(`\n`)
+			result += "\\n"
 		case '\f':
-			b.WriteString(`\f`)
+			result += "\\f"
 		case '\r':
-			b.WriteString(`\r`)
+			result += "\\r"
 		case '"':
-			b.WriteString(`\"`)
+			result += "\\\""
 		case '\\':
-			b.WriteString(`\\`)
+			result += "\\\\"
 		default:
 			intRr := uint16(rr)
 			if intRr < 0x001F {
-				b.WriteString(fmt.Sprintf("\\u%0.4X", intRr))
+				result += fmt.Sprintf("\\u%0.4X", intRr)
 			} else {
-				b.WriteRune(rr)
+				result += string(rr)
 			}
 		}
 	}
-	return b.String()
+	return result
 }
 
 func tomlValueStringRepresentation(v interface{}) (string, error) {
@@ -51,11 +49,6 @@ func tomlValueStringRepresentation(v interface{}) (string, error) {
 	case int64:
 		return strconv.FormatInt(value, 10), nil
 	case float64:
-		// Ensure a round float does contain a decimal point. Otherwise feeding
-		// the output back to the parser would convert to an integer.
-		if math.Trunc(value) == value {
-			return strconv.FormatFloat(value, 'f', 1, 32), nil
-		}
 		return strconv.FormatFloat(value, 'f', -1, 32), nil
 	case string:
 		return "\"" + encodeTomlString(value) + "\"", nil
@@ -118,7 +111,8 @@ func (t *Tree) writeTo(w io.Writer, indent, keyspace string, bytesCount int64) (
 			return bytesCount, err
 		}
 
-		writtenBytesCount, err := writeStrings(w, indent, k, " = ", repr, "\n")
+		kvRepr := fmt.Sprintf("%s%s = %s\n", indent, k, repr)
+		writtenBytesCount, err := w.Write([]byte(kvRepr))
 		bytesCount += int64(writtenBytesCount)
 		if err != nil {
 			return bytesCount, err
@@ -136,7 +130,8 @@ func (t *Tree) writeTo(w io.Writer, indent, keyspace string, bytesCount int64) (
 		switch node := v.(type) {
 		// node has to be of those two types given how keys are sorted above
 		case *Tree:
-			writtenBytesCount, err := writeStrings(w, "\n", indent, "[", combinedKey, "]\n")
+			tableName := fmt.Sprintf("\n%s[%s]\n", indent, combinedKey)
+			writtenBytesCount, err := w.Write([]byte(tableName))
 			bytesCount += int64(writtenBytesCount)
 			if err != nil {
 				return bytesCount, err
@@ -147,7 +142,8 @@ func (t *Tree) writeTo(w io.Writer, indent, keyspace string, bytesCount int64) (
 			}
 		case []*Tree:
 			for _, subTree := range node {
-				writtenBytesCount, err := writeStrings(w, "\n", indent, "[[", combinedKey, "]]\n")
+				tableArrayName := fmt.Sprintf("\n%s[[%s]]\n", indent, combinedKey)
+				writtenBytesCount, err := w.Write([]byte(tableArrayName))
 				bytesCount += int64(writtenBytesCount)
 				if err != nil {
 					return bytesCount, err
@@ -162,18 +158,6 @@ func (t *Tree) writeTo(w io.Writer, indent, keyspace string, bytesCount int64) (
 	}
 
 	return bytesCount, nil
-}
-
-func writeStrings(w io.Writer, s ...string) (int, error) {
-	var n int
-	for i := range s {
-		b, err := io.WriteString(w, s[i])
-		n += b
-		if err != nil {
-			return n, err
-		}
-	}
-	return n, nil
 }
 
 // WriteTo encode the Tree as Toml and writes it to the writer w.

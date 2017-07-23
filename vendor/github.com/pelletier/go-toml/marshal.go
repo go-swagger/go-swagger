@@ -268,20 +268,15 @@ func valueFromTree(mtype reflect.Type, tval *Tree) (reflect.Value, error) {
 			mtypef := mtype.Field(i)
 			opts := tomlOptions(mtypef)
 			if opts.include {
-				baseKey := opts.name
-				keysToTry := []string{baseKey, strings.ToLower(baseKey), strings.ToTitle(baseKey)}
-				for _, key := range keysToTry {
-					exists := tval.Has(key)
-					if !exists {
-						continue
-					}
+				key := opts.name
+				exists := tval.Has(key)
+				if exists {
 					val := tval.Get(key)
 					mvalf, err := valueFromToml(mtypef.Type, val)
 					if err != nil {
 						return mval, formatError(err, tval.GetPosition(key))
 					}
 					mval.Field(i).Set(mvalf)
-					break
 				}
 			}
 		}

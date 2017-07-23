@@ -4,7 +4,7 @@ MAINTAINER go-swagger contributors
 ENV GOCOVMODE atomic
 
 RUN apk add -U --no-cache bash tar gzip xz procps git curl ruby ruby-dev alpine-sdk libffi-dev rpm dpkg openssh-client &&\
-    curl -sSL https://get.docker.com/builds/Linux/x86_64/docker-17.04.0-ce.tgz | tar -C /usr/bin --strip-components=1 -xzf -
+    curl -sSL https://get.docker.com/builds/Linux/x86_64/docker-17.05.0-ce.tgz | tar -C /usr/bin --strip-components=1 -xzf -
 
 RUN set -e -x \
   && mkdir -p /usr/share/coverage /usr/share/testresults /usr/share/dist \

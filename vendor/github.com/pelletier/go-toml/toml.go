@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"strings"
@@ -252,8 +251,8 @@ func (t *Tree) createSubTree(keys []string, pos Position) error {
 	return nil
 }
 
-// LoadBytes creates a Tree from a []byte.
-func LoadBytes(b []byte) (tree *Tree, err error) {
+// LoadReader creates a Tree from any io.Reader.
+func LoadReader(reader io.Reader) (tree *Tree, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			if _, ok := r.(runtime.Error); ok {
@@ -262,23 +261,13 @@ func LoadBytes(b []byte) (tree *Tree, err error) {
 			err = errors.New(r.(string))
 		}
 	}()
-	tree = parseToml(lexToml(b))
-	return
-}
-
-// LoadReader creates a Tree from any io.Reader.
-func LoadReader(reader io.Reader) (tree *Tree, err error) {
-	inputBytes, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return
-	}
-	tree, err = LoadBytes(inputBytes)
+	tree = parseToml(lexToml(reader))
 	return
 }
 
 // Load creates a Tree from a string.
 func Load(content string) (tree *Tree, err error) {
-	return LoadBytes([]byte(content))
+	return LoadReader(strings.NewReader(content))
 }
 
 // LoadFile creates a Tree from a file.
