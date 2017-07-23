@@ -41,5 +41,9 @@ func ToInt(str string) (int64, error) {
 
 // ToBoolean convert the input string to a boolean.
 func ToBoolean(str string) (bool, error) {
-	return strconv.ParseBool(str)
+	res, err := strconv.ParseBool(str)
+	if err != nil {
+		res = false
+	}
+	return res, err
 }

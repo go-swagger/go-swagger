@@ -16,11 +16,7 @@ import (
 	"unicode/utf8"
 )
 
-var (
-	fieldsRequiredByDefault bool
-	notNumberRegexp         = regexp.MustCompile("[^0-9]+")
-	whiteSpacesAndMinus     = regexp.MustCompile("[\\s-]+")
-)
+var fieldsRequiredByDefault bool
 
 const maxURLRuneCount = 2083
 const minURLRuneCount = 3
@@ -69,7 +65,7 @@ func IsURL(str string) bool {
 }
 
 // IsRequestURL check if the string rawurl, assuming
-// it was received in an HTTP request, is a valid
+// it was recieved in an HTTP request, is a valid
 // URL confirm to RFC 3986
 func IsRequestURL(rawurl string) bool {
 	url, err := url.ParseRequestURI(rawurl)
@@ -83,7 +79,7 @@ func IsRequestURL(rawurl string) bool {
 }
 
 // IsRequestURI check if the string rawurl, assuming
-// it was received in an HTTP request, is an
+// it was recieved in an HTTP request, is an
 // absolute URI or an absolute path.
 func IsRequestURI(rawurl string) bool {
 	_, err := url.ParseRequestURI(rawurl)
@@ -276,8 +272,9 @@ func IsUUID(str string) bool {
 
 // IsCreditCard check if the string is a credit card.
 func IsCreditCard(str string) bool {
-	sanitized := notNumberRegexp.ReplaceAllString(str, "")
-	if !rxCreditCard.MatchString(sanitized) {
+	r, _ := regexp.Compile("[^0-9]+")
+	sanitized := r.ReplaceAll([]byte(str), []byte(""))
+	if !rxCreditCard.MatchString(string(sanitized)) {
 		return false
 	}
 	var sum int64
@@ -285,7 +282,7 @@ func IsCreditCard(str string) bool {
 	var tmpNum int64
 	var shouldDouble bool
 	for i := len(sanitized) - 1; i >= 0; i-- {
-		digit = sanitized[i:(i + 1)]
+		digit = string(sanitized[i:(i + 1)])
 		tmpNum, _ = ToInt(digit)
 		if shouldDouble {
 			tmpNum *= 2
@@ -319,11 +316,12 @@ func IsISBN13(str string) bool {
 // IsISBN check if the string is an ISBN (version 10 or 13).
 // If version value is not equal to 10 or 13, it will be check both variants.
 func IsISBN(str string, version int) bool {
-	sanitized := whiteSpacesAndMinus.ReplaceAllString(str, "")
+	r, _ := regexp.Compile("[\\s-]+")
+	sanitized := r.ReplaceAll([]byte(str), []byte(""))
 	var checksum int32
 	var i int32
 	if version == 10 {
-		if !rxISBN10.MatchString(sanitized) {
+		if !rxISBN10.MatchString(string(sanitized)) {
 			return false
 		}
 		for i = 0; i < 9; i++ {
@@ -339,7 +337,7 @@ func IsISBN(str string, version int) bool {
 		}
 		return false
 	} else if version == 13 {
-		if !rxISBN13.MatchString(sanitized) {
+		if !rxISBN13.MatchString(string(sanitized)) {
 			return false
 		}
 		factor := []int32{1, 3}
@@ -574,14 +572,6 @@ func ValidateStruct(s interface{}) (bool, error) {
 		if typeField.PkgPath != "" {
 			continue // Private field
 		}
-		structResult := true
-		if valueField.Kind() == reflect.Struct {
-			var err error
-			structResult, err = ValidateStruct(valueField.Interface())
-			if err != nil {
-				errs = append(errs, err)
-			}
-		}
 		resultField, err2 := typeCheck(valueField, typeField, val, nil)
 		if err2 != nil {
 
@@ -593,13 +583,20 @@ func ValidateStruct(s interface{}) (bool, error) {
 					jsonError.Name = jsonTag
 					err2 = jsonError
 				case Errors:
+					for _, e := range jsonError.Errors() {
+						switch tempErr := e.(type) {
+						case Error:
+							tempErr.Name = jsonTag
+							e = tempErr
+						}
+					}
 					err2 = jsonError
 				}
 			}
 
 			errs = append(errs, err2)
 		}
-		result = result && resultField && structResult
+		result = result && resultField
 	}
 	if len(errs) > 0 {
 		err = errs
@@ -631,7 +628,7 @@ func isValidTag(s string) bool {
 	}
 	for _, c := range s {
 		switch {
-		case strings.ContainsRune("\\'\"!#$%&()*+-./:<=>?@[]^_{|}~ ", c):
+		case strings.ContainsRune("!#$%&()*+-./:<=>?@[]^_{|}~ ", c):
 			// Backslash and quote chars are reserved, but
 			// otherwise any punctuation chars are allowed
 			// in a tag name.
@@ -657,18 +654,15 @@ func IsSemver(str string) bool {
 	return rxSemver.MatchString(str)
 }
 
-// IsTime check if string is valid according to given format
 func IsTime(str string, format string) bool {
 	_, err := time.Parse(format, str)
 	return err == nil
 }
 
-// IsRFC3339 check if string is valid timestamp value according to RFC3339
 func IsRFC3339(str string) bool {
 	return IsTime(str, time.RFC3339)
 }
 
-// IsISO4217 check if string is valid ISO currency code
 func IsISO4217(str string) bool {
 	for _, currency := range ISO4217List {
 		if str == currency {
@@ -718,18 +712,6 @@ func StringLength(str string, params ...string) bool {
 	return false
 }
 
-// Range check string's length
-func Range(str string, params ...string) bool {
-	if len(params) == 2 {
-		value, _ := ToFloat(str)
-		min, _ := ToFloat(params[0])
-		max, _ := ToFloat(params[1])
-		return InRange(value, min, max)
-	}
-
-	return false
-}
-
 func isInRaw(str string, params ...string) bool {
 	if len(params) == 1 {
 		rawParams := params[0]
@@ -742,7 +724,7 @@ func isInRaw(str string, params ...string) bool {
 	return false
 }
 
-// IsIn check if string str is a member of the set of strings params
+// check if string str is a member of the set of strings params
 func IsIn(str string, params ...string) bool {
 	for _, param := range params {
 		if str == param {
@@ -841,11 +823,11 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 		for validatorSpec, customErrorMessage := range options {
 			var negate bool
 			validator := validatorSpec
-			customMsgExists := len(customErrorMessage) > 0
+			customMsgExists := (len(customErrorMessage) > 0)
 
 			// Check whether the tag looks like '!something' or 'something'
 			if validator[0] == '!' {
-				validator = validator[1:]
+				validator = string(validator[1:])
 				negate = true
 			}
 
@@ -867,13 +849,22 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 				case reflect.String:
 					field := fmt.Sprint(v) // make value into string, then validate with regex
 					if result := validatefunc(field, ps[1:]...); (!result && !negate) || (result && negate) {
-						if customMsgExists {
-							return false, Error{t.Name, fmt.Errorf(customErrorMessage), customMsgExists}
+						var err error
+						if !negate {
+							if customMsgExists {
+								err = fmt.Errorf(customErrorMessage)
+							} else {
+								err = fmt.Errorf("%s does not validate as %s", field, validator)
+							}
+
+						} else {
+							if customMsgExists {
+								err = fmt.Errorf(customErrorMessage)
+							} else {
+								err = fmt.Errorf("%s does validate as %s", field, validator)
+							}
 						}
-						if negate {
-							return false, Error{t.Name, fmt.Errorf("%s does validate as %s", field, validator), customMsgExists}
-						}
-						return false, Error{t.Name, fmt.Errorf("%s does not validate as %s", field, validator), customMsgExists}
+						return false, Error{t.Name, err, customMsgExists}
 					}
 				default:
 					// type not yet supported, fail
@@ -888,13 +879,22 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 				case reflect.String:
 					field := fmt.Sprint(v) // make value into string, then validate with regex
 					if result := validatefunc(field); !result && !negate || result && negate {
-						if customMsgExists {
-							return false, Error{t.Name, fmt.Errorf(customErrorMessage), customMsgExists}
+						var err error
+
+						if !negate {
+							if customMsgExists {
+								err = fmt.Errorf(customErrorMessage)
+							} else {
+								err = fmt.Errorf("%s does not validate as %s", field, validator)
+							}
+						} else {
+							if customMsgExists {
+								err = fmt.Errorf(customErrorMessage)
+							} else {
+								err = fmt.Errorf("%s does validate as %s", field, validator)
+							}
 						}
-						if negate {
-							return false, Error{t.Name, fmt.Errorf("%s does validate as %s", field, validator), customMsgExists}
-						}
-						return false, Error{t.Name, fmt.Errorf("%s does not validate as %s", field, validator), customMsgExists}
+						return false, Error{t.Name, err, customMsgExists}
 					}
 				default:
 					//Not Yet Supported Types (Fail here!)
@@ -920,7 +920,26 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 			result = result && resultItem
 		}
 		return result, nil
-	case reflect.Slice, reflect.Array:
+	case reflect.Slice:
+		result := true
+		for i := 0; i < v.Len(); i++ {
+			var resultItem bool
+			var err error
+			if v.Index(i).Kind() != reflect.Struct {
+				resultItem, err = typeCheck(v.Index(i), t, o, options)
+				if err != nil {
+					return false, err
+				}
+			} else {
+				resultItem, err = ValidateStruct(v.Index(i).Interface())
+				if err != nil {
+					return false, err
+				}
+			}
+			result = result && resultItem
+		}
+		return result, nil
+	case reflect.Array:
 		result := true
 		for i := 0; i < v.Len(); i++ {
 			var resultItem bool
