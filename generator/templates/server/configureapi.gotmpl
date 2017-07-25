@@ -53,7 +53,7 @@ func configureAPI(api *{{.Package}}.{{ pascalize .Name }}API) http.Handler {
   // Expected interface func(string, ...interface{})
   //
   // Example:
-  // s.api.Logger = log.Printf
+  // api.Logger = log.Printf
 
   {{ range .Consumes }}{{ if .Implementation }}api.{{ pascalize .Name }}Consumer = {{ .Implementation }}
   {{else}}api.{{ pascalize .Name }}Consumer = runtime.ConsumerFunc(func(r io.Reader, target interface{}) error {
