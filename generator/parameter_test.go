@@ -929,6 +929,29 @@ func TestGenParameter_Issue776_LocalFileRef(t *testing.T) {
 
 }
 
+func TestGenParameter_Issue1111(t *testing.T) {
+	assert := assert.New(t)
+
+	gen, err := opBuilder("start-es-cluster-instances", "../fixtures/bugs/1111/arrayParam.json")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("clientParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("post_clusters_elasticsearch_cluster_id_instances_instance_ids_start_parameters.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertInCode(t, `r.SetPathParam("instance_ids", joinedInstanceIds[0])`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
 func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 	assert := assert.New(t)
 
