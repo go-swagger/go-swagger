@@ -46,7 +46,7 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 	// Load the spec
 	var err error
 	var specDoc *loads.Document
-	opts.Spec, specDoc, err = loadSpec(opts.Spec)
+	opts.Spec, specDoc, err = loadSpec(opts.Spec, opts.FlattenSpec)
 	if err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 			return err
 		}
 		// Restore spec to original
-		opts.Spec, specDoc, err = loadSpec(opts.Spec)
+		opts.Spec, specDoc, err = loadSpec(opts.Spec, opts.FlattenSpec)
 		if err != nil {
 			return err
 		}

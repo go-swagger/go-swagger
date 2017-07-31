@@ -70,7 +70,7 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 	// Load the spec
 	var err error
 	var specDoc *loads.Document
-	opts.Spec, specDoc, err = loadSpec(opts.Spec)
+	opts.Spec, specDoc, err = loadSpec(opts.Spec, opts.FlattenSpec)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 			return nil, err
 		}
 		// Restore spec to original
-		opts.Spec, specDoc, err = loadSpec(opts.Spec)
+		opts.Spec, specDoc, err = loadSpec(opts.Spec, opts.FlattenSpec)
 		if err != nil {
 			return nil, err
 		}

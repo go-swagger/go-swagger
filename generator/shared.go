@@ -311,6 +311,7 @@ type GenOpts struct {
 	DumpData          bool
 	WithContext       bool
 	ValidateSpec      bool
+	FlattenSpec       bool
 	defaultsEnsured   bool
 
 	Spec              string
@@ -599,7 +600,7 @@ func (g *GenOpts) renderDefinition(gg *GenDefinition) error {
 
 func validateSpec(path string, doc *loads.Document) (err error) {
 	if doc == nil {
-		if path, doc, err = loadSpec(path); err != nil {
+		if path, doc, err = loadSpec(path, false); err != nil {
 			return err
 		}
 	}
@@ -616,7 +617,7 @@ func validateSpec(path string, doc *loads.Document) (err error) {
 	return errors.New(str)
 }
 
-func loadSpec(specFile string) (string, *loads.Document, error) {
+func loadSpec(specFile string, flatten bool) (string, *loads.Document, error) {
 	// find swagger spec document, verify it exists
 	specPath := specFile
 	var err error
@@ -632,6 +633,16 @@ func loadSpec(specFile string) (string, *loads.Document, error) {
 	if err != nil {
 		return "", nil, err
 	}
+
+	if flatten {
+		if er := analysis.Flatten(analysis.FlattenOpts{
+			BasePath: specDoc.SpecFilePath(),
+			Spec:     analysis.New(specDoc.Spec()),
+		}); er != nil {
+			return "", nil, er
+		}
+	}
+
 	return specPath, specDoc, nil
 }
 

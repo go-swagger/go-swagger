@@ -125,20 +125,12 @@ func MustCreateRef(refURI string) Ref {
 	return Ref{Ref: jsonreference.MustCreateRef(refURI)}
 }
 
-// // NewResolvedRef creates a resolved ref
-// func NewResolvedRef(refURI string, data interface{}) Ref {
-// 	return Ref{
-// 		Ref:      jsonreference.MustCreateRef(refURI),
-// 		Resolved: data,
-// 	}
-// }
-
 // MarshalJSON marshals this ref into a JSON object
 func (r Ref) MarshalJSON() ([]byte, error) {
 	str := r.String()
 	if str == "" {
 		if r.IsRoot() {
-			return []byte(`{"$ref":"#"}`), nil
+			return []byte(`{"$ref":""}`), nil
 		}
 		return []byte("{}"), nil
 	}
