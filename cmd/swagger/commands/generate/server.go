@@ -42,6 +42,7 @@ type Server struct {
 	FlagStrategy      string   `long:"flag-strategy" description:"the strategy to provide flags for the server" default:"go-flags" choice:"go-flags" choice:"pflag"`
 	CompatibilityMode string   `long:"compatibility-mode" description:"the compatibility mode for the tls server" default:"modern" choice:"modern" choice:"intermediate"`
 	SkipValidation    bool     `long:"skip-validation" description:"skips validation of spec prior to generation"`
+	SkipFlatten       bool     `long:"skip-flatten" descirption:"skips flattening the spec prior to generation"`
 }
 
 // Execute runs this command
@@ -78,6 +79,7 @@ func (s *Server) Execute(args []string) error {
 		IncludeMain:       !s.ExcludeMain,
 		IncludeSupport:    !s.SkipSupport,
 		ValidateSpec:      !s.SkipValidation,
+		FlattenSpec:       !s.SkipFlatten,
 		ExcludeSpec:       s.ExcludeSpec,
 		TemplateDir:       string(s.TemplateDir),
 		WithContext:       s.WithContext,

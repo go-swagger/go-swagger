@@ -59,7 +59,7 @@ func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 	}
 
 	// Load the spec
-	specPath, specDoc, err := loadSpec(opts.Spec)
+	specPath, specDoc, err := loadSpec(opts.Spec, opts.FlattenSpec)
 	if err != nil {
 		return err
 	}

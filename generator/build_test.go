@@ -59,5 +59,6 @@ func newTestClient(input, output string) *generate.Client {
 	c.ModelPackage = "models"
 	c.ServerPackage = "restapi"
 	c.ClientPackage = "client"
+	c.SkipFlatten = true
 	return c
 }

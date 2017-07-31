@@ -66,6 +66,7 @@ func (o *Operation) Execute(args []string) error {
 		IncludeParameters: !o.NoStruct,
 		IncludeValidator:  !o.NoValidator,
 		IncludeURLBuilder: !o.NoURLBuilder,
+		FlattenSpec:       true,
 		Tags:              o.Tags,
 	}
 

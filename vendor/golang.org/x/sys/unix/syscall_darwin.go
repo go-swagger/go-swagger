@@ -251,6 +251,7 @@ func Kill(pid int, signum syscall.Signal) (err error) { return kill(pid, int(sig
 //sys	Mlock(b []byte) (err error)
 //sys	Mlockall(flags int) (err error)
 //sys	Mprotect(b []byte, prot int) (err error)
+//sys	Msync(b []byte, flags int) (err error)
 //sys	Munlock(b []byte) (err error)
 //sys	Munlockall() (err error)
 //sys	Open(path string, mode int, perm uint32) (fd int, err error)
@@ -479,7 +480,6 @@ func Kill(pid int, signum syscall.Signal) (err error) { return kill(pid, int(sig
 // Sendmsg_nocancel
 // Recvfrom_nocancel
 // Accept_nocancel
-// Msync_nocancel
 // Fcntl_nocancel
 // Select_nocancel
 // Fsync_nocancel

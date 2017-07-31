@@ -67,7 +67,7 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 	}
 
 	// Load the spec
-	_, specDoc, err := loadSpec(opts.Spec)
+	_, specDoc, err := loadSpec(opts.Spec, opts.FlattenSpec)
 	if err != nil {
 		return err
 	}

@@ -83,7 +83,7 @@
   branch = "master"
   name = "github.com/go-openapi/spec"
   packages = ["."]
-  revision = "9cf697d99bf904e29363382a2e8c23dde5c8d377"
+  revision = "51363c5ae11ba8152bd9f35d17da715fbd1a1136"
 
 [[projects]]
   branch = "master"
@@ -227,25 +227,25 @@
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context","context/ctxhttp","idna"]
-  revision = "ab5485076ff3407ad2d02db054635913f017b0ed"
+  revision = "f5079bd7f6f74e23c4d65efa0f4ce14cbd6a3c0f"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "c4489faa6e5ab84c0ef40d6ee878f7a030281f0f"
+  revision = "0f826bdd13b500be0f1d4004938ad978fcc6031e"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/text"
   packages = ["internal/gen","internal/triegen","internal/ucd","secure/bidirule","transform","unicode/bidi","unicode/cldr","unicode/norm","unicode/rangetable","width"]
-  revision = "836efe42bb4aa16aaa17b9c155d8813d336ed720"
+  revision = "3bd178b88a8180be2df394a1fbb81313916f0e7b"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/tools"
   packages = ["go/ast/astutil","go/buildutil","go/loader","imports"]
-  revision = "3da34b1b520a543128e8441cd2ffffc383111d03"
+  revision = "ac1e4b1998e6a311e006d9629b9283295dee36a3"
 
 [[projects]]
   branch = "v2"
