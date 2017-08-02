@@ -191,7 +191,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     }
     {{ end }}
   {{ end }}} else {
-    {{ if .IsArray }}{{ if .Child }}{{ if (and (not .Schema.IsInterface) (or .Child.IsAliased .Child.IsComplexObject)) }}for _, {{ .IndexVar }}{{ .ReceiverName }} := range {{ .ReceiverName }}.{{ pascalize .Name }} {
+    {{ if .IsArray }}{{ if .Child }}{{ if (and (not .Schema.IsInterface) (or .Child.IsAliased .Child.IsComplexObject)) }}for _, {{ .IndexVar }}{{ .ReceiverName }} := range body {
       if err := {{ .IndexVar }}{{ .ReceiverName }}.Validate(route.Formats); err != nil {
         res = append(res, err)
         break
