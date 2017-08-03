@@ -284,13 +284,12 @@ func (g GenStatusCodeResponses) MarshalJSON() ([]byte, error) {
 	}
 	var buf bytes.Buffer
 	buf.WriteRune('{')
-	s := 0
-	for _, v := range g {
+	for i, v := range g {
 		rb, err := json.Marshal(v)
 		if err != nil {
 			return nil, err
 		}
-		if s > 0 {
+		if i > 0 {
 			buf.WriteRune(',')
 		}
 		buf.WriteString(fmt.Sprintf("%q:", strconv.Itoa(v.Code)))
