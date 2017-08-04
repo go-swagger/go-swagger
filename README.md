@@ -267,3 +267,4 @@ For a V1 I want to have this feature set completed:
   - [x] duration
   - [x] password
   - [x] custom string formats
+  - [x] BSON ObjectId

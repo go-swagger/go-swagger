@@ -59,6 +59,7 @@ var schTypeVals = []struct{ Type, Format, Expected string }{
 	{"string", "hexcolor", "strfmt.HexColor"},
 	{"string", "rgbcolor", "strfmt.RGBColor"},
 	{"string", "duration", "strfmt.Duration"},
+	{"string", "ObjectId", "strfmt.ObjectId"},
 	{"string", "password", "strfmt.Password"},
 	{"file", "", "runtime.File"},
 }
