@@ -40,6 +40,11 @@ if err := {{.ReceiverName}}.validate{{ pascalize .Name }}{{ pascalize .Suffix }}
   return err
 }
 {{end}}
+{{if .IsCustomFormatter}}
+if err := validate.FormatOf({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ printf "%q" .SwaggerFormat }}, {{.ValueExpression}}.String(), formats); err != nil {
+  return err
+}
+{{end}}
 {{end}}
 {{define "slicevalidator"}}
 {{ if .Required }}
