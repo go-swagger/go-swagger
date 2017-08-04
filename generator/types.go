@@ -134,6 +134,7 @@ var typeMapping = map[string]string{
 	"rgbcolor":   "strfmt.RGBColor",
 	"duration":   "strfmt.Duration",
 	"password":   "strfmt.Password",
+	"ObjectId":   "strfmt.ObjectId",
 	"binary":     "io.ReadCloser",
 	"char":       "rune",
 	"int":        "int64",
@@ -785,6 +786,7 @@ var customFormatters = map[string]struct{}{
 	"strfmt.RGBColor":   struct{}{},
 	"strfmt.Base64":     struct{}{},
 	"strfmt.Duration":   struct{}{},
+	"strfmt.ObjectID":   struct{}{},
 	"io.ReadCloser":     struct{}{},
 	"io.Writer":         struct{}{},
 }
