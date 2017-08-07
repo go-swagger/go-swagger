@@ -71,6 +71,7 @@ func (c *Client) Execute(args []string) error {
 		IncludeSupport:    true,
 		TemplateDir:       string(c.TemplateDir),
 		DumpData:          c.DumpData,
+		ExistingModels:    c.ExistingModels,
 	}
 
 	if err := opts.EnsureDefaults(true); err != nil {
