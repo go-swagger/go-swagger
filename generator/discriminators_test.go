@@ -54,7 +54,7 @@ func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
 					assertInCode(t, "type Kennel struct {", res)
 					assertInCode(t, "ID int64 `json:\"id,omitempty\"`", res)
 					assertInCode(t, "Pets []Pet `json:\"pets\"`", res)
-					assertInCode(t, "if err := m.Pets[i].Validate(formats); err != nil {", res)
+					assertInCode(t, "if err := m.petsField[i].Validate(formats); err != nil {", res)
 					assertInCode(t, "m.validatePet", res)
 				} else {
 					fmt.Println(buf.String())
@@ -323,7 +323,7 @@ func TestGenerateModel_Bitbucket_WebhookSubscription(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(b)
 					assertInCode(t, "result.subjectField", res)
-					assertInCode(t, "Subject: m.subjectField", res)
+					assertInCode(t, "Subject: m.Subject()", res)
 				}
 			}
 		}

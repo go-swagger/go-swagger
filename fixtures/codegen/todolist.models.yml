@@ -556,6 +556,21 @@ definitions:
       required:
       - packSize
 
+  PetWithPets:
+    type: object
+    description: A representation of a Pet that keeps many pets
+    allOf:
+    - $ref: '#/definitions/Pet'
+    - properties:
+        pets:
+          type: array
+          items:
+            $ref: '#/definitions/Pet'
+        color:
+          type: string
+      required:
+      - pets
+
   # provided as part of issue 72, it incorrectly detects this as an object with
   # additional properties
   RunParameters:

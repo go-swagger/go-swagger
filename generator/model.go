@@ -381,10 +381,11 @@ func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContex
 	var rewriteValueExpr bool
 	if sg.Discrimination != nil && sg.Discrimination.Discriminators != nil {
 		_, rewriteValueExpr = sg.Discrimination.Discriminators["#/definitions/"+sg.TypeResolver.ModelName]
-		if pg.IndexVar == "i" && rewriteValueExpr {
+		if (pg.IndexVar == "i" && rewriteValueExpr) || sg.GenSchema.ElemType.HasDiscriminator {
 			pg.ValueExpr = sg.Receiver + "." + swag.ToJSONName(sg.GenSchema.Name) + "Field"
 		}
 	}
+	sg.GenSchema.IsBaseType = sg.GenSchema.ElemType.HasDiscriminator
 	pg.IndexVar = indexVar + "i"
 	pg.ValueExpr = pg.ValueExpr + "[" + indexVar + "]"
 	pg.Schema = *schema
@@ -1073,6 +1074,10 @@ func (sg *schemaGenContext) buildArray() error {
 	elProp.GenSchema.IsNullable = tpe.IsNullable && !tpe.HasDiscriminator
 	if elProp.GenSchema.IsNullable {
 		sg.GenSchema.GoType = "[]*" + elProp.GenSchema.GoType
+	}
+	sg.GenSchema.IsExported = !sg.GenSchema.ElemType.HasDiscriminator
+	if !sg.GenSchema.IsExported {
+		sg.GenSchema.ValueExpression += "()"
 	}
 
 	schemaCopy := elProp.GenSchema
