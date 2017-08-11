@@ -49,6 +49,10 @@ func NegotiateContentType(r *http.Request, offers []string, defaultOffer string)
 	bestWild := 3
 	specs := header.ParseAccept(r.Header, "Accept")
 	for _, offer := range normalizeOffers(offers) {
+		// No Accept header: just return the first offer.
+		if len(specs) == 0 {
+			return offer
+		}
 		for _, spec := range specs {
 			switch {
 			case spec.Q == 0.0:

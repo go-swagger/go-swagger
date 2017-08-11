@@ -1,6 +1,6 @@
 language: go
 go:
-- 1.7.1
+- 1.8.x
 install:
 - go get -u github.com/axw/gocov/gocov
 - go get -u gopkg.in/matm/v1/gocov-html

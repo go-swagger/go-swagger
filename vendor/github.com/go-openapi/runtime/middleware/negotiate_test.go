@@ -70,3 +70,12 @@ func TestNegotiateContentType(t *testing.T) {
 		}
 	}
 }
+
+func TestNegotiateContentTypeNoAcceptHeader(t *testing.T) {
+	r := &http.Request{Header: http.Header{}}
+	offers := []string{"application/json", "text/xml"}
+	actual := NegotiateContentType(r, offers, "")
+	if actual != "application/json" {
+		t.Errorf("NegotiateContentType(empty, %#v, empty)=%q, want %q", offers, actual, "application/json")
+	}
+}
