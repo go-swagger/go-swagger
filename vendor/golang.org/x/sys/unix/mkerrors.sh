@@ -45,6 +45,7 @@ includes_Darwin='
 #include <sys/sockio.h>
 #include <sys/sysctl.h>
 #include <sys/mman.h>
+#include <sys/mount.h>
 #include <sys/wait.h>
 #include <net/bpf.h>
 #include <net/if.h>

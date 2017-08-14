@@ -152,11 +152,8 @@ func TestContextNegotiateContentType(t *testing.T) {
 
 	ri, request, _ := ctx.RouteInfo(request)
 
-	res := NegotiateContentType(request, ri.Produces, "")
-	assert.Equal(t, "", res)
-
-	res2 := NegotiateContentType(request, ri.Produces, "text/plain")
-	assert.Equal(t, "text/plain", res2)
+	res := NegotiateContentType(request, ri.Produces, "text/plain")
+	assert.Equal(t, ri.Produces[0], res)
 }
 
 func TestContextBindAndValidate(t *testing.T) {
@@ -215,6 +212,7 @@ func TestContextRender(t *testing.T) {
 	// Panic when route is nil and there is not a producer for the requested response format
 	recorder = httptest.NewRecorder()
 	request, _ = http.NewRequest("GET", "/api/pets", nil)
+	request.Header.Set(runtime.HeaderAccept, "text/xml")
 	assert.Panics(t, func() { ctx.Respond(recorder, request, []string{}, nil, map[string]interface{}{"name": "hello"}) })
 
 	request, _ = http.NewRequest("GET", "/api/pets", nil)

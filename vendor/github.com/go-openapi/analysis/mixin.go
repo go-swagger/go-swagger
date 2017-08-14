@@ -32,6 +32,19 @@ func Mixin(primary *spec.Swagger, mixins ...*spec.Swagger) []string {
 	if primary.Paths == nil {
 		primary.Paths = &spec.Paths{Paths: make(map[string]spec.PathItem)}
 	}
+	if primary.Paths.Paths == nil {
+		primary.Paths.Paths = make(map[string]spec.PathItem)
+	}
+	if primary.Definitions == nil {
+		primary.Definitions = make(spec.Definitions)
+	}
+	if primary.Parameters == nil {
+		primary.Parameters = make(map[string]spec.Parameter)
+	}
+	if primary.Responses == nil {
+		primary.Responses = make(map[string]spec.Response)
+	}
+
 	for i, m := range mixins {
 		for k, v := range m.Definitions {
 			// assume name collisions represent IDENTICAL type. careful.
