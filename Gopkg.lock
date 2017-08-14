@@ -77,7 +77,7 @@
   branch = "master"
   name = "github.com/go-openapi/runtime"
   packages = [".","client","flagext","middleware","middleware/denco","middleware/header","middleware/untyped","security"]
-  revision = "73a94727f26953a79ffd70902d0f24977b6297d1"
+  revision = "d6605b7c17ac3b1033ca794886e6142a4141f5b0"
 
 [[projects]]
   branch = "master"
@@ -233,13 +233,13 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "e42485b6e20ae7d2304ec72e535b103ed350cc02"
+  revision = "c84c1ab9fd18cdd4c23dd021c10f5f46dea95e46"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/text"
   packages = ["internal/gen","internal/triegen","internal/ucd","secure/bidirule","transform","unicode/bidi","unicode/cldr","unicode/norm","unicode/rangetable","width"]
-  revision = "b19bf474d317b857955b12035d2c5acb57ce8b01"
+  revision = "e56139fd9c5bc7244c76116c68e500765bb6db6b"
 
 [[projects]]
   branch = "master"

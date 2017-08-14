@@ -41,6 +41,7 @@ func TestContentTypeValidation(t *testing.T) {
 	recorder = httptest.NewRecorder()
 	request, _ = http.NewRequest("POST", "/api/pets", nil)
 	request.Header.Add("content-type", "application(")
+	request.Header.Add("Accept", "application/json")
 	request.ContentLength = 1
 
 	mw.ServeHTTP(recorder, request)
