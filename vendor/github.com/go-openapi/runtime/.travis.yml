@@ -1,5 +1,7 @@
 language: go
+dist: trusty
 go:
+- 1.7.x
 - 1.8.x
 install:
 - go get -u github.com/axw/gocov/gocov
