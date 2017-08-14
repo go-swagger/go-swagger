@@ -3,10 +3,11 @@ package analysis
 import "testing"
 
 const (
-	widgetFile  = "fixtures/widget-crud.yml"
-	fooFile     = "fixtures/foo-crud.yml"
-	barFile     = "fixtures/bar-crud.yml"
-	noPathsFile = "fixtures/no-paths.yml"
+	widgetFile     = "fixtures/widget-crud.yml"
+	fooFile        = "fixtures/foo-crud.yml"
+	barFile        = "fixtures/bar-crud.yml"
+	noPathsFile    = "fixtures/no-paths.yml"
+	emptyPathsFile = "fixtures/empty-paths.json"
 )
 
 func TestMixin(t *testing.T) {
@@ -47,6 +48,17 @@ func TestMixin(t *testing.T) {
 
 	if len(primary.Responses) != 2 {
 		t.Errorf("TestMixin: Expected 2 top level responses in merged, got %v\n", len(primary.Responses))
+	}
+
+	// test that adding paths to a primary with no paths works (was NPE)
+	emptyPaths, err := loadSpec(emptyPathsFile)
+	if err != nil {
+		t.Fatalf("Could not load '%v': %v\n", emptyPathsFile, err)
+	}
+
+	collisions = Mixin(emptyPaths, primary)
+	if len(collisions) != 0 {
+		t.Errorf("TestMixin: Expected 0 collisions, got %v\n%v", len(collisions), collisions)
 	}
 
 }
