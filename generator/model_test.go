@@ -255,10 +255,10 @@ func TestGenerateModel_Primitives(t *testing.T) {
 		val.Name = "theType"
 		exp := v.Expected
 		if val.IsInterface || val.IsStream {
-			tt.assertRender(val, "type TheType "+exp+"\n\n")
+			tt.assertRender(val, "\n  \n  \n    type TheType "+exp+"\n  \n")
 			continue
 		}
-		tt.assertRender(val, "type TheType "+exp+"\n// Validate validates this the type\nfunc (o theType) Validate(formats strfmt.Registry) error {\n  return nil\n}\n")
+		tt.assertRender(val, "\n  \n  \n    type TheType "+exp+"\n  // Validate validates this the type\nfunc (o theType) Validate(formats strfmt.Registry) error {\n  return nil\n}\n")
 	}
 }
 
@@ -1760,7 +1760,7 @@ func TestGenModel_Issue423(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ct)
 					assertInCode(t, "site, err := UnmarshalSite(bytes.NewBuffer(raw), runtime.JSONConsumer())", res)
-					assertInCode(t, "result.Site = site", res)
+					assertInCode(t, "result.siteField = site", res)
 				}
 			}
 		}

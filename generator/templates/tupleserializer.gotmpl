@@ -53,44 +53,6 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
   return json.Marshal(data)
 }
 {{ end }}
-{{ define "discriminatedSerializer" }}
-// UnmarshalJSON unmarshals this polymorphic type from a JSON structure
-func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error {
-  var data {{ template "subTypeBody" . }}
-
-  buf := bytes.NewBuffer(raw)
-  dec := json.NewDecoder(buf)
-  dec.UseNumber()
-
-  if err := dec.Decode(&data); err != nil {
-    return err
-  }
-
-  {{ range .AllOf }}
-    {{ range .Properties }}
-      {{ if ne $.DiscriminatorField .Name }}
-        {{.ReceiverName}}.{{ if .IsBaseType}}{{ camelize .Name }}Field{{ else }}{{ pascalize .Name }}{{ end }} = data.{{ pascalize .Name }}
-      {{ end }}
-    {{ end }}
-  {{ end }}
-  {{ range .Properties }}
-    {{ if ne $.DiscriminatorField .Name }}
-      data.{{ pascalize .Name }} = {{ .ReceiverName }}.{{ if .IsBaseType}}{{ camelize .Name }}Field{{ else }}{{ pascalize .Name }}{{ end }}
-    {{ end }}
-  {{ end }}
-  return nil
-}
-
-// MarshalJSON marshals this polymorphic type to a JSON structure
-func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
-  var data {{ template "subTypeBody" . }}
-
-  {{ range .AllOf }}{{ range .Properties }}{{ if ne $.DiscriminatorField .Name }}data.{{ pascalize .Name }} = {{ .ReceiverName }}.{{ if .IsBaseType}}{{ camelize .Name }}Field{{ else }}{{ pascalize .Name }}{{ end }}
-  {{ end }}{{ end }}{{ end }}{{ range .Properties }}{{ if ne $.DiscriminatorField .Name }}data.{{ pascalize .Name }} = {{ .ReceiverName }}.{{ if .IsBaseType}}{{ camelize .Name }}Field{{ else }}{{ pascalize .Name }}{{ end }}
-  {{ end }}{{ end }}data.{{ pascalize .DiscriminatorField }} = {{ printf "%q" .DiscriminatorValue }}
-  return json.Marshal(data)
-}
-{{ end }}
 {{ define "hasDiscriminatedSerializer" }}
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error {
@@ -103,7 +65,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
   	return err
   }
 
-  {{ if .HasBaseType }}
+  {{ if or .IsBaseType .IsSubType }}
     var base {{ template "JustBaseTypeBody" . }}
     buf = bytes.NewBuffer(raw)
     dec = json.NewDecoder(buf)
@@ -117,9 +79,8 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
   {{ range .AllOf }}
     {{ if not .IsBaseType }}
       {{ range .Properties }}
-        /* {{ .Name }} {{ .IsBaseType }} {{ .IsExported }} exporting*/
-        {{ if not .IsExported }}
-          allOf{{ pascalize .Name }}, err := Unmarshal{{if .IsArray}}{{ pascalize .Items.GoType }}Slice{{else}}{{ pascalize .Name }}{{end}}(bytes.NewBuffer(data.{{ pascalize .Name }}), runtime.JSONConsumer())
+        {{ if or .IsBaseType (not .IsExported) }}
+          allOf{{ pascalize .Name }}, err := Unmarshal{{if .IsArray}}{{ pascalize .Items.GoType }}Slice{{else}}{{ pascalize .GoType }}{{end}}(bytes.NewBuffer(data.{{ pascalize .Name }}), runtime.JSONConsumer())
           if err != nil && err != io.EOF {
             return err
           }
@@ -161,22 +122,33 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
   var result {{ pascalize .Name }}
 
   {{ range $_, $parent := .AllOf }}
-    {{ range $idx, $val := $parent.Properties }}
-      {{ if ne $parent.DiscriminatorField $val.Name }}
-        {{ if $val.IsBaseType }}
-          result.{{ camelize $val.Name }}Field =
+    {{ if $parent.IsBaseType }}
+      {{ range $idx, $val := $parent.Properties }}
+        {{ if ne $parent.DiscriminatorField $val.Name }}
           {{ if $val.IsExported }}
-            base.{{ pascalize $val.Name }}
+            result.{{ camelize $val.Name }}Field = base.{{ pascalize $val.Name }}
           {{ else }}
-            allOf{{ pascalize $val.Name }}
+            result.{{ camelize $val.Name }}Field = allOf{{ pascalize $val.Name }}
           {{ end }}
         {{ else }}
+          if base.{{ pascalize $val.Name }} != result.{{ pascalize $val.Name }}() {
+            /* Not the type we're looking for. */
+            return errors.New(422, "invalid {{$val.Name}} value: %q", base.{{ pascalize $val.Name }})
+          }
+        {{ end }}
+      {{ end }}
+    {{ else }}
+      {{ range $idx, $val := $parent.Properties }}
+        {{ if $val.IsBaseType }}
+          result.{{ camelize $val.Name }}Field = allOf{{ pascalize $val.Name }}
+        {{ else }}
           result.{{ pascalize $val.Name }} = data.{{ pascalize $val.Name }}
-        {{end}}
+        {{ end }}
       {{ end }}
     {{ end }}
-  {{ end}}
-  {{ range .Properties }}result.{{ pascalize .Name }} = {{ if .IsBaseType }}{{ camelize .Name }}{{ else }}data.{{ pascalize .Name}}{{ end }}
+  {{ end }}
+  {{ range .Properties }}
+    result.{{ if .IsBaseType }}{{ camelize .Name }}Field{{ else }}{{ pascalize .Name }}{{ end }} = {{ if .IsBaseType }}{{ camelize .Name }}{{ else }}data.{{ pascalize .Name}}{{ end }}
   {{ end }}*{{ .ReceiverName }} = result
   return nil
 }
@@ -216,9 +188,9 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
           {{ end}}
         {{end}}
       {{ end }}
-      {{ if .HasAdditionalProperties }}
-        {{ if and .IsExported }}{{ pascalize .AdditionalProperties.Name }}{{ else }}{{ pascalize .AdditionalProperties.Name }}Field{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
-      {{ end }}
+    {{ if .HasAdditionalProperties }}
+      {{ if and .IsExported }}{{ pascalize .AdditionalProperties.Name }}{{ else }}{{ pascalize .AdditionalProperties.Name }}Field{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
+    {{ end }}
     {{ if .AdditionalItems }}
       {{ if and .IsExported (not .IsSubType) }}
         {{ pascalize .AdditionalItems.Name }}
@@ -250,9 +222,9 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
   {{ range .AllOf }}
     {{ if .Properties }}var data struct {
     {{range .Properties}}{{ if not .IsBaseType }}
-    {{ if not $.IsExported }}{{template "privstructfield" . }}{{ else }}{{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if not .Required }},omitempty{{ end }}"`/*three*/{{ end}}
+    {{ if not $.IsExported }}{{template "privstructfield" . }}{{ else }}{{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if not .Required }},omitempty{{ end }}"`{{ end}}
     {{else}}
-    {{ if not $.IsExported }}{{template "privstructfield" . }}{{ else }}{{ pascalize .Name}} json.RawMessage `json:"{{ .Name }}{{ if not .Required }},omitempty{{ end }}"`/*four  */{{ end}}
+    {{ if not $.IsExported }}{{template "privstructfield" . }}{{ else }}{{ pascalize .Name}} json.RawMessage `json:"{{ .Name }}{{ if not .Required }},omitempty{{ end }}"`{{ end}}
     {{end}}{{ end }}
     {{ if .HasAdditionalProperties }}{{ if and .IsExported }}{{ pascalize .AdditionalProperties.Name }}{{ else }}{{ pascalize .AdditionalProperties.Name }}Field{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
     {{ end }}
@@ -283,12 +255,13 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
 {{ define "schemaSerializer" }}
   {{- if .IsSubType }}
     {{ if not .HasBaseType }}
-      {{ template "discriminatedSerializer" . }}{{ end}}
-    {{ else if .IsTuple }}
-      {{ template "tupleSerializer" . }}
-    {{ else if .IsAdditionalProperties }}
-      {{ template "additionalPropertiesSerializer" . }}
-    {{ end -}}
+      {{ template "hasDiscriminatedSerializer" . }}
+    {{ end}}
+  {{ else if .IsTuple }}
+    {{ template "tupleSerializer" . }}
+  {{ else if .IsAdditionalProperties }}
+    {{ template "additionalPropertiesSerializer" . }}
+  {{ end -}}
   {{ if .HasBaseType -}}
     {{ template "hasDiscriminatedSerializer" . }}
   {{- else if and (gt (len .AllOf) 0) (not .IsSubType ) -}}
