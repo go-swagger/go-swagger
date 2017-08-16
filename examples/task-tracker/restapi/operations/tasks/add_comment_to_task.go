@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	middleware "github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
+	swag "github.com/go-openapi/swag"
 )
 
 // AddCommentToTaskHandlerFunc turns a function with the right signature into a add comment to task handler

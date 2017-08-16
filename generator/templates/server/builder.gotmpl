@@ -17,8 +17,8 @@ import (
   errors "github.com/go-openapi/errors"
   strfmt "github.com/go-openapi/strfmt"
   runtime "github.com/go-openapi/runtime"
-  middleware "github.com/go-openapi/runtime/middleware"{{ if .SecurityDefinitions }}
-  security "github.com/go-openapi/runtime/security"{{ end }}
+  middleware "github.com/go-openapi/runtime/middleware"
+  security "github.com/go-openapi/runtime/security"
 
   {{ range .DefaultImports }}{{ printf "%q" . }}
   {{ end }}

@@ -49,7 +49,7 @@ func (o *CreateUsersWithArrayInputParams) BindRequest(r *http.Request, route *mi
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))
 		} else {
-			for _, io := range o.Body {
+			for _, io := range body {
 				if err := io.Validate(route.Formats); err != nil {
 					res = append(res, err)
 					break
