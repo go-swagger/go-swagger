@@ -514,10 +514,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	receiver := a.Receiver
 
 	defaultImports := []string{
-		"github.com/go-openapi/errors",
-		"github.com/go-openapi/runtime",
 		"github.com/go-openapi/runtime/security",
-		"github.com/go-openapi/swag",
 		"github.com/go-openapi/validate",
 	}
 
