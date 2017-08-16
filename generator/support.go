@@ -513,7 +513,13 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	sw := a.SpecDoc.Spec()
 	receiver := a.Receiver
 
-	var defaultImports []string
+	defaultImports := []string{
+		"github.com/go-openapi/errors",
+		"github.com/go-openapi/runtime",
+		"github.com/go-openapi/runtime/security",
+		"github.com/go-openapi/swag",
+		"github.com/go-openapi/validate",
+	}
 
 	jsonb, _ := json.MarshalIndent(sw, "", "  ")
 
