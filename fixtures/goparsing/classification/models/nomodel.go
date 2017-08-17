@@ -163,6 +163,11 @@ type OtherTypes struct {
 	ManyModsTimed     mods.SomeTimedsType     `json:"manyModsTimed"`
 	ManyModsPetted    mods.SomePettedsType    `json:"manyModsPetted"`
 	ManyModsPettedPtr mods.SomePettedsPtrType `json:"manyModsPettedPtr"`
+
+	NamedAlias     SomeStringTypeAlias   `json:"namedAlias"`
+	NumberedAlias  SomeIntTypeAlias      `json:"numberedAlias"`
+	NamedsAlias    []SomeStringTypeAlias `json:"namedsAlias"`
+	NumberedsAlias []SomeIntTypeAlias    `json:"numberedsAlias"`
 }
 
 // A SimpleOne is a model with a few simple fields
@@ -184,6 +189,12 @@ type ComplexerOne struct {
 type OverridingOne struct {
 	SimpleOne
 	Age int64
+}
+
+// An OverridingOneIgnore is composed of a SimpleOne and overrides a field to ignore it
+type OverridingOneIgnore struct {
+	SimpleOne
+	Age int32 `json:"-"`
 }
 
 // An AllOfModel is composed out of embedded structs but it should build

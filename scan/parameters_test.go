@@ -35,7 +35,7 @@ func TestScanFileParam(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	assert.Len(t, noParamOps, 8)
+	assert.Len(t, noParamOps, 9)
 
 	of, ok := noParamOps["myOperation"]
 	assert.True(t, ok)
@@ -73,7 +73,7 @@ func TestParamsParser(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	assert.Len(t, noParamOps, 8)
+	assert.Len(t, noParamOps, 9)
 
 	cr, ok := noParamOps["yetAnotherOperation"]
 	assert.True(t, ok)
@@ -300,6 +300,35 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, 6, index, "%s index incorrect", param.Name)
 		case "items":
 			assert.Equal(t, 7, index, "%s index incorrect", param.Name)
+		default:
+			assert.Fail(t, "unkown property: "+param.Name)
+		}
+	}
+
+	// check that aliases work correctly
+	aliasOp, ok := noParamOps["someAliasOperation"]
+	assert.True(t, ok)
+	assert.Len(t, aliasOp.Parameters, 4)
+	for _, param := range aliasOp.Parameters {
+		switch param.Name {
+		case "intAlias":
+			assert.Equal(t, "query", param.In)
+			assert.Equal(t, "integer", param.Type)
+			assert.Equal(t, "int64", param.Format)
+			assert.True(t, param.Required)
+			assert.EqualValues(t, 10, *param.Maximum)
+			assert.EqualValues(t, 1, *param.Minimum)
+		case "stringAlias":
+			assert.Equal(t, "query", param.In)
+			assert.Equal(t, "string", param.Type)
+		case "intAliasPath":
+			assert.Equal(t, "path", param.In)
+			assert.Equal(t, "integer", param.Type)
+			assert.Equal(t, "int64", param.Format)
+		case "intAliasForm":
+			assert.Equal(t, "formData", param.In)
+			assert.Equal(t, "integer", param.Type)
+			assert.Equal(t, "int64", param.Format)
 		default:
 			assert.Fail(t, "unkown property: "+param.Name)
 		}

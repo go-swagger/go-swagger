@@ -179,7 +179,7 @@ func (option *Option) IsSet() bool {
 	return option.isSet
 }
 
-// IsSet returns true if option has been set via the default option tag
+// IsSetDefault returns true if option has been set via the default option tag
 func (option *Option) IsSetDefault() bool {
 	return option.isSetDefault
 }

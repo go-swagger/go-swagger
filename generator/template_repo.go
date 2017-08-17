@@ -93,6 +93,9 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	},
 	"inspect":   pretty.Sprint,
 	"cleanPath": path.Clean,
+	"mediaTypeName": func(orig string) string {
+		return strings.SplitN(orig, ";", 2)[0]
+	},
 }
 
 func init() {

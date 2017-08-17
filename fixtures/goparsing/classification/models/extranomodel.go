@@ -89,3 +89,11 @@ type SomePettedMap map[string]mods.Pet
 
 // SomeSomethingMap is a type that refines a Something value map
 type SomeSomethingMap map[string]Something
+
+// SomeStringTypeAlias is a type that refines string
+// swagger:alias
+type SomeStringTypeAlias string
+
+// SomeIntTypeAlias is a type that refines int64
+// swagger:alias
+type SomeIntTypeAlias int64

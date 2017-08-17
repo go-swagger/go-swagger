@@ -215,6 +215,14 @@ func TestEmbeddedStarExpr(t *testing.T) {
 	assertProperty(t, &schema, "integer", "notEmbedded", "int64", "NotEmbedded")
 }
 
+func TestOverridingOneIgnore(t *testing.T) {
+	schema := noModelDefs["OverridingOneIgnore"]
+
+	assertProperty(t, &schema, "integer", "id", "int64", "ID")
+	assertProperty(t, &schema, "string", "name", "", "Name")
+	assert.Len(t, schema.Properties, 2)
+}
+
 func TestAliasedTypes(t *testing.T) {
 	schema := noModelDefs["OtherTypes"]
 	assertRef(t, &schema, "named", "Named", "#/definitions/SomeStringType")
@@ -258,6 +266,11 @@ func TestAliasedTypes(t *testing.T) {
 	assertRef(t, &schema, "manyModsTimed", "ManyModsTimed", "#/definitions/modsSomeTimedsType")
 	assertRef(t, &schema, "manyModsPetted", "ManyModsPetted", "#/definitions/modsSomePettedsType")
 	assertRef(t, &schema, "manyModsPettedPtr", "ManyModsPettedPtr", "#/definitions/modsSomePettedsPtrType")
+
+	assertProperty(t, &schema, "string", "namedAlias", "", "NamedAlias")
+	assertProperty(t, &schema, "integer", "numberedAlias", "int64", "NumberedAlias")
+	assertArrayProperty(t, &schema, "string", "namedsAlias", "", "NamedsAlias")
+	assertArrayProperty(t, &schema, "integer", "numberedsAlias", "int64", "NumberedsAlias")
 }
 
 func TestParsePrimitiveSchemaProperty(t *testing.T) {

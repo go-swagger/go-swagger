@@ -201,3 +201,27 @@ type NoParams struct {
 		Notes string `json:"notes"`
 	} `json:"items"`
 }
+
+// NoParamsAlias is a struct that exists in a package
+// but is not annotated with the swagger params annotations
+// so it should now show up in a test
+//
+// swagger:parameters someAliasOperation
+type NoParamsAlias struct {
+	// default "in" is "query" => this params should be aliased
+	// required: true
+	// minimum: 1
+	// maximum: 10
+	IntAlias    SomeIntType    `json:"intAlias"`
+	StringAlias SomeStringType `json:"stringAlias"`
+	// in: path
+	IntAliasPath SomeIntType `json:"intAliasPath"`
+	// in: formData
+	IntAliasForm SomeIntType `json:"intAliasForm"`
+}
+
+// SomeStringType is a type that refines string
+type SomeStringType string
+
+// SomeIntType is a type that refines int64
+type SomeIntType int64
