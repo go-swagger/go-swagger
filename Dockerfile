@@ -1,7 +1,9 @@
 FROM golang:1.8-alpine
 MAINTAINER Ivan Porto Carrero <ivan@flanders.co.nz> (@casualjim)
 
-RUN apk --no-cache add ca-certificates shared-mime-info mailcap git build-base &&\
+ENV GOPATH=/go
+
+RUN apk --no-cache add git &&\
   go get -u github.com/go-openapi/runtime &&\
   go get -u github.com/asaskevich/govalidator &&\
   go get -u golang.org/x/net/context &&\
@@ -9,7 +11,10 @@ RUN apk --no-cache add ca-certificates shared-mime-info mailcap git build-base &
   go get -u github.com/jessevdk/go-flags &&\
   go get -u golang.org/x/net/context/ctxhttp
 
-ADD ./swagger-musl /usr/bin/swagger
+ADD . /go/src/github.com/eatigo/go-swagger
+WORKDIR /go/src/github.com/eatigo/go-swagger
+
+RUN go build -o /usr/bin/swagger ./cmd/swagger
 
 ENTRYPOINT ["/usr/bin/swagger"]
 CMD ["--help"]

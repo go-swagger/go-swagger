@@ -17,7 +17,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	"github.com/go-swagger/go-swagger/examples/todo-list/models"
+	"github.com/eatigo/go-swagger/examples/todo-list/models"
 )
 
 // NewAddOneParams creates a new AddOneParams object

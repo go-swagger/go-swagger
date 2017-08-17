@@ -106,15 +106,16 @@ func (p *patternAnalysis) addSchemaPattern(key, pattern string) {
 // The analyzed document contains a number of indices that make it easier to
 // reason about semantics of a swagger specification for use in code generation
 // or validation etc.
-func New(doc *spec.Swagger) *Spec {
+func New(doc *spec.Swagger, specFilePath string) *Spec {
 	a := &Spec{
-		spec:        doc,
-		consumes:    make(map[string]struct{}, 150),
-		produces:    make(map[string]struct{}, 150),
-		authSchemes: make(map[string]struct{}, 150),
-		operations:  make(map[string]map[string]*spec.Operation, 150),
-		allSchemas:  make(map[string]SchemaRef, 150),
-		allOfs:      make(map[string]SchemaRef, 150),
+		specFilePath: specFilePath,
+		spec:         doc,
+		consumes:     make(map[string]struct{}, 150),
+		produces:     make(map[string]struct{}, 150),
+		authSchemes:  make(map[string]struct{}, 150),
+		operations:   make(map[string]map[string]*spec.Operation, 150),
+		allSchemas:   make(map[string]SchemaRef, 150),
+		allOfs:       make(map[string]SchemaRef, 150),
 		references: referenceAnalysis{
 			schemas:        make(map[string]spec.Ref, 150),
 			pathItems:      make(map[string]spec.Ref, 150),
@@ -140,15 +141,16 @@ func New(doc *spec.Swagger) *Spec {
 // Spec takes a swagger spec object and turns it into a registry
 // with a bunch of utility methods to act on the information in the spec
 type Spec struct {
-	spec        *spec.Swagger
-	consumes    map[string]struct{}
-	produces    map[string]struct{}
-	authSchemes map[string]struct{}
-	operations  map[string]map[string]*spec.Operation
-	references  referenceAnalysis
-	patterns    patternAnalysis
-	allSchemas  map[string]SchemaRef
-	allOfs      map[string]SchemaRef
+	specFilePath string
+	spec         *spec.Swagger
+	consumes     map[string]struct{}
+	produces     map[string]struct{}
+	authSchemes  map[string]struct{}
+	operations   map[string]map[string]*spec.Operation
+	references   referenceAnalysis
+	patterns     patternAnalysis
+	allSchemas   map[string]SchemaRef
+	allOfs       map[string]SchemaRef
 }
 
 func (s *Spec) reset() {
@@ -504,11 +506,11 @@ func (s *Spec) paramsAsMap(parameters []spec.Parameter, res map[string]spec.Para
 	for _, param := range parameters {
 		pr := param
 		if pr.Ref.String() != "" {
-			obj, _, err := pr.Ref.GetPointer().Get(s.spec)
+			p, err := spec.ResolveParameterWithBase(s.spec, &pr.Ref, &spec.ExpandOptions{RelativeBase: s.specFilePath})
 			if err != nil {
 				panic(err)
 			}
-			pr = obj.(spec.Parameter)
+			pr = *p
 		}
 		res[mapKeyFromParam(&pr)] = pr
 	}

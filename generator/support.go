@@ -87,7 +87,7 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 		}
 	}
 
-	analyzed := analysis.New(specDoc.Spec())
+	analyzed := analysis.New(specDoc.Spec(), specDoc.SpecFilePath())
 
 	models, err := gatherModels(specDoc, modelNames)
 	if err != nil {

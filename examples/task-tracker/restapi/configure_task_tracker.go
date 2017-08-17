@@ -11,8 +11,8 @@ import (
 	middleware "github.com/go-openapi/runtime/middleware"
 	graceful "github.com/tylerb/graceful"
 
-	"github.com/go-swagger/go-swagger/examples/task-tracker/restapi/operations"
-	"github.com/go-swagger/go-swagger/examples/task-tracker/restapi/operations/tasks"
+	"github.com/eatigo/go-swagger/examples/task-tracker/restapi/operations"
+	"github.com/eatigo/go-swagger/examples/task-tracker/restapi/operations/tasks"
 )
 
 // This file is safe to edit. Once it exists it will not be overwritten

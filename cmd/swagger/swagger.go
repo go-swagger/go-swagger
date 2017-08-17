@@ -20,7 +20,7 @@ import (
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/loads/fmts"
-	"github.com/go-swagger/go-swagger/cmd/swagger/commands"
+	"github.com/eatigo/go-swagger/cmd/swagger/commands"
 	"github.com/jessevdk/go-flags"
 )
 

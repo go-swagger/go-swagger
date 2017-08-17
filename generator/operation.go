@@ -71,7 +71,7 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 	if err != nil {
 		return err
 	}
-	analyzed := analysis.New(specDoc.Spec())
+	analyzed := analysis.New(specDoc.Spec(), specDoc.SpecFilePath())
 
 	ops := gatherOperations(analyzed, operationNames)
 
@@ -531,7 +531,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 	}
 
 	if resp.Ref.String() != "" {
-		resp2, err := spec.ResolveResponse(b.Doc.Spec(), resp.Ref)
+		resp2, err := spec.ResolveResponseWithBase(b.Doc.Spec(), resp.Ref, &spec.ExpandOptions{RelativeBase: b.Doc.SpecFilePath()})
 		if err != nil {
 			return GenResponse{}, err
 		}
@@ -780,7 +780,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 	}
 
 	if param.Ref.String() != "" {
-		param2, err := spec.ResolveParameter(b.Doc.Spec(), param.Ref)
+		param2, err := spec.ResolveParameterWithBase(b.Doc.Spec(), &param.Ref, &spec.ExpandOptions{RelativeBase: b.Doc.SpecFilePath()})
 		if err != nil {
 			return GenParameter{}, err
 		}

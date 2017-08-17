@@ -31,7 +31,7 @@ func (c *FlattenSpec) Execute(args []string) error {
 
 	if er := analysis.Flatten(analysis.FlattenOpts{
 		BasePath: specDoc.SpecFilePath(),
-		Spec:     analysis.New(specDoc.Spec()),
+		Spec:     analysis.New(specDoc.Spec(), specDoc.SpecFilePath()),
 	}); er != nil {
 		log.Fatalln(er)
 	}

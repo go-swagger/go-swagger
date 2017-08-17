@@ -9,8 +9,8 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 
-	"github.com/go-swagger/go-swagger/examples/tutorials/custom-server/gen/restapi"
-	"github.com/go-swagger/go-swagger/examples/tutorials/custom-server/gen/restapi/operations"
+	"github.com/eatigo/go-swagger/examples/tutorials/custom-server/gen/restapi"
+	"github.com/eatigo/go-swagger/examples/tutorials/custom-server/gen/restapi/operations"
 )
 
 var portFlag = flag.Int("port", 3000, "Port to run this service on")

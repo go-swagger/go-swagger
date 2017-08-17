@@ -20,7 +20,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/go-swagger/go-swagger/generator"
+	"github.com/eatigo/go-swagger/generator"
 )
 
 // Operation the generate operation files command

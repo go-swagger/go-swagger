@@ -168,7 +168,7 @@ func Analyzed(data json.RawMessage, version string) (*Document, error) {
 	}
 
 	d := &Document{
-		Analyzer: analysis.New(swspec),
+		Analyzer: analysis.New(swspec, ""),
 		schema:   spec.MustLoadSwagger20Schema(),
 		spec:     swspec,
 		raw:      raw,
@@ -198,7 +198,7 @@ func (d *Document) Expanded(options ...*spec.ExpandOptions) (*Document, error) {
 	}
 
 	dd := &Document{
-		Analyzer: analysis.New(swspec),
+		Analyzer: analysis.New(swspec, d.specFilePath),
 		spec:     swspec,
 		schema:   spec.MustLoadSwagger20Schema(),
 		raw:      d.raw,

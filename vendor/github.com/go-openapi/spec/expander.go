@@ -31,7 +31,7 @@ import (
 
 var (
 	// Debug enables logging when SWAGGER_DEBUG env var is not empty
-	Debug = os.Getenv("SWAGGER_DEBUG") != ""
+	Debug = os.Getenv("DEBUG") != ""
 )
 
 // ExpandOptions provides options for expand.
@@ -63,6 +63,47 @@ func initResolutionCache() ResolutionCache {
 		"http://swagger.io/v2/schema.json":       MustLoadSwagger20Schema(),
 		"http://json-schema.org/draft-04/schema": MustLoadJSONSchemaDraft04(),
 	}}
+}
+
+func traverseRefs(rValue reflect.Value, replace func(strVal string) string) {
+	kind := rValue.Kind()
+	switch kind {
+	case reflect.Struct:
+	case reflect.Interface, reflect.Ptr:
+		traverseRefs(rValue.Elem(), replace)
+	case reflect.Map:
+		mapKeys := rValue.MapKeys()
+		for idx := range mapKeys {
+			mk := mapKeys[idx]
+			mv := rValue.MapIndex(mk)
+
+			if mk.Kind() == reflect.String && mk.String() == "$ref" {
+				if mv.Kind() == reflect.Interface {
+					mv = mv.Elem()
+				}
+				if mv.IsValid() {
+					nmv := reflect.ValueOf(replace(mv.String()))
+					rValue.SetMapIndex(mk, nmv)
+				}
+				return
+			}
+
+			traverseRefs(mv, replace)
+		}
+	case reflect.Slice:
+		sLength := rValue.Len()
+		for idx := 0; idx < sLength; idx++ {
+			traverseRefs(rValue.Index(idx), replace)
+		}
+	default:
+		return
+	}
+
+}
+
+func TraverseRefs(node interface{}, replace func(strVal string) string) {
+	rValue := reflect.Indirect(reflect.ValueOf(node))
+	traverseRefs(rValue, replace)
 }
 
 func (s *simpleCache) Get(uri string) (interface{}, bool) {
@@ -101,19 +142,19 @@ func ResolveRef(root interface{}, ref *Ref) (*Schema, error) {
 }
 
 // ResolveParameter resolves a paramter reference against a context root
-func ResolveParameter(root interface{}, ref Ref) (*Parameter, error) {
+func ResolveParameter(root interface{}, ref *Ref) (*Parameter, error) {
 	return ResolveParameterWithBase(root, ref, nil)
 }
 
 // ResolveParameterWithBase resolves a paramter reference against a context root and base path
-func ResolveParameterWithBase(root interface{}, ref Ref, opts *ExpandOptions) (*Parameter, error) {
+func ResolveParameterWithBase(root interface{}, ref *Ref, opts *ExpandOptions) (*Parameter, error) {
 	resolver, err := defaultSchemaLoader(root, nil, opts, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	result := new(Parameter)
-	if err := resolver.Resolve(&ref, result); err != nil {
+	if err := resolver.Resolve(ref, result); err != nil {
 		return nil, err
 	}
 	return result, nil
@@ -170,6 +211,7 @@ type schemaLoader struct {
 	loadingRef  *Ref
 	startingRef *Ref
 	currentRef  *Ref
+	currentFile string
 	root        interface{}
 	options     *ExpandOptions
 	cache       ResolutionCache
@@ -352,7 +394,6 @@ func normalizeFileRef(ref *Ref, relativeBase string) *Ref {
 }
 
 func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}) error {
-
 	tgt := reflect.ValueOf(target)
 	if tgt.Kind() != reflect.Ptr {
 		return fmt.Errorf("resolve ref: target needs to be a pointer")
@@ -429,7 +470,7 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 		((oldRef == nil && ref != nil) ||
 			(oldRef != nil && ref == nil) ||
 			(oldRef.String() != ref.String())) {
-
+		r.currentFile = currentRef.GetURL().Path
 		return r.resolveRef(currentRef, ref, data, target)
 	}
 
@@ -462,6 +503,13 @@ func (r *schemaLoader) resolveRef(currentRef, ref *Ref, node, target interface{}
 	} else {
 		res = data
 	}
+
+	TraverseRefs(res, func(refStr string) string {
+		if strings.HasPrefix(refStr, "#") {
+			return r.currentFile + refStr
+		}
+		return refStr
+	})
 
 	if err := swag.DynamicJSONToStruct(res, target); err != nil {
 		return err

@@ -9,8 +9,7 @@ import (
 	"net/http"
 
 	middleware "github.com/go-openapi/runtime/middleware"
-
-	"github.com/go-swagger/go-swagger/examples/authentication/models"
+	"github.com/eatigo/go-swagger/examples/authentication/models"
 )
 
 // GetIDHandlerFunc turns a function with the right signature into a get Id handler

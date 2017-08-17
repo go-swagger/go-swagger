@@ -19,7 +19,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/go-swagger/go-swagger/generator"
+	"github.com/eatigo/go-swagger/generator"
 )
 
 // Support generates the supporting files
