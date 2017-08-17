@@ -4,6 +4,7 @@ package restapi
 
 import (
 	"crypto/tls"
+	"io"
 	"net/http"
 
 	errors "github.com/go-openapi/errors"
@@ -11,6 +12,7 @@ import (
 	middleware "github.com/go-openapi/runtime/middleware"
 	graceful "github.com/tylerb/graceful"
 
+	"github.com/go-swagger/go-swagger/examples/stream-server/biz"
 	"github.com/go-swagger/go-swagger/examples/stream-server/restapi/operations"
 )
 
@@ -36,13 +38,36 @@ func configureAPI(api *operations.CountdownAPI) http.Handler {
 
 	api.JSONProducer = runtime.JSONProducer()
 
+	myCounter := &biz.MyCounter{}
 	api.ElapseHandler = operations.ElapseHandlerFunc(func(params operations.ElapseParams) middleware.Responder {
-		return middleware.NotImplemented("operation .Elapse has not yet been implemented")
+		if params.Length == 11 {
+			return operations.NewElapseForbidden()
+		}
+		return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {
+			f, _ := rw.(http.Flusher)
+			rw.WriteHeader(200)
+			myCounter.Down(params.Length, &flushWriter{f, rw})
+		})
 	})
 
 	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
+}
+
+// Via https://play.golang.org/p/PpbPyXbtEs
+type flushWriter struct {
+	f http.Flusher
+	w io.Writer
+}
+
+// Via https://play.golang.org/p/PpbPyXbtEs
+func (fw *flushWriter) Write(p []byte) (n int, err error) {
+	n, err = fw.w.Write(p)
+	if fw.f != nil {
+		fw.f.Flush()
+	}
+	return
 }
 
 // The TLS configuration before HTTPS server starts.

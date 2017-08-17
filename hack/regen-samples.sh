@@ -23,8 +23,10 @@ swagger generate client -A TaskTracker -f ./swagger.yml
 swagger generate server -A TaskTracker -f ./swagger.yml
 
 cd "${examples}/stream-server"
+cp restapi/configure_countdown.go .
 rm -rf cmd models restapi
 swagger generate server -A Countdown -f ./swagger.yml
+mv configure_countdown.go restapi/
 
 cd "${examples}/tutorials/todo-list/server-1"
 rm -rf cmd models restapi
