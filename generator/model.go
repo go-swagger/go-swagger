@@ -381,10 +381,11 @@ func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContex
 	var rewriteValueExpr bool
 	if sg.Discrimination != nil && sg.Discrimination.Discriminators != nil {
 		_, rewriteValueExpr = sg.Discrimination.Discriminators["#/definitions/"+sg.TypeResolver.ModelName]
-		if pg.IndexVar == "i" && rewriteValueExpr {
+		if (pg.IndexVar == "i" && rewriteValueExpr) || sg.GenSchema.ElemType.IsBaseType {
 			pg.ValueExpr = sg.Receiver + "." + swag.ToJSONName(sg.GenSchema.Name) + "Field"
 		}
 	}
+	sg.GenSchema.IsBaseType = sg.GenSchema.ElemType.HasDiscriminator
 	pg.IndexVar = indexVar + "i"
 	pg.ValueExpr = pg.ValueExpr + "[" + indexVar + "]"
 	pg.Schema = *schema
@@ -612,7 +613,7 @@ func (sg *schemaGenContext) buildProperties() error {
 	for k, v := range sg.Schema.Properties {
 		if Debug {
 			bbb, _ := json.MarshalIndent(sg.Schema, "", "  ")
-			log.Printf("building property %s[%q] (tup: %t) %s\n", sg.Name, k, sg.IsTuple, bbb)
+			log.Printf("building property %s[%q] (tup: %t) (BaseType: %t) %s\n", sg.Name, k, sg.IsTuple, sg.GenSchema.IsBaseType, bbb)
 		}
 
 		// check if this requires de-anonymizing, if so lift this as a new struct and extra schema
@@ -732,6 +733,9 @@ func (sg *schemaGenContext) buildProperties() error {
 
 		if customTag, found := emprop.Schema.Extensions["x-go-custom-tag"]; found {
 			emprop.GenSchema.CustomTag = customTag.(string)
+		}
+		if emprop.GenSchema.HasDiscriminator {
+			emprop.GenSchema.ValueExpression += "()"
 		}
 		sg.GenSchema.Properties = append(sg.GenSchema.Properties, emprop.GenSchema)
 	}
@@ -1074,6 +1078,8 @@ func (sg *schemaGenContext) buildArray() error {
 	if elProp.GenSchema.IsNullable {
 		sg.GenSchema.GoType = "[]*" + elProp.GenSchema.GoType
 	}
+	sg.GenSchema.IsArray = true
+	sg.GenSchema.IsExported = !sg.GenSchema.ElemType.HasDiscriminator
 
 	schemaCopy := elProp.GenSchema
 	schemaCopy.Required = false
@@ -1376,6 +1382,11 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	}
 	tpe.IsNullable = tpe.IsNullable || nullableOverride
 	sg.GenSchema.resolvedType = tpe
+	sg.GenSchema.IsBaseType = tpe.IsBaseType
+	sg.GenSchema.HasDiscriminator = tpe.HasDiscriminator
+	if tpe.IsArray && tpe.ElemType.IsBaseType {
+		sg.GenSchema.ValueExpression += "()"
+	}
 
 	if Debug {
 		log.Println("gschema nullable", sg.GenSchema.IsNullable)
@@ -1394,7 +1405,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		tpe, err = sg.TypeResolver.ResolveSchema(nil, !sg.Named, sg.Named || sg.IsTuple || sg.Required || sg.GenSchema.Required)
 	} else {
 		if Debug {
-			log.Printf("typed resolve, isAnonymous(%t), n: %t, t: %t, sgr: %t, sr: %t, isRequired(%t)", !sg.Named, sg.Named, sg.IsTuple, sg.Required, sg.GenSchema.Required, sg.Named || sg.IsTuple || sg.Required || sg.GenSchema.Required)
+			log.Printf("typed resolve, isAnonymous(%t), n: %t, t: %t, sgr: %t, sr: %t, isRequired(%t), BaseType(%t)", !sg.Named, sg.Named, sg.IsTuple, sg.Required, sg.GenSchema.Required, sg.Named || sg.IsTuple || sg.Required || sg.GenSchema.Required, sg.GenSchema.IsBaseType)
 			b, _ := json.MarshalIndent(sg.Schema, "", "  ")
 			log.Println(string(b))
 		}
