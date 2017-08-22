@@ -202,7 +202,7 @@ func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 				DefaultScheme: "http",
 				ExtraSchemas:  make(map[string]GenSchema),
 			}
-			genOp, err := bldr.makeOperation()
+			genOp, err := bldr.MakeOperation()
 			if assert.NoError(t, err) {
 				assert.True(t, genOp.Responses[0].Schema.IsBaseType)
 				var buf bytes.Buffer
@@ -238,7 +238,7 @@ func TestGenerateServer_Parameters(t *testing.T) {
 				DefaultScheme: "http",
 				ExtraSchemas:  make(map[string]GenSchema),
 			}
-			genOp, err := bldr.makeOperation()
+			genOp, err := bldr.MakeOperation()
 			if assert.NoError(t, err) {
 				assert.True(t, genOp.Responses[0].Schema.IsBaseType)
 				var buf bytes.Buffer

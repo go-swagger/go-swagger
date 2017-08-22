@@ -13,7 +13,7 @@ func TestURLBuilder_SimplePathParams(t *testing.T) {
 
 	gen, err := opBuilder("simplePathParams", "../fixtures/codegen/todolist.url.simple.yml")
 	if assert.NoError(err) {
-		op, err := gen.makeOperation()
+		op, err := gen.MakeOperation()
 		if assert.NoError(err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -69,7 +69,7 @@ func TestURLBuilder_SimpleQueryParams(t *testing.T) {
 
 	gen, err := opBuilder("simpleQueryParams", "../fixtures/codegen/todolist.url.simple.yml")
 	if assert.NoError(err) {
-		op, err := gen.makeOperation()
+		op, err := gen.MakeOperation()
 		if assert.NoError(err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -139,7 +139,7 @@ func testArrayQueryParams(t testing.TB, filePath, basePath string) {
 
 	gen, err := opBuilder("arrayQueryParams", filePath)
 	if assert.NoError(err) {
-		op, err := gen.makeOperation()
+		op, err := gen.MakeOperation()
 		if assert.NoError(err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
