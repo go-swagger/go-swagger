@@ -465,7 +465,7 @@ func TestGenerateModel_WithMap(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithMap"]
 		opts := opts()
-		genModel, err := makeGenDefinition( "WithMap", "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("WithMap", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.False(t, genModel.HasAdditionalProperties)
 			prop := getDefinitionProperty(genModel, "data")
@@ -489,7 +489,7 @@ func TestGenerateModel_WithMapInterface(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithMapInterface"]
 		opts := opts()
-		genModel, err := makeGenDefinition( "WithMapInterface", "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("WithMapInterface", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.False(t, genModel.HasAdditionalProperties)
 			prop := getDefinitionProperty(genModel, "extraInfo")
@@ -567,7 +567,7 @@ func TestGenerateModel_WithMapRegistry(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithMapRegistry"]
 		opts := opts()
-		genModel, err := makeGenDefinition( "WithMap", "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("WithMap", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.False(t, genModel.HasAdditionalProperties)
 			prop := getDefinitionProperty(genModel, "data")
@@ -696,7 +696,7 @@ func TestGenerateModel_JustRef(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["JustRef"]
 		opts := opts()
-		genModel, err := makeGenDefinition( "JustRef", "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("JustRef", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.NotEmpty(t, genModel.AllOf)
 			assert.True(t, genModel.IsComplexObject)
@@ -719,7 +719,7 @@ func TestGenerateModel_WithRef(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithRef"]
 		opts := opts()
-		genModel, err := makeGenDefinition( "WithRef", "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("WithRef", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.True(t, genModel.IsComplexObject)
 			assert.Equal(t, "WithRef", genModel.Name)
@@ -741,7 +741,7 @@ func TestGenerateModel_WithNullableRef(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithNullableRef"]
 		opts := opts()
-		genModel, err := makeGenDefinition( "WithNullableRef", "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("WithNullableRef", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.True(t, genModel.IsComplexObject)
 			assert.Equal(t, "WithNullableRef", genModel.Name)
@@ -905,7 +905,7 @@ func TestGenerateModel_WithItems(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithItems"]
 		opts := opts()
-		genModel, err := makeGenDefinition( "WithItems", "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("WithItems", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.Nil(t, genModel.Items)
 			assert.True(t, genModel.IsComplexObject)
@@ -1352,7 +1352,7 @@ func TestGenerateModel_WithAllOfAndDiscriminator(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["Cat"]
 		opts := opts()
-		genModel, err := makeGenDefinition( "Cat", "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("Cat", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) && assert.Len(t, genModel.AllOf, 2) {
 			assert.True(t, genModel.IsComplexObject)
 			assert.Equal(t, "Cat", genModel.Name)
@@ -1378,7 +1378,7 @@ func TestGenerateModel_WithAllOfAndDiscriminatorAndArrayOfPolymorphs(t *testing.
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["PetWithPets"]
 		opts := opts()
-		genModel, err := makeGenDefinition( "PetWithPets", "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("PetWithPets", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) && assert.Len(t, genModel.AllOf, 2) {
 			assert.True(t, genModel.IsComplexObject)
 			assert.Equal(t, "PetWithPets", genModel.Name)
@@ -1403,7 +1403,7 @@ func TestGenerateModel_WithAllOf(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["WithAllOf"]
 		opts := opts()
-		genModel, err := makeGenDefinition( "WithAllOf", "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("WithAllOf", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.Len(t, genModel.AllOf, 7)
 			assert.True(t, genModel.AllOf[1].HasAdditionalProperties)
@@ -1459,7 +1459,7 @@ func TestNumericKeys(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["AvatarUrls"]
 		opts := opts()
-		genModel, err := makeGenDefinition( "AvatarUrls", "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("AvatarUrls", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -1480,7 +1480,7 @@ func TestGenModel_Issue196(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["Event"]
 		opts := opts()
-		genModel, err := makeGenDefinition( "Event", "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("Event", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -1727,7 +1727,7 @@ func TestGenModel_Issue454(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["genericResource"]
 		opts := opts()
-		genModel, err := makeGenDefinition( "genericResource", "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("genericResource", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -1751,7 +1751,7 @@ func TestGenModel_Issue423(t *testing.T) {
 		definitions := specDoc.Spec().Definitions
 		schema := definitions["SRN"]
 		opts := opts()
-		genModel, err := makeGenDefinition( "SRN", "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("SRN", "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
