@@ -89,6 +89,7 @@ func (s *Server) Execute(args []string) error {
 		FlagStrategy:      s.FlagStrategy,
 		CompatibilityMode: s.CompatibilityMode,
 		ExistingModels:    s.ExistingModels,
+		Copyright:         string(s.CopyrightFile),
 	}
 
 	if e := opts.EnsureDefaults(false); e != nil {

@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -75,6 +76,14 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 		return nil, err
 	}
 
+	var bytebuffer []byte
+	//Read the Copyright from file path in opts
+	bytebuffer, err = ioutil.ReadFile(opts.Copyright)
+	if err != nil {
+		return nil, err
+	}
+	copyrightstr := string(bytebuffer)
+
 	// Validate if needed
 	if opts.ValidateSpec {
 		if err = validateSpec(opts.Spec, specDoc); err != nil {
@@ -126,6 +135,7 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 		// Package:       filepath.Base(opts.Target),
 		DumpData:        opts.DumpData,
 		Package:         apiPackage,
+		Copyright:       copyrightstr,
 		APIPackage:      apiPackage,
 		ModelsPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
 		ServerPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ServerPackage), "server"),
@@ -144,6 +154,7 @@ type appGenerator struct {
 	SpecDoc         *loads.Document
 	Analyzed        *analysis.Spec
 	Package         string
+	Copyright       string
 	APIPackage      string
 	ModelsPackage   string
 	ServerPackage   string
@@ -538,6 +549,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	log.Println("planning definitions")
 	for mn, m := range a.Models {
 		mod, err := makeGenDefinition(
+			a.Copyright,
 			mn,
 			a.ModelsPackage,
 			m,
@@ -598,7 +610,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 				tns[t] = struct{}{}
 			}
 		}
-		op, err := bldr.MakeOperation()
+		op, err := bldr.MakeOperation(a.Copyright)
 		if err != nil {
 			return GenApp{}, err
 		}
@@ -626,6 +638,9 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	for k, v := range opsGroupedByPackage {
 		sort.Sort(v)
 		opGroup := GenOperationGroup{
+			GenCommon: GenCommon{
+				Copyright: a.Copyright,
+			},
 			Name:           k,
 			Operations:     v,
 			DefaultImports: []string{filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ModelsPackage))},
@@ -665,6 +680,9 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	}
 
 	return GenApp{
+		GenCommon: GenCommon{
+			Copyright: a.Copyright,
+		},
 		APIPackage:          a.ServerPackage,
 		Package:             a.Package,
 		ReceiverName:        receiver,

@@ -72,6 +72,7 @@ func (c *Client) Execute(args []string) error {
 		TemplateDir:       string(c.TemplateDir),
 		DumpData:          c.DumpData,
 		ExistingModels:    c.ExistingModels,
+		Copyright:         string(c.CopyrightFile),
 	}
 
 	if err := opts.EnsureDefaults(true); err != nil {

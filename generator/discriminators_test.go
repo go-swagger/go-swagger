@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"testing"
 
+	"log"
+
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
-	"log"
 )
 
 // func init() {
@@ -43,7 +44,7 @@ func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
 		k := "Kennel"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.True(t, genModel.HasBaseType)
 			buf := bytes.NewBuffer(nil)
@@ -73,7 +74,7 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 		for _, k := range []string{"cat", "Dog"} {
 			schema := definitions[k]
 			opts := opts()
-			genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+			genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
 			if assert.NoError(t, err) {
 				assert.True(t, genModel.IsComplexObject)
 				assert.Equal(t, "petType", genModel.DiscriminatorField)
@@ -118,7 +119,7 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 		k := "Pet"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.True(t, genModel.IsComplexObject)
 			assert.Equal(t, "petType", genModel.DiscriminatorField)
@@ -161,7 +162,7 @@ func TestGenerateModel_UsesDiscriminator(t *testing.T) {
 		k := "WithPet"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) && assert.True(t, genModel.HasBaseType) {
 
 			buf := bytes.NewBuffer(nil)
@@ -201,7 +202,7 @@ func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 				DefaultScheme: "http",
 				ExtraSchemas:  make(map[string]GenSchema),
 			}
-			genOp, err := bldr.MakeOperation()
+			genOp, err := bldr.MakeOperation("Copyright")
 			if assert.NoError(t, err) {
 				assert.True(t, genOp.Responses[0].Schema.IsBaseType)
 				var buf bytes.Buffer
@@ -237,7 +238,7 @@ func TestGenerateServer_Parameters(t *testing.T) {
 				DefaultScheme: "http",
 				ExtraSchemas:  make(map[string]GenSchema),
 			}
-			genOp, err := bldr.MakeOperation()
+			genOp, err := bldr.MakeOperation("Copyright")
 			if assert.NoError(t, err) {
 				assert.True(t, genOp.Responses[0].Schema.IsBaseType)
 				var buf bytes.Buffer
@@ -260,7 +261,7 @@ func TestGenerateModel_Discriminator_Billforward(t *testing.T) {
 		k := "FlatPricingComponent"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) && assert.True(t, genModel.IsSubType) {
 
 			buf := bytes.NewBuffer(nil)
@@ -285,7 +286,7 @@ func TestGenerateModel_Bitbucket_Repository(t *testing.T) {
 		k := "repository"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.True(t, genModel.IsNullable)
 			for _, gm := range genModel.AllOf {
@@ -318,7 +319,7 @@ func TestGenerateModel_Bitbucket_WebhookSubscription(t *testing.T) {
 		k := "webhook_subscription"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -341,7 +342,7 @@ func TestGenerateModel_Issue319(t *testing.T) {
 		k := "Container"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) && assert.Equal(t, "map[string]Base", genModel.Properties[0].GoType) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -363,7 +364,7 @@ func TestGenerateModel_Issue541(t *testing.T) {
 		k := "Lion"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) && assert.NotEmpty(t, genModel.AllOf) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -387,7 +388,7 @@ func TestGenerateModel_Issue436(t *testing.T) {
 		k := "Image"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) && assert.NotEmpty(t, genModel.AllOf) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -414,7 +415,7 @@ func TestGenerateModel_Issue740(t *testing.T) {
 		k := "Bar"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) && assert.NotEmpty(t, genModel.AllOf) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -437,7 +438,7 @@ func TestGenerateModel_Issue743(t *testing.T) {
 		k := "Awol"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) && assert.NotEmpty(t, genModel.AllOf) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)

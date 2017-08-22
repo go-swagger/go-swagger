@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -75,6 +76,14 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 
 	ops := gatherOperations(analyzed, operationNames)
 
+	var bytebuffer []byte
+	//Read the Copyright from file path in opts
+	bytebuffer, err = ioutil.ReadFile(opts.Copyright)
+	if err != nil {
+		return err
+	}
+	copyrightstr := string(bytebuffer)
+
 	for operationName, opRef := range ops {
 		method, path, operation := opRef.Method, opRef.Path, opRef.Op
 		defaultScheme := opts.DefaultScheme
@@ -93,6 +102,7 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 		apiPackage := opts.LanguageOpts.MangleName(swag.ToFileName(opts.APIPackage), "api")
 		serverPackage := opts.LanguageOpts.MangleName(swag.ToFileName(opts.ServerPackage), "server")
 		generator := operationGenerator{
+			Copyright:            copyrightstr,
 			Name:                 operationName,
 			Method:               method,
 			Path:                 path,
@@ -128,6 +138,7 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 }
 
 type operationGenerator struct {
+	Copyright         string
 	Authorized        bool
 	IncludeHandler    bool
 	IncludeParameters bool
@@ -216,7 +227,7 @@ func (o *operationGenerator) Generate() error {
 		tag := intersected[0]
 		bldr.APIPackage = o.GenOpts.LanguageOpts.MangleName(swag.ToFileName(tag), o.APIPackage)
 	}
-	op, err := bldr.MakeOperation()
+	op, err := bldr.MakeOperation(o.Copyright)
 	if err != nil {
 		return err
 	}
@@ -287,7 +298,7 @@ func renameTimeout(seenIds map[string][]string, current string) string {
 	return next
 }
 
-func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
+func (b *codeGenOpBuilder) MakeOperation(copyright string) (GenOperation, error) {
 	if Debug {
 		log.Printf("[%s %s] parsing operation (id: %q)", b.Method, b.Path, b.Operation.ID)
 	}
@@ -452,6 +463,9 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	}
 
 	return GenOperation{
+		GenCommon: GenCommon{
+			Copyright: copyright,
+		},
 		Package:              b.APIPackage,
 		RootPackage:          b.RootAPIPackage,
 		Name:                 b.Name,
