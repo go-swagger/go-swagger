@@ -31,7 +31,7 @@ func TestEnum_StringThing(t *testing.T) {
 		k := "StringThing"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -55,7 +55,7 @@ func TestEnum_ComposedThing(t *testing.T) {
 		k := "ComposedThing"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -80,7 +80,7 @@ func TestEnum_IntThing(t *testing.T) {
 		k := "IntThing"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -104,7 +104,7 @@ func TestEnum_FloatThing(t *testing.T) {
 		k := "FloatThing"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -128,7 +128,7 @@ func TestEnum_SliceThing(t *testing.T) {
 		k := "SliceThing"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -152,7 +152,7 @@ func TestEnum_SliceAndItemsThing(t *testing.T) {
 		k := "SliceAndItemsThing"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -179,7 +179,7 @@ func TestEnum_SliceAndAdditionalItemsThing(t *testing.T) {
 		k := "SliceAndAdditionalItemsThing"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -209,7 +209,7 @@ func TestEnum_MapThing(t *testing.T) {
 		k := "MapThing"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -238,7 +238,7 @@ func TestEnum_ObjectThing(t *testing.T) {
 		k := "ObjectThing"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -289,7 +289,7 @@ func TestEnum_ComputeInstance(t *testing.T) {
 		k := "ComputeInstance"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -315,7 +315,7 @@ func TestEnum_Cluster(t *testing.T) {
 		k := "Cluster"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -346,7 +346,7 @@ func TestEnum_NewPrototype(t *testing.T) {
 		k := "NewPrototype"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -377,7 +377,7 @@ func TestEnum_Issue265(t *testing.T) {
 		k := "SodaBrand"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -399,7 +399,7 @@ func TestEnum_Issue325(t *testing.T) {
 		k := "SodaBrand"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err = templates.MustGet("model").Execute(buf, genModel)
@@ -416,7 +416,7 @@ func TestEnum_Issue325(t *testing.T) {
 
 		k = "Soda"
 		schema = definitions[k]
-		genModel, err = makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		genModel, err = makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
@@ -440,7 +440,7 @@ func TestEnum_Issue352(t *testing.T) {
 		k := "slp_action_enum"
 		schema := definitions[k]
 		opts := opts()
-		genModel, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		genModel, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)

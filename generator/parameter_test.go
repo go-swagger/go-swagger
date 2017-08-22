@@ -463,7 +463,7 @@ func TestGenParameters_Simple(t *testing.T) {
 func TestGenParameter_Issue163(t *testing.T) {
 	b, err := opBuilder("getSearch", "../fixtures/bugs/163/swagger.yml")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -485,7 +485,7 @@ func TestGenParameter_Issue163(t *testing.T) {
 func TestGenParameter_Issue195(t *testing.T) {
 	b, err := opBuilder("getTesting", "../fixtures/bugs/195/swagger.json")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -506,7 +506,7 @@ func TestGenParameter_Issue195(t *testing.T) {
 func TestGenParameter_Issue196(t *testing.T) {
 	b, err := opBuilder("postEvents", "../fixtures/bugs/196/swagger.yml")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -536,7 +536,7 @@ func TestGenParameter_Issue217(t *testing.T) {
 func assertNoValidator(t testing.TB, opName, path string) {
 	b, err := opBuilder(opName, path)
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			var buf bytes.Buffer
 			opts := opts()
@@ -557,7 +557,7 @@ func assertNoValidator(t testing.TB, opName, path string) {
 func TestGenParameter_Issue249(t *testing.T) {
 	b, err := opBuilder("putTesting", "../fixtures/bugs/249/swagger.json")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -578,7 +578,7 @@ func TestGenParameter_Issue249(t *testing.T) {
 func TestGenParameter_Issue248(t *testing.T) {
 	b, err := opBuilder("CreateThing", "../fixtures/bugs/248/swagger.json")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -599,7 +599,7 @@ func TestGenParameter_Issue248(t *testing.T) {
 func TestGenParameter_Issue350(t *testing.T) {
 	b, err := opBuilder("withBoolDefault", "../fixtures/codegen/todolist.allparams.yml")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -620,7 +620,7 @@ func TestGenParameter_Issue350(t *testing.T) {
 func TestGenParameter_Issue351(t *testing.T) {
 	b, err := opBuilder("withArray", "../fixtures/codegen/todolist.allparams.yml")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -643,7 +643,7 @@ func TestGenParameter_Issue511(t *testing.T) {
 
 	gen, err := opBuilder("postModels", "../fixtures/bugs/511/swagger.yml")
 	if assert.NoError(err) {
-		op, err := gen.MakeOperation("Copyright")
+		op, err := gen.makeOperation()
 		if assert.NoError(err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -666,7 +666,7 @@ func TestGenParameter_Issue628_Collection(t *testing.T) {
 
 	gen, err := opBuilder("collection", "../fixtures/bugs/628/swagger.yml")
 	if assert.NoError(err) {
-		op, err := gen.MakeOperation("Copyright")
+		op, err := gen.makeOperation()
 		if assert.NoError(err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -690,7 +690,7 @@ func TestGenParameter_Issue628_Single(t *testing.T) {
 
 	gen, err := opBuilder("single", "../fixtures/bugs/628/swagger.yml")
 	if assert.NoError(err) {
-		op, err := gen.MakeOperation("Copyright")
+		op, err := gen.makeOperation()
 		if assert.NoError(err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -714,7 +714,7 @@ func TestGenParameter_Issue628_Details(t *testing.T) {
 
 	gen, err := opBuilder("details", "../fixtures/bugs/628/swagger.yml")
 	if assert.NoError(err) {
-		op, err := gen.MakeOperation("Copyright")
+		op, err := gen.makeOperation()
 		if assert.NoError(err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -738,7 +738,7 @@ func TestGenParameter_Issue731_Collection(t *testing.T) {
 
 	gen, err := opBuilder("collection", "../fixtures/bugs/628/swagger.yml")
 	if assert.NoError(err) {
-		op, err := gen.MakeOperation("Copyright")
+		op, err := gen.makeOperation()
 		if assert.NoError(err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -763,7 +763,7 @@ func TestGenParameter_Issue731_Single(t *testing.T) {
 
 	gen, err := opBuilder("single", "../fixtures/bugs/628/swagger.yml")
 	if assert.NoError(err) {
-		op, err := gen.MakeOperation("Copyright")
+		op, err := gen.makeOperation()
 		if assert.NoError(err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -787,7 +787,7 @@ func TestGenParameter_Issue731_Details(t *testing.T) {
 
 	gen, err := opBuilder("details", "../fixtures/bugs/628/swagger.yml")
 	if assert.NoError(err) {
-		op, err := gen.MakeOperation("Copyright")
+		op, err := gen.makeOperation()
 		if assert.NoError(err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -810,7 +810,7 @@ func TestGenParameter_Issue809_Client(t *testing.T) {
 
 	gen, err := methodPathOpBuilder("get", "/foo", "../fixtures/bugs/809/swagger.yml")
 	if assert.NoError(err) {
-		op, err := gen.MakeOperation("Copyright")
+		op, err := gen.makeOperation()
 		if assert.NoError(err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -833,7 +833,7 @@ func TestGenParameter_Issue809_Server(t *testing.T) {
 
 	gen, err := methodPathOpBuilder("get", "/foo", "../fixtures/bugs/809/swagger.yml")
 	if assert.NoError(err) {
-		op, err := gen.MakeOperation("Copyright")
+		op, err := gen.makeOperation()
 		if assert.NoError(err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -856,7 +856,7 @@ func TestGenParameter_Issue1010_Server(t *testing.T) {
 
 	gen, err := methodPathOpBuilder("get", "/widgets/", "../fixtures/bugs/1010/swagger.yml")
 	if assert.NoError(err) {
-		op, err := gen.MakeOperation("Copyright")
+		op, err := gen.makeOperation()
 		if assert.NoError(err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -879,7 +879,7 @@ func TestGenParameter_Issue710(t *testing.T) {
 
 	gen, err := opBuilder("createTask", "../fixtures/codegen/todolist.allparams.yml")
 	if assert.NoError(err) {
-		op, err := gen.MakeOperation("Copyright")
+		op, err := gen.makeOperation()
 		if assert.NoError(err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -902,7 +902,7 @@ func TestGenParameter_Issue776_LocalFileRef(t *testing.T) {
 	defer func() { spec.Debug = false }()
 	b, err := opBuilder("GetItem", "../fixtures/bugs/776/param.yaml")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			var buf bytes.Buffer
 			opts := opts()
@@ -934,7 +934,7 @@ func TestGenParameter_Issue1111(t *testing.T) {
 
 	gen, err := opBuilder("start-es-cluster-instances", "../fixtures/bugs/1111/arrayParam.json")
 	if assert.NoError(err) {
-		op, err := gen.MakeOperation("Copyright")
+		op, err := gen.makeOperation()
 		if assert.NoError(err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -957,7 +957,7 @@ func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 
 	gen, err := opBuilder("arrayQueryParams", "../fixtures/codegen/todolist.arrayquery.yml")
 	if assert.NoError(err) {
-		op, err := gen.MakeOperation("Copyright")
+		op, err := gen.makeOperation()
 		if assert.NoError(err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()

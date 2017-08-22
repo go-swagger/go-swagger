@@ -189,7 +189,7 @@ func TestMakeOperationParamItem(t *testing.T) {
 func TestMakeOperation(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
 	if assert.NoError(t, err) {
-		gO, err := b.MakeOperation("Copyright")
+		gO, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			//pretty.Println(gO)
 			assert.Equal(t, "getTasks", gO.Name)
@@ -208,7 +208,7 @@ func TestMakeOperation(t *testing.T) {
 func TestRenderOperation_InstagramSearch(t *testing.T) {
 	b, err := methodPathOpBuilder("get", "/media/search", "../fixtures/codegen/instagram.yml")
 	if assert.NoError(t, err) {
-		gO, err := b.MakeOperation("Copyright")
+		gO, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -317,7 +317,7 @@ func findResponseHeader(op *spec.Operation, code int, name string) *spec.Header 
 func TestDateFormat_Spec1(t *testing.T) {
 	b, err := opBuilder("putTesting", "../fixtures/bugs/193/spec1.json")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -341,7 +341,7 @@ func TestDateFormat_Spec1(t *testing.T) {
 func TestDateFormat_Spec2(t *testing.T) {
 	b, err := opBuilder("putTesting", "../fixtures/bugs/193/spec2.json")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -484,7 +484,7 @@ func TestBuilder_Issue500(t *testing.T) {
 func TestGenClient_IllegalBOM(t *testing.T) {
 	b, err := methodPathOpBuilder("get", "/v3/attachments/{attachmentId}", "../fixtures/bugs/727/swagger.json")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -500,7 +500,7 @@ func TestGenClient_IllegalBOM(t *testing.T) {
 func TestGenClient_CustomFormatPath(t *testing.T) {
 	b, err := methodPathOpBuilder("get", "/mosaic/experimental/series/{SeriesId}/mosaics", "../fixtures/bugs/789/swagger.yml")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
@@ -518,7 +518,7 @@ func TestGenClient_CustomFormatPath(t *testing.T) {
 func TestGenClient_Issue733(t *testing.T) {
 	b, err := opBuilder("get_characters_character_id_mail_mail_id", "../fixtures/bugs/733/swagger.json")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()

@@ -74,7 +74,7 @@ func TestSchemaValidation_RequiredProps(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			assert.Len(t, gm.Properties, 6)
 			for _, p := range gm.Properties {
@@ -104,7 +104,7 @@ func TestSchemaValidation_Strings(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
@@ -132,7 +132,7 @@ func TestSchemaValidation_StringProps(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"name\"", "m.Name", prop) {
@@ -162,7 +162,7 @@ func TestSchemaValidation_NamedNumber(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
@@ -191,7 +191,7 @@ func TestSchemaValidation_NumberProps(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"age\"", "m.Age", prop) {
@@ -221,7 +221,7 @@ func TestSchemaValidation_NamedArray(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
@@ -251,7 +251,7 @@ func TestSchemaValidation_ArrayProps(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"tags\"", "m.Tags", prop) {
@@ -283,7 +283,7 @@ func TestSchemaValidation_NamedNestedArray(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
@@ -320,7 +320,7 @@ func TestSchemaValidation_NestedArrayProps(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"tags\"", "m.Tags", prop) {
@@ -359,7 +359,7 @@ func TestSchemaValidation_NamedNestedObject(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
@@ -409,7 +409,7 @@ func TestSchemaValidation_NestedObjectProps(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"args\"", "m.Args", prop) {
@@ -460,7 +460,7 @@ func TestSchemaValidation_NamedArrayMulti(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
@@ -495,7 +495,7 @@ func TestSchemaValidation_ArrayMultiProps(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"args\"", "m.Args", prop) {
@@ -530,7 +530,7 @@ func TestSchemaValidation_NamedArrayAdditional(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
@@ -567,7 +567,7 @@ func TestSchemaValidation_ArrayAdditionalProps(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"args\"", "m.Args", prop) {
@@ -603,7 +603,7 @@ func TestSchemaValidation_NamedMap(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
@@ -632,7 +632,7 @@ func TestSchemaValidation_MapProps(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"meta\"", "m.Meta", prop) {
@@ -663,7 +663,7 @@ func TestSchemaValidation_NamedMapComplex(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
@@ -695,7 +695,7 @@ func TestSchemaValidation_MapComplexProps(t *testing.T) {
 		k := "MapComplexValidations"
 		schema := specDoc.Spec().Definitions[k]
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"meta\"", "m.Meta", prop) {
@@ -729,7 +729,7 @@ func TestSchemaValidation_NamedNestedMap(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
@@ -760,7 +760,7 @@ func TestSchemaValidation_NestedMapProps(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"meta\"", "m.Meta", prop) {
@@ -883,7 +883,7 @@ func TestSchemaValidation_NamedNestedMapComplex(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				if assert.True(t, gm.GenSchema.AdditionalProperties.HasValidations) {
@@ -924,7 +924,7 @@ func TestSchemaValidation_NestedMapPropsComplex(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"meta\"", "m.Meta", prop) {
@@ -961,7 +961,7 @@ func TestSchemaValidation_NamedAllOf(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			if assertValidation(t, "", "m", gm.GenSchema) {
 				buf := bytes.NewBuffer(nil)
@@ -1003,7 +1003,7 @@ func TestSchemaValidation_AllOfProps(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			prop := gm.Properties[0]
 			if assertValidation(t, "\"meta\"", "m.Meta", prop) {
@@ -1040,7 +1040,7 @@ func TestSchemaValidation_RefedAllOf(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) && assert.Len(t, gm.AllOf, 2) {
 			//prop := gm.AllOf[0]
 			//if assertValidation(t, "\"meta\"", "m.Meta", prop) {
@@ -1069,7 +1069,7 @@ func TestSchemaValidation_SimpleZeroAllowed(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, gm)
@@ -1096,7 +1096,7 @@ func TestSchemaValidation_Pet(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, gm)
@@ -1123,7 +1123,7 @@ func TestSchemaValidation_UpdateOrg(t *testing.T) {
 		schema := specDoc.Spec().Definitions[k]
 
 		opts := opts()
-		gm, err := makeGenDefinition("Copyright", k, "models", schema, specDoc, opts)
+		gm, err := makeGenDefinition( k, "models", schema, specDoc, opts)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, gm)

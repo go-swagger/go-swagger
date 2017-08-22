@@ -26,7 +26,7 @@ import (
 func TestSimpleResponseRender(t *testing.T) {
 	b, err := opBuilder("updateTask", "../fixtures/codegen/todolist.responses.yml")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			var buf bytes.Buffer
 			opts := opts()
@@ -46,7 +46,7 @@ func TestSimpleResponseRender(t *testing.T) {
 func TestDefaultResponseRender(t *testing.T) {
 	b, err := opBuilder("getAllParameters", "../fixtures/codegen/todolist.responses.yml")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			var buf bytes.Buffer
 			opts := opts()
@@ -272,7 +272,7 @@ func (ctx *respHeaderTestContext) Assert(t testing.TB, header spec.Header, hdr G
 func TestGenResponses_Issue540(t *testing.T) {
 	b, err := opBuilder("postPet", "../fixtures/bugs/540/swagger.yml")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			var buf bytes.Buffer
 			opts := opts()
@@ -292,7 +292,7 @@ func TestGenResponses_Issue540(t *testing.T) {
 func TestGenResponses_Issue718_NotRequired(t *testing.T) {
 	b, err := opBuilder("doEmpty", "../fixtures/codegen/todolist.simple.yml")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			var buf bytes.Buffer
 			opts := opts()
@@ -312,7 +312,7 @@ func TestGenResponses_Issue718_NotRequired(t *testing.T) {
 func TestGenResponses_Issue718_Required(t *testing.T) {
 	b, err := opBuilder("doEmpty", "../fixtures/codegen/todolist.simple.yml")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			var buf bytes.Buffer
 			opts := opts()
@@ -335,7 +335,7 @@ func TestGenResponses_Issue776_Spec(t *testing.T) {
 
 	b, err := opBuilder("GetItem", "../fixtures/bugs/776/spec.yaml")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			var buf bytes.Buffer
 			opts := opts()
@@ -367,7 +367,7 @@ func TestGenResponses_Issue776_SwaggerTemplate(t *testing.T) {
 
 	b, err := opBuilder("getHealthy", "../fixtures/bugs/776/swagger-template.yml")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			var buf bytes.Buffer
 			opts := opts()
@@ -388,7 +388,7 @@ func TestIssue846(t *testing.T) {
 	for i := 0; i < 8; i++ {
 		b, err := opBuilder("getFoo", "../fixtures/bugs/846/swagger.yml")
 		if assert.NoError(t, err) {
-			op, err := b.MakeOperation("Copyright")
+			op, err := b.makeOperation()
 			if assert.NoError(t, err) {
 				var buf bytes.Buffer
 				opts := opts()
@@ -417,7 +417,7 @@ func TestIssue846(t *testing.T) {
 func TestIssue881(t *testing.T) {
 	b, err := opBuilder("getFoo", "../fixtures/bugs/881/swagger.yml")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			var buf bytes.Buffer
 			assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
@@ -428,7 +428,7 @@ func TestIssue881(t *testing.T) {
 func TestIssue881Deep(t *testing.T) {
 	b, err := opBuilder("getFoo", "../fixtures/bugs/881/deep.yml")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			var buf bytes.Buffer
 			assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
@@ -439,7 +439,7 @@ func TestIssue881Deep(t *testing.T) {
 func TestGenResponses_XGoName(t *testing.T) {
 	b, err := opBuilder("putTesting", "../fixtures/specs/response_name.json")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			var buf bytes.Buffer
 			opts := opts()
@@ -461,7 +461,7 @@ func TestGenResponses_XGoName(t *testing.T) {
 func TestGenResponses_Issue892(t *testing.T) {
 	b, err := methodPathOpBuilder("get", "/media/search", "../fixtures/bugs/982/swagger.yaml")
 	if assert.NoError(t, err) {
-		op, err := b.MakeOperation("Copyright")
+		op, err := b.makeOperation()
 		if assert.NoError(t, err) {
 			var buf bytes.Buffer
 			opts := opts()

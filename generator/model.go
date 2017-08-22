@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -65,14 +64,6 @@ func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 		return err
 	}
 
-	var bytebuffer []byte
-	//Read the Copyright from file path in opts
-	bytebuffer, err = ioutil.ReadFile(opts.Copyright)
-	if err != nil {
-		return err
-	}
-	copyrightstr := string(bytebuffer)
-
 	if len(modelNames) == 0 {
 		for k := range specDoc.Spec().Definitions {
 			modelNames = append(modelNames, k)
@@ -88,12 +79,11 @@ func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 
 		// generate files
 		generator := definitionGenerator{
-			Copyright: copyrightstr,
-			Name:      modelName,
-			Model:     model,
-			SpecDoc:   specDoc,
-			Target:    filepath.Join(opts.Target, opts.ModelPackage),
-			opts:      opts,
+			Name:    modelName,
+			Model:   model,
+			SpecDoc: specDoc,
+			Target:  filepath.Join(opts.Target, opts.ModelPackage),
+			opts:    opts,
 		}
 
 		if err := generator.Generate(); err != nil {
@@ -105,17 +95,16 @@ func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 }
 
 type definitionGenerator struct {
-	Copyright string
-	Name      string
-	Model     spec.Schema
-	SpecDoc   *loads.Document
-	Target    string
-	opts      *GenOpts
+	Name    string
+	Model   spec.Schema
+	SpecDoc *loads.Document
+	Target  string
+	opts    *GenOpts
 }
 
 func (m *definitionGenerator) Generate() error {
 
-	mod, err := makeGenDefinition(m.Copyright, m.Name, m.Target, m.Model, m.SpecDoc, m.opts)
+	mod, err := makeGenDefinition(m.Name, m.Target, m.Model, m.SpecDoc, m.opts)
 	if err != nil {
 		return err
 	}
@@ -140,11 +129,11 @@ func (m *definitionGenerator) generateModel(g *GenDefinition) error {
 	return m.opts.renderDefinition(g)
 }
 
-func makeGenDefinition(copyright, name, pkg string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts) (*GenDefinition, error) {
-	return makeGenDefinitionHierarchy(copyright, name, pkg, "", schema, specDoc, opts)
+func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts) (*GenDefinition, error) {
+	return makeGenDefinitionHierarchy(name, pkg, "", schema, specDoc, opts)
 }
 
-func makeGenDefinitionHierarchy(copyright, name, pkg, container string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts) (*GenDefinition, error) {
+func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts) (*GenDefinition, error) {
 
 	_, ok := schema.Extensions["x-go-type"]
 	if ok {
@@ -231,7 +220,7 @@ func makeGenDefinitionHierarchy(copyright, name, pkg, container string, schema s
 				}
 				ref = spec.Ref{}
 				if rsch != nil && rsch.Discriminator != "" {
-					gs, err := makeGenDefinitionHierarchy(copyright, strings.TrimPrefix(ss.Ref.String(), "#/definitions/"), pkg, pg.GenSchema.Name, *rsch, specDoc, opts)
+					gs, err := makeGenDefinitionHierarchy(strings.TrimPrefix(ss.Ref.String(), "#/definitions/"), pkg, pg.GenSchema.Name, *rsch, specDoc, opts)
 					if err != nil {
 						return nil, err
 					}
@@ -288,7 +277,7 @@ func makeGenDefinitionHierarchy(copyright, name, pkg, container string, schema s
 
 	return &GenDefinition{
 		GenCommon: GenCommon{
-			Copyright: copyright,
+			Copyright: opts.Copyright,
 		},
 		Package:        opts.LanguageOpts.MangleName(filepath.Base(pkg), "definitions"),
 		GenSchema:      pg.GenSchema,

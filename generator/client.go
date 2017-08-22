@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -66,14 +65,6 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 
 	analyzed := analysis.New(specDoc.Spec())
 
-	var bytebuffer []byte
-	//Read the Copyright from file path in opts
-	bytebuffer, err = ioutil.ReadFile(opts.Copyright)
-	if err != nil {
-		return err
-	}
-	copyrightstr := string(bytebuffer)
-
 	models, err := gatherModels(specDoc, modelNames)
 	if err != nil {
 		return err
@@ -103,7 +94,6 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 		Operations:      operations,
 		Target:          opts.Target,
 		DumpData:        opts.DumpData,
-		Copyright:       copyrightstr,
 		Package:         opts.LanguageOpts.MangleName(swag.ToFileName(opts.ClientPackage), "client"),
 		APIPackage:      opts.LanguageOpts.MangleName(swag.ToFileName(opts.APIPackage), "api"),
 		ModelsPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ModelPackage), "definitions"),

@@ -17,6 +17,7 @@ package generate
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -50,6 +51,20 @@ func (m *Model) Execute(args []string) error {
 	}
 	setDebug(cfg)
 
+	var bytebuffer []byte
+	var copyrightstr string
+	copyrightfile := string(m.CopyrightFile)
+	if copyrightfile != "" {
+		//Read the Copyright from file path in opts
+		bytebuffer, err = ioutil.ReadFile(copyrightfile)
+		if err != nil {
+			return err
+		}
+		copyrightstr = string(bytebuffer)
+	} else {
+		copyrightstr = ""
+	}
+
 	opts := &generator.GenOpts{
 		Spec:             string(m.Spec),
 		Target:           string(m.Target),
@@ -61,6 +76,7 @@ func (m *Model) Execute(args []string) error {
 		TemplateDir:      string(m.TemplateDir),
 		IncludeValidator: !m.NoValidator,
 		IncludeModel:     !m.NoStruct,
+		Copyright:        copyrightstr,
 	}
 
 	if err := opts.EnsureDefaults(false); err != nil {

@@ -16,6 +16,7 @@ package generate
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -60,6 +61,20 @@ func (s *Server) Execute(args []string) error {
 		s.SkipModels = true
 	}
 
+	var bytebuffer []byte
+	var copyrightstr string
+	copyrightfile := string(s.CopyrightFile)
+	if copyrightfile != "" {
+		//Read the Copyright from file path in opts
+		bytebuffer, err = ioutil.ReadFile(copyrightfile)
+		if err != nil {
+			return err
+		}
+		copyrightstr = string(bytebuffer)
+	} else {
+		copyrightstr = ""
+	}
+
 	opts := &generator.GenOpts{
 		Spec:              string(s.Spec),
 		Target:            string(s.Target),
@@ -89,7 +104,7 @@ func (s *Server) Execute(args []string) error {
 		FlagStrategy:      s.FlagStrategy,
 		CompatibilityMode: s.CompatibilityMode,
 		ExistingModels:    s.ExistingModels,
-		Copyright:         string(s.CopyrightFile),
+		Copyright:         copyrightstr,
 	}
 
 	if e := opts.EnsureDefaults(false); e != nil {
