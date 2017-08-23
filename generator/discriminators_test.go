@@ -201,6 +201,7 @@ func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 				Authed:        false,
 				DefaultScheme: "http",
 				ExtraSchemas:  make(map[string]GenSchema),
+				GenOpts:       opts(),
 			}
 			genOp, err := bldr.MakeOperation()
 			if assert.NoError(t, err) {
@@ -237,6 +238,7 @@ func TestGenerateServer_Parameters(t *testing.T) {
 				Authed:        false,
 				DefaultScheme: "http",
 				ExtraSchemas:  make(map[string]GenSchema),
+				GenOpts:       opts(),
 			}
 			genOp, err := bldr.MakeOperation()
 			if assert.NoError(t, err) {
