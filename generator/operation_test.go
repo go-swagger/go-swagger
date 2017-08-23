@@ -257,6 +257,7 @@ func methodPathOpBuilder(method, path, fname string) (codeGenOpBuilder, error) {
 		Analyzed:      analyzed,
 		Authed:        false,
 		ExtraSchemas:  make(map[string]GenSchema),
+		GenOpts:       opts(),
 	}, nil
 }
 
@@ -290,6 +291,7 @@ func opBuilder(name, fname string) (codeGenOpBuilder, error) {
 		Analyzed:      analyzed,
 		Authed:        false,
 		ExtraSchemas:  make(map[string]GenSchema),
+		GenOpts:       opts(),
 	}, nil
 }
 

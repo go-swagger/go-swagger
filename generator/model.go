@@ -276,6 +276,9 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 	}
 
 	return &GenDefinition{
+		GenCommon: GenCommon{
+			Copyright: opts.Copyright,
+		},
 		Package:        opts.LanguageOpts.MangleName(filepath.Base(pkg), "definitions"),
 		GenSchema:      pg.GenSchema,
 		DependsOn:      pg.Dependencies,

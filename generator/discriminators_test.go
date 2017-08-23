@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"testing"
 
+	"log"
+
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
-	"log"
 )
 
 // func init() {
@@ -200,6 +201,7 @@ func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 				Authed:        false,
 				DefaultScheme: "http",
 				ExtraSchemas:  make(map[string]GenSchema),
+				GenOpts:       opts(),
 			}
 			genOp, err := bldr.MakeOperation()
 			if assert.NoError(t, err) {
@@ -236,6 +238,7 @@ func TestGenerateServer_Parameters(t *testing.T) {
 				Authed:        false,
 				DefaultScheme: "http",
 				ExtraSchemas:  make(map[string]GenSchema),
+				GenOpts:       opts(),
 			}
 			genOp, err := bldr.MakeOperation()
 			if assert.NoError(t, err) {

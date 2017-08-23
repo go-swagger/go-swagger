@@ -569,6 +569,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		bldr.Doc = a.SpecDoc
 		bldr.Analyzed = a.Analyzed
 		bldr.BasePath = a.SpecDoc.BasePath()
+		bldr.GenOpts = a.GenOpts
 
 		// TODO: change operation name to something safe
 		bldr.Name = on
@@ -626,6 +627,9 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	for k, v := range opsGroupedByPackage {
 		sort.Sort(v)
 		opGroup := GenOperationGroup{
+			GenCommon: GenCommon{
+				Copyright: a.GenOpts.Copyright,
+			},
 			Name:           k,
 			Operations:     v,
 			DefaultImports: []string{filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ModelsPackage))},
@@ -665,6 +669,9 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	}
 
 	return GenApp{
+		GenCommon: GenCommon{
+			Copyright: a.GenOpts.Copyright,
+		},
 		APIPackage:          a.ServerPackage,
 		Package:             a.Package,
 		ReceiverName:        receiver,

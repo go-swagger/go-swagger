@@ -450,8 +450,10 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 			}
 		}
 	}
-
 	return GenOperation{
+		GenCommon: GenCommon{
+			Copyright: b.GenOpts.Copyright,
+		},
 		Package:              b.APIPackage,
 		RootPackage:          b.RootAPIPackage,
 		Name:                 b.Name,
