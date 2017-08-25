@@ -160,7 +160,11 @@ type appGenerator struct {
 }
 
 func baseImport(tgt string) string {
-	p, err := filepath.Abs(tgt)
+	tgtAbsPath, err := filepath.Abs(tgt)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	tgtAbsPath,err = filepath.EvalSymlinks(tgtAbsPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -172,14 +176,26 @@ func baseImport(tgt string) string {
 
 	var pth string
 	for _, gp := range filepath.SplitList(gopath) {
-		pp := filepath.Join(filepath.Clean(gp), "src")
-		var np, npp string
-		if goruntime.GOOS == "windows" {
-			np = strings.ToLower(p)
-			npp = strings.ToLower(pp)
+		// EvalSymLinks also calls the Clean
+		gopathExtended, err := filepath.EvalSymlinks(gp)
+		if err != nil {
+			log.Fatalln(err)
 		}
-		if strings.HasPrefix(np, npp) {
-			pth, err = filepath.Rel(pp, p)
+		gopathExtended = filepath.Join(gopathExtended, "src")
+
+		// At this stage both target path and GOPATH are
+		// absolutely expanded and symlink free paths.
+		// This will ensure correct path generation below.
+
+		// Windows (local) file systems - NTFS, as well as FAT and variants
+		// are case insensitive.
+		if goruntime.GOOS == "windows" {
+			tgtAbsPath = strings.ToLower(tgtAbsPath)
+			gopathExtended = strings.ToLower(gopathExtended)
+		}
+
+		if strings.HasPrefix(tgtAbsPath, gopathExtended) {
+			pth, err = filepath.Rel(gopathExtended, tgtAbsPath)
 			if err != nil {
 				log.Fatalln(err)
 			}
