@@ -102,14 +102,17 @@ func (c *Client) Execute(args []string) error {
 		return err
 	}
 
-	var basepath,rp string
+	var basepath,rp,targetAbs string
 
 	basepath,err = filepath.Abs(".")
 	if err != nil {
 		return err
 	}
-
-	rp, err = filepath.Rel(basepath, opts.Target)
+	targetAbs,err = filepath.Abs(opts.Target)
+	if err != nil {
+		return err
+	}
+		rp, err = filepath.Rel(basepath, targetAbs)
 	if err != nil {
 		return err
 	}
