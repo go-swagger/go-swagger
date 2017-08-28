@@ -159,12 +159,30 @@ type appGenerator struct {
 	GenOpts         *GenOpts
 }
 
+// 1. Checks if the child path and parent path coincide.
+// 2. If they do return child path  relative to parent path.
+// 3. Everything else return false
+func checkPrefixAndFetchRelativePath(childpath string, parentpath string) (bool, string)  {
+
+	if strings.HasPrefix(childpath, parentpath) {
+		pth, err := filepath.Rel(parentpath, childpath)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		return true, pth
+	} else {
+		return false, ""
+	}
+
+}
+
 func baseImport(tgt string) string {
 	tgtAbsPath, err := filepath.Abs(tgt)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	tgtAbsPath,err = filepath.EvalSymlinks(tgtAbsPath)
+	var tgtAbsPathExtended string
+	tgtAbsPathExtended,err = filepath.EvalSymlinks(tgtAbsPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -182,31 +200,60 @@ func baseImport(tgt string) string {
 			log.Fatalln(err)
 		}
 		gopathExtended = filepath.Join(gopathExtended, "src")
-
-		// At this stage both target path and GOPATH are
-		// absolutely expanded and symlink free paths.
-		// This will ensure correct path generation below.
+		gp = filepath.Join(gp,"src")
 
 		// Windows (local) file systems - NTFS, as well as FAT and variants
 		// are case insensitive.
 		if goruntime.GOOS == "windows" {
 			tgtAbsPath = strings.ToLower(tgtAbsPath)
+			tgtAbsPathExtended = strings.ToLower(tgtAbsPathExtended)
 			gopathExtended = strings.ToLower(gopathExtended)
+			gp = strings.ToLower(gp)
 		}
 
-		if strings.HasPrefix(tgtAbsPath, gopathExtended) {
-			pth, err = filepath.Rel(gopathExtended, tgtAbsPath)
-			if err != nil {
-				log.Fatalln(err)
-			}
+		// At this stage we have expanded and unexpanded target path. GOPATH is fully expanded.
+		// Expanded means symlink free.
+		// We compare both types of targetpath<s> with gopath.
+		// If any one of them coincides with gopath , it is imperative that
+		// target path lies inside gopath. How?
+		// 		- Case 1: Irrespective of symlinks paths coincide. Both non-expanded paths.
+		// 		- Case 2: Symlink in target path points to location inside GOPATH. (Expanded Target Path)
+		//    - Case 3: Symlink in target path points to directory outside GOPATH (Unexpanded target path)
+
+		// Case 1: - Do nothing case. If non-expanded paths match just genrate base import path as if
+		//				   there are no symlinks.
+
+		// Case 2: - Symlink in target path points to location inside GOPATH. (Expanded Target Path)
+		//					 First if will fail. Second if will succeed.
+
+		// Case 3: - Symlink in target path points to directory outside GOPATH (Unexpanded target path)
+		// 					 First if will succeed and break.
+
+
+		//compares non expanded path for both
+		if ok,relativepath := checkPrefixAndFetchRelativePath(tgtAbsPath, gp); ok {
+			pth = relativepath
 			break
 		}
+
+		// Compares non-expanded target path
+		if ok,relativepath := checkPrefixAndFetchRelativePath(tgtAbsPath, gopathExtended); ok {
+			pth = relativepath
+			break
+		}
+
+		// Compares expanded target path.
+		if ok,relativepath := checkPrefixAndFetchRelativePath(tgtAbsPathExtended, gopathExtended); ok {
+			pth = relativepath
+			break
+		}
+
 	}
 
 	if pth == "" {
 		log.Fatalln("target must reside inside a location in the $GOPATH/src")
 	}
-	return pth
+ 	return pth
 }
 
 func (a *appGenerator) Generate() error {
