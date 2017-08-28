@@ -170,9 +170,10 @@ func checkPrefixAndFetchRelativePath(childpath string, parentpath string) (bool,
 			log.Fatalln(err)
 		}
 		return true, pth
-	} else {
-		return false, ""
 	}
+
+	return false, ""
+	
 
 }
 
