@@ -4,7 +4,6 @@ import (
 	"testing"
 	"os"
 	goruntime "runtime"
-	"path/filepath"
 	"strings"
 )
 
