@@ -53,7 +53,7 @@ func TestCheckPrefixFetchRelPath(t *testing.T) {
 		actualok, actualpath := checkPrefixAndFetchRelativePath(item.childpath, item.parentpath)
 
 		if goruntime.GOOS == "windows" {
-			actualpath = filepath.Clean(actualpath)
+			item.path = filepath.Clean(item.path)
 		}
 
 		if actualok != item.ok {
