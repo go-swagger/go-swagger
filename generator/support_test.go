@@ -1,17 +1,17 @@
 package generator
 
 import (
-	"testing"
 	"os"
 	goruntime "runtime"
 	"strings"
+	"testing"
 )
 
 var checkprefixandfetchrelativepathtests = []struct {
 	childpath  string
 	parentpath string
-	ok bool
-	path string
+	ok         bool
+	path       string
 }{
 	// Positive
 	{"/", "/", true, "."},
@@ -23,34 +23,31 @@ var checkprefixandfetchrelativepathtests = []struct {
 	{"/User/Gopher", "/User/SomethingElse", false, ""},
 	{"/var", "/etc", false, ""},
 	{"/mnt/dev3", "/mnt/dev3/dir", false, ""},
-
-
-
 }
 
+var tempdir = os.TempDir()
+
 var checkbaseimporttest = []struct {
-	path  []string
-	gopath string
-	targetpath string
-	symlinksrc string
-	symlinkdest string  // symlink is the last dir in targetpath
+	path         []string
+	gopath       string
+	targetpath   string
+	symlinksrc   string
+	symlinkdest  string // symlink is the last dir in targetpath
 	expectedpath string
 }{
 	// No sym link. Positive Test Case
-	{[]string {"/tmp/root/go/src/github.com/go-swagger",}, "/tmp/root/go/", "/tmp/root/go/src/github.com/go-swagger", "", "", "github.com/go-swagger"},
+	{[]string{tempdir + "/root/go/src/github.com/go-swagger"}, tempdir + "/root/go/", tempdir + "/root/go/src/github.com/go-swagger", "", "", "github.com/go-swagger"},
 	// Symlink points inside GOPATH
-	{[]string {"/tmp/root/go/src/github.com/go-swagger",}, "/tmp/root/go/", "/tmp/root/symlink", "/tmp/root/symlink", "/tmp/root/go/src/", "."},
+	{[]string{tempdir + "/root/go/src/github.com/go-swagger"}, tempdir + "/root/go/", tempdir + "/root/symlink", tempdir + "/root/symlink", tempdir + "/root/go/src/", "."},
 	// Symlink points inside GOPATH
-	{[]string {"/tmp/root/go/src/github.com/go-swagger",}, "/tmp/root/go/", "/tmp/root/symlink", "/tmp/root/symlink", "/tmp/root/go/src/github.com", "github.com"},
+	{[]string{tempdir + "/root/go/src/github.com/go-swagger"}, tempdir + "/root/go/", tempdir + "/root/symlink", tempdir + "/root/symlink", tempdir + "/root/go/src/github.com", "github.com"},
 	// Symlink point outside GOPATH : Targets Case 1: in baseImport implementation.
-	{[]string {"/tmp/root/go/src/github.com/go-swagger","/tmp/root/gopher/go/"}, "/tmp/root/go/", "/tmp/root/go/src/github.com/gopher", "/tmp/root/go/src/github.com/gopher", "/tmp/root/gopher/go", "github.com/gopher"},
-
+	{[]string{tempdir + "/root/go/src/github.com/go-swagger", tempdir + "/root/gopher/go/"}, tempdir + "/root/go/", tempdir + "/root/go/src/github.com/gopher", tempdir + "/root/go/src/github.com/gopher", tempdir + "/root/gopher/go", "github.com/gopher"},
 }
-
 
 func TestCheckPrefixFetchRelPath(t *testing.T) {
 
-	for _,item := range checkprefixandfetchrelativepathtests {
+	for _, item := range checkprefixandfetchrelativepathtests {
 		actualok, actualpath := checkPrefixAndFetchRelativePath(item.childpath, item.parentpath)
 
 		if goruntime.GOOS == "windows" {
@@ -79,12 +76,12 @@ func TestBaseImport(t *testing.T) {
 
 	oldgopath := os.Getenv("GOPATH")
 	defer os.Setenv("GOPATH", oldgopath)
-	defer os.RemoveAll("/tmp/root")
+	defer os.RemoveAll(tempdir + "/root")
 
-	for _,item := range checkbaseimporttest {
+	for _, item := range checkbaseimporttest {
 
 		// Create Paths
-		for _,paths := range item.path {
+		for _, paths := range item.path {
 			os.MkdirAll(paths, 0777)
 		}
 
@@ -105,7 +102,7 @@ func TestBaseImport(t *testing.T) {
 			t.Errorf("baseImport(%s): expected %s, actual %s", item.targetpath, item.expectedpath, actualpath)
 		}
 
-		os.RemoveAll("/tmp/root")
+		os.RemoveAll(tempdir + "/root")
 
 	}
 
