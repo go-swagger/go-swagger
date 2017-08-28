@@ -3,6 +3,8 @@ package generator
 import (
 	"testing"
 	"os"
+	goruntime "runtime"
+	"path/filepath"
 )
 
 var checkprefixandfetchrelativepathtests = []struct {
@@ -49,6 +51,11 @@ func TestCheckPrefixFetchRelPath(t *testing.T) {
 
 	for _,item := range checkprefixandfetchrelativepathtests {
 		actualok, actualpath := checkPrefixAndFetchRelativePath(item.childpath, item.parentpath)
+
+		if goruntime.GOOS == "windows" {
+			actualpath = filepath.Clean(actualpath)
+		}
+
 		if actualok != item.ok {
 			t.Errorf("checkPrefixAndFetchRelativePath(%s, %s): expected %v, actual %v", item.childpath, item.parentpath, item.ok, actualok)
 		} else if actualpath != item.path {
@@ -88,6 +95,11 @@ func TestBaseImport(t *testing.T) {
 
 		// Test
 		actualpath := baseImport(item.targetpath)
+
+		if goruntime.GOOS == "windows" {
+			actualpath = filepath.Clean(actualpath)
+			item.expectedpath = filepath.Clean(item.expectedpath)
+		}
 
 		if actualpath != item.expectedpath {
 			t.Errorf("baseImport(%s): expected %s, actual %s", item.targetpath, item.expectedpath, actualpath)
