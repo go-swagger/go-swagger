@@ -5,6 +5,7 @@ import (
 	"os"
 	goruntime "runtime"
 	"path/filepath"
+	"strings"
 )
 
 var checkprefixandfetchrelativepathtests = []struct {
@@ -47,13 +48,14 @@ var checkbaseimporttest = []struct {
 
 }
 
+
 func TestCheckPrefixFetchRelPath(t *testing.T) {
 
 	for _,item := range checkprefixandfetchrelativepathtests {
 		actualok, actualpath := checkPrefixAndFetchRelativePath(item.childpath, item.parentpath)
 
 		if goruntime.GOOS == "windows" {
-			item.path = filepath.Clean(item.path)
+			item.path = strings.Replace(item.path, "/", "\\", -1)
 		}
 
 		if actualok != item.ok {
@@ -97,8 +99,7 @@ func TestBaseImport(t *testing.T) {
 		actualpath := baseImport(item.targetpath)
 
 		if goruntime.GOOS == "windows" {
-			actualpath = filepath.Clean(actualpath)
-			item.expectedpath = filepath.Clean(item.expectedpath)
+			item.expectedpath = strings.Replace(item.expectedpath, "/", "\\", -1)
 		}
 
 		if actualpath != item.expectedpath {
