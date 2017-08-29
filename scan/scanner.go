@@ -70,6 +70,7 @@ var (
 	rxResponseOverride   = regexp.MustCompile(`swagger:response\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}]+)?$`)
 	rxParametersOverride = regexp.MustCompile(`swagger:parameters\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}\p{Zs}]+)$`)
 	rxEnum               = regexp.MustCompile(`swagger:enum\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}]+)$`)
+	rxIgnoreOverride     = regexp.MustCompile(`swagger:ignore\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}]+)?$`)
 	rxDefault            = regexp.MustCompile(`swagger:default\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}]+)$`)
 	rxRoute              = regexp.MustCompile(
 		"swagger:route\\p{Zs}*" +
@@ -813,6 +814,7 @@ type sectionedParser struct {
 	currentTagger  *tagParser
 	title          []string
 	description    []string
+	ignored        bool
 }
 
 func (st *sectionedParser) collectTitleDescription() {
@@ -846,6 +848,10 @@ COMMENTS:
 	for _, c := range doc.List {
 		for _, line := range strings.Split(c.Text, "\n") {
 			if rxSwaggerAnnotation.MatchString(line) {
+				if rxIgnoreOverride.MatchString(line) {
+					st.ignored = true
+					break COMMENTS // an explicit ignore terminates this parser
+				}
 				if st.annotation == nil || !st.annotation.Matches(line) {
 					break COMMENTS // a new swagger: annotation terminates this parser
 				}
