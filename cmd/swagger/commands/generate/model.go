@@ -91,7 +91,17 @@ func (m *Model) Execute(args []string) error {
 		return err
 	}
 
-	rp, err := filepath.Rel(".", opts.Target)
+	var basepath,rp,targetAbs string
+
+	basepath,err = filepath.Abs(".")
+	if err != nil {
+		return err
+	}
+	targetAbs,err = filepath.Abs(opts.Target)
+	if err != nil {
+		return err
+	}
+	rp, err = filepath.Rel(basepath, targetAbs)
 	if err != nil {
 		return err
 	}
