@@ -19,6 +19,7 @@ type shared struct {
 	Target         flags.Filename `long:"target" short:"t" default:"./" description:"the base directory for generating the files"`
 	TemplateDir    flags.Filename `long:"template-dir" short:"T" description:"alternative template override directory"`
 	ConfigFile     flags.Filename `long:"config-file" short:"C" description:"configuration file to use for overriding template options"`
+	CopyrightFile  flags.Filename `long:"copyright information file" short:"r" description:"copyright file used to add copyright header"`
 	ExistingModels string         `long:"existing-models" description:"use pre-generated models e.g. github.com/foobar/model"`
 }
 

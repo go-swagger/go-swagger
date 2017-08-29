@@ -16,6 +16,7 @@ package generate
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -50,6 +51,20 @@ func (c *Client) Execute(args []string) error {
 		c.SkipModels = true
 	}
 
+	var bytebuffer []byte
+	var copyrightstr string
+	copyrightfile := string(c.CopyrightFile)
+	if copyrightfile != "" {
+		//Read the Copyright from file path in opts
+		bytebuffer, err = ioutil.ReadFile(copyrightfile)
+		if err != nil {
+			return err
+		}
+		copyrightstr = string(bytebuffer)
+	} else {
+		copyrightstr = ""
+	}
+
 	opts := &generator.GenOpts{
 		Spec: string(c.Spec),
 
@@ -71,6 +86,8 @@ func (c *Client) Execute(args []string) error {
 		IncludeSupport:    true,
 		TemplateDir:       string(c.TemplateDir),
 		DumpData:          c.DumpData,
+		ExistingModels:    c.ExistingModels,
+		Copyright:         copyrightstr,
 	}
 
 	if err := opts.EnsureDefaults(true); err != nil {
@@ -85,7 +102,17 @@ func (c *Client) Execute(args []string) error {
 		return err
 	}
 
-	rp, err := filepath.Rel(".", opts.Target)
+	var basepath,rp,targetAbs string
+
+	basepath,err = filepath.Abs(".")
+	if err != nil {
+		return err
+	}
+	targetAbs,err = filepath.Abs(opts.Target)
+	if err != nil {
+		return err
+	}
+		rp, err = filepath.Rel(basepath, targetAbs)
 	if err != nil {
 		return err
 	}

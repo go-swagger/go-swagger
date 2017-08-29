@@ -335,6 +335,7 @@ type GenOpts struct {
 	FlagStrategy      string
 	CompatibilityMode string
 	ExistingModels    string
+	Copyright         string
 }
 
 // TargetPath returns the target path relative to the server package

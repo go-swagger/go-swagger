@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	"log"
+
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/swag"
@@ -54,7 +56,7 @@ func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
 					assertInCode(t, "type Kennel struct {", res)
 					assertInCode(t, "ID int64 `json:\"id,omitempty\"`", res)
 					assertInCode(t, "Pets []Pet `json:\"pets\"`", res)
-					assertInCode(t, "if err := m.Pets[i].Validate(formats); err != nil {", res)
+					assertInCode(t, "if err := m.petsField[i].Validate(formats); err != nil {", res)
 					assertInCode(t, "m.validatePet", res)
 				} else {
 					fmt.Println(buf.String())
@@ -88,19 +90,20 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 						if k == "Dog" {
 							assertInCode(t, "func (m *Dog) validatePackSize(formats strfmt.Registry) error {", res)
 							assertInCode(t, "if err := m.validatePackSize(formats); err != nil {", res)
-							assertInCode(t, "data.PackSize = m.PackSize", res)
+							assertInCode(t, "PackSize: m.PackSize,", res)
 							assertInCode(t, "validate.Required(\"packSize\", \"body\", m.PackSize)", res)
 						} else {
 							assertInCode(t, "func (m *Cat) validateHuntingSkill(formats strfmt.Registry) error {", res)
 							assertInCode(t, "if err := m.validateHuntingSkill(formats); err != nil {", res)
 							assertInCode(t, "if err := m.validateHuntingSkillEnum(\"huntingSkill\", \"body\", *m.HuntingSkill); err != nil {", res)
-							assertInCode(t, "data.HuntingSkill = m.HuntingSkill", res)
+							assertInCode(t, "HuntingSkill: m.HuntingSkill", res)
 						}
 						assertInCode(t, "Name *string `json:\"name\"`", res)
 						assertInCode(t, "PetType string `json:\"petType\"`", res)
 
-						assertInCode(t, "data.Name = m.nameField", res)
-						assertInCode(t, "data.PetType = \""+k+"\"", res)
+						assertInCode(t, "result.nameField = base.Name", res)
+						assertInCode(t, "if base.PetType != result.PetType() {", res)
+						assertInCode(t, "return errors.New(422, \"invalid petType value: %q\", base.PetType)", res)
 
 						kk := swag.ToGoName(k)
 						assertInCode(t, "func (m *"+kk+") Name() *string", res)
@@ -137,10 +140,12 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 					assertInCode(t, "SetName(*string)", res)
 					assertInCode(t, "PetType() string", res)
 					assertInCode(t, "SetPetType(string)", res)
+					assertInCode(t, "type pet struct {", res)
 					assertInCode(t, "UnmarshalPet(reader io.Reader, consumer runtime.Consumer) (Pet, error)", res)
 					assertInCode(t, "PetType string `json:\"petType\"`", res)
 					assertInCode(t, "validate.RequiredString(\"petType\"", res)
 					assertInCode(t, "switch getType.PetType {", res)
+					assertInCode(t, "var result pet", res)
 					assertInCode(t, "var result Cat", res)
 					assertInCode(t, "var result Dog", res)
 				}
@@ -168,8 +173,8 @@ func TestGenerateModel_UsesDiscriminator(t *testing.T) {
 					res := string(b)
 					assertInCode(t, "type WithPet struct {", res)
 					assertInCode(t, "ID int64 `json:\"id,omitempty\"`", res)
-					assertInCode(t, "Pet Pet `json:\"-\"`", res)
-					assertInCode(t, "if err := m.Pet.Validate(formats); err != nil {", res)
+					assertInCode(t, "petField Pet", res)
+					assertInCode(t, "if err := m.Pet().Validate(formats); err != nil {", res)
 					assertInCode(t, "m.validatePet", res)
 				}
 			}
@@ -196,6 +201,7 @@ func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 				Authed:        false,
 				DefaultScheme: "http",
 				ExtraSchemas:  make(map[string]GenSchema),
+				GenOpts:       opts(),
 			}
 			genOp, err := bldr.MakeOperation()
 			if assert.NoError(t, err) {
@@ -232,6 +238,7 @@ func TestGenerateServer_Parameters(t *testing.T) {
 				Authed:        false,
 				DefaultScheme: "http",
 				ExtraSchemas:  make(map[string]GenSchema),
+				GenOpts:       opts(),
 			}
 			genOp, err := bldr.MakeOperation()
 			if assert.NoError(t, err) {
@@ -294,6 +301,8 @@ func TestGenerateModel_Bitbucket_Repository(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
+				s := string(buf.Bytes())
+				log.Printf(s)
 				b, err := opts.LanguageOpts.FormatContent("repository.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(b)
@@ -321,7 +330,7 @@ func TestGenerateModel_Bitbucket_WebhookSubscription(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(b)
 					assertInCode(t, "result.subjectField", res)
-					assertInCode(t, "Subject: m.subjectField", res)
+					assertInCode(t, "Subject: m.Subject()", res)
 				}
 			}
 		}

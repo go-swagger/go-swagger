@@ -13,9 +13,9 @@ import (
 )
 
 type tomlParser struct {
-	flowIdx       int
-	flow          []token
+	flow          chan token
 	tree          *Tree
+	tokensBuffer  []token
 	currentTable  []string
 	seenTableKeys []string
 }
@@ -34,10 +34,16 @@ func (p *tomlParser) run() {
 }
 
 func (p *tomlParser) peek() *token {
-	if p.flowIdx >= len(p.flow) {
+	if len(p.tokensBuffer) != 0 {
+		return &(p.tokensBuffer[0])
+	}
+
+	tok, ok := <-p.flow
+	if !ok {
 		return nil
 	}
-	return &p.flow[p.flowIdx]
+	p.tokensBuffer = append(p.tokensBuffer, tok)
+	return &tok
 }
 
 func (p *tomlParser) assume(typ tokenType) {
@@ -51,12 +57,16 @@ func (p *tomlParser) assume(typ tokenType) {
 }
 
 func (p *tomlParser) getToken() *token {
-	tok := p.peek()
-	if tok == nil {
+	if len(p.tokensBuffer) != 0 {
+		tok := p.tokensBuffer[0]
+		p.tokensBuffer = p.tokensBuffer[1:]
+		return &tok
+	}
+	tok, ok := <-p.flow
+	if !ok {
 		return nil
 	}
-	p.flowIdx++
-	return tok
+	return &tok
 }
 
 func (p *tomlParser) parseStart() tomlParserStateFn {
@@ -364,13 +374,13 @@ func (p *tomlParser) parseArray() interface{} {
 	return array
 }
 
-func parseToml(flow []token) *Tree {
+func parseToml(flow chan token) *Tree {
 	result := newTree()
 	result.position = Position{1, 1}
 	parser := &tomlParser{
-		flowIdx:       0,
 		flow:          flow,
 		tree:          result,
+		tokensBuffer:  make([]token, 0),
 		currentTable:  make([]string, 0),
 		seenTableKeys: make([]string, 0),
 	}

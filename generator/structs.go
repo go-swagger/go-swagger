@@ -12,9 +12,16 @@ import (
 	"github.com/go-openapi/spec"
 )
 
+// GenCommon contains common properties needed across
+// definitions, app and operations
+type GenCommon struct {
+	Copyright string
+}
+
 // GenDefinition contains all the properties to generate a
 // definition from a swagger spec
 type GenDefinition struct {
+	GenCommon
 	GenSchema
 	Package        string
 	Imports        map[string]string
@@ -252,6 +259,7 @@ type GenItems struct {
 
 // GenOperationGroup represents a named (tagged) group of operations
 type GenOperationGroup struct {
+	GenCommon
 	Name       string
 	Operations GenOperations
 
@@ -284,13 +292,12 @@ func (g GenStatusCodeResponses) MarshalJSON() ([]byte, error) {
 	}
 	var buf bytes.Buffer
 	buf.WriteRune('{')
-	s := 0
-	for _, v := range g {
+	for i, v := range g {
 		rb, err := json.Marshal(v)
 		if err != nil {
 			return nil, err
 		}
-		if s > 0 {
+		if i > 0 {
 			buf.WriteRune(',')
 		}
 		buf.WriteString(fmt.Sprintf("%q:", strconv.Itoa(v.Code)))
@@ -317,6 +324,7 @@ func (g *GenStatusCodeResponses) UnmarshalJSON(data []byte) error {
 
 // GenOperation represents an operation for code generation
 type GenOperation struct {
+	GenCommon
 	Package      string
 	ReceiverName string
 	Name         string
@@ -374,6 +382,7 @@ func (g GenOperations) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
 // GenApp represents all the meta data needed to generate an application
 // from a swagger spec
 type GenApp struct {
+	GenCommon
 	APIPackage          string
 	Package             string
 	ReceiverName        string

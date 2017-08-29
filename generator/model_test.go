@@ -255,10 +255,10 @@ func TestGenerateModel_Primitives(t *testing.T) {
 		val.Name = "theType"
 		exp := v.Expected
 		if val.IsInterface || val.IsStream {
-			tt.assertRender(val, "type TheType "+exp+"\n\n")
+			tt.assertRender(val, "\n  \n  \n    type TheType "+exp+"\n  \n")
 			continue
 		}
-		tt.assertRender(val, "type TheType "+exp+"\n// Validate validates this the type\nfunc (o theType) Validate(formats strfmt.Registry) error {\n  return nil\n}\n")
+		tt.assertRender(val, "\n  \n  \n    type TheType "+exp+"\n  // Validate validates this the type\nfunc (o theType) Validate(formats strfmt.Registry) error {\n  return nil\n}\n")
 	}
 }
 
@@ -1372,6 +1372,31 @@ func TestGenerateModel_WithAllOfAndDiscriminator(t *testing.T) {
 	}
 }
 
+func TestGenerateModel_WithAllOfAndDiscriminatorAndArrayOfPolymorphs(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["PetWithPets"]
+		opts := opts()
+		genModel, err := makeGenDefinition("PetWithPets", "models", schema, specDoc, opts)
+		if assert.NoError(t, err) && assert.Len(t, genModel.AllOf, 2) {
+			assert.True(t, genModel.IsComplexObject)
+			assert.Equal(t, "PetWithPets", genModel.Name)
+			assert.Equal(t, "PetWithPets", genModel.GoType)
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("PetWithPets.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, "type PetWithPets struct {", res)
+					assertInCode(t, "UnmarshalPetSlice", res)
+				}
+			}
+		}
+	}
+}
+
 func TestGenerateModel_WithAllOf(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
@@ -1734,8 +1759,8 @@ func TestGenModel_Issue423(t *testing.T) {
 				ct, err := opts.LanguageOpts.FormatContent("SRN.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
-					assertInCode(t, "Site json.RawMessage `json:\"site\"`", res)
-					assertInCode(t, "UnmarshalSite(bytes.NewBuffer(data.Site), runtime.JSONConsumer())", res)
+					assertInCode(t, "site, err := UnmarshalSite(bytes.NewBuffer(raw), runtime.JSONConsumer())", res)
+					assertInCode(t, "result.siteField = site", res)
 				}
 			}
 		}

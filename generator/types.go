@@ -134,6 +134,7 @@ var typeMapping = map[string]string{
 	"rgbcolor":   "strfmt.RGBColor",
 	"duration":   "strfmt.Duration",
 	"password":   "strfmt.Password",
+	"ObjectId":   "strfmt.ObjectId",
 	"binary":     "io.ReadCloser",
 	"char":       "rune",
 	"int":        "int64",
@@ -324,7 +325,8 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 			result.Pkg = pkg
 			result.PkgAlias = alias
 		}
-		result.HasDiscriminator = ref.Discriminator != ""
+		result.HasDiscriminator = res.HasDiscriminator
+		result.IsBaseType = result.HasDiscriminator
 		result.IsNullable = t.IsNullable(ref)
 		//result.IsAliased = true
 		return
@@ -463,7 +465,7 @@ func (t *typeResolver) goTypeName(nm string) string {
 func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (result resolvedType, err error) {
 	if Debug {
 		_, file, pos, _ := runtime.Caller(1)
-		log.Printf("%s:%d: resolving object (anon: %t, req: %t)\n", filepath.Base(file), pos, isAnonymous, false) //, bbb)
+		log.Printf("%s:%d: resolving object %s (anon: %t, req: %t)\n", filepath.Base(file), pos, t.ModelName, isAnonymous, false) //, bbb)
 	}
 
 	result.IsAnonymous = isAnonymous
@@ -785,6 +787,7 @@ var customFormatters = map[string]struct{}{
 	"strfmt.RGBColor":   struct{}{},
 	"strfmt.Base64":     struct{}{},
 	"strfmt.Duration":   struct{}{},
+	"strfmt.ObjectID":   struct{}{},
 	"io.ReadCloser":     struct{}{},
 	"io.Writer":         struct{}{},
 }

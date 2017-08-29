@@ -30,6 +30,8 @@ playground
 # Sublime files
 *.sublime-*
 
+# Vscode files
+.vscode/*
 cmd/swagger/swagger.json.bak
 tags
 

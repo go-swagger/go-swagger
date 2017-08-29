@@ -92,10 +92,13 @@ func MixinFiles(primaryFile string, mixinFiles []string, w io.Writer) ([]string,
 
 	bs, err := json.MarshalIndent(primary, "", "  ")
 	if err != nil {
-		return collisions, err
+		return nil, err
 	}
 
-	_, _ = w.Write(bs)
+	_, err = w.Write(bs)
+	if err != nil {
+		return nil, err
+	}
 
 	return collisions, nil
 }
