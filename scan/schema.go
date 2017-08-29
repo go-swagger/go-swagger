@@ -242,6 +242,11 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl *sch
 		return err
 	}
 
+	// if the type is marked to ignore, just return
+	if sp.ignored == true {
+		return nil
+	}
+
 	// analyze struct body for fields etc
 	// each exported struct field:
 	// * gets a type mapped to a go primitive
