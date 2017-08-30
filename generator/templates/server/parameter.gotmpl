@@ -161,8 +161,8 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
   if err != nil {{ if .IsNullable }}&& err != http.ErrMissingFile{{ end }}{
     res = append(res, errors.New(400, "reading file %q failed: %v", {{ printf "%q" (camelize .Name) }}, err))
   {{ if .IsNullable }}} else if err == http.ErrMissingFile {
-    // no-op for missing but optional file parameter{{ end }}
-  } else {
+    // no-op for missing but optional file parameter
+  {{ end }}} else {
     {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if .IsNullable }}&{{ end }}runtime.File{Data: {{ camelize .Name }}, Header: {{ camelize .Name }}Header}
   }
   {{ else }}fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, _ := fds.GetOK({{ .Path }})
