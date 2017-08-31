@@ -15,6 +15,7 @@ import (
 
 // SocialID social id
 // swagger:model social_id
+
 type SocialID struct {
 
 	// ssn
@@ -22,6 +23,8 @@ type SocialID struct {
 	// Min Length: 11
 	Ssn *string `json:"ssn"`
 }
+
+/* polymorph social_id ssn false */
 
 // Validate validates this social id
 func (m *SocialID) Validate(formats strfmt.Registry) error {

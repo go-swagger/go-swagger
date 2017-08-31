@@ -20,6 +20,7 @@ import (
 // A Task is the main entity in this application. Everything revolves around tasks and managing them.
 //
 // swagger:model Task
+
 type Task struct {
 	TaskCard
 
@@ -272,6 +273,7 @@ func (m *Task) UnmarshalBinary(b []byte) error {
 
 // TaskAttachmentsAnon task attachments anon
 // swagger:model TaskAttachmentsAnon
+
 type TaskAttachmentsAnon struct {
 
 	// The content type of the file.
@@ -308,6 +310,16 @@ type TaskAttachmentsAnon struct {
 	// Read Only: true
 	URL strfmt.URI `json:"url,omitempty"`
 }
+
+/* polymorph TaskAttachmentsAnon contentType false */
+
+/* polymorph TaskAttachmentsAnon description false */
+
+/* polymorph TaskAttachmentsAnon name false */
+
+/* polymorph TaskAttachmentsAnon size false */
+
+/* polymorph TaskAttachmentsAnon url false */
 
 // Validate validates this task attachments anon
 func (m *TaskAttachmentsAnon) Validate(formats strfmt.Registry) error {

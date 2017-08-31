@@ -24,45 +24,12 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// NewValidation starts a new validation middleware
-func newValidation(ctx *Context, next http.Handler) http.Handler {
-
-	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		matched, rCtx, _ := ctx.RouteInfo(r)
-		if rCtx != nil {
-			r = rCtx
-		}
-		if matched == nil {
-			ctx.NotFound(rw, r)
-			return
-		}
-		_, r, result := ctx.BindAndValidate(r, matched)
-
-		if result != nil {
-			ctx.Respond(rw, r, matched.Produces, matched, result)
-			return
-		}
-
-		debugLog("no result for %s %s", r.Method, r.URL.EscapedPath())
-		next.ServeHTTP(rw, r)
-	})
-}
-
 type validation struct {
 	context *Context
 	result  []error
 	request *http.Request
 	route   *MatchedRoute
 	bound   map[string]interface{}
-}
-
-type untypedBinder map[string]interface{}
-
-func (ub untypedBinder) BindRequest(r *http.Request, route *MatchedRoute, consumer runtime.Consumer) error {
-	if err := route.Binder.Bind(r, route.Params, consumer, ub); err != nil {
-		return err
-	}
-	return nil
 }
 
 // ContentType validates the content type of a request

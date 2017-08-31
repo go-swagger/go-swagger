@@ -105,6 +105,9 @@ func NewPetstoreAPI(spec *loads.Document) *PetstoreAPI {
 		APIKeyAuth: func(token string) (interface{}, error) {
 			return nil, errors.NotImplemented("api key auth (api_key) api_key from header param [api_key] has not yet been implemented")
 		},
+
+		// default authorizer is authorized meaning no requests are blocked
+		APIAuthorizer: security.Authorized(),
 	}
 }
 
@@ -152,6 +155,9 @@ type PetstoreAPI struct {
 	// APIKeyAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key api_key provided in the header
 	APIKeyAuth func(string) (interface{}, error)
+
+	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
+	APIAuthorizer runtime.Authorizer
 
 	// PetAddPetHandler sets the operation handler for the add pet operation
 	PetAddPetHandler pet.AddPetHandler
@@ -374,6 +380,13 @@ func (o *PetstoreAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) 
 		}
 	}
 	return result
+
+}
+
+// Authorizer returns the registered authorizer
+func (o *PetstoreAPI) Authorizer() runtime.Authorizer {
+
+	return o.APIAuthorizer
 
 }
 

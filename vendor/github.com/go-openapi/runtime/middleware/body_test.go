@@ -68,12 +68,12 @@ func TestBindRequest_DeleteNoBody(t *testing.T) {
 		ri, rCtx, ok := ctx.RouteInfo(req)
 		if assert.True(t, ok) {
 			req = rCtx
-			err := ctx.BindValidRequest(req, ri, rbn(func(r *http.Request, rr *MatchedRoute) error {
+			bverr := ctx.BindValidRequest(req, ri, rbn(func(r *http.Request, rr *MatchedRoute) error {
 				return nil
 			}))
 
-			assert.NoError(t, err)
-			//assert.Equal(t, io.EOF, err)
+			assert.NoError(t, bverr)
+			//assert.Equal(t, io.EOF, bverr)
 		}
 	}
 

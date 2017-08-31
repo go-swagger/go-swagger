@@ -49,7 +49,7 @@ func TestValidBearerAuth(t *testing.T) {
 
 	mpbody := bytes.NewBuffer(nil)
 	writer := multipart.NewWriter(mpbody)
-	writer.WriteField("access_token", "token123")
+	_ = writer.WriteField("access_token", "token123")
 	writer.Close()
 	req4, _ := http.NewRequest("POST", "/blah", mpbody)
 	req4.Header.Set("Content-Type", writer.FormDataContentType())
@@ -90,7 +90,7 @@ func TestInvalidBearerAuth(t *testing.T) {
 
 	mpbody := bytes.NewBuffer(nil)
 	writer := multipart.NewWriter(mpbody)
-	writer.WriteField("access_token", "token124")
+	_ = writer.WriteField("access_token", "token124")
 	writer.Close()
 	req4, _ := http.NewRequest("POST", "/blah", mpbody)
 	req4.Header.Set("Content-Type", writer.FormDataContentType())
@@ -131,7 +131,7 @@ func TestMissingBearerAuth(t *testing.T) {
 
 	mpbody := bytes.NewBuffer(nil)
 	writer := multipart.NewWriter(mpbody)
-	writer.WriteField("access_toke", "token123")
+	_ = writer.WriteField("access_toke", "token123")
 	writer.Close()
 	req4, _ := http.NewRequest("POST", "/blah", mpbody)
 	req4.Header.Set("Content-Type", writer.FormDataContentType())

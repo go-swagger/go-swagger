@@ -54,6 +54,12 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 		return nil, errors.NotImplemented("api key auth (api_key) api_key from header param [api_key] has not yet been implemented")
 	}
 
+	// Set your custom authorizer if needed. Default one is security.Authorized()
+	// Expected interface runtime.Authorizer
+	//
+	// Example:
+	// api.APIAuthorizer = security.Authorized()
+
 	api.PetAddPetHandler = pet.AddPetHandlerFunc(func(params pet.AddPetParams, principal interface{}) middleware.Responder {
 		return middleware.NotImplemented("operation pet.AddPet has not yet been implemented")
 	})

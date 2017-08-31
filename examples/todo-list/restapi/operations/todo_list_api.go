@@ -54,6 +54,9 @@ func NewTodoListAPI(spec *loads.Document) *TodoListAPI {
 		KeyAuth: func(token string) (interface{}, error) {
 			return nil, errors.NotImplemented("api key auth (key) x-todolist-token from header param [x-todolist-token] has not yet been implemented")
 		},
+
+		// default authorizer is authorized meaning no requests are blocked
+		APIAuthorizer: security.Authorized(),
 	}
 }
 
@@ -86,6 +89,9 @@ type TodoListAPI struct {
 	// KeyAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key x-todolist-token provided in the header
 	KeyAuth func(string) (interface{}, error)
+
+	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
+	APIAuthorizer runtime.Authorizer
 
 	// TodosAddOneHandler sets the operation handler for the add one operation
 	TodosAddOneHandler todos.AddOneHandler
@@ -204,6 +210,13 @@ func (o *TodoListAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) 
 		}
 	}
 	return result
+
+}
+
+// Authorizer returns the registered authorizer
+func (o *TodoListAPI) Authorizer() runtime.Authorizer {
+
+	return o.APIAuthorizer
 
 }
 

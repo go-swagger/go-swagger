@@ -12,22 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package runtime
+package security
 
 import (
 	"testing"
 
-	"github.com/go-openapi/strfmt"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAuthInfoWriter(t *testing.T) {
-	hand := ClientAuthInfoWriterFunc(func(r ClientRequest, _ strfmt.Registry) error {
-		return r.SetHeaderParam("authorization", "Bearer the-token-goes-here")
-	})
+func TestAuthorized(t *testing.T) {
+	authorizer := Authorized()
 
-	tr := new(trw)
-	err := hand.AuthenticateRequest(tr, nil)
+	err := authorizer.Authorize(nil, nil)
 	assert.NoError(t, err)
-	assert.Equal(t, "Bearer the-token-goes-here", tr.Headers.Get("Authorization"))
 }

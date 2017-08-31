@@ -115,6 +115,7 @@ func (o *AddCommentToTaskDefault) readResponse(response runtime.ClientResponse, 
 //
 swagger:model AddCommentToTaskBody
 */
+
 type AddCommentToTaskBody struct {
 
 	// content
@@ -125,6 +126,10 @@ type AddCommentToTaskBody struct {
 	// Required: true
 	UserID *int64 `json:"userId"`
 }
+
+/* polymorph AddCommentToTaskBody content false */
+
+/* polymorph AddCommentToTaskBody userId false */
 
 // MarshalBinary interface implementation
 func (o *AddCommentToTaskBody) MarshalBinary() ([]byte, error) {

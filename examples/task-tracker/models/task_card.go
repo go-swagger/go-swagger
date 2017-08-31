@@ -21,6 +21,7 @@ import (
 // A task card is a minimalistic representation of a task. Useful for display in list views, like a card list.
 //
 // swagger:model TaskCard
+
 type TaskCard struct {
 
 	// assigned to
@@ -93,6 +94,28 @@ type TaskCard struct {
 	// Min Length: 5
 	Title *string `json:"title"`
 }
+
+/* polymorph TaskCard assignedTo false */
+
+/* polymorph TaskCard description false */
+
+/* polymorph TaskCard effort false */
+
+/* polymorph TaskCard id false */
+
+/* polymorph TaskCard karma false */
+
+/* polymorph TaskCard milestone false */
+
+/* polymorph TaskCard reportedAt false */
+
+/* polymorph TaskCard severity false */
+
+/* polymorph TaskCard status false */
+
+/* polymorph TaskCard tags false */
+
+/* polymorph TaskCard title false */
 
 // Validate validates this task card
 func (m *TaskCard) Validate(formats strfmt.Registry) error {

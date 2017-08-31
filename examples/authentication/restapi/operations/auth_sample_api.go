@@ -49,6 +49,9 @@ func NewAuthSampleAPI(spec *loads.Document) *AuthSampleAPI {
 		KeyAuth: func(token string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("api key auth (key) x-token from header param [x-token] has not yet been implemented")
 		},
+
+		// default authorizer is authorized meaning no requests are blocked
+		APIAuthorizer: security.Authorized(),
 	}
 }
 
@@ -81,6 +84,9 @@ type AuthSampleAPI struct {
 	// KeyAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key x-token provided in the header
 	KeyAuth func(string) (*models.Principal, error)
+
+	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
+	APIAuthorizer runtime.Authorizer
 
 	// CustomersCreateHandler sets the operation handler for the create operation
 	CustomersCreateHandler customers.CreateHandler
@@ -189,6 +195,13 @@ func (o *AuthSampleAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme
 		}
 	}
 	return result
+
+}
+
+// Authorizer returns the registered authorizer
+func (o *AuthSampleAPI) Authorizer() runtime.Authorizer {
+
+	return o.APIAuthorizer
 
 }
 

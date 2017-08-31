@@ -49,6 +49,12 @@ func configureAPI(api *operations.TaskTrackerAPI) http.Handler {
 		return nil, errors.NotImplemented("api key auth (api_key) token from query param [token] has not yet been implemented")
 	}
 
+	// Set your custom authorizer if needed. Default one is security.Authorized()
+	// Expected interface runtime.Authorizer
+	//
+	// Example:
+	// api.APIAuthorizer = security.Authorized()
+
 	api.TasksAddCommentToTaskHandler = tasks.AddCommentToTaskHandlerFunc(func(params tasks.AddCommentToTaskParams, principal interface{}) middleware.Responder {
 		return middleware.NotImplemented("operation tasks.AddCommentToTask has not yet been implemented")
 	})

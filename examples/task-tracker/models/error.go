@@ -19,6 +19,7 @@ import (
 // Some properties are optional so might be empty most of the time
 //
 // swagger:model Error
+
 type Error struct {
 
 	// the error code, this is not necessarily the http status code
@@ -32,6 +33,12 @@ type Error struct {
 	// Required: true
 	Message *string `json:"message"`
 }
+
+/* polymorph Error code false */
+
+/* polymorph Error helpUrl false */
+
+/* polymorph Error message false */
 
 // Validate validates this error
 func (m *Error) Validate(formats strfmt.Registry) error {

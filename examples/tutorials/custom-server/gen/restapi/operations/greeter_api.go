@@ -155,6 +155,13 @@ func (o *GreeterAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) m
 
 }
 
+// Authorizer returns the registered authorizer
+func (o *GreeterAPI) Authorizer() runtime.Authorizer {
+
+	return nil
+
+}
+
 // ConsumersFor gets the consumers for the specified media types
 func (o *GreeterAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
 
