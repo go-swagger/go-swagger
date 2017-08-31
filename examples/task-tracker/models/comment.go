@@ -18,6 +18,7 @@ import (
 // Users can comment on issues to discuss plans for resolution etc.
 //
 // swagger:model Comment
+
 type Comment struct {
 
 	// The content of the comment.
@@ -37,6 +38,12 @@ type Comment struct {
 	// Required: true
 	User *UserCard `json:"user"`
 }
+
+/* polymorph Comment content false */
+
+/* polymorph Comment createdAt false */
+
+/* polymorph Comment user false */
 
 // Validate validates this comment
 func (m *Comment) Validate(formats strfmt.Registry) error {

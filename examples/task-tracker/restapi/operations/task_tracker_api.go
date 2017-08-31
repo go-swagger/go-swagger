@@ -71,6 +71,9 @@ func NewTaskTrackerAPI(spec *loads.Document) *TaskTrackerAPI {
 		APIKeyAuth: func(token string) (interface{}, error) {
 			return nil, errors.NotImplemented("api key auth (api_key) token from query param [token] has not yet been implemented")
 		},
+
+		// default authorizer is authorized meaning no requests are blocked
+		APIAuthorizer: security.Authorized(),
 	}
 }
 
@@ -115,6 +118,9 @@ type TaskTrackerAPI struct {
 	// APIKeyAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key token provided in the query
 	APIKeyAuth func(string) (interface{}, error)
+
+	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
+	APIAuthorizer runtime.Authorizer
 
 	// TasksAddCommentToTaskHandler sets the operation handler for the add comment to task operation
 	TasksAddCommentToTaskHandler tasks.AddCommentToTaskHandler
@@ -269,6 +275,13 @@ func (o *TaskTrackerAPI) AuthenticatorsFor(schemes map[string]spec.SecuritySchem
 		}
 	}
 	return result
+
+}
+
+// Authorizer returns the registered authorizer
+func (o *TaskTrackerAPI) Authorizer() runtime.Authorizer {
+
+	return o.APIAuthorizer
 
 }
 

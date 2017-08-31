@@ -43,6 +43,12 @@ func configureAPI(api *operations.AuthSampleAPI) http.Handler {
 		return nil, errors.NotImplemented("api key auth (key) x-token from header param [x-token] has not yet been implemented")
 	}
 
+	// Set your custom authorizer if needed. Default one is security.Authorized()
+	// Expected interface runtime.Authorizer
+	//
+	// Example:
+	// api.APIAuthorizer = security.Authorized()
+
 	api.CustomersCreateHandler = customers.CreateHandlerFunc(func(params customers.CreateParams, principal *models.Principal) middleware.Responder {
 		return middleware.NotImplemented("operation customers.Create has not yet been implemented")
 	})

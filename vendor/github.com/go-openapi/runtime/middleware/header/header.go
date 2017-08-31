@@ -46,8 +46,8 @@ func init() {
 		var t octetType
 		isCtl := c <= 31 || c == 127
 		isChar := 0 <= c && c <= 127
-		isSeparator := strings.IndexRune(" \t\"(),/:;<=>?@[]\\{}", rune(c)) >= 0
-		if strings.IndexRune(" \t\r\n", rune(c)) >= 0 {
+		isSeparator := strings.ContainsRune(" \t\"(),/:;<=>?@[]\\{}", rune(c))
+		if strings.ContainsRune(" \t\r\n", rune(c)) {
 			t |= isSpace
 		}
 		if isChar && !isCtl && !isSeparator {
@@ -167,11 +167,13 @@ func parseValueAndParams(s string) (value string, params map[string]string) {
 	return
 }
 
+// AcceptSpec ...
 type AcceptSpec struct {
 	Value string
 	Q     float64
 }
 
+// ParseAccept2 ...
 func ParseAccept2(header http.Header, key string) (specs []AcceptSpec) {
 	for _, en := range ParseList(header, key) {
 		v, p := parseValueAndParams(en)

@@ -14,6 +14,7 @@ import (
 
 // ValidationError validation error
 // swagger:model ValidationError
+
 type ValidationError struct {
 	Error
 

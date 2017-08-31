@@ -12,22 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package runtime
+package security
 
 import (
-	"testing"
+	"net/http"
 
-	"github.com/go-openapi/strfmt"
-	"github.com/stretchr/testify/assert"
+	"github.com/go-openapi/runtime"
 )
 
-func TestAuthInfoWriter(t *testing.T) {
-	hand := ClientAuthInfoWriterFunc(func(r ClientRequest, _ strfmt.Registry) error {
-		return r.SetHeaderParam("authorization", "Bearer the-token-goes-here")
-	})
-
-	tr := new(trw)
-	err := hand.AuthenticateRequest(tr, nil)
-	assert.NoError(t, err)
-	assert.Equal(t, "Bearer the-token-goes-here", tr.Headers.Get("Authorization"))
+// Authorized provides a default implementation of the Authorizer interface where all
+// requests are authorized (successful)
+func Authorized() runtime.Authorizer {
+	return runtime.AuthorizerFunc(func(_ *http.Request, _ interface{}) error { return nil })
 }

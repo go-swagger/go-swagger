@@ -184,6 +184,13 @@ func (o *TodoListAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) 
 
 }
 
+// Authorizer returns the registered authorizer
+func (o *TodoListAPI) Authorizer() runtime.Authorizer {
+
+	return nil
+
+}
+
 // ConsumersFor gets the consumers for the specified media types
 func (o *TodoListAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
 

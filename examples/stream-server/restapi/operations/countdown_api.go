@@ -155,6 +155,13 @@ func (o *CountdownAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme)
 
 }
 
+// Authorizer returns the registered authorizer
+func (o *CountdownAPI) Authorizer() runtime.Authorizer {
+
+	return nil
+
+}
+
 // ConsumersFor gets the consumers for the specified media types
 func (o *CountdownAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
 

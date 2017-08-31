@@ -22,6 +22,7 @@ go get -u -v github.com/tpng/gopkgs
 go get -u -v github.com/lukehoban/go-outline
 go get -u -v github.com/newhook/go-symbols
 go get -u -v github.com/mitchellh/gox
+go get -u github.com/golang/dep/cmd/dep
 
 # install all the linters
 gometalinter --install --update
