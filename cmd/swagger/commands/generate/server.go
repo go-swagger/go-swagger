@@ -118,13 +118,13 @@ func (s *Server) Execute(args []string) error {
 	if e := generator.GenerateServer(s.Name, s.Models, s.Operations, opts); e != nil {
 		return e
 	}
-	var basepath,rp,targetAbs string
+	var basepath, rp, targetAbs string
 
-	basepath,err = filepath.Abs(".")
+	basepath, err = filepath.Abs(".")
 	if err != nil {
 		return err
 	}
-	targetAbs,err = filepath.Abs(opts.Target)
+	targetAbs, err = filepath.Abs(opts.Target)
 	if err != nil {
 		return err
 	}

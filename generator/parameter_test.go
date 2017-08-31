@@ -40,8 +40,8 @@ func TestBodyParams(t *testing.T) {
 		}
 		for _, param := range op.Parameters {
 			if param.Name == "body" {
-				gp, err := b.MakeParameter("a", resolver, param, nil)
-				if assert.NoError(t, err) {
+				gp, perr := b.MakeParameter("a", resolver, param, nil)
+				if assert.NoError(t, perr) {
 					assert.True(t, gp.IsBodyParam())
 					if assert.NotNil(t, gp.Schema) {
 						assert.True(t, gp.Schema.IsComplexObject)

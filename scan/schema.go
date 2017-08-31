@@ -243,7 +243,7 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl *sch
 	}
 
 	// if the type is marked to ignore, just return
-	if sp.ignored == true {
+	if sp.ignored {
 		return nil
 	}
 
@@ -1058,12 +1058,6 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 	}
 
 }
-
-// unused
-// func fName() string {
-// 	pc, _, _, _ := runtime.Caller(1)
-// 	return runtime.FuncForPC(pc).Name()
-// }
 
 func (scp *schemaParser) typeForSelector(gofile *ast.File, expr *ast.SelectorExpr, prop swaggerTypable) error {
 	pkg, err := scp.packageForSelector(gofile, expr.X)

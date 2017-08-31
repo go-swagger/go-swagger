@@ -404,8 +404,8 @@ func TestEnum_Issue325(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			err = templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("soda_brand.go", buf.Bytes())
-				if assert.NoError(t, err) {
+				ff, ferr := opts.LanguageOpts.FormatContent("soda_brand.go", buf.Bytes())
+				if assert.NoError(t, ferr) {
 					res := string(ff)
 					assertInCode(t, "var sodaBrandEnum []interface{}", res)
 					assertInCode(t, "err := validate.Enum(path, location, value, sodaBrandEnum)", res)

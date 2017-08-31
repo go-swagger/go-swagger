@@ -82,14 +82,14 @@ func TestBaseImport(t *testing.T) {
 
 		// Create Paths
 		for _, paths := range item.path {
-			os.MkdirAll(paths, 0777)
+			_ = os.MkdirAll(paths, 0777)
 		}
 
 		// Change GOPATH
-		os.Setenv("GOPATH", item.gopath)
+		_ = os.Setenv("GOPATH", item.gopath)
 
 		// Create Symlink
-		os.Symlink(item.symlinkdest, item.symlinksrc)
+		_ = os.Symlink(item.symlinkdest, item.symlinksrc)
 
 		// Test
 		actualpath := baseImport(item.targetpath)

@@ -69,25 +69,25 @@ func (o *Operation) Execute(args []string) error {
 		Tags:              o.Tags,
 	}
 
-	if err := opts.EnsureDefaults(false); err != nil {
+	if err = opts.EnsureDefaults(false); err != nil {
 		return err
 	}
 
-	if err := configureOptsFromConfig(cfg, opts); err != nil {
+	if err = configureOptsFromConfig(cfg, opts); err != nil {
 		return err
 	}
 
-	if err := generator.GenerateServerOperation(o.Name, opts); err != nil {
+	if err = generator.GenerateServerOperation(o.Name, opts); err != nil {
 		return err
 	}
 
-	var basepath,rp,targetAbs string
+	var basepath, rp, targetAbs string
 
-	basepath,err = filepath.Abs(".")
+	basepath, err = filepath.Abs(".")
 	if err != nil {
 		return err
 	}
-	targetAbs,err = filepath.Abs(opts.Target)
+	targetAbs, err = filepath.Abs(opts.Target)
 	if err != nil {
 		return err
 	}

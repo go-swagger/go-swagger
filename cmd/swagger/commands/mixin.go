@@ -80,9 +80,9 @@ func MixinFiles(primaryFile string, mixinFiles []string, w io.Writer) ([]string,
 
 	var mixins []*spec.Swagger
 	for _, mixinFile := range mixinFiles {
-		mixin, err := loads.Spec(mixinFile)
-		if err != nil {
-			return nil, err
+		mixin, lerr := loads.Spec(mixinFile)
+		if lerr != nil {
+			return nil, lerr
 		}
 		mixins = append(mixins, mixin.Spec())
 	}

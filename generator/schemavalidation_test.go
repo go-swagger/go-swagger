@@ -50,9 +50,10 @@ func assertNotInCode(t testing.TB, expr, code string) bool {
 	return assert.NotRegexp(t, reqm(expr), code)
 }
 
-func assertRegexpNotInCode(t testing.TB, expr, code string) bool {
-	return assert.NotRegexp(t, reqOri(expr), code)
-}
+// Unused
+// func assertRegexpNotInCode(t testing.TB, expr, code string) bool {
+// 	return assert.NotRegexp(t, reqOri(expr), code)
+// }
 
 func assertValidation(t testing.TB, pth, expr string, gm GenSchema) bool {
 	if !assert.True(t, gm.HasValidations, "expected the schema to have validations") {

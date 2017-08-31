@@ -46,7 +46,6 @@ func (pf packageFilters) Matches(path string) bool {
 }
 
 type classifiedProgram struct {
-	prog       *loader.Program
 	Meta       []*ast.File
 	Models     []*ast.File
 	Routes     []*ast.File
