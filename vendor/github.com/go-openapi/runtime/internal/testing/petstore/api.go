@@ -15,7 +15,10 @@
 package petstore
 
 import (
+	goerrors "errors"
 	"io"
+	"net/http"
+	"strings"
 	gotest "testing"
 
 	"github.com/go-openapi/errors"
@@ -46,6 +49,8 @@ func NewAPI(t gotest.TB) (*loads.Document, *untyped.API) {
 	api.RegisterAuth("basic", security.BasicAuth(func(username, password string) (interface{}, error) {
 		if username == "admin" && password == "admin" {
 			return "admin", nil
+		} else if username == "topuser" && password == "topuser" {
+			return "topuser", nil
 		}
 		return nil, errors.Unauthenticated("basic")
 	}))
@@ -54,6 +59,12 @@ func NewAPI(t gotest.TB) (*loads.Document, *untyped.API) {
 			return "admin", nil
 		}
 		return nil, errors.Unauthenticated("token")
+	}))
+	api.RegisterAuthorizer(runtime.AuthorizerFunc(func(r *http.Request, user interface{}) error {
+		if r.Method == http.MethodPost && strings.HasPrefix(r.URL.Path, "/api/pets") && user.(string) != "admin" {
+			return goerrors.New("unauthorized")
+		}
+		return nil
 	}))
 	api.RegisterOperation("get", "/pets", new(stubOperationHandler))
 	api.RegisterOperation("post", "/pets", new(stubOperationHandler))
@@ -94,6 +105,7 @@ func NewRootAPI(t gotest.TB) (*loads.Document, *untyped.API) {
 		}
 		return nil, errors.Unauthenticated("token")
 	}))
+	api.RegisterAuthorizer(security.Authorized())
 	api.RegisterOperation("get", "/pets", new(stubOperationHandler))
 	api.RegisterOperation("post", "/pets", new(stubOperationHandler))
 	api.RegisterOperation("delete", "/pets/{id}", new(stubOperationHandler))

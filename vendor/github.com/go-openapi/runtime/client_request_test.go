@@ -56,13 +56,13 @@ func (t *trw) SetTimeout(timeout time.Duration) error {
 func TestRequestWriterFunc(t *testing.T) {
 
 	hand := ClientRequestWriterFunc(func(r ClientRequest, reg strfmt.Registry) error {
-		r.SetHeaderParam("blah", "blah blah")
-		r.SetBodyParam(struct{ Name string }{"Adriana"})
+		_ = r.SetHeaderParam("blah", "blah blah")
+		_ = r.SetBodyParam(struct{ Name string }{"Adriana"})
 		return nil
 	})
 
 	tr := new(trw)
-	hand.WriteToRequest(tr, nil)
+	_ = hand.WriteToRequest(tr, nil)
 	assert.Equal(t, "blah blah", tr.Headers.Get("blah"))
 	assert.Equal(t, "Adriana", tr.Body.(struct{ Name string }).Name)
 }

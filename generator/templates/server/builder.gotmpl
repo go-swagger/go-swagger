@@ -65,6 +65,10 @@ func New{{ pascalize .Name }}API(spec *loads.Document) *{{ pascalize .Name }}API
     },
     {{end}}
     {{end}}
+    {{if .SecurityDefinitions}}
+    // default authorizer is authorized meaning no requests are blocked
+    APIAuthorizer:    security.Authorized(),
+    {{end}}
   }
 }
 
@@ -105,6 +109,10 @@ type {{ pascalize .Name }}API struct {
   // it performs authentication based on an oauth2 bearer token provided in the request
   {{ pascalize .ID }}Auth func(string, []string) ({{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}, error)
   {{ end }}
+  {{end}}
+  {{if .SecurityDefinitions}}
+  // APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
+  APIAuthorizer runtime.Authorizer
   {{end}}
   {{range .Operations}}// {{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{ pascalize .Name }}Handler sets the operation handler for the {{ humanize .Name }} operation
   {{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{ pascalize .Name }}Handler {{if ne .Package $package}}{{.Package}}.{{end}}{{ pascalize .Name }}Handler
@@ -215,6 +223,15 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) AuthenticatorsFor(schemes map
     }
   }
   return result
+  {{else}}
+  return nil
+  {{end}}
+}
+
+// Authorizer returns the registered authorizer
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) Authorizer() runtime.Authorizer {
+  {{if .SecurityDefinitions}}
+  return {{.ReceiverName}}.APIAuthorizer
   {{else}}
   return nil
   {{end}}

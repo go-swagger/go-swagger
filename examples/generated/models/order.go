@@ -14,6 +14,7 @@ import (
 
 // Order order
 // swagger:model Order
+
 type Order struct {
 
 	// complete
@@ -34,6 +35,18 @@ type Order struct {
 	// Order Status
 	Status string `json:"status,omitempty"`
 }
+
+/* polymorph Order complete false */
+
+/* polymorph Order id false */
+
+/* polymorph Order petId false */
+
+/* polymorph Order quantity false */
+
+/* polymorph Order shipDate false */
+
+/* polymorph Order status false */
 
 // Validate validates this order
 func (m *Order) Validate(formats strfmt.Registry) error {

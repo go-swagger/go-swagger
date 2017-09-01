@@ -28,9 +28,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type email struct {
-	Address string
-}
+// type email struct {
+// 	Address string
+// }
 
 type paramFactory func(string) *spec.Parameter
 

@@ -59,8 +59,8 @@ func TestUntypedFileUpload(t *testing.T) {
 	part, err := writer.CreateFormFile("file", "plain-jane.txt")
 	assert.NoError(t, err)
 
-	part.Write([]byte("the file contents"))
-	writer.WriteField("name", "the-name")
+	_, _ = part.Write([]byte("the file contents"))
+	_ = writer.WriteField("name", "the-name")
 	assert.NoError(t, writer.Close())
 
 	urlStr := "http://localhost:8002/hello"
@@ -95,8 +95,8 @@ func TestUntypedFileUpload(t *testing.T) {
 	part, err = writer.CreateFormFile("bad-name", "plain-jane.txt")
 	assert.NoError(t, err)
 
-	part.Write([]byte("the file contents"))
-	writer.WriteField("name", "the-name")
+	_, _ = part.Write([]byte("the file contents"))
+	_ = writer.WriteField("name", "the-name")
 	assert.NoError(t, writer.Close())
 	req, _ = http.NewRequest("POST", urlStr, body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
@@ -106,7 +106,7 @@ func TestUntypedFileUpload(t *testing.T) {
 
 	req, _ = http.NewRequest("POST", urlStr, body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
-	req.MultipartReader()
+	_, _ = req.MultipartReader()
 
 	data = make(map[string]interface{})
 	assert.Error(t, binder.Bind(req, nil, runtime.JSONConsumer(), &data))

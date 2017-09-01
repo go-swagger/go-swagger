@@ -19,6 +19,7 @@ import (
 // This can be useful for filters and such.
 //
 // swagger:model Milestone
+
 type Milestone struct {
 
 	// The description of the milestone.
@@ -46,6 +47,14 @@ type Milestone struct {
 	// stats
 	Stats *MilestoneStats `json:"stats,omitempty"`
 }
+
+/* polymorph Milestone description false */
+
+/* polymorph Milestone dueDate false */
+
+/* polymorph Milestone name false */
+
+/* polymorph Milestone stats false */
 
 // Validate validates this milestone
 func (m *Milestone) Validate(formats strfmt.Registry) error {
@@ -130,6 +139,7 @@ func (m *Milestone) UnmarshalBinary(b []byte) error {
 // This object contains counts for the remaining open issues and the amount of issues that have been closed.
 //
 // swagger:model MilestoneStats
+
 type MilestoneStats struct {
 
 	// The closed issues.
@@ -141,6 +151,12 @@ type MilestoneStats struct {
 	// The total number of issues for this milestone.
 	Total int32 `json:"total,omitempty"`
 }
+
+/* polymorph MilestoneStats closed false */
+
+/* polymorph MilestoneStats open false */
+
+/* polymorph MilestoneStats total false */
 
 // Validate validates this milestone stats
 func (m *MilestoneStats) Validate(formats strfmt.Registry) error {

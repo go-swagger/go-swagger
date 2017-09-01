@@ -17,6 +17,7 @@ import (
 
 // Pet pet
 // swagger:model Pet
+
 type Pet struct {
 
 	// category
@@ -39,6 +40,18 @@ type Pet struct {
 	// tags
 	Tags []*Tag `json:"tags"`
 }
+
+/* polymorph Pet category false */
+
+/* polymorph Pet id false */
+
+/* polymorph Pet name false */
+
+/* polymorph Pet photoUrls false */
+
+/* polymorph Pet status false */
+
+/* polymorph Pet tags false */
 
 // Validate validates this pet
 func (m *Pet) Validate(formats strfmt.Registry) error {
