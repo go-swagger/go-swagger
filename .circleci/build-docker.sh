@@ -13,7 +13,7 @@ do
   if [ -f $pth/profile.tmp ]
   then
       cat $pth/profile.tmp | tail -n +2 >> coverage.txt
-      rm $pth/profile.tmp
+      rm -f $pth/profile.tmp
   fi
 done
 

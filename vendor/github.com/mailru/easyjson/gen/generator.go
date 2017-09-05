@@ -224,6 +224,10 @@ func fixAliasName(alias string) string {
 		"_",
 		-1,
 	)
+
+	if alias[0] == 'v' { // to void conflicting with var names, say v1
+		alias = "_" + alias
+	}
 	return alias
 }
 
@@ -380,7 +384,7 @@ func (DefaultFieldNamer) GetJSONFieldName(t reflect.Type, f reflect.StructField)
 }
 
 // LowerCamelCaseFieldNamer
-type LowerCamelCaseFieldNamer struct {}
+type LowerCamelCaseFieldNamer struct{}
 
 func isLower(b byte) bool {
 	return b <= 122 && b >= 97
@@ -407,7 +411,7 @@ func lowerFirst(s string) string {
 	    If the following char is upper OR numeric, LOWER it
 	    If is the end of string, LEAVE it
 	  Else lowercase
-	 */
+	*/
 
 	foundLower := false
 	for i := range s {

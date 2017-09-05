@@ -1,4 +1,4 @@
-// +build !use_easyjson,!use_ffjson,!use_codec
+// +build !use_easyjson,!use_ffjson,!use_codec,!use_jsoniter
 
 package benchmark
 
