@@ -4,7 +4,7 @@ export GOPATH
 
 all: test
 
-.root/src/$(PKG): 	
+.root/src/$(PKG):
 	mkdir -p $@
 	for i in $$PWD/* ; do ln -s $$i $@/`basename $$i` ; done 
 
@@ -45,6 +45,7 @@ test: generate root
 bench-other: generate root
 	@go test -benchmem -bench . $(PKG)/benchmark
 	@go test -benchmem -tags use_ffjson -bench . $(PKG)/benchmark
+	@go test -benchmem -tags use_jsoniter -bench . $(PKG)/benchmark
 	@go test -benchmem -tags use_codec -bench . $(PKG)/benchmark
 
 bench-python:
