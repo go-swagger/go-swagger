@@ -63,6 +63,38 @@ func init() {
 	}
 }
 
+// only used within this group of tests but never used within actual code base.
+func newSchemaAnnotationParser(goName string) *schemaAnnotationParser {
+	return &schemaAnnotationParser{GoName: goName, rx: rxModelOverride}
+}
+
+type schemaAnnotationParser struct {
+	GoName string
+	Name   string
+	rx     *regexp.Regexp
+}
+
+func (sap *schemaAnnotationParser) Matches(line string) bool {
+	return sap.rx.MatchString(line)
+}
+
+func (sap *schemaAnnotationParser) Parse(lines []string) error {
+	if sap.Name != "" {
+		return nil
+	}
+
+	if len(lines) > 0 {
+		for _, line := range lines {
+			matches := sap.rx.FindStringSubmatch(line)
+			if len(matches) > 1 && len(matches[1]) > 0 {
+				sap.Name = matches[1]
+				return nil
+			}
+		}
+	}
+	return nil
+}
+
 func extraModelsClassifier(t testing.TB) (*loader.Program, map[string]spec.Schema) {
 	prog := classifierProgram()
 	docFile := "../fixtures/goparsing/classification/models/extranomodel.go"
@@ -674,19 +706,6 @@ func TestSchemaValueExtractors(t *testing.T) {
 		"swagger:allOf      ",
 	}
 
-	discriminated := []string{
-		"// swagger:discriminated ",
-		"* swagger:discriminated ",
-		"* swagger:discriminated ",
-		" swagger:discriminated ",
-		"swagger:discriminated ",
-		"// swagger:discriminated    ",
-		"* swagger:discriminated     ",
-		"* swagger:discriminated    ",
-		" swagger:discriminated     ",
-		"swagger:discriminated      ",
-	}
-
 	parameters := []string{
 		"// swagger:parameters ",
 		"* swagger:parameters ",
@@ -719,7 +738,6 @@ func TestSchemaValueExtractors(t *testing.T) {
 	verifySwaggerOneArgSwaggerTag(t, rxModelOverride, models, append(validParams, "", "  ", " "), invalidParams)
 
 	verifySwaggerOneArgSwaggerTag(t, rxAllOf, allOf, append(validParams, "", "  ", " "), invalidParams)
-	verifySwaggerMultiArgSwaggerTag(t, rxDiscriminated, discriminated, validParams, invalidParams)
 
 	verifySwaggerMultiArgSwaggerTag(t, rxParametersOverride, parameters, validParams, invalidParams)
 

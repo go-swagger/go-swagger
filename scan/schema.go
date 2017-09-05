@@ -21,7 +21,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -100,37 +99,6 @@ func (sv schemaValidations) SetEnum(val string) {
 		interfaceSlice[i] = d
 	}
 	sv.current.Enum = interfaceSlice
-}
-
-func newSchemaAnnotationParser(goName string) *schemaAnnotationParser {
-	return &schemaAnnotationParser{GoName: goName, rx: rxModelOverride}
-}
-
-type schemaAnnotationParser struct {
-	GoName string
-	Name   string
-	rx     *regexp.Regexp
-}
-
-func (sap *schemaAnnotationParser) Matches(line string) bool {
-	return sap.rx.MatchString(line)
-}
-
-func (sap *schemaAnnotationParser) Parse(lines []string) error {
-	if sap.Name != "" {
-		return nil
-	}
-
-	if len(lines) > 0 {
-		for _, line := range lines {
-			matches := sap.rx.FindStringSubmatch(line)
-			if len(matches) > 1 && len(matches[1]) > 0 {
-				sap.Name = matches[1]
-				return nil
-			}
-		}
-	}
-	return nil
 }
 
 type schemaDecl struct {
@@ -1063,29 +1031,6 @@ func (scp *schemaParser) typeForSelector(gofile *ast.File, expr *ast.SelectorExp
 	pkg, err := scp.packageForSelector(gofile, expr.X)
 	if err != nil {
 		return err
-	}
-
-	return scp.parseIdentProperty(pkg, expr.Sel, prop)
-}
-
-func (scp *schemaParser) schemaForSelector(gofile *ast.File, expr *ast.SelectorExpr, prop swaggerTypable) error {
-	pkg, err := scp.packageForSelector(gofile, expr.X)
-	if err != nil {
-		return err
-	}
-
-	_, gd, _, err := findSourceFile(pkg, expr.Sel.Name)
-	if err != nil {
-		err := swaggerSchemaForType(expr.Sel.Name, prop)
-		if err != nil {
-			return fmt.Errorf("package %s, error is: %v", pkg.String(), err)
-		}
-		return nil
-	}
-
-	if swfmt, ok := strfmtName(gd.Doc); ok {
-		prop.Typed("string", swfmt)
-		return nil
 	}
 
 	return scp.parseIdentProperty(pkg, expr.Sel, prop)
