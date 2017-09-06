@@ -176,7 +176,7 @@ func DefaultSectionOpts(gen *GenOpts, client bool) {
 				ops = append(ops, TemplateOpts{
 					Name:     "parameters",
 					Source:   "asset:serverParameter",
-					Target:   "{{ if gt (len .Tags) 0 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}",
+					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_parameters.go",
 				})
 			}
@@ -184,7 +184,7 @@ func DefaultSectionOpts(gen *GenOpts, client bool) {
 				ops = append(ops, TemplateOpts{
 					Name:     "urlbuilder",
 					Source:   "asset:serverUrlbuilder",
-					Target:   "{{ if gt (len .Tags) 0 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}",
+					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_urlbuilder.go",
 				})
 			}
@@ -192,7 +192,7 @@ func DefaultSectionOpts(gen *GenOpts, client bool) {
 				ops = append(ops, TemplateOpts{
 					Name:     "responses",
 					Source:   "asset:serverResponses",
-					Target:   "{{ if gt (len .Tags) 0 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}",
+					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_responses.go",
 				})
 			}
@@ -200,7 +200,7 @@ func DefaultSectionOpts(gen *GenOpts, client bool) {
 				ops = append(ops, TemplateOpts{
 					Name:     "handler",
 					Source:   "asset:serverOperation",
-					Target:   "{{ if gt (len .Tags) 0 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}",
+					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}.go",
 				})
 			}
