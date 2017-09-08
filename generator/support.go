@@ -162,7 +162,7 @@ type appGenerator struct {
 // 1. Checks if the child path and parent path coincide.
 // 2. If they do return child path  relative to parent path.
 // 3. Everything else return false
-func checkPrefixAndFetchRelativePath(childpath string, parentpath string) (bool, string)  {
+func checkPrefixAndFetchRelativePath(childpath string, parentpath string) (bool, string) {
 
 	if strings.HasPrefix(childpath, parentpath) {
 		pth, err := filepath.Rel(parentpath, childpath)
@@ -174,7 +174,6 @@ func checkPrefixAndFetchRelativePath(childpath string, parentpath string) (bool,
 
 	return false, ""
 
-
 }
 
 func baseImport(tgt string) string {
@@ -183,7 +182,7 @@ func baseImport(tgt string) string {
 		log.Fatalln(err)
 	}
 	var tgtAbsPathExtended string
-	tgtAbsPathExtended,err = filepath.EvalSymlinks(tgtAbsPath)
+	tgtAbsPathExtended, err = filepath.EvalSymlinks(tgtAbsPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -201,7 +200,7 @@ func baseImport(tgt string) string {
 			log.Fatalln(err)
 		}
 		gopathExtended = filepath.Join(gopathExtended, "src")
-		gp = filepath.Join(gp,"src")
+		gp = filepath.Join(gp, "src")
 
 		// Windows (local) file systems - NTFS, as well as FAT and variants
 		// are case insensitive.
@@ -230,21 +229,20 @@ func baseImport(tgt string) string {
 		// Case 3: - Symlink in target path points to directory outside GOPATH (Unexpanded target path)
 		// 					 First if will succeed and break.
 
-
 		//compares non expanded path for both
-		if ok,relativepath := checkPrefixAndFetchRelativePath(tgtAbsPath, gp); ok {
+		if ok, relativepath := checkPrefixAndFetchRelativePath(tgtAbsPath, gp); ok {
 			pth = relativepath
 			break
 		}
 
 		// Compares non-expanded target path
-		if ok,relativepath := checkPrefixAndFetchRelativePath(tgtAbsPath, gopathExtended); ok {
+		if ok, relativepath := checkPrefixAndFetchRelativePath(tgtAbsPath, gopathExtended); ok {
 			pth = relativepath
 			break
 		}
 
 		// Compares expanded target path.
-		if ok,relativepath := checkPrefixAndFetchRelativePath(tgtAbsPathExtended, gopathExtended); ok {
+		if ok, relativepath := checkPrefixAndFetchRelativePath(tgtAbsPathExtended, gopathExtended); ok {
 			pth = relativepath
 			break
 		}
@@ -254,7 +252,7 @@ func baseImport(tgt string) string {
 	if pth == "" {
 		log.Fatalln("target must reside inside a location in the $GOPATH/src")
 	}
- 	return pth
+	return pth
 }
 
 func (a *appGenerator) Generate() error {

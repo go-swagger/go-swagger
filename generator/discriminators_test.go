@@ -302,7 +302,7 @@ func TestGenerateModel_Bitbucket_Repository(t *testing.T) {
 			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
 				s := string(buf.Bytes())
-				log.Printf(s)
+				log.Print(s)
 				b, err := opts.LanguageOpts.FormatContent("repository.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(b)

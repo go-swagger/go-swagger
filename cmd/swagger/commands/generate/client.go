@@ -90,29 +90,29 @@ func (c *Client) Execute(args []string) error {
 		Copyright:         copyrightstr,
 	}
 
-	if err := opts.EnsureDefaults(true); err != nil {
+	if err = opts.EnsureDefaults(true); err != nil {
 		return err
 	}
 
-	if err := configureOptsFromConfig(cfg, opts); err != nil {
+	if err = configureOptsFromConfig(cfg, opts); err != nil {
 		return err
 	}
 
-	if err := generator.GenerateClient(c.Name, c.Models, c.Operations, opts); err != nil {
+	if err = generator.GenerateClient(c.Name, c.Models, c.Operations, opts); err != nil {
 		return err
 	}
 
-	var basepath,rp,targetAbs string
+	var basepath, rp, targetAbs string
 
-	basepath,err = filepath.Abs(".")
+	basepath, err = filepath.Abs(".")
 	if err != nil {
 		return err
 	}
-	targetAbs,err = filepath.Abs(opts.Target)
+	targetAbs, err = filepath.Abs(opts.Target)
 	if err != nil {
 		return err
 	}
-		rp, err = filepath.Rel(basepath, targetAbs)
+	rp, err = filepath.Rel(basepath, targetAbs)
 	if err != nil {
 		return err
 	}

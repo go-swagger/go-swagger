@@ -52,13 +52,13 @@ func (s *Support) Execute(args []string) error {
 		return err
 	}
 
-	var basepath,rp,targetAbs string
+	var basepath, rp, targetAbs string
 	var err error
-	basepath,err = filepath.Abs(".")
+	basepath, err = filepath.Abs(".")
 	if err != nil {
 		return err
 	}
-	targetAbs,err = filepath.Abs(opts.Target)
+	targetAbs, err = filepath.Abs(opts.Target)
 	if err != nil {
 		return err
 	}
