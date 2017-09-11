@@ -549,6 +549,8 @@ func TestIsEmail(t *testing.T) {
 		{"foo@bar.com.au", true},
 		{"foo+bar@bar.com", true},
 		{"foo@bar.coffee", true},
+		{"foo@bar.coffee..coffee", false},
+		{"foo@bar.bar.coffee", true},
 		{"foo@bar.中文网", true},
 		{"invalidemail@", false},
 		{"invalid.com", false},
@@ -651,6 +653,14 @@ func TestIsURL(t *testing.T) {
 		{"http://[1200:0000:AB00:1234:0000:2552:7777:1313]", true},
 		{"http://user:pass@[::1]:9093/a/b/c/?a=v#abc", true},
 		{"https://127.0.0.1/a/b/c?a=v&c=11d", true},
+		{"https://foo_bar.example.com", true},
+		{"http://foo_bar.example.com", true},
+		{"http://foo_bar_fizz_buzz.example.com", true},
+		{"http://_cant_start_with_underescore", false},
+		{"http://cant_end_with_underescore_", false},
+		{"foo_bar.example.com", true},
+		{"foo_bar_fizz_buzz.example.com", true},
+		{"http://hello_world.example.com", true},
 	}
 	for _, test := range tests {
 		actual := IsURL(test.param)
@@ -1401,6 +1411,64 @@ func TestIsISO3166Alpha3(t *testing.T) {
 	}
 }
 
+func TestIsISO693Alpha2(t *testing.T) {
+	t.Parallel()
+
+	var tests = []struct {
+		param    string
+		expected bool
+	}{
+		{"", false},
+		{"abcd", false},
+		{"a", false},
+		{"ac", false},
+		{"ap", false},
+		{"de", true},
+		{"DE", false},
+		{"mk", true},
+		{"mac", false},
+		{"sw", true},
+		{"SW", false},
+		{"ger", false},
+		{"deu", false},
+	}
+	for _, test := range tests {
+		actual := IsISO693Alpha2(test.param)
+		if actual != test.expected {
+			t.Errorf("Expected IsISO693Alpha2(%q) to be %v, got %v", test.param, test.expected, actual)
+		}
+	}
+}
+
+func TestIsISO693Alpha3b(t *testing.T) {
+	t.Parallel()
+
+	var tests = []struct {
+		param    string
+		expected bool
+	}{
+		{"", false},
+		{"abcd", false},
+		{"a", false},
+		{"ac", false},
+		{"ap", false},
+		{"de", false},
+		{"DE", false},
+		{"mkd", false},
+		{"mac", true},
+		{"sw", false},
+		{"SW", false},
+		{"ger", true},
+		{"deu", false},
+	}
+	for _, test := range tests {
+		actual := IsISO693Alpha3b(test.param)
+		if actual != test.expected {
+			t.Errorf("Expected IsISO693Alpha3b(%q) to be %v, got %v", test.param, test.expected, actual)
+		}
+	}
+}
+
 func TestIsIP(t *testing.T) {
 	t.Parallel()
 
@@ -1499,17 +1567,23 @@ func TestIsDNSName(t *testing.T) {
 	}{
 		{"localhost", true},
 		{"a.bc", true},
+		{"a.b.", true},
+		{"a.b..", false},
 		{"localhost.local", true},
 		{"localhost.localdomain.intern", true},
+		{"l.local.intern", true},
+		{"ru.link.n.svpncloud.com", true},
 		{"-localhost", false},
 		{"localhost.-localdomain", false},
 		{"localhost.localdomain.-int", false},
-		{"_localhost", false},
-		{"localhost._localdomain", false},
-		{"localhost.localdomain._int", false},
+		{"_localhost", true},
+		{"localhost._localdomain", true},
+		{"localhost.localdomain._int", true},
 		{"lÖcalhost", false},
 		{"localhost.lÖcaldomain", false},
 		{"localhost.localdomain.üntern", false},
+		{"__", true},
+		{"localhost/", false},
 		{"127.0.0.1", false},
 		{"[::1]", false},
 		{"50.50.50.50", false},
@@ -2616,10 +2690,10 @@ func TestErrorsByField(t *testing.T) {
 		param    string
 		expected string
 	}{
-		{"CustomField", "An error occured"},
+		{"CustomField", "An error occurred"},
 	}
 
-	err = Error{"CustomField", fmt.Errorf("An error occured"), false}
+	err = Error{"CustomField", fmt.Errorf("An error occurred"), false}
 	errs = ErrorsByField(err)
 
 	if len(errs) != 1 {

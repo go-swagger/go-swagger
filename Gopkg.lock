@@ -16,8 +16,8 @@
 [[projects]]
   name = "github.com/asaskevich/govalidator"
   packages = ["."]
-  revision = "4918b99a7cb949bb295f3c7bbaf24b577d806e35"
-  version = "v6"
+  revision = "73945b6115bfbbcc57d89b7316e28109364124e1"
+  version = "v7"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -28,8 +28,8 @@
 [[projects]]
   name = "github.com/docker/go-units"
   packages = ["."]
-  revision = "f2d77a61e3c169b43402a0a1e84f06daf29b8190"
-  version = "v0.3.1"
+  revision = "0dadbb0345b35ec7ef35e228dabb8de89a65bf52"
+  version = "v0.3.2"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
@@ -233,7 +233,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "7ddbeae9ae08c6a06a59597f0c9edbc5ff2444ce"
+  revision = "a5054c7c1385fd50d9394475365355a87a7873ec"
 
 [[projects]]
   branch = "master"
