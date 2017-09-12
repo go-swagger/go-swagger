@@ -20,7 +20,7 @@ There are a number of filters you can use inside a template to manipulate values
 Filter | Description
 -------|-------------
 pascalize | every word boundary starts with a capital; "some long name" becomes SomeLongName
-camelize | every word boundary starts with a capital except the first word; "some long name" becomes SomeLongName
+camelize | every word boundary starts with a capital except the first word; "some long name" becomes someLongName
 varname | like camelize, but respects golint naming rules; "some url" becomes someURL
 humanize | takes an identifier and adds spaces to it; someLongName becomes "some long name"
 snakize | converts to lowercase and separates words with an underscore; someLongName becomes some_long_name
