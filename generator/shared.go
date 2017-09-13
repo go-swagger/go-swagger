@@ -777,9 +777,8 @@ func validateAndExpandSpec(opts *GenOpts, specDoc *loads.Document) error {
 	if opts.ValidateSpec {
 		if err := validateSpec(opts.Spec, specDoc); err != nil {
 			return err
-		} else {
-			return nil
 		}
+		return nil
 	}
 
 	// If no validation then just expand and return
