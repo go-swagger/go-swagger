@@ -770,3 +770,25 @@ func pruneEmpty(in []string) (out []string) {
 func trimBOM(in string) string {
 	return strings.Trim(in, "\xef\xbb\xbf")
 }
+
+func validateAndExpandSpec(opts *GenOpts, specDoc *loads.Document) error {
+
+	// Validate if needed
+	if opts.ValidateSpec {
+		if err := validateSpec(opts.Spec, specDoc); err != nil {
+			return err
+		} else {
+			return nil
+		}
+	}
+
+	// If no validation then just expand and return
+	exp, err := specDoc.Expanded()
+	if err != nil {
+			return err
+	}
+
+	*specDoc = *exp
+
+	return nil
+}

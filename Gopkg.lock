@@ -101,7 +101,7 @@
   branch = "master"
   name = "github.com/go-openapi/validate"
   packages = ["."]
-  revision = "8a82927c942c94794a5cd8b8b50ce2f48a955c0c"
+  revision = "901ab082554d18fd6a99cc3a4bde6469e58d4cf6"
 
 [[projects]]
   branch = "master"

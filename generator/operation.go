@@ -29,6 +29,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
+
 )
 
 type respSort struct {
@@ -71,9 +72,16 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 	if err != nil {
 		return err
 	}
+
+	// Validate and Expand. specDoc is in/out param.
+	validateAndExpandSpec(opts, specDoc)
+
 	analyzed := analysis.New(specDoc.Spec())
 
 	ops := gatherOperations(analyzed, operationNames)
+	if len(ops) == 0 {
+		return errors.New("no operations were selected")
+	}
 
 	for operationName, opRef := range ops {
 		method, path, operation := opRef.Method, opRef.Path, opRef.Op
