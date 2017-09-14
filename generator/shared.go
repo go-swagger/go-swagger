@@ -771,23 +771,31 @@ func trimBOM(in string) string {
 	return strings.Trim(in, "\xef\xbb\xbf")
 }
 
-func validateAndExpandSpec(opts *GenOpts, specDoc *loads.Document) error {
+func validateAndFlattenSpec(opts *GenOpts, specDoc *loads.Document) (*loads.Document, error) {
+
+	var err error
 
 	// Validate if needed
 	if opts.ValidateSpec {
 		if err := validateSpec(opts.Spec, specDoc); err != nil {
-			return err
+			return specDoc,err
 		}
-		return nil
 	}
 
-	// If no validation then just expand and return
-	exp, err := specDoc.Expanded()
+
+	// Restore spec to original
+	opts.Spec, specDoc, err = loadSpec(opts.Spec)
 	if err != nil {
-			return err
+		return nil,err
 	}
 
-	*specDoc = *exp
+	flattenOpts := analysis.FlattenOpts{
+		BasePath: specDoc.SpecFilePath(),
+		Spec:     analysis.New(specDoc.Spec()),
+	}
 
-	return nil
+	err = analysis.Flatten(flattenOpts)
+
+	return specDoc,nil
 }
+

@@ -74,7 +74,10 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 	}
 
 	// Validate and Expand. specDoc is in/out param.
-	validateAndExpandSpec(opts, specDoc)
+	specDoc,err = validateAndFlattenSpec(opts, specDoc)
+	if err != nil {
+		return err
+	}
 
 	analyzed := analysis.New(specDoc.Spec())
 
@@ -299,7 +302,9 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	if Debug {
 		log.Printf("[%s %s] parsing operation (id: %q)", b.Method, b.Path, b.Operation.ID)
 	}
-	resolver := newTypeResolver(b.ModelsPackage, b.Doc.ResetDefinitions())
+	// @eleanorrigby : letting the comment be. Commented in response to issue#890
+	// Post-flattening of spec we no longer need to reset defs for spec or use original spec in any case.
+	resolver := newTypeResolver(b.ModelsPackage, b.Doc/*.ResetDefinitions()*/)
 	receiver := "o"
 
 	operation := b.Operation

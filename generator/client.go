@@ -52,7 +52,10 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 	}
 
 	// Validate and Expand. specDoc is in/out param.
-	validateAndExpandSpec(opts, specDoc)
+	specDoc,err = validateAndFlattenSpec(opts, specDoc)
+	if err != nil {
+		return err
+	}
 
 	analyzed := analysis.New(specDoc.Spec())
 
