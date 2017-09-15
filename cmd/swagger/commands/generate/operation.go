@@ -36,6 +36,8 @@ type Operation struct {
 	NoValidator   bool     `long:"skip-validator" description:"when present will not generate a model validator"`
 	NoURLBuilder  bool     `long:"skip-url-builder" description:"when present will not generate a URL builder"`
 	DumpData      bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
+	SkipFlattening  bool     `long:"skip-flatten" description:"skips flattening of spec prior to generation"`
+	SkipValidation  bool     `long:"skip-validation" description:"skips validation of spec prior to generation"`
 }
 
 // Execute generates a model file
@@ -67,6 +69,8 @@ func (o *Operation) Execute(args []string) error {
 		IncludeValidator:  !o.NoValidator,
 		IncludeURLBuilder: !o.NoURLBuilder,
 		Tags:              o.Tags,
+		FlattenSpec:			 !o.SkipFlattening,
+		ValidateSpec:      !o.SkipValidation,
 	}
 
 	if err = opts.EnsureDefaults(false); err != nil {
