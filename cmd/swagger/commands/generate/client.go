@@ -37,6 +37,7 @@ type Client struct {
 	SkipOperations  bool     `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
 	DumpData        bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
 	SkipValidation  bool     `long:"skip-validation" description:"skips validation of spec prior to generation"`
+	SkipFlattening  bool     `long:"skip-flatten" description:"skips flattening of spec prior to generation"`
 }
 
 // Execute runs this command
@@ -82,6 +83,7 @@ func (c *Client) Execute(args []string) error {
 		IncludeParameters: !c.SkipOperations,
 		IncludeResponses:  !c.SkipOperations,
 		ValidateSpec:      !c.SkipValidation,
+		FlattenSpec:			 !c.SkipFlattening,
 		Tags:              c.Tags,
 		IncludeSupport:    true,
 		TemplateDir:       string(c.TemplateDir),

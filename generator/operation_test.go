@@ -535,7 +535,7 @@ func TestGenClient_Issue733(t *testing.T) {
 	}
 }
 
-func TestGenServerIssue890_ValidationTrue(t *testing.T) {
+func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stderr)
 	dr, _ := os.Getwd()
@@ -548,6 +548,7 @@ func TestGenServerIssue890_ValidationTrue(t *testing.T) {
 		IncludeResponses:  true,
 		IncludeMain:       true,
 		ValidateSpec:			 true,
+		FlattenSpec:			 true,
 		APIPackage:        "restapi",
 		ModelPackage:      "model",
 		ServerPackage:     "server",
@@ -577,8 +578,7 @@ func TestGenServerIssue890_ValidationTrue(t *testing.T) {
 	}
 }
 
-
-func TestGenClientIssue890_ValidationTrue(t *testing.T) {
+func TestGenClientIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 	defer func() {
 		dr, _ := os.Getwd()
 		os.RemoveAll(dr+"/restapi/")
@@ -586,13 +586,13 @@ func TestGenClientIssue890_ValidationTrue(t *testing.T) {
 	opts := testGenOpts()
 	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
 	opts.ValidateSpec = true
+	opts.FlattenSpec = true
 	// Testing this is enough as there is only one operation which is specified as $ref.
 	// If this doesn't get resolved then there will be an error definitely.
 	assert.NoError(t, GenerateClient("foo", nil, nil, &opts))
 }
 
-
-func TestGenServerIssue890_ValidationFalse(t *testing.T) {
+func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stderr)
 	dr, _ := os.Getwd()
@@ -605,6 +605,7 @@ func TestGenServerIssue890_ValidationFalse(t *testing.T) {
 		IncludeResponses:  true,
 		IncludeMain:       true,
 		ValidateSpec:			 false,
+		FlattenSpec:			 true,
 		APIPackage:        "restapi",
 		ModelPackage:      "model",
 		ServerPackage:     "server",
@@ -634,8 +635,7 @@ func TestGenServerIssue890_ValidationFalse(t *testing.T) {
 	}
 }
 
-
-func TestGenClientIssue890_ValidationFalse(t *testing.T) {
+func TestGenClientIssue890_ValidationFalseFlatteningTrue(t *testing.T) {
 	defer func() {
 		dr, _ := os.Getwd()
 		os.RemoveAll(dr+"/restapi/")
@@ -643,7 +643,92 @@ func TestGenClientIssue890_ValidationFalse(t *testing.T) {
 	opts := testGenOpts()
 	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
 	opts.ValidateSpec = false
+	opts.FlattenSpec = true
 	// Testing this is enough as there is only one operation which is specified as $ref.
 	// If this doesn't get resolved then there will be an error definitely.
 	assert.NoError(t, GenerateClient("foo", nil, nil, &opts))
+}
+
+func TestGenServerIssue890_ValidationFalseFlattenFalse(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stderr)
+	dr, _ := os.Getwd()
+	opts := &GenOpts{
+		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
+		IncludeModel:      true,
+		IncludeValidator:  true,
+		IncludeHandler:    true,
+		IncludeParameters: true,
+		IncludeResponses:  true,
+		IncludeMain:       true,
+		ValidateSpec:			 false,
+		FlattenSpec:       false,
+		APIPackage:        "restapi",
+		ModelPackage:      "model",
+		ServerPackage:     "server",
+		ClientPackage:     "client",
+		Target:            dr,
+	}
+
+	//Testing Server Generation
+	err := opts.EnsureDefaults(true)
+	assert.NoError(t, err)
+	_, err = newAppGenerator("JsonRefOperation", nil, nil, opts)
+	assert.Error(t, err)
+}
+
+func TestGenClientIssue890_ValidationFalseFlattenFalse(t *testing.T) {
+	defer func() {
+		dr, _ := os.Getwd()
+		os.RemoveAll(dr+"/restapi/")
+	}()
+	opts := testGenOpts()
+	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
+	opts.ValidateSpec = false
+	opts.FlattenSpec = false
+	// Testing this is enough as there is only one operation which is specified as $ref.
+	// If this doesn't get resolved then there will be an error definitely.
+	assert.Error(t, GenerateClient("foo", nil, nil, &opts))
+}
+
+func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stderr)
+	dr, _ := os.Getwd()
+	opts := &GenOpts{
+		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
+		IncludeModel:      true,
+		IncludeValidator:  true,
+		IncludeHandler:    true,
+		IncludeParameters: true,
+		IncludeResponses:  true,
+		IncludeMain:       true,
+		ValidateSpec:			 true,
+		FlattenSpec:       false,
+		APIPackage:        "restapi",
+		ModelPackage:      "model",
+		ServerPackage:     "server",
+		ClientPackage:     "client",
+		Target:            dr,
+	}
+
+	//Testing Server Generation
+	err := opts.EnsureDefaults(true)
+	assert.NoError(t, err)
+	_, err = newAppGenerator("JsonRefOperation", nil, nil, opts)
+	assert.Error(t, err)
+}
+
+func TestGenClientIssue890_ValidationTrueFlattenFalse(t *testing.T) {
+	defer func() {
+		dr, _ := os.Getwd()
+		os.RemoveAll(dr+"/restapi/")
+	}()
+	opts := testGenOpts()
+	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
+	opts.ValidateSpec = true
+	opts.FlattenSpec = false
+	// Testing this is enough as there is only one operation which is specified as $ref.
+	// If this doesn't get resolved then there will be an error definitely.
+	assert.Error(t, GenerateClient("foo", nil, nil, &opts))
 }
