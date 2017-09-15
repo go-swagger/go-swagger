@@ -213,7 +213,7 @@ func typeForHeader(header spec.Header) resolvedType {
 func newTypeResolver(pkg string, doc *loads.Document) *typeResolver {
 	resolver := typeResolver{ModelsPackage: pkg, Doc: doc}
 	resolver.KnownDefs = make(map[string]struct{}, 64)
-	for k, sch := range doc.OrigSpec().Definitions {
+	for k, sch := range doc.Spec().Definitions {
 		tpe, _, _ := knownDefGoType(k, sch, nil)
 		resolver.KnownDefs[tpe] = struct{}{}
 	}

@@ -29,6 +29,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
+
 )
 
 type respSort struct {
@@ -71,9 +72,19 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 	if err != nil {
 		return err
 	}
+
+	// Validate and Expand. specDoc is in/out param.
+	specDoc,err = validateAndFlattenSpec(opts, specDoc)
+	if err != nil {
+		return err
+	}
+
 	analyzed := analysis.New(specDoc.Spec())
 
 	ops := gatherOperations(analyzed, operationNames)
+	if len(ops) == 0 {
+		return errors.New("no operations were selected")
+	}
 
 	for operationName, opRef := range ops {
 		method, path, operation := opRef.Method, opRef.Path, opRef.Op
@@ -291,7 +302,9 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	if Debug {
 		log.Printf("[%s %s] parsing operation (id: %q)", b.Method, b.Path, b.Operation.ID)
 	}
-	resolver := newTypeResolver(b.ModelsPackage, b.Doc.ResetDefinitions())
+	// @eleanorrigby : letting the comment be. Commented in response to issue#890
+	// Post-flattening of spec we no longer need to reset defs for spec or use original spec in any case.
+	resolver := newTypeResolver(b.ModelsPackage, b.Doc/*.ResetDefinitions()*/)
 	receiver := "o"
 
 	operation := b.Operation

@@ -770,3 +770,32 @@ func pruneEmpty(in []string) (out []string) {
 func trimBOM(in string) string {
 	return strings.Trim(in, "\xef\xbb\xbf")
 }
+
+func validateAndFlattenSpec(opts *GenOpts, specDoc *loads.Document) (*loads.Document, error) {
+
+	var err error
+
+	// Validate if needed
+	if opts.ValidateSpec {
+		if err := validateSpec(opts.Spec, specDoc); err != nil {
+			return specDoc,err
+		}
+	}
+
+
+	// Restore spec to original
+	opts.Spec, specDoc, err = loadSpec(opts.Spec)
+	if err != nil {
+		return nil,err
+	}
+
+	flattenOpts := analysis.FlattenOpts{
+		BasePath: specDoc.SpecFilePath(),
+		Spec:     analysis.New(specDoc.Spec()),
+	}
+
+	err = analysis.Flatten(flattenOpts)
+
+	return specDoc,nil
+}
+

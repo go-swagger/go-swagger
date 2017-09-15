@@ -150,7 +150,7 @@ func TestMakeResponse_WithAllOfSchema(t *testing.T) {
 				if assert.NotEmpty(t, body.Properties) {
 					prop := body.Properties[0]
 					assert.Equal(t, "data", prop.Name)
-					assert.Equal(t, "[]*DataItems0", prop.GoType)
+					assert.Equal(t, "[]*models.DataItems0", prop.GoType)
 				}
 				items := b.ExtraSchemas["DataItems0"]
 				if assert.NotEmpty(t, items.AllOf) {
@@ -218,7 +218,7 @@ func TestRenderOperation_InstagramSearch(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					// fmt.Println(res)
-					assertInCode(t, "Data []*DataItems0 `json:\"data\"`", res)
+					assertInCode(t, "Data []*models.DataItems0 `json:\"data\"`", res)
 					assertInCode(t, "models.Media", res)
 				} else {
 					fmt.Println(buf.String())
@@ -533,4 +533,117 @@ func TestGenClient_Issue733(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestGenServerIssue890_ValidationTrue(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stderr)
+	dr, _ := os.Getwd()
+	opts := &GenOpts{
+		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
+		IncludeModel:      true,
+		IncludeValidator:  true,
+		IncludeHandler:    true,
+		IncludeParameters: true,
+		IncludeResponses:  true,
+		IncludeMain:       true,
+		ValidateSpec:			 true,
+		APIPackage:        "restapi",
+		ModelPackage:      "model",
+		ServerPackage:     "server",
+		ClientPackage:     "client",
+		Target:            dr,
+	}
+
+	//Testing Server Generation
+	err := opts.EnsureDefaults(true)
+	assert.NoError(t, err)
+	appGen, err := newAppGenerator("JsonRefOperation", nil, nil, opts)
+	if assert.NoError(t, err) {
+		op, err := appGen.makeCodegenApp()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("serverOperation").Execute(buf, op.Operations[0])
+			if assert.NoError(t, err) {
+				filecontent, err := appGen.GenOpts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(filecontent)
+					assertInCode(t, "GetHealthCheck", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+
+func TestGenClientIssue890_ValidationTrue(t *testing.T) {
+	defer func() {
+		dr, _ := os.Getwd()
+		os.RemoveAll(dr+"/restapi/")
+	}()
+	opts := testGenOpts()
+	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
+	opts.ValidateSpec = true
+	// Testing this is enough as there is only one operation which is specified as $ref.
+	// If this doesn't get resolved then there will be an error definitely.
+	assert.NoError(t, GenerateClient("foo", nil, nil, &opts))
+}
+
+
+func TestGenServerIssue890_ValidationFalse(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stderr)
+	dr, _ := os.Getwd()
+	opts := &GenOpts{
+		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
+		IncludeModel:      true,
+		IncludeValidator:  true,
+		IncludeHandler:    true,
+		IncludeParameters: true,
+		IncludeResponses:  true,
+		IncludeMain:       true,
+		ValidateSpec:			 false,
+		APIPackage:        "restapi",
+		ModelPackage:      "model",
+		ServerPackage:     "server",
+		ClientPackage:     "client",
+		Target:            dr,
+	}
+
+	//Testing Server Generation
+	err := opts.EnsureDefaults(true)
+	assert.NoError(t, err)
+	appGen, err := newAppGenerator("JsonRefOperation", nil, nil, opts)
+	if assert.NoError(t, err) {
+		op, err := appGen.makeCodegenApp()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("serverOperation").Execute(buf, op.Operations[0])
+			if assert.NoError(t, err) {
+				filecontent, err := appGen.GenOpts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(filecontent)
+					assertInCode(t, "GetHealthCheck", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+
+func TestGenClientIssue890_ValidationFalse(t *testing.T) {
+	defer func() {
+		dr, _ := os.Getwd()
+		os.RemoveAll(dr+"/restapi/")
+	}()
+	opts := testGenOpts()
+	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
+	opts.ValidateSpec = false
+	// Testing this is enough as there is only one operation which is specified as $ref.
+	// If this doesn't get resolved then there will be an error definitely.
+	assert.NoError(t, GenerateClient("foo", nil, nil, &opts))
 }

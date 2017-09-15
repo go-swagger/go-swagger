@@ -138,7 +138,7 @@ func TestInlinedSchemaResponses(t *testing.T) {
 							}
 						}
 						assert.Len(t, b.ExtraSchemas, 1)
-						assert.Equal(t, "[]*SuccessBodyItems0", res.Schema.GoType)
+						assert.Equal(t, "[]*models.SuccessBodyItems0", res.Schema.GoType)
 					}
 				}
 			}

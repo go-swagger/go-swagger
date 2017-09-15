@@ -51,16 +51,10 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 		return err
 	}
 
-	// Validate if needed
-	if opts.ValidateSpec {
-		if err = validateSpec(opts.Spec, specDoc); err != nil {
-			return err
-		}
-		// Restore spec to original
-		opts.Spec, specDoc, err = loadSpec(opts.Spec)
-		if err != nil {
-			return err
-		}
+	// Validate and Expand. specDoc is in/out param.
+	specDoc,err = validateAndFlattenSpec(opts, specDoc)
+	if err != nil {
+		return err
 	}
 
 	analyzed := analysis.New(specDoc.Spec())
@@ -69,7 +63,12 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 	if err != nil {
 		return err
 	}
+
 	operations := gatherOperations(analyzed, operationIDs)
+
+	if len(operations) == 0 {
+		return errors.New("no operations were selected")
+	}
 
 	defaultScheme := opts.DefaultScheme
 	if defaultScheme == "" {
