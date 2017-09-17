@@ -185,5 +185,36 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalBinary(b []byte) error 
   *{{ .ReceiverName }} = res
   return nil
 }
+
+// MarshalText interface implementation
+func ({{.ReceiverName}} *{{ pascalize .Name }}) MarshalText() ([]byte, error) {
+  if {{ .ReceiverName }} == nil {
+    return nil, nil
+  }
+  b, err := swag.WriteJSON({{ .ReceiverName }})
+  if err != nil {
+    return nil, err
+  }
+  return []byte(fmt.Sprintf("%v", b))
+}
+
+// UnmarshalText interface implementation
+func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalText(text []byte) error {
+  var res {{ pascalize .Name }}
+  fmt.Printf("%s", string(text))
+  *{{ .ReceiverName }} = res
+  return nil;
+}
 {{ end -}}
 
+// MarshalText interface implementation
+func ({{.ReceiverName}} *{{ pascalize .Name }}) String() string {
+  if {{ .ReceiverName }} == nil {
+    return nil, nil
+  }
+  b, err := swag.WriteJSON({{ .ReceiverName }})
+  if err != nil {
+    return nil, err
+  }
+  return fmt.Sprintf("%v", b)
+}
