@@ -207,7 +207,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalText(text []byte) error
 }
 {{ end -}}
 
-// MarshalText interface implementation
+// String interface implementation
 func ({{.ReceiverName}} *{{ pascalize .Name }}) String() string {
   if {{ .ReceiverName }} == nil {
     return nil, nil
