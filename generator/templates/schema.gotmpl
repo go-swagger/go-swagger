@@ -195,7 +195,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) MarshalText() ([]byte, error) {
   if err != nil {
     return nil, err
   }
-  return []byte(fmt.Sprintf("%v", b))
+  return []byte(fmt.Sprintf("%v", b)), nil
 }
 
 // UnmarshalText interface implementation
@@ -205,16 +205,20 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalText(text []byte) error
   *{{ .ReceiverName }} = res
   return nil;
 }
-{{ end -}}
+
 
 // String interface implementation
 func ({{.ReceiverName}} *{{ pascalize .Name }}) String() string {
   if {{ .ReceiverName }} == nil {
-    return nil, nil
+    fmt.Errorf("Nil calling object")
+    return ""
   }
   b, err := swag.WriteJSON({{ .ReceiverName }})
   if err != nil {
-    return nil, err
+    fmt.Errorf("%v", err)
+    return ""
   }
   return fmt.Sprintf("%v", b)
 }
+
+{{ end -}}
