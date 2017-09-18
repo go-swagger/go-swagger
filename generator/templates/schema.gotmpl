@@ -198,8 +198,11 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) MarshalText() ([]byte, error) {
 // UnmarshalText interface implementation
 func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalText(text []byte) error {
   var res {{ pascalize .Name }}
+  if err := swag.ReadJSON(text, &res); err != nil {
+    return err
+  }
   *{{ .ReceiverName }} = res
-  return nil;
+  return nil
 }
 
 
