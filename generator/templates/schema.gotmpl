@@ -191,17 +191,13 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) MarshalText() ([]byte, error) {
   if {{ .ReceiverName }} == nil {
     return nil, nil
   }
-  b, err := swag.WriteJSON({{ .ReceiverName }})
-  if err != nil {
-    return nil, err
-  }
-  return []byte(fmt.Sprintf("%v", b)), nil
+  return swag.WriteJSON({{ .ReceiverName }})
+
 }
 
 // UnmarshalText interface implementation
 func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalText(text []byte) error {
   var res {{ pascalize .Name }}
-  fmt.Printf("%s", string(text))
   *{{ .ReceiverName }} = res
   return nil;
 }
@@ -209,10 +205,6 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalText(text []byte) error
 
 // String interface implementation
 func ({{.ReceiverName}} *{{ pascalize .Name }}) String() string {
-  if {{ .ReceiverName }} == nil {
-    fmt.Errorf("Nil calling object")
-    return ""
-  }
   b, err := swag.WriteJSON({{ .ReceiverName }})
   if err != nil {
     fmt.Errorf("%v", err)
