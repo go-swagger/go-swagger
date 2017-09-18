@@ -207,7 +207,6 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalText(text []byte) error
 func ({{.ReceiverName}} *{{ pascalize .Name }}) String() string {
   b, err := swag.WriteJSON({{ .ReceiverName }})
   if err != nil {
-    fmt.Errorf("%v", err)
     return ""
   }
   return fmt.Sprintf("%v", b)
