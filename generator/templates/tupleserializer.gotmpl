@@ -1,6 +1,6 @@
 {{ define "tupleSerializer" }}
 // UnmarshalJSON unmarshals this tuple type from a JSON array
-func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(data []byte) error {
+func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error {
   // stage 1, get the array but just the array
   var stage1 []json.RawMessage
   buf := bytes.NewBuffer(raw)
@@ -43,7 +43,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(data []byte) error
 // MarshalJSON marshals this tuple type into a JSON array
 func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
   data := []interface{}{
-  {{ range .Properties }}{{ pascalize .Name }},
+  {{ range .Properties }}{{.ReceiverName}}.{{ pascalize .Name }},
   {{ end }} }
   {{ if .AdditionalItems }}
   for _, v := range {{ .AdditionalItems.ValueExpression }} {
