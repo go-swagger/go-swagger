@@ -118,3 +118,40 @@ func TestValidateRequiredNumber(t *testing.T) {
 	err = RequiredNumber("test", "body", 1)
 	assert.Nil(t, err)
 }
+
+func TestMultipleOf(t *testing.T) {
+
+	// positive
+
+	err := MultipleOf("test", "body", 9, 3)
+	assert.Nil(t, err)
+
+	err = MultipleOf("test", "body", 9.3, 3.1)
+	assert.Nil(t, err)
+
+	err = MultipleOf("test", "body", 9.1, 0.1)
+	assert.Nil(t, err)
+
+	err = MultipleOf("test", "body", 3, 0.3)
+	assert.Nil(t, err)
+
+	err = MultipleOf("test", "body", 6, 0.3)
+	assert.Nil(t, err)
+
+	err = MultipleOf("test", "body", 1, 0.25)
+	assert.Nil(t, err)
+
+	err = MultipleOf("test", "body", 8, 0.2)
+	assert.Nil(t, err)
+
+	// negative
+
+	err = MultipleOf("test", "body", 3, 0.4)
+	assert.Error(t, err)
+
+	err = MultipleOf("test", "body", 9.1, 0.2)
+	assert.Error(t, err)
+
+	err = MultipleOf("test", "body", 9.34, 0.1)
+	assert.Error(t, err)
+}

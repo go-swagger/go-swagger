@@ -48,12 +48,10 @@ import (
 // 	- every default value that is specified must validate against the schema for that property
 // 	- items property is required for all schemas/definitions of type `array`
 func Spec(doc *loads.Document, formats strfmt.Registry) error {
-   newSpecValidator := NewSpecValidator(doc.Schema(), formats)
-   errs, _ /*warns*/ := newSpecValidator.Validate(doc)
+	errs, _ /*warns*/ := NewSpecValidator(doc.Schema(), formats).Validate(doc)
 	if errs.HasErrors() {
 		return errors.CompositeValidationError(errs.Errors...)
 	}
-   *doc = *(newSpecValidator.expanded)
 	return nil
 }
 
