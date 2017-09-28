@@ -120,7 +120,7 @@ func newCompleteMiddleware(ctx *middleware.Context) http.Handler {
 }
 ```
 
-Prior to handling requests however you probably want to configure the API with some actual implementations.  To do that you have to edit the configure_xxx_api.go file.  That file will only be generated the first time you generate a server application from a swagger spec. So the generated server uses this file to let you fill in the blanks.
+Prior to handling requests however you probably want to configure the API with some actual implementations.  To do that you have to edit the configure_xxx.go file.  That file will only be generated the first time you generate a server application from a swagger spec. So the generated server uses this file to let you fill in the blanks.
 
 For the todolist application that file looks like:
 
