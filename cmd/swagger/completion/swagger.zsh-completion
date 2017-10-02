@@ -6,7 +6,7 @@ typeset -A opt_args
 __expand() {
   _arguments \
     '(-h,--help)'{-h,--help}'[Print help message]' \
-    "(--compact)--compact[when present, doesn't prettify the the json]" \
+    "(--compact)--compact[when present, doesn't prettify the json]" \
     '(-o, --output)'{-o,--output}"[the file to write to]:output" && return 0
 }
 
