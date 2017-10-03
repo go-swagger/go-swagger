@@ -39,6 +39,7 @@ const (
 	binary      = "binary"
 	xNullable   = "x-nullable"
 	xIsNullable = "x-isnullable"
+	xOmitEmpty  = "x-omitempty"
 	sHTTP       = "http"
 	body        = "body"
 )
@@ -394,6 +395,12 @@ func (t *typeResolver) isNullable(schema *spec.Schema) bool {
 	return len(schema.Properties) > 0
 }
 
+func (t *typeResolver) IsEmptyOmitted(schema *spec.Schema) bool {
+	v, found := schema.Extensions[xOmitEmpty]
+	omitted, cast := v.(bool)
+	return found && cast && omitted
+}
+
 func (t *typeResolver) firstType(schema *spec.Schema) string {
 	if len(schema.Type) == 0 || schema.Type[0] == "" {
 		return object
@@ -409,6 +416,7 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 
 	result.IsArray = true
 	result.IsNullable = false
+	result.IsEmptyOmitted = t.IsEmptyOmitted(schema)
 	if schema.AdditionalItems != nil {
 		result.HasAdditionalItems = (schema.AdditionalItems.Allows || schema.AdditionalItems.Schema != nil)
 	}
@@ -706,6 +714,7 @@ type resolvedType struct {
 	IsNullable        bool
 	IsStream          bool
 	HasDiscriminator  bool
+	IsEmptyOmitted    bool
 
 	// A tuple gets rendered as an anonymous struct with P{index} as property name
 	IsTuple            bool

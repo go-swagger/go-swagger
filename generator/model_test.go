@@ -2005,3 +2005,30 @@ func TestGenModel_Issue981(t *testing.T) {
 	}
 
 }
+
+func TestGenModel_Issue774(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/774/swagger.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "Foo"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ff, err := opts.LanguageOpts.FormatContent("Foo.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					fmt.Println(res)
+					assertInCode(t, "HasOmitEmptyFalse []string `json:\"hasOmitEmptyFalse\"`", res)
+					assertInCode(t, "HasOmitEmptyTrue []string `json:\"hasOmitEmptyTrue,omitempty\"`", res)
+					assertInCode(t, "NoOmitEmpty []string `json:\"noOmitEmpty\"`", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
