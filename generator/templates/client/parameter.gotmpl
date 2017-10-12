@@ -235,13 +235,12 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r runtime
   {{ end }}
 
   {{if .IsBodyParam}}
-  {{ if and .Schema.IsComplexObject .Schema.IsNullable (not .HasDiscriminator) }}if {{ .ValueExpression }} == nil {
-    {{ .ValueExpression }} = {{ .ZeroValue }}
+  {{ if and .Schema.IsComplexObject .Schema.IsNullable (not .HasDiscriminator) }}if {{ .ValueExpression }} != nil {
+    if err := r.SetBodyParam({{ .ValueExpression }}); err != nil {
+      return err
+    }
   }{{ end }}
 
-  if err := r.SetBodyParam({{ .ValueExpression }}); err != nil {
-    return err
-  }
   {{end}}
   {{end}}
   if len(res) > 0 {
