@@ -120,6 +120,23 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 			rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(sch), true, true)
 			if assert.NoError(t, err) {
 				assert.True(t, rt.IsArray)
+				assert.False(t, rt.IsEmptyOmitted)
+			}
+
+			s := new(spec.Schema).CollectionOf(sch)
+			s.AddExtension(xOmitEmpty, false)
+			rt, err = resolver.ResolveSchema(s, true, true)
+			if assert.NoError(t, err) {
+				assert.True(t, rt.IsArray)
+				assert.False(t, rt.IsEmptyOmitted)
+			}
+
+			s = new(spec.Schema).CollectionOf(sch)
+			s.AddExtension(xOmitEmpty, true)
+			rt, err = resolver.ResolveSchema(s, true, true)
+			if assert.NoError(t, err) {
+				assert.True(t, rt.IsArray)
+				assert.True(t, rt.IsEmptyOmitted)
 			}
 		}
 

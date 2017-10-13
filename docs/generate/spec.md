@@ -102,3 +102,4 @@ x-nullable | makes a property value nullable, for go code that means a pointer
 x-go-name | the go name of a type
 x-go-package | the go package of a type
 x-class | this is used in conjunction with discriminators to give a full type name
+x-omitempty | this is used with arrays to control presence of omitempty tag to be used by JSON Marshaler
