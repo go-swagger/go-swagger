@@ -48,6 +48,15 @@
 //       - name: obj
 //         value: field
 //
+//     InfoExtensions:
+//     x-info-value: value
+//     x-info-array:
+//       - value1
+//       - value2
+//     x-info-array-obj:
+//       - name: obj
+//         value: field
+//
 //     Security:
 //     - api_key:
 //
