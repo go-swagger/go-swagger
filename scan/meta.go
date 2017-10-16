@@ -75,6 +75,23 @@ func metaVendorExtensibleSetter(meta *spec.Swagger) func(json.RawMessage) error 
 	}
 }
 
+func infoVendorExtensibleSetter(meta *spec.Swagger) func(json.RawMessage) error {
+	return func(jsonValue json.RawMessage) error {
+		var jsonData spec.Extensions
+		err := json.Unmarshal(jsonValue, &jsonData)
+		if err != nil {
+			return err
+		}
+		for k := range jsonData {
+			if !rxAllowedExtensions.MatchString(k) {
+				return fmt.Errorf("invalid schema extension name, should start from `x-`: %s", k)
+			}
+		}
+		meta.Info.Extensions = jsonData
+		return nil
+	}
+}
+
 func newMetaParser(swspec *spec.Swagger) *sectionedParser {
 	sp := new(sectionedParser)
 	if swspec.Info == nil {
@@ -101,7 +118,8 @@ func newMetaParser(swspec *spec.Swagger) *sectionedParser {
 		newSingleLineTagParser("BasePath", &setMetaSingle{swspec, rxBasePath, setSwaggerBasePath}),
 		newSingleLineTagParser("Contact", &setMetaSingle{swspec, rxContact, setInfoContact}),
 		newSingleLineTagParser("License", &setMetaSingle{swspec, rxLicense, setInfoLicense}),
-		newMultiLineTagParser("YAMLBlock", newYamlParser(rxExtensions, metaVendorExtensibleSetter(swspec)), true),
+		newMultiLineTagParser("YAMLInfoExtensionsBlock", newYamlParser(rxInfoExtensions, infoVendorExtensibleSetter(swspec)), true),
+		newMultiLineTagParser("YAMLExtensionsBlock", newYamlParser(rxExtensions, metaVendorExtensibleSetter(swspec)), true),
 	}
 	return sp
 }
