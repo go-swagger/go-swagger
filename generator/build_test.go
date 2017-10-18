@@ -18,6 +18,9 @@ func TestGenerateAndBuild(t *testing.T) {
 		"issue 844": {
 			"../fixtures/bugs/844/swagger.json",
 		},
+		"issue 1216": {
+			"../fixtures/bugs/1216/swagger.yml",
+		},
 	}
 
 	for name, cas := range cases {

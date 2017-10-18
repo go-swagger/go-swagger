@@ -1,0 +1,45 @@
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: 'Test'
+definitions:
+  Test.Pet_Dog:
+    allOf:
+    - $ref: '#/definitions/Test.Pet'
+    - required:
+      - name
+      - barks
+      type: object
+      properties:
+        name:
+          type: string
+        barks:
+          type: boolean
+    type: object
+  Test.Pet_Cat:
+    allOf:
+    - $ref: '#/definitions/Test.Pet'
+    - required:
+      - name
+      - evil
+      type: object
+      properties:
+        name:
+          type: string
+        evil:
+          type: boolean
+    type: object
+  Test.Pet:
+    required:
+    - discriminator
+    discriminator: discriminator
+    type: object
+    properties:
+      discriminator:
+        type: string
+paths:
+  /:
+    get:
+      responses:
+        200:
+          description: Dummy path
