@@ -7,7 +7,7 @@ It specifically uses a todo list because it's a super well-understood applicatio
 
 When you start an application most likely you think about the functionality it supports.
 
-```shell
+```
 swagger init spec \
   --title "A To Do list application" \
   --description "The product of a tutorial on goswagger.io" \
@@ -38,7 +38,7 @@ swagger: "2.0"
 
 This doesn't do much but it would validate in the swagger validator step.
 
-```shellsession
+```
 ± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list
 git:(master) ✗ ? » swagger validate ./swagger.yml
 The swagger spec at "./swagger.yml" is valid against swagger specification 2.0
@@ -244,7 +244,7 @@ definitions:
 
 Once you generate a server for this you'll see the following directory listing:
 
-```shellsession
+```
 ± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-1
 git:(master) ✗ !? » swagger generate server -A TodoList -f ./swagger.yml
 2016/02/15 12:32:40 building a plan for generation
@@ -299,7 +299,7 @@ And then the last major section is the rest api, within the rest api there is th
 
 We skipped over naming operations, you have the ability to name the operations by giving operations an ID in the specification document. For example for the operation defintion with `operationId: findTodos`, the following tree would be generated:
 
-```shellsession
+```
 .
 ├── cmd
 │   └── todo-list-server
@@ -322,7 +322,7 @@ We skipped over naming operations, you have the ability to name the operations b
 
 At this point you're able to start the server, but lets first see what --help gives you. To make this happen you can first install the binary and then run it.
 
-```shellsession
+```
 ± ~/go/src/.../examples/tutorials/todo-list/server-1
 » go install ./cmd/todo-list-server/
 ± ~/go/src/.../examples/tutorials/todo-list/server-1
@@ -342,14 +342,14 @@ Help Options:
 
 As you can see your application can be run straightaway and it will use a random port value by default. This might not be what you want so you can configure a port with an argument or through an environment variable. Those env vars are chosen because many platforms (like heroku) use those to configure the apps they are running.
 
-```shellsession
+```
 git:(master) ✗ !? » todo-list-server
 serving todo list at http://127.0.0.1:64637
 ```
 
 And you can curl it:
 
-```shellsession
+```
 git:(master) ✗ !? » curl -i http://127.0.0.1:64637/
 ```
 ```http
@@ -575,7 +575,7 @@ definitions:
 
 Again this is a good time to sanity check, and run the validator.
 
-```shellsession
+```
 ± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-2
 git:(master) ✗ !? » swagger validate ./swagger.yml
 The swagger spec at "./swagger.yml" is valid against swagger specification 2.0
@@ -583,7 +583,7 @@ The swagger spec at "./swagger.yml" is valid against swagger specification 2.0
 
 You're ready to generate the API and start filling out some of the blanks.
 
-```shellsession
+```
 git:(master) ✗ !? » swagger generate server -A TodoList -f ./swagger.yml
 ... elided output ...
 2015/12/31 18:16:28 rendered main template: server.TodoList
@@ -644,7 +644,7 @@ After deleting the item from the store, there is a responder that needs to be cr
 
 You're all set now, with a spiffy new todo list api implemented, lets see if it actually works.
 
-```shellsession
+```
 » curl -i localhost:8765
 ```
 ```http
@@ -655,7 +655,7 @@ Content-Length: 3
 
 []
 ```
-```shellsession
+```
 ± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
 ```
 ```http
@@ -667,7 +667,7 @@ Content-Length: 157
 
 {"code":415,"message":"unsupported media type \"application/x-www-form-urlencoded\", only [application/io.goswagger.examples.todo-list.v1+json] are allowed"}                                                                                                     ± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
 ```
-```shellsession
+```
 » curl -i localhost:8765 -d "{\"description\":\"message $RANDOM\"}" -H 'Content-Type: application/io.goswagger.examples.todo-list.v1+json'
 ```
 ```http
@@ -678,7 +678,7 @@ Content-Length: 39
 
 {"description":"message 30925","id":1}
 ```
-```shellsession
+```
 ± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
 » curl -i localhost:8765 -d "{\"description\":\"message $RANDOM\"}" -H 'Content-Type: application/io.goswagger.examples.todo-list.v1+json'
 ```
@@ -690,7 +690,7 @@ Content-Length: 37
 
 {"description":"message 104","id":2}
 ```
-```shellsession
+```
 ± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
 » curl -i localhost:8765 -d "{\"description\":\"message $RANDOM\"}" -H 'Content-Type: application/io.goswagger.examples.todo-list.v1+json'
 ```
@@ -702,7 +702,7 @@ Content-Length: 39
 
 {"description":"message 15225","id":3}
 ```
-```shellsession
+```
 ± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
 » curl -i localhost:8765
 ```
@@ -714,7 +714,7 @@ Content-Length: 117
 
 [{"description":"message 30925","id":1},{"description":"message 104","id":2},{"description":"message 15225","id":3}]
 ```
-```shellsession
+```
 ± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
 » curl -i localhost:8765/3 -X PUT -H 'Content-Type: application/io.goswagger.examples.todo-list.v1+json' -d '{"description":"go shopping"}'
 ```
@@ -726,7 +726,7 @@ Content-Length: 37
 
 {"description":"go shopping","id":3}
 ```
-```shellsession
+```
 ± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
 » curl -i localhost:8765
 ```
@@ -738,7 +738,7 @@ Content-Length: 115
 
 [{"description":"message 30925","id":1},{"description":"message 104","id":2},{"description":"go shopping","id":3}]
 ```
-```shellsession
+```
 ± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
 » curl -i localhost:8765/1 -X DELETE -H 'Content-Type: application/io.goswagger.examples.todo-list.v1+json'
 ```
@@ -747,7 +747,7 @@ HTTP/1.1 204 No Content
 Content-Type: application/io.goswagger.examples.todo-list.v1+json
 Date: Fri, 01 Jan 2016 19:57:04 GMT
 ```
-```shellsession
+```
 ± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
 » curl -i localhost:8765
 ```

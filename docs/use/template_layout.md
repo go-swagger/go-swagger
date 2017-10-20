@@ -45,7 +45,7 @@ skip_format|boolean|Skip formatting code from the template according to the stan
 
 ## Server generation
 
-```shell
+```
 swagger generate server -A TodoList -f ./swagger.json -C default-server.yml
 ```
 
@@ -103,7 +103,7 @@ layout:
 
 ## Client generation
 
-```shell
+```
 swagger generate server -A TodoList -f ./swagger.json -C default-client.yml
 ```
 

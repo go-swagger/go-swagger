@@ -44,7 +44,7 @@ func main() {
 Running this would confirm that we can in fact read a swagger spec from disk. 
 The init method enables loading of yaml based specifications. The yaml package for golang used to be licensed as GPL so we made depending on it optional. 
 
-```shellsession
+```
 git:(master) ✗ !? » go run main.go ./swagger.yml  
 2016/10/08 20:50:42 loading "./swagger.yml" as contract for the server
 2016/10/08 20:50:42 Would be serving: A To Do list application
@@ -89,7 +89,7 @@ This code shows how to create an api descriptor and then invoking its verificati
 Because our specification contains operations and consumes/produces definitions this program should not run.
 When we try to run it, it should exit with a non-zero status.
 
-```shellsession
+```
 git:(master) ✗ -? » go run main.go ./swagger.yml
 2016/10/08 21:32:14 loading "./swagger.yml" as contract for the server
 2016/10/08 21:32:14 missing [application/io.goswagger.examples.todo-list.v1+json] consumes registrations
@@ -162,7 +162,7 @@ Our api descriptor validation is now satisfied, so we use the simplest way to st
 
 Server terminal:
 
-```shellsession
+```
 git:(master) ✗ -!? » go run main.go ./swagger.yml
 2016/10/08 23:35:18 loading "./swagger.yml" as contract for the server
 2016/10/08 23:35:18 serving A To Do list application at http://localhost:8000
@@ -170,7 +170,7 @@ git:(master) ✗ -!? » go run main.go ./swagger.yml
 
 Client terminal:
 
-```shellsession
+```
 git:(master) ✗ -!? » curl -i localhost:8000
 ```
 
@@ -344,7 +344,7 @@ With this set up we should be able to start a server, send it some requests and 
 
 #### List all
 
-```shellsession
+```
 git:(master) ✗ !? » curl -i localhost:8000
 ```
 
@@ -361,7 +361,7 @@ Content-Length: 87
 
 The default curl POST request should fail because we only allow:  application/io.goswagger.examples.todo-list.v1+json
 
-```shellsession
+```
 curl -i localhost:8000 -d '{"description":"item for the list"}'
 ```
 
@@ -376,7 +376,7 @@ Content-Length: 157
 
 When the content type header is sent, we have a better result:
 
-```shellsession
+```
 curl -i -H 'Content-Type: application/io.goswagger.examples.todo-list.v1+json' localhost:8000 -d '{"description":"a new item"}'
 ```
 
@@ -391,7 +391,7 @@ Content-Length: 36
 
 #### List again
 
-```shellsession
+```
 git:(master) ✗ !? » curl -i localhost:8000
 ```
 
@@ -406,7 +406,7 @@ Content-Length: 123
 
 #### Update an item
 
-```shellsession
+```
 curl -i -XPUT -H 'Content-Type: application/io.goswagger.examples.todo-list.v1+json' localhost:8000/3 -d '{"description":"an updated item"}'
 ```
 
@@ -421,7 +421,7 @@ Content-Length: 41
 
 #### List to verify
 
-```shellsession
+```
 git:(master) ✗ !? » curl -i localhost:8000
 ```
 
@@ -436,7 +436,7 @@ Content-Length: 41
 
 #### Delete an item
 
-```shellsession
+```
 curl -i -XDELETE localhost:8000/3
 ```
 
@@ -448,7 +448,7 @@ Date: Sun, 09 Oct 2016 16:00:59 GMT
 
 #### List to show start state again
 
-```shellsession
+```
 curl -i localhost:8000
 ```
 
@@ -463,7 +463,7 @@ Content-Length: 87
 
 At the end of the curl requests the server shows these outputs:
 
-```shellsession
+```
 git:(master) ✗ !? » go run main.go ./swagger.yml
 2016/10/09 08:50:34 loading "./swagger.yml" as contract for the server
 2016/10/09 08:50:34 serving A To Do list application at http://localhost:8000

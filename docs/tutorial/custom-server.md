@@ -54,7 +54,7 @@ but we'll store it as `./swagger/swagger.yml`, to keep our project's root folder
 Once we have our OpenAPI specification ready, it is time to generate our server.
 This can be done using the following command, from within our root folder:
 
-```shellsession
+```
 $ swagger generate server -t gen -f ./swagger/swagger.yml --exclude-main -A greeter
 ```
 

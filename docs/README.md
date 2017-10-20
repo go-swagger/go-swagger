@@ -60,7 +60,7 @@ go-swagger is distributed as binaries that are built of signed tags. It is publi
 
 #### Docker image
 
-```shell
+```
 docker pull quay.io/goswagger/swagger
 
 alias swagger="docker run --rm -it -v $HOME:$HOME -w $(pwd) quay.io/goswagger/swagger"
@@ -69,7 +69,7 @@ swagger version
 
 #### Homebrew/Linuxbrew
 
-```shell
+```
 brew tap go-swagger/go-swagger
 brew install go-swagger
 ```
@@ -80,7 +80,7 @@ You can download a binary for your platform from github:
 
 <https://github.com/go-swagger/go-swagger/releases/latest>
 
-```shell
+```
 latestv=$(curl -s https://api.github.com/repos/go-swagger/go-swagger/releases/latest | jq -r .tag_name)
 curl -o /usr/local/bin/swagger -L'#' https://github.com/go-swagger/go-swagger/releases/download/$latestv/swagger_$(echo `uname`|tr '[:upper:]' '[:lower:]')_amd64
 chmod +x /usr/local/bin/swagger
@@ -90,7 +90,7 @@ chmod +x /usr/local/bin/swagger
 
 This repo will work for any debian, the only file it contains gets copied to /usr/bin
 
-```shell
+```
 echo "deb https://dl.bintray.com/go-swagger/goswagger-debian ubuntu main" | sudo tee -a /etc/apt/sources.list
 ```
 
@@ -98,7 +98,7 @@ echo "deb https://dl.bintray.com/go-swagger/goswagger-debian ubuntu main" | sudo
 
 This repo should work on any distro that wants rpm packages, the only file it contains gets copied to /usr/bin/
 
-```shell
+```
 wget https://bintray.com/go-swagger/goswagger-rpm/rpm -O bintray-go-swagger-goswagger-rpm.repo
 ```
 
