@@ -83,8 +83,8 @@ definitions:
             description: "The edition of this model S"
             type: string
             x-go-name: Edition
-        x-class: "com.tesla.models.ModelS"
-        x-go-name: "ModelX"
+    x-class: "com.tesla.models.ModelS"
+    x-go-name: "ModelX"
   modelX:
     allOf:
       - $ref: "#/definitions/TeslaCar"
@@ -95,6 +95,6 @@ definitions:
             type: integer
             format: int32
             x-go-name: Doors
-        x-class: "com.tesla.models.ModelX"
-        x-go-name: ModelX
+    x-class: "com.tesla.models.ModelX"
+    x-go-name: ModelX
 ```
