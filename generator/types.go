@@ -456,6 +456,7 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 	result.SwaggerType = array
 	result.SwaggerFormat = ""
 	t.inferAliasing(&result, schema, isAnonymous, isRequired)
+	result.Extensions = schema.Extensions
 
 	return
 }
@@ -654,6 +655,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		return t.resolveArray(schema, isAnonymous, false)
 
 	case file, number, integer, boolean:
+		result.Extensions = schema.Extensions
 		result.GoType = typeMapping[tpe]
 		result.SwaggerType = tpe
 		t.inferAliasing(&result, schema, isAnonymous, isRequired)
@@ -678,6 +680,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 
 		result.IsPrimitive = true
 		result.IsNullable = nullableString(schema, isRequired)
+		result.Extensions = schema.Extensions
 		return
 
 	case object:
@@ -728,6 +731,7 @@ type resolvedType struct {
 	AliasedType   string
 	SwaggerType   string
 	SwaggerFormat string
+	Extensions    spec.Extensions
 
 	ElemType *resolvedType
 }
