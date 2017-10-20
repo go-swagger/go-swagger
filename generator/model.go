@@ -546,10 +546,7 @@ func hasValidations(model *spec.Schema, isRequired bool) (needsValidation bool, 
 // handleFormatConflicts handles all conflicting model properties when a format is set
 func handleFormatConflicts(model *spec.Schema) {
 	switch model.Format {
-	case "date":
-		model.MinLength = nil
-		model.MaxLength = nil
-	case "datetime":
+	case "date", "datetime", "uuid":
 		model.MinLength = nil
 		model.MaxLength = nil
 		// more cases should be inserted here if they arise
@@ -558,7 +555,7 @@ func handleFormatConflicts(model *spec.Schema) {
 
 func (sg *schemaGenContext) schemaValidations() sharedValidations {
 	model := sg.Schema
-	// resolve any conflicting properties if the model has a Fromat
+	// resolve any conflicting properties if the model has a format
 	handleFormatConflicts(&model)
 
 	isRequired := sg.Required
