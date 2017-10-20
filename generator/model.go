@@ -546,9 +546,10 @@ func hasValidations(model *spec.Schema, isRequired bool) (needsValidation bool, 
 // handleFormatConflicts handles all conflicting model properties when a format is set
 func handleFormatConflicts(model *spec.Schema) {
 	switch model.Format {
-	case "date", "datetime", "uuid":
+	case "date", "datetime", "uuid", "bsonobjectid", "base64", "duration":
 		model.MinLength = nil
 		model.MaxLength = nil
+		model.Pattern = ""
 		// more cases should be inserted here if they arise
 	}
 }
