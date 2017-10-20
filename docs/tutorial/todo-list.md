@@ -188,7 +188,6 @@ produces:
 - application/io.goswagger.examples.todo-list.v1+json
 schemes:
 - http
-- https
 paths:
   /:
     get:
@@ -246,7 +245,7 @@ Once you generate a server for this you'll see the following directory listing:
 
 ```
 ± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-1
-git:(master) ✗ !? » swagger generate server -A TodoList -f ./swagger.yml
+git:(master) ✗ !? » swagger generate server -A todo-list -f ./swagger.yml
 2016/02/15 12:32:40 building a plan for generation
 2016/02/15 12:32:40 planning definitions
 2016/02/15 12:32:40 planning operations
@@ -293,11 +292,11 @@ git:(master) ✗ !? » tree
 
 In this file tree you notice that there is a cmd/todo-list-server generated. The swagger generator adds -server to the application name (provided to the generated command through the -A argument).
 
-The second major section in this tree is the models package. This package contains go representations for both the defintions from the swagger spec document.
+The second major section in this tree is the models package. This package contains go representations for both the definitions from the swagger spec document.
 
-And then the last major section is the rest api, within the rest api there is the code that is generated based on the information from the paths property in the swagger specification. The go swagger generator uses the tags to group the operations into packages.
+And then the last major section is restapi. Within restapi there is the code that is generated based on the information from the paths property in the swagger specification. The go swagger generator uses the tags to group the operations into packages.
 
-We skipped over naming operations, you have the ability to name the operations by giving operations an ID in the specification document. For example for the operation defintion with `operationId: findTodos`, the following tree would be generated:
+We skipped over naming operations, you have the ability to name the operations by giving operations an ID in the specification document. For example for the operation definition with `operationId: findTodos`, the following tree would be generated:
 
 ```
 .
@@ -320,7 +319,7 @@ We skipped over naming operations, you have the ability to name the operations b
 └── swagger.yml
 ```
 
-At this point you're able to start the server, but lets first see what --help gives you. To make this happen you can first install the binary and then run it.
+At this point you're able to start the server, but let's first see what --help gives you. To make this happen you can first install the binary and then run it.
 
 ```
 ± ~/go/src/.../examples/tutorials/todo-list/server-1
@@ -389,7 +388,7 @@ paths:
             $ref: "#/definitions/error"
 ```
 
-So in this YAML snippet there is one new thing: you're defining that your API has a POST body and that that should be the item model defined earlier. Earlier the item schema was defined with a readOnly id, so that means it doesn't need to be included in the POST body. But the response to the POST request will include an id property. The next operation to define is the DELETE operation, where you delete a todo item from the list.
+So in this YAML snippet there is one new thing: you're defining that your API has a POST body and that that should be the item model defined earlier. Earlier the item schema was defined with a _readOnly_ id, so that means it doesn't need to be included in the POST body. But the response to the POST request will include an id property. The next operation to define is the DELETE operation, where you delete a todo item from the list.
 
 ```yaml
 ---
