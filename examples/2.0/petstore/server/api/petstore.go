@@ -324,7 +324,7 @@ var swaggerJSON = `{
     "petInput": {
       "allOf": [
         {
-          "$ref": "pet"
+          "$ref": "#/definitions/pet"
         },
         {
           "required": [
