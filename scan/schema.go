@@ -945,7 +945,7 @@ func (scp *schemaParser) makeRef(file *ast.File, pkg *loader.PackageInfo, gd *as
 func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.Ident, prop swaggerTypable) error {
 	// before proceeding make an exception to time.Time because it is a well known string format
 	if pkg.String() == "time" && expr.String() == "Time" {
-		prop.Typed("string", "datetime")
+		prop.Typed("string", "date-time")
 		return nil
 	}
 

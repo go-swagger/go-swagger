@@ -30,7 +30,7 @@ func TestSchemaParser(t *testing.T) {
 	assert.Equal(t, "NoModel is a struct without an annotation.", schema.Title)
 	assert.Equal(t, "NoModel exists in a package\nbut is not annotated with the swagger model annotations\nso it should now show up in a test.", schema.Description)
 	assert.Len(t, schema.Required, 3)
-	assert.Len(t, schema.Properties, 8)
+	assert.Len(t, schema.Properties, 11)
 
 	assertProperty(t, &schema, "integer", "id", "int64", "ID")
 	prop, ok := schema.Properties["id"]
@@ -72,6 +72,11 @@ func TestSchemaParser(t *testing.T) {
 	assert.True(t, ok, "should have a 'created' property")
 	assert.True(t, prop.ReadOnly, "'created' should be read only")
 
+	assertProperty(t, &schema, "string", "gocreated", "date-time", "GoTimeCreated")
+	prop, ok = schema.Properties["gocreated"]
+	assert.Equal(t, "GoTimeCreated holds the time when this entry was created in go time.Time", prop.Description)
+	assert.True(t, ok, "should have a 'gocreated' property")
+
 	assertArrayProperty(t, &schema, "string", "foo_slice", "", "FooSlice")
 	prop, ok = schema.Properties["foo_slice"]
 	assert.Equal(t, "a FooSlice has foos which are strings", prop.Description)
@@ -85,6 +90,16 @@ func TestSchemaParser(t *testing.T) {
 	assert.EqualValues(t, 3, *itprop.MinLength, "'foo_slice.items.minLength' should have been 3")
 	assert.EqualValues(t, 10, *itprop.MaxLength, "'foo_slice.items.maxLength' should have been 10")
 	assert.EqualValues(t, "\\w+", itprop.Pattern, "'foo_slice.items.pattern' should have \\w+")
+
+	assertArrayProperty(t, &schema, "string", "time_slice", "date-time", "TimeSlice")
+	prop, ok = schema.Properties["time_slice"]
+	assert.Equal(t, "a TimeSlice is a slice of times", prop.Description)
+	assert.True(t, ok, "should have a 'time_slice' property")
+	assert.NotNil(t, prop.Items, "time_slice should have had an items property")
+	assert.NotNil(t, prop.Items.Schema, "time_slice.items should have had a schema property")
+	assert.True(t, prop.UniqueItems, "'time_slice' should have unique items")
+	assert.EqualValues(t, 3, *prop.MinItems, "'time_slice' should have had 3 min items")
+	assert.EqualValues(t, 10, *prop.MaxItems, "'time_slice' should have had 10 max items")
 
 	assertArrayProperty(t, &schema, "array", "bar_slice", "", "BarSlice")
 	prop, ok = schema.Properties["bar_slice"]
@@ -112,14 +127,36 @@ func TestSchemaParser(t *testing.T) {
 		}
 	}
 
+	assertArrayProperty(t, &schema, "array", "deep_time_slice", "", "DeepTimeSlice")
+	prop, ok = schema.Properties["deep_time_slice"]
+	assert.Equal(t, "a DeepSlice has bars which are time", prop.Description)
+	assert.True(t, ok, "should have a 'deep_time_slice' property")
+	assert.NotNil(t, prop.Items, "deep_time_slice should have had an items property")
+	assert.NotNil(t, prop.Items.Schema, "deep_time_slice.items should have had a schema property")
+	assert.True(t, prop.UniqueItems, "'deep_time_slice' should have unique items")
+	assert.EqualValues(t, 3, *prop.MinItems, "'deep_time_slice' should have had 3 min items")
+	assert.EqualValues(t, 10, *prop.MaxItems, "'deep_time_slice' should have had 10 max items")
+	itprop = prop.Items.Schema
+	if assert.NotNil(t, itprop) {
+		assert.EqualValues(t, 4, *itprop.MinItems, "'deep_time_slice.items.minItems' should have been 4")
+		assert.EqualValues(t, 9, *itprop.MaxItems, "'deep_time_slice.items.maxItems' should have been 9")
+		itprop2 := itprop.Items.Schema
+		if assert.NotNil(t, itprop2) {
+			assert.EqualValues(t, 5, *itprop2.MinItems, "'deep_time_slice.items.items.minItems' should have been 5")
+			assert.EqualValues(t, 8, *itprop2.MaxItems, "'deep_time_slice.items.items.maxItems' should have been 8")
+			itprop3 := itprop2.Items.Schema
+			assert.NotNil(t, itprop3)
+		}
+	}
+
 	assertArrayProperty(t, &schema, "object", "items", "", "Items")
 	prop, ok = schema.Properties["items"]
 	assert.True(t, ok, "should have an 'items' slice")
 	assert.NotNil(t, prop.Items, "items should have had an items property")
 	assert.NotNil(t, prop.Items.Schema, "items.items should have had a schema property")
 	itprop = prop.Items.Schema
-	assert.Len(t, itprop.Properties, 4)
-	assert.Len(t, itprop.Required, 3)
+	assert.Len(t, itprop.Properties, 5)
+	assert.Len(t, itprop.Required, 4)
 	assertProperty(t, itprop, "integer", "id", "int32", "ID")
 	iprop, ok := itprop.Properties["id"]
 	assert.True(t, ok)
@@ -144,6 +181,11 @@ func TestSchemaParser(t *testing.T) {
 	assert.Equal(t, "The amount of pets to add to this bucket.", iprop.Description)
 	assert.EqualValues(t, 1, *iprop.Minimum)
 	assert.EqualValues(t, 10, *iprop.Maximum)
+
+	assertProperty(t, itprop, "string", "expiration", "date-time", "Expiration")
+	iprop, ok = itprop.Properties["expiration"]
+	assert.True(t, ok)
+	assert.Equal(t, "A dummy expiration date.", iprop.Description)
 
 	assertProperty(t, itprop, "string", "notes", "", "Notes")
 	iprop, ok = itprop.Properties["notes"]
