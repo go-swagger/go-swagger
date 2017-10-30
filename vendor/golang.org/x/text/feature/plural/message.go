@@ -16,6 +16,9 @@ import (
 	"golang.org/x/text/message/catalog"
 )
 
+// TODO: consider deleting this interface. Maybe VisibleDigits is always
+// sufficient and practical.
+
 // Interface is used for types that can determine their own plural form.
 type Interface interface {
 	// PluralForm reports the plural form for the given language of the
@@ -193,6 +196,9 @@ func execute(d *catmsg.Decoder) bool {
 	n := -1
 	if arg := d.Arg(argN); arg == nil {
 		// Default to Other.
+	} else if x, ok := arg.(number.VisibleDigits); ok {
+		d := x.Digits(nil, lang, scale)
+		form, n = cardinal.matchDisplayDigits(lang, &d)
 	} else if x, ok := arg.(Interface); ok {
 		// This covers lists and formatters from the number package.
 		form, n = x.PluralForm(lang, scale)

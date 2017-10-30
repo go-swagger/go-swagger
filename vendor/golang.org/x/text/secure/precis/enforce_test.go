@@ -210,27 +210,27 @@ var enforceTestCases = []struct {
 		{"\u03D2", "", errDisallowedRune},
 		{"\u03B0", "\u03B0", nil},
 		{"foo bar", "", errDisallowedRune},
-		{"♚", "", errDisallowedRune},
+		{"♚", "", bidirule.ErrInvalid},
 		{"\u007E", "~", nil},
 		{"a", "a", nil},
 		{"!", "!", nil},
-		{"²", "", errDisallowedRune},
+		{"²", "", bidirule.ErrInvalid},
 		{"\t", "", errDisallowedRune},
 		{"\n", "", errDisallowedRune},
-		{"\u26D6", "", errDisallowedRune},
-		{"\u26FF", "", errDisallowedRune},
+		{"\u26D6", "", bidirule.ErrInvalid},
+		{"\u26FF", "", bidirule.ErrInvalid},
 		{"\uFB00", "", errDisallowedRune},
-		{"\u1680", "", errDisallowedRune},
+		{"\u1680", "", bidirule.ErrInvalid},
 		{" ", "", errDisallowedRune},
 		{"  ", "", errDisallowedRune},
 		{"\u01C5", "", errDisallowedRune},
-		{"\u16EE", "", errDisallowedRune}, // Nl RUNIC ARLAUG SYMBOL
-		{"\u0488", "", errDisallowedRune}, // Me COMBINING CYRILLIC HUNDRED THOUSANDS SIGN
-		{"\u212B", "\u00e5", nil},         // Angstrom sign, NFC -> U+00E5
-		{"A\u030A", "å", nil},             // A + ring
-		{"\u00C5", "å", nil},              // A with ring
-		{"\u00E7", "ç", nil},              // c cedille
-		{"\u0063\u0327", "ç", nil},        // c + cedille
+		{"\u16EE", "", errDisallowedRune},   // Nl RUNIC ARLAUG SYMBOL
+		{"\u0488", "", bidirule.ErrInvalid}, // Me COMBINING CYRILLIC HUNDRED THOUSANDS SIGN
+		{"\u212B", "\u00e5", nil},           // Angstrom sign, NFC -> U+00E5
+		{"A\u030A", "å", nil},               // A + ring
+		{"\u00C5", "å", nil},                // A with ring
+		{"\u00E7", "ç", nil},                // c cedille
+		{"\u0063\u0327", "ç", nil},          // c + cedille
 		{"\u0158", "ř", nil},
 		{"\u0052\u030C", "ř", nil},
 
@@ -279,13 +279,16 @@ func TestBytes(t *testing.T) {
 			t.Errorf("got %+q (err: %v); want %+q (err: %v)", string(e), err, tc.output, tc.err)
 		}
 	})
-	// Test that calling Bytes with something that doesn't transform returns a
-	// copy.
-	orig := []byte("hello")
-	b, _ := NewFreeform().Bytes(orig)
-	if reflect.ValueOf(b).Pointer() == reflect.ValueOf(orig).Pointer() {
-		t.Error("original and result are the same slice; should be a copy")
-	}
+
+	t.Run("Copy", func(t *testing.T) {
+		// Test that calling Bytes with something that doesn't transform returns a
+		// copy.
+		orig := []byte("hello")
+		b, _ := NewFreeform().Bytes(orig)
+		if reflect.ValueOf(b).Pointer() == reflect.ValueOf(orig).Pointer() {
+			t.Error("original and result are the same slice; should be a copy")
+		}
+	})
 }
 
 func TestAppend(t *testing.T) {

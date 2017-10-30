@@ -560,7 +560,10 @@ func (s *stringValidator) Applies(source interface{}, kind reflect.Kind) bool {
 }
 
 func (s *stringValidator) Validate(val interface{}) *Result {
-	data := val.(string)
+	data, ok := val.(string)
+	if !ok {
+		return sErr(errors.InvalidType(s.Path, s.In, "string", val))
+	}
 
 	if s.Required && !s.AllowEmptyValue && (s.Default == nil || s.Default == "") {
 		if err := RequiredString(s.Path, s.In, data); err != nil {

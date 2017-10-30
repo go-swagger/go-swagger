@@ -26,5 +26,5 @@ func Minor(dev uint64) uint32 {
 // Mkdev returns a FreeBSD device number generated from the given major and
 // minor components.
 func Mkdev(major, minor uint32) uint64 {
-	return uint64((major << 8) | minor)
+	return (uint64(major) << 8) | uint64(minor)
 }

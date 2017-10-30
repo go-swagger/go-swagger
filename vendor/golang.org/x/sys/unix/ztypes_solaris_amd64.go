@@ -413,8 +413,6 @@ type BpfHdr struct {
 	Pad_cgo_0 [2]byte
 }
 
-const _SC_PAGESIZE = 0xb
-
 type Termios struct {
 	Iflag     uint32
 	Oflag     uint32
@@ -440,3 +438,22 @@ type Winsize struct {
 	Xpixel uint16
 	Ypixel uint16
 }
+
+type PollFd struct {
+	Fd      int32
+	Events  int16
+	Revents int16
+}
+
+const (
+	POLLERR    = 0x8
+	POLLHUP    = 0x10
+	POLLIN     = 0x1
+	POLLNVAL   = 0x20
+	POLLOUT    = 0x4
+	POLLPRI    = 0x2
+	POLLRDBAND = 0x80
+	POLLRDNORM = 0x40
+	POLLWRBAND = 0x100
+	POLLWRNORM = 0x4
+)

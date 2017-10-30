@@ -65,7 +65,7 @@ func TestSelect(t *testing.T) {
 		},
 	}, {
 		desc: "decimal without fractions",
-		msg:  Selectf(1, "%.of", "one", "foo", "other", "bar"),
+		msg:  Selectf(1, "%.0f", "one", "foo", "other", "bar"),
 		tests: []test{
 			// fractions are always plural in english
 			{arg: 0, result: "bar"},

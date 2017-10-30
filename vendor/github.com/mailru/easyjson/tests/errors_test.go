@@ -241,3 +241,45 @@ func TestMultipleErrorsNestedStruct(t *testing.T) {
 		}
 	}
 }
+
+func TestMultipleErrorsIntMap(t *testing.T) {
+	for i, test := range []struct {
+		Data    []byte
+		Offsets []int
+	}{
+		{
+			Data:    []byte(`{"a":"NumErr"}`),
+			Offsets: []int{1},
+		},
+		{
+			Data:    []byte(`{"":"ErrSyntax"}`),
+			Offsets: []int{1},
+		},
+		{
+			Data:    []byte(`{"a":"NumErr","33147483647":"ErrRange","-1":"ErrRange"}`),
+			Offsets: []int{1, 14, 39},
+		},
+	} {
+		l := jlexer.Lexer{
+			Data:              test.Data,
+			UseMultipleErrors: true,
+		}
+
+		var v ErrorIntMap
+
+		v.UnmarshalEasyJSON(&l)
+
+		errors := l.GetNonFatalErrors()
+
+		if len(errors) != len(test.Offsets) {
+			t.Errorf("[%d] TestMultipleErrorsInt(): errornum: want: %d, got %d", i, len(test.Offsets), len(errors))
+			return
+		}
+
+		for ii, e := range errors {
+			if e.Offset != test.Offsets[ii] {
+				t.Errorf("[%d] TestMultipleErrorsInt(): offset[%d]: want %d, got %d", i, ii, test.Offsets[ii], e.Offset)
+			}
+		}
+	}
+}
