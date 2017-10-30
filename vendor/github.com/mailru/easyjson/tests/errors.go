@@ -21,3 +21,6 @@ type ErrorNestedStruct struct {
 	ErrorStruct ErrorStruct `json:"error_struct"`
 	Int         int         `json:"int"`
 }
+
+//easyjson:json
+type ErrorIntMap map[uint32]string

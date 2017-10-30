@@ -18,6 +18,15 @@ func getPkgPath(fname string, isDir bool) (string, error) {
 		fname = path.Join(pwd, fname)
 	}
 
+	gopath := os.Getenv("GOPATH")
+	if gopath == "" {
+		var err error
+		gopath, err = getDefaultGoPath()
+		if err != nil {
+			return "", fmt.Errorf("cannot determine GOPATH: %s", err)
+		}
+	}
+
 	for _, p := range strings.Split(os.Getenv("GOPATH"), ":") {
 		prefix := path.Join(p, "src") + "/"
 		if rel := strings.TrimPrefix(fname, prefix); rel != fname {

@@ -47,15 +47,18 @@ type TLSClientOptions struct {
 
 // TLSClientAuth creates a tls.Config for mutual auth
 func TLSClientAuth(opts TLSClientOptions) (*tls.Config, error) {
-	// load client cert
-	cert, err := tls.LoadX509KeyPair(opts.Certificate, opts.Key)
-	if err != nil {
-		return nil, fmt.Errorf("tls client cert: %v", err)
-	}
-
 	// create client tls config
 	cfg := &tls.Config{}
-	cfg.Certificates = []tls.Certificate{cert}
+
+	// load client cert if specified
+	if opts.Certificate != "" {
+		cert, err := tls.LoadX509KeyPair(opts.Certificate, opts.Key)
+		if err != nil {
+			return nil, fmt.Errorf("tls client cert: %v", err)
+		}
+		cfg.Certificates = []tls.Certificate{cert}
+	}
+
 	cfg.InsecureSkipVerify = opts.InsecureSkipVerify
 
 	// When no CA certificate is provided, default to the system cert pool

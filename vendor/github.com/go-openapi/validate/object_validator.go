@@ -65,6 +65,15 @@ func (o *objectValidator) Validate(data interface{}) *Result {
 
 	res := new(Result)
 
+	// This is to check that the items keyword is only valid for array types
+	if _, itemsKeyFound := val["items"]; itemsKeyFound {
+		if t, typeFound := val["type"]; typeFound {
+			if tpe, ok := t.(string); !ok || tpe != "array" {
+				res.AddErrors(errors.InvalidType(o.Path, o.In, "array", nil))
+			}
+		}
+	}
+
 	if o.AdditionalProperties != nil && !o.AdditionalProperties.Allows {
 		for k := range val {
 			_, regularProperty := o.Properties[k]

@@ -14,6 +14,11 @@
 //    p := message.NewPrinter(language.English)
 //    p.Println(123456.78) // Prints 123,456.78
 //
+//    p.Printf("%d ducks in a row", 4331) // Prints 4,331 ducks in a row
+//
+//    p := message.NewPrinter(language.Dutch)
+//    p.Println("Hoogte: %f meter", 1244.9) // Prints Hoogte: 1.244,9 meter
+//
 //    p := message.NewPrinter(language.Bengali)
 //    p.Println(123456.78) // Prints ১,২৩,৪৫৬.৭৮
 //
