@@ -163,6 +163,17 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
   {{ if .IsNullable }}} else if err == http.ErrMissingFile {
     // no-op for missing but optional file parameter
   {{ end }}} else {
+    {{if or .MinLength .MaxLength}}size, _ := file.Seek(0, io.SeekEnd)
+		file.Seek(0, io.SeekStart)
+    {{end}}
+    {{if .MinLength}}if size < {{.MinLength}} {
+      res = append(res, errors.ExceedsMinimum({{ .Path }}, {{ printf "%q" .Location }}, {{ .MinLength }}, false))
+    }
+    {{end}}
+    {{if .MaxLength}}if size > {{.MaxLength}} {
+      res = append(res, errors.ExceedsMaximum({{ .Path }}, {{ printf "%q" .Location }}, {{ .MaxLength }}, false))
+    }
+    {{end}}
     {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if .IsNullable }}&{{ end }}runtime.File{Data: {{ camelize .Name }}, Header: {{ camelize .Name }}Header}
   }
   {{ else }}fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, _ := fds.GetOK({{ .Path }})
