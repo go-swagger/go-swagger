@@ -162,18 +162,9 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     res = append(res, errors.New(400, "reading file %q failed: %v", {{ printf "%q" (camelize .Name) }}, err))
   {{ if .IsNullable }}} else if err == http.ErrMissingFile {
     // no-op for missing but optional file parameter
-  {{ end }}} else {
-    {{if or .MinLength .MaxLength}}size, _ := file.Seek(0, io.SeekEnd)
-		file.Seek(0, io.SeekStart)
-    {{end}}
-    {{if .MinLength}}if size < {{.MinLength}} {
-      res = append(res, errors.ExceedsMinimum({{ .Path }}, {{ printf "%q" .Location }}, {{ .MinLength }}, false))
-    }
-    {{end}}
-    {{if .MaxLength}}if size > {{.MaxLength}} {
-      res = append(res, errors.ExceedsMaximum({{ .Path }}, {{ printf "%q" .Location }}, {{ .MaxLength }}, false))
-    }
-    {{end}}
+  {{ end }}} else if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}({{ camelize .Name }}, {{ camelize .Name }}Header); err != nil {
+    res = append(res, err)
+  } else {
     {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if .IsNullable }}&{{ end }}runtime.File{Data: {{ camelize .Name }}, Header: {{ camelize .Name }}Header}
   }
   {{ else }}fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, _ := fds.GetOK({{ .Path }})
@@ -238,6 +229,22 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
 
 {{ $className := (pascalize .Name) }}
 {{ range .Params }}
+{{ if .IsFileParam }}
+func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(file multipart.File, header *multipart.FileHeader) error {
+  {{if or .MinLength .MaxLength}}size, _ := file.Seek(0, io.SeekEnd)
+  file.Seek(0, io.SeekStart)
+  {{end}}
+  {{if .MinLength}}if size < {{.MinLength}} {
+    return errors.ExceedsMinimum({{ .Path }}, {{ printf "%q" .Location }}, {{ .MinLength }}, false)
+  }
+  {{end}}
+  {{if .MaxLength}}if size > {{.MaxLength}} {
+    return errors.ExceedsMaximum({{ .Path }}, {{ printf "%q" .Location }}, {{ .MaxLength }}, false)
+  }
+  {{end}}
+  return nil
+}
+{{ end }}
 {{ if not (or .IsBodyParam .IsFileParam) }}
 {{ if or .IsPrimitive .IsCustomFormatter }}
 func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawData []string, hasKey bool, formats strfmt.Registry) error {
