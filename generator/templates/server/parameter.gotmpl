@@ -106,7 +106,7 @@ func New{{ pascalize .Name }}Params() {{ pascalize .Name }}Params {
 type {{ pascalize .Name }}Params struct {
 
   // HTTP Request Object
-  HTTPRequest *http.Request
+  HTTPRequest *http.Request `json:"-"`
 
   {{ range .Params }}/*{{ if .Description }}{{ .Description }}{{ end }}{{ if .Required }}
   Required: true{{ end }}{{ if .Maximum }}
