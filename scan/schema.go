@@ -92,6 +92,7 @@ func (sv schemaValidations) SetMaxLength(val int64)     { sv.current.MaxLength =
 func (sv schemaValidations) SetPattern(val string)      { sv.current.Pattern = val }
 func (sv schemaValidations) SetUnique(val bool)         { sv.current.UniqueItems = val }
 func (sv schemaValidations) SetDefault(val interface{}) { sv.current.Default = val }
+func (sv schemaValidations) SetExample(val interface{}) { sv.current.Example = val }
 func (sv schemaValidations) SetEnum(val string) {
 	list := strings.Split(val, ",")
 	interfaceSlice := make([]interface{}, len(list))
@@ -728,7 +729,7 @@ func (scp *schemaParser) createParser(nm string, schema, ps *spec.Schema, fld *a
 			newSingleLineTagParser("enum", &setEnum{schemaValidations{ps}, rxf(rxEnumFmt, "")}),
 			newSingleLineTagParser("default", &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxDefaultFmt, "")}),
 			newSingleLineTagParser("type", &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxDefaultFmt, "")}),
-
+			newSingleLineTagParser("example", &setExample{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxExampleFmt, "")}),
 			newSingleLineTagParser("required", &setRequiredSchema{schema, nm}),
 			newSingleLineTagParser("readOnly", &setReadOnlySchema{ps}),
 			newSingleLineTagParser("discriminator", &setDiscriminator{schema, nm}),
@@ -753,6 +754,7 @@ func (scp *schemaParser) createParser(nm string, schema, ps *spec.Schema, fld *a
 				newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{schemaValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
 				newSingleLineTagParser(fmt.Sprintf("items%dEnum", level), &setEnum{schemaValidations{items}, rxf(rxEnumFmt, itemsPrefix)}),
 				newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
+				newSingleLineTagParser(fmt.Sprintf("items%dExample", level), &setExample{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{items}, rxf(rxExampleFmt, itemsPrefix)}),
 			}
 		}
 
