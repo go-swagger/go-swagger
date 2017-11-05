@@ -38,6 +38,7 @@ type validationBuilder interface {
 	SetUnique(bool)
 	SetEnum(string)
 	SetDefault(interface{})
+	SetExample(interface{})
 }
 
 type valueParser interface {
@@ -297,6 +298,23 @@ func (se *setEnum) Parse(lines []string) error {
 	return nil
 }
 
+func parseValueFromSchema(s string, schema *spec.SimpleSchema) (interface{}, error) {
+	if schema != nil {
+		switch strings.Trim(schema.TypeName(), "\"") {
+		case "integer", "int", "int64", "int32", "int16":
+			return strconv.Atoi(s)
+		case "bool", "boolean":
+			return strconv.ParseBool(s)
+		case "number", "float64", "float32":
+			return strconv.ParseFloat(s, 64)
+		default:
+			return s, nil
+		}
+	} else {
+		return s, nil
+	}
+}
+
 type setDefault struct {
 	scheme  *spec.SimpleSchema
 	builder validationBuilder
@@ -304,6 +322,7 @@ type setDefault struct {
 }
 
 func (sd *setDefault) Matches(line string) bool {
+	fmt.Printf("setDefault.Matches: line=%s\n", line)
 	return sd.rx.MatchString(line)
 }
 
@@ -313,32 +332,37 @@ func (sd *setDefault) Parse(lines []string) error {
 	}
 	matches := sd.rx.FindStringSubmatch(lines[0])
 	if len(matches) > 1 && len(matches[1]) > 0 {
-		if sd.scheme != nil {
-			switch strings.Trim(sd.scheme.TypeName(), "\"") {
-			case "integer", "int", "int64", "int32", "int16":
-				d, err := strconv.Atoi(matches[1])
-				if err != nil {
-					return err
-				}
-				sd.builder.SetDefault(d)
-			case "bool", "boolean":
-				b, err := strconv.ParseBool(matches[1])
-				if err != nil {
-					return err
-				}
-				sd.builder.SetDefault(b)
-			case "number", "float64", "float32":
-				b, err := strconv.ParseFloat(matches[1], 64)
-				if err != nil {
-					return err
-				}
-				sd.builder.SetDefault(b)
-			default:
-				sd.builder.SetDefault(matches[1])
-			}
-		} else {
-			sd.builder.SetDefault(matches[1])
+		d, err := parseValueFromSchema(matches[1], sd.scheme)
+		if err != nil {
+			return err
 		}
+		sd.builder.SetDefault(d)
+	}
+	return nil
+}
+
+type setExample struct {
+	scheme  *spec.SimpleSchema
+	builder validationBuilder
+	rx *regexp.Regexp
+}
+
+func (se *setExample) Matches(line string) bool {
+	return se.rx.MatchString(line)
+}
+
+func (se *setExample) Parse(lines []string) error {
+	fmt.Printf("setExample.Parse: lines=%v\n", lines)
+	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+		return nil
+	}
+	matches := se.rx.FindStringSubmatch(lines[0])
+	if len(matches) > 1 && len(matches[1]) > 0 {
+		d, err := parseValueFromSchema(matches[1], se.scheme)
+		if err != nil {
+			return err
+		}
+		se.builder.SetExample(d)
 	}
 	return nil
 }

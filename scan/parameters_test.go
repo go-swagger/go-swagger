@@ -159,6 +159,7 @@ func TestParamsParser(t *testing.T) {
 			assert.EqualValues(t, 3, *param.Minimum)
 			assert.False(t, param.ExclusiveMinimum)
 			assert.Equal(t, 2, param.Default, "%s default value is incorrect", param.Name)
+			assert.Equal(t, 27, param.Example)
 
 		case "x-hdr-name":
 			assert.Equal(t, "Name of this no model instance", param.Description)

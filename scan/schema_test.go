@@ -57,6 +57,7 @@ func TestSchemaParser(t *testing.T) {
 	assert.NotNil(t, prop.Minimum)
 	assert.EqualValues(t, 3, *prop.Minimum)
 	assert.False(t, prop.ExclusiveMinimum, "'score' should not have had an exclusive minimum")
+	assert.Equal(t, 27, prop.Example)
 
 	assertProperty(t, &schema, "string", "name", "", "Name")
 	prop, ok = schema.Properties["name"]

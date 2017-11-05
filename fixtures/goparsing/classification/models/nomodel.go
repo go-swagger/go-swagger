@@ -48,6 +48,7 @@ type NoModel struct {
 	// minimum: 3
 	// maximum: 45
 	// multiple of: 3
+	// example: 27
 	Score int32 `json:"score"`
 
 	// Name of this no model instance

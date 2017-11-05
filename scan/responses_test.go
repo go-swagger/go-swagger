@@ -120,6 +120,7 @@ func TestParseResponses(t *testing.T) {
 			assert.False(t, header.ExclusiveMaximum)
 			assert.EqualValues(t, 3, *header.Minimum)
 			assert.False(t, header.ExclusiveMinimum)
+			assert.Equal(t, 27, header.Example)
 
 		case "x-hdr-name":
 			assert.Equal(t, "Name of this some response instance", header.Description)
@@ -153,6 +154,7 @@ func TestParseResponses(t *testing.T) {
 			assert.EqualValues(t, 3, *itprop.MinLength, "'foo_slice.items.minLength' should have been 3")
 			assert.EqualValues(t, 10, *itprop.MaxLength, "'foo_slice.items.maxLength' should have been 10")
 			assert.EqualValues(t, "\\w+", itprop.Pattern, "'foo_slice.items.pattern' should have \\w+")
+			assert.Equal(t, "foo", itprop.Example)
 
 		case "bar_slice":
 			assert.Equal(t, "a BarSlice has bars which are strings", header.Description)

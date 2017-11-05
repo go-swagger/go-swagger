@@ -111,6 +111,7 @@ type NoParams struct {
 	// multiple of: 3
 	// in: query
 	// default: 2
+	// example: 27
 	Score int32 `json:"score"`
 
 	// Name of this no model instance
