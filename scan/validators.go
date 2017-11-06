@@ -322,7 +322,6 @@ type setDefault struct {
 }
 
 func (sd *setDefault) Matches(line string) bool {
-	fmt.Printf("setDefault.Matches: line=%s\n", line)
 	return sd.rx.MatchString(line)
 }
 
@@ -352,7 +351,6 @@ func (se *setExample) Matches(line string) bool {
 }
 
 func (se *setExample) Parse(lines []string) error {
-	fmt.Printf("setExample.Parse: lines=%v\n", lines)
 	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
 		return nil
 	}
