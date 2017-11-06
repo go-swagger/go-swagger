@@ -146,6 +146,9 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) WriteResponse(rw http.Response
   // response header {{.Name}}
   {{ template "serverheaderbuilder" . -}}
   {{ end }}
+  {{ if not .Schema }}
+  rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+  {{ end }}
   rw.WriteHeader({{ if eq .Code -1 }}{{ .ReceiverName }}._statusCode{{ else }}{{ .Code }}{{ end }}){{ if .Schema }}{{ if .Schema.IsComplexObject }}
   if {{ .ReceiverName }}.Payload != nil { {{ end }}
   payload := {{ .ReceiverName }}.Payload{{ if .Schema.IsArray }}
