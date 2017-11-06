@@ -76,7 +76,9 @@
       return err
     }
   {{end}}
+  // fmt.Println("I am here bro2")
   {{ if .Items }}
+    // fmt.Println("I am here bro")
     {{ if or .Items.Required .Items.HasValidations .Items.IsBaseType .Items.IsAliased }}
       for {{.IndexVar}} := 0; {{.IndexVar}} < len({{.ValueExpression}}); {{.IndexVar}}++ {
       {{with .Items}}
@@ -89,6 +91,17 @@
       {{end}}
       }
     {{end}}
+  {{ else }}
+    {{ if .IsNullable }}
+    if {{ .ValueExpression }} != nil {
+    {{ end }}
+    if err := {{.ValueExpression}}.Validate(formats); err != nil {
+      if ve, ok := err.(*errors.Validation); ok {
+        return ve.ValidateName({{ if .Path }}{{ .Path }}{{else}}""{{end}})
+      }
+      return err
+    }
+    {{ if .IsNullable }} } {{ end }}
   {{end}}
 {{end}}
 {{ define "mapvalidator" }}
