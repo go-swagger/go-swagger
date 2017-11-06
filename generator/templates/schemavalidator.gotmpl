@@ -76,9 +76,7 @@
       return err
     }
   {{end}}
-  // fmt.Println("I am here bro2")
   {{ if .Items }}
-    // fmt.Println("I am here bro")
     {{ if or .Items.Required .Items.HasValidations .Items.IsBaseType .Items.IsAliased }}
       for {{.IndexVar}} := 0; {{.IndexVar}} < len({{.ValueExpression}}); {{.IndexVar}}++ {
       {{with .Items}}
