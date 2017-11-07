@@ -263,11 +263,11 @@ type FdSet struct {
 }
 
 type Utsname struct {
-	Sysname  [257]int8
-	Nodename [257]int8
-	Release  [257]int8
-	Version  [257]int8
-	Machine  [257]int8
+	Sysname  [257]byte
+	Nodename [257]byte
+	Release  [257]byte
+	Version  [257]byte
+	Machine  [257]byte
 }
 
 type Ustat_t struct {

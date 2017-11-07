@@ -52,6 +52,34 @@ func (o *objectValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	return r
 }
 
+func (o *objectValidator) checkArrayMustHaveItems(res *Result, val map[string]interface{}) {
+	if t, typeFound := val["type"]; typeFound {
+		if tpe, ok := t.(string); ok && tpe == "array" {
+			if _, itemsKeyFound := val["items"]; !itemsKeyFound {
+				res.AddErrors(errors.Required("items", o.Path))
+			}
+		}
+	}
+}
+
+func (o *objectValidator) checkItemsMustBeTypeArray(res *Result, val map[string]interface{}) {
+	if _, itemsKeyFound := val["items"]; itemsKeyFound {
+		t, typeFound := val["type"]
+		if typeFound {
+			if tpe, ok := t.(string); !ok || tpe != "array" {
+				res.AddErrors(errors.InvalidType(o.Path, o.In, "array", nil))
+			}
+		} else {
+			// there is no type
+			// shouldnt validate
+			res.AddErrors(errors.Required("type", o.Path))
+		}
+	}
+}
+func (o *objectValidator) precheck(res *Result, val map[string]interface{}) {
+	o.checkArrayMustHaveItems(res, val)
+	o.checkItemsMustBeTypeArray(res, val)
+}
 func (o *objectValidator) Validate(data interface{}) *Result {
 	val := data.(map[string]interface{})
 	numKeys := int64(len(val))
@@ -64,16 +92,7 @@ func (o *objectValidator) Validate(data interface{}) *Result {
 	}
 
 	res := new(Result)
-
-	// This is to check that the items keyword is only valid for array types
-	if _, itemsKeyFound := val["items"]; itemsKeyFound {
-		if t, typeFound := val["type"]; typeFound {
-			if tpe, ok := t.(string); !ok || tpe != "array" {
-				res.AddErrors(errors.InvalidType(o.Path, o.In, "array", nil))
-			}
-		}
-	}
-
+	o.precheck(res, val)
 	if o.AdditionalProperties != nil && !o.AdditionalProperties.Allows {
 		for k := range val {
 			_, regularProperty := o.Properties[k]

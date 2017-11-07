@@ -89,10 +89,10 @@ var primitiveTypesString = "{" +
 	`"Int32":` + fmt.Sprint(math.MinInt32) + `,` +
 	`"Int64":` + fmt.Sprint(int64(math.MinInt64)) + `,` +
 
-	`"Uint":` + fmt.Sprint(math.MaxUint32) + `,` +
+	`"Uint":` + fmt.Sprint(uint32(math.MaxUint32)) + `,` +
 	`"Uint8":` + fmt.Sprint(math.MaxUint8) + `,` +
 	`"Uint16":` + fmt.Sprint(math.MaxUint16) + `,` +
-	`"Uint32":` + fmt.Sprint(math.MaxUint32) + `,` +
+	`"Uint32":` + fmt.Sprint(uint32(math.MaxUint32)) + `,` +
 	`"Uint64":` + fmt.Sprint(uint64(math.MaxUint64)) + `,` +
 
 	`"IntString":"` + fmt.Sprint(math.MinInt32) + `",` +
@@ -101,10 +101,10 @@ var primitiveTypesString = "{" +
 	`"Int32String":"` + fmt.Sprint(math.MinInt32) + `",` +
 	`"Int64String":"` + fmt.Sprint(int64(math.MinInt64)) + `",` +
 
-	`"UintString":"` + fmt.Sprint(math.MaxUint32) + `",` +
+	`"UintString":"` + fmt.Sprint(uint32(math.MaxUint32)) + `",` +
 	`"Uint8String":"` + fmt.Sprint(math.MaxUint8) + `",` +
 	`"Uint16String":"` + fmt.Sprint(math.MaxUint16) + `",` +
-	`"Uint32String":"` + fmt.Sprint(math.MaxUint32) + `",` +
+	`"Uint32String":"` + fmt.Sprint(uint32(math.MaxUint32)) + `",` +
 	`"Uint64String":"` + fmt.Sprint(uint64(math.MaxUint64)) + `",` +
 
 	`"Float32":` + fmt.Sprint(1.5) + `,` +
@@ -192,10 +192,10 @@ var namedPrimitiveTypesString = "{" +
 	`"Int32":` + fmt.Sprint(math.MinInt32) + `,` +
 	`"Int64":` + fmt.Sprint(int64(math.MinInt64)) + `,` +
 
-	`"Uint":` + fmt.Sprint(math.MaxUint32) + `,` +
+	`"Uint":` + fmt.Sprint(uint32(math.MaxUint32)) + `,` +
 	`"Uint8":` + fmt.Sprint(math.MaxUint8) + `,` +
 	`"Uint16":` + fmt.Sprint(math.MaxUint16) + `,` +
-	`"Uint32":` + fmt.Sprint(math.MaxUint32) + `,` +
+	`"Uint32":` + fmt.Sprint(uint32(math.MaxUint32)) + `,` +
 	`"Uint64":` + fmt.Sprint(uint64(math.MaxUint64)) + `,` +
 
 	`"Float32":` + fmt.Sprint(1.5) + `,` +

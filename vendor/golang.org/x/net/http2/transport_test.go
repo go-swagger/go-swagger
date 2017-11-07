@@ -3097,6 +3097,34 @@ func TestTransportCancelDataResponseRace(t *testing.T) {
 	}
 }
 
+// Issue 21316: It should be safe to reuse an http.Request after the
+// request has completed.
+func TestTransportNoRaceOnRequestObjectAfterRequestComplete(t *testing.T) {
+	st := newServerTester(t, func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		io.WriteString(w, "body")
+	}, optOnlyServer)
+	defer st.Close()
+
+	tr := &Transport{TLSClientConfig: tlsConfigInsecure}
+	defer tr.CloseIdleConnections()
+
+	req, _ := http.NewRequest("GET", st.ts.URL, nil)
+	resp, err := tr.RoundTrip(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = io.Copy(ioutil.Discard, resp.Body); err != nil {
+		t.Fatalf("error reading response body: %v", err)
+	}
+	if err := resp.Body.Close(); err != nil {
+		t.Fatalf("error closing response body: %v", err)
+	}
+
+	// This access of req.Header should not race with code in the transport.
+	req.Header = http.Header{}
+}
+
 func TestTransportRetryAfterGOAWAY(t *testing.T) {
 	var dialer struct {
 		sync.Mutex
