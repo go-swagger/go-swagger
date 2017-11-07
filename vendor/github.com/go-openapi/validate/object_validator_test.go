@@ -32,3 +32,34 @@ func TestItemsMustBeTypeArray(t *testing.T) {
 	res = ov.Validate(dataInvalid)
 	assert.NotEqual(t, 0, len(res.Errors))
 }
+
+func TestItemsMustHaveType(t *testing.T) {
+	ov := new(objectValidator)
+	dataValid := map[string]interface{}{
+		"type":  "array",
+		"items": "dummy",
+	}
+	dataInvalid := map[string]interface{}{
+		"items": "dummy",
+	}
+	res := ov.Validate(dataValid)
+	assert.Equal(t, 0, len(res.Errors))
+	res = ov.Validate(dataInvalid)
+	assert.NotEqual(t, 0, len(res.Errors))
+}
+
+func TestTypeArrayMustHaveItems(t *testing.T) {
+	ov := new(objectValidator)
+	dataValid := map[string]interface{}{
+		"type":  "array",
+		"items": "dummy",
+	}
+	dataInvalid := map[string]interface{}{
+		"type": "array",
+		"key":  "dummy",
+	}
+	res := ov.Validate(dataValid)
+	assert.Equal(t, 0, len(res.Errors))
+	res = ov.Validate(dataInvalid)
+	assert.NotEqual(t, 0, len(res.Errors))
+}

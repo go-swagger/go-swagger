@@ -25,12 +25,12 @@ var smallStructData = Entities{
 type SearchMetadata struct {
 	CompletedIn float64 `json:"completed_in"`
 	Count       int     `json:"count"`
-	MaxID       int     `json:"max_id"`
+	MaxID       int64   `json:"max_id"`
 	MaxIDStr    string  `json:"max_id_str"`
 	NextResults string  `json:"next_results"`
 	Query       string  `json:"query"`
 	RefreshURL  string  `json:"refresh_url"`
-	SinceID     int     `json:"since_id"`
+	SinceID     int64   `json:"since_id"`
 	SinceIDStr  string  `json:"since_id_str"`
 }
 
