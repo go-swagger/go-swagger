@@ -91,6 +91,9 @@ var FuncMap template.FuncMap = map[string]interface{}{
 		lines := strings.Split(str, "\n")
 		return (strings.Join(lines, "\n// "))
 	},
+	"blockcomment": func(str string) string {
+		return strings.Replace(str, "*/", "[*]/", -1)
+	},
 	"inspect":   pretty.Sprint,
 	"cleanPath": path.Clean,
 	"mediaTypeName": func(orig string) string {

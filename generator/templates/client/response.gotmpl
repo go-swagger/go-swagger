@@ -9,13 +9,13 @@ func New{{ pascalize .Name }}({{ if eq .Code -1 }}code int{{ end }}{{ if .Schema
 
 /*{{ pascalize .Name}} handles this case with default header values.
 
-{{ if .Description }}{{ .Description }}{{else}}{{ pascalize .Name }} {{ humanize .Name }}{{end}}
+{{ if .Description }}{{ blockcomment .Description }}{{else}}{{ pascalize .Name }} {{ humanize .Name }}{{end}}
 */
 type {{ pascalize .Name }} struct {
   {{ if eq .Code -1 }}
   _statusCode int
 
-  {{ end }}{{ range .Headers }}{{ if .Description }}/*{{ .Description }}
+  {{ end }}{{ range .Headers }}{{ if .Description }}/*{{ blockcomment .Description }}
   */{{ end }}
   {{ pascalize .Name }} {{ .GoType }}
   {{ end }}

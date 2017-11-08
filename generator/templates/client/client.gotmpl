@@ -32,7 +32,7 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *Client {
 /*
 Client {{ if .Summary }}{{ .Summary }}{{ if .Description }}
 
-{{ .Description }}{{ end }}{{ else if .Description}}{{ .Description }}{{ else }}for {{ humanize .Name }} API{{ end }}
+{{ blockcomment .Description }}{{ end }}{{ else if .Description}}{{ blockcomment .Description }}{{ else }}for {{ humanize .Name }} API{{ end }}
 */
 type Client struct {
   transport runtime.ClientTransport
@@ -42,7 +42,7 @@ type Client struct {
 {{ range .Operations }}/*
 {{ pascalize .Name }} {{ if .Summary }}{{ pluralizeFirstWord (humanize .Summary) }}{{ if .Description }}
 
-{{ .Description }}{{ end }}{{ else if .Description}}{{ .Description }}{{ else }}{{ humanize .Name }} API{{ end }}
+{{ blockcomment .Description }}{{ end }}{{ else if .Description}}{{ blockcomment .Description }}{{ else }}{{ humanize .Name }} API{{ end }}
 */
 func (a *Client) {{ pascalize .Name }}(params *{{ pascalize .Name }}Params{{ if .Authorized }}, authInfo runtime.ClientAuthInfoWriter{{end}}{{ if .HasStreamingResponse }}, writer io.Writer{{ end }}) {{ if .SuccessResponse }}({{ range .SuccessResponses }}*{{ pascalize .Name }}, {{ end }}{{ end }}error{{ if .SuccessResponse }}){{ end }} {
   // TODO: Validate the params before sending

@@ -90,7 +90,7 @@ for the {{ humanize .Name }} operation typically these are written to a http.Req
 type {{ pascalize .Name }}Params struct {
 
   {{ range .Params }}/*{{ pascalize .Name }}{{if .Description }}
-  {{ .Description }}
+  {{ blockcomment .Description }}
 
   {{ end }}*/
   {{ pascalize .ID }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{end}}

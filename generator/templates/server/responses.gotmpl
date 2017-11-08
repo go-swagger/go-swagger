@@ -54,14 +54,14 @@ if len({{ .ValueExpression }}S) > 0 {
 {{ if ne .Code -1 }}// {{pascalize .Name}}Code is the HTTP code returned for type {{ pascalize .Name}}
 const {{ pascalize .Name}}Code int = {{ .Code }}{{ end }}
 
-/*{{ if .Description }}{{ pascalize .Name }} {{ .Description }}{{else}}{{ pascalize .Name }} {{ humanize .Name }}{{end}}
+/*{{ if .Description }}{{ pascalize .Name }} {{ blockcomment .Description }}{{else}}{{ pascalize .Name }} {{ humanize .Name }}{{end}}
 
 swagger:response {{ camelize .Name }}
 */
 type {{ pascalize .Name }} struct {
   {{ if eq .Code -1 }}
   _statusCode int
-  {{ end }}{{ range .Headers }}/*{{if .Description }}{{ .Description }}{{ end }}{{ if .Required }}
+  {{ end }}{{ range .Headers }}/*{{if .Description }}{{ blockcomment .Description }}{{ end }}{{ if .Required }}
   Required: true{{ end }}{{ if .Maximum }}
   Maximum: {{ if .ExclusiveMaximum }}< {{ end }}{{ .Maximum }}{{ end }}{{ if .Minimum }}
   Minimum: {{ if .ExclusiveMinimum }}> {{ end }}{{ .Minimum }}{{ end }}{{ if .MultipleOf }}
@@ -77,7 +77,7 @@ type {{ pascalize .Name }} struct {
   {{ pascalize .Name }} {{ .GoType }} `json:"{{.Name}}{{ if not .Required }},omitempty{{ end }}"`
   {{ end }}
   {{ if .Schema }}{{ with .Schema }}
-  /*{{if .Description }}{{ .Description }}{{ end }}{{ if .Maximum }}
+  /*{{if .Description }}{{ blockcomment .Description }}{{ end }}{{ if .Maximum }}
   Maximum: {{ if .ExclusiveMaximum }}< {{ end }}{{ .Maximum }}{{ end }}{{ if .Minimum }}
   Minimum: {{ if .ExclusiveMinimum }}> {{ end }}{{ .Minimum }}{{ end }}{{ if .MultipleOf }}
   Multiple Of: {{ .MultipleOf }}{{ end }}{{ if .MaxLength }}
