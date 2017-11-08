@@ -51,7 +51,7 @@ func New{{ pascalize .Name }}(ctx *middleware.Context, handler {{ pascalize .Nam
 
 {{ if .Summary }}{{ .Summary }}{{ if .Description }}
 
-{{ .Description }}{{ end }}{{ else if .Description}}{{ .Description }}{{ else }}{{ pascalize .Name }} {{ humanize .Name }} API{{ end }}
+{{ blockcomment .Description }}{{ end }}{{ else if .Description}}{{ blockcomment .Description }}{{ else }}{{ pascalize .Name }} {{ humanize .Name }} API{{ end }}
 
 */
 type {{ pascalize .Name }} struct {
