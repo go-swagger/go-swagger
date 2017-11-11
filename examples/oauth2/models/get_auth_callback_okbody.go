@@ -14,7 +14,6 @@ import (
 
 // GetAuthCallbackOKBody get auth callback o k body
 // swagger:model getAuthCallbackOKBody
-
 type GetAuthCallbackOKBody struct {
 
 	// access token

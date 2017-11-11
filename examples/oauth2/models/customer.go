@@ -15,7 +15,6 @@ import (
 
 // Customer customer
 // swagger:model customer
-
 type Customer struct {
 
 	// agent associated with this customer

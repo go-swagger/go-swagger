@@ -16,7 +16,6 @@ import (
 
 // CreateUsersWithListInputParamsBody create users with list input params body
 // swagger:model createUsersWithListInputParamsBody
-
 type CreateUsersWithListInputParamsBody []*User
 
 // Validate validates this create users with list input params body

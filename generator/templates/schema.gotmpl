@@ -1,4 +1,4 @@
-{{ if .IncludeModel }}
+{{ if .IncludeModel -}}
   {{ if and .IsBaseType .IsExported }}type {{ pascalize .Name }} interface {
     {{if or .Required .HasValidations }}runtime.Validatable{{ end }}
     {{ range .AllOf }}
@@ -38,7 +38,6 @@
     {{- template "propertyValidationDocString" .AdditionalItems}} {{ pascalize .AdditionalItems.Name }}() []{{ template "schemaType" .AdditionalItems }}
   {{ end }}
 }
-
   type {{ camelize .Name }} {{ template "schemaBody" . }}
 
   {{ range .Properties }}
@@ -109,8 +108,8 @@ func unmarshal{{ pascalize .Name }}(data []byte, consumer runtime.Consumer) ({{ 
   return nil, errors.New(422, "invalid {{ .DiscriminatorField }} value: %q", getType.{{ pascalize .DiscriminatorField }})
 
 }
-{{ else }}
-  {{ if or .IsComplexObject .IsTuple .IsAdditionalProperties }}
+{{ else -}}
+  {{ if or .IsComplexObject .IsTuple .IsAdditionalProperties -}}
     {{ if .Name }}type {{ if not .IsExported }}{{ .Name }}{{ else }}{{ pascalize .Name }}{{ end }}{{ end }} {{ template "schemaBody" . }}
     {{ range .Properties }}
       /* polymorph {{ $.Name }} {{ .Name }} {{ .IsBaseType }} */
@@ -137,7 +136,7 @@ func unmarshal{{ pascalize .Name }}(data []byte, consumer runtime.Consumer) ({{ 
         return nil
       }
     {{end}}
-  {{ else }}
+  {{ else -}}
     type {{ pascalize .Name }} {{ template "typeSchemaType" . }}
   {{ end -}}
   {{ if .IsSubType }}

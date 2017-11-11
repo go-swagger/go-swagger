@@ -16,7 +16,6 @@ import (
 
 // PetTags pet tags
 // swagger:model petTags
-
 type PetTags []*Tag
 
 // Validate validates this pet tags

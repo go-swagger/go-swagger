@@ -17,7 +17,6 @@ import (
 // An issue can have at most 20 files attached to it.
 //
 // swagger:model taskAllOf1Attachments
-
 type TaskAllOf1Attachments map[string]TaskAllOf1AttachmentsAdditionalProperties
 
 // Validate validates this task all of1 attachments

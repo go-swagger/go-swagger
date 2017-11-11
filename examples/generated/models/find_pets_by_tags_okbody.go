@@ -16,7 +16,6 @@ import (
 
 // FindPetsByTagsOKBody find pets by tags o k body
 // swagger:model findPetsByTagsOKBody
-
 type FindPetsByTagsOKBody []*Pet
 
 // Validate validates this find pets by tags o k body

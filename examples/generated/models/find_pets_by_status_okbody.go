@@ -16,7 +16,6 @@ import (
 
 // FindPetsByStatusOKBody find pets by status o k body
 // swagger:model findPetsByStatusOKBody
-
 type FindPetsByStatusOKBody []*Pet
 
 // Validate validates this find pets by status o k body

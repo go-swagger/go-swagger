@@ -15,7 +15,6 @@ import (
 
 // TaskAllOf1AttachmentsAdditionalProperties task all of1 attachments additional properties
 // swagger:model taskAllOf1AttachmentsAdditionalProperties
-
 type TaskAllOf1AttachmentsAdditionalProperties struct {
 
 	// The content type of the file.

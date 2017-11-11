@@ -16,7 +16,6 @@ import (
 
 // ListTasksOKBody TaskList
 // swagger:model listTasksOKBody
-
 type ListTasksOKBody []*TaskCard
 
 // Validate validates this list tasks o k body

@@ -17,7 +17,6 @@ import (
 // This object contains counts for the remaining open issues and the amount of issues that have been closed.
 //
 // swagger:model milestoneStats
-
 type MilestoneStats struct {
 
 	// The closed issues.

@@ -16,7 +16,6 @@ import (
 
 // FindOKBody find o k body
 // swagger:model findOKBody
-
 type FindOKBody []*Item
 
 // Validate validates this find o k body

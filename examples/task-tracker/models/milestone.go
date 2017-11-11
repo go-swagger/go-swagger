@@ -19,7 +19,6 @@ import (
 // This can be useful for filters and such.
 //
 // swagger:model Milestone
-
 type Milestone struct {
 
 	// The description of the milestone.

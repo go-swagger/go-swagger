@@ -14,7 +14,6 @@ import (
 
 // TaskAllOf1 task all of1
 // swagger:model taskAllOf1
-
 type TaskAllOf1 struct {
 
 	// attachments

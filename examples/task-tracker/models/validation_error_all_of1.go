@@ -14,7 +14,6 @@ import (
 
 // ValidationErrorAllOf1 validation error all of1
 // swagger:model validationErrorAllOf1
-
 type ValidationErrorAllOf1 struct {
 
 	// an optional field name to which this validation error applies

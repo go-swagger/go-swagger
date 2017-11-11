@@ -14,7 +14,6 @@ import (
 
 // Tag tag
 // swagger:model Tag
-
 type Tag struct {
 
 	// id

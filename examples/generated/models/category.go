@@ -14,7 +14,6 @@ import (
 
 // Category category
 // swagger:model Category
-
 type Category struct {
 
 	// id

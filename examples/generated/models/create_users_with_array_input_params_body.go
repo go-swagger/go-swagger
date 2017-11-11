@@ -16,7 +16,6 @@ import (
 
 // CreateUsersWithArrayInputParamsBody create users with array input params body
 // swagger:model createUsersWithArrayInputParamsBody
-
 type CreateUsersWithArrayInputParamsBody []*User
 
 // Validate validates this create users with array input params body

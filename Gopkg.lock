@@ -160,7 +160,7 @@
 [[projects]]
   branch = "master"
   name = "github.com/mailru/easyjson"
-  packages = [".","buffer","jlexer","jwriter"]
+  packages = ["buffer","jlexer","jwriter"]
   revision = "5f62e4f3afa2f576dc86531b7df4d966b19ef8f8"
 
 [[projects]]
@@ -298,6 +298,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d93c7c78061dc9c7978c8937f9cfcb1a46d749e8fe828c82525c5ee55abd7566"
+  inputs-digest = "843d507471a279f79b325cbdbbf77f88e322560dea323059d2f4a141ab6b24a3"
   solver-name = "gps-cdcl"
   solver-version = 1

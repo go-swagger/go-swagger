@@ -20,7 +20,6 @@ import (
 // This field is read only, comments are added through a separate process.
 //
 // swagger:model taskAllOf1Comments
-
 type TaskAllOf1Comments []*Comment
 
 // Validate validates this task all of1 comments

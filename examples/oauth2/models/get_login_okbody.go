@@ -14,7 +14,6 @@ import (
 
 // GetLoginOKBody get login o k body
 // swagger:model getLoginOKBody
-
 type GetLoginOKBody struct {
 
 	// access token

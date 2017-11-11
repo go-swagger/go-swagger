@@ -16,7 +16,6 @@ import (
 
 // FindTodosOKBody find todos o k body
 // swagger:model findTodosOKBody
-
 type FindTodosOKBody []*Item
 
 // Validate validates this find todos o k body

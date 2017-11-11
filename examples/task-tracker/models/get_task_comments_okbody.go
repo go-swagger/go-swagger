@@ -16,7 +16,6 @@ import (
 
 // GetTaskCommentsOKBody get task comments o k body
 // swagger:model getTaskCommentsOKBody
-
 type GetTaskCommentsOKBody []*Comment
 
 // Validate validates this get task comments o k body

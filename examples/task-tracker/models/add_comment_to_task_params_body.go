@@ -18,7 +18,6 @@ import (
 // These values can have github flavored markdown.
 //
 // swagger:model addCommentToTaskParamsBody
-
 type AddCommentToTaskParamsBody struct {
 
 	// content
