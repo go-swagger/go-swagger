@@ -25,7 +25,7 @@ type FindTodosOK struct {
 	/*
 	  In: Body
 	*/
-	Payload []*models.Item `json:"body,omitempty"`
+	Payload models.FindTodosOKBody `json:"body,omitempty"`
 }
 
 // NewFindTodosOK creates FindTodosOK with default headers values
@@ -34,13 +34,13 @@ func NewFindTodosOK() *FindTodosOK {
 }
 
 // WithPayload adds the payload to the find todos o k response
-func (o *FindTodosOK) WithPayload(payload []*models.Item) *FindTodosOK {
+func (o *FindTodosOK) WithPayload(payload models.FindTodosOKBody) *FindTodosOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the find todos o k response
-func (o *FindTodosOK) SetPayload(payload []*models.Item) {
+func (o *FindTodosOK) SetPayload(payload models.FindTodosOKBody) {
 	o.Payload = payload
 }
 
@@ -50,7 +50,7 @@ func (o *FindTodosOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pro
 	rw.WriteHeader(200)
 	payload := o.Payload
 	if payload == nil {
-		payload = make([]*models.Item, 0, 50)
+		payload = make(models.FindTodosOKBody, 0, 50)
 	}
 
 	if err := producer.Produce(rw, payload); err != nil {

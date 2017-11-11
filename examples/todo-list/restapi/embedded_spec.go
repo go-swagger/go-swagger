@@ -69,10 +69,7 @@ func init() {
           "200": {
             "description": "OK",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/item"
-              }
+              "$ref": "#/definitions/findOKBody"
             }
           },
           "default": {
@@ -185,6 +182,13 @@ func init() {
           "type": "string"
         }
       }
+    },
+    "findOKBody": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/item"
+      },
+      "x-go-gen-location": "operations"
     },
     "item": {
       "type": "object",

@@ -25,7 +25,7 @@ type GetAuthCallbackOK struct {
 	/*
 	  In: Body
 	*/
-	Payload GetAuthCallbackOKBody `json:"body,omitempty"`
+	Payload *models.GetAuthCallbackOKBody `json:"body,omitempty"`
 }
 
 // NewGetAuthCallbackOK creates GetAuthCallbackOK with default headers values
@@ -34,13 +34,13 @@ func NewGetAuthCallbackOK() *GetAuthCallbackOK {
 }
 
 // WithPayload adds the payload to the get auth callback o k response
-func (o *GetAuthCallbackOK) WithPayload(payload GetAuthCallbackOKBody) *GetAuthCallbackOK {
+func (o *GetAuthCallbackOK) WithPayload(payload *models.GetAuthCallbackOKBody) *GetAuthCallbackOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get auth callback o k response
-func (o *GetAuthCallbackOK) SetPayload(payload GetAuthCallbackOKBody) {
+func (o *GetAuthCallbackOK) SetPayload(payload *models.GetAuthCallbackOKBody) {
 	o.Payload = payload
 }
 
@@ -48,11 +48,12 @@ func (o *GetAuthCallbackOK) SetPayload(payload GetAuthCallbackOKBody) {
 func (o *GetAuthCallbackOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 /*GetAuthCallbackDefault error

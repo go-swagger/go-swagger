@@ -18,6 +18,7 @@ import (
 	"log"
 	"reflect"
 	"regexp"
+	"strings"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/spec"
@@ -52,6 +53,10 @@ func (o *objectValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	return r
 }
 
+func (o *objectValidator) isPropertyName() bool {
+	p := strings.Split(o.Path, ".")
+	return p[len(p)-1] == "properties" && p[len(p)-2] != "properties"
+}
 func (o *objectValidator) checkArrayMustHaveItems(res *Result, val map[string]interface{}) {
 	if t, typeFound := val["type"]; typeFound {
 		if tpe, ok := t.(string); ok && tpe == "array" {
@@ -63,16 +68,17 @@ func (o *objectValidator) checkArrayMustHaveItems(res *Result, val map[string]in
 }
 
 func (o *objectValidator) checkItemsMustBeTypeArray(res *Result, val map[string]interface{}) {
-	if _, itemsKeyFound := val["items"]; itemsKeyFound {
-		t, typeFound := val["type"]
-		if typeFound {
-			if tpe, ok := t.(string); !ok || tpe != "array" {
-				res.AddErrors(errors.InvalidType(o.Path, o.In, "array", nil))
+	if !o.isPropertyName() {
+		if _, itemsKeyFound := val["items"]; itemsKeyFound {
+			t, typeFound := val["type"]
+			if typeFound {
+				if tpe, ok := t.(string); !ok || tpe != "array" {
+					res.AddErrors(errors.InvalidType(o.Path, o.In, "array", nil))
+				}
+			} else {
+				// there is no type
+				res.AddErrors(errors.Required("type", o.Path))
 			}
-		} else {
-			// there is no type
-			// shouldnt validate
-			res.AddErrors(errors.Required("type", o.Path))
 		}
 	}
 }
@@ -92,7 +98,9 @@ func (o *objectValidator) Validate(data interface{}) *Result {
 	}
 
 	res := new(Result)
+
 	o.precheck(res, val)
+
 	if o.AdditionalProperties != nil && !o.AdditionalProperties.Allows {
 		for k := range val {
 			_, regularProperty := o.Properties[k]

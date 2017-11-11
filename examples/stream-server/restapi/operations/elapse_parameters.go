@@ -30,7 +30,7 @@ func NewElapseParams() ElapseParams {
 type ElapseParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*How many seconds to count down
 	  Required: true

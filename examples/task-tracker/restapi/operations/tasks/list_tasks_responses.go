@@ -30,7 +30,7 @@ type ListTasksOK struct {
 	/*
 	  In: Body
 	*/
-	Payload []*models.TaskCard `json:"body,omitempty"`
+	Payload models.ListTasksOKBody `json:"body,omitempty"`
 }
 
 // NewListTasksOK creates ListTasksOK with default headers values
@@ -50,13 +50,13 @@ func (o *ListTasksOK) SetXLastTaskID(xLastTaskID int64) {
 }
 
 // WithPayload adds the payload to the list tasks o k response
-func (o *ListTasksOK) WithPayload(payload []*models.TaskCard) *ListTasksOK {
+func (o *ListTasksOK) WithPayload(payload models.ListTasksOKBody) *ListTasksOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the list tasks o k response
-func (o *ListTasksOK) SetPayload(payload []*models.TaskCard) {
+func (o *ListTasksOK) SetPayload(payload models.ListTasksOKBody) {
 	o.Payload = payload
 }
 
@@ -73,7 +73,7 @@ func (o *ListTasksOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pro
 	rw.WriteHeader(200)
 	payload := o.Payload
 	if payload == nil {
-		payload = make([]*models.TaskCard, 0, 50)
+		payload = make(models.ListTasksOKBody, 0, 50)
 	}
 
 	if err := producer.Produce(rw, payload); err != nil {

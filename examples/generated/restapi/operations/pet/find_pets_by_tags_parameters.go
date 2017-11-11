@@ -29,7 +29,7 @@ func NewFindPetsByTagsParams() FindPetsByTagsParams {
 type FindPetsByTagsParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*Tags to filter by
 	  In: query

@@ -45,7 +45,7 @@ type ClientRequest interface {
 
 	SetPathParam(string, string) error
 
-	SetFileParam(string, NamedReadCloser) error
+	SetFileParam(string, ...NamedReadCloser) error
 
 	SetBodyParam(interface{}) error
 

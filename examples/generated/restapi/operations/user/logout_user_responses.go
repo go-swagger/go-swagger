@@ -44,5 +44,7 @@ func (o *LogoutUserDefault) SetStatusCode(code int) {
 // WriteResponse to the client
 func (o *LogoutUserDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+
 	rw.WriteHeader(o._statusCode)
 }

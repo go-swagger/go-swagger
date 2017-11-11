@@ -54,7 +54,7 @@ func NewGetTaskCommentsOK() *GetTaskCommentsOK {
 The list of comments
 */
 type GetTaskCommentsOK struct {
-	Payload []*models.Comment
+	Payload models.GetTaskCommentsOKBody
 }
 
 func (o *GetTaskCommentsOK) Error() string {

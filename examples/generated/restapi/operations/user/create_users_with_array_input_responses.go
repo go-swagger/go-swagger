@@ -44,5 +44,7 @@ func (o *CreateUsersWithArrayInputDefault) SetStatusCode(code int) {
 // WriteResponse to the client
 func (o *CreateUsersWithArrayInputDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+
 	rw.WriteHeader(o._statusCode)
 }

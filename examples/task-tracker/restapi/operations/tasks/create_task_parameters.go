@@ -30,7 +30,7 @@ func NewCreateTaskParams() CreateTaskParams {
 type CreateTaskParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*The task to create
 	  Required: true

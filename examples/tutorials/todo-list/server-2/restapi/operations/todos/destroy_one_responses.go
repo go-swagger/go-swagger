@@ -31,6 +31,8 @@ func NewDestroyOneNoContent() *DestroyOneNoContent {
 // WriteResponse to the client
 func (o *DestroyOneNoContent) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+
 	rw.WriteHeader(204)
 }
 

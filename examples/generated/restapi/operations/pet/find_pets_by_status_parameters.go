@@ -29,7 +29,7 @@ func NewFindPetsByStatusParams() FindPetsByStatusParams {
 type FindPetsByStatusParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*Status values that need to be considered for filter
 	  In: query

@@ -124,12 +124,10 @@ func (o *GetIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registr
 	}
 	var res []error
 
-	if o.Info == nil {
-		o.Info = new(models.SocialID)
-	}
-
-	if err := r.SetBodyParam(o.Info); err != nil {
-		return err
+	if o.Info != nil {
+		if err := r.SetBodyParam(o.Info); err != nil {
+			return err
+		}
 	}
 
 	if len(res) > 0 {

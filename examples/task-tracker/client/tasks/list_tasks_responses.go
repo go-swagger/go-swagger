@@ -67,7 +67,7 @@ type ListTasksOK struct {
 	 */
 	XLastTaskID int64
 
-	Payload []*models.TaskCard
+	Payload models.ListTasksOKBody
 }
 
 func (o *ListTasksOK) Error() string {

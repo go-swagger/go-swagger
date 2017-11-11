@@ -54,7 +54,7 @@ func NewFindOK() *FindOK {
 OK
 */
 type FindOK struct {
-	Payload []*models.Item
+	Payload models.FindOKBody
 }
 
 func (o *FindOK) Error() string {

@@ -29,7 +29,7 @@ func NewGetPetByIDParams() GetPetByIDParams {
 type GetPetByIDParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*ID of pet that needs to be fetched
 	  Required: true

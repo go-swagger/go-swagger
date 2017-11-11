@@ -29,7 +29,7 @@ func NewCreateUserParams() CreateUserParams {
 type CreateUserParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*Created user object
 	  In: body

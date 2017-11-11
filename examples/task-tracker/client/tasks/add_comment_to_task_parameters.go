@@ -17,6 +17,8 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
+
+	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
 
 // NewAddCommentToTaskParams creates a new AddCommentToTaskParams object
@@ -67,7 +69,7 @@ type AddCommentToTaskParams struct {
 	  The comment to add
 
 	*/
-	Body AddCommentToTaskBody
+	Body *models.AddCommentToTaskParamsBody
 	/*ID
 	  The id of the item
 
@@ -113,13 +115,13 @@ func (o *AddCommentToTaskParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the add comment to task params
-func (o *AddCommentToTaskParams) WithBody(body AddCommentToTaskBody) *AddCommentToTaskParams {
+func (o *AddCommentToTaskParams) WithBody(body *models.AddCommentToTaskParamsBody) *AddCommentToTaskParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the add comment to task params
-func (o *AddCommentToTaskParams) SetBody(body AddCommentToTaskBody) {
+func (o *AddCommentToTaskParams) SetBody(body *models.AddCommentToTaskParamsBody) {
 	o.Body = body
 }
 
@@ -142,8 +144,10 @@ func (o *AddCommentToTaskParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if err := r.SetBodyParam(o.Body); err != nil {
-		return err
+	if o.Body != nil {
+		if err := r.SetBodyParam(o.Body); err != nil {
+			return err
+		}
 	}
 
 	// path param id

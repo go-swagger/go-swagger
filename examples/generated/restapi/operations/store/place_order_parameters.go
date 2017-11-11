@@ -29,7 +29,7 @@ func NewPlaceOrderParams() PlaceOrderParams {
 type PlaceOrderParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*order placed for purchasing the pet
 	  In: body

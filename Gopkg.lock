@@ -83,7 +83,7 @@
   branch = "master"
   name = "github.com/go-openapi/runtime"
   packages = [".","client","flagext","middleware","middleware/denco","middleware/header","middleware/untyped","security"]
-  revision = "e8231e16de5bcda9839e03ae07c5c96a1fd82041"
+  revision = "2da70401d8fa078b6fecdd7afdf3b589ae9669e4"
 
 [[projects]]
   branch = "master"
@@ -101,13 +101,13 @@
   branch = "master"
   name = "github.com/go-openapi/swag"
   packages = ["."]
-  revision = "f3f9494671f93fcff853e3c6e9e948b3eb71e590"
+  revision = "cf0bdb963811675a4d7e74901cefc7411a1df939"
 
 [[projects]]
   branch = "master"
   name = "github.com/go-openapi/validate"
   packages = ["."]
-  revision = "a762d5dd38f7c7e9e1a13c3e98344cfbe4aa15d9"
+  revision = "a52193aca9d575f354d8be388254c134765ea793"
 
 [[projects]]
   branch = "master"
@@ -160,7 +160,7 @@
 [[projects]]
   branch = "master"
   name = "github.com/mailru/easyjson"
-  packages = ["buffer","jlexer","jwriter"]
+  packages = [".","buffer","jlexer","jwriter"]
   revision = "5f62e4f3afa2f576dc86531b7df4d966b19ef8f8"
 
 [[projects]]
@@ -215,7 +215,7 @@
   branch = "master"
   name = "github.com/spf13/viper"
   packages = ["."]
-  revision = "8ef37cbca71638bf32f3d5e194117d4cb46da163"
+  revision = "4dddf7c62e16bce5807744018f5b753bfe21bbd2"
 
 [[projects]]
   name = "github.com/stretchr/testify"
@@ -239,7 +239,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ed25519","ed25519/internal/edwards25519"]
-  revision = "687d4b818545e443c8ba223cbef20b1721afd4db"
+  revision = "6a293f2d4b14b8e6d3f0539e383f6d0d30fce3fd"
 
 [[projects]]
   branch = "master"
@@ -257,7 +257,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "75813c647272dd855bda156405bf844a5414f5bf"
+  revision = "1e2299c37cc91a509f1b12369872d27be0ce98a6"
 
 [[projects]]
   branch = "master"
@@ -269,7 +269,7 @@
   branch = "master"
   name = "golang.org/x/tools"
   packages = ["go/ast/astutil","go/buildutil","go/loader","imports"]
-  revision = "05e91d06384e3a4eb0aba75560d254b8d5a7b431"
+  revision = "9c477bae194915bfd4bc8c314e90e28b9ec1c831"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -298,6 +298,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "843d507471a279f79b325cbdbbf77f88e322560dea323059d2f4a141ab6b24a3"
+  inputs-digest = "d93c7c78061dc9c7978c8937f9cfcb1a46d749e8fe828c82525c5ee55abd7566"
   solver-name = "gps-cdcl"
   solver-version = 1

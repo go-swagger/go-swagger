@@ -29,5 +29,7 @@ func NewDeletePetBadRequest() *DeletePetBadRequest {
 // WriteResponse to the client
 func (o *DeletePetBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+
 	rw.WriteHeader(400)
 }

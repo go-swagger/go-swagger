@@ -154,10 +154,7 @@ func init() {
           "200": {
             "description": "successful operation",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Pet"
-              }
+              "$ref": "#/definitions/findPetsByStatusOKBody"
             }
           },
           "400": {
@@ -202,10 +199,7 @@ func init() {
           "200": {
             "description": "successful operation",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Pet"
-              }
+              "$ref": "#/definitions/findPetsByTagsOKBody"
             }
           },
           "400": {
@@ -499,10 +493,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/User"
-              }
+              "$ref": "#/definitions/createUsersWithArrayInputParamsBody"
             }
           }
         ],
@@ -530,10 +521,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/User"
-              }
+              "$ref": "#/definitions/createUsersWithListInputParamsBody"
             }
           }
         ],
@@ -770,10 +758,7 @@ func init() {
           "type": "string"
         },
         "tags": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Tag"
-          }
+          "$ref": "#/definitions/petTags"
         }
       }
     },
@@ -818,6 +803,41 @@ func init() {
           "type": "string"
         }
       }
+    },
+    "createUsersWithArrayInputParamsBody": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/User"
+      },
+      "x-go-gen-location": "operations"
+    },
+    "createUsersWithListInputParamsBody": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/User"
+      },
+      "x-go-gen-location": "operations"
+    },
+    "findPetsByStatusOKBody": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Pet"
+      },
+      "x-go-gen-location": "operations"
+    },
+    "findPetsByTagsOKBody": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Pet"
+      },
+      "x-go-gen-location": "operations"
+    },
+    "petTags": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Tag"
+      },
+      "x-go-gen-location": "models"
     }
   },
   "securityDefinitions": {
