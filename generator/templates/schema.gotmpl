@@ -1,5 +1,5 @@
 {{ if .IncludeModel -}}
-  {{ if and .IsBaseType .IsExported }}type {{ pascalize .Name }} interface {
+  {{ if and .IsBaseType .IsExported -}}type {{ pascalize .Name }} interface {
     {{if or .Required .HasValidations }}runtime.Validatable{{ end }}
     {{ range .AllOf }}
       {{ if .IsAnonymous }}
@@ -38,6 +38,7 @@
     {{- template "propertyValidationDocString" .AdditionalItems}} {{ pascalize .AdditionalItems.Name }}() []{{ template "schemaType" .AdditionalItems }}
   {{ end }}
 }
+
   type {{ camelize .Name }} {{ template "schemaBody" . }}
 
   {{ range .Properties }}
@@ -112,7 +113,6 @@ func unmarshal{{ pascalize .Name }}(data []byte, consumer runtime.Consumer) ({{ 
   {{ if or .IsComplexObject .IsTuple .IsAdditionalProperties -}}
     {{ if .Name }}type {{ if not .IsExported }}{{ .Name }}{{ else }}{{ pascalize .Name }}{{ end }}{{ end }} {{ template "schemaBody" . }}
     {{ range .Properties }}
-      /* polymorph {{ $.Name }} {{ .Name }} {{ .IsBaseType }} */
       {{ if .IsBaseType }}
         func ({{ $.ReceiverName}} *{{ pascalize $.Name}}) {{ pascalize .Name}}() {{ template "schemaType" . }}{
           {{ if eq $.DiscriminatorField .Name }}return {{ printf "%q" $.DiscriminatorValue }}{{ else }}return {{ $.ReceiverName }}.{{camelize .Name}}Field{{end}}
