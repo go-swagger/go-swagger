@@ -34,6 +34,7 @@ Help Options:
           --skip-operations   no operations will be generated when this flag is specified
           --dump-data         when present dumps the json for the template generator instead of generating files
           --skip-validation   skips validation of spec prior to generation
+      -r, --copyright-file=   the file containing a copyright header for the generated source
 ```
 
 There is an example client in https://github.com/go-swagger/go-swagger/tree/master/examples/todo-list/client
