@@ -29,6 +29,8 @@ func NewUpdateUserBadRequest() *UpdateUserBadRequest {
 // WriteResponse to the client
 func (o *UpdateUserBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+
 	rw.WriteHeader(400)
 }
 
@@ -49,6 +51,8 @@ func NewUpdateUserNotFound() *UpdateUserNotFound {
 
 // WriteResponse to the client
 func (o *UpdateUserNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
 
 	rw.WriteHeader(404)
 }

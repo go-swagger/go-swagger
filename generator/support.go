@@ -76,9 +76,9 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 	}
 
 	// Validate and Expand. specDoc is in/out param.
-	specDoc,err = validateAndFlattenSpec(opts, specDoc)
+	specDoc, err = validateAndFlattenSpec(opts, specDoc)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	analyzed := analysis.New(specDoc.Spec())
@@ -571,7 +571,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	var defaultImports []string
 
-	jsonb, _ := json.MarshalIndent(sw, "", "  ")
+	jsonb, _ := json.MarshalIndent(a.SpecDoc.OrigSpec(), "", "  ")
 
 	consumes, _ := a.makeConsumes()
 	produces, _ := a.makeProduces()

@@ -33,7 +33,7 @@ func NewUpdateTaskParams() UpdateTaskParams {
 type UpdateTaskParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*The task to update
 	  Required: true

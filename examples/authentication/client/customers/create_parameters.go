@@ -124,12 +124,10 @@ func (o *CreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 	}
 	var res []error
 
-	if o.Info == nil {
-		o.Info = new(models.Customer)
-	}
-
-	if err := r.SetBodyParam(o.Info); err != nil {
-		return err
+	if o.Info != nil {
+		if err := r.SetBodyParam(o.Info); err != nil {
+			return err
+		}
 	}
 
 	if len(res) > 0 {

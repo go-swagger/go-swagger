@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"log"
-
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/swag"
@@ -301,8 +299,8 @@ func TestGenerateModel_Bitbucket_Repository(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
-				s := string(buf.Bytes())
-				log.Print(s)
+				// s := string(buf.Bytes())
+				// log.Print(s)
 				b, err := opts.LanguageOpts.FormatContent("repository.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(b)

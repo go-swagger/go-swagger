@@ -14,6 +14,8 @@ import (
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
+
+	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
 
 // NewAddCommentToTaskParams creates a new AddCommentToTaskParams object
@@ -30,12 +32,12 @@ func NewAddCommentToTaskParams() AddCommentToTaskParams {
 type AddCommentToTaskParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*The comment to add
 	  In: body
 	*/
-	Body AddCommentToTaskBody
+	Body *models.AddCommentToTaskParamsBody
 	/*The id of the item
 	  Required: true
 	  In: path
@@ -51,13 +53,16 @@ func (o *AddCommentToTaskParams) BindRequest(r *http.Request, route *middleware.
 
 	if runtime.HasBody(r) {
 		defer r.Body.Close()
-		var body AddCommentToTaskBody
+		var body models.AddCommentToTaskParamsBody
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))
 		} else {
+			if err := body.Validate(route.Formats); err != nil {
+				res = append(res, err)
+			}
 
 			if len(res) == 0 {
-				o.Body = body
+				o.Body = &body
 			}
 		}
 

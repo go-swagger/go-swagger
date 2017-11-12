@@ -68,19 +68,20 @@ func authenticated(token string) (bool, error) {
 	bearToken := "Bearer " + token
 	req, err := http.NewRequest("GET", userInfoURL, nil)
 	if err != nil {
-		return false, fmt.Errorf("http request", err)
+		return false, fmt.Errorf("http request: %v", err)
 	}
+
 	req.Header.Add("Authorization", bearToken)
 	cli := &http.Client{}
 	resp, err := cli.Do(req)
-	defer resp.Body.Close()
 	if err != nil {
-		return false, fmt.Errorf("http request", err)
+		return false, fmt.Errorf("http request: %v", err)
 	}
+	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	_, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return false, fmt.Errorf("fail to get response", err)
+		return false, fmt.Errorf("fail to get response: %v", err)
 	}
 	if resp.StatusCode != 200 {
 		return false, nil

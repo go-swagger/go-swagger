@@ -25,7 +25,7 @@ type FindPetsByStatusOK struct {
 	/*
 	  In: Body
 	*/
-	Payload []*models.Pet `json:"body,omitempty"`
+	Payload models.FindPetsByStatusOKBody `json:"body,omitempty"`
 }
 
 // NewFindPetsByStatusOK creates FindPetsByStatusOK with default headers values
@@ -34,13 +34,13 @@ func NewFindPetsByStatusOK() *FindPetsByStatusOK {
 }
 
 // WithPayload adds the payload to the find pets by status o k response
-func (o *FindPetsByStatusOK) WithPayload(payload []*models.Pet) *FindPetsByStatusOK {
+func (o *FindPetsByStatusOK) WithPayload(payload models.FindPetsByStatusOKBody) *FindPetsByStatusOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the find pets by status o k response
-func (o *FindPetsByStatusOK) SetPayload(payload []*models.Pet) {
+func (o *FindPetsByStatusOK) SetPayload(payload models.FindPetsByStatusOKBody) {
 	o.Payload = payload
 }
 
@@ -50,7 +50,7 @@ func (o *FindPetsByStatusOK) WriteResponse(rw http.ResponseWriter, producer runt
 	rw.WriteHeader(200)
 	payload := o.Payload
 	if payload == nil {
-		payload = make([]*models.Pet, 0, 50)
+		payload = make(models.FindPetsByStatusOKBody, 0, 50)
 	}
 
 	if err := producer.Produce(rw, payload); err != nil {
@@ -76,6 +76,8 @@ func NewFindPetsByStatusBadRequest() *FindPetsByStatusBadRequest {
 
 // WriteResponse to the client
 func (o *FindPetsByStatusBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
 
 	rw.WriteHeader(400)
 }

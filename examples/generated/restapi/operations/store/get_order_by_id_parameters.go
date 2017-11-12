@@ -28,7 +28,7 @@ func NewGetOrderByIDParams() GetOrderByIDParams {
 type GetOrderByIDParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*ID of pet that needs to be fetched
 	  Required: true

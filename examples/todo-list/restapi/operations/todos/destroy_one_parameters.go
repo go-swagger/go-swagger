@@ -28,7 +28,7 @@ func NewDestroyOneParams() DestroyOneParams {
 type DestroyOneParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*
 	  Required: true

@@ -19,7 +19,6 @@ import (
 // This can be useful for filters and such.
 //
 // swagger:model Milestone
-
 type Milestone struct {
 
 	// The description of the milestone.
@@ -127,58 +126,6 @@ func (m *Milestone) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *Milestone) UnmarshalBinary(b []byte) error {
 	var res Milestone
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// MilestoneStats Some counters for this milestone.
-//
-// This object contains counts for the remaining open issues and the amount of issues that have been closed.
-//
-// swagger:model MilestoneStats
-
-type MilestoneStats struct {
-
-	// The closed issues.
-	Closed int32 `json:"closed,omitempty"`
-
-	// The remaining open issues.
-	Open int32 `json:"open,omitempty"`
-
-	// The total number of issues for this milestone.
-	Total int32 `json:"total,omitempty"`
-}
-
-/* polymorph MilestoneStats closed false */
-
-/* polymorph MilestoneStats open false */
-
-/* polymorph MilestoneStats total false */
-
-// Validate validates this milestone stats
-func (m *MilestoneStats) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *MilestoneStats) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *MilestoneStats) UnmarshalBinary(b []byte) error {
-	var res MilestoneStats
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

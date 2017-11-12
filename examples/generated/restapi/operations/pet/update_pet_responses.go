@@ -29,6 +29,8 @@ func NewUpdatePetBadRequest() *UpdatePetBadRequest {
 // WriteResponse to the client
 func (o *UpdatePetBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+
 	rw.WriteHeader(400)
 }
 
@@ -50,6 +52,8 @@ func NewUpdatePetNotFound() *UpdatePetNotFound {
 // WriteResponse to the client
 func (o *UpdatePetNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+
 	rw.WriteHeader(404)
 }
 
@@ -70,6 +74,8 @@ func NewUpdatePetMethodNotAllowed() *UpdatePetMethodNotAllowed {
 
 // WriteResponse to the client
 func (o *UpdatePetMethodNotAllowed) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
 
 	rw.WriteHeader(405)
 }

@@ -15,7 +15,6 @@ import (
 
 // SocialID social id
 // swagger:model social_id
-
 type SocialID struct {
 
 	// ssn

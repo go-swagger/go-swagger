@@ -29,7 +29,7 @@ func NewGetTaskDetailsParams() GetTaskDetailsParams {
 type GetTaskDetailsParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*The id of the item
 	  Required: true

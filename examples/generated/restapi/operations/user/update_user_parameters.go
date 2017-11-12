@@ -31,7 +31,7 @@ func NewUpdateUserParams() UpdateUserParams {
 type UpdateUserParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*Updated user object
 	  In: body

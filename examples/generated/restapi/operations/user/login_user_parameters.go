@@ -29,7 +29,7 @@ func NewLoginUserParams() LoginUserParams {
 type LoginUserParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*The password for login in clear text
 	  In: query

@@ -8,11 +8,7 @@ package operations
 import (
 	"net/http"
 
-	errors "github.com/go-openapi/errors"
 	middleware "github.com/go-openapi/runtime/middleware"
-	strfmt "github.com/go-openapi/strfmt"
-	swag "github.com/go-openapi/swag"
-	validate "github.com/go-openapi/validate"
 )
 
 // GetAuthCallbackHandlerFunc turns a function with the right signature into a get auth callback handler
@@ -59,58 +55,4 @@ func (o *GetAuthCallback) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
-}
-
-// GetAuthCallbackOKBody get auth callback o k body
-// swagger:model GetAuthCallbackOKBody
-
-type GetAuthCallbackOKBody struct {
-
-	// access token
-	// Required: true
-	AccessToken *string `json:"access_token"`
-}
-
-/* polymorph GetAuthCallbackOKBody access_token false */
-
-// Validate validates this get auth callback o k body
-func (o *GetAuthCallbackOKBody) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := o.validateAccessToken(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (o *GetAuthCallbackOKBody) validateAccessToken(formats strfmt.Registry) error {
-
-	if err := validate.Required("getAuthCallbackOK"+"."+"access_token", "body", o.AccessToken); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (o *GetAuthCallbackOKBody) MarshalBinary() ([]byte, error) {
-	if o == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(o)
-}
-
-// UnmarshalBinary interface implementation
-func (o *GetAuthCallbackOKBody) UnmarshalBinary(b []byte) error {
-	var res GetAuthCallbackOKBody
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*o = res
-	return nil
 }

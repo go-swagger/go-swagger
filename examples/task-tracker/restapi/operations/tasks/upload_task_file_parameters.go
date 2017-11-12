@@ -6,6 +6,7 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"mime/multipart"
 	"net/http"
 
 	"github.com/go-openapi/errors"
@@ -30,7 +31,7 @@ func NewUploadTaskFileParams() UploadTaskFileParams {
 type UploadTaskFileParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*Extra information describing the file
 	  In: formData
@@ -39,7 +40,7 @@ type UploadTaskFileParams struct {
 	/*The file to upload
 	  In: formData
 	*/
-	File runtime.File
+	File *runtime.File
 	/*The id of the item
 	  Required: true
 	  In: path
@@ -68,10 +69,14 @@ func (o *UploadTaskFileParams) BindRequest(r *http.Request, route *middleware.Ma
 	}
 
 	file, fileHeader, err := r.FormFile("file")
-	if err != nil {
+	if err != nil && err != http.ErrMissingFile {
 		res = append(res, errors.New(400, "reading file %q failed: %v", "file", err))
+	} else if err == http.ErrMissingFile {
+		// no-op for missing but optional file parameter
+	} else if err := o.bindFile(file, fileHeader); err != nil {
+		res = append(res, err)
 	} else {
-		o.File = runtime.File{Data: file, Header: fileHeader}
+		o.File = &runtime.File{Data: file, Header: fileHeader}
 	}
 
 	rID, rhkID, _ := route.Params.GetOK("id")
@@ -95,6 +100,11 @@ func (o *UploadTaskFileParams) bindDescription(rawData []string, hasKey bool, fo
 	}
 
 	o.Description = &raw
+
+	return nil
+}
+
+func (o *UploadTaskFileParams) bindFile(file multipart.File, header *multipart.FileHeader) error {
 
 	return nil
 }

@@ -14,12 +14,10 @@ import (
 
 // ValidationError validation error
 // swagger:model ValidationError
-
 type ValidationError struct {
 	Error
 
-	// an optional field name to which this validation error applies
-	Field string `json:"field,omitempty"`
+	ValidationErrorAllOf1
 }
 
 // UnmarshalJSON unmarshals this object from a JSON structure
@@ -31,14 +29,11 @@ func (m *ValidationError) UnmarshalJSON(raw []byte) error {
 	}
 	m.Error = aO0
 
-	var data struct {
-		Field string `json:"field,omitempty"`
-	}
-	if err := swag.ReadJSON(raw, &data); err != nil {
+	var aO1 ValidationErrorAllOf1
+	if err := swag.ReadJSON(raw, &aO1); err != nil {
 		return err
 	}
-
-	m.Field = data.Field
+	m.ValidationErrorAllOf1 = aO1
 
 	return nil
 }
@@ -53,17 +48,11 @@ func (m ValidationError) MarshalJSON() ([]byte, error) {
 	}
 	_parts = append(_parts, aO0)
 
-	var data struct {
-		Field string `json:"field,omitempty"`
-	}
-
-	data.Field = m.Field
-
-	jsonData, err := swag.WriteJSON(data)
+	aO1, err := swag.WriteJSON(m.ValidationErrorAllOf1)
 	if err != nil {
 		return nil, err
 	}
-	_parts = append(_parts, jsonData)
+	_parts = append(_parts, aO1)
 
 	return swag.ConcatJSON(_parts...), nil
 }
@@ -73,6 +62,10 @@ func (m *ValidationError) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.Error.Validate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.ValidationErrorAllOf1.Validate(formats); err != nil {
 		res = append(res, err)
 	}
 

@@ -1,5 +1,5 @@
-{{ if .IncludeModel }}
-  {{ if and .IsBaseType .IsExported }}type {{ pascalize .Name }} interface {
+{{ if .IncludeModel -}}
+  {{ if and .IsBaseType .IsExported -}}type {{ pascalize .Name }} interface {
     {{if or .Required .HasValidations }}runtime.Validatable{{ end }}
     {{ range .AllOf }}
       {{ if .IsAnonymous }}
@@ -109,11 +109,10 @@ func unmarshal{{ pascalize .Name }}(data []byte, consumer runtime.Consumer) ({{ 
   return nil, errors.New(422, "invalid {{ .DiscriminatorField }} value: %q", getType.{{ pascalize .DiscriminatorField }})
 
 }
-{{ else }}
-  {{ if or .IsComplexObject .IsTuple .IsAdditionalProperties }}
+{{ else -}}
+  {{ if or .IsComplexObject .IsTuple .IsAdditionalProperties -}}
     {{ if .Name }}type {{ if not .IsExported }}{{ .Name }}{{ else }}{{ pascalize .Name }}{{ end }}{{ end }} {{ template "schemaBody" . }}
     {{ range .Properties }}
-      /* polymorph {{ $.Name }} {{ .Name }} {{ .IsBaseType }} */
       {{ if .IsBaseType }}
         func ({{ $.ReceiverName}} *{{ pascalize $.Name}}) {{ pascalize .Name}}() {{ template "schemaType" . }}{
           {{ if eq $.DiscriminatorField .Name }}return {{ printf "%q" $.DiscriminatorValue }}{{ else }}return {{ $.ReceiverName }}.{{camelize .Name}}Field{{end}}
@@ -137,7 +136,7 @@ func unmarshal{{ pascalize .Name }}(data []byte, consumer runtime.Consumer) ({{ 
         return nil
       }
     {{end}}
-  {{ else }}
+  {{ else -}}
     type {{ pascalize .Name }} {{ template "typeSchemaType" . }}
   {{ end -}}
   {{ if .IsSubType }}

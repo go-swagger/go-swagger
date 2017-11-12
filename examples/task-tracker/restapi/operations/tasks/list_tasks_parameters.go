@@ -36,7 +36,7 @@ func NewListTasksParams() ListTasksParams {
 type ListTasksParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*Amount of items to return in a single page
 	  In: query

@@ -62,7 +62,7 @@ type request struct {
 	header     http.Header
 	query      url.Values
 	formFields url.Values
-	fileFields map[string]runtime.NamedReadCloser
+	fileFields map[string][]runtime.NamedReadCloser
 	payload    interface{}
 	timeout    time.Duration
 }
@@ -91,7 +91,7 @@ func (r *request) BuildHTTP(mediaType string, producers map[string]runtime.Produ
 	buf := bytes.NewBuffer(nil)
 	if r.payload != nil || len(r.formFields) > 0 || len(r.fileFields) > 0 {
 		body = ioutil.NopCloser(buf)
-		if r.fileFields != nil {
+		if (runtime.MultipartFormMime == mediaType && len(r.formFields) > 0) || r.fileFields != nil {
 			pr, pw = io.Pipe()
 			body = pr
 		}
@@ -106,7 +106,7 @@ func (r *request) BuildHTTP(mediaType string, producers map[string]runtime.Produ
 	// check if this is a form type request
 	if len(r.formFields) > 0 || len(r.fileFields) > 0 {
 		// check if this is multipart
-		if len(r.fileFields) > 0 {
+		if runtime.MultipartFormMime == mediaType || len(r.fileFields) > 0 {
 			mp := multipart.NewWriter(pw)
 			req.Header.Set(runtime.HeaderContentType, mp.FormDataContentType())
 
@@ -117,29 +117,32 @@ func (r *request) BuildHTTP(mediaType string, producers map[string]runtime.Produ
 				}()
 
 				for fn, v := range r.formFields {
-					if len(v) > 0 {
-						if err := mp.WriteField(fn, v[0]); err != nil {
+					for _, vi := range v {
+						if err := mp.WriteField(fn, vi); err != nil {
 							pw.CloseWithError(err)
 							log.Println(err)
 						}
 					}
 				}
 
-				for fn, f := range r.fileFields {
-					wrtr, err := mp.CreateFormFile(fn, filepath.Base(f.Name()))
-					if err != nil {
-						pw.CloseWithError(err)
-						log.Println(err)
-					}
-					defer func() {
-						for _, ff := range r.fileFields {
-							ff.Close()
+				defer func() {
+					for _, ff := range r.fileFields {
+						for _, ffi := range ff {
+							ffi.Close()
 						}
-
-					}()
-					if _, err := io.Copy(wrtr, f); err != nil {
-						pw.CloseWithError(err)
-						log.Println(err)
+					}
+				}()
+				for fn, f := range r.fileFields {
+					for _, fi := range f {
+						wrtr, err := mp.CreateFormFile(fn, filepath.Base(fi.Name()))
+						if err != nil {
+							pw.CloseWithError(err)
+							log.Println(err)
+						}
+						if _, err := io.Copy(wrtr, fi); err != nil {
+							pw.CloseWithError(err)
+							log.Println(err)
+						}
 					}
 				}
 
@@ -246,25 +249,27 @@ func (r *request) SetPathParam(name string, value string) error {
 }
 
 // SetFileParam adds a file param to the request
-func (r *request) SetFileParam(name string, file runtime.NamedReadCloser) error {
-	if actualFile, ok := file.(*os.File); ok {
-		fi, err := os.Stat(actualFile.Name())
-		if err != nil {
-			return err
-		}
-		if fi.IsDir() {
-			return fmt.Errorf("%q is a directory, only files are supported", file.Name())
+func (r *request) SetFileParam(name string, files ...runtime.NamedReadCloser) error {
+	for _, file := range files {
+		if actualFile, ok := file.(*os.File); ok {
+			fi, err := os.Stat(actualFile.Name())
+			if err != nil {
+				return err
+			}
+			if fi.IsDir() {
+				return fmt.Errorf("%q is a directory, only files are supported", file.Name())
+			}
 		}
 	}
 
 	if r.fileFields == nil {
-		r.fileFields = make(map[string]runtime.NamedReadCloser)
+		r.fileFields = make(map[string][]runtime.NamedReadCloser)
 	}
 	if r.formFields == nil {
 		r.formFields = make(url.Values)
 	}
 
-	r.fileFields[name] = file
+	r.fileFields[name] = files
 	return nil
 }
 

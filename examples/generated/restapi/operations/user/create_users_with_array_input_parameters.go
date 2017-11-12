@@ -29,12 +29,12 @@ func NewCreateUsersWithArrayInputParams() CreateUsersWithArrayInputParams {
 type CreateUsersWithArrayInputParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*List of user object
 	  In: body
 	*/
-	Body []*models.User
+	Body models.CreateUsersWithArrayInputParamsBody
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -45,16 +45,10 @@ func (o *CreateUsersWithArrayInputParams) BindRequest(r *http.Request, route *mi
 
 	if runtime.HasBody(r) {
 		defer r.Body.Close()
-		var body []*models.User
+		var body models.CreateUsersWithArrayInputParamsBody
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))
 		} else {
-			for _, io := range body {
-				if err := io.Validate(route.Formats); err != nil {
-					res = append(res, err)
-					break
-				}
-			}
 
 			if len(res) == 0 {
 				o.Body = body

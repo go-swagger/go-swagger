@@ -10,7 +10,6 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -106,45 +105,5 @@ func (o *AddCommentToTaskDefault) readResponse(response runtime.ClientResponse, 
 		return err
 	}
 
-	return nil
-}
-
-/*AddCommentToTaskBody A comment to create
-//
-// These values can have github flavored markdown.
-//
-swagger:model AddCommentToTaskBody
-*/
-
-type AddCommentToTaskBody struct {
-
-	// content
-	// Required: true
-	Content *string `json:"content"`
-
-	// user Id
-	// Required: true
-	UserID *int64 `json:"userId"`
-}
-
-/* polymorph AddCommentToTaskBody content false */
-
-/* polymorph AddCommentToTaskBody userId false */
-
-// MarshalBinary interface implementation
-func (o *AddCommentToTaskBody) MarshalBinary() ([]byte, error) {
-	if o == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(o)
-}
-
-// UnmarshalBinary interface implementation
-func (o *AddCommentToTaskBody) UnmarshalBinary(b []byte) error {
-	var res AddCommentToTaskBody
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*o = res
 	return nil
 }

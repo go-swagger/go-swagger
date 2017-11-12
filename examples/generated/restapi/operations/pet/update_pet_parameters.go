@@ -29,7 +29,7 @@ func NewUpdatePetParams() UpdatePetParams {
 type UpdatePetParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*Pet object that needs to be added to the store
 	  In: body

@@ -15,7 +15,6 @@ import (
 
 // Item item
 // swagger:model item
-
 type Item struct {
 
 	// completed

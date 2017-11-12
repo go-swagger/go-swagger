@@ -25,7 +25,7 @@ type GetTaskCommentsOK struct {
 	/*
 	  In: Body
 	*/
-	Payload []*models.Comment `json:"body,omitempty"`
+	Payload models.GetTaskCommentsOKBody `json:"body,omitempty"`
 }
 
 // NewGetTaskCommentsOK creates GetTaskCommentsOK with default headers values
@@ -34,13 +34,13 @@ func NewGetTaskCommentsOK() *GetTaskCommentsOK {
 }
 
 // WithPayload adds the payload to the get task comments o k response
-func (o *GetTaskCommentsOK) WithPayload(payload []*models.Comment) *GetTaskCommentsOK {
+func (o *GetTaskCommentsOK) WithPayload(payload models.GetTaskCommentsOKBody) *GetTaskCommentsOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get task comments o k response
-func (o *GetTaskCommentsOK) SetPayload(payload []*models.Comment) {
+func (o *GetTaskCommentsOK) SetPayload(payload models.GetTaskCommentsOKBody) {
 	o.Payload = payload
 }
 
@@ -50,7 +50,7 @@ func (o *GetTaskCommentsOK) WriteResponse(rw http.ResponseWriter, producer runti
 	rw.WriteHeader(200)
 	payload := o.Payload
 	if payload == nil {
-		payload = make([]*models.Comment, 0, 50)
+		payload = make(models.GetTaskCommentsOKBody, 0, 50)
 	}
 
 	if err := producer.Produce(rw, payload); err != nil {

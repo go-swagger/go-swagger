@@ -11,7 +11,6 @@ import (
 
 // Principal principal
 // swagger:model principal
-
 type Principal string
 
 // Validate validates this principal

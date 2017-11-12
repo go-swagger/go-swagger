@@ -15,6 +15,7 @@
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"io/ioutil"
@@ -22,6 +23,7 @@ import (
 	"mime/multipart"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/go-openapi/runtime"
@@ -90,7 +92,16 @@ func TestBuildRequest_SetFile(t *testing.T) {
 	if assert.NoError(t, err) {
 		fl, ok := r.fileFields["file"]
 		if assert.True(t, ok) {
-			assert.Equal(t, "runtime.go", filepath.Base(fl.Name()))
+			assert.Equal(t, "runtime.go", filepath.Base(fl[0].Name()))
+		}
+	}
+	// success adds a file param with multiple files
+	err = r.SetFileParam("otherfiles", mustGetFile("./runtime.go"), mustGetFile("./request.go"))
+	if assert.NoError(t, err) {
+		fl, ok := r.fileFields["otherfiles"]
+		if assert.True(t, ok) {
+			assert.Equal(t, "runtime.go", filepath.Base(fl[0].Name()))
+			assert.Equal(t, "request.go", filepath.Base(fl[1].Name()))
 		}
 	}
 }
@@ -249,11 +260,79 @@ func TestBuildRequest_BuildHTTP_Form_Content_Length(t *testing.T) {
 	}
 }
 
+func TestBuildRequest_BuildHTTP_FormMultipart(t *testing.T) {
+	reqWrtr := runtime.ClientRequestWriterFunc(func(req runtime.ClientRequest, reg strfmt.Registry) error {
+		_ = req.SetFormParam("something", "some value")
+		_ = req.SetQueryParam("hello", "world")
+		_ = req.SetPathParam("id", "1234")
+		_ = req.SetHeaderParam("X-Rate-Limit", "200")
+		return nil
+	})
+	r, _ := newRequest("GET", "/flats/{id}/", reqWrtr)
+	_ = r.SetHeaderParam(runtime.HeaderContentType, runtime.MultipartFormMime)
+
+	req, err := r.BuildHTTP(runtime.MultipartFormMime, testProducers, nil)
+	if assert.NoError(t, err) && assert.NotNil(t, req) {
+		assert.Equal(t, "200", req.Header.Get("x-rate-limit"))
+		assert.Equal(t, "world", req.URL.Query().Get("hello"))
+		assert.Equal(t, "/flats/1234/", req.URL.Path)
+		expected1 := []byte("Content-Disposition: form-data; name=\"something\"")
+		expected2 := []byte("some value")
+		actual, _ := ioutil.ReadAll(req.Body)
+		actuallines := bytes.Split(actual, []byte("\r\n"))
+		assert.Equal(t, 6, len(actuallines))
+		boundary := string(actuallines[0])
+		lastboundary := string(actuallines[4])
+		assert.True(t, strings.HasPrefix(boundary, "--"))
+		assert.True(t, strings.HasPrefix(lastboundary, "--") && strings.HasSuffix(lastboundary, "--"))
+		assert.Equal(t, lastboundary, boundary + "--")
+		assert.Equal(t, expected1, actuallines[1])
+		assert.Equal(t, expected2, actuallines[3])
+	}
+}
+
+func TestBuildRequest_BuildHTTP_FormMultiples(t *testing.T) {
+	reqWrtr := runtime.ClientRequestWriterFunc(func(req runtime.ClientRequest, reg strfmt.Registry) error {
+		_ = req.SetFormParam("something", "some value", "another value")
+		_ = req.SetQueryParam("hello", "world")
+		_ = req.SetPathParam("id", "1234")
+		_ = req.SetHeaderParam("X-Rate-Limit", "200")
+		return nil
+	})
+	r, _ := newRequest("GET", "/flats/{id}/", reqWrtr)
+	_ = r.SetHeaderParam(runtime.HeaderContentType, runtime.MultipartFormMime)
+
+	req, err := r.BuildHTTP(runtime.MultipartFormMime, testProducers, nil)
+	if assert.NoError(t, err) && assert.NotNil(t, req) {
+		assert.Equal(t, "200", req.Header.Get("x-rate-limit"))
+		assert.Equal(t, "world", req.URL.Query().Get("hello"))
+		assert.Equal(t, "/flats/1234/", req.URL.Path)
+		expected1 := []byte("Content-Disposition: form-data; name=\"something\"")
+		expected2 := []byte("some value")
+		expected3 := []byte("another value")
+		actual, _ := ioutil.ReadAll(req.Body)
+		actuallines := bytes.Split(actual, []byte("\r\n"))
+		assert.Equal(t, 10, len(actuallines))
+		boundary := string(actuallines[0])
+		lastboundary := string(actuallines[8])
+		assert.True(t, strings.HasPrefix(boundary, "--"))
+		assert.True(t, strings.HasPrefix(lastboundary, "--") && strings.HasSuffix(lastboundary, "--"))
+		assert.Equal(t, lastboundary, boundary + "--")
+		assert.Equal(t, expected1, actuallines[1])
+		assert.Equal(t, expected2, actuallines[3])
+		assert.Equal(t, actuallines[0], actuallines[4])
+		assert.Equal(t, expected1, actuallines[5])
+		assert.Equal(t, expected3, actuallines[7])
+	}
+}
+
 func TestBuildRequest_BuildHTTP_Files(t *testing.T) {
 	cont, _ := ioutil.ReadFile("./runtime.go")
+	cont2, _ := ioutil.ReadFile("./request.go")
 	reqWrtr := runtime.ClientRequestWriterFunc(func(req runtime.ClientRequest, reg strfmt.Registry) error {
 		_ = req.SetFormParam("something", "some value")
 		_ = req.SetFileParam("file", mustGetFile("./runtime.go"))
+		_ = req.SetFileParam("otherfiles", mustGetFile("./runtime.go"), mustGetFile("./request.go"))
 		_ = req.SetQueryParam("hello", "world")
 		_ = req.SetPathParam("id", "1234")
 		_ = req.SetHeaderParam("X-Rate-Limit", "200")
@@ -275,12 +354,18 @@ func TestBuildRequest_BuildHTTP_Files(t *testing.T) {
 			frm, err := mr.ReadForm(1 << 20)
 			if assert.NoError(t, err) {
 				assert.Equal(t, "some value", frm.Value["something"][0])
-				mpff := frm.File["file"][0]
-				mpf, _ := mpff.Open()
-				defer mpf.Close()
-				assert.Equal(t, "runtime.go", mpff.Filename)
-				actual, _ := ioutil.ReadAll(mpf)
-				assert.Equal(t, cont, actual)
+				fileverifier := func(name string, index int, filename string, content []byte) {
+					mpff := frm.File[name][index]
+					mpf, _ := mpff.Open()
+					defer mpf.Close()
+					assert.Equal(t, filename, mpff.Filename)
+					actual, _ := ioutil.ReadAll(mpf)
+					assert.Equal(t, content, actual)
+				}
+				fileverifier("file", 0, "runtime.go", cont)
+
+				fileverifier("otherfiles", 0, "runtime.go", cont)
+				fileverifier("otherfiles", 1, "request.go", cont2)
 			}
 		}
 	}
