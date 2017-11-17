@@ -474,7 +474,7 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 		}
 		tt, err := template.New(t.Source).Funcs(FuncMap).Parse(string(content))
 		if err != nil {
-			return nil, fmt.Errorf("template parsing failed on template %s:", err.Error())
+			return nil, fmt.Errorf("template parsing failed on template %s: ", err.Error())
 			//return nil, err
 		}
 		templ = tt
@@ -485,7 +485,7 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 
 	var tBuf bytes.Buffer
 	if err := templ.Execute(&tBuf, data); err != nil {
-		return nil, fmt.Errorf("template execution failed on template %s:", err.Error())
+		return nil, fmt.Errorf("template execution failed on template %s: ", err.Error())
 	}
 	//if Debug {
 	log.Printf("executed template %s", t.Source)
