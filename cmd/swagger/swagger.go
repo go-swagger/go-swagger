@@ -33,6 +33,15 @@ var opts struct {
 }
 
 func main() {
+	// Recovering from internal panics
+	defer func() {
+		r := recover()
+		if r != nil {
+			log.Fatal("Fatal error:", r)
+			os.Exit(1)
+		}
+	}()
+
 	parser := flags.NewParser(&opts, flags.Default)
 	parser.ShortDescription = "helps you keep your API well described"
 	parser.LongDescription = `

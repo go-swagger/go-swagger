@@ -547,8 +547,8 @@ func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 		IncludeParameters: true,
 		IncludeResponses:  true,
 		IncludeMain:       true,
-		ValidateSpec:			 true,
-		FlattenSpec:			 true,
+		ValidateSpec:      true,
+		FlattenSpec:       true,
 		APIPackage:        "restapi",
 		ModelPackage:      "model",
 		ServerPackage:     "server",
@@ -581,7 +581,7 @@ func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 func TestGenClientIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 	defer func() {
 		dr, _ := os.Getwd()
-		os.RemoveAll(dr+"/restapi/")
+		os.RemoveAll(dr + "/restapi/")
 	}()
 	opts := testGenOpts()
 	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
@@ -604,8 +604,8 @@ func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
 		IncludeParameters: true,
 		IncludeResponses:  true,
 		IncludeMain:       true,
-		ValidateSpec:			 false,
-		FlattenSpec:			 true,
+		ValidateSpec:      false,
+		FlattenSpec:       true,
 		APIPackage:        "restapi",
 		ModelPackage:      "model",
 		ServerPackage:     "server",
@@ -638,7 +638,7 @@ func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
 func TestGenClientIssue890_ValidationFalseFlatteningTrue(t *testing.T) {
 	defer func() {
 		dr, _ := os.Getwd()
-		os.RemoveAll(dr+"/restapi/")
+		os.RemoveAll(dr + "/restapi/")
 	}()
 	opts := testGenOpts()
 	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
@@ -661,7 +661,7 @@ func TestGenServerIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 		IncludeParameters: true,
 		IncludeResponses:  true,
 		IncludeMain:       true,
-		ValidateSpec:			 false,
+		ValidateSpec:      false,
 		FlattenSpec:       false,
 		APIPackage:        "restapi",
 		ModelPackage:      "model",
@@ -680,7 +680,7 @@ func TestGenServerIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 func TestGenClientIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 	defer func() {
 		dr, _ := os.Getwd()
-		os.RemoveAll(dr+"/restapi/")
+		os.RemoveAll(dr + "/restapi/")
 	}()
 	opts := testGenOpts()
 	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
@@ -703,7 +703,7 @@ func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 		IncludeParameters: true,
 		IncludeResponses:  true,
 		IncludeMain:       true,
-		ValidateSpec:			 true,
+		ValidateSpec:      true,
 		FlattenSpec:       false,
 		APIPackage:        "restapi",
 		ModelPackage:      "model",
@@ -722,7 +722,7 @@ func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 func TestGenClientIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 	defer func() {
 		dr, _ := os.Getwd()
-		os.RemoveAll(dr+"/restapi/")
+		os.RemoveAll(dr + "/restapi/")
 	}()
 	opts := testGenOpts()
 	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
