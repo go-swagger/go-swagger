@@ -311,7 +311,7 @@ type GenOpts struct {
 	DumpData          bool
 	WithContext       bool
 	ValidateSpec      bool
-	FlattenSpec				bool
+	FlattenSpec       bool
 	defaultsEnsured   bool
 
 	Spec              string
@@ -779,7 +779,7 @@ func validateAndFlattenSpec(opts *GenOpts, specDoc *loads.Document) (*loads.Docu
 	// Validate if needed
 	if opts.ValidateSpec {
 		if err := validateSpec(opts.Spec, specDoc); err != nil {
-			return specDoc,err
+			return specDoc, err
 		}
 	}
 
@@ -798,6 +798,5 @@ func validateAndFlattenSpec(opts *GenOpts, specDoc *loads.Document) (*loads.Docu
 		err = analysis.Flatten(flattenOpts)
 	}
 
-	return specDoc,nil
+	return specDoc, nil
 }
-

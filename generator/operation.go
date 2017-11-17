@@ -29,7 +29,6 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
-
 )
 
 type respSort struct {
@@ -74,7 +73,7 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 	}
 
 	// Validate and Expand. specDoc is in/out param.
-	specDoc,err = validateAndFlattenSpec(opts, specDoc)
+	specDoc, err = validateAndFlattenSpec(opts, specDoc)
 	if err != nil {
 		return err
 	}
@@ -304,7 +303,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	}
 	// @eleanorrigby : letting the comment be. Commented in response to issue#890
 	// Post-flattening of spec we no longer need to reset defs for spec or use original spec in any case.
-	resolver := newTypeResolver(b.ModelsPackage, b.Doc/*.ResetDefinitions()*/)
+	resolver := newTypeResolver(b.ModelsPackage, b.Doc /*.ResetDefinitions()*/)
 	receiver := "o"
 
 	operation := b.Operation
@@ -465,7 +464,8 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	}
 	return GenOperation{
 		GenCommon: GenCommon{
-			Copyright: b.GenOpts.Copyright,
+			Copyright:        b.GenOpts.Copyright,
+			TargetImportPath: filepath.ToSlash(baseImport(b.GenOpts.Target)),
 		},
 		Package:              b.APIPackage,
 		RootPackage:          b.RootAPIPackage,
