@@ -5,7 +5,9 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/stretchr/testify/assert"
 	"testing"
-	//"fmt"
+        "os"
+        "io/ioutil"
+        "log"
 )
 
 var (
@@ -215,10 +217,11 @@ func TestRepoRecursiveTemplates(t *testing.T) {
 }
 
 // Test that definitions are available to templates
-// ..todo:: should test also with the codeGenApp context
+// TODO: should test also with the codeGenApp context
 
 // Test copyright definition
 func TestDefinitionCopyright(t *testing.T) {
+        log.SetOutput(os.Stdout)
 
 	repo := NewRepository(nil)
 
@@ -257,6 +260,7 @@ func TestDefinitionCopyright(t *testing.T) {
 
 // Test TargetImportPath definition
 func TestDefinitionTargetImportPath(t *testing.T) {
+        log.SetOutput(os.Stdout)
 
 	repo := NewRepository(nil)
 
@@ -296,6 +300,10 @@ func TestDefinitionTargetImportPath(t *testing.T) {
 
 // Simulates a definition environment for model templates
 func getModelEnvironment(spec string, opts *GenOpts) (*GenDefinition, error) {
+        // Don't want stderr output to pollute CI
+        log.SetOutput(ioutil.Discard)
+        defer log.SetOutput(os.Stdout)
+
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if err != nil {
 		return nil, err
@@ -315,6 +323,10 @@ func getModelEnvironment(spec string, opts *GenOpts) (*GenDefinition, error) {
 
 // Simulates a definition environment for operation templates
 func getOperationEnvironment(operation string, path string, spec string, opts *GenOpts) (*GenOperation, error) {
+        // Don't want stderr output to pollute CI
+        log.SetOutput(ioutil.Discard)
+        defer log.SetOutput(os.Stdout)
+
 	b, err := methodPathOpBuilder(operation, path, spec)
 	if err != nil {
 		return nil, err
