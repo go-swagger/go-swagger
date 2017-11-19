@@ -348,19 +348,19 @@ func (g *GenOpts) TargetPath() string {
 		log.Printf("could not evaluate target generation path \"%s\": you must create the target directory beforehand: %v", g.Target, err)
 		return ""
 	}
-        tgtAbs = filepath.ToSlash(tgtAbs)
+	tgtAbs = filepath.ToSlash(tgtAbs)
 	srvrAbs, err := filepath.Abs(g.ServerPackage)
 	if err != nil {
 		log.Printf("could not evaluate target server path \"%s\": %v", g.ServerPackage, err)
 		return ""
 	}
-        srvrAbs = filepath.ToSlash(srvrAbs)
+	srvrAbs = filepath.ToSlash(srvrAbs)
 	tgtRel, err := filepath.Rel(srvrAbs, tgtAbs)
 	if err != nil {
 		log.Printf("Target path \"%s\" and server path \"%s\" are not related. You shouldn't specify an absolute path in --server-package: %v", g.Target, g.ServerPackage, err)
 		return ""
 	}
-        tgtRel = filepath.ToSlash(tgtRel)
+	tgtRel = filepath.ToSlash(tgtRel)
 	return tgtRel
 }
 
@@ -371,25 +371,25 @@ func (g *GenOpts) SpecPath() string {
 	if strings.HasPrefix(g.Spec, "http://") || strings.HasPrefix(g.Spec, "https://") {
 		return g.Spec
 	}
-        // Local specifications
+	// Local specifications
 	specAbs, err := filepath.Abs(g.Spec)
 	if err != nil {
 		log.Printf("could not evaluate target generation path \"%s\": you must create the target directory beforehand: %v", g.Spec, err)
 		return ""
 	}
-        specAbs = filepath.ToSlash(specAbs)
+	specAbs = filepath.ToSlash(specAbs)
 	srvrAbs, err := filepath.Abs(g.ServerPackage)
 	if err != nil {
 		log.Printf("could not evaluate target server path \"%s\": %v", g.ServerPackage, err)
 		return ""
 	}
-        srvrAbs = filepath.ToSlash(srvrAbs)
+	srvrAbs = filepath.ToSlash(srvrAbs)
 	specRel, err := filepath.Rel(srvrAbs, specAbs)
 	if err != nil {
 		log.Printf("Specification path \"%s\" and server path \"%s\" are not related. You shouldn't specify an absolute path in --server-package: %v", g.Spec, g.ServerPackage, err)
 		return ""
 	}
-        specRel = filepath.ToSlash(specRel)
+	specRel = filepath.ToSlash(specRel)
 	return specRel
 }
 
@@ -527,13 +527,16 @@ func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
 	}
 
 	if dir != "" {
-		if Debug {
-			log.Printf("skipping creating directory %q for %s because it's an empty string", dir, t.Name)
-		}
-		// Directory settings consistent with file privileges.
-		// Environment's umask may alter this setup
-		if e := os.MkdirAll(dir, 0755); e != nil {
-			return e
+		_, exists := os.Stat(dir)
+		if os.IsNotExist(exists) {
+			if Debug {
+				log.Printf("creating directory %q for \"%s\"", dir, t.Name)
+			}
+			// Directory settings consistent with file privileges.
+			// Environment's umask may alter this setup
+			if e := os.MkdirAll(dir, 0755); e != nil {
+				return e
+			}
 		}
 	}
 

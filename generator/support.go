@@ -174,12 +174,12 @@ func checkPrefixAndFetchRelativePath(childpath string, parentpath string) (bool,
 func baseImport(tgt string) string {
 	tgtAbsPath, err := filepath.Abs(tgt)
 	if err != nil {
-		log.Fatalln("could not evaluate base import path with target \"%s\". Target directory must be created beforehand: %v", tgt, err)
+		log.Fatalf("could not evaluate base import path with target \"%s\". Target directory must be created beforehand: %v", tgt, err)
 	}
 	var tgtAbsPathExtended string
 	tgtAbsPathExtended, err = filepath.EvalSymlinks(tgtAbsPath)
 	if err != nil {
-		log.Fatalln("could not evaluate base import path with target \"%s\" (with symlink resolution): %v", tgtAbsPath, err)
+		log.Fatalf("could not evaluate base import path with target \"%s\" (with symlink resolution): %v", tgtAbsPath, err)
 	}
 
 	gopath := os.Getenv("GOPATH")
@@ -602,7 +602,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			a.GenOpts,
 		)
 		if err != nil {
-			return GenApp{}, fmt.Errorf("error in model %s while planning definitions: %v", mn,err)
+			return GenApp{}, fmt.Errorf("error in model %s while planning definitions: %v", mn, err)
 		}
 		if mod != nil {
 			//mod.ReceiverName = receiver

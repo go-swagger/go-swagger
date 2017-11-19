@@ -22,7 +22,6 @@ import (
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands"
 	"github.com/jessevdk/go-flags"
-	//"runtime/debug"
 )
 
 func init() {
@@ -42,6 +41,7 @@ func main() {
 	// TODO: reactivate 'defer catch all' once product is stable
 	// Recovering from internal panics
 	// Stack may be printed in Debug mode
+	// Need import "runtime/debug".
 	//defer func() {
 	//	r := recover()
 	//	if r != nil {

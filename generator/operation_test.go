@@ -581,7 +581,7 @@ func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 func TestGenClientIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 	defer func() {
 		dr, _ := os.Getwd()
-		os.RemoveAll(filepath.Join(filepath.FromSlash(dr),"restapi"))
+		os.RemoveAll(filepath.Join(filepath.FromSlash(dr), "restapi"))
 	}()
 	opts := testGenOpts()
 	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
@@ -638,7 +638,7 @@ func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
 func TestGenClientIssue890_ValidationFalseFlatteningTrue(t *testing.T) {
 	defer func() {
 		dr, _ := os.Getwd()
-		os.RemoveAll(filepath.Join(filepath.FromSlash(dr),"restapi"))
+		os.RemoveAll(filepath.Join(filepath.FromSlash(dr), "restapi"))
 	}()
 	opts := testGenOpts()
 	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
@@ -680,7 +680,7 @@ func TestGenServerIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 func TestGenClientIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 	defer func() {
 		dr, _ := os.Getwd()
-		os.RemoveAll(filepath.Join(filepath.FromSlash(dr),"restapi"))
+		os.RemoveAll(filepath.Join(filepath.FromSlash(dr), "restapi"))
 	}()
 	opts := testGenOpts()
 	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
@@ -722,7 +722,7 @@ func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 func TestGenClientIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 	defer func() {
 		dr, _ := os.Getwd()
-		os.RemoveAll(filepath.Join(filepath.FromSlash(dr),"restapi"))
+		os.RemoveAll(filepath.Join(filepath.FromSlash(dr), "restapi"))
 	}()
 	opts := testGenOpts()
 	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
