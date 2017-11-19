@@ -170,17 +170,16 @@ func checkPrefixAndFetchRelativePath(childpath string, parentpath string) (bool,
 
 }
 
+// TODO: handle error with a returned error rather than panic()
 func baseImport(tgt string) string {
 	tgtAbsPath, err := filepath.Abs(tgt)
 	if err != nil {
-		log.Printf("could not evaluate base import path with target \"%s\". Target directory must be created beforehand: %s", tgt, err.Error())
-		panic(err.Error())
+		log.Fatalln("could not evaluate base import path with target \"%s\". Target directory must be created beforehand: %v", tgt, err)
 	}
 	var tgtAbsPathExtended string
 	tgtAbsPathExtended, err = filepath.EvalSymlinks(tgtAbsPath)
 	if err != nil {
-		log.Printf("could not evaluate base import path with target \"%s\" (symlink resolution): %s", tgtAbsPath, err.Error())
-		panic(err.Error())
+		log.Fatalln("could not evaluate base import path with target \"%s\" (with symlink resolution): %v", tgtAbsPath, err)
 	}
 
 	gopath := os.Getenv("GOPATH")
@@ -595,9 +594,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	log.Println("planning definitions")
 	for mn, m := range a.Models {
-		if Debug {
-			fmt.Printf("makeGenDefinition(\"%s\")\n", mn)
-		}
 		mod, err := makeGenDefinition(
 			mn,
 			a.ModelsPackage,
@@ -606,7 +602,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			a.GenOpts,
 		)
 		if err != nil {
-			return GenApp{}, fmt.Errorf("error while planning definitions: %s", err.Error())
+			return GenApp{}, fmt.Errorf("error in model %s while planning definitions: %v", mn,err)
 		}
 		if mod != nil {
 			//mod.ReceiverName = receiver

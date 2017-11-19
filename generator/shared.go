@@ -108,9 +108,9 @@ func GoLangOpts() *LanguageOpts {
 	return opts
 }
 
-// Debug when the env var DEBUG is not empty
+// Debug when the env var DEBUG or SWAGGER_DEBUG is not empty
 // the generators will be very noisy about what they are doing
-var Debug = os.Getenv("DEBUG") != ""
+var Debug = os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
 
 func findSwaggerSpec(nm string) (string, error) {
 	specs := []string{"swagger.json", "swagger.yml", "swagger.yaml"}
@@ -340,47 +340,56 @@ type GenOpts struct {
 }
 
 // TargetPath returns the target generation path relative to the server package
-// May be used in templates. Errors are not fatal: an empty string is returned instead
+// Method used by templates, e.g. with {{ .TargetPath }}
+// Errors are not fatal: an empty string is returned instead
 func (g *GenOpts) TargetPath() string {
 	tgtAbs, err := filepath.Abs(g.Target)
 	if err != nil {
-		log.Printf("could not evaluate target generation path \"%s\": you must create the target directory beforehand: %s", g.Target, err.Error())
+		log.Printf("could not evaluate target generation path \"%s\": you must create the target directory beforehand: %v", g.Target, err)
 		return ""
 	}
+        tgtAbs = filepath.ToSlash(tgtAbs)
 	srvrAbs, err := filepath.Abs(g.ServerPackage)
 	if err != nil {
-		log.Printf("could not evaluate target server path \"%s\": %s", g.ServerPackage, err.Error())
+		log.Printf("could not evaluate target server path \"%s\": %v", g.ServerPackage, err)
 		return ""
 	}
+        srvrAbs = filepath.ToSlash(srvrAbs)
 	tgtRel, err := filepath.Rel(srvrAbs, tgtAbs)
 	if err != nil {
-		log.Printf("Target path \"%s\" and server path \"%s\" are not related. You shouldn't specify an absolute path in --server-package: %s", g.Target, g.ServerPackage, err.Error())
+		log.Printf("Target path \"%s\" and server path \"%s\" are not related. You shouldn't specify an absolute path in --server-package: %v", g.Target, g.ServerPackage, err)
 		return ""
 	}
+        tgtRel = filepath.ToSlash(tgtRel)
 	return tgtRel
 }
 
 // SpecPath returns the path to the spec relative to the server package
-// May be used in templates. Errors are not fatal: an empty string is returned instead
+// Method used by templates, e.g. with {{ .SpecPath }}
+// Errors are not fatal: an empty string is returned instead
 func (g *GenOpts) SpecPath() string {
 	if strings.HasPrefix(g.Spec, "http://") || strings.HasPrefix(g.Spec, "https://") {
 		return g.Spec
 	}
+        // Local specifications
 	specAbs, err := filepath.Abs(g.Spec)
 	if err != nil {
-		log.Fatalln(err)
+		log.Printf("could not evaluate target generation path \"%s\": you must create the target directory beforehand: %v", g.Spec, err)
 		return ""
 	}
+        specAbs = filepath.ToSlash(specAbs)
 	srvrAbs, err := filepath.Abs(g.ServerPackage)
 	if err != nil {
-		log.Fatalln(err)
+		log.Printf("could not evaluate target server path \"%s\": %v", g.ServerPackage, err)
 		return ""
 	}
+        srvrAbs = filepath.ToSlash(srvrAbs)
 	specRel, err := filepath.Rel(srvrAbs, specAbs)
 	if err != nil {
-		log.Fatalln(err)
+		log.Printf("Specification path \"%s\" and server path \"%s\" are not related. You shouldn't specify an absolute path in --server-package: %v", g.Spec, g.ServerPackage, err)
 		return ""
 	}
+        specRel = filepath.ToSlash(specRel)
 	return specRel
 }
 
@@ -474,7 +483,7 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 		}
 		tt, err := template.New(t.Source).Funcs(FuncMap).Parse(string(content))
 		if err != nil {
-			return nil, fmt.Errorf("template parsing failed on template %s: ", err.Error())
+			return nil, fmt.Errorf("template parsing failed on template %v: ", err)
 			//return nil, err
 		}
 		templ = tt
@@ -485,7 +494,7 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 
 	var tBuf bytes.Buffer
 	if err := templ.Execute(&tBuf, data); err != nil {
-		return nil, fmt.Errorf("template execution failed on template %s: ", err.Error())
+		return nil, fmt.Errorf("template execution failed on template %v: ", err)
 	}
 	//if Debug {
 	log.Printf("executed template %s", t.Source)
@@ -501,7 +510,7 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
 	dir, fname, err := g.location(t, data)
 	if err != nil {
-		return fmt.Errorf("failed to resolve template location for %s: %s", t.Name, err.Error())
+		return fmt.Errorf("failed to resolve template location for %s: %v", t.Name, err)
 	}
 
 	if t.SkipExists && fileExists(dir, fname) {
@@ -514,7 +523,7 @@ func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
 	log.Printf("creating generated file %q in %q as %s", fname, dir, t.Name)
 	content, err := g.render(t, data)
 	if err != nil {
-		return fmt.Errorf("failed rendering template data for %s: %s", t.Name, err.Error())
+		return fmt.Errorf("failed rendering template data for %s: %v", t.Name, err)
 	}
 
 	if dir != "" {
@@ -538,16 +547,16 @@ func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
 			log.Printf("source formatting failed on template-generated source (%q for %s). Check that your template produces valid code", filepath.Join(dir, fname), t.Name)
 			writeerr = ioutil.WriteFile(filepath.Join(dir, fname), content, 0644)
 			if writeerr != nil {
-				return fmt.Errorf("failed to write (unformatted) file %q in %q: %s", fname, dir, writeerr.Error())
+				return fmt.Errorf("failed to write (unformatted) file %q in %q: %v", fname, dir, writeerr)
 			}
 			log.Printf("unformatted generated source %q has been dumped for template debugging purposes. DO NOT build on this source!", fname)
-			return fmt.Errorf("source formatting on generated source %q failed: %s", t.Name, err.Error())
+			return fmt.Errorf("source formatting on generated source %q failed: %v", t.Name, err)
 		}
 	}
 
 	writeerr = ioutil.WriteFile(filepath.Join(dir, fname), formatted, 0644)
 	if writeerr != nil {
-		return fmt.Errorf("failed to write file %q in %q: %s", fname, dir, writeerr.Error())
+		return fmt.Errorf("failed to write file %q in %q: %v", fname, dir, writeerr)
 	}
 	return err
 }

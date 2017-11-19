@@ -22,25 +22,36 @@ import (
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands"
 	"github.com/jessevdk/go-flags"
+	//"runtime/debug"
 )
 
 func init() {
 	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
 }
 
+var (
+	// Debug is true when the SWAGGER_DEBUG env var is not empty
+	Debug = os.Getenv("SWAGGER_DEBUG") != ""
+)
+
 var opts struct {
 	// Version bool `long:"version" short:"v" description:"print the version of the command"`
 }
 
 func main() {
+	// TODO: reactivate 'defer catch all' once product is stable
 	// Recovering from internal panics
-	defer func() {
-		r := recover()
-		if r != nil {
-			log.Fatal("Fatal error:", r)
-			os.Exit(1)
-		}
-	}()
+	// Stack may be printed in Debug mode
+	//defer func() {
+	//	r := recover()
+	//	if r != nil {
+	//		log.Printf("Fatal error:", r)
+	//		if Debug {
+	//			debug.PrintStack()
+	//		}
+	//		os.Exit(1)
+	//	}
+	//}()
 
 	parser := flags.NewParser(&opts, flags.Default)
 	parser.ShortDescription = "helps you keep your API well described"
