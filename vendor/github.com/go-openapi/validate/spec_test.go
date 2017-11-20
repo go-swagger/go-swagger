@@ -205,6 +205,22 @@ func TestIssue18(t *testing.T) {
 	}
 }
 
+// check if a fragment path parameter is recognized
+func TestIssue39(t *testing.T) {
+	fp := filepath.Join("fixtures", "bugs", "39", "swagger.yml")
+
+	// as swagger spec
+	doc, err := loads.Spec(fp)
+	if assert.NoError(t, err) {
+		validator := NewSpecValidator(doc.Schema(), strfmt.Default)
+		res, _ := validator.Validate(doc)
+		for _, e := range res.Errors {
+			log.Println(e)
+		}
+		assert.True(t, res.IsValid())
+	}
+}
+
 func TestValidateDuplicatePropertyNames(t *testing.T) {
 	// simple allOf
 	doc, err := loads.Spec(filepath.Join("fixtures", "validation", "duplicateprops.json"))

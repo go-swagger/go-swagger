@@ -27,6 +27,7 @@ import (
 
 const sshd_config = `
 Protocol 2
+Banner {{.Dir}}/banner
 HostKey {{.Dir}}/id_rsa
 HostKey {{.Dir}}/id_dsa
 HostKey {{.Dir}}/id_ecdsa
@@ -255,6 +256,8 @@ func newServer(t *testing.T) *server {
 		t.Fatal(err)
 	}
 	f.Close()
+
+	writeFile(filepath.Join(dir, "banner"), []byte("Server Banner"))
 
 	for k, v := range testdata.PEMBytes {
 		filename := "id_" + k
