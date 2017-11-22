@@ -14,8 +14,12 @@ import (
 
 // GenCommon contains common properties needed across
 // definitions, app and operations
+// TargetImportPath may be used by templates to import other (possibly
+// generated) packages in the generation path (e.g. relative to GOPATH).
+// TargetImportPath is NOT used by standard templates.
 type GenCommon struct {
-	Copyright string
+	Copyright        string
+	TargetImportPath string
 }
 
 // GenDefinition contains all the properties to generate a

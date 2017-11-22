@@ -366,7 +366,7 @@ func TestDateFormat_Spec2(t *testing.T) {
 
 func TestBuilder_Issue287(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
+	defer log.SetOutput(os.Stdout)
 	dr, _ := os.Getwd()
 
 	opts := &GenOpts{
@@ -406,7 +406,7 @@ func TestBuilder_Issue287(t *testing.T) {
 
 func TestBuilder_Issue465(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
+	defer log.SetOutput(os.Stdout)
 	dr, _ := os.Getwd()
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/465/swagger.yml"),
@@ -445,7 +445,7 @@ func TestBuilder_Issue465(t *testing.T) {
 
 func TestBuilder_Issue500(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
+	defer log.SetOutput(os.Stdout)
 	dr, _ := os.Getwd()
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/500/swagger.yml"),
@@ -537,7 +537,7 @@ func TestGenClient_Issue733(t *testing.T) {
 
 func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
+	defer log.SetOutput(os.Stdout)
 	dr, _ := os.Getwd()
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
@@ -594,7 +594,7 @@ func TestGenClientIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 
 func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
+	defer log.SetOutput(os.Stdout)
 	dr, _ := os.Getwd()
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
@@ -651,7 +651,7 @@ func TestGenClientIssue890_ValidationFalseFlatteningTrue(t *testing.T) {
 
 func TestGenServerIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
+	defer log.SetOutput(os.Stdout)
 	dr, _ := os.Getwd()
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
@@ -693,7 +693,7 @@ func TestGenClientIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 
 func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
+	defer log.SetOutput(os.Stdout)
 	dr, _ := os.Getwd()
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),

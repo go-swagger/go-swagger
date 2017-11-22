@@ -464,7 +464,8 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	}
 	return GenOperation{
 		GenCommon: GenCommon{
-			Copyright: b.GenOpts.Copyright,
+			Copyright:        b.GenOpts.Copyright,
+			TargetImportPath: filepath.ToSlash(baseImport(b.GenOpts.Target)),
 		},
 		Package:              b.APIPackage,
 		RootPackage:          b.RootAPIPackage,

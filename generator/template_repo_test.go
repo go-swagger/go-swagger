@@ -2,9 +2,12 @@ package generator
 
 import (
 	"bytes"
-	"testing"
-
+	"github.com/go-openapi/loads"
 	"github.com/stretchr/testify/assert"
+	"testing"
+        "os"
+        "io/ioutil"
+        "log"
 )
 
 var (
@@ -17,6 +20,9 @@ var (
 	customMultiple        = `{{define "bindprimitiveparam" }}custom primitive{{end}}`
 	customNewTemplate     = `new template`
 	customExistingUsesNew = `{{define "bindprimitiveparam" }}{{ template "newtemplate" }}{{end}}`
+	// Test template environment
+	copyright        = `{{ .Copyright }}`
+	targetImportPath = `{{ .TargetImportPath }}`
 )
 
 func TestCustomTemplates(t *testing.T) {
@@ -208,4 +214,127 @@ func TestRepoRecursiveTemplates(t *testing.T) {
 	assert.Nil(t, err)
 
 	assert.Equal(t, expected, b.String())
+}
+
+// Test that definitions are available to templates
+// TODO: should test also with the codeGenApp context
+
+// Test copyright definition
+func TestDefinitionCopyright(t *testing.T) {
+        log.SetOutput(os.Stdout)
+
+	repo := NewRepository(nil)
+
+	err := repo.AddFile("copyright", copyright)
+	assert.NoError(t, err)
+
+	templ, err := repo.Get("copyright")
+	assert.Nil(t, err)
+
+	opts := opts()
+	opts.Copyright = "My copyright clause"
+	expected := opts.Copyright
+
+	// executes template against model definitions
+	genModel, err := getModelEnvironment("../fixtures/codegen/todolist.models.yml", opts)
+	assert.Nil(t, err)
+
+	rendered := bytes.NewBuffer(nil)
+	err = templ.Execute(rendered, genModel)
+	assert.Nil(t, err)
+
+	assert.Equal(t, expected, rendered.String())
+
+	// executes template against operations definitions
+	genOperation, err := getOperationEnvironment("get", "/media/search", "../fixtures/codegen/instagram.yml", opts)
+	assert.Nil(t, err)
+
+	rendered.Reset()
+
+	err = templ.Execute(rendered, genOperation)
+	assert.Nil(t, err)
+
+	assert.Equal(t, expected, rendered.String())
+
+}
+
+// Test TargetImportPath definition
+func TestDefinitionTargetImportPath(t *testing.T) {
+        log.SetOutput(os.Stdout)
+
+	repo := NewRepository(nil)
+
+	err := repo.AddFile("targetimportpath", targetImportPath)
+	assert.NoError(t, err)
+
+	templ, err := repo.Get("targetimportpath")
+	assert.Nil(t, err)
+
+	opts := opts()
+	// Non existing target would panic: to be tested too, but in another module
+	opts.Target = "../fixtures"
+	var expected = "github.com/go-swagger/go-swagger/fixtures"
+
+	// executes template against model definitions
+	genModel, err := getModelEnvironment("../fixtures/codegen/todolist.models.yml", opts)
+	assert.Nil(t, err)
+
+	rendered := bytes.NewBuffer(nil)
+	err = templ.Execute(rendered, genModel)
+	assert.Nil(t, err)
+
+	assert.Equal(t, expected, rendered.String())
+
+	// executes template against operations definitions
+	genOperation, err := getOperationEnvironment("get", "/media/search", "../fixtures/codegen/instagram.yml", opts)
+	assert.Nil(t, err)
+
+	rendered.Reset()
+
+	err = templ.Execute(rendered, genOperation)
+	assert.Nil(t, err)
+
+	assert.Equal(t, expected, rendered.String())
+
+}
+
+// Simulates a definition environment for model templates
+func getModelEnvironment(spec string, opts *GenOpts) (*GenDefinition, error) {
+        // Don't want stderr output to pollute CI
+        log.SetOutput(ioutil.Discard)
+        defer log.SetOutput(os.Stdout)
+
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	if err != nil {
+		return nil, err
+	}
+	definitions := specDoc.Spec().Definitions
+
+	for k, schema := range definitions {
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if err != nil {
+			return nil, err
+		}
+		// One is enough
+		return genModel, nil
+	}
+	return nil, nil
+}
+
+// Simulates a definition environment for operation templates
+func getOperationEnvironment(operation string, path string, spec string, opts *GenOpts) (*GenOperation, error) {
+        // Don't want stderr output to pollute CI
+        log.SetOutput(ioutil.Discard)
+        defer log.SetOutput(os.Stdout)
+
+	b, err := methodPathOpBuilder(operation, path, spec)
+	if err != nil {
+		return nil, err
+	}
+	b.GenOpts = opts
+	g, err := b.MakeOperation()
+	if err != nil {
+		return nil, err
+	}
+	return &g, nil
 }

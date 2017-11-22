@@ -84,7 +84,7 @@ func testAppGenerator(t testing.TB, specPath, name string) (*appGenerator, error
 
 func TestServer_UrlEncoded(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
+	defer log.SetOutput(os.Stdout)
 	gen, err := testAppGenerator(t, "../fixtures/codegen/simplesearch.yml", "search")
 	if assert.NoError(t, err) {
 		app, err := gen.makeCodegenApp()
@@ -115,7 +115,7 @@ func TestServer_UrlEncoded(t *testing.T) {
 
 func TestServer_MultipartForm(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
+	defer log.SetOutput(os.Stdout)
 	gen, err := testAppGenerator(t, "../fixtures/codegen/shipyard.yml", "shipyard")
 	if assert.NoError(t, err) {
 		app, err := gen.makeCodegenApp()
@@ -153,7 +153,7 @@ func TestServer_InvalidSpec(t *testing.T) {
 
 func TestServer_TrailingSlash(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
+	defer log.SetOutput(os.Stdout)
 	gen, err := testAppGenerator(t, "../fixtures/bugs/899/swagger.yml", "trailing slash")
 	if assert.NoError(t, err) {
 		app, err := gen.makeCodegenApp()
@@ -174,7 +174,7 @@ func TestServer_TrailingSlash(t *testing.T) {
 
 func TestServer_Issue987(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
+	defer log.SetOutput(os.Stdout)
 	gen, err := testAppGenerator(t, "../fixtures/bugs/987/swagger.yml", "deeper consumes produces")
 	if assert.NoError(t, err) {
 		app, err := gen.makeCodegenApp()
@@ -198,7 +198,7 @@ func TestServer_Issue987(t *testing.T) {
 
 func TestServer_FilterByTag(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
+	defer log.SetOutput(os.Stdout)
 	gen, err := testAppGenerator(t, "../fixtures/codegen/simplesearch.yml", "search")
 	if assert.NoError(t, err) {
 		gen.GenOpts.Tags = []string{"search"}

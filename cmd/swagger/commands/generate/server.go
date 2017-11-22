@@ -15,11 +15,10 @@
 package generate
 
 import (
-	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"strings"
+        "log"
 
 	"github.com/go-swagger/go-swagger/generator"
 )
@@ -55,7 +54,7 @@ func (s *Server) Execute(args []string) error {
 	setDebug(cfg)
 
 	if s.WithContext {
-		fmt.Fprintf(os.Stderr, "--with-context is deprecated because recent go versions now include the context on the request object to which you have access on the params.HTTPRequest property")
+		log.Printf("--with-context is deprecated because recent go versions now include the context on the request object to which you have access on the params.HTTPRequest property")
 	}
 
 	if s.ExistingModels != "" {
@@ -139,7 +138,7 @@ func (s *Server) Execute(args []string) error {
 		flagsPackage = "github.com/spf13/pflag"
 	}
 
-	fmt.Fprintf(os.Stderr, `Generation completed!
+	log.Printf(`Generation completed!
 
 For this generation to compile you need to have some packages in your GOPATH:
 
