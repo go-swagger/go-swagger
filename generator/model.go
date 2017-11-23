@@ -128,7 +128,7 @@ func (m *definitionGenerator) Generate() error {
 
 func (m *definitionGenerator) generateModel(g *GenDefinition) error {
 	if Debug {
-		log.Println("rendering definitions for %+v", *g)
+		log.Printf("rendering definitions for %+v", *g)
 	}
 	return m.opts.renderDefinition(g)
 }
