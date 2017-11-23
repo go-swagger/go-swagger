@@ -477,13 +477,19 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 
 	if templ == nil {
 		// try to load template from disk
-		content, err := ioutil.ReadFile(t.Source)
+		var templateFile string
+		if g.TemplateDir != "" {
+			templateFile = filepath.Join(g.TemplateDir, t.Source)
+		} else {
+			templateFile = t.Source
+		}
+		content, err := ioutil.ReadFile(templateFile)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Error while opening %s template file: %v", t.Source, err)
 		}
 		tt, err := template.New(t.Source).Funcs(FuncMap).Parse(string(content))
 		if err != nil {
-			return nil, fmt.Errorf("template parsing failed on template %v: ", err)
+			return nil, fmt.Errorf("template parsing failed on template %s: %v", t.Name, err)
 			//return nil, err
 		}
 		templ = tt
@@ -494,7 +500,7 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 
 	var tBuf bytes.Buffer
 	if err := templ.Execute(&tBuf, data); err != nil {
-		return nil, fmt.Errorf("template execution failed on template %v: ", err)
+		return nil, fmt.Errorf("template execution failed for template %s: %v", t.Name, err)
 	}
 	//if Debug {
 	log.Printf("executed template %s", t.Source)
@@ -510,7 +516,7 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
 	dir, fname, err := g.location(t, data)
 	if err != nil {
-		return fmt.Errorf("failed to resolve template location for %s: %v", t.Name, err)
+		return fmt.Errorf("failed to resolve template location for template %s: %v", t.Name, err)
 	}
 
 	if t.SkipExists && fileExists(dir, fname) {
