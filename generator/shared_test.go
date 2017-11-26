@@ -2,13 +2,16 @@ package generator
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 // TargetPath and SpecPath are used in server.gotmpl
@@ -159,7 +162,7 @@ func TestShared_SpecPath(t *testing.T) {
 	// to check that os.Getwd() and Rel() work well upstream
 	// and assume in functions that no error is returned.
 	if runtime.GOOS == "windows" {
-	        log.SetOutput(os.Stdout)
+		log.SetOutput(os.Stdout)
 		log.Println("INFO:Need some additional testing on windows")
 		//opts = new(GenOpts)
 		//opts.Spec = "C:/a/b/c"
@@ -272,7 +275,7 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 		os.Remove("test_badformat.gol")
 		os.Remove("test_badformat2.gol")
 		log.SetOutput(os.Stdout)
-	        Debug = false
+		Debug = false
 	}()
 
 	// Not skipping format
@@ -339,7 +342,7 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 	defer func() {
 		os.RemoveAll("TestGenDir")
 		log.SetOutput(os.Stdout)
-	        Debug = false
+		Debug = false
 	}()
 
 	// Not skipping format
@@ -376,3 +379,36 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 }
 
 // TODO: Test templates which are not assets (open in file)
+// Low level testing: templates loaded from file
+func TestShared_LoadTemplate(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
+	opts := GenOpts{}
+	tplOpts := TemplateOpts{
+		Name:       "File",
+		Source:     "File",
+		Target:     ".",
+		FileName:   "file.go",
+		SkipExists: false,
+		SkipFormat: false,
+	}
+
+	buf, err := opts.render(&tplOpts, nil)
+	spew.Dump(err)
+	assert.Error(t, err, "Error should be handled here")
+	assert.Contains(t, err.Error(), "open File")
+	assert.Contains(t, err.Error(), "no such file or directory")
+	assert.Contains(t, err.Error(), "error while opening")
+	assert.Nil(t, buf, "Upon error, GenOpts.render() should return nil buffer")
+
+	opts.TemplateDir = "./myTemplateDir"
+	buf, err = opts.render(&tplOpts, nil)
+	spew.Dump(err)
+	assert.Error(t, err, "Error should be handled here")
+	assert.Contains(t, err.Error(), "open myTemplateDir/File")
+	assert.Contains(t, err.Error(), "no such file or directory")
+	assert.Contains(t, err.Error(), "error while opening")
+	assert.Nil(t, buf, "Upon error, GenOpts.render() should return nil buffer")
+
+}
