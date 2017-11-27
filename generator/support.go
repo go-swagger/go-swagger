@@ -171,6 +171,11 @@ func checkPrefixAndFetchRelativePath(childpath string, parentpath string) (bool,
 }
 
 func baseImport(tgt string) string {
+	// On Windows, filepath.Abs("") behaves differently than on Unix:
+	// yields an error.
+	if tgt == "" {
+		tgt = "."
+	}
 	tgtAbsPath, err := filepath.Abs(tgt)
 	if err != nil {
 		log.Fatalln(err)
