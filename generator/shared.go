@@ -108,9 +108,9 @@ func GoLangOpts() *LanguageOpts {
 	return opts
 }
 
-// Debug when the env var DEBUG is not empty
+// Debug when the env var DEBUG or SWAGGER_DEBUG is not empty
 // the generators will be very noisy about what they are doing
-var Debug = os.Getenv("DEBUG") != ""
+var Debug = os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
 
 func findSwaggerSpec(nm string) (string, error) {
 	specs := []string{"swagger.json", "swagger.yml", "swagger.yaml"}
@@ -311,7 +311,7 @@ type GenOpts struct {
 	DumpData          bool
 	WithContext       bool
 	ValidateSpec      bool
-	FlattenSpec				bool
+	FlattenSpec       bool
 	defaultsEnsured   bool
 
 	Spec              string
@@ -339,40 +339,57 @@ type GenOpts struct {
 	Copyright         string
 }
 
-// TargetPath returns the target path relative to the server package
+// TargetPath returns the target generation path relative to the server package
+// Method used by templates, e.g. with {{ .TargetPath }}
+// Errors are not fatal: an empty string is returned instead
 func (g *GenOpts) TargetPath() string {
 	tgtAbs, err := filepath.Abs(g.Target)
 	if err != nil {
-		log.Fatalln(err)
+		log.Printf("could not evaluate target generation path \"%s\": you must create the target directory beforehand: %v", g.Target, err)
+		return ""
 	}
+	tgtAbs = filepath.ToSlash(tgtAbs)
 	srvrAbs, err := filepath.Abs(g.ServerPackage)
 	if err != nil {
-		log.Fatalln(err)
+		log.Printf("could not evaluate target server path \"%s\": %v", g.ServerPackage, err)
+		return ""
 	}
+	srvrAbs = filepath.ToSlash(srvrAbs)
 	tgtRel, err := filepath.Rel(srvrAbs, tgtAbs)
 	if err != nil {
-		log.Fatalln(err)
+		log.Printf("Target path \"%s\" and server path \"%s\" are not related. You shouldn't specify an absolute path in --server-package: %v", g.Target, g.ServerPackage, err)
+		return ""
 	}
+	tgtRel = filepath.ToSlash(tgtRel)
 	return tgtRel
 }
 
 // SpecPath returns the path to the spec relative to the server package
+// Method used by templates, e.g. with {{ .SpecPath }}
+// Errors are not fatal: an empty string is returned instead
 func (g *GenOpts) SpecPath() string {
 	if strings.HasPrefix(g.Spec, "http://") || strings.HasPrefix(g.Spec, "https://") {
 		return g.Spec
 	}
+	// Local specifications
 	specAbs, err := filepath.Abs(g.Spec)
 	if err != nil {
-		log.Fatalln(err)
+		log.Printf("could not evaluate target generation path \"%s\": you must create the target directory beforehand: %v", g.Spec, err)
+		return ""
 	}
+	specAbs = filepath.ToSlash(specAbs)
 	srvrAbs, err := filepath.Abs(g.ServerPackage)
 	if err != nil {
-		log.Fatalln(err)
+		log.Printf("could not evaluate target server path \"%s\": %v", g.ServerPackage, err)
+		return ""
 	}
+	srvrAbs = filepath.ToSlash(srvrAbs)
 	specRel, err := filepath.Rel(srvrAbs, specAbs)
 	if err != nil {
-		log.Fatalln(err)
+		log.Printf("Specification path \"%s\" and server path \"%s\" are not related. You shouldn't specify an absolute path in --server-package: %v", g.Spec, g.ServerPackage, err)
+		return ""
 	}
+	specRel = filepath.ToSlash(specRel)
 	return specRel
 }
 
@@ -459,14 +476,21 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 	}
 
 	if templ == nil {
-		// try to load template from disk
-		content, err := ioutil.ReadFile(t.Source)
+		// try to load template from disk, in TemplateDir if specified
+		var templateFile string
+		if g.TemplateDir != "" {
+			templateFile = filepath.Join(g.TemplateDir, t.Source)
+		} else {
+			templateFile = t.Source
+		}
+		content, err := ioutil.ReadFile(templateFile)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error while opening %s template file: %v", templateFile, err)
 		}
 		tt, err := template.New(t.Source).Funcs(FuncMap).Parse(string(content))
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("template parsing failed on template %s: %v", t.Name, err)
+			//return nil, err
 		}
 		templ = tt
 	}
@@ -476,50 +500,72 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 
 	var tBuf bytes.Buffer
 	if err := templ.Execute(&tBuf, data); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("template execution failed for template %s: %v", t.Name, err)
 	}
+	//if Debug {
+	log.Printf("executed template %s", t.Source)
+	//}
 
 	return tBuf.Bytes(), nil
 }
 
+// Render template and write generated source code
+// generated code is reformatted ("linted"), which gives an
+// additional level of checking. If this step fails, the generated
+// is still dumped, for template debugging purposes.
 func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
 	dir, fname, err := g.location(t, data)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to resolve template location for template %s: %v", t.Name, err)
 	}
 
 	if t.SkipExists && fileExists(dir, fname) {
-		log.Printf("skipping %s because it already exists", filepath.Join(dir, fname))
+		if Debug {
+			log.Printf("skipping generation of %s because it already exists and skip_exist directive is set for %s", filepath.Join(dir, fname), t.Name)
+		}
 		return nil
 	}
 
-	log.Printf("creating %q in %q as %s", fname, dir, t.Name)
+	log.Printf("creating generated file %q in %q as %s", fname, dir, t.Name)
 	content, err := g.render(t, data)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed rendering template data for %s: %v", t.Name, err)
 	}
 
 	if dir != "" {
-		if Debug {
-			log.Printf("skipping creating directory %q for %s because it's an empty string", dir, t.Name)
-		}
-		if e := os.MkdirAll(dir, 0700); e != nil {
-			return e
+		_, exists := os.Stat(dir)
+		if os.IsNotExist(exists) {
+			if Debug {
+				log.Printf("creating directory %q for \"%s\"", dir, t.Name)
+			}
+			// Directory settings consistent with file privileges.
+			// Environment's umask may alter this setup
+			if e := os.MkdirAll(dir, 0755); e != nil {
+				return e
+			}
 		}
 	}
 
 	// Conditionally format the code, unless the user wants to skip
 	formatted := content
+	var writeerr error
+
 	if !t.SkipFormat {
 		formatted, err = g.LanguageOpts.FormatContent(fname, content)
 		if err != nil {
-			err = fmt.Errorf("format %q failed: %v", t.Name, err)
+			log.Printf("source formatting failed on template-generated source (%q for %s). Check that your template produces valid code", filepath.Join(dir, fname), t.Name)
+			writeerr = ioutil.WriteFile(filepath.Join(dir, fname), content, 0644)
+			if writeerr != nil {
+				return fmt.Errorf("failed to write (unformatted) file %q in %q: %v", fname, dir, writeerr)
+			}
+			log.Printf("unformatted generated source %q has been dumped for template debugging purposes. DO NOT build on this source!", fname)
+			return fmt.Errorf("source formatting on generated source %q failed: %v", t.Name, err)
 		}
 	}
 
-	writeerr := ioutil.WriteFile(filepath.Join(dir, fname), formatted, 0644)
+	writeerr = ioutil.WriteFile(filepath.Join(dir, fname), formatted, 0644)
 	if writeerr != nil {
-		log.Printf("Failed to write %q: %s", fname, writeerr)
+		return fmt.Errorf("failed to write file %q in %q: %v", fname, dir, writeerr)
 	}
 	return err
 }
@@ -779,7 +825,7 @@ func validateAndFlattenSpec(opts *GenOpts, specDoc *loads.Document) (*loads.Docu
 	// Validate if needed
 	if opts.ValidateSpec {
 		if err := validateSpec(opts.Spec, specDoc); err != nil {
-			return specDoc,err
+			return specDoc, err
 		}
 	}
 
@@ -798,6 +844,5 @@ func validateAndFlattenSpec(opts *GenOpts, specDoc *loads.Document) (*loads.Docu
 		err = analysis.Flatten(flattenOpts)
 	}
 
-	return specDoc,nil
+	return specDoc, nil
 }
-

@@ -84,7 +84,7 @@ func testAppGenerator(t testing.TB, specPath, name string) (*appGenerator, error
 
 func TestServer_UrlEncoded(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
+	defer log.SetOutput(os.Stdout)
 	gen, err := testAppGenerator(t, "../fixtures/codegen/simplesearch.yml", "search")
 	if assert.NoError(t, err) {
 		app, err := gen.makeCodegenApp()
@@ -115,7 +115,7 @@ func TestServer_UrlEncoded(t *testing.T) {
 
 func TestServer_MultipartForm(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
+	defer log.SetOutput(os.Stdout)
 	gen, err := testAppGenerator(t, "../fixtures/codegen/shipyard.yml", "shipyard")
 	if assert.NoError(t, err) {
 		app, err := gen.makeCodegenApp()
@@ -153,7 +153,7 @@ func TestServer_InvalidSpec(t *testing.T) {
 
 func TestServer_TrailingSlash(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
+	defer log.SetOutput(os.Stdout)
 	gen, err := testAppGenerator(t, "../fixtures/bugs/899/swagger.yml", "trailing slash")
 	if assert.NoError(t, err) {
 		app, err := gen.makeCodegenApp()
@@ -174,7 +174,7 @@ func TestServer_TrailingSlash(t *testing.T) {
 
 func TestServer_Issue987(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
+	defer log.SetOutput(os.Stdout)
 	gen, err := testAppGenerator(t, "../fixtures/bugs/987/swagger.yml", "deeper consumes produces")
 	if assert.NoError(t, err) {
 		app, err := gen.makeCodegenApp()
@@ -198,7 +198,7 @@ func TestServer_Issue987(t *testing.T) {
 
 func TestServer_FilterByTag(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
+	defer log.SetOutput(os.Stdout)
 	gen, err := testAppGenerator(t, "../fixtures/codegen/simplesearch.yml", "search")
 	if assert.NoError(t, err) {
 		gen.GenOpts.Tags = []string{"search"}
@@ -217,4 +217,61 @@ func TestServer_FilterByTag(t *testing.T) {
 			}
 		}
 	}
+}
+
+// Checking error handling code: panic on mismatched template
+// High level test with AppGenerator
+func badTemplateCall() {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
+	gen, err := testAppGenerator(nil, "../fixtures/bugs/899/swagger.yml", "trailing slash")
+	if err != nil {
+		return
+	}
+	app, err := gen.makeCodegenApp()
+	log.SetOutput(ioutil.Discard)
+	if err != nil {
+		return
+	}
+	buf := bytes.NewBuffer(nil)
+	r := templates.MustGet("serverBuilderX").Execute(buf, app)
+
+	// Should never reach here
+	log.Printf("%+v\n", r)
+}
+
+func TestServer_BadTemplate(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
+	assert.Panics(t, badTemplateCall, "templates.MustGet() did not panic() as currently expected")
+}
+
+// Checking error handling code: panic on bad parsing template
+// High level test with AppGenerator
+func badParseCall() {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
+	var badParse = `{{{ define "T1" }}T1{{end}}{{ define "T2" }}T2{{end}}`
+
+	templates.AddFile("badparse", badParse)
+	gen, _ := testAppGenerator(nil, "../fixtures/bugs/899/swagger.yml", "trailing slash")
+	app, _ := gen.makeCodegenApp()
+	log.SetOutput(ioutil.Discard)
+	tpl := templates.MustGet("badparse")
+
+	// Should never reach here
+	buf := bytes.NewBuffer(nil)
+	r := tpl.Execute(buf, app)
+
+	log.Printf("%+v\n", r)
+}
+
+func TestServer_ErrorParsingTemplate(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
+	assert.Panics(t, badParseCall, "templates.MustGet() did not panic() as currently expected")
 }

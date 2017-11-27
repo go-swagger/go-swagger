@@ -74,7 +74,7 @@ func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 		// lookup schema
 		model, ok := specDoc.Spec().Definitions[modelName]
 		if !ok {
-			return fmt.Errorf("model %q not found in definitions in %s", modelName, specPath)
+			return fmt.Errorf("model %q not found in definitions given by %q", modelName, specPath)
 		}
 
 		// generate files
@@ -106,7 +106,7 @@ func (m *definitionGenerator) Generate() error {
 
 	mod, err := makeGenDefinition(m.Name, m.Target, m.Model, m.SpecDoc, m.opts)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not generate definitions for model %s on target %s: %v", m.Name, m.Target, err)
 	}
 
 	if m.opts.DumpData {
@@ -116,8 +116,9 @@ func (m *definitionGenerator) Generate() error {
 	}
 
 	if m.opts.IncludeModel {
+		log.Println("including additional model")
 		if err := m.generateModel(mod); err != nil {
-			return fmt.Errorf("model: %s", err)
+			return fmt.Errorf("could not generate model: %v", err)
 		}
 	}
 	log.Println("generated model", m.Name)
@@ -126,6 +127,9 @@ func (m *definitionGenerator) Generate() error {
 }
 
 func (m *definitionGenerator) generateModel(g *GenDefinition) error {
+	if Debug {
+		log.Printf("rendering definitions for %+v", *g)
+	}
 	return m.opts.renderDefinition(g)
 }
 
@@ -164,7 +168,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		IncludeModel:     opts.IncludeModel,
 	}
 	if err := pg.makeGenSchema(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not generate schema for %s: %v", name, err)
 	}
 	dsi, ok := di.Discriminators["#/definitions/"+name]
 	if ok {
