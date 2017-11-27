@@ -398,11 +398,11 @@ func TestShared_LoadTemplate(t *testing.T) {
 	assert.Contains(t, err.Error(), "error while opening")
 	assert.Nil(t, buf, "Upon error, GenOpts.render() should return nil buffer")
 
-	opts.TemplateDir = "./myTemplateDir"
+	opts.TemplateDir = filepath.Join(".", "myTemplateDir")
 	buf, err = opts.render(&tplOpts, nil)
 	//spew.Dump(err)
 	assert.Error(t, err, "Error should be handled here")
-	assert.Contains(t, err.Error(), "open myTemplateDir/File")
+	assert.Contains(t, err.Error(), "open "+filepath.Join("myTemplateDir", "File"))
 	assert.Contains(t, err.Error(), "error while opening")
 	assert.Nil(t, buf, "Upon error, GenOpts.render() should return nil buffer")
 
