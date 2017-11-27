@@ -43,7 +43,7 @@ type Server struct {
 	FlagStrategy      string   `long:"flag-strategy" description:"the strategy to provide flags for the server" default:"go-flags" choice:"go-flags" choice:"pflag"`
 	CompatibilityMode string   `long:"compatibility-mode" description:"the compatibility mode for the tls server" default:"modern" choice:"modern" choice:"intermediate"`
 	SkipValidation    bool     `long:"skip-validation" description:"skips validation of spec prior to generation"`
-	SkipFlattening  bool     `long:"skip-flatten" description:"skips flattening of spec prior to generation"`
+	SkipFlattening    bool     `long:"skip-flatten" description:"skips flattening of spec prior to generation"`
 }
 
 // Execute runs this command
@@ -55,7 +55,7 @@ func (s *Server) Execute(args []string) error {
 	setDebug(cfg)
 
 	if s.WithContext {
-		fmt.Fprintf(os.Stderr, "--with-context is deprecated because recent go versions now include the context on the request object to which you have access on the params.HTTPRequest property")
+		fmt.Fprintf(os.Stdout, "--with-context is deprecated because recent go versions now include the context on the request object to which you have access on the params.HTTPRequest property")
 	}
 
 	if s.ExistingModels != "" {
@@ -94,7 +94,7 @@ func (s *Server) Execute(args []string) error {
 		IncludeMain:       !s.ExcludeMain,
 		IncludeSupport:    !s.SkipSupport,
 		ValidateSpec:      !s.SkipValidation,
-		FlattenSpec:			 !s.SkipFlattening,
+		FlattenSpec:       !s.SkipFlattening,
 		ExcludeSpec:       s.ExcludeSpec,
 		TemplateDir:       string(s.TemplateDir),
 		WithContext:       s.WithContext,
@@ -139,7 +139,7 @@ func (s *Server) Execute(args []string) error {
 		flagsPackage = "github.com/spf13/pflag"
 	}
 
-	fmt.Fprintf(os.Stderr, `Generation completed!
+	fmt.Fprintf(os.Stdout, `Generation completed!
 
 For this generation to compile you need to have some packages in your GOPATH:
 

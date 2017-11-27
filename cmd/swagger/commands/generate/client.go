@@ -83,7 +83,7 @@ func (c *Client) Execute(args []string) error {
 		IncludeParameters: !c.SkipOperations,
 		IncludeResponses:  !c.SkipOperations,
 		ValidateSpec:      !c.SkipValidation,
-		FlattenSpec:			 !c.SkipFlattening,
+		FlattenSpec:       !c.SkipFlattening,
 		Tags:              c.Tags,
 		IncludeSupport:    true,
 		TemplateDir:       string(c.TemplateDir),
@@ -119,7 +119,7 @@ func (c *Client) Execute(args []string) error {
 		return err
 	}
 
-	fmt.Fprintf(os.Stderr, `Generation completed!
+	fmt.Fprintf(os.Stdout, `Generation completed!
 
 For this generation to compile you need to have some packages in your GOPATH:
 

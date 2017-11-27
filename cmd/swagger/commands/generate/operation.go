@@ -26,18 +26,18 @@ import (
 // Operation the generate operation files command
 type Operation struct {
 	shared
-	Name          []string `long:"name" short:"n" required:"true" description:"the operations to generate, repeat for multiple"`
-	Tags          []string `long:"tags" description:"the tags to include, if not specified defaults to all"`
-	Principal     string   `short:"P" long:"principal" description:"the model to use for the security principal"`
-	DefaultScheme string   `long:"default-scheme" description:"the default scheme for this API" default:"http"`
-	NoHandler     bool     `long:"skip-handler" description:"when present will not generate an operation handler"`
-	NoStruct      bool     `long:"skip-parameters" description:"when present will not generate the parameter model struct"`
-	NoResponses   bool     `long:"skip-responses" description:"when present will not generate the response model struct"`
-	NoValidator   bool     `long:"skip-validator" description:"when present will not generate a model validator"`
-	NoURLBuilder  bool     `long:"skip-url-builder" description:"when present will not generate a URL builder"`
-	DumpData      bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
-	SkipFlattening  bool     `long:"skip-flatten" description:"skips flattening of spec prior to generation"`
-	SkipValidation  bool     `long:"skip-validation" description:"skips validation of spec prior to generation"`
+	Name           []string `long:"name" short:"n" required:"true" description:"the operations to generate, repeat for multiple"`
+	Tags           []string `long:"tags" description:"the tags to include, if not specified defaults to all"`
+	Principal      string   `short:"P" long:"principal" description:"the model to use for the security principal"`
+	DefaultScheme  string   `long:"default-scheme" description:"the default scheme for this API" default:"http"`
+	NoHandler      bool     `long:"skip-handler" description:"when present will not generate an operation handler"`
+	NoStruct       bool     `long:"skip-parameters" description:"when present will not generate the parameter model struct"`
+	NoResponses    bool     `long:"skip-responses" description:"when present will not generate the response model struct"`
+	NoValidator    bool     `long:"skip-validator" description:"when present will not generate a model validator"`
+	NoURLBuilder   bool     `long:"skip-url-builder" description:"when present will not generate a URL builder"`
+	DumpData       bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
+	SkipFlattening bool     `long:"skip-flatten" description:"skips flattening of spec prior to generation"`
+	SkipValidation bool     `long:"skip-validation" description:"skips validation of spec prior to generation"`
 }
 
 // Execute generates a model file
@@ -69,7 +69,7 @@ func (o *Operation) Execute(args []string) error {
 		IncludeValidator:  !o.NoValidator,
 		IncludeURLBuilder: !o.NoURLBuilder,
 		Tags:              o.Tags,
-		FlattenSpec:			 !o.SkipFlattening,
+		FlattenSpec:       !o.SkipFlattening,
 		ValidateSpec:      !o.SkipValidation,
 	}
 
@@ -100,7 +100,7 @@ func (o *Operation) Execute(args []string) error {
 		return err
 	}
 
-	fmt.Fprintf(os.Stderr, `Generation completed!
+	fmt.Fprintf(os.Stdout, `Generation completed!
 
 For this generation to compile you need to have some packages in your GOPATH:
 

@@ -67,7 +67,7 @@ func (s *Support) Execute(args []string) error {
 		return err
 	}
 
-	fmt.Fprintf(os.Stderr, `Generation completed!
+	fmt.Fprintf(os.Stdout, `Generation completed!
 
 For this generation to compile you need to have some packages in your vendor or GOPATH:
 
