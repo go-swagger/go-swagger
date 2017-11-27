@@ -395,7 +395,6 @@ func TestShared_LoadTemplate(t *testing.T) {
 	//spew.Dump(err)
 	assert.Error(t, err, "Error should be handled here")
 	assert.Contains(t, err.Error(), "open File")
-	assert.Contains(t, err.Error(), "no such file or directory")
 	assert.Contains(t, err.Error(), "error while opening")
 	assert.Nil(t, buf, "Upon error, GenOpts.render() should return nil buffer")
 
@@ -404,7 +403,6 @@ func TestShared_LoadTemplate(t *testing.T) {
 	//spew.Dump(err)
 	assert.Error(t, err, "Error should be handled here")
 	assert.Contains(t, err.Error(), "open myTemplateDir/File")
-	assert.Contains(t, err.Error(), "no such file or directory")
 	assert.Contains(t, err.Error(), "error while opening")
 	assert.Nil(t, buf, "Upon error, GenOpts.render() should return nil buffer")
 
