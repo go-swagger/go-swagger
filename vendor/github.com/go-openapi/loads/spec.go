@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"net/url"
 
+	"path/filepath"
+
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
@@ -187,7 +189,7 @@ func (d *Document) Expanded(options ...*spec.ExpandOptions) (*Document, error) {
 		expandOptions = options[0]
 	} else {
 		expandOptions = &spec.ExpandOptions{
-			RelativeBase: d.specFilePath,
+			RelativeBase: filepath.Dir(d.specFilePath),
 		}
 	}
 

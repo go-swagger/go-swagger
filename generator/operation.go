@@ -585,7 +585,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 		rslv := resolver
 		sch := resp.Schema
 		if resp.Schema.Ref.String() != "" && !resp.Schema.Ref.HasFragmentOnly {
-			ss, err := spec.ResolveRefWithBase(b.Doc.Spec(), &resp.Schema.Ref, &spec.ExpandOptions{RelativeBase: b.Doc.SpecFilePath()})
+			ss, err := spec.ResolveRefWithBase(b.Doc.Spec(), &resp.Schema.Ref, nil)
 			if err != nil {
 				return GenResponse{}, err
 			}
@@ -834,7 +834,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		rslv := resolver
 		sch := param.Schema
 		if sch.Ref.String() != "" && !sch.Ref.HasFragmentOnly {
-			ss, err := spec.ResolveRefWithBase(b.Doc.Spec(), &sch.Ref, &spec.ExpandOptions{RelativeBase: b.Doc.SpecFilePath()})
+			ss, err := spec.ResolveRefWithBase(b.Doc.Spec(), &sch.Ref, nil)
 			if err != nil {
 				return GenParameter{}, err
 			}

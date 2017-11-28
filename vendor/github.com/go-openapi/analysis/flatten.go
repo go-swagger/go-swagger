@@ -44,8 +44,6 @@ func (f *FlattenOpts) Swagger() *swspec.Swagger {
 func Flatten(opts FlattenOpts) error {
 	// recursively expand responses, parameters, path items and items
 	err := swspec.ExpandSpec(opts.Swagger(), opts.ExpandOpts(true))
-	// b, _ := opts.Swagger().MarshalJSON()
-	// panic(string(b))
 	if err != nil {
 		return err
 	}
