@@ -16,8 +16,8 @@ package generate
 
 import (
 	"io/ioutil"
+	"log"
 	"path/filepath"
-        "log"
 
 	"github.com/go-swagger/go-swagger/generator"
 )
@@ -82,7 +82,7 @@ func (c *Client) Execute(args []string) error {
 		IncludeParameters: !c.SkipOperations,
 		IncludeResponses:  !c.SkipOperations,
 		ValidateSpec:      !c.SkipValidation,
-		FlattenSpec:			 !c.SkipFlattening,
+		FlattenSpec:       !c.SkipFlattening,
 		Tags:              c.Tags,
 		IncludeSupport:    true,
 		TemplateDir:       string(c.TemplateDir),
