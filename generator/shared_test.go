@@ -2,13 +2,13 @@ package generator
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
-	"runtime"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // TargetPath and SpecPath are used in server.gotmpl
@@ -74,15 +74,15 @@ func TestShared_TargetPath(t *testing.T) {
 	// TargetPath() is expected to fail
 	// when target and server reside on
 	// different volumes.
-	if runtime.GOOS == "windows" {
-		fmt.Println("INFO:Need some additional testing on windows")
-		//opts = new(GenOpts)
-		//opts.Target = "C:/a/b/c"
-		//opts.ServerPackage = "D:/y/z"
-		//expected = ""
-		//result = opts.TargetPath()
-		//assert.Equal(t, expected, result)
-	}
+	//if runtime.GOOS == "windows" {
+	//	log.Println("INFO:Need some additional testing on windows")
+	//opts = new(GenOpts)
+	//opts.Target = "C:/a/b/c"
+	//opts.ServerPackage = "D:/y/z"
+	//expected = ""
+	//result = opts.TargetPath()
+	//assert.Equal(t, expected, result)
+	//}
 }
 
 // NOTE: file://url is not supported
@@ -158,16 +158,16 @@ func TestShared_SpecPath(t *testing.T) {
 	// NOTE: a better error handling strategy would be
 	// to check that os.Getwd() and Rel() work well upstream
 	// and assume in functions that no error is returned.
-	if runtime.GOOS == "windows" {
-	        log.SetOutput(os.Stdout)
-		log.Println("INFO:Need some additional testing on windows")
-		//opts = new(GenOpts)
-		//opts.Spec = "C:/a/b/c"
-		//opts.ServerPackage = "D:/y/z"
-		//expected = ""
-		//result = opts.SpecPath()
-		//assert.Equal(t, expected, result)
-	}
+	//if runtime.GOOS == "windows" {
+	//	log.SetOutput(os.Stdout)
+	//	log.Println("INFO:Need some additional testing on windows")
+	//opts = new(GenOpts)
+	//opts.Spec = "C:/a/b/c"
+	//opts.ServerPackage = "D:/y/z"
+	//expected = ""
+	//result = opts.SpecPath()
+	//assert.Equal(t, expected, result)
+	//}
 }
 
 // Low level testing: templates not found (higher level calls raise panic(), see above)
@@ -272,7 +272,7 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 		os.Remove("test_badformat.gol")
 		os.Remove("test_badformat2.gol")
 		log.SetOutput(os.Stdout)
-	        Debug = false
+		Debug = false
 	}()
 
 	// Not skipping format
@@ -339,7 +339,7 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 	defer func() {
 		os.RemoveAll("TestGenDir")
 		log.SetOutput(os.Stdout)
-	        Debug = false
+		Debug = false
 	}()
 
 	// Not skipping format
@@ -375,4 +375,35 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-// TODO: Test templates which are not assets (open in file)
+// Test templates which are not assets (open in file)
+// Low level testing: templates loaded from file
+func TestShared_LoadTemplate(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
+	opts := GenOpts{}
+	tplOpts := TemplateOpts{
+		Name:       "File",
+		Source:     "File",
+		Target:     ".",
+		FileName:   "file.go",
+		SkipExists: false,
+		SkipFormat: false,
+	}
+
+	buf, err := opts.render(&tplOpts, nil)
+	//spew.Dump(err)
+	assert.Error(t, err, "Error should be handled here")
+	assert.Contains(t, err.Error(), "open File")
+	assert.Contains(t, err.Error(), "error while opening")
+	assert.Nil(t, buf, "Upon error, GenOpts.render() should return nil buffer")
+
+	opts.TemplateDir = filepath.Join(".", "myTemplateDir")
+	buf, err = opts.render(&tplOpts, nil)
+	//spew.Dump(err)
+	assert.Error(t, err, "Error should be handled here")
+	assert.Contains(t, err.Error(), "open "+filepath.Join("myTemplateDir", "File"))
+	assert.Contains(t, err.Error(), "error while opening")
+	assert.Nil(t, buf, "Upon error, GenOpts.render() should return nil buffer")
+
+}

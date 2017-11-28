@@ -2037,15 +2037,28 @@ func TestGenModel_Issue774(t *testing.T) {
 }
 
 // Non-regression when Debug mode activated
-// Run everyting again in Debug mode, just to make
+// Run everything again in Debug mode, just to make
 // sure no side effect has been added while debugging
 // TODO: remove it when no more "if Debug {}" branches are
 // present in source code.
 func TestDebugModelEntries(t *testing.T) {
 	Debug = true
 	log.SetOutput(ioutil.Discard)
+	// Verification only: temporarily mute stderr for possible debug logs to stderr
+	//origStdout := os.Stdout
+	//origStderr := os.Stderr
+	//f, err := os.OpenFile("stderr.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	//if err != nil {
+	//	panic("Test interrupted: cannot redirect stderr to log file")
+	//}
+	//os.Stdout = ioutil.Discard
+	//os.Stderr = f
 
-	defer log.SetOutput(os.Stdout)
+	defer func() {
+		log.SetOutput(os.Stdout)
+		//os.Stderr = origStderr
+		Debug = false
+	}()
 
 	TestGenerateModel_Sanity(t)
 	TestGenerateModel_DocString(t)
@@ -2115,4 +2128,5 @@ func TestDebugModelEntries(t *testing.T) {
 	TestGenModel_Issue822(t)
 	TestGenModel_Issue981(t)
 	TestGenModel_Issue774(t)
+	Debug = false
 }

@@ -476,7 +476,7 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 	}
 
 	if templ == nil {
-		// try to load template from disk
+		// try to load template from disk, in TemplateDir if specified
 		var templateFile string
 		if g.TemplateDir != "" {
 			templateFile = filepath.Join(g.TemplateDir, t.Source)
@@ -485,7 +485,7 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 		}
 		content, err := ioutil.ReadFile(templateFile)
 		if err != nil {
-			return nil, fmt.Errorf("Error while opening %s template file: %v", t.Source, err)
+			return nil, fmt.Errorf("error while opening %s template file: %v", templateFile, err)
 		}
 		tt, err := template.New(t.Source).Funcs(FuncMap).Parse(string(content))
 		if err != nil {
