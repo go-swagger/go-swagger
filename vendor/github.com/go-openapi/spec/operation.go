@@ -31,7 +31,7 @@ type OperationProps struct {
 	ExternalDocs *ExternalDocumentation `json:"externalDocs,omitempty"`
 	ID           string                 `json:"operationId,omitempty"`
 	Deprecated   bool                   `json:"deprecated,omitempty"`
-	Security     []map[string][]string  `json:"security,omitempty"`
+	Security     []map[string][]string  `json:"security"`
 	Parameters   []Parameter            `json:"parameters,omitempty"`
 	Responses    *Responses             `json:"responses,omitempty"`
 }

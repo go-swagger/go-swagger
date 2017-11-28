@@ -170,6 +170,7 @@ func checkPrefixAndFetchRelativePath(childpath string, parentpath string) (bool,
 
 }
 
+// TODO: handle error with a returned error rather than panic()
 func baseImport(tgt string) string {
 	// On Windows, filepath.Abs("") behaves differently than on Unix:
 	// yields an error.
@@ -178,12 +179,12 @@ func baseImport(tgt string) string {
 	}
 	tgtAbsPath, err := filepath.Abs(tgt)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalf("could not evaluate base import path with target \"%s\". Target directory must be created beforehand: %v", tgt, err)
 	}
 	var tgtAbsPathExtended string
 	tgtAbsPathExtended, err = filepath.EvalSymlinks(tgtAbsPath)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalf("could not evaluate base import path with target \"%s\" (with symlink resolution): %v", tgtAbsPath, err)
 	}
 
 	gopath := os.Getenv("GOPATH")
@@ -606,7 +607,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			a.GenOpts,
 		)
 		if err != nil {
-			return GenApp{}, err
+			return GenApp{}, fmt.Errorf("error in model %s while planning definitions: %v", mn, err)
 		}
 		if mod != nil {
 			//mod.ReceiverName = receiver
