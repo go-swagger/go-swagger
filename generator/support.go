@@ -172,6 +172,11 @@ func checkPrefixAndFetchRelativePath(childpath string, parentpath string) (bool,
 
 // TODO: handle error with a returned error rather than panic()
 func baseImport(tgt string) string {
+	// On Windows, filepath.Abs("") behaves differently than on Unix:
+	// yields an error.
+	if tgt == "" {
+		tgt = "."
+	}
 	tgtAbsPath, err := filepath.Abs(tgt)
 	if err != nil {
 		log.Fatalf("could not evaluate base import path with target \"%s\". Target directory must be created beforehand: %v", tgt, err)
