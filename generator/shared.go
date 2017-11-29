@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"reflect"
 	"sort"
@@ -835,10 +836,17 @@ func validateAndFlattenSpec(opts *GenOpts, specDoc *loads.Document) (*loads.Docu
 		return nil, err
 	}
 
+	absBasePath := specDoc.SpecFilePath()
+	if !path.IsAbs(absBasePath) {
+		cwd, _ := os.Getwd()
+		absBasePath = path.Join(cwd, absBasePath)
+	}
+
 	// Flatten if needed
 	if opts.FlattenSpec {
 		flattenOpts := analysis.FlattenOpts{
-			BasePath: specDoc.SpecFilePath(),
+			// BasePath must be absolute. This is guaranteed because opts.Spec is absolute
+			BasePath: absBasePath,
 			Spec:     analysis.New(specDoc.Spec()),
 		}
 		err = analysis.Flatten(flattenOpts)
