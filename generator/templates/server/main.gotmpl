@@ -77,7 +77,7 @@ func main() {
 	}
   {{ else }}{{ if .ExcludeSpec }}
   server := {{ .APIPackage }}.NewServer(nil){{ else }}
-  swaggerSpec, err := loads.Analyzed({{ .APIPackage }}.SwaggerJSON, "")
+  swaggerSpec, err := loads.Embedded({{ .APIPackage }}.SwaggerJSON, {{ .APIPackage }}.FlatSwaggerJSON)
   if err != nil {
     log.Fatalln(err)
   }
