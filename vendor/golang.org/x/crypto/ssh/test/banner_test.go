@@ -8,7 +8,6 @@ package test
 
 import (
 	"testing"
-
 )
 
 func TestBannerCallbackAgainstOpenSSH(t *testing.T) {

@@ -170,13 +170,14 @@ func (v *IDTokenVerifier) Verify(ctx context.Context, rawIDToken string) (*IDTok
 	}
 
 	t := &IDToken{
-		Issuer:   token.Issuer,
-		Subject:  token.Subject,
-		Audience: []string(token.Audience),
-		Expiry:   time.Time(token.Expiry),
-		IssuedAt: time.Time(token.IssuedAt),
-		Nonce:    token.Nonce,
-		claims:   payload,
+		Issuer:          token.Issuer,
+		Subject:         token.Subject,
+		Audience:        []string(token.Audience),
+		Expiry:          time.Time(token.Expiry),
+		IssuedAt:        time.Time(token.IssuedAt),
+		Nonce:           token.Nonce,
+		AccessTokenHash: token.AtHash,
+		claims:          payload,
 	}
 
 	// Check issuer.
@@ -228,6 +229,7 @@ func (v *IDTokenVerifier) Verify(ctx context.Context, rawIDToken string) (*IDTok
 	if len(v.config.SupportedSigningAlgs) != 0 && !contains(v.config.SupportedSigningAlgs, sig.Header.Algorithm) {
 		return nil, fmt.Errorf("oidc: id token signed with unsupported algorithm, expected %q got %q", v.config.SupportedSigningAlgs, sig.Header.Algorithm)
 	}
+	t.sigAlgorithm = sig.Header.Algorithm
 
 	gotPayload, err := v.keySet.VerifySignature(ctx, rawIDToken)
 	if err != nil {

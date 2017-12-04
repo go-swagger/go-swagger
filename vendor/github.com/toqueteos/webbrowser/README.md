@@ -1,26 +1,26 @@
-# webbrowser [![Build Status](https://travis-ci.org/toqueteos/webbrowser.png?branch=master)](https://travis-ci.org/toqueteos/webbrowser) [![GoDoc](http://godoc.org/github.com/toqueteos/webbrowser?status.png)](http://godoc.org/github.com/toqueteos/webbrowser) [![GitHub release](https://img.shields.io/github/release/toqueteos/webbrowser.svg)](https://github.com/toqueteos/webbrowser/releases)
+# webbrowser [![Build Status](https://travis-ci.org/toqueteos/webbrowser.png?branch=master)](https://travis-ci.org/toqueteos/webbrowser) [![GoDoc](http://godoc.org/github.com/toqueteos/webbrowser?status.png)](http://godoc.org/github.com/toqueteos/webbrowser)
 
-webbrowser provides a simple API for opening web pages on your default browser. It's inspired on [Python's webbrowser](http://docs.python.org/3.3/library/webbrowser.html) package but lacks some of its features (open new window).
+webbrowser provides a simple API for opening web pages on your default browser. It's inspired on [Python's webbrowser](http://docs.python.org/3/library/webbrowser.html) package but lacks some of its features (open new window).
 
 It just opens a webpage, most browsers will open it on a new tab.
 
 ## Installation
 
-Copy & Paste fans: `go get github.com/toqueteos/webbrowser`
+As simple as: `go get -u github.com/toqueteos/webbrowser`
 
 ## Usage
 
-Import the package (once you have installed it):
+```go
+package main
 
-    import "github.com/toqueteos/webbrowser"
+import "github.com/toqueteos/webbrowser"
 
-Then use the `Open` function.
-
+func main() {
     webbrowser.Open("http://golang.org")
+}
+```
 
 That's it!
-
-Need a full blown example? Checkout [examples/simple.go].
 
 ## Already disliking it?
 
@@ -35,7 +35,7 @@ The package is guaranteed to work on `windows`, `linux` and `darwin`. It also ha
 
 ## License
 
-It is licensed under the MIT open source license, please see the [LICENSE.txt] file for more information.
+It is licensed under the MIT open source license, please see the [LICENSE.md] file for more information.
 
 ## Thanks...
 

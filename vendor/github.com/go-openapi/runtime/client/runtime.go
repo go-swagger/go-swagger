@@ -231,11 +231,11 @@ func (r *Runtime) Submit(operation *runtime.ClientOperation) (interface{}, error
 	if auth == nil && r.DefaultAuthentication != nil {
 		auth = r.DefaultAuthentication
 	}
-	if auth != nil {
-		if err := auth.AuthenticateRequest(request, r.Formats); err != nil {
-			return nil, err
-		}
-	}
+	//if auth != nil {
+	//	if err := auth.AuthenticateRequest(request, r.Formats); err != nil {
+	//		return nil, err
+	//	}
+	//}
 
 	// TODO: pick appropriate media type
 	cmt := r.DefaultMediaType
@@ -247,7 +247,7 @@ func (r *Runtime) Submit(operation *runtime.ClientOperation) (interface{}, error
 		}
 	}
 
-	req, err := request.BuildHTTP(cmt, r.Producers, r.Formats)
+	req, err := request.buildHTTP(cmt, r.Producers, r.Formats, auth)
 	if err != nil {
 		return nil, err
 	}

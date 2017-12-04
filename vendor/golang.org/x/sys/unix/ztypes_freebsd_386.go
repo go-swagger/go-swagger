@@ -539,3 +539,11 @@ const (
 type CapRights struct {
 	Rights [2]uint64
 }
+
+type Utsname struct {
+	Sysname  [256]byte
+	Nodename [256]byte
+	Release  [256]byte
+	Version  [256]byte
+	Machine  [256]byte
+}

@@ -246,7 +246,7 @@ type seq []Message
 
 func (s seq) Compile(e *Encoder) (err error) {
 	err = ErrIncomplete
-	e.EncodeMessageType(First)
+	e.EncodeMessageType(msgFirst)
 	for _, m := range s {
 		// Pass only the last error, but allow erroneous or complete messages
 		// here to allow testing different scenarios.
