@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"testing"
 
@@ -261,15 +262,73 @@ func methodPathOpBuilder(method, path, fname string) (codeGenOpBuilder, error) {
 	}, nil
 }
 
-func opBuilder(name, fname string) (codeGenOpBuilder, error) {
+func opBuilderWithFlatten(name, fname string) (codeGenOpBuilder, error) {
 	if fname == "" {
 		fname = "../fixtures/codegen/todolist.simple.yml"
+	}
+
+	if !path.IsAbs(fname) {
+		cwd, _ := os.Getwd()
+		fname = path.Join(cwd, fname)
 	}
 
 	specDoc, err := loads.Spec(fname)
 	if err != nil {
 		return codeGenOpBuilder{}, err
 	}
+	o := &GenOpts{
+		FlattenSpec:  true,
+		ValidateSpec: false,
+		Spec:         fname,
+	}
+	specDoc, err = validateAndFlattenSpec(o, specDoc)
+	if err != nil {
+		return codeGenOpBuilder{}, err
+	}
+
+	analyzed := analysis.New(specDoc.Spec())
+
+	method, path, op, ok := analyzed.OperationForName(name)
+	if !ok {
+		return codeGenOpBuilder{}, errors.New("No operation could be found for " + name)
+	}
+
+	return codeGenOpBuilder{
+		Name:          name,
+		Method:        method,
+		Path:          path,
+		BasePath:      specDoc.BasePath(),
+		APIPackage:    "restapi",
+		ModelsPackage: "models",
+		Principal:     "models.User",
+		Target:        ".",
+		Operation:     *op,
+		Doc:           specDoc,
+		Analyzed:      analyzed,
+		Authed:        false,
+		ExtraSchemas:  make(map[string]GenSchema),
+		GenOpts:       opts(),
+	}, nil
+}
+
+func opBuilder(name, fname string) (codeGenOpBuilder, error) {
+	if fname == "" {
+		fname = "../fixtures/codegen/todolist.simple.yml"
+	}
+
+	if !path.IsAbs(fname) {
+		cwd, _ := os.Getwd()
+		fname = path.Join(cwd, fname)
+	}
+
+	specDoc, err := loads.Spec(fname)
+	if err != nil {
+		return codeGenOpBuilder{}, err
+	}
+	if err != nil {
+		return codeGenOpBuilder{}, err
+	}
+
 	analyzed := analysis.New(specDoc.Spec())
 
 	method, path, op, ok := analyzed.OperationForName(name)
@@ -678,7 +737,8 @@ func TestGenServerIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 	err := opts.EnsureDefaults(true)
 	assert.NoError(t, err)
 	_, err = newAppGenerator("JsonRefOperation", nil, nil, opts)
-	assert.Error(t, err)
+	// if flatten is not set, expand takes over so this would resume normally
+	assert.NoError(t, err)
 }
 
 func TestGenClientIssue890_ValidationFalseFlattenFalse(t *testing.T) {
@@ -692,7 +752,8 @@ func TestGenClientIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 	opts.FlattenSpec = false
 	// Testing this is enough as there is only one operation which is specified as $ref.
 	// If this doesn't get resolved then there will be an error definitely.
-	assert.Error(t, GenerateClient("foo", nil, nil, &opts))
+	// New: Now if flatten is false, expand takes over so server generation should resume normally
+	assert.NoError(t, GenerateClient("foo", nil, nil, &opts))
 }
 
 func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
@@ -720,7 +781,8 @@ func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 	err := opts.EnsureDefaults(true)
 	assert.NoError(t, err)
 	_, err = newAppGenerator("JsonRefOperation", nil, nil, opts)
-	assert.Error(t, err)
+	// now if flatten is false, expand takes over so server generation should resume normally
+	assert.NoError(t, err)
 }
 
 func TestGenClientIssue890_ValidationTrueFlattenFalse(t *testing.T) {
@@ -736,5 +798,6 @@ func TestGenClientIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 	opts.FlattenSpec = false
 	// Testing this is enough as there is only one operation which is specified as $ref.
 	// If this doesn't get resolved then there will be an error definitely.
-	assert.Error(t, GenerateClient("foo", nil, nil, &opts))
+	// same here: now if flatten doesn't resume, expand takes over
+	assert.NoError(t, GenerateClient("foo", nil, nil, &opts))
 }

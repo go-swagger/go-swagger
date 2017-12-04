@@ -332,6 +332,7 @@ func TestGenResponses_Issue718_Required(t *testing.T) {
 	}
 }
 
+// Issue776 includes references that span multiple files. Flattening or Expanding is required
 func TestGenResponses_Issue776_Spec(t *testing.T) {
 	spec.Debug = true
 	log.SetOutput(ioutil.Discard)
@@ -340,7 +341,7 @@ func TestGenResponses_Issue776_Spec(t *testing.T) {
 		spec.Debug = false
 	}()
 
-	b, err := opBuilder("GetItem", "../fixtures/bugs/776/spec.yaml")
+	b, err := opBuilderWithFlatten("GetItem", "../fixtures/bugs/776/spec.yaml")
 	if assert.NoError(t, err) {
 		op, err := b.MakeOperation()
 		if assert.NoError(t, err) {
@@ -349,21 +350,22 @@ func TestGenResponses_Issue776_Spec(t *testing.T) {
 			if assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op)) {
 				ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
 				if assert.NoError(t, err) {
-					assertInCode(t, "Payload *GetItemOKBody", string(ff))
+					// This should be models.Item if flat works correctly
+					assertInCode(t, "Payload *models.Item", string(ff))
 					assertNotInCode(t, "type GetItemOKBody struct", string(ff))
 				} else {
 					fmt.Println(buf.String())
 				}
 			}
-			var buf2 bytes.Buffer
-			if assert.NoError(t, templates.MustGet("serverOperation").Execute(&buf2, op)) {
-				ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf2.Bytes())
-				if assert.NoError(t, err) {
-					assertInCode(t, "type GetItemOKBody struct", string(ff))
-				} else {
-					fmt.Println(buf2.String())
-				}
-			}
+			// var buf2 bytes.Buffer
+			// if assert.NoError(t, templates.MustGet("serverOperation").Execute(&buf2, op)) {
+			// 	ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf2.Bytes())
+			// 	if assert.NoError(t, err) {
+			// 		assertInCode(t, "type GetItemOKBody struct", string(ff))
+			// 	} else {
+			// 		fmt.Println(buf2.String())
+			// 	}
+			// }
 		}
 	}
 }
@@ -376,7 +378,7 @@ func TestGenResponses_Issue776_SwaggerTemplate(t *testing.T) {
 		spec.Debug = false
 	}()
 
-	b, err := opBuilder("getHealthy", "../fixtures/bugs/776/swagger-template.yml")
+	b, err := opBuilderWithFlatten("getHealthy", "../fixtures/bugs/776/swagger-template.yml")
 	if assert.NoError(t, err) {
 		op, err := b.MakeOperation()
 		if assert.NoError(t, err) {
