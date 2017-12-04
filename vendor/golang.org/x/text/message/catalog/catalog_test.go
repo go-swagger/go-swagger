@@ -124,14 +124,21 @@ var testCases = []struct {
 		{"en", "macroU", "Hello macroU!"},
 	}}}
 
-func initCat(entries []entry) (*Catalog, []language.Tag) {
+func setMacros(b *Builder) {
+	b.SetMacro(language.English, "macro1", String("Joe"))
+	b.SetMacro(language.Und, "macro2", String("${macro1(1)}"))
+	b.SetMacro(language.English, "macroU", noMatchMessage{})
+}
+
+func initBuilder(t *testing.T, entries []entry) (Catalog, []language.Tag) {
 	tags := []language.Tag{}
-	cat := New()
+	cat := NewBuilder()
 	for _, e := range entries {
 		tag := language.MustParse(e.tag)
 		tags = append(tags, tag)
 		switch msg := e.msg.(type) {
 		case string:
+
 			cat.SetString(tag, e.key, msg)
 		case Message:
 			cat.Set(tag, e.key, msg)
@@ -139,17 +146,53 @@ func initCat(entries []entry) (*Catalog, []language.Tag) {
 			cat.Set(tag, e.key, msg...)
 		}
 	}
+	setMacros(cat)
 	return cat, internal.UniqueTags(tags)
 }
 
-func TestCatalog(t *testing.T) {
+type dictionary map[string]string
+
+func (d dictionary) Lookup(key string) (data string, ok bool) {
+	data, ok = d[key]
+	return data, ok
+}
+
+func initCatalog(t *testing.T, entries []entry) (Catalog, []language.Tag) {
+	m := map[string]Dictionary{}
+	for _, e := range entries {
+		m[e.tag] = dictionary{}
+	}
+	for _, e := range entries {
+		var msg Message
+		switch x := e.msg.(type) {
+		case string:
+			msg = String(x)
+		case Message:
+			msg = x
+		case []Message:
+			msg = firstInSequence(x)
+		}
+		data, _ := catmsg.Compile(language.MustParse(e.tag), nil, msg)
+		m[e.tag].(dictionary)[e.key] = data
+	}
+	c, err := NewFromMap(m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// TODO: implement macros for fixed catalogs.
+	b := NewBuilder()
+	setMacros(b)
+	c.(*catalog).macros.index = b.macros.index
+	return c, c.Languages()
+}
+
+func TestCatalog(t *testing.T) { testCatalog(t, initCatalog) }
+func TestBuilder(t *testing.T) { testCatalog(t, initBuilder) }
+
+func testCatalog(t *testing.T, init func(*testing.T, []entry) (Catalog, []language.Tag)) {
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%s", tc.desc), func(t *testing.T) {
-			cat, wantTags := initCat(tc.cat)
-			cat.SetMacro(language.English, "macro1", String("Joe"))
-			cat.SetMacro(language.Und, "macro2", String("${macro1(1)}"))
-			cat.SetMacro(language.English, "macroU", noMatchMessage{})
-
+			cat, wantTags := init(t, tc.cat)
 			if got := cat.Languages(); !reflect.DeepEqual(got, wantTags) {
 				t.Errorf("%s:Languages: got %v; want %v", tc.desc, got, wantTags)
 			}

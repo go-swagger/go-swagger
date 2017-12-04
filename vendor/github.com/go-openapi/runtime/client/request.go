@@ -65,6 +65,7 @@ type request struct {
 	fileFields map[string][]runtime.NamedReadCloser
 	payload    interface{}
 	timeout    time.Duration
+	buf        *bytes.Buffer
 }
 
 var (
@@ -74,6 +75,10 @@ var (
 
 // BuildHTTP creates a new http request based on the data from the params
 func (r *request) BuildHTTP(mediaType string, producers map[string]runtime.Producer, registry strfmt.Registry) (*http.Request, error) {
+	return r.buildHTTP(mediaType, producers, registry, nil)
+}
+
+func (r *request) buildHTTP(mediaType string, producers map[string]runtime.Producer, registry strfmt.Registry, auth runtime.ClientAuthInfoWriter) (*http.Request, error) {
 	// build the data
 	if err := r.writer.WriteToRequest(r, registry); err != nil {
 		return nil, err
@@ -88,9 +93,9 @@ func (r *request) BuildHTTP(mediaType string, producers map[string]runtime.Produ
 	var body io.ReadCloser
 	var pr *io.PipeReader
 	var pw *io.PipeWriter
-	buf := bytes.NewBuffer(nil)
+	r.buf = bytes.NewBuffer(nil)
 	if r.payload != nil || len(r.formFields) > 0 || len(r.fileFields) > 0 {
-		body = ioutil.NopCloser(buf)
+		body = ioutil.NopCloser(r.buf)
 		if (runtime.MultipartFormMime == mediaType && len(r.formFields) > 0) || r.fileFields != nil {
 			pr, pw = io.Pipe()
 			body = pr
@@ -155,7 +160,13 @@ func (r *request) BuildHTTP(mediaType string, producers map[string]runtime.Produ
 		// set content length before writing to the buffer
 		req.ContentLength = int64(len(formString))
 		// write the form values as the body
-		buf.WriteString(formString)
+		r.buf.WriteString(formString)
+
+		if auth != nil {
+			if err := auth.AuthenticateRequest(r, registry); err != nil {
+				return nil, err
+			}
+		}
 		return req, nil
 	}
 
@@ -167,11 +178,23 @@ func (r *request) BuildHTTP(mediaType string, producers map[string]runtime.Produ
 		req.Header.Set(runtime.HeaderContentType, mediaType)
 		if rdr, ok := r.payload.(io.ReadCloser); ok {
 			req.Body = rdr
+
+			if auth != nil {
+				if err := auth.AuthenticateRequest(r, registry); err != nil {
+					return nil, err
+				}
+			}
 			return req, nil
 		}
 
 		if rdr, ok := r.payload.(io.Reader); ok {
 			req.Body = ioutil.NopCloser(rdr)
+
+			if auth != nil {
+				if err := auth.AuthenticateRequest(r, registry); err != nil {
+					return nil, err
+				}
+			}
 			return req, nil
 		}
 
@@ -193,7 +216,7 @@ func (r *request) BuildHTTP(mediaType string, producers map[string]runtime.Produ
 			return nil, err
 		}
 		req.ContentLength = int64(b.Len())
-		if _, err := buf.Write(b.Bytes()); err != nil {
+		if _, err := r.buf.Write(b.Bytes()); err != nil {
 			return nil, err
 		}
 	}
@@ -202,7 +225,32 @@ func (r *request) BuildHTTP(mediaType string, producers map[string]runtime.Produ
 		req.Header.Set(runtime.HeaderContentType, mediaType)
 	}
 
+	if auth != nil {
+		if err := auth.AuthenticateRequest(r, registry); err != nil {
+			return nil, err
+		}
+	}
+
 	return req, nil
+}
+
+func (r *request) GetMethod() string {
+	return r.method
+}
+
+func (r *request) GetPath() string {
+	path := r.pathPattern
+	for k, v := range r.pathParams {
+		path = strings.Replace(path, "{"+k+"}", v, -1)
+	}
+	return path
+}
+
+func (r *request) GetBody() []byte {
+	if r.buf == nil {
+		return nil
+	}
+	return r.buf.Bytes()
 }
 
 // SetHeaderParam adds a header param to the request
@@ -225,6 +273,15 @@ func (r *request) SetQueryParam(name string, values ...string) error {
 	}
 	r.query[name] = values
 	return nil
+}
+
+// GetQueryParams returns a copy of all query params currently set for the request
+func (r *request) GetQueryParams() url.Values {
+	var result = make(url.Values)
+	for key, value := range r.query {
+		result[key] = append([]string{}, value...)
+	}
+	return result
 }
 
 // SetFormParam adds a forn param to the request

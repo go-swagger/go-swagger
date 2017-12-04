@@ -87,6 +87,7 @@ func (c *Command) Runnable() bool {
 // The order here is the order in which they are printed by 'go help'.
 var commands = []*Command{
 	cmdExtract,
+	cmdRewrite,
 	// TODO:
 	// - generate code from translations.
 	// - update: full-cycle update of extraction, sending, and integration

@@ -25,7 +25,7 @@ import (
 	"golang.org/x/crypto/ssh/testdata"
 )
 
-const sshd_config = `
+const sshdConfig = `
 Protocol 2
 Banner {{.Dir}}/banner
 HostKey {{.Dir}}/id_rsa
@@ -51,7 +51,7 @@ HostbasedAuthentication no
 PubkeyAcceptedKeyTypes=*
 `
 
-var configTmpl = template.Must(template.New("").Parse(sshd_config))
+var configTmpl = template.Must(template.New("").Parse(sshdConfig))
 
 type server struct {
 	t          *testing.T
@@ -271,7 +271,7 @@ func newServer(t *testing.T) *server {
 	}
 
 	var authkeys bytes.Buffer
-	for k, _ := range testdata.PEMBytes {
+	for k := range testdata.PEMBytes {
 		authkeys.Write(ssh.MarshalAuthorizedKey(testPublicKeys[k]))
 	}
 	writeFile(filepath.Join(dir, "authorized_keys"), authkeys.Bytes())
