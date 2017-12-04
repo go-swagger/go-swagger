@@ -15,9 +15,8 @@
 package generate
 
 import (
-	"fmt"
 	"io/ioutil"
-	"os"
+	"log"
 	"path/filepath"
 
 	"github.com/go-swagger/go-swagger/generator"
@@ -119,7 +118,7 @@ func (c *Client) Execute(args []string) error {
 		return err
 	}
 
-	fmt.Fprintf(os.Stdout, `Generation completed!
+	log.Printf(`Generation completed!
 
 For this generation to compile you need to have some packages in your GOPATH:
 
