@@ -314,6 +314,11 @@ func (a *appGenerator) Generate() error {
 				}
 				// })
 			}
+			opGroup := opg
+			opGroup.DefaultImports = app.DefaultImports
+			if err := a.GenOpts.renderOperationGroup(&opGroup); err != nil {
+				return fmt.Errorf("error while rendering operation group: %v", err)
+			}
 		}
 	}
 
