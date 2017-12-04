@@ -74,13 +74,6 @@ import (
 // A Handle refers to a registered message type.
 type Handle int
 
-// First is used as a Handle to EncodeMessageType, followed by a series of calls
-// to EncodeMessage, to implement selecting the first matching Message.
-//
-// TODO: this can be removed once we either can use type aliases or if the
-// internals of this package are merged with the catalog package.
-var First Handle = msgFirst
-
 // A Handler decodes and evaluates data compiled by a Message and sends the
 // result to the Decoder. The output may depend on the value of the substitution
 // arguments, accessible by the Decoder's Arg method. The Handler returns false
@@ -234,6 +227,23 @@ func Compile(tag language.Tag, macros Dictionary, m Message) (data string, err e
 		err = v.err
 	}
 	return string(buf), err
+}
+
+// FirstOf is a message type that prints the first message in the sequence that
+// resolves to a match for the given substitution arguments.
+type FirstOf []Message
+
+// Compile implements Message.
+func (s FirstOf) Compile(e *Encoder) error {
+	e.EncodeMessageType(msgFirst)
+	err := ErrIncomplete
+	for i, m := range s {
+		if err == nil {
+			return fmt.Errorf("catalog: message argument %d is complete and blocks subsequent messages", i-1)
+		}
+		err = e.EncodeMessage(m)
+	}
+	return err
 }
 
 // Var defines a message that can be substituted for a placeholder of the same

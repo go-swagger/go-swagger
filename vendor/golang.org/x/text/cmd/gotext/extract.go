@@ -13,13 +13,17 @@ import (
 	"go/constant"
 	"go/format"
 	"go/parser"
+	"go/token"
 	"go/types"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
+	fmtparser "golang.org/x/text/internal/format"
 	"golang.org/x/tools/go/loader"
 )
 
@@ -64,9 +68,9 @@ func runExtract(cmd *Command, args []string) error {
 		return buf.String()
 	}
 
-	var translations []Translation
+	var messages []Message
 
-	for _, info := range iprog.InitialPackages() {
+	for _, info := range iprog.AllPackages {
 		for _, f := range info.Files {
 			// Associate comments with nodes.
 			cmap := ast.NewCommentMap(iprog.Fset, f, f.Comments)
@@ -103,70 +107,113 @@ func runExtract(cmd *Command, args []string) error {
 					return true
 				}
 
+				fmtType, ok := m[meth.Obj().Name()]
+				if !ok {
+					return true
+				}
 				// argn is the index of the format string.
-				argn, ok := m[meth.Obj().Name()]
-				if !ok || argn >= len(call.Args) {
+				argn := fmtType.arg
+				if argn >= len(call.Args) {
 					return true
 				}
 
-				// Skip calls with non-constant format string.
-				fmtstr := info.Types[call.Args[argn]].Value
-				if fmtstr == nil || fmtstr.Kind() != constant.String {
+				args := call.Args[fmtType.arg:]
+
+				fmtMsg, ok := msgStr(info, args[0])
+				if !ok {
+					// TODO: identify the type of the format argument. If it
+					// is not a string, multiple keys may be defined.
 					return true
 				}
-
-				posn := conf.Fset.Position(call.Lparen)
-				filepos := fmt.Sprintf("%s:%d:%d", filepath.Base(posn.Filename), posn.Line, posn.Column)
-
-				// TODO: identify the type of the format argument. If it is not
-				// a string, multiple keys may be defined.
-				var key []string
-
-				// TODO: replace substitutions (%v) with a translator friendly
-				// notation. For instance:
-				//     "%d files remaining" -> "{numFiles} files remaining", or
-				//     "%d files remaining" -> "{arg1} files remaining"
-				// Alternatively, this could be done at a later stage.
-				msg := constant.StringVal(fmtstr)
-
-				// Construct a Translation unit.
-				c := Translation{
-					Key:              key,
-					Position:         filepath.Join(info.Pkg.Path(), filepos),
-					Original:         Text{Msg: msg},
-					ExtractedComment: getComment(call.Args[0]),
-					// TODO(fix): this doesn't get the before comment.
-					// Comment: getComment(call),
+				comment := ""
+				key := []string{}
+				if ident, ok := args[0].(*ast.Ident); ok {
+					key = append(key, ident.Name)
+					if v, ok := ident.Obj.Decl.(*ast.ValueSpec); ok && v.Comment != nil {
+						// TODO: get comment above ValueSpec as well
+						comment = v.Comment.Text()
+					}
 				}
 
-				for i, arg := range call.Args[argn+1:] {
-					var val string
+				key = append(key, fmtMsg)
+				arguments := []argument{}
+				args = args[1:]
+				simArgs := make([]interface{}, len(args))
+				for i, arg := range args {
+					expr := print(arg)
+					val := ""
 					if v := info.Types[arg].Value; v != nil {
 						val = v.ExactString()
+						simArgs[i] = val
+						switch arg.(type) {
+						case *ast.BinaryExpr, *ast.UnaryExpr:
+							expr = val
+						}
 					}
-					posn := conf.Fset.Position(arg.Pos())
-					filepos := fmt.Sprintf("%s:%d:%d", filepath.Base(posn.Filename), posn.Line, posn.Column)
-					c.Args = append(c.Args, Argument{
-						ID:             i + 1,
+					arguments = append(arguments, argument{
+						ArgNum:         i + 1,
 						Type:           info.Types[arg].Type.String(),
 						UnderlyingType: info.Types[arg].Type.Underlying().String(),
-						Expr:           print(arg),
+						Expr:           expr,
 						Value:          val,
 						Comment:        getComment(arg),
-						Position:       filepath.Join(info.Pkg.Path(), filepos),
+						Position:       posString(conf, info, arg.Pos()),
 						// TODO report whether it implements
 						// interfaces plural.Interface,
 						// gender.Interface.
 					})
 				}
+				msg := ""
 
-				translations = append(translations, c)
+				ph := placeholders{index: map[string]string{}}
+
+				p := fmtparser.Parser{}
+				p.Reset(simArgs)
+				for p.SetFormat(fmtMsg); p.Scan(); {
+					switch p.Status {
+					case fmtparser.StatusText:
+						msg += p.Text()
+					case fmtparser.StatusSubstitution,
+						fmtparser.StatusBadWidthSubstitution,
+						fmtparser.StatusBadPrecSubstitution:
+						arguments[p.ArgNum-1].used = true
+						arg := arguments[p.ArgNum-1]
+						sub := p.Text()
+						if !p.HasIndex {
+							r, sz := utf8.DecodeLastRuneInString(sub)
+							sub = fmt.Sprintf("%s[%d]%c", sub[:len(sub)-sz], p.ArgNum, r)
+						}
+						msg += fmt.Sprintf("{%s}", ph.addArg(&arg, sub))
+					}
+				}
+
+				// Add additional Placeholders that can be used in translations
+				// that are not present in the string.
+				for _, arg := range arguments {
+					if arg.used {
+						continue
+					}
+					ph.addArg(&arg, fmt.Sprintf("%%[%d]v", arg.ArgNum))
+				}
+
+				if c := getComment(call.Args[0]); c != "" {
+					comment = c
+				}
+
+				messages = append(messages, Message{
+					Key:     key,
+					Message: Text{Msg: msg},
+					// TODO(fix): this doesn't get the before comment.
+					Comment:      comment,
+					Placeholders: ph.slice,
+					Position:     posString(conf, info, call.Lparen),
+				})
 				return true
 			})
 		}
 	}
 
-	data, err := json.MarshalIndent(translations, "", "    ")
+	data, err := json.MarshalIndent(messages, "", "    ")
 	if err != nil {
 		return err
 	}
@@ -181,15 +228,110 @@ func runExtract(cmd *Command, args []string) error {
 	return nil
 }
 
+func posString(conf loader.Config, info *loader.PackageInfo, pos token.Pos) string {
+	p := conf.Fset.Position(pos)
+	file := fmt.Sprintf("%s:%d:%d", filepath.Base(p.Filename), p.Line, p.Column)
+	return filepath.Join(info.Pkg.Path(), file)
+}
+
 // extractFuncs indicates the types and methods for which to extract strings,
 // and which argument to extract.
 // TODO: use the types in conf.Import("golang.org/x/text/message") to extract
 // the correct instances.
-var extractFuncs = map[string]map[string]int{
+var extractFuncs = map[string]map[string]extractType{
 	// TODO: Printer -> *golang.org/x/text/message.Printer
 	"message.Printer": {
-		"Printf":  0,
-		"Sprintf": 0,
-		"Fprintf": 1,
+		"Printf":  extractType{arg: 0, format: true},
+		"Sprintf": extractType{arg: 0, format: true},
+		"Fprintf": extractType{arg: 1, format: true},
+
+		"Lookup": extractType{arg: 0},
 	},
+}
+
+type extractType struct {
+	// format indicates if the next arg is a formatted string or whether to
+	// concatenate all arguments
+	format bool
+	// arg indicates the position of the argument to extract.
+	arg int
+}
+
+func getID(arg *argument) string {
+	s := getLastComponent(arg.Expr)
+	s = strip(s)
+	s = strings.Replace(s, " ", "", -1)
+	// For small variable names, use user-defined types for more info.
+	if len(s) <= 2 && arg.UnderlyingType != arg.Type {
+		s = getLastComponent(arg.Type)
+	}
+	return strings.Title(s)
+}
+
+// strip is a dirty hack to convert function calls to placeholder IDs.
+func strip(s string) string {
+	s = strings.Map(func(r rune) rune {
+		if unicode.IsSpace(r) || r == '-' {
+			return '_'
+		}
+		if !unicode.In(r, unicode.Letter, unicode.Mark) {
+			return -1
+		}
+		return r
+	}, s)
+	// Strip "Get" from getter functions.
+	if strings.HasPrefix(s, "Get") || strings.HasPrefix(s, "get") {
+		if len(s) > len("get") {
+			r, _ := utf8.DecodeRuneInString(s)
+			if !unicode.In(r, unicode.Ll, unicode.M) { // not lower or mark
+				s = s[len("get"):]
+			}
+		}
+	}
+	return s
+}
+
+type placeholders struct {
+	index map[string]string
+	slice []Placeholder
+}
+
+func (p *placeholders) addArg(arg *argument, sub string) (id string) {
+	id = getID(arg)
+	id1 := id
+	alt, ok := p.index[id1]
+	for i := 1; ok && alt != sub; i++ {
+		id1 = fmt.Sprintf("%s_%d", id, i)
+		alt, ok = p.index[id1]
+	}
+	p.index[id1] = sub
+	p.slice = append(p.slice, Placeholder{
+		ID:             id1,
+		String:         sub,
+		Type:           arg.Type,
+		UnderlyingType: arg.UnderlyingType,
+		ArgNum:         arg.ArgNum,
+		Expr:           arg.Expr,
+		Comment:        arg.Comment,
+	})
+	return id1
+}
+
+func getLastComponent(s string) string {
+	return s[1+strings.LastIndexByte(s, '.'):]
+}
+
+func msgStr(info *loader.PackageInfo, e ast.Expr) (s string, ok bool) {
+	v := info.Types[e].Value
+	if v == nil || v.Kind() != constant.String {
+		return "", false
+	}
+	s = constant.StringVal(v)
+	// Only record strings with letters.
+	for _, r := range s {
+		if unicode.In(r, unicode.L) {
+			return s, true
+		}
+	}
+	return "", false
 }

@@ -1410,7 +1410,6 @@ func Vmsplice(fd int, iovs []Iovec, flags int) (int, error) {
 // Msgget
 // Msgrcv
 // Msgsnd
-// Newfstatat
 // Nfsservctl
 // Personality
 // Pselect6

@@ -106,6 +106,39 @@ func TestCompactIndex(t *testing.T) {
 	}
 }
 
+func TestMarshal(t *testing.T) {
+	testCases := []string{
+		// TODO: these values will change with each CLDR update. This issue
+		// will be solved if we decide to fix the indexes.
+		"und",
+		"ca-ES-valencia",
+		"ca-ES-valencia-u-va-posix",
+		"ca-ES-valencia-u-co-phonebk",
+		"ca-ES-valencia-u-co-phonebk-va-posix",
+		"x-klingon",
+		"en-US",
+		"en-US-u-va-posix",
+		"en",
+		"en-u-co-phonebk",
+		"en-001",
+		"sh",
+	}
+	for _, tc := range testCases {
+		var tag Tag
+		err := tag.UnmarshalText([]byte(tc))
+		if err != nil {
+			t.Errorf("UnmarshalText(%q): unexpected error: %v", tc, err)
+		}
+		b, err := tag.MarshalText()
+		if err != nil {
+			t.Errorf("MarshalText(%q): unexpected error: %v", tc, err)
+		}
+		if got := string(b); got != tc {
+			t.Errorf("%s: got %q; want %q", tc, got, tc)
+		}
+	}
+}
+
 func TestBase(t *testing.T) {
 	tests := []struct {
 		loc, lang string

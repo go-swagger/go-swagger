@@ -13,9 +13,9 @@ import (
 )
 
 // DefaultCatalog is used by SetString.
-var DefaultCatalog *catalog.Catalog = defaultCatalog
+var DefaultCatalog catalog.Catalog = defaultCatalog
 
-var defaultCatalog = catalog.New()
+var defaultCatalog = catalog.NewBuilder()
 
 // SetString calls SetString on the initial default Catalog.
 func SetString(tag language.Tag, key string, msg string) error {

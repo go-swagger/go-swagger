@@ -33,7 +33,11 @@ func (d *dict) Lookup(key string) (data string, ok bool) {
 	return d.s.lookup(d.tag, key)
 }
 
-func (c *Catalog) set(tag language.Tag, key string, s *store, msg ...Message) error {
+func (b *Builder) lookup(tag language.Tag, key string) (data string, ok bool) {
+	return b.index.lookup(tag, key)
+}
+
+func (c *Builder) set(tag language.Tag, key string, s *store, msg ...Message) error {
 	data, err := catmsg.Compile(tag, &dict{&c.macros, tag}, firstInSequence(msg))
 
 	s.mutex.Lock()

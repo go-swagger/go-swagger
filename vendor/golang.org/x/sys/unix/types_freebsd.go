@@ -36,6 +36,7 @@ package unix
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/un.h>
+#include <sys/utsname.h>
 #include <sys/wait.h>
 #include <net/bpf.h>
 #include <net/if.h>
@@ -389,3 +390,7 @@ const (
 // Capabilities
 
 type CapRights C.struct_cap_rights
+
+// Uname
+
+type Utsname C.struct_utsname
