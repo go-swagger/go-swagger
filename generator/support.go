@@ -71,10 +71,17 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 	// Load the spec
 	var err error
 	var specDoc *loads.Document
+
+	opts.Spec, err = findSwaggerSpec(opts.Spec)
+	if err != nil {
+		return nil, err
+	}
+
 	if !path.IsAbs(opts.Spec) {
 		cwd, _ := os.Getwd()
 		opts.Spec = path.Join(cwd, opts.Spec)
 	}
+
 	opts.Spec, specDoc, err = loadSpec(opts.Spec)
 	if err != nil {
 		return nil, err
