@@ -172,11 +172,6 @@ func checkPrefixAndFetchRelativePath(childpath string, parentpath string) (bool,
 
 // TODO: handle error with a returned error rather than panic()
 func baseImport(tgt string) string {
-	// On Windows, filepath.Abs("") behaves differently than on Unix:
-	// yields an error.
-	if tgt == "" {
-		tgt = "."
-	}
 	tgtAbsPath, err := filepath.Abs(tgt)
 	if err != nil {
 		log.Fatalf("could not evaluate base import path with target \"%s\". Target directory must be created beforehand: %v", tgt, err)
@@ -690,8 +685,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		sort.Sort(v)
 		opGroup := GenOperationGroup{
 			GenCommon: GenCommon{
-				Copyright:        a.GenOpts.Copyright,
-				TargetImportPath: filepath.ToSlash(baseImport(a.Target)),
+				Copyright: a.GenOpts.Copyright,
 			},
 			Name:           k,
 			Operations:     v,
@@ -733,8 +727,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	return GenApp{
 		GenCommon: GenCommon{
-			Copyright:        a.GenOpts.Copyright,
-			TargetImportPath: filepath.ToSlash(baseImport(a.Target)),
+			Copyright: a.GenOpts.Copyright,
 		},
 		APIPackage:          a.ServerPackage,
 		Package:             a.Package,
