@@ -690,7 +690,8 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		sort.Sort(v)
 		opGroup := GenOperationGroup{
 			GenCommon: GenCommon{
-				Copyright: a.GenOpts.Copyright,
+				Copyright:        a.GenOpts.Copyright,
+				TargetImportPath: filepath.ToSlash(baseImport(a.Target)),
 			},
 			Name:           k,
 			Operations:     v,
@@ -732,7 +733,8 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	return GenApp{
 		GenCommon: GenCommon{
-			Copyright: a.GenOpts.Copyright,
+			Copyright:        a.GenOpts.Copyright,
+			TargetImportPath: filepath.ToSlash(baseImport(a.Target)),
 		},
 		APIPackage:          a.ServerPackage,
 		Package:             a.Package,
