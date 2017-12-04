@@ -1,6 +1,7 @@
 package analysis
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -486,8 +487,14 @@ func TestDepthFirstSort(t *testing.T) {
 }
 
 func TestNameInlinedSchemas(t *testing.T) {
-	bp := filepath.Join(".", "fixtures", "nested_inline_schemas.yml")
+	cwd, _ := os.Getwd()
+	bp := filepath.Join(cwd, "fixtures", "nested_inline_schemas.yml")
 	sp, err := loadSpec(bp)
+	err = spec.ExpandSpec(sp, &spec.ExpandOptions{
+		RelativeBase: bp,
+		SkipSchemas:  true,
+	})
+	assert.NoError(t, err)
 	values := []struct {
 		Key      string
 		Location string
@@ -578,7 +585,8 @@ func TestNameInlinedSchemas(t *testing.T) {
 }
 
 func TestFlatten(t *testing.T) {
-	bp := filepath.Join(".", "fixtures", "flatten.yml")
+	cwd, _ := os.Getwd()
+	bp := filepath.Join(cwd, "fixtures", "flatten.yml")
 	sp, err := loadSpec(bp)
 	values := []struct {
 		Key      string
@@ -763,6 +771,8 @@ func TestFlatten(t *testing.T) {
 	}
 	if assert.NoError(t, err) {
 		err := Flatten(FlattenOpts{Spec: New(sp), BasePath: bp})
+		//b, _ := sp.MarshalJSON()
+		//panic(string(b))
 		if assert.NoError(t, err) {
 			for i, v := range values {
 				pk := v.Key[1:]

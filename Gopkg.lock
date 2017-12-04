@@ -47,7 +47,7 @@
   branch = "master"
   name = "github.com/go-openapi/analysis"
   packages = ["."]
-  revision = "8ed83f2ea9f00f945516462951a288eaa68bf0d6"
+  revision = "2202689560ae7059c9c916c80b2f12e6c3db5b56"
 
 [[projects]]
   branch = "master"
@@ -77,7 +77,7 @@
   branch = "master"
   name = "github.com/go-openapi/loads"
   packages = [".","fmts"]
-  revision = "c3e1ca4c0b6160cac10aeef7e8b425cc95b9c820"
+  revision = "a1b9e29411cdd7cbd557a6eb905911853c684333"
 
 [[projects]]
   branch = "master"
@@ -89,7 +89,7 @@
   branch = "master"
   name = "github.com/go-openapi/spec"
   packages = ["."]
-  revision = "5a4a1e94454f878ce1e1fefff23ea10bd5dd5110"
+  revision = "65a3c60d6972c141df601865fdb53ce5fbfc78af"
 
 [[projects]]
   branch = "master"
