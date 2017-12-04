@@ -16,9 +16,7 @@ package middleware
 
 import (
 	stdContext "context"
-	"log"
 	"net/http"
-	"os"
 	"strings"
 	"sync"
 
@@ -26,6 +24,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/logger"
 	"github.com/go-openapi/runtime/middleware/untyped"
 	"github.com/go-openapi/runtime/security"
 	"github.com/go-openapi/spec"
@@ -33,11 +32,12 @@ import (
 )
 
 // Debug when true turns on verbose logging
-var Debug = os.Getenv("SWAGGER_DEBUG") != "" || os.Getenv("DEBUG") != ""
+var Debug = logger.DebugEnabled()
+var Logger logger.Logger = logger.StandardLogger{}
 
 func debugLog(format string, args ...interface{}) {
 	if Debug {
-		log.Printf(format, args...)
+		Logger.Printf(format, args...)
 	}
 }
 

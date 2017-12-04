@@ -532,8 +532,15 @@ func (s *SpecValidator) validateParameters() *Result {
 			}
 			var fromPath []string
 			for _, i := range params {
-				fromPath = append(fromPath, knowns[i])
-				knowns[i] = "!"
+				knownsi := knowns[i]
+				iparams := extractPathParams(knownsi)
+				if len(iparams) > 0 {
+					fromPath = append(fromPath, iparams...)
+					for _, iparam := range iparams {
+						knownsi = strings.Replace(knownsi, iparam, "!", 1)
+					}
+					knowns[i] = knownsi
+				}
 			}
 			knownPath := strings.Join(knowns, "/")
 			if orig, ok := knownPaths[knownPath]; ok {
@@ -609,11 +616,28 @@ func (s *SpecValidator) validateParameters() *Result {
 func parsePath(path string) (segments []string, params []int) {
 	for i, p := range strings.Split(path, "/") {
 		segments = append(segments, p)
-		if len(p) > 0 && p[0] == '{' && p[len(p)-1] == '}' {
+		if d0 := strings.Index(p, "{"); d0 >= 0 && d0 < strings.Index(p, "}") {
 			params = append(params, i)
 		}
 	}
 	return
+}
+
+func extractPathParams(segment string) (params []string) {
+	for {
+		d0 := strings.IndexByte(segment, '{')
+		if d0 < 0 {
+			break
+		}
+		d1 := strings.IndexByte(segment[d0:], '}')
+		if d1 > 0 {
+			params = append(params, segment[d0:d0+d1+1])
+		} else {
+			break
+		}
+		segment = segment[d1:]
+	}
+	return params
 }
 
 func (s *SpecValidator) validateReferencesValid() *Result {

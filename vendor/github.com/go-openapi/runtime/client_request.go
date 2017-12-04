@@ -16,6 +16,7 @@ package runtime
 
 import (
 	"io"
+	"net/url"
 	"time"
 
 	"github.com/go-openapi/strfmt"
@@ -45,11 +46,19 @@ type ClientRequest interface {
 
 	SetPathParam(string, string) error
 
+	GetQueryParams() url.Values
+
 	SetFileParam(string, ...NamedReadCloser) error
 
 	SetBodyParam(interface{}) error
 
 	SetTimeout(time.Duration) error
+
+	GetMethod() string
+
+	GetPath() string
+
+	GetBody() []byte
 }
 
 // NamedReadCloser represents a named ReadCloser interface

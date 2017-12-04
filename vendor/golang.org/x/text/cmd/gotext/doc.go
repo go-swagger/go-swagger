@@ -14,6 +14,7 @@
 // The commands are:
 //
 // 	extract     extract strings to be translated from code
+// 	rewrite     rewrite rewrites fmt functions to use a message Printer
 //
 // Use "go help [command]" for more information about a command.
 //
@@ -30,6 +31,18 @@
 // 	go extract <package>*
 //
 //
+//
+//
+// Rewrite rewrites fmt functions to use a message Printer
+//
+// Usage:
+//
+// 	go rewrite <package>*
+//
+// rewrite is typically done once for a project. It rewrites all usages of
+// fmt to use x/text's message package whenever a message.Printer is in scope.
+// It rewrites Print and Println calls with constant strings to the equivalent
+// using Printf to allow translators to reorder arguments.
 //
 //
 package main

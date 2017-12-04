@@ -16,14 +16,14 @@
 [[projects]]
   name = "github.com/asaskevich/govalidator"
   packages = ["."]
-  revision = "73945b6115bfbbcc57d89b7316e28109364124e1"
-  version = "v7"
+  revision = "521b25f4b05fd26bec69d9dedeb8f9c9a83939a8"
+  version = "v8"
 
 [[projects]]
   branch = "v2"
   name = "github.com/coreos/go-oidc"
   packages = ["."]
-  revision = "77e7f2010a464ade7338597afe650dfcffbe2ca8"
+  revision = "2e15e5498dc4eda1265de6f4ccc49419fd81be16"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -82,14 +82,14 @@
 [[projects]]
   branch = "master"
   name = "github.com/go-openapi/runtime"
-  packages = [".","client","flagext","middleware","middleware/denco","middleware/header","middleware/untyped","security"]
-  revision = "2da70401d8fa078b6fecdd7afdf3b589ae9669e4"
+  packages = [".","client","flagext","logger","middleware","middleware/denco","middleware/header","middleware/untyped","security"]
+  revision = "94927f8c9742791a9aa46c6c3965f0a37025f41d"
 
 [[projects]]
   branch = "master"
   name = "github.com/go-openapi/spec"
   packages = ["."]
-  revision = "bfb48d37839bcacb52be3f539ffac5abcda7e195"
+  revision = "5a4a1e94454f878ce1e1fefff23ea10bd5dd5110"
 
 [[projects]]
   branch = "master"
@@ -107,7 +107,7 @@
   branch = "master"
   name = "github.com/go-openapi/validate"
   packages = ["."]
-  revision = "a52193aca9d575f354d8be388254c134765ea793"
+  revision = "d509235108fcf6ab4913d2dcb3a2260c0db2108e"
 
 [[projects]]
   branch = "master"
@@ -119,7 +119,7 @@
   branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
-  revision = "1643683e1b54a9e88ad26d98f81400c8c9d9f4f9"
+  revision = "1e59b77b52bf8e4b449a57e6f79f21226d571845"
 
 [[projects]]
   name = "github.com/gorilla/handlers"
@@ -161,7 +161,7 @@
   branch = "master"
   name = "github.com/mailru/easyjson"
   packages = ["buffer","jlexer","jwriter"]
-  revision = "5f62e4f3afa2f576dc86531b7df4d966b19ef8f8"
+  revision = "32fa128f234d041f196a9f3e0fea5ac9772c08e1"
 
 [[projects]]
   branch = "master"
@@ -188,10 +188,10 @@
   revision = "0dec1b30a0215bb68605dfc568e8855066c9202d"
 
 [[projects]]
-  branch = "master"
   name = "github.com/spf13/afero"
   packages = [".","mem"]
-  revision = "5660eeed305fe5f69c8fc6cf899132a459a97064"
+  revision = "8d919cbe7e2627e417f3e45c3c0e489a5b7e2536"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/spf13/cast"
@@ -226,8 +226,8 @@
 [[projects]]
   name = "github.com/toqueteos/webbrowser"
   packages = ["."]
-  revision = "21fc9f95c83442fd164094666f7cb4f9fdd56cd6"
-  version = "v1.0"
+  revision = "3232c91b8ede8ca86e8962981d881af78875542f"
+  version = "v1.1.0"
 
 [[projects]]
   name = "github.com/tylerb/graceful"
@@ -239,37 +239,37 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ed25519","ed25519/internal/edwards25519"]
-  revision = "6a293f2d4b14b8e6d3f0539e383f6d0d30fce3fd"
+  revision = "94eea52f7b742c7cbe0b03b22f0c4c8631ece122"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context","context/ctxhttp","idna"]
-  revision = "a337091b0525af65de94df2eb7e98bd9962dcbe2"
+  revision = "a8b9294777976932365dabb6640cf1468d95c70f"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/oauth2"
   packages = [".","internal"]
-  revision = "9ff8ebcc8e241d46f52ecc5bff0e5a2f2dbef402"
+  revision = "f95fa95eaa936d9d87489b15d1d18b97c1ba9c28"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "1e2299c37cc91a509f1b12369872d27be0ce98a6"
+  revision = "8b4580aae2a0dd0c231a45d3ccb8434ff533b840"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/text"
   packages = ["collate","collate/build","internal/colltab","internal/gen","internal/tag","internal/triegen","internal/ucd","language","secure/bidirule","transform","unicode/bidi","unicode/cldr","unicode/norm","unicode/rangetable","width"]
-  revision = "88f656faf3f37f690df1a32515b479415e1a6769"
+  revision = "57961680700a5336d15015c8c50686ca5ba362a4"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/tools"
   packages = ["go/ast/astutil","go/buildutil","go/loader","imports"]
-  revision = "9c477bae194915bfd4bc8c314e90e28b9ec1c831"
+  revision = "04447353bc504b9a5c02eb227b9ecd252e64ea20"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -293,7 +293,7 @@
   branch = "v2"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
-  revision = "eb3733d160e74a9c7e442f435eb3bea458e1d19f"
+  revision = "287cf08546ab5e7e37d55a84f7ed3fd1db036de5"
 
 [solve-meta]
   analyzer-name = "dep"

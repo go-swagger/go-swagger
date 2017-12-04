@@ -218,10 +218,32 @@ func TestPathConverter(t *testing.T) {
 		{"/{pet_id}", "/:pet_id"},
 		{"/{petId}", "/:petId"},
 		{"/{pet-id}", "/:pet-id"},
+		// composit parameters tests
+		{"/p_{pet_id}", "/p_:pet_id"},
+		{"/p_{petId}.{petSubId}", "/p_:petId"},
 	}
 
 	for _, tc := range cases {
 		actual := pathConverter.ReplaceAllString(tc.swagger, ":$1")
 		assert.Equal(t, tc.denco, actual, "expected swagger path %s to match %s but got %s", tc.swagger, tc.denco, actual)
+	}
+}
+
+func TestExtractCompositParameters(t *testing.T) {
+	// name is the composite parameter's name, value is the value of this composit parameter, pattern is the pattern to be matched
+	cases := []struct {
+		name string
+		value string
+		pattern string
+		names []string
+		values []string
+	}{
+		{name: "fragment", value: "gie", pattern: "e", names: []string{"fragment"}, values: []string{"gi"}},
+		{name: "fragment", value: "t.simpson", pattern: ".{subfragment}", names: []string{"fragment", "subfragment"}, values: []string{"t", "simpson"}},
+	}
+	for _, tc := range cases {
+		names, values := decodeCompositParams(tc.name, tc.value, tc.pattern, nil, nil)
+		assert.EqualValues(t, tc.names, names)
+		assert.EqualValues(t, tc.values, values)
 	}
 }
