@@ -206,6 +206,19 @@ type Producer interface {
 
 So it's something that can turn a reader into a hydrated interface. A producer is the counterpart of a consumer and writes objects to an io.Writer.  When you configure an api with those you make sure it can marshal the types for the supported content types.
 
+Go swagger automatically provides consumers and producers for known media types. To register a new mapping for a media
+type or to override an existing mapping, call the corresponding API functions in your configure_xxx.go file:
+
+```go
+func configureAPI(api *operations.ToDoListAPI) http.Handler {
+	// other setup code here...
+	
+	api.RegisterConsumer("application/pkcs10", myCustomConsumer)
+	api.RegisterProducer("application/pkcs10", myCustomProducer)
+}
+
+``` 
+
 The next thing that happens in the configureAPI method is setting up the authentication with a stub handler in this case. This particular swagger specification supports token based authentication and as such it wants you to configure a token auth handler.  Any error for an authentication handler is assumed to be an invalid authentication and will return the 401 status code.
 
 ```go

@@ -37,6 +37,8 @@ func New{{ pascalize .Name }}API(spec *loads.Document) *{{ pascalize .Name }}API
     formats:                strfmt.Default,
     defaultConsumes:        "{{ .DefaultConsumes }}",
     defaultProduces:        "{{ .DefaultProduces }}",
+    customConsumers:        make(map[string]runtime.Consumer),
+    customProducers:        make(map[string]runtime.Producer),
     ServerShutdown:         func() {  },
     spec:                   spec,
     ServeError:             errors.ServeError,
@@ -78,6 +80,8 @@ type {{ pascalize .Name }}API struct {
   context         *middleware.Context
   handlers        map[string]map[string]http.Handler
   formats         strfmt.Registry
+  customConsumers map[string]runtime.Consumer
+  customProducers map[string]runtime.Producer
   defaultConsumes string
   defaultProduces string
   Middleware      func(middleware.Builder) http.Handler
@@ -250,6 +254,10 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) ConsumersFor(mediaTypes []str
       {{end}}
       {{end}}
     }
+
+    if c, ok := {{.ReceiverName}}.customConsumers[mt]; ok {
+      result[mt] = c
+    }
   }
   return result
   {{else}}
@@ -269,6 +277,10 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) ProducersFor(mediaTypes []str
         result["{{ mediaTypeName .MediaType }}"] = {{.ReceiverName}}.{{ pascalize .Name }}Producer
       {{end}}
       {{end}}
+    }
+
+    if p, ok := {{.ReceiverName}}.customProducers[mt]; ok {
+      result[mt] = p
     }
   }
   return result
@@ -333,4 +345,14 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) Init() {
   if len({{.ReceiverName}}.handlers) == 0 {
     {{.ReceiverName}}.initHandlerCache()
   }
+}
+
+// RegisterConsumer allows you to add (or override) a consumer for a media type.
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) RegisterConsumer(mediaType string, consumer runtime.Consumer) {
+  {{.ReceiverName}}.customConsumers[mediaType] = consumer
+}
+
+// RegisterProducer allows you to add (or override) a producer for a media type.
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) RegisterProducer(mediaType string, producer runtime.Producer) {
+  {{.ReceiverName}}.customProducers[mediaType] = producer
 }
