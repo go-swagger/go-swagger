@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/go-openapi/analysis"
@@ -274,4 +276,59 @@ func TestServer_ErrorParsingTemplate(t *testing.T) {
 	defer log.SetOutput(os.Stdout)
 
 	assert.Panics(t, badParseCall, "templates.MustGet() did not panic() as currently expected")
+}
+
+func TestServer_OperationGroups(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+		os.RemoveAll(filepath.Join(".", "restapi"))
+		os.RemoveAll(filepath.Join(".", "search"))
+		os.RemoveAll(filepath.Join(".", "tasks"))
+	}()
+
+	gen, err := testAppGenerator(t, "../fixtures/codegen/simplesearch.yml", "search")
+	if assert.NoError(t, err) {
+		gen.GenOpts.Tags = []string{"search", "tasks"}
+		gen.GenOpts.IncludeModel = false
+		gen.GenOpts.IncludeHandler = true
+		gen.GenOpts.Sections.OperationGroups = []TemplateOpts{
+			{
+				Name:     "opGroupTest",
+				Source:   "asset:opGroupTest",
+				Target:   "{{ joinFilePath .Target .Name }}",
+				FileName: "{{ (snakize (pascalize .Name)) }}_opgroup_test.gol",
+			},
+		}
+		err := gen.Generate()
+		// This attempts fails: template not declared
+		assert.Error(t, err)
+		// Tolerates case variations on error message
+		assert.Contains(t, strings.ToLower(err.Error()), "template doesn't exist")
+
+		var opGroupTpl = `
+// OperationGroupName={{.Name}}
+// RootPackage={{.RootPackage}}
+{{ range .Operations }}
+	// OperationName={{.Name}}
+{{end}}`
+		templates.AddFile("opGroupTest", opGroupTpl)
+		err = gen.Generate()
+		assert.NoError(t, err)
+		//buf := bytes.NewBuffer(nil)
+		genContent, erf := ioutil.ReadFile("./search/search_opgroup_test.gol")
+		assert.NoError(t, erf, "Generator should have written a file")
+		assert.Contains(t, string(genContent), "// OperationGroupName=search")
+		assert.Contains(t, string(genContent), "// RootPackage=operations")
+		assert.Contains(t, string(genContent), "// OperationName=search")
+
+		genContent, erf = ioutil.ReadFile("./tasks/tasks_opgroup_test.gol")
+		assert.NoError(t, erf, "Generator should have written a file")
+		assert.Contains(t, string(genContent), "// OperationGroupName=tasks")
+		assert.Contains(t, string(genContent), "// RootPackage=operations")
+		assert.Contains(t, string(genContent), "// OperationName=createTask")
+		assert.Contains(t, string(genContent), "// OperationName=deleteTask")
+		assert.Contains(t, string(genContent), "// OperationName=getTasks")
+		assert.Contains(t, string(genContent), "// OperationName=updateTask")
+	}
 }
