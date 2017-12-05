@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -249,19 +250,24 @@ func (t *Repository) LoadDir(templatePath string) error {
 			if assetName, e := filepath.Rel(templatePath, path); e == nil {
 				if data, e := ioutil.ReadFile(path); e == nil {
 					if ee := t.AddFile(assetName, string(data)); ee != nil {
-						log.Fatal(ee)
+						// Fatality is decided by caller
+						// log.Fatal(ee)
+						return fmt.Errorf("Could not add template: %v", ee)
 					}
 				}
+				// Non-readable files are skipped
 			}
 		}
 		if err != nil {
 			return err
 		}
-
+		// Non-template files are skipped
 		return nil
 	})
-
-	return err
+	if err != nil {
+		return fmt.Errorf("Could not complete template processing in directory \"%s\": %v", templatePath, err)
+	}
+	return nil
 }
 
 func (t *Repository) addFile(name, data string, allowOverride bool) error {
@@ -441,16 +447,17 @@ func (t *Repository) Get(name string) (*template.Template, error) {
 
 // DumpTemplates prints out a dump of all the defined templates, where they are defined and what their dependencies are.
 func (t *Repository) DumpTemplates() {
-
-	fmt.Println("# Templates")
+	buf := bytes.NewBuffer(nil)
+	fmt.Fprintln(buf, "\n# Templates")
 	for name, templ := range t.templates {
-		fmt.Printf("## %s\n", name)
-		fmt.Printf("Defined in `%s`\n", t.files[name])
+		fmt.Fprintf(buf, "## %s\n", name)
+		fmt.Fprintf(buf, "Defined in `%s`\n", t.files[name])
 
 		if deps := findDependencies(templ.Tree.Root); len(deps) > 0 {
 
-			fmt.Printf("####requires \n - %v\n\n\n", strings.Join(deps, "\n - "))
+			fmt.Fprintf(buf, "####requires \n - %v\n\n\n", strings.Join(deps, "\n - "))
 		}
-		fmt.Println("\n---")
+		fmt.Fprintln(buf, "\n---")
 	}
+	log.Println(buf.String())
 }
