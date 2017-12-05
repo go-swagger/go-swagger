@@ -1994,7 +1994,7 @@ func TestGenModel_Issue981(t *testing.T) {
 				ct, err := opts.LanguageOpts.FormatContent("user.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
-					fmt.Println(res)
+					//fmt.Println(res)
 					assertInCode(t, "FirstName string `json:\"first_name,omitempty\"`", res)
 					assertInCode(t, "LastName string `json:\"last_name,omitempty\"`", res)
 					assertInCode(t, "if swag.IsZero(m.Type)", res)
@@ -2024,7 +2024,7 @@ func TestGenModel_Issue774(t *testing.T) {
 				ff, err := opts.LanguageOpts.FormatContent("Foo.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ff)
-					fmt.Println(res)
+					//fmt.Println(res)
 					assertInCode(t, "HasOmitEmptyFalse []string `json:\"hasOmitEmptyFalse\"`", res)
 					assertInCode(t, "HasOmitEmptyTrue []string `json:\"hasOmitEmptyTrue,omitempty\"`", res)
 					assertInCode(t, "NoOmitEmpty []string `json:\"noOmitEmpty\"`", res)
