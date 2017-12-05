@@ -2,12 +2,13 @@ package generator
 
 import (
 	"bytes"
+	"io/ioutil"
+	"log"
+	"os"
+	"testing"
+
 	"github.com/go-openapi/loads"
 	"github.com/stretchr/testify/assert"
-	"testing"
-        "os"
-        "io/ioutil"
-        "log"
 )
 
 var (
@@ -23,9 +24,29 @@ var (
 	// Test template environment
 	copyright        = `{{ .Copyright }}`
 	targetImportPath = `{{ .TargetImportPath }}`
+	funcTpl          = `
+Pascalize={{ pascalize "WeArePonies_Of_the_round table" }}
+Snakize={{ snakize "WeArePonies_Of_the_round table" }}
+Humanize={{ humanize "WeArePonies_Of_the_round table" }}
+PluralizeFirstWord={{ pluralizeFirstWord "pony of the round table" }}
+PluralizeFirstOfOneWord={{ pluralizeFirstWord "dwarf" }}
+PluralizeFirstOfNoWord={{ pluralizeFirstWord "" }}
+StripPackage={{ stripPackage "prefix.suffix" "xyz"}}
+StripNoPackage={{ stripPackage "suffix" "xyz"}}
+StripEmptyPackage={{ stripPackage "" "xyz" }}
+DropPackage={{ dropPackage "prefix.suffix" }}
+DropNoPackage={{ dropPackage "suffix" }}
+DropEmptyPackage={{ dropPackage "" }}
+ImportRuntime={{ contains .DefaultImports "github.com/go-openapi/runtime"}}
+DoNotImport={{ contains .DefaultImports "github.com/go-openapi/xruntime"}}
+PadSurround1={{ padSurround "padme" "-" 3 12}}
+PadSurround2={{ padSurround "padme" "-" 0 12}}
+Json={{ json .DefaultImports }}
+PrettyJson={{ prettyjson . }}
+`
 )
 
-func TestCustomTemplates(t *testing.T) {
+func TestTemplates_CustomTemplates(t *testing.T) {
 
 	var buf bytes.Buffer
 	headerTempl, err := templates.Get("bindprimitiveparam")
@@ -52,7 +73,7 @@ func TestCustomTemplates(t *testing.T) {
 
 }
 
-func TestCustomTemplatesMultiple(t *testing.T) {
+func TestTemplates_CustomTemplatesMultiple(t *testing.T) {
 	var buf bytes.Buffer
 
 	err := templates.AddFile("differentFileName", customMultiple)
@@ -68,7 +89,7 @@ func TestCustomTemplatesMultiple(t *testing.T) {
 	assert.Equal(t, "custom primitive", buf.String())
 }
 
-func TestCustomNewTemplates(t *testing.T) {
+func TestTemplates_CustomNewTemplates(t *testing.T) {
 	var buf bytes.Buffer
 
 	err := templates.AddFile("newtemplate", customNewTemplate)
@@ -86,7 +107,7 @@ func TestCustomNewTemplates(t *testing.T) {
 	assert.Equal(t, "new template", buf.String())
 }
 
-func TestRepoLoadingTemplates(t *testing.T) {
+func TestTemplates_RepoLoadingTemplates(t *testing.T) {
 
 	repo := NewRepository(nil)
 
@@ -106,7 +127,7 @@ func TestRepoLoadingTemplates(t *testing.T) {
 	assert.Equal(t, "test", b.String())
 }
 
-func TestRepoLoadsAllTemplatesDefined(t *testing.T) {
+func TestTemplates_RepoLoadsAllTemplatesDefined(t *testing.T) {
 
 	var b bytes.Buffer
 	repo := NewRepository(nil)
@@ -135,7 +156,7 @@ type testData struct {
 	Recurse  bool
 }
 
-func TestRepoLoadsAllDependantTemplates(t *testing.T) {
+func TestTemplates_RepoLoadsAllDependantTemplates(t *testing.T) {
 
 	var b bytes.Buffer
 	repo := NewRepository(nil)
@@ -156,7 +177,7 @@ func TestRepoLoadsAllDependantTemplates(t *testing.T) {
 
 }
 
-func TestRepoRecursiveTemplates(t *testing.T) {
+func TestTemplates_RepoRecursiveTemplates(t *testing.T) {
 
 	var b bytes.Buffer
 	repo := NewRepository(nil)
@@ -220,8 +241,8 @@ func TestRepoRecursiveTemplates(t *testing.T) {
 // TODO: should test also with the codeGenApp context
 
 // Test copyright definition
-func TestDefinitionCopyright(t *testing.T) {
-        log.SetOutput(os.Stdout)
+func TestTemplates_DefinitionCopyright(t *testing.T) {
+	log.SetOutput(os.Stdout)
 
 	repo := NewRepository(nil)
 
@@ -259,8 +280,8 @@ func TestDefinitionCopyright(t *testing.T) {
 }
 
 // Test TargetImportPath definition
-func TestDefinitionTargetImportPath(t *testing.T) {
-        log.SetOutput(os.Stdout)
+func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
+	log.SetOutput(os.Stdout)
 
 	repo := NewRepository(nil)
 
@@ -300,9 +321,9 @@ func TestDefinitionTargetImportPath(t *testing.T) {
 
 // Simulates a definition environment for model templates
 func getModelEnvironment(spec string, opts *GenOpts) (*GenDefinition, error) {
-        // Don't want stderr output to pollute CI
-        log.SetOutput(ioutil.Discard)
-        defer log.SetOutput(os.Stdout)
+	// Don't want stderr output to pollute CI
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
 
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if err != nil {
@@ -323,9 +344,9 @@ func getModelEnvironment(spec string, opts *GenOpts) (*GenDefinition, error) {
 
 // Simulates a definition environment for operation templates
 func getOperationEnvironment(operation string, path string, spec string, opts *GenOpts) (*GenOperation, error) {
-        // Don't want stderr output to pollute CI
-        log.SetOutput(ioutil.Discard)
-        defer log.SetOutput(os.Stdout)
+	// Don't want stderr output to pollute CI
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
 
 	b, err := methodPathOpBuilder(operation, path, spec)
 	if err != nil {
@@ -337,4 +358,116 @@ func getOperationEnvironment(operation string, path string, spec string, opts *G
 		return nil, err
 	}
 	return &g, nil
+}
+
+// Exercises FuncMap
+// Just running basic tests to make sure the function map works and all functions are available as expected.
+// More complete unit tests are provided by go-openapi/swag.
+// NOTE: We note that functions StripPackage() and DropPackage() behave the same way... and StripPackage()
+// function is not sensitive to its second arg... Probably not what was intended in the first place but not
+// blocking anyone for now.
+func TestTemplates_FuncMap(t *testing.T) {
+	log.SetOutput(os.Stdout)
+
+	err := templates.AddFile("functpl", funcTpl)
+	if assert.NoError(t, err) {
+		templ, err := templates.Get("functpl")
+		if assert.Nil(t, err) {
+			opts := opts()
+			// executes template against model definitions
+			genModel, err := getModelEnvironment("../fixtures/codegen/todolist.models.yml", opts)
+			if assert.Nil(t, err) {
+				rendered := bytes.NewBuffer(nil)
+				err = templ.Execute(rendered, genModel)
+				if assert.Nil(t, err) {
+					assert.Contains(t, rendered.String(), "Pascalize=WeArePoniesOfTheRoundTable\n")
+					assert.Contains(t, rendered.String(), "Snakize=we_are_ponies_of_the_round_table\n")
+					assert.Contains(t, rendered.String(), "Humanize=we are ponies of the round table\n")
+					assert.Contains(t, rendered.String(), "PluralizeFirstWord=ponies of the round table\n")
+					assert.Contains(t, rendered.String(), "PluralizeFirstOfOneWord=dwarves\n")
+					assert.Contains(t, rendered.String(), "PluralizeFirstOfNoWord=\n")
+					assert.Contains(t, rendered.String(), "StripPackage=suffix\n")
+					assert.Contains(t, rendered.String(), "StripNoPackage=suffix\n")
+					assert.Contains(t, rendered.String(), "StripEmptyPackage=\n")
+					assert.Contains(t, rendered.String(), "DropPackage=suffix\n")
+					assert.Contains(t, rendered.String(), "DropNoPackage=suffix\n")
+					assert.Contains(t, rendered.String(), "DropEmptyPackage=\n")
+					assert.Contains(t, rendered.String(), "DropEmptyPackage=\n")
+					assert.Contains(t, rendered.String(), "ImportRuntime=true\n")
+					assert.Contains(t, rendered.String(), "DoNotImport=false\n")
+					assert.Contains(t, rendered.String(), "PadSurround1=-,-,-,padme,-,-,-,-,-,-,-,-\n")
+					assert.Contains(t, rendered.String(), "PadSurround2=padme,-,-,-,-,-,-,-,-,-,-,-\n")
+					assert.Contains(t, rendered.String(), "Json=[\"github.com/go-openapi/errors\",\"github.com/go-openapi/runtime\",\"github.com/go-openapi/swag\",\"github.com/go-openapi/validate\"]")
+					assert.Contains(t, rendered.String(), "\"TargetImportPath\": \"github.com/go-swagger/go-swagger/generator\"")
+					//fmt.Println(rendered.String())
+				}
+			}
+		}
+	}
+}
+
+// AddFile() global package function (protected vs unprotected)
+// Mostly unused in tests, since the Repository.AddFile()
+// is generally prefered.
+func TestTemplates_AddFile(t *testing.T) {
+	log.SetOutput(os.Stdout)
+
+	// unprotected
+	err := AddFile("functpl", funcTpl)
+	if assert.NoError(t, err) {
+		_, err := templates.Get("functpl")
+		assert.Nil(t, err)
+	}
+	// protected
+	err = AddFile("schemabody", funcTpl)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "Cannot overwrite protected template")
+}
+
+// Test LoadDir
+func TestTemplates_LoadDir(t *testing.T) {
+	log.SetOutput(os.Stdout)
+
+	// Fails
+	err := templates.LoadDir("")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "Could not complete")
+
+	// Fails again (from any dir?)
+	err = templates.LoadDir("templates")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "Cannot overwrite protected template")
+
+	// TODO: success case
+	// To force a success, we need to empty the global list of protected
+	// templates...
+	origProtectedTemplates := protectedTemplates
+
+	defer func() {
+		// Restore variable initialized with package
+		protectedTemplates = origProtectedTemplates
+	}()
+
+	protectedTemplates = make(map[string]bool)
+	repo := NewRepository(FuncMap)
+	err = repo.LoadDir("templates")
+	assert.NoError(t, err)
+}
+
+// TODO: test error case in LoadDefaults()
+// test DumpTemplates()
+func TestTemplates_DumpTemplates(t *testing.T) {
+	buf := bytes.NewBuffer(nil)
+	log.SetOutput(buf)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+
+	templates.DumpTemplates()
+	assert.NotEmpty(t, buf)
+	// Sample output
+	assert.Contains(t, buf.String(), "## tupleSerializer")
+	assert.Contains(t, buf.String(), "Defined in `tupleserializer.gotmpl`")
+	assert.Contains(t, buf.String(), "####requires \n - schemaType")
+	//fmt.Println(buf)
 }
