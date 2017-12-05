@@ -84,6 +84,12 @@ func (r *request) buildHTTP(mediaType string, producers map[string]runtime.Produ
 		return nil, err
 	}
 
+	if auth != nil {
+		if err := auth.AuthenticateRequest(r, registry); err != nil {
+			return nil, err
+		}
+	}
+
 	// create http request
 	path := r.pathPattern
 	for k, v := range r.pathParams {
@@ -93,6 +99,7 @@ func (r *request) buildHTTP(mediaType string, producers map[string]runtime.Produ
 	var body io.ReadCloser
 	var pr *io.PipeReader
 	var pw *io.PipeWriter
+
 	r.buf = bytes.NewBuffer(nil)
 	if r.payload != nil || len(r.formFields) > 0 || len(r.fileFields) > 0 {
 		body = ioutil.NopCloser(r.buf)
@@ -162,11 +169,6 @@ func (r *request) buildHTTP(mediaType string, producers map[string]runtime.Produ
 		// write the form values as the body
 		r.buf.WriteString(formString)
 
-		if auth != nil {
-			if err := auth.AuthenticateRequest(r, registry); err != nil {
-				return nil, err
-			}
-		}
 		return req, nil
 	}
 
@@ -179,22 +181,12 @@ func (r *request) buildHTTP(mediaType string, producers map[string]runtime.Produ
 		if rdr, ok := r.payload.(io.ReadCloser); ok {
 			req.Body = rdr
 
-			if auth != nil {
-				if err := auth.AuthenticateRequest(r, registry); err != nil {
-					return nil, err
-				}
-			}
 			return req, nil
 		}
 
 		if rdr, ok := r.payload.(io.Reader); ok {
 			req.Body = ioutil.NopCloser(rdr)
 
-			if auth != nil {
-				if err := auth.AuthenticateRequest(r, registry); err != nil {
-					return nil, err
-				}
-			}
 			return req, nil
 		}
 
@@ -223,12 +215,6 @@ func (r *request) buildHTTP(mediaType string, producers map[string]runtime.Produ
 
 	if runtime.CanHaveBody(req.Method) && req.Body == nil && req.Header.Get(runtime.HeaderContentType) == "" {
 		req.Header.Set(runtime.HeaderContentType, mediaType)
-	}
-
-	if auth != nil {
-		if err := auth.AuthenticateRequest(r, registry); err != nil {
-			return nil, err
-		}
 	}
 
 	return req, nil

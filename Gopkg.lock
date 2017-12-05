@@ -83,13 +83,13 @@
   branch = "master"
   name = "github.com/go-openapi/runtime"
   packages = [".","client","flagext","logger","middleware","middleware/denco","middleware/header","middleware/untyped","security"]
-  revision = "94927f8c9742791a9aa46c6c3965f0a37025f41d"
+  revision = "6da9e4c21cb1e786e86e7901fc511ef4971355bc"
 
 [[projects]]
   branch = "master"
   name = "github.com/go-openapi/spec"
   packages = ["."]
-  revision = "65a3c60d6972c141df601865fdb53ce5fbfc78af"
+  revision = "4a3d26106361caf1779728cd8301ad6b9534934b"
 
 [[projects]]
   branch = "master"

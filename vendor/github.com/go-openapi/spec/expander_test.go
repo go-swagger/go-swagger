@@ -112,6 +112,18 @@ func TestSpecExpansion(t *testing.T) {
 	assert.Equal(t, errorModel, *pi.Delete.Responses.Default.Schema)
 }
 
+func TestResolveRef(t *testing.T) {
+	var root interface{}
+	err := json.Unmarshal([]byte(PetStore20), &root)
+	assert.NoError(t, err)
+	ref, err := NewRef("#/definitions/Category")
+	assert.NoError(t, err)
+	sch, err := ResolveRef(root, &ref)
+	assert.NoError(t, err)
+	b, _ := sch.MarshalJSON()
+	assert.JSONEq(t, `{"id":"Category","properties":{"id":{"type":"integer","format":"int64"},"name":{"type":"string"}}}`, string(b))
+}
+
 func TestResponseExpansion(t *testing.T) {
 	specDoc, err := jsonDoc("fixtures/expansion/all-the-things.json")
 	assert.NoError(t, err)

@@ -103,8 +103,26 @@ func ResolveRefWithBase(root interface{}, ref *Ref, opts *ExpandOptions) (*Schem
 }
 
 // ResolveRef resolves a reference against a context root
+// ref is guaranteed to be in root (no need to go to external files)
+// ResolveRef is ONLY called from the code generation module
 func ResolveRef(root interface{}, ref *Ref) (*Schema, error) {
-	return ResolveRefWithBase(root, ref, nil)
+	res, _, err := ref.GetPointer().Get(root)
+	if err != nil {
+		panic(err)
+	}
+	switch sch := res.(type) {
+	case Schema:
+		return &sch, nil
+	case *Schema:
+		return sch, nil
+	case map[string]interface{}:
+		b, _ := json.Marshal(sch)
+		newSch := new(Schema)
+		json.Unmarshal(b, newSch)
+		return newSch, nil
+	default:
+		return nil, fmt.Errorf("unknown type for the resolved reference")
+	}
 }
 
 // ResolveParameter resolves a paramter reference against a context root

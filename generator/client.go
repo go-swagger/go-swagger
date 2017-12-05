@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 
@@ -46,6 +47,16 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 	// Load the spec
 	var err error
 	var specDoc *loads.Document
+	opts.Spec, err = findSwaggerSpec(opts.Spec)
+	if err != nil {
+		return err
+	}
+
+	if !path.IsAbs(opts.Spec) {
+		cwd, _ := os.Getwd()
+		opts.Spec = path.Join(cwd, opts.Spec)
+	}
+
 	opts.Spec, specDoc, err = loadSpec(opts.Spec)
 	if err != nil {
 		return err
@@ -105,7 +116,6 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 		GenOpts:         opts,
 	}
 	generator.Receiver = "o"
-
 	return (&clientGenerator{generator}).Generate()
 }
 
@@ -118,6 +128,7 @@ func (c *clientGenerator) Generate() error {
 	if app.Name == "" {
 		app.Name = "APIClient"
 	}
+
 	app.DefaultImports = []string{c.GenOpts.ExistingModels}
 	if c.GenOpts.ExistingModels == "" {
 		app.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ModelsPackage))}
