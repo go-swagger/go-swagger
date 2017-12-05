@@ -579,7 +579,9 @@ func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 }
 
 func TestGenClientIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
 	defer func() {
+		log.SetOutput(os.Stdout)
 		dr, _ := os.Getwd()
 		os.RemoveAll(filepath.Join(filepath.FromSlash(dr), "restapi"))
 	}()
@@ -636,7 +638,9 @@ func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
 }
 
 func TestGenClientIssue890_ValidationFalseFlatteningTrue(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
 	defer func() {
+		log.SetOutput(os.Stdout)
 		dr, _ := os.Getwd()
 		os.RemoveAll(filepath.Join(filepath.FromSlash(dr), "restapi"))
 	}()
@@ -720,7 +724,9 @@ func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 }
 
 func TestGenClientIssue890_ValidationTrueFlattenFalse(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
 	defer func() {
+		log.SetOutput(os.Stdout)
 		dr, _ := os.Getwd()
 		os.RemoveAll(filepath.Join(filepath.FromSlash(dr), "restapi"))
 	}()
