@@ -21,7 +21,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"path"
 	"path/filepath"
 	"testing"
 
@@ -267,9 +266,9 @@ func opBuilderWithFlatten(name, fname string) (codeGenOpBuilder, error) {
 		fname = "../fixtures/codegen/todolist.simple.yml"
 	}
 
-	if !path.IsAbs(fname) {
+	if !filepath.IsAbs(fname) {
 		cwd, _ := os.Getwd()
-		fname = path.Join(cwd, fname)
+		fname = filepath.Join(cwd, fname)
 	}
 
 	specDoc, err := loads.Spec(fname)
@@ -316,9 +315,9 @@ func opBuilder(name, fname string) (codeGenOpBuilder, error) {
 		fname = "../fixtures/codegen/todolist.simple.yml"
 	}
 
-	if !path.IsAbs(fname) {
+	if !filepath.IsAbs(fname) {
 		cwd, _ := os.Getwd()
-		fname = path.Join(cwd, fname)
+		fname = filepath.Join(cwd, fname)
 	}
 
 	specDoc, err := loads.Spec(fname)
@@ -793,7 +792,7 @@ func TestGenClientIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 		os.RemoveAll(filepath.Join(filepath.FromSlash(dr), "restapi"))
 	}()
 	opts := testGenOpts()
-	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
+	opts.Spec = filepath.FromSlash("../fixtures/bugs/890/swagger.yaml")
 	opts.ValidateSpec = true
 	opts.FlattenSpec = false
 	// Testing this is enough as there is only one operation which is specified as $ref.
