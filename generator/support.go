@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path"
 	"path/filepath"
 	"regexp"
 	goruntime "runtime"
@@ -77,9 +76,9 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 		return nil, err
 	}
 
-	if !path.IsAbs(opts.Spec) {
+	if !filepath.IsAbs(opts.Spec) {
 		cwd, _ := os.Getwd()
-		opts.Spec = path.Join(cwd, opts.Spec)
+		opts.Spec = filepath.Join(cwd, opts.Spec)
 	}
 
 	opts.Spec, specDoc, err = loadSpec(opts.Spec)

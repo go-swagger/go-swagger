@@ -121,6 +121,7 @@ func ResolveRef(root interface{}, ref *Ref) (*Schema, error) {
 		json.Unmarshal(b, newSch)
 		return newSch, nil
 	default:
+		panic("yo yo")
 		return nil, fmt.Errorf("unknown type for the resolved reference")
 	}
 }
@@ -440,11 +441,11 @@ func (r *schemaLoader) Resolve(ref *Ref, target interface{}, basePath string) er
 
 // absPath returns the absolute path of a file
 func absPath(fname string) (string, error) {
-	if path.IsAbs(fname) {
+	if filepath.IsAbs(fname) {
 		return fname, nil
 	}
 	wd, err := os.Getwd()
-	return path.Join(wd, fname), err
+	return filepath.Join(wd, fname), err
 }
 
 // ExpandSpec expands the references in a swagger spec

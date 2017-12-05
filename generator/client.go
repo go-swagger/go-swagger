@@ -19,7 +19,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"sort"
 
@@ -52,9 +51,9 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 		return err
 	}
 
-	if !path.IsAbs(opts.Spec) {
+	if !filepath.IsAbs(opts.Spec) {
 		cwd, _ := os.Getwd()
-		opts.Spec = path.Join(cwd, opts.Spec)
+		opts.Spec = filepath.Join(cwd, opts.Spec)
 	}
 
 	opts.Spec, specDoc, err = loadSpec(opts.Spec)

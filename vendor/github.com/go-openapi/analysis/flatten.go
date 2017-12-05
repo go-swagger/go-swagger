@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -46,9 +47,9 @@ func (f *FlattenOpts) Swagger() *swspec.Swagger {
 // Rewritten schemas get a vendor extension x-go-gen-location so we know in which package they need to be rendered.
 func Flatten(opts FlattenOpts) error {
 	// Make sure opts.BasePath is an absolute path
-	if !path.IsAbs(opts.BasePath) {
+	if !filepath.IsAbs(opts.BasePath) {
 		cwd, _ := os.Getwd()
-		opts.BasePath = path.Join(cwd, opts.BasePath)
+		opts.BasePath = filepath.Join(cwd, opts.BasePath)
 	}
 	// recursively expand responses, parameters, path items and items
 	err := swspec.ExpandSpec(opts.Swagger(), &swspec.ExpandOptions{

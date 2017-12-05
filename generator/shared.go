@@ -21,7 +21,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"path"
 	"path/filepath"
 	"reflect"
 	"sort"
@@ -837,9 +836,9 @@ func validateAndFlattenSpec(opts *GenOpts, specDoc *loads.Document) (*loads.Docu
 	}
 
 	absBasePath := specDoc.SpecFilePath()
-	if !path.IsAbs(absBasePath) {
+	if !filepath.IsAbs(absBasePath) {
 		cwd, _ := os.Getwd()
-		absBasePath = path.Join(cwd, absBasePath)
+		absBasePath = filepath.Join(cwd, absBasePath)
 	}
 	/********************************************************************************************/
 	/* Either flatten or expand should be called here before moving on the code generation part */
