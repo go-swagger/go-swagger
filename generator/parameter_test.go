@@ -17,6 +17,9 @@ package generator
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/go-openapi/spec"
@@ -875,6 +878,11 @@ func TestGenParameter_Issue1010_Server(t *testing.T) {
 }
 
 func TestGenParameter_Issue710(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+
 	assert := assert.New(t)
 
 	gen, err := opBuilder("createTask", "../fixtures/codegen/todolist.allparams.yml")
@@ -899,7 +907,11 @@ func TestGenParameter_Issue710(t *testing.T) {
 
 func TestGenParameter_Issue776_LocalFileRef(t *testing.T) {
 	spec.Debug = true
-	defer func() { spec.Debug = false }()
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		spec.Debug = false
+		log.SetOutput(os.Stdout)
+	}()
 	b, err := opBuilder("GetItem", "../fixtures/bugs/776/param.yaml")
 	if assert.NoError(t, err) {
 		op, err := b.MakeOperation()
