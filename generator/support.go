@@ -302,17 +302,17 @@ func (a *appGenerator) Generate() error {
 			opgCopy := opg
 			log.Printf("rendering %d operations for %s", opg.Operations.Len(), opg.Name)
 			for _, op := range opgCopy.Operations {
-				// if len(errChan) > 0 {
-				// 	wg.Wait()
-				// 	return <-errChan
-				// }
 				opCopy := op
-				// wg.Do(func() {
 
 				if err := a.GenOpts.renderOperation(&opCopy); err != nil {
 					return err
 				}
-				// })
+			}
+			// Optional OperationGroups templates generation
+			opGroup := opg
+			opGroup.DefaultImports = app.DefaultImports
+			if err := a.GenOpts.renderOperationGroup(&opGroup); err != nil {
+				return fmt.Errorf("error while rendering operation group: %v", err)
 			}
 		}
 	}
