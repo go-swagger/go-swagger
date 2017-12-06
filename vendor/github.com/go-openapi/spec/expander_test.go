@@ -35,6 +35,45 @@ func jsonDoc(path string) (json.RawMessage, error) {
 	return json.RawMessage(data), nil
 }
 
+// tests that paths are normalized correctly
+func TestNormalizePaths(t *testing.T) {
+	testCases := []struct {
+		refPath   string
+		base      string
+		expOutput string
+	}{
+		{
+			// file basePath, absolute refPath
+			refPath:   "/another/base/path.json#/definitions/Pet",
+			base:      "/base/path.json",
+			expOutput: "/another/base/path.json#/definitions/Pet",
+		},
+		{
+			// file basePath, relative refPath
+			refPath:   "another/base/path.json#/definitions/Pet",
+			base:      "/base/path.json",
+			expOutput: "/base/another/base/path.json#/definitions/Pet",
+		},
+		{
+			// http basePath, absolute refPath
+			refPath:   "http://www.anotherexample.com/another/base/path/swagger.json#/definitions/Pet",
+			base:      "http://www.example.com/base/path/swagger.json",
+			expOutput: "http://www.anotherexample.com/another/base/path/swagger.json#/definitions/Pet",
+		},
+		{
+			// http basePath, relative refPath
+			refPath:   "another/base/path/swagger.json#/definitions/Pet",
+			base:      "http://www.example.com/base/path/swagger.json",
+			expOutput: "http://www.example.com/base/path/another/base/path/swagger.json#/definitions/Pet",
+		},
+	}
+
+	for _, tcase := range testCases {
+		out := normalizePaths(tcase.refPath, tcase.base)
+		assert.Equal(t, tcase.expOutput, out)
+	}
+}
+
 func TestExpandsKnownRef(t *testing.T) {
 	schema := RefProperty("http://json-schema.org/draft-04/schema#")
 	if assert.NoError(t, ExpandSchema(schema, nil, nil)) {

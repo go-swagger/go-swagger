@@ -341,7 +341,6 @@ const PetStore20 = `{
   },
   "definitions": {
     "Category": {
-      "id": "Category",
       "properties": {
         "id": {
           "format": "int64",
@@ -353,7 +352,6 @@ const PetStore20 = `{
       }
     },
     "Pet": {
-      "id": "Pet",
       "properties": {
         "category": {
           "$ref": "#/definitions/Category"
@@ -408,7 +406,6 @@ const PetStore20 = `{
       ]
     },
     "Tag": {
-      "id": "Tag",
       "properties": {
         "id": {
           "format": "int64",
@@ -617,7 +614,6 @@ const RootPetStore20 = `{
   },
   "definitions": {
     "Category": {
-      "id": "Category",
       "properties": {
         "id": {
           "format": "int64",
@@ -629,7 +625,6 @@ const RootPetStore20 = `{
       }
     },
     "Pet": {
-      "id": "Pet",
       "properties": {
         "category": {
           "$ref": "#/definitions/Category"
@@ -684,7 +679,6 @@ const RootPetStore20 = `{
       ]
     },
     "Tag": {
-      "id": "Tag",
       "properties": {
         "id": {
           "format": "int64",

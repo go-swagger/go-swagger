@@ -121,7 +121,6 @@ func ResolveRef(root interface{}, ref *Ref) (*Schema, error) {
 		json.Unmarshal(b, newSch)
 		return newSch, nil
 	default:
-		panic("yo yo")
 		return nil, fmt.Errorf("unknown type for the resolved reference")
 	}
 }
@@ -344,7 +343,6 @@ func normalizePaths(refPath, base string) string {
 			baseURL.Path = path.Join(path.Dir(baseURL.Path), refURL.Path)
 		} else { // base is a file
 			newBase := fmt.Sprintf("%s#%s", filepath.Join(filepath.Dir(base), filepath.FromSlash(refURL.Path)), refURL.Fragment)
-			log.Printf("Before Final Base: %+v", newBase)
 			return newBase
 		}
 

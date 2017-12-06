@@ -47,7 +47,7 @@
   branch = "master"
   name = "github.com/go-openapi/analysis"
   packages = ["."]
-  revision = "2202689560ae7059c9c916c80b2f12e6c3db5b56"
+  revision = "96b830073f22d307c347d4ba54348ba6eee7d237"
 
 [[projects]]
   branch = "master"
@@ -83,13 +83,13 @@
   branch = "master"
   name = "github.com/go-openapi/runtime"
   packages = [".","client","flagext","logger","middleware","middleware/denco","middleware/header","middleware/untyped","security"]
-  revision = "6da9e4c21cb1e786e86e7901fc511ef4971355bc"
+  revision = "6208f81d1f8225f4ce653e01a8a6b7e1c0165c31"
 
 [[projects]]
   branch = "master"
   name = "github.com/go-openapi/spec"
   packages = ["."]
-  revision = "4a3d26106361caf1779728cd8301ad6b9534934b"
+  revision = "01738944bdee0f26bf66420c5b17d54cfdf55341"
 
 [[projects]]
   branch = "master"
@@ -251,13 +251,13 @@
   branch = "master"
   name = "golang.org/x/oauth2"
   packages = [".","internal"]
-  revision = "f95fa95eaa936d9d87489b15d1d18b97c1ba9c28"
+  revision = "ea8c6730ed5beeff685fcd20d17423a8546daf6c"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "8b4580aae2a0dd0c231a45d3ccb8434ff533b840"
+  revision = "9167dbfd0f8e88b731dd88cbf73a270701a37bb4"
 
 [[projects]]
   branch = "master"
