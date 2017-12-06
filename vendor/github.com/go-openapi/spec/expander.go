@@ -330,14 +330,24 @@ func normalizePaths(refPath, base string) string {
 	refURL, _ := url.Parse(refPath)
 	if path.IsAbs(refURL.Path) {
 		// refPath is actually absolute
-		return refPath
+		if refURL.Host != "" {
+			return refPath
+		}
+		return filepath.FromSlash(refPath)
 	}
 
 	// relative refPath
 	baseURL, _ := url.Parse(base)
 	if !strings.HasPrefix(refPath, "#") {
 		// combining paths
-		baseURL.Path = path.Join(path.Dir(baseURL.Path), refURL.Path)
+		if baseURL.Host != "" {
+			baseURL.Path = path.Join(path.Dir(baseURL.Path), refURL.Path)
+		} else { // base is a file
+			newBase := fmt.Sprintf("%s#%s", filepath.Join(filepath.Dir(base), filepath.FromSlash(refURL.Path)), refURL.Fragment)
+			log.Printf("Before Final Base: %+v", newBase)
+			return newBase
+		}
+
 	}
 	// copying fragment from ref to base
 	baseURL.Fragment = refURL.Fragment
