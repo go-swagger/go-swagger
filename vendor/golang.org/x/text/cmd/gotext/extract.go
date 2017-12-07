@@ -9,10 +9,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"go/ast"
-	"go/build"
 	"go/constant"
 	"go/format"
-	"go/parser"
 	"go/token"
 	"go/types"
 	"io/ioutil"
@@ -23,7 +21,9 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"golang.org/x/text/internal"
 	fmtparser "golang.org/x/text/internal/format"
+	"golang.org/x/text/language"
 	"golang.org/x/tools/go/loader"
 )
 
@@ -33,6 +33,16 @@ import (
 // - handle features (gender, plural)
 // - message rewriting
 
+var (
+	srcLang *string
+	lang    *string
+)
+
+func init() {
+	srcLang = cmdExtract.Flag.String("srclang", "en-US", "the source-code language")
+	lang = cmdExtract.Flag.String("lang", "en-US", "comma-separated list of languages to process")
+}
+
 var cmdExtract = &Command{
 	Run:       runExtract,
 	UsageLine: "extract <package>*",
@@ -40,25 +50,10 @@ var cmdExtract = &Command{
 }
 
 func runExtract(cmd *Command, args []string) error {
-	if len(args) == 0 {
-		args = []string{"."}
-	}
-
-	conf := loader.Config{
-		Build:      &build.Default,
-		ParserMode: parser.ParseComments,
-	}
-
-	// Use the initial packages from the command line.
-	args, err := conf.FromArgs(args, false)
+	conf := loader.Config{}
+	prog, err := loadPackages(&conf, args)
 	if err != nil {
-		return err
-	}
-
-	// Load, parse and type-check the whole program.
-	iprog, err := conf.Load()
-	if err != nil {
-		return err
+		return wrap(err, "")
 	}
 
 	// print returns Go syntax for the specified node.
@@ -70,10 +65,10 @@ func runExtract(cmd *Command, args []string) error {
 
 	var messages []Message
 
-	for _, info := range iprog.AllPackages {
+	for _, info := range prog.AllPackages {
 		for _, f := range info.Files {
 			// Associate comments with nodes.
-			cmap := ast.NewCommentMap(iprog.Fset, f, f.Comments)
+			cmap := ast.NewCommentMap(prog.Fset, f, f.Comments)
 			getComment := func(n ast.Node) string {
 				cs := cmap.Filter(n).Comments()
 				if len(cs) > 0 {
@@ -213,16 +208,41 @@ func runExtract(cmd *Command, args []string) error {
 		}
 	}
 
-	data, err := json.MarshalIndent(messages, "", "    ")
+	tag, err := language.Parse(*srcLang)
 	if err != nil {
-		return err
+		return wrap(err, "")
 	}
-	for _, tag := range getLangs() {
-		// TODO: merge with existing files, don't overwrite.
-		os.MkdirAll(*dir, 0744)
-		file := filepath.Join(*dir, fmt.Sprintf("gotext_%v.out.json", tag))
-		if err := ioutil.WriteFile(file, data, 0744); err != nil {
-			return fmt.Errorf("could not create file: %v", err)
+	out := Locale{
+		Language: tag,
+		Messages: messages,
+	}
+	data, err := json.MarshalIndent(out, "", "    ")
+	if err != nil {
+		return wrap(err, "")
+	}
+	os.MkdirAll(*dir, 0755)
+	// TODO: this file can probably go if we replace the extract + generate
+	// cycle with a init once and update cycle.
+	file := filepath.Join(*dir, "extracted.gotext.json")
+	if err := ioutil.WriteFile(file, data, 0644); err != nil {
+		return wrapf(err, "could not create file")
+	}
+
+	langs := append(getLangs(), tag)
+	langs = internal.UniqueTags(langs)
+	for _, tag := range langs {
+		// TODO: inject translations from existing files to avoid retranslation.
+		out.Language = tag
+		data, err := json.MarshalIndent(out, "", "    ")
+		if err != nil {
+			return wrap(err, "JSON marshal failed")
+		}
+		file := filepath.Join(*dir, tag.String(), "out.gotext.json")
+		if err := os.MkdirAll(filepath.Dir(file), 0750); err != nil {
+			return wrap(err, "dir create failed")
+		}
+		if err := ioutil.WriteFile(file, data, 0740); err != nil {
+			return wrap(err, "write failed")
 		}
 	}
 	return nil

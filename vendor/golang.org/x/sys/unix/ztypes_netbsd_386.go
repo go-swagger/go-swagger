@@ -425,3 +425,11 @@ type Sysctlnode struct {
 	X_sysctl_parent [8]byte
 	X_sysctl_desc   [8]byte
 }
+
+type Utsname struct {
+	Sysname  [256]byte
+	Nodename [256]byte
+	Release  [256]byte
+	Version  [256]byte
+	Machine  [256]byte
+}

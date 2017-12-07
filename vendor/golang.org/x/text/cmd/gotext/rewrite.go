@@ -8,12 +8,9 @@ import (
 	"bytes"
 	"fmt"
 	"go/ast"
-	"go/build"
 	"go/constant"
 	"go/format"
-	"go/parser"
 	"go/token"
-	"log"
 	"os"
 	"strings"
 
@@ -38,7 +35,7 @@ var (
 
 var cmdRewrite = &Command{
 	Run:       runRewrite,
-	UsageLine: "rewrite <package>*",
+	UsageLine: "rewrite <package>",
 	Short:     "rewrite rewrites fmt functions to use a message Printer",
 	Long: `
 rewrite is typically done once for a project. It rewrites all usages of
@@ -49,34 +46,20 @@ using Printf to allow translators to reorder arguments.
 }
 
 func runRewrite(cmd *Command, args []string) error {
-	if len(args) == 0 {
-		args = []string{"."}
-	}
-
-	conf := loader.Config{
-		Build:       &build.Default,
-		ParserMode:  parser.ParseComments,
+	conf := &loader.Config{
 		AllowErrors: true, // Allow unused instances of message.Printer.
 	}
-
-	// Use the initial packages from the command line.
-	args, err := conf.FromArgs(args, false)
+	prog, err := loadPackages(conf, args)
 	if err != nil {
-		return err
+		return wrap(err, "")
 	}
 
-	// Load, parse and type-check the whole program.
-	iprog, err := conf.Load()
-	if err != nil {
-		return err
-	}
-
-	for _, info := range iprog.InitialPackages() {
+	for _, info := range prog.InitialPackages() {
 		for _, f := range info.Files {
 			// Associate comments with nodes.
 
 			// Pick up initialized Printers at the package level.
-			r := rewriter{info: info, conf: &conf}
+			r := rewriter{info: info, conf: conf}
 			for _, n := range info.InitOrder {
 				if t := r.info.Types[n.Rhs].Type.String(); strings.HasSuffix(t, printerType) {
 					r.printerVar = n.Lhs[0].Name()
@@ -89,12 +72,12 @@ func runRewrite(cmd *Command, args []string) error {
 			if *overwrite {
 				var err error
 				if w, err = os.Create(conf.Fset.File(f.Pos()).Name()); err != nil {
-					log.Fatalf("Could not open file: %v", err)
+					return wrap(err, "open failed")
 				}
 			}
 
 			if err := format.Node(w, conf.Fset, f); err != nil {
-				return err
+				return wrap(err, "go format failed")
 			}
 		}
 	}

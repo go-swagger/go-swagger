@@ -31,9 +31,9 @@ func InfoFromLangID(compactIndex int, numberSystem string) Info {
 	if !ok {
 		// Take the value for the default numbering system. This is by far the
 		// most common case as an alternative numbering system is hardly used.
-		if p&0x80 == 0 {
+		if p&0x80 == 0 { // Latn digits.
 			pSymIndex = p
-		} else {
+		} else { // Non-Latn or multiple numbering systems.
 			// Take the first entry from the alternatives list.
 			data := langToAlt[p&^0x80]
 			pSymIndex = data.symIndex
@@ -43,8 +43,22 @@ func InfoFromLangID(compactIndex int, numberSystem string) Info {
 		langIndex := compactIndex
 		ns := system
 	outerLoop:
-		for {
-			if p&0x80 == 0 {
+		for ; ; p = langToDefaults[langIndex] {
+			if langIndex == 0 {
+				// The CLDR root defines full symbol information for all
+				// numbering systems (even though mostly by means of
+				// aliases).
+				// Fall back to the default entry for Latn if there is
+				// no data for the numbering system of this language.
+				if ns == 0 {
+					break
+				}
+				// Fall back to Latin and start from the original
+				// language. See
+				// http://unicode.org/reports/tr35/#Locale_Inheritance.
+				ns = numLatn
+				langIndex = compactIndex
+			} else if p&0x80 == 0 {
 				if ns == 0 {
 					// The index directly points to the symbol data.
 					pSymIndex = p
@@ -52,30 +66,16 @@ func InfoFromLangID(compactIndex int, numberSystem string) Info {
 				}
 				// Move to the parent and retry.
 				langIndex = int(internal.Parent[langIndex])
-			}
-			// The index points to a list of symbol data indexes.
-			for _, e := range langToAlt[p&^0x80:] {
-				if int(e.compactTag) != langIndex {
-					if langIndex == 0 {
-						// The CLDR root defines full symbol information for all
-						// numbering systems (even though mostly by means of
-						// aliases). This means that we will never fall back to
-						// the default of the language. Also, the loop is
-						// guaranteed to terminate as a consequence.
-						ns = numLatn
-						// Fall back to Latin and start from the original
-						// language. See
-						// http://unicode.org/reports/tr35/#Locale_Inheritance.
-						langIndex = compactIndex
-					} else {
+			} else {
+				// The index points to a list of symbol data indexes.
+				for _, e := range langToAlt[p&^0x80:] {
+					if int(e.compactTag) != langIndex {
 						// Fall back to parent.
 						langIndex = int(internal.Parent[langIndex])
+					} else if e.system == ns {
+						pSymIndex = e.symIndex
+						break outerLoop
 					}
-					break
-				}
-				if e.system == ns {
-					pSymIndex = e.symIndex
-					break outerLoop
 				}
 			}
 		}
