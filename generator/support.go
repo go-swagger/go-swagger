@@ -70,12 +70,22 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 	// Load the spec
 	var err error
 	var specDoc *loads.Document
+
+	opts.Spec, err = findSwaggerSpec(opts.Spec)
+	if err != nil {
+		return nil, err
+	}
+
+	if !filepath.IsAbs(opts.Spec) {
+		cwd, _ := os.Getwd()
+		opts.Spec = filepath.Join(cwd, opts.Spec)
+	}
+
 	opts.Spec, specDoc, err = loadSpec(opts.Spec)
 	if err != nil {
 		return nil, err
 	}
 
-	// Validate and Expand. specDoc is in/out param.
 	specDoc, err = validateAndFlattenSpec(opts, specDoc)
 	if err != nil {
 		return nil, err
@@ -578,6 +588,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	var defaultImports []string
 
 	jsonb, _ := json.MarshalIndent(a.SpecDoc.OrigSpec(), "", "  ")
+	flatjsonb, _ := json.MarshalIndent(a.SpecDoc.Spec(), "", "  ")
 
 	consumes, _ := a.makeConsumes()
 	produces, _ := a.makeProduces()
@@ -757,6 +768,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		OperationGroups:     opGroups,
 		Principal:           prin,
 		SwaggerJSON:         generateReadableSpec(jsonb),
+		FlatSwaggerJSON:     generateReadableSpec(flatjsonb),
 		ExcludeSpec:         a.GenOpts != nil && a.GenOpts.ExcludeSpec,
 		WithContext:         a.GenOpts != nil && a.GenOpts.WithContext,
 		GenOpts:             a.GenOpts,

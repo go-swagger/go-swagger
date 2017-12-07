@@ -835,14 +835,21 @@ func validateAndFlattenSpec(opts *GenOpts, specDoc *loads.Document) (*loads.Docu
 		return nil, err
 	}
 
-	// Flatten if needed
-	if opts.FlattenSpec {
-		flattenOpts := analysis.FlattenOpts{
-			BasePath: specDoc.SpecFilePath(),
-			Spec:     analysis.New(specDoc.Spec()),
-		}
-		err = analysis.Flatten(flattenOpts)
+	absBasePath := specDoc.SpecFilePath()
+	if !filepath.IsAbs(absBasePath) {
+		cwd, _ := os.Getwd()
+		absBasePath = filepath.Join(cwd, absBasePath)
 	}
+	/********************************************************************************************/
+	/* Either flatten or expand should be called here before moving on the code generation part */
+	/********************************************************************************************/
+	flattenOpts := analysis.FlattenOpts{
+		Expand: !opts.FlattenSpec,
+		// BasePath must be absolute. This is guaranteed because opts.Spec is absolute
+		BasePath: absBasePath,
+		Spec:     analysis.New(specDoc.Spec()),
+	}
+	err = analysis.Flatten(flattenOpts)
 
 	return specDoc, nil
 }

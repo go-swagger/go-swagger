@@ -4,6 +4,12 @@
 
 package main
 
+import (
+	"encoding/json"
+
+	"golang.org/x/text/language"
+)
+
 // TODO: these definitions should be moved to a package so that the can be used
 // by other tools.
 
@@ -16,6 +22,14 @@ package main
 // the format string "%d file(s) remaining".
 // See the examples directory for examples of extracted messages.
 
+// A Locale is used to store all information for a single locale. This type is
+// used both for extraction and injection.
+type Locale struct {
+	Language language.Tag    `json:"language"`
+	Messages []Message       `json:"messages"`
+	Macros   map[string]Text `json:"macros,omitempty"`
+}
+
 // A Message describes a message to be translated.
 type Message struct {
 	// Key contains a list of identifiers for the message. If this list is empty
@@ -23,7 +37,7 @@ type Message struct {
 	Key         []string `json:"key,omitempty"`
 	Meaning     string   `json:"meaning,omitempty"`
 	Message     Text     `json:"message"`
-	Translation *Text    `json:"translation,omitempty"`
+	Translation *Text    `json:"translation,omitempty"` // TODO: not pointer?
 
 	Comment           string `json:"comment,omitempty"`
 	TranslatorComment string `json:"translatorComment,omitempty"`
@@ -101,6 +115,25 @@ type Text struct {
 
 	// Example contains an example message formatted with default values.
 	Example string `json:"example,omitempty"`
+}
+
+// rawText erases the UnmarshalJSON method.
+type rawText Text
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (t *Text) UnmarshalJSON(b []byte) error {
+	if b[0] == '"' {
+		return json.Unmarshal(b, &t.Msg)
+	}
+	return json.Unmarshal(b, (*rawText)(t))
+}
+
+// MarshalJSON implements json.Marshaler.
+func (t *Text) MarshalJSON() ([]byte, error) {
+	if t.Select == nil && t.Var == nil && t.Example == "" {
+		return json.Marshal(t.Msg)
+	}
+	return json.Marshal((*rawText)(t))
 }
 
 // Select selects a Text based on the feature value associated with a feature of

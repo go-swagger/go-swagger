@@ -12,6 +12,14 @@ import (
 	"golang.org/x/text/message/catalog"
 )
 
+// MatchLanguage reports the matched tag obtained from language.MatchStrings for
+// the Matcher of the DefaultCatalog.
+func MatchLanguage(preferred ...string) language.Tag {
+	c := DefaultCatalog
+	tag, _ := language.MatchStrings(c.Matcher(), preferred...)
+	return tag
+}
+
 // DefaultCatalog is used by SetString.
 var DefaultCatalog catalog.Catalog = defaultCatalog
 

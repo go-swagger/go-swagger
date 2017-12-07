@@ -164,6 +164,38 @@ func TestBuildRequest_BuildHTTP_Payload(t *testing.T) {
 	}
 }
 
+func TestBuildRequest_BuildHTTP_SetsInAuth(t *testing.T) {
+	bd := []struct{ Name, Hobby string }{{"Tom", "Organ trail"}, {"John", "Bird watching"}}
+	reqWrtr := runtime.ClientRequestWriterFunc(func(req runtime.ClientRequest, reg strfmt.Registry) error {
+		_ = req.SetBodyParam(bd)
+		_ = req.SetQueryParam("hello", "wrong")
+		_ = req.SetPathParam("id", "wrong")
+		_ = req.SetHeaderParam("X-Rate-Limit", "wrong")
+		return nil
+	})
+
+	auth := runtime.ClientAuthInfoWriterFunc(func(req runtime.ClientRequest, reg strfmt.Registry) error {
+		_ = req.SetBodyParam(bd)
+		_ = req.SetQueryParam("hello", "world")
+		_ = req.SetPathParam("id", "1234")
+		_ = req.SetHeaderParam("X-Rate-Limit", "200")
+		return nil
+	})
+
+	r, _ := newRequest("GET", "/flats/{id}/", reqWrtr)
+	_ = r.SetHeaderParam(runtime.HeaderContentType, runtime.JSONMime)
+
+	req, err := r.buildHTTP(runtime.JSONMime, testProducers, nil, auth)
+	if assert.NoError(t, err) && assert.NotNil(t, req) {
+		assert.Equal(t, "200", req.Header.Get("x-rate-limit"))
+		assert.Equal(t, "world", req.URL.Query().Get("hello"))
+		assert.Equal(t, "/flats/1234/", req.URL.Path)
+		expectedBody, _ := json.Marshal(bd)
+		actualBody, _ := ioutil.ReadAll(req.Body)
+		assert.Equal(t, append(expectedBody, '\n'), actualBody)
+	}
+}
+
 func TestBuildRequest_BuildHTTP_XMLPayload(t *testing.T) {
 	bd := []struct {
 		XMLName xml.Name `xml:"person"`
@@ -285,7 +317,7 @@ func TestBuildRequest_BuildHTTP_FormMultipart(t *testing.T) {
 		lastboundary := string(actuallines[4])
 		assert.True(t, strings.HasPrefix(boundary, "--"))
 		assert.True(t, strings.HasPrefix(lastboundary, "--") && strings.HasSuffix(lastboundary, "--"))
-		assert.Equal(t, lastboundary, boundary + "--")
+		assert.Equal(t, lastboundary, boundary+"--")
 		assert.Equal(t, expected1, actuallines[1])
 		assert.Equal(t, expected2, actuallines[3])
 	}
@@ -317,7 +349,7 @@ func TestBuildRequest_BuildHTTP_FormMultiples(t *testing.T) {
 		lastboundary := string(actuallines[8])
 		assert.True(t, strings.HasPrefix(boundary, "--"))
 		assert.True(t, strings.HasPrefix(lastboundary, "--") && strings.HasSuffix(lastboundary, "--"))
-		assert.Equal(t, lastboundary, boundary + "--")
+		assert.Equal(t, lastboundary, boundary+"--")
 		assert.Equal(t, expected1, actuallines[1])
 		assert.Equal(t, expected2, actuallines[3])
 		assert.Equal(t, actuallines[0], actuallines[4])

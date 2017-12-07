@@ -4,7 +4,7 @@
 
 package main
 
-//go:generate gotext extract
+//go:generate gotext extract --lang=de,zh
 
 import (
 	"net/http"
