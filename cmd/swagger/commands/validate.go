@@ -45,7 +45,7 @@ func (c *ValidateSpec) Execute(args []string) error {
 
 	result := validate.Spec(specDoc, strfmt.Default)
 	if result == nil {
-		fmt.Printf("The swagger spec at %q is valid against swagger specification %s\n", swaggerDoc, specDoc.Version())
+		log.Printf("\nThe swagger spec at %q is valid against swagger specification %s\n", swaggerDoc, specDoc.Version())
 	} else {
 		str := fmt.Sprintf("The swagger spec at %q is invalid against swagger specification %s. see errors :\n", swaggerDoc, specDoc.Version())
 		for _, desc := range result.(*swaggererrors.CompositeError).Errors {
