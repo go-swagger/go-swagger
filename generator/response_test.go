@@ -357,15 +357,6 @@ func TestGenResponses_Issue776_Spec(t *testing.T) {
 					fmt.Println(buf.String())
 				}
 			}
-			// var buf2 bytes.Buffer
-			// if assert.NoError(t, templates.MustGet("serverOperation").Execute(&buf2, op)) {
-			// 	ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf2.Bytes())
-			// 	if assert.NoError(t, err) {
-			// 		assertInCode(t, "type GetItemOKBody struct", string(ff))
-			// 	} else {
-			// 		fmt.Println(buf2.String())
-			// 	}
-			// }
 		}
 	}
 }
