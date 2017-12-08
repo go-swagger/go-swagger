@@ -95,7 +95,7 @@ func TestBaseImport(t *testing.T) {
 			if err := os.Symlink(item.symlinkdest, item.symlinksrc); err == nil {
 
 				// Test
-				actualpath := baseImport(item.targetpath)
+				actualpath := golang.baseImport(item.targetpath)
 
 				if goruntime.GOOS == "windows" {
 					item.expectedpath = strings.Replace(item.expectedpath, "/", "\\", -1)
