@@ -12,6 +12,7 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"sync/atomic"
 	"errors"
 	"time"
 
@@ -496,7 +497,7 @@ func (s *Server) Listen() error {
 
 // Shutdown server and clean up resources
 func (s *Server) Shutdown() error {
-	if s.shuttingDown {
+	if atomic.LoadInt32(&s.shuttingDown) != 0 {
 		s.Logf("already shutting down")
 		return nil
 	}
@@ -509,13 +510,13 @@ func (s *Server) handleShutdown(wg *sync.WaitGroup, server *graceful.Server) {
 	for {
 		select {
 		case <-s.shutdown:
-			s.shuttingDown = true
+			atomic.AddInt32(&s.shuttingDown, 1)
 			server.Stop(s.CleanupTimeout)
 			<-server.StopChan()
 			s.api.ServerShutdown()
 			return
 		case <-server.StopChan():
-			s.shuttingDown = true
+			atomic.AddInt32(&s.shuttingDown, 1)
 			s.api.ServerShutdown()
 			return
 		}
