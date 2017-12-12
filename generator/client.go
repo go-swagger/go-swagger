@@ -127,10 +127,10 @@ func (c *clientGenerator) Generate() error {
 	if app.Name == "" {
 		app.Name = "APIClient"
 	}
-
+	baseImport := c.GenOpts.LanguageOpts.baseImport(c.Target)
 	app.DefaultImports = []string{c.GenOpts.ExistingModels}
 	if c.GenOpts.ExistingModels == "" {
-		app.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ModelsPackage))}
+		app.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport, c.ModelsPackage))}
 	}
 	if err != nil {
 		return err
@@ -185,7 +185,7 @@ func (c *clientGenerator) Generate() error {
 				}
 				// })
 			}
-			app.DefaultImports = append(app.DefaultImports, filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ClientPackage, opGroup.Name)))
+			app.DefaultImports = append(app.DefaultImports, filepath.ToSlash(filepath.Join(baseImport, c.ClientPackage, opGroup.Name)))
 
 			// wg.Do(func() {
 			if err := c.GenOpts.renderOperationGroup(&opGroup); err != nil {

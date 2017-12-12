@@ -213,7 +213,7 @@ func (o *operationGenerator) Generate() error {
 
 	bldr.DefaultImports = []string{o.GenOpts.ExistingModels}
 	if o.GenOpts.ExistingModels == "" {
-		bldr.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(o.Base), o.ModelsPackage))}
+		bldr.DefaultImports = []string{filepath.ToSlash(filepath.Join(o.GenOpts.LanguageOpts.baseImport(o.Base), o.ModelsPackage))}
 	}
 
 	bldr.APIPackage = bldr.RootAPIPackage
@@ -465,7 +465,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	return GenOperation{
 		GenCommon: GenCommon{
 			Copyright:        b.GenOpts.Copyright,
-			TargetImportPath: filepath.ToSlash(baseImport(b.GenOpts.Target)),
+			TargetImportPath: filepath.ToSlash(b.GenOpts.LanguageOpts.baseImport(b.GenOpts.Target)),
 		},
 		Package:              b.APIPackage,
 		RootPackage:          b.RootAPIPackage,
