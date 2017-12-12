@@ -210,7 +210,7 @@ type Server struct {
 	handler           http.Handler
 	hasListeners      bool
 	shutdown          chan struct{}
-	shuttingDown      bool
+	shuttingDown      int32
 }
 
 // Logf logs message either via defined user logger or via system one if no user logger is defined.
