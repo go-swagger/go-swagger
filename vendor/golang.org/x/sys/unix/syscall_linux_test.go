@@ -184,16 +184,6 @@ func TestSelect(t *testing.T) {
 	}
 }
 
-func TestUname(t *testing.T) {
-	var utsname unix.Utsname
-	err := unix.Uname(&utsname)
-	if err != nil {
-		t.Fatalf("Uname: %v", err)
-	}
-
-	t.Logf("OS: %s/%s %s", utsname.Sysname[:], utsname.Machine[:], utsname.Release[:])
-}
-
 func TestFstatat(t *testing.T) {
 	defer chtmpdir(t)()
 

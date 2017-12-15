@@ -85,8 +85,8 @@ func (c *Command) Runnable() bool {
 var commands = []*Command{
 	cmdExtract,
 	cmdRewrite,
+	cmdGenerate,
 	// TODO:
-	// - generate code from translations.
 	// - update: full-cycle update of extraction, sending, and integration
 	// - report: report of freshness of translations
 }

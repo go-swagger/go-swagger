@@ -159,7 +159,7 @@ type Feature struct {
 var featuredFiles = []Feature{
 	{
 		Platform:     "Microsoft Windows",
-		Requirements: "Windows XP SP2 or later, Intel 64-bit processor",
+		Requirements: "Windows XP SP3 or later, Intel 64-bit processor",
 		fileRE:       regexp.MustCompile(`\.windows-amd64\.msi$`),
 	},
 	{
@@ -429,7 +429,7 @@ func getHandler(w http.ResponseWriter, r *http.Request) {
 
 func validUser(user string) bool {
 	switch user {
-	case "adg", "bradfitz", "cbro":
+	case "adg", "bradfitz", "cbro", "andybons":
 		return true
 	}
 	return false

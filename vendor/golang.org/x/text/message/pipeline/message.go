@@ -1,11 +1,12 @@
-// Copyright 2016 The Go Authors. All rights reserved.
+// Copyright 2017 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package main
+package pipeline
 
 import (
 	"encoding/json"
+	"strings"
 
 	"golang.org/x/text/language"
 )
@@ -22,9 +23,8 @@ import (
 // the format string "%d file(s) remaining".
 // See the examples directory for examples of extracted messages.
 
-// A Locale is used to store all information for a single locale. This type is
-// used both for extraction and injection.
-type Locale struct {
+// Messages is used to store translations for a single language.
+type Messages struct {
 	Language language.Tag    `json:"language"`
 	Messages []Message       `json:"messages"`
 	Macros   map[string]Text `json:"macros,omitempty"`
@@ -32,12 +32,13 @@ type Locale struct {
 
 // A Message describes a message to be translated.
 type Message struct {
-	// Key contains a list of identifiers for the message. If this list is empty
-	// the message itself is used as the key.
-	Key         []string `json:"key,omitempty"`
-	Meaning     string   `json:"meaning,omitempty"`
-	Message     Text     `json:"message"`
-	Translation *Text    `json:"translation,omitempty"` // TODO: not pointer?
+	// ID contains a list of identifiers for the message.
+	ID IDList `json:"id"`
+	// Key is the string that is used to look up the message at runtime.
+	Key         string `json:"key"`
+	Meaning     string `json:"meaning,omitempty"`
+	Message     Text   `json:"message"`
+	Translation Text   `json:"translation"`
 
 	Comment           string `json:"comment,omitempty"`
 	TranslatorComment string `json:"translatorComment,omitempty"`
@@ -49,6 +50,48 @@ type Message struct {
 
 	// Extraction information.
 	Position string `json:"position,omitempty"` // filePosition:line
+}
+
+// Placeholder reports the placeholder for the given ID if it is defined or nil
+// otherwise.
+func (m *Message) Placeholder(id string) *Placeholder {
+	for _, p := range m.Placeholders {
+		if p.ID == id {
+			return &p
+		}
+	}
+	return nil
+}
+
+// Substitute replaces placeholders in msg with their original value.
+func (m *Message) Substitute(msg string) (sub string, err error) {
+	last := 0
+	for i := 0; i < len(msg); {
+		pLeft := strings.IndexByte(msg[i:], '{')
+		if pLeft == -1 {
+			break
+		}
+		pLeft += i
+		pRight := strings.IndexByte(msg[pLeft:], '}')
+		if pRight == -1 {
+			return "", errorf("unmatched '}'")
+		}
+		pRight += pLeft
+		id := strings.TrimSpace(msg[pLeft+1 : pRight])
+		i = pRight + 1
+		if id != "" && id[0] == '$' {
+			continue
+		}
+		sub += msg[last:pLeft]
+		last = i
+		ph := m.Placeholder(id)
+		if ph == nil {
+			return "", errorf("unknown placeholder %q in message %q", id, msg)
+		}
+		sub += ph.String
+	}
+	sub += msg[last:]
+	return sub, err
 }
 
 // A Placeholder is a part of the message that should not be changed by a
@@ -117,6 +160,11 @@ type Text struct {
 	Example string `json:"example,omitempty"`
 }
 
+// IsEmpty reports whether this Text can generate anything.
+func (t *Text) IsEmpty() bool {
+	return t.Msg == "" && t.Select == nil && t.Var == nil
+}
+
 // rawText erases the UnmarshalJSON method.
 type rawText Text
 
@@ -134,6 +182,28 @@ func (t *Text) MarshalJSON() ([]byte, error) {
 		return json.Marshal(t.Msg)
 	}
 	return json.Marshal((*rawText)(t))
+}
+
+// IDList is a set identifiers that each may refer to possibly different
+// versions of the same message. When looking up a messages, the first
+// identifier in the list takes precedence.
+type IDList []string
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (id *IDList) UnmarshalJSON(b []byte) error {
+	if b[0] == '"' {
+		*id = []string{""}
+		return json.Unmarshal(b, &((*id)[0]))
+	}
+	return json.Unmarshal(b, (*[]string)(id))
+}
+
+// MarshalJSON implements json.Marshaler.
+func (id *IDList) MarshalJSON() ([]byte, error) {
+	if len(*id) == 1 {
+		return json.Marshal((*id)[0])
+	}
+	return json.Marshal((*[]string)(id))
 }
 
 // Select selects a Text based on the feature value associated with a feature of

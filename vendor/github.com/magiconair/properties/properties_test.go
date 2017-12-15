@@ -44,6 +44,8 @@ var complexTests = [][]string{
 	{"\nkey=value\n", "key", "value"},
 	{"\rkey=value\r", "key", "value"},
 	{"\r\nkey=value\r\n", "key", "value"},
+	{"\nkey=value\n \nkey2=value2", "key", "value", "key2", "value2"},
+	{"\nkey=value\n\t\nkey2=value2", "key", "value", "key2", "value2"},
 
 	// escaped chars in key
 	{"k\\ ey = value", "k ey", "value"},
@@ -456,6 +458,19 @@ func TestDisableExpansion(t *testing.T) {
 	p.MustSet("keyB", "${keyA}")
 	assert.Equal(t, p.MustGet("keyA"), "${keyB}")
 	assert.Equal(t, p.MustGet("keyB"), "${keyA}")
+}
+
+func TestDisableExpansionStillUpdatesKeys(t *testing.T) {
+	p := NewProperties()
+	p.MustSet("p1", "a")
+	assert.Equal(t, p.Keys(), []string{"p1"})
+	assert.Equal(t, p.String(), "p1 = a\n")
+
+	p.DisableExpansion = true
+	p.MustSet("p2", "b")
+
+	assert.Equal(t, p.Keys(), []string{"p1", "p2"})
+	assert.Equal(t, p.String(), "p1 = a\np2 = b\n")
 }
 
 func TestMustGet(t *testing.T) {

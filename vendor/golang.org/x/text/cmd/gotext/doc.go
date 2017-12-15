@@ -8,8 +8,9 @@
 //
 // The commands are:
 //
-// 	extract     extract strings to be translated from code
-// 	rewrite     rewrite rewrites fmt functions to use a message Printer
+// 	extract     extracts strings to be translated from code
+// 	rewrite     rewrites fmt functions to use a message Printer
+// 	generate    generates code to insert translated messages
 //
 // Use "go help [command]" for more information about a command.
 //
@@ -19,7 +20,7 @@
 // Use "gotext help [topic]" for more information about that topic.
 //
 //
-// Extract strings to be translated from code
+// Extracts strings to be translated from code
 //
 // Usage:
 //
@@ -28,16 +29,25 @@
 //
 //
 //
-// Rewrite rewrites fmt functions to use a message Printer
+// Rewrites fmt functions to use a message Printer
 //
 // Usage:
 //
-// 	go rewrite <package>*
+// 	go rewrite <package>
 //
 // rewrite is typically done once for a project. It rewrites all usages of
 // fmt to use x/text's message package whenever a message.Printer is in scope.
 // It rewrites Print and Println calls with constant strings to the equivalent
 // using Printf to allow translators to reorder arguments.
+//
+//
+// Generates code to insert translated messages
+//
+// Usage:
+//
+// 	go generate <package>
+//
+//
 //
 //
 package main

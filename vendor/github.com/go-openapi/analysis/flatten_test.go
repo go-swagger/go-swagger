@@ -486,6 +486,17 @@ func TestDepthFirstSort(t *testing.T) {
 	}
 }
 
+func TestBuildNameWithReservedKeyWord(t *testing.T) {
+	s := splitKey([]string{"definitions", "fullview", "properties", "properties"})
+	startIdx := 2
+	segments := []string{"fullview"}
+	newName := s.BuildName(segments, startIdx, nil)
+	assert.Equal(t, "fullview properties", newName)
+	s = splitKey([]string{"definitions", "fullview", "properties", "properties", "properties", "properties", "properties", "properties"})
+	newName = s.BuildName(segments, startIdx, nil)
+	assert.Equal(t, "fullview properties properties properties", newName)
+}
+
 func TestNameInlinedSchemas(t *testing.T) {
 	cwd, _ := os.Getwd()
 	bp := filepath.Join(cwd, "fixtures", "nested_inline_schemas.yml")
