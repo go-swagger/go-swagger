@@ -378,6 +378,60 @@ func TestPoll(t *testing.T) {
 	}
 }
 
+func TestGetwd(t *testing.T) {
+	fd, err := os.Open(".")
+	if err != nil {
+		t.Fatalf("Open .: %s", err)
+	}
+	// These are chosen carefully not to be symlinks on a Mac
+	// (unlike, say, /var, /etc)
+	dirs := []string{"/", "/usr/bin"}
+	if runtime.GOOS == "darwin" {
+		switch runtime.GOARCH {
+		case "arm", "arm64":
+			d1, err := ioutil.TempDir("", "d1")
+			if err != nil {
+				t.Fatalf("TempDir: %v", err)
+			}
+			d2, err := ioutil.TempDir("", "d2")
+			if err != nil {
+				t.Fatalf("TempDir: %v", err)
+			}
+			dirs = []string{d1, d2}
+		}
+	}
+	oldwd := os.Getenv("PWD")
+	for _, d := range dirs {
+		err = os.Chdir(d)
+		if err != nil {
+			t.Fatalf("Chdir: %v", err)
+		}
+		pwd, err1 := unix.Getwd()
+		os.Setenv("PWD", oldwd)
+		err2 := fd.Chdir()
+		if err2 != nil {
+			// We changed the current directory and cannot go back.
+			// Don't let the tests continue; they'll scribble
+			// all over some other directory.
+			fmt.Fprintf(os.Stderr, "fchdir back to dot failed: %s\n", err2)
+			os.Exit(1)
+		}
+		if err != nil {
+			fd.Close()
+			t.Fatalf("Chdir %s: %s", d, err)
+		}
+		if err1 != nil {
+			fd.Close()
+			t.Fatalf("Getwd in %s: %s", d, err1)
+		}
+		if pwd != d {
+			fd.Close()
+			t.Fatalf("Getwd returned %q want %q", pwd, d)
+		}
+	}
+	fd.Close()
+}
+
 // mktmpfifo creates a temporary FIFO and provides a cleanup function.
 func mktmpfifo(t *testing.T) (*os.File, func()) {
 	err := unix.Mkfifo("fifo", 0666)

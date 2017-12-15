@@ -123,7 +123,7 @@ func (t *Token) expired() bool {
 	if t.Expiry.IsZero() {
 		return false
 	}
-	return t.Expiry.Add(-expiryDelta).Before(time.Now())
+	return t.Expiry.Round(0).Add(-expiryDelta).Before(time.Now())
 }
 
 // Valid reports whether t is non-nil, has an AccessToken, and is not expired.

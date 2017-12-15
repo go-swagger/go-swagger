@@ -2,10 +2,10 @@
     "language": "de",
     "messages": [
         {
-            "key": [
-                "Hello %s!\n"
-            ],
+            "id": "Hello {From}!\n",
+            "key": "Hello %s!\n",
             "message": "Hello {From}!\n",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "From",
@@ -19,10 +19,10 @@
             "position": "golang.org/x/text/cmd/gotext/examples/extract_http/pkg/pkg.go:22:11"
         },
         {
-            "key": [
-                "Do you like your browser (%s)?\n"
-            ],
+            "id": "Do you like your browser ({User_Agent})?\n",
+            "key": "Do you like your browser (%s)?\n",
             "message": "Do you like your browser ({User_Agent})?\n",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "User_Agent",

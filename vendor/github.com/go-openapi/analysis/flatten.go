@@ -211,9 +211,18 @@ func uniqifyName(definitions swspec.Definitions, name string) string {
 		return name
 	}
 
-	if _, ok := definitions[name]; !ok {
+	unq := true
+	for k := range definitions {
+		if strings.ToLower(k) == strings.ToLower(name) {
+			unq = false
+			break
+		}
+	}
+
+	if unq {
 		return name
 	}
+
 	name += "OAIGen"
 	var idx int
 	unique := name
@@ -312,9 +321,27 @@ func (s splitKey) DefinitionName() string {
 	return s[1]
 }
 
+func (s splitKey) isKeyName(i int) bool {
+	if i <= 0 {
+		return false
+	}
+	count := 0
+	for idx := i - 1; idx > 0; idx-- {
+		if s[idx] != "properties" {
+			break
+		}
+		count++
+	}
+
+	if count%2 != 0 {
+		return true
+	}
+	return false
+}
+
 func (s splitKey) BuildName(segments []string, startIndex int, aschema *AnalyzedSchema) string {
-	for _, part := range s[startIndex:] {
-		if _, ignored := ignoredKeys[part]; !ignored {
+	for i, part := range s[startIndex:] {
+		if _, ignored := ignoredKeys[part]; !ignored || s.isKeyName(startIndex+i) {
 			if part == "items" || part == "additionalItems" {
 				if aschema.IsTuple || aschema.IsTupleWithExtra {
 					segments = append(segments, "tuple")

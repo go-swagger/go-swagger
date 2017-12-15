@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build !go1.10
+
 package idna
 
 import (
@@ -64,15 +66,6 @@ func TestTables(t *testing.T) {
 		want := p.Int(ucd.CanonicalCombiningClass) == cccVirama
 		if got != want {
 			t.Errorf("IsVirama(%U) = %v; want %v", r, got, want)
-		}
-
-		rtl := false
-		switch p.String(ucd.BidiClass) {
-		case "R", "AL", "AN":
-			rtl = true
-		}
-		if got := x.isBidi("A"); got != rtl && !x.isMapped() {
-			t.Errorf("IsBidi(%U) = %v; want %v", r, got, rtl)
 		}
 	})
 
