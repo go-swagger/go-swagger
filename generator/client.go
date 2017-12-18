@@ -154,8 +154,10 @@ func (c *clientGenerator) Generate() error {
 			modCopy := mod
 			// wg.Do(func() {
 			modCopy.IncludeValidator = true
-			if err := c.GenOpts.renderDefinition(&modCopy); err != nil {
-				return err
+			if !mod.IsStream {
+				if err := c.GenOpts.renderDefinition(&modCopy); err != nil {
+					return err
+				}
 			}
 			// })
 		}

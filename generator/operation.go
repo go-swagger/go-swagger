@@ -416,7 +416,9 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 
 	var extra GenSchemaList
 	for _, sch := range b.ExtraSchemas {
-		extra = append(extra, sch)
+		if !sch.IsStream {
+			extra = append(extra, sch)
+		}
 	}
 	sort.Sort(extra)
 
@@ -616,7 +618,9 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 			if b.ExtraSchemas == nil {
 				b.ExtraSchemas = make(map[string]GenSchema)
 			}
-			b.ExtraSchemas[k] = v
+			if !v.IsStream {
+				b.ExtraSchemas[k] = v
+			}
 		}
 
 		schema := sc.GenSchema
@@ -624,7 +628,9 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 			if b.ExtraSchemas == nil {
 				b.ExtraSchemas = make(map[string]GenSchema)
 			}
-			b.ExtraSchemas[schema.Name] = schema
+			if !schema.IsStream {
+				b.ExtraSchemas[schema.Name] = schema
+			}
 		}
 		if schema.IsAnonymous {
 
@@ -633,7 +639,9 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 			if b.ExtraSchemas == nil {
 				b.ExtraSchemas = make(map[string]GenSchema)
 			}
-			b.ExtraSchemas[schema.Name] = schema
+			if !schema.IsStream {
+				b.ExtraSchemas[schema.Name] = schema
+			}
 			schema = GenSchema{}
 			schema.IsAnonymous = false
 			schema.GoType = resolver.goTypeName(nm)

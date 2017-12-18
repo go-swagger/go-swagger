@@ -171,6 +171,13 @@ func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType)
 	result.SwaggerFormat = fmt
 	//_, result.IsPrimitive = primitives[tn]
 
+	if tn == file {
+		result.IsPrimitive = true
+		result.GoType = typeMapping[binary]
+		result.IsStream = true
+		return
+	}
+
 	if fmt != "" {
 		fmtn := strings.Replace(fmt, "-", "", -1)
 		if tpe, ok := typeMapping[fmtn]; ok {
@@ -633,6 +640,13 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 			logDebug("not anonymous ref")
 		}
 		logDebug("returning after ref")
+		return
+	}
+
+	if t.firstType(schema) == file {
+		result.IsPrimitive = true
+		result.GoType = typeMapping[binary]
+		result.IsStream = true
 		return
 	}
 
