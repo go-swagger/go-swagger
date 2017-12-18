@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"sync/atomic"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -137,4 +138,83 @@ func (b *binaryMarshalDummy) MarshalBinary() ([]byte, error) {
 	}
 
 	return []byte(b.str), nil
+}
+
+type closingWriter struct {
+	calledClose int64
+	calledWrite int64
+	b           bytes.Buffer
+}
+
+func (c *closingWriter) Close() error {
+	atomic.AddInt64(&c.calledClose, 1)
+	return nil
+}
+
+func (c *closingWriter) Write(p []byte) (n int, err error) {
+	atomic.AddInt64(&c.calledWrite, 1)
+	return c.b.Write(p)
+}
+
+func (c *closingWriter) String() string {
+	return c.b.String()
+}
+
+type closingReader struct {
+	calledClose int64
+	calledRead  int64
+	b           *bytes.Buffer
+}
+
+func (c *closingReader) Close() error {
+	atomic.AddInt64(&c.calledClose, 1)
+	return nil
+}
+
+func (c *closingReader) Read(p []byte) (n int, err error) {
+	atomic.AddInt64(&c.calledRead, 1)
+	return c.b.Read(p)
+}
+
+func TestBytestreamConsumer_Close(t *testing.T) {
+	cons := ByteStreamConsumer(ClosesStream)
+	expected := "the data for the stream to be sent over the wire"
+
+	// can consume as a Writer
+	var b bytes.Buffer
+	r := &closingReader{b: bytes.NewBufferString(expected)}
+	if assert.NoError(t, cons.Consume(r, &b)) {
+		assert.Equal(t, expected, b.String())
+		assert.EqualValues(t, 1, r.calledClose)
+	}
+
+	// can consume as a Writer
+	cons = ByteStreamConsumer()
+	b.Reset()
+	r = &closingReader{b: bytes.NewBufferString(expected)}
+	if assert.NoError(t, cons.Consume(r, &b)) {
+		assert.Equal(t, expected, b.String())
+		assert.EqualValues(t, 0, r.calledClose)
+	}
+}
+
+func TestBytestreamProducer_Close(t *testing.T) {
+	cons := ByteStreamProducer(ClosesStream)
+	expected := "the data for the stream to be sent over the wire"
+
+	// can consume as a Writer
+	r := &closingWriter{}
+	// can produce using a reader
+	if assert.NoError(t, cons.Produce(r, bytes.NewBufferString(expected))) {
+		assert.Equal(t, expected, r.String())
+		assert.EqualValues(t, 1, r.calledClose)
+	}
+
+	cons = ByteStreamProducer()
+	r = &closingWriter{}
+	// can produce using a reader
+	if assert.NoError(t, cons.Produce(r, bytes.NewBufferString(expected))) {
+		assert.Equal(t, expected, r.String())
+		assert.EqualValues(t, 0, r.calledClose)
+	}
 }

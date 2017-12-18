@@ -209,11 +209,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 			for ref.String() != "" {
 				var rsch *spec.Schema
 				var err error
-				if specDoc.SpecFilePath() != "" {
-					rsch, err = spec.ResolveRefWithBase(swsp, &ref, &spec.ExpandOptions{RelativeBase: specDoc.SpecFilePath()})
-				} else {
-					rsch, err = spec.ResolveRef(swsp, &ref)
-				}
+				rsch, err = spec.ResolveRef(swsp, &ref)
 				if err != nil {
 					return nil, err
 				}
@@ -282,7 +278,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 	return &GenDefinition{
 		GenCommon: GenCommon{
 			Copyright:        opts.Copyright,
-			TargetImportPath: filepath.ToSlash(baseImport(opts.Target)),
+			TargetImportPath: filepath.ToSlash(opts.LanguageOpts.baseImport(opts.Target)),
 		},
 		Package:        opts.LanguageOpts.MangleName(filepath.Base(pkg), "definitions"),
 		GenSchema:      pg.GenSchema,
@@ -693,11 +689,7 @@ func (sg *schemaGenContext) buildProperties() error {
 				var rsch *spec.Schema
 				var err error
 				specDoc := sg.TypeResolver.Doc
-				if specDoc.SpecFilePath() != "" {
-					rsch, err = spec.ResolveRefWithBase(specDoc.Spec(), &ref, &spec.ExpandOptions{RelativeBase: specDoc.SpecFilePath()})
-				} else {
-					rsch, err = spec.ResolveRef(specDoc.Spec(), &ref)
-				}
+				rsch, err = spec.ResolveRef(specDoc.Spec(), &ref)
 				if err != nil {
 					return err
 				}

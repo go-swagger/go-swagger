@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"go/ast"
 	goparser "go/parser"
+	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
@@ -1054,7 +1055,11 @@ func TestEnhancement793(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotEmpty(t, bytes)
 
-		doc, err := loads.Analyzed(bytes, "")
+		file, err := ioutil.TempFile(os.TempDir(), "scanner")
+		file.Write(bytes)
+		file.Close()
+
+		doc, err := loads.Spec(file.Name())
 		if assert.NoError(t, err) {
 			validator := validate.NewSpecValidator(doc.Schema(), strfmt.Default)
 			res, _ := validator.Validate(doc)

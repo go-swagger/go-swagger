@@ -46,6 +46,16 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 	// Load the spec
 	var err error
 	var specDoc *loads.Document
+	opts.Spec, err = findSwaggerSpec(opts.Spec)
+	if err != nil {
+		return err
+	}
+
+	if !filepath.IsAbs(opts.Spec) {
+		cwd, _ := os.Getwd()
+		opts.Spec = filepath.Join(cwd, opts.Spec)
+	}
+
 	opts.Spec, specDoc, err = loadSpec(opts.Spec)
 	if err != nil {
 		return err
@@ -105,7 +115,6 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 		GenOpts:         opts,
 	}
 	generator.Receiver = "o"
-
 	return (&clientGenerator{generator}).Generate()
 }
 
@@ -118,9 +127,10 @@ func (c *clientGenerator) Generate() error {
 	if app.Name == "" {
 		app.Name = "APIClient"
 	}
+	baseImport := c.GenOpts.LanguageOpts.baseImport(c.Target)
 	app.DefaultImports = []string{c.GenOpts.ExistingModels}
 	if c.GenOpts.ExistingModels == "" {
-		app.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ModelsPackage))}
+		app.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport, c.ModelsPackage))}
 	}
 	if err != nil {
 		return err
@@ -175,7 +185,7 @@ func (c *clientGenerator) Generate() error {
 				}
 				// })
 			}
-			app.DefaultImports = append(app.DefaultImports, filepath.ToSlash(filepath.Join(baseImport(c.Target), c.ClientPackage, opGroup.Name)))
+			app.DefaultImports = append(app.DefaultImports, filepath.ToSlash(filepath.Join(baseImport, c.ClientPackage, opGroup.Name)))
 
 			// wg.Do(func() {
 			if err := c.GenOpts.renderOperationGroup(&opGroup); err != nil {

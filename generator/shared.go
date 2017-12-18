@@ -23,6 +23,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	goruntime "runtime"
 	"sort"
 	"strings"
 	"text/template"
@@ -43,6 +44,7 @@ import (
 // LanguageOpts to describe a language to the code generator
 type LanguageOpts struct {
 	ReservedWords    []string
+	BaseImportFunc   func(string) string
 	reservedWordsSet map[string]struct{}
 	initialized      bool
 	formatFunc       func(string, []byte) ([]byte, error)
@@ -84,6 +86,13 @@ func (l *LanguageOpts) FormatContent(name string, content []byte) ([]byte, error
 	return content, nil
 }
 
+func (l *LanguageOpts) baseImport(tgt string) string {
+	if l.BaseImportFunc != nil {
+		return l.BaseImportFunc(tgt)
+	}
+	return ""
+}
+
 var golang = GoLangOpts()
 
 // GoLangOpts for rendering items as golang code
@@ -103,6 +112,90 @@ func GoLangOpts() *LanguageOpts {
 		opts.Fragment = true
 		opts.Comments = true
 		return imports.Process(ffn, content, opts)
+	}
+	opts.BaseImportFunc = func(tgt string) string {
+		// On Windows, filepath.Abs("") behaves differently than on Unix.
+		// Windows: yields an error, since Abs() does not know the volume.
+		// UNIX: returns current working directory
+		if tgt == "" {
+			tgt = "."
+		}
+		tgtAbsPath, err := filepath.Abs(tgt)
+		if err != nil {
+			log.Fatalf("could not evaluate base import path with target \"%s\": %v", tgt, err)
+		}
+		var tgtAbsPathExtended string
+		tgtAbsPathExtended, err = filepath.EvalSymlinks(tgtAbsPath)
+		if err != nil {
+			log.Fatalf("could not evaluate base import path with target \"%s\" (with symlink resolution): %v", tgtAbsPath, err)
+		}
+
+		gopath := os.Getenv("GOPATH")
+		if gopath == "" {
+			gopath = filepath.Join(os.Getenv("HOME"), "go")
+		}
+
+		var pth string
+		for _, gp := range filepath.SplitList(gopath) {
+			// EvalSymLinks also calls the Clean
+			gopathExtended, err := filepath.EvalSymlinks(gp)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			gopathExtended = filepath.Join(gopathExtended, "src")
+			gp = filepath.Join(gp, "src")
+
+			// Windows (local) file systems - NTFS, as well as FAT and variants
+			// are case insensitive.
+			if goruntime.GOOS == "windows" {
+				tgtAbsPath = strings.ToLower(tgtAbsPath)
+				tgtAbsPathExtended = strings.ToLower(tgtAbsPathExtended)
+				gopathExtended = strings.ToLower(gopathExtended)
+				gp = strings.ToLower(gp)
+			}
+
+			// At this stage we have expanded and unexpanded target path. GOPATH is fully expanded.
+			// Expanded means symlink free.
+			// We compare both types of targetpath<s> with gopath.
+			// If any one of them coincides with gopath , it is imperative that
+			// target path lies inside gopath. How?
+			// 		- Case 1: Irrespective of symlinks paths coincide. Both non-expanded paths.
+			// 		- Case 2: Symlink in target path points to location inside GOPATH. (Expanded Target Path)
+			//    - Case 3: Symlink in target path points to directory outside GOPATH (Unexpanded target path)
+
+			// Case 1: - Do nothing case. If non-expanded paths match just genrate base import path as if
+			//				   there are no symlinks.
+
+			// Case 2: - Symlink in target path points to location inside GOPATH. (Expanded Target Path)
+			//					 First if will fail. Second if will succeed.
+
+			// Case 3: - Symlink in target path points to directory outside GOPATH (Unexpanded target path)
+			// 					 First if will succeed and break.
+
+			//compares non expanded path for both
+			if ok, relativepath := checkPrefixAndFetchRelativePath(tgtAbsPath, gp); ok {
+				pth = relativepath
+				break
+			}
+
+			// Compares non-expanded target path
+			if ok, relativepath := checkPrefixAndFetchRelativePath(tgtAbsPath, gopathExtended); ok {
+				pth = relativepath
+				break
+			}
+
+			// Compares expanded target path.
+			if ok, relativepath := checkPrefixAndFetchRelativePath(tgtAbsPathExtended, gopathExtended); ok {
+				pth = relativepath
+				break
+			}
+
+		}
+
+		if pth == "" {
+			log.Fatalln("target must reside inside a location in the $GOPATH/src")
+		}
+		return pth
 	}
 	opts.Init()
 	return opts
@@ -835,14 +928,21 @@ func validateAndFlattenSpec(opts *GenOpts, specDoc *loads.Document) (*loads.Docu
 		return nil, err
 	}
 
-	// Flatten if needed
-	if opts.FlattenSpec {
-		flattenOpts := analysis.FlattenOpts{
-			BasePath: specDoc.SpecFilePath(),
-			Spec:     analysis.New(specDoc.Spec()),
-		}
-		err = analysis.Flatten(flattenOpts)
+	absBasePath := specDoc.SpecFilePath()
+	if !filepath.IsAbs(absBasePath) {
+		cwd, _ := os.Getwd()
+		absBasePath = filepath.Join(cwd, absBasePath)
 	}
+	/********************************************************************************************/
+	/* Either flatten or expand should be called here before moving on the code generation part */
+	/********************************************************************************************/
+	flattenOpts := analysis.FlattenOpts{
+		Expand: !opts.FlattenSpec,
+		// BasePath must be absolute. This is guaranteed because opts.Spec is absolute
+		BasePath: absBasePath,
+		Spec:     analysis.New(specDoc.Spec()),
+	}
+	err = analysis.Flatten(flattenOpts)
 
 	return specDoc, nil
 }

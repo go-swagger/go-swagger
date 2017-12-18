@@ -23,7 +23,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	goruntime "runtime"
 	"sort"
 	"strings"
 
@@ -70,12 +69,22 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 	// Load the spec
 	var err error
 	var specDoc *loads.Document
+
+	opts.Spec, err = findSwaggerSpec(opts.Spec)
+	if err != nil {
+		return nil, err
+	}
+
+	if !filepath.IsAbs(opts.Spec) {
+		cwd, _ := os.Getwd()
+		opts.Spec = filepath.Join(cwd, opts.Spec)
+	}
+
 	opts.Spec, specDoc, err = loadSpec(opts.Spec)
 	if err != nil {
 		return nil, err
 	}
 
-	// Validate and Expand. specDoc is in/out param.
 	specDoc, err = validateAndFlattenSpec(opts, specDoc)
 	if err != nil {
 		return nil, err
@@ -170,91 +179,6 @@ func checkPrefixAndFetchRelativePath(childpath string, parentpath string) (bool,
 
 }
 
-func baseImport(tgt string) string {
-	// On Windows, filepath.Abs("") behaves differently than on Unix.
-	// Windows: yields an error, since Abs() does not know the volume.
-	// UNIX: returns current working directory
-	if tgt == "" {
-		tgt = "."
-	}
-	tgtAbsPath, err := filepath.Abs(tgt)
-	if err != nil {
-		log.Fatalf("could not evaluate base import path with target \"%s\": %v", tgt, err)
-	}
-	var tgtAbsPathExtended string
-	tgtAbsPathExtended, err = filepath.EvalSymlinks(tgtAbsPath)
-	if err != nil {
-		log.Fatalf("could not evaluate base import path with target \"%s\" (with symlink resolution): %v", tgtAbsPath, err)
-	}
-
-	gopath := os.Getenv("GOPATH")
-	if gopath == "" {
-		gopath = filepath.Join(os.Getenv("HOME"), "go")
-	}
-
-	var pth string
-	for _, gp := range filepath.SplitList(gopath) {
-		// EvalSymLinks also calls the Clean
-		gopathExtended, err := filepath.EvalSymlinks(gp)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		gopathExtended = filepath.Join(gopathExtended, "src")
-		gp = filepath.Join(gp, "src")
-
-		// Windows (local) file systems - NTFS, as well as FAT and variants
-		// are case insensitive.
-		if goruntime.GOOS == "windows" {
-			tgtAbsPath = strings.ToLower(tgtAbsPath)
-			tgtAbsPathExtended = strings.ToLower(tgtAbsPathExtended)
-			gopathExtended = strings.ToLower(gopathExtended)
-			gp = strings.ToLower(gp)
-		}
-
-		// At this stage we have expanded and unexpanded target path. GOPATH is fully expanded.
-		// Expanded means symlink free.
-		// We compare both types of targetpath<s> with gopath.
-		// If any one of them coincides with gopath , it is imperative that
-		// target path lies inside gopath. How?
-		// 		- Case 1: Irrespective of symlinks paths coincide. Both non-expanded paths.
-		// 		- Case 2: Symlink in target path points to location inside GOPATH. (Expanded Target Path)
-		//    - Case 3: Symlink in target path points to directory outside GOPATH (Unexpanded target path)
-
-		// Case 1: - Do nothing case. If non-expanded paths match just genrate base import path as if
-		//				   there are no symlinks.
-
-		// Case 2: - Symlink in target path points to location inside GOPATH. (Expanded Target Path)
-		//					 First if will fail. Second if will succeed.
-
-		// Case 3: - Symlink in target path points to directory outside GOPATH (Unexpanded target path)
-		// 					 First if will succeed and break.
-
-		//compares non expanded path for both
-		if ok, relativepath := checkPrefixAndFetchRelativePath(tgtAbsPath, gp); ok {
-			pth = relativepath
-			break
-		}
-
-		// Compares non-expanded target path
-		if ok, relativepath := checkPrefixAndFetchRelativePath(tgtAbsPath, gopathExtended); ok {
-			pth = relativepath
-			break
-		}
-
-		// Compares expanded target path.
-		if ok, relativepath := checkPrefixAndFetchRelativePath(tgtAbsPathExtended, gopathExtended); ok {
-			pth = relativepath
-			break
-		}
-
-	}
-
-	if pth == "" {
-		log.Fatalln("target must reside inside a location in the $GOPATH/src")
-	}
-	return pth
-}
-
 func (a *appGenerator) Generate() error {
 
 	app, err := a.makeCodegenApp()
@@ -342,11 +266,11 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 		}
 		app = &ca
 	}
-
-	importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage))
+	baseImport := a.GenOpts.LanguageOpts.baseImport(a.Target)
+	importPath := filepath.ToSlash(filepath.Join(baseImport, a.ServerPackage, a.APIPackage))
 	app.DefaultImports = append(
 		app.DefaultImports,
-		filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage)),
+		filepath.ToSlash(filepath.Join(baseImport, a.ServerPackage)),
 		importPath,
 	)
 
@@ -578,6 +502,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	var defaultImports []string
 
 	jsonb, _ := json.MarshalIndent(a.SpecDoc.OrigSpec(), "", "  ")
+	flatjsonb, _ := json.MarshalIndent(a.SpecDoc.Spec(), "", "  ")
 
 	consumes, _ := a.makeConsumes()
 	produces, _ := a.makeProduces()
@@ -588,11 +513,12 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		prin = "interface{}"
 	}
 	security := a.makeSecuritySchemes()
+	baseImport := a.GenOpts.LanguageOpts.baseImport(a.Target)
 
 	var genMods []GenDefinition
 	importPath := a.GenOpts.ExistingModels
 	if a.GenOpts.ExistingModels == "" {
-		importPath = filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ModelsPackage))
+		importPath = filepath.ToSlash(filepath.Join(baseImport, a.ModelsPackage))
 	}
 
 	defaultImports = append(defaultImports, importPath)
@@ -671,7 +597,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	}
 	for k := range tns {
-		importPath := filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage, swag.ToFileName(k)))
+		importPath := filepath.ToSlash(filepath.Join(baseImport, a.ServerPackage, a.APIPackage, swag.ToFileName(k)))
 		defaultImports = append(defaultImports, importPath)
 	}
 	sort.Sort(genOps)
@@ -691,20 +617,20 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		opGroup := GenOperationGroup{
 			GenCommon: GenCommon{
 				Copyright:        a.GenOpts.Copyright,
-				TargetImportPath: filepath.ToSlash(baseImport(a.Target)),
+				TargetImportPath: filepath.ToSlash(baseImport),
 			},
 			Name:           k,
 			Operations:     v,
-			DefaultImports: []string{filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ModelsPackage))},
+			DefaultImports: []string{filepath.ToSlash(filepath.Join(baseImport, a.ModelsPackage))},
 			RootPackage:    a.APIPackage,
 			WithContext:    a.GenOpts != nil && a.GenOpts.WithContext,
 		}
 		opGroups = append(opGroups, opGroup)
 		var importPath string
 		if k == a.APIPackage {
-			importPath = filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage))
+			importPath = filepath.ToSlash(filepath.Join(baseImport, a.ServerPackage, a.APIPackage))
 		} else {
-			importPath = filepath.ToSlash(filepath.Join(baseImport(a.Target), a.ServerPackage, a.APIPackage, k))
+			importPath = filepath.ToSlash(filepath.Join(baseImport, a.ServerPackage, a.APIPackage, k))
 		}
 		defaultImports = append(defaultImports, importPath)
 	}
@@ -734,7 +660,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	return GenApp{
 		GenCommon: GenCommon{
 			Copyright:        a.GenOpts.Copyright,
-			TargetImportPath: filepath.ToSlash(baseImport(a.Target)),
+			TargetImportPath: filepath.ToSlash(baseImport),
 		},
 		APIPackage:          a.ServerPackage,
 		Package:             a.Package,
@@ -757,6 +683,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		OperationGroups:     opGroups,
 		Principal:           prin,
 		SwaggerJSON:         generateReadableSpec(jsonb),
+		FlatSwaggerJSON:     generateReadableSpec(flatjsonb),
 		ExcludeSpec:         a.GenOpts != nil && a.GenOpts.ExcludeSpec,
 		WithContext:         a.GenOpts != nil && a.GenOpts.WithContext,
 		GenOpts:             a.GenOpts,

@@ -6,6 +6,7 @@ package internal
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -32,6 +33,7 @@ func TestRetrieveTokenBustedNoSecret(t *testing.T) {
 		if got, want := r.FormValue("client_secret"), ""; got != want {
 			t.Errorf("client_secret = %q; want empty", got)
 		}
+		io.WriteString(w, "{}") // something non-empty, required to set a Content-Type in Go 1.10
 	}))
 	defer ts.Close()
 
@@ -82,7 +84,9 @@ func TestProviderAuthHeaderWorksDomain(t *testing.T) {
 func TestRetrieveTokenWithContexts(t *testing.T) {
 	const clientID = "client-id"
 
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, "{}") // something non-empty, required to set a Content-Type in Go 1.10
+	}))
 	defer ts.Close()
 
 	_, err := RetrieveToken(context.Background(), clientID, "", ts.URL, url.Values{})

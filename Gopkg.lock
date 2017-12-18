@@ -47,7 +47,7 @@
   branch = "master"
   name = "github.com/go-openapi/analysis"
   packages = ["."]
-  revision = "8ed83f2ea9f00f945516462951a288eaa68bf0d6"
+  revision = "96b830073f22d307c347d4ba54348ba6eee7d237"
 
 [[projects]]
   branch = "master"
@@ -77,19 +77,19 @@
   branch = "master"
   name = "github.com/go-openapi/loads"
   packages = [".","fmts"]
-  revision = "c3e1ca4c0b6160cac10aeef7e8b425cc95b9c820"
+  revision = "2a2b323bab96e6b1fdee110e57d959322446e9c9"
 
 [[projects]]
   branch = "master"
   name = "github.com/go-openapi/runtime"
   packages = [".","client","flagext","logger","middleware","middleware/denco","middleware/header","middleware/untyped","security"]
-  revision = "94927f8c9742791a9aa46c6c3965f0a37025f41d"
+  revision = "55d76b2319213cf30fdb7c4ae3a01541f5404c16"
 
 [[projects]]
   branch = "master"
   name = "github.com/go-openapi/spec"
   packages = ["."]
-  revision = "5a4a1e94454f878ce1e1fefff23ea10bd5dd5110"
+  revision = "01738944bdee0f26bf66420c5b17d54cfdf55341"
 
 [[projects]]
   branch = "master"
@@ -130,7 +130,7 @@
 [[projects]]
   branch = "master"
   name = "github.com/hashicorp/hcl"
-  packages = [".","hcl/ast","hcl/parser","hcl/scanner","hcl/strconv","hcl/token","json/parser","json/scanner","json/token"]
+  packages = [".","hcl/ast","hcl/parser","hcl/printer","hcl/scanner","hcl/strconv","hcl/token","json/parser","json/scanner","json/token"]
   revision = "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
 
 [[projects]]
@@ -215,7 +215,7 @@
   branch = "master"
   name = "github.com/spf13/viper"
   packages = ["."]
-  revision = "4dddf7c62e16bce5807744018f5b753bfe21bbd2"
+  revision = "1a0c4a370c3e8286b835467d2dfcdaf636c3538b"
 
 [[projects]]
   name = "github.com/stretchr/testify"
@@ -245,31 +245,31 @@
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context","context/ctxhttp","idna"]
-  revision = "a8b9294777976932365dabb6640cf1468d95c70f"
+  revision = "faacc1b5e36e3ff02cbec9661c69ac63dd5a83ad"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/oauth2"
   packages = [".","internal"]
-  revision = "f95fa95eaa936d9d87489b15d1d18b97c1ba9c28"
+  revision = "6a2004c8907a86949d71c664c81574897a4e55a6"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "8b4580aae2a0dd0c231a45d3ccb8434ff533b840"
+  revision = "a0f4589a76f1f83070cb9e5613809e1d07b97c13"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/text"
   packages = ["collate","collate/build","internal/colltab","internal/gen","internal/tag","internal/triegen","internal/ucd","language","secure/bidirule","transform","unicode/bidi","unicode/cldr","unicode/norm","unicode/rangetable","width"]
-  revision = "57961680700a5336d15015c8c50686ca5ba362a4"
+  revision = "be25de41fadfae372d6470bda81ca6beb55ef551"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/tools"
   packages = ["go/ast/astutil","go/buildutil","go/loader","imports"]
-  revision = "04447353bc504b9a5c02eb227b9ecd252e64ea20"
+  revision = "71657689f07604379fce067b57ff757f42c0bf3d"
 
 [[projects]]
   name = "google.golang.org/appengine"

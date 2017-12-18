@@ -328,7 +328,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) Serve(builder middleware.Buil
   return {{.ReceiverName}}.context.APIHandler(builder)
 }
 
-// Init allows you to just initialize the handler cache, you can then recompose the middelware as you see fit
+// Init allows you to just initialize the handler cache, you can then recompose the middleware as you see fit
 func ({{.ReceiverName}} *{{ pascalize .Name }}API) Init() {
   if len({{.ReceiverName}}.handlers) == 0 {
     {{.ReceiverName}}.initHandlerCache()
