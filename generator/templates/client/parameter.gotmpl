@@ -10,7 +10,6 @@ package {{ .Package }}
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-  "os"
   "net/http"
 
   "golang.org/x/net/context"
@@ -93,7 +92,7 @@ type {{ pascalize .Name }}Params struct {
   {{ blockcomment .Description }}
 
   {{ end }}*/
-  {{ pascalize .ID }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{end}}
+  {{ pascalize .ID }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}runtime.NamedReadCloser{{end}}
   {{ end }}
 
   {{ camelize .TimeoutName }} time.Duration
@@ -136,13 +135,13 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) SetHTTPClient(client *ht
 
 {{ range .Params }}
 // With{{ pascalize .ID }} adds the {{ varname .Name  }} to the {{ humanize $.Name }} params
-func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) With{{ pascalize .ID }}({{ varname .Name  }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (not .IsStream) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{ end }}) *{{ pascalize $.Name }}Params {
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) With{{ pascalize .ID }}({{ varname .Name  }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (not .IsStream) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}runtime.NamedReadCloser{{ end }}) *{{ pascalize $.Name }}Params {
   {{ $.ReceiverName }}.Set{{ pascalize .ID }}({{ varname .Name  }})
   return {{ .ReceiverName }}
 }
 
 // Set{{ pascalize .ID }} adds the {{ camelize .Name  }} to the {{ humanize $.Name }} params
-func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) Set{{ pascalize .ID }}({{ varname .Name  }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (not .IsStream) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}os.File{{ end }}) {
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) Set{{ pascalize .ID }}({{ varname .Name  }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (not .IsStream) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}runtime.NamedReadCloser{{ end }}) {
   {{ $.ReceiverName }}.{{ pascalize .ID }} = {{ varname .Name  }}
 }
 
@@ -186,7 +185,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r runtime
   if {{ .ValueExpression }} != nil {
   {{end}}
     // form file param {{ .Name }}
-    if err := r.SetFileParam({{ printf "%q" .Name }}, {{ if not .IsNullable}}&{{end}}{{ .ValueExpression }}); err != nil {
+    if err := r.SetFileParam({{ printf "%q" .Name }}, {{ .ValueExpression }}); err != nil {
       return err
     }
   {{ if .IsNullable}}
