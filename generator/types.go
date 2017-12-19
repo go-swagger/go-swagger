@@ -644,7 +644,9 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	}
 
 	if t.firstType(schema) == file {
+		result.SwaggerType = file
 		result.IsPrimitive = true
+		result.IsNullable = false
 		result.GoType = typeMapping[binary]
 		result.IsStream = true
 		return
