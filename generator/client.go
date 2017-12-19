@@ -96,26 +96,32 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 	}
 
 	generator := appGenerator{
-		Name:            appNameOrDefault(specDoc, name, "rest"),
-		SpecDoc:         specDoc,
-		Analyzed:        analyzed,
-		Models:          models,
-		Operations:      operations,
-		Target:          opts.Target,
-		DumpData:        opts.DumpData,
-		Package:         opts.LanguageOpts.MangleName(swag.ToFileName(opts.ClientPackage), "client"),
-		APIPackage:      opts.LanguageOpts.MangleName(swag.ToFileName(opts.APIPackage), "api"),
-		ModelsPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
-		ServerPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ServerPackage), "server"),
-		ClientPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ClientPackage), "client"),
-		Principal:       opts.Principal,
-		DefaultScheme:   defaultScheme,
-		DefaultProduces: defaultProduces,
-		DefaultConsumes: defaultConsumes,
-		GenOpts:         opts,
+		Name:              appNameOrDefault(specDoc, name, "rest"),
+		SpecDoc:           specDoc,
+		Analyzed:          analyzed,
+		Models:            models,
+		Operations:        operations,
+		Target:            opts.Target,
+		DumpData:          opts.DumpData,
+		Package:           opts.LanguageOpts.MangleName(swag.ToFileName(opts.ClientPackage), "client"),
+		APIPackage:        opts.LanguageOpts.MangleName(swag.ToFileName(opts.APIPackage), "api"),
+		ModelsPackage:     opts.LanguageOpts.MangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
+		ServerPackage:     opts.LanguageOpts.MangleName(swag.ToFileName(opts.ServerPackage), "server"),
+		ClientPackage:     opts.LanguageOpts.MangleName(swag.ToFileName(opts.ClientPackage), "client"),
+		OperationsPackage: opts.LanguageOpts.MangleName(swag.ToFileName(opts.ClientPackage), "client"),
+		Principal:         opts.Principal,
+		DefaultScheme:     defaultScheme,
+		DefaultProduces:   defaultProduces,
+		DefaultConsumes:   defaultConsumes,
+		GenOpts:           opts,
 	}
 	generator.Receiver = "o"
 	return (&clientGenerator{generator}).Generate()
+}
+
+func manglePackageName(opts *GenOpts, nm, def string) string {
+	dir, fn := filepath.Split(nm)
+	return opts.LanguageOpts.MangleName(filepath.Join(dir, swag.ToFileName(fn)), def)
 }
 
 type clientGenerator struct {
@@ -128,9 +134,14 @@ func (c *clientGenerator) Generate() error {
 		app.Name = "APIClient"
 	}
 	baseImport := c.GenOpts.LanguageOpts.baseImport(c.Target)
-	app.DefaultImports = []string{c.GenOpts.ExistingModels}
+
 	if c.GenOpts.ExistingModels == "" {
-		app.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport, c.ModelsPackage))}
+		if app.Imports == nil {
+			app.Imports = make(map[string]string)
+		}
+		app.Imports[c.ModelsPackage] = filepath.ToSlash(filepath.Join(baseImport, manglePackageName(c.GenOpts, c.GenOpts.ModelPackage, "models")))
+	} else {
+		app.DefaultImports = append(app.DefaultImports, c.GenOpts.ExistingModels)
 	}
 	if err != nil {
 		return err

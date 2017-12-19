@@ -266,6 +266,7 @@ type codeGenOpBuilder struct {
 	Doc                 *loads.Document
 	Analyzed            *analysis.Spec
 	DefaultImports      []string
+	Imports             map[string]string
 	DefaultScheme       string
 	DefaultProduces     string
 	DefaultConsumes     string
@@ -479,6 +480,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		Description:          trimBOM(operation.Description),
 		ReceiverName:         receiver,
 		DefaultImports:       b.DefaultImports,
+		Imports:              b.Imports,
 		Params:               params,
 		Summary:              trimBOM(operation.Summary),
 		QueryParams:          qp,
@@ -564,8 +566,8 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 		ReceiverName:   receiver,
 		Name:           name,
 		Description:    trimBOM(resp.Description),
-		DefaultImports: nil,
-		Imports:        nil,
+		DefaultImports: b.DefaultImports,
+		Imports:        b.Imports,
 		IsSuccess:      isSuccess,
 		Code:           code,
 		Method:         b.Method,
