@@ -2,17 +2,17 @@
     "language": "de",
     "messages": [
         {
-            "id": "Hello world!\n",
+            "id": "Hello world!",
             "key": "Hello world!\n",
-            "message": "Hello world!\n",
-            "translation": "Hallo Welt!\n",
+            "message": "Hello world!",
+            "translation": "Hallo Welt!",
             "position": "golang.org/x/text/cmd/gotext/examples/extract/main.go:27:10"
         },
         {
-            "id": "Hello {City}!\n",
+            "id": "Hello {City}!",
             "key": "Hello %s!\n",
-            "message": "Hello {City}!\n",
-            "translation": "Hallo {City}!\n",
+            "message": "Hello {City}!",
+            "translation": "Hallo {City}!",
             "placeholders": [
                 {
                     "id": "City",
@@ -26,10 +26,10 @@
             "position": "golang.org/x/text/cmd/gotext/examples/extract/main.go:31:10"
         },
         {
-            "id": "Hello {Town}!\n",
+            "id": "Hello {Town}!",
             "key": "Hello %s!\n",
-            "message": "Hello {Town}!\n",
-            "translation": "Hallo {Town}!\n",
+            "message": "Hello {Town}!",
+            "translation": "Hallo {Town}!",
             "placeholders": [
                 {
                     "id": "Town",
@@ -44,10 +44,10 @@
             "position": "golang.org/x/text/cmd/gotext/examples/extract/main.go:35:10"
         },
         {
-            "id": "{Person} is visiting {Place}!\n",
+            "id": "{Person} is visiting {Place}!",
             "key": "%s is visiting %s!\n",
-            "message": "{Person} is visiting {Place}!\n",
-            "translation": "{Person} besucht {Place}!\n",
+            "message": "{Person} is visiting {Place}!",
+            "translation": "{Person} besucht {Place}!",
             "placeholders": [
                 {
                     "id": "Person",
@@ -71,10 +71,10 @@
             "position": "golang.org/x/text/cmd/gotext/examples/extract/main.go:40:10"
         },
         {
-            "id": "{Person} is visiting {Place}!\n",
+            "id": "{Person} is visiting {Place}!",
             "key": "%[1]s is visiting %[3]s!\n",
-            "message": "{Person} is visiting {Place}!\n",
-            "translation": "{Person} besucht {Place}!\n",
+            "message": "{Person} is visiting {Place}!",
+            "translation": "{Person} besucht {Place}!",
             "comment": "Person visiting a place.",
             "placeholders": [
                 {
@@ -123,9 +123,9 @@
             "position": "golang.org/x/text/cmd/gotext/examples/extract/main.go:67:10"
         },
         {
-            "id": "Use the following code for your discount: {ReferralCode}\n",
+            "id": "Use the following code for your discount: {ReferralCode}",
             "key": "Use the following code for your discount: %d\n",
-            "message": "Use the following code for your discount: {ReferralCode}\n",
+            "message": "Use the following code for your discount: {ReferralCode}",
             "translation": "",
             "placeholders": [
                 {

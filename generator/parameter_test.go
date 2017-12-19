@@ -982,6 +982,34 @@ func TestGenParameter_Issue1199(t *testing.T) {
 	}
 }
 
+func TestGenParameter_Issue1325(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+
+	assert := assert.New(t)
+
+	gen, err := opBuilder("uploadFile", "../fixtures/bugs/1325/swagger.yaml")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("clientParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("create_task_parameter.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertInCode(t, "runtime.NamedReadCloser", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
 func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 	assert := assert.New(t)
 
