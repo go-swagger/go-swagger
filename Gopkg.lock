@@ -102,7 +102,7 @@
   branch = "master"
   name = "github.com/go-openapi/spec"
   packages = ["."]
-  revision = "aa90e7cfc0a78736511f9eeab8f7586d98c8f53a"
+  revision = "7857ce96ae06c22ec6a066c7f770543327f3fed8"
 
 [[projects]]
   branch = "master"
