@@ -6,6 +6,7 @@ package pipeline
 
 import (
 	"encoding/json"
+	"errors"
 	"strings"
 
 	"golang.org/x/text/language"
@@ -35,7 +36,7 @@ type Message struct {
 	// ID contains a list of identifiers for the message.
 	ID IDList `json:"id"`
 	// Key is the string that is used to look up the message at runtime.
-	Key         string `json:"key"`
+	Key         string `json:"key,omitempty"`
 	Meaning     string `json:"meaning,omitempty"`
 	Message     Text   `json:"message"`
 	Translation Text   `json:"translation"`
@@ -44,6 +45,11 @@ type Message struct {
 	TranslatorComment string `json:"translatorComment,omitempty"`
 
 	Placeholders []Placeholder `json:"placeholders,omitempty"`
+
+	// Fuzzy indicates that the provide translation needs review by a
+	// translator, for instance because it was derived from automated
+	// translation.
+	Fuzzy bool `json:"fuzzy,omitempty"`
 
 	// TODO: default placeholder syntax is {foo}. Allow alternative escaping
 	// like `foo`.
@@ -92,6 +98,20 @@ func (m *Message) Substitute(msg string) (sub string, err error) {
 	}
 	sub += msg[last:]
 	return sub, err
+}
+
+var errIncompatibleMessage = errors.New("messages incompatible")
+
+func checkEquivalence(a, b *Message) error {
+	for _, v := range a.ID {
+		for _, w := range b.ID {
+			if v == w {
+				return nil
+			}
+		}
+	}
+	// TODO: canonicalize placeholders and check for type equivalence.
+	return errIncompatibleMessage
 }
 
 // A Placeholder is a part of the message that should not be changed by a

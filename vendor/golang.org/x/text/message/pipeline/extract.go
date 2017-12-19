@@ -145,9 +145,11 @@ func Extract(c *Config) (*State, error) {
 
 				ph := placeholders{index: map[string]string{}}
 
+				trimmed, _, _ := trimWS(fmtMsg)
+
 				p := fmtparser.Parser{}
 				p.Reset(simArgs)
-				for p.SetFormat(fmtMsg); p.Scan(); {
+				for p.SetFormat(trimmed); p.Scan(); {
 					switch p.Status {
 					case fmtparser.StatusText:
 						msg += p.Text()

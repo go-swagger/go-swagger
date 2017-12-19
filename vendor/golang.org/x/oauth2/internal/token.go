@@ -200,7 +200,10 @@ func RetrieveToken(ctx context.Context, clientID, clientSecret, tokenURL string,
 		return nil, fmt.Errorf("oauth2: cannot fetch token: %v", err)
 	}
 	if code := r.StatusCode; code < 200 || code > 299 {
-		return nil, fmt.Errorf("oauth2: cannot fetch token: %v\nResponse: %s", r.Status, body)
+		return nil, &RetrieveError{
+			Response: r,
+			Body:     body,
+		}
 	}
 
 	var token *Token
@@ -248,4 +251,13 @@ func RetrieveToken(ctx context.Context, clientID, clientSecret, tokenURL string,
 		token.RefreshToken = v.Get("refresh_token")
 	}
 	return token, nil
+}
+
+type RetrieveError struct {
+	Response *http.Response
+	Body     []byte
+}
+
+func (r *RetrieveError) Error() string {
+	return fmt.Sprintf("oauth2: cannot fetch token: %v\nResponse: %s", r.Response.Status, r.Body)
 }
