@@ -2,9 +2,8 @@
     "language": "zh",
     "messages": [
         {
-            "id": "Hello {From}!\n",
-            "key": "Hello %s!\n",
-            "message": "Hello {From}!\n",
+            "id": "Hello {From}!",
+            "message": "Hello {From}!",
             "translation": "",
             "placeholders": [
                 {
@@ -15,13 +14,11 @@
                     "argNum": 1,
                     "expr": "r.Header.Get(\"From\")"
                 }
-            ],
-            "position": "golang.org/x/text/cmd/gotext/examples/extract_http/pkg/pkg.go:22:11"
+            ]
         },
         {
-            "id": "Do you like your browser ({User_Agent})?\n",
-            "key": "Do you like your browser (%s)?\n",
-            "message": "Do you like your browser ({User_Agent})?\n",
+            "id": "Do you like your browser ({User_Agent})?",
+            "message": "Do you like your browser ({User_Agent})?",
             "translation": "",
             "placeholders": [
                 {
@@ -32,8 +29,7 @@
                     "argNum": 1,
                     "expr": "r.Header.Get(\"User-Agent\")"
                 }
-            ],
-            "position": "golang.org/x/text/cmd/gotext/examples/extract_http/pkg/pkg.go:24:11"
+            ]
         }
     ]
 }

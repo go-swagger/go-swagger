@@ -91,7 +91,7 @@ func ResolveRefWithBase(root interface{}, ref *Ref, opts *ExpandOptions) (*Schem
 		return nil, err
 	}
 	specBasePath := ""
-	if opts != nil {
+	if opts != nil && opts.RelativeBase != "" {
 		specBasePath, _ = absPath(opts.RelativeBase)
 	}
 
@@ -466,7 +466,7 @@ func ExpandSpec(spec *Swagger, options *ExpandOptions) error {
 
 	// getting the base path of the spec to adjust all subsequent reference resolutions
 	specBasePath := ""
-	if options != nil {
+	if options != nil && options.RelativeBase != "" {
 		specBasePath, _ = absPath(options.RelativeBase)
 	}
 
@@ -561,8 +561,12 @@ func ExpandSchemaWithBasePath(schema *Schema, cache ResolutionCache, opts *Expan
 	}
 
 	if opts == nil {
-		return errors.New("cannot expand schema without a basPath")
+		return errors.New("cannot expand schema without a base path")
 	}
+	if opts.RelativeBase == "" {
+		return errors.New("cannot expand schema with empty base path")
+	}
+
 	basePath, _ := absPath(opts.RelativeBase)
 
 	resolver, err := defaultSchemaLoader(nil, opts, cache)

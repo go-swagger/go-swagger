@@ -265,7 +265,7 @@ func (r *Runtime) Submit(operation *runtime.ClientOperation) (interface{}, error
 		if err2 != nil {
 			return nil, err2
 		}
-		r.logger.Debugf(string(b) + "\n")
+		r.logger.Debugf("%s\n", string(b))
 	}
 
 	var hasTimeout bool
@@ -305,7 +305,7 @@ func (r *Runtime) Submit(operation *runtime.ClientOperation) (interface{}, error
 		if err2 != nil {
 			return nil, err2
 		}
-		r.logger.Debugf(string(b) + "\n")
+		r.logger.Debugf("%s\n", string(b))
 	}
 
 	ct := res.Header.Get(runtime.HeaderContentType)

@@ -1,0 +1,20 @@
+swagger: "2.0"
+info:
+  title: test for upload
+  version: "0.0.1"
+paths:
+  /files/:
+    post:
+      summary: upload the files.
+      operationId: uploadFile
+      consumes:
+      - multipart/form-data
+      parameters:
+      - in: "formData"
+        name: "body"
+        required: true
+        type: "file"
+      responses:
+        default:
+          description: default response
+definitions: {}

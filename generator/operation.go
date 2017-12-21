@@ -266,6 +266,7 @@ type codeGenOpBuilder struct {
 	Doc                 *loads.Document
 	Analyzed            *analysis.Spec
 	DefaultImports      []string
+	Imports             map[string]string
 	DefaultScheme       string
 	DefaultProduces     string
 	DefaultConsumes     string
@@ -416,7 +417,9 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 
 	var extra GenSchemaList
 	for _, sch := range b.ExtraSchemas {
-		extra = append(extra, sch)
+		if !sch.IsStream {
+			extra = append(extra, sch)
+		}
 	}
 	sort.Sort(extra)
 
@@ -477,6 +480,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		Description:          trimBOM(operation.Description),
 		ReceiverName:         receiver,
 		DefaultImports:       b.DefaultImports,
+		Imports:              b.Imports,
 		Params:               params,
 		Summary:              trimBOM(operation.Summary),
 		QueryParams:          qp,
@@ -562,8 +566,8 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 		ReceiverName:   receiver,
 		Name:           name,
 		Description:    trimBOM(resp.Description),
-		DefaultImports: nil,
-		Imports:        nil,
+		DefaultImports: b.DefaultImports,
+		Imports:        b.Imports,
 		IsSuccess:      isSuccess,
 		Code:           code,
 		Method:         b.Method,
@@ -616,7 +620,9 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 			if b.ExtraSchemas == nil {
 				b.ExtraSchemas = make(map[string]GenSchema)
 			}
-			b.ExtraSchemas[k] = v
+			if !v.IsStream {
+				b.ExtraSchemas[k] = v
+			}
 		}
 
 		schema := sc.GenSchema
@@ -624,7 +630,9 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 			if b.ExtraSchemas == nil {
 				b.ExtraSchemas = make(map[string]GenSchema)
 			}
-			b.ExtraSchemas[schema.Name] = schema
+			if !schema.IsStream {
+				b.ExtraSchemas[schema.Name] = schema
+			}
 		}
 		if schema.IsAnonymous {
 
@@ -633,7 +641,9 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 			if b.ExtraSchemas == nil {
 				b.ExtraSchemas = make(map[string]GenSchema)
 			}
-			b.ExtraSchemas[schema.Name] = schema
+			if !schema.IsStream {
+				b.ExtraSchemas[schema.Name] = schema
+			}
 			schema = GenSchema{}
 			schema.IsAnonymous = false
 			schema.GoType = resolver.goTypeName(nm)

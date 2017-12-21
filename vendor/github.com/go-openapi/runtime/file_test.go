@@ -1,14 +1,20 @@
 package runtime
 
 import (
-	"github.com/stretchr/testify/assert"
 	"io"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFileImplementsIOReader(t *testing.T) {
-	var file interface{} = File{}
+	var file interface{} = &File{}
 	expected := "that File implements io.Reader"
-	_, ok := file.(io.Reader)
-	assert.True(t, ok, expected)
+	assert.Implements(t, new(io.Reader), file, expected)
+}
+
+func TestFileImplementsIOReadCloser(t *testing.T) {
+	var file interface{} = &File{}
+	expected := "that File implements io.ReadCloser"
+	assert.Implements(t, new(io.ReadCloser), file, expected)
 }
