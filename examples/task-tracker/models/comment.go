@@ -38,12 +38,6 @@ type Comment struct {
 	User *UserCard `json:"user"`
 }
 
-/* polymorph Comment content false */
-
-/* polymorph Comment createdAt false */
-
-/* polymorph Comment user false */
-
 // Validate validates this comment
 func (m *Comment) Validate(formats strfmt.Registry) error {
 	var res []error

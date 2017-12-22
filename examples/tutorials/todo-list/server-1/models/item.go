@@ -30,12 +30,6 @@ type Item struct {
 	ID int64 `json:"id,omitempty"`
 }
 
-/* polymorph item completed false */
-
-/* polymorph item description false */
-
-/* polymorph item id false */
-
 // Validate validates this item
 func (m *Item) Validate(formats strfmt.Registry) error {
 	var res []error

@@ -29,12 +29,6 @@ type MilestoneStats struct {
 	Total int32 `json:"total,omitempty"`
 }
 
-/* polymorph milestoneStats closed false */
-
-/* polymorph milestoneStats open false */
-
-/* polymorph milestoneStats total false */
-
 // Validate validates this milestone stats
 func (m *MilestoneStats) Validate(formats strfmt.Registry) error {
 	var res []error

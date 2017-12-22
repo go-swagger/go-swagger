@@ -6,6 +6,7 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"io"
 	"mime/multipart"
 	"net/http"
 
@@ -40,7 +41,7 @@ type UploadTaskFileParams struct {
 	/*The file to upload
 	  In: formData
 	*/
-	File *runtime.File
+	File io.ReadCloser
 	/*The id of the item
 	  Required: true
 	  In: path
