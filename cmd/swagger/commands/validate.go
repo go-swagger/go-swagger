@@ -19,10 +19,16 @@ import (
 	"fmt"
 	"log"
 
-	swaggererrors "github.com/go-openapi/errors"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
+)
+
+const (
+	missingArgMsg  = "The validate command requires the swagger document url to be specified"
+	validSpecMsg   = "\nThe swagger spec at %q is valid against swagger specification %s\n"
+	invalidSpecMsg = "\nThe swagger spec at %q is invalid against swagger specification %s. See errors below:\n"
+	warningSpecMsg = "\nThe swagger spec at %q showed up some valid but possiby unwanted constructs. See warnings below:\n"
 )
 
 // ValidateSpec is a command that validates a swagger document
@@ -33,25 +39,46 @@ type ValidateSpec struct {
 
 // Execute validates the spec
 func (c *ValidateSpec) Execute(args []string) error {
+	// TODO: make optional
+	showWarnings := true
+
 	if len(args) == 0 {
-		return errors.New("The validate command requires the swagger document url to be specified")
+		return errors.New(missingArgMsg)
 	}
 
 	swaggerDoc := args[0]
+
 	specDoc, err := loads.Spec(swaggerDoc)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	result := validate.Spec(specDoc, strfmt.Default)
-	if result == nil {
-		log.Printf("\nThe swagger spec at %q is valid against swagger specification %s\n", swaggerDoc, specDoc.Version())
-	} else {
-		str := fmt.Sprintf("The swagger spec at %q is invalid against swagger specification %s. see errors :\n", swaggerDoc, specDoc.Version())
-		for _, desc := range result.(*swaggererrors.CompositeError).Errors {
-			str += fmt.Sprintf("- %s\n", desc)
+	// Attempts to report about all errors
+	// TODO: as arg
+	validate.SetContinueOnErrors(true)
+
+	v := validate.NewSpecValidator(specDoc.Schema(), strfmt.Default)
+	result, _ := v.Validate(specDoc) // returns fully detailed result with errors and warnings
+	//result := validate.Spec(specDoc, strfmt.Default)		// returns single error
+
+	if result.IsValid() {
+		log.Printf(validSpecMsg, swaggerDoc, specDoc.Version())
+	}
+	if result.HasWarnings() {
+		log.Printf(warningSpecMsg, swaggerDoc)
+		if showWarnings {
+			for _, desc := range result.Warnings {
+				log.Printf("- %s\n", desc.Error())
+			}
+		}
+	}
+	if result.HasErrors() {
+		str := fmt.Sprintf(invalidSpecMsg, swaggerDoc, specDoc.Version())
+		for _, desc := range result.Errors {
+			str += fmt.Sprintf("- %s\n", desc.Error())
 		}
 		return errors.New(str)
 	}
+
 	return nil
 }
