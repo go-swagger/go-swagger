@@ -1,0 +1,40 @@
+swagger: '2.0'
+info:
+  title: Test API
+  description: my test
+  version: "0.1.0"
+
+host: test.test.com
+
+schemes:
+  - https
+
+basePath: /
+
+produces:
+  - application/json
+consumes:
+  - application/json
+
+paths:
+  /:
+    get:
+      summary: Find a thing
+      description: It's acool thing
+      tags:
+        - Root
+      responses:
+        307:
+          description: Redirect to a thing.
+
+definitions:
+  MyFirstObject:
+    type: object
+    properties:
+      entree_choice:
+        type: object
+        additionalProperties:
+          type: string
+          enum:
+            - Beef
+            - Vegan

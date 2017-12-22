@@ -19,6 +19,14 @@
                 "description": "ignores non-arrays",
                 "data": {"foo" : "bar"},
                 "valid": true
+            },
+            {
+                "description": "JavaScript pseudo-array is valid",
+                "data": {
+                    "0": "invalid",
+                    "length": 1
+                },
+                "valid": true
             }
         ]
     },
@@ -54,6 +62,15 @@
             {
                 "description": "empty array",
                 "data": [ ],
+                "valid": true
+            },
+            {
+                "description": "JavaScript pseudo-array is valid",
+                "data": {
+                    "0": "invalid",
+                    "1": "valid",
+                    "length": 2
+                },
                 "valid": true
             }
         ]

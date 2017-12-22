@@ -29,10 +29,6 @@ type AddCommentToTaskParamsBody struct {
 	UserID *int64 `json:"userId"`
 }
 
-/* polymorph addCommentToTaskParamsBody content false */
-
-/* polymorph addCommentToTaskParamsBody userId false */
-
 // Validate validates this add comment to task params body
 func (m *AddCommentToTaskParamsBody) Validate(formats strfmt.Registry) error {
 	var res []error

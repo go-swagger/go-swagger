@@ -52,16 +52,6 @@ type TaskAllOf1AttachmentsAdditionalProperties struct {
 	URL strfmt.URI `json:"url,omitempty"`
 }
 
-/* polymorph taskAllOf1AttachmentsAdditionalProperties contentType false */
-
-/* polymorph taskAllOf1AttachmentsAdditionalProperties description false */
-
-/* polymorph taskAllOf1AttachmentsAdditionalProperties name false */
-
-/* polymorph taskAllOf1AttachmentsAdditionalProperties size false */
-
-/* polymorph taskAllOf1AttachmentsAdditionalProperties url false */
-
 // Validate validates this task all of1 attachments additional properties
 func (m *TaskAllOf1AttachmentsAdditionalProperties) Validate(formats strfmt.Registry) error {
 	var res []error

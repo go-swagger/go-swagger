@@ -23,10 +23,6 @@ type Category struct {
 	Name string `json:"name,omitempty"`
 }
 
-/* polymorph Category id false */
-
-/* polymorph Category name false */
-
 // Validate validates this category
 func (m *Category) Validate(formats strfmt.Registry) error {
 	var res []error

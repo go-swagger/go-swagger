@@ -1,0 +1,67 @@
+---
+swagger: "2.0"
+info:
+  version: "0.1.0"
+  title: issue#859. Reference validation
+paths:
+  /:
+    post:
+      parameters:
+        # error
+        - $ref: "#/parameters/rateLimit"
+        # error: $ref sibling
+        - name: myparam
+          in: query
+          type: string
+      responses:
+        200:
+          description: "Success"
+    get:
+      parameters:
+        # error
+        - $ref: "#/parameters/rateLimit"
+        # error $ref sibling
+        - name: myparam
+          in: query
+          schema:
+            # error
+            $ref: '#/definitions/myparam'
+      responses:
+        default:
+          description: the record
+          schema:
+            # error
+            $ref: "#/definitions/record"
+        404:
+          $ref: "#/responses/notFound"
+        200:
+          description: "Success"
+          schema:
+            # error
+            $ref: "#definitions/myoutput"
+
+parameters:
+  rateLimits:
+    name: X-Rate-Limit
+    in: header
+    type: integer
+    format: int32
+
+responses:
+  notFound:
+    description: Not found
+    schema:
+      # error
+      $ref: "#/definitions/record"
+
+definitions:
+  records:
+    type: object
+    properties:
+      createdAt:
+        type: string
+        format: date-time
+  myparams:
+    type: string
+  myoutputs:
+    type: string

@@ -47,14 +47,6 @@ type Milestone struct {
 	Stats *MilestoneStats `json:"stats,omitempty"`
 }
 
-/* polymorph Milestone description false */
-
-/* polymorph Milestone dueDate false */
-
-/* polymorph Milestone name false */
-
-/* polymorph Milestone stats false */
-
 // Validate validates this milestone
 func (m *Milestone) Validate(formats strfmt.Registry) error {
 	var res []error

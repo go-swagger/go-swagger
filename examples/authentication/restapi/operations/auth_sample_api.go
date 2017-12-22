@@ -19,8 +19,9 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	"github.com/go-swagger/go-swagger/examples/authentication/models"
 	"github.com/go-swagger/go-swagger/examples/authentication/restapi/operations/customers"
+
+	models "github.com/go-swagger/go-swagger/examples/authentication/models"
 )
 
 // NewAuthSampleAPI creates a new AuthSample instance
@@ -292,7 +293,7 @@ func (o *AuthSampleAPI) Serve(builder middleware.Builder) http.Handler {
 	return o.context.APIHandler(builder)
 }
 
-// Init allows you to just initialize the handler cache, you can then recompose the middelware as you see fit
+// Init allows you to just initialize the handler cache, you can then recompose the middleware as you see fit
 func (o *AuthSampleAPI) Init() {
 	if len(o.handlers) == 0 {
 		o.initHandlerCache()

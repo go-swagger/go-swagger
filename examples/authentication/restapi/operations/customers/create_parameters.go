@@ -12,7 +12,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/go-swagger/go-swagger/examples/authentication/models"
+	models "github.com/go-swagger/go-swagger/examples/authentication/models"
 )
 
 // NewCreateParams creates a new CreateParams object

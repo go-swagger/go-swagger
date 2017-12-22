@@ -1,0 +1,25 @@
+---
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: Breaking API as described by emsa23
+paths:
+  /:
+    get:
+      operationId: getFoo
+      responses:
+        200:
+          $ref: '#/responses/200'
+responses:
+  '200':
+    description: ok
+    headers:
+      status:
+        type: array
+        items:
+          type: string
+          enum:
+          - NEW
+          - PUBLISHED
+          - OPEN
+          - FINISHED

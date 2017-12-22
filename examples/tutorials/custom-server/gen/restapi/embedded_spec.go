@@ -9,11 +9,49 @@ import (
 	"encoding/json"
 )
 
-// SwaggerJSON embedded version of the swagger document used at generation time
-var SwaggerJSON json.RawMessage
+var (
+	// SwaggerJSON embedded version of the swagger document used at generation time
+	SwaggerJSON json.RawMessage
+	// FlatSwaggerJSON embedded flattened version of the swagger document used at generation time
+	FlatSwaggerJSON json.RawMessage
+)
 
 func init() {
 	SwaggerJSON = json.RawMessage([]byte(`{
+  "swagger": "2.0",
+  "info": {
+    "title": "Greeting Server",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/hello": {
+      "get": {
+        "produces": [
+          "text/plain"
+        ],
+        "operationId": "getGreeting",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "defaults to World if not given",
+            "name": "name",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "returns a greeting",
+            "schema": {
+              "description": "contains the actual greeting as plain text",
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}`))
+	FlatSwaggerJSON = json.RawMessage([]byte(`{
   "swagger": "2.0",
   "info": {
     "title": "Greeting Server",

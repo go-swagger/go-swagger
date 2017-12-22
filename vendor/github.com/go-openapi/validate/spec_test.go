@@ -16,9 +16,10 @@ package validate
 
 import (
 	"encoding/json"
+	"flag"
 	"io/ioutil"
-	"log"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/go-openapi/analysis"
@@ -29,8 +30,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// Enable long running tests by using cmd line arg,
+// e.g. go test ... -arg -enable-long
+// If not enabled, these tests are skipped
+// Current list of tests skipped by default:
+// - spec_test.go:TestIssue18
+// - messages_test.go:Test_Q
+// - swagger_test.go:Test_GoSwagger
+var enableLongTests bool
+
 func init() {
 	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
+	flag.BoolVar(&enableLongTests, "enable-long", false, "enable long runnning tests")
+}
+
+func skipNotify(t *testing.T) {
+	t.Log("To enable this long running test, use -args -enable-long in your go test command line")
 }
 
 func TestExpandResponseLocalFile(t *testing.T) {
@@ -59,9 +74,16 @@ func TestExpandResponseRecursive(t *testing.T) {
 	}
 }
 
+// Spec with no path
 func TestIssue52(t *testing.T) {
 	fp := filepath.Join("fixtures", "bugs", "52", "swagger.json")
 	jstext, _ := ioutil.ReadFile(fp)
+
+	status := continueOnErrors
+
+	defer func() {
+		SetContinueOnErrors(status)
+	}()
 
 	// as json schema
 	var sch spec.Schema
@@ -72,7 +94,9 @@ func TestIssue52(t *testing.T) {
 		assert.EqualError(t, res.Errors[0], ".paths in body is required")
 	}
 
-	// as swagger spec
+	// as swagger spec: path is set to nil
+	// Here, validation stops as paths is initialized to empty
+	SetContinueOnErrors(false)
 	doc, err := loads.Spec(fp)
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(doc.Schema(), strfmt.Default)
@@ -80,7 +104,22 @@ func TestIssue52(t *testing.T) {
 		assert.False(t, res.IsValid())
 		assert.EqualError(t, res.Errors[0], ".paths in body is required")
 	}
-
+	// Here, validation continues, with invalid path from early checks as null.
+	// This provides an additional (hopefully more informative) message.
+	SetContinueOnErrors(true) //
+	doc, err = loads.Spec(fp)
+	if assert.NoError(t, err) {
+		validator := NewSpecValidator(doc.Schema(), strfmt.Default)
+		res, _ := validator.Validate(doc)
+		assert.False(t, res.IsValid())
+		var verifiedErrors []string
+		for _, e := range res.Errors {
+			verifiedErrors = append(verifiedErrors, e.Error())
+		}
+		assert.Len(t, verifiedErrors, 2, "Unexpected number of error messages returned")
+		assert.Contains(t, verifiedErrors, ".paths in body is required")
+		assert.Contains(t, verifiedErrors, "spec has no valid path defined")
+	}
 }
 
 func TestIssue53(t *testing.T) {
@@ -96,7 +135,7 @@ func TestIssue53(t *testing.T) {
 		assert.EqualError(t, res.Errors[0], ".swagger in body is required")
 	}
 
-	// as swagger spec
+	// as swagger despec
 	doc, err := loads.Spec(fp)
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(doc.Schema(), strfmt.Default)
@@ -108,7 +147,6 @@ func TestIssue53(t *testing.T) {
 }
 
 func TestIssue62(t *testing.T) {
-	t.SkipNow()
 	fp := filepath.Join("fixtures", "bugs", "62", "swagger.json")
 
 	// as swagger spec
@@ -159,65 +197,159 @@ func TestIssue61_ResolvedRef(t *testing.T) {
 	}
 }
 
+// No error with this one
 func TestIssue123(t *testing.T) {
-	fp := filepath.Join("fixtures", "bugs", "123", "swagger.yml")
+	path := "swagger.yml"
+	fp := filepath.Join("fixtures", "bugs", "123", path)
 
 	// as swagger spec
 	doc, err := loads.Spec(fp)
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(doc.Schema(), strfmt.Default)
 		res, _ := validator.Validate(doc)
-		for _, e := range res.Errors {
-			log.Println(e)
-		}
 		assert.True(t, res.IsValid())
+
+		var verifiedErrors []string
+		for _, e := range res.Errors {
+			verifiedErrors = append(verifiedErrors, e.Error())
+		}
+		switch {
+		case strings.Contains(path, "swagger.yml"):
+			assert.Empty(t, verifiedErrors)
+		default:
+			t.Logf("Returned error messages: %v", verifiedErrors)
+			t.Fatal("fixture not tested. Please add assertions for messages")
+		}
+
+		if DebugTest {
+			if len(verifiedErrors) > 0 {
+				t.Logf("DEVMODE: Returned error messages validating %s ", path)
+				for _, v := range verifiedErrors {
+					t.Logf("%s", v)
+				}
+			}
+		}
 	}
 }
 
 func TestIssue6(t *testing.T) {
 	files, _ := filepath.Glob(filepath.Join("fixtures", "bugs", "6", "*.json"))
 	for _, path := range files {
+		t.Logf("Tested spec=%s", path)
 		doc, err := loads.Spec(path)
 		if assert.NoError(t, err) {
 			validator := NewSpecValidator(doc.Schema(), strfmt.Default)
 			res, _ := validator.Validate(doc)
-			for _, e := range res.Errors {
-				log.Println(e)
-			}
 			assert.False(t, res.IsValid())
+
+			var verifiedErrors []string
+			for _, e := range res.Errors {
+				verifiedErrors = append(verifiedErrors, e.Error())
+			}
+			switch {
+			case strings.Contains(path, "empty-responses.json"):
+				assert.Contains(t, verifiedErrors, "\"paths./foo.get.responses\" must not validate the schema (not)")
+				assert.Contains(t, verifiedErrors, "paths./foo.get.responses in body should have at least 1 properties")
+			case strings.Contains(path, "no-responses.json"):
+				assert.Contains(t, verifiedErrors, "paths./foo.get.responses in body is required")
+			default:
+				t.Logf("Returned error messages: %v", verifiedErrors)
+				t.Fatal("fixture not tested. Please add assertions for messages")
+			}
+			if DebugTest {
+				if len(verifiedErrors) > 0 {
+					t.Logf("DEVMODE:Returned error messages validating %s ", path)
+					for _, v := range verifiedErrors {
+						t.Logf("%s", v)
+					}
+				}
+			}
 		}
 	}
 }
 
 // check if invalid patterns are indeed invalidated
 func TestIssue18(t *testing.T) {
+	if !enableLongTests {
+		skipNotify(t)
+		t.SkipNow()
+	}
 	files, _ := filepath.Glob(filepath.Join("fixtures", "bugs", "18", "*.json"))
 	for _, path := range files {
+		t.Logf("Tested spec=%s", path)
 		doc, err := loads.Spec(path)
 		if assert.NoError(t, err) {
 			validator := NewSpecValidator(doc.Schema(), strfmt.Default)
 			res, _ := validator.Validate(doc)
-			for _, e := range res.Errors {
-				log.Println(e)
-			}
 			assert.False(t, res.IsValid())
+
+			var verifiedErrors []string
+			for _, e := range res.Errors {
+				verifiedErrors = append(verifiedErrors, e.Error())
+			}
+			switch {
+			case strings.Contains(path, "headerItems.json"):
+				assert.Contains(t, verifiedErrors, "X-Foo in header has invalid pattern: \")<-- bad pattern\"")
+			case strings.Contains(path, "headers.json"):
+				assert.Contains(t, verifiedErrors, "operation \"\" has invalid pattern in default header \"X-Foo\": \")<-- bad pattern\"")
+			case strings.Contains(path, "paramItems.json"):
+				assert.Contains(t, verifiedErrors, "body param \"user\" for \"\" has invalid items pattern: \")<-- bad pattern\"")
+				// Updated message: from "user.items in body has invalid pattern: \")<-- bad pattern\"" to:
+				assert.Contains(t, verifiedErrors, "default value for user in body does not validate its schema")
+				assert.Contains(t, verifiedErrors, "user.items.default in body has invalid pattern: \")<-- bad pattern\"")
+			case strings.Contains(path, "parameters.json"):
+				assert.Contains(t, verifiedErrors, "operation \"\" has invalid pattern in param \"userId\": \")<-- bad pattern\"")
+			case strings.Contains(path, "schema.json"):
+				// TODO: strange that the text does not say response "200"...
+				assert.Contains(t, verifiedErrors, "200 in response has invalid pattern: \")<-- bad pattern\"")
+			default:
+				t.Logf("Returned error messages: %v", verifiedErrors)
+				t.Fatal("fixture not tested. Please add assertions for messages")
+			}
+
+			if DebugTest {
+				if len(verifiedErrors) > 0 {
+					t.Logf("DEVMODE: Returned error messages validating %s ", path)
+					for _, v := range verifiedErrors {
+						t.Logf("%s", v)
+					}
+				}
+			}
 		}
 	}
 }
 
-// check if a fragment path parameter is recognized
+// check if a fragment path parameter is recognized, without error
 func TestIssue39(t *testing.T) {
-	fp := filepath.Join("fixtures", "bugs", "39", "swagger.yml")
+	path := "swagger.yml"
+	fp := filepath.Join("fixtures", "bugs", "39", path)
 
 	// as swagger spec
 	doc, err := loads.Spec(fp)
 	if assert.NoError(t, err) {
 		validator := NewSpecValidator(doc.Schema(), strfmt.Default)
 		res, _ := validator.Validate(doc)
-		for _, e := range res.Errors {
-			log.Println(e)
-		}
 		assert.True(t, res.IsValid())
+
+		var verifiedErrors []string
+		for _, e := range res.Errors {
+			verifiedErrors = append(verifiedErrors, e.Error())
+		}
+		switch {
+		case strings.Contains(path, "swagger.yml"):
+			assert.Empty(t, verifiedErrors)
+		default:
+			t.Logf("Returned error messages: %v", verifiedErrors)
+			t.Fatal("fixture not tested. Please add assertions for messages")
+		}
+		if DebugTest {
+			if len(verifiedErrors) > 0 {
+				t.Logf("DEVMODE: Returned error messages validating %s ", path)
+				for _, v := range verifiedErrors {
+					t.Logf("%s", v)
+				}
+			}
+		}
 	}
 }
 
@@ -285,9 +417,6 @@ func TestValidateCircularAncestry(t *testing.T) {
 		assert.Len(t, res.Errors, 1)
 	}
 
-}
-
-func TestValidateUniqueSecurityScopes(t *testing.T) {
 }
 
 func TestValidateReferenced(t *testing.T) {
@@ -411,7 +540,11 @@ func TestValidateDefaultValueAgainstSchema(t *testing.T) {
 			validator.analyzer = analysis.New(doc.Spec())
 			res := validator.validateDefaultValueValidAgainstSchema()
 			assert.NotEmpty(t, res.Errors, tt+" should have errors")
-			assert.Len(t, res.Errors, 1, tt+" should have 1 error")
+			// Update: now we have an additional message to explain it's all about a default value
+			// Example:
+			// - default value for limit in query does not validate its Schema
+			// - limit in query must be of type integer: "string"]
+			assert.True(t, len(res.Errors) >= 1, tt+" should have at least 1 error")
 		}
 	}
 }
@@ -620,4 +753,37 @@ func TestValidateItems(t *testing.T) {
 	pa.Post.Responses.StatusCodeResponses[200] = rp
 	res = validator.validateItems()
 	assert.NotEmpty(t, res.Errors)
+}
+
+// Reuse known validated cases through the higher level Spec() call
+func TestSpec_ValidDoc(t *testing.T) {
+	fp := filepath.Join("fixtures", "local_expansion", "spec.yaml")
+	doc2, err := loads.Spec(fp)
+	if assert.NoError(t, err) {
+		err := Spec(doc2, strfmt.Default)
+		assert.NoError(t, err)
+	}
+}
+
+// Check higher level behavior on invalid spec doc
+func TestSpec_InvalidDoc(t *testing.T) {
+	doc, err := loads.Spec(filepath.Join("fixtures", "validation", "invalid-default-value-parameter.json"))
+	if assert.NoError(t, err) {
+		err := Spec(doc, strfmt.Default)
+		assert.Error(t, err)
+	}
+}
+
+func TestValidate_InvalidInterface(t *testing.T) {
+	fp := filepath.Join("fixtures", "local_expansion", "spec.yaml")
+	doc2, err := loads.Spec(fp)
+	if assert.NoError(t, err) {
+		if assert.NotNil(t, doc2) {
+			validator := NewSpecValidator(doc2.Schema(), strfmt.Default)
+			bug := "bzzz"
+			res, _ := validator.Validate(bug)
+			assert.NotEmpty(t, res.Errors)
+			assert.Contains(t, res.Errors[0].Error(), "can only validate spec.Document objects")
+		}
+	}
 }

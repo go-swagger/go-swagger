@@ -81,3 +81,24 @@ func TestDate_Value(t *testing.T) {
 	assert.NoError(t, err)
 	assert.EqualValues(t, dbv, ref.Format("2006-01-02"))
 }
+
+func TestDate_IsDate(t *testing.T) {
+	tests := []struct {
+		value string
+		valid bool
+	}{
+		{"2017-12-22", true},
+		{"2017-1-1", false},
+		{"17-13-22", false},
+		{"2017-02-29", false}, // not a valid date : 2017 is not the leap year
+		{"2017-13-22", false},
+		{"2017-12-32", false},
+		{"20171-12-32", false},
+		{"YYYY-MM-DD", false},
+		{"20-17-2017", false},
+		{"2017-12-22T01:02:03Z", false},
+	}
+	for _, test := range tests {
+		assert.Equal(t, test.valid, IsDate(test.value), "value [%s] should be valid: [%t]", test.value, test.valid)
+	}
+}

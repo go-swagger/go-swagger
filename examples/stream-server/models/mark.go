@@ -22,8 +22,6 @@ type Mark struct {
 	Remains *int64 `json:"remains"`
 }
 
-/* polymorph Mark remains false */
-
 // Validate validates this mark
 func (m *Mark) Validate(formats strfmt.Registry) error {
 	var res []error

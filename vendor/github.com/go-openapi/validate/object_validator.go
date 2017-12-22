@@ -15,7 +15,6 @@
 package validate
 
 import (
-	"log"
 	"reflect"
 	"regexp"
 	"strings"
@@ -47,9 +46,7 @@ func (o *objectValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	// there is a problem in the type validator where it will be unhappy about null values
 	// so that requires more testing
 	r := reflect.TypeOf(source) == specSchemaType && (kind == reflect.Map || kind == reflect.Struct)
-	if Debug {
-		log.Printf("object validator for %q applies %t for %T (kind: %v)\n", o.Path, r, source, kind)
-	}
+	debugLog("object validator for %q applies %t for %T (kind: %v)\n", o.Path, r, source, kind)
 	return r
 }
 
@@ -57,6 +54,7 @@ func (o *objectValidator) isPropertyName() bool {
 	p := strings.Split(o.Path, ".")
 	return p[len(p)-1] == "properties" && p[len(p)-2] != "properties"
 }
+
 func (o *objectValidator) checkArrayMustHaveItems(res *Result, val map[string]interface{}) {
 	if t, typeFound := val["type"]; typeFound {
 		if tpe, ok := t.(string); ok && tpe == "array" {
@@ -82,10 +80,12 @@ func (o *objectValidator) checkItemsMustBeTypeArray(res *Result, val map[string]
 		}
 	}
 }
+
 func (o *objectValidator) precheck(res *Result, val map[string]interface{}) {
 	o.checkArrayMustHaveItems(res, val)
 	o.checkItemsMustBeTypeArray(res, val)
 }
+
 func (o *objectValidator) Validate(data interface{}) *Result {
 	val := data.(map[string]interface{})
 	numKeys := int64(len(val))
@@ -114,9 +114,47 @@ func (o *objectValidator) Validate(data interface{}) *Result {
 			}
 			if !regularProperty && k != "$schema" && k != "id" && !matched {
 				res.AddErrors(errors.PropertyNotAllowed(o.Path, o.In, k))
+
+				// Croaks a more explicit message on top of the standard one
+				// on some recognized cases.
+				//
+				// NOTE: edge cases with invalid type assertion are simply ignored here.
+				// NOTE: prefix your messages here by "IMPORTANT!" so there are not filtered
+				// by higher level callers (the IMPORTANT! tag will be eventually
+				// removed).
+				switch k {
+				// $ref is forbidden in header
+				case "headers":
+					if val[k] != nil {
+						if headers, mapOk := val[k].(map[string]interface{}); mapOk {
+							for headerKey, headerBody := range headers {
+								if headerBody != nil {
+									if headerSchema, mapOfMapOk := headerBody.(map[string]interface{}); mapOfMapOk {
+										if _, found := headerSchema["$ref"]; found {
+											var msg string
+											if refString, stringOk := headerSchema["$ref"].(string); stringOk {
+												msg = strings.Join([]string{", one may not use $ref=\":", refString, "\""}, "")
+											}
+											res.AddErrors(errors.New(errors.CompositeErrorCode, "IMPORTANT!in %q: $ref are not allowed in headers. In context for header %q%s", o.Path, headerKey, msg))
+										}
+									}
+								}
+							}
+						}
+					}
+					/*
+						case "$ref":
+							if val[k] != nil {
+								// TODO: check context of that ref: warn about siblings, check against invalid context
+							}
+					*/
+				}
 			}
 		}
 	} else {
+		// Property types:
+		// - pattern Property
+		// - additional Property
 		for key, value := range val {
 			_, regularProperty := o.Properties[key]
 			matched, succeededOnce, _ := o.validatePatternProperty(key, value, res)
@@ -132,6 +170,8 @@ func (o *objectValidator) Validate(data interface{}) *Result {
 
 	createdFromDefaults := map[string]bool{}
 
+	// Property types:
+	// - regular Property
 	for pName, pSchema := range o.Properties {
 		rName := pName
 		if o.Path != "" {
@@ -143,7 +183,7 @@ func (o *objectValidator) Validate(data interface{}) *Result {
 			res.Merge(r)
 		} else if pSchema.Default != nil {
 			createdFromDefaults[pName] = true
-			pName := pName // shaddow
+			pName := pName // shadow
 			def := pSchema.Default
 			res.Defaulters = append(res.Defaulters, DefaulterFunc(func() {
 				val[pName] = def
@@ -151,6 +191,7 @@ func (o *objectValidator) Validate(data interface{}) *Result {
 		}
 	}
 
+	// Check required properties
 	if len(o.Required) > 0 {
 		for _, k := range o.Required {
 			if _, ok := val[k]; !ok && !createdFromDefaults[k] {

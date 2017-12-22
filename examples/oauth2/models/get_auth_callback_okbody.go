@@ -20,8 +20,6 @@ type GetAuthCallbackOKBody struct {
 	AccessToken string `json:"access_token,omitempty"`
 }
 
-/* polymorph getAuthCallbackOKBody access_token false */
-
 // Validate validates this get auth callback o k body
 func (m *GetAuthCallbackOKBody) Validate(formats strfmt.Registry) error {
 	var res []error

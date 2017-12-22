@@ -1,0 +1,77 @@
+# This spec should be correctly detected as invalid
+swagger: '2.0'
+info:
+  title: issue-1238
+  version: 0.0.1
+  license:
+    name: MIT
+host: localhost:8081
+basePath: /api/v1
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  '/servers/{server_id}/zones':
+    get:
+      operationId: listZones
+      tags:
+        - zones
+      parameters:
+        - name: server_id
+          in: path
+          required: true
+          type: string
+      responses:
+        '200':
+          description: An array of Zones
+          schema:
+            $ref: '#/definitions/Zones'
+
+  '/servers/{server_id}/zones/{zone_id}':
+    get:
+      operationId: listZone
+      tags:
+        - zones
+      parameters:
+        - name: server_id
+          in: path
+          required: true
+          type: string
+        - name: zone_id
+          type: string
+          in: path
+          required: true
+      responses:
+        '200':
+          description: A Zone
+          schema:
+            $ref: '#/definitions/Zone'
+
+
+definitions:
+  Zones:
+    type: array
+    items:
+      $ref: '#/definitions/Zone'
+
+  Zone:
+    type: object
+    properties:
+      name:
+        type: string
+      RR:
+        $ref: '#/definitions/RRSets'
+
+  RRSets:
+    # Declaring items for an object should be correctly assessed as invalid and not trigger a panic (issue#1238)
+    type: object
+    items:
+      $ref: '#/definitions/RRSet'
+
+  RRSet:
+    properties:
+      name:
+        type: string

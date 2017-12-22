@@ -1,0 +1,124 @@
+{
+  "host": "localhost",
+  "schemes": [
+    "https"
+  ],
+  "swagger": "2.0",
+  "produces": [
+    "application/json"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "info": {
+    "title": "Soda Booth",
+    "version": "2.0"
+  },
+  "paths": {},
+  "definitions": {
+    "SRN": {
+      "type": "object",
+      "required": [
+        "id",
+        "service_ip",
+        "storage_ip",
+        "local_storage_ip",
+        "service_port",
+        "hb_port",
+        "site",
+        "disks"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "service_ip": {
+          "type": "string"
+        },
+        "storage_ip": {
+          "type": "string"
+        },
+        "local_storage_ip": {
+          "type": "string"
+        },
+        "service_port": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "hb_port": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "site": {
+          "$ref": "#/definitions/Site"
+        }
+      }
+    },
+    "Site": {
+      "type": "object",
+      "discriminator": "site_type",
+      "required": [
+        "name",
+        "site_type",
+        "username",
+        "password"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "site_type": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "SiteVMWARE": {
+      "description": "A Site located in a VMWARE environment",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Site"
+        },
+        {
+          "type": "object",
+          "required": [
+            "server"
+          ],
+          "properties": {
+            "server": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "SiteCLC": {
+      "description": "A Site located in a CLC environment",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Site"
+        },
+        {
+          "type": "object",
+          "required": [
+            "account",
+            "location"
+          ],
+          "properties": {
+            "account": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
