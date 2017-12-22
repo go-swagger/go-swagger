@@ -9,8 +9,12 @@ import (
 	"encoding/json"
 )
 
-// SwaggerJSON embedded version of the swagger document used at generation time
-var SwaggerJSON, FlatSwaggerJSON json.RawMessage
+var (
+	// SwaggerJSON embedded version of the swagger document used at generation time
+	SwaggerJSON json.RawMessage
+	// FlatSwaggerJSON embedded flattened version of the swagger document used at generation time
+	FlatSwaggerJSON json.RawMessage
+)
 
 func init() {
 	SwaggerJSON = json.RawMessage([]byte(`{
