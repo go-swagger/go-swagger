@@ -1,0 +1,21 @@
+---
+swagger: '2.0'
+info:
+  title: 'fixture 1289'
+  version: '1.0'
+produces:
+  - application/json
+paths:
+  '/fixture':
+    get:
+      operationId: op1
+      responses:
+        '200':
+          description: 'erroneous response'
+          schema:
+            # Expect clean
+            $ref: '#/definitions/someIds'
+
+definitions:
+  someIds:
+    type: string

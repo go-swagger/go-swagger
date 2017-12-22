@@ -1,0 +1,150 @@
+---
+swagger: "2.0"
+info:
+  title: "Spec with many duplicate things"
+  description: |
+    Check the following rules:
+      - params in path are unique
+      - no more than one param in body
+      - paths stripped from params are unique
+      - operationId is Unique
+      - params in operation are unique
+
+  version: "20170115"
+
+basePath: /20170115
+
+paths:
+  # Error: path params not unique
+  /loadBalancers/{loadBalancerId}/backendSets/{loadBalancerId}/get:
+    get:
+      description: Lists all backend sets associated with a given load balancer.
+      operationId: ope1
+      parameters:
+        - name: loadBalancerId
+          in: path
+          type: string
+          required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: The list is being retrieved.
+          headers:
+            opc-response-id:
+              description: |
+                Unique identifier for the response.
+              type: string
+  # Error more than 1 param in body
+  /bigbody/get:
+    get:
+      description: Lists all backend sets associated with a given load balancer.
+      operationId: ope2
+      parameters:
+        - name: loadBalancerId2
+          in: body
+          type: string
+          required: true
+        - name: loadBalancerId3
+          in: body
+          type: string
+          required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+  # Error duplicate path
+  /duplpath/{id1}/get:
+    get:
+      description: Lists all backend sets associated with a given load balancer.
+      operationId: ope3
+      parameters:
+        - name: id1
+          in: path
+          type: string
+          required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+  /duplpath/{id2}/get:
+    get:
+      operationId: ope4
+      parameters:
+        - name: id2
+          in: path
+          type: string
+          required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+  # Error duplicate operationId (paths are different)
+  /duplope/{id1}/get:
+    get:
+      description: Lists all backend sets associated with a given load balancer (dupl).
+      operationId: ope5
+      parameters:
+        - name: id1
+          in: path
+          type: string
+          required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+  /duplope/{id2}/getThemAll:
+    get:
+      description: Lists all backend sets associated with a given load balancer (dupl).
+      operationId: ope5
+      parameters:
+        - name: id2
+          in: path
+          type: string
+          required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+  # Error duplicate operationId (same path, different methods)
+  /duplope2/{id1}/get:
+    get:
+      description: Lists all backend sets associated with a given load balancer (dupl).
+      operationId: ope6
+      parameters:
+        - name: id1
+          in: path
+          type: string
+          required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+    post:
+      description: Lists all backend sets associated with a given load balancer (dupl).
+      operationId: ope6
+      parameters:
+        - name: id1
+          in: path
+          type: string
+          required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+  # Error : duplicate params 
+  /dupparam/get:
+    get:
+      description: Lists all backend sets associated with a given load balancer (dupl).
+      operationId: ope7
+      parameters:
+        - name: id2
+          in: query
+          type: string
+        - name: id2
+          in: query
+          type: string
+      produces:
+      - "application/json"
+      responses:
+        200:

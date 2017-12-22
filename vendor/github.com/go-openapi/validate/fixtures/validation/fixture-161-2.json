@@ -1,0 +1,69 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "",
+    "version": "1.0.0",
+    "title": "issue#161",
+    "termsOfService": "http://helloreverb.com/terms/",
+    "contact": {
+      "name": "apiteam@wordnik.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "host": "petstore.swagger.wordnik.com",
+  "basePath": "/v2",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/folders": {
+    "post": {
+            "parameters": [{
+                "name": "requestBody",
+                "in": "body",
+                "description": "body parameter",
+                "required": true,
+                "schema": {
+                    "type": "object",
+                    "title": "body of creating folder",
+                    "description": "body parameter of creating folder",
+                    "default": "{\"name\":\"new\",\"parent\":{\"id\":\"0\"}}",
+                    "required": ["name", "parent"],
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "parent": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "number"
+                                }
+                            }
+                        }
+                    },
+                    "readOnly": false,
+                    "externalDocs": {
+                        "description": "create a new folder.",
+                        "url": "https://box-content.readme.io/#create-a-new-folder"
+                    },
+                    "example": {
+                        "name": "newname.jpg",
+                        "parent": {
+                            "id": "0"
+                        }
+                    }
+                }
+            }],
+            "responses": {
+                "200": {
+			"description": "Some response"
+                }
+            }
+         }
+    }
+  }
+}

@@ -111,7 +111,7 @@ func (r *request) buildHTTP(mediaType, basePath string, producers map[string]run
 	r.buf = bytes.NewBuffer(nil)
 	if r.payload != nil || len(r.formFields) > 0 || len(r.fileFields) > 0 {
 		body = ioutil.NopCloser(r.buf)
-		if (runtime.MultipartFormMime == mediaType && len(r.formFields) > 0) || r.fileFields != nil {
+		if ((runtime.MultipartFormMime == mediaType || runtime.URLencodedFormMime == mediaType) && len(r.formFields) > 0) || r.fileFields != nil {
 			pr, pw = io.Pipe()
 			body = pr
 		}
@@ -128,9 +128,9 @@ func (r *request) buildHTTP(mediaType, basePath string, producers map[string]run
 	// check if this is a form type request
 	if len(r.formFields) > 0 || len(r.fileFields) > 0 {
 		// check if this is multipart
-		if runtime.MultipartFormMime == mediaType || len(r.fileFields) > 0 {
+		if runtime.MultipartFormMime == mediaType || runtime.URLencodedFormMime == mediaType || len(r.fileFields) > 0 {
 			mp := multipart.NewWriter(pw)
-			req.Header.Set(runtime.HeaderContentType, mp.FormDataContentType())
+			req.Header.Set(runtime.HeaderContentType, mangleContentType(mediaType, mp.Boundary()))
 
 			go func() {
 				defer func() {
@@ -240,6 +240,13 @@ func (r *request) buildHTTP(mediaType, basePath string, producers map[string]run
 	}
 
 	return req, nil
+}
+
+func mangleContentType(mediaType, boundary string) string {
+	if strings.ToLower(mediaType) == runtime.URLencodedFormMime {
+		return fmt.Sprintf("%s; boundary=%s", mediaType, boundary)
+	}
+	return "multipart/form-data; boundary=" + boundary
 }
 
 func (r *request) GetMethod() string {

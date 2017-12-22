@@ -1,0 +1,33 @@
+---
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: Test846 API
+  description: a simple API to test issue 846
+paths:
+  /:
+    get:
+      operationId: getFoo
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              Foo:
+                type: integer
+                format: int64
+        404:
+          description: NotFound
+          schema:
+            type: object
+            properties:
+              Message:
+                type: string
+        500:
+          description: Error
+          schema:
+            type: object
+            properties:
+              Message:
+                type: string

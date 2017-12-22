@@ -1,0 +1,34 @@
+swagger: '2.0'
+info:
+  title: issue-342
+  description: A variant on issue-342 with an incorrect attempt to fix the $ref sibling issue
+  version: 0.0.1
+  license:
+    name: MIT
+host: localhost:8081
+basePath: /api/v1
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /get_main_object:
+    get:
+      tags:
+        - maindata
+      parameters:
+          # Here, declared as a property and not an item: cannot marshall
+        $ref: "#/parameters/sid"  
+      responses:
+        '200':
+
+parameters:
+  sid:
+    #name: mysid
+    in: body
+    required: true
+    type: integer
+    format: int64
+
