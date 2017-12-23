@@ -1,0 +1,37 @@
+swagger: '2.0'
+info:
+  title: issue-342
+  description: |
+    A spec which triggers a panic because of invalid type assertion on parameters
+  version: 0.0.1
+  license:
+    name: MIT
+host: localhost:8081
+basePath: /api/v1
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /get_main_object:
+    get:
+      tags:
+        - maindata
+      parameters:
+        # This one is interesting: a whole schema replaces the parameter
+        - name: sid
+          in: body
+          required: true
+          $ref: "#/definitions/sample_info/properties/sid"  
+      responses:
+        '200':
+
+definitions:
+  sample_info:
+    type: object
+    properties:
+      sid:
+        type: string
+

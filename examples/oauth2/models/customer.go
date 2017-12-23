@@ -46,18 +46,6 @@ type Customer struct {
 	Surname *string `json:"surname"`
 }
 
-/* polymorph customer agentId false */
-
-/* polymorph customer customerId false */
-
-/* polymorph customer fipsCode false */
-
-/* polymorph customer name false */
-
-/* polymorph customer ssn false */
-
-/* polymorph customer surname false */
-
 // Validate validates this customer
 func (m *Customer) Validate(formats strfmt.Registry) error {
 	var res []error

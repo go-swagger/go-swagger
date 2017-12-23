@@ -13,6 +13,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/go-openapi/runtime/flagext"
@@ -41,6 +42,7 @@ func init() {
 func NewServer(api *operations.CountdownAPI) *Server {
 	s := new(Server)
 
+	s.shutdown = make(chan struct{})
 	s.api = api
 	return s
 }
@@ -90,6 +92,8 @@ type Server struct {
 	api          *operations.CountdownAPI
 	handler      http.Handler
 	hasListeners bool
+	shutdown     chan struct{}
+	shuttingDown int32
 }
 
 // Logf logs message either via defined user logger or via system one if no user logger is defined.
@@ -169,7 +173,7 @@ func (s *Server) Serve() (err error) {
 
 		configureServer(domainSocket, "unix", string(s.SocketPath))
 
-		wg.Add(1)
+		wg.Add(2)
 		s.Logf("Serving countdown at unix://%s", s.SocketPath)
 		go func(l net.Listener) {
 			defer wg.Done()
@@ -178,6 +182,7 @@ func (s *Server) Serve() (err error) {
 			}
 			s.Logf("Stopped serving countdown at unix://%s", s.SocketPath)
 		}(s.domainSocketL)
+		go s.handleShutdown(&wg, domainSocket)
 	}
 
 	if s.hasScheme(schemeHTTP) {
@@ -200,7 +205,7 @@ func (s *Server) Serve() (err error) {
 
 		configureServer(httpServer, "http", s.httpServerL.Addr().String())
 
-		wg.Add(1)
+		wg.Add(2)
 		s.Logf("Serving countdown at http://%s", s.httpServerL.Addr())
 		go func(l net.Listener) {
 			defer wg.Done()
@@ -209,6 +214,7 @@ func (s *Server) Serve() (err error) {
 			}
 			s.Logf("Stopped serving countdown at http://%s", l.Addr())
 		}(s.httpServerL)
+		go s.handleShutdown(&wg, httpServer)
 	}
 
 	if s.hasScheme(schemeHTTPS) {
@@ -285,7 +291,7 @@ func (s *Server) Serve() (err error) {
 
 		configureServer(httpsServer, "https", s.httpsServerL.Addr().String())
 
-		wg.Add(1)
+		wg.Add(2)
 		s.Logf("Serving countdown at https://%s", s.httpsServerL.Addr())
 		go func(l net.Listener) {
 			defer wg.Done()
@@ -294,6 +300,7 @@ func (s *Server) Serve() (err error) {
 			}
 			s.Logf("Stopped serving countdown at https://%s", l.Addr())
 		}(tls.NewListener(s.httpsServerL, httpsServer.TLSConfig))
+		go s.handleShutdown(&wg, httpsServer)
 	}
 
 	wg.Wait()
@@ -373,8 +380,30 @@ func (s *Server) Listen() error {
 
 // Shutdown server and clean up resources
 func (s *Server) Shutdown() error {
-	s.api.ServerShutdown()
+	if atomic.LoadInt32(&s.shuttingDown) != 0 {
+		s.Logf("already shutting down")
+		return nil
+	}
+	s.shutdown <- struct{}{}
 	return nil
+}
+
+func (s *Server) handleShutdown(wg *sync.WaitGroup, server *graceful.Server) {
+	defer wg.Done()
+	for {
+		select {
+		case <-s.shutdown:
+			atomic.AddInt32(&s.shuttingDown, 1)
+			server.Stop(s.CleanupTimeout)
+			<-server.StopChan()
+			s.api.ServerShutdown()
+			return
+		case <-server.StopChan():
+			atomic.AddInt32(&s.shuttingDown, 1)
+			s.api.ServerShutdown()
+			return
+		}
+	}
 }
 
 // GetHandler returns a handler useful for testing

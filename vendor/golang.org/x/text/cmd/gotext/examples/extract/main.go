@@ -4,7 +4,7 @@
 
 package main
 
-//go:generate gotext extract
+//go:generate gotext update -out catalog.go
 
 import (
 	"golang.org/x/text/language"

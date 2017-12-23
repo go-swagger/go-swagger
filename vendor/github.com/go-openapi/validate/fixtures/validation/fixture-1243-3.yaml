@@ -1,0 +1,33 @@
+---
+swagger: "2.0"
+info:
+  title: "Load Balancing Service API"
+  description: API for the Load Balancing Service
+  version: "20170115"
+
+basePath: /20170115
+
+paths:
+  /loadBalancers/{loadBalancerId}/backendSets:
+    get:
+      summary: "ListBackendSets"
+      tags: ['loadBalancer']
+      description: Lists all backend sets associated with a given load balancer.
+      operationId: "ListBackendSets"
+      # fixed that: Missing parameter in path
+      parameters:
+        - name: loadBalancerId
+          in: path
+          type: string
+          # Ah: should be required
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: The list is being retrieved.
+          # fix that: $ref is forbidden in headers
+          headers:
+            opc-response-id:
+              description: |
+                Unique identifier for the response.
+              type: string

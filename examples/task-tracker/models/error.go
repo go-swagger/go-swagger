@@ -33,12 +33,6 @@ type Error struct {
 	Message *string `json:"message"`
 }
 
-/* polymorph Error code false */
-
-/* polymorph Error helpUrl false */
-
-/* polymorph Error message false */
-
 // Validate validates this error
 func (m *Error) Validate(formats strfmt.Registry) error {
 	var res []error

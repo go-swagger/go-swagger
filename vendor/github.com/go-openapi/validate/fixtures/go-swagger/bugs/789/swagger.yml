@@ -1,0 +1,347 @@
+swagger: '2.0'
+basePath: /v1
+info:
+  version: experimental
+  title: Planet Mosaics API
+  description: An API to interact with Mosaics generated on Planet's platform.
+consumes:
+  - application/json
+produces:
+  - application/json
+schemes:
+  - https
+
+definitions:
+  MosaicSeriesFilter:
+    properties:
+      filterType:
+        type: string
+      filterable:
+        type: string
+        enum:
+          - mosaic_name
+        default: mosaic_name
+      value:
+        type: string
+    required:
+      - filterType
+      - filterable
+
+  Error:
+    properties:
+      message:
+        description: A descriptive error message.
+        type: string
+    type: object
+
+  Errors:
+    description: A list of Errors
+    type: array
+    items:
+      $ref: '#/definitions/Error'
+
+  APIError:
+    description: An APIError communicates both general and field-specific errors.
+      General errors include issues with core API usage as well as conflicts that
+      involve more than one field. Field-specific errors correspond to an individual
+      query parameter or request body attribute. Errors referencing nested fields
+      will be dot-delimited (e.g. user.groups.0.name).
+    properties:
+      field:
+        additionalProperties:
+          $ref: '#/definitions/Errors'
+        type: object
+      general:
+        $ref: '#/definitions/Errors'
+    required:
+      - general
+      - field
+    type: object
+
+  WriteResponse:
+    type: object
+    required:
+      - ok
+    description: Response of requests to create a mosaic
+    properties:
+      ok:
+        description: If it was successfully created.
+        type: boolean
+      errors:
+        description: A list of validation errors which prevented the request from succeeding
+        items:
+          $ref: '#/definitions/APIError'
+        type: array
+      id:
+        description: The id of the newly created mosaic
+        type: string
+
+  Mosaic:
+    description: A Mosaic is an object that includes the core metadata for a mosaic that is published on the platform. A Mosaic object may have additional fields depending on its `product_type`.
+    properties:
+      _links:
+        $ref: '#/definitions/MosaicLinks'
+      id:
+        description: A UUID to uniquely identify this Mosaic.
+        format: uuid
+        type: string
+      renditions:
+        description: A list of renditions to consume the Mosaic data.
+        items:
+          $ref: '#/definitions/MosaicRendition'
+        type: array
+      bbox:
+        description: The bounding box representing the extent of the mosaic.
+        format: geojson
+        type: string
+      coordinate_system:
+        description: The coordinate system of this mosaic
+        type: string
+      first_acquired:
+        description: The acquisition date of the oldest scene that contributed to this mosaic.
+        type: string
+        format: date-time
+      last_acquired:
+        description: The acquisition date of the newest scene that contributed to this mosaic.
+        type: string
+        format: date-time
+      interval:
+        description: The interval of the mosaic
+        type: string
+      product_type:
+        description: The product type of this mosaics, currently supported is "timelapse", "basemap"
+        type: string
+      name:
+        description: A name for this mosaic. This does not need to be unique.
+        type: string
+    type: object
+    required:
+      - id
+      - renditions
+      - bbox
+      - coordinate_system
+      - first_acquired
+      - last_acquired
+      - product_type
+      - name
+
+  MosaicSeries:
+    description: A Mosaic Series is a container to group mosaics that follow that have a specific criteria. This can be likened to a filter on top of mosaics, where a series can be defined as a TOI/AOI on a set Timelapse Mosaics.
+    type: object
+    properties:
+      _links:
+        $ref: '#/definitions/MosaicSeriesLinks'
+      id:
+        description: A UUID to uniquely identify this Mosaic Series.
+        format: uuid
+        type: string
+      name:
+        description: A human readable name for this series
+        type: string
+      interval:
+        description: The interval for the mosaics in the series.
+        type: string
+      product_type:
+        description: The type of product this mosaic is
+        enum:
+          - basemap
+            timelapse
+            l3m
+        type: string
+      selection_filters:
+        type: array
+        description: An array of MosaicSeriesFilters to filter mosaics
+        items:
+          $ref: '#/definitions/MosaicSeriesFilter'
+    required:
+      - id
+      - _links
+      - product_type
+      - name
+
+  MosaicRendition:
+    type: object
+    properties:
+      name:
+        description: The name of this rendition, e.g. RGB
+        type: string
+      type:
+        description: The type of this rendition, e.g. planet::webtiles::xyz, planet::webtiles::wmts
+        type: string
+      location:
+        description: A URL (possibly a template) pointing to a resource that provides access to the rendition.
+        type: string
+
+  MosaicListLinks:
+    properties:
+      _self:
+        description: The link back to this list page
+        type: string
+    type: object
+
+  MosaicSeriesListLinks:
+    properties:
+      _self:
+        description: The link to this listing page
+        type: string
+    type: object
+
+  MosaicLinks:
+    properties:
+      _self:
+        description: The canonical link to this specific Mosaic
+        type: string
+    type: object
+
+  MosaicSeriesLinks:
+    properties:
+      _self:
+        description: The canonincal link to this specific Mosaic Series
+        type: string
+      mosaics:
+        description: The canonincal link to the mosaics inside this Mosaic Series
+        type: string
+    type: object
+
+  MosaicSeriesMosaicsLinks:
+    properties:
+      _self:
+        description: The canonical link back to this list
+        type: string
+    type: object
+
+  MosaicListPage:
+    properties:
+      _links:
+        $ref: '#/definitions/MosaicListLinks'
+      mosaics:
+        items:
+          $ref: '#/definitions/Mosaic'
+        type: array
+    type: object
+
+  MosaicSeriesListPage:
+    properties:
+      _links:
+        $ref: '#/definitions/MosaicSeriesListLinks'
+      series:
+        items:
+          $ref: '#/definitions/MosaicSeries'
+        type: array
+    type: object
+
+  MosaicSeriesMosaicsListPage:
+    properties:
+      _links:
+        $ref: '#/definitions/MosaicSeriesMosaicsLinks'
+      mosaics:
+        items:
+          $ref: '#/definitions/Mosaic'
+        type: array
+    type: object
+
+parameters:
+  pSeriesId:
+    description: The Mosaic Series ID
+    in: path
+    name: SeriesId
+    format: uuid
+    required: true
+    type: string
+
+paths:
+  /mosaic/experimental/mosaics:
+    post:
+      description: Creates a new mosaic
+      parameters:
+        - name: body
+          in: body
+          description: mosaic to add
+          required: true
+          schema:
+            $ref: '#/definitions/Mosaic'
+      responses:
+        200:
+          description: Mosaic was successfully created
+          schema:
+            $ref: '#/definitions/WriteResponse'
+        400:
+          description: There was a validation error
+          schema:
+            $ref: '#/definitions/APIError'
+    put:
+      description: updates a mosaic
+      responses:
+        200:
+          description: Mosaic was successfully updated
+          schema:
+            $ref: '#/definitions/WriteResponse'
+        400:
+          description: There was a validation error
+          schema:
+            $ref: '#/definitions/APIError'
+    get:
+      description: Returns all accessible mosaics. For non authenticated users, this returns public mosaics.
+      responses:
+        200:
+          description: A list of mosaics.
+          schema:
+            $ref: '#/definitions/MosaicListPage'
+        400:
+          description: There was an error with the request.
+          schema:
+            $ref: '#/definitions/APIError'
+
+  /mosaic/experimental/series:
+    post:
+      description: Creates a Series
+      responses:
+        200:
+          description: The series was created.
+          schema:
+            $ref: '#/definitions/WriteResponse'
+        400:
+          description: There was an error with the request
+          schema:
+            $ref: '#/definitions/APIError'
+    get:
+      description: Returns a list of accessible mosaic series
+      responses:
+        200:
+          description: A list of Mosaic Series
+          schema:
+            $ref: '#/definitions/MosaicSeriesListPage'
+        400:
+          description: There was an error with the request.
+          schema:
+            $ref: '#/definitions/APIError'
+
+  /mosaic/experimental/series/{SeriesId}:
+    get:
+      description: Returns back a single Mosaic Series Record
+      parameters:
+      - $ref: '#/parameters/pSeriesId'
+      responses:
+        200:
+          description: Gets a single Mosaic Series record.
+          schema:
+            $ref: '#/definitions/MosaicSeries'
+        400:
+          description: There was an error with the request.
+          schema:
+            $ref: '#/definitions/APIError'
+
+  /mosaic/experimental/series/{SeriesId}/mosaics:
+    get:
+      description: Returns the list of mosaics in this series.
+      parameters:
+      - $ref: '#/parameters/pSeriesId'
+      responses:
+        200:
+          description: Returns the list of mosaics in this series.
+          schema:
+            $ref: '#/definitions/MosaicSeriesMosaicsListPage'
+        400:
+          description: There was an error with the request.
+          schema:
+            $ref: '#/definitions/APIError'

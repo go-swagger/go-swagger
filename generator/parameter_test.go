@@ -912,7 +912,7 @@ func TestGenParameter_Issue776_LocalFileRef(t *testing.T) {
 		spec.Debug = false
 		log.SetOutput(os.Stdout)
 	}()
-	b, err := opBuilder("GetItem", "../fixtures/bugs/776/param.yaml")
+	b, err := opBuilderWithFlatten("GetItem", "../fixtures/bugs/776/param.yaml")
 	if assert.NoError(t, err) {
 		op, err := b.MakeOperation()
 		if assert.NoError(t, err) {
@@ -921,19 +921,10 @@ func TestGenParameter_Issue776_LocalFileRef(t *testing.T) {
 			if assert.NoError(t, templates.MustGet("serverParameter").Execute(&buf, op)) {
 				ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
 				if assert.NoError(t, err) {
-					assertInCode(t, "Body *GetItemParamsBody", string(ff))
+					assertInCode(t, "Body *models.Item", string(ff))
 					assertNotInCode(t, "type GetItemParamsBody struct", string(ff))
 				} else {
 					fmt.Println(buf.String())
-				}
-			}
-			var buf2 bytes.Buffer
-			if assert.NoError(t, templates.MustGet("serverOperation").Execute(&buf2, op)) {
-				ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf2.Bytes())
-				if assert.NoError(t, err) {
-					assertInCode(t, "type GetItemParamsBody struct", string(ff))
-				} else {
-					fmt.Println(buf2.String())
 				}
 			}
 		}
@@ -983,6 +974,34 @@ func TestGenParameter_Issue1199(t *testing.T) {
 				if assert.NoError(err) {
 					res := string(ff)
 					assertInCode(t, assertion, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestGenParameter_Issue1325(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+
+	assert := assert.New(t)
+
+	gen, err := opBuilder("uploadFile", "../fixtures/bugs/1325/swagger.yaml")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("clientParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("create_task_parameter.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertInCode(t, "runtime.NamedReadCloser", res)
 				} else {
 					fmt.Println(buf.String())
 				}

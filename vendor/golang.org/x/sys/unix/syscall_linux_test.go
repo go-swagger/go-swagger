@@ -182,16 +182,39 @@ func TestSelect(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Select: %v", err)
 	}
-}
 
-func TestUname(t *testing.T) {
-	var utsname unix.Utsname
-	err := unix.Uname(&utsname)
+	dur := 150 * time.Millisecond
+	tv := unix.NsecToTimeval(int64(dur))
+	start := time.Now()
+	_, err = unix.Select(0, nil, nil, nil, &tv)
+	took := time.Since(start)
 	if err != nil {
-		t.Fatalf("Uname: %v", err)
+		t.Fatalf("Select: %v", err)
 	}
 
-	t.Logf("OS: %s/%s %s", utsname.Sysname[:], utsname.Machine[:], utsname.Release[:])
+	if took < dur {
+		t.Errorf("Select: timeout should have been at least %v, got %v", dur, took)
+	}
+}
+
+func TestPselect(t *testing.T) {
+	_, err := unix.Pselect(0, nil, nil, nil, &unix.Timespec{Sec: 0, Nsec: 0}, nil)
+	if err != nil {
+		t.Fatalf("Pselect: %v", err)
+	}
+
+	dur := 2500 * time.Microsecond
+	ts := unix.NsecToTimespec(int64(dur))
+	start := time.Now()
+	_, err = unix.Pselect(0, nil, nil, nil, &ts, nil)
+	took := time.Since(start)
+	if err != nil {
+		t.Fatalf("Pselect: %v", err)
+	}
+
+	if took < dur {
+		t.Errorf("Pselect: timeout should have been at least %v, got %v", dur, took)
+	}
 }
 
 func TestFstatat(t *testing.T) {

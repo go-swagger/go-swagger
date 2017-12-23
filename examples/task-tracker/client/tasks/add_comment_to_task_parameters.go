@@ -18,7 +18,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
+	models "github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
 
 // NewAddCommentToTaskParams creates a new AddCommentToTaskParams object

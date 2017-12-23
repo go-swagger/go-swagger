@@ -26,8 +26,18 @@
                 "valid": false
             },
             {
-                "description": "ignores non-objects",
-                "data": "foo",
+                "description": "ignores arrays",
+                "data": ["bar"],
+                "valid": true
+            },
+            {
+                "description": "ignores strings",
+                "data": "foobar",
+                "valid": true
+            },
+            {
+                "description": "ignores other non-objects",
+                "data": 12,
                 "valid": true
             }
         ]

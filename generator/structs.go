@@ -409,9 +409,13 @@ type GenApp struct {
 	Operations          GenOperations
 	OperationGroups     GenOperationGroups
 	SwaggerJSON         string
-	ExcludeSpec         bool
-	WithContext         bool
-	GenOpts             *GenOpts
+	// this is important for when the generated server adds routes
+	// ideally this should be removed after we code-generate the router instead of relying on runtime
+	// CAUTION: Could be problematic for big specs (might consume large amounts of memory)
+	FlatSwaggerJSON string
+	ExcludeSpec     bool
+	WithContext     bool
+	GenOpts         *GenOpts
 }
 
 // UseGoStructFlags returns true when no strategy is specified or it is set to "go-flags"

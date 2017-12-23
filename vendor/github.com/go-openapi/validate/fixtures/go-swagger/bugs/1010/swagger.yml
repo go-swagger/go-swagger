@@ -1,0 +1,16 @@
+swagger: "2.0"
+paths:
+  /widgets/:
+    get:
+      summary: Retrieve all widgets.
+      parameters:
+        - name: category_id
+          in: query
+          description: Return the widgets that are associated with this category.
+          required: true
+          type: array
+          collectionFormat: "multi"
+          items:
+            type: string
+            pattern: '^[0-9abcdefghjkmnpqrtuvwxyz]{29}$'
+definitions: {}

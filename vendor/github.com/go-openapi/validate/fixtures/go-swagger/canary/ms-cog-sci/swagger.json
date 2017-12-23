@@ -1,0 +1,649 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Azure Machine Learning - Text Analytics",
+    "version": "1.0",
+    "description": "The Text Analytics API is a suite of text analytics web services built with Azure Machine Learning. \r\nThe API can be used to analyze unstructured text for tasks such as sentiment analysis, key phrase extraction and language detection. \r\nNo training data is needed to use this API; just bring your text data. \r\nThis API uses advanced natural language processing techniques to deliver best in class predictions.\r\n\r\nFurther documentation can be found in https://azure.microsoft.com/en-us/documentation/articles/machine-learning-apps-text-analytics/"
+  },
+  "host": "westus.api.cognitive.microsoft.com",
+  "basePath": "/text/analytics/v2.0",
+  "schemes": [
+    "https"
+  ],
+  "paths": {
+    "/keyPhrases": {
+      "post": {
+        "description": "The API returns a list of strings denoting the key talking points in the input text. \r\n            We employ techniques from Microsoft Office's sophisticated Natural Language Processing toolkit. \r\n            Currently, the following languages are supported: English, German, Spanish and Japanese.",
+        "operationId": "Key Phrases",
+        "parameters": [
+          {
+            "name": "subscription-key",
+            "in": "query",
+            "description": "subscription key in url",
+            "type": "string"
+          },
+          {
+            "name": "Ocp-Apim-Subscription-Key",
+            "in": "header",
+            "description": "subscription key in header",
+            "type": "string"
+          },
+          {
+            "name": "multiLanguageBatchInputV2",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/MultiLanguageBatchInputV2"
+            }
+          }
+        ],
+        "consumes": [
+          "application/json",
+          "text/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/KeyPhraseBatchResultV2"
+            }
+          },
+          "400": {
+            "description": "BadRequest",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        },
+        "produces": [
+          "application/json",
+          "text/json"
+        ]
+      }
+    },
+    "/languages": {
+      "post": {
+        "description": "The API returns the detected language and a numeric score between 0 and 1. \r\n            Scores close to 1 indicate 100% certainty that the identified language is true. \r\n            A total of 120 languages are supported.",
+        "operationId": "Detect Language",
+        "parameters": [
+          {
+            "name": "numberOfLanguagesToDetect",
+            "in": "query",
+            "description": "Format - int32. (Optional) Number of languages to detect. Set to 1 by default.",
+            "type": "integer"
+          },
+          {
+            "name": "subscription-key",
+            "in": "query",
+            "description": "subscription key in url",
+            "type": "string"
+          },
+          {
+            "name": "Ocp-Apim-Subscription-Key",
+            "in": "header",
+            "description": "subscription key in header",
+            "type": "string"
+          },
+          {
+            "name": "batchInputV2",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/BatchInputV2"
+            }
+          }
+        ],
+        "consumes": [
+          "application/json",
+          "text/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/LanguageBatchResultV2"
+            }
+          },
+          "400": {
+            "description": "BadRequest",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        },
+        "produces": [
+          "application/json",
+          "text/json"
+        ]
+      }
+    },
+    "/operations/{operationId}": {
+      "get": {
+        "description": "Get the status of an operation submitted for processing. If the the operation has reached a 'Succeeded' state, will also return the result.",
+        "operationId": "Operation Status",
+        "parameters": [
+          {
+            "name": "operationId",
+            "in": "path",
+            "description": "A unique id for the submitted operation.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "subscription-key",
+            "in": "query",
+            "description": "subscription key in url",
+            "type": "string"
+          },
+          {
+            "name": "Ocp-Apim-Subscription-Key",
+            "in": "header",
+            "description": "subscription key in header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/OperationResult"
+            }
+          },
+          "400": {
+            "description": "BadRequest",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        },
+        "produces": [
+          "application/json",
+          "text/json"
+        ]
+      }
+    },
+    "/sentiment": {
+      "post": {
+        "description": "The API returns a numeric score between 0 and 1. \r\n            Scores close to 1 indicate positive sentiment, while scores close to 0 indicate negative sentiment. \r\n            Sentiment score is generated using classification techniques. \r\n            The input features to the classifier include n-grams, features generated from part-of-speech tags, and word embeddings. \r\n            Currently, the following languages are supported: English, Spanish, French, Portuguese.",
+        "operationId": "Sentiment",
+        "parameters": [
+          {
+            "name": "subscription-key",
+            "in": "query",
+            "description": "subscription key in url",
+            "type": "string"
+          },
+          {
+            "name": "Ocp-Apim-Subscription-Key",
+            "in": "header",
+            "description": "subscription key in header",
+            "type": "string"
+          },
+          {
+            "name": "multiLanguageBatchInputV2",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/MultiLanguageBatchInputV2"
+            }
+          }
+        ],
+        "consumes": [
+          "application/json",
+          "text/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/SentimentBatchResultV2"
+            }
+          },
+          "400": {
+            "description": "BadRequest",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        },
+        "produces": [
+          "application/json",
+          "text/json"
+        ]
+      }
+    },
+    "/topics": {
+      "post": {
+        "description": "The API returns the top detected topics for a list of submitted text documents. \r\n            A topic is identified with a key phrase, which can be one or more related words. \r\n            Use the URL parameters and stop word list to control which words or documents are filtered out. \r\n            You can also supply a list of topics to exclude from the response. \r\n            At least 100 text documents must be submitted, however it is designed to detect topics across hundreds to thousands of documents. \r\n            Note that one transaction is charged per text document submitted. \r\n            For best performance, limit each document to a short, human written text paragraph such as review, conversation or user feedback.",
+        "operationId": "Detect Topics",
+        "parameters": [
+          {
+            "name": "minDocumentsPerWord",
+            "in": "query",
+            "description": "Format - int32. (optional) Words that occur in less than this many documents are ignored. \r\n            Use this parameter to help exclude rare document topics.\r\n            Omit to let the service choose appropriate value.",
+            "type": "integer"
+          },
+          {
+            "name": "maxDocumentsPerWord",
+            "in": "query",
+            "description": "Format - int32. (optional) Words that occur in more than this many documents are ignored. \r\n            Use this parameter to help exclude ubiquitous document topics.\r\n            Omit to let the service choose appropriate value.",
+            "type": "integer"
+          },
+          {
+            "name": "subscription-key",
+            "in": "query",
+            "description": "subscription key in url",
+            "type": "string"
+          },
+          {
+            "name": "Ocp-Apim-Subscription-Key",
+            "in": "header",
+            "description": "subscription key in header",
+            "type": "string"
+          },
+          {
+            "name": "topicDetectionInputV2",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/TopicDetectionInputV2"
+            }
+          }
+        ],
+        "consumes": [
+          "application/json",
+          "text/json"
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "headers": {
+              "Operation-Location": {
+                "type": "string",
+                "description": "URL of the created operation. Invoke a GET HTTP request to retrieve the operation status."
+              }
+            }
+          },
+          "400": {
+            "description": "BadRequest",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        },
+        "produces": [
+          "application/json",
+          "text/json"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "MultiLanguageBatchInputV2": {
+      "type": "object",
+      "properties": {
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MultiLanguageInputV2"
+          }
+        }
+      }
+    },
+    "MultiLanguageInputV2": {
+      "type": "object",
+      "properties": {
+        "language": {
+          "description": "This is the 2 letter ISO 639-1 representation of a language.\r\n            For example, use \"en\" for English; \"es\" for Spanish etc.,",
+          "type": "string"
+        },
+        "id": {
+          "description": "Unique, non-empty document identifier.",
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    },
+    "KeyPhraseBatchResultV2": {
+      "type": "object",
+      "properties": {
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/KeyPhraseBatchResultItemV2"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ErrorRecordV2"
+          }
+        }
+      }
+    },
+    "KeyPhraseBatchResultItemV2": {
+      "type": "object",
+      "properties": {
+        "keyPhrases": {
+          "description": "A list of representative words or phrases. The number of key phrases returned is proportional to the number of words in the input document.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "id": {
+          "description": "Unique document identifier.",
+          "type": "string"
+        }
+      }
+    },
+    "ErrorRecordV2": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Input document unique identifier the error refers to.",
+          "type": "string"
+        },
+        "message": {
+          "description": "Error message.",
+          "type": "string"
+        }
+      }
+    },
+    "ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        },
+        "innerError": {
+          "$ref": "#/definitions/InternalError"
+        }
+      }
+    },
+    "InternalError": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "enum": [
+            "invalidParameterValue",
+            "invalidRequestBodyFormat",
+            "missingRequiredHeader",
+            "invalidRequestContent",
+            "missingRequiredParameter"
+          ],
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "innerError": {
+          "$ref": "#/definitions/InternalError"
+        }
+      }
+    },
+    "BatchInputV2": {
+      "type": "object",
+      "properties": {
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InputV2"
+          }
+        }
+      }
+    },
+    "InputV2": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique, non-empty document identifier.",
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    },
+    "Object": {
+      "type": "object",
+      "properties": {}
+    },
+    "LanguageBatchResultV2": {
+      "type": "object",
+      "properties": {
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LanguageBatchResultItemV2"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ErrorRecordV2"
+          }
+        }
+      }
+    },
+    "LanguageBatchResultItemV2": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique document identifier.",
+          "type": "string"
+        },
+        "detectedLanguages": {
+          "description": "A list of extracted languages.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetectedLanguageV2"
+          }
+        }
+      }
+    },
+    "DetectedLanguageV2": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Long name of a detected language (e.g. English, French).",
+          "type": "string"
+        },
+        "iso6391Name": {
+          "description": "A two letter representation of the detected language according to the ISO 639-1 standard (e.g. en, fr).",
+          "type": "string"
+        },
+        "score": {
+          "format": "double",
+          "description": "A confidence score between 0 and 1. Scores close to 1 indicate 100% certainty that the identified language is true.",
+          "type": "number"
+        }
+      }
+    },
+    "OperationResult": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "description": "Operation status.",
+          "enum": [
+            "notStarted",
+            "running",
+            "failed",
+            "cancelled",
+            "succeeded"
+          ],
+          "type": "string"
+        },
+        "createdDateTime": {
+          "format": "date-time",
+          "description": "Operation creation date time (ISO 8601 literal).",
+          "type": "string"
+        },
+        "lastActionDateTime": {
+          "format": "date-time",
+          "description": "Operation last status change date time (ISO 8601 literal).",
+          "type": "string"
+        },
+        "operationType": {
+          "description": "Name of API endpoint that created the operation.",
+          "type": "string"
+        },
+        "operationProcessingResult": {
+          "$ref": "#/definitions/OperationProcessingResult",
+          "description": "Operation result. Specific format varies according to the operation type. Exists only in case the operation has reached a 'Succeeded' state."
+        },
+        "message": {
+          "description": "Error message. Exists only in case the operation has reached a 'Failed' state.",
+          "type": "string"
+        }
+      }
+    },
+    "OperationProcessingResult": {
+      "required": [
+        "discriminator"
+      ],
+      "type": "object",
+      "properties": {
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ErrorRecordV2"
+          }
+        },
+        "discriminator": {
+          "type": "string"
+        }
+      },
+      "discriminator": "discriminator"
+    },
+    "SentimentBatchResultV2": {
+      "type": "object",
+      "properties": {
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SentimentBatchResultItemV2"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ErrorRecordV2"
+          }
+        }
+      }
+    },
+    "SentimentBatchResultItemV2": {
+      "type": "object",
+      "properties": {
+        "score": {
+          "format": "double",
+          "description": "A decimal number between 0 and 1 denoting the sentiment of the document. \r\n            A score above 0.7 usually refers to a positive document while a score below 0.3 normally has a negative connotation.\r\n            Mid values refer to neutral text.",
+          "type": "number"
+        },
+        "id": {
+          "description": "Unique document identifier.",
+          "type": "string"
+        }
+      }
+    },
+    "TopicDetectionInputV2": {
+      "type": "object",
+      "properties": {
+        "stopWords": {
+          "description": "List of words to ignore from all documents during pre-processing.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "topicsToExclude": {
+          "description": "List of topics to omit from the response.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InputV2"
+          }
+        }
+      }
+    },
+    "TopicDetectionResultV2": {
+      "description": "This is object returned for the clustering call",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/OperationProcessingResult"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "topics": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TopicInfoRecordV2"
+              }
+            },
+            "topicAssignments": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TopicAssignmentRecordV2"
+              }
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ErrorRecordV2"
+              }
+            }
+          }
+        }
+      ],
+      "properties": {}
+    },
+    "TopicInfoRecordV2": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "A unique identifier for each topic.",
+          "type": "string"
+        },
+        "score": {
+          "format": "double",
+          "description": "Count of documents assigned to topic.",
+          "type": "number"
+        },
+        "keyPhrase": {
+          "description": "A summarizing word or phrase for the topic.",
+          "type": "string"
+        }
+      }
+    },
+    "TopicAssignmentRecordV2": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "description": "Identifier for the document. Equates to the ID included in the input.",
+          "type": "string"
+        },
+        "topicId": {
+          "description": "The topic ID which the document has been assigned to.",
+          "type": "string"
+        },
+        "distance": {
+          "format": "double",
+          "description": "Document-to-topic affiliation score between 0 and 1. The lower a distance score the stronger the topic affiliation is.",
+          "type": "number"
+        }
+      }
+    }
+  }
+}

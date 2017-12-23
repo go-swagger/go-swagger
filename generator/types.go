@@ -171,6 +171,13 @@ func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType)
 	result.SwaggerFormat = fmt
 	//_, result.IsPrimitive = primitives[tn]
 
+	if tn == file {
+		result.IsPrimitive = true
+		result.GoType = typeMapping[binary]
+		result.IsStream = true
+		return
+	}
+
 	if fmt != "" {
 		fmtn := strings.Replace(fmt, "-", "", -1)
 		if tpe, ok := typeMapping[fmtn]; ok {
@@ -294,14 +301,8 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 		returns = true
 		var ref *spec.Schema
 		var er error
-		if t.Doc.SpecFilePath() != "" {
-			if Debug {
-				log.Printf("loading with base: %s", t.Doc.SpecFilePath())
-			}
-			ref, er = spec.ResolveRefWithBase(t.Doc.Spec(), &schema.Ref, &spec.ExpandOptions{RelativeBase: t.Doc.SpecFilePath()})
-		} else {
-			ref, er = spec.ResolveRef(t.Doc.Spec(), &schema.Ref)
-		}
+
+		ref, er = spec.ResolveRef(t.Doc.Spec(), &schema.Ref)
 		if er != nil {
 			if Debug {
 				log.Print("error resolving", er)
@@ -639,6 +640,15 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 			logDebug("not anonymous ref")
 		}
 		logDebug("returning after ref")
+		return
+	}
+
+	if t.firstType(schema) == file {
+		result.SwaggerType = file
+		result.IsPrimitive = true
+		result.IsNullable = false
+		result.GoType = typeMapping[binary]
+		result.IsStream = true
 		return
 	}
 

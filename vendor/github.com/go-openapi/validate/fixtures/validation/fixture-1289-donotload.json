@@ -1,0 +1,25 @@
+"someIds": {
+    "type": "array",
+    "example": [
+        413,
+        231,
+        777
+    ],
+    "default": [
+        413,
+        231,
+        777
+    ],
+    "items": {
+        "type": "number"
+    }
+},
+"getSomeIds": {
+    "type": "object",
+    "properties": {
+        "someIds": {
+            "$ref": "#/definitions/someIds",
+            "type": "array"
+        }
+    }
+},

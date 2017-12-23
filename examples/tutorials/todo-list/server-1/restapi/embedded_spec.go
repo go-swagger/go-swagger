@@ -9,8 +9,12 @@ import (
 	"encoding/json"
 )
 
-// SwaggerJSON embedded version of the swagger document used at generation time
-var SwaggerJSON json.RawMessage
+var (
+	// SwaggerJSON embedded version of the swagger document used at generation time
+	SwaggerJSON json.RawMessage
+	// FlatSwaggerJSON embedded flattened version of the swagger document used at generation time
+	FlatSwaggerJSON json.RawMessage
+)
 
 func init() {
 	SwaggerJSON = json.RawMessage([]byte(`{
@@ -86,6 +90,106 @@ func init() {
           "type": "string"
         }
       }
+    },
+    "item": {
+      "type": "object",
+      "required": [
+        "description"
+      ],
+      "properties": {
+        "completed": {
+          "type": "boolean"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "readOnly": true
+        }
+      }
+    }
+  }
+}`))
+	FlatSwaggerJSON = json.RawMessage([]byte(`{
+  "consumes": [
+    "application/io.goswagger.examples.todo-list.v1+json"
+  ],
+  "produces": [
+    "application/io.goswagger.examples.todo-list.v1+json"
+  ],
+  "schemes": [
+    "http"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "The product of a tutorial on goswagger.io",
+    "title": "A To Do list application",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "todos"
+        ],
+        "operationId": "findTodos",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "name": "since",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "format": "int32",
+            "default": 20,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "list the todo operations",
+            "schema": {
+              "$ref": "#/definitions/findTodosOKBody"
+            }
+          },
+          "default": {
+            "description": "generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "error": {
+      "type": "object",
+      "required": [
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "findTodosOKBody": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/item"
+      },
+      "x-go-gen-location": "operations"
     },
     "item": {
       "type": "object",

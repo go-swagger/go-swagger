@@ -1,0 +1,33 @@
+{
+  "swagger": "2.0",
+  "paths": {},
+  "definitions": {
+    "User": {
+      "description": "User - user model",
+      "type": "object",
+      "properties": {
+        "first_name": {
+          "type": "string",
+          "x-go-name": "FirstName"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "last_name": {
+          "type": "string",
+          "x-go-name": "LastName"
+        },
+        "user_type": {
+          "description": "User type",
+          "type": "integer",
+          "format": "int64",
+          "maximum": 5,
+          "minimum": 1,
+          "x-go-name": "Type"
+        }
+      },
+      "x-go-package": "github.com/go-swagger/go-swagger/fixtures/bugs/981"
+    }
+  }
+}

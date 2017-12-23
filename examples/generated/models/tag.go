@@ -23,10 +23,6 @@ type Tag struct {
 	Name string `json:"name,omitempty"`
 }
 
-/* polymorph Tag id false */
-
-/* polymorph Tag name false */
-
 // Validate validates this tag
 func (m *Tag) Validate(formats strfmt.Registry) error {
 	var res []error

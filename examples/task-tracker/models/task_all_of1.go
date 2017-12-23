@@ -36,16 +36,6 @@ type TaskAllOf1 struct {
 	ReportedBy *UserCard `json:"reportedBy,omitempty"`
 }
 
-/* polymorph taskAllOf1 attachments false */
-
-/* polymorph taskAllOf1 comments false */
-
-/* polymorph taskAllOf1 lastUpdated false */
-
-/* polymorph taskAllOf1 lastUpdatedBy false */
-
-/* polymorph taskAllOf1 reportedBy false */
-
 // Validate validates this task all of1
 func (m *TaskAllOf1) Validate(formats strfmt.Registry) error {
 	var res []error

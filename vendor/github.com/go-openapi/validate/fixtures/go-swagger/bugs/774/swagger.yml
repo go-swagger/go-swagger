@@ -1,0 +1,42 @@
+---
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: Breaking API as described by christianklotz
+paths:
+  /stores:
+    get:
+      operationId: getFoo
+      responses:
+        200:
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Foo'
+definitions:
+  Foo:
+    type: object
+    properties:
+      hasOmitEmptyTrue:
+        type: array
+        x-omitempty: true
+        items:
+          type: string
+          enum:
+          - some
+          - values
+      hasOmitEmptyFalse:
+        type: array
+        x-omitempty: false
+        items:
+          type: string
+          enum:
+          - some
+          - values
+      noOmitEmpty:
+        type: array
+        items:
+          type: string
+          enum:
+          - some
+          - values

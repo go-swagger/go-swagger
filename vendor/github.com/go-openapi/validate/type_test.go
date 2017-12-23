@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -151,10 +152,20 @@ func TestJSONSchemaSuite(t *testing.T) {
 			json.Unmarshal(b, &testDescriptions)
 
 			for _, testDescription := range testDescriptions {
+				var err error
+				b, _ := testDescription.Schema.MarshalJSON()
+				tmpFile, err := ioutil.TempFile(os.TempDir(), "validate-test")
+				assert.NoError(t, err)
+				tmpFile.Write(b)
+				tmpFile.Close()
+				opts := &spec.ExpandOptions{
+					RelativeBase:    tmpFile.Name(),
+					SkipSchemas:     false,
+					ContinueOnError: false,
+				}
+				err = spec.ExpandSchemaWithBasePath(testDescription.Schema, nil, opts)
 
-				err := spec.ExpandSchema(testDescription.Schema, nil, nil /*new(noopResCache)*/)
 				if assert.NoError(t, err, testDescription.Description+" should expand cleanly") {
-
 					validator := NewSchemaValidator(testDescription.Schema, nil, "data", strfmt.Default)
 					for _, test := range testDescription.Tests {
 
@@ -167,6 +178,7 @@ func TestJSONSchemaSuite(t *testing.T) {
 						}
 					}
 				}
+				os.Remove(tmpFile.Name())
 			}
 		}
 	}
