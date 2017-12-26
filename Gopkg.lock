@@ -96,19 +96,19 @@
     "middleware/untyped",
     "security"
   ]
-  revision = "1c2555dc2c3534a155a87f9aa33d0f037d1d8451"
+  revision = "a76104f379d3c5041f2a56e69db3ad8404ce4826"
 
 [[projects]]
   branch = "master"
   name = "github.com/go-openapi/spec"
   packages = ["."]
-  revision = "aa90e7cfc0a78736511f9eeab8f7586d98c8f53a"
+  revision = "fa03337d7da5735229ee8f5e9d5d0b996014b7f8"
 
 [[projects]]
   branch = "master"
   name = "github.com/go-openapi/strfmt"
   packages = ["."]
-  revision = "610b6cacdcde6852f4de68998bd20ce1dac85b22"
+  revision = "4dd3d302e100bae008baedc42d446ce83bdd10ad"
 
 [[projects]]
   branch = "master"
@@ -120,7 +120,7 @@
   branch = "master"
   name = "github.com/go-openapi/validate"
   packages = ["."]
-  revision = "d509235108fcf6ab4913d2dcb3a2260c0db2108e"
+  revision = "0e805b142cf7a9f578a775ff7d05745534371f9d"
 
 [[projects]]
   branch = "master"
@@ -301,7 +301,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "571f7bbbe08da2a8955aed9d4db316e78630e9a3"
+  revision = "83801418e1b59fb1880e363299581ee543af32ca"
 
 [[projects]]
   branch = "master"
@@ -334,7 +334,7 @@
     "go/loader",
     "imports"
   ]
-  revision = "64890f4e2b733655fee5077a5435a8812404c3a3"
+  revision = "ae8cc594552814363a7aeeb4f2825515a771fa38"
 
 [[projects]]
   name = "google.golang.org/appengine"

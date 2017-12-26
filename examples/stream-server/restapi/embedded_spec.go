@@ -9,11 +9,78 @@ import (
 	"encoding/json"
 )
 
-// SwaggerJSON embedded version of the swagger document used at generation time
-var SwaggerJSON json.RawMessage
+var (
+	// SwaggerJSON embedded version of the swagger document used at generation time
+	SwaggerJSON json.RawMessage
+	// FlatSwaggerJSON embedded flattened version of the swagger document used at generation time
+	FlatSwaggerJSON json.RawMessage
+)
 
 func init() {
 	SwaggerJSON = json.RawMessage([]byte(`{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "Example server for emitting newline delimited JSON",
+    "title": "Countdown",
+    "version": "1.0.0"
+  },
+  "basePath": "/",
+  "paths": {
+    "/elapse/{length}": {
+      "get": {
+        "description": "Count down the seconds remaining",
+        "summary": "Count down the number of seconds",
+        "operationId": "elapse",
+        "parameters": [
+          {
+            "maximum": 30,
+            "minimum": 2,
+            "type": "integer",
+            "description": "How many seconds to count down",
+            "name": "length",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Secondly update on remaining time",
+            "schema": {
+              "type": "string",
+              "format": "binary"
+            }
+          },
+          "403": {
+            "description": "Contrived - thrown when length of 11 is chosen"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Mark": {
+      "type": "object",
+      "required": [
+        "remains"
+      ],
+      "properties": {
+        "remains": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}`))
+	FlatSwaggerJSON = json.RawMessage([]byte(`{
   "consumes": [
     "application/json"
   ],

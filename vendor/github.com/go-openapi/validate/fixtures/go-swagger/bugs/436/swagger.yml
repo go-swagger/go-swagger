@@ -1,0 +1,51 @@
+swagger: "2.0"
+
+info:
+  title: Discriminator
+  description: Discriminator bug example
+  version: 0.0.1
+
+schemes:
+  - http
+
+consumes:
+  - application/json
+produces:
+  - application/json
+
+paths:
+  /image:
+    get:
+      operationId: image
+      summary: get image
+      responses:
+        200:
+          description: image
+          schema:
+            $ref: "#/definitions/Image"
+
+definitions:
+  Links:
+    type: array
+    items:
+      type: string
+  Image:
+    description: An image of an application and revision
+    allOf:
+      - $ref: '#/definitions/Links'
+    type: object
+    properties:
+      created:
+        description: The timestamp the image was created
+        type: string
+        format: date-time
+      size:
+        description: The size of the image, in bytes
+        type: integer
+      imageId:
+        description: The docker image id SHA
+        type: string
+    required:
+      - created
+      - size
+      - imageId

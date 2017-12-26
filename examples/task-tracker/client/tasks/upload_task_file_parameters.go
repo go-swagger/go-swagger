@@ -7,7 +7,6 @@ package tasks
 
 import (
 	"net/http"
-	"os"
 	"time"
 
 	"golang.org/x/net/context"
@@ -73,7 +72,7 @@ type UploadTaskFileParams struct {
 	  The file to upload
 
 	*/
-	File *os.File
+	File runtime.NamedReadCloser
 	/*ID
 	  The id of the item
 
@@ -130,13 +129,13 @@ func (o *UploadTaskFileParams) SetDescription(description *string) {
 }
 
 // WithFile adds the file to the upload task file params
-func (o *UploadTaskFileParams) WithFile(file *os.File) *UploadTaskFileParams {
+func (o *UploadTaskFileParams) WithFile(file runtime.NamedReadCloser) *UploadTaskFileParams {
 	o.SetFile(file)
 	return o
 }
 
 // SetFile adds the file to the upload task file params
-func (o *UploadTaskFileParams) SetFile(file *os.File) {
+func (o *UploadTaskFileParams) SetFile(file runtime.NamedReadCloser) {
 	o.File = file
 }
 

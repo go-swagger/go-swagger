@@ -1,0 +1,96 @@
+---
+swagger: "2.0"
+info:
+  title: "Load Balancing Service API"
+  description: Play with path parameters and checks
+  version: "20170115"
+
+basePath: /20170115
+
+paths:
+  /loadBalancers/{loadBalancerId}/backendSets:
+    get:
+      summary: "ListBackendSets"
+      tags: ['loadBalancer']
+      description: Lists all backend sets associated with a given load balancer.
+      operationId: "ListBackendSets"
+      # fixed that: Missing parameter in path
+      parameters:
+        - name: loadBalancerId
+          # fixed that: specified in
+          in: path
+          type: string
+          # fixed that: should be required
+          required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: The list is being retrieved.
+          # fixed that: $ref is forbidden in headers
+          headers:
+            opc-response-id:
+              description: |
+                Unique identifier for the response.
+              type: string
+  /loadBalancers/{aLotOfLoadBalancerIds}/backendSets:
+    get:
+      summary: "ERROR"
+      tags: ['loadBalancer']
+      description: Triggers an invalid spec check
+      operationId: "ListALotOfBackendSets"
+      # fixed that: Missing parameter in path
+      parameters:
+        # Error here: parameter don't match
+        - name: aLotOfLoadBalancerId
+          type: string
+          # fixed that: should be required
+          required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: The list is being retrieved.
+          # fixed that: $ref is forbidden in headers
+          headers:
+            opc-response-id:
+              description: |
+                Unique identifier for the response.
+              type: string
+  # This one should give a warning
+  /othercheck/{{sid}/warnMe:
+    get:
+      parameters:
+        - name: sid
+          type: string
+          in: path
+          required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+  # This one also
+  /othercheck/{sid }/warnMe:
+    get:
+      parameters:
+        - name: sid
+          type: string
+          in: path
+          required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+  # This one fails
+  /othercheck/{si/d}warnMe:
+    get:
+      parameters:
+        - name: sid
+          # fixed this
+          in: path
+          type: string
+          required: true
+      produces:
+      - "application/json"
+      responses:
+        200:

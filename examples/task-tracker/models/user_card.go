@@ -59,14 +59,6 @@ type UserCard struct {
 	ScreenName *string `json:"screenName"`
 }
 
-/* polymorph UserCard admin false */
-
-/* polymorph UserCard availableKarma false */
-
-/* polymorph UserCard id false */
-
-/* polymorph UserCard screenName false */
-
 // Validate validates this user card
 func (m *UserCard) Validate(formats strfmt.Registry) error {
 	var res []error

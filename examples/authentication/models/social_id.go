@@ -23,8 +23,6 @@ type SocialID struct {
 	Ssn *string `json:"ssn"`
 }
 
-/* polymorph social_id ssn false */
-
 // Validate validates this social id
 func (m *SocialID) Validate(formats strfmt.Registry) error {
 	var res []error

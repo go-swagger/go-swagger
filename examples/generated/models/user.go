@@ -41,22 +41,6 @@ type User struct {
 	Username string `json:"username,omitempty"`
 }
 
-/* polymorph User email false */
-
-/* polymorph User firstName false */
-
-/* polymorph User id false */
-
-/* polymorph User lastName false */
-
-/* polymorph User password false */
-
-/* polymorph User phone false */
-
-/* polymorph User userStatus false */
-
-/* polymorph User username false */
-
 // Validate validates this user
 func (m *User) Validate(formats strfmt.Registry) error {
 	var res []error

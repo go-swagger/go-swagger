@@ -11,9 +11,10 @@ import (
 	middleware "github.com/go-openapi/runtime/middleware"
 	graceful "github.com/tylerb/graceful"
 
-	"github.com/go-swagger/go-swagger/examples/authentication/models"
 	"github.com/go-swagger/go-swagger/examples/authentication/restapi/operations"
 	"github.com/go-swagger/go-swagger/examples/authentication/restapi/operations/customers"
+
+	models "github.com/go-swagger/go-swagger/examples/authentication/models"
 )
 
 // This file is safe to edit. Once it exists it will not be overwritten

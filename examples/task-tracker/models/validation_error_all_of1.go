@@ -20,8 +20,6 @@ type ValidationErrorAllOf1 struct {
 	Field string `json:"field,omitempty"`
 }
 
-/* polymorph validationErrorAllOf1 field false */
-
 // Validate validates this validation error all of1
 func (m *ValidationErrorAllOf1) Validate(formats strfmt.Registry) error {
 	var res []error

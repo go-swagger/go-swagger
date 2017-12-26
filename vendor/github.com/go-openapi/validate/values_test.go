@@ -17,10 +17,12 @@ package validate
 import (
 	"testing"
 
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestValidateIntEnum(t *testing.T) {
+func TestValues_ValidateIntEnum(t *testing.T) {
 	enumValues := []interface{}{1, 2, 3}
 
 	err := Enum("test", "body", int64(5), enumValues)
@@ -29,7 +31,7 @@ func TestValidateIntEnum(t *testing.T) {
 	assert.Nil(t, err2)
 }
 
-func TestValidateEnum(t *testing.T) {
+func TestValues_ValidateEnum(t *testing.T) {
 	enumValues := []string{"aa", "bb", "cc"}
 
 	err := Enum("test", "body", "a", enumValues)
@@ -38,7 +40,16 @@ func TestValidateEnum(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestValidateUniqueItems(t *testing.T) {
+// Check edge cases in Enum
+func TestValues_Enum_EdgeCases(t *testing.T) {
+	enumValues := "aa, bb, cc"
+
+	err := Enum("test", "body", int64(1), enumValues)
+	// No validation occurs: enumValues is not a slice
+	assert.Nil(t, err)
+}
+
+func TestValues_ValidateUniqueItems(t *testing.T) {
 	var err error
 
 	itemsNonUnique := []interface{}{
@@ -66,7 +77,7 @@ func TestValidateUniqueItems(t *testing.T) {
 	}
 }
 
-func TestValidateMinLength(t *testing.T) {
+func TestValues_ValidateMinLength(t *testing.T) {
 	var minLength int64 = 5
 	err := MinLength("test", "body", "aa", minLength)
 	assert.Error(t, err)
@@ -74,7 +85,7 @@ func TestValidateMinLength(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestValidateMaxLength(t *testing.T) {
+func TestValues_ValidateMaxLength(t *testing.T) {
 	var maxLength int64 = 5
 	err := MaxLength("test", "body", "bbbbbb", maxLength)
 	assert.Error(t, err)
@@ -82,7 +93,7 @@ func TestValidateMaxLength(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestValidateRequired(t *testing.T) {
+func TestValues_ValidateRequired(t *testing.T) {
 	var err error
 	path := "test"
 	in := "body"
@@ -112,14 +123,14 @@ func TestValidateRequired(t *testing.T) {
 
 }
 
-func TestValidateRequiredNumber(t *testing.T) {
+func TestValues_ValidateRequiredNumber(t *testing.T) {
 	err := RequiredNumber("test", "body", 0)
 	assert.Error(t, err)
 	err = RequiredNumber("test", "body", 1)
 	assert.Nil(t, err)
 }
 
-func TestMultipleOf(t *testing.T) {
+func TestValuMultipleOf(t *testing.T) {
 
 	// positive
 
@@ -154,4 +165,320 @@ func TestMultipleOf(t *testing.T) {
 
 	err = MultipleOf("test", "body", 9.34, 0.1)
 	assert.Error(t, err)
+}
+
+// Test edge case for Pattern (in regular spec, no invalid regexp should reach there)
+func TestValues_Pattern_Edgecases(t *testing.T) {
+	var err *errors.Validation
+	err = Pattern("path", "in", "pick-a-boo", `.*-[a-z]-.*`)
+	assert.Nil(t, err)
+
+	// Invalid regexp
+	err = Pattern("path", "in", "pick-a-boo", `.*-[a(-z]-^).*`)
+	if assert.NotNil(t, err) {
+		assert.Equal(t, int(err.Code()), int(errors.PatternFailCode))
+		assert.Contains(t, err.Error(), "pattern is invalid")
+	}
+
+	// Valid regexp, invalid pattern
+	err = Pattern("path", "in", "pick-8-boo", `.*-[a-z]-.*`)
+	if assert.NotNil(t, err) {
+		assert.Equal(t, int(err.Code()), int(errors.PatternFailCode))
+		assert.NotContains(t, err.Error(), "pattern is invalid")
+		assert.Contains(t, err.Error(), "should match")
+	}
+}
+
+// Test edge cases in FormatOf
+// not easily tested with full specs
+func TestValues_FormatOf_EdgeCases(t *testing.T) {
+	var err *errors.Validation
+
+	err = FormatOf("path", "in", "bugz", "", nil)
+	if assert.NotNil(t, err) {
+		assert.Equal(t, int(err.Code()), int(errors.InvalidTypeCode))
+		assert.Contains(t, err.Error(), "bugz is an invalid type name")
+	}
+
+	err = FormatOf("path", "in", "bugz", "", strfmt.Default)
+	if assert.NotNil(t, err) {
+		assert.Equal(t, int(err.Code()), int(errors.InvalidTypeCode))
+		assert.Contains(t, err.Error(), "bugz is an invalid type name")
+	}
+}
+
+// Test edge cases in MaximumNativeType
+// not easily exercised with full specs
+func TestValues_MaximumNative(t *testing.T) {
+	assert.Nil(t, MaximumNativeType("path", "in", int(5), 10, false))
+	assert.Nil(t, MaximumNativeType("path", "in", uint(5), 10, true))
+	assert.Nil(t, MaximumNativeType("path", "in", int8(5), 10, true))
+	assert.Nil(t, MaximumNativeType("path", "in", uint8(5), 10, true))
+	assert.Nil(t, MaximumNativeType("path", "in", int16(5), 10, true))
+	assert.Nil(t, MaximumNativeType("path", "in", uint16(5), 10, true))
+	assert.Nil(t, MaximumNativeType("path", "in", int32(5), 10, true))
+	assert.Nil(t, MaximumNativeType("path", "in", uint32(5), 10, true))
+	assert.Nil(t, MaximumNativeType("path", "in", int64(5), 10, true))
+	assert.Nil(t, MaximumNativeType("path", "in", uint64(5), 10, true))
+	assert.Nil(t, MaximumNativeType("path", "in", float32(5.5), 10, true))
+	assert.Nil(t, MaximumNativeType("path", "in", float64(5.5), 10, true))
+
+	var err *errors.Validation
+
+	err = MaximumNativeType("path", "in", int32(10), 10, true)
+	if assert.NotNil(t, err) {
+		code := int(err.Code())
+		assert.Equal(t, code, errors.MaxFailCode)
+	}
+
+	err = MaximumNativeType("path", "in", uint(10), 10, true)
+	if assert.NotNil(t, err) {
+		code := int(err.Code())
+		assert.Equal(t, code, errors.MaxFailCode)
+	}
+
+	err = MaximumNativeType("path", "in", int64(12), 10, false)
+	if assert.NotNil(t, err) {
+		code := int(err.Code())
+		assert.Equal(t, code, errors.MaxFailCode)
+	}
+
+	err = MaximumNativeType("path", "in", float32(12.6), 10, false)
+	if assert.NotNil(t, err) {
+		code := int(err.Code())
+		assert.Equal(t, code, int(errors.MaxFailCode))
+	}
+
+	err = MaximumNativeType("path", "in", float64(12.6), 10, false)
+	if assert.NotNil(t, err) {
+		code := int(err.Code())
+		assert.Equal(t, code, int(errors.MaxFailCode))
+	}
+
+	err = MaximumNativeType("path", "in", uint(5), -10, true)
+	if assert.NotNil(t, err) {
+		code := int(err.Code())
+		assert.Equal(t, code, int(errors.MaxFailCode))
+	}
+}
+
+// Test edge cases in MinimumNativeType
+// not easily exercised with full specs
+func TestValues_MinimumNative(t *testing.T) {
+	assert.Nil(t, MinimumNativeType("path", "in", int(5), 0, false))
+	assert.Nil(t, MinimumNativeType("path", "in", uint(5), 0, true))
+	assert.Nil(t, MinimumNativeType("path", "in", int8(5), 0, true))
+	assert.Nil(t, MinimumNativeType("path", "in", uint8(5), 0, true))
+	assert.Nil(t, MinimumNativeType("path", "in", int16(5), 0, true))
+	assert.Nil(t, MinimumNativeType("path", "in", uint16(5), 0, true))
+	assert.Nil(t, MinimumNativeType("path", "in", int32(5), 0, true))
+	assert.Nil(t, MinimumNativeType("path", "in", uint32(5), 0, true))
+	assert.Nil(t, MinimumNativeType("path", "in", int64(5), 0, true))
+	assert.Nil(t, MinimumNativeType("path", "in", uint64(5), 0, true))
+	assert.Nil(t, MinimumNativeType("path", "in", float32(5.5), 0, true))
+	assert.Nil(t, MinimumNativeType("path", "in", float64(5.5), 0, true))
+
+	var err *errors.Validation
+
+	err = MinimumNativeType("path", "in", uint(10), 10, true)
+	if assert.NotNil(t, err) {
+		code := int(err.Code())
+		assert.Equal(t, code, int(errors.MinFailCode))
+	}
+
+	err = MinimumNativeType("path", "in", uint(10), 10, true)
+	if assert.NotNil(t, err) {
+		code := int(err.Code())
+		assert.Equal(t, code, int(errors.MinFailCode))
+	}
+
+	err = MinimumNativeType("path", "in", int64(8), 10, false)
+	if assert.NotNil(t, err) {
+		code := int(err.Code())
+		assert.Equal(t, code, int(errors.MinFailCode))
+	}
+
+	err = MinimumNativeType("path", "in", float32(12.6), 20, false)
+	if assert.NotNil(t, err) {
+		code := int(err.Code())
+		assert.Equal(t, code, int(errors.MinFailCode))
+	}
+
+	err = MinimumNativeType("path", "in", float64(12.6), 20, false)
+	if assert.NotNil(t, err) {
+		code := int(err.Code())
+		assert.Equal(t, code, int(errors.MinFailCode))
+	}
+
+	err = MinimumNativeType("path", "in", uint(5), -10, true)
+	assert.Nil(t, err)
+}
+
+// Test edge cases in MaximumNativeType
+// not easily exercised with full specs
+func TestValues_MultipleOfNative(t *testing.T) {
+	assert.Nil(t, MultipleOfNativeType("path", "in", int(5), 1))
+	assert.Nil(t, MultipleOfNativeType("path", "in", uint(5), 1))
+	assert.Nil(t, MultipleOfNativeType("path", "in", int8(5), 1))
+	assert.Nil(t, MultipleOfNativeType("path", "in", uint8(5), 1))
+	assert.Nil(t, MultipleOfNativeType("path", "in", int16(5), 1))
+	assert.Nil(t, MultipleOfNativeType("path", "in", uint16(5), 1))
+	assert.Nil(t, MultipleOfNativeType("path", "in", int32(5), 1))
+	assert.Nil(t, MultipleOfNativeType("path", "in", uint32(5), 1))
+	assert.Nil(t, MultipleOfNativeType("path", "in", int64(5), 1))
+	assert.Nil(t, MultipleOfNativeType("path", "in", uint64(5), 1))
+
+	var err *errors.Validation
+
+	err = MultipleOfNativeType("path", "in", int64(5), -1)
+	if assert.NotNil(t, err) {
+		code := int(err.Code())
+		assert.Equal(t, code, int(errors.InvalidTypeCode))
+	}
+
+	err = MultipleOfNativeType("path", "in", int64(11), 5)
+	if assert.NotNil(t, err) {
+		code := int(err.Code())
+		assert.Equal(t, code, int(errors.MultipleOfFailCode))
+	}
+}
+
+// Test edge cases in IsValueValidAgainstRange
+// not easily exercised with full specs
+func TestValues_IsValueValidAgainstRange(t *testing.T) {
+	var err error
+
+	// We did not simulate these formats in full specs
+	err = IsValueValidAgainstRange(float32(123.45), "number", "float32", "prefix", "path")
+	assert.NoError(t, err)
+
+	err = IsValueValidAgainstRange(float64(123.45), "number", "float32", "prefix", "path")
+	assert.NoError(t, err)
+
+	err = IsValueValidAgainstRange(int64(123), "number", "float", "prefix", "path")
+	assert.NoError(t, err)
+
+	err = IsValueValidAgainstRange(int64(123), "integer", "", "prefix", "path")
+	assert.NoError(t, err)
+
+	err = IsValueValidAgainstRange(int64(123), "integer", "int64", "prefix", "path")
+	assert.NoError(t, err)
+
+	// Error case (do not occur in normal course of a validation)
+	err = IsValueValidAgainstRange("123", "number", "float", "prefix", "path")
+	if assert.Error(t, err) {
+		assert.Contains(t, err.Error(), "called with invalid (non numeric) val type")
+	}
+
+	// Checking a few limits
+	err = IsValueValidAgainstRange(int64(2147483647), "integer", "int32", "prefix", "path")
+	assert.NoError(t, err)
+
+	err = IsValueValidAgainstRange(int64(2147483647), "integer", "uint32", "prefix", "path")
+	assert.NoError(t, err)
+}
+
+// Test cases in private method asInt64()
+// including expected panic() cases
+func TestValues_asInt64(t *testing.T) {
+	var r int64
+	r = asInt64(int(3))
+	assert.Equal(t, int64(3), r)
+	r = asInt64(uint(3))
+	assert.Equal(t, int64(3), r)
+	r = asInt64(int8(3))
+	assert.Equal(t, int64(3), r)
+	r = asInt64(uint8(3))
+	assert.Equal(t, int64(3), r)
+	r = asInt64(int16(3))
+	assert.Equal(t, int64(3), r)
+	r = asInt64(uint16(3))
+	assert.Equal(t, int64(3), r)
+	r = asInt64(int32(3))
+	assert.Equal(t, int64(3), r)
+	r = asInt64(uint32(3))
+	assert.Equal(t, int64(3), r)
+	r = asInt64(int64(3))
+	assert.Equal(t, int64(3), r)
+	r = asInt64(uint64(3))
+	assert.Equal(t, int64(3), r)
+	r = asInt64(float32(3))
+	assert.Equal(t, int64(3), r)
+	r = asInt64(float64(3))
+	assert.Equal(t, int64(3), r)
+
+	// Non numeric
+	assert.PanicsWithValue(t, "Non numeric value in asInt64()", func() {
+		asInt64("123")
+	})
+}
+
+// Test cases in private method asUint64()
+// including expected panic() cases
+func TestValues_asUint64(t *testing.T) {
+	var r uint64
+	r = asUint64(int(3))
+	assert.Equal(t, uint64(3), r)
+	r = asUint64(uint(3))
+	assert.Equal(t, uint64(3), r)
+	r = asUint64(int8(3))
+	assert.Equal(t, uint64(3), r)
+	r = asUint64(uint8(3))
+	assert.Equal(t, uint64(3), r)
+	r = asUint64(int16(3))
+	assert.Equal(t, uint64(3), r)
+	r = asUint64(uint16(3))
+	assert.Equal(t, uint64(3), r)
+	r = asUint64(int32(3))
+	assert.Equal(t, uint64(3), r)
+	r = asUint64(uint32(3))
+	assert.Equal(t, uint64(3), r)
+	r = asUint64(int64(3))
+	assert.Equal(t, uint64(3), r)
+	r = asUint64(uint64(3))
+	assert.Equal(t, uint64(3), r)
+	r = asUint64(float32(3))
+	assert.Equal(t, uint64(3), r)
+	r = asUint64(float64(3))
+	assert.Equal(t, uint64(3), r)
+
+	// Non numeric
+	assert.PanicsWithValue(t, "Non numeric value in asUint64()", func() {
+		asUint64("123")
+	})
+}
+
+// Test cases in private method asFloat64()
+// including expected panic() cases
+func TestValues_asFloat64(t *testing.T) {
+	var r float64
+	r = asFloat64(int(3))
+	assert.Equal(t, float64(3), r)
+	r = asFloat64(uint(3))
+	assert.Equal(t, float64(3), r)
+	r = asFloat64(int8(3))
+	assert.Equal(t, float64(3), r)
+	r = asFloat64(uint8(3))
+	assert.Equal(t, float64(3), r)
+	r = asFloat64(int16(3))
+	assert.Equal(t, float64(3), r)
+	r = asFloat64(uint16(3))
+	assert.Equal(t, float64(3), r)
+	r = asFloat64(int32(3))
+	assert.Equal(t, float64(3), r)
+	r = asFloat64(uint32(3))
+	assert.Equal(t, float64(3), r)
+	r = asFloat64(int64(3))
+	assert.Equal(t, float64(3), r)
+	r = asFloat64(uint64(3))
+	assert.Equal(t, float64(3), r)
+	r = asFloat64(float32(3))
+	assert.Equal(t, float64(3), r)
+	r = asFloat64(float64(3))
+	assert.Equal(t, float64(3), r)
+
+	// Non numeric
+	assert.PanicsWithValue(t, "Non numeric value in asFloat64()", func() {
+		asFloat64("123")
+	})
 }

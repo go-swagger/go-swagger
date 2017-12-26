@@ -1,0 +1,94 @@
+---
+swagger: '2.0'
+info:
+  title: 'fixture for issue #581'
+  version: '1.0'
+  description: |
+    Exercise boundary checks for minimum, maximum and multipleOf
+    This provides supplementary test cases not tested in the fixture-581 series
+      - multipleOf 
+      - maximum with native type check
+      - minimum with native type check
+
+produces:
+  - application/json
+paths:
+  /fixture:
+    get:
+      operationId: op1
+      parameters:
+        # MultipleOf value not compatible with format 
+        # => still performs default value check as float64, and fails
+        - name: param1
+          in: query
+          type: integer
+          format: int32
+          # maxInt32+1
+          multipleOf: 2147483648
+          default: 99 
+        # => still performs default value check as float64, and succeeds
+        - name: param2
+          in: query
+          type: integer
+          format: int32
+          # maxInt32+1
+          multipleOf: 2147483648
+          default: 4294967296 
+        # MultipleOf. Default value not compatible with format 
+        # => still performs default value check as float64, and fails
+        - name: param3
+          in: query
+          type: integer
+          format: int32
+          multipleOf: 10
+          default: 2147483648
+        # MultipleOf. Default value not compatible with format 
+        # => still performs default value check as float64, and succeeds
+        - name: param4
+          in: query
+          type: integer
+          format: int32
+          multipleOf: 2
+          default: 2147483648
+        # Maximum. Default value not compatible with format 
+        # => still performs default value check as float64, and fails
+        - name: param5
+          in: query
+          type: integer
+          format: int32
+          # maxInt32
+          maximum: 2147483647
+          # maxInt32+1
+          default:  2147483648
+        # Maximum. Default value not compatible with format 
+        # => still performs default value check as float64, and succeeds
+        - name: param6
+          in: query
+          type: integer
+          format: uint32
+          # maxInt32
+          maximum: 2147483647
+          # maxInt32+1
+          default: -1
+        # Minimum. Default value not compatible with format 
+        # => still performs default value check as float64, and succeeds
+        - name: param7
+          in: query
+          type: integer
+          format: int32
+          # maxInt32
+          minimum: 2147483647
+          # maxInt32+1
+          default:  2147483648
+        # Minimum. Default value not compatible with format 
+        # => still performs default value check as float64, and fails
+        - name: param8
+          in: query
+          type: integer
+          format: uint32
+          # maxInt32
+          minimum: 2147483647
+          # maxInt32+1
+          default: -1
+      responses:
+        200:

@@ -14,7 +14,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	"github.com/go-swagger/go-swagger/examples/generated/models"
+	models "github.com/go-swagger/go-swagger/examples/generated/models"
 )
 
 // NewUpdateUserParams creates a new UpdateUserParams object
