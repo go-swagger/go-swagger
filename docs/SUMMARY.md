@@ -39,4 +39,4 @@
   - [Client generation](faq/faq_client.md)
   - [Spec generation from source](faq/faq_spec.md)
   - [API testing](faq/faq_testing.md)
-  - [Documenting your API](faq_documenting.md)
+  - [Documenting your API](faq/faq_documenting.md)

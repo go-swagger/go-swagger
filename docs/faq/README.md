@@ -18,10 +18,8 @@ Feel free to contribute new questions and share your experience with go-swagger!
 
 #### Installation,setup and environment
 * [What is the minimal go version required?](faq_setup.md#what-is-the-minimal-go-version-required)
-<!--
-* [Swagger installation issues](faq_setup.md#swagger-installation-issues)
-* [What is the proper way to vendor go-swagger?](faq_setup.md#what-is-the-proper-way-to-vendor-go-swagger)
--->
+<!-- * [Swagger installation issues](faq_setup.md#swagger-installation-issues) -->
+<!-- * [What is the proper way to vendor go-swagger?](faq_setup.md#what-is-the-proper-way-to-vendor-go-swagger) -->
 
 #### Model generation
 * [Non-required or nullable property?](faq_model.md#non-required-or-nullable-property)
