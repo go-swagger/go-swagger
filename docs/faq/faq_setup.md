@@ -7,7 +7,7 @@ Our general policy is that we support the two latest go versions.
 
 That being said, as of Dec. 2017, our CI engines currently run all tests on go 1.7, on Linux and Windows platforms.
 
-You should be able to build with go **1.6**, but we won't proceed to changes in order to keep backwards compatibility with 1.6.
+You should be able to build with go **1.6**, but we won't proceed to changes in order to maintain backward compatibility with 1.6.
 
 Originally from issue [#636](https://github.com/go-swagger/go-swagger/issues/636).
 

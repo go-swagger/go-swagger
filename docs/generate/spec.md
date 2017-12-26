@@ -82,6 +82,7 @@ There are several annotations that mark a comment block as a participant for the
 * [swagger:allOf](spec/allOf.md)
 * [swagger:strfmt](spec/strfmt.md)
 * [swagger:discriminated](spec/discriminated.md)
+* [swagger:ignore](spec/ignore.md)
 
 #### Embedded types
 
