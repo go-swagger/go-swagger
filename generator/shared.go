@@ -392,20 +392,21 @@ type SectionOpts struct {
 
 // GenOpts the options for the generator
 type GenOpts struct {
-	IncludeModel      bool
-	IncludeValidator  bool
-	IncludeHandler    bool
-	IncludeParameters bool
-	IncludeResponses  bool
-	IncludeURLBuilder bool
-	IncludeMain       bool
-	IncludeSupport    bool
-	ExcludeSpec       bool
-	DumpData          bool
-	WithContext       bool
-	ValidateSpec      bool
-	FlattenSpec       bool
-	defaultsEnsured   bool
+	IncludeModel       bool
+	IncludeValidator   bool
+	IncludeHandler     bool
+	IncludeParameters  bool
+	IncludeResponses   bool
+	IncludeURLBuilder  bool
+	IncludeMain        bool
+	IncludeSupport     bool
+	ExcludeSpec        bool
+	DumpData           bool
+	WithContext        bool
+	ValidateSpec       bool
+	FlattenSpec        bool
+	FlattenDefinitions bool
+	defaultsEnsured    bool
 
 	Spec              string
 	APIPackage        string
@@ -933,17 +934,23 @@ func validateAndFlattenSpec(opts *GenOpts, specDoc *loads.Document) (*loads.Docu
 		cwd, _ := os.Getwd()
 		absBasePath = filepath.Join(cwd, absBasePath)
 	}
+
+	/********************************************************************************************/
+	/* Either flatten or expand should be called here before moving on the code generation part */
+	/********************************************************************************************/
 	if opts.FlattenSpec {
-		/********************************************************************************************/
-		/* Either flatten or expand should be called here before moving on the code generation part */
-		/********************************************************************************************/
 		flattenOpts := analysis.FlattenOpts{
-			Expand: !opts.FlattenSpec,
+			Expand: false,
 			// BasePath must be absolute. This is guaranteed because opts.Spec is absolute
 			BasePath: absBasePath,
 			Spec:     analysis.New(specDoc.Spec()),
 		}
 		err = analysis.Flatten(flattenOpts)
+	} else {
+		err = spec.ExpandSpec(specDoc.Spec(), &spec.ExpandOptions{
+			RelativeBase: absBasePath,
+			SkipSchemas:  false,
+		})
 	}
 	if err != nil {
 		return nil, err
