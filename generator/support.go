@@ -23,6 +23,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	goruntime "runtime"
 	"sort"
 	"strings"
 
@@ -169,8 +170,15 @@ type appGenerator struct {
 // 2. If they do return child path  relative to parent path.
 // 3. Everything else return false
 func checkPrefixAndFetchRelativePath(childpath string, parentpath string) (bool, string) {
+	// Windows (local) file systems - NTFS, as well as FAT and variants
+	// are case insensitive.
+	cp, pp := childpath, parentpath
+	if goruntime.GOOS == "windows" {
+		cp = strings.ToLower(cp)
+		pp = strings.ToLower(pp)
+	}
 
-	if strings.HasPrefix(childpath, parentpath) {
+	if strings.HasPrefix(cp, pp) {
 		pth, err := filepath.Rel(parentpath, childpath)
 		if err != nil {
 			log.Fatalln(err)
