@@ -35,6 +35,7 @@ Help Options:
           --dump-data         when present dumps the json for the template generator instead of generating files
           --skip-validation   skips validation of spec prior to generation
       -r, --copyright-file=   the file containing a copyright header for the generated source
+	  --additional-initiliasm=  additional consecutive capitals that should be considered as initialism, repeat for multiple
 ```
 
 There is an example client in https://github.com/go-swagger/go-swagger/tree/master/examples/todo-list/client

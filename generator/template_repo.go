@@ -104,8 +104,6 @@ var FuncMap template.FuncMap = map[string]interface{}{
 
 func init() {
 	templates = NewRepository(FuncMap)
-	templates.LoadDefaults()
-
 }
 
 var assets = map[string][]byte{
