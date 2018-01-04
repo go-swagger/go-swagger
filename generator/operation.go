@@ -60,6 +60,7 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 	if opts == nil {
 		return errors.New("gen opts are required")
 	}
+	templates.LoadDefaults()
 	if opts.TemplateDir != "" {
 		if err := templates.LoadDir(opts.TemplateDir); err != nil {
 			return err

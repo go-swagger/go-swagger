@@ -343,7 +343,7 @@ func (sd *setDefault) Parse(lines []string) error {
 type setExample struct {
 	scheme  *spec.SimpleSchema
 	builder validationBuilder
-	rx *regexp.Regexp
+	rx      *regexp.Regexp
 }
 
 func (se *setExample) Matches(line string) bool {

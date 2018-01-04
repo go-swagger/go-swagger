@@ -47,6 +47,7 @@ Help Options:
           --compatibility-mode=[modern|intermediate] the compatibility mode for the tls server (default: modern)
           --skip-validation                          skips validation of spec prior to generation
       -r, --copyright-file=                          the file containing a copyright header for the generated source
+	  --additional-initialism=                       additional consecutive capitals that should be considered as initialism, repeat for multiple
 ```
 
 The server application gets generated with all the handlers stubbed out with a not implemented handler. That means that you can start the API server immediately after generating it. It will respond to all valid requests with 501 Not Implemented. When a request is invalid it will most likely respond with an appropriate 4xx response.
