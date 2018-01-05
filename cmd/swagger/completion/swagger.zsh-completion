@@ -53,7 +53,6 @@ __generate_model() {
     '(-T,--template-dir)'{-T,--template-dir}"[alternative template override directory]:template-dir" \
     '(-C,--config-file)'{-C,--config-file}"[configuration file to use for overriding template options]:config-file" \
     '(-n,--name)'{-n,--name}"[the model to generate]:name" \
-    "(--skip-validator)--skip-validator[when present will not generate a model validator]" \
     "(--skip-struct)--skip-struct[when present will not generate the model struct]" \
     "(--dump-data)--dump-data[when present dumps the json for the template generator instead of generating files]" && return 0
 }
@@ -76,7 +75,6 @@ __generate_operation() {
     "(--skip-handler)--skip-handler[when present will not generate an operation handler]" \
     "(--skip-parameters)--skip-parameters[when present will not generate the parameter model struct]" \
     "(--skip-responses)--skip-responses[when present will not generate the response model struct]" \
-    "(--skip-validator)--skip-validator[when present will not generate a model validator]" \
     "(--skip-url-builder)--skip-url-builder[when present will not generate a URL builder]" \
     "(--dump-data)--dump-data[when present dumps the json for the template generator instead of generating files]" && return 0
 }

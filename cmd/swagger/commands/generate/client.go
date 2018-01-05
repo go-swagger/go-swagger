@@ -76,6 +76,7 @@ func (c *Client) getOpts() (*generator.GenOpts, error) {
 		DumpData:          c.DumpData,
 		ExistingModels:    c.ExistingModels,
 		Copyright:         copyrightstr,
+		IsClient:          true,
 	}, nil
 }
 
@@ -98,5 +99,5 @@ You can get these now with: go get -u -f %s/...
 
 // Execute runs this command
 func (c *Client) Execute(args []string) error {
-	return generate(c)
+	return createSwagger(c)
 }

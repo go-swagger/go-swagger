@@ -37,7 +37,7 @@ func testGenOpts() (g GenOpts) {
 	g.TemplateDir = ""
 	g.WithContext = false
 	g.DumpData = false
-	_ = g.EnsureDefaults(false)
+	_ = g.EnsureDefaults()
 	return
 }
 

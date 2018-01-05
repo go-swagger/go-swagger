@@ -233,7 +233,7 @@ func findSwaggerSpec(nm string) (string, error) {
 
 // DefaultSectionOpts for a given opts, this is used when no config file is passed
 // and uses the embedded templates when no local override can be found
-func DefaultSectionOpts(gen *GenOpts, client bool) {
+func DefaultSectionOpts(gen *GenOpts) {
 	sec := gen.Sections
 	if len(sec.Models) == 0 {
 		sec.Models = []TemplateOpts{
@@ -247,7 +247,7 @@ func DefaultSectionOpts(gen *GenOpts, client bool) {
 	}
 
 	if len(sec.Operations) == 0 {
-		if client {
+		if gen.IsClient {
 			sec.Operations = []TemplateOpts{
 				{
 					Name:     "parameters",
@@ -302,7 +302,7 @@ func DefaultSectionOpts(gen *GenOpts, client bool) {
 	}
 
 	if len(sec.OperationGroups) == 0 {
-		if client {
+		if gen.IsClient {
 			sec.OperationGroups = []TemplateOpts{
 				{
 					Name:     "client",
@@ -317,7 +317,7 @@ func DefaultSectionOpts(gen *GenOpts, client bool) {
 	}
 
 	if len(sec.Application) == 0 {
-		if client {
+		if gen.IsClient {
 			sec.Application = []TemplateOpts{
 				{
 					Name:     "facade",
@@ -406,6 +406,7 @@ type GenOpts struct {
 	ValidateSpec       bool
 	FlattenSpec        bool
 	FlattenDefinitions bool
+	IsClient           bool
 	defaultsEnsured    bool
 
 	Spec              string
@@ -488,11 +489,11 @@ func (g *GenOpts) SpecPath() string {
 }
 
 // EnsureDefaults for these gen opts
-func (g *GenOpts) EnsureDefaults(client bool) error {
+func (g *GenOpts) EnsureDefaults() error {
 	if g.defaultsEnsured {
 		return nil
 	}
-	DefaultSectionOpts(g, client)
+	DefaultSectionOpts(g)
 	if g.LanguageOpts == nil {
 		g.LanguageOpts = GoLangOpts()
 	}
