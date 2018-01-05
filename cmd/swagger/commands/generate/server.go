@@ -116,5 +116,5 @@ You can get these now with: go get -u -f %s/...
 
 // Execute runs this command
 func (s *Server) Execute(args []string) error {
-	return generate(s)
+	return createSwagger(s)
 }

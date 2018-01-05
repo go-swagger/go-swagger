@@ -125,5 +125,4 @@ It aims to represent the contract of your API with a language agnostic descripti
 	if _, err := parser.Parse(); err != nil {
 		os.Exit(1)
 	}
-
 }

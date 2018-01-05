@@ -31,7 +31,6 @@ type Operation struct {
 	NoHandler      bool     `long:"skip-handler" description:"when present will not generate an operation handler"`
 	NoStruct       bool     `long:"skip-parameters" description:"when present will not generate the parameter model struct"`
 	NoResponses    bool     `long:"skip-responses" description:"when present will not generate the response model struct"`
-	NoValidator    bool     `long:"skip-validator" description:"when present will not generate a model validator"`
 	NoURLBuilder   bool     `long:"skip-url-builder" description:"when present will not generate a URL builder"`
 	DumpData       bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
 	SkipFlattening bool     `long:"skip-flatten" description:"skips flattening of spec prior to generation"`
@@ -53,7 +52,6 @@ func (o *Operation) getOpts() (*generator.GenOpts, error) {
 		IncludeHandler:    !o.NoHandler,
 		IncludeResponses:  !o.NoResponses,
 		IncludeParameters: !o.NoStruct,
-		IncludeValidator:  !o.NoValidator,
 		IncludeURLBuilder: !o.NoURLBuilder,
 		Tags:              o.Tags,
 		FlattenSpec:       !o.SkipFlattening,
@@ -83,5 +81,5 @@ func (o *Operation) Execute(args []string) error {
 		return errors.New("only 1 operation at a time is supported for dumping data")
 	}
 
-	return generate(o)
+	return createSwagger(o)
 }

@@ -42,7 +42,7 @@ func (s *shared) getAdditionalInitialisms() []string {
 	return s.AdditionalInitialisms
 }
 
-func generate(s sharedCommand) error {
+func createSwagger(s sharedCommand) error {
 	cfg, err := readConfig(string(s.getConfigFile()))
 	if err != nil {
 		return err
@@ -54,7 +54,7 @@ func generate(s sharedCommand) error {
 		return err
 	}
 
-	if err := opts.EnsureDefaults(false); err != nil {
+	if err := opts.EnsureDefaults(); err != nil {
 		return err
 	}
 
