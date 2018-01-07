@@ -23,7 +23,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	goruntime "runtime"
 	"sort"
 	"strings"
 	"text/template"
@@ -144,15 +143,6 @@ func GoLangOpts() *LanguageOpts {
 			}
 			gopathExtended = filepath.Join(gopathExtended, "src")
 			gp = filepath.Join(gp, "src")
-
-			// Windows (local) file systems - NTFS, as well as FAT and variants
-			// are case insensitive.
-			if goruntime.GOOS == "windows" {
-				tgtAbsPath = strings.ToLower(tgtAbsPath)
-				tgtAbsPathExtended = strings.ToLower(tgtAbsPathExtended)
-				gopathExtended = strings.ToLower(gopathExtended)
-				gp = strings.ToLower(gp)
-			}
 
 			// At this stage we have expanded and unexpanded target path. GOPATH is fully expanded.
 			// Expanded means symlink free.
