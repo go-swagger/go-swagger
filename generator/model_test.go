@@ -1762,7 +1762,7 @@ func TestGenModel_Issue423(t *testing.T) {
 				ct, err := opts.LanguageOpts.FormatContent("SRN.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
-					assertInCode(t, "site, err := UnmarshalSite(bytes.NewBuffer(raw), runtime.JSONConsumer())", res)
+					assertInCode(t, "site, err := UnmarshalSite(bytes.NewBuffer(data.Site), runtime.JSONConsumer())", res)
 					assertInCode(t, "result.siteField = site", res)
 				}
 			}
@@ -2036,6 +2036,34 @@ func TestGenModel_Issue774(t *testing.T) {
 	}
 }
 
+func TestGenModel_Issue1341(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/1341/swagger.yaml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "ExecutableValueString"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ff, err := opts.LanguageOpts.FormatContent("executable_value_string.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					//fmt.Println(res)
+					assertInCode(t, `return errors.New(422, "invalid ValueType value: %q", base.ValueType`, res)
+					assertInCode(t, "result.testField = base.Test", res)
+					assertInCode(t, "Test *string `json:\"Test\"`", res)
+					assertInCode(t, "Test: m.Test(),", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
 // Non-regression when Debug mode activated
 // Run everything again in Debug mode, just to make
 // sure no side effect has been added while debugging
@@ -2128,5 +2156,6 @@ func TestDebugModelEntries(t *testing.T) {
 	TestGenModel_Issue822(t)
 	TestGenModel_Issue981(t)
 	TestGenModel_Issue774(t)
+	TestGenModel_Issue1341(t)
 	Debug = false
 }
