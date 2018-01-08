@@ -44,118 +44,6 @@ const (
 	body        = "body"
 )
 
-var zeroes = map[string]string{
-	"string":            "\"\"",
-	"int8":              "0",
-	"int":               "0",
-	"int16":             "0",
-	"int32":             "0",
-	"int64":             "0",
-	"uint":              "0",
-	"uint8":             "0",
-	"uint16":            "0",
-	"uint32":            "0",
-	"uint64":            "0",
-	"bool":              "false",
-	"float32":           "0",
-	"float64":           "0",
-	"strfmt.DateTime":   "strfmt.DateTime{}",
-	"strfmt.Date":       "strfmt.Date{}",
-	"strfmt.URI":        "strfmt.URI(\"\")",
-	"strfmt.Email":      "strfmt.Email(\"\")",
-	"strfmt.Hostname":   "strfmt.Hostname(\"\")",
-	"strfmt.IPv4":       "strfmt.IPv4(\"\")",
-	"strfmt.IPv6":       "strfmt.IPv6(\"\")",
-	"strfmt.UUID":       "strfmt.UUID(\"\")",
-	"strfmt.UUID3":      "strfmt.UUID3(\"\")",
-	"strfmt.UUID4":      "strfmt.UUID4(\"\")",
-	"strfmt.UUID5":      "strfmt.UUID5(\"\")",
-	"strfmt.ISBN":       "strfmt.ISBN(\"\")",
-	"strfmt.ISBN10":     "strfmt.ISBN10(\"\")",
-	"strfmt.ISBN13":     "strfmt.ISBN13(\"\")",
-	"strfmt.CreditCard": "strfmt.CreditCard(\"\")",
-	"strfmt.SSN":        "strfmt.SSN(\"\")",
-	"strfmt.Password":   "strfmt.Password(\"\")",
-	"strfmt.HexColor":   "strfmt.HexColor(\"#000000\")",
-	"strfmt.RGBColor":   "strfmt.RGBColor(\"rgb(0,0,0)\")",
-	"strfmt.Base64":     "nil",
-	"strfmt.Duration":   "0",
-}
-
-var stringConverters = map[string]string{
-	"int8":    "swag.ConvertInt8",
-	"int16":   "swag.ConvertInt16",
-	"int32":   "swag.ConvertInt32",
-	"int64":   "swag.ConvertInt64",
-	"uint8":   "swag.ConvertUint8",
-	"uint16":  "swag.ConvertUint16",
-	"uint32":  "swag.ConvertUint32",
-	"uint64":  "swag.ConvertUint64",
-	"bool":    "swag.ConvertBool",
-	"float32": "swag.ConvertFloat32",
-	"float64": "swag.ConvertFloat64",
-}
-
-var stringFormatters = map[string]string{
-	"int8":    "swag.FormatInt8",
-	"int16":   "swag.FormatInt16",
-	"int32":   "swag.FormatInt32",
-	"int64":   "swag.FormatInt64",
-	"uint8":   "swag.FormatUint8",
-	"uint16":  "swag.FormatUint16",
-	"uint32":  "swag.FormatUint32",
-	"uint64":  "swag.FormatUint64",
-	"bool":    "swag.FormatBool",
-	"float32": "swag.FormatFloat32",
-	"float64": "swag.FormatFloat64",
-}
-
-// typeMapping contains a mapping of format or type name to go type
-var typeMapping = map[string]string{
-	"byte":       "strfmt.Base64",
-	"date":       "strfmt.Date",
-	"datetime":   "strfmt.DateTime",
-	"date-time":  "strfmt.DateTime",
-	"uri":        "strfmt.URI",
-	"email":      "strfmt.Email",
-	"hostname":   "strfmt.Hostname",
-	"ipv4":       "strfmt.IPv4",
-	"ipv6":       "strfmt.IPv6",
-	"mac":        "strfmt.MAC",
-	"uuid":       "strfmt.UUID",
-	"uuid3":      "strfmt.UUID3",
-	"uuid4":      "strfmt.UUID4",
-	"uuid5":      "strfmt.UUID5",
-	"isbn":       "strfmt.ISBN",
-	"isbn10":     "strfmt.ISBN10",
-	"isbn13":     "strfmt.ISBN13",
-	"creditcard": "strfmt.CreditCard",
-	"ssn":        "strfmt.SSN",
-	"hexcolor":   "strfmt.HexColor",
-	"rgbcolor":   "strfmt.RGBColor",
-	"duration":   "strfmt.Duration",
-	"password":   "strfmt.Password",
-	"ObjectId":   "strfmt.ObjectId",
-	"binary":     "io.ReadCloser",
-	"char":       "rune",
-	"int":        "int64",
-	"int8":       "int8",
-	"int16":      "int16",
-	"int32":      "int32",
-	"int64":      "int64",
-	"uint":       "uint64",
-	"uint8":      "uint8",
-	"uint16":     "uint16",
-	"uint32":     "uint32",
-	"uint64":     "uint64",
-	"float":      "float32",
-	"double":     "float64",
-	"number":     "float64",
-	"integer":    "int64",
-	"boolean":    "bool",
-	"file":       "runtime.File",
-}
-
 // swaggerTypeMapping contains a mapping from go type to swagger type or format
 var swaggerTypeName map[string]string
 
@@ -615,14 +503,6 @@ func boolExtension(ext spec.Extensions, key string) *bool {
 	return nil
 }
 
-func logDebug(frmt string, args ...interface{}) {
-	if Debug {
-		_, file, pos, _ := runtime.Caller(2)
-		log.Printf("%s:%d: %s", filepath.Base(file), pos, fmt.Sprintf(frmt, args...))
-	}
-
-}
-
 func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequired bool) (result resolvedType, err error) {
 	logDebug("resolving schema (anon: %t, req: %t) %s\n", isAnonymous, isRequired, t.ModelName /*bbb*/)
 	if schema == nil {
@@ -747,70 +627,25 @@ type resolvedType struct {
 }
 
 func (rt *resolvedType) Zero() string {
+	// zero function provided as native or by strfmt function
 	if zr, ok := zeroes[rt.GoType]; ok {
 		return zr
 	}
+	// map and slice initializer
 	if rt.IsMap || rt.IsArray {
 		return "make(" + rt.GoType + ", 0, 50)"
 	}
+	// object initializer
 	if rt.IsTuple || rt.IsComplexObject {
 		if rt.IsNullable {
 			return "new(" + rt.GoType + ")"
 		}
 		return rt.GoType + "{}"
 	}
+	// interface initializer
 	if rt.IsInterface {
 		return "nil"
 	}
 
 	return ""
-}
-
-var primitives = map[string]struct{}{
-	"bool":       struct{}{},
-	"uint":       struct{}{},
-	"uint8":      struct{}{},
-	"uint16":     struct{}{},
-	"uint32":     struct{}{},
-	"uint64":     struct{}{},
-	"int":        struct{}{},
-	"int8":       struct{}{},
-	"int16":      struct{}{},
-	"int32":      struct{}{},
-	"int64":      struct{}{},
-	"float32":    struct{}{},
-	"float64":    struct{}{},
-	"string":     struct{}{},
-	"complex64":  struct{}{},
-	"complex128": struct{}{},
-	"byte":       struct{}{},
-	"[]byte":     struct{}{},
-	"rune":       struct{}{},
-}
-
-var customFormatters = map[string]struct{}{
-	"strfmt.DateTime":   struct{}{},
-	"strfmt.Date":       struct{}{},
-	"strfmt.URI":        struct{}{},
-	"strfmt.Email":      struct{}{},
-	"strfmt.Hostname":   struct{}{},
-	"strfmt.IPv4":       struct{}{},
-	"strfmt.IPv6":       struct{}{},
-	"strfmt.UUID":       struct{}{},
-	"strfmt.UUID3":      struct{}{},
-	"strfmt.UUID4":      struct{}{},
-	"strfmt.UUID5":      struct{}{},
-	"strfmt.ISBN":       struct{}{},
-	"strfmt.ISBN10":     struct{}{},
-	"strfmt.ISBN13":     struct{}{},
-	"strfmt.CreditCard": struct{}{},
-	"strfmt.SSN":        struct{}{},
-	"strfmt.Password":   struct{}{},
-	"strfmt.HexColor":   struct{}{},
-	"strfmt.RGBColor":   struct{}{},
-	"strfmt.Base64":     struct{}{},
-	"strfmt.Duration":   struct{}{},
-	"strfmt.ObjectID":   struct{}{},
-	"io.ReadCloser":     struct{}{},
-	"io.Writer":         struct{}{},
 }
