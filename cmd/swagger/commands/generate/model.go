@@ -22,10 +22,9 @@ import (
 // Model the generate model file command
 type Model struct {
 	shared
-	Name        []string `long:"name" short:"n" description:"the model to generate"`
-	NoValidator bool     `long:"skip-validator" description:"when present will not generate a model validator"`
-	NoStruct    bool     `long:"skip-struct" description:"when present will not generate the model struct"`
-	DumpData    bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
+	Name     []string `long:"name" short:"n" description:"the model to generate"`
+	NoStruct bool     `long:"skip-struct" description:"when present will not generate the model struct"`
+	DumpData bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
 }
 
 // Execute generates a model file
@@ -46,7 +45,6 @@ func (m *Model) Execute(args []string) error {
 		ExcludeSpec:    true,
 		SkipSupport:    true,
 		SkipOperations: true,
-		SkipValidation: m.NoValidator,
 		SkipModels:     m.NoStruct,
 	}
 	return s.Execute(args)
