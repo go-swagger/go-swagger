@@ -551,6 +551,7 @@ func (g *GenOpts) location(t *TemplateOpts, data interface{}) (string, string, e
 
 func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 	var templ *template.Template
+
 	if strings.HasPrefix(strings.ToLower(t.Source), "asset:") {
 		tt, err := templates.Get(strings.TrimPrefix(t.Source, "asset:"))
 		if err != nil {
@@ -560,7 +561,17 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 	}
 
 	if templ == nil {
+		// try to load from repository (and enable dependencies)
+		name := swag.ToJSONName(strings.TrimSuffix(t.Source, ".gotmpl"))
+		tt, err := templates.Get(name)
+		if err == nil {
+			templ = tt
+		}
+	}
+
+	if templ == nil {
 		// try to load template from disk, in TemplateDir if specified
+		// (dependencies resolution is limited to preloaded assets)
 		var templateFile string
 		if g.TemplateDir != "" {
 			templateFile = filepath.Join(g.TemplateDir, t.Source)
@@ -574,10 +585,10 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 		tt, err := template.New(t.Source).Funcs(FuncMap).Parse(string(content))
 		if err != nil {
 			return nil, fmt.Errorf("template parsing failed on template %s: %v", t.Name, err)
-			//return nil, err
 		}
 		templ = tt
 	}
+
 	if templ == nil {
 		return nil, fmt.Errorf("template %q not found", t.Source)
 	}
