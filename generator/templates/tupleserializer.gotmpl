@@ -89,32 +89,10 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
     {{ end }}
   {{ end }}
   {{ range .Properties }}
-    {{ if and ( not .IsArray ) .IsBaseType }}
-      {{ camelize .Name }}, err := Unmarshal{{ .GoType }}(bytes.NewBuffer(raw), runtime.JSONConsumer())
+    {{ if or .IsBaseType (not .IsExported) }}
+      {{ camelize .Name }}, err := Unmarshal{{if .IsArray}}{{ pascalize .Items.GoType }}Slice{{else}}{{ pascalize .GoType }}{{end}}(bytes.NewBuffer(data.{{ pascalize .Name }}), runtime.JSONConsumer())
       if err != nil && err != io.EOF {
         return err
-      }
-    {{ else if and .IsArray .IsBaseType }}
-      var {{ camelize .Name }} {{ .GoType }}
-      buf = bytes.NewBuffer(raw)
-      dec = json.NewDecoder(buf)
-      dec.UseNumber()
-
-      untypedObj := make(map[string]interface{})
-      if err := dec.Decode(&untypedObj); err != nil {
-        return err
-      }
-      if untyped{{ pascalize .Name }}, ok := untypedObj[{{ printf "%q" .Name }}]; ok {
-        if slc{{ pascalize .Name}}, ok := untyped{{ pascalize .Name }}.([]interface{}); ok {
-          for _, slcEl := range slc{{ pascalize .Name }} {
-            slcJSON, _ := json.Marshal(slcEl)
-            slcObj, err := Unmarshal{{ .Items.GoType }}(bytes.NewBuffer(slcJSON), runtime.JSONConsumer())
-            if err != nil && err != io.EOF {
-              return err
-            }
-            {{ camelize .Name }} = append({{ camelize .Name }}, slcObj)
-          }
-        }
       }
     {{ end }}
   {{ end }}
@@ -122,34 +100,57 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
   var result {{ pascalize .Name }}
 
   {{ range $_, $parent := .AllOf }}
-    {{ if $parent.IsBaseType }}
-      {{ range $idx, $val := $parent.Properties }}
-        {{ if ne $parent.DiscriminatorField $val.Name }}
-          {{ if $val.IsExported }}
-            result.{{ camelize $val.Name }}Field = base.{{ pascalize $val.Name }}
+    {{ if $parent.IsAnonymous }}
+      {{ if $parent.IsBaseType }}
+        {{ range $idx, $val := $parent.Properties }}
+          {{ if ne $parent.DiscriminatorField $val.Name }}
+            {{ if $val.IsExported }}
+              result.{{ camelize $val.Name }}Field = base.{{ pascalize $val.Name }}
+            {{ else }}
+              result.{{ camelize $val.Name }}Field = allOf{{ pascalize $val.Name }}
+            {{ end }}
           {{ else }}
-            result.{{ camelize $val.Name }}Field = allOf{{ pascalize $val.Name }}
+            if base.{{ pascalize $val.Name }} != result.{{ pascalize $val.Name }}() {
+              /* Not the type we're looking for. */
+              return errors.New(422, "invalid {{$val.Name}} value: %q", base.{{ pascalize $val.Name }})
+            }
           {{ end }}
-        {{ else }}
-          if base.{{ pascalize $val.Name }} != result.{{ pascalize $val.Name }}() {
-            /* Not the type we're looking for. */
-            return errors.New(422, "invalid {{$val.Name}} value: %q", base.{{ pascalize $val.Name }})
-          }
+        {{ end }}
+      {{ else }}
+        {{ range $idx, $val := $parent.Properties }}
+          {{ if $val.IsBaseType }}
+            result.{{ camelize $val.Name }}Field = allOf{{ pascalize $val.Name }}
+          {{ else }}
+            result.{{ pascalize $val.Name }} = data.{{ pascalize $val.Name }}
+          {{ end }}
         {{ end }}
       {{ end }}
     {{ else }}
-      {{ range $idx, $val := $parent.Properties }}
-        {{ if $val.IsBaseType }}
-          result.{{ camelize $val.Name }}Field = allOf{{ pascalize $val.Name }}
-        {{ else }}
-          result.{{ pascalize $val.Name }} = data.{{ pascalize $val.Name }}
+      {{ if and $parent.IsBaseType $parent.IsExported }}
+        {{ range $idx, $val := $parent.Properties }}
+          {{ if ne $parent.DiscriminatorField $val.Name }}
+            {{ if $val.IsExported }}
+              result.{{ camelize $val.Name }}Field = base.{{ pascalize $val.Name }}
+            {{ else }}
+              result.{{ camelize $val.Name }}Field = allOf{{ pascalize $val.Name }}
+            {{ end }}
+          {{ else }}
+            if base.{{ pascalize $val.Name }} != result.{{ pascalize $val.Name }}() {
+              /* Not the type we're looking for. */
+              return errors.New(422, "invalid {{$val.Name}} value: %q", base.{{ pascalize $val.Name }})
+            }
+          {{ end }}
         {{ end }}
+      {{ else }}
+        result.{{ $parent.GoType }} = data.{{ $parent.GoType }}
       {{ end }}
     {{ end }}
   {{ end }}
   {{ range .Properties }}
+    // {{ .Name }}
     result.{{ if .IsBaseType }}{{ camelize .Name }}Field{{ else }}{{ pascalize .Name }}{{ end }} = {{ if .IsBaseType }}{{ camelize .Name }}{{ else }}data.{{ pascalize .Name}}{{ end }}
-  {{ end }}*{{ .ReceiverName }} = result
+  {{ end }}
+  *{{ .ReceiverName }} = result
   return nil
 }
 
@@ -168,6 +169,7 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) { {
 	return swag.ConcatJSON(b1, b2), nil
 }
 {{ end }}
+
 {{ define "allOfSerializer" }}{{ $receiverName := .ReceiverName }}
 // UnmarshalJSON unmarshals this object from a JSON structure
 func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error {

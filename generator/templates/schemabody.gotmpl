@@ -111,7 +111,7 @@
       {{ end }}
     {{ else }}
       {{ if not (and .IsBaseType .IsExported) }}
-        {{ .GoType }}/*trouble*/
+        {{ .GoType }}
       {{ end }}
     {{ end }}
   {{ end }}
@@ -122,6 +122,8 @@
       {{ else }}
         {{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if not .Required }},omitempty{{ end }}"`
       {{ end}}
+    {{ else }}
+      {{ pascalize .Name }} json.RawMessage `json:"{{ .Name }}{{ if not .Required }},omitempty{{ end }}"`
     {{end}}
   {{ end }}
   {{ if .HasAdditionalProperties }}
@@ -151,7 +153,7 @@
       {{ end }}
       {{ else }}
         {{ if not (and .IsBaseType .IsExported) }}
-          {{ .GoType }}/*trouble*/
+          {{ .GoType }}
         {{ end }}
       {{ end }}
     {{ end }}
@@ -173,6 +175,10 @@
         {{ if not .IsBaseType }}
           {{ pascalize .Name }}: {{ .ReceiverName}}.{{ pascalize .Name }},
         {{ end }}
+      {{ end }}
+    {{ else }}
+      {{ if not (and .IsBaseType .IsExported) }}
+        {{ .GoType }}: {{ .ReceiverName }}.{{ .GoType }},
       {{ end }}
     {{ end }}
   {{ end }}
