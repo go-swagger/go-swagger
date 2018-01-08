@@ -631,6 +631,7 @@ func (sg *schemaGenContext) buildProperties() error {
 		if Debug {
 			bbb, _ := json.MarshalIndent(sg.Schema, "", "  ")
 			log.Printf("building property %s[%q] (tup: %t) (BaseType: %t) %s\n", sg.Name, k, sg.IsTuple, sg.GenSchema.IsBaseType, bbb)
+			log.Printf("property %s[%q] (tup: %t) HasValidations: %t)\n", sg.Name, k, sg.IsTuple, sg.GenSchema.HasValidations)
 		}
 
 		// check if this requires de-anonymizing, if so lift this as a new struct and extra schema
@@ -682,6 +683,9 @@ func (sg *schemaGenContext) buildProperties() error {
 			emprop.GenSchema.NeedsValidation = true
 			sg.GenSchema.NeedsValidation = true
 		}
+		// Generates format validation on property, even when not Required
+		emprop.GenSchema.HasValidations = emprop.GenSchema.HasValidations || tpe.IsCustomFormatter
+
 		if emprop.Schema.Ref.String() != "" {
 			ref := emprop.Schema.Ref
 			var sch *spec.Schema

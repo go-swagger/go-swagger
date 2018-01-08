@@ -39,7 +39,6 @@ func TestGenerateModel(t *testing.T) {
 			flags.Parse(m)
 			m.Spec = flags.Filename(path)
 			m.Target = flags.Filename(generated)
-			m.NoValidator = true
 
 			if err := m.Execute([]string{}); err != nil {
 				t.Error(err)
