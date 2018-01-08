@@ -741,9 +741,11 @@ func TestGenServerIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 }
 
 func TestGenClientIssue890_ValidationFalseFlattenFalse(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
 	defer func() {
 		dr, _ := os.Getwd()
 		os.RemoveAll(filepath.Join(filepath.FromSlash(dr), "restapi"))
+		log.SetOutput(os.Stdout)
 	}()
 	opts := testGenOpts()
 	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
