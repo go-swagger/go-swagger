@@ -16,6 +16,7 @@ package generator
 
 import (
 	"io/ioutil"
+	"log"
 	"os"
 	"testing"
 
@@ -34,8 +35,10 @@ func TestClient_BaseImportDisabled(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create a test target directory: %v", err)
 	}
+	log.SetOutput(ioutil.Discard)
 	defer func() {
 		os.RemoveAll(targetdir)
+		log.SetOutput(os.Stdout)
 	}()
 	opts := testGenOpts()
 	opts.Target = targetdir

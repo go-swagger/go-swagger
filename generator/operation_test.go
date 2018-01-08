@@ -382,7 +382,8 @@ func TestDateFormat_Spec1(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
 			opts.defaultsEnsured = false
-			err = opts.EnsureDefaults(true)
+			opts.IsClient = true
+			err = opts.EnsureDefaults()
 			assert.NoError(t, err)
 			err = templates.MustGet("clientParameter").Execute(buf, op)
 			if assert.NoError(t, err) {
@@ -406,7 +407,8 @@ func TestDateFormat_Spec2(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
 			opts.defaultsEnsured = false
-			err = opts.EnsureDefaults(true)
+			opts.IsClient = true
+			err = opts.EnsureDefaults()
 			assert.NoError(t, err)
 			err = templates.MustGet("clientParameter").Execute(buf, op)
 			if assert.NoError(t, err) {
@@ -441,7 +443,7 @@ func TestBuilder_Issue287(t *testing.T) {
 		ClientPackage:     "client",
 		Target:            dr,
 	}
-	err := opts.EnsureDefaults(false)
+	err := opts.EnsureDefaults()
 	assert.NoError(t, err)
 	appGen, err := newAppGenerator("plainTexter", nil, nil, opts)
 	if assert.NoError(t, err) {
@@ -479,8 +481,9 @@ func TestBuilder_Issue465(t *testing.T) {
 		ServerPackage:     "server",
 		ClientPackage:     "client",
 		Target:            dr,
+		IsClient:          true,
 	}
-	err := opts.EnsureDefaults(true)
+	err := opts.EnsureDefaults()
 	assert.NoError(t, err)
 	appGen, err := newAppGenerator("plainTexter", nil, nil, opts)
 	if assert.NoError(t, err) {
@@ -519,7 +522,7 @@ func TestBuilder_Issue500(t *testing.T) {
 		ClientPackage:     "client",
 		Target:            dr,
 	}
-	err := opts.EnsureDefaults(false)
+	err := opts.EnsureDefaults()
 	assert.NoError(t, err)
 	appGen, err := newAppGenerator("multiTags", nil, nil, opts)
 	if assert.NoError(t, err) {
@@ -549,7 +552,8 @@ func TestGenClient_IllegalBOM(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
 			opts.defaultsEnsured = false
-			err = opts.EnsureDefaults(true)
+			opts.IsClient = true
+			err = opts.EnsureDefaults()
 			assert.NoError(t, err)
 			err = templates.MustGet("clientResponse").Execute(buf, op)
 			assert.NoError(t, err)
@@ -565,7 +569,8 @@ func TestGenClient_CustomFormatPath(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
 			opts.defaultsEnsured = false
-			err = opts.EnsureDefaults(true)
+			opts.IsClient = true
+			err = opts.EnsureDefaults()
 			assert.NoError(t, err)
 			err = templates.MustGet("clientParameter").Execute(buf, op)
 			if assert.NoError(t, err) {
@@ -583,7 +588,8 @@ func TestGenClient_Issue733(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
 			opts.defaultsEnsured = false
-			err = opts.EnsureDefaults(true)
+			opts.IsClient = true
+			err = opts.EnsureDefaults()
 			assert.NoError(t, err)
 			err = templates.MustGet("clientResponse").Execute(buf, op)
 			if assert.NoError(t, err) {
@@ -612,10 +618,11 @@ func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 		ServerPackage:     "server",
 		ClientPackage:     "client",
 		Target:            dr,
+		IsClient:          true,
 	}
 
 	//Testing Server Generation
-	err := opts.EnsureDefaults(true)
+	err := opts.EnsureDefaults()
 	assert.NoError(t, err)
 	appGen, err := newAppGenerator("JsonRefOperation", nil, nil, opts)
 	if assert.NoError(t, err) {
@@ -664,17 +671,17 @@ func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
 		IncludeParameters: true,
 		IncludeResponses:  true,
 		IncludeMain:       true,
-		ValidateSpec:      false,
 		FlattenSpec:       true,
 		APIPackage:        "restapi",
 		ModelPackage:      "model",
 		ServerPackage:     "server",
 		ClientPackage:     "client",
 		Target:            dr,
+		IsClient:          true,
 	}
 
 	//Testing Server Generation
-	err := opts.EnsureDefaults(true)
+	err := opts.EnsureDefaults()
 	assert.NoError(t, err)
 	appGen, err := newAppGenerator("JsonRefOperation", nil, nil, opts)
 	if assert.NoError(t, err) {
@@ -730,10 +737,11 @@ func TestGenServerIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 		ServerPackage:     "server",
 		ClientPackage:     "client",
 		Target:            dr,
+		IsClient:          true,
 	}
 
 	//Testing Server Generation
-	err := opts.EnsureDefaults(true)
+	err := opts.EnsureDefaults()
 	assert.NoError(t, err)
 	_, err = newAppGenerator("JsonRefOperation", nil, nil, opts)
 	// if flatten is not set, expand takes over so this would resume normally
@@ -741,9 +749,11 @@ func TestGenServerIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 }
 
 func TestGenClientIssue890_ValidationFalseFlattenFalse(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
 	defer func() {
 		dr, _ := os.Getwd()
 		os.RemoveAll(filepath.Join(filepath.FromSlash(dr), "restapi"))
+		log.SetOutput(os.Stdout)
 	}()
 	opts := testGenOpts()
 	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
@@ -774,10 +784,11 @@ func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 		ServerPackage:     "server",
 		ClientPackage:     "client",
 		Target:            dr,
+		IsClient:          true,
 	}
 
 	//Testing Server Generation
-	err := opts.EnsureDefaults(true)
+	err := opts.EnsureDefaults()
 	assert.NoError(t, err)
 	_, err = newAppGenerator("JsonRefOperation", nil, nil, opts)
 	// now if flatten is false, expand takes over so server generation should resume normally

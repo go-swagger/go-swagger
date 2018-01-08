@@ -29,7 +29,7 @@ func opts() *GenOpts {
 	var opts GenOpts
 	opts.IncludeValidator = true
 	opts.IncludeModel = true
-	if err := opts.EnsureDefaults(false); err != nil {
+	if err := opts.EnsureDefaults(); err != nil {
 		panic(err)
 	}
 	return &opts
