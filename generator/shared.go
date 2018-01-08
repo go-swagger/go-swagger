@@ -43,7 +43,7 @@ import (
 // LanguageOpts to describe a language to the code generator
 type LanguageOpts struct {
 	ReservedWords    []string
-	BaseImportFunc   func(string) string
+	BaseImportFunc   func(string) string `json:"-"`
 	reservedWordsSet map[string]struct{}
 	initialized      bool
 	formatFunc       func(string, []byte) ([]byte, error)
