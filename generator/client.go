@@ -30,11 +30,9 @@ import (
 
 // GenerateClient generates a client library for a swagger spec document.
 func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpts) error {
+	templates.LoadDefaults()
 	if opts == nil {
 		return errors.New("gen opts are required")
-	}
-	if err := opts.EnsureDefaults(true); err != nil {
-		return err
 	}
 
 	if opts.TemplateDir != "" {

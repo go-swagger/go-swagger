@@ -17,7 +17,6 @@ package generate
 import (
 	"errors"
 	"log"
-	"path/filepath"
 
 	"github.com/go-swagger/go-swagger/generator"
 )
@@ -32,26 +31,14 @@ type Operation struct {
 	NoHandler      bool     `long:"skip-handler" description:"when present will not generate an operation handler"`
 	NoStruct       bool     `long:"skip-parameters" description:"when present will not generate the parameter model struct"`
 	NoResponses    bool     `long:"skip-responses" description:"when present will not generate the response model struct"`
-	NoValidator    bool     `long:"skip-validator" description:"when present will not generate a model validator"`
 	NoURLBuilder   bool     `long:"skip-url-builder" description:"when present will not generate a URL builder"`
 	DumpData       bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
 	SkipFlattening bool     `long:"skip-flatten" description:"skips flattening of spec prior to generation"`
 	SkipValidation bool     `long:"skip-validation" description:"skips validation of spec prior to generation"`
 }
 
-// Execute generates a model file
-func (o *Operation) Execute(args []string) error {
-	if o.DumpData && len(o.Name) > 1 {
-		return errors.New("only 1 operation at a time is supported for dumping data")
-	}
-
-	cfg, err := readConfig(string(o.ConfigFile))
-	if err != nil {
-		return err
-	}
-	setDebug(cfg)
-
-	opts := &generator.GenOpts{
+func (o *Operation) getOpts() (*generator.GenOpts, error) {
+	return &generator.GenOpts{
 		Spec:              string(o.Spec),
 		Target:            string(o.Target),
 		APIPackage:        o.APIPackage,
@@ -65,48 +52,34 @@ func (o *Operation) Execute(args []string) error {
 		IncludeHandler:    !o.NoHandler,
 		IncludeResponses:  !o.NoResponses,
 		IncludeParameters: !o.NoStruct,
-		IncludeValidator:  !o.NoValidator,
 		IncludeURLBuilder: !o.NoURLBuilder,
 		Tags:              o.Tags,
 		FlattenSpec:       !o.SkipFlattening,
 		ValidateSpec:      !o.SkipValidation,
-	}
+	}, nil
+}
 
-	if err = opts.EnsureDefaults(false); err != nil {
-		return err
-	}
+func (o *Operation) generate(opts *generator.GenOpts) error {
+	return generator.GenerateServerOperation(o.Name, opts)
+}
 
-	if err = configureOptsFromConfig(cfg, opts); err != nil {
-		return err
-	}
-
-	if err = generator.GenerateServerOperation(o.Name, opts); err != nil {
-		return err
-	}
-
-	var basepath, rp, targetAbs string
-
-	basepath, err = filepath.Abs(".")
-	if err != nil {
-		return err
-	}
-	targetAbs, err = filepath.Abs(opts.Target)
-	if err != nil {
-		return err
-	}
-	rp, err = filepath.Rel(basepath, targetAbs)
-	if err != nil {
-		return err
-	}
+func (o *Operation) log(rp string) {
 
 	log.Printf(`Generation completed!
 
 For this generation to compile you need to have some packages in your GOPATH:
 
-  * github.com/go-openapi/runtime
+	* github.com/go-openapi/runtime
 
 You can get these now with: go get -u -f %s/...
 `, rp)
+}
 
-	return nil
+// Execute generates a model file
+func (o *Operation) Execute(args []string) error {
+	if o.DumpData && len(o.Name) > 1 {
+		return errors.New("only 1 operation at a time is supported for dumping data")
+	}
+
+	return createSwagger(o)
 }
