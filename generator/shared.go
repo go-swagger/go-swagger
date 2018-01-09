@@ -191,10 +191,6 @@ func GoLangOpts() *LanguageOpts {
 	return opts
 }
 
-// Debug when the env var DEBUG or SWAGGER_DEBUG is not empty
-// the generators will be very noisy about what they are doing
-var Debug = os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
-
 func findSwaggerSpec(nm string) (string, error) {
 	specs := []string{"swagger.json", "swagger.yml", "swagger.yaml"}
 	if nm != "" {
