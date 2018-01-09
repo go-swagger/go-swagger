@@ -15,6 +15,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
 
@@ -34,6 +35,9 @@ var (
 )
 
 var opts struct {
+	// General options applicable to all commands
+	Quiet   func()       `long:"quiet" short:"q" description:"silence logs"`
+	LogFile func(string) `long:"output" short:"o" description:"redirect logs to file" value-name:"LOG-FILE"`
 	// Version bool `long:"version" short:"v" description:"print the version of the command"`
 }
 
@@ -120,6 +124,17 @@ It aims to represent the contract of your API with a language agnostic descripti
 			cmd.ShortDescription = "generate one or more server operations from the swagger spec"
 			cmd.LongDescription = cmd.ShortDescription
 		}
+	}
+
+	opts.Quiet = func() {
+		log.SetOutput(ioutil.Discard)
+	}
+	opts.LogFile = func(logfile string) {
+		f, err := os.OpenFile(logfile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+		if err != nil {
+			log.Fatalf("cannot write to file %s: %v", logfile, err)
+		}
+		log.SetOutput(f)
 	}
 
 	if _, err := parser.Parse(); err != nil {
