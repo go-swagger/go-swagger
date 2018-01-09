@@ -11,7 +11,26 @@ Or it can load your local spec into the swagger docs viewer at http://petstore.s
 To serve a documentation site:
 
 ```
-swagger serve [http-url|filepath]
+Usage:
+  swagger [OPTIONS] serve [serve-OPTIONS]
+
+serve a spec and swagger or redoc documentation ui
+
+Application Options:
+  -q, --quiet                         silence logs
+  -o, --output=LOG-FILE               redirect logs to file
+
+Help Options:
+  -h, --help                          Show this help message
+
+[serve command options]
+          --base-path=                the base path to serve the spec and UI at
+      -F, --flavor=[redoc|swagger]    the flavor of docs, can be swagger or redoc (default: redoc)
+          --doc-url=                  override the url which takes a url query param to render the doc ui
+          --no-open                   when present won't open the the browser to show the url
+          --no-ui                     when present, only the swagger spec will be served
+      -p, --port=                     the port to serve this site [$PORT]
+          --host=                     the interface to serve this site, defaults to 0.0.0.0 [$HOST]
 ```
 
 This will start a server with cors enabled so that sites on other domains can load your specification document. 
