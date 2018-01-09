@@ -9,11 +9,11 @@
   - [Custom Server](tutorial/custom-server.md)
   - [Dynamic Server](tutorial/dynamic.md)
 - Use-Cases
+  - [Options and commands](usage/swagger.md)
   - [Serve UI](usage/serve_ui.md)
   - [Validate](usage/validate.md)
   - Generate
     - [API Client](generate/client.md)
-      - [Usage](use/client.md)
     - [API Server](generate/server.md)
       - [Usage](use/server.md)
     - [API Model](generate/model.md)

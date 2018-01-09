@@ -10,17 +10,21 @@ It includes a full json-schema validator and adds some extra validations to ensu
 To validate a specification:
 
 ```
-swagger validate [http-url|filepath] [--skip-warnings][--stop-on-error]
+Usage:
+  swagger [OPTIONS] validate [validate-OPTIONS]
 
 validate the provided swagger document against a swagger spec
 
+Application Options:
+  -q, --quiet                 silence logs
+  -o, --output=LOG-FILE       redirect logs to file
+
 Help Options:
-  -h, --help               Show this help message
+  -h, --help                  Show this help message
 
 [validate command options]
-          --skip-warnings  when present will not show up warnings upon validation
-          --stop-on-error  when present will not continue validation after critical errors are found
-
+          --skip-warnings     when present will not show up warnings upon validation
+          --stop-on-error     when present will not continue validation after critical errors are found
 ```
 
 ### Swagger 2.0 resources
