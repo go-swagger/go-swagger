@@ -2170,10 +2170,43 @@ func TestGenModel_Issue1347(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
+				ff, err := opts.LanguageOpts.FormatContent("Foo.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					//log.Println("1347")
+					//log.Println(res)
+					// Just verify that the validation call is generated even though we add a non-required property
+					assertInCode(t, `validate.FormatOf("config1", "body", "hostname", m.Config1.String(), formats)`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+// This tests to check that format validation is performed on MAC format
+func TestGenModel_Issue1348(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/1348/fixture-1348.yaml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "ContainerConfig"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
 				ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
-					assertInCode(t, `validate.FormatOf("config1", "body", "hostname", m.Config1.String(), formats)`, res)
+					//log.Println("1348")
+					//log.Println(res)
+					// Just verify that the validation call is generated with proper format
+					assertInCode(t, `if err := validate.FormatOf("config1", "body", "mac", m.Config1.String(), formats)`, res)
+				} else {
+					fmt.Println(buf.String())
 				}
 			}
 		}
