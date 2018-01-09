@@ -18,6 +18,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func init() {
+	templates.LoadDefaults()
+}
+
 func testGenOpts() (g GenOpts) {
 	g.Target = "."
 	g.APIPackage = "operations"

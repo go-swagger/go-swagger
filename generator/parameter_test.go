@@ -27,6 +27,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func init() {
+	templates.LoadDefaults()
+}
+
 func TestBodyParams(t *testing.T) {
 	b, err := opBuilder("updateTask", "../fixtures/codegen/todolist.bodyparams.yml")
 
@@ -1149,6 +1153,42 @@ func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 					assertInCode(t, `err := validate.MaxItems(fmt.Sprintf("%s.%v", "siNested", i), "query", siNestedISize, 20)`, res)
 					assertInCode(t, `siNestedIR = append(siNestedIR, siNestedI)`, res)
 					assertInCode(t, `o.SiNested = siNestedIR`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestGenParameter_Issue909(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+
+	assert := assert.New(t)
+
+	gen, err := opBuilder("getOptional", "../fixtures/bugs/909/fixture-909.yaml")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("serverParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertInCode(t, `if err := o.validateNotAnOption1(formats); err != nil {`, res)
+					assertInCode(t, `value, err := formats.Parse("date-time", raw)`, res)
+					assertInCode(t, `func (o *GetOptionalParams) validateNotAnOption1(formats strfmt.Registry) error {`, res)
+					assertInCode(t, `if err := validate.FormatOf("notAnOption1", "query", "date-time", o.NotAnOption1.String(), formats); err != nil {`, res)
+
+					assertInCode(t, `if err := o.validateNotAnOption2(formats); err != nil {`, res)
+					assertInCode(t, `value, err := formats.Parse("uuid", raw)`, res)
+					assertInCode(t, `func (o *GetOptionalParams) validateNotAnOption2(formats strfmt.Registry) error {`, res)
+					assertInCode(t, `if err := validate.FormatOf("notAnOption2", "query", "uuid", o.NotAnOption2.String(), formats); err != nil {`, res)
 				} else {
 					fmt.Println(buf.String())
 				}

@@ -30,6 +30,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func init() {
+	templates.LoadDefaults()
+}
+
 func TestUniqueOperationNames(t *testing.T) {
 	doc, err := loads.Spec("../fixtures/codegen/todolist.simple.yml")
 	if assert.NoError(t, err) {

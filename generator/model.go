@@ -631,7 +631,7 @@ func (sg *schemaGenContext) buildProperties() error {
 		if Debug {
 			bbb, _ := json.MarshalIndent(sg.Schema, "", "  ")
 			log.Printf("building property %s[%q] (tup: %t) (BaseType: %t) %s\n", sg.Name, k, sg.IsTuple, sg.GenSchema.IsBaseType, bbb)
-			log.Printf("property %s[%q] (tup: %t) HasValidations: %t)\n", sg.Name, k, sg.IsTuple, sg.GenSchema.HasValidations)
+			log.Printf("property %s[%q] (tup: %t) HasValidations: %t)", sg.Name, k, sg.IsTuple, sg.GenSchema.HasValidations)
 		}
 
 		// check if this requires de-anonymizing, if so lift this as a new struct and extra schema
@@ -1363,7 +1363,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		return nil
 	}
 	if Debug {
-		log.Println("after shortcuit named ref")
+		log.Println("after shortcut named ref")
 		b, _ := json.MarshalIndent(sg.Schema, "", "  ")
 		log.Println(string(b))
 	}
@@ -1395,7 +1395,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		return err
 	}
 	if Debug {
-		log.Println("gschema rrequired", sg.GenSchema.Required, "nullable", sg.GenSchema.IsNullable)
+		log.Println("gschema required", sg.GenSchema.Required, "nullable", sg.GenSchema.IsNullable)
 	}
 	tpe.IsNullable = tpe.IsNullable || nullableOverride
 	sg.GenSchema.resolvedType = tpe
@@ -1440,7 +1440,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.IsBaseType = sg.GenSchema.HasDiscriminator
 
 	if Debug {
-		log.Println("gschema nnullable", sg.GenSchema.IsNullable, otn, nullableOverride)
+		log.Println("gschema nullable", sg.GenSchema.IsNullable, otn, nullableOverride)
 		b, _ := json.MarshalIndent(sg.Schema, "", "  ")
 		log.Println(string(b))
 	}

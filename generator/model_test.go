@@ -31,6 +31,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func init() {
+	templates.LoadDefaults()
+}
+
 type templateTest struct {
 	t        testing.TB
 	template *template.Template

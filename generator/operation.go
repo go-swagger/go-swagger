@@ -784,6 +784,7 @@ func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path
 	hasNumberValidation := items.Maximum != nil || items.Minimum != nil || items.MultipleOf != nil
 	hasStringValidation := items.MaxLength != nil || items.MinLength != nil || items.Pattern != ""
 	hasSliceValidations := items.MaxItems != nil || items.MinItems != nil || items.UniqueItems
+	// TODO: customFormatters
 	hasValidations := hasNumberValidation || hasStringValidation || hasSliceValidations || len(items.Enum) > 0
 	res.HasValidations = hasValidations
 	res.HasSliceValidations = hasSliceValidations
@@ -805,6 +806,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		log.Printf("[%s %s] making parameter %q", b.Method, b.Path, param.Name)
 	}
 
+	// Resolve $ref before all
 	if param.Ref.String() != "" {
 		param2, err := spec.ResolveParameter(b.Doc.Spec(), param.Ref)
 		if err != nil {
@@ -841,6 +843,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 	}
 
 	if param.In == "body" {
+		// Process parameters declared in body (i.e. have a Schema)
 		var named bool
 		rslv := resolver
 		sch := param.Schema
@@ -880,6 +883,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 			b.ExtraSchemas[b.Operation.ID+"ParamsBody"] = schema
 		}
 		if schema.IsAnonymous {
+			// A generated name for anonymous parameter in body
 			schema.Name = swag.ToGoName(b.Operation.ID + " Body")
 			nm := schema.Name
 			schema.GoType = nm
@@ -925,6 +929,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		res.ZeroValue = schema.Zero()
 
 	} else {
+		// Process parameters declared in other inputs: path, query, header (SimpleSchema)
 		res.resolvedType = simpleResolvedType(param.Type, param.Format, param.Items)
 		res.sharedValidations = sharedValidations{
 			Required:         param.Required,
@@ -943,6 +948,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		}
 
 		if param.Items != nil {
+			// Follow Items definition for array parameters
 			pi, err := b.MakeParameterItem(receiver, param.Name+" "+res.IndexVar, res.IndexVar+"i", "fmt.Sprintf(\"%s.%v\", "+res.Path+", "+res.IndexVar+")", res.Name+"I", param.In, resolver, param.Items, nil)
 			if err != nil {
 				return GenParameter{}, err
@@ -953,6 +959,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 
 	}
 
+	// Summarize validation requirements for code generator
 	hasNumberValidation := param.Maximum != nil || param.Minimum != nil || param.MultipleOf != nil
 	hasStringValidation := param.MaxLength != nil || param.MinLength != nil || param.Pattern != ""
 	hasSliceValidations := param.MaxItems != nil || param.MinItems != nil || param.UniqueItems
@@ -960,7 +967,9 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 
 	res.Converter = stringConverters[res.GoType]
 	res.Formatter = stringFormatters[res.GoType]
-	res.HasValidations = hasValidations
+
+	// Custom format requires a validation too
+	res.HasValidations = hasValidations || res.IsCustomFormatter
 	res.HasSliceValidations = hasSliceValidations
 	return res, nil
 }
