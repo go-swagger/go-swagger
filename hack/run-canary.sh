@@ -6,7 +6,7 @@
 # Bails on any command failure
 set -e -o pipefail
 
-basedir=`cd ${0%%/*};pwd`
+basedir=`cd ${0%/*};pwd`
 FIXTURES=${basedir}/../fixtures/canary
 
 if [[ "${SWAGGER_BIN}" ]]; then

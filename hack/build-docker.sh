@@ -3,7 +3,7 @@
 # Bails on any command failure
 set -e -o pipefail
 
-cd ${0%%/*}/..
+cd ${0%/*}/..
 echo "Building swagger from $(pwd)..."
 
 if [[ ${1} == "--circleci" ]] ; then
