@@ -16,10 +16,10 @@ jobs:
           name: Submit coverage results
           command: bash <(curl -s https://codecov.io/bash)
 
-      - run:
-          name: Run unit tests with race detector
-          command: ./hack/test.sh --nocover
-          no_output_timeout: 30m
+          #- run:
+          #name: Run unit tests with race detector
+          #command: ./hack/test.sh --nocover
+          #no_output_timeout: 30m
 
       - run:
           name: Build docker images
