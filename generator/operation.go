@@ -667,7 +667,7 @@ func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) (G
 	id := swag.ToGoName(name)
 	res := GenHeader{
 		sharedValidations: sharedValidations{
-			Required:            true,
+			Required:            true, // NOTE: Required is not defined by the Swagger schema for header. Set arbitrarily to true for convenience in templates.
 			Maximum:             hdr.Maximum,
 			ExclusiveMaximum:    hdr.ExclusiveMaximum,
 			Minimum:             hdr.Minimum,
@@ -701,6 +701,10 @@ func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) (G
 	}
 
 	if hdr.Items != nil {
+		if res.CollectionFormat == "" {
+			// When not defined,CollectionFormat defaults to csv
+			res.CollectionFormat = "csv"
+		}
 		pi, err := b.MakeHeaderItem(receiver, name+" "+res.IndexVar, res.IndexVar+"i", "fmt.Sprintf(\"%s.%v\", \"header\", "+res.IndexVar+")", res.Name+"I", hdr.Items, nil)
 		if err != nil {
 			return GenHeader{}, err
@@ -731,8 +735,12 @@ func (b *codeGenOpBuilder) MakeHeaderItem(receiver, paramName, indexVar, path, v
 	res.Name = paramName
 	res.Path = path
 	res.Location = "header"
-	res.ValueExpression = valueExpression
+	res.ValueExpression = golang.MangleVarName(swag.ToGoName(valueExpression))
 	res.CollectionFormat = items.CollectionFormat
+	if res.CollectionFormat == "" && items.Items != nil {
+		// When not defined,CollectionFormat defaults to csv
+		res.CollectionFormat = "csv"
+	}
 	res.Converter = stringConverters[res.GoType]
 	res.Formatter = stringFormatters[res.GoType]
 	res.IndexVar = indexVar
@@ -744,12 +752,16 @@ func (b *codeGenOpBuilder) MakeHeaderItem(receiver, paramName, indexVar, path, v
 	res.HasSliceValidations = hasSliceValidations
 
 	if items.Items != nil {
-		hi, err := b.MakeHeaderItem(receiver, paramName+" "+indexVar, indexVar+"i", "fmt.Sprintf(\"%s.%v\", \"header\", "+indexVar+")", valueExpression+"I", items.Items, items)
+		// Recursively follows nested arrays
+		// IMPORTANT! transmitting a ValueExpression consistent with the parent's one
+		hi, err := b.MakeHeaderItem(receiver, paramName+" "+indexVar, indexVar+"i", "fmt.Sprintf(\"%s.%v\", \"header\", "+indexVar+")", res.ValueExpression+"I", items.Items, items)
 		if err != nil {
 			return GenItems{}, err
 		}
 		res.Child = &hi
 		hi.Parent = &res
+		// Propagates HasValidations flag to outer Items definition (currently not in use: done to remain consistent with parameters)
+		res.HasValidations = res.HasValidations || hi.HasValidations
 	}
 
 	return res, nil
@@ -776,26 +788,34 @@ func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path
 	res.Name = paramName
 	res.Path = path
 	res.Location = location
-	res.ValueExpression = swag.ToVarName(valueExpression)
+	res.ValueExpression = golang.MangleVarName(swag.ToGoName(valueExpression))
 	res.CollectionFormat = items.CollectionFormat
+	if res.CollectionFormat == "" && items.Items != nil {
+		// When not defined,CollectionFormat defaults to csv
+		res.CollectionFormat = "csv"
+	}
 	res.Converter = stringConverters[res.GoType]
 	res.Formatter = stringFormatters[res.GoType]
 	res.IndexVar = indexVar
 	hasNumberValidation := items.Maximum != nil || items.Minimum != nil || items.MultipleOf != nil
 	hasStringValidation := items.MaxLength != nil || items.MinLength != nil || items.Pattern != ""
 	hasSliceValidations := items.MaxItems != nil || items.MinItems != nil || items.UniqueItems
-	// TODO: customFormatters
-	hasValidations := hasNumberValidation || hasStringValidation || hasSliceValidations || len(items.Enum) > 0
+
+	hasValidations := hasNumberValidation || hasStringValidation || hasSliceValidations || len(items.Enum) > 0 || res.IsCustomFormatter
 	res.HasValidations = hasValidations
 	res.HasSliceValidations = hasSliceValidations
 
 	if items.Items != nil {
-		pi, err := b.MakeParameterItem(receiver, paramName+" "+indexVar, indexVar+"i", "fmt.Sprintf(\"%s.%v\", "+path+", "+indexVar+")", valueExpression+"I", location, resolver, items.Items, items)
+		// Recursively follows nested arrays
+		// IMPORTANT! transmitting a ValueExpression consistent with the parent's one
+		pi, err := b.MakeParameterItem(receiver, paramName+" "+indexVar, indexVar+"i", "fmt.Sprintf(\"%s.%v\", "+path+", "+indexVar+")", res.ValueExpression+"I", location, resolver, items.Items, items)
 		if err != nil {
 			return GenItems{}, err
 		}
 		res.Child = &pi
 		pi.Parent = &res
+		// Propagates HasValidations flag to outer Items definition
+		res.HasValidations = res.HasValidations || pi.HasValidations
 	}
 
 	return res, nil
@@ -806,8 +826,8 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		log.Printf("[%s %s] making parameter %q", b.Method, b.Path, param.Name)
 	}
 
-	// Resolve $ref before all
 	if param.Ref.String() != "" {
+		// Resolve $ref before all
 		param2, err := spec.ResolveParameter(b.Doc.Spec(), param.Ref)
 		if err != nil {
 			return GenParameter{}, err
@@ -823,6 +843,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 	if len(idMapping) > 0 {
 		id = idMapping[param.In][param.Name]
 	}
+
 	res := GenParameter{
 		ID:               id,
 		Name:             param.Name,
@@ -841,6 +862,8 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		AllowEmptyValue:  (param.In == "query" || param.In == "formData") && param.AllowEmptyValue,
 		Extensions:       param.Extensions,
 	}
+
+	hasChildValidations := false
 
 	if param.In == "body" {
 		// Process parameters declared in body (i.e. have a Schema)
@@ -927,7 +950,6 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		res.resolvedType = schema.resolvedType
 		res.sharedValidations = schema.sharedValidations
 		res.ZeroValue = schema.Zero()
-
 	} else {
 		// Process parameters declared in other inputs: path, query, header (SimpleSchema)
 		res.resolvedType = simpleResolvedType(param.Type, param.Format, param.Items)
@@ -948,22 +970,28 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		}
 
 		if param.Items != nil {
+			if res.CollectionFormat == "" {
+				// When not defined,CollectionFormat defaults to csv
+				res.CollectionFormat = "csv"
+			}
+
 			// Follow Items definition for array parameters
 			pi, err := b.MakeParameterItem(receiver, param.Name+" "+res.IndexVar, res.IndexVar+"i", "fmt.Sprintf(\"%s.%v\", "+res.Path+", "+res.IndexVar+")", res.Name+"I", param.In, resolver, param.Items, nil)
 			if err != nil {
 				return GenParameter{}, err
 			}
 			res.Child = &pi
+			// Propagates HasValidations from from child array
+			hasChildValidations = pi.HasValidations
 		}
 		res.IsNullable = !param.Required && !param.AllowEmptyValue
-
 	}
 
 	// Summarize validation requirements for code generator
 	hasNumberValidation := param.Maximum != nil || param.Minimum != nil || param.MultipleOf != nil
 	hasStringValidation := param.MaxLength != nil || param.MinLength != nil || param.Pattern != ""
 	hasSliceValidations := param.MaxItems != nil || param.MinItems != nil || param.UniqueItems
-	hasValidations := hasNumberValidation || hasStringValidation || hasSliceValidations || len(param.Enum) > 0
+	hasValidations := hasNumberValidation || hasStringValidation || hasSliceValidations || len(param.Enum) > 0 || hasChildValidations
 
 	res.Converter = stringConverters[res.GoType]
 	res.Formatter = stringFormatters[res.GoType]

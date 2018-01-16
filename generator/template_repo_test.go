@@ -471,3 +471,16 @@ func TestTemplates_DumpTemplates(t *testing.T) {
 	assert.Contains(t, buf.String(), "####requires \n - schemaType")
 	//fmt.Println(buf)
 }
+
+// Go litteral initializer func
+func TestTemplates_AsGoInitializer(t *testing.T) {
+	a0 := []interface{}{"a", "b"}
+	res, err := asGoInitializer(a0)
+	assert.NoError(t, err)
+	assert.Equal(t, `{"a","b",}`, res)
+
+	a1 := []interface{}{[]interface{}{"a", "b"}, []interface{}{"c", "d"}}
+	res, err = asGoInitializer(a1)
+	assert.NoError(t, err)
+	assert.Equal(t, `{{"a","b",},{"c","d",},}`, res)
+}

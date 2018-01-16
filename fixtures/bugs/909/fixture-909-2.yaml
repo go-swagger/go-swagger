@@ -15,17 +15,23 @@ paths:
       parameters:
       - name: notAnOption1
         in: query
-        type: string
-        format: date-time
+        type: array
+        collectionFormat: csv
         required: true
-      - name: notAnOption2
+        items:
+          type: string
+          format: date-time
+      - name: isAnOption2
         in: query
-        type: string
-        format: uuid
-        required: true
+        type: array
+        collectionFormat: csv
+        required: false
+        items:
+          type: string
+          format: uuid
       - name: notAnOption3
         in: body
-        required: true
+        required: false
         schema:
           $ref: '#/definitions/ContainerConfig'
       responses:

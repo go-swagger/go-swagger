@@ -1395,7 +1395,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		return err
 	}
 	if Debug {
-		log.Println("gschema required", sg.GenSchema.Required, "nullable", sg.GenSchema.IsNullable)
+		log.Println("gschema rrequired", sg.GenSchema.Required, "nullable", sg.GenSchema.IsNullable)
 	}
 	tpe.IsNullable = tpe.IsNullable || nullableOverride
 	sg.GenSchema.resolvedType = tpe
@@ -1440,7 +1440,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.IsBaseType = sg.GenSchema.HasDiscriminator
 
 	if Debug {
-		log.Println("gschema nullable", sg.GenSchema.IsNullable, otn, nullableOverride)
+		log.Println("gschema nnullable", sg.GenSchema.IsNullable, otn, nullableOverride)
 		b, _ := json.MarshalIndent(sg.Schema, "", "  ")
 		log.Println(string(b))
 	}
