@@ -472,7 +472,7 @@ func TestTemplates_DumpTemplates(t *testing.T) {
 	//fmt.Println(buf)
 }
 
-// Go litteral initializer func
+// Go literal initializer func
 func TestTemplates_AsGoInitializer(t *testing.T) {
 	a0 := []interface{}{"a", "b"}
 	res, err := asGoInitializer(a0)

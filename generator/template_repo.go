@@ -209,7 +209,7 @@ func asPrettyJSON(data interface{}) (string, error) {
 }
 
 func asGoInitializer(data interface{}) (string, error) {
-	// Constructs a Go litteral initializer from interface{}
+	// Constructs a Go literal initializer from interface{}
 	b, err := json.Marshal(data)
 	if err != nil {
 		return "", err
