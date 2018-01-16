@@ -336,3 +336,36 @@ func TestServer_OperationGroups(t *testing.T) {
 		assert.Contains(t, string(genContent), "// OperationName=updateTask")
 	}
 }
+
+func TestServer_Issue1301(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+	gen, err := testAppGenerator(t, "../fixtures/enhancements/1301/swagger.yml", "custom producers")
+	if assert.NoError(t, err) {
+		app, err := gen.makeCodegenApp()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			if assert.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app)) {
+				formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(formatted)
+
+					// initialisation in New<Name>API function
+					assertInCode(t, `customConsumers:     make(map[string]runtime.Consumer)`, res)
+					assertInCode(t, `customProducers:     make(map[string]runtime.Producer)`, res)
+
+					// declaration in struct
+					assertInCode(t, `customConsumers map[string]runtime.Consumer`, res)
+					assertInCode(t, `customProducers map[string]runtime.Producer`, res)
+					assertRegexpInCode(t, `if c, ok := o\.customConsumers\[mt\]; ok \{\s+result\[mt\] = c\s+\}`, res)
+					assertRegexpInCode(t, `if p, ok := o\.customProducers\[mt\]; ok \{\s+result\[mt\] = p\s+\}`, res)
+					assertRegexpInCode(t, `func \(o \*CustomProducersAPI\) RegisterConsumer\(mediaType string, consumer runtime\.Consumer\) \{\s+	o\.customConsumers\[mediaType\] = consumer\s+\}`, res)
+					assertRegexpInCode(t, `func \(o \*CustomProducersAPI\) RegisterProducer\(mediaType string, producer runtime\.Producer\) \{\s+	o\.customProducers\[mediaType\] = producer\s+\}`, res)
+
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
