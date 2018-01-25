@@ -34,6 +34,14 @@ type GenDefinition struct {
 	DependsOn      []string
 }
 
+// GenDefinitions represents a list of operations to generate
+// this implements a sort by operation id
+type GenDefinitions []GenDefinition
+
+func (g GenDefinitions) Len() int           { return len(g) }
+func (g GenDefinitions) Less(i, j int) bool { return g[i].Name < g[j].Name }
+func (g GenDefinitions) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
+
 // GenSchemaList is a list of schemas for generation.
 //
 // It can be sorted by name to get a stable struct layout for
