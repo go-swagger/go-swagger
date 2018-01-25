@@ -525,7 +525,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	baseImport := a.GenOpts.LanguageOpts.baseImport(a.Target)
 	var imports map[string]string
 
-	var genMods []GenDefinition
+	var genMods GenDefinitions
 	importPath := a.GenOpts.ExistingModels
 	if a.GenOpts.ExistingModels == "" {
 		if imports == nil {
@@ -555,6 +555,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			genMods = append(genMods, *mod)
 		}
 	}
+	sort.Sort(genMods)
 
 	log.Println("planning operations")
 	tns := make(map[string]struct{})
