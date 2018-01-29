@@ -368,9 +368,12 @@ type GenOperation struct {
 	HeaderParams         GenParameters
 	FormParams           GenParameters
 	HasQueryParams       bool
+	HasPathParams        bool
+	HasHeaderParams      bool
 	HasFormParams        bool
 	HasFormValueParams   bool
 	HasFileParams        bool
+	HasBodyParams        bool
 	HasStreamingResponse bool
 
 	Schemes            []string
