@@ -188,7 +188,7 @@ func testArrayQueryParams(t testing.TB, filePath, basePath string) {
 					assertInCode(t, `siFloat32IS := swag.FormatFloat32(siFloat32I)`, res)
 					assertInCode(t, `if siFloat32IS != ""`, res)
 					assertInCode(t, `siFloat32IR = append(siFloat32IR, siFloat32IS)`, res)
-					assertInCode(t, `siFloat32 := swag.JoinByFormat(siFloat32IR, "")`, res)
+					assertInCode(t, `siFloat32 := swag.JoinByFormat(siFloat32IR, "csv")`, res) // NOTE(fredbi): defaults to csv
 					assertInCode(t, `if len(siFloat32) > 0`, res)
 					assertInCode(t, `qsv := siFloat32[0]`, res)
 					assertInCode(t, `qs.Set("siFloat32", qsv)`, res)

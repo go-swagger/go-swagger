@@ -110,6 +110,9 @@ paths:
       operationId: getAllParameters
       summary: all possible single value query parameters
       description: Used to see if a codegen can render all the possible parameter variations for a query param
+      responses:
+        default:
+          description: Generic Error
 
   /withBoolDefault:
     get:
@@ -140,7 +143,7 @@ paths:
             minLength: 64
             maxLength: 64
           collectionFormat: multi
-      response:
+      responses:
         default:
           description: Generic Error
 

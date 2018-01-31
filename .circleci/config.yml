@@ -8,13 +8,31 @@ jobs:
       - checkout
 
       - run:
-          name: Run the tests
-          command: .circleci/build-docker.sh
+          name: Run unit tests
+          command: ./hack/test.sh
           no_output_timeout: 30m
 
       - run:
           name: Submit coverage results
           command: bash <(curl -s https://codecov.io/bash)
+
+      # Running the race detector is not supported on circleCI
+      #- run:
+      #    name: Run unit tests with race detector
+      #    command: ./hack/test.sh --nocover
+      #    no_output_timeout: 30m
+
+      - run:
+          name: Build docker images
+          command: ./hack/build-docker.sh --circleci
+
+      - run:
+          name: Test codegen builds
+          command: ./hack/codegen-nonreg.sh --circleci
+
+      - run:
+          name: Test canary builds
+          command: ./hack/run-canary.sh
 
       - run:
           name: Prepare release

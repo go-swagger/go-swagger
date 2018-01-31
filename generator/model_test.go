@@ -2201,8 +2201,6 @@ func TestGenModel_Issue1348(t *testing.T) {
 				ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
-					//log.Println("1348")
-					//log.Println(res)
 					// Just verify that the validation call is generated with proper format
 					assertInCode(t, `if err := validate.FormatOf("config1", "body", "mac", m.Config1.String(), formats)`, res)
 				} else {

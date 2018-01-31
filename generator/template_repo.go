@@ -100,6 +100,12 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	"mediaTypeName": func(orig string) string {
 		return strings.SplitN(orig, ";", 2)[0]
 	},
+	"goSliceInitializer": goSliceInitializer,
+	"hasPrefix":          strings.HasPrefix,
+	"stringContains":     strings.Contains,
+	"hasDefaultParam":    hasDefaultParam,
+	"hasDefaultHeader":   hasDefaultHeader,
+	"itemsLocation":      asItemsLocation,
 }
 
 func init() {
@@ -205,6 +211,58 @@ func asPrettyJSON(data interface{}) (string, error) {
 		return "", err
 	}
 	return string(b), nil
+}
+
+func goSliceInitializer(data interface{}) (string, error) {
+	// goSliceInitializer constructs a Go literal initializer from interface{} literals.
+	// e.g. []interface{}{"a", "b"} is transformed in {"a","b",}
+	// e.g. map[string]interface{}{ "a": "x", "b": "y"} is transformed in {"a":"x","b":"y",}
+	// NOTE: this is currently used to construct simple slice intializers for default values.
+	// This allows for nicer slice initializers for slices of primitive types and avoid systematic use for json.Unmarshal().
+	b, err := json.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+	return strings.Replace(strings.Replace(strings.Replace(string(b), "}", ",}", -1), "[", "{", -1), "]", ",}", -1), nil
+}
+
+func hasDefaultParam(parameters GenParameters) bool {
+	// hasDefaultParam returns true is at least one input parameter has a .Default
+	// NOTE: this is currently used by templates to avoid empty constructs
+	for _, param := range parameters {
+		if param.HasDefault {
+			return true
+		}
+	}
+	return false
+}
+
+func hasDefaultHeader(headers GenHeaders) bool {
+	// hasDefaultHeader returns true is at least one header in response has a .Default
+	// NOTE: this is currently used by templates to avoid empty constructs
+	for _, header := range headers {
+		if header.HasDefault {
+			return true
+		}
+	}
+	return false
+}
+
+func asItemsLocation(items interface{}) string {
+	// asItemsLocation returns a string "items.items..." with as many items as the level of nesting of the array.
+	// NOTE: this is currently used by templates to generate explicit comments in nested structures
+	res, ok := items.(*GenItems)
+	if !ok {
+		// Root object, e.g. GenParameter or GenHeader
+		return ""
+	}
+	current := res
+	i := 1
+	for current.Parent != nil {
+		i++
+		current = current.Parent
+	}
+	return strings.Repeat("items.", i)
 }
 
 // NewRepository creates a new template repository with the provided functions defined

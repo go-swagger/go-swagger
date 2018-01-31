@@ -29,7 +29,7 @@ paths:
               $ref: "#/definitions/Pet"
       responses:
         default:
-          descriptions: Generic out
+          description: Generic out
           schema:
             type: array
             items:
@@ -140,6 +140,6 @@ definitions:
           - organization
           - product
           - user
-        crmid:
-          type: string
+      crmid:
+        type: string
 
