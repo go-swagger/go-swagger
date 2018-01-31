@@ -74,10 +74,11 @@ todolist.schemavalidation.yml\
 )"
 
 if [[ "$1" = "--circleci" ]] ; then
-    # Coloured output not supported by default on CircleCI. Force term to xterm
-    #MONO=1
-    export TERM=xterm
-    MONO=""
+    # Coloured output not supported by default on CircleCI.
+    # Forcing term to xterm is not enough: tput not available with minimalist env.
+    MONO=1
+    #export TERM=xterm
+    #MONO=""
 else
     MONO=""
 fi
