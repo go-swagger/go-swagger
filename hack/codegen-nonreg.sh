@@ -87,7 +87,7 @@ fi
 initColors
 
 # All fixtures in ./fixtures/codegen + some others
-cd ${0%%/*}
+cd ${0%/*}
 specdir="../fixtures/codegen ../fixtures/bugs/909"
 gendir=./tmp-gen
 rm -rf ${gendir}
