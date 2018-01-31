@@ -310,7 +310,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 
 	operation := b.Operation
 	var params, qp, pp, hp, fp GenParameters
-	var hasQueryParams, hasFormParams, hasFileParams, hasFormValueParams bool
+	var hasQueryParams, hasPathParams, hasHeaderParams, hasFormParams, hasFileParams, hasFormValueParams, hasBodyParams bool
 	paramsForOperation := b.Analyzed.ParamsFor(b.Method, b.Path)
 	timeoutName := "timeout"
 
@@ -356,10 +356,15 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 			fp = append(fp, cp)
 		}
 		if cp.IsPathParam() {
+			hasPathParams = true
 			pp = append(pp, cp)
 		}
 		if cp.IsHeaderParam() {
+			hasHeaderParams = true
 			hp = append(hp, cp)
+		}
+		if cp.IsBodyParam() {
+			hasBodyParams = true
 		}
 		params = append(params, cp)
 	}
@@ -489,9 +494,12 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		HeaderParams:         hp,
 		FormParams:           fp,
 		HasQueryParams:       hasQueryParams,
+		HasPathParams:        hasPathParams,
+		HasHeaderParams:      hasHeaderParams,
 		HasFormParams:        hasFormParams,
 		HasFormValueParams:   hasFormValueParams,
 		HasFileParams:        hasFileParams,
+		HasBodyParams:        hasBodyParams,
 		HasStreamingResponse: hasStreamingResponse,
 		Authorized:           b.Authed,
 		Security:             b.Security,
