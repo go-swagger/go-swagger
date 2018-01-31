@@ -28,10 +28,11 @@ if {{ .ValueExpression }}S != "" {
 {{ end }}
 {{define "sliceserverheaderbuilder" }}
 var {{ varname .Child.ValueExpression }}R []string
-for _, {{ varname .Child.ValueExpression }} := range {{ .ValueExpression }} {
-  {{- if not .Child.IsArray }}{{ template "sliceitemserverheaderbuilder" .Child }}{{ else }}{{ template "sliceserverheaderbuilder" .Child }}{{ end -}}
+if len({{ .ValueExpression }}) > 0 {
+    for _, {{ varname .Child.ValueExpression }} := range {{ .ValueExpression }} {
+    {{- if not .Child.IsArray }}{{ template "sliceitemserverheaderbuilder" .Child }}{{ else }}{{ template "sliceserverheaderbuilder" .Child }}{{ end -}}
+    }
 }
-
 {{ if not .Child.Parent -}}
 {{ varname .ID }} := swag.JoinByFormat({{ varname .Child.ValueExpression }}R, {{ printf "%q" .CollectionFormat }})
 if len({{ varname .ID }}) > 0 {

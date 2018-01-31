@@ -100,6 +100,7 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	"mediaTypeName": func(orig string) string {
 		return strings.SplitN(orig, ";", 2)[0]
 	},
+	"goinitializer": asGoInitializer,
 }
 
 func init() {
@@ -205,6 +206,15 @@ func asPrettyJSON(data interface{}) (string, error) {
 		return "", err
 	}
 	return string(b), nil
+}
+
+func asGoInitializer(data interface{}) (string, error) {
+	// Constructs a Go literal initializer from interface{}
+	b, err := json.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+	return strings.Replace(strings.Replace(strings.Replace(string(b), "}", ",}", -1), "[", "{", -1), "]", ",}", -1), nil
 }
 
 // NewRepository creates a new template repository with the provided functions defined

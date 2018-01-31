@@ -631,7 +631,7 @@ func (sg *schemaGenContext) buildProperties() error {
 		if Debug {
 			bbb, _ := json.MarshalIndent(sg.Schema, "", "  ")
 			log.Printf("building property %s[%q] (tup: %t) (BaseType: %t) %s\n", sg.Name, k, sg.IsTuple, sg.GenSchema.IsBaseType, bbb)
-			log.Printf("property %s[%q] (tup: %t) HasValidations: %t)\n", sg.Name, k, sg.IsTuple, sg.GenSchema.HasValidations)
+			log.Printf("property %s[%q] (tup: %t) HasValidations: %t)", sg.Name, k, sg.IsTuple, sg.GenSchema.HasValidations)
 		}
 
 		// check if this requires de-anonymizing, if so lift this as a new struct and extra schema
@@ -1363,7 +1363,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		return nil
 	}
 	if Debug {
-		log.Println("after shortcuit named ref")
+		log.Println("after shortcut named ref")
 		b, _ := json.MarshalIndent(sg.Schema, "", "  ")
 		log.Println(string(b))
 	}

@@ -18,6 +18,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// Perform common initialization of template repository before running tests.
+// This allows to run tests unitarily (e.g. go test -run xxx ).
+func TestMain(m *testing.M) {
+	templates.LoadDefaults()
+	m.Run()
+}
+
 func testGenOpts() (g GenOpts) {
 	g.Target = "."
 	g.APIPackage = "operations"
