@@ -51,9 +51,6 @@ func NewHTTPClient(formats strfmt.Registry) *{{ pascalize .Name }} {
 // using a customizable transport config.
 func NewHTTPClientWithConfig(formats strfmt.Registry, cfg *TransportConfig) *{{ pascalize .Name }} {
   // ensure nullable parameters have default
-  if formats == nil {
-    formats = strfmt.Default
-  }
   if cfg == nil {
     cfg = DefaultTransportConfig()
   }
@@ -65,6 +62,11 @@ func NewHTTPClientWithConfig(formats strfmt.Registry, cfg *TransportConfig) *{{ 
 
 // New creates a new {{ humanize .Name }} client
 func New(transport runtime.ClientTransport, formats strfmt.Registry) *{{ pascalize .Name }} {
+  // ensure nullable parameters have default
+  if formats == nil {
+    formats = strfmt.Default
+  }
+
   cli := new({{ pascalize .Name }})
   cli.Transport = transport
   {{ range .OperationGroups }}
