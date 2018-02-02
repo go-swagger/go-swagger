@@ -2212,3 +2212,59 @@ func TestGenModel_Issue1348(t *testing.T) {
 		}
 	}
 }
+
+// This tests that additionalProperties with validation is generated properly.
+func TestGenModel_Issue1397a(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/1397/fixture-1397a.yaml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "ContainerConfig"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					//log.Println("1397a")
+					//log.Println(res)
+					// Just verify that the validation call is generated with proper format
+					assertInCode(t, `if swag.IsZero(m[k]) { // not required`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+// This tests that an enum of object values validates properly.
+func TestGenModel_Issue1397b(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/1397/fixture-1397b.yaml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "ContainerConfig"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					log.Println("1397b")
+					log.Println(res)
+					// Just verify that the validation call is generated with proper format
+					assertInCode(t, `if err := m.validateContainerConfigEnum("", "body", m); err != nil {`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
