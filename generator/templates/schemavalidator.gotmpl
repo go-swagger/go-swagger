@@ -112,10 +112,6 @@
     if err := validate.Required({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if not .IsAnonymous }}{{ .GoType }}({{ end }}{{.ValueExpression }}{{ if not .IsAnonymous }}){{ end }}); err != nil {
       return err
     }
-    {{ else }}
-    if swag.IsZero({{ .ValueExpression }}) { // not required
-  return nil
-}
     {{ end }}
     {{ if  .AdditionalProperties.NeedsValidation }}
     for {{.AdditionalProperties.KeyVar }} := range {{ .ValueExpression }} {
@@ -187,15 +183,15 @@
           {{ end }}
         {{ end }}
       {{ end }}
-}
+    }
     {{ end }}
+  {{ end }}
 
-    {{ if .Enum }}
-// from map
-if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
-  return err
-}
-    {{ end }}
+  {{ if .Enum }}
+  // from map
+  if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
+    return err
+  }
   {{ end }}
 {{ end }}
 
@@ -385,7 +381,7 @@ func ({{.ReceiverName }} {{ if or .IsTuple .IsComplexObject .IsAdditionalPropert
       res = append(res, err)
     }
   {{ end }}
-  {{ if and .Enum (not .IsPrimitive) }}
+  {{ if and .Enum (not .IsPrimitive) (not .IsMap) }}
     // value enum
     if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Enum("", "body", {{ .ReceiverName }}); err != nil {
       res = append(res, err)
