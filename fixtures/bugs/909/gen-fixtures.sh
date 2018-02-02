@@ -3,7 +3,7 @@ if [[ ${1} == "--clean" ]] ; then
     clean=1
 fi
 # A small utility to build fixture servers
-testcases="1 2 3 4 5"
+testcases="1 2 3 4 5 6"
 for testcase in ${testcases} ; do
     target=./gen${testcase}
     spec=./fixture-909-${testcase}.yaml
