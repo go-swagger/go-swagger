@@ -631,11 +631,17 @@ func (s *setOpParams) Matches(line string) bool {
 }
 
 const (
+	// ParamDescriptionKey indicates the tag used to define a parameter description in swagger:route
 	ParamDescriptionKey = "description"
+	// ParamNameKey indicates the tag used to define a parameter name in swagger:route
 	ParamNameKey        = "name"
+	// ParamInKey indicates the tag used to define a parameter location in swagger:route
 	ParamInKey          = "in"
+	// ParamRequiredKey indicates the tag used to declare whether a parameter is required in swagger:route
 	ParamRequiredKey    = "required"
+	// ParamSchemaKey indicates the tag used to define body model for requests in swagger:route
 	ParamSchemaKey      = "schema"
+	// ParamAllowEmptyKey indicates the tag used to indicate whether a parameter allows empty values in swagger:route
 	ParamAllowEmptyKey  = "allowempty"
 )
 
