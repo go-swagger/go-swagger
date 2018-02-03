@@ -64,6 +64,13 @@ func ServeAPI(host, basePath string, schemes []string) error {
 
 	Schemes: http, https, ws, wss
 
+	Parameters:
+	+ name: request
+	  in: body
+	  schema: something
+	+ name: id
+	  in: path
+
 	Responses:
 	default: body:genericError
 	200: body:someResponse

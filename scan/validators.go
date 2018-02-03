@@ -614,6 +614,115 @@ func (ss *setOpResponses) Matches(line string) bool {
 	return ss.rx.MatchString(line)
 }
 
+func newSetParams(params []*spec.Parameter, setter func([]*spec.Parameter)) *setOpParams {
+	return &setOpParams{
+		set:        setter,
+		parameters: params,
+	}
+}
+
+type setOpParams struct {
+	set        func([]*spec.Parameter)
+	parameters []*spec.Parameter
+}
+
+func (s *setOpParams) Matches(line string) bool {
+	return rxParameters.MatchString(line)
+}
+
+const (
+	ParamDescriptionKey = "description"
+	ParamNameKey        = "name"
+	ParamInKey          = "in"
+	ParamRequiredKey    = "required"
+	ParamSchemaKey      = "schema"
+	ParamAllowEmptyKey  = "allowempty"
+)
+
+var validIn = []string{"path", "query", "header", "body", "form"}
+
+func (s *setOpParams) Parse(lines []string) error {
+	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+		return nil
+	}
+
+	var current *spec.Parameter
+	for _, line := range lines {
+		l := strings.TrimSpace(line)
+
+		if strings.HasPrefix(l, "+") {
+			if current != nil {
+				if current.Description != "" && current.Schema != nil {
+					current.Schema.Description = current.Description
+				}
+				s.parameters = append(s.parameters, current)
+			}
+			current = new(spec.Parameter)
+			l = strings.TrimPrefix(l, "+")
+		}
+
+		kv := strings.SplitN(l, ":", 2)
+
+		if len(kv) <= 1 {
+			continue
+		}
+
+		key := strings.ToLower(strings.TrimSpace(kv[0]))
+		value := strings.TrimSpace(kv[1])
+
+		switch key {
+		case ParamDescriptionKey:
+			current.Description = value
+			break
+		case ParamNameKey:
+			current.Name = value
+			break
+		case ParamInKey:
+			v := strings.ToLower(value)
+			if contains(validIn, v) {
+				current.In = v
+			}
+			break
+		case ParamRequiredKey:
+			if v, err := strconv.ParseBool(value); err == nil {
+				current.Required = v
+			}
+			break
+		case ParamSchemaKey:
+			current.Schema = new(spec.Schema)
+			if ref, err := spec.NewRef("#/definitions/" + value); err == nil {
+				current.Schema.Ref = ref
+			}
+			break
+		case ParamAllowEmptyKey:
+			if v, err := strconv.ParseBool(value); err == nil {
+				current.AllowEmptyValue = v
+			}
+			break
+		default:
+			continue
+		}
+	}
+
+	if current != nil {
+		if current.Description != "" && current.Schema != nil {
+			current.Schema.Description = current.Description
+		}
+		s.parameters = append(s.parameters, current)
+	}
+	s.set(s.parameters)
+	return nil
+}
+
+func contains(arr []string, obj string) bool {
+	for _, v := range arr {
+		if v == obj {
+			return true
+		}
+	}
+	return false
+}
+
 //ResponseTag used when specifying a response to point to a defined swagger:response
 const ResponseTag = "response"
 

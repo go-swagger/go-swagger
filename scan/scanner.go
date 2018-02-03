@@ -111,6 +111,7 @@ var (
 	rxSecuritySchemes = regexp.MustCompile(`[Ss]ecurity\p{Zs}*:`)
 	rxSecurity        = regexp.MustCompile(`[Ss]ecurity\p{Zs}*[Dd]efinitions:`)
 	rxResponses       = regexp.MustCompile(`[Rr]esponses\p{Zs}*:`)
+	rxParameters      = regexp.MustCompile(`[Pp]arameters\p{Zs}*:`)
 	rxSchemes         = regexp.MustCompile(`[Ss]chemes\p{Zs}*:\p{Zs}*((?:(?:https?|HTTPS?|wss?|WSS?)[\p{Zs},]*)+)$`)
 	rxVersion         = regexp.MustCompile(`[Vv]ersion\p{Zs}*:\p{Zs}*(.+)$`)
 	rxHost            = regexp.MustCompile(`[Hh]ost\p{Zs}*:\p{Zs}*(.+)$`)

@@ -49,6 +49,14 @@ func opResponsesSetter(op *spec.Operation) func(*spec.Response, map[int]spec.Res
 	}
 }
 
+func opParamSetter(op *spec.Operation) func([]*spec.Parameter) {
+	return func(params []*spec.Parameter) {
+		for _, v := range params {
+			op.AddParam(v)
+		}
+	}
+}
+
 func newRoutesParser(prog *loader.Program) *routesParser {
 	return &routesParser{
 		program: prog,
@@ -60,6 +68,7 @@ type routesParser struct {
 	definitions map[string]spec.Schema
 	operations  map[string]*spec.Operation
 	responses   map[string]spec.Response
+	parameters  []*spec.Parameter
 }
 
 func (rp *routesParser) Parse(gofile *ast.File, target interface{}) error {
@@ -82,11 +91,13 @@ func (rp *routesParser) Parse(gofile *ast.File, target interface{}) error {
 		sp.setTitle = func(lines []string) { op.Summary = joinDropLast(lines) }
 		sp.setDescription = func(lines []string) { op.Description = joinDropLast(lines) }
 		sr := newSetResponses(rp.definitions, rp.responses, opResponsesSetter(op))
+		spa := newSetParams(rp.parameters, opParamSetter(op))
 		sp.taggers = []tagParser{
 			newMultiLineTagParser("Consumes", newMultilineDropEmptyParser(rxConsumes, opConsumesSetter(op)), false),
 			newMultiLineTagParser("Produces", newMultilineDropEmptyParser(rxProduces, opProducesSetter(op)), false),
 			newSingleLineTagParser("Schemes", newSetSchemes(opSchemeSetter(op))),
 			newMultiLineTagParser("Security", newSetSecurity(rxSecuritySchemes, opSecurityDefsSetter(op)), false),
+			newMultiLineTagParser("Parameters", spa, false),
 			newMultiLineTagParser("Responses", sr, false),
 		}
 		if err := sp.Parse(content.Remaining); err != nil {

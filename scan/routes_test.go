@@ -138,6 +138,10 @@ func TestRoutesParserBody(t *testing.T) {
 		[]string{"pets", "users"},
 		[]string{"read", "write"},
 	)
+	assert.NotNil(t, po.Post)
+	assert.Equal(t, 2, len(po.Post.Parameters))
+	assert.Equal(t, "request", po.Post.Parameters[0].Name)
+	assert.Equal(t, "body", po.Post.Parameters[0].In)
 	assertOperationBody(t,
 		po.Post,
 		"createPet",
