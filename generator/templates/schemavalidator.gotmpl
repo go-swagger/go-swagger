@@ -156,6 +156,11 @@
           {{ template "slicevalidator" . }}
         {{ else if .IsMap }}
           {{ template "mapvalidator" . }}
+          {{ if .Enum }}
+      if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}ValueEnum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
+        return err
+      }
+          {{ end }}
         {{ else if or .IsComplexObject .IsTuple .IsAdditionalProperties .IsAliased }}
           {{ if not .IsAnonymous }}
             {{ if .IsNullable }}
@@ -185,13 +190,12 @@
       {{ end }}
     }
     {{ end }}
-  {{ end }}
-
-  {{ if .Enum }}
-  // from map
-  if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
-    return err
-  }
+    {{ if .Enum }}
+    // from map
+    if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
+      return err
+    }
+    {{ end }}
   {{ end }}
 {{ end }}
 
