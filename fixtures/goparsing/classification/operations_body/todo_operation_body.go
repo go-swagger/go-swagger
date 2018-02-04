@@ -65,11 +65,16 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	Schemes: http, https, ws, wss
 
 	Parameters:
-	+ name: request
-	  in: body
-	  schema: something
-	+ name: id
-	  in: path
+	+ name:        request
+	  description: The request model.
+	  in:          body
+	  schema:      petModel
+	  unknown:     invalid key that will not get parsed. Added to increase coverage.
+	+ name:        id
+	  description: The pet id
+	  in:          path
+	  required:    true
+	  allowEmpty:  false
 
 	Responses:
 	default: body:genericError
@@ -99,6 +104,8 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	// api_key:
 	// oauth: orders:read, https://www.googleapis.com/auth/userinfo.email
 	//
+	// Parameters:
+	//
 	// Responses:
 	// default: body:genericError
 	// 200: body:someResponse
@@ -122,6 +129,18 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	// Security:
 	// api_key:
 	// oauth: read, write
+	//
+	// Parameters:
+	// + name:        id
+	//   description: The order id
+	//   in:          invalidIn
+	//   required:    false
+	//   allowEmpty:  true
+	//   noValue  (to increase coverage, line with colon, split result will be 1)
+	// + name:        request
+	//   description: The request model.
+	//   in:          body
+	//   schema:      orderModel
 	//
 	// Responses:
 	// default: body:genericError

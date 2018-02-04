@@ -140,8 +140,19 @@ func TestRoutesParserBody(t *testing.T) {
 	)
 	assert.NotNil(t, po.Post)
 	assert.Equal(t, 2, len(po.Post.Parameters))
-	assert.Equal(t, "request", po.Post.Parameters[0].Name)
-	assert.Equal(t, "body", po.Post.Parameters[0].In)
+
+	param1 := po.Post.Parameters[0]
+	assert.Equal(t, "request", param1.Name)
+	assert.Equal(t, "body", param1.In)
+	assert.Equal(t, "The request model.", param1.Description)
+
+	param2 := po.Post.Parameters[1]
+	assert.Equal(t, "id", param2.Name)
+	assert.Equal(t, "The pet id", param2.Description)
+	assert.Equal(t, "path", param2.In)
+	assert.Equal(t, true, param2.Required)
+	assert.Equal(t, false, param2.AllowEmptyValue)
+
 	assertOperationBody(t,
 		po.Post,
 		"createPet",
@@ -162,6 +173,21 @@ func TestRoutesParserBody(t *testing.T) {
 		[]string{"orders"},
 		[]string{"orders:read", "https://www.googleapis.com/auth/userinfo.email"},
 	)
+	assert.NotNil(t, po.Post)
+	assert.Equal(t, 2, len(po.Post.Parameters))
+
+	param2 = po.Post.Parameters[0]
+	assert.Equal(t, "id", param2.Name)
+	assert.Equal(t, "The order id", param2.Description)
+	assert.Equal(t, "", param2.In)  // Invalid value should not be set
+	assert.Equal(t, false, param2.Required)
+	assert.Equal(t, true, param2.AllowEmptyValue)
+
+	param1 = po.Post.Parameters[1]
+	assert.Equal(t, "request", param1.Name)
+	assert.Equal(t, "body", param1.In)
+	assert.Equal(t, "The request model.", param1.Description)
+
 	assertOperationBody(t,
 		po.Post,
 		"createOrder",
