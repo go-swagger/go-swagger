@@ -142,9 +142,9 @@ import (
 
 func configureAPI(api *operations.ToDoListAPI) http.Handler {
 	// configure the api here
-	api.JSONConsumer = httpkit.JSONConsumer()
+	api.JSONConsumer = runtime.JSONConsumer()
 
-	api.JSONProducer = httpkit.JSONProducer()
+	api.JSONProducer = runtime.JSONProducer()
 
 	api.KeyAuth = func(token string) (interface{}, error) {
 		return nil, errors.NotImplemented("api key auth (key) x-petstore-token from header has not yet been implemented")
@@ -362,7 +362,7 @@ Go swagger uses responders which are an interface implementation for things that
 // Responder is an interface for types to implement
 // when they want to be considered for writing HTTP responses
 type Responder interface {
-	WriteResponse(http.ResponseWriter, httpkit.Producer)
+	WriteResponse(http.ResponseWriter, runtime.Producer)
 }
 
 /*AddOneCreated Created
@@ -376,7 +376,7 @@ type AddOneCreated struct {
 }
 
 // WriteResponse to the client
-func (o *AddOneCreated) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *AddOneCreated) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(201)
 	if o.Payload != nil {
@@ -397,7 +397,7 @@ type AddOneDefault struct {
 }
 
 // WriteResponse to the client
-func (o *AddOneDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *AddOneDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
 	if o.Payload != nil {
