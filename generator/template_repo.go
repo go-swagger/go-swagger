@@ -103,9 +103,6 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	"goSliceInitializer": goSliceInitializer,
 	"hasPrefix":          strings.HasPrefix,
 	"stringContains":     strings.Contains,
-	"hasDefaultParam":    hasDefaultParam,
-	"hasDefaultHeader":   hasDefaultHeader,
-	"itemsLocation":      asItemsLocation,
 }
 
 func init() {
@@ -224,45 +221,6 @@ func goSliceInitializer(data interface{}) (string, error) {
 		return "", err
 	}
 	return strings.Replace(strings.Replace(strings.Replace(string(b), "}", ",}", -1), "[", "{", -1), "]", ",}", -1), nil
-}
-
-func hasDefaultParam(parameters GenParameters) bool {
-	// hasDefaultParam returns true is at least one input parameter has a .Default
-	// NOTE: this is currently used by templates to avoid empty constructs
-	for _, param := range parameters {
-		if param.HasDefault {
-			return true
-		}
-	}
-	return false
-}
-
-func hasDefaultHeader(headers GenHeaders) bool {
-	// hasDefaultHeader returns true is at least one header in response has a .Default
-	// NOTE: this is currently used by templates to avoid empty constructs
-	for _, header := range headers {
-		if header.HasDefault {
-			return true
-		}
-	}
-	return false
-}
-
-func asItemsLocation(items interface{}) string {
-	// asItemsLocation returns a string "items.items..." with as many items as the level of nesting of the array.
-	// NOTE: this is currently used by templates to generate explicit comments in nested structures
-	res, ok := items.(*GenItems)
-	if !ok {
-		// Root object, e.g. GenParameter or GenHeader
-		return ""
-	}
-	current := res
-	i := 1
-	for current.Parent != nil {
-		i++
-		current = current.Parent
-	}
-	return strings.Repeat("items.", i)
 }
 
 // NewRepository creates a new template repository with the provided functions defined

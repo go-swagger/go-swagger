@@ -709,10 +709,6 @@ func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) (G
 	}
 
 	if hdr.Items != nil {
-		if res.CollectionFormat == "" {
-			// When not defined,CollectionFormat defaults to csv
-			res.CollectionFormat = "csv"
-		}
 		pi, err := b.MakeHeaderItem(receiver, name+" "+res.IndexVar, res.IndexVar+"i", "fmt.Sprintf(\"%s.%v\", \"header\", "+res.IndexVar+")", res.Name+"I", hdr.Items, nil)
 		if err != nil {
 			return GenHeader{}, err
@@ -743,12 +739,8 @@ func (b *codeGenOpBuilder) MakeHeaderItem(receiver, paramName, indexVar, path, v
 	res.Name = paramName
 	res.Path = path
 	res.Location = "header"
-	res.ValueExpression = golang.MangleVarName(swag.ToGoName(valueExpression))
+	res.ValueExpression = swag.ToVarName(valueExpression)
 	res.CollectionFormat = items.CollectionFormat
-	if res.CollectionFormat == "" && items.Items != nil {
-		// When not defined,CollectionFormat defaults to csv
-		res.CollectionFormat = "csv"
-	}
 	res.Converter = stringConverters[res.GoType]
 	res.Formatter = stringFormatters[res.GoType]
 	res.IndexVar = indexVar
@@ -796,12 +788,8 @@ func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path
 	res.Name = paramName
 	res.Path = path
 	res.Location = location
-	res.ValueExpression = golang.MangleVarName(swag.ToGoName(valueExpression))
+	res.ValueExpression = swag.ToVarName(valueExpression)
 	res.CollectionFormat = items.CollectionFormat
-	if res.CollectionFormat == "" && items.Items != nil {
-		// When not defined,CollectionFormat defaults to csv
-		res.CollectionFormat = "csv"
-	}
 	res.Converter = stringConverters[res.GoType]
 	res.Formatter = stringFormatters[res.GoType]
 	res.IndexVar = indexVar
@@ -980,11 +968,6 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		res.ZeroValue = res.resolvedType.Zero()
 
 		if param.Items != nil {
-			if res.CollectionFormat == "" {
-				// When not defined,CollectionFormat defaults to csv
-				res.CollectionFormat = "csv"
-			}
-
 			// Follow Items definition for array parameters
 			pi, err := b.MakeParameterItem(receiver, param.Name+" "+res.IndexVar, res.IndexVar+"i", "fmt.Sprintf(\"%s.%v\", "+res.Path+", "+res.IndexVar+")", res.Name+"I", param.In, resolver, param.Items, nil)
 			if err != nil {

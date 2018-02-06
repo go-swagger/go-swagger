@@ -315,15 +315,8 @@ func (ctx *paramTestContext) assertGenParam(t testing.TB, param spec.Parameter, 
 	if !assert.Equal(t, param.Description, gp.Description) {
 		return false
 	}
-	// CollectionFormat now defaults to csv when Items is defined
-	if param.CollectionFormat == "" && param.Items != nil {
-		if !assert.Equal(t, "csv", gp.CollectionFormat) {
-			return false
-		}
-	} else {
-		if !assert.Equal(t, param.CollectionFormat, gp.CollectionFormat) {
-			return false
-		}
+	if !assert.Equal(t, param.CollectionFormat, gp.CollectionFormat) {
+		return false
 	}
 	if !assert.Equal(t, param.Required, gp.Required) {
 		return false
@@ -406,15 +399,8 @@ func (ctx *paramItemsTestContext) Assert(t testing.TB, pItems *spec.Items, gpIte
 	if !assert.Equal(t, ctx.Converter, gpItems.Converter) {
 		return false
 	}
-	// Now defaults to csv when Items is defined
-	if pItems.CollectionFormat == "" && pItems.Items != nil {
-		if !assert.Equal(t, "csv", gpItems.CollectionFormat) {
-			return false
-		}
-	} else {
-		if !assert.Equal(t, pItems.CollectionFormat, gpItems.CollectionFormat) {
-			return false
-		}
+	if !assert.Equal(t, pItems.CollectionFormat, gpItems.CollectionFormat) {
+		return false
 	}
 	if !assert.Equal(t, pItems.Minimum, gpItems.Minimum) || !assert.Equal(t, pItems.ExclusiveMinimum, gpItems.ExclusiveMinimum) {
 		return false
@@ -770,7 +756,7 @@ func TestGenParameter_Issue731_Collection(t *testing.T) {
 					res := string(ff)
 					assertInCode(t, `for _, v := range o.WorkspaceID`, res)
 					assertInCode(t, `valuesWorkspaceID = append(valuesWorkspaceID, v.String())`, res)
-					assertInCode(t, `joinedWorkspaceID := swag.JoinByFormat(valuesWorkspaceID, "csv")`, res) // NOTE(fredbi): defaults to csv
+					assertInCode(t, `joinedWorkspaceID := swag.JoinByFormat(valuesWorkspaceID, "")`, res)
 				} else {
 					fmt.Println(buf.String())
 				}
@@ -1066,7 +1052,7 @@ func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 					assertInCode(t, `err := validate.MinItems("siFloat", "query", siFloatSize, 5)`, res)
 					assertInCode(t, `err := validate.MaxItems("siFloat", "query", siFloatSize, 50)`, res)
 
-					assertInCode(t, `siFloat32IC := swag.SplitByFormat(qvSiFloat32, "csv")`, res) // NOTE(fredbi) : Now defaults to csv
+					assertInCode(t, `siFloat32IC := swag.SplitByFormat(qvSiFloat32, "")`, res)
 					assertInCode(t, `var siFloat32IR []float32`, res)
 					assertInCode(t, `for i, siFloat32IV := range siFloat32IC`, res)
 					assertInCode(t, `siFloat32I, err := swag.ConvertFloat32(siFloat32IV)`, res)
@@ -1240,7 +1226,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`isAnOption2IC := swag.SplitByFormat(qvIsAnOption2, "pipes")`,
 				`var isAnOption2IR [][]strfmt.UUID`,
 				`for i, isAnOption2IV := range isAnOption2IC {`,
-				`isAnOption2IIC := swag.SplitByFormat(isAnOption2IV, "csv")`,
+				`isAnOption2IIC := swag.SplitByFormat(isAnOption2IV, "")`,
 				`if len(isAnOption2IIC) > 0 {`,
 				`var isAnOption2IIR []strfmt.UUID`,
 				`for ii, isAnOption2IIV := range isAnOption2IIC {`,
@@ -1253,7 +1239,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`isAnOption4IC := swag.SplitByFormat(qvIsAnOption4, "csv")`,
 				`var isAnOption4IR [][][]strfmt.UUID`,
 				`for i, isAnOption4IV := range isAnOption4IC {`,
-				`isAnOption4IIC := swag.SplitByFormat(isAnOption4IV, "csv")`,
+				`isAnOption4IIC := swag.SplitByFormat(isAnOption4IV, "")`,
 				`if len(isAnOption4IIC) > 0 {`,
 				`var isAnOption4IIR [][]strfmt.UUID`,
 				`for ii, isAnOption4IIV := range isAnOption4IIC {`,
@@ -1278,7 +1264,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`isAnOptionalHeaderIC := swag.SplitByFormat(qvIsAnOptionalHeader, "pipes")`,
 				`var isAnOptionalHeaderIR [][]strfmt.UUID`,
 				`for i, isAnOptionalHeaderIV := range isAnOptionalHeaderIC {`,
-				`isAnOptionalHeaderIIC := swag.SplitByFormat(isAnOptionalHeaderIV, "csv")`,
+				`isAnOptionalHeaderIIC := swag.SplitByFormat(isAnOptionalHeaderIV, "")`,
 				`if len(isAnOptionalHeaderIIC) > 0 {`,
 				`var isAnOptionalHeaderIIR []strfmt.UUID`,
 				`for ii, isAnOptionalHeaderIIV := range isAnOptionalHeaderIIC {`,
@@ -1314,7 +1300,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`IsAnOption4 [][][]strfmt.UUID`,
 				`NotAnOption1 [][]strfmt.DateTime`,
 				`NotAnOption3 *models.ContainerConfig`,
-				`isAnOption2IC := swag.SplitByFormat(qvIsAnOption2, "csv")`,
+				`isAnOption2IC := swag.SplitByFormat(qvIsAnOption2, "")`,
 				`var isAnOption2IR [][]strfmt.UUID`,
 				`for i, isAnOption2IV := range isAnOption2IC {`,
 				`isAnOption2IIC := swag.SplitByFormat(isAnOption2IV, "pipes")`,
@@ -1327,7 +1313,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`isAnOption2IIR = append(isAnOption2IIR, isAnOption2II)`,
 				`isAnOption2IR = append(isAnOption2IR, isAnOption2IIR)`,
 				`o.IsAnOption2 = isAnOption2IR`,
-				`isAnOption4IC := swag.SplitByFormat(qvIsAnOption4, "csv")`,
+				`isAnOption4IC := swag.SplitByFormat(qvIsAnOption4, "")`,
 				`var isAnOption4IR [][][]strfmt.UUID`,
 				`for i, isAnOption4IV := range isAnOption4IC {`,
 				`isAnOption4IIC := swag.SplitByFormat(isAnOption4IV, "pipes")`,
@@ -1354,10 +1340,10 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`isAnOption4Size := int64(len(o.IsAnOption4))`,
 				`if err := validate.MaxItems("isAnOption4", "query", isAnOption4Size, 4); err != nil {`,
 				`return errors.Required("notAnOption1", "query")`,
-				`notAnOption1IC := swag.SplitByFormat(qvNotAnOption1, "csv")`,
+				`notAnOption1IC := swag.SplitByFormat(qvNotAnOption1, "")`,
 				`var notAnOption1IR [][]strfmt.DateTime`,
 				`for i, notAnOption1IV := range notAnOption1IC {`,
-				`notAnOption1IIC := swag.SplitByFormat(notAnOption1IV, "csv")`,
+				`notAnOption1IIC := swag.SplitByFormat(notAnOption1IV, "")`,
 				`if len(notAnOption1IIC) > 0 {`,
 				`var notAnOption1IIR []strfmt.DateTime`,
 				`for ii, notAnOption1IIV := range notAnOption1IIC {`,
@@ -1398,7 +1384,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`xIsAnOptionalHeader2ISs := xIsAnOptionalHeader2IS[0]`,
 				`if xIsAnOptionalHeader2ISs != "" {`,
 				`xIsAnOptionalHeader2IR = append(xIsAnOptionalHeader2IR, xIsAnOptionalHeader2ISs)`,
-				`xIsAnOptionalHeader2 := swag.JoinByFormat(xIsAnOptionalHeader2IR, "csv")`,
+				`xIsAnOptionalHeader2 := swag.JoinByFormat(xIsAnOptionalHeader2IR, "")`,
 				`hv := xIsAnOptionalHeader2[0]`,
 				`rw.Header().Set("x-isAnOptionalHeader2", hv)`,
 				`var xIsAnOptionalHeader3IR []string`,
@@ -1410,7 +1396,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`xIsAnOptionalHeader3IIIS := xIsAnOptionalHeader3III.String()`,
 				`if xIsAnOptionalHeader3IIIS != "" {`,
 				`xIsAnOptionalHeader3IIIR = append(xIsAnOptionalHeader3IIIR, xIsAnOptionalHeader3IIIS)`,
-				`xIsAnOptionalHeader3IIS := swag.JoinByFormat(xIsAnOptionalHeader3IIIR, "csv")`,
+				`xIsAnOptionalHeader3IIS := swag.JoinByFormat(xIsAnOptionalHeader3IIIR, "")`,
 				`xIsAnOptionalHeader3IISs := xIsAnOptionalHeader3IIS[0]`,
 				`if xIsAnOptionalHeader3IISs != "" {`,
 				`xIsAnOptionalHeader3IIR = append(xIsAnOptionalHeader3IIR, xIsAnOptionalHeader3IISs)`,
@@ -1418,7 +1404,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`xIsAnOptionalHeader3ISs := xIsAnOptionalHeader3IS[0]`,
 				`if xIsAnOptionalHeader3ISs != "" {`,
 				`xIsAnOptionalHeader3IR = append(xIsAnOptionalHeader3IR, xIsAnOptionalHeader3ISs)`,
-				`xIsAnOptionalHeader3 := swag.JoinByFormat(xIsAnOptionalHeader3IR, "csv")`,
+				`xIsAnOptionalHeader3 := swag.JoinByFormat(xIsAnOptionalHeader3IR, "")`,
 				`hv := xIsAnOptionalHeader3[0]`,
 				`rw.Header().Set("x-isAnOptionalHeader3", hv)`,
 			},
@@ -1439,8 +1425,10 @@ func TestGenParameter_Issue909(t *testing.T) {
 						ff, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
 						if assert.NoError(err, "Expected formatting to go well on %s with template %s", fixtureSpec, fixtureTemplate) {
 							res := string(ff)
-							for _, codeLine := range expectedCode {
-								assertInCode(t, codeLine, res)
+							for line, codeLine := range expectedCode {
+								if !assertInCode(t, codeLine, res) {
+									t.Logf("Code expected did not match for fixture %s at line %d", fixtureSpec, line)
+								}
 							}
 						} else {
 							fmt.Println(buf.String())

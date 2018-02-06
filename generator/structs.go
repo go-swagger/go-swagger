@@ -171,12 +171,30 @@ type GenHeader struct {
 	ZeroValue string
 }
 
+// ItemsDepth returns a string "items.items..." with as many items as the level of nesting of the array.
+// For a header objects it always returns "".
+func (g *GenHeader) ItemsDepth() string {
+	// NOTE: this is currently used by templates to generate explicit comments in nested structures
+	return ""
+}
+
 // GenHeaders is a sorted collection of headers for codegen
 type GenHeaders []GenHeader
 
 func (g GenHeaders) Len() int           { return len(g) }
 func (g GenHeaders) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
 func (g GenHeaders) Less(i, j int) bool { return g[i].Name < g[j].Name }
+
+// HasSomeDefaults returns true is at least one header has a default value set
+func (g GenHeaders) HasSomeDefaults() bool {
+	// NOTE: this is currently used by templates to avoid empty constructs
+	for _, header := range g {
+		if header.HasDefault {
+			return true
+		}
+	}
+	return false
+}
 
 // GenParameter is used to represent
 // a parameter or a header for code generation.
@@ -244,12 +262,30 @@ func (g *GenParameter) IsFileParam() bool {
 	return g.SwaggerType == "file"
 }
 
+// ItemsDepth returns a string "items.items..." with as many items as the level of nesting of the array.
+// For a parameter object, it always returns "".
+func (g *GenParameter) ItemsDepth() string {
+	// NOTE: this is currently used by templates to generate explicit comments in nested structures
+	return ""
+}
+
 // GenParameters represents a sorted parameter collection
 type GenParameters []GenParameter
 
 func (g GenParameters) Len() int           { return len(g) }
 func (g GenParameters) Less(i, j int) bool { return g[i].Name < g[j].Name }
 func (g GenParameters) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
+
+// HasSomeDefaults returns true is at least one parameter has a default value set
+func (g GenParameters) HasSomeDefaults() bool {
+	// NOTE: this is currently used by templates to avoid empty constructs
+	for _, param := range g {
+		if param.HasDefault {
+			return true
+		}
+	}
+	return false
+}
 
 // GenItems represents the collection items for a collection parameter
 type GenItems struct {
@@ -267,6 +303,18 @@ type GenItems struct {
 
 	Location string
 	IndexVar string
+}
+
+// ItemsDepth returns a string "items.items..." with as many items as the level of nesting of the array.
+func (g *GenItems) ItemsDepth() string {
+	// NOTE: this is currently used by templates to generate explicit comments in nested structures
+	current := g
+	i := 1
+	for current.Parent != nil {
+		i++
+		current = current.Parent
+	}
+	return strings.Repeat("items.", i)
 }
 
 // GenOperationGroup represents a named (tagged) group of operations

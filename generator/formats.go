@@ -117,7 +117,6 @@ var typeMapping = map[string]string{
 	// plus the following aliases:
 	//  - "datetime" alias for the more official "date-time"
 	//  - "objectid" and "ObjectId" aliases for "bsonobjectid"
-	// TODO: aliasing does not work, and was not really intended. Best to suppress it altogether.
 	"byte":         "strfmt.Base64",
 	"creditcard":   "strfmt.CreditCard",
 	"date":         "strfmt.Date",

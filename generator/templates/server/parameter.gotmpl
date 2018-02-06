@@ -3,25 +3,25 @@
     {{ camelize .Name }}Size := int64(len({{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end }}{{ if and .Child (not (hasPrefix .ValueExpression "o.")) }}{{ .Child.ValueExpression }}C{{ else }}{{ .ValueExpression }}{{ end }}))
 {{ end }}
 {{ if .MinItems }}
-// {{ itemsLocation . }}minItems: {{ .MinItems }}
+// {{ .ItemsDepth }}minItems: {{ .MinItems }}
 if err := validate.MinItems({{ .Path }}, {{ printf "%q" .Location }}, {{ camelize .Name }}Size, {{ .MinItems }}); err != nil {
   return err
 }
 {{ end }}
 {{ if .MaxItems }}
-// {{ itemsLocation . }}maxItems: {{ .MaxItems }}
+// {{ .ItemsDepth }}maxItems: {{ .MaxItems }}
 if err := validate.MaxItems({{ .Path }}, {{ printf "%q" .Location }}, {{ camelize .Name }}Size, {{.MaxItems}}); err != nil {
   return err
 }
 {{ end }}
 {{ if .UniqueItems }}
-// {{ itemsLocation . }}uniqueItems: true
+// {{ .ItemsDepth }}uniqueItems: true
 if err := validate.UniqueItems({{ .Path }}, {{ printf "%q" .Location }}, {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end }}{{ if and .Child (not ( hasPrefix .ValueExpression "o." )) }}{{ .Child.ValueExpression }}C{{ else }}{{ .ValueExpression }}{{ end }}); err != nil {
   return err
 }
 {{ end }}
 {{ if .Enum }}
-// {{ itemsLocation . }}Enum: {{ .Enum }}
+// {{ .ItemsDepth }}Enum: {{ .Enum }}
 if err := validate.Enum({{ .Path }}, {{ printf "%q" .Location }}, {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end }}{{ if and .Child (not ( hasPrefix .ValueExpression "o." )) }}{{ .Child.ValueExpression }}C{{ else }}{{ .ValueExpression }}{{ end }}); err != nil {
   return err
 }
@@ -41,7 +41,7 @@ if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", {{
 var {{ varname .Child.ValueExpression }}R {{ .GoType }}
 for {{ if or .Child.HasValidations .Child.Converter .Child.IsCustomFormatter }}{{ .IndexVar }}{{ else }}_{{ end }}, {{ varname .Child.ValueExpression }}V := range {{ varname .Child.ValueExpression }}C {
   {{ if or .Child.IsArray -}}{{- /* Recursive resolution of arrays in params */ -}}
-  // {{ itemsLocation .Child }}CollectionFormat: {{ .Child.CollectionFormat }}
+  // {{ .Child.ItemsDepth }}CollectionFormat: {{ .Child.CollectionFormat }}
   {{ .Child.Child.ValueExpression }}C := swag.SplitByFormat({{ varname .Child.ValueExpression }}V, {{ printf "%q" .Child.CollectionFormat }})
   if len({{ varname .Child.Child.ValueExpression }}C) > 0 {
   {{ template "sliceparambinder" .Child }}
@@ -50,13 +50,13 @@ for {{ if or .Child.HasValidations .Child.Converter .Child.IsCustomFormatter }}{
   {{ if .Child.HasSliceValidations -}}{{ template "sliceparamvalidator" .Child }}{{- end -}}
   {{- else -}}{{- /* Non-array type in items */ -}}
   {{ if .Child.Converter -}}
-      {{ if ne .Child.SwaggerFormat "" }}// {{ itemsLocation .Child }}Format: {{ printf "%q" .Child.SwaggerFormat }}{{ end }}
+      {{ if ne .Child.SwaggerFormat "" }}// {{ .Child.ItemsDepth }}Format: {{ printf "%q" .Child.SwaggerFormat }}{{ end }}
   {{ varname .Child.ValueExpression }}, err := {{ .Child.Converter }}({{ varname .Child.ValueExpression }}V)
   if err != nil {
     return errors.InvalidType({{ .Child.Path }}, {{ printf "%q" .Child.Location }}, "{{ .Child.GoType }}", {{ varname .Child.ValueExpression }})
   }
   {{- else if .Child.IsCustomFormatter -}}
-  // {{ itemsLocation .Child }}Format: {{ printf "%q" .Child.SwaggerFormat }}
+  // {{ .Child.ItemsDepth }}Format: {{ printf "%q" .Child.SwaggerFormat }}
   value, err := formats.Parse({{ printf "%q" .Child.SwaggerFormat }},{{ varname .Child.ValueExpression }}V)
   if err != nil {
     return errors.InvalidType({{ .Child.Path }}, {{ printf "%q" .Child.Location }}, "{{ .Child.GoType }}", value)
@@ -100,12 +100,12 @@ import (
 )
 
 // New{{ pascalize .Name }}Params creates a new {{ pascalize .Name }}Params object
-{{ if hasDefaultParam .Params -}}
+{{ if .Params.HasSomeDefaults -}}
 // with the default values initialized.{{ else -}}
 // no default values defined in spec.
 {{- end }}
 func New{{ pascalize .Name }}Params() {{ pascalize .Name }}Params {
-{{ if hasDefaultParam .Params }}
+{{ if .Params.HasSomeDefaults }}
   var (
   // initialize parameters with default values
   {{ range .Params }} 

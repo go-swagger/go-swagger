@@ -98,7 +98,7 @@ if code <= 0 {
     code = 500
   }
 {{ end }}
-{{ if hasDefaultHeader .Headers }}
+{{ if .Headers.HasSomeDefaults }}
   var (
   // initialize headers with default values
   {{ range .Headers }}
