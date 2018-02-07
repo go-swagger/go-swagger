@@ -2268,3 +2268,34 @@ func TestGenModel_Issue1397b(t *testing.T) {
 		}
 	}
 }
+
+// This tests that additionalProperties with an array of polymorphic objects is generated properly.
+func TestGenModel_Issue1409(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/1409/fixture-1409.yaml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "Graph"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					//log.Println("1409")
+					//log.Println(res)
+					// Just verify that the validation call is generated with proper format
+					assertInCode(t, `nodes, err := UnmarshalNodeSlice(bytes.NewBuffer(data.Nodes), runtime.JSONConsumer())`, res)
+					assertInCode(t, `if err := json.Unmarshal(raw, &rawProps); err != nil {`, res)
+					assertInCode(t, `m.GraphAdditionalProperties[k] = toadd`, res)
+					assertInCode(t, `b3, err = json.Marshal(m.GraphAdditionalProperties)`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
