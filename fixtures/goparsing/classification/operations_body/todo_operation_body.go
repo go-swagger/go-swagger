@@ -68,7 +68,7 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	+ name:        request
 	  description: The request model.
 	  in:          body
-	  schema:      petModel
+	  type:        petModel
 	  unknown:     invalid key that will not get parsed. Added to increase coverage.
 	+ name:        id
 	  description: The pet id
@@ -136,11 +136,11 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	//   in:          invalidIn
 	//   required:    false
 	//   allowEmpty:  true
-	//   noValue  (to increase coverage, line with colon, split result will be 1)
+	//   noValue  (to increase coverage, line without colon, split result will be 1)
 	// + name:        request
 	//   description: The request model.
 	//   in:          body
-	//   schema:      orderModel
+	//   type:        orderModel
 	//
 	// Responses:
 	// default: body:genericError
@@ -221,6 +221,76 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	// 200: body:someResponse
 	// 422: body:validationError
 	mountItem("DELETE", basePath+"/orders/:id", nil)
+
+
+	// swagger:route POST /param-test params testParams
+	//
+	// Allow some params with constraints.
+	//
+	// Consumes:
+	// application/json
+	// application/x-protobuf
+	//
+	// Produces:
+	// application/json
+	// application/x-protobuf
+	//
+	// Schemes: http, https, ws, wss
+	//
+	// Security:
+	// api_key:
+	// oauth: read, write
+	//
+	// Parameters:
+	// + name:        someNumber
+	//   description: some number
+	//   in:          path
+	//   required:    true
+	//   allowEmpty:  true
+	//   type:        number
+	//   max:         20
+	//   min:         10
+	//   default:     15
+	// + name:        someQuery
+	//   description: some query values
+	//   in:          query
+	//   type:        array
+	//   minLength:   5
+	//   maxLength:   20
+	// + name:        someBoolean
+	//   in:          path
+	//   description: some boolean
+	//   type:        boolean
+	//   default:     true
+	// + name:        constraintsOnInvalidType
+	//   description: test constraints on invalid types
+	//   in:          query
+	//   type:        bool
+	//   min:         1
+	//   max:         10
+	//   minLength:   1
+	//   maxLength:   10
+	//   format:      abcde
+	//   default:     false
+	// + name:        noType
+	//   description: test no type
+	//   min:         1
+	//   max:         10
+	//   minLength:   1
+	//   maxLength:   10
+	//   default:     something
+	// + name:        request
+	//   description: The request model.
+	//   in:          body
+	//   type:        string
+	//   enum:        apple, orange, pineapple, peach, plum
+	//   default:     orange
+	//
+	// Responses:
+	// default: body:genericError
+	// 200: body:someResponse
+	// 422: body:validationError
+	mountItem("POST", basePath+"/param-test", nil)
 
 	return nil
 }
