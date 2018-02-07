@@ -43,7 +43,7 @@ const (
 	TypeInteger = "integer"
 	// TypeBoolean is the identifier for a boolean type in swagger:route
 	TypeBoolean = "boolean"
-	// TypeBoolean is the identifier for a boolean type in swagger:route
+	// TypeBool is the identifier for a boolean type in swagger:route
 	TypeBool = "bool"
 	// TypeObject is the identifier for an object type in swagger:route
 	TypeObject = "object"
@@ -78,7 +78,7 @@ func (s *setOpParams) Parse(lines []string) error {
 	}
 
 	var current *spec.Parameter
-	var extraData map[string]string = make(map[string]string)
+	var extraData map[string]string
 
 	for _, line := range lines {
 		l := strings.TrimSpace(line)
