@@ -2214,6 +2214,34 @@ func TestGenModel_Issue1348(t *testing.T) {
 }
 
 // This tests that additionalProperties with validation is generated properly.
+func TestGenModel_Issue1198(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/1198/fixture-1198.yaml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "pet"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					//log.Println("1198")
+					//log.Println(res)
+					// Just verify that the validation call is generated with proper format
+					assertInCode(t, `if err := m.validateDate(formats); err != nil {`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+// This tests that additionalProperties with validation is generated properly.
 func TestGenModel_Issue1397a(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/1397/fixture-1397a.yaml")
 	if assert.NoError(t, err) {
