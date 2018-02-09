@@ -132,6 +132,8 @@ paths:
       operationId: getAllParameters
       summary: all possible single value query parameters
       description: Used to see if a codegen can render all the possible parameter variations for a query param
+      responses:
+        default:
 
 responses:
   ErrorResponse:

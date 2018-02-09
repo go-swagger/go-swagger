@@ -1,0 +1,327 @@
+swagger: '2.0'
+info:
+  title: fixture for issue#909
+  description: fixture to check correct declaration and default initialization of all formats
+  version: '1.0.0'
+host: localhost
+basePath: /
+produces:
+  - application/json
+schemes:
+  - http
+paths:
+  /optional:
+    get:
+      parameters:
+        # Known issues with binary (IsStream: true).
+        #- name: aBinary
+        #in: query
+        #type: string
+        #format: binary
+        #required: false
+        # default for binary stream?
+        #default: 'af03f6'
+      - name: aByte
+        in: query
+        type: string
+        format: byte
+        required: false
+        default: 'ZWxpemFiZXRocG9zZXk='
+      - name: aBool
+        in: query
+        type: boolean
+        required: false
+        default: true
+      - name: aFloat
+        in: query
+        type: number
+        format: float
+        required: false
+        default: 99.99
+      - name: aDouble
+        in: query
+        type: number
+        format: double
+        required: false
+        default: 99.99
+      - name: aInt32
+        in: query
+        type: integer
+        format: int32
+        required: false
+        default: -99
+      - name: aUint32
+        in: query
+        type: integer
+        format: uint32
+        required: false
+        default: 99
+      - name: aInt64
+        in: query
+        type: integer
+        format: int64
+        required: false
+        default: -99
+      - name: aUint64
+        in: query
+        type: integer
+        format: uint64
+        required: false
+        default: 99
+      - name: aCreditCard
+        in: query
+        type: string
+        format: creditcard
+        required: false
+        default: '4111-1111-1111-1111'
+      - name: aDate
+        in: query
+        type: string
+        format: date
+        required: false
+        default: '1970-01-01'
+      - name: aDateTime
+        in: query
+        type: string
+        format: date-time
+        required: false
+        default: '1970-01-01T11:01:05.283185Z'
+      - name: aDuration
+        in: query
+        type: string
+        format: duration
+        required: false
+        default: '1 ms'
+      - name: anEmail
+        in: query
+        type: string
+        format: email
+        required: false
+        default: 'fredbi@github.com'
+      - name: aHexColor
+        in: query
+        type: string
+        format: hexcolor
+        required: false
+        default: '#FFFFFF'
+      - name: aHostname
+        in: query
+        type: string
+        format: hostname
+        required: false
+        default: 'www.example.com'
+      - name: anIpv4
+        in: query
+        type: string
+        format: ipv4
+        required: false
+        default: '192.168.224.1'
+      - name: anIpv6
+        in: query
+        type: string
+        format: ipv6
+        required: false
+        default: '::1'
+      - name: anISBN
+        in: query
+        type: string
+        format: isbn
+        required: false
+        default: '0321751043'
+      - name: anISBN10
+        in: query
+        type: string
+        format: isbn10
+        required: false
+        default: '0321751043'
+      - name: anISBN13
+        in: query
+        type: string
+        format: isbn13
+        required: false
+        default: '978 3401013190'
+      - name: aMac
+        in: query
+        type: string
+        format: mac
+        required: false
+        default: '01:02:03:04:05:06'
+      - name: aBsonObjectId
+        in: query
+        type: string
+        format: bsonobjectid
+        required: false
+        default: '507f1f77bcf86cd799439011'
+      - name: aPassword
+        in: query
+        type: string
+        format: password
+        required: false
+        default: 'secret'
+      - name: aRGBColor
+        in: query
+        type: string
+        format: rgbcolor
+        required: false
+        default: 'rgb(255,255,255)'
+      - name: aSsn
+        in: query
+        type: string
+        format: ssn
+        required: false
+        default: '111-11-1111'
+      - name: aUri
+        in: query
+        type: string
+        format: uri
+        required: false
+        default: 'http://foo.bar/?baz=qux#quux'
+      - name: aUUID
+        in: query
+        type: string
+        format: uuid
+        required: false
+        default: 'a8098c1a-f86e-11da-bd1a-00112444be1e'
+      - name: aUUID3
+        in: query
+        type: string
+        format: uuid3
+        required: false
+        default: 'bcd02e22-68f0-3046-a512-327cca9def8f'
+      - name: aUUID4
+        in: query
+        type: string
+        format: uuid4
+        required: false
+        default: '025b0d74-00a2-4048-bf57-227c5111bb34'
+      - name: aUUID5
+        in: query
+        type: string
+        format: uuid5
+        required: false
+        default: '886313e1-3b8a-5372-9b90-0c9aee199e5d'
+      responses:
+        200:
+          description: "empty response"
+          headers:
+            # funny header setup with formatted headers with default values
+            X-aByte:
+              type: string
+              format: byte
+              default: 'ZWxpemFiZXRocG9zZXk='
+            X-aBool:
+              type: boolean
+              default: true
+            X-aFloat:
+              type: number
+              format: float
+              default: 99.99
+            X-aDouble:
+              type: number
+              format: double
+              default: 99.99
+            X-aInt32:
+              type: integer
+              format: int32
+              default: -99
+            X-aUint32:
+              type: integer
+              format: uint32
+              default: 99
+            X-aInt64:
+              type: integer
+              format: int64
+              default: -99
+            X-aUint64:
+              type: integer
+              format: uint64
+              default: 99
+            X-aCreditCard:
+              type: string
+              format: creditcard
+              default: '4111-1111-1111-1111'
+            X-aDate:
+              type: string
+              format: date
+              default: '1970-01-01'
+            X-aDateTime:
+              type: string
+              format: date-time
+              default: '1970-01-01T11:01:05.283185Z'
+            X-aDuration:
+              type: string
+              format: duration
+              default: '1 ms'
+            X-anEmail:
+              type: string
+              format: email
+              default: 'fredbi@github.com'
+            X-aHexColor:
+              type: string
+              format: hexcolor
+              default: '#FFFFFF'
+            X-aHostname:
+              type: string
+              format: hostname
+              default: 'www.example.com'
+            X-anIpv4:
+              type: string
+              format: ipv4
+              default: '192.168.224.1'
+            X-anIpv6:
+              type: string
+              format: ipv6
+              default: '::1'
+            X-anISBN:
+              type: string
+              format: isbn
+              default: '0321751043'
+            X-anISBN10:
+              type: string
+              format: isbn10
+              default: '0321751043'
+            X-anISBN13:
+              type: string
+              format: isbn13
+              default: '978 3401013190'
+            X-aMac:
+              type: string
+              format: mac
+              default: '01:02:03:04:05:06'
+            X-aBsonObjectId:
+              type: string
+              format: bsonobjectid
+              default: '507f1f77bcf86cd799439011'
+            X-aPassword:
+              type: string
+              format: password
+              default: 'secret'
+            X-aRGBColor:
+              type: string
+              format: rgbcolor
+              default: 'rgb(255,255,255)'
+            X-aSsn:
+              type: string
+              format: ssn
+              default: '111-11-1111'
+            X-aUri:
+              type: string
+              format: uri
+              default: 'http://foo.bar/?baz=qux#quux'
+            X-aUUID:
+              type: string
+              format: uuid
+              default: 'a8098c1a-f86e-11da-bd1a-00112444be1e'
+            X-aUUID3:
+              type: string
+              format: uuid3
+              default: 'bcd02e22-68f0-3046-a512-327cca9def8f'
+            X-aUUID4:
+              type: string
+              format: uuid4
+              default: '025b0d74-00a2-4048-bf57-227c5111bb34'
+            X-aUUID5:
+              type: string
+              format: uuid5
+              default: '886313e1-3b8a-5372-9b90-0c9aee199e5d'
+      

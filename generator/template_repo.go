@@ -100,6 +100,9 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	"mediaTypeName": func(orig string) string {
 		return strings.SplitN(orig, ";", 2)[0]
 	},
+	"goSliceInitializer": goSliceInitializer,
+	"hasPrefix":          strings.HasPrefix,
+	"stringContains":     strings.Contains,
 }
 
 func init() {
@@ -205,6 +208,19 @@ func asPrettyJSON(data interface{}) (string, error) {
 		return "", err
 	}
 	return string(b), nil
+}
+
+func goSliceInitializer(data interface{}) (string, error) {
+	// goSliceInitializer constructs a Go literal initializer from interface{} literals.
+	// e.g. []interface{}{"a", "b"} is transformed in {"a","b",}
+	// e.g. map[string]interface{}{ "a": "x", "b": "y"} is transformed in {"a":"x","b":"y",}
+	// NOTE: this is currently used to construct simple slice intializers for default values.
+	// This allows for nicer slice initializers for slices of primitive types and avoid systematic use for json.Unmarshal().
+	b, err := json.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+	return strings.Replace(strings.Replace(strings.Replace(string(b), "}", ",}", -1), "[", "{", -1), "]", ",}", -1), nil
 }
 
 // NewRepository creates a new template repository with the provided functions defined

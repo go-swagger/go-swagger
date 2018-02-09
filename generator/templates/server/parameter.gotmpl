@@ -1,24 +1,28 @@
 {{ define "sliceparamvalidator"}}
 {{ if or .MinItems .MaxItems }}
-{{ camelize .Name }}Size := int64(len({{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end }}{{ .ValueExpression }}))
+    {{ camelize .Name }}Size := int64(len({{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end }}{{ if and .Child (not (hasPrefix .ValueExpression "o.")) }}{{ .Child.ValueExpression }}C{{ else }}{{ .ValueExpression }}{{ end }}))
 {{ end }}
 {{ if .MinItems }}
+// {{ .ItemsDepth }}minItems: {{ .MinItems }}
 if err := validate.MinItems({{ .Path }}, {{ printf "%q" .Location }}, {{ camelize .Name }}Size, {{ .MinItems }}); err != nil {
   return err
 }
 {{ end }}
 {{ if .MaxItems }}
+// {{ .ItemsDepth }}maxItems: {{ .MaxItems }}
 if err := validate.MaxItems({{ .Path }}, {{ printf "%q" .Location }}, {{ camelize .Name }}Size, {{.MaxItems}}); err != nil {
   return err
 }
 {{ end }}
 {{ if .UniqueItems }}
-if err := validate.UniqueItems({{ .Path }}, {{ printf "%q" .Location }}, {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end }}{{ .ValueExpression }}); err != nil {
+// {{ .ItemsDepth }}uniqueItems: true
+if err := validate.UniqueItems({{ .Path }}, {{ printf "%q" .Location }}, {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end }}{{ if and .Child (not ( hasPrefix .ValueExpression "o." )) }}{{ .Child.ValueExpression }}C{{ else }}{{ .ValueExpression }}{{ end }}); err != nil {
   return err
 }
 {{ end }}
 {{ if .Enum }}
-if err := validate.Enum({{ .Path }}, {{ printf "%q" .Location }}, {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end }}{{ .ValueExpression }}, {{ .Enum }}); err != nil {
+// {{ .ItemsDepth }}Enum: {{ .Enum }}
+if err := validate.Enum({{ .Path }}, {{ printf "%q" .Location }}, {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end }}{{ if and .Child (not ( hasPrefix .ValueExpression "o." )) }}{{ .Child.ValueExpression }}C{{ else }}{{ .ValueExpression }}{{ end }}); err != nil {
   return err
 }
 {{ end }}
@@ -26,7 +30,7 @@ if err := validate.Enum({{ .Path }}, {{ printf "%q" .Location }}, {{ if and (not
 {{ define "propertyparamvalidator" }}
 {{ if .IsPrimitive }}{{ template "validationPrimitive" . }}{{ end }}
 {{ if .IsCustomFormatter }}
-if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", {{.ValueExpression}}.String(), formats); err != nil {
+if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", {{ .ValueExpression}}.String(), formats); err != nil {
   return err
 }{{ end }}
 {{ if .IsArray }}{{ template "sliceparamvalidator" . }}{{ end -}}
@@ -36,27 +40,35 @@ if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", {{
 {{ define "sliceparambinder" }}
 var {{ varname .Child.ValueExpression }}R {{ .GoType }}
 for {{ if or .Child.HasValidations .Child.Converter .Child.IsCustomFormatter }}{{ .IndexVar }}{{ else }}_{{ end }}, {{ varname .Child.ValueExpression }}V := range {{ varname .Child.ValueExpression }}C {
-  {{ if or .Child.IsArray -}}
+  {{ if or .Child.IsArray -}}{{- /* Recursive resolution of arrays in params */ -}}
+  // {{ .Child.ItemsDepth }}CollectionFormat: {{ .Child.CollectionFormat }}
   {{ .Child.Child.ValueExpression }}C := swag.SplitByFormat({{ varname .Child.ValueExpression }}V, {{ printf "%q" .Child.CollectionFormat }})
+  if len({{ varname .Child.Child.ValueExpression }}C) > 0 {
   {{ template "sliceparambinder" .Child }}
-  {{- else -}}
+  {{ varname .Child.ValueExpression }}R = append({{ varname .Child.ValueExpression }}R, {{ varname .Child.ValueExpression }}{{ if .Child.IsArray }}IR{{end}})
+  }
+  {{ if .Child.HasSliceValidations -}}{{ template "sliceparamvalidator" .Child }}{{- end -}}
+  {{- else -}}{{- /* Non-array type in items */ -}}
   {{ if .Child.Converter -}}
+      {{ if ne .Child.SwaggerFormat "" }}// {{ .Child.ItemsDepth }}Format: {{ printf "%q" .Child.SwaggerFormat }}{{ end }}
   {{ varname .Child.ValueExpression }}, err := {{ .Child.Converter }}({{ varname .Child.ValueExpression }}V)
   if err != nil {
     return errors.InvalidType({{ .Child.Path }}, {{ printf "%q" .Child.Location }}, "{{ .Child.GoType }}", {{ varname .Child.ValueExpression }})
   }
   {{- else if .Child.IsCustomFormatter -}}
-  {{ varname .Child.ValueExpression }}, err := formats.Parse({{ varname .Child.ValueExpression }}V)
+  // {{ .Child.ItemsDepth }}Format: {{ printf "%q" .Child.SwaggerFormat }}
+  value, err := formats.Parse({{ printf "%q" .Child.SwaggerFormat }},{{ varname .Child.ValueExpression }}V)
   if err != nil {
-    return errors.InvalidType({{ .Child.Path }}, {{ printf "%q" .Child.Location }}, "{{ .Child.GoType }}", {{ varname .Child.ValueExpression }})
+    return errors.InvalidType({{ .Child.Path }}, {{ printf "%q" .Child.Location }}, "{{ .Child.GoType }}", value)
   }
+  {{ varname .Child.ValueExpression }} := *(value.(*{{.Child.GoType}}))
   {{- else -}}
   {{ varname .Child.ValueExpression }} := {{ varname .Child.ValueExpression }}V
   {{ end }}
-  {{- end }}
 
   {{ template "propertyparamvalidator" .Child }}
-  {{ varname .Child.ValueExpression }}R = append({{ varname .Child.ValueExpression }}R, {{ varname .Child.ValueExpression }})
+  {{ varname .Child.ValueExpression }}R = append({{ varname .Child.ValueExpression }}R, {{ varname .Child.ValueExpression }}{{ if .Child.IsArray }}IR{{end}})
+  {{- end }}
 }
 {{ end }}// Code generated by go-swagger; DO NOT EDIT.
 
@@ -88,12 +100,47 @@ import (
 )
 
 // New{{ pascalize .Name }}Params creates a new {{ pascalize .Name }}Params object
-// with the default values initialized.
+{{ if .Params.HasSomeDefaults -}}
+// with the default values initialized.{{ else -}}
+// no default values defined in spec.
+{{- end }}
 func New{{ pascalize .Name }}Params() {{ pascalize .Name }}Params {
+{{ if .Params.HasSomeDefaults }}
   var (
-  {{ range .Params }}{{ if .HasDefault }}{{ if not .IsFileParam }}{{ varname .ID}}Default = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
-  {{ end }}{{ end }}{{end}}
+  // initialize parameters with default values
+  {{ range .Params }} 
+      {{ if .HasDefault -}}
+          {{ if not .IsFileParam }}{{ varname .ID}}Default = 
+              {{- if and .IsPrimitive .IsCustomFormatter (not (stringContains .Zero "(\"" )) }}{{ .Zero }}{{/* strfmt type initializer requires UnmarshalText(), e.g. Date, Datetime, Duration */}}
+              {{- else if and .IsPrimitive .IsCustomFormatter (stringContains .Zero "(\"" ) }}{{.GoType}}({{- printf "%#v" .Default }}){{/* strfmt type initializer takes string */}}
+              {{- else if and .IsPrimitive (not .IsCustomFormatter) -}}{{.GoType}}({{- printf "%#v" .Default }}){{/* regular go primitive type initializer */}}
+              {{- else if .IsArray -}}{{- /* Do not initialize from possible defaults in nested arrays */ -}}
+                  {{- if and .Child.IsPrimitive .Child.IsCustomFormatter }}{{ .Zero }}{{/* initialization strategy with UnmarshalText() */}}
+                  {{- else if .Child.IsArray -}}{{ .Zero }}{{/* initialization strategy with json.Unmarshal() */}}
+                  {{- else if and .Child.IsPrimitive (not .Child.IsCustomFormatter) -}}{{.GoType}}{{- goSliceInitializer .Default }}{{/* regular go primitive type initializer: simple slice initializer */}}
+                  {{- else }}{{ printf "%#v" .Default }}{{/* all other cases (e.g. schema) [should not occur] */}}
+                  {{- end }}
+              {{- else }}{{ printf "%#v" .Default }}{{/* case .Schema */}}
+              {{- end }}
+          {{- end }}
+      {{- end }}
+  {{- end }}
   )
+
+{{ range .Params }}{{ if .HasDefault -}}{{- /* carry on UnmarshalText initialization strategy */ -}}
+      {{ if and .IsPrimitive .IsCustomFormatter (not (stringContains .Zero "(\"")) }}{{ varname .ID}}Default.UnmarshalText([]byte({{ printf "%q" .Default }}))
+      {{ else if .IsArray -}}
+          {{ if or ( and .Child.IsPrimitive .Child.IsCustomFormatter ) .Child.IsArray -}}
+          if err := json.Unmarshal([]byte(`{{printf "%s" (json .Default)}}`), &{{ varname .ID }}Default); err != nil {
+            // panics if specification is invalid
+            msg := fmt.Sprintf("invalid default value for parameter {{ varname .ID }}: %v",err)
+            panic(msg)
+          }
+          {{ end -}}
+      {{- end }}
+  {{ end -}}
+{{- end }} 
+{{ end }}
   return {{ pascalize .Name }}Params{ {{ range .Params }}{{ if .HasDefault }}
     {{ pascalize .ID}}: {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}&{{ end }}{{ varname .ID }}Default,
   {{ end }}{{ end }} }
@@ -128,9 +175,12 @@ type {{ pascalize .Name }}Params struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with New{{ pascalize .Name }}Params() beforehand.
 func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
   var res []error
+
   {{ .ReceiverName }}.HTTPRequest = r
 
   {{ if .HasQueryParams }}qs := runtime.Values(r.URL.Query()){{ end }}
@@ -146,7 +196,8 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
   {{ end }}{{ end }}
 
   {{ range .Params }}
-  {{ if not .IsArray }}{{ if .IsQueryParam }}q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, _ := qs.GetOK({{ .Path }})
+  {{ if not .IsArray -}}
+  {{ if .IsQueryParam }}q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, _ := qs.GetOK({{ .Path }})
   if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, route.Formats); err != nil {
     res = append(res, err)
   }
@@ -157,23 +208,33 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
   {{ else if .IsHeaderParam }}if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(r.Header[http.CanonicalHeaderKey({{ .Path }})], true, route.Formats); err != nil {
     res = append(res, err)
   }
-  {{ else if .IsFormParam }}{{if .IsFileParam }}{{ camelize .Name }}, {{ camelize .Name }}Header, err := r.FormFile({{ .Path }})
+  {{ else if .IsFormParam -}}
+    {{if .IsFileParam }}{{ camelize .Name }}, {{ camelize .Name }}Header, err := r.FormFile({{ .Path }})
   if err != nil {{ if .IsNullable }}&& err != http.ErrMissingFile{{ end }}{
     res = append(res, errors.New(400, "reading file %q failed: %v", {{ printf "%q" (camelize .Name) }}, err))
-  {{ if .IsNullable }}} else if err == http.ErrMissingFile {
+        {{ if .IsNullable }}} else if err == http.ErrMissingFile {
     // no-op for missing but optional file parameter
-  {{ end }}} else if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}({{ camelize .Name }}, {{ camelize .Name }}Header); err != nil {
-    res = append(res, err)
+        {{ end }}} else if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}({{ camelize .Name }}, {{ camelize .Name }}Header); err != nil {
+    {{ if .Required }}// Required: true{{ printf "\n" }}{{end }}res = append(res, err)
   } else {
     {{ .ReceiverName }}.{{ pascalize .Name }} = &runtime.File{Data: {{ camelize .Name }}, Header: {{ camelize .Name }}Header}
   }
-  {{ else }}fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, _ := fds.GetOK({{ .Path }})
+    {{ else }}fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, _ := fds.GetOK({{ .Path }})
   if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, route.Formats); err != nil {
     res = append(res, err)
   }
-  {{ end }}{{ end }}
-  {{ else if .IsArray }}{{ if .IsQueryParam }}q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, _ := qs.GetOK({{ .Path }})
+    {{ end }}{{/* end .FileParam */}} 
+  {{ end }}{{/* end not .Array */}}
+  {{ else if .IsArray -}}
+    {{ if .IsQueryParam }}q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, _ := qs.GetOK({{ .Path }})
   if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, route.Formats); err != nil {
+    res = append(res, err)
+  }
+  {{ else if .IsPathParam }}r{{ pascalize .Name }}, rhk{{ pascalize .Name }}, _ := route.Params.GetOK({{ .Path }})
+  if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(r{{ pascalize .Name }}, rhk{{ pascalize .Name }}, route.Formats); err != nil {
+    res = append(res, err)
+  }
+  {{ else if .IsHeaderParam }}if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(r.Header[http.CanonicalHeaderKey({{ .Path }})], true, route.Formats); err != nil {
     res = append(res, err)
   }
   {{ else if and .IsFormParam }}fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, _ := fds.GetOK({{ .Path }})
@@ -255,14 +316,17 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawDa
   if len(rawData) > 0 {
     raw = rawData[len(rawData)-1]
   }
-  {{ if and (not .IsPathParam) .Required (not .AllowEmptyValue) }}if err := validate.RequiredString({{ .Path }}, {{ printf "%q" .Location }}, raw); err != nil {
+
+  // Required: {{ .Required }}
+  {{ if .IsQueryParam }}// AllowEmptyValue: {{ .AllowEmptyValue }}{{ end }}{{ if .IsPathParam }}// Parameter is provided by construction from the route{{ end }}
+  {{ if and (not .IsPathParam) .Required (not .AllowEmptyValue) -}}
+  if err := validate.RequiredString({{ .Path }}, {{ printf "%q" .Location }}, raw); err != nil {
     return err
   }
-  {{ else if and ( not .IsPathParam ) (or (not .Required) .AllowEmptyValue) }}if raw == "" { // empty values pass all other validations
-    {{ if .HasDefault }}var {{ camelize .Name}}Default {{ if not .IsFileParam }}{{ .GoType }}{{ else }}
-    Writer{{end}} = {{ if .IsPrimitive}}{{.GoType}}({{ end}}{{ printf "%#v" .Default }}{{ if .IsPrimitive }}){{ end }}
-    {{ .ValueExpression }} = {{ if and (not .IsArray) (not .HasDiscriminator) (or .IsNullable  ) (not .IsStream) }}&{{ end }}{{ camelize .Name }}Default
-    {{ end }}return nil
+  {{ else if and ( not .IsPathParam ) (or (not .Required) .AllowEmptyValue) -}}
+  if raw == "" { // empty values pass all other validations{{ if .HasDefault }}
+    // Default values have been previously initialized by New{{ $className }}Params(){{ end }}
+    return nil
   }
   {{ end }}
   {{ if .Converter }}value, err := {{ .Converter }}(raw)
@@ -270,7 +334,8 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawDa
     return errors.InvalidType({{ .Path }}, {{ printf "%q" .Location }}, {{ printf "%q" .GoType }}, raw)
   }
   {{ .ValueExpression }} = {{ if .IsNullable }}&{{ end }}value
-  {{ else if .IsCustomFormatter }}value, err := formats.Parse({{ printf "%q" .SwaggerFormat }}, raw)
+  {{ else if .IsCustomFormatter }}// Format: {{ .SwaggerFormat }}
+  value, err := formats.Parse({{ printf "%q" .SwaggerFormat }}, raw)
   if err != nil {
     return errors.InvalidType({{ .Path }}, {{ printf "%q" .Location }}, {{ printf "%q" .GoType }}, raw)
   }
@@ -289,22 +354,24 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawDa
     return errors.Required({{ .Path }}, {{ printf "%q" .Location }})
   }
   {{ end }}
-  {{ if eq .CollectionFormat "multi" }}{{ varname .Child.ValueExpression }}C := rawData{{ else }}var qv{{ pascalize .Name }} string
+  {{ if eq .CollectionFormat "multi" -}}
+  // CollectionFormat: {{ .CollectionFormat }}
+  {{ varname .Child.ValueExpression }}C := rawData 
+  {{ else -}} 
+  var qv{{ pascalize .Name }} string
   if len(rawData) > 0 {
     qv{{ pascalize .Name }} = rawData[len(rawData) - 1]
   }
 
+  // CollectionFormat: {{ .CollectionFormat }}
   {{ varname .Child.ValueExpression }}C := swag.SplitByFormat(qv{{ pascalize .Name }}, {{ printf "%q" .CollectionFormat }}){{ end }}
   {{if and .Required (not .AllowEmptyValue) }}
   if len({{ varname .Child.ValueExpression }}C) == 0 {
     return errors.Required({{ .Path }}, {{ printf "%q" .Location }})
   }
-  {{ end }}
-  {{ if not .Required }}{{ if .HasDefault }}defValue := swag.SplitByFormat({{ .Default }}, {{ printf "%q" .CollectionFormat }})
-  if len({{ varname .Child.ValueExpression }}C) == 0 && len(defValue) > 0 {
-    {{ .ValueExpression }} = defValue
-  {{ else }}if len({{ varname .Child.ValueExpression }}C) == 0 {
-    return nil{{ end }}
+  {{ else }}if len({{ varname .Child.ValueExpression }}C) == 0 { {{ if .HasDefault }}
+    // Default values have been previously initialized by New{{ $className }}Params(){{ end }}
+    return nil
   }{{ end }}
   {{ template "sliceparambinder" . }}
   {{ .ValueExpression }} = {{ varname .Child.ValueExpression }}R

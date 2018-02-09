@@ -2,13 +2,9 @@ swagger: '2.0'
 
 info:
   version: "1.0.0"
-  title: Simple Search API
+  title: Private to-do list
   description: |
-    A very simple api description that makes a x-www-form-urlencoded only API to submit searches.
-
-tags:
-  - name: search
-  - name: tasks
+    A very simple api description that makes a json only API to submit to do's.
 
 produces:
   - application/json
@@ -17,24 +13,6 @@ consumes:
   - application/json
 
 paths:
-  /search:
-    post:
-      operationId: search
-      summary: searches tasks
-      description: searches the task titles and descriptions for a match
-      consumes:
-        - application/x-www-form-urlencoded
-      tags:
-        - search
-      parameters:
-        - name: q
-          in: formData
-          type: string
-          description: the search string
-          required: true
-      responses:
-        default:  
-          description: Generic Error
   /tasks:
     get:
       operationId: getTasks
@@ -146,8 +124,34 @@ paths:
         204:
           description: Task Deleted
 
+  /other/do-empty:
+    get:
+      operationId: doEmpty
+      summary: return empty list not nil
+      responses:
+        200:
+          description: list of foo
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Foo"
+
+  /other/do-empty-required:
+    get:
+      operationId: doEmptyRequired
+      summary: return empty list not nil
+      responses:
+        200:
+          description: list of foo
+          #required: true
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Foo"
 
 definitions:
+  Foo:
+    type: string
   Task:
     title: A Task object
     description: |

@@ -34,11 +34,11 @@ var zeroes = map[string]string{
 	"uint64":  "0",
 	// Extended formats (23 formats corresponding to the Default registry
 	// provided by go-openapi/strfmt)
-	"strfmt.Base64":     "nil",
+	"strfmt.Base64":     "strfmt.Base64([]byte(nil))",
 	"strfmt.CreditCard": "strfmt.CreditCard(\"\")",
 	"strfmt.Date":       "strfmt.Date{}",
 	"strfmt.DateTime":   "strfmt.DateTime{}",
-	"strfmt.Duration":   "0",
+	"strfmt.Duration":   "strfmt.Duration(0)",
 	"strfmt.Email":      "strfmt.Email(\"\")",
 	"strfmt.HexColor":   "strfmt.HexColor(\"#000000\")",
 	"strfmt.Hostname":   "strfmt.Hostname(\"\")",
@@ -48,15 +48,15 @@ var zeroes = map[string]string{
 	"strfmt.ISBN10":     "strfmt.ISBN10(\"\")",
 	"strfmt.ISBN13":     "strfmt.ISBN13(\"\")",
 	"strfmt.MAC":        "strfmt.MAC(\"\")",
-	//"strfmt.ObjectId":	N/A  /* bson objectID has no zero initializer */,
-	"strfmt.Password": "strfmt.Password(\"\")",
-	"strfmt.RGBColor": "strfmt.RGBColor(\"rgb(0,0,0)\")",
-	"strfmt.SSN":      "strfmt.SSN(\"\")",
-	"strfmt.URI":      "strfmt.URI(\"\")",
-	"strfmt.UUID":     "strfmt.UUID(\"\")",
-	"strfmt.UUID3":    "strfmt.UUID3(\"\")",
-	"strfmt.UUID4":    "strfmt.UUID4(\"\")",
-	"strfmt.UUID5":    "strfmt.UUID5(\"\")",
+	"strfmt.ObjectId":   "strfmt.ObjectId(\"\")",
+	"strfmt.Password":   "strfmt.Password(\"\")",
+	"strfmt.RGBColor":   "strfmt.RGBColor(\"rgb(0,0,0)\")",
+	"strfmt.SSN":        "strfmt.SSN(\"\")",
+	"strfmt.URI":        "strfmt.URI(\"\")",
+	"strfmt.UUID":       "strfmt.UUID(\"\")",
+	"strfmt.UUID3":      "strfmt.UUID3(\"\")",
+	"strfmt.UUID4":      "strfmt.UUID4(\"\")",
+	"strfmt.UUID5":      "strfmt.UUID5(\"\")",
 	//"file":       "runtime.File",
 }
 
@@ -188,7 +188,7 @@ var customFormatters = map[string]struct{}{
 	"strfmt.ISBN10":     struct{}{},
 	"strfmt.ISBN13":     struct{}{},
 	"strfmt.MAC":        struct{}{},
-	"strfmt.ObjectID":   struct{}{},
+	"strfmt.ObjectId":   struct{}{},
 	"strfmt.Password":   struct{}{},
 	"strfmt.RGBColor":   struct{}{},
 	"strfmt.SSN":        struct{}{},
@@ -200,5 +200,5 @@ var customFormatters = map[string]struct{}{
 	// Special
 	"io.ReadCloser": struct{}{}, // for "format": "binary"
 	"io.Writer":     struct{}{},
-	// NOTE: runtime.File is not a customFormatters
+	// NOTE: runtime.File is not a customFormatter
 }

@@ -31,7 +31,6 @@ var {{ varname .Child.ValueExpression }}R []string
 for _, {{ varname .Child.ValueExpression }} := range {{ .ValueExpression }} {
   {{- if not .Child.IsArray }}{{ template "sliceitemserverheaderbuilder" .Child }}{{ else }}{{ template "sliceserverheaderbuilder" .Child }}{{ end -}}
 }
-
 {{ if not .Child.Parent -}}
 {{ varname .ID }} := swag.JoinByFormat({{ varname .Child.ValueExpression }}R, {{ printf "%q" .CollectionFormat }})
 if len({{ varname .ID }}) > 0 {
@@ -61,8 +60,8 @@ swagger:response {{ camelize .Name }}
 type {{ pascalize .Name }} struct {
   {{ if eq .Code -1 }}
   _statusCode int
-  {{ end }}{{ range .Headers }}/*{{if .Description }}{{ blockcomment .Description }}{{ end }}{{ if .Required }}
-  Required: true{{ end }}{{ if .Maximum }}
+  {{ end }}{{ range .Headers }}/*{{if .Description }}{{ blockcomment .Description }}{{ end }}
+  {{ if .Maximum }}
   Maximum: {{ if .ExclusiveMaximum }}< {{ end }}{{ .Maximum }}{{ end }}{{ if .Minimum }}
   Minimum: {{ if .ExclusiveMinimum }}> {{ end }}{{ .Minimum }}{{ end }}{{ if .MultipleOf }}
   Multiple Of: {{ .MultipleOf }}{{ end }}{{ if .MaxLength }}
@@ -95,14 +94,52 @@ type {{ pascalize .Name }} struct {
 
 // New{{ pascalize .Name }} creates {{ pascalize .Name }} with default headers values
 func New{{ pascalize .Name }}({{ if eq .Code -1 }}code int{{ end }}) *{{ pascalize .Name }} { {{ if eq .Code -1 }}
-  if code <= 0 {
+if code <= 0 {
     code = 500
   }
 {{ end }}
+{{ if .Headers.HasSomeDefaults }}
+  var (
+  // initialize headers with default values
+  {{ range .Headers }}
+      {{ if .HasDefault -}}
+          {{ varname .ID}}Default = 
+              {{- if and .IsPrimitive .IsCustomFormatter (not (stringContains .Zero "(\"" )) }}{{ .Zero }}{{/* strfmt type initializer requires UnmarshalText(), e.g. Date, Datetime, Duration */}}
+              {{- else if and .IsPrimitive .IsCustomFormatter (stringContains .Zero "(\"" ) }}{{.GoType}}({{- printf "%#v" .Default }}){{/* strfmt type initializer takes string */}}
+              {{- else if and .IsPrimitive (not .IsCustomFormatter) -}}{{.GoType}}({{- printf "%#v" .Default }}){{/* regular go primitive type initializer */}}
+              {{- else if .IsArray -}}{{- /* Do not initialize from possible defaults in nested arrays */ -}}
+                  {{- if and .Child.IsPrimitive .Child.IsCustomFormatter }}{{ .Zero }}{{/* initialization strategy with UnmarshalText() */}}
+                  {{- else if .Child.IsArray -}}{{ .Zero }}{{/* initialization strategy with json.Unmarshal() */}}
+                  {{- else if and .Child.IsPrimitive (not .Child.IsCustomFormatter) -}}{{.GoType}}{{- goSliceInitializer .Default }}{{/* regular go primitive type initializer: simple slice initializer */}}
+                  {{- else }}{{ printf "%#v" .Default }}{{/* all other cases (e.g. schema) [should not occur] */}}
+                  {{- end }}
+              {{- else }}{{ printf "%#v" .Default }}{{/* case .Schema */}}
+              {{- end }}
+      {{- end }}
+  {{- end }}
+  )
+  
+{{ range .Headers }}{{ if .HasDefault -}}{{- /* carry on UnmarshalText initialization strategy */ -}}
+      {{ if and .IsPrimitive .IsCustomFormatter (not (stringContains .Zero "(\"")) }}{{ varname .ID}}Default.UnmarshalText([]byte({{ printf "%q" .Default }}))
+      {{ else if .IsArray -}}
+          {{ if or ( and .Child.IsPrimitive .Child.IsCustomFormatter ) .Child.IsArray -}}
+          if err := json.Unmarshal([]byte(`{{printf "%s" (json .Default)}}`), &{{ varname .ID }}Default); err != nil {
+            // panics if specification is invalid
+            msg := fmt.Sprintf("invalid default value for header {{ varname .ID }}: %v",err)
+            panic(msg)
+          }
+          {{ end -}}
+      {{- end }}
+  {{- end }}
+{{- end }} 
+{{ end }}
   return &{{ pascalize .Name }}{
-    {{ if eq .Code -1 }}_statusCode: code,
-    {{ end }}{{ range .Headers }}{{ if .HasDefault }}{{ pascalize .Name }}: {{ printf "%#v" .Default }},{{ end }}
-  {{ end }}}
+    {{ if eq .Code -1 }}_statusCode: code,{{ end }}
+    {{ range .Headers }}{{ if .HasDefault }}
+    {{ pascalize .Name}}: {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}&{{ end }}{{ varname .ID }}Default,
+    {{ end }}
+  {{ end -}}
+  }
 }
 
 {{ if eq .Code -1 }}

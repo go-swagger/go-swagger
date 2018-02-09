@@ -55,6 +55,10 @@ paths:
       tags:
         - tasks
       parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
         - name: body
           in: body
           description: the updated task
