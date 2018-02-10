@@ -56,7 +56,7 @@ for testcase in ${testcases} ; do
     fi
 done
 # More advanced tests
-testcases="gentest.yaml gentest2.yaml gentest3.yaml"
+testcases="gentest.yaml gentest2.yaml gentest3.yaml fixture-1414.json"
 for testcase in ${testcases} ; do
     target=./gen-${testcase%.*}
     spec=./${testcase}
