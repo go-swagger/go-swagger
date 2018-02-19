@@ -1,0 +1,115 @@
+package generator
+
+import (
+	"encoding/json"
+	"testing"
+
+	"github.com/go-openapi/strfmt"
+	"github.com/stretchr/testify/assert"
+
+	model "github.com/go-swagger/go-swagger/fixtures/bugs/1084/gen-fixture-1084/models"
+)
+
+func Test_Datetime(t *testing.T) {
+	var myTime model.Instant
+	// Works by casting type
+	err := json.Unmarshal([]byte(`"2017-07-26T08:30:06.956884177Z"`), (*strfmt.DateTime)(&myTime))
+	t.Logf("err= %v", err)
+	t.Logf("myTime= %v", myTime)
+	t.Logf("myTime.String()= %v", strfmt.DateTime(myTime).String())
+
+	// Should work now
+	var myOtherTime model.Instant
+	json.Unmarshal([]byte(`"2017-07-26T08:30:06.956884177Z"`), &myOtherTime)
+	assert.Equal(t, myTime, myOtherTime)
+
+	ref, _ := json.Marshal((*strfmt.DateTime)(&myTime))
+	json, _ := myOtherTime.MarshalJSON()
+	assert.Equal(t, ref, json)
+
+	bin, _ := myOtherTime.MarshalBinary()
+	assert.Equal(t, ref, bin)
+
+	var yetAnotherTime model.Instant
+	yetAnotherTime.UnmarshalBinary([]byte(`"2017-07-26T08:30:06.956884177Z"`))
+	assert.Equal(t, myTime, yetAnotherTime)
+}
+
+func Test_Date(t *testing.T) {
+	var myDate model.Birthday
+	err := json.Unmarshal([]byte(`"2017-07-26"`), (*strfmt.Date)(&myDate))
+	t.Logf("err= %v", err)
+	t.Logf("myDate= %v", myDate)
+	t.Logf("myDate.String()= %v", strfmt.Date(myDate).String())
+
+	var myOtherDate model.Birthday
+	json.Unmarshal([]byte(`"2017-07-26"`), &myOtherDate)
+	assert.Equal(t, myDate, myOtherDate)
+
+	ref, _ := json.Marshal((*strfmt.Date)(&myDate))
+	json, _ := myOtherDate.MarshalJSON()
+	assert.Equal(t, ref, json)
+
+	bin, _ := myOtherDate.MarshalBinary()
+	assert.Equal(t, ref, bin)
+
+	var yetAnotherDate model.Birthday
+	yetAnotherDate.UnmarshalBinary([]byte(`"2017-07-26"`))
+	assert.Equal(t, myDate, yetAnotherDate)
+}
+func Test_Duration(t *testing.T) {
+	var myDuration model.Elapsed
+	err := json.Unmarshal([]byte(`"10s"`), (*strfmt.Duration)(&myDuration))
+	t.Logf("err= %v", err)
+	t.Logf("myDuration= %v", myDuration)
+	t.Logf("myDuration.String()= %v", strfmt.Duration(myDuration).String())
+
+	var myOtherDuration model.Elapsed
+	json.Unmarshal([]byte(`"10s"`), &myOtherDuration)
+	assert.Equal(t, myDuration, myOtherDuration)
+
+	ref, _ := json.Marshal((*strfmt.Duration)(&myDuration))
+	json, _ := myOtherDuration.MarshalJSON()
+	assert.Equal(t, ref, json)
+
+	bin, _ := myOtherDuration.MarshalBinary()
+	assert.Equal(t, ref, bin)
+
+	var yetAnotherDuration model.Elapsed
+	yetAnotherDuration.UnmarshalBinary([]byte(`"10s"`))
+	assert.Equal(t, myDuration, yetAnotherDuration)
+}
+
+func Test_Witness(t *testing.T) {
+	var myWitness model.Witness
+	err := json.Unmarshal([]byte(`"http://www.example.com"`), (*strfmt.URI)(&myWitness))
+	t.Logf("err= %v", err)
+	t.Logf("myWitness= %v", myWitness)
+	t.Logf("myWitness.String()= %v", strfmt.URI(myWitness).String())
+
+	var myOtherWitness model.Witness
+	json.Unmarshal([]byte(`"http://www.example.com"`), &myOtherWitness)
+	assert.Equal(t, myWitness, myOtherWitness)
+}
+
+func Test_Numeric(t *testing.T) {
+	var myNumerical model.Numerical
+	err := json.Unmarshal([]byte(`1000`), (*uint32)(&myNumerical))
+	t.Logf("err= %v", err)
+	t.Logf("myNumerical= %v", myNumerical)
+
+	var myOtherNumerical model.Numerical
+	json.Unmarshal([]byte(`1000`), &myOtherNumerical)
+	assert.Equal(t, myNumerical, myOtherNumerical)
+}
+
+func Test_Boolean(t *testing.T) {
+	var myLogical model.Logical
+	err := json.Unmarshal([]byte(`true`), (*bool)(&myLogical))
+	t.Logf("err= %v", err)
+	t.Logf("myLogical= %v", myLogical)
+
+	var myOtherLogical model.Logical
+	json.Unmarshal([]byte(`true`), &myOtherLogical)
+	assert.Equal(t, myLogical, myOtherLogical)
+}

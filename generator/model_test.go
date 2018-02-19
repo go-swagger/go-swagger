@@ -256,13 +256,77 @@ func TestGenerateModel_Primitives(t *testing.T) {
 		val.Name = "theType"
 		exp := v.Expected
 		if val.IsInterface || val.IsStream {
-			tt.assertRender(val, "type TheType "+exp+"\n  \n")
+			tt.assertRender(&val, "type TheType "+exp+"\n  \n")
 			continue
 		}
-		tt.assertRender(val, "type TheType "+exp+"\n  // Validate validates this the type\nfunc (o theType) Validate(formats strfmt.Registry) error {\n  return nil\n}\n")
+		tt.assertRender(&val, "type TheType "+exp+"\n  // Validate validates this the type\nfunc (o theType) Validate(formats strfmt.Registry) error {\n  return nil\n}\n")
 	}
 }
 
+func TestGenerateModel_Zeroes(t *testing.T) {
+	for _, v := range schTypeGenDataSimple {
+		//t.Logf("Zero for %s: %s", v.Value.GoType, v.Value.Zero())
+		switch v.Value.GoType {
+		// verifying Zero for primitive
+		case "string":
+			assert.Equal(t, `""`, v.Value.Zero())
+		case "bool":
+			assert.Equal(t, `false`, v.Value.Zero())
+		case "int32", "int64", "float32", "float64":
+			assert.Equal(t, `0`, v.Value.Zero())
+		// verifying Zero for primitive formatters
+		case "strfmt.Date", "strfmt.DateTime", "strfmt.OjbectId": // akin to structs
+			rex := regexp.MustCompile(regexp.QuoteMeta(v.Value.GoType) + `{}`)
+			assert.True(t, rex.MatchString(v.Value.Zero()))
+			k := v.Value
+			k.IsAliased = true
+			k.AliasedType = k.GoType
+			k.GoType = "myAliasedType"
+			rex = regexp.MustCompile(regexp.QuoteMeta(k.GoType+"("+k.AliasedType) + `{}` + `\)`)
+			assert.True(t, rex.MatchString(k.Zero()))
+			//t.Logf("Zero for %s: %s", k.GoType, k.Zero())
+		case "strfmt.Duration": // akin to integer
+			rex := regexp.MustCompile(regexp.QuoteMeta(v.Value.GoType) + `\(\d*\)`)
+			assert.True(t, rex.MatchString(v.Value.Zero()))
+			k := v.Value
+			k.IsAliased = true
+			k.AliasedType = k.GoType
+			k.GoType = "myAliasedType"
+			rex = regexp.MustCompile(regexp.QuoteMeta(k.GoType+"("+k.AliasedType) + `\(\d*\)` + `\)`)
+			//t.Logf("Zero for %s: %s", k.GoType, k.Zero())
+		case "strfmt.Base64": // akin to []byte
+			rex := regexp.MustCompile(regexp.QuoteMeta(v.Value.GoType) + `\(\[\]byte.*\)`)
+			assert.True(t, rex.MatchString(v.Value.Zero()))
+			k := v.Value
+			k.IsAliased = true
+			k.AliasedType = k.GoType
+			k.GoType = "myAliasedType"
+			rex = regexp.MustCompile(regexp.QuoteMeta(k.GoType+"("+k.AliasedType) + `\(\[\]byte.*\)` + `\)`)
+			// t.Logf("Zero for %s: %s", k.GoType, k.Zero())
+		case "interface{}":
+			assert.Equal(t, `nil`, v.Value.Zero())
+		case "io.ReadCloser":
+			continue
+		default:
+			if strings.HasPrefix(v.Value.GoType, "[]") || strings.HasPrefix(v.Value.GoType, "map[") { // akin to slice or map
+				assert.True(t, strings.HasPrefix(v.Value.Zero(), "make("))
+
+			} else if strings.HasPrefix(v.Value.GoType, "models.") {
+				assert.True(t, strings.HasPrefix(v.Value.Zero(), "new("))
+
+			} else { // akin to string
+				rex := regexp.MustCompile(regexp.QuoteMeta(v.Value.GoType) + `\(".*"\)`)
+				assert.True(t, rex.MatchString(v.Value.Zero()))
+				k := v.Value
+				k.IsAliased = true
+				k.AliasedType = k.GoType
+				k.GoType = "myAliasedType"
+				rex = regexp.MustCompile(regexp.QuoteMeta(k.GoType+"("+k.AliasedType) + `\(".*"\)` + `\)`)
+				//t.Logf("Zero for %s: %s", k.GoType, k.Zero())
+			}
+		}
+	}
+}
 func TestGenerateModel_Nota(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
