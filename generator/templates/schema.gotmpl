@@ -139,6 +139,17 @@ func unmarshal{{ pascalize .Name }}(data []byte, consumer runtime.Consumer) ({{ 
   {{ else -}}
     type {{ pascalize .Name }} {{ template "typeSchemaType" . }}
   {{ end -}}
+  {{ if (and .IsPrimitive .IsAliased .IsCustomFormatter (not (stringContains .Zero "(\""))) }}
+      // UnmarshalJSON sets a {{ pascalize .Name }} value from JSON input
+      func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(b []byte) error {
+        return ((*{{ .AliasedType }})({{ .ReceiverName}})).UnmarshalJSON(b)
+      }
+
+      // MarshalJSON retrieves a {{ pascalize .Name }} value as JSON output
+      func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
+        return ({{ .AliasedType }}({{ .ReceiverName}})).MarshalJSON()
+      }
+  {{ end -}}
   {{ if .IsSubType }}
     {{ range .AllOf }}
       {{ range .Properties }}
@@ -166,7 +177,7 @@ func unmarshal{{ pascalize .Name }}(data []byte, consumer runtime.Consumer) ({{ 
 func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ if not .IsExported }}{{ .Name }}{{ else }}{{ pascalize .Name }}{{ end }}) Validate(formats strfmt.Registry) error {
   return nil
 }{{ end }}{{ end }}{{ end }}
-{{ if and (not (or .IsInterface .IsStream .IsBaseType)) (or .IsTuple .IsComplexObject .IsAdditionalProperties) }}
+{{ if and (not (or .IsInterface .IsStream .IsBaseType)) (or .IsTuple .IsComplexObject .IsAdditionalProperties (and .IsPrimitive .IsAliased .IsCustomFormatter (not (stringContains .Zero "(\"")))) }}
 // MarshalBinary interface implementation
 func ({{.ReceiverName}} *{{ pascalize .Name }}) MarshalBinary() ([]byte, error) {
   if {{ .ReceiverName }} == nil {

@@ -1,0 +1,49 @@
+swagger: "2.0"
+info:
+  version: 0.0.0
+  title: 'Issue 1084'
+definitions:
+  instant:
+    type: string
+    format: date-time
+  birthday:
+    type: string
+    format: date
+    default: 1982-01-10
+  elapsed:
+    type: string
+    format: duration
+  witness:
+    type: string
+    format: uri
+  numerical:
+    type: integer
+    format: uint32
+    default: 15
+  logical:
+    type: boolean
+  complicated:
+    type: object
+    properties:
+      p1:
+        type: string
+      p2:
+        type: string
+        format: date
+  lessComplicated:
+    type: array
+    items: 
+      type: string 
+      format: duration
+paths:
+  /time:
+    get:
+      description: get server time
+      operationId: getTime
+      responses:
+        '200':
+          description: getTime success
+          schema:
+            $ref: "#/definitions/instant"
+        default:
+          description : getTime error

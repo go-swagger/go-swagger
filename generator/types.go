@@ -627,6 +627,12 @@ type resolvedType struct {
 }
 
 func (rt *resolvedType) Zero() string {
+	// if type is aliased, provide zero from the aliased type
+	if rt.IsAliased {
+		if zr, ok := zeroes[rt.AliasedType]; ok {
+			return rt.GoType + "(" + zr + ")"
+		}
+	}
 	// zero function provided as native or by strfmt function
 	if zr, ok := zeroes[rt.GoType]; ok {
 		return zr
