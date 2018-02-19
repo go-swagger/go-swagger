@@ -15,209 +15,270 @@
 package validate
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"path/filepath"
-	"strings"
+	"io"
 	"testing"
 	"time"
 
-	"github.com/go-openapi/spec"
+	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
 )
 
-type schemaTestT struct {
-	Description string       `json:"description"`
-	Schema      *spec.Schema `json:"schema"`
-	Tests       []struct {
-		Description string      `json:"description"`
-		Data        interface{} `json:"data"`
-		Valid       bool        `json:"valid"`
+type expectedJSONType struct {
+	value                 interface{}
+	expectedJSONType      string
+	expectedSwaggerFormat string
+}
+
+func TestType_schemaInfoForType(t *testing.T) {
+	testTypes := []expectedJSONType{
+		expectedJSONType{
+			value:                 []byte("abc"),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "byte",
+		},
+		expectedJSONType{
+			value:                 strfmt.Date(time.Date(2014, 10, 10, 0, 0, 0, 0, time.UTC)),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "date",
+		},
+		expectedJSONType{
+			value:                 strfmt.NewDateTime(),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "date-time",
+		},
+		expectedJSONType{
+			// TODO: this exception is really prone to errors: should alias runtime.File in strfmt
+			value:                 runtime.File{},
+			expectedJSONType:      "file",
+			expectedSwaggerFormat: "",
+		},
+		expectedJSONType{
+			value:                 strfmt.URI("http://thisisleadingusnowhere.com"),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "uri",
+		},
+		expectedJSONType{
+			value:                 strfmt.Email("fred@esasymoney.com"),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "email",
+		},
+		expectedJSONType{
+			value:                 strfmt.Hostname("www.github.com"),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "hostname",
+		},
+		expectedJSONType{
+			value:                 strfmt.Password("secret"),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "password",
+		},
+		expectedJSONType{
+			value:                 strfmt.IPv4("192.168.224.1"),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "ipv4",
+		},
+		expectedJSONType{
+			value:                 strfmt.IPv6("::1"),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "ipv6",
+		},
+		expectedJSONType{
+			value:                 strfmt.MAC("01:02:03:04:05:06"),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "mac",
+		},
+		expectedJSONType{
+			value:                 strfmt.UUID("a8098c1a-f86e-11da-bd1a-00112444be1e"),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "uuid",
+		},
+		expectedJSONType{
+			value:                 strfmt.UUID3("bcd02e22-68f0-3046-a512-327cca9def8f"),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "uuid3",
+		},
+		expectedJSONType{
+			value:                 strfmt.UUID4("025b0d74-00a2-4048-bf57-227c5111bb34"),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "uuid4",
+		},
+		expectedJSONType{
+			value:                 strfmt.UUID5("886313e1-3b8a-5372-9b90-0c9aee199e5d"),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "uuid5",
+		},
+		expectedJSONType{
+			value:                 strfmt.ISBN("0321751043"),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "isbn",
+		},
+		expectedJSONType{
+			value:                 strfmt.ISBN10("0321751043"),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "isbn10",
+		},
+		expectedJSONType{
+			value:                 strfmt.ISBN13("978-0321751041"),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "isbn13",
+		},
+		expectedJSONType{
+			value:                 strfmt.CreditCard("4111-1111-1111-1111"),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "creditcard",
+		},
+		expectedJSONType{
+			value:                 strfmt.SSN("111-11-1111"),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "ssn",
+		},
+		expectedJSONType{
+			value:                 strfmt.HexColor("#FFFFFF"),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "hexcolor",
+		},
+		expectedJSONType{
+			value:                 strfmt.RGBColor("rgb(255,255,255)"),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "rgbcolor",
+		},
+		// Numerical values
+		expectedJSONType{
+			value:                 true,
+			expectedJSONType:      "boolean",
+			expectedSwaggerFormat: "",
+		},
+		expectedJSONType{
+			value:                 int8(12),
+			expectedJSONType:      "integer",
+			expectedSwaggerFormat: "int32",
+		},
+		expectedJSONType{
+			value:                 uint8(12),
+			expectedJSONType:      "integer",
+			expectedSwaggerFormat: "int32",
+		},
+		expectedJSONType{
+			value:                 int16(12),
+			expectedJSONType:      "integer",
+			expectedSwaggerFormat: "int32",
+		},
+		expectedJSONType{
+			value:            uint16(12),
+			expectedJSONType: "integer",
+			// TODO: should be uint32
+			expectedSwaggerFormat: "int32",
+		},
+		expectedJSONType{
+			value:                 int32(12),
+			expectedJSONType:      "integer",
+			expectedSwaggerFormat: "int32",
+		},
+		expectedJSONType{
+			value:            uint32(12),
+			expectedJSONType: "integer",
+			// TODO: should be uint32
+			expectedSwaggerFormat: "int32",
+		},
+		expectedJSONType{
+			value:                 int(12),
+			expectedJSONType:      "integer",
+			expectedSwaggerFormat: "int64",
+		},
+		expectedJSONType{
+			value:            uint(12),
+			expectedJSONType: "integer",
+			// TODO: should be uint64
+			expectedSwaggerFormat: "int64",
+		},
+		expectedJSONType{
+			value:                 int64(12),
+			expectedJSONType:      "integer",
+			expectedSwaggerFormat: "int64",
+		},
+		expectedJSONType{
+			value:            uint64(12),
+			expectedJSONType: "integer",
+			// TODO: should be uint64
+			expectedSwaggerFormat: "int64",
+		},
+		expectedJSONType{
+			value:            float32(12),
+			expectedJSONType: "number",
+			// TODO: should be float
+			expectedSwaggerFormat: "float32",
+		},
+		expectedJSONType{
+			value:            float64(12),
+			expectedJSONType: "number",
+			// TODO: should be double
+			expectedSwaggerFormat: "float64",
+		},
+		expectedJSONType{
+			value:                 []string{},
+			expectedJSONType:      "array",
+			expectedSwaggerFormat: "",
+		},
+		expectedJSONType{
+			value:                 expectedJSONType{},
+			expectedJSONType:      "object",
+			expectedSwaggerFormat: "",
+		},
+		expectedJSONType{
+			value:                 map[string]bool{"key": false},
+			expectedJSONType:      "object",
+			expectedSwaggerFormat: "",
+		},
+		expectedJSONType{
+			value:                 "simply a string",
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "",
+		},
+		expectedJSONType{
+			// NOTE: Go array returns no JSON type
+			value:                 [4]int{1, 2, 4, 4},
+			expectedJSONType:      "",
+			expectedSwaggerFormat: "",
+		},
+		expectedJSONType{
+			value:                 strfmt.Base64("ZWxpemFiZXRocG9zZXk="),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "byte",
+		},
+		expectedJSONType{
+			value:                 strfmt.Duration(0),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "duration",
+		},
+		expectedJSONType{
+			value:                 strfmt.ObjectId("507f1f77bcf86cd799439011"),
+			expectedJSONType:      "string",
+			expectedSwaggerFormat: "bsonobjectid",
+		},
+		/*
+			Test case for : case reflect.Interface:
+				// What to do here?
+				panic("dunno what to do here")
+		*/
 	}
-}
 
-type schemasTestT struct {
-	Schema  *spec.Schema `json:"schema"`
-	Valid   interface{}  `json:"valid"`
-	Invalid interface{}  `json:"invalid"`
-}
+	v := &typeValidator{}
+	for _, x := range testTypes {
+		jsonType, swaggerFormat := v.schemaInfoForType(x.value)
+		assert.Equal(t, x.expectedJSONType, jsonType)
+		assert.Equal(t, x.expectedSwaggerFormat, swaggerFormat)
 
-var jsonSchemaFixturesPath = filepath.Join("fixtures", "jsonschema_suite")
-var schemaFixturesPath = filepath.Join("fixtures", "schemas")
-
-var ints = []interface{}{
-	1,
-	int8(1),
-	int16(1),
-	int(1),
-	int32(1),
-	int64(1),
-	uint8(1),
-	uint16(1),
-	uint(1),
-	uint32(1),
-	uint64(1),
-	5.0,
-	float32(5.0),
-	float64(5.0),
-}
-
-var notInts = []interface{}{
-	5.1,
-	float32(5.1),
-	float64(5.1),
-}
-
-var notNumbers = []interface{}{
-	map[string]string{},
-	struct{}{},
-	time.Time{},
-	"yada",
-}
-
-var enabled = []string{
-	"minLength",
-	"maxLength",
-	"pattern",
-	"type",
-	"minimum",
-	"maximum",
-	"multipleOf",
-	"enum",
-	"default",
-	"dependencies",
-	"items",
-	"maxItems",
-	"maxProperties",
-	"minItems",
-	"minProperties",
-	"patternProperties",
-	"required",
-	"additionalItems",
-	"uniqueItems",
-	"properties",
-	"additionalProperties",
-	"allOf",
-	"not",
-	"oneOf",
-	"anyOf",
-	"ref",
-	"definitions",
-	"refRemote",
-	"format",
-}
-
-type noopResCache struct {
-}
-
-func (n *noopResCache) Get(key string) (interface{}, bool) {
-	return nil, false
-}
-func (n *noopResCache) Set(string, interface{}) {
-
-}
-
-func isEnabled(nm string) bool {
-	return swag.ContainsStringsCI(enabled, nm)
-}
-
-func TestJSONSchemaSuite(t *testing.T) {
-	go func() {
-		err := http.ListenAndServe("localhost:1234", http.FileServer(http.Dir(jsonSchemaFixturesPath+"/remotes")))
-		if err != nil {
-			panic(err.Error())
-		}
-	}()
-	files, err := ioutil.ReadDir(jsonSchemaFixturesPath)
-	if err != nil {
-		t.Fatal(err)
+		jsonType, swaggerFormat = v.schemaInfoForType(&x.value)
+		assert.Equal(t, x.expectedJSONType, jsonType)
+		assert.Equal(t, x.expectedSwaggerFormat, swaggerFormat)
 	}
 
-	for _, f := range files {
-		if f.IsDir() {
-			continue
-		}
-		fileName := f.Name()
-		specName := strings.TrimSuffix(fileName, filepath.Ext(fileName))
-		if isEnabled(specName) {
-
-			t.Log("Running " + specName)
-			b, _ := ioutil.ReadFile(filepath.Join(jsonSchemaFixturesPath, fileName))
-
-			var testDescriptions []schemaTestT
-			json.Unmarshal(b, &testDescriptions)
-
-			for _, testDescription := range testDescriptions {
-				var err error
-				b, _ := testDescription.Schema.MarshalJSON()
-				tmpFile, err := ioutil.TempFile(os.TempDir(), "validate-test")
-				assert.NoError(t, err)
-				tmpFile.Write(b)
-				tmpFile.Close()
-				opts := &spec.ExpandOptions{
-					RelativeBase:    tmpFile.Name(),
-					SkipSchemas:     false,
-					ContinueOnError: false,
-				}
-				err = spec.ExpandSchemaWithBasePath(testDescription.Schema, nil, opts)
-
-				if assert.NoError(t, err, testDescription.Description+" should expand cleanly") {
-					validator := NewSchemaValidator(testDescription.Schema, nil, "data", strfmt.Default)
-					for _, test := range testDescription.Tests {
-
-						result := validator.Validate(test.Data)
-						assert.NotNil(t, result, test.Description+" should validate")
-						if test.Valid {
-							assert.Empty(t, result.Errors, test.Description+" should not have errors")
-						} else {
-							assert.NotEmpty(t, result.Errors, test.Description+" should have errors")
-						}
-					}
-				}
-				os.Remove(tmpFile.Name())
-			}
-		}
-	}
-}
-
-func TestSchemaFixtures(t *testing.T) {
-	files, err := ioutil.ReadDir(schemaFixturesPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for _, f := range files {
-		if f.IsDir() {
-			continue
-		}
-		fileName := f.Name()
-		specName := strings.TrimSuffix(fileName, filepath.Ext(fileName))
-
-		t.Log("Running " + specName)
-		b, _ := ioutil.ReadFile(filepath.Join(schemaFixturesPath, fileName))
-
-		var testDescriptions []schemasTestT
-		json.Unmarshal(b, &testDescriptions)
-
-		for _, testDescription := range testDescriptions {
-
-			err := spec.ExpandSchema(testDescription.Schema, nil, nil /*new(noopResCache)*/)
-			if assert.NoError(t, err) {
-
-				validator := NewSchemaValidator(testDescription.Schema, nil, "data", strfmt.Default)
-				valid := validator.Validate(testDescription.Valid)
-				if assert.NotNil(t, valid, specName+" should validate") {
-					assert.Empty(t, valid.Errors, specName+".valid should not have errors")
-				}
-				invalid := validator.Validate(testDescription.Invalid)
-				if assert.NotNil(t, invalid, specName+" should validate") {
-					assert.NotEmpty(t, invalid.Errors, specName+".invalid should have errors")
-				}
-			}
-		}
-	}
+	// Check file declarations as io.ReadCloser are properly detected
+	myFile := runtime.File{}
+	var myReader io.ReadCloser
+	myReader = &myFile
+	jsonType, swaggerFormat := v.schemaInfoForType(myReader)
+	assert.Equal(t, "file", jsonType)
+	assert.Equal(t, "", swaggerFormat)
 }

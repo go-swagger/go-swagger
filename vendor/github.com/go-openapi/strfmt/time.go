@@ -64,7 +64,8 @@ const (
 var (
 	dateTimeFormats = []string{RFC3339Micro, RFC3339Millis, time.RFC3339, time.RFC3339Nano}
 	rxDateTime      = regexp.MustCompile(DateTimePattern)
-	MarshalFormat   = RFC3339Millis
+	// MarshalFormat sets the time resolution format used for marshaling time (set to milliseconds)
+	MarshalFormat = RFC3339Millis
 )
 
 // ParseDateTime parses a string that represents an ISO8601 time or a unix epoch
@@ -98,6 +99,7 @@ func NewDateTime() DateTime {
 	return DateTime(time.Unix(0, 0).UTC())
 }
 
+// String converts this time to a string
 func (t DateTime) String() string {
 	return time.Time(t).Format(MarshalFormat)
 }
@@ -141,22 +143,26 @@ func (t DateTime) Value() (driver.Value, error) {
 	return driver.Value(t.String()), nil
 }
 
+// MarshalJSON returns the DateTime as JSON
 func (t DateTime) MarshalJSON() ([]byte, error) {
 	var w jwriter.Writer
 	t.MarshalEasyJSON(&w)
 	return w.BuildBytes()
 }
 
+// MarshalEasyJSON writes the DateTime to a easyjson.Writer
 func (t DateTime) MarshalEasyJSON(w *jwriter.Writer) {
 	w.String(time.Time(t).Format(MarshalFormat))
 }
 
+// UnmarshalJSON sets the DateTime from JSON
 func (t *DateTime) UnmarshalJSON(data []byte) error {
 	l := jlexer.Lexer{Data: data}
 	t.UnmarshalEasyJSON(&l)
 	return l.Error()
 }
 
+// UnmarshalEasyJSON sets the DateTime from a easyjson.Lexer
 func (t *DateTime) UnmarshalEasyJSON(in *jlexer.Lexer) {
 	if data := in.String(); in.Ok() {
 		tt, err := ParseDateTime(data)
@@ -168,10 +174,12 @@ func (t *DateTime) UnmarshalEasyJSON(in *jlexer.Lexer) {
 	}
 }
 
+// GetBSON returns the DateTime as a bson.M{} map.
 func (t *DateTime) GetBSON() (interface{}, error) {
 	return bson.M{"data": t.String()}, nil
 }
 
+// SetBSON sets the DateTime from raw bson data
 func (t *DateTime) SetBSON(raw bson.Raw) error {
 	var m bson.M
 	if err := raw.Unmarshal(&m); err != nil {

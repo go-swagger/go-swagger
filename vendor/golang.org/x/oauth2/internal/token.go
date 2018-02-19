@@ -6,6 +6,7 @@ package internal
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -123,10 +124,13 @@ var brokenAuthHeaderProviders = []string{
 	"https://api.patreon.com/",
 	"https://sandbox.codeswholesale.com/oauth/token",
 	"https://api.sipgate.com/v1/authorization/oauth",
+	"https://api.medium.com/v1/tokens",
+	"https://log.finalsurge.com/oauth/token",
 }
 
 // brokenAuthHeaderDomains lists broken providers that issue dynamic endpoints.
 var brokenAuthHeaderDomains = []string{
+	".auth0.com",
 	".force.com",
 	".myshopify.com",
 	".okta.com",
@@ -169,10 +173,6 @@ func providerAuthHeaderWorks(tokenURL string) bool {
 }
 
 func RetrieveToken(ctx context.Context, clientID, clientSecret, tokenURL string, v url.Values) (*Token, error) {
-	hc, err := ContextClient(ctx)
-	if err != nil {
-		return nil, err
-	}
 	bustedAuth := !providerAuthHeaderWorks(tokenURL)
 	if bustedAuth {
 		if clientID != "" {
@@ -190,7 +190,7 @@ func RetrieveToken(ctx context.Context, clientID, clientSecret, tokenURL string,
 	if !bustedAuth {
 		req.SetBasicAuth(url.QueryEscape(clientID), url.QueryEscape(clientSecret))
 	}
-	r, err := ctxhttp.Do(ctx, hc, req)
+	r, err := ctxhttp.Do(ctx, ContextClient(ctx), req)
 	if err != nil {
 		return nil, err
 	}
@@ -249,6 +249,9 @@ func RetrieveToken(ctx context.Context, clientID, clientSecret, tokenURL string,
 	// if this was a token refreshing request.
 	if token.RefreshToken == "" {
 		token.RefreshToken = v.Get("refresh_token")
+	}
+	if token.AccessToken == "" {
+		return token, errors.New("oauth2: server response missing access_token")
 	}
 	return token, nil
 }

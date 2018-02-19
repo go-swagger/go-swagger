@@ -1,0 +1,11 @@
+definitions:
+  fixture:
+    type: string
+parameters:
+  param1:
+    name: queryParam1
+    in: query
+    type: string
+responses:
+  NotFound:
+    description: Not found

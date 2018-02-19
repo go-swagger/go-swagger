@@ -40,7 +40,7 @@ func Enum(path, in string, data interface{}, enum interface{}) *errors.Validatio
 				return nil
 			}
 			actualType := reflect.TypeOf(enumValue)
-			if actualType == nil {
+			if actualType == nil { // Safeguard. Frankly, I don't know how we may get a nil
 				continue
 			}
 			expectedValue := reflect.ValueOf(data)
@@ -201,7 +201,7 @@ func MinimumUint(path, in string, data, min uint64, exclusive bool) *errors.Vali
 func MultipleOf(path, in string, data, factor float64) *errors.Validation {
 	// multipleOf factor must be positive
 	if factor < 0 {
-		return positiveMultipleOfFactor(path, in, "number", factor)
+		return errors.MultipleOfMustBePositive(path, in, factor)
 	}
 	var mult float64
 	if factor < 1 {
@@ -219,12 +219,11 @@ func MultipleOf(path, in string, data, factor float64) *errors.Validation {
 func MultipleOfInt(path, in string, data int64, factor int64) *errors.Validation {
 	// multipleOf factor must be positive
 	if factor < 0 {
-		return positiveMultipleOfFactor(path, in, "integer", factor)
+		return errors.MultipleOfMustBePositive(path, in, factor)
 	}
 	mult := data / factor
 	if mult*factor != data {
-		// TODO: add to pkg errors a version of message with %v
-		return errors.NotMultipleOf(path, in, float64(factor))
+		return errors.NotMultipleOf(path, in, factor)
 	}
 	return nil
 }
@@ -233,8 +232,7 @@ func MultipleOfInt(path, in string, data int64, factor int64) *errors.Validation
 func MultipleOfUint(path, in string, data, factor uint64) *errors.Validation {
 	mult := data / factor
 	if mult*factor != data {
-		// TODO: add to pkg errors a version of message with %v
-		return errors.NotMultipleOf(path, in, float64(factor))
+		return errors.NotMultipleOf(path, in, factor)
 	}
 	return nil
 }
@@ -250,26 +248,27 @@ func FormatOf(path, in, format, data string, registry strfmt.Registry) *errors.V
 	if ok := registry.Validates(format, data); !ok {
 		return errors.InvalidType(path, in, format, data)
 	}
-
 	return nil
 }
 
 // MaximumNativeType provides native type constraint validation as a facade
 // to various numeric types versions of Maximum constraint check.
+//
 // Assumes that any possible loss conversion during conversion has been
 // checked beforehand.
 //
-// NOTE: currently, multipleOf is marshalled as a float64, no matter what,
-// which means there may be loss during conversions (e.g. for very large integers)
-// Normally, the JSON MAX_SAFE_INTEGER check ensure we do not get such a loss
+// NOTE: currently, the max value is marshalled as a float64, no matter what,
+// which means there may be a loss during conversions (e.g. for very large integers)
+//
+// TODO: Normally, a JSON MAX_SAFE_INTEGER check would ensure conversion remains loss-free
 func MaximumNativeType(path, in string, val interface{}, max float64, exclusive bool) *errors.Validation {
 	kind := reflect.ValueOf(val).Type().Kind()
 	switch kind {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		value := asInt64(val)
+		value := valueHelp.asInt64(val)
 		return MaximumInt(path, in, value, int64(max), exclusive)
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		value := asUint64(val)
+		value := valueHelp.asUint64(val)
 		if max < 0 {
 			return errors.ExceedsMaximum(path, in, max, exclusive)
 		}
@@ -277,27 +276,29 @@ func MaximumNativeType(path, in string, val interface{}, max float64, exclusive 
 	case reflect.Float32, reflect.Float64:
 		fallthrough
 	default:
-		value := asFloat64(val)
+		value := valueHelp.asFloat64(val)
 		return Maximum(path, in, value, max, exclusive)
 	}
 }
 
 // MinimumNativeType provides native type constraint validation as a facade
 // to various numeric types versions of Minimum constraint check.
+//
 // Assumes that any possible loss conversion during conversion has been
 // checked beforehand.
 //
-// NOTE: currently, multipleOf is marshalled as a float64, no matter what,
-// which means there may be loss during conversions (e.g. for very large integers)
-// Normally, a JSON MAX_SAFE_INTEGER check would ensure we do not get such a loss
+// NOTE: currently, the min value is marshalled as a float64, no matter what,
+// which means there may be a loss during conversions (e.g. for very large integers)
+//
+// TODO: Normally, a JSON MAX_SAFE_INTEGER check would ensure conversion remains loss-free
 func MinimumNativeType(path, in string, val interface{}, min float64, exclusive bool) *errors.Validation {
 	kind := reflect.ValueOf(val).Type().Kind()
 	switch kind {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		value := asInt64(val)
+		value := valueHelp.asInt64(val)
 		return MinimumInt(path, in, value, int64(min), exclusive)
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		value := asUint64(val)
+		value := valueHelp.asUint64(val)
 		if min < 0 {
 			return nil
 		}
@@ -305,38 +306,41 @@ func MinimumNativeType(path, in string, val interface{}, min float64, exclusive 
 	case reflect.Float32, reflect.Float64:
 		fallthrough
 	default:
-		value := asFloat64(val)
+		value := valueHelp.asFloat64(val)
 		return Minimum(path, in, value, min, exclusive)
 	}
 }
 
 // MultipleOfNativeType provides native type constraint validation as a facade
 // to various numeric types version of MultipleOf constraint check.
+//
 // Assumes that any possible loss conversion during conversion has been
 // checked beforehand.
 //
-// NOTE: currently, multipleOf is marshalled as a float64, no matter what,
-// which means there may be loss during conversions (e.g. for very large integers)
-// Normally, a JSON MAX_SAFE_INTEGER check would ensure we do not get such a loss
+// NOTE: currently, the multipleOf factor is marshalled as a float64, no matter what,
+// which means there may be a loss during conversions (e.g. for very large integers)
+//
+// TODO: Normally, a JSON MAX_SAFE_INTEGER check would ensure conversion remains loss-free
 func MultipleOfNativeType(path, in string, val interface{}, multipleOf float64) *errors.Validation {
 	kind := reflect.ValueOf(val).Type().Kind()
 	switch kind {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		value := asInt64(val)
+		value := valueHelp.asInt64(val)
 		return MultipleOfInt(path, in, value, int64(multipleOf))
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		value := asUint64(val)
+		value := valueHelp.asUint64(val)
 		return MultipleOfUint(path, in, value, uint64(multipleOf))
 	case reflect.Float32, reflect.Float64:
 		fallthrough
 	default:
-		value := asFloat64(val)
+		value := valueHelp.asFloat64(val)
 		return MultipleOf(path, in, value, multipleOf)
 	}
 }
 
 // IsValueValidAgainstRange checks that a numeric value is compatible with
-// the range defined by Type and Format, that is, may be converter without loss.
+// the range defined by Type and Format, that is, may be converted without loss.
+//
 // NOTE: this check is about type capacity and not formal verification such as: 1.0 != 1L
 func IsValueValidAgainstRange(val interface{}, typeName, format, prefix, path string) error {
 	kind := reflect.ValueOf(val).Type().Kind()
@@ -345,11 +349,11 @@ func IsValueValidAgainstRange(val interface{}, typeName, format, prefix, path st
 	stringRep := ""
 	switch kind {
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		stringRep = swag.FormatUint64(asUint64(val))
+		stringRep = swag.FormatUint64(valueHelp.asUint64(val))
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		stringRep = swag.FormatInt64(asInt64(val))
+		stringRep = swag.FormatInt64(valueHelp.asInt64(val))
 	case reflect.Float32, reflect.Float64:
-		stringRep = swag.FormatFloat64(asFloat64(val))
+		stringRep = swag.FormatFloat64(valueHelp.asFloat64(val))
 	default:
 		return fmt.Errorf("%s value number range checking called with invalid (non numeric) val type in %s", prefix, path)
 	}
@@ -391,115 +395,4 @@ func IsValueValidAgainstRange(val interface{}, typeName, format, prefix, path st
 		}
 	}
 	return errVal
-}
-
-// Error for negative multipleOf factors
-// TODO: add a more specific message in errors pkg
-func positiveMultipleOfFactor(path, in, typeName string, factor interface{}) *errors.Validation {
-	return errors.InvalidType(path, in, typeName, fmt.Errorf("factor in multipleOf must be positive: %v", factor))
-}
-
-// Faster number conversion functions, without error checking
-// (implements an implicit type upgrade).
-// WARNING: moving into edge cases results in panic()
-func asInt64(val interface{}) int64 {
-	kind := reflect.ValueOf(val).Type().Kind()
-
-	switch kind {
-	case reflect.Int8:
-		return (int64(val.(int8)))
-	case reflect.Uint8:
-		return (int64(val.(uint8)))
-	case reflect.Int16:
-		return (int64(val.(int16)))
-	case reflect.Uint16:
-		return (int64(val.(uint16)))
-	case reflect.Int32:
-		return (int64(val.(int32)))
-	case reflect.Uint32:
-		return (int64(val.(uint32)))
-	case reflect.Int:
-		return (int64(val.(int)))
-	case reflect.Int64:
-		return (int64(val.(int64)))
-	case reflect.Uint64:
-		return (int64(val.(uint64)))
-	case reflect.Uint:
-		return (int64(val.(uint)))
-	case reflect.Float32:
-		return (int64(val.(float32)))
-	case reflect.Float64:
-		return (int64(val.(float64)))
-	default:
-		panic("Non numeric value in asInt64()")
-	}
-}
-
-// Same for unsigned integers
-func asUint64(val interface{}) uint64 {
-	kind := reflect.ValueOf(val).Type().Kind()
-
-	switch kind {
-	case reflect.Int8:
-		return (uint64(val.(int8)))
-	case reflect.Uint8:
-		return (uint64(val.(uint8)))
-	case reflect.Int16:
-		return (uint64(val.(int16)))
-	case reflect.Uint16:
-		return (uint64(val.(uint16)))
-	case reflect.Int32:
-		return (uint64(val.(int32)))
-	case reflect.Uint32:
-		return (uint64(val.(uint32)))
-	case reflect.Int:
-		return (uint64(val.(int)))
-	case reflect.Int64:
-		return (uint64(val.(int64)))
-	case reflect.Uint64:
-		return (uint64(val.(uint64)))
-	case reflect.Uint:
-		return (uint64(val.(uint)))
-	case reflect.Float32:
-		return (uint64(val.(float32)))
-	case reflect.Float64:
-		return (uint64(val.(float64)))
-	default:
-		panic("Non numeric value in asUint64()")
-	}
-
-}
-
-// Same for unsigned floats
-func asFloat64(val interface{}) float64 {
-	kind := reflect.ValueOf(val).Type().Kind()
-
-	switch kind {
-	case reflect.Int8:
-		return (float64(val.(int8)))
-	case reflect.Uint8:
-		return (float64(val.(uint8)))
-	case reflect.Int16:
-		return (float64(val.(int16)))
-	case reflect.Uint16:
-		return (float64(val.(uint16)))
-	case reflect.Int32:
-		return (float64(val.(int32)))
-	case reflect.Uint32:
-		return (float64(val.(uint32)))
-	case reflect.Int:
-		return (float64(val.(int)))
-	case reflect.Int64:
-		return (float64(val.(int64)))
-	case reflect.Uint64:
-		return (float64(val.(uint64)))
-	case reflect.Uint:
-		return (float64(val.(uint)))
-	case reflect.Float32:
-		return (float64(val.(float32)))
-	case reflect.Float64:
-		return (float64(val.(float64)))
-	default:
-		panic("Non numeric value in asFloat64()")
-	}
 }

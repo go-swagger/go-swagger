@@ -866,6 +866,29 @@ func main() {
 }
 `,
 	},
+
+	{
+		name: "issue #12097",
+		in: `// a
+// b
+// c
+
+func main() {
+    _ = fmt.Println
+}`,
+		out: `package main
+
+import "fmt"
+
+// a
+// b
+// c
+
+func main() {
+	_ = fmt.Println
+}
+`,
+	},
 }
 
 func TestFixImports(t *testing.T) {
@@ -1273,12 +1296,12 @@ func TestFindImportStdlib(t *testing.T) {
 		{"ioutil", []string{"Discard"}, "io/ioutil"},
 	}
 	for _, tt := range tests {
-		got, rename, ok := findImportStdlib(tt.pkg, strSet(tt.symbols))
+		got, ok := findImportStdlib(tt.pkg, strSet(tt.symbols))
 		if (got != "") != ok {
 			t.Error("findImportStdlib return value inconsistent")
 		}
-		if got != tt.want || rename {
-			t.Errorf("findImportStdlib(%q, %q) = %q, %t; want %q, false", tt.pkg, tt.symbols, got, rename, tt.want)
+		if got != tt.want {
+			t.Errorf("findImportStdlib(%q, %q) = %q, want %q", tt.pkg, tt.symbols, got, tt.want)
 		}
 	}
 }
@@ -1608,14 +1631,18 @@ func TestSiblingImports(t *testing.T) {
 	const provide = `package siblingimporttest
 
 import "local/log"
+import "my/bytes"
 
 func LogSomething() {
 	log.Print("Something")
+	bytes.SomeFunc()
 }
 `
 
 	// need is the file being tested that needs the import.
 	const need = `package siblingimporttest
+
+var _ = bytes.Buffer{}
 
 func LogSomethingElse() {
 	log.Print("Something else")
@@ -1625,7 +1652,12 @@ func LogSomethingElse() {
 	// want is the expected result file
 	const want = `package siblingimporttest
 
-import "local/log"
+import (
+	"bytes"
+	"local/log"
+)
+
+var _ = bytes.Buffer{}
 
 func LogSomethingElse() {
 	log.Print("Something else")
@@ -1956,4 +1988,70 @@ var _ = &bytes.Buffer{}
 			t.Errorf("Process = got %q; want %q", got, want)
 		}
 	})
+}
+
+// A happy path test for Process
+func TestProcess(t *testing.T) {
+	in := `package testimports
+
+	var s = fmt.Sprintf("%s", "value")
+`
+	out, err := Process("foo", []byte(in), nil)
+
+	if err != nil {
+		t.Errorf("Process returned error.\n got:\n%v\nwant:\nnil", err)
+	}
+
+	want := `package testimports
+
+import "fmt"
+
+var s = fmt.Sprintf("%s", "value")
+`
+	if got := string(out); got != want {
+		t.Errorf("Process returned unexpected result.\ngot:\n%v\nwant:\n%v", got, want)
+	}
+}
+
+// Ensures a token as large as 500000 bytes can be handled
+// https://golang.org/issues/18201
+func TestProcessLargeToken(t *testing.T) {
+	largeString := strings.Repeat("x", 500000)
+
+	in := `package testimports
+
+import (
+	"fmt"
+	"mydomain.mystuff/mypkg"
+)
+
+const s = fmt.Sprintf("%s", "` + largeString + `")
+const x = mypkg.Sprintf("%s", "my package")
+
+// end
+`
+
+	out, err := Process("foo", []byte(in), nil)
+
+	if err != nil {
+		t.Errorf("Process returned error.\n got:\n%v\nwant:\nnil", err)
+	}
+
+	want := `package testimports
+
+import (
+	"fmt"
+
+	"mydomain.mystuff/mypkg"
+)
+
+const s = fmt.Sprintf("%s", "` + largeString + `")
+const x = mypkg.Sprintf("%s", "my package")
+
+// end
+`
+
+	if got := string(out); got != want {
+		t.Errorf("Process returned unexpected result.\ngot:\n%v\nwant:\n%v", got, want)
+	}
 }

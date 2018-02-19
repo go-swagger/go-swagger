@@ -15,7 +15,7 @@
 package validate
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -31,12 +31,18 @@ func init() {
 	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
 }
 
+func skipNotifyGoSwagger(t *testing.T) {
+	t.Log("To enable this long running test, use -args -enable-go-swagger in your go test command line")
+}
+
 // Exercise validate will all tests cases from package go-swagger
 // A copy of all fixtures available in in go-swagger/go-swagger
 // is maintained in fixtures/go-swagger
+//
+// TODO: move this list to a YAML fixture config file
 func Test_GoSwaggerTestCases(t *testing.T) {
-	if !enableLongTests {
-		skipNotify(t)
+	if !enableGoSwaggerTests {
+		skipNotifyGoSwagger(t)
 		t.SkipNow()
 	}
 	// A list of test cases which fail on "swagger validate" at spec load time
@@ -64,7 +70,7 @@ func Test_GoSwaggerTestCases(t *testing.T) {
 		"fixtures/go-swagger/bugs/453/swagger.yml":                       true,
 		"fixtures/go-swagger/bugs/455/swagger.yml":                       true,
 		"fixtures/go-swagger/bugs/628/swagger.yml":                       true,
-		"fixtures/go-swagger/bugs/733/swagger.json":                      true,
+		"fixtures/go-swagger/bugs/733/swagger.json":                      false,
 		"fixtures/go-swagger/bugs/763/swagger.yml":                       true,
 		"fixtures/go-swagger/bugs/774/swagger.yml":                       true,
 		"fixtures/go-swagger/bugs/776/error.yaml":                        true,
@@ -109,12 +115,6 @@ func Test_GoSwaggerTestCases(t *testing.T) {
 		"fixtures/go-swagger/specs/resolution.json":                      true,
 	}
 
-	//t.SkipNow()
-	state := continueOnErrors
-	SetContinueOnErrors(true)
-	defer func() {
-		SetContinueOnErrors(state)
-	}()
 	if testGoSwaggerSpecs(t, "./fixtures/go-swagger", expectedFailures, expectedLoadFailures, true) != 0 {
 		t.Fail()
 	}
@@ -123,64 +123,75 @@ func Test_GoSwaggerTestCases(t *testing.T) {
 // A non regression test re "swagger validate" expectations
 // Just validates all fixtures in ./fixtures/go-swagger (excluded codegen cases)
 func testGoSwaggerSpecs(t *testing.T, path string, expectToFail, expectToFailOnLoad map[string]bool, haltOnErrors bool) (errs int) {
+	// countSpec := 0
 	err := filepath.Walk(path,
 		func(path string, info os.FileInfo, err error) error {
-			shouldNotLoad := false
-			shouldFail := false
-			if _, ok := expectToFailOnLoad[path]; ok {
-				shouldNotLoad = expectToFailOnLoad[path]
-			}
-			if _, ok := expectToFail[path]; ok {
-				shouldFail = expectToFail[path]
-			}
-			if !info.IsDir() && (strings.HasSuffix(info.Name(), ".yaml") || strings.HasSuffix(info.Name(), ".yml") || strings.HasSuffix(info.Name(), ".json")) {
-				// Checking invalid specs
-				t.Logf("Testing messages for spec: %s", path)
-				doc, err := loads.Spec(path)
-				if shouldNotLoad {
-					if !assert.Error(t, err, "Expected this spec not to load") {
-						errs++
-					}
-				} else {
-					if !assert.NoError(t, err, "Expected this spec to load without error") {
-						errs++
-					}
+			t.Run(path, func(t *testing.T) {
+				t.Parallel()
+				shouldNotLoad := false
+				shouldFail := false
+				if _, ok := expectToFailOnLoad[path]; ok {
+					shouldNotLoad = expectToFailOnLoad[path]
 				}
-				if errs > 0 {
-					if haltOnErrors {
-						return fmt.Errorf("Test halted: stop on error mode")
-					}
-					return nil
+				if _, ok := expectToFail[path]; ok {
+					shouldFail = expectToFail[path]
 				}
-				if shouldNotLoad {
-					return nil
-				}
-
-				// Validate the spec document
-				validator := NewSpecValidator(doc.Schema(), strfmt.Default)
-				res, _ := validator.Validate(doc)
-				if shouldFail {
-					if !assert.False(t, res.IsValid(), "Expected this spec to be invalid") {
-						errs++
+				if !info.IsDir() && (strings.HasSuffix(info.Name(), ".yaml") || strings.HasSuffix(info.Name(), ".yml") || strings.HasSuffix(info.Name(), ".json")) {
+					if DebugTest {
+						t.Logf("Testing validation status for spec: %s", path)
 					}
-				} else {
-					if !assert.True(t, res.IsValid(), "Expected this spec to be valid") {
-						t.Logf("Errors reported by validation on %s", path)
-						for _, e := range res.Errors {
-							t.Log(e)
+					doc, err := loads.Spec(path)
+					if shouldNotLoad {
+						if !assert.Errorf(t, err, "Expected this spec not to load: %s", path) {
+							errs++
 						}
-						errs++
+					} else {
+						if !assert.NoErrorf(t, err, "Expected this spec to load without error: %s", path) {
+							errs++
+						}
+					}
+					if errs > 0 {
+						if haltOnErrors {
+							assert.FailNow(t, "Test Halted: stop on error mode")
+							return
+						}
+					}
+					if shouldNotLoad {
+						return
+					}
+
+					// Validate the spec document
+					validator := NewSpecValidator(doc.Schema(), strfmt.Default)
+					validator.SetContinueOnErrors(true)
+					res, _ := validator.Validate(doc)
+					if shouldFail {
+						if !assert.Falsef(t, res.IsValid(), "Expected this spec to be invalid: %s", path) {
+							errs++
+						}
+					} else {
+						if !assert.Truef(t, res.IsValid(), "Expected this spec to be valid: %s", path) {
+							t.Logf("Errors reported by validation on %s", path)
+							for _, e := range res.Errors {
+								t.Log(e)
+							}
+							errs++
+						}
+
 					}
 				}
-			}
-			if haltOnErrors && errs > 0 {
-				return fmt.Errorf("Test halted: stop on error mode")
-			}
+				if haltOnErrors && errs > 0 {
+					assert.FailNow(t, "Test halted: stop on error mode")
+					return
+				}
+			})
 			return nil
 		})
 	if err != nil {
 		t.Logf("%v", err)
 		errs++
+	}
+	if t.Failed() {
+		log.Printf("A change in expected validation status has been detected")
 	}
 	return
 }

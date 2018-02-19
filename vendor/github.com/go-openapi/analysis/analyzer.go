@@ -500,26 +500,66 @@ func fieldNameFromParam(param *spec.Parameter) string {
 	return swag.ToGoName(param.Name)
 }
 
-func (s *Spec) paramsAsMap(parameters []spec.Parameter, res map[string]spec.Parameter) {
+// ErrorOnParamFunc is a callback function to be invoked
+// whenever an error is encountered while resolving references
+// on parameters.
+// This function takes as input the spec.Parameter which triggered the
+// error and the error itself.
+// If the callback function returns false, the calling function should bail.
+// If it returns true, the calling function should continue evaluating parameters.
+// A nil ErrorOnParamFunc must be evaluated as equivalent to panic().
+type ErrorOnParamFunc func(spec.Parameter, error) bool
+
+func (s *Spec) paramsAsMap(parameters []spec.Parameter, res map[string]spec.Parameter, callmeOnError ErrorOnParamFunc) {
 	for _, param := range parameters {
 		pr := param
 		if pr.Ref.String() != "" {
 			obj, _, err := pr.Ref.GetPointer().Get(s.spec)
 			if err != nil {
-				panic(err)
+				if callmeOnError != nil {
+					if callmeOnError(param, fmt.Errorf("invalid reference: %q", pr.Ref.String())) {
+						continue
+					}
+					break
+				} else {
+					panic(fmt.Sprintf("invalid reference: %q", pr.Ref.String()))
+				}
 			}
-			pr = obj.(spec.Parameter)
+			if objAsParam, ok := obj.(spec.Parameter); ok {
+				pr = objAsParam
+			} else {
+				if callmeOnError != nil {
+					if callmeOnError(param, fmt.Errorf("resolved reference is not a parameter: %q", pr.Ref.String())) {
+						continue
+					}
+					break
+				} else {
+					panic(fmt.Sprintf("resolved reference is not a parameter: %q", pr.Ref.String()))
+				}
+			}
 		}
 		res[mapKeyFromParam(&pr)] = pr
 	}
 }
 
-// ParametersFor the specified operation id
+// ParametersFor the specified operation id.
+// Assumes parameters properly resolve references if any and that
+// such references actually resolve to a parameter object.
+// Otherwise, panics.
 func (s *Spec) ParametersFor(operationID string) []spec.Parameter {
+	return s.SafeParametersFor(operationID, nil)
+}
+
+// SafeParametersFor the specified operation id.
+// Do not assume parameters properly resolve references or that
+// such references actually resolve to a parameter object.
+// Upon error, invoke a ErrorOnParamFunc callback with the erroneous
+// parameter. If the callback is set to nil, panics upon errors.
+func (s *Spec) SafeParametersFor(operationID string, callmeOnError ErrorOnParamFunc) []spec.Parameter {
 	gatherParams := func(pi *spec.PathItem, op *spec.Operation) []spec.Parameter {
 		bag := make(map[string]spec.Parameter)
-		s.paramsAsMap(pi.Parameters, bag)
-		s.paramsAsMap(op.Parameters, bag)
+		s.paramsAsMap(pi.Parameters, bag, callmeOnError)
+		s.paramsAsMap(op.Parameters, bag, callmeOnError)
 
 		var res []spec.Parameter
 		for _, v := range bag {
@@ -555,11 +595,23 @@ func (s *Spec) ParametersFor(operationID string) []spec.Parameter {
 
 // ParamsFor the specified method and path. Aggregates them with the defaults etc, so it's all the params that
 // apply for the method and path.
+// Assumes parameters properly resolve references if any and that
+// such references actually resolve to a parameter object.
+// Otherwise, panics.
 func (s *Spec) ParamsFor(method, path string) map[string]spec.Parameter {
+	return s.SafeParamsFor(method, path, nil)
+}
+
+// SafeParamsFor the specified method and path. Aggregates them with the defaults etc, so it's all the params that
+// Do not assume parameters properly resolve references or that
+// such references actually resolve to a parameter object.
+// Upon error, invoke a ErrorOnParamFunc callback with the erroneous
+// parameter. If the callback is set to nil, panics upon errors.
+func (s *Spec) SafeParamsFor(method, path string, callmeOnError ErrorOnParamFunc) map[string]spec.Parameter {
 	res := make(map[string]spec.Parameter)
 	if pi, ok := s.spec.Paths.Paths[path]; ok {
-		s.paramsAsMap(pi.Parameters, res)
-		s.paramsAsMap(s.operations[strings.ToUpper(method)][path].Parameters, res)
+		s.paramsAsMap(pi.Parameters, res, callmeOnError)
+		s.paramsAsMap(s.operations[strings.ToUpper(method)][path].Parameters, res, callmeOnError)
 	}
 	return res
 }

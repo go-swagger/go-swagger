@@ -15,6 +15,7 @@
 package validate
 
 import (
+	"math"
 	"testing"
 
 	"github.com/go-openapi/errors"
@@ -47,6 +48,11 @@ func TestValues_Enum_EdgeCases(t *testing.T) {
 	err := Enum("test", "body", int64(1), enumValues)
 	// No validation occurs: enumValues is not a slice
 	assert.Nil(t, err)
+
+	// TODO(TEST): edge case: value is not a concrete type
+	// It's really a go internals challenge
+	// to figure a test case to demonstrate
+	// this case must be checked (!!)
 }
 
 func TestValues_ValidateUniqueItems(t *testing.T) {
@@ -164,6 +170,10 @@ func TestValuMultipleOf(t *testing.T) {
 	assert.Error(t, err)
 
 	err = MultipleOf("test", "body", 9.34, 0.1)
+	assert.Error(t, err)
+
+	// error on negative factor
+	err = MultipleOf("test", "body", 9.34, -0.1)
 	assert.Error(t, err)
 }
 
@@ -333,10 +343,16 @@ func TestValues_MultipleOfNative(t *testing.T) {
 	err = MultipleOfNativeType("path", "in", int64(5), -1)
 	if assert.NotNil(t, err) {
 		code := int(err.Code())
-		assert.Equal(t, code, int(errors.InvalidTypeCode))
+		assert.Equal(t, code, int(errors.MultipleOfMustBePositiveCode))
 	}
 
 	err = MultipleOfNativeType("path", "in", int64(11), 5)
+	if assert.NotNil(t, err) {
+		code := int(err.Code())
+		assert.Equal(t, code, int(errors.MultipleOfFailCode))
+	}
+
+	err = MultipleOfNativeType("path", "in", uint64(11), 5)
 	if assert.NotNil(t, err) {
 		code := int(err.Code())
 		assert.Equal(t, code, int(errors.MultipleOfFailCode))
@@ -364,121 +380,24 @@ func TestValues_IsValueValidAgainstRange(t *testing.T) {
 	err = IsValueValidAgainstRange(int64(123), "integer", "int64", "prefix", "path")
 	assert.NoError(t, err)
 
+	err = IsValueValidAgainstRange(int64(123), "integer", "uint64", "prefix", "path")
+	assert.NoError(t, err)
+
 	// Error case (do not occur in normal course of a validation)
-	err = IsValueValidAgainstRange("123", "number", "float", "prefix", "path")
+	err = IsValueValidAgainstRange(float64(math.MaxFloat64), "integer", "", "prefix", "path")
+	if assert.Error(t, err) {
+		assert.Contains(t, err.Error(), "must be of type integer (default format)")
+	}
+
+	// Checking a few limits
+	err = IsValueValidAgainstRange("123", "number", "", "prefix", "path")
 	if assert.Error(t, err) {
 		assert.Contains(t, err.Error(), "called with invalid (non numeric) val type")
 	}
 
-	// Checking a few limits
 	err = IsValueValidAgainstRange(int64(2147483647), "integer", "int32", "prefix", "path")
 	assert.NoError(t, err)
 
 	err = IsValueValidAgainstRange(int64(2147483647), "integer", "uint32", "prefix", "path")
 	assert.NoError(t, err)
-}
-
-// Test cases in private method asInt64()
-// including expected panic() cases
-func TestValues_asInt64(t *testing.T) {
-	var r int64
-	r = asInt64(int(3))
-	assert.Equal(t, int64(3), r)
-	r = asInt64(uint(3))
-	assert.Equal(t, int64(3), r)
-	r = asInt64(int8(3))
-	assert.Equal(t, int64(3), r)
-	r = asInt64(uint8(3))
-	assert.Equal(t, int64(3), r)
-	r = asInt64(int16(3))
-	assert.Equal(t, int64(3), r)
-	r = asInt64(uint16(3))
-	assert.Equal(t, int64(3), r)
-	r = asInt64(int32(3))
-	assert.Equal(t, int64(3), r)
-	r = asInt64(uint32(3))
-	assert.Equal(t, int64(3), r)
-	r = asInt64(int64(3))
-	assert.Equal(t, int64(3), r)
-	r = asInt64(uint64(3))
-	assert.Equal(t, int64(3), r)
-	r = asInt64(float32(3))
-	assert.Equal(t, int64(3), r)
-	r = asInt64(float64(3))
-	assert.Equal(t, int64(3), r)
-
-	// Non numeric
-	assert.PanicsWithValue(t, "Non numeric value in asInt64()", func() {
-		asInt64("123")
-	})
-}
-
-// Test cases in private method asUint64()
-// including expected panic() cases
-func TestValues_asUint64(t *testing.T) {
-	var r uint64
-	r = asUint64(int(3))
-	assert.Equal(t, uint64(3), r)
-	r = asUint64(uint(3))
-	assert.Equal(t, uint64(3), r)
-	r = asUint64(int8(3))
-	assert.Equal(t, uint64(3), r)
-	r = asUint64(uint8(3))
-	assert.Equal(t, uint64(3), r)
-	r = asUint64(int16(3))
-	assert.Equal(t, uint64(3), r)
-	r = asUint64(uint16(3))
-	assert.Equal(t, uint64(3), r)
-	r = asUint64(int32(3))
-	assert.Equal(t, uint64(3), r)
-	r = asUint64(uint32(3))
-	assert.Equal(t, uint64(3), r)
-	r = asUint64(int64(3))
-	assert.Equal(t, uint64(3), r)
-	r = asUint64(uint64(3))
-	assert.Equal(t, uint64(3), r)
-	r = asUint64(float32(3))
-	assert.Equal(t, uint64(3), r)
-	r = asUint64(float64(3))
-	assert.Equal(t, uint64(3), r)
-
-	// Non numeric
-	assert.PanicsWithValue(t, "Non numeric value in asUint64()", func() {
-		asUint64("123")
-	})
-}
-
-// Test cases in private method asFloat64()
-// including expected panic() cases
-func TestValues_asFloat64(t *testing.T) {
-	var r float64
-	r = asFloat64(int(3))
-	assert.Equal(t, float64(3), r)
-	r = asFloat64(uint(3))
-	assert.Equal(t, float64(3), r)
-	r = asFloat64(int8(3))
-	assert.Equal(t, float64(3), r)
-	r = asFloat64(uint8(3))
-	assert.Equal(t, float64(3), r)
-	r = asFloat64(int16(3))
-	assert.Equal(t, float64(3), r)
-	r = asFloat64(uint16(3))
-	assert.Equal(t, float64(3), r)
-	r = asFloat64(int32(3))
-	assert.Equal(t, float64(3), r)
-	r = asFloat64(uint32(3))
-	assert.Equal(t, float64(3), r)
-	r = asFloat64(int64(3))
-	assert.Equal(t, float64(3), r)
-	r = asFloat64(uint64(3))
-	assert.Equal(t, float64(3), r)
-	r = asFloat64(float32(3))
-	assert.Equal(t, float64(3), r)
-	r = asFloat64(float64(3))
-	assert.Equal(t, float64(3), r)
-
-	// Non numeric
-	assert.PanicsWithValue(t, "Non numeric value in asFloat64()", func() {
-		asFloat64("123")
-	})
 }

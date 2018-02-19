@@ -1,9 +1,262 @@
 # 
 # This document specifies messages expecations on tested fixtures (errors and warnings)
 # Messages may be either a plain string (assert.Contains) or a simple regexp (assert.True(regexp.MatchString())
+fixture-items-items.yaml:
+  comment: how to get through item.Items in simple schemas
+  todo: 
+  expectedLoadError: false
+  expectedValid: true
+  expectedMessages: []
+  expectedWarnings:
+  - message: 'soSimple in path has a default value and is required as parameter'
+    withContinueOnErrors: false
+    isRegexp: false
+valid-referenced.yml:
+  comment: 
+  todo: 
+  expectedLoadError: false
+  expectedValid: true
+  expectedMessages: []
+  expectedWarnings: []
+valid-referenced-variants.yaml:
+  comment: additional scenarios with failures on additionalProperties and required properties
+  todo: 
+  expectedLoadError: false
+  expectedValid: false
+  expectedMessages: 
+  - message: 'definitions.lotOfErrors.patternProperties in body is a forbidden property'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: '"definitions.lotOfErrors.additionalProperties" must validate at least one schema (anyOf)'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'definitions.lotOfErrors.additionalProperties.patternProperties in body is a forbidden property'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'definitions.lotOfErrors2.patternProperties in body is a forbidden property'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'pattern "^)b-InvalidRegexp1.(*$" is invalid in lotOfErrors'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: '"bug" is present in required but not defined as property in definition "lotOfErrors"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'pattern "^)b-InvalidRegexp2.(*$" is invalid in lotOfErrors2'
+    withContinueOnErrors: true
+    isRegexp: false
+  expectedWarnings:
+  - message: 'Required property a in "lotOfErrors" should not be marked as both required and readOnly'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'Required property z-1 in "lotOfErrors" should not be marked as both required and readOnly'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'Required property b-8 in "lotOfErrors2" should not be marked as both required and readOnly'
+    withContinueOnErrors: true
+    isRegexp: false
+fixture-additional-items.yaml:
+  comment: 
+  todo:  unsupported keyword such as additionnalItems should be better reported
+  expectedLoadError: false
+  expectedValid: true
+  expectedMessages: []
+  expectedWarnings: []
+fixture-additional-items-2.yaml:
+  comment: 
+  todo:  unsupported keyword such as additionnalItems should be better reported
+  expectedLoadError: false
+  expectedValid: false
+  expectedMessages:
+  - message: '"paths./servers/getGood.get.parameters" must validate one and only one schema (oneOf). Found none valid'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'paths./servers/getGood.get.parameters.schema.additionalItems in body is a forbidden property'
+    withContinueOnErrors: false
+    isRegexp: false
+  expectedWarnings: []
+fixture-additional-items-3.yaml:
+  comment: 
+  todo:  unsupported keyword such as additionnalItems should be better reported
+  expectedLoadError: false
+  expectedValid: false
+  expectedMessages:
+  - message: '"paths./servers/edgeCase.get.responses.200" must validate one and only one schema (oneOf). Found none valid'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: '"paths./servers/edgeCase.get.responses.200.schema" must validate one and only one schema (oneOf). Found none valid'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'paths./servers/edgeCase.get.responses.200.schema.additionalItems in body is a forbidden property'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: '"paths./servers/edgeCase.get.responses.200.schema.items" must validate at least one schema (anyOf)'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'paths./servers/edgeCase.get.responses.200.schema.items.additionalItems in body is a forbidden property'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: '"paths./servers/getGood.get.responses.200" must validate one and only one schema (oneOf). Found none valid'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: '"paths./servers/getGood.get.responses.200.schema" must validate one and only one schema (oneOf). Found none valid'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'paths./servers/getGood.get.responses.200.schema.additionalItems in body is a forbidden property'
+    withContinueOnErrors: false
+    isRegexp: false
+  expectedWarnings:
+  - message: 'definition "#/definitions/itemsSchema0" is not used anywhere'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'definition "#/definitions/itemsSchema1" is not used anywhere'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'definition "#/definitions/itemsSchema2" is not used anywhere'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'definition "#/definitions/itemsSchema3" is not used anywhere'
+    withContinueOnErrors: true
+    isRegexp: false
+fixture-no-json-example.yaml:
+  comment: a response example for a mime type other than application/json
+  todo:  not supported. atm, this is just a warning
+  expectedLoadError: false
+  expectedValid: true
+  expectedMessages: []
+  expectedWarnings:
+  - message: 'No validation attempt for examples for media types other than application/json, in operation "getGoodOp", default response'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'Examples provided without schema in operation "getGoodOp", response 200'
+    withContinueOnErrors: false
+    isRegexp: false
+fixture-additional-items-invalid-values.yaml:
+  comment: additional testing scenario for default and example values
+  todo:  
+  expectedLoadError: false
+  expectedValid: false
+  expectedMessages:
+  - message: '"paths./servers/getBad1.get.responses.default" must validate one and only one schema (oneOf). Found none valid'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'paths./servers/getBad1.get.responses.default.description in body is required'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'default value for addItems in body does not validate its schema'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'addItems.default.0.first in body must be of type string: "array"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'addItems.default.2.c in body must be of type number: "string"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'addItems.default.2.x in body must be of type string: "number"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'addItems.default.2.x in body should be one of [a b c]'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'addItems.default.3.z in body must be of type number: "string"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'in operation "getGoodOp", default value in default response does not validate its schema'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'default.default.0.first in body must be of type string: "array"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'default.default.2.x in body must be of type string: "number"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'default.default.2.x in body should be one of [a b c]'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'default.default.2.c in body must be of type number: "string"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'default.default.3.z in body must be of type number: "string"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'in operation "getGoodOp", default value in response 200 does not validate its schema'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: '200.default.0.first in body must be of type string: "array"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: '200.default.2.c in body must be of type number: "string"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: '200.default.2.x in body must be of type string: "number"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: '200.default.2.x in body should be one of [a b c]'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: '200.default.3.z in body must be of type number: "string"'
+    withContinueOnErrors: true
+    isRegexp: false
+  expectedWarnings:
+  - message: 'in operation "getGoodOp", example value in response 200 does not validate its schema'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: '/servers/getBad1.0.first in body must be of type string: "number"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: '/servers/getBad1.3.z in body must be of type number: "boolean"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: '200.example.0.first in body must be of type string: "number"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: '200.example.3.z in body must be of type number: "boolean"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'example value for addItems in body does not validate its schema'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'addItems.example.0.first in body must be of type string: "number"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'addItems.example.3.z in body must be of type number: "boolean"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'in operation "getGoodOp", example value in default response does not validate its schema'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'default.example.0.first in body must be of type string: "number"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'default.example.3.z in body must be of type number: "boolean"'
+    withContinueOnErrors: true
+    isRegexp: false
+fixture-no-response.yaml:
+  comment: 
+  todo: 
+  expectedLoadError: false
+  expectedValid: false
+  expectedMessages:
+  - message: 'operation "ListBackendSets" has no valid response'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'paths./loadBalancers/{loadBalancerId}/backendSets.get.responses in body must be of type object: "null"'
+    withContinueOnErrors: false
+    isRegexp: false
+  expectedWarnings: []
+fixture-empty-paths.json:
+  comment: 
+  todo: 
+  expectedLoadError: false
+  expectedValid: true
+  expectedMessages: []
+  expectedWarnings:
+  - message: spec has no valid path defined
+    withContinueOnErrors: false
+    isRegexp: false
 fixture-patternProperties.json:
   comment: Exercise pattern properties (for default values), with an invalid pattern
-  todo: should be generalized to example values when supported
+  todo: 
   expectedLoadError: false
   expectedValid: false
   expectedMessages:
@@ -51,27 +304,48 @@ fixture-161-2.json:
   - message: 'requestBody.default in body must be of type object: "string"'
     withContinueOnErrors: false
     isRegexp: false
-  expectedWarnings: []
+  expectedWarnings:
+  - message: 'example value for requestBody in body does not validate its schema'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'requestBody.example.parent.id in body must be of type number: "string"'
+    withContinueOnErrors: false
+    isRegexp: false
 fixture-161-good.json:
-  comment: 'Issue#161: this is the corresponding corrected spec which should be valid'
+  comment: 'Issue#161: this is the corresponding corrected spec which should be valid. Ah! But now examples are invalid...'
   todo: 
   expectedLoadError: false
   expectedValid: true
   expectedMessages: []
-  expectedWarnings: []
+  expectedWarnings:
+  - message: 'example value for requestBody in body does not validate its schema'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'requestBody.example.parent.id in body must be of type number: "string"'
+    withContinueOnErrors: false
+    isRegexp: false
 fixture-161.json:
   comment: 'Issue#161: default value as object'
-  todo: This spec may also be used to check example values
+  todo: 
   expectedLoadError: false
   expectedValid: false
   expectedMessages:
-  - message: default value for requestBody in body does not validate its schema
+  - message: 'default value for requestBody in body does not validate its schema'
     withContinueOnErrors: false
     isRegexp: false
   - message: 'requestBody.default in body must be of type object: "string"'
     withContinueOnErrors: false
     isRegexp: false
-  expectedWarnings: []
+  expectedWarnings:
+  - message: 'requestBody.example.name in body must be of type object: "string"'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'example value for requestBody in body does not validate its schema'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'requestBody.example.parent.id in body must be of type number: "string"'
+    withContinueOnErrors: false
+    isRegexp: false
 fixture-342-2.yaml:
   comment: Botched correction attempt for fixture-342
   todo: 
@@ -89,20 +363,83 @@ fixture-342.yaml:
   expectedLoadError: false
   expectedValid: false
   expectedMessages:
+  - message: 'paths./get_main_object.get.parameters.$ref in body is a forbidden property'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'invalid definition for parameter sid in body in operation ""'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'paths./get_main_object.get.parameters.in in body should be one of [header]'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'paths./get_main_object.get.parameters.type in body is required'
+    withContinueOnErrors: false
+    isRegexp: false
   - message: '"paths./get_main_object.get.parameters" must validate one and only one schema (oneOf). Found none valid'
     withContinueOnErrors: false
     isRegexp: false
-  - message: 'invalid definition as Schema for parameter sid in body in operation ""'
+  - message: 'invalid ref "nowhere.yaml#/definitions/sample_info/properties/sid"'
     withContinueOnErrors: true
     isRegexp: false
-  - message: some parameters definitions are broken in "/get_main_object".GET. Cannot continue validating parameters for operation
+  - message: 'invalid definition as Schema for parameter  in  in operation ""'
     withContinueOnErrors: true
+    isRegexp: false
+  - message: 'invalid definition for parameter  in  in operation ""'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'could not resolve reference in "/get_main_object".GET to $ref nowhere.yaml#/definitions/sample_info/properties/sid: open fixtures/validation/nowhere.yaml: no such file or directory'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: '"parameters.wrong" must validate one and only one schema (oneOf). Found none valid'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'parameters.wrong.theName in body is a forbidden property'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'parameters.wrong.theType in body is a forbidden property'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'parameters.wrong.name in body is required'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'parameters.wrong.in in body is required'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'parameters.wrong.type in body is required'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: '"parameters.notbetter" must validate one and only one schema (oneOf). Found none valid'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'parameters.notbetter.properties in body is a forbidden property'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'parameters.notbetter.type in body should be one of [string number boolean integer array]'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'parameters.notbetter.name in body is required'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'parameters.notbetter.in in body is required'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: '"parameters.stillnogood" must validate one and only one schema (oneOf). Found none valid'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'parameters.stillnogood.name in body is required'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'parameters.stillnogood.in in body is required'
+    withContinueOnErrors: false
     isRegexp: false
   expectedWarnings:
-  - message: definition "#/definitions/sample_info" is not used anywhere
+  - message: 'definition "#/definitions/sample_info" is not used anywhere'
     withContinueOnErrors: true
     isRegexp: false
   - message: $ref property should have no sibling in "".sid
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: $ref property should have no sibling in "".
     withContinueOnErrors: true
     isRegexp: false
 fixture-581-good-numbers.yaml:
@@ -120,11 +457,23 @@ fixture-581-good.yaml:
   expectedMessages: []
   expectedWarnings: []
 fixture-581-inline-param-format.yaml:
-  comment: 
+  comment: a collection of error messages raised by format validation
   todo: 
   expectedLoadError: false
   expectedValid: false
   expectedMessages:
+  - message: 'paths./fixture.get.parameters.in in body should be one of [body]'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'paths./fixture.get.parameters.in in body should be one of [header]'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'paths./fixture.get.parameters.multipleOf in body should be greater than 0'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: '"paths./fixture.get.parameters" must validate one and only one schema (oneOf). Found none valid'
+    withContinueOnErrors: false
+    isRegexp: false
   - message: default value for inlineInfiniteInt in query does not validate its schema
     withContinueOnErrors: true
     isRegexp: false
@@ -146,9 +495,6 @@ fixture-581-inline-param-format.yaml:
   - message: default value for negFactor3 in query does not validate its schema
     withContinueOnErrors: true
     isRegexp: false
-  - message: '"paths./fixture.get.parameters" must validate one and only one schema (oneOf). Found none valid'
-    withContinueOnErrors: false
-    isRegexp: false
   - message: Checked value must be of type integer with format uint32 in inlineInfiniteInt
     withContinueOnErrors: true
     isRegexp: false
@@ -158,7 +504,7 @@ fixture-581-inline-param-format.yaml:
   - message: Checked value must be of type integer with format uint32 in negFactor3
     withContinueOnErrors: true
     isRegexp: false
-  - message: 'negFactor in query must be of type number, because: factor in multipleOf must be positive: -300'
+  - message: 'factor MultipleOf declared for negFactor must be positive: -300'
     withContinueOnErrors: true
     isRegexp: false
   - message: negFactor2 in query should be a multiple of 3
@@ -192,36 +538,23 @@ fixture-581-inline-param-format.yaml:
   - message: definition "#/definitions/myId" is not used anywhere
     withContinueOnErrors: true
     isRegexp: false
-  - message: inlineMaxInt in query has a default but no valid schema
-    withContinueOnErrors: true
-    isRegexp: false
-  - message: inlineInfiniteInt2 in query has a default but no valid schema
-    withContinueOnErrors: true
-    isRegexp: false
-  - message: negFactor2 in query has a default but no valid schema
-    withContinueOnErrors: true
-    isRegexp: false
-  - message: inlineInfiniteInt in query has a default but no valid schema
-    withContinueOnErrors: true
-    isRegexp: false
-  - message: negFactor in query has a default but no valid schema
-    withContinueOnErrors: true
-    isRegexp: false
-  - message: negFactor3 in query has a default but no valid schema
-    withContinueOnErrors: true
-    isRegexp: false
-  - message: inlineMinInt in query has a default but no valid schema
-    withContinueOnErrors: true
-    isRegexp: false
 fixture-581-inline-param.yaml:
   comment: A variation on the theme of number constraints, inspired by isssue#581.
     Focuses on inline params.
-  todo: The negative multiple message should be part of he error validation errors.
-    Still limited by support of default values check
+  todo: Still limited by support of default/examples values check
   expectedLoadError: false
   expectedValid: false
   expectedMessages:
   - message: '"paths./fixture.get.parameters" must validate one and only one schema (oneOf). Found none valid'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'paths./fixture.get.parameters.in in body should be one of [body]'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'paths./fixture.get.parameters.in in body should be one of [header]'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'paths./fixture.get.parameters.multipleOf in body should be greater than 0'
     withContinueOnErrors: false
     isRegexp: false
   - message: default value for inlineInfiniteInt in query does not validate its schema
@@ -248,7 +581,7 @@ fixture-581-inline-param.yaml:
   - message: Maximum boundary value must be of type integer (default format) in inlineInfiniteInt
     withContinueOnErrors: true
     isRegexp: false
-  - message: 'negFactor in query must be of type number, because: factor in multipleOf must be positive: -300'
+  - message: 'factor MultipleOf declared for negFactor must be positive: -300'
     withContinueOnErrors: true
     isRegexp: false
   - message: inlineMinInt in query should be less than or equal to 1
@@ -264,24 +597,15 @@ fixture-581-inline-param.yaml:
   - message: definition "#/definitions/myId" is not used anywhere
     withContinueOnErrors: true
     isRegexp: false
-  - message: inlineMaxInt in query has a default but no valid schema
-    withContinueOnErrors: true
-    isRegexp: false
-  - message: inlineInfiniteInt in query has a default but no valid schema
-    withContinueOnErrors: true
-    isRegexp: false
-  - message: negFactor in query has a default but no valid schema
-    withContinueOnErrors: true
-    isRegexp: false
-  - message: inlineMinInt in query has a default but no valid schema
-    withContinueOnErrors: true
-    isRegexp: false
 fixture-581.yaml:
   comment: 'Issue#581 : value and type checking in constraints'
   todo: issue#581 not solved since only inline params are subject to this validation
   expectedLoadError: false
   expectedValid: false
   expectedMessages:
+  - message: 'paths./fixture.get.parameters.in in body should be one of [body]'
+    withContinueOnErrors: false
+    isRegexp: false
   - message: '"paths./fixture.get.parameters" must validate one and only one schema (oneOf). Found none valid'
     withContinueOnErrors: false
     isRegexp: false
@@ -319,25 +643,34 @@ fixture-859-good.yaml:
 fixture-859.yaml:
   comment: 'Issue#859: clear message on unresolved $ref. First scenario for messages
     Supplement for items, arrays and other nested structures in fixture-859-2.yaml'
-  todo: 
+  todo: would love to have all missing references in one shot.
   expectedLoadError: false
   expectedValid: false
   expectedMessages:
+  - message: 'paths./.get.parameters.in in body should be one of [body]'
+    withContinueOnErrors: false
+    isRegexp: false
   - message: '"paths./.get.parameters" must validate one and only one schema (oneOf). Found none valid'
     withContinueOnErrors: false
     isRegexp: false
   - message: 'some references could not be resolved in spec\. First found: object has no key ".*"'
     withContinueOnErrors: true
     isRegexp: true
+    #- message: 'invalid reference: "#/parameters/rateLimit"'
+    #withContinueOnErrors: true
+    #isRegexp: true
   - message: 'could not resolve reference in "/".GET to $ref #/parameters/rateLimit: object has no key "rateLimit"'
     withContinueOnErrors: true
     isRegexp: false
-  - message: some parameters definitions are broken in "/".POST. Cannot continue validating parameters for operation
+  - message: 'could not resolve reference in / to $ref : object has no key "record"'
     withContinueOnErrors: true
     isRegexp: false
-  - message: some parameters definitions are broken in "/".GET. Cannot continue validating parameters for operation
-    withContinueOnErrors: true
-    isRegexp: false
+    #- message: some parameters definitions are broken in "/".POST. Cannot carry on full checks on parameters for operation
+    #withContinueOnErrors: true
+    #isRegexp: false
+    #- message: some parameters definitions are broken in "/".GET. Cannot carry on full checks on parameters for operation
+    #withContinueOnErrors: true
+    #isRegexp: false
   - message: 'could not resolve reference in "/".POST to $ref #/parameters/rateLimit: object has no key "rateLimit"'
     withContinueOnErrors: true
     isRegexp: false
@@ -417,6 +750,27 @@ fixture-1171.yaml:
       as required
     withContinueOnErrors: true
     isRegexp: false
+  # TODO name missing in path
+  - message: 'items in paths./server/getBody.get.parameters.schema is required' 
+    withContinueOnErrors: false
+    isRegexp: false
+  # TODO name missing in path
+  - message: 'items in paths./servers/{server_id}/zones.get.parameters.schema is required' 
+    withContinueOnErrors: false
+    isRegexp: false
+  # TODO name missing in path
+  - message: 'paths./server/getBody.get.parameters.in in body should be one of [header]' 
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'paths./server/getBody.get.parameters.name in body is required' 
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'paths./server/getBody.get.parameters.thestreetwithnoname in body is a forbidden property'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'paths./servers/{server_id}/zones.get.parameters.in in body should be one of [body]'
+    withContinueOnErrors: false
+    isRegexp: false
   expectedWarnings: []
 fixture-1231.yaml:
   comment: ""
@@ -428,6 +782,31 @@ fixture-1231.yaml:
       Found none valid'
     withContinueOnErrors: false
     isRegexp: false
+  - message: 'parameters.customerIdParam.example in body is a forbidden property'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'parameters.customerIdParam.in in body should be one of [header]'
+    withContinueOnErrors: false
+    isRegexp: false
+  expectedWarnings:
+  - message: 'definitions.customer.create_date.example in body must be of type date-time: "float64"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'definitions.customer.email.example in body must be of type email: "float64"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'definitions.customer.id.example in body must be of type uuid: "float64"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'definitions.customer2.example.create_date in body must be of type date-time: "bad-date"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'definitions.customer2.example.id in body must be of type uuid: "mycustomer"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'example value for customer_id in path does not validate its schema'
+    withContinueOnErrors: true
+    isRegexp: false
   - message: '/v1/broker/{customer_id}.id in body must be of type uuid: "mycustomer"'
     withContinueOnErrors: true
     isRegexp: false
@@ -435,7 +814,9 @@ fixture-1231.yaml:
       "bad-date"'
     withContinueOnErrors: true
     isRegexp: false
-  expectedWarnings: []
+  - message: 'customer_id in path must be of type uuid: "xyz"'
+    withContinueOnErrors: true
+    isRegexp: false
 fixture-1238.yaml:
   comment: ""
   todo: ""
@@ -466,9 +847,12 @@ fixture-1243-3.yaml:
       validate one and only one schema (oneOf). Found none valid'
     withContinueOnErrors: false
     isRegexp: false
-  - message: in operation "ListBackendSets",path param "loadBalancerId" must be declared
-      as required
+  - message: 'in operation "ListBackendSets",path param "loadBalancerId" must be declared
+      as required'
     withContinueOnErrors: true
+    isRegexp: false
+  - message: 'paths./loadBalancers/{loadBalancerId}/backendSets.get.parameters.in in body should be one of [header]'
+    withContinueOnErrors: false
     isRegexp: false
   expectedWarnings: []
 fixture-1243-4.yaml:
@@ -479,6 +863,15 @@ fixture-1243-4.yaml:
   expectedMessages:
   - message: '"paths./loadBalancers/{aLotOfLoadBalancerIds}/backendSets.get.parameters"
       must validate one and only one schema (oneOf). Found none valid'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'paths./loadBalancers/{aLotOfLoadBalancerIds}/backendSets.get.parameters.in in body is required'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'paths./loadBalancers/{aLotOfLoadBalancerIds}/backendSets.get.parameters.schema in body is required'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'paths./loadBalancers/{aLotOfLoadBalancerIds}/backendSets.get.parameters.type in body is a forbidden property'
     withContinueOnErrors: false
     isRegexp: false
   - message: path param "{aLotOfLoadBalancerIds}" has no parameter definition
@@ -548,47 +941,53 @@ fixture-1243-5.yaml:
   expectedLoadError: false
   expectedValid: false
   expectedMessages:
-  - message: '"paths./loadBalancers/{aLotOfLoadBalancerIds}/backendSets.get.parameters"
-      must validate one and only one schema (oneOf). Found none valid'
+  #- message: '"paths./loadBalancers/{aLotOfLoadBalancerIds}/backendSets.get.parameters"
+  #   must validate one and only one schema (oneOf). Found none valid'
+  # withContinueOnErrors: false
+  # isRegexp: false
+  #- message: '"paths./othercheck/{{sid}/warnMe.get.parameters" must validate one and
+  #   only one schema (oneOf). Found none valid'
+  # withContinueOnErrors: false
+  # isRegexp: false
+  #- message: '"paths./othercheck/{sid }/warnMe.get.parameters" must validate one and
+  #   only one schema (oneOf). Found none valid'
+  # withContinueOnErrors: false
+  # isRegexp: false
+  #- message: '"paths./othercheck/{si/d}warnMe.get.parameters" must validate one and
+  #   only one schema (oneOf). Found none valid'
+  # withContinueOnErrors: false
+  # isRegexp: false
+  - message: 'path param "sid" is not present in path "/othercheck/{si/d}warnMe"'
     withContinueOnErrors: false
     isRegexp: false
-  - message: '"paths./othercheck/{{sid}/warnMe.get.parameters" must validate one and
-      only one schema (oneOf). Found none valid'
+  - message: 'path param "{sid" is not present in path "/othercheck/{{sid}/warnMe"'
     withContinueOnErrors: false
     isRegexp: false
-  - message: '"paths./othercheck/{sid }/warnMe.get.parameters" must validate one and
-      only one schema (oneOf). Found none valid'
-    withContinueOnErrors: false
-    isRegexp: false
-  - message: '"paths./othercheck/{si/d}warnMe.get.parameters" must validate one and
-      only one schema (oneOf). Found none valid'
-    withContinueOnErrors: false
-    isRegexp: false
-  - message: path param "{aLotOfLoadBalancerIds}" has no parameter definition
-    withContinueOnErrors: true
-    isRegexp: false
+  #- message: path param "{aLotOfLoadBalancerIds}" has no parameter definition
+  # withContinueOnErrors: true
+  # isRegexp: false
   - message: path param "{sid}" has no parameter definition
-    withContinueOnErrors: true
+    withContinueOnErrors: false
     isRegexp: false
-  - message: path param "{sid }" has no parameter definition
-    withContinueOnErrors: true
-    isRegexp: false
+  #- message: path param "{sid }" has no parameter definition
+  # withContinueOnErrors: true
+  # isRegexp: false
   - message: path /loadBalancers/{aLotOfLoadBalancerIds}/backendSets overlaps with
       /loadBalancers/{loadBalancerId}/backendSets
-    withContinueOnErrors: true
+    withContinueOnErrors: false
     isRegexp: false
   expectedWarnings:
   - message: in path "/othercheck/{sid }/warnMe", param "{sid }" contains {,} or white
       space. Albeit not stricly illegal, this is probably no what you want
-    withContinueOnErrors: true
+    withContinueOnErrors: false
     isRegexp: false
   - message: path stripped from path parameters /othercheck/{X/warnMe contains {,}
       or white space. This is probably no what you want.
-    withContinueOnErrors: true
+    withContinueOnErrors: false
     isRegexp: false
   - message: path stripped from path parameters /othercheck/{si/d}warnMe contains
       {,} or white space. This is probably no what you want.
-    withContinueOnErrors: true
+    withContinueOnErrors: false
     isRegexp: false
 fixture-1243-good.yaml:
   comment: ""
@@ -674,6 +1073,9 @@ fixture-collisions.yaml:
   - message: paths./dupparam/get.get.parameters in body shouldn't contain duplicates
     withContinueOnErrors: false
     isRegexp: false
+  - message: paths./bigbody/get.get.parameters.in in body should be one of [header]
+    withContinueOnErrors: false
+    isRegexp: false
   - message: 'operation "ope2" has more than 1 body param: ["loadBalancerId2" "loadBalancerId3"]'
     withContinueOnErrors: true
     isRegexp: false
@@ -690,7 +1092,7 @@ fixture-collisions.yaml:
     withContinueOnErrors: true
     isRegexp: false
   - message: 'params in path "/loadBalancers/{loadBalancerId}/backendSets/{loadBalancerId}/get"
-      must be unique: "{loadBalancerId}" conflicts whith "{loadBalancerId}"'
+      must be unique: "{loadBalancerId}" conflicts with "{loadBalancerId}"'
     withContinueOnErrors: true
     isRegexp: false
   expectedWarnings: []
@@ -770,38 +1172,22 @@ fixture-constraints-on-numbers.yaml:
     withContinueOnErrors: false
     isRegexp: false
   expectedWarnings:
-  # Those used to be a debug log: now its a warning
-  - message: param1 in query has a default but no valid schema
-    withContinueOnErrors: false
-    isRegexp: false
-  - message: param2 in query has a default but no valid schema
-    withContinueOnErrors: false
-    isRegexp: false
-  - message: param3 in query has a default but no valid schema
-    withContinueOnErrors: false
-    isRegexp: false
-  - message: param4 in query has a default but no valid schema
-    withContinueOnErrors: false
-    isRegexp: false
-  - message: param5 in query has a default but no valid schema
-    withContinueOnErrors: false
-    isRegexp: false
-  - message: param6 in query has a default but no valid schema
-    withContinueOnErrors: false
-    isRegexp: false
-  - message: param7 in query has a default but no valid schema
-    withContinueOnErrors: false
-    isRegexp: false
-  - message: param8 in query has a default but no valid schema
-    withContinueOnErrors: false
-    isRegexp: false
+  #- message: param8 in query has a default but no valid schema
+  #  withContinueOnErrors: false
+  #  isRegexp: false
 fixture-invalid-example-property.yaml:
   comment: 
-  todo: this one should fail when examples are validated
+  todo: 
   expectedLoadError: false
   expectedValid: true
   expectedMessages: []
-  expectedWarnings: []
+  expectedWarnings:
+  - message: example value for getSomeIds in body does not validate its schema
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'getSomeIds.id.example in body must be of type number: "string"'
+    withContinueOnErrors: false
+    isRegexp: false
 fixture-valid-example-property.yaml:
   comment: 
   todo: 
@@ -823,3 +1209,145 @@ petstore-expanded.json:
     withContinueOnErrors: true
     isRegexp: true
   expectedWarnings: []
+gentest.yaml:
+  comment: many parameters situations
+  todo: 
+  expectedLoadError: false
+  expectedValid: true
+  expectedMessages: []
+  expectedWarnings:
+  - message: deepNested1 in query has a default value and is required as parameter
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: queryParam2 in query has a default value and is required as parameter
+    withContinueOnErrors: false
+    isRegexp: false
+gentest2.yaml:
+  comment: many parameters situations with default values
+  todo: 
+  expectedLoadError: false
+  expectedValid: true
+  expectedMessages: []
+  expectedWarnings:
+  - message: deepNested1 in query has a default value and is required as parameter
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: queryParam2 in query has a default value and is required as parameter
+    withContinueOnErrors: false
+    isRegexp: false
+gentest3.yaml:
+  comment: default format in headers
+  todo: 
+  expectedLoadError: false
+  expectedValid: false
+  expectedMessages:
+  - message: 'in operation "gimmeLottaHeaders", default value in header sanity-check-header-2 for response 201 does not validate its schema'
+    withContinueOnErrors: false
+    isRegexp: false
+  - message: 'sanity-check-header-2 in response must be of type date: "x1972-01-01"'
+    withContinueOnErrors: false
+    isRegexp: false
+  expectedWarnings: []
+fixture-all-formats.yaml:
+  comment: all custom formats as default values
+  todo:
+  expectedLoadError: false
+  expectedValid: false
+  expectedMessages:
+  # On parameters:
+  - message: 'default value for n01 in query does not validate its schema'
+  - message: 'default value for n03 in query does not validate its schema'
+  - message: 'default value for n04 in query does not validate its schema'
+  - message: 'default value for n05 in query does not validate its schema'
+  - message: 'default value for n06 in query does not validate its schema'
+  - message: 'default value for p01 in query does not validate its schema'
+  - message: 'default value for p02 in query does not validate its schema'
+  - message: 'default value for p03 in query does not validate its schema'
+  - message: 'default value for p04 in query does not validate its schema'
+  - message: 'default value for p05 in query does not validate its schema'
+  - message: 'default value for p06 in query does not validate its schema'
+  - message: 'default value for p07 in query does not validate its schema'
+  - message: 'default value for p08 in query does not validate its schema'
+  - message: 'default value for p09 in query does not validate its schema'
+  - message: 'default value for p10 in query does not validate its schema'
+  - message: 'default value for p11 in query does not validate its schema'
+  - message: 'default value for p12 in query does not validate its schema'
+  - message: 'default value for p13 in query does not validate its schema'
+  - message: 'default value for p14 in query does not validate its schema'
+  - message: 'default value for p15 in query does not validate its schema'
+  - message: 'default value for p16 in query does not validate its schema'
+  - message: 'default value for p17 in query does not validate its schema'
+  - message: 'default value for p18 in query does not validate its schema'
+  - message: 'default value for p20 in query does not validate its schema'
+  - message: 'default value for p21 in query does not validate its schema'
+  - message: 'default value for p22 in query does not validate its schema'
+  - message: 'default value for p23 in query does not validate its schema'
+  - message: 'n01 in query must be of type number: "string"'
+  - message: 'n03 in query must be of type int32: "float64"'
+  - message: 'n04 in query must be of type int64: "float64"'
+  - message: 'Checked value must be of type integer with format uint32 in n05'
+  - message: 'Checked value must be of type integer with format uint64 in n06'
+  - message: 'p01 in query must be of type byte: "ZWxpemFiZXRocG9zZXk"'
+  - message: 'p02 in query must be of type creditcard: "4111-1X11-1111-1111"'
+  - message: 'p03 in query must be of type date: "1970-13-01"'
+  - message: 'p04 in query must be of type date-time: "1963-13-19T08:30:06.283185Z"'
+  - message: 'p05 in query must be of type duration: "three weeks"'
+  - message: 'p06 in query must be of type email: "joe.bloggs-example.com"'
+  - message: 'p07 in query must be of type hexcolor: "xFFFFFF"'
+  - message: 'p08 in query must be of type hostname: "not_a_valid_hostname"'
+  - message: 'p09 in query must be of type ipv4: "192.168.0.256"'
+  - message: 'p10 in query must be of type ipv6: "o::1"'
+  - message: 'p11 in query must be of type isbn: "abc-0321751043"'
+  - message: 'p12 in query must be of type isbn10: "abc-0321751043"'
+  - message: 'p13 in query must be of type isbn13: "978|3401013190"'
+  - message: 'p14 in query must be of type mac: "01:02:03:04:05:06:07"'
+  - message: 'p15 in query must be of type bsonobjectid: "x07f1f77bcf86cd799439011"'
+  - message: 'p16 in query must be of type password: "float64"'
+  - message: 'p17 in query must be of type rgbcolor: "rgb(100,100)"'
+  - message: 'p18 in query must be of type ssn: "111-11111"'
+  - message: 'p20 in query must be of type uuid: "a8098c1a+f86e+11da+bd1a+00112444be1e"'
+  - message: 'p21 in query must be of type uuid3: "bcd02e22+68f0+3046+a512+327cca9def8f"'
+  - message: 'p22 in query must be of type uuid4: "025b0d74+00a2+4048+bf57+227c5111bb34"'
+  - message: 'p23 in query must be of type uuid5: "886313e1+3b8a+5372+9b90+0c9aee199e5d"'
+  # On schema:
+  - message: 'definitions.allformats-bad.prop01.default in body must be of type byte: "ZWxpemFiZXRocG9zZXk"'
+  - message: 'definitions.allformats-bad.prop02.default in body must be of type creditcard: "4111-1111-1111-111K"'
+  - message: 'definitions.allformats-bad.prop03.default in body must be of type date: "1970-01-32"'
+  - message: 'definitions.allformats-bad.prop04.default in body must be of type date-time: "1963-06-19T99:30:06.283185Z"'
+  - message: 'definitions.allformats-bad.prop05.default in body must be of type duration: "weeks"'
+  - message: 'definitions.allformats-bad.prop06.default in body must be of type email: "joe.bloggs-example.com"'
+  - message: 'definitions.allformats-bad.prop07.default in body must be of type hexcolor: "float64"'
+  - message: 'definitions.allformats-bad.prop08.default in body must be of type hostname: "---invalid-hostname---"'
+  - message: 'definitions.allformats-bad.prop09.default in body must be of type ipv4: "192.2.0.1.45"'
+  - message: 'definitions.allformats-bad.prop10.default in body must be of type ipv6: "x::1"'
+  - message: 'definitions.allformats-bad.prop11.default in body must be of type isbn: "X0321751043"'
+  - message: 'definitions.allformats-bad.prop12.default in body must be of type isbn10: "X0321751043"'
+  - message: 'definitions.allformats-bad.prop13.default in body must be of type isbn13: "X978 3401013190"'
+  - message: 'definitions.allformats-bad.prop14.default in body must be of type mac: "X1:02:03:04:05:06"'
+  - message: 'definitions.allformats-bad.prop15.default in body must be of type bsonobjectid: "X507f1f77bcf86cd799439011"'
+  - message: 'definitions.allformats-bad.prop16.default in body must be of type password: "float64"'
+  - message: 'definitions.allformats-bad.prop17.default in body must be of type rgbcolor: "gb(100,100,100)"'
+  - message: 'definitions.allformats-bad.prop18.default in body must be of type ssn: "Z111-11-1111"'
+  - message: 'definitions.allformats-bad.prop20.default in body must be of type uuid: "a8098c1a+f86e+11da+bd1a+00112444be1e"'
+  - message: 'definitions.allformats-bad.prop21.default in body must be of type uuid3: "bcd02e22+68f0+3046+a512+327cca9def8f"'
+  - message: 'definitions.allformats-bad.prop22.default in body must be of type uuid4: "025b0d74+00a2+4048+bf57+227c5111bb34"'
+  - message: 'definitions.allformats-bad.prop23.default in body must be of type uuid5: "886313e1+3b8a+5372+9b90+0c9aee199e5d"'
+  - message: 'definitions.allformats-bad.propn01.default in body must be of type number: "string"'
+  - message: 'definitions.allformats-bad.propn02.default in body must be of type number: "string"'
+  - message: 'definitions.allformats-bad.propn03.default in body must be of type int32: "float64"'
+  - message: 'definitions.allformats-bad.propn04.default in body must be of type int64: "float64"'
+  - message: 'definitions.allformats-bad.propn05.default in body must be of type uint32: "float64"'
+  - message: 'definitions.allformats-bad.propn06.default in body must be of type uint64: "float64"'
+  expectedWarnings: []
+fixture-bad-response.yaml:
+  comment: $ref sibling in response
+  todo:
+  expectedLoadError: false
+  expectedValid: false
+  expectedMessages:
+  - message: '"paths./fixture.get.responses.200" must validate one and only one schema (oneOf). Found none valid'
+  - message: 'paths./fixture.get.responses.200.$ref in body is a forbidden property'
+  expectedWarnings:
+  - message: 'definition "#/definitions/someIds" is not used anywhere'
+    withContinueOnErrors: true
+

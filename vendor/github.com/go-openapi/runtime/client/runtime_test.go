@@ -30,9 +30,13 @@ import (
 
 	"golang.org/x/net/context"
 
+	"crypto/x509"
+	"encoding/pem"
+
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // task This describes a task. Tasks require a content property to be set.
@@ -61,6 +65,91 @@ func TestRuntime_TLSAuthConfig(t *testing.T) {
 			assert.Len(t, cfg.Certificates, 1)
 			assert.NotNil(t, cfg.RootCAs)
 			assert.Equal(t, "somewhere", cfg.ServerName)
+		}
+	}
+}
+
+func TestRuntime_TLSAuthConfigWithRSAKey(t *testing.T) {
+
+	keyPem, err := ioutil.ReadFile("../fixtures/certs/myclient.key")
+	require.NoError(t, err)
+
+	keyDer, _ := pem.Decode(keyPem)
+	require.NotNil(t, keyDer)
+
+	key, err := x509.ParsePKCS1PrivateKey(keyDer.Bytes)
+	require.NoError(t, err)
+
+	certPem, err := ioutil.ReadFile("../fixtures/certs/myclient.crt")
+	require.NoError(t, err)
+
+	certDer, _ := pem.Decode(certPem)
+	require.NotNil(t, certDer)
+
+	cert, err := x509.ParseCertificate(certDer.Bytes)
+
+	var opts TLSClientOptions
+	opts.LoadedKey = key
+	opts.LoadedCertificate = cert
+
+	cfg, err := TLSClientAuth(opts)
+	if assert.NoError(t, err) {
+		if assert.NotNil(t, cfg) {
+			assert.Len(t, cfg.Certificates, 1)
+		}
+	}
+}
+
+func TestRuntime_TLSAuthConfigWithECKey(t *testing.T) {
+
+	keyPem, err := ioutil.ReadFile("../fixtures/certs/myclient-ecc.key")
+	require.NoError(t, err)
+
+	_, remainder := pem.Decode(keyPem)
+	keyDer, _ := pem.Decode(remainder)
+	require.NotNil(t, keyDer)
+
+	key, err := x509.ParseECPrivateKey(keyDer.Bytes)
+	require.NoError(t, err)
+
+	certPem, err := ioutil.ReadFile("../fixtures/certs/myclient-ecc.crt")
+	require.NoError(t, err)
+
+	certDer, _ := pem.Decode(certPem)
+	require.NotNil(t, certDer)
+
+	cert, err := x509.ParseCertificate(certDer.Bytes)
+
+	var opts TLSClientOptions
+	opts.LoadedKey = key
+	opts.LoadedCertificate = cert
+
+	cfg, err := TLSClientAuth(opts)
+	if assert.NoError(t, err) {
+		if assert.NotNil(t, cfg) {
+			assert.Len(t, cfg.Certificates, 1)
+		}
+	}
+}
+
+func TestRuntime_TLSAuthConfigWithLoadedCA(t *testing.T) {
+
+	certPem, err := ioutil.ReadFile("../fixtures/certs/myCA.crt")
+	require.NoError(t, err)
+
+	block, _ := pem.Decode(certPem)
+	require.NotNil(t, block)
+
+	cert, err := x509.ParseCertificate(block.Bytes)
+	require.NoError(t, err)
+
+	var opts TLSClientOptions
+	opts.LoadedCA = cert
+
+	cfg, err := TLSClientAuth(opts)
+	if assert.NoError(t, err) {
+		if assert.NotNil(t, cfg) {
+			assert.NotNil(t, cfg.RootCAs)
 		}
 	}
 }

@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/go-openapi/errors"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/strfmt"
 )
@@ -76,7 +75,7 @@ func (s *schemaSliceValidator) Validate(data interface{}) *Result {
 	}
 	if s.AdditionalItems != nil && itemsSize < int64(size) {
 		if s.Items != nil && len(s.Items.Schemas) > 0 && !s.AdditionalItems.Allows {
-			result.AddErrors(errors.New(422, "array doesn't allow for additional items"))
+			result.AddErrors(arrayDoesNotAllowAdditionalItemsMsg())
 		}
 		if s.AdditionalItems.Schema != nil {
 			for i := itemsSize; i < (int64(size)-itemsSize)+1; i++ {

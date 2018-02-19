@@ -38,6 +38,12 @@ func TestDuration(t *testing.T) {
 	err = pp.UnmarshalText(b)
 	assert.NoError(t, err)
 
+	err = pp.UnmarshalText([]byte("three week"))
+	assert.Error(t, err)
+
+	err = pp.UnmarshalText([]byte("9999999999999999999999999999999999999999999999999999999 weeks"))
+	assert.Error(t, err)
+
 	txt, err := pp.MarshalText()
 	assert.NoError(t, err)
 	assert.Equal(t, orig, string(txt))
@@ -45,6 +51,15 @@ func TestDuration(t *testing.T) {
 	err = pp.UnmarshalJSON(bj)
 	assert.NoError(t, err)
 	assert.EqualValues(t, orig, pp.String())
+
+	err = pp.UnmarshalJSON([]byte("yada"))
+	assert.Error(t, err)
+
+	err = pp.UnmarshalJSON([]byte(`"12 parsecs"`))
+	assert.Error(t, err)
+
+	err = pp.UnmarshalJSON([]byte(`"12 y"`))
+	assert.Error(t, err)
 
 	b, err = pp.MarshalJSON()
 	assert.NoError(t, err)
@@ -66,6 +81,16 @@ func testDurationParser(t *testing.T, toParse string, expected time.Duration) {
 	assert.Equal(t, expected, r)
 }
 
+func TestDurationParser_Failed(t *testing.T) {
+	_, e := ParseDuration("45 wekk")
+	assert.Error(t, e)
+}
+
+func TestIsDuration_Failed(t *testing.T) {
+	e := IsDuration("45 weeekks")
+	assert.False(t, e)
+}
+
 func testDurationSQLScanner(t *testing.T, dur time.Duration) {
 	values := []interface{}{int64(dur), float64(dur)}
 	for _, value := range values {
@@ -73,7 +98,23 @@ func testDurationSQLScanner(t *testing.T, dur time.Duration) {
 		err := result.Scan(value)
 		assert.NoError(t, err)
 		assert.Equal(t, dur, time.Duration(result))
+
+		// And the other way arround
+		resv, erv := result.Value()
+		assert.NoError(t, erv)
+		assert.EqualValues(t, value, resv)
+
 	}
+}
+
+func TestDurationScanner_Nil(t *testing.T) {
+	var result Duration
+	err := result.Scan(nil)
+	assert.NoError(t, err)
+	assert.EqualValues(t, 0, time.Duration(result))
+
+	err = result.Scan("1 ms")
+	assert.Error(t, err)
 }
 
 func TestDurationParser(t *testing.T) {
@@ -140,4 +181,26 @@ func TestDurationParser(t *testing.T) {
 		testDurationParser(t, str, dur)
 		testDurationSQLScanner(t, dur)
 	}
+}
+func TestIsDuration_Caveats(t *testing.T) {
+	// This works too
+	e := IsDuration("45 weeks")
+	assert.True(t, e)
+
+	// This works too
+	e = IsDuration("45 weekz")
+	assert.True(t, e)
+
+	// This works too
+	e = IsDuration("12 hours")
+	assert.True(t, e)
+
+	// This works too
+	e = IsDuration("12 minutes")
+	assert.True(t, e)
+
+	// This does not work
+	e = IsDuration("12 phours")
+	assert.False(t, e)
+
 }

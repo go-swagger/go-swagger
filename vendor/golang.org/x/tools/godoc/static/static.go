@@ -1,4 +1,4 @@
-// Copyright 2017 The Go Authors. All rights reserved.
+// Copyright 2018 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -766,7 +766,7 @@ function setupInlinePlayground() {
 			code.on('keyup', resize);
 			code.keyup(); // resize now.
 		};
-		
+
 		// If example already visible, set up playground now.
 		if ($(el).is(':visible')) {
 			setup();
@@ -870,7 +870,7 @@ function personalizeInstallInstructions() {
     $('.testWindows').show();
   }
 
-  var download = "https://storage.googleapis.com/golang/" + filename;
+  var download = "https://dl.google.com/go/" + filename;
 
   var message = $('<p class="downloading">'+
     'Your download should begin shortly. '+
@@ -2599,6 +2599,7 @@ function PlaygroundOutput(el) {
         processData: false,
         data: sharingData,
         type: "POST",
+        contentType: "text/plain; charset=utf-8",
         complete: function(xhr) {
           sharing = false;
           if (xhr.status != 200) {
@@ -2914,11 +2915,7 @@ pre .ln {
 	-ms-user-select: none;
 	user-select: none;
 }
-.ln::before {
-	/* Inserting the line numbers as a ::before pseudo-element avoids making
-	 * them selectable; it's the trick Github uses as well. */
-	content: attr(data-content);
-}
+
 body {
 	color: #222;
 }

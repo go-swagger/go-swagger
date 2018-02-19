@@ -1,60 +1,27 @@
+// Copyright 2015 go-swagger maintainers
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package validate
 
 import (
-	"encoding/json"
 	"math"
 	"reflect"
 	"testing"
 
 	"github.com/go-openapi/spec"
-	"github.com/go-openapi/strfmt"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
-
-func TestStringValidator_Validate_Panic(t *testing.T) {
-	var schemaJSON = `
-{
-    "properties": {
-        "name": {
-            "type": "string",
-            "pattern": "^[A-Za-z]+$",
-            "minLength": 1
-        },
-        "place": {
-            "type": "string",
-            "pattern": "^[A-Za-z]+$",
-            "minLength": 1
-        }
-    },
-    "required": [
-        "name"
-    ]
-}`
-	var inputJSON = `{"name": "Ivan"}`
-	schema := new(spec.Schema)
-	require.NoError(t, json.Unmarshal([]byte(schemaJSON), schema))
-	var input map[string]interface{}
-	require.NoError(t, json.Unmarshal([]byte(inputJSON), &input))
-	input["place"] = json.Number("10")
-
-	assert.Error(t, AgainstSchema(schema, input, strfmt.Default))
-}
-
-func TestNumberValidator_ConvertToFloatEdgeCases(t *testing.T) {
-	v := numberValidator{}
-	// convert
-	assert.Equal(t, float64(12.5), v.convertToFloat(float32(12.5)))
-	assert.Equal(t, float64(12.5), v.convertToFloat(float64(12.5)))
-	assert.Equal(t, float64(12), v.convertToFloat(int(12)))
-	assert.Equal(t, float64(12), v.convertToFloat(int32(12)))
-	assert.Equal(t, float64(12), v.convertToFloat(int64(12)))
-
-	// does not convert
-	assert.Equal(t, float64(0), v.convertToFloat("12"))
-	// overflow : silent loss of info - ok (9.223372036854776e+18)
-	assert.NotEqual(t, float64(0), v.convertToFloat(int64(math.MaxInt64)))
-}
 
 func TestNumberValidator_EdgeCases(t *testing.T) {
 	// Apply
@@ -174,6 +141,32 @@ func TestBasicCommonValidator_EdgeCases(t *testing.T) {
 func testCommonApply(t *testing.T, v *basicCommonValidator, sources []interface{}) {
 	for _, source := range sources {
 		assert.True(t, v.Applies(source, reflect.String))
+	}
+}
+
+func TestBasicSliceValidator_EdgeCases(t *testing.T) {
+	// Apply
+
+	v := basicSliceValidator{}
+
+	// basicCommonValidator applies to: Parameter,Schema,Header
+
+	sources := []interface{}{
+		new(spec.Parameter),
+		new(spec.Items),
+		new(spec.Header),
+	}
+
+	testSliceApply(t, &v, sources)
+
+	assert.False(t, v.Applies(new(spec.Schema), reflect.Slice))
+	assert.False(t, v.Applies(new(spec.Parameter), reflect.String))
+
+}
+
+func testSliceApply(t *testing.T, v *basicSliceValidator, sources []interface{}) {
+	for _, source := range sources {
+		assert.True(t, v.Applies(source, reflect.Slice))
 	}
 }
 

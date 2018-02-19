@@ -1,0 +1,21 @@
+swagger: '2.0'
+info:
+  title: Object
+  version: 0.1.0
+
+paths:
+  /:
+    get:
+      summary: GET
+      operationId: getAll
+      parameters:
+        - $ref: 'fixture-responses-2.yaml#/parameters/param1'
+        - name: param2
+          in: body
+          schema:
+            $ref: 'fixture-responses-2.yaml#/definitions/fixture'
+      responses:
+        '200':
+          description: Ok
+        '404':
+          $ref: 'fixture-responses-2.yaml#/responses/NotFound'

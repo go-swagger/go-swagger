@@ -88,7 +88,7 @@ func nameInlinedSchemas(opts *FlattenOpts) error {
 				return fmt.Errorf("schema analysis [%s]: %v", sch.Ref.String(), err)
 			}
 
-			if !asch.IsSimpleSchema { // complex schemas get moved
+			if !asch.IsSimpleSchema && !asch.IsArray { // complex schemas get moved
 				if err := namer.Name(key, sch.Schema, asch); err != nil {
 					return err
 				}

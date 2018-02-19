@@ -9,7 +9,6 @@ paths:
       parameters:
         # error
         - $ref: "#/parameters/rateLimit"
-        # error: $ref sibling
         - name: myparam
           in: query
           type: string
@@ -18,27 +17,22 @@ paths:
           description: "Success"
     get:
       parameters:
-        # error
-        - $ref: "#/parameters/rateLimit"
-        # error $ref sibling
+        - $ref: "#/parameters/rateLimit"        #  <-- error: mispelled reference cannot resolve
         - name: myparam
           in: query
           schema:
-            # error
-            $ref: '#/definitions/myparam'
+            $ref: '#/definitions/myparam' # <- error : mispelled reference cannot resolve
       responses:
         default:
           description: the record
           schema:
-            # error
-            $ref: "#/definitions/record"
+            $ref: "#/definitions/record" # <- error : mispelled reference cannot resolve
         404:
           $ref: "#/responses/notFound"
         200:
           description: "Success"
           schema:
-            # error
-            $ref: "#definitions/myoutput"
+            $ref: "#definitions/myoutput" # <- error : mispelled reference cannot resolve
 
 parameters:
   rateLimits:
@@ -51,8 +45,7 @@ responses:
   notFound:
     description: Not found
     schema:
-      # error
-      $ref: "#/definitions/record"
+      $ref: "#/definitions/record"  # <- error : mispelled reference cannot resolve
 
 definitions:
   records:

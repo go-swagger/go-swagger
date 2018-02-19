@@ -82,7 +82,9 @@ type tokenSource struct {
 func (c *tokenSource) Token() (*oauth2.Token, error) {
 	v := url.Values{
 		"grant_type": {"client_credentials"},
-		"scope":      internal.CondVal(strings.Join(c.conf.Scopes, " ")),
+	}
+	if len(c.conf.Scopes) > 0 {
+		v.Set("scope", strings.Join(c.conf.Scopes, " "))
 	}
 	for k, p := range c.conf.EndpointParams {
 		if _, ok := v[k]; ok {

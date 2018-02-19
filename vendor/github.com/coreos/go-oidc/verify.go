@@ -94,21 +94,7 @@ type Config struct {
 // The returned IDTokenVerifier is tied to the Provider's context and its behavior is
 // undefined once the Provider's context is canceled.
 func (p *Provider) Verifier(config *Config) *IDTokenVerifier {
-
-	return newVerifier(p.remoteKeySet, config, p.issuer)
-}
-
-func newVerifier(keySet KeySet, config *Config, issuer string) *IDTokenVerifier {
-	// If SupportedSigningAlgs is empty defaults to only support RS256.
-	if len(config.SupportedSigningAlgs) == 0 {
-		config.SupportedSigningAlgs = []string{RS256}
-	}
-
-	return &IDTokenVerifier{
-		keySet: keySet,
-		config: config,
-		issuer: issuer,
-	}
+	return NewVerifier(p.issuer, p.remoteKeySet, config)
 }
 
 func parseJWT(p string) ([]byte, error) {
@@ -226,9 +212,15 @@ func (v *IDTokenVerifier) Verify(ctx context.Context, rawIDToken string) (*IDTok
 	}
 
 	sig := jws.Signatures[0]
-	if len(v.config.SupportedSigningAlgs) != 0 && !contains(v.config.SupportedSigningAlgs, sig.Header.Algorithm) {
-		return nil, fmt.Errorf("oidc: id token signed with unsupported algorithm, expected %q got %q", v.config.SupportedSigningAlgs, sig.Header.Algorithm)
+	supportedSigAlgs := v.config.SupportedSigningAlgs
+	if len(supportedSigAlgs) == 0 {
+		supportedSigAlgs = []string{RS256}
 	}
+
+	if !contains(supportedSigAlgs, sig.Header.Algorithm) {
+		return nil, fmt.Errorf("oidc: id token signed with unsupported algorithm, expected %q got %q", supportedSigAlgs, sig.Header.Algorithm)
+	}
+
 	t.sigAlgorithm = sig.Header.Algorithm
 
 	gotPayload, err := v.keySet.VerifySignature(ctx, rawIDToken)

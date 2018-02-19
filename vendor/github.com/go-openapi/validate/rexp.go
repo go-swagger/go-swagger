@@ -19,14 +19,14 @@ import (
 	"sync"
 )
 
-// Cache of compiled regular expressions
+// Cache for compiled regular expressions
 var (
 	cacheMutex = &sync.Mutex{}
 	reDict     = map[string]*re.Regexp{}
 )
 
-// Save repeated regexp compilation
 func compileRegexp(pattern string) (*re.Regexp, error) {
+	// Save repeated regexp compilation
 	if reDict[pattern] != nil {
 		return reDict[pattern], nil
 	}
@@ -37,8 +37,8 @@ func compileRegexp(pattern string) (*re.Regexp, error) {
 	return reDict[pattern], err
 }
 
-// Save repeated regexp compilation, with panic on error
 func mustCompileRegexp(pattern string) *re.Regexp {
+	// Save repeated regexp compilation, with panic on error
 	if reDict[pattern] != nil {
 		return reDict[pattern]
 	}

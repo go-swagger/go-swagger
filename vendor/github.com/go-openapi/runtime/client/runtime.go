@@ -15,8 +15,12 @@
 package client
 
 import (
+	"crypto"
+	"crypto/ecdsa"
+	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"io/ioutil"
 	"mime"
@@ -37,12 +41,44 @@ import (
 
 // TLSClientOptions to configure client authentication with mutual TLS
 type TLSClientOptions struct {
-	Certificate        string
-	Key                string
-	CA                 string
-	ServerName         string
+	// Certificate is the path to a PEM-encoded certificate to be used for
+	// client authentication. If set then Key must also be set.
+	Certificate string
+
+	// LoadedCertificate is the certificate to be used for client authentication.
+	// This field is ignored if Certificate is set. If this field is set, LoadedKey
+	// is also required.
+	LoadedCertificate *x509.Certificate
+
+	// Key is the path to an unencrypted PEM-encoded private key for client
+	// authentication. This field is required if Certificate is set.
+	Key string
+
+	// LoadedKey is the key for client authentication. This field is required if
+	// LoadedCertificate is set.
+	LoadedKey crypto.PrivateKey
+
+	// CA is a path to a PEM-encoded certificate that specifies the root certificate
+	// to use when validating the TLS certificate presented by the server. If this field
+	// (and LoadedCA) is not set, the system certificate pool is used. This field is ignored if LoadedCA
+	// is set.
+	CA string
+
+	// LoadedCA specifies the root certificate to use when validating the server's TLS certificate.
+	// If this field (and CA) is not set, the system certificate pool is used.
+	LoadedCA *x509.Certificate
+
+	// ServerName specifies the hostname to use when verifying the server certificate.
+	// If this field is set then InsecureSkipVerify will be ignored and treated as
+	// false.
+	ServerName string
+
+	// InsecureSkipVerify controls whether the certificate chain and hostname presented
+	// by the server are validated. If false, any certificate is accepted.
 	InsecureSkipVerify bool
-	_                  struct{}
+
+	// Prevents callers using unkeyed fields.
+	_ struct{}
 }
 
 // TLSClientAuth creates a tls.Config for mutual auth
@@ -57,6 +93,32 @@ func TLSClientAuth(opts TLSClientOptions) (*tls.Config, error) {
 			return nil, fmt.Errorf("tls client cert: %v", err)
 		}
 		cfg.Certificates = []tls.Certificate{cert}
+	} else if opts.LoadedCertificate != nil {
+		block := pem.Block{Type: "CERTIFICATE", Bytes: opts.LoadedCertificate.Raw}
+		certPem := pem.EncodeToMemory(&block)
+
+		var keyBytes []byte
+		switch k := opts.LoadedKey.(type) {
+		case *rsa.PrivateKey:
+			keyBytes = x509.MarshalPKCS1PrivateKey(k)
+		case *ecdsa.PrivateKey:
+			var err error
+			keyBytes, err = x509.MarshalECPrivateKey(k)
+			if err != nil {
+				return nil, fmt.Errorf("tls client priv key: %v", err)
+			}
+		default:
+			return nil, fmt.Errorf("tls client priv key: unsupported key type")
+		}
+
+		block = pem.Block{Type: "PRIVATE KEY", Bytes: keyBytes}
+		keyPem := pem.EncodeToMemory(&block)
+
+		cert, err := tls.X509KeyPair(certPem, keyPem)
+		if err != nil {
+			return nil, fmt.Errorf("tls client cert: %v", err)
+		}
+		cfg.Certificates = []tls.Certificate{cert}
 	}
 
 	cfg.InsecureSkipVerify = opts.InsecureSkipVerify
@@ -64,7 +126,11 @@ func TLSClientAuth(opts TLSClientOptions) (*tls.Config, error) {
 	// When no CA certificate is provided, default to the system cert pool
 	// that way when a request is made to a server known by the system trust store,
 	// the name is still verified
-	if opts.CA != "" {
+	if opts.LoadedCA != nil {
+		caCertPool := x509.NewCertPool()
+		caCertPool.AddCert(opts.LoadedCA)
+		cfg.RootCAs = caCertPool
+	} else if opts.CA != "" {
 		// load ca cert
 		caCert, err := ioutil.ReadFile(opts.CA)
 		if err != nil {
