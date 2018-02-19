@@ -762,6 +762,7 @@ func (sg *schemaGenContext) buildProperties() error {
 
 func (sg *schemaGenContext) buildAllOf() error {
 	if len(sg.Schema.AllOf) > 0 {
+		sort.Sort(sg.GenSchema.AllOf)
 		if sg.Container == "" {
 			sg.Container = sg.Name
 		}
