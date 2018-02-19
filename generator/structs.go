@@ -77,7 +77,7 @@ type GenSchema struct {
 	XMLName                 string
 	CustomTag               string
 	Properties              GenSchemaList
-	AllOf                   []GenSchema
+	AllOf                   GenSchemaList
 	HasAdditionalProperties bool
 	IsAdditionalProperties  bool
 	AdditionalProperties    *GenSchema
