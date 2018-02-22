@@ -1,0 +1,57 @@
+swagger: '2.0'
+info:
+  title: Title
+  description: some description
+  contact:
+    name: John Doe
+    url: https://www.acme.com/support
+    email: support@acme.com
+  version: "1.0.0"
+paths:
+  /:
+    get:
+      responses:
+        200:
+          description: Example path
+          schema:
+            #$ref: '#/definitions/ExecuteValues'
+            type: string
+        default:
+          description: generic error
+          schema:
+            type: string
+definitions:
+  ExecuteValues:
+    description: recursive definition
+    type: object
+    properties:
+      Value:
+        $ref: "#/definitions/ExecuteValue"
+      Array:
+        description: array definition
+        type: array
+        items:
+          $ref: "#/definitions/ExecuteValues"
+    default:
+      Array:
+      - Array:
+        - Value:
+            Value: value
+            ValueType: ExecuteValueString
+      - Value:
+          Value: true
+          ValueType: ExecuteValueBoolean
+  ExecuteValue:
+    description: non-recursive definition
+    type: object
+    discriminator: ValueType
+    required:
+    - ValueType
+    - Test
+    properties:
+      ValueType:
+        description: the type of the value
+        type: string
+      Test:
+        description: a test
+        type: string

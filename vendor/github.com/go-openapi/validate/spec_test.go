@@ -745,3 +745,54 @@ func TestSpec_Issue73(t *testing.T) {
 		assert.Empty(t, res.Errors, " in fixture-swagger-good.yaml")
 	}
 }
+
+func TestSpec_Issue1341(t *testing.T) {
+	// testing recursive walk with defaults and examples
+	doc, err := loads.Spec(filepath.Join("fixtures", "bugs", "1341", "fixture-1341-good.yaml"))
+	if assert.NoError(t, err) {
+		validator := NewSpecValidator(doc.Schema(), strfmt.Default)
+		res, _ := validator.Validate(doc)
+		assert.Empty(t, res.Errors, " in fixture-1341-good.yaml")
+		assert.Len(t, res.Warnings, 1, " in fixture-1341-good.yaml")
+	}
+
+	doc, err = loads.Spec(filepath.Join("fixtures", "bugs", "1341", "fixture-1341.yaml"))
+	if assert.NoError(t, err) {
+		validator := NewSpecValidator(doc.Schema(), strfmt.Default)
+		res, _ := validator.Validate(doc)
+		assert.Empty(t, res.Errors, "in fixture-1341.yaml")
+		assert.Empty(t, res.Warnings, "in fixture-1341.yaml")
+	}
+
+	doc, err = loads.Spec(filepath.Join("fixtures", "bugs", "1341", "fixture-1341-2.yaml"))
+	if assert.NoError(t, err) {
+		validator := NewSpecValidator(doc.Schema(), strfmt.Default)
+		res, _ := validator.Validate(doc)
+		assert.Empty(t, res.Errors, "in fixture-1341-2.yaml")
+		assert.Empty(t, res.Warnings, "in fixture-1341-2.yaml")
+	}
+
+	doc, err = loads.Spec(filepath.Join("fixtures", "bugs", "1341", "fixture-1341-3.yaml"))
+	if assert.NoError(t, err) {
+		validator := NewSpecValidator(doc.Schema(), strfmt.Default)
+		res, _ := validator.Validate(doc)
+		assert.Empty(t, res.Errors, "in fixture-1341-3.yaml")
+		assert.Len(t, res.Warnings, 4, "in fixture-1341-3.yaml")
+	}
+
+	doc, err = loads.Spec(filepath.Join("fixtures", "bugs", "1341", "fixture-1341-4.yaml"))
+	if assert.NoError(t, err) {
+		validator := NewSpecValidator(doc.Schema(), strfmt.Default)
+		res, _ := validator.Validate(doc)
+		assert.Empty(t, res.Errors, "in fixture-1341-4.yaml")
+		assert.Empty(t, res.Warnings, "in fixture-1341-4.yaml")
+	}
+
+	doc, err = loads.Spec(filepath.Join("fixtures", "bugs", "1341", "fixture-1341-5.yaml"))
+	if assert.NoError(t, err) {
+		validator := NewSpecValidator(doc.Schema(), strfmt.Default)
+		res, _ := validator.Validate(doc)
+		assert.Len(t, res.Errors, 4, "in fixture-1341-5.yaml")
+		assert.Empty(t, res.Warnings, "in fixture-1341-5.yaml")
+	}
+}

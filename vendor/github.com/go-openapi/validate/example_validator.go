@@ -16,13 +16,57 @@ package validate
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/go-openapi/spec"
 )
 
 // ExampleValidator validates example values defined in a spec
 type exampleValidator struct {
-	SpecValidator *SpecValidator
+	SpecValidator  *SpecValidator
+	visitedSchemas map[string]bool
+}
+
+// resetVisited resets the internal state of visited schemas
+func (ex *exampleValidator) resetVisited() {
+	ex.visitedSchemas = map[string]bool{}
+}
+
+// beingVisited asserts a schema is being visited
+func (ex *exampleValidator) beingVisited(path string) {
+	ex.visitedSchemas[path] = true
+}
+
+// isVisited tells if a path has already been visited
+func (ex *exampleValidator) isVisited(path string) bool {
+	found := ex.visitedSchemas[path]
+	if !found {
+		// search for overlapping paths
+		frags := strings.Split(path, ".")
+		if len(frags) < 2 {
+			// shortcut exit on smaller paths
+			return found
+		}
+		last := len(frags) - 1
+		var currentFragStr, parent string
+		for i := range frags {
+			if i == 0 {
+				currentFragStr = frags[last]
+			} else {
+				currentFragStr = strings.Join([]string{frags[last-i], currentFragStr}, ".")
+			}
+			if i < last {
+				parent = strings.Join(frags[0:last-i], ".")
+			} else {
+				parent = ""
+			}
+			if strings.HasSuffix(parent, currentFragStr) {
+				found = true
+				break
+			}
+		}
+	}
+	return found
 }
 
 // Validate validates the example values declared in the swagger spec
@@ -38,6 +82,7 @@ func (ex *exampleValidator) Validate() (errs *Result) {
 	if ex == nil || ex.SpecValidator == nil {
 		return errs
 	}
+	ex.resetVisited()
 	errs.Merge(ex.validateExampleValueValidAgainstSchema()) // error -
 
 	return errs
@@ -59,6 +104,9 @@ func (ex *exampleValidator) validateExampleValueValidAgainstSchema() *Result {
 
 					// As of swagger 2.0, Examples are not supported in simple parameters
 					// However, it looks like it is supported by go-openapi
+
+					// reset explored schemas to get depth-first recursive-proof exploration
+					ex.resetVisited()
 
 					// Check simple parameters first
 					// default values provided must validate against their inline definition (no explicit schema)
@@ -111,6 +159,8 @@ func (ex *exampleValidator) validateExampleValueValidAgainstSchema() *Result {
 		}
 	}
 	if s.spec.Spec().Definitions != nil { // Safeguard
+		// reset explored schemas to get depth-first recursive-proof exploration
+		ex.resetVisited()
 		for nm, sch := range s.spec.Spec().Definitions {
 			res.Merge(ex.validateExampleValueSchemaAgainstSchema(fmt.Sprintf("definitions.%s", nm), "body", &sch))
 		}
@@ -130,6 +180,9 @@ func (ex *exampleValidator) validateExampleInResponse(resp *spec.Response, respo
 
 	if response.Headers != nil { // Safeguard
 		for nm, h := range response.Headers {
+			// reset explored schemas to get depth-first recursive-proof exploration
+			ex.resetVisited()
+
 			if h.Example != nil {
 				red := NewHeaderValidator(nm, &h, s.KnownFormats).Validate(h.Example)
 				if red.HasErrorsOrWarnings() {
@@ -155,6 +208,9 @@ func (ex *exampleValidator) validateExampleInResponse(resp *spec.Response, respo
 		}
 	}
 	if response.Schema != nil {
+		// reset explored schemas to get depth-first recursive-proof exploration
+		ex.resetVisited()
+
 		red := ex.validateExampleValueSchemaAgainstSchema(responseCodeAsStr, "response", response.Schema)
 		if red.HasErrorsOrWarnings() {
 			// Additional message to make sure the context of the error is not lost
@@ -179,43 +235,47 @@ func (ex *exampleValidator) validateExampleInResponse(resp *spec.Response, respo
 }
 
 func (ex *exampleValidator) validateExampleValueSchemaAgainstSchema(path, in string, schema *spec.Schema) *Result {
-	res := new(Result)
+	if schema == nil || ex.isVisited(path) {
+		// Avoids recursing if we are already done with that check
+		return nil
+	}
+	ex.beingVisited(path)
 	s := ex.SpecValidator
-	if schema != nil { // Safeguard
-		if schema.Example != nil {
-			res.MergeAsWarnings(NewSchemaValidator(schema, s.spec.Spec(), path+".example", s.KnownFormats).Validate(schema.Example))
+	res := new(Result)
+
+	if schema.Example != nil {
+		res.MergeAsWarnings(NewSchemaValidator(schema, s.spec.Spec(), path+".example", s.KnownFormats).Validate(schema.Example))
+	}
+	if schema.Items != nil {
+		if schema.Items.Schema != nil {
+			res.Merge(ex.validateExampleValueSchemaAgainstSchema(path+".items.example", in, schema.Items.Schema))
 		}
-		if schema.Items != nil {
-			if schema.Items.Schema != nil {
-				res.Merge(ex.validateExampleValueSchemaAgainstSchema(path+".items.example", in, schema.Items.Schema))
+		// Multiple schemas in items
+		if schema.Items.Schemas != nil { // Safeguard
+			for i, sch := range schema.Items.Schemas {
+				res.Merge(ex.validateExampleValueSchemaAgainstSchema(fmt.Sprintf("%s.items[%d].example", path, i), in, &sch))
 			}
-			// Multiple schemas in items
-			if schema.Items.Schemas != nil { // Safeguard
-				for i, sch := range schema.Items.Schemas {
-					res.Merge(ex.validateExampleValueSchemaAgainstSchema(fmt.Sprintf("%s.items[%d].example", path, i), in, &sch))
-				}
-			}
 		}
-		if _, err := compileRegexp(schema.Pattern); err != nil {
-			res.AddErrors(invalidPatternInMsg(path, in, schema.Pattern))
-		}
-		if schema.AdditionalItems != nil && schema.AdditionalItems.Schema != nil {
-			// NOTE: we keep validating values, even though additionalItems is unsupported in Swagger 2.0 (and 3.0 as well)
-			res.Merge(ex.validateExampleValueSchemaAgainstSchema(fmt.Sprintf("%s.additionalItems", path), in, schema.AdditionalItems.Schema))
-		}
-		for propName, prop := range schema.Properties {
-			res.Merge(ex.validateExampleValueSchemaAgainstSchema(path+"."+propName, in, &prop))
-		}
-		for propName, prop := range schema.PatternProperties {
-			res.Merge(ex.validateExampleValueSchemaAgainstSchema(path+"."+propName, in, &prop))
-		}
-		if schema.AdditionalProperties != nil && schema.AdditionalProperties.Schema != nil {
-			res.Merge(ex.validateExampleValueSchemaAgainstSchema(fmt.Sprintf("%s.additionalProperties", path), in, schema.AdditionalProperties.Schema))
-		}
-		if schema.AllOf != nil {
-			for i, aoSch := range schema.AllOf {
-				res.Merge(ex.validateExampleValueSchemaAgainstSchema(fmt.Sprintf("%s.allOf[%d]", path, i), in, &aoSch))
-			}
+	}
+	if _, err := compileRegexp(schema.Pattern); err != nil {
+		res.AddErrors(invalidPatternInMsg(path, in, schema.Pattern))
+	}
+	if schema.AdditionalItems != nil && schema.AdditionalItems.Schema != nil {
+		// NOTE: we keep validating values, even though additionalItems is unsupported in Swagger 2.0 (and 3.0 as well)
+		res.Merge(ex.validateExampleValueSchemaAgainstSchema(fmt.Sprintf("%s.additionalItems", path), in, schema.AdditionalItems.Schema))
+	}
+	for propName, prop := range schema.Properties {
+		res.Merge(ex.validateExampleValueSchemaAgainstSchema(path+"."+propName, in, &prop))
+	}
+	for propName, prop := range schema.PatternProperties {
+		res.Merge(ex.validateExampleValueSchemaAgainstSchema(path+"."+propName, in, &prop))
+	}
+	if schema.AdditionalProperties != nil && schema.AdditionalProperties.Schema != nil {
+		res.Merge(ex.validateExampleValueSchemaAgainstSchema(fmt.Sprintf("%s.additionalProperties", path), in, schema.AdditionalProperties.Schema))
+	}
+	if schema.AllOf != nil {
+		for i, aoSch := range schema.AllOf {
+			res.Merge(ex.validateExampleValueSchemaAgainstSchema(fmt.Sprintf("%s.allOf[%d]", path, i), in, &aoSch))
 		}
 	}
 	return res
