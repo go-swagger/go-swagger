@@ -1,0 +1,593 @@
+---
+swagger: '2.0'
+info:
+  title: 'fixture to tests formats in parameters, schema objects'
+  version: '1.0'
+  description: |
+    This exercises the type and format validation based on complete spec
+produces:
+  - application/json
+paths:
+  /fixture/formats-good:
+    get:
+      operationId: op1
+      parameters:
+        - name: p01
+          in: query
+          type: string
+          format: byte
+          default: 'ZWxpemFiZXRocG9zZXk='
+        - name: p02
+          in: query
+          type: string
+          format: creditcard
+          default: '4111-1111-1111-1111'
+        - name: p03
+          in: query
+          type: string
+          format: date
+          default: 1970-01-01
+        - name: p04
+          in: query
+          type: string
+          format: date-time
+          default: '1963-06-19T08:30:06.283185Z'
+        - name: p05
+          in: query
+          type: string
+          format: duration
+          default: '3 weeks'
+        - name: p06
+          in: query
+          type: string
+          format: email
+          default: 'joe.bloggs@example.com'
+        - name: p07
+          in: query
+          type: string
+          format: hexcolor
+          default: '#FFFFFF'
+        - name: p08
+          in: query
+          type: string
+          format: hostname
+          default: 'www.example.com'
+        - name: p09
+          in: query
+          type: string
+          format: ipv4
+          default: '192.168.0.1'
+        - name: p10
+          in: query
+          type: string
+          format: ipv6
+          default:  '::1'
+        - name: p11
+          in: query
+          type: string
+          format: isbn
+          default: '0321751043'
+        - name: p12
+          in: query
+          type: string
+          format: isbn10
+          default: '0321751043'
+        - name: p13
+          in: query
+          type: string
+          format: isbn13
+          default: '978 3401013190'
+        - name: p14
+          in: query
+          type: string
+          format: mac
+          default: '01:02:03:04:05:06'
+        - name: p15
+          in: query
+          type: string
+          format: bsonobjectid
+          default: '507f1f77bcf86cd799439011'
+        - name: p16
+          in: query
+          type: string
+          format: password
+          default: 'secret'
+        - name: p17
+          in: query
+          type: string
+          format: rgbcolor
+          default: 'rgb(100,100,100)'
+        - name: p18
+          in: query
+          type: string
+          format: ssn
+          default: '111-11-1111'
+        - name: p19
+          in: query
+          type: string
+          format: uri
+          default: 'http://foo.bar/?baz=qux#quux'
+        - name: p20
+          in: query
+          type: string
+          format: uuid
+          default: 'a8098c1a-f86e-11da-bd1a-00112444be1e'
+        - name: p21
+          in: query
+          type: string
+          format: uuid3
+          default: 'bcd02e22-68f0-3046-a512-327cca9def8f'
+        - name: p22
+          in: query
+          type: string
+          format: uuid4
+          default: '025b0d74-00a2-4048-bf57-227c5111bb34'
+        - name: p23
+          in: query
+          type: string
+          format: uuid5
+          default: '886313e1-3b8a-5372-9b90-0c9aee199e5d'
+        - name: n01
+          in: query
+          type: number
+          format: float
+          default: 10.01
+        - name: n02
+          in: query
+          type: number
+          format: double
+          default: 100.99
+        - name: n03
+          in: query
+          type: integer
+          format: int32
+          default: -12
+        - name: n04
+          in: query
+          type: integer
+          format: int64
+          default: 20
+        - name: n05
+          in: query
+          type: integer
+          format: uint32
+          default: 20
+        - name: n06
+          in: query
+          type: integer
+          format: uint64
+          default: 30
+          # TODO: check format aliases
+      responses:
+        200:
+          description: 'response exercising formats'
+          # TODO: check format in headers
+          schema:
+            $ref: '#/definitions/allformats'
+
+  /fixture/formats-bad:
+    get:
+      operationId: op2
+      parameters:
+        - name: p01
+          in: query
+          type: string
+          format: byte
+          default: 'ZWxpemFiZXRocG9zZXk'
+        - name: p02
+          in: query
+          type: string
+          format: creditcard
+          default: '4111-1X11-1111-1111'
+        - name: p03
+          in: query
+          type: string
+          format: date
+          default: 1970-13-01
+        - name: p04
+          in: query
+          type: string
+          format: date-time
+          default: '1963-13-19T08:30:06.283185Z'
+        - name: p05
+          in: query
+          type: string
+          format: duration
+          default: 'three weeks'
+        - name: p06
+          in: query
+          type: string
+          format: email
+          default: 'joe.bloggs-example.com'
+        - name: p07
+          in: query
+          type: string
+          format: hexcolor
+          default: 'xFFFFFF'
+        - name: p08
+          in: query
+          type: string
+          format: hostname
+          default: 'not_a_valid_hostname'
+        - name: p09
+          in: query
+          type: string
+          format: ipv4
+          default: '192.168.0.256'
+        - name: p10
+          in: query
+          type: string
+          format: ipv6
+          default:  'o::1'
+        - name: p11
+          in: query
+          type: string
+          format: isbn
+          default: 'abc-0321751043'
+        - name: p12
+          in: query
+          type: string
+          format: isbn10
+          default: 'abc-0321751043'
+        - name: p13
+          in: query
+          type: string
+          format: isbn13
+          default: '978|3401013190'
+        - name: p14
+          in: query
+          type: string
+          format: mac
+          default: '01:02:03:04:05:06:07'
+        - name: p15
+          in: query
+          type: string
+          format: bsonobjectid
+          default: 'x07f1f77bcf86cd799439011'
+        - name: p16
+          in: query
+          type: string
+          format: password
+          default: 0
+        - name: p17
+          in: query
+          type: string
+          format: rgbcolor
+          default: 'rgb(100,100)'
+        - name: p18
+          in: query
+          type: string
+          format: ssn
+          default: '111-11111'
+        - name: p19
+          in: query
+          type: string
+          format: uri
+          default: 'httz://foo.bar/?baz=qux#quux'
+        - name: p20
+          in: query
+          type: string
+          format: uuid
+          default: 'a8098c1a+f86e+11da+bd1a+00112444be1e'
+        - name: p21
+          in: query
+          type: string
+          format: uuid3
+          default: 'bcd02e22+68f0+3046+a512+327cca9def8f'
+        - name: p22
+          in: query
+          type: string
+          format: uuid4
+          default: '025b0d74+00a2+4048+bf57+227c5111bb34'
+        - name: p23
+          in: query
+          type: string
+          format: uuid5
+          default: '886313e1+3b8a+5372+9b90+0c9aee199e5d'
+        - name: n01
+          in: query
+          type: number
+          format: float
+          default: abc
+        - name: n02
+          in: query
+          type: number
+          format: double
+          default: 100.99
+        - name: n03
+          in: query
+          type: integer
+          format: int32
+          default: -12.05
+        - name: n04
+          in: query
+          type: integer
+          format: int64
+          default: 20.05
+        - name: n05
+          in: query
+          type: integer
+          format: uint32
+          default: -20
+        - name: n06
+          in: query
+          type: integer
+          format: uint64
+          default: -30
+      responses:
+        200:
+          description: 'response exercising formats'
+          schema:
+            $ref: '#/definitions/allformats-bad'
+ 
+  /fixture/body:
+    post:
+      operationId: op3
+      parameters:
+        - name: allformat
+          in: body
+          schema:
+            $ref: '#/definitions/allformats'
+      responses:
+        200:
+          description: 'response exercising formats'
+          # TODO: check format in headers
+          schema:
+            $ref: '#/definitions/allformats'
+  /fixture/file:
+    post:
+      operationId: op4
+      consumes: 
+      - multipart/form-data
+      parameters:
+        - name: f01
+          in: formData
+          type: file
+          required: true
+        - name: f02
+          in: formData
+          type: file
+          required: false
+      responses:
+        200:
+          description: 'response exercising formats'
+
+definitions:
+  allformats:
+    type: object
+    properties:
+      prop01:
+        type: string
+        format: byte
+        default: 'ZWxpemFiZXRocG9zZXk='
+      prop02:
+        type: string
+        format: creditcard
+        default: '4111-1111-1111-1111'
+      prop03:
+        type: string
+        format: date
+        default: 1970-01-01
+      prop04:
+        type: string
+        format: date-time
+        default: '1963-06-19T08:30:06.283185Z'
+      prop05:
+        type: string
+        format: duration
+        default: '3 weeks'
+      prop06:
+        type: string
+        format: email
+        default: 'joe.bloggs@example.com'
+      prop07:
+        type: string
+        format: hexcolor
+        default: '#FFFFFF'
+      prop08:
+        type: string
+        format: hostname
+        default: 'www.example.com'
+      prop09:
+        type: string
+        format: ipv4
+        default: '192.168.0.1'
+      prop10:
+        type: string
+        format: ipv6
+        default:  '::1'
+      prop11:
+        type: string
+        format: isbn
+        default: '0321751043'
+      prop12:
+        type: string
+        format: isbn10
+        default: '0321751043'
+      prop13:
+        type: string
+        format: isbn13
+        default: '978 3401013190'
+      prop14:
+        type: string
+        format: mac
+        default: '01:02:03:04:05:06'
+      prop15:
+        type: string
+        format: bsonobjectid
+        default: '507f1f77bcf86cd799439011'
+      prop16:
+        type: string
+        format: password
+        default: 'secret'
+      prop17:
+        type: string
+        format: rgbcolor
+        default: 'rgb(100,100,100)'
+      prop18:
+        type: string
+        format: ssn
+        default: '111-11-1111'
+      prop19:
+        type: string
+        format: uri
+        default: 'http://foo.bar/?baz=qux#quux'
+      prop20:
+        type: string
+        format: uuid
+        default: 'a8098c1a-f86e-11da-bd1a-00112444be1e'
+      prop21:
+        type: string
+        format: uuid3
+        default: 'bcd02e22-68f0-3046-a512-327cca9def8f'
+      prop22:
+        type: string
+        format: uuid4
+        default: '025b0d74-00a2-4048-bf57-227c5111bb34'
+      prop23:
+        type: string
+        format: uuid5
+        default: '886313e1-3b8a-5372-9b90-0c9aee199e5d'
+      propn01:
+        type: number
+        format: float
+        default: 10.01
+      propn02:
+        type: number
+        format: double
+        default: 100.99
+      propn03:
+        type: integer
+        format: int32
+        default: -12
+      propn04:
+        type: integer
+        format: int64
+        default: 20
+      propn05:
+        type: integer
+        format: uint32
+        default: 20
+      propn06:
+        type: integer
+        format: uint64
+        default: 30
+  allformats-bad:
+    type: object
+    properties:
+      prop01:
+        type: string
+        format: byte
+        default: 'ZWxpemFiZXRocG9zZXk'
+      prop02:
+        type: string
+        format: creditcard
+        default: '4111-1111-1111-111K'
+      prop03:
+        type: string
+        format: date
+        default: 1970-01-32
+      prop04:
+        type: string
+        format: date-time
+        default: '1963-06-19T99:30:06.283185Z'
+      prop05:
+        type: string
+        format: duration
+        default: 'weeks'
+      prop06:
+        type: string
+        format: email
+        default: 'joe.bloggs-example.com'
+      prop07:
+        type: string
+        format: hexcolor
+        default: 1
+      prop08:
+        type: string
+        format: hostname
+        default: '---invalid-hostname---'
+      prop09:
+        type: string
+        format: ipv4
+        default: '192.2.0.1.45'
+      prop10:
+        type: string
+        format: ipv6
+        default:  'x::1'
+      prop11:
+        type: string
+        format: isbn
+        default: 'X0321751043'
+      prop12:
+        type: string
+        format: isbn10
+        default: 'X0321751043'
+      prop13:
+        type: string
+        format: isbn13
+        default: 'X978 3401013190'
+      prop14:
+        type: string
+        format: mac
+        default: 'X1:02:03:04:05:06'
+      prop15:
+        type: string
+        format: bsonobjectid
+        default: 'X507f1f77bcf86cd799439011'
+      prop16:
+        type: string
+        format: password
+        default: 10
+      prop17:
+        type: string
+        format: rgbcolor
+        default: 'gb(100,100,100)'
+      prop18:
+        type: string
+        format: ssn
+        default: 'Z111-11-1111'
+      prop19:
+        type: string
+        format: uri
+        default: 'xttp://foo.bar/?baz=qux#quux'
+      prop20:
+        type: string
+        format: uuid
+        default: 'a8098c1a+f86e+11da+bd1a+00112444be1e'
+      prop21:
+        type: string
+        format: uuid3
+        default: 'bcd02e22+68f0+3046+a512+327cca9def8f'
+      prop22:
+        type: string
+        format: uuid4
+        default: '025b0d74+00a2+4048+bf57+227c5111bb34'
+      prop23:
+        type: string
+        format: uuid5
+        default: '886313e1+3b8a+5372+9b90+0c9aee199e5d'
+      propn01:
+        type: number
+        format: float
+        default: abc
+      propn02:
+        type: number
+        format: double
+        default: abc
+      propn03:
+        type: integer
+        format: int32
+        default: -12.05
+      propn04:
+        type: integer
+        format: int64
+        default: 20.99
+      propn05:
+        type: integer
+        format: uint32
+        default: 20.05
+      propn06:
+        type: integer
+        format: uint64
+        default: 30.05

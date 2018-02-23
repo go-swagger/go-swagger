@@ -21,25 +21,18 @@ import (
 	"github.com/go-openapi/errors"
 )
 
-// Defaulter ...
-type Defaulter interface {
-	Apply()
-}
-
-// DefaulterFunc ...
-type DefaulterFunc func()
-
-// Apply ...
-func (f DefaulterFunc) Apply() {
-	f()
-}
-
-// Result represents a validation result set
+// Result represents a validation result set, composed of
+// errors and warnings.
+//
+// It is used to keep track of all detected errors and warnings during
+// the validation of a specification.
+//
 // Matchcount is used to determine
 // which errors are relevant in the case of AnyOf, OneOf
 // schema validation. Results from the validation branch
 // with most matches get eventually selected.
-// TODO keep path of key originating the error
+//
+// TODO: keep path of key originating the error
 type Result struct {
 	Errors     []error
 	Warnings   []error
@@ -47,7 +40,7 @@ type Result struct {
 	Defaulters []Defaulter
 }
 
-// Merge merges this result with the other one, preserving match counts etc
+// Merge merges this result with the other one(s), preserving match counts etc.
 func (r *Result) Merge(others ...*Result) *Result {
 	for _, other := range others {
 		if other != nil {
@@ -60,7 +53,8 @@ func (r *Result) Merge(others ...*Result) *Result {
 	return r
 }
 
-// MergeAsErrors merges this result with the other one, preserving match counts etc.
+// MergeAsErrors merges this result with the other one(s), preserving match counts etc.
+//
 // Warnings from input are merged as Errors in the returned merged Result.
 func (r *Result) MergeAsErrors(others ...*Result) *Result {
 	for _, other := range others {
@@ -74,7 +68,8 @@ func (r *Result) MergeAsErrors(others ...*Result) *Result {
 	return r
 }
 
-// MergeAsWarnings merges this result with the other one, preserving match counts etc.
+// MergeAsWarnings merges this result with the other one(s), preserving match counts etc.
+//
 // Errors from input are merged as Warnings in the returned merged Result.
 func (r *Result) MergeAsWarnings(others ...*Result) *Result {
 	for _, other := range others {
@@ -89,12 +84,13 @@ func (r *Result) MergeAsWarnings(others ...*Result) *Result {
 }
 
 // AddErrors adds errors to this validation result (if not already reported).
+//
 // Since the same check may be passed several times while exploring the
-// spec structure (via $ref, ...) it is important to keep reported messages
+// spec structure (via $ref, ...) reported messages are kept
 // unique.
 func (r *Result) AddErrors(errors ...error) {
-	found := false
 	for _, e := range errors {
+		found := false
 		if e != nil {
 			for _, isReported := range r.Errors {
 				if e.Error() == isReported.Error() {
@@ -109,10 +105,10 @@ func (r *Result) AddErrors(errors ...error) {
 	}
 }
 
-// AddWarnings adds warnings to this validation result (if not already reported)
+// AddWarnings adds warnings to this validation result (if not already reported).
 func (r *Result) AddWarnings(warnings ...error) {
-	found := false
 	for _, e := range warnings {
+		found := false
 		if e != nil {
 			for _, isReported := range r.Warnings {
 				if e.Error() == isReported.Error() {
@@ -127,17 +123,19 @@ func (r *Result) AddWarnings(warnings ...error) {
 	}
 }
 
-// KeepRelevantErrors strips a result from standard errors and keeps
-// the ones which are supposedly more accurate.
-// The original result remains unaffected (creates a new instance of Result).
-// We do that to work around the "matchCount" filter which would otherwise
-// strip our result from some accurate error reporting from lower level validators.
-//
-// NOTE: this implementation with a placeholder (IMPORTANT!) is neither clean nor
-// very efficient. On the other hand, relying on go-openapi/errors to manipulate
-// codes would require to change a lot here. So, for the moment, let's go with
-// placeholders.
-func (r *Result) KeepRelevantErrors() *Result {
+func (r *Result) keepRelevantErrors() *Result {
+	// TODO: this one is going to disapear...
+	// keepRelevantErrors strips a result from standard errors and keeps
+	// the ones which are supposedly more accurate.
+	//
+	// The original result remains unaffected (creates a new instance of Result).
+	// This method is used to work around the "matchCount" filter which would otherwise
+	// strip our result from some accurate error reporting from lower level validators.
+	//
+	// NOTE: this implementation with a placeholder (IMPORTANT!) is neither clean nor
+	// very efficient. On the other hand, relying on go-openapi/errors to manipulate
+	// codes would require to change a lot here. So, for the moment, let's go with
+	// placeholders.
 	strippedErrors := []error{}
 	for _, e := range r.Errors {
 		if strings.HasPrefix(e.Error(), "IMPORTANT!") {
@@ -156,21 +154,45 @@ func (r *Result) KeepRelevantErrors() *Result {
 	return strippedResult
 }
 
-// IsValid returns true when this result is valid
-// TODO: allowing to work on nil object (same with HasErrors(), ...)
-// same for Merge, etc... => would result in safe, more concise calls.
+// IsValid returns true when this result is valid.
+//
+// Returns true on a nil *Result.
 func (r *Result) IsValid() bool {
+	if r == nil {
+		return true
+	}
 	return len(r.Errors) == 0
 }
 
-// HasErrors returns true when this result is invalid
+// HasErrors returns true when this result is invalid.
+//
+// Returns false on a nil *Result.
 func (r *Result) HasErrors() bool {
+	if r == nil {
+		return false
+	}
 	return !r.IsValid()
 }
 
-// HasWarnings returns true when this result contains warnings
+// HasWarnings returns true when this result contains warnings.
+//
+// Returns false on a nil *Result.
 func (r *Result) HasWarnings() bool {
+	if r == nil {
+		return false
+	}
 	return len(r.Warnings) > 0
+}
+
+// HasErrorsOrWarnings returns true when this result contains
+// either errors or warnings.
+//
+// Returns false on a nil *Result.
+func (r *Result) HasErrorsOrWarnings() bool {
+	if r == nil {
+		return false
+	}
+	return len(r.Errors) > 0 || len(r.Warnings) > 0
 }
 
 // Inc increments the match count
@@ -179,6 +201,7 @@ func (r *Result) Inc() {
 }
 
 // AsError renders this result as an error interface
+//
 // TODO: reporting / pretty print with path ordered and indented
 func (r *Result) AsError() error {
 	if r.IsValid() {

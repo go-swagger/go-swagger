@@ -59,7 +59,7 @@ parameters:
     required: true
     type: string
     format: uuid
-    example: xyz
+    example: xyz            #<---- example not allowed here
 definitions:
   # example property by property
   customer:
@@ -101,6 +101,6 @@ definitions:
         format: date-time
         description: The date and time when the customer was created
     example:
-      id: mycustomer
-      email: mycustomer@ripoffpark.com
+      id: 'mycustomer'
+      email: 'mycustomer@ripoffpark.com'
       create_date: bad-date

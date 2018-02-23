@@ -34,11 +34,13 @@ func TestDate(t *testing.T) {
 	assert.NoError(t, err)
 	err = pp.UnmarshalText([]byte("yada"))
 	assert.Error(t, err)
+
 	orig := "2014-12-15"
 	b := []byte(orig)
 	bj := []byte("\"" + orig + "\"")
 	err = pp.UnmarshalText([]byte(orig))
 	assert.NoError(t, err)
+
 	txt, err := pp.MarshalText()
 	assert.NoError(t, err)
 	assert.Equal(t, orig, string(txt))
@@ -46,6 +48,9 @@ func TestDate(t *testing.T) {
 	err = pp.UnmarshalJSON(bj)
 	assert.NoError(t, err)
 	assert.EqualValues(t, orig, pp.String())
+
+	err = pp.UnmarshalJSON([]byte(`"1972/01/01"`))
+	assert.Error(t, err)
 
 	b, err = pp.MarshalJSON()
 	assert.NoError(t, err)
@@ -72,6 +77,14 @@ func TestDate_Scan(t *testing.T) {
 		(&result).Scan(value)
 		assert.Equal(t, date, result, "value: %#v", value)
 	}
+
+	dd := Date{}
+	err := dd.Scan(nil)
+	assert.NoError(t, err)
+	assert.Equal(t, Date{}, dd)
+
+	err = dd.Scan(19700101)
+	assert.Error(t, err)
 }
 
 func TestDate_Value(t *testing.T) {
@@ -90,7 +103,11 @@ func TestDate_IsDate(t *testing.T) {
 		{"2017-12-22", true},
 		{"2017-1-1", false},
 		{"17-13-22", false},
-		{"2017-02-29", false}, // not a valid date : 2017 is not the leap year
+		{"2017-02-29", false}, // not a valid date : 2017 is not a leap year
+		{"1900-02-29", false}, // not a valid date : 1900 is not a leap year
+		{"2100-02-29", false}, // not a valid date : 2100 is not a leap year
+		{"2000-02-29", true},  // a valid date : 2000 is a leap year
+		{"2400-02-29", true},  // a valid date : 2000 is a leap year
 		{"2017-13-22", false},
 		{"2017-12-32", false},
 		{"20171-12-32", false},

@@ -252,7 +252,7 @@ func (v verificationTest) runGetToken(t *testing.T) *IDToken {
 	} else {
 		ks = &testVerifier{v.verificationKey.jwk()}
 	}
-	verifier := newVerifier(ks, &v.config, issuer)
+	verifier := NewVerifier(issuer, ks, &v.config)
 
 	idToken, err := verifier.Verify(ctx, token)
 	if err != nil {

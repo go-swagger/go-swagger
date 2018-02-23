@@ -159,17 +159,16 @@ func (b *basicCommonValidator) Validate(data interface{}) (res *Result) {
 	if len(b.Enum) > 0 {
 		for _, enumValue := range b.Enum {
 			actualType := reflect.TypeOf(enumValue)
-			if actualType == nil {
-				continue
-			}
-			expectedValue := reflect.ValueOf(data)
-			if expectedValue.IsValid() && expectedValue.Type().ConvertibleTo(actualType) {
-				if reflect.DeepEqual(expectedValue.Convert(actualType).Interface(), enumValue) {
-					return nil
+			if actualType != nil { // Safeguard
+				expectedValue := reflect.ValueOf(data)
+				if expectedValue.IsValid() && expectedValue.Type().ConvertibleTo(actualType) {
+					if reflect.DeepEqual(expectedValue.Convert(actualType).Interface(), enumValue) {
+						return nil
+					}
 				}
 			}
 		}
-		return sErr(errors.EnumFail(b.Path, b.In, data, b.Enum))
+		return errorHelp.sErr(errors.EnumFail(b.Path, b.In, data, b.Enum))
 	}
 	return nil
 }
@@ -413,29 +412,25 @@ func (s *basicSliceValidator) Applies(source interface{}, kind reflect.Kind) boo
 	return false
 }
 
-func sErr(err errors.Error) *Result {
-	return &Result{Errors: []error{err}}
-}
-
 func (s *basicSliceValidator) Validate(data interface{}) *Result {
 	val := reflect.ValueOf(data)
 
 	size := int64(val.Len())
 	if s.MinItems != nil {
 		if err := MinItems(s.Path, s.In, size, *s.MinItems); err != nil {
-			return sErr(err)
+			return errorHelp.sErr(err)
 		}
 	}
 
 	if s.MaxItems != nil {
 		if err := MaxItems(s.Path, s.In, size, *s.MaxItems); err != nil {
-			return sErr(err)
+			return errorHelp.sErr(err)
 		}
 	}
 
 	if s.UniqueItems {
 		if err := UniqueItems(s.Path, s.In, data); err != nil {
-			return sErr(err)
+			return errorHelp.sErr(err)
 		}
 	}
 
@@ -497,20 +492,8 @@ func (n *numberValidator) Applies(source interface{}, kind reflect.Kind) bool {
 	return false
 }
 
-func (n *numberValidator) convertToFloat(val interface{}) float64 {
-	v := reflect.ValueOf(val)
-	switch v.Kind() {
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return float64(v.Int())
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return float64(v.Uint())
-	case reflect.Float32, reflect.Float64:
-		return v.Float()
-	}
-	return 0
-}
-
 // Validate provides a validator for generic JSON numbers,
+//
 // By default, numbers are internally represented as float64.
 // Formats float, or float32 may alter this behavior by mapping to float32.
 // A special validation process is followed for integers, with optional "format":
@@ -518,6 +501,7 @@ func (n *numberValidator) convertToFloat(val interface{}) float64 {
 //
 // NOTE: since the constraint specified (boundary, multipleOf) is unmarshalled
 // as float64, loss of information remains possible (e.g. on very large integers).
+//
 // Since this value directly comes from the unmarshalling, it is not possible
 // at this stage of processing to check further and guarantee the correctness of such values.
 //
@@ -527,6 +511,7 @@ func (n *numberValidator) convertToFloat(val interface{}) float64 {
 // If this is the case, replace AddErrors() by AddWarnings() and IsValid() by !HasWarnings().
 //
 // TODO: consider replacing boundary check errors by simple warnings.
+//
 // TODO: default boundaries with MAX_SAFE_INTEGER are not checked (specific to json.Number?)
 func (n *numberValidator) Validate(val interface{}) *Result {
 	res := new(Result)
@@ -537,7 +522,7 @@ func (n *numberValidator) Validate(val interface{}) *Result {
 
 	// Used only to attempt to validate constraint on value,
 	// even though value or constraint specified do not match type and format
-	data := n.convertToFloat(val)
+	data := valueHelp.asFloat64(val)
 
 	// Is the provided value within the range of the specified numeric type and format?
 	res.AddErrors(IsValueValidAgainstRange(val, n.Type, n.Format, "Checked", n.Path))
@@ -548,12 +533,12 @@ func (n *numberValidator) Validate(val interface{}) *Result {
 		if resMultiple.IsValid() {
 			// Constraint validated with compatible types
 			if err := MultipleOfNativeType(n.Path, n.In, val, *n.MultipleOf); err != nil {
-				resMultiple.Merge(sErr(err))
+				resMultiple.Merge(errorHelp.sErr(err))
 			}
 		} else {
 			// Constraint nevertheless validated, converted as general number
 			if err := MultipleOf(n.Path, n.In, data, *n.MultipleOf); err != nil {
-				resMultiple.Merge(sErr(err))
+				resMultiple.Merge(errorHelp.sErr(err))
 			}
 		}
 	}
@@ -564,12 +549,12 @@ func (n *numberValidator) Validate(val interface{}) *Result {
 		if resMaximum.IsValid() {
 			// Constraint validated with compatible types
 			if err := MaximumNativeType(n.Path, n.In, val, *n.Maximum, n.ExclusiveMaximum); err != nil {
-				resMaximum.Merge(sErr(err))
+				resMaximum.Merge(errorHelp.sErr(err))
 			}
 		} else {
 			// Constraint nevertheless validated, converted as general number
 			if err := Maximum(n.Path, n.In, data, *n.Maximum, n.ExclusiveMaximum); err != nil {
-				resMaximum.Merge(sErr(err))
+				resMaximum.Merge(errorHelp.sErr(err))
 			}
 		}
 	}
@@ -580,12 +565,12 @@ func (n *numberValidator) Validate(val interface{}) *Result {
 		if resMinimum.IsValid() {
 			// Constraint validated with compatible types
 			if err := MinimumNativeType(n.Path, n.In, val, *n.Minimum, n.ExclusiveMinimum); err != nil {
-				resMinimum.Merge(sErr(err))
+				resMinimum.Merge(errorHelp.sErr(err))
 			}
 		} else {
 			// Constraint nevertheless validated, converted as general number
 			if err := Minimum(n.Path, n.In, data, *n.Minimum, n.ExclusiveMinimum); err != nil {
-				resMinimum.Merge(sErr(err))
+				resMinimum.Merge(errorHelp.sErr(err))
 			}
 		}
 	}
@@ -623,30 +608,30 @@ func (s *stringValidator) Applies(source interface{}, kind reflect.Kind) bool {
 func (s *stringValidator) Validate(val interface{}) *Result {
 	data, ok := val.(string)
 	if !ok {
-		return sErr(errors.InvalidType(s.Path, s.In, "string", val))
+		return errorHelp.sErr(errors.InvalidType(s.Path, s.In, "string", val))
 	}
 
 	if s.Required && !s.AllowEmptyValue && (s.Default == nil || s.Default == "") {
 		if err := RequiredString(s.Path, s.In, data); err != nil {
-			return sErr(err)
+			return errorHelp.sErr(err)
 		}
 	}
 
 	if s.MaxLength != nil {
 		if err := MaxLength(s.Path, s.In, data, *s.MaxLength); err != nil {
-			return sErr(err)
+			return errorHelp.sErr(err)
 		}
 	}
 
 	if s.MinLength != nil {
 		if err := MinLength(s.Path, s.In, data, *s.MinLength); err != nil {
-			return sErr(err)
+			return errorHelp.sErr(err)
 		}
 	}
 
 	if s.Pattern != "" {
 		if err := Pattern(s.Path, s.In, data, s.Pattern); err != nil {
-			return sErr(err)
+			return errorHelp.sErr(err)
 		}
 	}
 	return nil

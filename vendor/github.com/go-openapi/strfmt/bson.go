@@ -27,6 +27,7 @@ import (
 
 func init() {
 	var id ObjectId
+	// register this format in the default registry
 	Default.Add("bsonobjectid", &id, IsBSONObjectID)
 }
 
@@ -36,6 +37,9 @@ func IsBSONObjectID(str string) bool {
 	return id.UnmarshalText([]byte(str)) == nil
 }
 
+// ObjectId represents a BSON object ID (alias to gopkg.in/mgo.v2/bson.ObjectId)
+//
+// swagger:strfmt bsonobjectid
 type ObjectId bson.ObjectId
 
 // NewObjectId creates a ObjectId from a Hex String
@@ -83,32 +87,38 @@ func (id *ObjectId) String() string {
 	return string(*id)
 }
 
+// MarshalJSON returns the ObjectId as JSON
 func (id *ObjectId) MarshalJSON() ([]byte, error) {
 	var w jwriter.Writer
 	id.MarshalEasyJSON(&w)
 	return w.BuildBytes()
 }
 
+// MarshalEasyJSON writes the ObjectId to a easyjson.Writer
 func (id *ObjectId) MarshalEasyJSON(w *jwriter.Writer) {
 	w.String(bson.ObjectId(*id).Hex())
 }
 
+// UnmarshalJSON sets the ObjectId from JSON
 func (id *ObjectId) UnmarshalJSON(data []byte) error {
 	l := jlexer.Lexer{Data: data}
 	id.UnmarshalEasyJSON(&l)
 	return l.Error()
 }
 
+// UnmarshalEasyJSON sets the ObjectId from a easyjson.Lexer
 func (id *ObjectId) UnmarshalEasyJSON(in *jlexer.Lexer) {
 	if data := in.String(); in.Ok() {
 		*id = NewObjectId(data)
 	}
 }
 
+// GetBSON returns the hex representation of the ObjectId as a bson.M{} map.
 func (id *ObjectId) GetBSON() (interface{}, error) {
 	return bson.M{"data": bson.ObjectId(*id).Hex()}, nil
 }
 
+// SetBSON sets the ObjectId from raw bson data
 func (id *ObjectId) SetBSON(raw bson.Raw) error {
 	var m bson.M
 	if err := raw.Unmarshal(&m); err != nil {

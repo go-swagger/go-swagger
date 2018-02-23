@@ -1,3 +1,17 @@
+// Copyright 2015 go-swagger maintainers
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package validate
 
 import (
@@ -160,14 +174,30 @@ func TestResult_HasWarnings(t *testing.T) {
 	assert.True(t, r.HasWarnings())
 }
 
-func TestResult_KeepRelevantErrors(t *testing.T) {
+func TestResult_HasErrorsOrWarnings(t *testing.T) {
+	r := Result{}
+	r2 := Result{}
+
+	assert.False(t, r.HasErrorsOrWarnings())
+
+	r.AddErrors(fmt.Errorf("One Error"))
+	assert.True(t, r.HasErrorsOrWarnings())
+
+	r2.AddWarnings(fmt.Errorf("One Warning"))
+	assert.True(t, r2.HasErrorsOrWarnings())
+
+	r.Merge(&r2)
+	assert.True(t, r.HasErrorsOrWarnings())
+}
+
+func TestResult_keepRelevantErrors(t *testing.T) {
 	r := Result{}
 	r.AddErrors(fmt.Errorf("One Error"))
 	r.AddErrors(fmt.Errorf("IMPORTANT!Another Error"))
 	r.AddWarnings(fmt.Errorf("One warning"))
 	r.AddWarnings(fmt.Errorf("IMPORTANT!Another warning"))
-	assert.Len(t, r.KeepRelevantErrors().Errors, 1)
-	assert.Len(t, r.KeepRelevantErrors().Warnings, 1)
+	assert.Len(t, r.keepRelevantErrors().Errors, 1)
+	assert.Len(t, r.keepRelevantErrors().Warnings, 1)
 }
 
 func TestResult_AsError(t *testing.T) {
@@ -181,4 +211,13 @@ func TestResult_AsError(t *testing.T) {
 		assert.Contains(t, res.Error(), "One Error")                // Expected from pkg errors
 		assert.Contains(t, res.Error(), "Additional Error")         // Expected from pkg errors
 	}
+}
+
+// Test methods which suppport a call on a nil instance
+func TestResult_NilInstance(t *testing.T) {
+	var r *Result
+	assert.True(t, r.IsValid())
+	assert.False(t, r.HasErrors())
+	assert.False(t, r.HasWarnings())
+	assert.False(t, r.HasErrorsOrWarnings())
 }

@@ -14,12 +14,12 @@
               "schema": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/input/definitions/todo-full"
+                  "$ref": "#/definitions/todo-full"
                 }
               }
             },
             "404": {
-              "$ref": "#/input/responses/404"
+              "$ref": "#/responses/404"
             }
           }
         }
@@ -40,7 +40,7 @@
       "todo-full": {
         "allOf": [
           {
-            "$ref": "#/input/definitions/todo-partial"
+            "$ref": "#/definitions/todo-partial"
           },
           {
             "type": "object",

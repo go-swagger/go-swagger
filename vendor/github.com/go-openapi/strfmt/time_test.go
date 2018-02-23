@@ -55,12 +55,21 @@ func TestParseDateTime_errorCases(t *testing.T) {
 func TestParseDateTime_fullCycle(t *testing.T) {
 	for caseNum, example := range testCases {
 		t.Logf("Case #%d", caseNum)
-		parsed, err := ParseDateTime(string(example.in))
+
+		parsed, err := ParseDateTime(example.str)
 		assert.NoError(t, err)
 		assert.EqualValues(t, example.time, parsed)
+
 		mt, err := parsed.MarshalText()
 		assert.NoError(t, err)
 		assert.Equal(t, []byte(example.str), mt)
+
+		if example.str != "" {
+			v := IsDateTime(example.str)
+			assert.True(t, v)
+		} else {
+			t.Logf("IsDateTime() skipped for empty testcases")
+		}
 
 		pp := NewDateTime()
 		err = pp.UnmarshalText(mt)
@@ -74,6 +83,29 @@ func TestParseDateTime_fullCycle(t *testing.T) {
 	}
 }
 
+func TestDateTime_IsDateTime_errorCases(t *testing.T) {
+	v := IsDateTime("zor")
+	assert.False(t, v)
+
+	v = IsDateTime("zorg")
+	assert.False(t, v)
+
+	v = IsDateTime("zorgTx")
+	assert.False(t, v)
+
+	v = IsDateTime("1972-12-31Tx")
+	assert.False(t, v)
+
+	v = IsDateTime("1972-12-31T24:40:00.000Z")
+	assert.False(t, v)
+
+	v = IsDateTime("1972-12-31T23:63:00.000Z")
+	assert.False(t, v)
+
+	v = IsDateTime("1972-12-31T23:59:60.000Z")
+	assert.False(t, v)
+
+}
 func TestDateTime_UnmarshalText_errorCases(t *testing.T) {
 	pp := NewDateTime()
 	err := pp.UnmarshalText([]byte("yada"))
@@ -89,6 +121,12 @@ func TestDateTime_UnmarshalText(t *testing.T) {
 		err := pp.UnmarshalText(example.in)
 		assert.NoError(t, err)
 		assert.EqualValues(t, example.time, pp)
+
+		// Other way around
+		val, erv := pp.Value()
+		assert.NoError(t, erv)
+		assert.EqualValues(t, example.str, val)
+
 	}
 }
 func TestDateTime_UnmarshalJSON(t *testing.T) {
@@ -99,6 +137,15 @@ func TestDateTime_UnmarshalJSON(t *testing.T) {
 		assert.NoError(t, err)
 		assert.EqualValues(t, example.time, pp)
 	}
+
+	// Check UnmarshalJSON failure with no lexed items
+	pp := NewDateTime()
+	err := pp.UnmarshalJSON([]byte("zorg emperor"))
+	assert.Error(t, err)
+
+	// Check lexer failure
+	err = pp.UnmarshalJSON([]byte(`"zorg emperor"`))
+	assert.Error(t, err)
 }
 
 func esc(v []byte) []byte {
@@ -131,11 +178,43 @@ func TestDateTime_MarshalJSON(t *testing.T) {
 func TestDateTime_Scan(t *testing.T) {
 	for caseNum, example := range testCases {
 		t.Logf("Case #%d", caseNum)
+
 		pp := NewDateTime()
 		err := pp.Scan(example.in)
 		assert.NoError(t, err)
 		assert.Equal(t, DateTime(example.time), pp)
+
+		pp = NewDateTime()
+		err = pp.Scan(string(example.in))
+		assert.NoError(t, err)
+		assert.Equal(t, DateTime(example.time), pp)
+
+		pp = NewDateTime()
+		err = pp.Scan(example.time)
+		assert.NoError(t, err)
+		assert.Equal(t, DateTime(example.time), pp)
 	}
+}
+
+func TestDateTime_Scan_Failed(t *testing.T) {
+	pp := NewDateTime()
+	zero := NewDateTime()
+
+	err := pp.Scan(nil)
+	assert.NoError(t, err)
+	// Zero values differ...
+	//assert.Equal(t, zero, pp)
+	assert.Equal(t, DateTime{}, pp)
+
+	err = pp.Scan("")
+	assert.NoError(t, err)
+	assert.Equal(t, zero, pp)
+
+	err = pp.Scan(int64(0))
+	assert.Error(t, err)
+
+	err = pp.Scan(float64(0))
+	assert.Error(t, err)
 }
 
 func TestDateTime_BSON(t *testing.T) {

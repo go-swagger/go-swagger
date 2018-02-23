@@ -16,6 +16,7 @@ package errors
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -202,6 +203,16 @@ func TestSchemaErrors(t *testing.T) {
 	assert.EqualValues(t, MultipleOfFailCode, err.Code())
 	assert.Equal(t, "something in query should be a multiple of 5", err.Error())
 
+	err = NotMultipleOf("something", "query", float64(5))
+	assert.Error(t, err)
+	assert.EqualValues(t, MultipleOfFailCode, err.Code())
+	assert.Equal(t, "something in query should be a multiple of 5", err.Error())
+
+	err = NotMultipleOf("something", "query", uint64(5))
+	assert.Error(t, err)
+	assert.EqualValues(t, MultipleOfFailCode, err.Code())
+	assert.Equal(t, "something in query should be a multiple of 5", err.Error())
+
 	err = NotMultipleOf("something", "", 5)
 	assert.Error(t, err)
 	assert.EqualValues(t, MultipleOfFailCode, err.Code())
@@ -281,4 +292,73 @@ func TestSchemaErrors(t *testing.T) {
 	assert.Error(t, err2)
 	assert.EqualValues(t, CompositeErrorCode, err2.Code())
 	assert.Equal(t, "validation failure list", err2.Error())
+
+	err2 = CompositeValidationError(fmt.Errorf("First error"), fmt.Errorf("Second error"))
+	assert.Error(t, err2)
+	assert.EqualValues(t, CompositeErrorCode, err2.Code())
+	assert.Equal(t, "validation failure list:\nFirst error\nSecond error", err2.Error())
+
+	//func MultipleOfMustBePositive(name, in string, factor interface{}) *Validation {
+	err = MultipleOfMustBePositive("path", "body", float64(-10))
+	assert.Error(t, err)
+	assert.EqualValues(t, MultipleOfMustBePositiveCode, err.Code())
+	assert.Equal(t, `factor MultipleOf declared for path must be positive: -10`, err.Error())
+
+	err = MultipleOfMustBePositive("path", "body", int64(-10))
+	assert.Error(t, err)
+	assert.EqualValues(t, MultipleOfMustBePositiveCode, err.Code())
+	assert.Equal(t, `factor MultipleOf declared for path must be positive: -10`, err.Error())
+
+	// func PropertyNotAllowed(name, in, key string) *Validation {
+	err = PropertyNotAllowed("path", "body", "key")
+	assert.Error(t, err)
+	assert.EqualValues(t, UnallowedPropertyCode, err.Code())
+	//unallowedProperty         = "%s.%s in %s is a forbidden property"
+	assert.Equal(t, "path.key in body is a forbidden property", err.Error())
+
+	err = PropertyNotAllowed("path", "", "key")
+	assert.Error(t, err)
+	assert.EqualValues(t, UnallowedPropertyCode, err.Code())
+	//unallowedPropertyNoIn     = "%s.%s is a forbidden property"
+	assert.Equal(t, "path.key is a forbidden property", err.Error())
+
+	//func TooManyProperties(name, in string, n int64) *Validation {
+	err = TooManyProperties("path", "body", 10)
+	assert.Error(t, err)
+	assert.EqualValues(t, TooManyPropertiesCode, err.Code())
+	//tooManyProperties         = "%s in %s should have at most %d properties"
+	assert.Equal(t, "path in body should have at most 10 properties", err.Error())
+
+	err = TooManyProperties("path", "", 10)
+	assert.Error(t, err)
+	assert.EqualValues(t, TooManyPropertiesCode, err.Code())
+	//tooManyPropertiesNoIn     = "%s should have at most %d properties"
+	assert.Equal(t, "path should have at most 10 properties", err.Error())
+
+	err = TooFewProperties("path", "body", 10)
+	// func TooFewProperties(name, in string, n int64) *Validation {
+	assert.Error(t, err)
+	assert.EqualValues(t, TooFewPropertiesCode, err.Code())
+	//tooFewProperties          = "%s in %s should have at least %d properties"
+	assert.Equal(t, "path in body should have at least 10 properties", err.Error())
+
+	err = TooFewProperties("path", "", 10)
+	// func TooFewProperties(name, in string, n int64) *Validation {
+	assert.Error(t, err)
+	assert.EqualValues(t, TooFewPropertiesCode, err.Code())
+	//tooFewPropertiesNoIn      = "%s should have at least %d properties"
+	assert.Equal(t, "path should have at least 10 properties", err.Error())
+
+	//func FailedAllPatternProperties(name, in, key string) *Validation {
+	err = FailedAllPatternProperties("path", "body", "key")
+	assert.Error(t, err)
+	assert.EqualValues(t, FailedAllPatternPropsCode, err.Code())
+	//failedAllPatternProps     = "%s.%s in %s failed all pattern properties"
+	assert.Equal(t, "path.key in body failed all pattern properties", err.Error())
+
+	err = FailedAllPatternProperties("path", "", "key")
+	assert.Error(t, err)
+	assert.EqualValues(t, FailedAllPatternPropsCode, err.Code())
+	//failedAllPatternPropsNoIn = "%s.%s failed all pattern properties"
+	assert.Equal(t, "path.key failed all pattern properties", err.Error())
 }

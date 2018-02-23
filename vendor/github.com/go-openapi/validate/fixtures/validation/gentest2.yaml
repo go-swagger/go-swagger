@@ -1,0 +1,724 @@
+swagger: '2.0'
+info:
+  title: code generation test fixture for parameters, with default values
+  version: '1.0.0'
+host: localhost
+basePath: /
+consumes:
+  - application/json
+produces:
+  - application/json
+schemes:
+  - http
+paths:
+  /required/params:
+    get:
+      operationId: getRequired
+      parameters:
+      - name: notAnOption1
+        in: query
+        type: string
+        format: date
+        required: true
+      - name: notAnOption2
+        in: query
+        type: string
+        format: password
+        pattern: '^[a-z]$'
+        required: true
+      - name: notAnOption3
+        in: query
+        type: integer
+        format: int32
+        required: true
+      - name: notAnOption4
+        in: query
+        type: integer
+        format: int32
+        required: true
+        minimum: 10
+        maximum: 100
+        multipleOf: 10
+      - name: notAnOption5
+        in: query
+        type: array
+        required: true
+        maxItems: 2
+        items:
+          type: string
+          format: uuid
+      - name: notAnOption6
+        in: query
+        type: array
+        collectionFormat: pipes
+        required: true
+        uniqueItems: true
+        items:
+          type: integer
+          format: int32
+          minimum: 10
+          maximum: 100
+          multipleOf: 10
+      - name: notAnOption7
+        in: query
+        type: array
+        collectionFormat: pipes
+        required: true
+        uniqueItems: false
+        items:
+          type: array
+          collectionFormat: csv
+          uniqueItems: true
+          items:
+            type: string
+            format: date
+      responses: &stdResponses
+        200:
+          description: simple type
+          schema:
+            type: string
+            format: date
+        201:
+          description: simple type
+          schema:
+            type: string
+            format: uuid
+        default:
+          description: schema type
+          schema:
+            $ref: '#/definitions/ContainerConfig'
+  /optional/params:
+    get:
+      operationId: getOptional
+      parameters:
+      - name: sanityCheck1
+        in: query
+        type: string
+        required: false
+        default: sanity check one passed for primitive type
+      - name: sanityCheck2
+        in: query
+        type: number
+        required: false
+        default: 99.9
+      - name: sanityCheck3
+        in: query
+        type: integer
+        required: false
+        default: 1000
+      - name: sanityCheck4
+        in: query
+        type: integer
+        format: uint32
+        required: false
+        default: 100
+      - name: sanityCheckFormat1
+        in: query
+        type: string
+        format: uuid
+        required: false
+        default: a8098c1a-f86e-11da-bd1a-00112444be1e
+      - name: isAnOption1
+        in: query
+        type: string
+        format: date
+        required: false
+        default: '1970-01-01'
+      - name: isAnOption2
+        in: query
+        type: string
+        format: password
+        pattern: '^[a-z]$'
+        required: false
+        default: z
+      - name: isAnOption3
+        in: query
+        type: integer
+        format: int32
+        required: false
+        default: 32
+      - name: isAnOption4
+        in: query
+        type: integer
+        format: int32
+        required: false
+        minimum: 10
+        maximum: 100
+        multipleOf: 10
+        default: 60
+      - name: isAnOption5
+        in: query
+        type: array
+        maxItems: 2
+        items:
+          type: string
+          format: uuid
+        default:
+        - a8098c1a-f86e-11da-bd1a-00112444be1e
+      - name: isAnOption6
+        in: query
+        type: array
+        collectionFormat: pipes
+        required: false
+        items:
+          type: integer
+          format: int32
+          minimum: 10
+          maximum: 100
+          multipleOf: 10
+        default:
+        - 10
+        - 20
+        - 30
+        - 40
+      - name: isAnOption7
+        in: query
+        type: array
+        collectionFormat: pipes
+        required: false
+        items:
+          type: array
+          collectionFormat: csv
+          items:
+            type: string
+            format: date
+          default:
+          - '2018-01-01'
+          - '2018-01-02'
+          - '2018-01-03'
+          - '2018-01-04'
+        default:
+        -
+          - '2012-01-01'
+          - '2014-01-02'
+          - '2016-01-03'
+          - '2018-01-04'
+        -
+          - '2011-01-01'
+          - '2013-01-02'
+          - '2015-01-03'
+          - '2017-01-04'
+      - name: isAnOption8
+        in: query
+        type: array
+        maxItems: 2
+        uniqueItems: true
+        items:
+          type: string
+        default:
+        - default unformatted string array item 1
+        - default unformatted string array item 2
+      - name: isAnOption9
+        in: query
+        type: array
+        collectionFormat: pipes
+        required: false
+        items:
+          type: array
+          collectionFormat: csv
+          items:
+            type: string
+            format: duration
+          default:
+          - 1d
+          - 1w
+          - 1h
+          - 2w
+        default:
+        -
+          - 1s
+          - 1h
+          - 1d
+          - 1w
+        -
+          - 2s
+          - 2h
+          - 2d
+          - 2w
+      responses: *stdResponses
+  /path/params/{notAnOption1}/{notAnOption2}/{notAnOption3}/{notAnOption4}/{notAnOption5}/{notAnOption6}/{notAnOption7}:
+    get:
+      operationId: getRequiredInPath
+      parameters:
+      - name: notAnOption1
+        in: path
+        type: string
+        format: date
+        required: true
+      - name: notAnOption2
+        in: path
+        type: string
+        format: password
+        pattern: '^[a-z]$'
+        required: true
+      - name: notAnOption3
+        in: path
+        type: integer
+        format: int32
+        required: true
+      - name: notAnOption4
+        in: path
+        type: integer
+        format: int32
+        required: true
+        minimum: 10
+        maximum: 100
+        multipleOf: 10
+      - name: notAnOption5
+        in: path
+        type: array
+        maxItems: 2
+        required: true
+        items:
+          type: string
+          format: uuid
+      - name: notAnOption6
+        in: path
+        type: array
+        collectionFormat: pipes
+        required: true
+        items:
+          type: integer
+          format: int32
+          minimum: 10
+          maximum: 100
+          multipleOf: 10
+      - name: notAnOption7
+        in: path
+        type: array
+        collectionFormat: pipes
+        required: true
+        items:
+          type: array
+          collectionFormat: csv
+          items:
+            type: string
+            format: date
+      responses: *stdResponses
+  /optional/headers:
+    get:
+      operationId: getInHeaders
+      parameters:
+      - name: isAnOption1
+        in: header
+        type: string
+        format: date
+        required: false
+        default: '1970-01-01'
+      - name: isAnOption2
+        in: header
+        type: string
+        format: password
+        pattern: '^[a-z]$'
+        required: false
+        default: z
+      - name: isAnOption3
+        in: header
+        type: integer
+        format: int32
+        required: false
+        default: 32
+      - name: isAnOption4
+        in: header
+        type: integer
+        format: int32
+        required: false
+        minimum: 10
+        maximum: 100
+        multipleOf: 10
+        default: 60
+      - name: isAnOption5
+        in: header
+        type: array
+        maxItems: 2
+        items:
+          type: string
+          format: uuid
+        default:
+        - a8098c1a-f86e-11da-bd1a-00112444be1e
+      - name: isAnOption6
+        in: header
+        type: array
+        collectionFormat: pipes
+        required: false
+        items:
+          type: integer
+          format: int32
+          minimum: 10
+          maximum: 100
+          multipleOf: 10
+        default:
+        - 10
+        - 20
+        - 30
+        - 40
+      - name: isAnOption7
+        in: header
+        type: array
+        collectionFormat: pipes
+        required: false
+        items:
+          type: array
+          collectionFormat: csv
+          items:
+            type: string
+            format: date
+          default:
+          - '2018-01-01'
+          - '2018-01-02'
+          - '2018-01-03'
+          - '2018-01-04'
+        default:
+        -
+          - '2012-01-01'
+          - '2014-01-02'
+          - '2016-01-03'
+          - '2018-01-04'
+        -
+          - '2011-01-01'
+          - '2013-01-02'
+          - '2015-01-03'
+          - '2017-01-04'
+      responses: *stdResponses
+  /mixed/deepnested:
+    get:
+      operationId: getInDepth
+      parameters:
+      - name: deepNested1
+        in: query
+        type: array
+        collectionFormat: pipes
+        required: true
+        maxItems: 2
+        items:
+          type: array
+          collectionFormat: csv
+          minItems: 2
+          items:
+            type: array
+            collectionFormat: ssv
+            uniqueItems: true
+            items:
+              type: string
+              pattern: '^[a-z]$'
+            default:
+            - a
+            - b
+            - c
+          default:
+          -
+            - x
+            - 'y'
+            - z
+          -
+            - u
+            - v
+            - w
+        default:
+        -
+          -
+            - h
+            - i
+            - j
+          -
+            - k
+            - l
+            - m
+        -
+          -
+            - h
+            - i
+            - j
+          -
+            - k
+            - l
+            - m
+      - name: deepNested2
+        in: header
+        type: array
+        collectionFormat: pipes
+        required: false
+        maxItems: 2
+        items:
+          type: array
+          collectionFormat: csv
+          minItems: 2
+          items:
+            type: array
+            collectionFormat: ssv
+            uniqueItems: true
+            items:
+              type: string
+              pattern: '^[a-z]$'
+            default:
+            - a
+            - b
+            - c
+          default:
+          -
+            - x
+            - 'y'
+            - z
+          -
+            - u
+            - v
+            - w
+        default:
+        -
+          -
+            - h
+            - i
+            - j
+          -
+            - k
+            - l
+            - m
+        -
+          -
+            - h
+            - i
+            - j
+          -
+            - k
+            - l
+            - m
+      responses: *stdResponses
+  /mixed/mixedBody/{pathParam1}:
+    post:
+      operationId: getInBody
+      parameters:
+      - name: bodyBuilding
+        in: body
+        schema:
+          $ref: '#/definitions/ContainerConfig'
+      - name: queryParam1
+        in: query
+        type: integer
+        required: false
+        allowEmptyValue: true
+        default: 100
+        maximum: 1000
+      - name: queryParam2
+        in: query
+        type: string
+        format: date
+        required: false
+        default: '1970-01-01'
+      - name: queryParam3
+        in: query
+        type: integer 
+        format: uint32
+        minimum: 12
+        exclusiveMinimum: true
+        allowEmptyValue: true
+        required: true
+      - name: queryParam4
+        in: query
+        collectionFormat: multi
+        maxItems: 2
+        type: array
+        items:
+          type: string
+          format: uuid
+        default:
+        - a8098c1a-f86e-11da-bd1a-00112444be1e
+        - a8098c1a-f86e-11da-bd1a-00112444be1e
+      - name: query_issue_863
+        in: query
+        type: array
+        items:
+          type: string
+          enum:
+          - enum1
+          - enum2
+          - enum3
+      - name: pathParam1
+        in: path
+        type: string
+        pattern: '^\w+$'
+        required: true
+      - name: headerParam1
+        in: header
+        type: array
+        items:
+          type: number
+        default:
+        - 1.1
+        - 2.75
+        required: false
+      responses: *stdResponses
+
+  /mixed/mixedBody2/{pathParam1}:
+    post:
+      operationId: getInBody2
+      parameters:
+      - name: bodyBuilding
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/errorResponseMsg'
+      - name: queryParam1
+        in: query
+        type: integer
+        required: false
+        allowEmptyValue: true
+        default: 100
+        maximum: 1000
+      - name: queryParam2
+        in: query
+        type: string
+        format: date
+        required: true
+        default: '1970-01-01'
+      - name: queryParam3
+        in: query
+        type: integer 
+        format: uint32
+        minimum: 12
+        exclusiveMinimum: true
+        allowEmptyValue: true
+        required: true
+      - name: queryParam4
+        in: query
+        collectionFormat: multi
+        maxItems: 2
+        type: array
+        items:
+          type: string
+          format: uuid
+        default:
+        - a8098c1a-f86e-11da-bd1a-00112444be1e
+      - name: pathParam1
+        in: path
+        type: string
+        pattern: '^\w+$'
+        required: true
+      - name: headerParam1
+        in: header
+        type: array
+        items:
+          type: number
+        default:
+        - 1.1
+        - 2.75
+        required: false
+      responses: *stdResponses
+
+  /mixed/mixedBody3/{pathParam1}:
+    post:
+      operationId: getInBody3
+      parameters:
+      - name: bodyBuilding
+        in: body
+        required: false
+        schema:
+          $ref: '#/definitions/errorResponseMsg'
+      - name: queryParam1
+        in: query
+        type: integer
+        required: false
+        allowEmptyValue: true
+        default: 100
+        maximum: 1000
+      - name: queryParam2
+        in: query
+        type: string
+        format: date
+        required: true
+        default: '1970-01-01'
+      - name: queryParam3
+        in: query
+        type: integer 
+        format: uint32
+        minimum: 12
+        exclusiveMinimum: true
+        allowEmptyValue: true
+        required: true
+      - name: queryParam4
+        in: query
+        collectionFormat: multi
+        maxItems: 2
+        type: array
+        items:
+          type: string
+          format: uuid
+        default:
+        - a8098c1a-f86e-11da-bd1a-00112444be1e
+      - name: pathParam1
+        in: path
+        type: string
+        pattern: '^\w+$'
+        required: true
+      - name: headerParam1
+        in: header
+        type: array
+        items:
+          type: number
+        default:
+        - 1.1
+        - 2.75
+        required: false
+      responses: *stdResponses
+  /form/{pathParam1}:
+    post:
+      operationId: getInForm
+      consumes:
+      - multipart/formData
+      parameters:
+      - name: pathParam1
+        in: path
+        type: string
+        maxLength: 10
+        required: true
+      - name: docname
+        in: formData
+        type: string
+        pattern: '^\w+\.doc$'
+        required: true
+      - name: docAuthor
+        in: formData
+        type: string
+      - name: attachment
+        in: formData
+        type: file
+        required: true
+      - name: addendum
+        in: formData
+        type: file
+        required: false
+      responses: *stdResponses
+
+definitions:
+  ContainerConfig:
+    type: object
+    required: [config1]
+    properties:
+      config1:
+        type: string
+        format: date
+      config2:
+        type: string
+        format: date
+        default: '1999-09-09'
+    default:
+      config1: '2019-09-09'
+      config2: '2018-09-09'
+  errorResponseMsg:
+    type: object 
+    required: [ errorCode, reason ]
+    properties:
+      errorCode:
+        type: integer
+      reason:
+        type: string
+      severity:
+        type: string
+        enum: [ FATAL, CRITICAL, ERROR, WARNING, INFO ]
+      additional:
+        type: string
+        enum: [ FATAL, CRITICAL, ERROR, WARNING, INFO ]
+        default: INFO
+    default:
+      errorCode: 501
+      reason: not implemented
+      severity: FATAL

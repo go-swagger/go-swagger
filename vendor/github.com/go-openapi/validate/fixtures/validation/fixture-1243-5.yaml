@@ -42,6 +42,7 @@ paths:
       parameters:
         # Fixed that error here: parameter don't match
         - name: aLotOfLoadBalancerIds
+          in: path
           type: string
           # fixed that: should be required
           required: true
@@ -63,6 +64,7 @@ paths:
         # Fixed this: stupid, but what if I explictly want a { in name...
         # Still an error since we add " in the name string
         - name: '{sid'
+          in: path
           type: string
           required: true
       produces:
@@ -76,6 +78,7 @@ paths:
         # Fixed this: stupid, but what if I explictly want a space in name...
         # Still an error since we add " in the name string
         - name: 'sid '
+          in: path
           type: string
           required: true
       produces:
@@ -87,6 +90,7 @@ paths:
     get:
       parameters:
         - name: sid
+          in: path
           type: string
           required: true
       produces:

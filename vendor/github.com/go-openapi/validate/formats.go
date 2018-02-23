@@ -47,6 +47,9 @@ func (f *formatValidator) Applies(source interface{}, kind reflect.Kind) bool {
 		case *spec.Schema:
 			sch := source.(*spec.Schema)
 			return kind == reflect.String && f.KnownFormats.ContainsName(sch.Format)
+		case *spec.Header:
+			hdr := source.(*spec.Header)
+			return kind == reflect.String && f.KnownFormats.ContainsName(hdr.Format)
 		}
 		return false
 	}
@@ -57,6 +60,7 @@ func (f *formatValidator) Applies(source interface{}, kind reflect.Kind) bool {
 
 func (f *formatValidator) Validate(val interface{}) *Result {
 	result := new(Result)
+	debugLog("validating \"%v\" against format: %s", val, f.Format)
 
 	if err := FormatOf(f.Path, f.In, f.Format, val.(string), f.KnownFormats); err != nil {
 		result.AddErrors(err)

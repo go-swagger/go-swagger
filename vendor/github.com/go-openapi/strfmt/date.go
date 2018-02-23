@@ -28,6 +28,7 @@ import (
 
 func init() {
 	d := Date{}
+	// register this format in the default registry
 	Default.Add("date", &d, IsDate)
 }
 
@@ -94,38 +95,44 @@ func (d Date) Value() (driver.Value, error) {
 	return driver.Value(d.String()), nil
 }
 
-func (t Date) MarshalJSON() ([]byte, error) {
+// MarshalJSON returns the Date as JSON
+func (d Date) MarshalJSON() ([]byte, error) {
 	var w jwriter.Writer
-	t.MarshalEasyJSON(&w)
+	d.MarshalEasyJSON(&w)
 	return w.BuildBytes()
 }
 
-func (t Date) MarshalEasyJSON(w *jwriter.Writer) {
-	w.String(time.Time(t).Format(RFC3339FullDate))
+// MarshalEasyJSON writes the Date to a easyjson.Writer
+func (d Date) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(time.Time(d).Format(RFC3339FullDate))
 }
 
-func (t *Date) UnmarshalJSON(data []byte) error {
+// UnmarshalJSON sets the Date from JSON
+func (d *Date) UnmarshalJSON(data []byte) error {
 	l := jlexer.Lexer{Data: data}
-	t.UnmarshalEasyJSON(&l)
+	d.UnmarshalEasyJSON(&l)
 	return l.Error()
 }
 
-func (t *Date) UnmarshalEasyJSON(in *jlexer.Lexer) {
+// UnmarshalEasyJSON sets the Date from a easyjson.Lexer
+func (d *Date) UnmarshalEasyJSON(in *jlexer.Lexer) {
 	if data := in.String(); in.Ok() {
 		tt, err := time.Parse(RFC3339FullDate, data)
 		if err != nil {
 			in.AddError(err)
 			return
 		}
-		*t = Date(tt)
+		*d = Date(tt)
 	}
 }
 
-func (t *Date) GetBSON() (interface{}, error) {
-	return bson.M{"data": t.String()}, nil
+// GetBSON returns the Date as a bson.M{} map.
+func (d *Date) GetBSON() (interface{}, error) {
+	return bson.M{"data": d.String()}, nil
 }
 
-func (t *Date) SetBSON(raw bson.Raw) error {
+// SetBSON sets the Date from raw bson data
+func (d *Date) SetBSON(raw bson.Raw) error {
 	var m bson.M
 	if err := raw.Unmarshal(&m); err != nil {
 		return err
@@ -133,9 +140,9 @@ func (t *Date) SetBSON(raw bson.Raw) error {
 
 	if data, ok := m["data"].(string); ok {
 		rd, err := time.Parse(RFC3339FullDate, data)
-		*t = Date(rd)
+		*d = Date(rd)
 		return err
 	}
 
-	return errors.New("couldn't unmarshal bson raw value as Duration")
+	return errors.New("couldn't unmarshal bson raw value as Date")
 }

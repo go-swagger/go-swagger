@@ -1,0 +1,31 @@
+---
+swagger: '2.0'
+info:
+  title: checking $ref siblings in response
+  version: '1.0'
+  description: |
+    This one checks that wrong response declaraion with $ref sibling
+    is correcly handled and reported
+
+produces:
+  - application/json
+paths:
+  /fixture:
+    get:
+      operationId: op1
+      parameters:
+        - name: myid
+          in: body
+          schema:
+            $ref: '#/definitions/myId'
+      responses:
+        200:
+          description: 'response with $ref sibling'
+          schema:
+          $ref: '#/definitions/someIds'
+
+definitions:
+  myId:
+    type: string
+  someIds:
+    type: integer

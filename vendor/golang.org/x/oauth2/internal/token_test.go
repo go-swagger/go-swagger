@@ -33,7 +33,8 @@ func TestRetrieveTokenBustedNoSecret(t *testing.T) {
 		if got, want := r.FormValue("client_secret"), ""; got != want {
 			t.Errorf("client_secret = %q; want empty", got)
 		}
-		io.WriteString(w, "{}") // something non-empty, required to set a Content-Type in Go 1.10
+		w.Header().Set("Content-Type", "application/json")
+		io.WriteString(w, `{"access_token": "ACCESS_TOKEN", "token_type": "bearer"}`)
 	}))
 	defer ts.Close()
 
@@ -85,7 +86,8 @@ func TestRetrieveTokenWithContexts(t *testing.T) {
 	const clientID = "client-id"
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		io.WriteString(w, "{}") // something non-empty, required to set a Content-Type in Go 1.10
+		w.Header().Set("Content-Type", "application/json")
+		io.WriteString(w, `{"access_token": "ACCESS_TOKEN", "token_type": "bearer"}`)
 	}))
 	defer ts.Close()
 
@@ -94,14 +96,16 @@ func TestRetrieveTokenWithContexts(t *testing.T) {
 		t.Errorf("RetrieveToken (with background context) = %v; want no error", err)
 	}
 
-	ctx, cancelfunc := context.WithCancel(context.Background())
-
+	retrieved := make(chan struct{})
 	cancellingts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cancelfunc()
+		<-retrieved
 	}))
 	defer cancellingts.Close()
 
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
 	_, err = RetrieveToken(ctx, clientID, "", cancellingts.URL, url.Values{})
+	close(retrieved)
 	if err == nil {
 		t.Errorf("RetrieveToken (with cancelled context) = nil; want error")
 	}
