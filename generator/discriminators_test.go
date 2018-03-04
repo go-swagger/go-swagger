@@ -86,12 +86,12 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 						assertNotInCode(t, "m.Pet.Validate", res)
 						assertInCode(t, "if err := m.validateName(formats); err != nil {", res)
 						if k == "Dog" {
-							assertInCode(t, "func (m *Dog) validatePackSize(formats strfmt.Registry) error {", res)
+							assertInCode(t, "func (m *Dog) validatePackSize(formats strfmt.Registry) []error {", res)
 							assertInCode(t, "if err := m.validatePackSize(formats); err != nil {", res)
 							assertInCode(t, "PackSize: m.PackSize,", res)
 							assertInCode(t, "validate.Required(\"packSize\", \"body\", m.PackSize)", res)
 						} else {
-							assertInCode(t, "func (m *Cat) validateHuntingSkill(formats strfmt.Registry) error {", res)
+							assertInCode(t, "func (m *Cat) validateHuntingSkill(formats strfmt.Registry) []error {", res)
 							assertInCode(t, "if err := m.validateHuntingSkill(formats); err != nil {", res)
 							assertInCode(t, "if err := m.validateHuntingSkillEnum(\"huntingSkill\", \"body\", *m.HuntingSkill); err != nil {", res)
 							assertInCode(t, "HuntingSkill: m.HuntingSkill", res)
