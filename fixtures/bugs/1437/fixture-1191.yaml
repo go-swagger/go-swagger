@@ -1,0 +1,30 @@
+swagger: '2.0'
+info:
+  version: '2.0.0'
+  title: Thing API
+  description: Some description
+basePath: /thing-api
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  '/things':
+    get:
+      operationId: POST_things
+      summary: Get a Thing
+      description: Create a new thing
+      responses:
+        '200':
+          description: Its all ok
+          schema:
+            type: object
+            properties:
+              notification_url:
+                $ref: '#/definitions/notification-url'
+definitions:
+  notification-url:
+    description: A URL to be notified about the Thing
+    type: string
+    maxLength: 1000
+    format: uri

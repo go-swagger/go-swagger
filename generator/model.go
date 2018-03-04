@@ -675,6 +675,7 @@ func (sg *schemaGenContext) buildProperties() error {
 		if err := emprop.makeGenSchema(); err != nil {
 			return err
 		}
+
 		if hasValidation || emprop.GenSchema.HasValidations {
 			emprop.GenSchema.HasValidations = true
 			sg.GenSchema.HasValidations = true
@@ -683,8 +684,8 @@ func (sg *schemaGenContext) buildProperties() error {
 			emprop.GenSchema.NeedsValidation = true
 			sg.GenSchema.NeedsValidation = true
 		}
-		// Generates format validation on property, even when not Required
-		emprop.GenSchema.HasValidations = emprop.GenSchema.HasValidations || tpe.IsCustomFormatter
+		// generates format validation on property, even when not Required
+		emprop.GenSchema.HasValidations = emprop.GenSchema.HasValidations || (tpe.IsCustomFormatter && !tpe.IsStream) || (tpe.IsArray && tpe.ElemType.IsCustomFormatter && !tpe.ElemType.IsStream)
 
 		if emprop.Schema.Ref.String() != "" {
 			ref := emprop.Schema.Ref
@@ -733,6 +734,8 @@ func (sg *schemaGenContext) buildProperties() error {
 				emprop.GenSchema.IsAliased = true
 			}
 			nv, hv := hasValidations(sch, false)
+			// include format validation, excluding binary
+			hv = hv || (ttpe.IsCustomFormatter && !ttpe.IsStream) || (ttpe.IsArray && ttpe.ElemType.IsCustomFormatter && !ttpe.ElemType.IsStream)
 			if hv {
 				emprop.GenSchema.HasValidations = true
 			}
@@ -1102,6 +1105,8 @@ func (sg *schemaGenContext) buildArray() error {
 	schemaCopy := elProp.GenSchema
 	schemaCopy.Required = false
 	hv, _ := hasValidations(sg.Schema.Items.Schema, false)
+	// include format validation, excluding binary
+	hv = hv || (schemaCopy.IsCustomFormatter && !schemaCopy.IsStream) || (schemaCopy.IsArray && schemaCopy.ElemType.IsCustomFormatter && !schemaCopy.ElemType.IsStream)
 	schemaCopy.HasValidations = elProp.GenSchema.IsNullable || hv
 	sg.GenSchema.Items = &schemaCopy
 	if sg.Named {
@@ -1112,7 +1117,7 @@ func (sg *schemaGenContext) buildArray() error {
 
 func (sg *schemaGenContext) buildItems() error {
 	presentsAsSingle := sg.Schema.Items != nil && sg.Schema.Items.Schema != nil
-	if presentsAsSingle && sg.Schema.AdditionalItems != nil { // unsure if htis a valid of invalid schema
+	if presentsAsSingle && sg.Schema.AdditionalItems != nil { // unsure if this a valid of invalid schema
 		return fmt.Errorf("single schema (%s) can't have additional items", sg.Name)
 	}
 	if presentsAsSingle {
@@ -1402,6 +1407,8 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.resolvedType = tpe
 	sg.GenSchema.IsBaseType = tpe.IsBaseType
 	sg.GenSchema.HasDiscriminator = tpe.HasDiscriminator
+	// include format validations, excluding binary
+	sg.GenSchema.HasValidations = sg.GenSchema.HasValidations || (tpe.IsCustomFormatter && !tpe.IsStream) || (tpe.IsArray && tpe.ElemType.IsCustomFormatter && !tpe.ElemType.IsStream)
 	if tpe.IsArray && tpe.ElemType.IsBaseType {
 		sg.GenSchema.ValueExpression += "()"
 	}

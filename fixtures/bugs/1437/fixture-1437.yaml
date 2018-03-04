@@ -1,0 +1,72 @@
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: 'Enum'
+  description: |
+    Test simple format generation
+  contact:
+    name: API Support
+    url: http://www.example.com
+    email: contact@github.com
+consumes:
+  - application/json
+produces:
+  - application/json
+definitions:
+  aDate:
+    type: string
+    format: date
+  aTime:
+    type: string
+    format: datetime
+  aUri:
+    type: string
+    format: uri
+  aUUID:
+    type: string
+    format: uuid
+  aListOfUUIDs:
+    type: array
+    items:
+      type: string
+      format: uuid
+  aListOfDates:
+    type: array
+    items:
+      type: string
+      format: date
+  aSetOfUUIDs:
+    type: array
+    minItems: 5
+    items:
+      $ref: '#/definitions/aUUID'
+  aSetOfDates:
+    type: array
+    minItems: 10
+    items:
+      $ref: '#/definitions/aDate'
+  uuEncoded:
+    type: string
+    format: byte
+  nonregIoReader:
+    type: string 
+    format: binary
+  #nonregIoReaderValid:
+  #  type: string 
+  #  format: binary
+  #  minLength: 10                  #<- this generates failed code
+  myObject:
+    type: object 
+    properties:
+      thisUUID:
+        $ref: '#/definitions/aUUID'
+      thisListOfDates:
+        $ref: '#/definitions/aListOfDates'      #<- there is still (another) a bug to validate this
+      thisIoReader:
+        $ref: '#/definitions/nonregIoReader'
+paths:
+  /fixture:
+    get:
+      responses:
+        200:
+          description: OK
