@@ -172,7 +172,6 @@ var primitives = map[string]struct{}{
 
 // Formats with a custom formatter.
 // Currently, 23 such formats are supported
-// + 2 interfaces for io.Writers and Closers
 var customFormatters = map[string]struct{}{
 	"strfmt.Base64":     struct{}{},
 	"strfmt.CreditCard": struct{}{},
@@ -197,8 +196,8 @@ var customFormatters = map[string]struct{}{
 	"strfmt.UUID3":      struct{}{},
 	"strfmt.UUID4":      struct{}{},
 	"strfmt.UUID5":      struct{}{},
-	// Special
-	"io.ReadCloser": struct{}{}, // for "format": "binary"
-	"io.Writer":     struct{}{},
+	// the following interfaces do not generate validations
+	"io.ReadCloser": struct{}{}, // for "format": "binary" (server side)
+	"io.Writer":     struct{}{}, // for "format": "binary" (client side)
 	// NOTE: runtime.File is not a customFormatter
 }

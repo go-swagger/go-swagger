@@ -1,0 +1,32 @@
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: 'Enum'
+  description: |
+    Format validation generation
+  contact:
+    name: API Support
+    url: http://www.example.com
+    email: contact@github.com
+consumes:
+  - application/json
+produces:
+  - application/json
+definitions:
+  aListOfDates:
+    type: array
+    items:
+      type: string
+      format: date
+  myObject:
+    type: object 
+    properties:
+      thisListOfDates:
+        $ref: '#/definitions/aListOfDates'      #<- there is still (another) a bug to validate this
+paths:
+paths:
+  /fixture:
+    get:
+      responses:
+        200:
+          description: OK
