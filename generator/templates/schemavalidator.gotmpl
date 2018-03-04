@@ -1,48 +1,55 @@
 {{ define "primitivefieldvalidator" }}
   {{ if .Required }}
   if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if not (or .IsAnonymous .IsNullable) }}{{ .GoType }}({{ end }}{{.ValueExpression }}{{ if not (or .IsAnonymous .IsNullable) }}){{ end }}); err != nil {
+    {{ if .Path -}}
+    res = append(res, err)
+    // no further validations
+    return res
+    {{- else -}}
+    // no further validations
     return err
+    {{- end }}
   }
   {{ end }}
   {{ if .MinLength }}
   if err := validate.MinLength({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, string({{ if .IsNullable }}*{{ end }}{{.ValueExpression }}), {{.MinLength }}); err != nil {
-    return err
+    res = append(res, err)
   }
   {{ end }}
   {{ if .MaxLength }}
   if err := validate.MaxLength({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, string({{ if .IsNullable }}*{{ end }}{{.ValueExpression }}), {{.MaxLength }}); err != nil {
-    return err
+    res = append(res, err)
   }
   {{ end }}
   {{ if .Pattern }}
   if err := validate.Pattern({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, string({{ if .IsNullable }}*{{ end }}{{.ValueExpression }}), `{{.Pattern }}`); err != nil {
-    return err
+    res = append(res, err)
   }
   {{ end }}
   {{ if .Minimum }}
   if err := validate.Minimum{{ if eq .SwaggerType "integer" }}Int{{ end }}({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if eq .SwaggerType "integer" }}int{{ else }}float{{ end }}64({{ if .IsNullable }}*{{ end }}{{.ValueExpression }}), {{.Minimum }}, {{.ExclusiveMinimum }}); err != nil {
-    return err
+    res = append(res, err)
   }
   {{ end }}
   {{ if .Maximum }}
   if err := validate.Maximum{{ if eq .SwaggerType "integer" }}Int{{ end }}({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if eq .SwaggerType "integer" }}int{{ else }}float{{ end }}64({{ if .IsNullable }}*{{ end }}{{.ValueExpression }}), {{.Maximum }}, {{.ExclusiveMaximum }}); err != nil {
-    return err
+    res = append(res, err)
   }
   {{ end }}
   {{ if .MultipleOf }}
   if err := validate.MultipleOf({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, float64({{ if .IsNullable }}*{{ end }}{{.ValueExpression }}), {{.MultipleOf }}); err != nil {
-    return err
+    res = append(res, err)
   }
   {{ end }}
   {{ if .Enum }}
   // value enum
   if err := {{.ReceiverName }}.validate{{ pascalize .Name }}{{ pascalize .Suffix }}Enum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if .IsNullable }}*{{ end }}{{.ValueExpression }}); err != nil {
-    return err
+    res = append(res, err)
   }
   {{ end }}
   {{ if .IsCustomFormatter }}
   if err := validate.FormatOf({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ printf "%q" .SwaggerFormat }}, {{.ValueExpression }}.String(), formats); err != nil {
-    return err
+    res = append(res, err)
   }
   {{ end }}
 {{ end }}
@@ -50,7 +57,14 @@
 {{define "slicevalidator" }}
   {{ if .Required }}
     if err := validate.Required({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
+      {{ if .Path -}}
+      res = append(res, err)
+      // no further validations
+      return res
+      {{- else -}}
+      // no further validations
       return err
+      {{- end }}
     }
   {{ end }}
   {{ if or .MinItems .MaxItems }}
@@ -58,23 +72,23 @@
   {{ end }}
   {{ if .MinItems }}
     if err := validate.MinItems({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .IndexVar }}{{ pascalize .Name }}Size, {{.MinItems }}); err != nil {
-      return err
+      res = append(res, err)
     }
   {{ end }}
   {{ if .MaxItems }}
     if err := validate.MaxItems({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .IndexVar }}{{ pascalize .Name }}Size, {{.MaxItems }}); err != nil {
-      return err
+      res = append(res, err)
     }
   {{ end }}
   {{ if .UniqueItems }}
     if err := validate.UniqueItems({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
-      return err
+      res = append(res, err)
     }
   {{ end }}
   {{ if .Enum }}
     // for slice
     if err := {{.ReceiverName }}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
-      return err
+      res = append(res, err)
     }
   {{ end }}
   {{ if .Items }}
@@ -96,9 +110,9 @@
     {{ end }}
       if err := {{.ValueExpression }}.Validate(formats); err != nil {
         if ve, ok := err.(*errors.Validation); ok {
-          return ve.ValidateName({{ if .Path }}{{ .Path }}{{ else }}""{{ end }})
+          res = append(res, ve.ValidateName({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}))
         }
-        return err
+        res = append(res, err)
       }
     {{ if .IsNullable }}
     }
@@ -110,7 +124,14 @@
   {{ if .HasAdditionalProperties }}
     {{ if .AdditionalProperties.Required }}
     if err := validate.Required({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if not .IsAnonymous }}{{ .GoType }}({{ end }}{{.ValueExpression }}{{ if not .IsAnonymous }}){{ end }}); err != nil {
+      {{ if .Path -}}
+      res = append(res, err)
+      // no further validations
+      return res
+      {{- else -}}
+      // no further validations
       return err
+      {{- end }}
     }
     {{ end }}
     {{ if  .AdditionalProperties.NeedsValidation }}
@@ -128,7 +149,7 @@
       if val, ok := {{ .ValueExpression }}; ok {
               {{ end }}
         if err := val.Validate(formats); err != nil {
-          return err
+          res = append(res, err)
         }
               {{ if .IsNullable }}
       }
@@ -158,7 +179,7 @@
           {{ template "mapvalidator" . }}
           {{ if .Enum }}
       if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}ValueEnum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
-        return err
+        res = append(res, err)
       }
           {{ end }}
         {{ else if or .IsComplexObject .IsTuple .IsAdditionalProperties .IsAliased }}
@@ -167,7 +188,7 @@
       if val, ok := {{ .ValueExpression }}; ok {
             {{ end }}
         if err := val.Validate(formats); err != nil {
-          return err
+          res = append(res, err)
         }
             {{ if .IsNullable }}
       }
@@ -193,7 +214,7 @@
     {{ if .Enum }}
     // from map
     if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
-      return err
+      res = append(res, err)
     }
     {{ end }}
   {{ end }}
@@ -203,7 +224,14 @@
   {{ if not .IsAnonymous }}
     {{ if and .Required .IsNullable }}
       if err := validate.Required({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
+      {{ if .Path -}}
+        res = append(res, err)
+        // no further validations
+        return res
+      {{- else -}}
+        // no further validations
         return err
+      {{- end }}
       }
     {{ end }}
     {{ if .IsNullable }}
@@ -211,9 +239,9 @@
     {{ end }}
       if err := {{.ValueExpression }}.Validate(formats); err != nil {
         if ve, ok := err.(*errors.Validation); ok {
-          return ve.ValidateName({{ if .Path }}{{ .Path }}{{ else }}""{{ end }})
+          res = append(res, ve.ValidateName({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}))
         }
-        return err
+        res = append(res, err)
       }
     {{ if .IsNullable }}
     }
@@ -346,14 +374,14 @@ func ({{.ReceiverName }} {{ if or .IsTuple .IsComplexObject .IsAdditionalPropert
       {{ range .Properties }}
         {{ if and (ne $.DiscriminatorField .Name) (or .Required .HasValidations) }}
           if err := {{.ReceiverName }}.validate{{ pascalize .Name }}(formats); err != nil {
-            res = append(res, err)
+            res = append(res, err...)
           }
         {{ end }}
       {{ end }}
     {{ end }}
     {{ if and .IsTuple .AdditionalItems }}
       if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Items(formats); err != nil {
-        res = append(res, err)
+        res = append(res, err...)
       }
     {{ end }}
     {{ if not (or .IsInterface (or .IsAnonymous .IsBaseType)) }}
@@ -376,13 +404,13 @@ func ({{.ReceiverName }} {{ if or .IsTuple .IsComplexObject .IsAdditionalPropert
     {{ if and (ne $.DiscriminatorField .Name) (or .Required .HasValidations) }}
       if err := {{.ReceiverName }}.validate{{ pascalize .Name }}(formats); err != nil {
         // prop
-        res = append(res, err)
+        res = append(res, err...)
       }
     {{ end }}
   {{ end }}
   {{ if and .IsTuple .AdditionalItems }}
     if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Items(formats); err != nil {
-      res = append(res, err)
+      res = append(res, err...)
     }
   {{ end }}
   {{ if and .Enum (not .IsPrimitive) (not .IsMap) }}
@@ -393,6 +421,10 @@ func ({{.ReceiverName }} {{ if or .IsTuple .IsComplexObject .IsAdditionalPropert
   {{ end }}
 
   if len(res) > 0 {
+    if len(res) == 1 {
+      return res[0]
+    }
+    // multiple validation errors
     return errors.CompositeValidationError(res...)
   }
   return nil
@@ -498,7 +530,8 @@ func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else 
       {{ end }}
 
       {{ if and (ne $.DiscriminatorField .Name) (or .Required .HasValidations) }}
-func ({{.ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}(formats strfmt.Registry) error {
+func ({{.ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}(formats strfmt.Registry) []error {
+  var res []error
         {{ if not .Required }}
   if swag.IsZero({{ .ValueExpression }}) { // not required
     return nil
@@ -506,6 +539,9 @@ func ({{.ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else i
         {{ end }}
         {{template "propertyvalidator" . }}
 
+  if len(res)>0 {
+    return res
+  }
   return nil
 }
       {{ end }}
@@ -601,7 +637,8 @@ func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else 
         {{ end }}
 
 
-func ({{.ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}(formats strfmt.Registry) error {
+func ({{.ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}(formats strfmt.Registry) []error {
+  var res []error
         {{ if not .Required }}
   if swag.IsZero({{ .ValueExpression }}) { // not required
     return nil
@@ -609,6 +646,9 @@ func ({{.ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else i
         {{ end }}
         {{template "propertyvalidator" . }}
 
+  if len(res)>0 {
+    return res
+  }
   return nil
 }
       {{ end }}
@@ -636,12 +676,16 @@ func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else 
   return nil
 }
     {{ end }}
-func ({{.ReceiverName }} *{{ pascalize .Name }}) validate{{ pascalize .Name }}Items(formats strfmt.Registry) error {
+func ({{.ReceiverName }} *{{ pascalize .Name }}) validate{{ pascalize .Name }}Items(formats strfmt.Registry) []error {
+  var res []error
     {{ if or .AdditionalItems.Required .AdditionalItems.HasValidations }}
   for {{ .IndexVar }} := range {{ .ValueExpression }}.{{ pascalize .Name }}Items {
       {{template "propertyvalidator" .AdditionalItems }}
   }
     {{ end }}
+  if len(res)>0 {
+    return res
+  }
   return nil
 }
   {{ end }}
