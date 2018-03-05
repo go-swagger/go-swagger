@@ -383,7 +383,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	var successResponses []GenResponse
 	if operation.Responses != nil {
 		for _, v := range srs {
-			name, ok := v.Response.Extensions.GetString("x-go-name")
+			name, ok := v.Response.Extensions.GetString(xGoName)
 			if !ok {
 				name = runtime.Statuses[v.Code]
 			}
@@ -431,11 +431,11 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 
 	swsp := resolver.Doc.Spec()
 	var extraSchemes []string
-	if ess, ok := operation.Extensions.GetStringSlice("x-schemes"); ok {
+	if ess, ok := operation.Extensions.GetStringSlice(xSchemes); ok {
 		extraSchemes = append(extraSchemes, ess...)
 	}
 
-	if ess1, ok := swsp.Extensions.GetStringSlice("x-schemes"); ok {
+	if ess1, ok := swsp.Extensions.GetStringSlice(xSchemes); ok {
 		extraSchemes = concatUnique(ess1, extraSchemes)
 	}
 	sort.Strings(extraSchemes)

@@ -28,20 +28,29 @@ import (
 )
 
 const (
-	iface       = "interface{}"
-	array       = "array"
-	file        = "file"
-	number      = "number"
-	integer     = "integer"
-	boolean     = "boolean"
-	str         = "string"
-	object      = "object"
-	binary      = "binary"
-	xNullable   = "x-nullable"
-	xIsNullable = "x-isnullable"
-	xOmitEmpty  = "x-omitempty"
-	sHTTP       = "http"
-	body        = "body"
+	iface   = "interface{}"
+	array   = "array"
+	file    = "file"
+	number  = "number"
+	integer = "integer"
+	boolean = "boolean"
+	str     = "string"
+	object  = "object"
+	binary  = "binary"
+	sHTTP   = "http"
+	body    = "body"
+)
+
+// Extensions supported by go-swagger
+const (
+	xClass       = "x-class"         // class name used by discriminator
+	xGoCustomTag = "x-go-custom-tag" // additional tag for serializers on struct fields
+	xGoName      = "x-go-name"       // name of the generated go variable
+	xGoType      = "x-go-type"       // reuse existing type (do not generate)
+	xIsNullable  = "x-isnullable"
+	xNullable    = "x-nullable" // turns the schema into a pointer
+	xOmitEmpty   = "x-omitempty"
+	xSchemes     = "x-schemes" // additional schemes supported for operations (server generation)
 )
 
 // swaggerTypeMapping contains a mapping from go type to swagger type or format
@@ -127,15 +136,15 @@ func debugLog(format string, args ...interface{}) {
 func knownDefGoType(def string, schema spec.Schema, clear func(string) string) (string, string, string) {
 	debugLog("known def type: %q", def)
 	ext := schema.Extensions
-	if nm, ok := ext.GetString("x-go-name"); ok {
+	if nm, ok := ext.GetString(xGoName); ok {
 		if clear == nil {
-			debugLog("known def type x-go-name no clear: %q", nm)
+			debugLog("known def type %s no clear: %q", xGoName, nm)
 			return nm, "", ""
 		}
-		debugLog("known def type x-go-name clear: %q -> %q", nm, clear(nm))
+		debugLog("known def type %s clear: %q -> %q", xGoName, nm, clear(nm))
 		return clear(nm), "", ""
 	}
-	v, ok := ext["x-go-type"]
+	v, ok := ext[xGoType]
 	if !ok {
 		if clear == nil {
 			debugLog("known def type no clear: %q", def)
@@ -155,7 +164,7 @@ func knownDefGoType(def string, schema spec.Schema, clear func(string) string) (
 	} else {
 		alias = filepath.Base(pkg)
 	}
-	debugLog("known def type x-go-type no clear: %q", alias+"."+t, pkg, alias)
+	debugLog("known def type %s no clear: %q", xGoType, alias+"."+t, pkg, alias)
 	return alias + "." + t, pkg, alias
 }
 
@@ -253,6 +262,8 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema, isAnonymous bool, isRe
 			result.IsPrimitive = schFmt != binary
 			result.IsStream = schFmt == binary
 			_, result.IsCustomFormatter = customFormatters[tpe]
+			// propagate extensions in resolvedType
+			result.Extensions = schema.Extensions
 
 			switch result.SwaggerType {
 			case str:
