@@ -31,7 +31,7 @@ func discriminatorInfo(doc *analysis.Spec) *discInfo {
 	baseTypes := make(map[string]discor)
 	for _, sch := range doc.AllDefinitions() {
 		if sch.Schema.Discriminator != "" {
-			tpe, _ := sch.Schema.Extensions.GetString("x-go-name")
+			tpe, _ := sch.Schema.Extensions.GetString(xGoName)
 			if tpe == "" {
 				tpe = swag.ToGoName(sch.Name)
 			}
@@ -48,11 +48,11 @@ func discriminatorInfo(doc *analysis.Spec) *discInfo {
 		for _, ao := range sch.Schema.AllOf {
 			if ao.Ref.String() != "" {
 				if bt, ok := baseTypes[ao.Ref.String()]; ok {
-					name, _ := sch.Schema.Extensions.GetString("x-class")
+					name, _ := sch.Schema.Extensions.GetString(xClass)
 					if name == "" {
 						name = sch.Name
 					}
-					tpe, _ := sch.Schema.Extensions.GetString("x-go-name")
+					tpe, _ := sch.Schema.Extensions.GetString(xGoName)
 					if tpe == "" {
 						tpe = swag.ToGoName(sch.Name)
 					}

@@ -417,7 +417,7 @@ func basicTaskListResolver(t testing.TB) (*loads.Document, *typeResolver, error)
 	}
 	swsp := tlb.Spec()
 	uc := swsp.Definitions["UserCard"]
-	uc.AddExtension("x-go-name", "UserItem")
+	uc.AddExtension(xGoName, "UserItem")
 	swsp.Definitions["UserCard"] = uc
 	resolver := &typeResolver{
 		Doc:           tlb,
@@ -427,7 +427,7 @@ func basicTaskListResolver(t testing.TB) (*loads.Document, *typeResolver, error)
 	resolver.KnownDefs = make(map[string]struct{})
 	for k, sch := range swsp.Definitions {
 		resolver.KnownDefs[k] = struct{}{}
-		if nm, ok := sch.Extensions["x-go-name"]; ok {
+		if nm, ok := sch.Extensions[xGoName]; ok {
 			resolver.KnownDefs[nm.(string)] = struct{}{}
 		}
 	}

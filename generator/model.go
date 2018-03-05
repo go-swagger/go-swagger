@@ -139,7 +139,7 @@ func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *loads.Docu
 
 func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts) (*GenDefinition, error) {
 
-	_, ok := schema.Extensions["x-go-type"]
+	_, ok := schema.Extensions[xGoType]
 	if ok {
 		return nil, nil
 	}
@@ -717,7 +717,7 @@ func (sg *schemaGenContext) buildProperties() error {
 			}
 			var nm = filepath.Base(emprop.Schema.Ref.GetURL().Fragment)
 			var tn string
-			if gn, ok := emprop.Schema.Extensions["x-go-name"]; ok {
+			if gn, ok := emprop.Schema.Extensions[xGoName]; ok {
 				tn = gn.(string)
 			} else {
 				tn = swag.ToGoName(nm)
@@ -748,7 +748,7 @@ func (sg *schemaGenContext) buildProperties() error {
 		}
 		sg.MergeResult(emprop, false)
 
-		if customTag, found := emprop.Schema.Extensions["x-go-custom-tag"]; found {
+		if customTag, found := emprop.Schema.Extensions[xGoCustomTag]; found {
 			emprop.GenSchema.CustomTag = customTag.(string)
 		}
 		if emprop.GenSchema.HasDiscriminator {
@@ -1319,7 +1319,7 @@ func (sg *schemaGenContext) GoName() string {
 }
 
 func goName(sch *spec.Schema, orig string) string {
-	name, _ := sch.Extensions.GetString("x-go-name")
+	name, _ := sch.Extensions.GetString(xGoName)
 	if name != "" {
 		return name
 	}
