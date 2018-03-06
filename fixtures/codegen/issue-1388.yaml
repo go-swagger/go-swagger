@@ -1,0 +1,77 @@
+swagger: '2.0'
+info:
+  title: a title
+  description: A Problem Document
+  version: 1.0.0
+basePath: /api/v1
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /issues:
+    post:
+      summary: Create a new issue
+      description: Issues represent problems or suggestions for the app, this creates a new one.
+      operationId: createIssue
+      tags:
+        - issues
+      parameters:
+        - in: body
+          name: createIssuePayload
+          required: true
+          schema:
+            $ref: '#/definitions/CreateIssuePayload'
+      responses:
+        201:
+          description: created issue
+          schema:
+            $ref: '#/definitions/IssuePayload'
+        400:
+          description: invalid request
+    get:
+      summary: List all issues
+      description: List all issues
+      operationId: indexIssues
+      tags:
+        - issues
+      responses:
+        200:
+          description: list of issues
+          schema:
+            $ref: '#/definitions/IndexIssuesPayload'
+        400:
+          description: invalid request
+
+definitions:
+  CreateIssuePayload:
+    type: object
+    properties:
+      description:
+        type: string
+        example: This is a test issue
+    required:
+      - description
+  IndexIssuesPayload:
+    type: array
+    items:
+      $ref: '#/definitions/IssuePayload'
+  IssuePayload:
+    allOf:
+      - $ref: '#/definitions/CreateIssuePayload'
+      - type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+            example: c56a4180-65aa-42ec-a945-5fd21dec0538
+          created_at:
+            type: string
+            format: date-time
+          updated_at:
+            type: string
+            format: date-time
+        required:
+          - id
+          - created_at
+          - updated_at

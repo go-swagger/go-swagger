@@ -1,0 +1,4800 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Mobile Money API",
+    "description": "This document defines the RESTful endpoints provided by the GSMA Mobile Money API",
+    "version": "0.14"
+  },
+  "host": "gsma-harmonisation.symbox.com",
+  "basePath": "/v0.14/MM",
+  "schemes": [
+    "https"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/transactions": {
+      "post": {
+        "summary": "Create A Transaction",
+        "description": "Provided with a valid object representation, this endpoint allows for a new transaction to be created",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/correlationId"
+          },
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/requestTransaction"
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/responseTransaction"
+          },
+          "202": {
+            "$ref": "#/responses/responseRequestState"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/transactions/{transactionReference}": {
+      "get": {
+        "summary": "View A Transaction",
+        "description": "This endpoint returns the current state of a transaction",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/transactionReference"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/responseTransaction"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/transactions/{transactionReference}/reversals": {
+      "post": {
+        "summary": "Create A Reversal",
+        "description": "Provided with a valid object representation, this endpoint allows for a new reversal to be created",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/correlationId"
+          },
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/transactionReference"
+          },
+          {
+            "$ref": "#/parameters/requestReversal"
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/responseReversal"
+          },
+          "202": {
+            "$ref": "#/responses/responseRequestState"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/batchtransactions": {
+      "post": {
+        "summary": "Create A Transaction Batch",
+        "description": "Provided with a valid object representation, this endpoint allows for a new transaction batch to be created",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/correlationId"
+          },
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/requestBatchTransaction"
+          }
+        ],
+        "responses": {
+          "202": {
+            "$ref": "#/responses/responseRequestState"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/batchtransactions/{batchId}": {
+      "get": {
+        "summary": "View A Transaction Batch",
+        "description": "This endpoint returns the current status of a batch transaction",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/batchId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/responseBatchTransaction"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update A Transaction Batch",
+        "description": "This endpoint updates a specific transaction batch",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/correlationId"
+          },
+          {
+            "$ref": "#/parameters/batchId"
+          },
+          {
+            "$ref": "#/parameters/patch"
+          }
+        ],
+        "responses": {
+          "202": {
+            "$ref": "#/responses/responseRequestState"
+          },
+          "204": {
+            "description": "an empty response is returned for a synchronous successful patch"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/batchtransactions/{batchId}/rejections": {
+      "get": {
+        "summary": "View Batch Rejections",
+        "description": "This endpoint returns rejected transactions for a specific batch",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/batchId"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/fromDateTime"
+          },
+          {
+            "$ref": "#/parameters/toDateTime"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/listBatchRejection"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/batchtransactions/{batchId}/completions": {
+      "get": {
+        "summary": "View Batch Completions",
+        "description": "This endpoint returns completed transactions for a specific batch",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/batchId"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/fromDateTime"
+          },
+          {
+            "$ref": "#/parameters/toDateTime"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/listBatchCompletion"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/{accountId}/status": {
+      "get": {
+        "summary": "View Account Status",
+        "description": "This endpoint returns the current status of an account",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/accountId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/accountStatus"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/msisdn/{msisdn}/status": {
+      "get": {
+        "summary": "View Account Status",
+        "description": "This endpoint returns the current status of an account (via MSISDN identifier)",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/msisdn"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/accountStatus"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/{accountId}/accountname": {
+      "get": {
+        "summary": "View Account Name",
+        "description": "This endpoint returns the name of an account",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/accountId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/accountName"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/msisdn/{msisdn}/accountname": {
+      "get": {
+        "summary": "View Account Name",
+        "description": "This endpoint returns the name of an account (via MSISDN identifier)",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/msisdn"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/accountName"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/{accountId}/balance": {
+      "get": {
+        "summary": "View Account Balance",
+        "description": "This endpoint returns the balance of an account",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/accountId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/accountBalance"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/msisdn/{msisdn}/balance": {
+      "get": {
+        "summary": "View Account Balance",
+        "description": "This endpoint returns the balance of an account (via MSISDN identifier)",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/msisdn"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/accountBalance"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/{accountId}/transactions": {
+      "get": {
+        "summary": "View Account Specific Transaction",
+        "description": "This endpoint returns transactions linked to a specific account",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/accountId"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/fromDateTime"
+          },
+          {
+            "$ref": "#/parameters/toDateTime"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/listTransaction"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/msisdn/{msisdn}/transactions": {
+      "get": {
+        "summary": "View Account Specific Transaction",
+        "description": "This endpoint returns transactions linked to a specific account (via MSISDN identifier)",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/msisdn"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/fromDateTime"
+          },
+          {
+            "$ref": "#/parameters/toDateTime"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/listTransaction"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/{accountId}/statemententries": {
+      "get": {
+        "summary": "View Account Statements",
+        "description": "This endpoint returns statements linked to an account",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/accountId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/listStatementEntry"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/msisdn/{msisdn}/statemententries": {
+      "get": {
+        "summary": "View Account Statements",
+        "description": "This endpoint returns statements linked to an account (via MSISDN identifier)",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/msisdn"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/listStatementEntry"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/statemententries/{transactionReference}": {
+      "get": {
+        "summary": "View Specific Statement",
+        "description": "This endpoint returns the statement of a specific transaction",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/transactionReference"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/statementEntry"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/{accountId}/bills": {
+      "get": {
+        "summary": "View Account Bills",
+        "description": "This endpoint returns bills linked to an account",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/accountId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/listBill"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/msisdn/{msisdn}/bills": {
+      "get": {
+        "summary": "View Account Bills",
+        "description": "This endpoint returns bills linked to an account (via MSISDN identifier)",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/msisdn"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/listBill"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/{accountId}/bills/{billReference}/payments": {
+      "post": {
+        "summary": "Create A Bill Payment",
+        "description": "Provided with a valid object representation, this endpoint allows for a new bill payment to be created for a specific account",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/correlationId"
+          },
+          {
+            "$ref": "#/parameters/accountId"
+          },
+          {
+            "$ref": "#/parameters/billReference"
+          },
+          {
+            "$ref": "#/parameters/requestBillPayment"
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/responseBillPayment"
+          },
+          "202": {
+            "$ref": "#/responses/responseRequestState"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/msisdn/{msisdn}/bills/{billReference}/payments": {
+      "post": {
+        "summary": "Create A Bill Payment",
+        "description": "Provided with a valid object representation, this endpoint allows for a new bill payment to be created for a specific account (via MSISDN identifier)",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/correlationId"
+          },
+          {
+            "$ref": "#/parameters/msisdn"
+          },
+          {
+            "$ref": "#/parameters/billReference"
+          },
+          {
+            "$ref": "#/parameters/requestBillPayment"
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/responseBillPayment"
+          },
+          "202": {
+            "$ref": "#/responses/responseRequestState"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/bills/{billReference}/payments": {
+      "post": {
+        "summary": "Create A Bill Payment",
+        "description": "Provided with a valid object representation, this endpoint allows for a new bill payment to be created",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/correlationId"
+          },
+          {
+            "$ref": "#/parameters/billReference"
+          },
+          {
+            "$ref": "#/parameters/requestBillPayment"
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/responseBillPayment"
+          },
+          "202": {
+            "$ref": "#/responses/responseRequestState"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/{accountId}/debitmandates": {
+      "post": {
+        "summary": "Create A Debit Mandate",
+        "description": "Provided with a valid object representation, this endpoint allows for a new debit mandate to be created for a specific account",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/correlationId"
+          },
+          {
+            "$ref": "#/parameters/accountId"
+          },
+          {
+            "$ref": "#/parameters/requestDebitMandate"
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/responseDebitMandate"
+          },
+          "202": {
+            "$ref": "#/responses/responseRequestState"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/msisdn/{msisdn}/debitmandates": {
+      "post": {
+        "summary": "Create A Debit Mandate",
+        "description": "Provided with a valid object representation, this endpoint allows for a new debit mandate to be created for a specific account (via MSISDN identifier)",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/correlationId"
+          },
+          {
+            "$ref": "#/parameters/msisdn"
+          },
+          {
+            "$ref": "#/parameters/requestDebitMandate"
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/responseDebitMandate"
+          },
+          "202": {
+            "$ref": "#/responses/responseRequestState"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/{accountId}/debitmandates/{debitMandateReference}": {
+      "patch": {
+        "summary": "Update A Debit Mandate",
+        "description": "This endpoint updates a specific debit mandate linked to an account",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/correlationId"
+          },
+          {
+            "$ref": "#/parameters/accountId"
+          },
+          {
+            "$ref": "#/parameters/debitMandateReference"
+          },
+          {
+            "$ref": "#/parameters/patch"
+          }
+        ],
+        "responses": {
+          "202": {
+            "$ref": "#/responses/responseRequestState"
+          },
+          "204": {
+            "description": "an empty response is returned for a synchronous successful patch"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      },
+      "get": {
+        "summary": "View A Debit Mandate",
+        "description": "This endpoint returns a specific debit mandate linked to an account",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/accountId"
+          },
+          {
+            "$ref": "#/parameters/debitMandateReference"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/responseDebitMandate"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/msisdn/{msisdn}/debitmandates/{debitMandateReference}": {
+      "patch": {
+        "summary": "Update A Debit Mandate",
+        "description": "This endpoint updates a specific debit mandate linked to an account (via MSISDN identifier)",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/correlationId"
+          },
+          {
+            "$ref": "#/parameters/msisdn"
+          },
+          {
+            "$ref": "#/parameters/debitMandateReference"
+          },
+          {
+            "$ref": "#/parameters/patch"
+          }
+        ],
+        "responses": {
+          "202": {
+            "$ref": "#/responses/responseRequestState"
+          },
+          "204": {
+            "description": "an empty response is returned for a synchronous successful patch"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      },
+      "get": {
+        "summary": "View A Debit Mandate",
+        "description": "This endpoint returns a specific debit mandate linked to an account (via MSISDN identifier)",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/msisdn"
+          },
+          {
+            "$ref": "#/parameters/debitMandateReference"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/responseDebitMandate"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/{accountId}/links": {
+      "post": {
+        "summary": "Create A Link",
+        "description": "Provided with a valid object representation, this endpoint allows for a new link to be created for a specific account",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/correlationId"
+          },
+          {
+            "$ref": "#/parameters/accountId"
+          },
+          {
+            "$ref": "#/parameters/requestLink"
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/responseLink"
+          },
+          "202": {
+            "$ref": "#/responses/responseRequestState"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/msisdn/{msisdn}/links": {
+      "post": {
+        "summary": "Create A Link",
+        "description": "Provided with a valid object representation, this endpoint allows for a new link to be created for a specific account (via MSISDN identifier)",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/correlationId"
+          },
+          {
+            "$ref": "#/parameters/msisdn"
+          },
+          {
+            "$ref": "#/parameters/requestLink"
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/responseLink"
+          },
+          "202": {
+            "$ref": "#/responses/responseRequestState"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/{accountId}/links/{linkReference}": {
+      "patch": {
+        "summary": "Update A Link",
+        "description": "This endpoint updates a specific link",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/correlationId"
+          },
+          {
+            "$ref": "#/parameters/accountId"
+          },
+          {
+            "$ref": "#/parameters/linkReference"
+          },
+          {
+            "$ref": "#/parameters/patch"
+          }
+        ],
+        "responses": {
+          "202": {
+            "$ref": "#/responses/responseRequestState"
+          },
+          "204": {
+            "description": "an empty response is returned for a synchronous successful patch"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      },
+      "get": {
+        "summary": "View A Link",
+        "description": "This endpoint returns a specific link",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/accountId"
+          },
+          {
+            "$ref": "#/parameters/linkReference"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/responseDebitMandate"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/accounts/msisdn/{msisdn}/links/{linkReference}": {
+      "patch": {
+        "summary": "Update A Link",
+        "description": "This endpoint updates a specific link (via MSISDN identifier)",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/correlationId"
+          },
+          {
+            "$ref": "#/parameters/msisdn"
+          },
+          {
+            "$ref": "#/parameters/linkReference"
+          },
+          {
+            "$ref": "#/parameters/patch"
+          }
+        ],
+        "responses": {
+          "202": {
+            "$ref": "#/responses/responseRequestState"
+          },
+          "204": {
+            "description": "an empty response is returned for a synchronous successful patch"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      },
+      "get": {
+        "summary": "View A Link",
+        "description": "This endpoint returns a specific link (via MSISDN identifier)",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/msisdn"
+          },
+          {
+            "$ref": "#/parameters/linkReference"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/responseDebitMandate"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/quotations": {
+      "post": {
+        "summary": "Create A New Quotation",
+        "description": "Provided with a valid object representation, this endpoint allows for a new quotation to be created",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/correlationId"
+          },
+          {
+            "$ref": "#/parameters/requestQuotation"
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/responseQuotation"
+          },
+          "202": {
+            "$ref": "#/responses/responseRequestState"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/quotations/{quotationReference}": {
+      "patch": {
+        "summary": "Update A Quotation",
+        "description": "This endpoint updates a specific quotation",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/correlationId"
+          },
+          {
+            "$ref": "#/parameters/quotationReference"
+          },
+          {
+            "$ref": "#/parameters/patch"
+          }
+        ],
+        "responses": {
+          "202": {
+            "$ref": "#/responses/responseRequestState"
+          },
+          "204": {
+            "description": "an empty response is returned for a synchronous successful patch"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      },
+      "get": {
+        "summary": "View A Quotation",
+        "description": "This endpoint returns a specific quotation",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/quotationReference"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/responseQuotation"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/heartbeat": {
+      "get": {
+        "summary": "Check API availability",
+        "description": "This endpoint returns the current status of the API",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/heartbeat"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/requeststates/{serverCorrelationId}": {
+      "patch": {
+        "summary": "Update A Request State",
+        "description": "This endpoint updates a specific request state",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/correlationId"
+          },
+          {
+            "$ref": "#/parameters/serverCorrelationId"
+          },
+          {
+            "$ref": "#/parameters/patch"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "an empty response is returned for a synchronous successful patch"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      },
+      "get": {
+        "summary": "View A Request State",
+        "description": "This endpoint returns a specific request state",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/serverCorrelationId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/responseRequestState"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/responses/{clientCorrelationId}": {
+      "get": {
+        "summary": "View A Response",
+        "description": "This endpoint returns a specfic response",
+        "parameters": [
+          {
+            "$ref": "#/parameters/date"
+          },
+          {
+            "$ref": "#/parameters/clientCorrelationId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/response"
+          },
+          "401": {
+            "$ref": "#/responses/error"
+          },
+          "404": {
+            "$ref": "#/responses/error"
+          },
+          "500": {
+            "$ref": "#/responses/error"
+          },
+          "503": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "baseTransaction": {
+      "type": "object",
+      "required": [
+        "amount",
+        "currency",
+        "type",
+        "requestDate",
+        "debitParty",
+        "creditParty"
+      ],
+      "properties": {
+        "amount": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d{2}$",
+          "description": "Principle Transaction Amount.",
+          "minLength": 4,
+          "maxLength": 256
+        },
+        "currency": {
+          "description": "Currency of the principal transaction amount.",
+          "$ref": "#/definitions/currenciesEnum"
+        },
+        "type": {
+          "description": "The harmonised Transaction Type",
+          "$ref": "#/definitions/transactionTypeEnum"
+        },
+        "subType": {
+          "type": "string",
+          "description": "A non-harmonised sub-classification of the type of transaction. Values are not fixed and usage will vary according to Provider.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "descriptionText": {
+          "type": "string",
+          "description": "Free format text description of the transaction provided by the client. This can be provided as a reference for the receiver on the SMS and on the account statement.",
+          "minLength": 0,
+          "maxLength": 160
+        },
+        "requestDate": {
+          "type": "string",
+          "description": "The creation date and time of the transaction as supplied by the client.",
+          "format": "date-time"
+        },
+        "requestingOrganisationTransactionReference": {
+          "type": "string",
+          "description": "A reference provided by the requesting organisation that is to be associated with the transaction.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "oneTimeCode": {
+          "type": "string",
+          "description": "A one-time code that can be supplied in the request or can be generated in the response depending upon the use case.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "geoCode": {
+          "type": "string",
+          "pattern": "^(-?(90|(\\d|[1-8]\\d)(\\.\\d{1,6}){0,1}))\\,{1}(-?(180|(\\d|\\d\\d|1[0-7]\\d)(\\.\\d{1,6}){0,1}))$",
+          "description": "Indicates the geographic location from where the transaction was initiated.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "debitParty": {
+          "type": "array",
+          "description": "A collection of key/value pairs that enable the debit party to be identified. Keys include MSISDN and Wallet Identifier.",
+          "minItems": 1,
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/accountIdentifierBase"
+          }
+        },
+        "creditParty": {
+          "type": "array",
+          "description": "A series of key/value pairs that enable the credit party to be identified. Keys include MSISDN and Wallet Identifier.",
+          "minItems": 1,
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/accountIdentifierBase"
+          }
+        },
+        "senderKyc": {
+          "description": "A collection of properties detailing the KYC of the transaction Sender, typically used for International Transfers.",
+          "$ref": "#/definitions/kyc"
+        },
+        "recipientKyc": {
+          "description": "A collection of properties detailed the KYC of the transaction Recipient, typically used for International Transfers.",
+          "$ref": "#/definitions/kyc"
+        },
+        "originalTransactionReference": {
+          "type": "string",
+          "description": "For reversals and refunds, this property indicates the transaction which is the subject of the reversal.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "servicingIdentity": {
+          "type": "string",
+          "description": "The property is used to identify the servicing identity for �present� transactions, e.g. till, POS ID, assistant ID",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "requestingLei": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]{4}00[A-Z0-9]{12}\\d{2}$",
+          "description": "Legal Entity Identifier of the organisation that is requesting the transaction.",
+          "minLength": 0,
+          "maxLength": 20
+        },
+        "receivingLei": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]{4}00[A-Z0-9]{12}\\d{2}$",
+          "description": "Legal Entity Identifier of the organisation that is receiving the transaction.",
+          "minLength": 0,
+          "maxLength": 20
+        },
+        "metadata": {
+          "type": "array",
+          "description": "A collection of key/value pairs. These can be used to populate additional transaction properties.",
+          "maxItems": 20,
+          "items": {
+            "$ref": "#/definitions/metadata"
+          }
+        }
+      }
+    },
+    "requestTransaction": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/baseTransaction"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "transactionStatus": {
+              "type": "string",
+              "description": "Indicates the status of the transaction as stored by the API provider.",
+              "minLength": 0,
+              "maxLength": 256
+            },
+            "internationalTransferInformation": {
+              "$ref": "#/definitions/internationalTransfer"
+            }
+          }
+        }
+      ]
+    },
+    "responseTransaction": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/baseTransaction"
+        },
+        {
+          "type": "object",
+          "required": [
+            "transactionStatus",
+            "transactionReference"
+          ],
+          "properties": {
+            "transactionStatus": {
+              "type": "string",
+              "description": "Indicates the status of the transaction as stored by the API provider.",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "creationDate": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Date and time when the transaction was created by the API Provider."
+            },
+            "modificationDate": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Date and time when the transaction was modified by the API Provider."
+            },
+            "transactionReference": {
+              "type": "string",
+              "description": "Unique reference for the transaction. This is returned in the response by API provider.",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "transactionReceipt": {
+              "type": "string",
+              "description": "Transaction receipt number as notified to the parties. This may differ from the Transaction Reference.",
+              "minLength": 0,
+              "maxLength": 256
+            },
+            "internationalTransferInformation": {
+              "description": "A collection of properties detailed information specifically used for international transfers.",
+              "$ref": "#/definitions/internationalTransferResponse"
+            }
+          }
+        }
+      ]
+    },
+    "internationalTransfer": {
+      "type": "object",
+      "required": [
+        "originCountry"
+      ],
+      "properties": {
+        "originCountry": {
+          "description": "The originating country of the transaction, i.e. the country where the transaction commenced.",
+          "$ref": "#/definitions/countriesEnum"
+        },
+        "quotationReference": {
+          "description": "Reference for the quotation that was provider to the sender.",
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "quoteId": {
+          "type": "string",
+          "description": "The specific quote associated with the quotation.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "receivingCountry": {
+          "description": "Destination Country of international remittance.",
+          "$ref": "#/definitions/countriesEnum"
+        },
+        "remittancePurpose": {
+          "type": "string",
+          "description": "Property providing a description of the reason for the international remittance.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "relationshipSender": {
+          "type": "string",
+          "description": "Indicates the relationship (if any) between the sender and the receiver.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "deliveryMethod": {
+          "description": "The recipient delivery method as chosen by the sender.",
+          "$ref": "#/definitions/deliveryMethodEnum"
+        }
+      }
+    },
+    "internationalTransferResponse": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/internationalTransfer"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "senderBlockingReason": {
+              "type": "string",
+              "description": "The reason for blocking the transaction, based on AML checks on the sender.",
+              "minLength": 0,
+              "maxLength": 256
+            },
+            "recipientBlockingReason": {
+              "type": "string",
+              "description": "The reason for blocking the transaction, based on AML checks on the recipient.",
+              "minLength": 0,
+              "maxLength": 256
+            }
+          }
+        }
+      ]
+    },
+    "baseReversal": {
+      "type": "object",
+      "required": [
+        "type",
+        "requestDate"
+      ],
+      "properties": {
+        "amount": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d{2}$",
+          "description": "Principle Transaction Amount.",
+          "minLength": 4,
+          "maxLength": 256
+        },
+        "currency": {
+          "description": "Currency of the principal transaction amount.",
+          "$ref": "#/definitions/currenciesEnum"
+        },
+        "type": {
+          "description": "The harmonised Transaction Type",
+          "$ref": "#/definitions/transactionTypeEnum"
+        },
+        "subType": {
+          "type": "string",
+          "description": "A non-harmonised sub-classification of the type of transaction. Values are not fixed and usage will vary according to Provider.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "descriptionText": {
+          "type": "string",
+          "description": "Free format text description of the transaction provided by the client. This can be provided as a reference for the receiver on the SMS and on the account statement.",
+          "minLength": 0,
+          "maxLength": 160
+        },
+        "requestDate": {
+          "type": "string",
+          "description": "The creation date and time of the transaction as supplied by the client.",
+          "format": "date-time"
+        },
+        "geoCode": {
+          "type": "string",
+          "pattern": "^(-?(90|(\\d|[1-8]\\d)(\\.\\d{1,6}){0,1}))\\,{1}(-?(180|(\\d|\\d\\d|1[0-7]\\d)(\\.\\d{1,6}){0,1}))$",
+          "description": "Indicates the geographic location from where the transaction was initiated.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "requestingOrganisationTransactionReference": {
+          "type": "string",
+          "description": "A reference provided by the requesting organisation that is to be associated with the transaction.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "debitParty": {
+          "type": "array",
+          "description": "A collection of key/value pairs that enable the debit party to be identified. Keys include MSISDN and Wallet Identifier.",
+          "minItems": 0,
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/accountIdentifierBase"
+          }
+        },
+        "creditParty": {
+          "type": "array",
+          "description": "A series of key/value pairs that enable the credit party to be identified. Keys include MSISDN and Wallet Identifier.",
+          "minItems": 0,
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/accountIdentifierBase"
+          }
+        },
+        "servicingIdentity": {
+          "type": "string",
+          "description": "The property is used to identify the servicing identity for �present� transactions, e.g. till, POS ID, assistant ID",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "metadata": {
+          "type": "array",
+          "description": "A collection of key/value pairs. These can be used to populate additional transaction properties.",
+          "maxItems": 20,
+          "items": {
+            "$ref": "#/definitions/metadata"
+          }
+        }
+      }
+    },
+    "requestReversal": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/baseReversal"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "transactionStatus": {
+              "type": "string",
+              "description": "Indicates the status of the transaction as stored by the API provider.",
+              "minLength": 0,
+              "maxLength": 256
+            }
+          }
+        }
+      ]
+    },
+    "responseReversal": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/baseReversal"
+        },
+        {
+          "type": "object",
+          "required": [
+            "transactionStatus",
+            "transactionReference",
+            "originalTransactionReference"
+          ],
+          "properties": {
+            "transactionStatus": {
+              "type": "string",
+              "description": "Indicates the status of the transaction as stored by the API provider.",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "creationDate": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Date and time when the transaction was created by the API Provider."
+            },
+            "modificationDate": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Date and time when the transaction was modified by the API Provider."
+            },
+            "transactionReference": {
+              "type": "string",
+              "description": "Unique reference for the transaction. This is returned in the response by API provider.",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "transactionReceipt": {
+              "type": "string",
+              "description": "Transaction receipt number as notified to the parties. This may differ from the Transaction Reference.",
+              "minLength": 0,
+              "maxLength": 256
+            },
+            "originalTransactionReference": {
+              "type": "string",
+              "description": "For reversals and refunds, this property indicates the transaction which is the subject of the reversal.",
+              "minLength": 0,
+              "maxLength": 256
+            }
+          }
+        }
+      ]
+    },
+    "baseBatchTransaction": {
+      "type": "object",
+      "properties": {
+        "batchTitle": {
+          "type": "string",
+          "description": "Client-provided title for the batch.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "batchDescription": {
+          "type": "string",
+          "description": "Client-provided description of the batch.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "processingFlag": {
+          "type": "boolean",
+          "description": "Indicates whether the batch is currently undergoing processing by the API Provider."
+        },
+        "scheduledStartDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "If the batch has been scheduled, the expected start time is provided here."
+        }
+      }
+    },
+    "requestBatchTransaction": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/baseBatchTransaction"
+        },
+        {
+          "type": "object",
+          "required": [
+            "transactions"
+          ],
+          "properties": {
+            "batchStatus": {
+              "description": "Indicates the status of the batch.",
+              "$ref": "#/definitions/batchStatusEnum"
+            },
+            "transactions": {
+              "type": "array",
+              "description": "Collection of Transactions that are to be processed.",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/definitions/requestTransaction"
+              }
+            },
+            "creationDate": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Indicates when the batch was created as recorded by the API provider."
+            }
+          }
+        }
+      ]
+    },
+    "responseBatchTransaction": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/baseBatchTransaction"
+        },
+        {
+          "type": "object",
+          "required": [
+            "batchId",
+            "batchStatus",
+            "creationDate",
+            "approvalDate",
+            "completionDate"
+          ],
+          "properties": {
+            "batchStatus": {
+              "description": "Indicates the status of the batch.",
+              "$ref": "#/definitions/batchStatusEnum"
+            },
+            "batchId": {
+              "type": "string",
+              "description": "Identifier for the Batch that is assigned by the API provider. This ID is used by the client on subsequent GET or PATCH operations.",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "creationDate": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Indicates when the batch was created as recorded by the API provider."
+            },
+            "approvalDate": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Indicates when the batch was approved as recorded by the API provider."
+            },
+            "completionDate": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Indicates when the batch was completed as recorded by the API provider."
+            },
+            "rejectionCount": {
+              "type": "number",
+              "format": "int32",
+              "description": "Indicates the number of records that have been rejected, either during parsing or during final processing.",
+              "minimum": 0
+            },
+            "parsingSuccessCount": {
+              "type": "number",
+              "format": "int32",
+              "description": "Indicates the number of records that have been parsed successfully.",
+              "minimum": 0
+            },
+            "completedCount": {
+              "type": "number",
+              "format": "int32",
+              "description": "Indicates the number of records that have been successful completed.",
+              "minimum": 0
+            }
+          }
+        }
+      ]
+    },
+    "batchRejection": {
+      "type": "object",
+      "required": [
+        "rejectionDate",
+        "debitParty",
+        "creditParty",
+        "rejectionReason"
+      ],
+      "properties": {
+        "transactionReference": {
+          "type": "string",
+          "description": "Transaction Reference as assigned by the API provider.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "rejectionDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date and time of the rejection."
+        },
+        "debitParty": {
+          "type": "array",
+          "description": "The debit party identifiers for the transaction as specific in the batch request.",
+          "minItems": 1,
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/accountIdentifierBase"
+          }
+        },
+        "creditParty": {
+          "type": "array",
+          "description": "The credit party identifiers for the transaction as specific in the batch request.",
+          "minItems": 1,
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/accountIdentifierBase"
+          }
+        },
+        "rejectionReason": {
+          "type": "string",
+          "description": "The reason for the transaction request as indicated by the API provider.",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "requestingOrganisationTransactionReference": {
+          "type": "string",
+          "description": "A reference provider by the requesting organisation that is to be associated with the transactions.",
+          "minLength": 0,
+          "maxLength": 256
+        }
+      }
+    },
+    "batchCompletion": {
+      "type": "object",
+      "required": [
+        "transactionReference",
+        "completionDate",
+        "link",
+        "debitParty",
+        "creditParty"
+      ],
+      "properties": {
+        "transactionReference": {
+          "type": "string",
+          "description": "Transaction Reference as assigned by the API provider.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "completionDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date and time indicating when the transaction was completed."
+        },
+        "link": {
+          "type": "string",
+          "description": "Provides a URL to the transaction resource.",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "debitParty": {
+          "type": "array",
+          "description": "The debit party identifiers for the transaction as specific in the batch request.",
+          "minItems": 1,
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/accountIdentifierBase"
+          }
+        },
+        "creditParty": {
+          "type": "array",
+          "description": "The credit party identifiers for the transaction as specific in the batch request.",
+          "minItems": 1,
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/accountIdentifierBase"
+          }
+        },
+        "requestingOrganisationTransactionReference": {
+          "type": "string",
+          "description": "A reference provider by the requesting organisation that is to be associated with the transactions.",
+          "minLength": 0,
+          "maxLength": 256
+        }
+      }
+    },
+    "accountStatus": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "description": "Indicates a simplified representation of the account status. This will be shown as �available� or �unavailable�. A state of �unavailable� means that the account is in a state that does not allow posting of transactions. �unregistered� indicates that although not available a transaction posted with the account identifier(s) will result an unregistered voucher creation.",
+          "$ref": "#/definitions/accountStatusEnum"
+        },
+        "subStatus": {
+          "type": "string",
+          "description": "Property can be used to return a provider-specific status for the account.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "lei": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]{4}00[A-Z0-9]{12}\\d{2}$",
+          "description": "Indicates the Legal Entity Identifier of the organisation holding the account.",
+          "minLength": 0,
+          "maxLength": 20
+        }
+      }
+    },
+    "accountBalance": {
+      "type": "object",
+      "properties": {
+        "currentBalance": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d{2}$",
+          "description": "Current outstanding balance on the account.",
+          "minLength": 4,
+          "maxLength": 256
+        },
+        "availableBalance": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d{2}$",
+          "description": "Indicates the balance that is able to be debited for an account. This balance is only provided on some API provider systems.",
+          "minLength": 4,
+          "maxLength": 256
+        },
+        "reservedBalance": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d{2}$",
+          "description": "Indicates the portion of the balance that is reserved, i.e. intended to be debited. This balance is only provided on some API provider systems.",
+          "minLength": 4,
+          "maxLength": 256
+        },
+        "unclearedBalance": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d{2}$",
+          "description": "Indicates the sum of uncleared funds in an account, i.e. those that are awaiting a credit confirmation.",
+          "minLength": 4,
+          "maxLength": 256
+        },
+        "currency": {
+          "description": "Currency for all returned balances.",
+          "$ref": "#/definitions/currenciesEnum"
+        },
+        "status": {
+          "description": "Indicates a simplified representation of the account status. This will be shown as �available� or �unavailable�. A state of �unavailable� means that the account is in a state that does not allow posting of transactions. �unregistered� indicates that although not available a transaction posted with the account identifier(s) will result an unregistered voucher creation.",
+          "$ref": "#/definitions/accountStatusEnum"
+        }
+      }
+    },
+    "accountName": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "name": {
+          "description": "A collection of properties detailing the name of the Primary Account Holder.",
+          "$ref": "#/definitions/name"
+        },
+        "status": {
+          "description": "Indicates a simplified representation of the account status. This will be shown as �available� or �unavailable�. A state of �unavailable� means that the account is in a state that does not allow posting of transactions. �unregistered� indicates that although not available a transaction posted with the account identifier(s) will result an unregistered voucher creation.",
+          "$ref": "#/definitions/accountStatusEnum"
+        },
+        "lei": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]{4}00[A-Z0-9]{12}\\d{2}$",
+          "description": "Indicates the Legal Entity Identifier of the organisation holding the account.",
+          "minLength": 0,
+          "maxLength": 20
+        }
+      }
+    },
+    "statementEntry": {
+      "type": "object",
+      "required": [
+        "amount",
+        "currency",
+        "transactionReference",
+        "debitParty",
+        "creditParty",
+        "transactionStatus"
+      ],
+      "properties": {
+        "amount": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d{2}$",
+          "description": "Requested transaction amount.",
+          "minLength": 4,
+          "maxLength": 256
+        },
+        "currency": {
+          "description": "Currency of the requested transaction amount.",
+          "$ref": "#/definitions/currenciesEnum"
+        },
+        "displayType": {
+          "type": "string",
+          "description": "The transaction type that is to be used for presentation to the account holder as determined by the API provider. This is not necessarily the actual transaction type.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "transactionStatus": {
+          "type": "string",
+          "description": "Indicates the status of the transaction as represented by the API provider.",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "descriptionText": {
+          "type": "string",
+          "description": "Free format text description of the transaction provided by the client. This can be provided as a reference for the receiver on the SMS and on the account statement.",
+          "minLength": 0,
+          "maxLength": 160
+        },
+        "requestDate": {
+          "type": "string",
+          "format": "datetime",
+          "description": "The creation date and time of the transaction as supplied by the client."
+        },
+        "creationDate": {
+          "type": "string",
+          "format": "datetime",
+          "description": "Date and time when the transaction was created by the API Provider."
+        },
+        "modificationDate": {
+          "type": "string",
+          "format": "datetime",
+          "description": "Date and time when the transaction modified by the API Provider."
+        },
+        "transactionReference": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "Unique reference for the transaction. This is returned in the response by API provider."
+        },
+        "transactionReceipt": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 256,
+          "description": "Transaction receipt number as notified to the parties. This may differ from the Transaction Reference."
+        },
+        "debitParty": {
+          "type": "array",
+          "description": "A collection of key/value pairs that enable the debit party to be identified. Keys include MSISDN and Wallet Identifier.",
+          "minItems": 1,
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/accountIdentifierBase"
+          }
+        },
+        "creditParty": {
+          "type": "array",
+          "description": "A series of key/value pairs that identify the credit party. Keys include MSISDN and Wallet Identifier.",
+          "minItems": 1,
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/accountIdentifierBase"
+          }
+        }
+      }
+    },
+    "bill": {
+      "type": "object",
+      "properties": {
+        "currency": {
+          "description": "Currency of the bill to be paid.",
+          "$ref": "#/definitions/currenciesEnum"
+        },
+        "amountDue": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d{2}$",
+          "description": "Amount outstanding on the bill to be paid.",
+          "minLength": 4,
+          "maxLength": 256
+        },
+        "dueDate": {
+          "type": "string",
+          "format": "date",
+          "description": "Date on which the Bill is due to be paid."
+        },
+        "billReference": {
+          "type": "string",
+          "description": "Reference number for the Bill that this payer can use when he/she wishes to pay.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "minimumAmountDue": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d{2}$",
+          "description": "The minimum amount that is outstanding on the bill to be paid.",
+          "minLength": 4,
+          "maxLength": 256
+        },
+        "billDescription": {
+          "type": "string",
+          "description": "Description of the bill that is to be paid.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "metadata": {
+          "type": "array",
+          "description": "A collection of key/value pairs. These can be used to return additional information regarding the bill.",
+          "maxItems": 20,
+          "items": {
+            "$ref": "#/definitions/metadata"
+          }
+        }
+      }
+    },
+    "billPayment": {
+      "type": "object",
+      "required": [
+        "currency",
+        "paidAmount"
+      ],
+      "properties": {
+        "currency": {
+          "description": "Currency of the amount that is being paid.",
+          "$ref": "#/definitions/currenciesEnum"
+        },
+        "paidAmount": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d{2}$",
+          "description": "Amount that is being paid.",
+          "minLength": 4,
+          "maxLength": 256
+        },
+        "customerReference": {
+          "type": "string",
+          "description": "Textual reference provided by the customer paying the bill",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "supplementaryBillReferenceDetails": {
+          "type": "array",
+          "description": "In some cases, a single reference is not sufficient to identify a bill. This key-value collection enables further reference information to be supplied.",
+          "minItems": 0,
+          "maxItems": 20,
+          "items": {
+            "$ref": "#/definitions/supplementaryBillReference"
+          }
+        }
+      }
+    },
+    "baseDebitMandate": {
+      "type": "object",
+      "required": [
+        "startDate",
+        "requestDate"
+      ],
+      "properties": {
+        "currency": {
+          "description": "Currency of the principal transaction amount.",
+          "$ref": "#/definitions/currenciesEnum"
+        },
+        "amountLimit": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d{2}$",
+          "description": "The maximum amount that can be taken by the Payee on a payment request.",
+          "minLength": 4,
+          "maxLength": 256
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date",
+          "description": "Date on which the first payment is to be taken."
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date",
+          "description": "Date on which the final payment is to be taken."
+        },
+        "numberOfPayments": {
+          "type": "number",
+          "format": "int32",
+          "description": "Indicates the number of consecutive payments that are to be taken.",
+          "minimum": 0,
+          "exclusiveMinimum": false
+        },
+        "frequencyType": {
+          "description": "Indicates the frequency for which payments will be taken from the payers account.",
+          "$ref": "#/definitions/frequencyTypeEnum"
+        },
+        "mandateStatus": {
+          "description": "Indicates the status of the Mandate as held in the API Provider system.",
+          "$ref": "#/definitions/mandateStatusEnum"
+        },
+        "requestDate": {
+          "type": "string",
+          "format": "datetime",
+          "description": "The request date and time of the transaction as supplied by the client."
+        }
+      }
+    },
+    "requestDebitMandate": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/baseDebitMandate"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "mandateReference": {
+              "type": "string",
+              "description": "Unique reference provided by the API Provider for the mandate.",
+              "minLength": 0,
+              "maxLength": 256
+            }
+          }
+        }
+      ]
+    },
+    "responseDebitMandate": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/baseDebitMandate"
+        },
+        {
+          "type": "object",
+          "required": [
+            "mandateReference"
+          ],
+          "properties": {
+            "mandateReference": {
+              "type": "string",
+              "description": "Unique reference provided by the API Provider for the mandate.",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "creationDate": {
+              "type": "string",
+              "format": "datetime",
+              "description": "Date and time when the debit mandate was created by the API Provider."
+            },
+            "modificationDate": {
+              "type": "string",
+              "format": "datetime",
+              "description": "Date and time when the debit mandate was modified by the API Provider."
+            }
+          }
+        }
+      ]
+    },
+    "link": {
+      "type": "object",
+      "required": [
+        "status",
+        "sourceAccountIdentifiers"
+      ],
+      "properties": {
+        "status": {
+          "description": "Indicates the status of the Link.",
+          "$ref": "#/definitions/linkStatusEnum"
+        },
+        "mode": {
+          "description": "Indicates the mode of operation support for the Link. If not populated, then default value it �Both�.",
+          "$ref": "#/definitions/linkModeEnum"
+        },
+        "sourceAccountIdentifiers": {
+          "type": "array",
+          "description": "A series of key/value pairs that identify the source account. Keys include MSISDN and Wallet Identifier.",
+          "minItems": 1,
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/accountIdentifierBase"
+          }
+        }
+      }
+    },
+    "responseLink": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/link"
+        },
+        {
+          "type": "object",
+          "required": [
+            "linkReference"
+          ],
+          "properties": {
+            "linkReference": {
+              "type": "string",
+              "description": "Indicates the Link reference. This enables a linked account to be uniquely identified.",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          }
+        }
+      ]
+    },
+    "baseQuotation": {
+      "type": "object",
+      "required": [
+        "requestDate",
+        "creditParty",
+        "debitParty",
+        "requestAmount",
+        "requestCurrency"
+      ],
+      "properties": {
+        "requestDate": {
+          "type": "string",
+          "format": "datetime",
+          "description": "The creation date and time of the transaction as supplied by the client."
+        },
+        "debitParty": {
+          "type": "array",
+          "description": "A collection of key/value pairs that enable the debit party to be identified. Keys include MSISDN and Wallet Identifier.",
+          "minItems": 1,
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/accountIdentifierBase"
+          }
+        },
+        "creditParty": {
+          "type": "array",
+          "description": "A series of key/value pairs that enable the credit party to be identified. Keys include MSISDN and Wallet Identifier.",
+          "minItems": 1,
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/accountIdentifierBase"
+          }
+        },
+        "senderKyc": {
+          "description": "A collection of properties detailing the KYC of the transaction Sender, typically used for International Transfers.",
+          "$ref": "#/definitions/kyc"
+        },
+        "recipientKyc": {
+          "description": "A collection of properties detailed the KYC of the transaction Recipient, typically used for International Transfers.",
+          "$ref": "#/definitions/kyc"
+        },
+        "requestAmount": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d{2}$",
+          "description": "Requested quotation amount.",
+          "minLength": 4,
+          "maxLength": 256
+        },
+        "requestCurrency": {
+          "description": "Currency of the requested quotation amount.",
+          "$ref": "#/definitions/currenciesEnum"
+        },
+        "chosenDeliveryMethod": {
+          "description": "The delivery method chosen by the sending end user as the specific delivery method to be used in the quotes received.",
+          "$ref": "#/definitions/deliveryMethodEnum"
+        },
+        "quotes": {
+          "type": "array",
+          "description": "A collection of quotes. A quote can be received from a single receiving payment service provider or from multiple providers.",
+          "minItems": 0,
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/quote"
+          }
+        },
+        "senderBlockingReason": {
+          "type": "string",
+          "description": "The reason for blocking the quotation, based on AML checks on the sender.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "recipientBlockingReason": {
+          "type": "string",
+          "description": "The reason for blocking the quotation, based on AML checks on the recipient.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "metadata": {
+          "type": "array",
+          "description": "A collection of key/value pairs. These can be used to populate additional quotation properties.",
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/metadata"
+          }
+        }
+      }
+    },
+    "requestQuotation": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/baseQuotation"
+        }
+      ]
+    },
+    "responseQuotation": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/baseQuotation"
+        },
+        {
+          "type": "object",
+          "required": [
+            "quotationReference"
+          ],
+          "properties": {
+            "quotationReference": {
+              "type": "string",
+              "description": "Unique reference for the Quotation as provided by the API Provider.",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "quotationStatus": {
+              "description": "Indicates the creation state of the quotation.",
+              "$ref": "#/definitions/quotationStatusEnum"
+            },
+            "creationDate": {
+              "type": "string",
+              "format": "datetime",
+              "description": "Date and time when the transaction was created by the API Provider."
+            },
+            "modificationDate": {
+              "type": "string",
+              "format": "datetime",
+              "description": "Date and time when the transaction was modified by the API Provider."
+            },
+            "availableDeliveryMethod": {
+              "description": "Delivery Methods that are possible for the intended recipient.",
+              "$ref": "#/definitions/deliveryMethodEnum"
+            }
+          }
+        }
+      ]
+    },
+    "requestState": {
+      "type": "object",
+      "required": [
+        "serverCorrelationId",
+        "status",
+        "notificationMethod"
+      ],
+      "properties": {
+        "serverCorrelationId": {
+          "type": "string",
+          "description": "A unique identifier issued by the provider to enable the client to identify the RequestState resource on subsequent polling requests.",
+          "pattern": "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "status": {
+          "description": "Indicates the status of the request.",
+          "$ref": "#/definitions/requestStateStatusEnum"
+        },
+        "pendingReason": {
+          "type": "string",
+          "description": "A textual description that can be provided to describe the reason for a pending status.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "notificationMethod": {
+          "description": "Indicates whether a callback will be issued or whether the client will need to poll.",
+          "$ref": "#/definitions/notificationMethodEnum"
+        },
+        "objectReference": {
+          "type": "string",
+          "description": "Provides a reference to the subject resource, e.g. transaction reference.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "expiryTime": {
+          "type": "string",
+          "format": "datetime",
+          "description": "Indicate the time by which the provider will fail the request if completion criteria have not been met. For an example, a debit party failing to authorise within the allowed time period."
+        },
+        "pollLimit": {
+          "type": "number",
+          "format": "int32",
+          "description": "Indicates the number of poll attempts for the given requeststate resource that will be allowed by the provider.",
+          "minimum": 0,
+          "exclusiveMinimum": true
+        },
+        "error": {
+          "$ref": "#/definitions/error"
+        }
+      }
+    },
+    "kyc": {
+      "type": "object",
+      "properties": {
+        "nationality": {
+          "description": "Nationality of the KYC subject.",
+          "$ref": "#/definitions/countriesEnum"
+        },
+        "dateOfBirth": {
+          "type": "string",
+          "format": "date",
+          "description": "Birth date of the KYC subject."
+        },
+        "occupation": {
+          "type": "string",
+          "description": "Occupation of the KYC subject.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "employerName": {
+          "type": "string",
+          "description": "Employer Name of the KYC subject.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "contactPhone": {
+          "type": "string",
+          "description": "Contact phone number (mobile or landline) of the KYC subject.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "gender": {
+          "description": "Gender of the KYC Object.",
+          "$ref": "#/definitions/genderEnum"
+        },
+        "idDocument": {
+          "type": "array",
+          "description": "An array of properties containing the forms of identification that are associated with the subject.",
+          "minItems": 0,
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/idDocument"
+          }
+        },
+        "postalAddress": {
+          "description": "A collection of properties that details the postal address of the KYC subject.",
+          "$ref": "#/definitions/address"
+        },
+        "subjectName": {
+          "description": "Refers to the name properties for the KYC subject.",
+          "$ref": "#/definitions/name"
+        },
+        "emailAddress": {
+          "type": "string",
+          "description": "Email address of the KYC subject.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "birthCountry": {
+          "description": "The country of birth of the KYC subject.",
+          "$ref": "#/definitions/countriesEnum"
+        }
+      }
+    },
+    "name": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The given title of the KYC subject, e.g. Mr, Mrs, Dr.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "firstName": {
+          "type": "string",
+          "description": "First name (also referred to as given name) of the KYC subject.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "middleName": {
+          "type": "string",
+          "description": "Middle Name of the KYC subject.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Surname (also referred to as last or family name) of the KYC subject.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "fullName": {
+          "type": "string",
+          "description": "The full name of the KYC subject.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "nativeName": {
+          "type": "string",
+          "description": "The full name expressed as in the native language.",
+          "minLength": 0,
+          "maxLength": 256
+        }
+      }
+    },
+    "idDocument": {
+      "type": "object",
+      "required": [
+        "idType"
+      ],
+      "properties": {
+        "idType": {
+          "description": "Indicates the type of identification for the KYC subject, e.g. passport, driving licence etc.",
+          "$ref": "#/definitions/idTypeEnum"
+        },
+        "idNumber": {
+          "type": "string",
+          "description": "Reference pertaining to the type of identification for the KYC subject.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "issueDate": {
+          "type": "string",
+          "format": "date",
+          "description": "Date of issue for the identification document."
+        },
+        "expiryDate": {
+          "type": "string",
+          "format": "date",
+          "description": "Date of expiry for the identification document."
+        },
+        "issuer": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 256,
+          "description": "Indicates the organisation/government entity that issued the ID document."
+        },
+        "issuerPlace": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 256,
+          "description": "Place of issue for the identification type."
+        },
+        "issuerCountry": {
+          "description": "Country where the identification type was issued.",
+          "$ref": "#/definitions/countriesEnum"
+        },
+        "otherIdDescription": {
+          "type": "string",
+          "description": "Where an ID Type of �otherid� is specified, a description of the type of identification can be provided in this property.",
+          "minLength": 0,
+          "maxLength": 256
+        }
+      }
+    },
+    "address": {
+      "type": "object",
+      "required": [
+        "country"
+      ],
+      "properties": {
+        "addressLine1": {
+          "type": "string",
+          "description": "First line of the address.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "addressLine2": {
+          "type": "string",
+          "description": "Second line of the address.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "addressLine3": {
+          "type": "string",
+          "description": "Third line of the address.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "city": {
+          "type": "string",
+          "description": "City/Town",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "stateProvince": {
+          "type": "string",
+          "description": "State or Province",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "postalCode": {
+          "type": "string",
+          "description": "Postal Code",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "country": {
+          "description": "Country",
+          "$ref": "#/definitions/countriesEnum"
+        }
+      }
+    },
+    "quote": {
+      "type": "object",
+      "required": [
+        "quoteId",
+        "sendingAmount",
+        "sendingCurrency",
+        "receivingAmount",
+        "receivingCurrency",
+        "fxRate"
+      ],
+      "properties": {
+        "quoteId": {
+          "type": "string",
+          "description": "The unique ID for this quote.",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "quoteExpiryTime": {
+          "type": "string",
+          "description": "The timestamp when the quote will expire.",
+          "format": "datetime"
+        },
+        "receivingServiceProvider": {
+          "type": "string",
+          "description": "The name of the RSP, i.e. the provider that the quote is associated with.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "sendingAmount": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d{2}$",
+          "description": "Requested quotation amount as supplied by the sender.",
+          "minLength": 4,
+          "maxLength": 256
+        },
+        "sendingCurrency": {
+          "description": "Currency of the requested quotation amount.",
+          "$ref": "#/definitions/currenciesEnum"
+        },
+        "receivingAmount": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d{2}$",
+          "description": "The total amount as it will be received by the receiving end user.",
+          "minLength": 4,
+          "maxLength": 256
+        },
+        "receivingCurrency": {
+          "description": "The currency of the quote.",
+          "$ref": "#/definitions/currenciesEnum"
+        },
+        "fxRate": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d{2}$",
+          "description": "The conversion rate applicable between the sending and the receiving currency for the requested transaction.",
+          "minLength": 4,
+          "maxLength": 256
+        },
+        "deliveryMethod": {
+          "description": "The delivery method that is applicable to the quotation.",
+          "$ref": "#/definitions/deliveryMethodEnum"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "key",
+        "value"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "Identifies the type of additional property.",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "value": {
+          "type": "string",
+          "description": "Identifies the value of the additional property.",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      }
+    },
+    "supplementaryBillReference": {
+      "type": "object",
+      "required": [
+        "paymentReferenceType",
+        "paymentReferenceValue"
+      ],
+      "properties": {
+        "paymentReferenceType": {
+          "type": "string",
+          "description": "Identifies the type of the additional payment reference.",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "paymentReferenceValue": {
+          "type": "string",
+          "description": "Identifies the value of the additional payment reference.",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "required": [
+        "errorCategory",
+        "errorCode"
+      ],
+      "properties": {
+        "errorCategory": {
+          "description": "The category grouping for the error.",
+          "$ref": "#/definitions/errorCategoryEnum"
+        },
+        "errorCode": {
+          "description": "The harmonised error code identifying the reason for error.",
+          "$ref": "#/definitions/errorCodeEnum"
+        },
+        "errorDescription": {
+          "type": "string",
+          "description": "A textual Description of the error.",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "errorDateTime": {
+          "type": "string",
+          "format": "datetime",
+          "description": "The timestamp indicating when the error occurred."
+        },
+        "errorParameters": {
+          "type": "array",
+          "description": "Diagnostic information in the form of key/value pairs relating to the error.",
+          "minItems": 0,
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/metadata"
+          }
+        }
+      }
+    },
+    "heartbeat": {
+      "type": "object",
+      "required": [
+        "serviceStatus"
+      ],
+      "properties": {
+        "serviceStatus": {
+          "description": "Provides the status of the requested service.",
+          "$ref": "#/definitions/serviceStatusEnum"
+        },
+        "delay": {
+          "type": "number",
+          "format": "int64",
+          "description": "The anticipated processing delay in milliseconds."
+        }
+      }
+    },
+    "response": {
+      "type": "object",
+      "required": [
+        "link"
+      ],
+      "properties": {
+        "link": {
+          "type": "string",
+          "description": "Provides a URL to the resource associated with the given correlation ID.",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      }
+    },
+    "patch": {
+      "type": "object",
+      "required": [
+        "op",
+        "path",
+        "value"
+      ],
+      "properties": {
+        "op": {
+          "$ref": "#/definitions/patchOpEnum"
+        },
+        "path": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "accountIdentifierBase": {
+      "discriminator": "key",
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "Provides the account identifier type.",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "value": {
+          "type": "string",
+          "description": "Provides the account identifier type value.",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ]
+    },
+    "accountcategory": {
+      "description": "Can be used to identify the sources of funds category where there are multiple accounts (wallets) held against an account holder.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/accountIdentifierBase"
+        },
+        {
+          "properties": {
+            "value": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": [
+            "value"
+          ]
+        }
+      ]
+    },
+    "bankaccountno": {
+      "description": "Financial institution account number that is typically known by the account holder.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/accountIdentifierBase"
+        },
+        {
+          "properties": {
+            "value": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": [
+            "value"
+          ]
+        }
+      ]
+    },
+    "accountrank": {
+      "description": "Is used to identify the rank of the source of funds ranks where there are multiple accounts (wallets) held against an account holder.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/accountIdentifierBase"
+        },
+        {
+          "properties": {
+            "value": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": [
+            "value"
+          ]
+        }
+      ]
+    },
+    "identityalias": {
+      "description": "An alias for the identity, e.g. short code for an agent till or company name/number for a bill payment.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/accountIdentifierBase"
+        },
+        {
+          "properties": {
+            "value": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": [
+            "value"
+          ]
+        }
+      ]
+    },
+    "iban": {
+      "description": "Internationally agreed system of identifying bank accounts across national borders to facilitate the communication and processing of cross border transactions. Can contain up to 34 alphanumeric characters.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/accountIdentifierBase"
+        },
+        {
+          "properties": {
+            "value": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": [
+            "value"
+          ]
+        }
+      ]
+    },
+    "accountid": {
+      "description": "Identifier for the account holder.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/accountIdentifierBase"
+        },
+        {
+          "properties": {
+            "value": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": [
+            "value"
+          ]
+        }
+      ]
+    },
+    "msisdn": {
+      "description": "Mobile Number of the account holder. Should conform to ITU E.123.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/accountIdentifierBase"
+        },
+        {
+          "properties": {
+            "value": {
+              "type": "string",
+              "pattern": "^\\+(?:[0-9] ?){6,14}[0-9]$",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": [
+            "value"
+          ]
+        }
+      ]
+    },
+    "swiftbic": {
+      "description": "A bank identifier code (BIC) is a unique identifier for a specific financial institution. A BIC is composed of a 4-character bank code, a 2-character country code, a 2-character location code and an optional 3-character branch code. BICs are used by financial institutions for letters of credit, payments and securities transactions and other business messages between banks. Please refer to ISO 9362 for further information.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/accountIdentifierBase"
+        },
+        {
+          "properties": {
+            "value": {
+              "type": "string",
+              "pattern": "^[a-zA-Z]{4}[a-zA-Z]{2}[a-zA-Z0-9]{2}([a-zA-Z0-9]{3})?$",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": [
+            "value"
+          ]
+        }
+      ]
+    },
+    "sortcode": {
+      "description": "Sort code to identify the financial institution holding the account.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/accountIdentifierBase"
+        },
+        {
+          "properties": {
+            "value": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": [
+            "value"
+          ]
+        }
+      ]
+    },
+    "organisationid": {
+      "description": "Used to identify the organisation for which a payment is to be made.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/accountIdentifierBase"
+        },
+        {
+          "properties": {
+            "value": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": [
+            "value"
+          ]
+        }
+      ]
+    },
+    "username": {
+      "description": "Used to identify target account via an associated username.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/accountIdentifierBase"
+        },
+        {
+          "properties": {
+            "value": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": [
+            "value"
+          ]
+        }
+      ]
+    },
+    "walletid": {
+      "description": "A means to identify a mobile money wallet, particularly where multiple wallets can be held against an MSISDN. typically used in conjunction with MSISDN or identity alias to identify a particular wallet.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/accountIdentifierBase"
+        },
+        {
+          "properties": {
+            "value": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": [
+            "value"
+          ]
+        }
+      ]
+    },
+    "linkref": {
+      "description": "A means to uniquely identify an account via an account to account link. E.g. wallet account link to bank account.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/accountIdentifierBase"
+        },
+        {
+          "properties": {
+            "value": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": [
+            "value"
+          ]
+        }
+      ]
+    },
+    "transactionTypeEnum": {
+      "type": "string",
+      "enum": [
+        "billpay",
+        "deposit",
+        "disbursement",
+        "transfer",
+        "merchantpayment",
+        "inttransfer",
+        "adjustment",
+        "reversal",
+        "withdrawal"
+      ]
+    },
+    "countriesEnum": {
+      "type": "string",
+      "enum": [
+        "AD",
+        "AE",
+        "AF",
+        "AG",
+        "AI",
+        "AL",
+        "AM",
+        "AO",
+        "AQ",
+        "AR",
+        "AS",
+        "AT",
+        "AU",
+        "AW",
+        "AX",
+        "AZ",
+        "BA",
+        "BB",
+        "BD",
+        "BE",
+        "BF",
+        "BG",
+        "BH",
+        "BI",
+        "BJ",
+        "BL",
+        "BM",
+        "BN",
+        "BO",
+        "BQ",
+        "BR",
+        "BS",
+        "BT",
+        "BV",
+        "BW",
+        "BY",
+        "BZ",
+        "CA",
+        "CC",
+        "CD",
+        "CF",
+        "CG",
+        "CH",
+        "CI",
+        "CK",
+        "CL",
+        "CM",
+        "CN",
+        "CO",
+        "CR",
+        "CU",
+        "CV",
+        "CW",
+        "CX",
+        "CY",
+        "CZ",
+        "DE",
+        "DJ",
+        "DK",
+        "DM",
+        "DO",
+        "DZ",
+        "EC",
+        "EE",
+        "EG",
+        "EH",
+        "ER",
+        "ES",
+        "ET",
+        "FI",
+        "FJ",
+        "FK",
+        "FM",
+        "FO",
+        "FR",
+        "GA",
+        "GB",
+        "GD",
+        "GE",
+        "GF",
+        "GG",
+        "GH",
+        "GI",
+        "GL",
+        "GM",
+        "GN",
+        "GP",
+        "GQ",
+        "GR",
+        "GS",
+        "GT",
+        "GU",
+        "GW",
+        "GY",
+        "HK",
+        "HM",
+        "HN",
+        "HR",
+        "HT",
+        "HU",
+        "ID",
+        "IE",
+        "IL",
+        "IM",
+        "IN",
+        "IO",
+        "IQ",
+        "IR",
+        "IS",
+        "IT",
+        "JE",
+        "JM",
+        "JO",
+        "JP",
+        "KE",
+        "KG",
+        "KH",
+        "KI",
+        "KM",
+        "KN",
+        "KP",
+        "KR",
+        "KW",
+        "KY",
+        "KZ",
+        "LA",
+        "LB",
+        "LC",
+        "LI",
+        "LK",
+        "LR",
+        "LS",
+        "LT",
+        "LU",
+        "LV",
+        "LY",
+        "MA",
+        "MC",
+        "MD",
+        "ME",
+        "MF",
+        "MG",
+        "MH",
+        "MK",
+        "ML",
+        "MM",
+        "MN",
+        "MO",
+        "MP",
+        "MQ",
+        "MR",
+        "MS",
+        "MT",
+        "MU",
+        "MV",
+        "MW",
+        "MX",
+        "MY",
+        "MZ",
+        "NA",
+        "NC",
+        "NE",
+        "NF",
+        "NG",
+        "NI",
+        "NL",
+        "NO",
+        "NP",
+        "NR",
+        "NU",
+        "NZ",
+        "OM",
+        "PA",
+        "PE",
+        "PF",
+        "PG",
+        "PH",
+        "PK",
+        "PL",
+        "PM",
+        "PN",
+        "PR",
+        "PS",
+        "PT",
+        "PW",
+        "PY",
+        "QA",
+        "RE",
+        "RO",
+        "RS",
+        "RU",
+        "RW",
+        "SA",
+        "SB",
+        "SC",
+        "SD",
+        "SE",
+        "SG",
+        "SH",
+        "SI",
+        "SJ",
+        "SK",
+        "SL",
+        "SM",
+        "SN",
+        "SO",
+        "SR",
+        "SS",
+        "ST",
+        "SV",
+        "SX",
+        "SY",
+        "SZ",
+        "TC",
+        "TD",
+        "TF",
+        "TG",
+        "TH",
+        "TJ",
+        "TK",
+        "TL",
+        "TM",
+        "TN",
+        "TO",
+        "TR",
+        "TT",
+        "TV",
+        "TW",
+        "TZ",
+        "UA",
+        "UG",
+        "UM",
+        "US",
+        "UY",
+        "UZ",
+        "VA",
+        "VC",
+        "VE",
+        "VG",
+        "VI",
+        "VN",
+        "VU",
+        "WF",
+        "WS",
+        "YE",
+        "YT",
+        "ZA",
+        "ZM",
+        "ZW"
+      ]
+    },
+    "currenciesEnum": {
+      "type": "string",
+      "enum": [
+        "AED",
+        "AFN",
+        "ALL",
+        "AMD",
+        "ANG",
+        "AOA",
+        "ARS",
+        "AUD",
+        "AWG",
+        "AZN",
+        "BAM",
+        "BBD",
+        "BDT",
+        "BGN",
+        "BHD",
+        "BIF",
+        "BMD",
+        "BND",
+        "BOB",
+        "BOV",
+        "BRL",
+        "BSD",
+        "BTN",
+        "BWP",
+        "BYR",
+        "BZD",
+        "CAD",
+        "CDF",
+        "CHE",
+        "CHF",
+        "CHW",
+        "CLF",
+        "CLP",
+        "CNY",
+        "COP",
+        "COU",
+        "CRC",
+        "CUC",
+        "CUP",
+        "CVE",
+        "CZK",
+        "DJF",
+        "DKK",
+        "DOP",
+        "DZD",
+        "EGP",
+        "ERN",
+        "ETB",
+        "EUR",
+        "FJD",
+        "FKP",
+        "GBP",
+        "GEL",
+        "GHS",
+        "GIP",
+        "GMD",
+        "GNF",
+        "GTQ",
+        "GYD",
+        "HKD",
+        "HNL",
+        "HRK",
+        "HTG",
+        "HUF",
+        "IDR",
+        "ILS",
+        "INR",
+        "IQD",
+        "IRR",
+        "ISK",
+        "JMD",
+        "JOD",
+        "JPY",
+        "KES",
+        "KGS",
+        "KHR",
+        "KMF",
+        "KPW",
+        "KRW",
+        "KWD",
+        "KYD",
+        "KZT",
+        "LAK",
+        "LBP",
+        "LKR",
+        "LRD",
+        "LSL",
+        "LYD",
+        "MAD",
+        "MDL",
+        "MGA",
+        "MKD",
+        "MMK",
+        "MNT",
+        "MOP",
+        "MRO",
+        "MUR",
+        "MVR",
+        "MWK",
+        "MXN",
+        "MXV",
+        "MYR",
+        "MZN",
+        "NAD",
+        "NGN",
+        "NIO",
+        "NOK",
+        "NPR",
+        "NZD",
+        "OMR",
+        "PAB",
+        "PEN",
+        "PGK",
+        "PHP",
+        "PKR",
+        "PLN",
+        "PYG",
+        "QAR",
+        "RON",
+        "RSD",
+        "RUB",
+        "RWF",
+        "SAR",
+        "SBD",
+        "SCR",
+        "SDG",
+        "SEK",
+        "SGD",
+        "SHP",
+        "SLL",
+        "SOS",
+        "SRD",
+        "SSP",
+        "STD",
+        "SVC",
+        "SYP",
+        "SZL",
+        "THB",
+        "TJS",
+        "TMT",
+        "TND",
+        "TOP",
+        "TRY",
+        "TTD",
+        "TWD",
+        "TZS",
+        "UAH",
+        "UGX",
+        "USD",
+        "USN",
+        "UYI",
+        "UYU",
+        "UZS",
+        "VEF",
+        "VND",
+        "VUV",
+        "WST",
+        "XAF",
+        "XAG",
+        "XAU",
+        "XBA",
+        "XBB",
+        "XBC",
+        "XBD",
+        "XCD",
+        "XDR",
+        "XOF",
+        "XPD",
+        "XPF",
+        "XPT",
+        "XSU",
+        "XTS",
+        "XUA",
+        "XXX",
+        "YER",
+        "ZAR",
+        "ZMW",
+        "ZWL"
+      ]
+    },
+    "genderEnum": {
+      "type": "string",
+      "enum": [
+        "m",
+        "f",
+        "u"
+      ]
+    },
+    "idTypeEnum": {
+      "type": "string",
+      "enum": [
+        "passport",
+        "nationalregistration",
+        "otherId",
+        "drivinglicence",
+        "socialsecurity",
+        "alienregistration",
+        "nationalidcard",
+        "employer",
+        "taxid",
+        "seniorcitizenscard",
+        "marriagecertificate",
+        "birthcertificate",
+        "healthcard",
+        "votersid",
+        "villageelderLetter",
+        "pancard",
+        "officialletter"
+      ]
+    },
+    "deliveryMethodEnum": {
+      "type": "string",
+      "enum": [
+        "directtoaccount",
+        "agent",
+        "personaldelivery"
+      ]
+    },
+    "frequencyTypeEnum": {
+      "type": "string",
+      "enum": [
+        "weekly",
+        "fortnight",
+        "monthspecificdate",
+        "twomonths",
+        "threemonths",
+        "fourmonths",
+        "sixmonths",
+        "yearly",
+        "lastdaymonth",
+        "lastdaymonthworking",
+        "lastmonday",
+        "lasttuesday",
+        "lastwednesday",
+        "lastthursday",
+        "lastfriday",
+        "lastsaturday",
+        "lastsunday",
+        "specificdaymonthly"
+      ]
+    },
+    "accountStatusEnum": {
+      "enum": [
+        "available",
+        "unavailable",
+        "unregistered"
+      ]
+    },
+    "mandateStatusEnum": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ]
+    },
+    "linkStatusEnum": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ]
+    },
+    "linkModeEnum": {
+      "type": "string",
+      "enum": [
+        "push",
+        "pull",
+        "both"
+      ]
+    },
+    "quotationStatusEnum": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "rejected",
+        "completed"
+      ]
+    },
+    "patchOpEnum": {
+      "type": "string",
+      "enum": [
+        "replace",
+        "add"
+      ]
+    },
+    "requestStateStatusEnum": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "failed"
+      ]
+    },
+    "notificationMethodEnum": {
+      "type": "string",
+      "enum": [
+        "callback",
+        "polling"
+      ]
+    },
+    "serviceStatusEnum": {
+      "type": "string",
+      "enum": [
+        "available",
+        "unavailable",
+        "degraded"
+      ]
+    },
+    "batchStatusEnum": {
+      "type": "string",
+      "enum": [
+        "created",
+        "approved",
+        "completed"
+      ]
+    },
+    "errorCategoryEnum": {
+      "type": "string",
+      "enum": [
+        "businessRule",
+        "validation",
+        "authorisation",
+        "identification",
+        "internal",
+        "serviceUnavailable"
+      ]
+    },
+    "errorCodeEnum": {
+      "type": "string",
+      "enum": [
+        "genericError",
+        "dailyVolumeLimitExceeded",
+        "dailyValueLimitExceeded",
+        "weeklyVolumeLimitExceeded",
+        "weeklyValueLimitExceeded",
+        "monthlyVolumeLimitExceeded",
+        "monthlyValueLimitExceeded",
+        "accountMaxTotalVolumeExceeded",
+        "accountMaxTotalValueExceeded",
+        "lessThanTransactionMinValue",
+        "greaterThanTransactionMaxValue",
+        "maxBalanceExceed",
+        "samePartiesError",
+        "duplicateRequest",
+        "insufficientFunds",
+        "incorrectState",
+        "underPaymentNotAllowed",
+        "overPaymentNotAllowed",
+        "rateLimitError",
+        "transactionTypeError",
+        "noMandateAuthority",
+        "linkViolation",
+        "countryofOriginNotPermitted",
+        "nationalityNotPermitted",
+        "idDocumentNotSupported",
+        "issuingCountryNotSupported",
+        "quoteHasExpired",
+        "identifierError",
+        "lengthError",
+        "formatError",
+        "negativeValue",
+        "currencyNotSupported",
+        "mandatoryValueNotSupplied",
+        "invalidOffset",
+        "clientAuthorisationError",
+        "requestDeclined",
+        "servicingPartyAuthorisationError",
+        "requestingPartyAuthorisationError"
+      ]
+    }
+  },
+  "parameters": {
+    "correlationId": {
+      "name": "X-CorrelationID",
+      "in": "header",
+      "description": "Header parameter to uniquely identify the request",
+      "required": true,
+      "type": "string",
+      "pattern": "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
+    },
+    "transactionReference": {
+      "name": "transactionReference",
+      "in": "path",
+      "description": "Path variable to uniquely identify the transaction",
+      "required": true,
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "date": {
+      "name": "Date",
+      "in": "header",
+      "description": "Header parameter to indicate the date and time that the message was originated",
+      "required": true,
+      "type": "string",
+      "format": "datetime"
+    },
+    "requestTransaction": {
+      "name": "requestTransaction",
+      "in": "body",
+      "description": "Represents the request body of a transaction",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/requestTransaction"
+      }
+    },
+    "requestReversal": {
+      "name": "requestReversal",
+      "in": "body",
+      "description": "Represents the request body of a reversal",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/requestReversal"
+      }
+    },
+    "batchId": {
+      "name": "batchId",
+      "in": "path",
+      "description": "Path variable to uniquely identify the transaction batch",
+      "required": true,
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "requestBatchTransaction": {
+      "name": "requestBatchTransaction",
+      "in": "body",
+      "description": "Represents the request body of a transaction batch",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/requestBatchTransaction"
+      }
+    },
+    "limit": {
+      "name": "limit",
+      "in": "query",
+      "description": "Supports pagination. If this is not supplied, then the server will apply a limit of 50 records returned for each request.",
+      "required": false,
+      "type": "integer",
+      "format": "int32"
+    },
+    "offset": {
+      "name": "offset",
+      "in": "query",
+      "description": "Supports pagination. This value will indicate the cursor position from where to retrieve the set of records. For example, a limit of 50 and offset of 10 will return records 10 to 60.",
+      "required": false,
+      "type": "integer",
+      "format": "int32"
+    },
+    "fromDateTime": {
+      "name": "fromDateTime",
+      "in": "query",
+      "description": "Indicates the minimum date for which records should be returned",
+      "required": false,
+      "type": "string",
+      "format": "datetime"
+    },
+    "toDateTime": {
+      "name": "toDateTime",
+      "in": "query",
+      "description": "Indicates the maximum date for which records should be returned",
+      "required": false,
+      "type": "string",
+      "format": "datetime"
+    },
+    "patch": {
+      "name": "patch",
+      "in": "body",
+      "description": "Represents the request body of a patch operation",
+      "required": true,
+      "schema": {
+        "type": "array",
+        "minItems": 1,
+        "maxItems": 10,
+        "items": {
+          "$ref": "#/definitions/patch"
+        }
+      }
+    },
+    "accountId": {
+      "name": "accountId",
+      "in": "path",
+      "description": "Path variable to uniquely identify an account",
+      "required": true,
+      "type": "string",
+      "pattern": "^(accountcategory|bankaccountno|accountrank|identityalias|iban|accountid|msisdn|swiftbic|sortcode|organisationid|username|walletid|linkref)(@.+?\\\\$(accountcategory|bankaccountno|accountrank|identityalias|iban|accountid|msisdn|swiftbic|sortcode|organisationid|username|walletid|linkref))*@(?!.*?\\\\$(accountcategory|bankaccountno|accountrank|identityalias|iban|accountid|msisdn|swiftbic|sortcode|organisationid|username|walletid|linkref).*).+?$"
+    },
+    "msisdn": {
+      "name": "msisdn",
+      "in": "path",
+      "description": "Path variable to uniquely identify an account (via MSISDN identifier)",
+      "required": true,
+      "type": "string",
+      "pattern": "^\\+(?:[0-9] ?){6,14}[0-9]$"
+    },
+    "requestDebitMandate": {
+      "name": "requestDebitMandate",
+      "in": "body",
+      "description": "Represents the request body of a debit mandate",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/requestDebitMandate"
+      }
+    },
+    "billReference": {
+      "name": "billReference",
+      "in": "path",
+      "description": "Path variable to uniquely identify a bill",
+      "required": true,
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "debitMandateReference": {
+      "name": "debitMandateReference",
+      "in": "path",
+      "description": "Path variable to uniquely identify a debit mandate",
+      "required": true,
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "requestLink": {
+      "name": "requestLink",
+      "in": "body",
+      "description": "Represents the request body of a link",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/link"
+      }
+    },
+    "linkReference": {
+      "name": "linkReference",
+      "in": "path",
+      "description": "Path variable to uniquely identify a link",
+      "required": true,
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "quotationReference": {
+      "name": "quotationReference",
+      "in": "path",
+      "description": "Path variable to uniquely identify a quotation",
+      "required": true,
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "requestQuotation": {
+      "name": "requestQuotation",
+      "in": "body",
+      "description": "Represents the request body of a quotation request",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/requestQuotation"
+      }
+    },
+    "requestBillPayment": {
+      "name": "requestBillPayment",
+      "in": "body",
+      "description": "Represents the request body of a bill payment",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/billPayment"
+      }
+    },
+    "serverCorrelationId": {
+      "name": "serverCorrelationId",
+      "in": "path",
+      "description": "Path variable to uniquely identify a request state",
+      "required": true,
+      "type": "string",
+      "pattern": "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
+    },
+    "clientCorrelationId": {
+      "name": "clientCorrelationId",
+      "in": "path",
+      "description": "Path variable to uniquely identify a response",
+      "required": true,
+      "type": "string",
+      "pattern": "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
+    }
+  },
+  "responses": {
+    "responseTransaction": {
+      "description": "Represents a Transaction response",
+      "headers": {
+        "Date": {
+          "description": "The date and time that the response message was sent",
+          "type": "string",
+          "format": "datetime"
+        }
+      },
+      "schema": {
+        "$ref": "#/definitions/responseTransaction"
+      }
+    },
+    "responseReversal": {
+      "description": "Represents a Reversal response",
+      "headers": {
+        "Date": {
+          "description": "The date and time that the response message was sent",
+          "type": "string",
+          "format": "datetime"
+        }
+      },
+      "schema": {
+        "$ref": "#/definitions/responseReversal"
+      }
+    },
+    "responseBatchTransaction": {
+      "description": "Represents a Transaction Batch response",
+      "headers": {
+        "Date": {
+          "description": "The date and time that the response message was sent",
+          "type": "string",
+          "format": "datetime"
+        }
+      },
+      "schema": {
+        "$ref": "#/definitions/responseBatchTransaction"
+      }
+    },
+    "listBatchRejection": {
+      "description": "Represent a list of Batch Rejections",
+      "headers": {
+        "Date": {
+          "description": "The date and time that the response message was sent",
+          "type": "string",
+          "format": "datetime"
+        },
+        "X-Records-Available-Count": {
+          "description": "Integer containing number of records that are available to be returned",
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "schema": {
+        "type": "array",
+        "minItems": 0,
+        "items": {
+          "$ref": "#/definitions/batchRejection"
+        }
+      }
+    },
+    "listBatchCompletion": {
+      "description": "Represent a list of Batch Completions",
+      "headers": {
+        "Date": {
+          "description": "The date and time that the response message was sent",
+          "type": "string",
+          "format": "datetime"
+        },
+        "X-Records-Available-Count": {
+          "description": "Integer containing number of records that are available to be returned",
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "schema": {
+        "type": "array",
+        "minItems": 0,
+        "items": {
+          "$ref": "#/definitions/batchCompletion"
+        }
+      }
+    },
+    "listTransaction": {
+      "description": "Represent a list of Transactions",
+      "headers": {
+        "Date": {
+          "description": "The date and time that the response message was sent",
+          "type": "string",
+          "format": "datetime"
+        },
+        "X-Records-Available-Count": {
+          "description": "Integer containing number of records that are available to be returned",
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "schema": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "$ref": "#/definitions/responseTransaction"
+        }
+      }
+    },
+    "accountStatus": {
+      "description": "Represents the response body of an account status",
+      "headers": {
+        "Date": {
+          "description": "The date and time that the response message was sent",
+          "type": "string",
+          "format": "datetime"
+        }
+      },
+      "schema": {
+        "$ref": "#/definitions/accountStatus"
+      }
+    },
+    "accountName": {
+      "description": "Represents the response body of an account name",
+      "headers": {
+        "Date": {
+          "description": "The date and time that the response message was sent",
+          "type": "string",
+          "format": "datetime"
+        }
+      },
+      "schema": {
+        "$ref": "#/definitions/accountName"
+      }
+    },
+    "accountBalance": {
+      "description": "Represents the response body of an account balance",
+      "headers": {
+        "Date": {
+          "description": "The date and time that the response message was sent",
+          "type": "string",
+          "format": "datetime"
+        }
+      },
+      "schema": {
+        "$ref": "#/definitions/accountBalance"
+      }
+    },
+    "statementEntry": {
+      "description": "Represents the response body of a statement entry",
+      "headers": {
+        "Date": {
+          "description": "The date and time that the response message was sent",
+          "type": "string",
+          "format": "datetime"
+        }
+      },
+      "schema": {
+        "$ref": "#/definitions/statementEntry"
+      }
+    },
+    "listStatementEntry": {
+      "description": "Represents a list of statements",
+      "headers": {
+        "Date": {
+          "description": "The date and time that the response message was sent",
+          "type": "string",
+          "format": "datetime"
+        }
+      },
+      "schema": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "$ref": "#/definitions/statementEntry"
+        }
+      }
+    },
+    "listBill": {
+      "description": "Represents a list of bills",
+      "headers": {
+        "Date": {
+          "description": "The date and time that the response message was sent",
+          "type": "string",
+          "format": "datetime"
+        }
+      },
+      "schema": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "$ref": "#/definitions/bill"
+        }
+      }
+    },
+    "responseDebitMandate": {
+      "description": "Represents the response body of a debit mandate",
+      "headers": {
+        "Date": {
+          "description": "The date and time that the response message was sent",
+          "type": "string",
+          "format": "datetime"
+        }
+      },
+      "schema": {
+        "$ref": "#/definitions/responseDebitMandate"
+      }
+    },
+    "responseLink": {
+      "description": "Represents the response body of a link",
+      "headers": {
+        "Date": {
+          "description": "The date and time that the response message was sent",
+          "type": "string",
+          "format": "datetime"
+        }
+      },
+      "schema": {
+        "$ref": "#/definitions/responseLink"
+      }
+    },
+    "responseQuotation": {
+      "description": "Represents the response body of a quotation",
+      "headers": {
+        "Date": {
+          "description": "The date and time that the response message was sent",
+          "type": "string",
+          "format": "datetime"
+        }
+      },
+      "schema": {
+        "$ref": "#/definitions/responseQuotation"
+      }
+    },
+    "responseBillPayment": {
+      "description": "Represents the response body of a bill payment",
+      "headers": {
+        "Date": {
+          "description": "The date and time that the response message was sent",
+          "type": "string",
+          "format": "datetime"
+        }
+      },
+      "schema": {
+        "$ref": "#/definitions/billPayment"
+      }
+    },
+    "responseRequestState": {
+      "description": "Represents the response body of an asynchronous request",
+      "headers": {
+        "Date": {
+          "description": "The date and time that the response message was sent",
+          "type": "string",
+          "format": "datetime"
+        }
+      },
+      "schema": {
+        "$ref": "#/definitions/requestState"
+      }
+    },
+    "response": {
+      "description": "Represents the response body of a response",
+      "headers": {
+        "Date": {
+          "description": "The date and time that the response message was sent",
+          "type": "string",
+          "format": "datetime"
+        }
+      },
+      "schema": {
+        "$ref": "#/definitions/response"
+      }
+    },
+    "heartbeat": {
+      "description": "Represents the response body of a heartbeat",
+      "headers": {
+        "Date": {
+          "description": "The date and time that the response message was sent",
+          "type": "string",
+          "format": "datetime"
+        }
+      },
+      "schema": {
+        "$ref": "#/definitions/heartbeat"
+      }
+    },
+    "error": {
+      "description": "error object",
+      "headers": {
+        "Date": {
+          "description": "The date and time that the response message was sent",
+          "type": "string",
+          "format": "datetime"
+        }
+      },
+      "schema": {
+        "$ref": "#/definitions/error"
+      }
+    }
+  }
+}

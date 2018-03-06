@@ -1,0 +1,29 @@
+swagger: '2.0'
+info:
+  title: Example Endpoint
+  version: 0.0.1
+host: example.com
+schemes:
+- https
+basePath: /v1/
+consumes:
+- application/json
+produces:
+- application/json
+paths:
+  /xxx/add:
+    post:
+      description: redacted
+      responses:
+        204:
+          description: OK
+      parameters:
+      - in: body
+        name: parameters
+        required: true
+        schema:
+          properties:
+            retest:
+              properties:
+                id:
+                  type: string
