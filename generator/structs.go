@@ -229,6 +229,17 @@ type GenParameter struct {
 	ZeroValue       string
 	AllowEmptyValue bool
 
+	// validation strategy for Body params, which may mix model and simple constructs.
+	// Distinguish the following cases:
+	// - HasSimpleBodyParams: body is an inline simple type
+	// - HasModelBodyParams: body is a model objectd
+	// - HasSimpleBodyItems: body is an inline array of simple type
+	// - HasModelBodyItems: body is an array of model objects
+	HasSimpleBodyParams bool
+	HasModelBodyParams  bool
+	HasSimpleBodyItems  bool
+	HasModelBodyItems   bool
+
 	Extensions map[string]interface{}
 }
 
@@ -303,6 +314,9 @@ type GenItems struct {
 
 	Location string
 	IndexVar string
+
+	// instructs generator to skip the splitting and parsing from CollectionFormat
+	SkipParse bool
 }
 
 // ItemsDepth returns a string "items.items..." with as many items as the level of nesting of the array.
