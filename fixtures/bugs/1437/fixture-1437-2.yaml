@@ -40,9 +40,9 @@ definitions:
       thisUUID:
         $ref: '#/definitions/aUUID'
       thisListOfUUIDs:
-        $ref: '#/definitions/aListOfUUIDs'      #<- there is still (another) a bug to validate this
+        $ref: '#/definitions/aListOfUUIDs'
       thisListOfDates:
-        $ref: '#/definitions/aListOfDates'      #<- there is still (another) a bug to validate this
+        $ref: '#/definitions/aListOfDates'
       thisIoReader:
         $ref: '#/definitions/nonregIoReader'
       theListWithoutValidation:
