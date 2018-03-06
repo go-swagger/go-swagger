@@ -4,7 +4,8 @@ if [[ ${1} == "--clean" ]] ; then
 fi
 # A small utility to build fixture servers
 # Fixtures with models only
-testcases="fixture-1437-3.yaml fixture-1437-2.yaml fixture-1191.yaml fixture-1437.yaml"
+testcases="fixture-1437-3.yaml fixture-1437-2.yaml fixture-1191.yaml fixture-1437.yaml fixture-1437-4.yaml"
+#testcases="fixture-debug-2.yaml"
 for testcase in ${testcases} ; do
     target=./gen-${testcase%.*}
     spec=./${testcase}
@@ -12,7 +13,7 @@ for testcase in ${testcases} ; do
     rm -rf ${target}
     mkdir ${target}
     echo "Generation for ${spec}"
-    swagger generate model --spec ${spec} --target ${target} --output=${testcase%.*}.log
+    swagger generate model --skip-validation --spec ${spec} --target ${target} --output=${testcase%.*}.log 
     # 1>x.log 2>&1
     #
     if [[ $? != 0 ]] ; then
@@ -40,7 +41,7 @@ done
 # - bitbucket: model does not compile
 # - issue72: invalid spec
 # - todolist.discriminator: known issue with schemavalidator
-testcases=`cd ../../codegen;ls -1|grep -vE 'azure|bitbucket|existing-model|issue72|todolist.discriminator|todolist.simple.yml'`
+testcases=`cd ../../codegen;ls -1 *.yaml *.yml *.json|grep -vE 'azure|bitbucket|existing-model|issue72|todolist.discriminator|todolist.simple.yml'`
 for testcase in ${testcases} ; do
     target=./gen-${testcase%.*}
     spec=../../codegen/${testcase}

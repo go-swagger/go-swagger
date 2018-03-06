@@ -1252,6 +1252,8 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 	}
 	sg.GenSchema.resolvedType = tpe
 	sg.GenSchema.IsNullable = sg.GenSchema.IsNullable || nullableOverride
+	// prevent format from bubbling up in composed type
+	item.GenSchema.IsCustomFormatter = false
 	sg.MergeResult(item, true)
 	sg.GenSchema.AllOf = append(sg.GenSchema.AllOf, item.GenSchema)
 	return true, nil
