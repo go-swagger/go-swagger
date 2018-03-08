@@ -41,13 +41,7 @@
   }
   {{ end }}
   {{ if .IsCustomFormatter }} 
-    {{- if .IsAliased -}}
-  if err := validate.FormatOf({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ printf "%q" .SwaggerFormat }}, {{ .AliasedType }}({{.ValueExpression }}).String(), formats); err != nil {
-    {{- else -}}
-  if err := validate.FormatOf({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ printf "%q" .SwaggerFormat }}, {{.ValueExpression }}.String(), formats); err != nil {
-    {{- end }}
-    return err
-  }
+    {{ template "validationCustomformat" . }}
   {{ end }}
 {{ end }}
 
@@ -256,6 +250,18 @@
   {{ end }}
 {{ end }}
 
+{{ define "fieldvalidator"}}
+  {{ if .IsPrimitive }}
+    {{ template "primitivefieldvalidator" . }}
+  {{ else if .IsCustomFormatter }}
+    {{ template "validationCustomformat" . }}
+  {{ else if .IsArray }}
+    {{ template "slicevalidator" . }}
+  {{ else if .IsMap }}
+    {{ template "mapvalidator" . }}
+  {{ end }}
+{{ end }}
+
 {{define "schemavalidator" }}
   {{ if .Enum }}
     {{ if (eq .SwaggerType "string") }}
@@ -337,15 +343,7 @@ func ({{.ReceiverName }} {{ if or .IsTuple .IsComplexObject .IsAdditionalPropert
 
   {{ range .AllOf }}
     {{ if or .Required .HasValidations }}
-      {{ if .IsPrimitive }}
-        {{ template "primitivefieldvalidator" . }}
-      {{ else if .IsCustomFormatter }}
-        {{ template "validationCustomformat" . }}
-      {{ else if .IsArray }}
-        {{ template "slicevalidator" . }}
-      {{ else if .IsMap }}
-        {{ template "mapvalidator" . }}
-      {{ end }}
+      {{ template "fieldvalidator" . }}
 
       {{ range .Properties }}
         {{ if and (ne $.DiscriminatorField .Name) (or .Required .HasValidations) }}
@@ -366,15 +364,7 @@ func ({{.ReceiverName }} {{ if or .IsTuple .IsComplexObject .IsAdditionalPropert
       }
     {{ end }}
   {{ end }}
-  {{ if .IsPrimitive }}
-    {{ template "primitivefieldvalidator" . }}
-  {{ else if .IsCustomFormatter }}
-    {{ template "validationCustomformat" . }}
-  {{ else if .IsArray }}
-    {{ template "slicevalidator" . }}
-  {{ else if .IsMap }}
-    {{ template "mapvalidator" . }}
-  {{ end }}
+  {{ template "fieldvalidator" . }}
 
   {{ range .Properties }}
     {{ if and (ne $.DiscriminatorField .Name) (or .Required .HasValidations) }}
