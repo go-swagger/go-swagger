@@ -28,6 +28,8 @@ Swagger helps companies like Apigee, Getty Images, Intuit, LivingSocial, McKesso
 build the best possible services with RESTful APIs.Now in version 2.0, Swagger is more enabling than ever.
 And it's 100% open source software.
 
+More detailed documentation is available at https://goswagger.io.
+
 Install:
 
 		go get -u github.com/go-swagger/go-swagger/cmd/swagger

@@ -63,7 +63,8 @@ azure-text-analyis.json|\
 bitbucket.json|\
 existing-model.yml|\
 issue72.json|\
-todolist.simple.yml\
+todolist.simple.yml|\
+cloudbreak.json\
 )"
 # The following ones should fail validation, but produce correct generated code (at least it builds)
 known_skip_validation="@(\
@@ -90,6 +91,7 @@ initColors
 cd ${0%/*}
 specdir="../fixtures/codegen ../fixtures/bugs/909 ../fixtures/bugs/1437 ../fixtures/bugs/1314 ../fixtures/bugs/1062/eve-online-esi.json"
 specdir=${specdir}" ../fixtures/bugs/1392"
+specdir=${specdir}" ../fixtures/bugs/1277"
 gendir=./tmp-gen
 rm -rf ${gendir}
 
