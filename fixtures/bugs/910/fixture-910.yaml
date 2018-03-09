@@ -1,0 +1,32 @@
+swagger: "2.0"
+
+info:
+  title: MyTest
+  description: MyTest
+  version: "1.0.0"
+
+paths:
+  /mytest:
+    get:
+      description: my test
+      responses:
+        200:
+          description: my test
+          schema:
+            type: object
+            properties:
+              foo:
+                type: object
+              bar:
+                type: integer
+                format: int64
+              baz:
+                type: integer
+                format: int64
+              quux:
+                type: array
+                items:
+                  type: string
+            required:
+              - foo
+              - bar
