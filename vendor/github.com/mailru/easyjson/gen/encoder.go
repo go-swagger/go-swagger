@@ -108,6 +108,14 @@ func (g *Generator) genTypeEncoder(t reflect.Type, in string, tags fieldTags, in
 	return err
 }
 
+// returns true of the type t implements one of the custom marshaler interfaces
+func hasCustomMarshaler(t reflect.Type) bool {
+	t = reflect.PtrTo(t)
+	return t.Implements(reflect.TypeOf((*easyjson.Marshaler)(nil)).Elem()) ||
+		t.Implements(reflect.TypeOf((*json.Marshaler)(nil)).Elem()) ||
+		t.Implements(reflect.TypeOf((*encoding.TextMarshaler)(nil)).Elem())
+}
+
 // genTypeEncoderNoCheck generates code that encodes in of type t into the writer.
 func (g *Generator) genTypeEncoderNoCheck(t reflect.Type, in string, tags fieldTags, indent int, assumeNonEmpty bool) error {
 	ws := strings.Repeat("  ", indent)
@@ -197,9 +205,9 @@ func (g *Generator) genTypeEncoderNoCheck(t reflect.Type, in string, tags fieldT
 	case reflect.Map:
 		key := t.Key()
 		keyEnc, ok := primitiveStringEncoders[key.Kind()]
-		if !ok {
-			return fmt.Errorf("map key type %v not supported: only string and integer keys are allowed", key)
-		}
+		if !ok && !hasCustomMarshaler(key) {
+			return fmt.Errorf("map key type %v not supported: only string and integer keys and types implementing Marshaler interfaces are allowed", key)
+		} // else assume the caller knows what they are doing and that the custom marshaler performs the translation from the key type to a string or integer
 		tmpVar := g.uniqueVarName()
 
 		if !assumeNonEmpty {
@@ -213,7 +221,14 @@ func (g *Generator) genTypeEncoderNoCheck(t reflect.Type, in string, tags fieldT
 		fmt.Fprintln(g.out, ws+"  "+tmpVar+"First := true")
 		fmt.Fprintln(g.out, ws+"  for "+tmpVar+"Name, "+tmpVar+"Value := range "+in+" {")
 		fmt.Fprintln(g.out, ws+"    if "+tmpVar+"First { "+tmpVar+"First = false } else { out.RawByte(',') }")
-		fmt.Fprintln(g.out, ws+"    "+fmt.Sprintf(keyEnc, tmpVar+"Name"))
+		if keyEnc != "" {
+			fmt.Fprintln(g.out, ws+"    "+fmt.Sprintf(keyEnc, tmpVar+"Name"))
+		} else {
+			if err := g.genTypeEncoder(key, tmpVar+"Name", tags, indent+2, false); err != nil {
+				return err
+			}
+		}
+
 		fmt.Fprintln(g.out, ws+"    out.RawByte(':')")
 
 		if err := g.genTypeEncoder(t.Elem(), tmpVar+"Value", tags, indent+2, false); err != nil {

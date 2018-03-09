@@ -62,7 +62,7 @@ func TestQuestionPackUnpack(t *testing.T) {
 		Type:  TypeA,
 		Class: ClassINET,
 	}
-	buf, err := want.pack(make([]byte, 1, 50), map[string]int{})
+	buf, err := want.pack(make([]byte, 1, 50), map[string]int{}, 1)
 	if err != nil {
 		t.Fatal("Packing failed:", err)
 	}
@@ -129,7 +129,7 @@ func TestNamePackUnpack(t *testing.T) {
 	for _, test := range tests {
 		in := mustNewName(test.in)
 		want := mustNewName(test.want)
-		buf, err := in.pack(make([]byte, 0, 30), map[string]int{})
+		buf, err := in.pack(make([]byte, 0, 30), map[string]int{}, 0)
 		if err != test.err {
 			t.Errorf("Packing of %q: got err = %v, want err = %v", test.in, err, test.err)
 			continue
@@ -237,6 +237,40 @@ func TestDNSPackUnpack(t *testing.T) {
 		if err != nil {
 			t.Fatalf("%d: packing failed: %v", i, err)
 		}
+		var got Message
+		err = got.Unpack(b)
+		if err != nil {
+			t.Fatalf("%d: unpacking failed: %v", i, err)
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("%d: got = %+v, want = %+v", i, &got, &want)
+		}
+	}
+}
+
+func TestDNSAppendPackUnpack(t *testing.T) {
+	wants := []Message{
+		{
+			Questions: []Question{
+				{
+					Name:  mustNewName("."),
+					Type:  TypeAAAA,
+					Class: ClassINET,
+				},
+			},
+			Answers:     []Resource{},
+			Authorities: []Resource{},
+			Additionals: []Resource{},
+		},
+		largeTestMsg(),
+	}
+	for i, want := range wants {
+		b := make([]byte, 2, 514)
+		b, err := want.AppendPack(b)
+		if err != nil {
+			t.Fatalf("%d: packing failed: %v", i, err)
+		}
+		b = b[2:]
 		var got Message
 		err = got.Unpack(b)
 		if err != nil {
@@ -412,7 +446,7 @@ func TestVeryLongTxt(t *testing.T) {
 		},
 		&TXTResource{loremIpsum},
 	}
-	buf, err := want.pack(make([]byte, 0, 8000), map[string]int{})
+	buf, err := want.pack(make([]byte, 0, 8000), map[string]int{}, 0)
 	if err != nil {
 		t.Fatal("Packing failed:", err)
 	}
@@ -431,6 +465,26 @@ func TestVeryLongTxt(t *testing.T) {
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Got = %#v, want = %#v", got, want)
+	}
+}
+
+func TestStartAppends(t *testing.T) {
+	buf := make([]byte, 2, 514)
+	wantBuf := []byte{4, 44}
+	copy(buf, wantBuf)
+
+	b := NewBuilder(buf, Header{})
+	b.EnableCompression()
+
+	buf, err := b.Finish()
+	if err != nil {
+		t.Fatal("Building failed:", err)
+	}
+	if got, want := len(buf), headerLen+2; got != want {
+		t.Errorf("Got len(buf} = %d, want = %d", got, want)
+	}
+	if string(buf[:2]) != string(wantBuf) {
+		t.Errorf("Original data not preserved, got = %v, want = %v", buf[:2], wantBuf)
 	}
 }
 
@@ -514,8 +568,8 @@ func TestBuilder(t *testing.T) {
 		t.Fatal("Packing without builder:", err)
 	}
 
-	var b Builder
-	b.Start(nil, msg.Header)
+	b := NewBuilder(nil, msg.Header)
+	b.EnableCompression()
 
 	if err := b.StartQuestions(); err != nil {
 		t.Fatal("b.StartQuestions():", err)
@@ -653,9 +707,7 @@ func TestResourcePack(t *testing.T) {
 	}
 }
 
-func BenchmarkParsing(b *testing.B) {
-	b.ReportAllocs()
-
+func benchmarkParsingSetup() ([]byte, error) {
 	name := mustNewName("foo.bar.example.com.")
 	msg := Message{
 		Header: Header{Response: true, Authoritative: true},
@@ -700,111 +752,148 @@ func BenchmarkParsing(b *testing.B) {
 
 	buf, err := msg.Pack()
 	if err != nil {
-		b.Fatal("msg.Pack():", err)
+		return nil, fmt.Errorf("msg.Pack(): %v", err)
+	}
+	return buf, nil
+}
+
+func benchmarkParsing(tb testing.TB, buf []byte) {
+	var p Parser
+	if _, err := p.Start(buf); err != nil {
+		tb.Fatal("p.Start(buf):", err)
 	}
 
-	for i := 0; i < b.N; i++ {
-		var p Parser
-		if _, err := p.Start(buf); err != nil {
-			b.Fatal("p.Start(buf):", err)
+	for {
+		_, err := p.Question()
+		if err == ErrSectionDone {
+			break
+		}
+		if err != nil {
+			tb.Fatal("p.Question():", err)
+		}
+	}
+
+	for {
+		h, err := p.AnswerHeader()
+		if err == ErrSectionDone {
+			break
+		}
+		if err != nil {
+			panic(err)
 		}
 
-		for {
-			_, err := p.Question()
-			if err == ErrSectionDone {
-				break
+		switch h.Type {
+		case TypeA:
+			if _, err := p.AResource(); err != nil {
+				tb.Fatal("p.AResource():", err)
 			}
-			if err != nil {
-				b.Fatal("p.Question():", err)
+		case TypeAAAA:
+			if _, err := p.AAAAResource(); err != nil {
+				tb.Fatal("p.AAAAResource():", err)
 			}
-		}
-
-		for {
-			h, err := p.AnswerHeader()
-			if err == ErrSectionDone {
-				break
+		case TypeCNAME:
+			if _, err := p.CNAMEResource(); err != nil {
+				tb.Fatal("p.CNAMEResource():", err)
 			}
-			if err != nil {
-				panic(err)
+		case TypeNS:
+			if _, err := p.NSResource(); err != nil {
+				tb.Fatal("p.NSResource():", err)
 			}
-
-			switch h.Type {
-			case TypeA:
-				if _, err := p.AResource(); err != nil {
-					b.Fatal("p.AResource():", err)
-				}
-			case TypeAAAA:
-				if _, err := p.AAAAResource(); err != nil {
-					b.Fatal("p.AAAAResource():", err)
-				}
-			case TypeCNAME:
-				if _, err := p.CNAMEResource(); err != nil {
-					b.Fatal("p.CNAMEResource():", err)
-				}
-			case TypeNS:
-				if _, err := p.NSResource(); err != nil {
-					b.Fatal("p.NSResource():", err)
-				}
-			default:
-				b.Fatalf("unknown type: %T", h)
-			}
+		default:
+			tb.Fatalf("unknown type: %T", h)
 		}
 	}
 }
 
-func BenchmarkBuilding(b *testing.B) {
-	b.ReportAllocs()
+func BenchmarkParsing(b *testing.B) {
+	buf, err := benchmarkParsingSetup()
+	if err != nil {
+		b.Fatal(err)
+	}
 
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		benchmarkParsing(b, buf)
+	}
+}
+
+func TestParsingAllocs(t *testing.T) {
+	buf, err := benchmarkParsingSetup()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if allocs := testing.AllocsPerRun(100, func() { benchmarkParsing(t, buf) }); allocs > 0.5 {
+		t.Errorf("Allocations during parsing: got = %f, want ~0", allocs)
+	}
+}
+
+func benchmarkBuildingSetup() (Name, []byte) {
 	name := mustNewName("foo.bar.example.com.")
 	buf := make([]byte, 0, packStartingCap)
+	return name, buf
+}
 
+func benchmarkBuilding(tb testing.TB, name Name, buf []byte) {
+	bld := NewBuilder(buf, Header{Response: true, Authoritative: true})
+
+	if err := bld.StartQuestions(); err != nil {
+		tb.Fatal("bld.StartQuestions():", err)
+	}
+	q := Question{
+		Name:  name,
+		Type:  TypeA,
+		Class: ClassINET,
+	}
+	if err := bld.Question(q); err != nil {
+		tb.Fatalf("bld.Question(%+v): %v", q, err)
+	}
+
+	hdr := ResourceHeader{
+		Name:  name,
+		Class: ClassINET,
+	}
+	if err := bld.StartAnswers(); err != nil {
+		tb.Fatal("bld.StartQuestions():", err)
+	}
+
+	ar := AResource{[4]byte{}}
+	if err := bld.AResource(hdr, ar); err != nil {
+		tb.Fatalf("bld.AResource(%+v, %+v): %v", hdr, ar, err)
+	}
+
+	aaar := AAAAResource{[16]byte{}}
+	if err := bld.AAAAResource(hdr, aaar); err != nil {
+		tb.Fatalf("bld.AAAAResource(%+v, %+v): %v", hdr, aaar, err)
+	}
+
+	cnr := CNAMEResource{name}
+	if err := bld.CNAMEResource(hdr, cnr); err != nil {
+		tb.Fatalf("bld.CNAMEResource(%+v, %+v): %v", hdr, cnr, err)
+	}
+
+	nsr := NSResource{name}
+	if err := bld.NSResource(hdr, nsr); err != nil {
+		tb.Fatalf("bld.NSResource(%+v, %+v): %v", hdr, nsr, err)
+	}
+
+	if _, err := bld.Finish(); err != nil {
+		tb.Fatal("bld.Finish():", err)
+	}
+}
+
+func BenchmarkBuilding(b *testing.B) {
+	name, buf := benchmarkBuildingSetup()
+	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		var bld Builder
-		bld.StartWithoutCompression(buf, Header{Response: true, Authoritative: true})
+		benchmarkBuilding(b, name, buf)
+	}
+}
 
-		if err := bld.StartQuestions(); err != nil {
-			b.Fatal("bld.StartQuestions():", err)
-		}
-		q := Question{
-			Name:  name,
-			Type:  TypeA,
-			Class: ClassINET,
-		}
-		if err := bld.Question(q); err != nil {
-			b.Fatalf("bld.Question(%+v): %v", q, err)
-		}
-
-		hdr := ResourceHeader{
-			Name:  name,
-			Class: ClassINET,
-		}
-		if err := bld.StartAnswers(); err != nil {
-			b.Fatal("bld.StartQuestions():", err)
-		}
-
-		ar := AResource{[4]byte{}}
-		if err := bld.AResource(hdr, ar); err != nil {
-			b.Fatalf("bld.AResource(%+v, %+v): %v", hdr, ar, err)
-		}
-
-		aaar := AAAAResource{[16]byte{}}
-		if err := bld.AAAAResource(hdr, aaar); err != nil {
-			b.Fatalf("bld.AAAAResource(%+v, %+v): %v", hdr, aaar, err)
-		}
-
-		cnr := CNAMEResource{name}
-		if err := bld.CNAMEResource(hdr, cnr); err != nil {
-			b.Fatalf("bld.CNAMEResource(%+v, %+v): %v", hdr, cnr, err)
-		}
-
-		nsr := NSResource{name}
-		if err := bld.NSResource(hdr, nsr); err != nil {
-			b.Fatalf("bld.NSResource(%+v, %+v): %v", hdr, nsr, err)
-		}
-
-		if _, err := bld.Finish(); err != nil {
-			b.Fatal("bld.Finish():", err)
-		}
+func TestBuildingAllocs(t *testing.T) {
+	name, buf := benchmarkBuildingSetup()
+	if allocs := testing.AllocsPerRun(100, func() { benchmarkBuilding(t, name, buf) }); allocs > 0.5 {
+		t.Errorf("Allocations during building: got = %f, want ~0", allocs)
 	}
 }
 

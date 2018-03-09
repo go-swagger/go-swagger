@@ -300,6 +300,45 @@ func TestSampleNimbusJWSMessagesHMAC(t *testing.T) {
 	}
 }
 
+func TestHeaderFieldsCompact(t *testing.T) {
+	msg := "eyJhbGciOiJFUzUxMiJ9.TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQ.AeYNFC1rwIgQv-5fwd8iRyYzvTaSCYTEICepgu9gRId-IW99kbSVY7yH0MvrQnqI-a0L8zwKWDR35fW5dukPAYRkADp3Y1lzqdShFcEFziUVGo46vqbiSajmKFrjBktJcCsfjKSaLHwxErF-T10YYPCQFHWb2nXJOOI3CZfACYqgO84g"
+
+	obj, err := ParseSigned(msg)
+	if err != nil {
+		t.Fatal("unable to parse message", msg, err)
+	}
+	if obj.Signatures[0].Header.Algorithm != "ES512" {
+		t.Error("merged header did not contain expected alg value")
+	}
+	if obj.Signatures[0].Protected.Algorithm != "ES512" {
+		t.Error("protected header did not contain expected alg value")
+	}
+	if obj.Signatures[0].Unprotected.Algorithm != "" {
+		t.Error("unprotected header contained an alg value")
+	}
+}
+
+func TestHeaderFieldsFull(t *testing.T) {
+	msg := `{"payload":"TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQ","protected":"eyJhbGciOiJFUzUxMiJ9","header":{"custom":"test"},"signature":"AeYNFC1rwIgQv-5fwd8iRyYzvTaSCYTEICepgu9gRId-IW99kbSVY7yH0MvrQnqI-a0L8zwKWDR35fW5dukPAYRkADp3Y1lzqdShFcEFziUVGo46vqbiSajmKFrjBktJcCsfjKSaLHwxErF-T10YYPCQFHWb2nXJOOI3CZfACYqgO84g"}`
+
+	obj, err := ParseSigned(msg)
+	if err != nil {
+		t.Fatal("unable to parse message", msg, err)
+	}
+	if obj.Signatures[0].Header.Algorithm != "ES512" {
+		t.Error("merged header did not contain expected alg value")
+	}
+	if obj.Signatures[0].Protected.Algorithm != "ES512" {
+		t.Error("protected header did not contain expected alg value")
+	}
+	if obj.Signatures[0].Unprotected.Algorithm != "" {
+		t.Error("unprotected header contained an alg value")
+	}
+	if obj.Signatures[0].Unprotected.ExtraHeaders["custom"] != "test" {
+		t.Error("unprotected header did not contain custom header value")
+	}
+}
+
 // Test vectors generated with nimbus-jose-jwt
 func TestErrorMissingPayloadJWS(t *testing.T) {
 	_, err := (&rawJSONWebSignature{}).sanitized()

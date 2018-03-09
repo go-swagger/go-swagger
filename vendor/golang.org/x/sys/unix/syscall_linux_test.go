@@ -292,6 +292,10 @@ func TestSchedSetaffinity(t *testing.T) {
 		t.Errorf("CpuClr: didn't clear CPU %d in set: %v", cpu, newMask)
 	}
 
+	if runtime.NumCPU() < 2 {
+		t.Skip("skipping setaffinity tests on single CPU system")
+	}
+
 	err = unix.SchedSetaffinity(0, &newMask)
 	if err != nil {
 		t.Fatalf("SchedSetaffinity: %v", err)
