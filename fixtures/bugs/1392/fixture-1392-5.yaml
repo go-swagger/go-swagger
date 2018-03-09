@@ -1,0 +1,186 @@
+swagger: "2.0"
+info:
+  title: Bug Demo
+  description: Test various body param configurations, with the exception of additionalProperties and additionalItems
+  version: "0.1.0"
+schemes:
+  - http
+produces:
+  - application/json
+consumes:
+  - application/json
+parameters:
+  btest01:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/aNumberValidable'
+  btest02:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/aSimpleArray'
+  btest03:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/aComplexObject'
+  btest04:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/aPrimitive'
+  btest05:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/aPrimitiveNumber'
+  btest06:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/aPrimitiveValidable'
+  btest07:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/anAliasedPrimitive'
+  btest08:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/anAliasedPrimitiveValidable'
+  btest09:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/anAliasedObject'
+  btest10:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/anAliasedObject2'
+  btest11:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/anAliasedArray'
+  btest12:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/aPrimitiveArray'
+  btest13:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/anInterface'
+  btest14:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/anObjectOfInterfaces'
+  btest15:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/anArrayOfInterfaces'
+  btest16:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/aNestedArray'
+paths:
+  /bodybuilder23:
+    post:
+      operationId: Bodybuilder23
+      description: body btest23
+      parameters:
+      - in: body
+        name: myObject
+        schema:
+          type: array
+          minItems: 15
+          items:
+            $ref: '#/definitions/aSimpleArray'
+      responses:
+        default:
+          description: an error
+definitions:
+  aNumberValidable:
+    type: integer
+    minimum: 10
+    maximum: 100
+  aSimpleArray:
+    type: array
+    items:
+      type: string
+      enum: [a,b]
+  aComplexObject:
+    type: object
+    required: [prop1]
+    properties:
+      prop1:
+        type: string
+        format: uri
+      prop2:
+        type: string
+        enum:
+          - a
+          - b
+  aPrimitive:
+    type: string
+    minLength: 10
+  aPrimitiveNumber:
+    type: integer 
+    format: uint32
+    multipleOf: 10
+  aPrimitiveValidable:
+    type: string
+    enum: [ primitive, civilized, outofthisworld ]
+  anAliasedPrimitive:
+    type: string
+    format: uri
+  anAliasedPrimitiveValidable:
+    type: string
+    format: duration
+  anAliasedObject:
+    $ref: '#/definitions/aComplexObject'
+  anAliasedObject2:
+    $ref: '#/definitions/anAliasedPrimitiveValidable'
+  anAliasedArray:
+    type: array
+    maxItems: 6
+    items:
+      type: string
+      format: uuid
+  aPrimitiveArray:
+    type: array
+    maxItems: 6
+    items:
+      type: integer
+      format: uint32
+  anInterface:
+    type: string 
+    format: binary
+  anObjectOfInterfaces:
+    type: object
+    properties:
+      aReader:
+        type: string 
+        format: binary
+  anArrayOfInterfaces:
+    type: array
+    maxItems: 6
+    items:
+      type: string 
+      format: binary
+  aNestedArray:
+    type: array 
+    maxItems: 6
+    items:
+      type: array
+      uniqueItems: true
+      items:
+        type: string
+        format: date

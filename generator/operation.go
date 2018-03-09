@@ -471,6 +471,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 			}
 		}
 	}
+
 	return GenOperation{
 		GenCommon: GenCommon{
 			Copyright:        b.GenOpts.Copyright,
@@ -925,25 +926,73 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 			schema.IsInterface = len(schema.Properties) == 0
 		}
 		res.Schema = &schema
-		it := res.Schema.Items
 
+		// clone the .Items schema structure as a .GenItems structure
+		// for compatibility with simple param templates
+		it := res.Schema.Items
 		items := new(GenItems)
-		var prev *GenItems
-		next := items
-		for it != nil {
-			next.resolvedType = it.resolvedType
-			next.sharedValidations = it.sharedValidations
-			next.Formatter = stringFormatters[it.SwaggerFormat]
-			_, next.IsCustomFormatter = customFormatters[it.SwaggerFormat]
-			it = it.Items
-			if prev != nil {
-				prev.Child = next
+		if it != nil {
+			var prev *GenItems
+			next := items
+			next.Name = res.Name + " " + res.Schema.IndexVar
+			next.IndexVar = res.Schema.IndexVar + "i"
+			next.ValueExpression = swag.ToVarName(res.Name + "I")
+			next.Path = "fmt.Sprintf(\"%s.%v\", " + res.Path + ", " + res.IndexVar + ")"
+			next.Location = "body"
+			for it != nil {
+				next.resolvedType = it.resolvedType
+				next.sharedValidations = it.sharedValidations
+				next.Formatter = stringFormatters[it.SwaggerFormat]
+				next.Converter = stringConverters[res.GoType]
+				next.Parent = prev
+				_, next.IsCustomFormatter = customFormatters[it.GoType]
+				next.IsCustomFormatter = next.IsCustomFormatter && !it.IsStream
+
+				// special instruction to avoid using CollectionFormat for body params
+				next.SkipParse = true
+
+				if prev != nil {
+					next.Name = prev.Name + prev.IndexVar
+					next.IndexVar = prev.IndexVar + "i"
+					next.ValueExpression = swag.ToVarName(prev.ValueExpression + "I")
+					next.Path = "fmt.Sprintf(\"%s.%v\", " + prev.Path + ", " + prev.IndexVar + ")"
+					prev.Child = next
+				}
+
+				// found a complex or aliased thing
+				// hide details from the aliased type and stop recursing
+				if next.IsAliased || next.IsComplexObject {
+					next.IsArray = false
+					next.IsCustomFormatter = false
+					next.HasValidations = true
+					next.IsComplexObject = true
+					next.IsAliased = true
+					break
+				}
+				prev = next
+				next = new(GenItems)
+				it = it.Items
 			}
-			prev = next
-			next = new(GenItems)
+			// propagate HasValidations
+			var propag func(child *GenItems) bool
+			propag = func(child *GenItems) bool {
+				if child == nil {
+					return false
+				}
+				child.HasValidations = child.HasValidations || propag(child.Child)
+				return child.HasValidations
+			}
+			items.HasValidations = propag(items)
+			schema.HasValidations = schema.HasValidations || items.HasValidations
 		}
+
+		// templates assume at least one .Child != nil
 		res.Child = items
+		hasChildValidations = res.Child.HasValidations
+
 		res.resolvedType = schema.resolvedType
+
+		// simple and schema views share the same validations
 		res.sharedValidations = schema.sharedValidations
 		res.ZeroValue = schema.Zero()
 	} else {
@@ -989,8 +1038,41 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 	res.Converter = stringConverters[res.GoType]
 	res.Formatter = stringFormatters[res.GoType]
 
-	// Custom format requires a validation too
-	res.HasValidations = hasValidations || res.IsCustomFormatter
+	// Custom format requires a validation too (but not when binary)
+	res.HasValidations = hasValidations || (res.IsCustomFormatter && !res.IsStream)
 	res.HasSliceValidations = hasSliceValidations
+
+	b.setBodyParamValidation(&res)
 	return res, nil
+}
+
+func (b *codeGenOpBuilder) setBodyParamValidation(p *GenParameter) {
+	// determine validation strategy for body param
+	if p.IsBodyParam() {
+		var hasSimpleBodyParams, hasSimpleBodyItems, hasModelBodyParams, hasModelBodyItems bool
+		s := p.Schema
+		if s != nil {
+			doNot := s.IsInterface || s.IsStream
+			// composition of primitive fields must be properly identified: hack this through
+			_, isPrimitive := primitives[s.GoType]
+			_, isFormatter := customFormatters[s.GoType]
+			isComposedPrimitive := s.IsPrimitive && !(isPrimitive || isFormatter)
+
+			hasSimpleBodyParams = !s.IsComplexObject && !s.IsAliased && !isComposedPrimitive && !doNot
+			hasModelBodyParams = (s.IsComplexObject || s.IsAliased || isComposedPrimitive) && !doNot
+
+			if s.IsArray && s.Items != nil {
+				it := s.Items
+				doNot := it.IsInterface || it.IsStream
+				hasSimpleBodyItems = !it.IsComplexObject && !(it.IsAliased || doNot)
+				hasModelBodyItems = (it.IsComplexObject || it.IsAliased) && !doNot
+			}
+		}
+		// set validation strategy for body param
+		p.HasSimpleBodyParams = hasSimpleBodyParams
+		p.HasSimpleBodyItems = hasSimpleBodyItems
+		p.HasModelBodyParams = hasModelBodyParams
+		p.HasModelBodyItems = hasModelBodyItems
+	}
+
 }

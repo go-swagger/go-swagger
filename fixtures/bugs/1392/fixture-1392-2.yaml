@@ -1,0 +1,401 @@
+swagger: "2.0"
+info:
+  title: Bug Demo
+  description: Test various body param configurations, with the exception of additionalProperties and additionalItems
+  version: "0.1.0"
+schemes:
+  - http
+produces:
+  - application/json
+consumes:
+  - application/json
+parameters:
+  btest01:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/aNumberValidable'
+  btest02:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/aSimpleArray'
+  btest03:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/aComplexObject'
+  btest04:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/aPrimitive'
+  btest05:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/aPrimitiveNumber'
+  btest06:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/aPrimitiveValidable'
+  btest07:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/anAliasedPrimitive'
+  btest08:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/anAliasedPrimitiveValidable'
+  btest09:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/anAliasedObject'
+  btest10:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/anAliasedObject2'
+  btest11:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/anAliasedArray'
+  btest12:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/aPrimitiveArray'
+  btest13:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/anInterface'
+  btest14:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/anObjectOfInterfaces'
+  btest15:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/anArrayOfInterfaces'
+  btest16:
+    in: body
+    name: myObject
+    schema:
+      $ref: '#/definitions/aNestedArray'
+paths:
+  /bodybuilder01:
+    post:
+      description: body btest01
+      parameters:
+        - $ref: '#/parameters/btest01'
+      responses:
+        default:
+          description: an error
+  /bodybuilder02:
+    post:
+      description: body btest02
+      parameters:
+        - $ref: '#/parameters/btest02'
+      responses:
+        default:
+          description: an error
+  /bodybuilder03:
+    post:
+      description: body btest03
+      parameters:
+        - $ref: '#/parameters/btest03'
+      responses:
+        default:
+          description: an error
+  /bodybuilder04:
+    post:
+      description: body btest04
+      parameters:
+        - $ref: '#/parameters/btest04'
+      responses:
+        default:
+          description: an error
+  /bodybuilder05:
+    post:
+      description: body btest05
+      parameters:
+        - $ref: '#/parameters/btest05'
+      responses:
+        default:
+          description: an error
+  /bodybuilder06:
+    post:
+      description: body btest06
+      parameters:
+        - $ref: '#/parameters/btest06'
+      responses:
+        default:
+          description: an error
+  /bodybuilder07:
+    post:
+      description: body btest07
+      parameters:
+        - $ref: '#/parameters/btest07'
+      responses:
+        default:
+          description: an error
+  /bodybuilder08:
+    post:
+      description: body btest08
+      parameters:
+        - $ref: '#/parameters/btest08'
+      responses:
+        default:
+          description: an error
+  /bodybuilder09:
+    post:
+      description: body btest09
+      parameters:
+        - $ref: '#/parameters/btest09'
+      responses:
+        default:
+          description: an error
+  /bodybuilder10:
+    post:
+      description: body btest10
+      parameters:
+        - $ref: '#/parameters/btest10'
+      responses:
+        default:
+          description: an error
+  /bodybuilder11:
+    post:
+      description: body btest11
+      parameters:
+        - $ref: '#/parameters/btest11'
+      responses:
+        default:
+          description: an error
+  /bodybuilder12:
+    post:
+      description: body btest12
+      parameters:
+        - $ref: '#/parameters/btest12'
+      responses:
+        default:
+          description: an error
+  /bodybuilder13:
+    post:
+      description: body btest13
+      parameters:
+        - $ref: '#/parameters/btest13'
+      responses:
+        default:
+          description: an error
+  /bodybuilder14:
+    post:
+      description: body btest14
+      parameters:
+        - $ref: '#/parameters/btest14'
+      responses:
+        default:
+          description: an error
+  /bodybuilder15:
+    post:
+      description: body btest15
+      parameters:
+        - $ref: '#/parameters/btest15'
+      responses:
+        default:
+          description: an error
+  /bodybuilder16:
+    post:
+      description: body btest16
+      parameters:
+        - $ref: '#/parameters/btest16'
+      responses:
+        default:
+          description: an error
+  /bodybuilder17:
+    post:
+      description: body btest17
+      parameters:
+      - in: body
+        name: myObject
+        schema:
+          type: object
+          properties:
+            p0:
+              type: string
+              format: mac
+      responses:
+        default:
+          description: an error
+  /bodybuilder18:
+    post:
+      description: body btest18
+      parameters:
+      - in: body
+        name: myObject
+        schema:
+          type: object
+          properties: 
+            p1: 
+              type: string
+            p2: 
+              type: integer
+      responses:
+        default:
+          description: an error
+  /bodybuilder19:
+    post:
+      description: body btest19
+      parameters:
+      - in: body
+        name: myObject
+        schema:
+          type: array
+          items:
+            type: integer
+            minimum: 100
+      responses:
+        default:
+          description: an error
+  /bodybuilder20:
+    post:
+      operationId: PostBodybuilder20
+      description: body btest20
+      parameters:
+      - in: body
+        name: myObject
+        schema:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            format: uri
+      responses:
+        default:
+          description: an error
+  /bodybuilder21:
+    post:
+      description: body btest21
+      parameters:
+      - in: body
+        name: myObject
+        schema:
+          type: string
+          enum:
+            - str1
+            - str2
+      responses:
+        default:
+          description: an error
+  /bodybuilder22:
+    post:
+      description: body btest22
+      parameters:
+      - in: body
+        name: myObject
+        schema:
+          type: integer
+          minimum: 15
+          multipleOf: 10
+      responses:
+        default:
+          description: an error
+  /bodybuilder23:
+    post:
+      description: body btest23
+      parameters:
+      - in: body
+        name: myObject
+        schema:
+          type: array
+          minItems: 15
+          items:
+            $ref: '#/definitions/aSimpleArray'
+      responses:
+        default:
+          description: an error
+definitions:
+  aNumberValidable:
+    type: integer
+    minimum: 10
+    maximum: 100
+  aSimpleArray:
+    type: array
+    items:
+      type: string
+      enum: [a,b]
+  aComplexObject:
+    type: object
+    required: [prop1]
+    properties:
+      prop1:
+        type: string
+        format: uri
+      prop2:
+        type: string
+        enum:
+          - a
+          - b
+  aPrimitive:
+    type: string
+    minLength: 10
+  aPrimitiveNumber:
+    type: integer 
+    format: uint32
+    multipleOf: 10
+  aPrimitiveValidable:
+    type: string
+    enum: [ primitive, civilized, outofthisworld ]
+  anAliasedPrimitive:
+    type: string
+    format: uri
+  anAliasedPrimitiveValidable:
+    type: string
+    format: duration
+  anAliasedObject:
+    $ref: '#/definitions/aComplexObject'
+  anAliasedObject2:
+    $ref: '#/definitions/anAliasedPrimitiveValidable'
+  anAliasedArray:
+    type: array
+    maxItems: 6
+    items:
+      type: string
+      format: uuid
+  aPrimitiveArray:
+    type: array
+    maxItems: 6
+    items:
+      type: integer
+      format: uint32
+  anInterface:
+    type: string 
+    format: binary
+  anObjectOfInterfaces:
+    type: object
+    properties:
+      aReader:
+        type: string 
+        format: binary
+  anArrayOfInterfaces:
+    type: array
+    maxItems: 6
+    items:
+      type: string 
+      format: binary
+  aNestedArray:
+    type: array 
+    maxItems: 6
+    items:
+      type: array
+      uniqueItems: true
+      items:
+        type: string
+        format: date

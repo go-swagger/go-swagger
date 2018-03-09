@@ -63,7 +63,6 @@ azure-text-analyis.json|\
 bitbucket.json|\
 existing-model.yml|\
 issue72.json|\
-todolist.discriminators.yml|\
 todolist.simple.yml\
 )"
 # The following ones should fail validation, but produce correct generated code (at least it builds)
@@ -90,6 +89,7 @@ initColors
 # All fixtures in ./fixtures/codegen + some others
 cd ${0%/*}
 specdir="../fixtures/codegen ../fixtures/bugs/909 ../fixtures/bugs/1437 ../fixtures/bugs/1314 ../fixtures/bugs/1062/eve-online-esi.json"
+specdir=${specdir}" ../fixtures/bugs/1392"
 gendir=./tmp-gen
 rm -rf ${gendir}
 
