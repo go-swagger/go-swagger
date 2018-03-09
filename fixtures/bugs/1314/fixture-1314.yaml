@@ -1,0 +1,25 @@
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: 'simple array parameter'
+paths:
+  /resource//{IDs}:
+    get:
+      parameters:
+      - $ref: '#/parameters/IDs'
+      responses:
+        default:
+          description: ok
+
+parameters:
+  IDs:
+    name: IDs
+    in: path
+    description: A singele object ID or a comma seperated list of objects IDs.
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+    minItems: 1
+    uniqueItems: true
+    required: true

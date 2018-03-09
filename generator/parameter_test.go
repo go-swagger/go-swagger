@@ -1439,3 +1439,55 @@ func TestGenParameter_Issue909(t *testing.T) {
 		}
 	}
 }
+
+// verifies that validation method is called on body param with $ref
+func TestGenParameter_Issue1237(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+
+	assert := assert.New(t)
+	fixtureConfig := map[string]map[string][]string{
+		"1": map[string][]string{ // fixture index
+			"serverParameter": []string{ // executed template
+				// expected code lines
+				`var body models.Sg`,
+				`if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`if err == io.EOF {`,
+				`res = append(res, errors.Required("body", "body"))`,
+				`} else {`,
+				`res = append(res, errors.NewParseError("body", "body", "", err))`,
+				`if err := body.Validate(route.Formats); err != nil {`,
+			},
+		},
+	}
+
+	for _, fixtureContents := range fixtureConfig {
+		fixtureSpec := strings.Join([]string{"fixture-1237", ".json"}, "")
+		gen, err := opBuilder("add sg", filepath.Join("..", "fixtures", "bugs", "1237", fixtureSpec))
+		if assert.NoError(err) {
+			op, err := gen.MakeOperation()
+			if assert.NoError(err) {
+				opts := opts()
+				for fixtureTemplate, expectedCode := range fixtureContents {
+					buf := bytes.NewBuffer(nil)
+					err := templates.MustGet(fixtureTemplate).Execute(buf, op)
+					if assert.NoError(err, "Expected generation to go well on %s with template %s", fixtureSpec, fixtureTemplate) {
+						ff, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+						if assert.NoError(err, "Expected formatting to go well on %s with template %s", fixtureSpec, fixtureTemplate) {
+							res := string(ff)
+							for line, codeLine := range expectedCode {
+								if !assertInCode(t, codeLine, res) {
+									t.Logf("Code expected did not match for fixture %s at line %d", fixtureSpec, line)
+								}
+							}
+						} else {
+							fmt.Println(buf.String())
+						}
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,25 @@
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: 'Test'
+paths:
+  /:
+    get:
+      responses:
+        200:
+          description: Success
+          schema:
+            required:
+              - data
+            properties:
+              data:
+                required:
+                  - account_id
+                  - access_token
+                properties:
+                  account_id:
+                    type: integer
+                    format: int64
+                  access_token:
+                    type: string
+                    maxLength: 64

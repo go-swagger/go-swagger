@@ -480,3 +480,38 @@ func TestGenResponses_Issue892(t *testing.T) {
 		}
 	}
 }
+
+func TestGenResponses_Issue1013(t *testing.T) {
+	b, err := methodPathOpBuilder("get", "/test", "../fixtures/bugs/1013/fixture-1013.yaml")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			var buf bytes.Buffer
+			opts := opts()
+			if assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op)) {
+				ff, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					assertInCode(t, "Payload *models.Response `json:\"body,omitempty\"`", string(ff))
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+	b, err = methodPathOpBuilder("get", "/test2", "../fixtures/bugs/1013/fixture-1013.yaml")
+	if assert.NoError(t, err) {
+		op, err := b.MakeOperation()
+		if assert.NoError(t, err) {
+			var buf bytes.Buffer
+			opts := opts()
+			if assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op)) {
+				ff, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					assertInCode(t, "Payload *models.Response `json:\"body,omitempty\"`", string(ff))
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}

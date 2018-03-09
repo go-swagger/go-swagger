@@ -1,0 +1,34 @@
+---
+swagger: "2.0"
+info:
+  description: example in response test
+  title: expand test
+  version: "0.0.0"
+schemes:
+  - http
+definitions:
+  Response:
+    type: object
+    properties:
+      test:
+        type: string
+paths:
+  /test:
+    get:
+      operationId: optest
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Response'
+          examples:
+            "application/json":
+              test: blah
+  /test2:
+    get:
+      operationId: optest2
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Response'
