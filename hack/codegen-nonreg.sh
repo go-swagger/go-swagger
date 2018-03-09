@@ -89,7 +89,7 @@ initColors
 
 # All fixtures in ./fixtures/codegen + some others
 cd ${0%/*}
-specdir="../fixtures/codegen ../fixtures/bugs/909 ../fixtures/bugs/1437"
+specdir="../fixtures/codegen ../fixtures/bugs/909 ../fixtures/bugs/1437 ../fixtures/bugs/1314 ../fixtures/bugs/1062/eve-online-esi.json"
 gendir=./tmp-gen
 rm -rf ${gendir}
 

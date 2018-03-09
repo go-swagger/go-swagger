@@ -2389,3 +2389,67 @@ func TestGenModel_Issue1409(t *testing.T) {
 		}
 	}
 }
+
+// This tests makes sure model definitions from inline schema in response are properly flattened and get validation
+func TestGenModel_Issue866(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/866/fixture-866.yaml")
+	if assert.NoError(t, err) {
+		p, ok := specDoc.Spec().Paths.Paths["/"]
+		if assert.True(t, ok) {
+			op := p.Get
+			responses := op.Responses.StatusCodeResponses
+			for k, r := range responses {
+				t.Logf("Response: %d", k)
+				schema := *r.Schema
+				opts := opts()
+				genModel, err := makeGenDefinition("GetOKBody", "models", schema, specDoc, opts)
+				if assert.NoError(t, err) {
+					buf := bytes.NewBuffer(nil)
+					err := templates.MustGet("model").Execute(buf, genModel)
+					if assert.NoError(t, err) {
+						ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+						if assert.NoError(t, err) {
+							res := string(ct)
+							assertInCode(t, `if err := validate.Required(`, res)
+							assertInCode(t, `if err := validate.MaxLength(`, res)
+							assertInCode(t, `if err := m.validateAccessToken(formats); err != nil {`, res)
+							assertInCode(t, `if err := m.validateAccountID(formats); err != nil {`, res)
+						} else {
+							fmt.Println(buf.String())
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+// This tests makes sure marshalling and validation is generated in aliased formatted definitions
+func TestGenModel_Issue946(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/946/fixture-946.yaml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "mydate"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, `type Mydate strfmt.Date`, res)
+					assertInCode(t, `func (m *Mydate) UnmarshalJSON(b []byte) error {`, res)
+					assertInCode(t, `return ((*strfmt.Date)(m)).UnmarshalJSON(b)`, res)
+					assertInCode(t, `func (m Mydate) MarshalJSON() ([]byte, error) {`, res)
+					assertInCode(t, `return (strfmt.Date(m)).MarshalJSON()`, res)
+					assertInCode(t, `if err := validate.FormatOf("", "body", "date", strfmt.Date(m).String(), formats); err != nil {`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}

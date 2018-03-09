@@ -1,0 +1,269 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "This is a sample server sg server. You can find out more about Swagger at http://swagger.io or on irc.freenode.net, #swagger. filters.",
+    "version": "1.0.0",
+    "title": "Swagger Sg",
+    "termsOfService": "http://swagger.io/terms/",
+    "contact": {
+      "email": "apiteam@swagger.io"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "host": "localhost:32260",
+  "basePath": "/ccmts-config/v2",
+  "tags": [
+    {
+      "name": "sg",
+      "description": "Everything about your sg",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "http://swagger.io"
+      }
+    },
+    {
+      "name": "global",
+      "description": "Everything about your global settings"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/sg": {
+      "put": {
+        "tags": [
+          "sg"
+        ],
+        "summary": "Add a new sg to the store",
+        "description": "",
+        "operationId": "add sg",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "sg object that needs to be added to the store",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/sg"
+            }
+          }
+        ],
+        "responses": {
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/sg/{sgId}": {
+      "get": {
+        "tags": [
+          "sg"
+        ],
+        "summary": "Find sg by ID",
+        "description": "Returns a sg",
+        "operationId": "getsgById",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "sgId",
+            "in": "path",
+            "description": "ID of sg to return",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/sg"
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "sg not found"
+          }
+        }
+      }
+    },
+    "/ptp": {
+      "put": {
+        "tags": [
+          "global"
+        ],
+        "summary": "Add new ptp settings to store",
+        "description": "",
+        "operationId": "add ptp",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "sg object that needs to be added to the store",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ptp"
+            }
+          }
+        ],
+        "responses": {
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "global"
+        ],
+        "summary": "get ptp global settings",
+        "description": "Returns ptp global settings",
+        "operationId": "getptp",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/ptp"
+            }
+          },
+          "404": {
+            "description": "ptp not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "global"
+        ],
+        "summary": "delete ptp global settings",
+        "description": "delete ptp global settings",
+        "operationId": "deleteptp",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/ptp"
+            }
+          },
+          "404": {
+            "description": "ptp not deleted"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "md": {
+      "properties": {
+        "mac": {
+          "type": "string",
+          "format": "string"
+        },
+        "adminState": {
+          "type": "boolean",
+          "default": true
+        },
+        "syncInterval": {
+          "type": "integer",
+          "format": "int32",
+          "maximum": 3000,
+          "minimum": 0
+        },
+        "priDcid": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int8",
+            "minimum": 0,
+            "maximum": 166,
+            "uniqueItems": true
+          }
+        },
+        "ucid": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int8",
+            "minimum": 0,
+            "maximum": 166,
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "sg": {
+      "type": "object",
+      "required": [
+        "md"
+      ],
+      "properties": {
+        "sgId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "ds": {
+          "type": "string",
+          "format": "string"
+        },
+        "us": {
+          "type": "string",
+          "format": "string"
+        },
+        "md": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/md"
+          }
+        }
+      },
+      "xml": {
+        "name": "sg"
+      }
+    },
+    "ptp": {
+      "type": "object",
+      "properties": {
+        "ptpMasterIp": {
+          "type": "string",
+          "format": "string",
+          "pattern": "((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])"
+        },
+        "ptpGwIp": {
+          "type": "string",
+          "format": "string",
+          "pattern": "^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$"
+        }
+      },
+      "xml": {
+        "name": "ptp"
+      }
+    }
+  }
+}
