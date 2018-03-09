@@ -402,7 +402,7 @@ func TestEncrypterExtraHeaderInclusion(t *testing.T) {
 	if parsed.Header.ExtraHeaders[HeaderType] != "JWT" ||
 		parsed.Header.ExtraHeaders[HeaderContentType] != "JWT" ||
 		parsed.Header.ExtraHeaders[HeaderKey("myCustomHeader")] != "xyz" {
-		t.Fatal("Mismatch in extra headers: %#v", parsed.Header.ExtraHeaders)
+		t.Fatalf("Mismatch in extra headers: %#v", parsed.Header.ExtraHeaders)
 	}
 }
 

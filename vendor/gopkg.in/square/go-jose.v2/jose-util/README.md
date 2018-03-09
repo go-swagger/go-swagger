@@ -11,7 +11,7 @@ The utility includes the subcommands `encrypt`, `decrypt`, `sign`, `verify` and
 
 Algorithms are selected via the `--alg` and `--enc` flags, which influence the
 `alg` and `enc` headers in respectively. For JWE, `--alg` specifies the key
-managment algorithm (e.g. `RSA-OAEP`) and `--enc` specifies the content
+management algorithm (e.g. `RSA-OAEP`) and `--enc` specifies the content
 encryption algorithm (e.g. `A128GCM`). For JWS, `--alg` specifies the
 signature algorithm (e.g. `PS256`).
 
@@ -23,7 +23,7 @@ message, but it's possible to get the full serialization by supplying the
 
 Keys are specified via the `--key` flag. Supported key types are naked RSA/EC
 keys and X.509 certificates with embedded RSA/EC keys. Keys must be in PEM
-or DER formats.
+or DER formats. JWK format produced by `jwk-keygen` is also supported.
 
 ## Examples
 

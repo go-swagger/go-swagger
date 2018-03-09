@@ -7,6 +7,7 @@
 package unix
 
 import (
+	"bytes"
 	"runtime"
 	"sync"
 	"syscall"
@@ -52,12 +53,11 @@ func errnoErr(e syscall.Errno) error {
 
 // clen returns the index of the first NULL byte in n or len(n) if n contains no NULL byte.
 func clen(n []byte) int {
-	for i := 0; i < len(n); i++ {
-		if n[i] == 0 {
-			return i
-		}
+	i := bytes.IndexByte(n, 0)
+	if i == -1 {
+		i = len(n)
 	}
-	return len(n)
+	return i
 }
 
 // Mmap manager, for use by operating system-specific implementations.
