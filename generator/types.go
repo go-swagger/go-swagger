@@ -756,6 +756,10 @@ type resolvedType struct {
 	// IsMapNullOverride indicates that a nullable object is used within an
 	// aliased map. In this case, the reference is not rendered with a pointer
 	IsMapNullOverride bool
+
+	// IsSuperAlias indicates that the aliased type is really the same type,
+	// e.g. in golang, this translates to: type A = B
+	IsSuperAlias bool
 }
 
 func (rt *resolvedType) Zero() string {
@@ -770,7 +774,9 @@ func (rt *resolvedType) Zero() string {
 		return zr
 	}
 	// map and slice initializer
-	if rt.IsMap || rt.IsArray {
+	if rt.IsMap {
+		return "make(" + rt.GoType + ", 50)"
+	} else if rt.IsArray {
 		return "make(" + rt.GoType + ", 0, 50)"
 	}
 	// object initializer

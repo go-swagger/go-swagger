@@ -172,6 +172,9 @@ check_list=`for d in ${specdir}; do ls $d/*.yml;ls $d/*.json;ls $d/*.yaml;done 2
 check_list=${check_list}" fixtures/bugs/1621/fixture-1621.yaml"
 check_list=${check_list}" fixtures/bugs/1774/def_api.yaml"
 check_list=${check_list}" fixtures/bugs/1767/fixture-1767.yaml"
+check_list=${check_list}" fixtures/bugs/1260/fixture-realiased-types.yaml"
+check_list=${check_list}" fixtures/bugs/1260/test3-swagger.yaml fixtures/bugs/1260/test3-bis-swagger.yaml"
+check_list=${check_list}" fixtures/bugs/1260/test3-ter-swagger.yaml fixtures/bugs/1260/test3-ter-swagger-flat.json"
 
 list=( $check_list )
 fixtures_count=${#list[@]}

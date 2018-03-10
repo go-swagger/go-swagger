@@ -10259,5 +10259,676 @@ func initFixture1617() {
 		// output in log
 		noLines,
 		noLines)
+}
 
+func initFixtureRealiasedTypes() {
+	/*
+	   realiased types
+	*/
+
+	f := newModelFixture("../fixtures/bugs/1260/fixture-realiased-types.yaml", "test type realiasing")
+	thisRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	// load expectations for model: g1.go
+	thisRun.AddExpectations("g1.go", []string{
+		`type G1 struct {`,
+		"	Prop1 int64 `json:\"prop1,omitempty\"`",
+		// empty validation
+		"func (m *G1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: e2v.go
+	thisRun.AddExpectations("e2v.go", []string{
+		`type E2v = E0v`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: a1v.go
+	thisRun.AddExpectations("a1v.go", []string{
+		`type A1v []int64`,
+		`func (m A1v) Validate(formats strfmt.Registry) error {`,
+		`	iA1vSize := int64(len(m)`,
+		`	if err := validate.MaxItems("", "body", iA1vSize, 100); err != nil {`,
+		`	for i := 0; i < len(m); i++ {`,
+		`		if err := validate.MaximumInt(strconv.Itoa(i), "body", int64(m[i]), 100, false); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: f2v.go
+	thisRun.AddExpectations("f2v.go", []string{
+		`type F2v = F0v`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: hsubtype1.go
+	thisRun.AddExpectations("hsubtype1.go", []string{
+		`type Hsubtype1 struct {`,
+		`	h1p1Field string`,
+		`	h1p2Field strfmt.Date`,
+		"	Hsp1 uint32 `json:\"hsp1,omitempty\"`",
+		`func (m *Hsubtype1) H1p1() string {`,
+		`	return m.h1p1Field`,
+		`func (m *Hsubtype1) SetH1p1(val string) {`,
+		`	m.h1p1Field = val`,
+		`func (m *Hsubtype1) H1p2() strfmt.Date {`,
+		`	return m.h1p2Field`,
+		`func (m *Hsubtype1) SetH1p2(val strfmt.Date) {`,
+		`	m.h1p2Field = val`,
+		`func (m *Hsubtype1) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateH1p2(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *Hsubtype1) validateH1p2(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.H1p2()) {`,
+		`	if err := validate.FormatOf("h1p2", "body", "date", m.H1p2().String(), formats); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: f2.go
+	thisRun.AddExpectations("f2.go", []string{
+		`type F2 = F0`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: h0.go
+	thisRun.AddExpectations("h0.go", []string{
+		`type H0 = H1`,
+		`func UnmarshalH0(reader io.Reader, consumer runtime.Consumer) (H0, error) {`,
+		`	return UnmarshalH1(reader, consumer`,
+		`func UnmarshalH0Slice(reader io.Reader, consumer runtime.Consumer) ([]H0, error) {`,
+		`	return UnmarshalH1Slice(reader, consumer`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: c1v.go
+	thisRun.AddExpectations("c1v.go", []string{
+		`type C1v interface{`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: d0v.go
+	thisRun.AddExpectations("d0v.go", []string{
+		`type D0v = D1v`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: e2.go
+	thisRun.AddExpectations("e2.go", []string{
+		`type E2 = E0`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: d2v.go
+	thisRun.AddExpectations("d2v.go", []string{
+		`type D2v = D0v`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: b2v.go
+	thisRun.AddExpectations("b2v.go", []string{
+		`type B2v = B0v`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: a1.go
+	thisRun.AddExpectations("a1.go", []string{
+		`type A1 []int64`,
+		// empty validation
+		"func (m A1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: hsubtype2.go
+	thisRun.AddExpectations("hsubtype2.go", []string{
+		`type Hsubtype2 struct {`,
+		`	h1p1Field string`,
+		`	h1p2Field strfmt.Date`,
+		"	Hsp2 strfmt.DateTime `json:\"hsp2,omitempty\"`",
+		`func (m *Hsubtype2) H1p1() string {`,
+		`	return m.h1p1Field`,
+		`func (m *Hsubtype2) SetH1p1(val string) {`,
+		`	m.h1p1Field = val`,
+		`func (m *Hsubtype2) H1p2() strfmt.Date {`,
+		`	return m.h1p2Field`,
+		`func (m *Hsubtype2) SetH1p2(val strfmt.Date) {`,
+		`	m.h1p2Field = val`,
+		`func (m *Hsubtype2) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateH1p2(formats); err != nil {`,
+		`	if err := m.validateHsp2(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *Hsubtype2) validateH1p2(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.H1p2()) {`,
+		`	if err := validate.FormatOf("h1p2", "body", "date", m.H1p2().String(), formats); err != nil {`,
+		`func (m *Hsubtype2) validateHsp2(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.Hsp2) {`,
+		`	if err := validate.FormatOf("hsp2", "body", "date-time", m.Hsp2.String(), formats); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: b2.go
+	thisRun.AddExpectations("b2.go", []string{
+		`type B2 = B0`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: b1.go
+	thisRun.AddExpectations("b1.go", []string{
+		`type B1 map[string]int64`,
+		// empty validation
+		"func (m B1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: d0.go
+	thisRun.AddExpectations("d0.go", []string{
+		`type D0 = D1`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: g1v.go
+	thisRun.AddExpectations("g1v.go", []string{
+		`type G1v struct {`,
+		"	Prop1v int64 `json:\"prop1v,omitempty\"`",
+		"	Prop2v *int64 `json:\"prop2v\"`",
+		`func (m *G1v) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateProp1v(formats); err != nil {`,
+		`	if err := m.validateProp2v(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *G1v) validateProp1v(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.Prop1v) {`,
+		`	if err := validate.MaximumInt("prop1v", "body", int64(m.Prop1v), 100, false); err != nil {`,
+		`func (m *G1v) validateProp2v(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("prop2v", "body", m.Prop2v); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: e0.go
+	thisRun.AddExpectations("e0.go", []string{
+		`type E0 = E1`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: f0v.go
+	thisRun.AddExpectations("f0v.go", []string{
+		`type F0v = F1v`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: h2.go
+	thisRun.AddExpectations("h2.go", []string{
+		`type H2 = H0`,
+		`func UnmarshalH2(reader io.Reader, consumer runtime.Consumer) (H2, error) {`,
+		`	return UnmarshalH0(reader, consumer`,
+		`func UnmarshalH2Slice(reader io.Reader, consumer runtime.Consumer) ([]H2, error) {`,
+		`	return UnmarshalH0Slice(reader, consumer`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: b1v.go
+	thisRun.AddExpectations("b1v.go", []string{
+		`type B1v map[string]int64`,
+		`func (m B1v) Validate(formats strfmt.Registry) error {`,
+		`	for k := range m {`,
+		`		if err := validate.MaximumInt(k, "body", int64(m[k]), 100, false); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: f0.go
+	thisRun.AddExpectations("f0.go", []string{
+		`type F0 = F1`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: a2v.go
+	thisRun.AddExpectations("a2v.go", []string{
+		`type A2v = A0v`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: hs2.go
+	thisRun.AddExpectations("hs2.go", []string{
+		`type Hs2 struct {`,
+		`	Hs0`,
+		// empty validation
+		"func (m *Hs2) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: d1v.go
+	thisRun.AddExpectations("d1v.go", []string{
+		`type D1v int64`,
+		`func (m D1v) Validate(formats strfmt.Registry) error {`,
+		`	if err := validate.MaximumInt("", "body", int64(m), 100, false); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: c1.go
+	thisRun.AddExpectations("c1.go", []string{
+		`type C1 interface{`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: c2.go
+	thisRun.AddExpectations("c2.go", []string{
+		`type C2 = C0`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: e0v.go
+	thisRun.AddExpectations("e0v.go", []string{
+		`type E0v = E1v`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: d1.go
+	thisRun.AddExpectations("d1.go", []string{
+		`type D1 int64`,
+		// empty validation
+		"func (m D1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: g2.go
+	thisRun.AddExpectations("g2.go", []string{
+		`type G2 struct {`,
+		`	G0`,
+		// empty validation
+		"func (m *G2) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: d2.go
+	thisRun.AddExpectations("d2.go", []string{
+		`type D2 = D0`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: b0.go
+	thisRun.AddExpectations("b0.go", []string{
+		`type B0 = B1`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: c2v.go
+	thisRun.AddExpectations("c2v.go", []string{
+		`type C2v = C0v`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: g0.go
+	thisRun.AddExpectations("g0.go", []string{
+		`type G0 struct {`,
+		`	G1`,
+		// empty validation
+		"func (m *G0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: a0.go
+	thisRun.AddExpectations("a0.go", []string{
+		`type A0 = A1`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: a2.go
+	thisRun.AddExpectations("a2.go", []string{
+		`type A2 = A0`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: h1.go
+	thisRun.AddExpectations("h1.go", []string{
+		`type H1 interface {`,
+		`	runtime.Validatable`,
+		`	H1p1() string`,
+		`	SetH1p1(string`,
+		`	H1p2() strfmt.Date`,
+		`	SetH1p2(strfmt.Date`,
+		`type h1 struct {`,
+		`	h1p1Field string`,
+		`	h1p2Field strfmt.Date`,
+		`func (m *h1) H1p1() string {`,
+		`	return m.h1p1Field`,
+		`func (m *h1) SetH1p1(val string) {`,
+		`	m.h1p1Field = val`,
+		`func (m *h1) H1p2() strfmt.Date {`,
+		`	return m.h1p2Field`,
+		`func (m *h1) SetH1p2(val strfmt.Date) {`,
+		`	m.h1p2Field = val`,
+		`func UnmarshalH1Slice(reader io.Reader, consumer runtime.Consumer) ([]H1, error) {`,
+		`	var elements []json.RawMessage`,
+		`	if err := consumer.Consume(reader, &elements); err != nil {`,
+		`		return nil, err`,
+		`	var result []H1`,
+		`	for _, element := range elements {`,
+		`		obj, err := unmarshalH1(element, consumer`,
+		`		if err != nil {`,
+		`			return nil, err`,
+		`		result = append(result, obj`,
+		`	return result, nil`,
+		`func UnmarshalH1(reader io.Reader, consumer runtime.Consumer) (H1, error) {`,
+		`	data, err := ioutil.ReadAll(reader`,
+		`	if err != nil {`,
+		`		return nil, err`,
+		`	return unmarshalH1(data, consumer`,
+		`func unmarshalH1(data []byte, consumer runtime.Consumer) (H1, error) {`,
+		`	buf := bytes.NewBuffer(data`,
+		`	buf2 := bytes.NewBuffer(data`,
+		`	var getType struct {`,
+		"		Htype string `json:\"htype\"`",
+		`	if err := consumer.Consume(buf, &getType); err != nil {`,
+		`		return nil, err`,
+		`	if err := validate.RequiredString("htype", "body", getType.Htype); err != nil {`,
+		`		return nil, err`,
+		`	switch getType.Htype {`,
+		`	case "h1":`,
+		`		var result h1`,
+		`		if err := consumer.Consume(buf2, &result); err != nil {`,
+		`			return nil, err`,
+		`		return &result, nil`,
+		`	case "hsubtype1":`,
+		`		var result Hsubtype1`,
+		`		if err := consumer.Consume(buf2, &result); err != nil {`,
+		`			return nil, err`,
+		`		return &result, nil`,
+		`	case "hsubtype2":`,
+		`		var result Hsubtype2`,
+		`		if err := consumer.Consume(buf2, &result); err != nil {`,
+		`			return nil, err`,
+		`		return &result, nil`,
+		`	return nil, errors.New(422, "invalid htype value: %q", getType.Htype`,
+		`func (m *h1) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateH1p2(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *h1) validateH1p2(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.H1p2()) {`,
+		`	if err := validate.FormatOf("h1p2", "body", "date", m.H1p2().String(), formats); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: c0v.go
+	thisRun.AddExpectations("c0v.go", []string{
+		`type C0v = C1v`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: g2v.go
+	thisRun.AddExpectations("g2v.go", []string{
+		`type G2v struct {`,
+		`	G0v`,
+		// empty validation
+		"func (m *G2v) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: f1.go
+	thisRun.AddExpectations("f1.go", []string{
+		`type F1 strfmt.UUID`,
+		`func (m F1) Validate(formats strfmt.Registry) error {`,
+		`	if err := validate.FormatOf("", "body", "uuid", strfmt.UUID(m).String(), formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: e1.go
+	thisRun.AddExpectations("e1.go", []string{
+		`type E1 strfmt.Date`,
+		`func (m E1) Validate(formats strfmt.Registry) error {`,
+		`	if err := validate.FormatOf("", "body", "date", strfmt.Date(m).String(), formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: a0v.go
+	thisRun.AddExpectations("a0v.go", []string{
+		`type A0v = A1v`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: c0.go
+	thisRun.AddExpectations("c0.go", []string{
+		`type C0 = C1`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: f1v.go
+	thisRun.AddExpectations("f1v.go", []string{
+		`type F1v strfmt.UUID`,
+		`func (m F1v) Validate(formats strfmt.Registry) error {`,
+		`	if err := validate.FormatOf("", "body", "uuid", strfmt.UUID(m).String(), formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: e1v.go
+	thisRun.AddExpectations("e1v.go", []string{
+		`type E1v strfmt.Date`,
+		`func (m E1v) Validate(formats strfmt.Registry) error {`,
+		`	if err := validate.FormatOf("", "body", "date", strfmt.Date(m).String(), formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: b0v.go
+	thisRun.AddExpectations("b0v.go", []string{
+		`type B0v = B1v`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: g0v.go
+	thisRun.AddExpectations("g0v.go", []string{
+		`type G0v struct {`,
+		`	G1v`,
+		// empty validation
+		"func (m *G0v) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: hs0.go
+	thisRun.AddExpectations("hs0.go", []string{
+		`type Hs0 struct {`,
+		`	Hsubtype1`,
+		// empty validation
+		"func (m *Hs0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
 }

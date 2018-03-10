@@ -1,0 +1,215 @@
+swagger: '2.0'
+info:
+  version: 0.1.1
+  title: test 1
+  description: realiased types
+  contact:
+    name: Fred
+
+schemes:
+  - http
+
+consumes:
+  - application/json
+produces:
+  - application/json
+
+paths:
+  /getAll:
+    get:
+      operationId: getAll
+      parameters:
+        - name: a
+          in: body
+          description: max number of results
+          required: false
+          schema:
+            $ref: '#/definitions/a0'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/a0'
+        '201':
+          description: Success
+          schema:
+            $ref: '#/definitions/h0'
+        '203':
+          description: Success
+          schema:
+            $ref: '#/definitions/h1'
+        '204':
+          description: Success
+          schema:
+            $ref: '#/definitions/h2'
+        '206':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/h2'
+
+  /getSome:
+    get:
+      operationId: getSome
+      parameters:
+        - name: a
+          in: body
+          description: some polymorphic results
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/h2'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/c2'
+definitions:
+  a0:
+    $ref: '#/definitions/a1'
+  a1:
+    type: array
+    items:
+      type: integer
+  a2:
+    $ref: '#/definitions/a0'
+  b0:
+    $ref: '#/definitions/b1'
+  b1:
+    type: object
+    additionalProperties:
+      type: integer
+  b2:
+    $ref: '#/definitions/b0'
+  c0:
+    $ref: '#/definitions/c1'
+  c1:
+    type: object
+    additionalProperties: true
+  c2:
+    $ref: '#/definitions/c0'
+  d0:
+    $ref: '#/definitions/d1'
+  d1:
+    type: integer
+  d2:
+    $ref: '#/definitions/d0'
+  e0:
+    $ref: '#/definitions/e1'
+  e1:
+    type: string
+    format: date
+  e2:
+    $ref: '#/definitions/e0'
+  f0:
+    $ref: '#/definitions/f1'
+  f1:
+    type: string
+    format: uuid
+  f2:
+    $ref: '#/definitions/f0'
+  g0:
+    $ref: '#/definitions/g1'
+  g1:
+    type: object
+    properties:
+      prop1:
+        type: integer
+  g2:
+    $ref: '#/definitions/g0'
+  # with validations
+  a0v:
+    $ref: '#/definitions/a1v'
+  a1v:
+    type: array
+    maxItems: 100
+    items:
+      type: integer
+      maximum: 100
+  a2v:
+    $ref: '#/definitions/a0v'
+  b0v:
+    $ref: '#/definitions/b1v'
+  b1v:
+    type: object
+    additionalProperties:
+      type: integer
+      maximum: 100
+  b2v:
+    $ref: '#/definitions/b0v'
+  c0v:
+    $ref: '#/definitions/c1v'
+  c1v:
+    type: object
+    additionalProperties: true
+  c2v:
+    $ref: '#/definitions/c0v'
+  d0v:
+    $ref: '#/definitions/d1v'
+  d1v:
+    type: integer
+    maximum: 100
+  d2v:
+    $ref: '#/definitions/d0v'
+  e0v:
+    $ref: '#/definitions/e1v'
+  e1v:
+    type: string
+    format: date
+  e2v:
+    $ref: '#/definitions/e0v'
+  f0v:
+    $ref: '#/definitions/f1v'
+  f1v:
+    type: string
+    format: uuid
+  f2v:
+    $ref: '#/definitions/f0v'
+  g0v:
+    $ref: '#/definitions/g1v'
+  g1v:
+    type: object
+    required: [ prop2v ]
+    properties:
+      prop1v:
+        type: integer
+        maximum: 100
+      prop2v:
+        type: integer
+  g2v:
+    $ref: '#/definitions/g0v'
+  h0:
+    $ref: '#/definitions/h1'
+  h1:
+    type: object
+    discriminator: htype
+    properties:
+      h1p1:
+        type: string
+      h1p2:
+        type: string
+        format: date
+  hsubtype1:
+    type: object
+    allOf:
+    - $ref: '#/definitions/h1'
+    - properties:
+        hsp1:
+          type: integer
+          format: uint32
+  hsubtype2:
+    type: object
+    allOf:
+    - $ref: '#/definitions/h1'
+    - properties:
+        hsp2:
+          type: string
+          format: date-time
+  h2:
+    $ref: '#/definitions/h0'
+  hs0:
+    $ref: '#/definitions/hsubtype1'
+  hs2:
+    $ref: '#/definitions/hs0'

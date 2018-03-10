@@ -2,7 +2,8 @@
   {{- if and (or ((len .AllOf) gt 0) .IsAnonymous) ( not .IsMap) }}
     {{- template "schemaBody" . }}
   {{- else }}
-    {{- if and (not .IsMap) .IsNullable }}*{{ end }}
+    {{- if and (not .IsMap) .IsNullable (not .IsSuperAlias) }}*{{ end }}
+    {{- if .IsSuperAlias }} = {{ end }}
     {{- .GoType }}
   {{- end}}
 {{- end }}
@@ -19,7 +20,8 @@
   {{- if and (or ((len .AllOf) gt 0) .IsAnonymous) ( not .IsMap) }}
     {{- template "schemaBody" . }}
   {{- else }}
-    {{- if and (not .IsMap) .IsNullable }}*{{ end }}
+    {{- if and (not .IsMap) .IsNullable (not .IsSuperAlias) }}*{{ end }}
+    {{- if .IsSuperAlias }} = {{ end }}
     {{- if .AliasedType }}{{ .AliasedType }}{{ else }}{{ .GoType }}{{ end }}
   {{- end}}
 {{- end }}

@@ -197,6 +197,9 @@ func initModelFixtures() {
 
 	// allOf with properties
 	initFixture1617()
+
+	// type realiasing
+	initFixtureRealiasedTypes()
 }
 
 /* Template initTxxx() to prepare and load a fixture:
