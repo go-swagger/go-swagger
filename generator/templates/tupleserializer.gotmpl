@@ -37,7 +37,9 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
       if err := dec.Decode({{ if not .AdditionalItems.IsNullable }}&{{ end }}toadd); err != nil {
         return err
       }
-      {{ .ValueExpression }} = append({{ .ValueExpression }}, toadd)
+      {{ with .AdditionalItems -}}
+        {{ $.ValueExpression }}.{{- if .IsExported }}{{ pascalize .Name }}{{ else }}{{ camelize .Name }}{{ end }} = append({{ $.ValueExpression }}.{{- if .IsExported }}{{ pascalize .Name }}{{ else }}{{ camelize .Name }}{{ end }}, toadd)
+      {{- end }}
     }
   }
   {{ end }}
@@ -51,8 +53,8 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
     {{.ReceiverName}}.{{ pascalize .Name }},
   {{ end }}
   }
-  {{ if .AdditionalItems }}
-  for _, v := range {{ .AdditionalItems.ValueExpression }} {
+  {{ with .AdditionalItems }}
+  for _, v := range {{ $.ValueExpression }}.{{ if .IsExported }}{{ pascalize .Name }}{{ else }}{{ camelize .Name }}{{ end }} {
     data = append(data, v)
   }
   {{ end }}

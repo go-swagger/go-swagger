@@ -1,0 +1,470 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "A very simple api description that makes a json only API to submit to do's.\n",
+    "title": "Private to-do list",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/models": {
+      "get": {
+        "description": "Used to see if a codegen can render all the possible enum categories",
+        "tags": [
+          "testcgen"
+        ],
+        "summary": "many model variations",
+        "operationId": "modelOp",
+        "responses": {
+          "default": {
+            "description": "Generic Out"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Cluster": {
+      "description": "The cluster layout.",
+      "type": "object",
+      "required": [
+        "links",
+        "data"
+      ],
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/clusterData"
+        },
+        "links": {
+          "$ref": "#/definitions/clusterLinks"
+        }
+      }
+    },
+    "ComposedThing": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/StringThing"
+        },
+        {
+          "$ref": "#/definitions/composedThingAllOf1"
+        }
+      ]
+    },
+    "ComputeInstance": {
+      "description": "Description of the compute instance",
+      "type": "object",
+      "required": [
+        "id",
+        "region"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string",
+          "enum": [
+            "us-west-2",
+            "us-east-1"
+          ]
+        }
+      }
+    },
+    "FloatThing": {
+      "type": "number",
+      "format": "float",
+      "enum": [
+        21,
+        28,
+        35
+      ]
+    },
+    "IntThing": {
+      "type": "integer",
+      "format": "int32",
+      "enum": [
+        22,
+        27,
+        32
+      ]
+    },
+    "Link": {
+      "type": "string",
+      "format": "uri"
+    },
+    "MapThing": {
+      "type": "object",
+      "enum": [
+        {
+          "snack": "snickers"
+        },
+        {
+          "snack": "twix"
+        },
+        {
+          "snack": "mars"
+        }
+      ],
+      "additionalProperties": {
+        "type": "string",
+        "enum": [
+          "snickers",
+          "twix",
+          "mars"
+        ]
+      }
+    },
+    "NewPrototype": {
+      "description": "Description of a new prototype",
+      "type": "object",
+      "required": [
+        "role",
+        "delegate"
+      ],
+      "properties": {
+        "activating_user": {
+          "$ref": "#/definitions/newPrototypeActivatingUser"
+        },
+        "delegate": {
+          "$ref": "#/definitions/newPrototypeDelegate"
+        },
+        "role": {
+          "description": "Role that should be applied to the delegate",
+          "type": "string",
+          "minLength": 1,
+          "enum": [
+            "read",
+            "write",
+            "admin"
+          ]
+        }
+      }
+    },
+    "ObjectThing": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "cats": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "four",
+              "five",
+              "six"
+            ]
+          }
+        },
+        "flour": {
+          "type": "number",
+          "format": "float",
+          "enum": [
+            1,
+            2,
+            3
+          ]
+        },
+        "flower": {
+          "type": "integer",
+          "format": "int32",
+          "enum": [
+            1,
+            2,
+            3
+          ]
+        },
+        "lions": {
+          "$ref": "#/definitions/objectThingLions"
+        },
+        "name": {
+          "type": "string",
+          "enum": [
+            "one",
+            "two",
+            "three"
+          ]
+        },
+        "wolves": {
+          "type": "object",
+          "enum": [
+            {
+              "snack": "bambi"
+            },
+            {
+              "snack": "tweetie"
+            },
+            {
+              "snack": "red riding hood"
+            }
+          ],
+          "additionalProperties": {
+            "type": "string",
+            "enum": [
+              "snow white",
+              "tweetie",
+              "bambi",
+              "red riding hood"
+            ]
+          }
+        }
+      }
+    },
+    "SliceAndAdditionalItemsThing": {
+      "type": "array",
+      "enum": [
+        [
+          "sparrow",
+          "dove",
+          "chicken"
+        ],
+        [
+          "cod",
+          "salmon",
+          "shark"
+        ],
+        [
+          "monkey",
+          "tiger",
+          "elephant"
+        ]
+      ],
+      "items": [
+        {
+          "type": "string",
+          "enum": [
+            "sparrow",
+            "dove",
+            "chicken",
+            "cod",
+            "salmon",
+            "shark",
+            "monkey",
+            "tiger",
+            "elephant"
+          ]
+        }
+      ],
+      "additionalItems": {
+        "type": "number",
+        "format": "float",
+        "enum": [
+          43,
+          44,
+          45
+        ]
+      }
+    },
+    "SliceAndItemsThing": {
+      "type": "array",
+      "enum": [
+        [
+          "sparrow",
+          "dove",
+          "chicken"
+        ],
+        [
+          "cod",
+          "salmon",
+          "shark"
+        ],
+        [
+          "monkey",
+          "tiger",
+          "elephant"
+        ]
+      ],
+      "items": {
+        "type": "string",
+        "enum": [
+          "sparrow",
+          "dove",
+          "chicken",
+          "cod",
+          "salmon",
+          "shark",
+          "monkey",
+          "tiger",
+          "elephant"
+        ]
+      }
+    },
+    "SliceThing": {
+      "type": "array",
+      "enum": [
+        [
+          "sparrow",
+          "dove",
+          "chicken"
+        ],
+        [
+          "cod",
+          "salmon",
+          "shark"
+        ],
+        [
+          "monkey",
+          "tiger",
+          "elephant"
+        ]
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "StringThing": {
+      "type": "string",
+      "enum": [
+        "bird",
+        "fish",
+        "mammal"
+      ]
+    },
+    "clusterData": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "clusterError": {
+          "description": "Error associated with building or tearingdown the cluster.",
+          "type": "string"
+        },
+        "noOfNodes": {
+          "description": "Number of nodes the cluster has",
+          "type": "integer",
+          "format": "int32"
+        },
+        "scheduler": {
+          "description": "The scheduler that needs to be used by the job scheduler.",
+          "type": "string"
+        },
+        "status": {
+          "description": "The status of the cluster. It will be one of scheduled, building, up, deleting, exited or error.",
+          "type": "string",
+          "default": "scheduled",
+          "enum": [
+            "scheduled",
+            "building",
+            "up",
+            "deleting",
+            "exited",
+            "error"
+          ]
+        }
+      },
+      "x-go-gen-location": "models"
+    },
+    "clusterLinks": {
+      "type": "object",
+      "required": [
+        "self"
+      ],
+      "properties": {
+        "self": {
+          "$ref": "#/definitions/Link"
+        }
+      },
+      "x-go-gen-location": "models"
+    },
+    "composedThingAllOf1": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": [
+            "one",
+            "two",
+            "three"
+          ]
+        }
+      },
+      "x-go-gen-location": "models"
+    },
+    "newPrototypeActivatingUser": {
+      "description": "Repository creating user to whom the rule should apply",
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "description": "The username for the activating_user",
+          "type": "string"
+        }
+      },
+      "x-go-gen-location": "models"
+    },
+    "newPrototypeDelegate": {
+      "description": "Information about the user or team to which the rule grants access",
+      "type": "object",
+      "required": [
+        "name",
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "description": "Whether the delegate is a user or a team",
+          "type": "string",
+          "enum": [
+            "user",
+            "team"
+          ]
+        },
+        "name": {
+          "description": "The name for the delegate team or user",
+          "type": "string"
+        }
+      },
+      "x-go-gen-location": "models"
+    },
+    "objectThingLions": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string",
+          "enum": [
+            "seven",
+            "eight",
+            "nine"
+          ]
+        },
+        {
+          "type": "integer",
+          "format": "int64",
+          "enum": [
+            4,
+            5,
+            6
+          ]
+        }
+      ],
+      "additionalItems": {
+        "type": "number",
+        "format": "double",
+        "enum": [
+          7,
+          8,
+          9
+        ]
+      },
+      "x-go-gen-location": "models"
+    },
+    "slp_action_enum": {
+      "type": "string",
+      "enum": [
+        "slp.action.STOP"
+      ]
+    }
+  }
+}

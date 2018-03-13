@@ -289,7 +289,7 @@ func init() {
   }
 }
 
-func ({{ .ReceiverName }} {{ if not .IsPrimitive }}*{{ end }}{{ if .IsExported }}{{ pascalize .Name }}{{ else }}{{ .Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "dereffedSchemaType" . }}) error {
+func ({{ .ReceiverName }} {{ if not .IsPrimitive }}*{{ end }}{{ if .IsExported }}{{ pascalize .Name }}{{ else }}{{ .Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" . }}) error {
   if err := validate.Enum(path, location, value, {{ camelize .Name }}Enum); err != nil {
     return err
   }
@@ -309,7 +309,7 @@ func init() {
   }
 }
 
-func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ template "dereffedSchemaType" .Items }}) error {
+func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" .Items }}) error {
   if err := validate.Enum(path, location, value, {{ camelize .Name }}ItemsEnum); err != nil {
     return err
   }
@@ -324,14 +324,14 @@ var {{ camelize .Name }}ValueEnum []interface{}
 func init() {
   var res []{{ template "dereffedSchemaType" . }}
   if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
-    return err
+    panic(err)
   }
   for _, v := range res {
     {{ camelize .Name }}ValueEnum = append({{ camelize .Name }}ValueEnum, v)
   }
 }
 
-func ({{ .ReceiverName }} *{{ if .IsExported }}{{ pascalize .Name }}{{ else }}{{ .Name }}{{ end }}) validate{{ pascalize .Name }}ValueEnum(path, location string, value {{ template "dereffedSchemaType" . }}) error {
+func ({{ .ReceiverName }} *{{ if .IsExported }}{{ pascalize .Name }}{{ else }}{{ .Name }}{{ end }}) validate{{ pascalize .Name }}ValueEnum(path, location string, value {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" . }}) error {
   if err := validate.Enum(path, location, value, {{ camelize .Name }}ValueEnum); err != nil {
     return err
   }
@@ -422,7 +422,7 @@ const (
         {{ end }}
 
 // prop value enum
-func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "dereffedSchemaType" . }}) error {
+func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" . }}) error {
   if err := validate.Enum(path, location, value, {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum); err != nil {
     return err
   }
@@ -441,7 +441,7 @@ func init() {
   }
 }
 
-func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ template "dereffedSchemaType" .Items }}) error {
+func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ if or .Items.IsTuple .Items.IsComplexObject .Items.IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" .Items }}) error {
   if err := validate.Enum(path, location, value, {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum); err != nil {
     return err
   }
@@ -462,7 +462,7 @@ func init() {
   }
 }
 
-func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "dereffedSchemaType" .AdditionalItems }}) error {
+func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ if or .AdditionalItems.IsTuple .AdditionalItems.IsComplexObject .AdditionalItems.IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" .AdditionalItems }}) error {
   if err := validate.Enum(path, location, value, {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum); err != nil {
     return err
   }
@@ -485,7 +485,7 @@ func init() {
   }
 }
 
-func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}ValueEnum(path, location string, value {{ template "dereffedSchemaType" . }}) error {
+func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}ValueEnum(path, location string, value {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" . }}) error {
   if err := validate.Enum(path, location, value, {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum); err != nil {
     return err
   }
@@ -525,7 +525,7 @@ func init() {
 }
 
 // property enum
-func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "dereffedSchemaType" . }}) error {
+func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" . }}) error {
   if err := validate.Enum(path, location, value, {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum); err != nil {
     return err
   }
@@ -545,7 +545,7 @@ func init() {
   }
 }
 
-func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ template "dereffedSchemaType" .Items }}) error {
+func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ if or .Items.IsTuple .Items.IsComplexObject .Items.IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" .Items }}) error {
   if err := validate.Enum(path, location, value, {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum); err != nil {
     return err
   }
@@ -566,7 +566,7 @@ func init() {
   }
 }
 
-func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ template "dereffedSchemaType" .AdditionalItems }}) error {
+func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ if or .AdditionalItems.IsTuple .AdditionalItems.IsComplexObject .AdditionalItems.IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" .AdditionalItems }}) error {
   if err := validate.Enum(path, location, value, {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum); err != nil {
     return err
   }
@@ -588,7 +588,7 @@ func init() {
 }
 
 // additional properties value enum
-func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}ValueEnum(path, location string, value {{ template "dereffedSchemaType" . }}) error {
+func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}ValueEnum(path, location string, value {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" . }}) error {
   if err := validate.Enum(path, location, value, {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum); err != nil {
     return err
   }
@@ -626,7 +626,7 @@ func init() {
   }
 }
 
-func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ template "dereffedSchemaType" .AdditionalItems }}) error {
+func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ if or .AdditionalItems.IsTuple .AdditionalItems.IsComplexObject .AdditionalItems.IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" .AdditionalItems }}) error {
   if err := validate.Enum(path, location, value, {{ camelize .Name }}ItemsEnum); err != nil {
     return err
   }
