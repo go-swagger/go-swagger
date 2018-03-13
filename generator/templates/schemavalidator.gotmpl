@@ -103,7 +103,6 @@
     {{ end }}
   {{ end }}
 {{ end }}
-
 {{ define "mapvalidator" }}
   {{ if .HasAdditionalProperties }}
     {{ if .AdditionalProperties.Required }}
@@ -194,6 +193,10 @@
       return err
     }
     {{ end }}
+  {{ else if and .Required .IsAliased .IsInterface }}
+      if err := validate.Required({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
+        return err
+      }
   {{ end }}
 {{ end }}
 

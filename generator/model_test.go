@@ -2453,3 +2453,42 @@ func TestGenModel_Issue946(t *testing.T) {
 		}
 	}
 }
+
+// This tests makes sure that docstring in inline schema in response properly reflect the Required property
+func TestGenModel_Issue910(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/910/fixture-910.yaml")
+	if assert.NoError(t, err) {
+		p, ok := specDoc.Spec().Paths.Paths["/mytest"]
+		if assert.True(t, ok) {
+			op := p.Get
+			responses := op.Responses.StatusCodeResponses
+			for k, r := range responses {
+				t.Logf("Response: %d", k)
+				schema := *r.Schema
+				opts := opts()
+				genModel, err := makeGenDefinition("GetMyTestOKBody", "models", schema, specDoc, opts)
+				if assert.NoError(t, err) {
+					buf := bytes.NewBuffer(nil)
+					err := templates.MustGet("model").Execute(buf, genModel)
+					if assert.NoError(t, err) {
+						ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+						if assert.NoError(t, err) {
+							res := string(ct)
+							assertInCode(t, "// bar\n	// Required: true\n	Bar *int64 `json:\"bar\"`", res)
+							assertInCode(t, "// foo\n	// Required: true\n	Foo interface{} `json:\"foo\"`", res)
+							assertInCode(t, "// baz\n	Baz int64 `json:\"baz,omitempty\"`", res)
+							assertInCode(t, "// quux\n	Quux []string `json:\"quux\"`", res)
+							assertInCode(t, `if err := validate.Required("bar", "body", m.Bar); err != nil {`, res)
+							assertInCode(t, `if err := validate.Required("foo", "body", m.Foo); err != nil {`, res)
+							assertNotInCode(t, `if err := validate.Required("baz", "body", m.Baz); err != nil {`, res)
+							assertNotInCode(t, `if err := validate.Required("quux", "body", m.Quux); err != nil {`, res)
+							assertInCode(t, `if swag.IsZero(m.Quux) { // not required`, res)
+						} else {
+							fmt.Println(buf.String())
+						}
+					}
+				}
+			}
+		}
+	}
+}
