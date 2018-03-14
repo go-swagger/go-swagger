@@ -33,6 +33,12 @@ function errcr() {
 function err() {
     printf "${red}${bold}%s${normal}" "$*"
 }
+function successcr() {
+    success "$*" ; printf "\n"
+}
+function success() {
+    printf "${green}${bold}%s${normal}" "$*"
+}
 function warncr() {
     warn "$*" ; printf "\n"
 }
@@ -69,9 +75,30 @@ cloudbreak.json\
 # The following ones should fail validation, but produce correct generated code (at least it builds)
 known_skip_validation="@(\
 todolist.enums.yml|\
+todolist.enums.flattened.json|\
 todolist.models.yml|\
 todolist.schemavalidation.yml|\
 swagger-gsma.json\
+)"
+
+# A list of known client build failures
+known_client_failure="@(\
+todolist.arrayform.yml|\
+todolist.arrayquery.yml|\
+todolist.url.basepath.yml|\
+todolist.url.simple.yml|\
+swagger-codegen-tests.json|\
+fixture-1414.json|\
+fixture-909-3.yaml|\
+fixture-909-4.yaml|\
+fixture-909-5.yaml|\
+fixture-909-6.yaml|\
+gentest2.yaml|\
+gentest3.yaml|\
+gentest.yaml|\
+fixture-1437-4.yaml|\
+fixture-1392-2.yaml|\
+fixture-1392-3.yaml|\
 )"
 
 if [[ "$1" = "--circleci" ]] ; then
@@ -103,26 +130,38 @@ for spec in ${check_list}; do
     ${known_failed})
         warncr "[`date +%T`]${spec}: not tested against full build because of known issues."
         run="false"
+        opts=""
+        buildClient="false"
         ;;
     ${known_skip_validation})
         info "[`date +%T`]${spec}: assumed invalid but tested against full build..."
         run="true"
         opts="--skip-validation"
+        buildClient="true"
+        ;;
+    ${known_client_failure})
+        warncr "[`date +%T`]${spec}: will not attempt to build the client because of known issues..."
+        run="true"
+        opts=""
+        buildClient="false"
         ;;
     *)
         printf "[`date +%T`]%s: %s..." ${spec} "assumed valid and tested against build"
         run="true"
         opts=""
+        buildClient="true"
         ;;
     esac
 
     if [[ ${run} == "true" ]]; then
         target=${gendir}/gen-${testcase%.*}
+        target_client=${gendir}/gen-${testcase%.*}"-client"
         server_name="nrcodegen"
+        client_name="nrcodegen"
         errlog=${gendir}/stderr.log
 
-        rm -rf ${target}
-        mkdir -p ${target}
+        rm -rf ${target} ${target_client}
+        mkdir -p ${target} ${target_client}
         rm -f ${errlog}
 
         # Gen server
@@ -132,16 +171,48 @@ for spec in ${check_list}; do
             if [[ -f ${errlog} ]] ; then errcr `cat ${errlog}` ; rm ${errlog};fi
             exit 1
         fi
-        ok `printf "%s..."  "Generation OK"`
+        ok `printf " %s..."  "Generation server OK"`
         rm -f ${errlog}
-        # Build server
-        (cd ${target}/cmd/${server_name}"-server"; go build) 2>${errlog}
+        # Gen client
+        swagger generate client --spec ${spec} --target ${target_client} --name=${client_name} --quiet ${opts} 2>${errlog}
         if [[ $? != 0 ]] ; then
-            errcr "Build Failed"
+            errcr "Generation Failed"
             if [[ -f ${errlog} ]] ; then errcr `cat ${errlog}` ; rm ${errlog};fi
             exit 1
         fi
-        okcr "Build: OK"
+        ok `printf " %s..."  "Generation client OK"`
+        # Build server
+        (cd ${target}/cmd/${server_name}"-server"; go build) 2>${errlog}
+        if [[ $? != 0 ]] ; then
+            errcr "Server build Failed"
+            if [[ -f ${errlog} ]] ; then errcr `cat ${errlog}` ; rm ${errlog};fi
+            exit 1
+        fi
+        ok `printf " %s..."  "Server build OK"`
+        # Build models if any produced 
+        if [[ -d ${target}/models ]] ; then 
+            (cd ${target}/models ; go build) 2>${errlog}
+            if [[ $? != 0 ]] ; then
+                errcr "Model build Failed"
+                if [[ -f ${errlog} ]] ; then errcr `cat ${errlog}` ; rm ${errlog};fi
+                exit 1
+            fi
+        fi
+        ok `printf " %s..."  "Models build OK"`
+        # Build client
+        if [[ ${buildClient} == "false" ]] ; then
+            warn "(no client built)"
+            # continue
+        else
+            (cd ${target_client}/client ; go build) 2>${errlog}
+            if [[ $? != 0 ]] ; then
+                errcr "Client build Failed"
+                if [[ -f ${errlog} ]] ; then errcr `cat ${errlog}` ; rm ${errlog};fi
+                exit 1
+            fi
+            ok `printf " %s..."  "Client build OK"`
+        fi
+        successcr "[All builds: OK]"
         rm -f ${errlog}
         rm -rf ${target}
     fi

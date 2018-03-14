@@ -426,7 +426,7 @@ func (sg *schemaGenContext) NewAdditionalItems(schema *spec.Schema) *schemaGenCo
 		pg.Path = pg.Path + "+ \".\" + strconv.Itoa(" + indexVar + mod + ")"
 	}
 	pg.IndexVar = indexVar
-	pg.ValueExpr = sg.ValueExpr + "." + sg.GoName() + "Items[" + indexVar + "]"
+	pg.ValueExpr = sg.ValueExpr + "." + pascalize(sg.GoName()) + "Items[" + indexVar + "]"
 	pg.Schema = spec.Schema{}
 	if schema != nil {
 		pg.Schema = *schema
@@ -741,6 +741,10 @@ func (sg *schemaGenContext) buildProperties() error {
 			}
 			if nv {
 				emprop.GenSchema.NeedsValidation = true
+			}
+			if ttpe.HasAdditionalItems && sch.AdditionalItems.Schema != nil {
+				// when AdditionalItems specifies a Schema, there is a validation
+				emprop.GenSchema.HasValidations = true
 			}
 		}
 		if sg.Schema.Discriminator == k {
@@ -1126,6 +1130,7 @@ func (sg *schemaGenContext) buildItems() error {
 	if sg.Schema.Items == nil {
 		return nil
 	}
+
 	// This is a tuple, build a new model that represents this
 	if sg.Named {
 		sg.GenSchema.Name = sg.Name

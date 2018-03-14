@@ -188,7 +188,7 @@ func TestEnum_SliceAndAdditionalItemsThing(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "var sliceAndAdditionalItemsThingEnum []interface{}", res)
-					assertInCode(t, k+") validateSliceAndAdditionalItemsThingEnum(path, location string, value SliceAndAdditionalItemsThing)", res)
+					assertInCode(t, k+") validateSliceAndAdditionalItemsThingEnum(path, location string, value *SliceAndAdditionalItemsThing)", res)
 					//assertInCode(t, "m.validateSliceAndAdditionalItemsThingEnum(\"\", \"body\", m)", res)
 					assertInCode(t, "var sliceAndAdditionalItemsThingTypeP0PropEnum []interface{}", res)
 					assertInCode(t, k+") validateP0Enum(path, location string, value string)", res)
@@ -232,48 +232,89 @@ func TestEnum_MapThing(t *testing.T) {
 }
 
 func TestEnum_ObjectThing(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.enums.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "ObjectThing"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	// verify that additionalItems render the same from an expanded and a flattened spec
+	// known issue: there are some slight differences in generated code and variables for enum,
+	// depending on how the spec has been preprocessed
+	specs := []string{
+		"../fixtures/codegen/todolist.enums.yml",
+		"../fixtures/codegen/todolist.enums.flattened.json", // this one is the first one, after "swagger flatten"
+	}
+	k := "ObjectThing"
+	for _, fixture := range specs {
+		t.Logf("%s from spec: %s", k, fixture)
+		specDoc, err := loads.Spec(fixture)
 		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
+			definitions := specDoc.Spec().Definitions
+			schema := definitions[k]
+			opts := opts()
+			genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("object_thing.go", buf.Bytes())
+				buf := bytes.NewBuffer(nil)
+				err := templates.MustGet("model").Execute(buf, genModel)
 				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "var objectThingTypeNamePropEnum []interface{}", res)
-					assertInCode(t, "var objectThingTypeFlowerPropEnum []interface{}", res)
-					assertInCode(t, "var objectThingTypeLionsPropEnum []interface{}", res)
-					assertInCode(t, "var objectThingTypeFlourPropEnum []interface{}", res)
-					assertInCode(t, "var objectThingTypeWolvesPropEnum []interface{}", res)
-					assertInCode(t, "var objectThingWolvesValueEnum []interface{}", res)
-					assertInCode(t, "var objectThingCatsItemsEnum []interface{}", res)
-					assertInCode(t, "var objectThingLionsTuple0TypeP0PropEnum []interface{}", res)
-					assertInCode(t, "var objectThingLionsTuple0TypeP1PropEnum []interface{}", res)
-					assertInCode(t, "var objectThingLionsTuple0ItemsEnum []interface{}", res)
-					assertInCode(t, k+") validateNameEnum(path, location string, value string)", res)
-					assertInCode(t, k+") validateFlowerEnum(path, location string, value int32)", res)
-					assertInCode(t, k+") validateFlourEnum(path, location string, value float32)", res)
-					assertInCode(t, k+") validateLionsEnum(path, location string, value float64)", res)
-					assertInCode(t, k+") validateWolvesEnum(path, location string, value map[string]string)", res)
-					assertInCode(t, k+") validateWolvesValueEnum(path, location string, value string)", res)
-					assertInCode(t, k+") validateCatsItemsEnum(path, location string, value string)", res)
-					assertInCode(t, k+"LionsTuple0) validateObjectThingLionsTuple0ItemsEnum(path, location string, value float64)", res)
-					assertInCode(t, k+") validateCats(", res)
-					assertInCode(t, "m.validateNameEnum(\"name\", \"body\", *m.Name)", res)
-					assertInCode(t, "m.validateFlowerEnum(\"flower\", \"body\", m.Flower)", res)
-					assertInCode(t, "m.validateFlourEnum(\"flour\", \"body\", m.Flour)", res)
-					assertInCode(t, "m.validateWolvesEnum(\"wolves\", \"body\", m.Wolves)", res)
-					assertInCode(t, "m.validateWolvesValueEnum(\"wolves\"+\".\"+k, \"body\", m.Wolves[k])", res)
-					assertInCode(t, "m.validateCatsItemsEnum(\"cats\"+\".\"+strconv.Itoa(i), \"body\", m.Cats[i])", res)
-					assertInCode(t, "m.validateP1Enum(\"P1\", \"body\", *m.P1)", res)
-					assertInCode(t, "m.validateP0Enum(\"P0\", \"body\", *m.P0)", res)
-					assertInCode(t, "m.validateObjectThingLionsTuple0ItemsEnum(strconv.Itoa(i), \"body\", m.ObjectThingLionsTuple0Items[i])", res)
+					ff, err := opts.LanguageOpts.FormatContent("object_thing.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(ff)
+						// all these remain unaffected
+						assertInCode(t, "var objectThingTypeNamePropEnum []interface{}", res)
+						assertInCode(t, "var objectThingTypeFlowerPropEnum []interface{}", res)
+						assertInCode(t, "var objectThingTypeFlourPropEnum []interface{}", res)
+						assertInCode(t, "var objectThingTypeWolvesPropEnum []interface{}", res)
+						assertInCode(t, "var objectThingWolvesValueEnum []interface{}", res)
+						assertInCode(t, "var objectThingCatsItemsEnum []interface{}", res)
+						assertInCode(t, k+") validateNameEnum(path, location string, value string)", res)
+						assertInCode(t, k+") validateFlowerEnum(path, location string, value int32)", res)
+						assertInCode(t, k+") validateFlourEnum(path, location string, value float32)", res)
+						assertInCode(t, k+") validateWolvesEnum(path, location string, value map[string]string)", res)
+						assertInCode(t, k+") validateWolvesValueEnum(path, location string, value string)", res)
+						assertInCode(t, k+") validateCatsItemsEnum(path, location string, value string)", res)
+						assertInCode(t, k+") validateCats(", res)
+						assertInCode(t, "m.validateNameEnum(\"name\", \"body\", *m.Name)", res)
+						assertInCode(t, "m.validateFlowerEnum(\"flower\", \"body\", m.Flower)", res)
+						assertInCode(t, "m.validateFlourEnum(\"flour\", \"body\", m.Flour)", res)
+						assertInCode(t, "m.validateWolvesEnum(\"wolves\", \"body\", m.Wolves)", res)
+						assertInCode(t, "m.validateWolvesValueEnum(\"wolves\"+\".\"+k, \"body\", m.Wolves[k])", res)
+						assertInCode(t, "m.validateCatsItemsEnum(\"cats\"+\".\"+strconv.Itoa(i), \"body\", m.Cats[i])", res)
+
+						// small naming differences may be found between the expand and the flatten version of spec
+						namingDifference := "Tuple0"
+						pathDifference := "P"
+						if strings.Contains(fixture, "flattened") {
+							// when expanded, all defs are in the same template for AdditionalItems
+							schema := definitions["objectThingLions"]
+							genModel, err = makeGenDefinition("ObjectThingLions", "models", schema, specDoc, opts)
+							if assert.NoError(t, err) {
+								buf = bytes.NewBuffer(nil)
+								err := templates.MustGet("model").Execute(buf, genModel)
+								if assert.NoError(t, err) {
+									ff, err := opts.LanguageOpts.FormatContent("object_thing_lions.go", buf.Bytes())
+									if assert.NoError(t, err) {
+										res = string(ff)
+									}
+								}
+							}
+							namingDifference = ""
+							pathDifference = ""
+						}
+						// now common check resumes
+						assertInCode(t, "var objectThingLions"+namingDifference+"TypeP0PropEnum []interface{}", res)
+						assertInCode(t, "var objectThingLions"+namingDifference+"TypeP1PropEnum []interface{}", res)
+						assertInCode(t, "var objectThingLions"+namingDifference+"ItemsEnum []interface{}", res)
+						assertInCode(t, "m.validateP1Enum(\""+pathDifference+"1\", \"body\", *m.P1)", res)
+						assertInCode(t, "m.validateP0Enum(\""+pathDifference+"0\", \"body\", *m.P0)", res)
+						assertInCode(t, k+"Lions"+namingDifference+") validateObjectThingLions"+namingDifference+"ItemsEnum(path, location string, value float64)", res)
+
+						if namingDifference != "" {
+							assertInCode(t, "m.validateObjectThingLions"+namingDifference+"ItemsEnum(strconv.Itoa(i), \"body\", m.ObjectThingLions"+namingDifference+"Items[i])", res)
+							assertInCode(t, "var objectThingTypeLionsPropEnum []interface{}", res)
+							assertInCode(t, k+") validateLionsEnum(path, location string, value float64)", res)
+						} else {
+							assertInCode(t, "m.validateObjectThingLions"+namingDifference+"ItemsEnum(strconv.Itoa(i+2), \"body\", m.ObjectThingLions"+namingDifference+"Items[i])", res)
+							assertInCode(t, "var objectThingLionsItemsEnum []interface{}", res)
+							assertInCode(t, k+"Lions) validateObjectThingLionsItemsEnum(path, location string, value float64)", res)
+						}
+
+					}
 				}
 			}
 		}
