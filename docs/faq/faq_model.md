@@ -2,6 +2,48 @@
 
 ## Model generation
 
+### Custom validation
+_Use-Case_: is it possible to write own validation for custom types ? If it is, can someone give me example ?
+
+>For example! 
+>There is bookstore, with info about books: author, title, price. 
+> And we want, that books from some author will not cost more the some price.
+> So I want write function ValidateBookCustom() like:
+```golang
+if book.author == "Some author" {
+    if book.price > 1000 {
+       return false
+   }
+    else return true
+}
+```
+
+> And I want to use this function.
+
+**Answer**: there are several ways to achieve that.
+- reusing customized models
+- reusing custom go types
+- customizing code generation
+
+You should know that models may be generated independently from server, then reused when generating a new server.
+
+You might build on that: generating a first model, customizing the validation code, then reusing this model (possibly with some others) in your servers.
+
+Another way is to use the `x-go-type extension`, to replace type generation with a custom type.
+
+There is the opportunity to get go-swagger to reuse a predefined type to satisfy the definition in the swagger spec.
+Imported package and type alias may be specified as options, as shown in this example: 
+https://github.com/go-swagger/go-swagger/blob/master/fixtures/codegen/existing-model.yml#L84-L88
+
+That example reuses a type provided by a library with a package alias and type name. The code generator will respect this.
+
+You might use both, preparing a customized model from an initially generated structure, then reusing type custom type in other declarations by hinting the generator with x-go-type.
+
+Further, for repetitive customization, you might be willing to customize the generator's templates. Like in [here](https://github.com/go-swagger/go-swagger/blob/master/generator/templates/schemavalidator.gotmpl)
+for models, or in [here](https://github.com/go-swagger/go-swagger/blob/master/generator/templates/server/parameter.gotmpl) for inline parameters.
+
+Originally from issues [#997](https://github.com/go-swagger/go-swagger/issues/997) and [#1334](https://github.com/go-swagger/go-swagger/issues/1334)
+
 ### Non-required or nullable property?
 _Use-Case_: when a definition has a property N, if N is a number and is not required,
 the corresponding generated model has the struct flag `omitempty` for N.
