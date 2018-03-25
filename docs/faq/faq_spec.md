@@ -220,7 +220,7 @@ type User struct {
 Originally from issue [#561](https://github.com/go-swagger/go-swagger/issues/561).
 
 ### Documentation or tutorials on code annotation
-_Use-Case: documentation is scant on how to generate swagger files from annotations.
+_Use-Case_: documentation is scant on how to generate swagger files from annotations.
 Is it really all there in http://goswagger.io/generate/spec/?
 
 **Answer**: yes, it's all in there (or directly in the repo: https://github.com/go-swagger/go-swagger/tree/master/docs/generate/spec)

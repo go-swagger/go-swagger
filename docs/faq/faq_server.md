@@ -266,27 +266,6 @@ layout:
      file_name: "{{ (snakize (pascalize .Name)) }}.go"
 ```
 
-### How to use swagger-ui cors?
-
-**Answer**: you can add a cors middleware.
-
-Like: https://github.com/rs/cors
-
-[Documentation on how to customize middleware](use/middleware.md)
-
-Working example (in `configure_name.go`):
-
-```golang
-import "github.com/rs/cors"
-
-func setupGlobalMiddleware(handler http.Handler) http.Handler {
-    handleCORS := cors.Default().Handler
-    return handleCORS(handler)
-}
-```
-
-Originally from issue [#481](https://github.com/go-swagger/go-swagger/issues/481).
-
 ### Support streaming responses
 _Use-Case_: Docker client expects a stream of JSON structs from daemon to show a progress bar, as in:
 ```bash
