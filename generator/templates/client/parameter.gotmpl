@@ -226,8 +226,10 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r runtime
   // SetPathParam does not support variadric arguments, since we used JoinByFormat
   // we can send the first item in the array as it's all the items of the previous
   // array joined together
-  if err := r.SetPathParam({{ printf "%q" .Name }}, joined{{ pascalize .Name }}[0]); err != nil {
-    return err
+  if len(joined{{ pascalize .Name }}) > 0 {
+     if err := r.SetPathParam({{ printf "%q" .Name }}, joined{{ pascalize .Name }}[0]); err != nil {
+      return err
+    }
   }
   {{ end }}{{ end }}
 
