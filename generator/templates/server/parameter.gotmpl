@@ -45,6 +45,7 @@
     {{- else }}
       {{- if .IsInterface }}
   // no validation on generic interface
+  {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
      {{- end }}
   {{- end }}
 {{- end }}
