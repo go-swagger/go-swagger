@@ -159,7 +159,7 @@ type operationGenerator struct {
 	ServerPackage        string
 	ClientPackage        string
 	Operation            spec.Operation
-	SecurityRequirements []analysis.SecurityRequirement
+	SecurityRequirements [][]analysis.SecurityRequirement
 	SecurityDefinitions  map[string]spec.SecurityScheme
 	Tags                 []string
 	DefaultScheme        string
@@ -271,7 +271,7 @@ type codeGenOpBuilder struct {
 	DefaultScheme       string
 	DefaultProduces     string
 	DefaultConsumes     string
-	Security            []analysis.SecurityRequirement
+	Security            [][]analysis.SecurityRequirement
 	SecurityDefinitions map[string]spec.SecurityScheme
 	ExtraSchemas        map[string]GenSchema
 	GenOpts             *GenOpts

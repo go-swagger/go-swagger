@@ -22,7 +22,7 @@
 
 
 [[constraint]]
-  branch = "master"
+  branch = "auth-fixes"
   name = "github.com/go-openapi/analysis"
 
 [[constraint]]
@@ -38,7 +38,7 @@
   name = "github.com/go-openapi/loads"
 
 [[constraint]]
-  branch = "master"
+  branch = "auth-fix"
   name = "github.com/go-openapi/runtime"
 
 [[constraint]]

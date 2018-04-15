@@ -415,7 +415,7 @@ type GenOperation struct {
 	ExtraSchemas   []GenSchema
 
 	Authorized          bool
-	Security            []analysis.SecurityRequirement
+	Security            [][]analysis.SecurityRequirement
 	SecurityDefinitions map[string]spec.SecurityScheme
 	Principal           string
 
