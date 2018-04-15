@@ -411,7 +411,7 @@ type SecurityRequirement struct {
 }
 
 // SecurityRequirementsFor gets the security requirements for the operation
-func (s *Spec) SecurityRequirementsFor(operation *spec.Operation) []SecurityRequirement {
+func (s *Spec) SecurityRequirementsFor(operation *spec.Operation) [][]SecurityRequirement {
 	if s.spec.Security == nil && operation.Security == nil {
 		return nil
 	}
@@ -421,18 +421,35 @@ func (s *Spec) SecurityRequirementsFor(operation *spec.Operation) []SecurityRequ
 		schemes = operation.Security
 	}
 
-	unique := make(map[string]SecurityRequirement)
+	var result [][]SecurityRequirement
 	for _, scheme := range schemes {
+		if len(scheme) == 0 {
+			// append a zero object for anonymous
+			result = append(result, []SecurityRequirement{{}})
+			continue
+		}
+		var reqs []SecurityRequirement
 		for k, v := range scheme {
-			if _, ok := unique[k]; !ok {
-				unique[k] = SecurityRequirement{Name: k, Scopes: v}
+			if v == nil {
+				v = []string{}
+			}
+			reqs = append(reqs, SecurityRequirement{Name: k, Scopes: v})
+		}
+		result = append(result, reqs)
+	}
+	return result
+}
+
+// SecurityDefinitionsForRequirements gets the matching security definitions for a set of requirements
+func (s *Spec) SecurityDefinitionsForRequirements(requirements []SecurityRequirement) map[string]spec.SecurityScheme {
+	result := make(map[string]spec.SecurityScheme)
+
+	for _, v := range requirements {
+		if definition, ok := s.spec.SecurityDefinitions[v.Name]; ok {
+			if definition != nil {
+				result[v.Name] = *definition
 			}
 		}
-	}
-
-	var result []SecurityRequirement
-	for _, v := range unique {
-		result = append(result, v)
 	}
 	return result
 }
@@ -443,11 +460,20 @@ func (s *Spec) SecurityDefinitionsFor(operation *spec.Operation) map[string]spec
 	if len(requirements) == 0 {
 		return nil
 	}
+
 	result := make(map[string]spec.SecurityScheme)
-	for _, v := range requirements {
-		if definition, ok := s.spec.SecurityDefinitions[v.Name]; ok {
-			if definition != nil {
-				result[v.Name] = *definition
+	for _, reqs := range requirements {
+		for _, v := range reqs {
+			if v.Name == "" {
+				continue
+			}
+			if _, ok := result[v.Name]; ok {
+				continue
+			}
+			if definition, ok := s.spec.SecurityDefinitions[v.Name]; ok {
+				if definition != nil {
+					result[v.Name] = *definition
+				}
 			}
 		}
 	}
@@ -551,7 +577,7 @@ func (s *Spec) ParametersFor(operationID string) []spec.Parameter {
 }
 
 // SafeParametersFor the specified operation id.
-// Do not assume parameters properly resolve references or that
+// Does not assume parameters properly resolve references or that
 // such references actually resolve to a parameter object.
 // Upon error, invoke a ErrorOnParamFunc callback with the erroneous
 // parameter. If the callback is set to nil, panics upon errors.
@@ -603,7 +629,8 @@ func (s *Spec) ParamsFor(method, path string) map[string]spec.Parameter {
 }
 
 // SafeParamsFor the specified method and path. Aggregates them with the defaults etc, so it's all the params that
-// Do not assume parameters properly resolve references or that
+// apply for the method and path
+// Does not assume parameters properly resolve references or that
 // such references actually resolve to a parameter object.
 // Upon error, invoke a ErrorOnParamFunc callback with the erroneous
 // parameter. If the callback is set to nil, panics upon errors.

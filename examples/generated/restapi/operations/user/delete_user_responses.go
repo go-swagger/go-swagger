@@ -23,6 +23,7 @@ type DeleteUserBadRequest struct {
 
 // NewDeleteUserBadRequest creates DeleteUserBadRequest with default headers values
 func NewDeleteUserBadRequest() *DeleteUserBadRequest {
+
 	return &DeleteUserBadRequest{}
 }
 
@@ -46,6 +47,7 @@ type DeleteUserNotFound struct {
 
 // NewDeleteUserNotFound creates DeleteUserNotFound with default headers values
 func NewDeleteUserNotFound() *DeleteUserNotFound {
+
 	return &DeleteUserNotFound{}
 }
 

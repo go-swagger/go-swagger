@@ -49,6 +49,7 @@ var testCases = []struct {
 	{&mapUint64StringValue, mapUint64StringValueString},
 	{&mapUintptrStringValue, mapUintptrStringValueString},
 	{&intKeyedMapStructValue, intKeyedMapStructValueString},
+	{&intArrayStructValue, intArrayStructValueString},
 }
 
 func TestMarshal(t *testing.T) {

@@ -25,6 +25,7 @@ type UploadTaskFileCreated struct {
 
 // NewUploadTaskFileCreated creates UploadTaskFileCreated with default headers values
 func NewUploadTaskFileCreated() *UploadTaskFileCreated {
+
 	return &UploadTaskFileCreated{}
 }
 
@@ -43,8 +44,8 @@ swagger:response uploadTaskFileDefault
 type UploadTaskFileDefault struct {
 	_statusCode int
 	/*
-	  Required: true
-	*/
+
+	 */
 	XErrorCode string `json:"X-Error-Code"`
 
 	/*

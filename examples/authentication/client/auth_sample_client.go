@@ -38,9 +38,6 @@ func NewHTTPClient(formats strfmt.Registry) *AuthSample {
 // using a customizable transport config.
 func NewHTTPClientWithConfig(formats strfmt.Registry, cfg *TransportConfig) *AuthSample {
 	// ensure nullable parameters have default
-	if formats == nil {
-		formats = strfmt.Default
-	}
 	if cfg == nil {
 		cfg = DefaultTransportConfig()
 	}
@@ -52,6 +49,11 @@ func NewHTTPClientWithConfig(formats strfmt.Registry, cfg *TransportConfig) *Aut
 
 // New creates a new auth sample client
 func New(transport runtime.ClientTransport, formats strfmt.Registry) *AuthSample {
+	// ensure nullable parameters have default
+	if formats == nil {
+		formats = strfmt.Default
+	}
+
 	cli := new(AuthSample)
 	cli.Transport = transport
 

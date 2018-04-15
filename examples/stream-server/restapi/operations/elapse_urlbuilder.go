@@ -50,6 +50,7 @@ func (o *ElapseURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("Length is required on ElapseURL")
 	}
+
 	_basePath := o._basePath
 	if _basePath == "" {
 		_basePath = "/"

@@ -113,10 +113,7 @@ func (h *handlerServer) GetPageInfo(abspath, relpath string, mode PageInfoMode, 
 		// documentation (historic).
 		pkgname = "main" // assume package main since pkginfo.Name == ""
 		pkgfiles = pkginfo.IgnoredGoFiles
-	}
-
-	// get package information, if any
-	if len(pkgfiles) > 0 {
+	} else {
 		// build package AST
 		fset := token.NewFileSet()
 		files, err := h.c.parseFiles(fset, relpath, abspath, pkgfiles)
@@ -321,11 +318,17 @@ func (h *handlerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	info.GoogleCN = googleCN(r)
+	var body []byte
+	if info.Dirname == "/src" {
+		body = applyTemplate(h.p.PackageRootHTML, "packageRootHTML", info)
+	} else {
+		body = applyTemplate(h.p.PackageHTML, "packageHTML", info)
+	}
 	h.p.ServePage(w, Page{
 		Title:    title,
 		Tabtitle: tabtitle,
 		Subtitle: subtitle,
-		Body:     applyTemplate(h.p.PackageHTML, "packageHTML", info),
+		Body:     body,
 		GoogleCN: info.GoogleCN,
 	})
 }

@@ -30,6 +30,7 @@ type GetPetByIDOK struct {
 
 // NewGetPetByIDOK creates GetPetByIDOK with default headers values
 func NewGetPetByIDOK() *GetPetByIDOK {
+
 	return &GetPetByIDOK{}
 }
 
@@ -68,6 +69,7 @@ type GetPetByIDBadRequest struct {
 
 // NewGetPetByIDBadRequest creates GetPetByIDBadRequest with default headers values
 func NewGetPetByIDBadRequest() *GetPetByIDBadRequest {
+
 	return &GetPetByIDBadRequest{}
 }
 
@@ -91,6 +93,7 @@ type GetPetByIDNotFound struct {
 
 // NewGetPetByIDNotFound creates GetPetByIDNotFound with default headers values
 func NewGetPetByIDNotFound() *GetPetByIDNotFound {
+
 	return &GetPetByIDNotFound{}
 }
 

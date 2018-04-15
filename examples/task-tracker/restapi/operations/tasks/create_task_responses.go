@@ -25,6 +25,7 @@ type CreateTaskCreated struct {
 
 // NewCreateTaskCreated creates CreateTaskCreated with default headers values
 func NewCreateTaskCreated() *CreateTaskCreated {
+
 	return &CreateTaskCreated{}
 }
 
@@ -43,8 +44,8 @@ swagger:response createTaskDefault
 type CreateTaskDefault struct {
 	_statusCode int
 	/*
-	  Required: true
-	*/
+
+	 */
 	XErrorCode string `json:"X-Error-Code"`
 
 	/*

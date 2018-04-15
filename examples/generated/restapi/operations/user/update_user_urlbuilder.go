@@ -48,6 +48,7 @@ func (o *UpdateUserURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("Username is required on UpdateUserURL")
 	}
+
 	_basePath := o._basePath
 	if _basePath == "" {
 		_basePath = "/v2"

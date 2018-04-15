@@ -6,10 +6,13 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"strconv"
+
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // TaskAllOf1 task all of1
@@ -19,8 +22,13 @@ type TaskAllOf1 struct {
 	// attachments
 	Attachments TaskAllOf1Attachments `json:"attachments,omitempty"`
 
-	// comments
-	Comments TaskAllOf1Comments `json:"comments"`
+	// The 5 most recent items for this issue.
+	//
+	// The detail view of an issue includes the 5 most recent comments.
+	// This field is read only, comments are added through a separate process.
+	//
+	// Read Only: true
+	Comments []*Comment `json:"comments"`
 
 	// The time at which this issue was last updated.
 	//
@@ -40,6 +48,16 @@ type TaskAllOf1 struct {
 func (m *TaskAllOf1) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateComments(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateLastUpdated(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if err := m.validateLastUpdatedBy(formats); err != nil {
 		// prop
 		res = append(res, err)
@@ -53,6 +71,47 @@ func (m *TaskAllOf1) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *TaskAllOf1) validateComments(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Comments) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Comments); i++ {
+
+		if swag.IsZero(m.Comments[i]) { // not required
+			continue
+		}
+
+		if m.Comments[i] != nil {
+
+			if err := m.Comments[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("comments" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+
+		}
+
+	}
+
+	return nil
+}
+
+func (m *TaskAllOf1) validateLastUpdated(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.LastUpdated) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("lastUpdated", "body", "date-time", m.LastUpdated.String(), formats); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -70,6 +129,7 @@ func (m *TaskAllOf1) validateLastUpdatedBy(formats strfmt.Registry) error {
 			}
 			return err
 		}
+
 	}
 
 	return nil
@@ -89,6 +149,7 @@ func (m *TaskAllOf1) validateReportedBy(formats strfmt.Registry) error {
 			}
 			return err
 		}
+
 	}
 
 	return nil

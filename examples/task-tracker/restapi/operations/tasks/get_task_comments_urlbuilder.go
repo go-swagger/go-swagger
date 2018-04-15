@@ -54,6 +54,7 @@ func (o *GetTaskCommentsURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("ID is required on GetTaskCommentsURL")
 	}
+
 	_basePath := o._basePath
 	if _basePath == "" {
 		_basePath = "/api"

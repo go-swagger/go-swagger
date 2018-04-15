@@ -23,6 +23,7 @@ type UpdatePetWithFormMethodNotAllowed struct {
 
 // NewUpdatePetWithFormMethodNotAllowed creates UpdatePetWithFormMethodNotAllowed with default headers values
 func NewUpdatePetWithFormMethodNotAllowed() *UpdatePetWithFormMethodNotAllowed {
+
 	return &UpdatePetWithFormMethodNotAllowed{}
 }
 

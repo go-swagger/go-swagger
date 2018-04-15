@@ -12,6 +12,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -19,9 +20,13 @@ import (
 // NewGetTaskCommentsParams creates a new GetTaskCommentsParams object
 // with the default values initialized.
 func NewGetTaskCommentsParams() GetTaskCommentsParams {
+
 	var (
+		// initialize parameters with default values
+
 		pageSizeDefault = int32(20)
 	)
+
 	return GetTaskCommentsParams{
 		PageSize: &pageSizeDefault,
 	}
@@ -53,9 +58,12 @@ type GetTaskCommentsParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewGetTaskCommentsParams() beforehand.
 func (o *GetTaskCommentsParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	qs := runtime.Values(r.URL.Query())
@@ -87,6 +95,9 @@ func (o *GetTaskCommentsParams) bindID(rawData []string, hasKey bool, formats st
 		raw = rawData[len(rawData)-1]
 	}
 
+	// Required: true
+	// Parameter is provided by construction from the route
+
 	value, err := swag.ConvertInt64(raw)
 	if err != nil {
 		return errors.InvalidType("id", "path", "int64", raw)
@@ -101,9 +112,11 @@ func (o *GetTaskCommentsParams) bindPageSize(rawData []string, hasKey bool, form
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
-		var pageSizeDefault int32 = int32(20)
-		o.PageSize = &pageSizeDefault
+		// Default values have been previously initialized by NewGetTaskCommentsParams()
 		return nil
 	}
 
@@ -121,15 +134,32 @@ func (o *GetTaskCommentsParams) bindSince(rawData []string, hasKey bool, formats
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
 
+	// Format: date-time
 	value, err := formats.Parse("date-time", raw)
 	if err != nil {
 		return errors.InvalidType("since", "query", "strfmt.DateTime", raw)
 	}
 	o.Since = (value.(*strfmt.DateTime))
+
+	if err := o.validateSince(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *GetTaskCommentsParams) validateSince(formats strfmt.Registry) error {
+
+	if err := validate.FormatOf("since", "query", "date-time", o.Since.String(), formats); err != nil {
+		return err
+	}
 
 	return nil
 }

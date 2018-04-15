@@ -16,9 +16,9 @@ import (
 )
 
 // NewFindPetsByStatusParams creates a new FindPetsByStatusParams object
-// with the default values initialized.
+// no default values defined in spec.
 func NewFindPetsByStatusParams() FindPetsByStatusParams {
-	var ()
+
 	return FindPetsByStatusParams{}
 }
 
@@ -39,9 +39,12 @@ type FindPetsByStatusParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewFindPetsByStatusParams() beforehand.
 func (o *FindPetsByStatusParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	qs := runtime.Values(r.URL.Query())
@@ -59,6 +62,7 @@ func (o *FindPetsByStatusParams) BindRequest(r *http.Request, route *middleware.
 
 func (o *FindPetsByStatusParams) bindStatus(rawData []string, hasKey bool, formats strfmt.Registry) error {
 
+	// CollectionFormat: multi
 	statusIC := rawData
 
 	if len(statusIC) == 0 {

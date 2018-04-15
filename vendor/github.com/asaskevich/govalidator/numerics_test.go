@@ -181,7 +181,7 @@ func TestIsNatural(t *testing.T) {
 func TestInRangeInt(t *testing.T) {
 	t.Parallel()
 
-	var tests = []struct {
+	var testAsInts = []struct {
 		param    int
 		left     int
 		right    int
@@ -196,10 +196,210 @@ func TestInRangeInt(t *testing.T) {
 		{0, 0, -1, true},
 		{0, 10, 5, false},
 	}
-	for _, test := range tests {
+	for _, test := range testAsInts {
 		actual := InRangeInt(test.param, test.left, test.right)
 		if actual != test.expected {
-			t.Errorf("Expected InRangeInt(%v, %v, %v) to be %v, got %v", test.param, test.left, test.right, test.expected, actual)
+			t.Errorf("Expected InRangeInt(%v, %v, %v) to be %v, got %v using type int", test.param, test.left, test.right, test.expected, actual)
+		}
+	}
+
+	var testAsInt8s = []struct {
+		param    int8
+		left     int8
+		right    int8
+		expected bool
+	}{
+		{0, 0, 0, true},
+		{1, 0, 0, false},
+		{-1, 0, 0, false},
+		{0, -1, 1, true},
+		{0, 0, 1, true},
+		{0, -1, 0, true},
+		{0, 0, -1, true},
+		{0, 10, 5, false},
+	}
+	for _, test := range testAsInt8s {
+		actual := InRangeInt(test.param, test.left, test.right)
+		if actual != test.expected {
+			t.Errorf("Expected InRangeInt(%v, %v, %v) to be %v, got %v using type int8", test.param, test.left, test.right, test.expected, actual)
+		}
+	}
+
+	var testAsInt16s = []struct {
+		param    int16
+		left     int16
+		right    int16
+		expected bool
+	}{
+		{0, 0, 0, true},
+		{1, 0, 0, false},
+		{-1, 0, 0, false},
+		{0, -1, 1, true},
+		{0, 0, 1, true},
+		{0, -1, 0, true},
+		{0, 0, -1, true},
+		{0, 10, 5, false},
+	}
+	for _, test := range testAsInt16s {
+		actual := InRangeInt(test.param, test.left, test.right)
+		if actual != test.expected {
+			t.Errorf("Expected InRangeInt(%v, %v, %v) to be %v, got %v using type int16", test.param, test.left, test.right, test.expected, actual)
+		}
+	}
+
+	var testAsInt32s = []struct {
+		param    int32
+		left     int32
+		right    int32
+		expected bool
+	}{
+		{0, 0, 0, true},
+		{1, 0, 0, false},
+		{-1, 0, 0, false},
+		{0, -1, 1, true},
+		{0, 0, 1, true},
+		{0, -1, 0, true},
+		{0, 0, -1, true},
+		{0, 10, 5, false},
+	}
+	for _, test := range testAsInt32s {
+		actual := InRangeInt(test.param, test.left, test.right)
+		if actual != test.expected {
+			t.Errorf("Expected InRangeInt(%v, %v, %v) to be %v, got %v using type int32", test.param, test.left, test.right, test.expected, actual)
+		}
+	}
+
+	var testAsInt64s = []struct {
+		param    int64
+		left     int64
+		right    int64
+		expected bool
+	}{
+		{0, 0, 0, true},
+		{1, 0, 0, false},
+		{-1, 0, 0, false},
+		{0, -1, 1, true},
+		{0, 0, 1, true},
+		{0, -1, 0, true},
+		{0, 0, -1, true},
+		{0, 10, 5, false},
+	}
+	for _, test := range testAsInt64s {
+		actual := InRangeInt(test.param, test.left, test.right)
+		if actual != test.expected {
+			t.Errorf("Expected InRangeInt(%v, %v, %v) to be %v, got %v using type int64", test.param, test.left, test.right, test.expected, actual)
+		}
+	}
+
+	var testAsUInts = []struct {
+		param    uint
+		left     uint
+		right    uint
+		expected bool
+	}{
+		{0, 0, 0, true},
+		{1, 0, 0, false},
+		{0, 0, 1, true},
+		{0, 10, 5, false},
+	}
+	for _, test := range testAsUInts {
+		actual := InRangeInt(test.param, test.left, test.right)
+		if actual != test.expected {
+			t.Errorf("Expected InRangeInt(%v, %v, %v) to be %v, got %v using type uint", test.param, test.left, test.right, test.expected, actual)
+		}
+	}
+
+	var testAsUInt8s = []struct {
+		param    uint8
+		left     uint8
+		right    uint8
+		expected bool
+	}{
+		{0, 0, 0, true},
+		{1, 0, 0, false},
+		{0, 0, 1, true},
+		{0, 10, 5, false},
+	}
+	for _, test := range testAsUInt8s {
+		actual := InRangeInt(test.param, test.left, test.right)
+		if actual != test.expected {
+			t.Errorf("Expected InRangeInt(%v, %v, %v) to be %v, got %v using type uint", test.param, test.left, test.right, test.expected, actual)
+		}
+	}
+
+	var testAsUInt16s = []struct {
+		param    uint16
+		left     uint16
+		right    uint16
+		expected bool
+	}{
+		{0, 0, 0, true},
+		{1, 0, 0, false},
+		{0, 0, 1, true},
+		{0, 10, 5, false},
+	}
+	for _, test := range testAsUInt16s {
+		actual := InRangeInt(test.param, test.left, test.right)
+		if actual != test.expected {
+			t.Errorf("Expected InRangeInt(%v, %v, %v) to be %v, got %v using type uint", test.param, test.left, test.right, test.expected, actual)
+		}
+	}
+
+	var testAsUInt32s = []struct {
+		param    uint32
+		left     uint32
+		right    uint32
+		expected bool
+	}{
+		{0, 0, 0, true},
+		{1, 0, 0, false},
+		{0, 0, 1, true},
+		{0, 10, 5, false},
+	}
+	for _, test := range testAsUInt32s {
+		actual := InRangeInt(test.param, test.left, test.right)
+		if actual != test.expected {
+			t.Errorf("Expected InRangeInt(%v, %v, %v) to be %v, got %v using type uint", test.param, test.left, test.right, test.expected, actual)
+		}
+	}
+
+	var testAsUInt64s = []struct {
+		param    uint64
+		left     uint64
+		right    uint64
+		expected bool
+	}{
+		{0, 0, 0, true},
+		{1, 0, 0, false},
+		{0, 0, 1, true},
+		{0, 10, 5, false},
+	}
+	for _, test := range testAsUInt64s {
+		actual := InRangeInt(test.param, test.left, test.right)
+		if actual != test.expected {
+			t.Errorf("Expected InRangeInt(%v, %v, %v) to be %v, got %v using type uint", test.param, test.left, test.right, test.expected, actual)
+		}
+	}
+
+	var testAsStrings = []struct {
+		param    string
+		left     string
+		right    string
+		expected bool
+	}{
+		{"0", "0", "0", true},
+		{"1", "0", "0", false},
+		{"-1", "0", "0", false},
+		{"0", "-1", "1", true},
+		{"0", "0", "1", true},
+		{"0", "-1", "0", true},
+		{"0", "0", "-1", true},
+		{"0", "10", "5", false},
+	}
+	for _, test := range testAsStrings {
+		actual := InRangeInt(test.param, test.left, test.right)
+		if actual != test.expected {
+			t.Errorf("Expected InRangeInt(%v, %v, %v) to be %v, got %v using type string", test.param, test.left, test.right, test.expected, actual)
 		}
 	}
 }

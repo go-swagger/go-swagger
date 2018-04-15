@@ -499,6 +499,74 @@ func TestIsUpperCase(t *testing.T) {
 	}
 }
 
+func TestHasLowerCase(t *testing.T) {
+	t.Parallel()
+
+	var tests = []struct {
+		param    string
+		expected bool
+	}{
+		{"", true},
+		{"abc123", true},
+		{"abc", true},
+		{"a b c", true},
+		{"abcß", true},
+		{"abcẞ", true},
+		{"ABCẞ", false},
+		{"tr竪s 端ber", true},
+		{"fooBar", true},
+		{"123ABC", false},
+		{"ABC123", false},
+		{"ABC", false},
+		{"S T R", false},
+		{"fooBar", true},
+		{"abacaba123", true},
+		{"FÒÔBÀŘ", false},
+		{"fòôbàř", true},
+		{"fÒÔBÀŘ", true},
+	}
+	for _, test := range tests {
+		actual := HasLowerCase(test.param)
+		if actual != test.expected {
+			t.Errorf("Expected HasLowerCase(%q) to be %v, got %v", test.param, test.expected, actual)
+		}
+	}
+}
+
+func TestHasUpperCase(t *testing.T) {
+	t.Parallel()
+
+	var tests = []struct {
+		param    string
+		expected bool
+	}{
+		{"", true},
+		{"abc123", false},
+		{"abc", false},
+		{"a b c", false},
+		{"abcß", false},
+		{"abcẞ", false},
+		{"ABCẞ", true},
+		{"tr竪s 端ber", false},
+		{"fooBar", true},
+		{"123ABC", true},
+		{"ABC123", true},
+		{"ABC", true},
+		{"S T R", true},
+		{"fooBar", true},
+		{"abacaba123", false},
+		{"FÒÔBÀŘ", true},
+		{"fòôbàř", false},
+		{"Fòôbàř", true},
+	}
+	for _, test := range tests {
+		actual := HasUpperCase(test.param)
+		if actual != test.expected {
+			t.Errorf("Expected HasUpperCase(%q) to be %v, got %v", test.param, test.expected, actual)
+		}
+	}
+}
+
 func TestIsInt(t *testing.T) {
 	t.Parallel()
 
@@ -536,13 +604,12 @@ func TestIsInt(t *testing.T) {
 	}
 }
 
-
 func TestIsHash(t *testing.T) {
 	t.Parallel()
 
 	var tests = []struct {
 		param    string
-		algo 	 string
+		algo     string
 		expected bool
 	}{
 		{"3ca25ae354e192b26879f651a51d92aa8a34d8d3", "sha1", true},
@@ -576,19 +643,13 @@ func TestIsEmail(t *testing.T) {
 	}{
 		{"", false},
 		{"foo@bar.com", true},
-		{"x@x.x", true},
 		{"foo@bar.com.au", true},
 		{"foo+bar@bar.com", true},
 		{"foo@bar.coffee", true},
 		{"foo@bar.coffee..coffee", false},
-		{"foo@bar.bar.coffee", true},
-		{"foo@bar.中文网", true},
 		{"invalidemail@", false},
 		{"invalid.com", false},
 		{"@invalid.com", false},
-		{"test|123@m端ller.com", true},
-		{"hans@m端ller.com", true},
-		{"hans.m端ller@test.com", true},
 		{"NathAn.daVIeS@DomaIn.cOM", true},
 		{"NATHAN.DAVIES@DOMAIN.CO.UK", true},
 	}
@@ -744,7 +805,6 @@ func TestIsRequestURL(t *testing.T) {
 		{"http://www.foo---bar.com/", true},
 		{"mailto:someone@example.com", true},
 		{"irc://irc.server.org/channel", true},
-		{"irc://#channel@network", true},
 		{"/abs/test/dir", false},
 		{"./rel/test/dir", false},
 	}
@@ -793,7 +853,6 @@ func TestIsRequestURI(t *testing.T) {
 		{"http://www.foo---bar.com/", true},
 		{"mailto:someone@example.com", true},
 		{"irc://irc.server.org/channel", true},
-		{"irc://#channel@network", true},
 		{"/abs/test/dir", true},
 		{"./rel/test/dir", false},
 	}
@@ -2116,6 +2175,15 @@ type MissingValidationDeclarationStruct struct {
 	Email string `valid:"required,email"`
 }
 
+type FieldRequiredByDefault struct {
+	Email string `valid:"email"`
+}
+
+type MultipleFieldsRequiredByDefault struct {
+	Url   string `valid:"url"`
+	Email string `valid:"email"`
+}
+
 type FieldsRequiredByDefaultButExemptStruct struct {
 	Name  string `valid:"-"`
 	Email string `valid:"email"`
@@ -2138,6 +2206,46 @@ func TestValidateMissingValidationDeclarationStruct(t *testing.T) {
 	}{
 		{MissingValidationDeclarationStruct{}, false},
 		{MissingValidationDeclarationStruct{Name: "TEST", Email: "test@example.com"}, false},
+	}
+	SetFieldsRequiredByDefault(true)
+	for _, test := range tests {
+		actual, err := ValidateStruct(test.param)
+		if actual != test.expected {
+			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
+			if err != nil {
+				t.Errorf("Got Error on ValidateStruct(%q): %s", test.param, err)
+			}
+		}
+	}
+	SetFieldsRequiredByDefault(false)
+}
+
+func TestFieldRequiredByDefault(t *testing.T) {
+	var tests = []struct {
+		param    FieldRequiredByDefault
+		expected bool
+	}{
+		{FieldRequiredByDefault{}, false},
+	}
+	SetFieldsRequiredByDefault(true)
+	for _, test := range tests {
+		actual, err := ValidateStruct(test.param)
+		if actual != test.expected {
+			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
+			if err != nil {
+				t.Errorf("Got Error on ValidateStruct(%q): %s", test.param, err)
+			}
+		}
+	}
+	SetFieldsRequiredByDefault(false)
+}
+
+func TestMultipleFieldsRequiredByDefault(t *testing.T) {
+	var tests = []struct {
+		param    MultipleFieldsRequiredByDefault
+		expected bool
+	}{
+		{MultipleFieldsRequiredByDefault{}, false},
 	}
 	SetFieldsRequiredByDefault(true)
 	for _, test := range tests {
@@ -2535,6 +2643,7 @@ func TestValidateStruct(t *testing.T) {
 		{User{"John", "", "12345", 0, &Address{"Street", "123456789"}, []Address{{"Street", "ABC456D89"}, {"Street", "123456"}}}, false},
 		{UserValid{"John", "john@yahoo.com", "123G#678", 20, &Address{"Street", "123456"}, []Address{{"Street", "123456"}, {"Street", "123456"}}}, true},
 		{UserValid{"John", "john!yahoo.com", "12345678", 20, &Address{"Street", "ABC456D89"}, []Address{}}, false},
+		{UserValid{"John", "john@yahoo.com", "12345678", 20, &Address{"Street", "123456xxx"}, []Address{{"Street", "123456"}, {"Street", "123456"}}}, false},
 		{UserValid{"John", "john!yahoo.com", "12345678", 20, &Address{"Street", "ABC456D89"}, []Address{{"Street", "ABC456D89"}, {"Street", "123456"}}}, false},
 		{UserValid{"John", "", "12345", 0, &Address{"Street", "123456789"}, []Address{{"Street", "ABC456D89"}, {"Street", "123456"}}}, false},
 		{nil, true},
@@ -2850,6 +2959,73 @@ func ExampleValidateStruct() {
 		println("error: " + err.Error())
 	}
 	println(result)
+}
+
+func TestValidateStructParamValidatorInt(t *testing.T) {
+	type Test1 struct {
+		Int   int   `valid:"range(1|10)"`
+		Int8  int8  `valid:"range(1|10)"`
+		Int16 int16 `valid:"range(1|10)"`
+		Int32 int32 `valid:"range(1|10)"`
+		Int64 int64 `valid:"range(1|10)"`
+
+		Uint   uint   `valid:"range(1|10)"`
+		Uint8  uint8  `valid:"range(1|10)"`
+		Uint16 uint16 `valid:"range(1|10)"`
+		Uint32 uint32 `valid:"range(1|10)"`
+		Uint64 uint64 `valid:"range(1|10)"`
+
+		Float32 float32 `valid:"range(1|10)"`
+		Float64 float64 `valid:"range(1|10)"`
+	}
+	test1Ok := &Test1{5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5}
+	test1NotOk := &Test1{11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11}
+
+	_, err := ValidateStruct(test1Ok)
+	if err != nil {
+		t.Errorf("Test failed: %s", err)
+	}
+
+	_, err = ValidateStruct(test1NotOk)
+	if err == nil {
+		t.Errorf("Test failed: nil")
+	}
+
+	type Test2 struct {
+		Int   int   `valid:"in(1|10)"`
+		Int8  int8  `valid:"in(1|10)"`
+		Int16 int16 `valid:"in(1|10)"`
+		Int32 int32 `valid:"in(1|10)"`
+		Int64 int64 `valid:"in(1|10)"`
+
+		Uint   uint   `valid:"in(1|10)"`
+		Uint8  uint8  `valid:"in(1|10)"`
+		Uint16 uint16 `valid:"in(1|10)"`
+		Uint32 uint32 `valid:"in(1|10)"`
+		Uint64 uint64 `valid:"in(1|10)"`
+
+		Float32 float32 `valid:"in(1|10)"`
+		Float64 float64 `valid:"in(1|10)"`
+	}
+
+	test2Ok1 := &Test2{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+	test2Ok2 := &Test2{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10}
+	test2NotOk := &Test2{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}
+
+	_, err = ValidateStruct(test2Ok1)
+	if err != nil {
+		t.Errorf("Test failed: %s", err)
+	}
+
+	_, err = ValidateStruct(test2Ok2)
+	if err != nil {
+		t.Errorf("Test failed: %s", err)
+	}
+
+	_, err = ValidateStruct(test2NotOk)
+	if err == nil {
+		t.Errorf("Test failed: nil")
+	}
 }
 
 func TestIsCIDR(t *testing.T) {

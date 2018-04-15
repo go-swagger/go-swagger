@@ -25,6 +25,7 @@ type AddCommentToTaskCreated struct {
 
 // NewAddCommentToTaskCreated creates AddCommentToTaskCreated with default headers values
 func NewAddCommentToTaskCreated() *AddCommentToTaskCreated {
+
 	return &AddCommentToTaskCreated{}
 }
 
@@ -43,8 +44,8 @@ swagger:response addCommentToTaskDefault
 type AddCommentToTaskDefault struct {
 	_statusCode int
 	/*
-	  Required: true
-	*/
+
+	 */
 	XErrorCode string `json:"X-Error-Code"`
 
 	/*

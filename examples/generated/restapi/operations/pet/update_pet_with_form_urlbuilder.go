@@ -48,6 +48,7 @@ func (o *UpdatePetWithFormURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("PetID is required on UpdatePetWithFormURL")
 	}
+
 	_basePath := o._basePath
 	if _basePath == "" {
 		_basePath = "/v2"

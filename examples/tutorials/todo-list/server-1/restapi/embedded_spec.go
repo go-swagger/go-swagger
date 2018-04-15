@@ -155,7 +155,10 @@ func init() {
           "200": {
             "description": "list the todo operations",
             "schema": {
-              "$ref": "#/definitions/findTodosOKBody"
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/item"
+              }
             }
           },
           "default": {
@@ -183,13 +186,6 @@ func init() {
           "type": "string"
         }
       }
-    },
-    "findTodosOKBody": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/item"
-      },
-      "x-go-gen-location": "operations"
     },
     "item": {
       "type": "object",

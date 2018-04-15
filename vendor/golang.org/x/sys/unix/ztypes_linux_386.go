@@ -96,24 +96,24 @@ type Rlimit struct {
 type _Gid_t uint32
 
 type Stat_t struct {
-	Dev       uint64
-	X__pad1   uint16
-	_         [2]byte
-	X__st_ino uint32
-	Mode      uint32
-	Nlink     uint32
-	Uid       uint32
-	Gid       uint32
-	Rdev      uint64
-	X__pad2   uint16
-	_         [2]byte
-	Size      int64
-	Blksize   int32
-	Blocks    int64
-	Atim      Timespec
-	Mtim      Timespec
-	Ctim      Timespec
-	Ino       uint64
+	Dev     uint64
+	_       uint16
+	_       [2]byte
+	_       uint32
+	Mode    uint32
+	Nlink   uint32
+	Uid     uint32
+	Gid     uint32
+	Rdev    uint64
+	_       uint16
+	_       [2]byte
+	Size    int64
+	Blksize int32
+	Blocks  int64
+	Atim    Timespec
+	Mtim    Timespec
+	Ctim    Timespec
+	Ino     uint64
 }
 
 type Statfs_t struct {
@@ -132,9 +132,9 @@ type Statfs_t struct {
 }
 
 type StatxTimestamp struct {
-	Sec         int64
-	Nsec        uint32
-	X__reserved int32
+	Sec  int64
+	Nsec uint32
+	_    int32
 }
 
 type Statx_t struct {
@@ -171,7 +171,7 @@ type Dirent struct {
 }
 
 type Fsid struct {
-	X__val [2]int32
+	_ [2]int32
 }
 
 type Flock_t struct {
@@ -491,7 +491,7 @@ const (
 	IFLA_EVENT           = 0x2c
 	IFLA_NEW_NETNSID     = 0x2d
 	IFLA_IF_NETNSID      = 0x2e
-	IFLA_MAX             = 0x2e
+	IFLA_MAX             = 0x31
 	RT_SCOPE_UNIVERSE    = 0x0
 	RT_SCOPE_SITE        = 0xc8
 	RT_SCOPE_LINK        = 0xfd
@@ -583,12 +583,12 @@ type RtAttr struct {
 }
 
 type IfInfomsg struct {
-	Family     uint8
-	X__ifi_pad uint8
-	Type       uint16
-	Index      int32
-	Flags      uint32
-	Change     uint32
+	Family uint8
+	_      uint8
+	Type   uint16
+	Index  int32
+	Flags  uint32
+	Change uint32
 }
 
 type IfAddrmsg struct {
@@ -683,7 +683,7 @@ type Sysinfo_t struct {
 	Totalhigh uint32
 	Freehigh  uint32
 	Unit      uint32
-	X_f       [8]int8
+	_         [8]int8
 }
 
 type Utsname struct {
@@ -739,7 +739,7 @@ const (
 )
 
 type Sigset_t struct {
-	X__val [32]uint32
+	_ [32]uint32
 }
 
 const RNDGETENTCNT = 0x80045200
@@ -894,4 +894,71 @@ const (
 	BDADDR_BREDR     = 0x0
 	BDADDR_LE_PUBLIC = 0x1
 	BDADDR_LE_RANDOM = 0x2
+)
+
+const (
+	CBitFieldMaskBit0  = 0x1
+	CBitFieldMaskBit1  = 0x2
+	CBitFieldMaskBit2  = 0x4
+	CBitFieldMaskBit3  = 0x8
+	CBitFieldMaskBit4  = 0x10
+	CBitFieldMaskBit5  = 0x20
+	CBitFieldMaskBit6  = 0x40
+	CBitFieldMaskBit7  = 0x80
+	CBitFieldMaskBit8  = 0x100
+	CBitFieldMaskBit9  = 0x200
+	CBitFieldMaskBit10 = 0x400
+	CBitFieldMaskBit11 = 0x800
+	CBitFieldMaskBit12 = 0x1000
+	CBitFieldMaskBit13 = 0x2000
+	CBitFieldMaskBit14 = 0x4000
+	CBitFieldMaskBit15 = 0x8000
+	CBitFieldMaskBit16 = 0x10000
+	CBitFieldMaskBit17 = 0x20000
+	CBitFieldMaskBit18 = 0x40000
+	CBitFieldMaskBit19 = 0x80000
+	CBitFieldMaskBit20 = 0x100000
+	CBitFieldMaskBit21 = 0x200000
+	CBitFieldMaskBit22 = 0x400000
+	CBitFieldMaskBit23 = 0x800000
+	CBitFieldMaskBit24 = 0x1000000
+	CBitFieldMaskBit25 = 0x2000000
+	CBitFieldMaskBit26 = 0x4000000
+	CBitFieldMaskBit27 = 0x8000000
+	CBitFieldMaskBit28 = 0x10000000
+	CBitFieldMaskBit29 = 0x20000000
+	CBitFieldMaskBit30 = 0x40000000
+	CBitFieldMaskBit31 = 0x80000000
+	CBitFieldMaskBit32 = 0x100000000
+	CBitFieldMaskBit33 = 0x200000000
+	CBitFieldMaskBit34 = 0x400000000
+	CBitFieldMaskBit35 = 0x800000000
+	CBitFieldMaskBit36 = 0x1000000000
+	CBitFieldMaskBit37 = 0x2000000000
+	CBitFieldMaskBit38 = 0x4000000000
+	CBitFieldMaskBit39 = 0x8000000000
+	CBitFieldMaskBit40 = 0x10000000000
+	CBitFieldMaskBit41 = 0x20000000000
+	CBitFieldMaskBit42 = 0x40000000000
+	CBitFieldMaskBit43 = 0x80000000000
+	CBitFieldMaskBit44 = 0x100000000000
+	CBitFieldMaskBit45 = 0x200000000000
+	CBitFieldMaskBit46 = 0x400000000000
+	CBitFieldMaskBit47 = 0x800000000000
+	CBitFieldMaskBit48 = 0x1000000000000
+	CBitFieldMaskBit49 = 0x2000000000000
+	CBitFieldMaskBit50 = 0x4000000000000
+	CBitFieldMaskBit51 = 0x8000000000000
+	CBitFieldMaskBit52 = 0x10000000000000
+	CBitFieldMaskBit53 = 0x20000000000000
+	CBitFieldMaskBit54 = 0x40000000000000
+	CBitFieldMaskBit55 = 0x80000000000000
+	CBitFieldMaskBit56 = 0x100000000000000
+	CBitFieldMaskBit57 = 0x200000000000000
+	CBitFieldMaskBit58 = 0x400000000000000
+	CBitFieldMaskBit59 = 0x800000000000000
+	CBitFieldMaskBit60 = 0x1000000000000000
+	CBitFieldMaskBit61 = 0x2000000000000000
+	CBitFieldMaskBit62 = 0x4000000000000000
+	CBitFieldMaskBit63 = 0x8000000000000000
 )

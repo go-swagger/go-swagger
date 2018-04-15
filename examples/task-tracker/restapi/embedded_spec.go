@@ -882,7 +882,11 @@ func init() {
           "200": {
             "description": "Successful response",
             "schema": {
-              "$ref": "#/definitions/listTasksOKBody"
+              "type": "array",
+              "title": "TaskList",
+              "items": {
+                "$ref": "#/definitions/TaskCard"
+              }
             },
             "headers": {
               "X-Last-Task-Id": {
@@ -1113,7 +1117,10 @@ func init() {
           "200": {
             "description": "The list of comments",
             "schema": {
-              "$ref": "#/definitions/getTaskCommentsOKBody"
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Comment"
+              }
             }
           },
           "default": {
@@ -1507,21 +1514,6 @@ func init() {
       },
       "x-go-gen-location": "operations"
     },
-    "getTaskCommentsOKBody": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/Comment"
-      },
-      "x-go-gen-location": "operations"
-    },
-    "listTasksOKBody": {
-      "type": "array",
-      "title": "TaskList",
-      "items": {
-        "$ref": "#/definitions/TaskCard"
-      },
-      "x-go-gen-location": "operations"
-    },
     "milestoneStats": {
       "description": "This object contains counts for the remaining open issues and the amount of issues that have been closed.\n",
       "type": "object",
@@ -1552,7 +1544,13 @@ func init() {
           "$ref": "#/definitions/taskAllOf1Attachments"
         },
         "comments": {
-          "$ref": "#/definitions/taskAllOf1Comments"
+          "description": "The detail view of an issue includes the 5 most recent comments.\nThis field is read only, comments are added through a separate process.\n",
+          "type": "array",
+          "title": "The 5 most recent items for this issue.",
+          "items": {
+            "$ref": "#/definitions/Comment"
+          },
+          "readOnly": true
         },
         "lastUpdated": {
           "description": "This field is read only so it's only sent as part of the response.\n",
@@ -1617,16 +1615,6 @@ func init() {
         }
       },
       "x-go-gen-location": "models"
-    },
-    "taskAllOf1Comments": {
-      "description": "The detail view of an issue includes the 5 most recent comments.\nThis field is read only, comments are added through a separate process.\n",
-      "type": "array",
-      "title": "The 5 most recent items for this issue.",
-      "items": {
-        "$ref": "#/definitions/Comment"
-      },
-      "x-go-gen-location": "models",
-      "readOnly": true
     },
     "validationErrorAllOf1": {
       "type": "object",

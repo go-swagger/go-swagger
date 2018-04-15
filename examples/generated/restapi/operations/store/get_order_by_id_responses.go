@@ -30,6 +30,7 @@ type GetOrderByIDOK struct {
 
 // NewGetOrderByIDOK creates GetOrderByIDOK with default headers values
 func NewGetOrderByIDOK() *GetOrderByIDOK {
+
 	return &GetOrderByIDOK{}
 }
 
@@ -68,6 +69,7 @@ type GetOrderByIDBadRequest struct {
 
 // NewGetOrderByIDBadRequest creates GetOrderByIDBadRequest with default headers values
 func NewGetOrderByIDBadRequest() *GetOrderByIDBadRequest {
+
 	return &GetOrderByIDBadRequest{}
 }
 
@@ -91,6 +93,7 @@ type GetOrderByIDNotFound struct {
 
 // NewGetOrderByIDNotFound creates GetOrderByIDNotFound with default headers values
 func NewGetOrderByIDNotFound() *GetOrderByIDNotFound {
+
 	return &GetOrderByIDNotFound{}
 }
 
