@@ -1,5 +1,7 @@
 package restapi
 
+// THIS CODE HAS NOT BEEN GENERATED
+
 import (
 	"fmt"
 	"io/ioutil"
@@ -12,20 +14,33 @@ import (
 )
 
 var (
-	state = "foobar" // Don't do this in production.
+	// state carries an internal token during the oauth2 workflow
+	// we just need a non empty initial value
+	state = "foobar" // Don't make this a global in production.
 
-	clientID     = ""
-	clientSecret = ""
-	issuer       = "https://accounts.google.com"
-	authURL      = "https://accounts.google.com/o/oauth2/v2/auth"
-	tokenURL     = "https://www.googleapis.com/oauth2/v4/token"
-	userInfoURL  = "https://www.googleapis.com/oauth2/v3/userinfo"
-	callbackURL  = "http://127.0.0.1:12345/api/auth/callback"
+	// the credentials for this API (adapt values when registering API)
+	clientID     = "" // <= enter registered API client ID here
+	clientSecret = "" // <= enter registered API client secret here
 
+	//  unused in this example: the signer of the delivered token
+	issuer = "https://accounts.google.com"
+
+	// the Google login URL
+	authURL = "https://accounts.google.com/o/oauth2/v2/auth"
+
+	// the Google OAuth2 resource provider which delivers access tokens
+	tokenURL    = "https://www.googleapis.com/oauth2/v4/token"
+	userInfoURL = "https://www.googleapis.com/oauth2/v3/userinfo"
+
+	// our endpoint to be called back by the redirected client
+	callbackURL = "http://127.0.0.1:12345/api/auth/callback"
+
+	// the description of the OAuth2 flow
 	endpoint = oauth2.Endpoint{
 		AuthURL:  authURL,
 		TokenURL: tokenURL,
 	}
+
 	config = oauth2.Config{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
@@ -36,12 +51,18 @@ var (
 )
 
 func login(r *http.Request) string {
+	// implements the login with a redirection and an access tokeb
 	var accessToken string
 	http.Redirect(wG, r, config.AuthCodeURL(state), http.StatusFound)
 	return accessToken
 }
 
 func callback(r *http.Request) (string, error) {
+	// we expect the redirected client to call us back
+	// with 2 query params: state and code.
+	// We use directly the Request params here, since we did not
+	// bother to document these parameters in the spec.
+
 	if r.URL.Query().Get("state") != state {
 		log.Println("state did not match")
 		return "", fmt.Errorf("state did not match")
@@ -54,17 +75,23 @@ func callback(r *http.Request) (string, error) {
 
 	authCode := r.URL.Query().Get("code")
 	log.Printf("Authorization code: %v\n", authCode)
+
+	// Exchange converts an authorization code into a token.
+	// Under the hood, the oauth2 client POST a request to do so
+	// at tokenURL, then redirects...
 	oauth2Token, err := config.Exchange(ctx, authCode)
 	if err != nil {
 		log.Println("failed to exchange token", err.Error())
 		return "", fmt.Errorf("failed to exchange token")
 	}
+
+	// the authorization server's returned token
 	log.Println("Raw token data:", oauth2Token)
 	return oauth2Token.AccessToken, nil
 }
 
 func authenticated(token string) (bool, error) {
-	// validate the token
+	// validates the token by sending a request at userInfoURL
 	bearToken := "Bearer " + token
 	req, err := http.NewRequest("GET", userInfoURL, nil)
 	if err != nil {
@@ -72,6 +99,7 @@ func authenticated(token string) (bool, error) {
 	}
 
 	req.Header.Add("Authorization", bearToken)
+
 	cli := &http.Client{}
 	resp, err := cli.Do(req)
 	if err != nil {
