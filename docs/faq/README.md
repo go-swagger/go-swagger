@@ -22,6 +22,7 @@ Feel free to contribute new questions and share your experience with go-swagger!
 <!-- * [What is the proper way to vendor go-swagger?](faq_setup.md#what-is-the-proper-way-to-vendor-go-swagger) -->
 
 #### Model generation
+* [Custom validation](faq_model.md#custom-validation)
 * [Non-required or nullable property?](faq_model.md#non-required-or-nullable-property)
 * [String parameter in body and query?](faq_model.md#string-parameter-in-body-and-query)
 * [Request response can have different objects returned based on query parameters](faq_model.md#request-response-can-have-different-objects-returned-based-on-query-parameters)
@@ -34,10 +35,9 @@ Feel free to contribute new questions and share your experience with go-swagger!
 * [What are the dependencies required by the generated server?](faq_server.md#what-are-the-dependencies-required-by-the-generated-server)
 * [How to add custom flags?](faq_server.md#how-to-add-custom-flags)
 * [How do you integrate the flag sets of go-swagger and other packages, in particular, glog?](faq_server.md#how-do-you-integrate-the-flag-sets-of-go-swagger-and-other-packages-in-particular-glog)
+* [How to serve two or more swagger specs from one server?](faq_server.md#how-to-serve-two-or-more-swagger-specs-from-one-server)
 * [How to access access API struct inside operator handler?](faq_server.md#how-to-access-access-api-struct-inside-operator-handler)
 * [Use go-swagger to generate different client or servers](faq_server.md#use-go-swagger-to-generate-different-client-or-servers)
-* [How to serve two or more swagger specs from one server?](faq_server.md#how-to-serve-two-or-more-swagger-specs-from-one-server)
-* [How to use swagger-ui/cors?](faq_server.md#how-to-use-swagger-ui-cors)
 * [Support streaming responses](faq_server.md#support-streaming-responses)
 
 #### Client generation
@@ -58,11 +58,14 @@ Feel free to contribute new questions and share your experience with go-swagger!
 <!--* [Generating spec cannot import dependencies](faq_spec.md#generating-spec-cannot-import-dependencies)-->
 
 #### API testing
-* [Using httptest](faq_testing.md#using-httptest)
 * [Any suggestions how to leverage the generated client for benchmarking the API?](faq_testing.md#any-suggestions-how-to-leverage-the-generated-client-for-benchmarking-the-api)
+* [Using httptest](faq_testing.md#using-httptest)
 
 #### Documenting your API
 * [Serving swagger-ui with the API Server](faq_documenting.md#serving-swagger-ui-with-the-api-server)
+* [Serving UI from existing app](faq_documenting.md#how-to-serve-swagger-ui-from-a-preexisting-web-app)
+* [How to use swagger-ui/cors?](faq_server.md#how-to-use-swagger-ui-cors)
+* [Serving my own UI files](faq_server.md#how-to-serve-my-ui-files)
 
 <!-- More on that...
 #### Documentation and tutorials
