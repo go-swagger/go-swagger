@@ -29,6 +29,7 @@ type ElapseOK struct {
 
 // NewElapseOK creates ElapseOK with default headers values
 func NewElapseOK() *ElapseOK {
+
 	return &ElapseOK{}
 }
 
@@ -66,6 +67,7 @@ type ElapseForbidden struct {
 
 // NewElapseForbidden creates ElapseForbidden with default headers values
 func NewElapseForbidden() *ElapseForbidden {
+
 	return &ElapseForbidden{}
 }
 

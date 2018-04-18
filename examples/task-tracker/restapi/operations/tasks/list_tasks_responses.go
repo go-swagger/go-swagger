@@ -23,18 +23,19 @@ swagger:response listTasksOK
 */
 type ListTasksOK struct {
 	/*the last task id known to the application
-	  Required: true
-	*/
+
+	 */
 	XLastTaskID int64 `json:"X-Last-Task-Id"`
 
 	/*
 	  In: Body
 	*/
-	Payload models.ListTasksOKBody `json:"body,omitempty"`
+	Payload []*models.TaskCard `json:"body,omitempty"`
 }
 
 // NewListTasksOK creates ListTasksOK with default headers values
 func NewListTasksOK() *ListTasksOK {
+
 	return &ListTasksOK{}
 }
 
@@ -50,13 +51,13 @@ func (o *ListTasksOK) SetXLastTaskID(xLastTaskID int64) {
 }
 
 // WithPayload adds the payload to the list tasks o k response
-func (o *ListTasksOK) WithPayload(payload models.ListTasksOKBody) *ListTasksOK {
+func (o *ListTasksOK) WithPayload(payload []*models.TaskCard) *ListTasksOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the list tasks o k response
-func (o *ListTasksOK) SetPayload(payload models.ListTasksOKBody) {
+func (o *ListTasksOK) SetPayload(payload []*models.TaskCard) {
 	o.Payload = payload
 }
 
@@ -73,7 +74,7 @@ func (o *ListTasksOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pro
 	rw.WriteHeader(200)
 	payload := o.Payload
 	if payload == nil {
-		payload = make(models.ListTasksOKBody, 0, 50)
+		payload = make([]*models.TaskCard, 0, 50)
 	}
 
 	if err := producer.Produce(rw, payload); err != nil {
@@ -99,6 +100,7 @@ type ListTasksUnprocessableEntity struct {
 
 // NewListTasksUnprocessableEntity creates ListTasksUnprocessableEntity with default headers values
 func NewListTasksUnprocessableEntity() *ListTasksUnprocessableEntity {
+
 	return &ListTasksUnprocessableEntity{}
 }
 
@@ -132,8 +134,8 @@ swagger:response listTasksDefault
 type ListTasksDefault struct {
 	_statusCode int
 	/*
-	  Required: true
-	*/
+
+	 */
 	XErrorCode string `json:"X-Error-Code"`
 
 	/*

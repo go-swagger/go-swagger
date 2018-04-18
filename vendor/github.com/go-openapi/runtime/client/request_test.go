@@ -268,6 +268,29 @@ func TestBuildRequest_BuildHTTP_Form(t *testing.T) {
 	}
 }
 
+func TestBuildRequest_BuildHTTP_Form_URLEncoded(t *testing.T) {
+	reqWrtr := runtime.ClientRequestWriterFunc(func(req runtime.ClientRequest, reg strfmt.Registry) error {
+		_ = req.SetFormParam("something", "some value")
+		_ = req.SetQueryParam("hello", "world")
+		_ = req.SetPathParam("id", "1234")
+		_ = req.SetHeaderParam("X-Rate-Limit", "200")
+		return nil
+	})
+	r, _ := newRequest("GET", "/flats/{id}/", reqWrtr)
+	_ = r.SetHeaderParam(runtime.HeaderContentType, runtime.URLencodedFormMime)
+
+	req, err := r.BuildHTTP(runtime.URLencodedFormMime, "", testProducers, nil)
+	if assert.NoError(t, err) && assert.NotNil(t, req) {
+		assert.Equal(t, "200", req.Header.Get("x-rate-limit"))
+		assert.Equal(t, runtime.URLencodedFormMime, req.Header.Get(runtime.HeaderContentType))
+		assert.Equal(t, "world", req.URL.Query().Get("hello"))
+		assert.Equal(t, "/flats/1234/", req.URL.Path)
+		expected := []byte("something=some+value")
+		actual, _ := ioutil.ReadAll(req.Body)
+		assert.Equal(t, expected, actual)
+	}
+}
+
 func TestBuildRequest_BuildHTTP_Form_Content_Length(t *testing.T) {
 	reqWrtr := runtime.ClientRequestWriterFunc(func(req runtime.ClientRequest, reg strfmt.Registry) error {
 		_ = req.SetFormParam("something", "some value")

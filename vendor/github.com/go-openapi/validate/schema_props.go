@@ -43,15 +43,15 @@ func (s *schemaPropsValidator) SetPath(path string) {
 }
 
 func newSchemaPropsValidator(path string, in string, allOf, oneOf, anyOf []spec.Schema, not *spec.Schema, deps spec.Dependencies, root interface{}, formats strfmt.Registry) *schemaPropsValidator {
-	var anyValidators []SchemaValidator
+	anyValidators := make([]SchemaValidator, 0, len(anyOf))
 	for _, v := range anyOf {
 		anyValidators = append(anyValidators, *NewSchemaValidator(&v, root, path, formats))
 	}
-	var allValidators []SchemaValidator
+	allValidators := make([]SchemaValidator, 0, len(allOf))
 	for _, v := range allOf {
 		allValidators = append(allValidators, *NewSchemaValidator(&v, root, path, formats))
 	}
-	var oneValidators []SchemaValidator
+	oneValidators := make([]SchemaValidator, 0, len(oneOf))
 	for _, v := range oneOf {
 		oneValidators = append(oneValidators, *NewSchemaValidator(&v, root, path, formats))
 	}

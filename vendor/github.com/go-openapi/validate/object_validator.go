@@ -102,6 +102,7 @@ func (o *objectValidator) Validate(data interface{}) *Result {
 
 	o.precheck(res, val)
 
+	// check validity of field names
 	if o.AdditionalProperties != nil && !o.AdditionalProperties.Allows {
 		// Case: additionalProperties: false
 		for k := range val {
@@ -175,7 +176,8 @@ func (o *objectValidator) Validate(data interface{}) *Result {
 				// Cases: properties which are not regular properties and have not been matched by the PatternProperties validator
 				if o.AdditionalProperties != nil && o.AdditionalProperties.Schema != nil {
 					// AdditionalProperties as Schema
-					res.Merge(NewSchemaValidator(o.AdditionalProperties.Schema, o.Root, o.Path+"."+key, o.KnownFormats).Validate(value))
+					r := NewSchemaValidator(o.AdditionalProperties.Schema, o.Root, o.Path+"."+key, o.KnownFormats).Validate(value)
+					res.mergeForField(data.(map[string]interface{}), key, r)
 				} else if regularProperty && !(matched || succeededOnce) {
 					// TODO: this is dead code since regularProperty=false here
 					res.AddErrors(errors.FailedAllPatternProperties(o.Path, o.In, key))
@@ -189,7 +191,8 @@ func (o *objectValidator) Validate(data interface{}) *Result {
 
 	// Property types:
 	// - regular Property
-	for pName, pSchema := range o.Properties {
+	for pName := range o.Properties {
+		pSchema := o.Properties[pName] // one instance per iteration
 		rName := pName
 		if o.Path != "" {
 			rName = o.Path + "." + pName
@@ -198,17 +201,12 @@ func (o *objectValidator) Validate(data interface{}) *Result {
 		// Recursively validates each property against its schema
 		if v, ok := val[pName]; ok {
 			r := NewSchemaValidator(&pSchema, o.Root, rName, o.KnownFormats).Validate(v)
-			res.Merge(r)
+			res.mergeForField(data.(map[string]interface{}), pName, r)
 		} else if pSchema.Default != nil {
 			// If a default value is defined, creates the property from defaults
 			// NOTE: JSON schema does not enforce default values to be valid against schema. Swagger does.
 			createdFromDefaults[pName] = true
-			pName := pName // shadow
-			// TODO: should validate the default first and ignore the value if invalid
-			def := pSchema.Default
-			res.Defaulters = append(res.Defaulters, DefaulterFunc(func() {
-				val[pName] = def
-			}))
+			res.addPropertySchemata(data.(map[string]interface{}), pName, &pSchema)
 		}
 	}
 
@@ -230,7 +228,8 @@ func (o *objectValidator) Validate(data interface{}) *Result {
 		if !regularProperty && (matched /*|| succeededOnce*/) {
 			for _, pName := range patterns {
 				if v, ok := o.PatternProperties[pName]; ok {
-					res.Merge(NewSchemaValidator(&v, o.Root, o.Path+"."+key, o.KnownFormats).Validate(value))
+					r := NewSchemaValidator(&v, o.Root, o.Path+"."+key, o.KnownFormats).Validate(value)
+					res.mergeForField(data.(map[string]interface{}), key, r)
 				}
 			}
 		}

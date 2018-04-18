@@ -862,6 +862,9 @@ func (u UUID) MarshalEasyJSON(w *jwriter.Writer) {
 
 // UnmarshalJSON sets the UUID from JSON
 func (u *UUID) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" {
+		return nil
+	}
 	l := jlexer.Lexer{Data: data}
 	u.UnmarshalEasyJSON(&l)
 	return l.Error()
@@ -947,6 +950,9 @@ func (u UUID3) MarshalEasyJSON(w *jwriter.Writer) {
 
 // UnmarshalJSON sets the UUID3 from JSON
 func (u *UUID3) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" {
+		return nil
+	}
 	l := jlexer.Lexer{Data: data}
 	u.UnmarshalEasyJSON(&l)
 	return l.Error()
@@ -1032,6 +1038,9 @@ func (u UUID4) MarshalEasyJSON(w *jwriter.Writer) {
 
 // UnmarshalJSON sets the UUID4 from JSON
 func (u *UUID4) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" {
+		return nil
+	}
 	l := jlexer.Lexer{Data: data}
 	u.UnmarshalEasyJSON(&l)
 	return l.Error()
@@ -1117,6 +1126,9 @@ func (u UUID5) MarshalEasyJSON(w *jwriter.Writer) {
 
 // UnmarshalJSON sets the UUID5 from JSON
 func (u *UUID5) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" {
+		return nil
+	}
 	l := jlexer.Lexer{Data: data}
 	u.UnmarshalEasyJSON(&l)
 	return l.Error()

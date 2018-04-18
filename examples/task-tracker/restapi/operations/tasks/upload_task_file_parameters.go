@@ -19,9 +19,9 @@ import (
 )
 
 // NewUploadTaskFileParams creates a new UploadTaskFileParams object
-// with the default values initialized.
+// no default values defined in spec.
 func NewUploadTaskFileParams() UploadTaskFileParams {
-	var ()
+
 	return UploadTaskFileParams{}
 }
 
@@ -50,16 +50,19 @@ type UploadTaskFileParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewUploadTaskFileParams() beforehand.
 func (o *UploadTaskFileParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		if err != http.ErrNotMultipart {
-			return err
+			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
-			return err
+			return errors.New(400, "%v", err)
 		}
 	}
 	fds := runtime.Values(r.Form)
@@ -96,6 +99,9 @@ func (o *UploadTaskFileParams) bindDescription(rawData []string, hasKey bool, fo
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
@@ -115,6 +121,9 @@ func (o *UploadTaskFileParams) bindID(rawData []string, hasKey bool, formats str
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+	// Parameter is provided by construction from the route
 
 	value, err := swag.ConvertInt64(raw)
 	if err != nil {

@@ -48,6 +48,7 @@ func (o *DeleteOrderURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("OrderID is required on DeleteOrderURL")
 	}
+
 	_basePath := o._basePath
 	if _basePath == "" {
 		_basePath = "/v2"

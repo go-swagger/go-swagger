@@ -1,8 +1,8 @@
 language: go
-dist: trusty
 go:
 - 1.8.x
 - 1.9.x
+- 1.10.x
 install:
 - go get -u github.com/axw/gocov/gocov
 - go get -u gopkg.in/matm/v1/gocov-html

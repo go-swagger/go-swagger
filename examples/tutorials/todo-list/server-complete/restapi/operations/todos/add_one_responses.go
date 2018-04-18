@@ -30,6 +30,7 @@ type AddOneCreated struct {
 
 // NewAddOneCreated creates AddOneCreated with default headers values
 func NewAddOneCreated() *AddOneCreated {
+
 	return &AddOneCreated{}
 }
 

@@ -38,9 +38,6 @@ func NewHTTPClient(formats strfmt.Registry) *TaskTracker {
 // using a customizable transport config.
 func NewHTTPClientWithConfig(formats strfmt.Registry, cfg *TransportConfig) *TaskTracker {
 	// ensure nullable parameters have default
-	if formats == nil {
-		formats = strfmt.Default
-	}
 	if cfg == nil {
 		cfg = DefaultTransportConfig()
 	}
@@ -52,6 +49,11 @@ func NewHTTPClientWithConfig(formats strfmt.Registry, cfg *TransportConfig) *Tas
 
 // New creates a new task tracker client
 func New(transport runtime.ClientTransport, formats strfmt.Registry) *TaskTracker {
+	// ensure nullable parameters have default
+	if formats == nil {
+		formats = strfmt.Default
+	}
+
 	cli := new(TaskTracker)
 	cli.Transport = transport
 

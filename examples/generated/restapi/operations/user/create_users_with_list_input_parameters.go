@@ -16,9 +16,9 @@ import (
 )
 
 // NewCreateUsersWithListInputParams creates a new CreateUsersWithListInputParams object
-// with the default values initialized.
+// no default values defined in spec.
 func NewCreateUsersWithListInputParams() CreateUsersWithListInputParams {
-	var ()
+
 	return CreateUsersWithListInputParams{}
 }
 
@@ -34,29 +34,39 @@ type CreateUsersWithListInputParams struct {
 	/*List of user object
 	  In: body
 	*/
-	Body models.CreateUsersWithListInputParamsBody
+	Body []*models.User
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewCreateUsersWithListInputParams() beforehand.
 func (o *CreateUsersWithListInputParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	if runtime.HasBody(r) {
 		defer r.Body.Close()
-		var body models.CreateUsersWithListInputParamsBody
+		var body []*models.User
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))
 		} else {
+
+			// validate array of body objects
+			o.Body = body
+			for _, io := range o.Body {
+				if err := io.Validate(route.Formats); err != nil {
+					res = append(res, err)
+					break
+				}
+			}
 
 			if len(res) == 0 {
 				o.Body = body
 			}
 		}
-
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}

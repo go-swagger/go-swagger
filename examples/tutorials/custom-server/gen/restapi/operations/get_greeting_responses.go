@@ -28,6 +28,7 @@ type GetGreetingOK struct {
 
 // NewGetGreetingOK creates GetGreetingOK with default headers values
 func NewGetGreetingOK() *GetGreetingOK {
+
 	return &GetGreetingOK{}
 }
 

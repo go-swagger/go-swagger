@@ -50,6 +50,7 @@ func (o *DeleteTaskURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("ID is required on DeleteTaskURL")
 	}
+
 	_basePath := o._basePath
 	if _basePath == "" {
 		_basePath = "/api"

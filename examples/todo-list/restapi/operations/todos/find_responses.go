@@ -25,22 +25,23 @@ type FindOK struct {
 	/*
 	  In: Body
 	*/
-	Payload models.FindOKBody `json:"body,omitempty"`
+	Payload []*models.Item `json:"body,omitempty"`
 }
 
 // NewFindOK creates FindOK with default headers values
 func NewFindOK() *FindOK {
+
 	return &FindOK{}
 }
 
 // WithPayload adds the payload to the find o k response
-func (o *FindOK) WithPayload(payload models.FindOKBody) *FindOK {
+func (o *FindOK) WithPayload(payload []*models.Item) *FindOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the find o k response
-func (o *FindOK) SetPayload(payload models.FindOKBody) {
+func (o *FindOK) SetPayload(payload []*models.Item) {
 	o.Payload = payload
 }
 
@@ -50,7 +51,7 @@ func (o *FindOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer
 	rw.WriteHeader(200)
 	payload := o.Payload
 	if payload == nil {
-		payload = make(models.FindOKBody, 0, 50)
+		payload = make([]*models.Item, 0, 50)
 	}
 
 	if err := producer.Produce(rw, payload); err != nil {

@@ -16,9 +16,9 @@ import (
 )
 
 // NewCreateParams creates a new CreateParams object
-// with the default values initialized.
+// no default values defined in spec.
 func NewCreateParams() CreateParams {
-	var ()
+
 	return CreateParams{}
 }
 
@@ -38,9 +38,12 @@ type CreateParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewCreateParams() beforehand.
 func (o *CreateParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	if runtime.HasBody(r) {
@@ -49,6 +52,8 @@ func (o *CreateParams) BindRequest(r *http.Request, route *middleware.MatchedRou
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("info", "body", "", err))
 		} else {
+
+			// validate body object
 			if err := body.Validate(route.Formats); err != nil {
 				res = append(res, err)
 			}
@@ -57,9 +62,7 @@ func (o *CreateParams) BindRequest(r *http.Request, route *middleware.MatchedRou
 				o.Info = &body
 			}
 		}
-
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}

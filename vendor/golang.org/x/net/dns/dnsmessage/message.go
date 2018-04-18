@@ -5,6 +5,9 @@
 // Package dnsmessage provides a mostly RFC 1035 compliant implementation of
 // DNS message packing and unpacking.
 //
+// The package also supports messages with Extension Mechanisms for DNS
+// (EDNS(0)) as defined in RFC 6891.
+//
 // This implementation is designed to minimize heap allocations and avoid
 // unnecessary packing and unpacking as much as possible.
 package dnsmessage
@@ -39,6 +42,7 @@ const (
 	TypeTXT   Type = 16
 	TypeAAAA  Type = 28
 	TypeSRV   Type = 33
+	TypeOPT   Type = 41
 
 	// Question.Type
 	TypeWKS   Type = 11
@@ -90,6 +94,8 @@ var (
 	errTooManyAuthorities = errors.New("too many Authorities to pack (>65535)")
 	errTooManyAdditionals = errors.New("too many Additionals to pack (>65535)")
 	errNonCanonicalName   = errors.New("name is not in canonical format (it must end with a .)")
+	errStringTooLong      = errors.New("character string exceeds maximum length (255)")
+	errCompressedSRV      = errors.New("compressed name in SRV resource data")
 )
 
 // Internal constants.
@@ -218,6 +224,7 @@ func (h *header) count(sec section) uint16 {
 	return 0
 }
 
+// pack appends the wire format of the header to msg.
 func (h *header) pack(msg []byte) []byte {
 	msg = packUint16(msg, h.id)
 	msg = packUint16(msg, h.bits)
@@ -280,6 +287,7 @@ type ResourceBody interface {
 	realType() Type
 }
 
+// pack appends the wire format of the Resource to msg.
 func (r *Resource) pack(msg []byte, compression map[string]int, compressionOff int) ([]byte, error) {
 	if r.Body == nil {
 		return msg, errNilResouceBody
@@ -798,6 +806,24 @@ func (p *Parser) AAAAResource() (AAAAResource, error) {
 	return r, nil
 }
 
+// OPTResource parses a single OPTResource.
+//
+// One of the XXXHeader methods must have been called before calling this
+// method.
+func (p *Parser) OPTResource() (OPTResource, error) {
+	if !p.resHeaderValid || p.resHeader.Type != TypeOPT {
+		return OPTResource{}, ErrNotStarted
+	}
+	r, err := unpackOPTResource(p.msg, p.off, p.resHeader.Length)
+	if err != nil {
+		return OPTResource{}, err
+	}
+	p.off += int(p.resHeader.Length)
+	p.resHeaderValid = false
+	p.index++
+	return r, nil
+}
+
 // Unpack parses a full Message.
 func (m *Message) Unpack(msg []byte) error {
 	var p Parser
@@ -1274,6 +1300,30 @@ func (b *Builder) AAAAResource(h ResourceHeader, r AAAAResource) error {
 	return nil
 }
 
+// OPTResource adds a single OPTResource.
+func (b *Builder) OPTResource(h ResourceHeader, r OPTResource) error {
+	if err := b.checkResourceSection(); err != nil {
+		return err
+	}
+	h.Type = r.realType()
+	msg, length, err := h.pack(b.msg, b.compression, b.start)
+	if err != nil {
+		return &nestedError{"ResourceHeader", err}
+	}
+	preLen := len(msg)
+	if msg, err = r.pack(msg, b.compression, b.start); err != nil {
+		return &nestedError{"OPTResource body", err}
+	}
+	if err := h.fixLen(msg, length, preLen); err != nil {
+		return err
+	}
+	if err := b.incrementSectionCount(); err != nil {
+		return err
+	}
+	b.msg = msg
+	return nil
+}
+
 // Finish ends message building and generates a binary message.
 func (b *Builder) Finish() ([]byte, error) {
 	if b.section < sectionHeader {
@@ -1311,9 +1361,10 @@ type ResourceHeader struct {
 	Length uint16
 }
 
-// pack packs all of the fields in a ResourceHeader except for the length. The
-// length bytes are returned as a slice so they can be filled in after the rest
-// of the Resource has been packed.
+// pack appends the wire format of the ResourceHeader to oldMsg.
+//
+// The bytes where length was packed are returned as a slice so they can be
+// updated after the rest of the Resource has been packed.
 func (h *ResourceHeader) pack(oldMsg []byte, compression map[string]int, compressionOff int) (msg []byte, length []byte, err error) {
 	msg = oldMsg
 	if msg, err = h.Name.pack(msg, compression, compressionOff); err != nil {
@@ -1361,6 +1412,44 @@ func (h *ResourceHeader) fixLen(msg []byte, length []byte, preLen int) error {
 	return nil
 }
 
+// EDNS(0) wire costants.
+const (
+	edns0Version = 0
+
+	edns0DNSSECOK     = 0x00008000
+	ednsVersionMask   = 0x00ff0000
+	edns0DNSSECOKMask = 0x00ff8000
+)
+
+// SetEDNS0 configures h for EDNS(0).
+//
+// The provided extRCode must be an extedned RCode.
+func (h *ResourceHeader) SetEDNS0(udpPayloadLen int, extRCode RCode, dnssecOK bool) error {
+	h.Name = Name{Data: [nameLen]byte{'.'}, Length: 1} // RFC 6891 section 6.1.2
+	h.Type = TypeOPT
+	h.Class = Class(udpPayloadLen)
+	h.TTL = uint32(extRCode) >> 4 << 24
+	if dnssecOK {
+		h.TTL |= edns0DNSSECOK
+	}
+	return nil
+}
+
+// DNSSECAllowed reports whether the DNSSEC OK bit is set.
+func (h *ResourceHeader) DNSSECAllowed() bool {
+	return h.TTL&edns0DNSSECOKMask == edns0DNSSECOK // RFC 6891 section 6.1.3
+}
+
+// ExtendedRCode returns an extended RCode.
+//
+// The provided rcode must be the RCode in DNS message header.
+func (h *ResourceHeader) ExtendedRCode(rcode RCode) RCode {
+	if h.TTL&ednsVersionMask == edns0Version { // RFC 6891 section 6.1.3
+		return RCode(h.TTL>>24<<4) | rcode
+	}
+	return rcode
+}
+
 func skipResource(msg []byte, off int) (int, error) {
 	newOff, err := skipName(msg, off)
 	if err != nil {
@@ -1385,6 +1474,7 @@ func skipResource(msg []byte, off int) (int, error) {
 	return newOff, nil
 }
 
+// packUint16 appends the wire format of field to msg.
 func packUint16(msg []byte, field uint16) []byte {
 	return append(msg, byte(field>>8), byte(field))
 }
@@ -1403,6 +1493,7 @@ func skipUint16(msg []byte, off int) (int, error) {
 	return off + uint16Len, nil
 }
 
+// packType appends the wire format of field to msg.
 func packType(msg []byte, field Type) []byte {
 	return packUint16(msg, uint16(field))
 }
@@ -1416,6 +1507,7 @@ func skipType(msg []byte, off int) (int, error) {
 	return skipUint16(msg, off)
 }
 
+// packClass appends the wire format of field to msg.
 func packClass(msg []byte, field Class) []byte {
 	return packUint16(msg, uint16(field))
 }
@@ -1429,6 +1521,7 @@ func skipClass(msg []byte, off int) (int, error) {
 	return skipUint16(msg, off)
 }
 
+// packUint32 appends the wire format of field to msg.
 func packUint32(msg []byte, field uint32) []byte {
 	return append(
 		msg,
@@ -1454,17 +1547,16 @@ func skipUint32(msg []byte, off int) (int, error) {
 	return off + uint32Len, nil
 }
 
-func packText(msg []byte, field string) []byte {
-	for len(field) > 0 {
-		l := len(field)
-		if l > 255 {
-			l = 255
-		}
-		msg = append(msg, byte(l))
-		msg = append(msg, field[:l]...)
-		field = field[l:]
+// packText appends the wire format of field to msg.
+func packText(msg []byte, field string) ([]byte, error) {
+	l := len(field)
+	if l > 255 {
+		return nil, errStringTooLong
 	}
-	return msg
+	msg = append(msg, byte(l))
+	msg = append(msg, field...)
+
+	return msg, nil
 }
 
 func unpackText(msg []byte, off int) (string, int, error) {
@@ -1490,6 +1582,7 @@ func skipText(msg []byte, off int) (int, error) {
 	return endOff, nil
 }
 
+// packBytes appends the wire format of field to msg.
 func packBytes(msg []byte, field []byte) []byte {
 	return append(msg, field...)
 }
@@ -1534,7 +1627,7 @@ func (n Name) String() string {
 	return string(n.Data[:n.Length])
 }
 
-// pack packs a domain name.
+// pack appends the wire format of the Name to msg.
 //
 // Domain names are a sequence of counted strings split at the dots. They end
 // with a zero-length string. Compression can be used to reuse domain suffixes.
@@ -1602,6 +1695,10 @@ func (n *Name) pack(msg []byte, compression map[string]int, compressionOff int) 
 
 // unpack unpacks a domain name.
 func (n *Name) unpack(msg []byte, off int) (int, error) {
+	return n.unpackCompressed(msg, off, true /* allowCompression */)
+}
+
+func (n *Name) unpackCompressed(msg []byte, off int, allowCompression bool) (int, error) {
 	// currOff is the current working offset.
 	currOff := off
 
@@ -1637,6 +1734,9 @@ Loop:
 			name = append(name, '.')
 			currOff = endOff
 		case 0xC0: // Pointer
+			if !allowCompression {
+				return off, errCompressedSRV
+			}
 			if currOff >= len(msg) {
 				return off, errInvalidPtr
 			}
@@ -1716,6 +1816,7 @@ type Question struct {
 	Class Class
 }
 
+// pack appends the wire format of the Question to msg.
 func (q *Question) pack(msg []byte, compression map[string]int, compressionOff int) ([]byte, error) {
 	msg, err := q.Name.pack(msg, compression, compressionOff)
 	if err != nil {
@@ -1777,6 +1878,11 @@ func unpackResourceBody(msg []byte, off int, hdr ResourceHeader) (ResourceBody, 
 		rb, err = unpackSRVResource(msg, off)
 		r = &rb
 		name = "SRV"
+	case TypeOPT:
+		var rb OPTResource
+		rb, err = unpackOPTResource(msg, off, hdr.Length)
+		r = &rb
+		name = "OPT"
 	}
 	if err != nil {
 		return nil, off, &nestedError{name + " record", err}
@@ -1796,6 +1902,7 @@ func (r *CNAMEResource) realType() Type {
 	return TypeCNAME
 }
 
+// pack appends the wire format of the CNAMEResource to msg.
 func (r *CNAMEResource) pack(msg []byte, compression map[string]int, compressionOff int) ([]byte, error) {
 	return r.CNAME.pack(msg, compression, compressionOff)
 }
@@ -1818,6 +1925,7 @@ func (r *MXResource) realType() Type {
 	return TypeMX
 }
 
+// pack appends the wire format of the MXResource to msg.
 func (r *MXResource) pack(msg []byte, compression map[string]int, compressionOff int) ([]byte, error) {
 	oldMsg := msg
 	msg = packUint16(msg, r.Pref)
@@ -1849,6 +1957,7 @@ func (r *NSResource) realType() Type {
 	return TypeNS
 }
 
+// pack appends the wire format of the NSResource to msg.
 func (r *NSResource) pack(msg []byte, compression map[string]int, compressionOff int) ([]byte, error) {
 	return r.NS.pack(msg, compression, compressionOff)
 }
@@ -1870,6 +1979,7 @@ func (r *PTRResource) realType() Type {
 	return TypePTR
 }
 
+// pack appends the wire format of the PTRResource to msg.
 func (r *PTRResource) pack(msg []byte, compression map[string]int, compressionOff int) ([]byte, error) {
 	return r.PTR.pack(msg, compression, compressionOff)
 }
@@ -1901,6 +2011,7 @@ func (r *SOAResource) realType() Type {
 	return TypeSOA
 }
 
+// pack appends the wire format of the SOAResource to msg.
 func (r *SOAResource) pack(msg []byte, compression map[string]int, compressionOff int) ([]byte, error) {
 	oldMsg := msg
 	msg, err := r.NS.pack(msg, compression, compressionOff)
@@ -1953,19 +2064,28 @@ func unpackSOAResource(msg []byte, off int) (SOAResource, error) {
 
 // A TXTResource is a TXT Resource record.
 type TXTResource struct {
-	Txt string // Not a domain name.
+	TXT []string
 }
 
 func (r *TXTResource) realType() Type {
 	return TypeTXT
 }
 
+// pack appends the wire format of the TXTResource to msg.
 func (r *TXTResource) pack(msg []byte, compression map[string]int, compressionOff int) ([]byte, error) {
-	return packText(msg, r.Txt), nil
+	oldMsg := msg
+	for _, s := range r.TXT {
+		var err error
+		msg, err = packText(msg, s)
+		if err != nil {
+			return oldMsg, err
+		}
+	}
+	return msg, nil
 }
 
 func unpackTXTResource(msg []byte, off int, length uint16) (TXTResource, error) {
-	var txt string
+	txts := make([]string, 0, 1)
 	for n := uint16(0); n < length; {
 		var t string
 		var err error
@@ -1977,9 +2097,9 @@ func unpackTXTResource(msg []byte, off int, length uint16) (TXTResource, error) 
 			return TXTResource{}, errCalcLen
 		}
 		n += uint16(len(t)) + 1
-		txt += t
+		txts = append(txts, t)
 	}
-	return TXTResource{txt}, nil
+	return TXTResource{txts}, nil
 }
 
 // An SRVResource is an SRV Resource record.
@@ -1994,6 +2114,7 @@ func (r *SRVResource) realType() Type {
 	return TypeSRV
 }
 
+// pack appends the wire format of the SRVResource to msg.
 func (r *SRVResource) pack(msg []byte, compression map[string]int, compressionOff int) ([]byte, error) {
 	oldMsg := msg
 	msg = packUint16(msg, r.Priority)
@@ -2020,7 +2141,7 @@ func unpackSRVResource(msg []byte, off int) (SRVResource, error) {
 		return SRVResource{}, &nestedError{"Port", err}
 	}
 	var target Name
-	if _, err := target.unpack(msg, off); err != nil {
+	if _, err := target.unpackCompressed(msg, off, false /* allowCompression */); err != nil {
 		return SRVResource{}, &nestedError{"Target", err}
 	}
 	return SRVResource{priority, weight, port, target}, nil
@@ -2035,6 +2156,7 @@ func (r *AResource) realType() Type {
 	return TypeA
 }
 
+// pack appends the wire format of the AResource to msg.
 func (r *AResource) pack(msg []byte, compression map[string]int, compressionOff int) ([]byte, error) {
 	return packBytes(msg, r.A[:]), nil
 }
@@ -2056,6 +2178,7 @@ func (r *AAAAResource) realType() Type {
 	return TypeAAAA
 }
 
+// pack appends the wire format of the AAAAResource to msg.
 func (r *AAAAResource) pack(msg []byte, compression map[string]int, compressionOff int) ([]byte, error) {
 	return packBytes(msg, r.AAAA[:]), nil
 }
@@ -2066,4 +2189,59 @@ func unpackAAAAResource(msg []byte, off int) (AAAAResource, error) {
 		return AAAAResource{}, err
 	}
 	return AAAAResource{aaaa}, nil
+}
+
+// An OPTResource is an OPT pseudo Resource record.
+//
+// The pseudo resource record is part of the extension mechanisms for DNS
+// as defined in RFC 6891.
+type OPTResource struct {
+	Options []Option
+}
+
+// An Option represents a DNS message option within OPTResource.
+//
+// The message option is part of the extension mechanisms for DNS as
+// defined in RFC 6891.
+type Option struct {
+	Code uint16 // option code
+	Data []byte
+}
+
+func (r *OPTResource) realType() Type {
+	return TypeOPT
+}
+
+func (r *OPTResource) pack(msg []byte, compression map[string]int, compressionOff int) ([]byte, error) {
+	for _, opt := range r.Options {
+		msg = packUint16(msg, opt.Code)
+		l := uint16(len(opt.Data))
+		msg = packUint16(msg, l)
+		msg = packBytes(msg, opt.Data)
+	}
+	return msg, nil
+}
+
+func unpackOPTResource(msg []byte, off int, length uint16) (OPTResource, error) {
+	var opts []Option
+	for oldOff := off; off < oldOff+int(length); {
+		var err error
+		var o Option
+		o.Code, off, err = unpackUint16(msg, off)
+		if err != nil {
+			return OPTResource{}, &nestedError{"Code", err}
+		}
+		var l uint16
+		l, off, err = unpackUint16(msg, off)
+		if err != nil {
+			return OPTResource{}, &nestedError{"Data", err}
+		}
+		o.Data = make([]byte, l)
+		if copy(o.Data, msg[off:]) != int(l) {
+			return OPTResource{}, &nestedError{"Data", errCalcLen}
+		}
+		off += int(l)
+		opts = append(opts, o)
+	}
+	return OPTResource{opts}, nil
 }

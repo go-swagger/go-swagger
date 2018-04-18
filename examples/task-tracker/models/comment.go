@@ -47,6 +47,11 @@ func (m *Comment) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateCreatedAt(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if err := m.validateUser(formats); err != nil {
 		// prop
 		res = append(res, err)
@@ -67,6 +72,19 @@ func (m *Comment) validateContent(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Comment) validateCreatedAt(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.CreatedAt) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("createdAt", "body", "date-time", m.CreatedAt.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Comment) validateUser(formats strfmt.Registry) error {
 
 	if err := validate.Required("user", "body", m.User); err != nil {
@@ -81,6 +99,7 @@ func (m *Comment) validateUser(formats strfmt.Registry) error {
 			}
 			return err
 		}
+
 	}
 
 	return nil

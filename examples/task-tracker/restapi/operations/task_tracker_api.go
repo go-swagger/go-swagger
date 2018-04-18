@@ -29,6 +29,8 @@ func NewTaskTrackerAPI(spec *loads.Document) *TaskTrackerAPI {
 		formats:               strfmt.Default,
 		defaultConsumes:       "application/json",
 		defaultProduces:       "application/json",
+		customConsumers:       make(map[string]runtime.Consumer),
+		customProducers:       make(map[string]runtime.Producer),
 		ServerShutdown:        func() {},
 		spec:                  spec,
 		ServeError:            errors.ServeError,
@@ -89,6 +91,8 @@ type TaskTrackerAPI struct {
 	context         *middleware.Context
 	handlers        map[string]map[string]http.Handler
 	formats         strfmt.Registry
+	customConsumers map[string]runtime.Consumer
+	customProducers map[string]runtime.Producer
 	defaultConsumes string
 	defaultProduces string
 	Middleware      func(middleware.Builder) http.Handler
@@ -299,6 +303,10 @@ func (o *TaskTrackerAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Co
 			result["multipart/form-data"] = o.MultipartformConsumer
 
 		}
+
+		if c, ok := o.customConsumers[mt]; ok {
+			result[mt] = c
+		}
 	}
 	return result
 
@@ -314,6 +322,10 @@ func (o *TaskTrackerAPI) ProducersFor(mediaTypes []string) map[string]runtime.Pr
 		case "application/vnd.goswagger.examples.task-tracker.v1+json":
 			result["application/vnd.goswagger.examples.task-tracker.v1+json"] = o.JSONProducer
 
+		}
+
+		if p, ok := o.customProducers[mt]; ok {
+			result[mt] = p
 		}
 	}
 	return result
@@ -410,4 +422,14 @@ func (o *TaskTrackerAPI) Init() {
 	if len(o.handlers) == 0 {
 		o.initHandlerCache()
 	}
+}
+
+// RegisterConsumer allows you to add (or override) a consumer for a media type.
+func (o *TaskTrackerAPI) RegisterConsumer(mediaType string, consumer runtime.Consumer) {
+	o.customConsumers[mediaType] = consumer
+}
+
+// RegisterProducer allows you to add (or override) a producer for a media type.
+func (o *TaskTrackerAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
+	o.customProducers[mediaType] = producer
 }

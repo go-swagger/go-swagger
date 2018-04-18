@@ -48,6 +48,7 @@ func (o *GetUserByNameURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("Username is required on GetUserByNameURL")
 	}
+
 	_basePath := o._basePath
 	if _basePath == "" {
 		_basePath = "/v2"

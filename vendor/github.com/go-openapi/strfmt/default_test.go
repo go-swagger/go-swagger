@@ -274,6 +274,11 @@ func TestFormatUUID3(t *testing.T) {
 
 	testValid(t, "uuid3", str)
 	testInvalid(t, "uuid3", "not-a-uuid")
+
+	var uuidZero UUID3
+	err = uuidZero.UnmarshalJSON([]byte("null"))
+	assert.NoError(t, err)
+	assert.EqualValues(t, UUID3(""), uuidZero)
 }
 
 func TestFormatUUID4(t *testing.T) {
@@ -310,6 +315,11 @@ func TestFormatUUID4(t *testing.T) {
 
 	testValid(t, "uuid4", str)
 	testInvalid(t, "uuid4", "not-a-uuid")
+
+	var uuidZero UUID4
+	err = uuidZero.UnmarshalJSON([]byte("null"))
+	assert.NoError(t, err)
+	assert.EqualValues(t, UUID4(""), uuidZero)
 }
 
 func TestFormatUUID5(t *testing.T) {
@@ -346,6 +356,11 @@ func TestFormatUUID5(t *testing.T) {
 
 	testValid(t, "uuid5", str)
 	testInvalid(t, "uuid5", "not-a-uuid")
+
+	var uuidZero UUID5
+	err = uuidZero.UnmarshalJSON([]byte("null"))
+	assert.NoError(t, err)
+	assert.EqualValues(t, UUID5(""), uuidZero)
 }
 
 func TestFormatUUID(t *testing.T) {
@@ -382,6 +397,11 @@ func TestFormatUUID(t *testing.T) {
 
 	testValid(t, "uuid", str)
 	testInvalid(t, "uuid", "not-a-uuid")
+
+	var uuidZero UUID
+	err = uuidZero.UnmarshalJSON([]byte("null"))
+	assert.NoError(t, err)
+	assert.EqualValues(t, UUID(""), uuidZero)
 }
 
 func TestFormatISBN(t *testing.T) {

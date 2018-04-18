@@ -25,22 +25,23 @@ type FindPetsByStatusOK struct {
 	/*
 	  In: Body
 	*/
-	Payload models.FindPetsByStatusOKBody `json:"body,omitempty"`
+	Payload []*models.Pet `json:"body,omitempty"`
 }
 
 // NewFindPetsByStatusOK creates FindPetsByStatusOK with default headers values
 func NewFindPetsByStatusOK() *FindPetsByStatusOK {
+
 	return &FindPetsByStatusOK{}
 }
 
 // WithPayload adds the payload to the find pets by status o k response
-func (o *FindPetsByStatusOK) WithPayload(payload models.FindPetsByStatusOKBody) *FindPetsByStatusOK {
+func (o *FindPetsByStatusOK) WithPayload(payload []*models.Pet) *FindPetsByStatusOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the find pets by status o k response
-func (o *FindPetsByStatusOK) SetPayload(payload models.FindPetsByStatusOKBody) {
+func (o *FindPetsByStatusOK) SetPayload(payload []*models.Pet) {
 	o.Payload = payload
 }
 
@@ -50,7 +51,7 @@ func (o *FindPetsByStatusOK) WriteResponse(rw http.ResponseWriter, producer runt
 	rw.WriteHeader(200)
 	payload := o.Payload
 	if payload == nil {
-		payload = make(models.FindPetsByStatusOKBody, 0, 50)
+		payload = make([]*models.Pet, 0, 50)
 	}
 
 	if err := producer.Produce(rw, payload); err != nil {
@@ -71,6 +72,7 @@ type FindPetsByStatusBadRequest struct {
 
 // NewFindPetsByStatusBadRequest creates FindPetsByStatusBadRequest with default headers values
 func NewFindPetsByStatusBadRequest() *FindPetsByStatusBadRequest {
+
 	return &FindPetsByStatusBadRequest{}
 }
 

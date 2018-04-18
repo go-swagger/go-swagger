@@ -25,6 +25,7 @@ type DestroyOneNoContent struct {
 
 // NewDestroyOneNoContent creates DestroyOneNoContent with default headers values
 func NewDestroyOneNoContent() *DestroyOneNoContent {
+
 	return &DestroyOneNoContent{}
 }
 
