@@ -172,7 +172,7 @@ type Dirent struct {
 }
 
 type Fsid struct {
-	_ [2]int32
+	Val [2]int32
 }
 
 type Flock_t struct {
@@ -763,7 +763,7 @@ const (
 )
 
 type Sigset_t struct {
-	_ [16]uint64
+	Val [16]uint64
 }
 
 const RNDGETENTCNT = 0x80045200
@@ -918,6 +918,177 @@ const (
 	BDADDR_BREDR     = 0x0
 	BDADDR_LE_PUBLIC = 0x1
 	BDADDR_LE_RANDOM = 0x2
+)
+
+type PerfEventAttr struct {
+	Type               uint32
+	Size               uint32
+	Config             uint64
+	Sample             uint64
+	Sample_type        uint64
+	Read_format        uint64
+	Bits               uint64
+	Wakeup             uint32
+	Bp_type            uint32
+	Ext1               uint64
+	Ext2               uint64
+	Branch_sample_type uint64
+	Sample_regs_user   uint64
+	Sample_stack_user  uint32
+	Clockid            int32
+	Sample_regs_intr   uint64
+	Aux_watermark      uint32
+	_                  uint32
+}
+
+type PerfEventMmapPage struct {
+	Version        uint32
+	Compat_version uint32
+	Lock           uint32
+	Index          uint32
+	Offset         int64
+	Time_enabled   uint64
+	Time_running   uint64
+	Capabilities   uint64
+	Pmc_width      uint16
+	Time_shift     uint16
+	Time_mult      uint32
+	Time_offset    uint64
+	Time_zero      uint64
+	Size           uint32
+	_              [948]uint8
+	Data_head      uint64
+	Data_tail      uint64
+	Data_offset    uint64
+	Data_size      uint64
+	Aux_head       uint64
+	Aux_tail       uint64
+	Aux_offset     uint64
+	Aux_size       uint64
+}
+
+const (
+	PerfBitDisabled               uint64 = CBitFieldMaskBit0
+	PerfBitInherit                       = CBitFieldMaskBit1
+	PerfBitPinned                        = CBitFieldMaskBit2
+	PerfBitExclusive                     = CBitFieldMaskBit3
+	PerfBitExcludeUser                   = CBitFieldMaskBit4
+	PerfBitExcludeKernel                 = CBitFieldMaskBit5
+	PerfBitExcludeHv                     = CBitFieldMaskBit6
+	PerfBitExcludeIdle                   = CBitFieldMaskBit7
+	PerfBitMmap                          = CBitFieldMaskBit8
+	PerfBitComm                          = CBitFieldMaskBit9
+	PerfBitFreq                          = CBitFieldMaskBit10
+	PerfBitInheritStat                   = CBitFieldMaskBit11
+	PerfBitEnableOnExec                  = CBitFieldMaskBit12
+	PerfBitTask                          = CBitFieldMaskBit13
+	PerfBitWatermark                     = CBitFieldMaskBit14
+	PerfBitPreciseIPBit1                 = CBitFieldMaskBit15
+	PerfBitPreciseIPBit2                 = CBitFieldMaskBit16
+	PerfBitMmapData                      = CBitFieldMaskBit17
+	PerfBitSampleIDAll                   = CBitFieldMaskBit18
+	PerfBitExcludeHost                   = CBitFieldMaskBit19
+	PerfBitExcludeGuest                  = CBitFieldMaskBit20
+	PerfBitExcludeCallchainKernel        = CBitFieldMaskBit21
+	PerfBitExcludeCallchainUser          = CBitFieldMaskBit22
+	PerfBitMmap2                         = CBitFieldMaskBit23
+	PerfBitCommExec                      = CBitFieldMaskBit24
+	PerfBitUseClockID                    = CBitFieldMaskBit25
+	PerfBitContextSwitch                 = CBitFieldMaskBit26
+)
+
+const (
+	PERF_TYPE_HARDWARE   = 0x0
+	PERF_TYPE_SOFTWARE   = 0x1
+	PERF_TYPE_TRACEPOINT = 0x2
+	PERF_TYPE_HW_CACHE   = 0x3
+	PERF_TYPE_RAW        = 0x4
+	PERF_TYPE_BREAKPOINT = 0x5
+
+	PERF_COUNT_HW_CPU_CYCLES              = 0x0
+	PERF_COUNT_HW_INSTRUCTIONS            = 0x1
+	PERF_COUNT_HW_CACHE_REFERENCES        = 0x2
+	PERF_COUNT_HW_CACHE_MISSES            = 0x3
+	PERF_COUNT_HW_BRANCH_INSTRUCTIONS     = 0x4
+	PERF_COUNT_HW_BRANCH_MISSES           = 0x5
+	PERF_COUNT_HW_BUS_CYCLES              = 0x6
+	PERF_COUNT_HW_STALLED_CYCLES_FRONTEND = 0x7
+	PERF_COUNT_HW_STALLED_CYCLES_BACKEND  = 0x8
+	PERF_COUNT_HW_REF_CPU_CYCLES          = 0x9
+
+	PERF_COUNT_HW_CACHE_L1D  = 0x0
+	PERF_COUNT_HW_CACHE_L1I  = 0x1
+	PERF_COUNT_HW_CACHE_LL   = 0x2
+	PERF_COUNT_HW_CACHE_DTLB = 0x3
+	PERF_COUNT_HW_CACHE_ITLB = 0x4
+	PERF_COUNT_HW_CACHE_BPU  = 0x5
+	PERF_COUNT_HW_CACHE_NODE = 0x6
+
+	PERF_COUNT_HW_CACHE_OP_READ     = 0x0
+	PERF_COUNT_HW_CACHE_OP_WRITE    = 0x1
+	PERF_COUNT_HW_CACHE_OP_PREFETCH = 0x2
+
+	PERF_COUNT_HW_CACHE_RESULT_ACCESS = 0x0
+	PERF_COUNT_HW_CACHE_RESULT_MISS   = 0x1
+
+	PERF_COUNT_SW_CPU_CLOCK        = 0x0
+	PERF_COUNT_SW_TASK_CLOCK       = 0x1
+	PERF_COUNT_SW_PAGE_FAULTS      = 0x2
+	PERF_COUNT_SW_CONTEXT_SWITCHES = 0x3
+	PERF_COUNT_SW_CPU_MIGRATIONS   = 0x4
+	PERF_COUNT_SW_PAGE_FAULTS_MIN  = 0x5
+	PERF_COUNT_SW_PAGE_FAULTS_MAJ  = 0x6
+	PERF_COUNT_SW_ALIGNMENT_FAULTS = 0x7
+	PERF_COUNT_SW_EMULATION_FAULTS = 0x8
+	PERF_COUNT_SW_DUMMY            = 0x9
+
+	PERF_SAMPLE_IP           = 0x1
+	PERF_SAMPLE_TID          = 0x2
+	PERF_SAMPLE_TIME         = 0x4
+	PERF_SAMPLE_ADDR         = 0x8
+	PERF_SAMPLE_READ         = 0x10
+	PERF_SAMPLE_CALLCHAIN    = 0x20
+	PERF_SAMPLE_ID           = 0x40
+	PERF_SAMPLE_CPU          = 0x80
+	PERF_SAMPLE_PERIOD       = 0x100
+	PERF_SAMPLE_STREAM_ID    = 0x200
+	PERF_SAMPLE_RAW          = 0x400
+	PERF_SAMPLE_BRANCH_STACK = 0x800
+
+	PERF_SAMPLE_BRANCH_USER       = 0x1
+	PERF_SAMPLE_BRANCH_KERNEL     = 0x2
+	PERF_SAMPLE_BRANCH_HV         = 0x4
+	PERF_SAMPLE_BRANCH_ANY        = 0x8
+	PERF_SAMPLE_BRANCH_ANY_CALL   = 0x10
+	PERF_SAMPLE_BRANCH_ANY_RETURN = 0x20
+	PERF_SAMPLE_BRANCH_IND_CALL   = 0x40
+
+	PERF_FORMAT_TOTAL_TIME_ENABLED = 0x1
+	PERF_FORMAT_TOTAL_TIME_RUNNING = 0x2
+	PERF_FORMAT_ID                 = 0x4
+	PERF_FORMAT_GROUP              = 0x8
+
+	PERF_RECORD_MMAP       = 0x1
+	PERF_RECORD_LOST       = 0x2
+	PERF_RECORD_COMM       = 0x3
+	PERF_RECORD_EXIT       = 0x4
+	PERF_RECORD_THROTTLE   = 0x5
+	PERF_RECORD_UNTHROTTLE = 0x6
+	PERF_RECORD_FORK       = 0x7
+	PERF_RECORD_READ       = 0x8
+	PERF_RECORD_SAMPLE     = 0x9
+
+	PERF_CONTEXT_HV     = -0x20
+	PERF_CONTEXT_KERNEL = -0x80
+	PERF_CONTEXT_USER   = -0x200
+
+	PERF_CONTEXT_GUEST        = -0x800
+	PERF_CONTEXT_GUEST_KERNEL = -0x880
+	PERF_CONTEXT_GUEST_USER   = -0xa00
+
+	PERF_FLAG_FD_NO_GROUP = 0x1
+	PERF_FLAG_FD_OUTPUT   = 0x2
+	PERF_FLAG_PID_CGROUP  = 0x4
 )
 
 const (

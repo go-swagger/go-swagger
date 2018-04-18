@@ -18,7 +18,8 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// Prune recursively removes all non-specified fields from the data.
+// Prune recursively removes all non-specified fields from the underlying data of the result.
+// The data must be a JSON struct as returned by json.Unmarshal.
 func Prune(r *validate.Result) {
 	prune(r.Data(), r)
 }

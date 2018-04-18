@@ -23,7 +23,7 @@
   branch = "v2"
   name = "github.com/coreos/go-oidc"
   packages = ["."]
-  revision = "065b426bd41667456c1a924468f507673629c46b"
+  revision = "1180514eaf4d9f38d0d19eef639a1d695e066e72"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -44,10 +44,10 @@
   version = "v1.4.7"
 
 [[projects]]
-  branch = "auth-fixes"
+  branch = "master"
   name = "github.com/go-openapi/analysis"
   packages = ["."]
-  revision = "baefbc39ec5173b942ca436d603c617d5ab3171f"
+  revision = "863ac7f90e00e88e507095639a8457bbbf3c2ec9"
 
 [[projects]]
   branch = "master"
@@ -83,7 +83,7 @@
   revision = "2a2b323bab96e6b1fdee110e57d959322446e9c9"
 
 [[projects]]
-  branch = "auth-fix"
+  branch = "master"
   name = "github.com/go-openapi/runtime"
   packages = [
     ".",
@@ -96,7 +96,7 @@
     "middleware/untyped",
     "security"
   ]
-  revision = "ed276fb0f56dc86cd73c64a9e83aae8131513041"
+  revision = "1c997f7e69df84d5c13222f6491841512b5f45ea"
 
 [[projects]]
   branch = "master"
@@ -120,7 +120,7 @@
   branch = "master"
   name = "github.com/go-openapi/validate"
   packages = ["."]
-  revision = "a6c59cf99c081a216ca6988799f3203df06458d2"
+  revision = "659e09d234fdd860a2556c5a53fcfff6f787e24b"
 
 [[projects]]
   branch = "master"
@@ -286,7 +286,7 @@
     "context/ctxhttp",
     "idna"
   ]
-  revision = "61147c48b25b599e5b561d2e9c4f3e1ef489ca41"
+  revision = "84348c2dc81a524fe94aaea3e3d9f967135338ef"
 
 [[projects]]
   branch = "master"
@@ -295,13 +295,13 @@
     ".",
     "internal"
   ]
-  revision = "921ae394b9430ed4fb549668d7b087601bd60a81"
+  revision = "6881fee410a5daf86371371f9ad451b95e168b71"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "2281fa97ef7b0c26324634d5a22f04babdac8713"
+  revision = "b126b21c05a91c856b027c16779c12e3bf236954"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -332,9 +332,10 @@
     "go/ast/astutil",
     "go/buildutil",
     "go/loader",
-    "imports"
+    "imports",
+    "internal/fastwalk"
   ]
-  revision = "327197e6b056fd5c2c733feceab7a7a195556dbc"
+  revision = "94b14834a20132093826ea5e2da5502a13908ad3"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -378,6 +379,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "cded35dce8693a586802e14a7995aed96e876b55e626fd175b2d7a17ce5cf99b"
+  inputs-digest = "843d507471a279f79b325cbdbbf77f88e322560dea323059d2f4a141ab6b24a3"
   solver-name = "gps-cdcl"
   solver-version = 1

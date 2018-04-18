@@ -57,7 +57,7 @@ func (s *schemaSliceValidator) Validate(data interface{}) *Result {
 		for i := 0; i < size; i++ {
 			validator.SetPath(fmt.Sprintf("%s.%d", s.Path, i))
 			value := val.Index(i)
-			result.mergeForSlice(data.([]interface{}), i, validator.Validate(value.Interface()))
+			result.mergeForSlice(val, i, validator.Validate(value.Interface()))
 		}
 	}
 
@@ -69,7 +69,7 @@ func (s *schemaSliceValidator) Validate(data interface{}) *Result {
 			if val.Len() <= i {
 				break
 			}
-			result.mergeForSlice(data.([]interface{}), int(i), validator.Validate(val.Index(i).Interface()))
+			result.mergeForSlice(val, int(i), validator.Validate(val.Index(i).Interface()))
 		}
 	}
 	if s.AdditionalItems != nil && itemsSize < size {
@@ -79,7 +79,7 @@ func (s *schemaSliceValidator) Validate(data interface{}) *Result {
 		if s.AdditionalItems.Schema != nil {
 			for i := itemsSize; i < size-itemsSize+1; i++ {
 				validator := NewSchemaValidator(s.AdditionalItems.Schema, s.Root, fmt.Sprintf("%s.%d", s.Path, i), s.KnownFormats)
-				result.mergeForSlice(data.([]interface{}), int(i), validator.Validate(val.Index(int(i)).Interface()))
+				result.mergeForSlice(val, int(i), validator.Validate(val.Index(int(i)).Interface()))
 			}
 		}
 	}

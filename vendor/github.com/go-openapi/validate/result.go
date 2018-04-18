@@ -82,7 +82,7 @@ func (fk *FieldKey) Field() string {
 }
 
 // NewItemKey returns a pair of a slice and index usable as a key of a map.
-func NewItemKey(slice []interface{}, i int) ItemKey {
+func NewItemKey(slice interface{}, i int) ItemKey {
 	return ItemKey{slice: reflect.ValueOf(slice), index: i}
 }
 
@@ -103,7 +103,7 @@ type fieldSchemata struct {
 }
 
 type itemSchemata struct {
-	slice    []interface{}
+	slice    reflect.Value
 	index    int
 	schemata schemata
 }
@@ -196,7 +196,7 @@ func (r *Result) mergeForField(obj map[string]interface{}, field string, other *
 }
 
 // mergeForSlice merges other into r, assigning other's root schemata to the given slice and index.
-func (r *Result) mergeForSlice(slice []interface{}, i int, other *Result) *Result {
+func (r *Result) mergeForSlice(slice reflect.Value, i int, other *Result) *Result {
 	if other == nil {
 		return r
 	}
@@ -204,7 +204,7 @@ func (r *Result) mergeForSlice(slice []interface{}, i int, other *Result) *Resul
 
 	if other.rootObjectSchemata.Len() > 0 {
 		if r.itemSchemata == nil {
-			r.itemSchemata = make([]itemSchemata, len(slice))
+			r.itemSchemata = make([]itemSchemata, slice.Len())
 		}
 		r.itemSchemata = append(r.itemSchemata, itemSchemata{
 			slice:    slice,
@@ -233,9 +233,9 @@ func (r *Result) addPropertySchemata(obj map[string]interface{}, fld string, sch
 
 // addSliceSchemata adds the given schemata for the slice and index.
 // The slice schemata might be reused. I.e. do not modify it after being added to a result.
-func (r *Result) addSliceSchemata(slice []interface{}, i int, schema *spec.Schema) {
+func (r *Result) addSliceSchemata(slice reflect.Value, i int, schema *spec.Schema) {
 	if r.itemSchemata == nil {
-		r.itemSchemata = make([]itemSchemata, 0, len(slice))
+		r.itemSchemata = make([]itemSchemata, 0, slice.Len())
 	}
 	r.itemSchemata = append(r.itemSchemata, itemSchemata{slice: slice, index: i, schemata: schemata{one: schema}})
 }
