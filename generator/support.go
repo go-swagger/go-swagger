@@ -643,6 +643,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			Imports:        imports,
 			RootPackage:    a.APIPackage,
 			WithContext:    a.GenOpts != nil && a.GenOpts.WithContext,
+			GenOpts:        a.GenOpts,
 		}
 		opGroups = append(opGroups, opGroup)
 		var importPath string

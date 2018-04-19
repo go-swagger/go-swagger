@@ -179,6 +179,7 @@ func (c *clientGenerator) Generate() error {
 			opGroup := app.OperationGroups[i]
 			opGroup.DefaultImports = app.DefaultImports
 			opGroup.RootPackage = c.ClientPackage
+			opGroup.GenOpts = c.GenOpts
 			app.OperationGroups[i] = opGroup
 			sort.Sort(opGroup.Operations)
 			for _, op := range opGroup.Operations {

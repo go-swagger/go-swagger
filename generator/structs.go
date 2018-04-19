@@ -343,6 +343,7 @@ type GenOperationGroup struct {
 	DefaultImports []string
 	RootPackage    string
 	WithContext    bool
+	GenOpts        *GenOpts
 }
 
 // GenOperationGroups is a sorted collection of operation groups
