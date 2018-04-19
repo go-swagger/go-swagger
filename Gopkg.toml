@@ -22,8 +22,8 @@
 
 
 [[constraint]]
-  branch = "master"
   name = "github.com/go-openapi/analysis"
+  revision = "8ed83f2ea9f00f945516462951a288eaa68bf0d6"
 
 [[constraint]]
   branch = "master"
@@ -54,8 +54,8 @@
   name = "github.com/go-openapi/swag"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/go-openapi/validate"
+  revision = "a762d5dd38f7c7e9e1a13c3e98344cfbe4aa15d9"
 
 [[constraint]]
   branch = "master"

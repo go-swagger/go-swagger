@@ -44,7 +44,6 @@
   version = "v1.4.2"
 
 [[projects]]
-  branch = "master"
   name = "github.com/go-openapi/analysis"
   packages = ["."]
   revision = "8ed83f2ea9f00f945516462951a288eaa68bf0d6"
@@ -115,10 +114,9 @@
   revision = "cf0bdb963811675a4d7e74901cefc7411a1df939"
 
 [[projects]]
-  branch = "master"
   name = "github.com/go-openapi/validate"
   packages = ["."]
-  revision = "a52193aca9d575f354d8be388254c134765ea793"
+  revision = "a762d5dd38f7c7e9e1a13c3e98344cfbe4aa15d9"
 
 [[projects]]
   branch = "master"
@@ -375,6 +373,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "099583f45b31cedee91e8f63ee15cef606d882bd2da0ca686b06b0b732e28915"
+  inputs-digest = "1696214cf5094075b8f8feb88fc4467818f2f1ca11e65bae6681c0e849290af5"
   solver-name = "gps-cdcl"
   solver-version = 1
