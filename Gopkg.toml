@@ -42,8 +42,8 @@
   name = "github.com/go-openapi/runtime"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/go-openapi/spec"
+  revision = "a4fa9574c7aa73b2fc54e251eb9524d0482bb592"
 
 [[constraint]]
   branch = "master"
