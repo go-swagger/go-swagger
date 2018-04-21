@@ -30,6 +30,7 @@ type GetUserByNameOK struct {
 
 // NewGetUserByNameOK creates GetUserByNameOK with default headers values
 func NewGetUserByNameOK() *GetUserByNameOK {
+
 	return &GetUserByNameOK{}
 }
 
@@ -68,6 +69,7 @@ type GetUserByNameBadRequest struct {
 
 // NewGetUserByNameBadRequest creates GetUserByNameBadRequest with default headers values
 func NewGetUserByNameBadRequest() *GetUserByNameBadRequest {
+
 	return &GetUserByNameBadRequest{}
 }
 
@@ -91,6 +93,7 @@ type GetUserByNameNotFound struct {
 
 // NewGetUserByNameNotFound creates GetUserByNameNotFound with default headers values
 func NewGetUserByNameNotFound() *GetUserByNameNotFound {
+
 	return &GetUserByNameNotFound{}
 }
 

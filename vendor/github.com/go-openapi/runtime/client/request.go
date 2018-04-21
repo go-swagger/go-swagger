@@ -74,6 +74,14 @@ var (
 	_ runtime.ClientRequest = new(request)
 )
 
+func (r *request) isMultipart(mediaType string) bool {
+	if len(r.fileFields) > 0 {
+		return true
+	}
+
+	return runtime.MultipartFormMime == mediaType
+}
+
 // BuildHTTP creates a new http request based on the data from the params
 func (r *request) BuildHTTP(mediaType, basePath string, producers map[string]runtime.Producer, registry strfmt.Registry) (*http.Request, error) {
 	return r.buildHTTP(mediaType, basePath, producers, registry, nil)
@@ -111,7 +119,7 @@ func (r *request) buildHTTP(mediaType, basePath string, producers map[string]run
 	r.buf = bytes.NewBuffer(nil)
 	if r.payload != nil || len(r.formFields) > 0 || len(r.fileFields) > 0 {
 		body = ioutil.NopCloser(r.buf)
-		if ((runtime.MultipartFormMime == mediaType || runtime.URLencodedFormMime == mediaType) && len(r.formFields) > 0) || r.fileFields != nil {
+		if r.isMultipart(mediaType) {
 			pr, pw = io.Pipe()
 			body = pr
 		}
@@ -127,58 +135,58 @@ func (r *request) buildHTTP(mediaType, basePath string, producers map[string]run
 
 	// check if this is a form type request
 	if len(r.formFields) > 0 || len(r.fileFields) > 0 {
-		// check if this is multipart
-		if runtime.MultipartFormMime == mediaType || runtime.URLencodedFormMime == mediaType || len(r.fileFields) > 0 {
-			mp := multipart.NewWriter(pw)
-			req.Header.Set(runtime.HeaderContentType, mangleContentType(mediaType, mp.Boundary()))
-
-			go func() {
-				defer func() {
-					mp.Close()
-					pw.Close()
-				}()
-
-				for fn, v := range r.formFields {
-					for _, vi := range v {
-						if err := mp.WriteField(fn, vi); err != nil {
-							pw.CloseWithError(err)
-							log.Println(err)
-						}
-					}
-				}
-
-				defer func() {
-					for _, ff := range r.fileFields {
-						for _, ffi := range ff {
-							ffi.Close()
-						}
-					}
-				}()
-				for fn, f := range r.fileFields {
-					for _, fi := range f {
-						wrtr, err := mp.CreateFormFile(fn, filepath.Base(fi.Name()))
-						if err != nil {
-							pw.CloseWithError(err)
-							log.Println(err)
-						}
-						if _, err := io.Copy(wrtr, fi); err != nil {
-							pw.CloseWithError(err)
-							log.Println(err)
-						}
-					}
-				}
-
-			}()
+		if !r.isMultipart(mediaType) {
+			req.Header.Set(runtime.HeaderContentType, mediaType)
+			formString := r.formFields.Encode()
+			// set content length before writing to the buffer
+			req.ContentLength = int64(len(formString))
+			// write the form values as the body
+			r.buf.WriteString(formString)
 			return req, nil
 		}
 
-		req.Header.Set(runtime.HeaderContentType, mediaType)
-		formString := r.formFields.Encode()
-		// set content length before writing to the buffer
-		req.ContentLength = int64(len(formString))
-		// write the form values as the body
-		r.buf.WriteString(formString)
+		mp := multipart.NewWriter(pw)
+		req.Header.Set(runtime.HeaderContentType, mangleContentType(mediaType, mp.Boundary()))
+
+		go func() {
+			defer func() {
+				mp.Close()
+				pw.Close()
+			}()
+
+			for fn, v := range r.formFields {
+				for _, vi := range v {
+					if err := mp.WriteField(fn, vi); err != nil {
+						pw.CloseWithError(err)
+						log.Println(err)
+					}
+				}
+			}
+
+			defer func() {
+				for _, ff := range r.fileFields {
+					for _, ffi := range ff {
+						ffi.Close()
+					}
+				}
+			}()
+			for fn, f := range r.fileFields {
+				for _, fi := range f {
+					wrtr, err := mp.CreateFormFile(fn, filepath.Base(fi.Name()))
+					if err != nil {
+						pw.CloseWithError(err)
+						log.Println(err)
+					}
+					if _, err := io.Copy(wrtr, fi); err != nil {
+						pw.CloseWithError(err)
+						log.Println(err)
+					}
+				}
+			}
+
+		}()
 		return req, nil
+
 	}
 
 	// if there is payload, use the producer to write the payload, and then

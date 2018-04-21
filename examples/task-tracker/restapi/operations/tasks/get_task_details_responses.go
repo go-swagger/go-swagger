@@ -30,6 +30,7 @@ type GetTaskDetailsOK struct {
 
 // NewGetTaskDetailsOK creates GetTaskDetailsOK with default headers values
 func NewGetTaskDetailsOK() *GetTaskDetailsOK {
+
 	return &GetTaskDetailsOK{}
 }
 
@@ -73,6 +74,7 @@ type GetTaskDetailsUnprocessableEntity struct {
 
 // NewGetTaskDetailsUnprocessableEntity creates GetTaskDetailsUnprocessableEntity with default headers values
 func NewGetTaskDetailsUnprocessableEntity() *GetTaskDetailsUnprocessableEntity {
+
 	return &GetTaskDetailsUnprocessableEntity{}
 }
 
@@ -106,8 +108,8 @@ swagger:response getTaskDetailsDefault
 type GetTaskDetailsDefault struct {
 	_statusCode int
 	/*
-	  Required: true
-	*/
+
+	 */
 	XErrorCode string `json:"X-Error-Code"`
 
 	/*

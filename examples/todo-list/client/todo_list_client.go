@@ -38,9 +38,6 @@ func NewHTTPClient(formats strfmt.Registry) *TodoList {
 // using a customizable transport config.
 func NewHTTPClientWithConfig(formats strfmt.Registry, cfg *TransportConfig) *TodoList {
 	// ensure nullable parameters have default
-	if formats == nil {
-		formats = strfmt.Default
-	}
 	if cfg == nil {
 		cfg = DefaultTransportConfig()
 	}
@@ -52,6 +49,11 @@ func NewHTTPClientWithConfig(formats strfmt.Registry, cfg *TransportConfig) *Tod
 
 // New creates a new todo list client
 func New(transport runtime.ClientTransport, formats strfmt.Registry) *TodoList {
+	// ensure nullable parameters have default
+	if formats == nil {
+		formats = strfmt.Default
+	}
+
 	cli := new(TodoList)
 	cli.Transport = transport
 

@@ -50,6 +50,7 @@ func (o *UpdateOneURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("ID is required on UpdateOneURL")
 	}
+
 	_basePath := o._basePath
 	result.Path = golangswaggerpaths.Join(_basePath, _path)
 

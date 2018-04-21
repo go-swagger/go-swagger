@@ -8,6 +8,10 @@
   - [Middleware](use/middleware.md)
   - [Custom Server](tutorial/custom-server.md)
   - [Dynamic Server](tutorial/dynamic.md)
+  - Security
+    - [Authentication](tutorial/authentication/README.md)
+    - [OAuth2](tutorial/oauth2/README.md)
+    - [Composition](tutorial/composed-auth/README.md)
 - Use-Cases
   - [Options and commands](usage/swagger.md)
   - [Serve UI](usage/serve_ui.md)

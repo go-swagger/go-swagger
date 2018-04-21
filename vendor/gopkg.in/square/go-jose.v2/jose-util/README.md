@@ -31,19 +31,19 @@ or DER formats. JWK format produced by `jwk-keygen` is also supported.
 
 Takes a plaintext as input, encrypts, and prints the encrypted message.
 
-    jose-util encrypt -k public-key.pem --alg RSA-OAEP --enc A128GCM
+    jose-util encrypt --key public-key.pem --alg RSA-OAEP --enc A128GCM
 
 ### Decrypt
 
 Takes an encrypted message (JWE) as input, decrypts, and prints the plaintext.
 
-    jose-util decrypt -k private-key.pem
+    jose-util decrypt --key private-key.pem
 
 ### Sign
 
 Takes a payload as input, signs it, and prints the signed message with the embedded payload.
 
-    jose-util sign -k private-key.pem --alg PS256
+    jose-util sign --key private-key.pem --alg PS256
 
 ### Verify
 

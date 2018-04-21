@@ -30,6 +30,7 @@ type GetAuthCallbackOK struct {
 
 // NewGetAuthCallbackOK creates GetAuthCallbackOK with default headers values
 func NewGetAuthCallbackOK() *GetAuthCallbackOK {
+
 	return &GetAuthCallbackOK{}
 }
 

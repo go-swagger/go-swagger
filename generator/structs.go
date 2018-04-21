@@ -343,6 +343,7 @@ type GenOperationGroup struct {
 	DefaultImports []string
 	RootPackage    string
 	WithContext    bool
+	GenOpts        *GenOpts
 }
 
 // GenOperationGroups is a sorted collection of operation groups
@@ -415,7 +416,7 @@ type GenOperation struct {
 	ExtraSchemas   []GenSchema
 
 	Authorized          bool
-	Security            []analysis.SecurityRequirement
+	Security            [][]analysis.SecurityRequirement
 	SecurityDefinitions map[string]spec.SecurityScheme
 	Principal           string
 

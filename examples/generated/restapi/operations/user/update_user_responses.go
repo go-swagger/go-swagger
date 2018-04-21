@@ -23,6 +23,7 @@ type UpdateUserBadRequest struct {
 
 // NewUpdateUserBadRequest creates UpdateUserBadRequest with default headers values
 func NewUpdateUserBadRequest() *UpdateUserBadRequest {
+
 	return &UpdateUserBadRequest{}
 }
 
@@ -46,6 +47,7 @@ type UpdateUserNotFound struct {
 
 // NewUpdateUserNotFound creates UpdateUserNotFound with default headers values
 func NewUpdateUserNotFound() *UpdateUserNotFound {
+
 	return &UpdateUserNotFound{}
 }
 

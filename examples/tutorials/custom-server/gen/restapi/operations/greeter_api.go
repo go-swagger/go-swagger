@@ -27,6 +27,8 @@ func NewGreeterAPI(spec *loads.Document) *GreeterAPI {
 		formats:             strfmt.Default,
 		defaultConsumes:     "application/json",
 		defaultProduces:     "application/json",
+		customConsumers:     make(map[string]runtime.Consumer),
+		customProducers:     make(map[string]runtime.Producer),
 		ServerShutdown:      func() {},
 		spec:                spec,
 		ServeError:          errors.ServeError,
@@ -47,6 +49,8 @@ type GreeterAPI struct {
 	context         *middleware.Context
 	handlers        map[string]map[string]http.Handler
 	formats         strfmt.Registry
+	customConsumers map[string]runtime.Consumer
+	customProducers map[string]runtime.Producer
 	defaultConsumes string
 	defaultProduces string
 	Middleware      func(middleware.Builder) http.Handler
@@ -173,6 +177,10 @@ func (o *GreeterAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consum
 			result["application/json"] = o.JSONConsumer
 
 		}
+
+		if c, ok := o.customConsumers[mt]; ok {
+			result[mt] = c
+		}
 	}
 	return result
 
@@ -188,6 +196,10 @@ func (o *GreeterAPI) ProducersFor(mediaTypes []string) map[string]runtime.Produc
 		case "text/plain":
 			result["text/plain"] = o.TxtProducer
 
+		}
+
+		if p, ok := o.customProducers[mt]; ok {
+			result[mt] = p
 		}
 	}
 	return result
@@ -249,4 +261,14 @@ func (o *GreeterAPI) Init() {
 	if len(o.handlers) == 0 {
 		o.initHandlerCache()
 	}
+}
+
+// RegisterConsumer allows you to add (or override) a consumer for a media type.
+func (o *GreeterAPI) RegisterConsumer(mediaType string, consumer runtime.Consumer) {
+	o.customConsumers[mediaType] = consumer
+}
+
+// RegisterProducer allows you to add (or override) a producer for a media type.
+func (o *GreeterAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
+	o.customProducers[mediaType] = producer
 }

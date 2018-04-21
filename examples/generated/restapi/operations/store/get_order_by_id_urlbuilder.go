@@ -48,6 +48,7 @@ func (o *GetOrderByIDURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("OrderID is required on GetOrderByIDURL")
 	}
+
 	_basePath := o._basePath
 	if _basePath == "" {
 		_basePath = "/v2"

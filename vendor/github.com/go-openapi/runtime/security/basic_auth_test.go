@@ -15,6 +15,7 @@
 package security
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -66,6 +67,84 @@ func TestMissingbasicAuth(t *testing.T) {
 
 func TestNoRequestBasicAuth(t *testing.T) {
 	ba := BasicAuth(basicAuthHandler)
+
+	ok, usr, err := ba.Authenticate("token")
+
+	assert.NoError(t, err)
+	assert.False(t, ok)
+	assert.Nil(t, usr)
+}
+
+type secTestKey uint8
+
+const (
+	original secTestKey = iota
+	extra
+	reason
+)
+
+const (
+	wisdom      = "The man who is swimming against the stream knows the strength of it."
+	extraWisdom = "Our greatest glory is not in never falling, but in rising every time we fall."
+	expReason   = "I like the dreams of the future better than the history of the past."
+)
+
+var basicAuthHandlerCtx = UserPassAuthenticationCtx(func(ctx context.Context, user, pass string) (context.Context, interface{}, error) {
+	if user == "admin" && pass == "123456" {
+		return context.WithValue(ctx, extra, extraWisdom), "admin", nil
+	}
+	return context.WithValue(ctx, reason, expReason), "", errors.Unauthenticated("basic")
+})
+
+func TestValidBasicAuthCtx(t *testing.T) {
+	ba := BasicAuthCtx(basicAuthHandlerCtx)
+
+	req, _ := http.NewRequest("GET", "/blah", nil)
+	req = req.WithContext(context.WithValue(req.Context(), original, wisdom))
+	req.SetBasicAuth("admin", "123456")
+	ok, usr, err := ba.Authenticate(req)
+
+	assert.NoError(t, err)
+	assert.True(t, ok)
+	assert.Equal(t, "admin", usr)
+	assert.Equal(t, wisdom, req.Context().Value(original))
+	assert.Equal(t, extraWisdom, req.Context().Value(extra))
+	assert.Nil(t, req.Context().Value(reason))
+}
+
+func TestInvalidBasicAuthCtx(t *testing.T) {
+	ba := BasicAuthCtx(basicAuthHandlerCtx)
+
+	req, _ := http.NewRequest("GET", "/blah", nil)
+	req = req.WithContext(context.WithValue(req.Context(), original, wisdom))
+	req.SetBasicAuth("admin", "admin")
+	ok, usr, err := ba.Authenticate(req)
+
+	assert.Error(t, err)
+	assert.True(t, ok)
+	assert.Equal(t, "", usr)
+	assert.Equal(t, wisdom, req.Context().Value(original))
+	assert.Nil(t, req.Context().Value(extra))
+	assert.Equal(t, expReason, req.Context().Value(reason))
+}
+
+func TestMissingbasicAuthCtx(t *testing.T) {
+	ba := BasicAuthCtx(basicAuthHandlerCtx)
+
+	req, _ := http.NewRequest("GET", "/blah", nil)
+	req = req.WithContext(context.WithValue(req.Context(), original, wisdom))
+	ok, usr, err := ba.Authenticate(req)
+	assert.NoError(t, err)
+	assert.False(t, ok)
+	assert.Equal(t, nil, usr)
+
+	assert.Equal(t, wisdom, req.Context().Value(original))
+	assert.Nil(t, req.Context().Value(extra))
+	assert.Nil(t, req.Context().Value(reason))
+}
+
+func TestNoRequestBasicAuthCtx(t *testing.T) {
+	ba := BasicAuthCtx(basicAuthHandlerCtx)
 
 	ok, usr, err := ba.Authenticate("token")
 

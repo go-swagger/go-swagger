@@ -116,6 +116,8 @@ func TestRAMInBytes(t *testing.T) {
 	assertSuccessEquals(t, 32*KiB, RAMInBytes, "32K")
 	assertSuccessEquals(t, 32*KiB, RAMInBytes, "32kb")
 	assertSuccessEquals(t, 32*KiB, RAMInBytes, "32Kb")
+	assertSuccessEquals(t, 32*KiB, RAMInBytes, "32Kib")
+	assertSuccessEquals(t, 32*KiB, RAMInBytes, "32KIB")
 	assertSuccessEquals(t, 32*MiB, RAMInBytes, "32Mb")
 	assertSuccessEquals(t, 32*GiB, RAMInBytes, "32Gb")
 	assertSuccessEquals(t, 32*TiB, RAMInBytes, "32Tb")

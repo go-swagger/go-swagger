@@ -30,6 +30,7 @@ type PlaceOrderOK struct {
 
 // NewPlaceOrderOK creates PlaceOrderOK with default headers values
 func NewPlaceOrderOK() *PlaceOrderOK {
+
 	return &PlaceOrderOK{}
 }
 
@@ -68,6 +69,7 @@ type PlaceOrderBadRequest struct {
 
 // NewPlaceOrderBadRequest creates PlaceOrderBadRequest with default headers values
 func NewPlaceOrderBadRequest() *PlaceOrderBadRequest {
+
 	return &PlaceOrderBadRequest{}
 }
 

@@ -25,6 +25,7 @@ type DeleteTaskNoContent struct {
 
 // NewDeleteTaskNoContent creates DeleteTaskNoContent with default headers values
 func NewDeleteTaskNoContent() *DeleteTaskNoContent {
+
 	return &DeleteTaskNoContent{}
 }
 
@@ -43,8 +44,8 @@ swagger:response deleteTaskDefault
 type DeleteTaskDefault struct {
 	_statusCode int
 	/*
-	  Required: true
-	*/
+
+	 */
 	XErrorCode string `json:"X-Error-Code"`
 
 	/*

@@ -21,9 +21,13 @@ import (
 // NewListTasksParams creates a new ListTasksParams object
 // with the default values initialized.
 func NewListTasksParams() ListTasksParams {
+
 	var (
+		// initialize parameters with default values
+
 		pageSizeDefault = int32(20)
 	)
+
 	return ListTasksParams{
 		PageSize: &pageSizeDefault,
 	}
@@ -61,9 +65,12 @@ type ListTasksParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewListTasksParams() beforehand.
 func (o *ListTasksParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	qs := runtime.Values(r.URL.Query())
@@ -99,9 +106,11 @@ func (o *ListTasksParams) bindPageSize(rawData []string, hasKey bool, formats st
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
-		var pageSizeDefault int32 = int32(20)
-		o.PageSize = &pageSizeDefault
+		// Default values have been previously initialized by NewListTasksParams()
 		return nil
 	}
 
@@ -119,6 +128,9 @@ func (o *ListTasksParams) bindSinceID(rawData []string, hasKey bool, formats str
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
@@ -139,8 +151,8 @@ func (o *ListTasksParams) bindStatus(rawData []string, hasKey bool, formats strf
 		qvStatus = rawData[len(rawData)-1]
 	}
 
+	// CollectionFormat: pipes
 	statusIC := swag.SplitByFormat(qvStatus, "pipes")
-
 	if len(statusIC) == 0 {
 		return nil
 	}
@@ -166,6 +178,7 @@ func (o *ListTasksParams) bindStatus(rawData []string, hasKey bool, formats strf
 
 func (o *ListTasksParams) validateStatus(formats strfmt.Registry) error {
 
+	// uniqueItems: true
 	if err := validate.UniqueItems("status", "query", o.Status); err != nil {
 		return err
 	}
@@ -180,8 +193,8 @@ func (o *ListTasksParams) bindTags(rawData []string, hasKey bool, formats strfmt
 		qvTags = rawData[len(rawData)-1]
 	}
 
+	// CollectionFormat:
 	tagsIC := swag.SplitByFormat(qvTags, "")
-
 	if len(tagsIC) == 0 {
 		return nil
 	}
@@ -203,6 +216,7 @@ func (o *ListTasksParams) bindTags(rawData []string, hasKey bool, formats strfmt
 
 func (o *ListTasksParams) validateTags(formats strfmt.Registry) error {
 
+	// uniqueItems: true
 	if err := validate.UniqueItems("tags", "query", o.Tags); err != nil {
 		return err
 	}

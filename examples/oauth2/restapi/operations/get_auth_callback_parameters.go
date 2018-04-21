@@ -13,9 +13,9 @@ import (
 )
 
 // NewGetAuthCallbackParams creates a new GetAuthCallbackParams object
-// with the default values initialized.
+// no default values defined in spec.
 func NewGetAuthCallbackParams() GetAuthCallbackParams {
-	var ()
+
 	return GetAuthCallbackParams{}
 }
 
@@ -30,9 +30,12 @@ type GetAuthCallbackParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewGetAuthCallbackParams() beforehand.
 func (o *GetAuthCallbackParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	if len(res) > 0 {

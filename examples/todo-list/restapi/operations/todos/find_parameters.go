@@ -19,9 +19,9 @@ import (
 )
 
 // NewFindParams creates a new FindParams object
-// with the default values initialized.
+// no default values defined in spec.
 func NewFindParams() FindParams {
-	var ()
+
 	return FindParams{}
 }
 
@@ -53,16 +53,19 @@ type FindParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewFindParams() beforehand.
 func (o *FindParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		if err != http.ErrNotMultipart {
-			return err
+			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
-			return err
+			return errors.New(400, "%v", err)
 		}
 	}
 	fds := runtime.Values(r.Form)
@@ -95,6 +98,9 @@ func (o *FindParams) bindXRateLimit(rawData []string, hasKey bool, formats strfm
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+
 	if err := validate.RequiredString("X-Rate-Limit", "header", raw); err != nil {
 		return err
 	}
@@ -116,6 +122,9 @@ func (o *FindParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Reg
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
@@ -134,10 +143,16 @@ func (o *FindParams) bindTags(rawData []string, hasKey bool, formats strfmt.Regi
 		return errors.Required("tags", "formData")
 	}
 
+	// CollectionFormat: multi
 	tagsIC := rawData
+
+	if len(tagsIC) == 0 {
+		return nil
+	}
 
 	var tagsIR []int32
 	for i, tagsIV := range tagsIC {
+		// items.Format: "int32"
 		tagsI, err := swag.ConvertInt32(tagsIV)
 		if err != nil {
 			return errors.InvalidType(fmt.Sprintf("%s.%v", "tags", i), "formData", "int32", tagsI)

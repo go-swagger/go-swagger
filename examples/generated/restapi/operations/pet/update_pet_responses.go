@@ -23,6 +23,7 @@ type UpdatePetBadRequest struct {
 
 // NewUpdatePetBadRequest creates UpdatePetBadRequest with default headers values
 func NewUpdatePetBadRequest() *UpdatePetBadRequest {
+
 	return &UpdatePetBadRequest{}
 }
 
@@ -46,6 +47,7 @@ type UpdatePetNotFound struct {
 
 // NewUpdatePetNotFound creates UpdatePetNotFound with default headers values
 func NewUpdatePetNotFound() *UpdatePetNotFound {
+
 	return &UpdatePetNotFound{}
 }
 
@@ -69,6 +71,7 @@ type UpdatePetMethodNotAllowed struct {
 
 // NewUpdatePetMethodNotAllowed creates UpdatePetMethodNotAllowed with default headers values
 func NewUpdatePetMethodNotAllowed() *UpdatePetMethodNotAllowed {
+
 	return &UpdatePetMethodNotAllowed{}
 }
 

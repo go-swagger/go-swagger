@@ -29,6 +29,8 @@ func NewTodoListAPI(spec *loads.Document) *TodoListAPI {
 		formats:             strfmt.Default,
 		defaultConsumes:     "application/json",
 		defaultProduces:     "application/json",
+		customConsumers:     make(map[string]runtime.Consumer),
+		customProducers:     make(map[string]runtime.Producer),
 		ServerShutdown:      func() {},
 		spec:                spec,
 		ServeError:          errors.ServeError,
@@ -66,6 +68,8 @@ type TodoListAPI struct {
 	context         *middleware.Context
 	handlers        map[string]map[string]http.Handler
 	formats         strfmt.Registry
+	customConsumers map[string]runtime.Consumer
+	customProducers map[string]runtime.Producer
 	defaultConsumes string
 	defaultProduces string
 	Middleware      func(middleware.Builder) http.Handler
@@ -231,6 +235,10 @@ func (o *TodoListAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consu
 			result["application/io.swagger.examples.todo-list.v1+json"] = o.JSONConsumer
 
 		}
+
+		if c, ok := o.customConsumers[mt]; ok {
+			result[mt] = c
+		}
 	}
 	return result
 
@@ -246,6 +254,10 @@ func (o *TodoListAPI) ProducersFor(mediaTypes []string) map[string]runtime.Produ
 		case "application/io.swagger.examples.todo-list.v1+json":
 			result["application/io.swagger.examples.todo-list.v1+json"] = o.JSONProducer
 
+		}
+
+		if p, ok := o.customProducers[mt]; ok {
+			result[mt] = p
 		}
 	}
 	return result
@@ -322,4 +334,14 @@ func (o *TodoListAPI) Init() {
 	if len(o.handlers) == 0 {
 		o.initHandlerCache()
 	}
+}
+
+// RegisterConsumer allows you to add (or override) a consumer for a media type.
+func (o *TodoListAPI) RegisterConsumer(mediaType string, consumer runtime.Consumer) {
+	o.customConsumers[mediaType] = consumer
+}
+
+// RegisterProducer allows you to add (or override) a producer for a media type.
+func (o *TodoListAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
+	o.customProducers[mediaType] = producer
 }

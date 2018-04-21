@@ -30,6 +30,7 @@ type GetLoginOK struct {
 
 // NewGetLoginOK creates GetLoginOK with default headers values
 func NewGetLoginOK() *GetLoginOK {
+
 	return &GetLoginOK{}
 }
 

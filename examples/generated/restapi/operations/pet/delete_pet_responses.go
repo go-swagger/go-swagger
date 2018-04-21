@@ -23,6 +23,7 @@ type DeletePetBadRequest struct {
 
 // NewDeletePetBadRequest creates DeletePetBadRequest with default headers values
 func NewDeletePetBadRequest() *DeletePetBadRequest {
+
 	return &DeletePetBadRequest{}
 }
 

@@ -118,6 +118,11 @@ func (m *TaskCard) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateReportedAt(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if err := m.validateSeverity(formats); err != nil {
 		// prop
 		res = append(res, err)
@@ -158,6 +163,7 @@ func (m *TaskCard) validateAssignedTo(formats strfmt.Registry) error {
 			}
 			return err
 		}
+
 	}
 
 	return nil
@@ -211,6 +217,20 @@ func (m *TaskCard) validateMilestone(formats strfmt.Registry) error {
 			}
 			return err
 		}
+
+	}
+
+	return nil
+}
+
+func (m *TaskCard) validateReportedAt(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ReportedAt) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("reportedAt", "body", "date-time", m.ReportedAt.String(), formats); err != nil {
+		return err
 	}
 
 	return nil
@@ -246,12 +266,16 @@ func init() {
 }
 
 const (
+
 	// TaskCardStatusOpen captures enum value "open"
 	TaskCardStatusOpen string = "open"
+
 	// TaskCardStatusClosed captures enum value "closed"
 	TaskCardStatusClosed string = "closed"
+
 	// TaskCardStatusIgnored captures enum value "ignored"
 	TaskCardStatusIgnored string = "ignored"
+
 	// TaskCardStatusRejected captures enum value "rejected"
 	TaskCardStatusRejected string = "rejected"
 )

@@ -50,6 +50,7 @@ func (o *GetTaskDetailsURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("ID is required on GetTaskDetailsURL")
 	}
+
 	_basePath := o._basePath
 	if _basePath == "" {
 		_basePath = "/api"

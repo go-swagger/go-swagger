@@ -65,6 +65,11 @@ func TestDate(t *testing.T) {
 	err = bson.Unmarshal(bsonData, &dateCopy)
 	assert.NoError(t, err)
 	assert.Equal(t, dateOriginal, dateCopy)
+
+	var dateZero Date
+	err = dateZero.UnmarshalJSON([]byte("null"))
+	assert.NoError(t, err)
+	assert.Equal(t, Date{}, dateZero)
 }
 
 func TestDate_Scan(t *testing.T) {

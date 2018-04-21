@@ -159,7 +159,7 @@ func (h *paramHelper) safeExpandedParamsFor(path, method, operationID string, re
 				resolvedParams = append(resolvedParams, *resolvedParam)
 			}
 		}
-		// remove params with invalid expansion from slice
+		// remove params with invalid expansion from Slice
 		operation.Parameters = resolvedParams
 
 		for _, ppr := range s.analyzer.SafeParamsFor(method, path,

@@ -30,6 +30,7 @@ type UpdateTaskOK struct {
 
 // NewUpdateTaskOK creates UpdateTaskOK with default headers values
 func NewUpdateTaskOK() *UpdateTaskOK {
+
 	return &UpdateTaskOK{}
 }
 
@@ -73,6 +74,7 @@ type UpdateTaskUnprocessableEntity struct {
 
 // NewUpdateTaskUnprocessableEntity creates UpdateTaskUnprocessableEntity with default headers values
 func NewUpdateTaskUnprocessableEntity() *UpdateTaskUnprocessableEntity {
+
 	return &UpdateTaskUnprocessableEntity{}
 }
 
@@ -106,8 +108,8 @@ swagger:response updateTaskDefault
 type UpdateTaskDefault struct {
 	_statusCode int
 	/*
-	  Required: true
-	*/
+
+	 */
 	XErrorCode string `json:"X-Error-Code"`
 
 	/*

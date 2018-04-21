@@ -30,6 +30,7 @@ type GetIDOK struct {
 
 // NewGetIDOK creates GetIDOK with default headers values
 func NewGetIDOK() *GetIDOK {
+
 	return &GetIDOK{}
 }
 
@@ -73,6 +74,7 @@ type GetIDUnauthorized struct {
 
 // NewGetIDUnauthorized creates GetIDUnauthorized with default headers values
 func NewGetIDUnauthorized() *GetIDUnauthorized {
+
 	return &GetIDUnauthorized{}
 }
 
@@ -116,6 +118,7 @@ type GetIDNotFound struct {
 
 // NewGetIDNotFound creates GetIDNotFound with default headers values
 func NewGetIDNotFound() *GetIDNotFound {
+
 	return &GetIDNotFound{}
 }
 

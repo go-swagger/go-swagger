@@ -48,10 +48,12 @@ var primitiveStringDecoders = map[reflect.Kind]string{
 	reflect.Uint32:  "in.Uint32Str()",
 	reflect.Uint64:  "in.Uint64Str()",
 	reflect.Uintptr: "in.UintptrStr()",
+	reflect.Float32: "in.Float32Str()",
+	reflect.Float64: "in.Float64Str()",
 }
 
 var customDecoders = map[string]string{
-	"json.Number":    "in.JsonNumber()",
+	"json.Number": "in.JsonNumber()",
 }
 
 // genTypeDecoder generates decoding code for the type t, but uses unmarshaler interface if implemented by t.
@@ -96,7 +98,7 @@ func hasCustomUnmarshaler(t reflect.Type) bool {
 func (g *Generator) genTypeDecoderNoCheck(t reflect.Type, out string, tags fieldTags, indent int) error {
 	ws := strings.Repeat("  ", indent)
 	// Check whether type is primitive, needs to be done after interface check.
-	if dec := customDecoders[t.String()]; dec != ""  {
+	if dec := customDecoders[t.String()]; dec != "" {
 		fmt.Fprintln(g.out, ws+out+" = "+dec)
 		return nil
 	} else if dec := primitiveStringDecoders[t.Kind()]; dec != "" && tags.asString {
@@ -178,7 +180,7 @@ func (g *Generator) genTypeDecoderNoCheck(t reflect.Type, out string, tags field
 			fmt.Fprintln(g.out, ws+"  for !in.IsDelim(']') {")
 			fmt.Fprintln(g.out, ws+"    if "+iterVar+" < "+fmt.Sprint(length)+" {")
 
-			if err := g.genTypeDecoder(elem, out+"["+iterVar+"]", tags, indent+3); err != nil {
+			if err := g.genTypeDecoder(elem, "("+out+")["+iterVar+"]", tags, indent+3); err != nil {
 				return err
 			}
 

@@ -28,6 +28,7 @@ type LoginUserOK struct {
 
 // NewLoginUserOK creates LoginUserOK with default headers values
 func NewLoginUserOK() *LoginUserOK {
+
 	return &LoginUserOK{}
 }
 
@@ -65,6 +66,7 @@ type LoginUserBadRequest struct {
 
 // NewLoginUserBadRequest creates LoginUserBadRequest with default headers values
 func NewLoginUserBadRequest() *LoginUserBadRequest {
+
 	return &LoginUserBadRequest{}
 }
 

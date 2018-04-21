@@ -30,6 +30,7 @@ type UpdateOneOK struct {
 
 // NewUpdateOneOK creates UpdateOneOK with default headers values
 func NewUpdateOneOK() *UpdateOneOK {
+
 	return &UpdateOneOK{}
 }
 

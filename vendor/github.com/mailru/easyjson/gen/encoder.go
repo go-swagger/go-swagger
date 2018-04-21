@@ -45,6 +45,8 @@ var primitiveStringEncoders = map[reflect.Kind]string{
 	reflect.Uint32:  "out.Uint32Str(uint32(%v))",
 	reflect.Uint64:  "out.Uint64Str(uint64(%v))",
 	reflect.Uintptr: "out.UintptrStr(uintptr(%v))",
+	reflect.Float32: "out.Float32Str(float32(%v))",
+	reflect.Float64: "out.Float64Str(float64(%v))",
 }
 
 // fieldTags contains parsed version of json struct field tags.
@@ -173,7 +175,7 @@ func (g *Generator) genTypeEncoderNoCheck(t reflect.Type, in string, tags fieldT
 			fmt.Fprintln(g.out, ws+"    out.RawByte(',')")
 			fmt.Fprintln(g.out, ws+"  }")
 
-			if err := g.genTypeEncoder(elem, in+"["+iVar+"]", tags, indent+1, false); err != nil {
+			if err := g.genTypeEncoder(elem, "("+in+")["+iVar+"]", tags, indent+1, false); err != nil {
 				return err
 			}
 
