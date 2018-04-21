@@ -16,7 +16,7 @@ import (
   {{ end -}}
   {{ if .UsePFlags }}flag "github.com/spf13/pflag"
   {{ end -}}
-	graceful "github.com/tylerb/graceful"
+
 
   {{range .DefaultImports}}{{printf "%q" .}}
   {{end}}
