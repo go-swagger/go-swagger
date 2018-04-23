@@ -2,7 +2,7 @@
 
 The toolkit has a command to expand a swagger specification.
 
-Expanding a specification resolve all $ref (remote or local) and replace them by their expanded
+Expanding a specification resolve all `$ref` (remote or local) and replace them by their expanded
 content in the main spec document.
 
 ### Usage

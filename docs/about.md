@@ -1,4 +1,4 @@
-# What is go-swagger?
+# Approaches to API development
 
 There are essentially two ways along which your API and its documentation tend to evolve.
 This toolkit aims to support you along both and remove the repetitive nature of writing what is essentially boilerplate code for faster iteration times.

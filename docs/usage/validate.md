@@ -3,8 +3,6 @@
 The toolkit has a command to validate swagger specifications for you.
 It includes a full json-schema validator and adds some extra validations to ensure the spec is valid.
 
-<!--more-->
-
 ### Usage
 
 To validate a specification:
@@ -37,24 +35,24 @@ Help Options:
 All the rules the validator tool supports:
 
 *	validate against jsonschema
-*	validate extra rules [here](https://github.com/apigee-127/sway/tree/master/docs#semantic-validation)
+*	validate extra rules, inspired from [the sway swagger validator](https://github.com/apigee-127/sway/tree/master/docs#semantic-validation)
 
 Rule | Severity
 -----|---------
-definition can't declare a property that's already defined by one of its ancestors | Error
-definition's ancestor can't be a descendant of the same model | Error
-each security reference should contain only unique scopes | Warning
-each security scope in a security definition should be unique | Warning
-path parameter declarations do not allow empty names _(`/path/{}` is not valid)_ | Error
-each api path should be non-verbatim (account for path param names) unique per method | Error
-each path parameter should correspond to a parameter placeholder and vice versa | Error
-each referencable definition must have references | Warning
-each definition property listed in the required array must be defined in the properties of the model | Error
-each parameter should have a unique `name` and `in` combination | Error
-each operation must have an unique `operationId` | Error
-each operation should have only 1 parameter of type body | Error
-each operation cannot have both a body parameter and a formData parameter | Error
-each reference must point to a valid object | Error
-every default value that is specified must validate against the schema for that property | Error
-every example that is specified must validate against the schema for that property | Error
-items property is required for all schemas/definitions of type `array` | Error
+definition can't declare a property that's already defined by one of its ancestors  | Error
+definition's ancestor can't be a descendant of the same model  | Error
+each api path should be non-verbatim (account for path param names) unique per method  | Error
+each path parameter should correspond to a parameter placeholder and vice versa  | Error
+path parameter declarations do not allow empty names _(`/path/{}` is not valid)_  | Error
+each definition property listed in the required array must be defined in the properties of the model  | Error
+each parameter should have a unique `name` and `in` combination  | Error
+each operation should have at most 1 parameter of type body  | Error
+each operation cannot have both a body parameter and a formData parameter  | Error
+each operation must have an unique `operationId`  | Error
+each reference must point to a valid object  | Error
+every default value that is specified must validate against the schema for that property  | Error
+items property is required for all schemas/definitions of type `array`  | Error
+param in path must have the property required: true
+every example that is specified should validate against the schema for that property  | Warning
+$ref should not have siblings  | Warning
+each referable definition must have references  | Warning

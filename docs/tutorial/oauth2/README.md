@@ -214,7 +214,7 @@ func login(r *http.Request) string {
 	// implements the login with a redirection and an access token
 	var accessToken string
 	wG := r.Context().Value(ctxResponseWriter).(http.ResponseWriter)
-	log.Println("Access token:", accessToken)
+	http.Redirect(wG, r, config.AuthCodeURL(state), http.StatusFound)
 	return accessToken
 }
 ```

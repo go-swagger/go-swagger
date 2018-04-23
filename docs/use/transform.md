@@ -10,7 +10,7 @@ Currently it is possible to apply the following transforms:
 
 ### Expansion
 
-Expanding a spec may prove useful to produce documentation or test cases. The primary intent is not code generation.
+Expanding a spec may prove useful to validate a schema, produce documentation or test cases. The primary intent is not code generation.
 
 > **NOTE**: Circular `$ref` are detected and remain as local `$ref`
 
@@ -20,6 +20,8 @@ Usage:
 or
 
 `swagger flatten --with-expand` {spec}`
+
+Full list of available options [for expand](../usage/expand.md) and [for flatten](../usage/flatten.md).
 
 or with codegen commands:
 
@@ -50,7 +52,7 @@ Usage:
 
 or more explicitly:
 
-`swagger flatten --with-flatten:minimal {spec}`
+`swagger flatten --with-flatten=minimal {spec}`
 
 This is the default option for codegen commands:
 
@@ -65,13 +67,16 @@ This is the default option for codegen commands:
 
 Full flattening is useful to factorize data model objects into simpler structures.
 
+> Complex structures (i.e. objects with properties or schemas with an `allOf` composition) are moved to standalone definitions.
+> Arrays and map constructs (e.g. AdditionalProperties) are not considered complex.
+
 Usage:
 
-`swagger flatten --with-flatten:full {spec}`
+`swagger flatten --with-flatten=full {spec}`
 
 Or with codegen commands:
 
-`swagger generate [model|server|client|operation|...] --spec={spec} --with-flatten:full`
+`swagger generate [model|server|client|operation|...] --spec={spec} --with-flatten=full`
 
 > **NOTE**: this used to be the default for codegen commands with releases 0.13 and 0.14. 
 > This behavior has been reverted with release 0.15.
@@ -125,6 +130,8 @@ Usage:
 
 `swagger mixin {primary spec} [{spec to merge}...]`
 
+Full list of available options [here](../usage/mixin.md).
+
 ### Roadmap
 
 This set of features is essentially provided by the `github.com/go-openapi/analysis` package.
@@ -133,7 +140,7 @@ Feel free to contribute new features to this repo.
 Currently, here is a todo list of improvements planned to the spec preprocessing feature:
 
 - in full flatten mode, more options to control how allOf are handled
-- in full flatten mode propagating `x-go-name` (as prefix) to newly created definitions: 
-creating new definitions introduces some naming conventions.
-If a x-go-name has been set in the original structure, new names are not consistent with their container...
+- in full flatten mode propagating `x-go-name` (as prefix) to newly created definitions. 
+As creating new definitions introduces some naming conventions.
+If a x-go-name has been set in the original structure, new names should remain consistent with their container...
 - struct name analysis and better prediction/resolution of duplicate identifiers

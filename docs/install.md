@@ -1,5 +1,8 @@
 ## Installing
 
+**IMPORTANT NOTE**: `go-swagger` is a tool to mainly generate or analyze source code. In order to make it work after successful
+installation, see [the prerequisites](https://goswagger.io/generate/requirements.html) on your development environment.
+
 ### Installing from binary distributions
 
 go-swagger releases are distributed as binaries that are built from signed tags. It is published [as github release](https://github.com/go-swagger/go-swagger/tags),
