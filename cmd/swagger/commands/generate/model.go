@@ -25,6 +25,7 @@ type Model struct {
 	Name           []string `long:"name" short:"n" description:"the model to generate"`
 	NoStruct       bool     `long:"skip-struct" description:"when present will not generate the model struct"`
 	DumpData       bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
+	SkipFlattening bool     `long:"skip-flatten" description:"skips flattening of spec prior to generation"`
 	SkipValidation bool     `long:"skip-validation" description:"skips validation of spec prior to generation"`
 }
 
@@ -47,6 +48,7 @@ func (m *Model) Execute(args []string) error {
 		SkipSupport:    true,
 		SkipOperations: true,
 		SkipModels:     m.NoStruct,
+		SkipFlattening: m.SkipFlattening,
 		SkipValidation: m.SkipValidation,
 	}
 	return s.Execute(args)
