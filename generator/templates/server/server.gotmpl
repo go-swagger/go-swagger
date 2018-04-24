@@ -165,6 +165,7 @@ func NewServer(api *{{ .Package }}.{{ pascalize .Name }}API) *Server {
   {{ end }}{{ end }}
 	s.shutdown = make(chan struct{})
 	s.api = api
+    s.interrupt = make(chan os.Signal, 1)
 	return s
 }
 
@@ -340,10 +341,10 @@ func (s *Server) Serve() (err error) {
 			s.Logf("Stopped serving {{ humanize .Name }} at http://%s", l.Addr())
 		}(s.httpServerL)
 
-        interrupt := s.interruptChan()
-        signalNotify(interrupt)
+        signalNotify(s.interrupt)
         quitting := make(chan struct{})
-        go s.handleInterrupt(interrupt, quitting, s.httpServerL)
+        once := new(sync.Once)
+		go handleInterrupt(once, s, quitting)
 		
         go s.handleShutdown(&wg, httpServer)
 	}
@@ -597,34 +598,24 @@ func (s *Server) TLSListener() (net.Listener, error) {
 	return s.httpsServerL, nil
 }
 
-func (s *Server) interruptChan() chan os.Signal {
-    s.chanLock.Lock()
-    defer s.chanLock.Unlock()
+func handleInterrupt(once *sync.Once, s *Server, quitting chan struct{}) {
+    once.Do(func(){
+	for _ = range s.interrupt {
+		if s.interrupted {
+			s.Logf("Server already shutting down")
+			continue
+		}
+		s.interrupted = true
+		s.Logf("Shutting down... ")
+		close(quitting)
 
-    if s.interrupt == nil {
-        s.interrupt = make(chan os.Signal, 1)
-    }
-    
-    return s.interrupt
-
-}
-
-func (s *Server) handleInterrupt(interrupt chan os.Signal, quitting chan struct{}, l net.Listener) {
-    for _ = range interrupt {
-        if s.interrupted {
-            s.Logf("Server already shutting down")
-            continue
-        }
-        s.interrupted = true
-        s.Logf("Shutting down... ")
-        close(quitting)
-        
-        //s.SetKeepAlivesEnabled(false)
-        if err := l.Close(); err != nil {
-            s.Logf("Error: %s", err)
-        }
-        //s.shutdown <- struct{}{}
-    }
+		//s.SetKeepAlivesEnabled(false)
+		if err := s.httpServerL.Close(); err != nil {
+			s.Logf("Error: %s", err)
+		}
+		//s.shutdown <- struct{}{}
+	}
+    })
 }
 
 func signalNotify(interrupt chan<- os.Signal) {
