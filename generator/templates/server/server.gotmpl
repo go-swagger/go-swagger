@@ -288,6 +288,10 @@ func (s *Server) Serve() (err error) {
 	}
 
 	var wg sync.WaitGroup
+    quitting := make(chan struct{})
+    once := new(sync.Once)
+    signalNotify(s.interrupt)
+    go handleInterrupt(once, s, quitting)
 
 	if s.hasScheme(schemeUnix) {
 		domainSocket := new(http.Server)
@@ -341,10 +345,6 @@ func (s *Server) Serve() (err error) {
 			s.Logf("Stopped serving {{ humanize .Name }} at http://%s", l.Addr())
 		}(s.httpServerL)
 
-        signalNotify(s.interrupt)
-        quitting := make(chan struct{})
-        once := new(sync.Once)
-		go handleInterrupt(once, s, quitting)
 		
         go s.handleShutdown(&wg, httpServer)
 	}
@@ -611,6 +611,12 @@ func handleInterrupt(once *sync.Once, s *Server, quitting chan struct{}) {
 
 		//s.SetKeepAlivesEnabled(false)
 		if err := s.httpServerL.Close(); err != nil {
+			s.Logf("Error: %s", err)
+		}
+		if err := s.httpsServerL.Close(); err != nil {
+			s.Logf("Error: %s", err)
+		}
+		if err := s.domainSocketL.Close(); err != nil {
 			s.Logf("Error: %s", err)
 		}
 		//s.shutdown <- struct{}{}
