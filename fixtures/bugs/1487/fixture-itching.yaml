@@ -1,0 +1,197 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: fixture for additionalProperties
+  description: |
+    This one regroups a number of itching cases, essentially around additionalProperties.
+    In particular, we test some things with empty objects (no properties) which have additionalProperties of diverse sorts.
+    We also added here some funny models using the special types Files, string format: binary and interface{}
+    These special cases do not correspond to actual API specs: we use them to verify the internal behavior of the general.
+
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /models:
+    get:
+      operationId: modelOp
+      summary: many model variations
+      description: Used to see if a codegen can render all the possible enum categories
+      tags:
+        - testcgen
+      responses:
+        default:
+          description: Generic Out
+definitions:
+  emptyObjectWithAdditionalSlice:
+    type: object
+    additionalProperties:
+      type: array
+      items:
+        type: object
+        properties:
+          dummyProp1: 
+            type: string
+            format: date
+  emptyObjectWithAdditionalNestedSlice:
+    type: object
+    additionalProperties:
+      type: array
+      items:
+        type: array 
+        items: 
+          type: array
+          items:
+            type: object
+            properties:
+              dummyProp1: 
+                type: string
+                format: date
+  aliasedThing:
+    type: object
+    properties: 
+      prop1: 
+        type: string
+        format: date
+  nullableThing:
+    type: string
+    format: date
+    # atm, such check is not supported
+    #pattern: '^2017-..-..$'
+    x-nullable: true
+  emptyObjectWithAdditionalAlias:
+    type: object
+    additionalProperties:
+      $ref: '#/definitions/aliasedThing'
+  emptyObjectWithAdditionalNullable:
+    type: object
+    additionalProperties:
+      $ref: '#/definitions/nullableThing'
+  objectWithEmptyObject:
+    type: object
+    properties:
+      nonEmptyObj: 
+        $ref: '#/definitions/nullableThing'
+      emptyObj: 
+        $ref: '#/definitions/emptyObjectWithAdditionalAlias'
+  emptyObjectWithAdditionalNullablePrimitive:
+    type: object
+    additionalProperties:
+      type: string
+      format: date
+      x-nullable: true
+  emptyObjectWithAdditionalNonNullablePrimitive:
+    type: object
+    additionalProperties:
+      type: string
+      format: date
+      # atm, such check is not supported
+      #pattern: '^2018-..-..$'
+  notValidatedAdditionalProps:
+    type: object
+    properties: 
+      prop2:
+        type: string
+        format: uuid
+    additionalProperties:
+      type: object 
+      additionalProperties: 
+        type: object 
+        additionalProperties: 
+          type: string
+  notValidatedAdditionalPropsSlice:
+    type: object
+    properties: 
+      prop2:
+        type: string
+        format: uuid
+    additionalProperties:
+      type: array 
+      items:
+        additionalProperties: 
+          type: object 
+          additionalProperties: 
+            type: string
+  # At the moment, this one generates a non-empty Validate()
+  # this is because of the len(properties) validation criterion
+  notValidatedAtAll:
+    type: object
+    properties: 
+      prop2:
+        type: string
+    additionalProperties:
+      type: array 
+      items:
+        additionalProperties: 
+          type: object 
+          additionalProperties: 
+            type: string
+  enumsWithAdditionalProps:
+    type: object
+    enum: 
+      - '{ "a": 1, "b": 2 }'
+      - '{ "a": 3, "b": 4 }'
+    additionalProperties:
+      type: object
+      enum: 
+        - '{ "b": 2 }'
+        - '{ "b": 4 }'
+  goodOldFormatIssue:
+    type: object 
+    required: [ myFile ]
+    properties:
+      myFile: 
+        type: string
+        format: binary
+      anotherFile: 
+        type: string
+        format: binary
+      alternateFile:
+        type: file
+      thisAliasedFile: 
+        $ref:  '#/definitions/aliasedFile'
+      thisNullableAliasedFile: 
+        $ref:  '#/definitions/aliasedNullableFile'
+      thisAlternateAliasedFile:
+        $ref:  '#/definitions/aliasedTypeFile'
+      thisNullableAlternateAliasedFile:
+        $ref:  '#/definitions/aliasedTypeNullableFile'
+      myBytes: 
+        type: string
+        format: byte
+  sliceOfAliasedFiles:
+    type: array 
+    minItems: 4
+    items: 
+      $ref: '#/definitions/aliasedFile'
+  additionalFile:
+    type: object
+    properties: 
+      dirName:
+        type: string
+    additionalProperties:
+      type: string
+      format: binary
+  additionalAliasedFile:
+  aliasedFile:
+    type: string
+    format: binary
+  aliasedTypeFile:
+    type: file
+  aliasedNullableFile:
+    type: string
+    format: binary
+    x-nullable: true
+  aliasedTypeNullableFile:
+    type: file
+    x-nullable: true
+  topLevelFormatIssue:
+    type: object 
+    properties:
+      myFile: 
+        type: string
+        format: binary
+      myAlternateFile: 
+        type: file

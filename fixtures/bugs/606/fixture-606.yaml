@@ -1,0 +1,61 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: broken code because Validate() is not produced
+  description: broken code produced on polymorphic type
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /models:
+    get:
+      operationId: modelOp
+      summary: many model variations
+      description: no description
+      tags:
+        - testcgen
+      responses:
+        default:
+          description: Generic Out
+definitions:
+  RangeFilter:
+    allOf:
+    - $ref: '#/definitions/Filter'
+    - properties:
+        config:
+          properties:
+            gt:
+              format: double
+              type: number
+            gte:
+              format: double
+              type: number
+            lt:
+              format: double
+              type: number
+            lte:
+              format: double
+              type: number
+          type: object
+      required:
+      - config
+      type: object
+  Filter:
+    discriminator: type
+    properties:
+      type:
+        type: string
+    required:
+    - type
+    type: object
+  NotFilter:
+    allOf:
+    - $ref: '#/definitions/Filter'
+    - properties:
+        config:
+          $ref: '#/definitions/Filter'
+      required:
+      - config
+      type: object

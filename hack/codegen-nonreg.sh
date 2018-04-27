@@ -57,20 +57,24 @@ if [ ! -f `which swagger` ]; then
   exit 1
 fi
 
-# The following ones fail generation: todo existing_model requires pregeneration
 # NOTE(fredbi): 
-# - issue72: invalid spec
-# - todolist.discriminators.yml: invalid mode generation (issue#1376)
-# - bitbucket.json: model does not compile (anonymous allOf1)
-# - azure-text-analyis.json: invalid specification with duplicate property in allOf construct (provided fixed version for testing)
+# The following ones fail generation: 
+# - todo existing_model requires pregeneration
+# - issue72: model works with --skip-validation. Invalid spec (duplicate operationID)
 # - todolist.simple.yml: invalid default values put on purpose for UT (provided fixed version for testing)
+#
+# The following ones requires some checks to be skipped:
+# - azure-text-analyis.json: works with --skip-validation. Invalid specification with duplicate property in allOf construct (provided fixed version for testing)
+# - azure-text-analyis.json: should work with -skip-validation
+#
+# The following ones used to fail and are ok:
+# - todolist.discriminators.yml: works
+# - bitbucket.json: works nows
+# - cloudbreak.json : now works
 known_failed="@(\
-azure-text-analyis.json|\
-bitbucket.json|\
 existing-model.yml|\
 issue72.json|\
-todolist.simple.yml|\
-cloudbreak.json\
+todolist.simple.yml\
 )"
 # The following ones should fail validation, but produce correct generated code (at least it builds)
 known_skip_validation="@(\
@@ -78,6 +82,7 @@ todolist.enums.yml|\
 todolist.enums.flattened.json|\
 todolist.models.yml|\
 todolist.schemavalidation.yml|\
+azure-text-analyis.json|\
 swagger-gsma.json\
 )"
 

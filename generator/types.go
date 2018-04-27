@@ -69,6 +69,7 @@ func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType)
 	//_, result.IsPrimitive = primitives[tn]
 
 	if tn == file {
+		// special case of swagger type "file", rendered as io.ReadCloser interface
 		result.IsPrimitive = true
 		result.GoType = typeMapping[binary]
 		result.IsStream = true
@@ -81,6 +82,8 @@ func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType)
 			result.GoType = tpe
 			result.IsPrimitive = true
 			_, result.IsCustomFormatter = customFormatters[tpe]
+			// special case of swagger format "binary", rendered as io.ReadCloser interface
+			// TODO(fredbi): should set IsCustomFormatter=false when binary
 			result.IsStream = fmt == binary
 			return
 		}
@@ -184,6 +187,14 @@ func (t *typeResolver) NewWithModelName(name string) *typeResolver {
 	}
 }
 
+// IsNullable hints the generator as to render the type with a pointer or not.
+//
+// A schema is deemed nullable (i.e. rendered by a pointer) when:
+// - a custom extension says it has to be so
+// - it is an object with properties
+// - it is a composed object (allOf)
+//
+// The interpretation of Required as a mean to make a type nullable is carried on elsewhere.
 func (t *typeResolver) IsNullable(schema *spec.Schema) bool {
 	nullable := t.isNullable(schema)
 	return nullable || len(schema.AllOf) > 0
@@ -202,7 +213,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 		ref, er = spec.ResolveRef(t.Doc.Spec(), &schema.Ref)
 		if er != nil {
 			if Debug {
-				log.Print("error resolving", er)
+				log.Printf("error resolving ref %s: %v", schema.Ref.String(), er)
 			}
 			err = er
 			return
@@ -259,6 +270,8 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema, isAnonymous bool, isRe
 			result.SwaggerFormat = schema.Format
 			result.GoType = tpe
 			t.inferAliasing(&result, schema, isAnonymous, isRequired)
+			// special case of swagger format "binary", rendered as io.ReadCloser interface and is therefore not a primitive type
+			// TODO: should set IsCustomFormatter=false in this case.
 			result.IsPrimitive = schFmt != binary
 			result.IsStream = schFmt == binary
 			_, result.IsCustomFormatter = customFormatters[tpe]
@@ -305,6 +318,10 @@ func (t *typeResolver) firstType(schema *spec.Schema) string {
 	if len(schema.Type) == 0 || schema.Type[0] == "" {
 		return object
 	}
+	if len(schema.Type) > 1 {
+		// JSON-Schema multiple types, e.g. {"type": [ "object", "array" ]} are not supported.
+		log.Printf("warning: JSON-Schema type definition as array with several types is not supported in %#v. Taking the first type: %s", schema.Type, schema.Type[0])
+	}
 	return schema.Type[0]
 }
 
@@ -345,7 +362,6 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 		err = er
 		return
 	}
-
 	rt.IsNullable = t.IsNullable(schema.Items.Schema) && !rt.HasDiscriminator
 	result.GoType = "[]" + rt.GoType
 	if rt.IsNullable && !strings.HasPrefix(rt.GoType, "*") {
@@ -413,19 +429,59 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 	// account for additional properties
 	if schema.AdditionalProperties != nil && schema.AdditionalProperties.Schema != nil {
 		sch := schema.AdditionalProperties.Schema
-		et, er := t.ResolveSchema(schema.AdditionalProperties.Schema, sch.Ref.String() == "", false)
+		et, er := t.ResolveSchema(sch, sch.Ref.String() == "", false)
 		if er != nil {
 			err = er
 			return
 		}
+
 		result.IsMap = !result.IsComplexObject
+
 		result.SwaggerType = object
 
 		et.IsNullable = t.isNullable(schema.AdditionalProperties.Schema)
-		result.GoType = "map[string]" + et.GoType
 		if et.IsNullable {
 			result.GoType = "map[string]*" + et.GoType
+		} else {
+			result.GoType = "map[string]" + et.GoType
+
 		}
+
+		// Resolving nullability conflicts for:
+		// - map[][]...[]{items}
+		// - map[]{aliased type}
+		//
+		// when IsMap is true.
+		//
+		// IsMapNullOverride is to be handled by generator for special cases
+		// where the map element is considered non nullable and the element itself is.
+		//
+		// This allows to appreciate nullability according to the context.
+		needsOverride := result.IsMap && (et.IsArray || (sch.Ref.String() != "" || et.IsAliased || et.IsAnonymous)) //*&& !et.IsPrimitive*/
+
+		if needsOverride {
+			var er error
+			if et.IsArray {
+				var it resolvedType
+				s := sch
+				// resolve the last items after nested arrays
+				for s.Items != nil && s.Items.Schema != nil {
+					it, er = t.ResolveSchema(s.Items.Schema, sch.Ref.String() == "", false)
+					if er != nil {
+						return
+					}
+					s = s.Items.Schema
+				}
+				// mark an override when nullable status conflicts, i.e. when the original type is not already nullable
+				if !it.IsAnonymous || it.IsAnonymous && it.IsNullable {
+					result.IsMapNullOverride = true
+				}
+			} else {
+				// this locks the generator on the local nullability status
+				result.IsMapNullOverride = true
+			}
+		}
+
 		t.inferAliasing(&result, schema, isAnonymous, false)
 		result.ElemType = &et
 		return
@@ -434,6 +490,8 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 	if len(schema.Properties) > 0 {
 		return
 	}
+
+	// an object without property is rendered as interface{}
 	result.GoType = iface
 	result.IsMap = true
 	result.SwaggerType = object
@@ -515,7 +573,7 @@ func boolExtension(ext spec.Extensions, key string) *bool {
 }
 
 func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequired bool) (result resolvedType, err error) {
-	logDebug("resolving schema (anon: %t, req: %t) %s\n", isAnonymous, isRequired, t.ModelName /*bbb*/)
+	logDebug("resolving schema (anon: %t, req: %t) %s\n", isAnonymous, isRequired, t.ModelName)
 	if schema == nil {
 		result.IsInterface = true
 		result.GoType = iface
@@ -534,6 +592,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		return
 	}
 
+	// special case of swagger type "file", rendered as io.ReadCloser interface
 	if t.firstType(schema) == file {
 		result.SwaggerType = file
 		result.IsPrimitive = true
@@ -605,7 +664,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	}
 }
 
-// A resolvedType is a swagger type that has been resolved and analyzed for usage
+// resolvedType is a swagger type that has been resolved and analyzed for usage
 // in a template
 type resolvedType struct {
 	IsAnonymous       bool
@@ -617,14 +676,18 @@ type resolvedType struct {
 	IsAliased         bool
 	IsNullable        bool
 	IsStream          bool
-	HasDiscriminator  bool
 	IsEmptyOmitted    bool
 
 	// A tuple gets rendered as an anonymous struct with P{index} as property name
 	IsTuple            bool
 	HasAdditionalItems bool
-	IsComplexObject    bool
-	IsBaseType         bool
+
+	// A complex object gets rendered as a struct
+	IsComplexObject bool
+
+	// A polymorphic type
+	IsBaseType       bool
+	HasDiscriminator bool
 
 	GoType        string
 	Pkg           string
@@ -634,7 +697,12 @@ type resolvedType struct {
 	SwaggerFormat string
 	Extensions    spec.Extensions
 
+	// The type of the element in a slice or map
 	ElemType *resolvedType
+
+	// IsMapNullOverride indicates that a nullable object is used within an
+	// aliased map. In this case, the reference is not rendered with a pointer
+	IsMapNullOverride bool
 }
 
 func (rt *resolvedType) Zero() string {

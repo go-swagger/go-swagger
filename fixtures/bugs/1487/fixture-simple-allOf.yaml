@@ -1,0 +1,87 @@
+
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: fixture for nested allOf with ref
+  description: we test various composition combinations, including nested, and nested isolated with a properties (e.g. issue #1479)
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /models:
+    get:
+      operationId: modelOp
+      summary: many model variations
+      description: no description
+      responses:
+        default:
+          description: Generic Out
+
+definitions:
+  notReallyComposedThing:
+    allOf:
+      - type: object 
+        properties: 
+          prop0:
+            type: string
+            format: uuid
+  composedThing:
+    allOf:
+      - type: object 
+        properties: 
+          prop1:
+            type: string
+            format: uuid
+      - type: object 
+        properties: 
+          prop2:
+            type: string
+            format: uuid
+  simpleNestedObject:
+    allOf:
+      - $ref: '#/definitions/composedThing'
+      - type: object 
+        properties: 
+          prop3:
+            type: string
+            format: uuid
+  deepNestedObject:
+    type: object
+    allOf:
+      - $ref: '#/definitions/simpleNestedObject'
+      - type: object 
+        allOf:
+          - type: object 
+            properties: 
+              prop4:
+                type: string
+                format: uuid
+          - type: object 
+            properties: 
+              prop5:
+                type: string
+                format: date
+  breakNestedObject:
+    type: object
+    allOf:
+      - $ref: '#/definitions/simpleNestedObject'
+      - type: object 
+        properties: 
+          prop6:
+            type: string
+            format: uuid
+          prop7:
+            type: object
+            allOf:
+              - type: object
+                properties:
+                  prop8:
+                    type: integer
+                    minimum: 12
+              - type: object
+                properties:
+                  prop9:
+                    type: integer
+                    maximum: 12

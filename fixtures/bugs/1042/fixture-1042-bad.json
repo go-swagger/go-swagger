@@ -1,0 +1,62 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "allOf marshalling",
+    "description": "when the specification incorrectly defines the allOf,\ngenerated unmarshalling is wrong.\nThis fixture asserts that with correct spec, the generated models are correct.\n",
+    "version": "0.0"
+  },
+  "basePath": "/test",
+  "paths": {
+    "/allof": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "test",
+            "schema": {
+              "$ref": "#/definitions/B"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "A": {
+      "description": "a first definition A",
+      "type": "object",
+      "properties": {
+        "f1": {
+          "type": "string"
+        },
+        "f2": {
+          "type": "string"
+        }
+      }
+    },
+    "B": {
+      "description": "a second definition B, which extends A",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/A"
+        },
+        null
+      ],
+      "required": [
+        "f3",
+        "f4"
+      ],
+      "properties": {
+        "f3": {
+          "type": "string"
+        },
+        "f4": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

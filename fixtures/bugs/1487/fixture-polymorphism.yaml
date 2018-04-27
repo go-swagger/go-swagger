@@ -1,0 +1,158 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: check validation codegen on polymorphic types
+  description: various patterns of polymorphic types with or without validation
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /models:
+    get:
+      operationId: modelOp
+      summary: many model variations
+      description: no description
+      tags:
+        - testcgen
+      responses:
+        default:
+          description: Generic Out
+definitions:
+  # TODO: map of polymorphic types
+  # TODO: tuple in base type
+  # TODO: marshal aliases of base type
+  # TODO: marshal additional properties in base type
+  MapOfNodes:
+    type: object
+    additionalProperties:
+      $ref: "#/definitions/Node"
+  # Issue: Validate() is empty
+  Graph:
+    type: object
+    properties:
+      Nodes:
+        type: array
+        items:
+          $ref: "#/definitions/Node"
+  SmallGraph:
+    type: object
+    properties:
+      Nodes:
+        maxItems: 10
+        type: array
+        items:
+          $ref: "#/definitions/Node"
+  # Issue: Validate() is empty instead of just return nil
+  Node:
+    type: object
+    discriminator: NodeType
+    required:
+      - NodeType
+    properties:
+      NodeType:
+        type: string
+      NodeSize:
+        type: integer
+        minimum: 0
+  SmallNode:
+    type: object
+    discriminator: NodeType
+    required:
+      - NodeType
+    properties:
+      NodeType:
+        # no validations are taken into account on discriminator property
+        # (purely documentary)
+        type: string
+        maxLength: 255
+  CodeBlockNode:
+    allOf:
+      - $ref: "#/definitions/Node"
+      - properties:
+          Code:
+            type: string
+  # Added an additional subtype
+  DocBlockNode:
+    allOf:
+      - $ref: "#/definitions/Node"
+      - properties:
+          Doc:
+            type: string
+            maxLength: 1000
+  # Issue: alias generated, without Validate()
+  arrayOfBaseTypes:
+    type: array
+    items:
+      $ref: '#/definitions/myBaseType'
+  smallArrayOfBaseTypes:
+    type: array
+    maxItems: 12
+    items:
+      $ref: '#/definitions/myBaseType'
+  # Issue: broken codegen
+  tupleOfBaseTypes:                 # OK
+    type: array
+    items:
+      - $ref: '#/definitions/mySubType1'
+      - $ref: '#/definitions/mySubType2'
+      - $ref: '#/definitions/myBaseType'                # tuple element is a base type
+      # BROKEN - $ref: '#/definitions/smallArrayOfBaseTypes'     # tuple element is an alias on base type (slice)
+      # BROKEN - $ref: '#/definitions/MapOfNodes'                # tuple element is an alias on base type (map)
+  mapOfBaseTypes:
+    type: object 
+    properties: 
+      dummy:
+        type: integer
+        multipleOf: 10
+    additionalProperties:
+      $ref: "#/definitions/myBaseType"
+  tupleWithAdditionalBaseTypes:
+    type: array
+    items:
+      - type: integer
+        minimum: 100
+      - $ref: '#/definitions/mySubType1'
+      - $ref: '#/definitions/mySubType2'
+    additionalItems:
+      $ref: '#/definitions/myBaseType'                # additionalItems are a base type
+  mySubType1:
+    allOf:
+      - $ref: "#/definitions/myBaseType"
+      - properties:
+          subprop1:
+            type: string 
+            format: date
+  mySubType2:
+    allOf:
+      - $ref: "#/definitions/myBaseType"
+      - type: object 
+        additionalProperties:
+          $ref: "#/definitions/myBaseType"
+  myBaseType:
+    type: object
+    discriminator: myObjectType
+    required:
+      - myObjectType
+    properties:
+      myObjectType:
+        type: string
+      myObjectPrice:
+        type: number
+        minimum: 0
+      myObjectResellers:
+        type: array 
+        items: 
+          type: object 
+          required: [name]
+          properties: 
+            name: 
+              type: string
+            address: 
+              type: string
+    additionalProperties:
+      type: array
+      items:
+        additionalProperties: true
+

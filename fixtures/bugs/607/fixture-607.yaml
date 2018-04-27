@@ -1,0 +1,63 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: broken code when using array of polymorphic type
+  description: broken code produced on polymorphic type
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /models:
+    get:
+      operationId: modelOp
+      summary: many model variations
+      description: no description
+      tags:
+        - testcgen
+      responses:
+        default:
+          description: Generic Out
+definitions:
+  RangeFilter:
+    allOf:
+      - $ref: '#/definitions/Filter'
+      - properties:
+          config:
+            properties:
+              gt:
+                format: double
+                type: number
+              gte:
+                format: double
+                type: number
+              lt:
+                format: double
+                type: number
+              lte:
+                format: double
+                type: number
+            type: object
+        required:
+          - config
+        type: object
+  Filter:
+    discriminator: type
+    properties:
+      type:
+        type: string
+    required:
+      - type
+    type: object
+  AndFilter:
+    allOf:
+      - $ref: '#/definitions/Filter'
+      - properties:
+          config:
+            items:
+              $ref: '#/definitions/Filter'
+            type: array
+        required:
+          - config
+        type: object

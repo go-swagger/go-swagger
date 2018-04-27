@@ -1,0 +1,160 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: Nested maps
+  description: |
+    Testes focused on nested maps (i.e.nested AdditionalProperties)
+
+produces:
+  - application/json
+
+consumes:
+  - application/json
+
+paths:
+  /models:
+    get:
+      operationId: modelOp
+      summary: many model variations
+      description: Used to see if a codegen can render all the possible parameter variations for a header param
+      tags:
+        - testcgen
+      responses:
+        default:
+          description: Generic Out
+definitions:
+  NamedNestedMapComplex:
+    type: object
+    additionalProperties:
+      type: object
+      additionalProperties:
+        type: object
+        additionalProperties:
+          type: object
+          properties:
+            name:
+              type: string
+              minLength: 10
+              maxLength: 50
+              pattern: "\\w+"
+            age:
+              type: integer
+              format: int32
+              multipleOf: 1
+              minimum: 1
+              maximum: 200
+              exclusiveMaximum: true
+              exclusiveMinimum: true
+  NamedNestedMapWithSlice:
+    type: object
+    additionalProperties:
+      type: object
+      additionalProperties:
+        type: object
+        additionalProperties:
+          type: array
+          maxItems: 100
+          items:
+            type: string
+            minLength: 10
+  NestedMapValidations:
+    type: object
+    properties:
+      meta:
+        type: object
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: integer
+              format: int64
+              minimum: 3
+              maximum: 6
+              multipleOf: 1
+  NestedMapComplexValidations:
+    type: object
+    properties:
+      meta:
+        type: object
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 10
+                  maxLength: 50
+                  pattern: "\\w+"
+                age:
+                  type: integer
+                  format: int32
+                  multipleOf: 1
+                  minimum: 1
+                  maximum: 200
+                  exclusiveMaximum: true
+                  exclusiveMinimum: true
+  NestedMapNoValidations:
+    type: object
+    additionalProperties:
+      type: object
+      additionalProperties:
+        type: object
+        additionalProperties:
+          type: object
+          properties:
+            name:
+              type: string
+            age:
+              type: integer 
+  NestedMapSliceOfInterface:
+    type: object
+    additionalProperties:
+      type: object
+      additionalProperties:
+        type: object
+        additionalProperties:
+          type: array
+          items:
+            $ref: '#/definitions/aliasInterface'
+  NestedMapMaxSliceOfInterface:
+    type: object
+    additionalProperties:
+      type: object
+      additionalProperties:
+        type: object
+        additionalProperties:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/definitions/aliasInterface'
+  aliasInterface:
+    type: object
+    additionalProperties: true
+  testNestedInterface:
+    type: object
+    properties:
+      meta:
+        type: object
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: object
+              additionalProperties: true
+  testNestedAliasedInterface:
+    type: object
+    properties:
+      meta:
+        type: object
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              $ref: '#/definitions/aliasInterface'
