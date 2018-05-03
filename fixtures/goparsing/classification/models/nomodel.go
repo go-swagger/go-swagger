@@ -601,6 +601,8 @@ type Cars struct {
 	Cars []*TeslaCar `json:"cars"`
 }
 
+// JSONString has fields with ",string" JSON directives.
+//
 // swagger:model jsonString
 type JSONString struct {
 	// Should be encoded as a string with string format "integer"
