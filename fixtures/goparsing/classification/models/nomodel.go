@@ -600,3 +600,32 @@ type ModelA struct {
 type Cars struct {
 	Cars []*TeslaCar `json:"cars"`
 }
+
+// JSONString has fields with ",string" JSON directives.
+//
+// swagger:model jsonString
+type JSONString struct {
+	// Should be encoded as a string with string format "integer"
+	SomeInt    int    `json:"someInt,string"`
+	SomeInt8   int8   `json:"someInt8,string"`
+	SomeInt16  int16  `json:"someInt16,string"`
+	SomeInt32  int32  `json:"someInt32,string"`
+	SomeInt64  int64  `json:"someInt64,string"`
+	SomeUint   uint   `json:"someUint,string"`
+	SomeUint8  uint8  `json:"someUint8,string"`
+	SomeUint16 uint16 `json:"someUint16,string"`
+	SomeUint32 uint32 `json:"someUint32,string"`
+	SomeUint64 uint64 `json:"someUint64,string"`
+
+	// Should be encoded as a string with string format "double"
+	SomeFloat64 float64 `json:"someFloat64,string"`
+
+	// Should be encoded as a string with no format
+	SomeString string `json:"someString,string"`
+
+	// Should be encoded as a string with no format
+	SomeBool bool `json:"someBool,string"`
+
+	// The ",string" directive should be ignore before the type isn't scalar
+	SomethingElse Cars `json:"somethingElse,string"`
+}

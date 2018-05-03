@@ -309,7 +309,7 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 		for _, fld := range tpe.Fields.List {
 			if len(fld.Names) > 0 && fld.Names[0] != nil && fld.Names[0].IsExported() {
 				gnm := fld.Names[0].Name
-				nm, ignore, err := parseJSONTag(fld)
+				nm, ignore, _, err := parseJSONTag(fld)
 				if err != nil {
 					return err
 				}
