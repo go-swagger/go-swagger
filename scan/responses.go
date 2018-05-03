@@ -284,7 +284,7 @@ func (rp *responseParser) parseStructType(gofile *ast.File, response *spec.Respo
 
 		for _, fld := range tpe.Fields.List {
 			if len(fld.Names) > 0 && fld.Names[0] != nil && fld.Names[0].IsExported() {
-				nm, ignore, err := parseJSONTag(fld)
+				nm, ignore, _, err := parseJSONTag(fld)
 				if err != nil {
 					return err
 				}

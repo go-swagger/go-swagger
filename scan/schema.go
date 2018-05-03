@@ -592,7 +592,7 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 
 	for _, fld := range tpe.Fields.List {
 		if len(fld.Names) == 0 {
-			_, ignore, err := parseJSONTag(fld)
+			_, ignore, _, err := parseJSONTag(fld)
 			if err != nil {
 				return err
 			}
@@ -657,7 +657,7 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 	for _, fld := range tpe.Fields.List {
 		if len(fld.Names) > 0 && fld.Names[0] != nil && fld.Names[0].IsExported() {
 			gnm := fld.Names[0].Name
-			nm, ignore, err := parseJSONTag(fld)
+			nm, ignore, isString, err := parseJSONTag(fld)
 			if err != nil {
 				return err
 			}
@@ -674,6 +674,10 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 			ps := schema.Properties[nm]
 			if err := parseProperty(scp, gofile, fld.Type, schemaTypable{&ps, 0}); err != nil {
 				return err
+			}
+			if isString {
+				ps.Typed("string", ps.Format)
+				ps.Ref = spec.Ref{}
 			}
 			if strfmtName, ok := strfmtName(fld.Doc); ok {
 				ps.Typed("string", strfmtName)
@@ -1236,25 +1240,41 @@ func parseProperty(scp *schemaParser, gofile *ast.File, fld ast.Expr, prop swagg
 	return nil
 }
 
-func parseJSONTag(field *ast.Field) (name string, ignore bool, err error) {
+func parseJSONTag(field *ast.Field) (name string, ignore bool, isString bool, err error) {
 	if len(field.Names) > 0 {
 		name = field.Names[0].Name
 	}
 	if field.Tag != nil && len(strings.TrimSpace(field.Tag.Value)) > 0 {
 		tv, err := strconv.Unquote(field.Tag.Value)
 		if err != nil {
-			return name, false, err
+			return name, false, false, err
 		}
 
 		if strings.TrimSpace(tv) != "" {
 			st := reflect.StructTag(tv)
-			jsonName := strings.Split(st.Get("json"), ",")[0]
+			jsonParts := strings.Split(st.Get("json"), ",")
+			jsonName := jsonParts[0]
+
+			if len(jsonParts) > 1 && jsonParts[1] == "string" {
+				// Need to check if the field type is a scalar. Otherwise, the
+				// ",string" directive doesn't apply.
+				ident, ok := field.Type.(*ast.Ident)
+				if ok {
+					switch ident.Name {
+					case "int", "int8", "int16", "int32", "int64",
+						"uint", "uint8", "uint16", "uint32", "uint64",
+						"float64", "string", "bool":
+						isString = true
+					}
+				}
+			}
+
 			if jsonName == "-" {
-				return name, true, nil
+				return name, true, isString, nil
 			} else if jsonName != "" {
-				return jsonName, false, nil
+				return jsonName, false, isString, nil
 			}
 		}
 	}
-	return name, false, nil
+	return name, false, false, nil
 }
