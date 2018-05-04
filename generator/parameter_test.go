@@ -1705,3 +1705,26 @@ func TestGenParameter_Issue1392(t *testing.T) {
 		}
 	}
 }
+
+func TestGenParameter_Issue1513(t *testing.T) {
+	assert := assert.New(t)
+	var assertion = `r.SetBodyParam(o.Something)`
+	gen, err := opBuilderWithFlatten("put-enum", "../fixtures/bugs/1513/enums.yaml")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("clientParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("move_clusters_parameters.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertInCode(t, assertion, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
