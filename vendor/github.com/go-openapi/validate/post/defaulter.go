@@ -26,8 +26,10 @@ func ApplyDefaults(r *validate.Result) {
 	LookForDefaultingScheme:
 		for _, s := range schemata {
 			if s.Default != nil {
-				key.Object()[key.Field()] = s.Default
-				break LookForDefaultingScheme
+				if _, found := key.Object()[key.Field()]; !found {
+					key.Object()[key.Field()] = s.Default
+					break LookForDefaultingScheme
+				}
 			}
 		}
 	}

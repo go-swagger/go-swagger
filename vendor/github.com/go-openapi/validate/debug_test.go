@@ -16,7 +16,6 @@ package validate
 
 import (
 	"io/ioutil"
-	"log"
 	"os"
 	"sync"
 	"testing"
@@ -37,7 +36,6 @@ func TestDebug(t *testing.T) {
 	tmpName := tmpFile.Name()
 	defer func() {
 		Debug = false
-		log.SetOutput(os.Stdout)
 		// mutex for -race
 		logMutex.Unlock()
 		os.Remove(tmpName)
@@ -45,15 +43,21 @@ func TestDebug(t *testing.T) {
 
 	// mutex for -race
 	logMutex.Lock()
-	log.SetOutput(tmpFile)
 	Debug = true
 	debugOptions()
+	defer func() {
+		validateLogger.SetOutput(os.Stdout)
+	}()
+
+	validateLogger.SetOutput(tmpFile)
+
 	debugLog("A debug")
 	Debug = false
 	tmpFile.Close()
+
 	flushed, _ := os.Open(tmpName)
 	buf := make([]byte, 500)
 	flushed.Read(buf)
-	log.SetOutput(os.Stdout)
+	validateLogger.SetOutput(os.Stdout)
 	assert.Contains(t, string(buf), "A debug")
 }

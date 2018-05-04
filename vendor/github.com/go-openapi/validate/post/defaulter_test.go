@@ -45,6 +45,7 @@ func TestDefaulter(t *testing.T) {
 	t.Logf("After: %v", x)
 	var expected interface{}
 	err = json.Unmarshal([]byte(`{
+		"existing": 100,
 		"int": 42,
 		"str": "Hello",
 		"obj": {"foo": "bar"},
@@ -108,10 +109,11 @@ func BenchmarkDefaulting(b *testing.B) {
 
 func defaulterFixtureInput() map[string]interface{} {
 	return map[string]interface{}{
-		"nested": map[string]interface{}{},
-		"all":    map[string]interface{}{},
-		"any":    map[string]interface{}{},
-		"one":    map[string]interface{}{},
+		"existing": float64(100),
+		"nested":   map[string]interface{}{},
+		"all":      map[string]interface{}{},
+		"any":      map[string]interface{}{},
+		"one":      map[string]interface{}{},
 	}
 }
 

@@ -94,8 +94,8 @@ func (js jwtSource) Token() (*oauth2.Token, error) {
 	// Add scopes if they exist;  If not, it defaults to app scopes
 	if scopes := js.conf.Scopes; scopes != nil {
 		upperScopes := make([]string, len(scopes))
-		for _, k := range scopes {
-			upperScopes = append(upperScopes, strings.ToUpper(k))
+		for i, k := range scopes {
+			upperScopes[i] = strings.ToUpper(k)
 		}
 		v.Set("scope", strings.Join(upperScopes, "+"))
 	}

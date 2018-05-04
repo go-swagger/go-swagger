@@ -4,12 +4,9 @@ import (
 	"crypto/rsa"
 	"io/ioutil"
 
-	"github.com/davecgh/go-spew/spew"
-
 	jwt "github.com/dgrijalva/jwt-go"
 	errors "github.com/go-openapi/errors"
 	models "github.com/go-swagger/go-swagger/examples/composed-auth/models"
-	logging "github.com/op/go-logging"
 )
 
 const (
@@ -18,7 +15,6 @@ const (
 )
 
 var (
-	logger *logging.Logger
 	userDb map[string]string
 
 	// Keys used to sign and verify our tokens
@@ -33,9 +29,6 @@ type roleClaims struct {
 }
 
 func init() {
-	logger = logging.MustGetLogger("auth")
-	logging.SetLevel(logging.DEBUG, "auth")
-
 	// emulates the loading of a local users database
 	userDb = map[string]string{
 		"fred": "scrum",
@@ -58,7 +51,6 @@ func init() {
 // IsRegistered determines if the user is properly registered,
 // i.e if a valid username:password pair has been provided
 func IsRegistered(user, pass string) (*models.Principal, error) {
-	logger.Debugf("Credentials: %q:%q", user, pass)
 	if password, ok := userDb[user]; ok {
 		if pass == password {
 			return &models.Principal{
@@ -66,16 +58,13 @@ func IsRegistered(user, pass string) (*models.Principal, error) {
 			}, nil
 		}
 	}
-	logger.Debug("Bad credentials")
 	return nil, errors.New(401, "Unauthorized: not a registered user")
 }
 
 // IsReseller tells if the API key is a JWT signed by us with a claim to be a reseller
 func IsReseller(token string) (*models.Principal, error) {
-	logger.Debug("Parsing token")
 	claims, err := parseAndCheckToken(token)
 	if err == nil {
-		logger.Debugf("Token claims: %s", spew.Sdump(claims))
 		if claims.Issuer == "example.com" && claims.Id != "" {
 			isReseller := false
 			for _, role := range claims.Roles {
@@ -89,11 +78,9 @@ func IsReseller(token string) (*models.Principal, error) {
 					Name: claims.Id,
 				}, nil
 			}
-			logger.Debug("Bad claims")
 			return nil, errors.New(403, "Forbidden: insufficient API key privileges")
 		}
 	}
-	logger.Debug("Bad credentials")
 	return nil, errors.New(401, "Unauthorized: invalid API key token: %v", err)
 }
 
@@ -101,10 +88,8 @@ func IsReseller(token string) (*models.Principal, error) {
 // member of an authorization scope.
 // We verify that the claimed role is one of the passed scopes
 func HasRole(token string, scopes []string) (*models.Principal, error) {
-	logger.Debugf("Runtime passed scopes: %v", scopes)
 	claims, err := parseAndCheckToken(token)
 	if err == nil {
-		logger.Debugf("Token claims: %s", spew.Sdump(claims))
 		if claims.Issuer == "example.com" {
 			isInScopes := false
 			claimedRoles := []string{}
@@ -123,11 +108,9 @@ func HasRole(token string, scopes []string) (*models.Principal, error) {
 					Roles: claimedRoles,
 				}, nil
 			}
-			logger.Debug("Bad claims")
 			return nil, errors.New(403, "Forbidden: insufficient privileges")
 		}
 	}
-	logger.Debug("Bad credentials")
 	return nil, errors.New(401, "Unauthorized: invalid Bearer token: %v", err)
 }
 

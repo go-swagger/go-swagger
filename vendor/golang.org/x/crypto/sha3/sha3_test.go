@@ -126,7 +126,7 @@ func TestKeccakKats(t *testing.T) {
 
 // TestUnalignedWrite tests that writing data in an arbitrary pattern with
 // small input buffers.
-func testUnalignedWrite(t *testing.T) {
+func TestUnalignedWrite(t *testing.T) {
 	testUnalignedAndGeneric(t, func(impl string) {
 		buf := sequentialBytes(0x10000)
 		for alg, df := range testDigests {

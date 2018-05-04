@@ -47,11 +47,6 @@ security requirements may be composed out of several schemes, and use API author
 
 ### Prerequisites
 
-In order to build and run this example, you need to retrieve some packages not shipped with go-swagger: 
-
-- `go get -u github.com/dgrijalva/jwt-go`
-- `go get -u github.com/op/go-logging`
-
 `jwt-go` ships with a nice JWT CLI utility. Although not required, you might want to install it and 
 play with your own tokens:
 
