@@ -4,8 +4,8 @@ package restapi
 
 import (
 	"crypto/tls"
+	"log"
 	"net/http"
-	"os"
 
 	"github.com/davecgh/go-spew/spew"
 	errors "github.com/go-openapi/errors"
@@ -18,7 +18,6 @@ import (
 	models "github.com/go-swagger/go-swagger/examples/composed-auth/models"
 
 	auth "github.com/go-swagger/go-swagger/examples/composed-auth/auth"
-	logging "github.com/op/go-logging"
 )
 
 //go:generate swagger generate server --target .. --name multiAuthExample --spec ../swagger.yml --principal models.Principal
@@ -34,14 +33,7 @@ func configureAPI(api *operations.MultiAuthExampleAPI) http.Handler {
 	// Set your custom logger if needed. Default one is log.Printf
 	// Expected interface func(string, ...interface{})
 
-	// want some color
-	format := logging.MustStringFormatter(`%{color}%{time:15:04:05.000} [%{module}]%{shortfunc} -> %{level:.4s} %{id:03x}%{color:reset} %{message}`)
-	backendFmt := logging.NewBackendFormatter(logging.NewLogBackend(os.Stderr, "", 0), format)
-	logging.SetLevel(logging.DEBUG, "api")
-	logging.SetBackend(backendFmt)
-	logger := logging.MustGetLogger("api")
-
-	api.Logger = logger.Infof
+	api.Logger = log.Printf
 
 	api.JSONConsumer = runtime.JSONConsumer()
 
@@ -81,23 +73,23 @@ func configureAPI(api *operations.MultiAuthExampleAPI) http.Handler {
 	// api.APIAuthorizer = security.Authorized()
 
 	api.AddOrderHandler = operations.AddOrderHandlerFunc(func(params operations.AddOrderParams, principal *models.Principal) middleware.Responder {
-		logger.Warningf("AddOrder called with params: %s, and principal: %s", spew.Sdump(params.Order), spew.Sdump(principal))
+		log.Printf("AddOrder called with params: %s, and principal: %s", spew.Sdump(params.Order), spew.Sdump(principal))
 		return middleware.NotImplemented("operation .AddOrder has not yet been implemented")
 	})
 	api.GetItemsHandler = operations.GetItemsHandlerFunc(func(params operations.GetItemsParams) middleware.Responder {
-		logger.Warningf("GetItems called with NO params and NO principal")
+		log.Printf("GetItems called with NO params and NO principal")
 		return middleware.NotImplemented("operation .GetItems has not yet been implemented")
 	})
 	api.GetOrderHandler = operations.GetOrderHandlerFunc(func(params operations.GetOrderParams, principal *models.Principal) middleware.Responder {
-		logger.Warningf("GetOrder called with params: %s, and principal: %s", spew.Sdump(params.OrderID), spew.Sdump(principal))
+		log.Printf("GetOrder called with params: %s, and principal: %s", spew.Sdump(params.OrderID), spew.Sdump(principal))
 		return middleware.NotImplemented("operation .GetOrder has not yet been implemented")
 	})
 	api.GetOrdersForItemHandler = operations.GetOrdersForItemHandlerFunc(func(params operations.GetOrdersForItemParams, principal *models.Principal) middleware.Responder {
-		logger.Warningf("GetOrdersForItem called with params: %v, and principal: %v", spew.Sdump(params.ItemID), spew.Sdump(principal))
+		log.Printf("GetOrdersForItem called with params: %v, and principal: %v", spew.Sdump(params.ItemID), spew.Sdump(principal))
 		return middleware.NotImplemented("operation .GetOrdersForItem has not yet been implemented")
 	})
 	api.GetAccountHandler = operations.GetAccountHandlerFunc(func(params operations.GetAccountParams, principal *models.Principal) middleware.Responder {
-		logger.Warningf("GetAccount called with NO params, and principal: %s", spew.Sdump(principal))
+		log.Printf("GetAccount called with NO params, and principal: %s", spew.Sdump(principal))
 		return middleware.NotImplemented("operation .GetAccount has not yet been implemented")
 	})
 

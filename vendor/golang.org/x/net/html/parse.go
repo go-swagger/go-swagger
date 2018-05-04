@@ -185,7 +185,7 @@ func (p *parser) clearStackToContext(s scope) {
 }
 
 // generateImpliedEndTags pops nodes off the stack of open elements as long as
-// the top node has a tag name of dd, dt, li, optgroup, option, p, rp, or rt.
+// the top node has a tag name of dd, dt, li, optgroup, option, p, rb, rp, rt or rtc.
 // If exceptions are specified, nodes with that name will not be popped off.
 func (p *parser) generateImpliedEndTags(exceptions ...string) {
 	var i int
@@ -194,9 +194,7 @@ loop:
 		n := p.oe[i]
 		if n.Type == ElementNode {
 			switch n.DataAtom {
-			// TODO: add a.Rb and a.Rtc, to match the spec. This needs additions to the
-			// atom package. Ditto for generateAllImpliedEndTags.
-			case a.Dd, a.Dt, a.Li, a.Optgroup, a.Option, a.P, a.Rp, a.Rt:
+			case a.Dd, a.Dt, a.Li, a.Optgroup, a.Option, a.P, a.Rb, a.Rp, a.Rt, a.Rtc:
 				for _, except := range exceptions {
 					if n.Data == except {
 						break loop
@@ -212,8 +210,8 @@ loop:
 }
 
 // generateAllImpliedEndTags pops nodes off the stack of open elements as long as
-// the top node has a tag name of caption, colgroup, dd, div, dt, li, optgroup, option, p, rp, rt,
-// span, tbody, td, tfoot, th, thead or tr.
+// the top node has a tag name of caption, colgroup, dd, div, dt, li, optgroup, option, p, rb,
+// rp, rt, rtc, span, tbody, td, tfoot, th, thead or tr.
 func (p *parser) generateAllImpliedEndTags() {
 	var i int
 	for i = len(p.oe) - 1; i >= 0; i-- {
@@ -221,8 +219,8 @@ func (p *parser) generateAllImpliedEndTags() {
 		if n.Type == ElementNode {
 			switch n.DataAtom {
 			// TODO: remove this divergence from the HTML5 spec
-			case a.Caption, a.Colgroup, a.Dd, a.Div, a.Dt, a.Li, a.Optgroup, a.Option, a.P, a.Rp, a.Rt,
-				a.Span, a.Tbody, a.Td, a.Tfoot, a.Th, a.Thead, a.Tr:
+			case a.Caption, a.Colgroup, a.Dd, a.Div, a.Dt, a.Li, a.Optgroup, a.Option, a.P, a.Rb,
+				a.Rp, a.Rt, a.Rtc, a.Span, a.Tbody, a.Td, a.Tfoot, a.Th, a.Thead, a.Tr:
 				continue
 			}
 		}
@@ -1047,9 +1045,14 @@ func inBodyIM(p *parser) bool {
 			}
 			p.reconstructActiveFormattingElements()
 			p.addElement()
-		case a.Rp, a.Rt:
+		case a.Rb, a.Rtc:
 			if p.elementInScope(defaultScope, a.Ruby) {
 				p.generateImpliedEndTags()
+			}
+			p.addElement()
+		case a.Rp, a.Rt:
+			if p.elementInScope(defaultScope, a.Ruby) {
+				p.generateImpliedEndTags("rtc")
 			}
 			p.addElement()
 		case a.Math, a.Svg:
@@ -1153,9 +1156,8 @@ func inBodyIM(p *parser) bool {
 			return false
 		} else {
 			for _, e := range p.oe {
-				// TODO(namusyaka): rb and rtc elements should be added after updating atom.
 				switch e.DataAtom {
-				case a.Dd, a.Dt, a.Li, a.Optgroup, a.Option, a.P, a.Rp, a.Rt, a.Tbody, a.Td, a.Tfoot, a.Th,
+				case a.Dd, a.Dt, a.Li, a.Optgroup, a.Option, a.P, a.Rb, a.Rp, a.Rt, a.Rtc, a.Tbody, a.Td, a.Tfoot, a.Th,
 					a.Thead, a.Tr, a.Body, a.Html:
 				default:
 					return true

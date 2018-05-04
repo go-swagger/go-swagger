@@ -26,24 +26,24 @@ var (
 )
 
 func compileRegexp(pattern string) (*re.Regexp, error) {
+	cacheMutex.Lock()
+	defer cacheMutex.Unlock()
 	// Save repeated regexp compilation
 	if reDict[pattern] != nil {
 		return reDict[pattern], nil
 	}
 	var err error
-	cacheMutex.Lock()
 	reDict[pattern], err = re.Compile(pattern)
-	cacheMutex.Unlock()
 	return reDict[pattern], err
 }
 
 func mustCompileRegexp(pattern string) *re.Regexp {
+	cacheMutex.Lock()
+	defer cacheMutex.Unlock()
 	// Save repeated regexp compilation, with panic on error
 	if reDict[pattern] != nil {
 		return reDict[pattern]
 	}
-	defer cacheMutex.Unlock()
-	cacheMutex.Lock()
 	reDict[pattern] = re.MustCompile(pattern)
 	return reDict[pattern]
 }

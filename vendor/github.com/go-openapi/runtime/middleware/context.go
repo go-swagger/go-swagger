@@ -419,6 +419,9 @@ func (c *Context) Authorize(request *http.Request, route *MatchedRoute) (interfa
 
 	applies, usr, err := route.Authenticators.Authenticate(request, route)
 	if !applies || err != nil || !route.Authenticators.AllowsAnonymous() && usr == nil {
+		if err != nil {
+			return nil, nil, err
+		}
 		return nil, nil, errors.Unauthenticated("invalid credentials")
 	}
 	if route.Authorizer != nil {

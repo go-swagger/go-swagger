@@ -32,6 +32,12 @@
   version = "v1.1.0"
 
 [[projects]]
+  name = "github.com/dgrijalva/jwt-go"
+  packages = ["."]
+  revision = "06ea1031745cb8b3dab3f6a236daf2b0aa468b7e"
+  version = "v3.2.0"
+
+[[projects]]
   name = "github.com/docker/go-units"
   packages = ["."]
   revision = "47565b4f722fb6ceae66b95f853feed578a4a51c"
@@ -96,7 +102,7 @@
     "middleware/untyped",
     "security"
   ]
-  revision = "1c997f7e69df84d5c13222f6491841512b5f45ea"
+  revision = "f12926f16ac2fb1da15316fd0aa84ce0d64550c3"
 
 [[projects]]
   branch = "master"
@@ -120,7 +126,7 @@
   branch = "master"
   name = "github.com/go-openapi/validate"
   packages = ["."]
-  revision = "659e09d234fdd860a2556c5a53fcfff6f787e24b"
+  revision = "9286f6d0e5c1ffc7cf2bda1d59291dc3c4f2f828"
 
 [[projects]]
   branch = "master"
@@ -131,8 +137,8 @@
 [[projects]]
   name = "github.com/golang/protobuf"
   packages = ["proto"]
-  revision = "925541529c1fa6821df4e44ce2723319eb2be768"
-  version = "v1.0.0"
+  revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
+  version = "v1.1.0"
 
 [[projects]]
   name = "github.com/gorilla/handlers"
@@ -216,7 +222,7 @@
     ".",
     "cacheobject"
   ]
-  revision = "525d0eb5f91d30e3b1548de401b7ef9ea6898520"
+  revision = "fd225a25f1983d116db58553068677ba03f51fa9"
 
 [[projects]]
   name = "github.com/spf13/afero"
@@ -276,7 +282,7 @@
     "ed25519",
     "ed25519/internal/edwards25519"
   ]
-  revision = "d6449816ce06963d9d136eee5a56fca5b0616e7e"
+  revision = "1f94bef427e370e425e55b172f3b5e300ef38304"
 
 [[projects]]
   branch = "master"
@@ -286,7 +292,7 @@
     "context/ctxhttp",
     "idna"
   ]
-  revision = "84348c2dc81a524fe94aaea3e3d9f967135338ef"
+  revision = "640f4622ab692b87c2f3a94265e6f579fe38263d"
 
 [[projects]]
   branch = "master"
@@ -295,13 +301,13 @@
     ".",
     "internal"
   ]
-  revision = "6881fee410a5daf86371371f9ad451b95e168b71"
+  revision = "cdc340f7c179dbbfa4afd43b7614e8fcadde4269"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "b126b21c05a91c856b027c16779c12e3bf236954"
+  revision = "6f686a352de66814cdd080d970febae7767857a3"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -335,7 +341,7 @@
     "imports",
     "internal/fastwalk"
   ]
-  revision = "94b14834a20132093826ea5e2da5502a13908ad3"
+  revision = "ae8027637c91c400af8a3e006c35c7011b3ca1fe"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -379,6 +385,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "843d507471a279f79b325cbdbbf77f88e322560dea323059d2f4a141ab6b24a3"
+  inputs-digest = "8d9c591b54bf12934ba06b5e0191a1ccf422b0b64e7be5ea31bcf4904a9dc65a"
   solver-name = "gps-cdcl"
   solver-version = 1
