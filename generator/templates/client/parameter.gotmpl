@@ -236,13 +236,13 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r runtime
   {{ end }}
 
   {{if .IsBodyParam}}
-  {{ if or .Schema.IsInterface .Schema.IsStream (and .Schema.IsArray .Child) (and .Schema.IsMap .Child) (and .Schema.IsNullable (not .HasDiscriminator)) }}if {{ .ValueExpression }} != nil {
+  {{ if or .Schema.IsInterface .Schema.IsStream (and .Schema.IsArray .Child) (and .Schema.IsMap .Child) (and .Schema.IsNullable (not .HasDiscriminator)) }} if {{ .ValueExpression }} != nil { {{end}}
     if err := r.SetBodyParam({{ .ValueExpression }}); err != nil {
       return err
     }
-  }{{ end }}
-
+  {{ if or .Schema.IsInterface .Schema.IsStream (and .Schema.IsArray .Child) (and .Schema.IsMap .Child) (and .Schema.IsNullable (not .HasDiscriminator)) }} } {{end}}
   {{end}}
+
   {{end}}
   if len(res) > 0 {
     return errors.CompositeValidationError(res...)
