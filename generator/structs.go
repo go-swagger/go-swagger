@@ -97,25 +97,37 @@ type GenSchema struct {
 }
 
 type sharedValidations struct {
-	Required            bool
-	MaxLength           *int64
-	MinLength           *int64
-	Pattern             string
-	MultipleOf          *float64
-	Minimum             *float64
-	Maximum             *float64
-	ExclusiveMinimum    bool
-	ExclusiveMaximum    bool
-	Enum                []interface{}
-	ItemsEnum           []interface{}
-	HasValidations      bool
+	HasValidations bool
+	Required       bool
+
+	// String validations
+	MaxLength *int64
+	MinLength *int64
+	Pattern   string
+
+	// Number validations
+	MultipleOf       *float64
+	Minimum          *float64
+	Maximum          *float64
+	ExclusiveMinimum bool
+	ExclusiveMaximum bool
+
+	Enum      []interface{}
+	ItemsEnum []interface{}
+
+	// Slice validations
 	MinItems            *int64
 	MaxItems            *int64
 	UniqueItems         bool
 	HasSliceValidations bool
-	NeedsSize           bool
-	NeedsValidation     bool
-	NeedsRequired       bool
+
+	// Not used yet (intended for maxProperties, minProperties validations)
+	NeedsSize bool
+	// Not used: deprecated
+	//NeedsValidation bool
+	//NeedsRequired bool
+
+	// NOTE: "patternProperties" and "dependencies" not supported by Swagger 2.0
 }
 
 // GenResponse represents a response object for code generation

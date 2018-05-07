@@ -1,0 +1,87 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: fixture for tuples and additionalItems
+  description: check different patterns of additionalItems validations or absence thereof
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /models:
+    get:
+      operationId: modelOp
+      summary: many model variations
+      description: no description
+      tags:
+        - testcgen
+      responses:
+        default:
+          description: Generic Out
+definitions:
+  comics:
+    type: array
+    items:
+      # no validation expected here
+      - type: string
+      # validation expected here
+      - type: object
+        required: [narrative]
+        properties:
+          narrative:
+            type: string
+      # validation expected here too
+      - type: object
+        properties:
+          marketingBS:
+            type: string
+      # validation expected here
+      - type: object
+        properties:
+          character:
+            type: string
+            pattern: '^[A-Z]+$'
+          author:
+            type: string
+            minLength: 1
+      # validation expected here
+      - type: array
+        items: 
+          type: string
+          format: isbn
+      - type: integer
+  classics:
+    type: array
+    items:
+      # no validation here
+      - type: integer 
+      # validation here
+      - type: string 
+        format: isbn
+      # validation here
+      - $ref: '#/definitions/comics'
+    additionalItems:
+      # validation expected here
+      type: array
+      items:
+        - type: object
+          properties:
+            title:
+              type: string
+              enum: [ 'Les Misérables', 'Bleak House', 'Sherlock Holmes', 'Siddhartha' ]
+            period:
+              type: string
+        - type: array
+          items:
+            type: string
+            format: date
+        - type: object
+          properties:
+            origin: 
+              type: string
+              enum: [ print, e-book, collection, museum ]
+          additionalProperties:
+              type: string
+              enum: [ bookshop, amazon, library ]
+        - $ref: '#/definitions/comics'

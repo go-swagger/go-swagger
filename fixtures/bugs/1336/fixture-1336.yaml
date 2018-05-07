@@ -1,0 +1,59 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: broken code when using array of polymorphic type
+  description: broken code produced on polymorphic type
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /models:
+    get:
+      operationId: modelOp
+      summary: many model variations
+      description: no description
+      tags:
+        - testcgen
+      parameters: 
+        - name: sanity 
+          in: body 
+          schema: 
+            $ref: '#/definitions/sanityCheck'
+      responses:
+        default:
+          description: Generic Out
+definitions:
+  sanityCheck:
+    description: an extensible empty object 
+    type: object
+    additionalProperties: true
+  Graph:
+    type: object
+    properties:
+      Nodes:
+        type: array
+        items:
+          $ref: "#/definitions/Node"
+  Node:
+    type: object
+    discriminator: NodeType
+    required:
+      - NodeType
+    properties:
+      NodeType:
+        type: string
+  CodeBlockNode:
+    allOf:
+      - $ref: "#/definitions/Node"
+      - properties:
+          Code:
+            type: string
+  # Added an addition subtype
+  DocBlockNode:
+    allOf:
+      - $ref: "#/definitions/Node"
+      - properties:
+          Doc:
+            type: string

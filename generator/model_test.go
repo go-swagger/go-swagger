@@ -564,7 +564,8 @@ func TestGenerateModel_WithMapInterface(t *testing.T) {
 			assert.Equal(t, "map[string]interface{}", prop.GoType)
 			assert.True(t, prop.Required)
 			assert.True(t, prop.HasValidations)
-			assert.False(t, prop.NeedsValidation)
+			// NOTE(fredbi): NeedsValidation now deprecated
+			//assert.False(t, prop.NeedsValidation)
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
@@ -2482,7 +2483,8 @@ func TestGenModel_Issue910(t *testing.T) {
 							assertInCode(t, `if err := validate.Required("foo", "body", m.Foo); err != nil {`, res)
 							assertNotInCode(t, `if err := validate.Required("baz", "body", m.Baz); err != nil {`, res)
 							assertNotInCode(t, `if err := validate.Required("quux", "body", m.Quux); err != nil {`, res)
-							assertInCode(t, `if swag.IsZero(m.Quux) { // not required`, res)
+							// NOTE(fredbi); fixed Required in slices. This property has actually no validation
+							assertNotInCode(t, `if swag.IsZero(m.Quux) { // not required`, res)
 						} else {
 							fmt.Println(buf.String())
 						}

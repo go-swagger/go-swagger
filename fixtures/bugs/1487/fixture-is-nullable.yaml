@@ -1,0 +1,32 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: fixture for x-nullable flag
+  description: just an elementary check with the x-nullable tag
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /models:
+    get:
+      operationId: modelOp
+      summary: many model variations
+      description: Used to see if a codegen can render all the possible enum categories
+      tags:
+        - testcgen
+      responses:
+        default:
+          description: Generic Out
+definitions:
+  thingWithNullableDates:
+    type: object
+    properties:
+      prop1: 
+        type: string
+        format: date
+      prop2: 
+        type: string
+        format: date
+        x-nullable: true

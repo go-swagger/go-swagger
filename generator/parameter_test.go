@@ -1449,7 +1449,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 						if assert.NoError(err, "Expected formatting to go well on %s with template %s", fixtureSpec, fixtureTemplate) {
 							res := string(ff)
 							for line, codeLine := range expectedCode {
-								if !assertInCode(t, codeLine, res) {
+								if !assertInCode(t, strings.TrimSpace(codeLine), res) {
 									t.Logf("Code expected did not match for fixture %s at line %d", fixtureSpec, line)
 								}
 							}
@@ -1500,7 +1500,7 @@ func TestGenParameter_Issue1237(t *testing.T) {
 						if assert.NoError(err, "Expected formatting to go well on %s with template %s", fixtureSpec, fixtureTemplate) {
 							res := string(ff)
 							for line, codeLine := range expectedCode {
-								if !assertInCode(t, codeLine, res) {
+								if !assertInCode(t, strings.TrimSpace(codeLine), res) {
 									t.Logf("Code expected did not match for fixture %s at line %d", fixtureSpec, line)
 								}
 							}
@@ -1692,7 +1692,7 @@ func TestGenParameter_Issue1392(t *testing.T) {
 						if assert.NoError(err, "Expected formatting to go well on %s with template %s", fixtureSpec, fixtureTemplate) {
 							res := string(ff)
 							for line, codeLine := range expectedCode {
-								if !assertInCode(t, codeLine, res) {
+								if !assertInCode(t, strings.TrimSpace(codeLine), res) {
 									t.Logf("Code expected did not match for fixture %s at line %d", fixtureSpec, line)
 								}
 							}

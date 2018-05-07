@@ -44,4 +44,11 @@
 // Unique: true
 {{- end }}
 
+{{- if .IsCustomFormatter }}
+// Format: {{ .SwaggerFormat }}
+{{- end }}
+
+{{- if .Enum }}
+// Enum: {{ printf "%v" .Enum }}
+{{- end }}
 {{- end}}

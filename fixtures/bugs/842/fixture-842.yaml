@@ -1,0 +1,34 @@
+swagger: '2.0'
+info:
+  title: polymorphic type containing an array of the base type
+  description: codegen fails to produce code that builds
+paths:
+  /execute:
+    post:
+      responses:
+        200:
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Value"
+
+definitions:
+  Value:
+    type: "object"
+    discriminator: "ValueType"
+    required:
+      - "ValueType"
+    properties:
+      ValueType:
+        type: "string"
+
+  ValueArray:
+    allOf:
+      - $ref: "#/definitions/Value"
+      - required:
+          - "Values"
+        properties:
+          Values:
+            type: "array"
+            items:
+              $ref: "#/definitions/Value"

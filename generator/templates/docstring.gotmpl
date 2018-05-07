@@ -1,9 +1,12 @@
 {{define "docstring"}}
-  {{- if .Title }}{{ comment .Title }}{{- if .Description }}
+  {{- if .Title }} 
+    {{- comment .Title }} 
+    {{- if .Description }}
 //
 // {{ comment .Description }}
-{{- end }}
-{{- else if .Description}}{{ comment .Description }}
-{{- else }}{{ humanize .Name }}
-{{- end }}
+    {{- end }}
+  {{- else if .Description}} 
+    {{- comment .Description }}
+  {{- else }}{{ humanize .Name }}
+  {{- end }}
 {{- end }}

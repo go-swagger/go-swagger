@@ -1,0 +1,28 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: fixture with erroneous statements
+  description: see how the codegen reacts with invalid things (used to cover error cases in UT)
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /models:
+    get:
+      operationId: modelOp
+      summary: many model variations
+      description: no description
+      tags:
+        - testcgen
+      responses:
+        default:
+          description: Generic Out
+definitions:
+  arrayWithoutItems:
+    description: in swagger, an array **MUST** have an items schema
+    type: array
+  multipleTypes:
+    description: 'in swagger, an array **MUST** have an items schema: therefore this definition is invalid'
+    type: [ object, array ]
