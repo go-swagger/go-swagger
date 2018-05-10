@@ -1,0 +1,102 @@
+
+---
+  consumes: 
+    - "application/json"
+  produces: 
+    - "application/json"
+  swagger: "2.0"
+  info: 
+    description: "various patterns of additionalProperties"
+    title: "fixture for additionalProperties"
+    version: "1.0.0"
+  paths: 
+    /models: 
+      get: 
+        description: "no description"
+        tags: 
+          - "testcgen"
+        summary: "many model variations"
+        operationId: "modelOp"
+        responses: 
+          default: 
+            description: "Generic Out"
+  definitions: 
+    trial: 
+      type: "object"
+      properties: 
+        a1: 
+          type: "string"
+          format: "date-time"
+        additionalProperties: 
+          type: "object"
+          properties: 
+            discourse: 
+              type: "string"
+            hoursSpent: 
+              type: "number"
+          additionalProperties: true
+    additionalTransitiveRefedObjectThing: 
+      type: "object"
+      properties: 
+        thisOneNotRequired: 
+          type: "integer"
+          maximum: 10
+      additionalProperties: 
+        type: "object"
+        properties: 
+          prop1:
+            type: "object"
+            properties: 
+              thisOneNotRequiredEither: 
+                type: "integer"
+                maximum: 20
+            additionalProperties: 
+              type: "object"
+              properties: 
+                a1: 
+                  type: "string"
+                  format: "date-time"
+                b1: 
+                  type: "string"
+                  format: "date"
+              additionalProperties: true
+        additionalProperties: 
+          type: "object"
+          properties: 
+            discourse: 
+              type: "string"
+            hoursSpent: 
+              type: "number"
+          additionalProperties: true
+    additionalTransitiveRefedThing: 
+       type: "object"
+       properties: 
+         thisOneNotRequired: 
+           type: "integer"
+           maximum: 10
+       additionalProperties: 
+         type: "array"
+         uniqueItems: true
+         items: 
+           type: "object"
+           properties: 
+             thisOneNotRequiredEither: 
+               type: "integer"
+               maximum: 20
+           additionalProperties: 
+             type: "object"
+             properties: 
+               a1: 
+                 type: "string"
+                 format: "date-time"
+               b1: 
+                 type: "string"
+                 format: "date-time"
+             additionalProperties: 
+               type: "object"
+               properties: 
+                 discourse: 
+                   type: "string"
+                 hoursSpent: 
+                   type: "number"
+               additionalProperties: true

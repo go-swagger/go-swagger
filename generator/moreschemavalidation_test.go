@@ -167,6 +167,7 @@ func initModelFixtures() {
 	initFixture1336()
 	initFixtureErrors()
 	initFixture844Variations()
+	initFixtureMoreAddProps()
 	// a more stringent verification of this known fixture
 	initTodolistSchemavalidation()
 }

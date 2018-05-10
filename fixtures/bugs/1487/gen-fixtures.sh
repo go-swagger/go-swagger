@@ -2,43 +2,52 @@
 if [[ ${1} == "--clean" ]] ; then
     clean=1
 fi
-continueOnError=1
+continueOnError=
 # A small utility to build fixture servers
 # Fixtures with models only
-
-
-#testcases="${testcases} ../../codegen/issue72.json"
-#testcases="${testcases} ../../canary/bitbucket.org/swagger.json"
-#testcases="${testcases} ../../codegen/azure-text-analyis.json"
-#testcases="${testcases} ../../codegen/todolist.simple.yml"
-#testcases="${testcases} swagger-gsma.yaml"
-#testcases="${testcases} ../844/swagger.json"
-#testcases="${testcases} fixture-844-variations.yaml"
-#testcases="${testcases} fixture-anonymous-enum.yaml"
-#testcases="${testcases} fixture-nested-maps.yaml"
-#testcases="${testcases} fixture-errors.yaml"
-#testcases="${testcases} fixture-simple-allOf.yaml"
-#testcases="${testcases} fixture-complex-allOf.yaml"
-#testcases="${testcases} fixture-is-nullable.yaml"
-#testcases="${testcases} fixture-itching.yaml"
-#testcases="${testcases} fixture-additionalProps.yaml"
-#testcases="${testcases} fixture-tuple.yaml"
-#testcases="${testcases} fixture-allOf.yaml"
+testcases="${testcases} fixture-moreAddProps.yaml"
+testcases="${testcases} ../../codegen/issue72.json"
+testcases="${testcases} ../../canary/bitbucket.org/swagger.json"
+testcases="${testcases} ../../codegen/azure-text-analyis-fixed.json"
+testcases="${testcases} ../../codegen/todolist.simple.yml"
+testcases="${testcases} ../../codegen/swagger-gsma.json"
+testcases="${testcases} ../844/swagger.json"
+testcases="${testcases} fixture-844-variations.yaml"
+testcases="${testcases} fixture-nested-maps.yaml"
+testcases="${testcases} fixture-errors.yaml"
+testcases="${testcases} fixture-simple-allOf.yaml"
+testcases="${testcases} fixture-complex-allOf.yaml"
+testcases="${testcases} fixture-is-nullable.yaml"
+testcases="${testcases} fixture-itching.yaml"
+testcases="${testcases} fixture-additionalProps.yaml"
+testcases="${testcases} fixture-tuple.yaml"
+testcases="${testcases} fixture-allOf.yaml"
 testcases="${testcases} ../1479/fixture-1479-part.yaml"
-#testcases="${testcases} ../1198/fixture-1198.yaml"
-#testcases="${testcases} ../1042/fixture-1042.yaml"
-#testcases="${testcases} ../1042/fixture-1042-2.yaml"
-#testcases="${testcases} ../979/fixture-979.yaml"
-#testcases="${testcases} ../842/fixture-842.yaml"
-#testcases="${testcases} ../607/fixture-607.yaml"
-#testcases="${testcases} ../1336/fixture-1336.yaml"
-#testcases="${testcases} ../1277/cloudbreak.json"
-#testcases="${testcases} ../../codegen/todolist.schemavalidation.yml"
-#testcases="${testcases} ../../codegen/todolist.discriminators.yml"
-#testcases="${testcases} ../../codegen/billforward.discriminators.yml"
-#opts="--skip-flatten"
+testcases="${testcases} ../1198/fixture-1198.yaml"
+testcases="${testcases} ../1042/fixture-1042.yaml"
+testcases="${testcases} ../1042/fixture-1042-2.yaml"
+testcases="${testcases} ../979/fixture-979.yaml"
+testcases="${testcases} ../842/fixture-842.yaml"
+testcases="${testcases} ../607/fixture-607.yaml"
+testcases="${testcases} ../1336/fixture-1336.yaml"
+testcases="${testcases} ../1277/cloudbreak.json"
+testcases="${testcases} ../../codegen/todolist.schemavalidation.yml"
+testcases="${testcases} ../../codegen/todolist.discriminators.yml"
+testcases="${testcases} ../../codegen/billforward.discriminators.yml"
 #export SWAGGER_DEBUG=1
+for opts in  "" "--skip-flatten" ; do
 for testcase in ${testcases} ; do
+    grep -q discriminator ${testcase}
+    discriminated=$?
+    if [[ ${discriminated} -eq 0 && ${opts} == "--skip-flatten" ]] ; then
+        echo "Skipped ${testcase} with ${opts}: discriminator not supported with ${opts}"
+        continue
+    fi
+    if [[ ${testcase} == "../1479/fixture-1479-part.yaml" && ${opts} == "--skip-flatten" ]] ; then
+        echo "Skipped ${testcase} with ${opts}: known issue with enum in anonymous allOf not validated. See you next PR"
+        continue
+    fi
+
     spec=${testcase}
     testcase=`basename ${testcase}`
     if [[ -z ${opts} ]]; then
@@ -49,7 +58,7 @@ for testcase in ${testcases} ; do
     serverName="codegensrv"
     rm -rf ${target}
     mkdir ${target}
-    echo "Model generation for ${spec}"
+    echo "Model generation for ${spec} with opts=${opts}"
     swagger generate model --skip-validation ${opts} --spec=${spec} --target=${target} --output=${testcase%.*}.log
     # 1>x.log 2>&1
     #
@@ -81,6 +90,7 @@ for testcase in ${testcases} ; do
              rm -rf ${target}
         fi
     fi
+done
 done
 if [[ ! -z ${failures} ]] ; then 
     echo ${failures}|tr ' ' '\n'

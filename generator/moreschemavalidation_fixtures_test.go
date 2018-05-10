@@ -2855,10 +2855,11 @@ func initFixtureItching() {
 }
 
 func initFixtureAdditionalProps() {
-	// testing ../fixtures/bugs/1487/fixture-additionalProps.yaml with expand (--skip-flatten)
+	// testing ../fixtures/bugs/1487/fixture-additionalProps.yaml with flatten and expand (--skip-flatten)
 
-	/* various patterns of additionalProperties
-	 */
+	/*
+		various patterns of additionalProperties
+	*/
 	f := newModelFixture("../fixtures/bugs/1487/fixture-additionalProps.yaml", "fixture for additionalProperties")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
@@ -2883,6 +2884,8 @@ func initFixtureAdditionalProps() {
 		// output in log
 		noLines,
 		noLines)
+
+	expandRun.AddExpectations("additional_object_with_formated_thing.go", flattenRun.ExpectedFor("AdditionalObjectWithFormatedThing").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: aliased_date.go
 	flattenRun.AddExpectations("aliased_date.go", []string{
@@ -2924,6 +2927,28 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+	expandRun.AddExpectations("additional_array_of_refed_thing.go", []string{
+		`type AdditionalArrayOfRefedThing struct {`,
+		"	ThisOneNotRequired int64 `json:\"thisOneNotRequired,omitempty\"`",
+		"	AdditionalArrayOfRefedThing map[string][]strfmt.Date `json:\"-\"`",
+		`func (m *AdditionalArrayOfRefedThing) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
+		`	for k := range m.AdditionalArrayOfRefedThing {`,
+		`		if swag.IsZero(m.AdditionalArrayOfRefedThing[k]) {`,
+		`		if err := validate.UniqueItems(k, "body", m.AdditionalArrayOfRefedThing[k]); err != nil {`,
+		`		for i := 0; i < len(m.AdditionalArrayOfRefedThing[k]); i++ {`,
+		`			if err := validate.FormatOf(k+"."+strconv.Itoa(i), "body", "date", m.AdditionalArrayOfRefedThing[k][i].String(), formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalArrayOfRefedThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.ThisOneNotRequired) {`,
+		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
 	// load expectations for model: additional_object_with_nullable_thing.go
 	flattenRun.AddExpectations("additional_object_with_nullable_thing.go", []string{
 		`type AdditionalObjectWithNullableThing struct {`,
@@ -2936,6 +2961,26 @@ func initFixtureAdditionalProps() {
 		`		if val, ok := m.AdditionalObjectWithNullableThing[k]; ok {`,
 		`			if val != nil {`,
 		`				if err := val.Validate(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalObjectWithNullableThing) validateBlob(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.Blob) {`,
+		`	if err := validate.MinimumInt("blob", "body", int64(m.Blob), 1, false); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	expandRun.AddExpectations("additional_object_with_nullable_thing.go", []string{
+		`type AdditionalObjectWithNullableThing struct {`,
+		"	Blob int64 `json:\"blob,omitempty\"`",
+		"	AdditionalObjectWithNullableThing map[string]*strfmt.Date `json:\"-\"`",
+		`func (m *AdditionalObjectWithNullableThing) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateBlob(formats); err != nil {`,
+		`	for k := range m.AdditionalObjectWithNullableThing {`,
+		`		if swag.IsZero(m.AdditionalObjectWithNullableThing[k]) {`,
+		`		if err := validate.FormatOf(k, "body", "date", m.AdditionalObjectWithNullableThing[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalObjectWithNullableThing) validateBlob(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Blob) {`,
@@ -3000,6 +3045,8 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+	expandRun.AddExpectations("additional_things.go", flattenRun.ExpectedFor("AdditionalThings").ExpectedLines, todo, noLines, noLines)
+
 	// load expectations for model: transitive_refed_thing_additional_properties.go
 	flattenRun.AddExpectations("transitive_refed_thing_additional_properties.go", []string{
 		`type TransitiveRefedThingAdditionalProperties struct {`,
@@ -3033,6 +3080,37 @@ func initFixtureAdditionalProps() {
 		`			if val != nil {`,
 		`				if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	expandRun.AddExpectations("additional_object.go", []string{
+		`type AdditionalObject struct {`,
+		"	MockID float64 `json:\"mockId,omitempty\"`",
+		"	AdditionalObject map[string]*AdditionalObjectAnon `json:\"-\"`",
+		`func (m *AdditionalObject) Validate(formats strfmt.Registry) error {`,
+		`	for k := range m.AdditionalObject {`,
+		`		if val, ok := m.AdditionalObject[k]; ok {`,
+		`			if val != nil {`,
+		`				if err := val.Validate(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`type AdditionalObjectAnon struct {`,
+		"	MockA string `json:\"mockA,omitempty\"`",
+		"	MockB *string `json:\"mockB\"`",
+		"	MockC float64 `json:\"mockC,omitempty\"`",
+		`func (m *AdditionalObjectAnon) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateMockA(formats); err != nil {`,
+		`	if err := m.validateMockB(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalObjectAnon) validateMockA(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.MockA) {`,
+		"	if err := validate.Pattern(\"mockA\", \"body\", string(m.MockA), `^[A-Z]$`); err != nil {",
+		`func (m *AdditionalObjectAnon) validateMockB(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("mockB", "body", m.MockB); err != nil {`,
+		`	if err := validate.MinLength("mockB", "body", string(*m.MockB), 1); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -3081,6 +3159,30 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+	expandRun.AddExpectations("additional_slice_of_aliased_nullable_primitives.go", []string{
+		`type AdditionalSliceOfAliasedNullablePrimitives struct {`,
+		"	Prop3 strfmt.UUID `json:\"prop3,omitempty\"`",
+		"	AdditionalSliceOfAliasedNullablePrimitives map[string][]*strfmt.Date `json:\"-\"`",
+		`func (m *AdditionalSliceOfAliasedNullablePrimitives) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateProp3(formats); err != nil {`,
+		`	for k := range m.AdditionalSliceOfAliasedNullablePrimitives {`,
+		`		if swag.IsZero(m.AdditionalSliceOfAliasedNullablePrimitives[k]) {`,
+		`		iAdditionalSliceOfAliasedNullablePrimitivesSize := int64(len(m.AdditionalSliceOfAliasedNullablePrimitives[k])`,
+		`		if err := validate.MinItems(k, "body", iAdditionalSliceOfAliasedNullablePrimitivesSize, 10); err != nil {`,
+		`		for i := 0; i < len(m.AdditionalSliceOfAliasedNullablePrimitives[k]); i++ {`,
+		`			if swag.IsZero(m.AdditionalSliceOfAliasedNullablePrimitives[k][i]) {`,
+		`			if err := validate.FormatOf(k+"."+strconv.Itoa(i), "body", "date", m.AdditionalSliceOfAliasedNullablePrimitives[k][i].String(), formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalSliceOfAliasedNullablePrimitives) validateProp3(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.Prop3) {`,
+		`	if err := validate.FormatOf("prop3", "body", "uuid", m.Prop3.String(), formats); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
 	// load expectations for model: additional_slice_of_slice.go
 	flattenRun.AddExpectations("additional_slice_of_slice.go", []string{
 		`type AdditionalSliceOfSlice struct {`,
@@ -3110,6 +3212,42 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+	expandRun.AddExpectations("additional_slice_of_slice.go", []string{
+		`type AdditionalSliceOfSlice struct {`,
+		"	Prop4 strfmt.UUID `json:\"prop4,omitempty\"`",
+		"	AdditionalSliceOfSlice map[string][][]*AdditionalSliceOfSliceItems0 `json:\"-\"`",
+		`func (m *AdditionalSliceOfSlice) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateProp4(formats); err != nil {`,
+		`	for k := range m.AdditionalSliceOfSlice {`,
+		`		if err := validate.Required(k, "body", m.AdditionalSliceOfSlice[k]); err != nil {`,
+		`		for i := 0; i < len(m.AdditionalSliceOfSlice[k]); i++ {`,
+		`			iiAdditionalSliceOfSliceSize := int64(len(m.AdditionalSliceOfSlice[k][i])`,
+		`			if err := validate.MaxItems(k+"."+strconv.Itoa(i), "body", iiAdditionalSliceOfSliceSize, 10); err != nil {`,
+		`			for ii := 0; ii < len(m.AdditionalSliceOfSlice[k][i]); ii++ {`,
+		`				if swag.IsZero(m.AdditionalSliceOfSlice[k][i][ii]) {`,
+		`				if m.AdditionalSliceOfSlice[k][i][ii] != nil {`,
+		`					if err := m.AdditionalSliceOfSlice[k][i][ii].Validate(formats); err != nil {`,
+		`						if ve, ok := err.(*errors.Validation); ok {`,
+		`							return ve.ValidateName(k + "." + strconv.Itoa(i) + "." + strconv.Itoa(ii)`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalSliceOfSlice) validateProp4(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.Prop4) {`,
+		`	if err := validate.FormatOf("prop4", "body", "uuid", m.Prop4.String(), formats); err != nil {`,
+		`type AdditionalSliceOfSliceItems0 struct {`,
+		"	Prop5 int64 `json:\"prop5,omitempty\"`",
+		`func (m *AdditionalSliceOfSliceItems0) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateProp5(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalSliceOfSliceItems0) validateProp5(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.Prop5) {`,
+		`	if err := validate.MaximumInt("prop5", "body", int64(m.Prop5), 10, false); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
 	// load expectations for model: additional_object_with_aliased_thing.go
 	flattenRun.AddExpectations("additional_object_with_aliased_thing.go", []string{
 		`type AdditionalObjectWithAliasedThing struct {`,
@@ -3121,6 +3259,26 @@ func initFixtureAdditionalProps() {
 		`		if swag.IsZero(m.AdditionalObjectWithAliasedThing[k]) {`,
 		`		if val, ok := m.AdditionalObjectWithAliasedThing[k]; ok {`,
 		`			if err := val.Validate(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalObjectWithAliasedThing) validateBlob(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.Blob) {`,
+		`	if err := validate.MinimumInt("blob", "body", int64(m.Blob), 1, false); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	expandRun.AddExpectations("additional_object_with_aliased_thing.go", []string{
+		`type AdditionalObjectWithAliasedThing struct {`,
+		"	Blob int64 `json:\"blob,omitempty\"`",
+		"	AdditionalObjectWithAliasedThing map[string]strfmt.Date `json:\"-\"`",
+		`func (m *AdditionalObjectWithAliasedThing) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateBlob(formats); err != nil {`,
+		`	for k := range m.AdditionalObjectWithAliasedThing {`,
+		`		if swag.IsZero(m.AdditionalObjectWithAliasedThing[k]) {`,
+		`		if err := validate.FormatOf(k, "body", "date", m.AdditionalObjectWithAliasedThing[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalObjectWithAliasedThing) validateBlob(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Blob) {`,
@@ -3274,6 +3432,64 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+	expandRun.AddExpectations("additional_transitive_refed_thing.go", []string{
+		`type AdditionalTransitiveRefedThing struct {`,
+		"	ThisOneNotRequired int64 `json:\"thisOneNotRequired,omitempty\"`",
+		"	AdditionalTransitiveRefedThing map[string][]*AdditionalTransitiveRefedThingItems0 `json:\"-\"`",
+		`func (m *AdditionalTransitiveRefedThing) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
+		`	for k := range m.AdditionalTransitiveRefedThing {`,
+		`		if err := validate.Required(k, "body", m.AdditionalTransitiveRefedThing[k]); err != nil {`,
+		`		if err := validate.UniqueItems(k, "body", m.AdditionalTransitiveRefedThing[k]); err != nil {`,
+		`		for i := 0; i < len(m.AdditionalTransitiveRefedThing[k]); i++ {`,
+		`			if swag.IsZero(m.AdditionalTransitiveRefedThing[k][i]) {`,
+		`			if m.AdditionalTransitiveRefedThing[k][i] != nil {`,
+		`				if err := m.AdditionalTransitiveRefedThing[k][i].Validate(formats); err != nil {`,
+		`					if ve, ok := err.(*errors.Validation); ok {`,
+		`						return ve.ValidateName(k + "." + strconv.Itoa(i)`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalTransitiveRefedThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.ThisOneNotRequired) {`,
+		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+		`type AdditionalTransitiveRefedThingItems0 struct {`,
+		"	ThisOneNotRequiredEither int64 `json:\"thisOneNotRequiredEither,omitempty\"`",
+		"	AdditionalTransitiveRefedThingItems0 map[string]*AdditionalTransitiveRefedThingItems0Anon `json:\"-\"`",
+		`func (m *AdditionalTransitiveRefedThingItems0) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateThisOneNotRequiredEither(formats); err != nil {`,
+		`	for k := range m.AdditionalTransitiveRefedThingItems0 {`,
+		`		if val, ok := m.AdditionalTransitiveRefedThingItems0[k]; ok {`,
+		`			if val != nil {`,
+		`				if err := val.Validate(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalTransitiveRefedThingItems0) validateThisOneNotRequiredEither(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.ThisOneNotRequiredEither) {`,
+		`	if err := validate.MaximumInt("thisOneNotRequiredEither", "body", int64(m.ThisOneNotRequiredEither), 20, false); err != nil {`,
+		`type AdditionalTransitiveRefedThingItems0Anon struct {`,
+		"	A1 strfmt.DateTime `json:\"a1,omitempty\"`",
+		"	AdditionalTransitiveRefedThingItems0Anon map[string]*AdditionalTransitiveRefedThingItems0AnonAnon `json:\"-\"`",
+		`func (m *AdditionalTransitiveRefedThingItems0Anon) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateA1(formats); err != nil {`,
+		`	for k := range m.AdditionalTransitiveRefedThingItems0Anon {`,
+		`		if val, ok := m.AdditionalTransitiveRefedThingItems0Anon[k]; ok {`,
+		`			if val != nil {`,
+		`				if err := val.Validate(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalTransitiveRefedThingItems0Anon) validateA1(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.A1) {`,
+		`	if err := validate.FormatOf("a1", "body", "date-time", m.A1.String(), formats); err != nil {`,
+		`type AdditionalTransitiveRefedThingItems0AnonAnon struct {`,
+		"	Discourse string `json:\"discourse,omitempty\"`",
+		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
+		"	AdditionalTransitiveRefedThingItems0AnonAnonAdditionalProperties map[string]interface{} `json:\"-\"`",
+		// empty validation
+		"func (m *AdditionalTransitiveRefedThingItems0AnonAnon) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
 	// load expectations for model: additional_nullable_array_thing.go
 	flattenRun.AddExpectations("additional_nullable_array_thing.go", []string{
 		`type AdditionalNullableArrayThing struct {`,
@@ -3297,6 +3513,8 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+	expandRun.AddExpectations("additional_nullable_array_thing.go", flattenRun.ExpectedFor("AdditionalNullableArrayThing").ExpectedLines, todo, noLines, noLines)
+
 	// load expectations for model: additional_slice_of_primitives.go
 	flattenRun.AddExpectations("additional_slice_of_primitives.go", []string{
 		`type AdditionalSliceOfPrimitives struct {`,
@@ -3315,6 +3533,8 @@ func initFixtureAdditionalProps() {
 		// output in log
 		noLines,
 		noLines)
+
+	expandRun.AddExpectations("additional_slice_of_primitives.go", flattenRun.ExpectedFor("AdditionalSliceOfPrimitives").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: additional_array_thing.go
 	flattenRun.AddExpectations("additional_array_thing.go", []string{
@@ -3339,15 +3559,19 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+	expandRun.AddExpectations("additional_array_thing.go", flattenRun.ExpectedFor("AdditionalArrayThing").ExpectedLines, todo, noLines, noLines)
+
 	// load expectations for model: interface_thing.go
 	flattenRun.AddExpectations("interface_thing.go", []string{
-		`type InterfaceThing interface{`,
+		`type InterfaceThing interface{}`,
 	},
 		// not expected
 		todo,
 		// output in log
 		noLines,
 		noLines)
+
+	expandRun.AddExpectations("interface_thing.go", flattenRun.ExpectedFor("InterfaceThing").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: empty_object_with_additional_slice.go
 	flattenRun.AddExpectations("empty_object_with_additional_slice.go", []string{
@@ -3361,6 +3585,32 @@ func initFixtureAdditionalProps() {
 		`				if ve, ok := err.(*errors.Validation); ok {`,
 		`					return ve.ValidateName(k + "." + strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	expandRun.AddExpectations("empty_object_with_additional_slice.go", []string{
+		`type EmptyObjectWithAdditionalSlice map[string][]EmptyObjectWithAdditionalSliceItems0`,
+		`func (m EmptyObjectWithAdditionalSlice) Validate(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("", "body", EmptyObjectWithAdditionalSlice(m)); err != nil {`,
+		`	for k := range m {`,
+		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
+		`		for i := 0; i < len(m[k]); i++ {`,
+		`			if err := m[k][i].Validate(formats); err != nil {`,
+		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`					return ve.ValidateName(k + "." + strconv.Itoa(i)`,
+		`		return errors.CompositeValidationError(res...`,
+		`type EmptyObjectWithAdditionalSliceItems0 struct {`,
+		"	DummyProp1 strfmt.Date `json:\"dummyProp1,omitempty\"`",
+		`func (m *EmptyObjectWithAdditionalSliceItems0) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateDummyProp1(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *EmptyObjectWithAdditionalSliceItems0) validateDummyProp1(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.DummyProp1) {`,
+		`	if err := validate.FormatOf("dummyProp1", "body", "date", m.DummyProp1.String(), formats); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -3384,6 +3634,32 @@ func initFixtureAdditionalProps() {
 		`					if ve, ok := err.(*errors.Validation); ok {`,
 		`						return ve.ValidateName(k + "." + strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	expandRun.AddExpectations("additional_slice_of_objects.go", []string{
+		`type AdditionalSliceOfObjects struct {`,
+		"	Prop1 string `json:\"prop1,omitempty\"`",
+		"	AdditionalSliceOfObjects map[string][]*AdditionalSliceOfObjectsItems0 `json:\"-\"`",
+		`func (m *AdditionalSliceOfObjects) Validate(formats strfmt.Registry) error {`,
+		`	for k := range m.AdditionalSliceOfObjects {`,
+		`		if err := validate.Required(k, "body", m.AdditionalSliceOfObjects[k]); err != nil {`,
+		`		if err := validate.UniqueItems(k, "body", m.AdditionalSliceOfObjects[k]); err != nil {`,
+		`		for i := 0; i < len(m.AdditionalSliceOfObjects[k]); i++ {`,
+		`			if swag.IsZero(m.AdditionalSliceOfObjects[k][i]) {`,
+		`			if m.AdditionalSliceOfObjects[k][i] != nil {`,
+		`				if err := m.AdditionalSliceOfObjects[k][i].Validate(formats); err != nil {`,
+		`					if ve, ok := err.(*errors.Validation); ok {`,
+		`						return ve.ValidateName(k + "." + strconv.Itoa(i)`,
+		`		return errors.CompositeValidationError(res...`,
+		`type AdditionalSliceOfObjectsItems0 struct {`,
+		"	Prop2 int64 `json:\"prop2,omitempty\"`",
+		// empty validation
+		"func (m *AdditionalSliceOfObjectsItems0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -3424,6 +3700,78 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+	expandRun.AddExpectations("additional_things_nested.go", []string{
+		`type AdditionalThingsNested struct {`,
+		"	Origin string `json:\"origin,omitempty\"`",
+		"	AdditionalThingsNested map[string]*AdditionalThingsNestedAnon `json:\"-\"`",
+		`func (m *AdditionalThingsNested) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateOrigin(formats); err != nil {`,
+		`	for k := range m.AdditionalThingsNested {`,
+		`		if val, ok := m.AdditionalThingsNested[k]; ok {`,
+		`			if val != nil {`,
+		`				if err := val.Validate(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`var additionalThingsNestedTypeOriginPropEnum []interface{`,
+		`	var res []string`,
+		"	if err := json.Unmarshal([]byte(`[\"goPrint\",\"goE-book\",\"goCollection\",\"goMuseum\"]`), &res); err != nil {",
+		`	for _, v := range res {`,
+		`		additionalThingsNestedTypeOriginPropEnum = append(additionalThingsNestedTypeOriginPropEnum, v`,
+		`	AdditionalThingsNestedOriginGoPrint string = "goPrint"`,
+		`	AdditionalThingsNestedOriginGoEBook string = "goE-book"`,
+		`	AdditionalThingsNestedOriginGoCollection string = "goCollection"`,
+		`	AdditionalThingsNestedOriginGoMuseum string = "goMuseum"`,
+		`func (m *AdditionalThingsNested) validateOriginEnum(path, location string, value string) error {`,
+		`	if err := validate.Enum(path, location, value, additionalThingsNestedTypeOriginPropEnum); err != nil {`,
+		`func (m *AdditionalThingsNested) validateOrigin(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.Origin) {`,
+		`	if err := m.validateOriginEnum("origin", "body", m.Origin); err != nil {`,
+		`type AdditionalThingsNestedAnon struct {`,
+		"	PrinterAddress string `json:\"printerAddress,omitempty\"`",
+		"	PrinterCountry string `json:\"printerCountry,omitempty\"`",
+		"	PrinterDate strfmt.Date `json:\"printerDate,omitempty\"`",
+		"	AdditionalThingsNestedAnon map[string]*AdditionalThingsNestedAnonAnon `json:\"-\"`",
+		`func (m *AdditionalThingsNestedAnon) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validatePrinterCountry(formats); err != nil {`,
+		`	if err := m.validatePrinterDate(formats); err != nil {`,
+		`	for k := range m.AdditionalThingsNestedAnon {`,
+		`		if val, ok := m.AdditionalThingsNestedAnon[k]; ok {`,
+		`			if val != nil {`,
+		`				if err := val.Validate(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`var additionalThingsNestedAnonTypePrinterCountryPropEnum []interface{`,
+		`	var res []string`,
+		"	if err := json.Unmarshal([]byte(`[\"US\",\"FR\",\"UK\",\"BE\",\"CA\",\"DE\"]`), &res); err != nil {",
+		`	for _, v := range res {`,
+		`		additionalThingsNestedAnonTypePrinterCountryPropEnum = append(additionalThingsNestedAnonTypePrinterCountryPropEnum, v`,
+		`	AdditionalThingsNestedAnonPrinterCountryUS string = "US"`,
+		`	AdditionalThingsNestedAnonPrinterCountryFR string = "FR"`,
+		`	AdditionalThingsNestedAnonPrinterCountryUK string = "UK"`,
+		`	AdditionalThingsNestedAnonPrinterCountryBE string = "BE"`,
+		`	AdditionalThingsNestedAnonPrinterCountryCA string = "CA"`,
+		`	AdditionalThingsNestedAnonPrinterCountryDE string = "DE"`,
+		`func (m *AdditionalThingsNestedAnon) validatePrinterCountryEnum(path, location string, value string) error {`,
+		`	if err := validate.Enum(path, location, value, additionalThingsNestedAnonTypePrinterCountryPropEnum); err != nil {`,
+		`func (m *AdditionalThingsNestedAnon) validatePrinterCountry(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.PrinterCountry) {`,
+		`	if err := m.validatePrinterCountryEnum("printerCountry", "body", m.PrinterCountry); err != nil {`,
+		`func (m *AdditionalThingsNestedAnon) validatePrinterDate(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.PrinterDate) {`,
+		`	if err := validate.FormatOf("printerDate", "body", "date", m.PrinterDate.String(), formats); err != nil {`,
+		`type AdditionalThingsNestedAnonAnon struct {`,
+		"	AverageDelay strfmt.Duration `json:\"averageDelay,omitempty\"`",
+		`func (m *AdditionalThingsNestedAnonAnon) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateAverageDelay(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalThingsNestedAnonAnon) validateAverageDelay(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.AverageDelay) {`,
+		`	if err := validate.FormatOf("averageDelay", "body", "duration", m.AverageDelay.String(), formats); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
 	// load expectations for model: no_validation_thing.go
 	flattenRun.AddExpectations("no_validation_thing.go", []string{
 		`type NoValidationThing struct {`,
@@ -3438,6 +3786,8 @@ func initFixtureAdditionalProps() {
 		// output in log
 		noLines,
 		noLines)
+
+	expandRun.AddExpectations("no_validation_thing.go", flattenRun.ExpectedFor("NoValidationThing").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: additional_array_of_interface.go
 	flattenRun.AddExpectations("additional_array_of_interface.go", []string{
@@ -3460,6 +3810,8 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+	expandRun.AddExpectations("additional_array_of_interface.go", flattenRun.ExpectedFor("AdditionalArrayOfInterface").ExpectedLines, todo, noLines, noLines)
+
 	// load expectations for model: additional_formated_thing.go
 	flattenRun.AddExpectations("additional_formated_thing.go", []string{
 		`type AdditionalFormatedThing map[string]strfmt.Date`,
@@ -3475,6 +3827,8 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+	expandRun.AddExpectations("additional_formated_thing.go", flattenRun.ExpectedFor("AdditionalFormatedThing").ExpectedLines, todo, noLines, noLines)
+
 	// load expectations for model: aliased_nullable_date.go
 	flattenRun.AddExpectations("aliased_nullable_date.go", []string{
 		`type AliasedNullableDate strfmt.Date`,
@@ -3487,6 +3841,8 @@ func initFixtureAdditionalProps() {
 		// output in log
 		noLines,
 		noLines)
+
+	expandRun.AddExpectations("aliased_nullable_date.go", flattenRun.ExpectedFor("AliasedNullableDate").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: additional_array_of_refed_object.go
 	flattenRun.AddExpectations("additional_array_of_refed_object.go", []string{
@@ -3508,6 +3864,38 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalArrayOfRefedObject) validateThisOneNotRequired(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequired) {`,
 		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	expandRun.AddExpectations("additional_array_of_refed_object.go", []string{
+		`type AdditionalArrayOfRefedObject struct {`,
+		"	ThisOneNotRequired int64 `json:\"thisOneNotRequired,omitempty\"`",
+		"	AdditionalArrayOfRefedObject map[string][]*AdditionalArrayOfRefedObjectItems0 `json:\"-\"`",
+		`func (m *AdditionalArrayOfRefedObject) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
+		`	for k := range m.AdditionalArrayOfRefedObject {`,
+		`		if err := validate.Required(k, "body", m.AdditionalArrayOfRefedObject[k]); err != nil {`,
+		`		if err := validate.UniqueItems(k, "body", m.AdditionalArrayOfRefedObject[k]); err != nil {`,
+		`		for i := 0; i < len(m.AdditionalArrayOfRefedObject[k]); i++ {`,
+		`			if swag.IsZero(m.AdditionalArrayOfRefedObject[k][i]) {`,
+		`			if m.AdditionalArrayOfRefedObject[k][i] != nil {`,
+		`				if err := m.AdditionalArrayOfRefedObject[k][i].Validate(formats); err != nil {`,
+		`					if ve, ok := err.(*errors.Validation); ok {`,
+		`						return ve.ValidateName(k + "." + strconv.Itoa(i)`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalArrayOfRefedObject) validateThisOneNotRequired(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.ThisOneNotRequired) {`,
+		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+		`type AdditionalArrayOfRefedObjectItems0 struct {`,
+		"	Discourse string `json:\"discourse,omitempty\"`",
+		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
+		"	AdditionalArrayOfRefedObjectItems0AdditionalProperties map[string]interface{} `json:\"-\"`",
+		// empty validation
+		"func (m *AdditionalArrayOfRefedObjectItems0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -3541,6 +3929,29 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+	expandRun.AddExpectations("additional_slice_of_aliased_primitives.go", []string{
+		`type AdditionalSliceOfAliasedPrimitives struct {`,
+		"	Prop2 strfmt.UUID `json:\"prop2,omitempty\"`",
+		"	AdditionalSliceOfAliasedPrimitives map[string][]strfmt.Date `json:\"-\"`",
+		`func (m *AdditionalSliceOfAliasedPrimitives) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateProp2(formats); err != nil {`,
+		`	for k := range m.AdditionalSliceOfAliasedPrimitives {`,
+		`		if swag.IsZero(m.AdditionalSliceOfAliasedPrimitives[k]) {`,
+		`		iAdditionalSliceOfAliasedPrimitivesSize := int64(len(m.AdditionalSliceOfAliasedPrimitives[k])`,
+		`		if err := validate.MaxItems(k, "body", iAdditionalSliceOfAliasedPrimitivesSize, 10); err != nil {`,
+		`		for i := 0; i < len(m.AdditionalSliceOfAliasedPrimitives[k]); i++ {`,
+		`			if err := validate.FormatOf(k+"."+strconv.Itoa(i), "body", "date", m.AdditionalSliceOfAliasedPrimitives[k][i].String(), formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalSliceOfAliasedPrimitives) validateProp2(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.Prop2) {`,
+		`	if err := validate.FormatOf("prop2", "body", "uuid", m.Prop2.String(), formats); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
 	// load expectations for model: transitive_refed_thing.go
 	flattenRun.AddExpectations("transitive_refed_thing.go", []string{
 		`type TransitiveRefedThing struct {`,
@@ -3563,6 +3974,46 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+	expandRun.AddExpectations("transitive_refed_thing.go", []string{
+		`type TransitiveRefedThing struct {`,
+		"	ThisOneNotRequiredEither int64 `json:\"thisOneNotRequiredEither,omitempty\"`",
+		"	TransitiveRefedThing map[string]*TransitiveRefedThingAnon `json:\"-\"`",
+		`func (m *TransitiveRefedThing) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateThisOneNotRequiredEither(formats); err != nil {`,
+		`	for k := range m.TransitiveRefedThing {`,
+		`		if val, ok := m.TransitiveRefedThing[k]; ok {`,
+		`			if val != nil {`,
+		`				if err := val.Validate(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *TransitiveRefedThing) validateThisOneNotRequiredEither(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.ThisOneNotRequiredEither) {`,
+		`	if err := validate.MaximumInt("thisOneNotRequiredEither", "body", int64(m.ThisOneNotRequiredEither), 20, false); err != nil {`,
+		`type TransitiveRefedThingAnon struct {`,
+		"	A1 strfmt.DateTime `json:\"a1,omitempty\"`",
+		"	TransitiveRefedThingAnon map[string]*TransitiveRefedThingAnonAnon `json:\"-\"`",
+		`func (m *TransitiveRefedThingAnon) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateA1(formats); err != nil {`,
+		`	for k := range m.TransitiveRefedThingAnon {`,
+		`		if val, ok := m.TransitiveRefedThingAnon[k]; ok {`,
+		`			if val != nil {`,
+		`				if err := val.Validate(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *TransitiveRefedThingAnon) validateA1(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.A1) {`,
+		`	if err := validate.FormatOf("a1", "body", "date-time", m.A1.String(), formats); err != nil {`,
+		`type TransitiveRefedThingAnonAnon struct {`,
+		"	Discourse string `json:\"discourse,omitempty\"`",
+		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
+		"	TransitiveRefedThingAnonAnonAdditionalProperties map[string]interface{} `json:\"-\"`",
+		// empty validation
+		"func (m *TransitiveRefedThingAnonAnon) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
 	// load expectations for model: additional_empty_object.go
 	flattenRun.AddExpectations("additional_empty_object.go", []string{
 		`type AdditionalEmptyObject struct {`,
@@ -3576,6 +4027,8 @@ func initFixtureAdditionalProps() {
 		// output in log
 		noLines,
 		noLines)
+
+	expandRun.AddExpectations("additional_empty_object.go", flattenRun.ExpectedFor("AdditionalEmptyObject").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: additional_date_with_nullable_thing.go
 	flattenRun.AddExpectations("additional_date_with_nullable_thing.go", []string{
@@ -3601,6 +4054,31 @@ func initFixtureAdditionalProps() {
 		`		if err := m.NullableDate.Validate(formats); err != nil {`,
 		`			if ve, ok := err.(*errors.Validation); ok {`,
 		`				return ve.ValidateName("nullableDate"`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	expandRun.AddExpectations("additional_date_with_nullable_thing.go", []string{
+		`type AdditionalDateWithNullableThing struct {`,
+		"	Blob int64 `json:\"blob,omitempty\"`",
+		"	NullableDate *strfmt.Date `json:\"nullableDate,omitempty\"`",
+		"	AdditionalDateWithNullableThing map[string]*strfmt.Date `json:\"-\"`",
+		`func (m *AdditionalDateWithNullableThing) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateBlob(formats); err != nil {`,
+		`	if err := m.validateNullableDate(formats); err != nil {`,
+		`	for k := range m.AdditionalDateWithNullableThing {`,
+		`		if swag.IsZero(m.AdditionalDateWithNullableThing[k]) {`,
+		`		if err := validate.FormatOf(k, "body", "date", m.AdditionalDateWithNullableThing[k].String(), formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalDateWithNullableThing) validateBlob(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.Blob) {`,
+		`	if err := validate.MinimumInt("blob", "body", int64(m.Blob), 1, false); err != nil {`,
+		`func (m *AdditionalDateWithNullableThing) validateNullableDate(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.NullableDate) {`,
+		`	if err := validate.FormatOf("nullableDate", "body", "date", m.NullableDate.String(), formats); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -7993,6 +8471,423 @@ func initFixture844Variations() {
 		`	Bar`,
 		// empty validation
 		"func (m *GetOKBody) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+}
+
+func initFixtureMoreAddProps() {
+	// testing fixture-moreAddProps.yaml with flatten and expand (--skip-flatten)
+
+	/*
+	   various patterns of additionalProperties
+	*/
+
+	f := newModelFixture("../fixtures/bugs/1487/fixture-moreAddProps.yaml", "fixture for additionalProperties")
+	flattenRun := f.AddRun(false)
+	expandRun := f.AddRun(true)
+
+	// load expectations for model: trial.go
+	flattenRun.AddExpectations("trial.go", []string{
+		`type Trial struct {`,
+		"	A1 strfmt.DateTime `json:\"a1,omitempty\"`",
+		"	AdditionalProperties *TrialAdditionalProperties `json:\"additionalProperties,omitempty\"`",
+		`func (m *Trial) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateA1(formats); err != nil {`,
+		`	if err := m.validateAdditionalProperties(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *Trial) validateA1(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.A1) {`,
+		`	if err := validate.FormatOf("a1", "body", "date-time", m.A1.String(), formats); err != nil {`,
+		`func (m *Trial) validateAdditionalProperties(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.AdditionalProperties) {`,
+		`	if m.AdditionalProperties != nil {`,
+		`		if err := m.AdditionalProperties.Validate(formats); err != nil {`,
+		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`				return ve.ValidateName("additionalProperties"`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: trial_additional_properties.go
+	flattenRun.AddExpectations("trial_additional_properties.go", []string{
+		`type TrialAdditionalProperties struct {`,
+		"	Discourse string `json:\"discourse,omitempty\"`",
+		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
+		"	TrialAdditionalPropertiesAdditionalProperties map[string]interface{} `json:\"-\"`",
+		// empty validation
+		"func (m *TrialAdditionalProperties) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: additional_transitive_refed_object_thing_additional_properties.go
+	flattenRun.AddExpectations("additional_transitive_refed_object_thing_additional_properties.go", []string{
+		`type AdditionalTransitiveRefedObjectThingAdditionalProperties struct {`,
+		"	Prop1 *AdditionalTransitiveRefedObjectThingAdditionalPropertiesProp1 `json:\"prop1,omitempty\"`",
+		"	AdditionalTransitiveRefedObjectThingAdditionalProperties map[string]*AdditionalTransitiveRefedObjectThingAdditionalPropertiesAdditionalProperties `json:\"-\"`",
+		`func (m *AdditionalTransitiveRefedObjectThingAdditionalProperties) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateProp1(formats); err != nil {`,
+		`	for k := range m.AdditionalTransitiveRefedObjectThingAdditionalProperties {`,
+		`		if val, ok := m.AdditionalTransitiveRefedObjectThingAdditionalProperties[k]; ok {`,
+		`			if val != nil {`,
+		`				if err := val.Validate(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalTransitiveRefedObjectThingAdditionalProperties) validateProp1(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.Prop1) {`,
+		`	if m.Prop1 != nil {`,
+		`		if err := m.Prop1.Validate(formats); err != nil {`,
+		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`				return ve.ValidateName("prop1"`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: additional_transitive_refed_object_thing_additional_properties_prop1.go
+	flattenRun.AddExpectations("additional_transitive_refed_object_thing_additional_properties_prop1.go", []string{
+		`type AdditionalTransitiveRefedObjectThingAdditionalPropertiesProp1 struct {`,
+		"	ThisOneNotRequiredEither int64 `json:\"thisOneNotRequiredEither,omitempty\"`",
+		"	AdditionalTransitiveRefedObjectThingAdditionalPropertiesProp1 map[string]*AdditionalTransitiveRefedObjectThingAdditionalPropertiesProp1AdditionalProperties `json:\"-\"`",
+		`func (m *AdditionalTransitiveRefedObjectThingAdditionalPropertiesProp1) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateThisOneNotRequiredEither(formats); err != nil {`,
+		`	for k := range m.AdditionalTransitiveRefedObjectThingAdditionalPropertiesProp1 {`,
+		`		if val, ok := m.AdditionalTransitiveRefedObjectThingAdditionalPropertiesProp1[k]; ok {`,
+		`			if val != nil {`,
+		`				if err := val.Validate(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalTransitiveRefedObjectThingAdditionalPropertiesProp1) validateThisOneNotRequiredEither(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.ThisOneNotRequiredEither) {`,
+		`	if err := validate.MaximumInt("thisOneNotRequiredEither", "body", int64(m.ThisOneNotRequiredEither), 20, false); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: additional_transitive_refed_thing.go
+	flattenRun.AddExpectations("additional_transitive_refed_thing.go", []string{
+		`type AdditionalTransitiveRefedThing struct {`,
+		"	ThisOneNotRequired int64 `json:\"thisOneNotRequired,omitempty\"`",
+		"	AdditionalTransitiveRefedThing map[string][]*AdditionalTransitiveRefedThingAdditionalPropertiesItems `json:\"-\"`",
+		`func (m *AdditionalTransitiveRefedThing) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
+		`	for k := range m.AdditionalTransitiveRefedThing {`,
+		`		if err := validate.Required(k, "body", m.AdditionalTransitiveRefedThing[k]); err != nil {`,
+		`		if err := validate.UniqueItems(k, "body", m.AdditionalTransitiveRefedThing[k]); err != nil {`,
+		`		for i := 0; i < len(m.AdditionalTransitiveRefedThing[k]); i++ {`,
+		`			if swag.IsZero(m.AdditionalTransitiveRefedThing[k][i]) {`,
+		`			if m.AdditionalTransitiveRefedThing[k][i] != nil {`,
+		`				if err := m.AdditionalTransitiveRefedThing[k][i].Validate(formats); err != nil {`,
+		`					if ve, ok := err.(*errors.Validation); ok {`,
+		`						return ve.ValidateName(k + "." + strconv.Itoa(i)`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalTransitiveRefedThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.ThisOneNotRequired) {`,
+		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: additional_transitive_refed_thing_additional_properties_items_additional_properties_additional_properties.go
+	flattenRun.AddExpectations("additional_transitive_refed_thing_additional_properties_items_additional_properties_additional_properties.go", []string{
+		`type AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalPropertiesAdditionalProperties struct {`,
+		"	Discourse string `json:\"discourse,omitempty\"`",
+		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
+		"	AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalPropertiesAdditionalPropertiesAdditionalProperties map[string]interface{} `json:\"-\"`",
+		// empty validation
+		"func (m *AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalPropertiesAdditionalProperties) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: additional_transitive_refed_object_thing.go
+	flattenRun.AddExpectations("additional_transitive_refed_object_thing.go", []string{
+		`type AdditionalTransitiveRefedObjectThing struct {`,
+		"	ThisOneNotRequired int64 `json:\"thisOneNotRequired,omitempty\"`",
+		"	AdditionalTransitiveRefedObjectThing map[string]*AdditionalTransitiveRefedObjectThingAdditionalProperties `json:\"-\"`",
+		`func (m *AdditionalTransitiveRefedObjectThing) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
+		`	for k := range m.AdditionalTransitiveRefedObjectThing {`,
+		`		if val, ok := m.AdditionalTransitiveRefedObjectThing[k]; ok {`,
+		`			if val != nil {`,
+		`				if err := val.Validate(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalTransitiveRefedObjectThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.ThisOneNotRequired) {`,
+		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: additional_transitive_refed_object_thing_additional_properties_additional_properties.go
+	flattenRun.AddExpectations("additional_transitive_refed_object_thing_additional_properties_additional_properties.go", []string{
+		`type AdditionalTransitiveRefedObjectThingAdditionalPropertiesAdditionalProperties struct {`,
+		"	Discourse string `json:\"discourse,omitempty\"`",
+		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
+		"	AdditionalTransitiveRefedObjectThingAdditionalPropertiesAdditionalPropertiesAdditionalProperties map[string]interface{} `json:\"-\"`",
+		// empty validation
+		"func (m *AdditionalTransitiveRefedObjectThingAdditionalPropertiesAdditionalProperties) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: additional_transitive_refed_object_thing_additional_properties_prop1_additional_properties.go
+	flattenRun.AddExpectations("additional_transitive_refed_object_thing_additional_properties_prop1_additional_properties.go", []string{
+		`type AdditionalTransitiveRefedObjectThingAdditionalPropertiesProp1AdditionalProperties struct {`,
+		"	A1 strfmt.DateTime `json:\"a1,omitempty\"`",
+		"	B1 strfmt.Date `json:\"b1,omitempty\"`",
+		"	AdditionalTransitiveRefedObjectThingAdditionalPropertiesProp1AdditionalPropertiesAdditionalProperties map[string]interface{} `json:\"-\"`",
+		`func (m *AdditionalTransitiveRefedObjectThingAdditionalPropertiesProp1AdditionalProperties) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateA1(formats); err != nil {`,
+		`	if err := m.validateB1(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalTransitiveRefedObjectThingAdditionalPropertiesProp1AdditionalProperties) validateA1(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.A1) {`,
+		`	if err := validate.FormatOf("a1", "body", "date-time", m.A1.String(), formats); err != nil {`,
+		`func (m *AdditionalTransitiveRefedObjectThingAdditionalPropertiesProp1AdditionalProperties) validateB1(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.B1) {`,
+		`	if err := validate.FormatOf("b1", "body", "date", m.B1.String(), formats); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: additional_transitive_refed_thing_additional_properties_items.go
+	flattenRun.AddExpectations("additional_transitive_refed_thing_additional_properties_items.go", []string{
+		`type AdditionalTransitiveRefedThingAdditionalPropertiesItems struct {`,
+		"	ThisOneNotRequiredEither int64 `json:\"thisOneNotRequiredEither,omitempty\"`",
+		"	AdditionalTransitiveRefedThingAdditionalPropertiesItems map[string]*AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalProperties `json:\"-\"`",
+		`func (m *AdditionalTransitiveRefedThingAdditionalPropertiesItems) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateThisOneNotRequiredEither(formats); err != nil {`,
+		`	for k := range m.AdditionalTransitiveRefedThingAdditionalPropertiesItems {`,
+		`		if val, ok := m.AdditionalTransitiveRefedThingAdditionalPropertiesItems[k]; ok {`,
+		`			if val != nil {`,
+		`				if err := val.Validate(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalTransitiveRefedThingAdditionalPropertiesItems) validateThisOneNotRequiredEither(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.ThisOneNotRequiredEither) {`,
+		`	if err := validate.MaximumInt("thisOneNotRequiredEither", "body", int64(m.ThisOneNotRequiredEither), 20, false); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: additional_transitive_refed_thing_additional_properties_items_additional_properties.go
+	flattenRun.AddExpectations("additional_transitive_refed_thing_additional_properties_items_additional_properties.go", []string{
+		`type AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalProperties struct {`,
+		"	A1 strfmt.DateTime `json:\"a1,omitempty\"`",
+		"	B1 strfmt.DateTime `json:\"b1,omitempty\"`",
+		"	AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalProperties map[string]*AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalPropertiesAdditionalProperties `json:\"-\"`",
+		`func (m *AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalProperties) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateA1(formats); err != nil {`,
+		`	if err := m.validateB1(formats); err != nil {`,
+		`	for k := range m.AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalProperties {`,
+		`		if val, ok := m.AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalProperties[k]; ok {`,
+		`			if val != nil {`,
+		`				if err := val.Validate(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalProperties) validateA1(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.A1) {`,
+		`	if err := validate.FormatOf("a1", "body", "date-time", m.A1.String(), formats); err != nil {`,
+		`func (m *AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalProperties) validateB1(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.B1) {`,
+		`	if err := validate.FormatOf("b1", "body", "date-time", m.B1.String(), formats); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: trial.go
+	expandRun.AddExpectations("trial.go", []string{
+		`type Trial struct {`,
+		"	A1 strfmt.DateTime `json:\"a1,omitempty\"`",
+		"	AdditionalProperties *TrialAdditionalProperties `json:\"additionalProperties,omitempty\"`",
+		`func (m *Trial) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateA1(formats); err != nil {`,
+		`	if err := m.validateAdditionalProperties(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *Trial) validateA1(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.A1) {`,
+		`	if err := validate.FormatOf("a1", "body", "date-time", m.A1.String(), formats); err != nil {`,
+		`func (m *Trial) validateAdditionalProperties(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.AdditionalProperties) {`,
+		`	if m.AdditionalProperties != nil {`,
+		`		if err := m.AdditionalProperties.Validate(formats); err != nil {`,
+		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`				return ve.ValidateName("additionalProperties"`,
+		`type TrialAdditionalProperties struct {`,
+		"	Discourse string `json:\"discourse,omitempty\"`",
+		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
+		"	TrialAdditionalPropertiesAdditionalProperties map[string]interface{} `json:\"-\"`",
+		// empty validation
+		"func (m *TrialAdditionalProperties) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: additional_transitive_refed_thing.go
+	expandRun.AddExpectations("additional_transitive_refed_thing.go", []string{
+		`type AdditionalTransitiveRefedThing struct {`,
+		"	ThisOneNotRequired int64 `json:\"thisOneNotRequired,omitempty\"`",
+		"	AdditionalTransitiveRefedThing map[string][]*AdditionalTransitiveRefedThingItems0 `json:\"-\"`",
+		`func (m *AdditionalTransitiveRefedThing) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
+		`	for k := range m.AdditionalTransitiveRefedThing {`,
+		`		if err := validate.Required(k, "body", m.AdditionalTransitiveRefedThing[k]); err != nil {`,
+		`		if err := validate.UniqueItems(k, "body", m.AdditionalTransitiveRefedThing[k]); err != nil {`,
+		`		for i := 0; i < len(m.AdditionalTransitiveRefedThing[k]); i++ {`,
+		`			if swag.IsZero(m.AdditionalTransitiveRefedThing[k][i]) {`,
+		`			if m.AdditionalTransitiveRefedThing[k][i] != nil {`,
+		`				if err := m.AdditionalTransitiveRefedThing[k][i].Validate(formats); err != nil {`,
+		`					if ve, ok := err.(*errors.Validation); ok {`,
+		`						return ve.ValidateName(k + "." + strconv.Itoa(i)`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalTransitiveRefedThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.ThisOneNotRequired) {`,
+		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+		`type AdditionalTransitiveRefedThingItems0 struct {`,
+		"	ThisOneNotRequiredEither int64 `json:\"thisOneNotRequiredEither,omitempty\"`",
+		"	AdditionalTransitiveRefedThingItems0 map[string]*AdditionalTransitiveRefedThingItems0Anon `json:\"-\"`",
+		`func (m *AdditionalTransitiveRefedThingItems0) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateThisOneNotRequiredEither(formats); err != nil {`,
+		`	for k := range m.AdditionalTransitiveRefedThingItems0 {`,
+		`		if val, ok := m.AdditionalTransitiveRefedThingItems0[k]; ok {`,
+		`			if val != nil {`,
+		`				if err := val.Validate(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalTransitiveRefedThingItems0) validateThisOneNotRequiredEither(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.ThisOneNotRequiredEither) {`,
+		`	if err := validate.MaximumInt("thisOneNotRequiredEither", "body", int64(m.ThisOneNotRequiredEither), 20, false); err != nil {`,
+		`type AdditionalTransitiveRefedThingItems0Anon struct {`,
+		"	A1 strfmt.DateTime `json:\"a1,omitempty\"`",
+		"	B1 strfmt.DateTime `json:\"b1,omitempty\"`",
+		"	AdditionalTransitiveRefedThingItems0Anon map[string]*AdditionalTransitiveRefedThingItems0AnonAnon `json:\"-\"`",
+		`func (m *AdditionalTransitiveRefedThingItems0Anon) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateA1(formats); err != nil {`,
+		`	if err := m.validateB1(formats); err != nil {`,
+		`	for k := range m.AdditionalTransitiveRefedThingItems0Anon {`,
+		`		if val, ok := m.AdditionalTransitiveRefedThingItems0Anon[k]; ok {`,
+		`			if val != nil {`,
+		`				if err := val.Validate(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalTransitiveRefedThingItems0Anon) validateA1(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.A1) {`,
+		`	if err := validate.FormatOf("a1", "body", "date-time", m.A1.String(), formats); err != nil {`,
+		`func (m *AdditionalTransitiveRefedThingItems0Anon) validateB1(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.B1) {`,
+		`	if err := validate.FormatOf("b1", "body", "date-time", m.B1.String(), formats); err != nil {`,
+		`type AdditionalTransitiveRefedThingItems0AnonAnon struct {`,
+		"	Discourse string `json:\"discourse,omitempty\"`",
+		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
+		"	AdditionalTransitiveRefedThingItems0AnonAnonAdditionalProperties map[string]interface{} `json:\"-\"`",
+		// empty validation
+		"func (m *AdditionalTransitiveRefedThingItems0AnonAnon) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: additional_transitive_refed_object_thing.go
+	expandRun.AddExpectations("additional_transitive_refed_object_thing.go", []string{
+		`type AdditionalTransitiveRefedObjectThing struct {`,
+		"	ThisOneNotRequired int64 `json:\"thisOneNotRequired,omitempty\"`",
+		"	AdditionalTransitiveRefedObjectThing map[string]*AdditionalTransitiveRefedObjectThingAnon `json:\"-\"`",
+		`func (m *AdditionalTransitiveRefedObjectThing) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
+		`	for k := range m.AdditionalTransitiveRefedObjectThing {`,
+		`		if val, ok := m.AdditionalTransitiveRefedObjectThing[k]; ok {`,
+		`			if val != nil {`,
+		`				if err := val.Validate(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalTransitiveRefedObjectThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.ThisOneNotRequired) {`,
+		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+		`type AdditionalTransitiveRefedObjectThingAnon struct {`,
+		"	Prop1 *AdditionalTransitiveRefedObjectThingAnonProp1 `json:\"prop1,omitempty\"`",
+		"	AdditionalTransitiveRefedObjectThingAnon map[string]*AdditionalTransitiveRefedObjectThingAnonAnon `json:\"-\"`",
+		`func (m *AdditionalTransitiveRefedObjectThingAnon) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateProp1(formats); err != nil {`,
+		`	for k := range m.AdditionalTransitiveRefedObjectThingAnon {`,
+		`		if val, ok := m.AdditionalTransitiveRefedObjectThingAnon[k]; ok {`,
+		`			if val != nil {`,
+		`				if err := val.Validate(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalTransitiveRefedObjectThingAnon) validateProp1(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.Prop1) {`,
+		`	if m.Prop1 != nil {`,
+		`		if err := m.Prop1.Validate(formats); err != nil {`,
+		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`				return ve.ValidateName("prop1"`,
+		`type AdditionalTransitiveRefedObjectThingAnonAnon struct {`,
+		"	Discourse string `json:\"discourse,omitempty\"`",
+		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
+		"	AdditionalTransitiveRefedObjectThingAnonAnonAdditionalProperties map[string]interface{} `json:\"-\"`",
+		`type AdditionalTransitiveRefedObjectThingAnonProp1 struct {`,
+		"	ThisOneNotRequiredEither int64 `json:\"thisOneNotRequiredEither,omitempty\"`",
+		"	AdditionalTransitiveRefedObjectThingAnonProp1 map[string]*AdditionalTransitiveRefedObjectThingAnonProp1Anon `json:\"-\"`",
+		`func (m *AdditionalTransitiveRefedObjectThingAnonProp1) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateThisOneNotRequiredEither(formats); err != nil {`,
+		`	for k := range m.AdditionalTransitiveRefedObjectThingAnonProp1 {`,
+		`		if val, ok := m.AdditionalTransitiveRefedObjectThingAnonProp1[k]; ok {`,
+		`			if val != nil {`,
+		`				if err := val.Validate(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalTransitiveRefedObjectThingAnonProp1) validateThisOneNotRequiredEither(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.ThisOneNotRequiredEither) {`,
+		`	if err := validate.MaximumInt("prop1"+"."+"thisOneNotRequiredEither", "body", int64(m.ThisOneNotRequiredEither), 20, false); err != nil {`,
+		`type AdditionalTransitiveRefedObjectThingAnonProp1Anon struct {`,
+		"	A1 strfmt.DateTime `json:\"a1,omitempty\"`",
+		"	B1 strfmt.Date `json:\"b1,omitempty\"`",
+		"	AdditionalTransitiveRefedObjectThingAnonProp1AnonAdditionalProperties map[string]interface{} `json:\"-\"`",
+		`func (m *AdditionalTransitiveRefedObjectThingAnonProp1Anon) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateA1(formats); err != nil {`,
+		`	if err := m.validateB1(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *AdditionalTransitiveRefedObjectThingAnonProp1Anon) validateA1(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.A1) {`,
+		`	if err := validate.FormatOf("a1", "body", "date-time", m.A1.String(), formats); err != nil {`,
+		`func (m *AdditionalTransitiveRefedObjectThingAnonProp1Anon) validateB1(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.B1) {`,
+		`	if err := validate.FormatOf("b1", "body", "date", m.B1.String(), formats); err != nil {`,
+		// empty validation
+		"func (m *AdditionalTransitiveRefedObjectThingAnonAnon) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
