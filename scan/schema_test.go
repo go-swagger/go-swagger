@@ -585,8 +585,6 @@ func TestInterfaceDiscriminators(t *testing.T) {
 
 		assertProperty(t, &schema, "integer", "doors", "int64", "Doors")
 	}
-
-	schema, ok = noModelDefs["jsonString"]
 }
 
 func TestStringStructTag(t *testing.T) {
@@ -610,6 +608,14 @@ func TestStringStructTag(t *testing.T) {
 	if assert.True(t, ok) {
 		assert.NotEqual(t, "string", prop.Type)
 	}
+}
+
+func TestIgnoredStructField(t *testing.T) {
+	_ = classificationProg
+	sch := noModelDefs["ignoredFields"]
+	assertProperty(t, &sch, "string", "someIncludedField", "", "SomeIncludedField")
+	assertProperty(t, &sch, "string", "someErroneouslyIncludedField", "", "SomeErroneouslyIncludedField")
+	assert.Len(t, sch.Properties, 2)
 }
 
 func TestAliasedModels(t *testing.T) {

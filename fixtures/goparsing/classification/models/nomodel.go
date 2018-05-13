@@ -629,3 +629,17 @@ type JSONString struct {
 	// The ",string" directive should be ignore before the type isn't scalar
 	SomethingElse Cars `json:"somethingElse,string"`
 }
+
+// IgnoredFields demostrates the use of swagger:ignore on struct fields.
+//
+// swagger:model ignoredFields
+type IgnoredFields struct {
+	SomeIncludedField string `json:"someIncludedField"`
+
+	// swagger:ignore
+	SomeIgnoredField string `json:"someIgnoredField"`
+
+	// This swagger:ignore tag won't work - it needs to be in the field's doc
+	// block
+	SomeErroneouslyIncludedField string `json:"someErroneouslyIncludedField"` // swagger:ignore
+}
