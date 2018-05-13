@@ -1245,6 +1245,44 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 	}
 
 	if !sg.GenSchema.IsMap && (sg.GenSchema.IsAdditionalProperties && sg.Named) {
+		// we have a complex object with an AdditionalProperties schema
+
+		tpe, err := sg.TypeResolver.ResolveSchema(addp.Schema, addp.Schema.Ref.String() == "", false)
+		if err != nil {
+			return err
+		}
+
+		if tpe.IsComplexObject && tpe.IsAnonymous {
+			// if the AdditionalProperties is an anonymous complex object, generate a new type for it
+			pg := sg.makeNewStruct(sg.Name+" Anon", *addp.Schema)
+			if err := pg.makeGenSchema(); err != nil {
+				return err
+			}
+			sg.MergeResult(pg, false)
+			sg.ExtraSchemas[pg.Name] = pg.GenSchema
+
+			sg.Schema.AdditionalProperties.Schema = spec.RefProperty("#/definitions/" + pg.Name)
+			sg.IsVirtual = true
+
+			comprop := sg.NewAdditionalProperty(*sg.Schema.AdditionalProperties.Schema)
+			if err := comprop.makeGenSchema(); err != nil {
+				return err
+			}
+
+			comprop.GenSchema.Required = true
+			comprop.GenSchema.HasValidations = true
+
+			comprop.GenSchema.ValueExpression = sg.GenSchema.ValueExpression + "." + swag.ToGoName(sg.GenSchema.Name) + "[" + comprop.KeyVar + "]"
+
+			sg.GenSchema.AdditionalProperties = &comprop.GenSchema
+			sg.GenSchema.HasAdditionalProperties = true
+			sg.GenSchema.ValueExpression += "." + swag.ToGoName(sg.GenSchema.Name)
+
+			sg.MergeResult(comprop, false)
+
+			return nil
+		}
+
 		// this is a regular named schema for AdditionalProperties
 		sg.GenSchema.ValueExpression += "." + swag.ToGoName(sg.GenSchema.Name)
 		comprop := sg.NewAdditionalProperty(*addp.Schema)
