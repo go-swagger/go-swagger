@@ -592,6 +592,11 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 
 	for _, fld := range tpe.Fields.List {
 		if len(fld.Names) == 0 {
+			// if the field is annotated with swagger:ignore, ignore it
+			if ignored(fld.Doc) {
+				continue
+			}
+
 			_, ignore, _, err := parseJSONTag(fld)
 			if err != nil {
 				return err
@@ -656,6 +661,12 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 	schema.Typed("object", "")
 	for _, fld := range tpe.Fields.List {
 		if len(fld.Names) > 0 && fld.Names[0] != nil && fld.Names[0].IsExported() {
+			log.Println(fld.Names[0], fld.Comment)
+			// if the field is annotated with swagger:ignore, ignore it
+			if ignored(fld.Doc) {
+				continue
+			}
+
 			gnm := fld.Names[0].Name
 			nm, ignore, isString, err := parseJSONTag(fld)
 			if err != nil {
@@ -1111,6 +1122,19 @@ func strfmtName(comments *ast.CommentGroup) (string, bool) {
 		}
 	}
 	return "", false
+}
+
+func ignored(comments *ast.CommentGroup) bool {
+	if comments != nil {
+		for _, cmt := range comments.List {
+			for _, ln := range strings.Split(cmt.Text, "\n") {
+				if rxIgnoreOverride.MatchString(ln) {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 func enumName(comments *ast.CommentGroup) (string, bool) {
