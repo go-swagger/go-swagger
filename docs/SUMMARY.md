@@ -1,7 +1,8 @@
 # Summary
 
 - [Introduction](README.md)
-  - [Approach](about.md)
+  - [Approaches](about.md)
+  - [Installation](install.md)
 - [Features](features.md)
 - Tutorials
   - [Simple Server](tutorial/todo-list.md)
