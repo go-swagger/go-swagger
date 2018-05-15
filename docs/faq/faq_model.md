@@ -3,12 +3,12 @@
 ## Model generation
 
 ### Custom validation
-_Use-Case_: is it possible to write own validation for custom types ? If it is, can someone give me example ?
+_Use-Case_: is it possible to write my own validation code for custom types? If so, can someone give me an example?
 
->For example! 
+>Usage example:
 >There is bookstore, with info about books: author, title, price. 
-> And we want, that books from some author will not cost more the some price.
-> So I want write function ValidateBookCustom() like:
+> And we want that books from some author will not cost more than some price.
+> So I want to write and use a function ValidateBookCustom() like:
 ```golang
 if book.author == "Some author" {
     if book.price > 1000 {
@@ -18,7 +18,6 @@ if book.author == "Some author" {
 }
 ```
 
-> And I want to use this function.
 
 **Answer**: there are several ways to achieve that.
 - reusing customized models
