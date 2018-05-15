@@ -234,7 +234,7 @@ Its only defined method looks very similar to the function type `GetGreetingHand
 
 Even better, the `GetGreetingHandlerFunc` implements the `Handle` function as defined by the `GetGreetingHandler` interface, meaning that we can use a function respecting the type alias as defined by `GetGreetingHandlerFunc`, where we normally would have to implement a struct adhering to the `GetGreetingHandler` interface.
 
-Implementing our handler as a struct always us to handle with certain state in mind. You can check out the [kvstore example][] to see a more elaborate example, where you can see the handlers being implemented using a struct per operation.
+Implementing our handler as a struct allows us to handle with a certain state in mind. You can check out the [kvstore example][] to see a more elaborate example, where you can see the handlers being implemented using a struct per operation.
 
 Our Greeter API is however simple enough, that we'll opt for just a simple method.
 [KISS][] never grows old. So with all of this said, let's implement our one and only handler.
