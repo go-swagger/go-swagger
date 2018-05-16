@@ -811,3 +811,194 @@ func TestGenClientIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 	// same here: now if flatten doesn't resume, expand takes over
 	assert.NoError(t, GenerateClient("foo", nil, nil, &opts))
 }
+
+// This tests that securityDefinitions generate stable code
+func TestBuilder_Issue1214(t *testing.T) {
+	const any = `(.|\n)+`
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+	dr, _ := os.Getwd()
+	opts := &GenOpts{
+		Spec:              filepath.FromSlash("../fixtures/bugs/1214/fixture-1214.yaml"),
+		IncludeModel:      true,
+		IncludeValidator:  true,
+		IncludeHandler:    true,
+		IncludeParameters: true,
+		IncludeResponses:  true,
+		IncludeMain:       true,
+		APIPackage:        "restapi",
+		ModelPackage:      "model",
+		ServerPackage:     "server",
+		ClientPackage:     "client",
+		Target:            dr,
+		IsClient:          false,
+	}
+	err := opts.EnsureDefaults()
+	assert.NoError(t, err)
+	appGen, err := newAppGenerator("fixture-1214", nil, nil, opts)
+	if assert.NoError(t, err) {
+		op, err := appGen.makeCodegenApp()
+		if assert.NoError(t, err) {
+			for i := 0; i < 5; i++ {
+				buf := bytes.NewBuffer(nil)
+				ert := templates.MustGet("serverConfigureapi").Execute(buf, op)
+				if assert.NoError(t, ert) {
+					ff, erf := appGen.GenOpts.LanguageOpts.FormatContent("fixture_1214_configure_api.go", buf.Bytes())
+					if assert.NoError(t, erf) {
+						res := string(ff)
+						assertRegexpInCode(t, any+
+							`api\.AAuth = func\(user string, pass string\)`+any+
+							`api\.BAuth = func\(token string\)`+any+
+							`api\.CAuth = func\(token string\)`+any+
+							`api\.DAuth = func\(token string\)`+any+
+							`api\.EAuth = func\(token string, scopes \[\]string\)`+any, res)
+					} else {
+						fmt.Println(buf.String())
+						break
+					}
+				} else {
+					break
+				}
+				buf = bytes.NewBuffer(nil)
+				err = templates.MustGet("serverBuilder").Execute(buf, op)
+				if assert.NoError(t, err) {
+					ff, err := appGen.GenOpts.LanguageOpts.FormatContent("fixture_1214_server.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(ff)
+						assertRegexpInCode(t, any+
+							`AAuth: func\(user string, pass string\) \(interface{}, error\) {`+any+
+							`BAuth: func\(token string\) \(interface{}, error\) {`+any+
+							`CAuth: func\(token string\) \(interface{}, error\) {`+any+
+							`DAuth: func\(token string\) \(interface{}, error\) {`+any+
+							`EAuth: func\(token string, scopes \[\]string\) \(interface{}, error\) {`+any+
+
+							`AAuth func\(string, string\) \(interface{}, error\)`+any+
+							`BAuth func\(string\) \(interface{}, error\)`+any+
+							`CAuth func\(string\) \(interface{}, error\)`+any+
+							`DAuth func\(string\) \(interface{}, error\)`+any+
+							`EAuth func\(string, \[\]string\) \(interface{}, error\)`+any+
+
+							`if o\.AAuth == nil {`+any+
+							`unregistered = append\(unregistered, "AAuth"\)`+any+
+							`if o\.BAuth == nil {`+any+
+							`unregistered = append\(unregistered, "K1Auth"\)`+any+
+							`if o\.CAuth == nil {`+any+
+							`unregistered = append\(unregistered, "K2Auth"\)`+any+
+							`if o\.DAuth == nil {`+any+
+							`unregistered = append\(unregistered, "K3Auth"\)`+any+
+							`if o\.EAuth == nil {`+any+
+							`unregistered = append\(unregistered, "EAuth"\)`+any+
+
+							`case "A":`+any+
+							`case "B":`+any+
+							`case "C":`+any+
+							`case "D":`+any+
+							`case "E":`+any, res)
+					} else {
+						fmt.Println(buf.String())
+						break
+					}
+				} else {
+					break
+				}
+			}
+		}
+	}
+}
+
+func TestGenSecurityRequirements(t *testing.T) {
+	for i := 0; i < 5; i++ {
+		operation := "asecOp"
+		b, err := opBuilder(operation, "../fixtures/bugs/1214/fixture-1214.yaml")
+		if !assert.NoError(t, err) {
+			t.FailNow()
+			return
+		}
+		b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
+		genRequirements := b.makeSecurityRequirements("o")
+		assert.Len(t, genRequirements, 2)
+		assert.Equal(t, []GenSecurityRequirements{
+			GenSecurityRequirements{
+				GenSecurityRequirement{
+					Name:   "A",
+					Scopes: []string{},
+				},
+				GenSecurityRequirement{
+					Name:   "B",
+					Scopes: []string{},
+				},
+				GenSecurityRequirement{
+					Name:   "E",
+					Scopes: []string{"s0", "s1", "s2", "s3", "s4"},
+				},
+			},
+			GenSecurityRequirements{
+				GenSecurityRequirement{
+					Name:   "C",
+					Scopes: []string{},
+				},
+				GenSecurityRequirement{
+					Name:   "D",
+					Scopes: []string{},
+				},
+				GenSecurityRequirement{
+					Name:   "E",
+					Scopes: []string{"s5", "s6", "s7", "s8", "s9"},
+				},
+			},
+		}, genRequirements)
+
+		operation = "bsecOp"
+		b, err = opBuilder(operation, "../fixtures/bugs/1214/fixture-1214.yaml")
+		if !assert.NoError(t, err) {
+			t.FailNow()
+			return
+		}
+		b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
+		genRequirements = b.makeSecurityRequirements("o")
+		assert.Len(t, genRequirements, 2)
+		assert.Equal(t, []GenSecurityRequirements{
+			GenSecurityRequirements{
+				GenSecurityRequirement{
+					Name:   "A",
+					Scopes: []string{},
+				},
+				GenSecurityRequirement{
+					Name:   "E",
+					Scopes: []string{"s0", "s1", "s2", "s3", "s4"},
+				},
+			},
+			GenSecurityRequirements{
+				GenSecurityRequirement{
+					Name:   "D",
+					Scopes: []string{},
+				},
+				GenSecurityRequirement{
+					Name:   "E",
+					Scopes: []string{"s5", "s6", "s7", "s8", "s9"},
+				},
+			},
+		}, genRequirements)
+	}
+
+	operation := "csecOp"
+	b, err := opBuilder(operation, "../fixtures/bugs/1214/fixture-1214.yaml")
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+	b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
+	genRequirements := b.makeSecurityRequirements("o")
+	assert.NotNil(t, genRequirements)
+	assert.Len(t, genRequirements, 0)
+
+	operation = "nosecOp"
+	b, err = opBuilder(operation, "../fixtures/bugs/1214/fixture-1214-2.yaml")
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+	b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
+	genRequirements = b.makeSecurityRequirements("o")
+	assert.Nil(t, genRequirements)
+}

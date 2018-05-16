@@ -469,38 +469,17 @@ func (a *appGenerator) makeProduces() (produces GenSerGroups, producesJSON bool)
 	return
 }
 
-func (a *appGenerator) makeSecuritySchemes() (security GenSecuritySchemes) {
-
-	prin := a.Principal
-	if prin == "" {
-		prin = "interface{}"
+func (a *appGenerator) makeSecuritySchemes() GenSecuritySchemes {
+	if a.Principal == "" {
+		a.Principal = "interface{}"
 	}
+	requiredSecuritySchemes := make(map[string]spec.SecurityScheme, len(a.Analyzed.RequiredSecuritySchemes()))
 	for _, scheme := range a.Analyzed.RequiredSecuritySchemes() {
-		if req, ok := a.SpecDoc.Spec().SecurityDefinitions[scheme]; ok {
-			isOAuth2 := strings.ToLower(req.Type) == "oauth2"
-			var scopes []string
-			if isOAuth2 {
-				for k := range req.Scopes {
-					scopes = append(scopes, k)
-				}
-			}
-
-			security = append(security, GenSecurityScheme{
-				AppName:      a.Name,
-				ID:           scheme,
-				ReceiverName: a.Receiver,
-				Name:         req.Name,
-				IsBasicAuth:  strings.ToLower(req.Type) == "basic",
-				IsAPIKeyAuth: strings.ToLower(req.Type) == "apikey",
-				IsOAuth2:     isOAuth2,
-				Scopes:       scopes,
-				Principal:    prin,
-				Source:       req.In,
-			})
+		if req, ok := a.SpecDoc.Spec().SecurityDefinitions[scheme]; ok && req != nil {
+			requiredSecuritySchemes[scheme] = *req
 		}
 	}
-	sort.Sort(security)
-	return
+	return gatherSecuritySchemes(requiredSecuritySchemes, a.Name, a.Principal, a.Receiver)
 }
 
 func (a *appGenerator) makeCodegenApp() (GenApp, error) {
@@ -517,10 +496,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	produces, _ := a.makeProduces()
 	sort.Sort(consumes)
 	sort.Sort(produces)
-	prin := a.Principal
-	if prin == "" {
-		prin = "interface{}"
-	}
 	security := a.makeSecuritySchemes()
 	baseImport := a.GenOpts.LanguageOpts.baseImport(a.Target)
 	var imports map[string]string
@@ -532,7 +507,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			imports = make(map[string]string)
 		}
 		imports[a.ModelsPackage] = filepath.ToSlash(filepath.Join(baseImport, manglePackageName(a.GenOpts, a.GenOpts.ModelPackage, "models")))
-		// importPath = filepath.ToSlash(filepath.Join(baseImport, a.ModelsPackage))
 	}
 	if importPath != "" {
 		defaultImports = append(defaultImports, importPath)
@@ -564,9 +538,10 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		o := opp.Op
 		o.Tags = pruneEmpty(o.Tags)
 		o.ID = on
+
 		var bldr codeGenOpBuilder
 		bldr.ModelsPackage = a.ModelsPackage
-		bldr.Principal = prin
+		bldr.Principal = a.Principal
 		bldr.Target = a.Target
 		bldr.DefaultImports = defaultImports
 		bldr.Imports = imports
@@ -702,7 +677,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		Models:              genMods,
 		Operations:          genOps,
 		OperationGroups:     opGroups,
-		Principal:           prin,
+		Principal:           a.Principal,
 		SwaggerJSON:         generateReadableSpec(jsonb),
 		FlatSwaggerJSON:     generateReadableSpec(flatjsonb),
 		ExcludeSpec:         a.GenOpts != nil && a.GenOpts.ExcludeSpec,

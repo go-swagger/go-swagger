@@ -1,0 +1,17 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: ordering security requirements
+  description: verify that generated code keeps a stable order of security requirements
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /nosec:
+    get:
+      operationId: nosecOp
+      description: no description
+      responses:
+        default:
