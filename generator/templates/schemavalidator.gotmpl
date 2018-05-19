@@ -245,6 +245,11 @@
         return err
       }
     {{ end }}
+    // DEBUG: objectvalidator 
+    // .IsAliased: {{ .IsAliased }}
+    // .ValueExpression: {{.ValueExpression}}
+    // .IsNullable: {{.IsNullable}}
+    // .IsArray: {{.IsArray}}
     {{- if or .IsAliased (ne .ValueExpression .ReceiverName) }}{{/* prevents generated code to call itself: case of aliased types */}}
       {{- if and .IsNullable (not .IsMapNullOverride) }}
       if {{ .ValueExpression }} != nil {
@@ -427,6 +432,13 @@ func ({{.ReceiverName }} {{ if or .IsTuple .IsComplexObject .IsAdditionalPropert
   {{- end }}
   {{ template "fieldvalidator" . }}
   {{ range .Properties }}
+    // DEBUG: properties
+    // .IsAliased: {{ .IsAliased }}
+    // .ValueExpression: {{.ValueExpression}}
+    // .HasValidations: {{.HasValidations}}
+    // .Required: {{.Required}}
+    // .IsNullable: {{.IsNullable}}
+    // .IsArray: {{.IsArray}}
     {{ if and (ne $.DiscriminatorField .Name) (or .Required .HasValidations) }}
       if err := {{.ReceiverName }}.validate{{ pascalize .Name }}(formats); err != nil {
         res = append(res, err)

@@ -170,6 +170,8 @@ func initModelFixtures() {
 	initFixtureMoreAddProps()
 	// a more stringent verification of this known fixture
 	initTodolistSchemavalidation()
+	initFixture1537()
+	initFixture1537v2()
 }
 
 /* Template initTxxx() to prepare and load a fixture:

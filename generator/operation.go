@@ -894,6 +894,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		if err := sc.makeGenSchema(); err != nil {
 			return GenParameter{}, err
 		}
+		// TODO: lift nested extra schemas
 
 		schema := sc.GenSchema
 		if named {
@@ -964,7 +965,9 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 				if next.IsAliased || next.IsComplexObject {
 					next.IsArray = false
 					next.IsCustomFormatter = false
-					next.HasValidations = true
+					if !(next.IsInterface || next.IsStream) {
+						next.HasValidations = true
+					}
 					next.IsComplexObject = true
 					next.IsAliased = true
 					break
@@ -1043,6 +1046,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 	res.HasSliceValidations = hasSliceValidations
 
 	b.setBodyParamValidation(&res)
+
 	return res, nil
 }
 

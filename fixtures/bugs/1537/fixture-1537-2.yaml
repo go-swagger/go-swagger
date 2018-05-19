@@ -1,0 +1,51 @@
+---
+  swagger: "2.0"
+  info: 
+    title: "param body required with array of aliased items"
+    version: "0.0.1"
+    description: "repro issue 1537"
+    license: 
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  definitions: 
+    profileCfg:
+      type: object
+      properties:
+        value1:
+          type: integer
+          format: int32
+        value2:
+          type: integer
+          format: int32
+    profileCfgs:
+      type: array
+      x-omitempty: true
+      maxItems: 10
+      items:
+        $ref: '#/definitions/profileCfg'
+    profileCfgsNoValidation:
+      type: array
+      x-omitempty: true
+      items:
+        $ref: '#/definitions/profileCfg'
+    Profiles:
+      type: array
+      items:
+        $ref: '#/definitions/profileCfgs'
+    ProfilesNoValidation:
+      type: array
+      items:
+        $ref: '#/definitions/profileCfgsNoValidation'
+  paths: 
+    /getProfiles: 
+      get: 
+        operationId: getProfiles
+        parameters:
+          - name: profilesInBody
+            in: body
+            required: false
+            schema:
+              $ref: '#/definitions/Profiles'
+        responses: 
+          200: 
+            description: "OK"

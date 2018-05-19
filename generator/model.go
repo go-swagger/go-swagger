@@ -784,7 +784,7 @@ func (sg *schemaGenContext) buildProperties() error {
 		// NOTE: this may be the case when the type is left empty and we get a Enum validation.
 		if emprop.GenSchema.IsInterface || emprop.GenSchema.IsStream {
 			emprop.GenSchema.HasValidations = false
-		} else if hasValidation || emprop.GenSchema.HasValidations || emprop.GenSchema.Required || len(emprop.GenSchema.AllOf) > 0 {
+		} else if hasValidation || emprop.GenSchema.HasValidations || emprop.GenSchema.Required || emprop.GenSchema.IsAliased || len(emprop.GenSchema.AllOf) > 0 {
 			emprop.GenSchema.HasValidations = true
 			sg.GenSchema.HasValidations = true
 		}
@@ -1471,6 +1471,10 @@ func (sg *schemaGenContext) buildArray() error {
 	hv = hv || (schemaCopy.IsCustomFormatter && !schemaCopy.IsStream) || (schemaCopy.IsArray && schemaCopy.ElemType.IsCustomFormatter && !schemaCopy.ElemType.IsStream)
 
 	schemaCopy.HasValidations = schemaCopy.HasValidations || elProp.GenSchema.IsNullable || hv || elProp.GenSchema.IsBaseType
+
+	if elProp.GenSchema.IsAliased && !(elProp.GenSchema.IsInterface || elProp.GenSchema.IsStream) {
+		schemaCopy.HasValidations = true
+	}
 
 	// lift validations
 	sg.GenSchema.HasValidations = sg.GenSchema.HasValidations || schemaCopy.HasValidations

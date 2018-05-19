@@ -8896,3 +8896,205 @@ func initFixtureMoreAddProps() {
 		noLines)
 
 }
+
+func initFixture1537() {
+	// testing fixture-1537.yaml with flatten and expand (--skip-flatten)
+	// TODO: expand
+
+	/*
+	   repro issue 1537
+	*/
+
+	f := newModelFixture("../fixtures/bugs/1537/fixture-1537.yaml", "param body required with array of objects")
+	thisRun := f.AddRun(false)
+
+	// load expectations for model: profile_array.go
+	thisRun.AddExpectations("profile_array.go", []string{
+		`type ProfileArray struct {`,
+		"	ProfileCfg []*ProfileCfg `json:\"profileCfg\"`",
+		`func (m *ProfileArray) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateProfileCfg(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *ProfileArray) validateProfileCfg(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("profileCfg", "body", m.ProfileCfg); err != nil {`,
+		`	for i := 0; i < len(m.ProfileCfg); i++ {`,
+		`		if swag.IsZero(m.ProfileCfg[i]) {`,
+		`		if m.ProfileCfg[i] != nil {`,
+		`			if err := m.ProfileCfg[i].Validate(formats); err != nil {`,
+		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`					return ve.ValidateName("profileCfg" + "." + strconv.Itoa(i)`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: profile.go
+	thisRun.AddExpectations("profile.go", []string{
+		`type Profile struct {`,
+		"	ProfileCfg ProfileCfgs `json:\"profileCfg,omitempty\"`",
+		`func (m *Profile) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateProfileCfg(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *Profile) validateProfileCfg(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.ProfileCfg) {`,
+		`	if err := m.ProfileCfg.Validate(formats); err != nil {`,
+		`		if ve, ok := err.(*errors.Validation); ok {`,
+		`			return ve.ValidateName("profileCfg"`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: profile_cfgs.go
+	thisRun.AddExpectations("profile_cfgs.go", []string{
+		`type ProfileCfgs []*ProfileCfg`,
+		`func (m ProfileCfgs) Validate(formats strfmt.Registry) error {`,
+		`	for i := 0; i < len(m); i++ {`,
+		`		if swag.IsZero(m[i]) {`,
+		`		if m[i] != nil {`,
+		`			if err := m[i].Validate(formats); err != nil {`,
+		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`					return ve.ValidateName(strconv.Itoa(i)`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: profile_cfg.go
+	thisRun.AddExpectations("profile_cfg.go", []string{
+		`type ProfileCfg struct {`,
+		"	Value1 int32 `json:\"value1,omitempty\"`",
+		"	Value2 int32 `json:\"value2,omitempty\"`",
+		// empty validation
+		"func (m *ProfileCfg) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: profile_required.go
+	thisRun.AddExpectations("profile_required.go", []string{
+		`type ProfileRequired struct {`,
+		"	ProfileCfg ProfileCfgs `json:\"profileCfg\"`",
+		`func (m *ProfileRequired) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateProfileCfg(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *ProfileRequired) validateProfileCfg(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("profileCfg", "body", m.ProfileCfg); err != nil {`,
+		`	if err := m.ProfileCfg.Validate(formats); err != nil {`,
+		`		if ve, ok := err.(*errors.Validation); ok {`,
+		`			return ve.ValidateName("profileCfg"`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+}
+
+func initFixture1537v2() {
+	// testing fixture-1537-2.yaml with flatten and expand (--skip-flatten)
+	// TODO: expand
+
+	/*
+	   repro issue 1537, with aliased items
+	*/
+
+	f := newModelFixture("../fixtures/bugs/1537/fixture-1537-2.yaml", "param body required with array of aliased items")
+	thisRun := f.AddRun(false)
+
+	// load expectations for model: profiles.go
+	thisRun.AddExpectations("profiles.go", []string{
+		`type Profiles []ProfileCfgs`,
+		`func (m Profiles) Validate(formats strfmt.Registry) error {`,
+		`	for i := 0; i < len(m); i++ {`,
+		`		if err := m[i].Validate(formats); err != nil {`,
+		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`				return ve.ValidateName(strconv.Itoa(i)`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: profile_cfgs_no_validation.go
+	thisRun.AddExpectations("profile_cfgs_no_validation.go", []string{
+		`type ProfileCfgsNoValidation []*ProfileCfg`,
+		`func (m ProfileCfgsNoValidation) Validate(formats strfmt.Registry) error {`,
+		`	for i := 0; i < len(m); i++ {`,
+		`		if swag.IsZero(m[i]) {`,
+		`		if m[i] != nil {`,
+		`			if err := m[i].Validate(formats); err != nil {`,
+		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`					return ve.ValidateName(strconv.Itoa(i)`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: profile_cfgs.go
+	thisRun.AddExpectations("profile_cfgs.go", []string{
+		`type ProfileCfgs []*ProfileCfg`,
+		`func (m ProfileCfgs) Validate(formats strfmt.Registry) error {`,
+		`	iProfileCfgsSize := int64(len(m)`,
+		`	if err := validate.MaxItems("", "body", iProfileCfgsSize, 10); err != nil {`,
+		`	for i := 0; i < len(m); i++ {`,
+		`		if swag.IsZero(m[i]) {`,
+		`		if m[i] != nil {`,
+		`			if err := m[i].Validate(formats); err != nil {`,
+		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`					return ve.ValidateName(strconv.Itoa(i)`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: profile_cfg.go
+	thisRun.AddExpectations("profile_cfg.go", []string{
+		`type ProfileCfg struct {`,
+		"	Value1 int32 `json:\"value1,omitempty\"`",
+		"	Value2 int32 `json:\"value2,omitempty\"`",
+		// empty validation
+		"func (m *ProfileCfg) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: profiles_no_validation.go
+	thisRun.AddExpectations("profiles_no_validation.go", []string{
+		`type ProfilesNoValidation []ProfileCfgsNoValidation`,
+		`func (m ProfilesNoValidation) Validate(formats strfmt.Registry) error {`,
+		`	for i := 0; i < len(m); i++ {`,
+		`		if err := m[i].Validate(formats); err != nil {`,
+		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`				return ve.ValidateName(strconv.Itoa(i)`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+}

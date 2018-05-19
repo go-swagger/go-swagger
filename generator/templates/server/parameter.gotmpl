@@ -32,9 +32,9 @@
     res = append(res, err)
   }
     {{- else if .IsArray }}
-      {{- if or .Child.HasValidations .Schema.HasValidations }}
   // validate inline body array
   {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
+      {{- if or .Child.HasValidations .Schema.HasValidations }}
   if err := {{ .ReceiverName }}.validate{{ pascalize .ID }}Body(route.Formats); err != nil {
     res = append(res, err)
   }
@@ -125,7 +125,7 @@ for {{ if or .Child.HasValidations .Child.Converter .Child.IsCustomFormatter }}{
     return errors.InvalidType({{ .Child.Path }}, {{ printf "%q" .Child.Location }}, "{{ .Child.GoType }}", value)
   }
   {{ varname .Child.ValueExpression }} := *(value.(*{{.Child.GoType}}))
-  {{- else if .Child.IsComplexObject -}}{{- /* dedicated to nested body params */ -}}
+  {{- else if and .Child.IsComplexObject .Child.HasValidations -}}{{- /* dedicated to nested body params */ -}}
   {{ varname .Child.ValueExpression }} := {{ varname .Child.ValueExpression }}V
   if err := {{ .Child.ValueExpression }}.Validate(formats) ; err != nil {
     if ve, ok := err.(*errors.Validation); ok {
@@ -463,11 +463,13 @@ func ({{ .ReceiverName }} *{{ $className }}Params) validate{{ pascalize .ID }}(f
       {{- if .Schema.HasValidations  }}
 // validate{{ pascalize .ID }}Body validates an inline body parameter
 func ({{ .ReceiverName }} *{{ $className }}Params) validate{{ pascalize .ID }}Body(formats strfmt.Registry) error {
-          {{ template "propertyparamvalidator" . }}
+        {{ template "propertyparamvalidator" . }}
         {{- if .IsArray }}
-          {{ varname .Child.ValueExpression }}C := {{ .ValueExpression }}
-          {{ template "sliceparambinder" . }}
-          {{ .ValueExpression }} = {{ varname .Child.ValueExpression }}R
+          {{- if .Child.HasValidations }}
+            {{ varname .Child.ValueExpression }}C := {{ .ValueExpression }}
+            {{ template "sliceparambinder" . }}
+            {{ .ValueExpression }} = {{ varname .Child.ValueExpression }}R
+          {{- end }}
         {{- end }}
   return nil
 }
