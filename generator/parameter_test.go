@@ -1728,3 +1728,334 @@ func TestGenParameter_Issue1513(t *testing.T) {
 		}
 	}
 }
+
+// Body param validation on empty objects
+func TestGenParameter_Issue1536(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+
+	// testing fixture-1536.yaml with flatten
+	// param body with array of empty objects
+
+	fixtureConfig := map[string]map[string][]string{
+
+		// load expectations for parameters in operation get_interface_parameters.go
+		"getInterface": map[string][]string{ // fixture index
+			"serverParameter": []string{ // executed template
+				// expected code lines
+				`func NewGetInterfaceParams() GetInterfaceParams {`,
+				`	return GetInterfaceParams{`,
+				`type GetInterfaceParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	Generic interface{`,
+				`func (o *GetInterfaceParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body interface{`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			res = append(res, errors.NewParseError("generic", "body", "", err)`,
+				`		} else {`,
+				`			o.Generic = body`,
+				`		return errors.CompositeValidationError(res...`,
+			},
+		},
+
+		// load expectations for parameters in operation get_map_slice_parameters.go
+		"getMapSlice": map[string][]string{ // fixture index
+			"serverParameter": []string{ // executed template
+				// expected code lines
+				`func NewGetMapSliceParams() GetMapSliceParams {`,
+				`	return GetMapSliceParams{`,
+				`type GetMapSliceParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	GenericMapSlice []map[string]models.ModelInterface`,
+				`func (o *GetMapSliceParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body []map[string]models.ModelInterface`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			res = append(res, errors.NewParseError("genericMapSlice", "body", "", err)`,
+				`		} else {`,
+				`			o.GenericMapSlice = body`,
+				`		return errors.CompositeValidationError(res...`,
+			},
+		},
+
+		// load expectations for parameters in operation get_nested_with_validations_parameters.go
+		"getNestedWithValidations": map[string][]string{ // fixture index
+			"serverParameter": []string{ // executed template
+				// expected code lines
+				`func NewGetNestedWithValidationsParams() GetNestedWithValidationsParams {`,
+				`	return GetNestedWithValidationsParams{`,
+				`type GetNestedWithValidationsParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	GenericNestedWithValidations [][][][]interface{`,
+				`func (o *GetNestedWithValidationsParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body [][][][]interface{`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			res = append(res, errors.NewParseError("genericNestedWithValidations", "body", "", err)`,
+				`		} else {`,
+				`			o.GenericNestedWithValidations = body`,
+				`			if err := o.validateGenericNestedWithValidationsBody(route.Formats); err != nil {`,
+				`		return errors.CompositeValidationError(res...`,
+				`func (o *GetNestedWithValidationsParams) validateGenericNestedWithValidationsBody(formats strfmt.Registry) error {`,
+				`	genericNestedWithValidationsIC := o.GenericNestedWithValidations`,
+				`	var genericNestedWithValidationsIR [][][][]interface{`,
+				`	for i, genericNestedWithValidationsIV := range genericNestedWithValidationsIC {`,
+				`		genericNestedWithValidationsIIC := genericNestedWithValidationsIV`,
+				`		if len(genericNestedWithValidationsIIC) > 0 {`,
+				`			var genericNestedWithValidationsIIR [][][]interface{`,
+				`			for ii, genericNestedWithValidationsIIV := range genericNestedWithValidationsIIC {`,
+				`				genericNestedWithValidationsIIIC := genericNestedWithValidationsIIV`,
+				`				if len(genericNestedWithValidationsIIIC) > 0 {`,
+				`					var genericNestedWithValidationsIIIR [][]interface{`,
+				`					for iii, genericNestedWithValidationsIIIV := range genericNestedWithValidationsIIIC {`,
+				`						genericNestedWithValidationsIIIIC := genericNestedWithValidationsIIIV`,
+				`						if len(genericNestedWithValidationsIIIIC) > 0 {`,
+				`							var genericNestedWithValidationsIIIIR []interface{`,
+				`							for _, genericNestedWithValidationsIIIIV := range genericNestedWithValidationsIIIIC {`,
+				`								genericNestedWithValidationsIIII := genericNestedWithValidationsIIIIV`,
+				`								genericNestedWithValidationsIIIIR = append(genericNestedWithValidationsIIIIR, genericNestedWithValidationsIIII`,
+				`							genericNestedWithValidationsIIIR = append(genericNestedWithValidationsIIIR, genericNestedWithValidationsIIIIR`,
+				`						genericNestedWithValidationsIiiiiiSize := int64(len(genericNestedWithValidationsIIIIC)`,
+				`						if err := validate.MaxItems(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "genericNestedWithValidations", i), ii), iii), "", genericNestedWithValidationsIiiiiiSize, 10); err != nil {`,
+				`					genericNestedWithValidationsIIR = append(genericNestedWithValidationsIIR, genericNestedWithValidationsIIIR`,
+				`			genericNestedWithValidationsIR = append(genericNestedWithValidationsIR, genericNestedWithValidationsIIR`,
+				`	o.GenericNestedWithValidations = genericNestedWithValidationsIR`,
+			},
+		},
+
+		// load expectations for parameters in operation get_another_interface_parameters.go
+		"getAnotherInterface": map[string][]string{ // fixture index
+			"serverParameter": []string{ // executed template
+				// expected code lines
+				`func NewGetAnotherInterfaceParams() GetAnotherInterfaceParams {`,
+				`	return GetAnotherInterfaceParams{`,
+				`type GetAnotherInterfaceParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	AnotherGeneric interface{`,
+				`func (o *GetAnotherInterfaceParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body interface{`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			res = append(res, errors.NewParseError("anotherGeneric", "body", "", err)`,
+				`		} else {`,
+				`			o.AnotherGeneric = body`,
+				`		return errors.CompositeValidationError(res...`,
+			},
+		},
+
+		// load expectations for parameters in operation get_nested_required_parameters.go
+		"getNestedRequired": map[string][]string{ // fixture index
+			"serverParameter": []string{ // executed template
+				// expected code lines
+				`func NewGetNestedRequiredParams() GetNestedRequiredParams {`,
+				`	return GetNestedRequiredParams{`,
+				`type GetNestedRequiredParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	ObjectNestedRequired [][][][]*models.GetNestedRequiredParamsBodyItemsItemsItemsItems`,
+				`func (o *GetNestedRequiredParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body [][][][]*models.GetNestedRequiredParamsBodyItemsItemsItemsItems`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			res = append(res, errors.NewParseError("objectNestedRequired", "body", "", err)`,
+				`		} else {`,
+				`			o.ObjectNestedRequired = body`,
+				`			if err := o.validateObjectNestedRequiredBody(route.Formats); err != nil {`,
+				`		return errors.CompositeValidationError(res...`,
+				`func (o *GetNestedRequiredParams) validateObjectNestedRequiredBody(formats strfmt.Registry) error {`,
+				`	objectNestedRequiredIC := o.ObjectNestedRequired`,
+				`	var objectNestedRequiredIR [][][][]*models.GetNestedRequiredParamsBodyItemsItemsItemsItems`,
+				`	for i, objectNestedRequiredIV := range objectNestedRequiredIC {`,
+				`		objectNestedRequiredIIC := objectNestedRequiredIV`,
+				`		if len(objectNestedRequiredIIC) > 0 {`,
+				`			var objectNestedRequiredIIR [][][]*models.GetNestedRequiredParamsBodyItemsItemsItemsItems`,
+				`			for ii, objectNestedRequiredIIV := range objectNestedRequiredIIC {`,
+				`				objectNestedRequiredIIIC := objectNestedRequiredIIV`,
+				`				if len(objectNestedRequiredIIIC) > 0 {`,
+				`					var objectNestedRequiredIIIR [][]*models.GetNestedRequiredParamsBodyItemsItemsItemsItems`,
+				`					for iii, objectNestedRequiredIIIV := range objectNestedRequiredIIIC {`,
+				`						objectNestedRequiredIIIIC := objectNestedRequiredIIIV`,
+				`						if len(objectNestedRequiredIIIIC) > 0 {`,
+				`							var objectNestedRequiredIIIIR []*models.GetNestedRequiredParamsBodyItemsItemsItemsItems`,
+				`							for iiii, objectNestedRequiredIIIIV := range objectNestedRequiredIIIIC {`,
+				`								objectNestedRequiredIIII := objectNestedRequiredIIIIV`,
+				`								if err := objectNestedRequiredIIII.Validate(formats); err != nil {`,
+				`									if ve, ok := err.(*errors.Validation); ok {`,
+				`										return ve.ValidateName(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "objectNestedRequired", i), ii), iii), iiii)`,
+				`								objectNestedRequiredIIIIR = append(objectNestedRequiredIIIIR, objectNestedRequiredIIII`,
+				`							objectNestedRequiredIIIR = append(objectNestedRequiredIIIR, objectNestedRequiredIIIIR`,
+				`					objectNestedRequiredIIR = append(objectNestedRequiredIIR, objectNestedRequiredIIIR`,
+				`			objectNestedRequiredIR = append(objectNestedRequiredIR, objectNestedRequiredIIR`,
+				`	o.ObjectNestedRequired = objectNestedRequiredIR`,
+			},
+		},
+
+		// load expectations for parameters in operation get_records_max_parameters.go
+		"getRecordsMax": map[string][]string{ // fixture index
+			"serverParameter": []string{ // executed template
+				// expected code lines
+				`func NewGetRecordsMaxParams() GetRecordsMaxParams {`,
+				`	return GetRecordsMaxParams{`,
+				`type GetRecordsMaxParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	MaxRecords []interface{`,
+				`func (o *GetRecordsMaxParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body []interface{`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			if err == io.EOF {`,
+				`				res = append(res, errors.Required("maxRecords", "body")`,
+				`			} else {`,
+				`				res = append(res, errors.NewParseError("maxRecords", "body", "", err)`,
+				`		} else {`,
+				`			o.MaxRecords = body`,
+				`			if err := o.validateMaxRecordsBody(route.Formats); err != nil {`,
+				`	} else {`,
+				`		res = append(res, errors.Required("maxRecords", "body")`,
+				`		return errors.CompositeValidationError(res...`,
+				`func (o *GetRecordsMaxParams) validateMaxRecordsBody(formats strfmt.Registry) error {`,
+				`	maxRecordsSize := int64(len(o.MaxRecords)`,
+				`	if err := validate.MaxItems("maxRecords", "body", maxRecordsSize, 10); err != nil {`,
+			},
+		},
+
+		// load expectations for parameters in operation get_records_parameters.go
+		"getRecords": map[string][]string{ // fixture index
+			"serverParameter": []string{ // executed template
+				// expected code lines
+				`func NewGetRecordsParams() GetRecordsParams {`,
+				`	return GetRecordsParams{`,
+				`type GetRecordsParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	Records []interface{`,
+				`func (o *GetRecordsParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body []interface{`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			if err == io.EOF {`,
+				`				res = append(res, errors.Required("records", "body")`,
+				`			} else {`,
+				`				res = append(res, errors.NewParseError("records", "body", "", err)`,
+				`		} else {`,
+				`			o.Records = body`,
+				`			if err := o.validateRecordsBody(route.Formats); err != nil {`,
+				`	} else {`,
+				`		res = append(res, errors.Required("records", "body")`,
+				`		return errors.CompositeValidationError(res...`,
+				`func (o *GetRecordsParams) validateRecordsBody(formats strfmt.Registry) error {`,
+			},
+		},
+
+		// load expectations for parameters in operation get_map_parameters.go
+		"getMap": map[string][]string{ // fixture index
+			"serverParameter": []string{ // executed template
+				// expected code lines
+				`func NewGetMapParams() GetMapParams {`,
+				`	return GetMapParams{`,
+				`type GetMapParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	GenericMap interface{`,
+				`func (o *GetMapParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body interface{`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			res = append(res, errors.NewParseError("genericMap", "body", "", err)`,
+				`		} else {`,
+				`			o.GenericMap = body`,
+				`		return errors.CompositeValidationError(res...`,
+			},
+		},
+
+		// load expectations for parameters in operation get_slice_map_parameters.go
+		"getSliceMap": map[string][]string{ // fixture index
+			"serverParameter": []string{ // executed template
+				// expected code lines
+				`func NewGetSliceMapParams() GetSliceMapParams {`,
+				`	return GetSliceMapParams{`,
+				`type GetSliceMapParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	GenericSliceMap interface{`,
+				`func (o *GetSliceMapParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body interface{`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			res = append(res, errors.NewParseError("genericSliceMap", "body", "", err)`,
+				`		} else {`,
+				`			o.GenericSliceMap = body`,
+				`		return errors.CompositeValidationError(res...`,
+			},
+		},
+
+		// load expectations for parameters in operation get_nested_parameters.go
+		"getNested": map[string][]string{ // fixture index
+			"serverParameter": []string{ // executed template
+				// expected code lines
+				`func NewGetNestedParams() GetNestedParams {`,
+				`	return GetNestedParams{`,
+				`type GetNestedParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	GenericNested [][][][]interface{`,
+				`func (o *GetNestedParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body [][][][]interface{`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			res = append(res, errors.NewParseError("genericNested", "body", "", err)`,
+				`		} else {`,
+				`			o.GenericNested = body`,
+				`		return errors.CompositeValidationError(res...`,
+			},
+		},
+	}
+
+	assert := assert.New(t)
+	for fixtureIndex, fixtureContents := range fixtureConfig {
+		fixtureSpec := "fixture-1536.yaml"
+		gen, err := opBuilderWithFlatten(fixtureIndex, filepath.Join("..", "fixtures", "bugs", "1536", fixtureSpec))
+		if assert.NoError(err) {
+			op, err := gen.MakeOperation()
+			if assert.NoError(err) {
+				opts := opts()
+				opts.FlattenSpec = true
+				for fixtureTemplate, expectedCode := range fixtureContents {
+					buf := bytes.NewBuffer(nil)
+					err := templates.MustGet(fixtureTemplate).Execute(buf, op)
+					if assert.NoError(err, "Expected generation to go well on %s with template %s", fixtureSpec, fixtureTemplate) {
+						ff, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+						if assert.NoError(err, "Expected formatting to go well on %s with template %s", fixtureSpec, fixtureTemplate) {
+							res := string(ff)
+							for line, codeLine := range expectedCode {
+								if !assertInCode(t, strings.TrimSpace(codeLine), res) {
+									t.Logf("Code expected did not match for fixture %s at line %d", fixtureSpec, line)
+								}
+							}
+						} else {
+							fmt.Println(buf.String())
+						}
+					}
+				}
+			}
+		}
+	}
+}

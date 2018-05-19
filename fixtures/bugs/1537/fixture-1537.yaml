@@ -1,0 +1,109 @@
+---
+  swagger: "2.0"
+  info: 
+    title: "param body required with array of objects"
+    version: "0.0.1"
+    description: "repro issue 1537"
+    license: 
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  definitions: 
+    profileCfg:
+      type: object
+      properties:
+        value1:
+          type: integer
+          format: int32
+        value2:
+          type: integer
+          format: int32
+    profileCfgs:
+      type: array
+      x-omitempty: true
+      items:
+        $ref: '#/definitions/profileCfg'
+    Profile:
+      type: object
+      properties:
+        profileCfg:
+          $ref: '#/definitions/profileCfgs'
+    ProfileRequired:
+      type: object
+      required:
+        - profileCfg
+      properties:
+        profileCfg:
+          $ref: '#/definitions/profileCfgs'
+    ProfileArray:
+      type: object
+      required:
+        - profileCfg
+      properties:
+        profileCfg:
+          type: array
+          x-omitempty: true
+          items:
+            $ref: '#/definitions/profileCfg'
+  paths: 
+    /getProfileCfg: 
+      get: 
+        operationId: getProfileCfg
+        parameters:
+          - name: profileCfgInBody
+            in: body
+            required: false
+            schema:
+              $ref: '#/definitions/profileCfg'
+        responses: 
+          200: 
+            description: "OK"
+    /getProfileCfgs: 
+      get: 
+        operationId: getProfileCfgs
+        parameters:
+          - name: profileCfgsInBody
+            in: body
+            required: false
+            schema:
+              $ref: '#/definitions/profileCfgs'
+        responses: 
+          200: 
+            description: "OK"
+    /getProfileCfgsSanity: 
+      get: 
+        operationId: getProfileCfgsSanity
+        parameters:
+          - name: profileCfgsInBodySanity
+            in: body
+            required: false
+            schema:
+              type: array
+              items:
+                $ref: '#/definitions/profileCfg'
+        responses: 
+          200: 
+            description: "OK"
+    /getProfile: 
+      get: 
+        operationId: getProfile
+        parameters:
+          - name: profileInBody
+            in: body
+            required: false
+            schema:
+              $ref: '#/definitions/Profile'
+        responses: 
+          200: 
+            description: "OK"
+    /getProfileRequired: 
+      get: 
+        operationId: getProfileRequired
+        parameters:
+          - name: profileRequiredInBody
+            in: body
+            required: false
+            schema:
+              $ref: '#/definitions/ProfileRequired'
+        responses: 
+          200: 
+            description: "OK"
