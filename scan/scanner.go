@@ -82,7 +82,7 @@ var (
 			")?\\p{Zs}+" +
 			rxOpID + "\\p{Zs}*$")
 	rxBeginYAMLSpec    = regexp.MustCompile(`---\p{Zs}*$`)
-	rxUncommentHeaders = regexp.MustCompile(`^[\p{Zs}\t/\*-]*`)
+	rxUncommentHeaders = regexp.MustCompile(`^[\p{Zs}\t/\*-]*\|?`)
 	rxUncommentYAML    = regexp.MustCompile(`^[\p{Zs}\t]*/*`)
 	rxOperation        = regexp.MustCompile(
 		"swagger:operation\\p{Zs}*" +
