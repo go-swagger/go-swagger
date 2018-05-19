@@ -1,0 +1,48 @@
+swagger: "2.0"
+
+info:
+  title: polymorphic unmarshaller
+  description: 'reproduces issue 1532'
+  version: "1.0.0"
+
+paths:
+  /mytest:
+    get:
+      description: my test
+      responses:
+        200:
+          description: my test
+definitions:
+  Event:
+    type: object
+    discriminator: event
+    properties:
+      event:
+        type: "string"
+        enum:
+          - update_object
+          - delete
+      id:
+        type: string
+    required:
+      - event
+      - id
+  update_object:
+    type: object
+    allOf:
+      - $ref: "#/definitions/Event"
+      - type: object
+        properties:
+          data: # <--- This is what produces an issue
+            $ref: "#/definitions/Object"
+  Object:
+    type: object
+    discriminator: type
+    properties:
+      type:
+        type: string
+        enum:
+          - Message
+          - User
+    required:
+      - type

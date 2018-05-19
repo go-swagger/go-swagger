@@ -1825,8 +1825,8 @@ func TestGenModel_Issue423(t *testing.T) {
 				ct, err := opts.LanguageOpts.FormatContent("SRN.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
-					assertInCode(t, "site, err := UnmarshalSite(bytes.NewBuffer(data.Site), runtime.JSONConsumer())", res)
-					assertInCode(t, "result.siteField = site", res)
+					assertInCode(t, "propSite, err := UnmarshalSite(bytes.NewBuffer(data.Site), runtime.JSONConsumer())", res)
+					assertInCode(t, "result.siteField = propSite", res)
 				}
 			}
 		}
@@ -2379,7 +2379,7 @@ func TestGenModel_Issue1409(t *testing.T) {
 					//log.Println("1409")
 					//log.Println(res)
 					// Just verify that the validation call is generated with proper format
-					assertInCode(t, `nodes, err := UnmarshalNodeSlice(bytes.NewBuffer(data.Nodes), runtime.JSONConsumer())`, res)
+					assertInCode(t, `propNodes, err := UnmarshalNodeSlice(bytes.NewBuffer(data.Nodes), runtime.JSONConsumer())`, res)
 					assertInCode(t, `if err := json.Unmarshal(raw, &rawProps); err != nil {`, res)
 					assertInCode(t, `m.GraphAdditionalProperties[k] = toadd`, res)
 					assertInCode(t, `b3, err = json.Marshal(m.GraphAdditionalProperties)`, res)
