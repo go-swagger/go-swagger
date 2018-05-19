@@ -103,6 +103,14 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	"goSliceInitializer": goSliceInitializer,
 	"hasPrefix":          strings.HasPrefix,
 	"stringContains":     strings.Contains,
+	"dedupe": func(arg string) string {
+		for _, v := range []string{"base", "buf", "data", "dec", "err", "rawProps", "result"} {
+			if v == arg {
+				return "Prop"
+			}
+		}
+		return ""
+	},
 }
 
 func init() {

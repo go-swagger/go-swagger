@@ -99,7 +99,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
   {{ end }}
   {{ range .Properties }}
     {{ if or .IsBaseType (not .IsExported) }}
-  {{ camelize .Name }}, err := Unmarshal{{ if .IsArray }}{{ pascalize .Items.GoType }}Slice{{ else }}{{ pascalize .GoType }}{{ end }}(bytes.NewBuffer(data.{{ pascalize .Name }}), runtime.JSONConsumer())
+      {{ camelize .Name }}{{ dedupe .Name }}, err := Unmarshal{{ if .IsArray }}{{ pascalize .Items.GoType }}Slice{{ else }}{{ pascalize .GoType }}{{ end }}(bytes.NewBuffer(data.{{ pascalize .Name }}), runtime.JSONConsumer())
   if err != nil && err != io.EOF {
     return err
   }
@@ -157,7 +157,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
   {{ end }}
   {{ range .Properties }}
   // {{ .Name }}
-  result.{{ if .IsBaseType }}{{ camelize .Name }}Field{{ else }}{{ pascalize .Name }}{{ end }} = {{ if .IsBaseType }}{{ camelize .Name }}{{ else }}data.{{ pascalize .Name}}{{ end }}
+  result.{{ if .IsBaseType }}{{ camelize .Name }}Field{{ else }}{{ pascalize .Name }}{{ end }} = {{ if .IsBaseType }}{{ camelize .Name }}{{ dedupe .Name }}{{ else }}data.{{ pascalize .Name}}{{ end }}
   {{ end }}
   *{{ .ReceiverName }} = result
 

@@ -489,3 +489,14 @@ func TestTemplates_GoSliceInitializer(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, `{"a":"y","b":"z",}`, res)
 }
+
+func TestTemplates_Dedupe(t *testing.T) {
+	fn, ok := FuncMap["dedupe"]
+	assert.True(t, ok)
+	dedupe, isFunc := fn.(func(string) string)
+	assert.True(t, isFunc)
+	res := dedupe("data")
+	assert.Equal(t, "Prop", res)
+	res = dedupe("zorg")
+	assert.Equal(t, "", res)
+}
