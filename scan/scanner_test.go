@@ -487,6 +487,18 @@ See how markdown works now, we can have lists:
 [Links works too](http://localhost)
 `
 
+	text4 := `This has whitespace sensitive markdown in the description
+
+|+ first item
+|    + nested item
+|    + also nested item
+
+Sample code block:
+
+|    fmt.Println("Hello World!")
+
+`
+
 	var err error
 
 	st := &sectionedParser{}
@@ -512,6 +524,14 @@ See how markdown works now, we can have lists:
 
 	assert.EqualValues(t, []string{"This has a title, and markdown in the description"}, st.Title())
 	assert.EqualValues(t, []string{"See how markdown works now, we can have lists:", "", "+ first item", "+ second item", "+ third item", "", "[Links works too](http://localhost)"}, st.Description())
+
+	st = &sectionedParser{}
+	st.setTitle = func(lines []string) {}
+	err = st.Parse(ascg(text4))
+	assert.NoError(t, err)
+
+	assert.EqualValues(t, []string{"This has whitespace sensitive markdown in the description"}, st.Title())
+	assert.EqualValues(t, []string{"+ first item", "    + nested item", "    + also nested item", "", "Sample code block:", "", "    fmt.Println(\"Hello World!\")"}, st.Description())
 }
 
 func dummyBuilder() schemaValidations {
