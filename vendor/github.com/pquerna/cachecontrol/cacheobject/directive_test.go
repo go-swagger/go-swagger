@@ -280,7 +280,7 @@ func TestParseDeltaSecondsLarge(t *testing.T) {
 }
 
 func TestParseDeltaSecondsVeryLarge(t *testing.T) {
-	ds, err := parseDeltaSeconds(fmt.Sprintf("%d", math.MaxInt64))
+	ds, err := parseDeltaSeconds(fmt.Sprintf("%d", int64(math.MaxInt64)))
 	require.NoError(t, err)
 	require.Equal(t, ds, DeltaSeconds(math.MaxInt32))
 }

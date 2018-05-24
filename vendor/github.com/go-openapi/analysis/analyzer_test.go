@@ -633,9 +633,12 @@ func TestSecurityRequirements(t *testing.T) {
 	require.Empty(t, reqs2[1][0].Name)
 	require.Empty(t, reqs2[1][0].Scopes)
 	require.Len(t, reqs2[2], 2)
-	require.Equal(t, reqs2[2][0].Name, "basic")
+	//
+	//require.Equal(t, reqs2[2][0].Name, "basic")
+	require.Contains(t, reqs2[2], SecurityRequirement{Name: "basic", Scopes: []string{}})
 	require.Empty(t, reqs2[2][0].Scopes)
-	require.Equal(t, reqs2[2][1].Name, "apiKey")
+	//require.Equal(t, reqs2[2][1].Name, "apiKey")
+	require.Contains(t, reqs2[2], SecurityRequirement{Name: "apiKey", Scopes: []string{}})
 	require.Empty(t, reqs2[2][1].Scopes)
 }
 

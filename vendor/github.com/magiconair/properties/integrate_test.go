@@ -1,4 +1,4 @@
-// Copyright 2017 Frank Schroeder. All rights reserved.
+// Copyright 2018 Frank Schroeder. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -52,7 +52,7 @@ func TestFlagOverride(t *testing.T) {
 		t.Errorf("Got customized b=%d, want %d", *gotB, want)
 	}
 	if want := 4; *gotC != want {
-		t.Errorf("Got overriden c=%d, want %d", *gotC, want)
+		t.Errorf("Got overridden c=%d, want %d", *gotC, want)
 	}
 }
 

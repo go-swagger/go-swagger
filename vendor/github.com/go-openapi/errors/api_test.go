@@ -25,8 +25,8 @@ import (
 
 func TestServeError(t *testing.T) {
 	// method not allowed wins
-	var err error
-	err = MethodNotAllowed("GET", []string{"POST", "PUT"})
+	// err abides by the Error interface
+	err := MethodNotAllowed("GET", []string{"POST", "PUT"})
 	recorder := httptest.NewRecorder()
 	ServeError(recorder, nil, err)
 	assert.Equal(t, http.StatusMethodNotAllowed, recorder.Code)
@@ -51,12 +51,73 @@ func TestServeError(t *testing.T) {
 	assert.Equal(t, `{"code":601,"message":"someType is an invalid type name"}`, recorder.Body.String())
 
 	// defaults to internal server error
-	err = fmt.Errorf("some error")
+	simpleErr := fmt.Errorf("some error")
 	recorder = httptest.NewRecorder()
-	ServeError(recorder, nil, err)
+	ServeError(recorder, nil, simpleErr)
 	assert.Equal(t, http.StatusInternalServerError, recorder.Code)
 	// assert.Equal(t, "application/json", recorder.Header().Get("content-type"))
 	assert.Equal(t, `{"code":500,"message":"some error"}`, recorder.Body.String())
+
+	// composite errors
+
+	// unrecognized: return internal error with first error only - the second error is ignored
+	compositeErr := &CompositeError{
+		Errors: []error{
+			fmt.Errorf("firstError"),
+			fmt.Errorf("anotherError"),
+		},
+	}
+	recorder = httptest.NewRecorder()
+	ServeError(recorder, nil, compositeErr)
+	assert.Equal(t, http.StatusInternalServerError, recorder.Code)
+	assert.Equal(t, `{"code":500,"message":"firstError"}`, recorder.Body.String())
+
+	// recognized: return internal error with first error only - the second error is ignored
+	compositeErr = &CompositeError{
+		Errors: []error{
+			New(600, "myApiError"),
+			New(601, "myOtherApiError"),
+		},
+	}
+	recorder = httptest.NewRecorder()
+	ServeError(recorder, nil, compositeErr)
+	assert.Equal(t, CompositeErrorCode, recorder.Code)
+	assert.Equal(t, `{"code":600,"message":"myApiError"}`, recorder.Body.String())
+
+	// recognized API Error, flattened
+	compositeErr = &CompositeError{
+		Errors: []error{
+			&CompositeError{
+				Errors: []error{
+					New(600, "myApiError"),
+					New(601, "myOtherApiError"),
+				},
+			},
+		},
+	}
+	recorder = httptest.NewRecorder()
+	ServeError(recorder, nil, compositeErr)
+	assert.Equal(t, CompositeErrorCode, recorder.Code)
+	assert.Equal(t, `{"code":600,"message":"myApiError"}`, recorder.Body.String())
+
+	// check guard against empty CompositeError (e.g. nil Error interface)
+	compositeErr = &CompositeError{
+		Errors: []error{
+			&CompositeError{
+				Errors: []error{},
+			},
+		},
+	}
+	recorder = httptest.NewRecorder()
+	ServeError(recorder, nil, compositeErr)
+	assert.Equal(t, http.StatusInternalServerError, recorder.Code)
+	assert.Equal(t, `{"code":500,"message":"Unknown error"}`, recorder.Body.String())
+
+	// check guard against nil type
+	recorder = httptest.NewRecorder()
+	ServeError(recorder, nil, nil)
+	assert.Equal(t, http.StatusInternalServerError, recorder.Code)
+	assert.Equal(t, `{"code":500,"message":"Unknown error"}`, recorder.Body.String())
 }
 
 func TestAPIErrors(t *testing.T) {
@@ -94,4 +155,30 @@ func TestAPIErrors(t *testing.T) {
 	assert.Error(t, err)
 	assert.EqualValues(t, http.StatusNotAcceptable, err.Code())
 	assert.EqualValues(t, "unsupported media type requested, only [application/json application/x-yaml] are available", err.Error())
+}
+
+func TestValidateName(t *testing.T) {
+	v := &Validation{Name: "myValidation", message: "myMessage"}
+
+	// unchanged
+	vv := v.ValidateName("")
+	assert.EqualValues(t, "myValidation", vv.Name)
+	assert.EqualValues(t, "myMessage", vv.message)
+
+	// unchanged
+	vv = v.ValidateName("myNewName")
+	assert.EqualValues(t, "myValidation", vv.Name)
+	assert.EqualValues(t, "myMessage", vv.message)
+
+	v.Name = ""
+
+	// unchanged
+	vv = v.ValidateName("")
+	assert.EqualValues(t, "", vv.Name)
+	assert.EqualValues(t, "myMessage", vv.message)
+
+	// forced
+	vv = v.ValidateName("myNewName")
+	assert.EqualValues(t, "myNewName", vv.Name)
+	assert.EqualValues(t, "myNewNamemyMessage", vv.message)
 }

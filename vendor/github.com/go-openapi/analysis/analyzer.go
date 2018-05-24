@@ -421,7 +421,7 @@ func (s *Spec) SecurityRequirementsFor(operation *spec.Operation) [][]SecurityRe
 		schemes = operation.Security
 	}
 
-	var result [][]SecurityRequirement
+	result := [][]SecurityRequirement{}
 	for _, scheme := range schemes {
 		if len(scheme) == 0 {
 			// append a zero object for anonymous
