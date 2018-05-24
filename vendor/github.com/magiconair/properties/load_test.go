@@ -1,4 +1,4 @@
-// Copyright 2017 Frank Schroeder. All rights reserved.
+// Copyright 2018 Frank Schroeder. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -15,6 +15,18 @@ import (
 
 	"github.com/magiconair/properties/assert"
 )
+
+func TestEncoding(t *testing.T) {
+	if got, want := utf8Default, Encoding(0); got != want {
+		t.Fatalf("got encoding %d want %d", got, want)
+	}
+	if got, want := UTF8, Encoding(1); got != want {
+		t.Fatalf("got encoding %d want %d", got, want)
+	}
+	if got, want := ISO_8859_1, Encoding(2); got != want {
+		t.Fatalf("got encoding %d want %d", got, want)
+	}
+}
 
 func TestLoadFailsWithNotExistingFile(t *testing.T) {
 	_, err := LoadFile("doesnotexist.properties", ISO_8859_1)

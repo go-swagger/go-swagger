@@ -22,7 +22,6 @@ package unix
 #include <dirent.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
-#include <netpacket/packet.h>
 #include <poll.h>
 #include <sched.h>
 #include <signal.h>
@@ -38,6 +37,7 @@ package unix
 #include <sys/select.h>
 #include <sys/signal.h>
 #include <sys/statfs.h>
+#include <sys/statvfs.h>
 #include <sys/sysinfo.h>
 #include <sys/time.h>
 #include <sys/times.h>
@@ -61,6 +61,7 @@ package unix
 #include <utime.h>
 #include <linux/can.h>
 #include <linux/if_alg.h>
+#include <linux/if_packet.h>
 #include <linux/fs.h>
 #include <linux/vm_sockets.h>
 #include <linux/random.h>
@@ -336,8 +337,6 @@ type _Gid_t C.gid_t
 // Files
 
 type Stat_t C.struct_stat
-
-type Statfs_t C.struct_statfs
 
 type StatxTimestamp C.struct_statx_timestamp
 
@@ -972,3 +971,53 @@ type HDDriveCmdHdr C.struct_hd_drive_cmd_hdr
 type HDGeometry C.struct_hd_geometry
 
 type HDDriveID C.struct_hd_driveid
+
+// Statfs
+
+type Statfs_t C.struct_statfs
+
+const (
+	ST_MANDLOCK    = C.ST_MANDLOCK
+	ST_NOATIME     = C.ST_NOATIME
+	ST_NODEV       = C.ST_NODEV
+	ST_NODIRATIME  = C.ST_NODIRATIME
+	ST_NOEXEC      = C.ST_NOEXEC
+	ST_NOSUID      = C.ST_NOSUID
+	ST_RDONLY      = C.ST_RDONLY
+	ST_RELATIME    = C.ST_RELATIME
+	ST_SYNCHRONOUS = C.ST_SYNCHRONOUS
+)
+
+// TPacket
+
+type TpacketHdr C.struct_tpacket_hdr
+
+type Tpacket2Hdr C.struct_tpacket2_hdr
+
+type Tpacket3Hdr C.struct_tpacket3_hdr
+
+type TpacketHdrVariant1 C.struct_tpacket_hdr_variant1
+
+type TpacketBlockDesc C.struct_tpacket_block_desc
+
+type TpacketReq C.struct_tpacket_req
+
+type TpacketReq3 C.struct_tpacket_req3
+
+type TpacketStats C.struct_tpacket_stats
+
+type TpacketStatsV3 C.struct_tpacket_stats_v3
+
+type TpacketAuxdata C.struct_tpacket_auxdata
+
+const (
+	TPACKET_V1 = C.TPACKET_V1
+	TPACKET_V2 = C.TPACKET_V2
+	TPACKET_V3 = C.TPACKET_V3
+)
+
+const (
+	SizeofTpacketHdr  = C.sizeof_struct_tpacket_hdr
+	SizeofTpacket2Hdr = C.sizeof_struct_tpacket2_hdr
+	SizeofTpacket3Hdr = C.sizeof_struct_tpacket3_hdr
+)

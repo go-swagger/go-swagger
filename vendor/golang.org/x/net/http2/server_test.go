@@ -1810,6 +1810,7 @@ func TestServer_Response_TransferEncoding_chunked(t *testing.T) {
 			{":status", "200"},
 			{"content-type", "text/plain; charset=utf-8"},
 			{"content-length", strconv.Itoa(len(msg))},
+			{"x-content-type-options", "nosniff"},
 		}
 		if !reflect.DeepEqual(goth, wanth) {
 			t.Errorf("Got headers %v; want %v", goth, wanth)
@@ -1998,6 +1999,7 @@ func TestServer_Response_LargeWrite(t *testing.T) {
 		wanth := [][2]string{
 			{":status", "200"},
 			{"content-type", "text/plain; charset=utf-8"}, // sniffed
+			{"x-content-type-options", "nosniff"},
 			// and no content-length
 		}
 		if !reflect.DeepEqual(goth, wanth) {
@@ -2212,6 +2214,7 @@ func TestServer_Response_Automatic100Continue(t *testing.T) {
 			{":status", "200"},
 			{"content-type", "text/plain; charset=utf-8"},
 			{"content-length", strconv.Itoa(len(reply))},
+			{"x-content-type-options", "nosniff"},
 		}
 		if !reflect.DeepEqual(goth, wanth) {
 			t.Errorf("Got headers %v; want %v", goth, wanth)
@@ -2935,6 +2938,7 @@ func testServerWritesTrailers(t *testing.T, withFlush bool) {
 			{"trailer", "Transfer-Encoding, Content-Length, Trailer"},
 			{"content-type", "text/plain; charset=utf-8"},
 			{"content-length", "5"},
+			{"x-content-type-options", "nosniff"},
 		}
 		if !reflect.DeepEqual(goth, wanth) {
 			t.Errorf("Header mismatch.\n got: %v\nwant: %v", goth, wanth)
@@ -3326,6 +3330,7 @@ func TestServerNoDuplicateContentType(t *testing.T) {
 		{":status", "200"},
 		{"content-type", ""},
 		{"content-length", "41"},
+		{"x-content-type-options", "nosniff"},
 	}
 	if !reflect.DeepEqual(headers, want) {
 		t.Errorf("Headers mismatch.\n got: %q\nwant: %q\n", headers, want)
@@ -3758,4 +3763,23 @@ func TestIssue20704Race(t *testing.T) {
 		// reading the body:
 		resp.Body.Close()
 	}
+}
+
+func TestServer_Rejects_TooSmall(t *testing.T) {
+	testServerResponse(t, func(w http.ResponseWriter, r *http.Request) error {
+		return nil
+	}, func(st *serverTester) {
+		st.writeHeaders(HeadersFrameParam{
+			StreamID: 1, // clients send odd numbers
+			BlockFragment: st.encodeHeader(
+				":method", "POST",
+				"content-length", "4",
+			),
+			EndStream:  false, // to say DATA frames are coming
+			EndHeaders: true,
+		})
+		st.writeData(1, true, []byte("12345"))
+
+		st.wantRSTStream(1, ErrCodeProtocol)
+	})
 }

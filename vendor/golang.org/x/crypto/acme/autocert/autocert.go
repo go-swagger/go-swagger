@@ -542,6 +542,20 @@ func (m *Manager) authorizedCert(ctx context.Context, key crypto.Signer, domain 
 	return der, leaf, nil
 }
 
+// revokePending revokes all provided authorizations (passed as a map of URIs)
+func (m *Manager) revokePending(ctx context.Context, pendingAuthzURIs map[string]bool) {
+	f := func(ctx context.Context) {
+		for uri := range pendingAuthzURIs {
+			m.Client.RevokeAuthorization(ctx, uri)
+		}
+	}
+	if waitForRevocations {
+		f(ctx)
+	} else {
+		go f(context.Background())
+	}
+}
+
 // verify runs the identifier (domain) authorization flow
 // using each applicable ACME challenge type.
 func (m *Manager) verify(ctx context.Context, client *acme.Client, domain string) error {
@@ -553,6 +567,10 @@ func (m *Manager) verify(ctx context.Context, client *acme.Client, domain string
 		challengeTypes = append(challengeTypes, "http-01")
 	}
 	m.tokensMu.RUnlock()
+
+	// we keep track of pending authzs and revoke the ones that did not validate.
+	pendingAuthzs := make(map[string]bool)
+	defer m.revokePending(ctx, pendingAuthzs)
 
 	var nextTyp int // challengeType index of the next challenge type to try
 	for {
@@ -569,6 +587,8 @@ func (m *Manager) verify(ctx context.Context, client *acme.Client, domain string
 		case acme.StatusInvalid:
 			return fmt.Errorf("acme/autocert: invalid authorization %q", authz.URI)
 		}
+
+		pendingAuthzs[authz.URI] = true
 
 		// Pick the next preferred challenge.
 		var chal *acme.Challenge
@@ -590,6 +610,7 @@ func (m *Manager) verify(ctx context.Context, client *acme.Client, domain string
 
 		// A challenge is fulfilled and accepted: wait for the CA to validate.
 		if _, err := client.WaitAuthorization(ctx, authz.URI); err == nil {
+			delete(pendingAuthzs, authz.URI)
 			return nil
 		}
 	}
@@ -959,4 +980,7 @@ var (
 
 	// Called when a state is removed.
 	testDidRemoveState = func(domain string) {}
+
+	// make testing of revokePending synchronous
+	waitForRevocations = false
 )

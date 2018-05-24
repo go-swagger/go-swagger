@@ -50,6 +50,7 @@ includes_Darwin='
 #include <sys/mount.h>
 #include <sys/utsname.h>
 #include <sys/wait.h>
+#include <sys/xattr.h>
 #include <net/bpf.h>
 #include <net/if.h>
 #include <net/if_types.h>
@@ -171,6 +172,7 @@ struct ltchars {
 #include <linux/filter.h>
 #include <linux/fs.h>
 #include <linux/keyctl.h>
+#include <linux/magic.h>
 #include <linux/netlink.h>
 #include <linux/perf_event.h>
 #include <linux/random.h>
@@ -384,7 +386,8 @@ ccflags="$@"
 		$2 ~ /^TC[IO](ON|OFF)$/ ||
 		$2 ~ /^IN_/ ||
 		$2 ~ /^LOCK_(SH|EX|NB|UN)$/ ||
-		$2 ~ /^(AF|SOCK|SO|SOL|IPPROTO|IP|IPV6|ICMP6|TCP|EVFILT|NOTE|EV|SHUT|PROT|MAP|PACKET|MSG|SCM|MCL|DT|MADV|PR)_/ ||
+		$2 ~ /^(AF|SOCK|SO|SOL|IPPROTO|IP|IPV6|ICMP6|TCP|EVFILT|NOTE|EV|SHUT|PROT|MAP|T?PACKET|MSG|SCM|MCL|DT|MADV|PR)_/ ||
+		$2 ~ /^TP_STATUS_/ ||
 		$2 ~ /^FALLOC_/ ||
 		$2 == "ICMPV6_FILTER" ||
 		$2 == "SOMAXCONN" ||
@@ -426,6 +429,8 @@ ccflags="$@"
 		$2 ~ /^PERF_EVENT_IOC_/ ||
 		$2 ~ /^SECCOMP_MODE_/ ||
 		$2 ~ /^SPLICE_/ ||
+		$2 !~ /^AUDIT_RECORD_MAGIC/ &&
+		$2 ~ /^[A-Z0-9_]+_MAGIC2?$/ ||
 		$2 ~ /^(VM|VMADDR)_/ ||
 		$2 ~ /^IOCTL_VM_SOCKETS_/ ||
 		$2 ~ /^(TASKSTATS|TS)_/ ||
@@ -433,7 +438,7 @@ ccflags="$@"
 		$2 ~ /^GENL_/ ||
 		$2 ~ /^STATX_/ ||
 		$2 ~ /^UTIME_/ ||
-		$2 ~ /^XATTR_(CREATE|REPLACE)/ ||
+		$2 ~ /^XATTR_(CREATE|REPLACE|NO(DEFAULT|FOLLOW|SECURITY)|SHOWCOMPRESSION)/ ||
 		$2 ~ /^ATTR_(BIT_MAP_COUNT|(CMN|VOL|FILE)_)/ ||
 		$2 ~ /^FSOPT_/ ||
 		$2 ~ /^WDIOC_/ ||

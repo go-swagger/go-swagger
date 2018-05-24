@@ -10,6 +10,33 @@ consumes:
   - application/json
 produces:
   - application/json
+securityDefinitions:
+  myRoles:
+    description: definition of scopes as roles
+    type: oauth2
+    flow: accessCode 
+    authorizationUrl: https://foo.bar.com/authorize
+    tokenUrl: https://foo.bar.com/token
+    scopes:
+      sellers: group of sellers
+      buyers: group of buyers
+  myPrimaryAPIKey:
+    type: apiKey
+    name: X-primaryApiKey
+    in: header
+  myBasicAuth:
+    type: basic
+    description: basic primary auth
+security:
+  - myPrimaryAPIKey: []
+  - 
+    myBasicAuth: []
+    myRoles: [ sellers ]
+  - 
+    myBasicAuth: []
+tags:
+  - name: conflict
+    description: a tag in conflict with primary spec
 paths:
   /common:
     get:
