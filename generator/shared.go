@@ -956,3 +956,40 @@ func validateAndFlattenSpec(opts *GenOpts, specDoc *loads.Document) (*loads.Docu
 
 	return specDoc, nil
 }
+
+// gatherSecuritySchemes produces a sorted representation from a map of spec security schemes
+func gatherSecuritySchemes(securitySchemes map[string]spec.SecurityScheme, appName, principal, receiver string) (security GenSecuritySchemes) {
+	for scheme, req := range securitySchemes {
+		isOAuth2 := strings.ToLower(req.Type) == "oauth2"
+		var scopes []string
+		if isOAuth2 {
+			for k := range req.Scopes {
+				scopes = append(scopes, k)
+			}
+		}
+		sort.Strings(scopes)
+
+		security = append(security, GenSecurityScheme{
+			AppName:      appName,
+			ID:           scheme,
+			ReceiverName: receiver,
+			Name:         req.Name,
+			IsBasicAuth:  strings.ToLower(req.Type) == "basic",
+			IsAPIKeyAuth: strings.ToLower(req.Type) == "apikey",
+			IsOAuth2:     isOAuth2,
+			Scopes:       scopes,
+			Principal:    principal,
+			Source:       req.In,
+			// from original spec
+			Description:      req.Description,
+			Type:             strings.ToLower(req.Type),
+			In:               req.In,
+			Flow:             req.Flow,
+			AuthorizationURL: req.AuthorizationURL,
+			TokenURL:         req.TokenURL,
+			Extensions:       req.Extensions,
+		})
+	}
+	sort.Sort(security)
+	return
+}

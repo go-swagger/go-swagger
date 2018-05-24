@@ -416,9 +416,8 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		defaultResponse = &gr
 	}
 
-	prin := b.Principal
-	if prin == "" {
-		prin = iface
+	if b.Principal == "" {
+		b.Principal = iface
 	}
 
 	var extra GenSchemaList
@@ -503,9 +502,9 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		HasBodyParams:        hasBodyParams,
 		HasStreamingResponse: hasStreamingResponse,
 		Authorized:           b.Authed,
-		Security:             b.Security,
-		SecurityDefinitions:  b.SecurityDefinitions,
-		Principal:            prin,
+		Security:             b.makeSecurityRequirements(receiver),
+		SecurityDefinitions:  b.makeSecuritySchemes(receiver),
+		Principal:            b.Principal,
 		Responses:            responses,
 		DefaultResponse:      defaultResponse,
 		SuccessResponse:      successResponse,
@@ -1079,4 +1078,37 @@ func (b *codeGenOpBuilder) setBodyParamValidation(p *GenParameter) {
 		p.HasModelBodyItems = hasModelBodyItems
 	}
 
+}
+
+// makeSecuritySchemes produces a sorted list of security schemes for this operation
+func (b *codeGenOpBuilder) makeSecuritySchemes(receiver string) GenSecuritySchemes {
+	return gatherSecuritySchemes(b.SecurityDefinitions, b.Name, b.Principal, receiver)
+}
+
+// makeSecurityRequirements produces a sorted list of security requirements for this operation.
+// As for current, these requirements are not used by codegen (sec. requirement is determined at runtime).
+// We keep the order of the slice from the original spec, but sort the inner slice which comes from a map,
+// as well as the map of scopes.
+func (b *codeGenOpBuilder) makeSecurityRequirements(receiver string) []GenSecurityRequirements {
+	if b.Security == nil {
+		// nil (default requirement) is different than [] (no requirement)
+		return nil
+	}
+
+	securityRequirements := make([]GenSecurityRequirements, 0, len(b.Security))
+	for _, req := range b.Security {
+		jointReq := make(GenSecurityRequirements, 0, len(req))
+		for _, j := range req {
+			scopes := j.Scopes
+			sort.Strings(scopes)
+			jointReq = append(jointReq, GenSecurityRequirement{
+				Name:   j.Name,
+				Scopes: scopes,
+			})
+		}
+		// sort joint requirements (come from a map in spec)
+		sort.Sort(jointReq)
+		securityRequirements = append(securityRequirements, jointReq)
+	}
+	return securityRequirements
 }

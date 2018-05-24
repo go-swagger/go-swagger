@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/spec"
 )
 
@@ -428,8 +427,8 @@ type GenOperation struct {
 	ExtraSchemas   []GenSchema
 
 	Authorized          bool
-	Security            [][]analysis.SecurityRequirement
-	SecurityDefinitions map[string]spec.SecurityScheme
+	Security            []GenSecurityRequirements
+	SecurityDefinitions GenSecuritySchemes
 	Principal           string
 
 	SuccessResponse  *GenResponse
@@ -490,14 +489,17 @@ type GenApp struct {
 	ExtraSchemes        []string
 	Consumes            GenSerGroups
 	Produces            GenSerGroups
-	SecurityDefinitions []GenSecurityScheme
+	SecurityDefinitions GenSecuritySchemes
 	Models              []GenDefinition
 	Operations          GenOperations
 	OperationGroups     GenOperationGroups
 	SwaggerJSON         string
-	// this is important for when the generated server adds routes
-	// ideally this should be removed after we code-generate the router instead of relying on runtime
-	// CAUTION: Could be problematic for big specs (might consume large amounts of memory)
+	// Embedded specs: this is important for when the generated server adds routes.
+	// NOTE: there is a distinct advantage to having this in runtime rather than generated code.
+	// We are noti ever going to generate the router.
+	// If embedding spec is an issue (e.g. memory usage), this can be excluded with the --exclude-spec
+	// generation option. Alternative methods to serve spec (e.g. from disk, ...) may be implemented by
+	// adding a middleware to the generated API.
 	FlatSwaggerJSON string
 	ExcludeSpec     bool
 	WithContext     bool
@@ -561,13 +563,6 @@ type GenSerializer struct {
 	Implementation string
 }
 
-// GenSecuritySchemes sorted representation of serializers
-type GenSecuritySchemes []GenSecurityScheme
-
-func (g GenSecuritySchemes) Len() int           { return len(g) }
-func (g GenSecuritySchemes) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
-func (g GenSecuritySchemes) Less(i, j int) bool { return g[i].Name < g[j].Name }
-
 // GenSecurityScheme represents a security scheme for code generation
 type GenSecurityScheme struct {
 	AppName      string
@@ -580,4 +575,35 @@ type GenSecurityScheme struct {
 	Scopes       []string
 	Source       string
 	Principal    string
+	// from spec.SecurityScheme
+	Description      string
+	Type             string
+	In               string
+	Flow             string
+	AuthorizationURL string
+	TokenURL         string
+	Extensions       map[string]interface{}
 }
+
+// GenSecuritySchemes sorted representation of serializers
+type GenSecuritySchemes []GenSecurityScheme
+
+func (g GenSecuritySchemes) Len() int           { return len(g) }
+func (g GenSecuritySchemes) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
+func (g GenSecuritySchemes) Less(i, j int) bool { return g[i].ID < g[j].ID }
+
+// GenSecurityRequirement represents a security requirement for an operation
+type GenSecurityRequirement struct {
+	Name   string
+	Scopes []string
+}
+
+// GenSecurityRequirements represents a compounded security requirement specification.
+// In a []GenSecurityRequirements complete requirements specification,
+// outer elements are interpreted as optional requirements (OR), and
+// inner elements are interpreted as jointly required (AND).
+type GenSecurityRequirements []GenSecurityRequirement
+
+func (g GenSecurityRequirements) Len() int           { return len(g) }
+func (g GenSecurityRequirements) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
+func (g GenSecurityRequirements) Less(i, j int) bool { return g[i].Name < g[j].Name }
