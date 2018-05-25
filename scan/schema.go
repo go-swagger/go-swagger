@@ -661,7 +661,6 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 	schema.Typed("object", "")
 	for _, fld := range tpe.Fields.List {
 		if len(fld.Names) > 0 && fld.Names[0] != nil && fld.Names[0].IsExported() {
-			log.Println(fld.Names[0], fld.Comment)
 			// if the field is annotated with swagger:ignore, ignore it
 			if ignored(fld.Doc) {
 				continue
