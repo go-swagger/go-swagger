@@ -10,6 +10,7 @@ it knows how to serialize and deserialize swagger specifications.
 [Swagger](https://swagger.io/) is a simple yet powerful representation of your RESTful API.<br>
 
 > <img src="https://raw.githubusercontent.com/swagger-api/swagger.io/wordpress/swagger-logo.png" width="20">  **Swagger in a nutshell**
+>
 > With the largest ecosystem of API tooling on the planet, thousands of developers are supporting Swagger in almost every modern programming language and deployment environment.
 >
 > With a Swagger-enabled API, you get interactive documentation, client SDK generation and discoverability. We created Swagger to help fulfill the promise of APIs.
