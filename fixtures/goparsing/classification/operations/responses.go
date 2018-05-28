@@ -29,6 +29,15 @@ type GenericError struct {
 	}
 }
 
+// MyOwnFunc contians a response inside it.
+func MyOwnFunc() {
+	// SimpleOnesFunc is a collection of SimpleOne
+	// swagger:response simpleOnesFunc
+	type SimpleOnesFunc struct {
+		Ones []*SimpleOne `json:"ones"`
+	}
+}
+
 // A ValidationError is an error that is used when the required input fails validation.
 // swagger:response validationError
 type ValidationError struct {

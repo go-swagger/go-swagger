@@ -227,9 +227,9 @@ func (pp *paramStructParser) Parse(gofile *ast.File, target interface{}) error {
 					switch x3 := x2.Decl.(type) {
 					case *ast.GenDecl:
 						for _, spc := range x3.Specs {
-							switch x2 := spc.(type) {
+							switch x4 := spc.(type) {
 							case *ast.TypeSpec:
-								sd := paramDecl{gofile, x3, x2, nil}
+								sd := paramDecl{gofile, x3, x4, nil}
 								sd.inferOperationIDs()
 								if err := pp.parseDecl(tgt, sd); err != nil {
 									return err

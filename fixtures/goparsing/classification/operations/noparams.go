@@ -33,6 +33,20 @@ type MyFileParams struct {
 	MyFormFile *bytes.Buffer `json:"myFormFile"`
 }
 
+// MyFunc contains a struct with parameters.
+func MyFunc() {
+	// MyFuncFileParams contains the uploaded file data in a function.
+	// swagger:parameters myFuncOperation
+	type MyFuncFileParams struct {
+		// MyFormFile desc.
+		//
+		// in: formData
+		//
+		// swagger:file
+		MyFormFile *bytes.Buffer `json:"myFormFile"`
+	}
+}
+
 // EmbeddedFileParams embeds a *MyFileParams
 // swagger:parameters myOtherOperation
 type EmbeddedFileParams struct {

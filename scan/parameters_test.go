@@ -35,7 +35,7 @@ func TestScanFileParam(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	assert.Len(t, noParamOps, 9)
+	assert.Len(t, noParamOps, 10)
 
 	of, ok := noParamOps["myOperation"]
 	assert.True(t, ok)
@@ -59,6 +59,15 @@ func TestScanFileParam(t *testing.T) {
 	assert.Equal(t, "formData", extraParam.In)
 	assert.Equal(t, "integer", extraParam.Type)
 	assert.True(t, extraParam.Required)
+
+	ffp, ok := noParamOps["myFuncOperation"]
+	assert.True(t, ok)
+	assert.Len(t, ffp.Parameters, 1)
+	fileParam = ffp.Parameters[0]
+	assert.Equal(t, "MyFormFile desc.", fileParam.Description)
+	assert.Equal(t, "formData", fileParam.In)
+	assert.Equal(t, "file", fileParam.Type)
+	assert.False(t, fileParam.Required)
 }
 
 func TestParamsParser(t *testing.T) {
@@ -73,7 +82,7 @@ func TestParamsParser(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	assert.Len(t, noParamOps, 9)
+	assert.Len(t, noParamOps, 10)
 
 	cr, ok := noParamOps["yetAnotherOperation"]
 	assert.True(t, ok)
