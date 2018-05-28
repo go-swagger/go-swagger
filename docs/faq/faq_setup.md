@@ -3,7 +3,7 @@
 ## Installation and environment
 
 ### What is the minimal go version required?
-Our general policy is that we support the two latest go versions.
+Our policy is to support the two latest versions of the go compiler.
 
 That being said, as of Dec. 2017, our CI engines currently run all tests on go 1.7, on Linux and Windows platforms.
 

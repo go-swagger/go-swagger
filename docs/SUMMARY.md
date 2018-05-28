@@ -18,6 +18,7 @@
   - [Serve UI](usage/serve_ui.md)
   - [Validate](usage/validate.md)
   - Generate
+    - [Dependencies & Requirements](generate/requirements.md)
     - [API Client](generate/client.md)
     - [API Server](generate/server.md)
       - [Usage](use/server.md)
