@@ -202,19 +202,41 @@ type paramStructParser struct {
 	scp       *schemaParser
 }
 
+// Parse will traverse a file and look for parameters.
 func (pp *paramStructParser) Parse(gofile *ast.File, target interface{}) error {
 	tgt := target.(map[string]*spec.Operation)
 	for _, decl := range gofile.Decls {
-		gd, ok := decl.(*ast.GenDecl)
-		if !ok {
-			continue
-		}
-		for _, spc := range gd.Specs {
-			if ts, ok := spc.(*ast.TypeSpec); ok {
-				sd := paramDecl{gofile, gd, ts, nil}
-				sd.inferOperationIDs()
-				if err := pp.parseDecl(tgt, sd); err != nil {
-					return err
+		switch x1 := decl.(type) {
+		// Check for parameters at the package level.
+		case *ast.GenDecl:
+			for _, spc := range x1.Specs {
+				switch x2 := spc.(type) {
+				case *ast.TypeSpec:
+					sd := paramDecl{gofile, x1, x2, nil}
+					sd.inferOperationIDs()
+					if err := pp.parseDecl(tgt, sd); err != nil {
+						return err
+					}
+				}
+			}
+		// Check for parameters inside functions.
+		case *ast.FuncDecl:
+			for _, b := range x1.Body.List {
+				switch x2 := b.(type) {
+				case *ast.DeclStmt:
+					switch x3 := x2.Decl.(type) {
+					case *ast.GenDecl:
+						for _, spc := range x3.Specs {
+							switch x4 := spc.(type) {
+							case *ast.TypeSpec:
+								sd := paramDecl{gofile, x3, x4, nil}
+								sd.inferOperationIDs()
+								if err := pp.parseDecl(tgt, sd); err != nil {
+									return err
+								}
+							}
+						}
+					}
 				}
 			}
 		}
