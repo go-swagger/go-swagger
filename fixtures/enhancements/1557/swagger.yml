@@ -1,0 +1,20 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Example
+schemes:
+  - http
+paths:
+  /pdf:
+    post:
+      summary: Accepts and returns a pdf file
+      consumes:
+        - application/pdf
+      produces:
+        - application/pdf
+      responses:
+        200:
+          description: A pdf file
+          schema:
+            type: string
+            format: binary

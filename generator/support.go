@@ -352,6 +352,23 @@ func (a *appGenerator) makeConsumes() (consumes GenSerGroups, consumesJSON bool)
 	for _, cons := range a.Analyzed.RequiredConsumes() {
 		cn, ok := mediaTypeName(cons)
 		if !ok {
+			nm := swag.ToJSONName(cons)
+			ser := GenSerializer{
+				AppName:        a.Name,
+				ReceiverName:   a.Receiver,
+				Name:           nm,
+				MediaType:      cons,
+				Implementation: "",
+			}
+
+			consumes = append(consumes, GenSerGroup{
+				AppName:        ser.AppName,
+				ReceiverName:   ser.ReceiverName,
+				Name:           ser.Name,
+				MediaType:      cons,
+				AllSerializers: []GenSerializer{ser},
+				Implementation: ser.Implementation,
+			})
 			continue
 		}
 		nm := swag.ToJSONName(cn)
@@ -413,6 +430,22 @@ func (a *appGenerator) makeProduces() (produces GenSerGroups, producesJSON bool)
 	for _, prod := range a.Analyzed.RequiredProduces() {
 		pn, ok := mediaTypeName(prod)
 		if !ok {
+			nm := swag.ToJSONName(prod)
+			ser := GenSerializer{
+				AppName:        a.Name,
+				ReceiverName:   a.Receiver,
+				Name:           nm,
+				MediaType:      prod,
+				Implementation: "",
+			}
+			produces = append(produces, GenSerGroup{
+				AppName:        ser.AppName,
+				ReceiverName:   ser.ReceiverName,
+				Name:           ser.Name,
+				MediaType:      prod,
+				Implementation: ser.Implementation,
+				AllSerializers: []GenSerializer{ser},
+			})
 			continue
 		}
 		nm := swag.ToJSONName(pn)

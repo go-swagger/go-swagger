@@ -372,3 +372,27 @@ func TestServer_Issue1301(t *testing.T) {
 		}
 	}
 }
+
+func TestServer_Issue1557(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+	gen, err := testAppGenerator(t, "../fixtures/enhancements/1557/swagger.yml", "generate consumer/producer handlers that are not whitelisted")
+	if assert.NoError(t, err) {
+		app, err := gen.makeCodegenApp()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			if assert.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app)) {
+				formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(formatted)
+					assertRegexpInCode(t, `ApplicationPdfConsumer:\s+runtime.Consumer`, res)
+					assertRegexpInCode(t, `ApplicationPdfProducer:\s+runtime.Producer`, res)
+					assertInCode(t, `result["application/pdf"] = o.ApplicationPdfConsumer`, res)
+					assertInCode(t, `result["application/pdf"] = o.ApplicationPdfProducer`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
