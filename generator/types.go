@@ -66,7 +66,6 @@ func init() {
 func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType) {
 	result.SwaggerType = tn
 	result.SwaggerFormat = fmt
-	//_, result.IsPrimitive = primitives[tn]
 
 	if tn == file {
 		// special case of swagger type "file", rendered as io.ReadCloser interface
@@ -126,13 +125,6 @@ func newTypeResolver(pkg string, doc *loads.Document) *typeResolver {
 		resolver.KnownDefs[tpe] = struct{}{}
 	}
 	return &resolver
-}
-
-func debugLog(format string, args ...interface{}) {
-	if Debug {
-		_, file, pos, _ := runtime.Caller(2)
-		log.Printf("%s:%d: "+format, append([]interface{}{filepath.Base(file), pos}, args...)...)
-	}
 }
 
 // knownDefGoType returns go type, package and package alias for definition
@@ -320,6 +312,7 @@ func (t *typeResolver) firstType(schema *spec.Schema) string {
 	}
 	if len(schema.Type) > 1 {
 		// JSON-Schema multiple types, e.g. {"type": [ "object", "array" ]} are not supported.
+		// TODO: should keep the first _supported_ type, e.g. skip null
 		log.Printf("warning: JSON-Schema type definition as array with several types is not supported in %#v. Taking the first type: %s", schema.Type, schema.Type[0])
 	}
 	return schema.Type[0]
@@ -362,6 +355,8 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 		err = er
 		return
 	}
+	// override the general nullability rule from ResolveSchema():
+	// only complex items are nullable (when not discriminated, not forced by x-nullable)
 	rt.IsNullable = t.IsNullable(schema.Items.Schema) && !rt.HasDiscriminator
 	result.GoType = "[]" + rt.GoType
 	if rt.IsNullable && !strings.HasPrefix(rt.GoType, "*") {
@@ -439,25 +434,27 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 
 		result.SwaggerType = object
 
+		// only complex map elements are nullable (when not forced by x-nullable)
+		// TODO: figure out if required to check when not discriminated like arrays?
 		et.IsNullable = t.isNullable(schema.AdditionalProperties.Schema)
 		if et.IsNullable {
 			result.GoType = "map[string]*" + et.GoType
 		} else {
 			result.GoType = "map[string]" + et.GoType
-
 		}
 
 		// Resolving nullability conflicts for:
 		// - map[][]...[]{items}
 		// - map[]{aliased type}
 		//
-		// when IsMap is true.
+		// when IsMap is true and the type is a distinct definition,
+		// aliased type or anonymous construct generated independently.
 		//
-		// IsMapNullOverride is to be handled by generator for special cases
+		// IsMapNullOverride is to be handled by the generator for special cases
 		// where the map element is considered non nullable and the element itself is.
 		//
-		// This allows to appreciate nullability according to the context.
-		needsOverride := result.IsMap && (et.IsArray || (sch.Ref.String() != "" || et.IsAliased || et.IsAnonymous)) //*&& !et.IsPrimitive*/
+		// This allows to appreciate nullability according to the context
+		needsOverride := result.IsMap && (et.IsArray || (sch.Ref.String() != "" || et.IsAliased || et.IsAnonymous))
 
 		if needsOverride {
 			var er error
@@ -491,7 +488,7 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 		return
 	}
 
-	// an object without property is rendered as interface{}
+	// an object without property and without AdditionalProperties schema is rendered as interface{}
 	result.GoType = iface
 	result.IsMap = true
 	result.SwaggerType = object
@@ -500,6 +497,12 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 	return
 }
 
+// nullableBool makes a boolean a pointer when we want to distinguish the zero value from no value set.
+// This is the case when:
+// - a x-nullable extension says so in the spec
+// - it is **not** a read-only property
+// - it is a required property
+// - it has a default value
 func nullableBool(schema *spec.Schema, isRequired bool) bool {
 	if nullable := nullableExtension(schema.Extensions); nullable != nil {
 		return *nullable
@@ -510,6 +513,14 @@ func nullableBool(schema *spec.Schema, isRequired bool) bool {
 	return required || optional
 }
 
+// nullableNumber makes a number a pointer when we want to distinguish the zero value from no value set.
+// This is the case when:
+// - a x-nullable extension says so in the spec
+// - it is **not** a read-only property
+// - it is a required property
+// - boundaries defines the zero value as a valid value:
+//   - there is a non-exclusive boundary set at the zero value of the type
+//   - the [min,max] range crosses the zero value of the type
 func nullableNumber(schema *spec.Schema, isRequired bool) bool {
 	if nullable := nullableExtension(schema.Extensions); nullable != nil {
 		return *nullable
@@ -527,6 +538,13 @@ func nullableNumber(schema *spec.Schema, isRequired bool) bool {
 	return nullable
 }
 
+// nullableString makes a string nullable when we want to distinguish the zero value from no value set.
+// This is the case when:
+// - a x-nullable extension says so in the spec
+// - it is **not** a read-only property
+// - it is a required property
+// - it has a MinLength property set to 0
+// - it has a default other than "" (the zero for strings) and no MinLength or zero MinLength
 func nullableString(schema *spec.Schema, isRequired bool) bool {
 	if nullable := nullableExtension(schema.Extensions); nullable != nil {
 		return *nullable

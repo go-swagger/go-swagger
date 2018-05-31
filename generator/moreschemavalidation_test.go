@@ -172,6 +172,10 @@ func initModelFixtures() {
 	initTodolistSchemavalidation()
 	initFixture1537()
 	initFixture1537v2()
+
+	// more maps and nullability checks
+	initFixture15365()
+	initFixtureNestedMaps()
 }
 
 /* Template initTxxx() to prepare and load a fixture:
@@ -227,8 +231,7 @@ func TestModelGenerateDefinition(t *testing.T) {
 			panic(err)
 		}
 
-		var err error
-		err = GenerateDefinition([]string{"thingWithNullableDates"}, opts)
+		err := GenerateDefinition([]string{"thingWithNullableDates"}, opts)
 		assert.NoErrorf(err, "Expected GenerateDefinition() to run without error")
 
 		err = GenerateDefinition(nil, opts)

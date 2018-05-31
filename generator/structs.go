@@ -219,6 +219,7 @@ type GenParameter struct {
 	Path            string
 	ValueExpression string
 	IndexVar        string
+	KeyVar          string
 	ReceiverName    string
 	Location        string
 	Title           string
@@ -233,7 +234,8 @@ type GenParameter struct {
 	Child  *GenItems
 	Parent *GenItems
 
-	BodyParam *GenParameter
+	/// Unused
+	//BodyParam *GenParameter
 
 	Default         interface{}
 	HasDefault      bool
@@ -246,10 +248,14 @@ type GenParameter struct {
 	// - HasModelBodyParams: body is a model objectd
 	// - HasSimpleBodyItems: body is an inline array of simple type
 	// - HasModelBodyItems: body is an array of model objects
+	// - HasSimpleBodyMap: body is a map of simple objects (possibly arrays)
+	// - HasModelBodyMap: body is a map of model objects
 	HasSimpleBodyParams bool
 	HasModelBodyParams  bool
 	HasSimpleBodyItems  bool
 	HasModelBodyItems   bool
+	HasSimpleBodyMap    bool
+	HasModelBodyMap     bool
 
 	Extensions map[string]interface{}
 }
@@ -325,6 +331,7 @@ type GenItems struct {
 
 	Location string
 	IndexVar string
+	KeyVar   string
 
 	// instructs generator to skip the splitting and parsing from CollectionFormat
 	SkipParse bool

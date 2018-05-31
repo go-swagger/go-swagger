@@ -254,7 +254,9 @@ func initFixture1479Part() {
 		`	if err := validate.MinItems("ConsoleSize", "body", iConsoleSizeSize, 2); err != nil {`,
 		`	if err := validate.MaxItems("ConsoleSize", "body", iConsoleSizeSize, 2); err != nil {`,
 		`	for i := 0; i < len(m.ConsoleSize); i++ {`,
+		// do we need...?
 		`		if swag.IsZero(m.ConsoleSize[i]) {`,
+		//`		if err := validate.Required("ConsoleSize"+"."+strconv.Itoa(i), "body", m.ConsoleSize[i]); err != nil {`,
 		`		if err := validate.MinimumInt("ConsoleSize"+"."+strconv.Itoa(i), "body", int64(*m.ConsoleSize[i]), 0, false); err != nil {`,
 		`var hostConfigAllOf0TypeIsolationPropEnum []interface{`,
 		`	var res []string`,
@@ -383,7 +385,9 @@ func initFixture1479Part() {
 		`	if err := validate.MinItems("ConsoleSize", "body", iConsoleSizeSize, 2); err != nil {`,
 		`	if err := validate.MaxItems("ConsoleSize", "body", iConsoleSizeSize, 2); err != nil {`,
 		`	for i := 0; i < len(m.ConsoleSize); i++ {`,
+		// do we need...
 		`		if swag.IsZero(m.ConsoleSize[i]) {`,
+		//`		if err := validate.Required("ConsoleSize"+"."+strconv.Itoa(i), "body", m.ConsoleSize[i]); err != nil {`,
 		`		if err := validate.MinimumInt("ConsoleSize"+"."+strconv.Itoa(i), "body", int64(*m.ConsoleSize[i]), 0, false); err != nil {`,
 		`var hostConfigTypeIsolationPropEnum []interface{`,
 		`	var res []string`,
@@ -612,7 +616,9 @@ func initFixture1479Part() {
 		`	if err := validate.MinItems("HostConfig"+"."+"ConsoleSize", "body", iConsoleSizeSize, 2); err != nil {`,
 		`	if err := validate.MaxItems("HostConfig"+"."+"ConsoleSize", "body", iConsoleSizeSize, 2); err != nil {`,
 		`	for i := 0; i < len(m.HostConfig.ConsoleSize); i++ {`,
+		// do we need... ?
 		`		if swag.IsZero(m.HostConfig.ConsoleSize[i]) {`,
+		//`if err := validate.Required("HostConfig"+"."+"ConsoleSize"+"."+strconv.Itoa(i), "body", m.HostConfig.ConsoleSize[i]); err != nil {`,
 		`		if err := validate.MinimumInt("HostConfig"+"."+"ConsoleSize"+"."+strconv.Itoa(i), "body", int64(*m.HostConfig.ConsoleSize[i]), 0, false); err != nil {`,
 		// TODO: enum if anonymous allOf is not honored (missing func)
 		// => will do that with Enum refactoring
@@ -1854,7 +1860,11 @@ func initFixtureComplexAllOf() {
 		`	iProp2Size := int64(len(m.Prop2)`,
 		`	if err := validate.MaxItems("prop2", "body", iProp2Size, 20); err != nil {`,
 		`	for i := 0; i < len(m.Prop2); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`		if swag.IsZero(m.Prop2[i]) {`,
+		// nullable required:
+		//`	if err := validate.Required("prop2"+"."+strconv.Itoa(i), "body", m.Prop2[i]); err != nil`,
 		`		if err := validate.FormatOf("prop2"+"."+strconv.Itoa(i), "body", "date", m.Prop2[i].String(), formats); err != nil {`,
 	},
 		// not expected
@@ -1954,7 +1964,11 @@ func initFixtureComplexAllOf() {
 		`func (m SliceOfAllOf) Validate(formats strfmt.Registry) error {`,
 		`	if err := validate.UniqueItems("", "body", m); err != nil {`,
 		`	for i := 0; i < len(m); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
+		// nullable required:
+		//`if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -1972,7 +1986,11 @@ func initFixtureComplexAllOf() {
 		`func (m SliceOfAllOf) Validate(formats strfmt.Registry) error {`,
 		`	if err := validate.UniqueItems("", "body", m); err != nil {`,
 		`	for i := 0; i < len(m); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
+		// nullable required:
+		//`if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -2102,7 +2120,11 @@ func initFixtureComplexAllOf() {
 		`func (m SliceMixAllOf0) Validate(formats strfmt.Registry) error {`,
 		`	if err := validate.UniqueItems("", "body", m); err != nil {`,
 		`	for i := 0; i < len(m); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
+		// nullable required:
+		//`if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -2172,7 +2194,11 @@ func initFixtureComplexAllOf() {
 		`	iProp2Size := int64(len(m.Prop2)`,
 		`	if err := validate.MaxItems("prop2", "body", iProp2Size, 20); err != nil {`,
 		`	for i := 0; i < len(m.Prop2); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`		if swag.IsZero(m.Prop2[i]) {`,
+		// nullable required:
+		//`if err := validate.Required("prop2"+"."+strconv.Itoa(i), "body", m.Prop2[i]); err != nil {`,
 		`		if m.Prop2[i] != nil {`,
 		`			if err := m.Prop2[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -2808,8 +2834,9 @@ func initFixtureItching() {
 		noLines)
 
 	// load expectations for model: empty_object_with_additional_nullable.go
+	// fixed nullability of aliased type
 	flattenRun.AddExpectations("empty_object_with_additional_nullable.go", []string{
-		`type EmptyObjectWithAdditionalNullable map[string]NullableThing`,
+		`type EmptyObjectWithAdditionalNullable map[string]*NullableThing`,
 		`func (m EmptyObjectWithAdditionalNullable) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
 		`		if swag.IsZero(m[k]) {`,
@@ -3139,11 +3166,16 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalSliceOfAliasedNullablePrimitives) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateProp3(formats); err != nil {`,
 		`	for k := range m.AdditionalSliceOfAliasedNullablePrimitives {`,
+		// do we need Required when element is nullable?
 		`		if swag.IsZero(m.AdditionalSliceOfAliasedNullablePrimitives[k]) {`,
 		`		iAdditionalSliceOfAliasedNullablePrimitivesSize := int64(len(m.AdditionalSliceOfAliasedNullablePrimitives[k])`,
 		`		if err := validate.MinItems(k, "body", iAdditionalSliceOfAliasedNullablePrimitivesSize, 10); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfAliasedNullablePrimitives[k]); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`			if swag.IsZero(m.AdditionalSliceOfAliasedNullablePrimitives[k][i]) {`,
+		// nullable required:
+		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalSliceOfAliasedNullablePrimitives[k][i]); err != nil {`,
 		`			if m.AdditionalSliceOfAliasedNullablePrimitives[k][i] != nil {`,
 		`				if err := m.AdditionalSliceOfAliasedNullablePrimitives[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -3170,7 +3202,11 @@ func initFixtureAdditionalProps() {
 		`		iAdditionalSliceOfAliasedNullablePrimitivesSize := int64(len(m.AdditionalSliceOfAliasedNullablePrimitives[k])`,
 		`		if err := validate.MinItems(k, "body", iAdditionalSliceOfAliasedNullablePrimitivesSize, 10); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfAliasedNullablePrimitives[k]); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`			if swag.IsZero(m.AdditionalSliceOfAliasedNullablePrimitives[k][i]) {`,
+		// nullable required:
+		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalSliceOfAliasedNullablePrimitives[k][i]); err != nil {`,
 		`			if err := validate.FormatOf(k+"."+strconv.Itoa(i), "body", "date", m.AdditionalSliceOfAliasedNullablePrimitives[k][i].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalSliceOfAliasedNullablePrimitives) validateProp3(formats strfmt.Registry) error {`,
@@ -3196,7 +3232,11 @@ func initFixtureAdditionalProps() {
 		`			iiAdditionalSliceOfSliceSize := int64(len(m.AdditionalSliceOfSlice[k][i])`,
 		`			if err := validate.MaxItems(k+"."+strconv.Itoa(i), "body", iiAdditionalSliceOfSliceSize, 10); err != nil {`,
 		`			for ii := 0; ii < len(m.AdditionalSliceOfSlice[k][i]); ii++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`				if swag.IsZero(m.AdditionalSliceOfSlice[k][i][ii]) {`,
+		// nullable not required:
+		//`				if err := validate.Required(k+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii), "body", m.AdditionalSliceOfSlice[k][i][ii]); err != nil {`,
 		`				if m.AdditionalSliceOfSlice[k][i][ii] != nil {`,
 		`					if err := m.AdditionalSliceOfSlice[k][i][ii].Validate(formats); err != nil {`,
 		`						if ve, ok := err.(*errors.Validation); ok {`,
@@ -3224,7 +3264,11 @@ func initFixtureAdditionalProps() {
 		`			iiAdditionalSliceOfSliceSize := int64(len(m.AdditionalSliceOfSlice[k][i])`,
 		`			if err := validate.MaxItems(k+"."+strconv.Itoa(i), "body", iiAdditionalSliceOfSliceSize, 10); err != nil {`,
 		`			for ii := 0; ii < len(m.AdditionalSliceOfSlice[k][i]); ii++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`				if swag.IsZero(m.AdditionalSliceOfSlice[k][i][ii]) {`,
+		// nullable required:
+		//`				if err := validate.Required(k+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii), "body", m.AdditionalSliceOfSlice[k][i][ii]); err != nil {`,
 		`				if m.AdditionalSliceOfSlice[k][i][ii] != nil {`,
 		`					if err := m.AdditionalSliceOfSlice[k][i][ii].Validate(formats); err != nil {`,
 		`						if ve, ok := err.(*errors.Validation); ok {`,
@@ -3416,7 +3460,11 @@ func initFixtureAdditionalProps() {
 		`		if err := validate.Required(k, "body", m.AdditionalTransitiveRefedThing[k]); err != nil {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalTransitiveRefedThing[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalTransitiveRefedThing[k]); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`			if swag.IsZero(m.AdditionalTransitiveRefedThing[k][i]) {`,
+		// nullable required:
+		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalTransitiveRefedThing[k][i]); err != nil {`,
 		`			if m.AdditionalTransitiveRefedThing[k][i] != nil {`,
 		`				if err := m.AdditionalTransitiveRefedThing[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -3442,7 +3490,11 @@ func initFixtureAdditionalProps() {
 		`		if err := validate.Required(k, "body", m.AdditionalTransitiveRefedThing[k]); err != nil {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalTransitiveRefedThing[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalTransitiveRefedThing[k]); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`			if swag.IsZero(m.AdditionalTransitiveRefedThing[k][i]) {`,
+		// nullable required:
+		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalTransitiveRefedThing[k][i]); err != nil {`,
 		`			if m.AdditionalTransitiveRefedThing[k][i] != nil {`,
 		`				if err := m.AdditionalTransitiveRefedThing[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -3628,7 +3680,11 @@ func initFixtureAdditionalProps() {
 		`		if err := validate.Required(k, "body", m.AdditionalSliceOfObjects[k]); err != nil {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalSliceOfObjects[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfObjects[k]); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`			if swag.IsZero(m.AdditionalSliceOfObjects[k][i]) {`,
+		// nullable required:
+		//`if err := validate.Required(k, "body", m.AdditionalSliceOfObjects[k]); err != nil {`,
 		`			if m.AdditionalSliceOfObjects[k][i] != nil {`,
 		`				if err := m.AdditionalSliceOfObjects[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -3650,7 +3706,11 @@ func initFixtureAdditionalProps() {
 		`		if err := validate.Required(k, "body", m.AdditionalSliceOfObjects[k]); err != nil {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalSliceOfObjects[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfObjects[k]); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`			if swag.IsZero(m.AdditionalSliceOfObjects[k][i]) {`,
+		// nullable required:
+		//`if err := validate.Required(k, "body", m.AdditionalSliceOfObjects[k]); err != nil {`,
 		`			if m.AdditionalSliceOfObjects[k][i] != nil {`,
 		`				if err := m.AdditionalSliceOfObjects[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -3855,7 +3915,11 @@ func initFixtureAdditionalProps() {
 		`		if err := validate.Required(k, "body", m.AdditionalArrayOfRefedObject[k]); err != nil {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalArrayOfRefedObject[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalArrayOfRefedObject[k]); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`			if swag.IsZero(m.AdditionalArrayOfRefedObject[k][i]) {`,
+		// nullable required:
+		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalArrayOfRefedObject[k][i]); err != nil {`,
 		`			if m.AdditionalArrayOfRefedObject[k][i] != nil {`,
 		`				if err := m.AdditionalArrayOfRefedObject[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -3881,7 +3945,11 @@ func initFixtureAdditionalProps() {
 		`		if err := validate.Required(k, "body", m.AdditionalArrayOfRefedObject[k]); err != nil {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalArrayOfRefedObject[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalArrayOfRefedObject[k]); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`			if swag.IsZero(m.AdditionalArrayOfRefedObject[k][i]) {`,
+		// nullable required:
+		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalArrayOfRefedObject[k][i]); err != nil {`,
 		`			if m.AdditionalArrayOfRefedObject[k][i] != nil {`,
 		`				if err := m.AdditionalArrayOfRefedObject[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -4136,6 +4204,7 @@ func initFixtureTuple() {
 		"	P0 *int64 `json:\"-\"`",
 		"	P1 *strfmt.ISBN `json:\"-\"`",
 		"	P2 *ClassicsTuple0 `json:\"-\"`",
+		// TODO: items should not be pointer
 		"	ClassicsItems []*ClassicsClassicsItemsTuple0 `json:\"-\"`",
 		`func (m *Classics) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateP0(formats); err != nil {`,
@@ -6645,7 +6714,11 @@ func initTodolistSchemavalidation() {
 		`func (m *Pet) validateTags(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Tags) {`,
 		`	for i := 0; i < len(m.Tags); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`		if swag.IsZero(m.Tags[i]) {`,
+		// nullable required:
+		//`if err := validate.Required("tags"+"."+strconv.Itoa(i), "body", m.Tags[i]); err != nil {`,
 		`		if m.Tags[i] != nil {`,
 		`			if err := m.Tags[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -6698,7 +6771,11 @@ func initTodolistSchemavalidation() {
 		`func (m *Pet) validateTags(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Tags) {`,
 		`	for i := 0; i < len(m.Tags); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`		if swag.IsZero(m.Tags[i]) {`,
+		// nullable required:
+		//`		if err := validate.Required("tags"+"."+strconv.Itoa(i), "body", m.Tags[i]); err != nil {`,
 		`		if m.Tags[i] != nil {`,
 		`			if err := m.Tags[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -8589,7 +8666,11 @@ func initFixtureMoreAddProps() {
 		`		if err := validate.Required(k, "body", m.AdditionalTransitiveRefedThing[k]); err != nil {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalTransitiveRefedThing[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalTransitiveRefedThing[k]); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`			if swag.IsZero(m.AdditionalTransitiveRefedThing[k][i]) {`,
+		// nullable not required:
+		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalTransitiveRefedThing[k][i]); err != nil {`,
 		`			if m.AdditionalTransitiveRefedThing[k][i] != nil {`,
 		`				if err := m.AdditionalTransitiveRefedThing[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -8771,7 +8852,11 @@ func initFixtureMoreAddProps() {
 		`		if err := validate.Required(k, "body", m.AdditionalTransitiveRefedThing[k]); err != nil {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalTransitiveRefedThing[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalTransitiveRefedThing[k]); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`			if swag.IsZero(m.AdditionalTransitiveRefedThing[k][i]) {`,
+		// nullable required:
+		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalTransitiveRefedThing[k][i]); err != nil {`,
 		`			if m.AdditionalTransitiveRefedThing[k][i] != nil {`,
 		`				if err := m.AdditionalTransitiveRefedThing[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -8918,7 +9003,11 @@ func initFixture1537() {
 		`func (m *ProfileArray) validateProfileCfg(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("profileCfg", "body", m.ProfileCfg); err != nil {`,
 		`	for i := 0; i < len(m.ProfileCfg); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`		if swag.IsZero(m.ProfileCfg[i]) {`,
+		// nullable required:
+		//`if err := validate.Required("profileCfg"+"."+strconv.Itoa(i), "body", m.ProfileCfg[i]); err != nil {`,
 		`		if m.ProfileCfg[i] != nil {`,
 		`			if err := m.ProfileCfg[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -8954,7 +9043,11 @@ func initFixture1537() {
 		`type ProfileCfgs []*ProfileCfg`,
 		`func (m ProfileCfgs) Validate(formats strfmt.Registry) error {`,
 		`	for i := 0; i < len(m); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
+		// nullable required:
+		//`if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -9034,7 +9127,11 @@ func initFixture1537v2() {
 		`type ProfileCfgsNoValidation []*ProfileCfg`,
 		`func (m ProfileCfgsNoValidation) Validate(formats strfmt.Registry) error {`,
 		`	for i := 0; i < len(m); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
+		// nullable required:
+		//`		if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -9054,7 +9151,11 @@ func initFixture1537v2() {
 		`	iProfileCfgsSize := int64(len(m)`,
 		`	if err := validate.MaxItems("", "body", iProfileCfgsSize, 10); err != nil {`,
 		`	for i := 0; i < len(m); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
+		// nullable required:
+		//`		if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -9097,4 +9198,263 @@ func initFixture1537v2() {
 		noLines,
 		noLines)
 
+}
+
+func initFixture15365() {
+	// testing fixture-1536-5.yaml with flatten but NOT expand (--skip-flatten)
+
+	f := newModelFixture("../fixtures/bugs/1536/fixture-1536-5.yaml", "param body with maps")
+	thisRun := f.AddRun(false)
+
+	// load expectations for model: model_array_of_nullable.go
+	thisRun.AddExpectations("model_array_of_nullable.go", []string{
+		`type ModelArrayOfNullable []*int64`,
+		`func (m ModelArrayOfNullable) Validate(formats strfmt.Registry) error {`,
+		`	for i := 0; i < len(m); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
+		`		if swag.IsZero(m[i]) {`,
+		// nullable required:
+		//`		if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
+		`		if err := validate.MinimumInt(strconv.Itoa(i), "body", int64(*m[i]), 0, false); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: model_map_of_nullable_primitive.go
+	thisRun.AddExpectations("model_map_of_nullable_primitive.go", []string{
+		`type ModelMapOfNullablePrimitive map[string]*int64`,
+		`func (m ModelMapOfNullablePrimitive) Validate(formats strfmt.Registry) error {`,
+		`	for k := range m {`,
+		// do we need Required when element is nullable?
+		// nullable not required:
+		`		if swag.IsZero(m[k]) {`,
+		`		if err := validate.MinimumInt(k, "body", int64(*m[k]), 0, false); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: model_array_with_max.go
+	thisRun.AddExpectations("model_array_with_max.go", []string{
+		`type ModelArrayWithMax []interface{`,
+		`func (m ModelArrayWithMax) Validate(formats strfmt.Registry) error {`,
+		`	iModelArrayWithMaxSize := int64(len(m)`,
+		`	if err := validate.MaxItems("", "body", iModelArrayWithMaxSize, 10); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: model_array_of_x_nullable.go
+	thisRun.AddExpectations("model_array_of_x_nullable.go", []string{
+		`type ModelArrayOfXNullable []*int64`,
+		// do we need Required when item is nullable?
+		// nullable not required:
+		"func (m ModelArrayOfXNullable) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		// nullable required:
+		//`func (m ModelArrayOfXNullable) Validate(formats strfmt.Registry) error {`,
+		//`func (m ModelArrayOfXNullable) Validate(formats strfmt.Registry) error {`,
+		//`for i := 0; i < len(m); i++ {`,
+		//`	if swag.IsZero(m[k]) {`,
+		//`	if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: model_array_of_nullable_format.go
+	thisRun.AddExpectations("model_array_of_nullable_format.go", []string{
+		`type ModelArrayOfNullableFormat []*strfmt.UUID`,
+		`func (m ModelArrayOfNullableFormat) Validate(formats strfmt.Registry) error {`,
+		`	for i := 0; i < len(m); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
+		`		if swag.IsZero(m[i]) {`,
+		// nullable required:
+		//`		if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
+		`		if err := validate.FormatOf(strconv.Itoa(i), "body", "uuid", m[i].String(), formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: model_map_of_of_slice_of_nullable_primitive.go
+	thisRun.AddExpectations("model_map_of_of_slice_of_nullable_primitive.go", []string{
+		`type ModelMapOfOfSliceOfNullablePrimitive map[string][]*int64`,
+		`func (m ModelMapOfOfSliceOfNullablePrimitive) Validate(formats strfmt.Registry) error {`,
+		`	for k := range m {`,
+		// do we need Required when element is nullable?
+		// nullable not required:
+		`		if swag.IsZero(m[k]) {`,
+		`		for i := 0; i < len(m[k]); i++ {`,
+		// do we need Required when item is nullable?
+		// nullable not required:
+		`			if swag.IsZero(m[k]) {`,
+		`			if err := validate.MinimumInt(k+"."+strconv.Itoa(i), "body", int64(*m[k][i]), 0, false); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: model_map_of_ref.go
+	thisRun.AddExpectations("model_map_of_ref.go", []string{
+		`type ModelMapOfRef map[string]ModelArrayWithMax`,
+		`func (m ModelMapOfRef) Validate(formats strfmt.Registry) error {`,
+		`	for k := range m {`,
+		`		if swag.IsZero(m[k]) {`,
+		`		if err := m[k].Validate(formats); err != nil {`,
+		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`				return ve.ValidateName(k`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: model_array_of_format.go
+	thisRun.AddExpectations("model_array_of_format.go", []string{
+		`type ModelArrayOfFormat []strfmt.UUID`,
+		`func (m ModelArrayOfFormat) Validate(formats strfmt.Registry) error {`,
+		`	for i := 0; i < len(m); i++ {`,
+		`		if err := validate.FormatOf(strconv.Itoa(i), "body", "uuid", m[i].String(), formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: model_array_of_ref_no_validations.go
+	thisRun.AddExpectations("model_array_of_ref_no_validations.go", []string{
+		`type ModelArrayOfRefNoValidations []ModelInterface`,
+		// empty validation
+		"func (m ModelArrayOfRefNoValidations) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: model_array_of_not_nullable.go
+	thisRun.AddExpectations("model_array_of_not_nullable.go", []string{
+		`type ModelArrayOfNotNullable []int64`,
+		`func (m ModelArrayOfNotNullable) Validate(formats strfmt.Registry) error {`,
+		`	for i := 0; i < len(m); i++ {`,
+		`		if err := validate.MinimumInt(strconv.Itoa(i), "body", int64(m[i]), 10, false); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: model_array_of_nullable_string.go
+	thisRun.AddExpectations("model_array_of_nullable_string.go", []string{
+		`type ModelArrayOfNullableString []*string`,
+		// do we need Required when item is nullable?
+		// nullable not required:
+		// empty validation
+		"func (m ModelArrayOfNullableString) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		// nullable required:
+		//`func (m ModelArrayOfNullableString) Validate(formats strfmt.Registry) error {`,
+		//`for i := 0; i < len(m); i++ {`,
+		//`	if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: model_map_of_x_nullable_primitive.go
+	thisRun.AddExpectations("model_map_of_x_nullable_primitive.go", []string{
+		`type ModelMapOfXNullablePrimitive map[string]*int64`,
+		`func (m ModelMapOfXNullablePrimitive) Validate(formats strfmt.Registry) error {`,
+		`	for k := range m {`,
+		// do we need...?
+		`		if swag.IsZero(m[k]) {`,
+		`		if err := validate.MinimumInt(k, "body", int64(*m[k]), 100, false); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: model_array_of_not_nullable_string.go
+	thisRun.AddExpectations("model_array_of_not_nullable_string.go", []string{
+		`type ModelArrayOfNotNullableString []string`,
+		// empty validation
+		"func (m ModelArrayOfNotNullableString) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: model_array_of_ref_slice_validations.go
+	thisRun.AddExpectations("model_array_of_ref_slice_validations.go", []string{
+		`type ModelArrayOfRefSliceValidations []ModelInterface`,
+		`func (m ModelArrayOfRefSliceValidations) Validate(formats strfmt.Registry) error {`,
+		`	iModelArrayOfRefSliceValidationsSize := int64(len(m)`,
+		`	if err := validate.MaxItems("", "body", iModelArrayOfRefSliceValidationsSize, 10); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: model_interface.go
+	thisRun.AddExpectations("model_interface.go", []string{
+		`type ModelInterface interface{`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: model_array_of_ref.go
+	thisRun.AddExpectations("model_array_of_ref.go", []string{
+		`type ModelArrayOfRef []ModelArrayOfXNullable`,
+		`func (m ModelArrayOfRef) Validate(formats strfmt.Registry) error {`,
+		`	for i := 0; i < len(m); i++ {`,
+		`		if err := m[i].Validate(formats); err != nil {`,
+		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`				return ve.ValidateName(strconv.Itoa(i)`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
 }

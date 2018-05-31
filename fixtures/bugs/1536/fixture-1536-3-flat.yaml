@@ -1,0 +1,266 @@
+---
+  swagger: "2.0"
+  info: 
+    description: "repro issue 1537"
+    title: "param body with maps"
+    license: 
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+    version: "0.0.1"
+  paths: 
+    /getArray: 
+      get: 
+        operationId: "getArray"
+        parameters: 
+          - 
+            name: "arrayOfObject"
+            in: "body"
+            required: true
+            schema: 
+              type: "array"
+              items: 
+                $ref: "#/definitions/modelObject"
+        responses: 
+          200: 
+            description: "OK"
+    /getArrayNested: 
+      get: 
+        operationId: "getArrayNested"
+        parameters: 
+          - 
+            name: "arrayOfarray"
+            in: "body"
+            required: true
+            schema: 
+              type: "array"
+              items: 
+                type: "array"
+                items: 
+                  $ref: "#/definitions/modelObject"
+        responses: 
+          200: 
+            description: "OK"
+    /getArrayNestedSimple: 
+      get: 
+        operationId: "getArrayNestedSimple"
+        parameters: 
+          - 
+            name: "arrayOfarraySimple"
+            in: "body"
+            required: true
+            schema: 
+              type: "array"
+              items: 
+                type: "array"
+                items: 
+                  type: "string"
+                  maxLength: 100
+        responses: 
+          200: 
+            description: "OK"
+    /getArrayOfInterface: 
+      get: 
+        operationId: "getArrayOfInterface"
+        parameters: 
+          - 
+            name: "arrayOfInterface"
+            in: "body"
+            required: true
+            schema: 
+              type: "array"
+              items: 
+                type: "object"
+                additionalProperties: true
+        responses: 
+          200: 
+            description: "OK"
+    /getArrayOfMap: 
+      get: 
+        operationId: "getArrayOfMap"
+        parameters: 
+          - 
+            name: "arrayOfMap"
+            in: "body"
+            required: true
+            schema: 
+              type: "array"
+              maxItems: 50
+              items: 
+                type: "object"
+                additionalProperties: 
+                  type: "array"
+                  maxItems: 10
+                  items: 
+                    type: "integer"
+                    format: "int32"
+                    maximum: 100
+        responses: 
+          200: 
+            description: "OK"
+    /getMapAnonArray: 
+      get: 
+        operationId: "getMapAnonArray"
+        parameters: 
+          - 
+            name: "mapOfAnonArray"
+            in: "body"
+            required: true
+            schema: 
+              type: "object"
+              additionalProperties: 
+                type: "array"
+                items: 
+                  type: "integer"
+                  minimum: 0
+        responses: 
+          200: 
+            description: "OK"
+    /getMapArray: 
+      get: 
+        operationId: "getMapArray"
+        parameters: 
+          - 
+            name: "mapOfArray"
+            in: "body"
+            required: true
+            schema: 
+              $ref: "#/definitions/getMapArrayParamsBody"
+        responses: 
+          200: 
+            description: "OK"
+    /getMapArrayWithMax: 
+      get: 
+        operationId: "getMapArrayWithMax"
+        parameters: 
+          - 
+            name: "mapOfArrayWithMax"
+            in: "body"
+            required: true
+            schema: 
+              type: "object"
+              additionalProperties: 
+                $ref: "#/definitions/modelArrayWithMax"
+        responses: 
+          200: 
+            description: "OK"
+    /getMapInterface: 
+      get: 
+        operationId: "getMapInterface"
+        parameters: 
+          - 
+            name: "mapOfInterface"
+            in: "body"
+            required: true
+            schema: 
+              type: "object"
+              additionalProperties: 
+                $ref: "#/definitions/modelInterface"
+        responses: 
+          200: 
+            description: "OK"
+    /getMapObject: 
+      get: 
+        operationId: "getMapObject"
+        parameters: 
+          - 
+            name: "mapOfObject"
+            in: "body"
+            required: true
+            schema: 
+              $ref: "#/definitions/getMapObjectParamsBody"
+        responses: 
+          200: 
+            description: "OK"
+    /getMapOfAnonArray: 
+      get: 
+        operationId: "getMapOfAnonArray"
+        parameters: 
+          - 
+            name: "mapOfAnonArray"
+            in: "body"
+            required: true
+            schema: 
+              type: "object"
+              additionalProperties: 
+                type: "array"
+                maxItems: 10
+                items: 
+                  type: "integer"
+                  maximum: 100
+        responses: 
+          200: 
+            description: "OK"
+    /getMapOfAnonMap: 
+      get: 
+        operationId: "getMapOfAnonMap"
+        parameters: 
+          - 
+            name: "mapOfAnonMap"
+            in: "body"
+            required: true
+            schema: 
+              type: "object"
+              additionalProperties: 
+                type: "object"
+                additionalProperties: 
+                  type: "array"
+                  items: 
+                    type: "integer"
+                    maximum: 100
+        responses: 
+          200: 
+            description: "OK"
+    /getMapOfMap: 
+      get: 
+        operationId: "getMapOfMap"
+        parameters: 
+          - 
+            name: "mapOfMap"
+            in: "body"
+            required: true
+            schema: 
+              type: "object"
+              additionalProperties: 
+                type: "object"
+                additionalProperties: 
+                  $ref: "#/definitions/modelArrayWithMax"
+        responses: 
+          200: 
+            description: "OK"
+  definitions: 
+    getMapArrayParamsBody: 
+      type: "object"
+      additionalProperties: 
+        $ref: "#/definitions/modelArray"
+      x-go-gen-location: "operations"
+    getMapObjectParamsBody: 
+      type: "object"
+      additionalProperties: 
+        $ref: "#/definitions/modelObject"
+      x-go-gen-location: "operations"
+    modelArray: 
+      type: "array"
+      items: 
+        $ref: "#/definitions/modelArrayItems"
+    modelArrayItems: 
+      type: "object"
+      properties: 
+        aNum: 
+          type: "integer"
+          maximum: 10
+      x-go-gen-location: "models"
+    modelArrayWithMax: 
+      type: "array"
+      maxItems: 10
+      items: 
+        type: "object"
+    modelInterface: 
+      type: "object"
+      additionalProperties: true
+    modelObject: 
+      type: "object"
+      properties: 
+        aProp: 
+          type: "string"
+          format: "hostname"
+

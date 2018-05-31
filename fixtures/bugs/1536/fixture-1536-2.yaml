@@ -26,12 +26,48 @@
       get: 
         operationId: getSimpleArray
         parameters:
-          - name: simpleBody
+          - name: simpleArray
             in: body
             schema:
               type: array
               items:
                 type: integer
+        responses: 
+          200: 
+            description: "OK"
+    /getSimpleArrayWithValidation:
+      get: 
+        operationId: getSimpleArrayWithValidation
+        parameters:
+          - name: simpleArrayWithValidation
+            in: body
+            schema:
+              type: array
+              items:
+                type: integer
+                maximum: 12
+        responses: 
+          200: 
+            description: "OK"
+    /getSimpleArrayWithSliceValidation:
+      get: 
+        operationId: getSimpleArrayWithSliceValidation
+        parameters:
+          - name: simpleArrayWithSliceValidation
+            in: body
+            schema:
+              type: array
+              items:
+                type: integer
+              enum:
+                - 
+                  - 1
+                  - 2
+                  - 3
+                - 
+                  - 4
+                  - 5
+                  - 6
         responses: 
           200: 
             description: "OK"

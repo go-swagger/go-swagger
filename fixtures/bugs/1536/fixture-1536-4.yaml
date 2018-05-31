@@ -1,0 +1,442 @@
+---
+  swagger: "2.0"
+  info: 
+    title: "param body with maps"
+    version: "0.0.1"
+    description: "repro issue 1537"
+    license: 
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  parameters:
+    nestedArray01:
+      name: nestedArray01
+      in: body
+      required: true
+      schema:
+        type: array
+        maxItems: 10
+        items:
+          type: array
+          maxItems: 10
+          items:
+            type: array
+            maxItems: 10
+            items:
+              type: string
+              format: date
+    nestedArray02:
+      name: nestedArray01
+      in: body
+      required: true
+      schema:
+        type: array
+        maxItems: 10
+        items:
+          type: array
+          maxItems: 10
+          items:
+            type: array
+            maxItems: 10
+            items:
+              # expect this string to be nullable
+              type: string
+              minLength: 0
+    nestedArray03:
+      name: nestedArray03
+      in: body
+      required: true
+      # expect no validation
+      schema:
+        type: array
+        items:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+    nestedArray04:
+      name: nestedArray03
+      in: body
+      required: true
+      # expect slice validations only
+      schema:
+        type: array
+        uniqueItems: true
+        items:
+          type: array
+          uniqueItems: true
+          items:
+            type: array
+            uniqueItems: true
+            items:
+              type: string
+    nestedMap01:
+      name: nestedMap01
+      in: body
+      required: true
+      schema:
+        type: object
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: string
+              format: date
+    nestedMap02:
+      name: nestedMap02
+      in: body
+      required: true
+      schema:
+        type: object
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: string
+              minLength: 0
+    nestedMap03:
+      name: nestedMap03
+      in: body
+      required: true
+      schema:
+        type: object
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: string
+    nestedMap04:
+      name: nestedMap04
+      in: body
+      required: true
+      schema:
+        type: object
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: boolean
+              default: true
+    nestedMapAndSlice01:
+      name: nestedMapAndSlice01
+      in: body
+      required: true
+      schema:
+        type: object
+        additionalProperties:
+          type: array
+          uniqueItems: true
+          items:
+            type: object
+            additionalProperties:
+              type: array
+              uniqueItems: true
+              items:
+                type: object
+                additionalProperties:
+                  type: string
+                  format: date
+    nestedMapAndSlice02:
+      name: nestedMapAndSlice02
+      in: body
+      required: true
+      schema:
+        type: object
+        additionalProperties:
+          type: array
+          uniqueItems: true
+          items:
+            type: object
+            additionalProperties:
+              type: array
+              uniqueItems: true
+              items:
+                type: object
+                additionalProperties:
+                  type: integer
+                  minimum: 0
+    nestedMapAndSlice03:
+      name: nestedMapAndSlice03
+      in: body
+      required: true
+      schema:
+        type: object
+        additionalProperties:
+          type: array
+          uniqueItems: true
+          items:
+            type: object
+            additionalProperties:
+              type: array
+              uniqueItems: true
+              items:
+                type: object
+                additionalProperties:
+                  type: integer
+                  # breaks!!
+                  #type: boolean
+                  #default: true
+    nestedSliceAndMap01:
+      name: nestedSliceAndMap01
+      in: body
+      required: true
+      schema:
+        type: array
+        uniqueItems: true
+        items:
+          type: object
+          additionalProperties:
+            type: array
+            uniqueItems: true
+            items:
+              type: object
+              additionalProperties:
+                type: string
+                format: date
+    nestedSliceAndMap02:
+      name: nestedSliceAndMap02
+      in: body
+      required: true
+      schema:
+        type: array
+        uniqueItems: true
+        items:
+          type: object
+          additionalProperties:
+            type: array
+            uniqueItems: true
+            items:
+              type: object
+              additionalProperties:
+                type: string
+                minLength: 0
+    nestedSliceAndMap03:
+      name: nestedSliceAndMap03
+      in: body
+      required: true
+      schema:
+        type: array
+        uniqueItems: true
+        items:
+          type: object
+          additionalProperties:
+            type: array
+            uniqueItems: true
+            items:
+              type: object
+              additionalProperties:
+                type: string
+  definitions: 
+    modelInterface:
+      type: object
+      additionalProperties: true
+    modelObject:
+      type: object
+      properties:
+        aProp:
+          type: string
+          format: hostname
+    modelArray:
+      type: array
+      items:
+        type: object
+        properties:
+          aNum: 
+            type: integer
+            maximum: 10
+    modelArrayWithMax:
+      type: array
+      maxItems: 10
+      items:
+        type: object
+    nestedSliceAndMap03Ref:
+      type: array
+      uniqueItems: true
+      items:
+        type: object
+        additionalProperties:
+          type: array
+          uniqueItems: true
+          items:
+            type: object
+            additionalProperties:
+              type: string
+    nestedRefNoValidation:
+      type: array
+      items:
+        type: integer
+  paths: 
+    /getNestedArray01:
+      get: 
+        operationId: getNestedArray01
+        parameters:
+          - $ref: '#/parameters/nestedArray01'
+        responses: 
+          200: 
+            description: "OK"
+    /getNestedArray02:
+      get: 
+        operationId: getNestedArray02
+        parameters:
+          - $ref: '#/parameters/nestedArray02'
+        responses: 
+          200: 
+            description: "OK"
+    /getNestedArray03:
+      get: 
+        operationId: getNestedArray03
+        parameters:
+          - $ref: '#/parameters/nestedArray03'
+        responses: 
+          200: 
+            description: "OK"
+    /getNestedArray04:
+      get: 
+        operationId: getNestedArray04
+        parameters:
+          - $ref: '#/parameters/nestedArray04'
+        responses: 
+          200: 
+            description: "OK"
+    /getNestedMap01:
+      get: 
+        operationId: getNestedMap01
+        parameters:
+          - $ref: '#/parameters/nestedMap01'
+        responses: 
+          200: 
+            description: "OK"
+    /getNestedMap02:
+      get: 
+        operationId: getNestedMap02
+        parameters:
+          - $ref: '#/parameters/nestedMap02'
+        responses: 
+          200: 
+            description: "OK"
+    /getNestedMap03:
+      get: 
+        operationId: getNestedMap03
+        parameters:
+          - $ref: '#/parameters/nestedMap03'
+        responses: 
+          200: 
+            description: "OK"
+    /getNestedMap04:
+      get: 
+        operationId: getNestedMap04
+        parameters:
+          - $ref: '#/parameters/nestedMap04'
+        responses: 
+          200: 
+            description: "OK"
+    /getNestedMapAndSlice01:
+      get: 
+        operationId: getNestedMapAndSlice01
+        parameters:
+          - $ref: '#/parameters/nestedMapAndSlice01'
+        responses: 
+          200: 
+            description: "OK"
+    /getNestedMapAndSlice02:
+      get: 
+        operationId: getNestedMapAndSlice02
+        parameters:
+          - $ref: '#/parameters/nestedMapAndSlice02'
+        responses: 
+          200: 
+            description: "OK"
+    /getNestedMapAndSlice03:
+      get: 
+        operationId: getNestedMapAndSlice03
+        parameters:
+          - $ref: '#/parameters/nestedMapAndSlice03'
+        responses: 
+          200: 
+            description: "OK"
+    /getNestedSliceAndMap01:
+      get: 
+        operationId: getNestedSliceAndMap01
+        parameters:
+          - $ref: '#/parameters/nestedSliceAndMap01'
+        responses: 
+          200: 
+            description: "OK"
+    /getNestedSliceAndMap02:
+      get: 
+        operationId: getNestedSliceAndMap02
+        parameters:
+          - $ref: '#/parameters/nestedSliceAndMap02'
+        responses: 
+          200: 
+            description: "OK"
+    /getNestedSliceAndMap03:
+      get: 
+        operationId: getNestedSliceAndMap03
+        parameters:
+          - $ref: '#/parameters/nestedSliceAndMap03'
+        responses: 
+          200: 
+            description: "OK"
+    /getNestedSliceAndMap03Ref:
+      get: 
+        operationId: getNestedSliceAndMap03Ref
+        parameters:
+          - name: nestedSliceAndMap03Ref 
+            in: body
+            required: false 
+            schema:
+              $ref: '#/definitions/nestedSliceAndMap03Ref'
+        responses: 
+          200: 
+            description: "OK"
+    /getNestedRefNoValidation01:
+      get:
+        operationId: getNestedRefNoValidation01
+        parameters:
+          - name: nestedRefNovalidation01
+            in: body
+            required: false 
+            schema:
+              type: object
+              additionalProperties:
+                $ref: '#/definitions/nestedRefNoValidation'
+        responses: 
+          200: 
+            description: "OK"
+    /getNestedRefNoValidation02:
+      get:
+        operationId: getNestedRefNoValidation02
+        parameters:
+          - name: nestedRefNovalidation02
+            in: body
+            required: false 
+            schema:
+              type: object
+              additionalProperties:
+                type: object
+                additionalProperties:
+                  $ref: '#/definitions/nestedRefNoValidation'
+        responses: 
+          200: 
+            description: "OK"
+    /getNestedRefNoValidation03:
+      get:
+        operationId: getNestedRefNoValidation03
+        parameters:
+          - name: nestedRefNovalidation03
+            in: body
+            required: false 
+            schema:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  $ref: '#/definitions/nestedRefNoValidation'
+        responses: 
+          200: 
+            description: "OK"

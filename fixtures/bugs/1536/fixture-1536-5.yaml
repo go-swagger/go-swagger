@@ -1,0 +1,102 @@
+---
+  swagger: "2.0"
+  info: 
+    title: "param body with maps"
+    version: "0.0.1"
+    description: "repro issue 1537"
+    license: 
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  definitions: 
+    modelInterface:
+      type: object
+      additionalProperties: true
+    modelArrayWithMax:
+      type: array
+      maxItems: 10
+      items:
+        type: object
+    modelMapOfRef:
+       type: object
+       additionalProperties:
+         $ref: '#/definitions/modelArrayWithMax'
+    modelArrayOfNotNullable:
+       type: array
+       items:
+         type: integer
+         minimum: 10
+    modelArrayOfNullable:
+       type: array
+       items:
+         type: integer
+         minimum: 0
+    modelArrayOfXNullable:
+       type: array
+       items:
+         type: integer
+         x-nullable: true
+    modelArrayOfNotNullableString:
+       type: array
+       items:
+         type: string
+         default: ""
+    modelArrayOfNullableString:
+       type: array
+       items:
+         type: string
+         default: "abc"
+    modelArrayOfFormat:
+       type: array
+       items:
+         type: string
+         format: uuid
+    modelArrayOfNullableFormat:
+       type: array
+       items:
+         type: string
+         format: uuid
+         x-nullable: true
+    modelArrayOfRef:
+       type: array
+       items:
+         $ref: '#/definitions/modelArrayOfXNullable'
+    modelArrayOfRefNoValidations:
+       type: array
+       items:
+         $ref: '#/definitions/modelInterface'
+    modelArrayOfRefSliceValidations:
+       type: array
+       maxItems: 10
+       items:
+         $ref: '#/definitions/modelInterface'
+    modelMapOfNullablePrimitive:
+      type: object 
+      additionalProperties:
+        type: integer
+        minimum: 0
+    modelMapOfXNullablePrimitive:
+      type: object 
+      additionalProperties:
+        type: integer
+        minimum: 100
+        x-nullable: true
+    modelMapOfOfSliceOfNullablePrimitive:
+      type: object 
+      additionalProperties:
+        type: array
+        items:
+          type: integer
+          minimum: 0
+  paths: 
+    /getMapArrayWithMax:
+      get: 
+        operationId: noop
+        parameters:
+          - name: mapOfNullablePrimitive
+            in: body
+            required: true
+            schema:
+              $ref: '#/definitions/modelMapOfNullablePrimitive'
+        responses: 
+          200: 
+            description: "OK"

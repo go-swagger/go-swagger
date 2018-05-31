@@ -7,7 +7,11 @@ continueOnError=
 # Fixtures with models only
 testcases="${testcases} fixture-1536.yaml"
 testcases="${testcases} fixture-1536-2.yaml"
-#export SWAGGER_DEBUG=1
+testcases="${testcases} fixture-1536-3.yaml"
+testcases="${testcases} fixture-1536-4.yaml"
+testcases="${testcases} fixture-1536-5.yaml"
+#testcases="${testcases} fixture-1536-6.yaml"
+export SWAGGER_DEBUG=1
 #for opts in  "" "--skip-flatten" ; do
 for opts in  "" ; do
 for testcase in ${testcases} ; do
