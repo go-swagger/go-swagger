@@ -15,7 +15,12 @@ swagger:type [type]
 ```go
 // swagger:type string
 type NullString struct {
-	sql.NullString
+     sql.NullString
+}
+
+// swagger:model myString
+type MyString struct {
+     NS NullString
 }
 ```
 
