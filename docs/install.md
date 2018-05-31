@@ -62,7 +62,7 @@ You are welcome to clone this repo and start contributing:
 cd $GOPATH/src
 mkdir -p github.com/go-swagger
 cd github.com/go-swagger
-git clone https:/github.com/go-swagger/go-swagger
+git clone https://github.com/go-swagger/go-swagger
 ```
 
 > **NOTE**: go-swagger works on *nix as well as Windows OS 
