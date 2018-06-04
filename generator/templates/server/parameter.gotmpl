@@ -62,9 +62,17 @@
         {{- end }}
     }
       {{- end }}
-    if err := {{ .ValueExpression }}[{{ .KeyVar }}].Validate(route.Formats); err != nil {
-      res = append(res, err)
-      break
+    if val , ok :={{ .ValueExpression }}[{{ .KeyVar }}]; ok {
+        {{- if and .IsNullable (not .IsMapNullOverride) }}
+        if val != nil {
+        {{- end }}
+        if err := val.Validate(route.Formats); err != nil {
+            res = append(res, err)
+            break
+        }
+        {{- if and .IsNullable (not .IsMapNullOverride) }}
+        }
+        {{- end }}
     }
   }
 
@@ -191,7 +199,7 @@ if err := validate.Enum(
       {{ .Child.Child.ValueExpression }}C := {{ varname .Child.ValueExpression }}V
       {{ template "mapparamvalidator" .Child }}
     {{- else }}
-      {{- if .Child.IsNullable }}
+      {{- if and .Child.IsNullable }}
     if {{ varname .Child.ValueExpression }}V == nil {
        {{- if .Child.Required }}
        return errors.Required({{ .Child.Path }}, {{ printf "%q" .Child.Location }})
@@ -243,7 +251,7 @@ for {{ if or .Child.HasValidations .Child.Converter .Child.IsCustomFormatter }}{
     {{- template "mapparamvalidator" .Child }}
     {{ varname .Child.ValueExpression }}R = append({{ varname .Child.ValueExpression }}R, {{ varname .Child.ValueExpression }}{{ if or .Child.IsArray .Child.IsMap }}IR{{end}})
   {{- else }}{{/* non-array && non-map type in items */}}
-    {{- if .Child.IsNullable }}
+    {{- if and .Child.IsNullable (not .IsMapNullOverride) }}
     if {{ varname .Child.ValueExpression }}V == nil {
        {{- if .Child.Required }}
        return errors.Required({{ .Child.Path }}, {{ printf "%q" .Child.Location }})

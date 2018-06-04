@@ -10,10 +10,11 @@ testcases="${testcases} fixture-1536-2.yaml"
 testcases="${testcases} fixture-1536-3.yaml"
 testcases="${testcases} fixture-1536-4.yaml"
 testcases="${testcases} fixture-1536-5.yaml"
-#testcases="${testcases} fixture-1536-6.yaml"
-export SWAGGER_DEBUG=1
-#for opts in  "" "--skip-flatten" ; do
-for opts in  "" ; do
+testcases="${testcases} fixture-1536-2-responses.yaml"
+testcases="${testcases} ../../codegen/instagram.yml"
+testcases="${testcases} ../../codegen/todolist.responses.yml"
+testcases="${testcases} fixture-1536-models.yaml"
+for opts in  "" "--skip-flatten" ; do
 for testcase in ${testcases} ; do
     grep -q discriminator ${testcase}
     discriminated=$?

@@ -124,6 +124,7 @@ cd ${0%/*}
 specdir="../fixtures/codegen ../fixtures/bugs/909 ../fixtures/bugs/1437 ../fixtures/bugs/1314 ../fixtures/bugs/1062/eve-online-esi.json"
 specdir=${specdir}" ../fixtures/bugs/1392"
 specdir=${specdir}" ../fixtures/bugs/1277"
+specdir=${specdir}" ../fixtures/bugs/1536"
 gendir=./tmp-gen
 rm -rf ${gendir}
 

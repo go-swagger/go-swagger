@@ -8,8 +8,8 @@ continueOnError=
 testcases="${testcases} fixture-1537.yaml"
 testcases="${testcases} fixture-1537-2.yaml"
 #export SWAGGER_DEBUG=1
-#for opts in  "" "--skip-flatten" ; do
-for opts in  "" ; do
+for opts in  "" "--skip-flatten" ; do
+#for opts in  "" ; do
 for testcase in ${testcases} ; do
     grep -q discriminator ${testcase}
     discriminated=$?
