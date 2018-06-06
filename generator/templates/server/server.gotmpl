@@ -502,6 +502,7 @@ func (s *Server) Shutdown() error {
 		return nil
 	}
 	s.shutdown <- struct{}{}
+    close(s.shutdown)
 	return nil
 }
 
