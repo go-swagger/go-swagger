@@ -501,7 +501,6 @@ func (s *Server) Shutdown() error {
 		s.Logf("already shutting down")
 		return nil
 	}
-	s.shutdown <- struct{}{}
     close(s.shutdown)
 	return nil
 }
