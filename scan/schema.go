@@ -21,7 +21,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -85,14 +84,15 @@ func (sv schemaValidations) SetMinimum(val float64, exclusive bool) {
 	sv.current.Minimum = &val
 	sv.current.ExclusiveMinimum = exclusive
 }
-func (sv schemaValidations) SetMultipleOf(val float64) { sv.current.MultipleOf = &val }
-func (sv schemaValidations) SetMinItems(val int64)     { sv.current.MinItems = &val }
-func (sv schemaValidations) SetMaxItems(val int64)     { sv.current.MaxItems = &val }
-func (sv schemaValidations) SetMinLength(val int64)    { sv.current.MinLength = &val }
-func (sv schemaValidations) SetMaxLength(val int64)    { sv.current.MaxLength = &val }
-func (sv schemaValidations) SetPattern(val string)     { sv.current.Pattern = val }
-func (sv schemaValidations) SetUnique(val bool)        { sv.current.UniqueItems = val }
-func (sv schemaValidations) SetDefault(val string)     { sv.current.Default = val }
+func (sv schemaValidations) SetMultipleOf(val float64)  { sv.current.MultipleOf = &val }
+func (sv schemaValidations) SetMinItems(val int64)      { sv.current.MinItems = &val }
+func (sv schemaValidations) SetMaxItems(val int64)      { sv.current.MaxItems = &val }
+func (sv schemaValidations) SetMinLength(val int64)     { sv.current.MinLength = &val }
+func (sv schemaValidations) SetMaxLength(val int64)     { sv.current.MaxLength = &val }
+func (sv schemaValidations) SetPattern(val string)      { sv.current.Pattern = val }
+func (sv schemaValidations) SetUnique(val bool)         { sv.current.UniqueItems = val }
+func (sv schemaValidations) SetDefault(val interface{}) { sv.current.Default = val }
+func (sv schemaValidations) SetExample(val interface{}) { sv.current.Example = val }
 func (sv schemaValidations) SetEnum(val string) {
 	list := strings.Split(val, ",")
 	interfaceSlice := make([]interface{}, len(list))
@@ -100,37 +100,6 @@ func (sv schemaValidations) SetEnum(val string) {
 		interfaceSlice[i] = d
 	}
 	sv.current.Enum = interfaceSlice
-}
-
-func newSchemaAnnotationParser(goName string) *schemaAnnotationParser {
-	return &schemaAnnotationParser{GoName: goName, rx: rxModelOverride}
-}
-
-type schemaAnnotationParser struct {
-	GoName string
-	Name   string
-	rx     *regexp.Regexp
-}
-
-func (sap *schemaAnnotationParser) Matches(line string) bool {
-	return sap.rx.MatchString(line)
-}
-
-func (sap *schemaAnnotationParser) Parse(lines []string) error {
-	if sap.Name != "" {
-		return nil
-	}
-
-	if len(lines) > 0 {
-		for _, line := range lines {
-			matches := sap.rx.FindStringSubmatch(line)
-			if len(matches) > 1 && len(matches[1]) > 0 {
-				sap.Name = matches[1]
-				return nil
-			}
-		}
-	}
-	return nil
 }
 
 type schemaDecl struct {
@@ -242,6 +211,11 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl *sch
 		return err
 	}
 
+	// if the type is marked to ignore, just return
+	if sp.ignored {
+		return nil
+	}
+
 	// analyze struct body for fields etc
 	// each exported struct field:
 	// * gets a type mapped to a go primitive
@@ -252,11 +226,11 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl *sch
 	// * the following lines are the description
 	switch tpe := decl.TypeSpec.Type.(type) {
 	case *ast.StructType:
-		if err := scp.parseStructType(decl.File, schPtr, tpe, make(map[string]struct{})); err != nil {
+		if err := scp.parseStructType(decl.File, schPtr, tpe, make(map[string]string)); err != nil {
 			return err
 		}
 	case *ast.InterfaceType:
-		if err := scp.parseInterfaceType(decl.File, schPtr, tpe, make(map[string]struct{})); err != nil {
+		if err := scp.parseInterfaceType(decl.File, schPtr, tpe, make(map[string]string)); err != nil {
 			return err
 		}
 	case *ast.Ident:
@@ -344,7 +318,7 @@ func (scp *schemaParser) parseNamedType(gofile *ast.File, expr ast.Expr, prop sw
 		if schema == nil {
 			return fmt.Errorf("items doesn't support embedded structs")
 		}
-		return scp.parseStructType(gofile, prop.Schema(), ftpe, make(map[string]struct{}))
+		return scp.parseStructType(gofile, prop.Schema(), ftpe, make(map[string]string))
 
 	case *ast.SelectorExpr:
 		err := scp.typeForSelector(gofile, ftpe, prop)
@@ -389,7 +363,7 @@ func (scp *schemaParser) parseNamedType(gofile *ast.File, expr ast.Expr, prop sw
 	return nil
 }
 
-func (scp *schemaParser) parseEmbeddedType(gofile *ast.File, schema *spec.Schema, expr ast.Expr, seenPreviously map[string]struct{}) error {
+func (scp *schemaParser) parseEmbeddedType(gofile *ast.File, schema *spec.Schema, expr ast.Expr, seenPreviously map[string]string) error {
 	switch tpe := expr.(type) {
 	case *ast.Ident:
 		// do lookup of type
@@ -441,7 +415,7 @@ func (scp *schemaParser) parseEmbeddedType(gofile *ast.File, schema *spec.Schema
 	return fmt.Errorf("unable to resolve embedded struct for: %v", expr)
 }
 
-func (scp *schemaParser) parseAllOfMember(gofile *ast.File, schema *spec.Schema, expr ast.Expr, seenPreviously map[string]struct{}) error {
+func (scp *schemaParser) parseAllOfMember(gofile *ast.File, schema *spec.Schema, expr ast.Expr, seenPreviously map[string]string) error {
 	// TODO: check if struct is annotated with swagger:model or known in the definitions otherwise
 	var pkg *loader.PackageInfo
 	var file *ast.File
@@ -495,7 +469,7 @@ func (scp *schemaParser) parseAllOfMember(gofile *ast.File, schema *spec.Schema,
 
 	return nil
 }
-func (scp *schemaParser) parseInterfaceType(gofile *ast.File, bschema *spec.Schema, tpe *ast.InterfaceType, seenPreviously map[string]struct{}) error {
+func (scp *schemaParser) parseInterfaceType(gofile *ast.File, bschema *spec.Schema, tpe *ast.InterfaceType, seenPreviously map[string]string) error {
 	if tpe.Methods == nil {
 		return nil
 	}
@@ -592,7 +566,7 @@ func (scp *schemaParser) parseInterfaceType(gofile *ast.File, bschema *spec.Sche
 			if ps.Ref.String() == "" && nm != gnm {
 				ps.AddExtension("x-go-name", gnm)
 			}
-			seenProperties[nm] = struct{}{}
+			seenProperties[nm] = gnm
 			schema.Properties[nm] = ps
 		}
 
@@ -608,7 +582,7 @@ func (scp *schemaParser) parseInterfaceType(gofile *ast.File, bschema *spec.Sche
 	return nil
 }
 
-func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema, tpe *ast.StructType, seenPreviously map[string]struct{}) error {
+func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema, tpe *ast.StructType, seenPreviously map[string]string) error {
 	if tpe.Fields == nil {
 		return nil
 	}
@@ -618,7 +592,12 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 
 	for _, fld := range tpe.Fields.List {
 		if len(fld.Names) == 0 {
-			_, ignore, err := parseJSONTag(fld)
+			// if the field is annotated with swagger:ignore, ignore it
+			if ignored(fld.Doc) {
+				continue
+			}
+
+			_, ignore, _, err := parseJSONTag(fld)
 			if err != nil {
 				return err
 			}
@@ -682,18 +661,33 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 	schema.Typed("object", "")
 	for _, fld := range tpe.Fields.List {
 		if len(fld.Names) > 0 && fld.Names[0] != nil && fld.Names[0].IsExported() {
+			// if the field is annotated with swagger:ignore, ignore it
+			if ignored(fld.Doc) {
+				continue
+			}
+
 			gnm := fld.Names[0].Name
-			nm, ignore, err := parseJSONTag(fld)
+			nm, ignore, isString, err := parseJSONTag(fld)
 			if err != nil {
 				return err
 			}
 			if ignore {
+				for seenTagName, seenFieldName := range seenPreviously {
+					if seenFieldName == gnm {
+						delete(schema.Properties, seenTagName)
+						break
+					}
+				}
 				continue
 			}
 
 			ps := schema.Properties[nm]
 			if err := parseProperty(scp, gofile, fld.Type, schemaTypable{&ps, 0}); err != nil {
 				return err
+			}
+			if isString {
+				ps.Typed("string", ps.Format)
+				ps.Ref = spec.Ref{}
 			}
 			if strfmtName, ok := strfmtName(fld.Doc); ok {
 				ps.Typed("string", strfmtName)
@@ -707,7 +701,11 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 			if ps.Ref.String() == "" && nm != gnm {
 				ps.AddExtension("x-go-name", gnm)
 			}
-			seenProperties[nm] = struct{}{}
+			// we have 2 cases:
+			// 1. field with different name override tag
+			// 2. field with different name removes tag
+			// so we need to save both tag&name
+			seenProperties[nm] = gnm
 			schema.Properties[nm] = ps
 		}
 	}
@@ -723,8 +721,12 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 }
 
 func (scp *schemaParser) createParser(nm string, schema, ps *spec.Schema, fld *ast.Field) *sectionedParser {
-
 	sp := new(sectionedParser)
+
+	schemeType, err := ps.Type.MarshalJSON()
+	if err != nil {
+		return nil
+	}
 
 	if ps.Ref.String() == "" {
 		sp.setDescription = func(lines []string) { ps.Description = joinDropLast(lines) }
@@ -739,13 +741,19 @@ func (scp *schemaParser) createParser(nm string, schema, ps *spec.Schema, fld *a
 			newSingleLineTagParser("maxItems", &setMaxItems{schemaValidations{ps}, rxf(rxMaxItemsFmt, "")}),
 			newSingleLineTagParser("unique", &setUnique{schemaValidations{ps}, rxf(rxUniqueFmt, "")}),
 			newSingleLineTagParser("enum", &setEnum{schemaValidations{ps}, rxf(rxEnumFmt, "")}),
-			newSingleLineTagParser("default", &setDefault{schemaValidations{ps}, rxf(rxDefaultFmt, "")}),
+			newSingleLineTagParser("default", &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxDefaultFmt, "")}),
+			newSingleLineTagParser("type", &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxDefaultFmt, "")}),
+			newSingleLineTagParser("example", &setExample{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxExampleFmt, "")}),
 			newSingleLineTagParser("required", &setRequiredSchema{schema, nm}),
 			newSingleLineTagParser("readOnly", &setReadOnlySchema{ps}),
 			newSingleLineTagParser("discriminator", &setDiscriminator{schema, nm}),
 		}
 
 		itemsTaggers := func(items *spec.Schema, level int) []tagParser {
+			schemeType, err := items.Type.MarshalJSON()
+			if err != nil {
+				return nil
+			}
 			// the expression is 1-index based not 0-index
 			itemsPrefix := fmt.Sprintf(rxItemsPrefixFmt, level+1)
 			return []tagParser{
@@ -759,9 +767,9 @@ func (scp *schemaParser) createParser(nm string, schema, ps *spec.Schema, fld *a
 				newSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{schemaValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
 				newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{schemaValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
 				newSingleLineTagParser(fmt.Sprintf("items%dEnum", level), &setEnum{schemaValidations{items}, rxf(rxEnumFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{schemaValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
+				newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
+				newSingleLineTagParser(fmt.Sprintf("items%dExample", level), &setExample{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{items}, rxf(rxExampleFmt, itemsPrefix)}),
 			}
-
 		}
 
 		var parseArrayTypes func(expr ast.Expr, items *spec.SchemaOrArray, level int) ([]tagParser, error)
@@ -843,7 +851,7 @@ func hasFilePathPrefix(s, prefix string) bool {
 func (scp *schemaParser) packageForFile(gofile *ast.File, tpe *ast.Ident) (*loader.PackageInfo, error) {
 	fn := scp.program.Fset.File(gofile.Pos()).Name()
 	if Debug {
-		log.Println("trying for", fn)
+		log.Println("trying for", fn, tpe.Name, tpe.String())
 	}
 	fa, err := filepath.Abs(fn)
 	if err != nil {
@@ -951,8 +959,15 @@ func (scp *schemaParser) makeRef(file *ast.File, pkg *loader.PackageInfo, gd *as
 }
 
 func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.Ident, prop swaggerTypable) error {
+	// before proceeding make an exception to time.Time because it is a well known string format
+	if pkg.String() == "time" && expr.String() == "Time" {
+		prop.Typed("string", "date-time")
+		return nil
+	}
+
 	// find the file this selector points to
 	file, gd, ts, err := findSourceFile(pkg, expr.Name)
+
 	if err != nil {
 		err := swaggerSchemaForType(expr.Name, prop)
 		if err != nil {
@@ -995,6 +1010,20 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 		return nil
 	}
 
+	if typeName, ok := typeName(gd.Doc); ok {
+		swaggerSchemaForType(typeName, prop)
+		return nil
+	}
+
+	if isAliasParam(prop) || aliasParam(gd.Doc) {
+		itype, ok := ts.Type.(*ast.Ident)
+		if ok {
+			err := swaggerSchemaForType(itype.Name, prop)
+			if err == nil {
+				return nil
+			}
+		}
+	}
 	switch tpe := ts.Type.(type) {
 	case *ast.ArrayType:
 		return scp.makeRef(file, pkg, gd, ts, prop)
@@ -1027,39 +1056,10 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 
 }
 
-// unused
-// func fName() string {
-// 	pc, _, _, _ := runtime.Caller(1)
-// 	return runtime.FuncForPC(pc).Name()
-// }
-
 func (scp *schemaParser) typeForSelector(gofile *ast.File, expr *ast.SelectorExpr, prop swaggerTypable) error {
 	pkg, err := scp.packageForSelector(gofile, expr.X)
 	if err != nil {
 		return err
-	}
-
-	return scp.parseIdentProperty(pkg, expr.Sel, prop)
-}
-
-func (scp *schemaParser) schemaForSelector(gofile *ast.File, expr *ast.SelectorExpr, prop swaggerTypable) error {
-	pkg, err := scp.packageForSelector(gofile, expr.X)
-	if err != nil {
-		return err
-	}
-
-	_, gd, _, err := findSourceFile(pkg, expr.Sel.Name)
-	if err != nil {
-		err := swaggerSchemaForType(expr.Sel.Name, prop)
-		if err != nil {
-			return fmt.Errorf("package %s, error is: %v", pkg.String(), err)
-		}
-		return nil
-	}
-
-	if swfmt, ok := strfmtName(gd.Doc); ok {
-		prop.Typed("string", swfmt)
-		return nil
 	}
 
 	return scp.parseIdentProperty(pkg, expr.Sel, prop)
@@ -1123,6 +1123,19 @@ func strfmtName(comments *ast.CommentGroup) (string, bool) {
 	return "", false
 }
 
+func ignored(comments *ast.CommentGroup) bool {
+	if comments != nil {
+		for _, cmt := range comments.List {
+			for _, ln := range strings.Split(cmt.Text, "\n") {
+				if rxIgnoreOverride.MatchString(ln) {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
 func enumName(comments *ast.CommentGroup) (string, bool) {
 	if comments != nil {
 		for _, cmt := range comments.List {
@@ -1137,6 +1150,19 @@ func enumName(comments *ast.CommentGroup) (string, bool) {
 	return "", false
 }
 
+func aliasParam(comments *ast.CommentGroup) bool {
+	if comments != nil {
+		for _, cmt := range comments.List {
+			for _, ln := range strings.Split(cmt.Text, "\n") {
+				if rxAlias.MatchString(ln) {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
 func defaultName(comments *ast.CommentGroup) (string, bool) {
 	if comments != nil {
 		for _, cmt := range comments.List {
@@ -1144,6 +1170,23 @@ func defaultName(comments *ast.CommentGroup) (string, bool) {
 				matches := rxDefault.FindStringSubmatch(ln)
 				if len(matches) > 1 && len(strings.TrimSpace(matches[1])) > 0 {
 					return strings.TrimSpace(matches[1]), true
+				}
+			}
+		}
+	}
+	return "", false
+}
+
+func typeName(comments *ast.CommentGroup) (string, bool) {
+
+	var typ string
+	if comments != nil {
+		for _, cmt := range comments.List {
+			for _, ln := range strings.Split(cmt.Text, "\n") {
+				matches := rxType.FindStringSubmatch(ln)
+				if len(matches) > 1 && len(strings.TrimSpace(matches[1])) > 0 {
+					typ = strings.TrimSpace(matches[1])
+					return typ, true
 				}
 			}
 		}
@@ -1175,7 +1218,7 @@ func parseProperty(scp *schemaParser, gofile *ast.File, fld ast.Expr, prop swagg
 		if schema == nil {
 			return fmt.Errorf("items doesn't support embedded structs")
 		}
-		return scp.parseStructType(gofile, prop.Schema(), ftpe, make(map[string]struct{}))
+		return scp.parseStructType(gofile, prop.Schema(), ftpe, make(map[string]string))
 
 	case *ast.SelectorExpr:
 		err := scp.typeForSelector(gofile, ftpe, prop)
@@ -1220,25 +1263,41 @@ func parseProperty(scp *schemaParser, gofile *ast.File, fld ast.Expr, prop swagg
 	return nil
 }
 
-func parseJSONTag(field *ast.Field) (name string, ignore bool, err error) {
+func parseJSONTag(field *ast.Field) (name string, ignore bool, isString bool, err error) {
 	if len(field.Names) > 0 {
 		name = field.Names[0].Name
 	}
 	if field.Tag != nil && len(strings.TrimSpace(field.Tag.Value)) > 0 {
 		tv, err := strconv.Unquote(field.Tag.Value)
 		if err != nil {
-			return name, false, err
+			return name, false, false, err
 		}
 
 		if strings.TrimSpace(tv) != "" {
 			st := reflect.StructTag(tv)
-			jsonName := strings.Split(st.Get("json"), ",")[0]
+			jsonParts := strings.Split(st.Get("json"), ",")
+			jsonName := jsonParts[0]
+
+			if len(jsonParts) > 1 && jsonParts[1] == "string" {
+				// Need to check if the field type is a scalar. Otherwise, the
+				// ",string" directive doesn't apply.
+				ident, ok := field.Type.(*ast.Ident)
+				if ok {
+					switch ident.Name {
+					case "int", "int8", "int16", "int32", "int64",
+						"uint", "uint8", "uint16", "uint32", "uint64",
+						"float64", "string", "bool":
+						isString = true
+					}
+				}
+			}
+
 			if jsonName == "-" {
-				return name, true, nil
+				return name, true, isString, nil
 			} else if jsonName != "" {
-				return jsonName, false, nil
+				return jsonName, false, isString, nil
 			}
 		}
 	}
-	return name, false, nil
+	return name, false, false, nil
 }

@@ -60,6 +60,7 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 	if opts == nil {
 		return errors.New("gen opts are required")
 	}
+	templates.LoadDefaults()
 	if opts.TemplateDir != "" {
 		if err := templates.LoadDir(opts.TemplateDir); err != nil {
 			return err
@@ -71,9 +72,19 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 	if err != nil {
 		return err
 	}
+
+	// Validate and Expand. specDoc is in/out param.
+	specDoc, err = validateAndFlattenSpec(opts, specDoc)
+	if err != nil {
+		return err
+	}
+
 	analyzed := analysis.New(specDoc.Spec())
 
 	ops := gatherOperations(analyzed, operationNames)
+	if len(ops) == 0 {
+		return errors.New("no operations were selected")
+	}
 
 	for operationName, opRef := range ops {
 		method, path, operation := opRef.Method, opRef.Path, opRef.Op
@@ -148,7 +159,7 @@ type operationGenerator struct {
 	ServerPackage        string
 	ClientPackage        string
 	Operation            spec.Operation
-	SecurityRequirements []analysis.SecurityRequirement
+	SecurityRequirements [][]analysis.SecurityRequirement
 	SecurityDefinitions  map[string]spec.SecurityScheme
 	Tags                 []string
 	DefaultScheme        string
@@ -203,7 +214,7 @@ func (o *operationGenerator) Generate() error {
 
 	bldr.DefaultImports = []string{o.GenOpts.ExistingModels}
 	if o.GenOpts.ExistingModels == "" {
-		bldr.DefaultImports = []string{filepath.ToSlash(filepath.Join(baseImport(o.Base), o.ModelsPackage))}
+		bldr.DefaultImports = []string{filepath.ToSlash(filepath.Join(o.GenOpts.LanguageOpts.baseImport(o.Base), o.ModelsPackage))}
 	}
 
 	bldr.APIPackage = bldr.RootAPIPackage
@@ -256,10 +267,11 @@ type codeGenOpBuilder struct {
 	Doc                 *loads.Document
 	Analyzed            *analysis.Spec
 	DefaultImports      []string
+	Imports             map[string]string
 	DefaultScheme       string
 	DefaultProduces     string
 	DefaultConsumes     string
-	Security            []analysis.SecurityRequirement
+	Security            [][]analysis.SecurityRequirement
 	SecurityDefinitions map[string]spec.SecurityScheme
 	ExtraSchemas        map[string]GenSchema
 	GenOpts             *GenOpts
@@ -291,12 +303,14 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	if Debug {
 		log.Printf("[%s %s] parsing operation (id: %q)", b.Method, b.Path, b.Operation.ID)
 	}
-	resolver := newTypeResolver(b.ModelsPackage, b.Doc.ResetDefinitions())
+	// @eleanorrigby : letting the comment be. Commented in response to issue#890
+	// Post-flattening of spec we no longer need to reset defs for spec or use original spec in any case.
+	resolver := newTypeResolver(b.ModelsPackage, b.Doc /*.ResetDefinitions()*/)
 	receiver := "o"
 
 	operation := b.Operation
 	var params, qp, pp, hp, fp GenParameters
-	var hasQueryParams, hasFormParams, hasFileParams, hasFormValueParams bool
+	var hasQueryParams, hasPathParams, hasHeaderParams, hasFormParams, hasFileParams, hasFormValueParams, hasBodyParams bool
 	paramsForOperation := b.Analyzed.ParamsFor(b.Method, b.Path)
 	timeoutName := "timeout"
 
@@ -342,10 +356,15 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 			fp = append(fp, cp)
 		}
 		if cp.IsPathParam() {
+			hasPathParams = true
 			pp = append(pp, cp)
 		}
 		if cp.IsHeaderParam() {
+			hasHeaderParams = true
 			hp = append(hp, cp)
+		}
+		if cp.IsBodyParam() {
+			hasBodyParams = true
 		}
 		params = append(params, cp)
 	}
@@ -364,7 +383,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	var successResponses []GenResponse
 	if operation.Responses != nil {
 		for _, v := range srs {
-			name, ok := v.Response.Extensions.GetString("x-go-name")
+			name, ok := v.Response.Extensions.GetString(xGoName)
 			if !ok {
 				name = runtime.Statuses[v.Code]
 			}
@@ -397,24 +416,25 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		defaultResponse = &gr
 	}
 
-	prin := b.Principal
-	if prin == "" {
-		prin = iface
+	if b.Principal == "" {
+		b.Principal = iface
 	}
 
 	var extra GenSchemaList
 	for _, sch := range b.ExtraSchemas {
-		extra = append(extra, sch)
+		if !sch.IsStream {
+			extra = append(extra, sch)
+		}
 	}
 	sort.Sort(extra)
 
 	swsp := resolver.Doc.Spec()
 	var extraSchemes []string
-	if ess, ok := operation.Extensions.GetStringSlice("x-schemes"); ok {
+	if ess, ok := operation.Extensions.GetStringSlice(xSchemes); ok {
 		extraSchemes = append(extraSchemes, ess...)
 	}
 
-	if ess1, ok := swsp.Extensions.GetStringSlice("x-schemes"); ok {
+	if ess1, ok := swsp.Extensions.GetStringSlice(xSchemes); ok {
 		extraSchemes = concatUnique(ess1, extraSchemes)
 	}
 	sort.Strings(extraSchemes)
@@ -452,6 +472,10 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	}
 
 	return GenOperation{
+		GenCommon: GenCommon{
+			Copyright:        b.GenOpts.Copyright,
+			TargetImportPath: filepath.ToSlash(b.GenOpts.LanguageOpts.baseImport(b.GenOpts.Target)),
+		},
 		Package:              b.APIPackage,
 		RootPackage:          b.RootAPIPackage,
 		Name:                 b.Name,
@@ -462,6 +486,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		Description:          trimBOM(operation.Description),
 		ReceiverName:         receiver,
 		DefaultImports:       b.DefaultImports,
+		Imports:              b.Imports,
 		Params:               params,
 		Summary:              trimBOM(operation.Summary),
 		QueryParams:          qp,
@@ -469,14 +494,17 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		HeaderParams:         hp,
 		FormParams:           fp,
 		HasQueryParams:       hasQueryParams,
+		HasPathParams:        hasPathParams,
+		HasHeaderParams:      hasHeaderParams,
 		HasFormParams:        hasFormParams,
 		HasFormValueParams:   hasFormValueParams,
 		HasFileParams:        hasFileParams,
+		HasBodyParams:        hasBodyParams,
 		HasStreamingResponse: hasStreamingResponse,
 		Authorized:           b.Authed,
-		Security:             b.Security,
-		SecurityDefinitions:  b.SecurityDefinitions,
-		Principal:            prin,
+		Security:             b.makeSecurityRequirements(receiver),
+		SecurityDefinitions:  b.makeSecuritySchemes(receiver),
+		Principal:            b.Principal,
 		Responses:            responses,
 		DefaultResponse:      defaultResponse,
 		SuccessResponse:      successResponse,
@@ -488,6 +516,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		ExtraSchemes:         extraSchemes,
 		WithContext:          b.WithContext,
 		TimeoutName:          timeoutName,
+		Extensions:           operation.Extensions,
 	}, nil
 }
 
@@ -546,12 +575,13 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 		ReceiverName:   receiver,
 		Name:           name,
 		Description:    trimBOM(resp.Description),
-		DefaultImports: nil,
-		Imports:        nil,
+		DefaultImports: b.DefaultImports,
+		Imports:        b.Imports,
 		IsSuccess:      isSuccess,
 		Code:           code,
 		Method:         b.Method,
 		Path:           b.Path,
+		Extensions:     resp.Extensions,
 	}
 
 	for hName, header := range resp.Headers {
@@ -568,7 +598,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 		rslv := resolver
 		sch := resp.Schema
 		if resp.Schema.Ref.String() != "" && !resp.Schema.Ref.HasFragmentOnly {
-			ss, err := spec.ResolveRefWithBase(b.Doc.Spec(), &resp.Schema.Ref, &spec.ExpandOptions{RelativeBase: b.Doc.SpecFilePath()})
+			ss, err := spec.ResolveRefWithBase(b.Doc.Spec(), &resp.Schema.Ref, nil)
 			if err != nil {
 				return GenResponse{}, err
 			}
@@ -599,7 +629,9 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 			if b.ExtraSchemas == nil {
 				b.ExtraSchemas = make(map[string]GenSchema)
 			}
-			b.ExtraSchemas[k] = v
+			if !v.IsStream {
+				b.ExtraSchemas[k] = v
+			}
 		}
 
 		schema := sc.GenSchema
@@ -607,7 +639,9 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 			if b.ExtraSchemas == nil {
 				b.ExtraSchemas = make(map[string]GenSchema)
 			}
-			b.ExtraSchemas[schema.Name] = schema
+			if !schema.IsStream {
+				b.ExtraSchemas[schema.Name] = schema
+			}
 		}
 		if schema.IsAnonymous {
 
@@ -616,7 +650,9 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 			if b.ExtraSchemas == nil {
 				b.ExtraSchemas = make(map[string]GenSchema)
 			}
-			b.ExtraSchemas[schema.Name] = schema
+			if !schema.IsStream {
+				b.ExtraSchemas[schema.Name] = schema
+			}
 			schema = GenSchema{}
 			schema.IsAnonymous = false
 			schema.GoType = resolver.goTypeName(nm)
@@ -639,7 +675,7 @@ func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) (G
 	id := swag.ToGoName(name)
 	res := GenHeader{
 		sharedValidations: sharedValidations{
-			Required:            true,
+			Required:            true, // NOTE: Required is not defined by the Swagger schema for header. Set arbitrarily to true for convenience in templates.
 			Maximum:             hdr.Maximum,
 			ExclusiveMaximum:    hdr.ExclusiveMaximum,
 			Minimum:             hdr.Minimum,
@@ -703,7 +739,7 @@ func (b *codeGenOpBuilder) MakeHeaderItem(receiver, paramName, indexVar, path, v
 	res.Name = paramName
 	res.Path = path
 	res.Location = "header"
-	res.ValueExpression = valueExpression
+	res.ValueExpression = swag.ToVarName(valueExpression)
 	res.CollectionFormat = items.CollectionFormat
 	res.Converter = stringConverters[res.GoType]
 	res.Formatter = stringFormatters[res.GoType]
@@ -716,12 +752,16 @@ func (b *codeGenOpBuilder) MakeHeaderItem(receiver, paramName, indexVar, path, v
 	res.HasSliceValidations = hasSliceValidations
 
 	if items.Items != nil {
-		hi, err := b.MakeHeaderItem(receiver, paramName+" "+indexVar, indexVar+"i", "fmt.Sprintf(\"%s.%v\", \"header\", "+indexVar+")", valueExpression+"I", items.Items, items)
+		// Recursively follows nested arrays
+		// IMPORTANT! transmitting a ValueExpression consistent with the parent's one
+		hi, err := b.MakeHeaderItem(receiver, paramName+" "+indexVar, indexVar+"i", "fmt.Sprintf(\"%s.%v\", \"header\", "+indexVar+")", res.ValueExpression+"I", items.Items, items)
 		if err != nil {
 			return GenItems{}, err
 		}
 		res.Child = &hi
 		hi.Parent = &res
+		// Propagates HasValidations flag to outer Items definition (currently not in use: done to remain consistent with parameters)
+		res.HasValidations = res.HasValidations || hi.HasValidations
 	}
 
 	return res, nil
@@ -756,17 +796,22 @@ func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path
 	hasNumberValidation := items.Maximum != nil || items.Minimum != nil || items.MultipleOf != nil
 	hasStringValidation := items.MaxLength != nil || items.MinLength != nil || items.Pattern != ""
 	hasSliceValidations := items.MaxItems != nil || items.MinItems != nil || items.UniqueItems
-	hasValidations := hasNumberValidation || hasStringValidation || hasSliceValidations || len(items.Enum) > 0
+
+	hasValidations := hasNumberValidation || hasStringValidation || hasSliceValidations || len(items.Enum) > 0 || res.IsCustomFormatter
 	res.HasValidations = hasValidations
 	res.HasSliceValidations = hasSliceValidations
 
 	if items.Items != nil {
-		pi, err := b.MakeParameterItem(receiver, paramName+" "+indexVar, indexVar+"i", "fmt.Sprintf(\"%s.%v\", "+path+", "+indexVar+")", valueExpression+"I", location, resolver, items.Items, items)
+		// Recursively follows nested arrays
+		// IMPORTANT! transmitting a ValueExpression consistent with the parent's one
+		pi, err := b.MakeParameterItem(receiver, paramName+" "+indexVar, indexVar+"i", "fmt.Sprintf(\"%s.%v\", "+path+", "+indexVar+")", res.ValueExpression+"I", location, resolver, items.Items, items)
 		if err != nil {
 			return GenItems{}, err
 		}
 		res.Child = &pi
 		pi.Parent = &res
+		// Propagates HasValidations flag to outer Items definition
+		res.HasValidations = res.HasValidations || pi.HasValidations
 	}
 
 	return res, nil
@@ -778,6 +823,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 	}
 
 	if param.Ref.String() != "" {
+		// Resolve $ref before all
 		param2, err := spec.ResolveParameter(b.Doc.Spec(), param.Ref)
 		if err != nil {
 			return GenParameter{}, err
@@ -793,6 +839,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 	if len(idMapping) > 0 {
 		id = idMapping[param.In][param.Name]
 	}
+
 	res := GenParameter{
 		ID:               id,
 		Name:             param.Name,
@@ -809,14 +856,18 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		Child:            child,
 		Location:         param.In,
 		AllowEmptyValue:  (param.In == "query" || param.In == "formData") && param.AllowEmptyValue,
+		Extensions:       param.Extensions,
 	}
 
+	hasChildValidations := false
+
 	if param.In == "body" {
+		// Process parameters declared in body (i.e. have a Schema)
 		var named bool
 		rslv := resolver
 		sch := param.Schema
 		if sch.Ref.String() != "" && !sch.Ref.HasFragmentOnly {
-			ss, err := spec.ResolveRefWithBase(b.Doc.Spec(), &sch.Ref, &spec.ExpandOptions{RelativeBase: b.Doc.SpecFilePath()})
+			ss, err := spec.ResolveRefWithBase(b.Doc.Spec(), &sch.Ref, nil)
 			if err != nil {
 				return GenParameter{}, err
 			}
@@ -842,6 +893,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		if err := sc.makeGenSchema(); err != nil {
 			return GenParameter{}, err
 		}
+		// TODO: lift nested extra schemas
 
 		schema := sc.GenSchema
 		if named {
@@ -851,6 +903,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 			b.ExtraSchemas[b.Operation.ID+"ParamsBody"] = schema
 		}
 		if schema.IsAnonymous {
+			// A generated name for anonymous parameter in body
 			schema.Name = swag.ToGoName(b.Operation.ID + " Body")
 			nm := schema.Name
 			schema.GoType = nm
@@ -873,29 +926,79 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 			schema.IsInterface = len(schema.Properties) == 0
 		}
 		res.Schema = &schema
-		it := res.Schema.Items
 
+		// clone the .Items schema structure as a .GenItems structure
+		// for compatibility with simple param templates
+		it := res.Schema.Items
 		items := new(GenItems)
-		var prev *GenItems
-		next := items
-		for it != nil {
-			next.resolvedType = it.resolvedType
-			next.sharedValidations = it.sharedValidations
-			next.Formatter = stringFormatters[it.SwaggerFormat]
-			_, next.IsCustomFormatter = customFormatters[it.SwaggerFormat]
-			it = it.Items
-			if prev != nil {
-				prev.Child = next
+		if it != nil {
+			var prev *GenItems
+			next := items
+			next.Name = res.Name + " " + res.Schema.IndexVar
+			next.IndexVar = res.Schema.IndexVar + "i"
+			next.ValueExpression = swag.ToVarName(res.Name + "I")
+			next.Path = "fmt.Sprintf(\"%s.%v\", " + res.Path + ", " + res.IndexVar + ")"
+			next.Location = "body"
+			for it != nil {
+				next.resolvedType = it.resolvedType
+				next.sharedValidations = it.sharedValidations
+				next.Formatter = stringFormatters[it.SwaggerFormat]
+				next.Converter = stringConverters[res.GoType]
+				next.Parent = prev
+				_, next.IsCustomFormatter = customFormatters[it.GoType]
+				next.IsCustomFormatter = next.IsCustomFormatter && !it.IsStream
+
+				// special instruction to avoid using CollectionFormat for body params
+				next.SkipParse = true
+
+				if prev != nil {
+					next.Name = prev.Name + prev.IndexVar
+					next.IndexVar = prev.IndexVar + "i"
+					next.ValueExpression = swag.ToVarName(prev.ValueExpression + "I")
+					next.Path = "fmt.Sprintf(\"%s.%v\", " + prev.Path + ", " + prev.IndexVar + ")"
+					prev.Child = next
+				}
+
+				// found a complex or aliased thing
+				// hide details from the aliased type and stop recursing
+				if next.IsAliased || next.IsComplexObject {
+					next.IsArray = false
+					next.IsCustomFormatter = false
+					if !(next.IsInterface || next.IsStream) {
+						next.HasValidations = true
+					}
+					next.IsComplexObject = true
+					next.IsAliased = true
+					break
+				}
+				prev = next
+				next = new(GenItems)
+				it = it.Items
 			}
-			prev = next
-			next = new(GenItems)
+			// propagate HasValidations
+			var propag func(child *GenItems) bool
+			propag = func(child *GenItems) bool {
+				if child == nil {
+					return false
+				}
+				child.HasValidations = child.HasValidations || propag(child.Child)
+				return child.HasValidations
+			}
+			items.HasValidations = propag(items)
+			schema.HasValidations = schema.HasValidations || items.HasValidations
 		}
+
+		// templates assume at least one .Child != nil
 		res.Child = items
+		hasChildValidations = res.Child.HasValidations
+
 		res.resolvedType = schema.resolvedType
+
+		// simple and schema views share the same validations
 		res.sharedValidations = schema.sharedValidations
 		res.ZeroValue = schema.Zero()
-
 	} else {
+		// Process parameters declared in other inputs: path, query, header (SimpleSchema)
 		res.resolvedType = simpleResolvedType(param.Type, param.Format, param.Items)
 		res.sharedValidations = sharedValidations{
 			Required:         param.Required,
@@ -913,25 +1016,99 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 			Enum:             param.Enum,
 		}
 
+		res.ZeroValue = res.resolvedType.Zero()
+
 		if param.Items != nil {
+			// Follow Items definition for array parameters
 			pi, err := b.MakeParameterItem(receiver, param.Name+" "+res.IndexVar, res.IndexVar+"i", "fmt.Sprintf(\"%s.%v\", "+res.Path+", "+res.IndexVar+")", res.Name+"I", param.In, resolver, param.Items, nil)
 			if err != nil {
 				return GenParameter{}, err
 			}
 			res.Child = &pi
+			// Propagates HasValidations from from child array
+			hasChildValidations = pi.HasValidations
 		}
 		res.IsNullable = !param.Required && !param.AllowEmptyValue
-
 	}
 
+	// Summarize validation requirements for code generator
 	hasNumberValidation := param.Maximum != nil || param.Minimum != nil || param.MultipleOf != nil
 	hasStringValidation := param.MaxLength != nil || param.MinLength != nil || param.Pattern != ""
 	hasSliceValidations := param.MaxItems != nil || param.MinItems != nil || param.UniqueItems
-	hasValidations := hasNumberValidation || hasStringValidation || hasSliceValidations || len(param.Enum) > 0
+	hasValidations := hasNumberValidation || hasStringValidation || hasSliceValidations || len(param.Enum) > 0 || hasChildValidations
 
 	res.Converter = stringConverters[res.GoType]
 	res.Formatter = stringFormatters[res.GoType]
-	res.HasValidations = hasValidations
+
+	// Custom format requires a validation too (but not when binary)
+	res.HasValidations = hasValidations || (res.IsCustomFormatter && !res.IsStream)
 	res.HasSliceValidations = hasSliceValidations
+
+	b.setBodyParamValidation(&res)
+
 	return res, nil
+}
+
+func (b *codeGenOpBuilder) setBodyParamValidation(p *GenParameter) {
+	// determine validation strategy for body param
+	if p.IsBodyParam() {
+		var hasSimpleBodyParams, hasSimpleBodyItems, hasModelBodyParams, hasModelBodyItems bool
+		s := p.Schema
+		if s != nil {
+			doNot := s.IsInterface || s.IsStream
+			// composition of primitive fields must be properly identified: hack this through
+			_, isPrimitive := primitives[s.GoType]
+			_, isFormatter := customFormatters[s.GoType]
+			isComposedPrimitive := s.IsPrimitive && !(isPrimitive || isFormatter)
+
+			hasSimpleBodyParams = !s.IsComplexObject && !s.IsAliased && !isComposedPrimitive && !doNot
+			hasModelBodyParams = (s.IsComplexObject || s.IsAliased || isComposedPrimitive) && !doNot
+
+			if s.IsArray && s.Items != nil {
+				it := s.Items
+				doNot := it.IsInterface || it.IsStream
+				hasSimpleBodyItems = !it.IsComplexObject && !(it.IsAliased || doNot)
+				hasModelBodyItems = (it.IsComplexObject || it.IsAliased) && !doNot
+			}
+		}
+		// set validation strategy for body param
+		p.HasSimpleBodyParams = hasSimpleBodyParams
+		p.HasSimpleBodyItems = hasSimpleBodyItems
+		p.HasModelBodyParams = hasModelBodyParams
+		p.HasModelBodyItems = hasModelBodyItems
+	}
+
+}
+
+// makeSecuritySchemes produces a sorted list of security schemes for this operation
+func (b *codeGenOpBuilder) makeSecuritySchemes(receiver string) GenSecuritySchemes {
+	return gatherSecuritySchemes(b.SecurityDefinitions, b.Name, b.Principal, receiver)
+}
+
+// makeSecurityRequirements produces a sorted list of security requirements for this operation.
+// As for current, these requirements are not used by codegen (sec. requirement is determined at runtime).
+// We keep the order of the slice from the original spec, but sort the inner slice which comes from a map,
+// as well as the map of scopes.
+func (b *codeGenOpBuilder) makeSecurityRequirements(receiver string) []GenSecurityRequirements {
+	if b.Security == nil {
+		// nil (default requirement) is different than [] (no requirement)
+		return nil
+	}
+
+	securityRequirements := make([]GenSecurityRequirements, 0, len(b.Security))
+	for _, req := range b.Security {
+		jointReq := make(GenSecurityRequirements, 0, len(req))
+		for _, j := range req {
+			scopes := j.Scopes
+			sort.Strings(scopes)
+			jointReq = append(jointReq, GenSecurityRequirement{
+				Name:   j.Name,
+				Scopes: scopes,
+			})
+		}
+		// sort joint requirements (come from a map in spec)
+		sort.Sort(jointReq)
+		securityRequirements = append(securityRequirements, jointReq)
+	}
+	return securityRequirements
 }

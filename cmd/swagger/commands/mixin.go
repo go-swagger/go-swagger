@@ -57,7 +57,7 @@ func (c *MixinSpec) Execute(args []string) error {
 		if len(collisions) != 0 {
 			// use bash $? to get actual # collisions
 			// (but has to be non-zero)
-			os.Exit(int(len(collisions)))
+			os.Exit(len(collisions))
 		}
 		os.Exit(254)
 	}
@@ -80,9 +80,9 @@ func MixinFiles(primaryFile string, mixinFiles []string, w io.Writer) ([]string,
 
 	var mixins []*spec.Swagger
 	for _, mixinFile := range mixinFiles {
-		mixin, err := loads.Spec(mixinFile)
-		if err != nil {
-			return nil, err
+		mixin, lerr := loads.Spec(mixinFile)
+		if lerr != nil {
+			return nil, lerr
 		}
 		mixins = append(mixins, mixin.Spec())
 	}
@@ -92,10 +92,13 @@ func MixinFiles(primaryFile string, mixinFiles []string, w io.Writer) ([]string,
 
 	bs, err := json.MarshalIndent(primary, "", "  ")
 	if err != nil {
-		return collisions, err
+		return nil, err
 	}
 
-	w.Write(bs)
+	_, err = w.Write(bs)
+	if err != nil {
+		return nil, err
+	}
 
 	return collisions, nil
 }

@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -89,16 +90,23 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	"joinFilePath": filepath.Join,
 	"comment": func(str string) string {
 		lines := strings.Split(str, "\n")
-		return strings.Join(lines, "\n// ")
+		return (strings.Join(lines, "\n// "))
+	},
+	"blockcomment": func(str string) string {
+		return strings.Replace(str, "*/", "[*]/", -1)
 	},
 	"inspect":   pretty.Sprint,
 	"cleanPath": path.Clean,
+	"mediaTypeName": func(orig string) string {
+		return strings.SplitN(orig, ";", 2)[0]
+	},
+	"goSliceInitializer": goSliceInitializer,
+	"hasPrefix":          strings.HasPrefix,
+	"stringContains":     strings.Contains,
 }
 
 func init() {
 	templates = NewRepository(FuncMap)
-	templates.LoadDefaults()
-
 }
 
 var assets = map[string][]byte{
@@ -176,6 +184,16 @@ var protectedTemplates = map[string]bool{
 	"discriminatedSerializer":        true,
 }
 
+// AddFile adds a file to the default repository. It will create a new template based on the filename.
+// It trims the .gotmpl from the end and converts the name using swag.ToJSONName. This will strip
+// directory separators and Camelcase the next letter.
+// e.g validation/primitive.gotmpl will become validationPrimitive
+//
+// If the file contains a definition for a template that is protected the whole file will not be added
+func AddFile(name, data string) error {
+	return templates.addFile(name, data, false)
+}
+
 func asJSON(data interface{}) (string, error) {
 	b, err := json.Marshal(data)
 	if err != nil {
@@ -190,6 +208,19 @@ func asPrettyJSON(data interface{}) (string, error) {
 		return "", err
 	}
 	return string(b), nil
+}
+
+func goSliceInitializer(data interface{}) (string, error) {
+	// goSliceInitializer constructs a Go literal initializer from interface{} literals.
+	// e.g. []interface{}{"a", "b"} is transformed in {"a","b",}
+	// e.g. map[string]interface{}{ "a": "x", "b": "y"} is transformed in {"a":"x","b":"y",}
+	// NOTE: this is currently used to construct simple slice intializers for default values.
+	// This allows for nicer slice initializers for slices of primitive types and avoid systematic use for json.Unmarshal().
+	b, err := json.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+	return strings.Replace(strings.Replace(strings.Replace(string(b), "}", ",}", -1), "[", "{", -1), "]", ",}", -1), nil
 }
 
 // NewRepository creates a new template repository with the provided functions defined
@@ -230,21 +261,27 @@ func (t *Repository) LoadDir(templatePath string) error {
 	err := filepath.Walk(templatePath, func(path string, info os.FileInfo, err error) error {
 
 		if strings.HasSuffix(path, ".gotmpl") {
-			assetName := strings.TrimPrefix(path, templatePath)
-			if data, e := ioutil.ReadFile(path); e == nil {
-				if ee := t.AddFile(assetName, string(data)); ee != nil {
-					log.Fatal(ee)
+			if assetName, e := filepath.Rel(templatePath, path); e == nil {
+				if data, e := ioutil.ReadFile(path); e == nil {
+					if ee := t.AddFile(assetName, string(data)); ee != nil {
+						// Fatality is decided by caller
+						// log.Fatal(ee)
+						return fmt.Errorf("Could not add template: %v", ee)
+					}
 				}
+				// Non-readable files are skipped
 			}
 		}
 		if err != nil {
 			return err
 		}
-
+		// Non-template files are skipped
 		return nil
 	})
-
-	return err
+	if err != nil {
+		return fmt.Errorf("Could not complete template processing in directory \"%s\": %v", templatePath, err)
+	}
+	return nil
 }
 
 func (t *Repository) addFile(name, data string, allowOverride bool) error {
@@ -424,16 +461,17 @@ func (t *Repository) Get(name string) (*template.Template, error) {
 
 // DumpTemplates prints out a dump of all the defined templates, where they are defined and what their dependencies are.
 func (t *Repository) DumpTemplates() {
-
-	fmt.Println("# Templates")
+	buf := bytes.NewBuffer(nil)
+	fmt.Fprintln(buf, "\n# Templates")
 	for name, templ := range t.templates {
-		fmt.Printf("## %s\n", name)
-		fmt.Printf("Defined in `%s`\n", t.files[name])
+		fmt.Fprintf(buf, "## %s\n", name)
+		fmt.Fprintf(buf, "Defined in `%s`\n", t.files[name])
 
 		if deps := findDependencies(templ.Tree.Root); len(deps) > 0 {
 
-			fmt.Printf("####requires \n - %v\n\n\n", strings.Join(deps, "\n - "))
+			fmt.Fprintf(buf, "####requires \n - %v\n\n\n", strings.Join(deps, "\n - "))
 		}
-		fmt.Println("\n---")
+		fmt.Fprintln(buf, "\n---")
 	}
+	log.Println(buf.String())
 }

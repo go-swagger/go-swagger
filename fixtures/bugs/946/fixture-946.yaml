@@ -1,0 +1,18 @@
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: 'AliasTest'
+definitions:
+definitions:
+  mydate:
+    description: this is mydate
+    type: string
+    format: date
+paths:
+  /:
+    get:
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/mydate'

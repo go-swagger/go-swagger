@@ -111,17 +111,25 @@ func MethodNotAllowed(requested string, allow []string) Error {
 	return &MethodNotAllowedError{code: http.StatusMethodNotAllowed, Allowed: allow, message: msg}
 }
 
-// ServeError the error handler interface implemenation
+const head = "HEAD"
+
+// ServeError the error handler interface implementation
 func ServeError(rw http.ResponseWriter, r *http.Request, err error) {
 	rw.Header().Set("Content-Type", "application/json")
 	switch e := err.(type) {
 	case *CompositeError:
 		er := flattenComposite(e)
-		ServeError(rw, r, er.Errors[0])
+		// strips composite errors to first element only
+		if len(er.Errors) > 0 {
+			ServeError(rw, r, er.Errors[0])
+		} else {
+			// guard against empty CompositeError (invalid construct)
+			ServeError(rw, r, nil)
+		}
 	case *MethodNotAllowedError:
 		rw.Header().Add("Allow", strings.Join(err.(*MethodNotAllowedError).Allowed, ","))
 		rw.WriteHeader(asHTTPCode(int(e.Code())))
-		if r == nil || r.Method != "HEAD" {
+		if r == nil || r.Method != head {
 			rw.Write(errorAsJSON(e))
 		}
 	case Error:
@@ -131,12 +139,15 @@ func ServeError(rw http.ResponseWriter, r *http.Request, err error) {
 			return
 		}
 		rw.WriteHeader(asHTTPCode(int(e.Code())))
-		if r == nil || r.Method != "HEAD" {
+		if r == nil || r.Method != head {
 			rw.Write(errorAsJSON(e))
 		}
+	case nil:
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write(errorAsJSON(New(http.StatusInternalServerError, "Unknown error")))
 	default:
 		rw.WriteHeader(http.StatusInternalServerError)
-		if r == nil || r.Method != "HEAD" {
+		if r == nil || r.Method != head {
 			rw.Write(errorAsJSON(New(http.StatusInternalServerError, err.Error())))
 		}
 	}

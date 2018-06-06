@@ -1,0 +1,42 @@
+swagger: '2.0'
+info:
+  title: fixture a for issue#1409
+  version: '1.0.0'
+host: localhost
+basePath: /
+produces:
+  - application/json
+schemes:
+  - http
+paths:
+  /path:
+    get:
+      operationId: path
+      responses:
+        200:
+          description: simple type
+          schema:
+            $ref: '#/definitions/Graph'
+definitions:
+  Graph:
+    type: object
+    additionalProperties: true
+    properties:
+      Nodes:
+        type: array
+        items:
+          $ref: "#/definitions/Node"
+  Node:
+    type: object
+    discriminator: NodeType
+    required:
+    - NodeType
+    properties:
+      NodeType:
+        type: string
+  CodeBlockNode:
+    allOf:
+    - $ref: "#/definitions/Node"
+    - properties:
+         Code:
+          type: string

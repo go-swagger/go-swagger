@@ -1,0 +1,56 @@
+---
+swagger: '2.0'
+info:
+  title: 'fixture for issue #581'
+  version: '1.0'
+  description: |
+    test verification of overflow on min/max boundary
+    reproduces the initial reported case,with schema and $refs
+
+produces:
+  - application/json
+paths:
+  /fixture:
+    get:
+      operationId: op1
+      parameters:
+        - name: myid
+          in: query
+          schema:
+            $ref: '#/definitions/myId'
+      responses:
+        200:
+          description: 'response exercising integer boundaries'
+          schema:
+            $ref: '#/definitions/someIds'
+
+definitions:
+  myId:
+    type: object
+    properties:
+      uint8:
+        type: integer
+        minimum: 0
+        maximum: 255
+        # Error: default does not validate against boundaries
+        default: 256
+      int64:
+        type: integer
+        minimum: -9223372036854775808
+        # Error: maximum is not an int64
+        maximum: 9223372036854775807000
+      uint64:
+        type: integer
+        minimum: -9223372036854775807000
+        maximum: 18446744073709551615
+      uint64-wrong:
+        type: integer
+        minimum: 0
+        maximum: 18446744073709551616
+  someIds:
+    type: object
+    properties:
+      smallId:
+        type: integer
+        minimum: 0
+        maximum: 12

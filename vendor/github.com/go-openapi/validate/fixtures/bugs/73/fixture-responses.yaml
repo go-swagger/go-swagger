@@ -1,0 +1,16 @@
+swagger: '2.0'
+info:
+  title: Responses
+  version: 0.1.0
+responses:
+  NotFound:
+    description: Not found
+
+paths:
+  /:
+    get:
+      summary: GET
+      operationId: getAll
+      responses:
+        '200':
+          description: Ok

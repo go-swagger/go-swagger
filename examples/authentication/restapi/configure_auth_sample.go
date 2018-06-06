@@ -1,20 +1,21 @@
+// This file is safe to edit. Once it exists it will not be overwritten
+
 package restapi
 
 import (
 	"crypto/tls"
-	"log"
 	"net/http"
 
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
+	graceful "github.com/tylerb/graceful"
 
-	"github.com/go-swagger/go-swagger/examples/authentication/models"
 	"github.com/go-swagger/go-swagger/examples/authentication/restapi/operations"
 	"github.com/go-swagger/go-swagger/examples/authentication/restapi/operations/customers"
-)
 
-// This file is safe to edit. Once it exists it will not be overwritten
+	models "github.com/go-swagger/go-swagger/examples/authentication/models"
+)
 
 //go:generate swagger generate server --target .. --name AuthSample --spec ../swagger.yml --principal models.Principal
 
@@ -30,7 +31,7 @@ func configureAPI(api *operations.AuthSampleAPI) http.Handler {
 	// Expected interface func(string, ...interface{})
 	//
 	// Example:
-	api.Logger = log.Printf
+	// api.Logger = log.Printf
 
 	api.JSONConsumer = runtime.JSONConsumer()
 
@@ -38,13 +39,14 @@ func configureAPI(api *operations.AuthSampleAPI) http.Handler {
 
 	// Applies when the "x-token" header is set
 	api.KeyAuth = func(token string) (*models.Principal, error) {
-		if token == "abcdefuvwxyz" {
-			prin := models.Principal(token)
-			return &prin, nil
-		}
-		api.Logger("Access attempt with incorrect api key auth: %s", token)
-		return nil, errors.New(401, "incorrect api key auth")
+		return nil, errors.NotImplemented("api key auth (key) x-token from header param [x-token] has not yet been implemented")
 	}
+
+	// Set your custom authorizer if needed. Default one is security.Authorized()
+	// Expected interface runtime.Authorizer
+	//
+	// Example:
+	// api.APIAuthorizer = security.Authorized()
 
 	api.CustomersCreateHandler = customers.CreateHandlerFunc(func(params customers.CreateParams, principal *models.Principal) middleware.Responder {
 		return middleware.NotImplemented("operation customers.Create has not yet been implemented")
@@ -61,6 +63,13 @@ func configureAPI(api *operations.AuthSampleAPI) http.Handler {
 // The TLS configuration before HTTPS server starts.
 func configureTLS(tlsConfig *tls.Config) {
 	// Make all necessary changes to the TLS configuration here.
+}
+
+// As soon as server is initialized but not run yet, this function will be called.
+// If you need to modify a config, store server instance to stop it individually later, this is the place.
+// This function can be called multiple times, depending on the number of serving schemes.
+// scheme value will be set accordingly: "http", "https" or "unix"
+func configureServer(s *graceful.Server, scheme, addr string) {
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.

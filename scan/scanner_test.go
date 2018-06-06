@@ -18,7 +18,9 @@ import (
 	"fmt"
 	"go/ast"
 	goparser "go/parser"
+	"io/ioutil"
 	"log"
+	"os"
 	"regexp"
 	"sort"
 	"strings"
@@ -61,6 +63,38 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+// only used within this group of tests but never used within actual code base.
+func newSchemaAnnotationParser(goName string) *schemaAnnotationParser {
+	return &schemaAnnotationParser{GoName: goName, rx: rxModelOverride}
+}
+
+type schemaAnnotationParser struct {
+	GoName string
+	Name   string
+	rx     *regexp.Regexp
+}
+
+func (sap *schemaAnnotationParser) Matches(line string) bool {
+	return sap.rx.MatchString(line)
+}
+
+func (sap *schemaAnnotationParser) Parse(lines []string) error {
+	if sap.Name != "" {
+		return nil
+	}
+
+	if len(lines) > 0 {
+		for _, line := range lines {
+			matches := sap.rx.FindStringSubmatch(line)
+			if len(matches) > 1 && len(matches[1]) > 0 {
+				sap.Name = matches[1]
+				return nil
+			}
+		}
+	}
+	return nil
 }
 
 func extraModelsClassifier(t testing.TB) (*loader.Program, map[string]spec.Schema) {
@@ -453,6 +487,18 @@ See how markdown works now, we can have lists:
 [Links works too](http://localhost)
 `
 
+	text4 := `This has whitespace sensitive markdown in the description
+
+|+ first item
+|    + nested item
+|    + also nested item
+
+Sample code block:
+
+|    fmt.Println("Hello World!")
+
+`
+
 	var err error
 
 	st := &sectionedParser{}
@@ -478,6 +524,14 @@ See how markdown works now, we can have lists:
 
 	assert.EqualValues(t, []string{"This has a title, and markdown in the description"}, st.Title())
 	assert.EqualValues(t, []string{"See how markdown works now, we can have lists:", "", "+ first item", "+ second item", "+ third item", "", "[Links works too](http://localhost)"}, st.Description())
+
+	st = &sectionedParser{}
+	st.setTitle = func(lines []string) {}
+	err = st.Parse(ascg(text4))
+	assert.NoError(t, err)
+
+	assert.EqualValues(t, []string{"This has whitespace sensitive markdown in the description"}, st.Title())
+	assert.EqualValues(t, []string{"+ first item", "    + nested item", "    + also nested item", "", "Sample code block:", "", "    fmt.Println(\"Hello World!\")"}, st.Description())
 }
 
 func dummyBuilder() schemaValidations {
@@ -502,9 +556,9 @@ maximum: 20
 	st := &sectionedParser{}
 	st.setTitle = func(lines []string) {}
 	st.taggers = []tagParser{
-		{"Maximum", false, nil, &setMaximum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMaximumFmt, ""))}},
-		{"Minimum", false, nil, &setMinimum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMinimumFmt, ""))}},
-		{"MultipleOf", false, nil, &setMultipleOf{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMultipleOfFmt, ""))}},
+		{"Maximum", false, false, nil, &setMaximum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMaximumFmt, ""))}},
+		{"Minimum", false, false, nil, &setMinimum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMinimumFmt, ""))}},
+		{"MultipleOf", false, false, nil, &setMultipleOf{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMultipleOfFmt, ""))}},
 	}
 
 	err = st.Parse(ascg(block))
@@ -520,9 +574,9 @@ maximum: 20
 	st = &sectionedParser{}
 	st.setTitle = func(lines []string) {}
 	st.taggers = []tagParser{
-		{"Maximum", false, nil, &setMaximum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMaximumFmt, ""))}},
-		{"Minimum", false, nil, &setMinimum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMinimumFmt, ""))}},
-		{"MultipleOf", false, nil, &setMultipleOf{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMultipleOfFmt, ""))}},
+		{"Maximum", false, false, nil, &setMaximum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMaximumFmt, ""))}},
+		{"Minimum", false, false, nil, &setMinimum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMinimumFmt, ""))}},
+		{"MultipleOf", false, false, nil, &setMultipleOf{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMultipleOfFmt, ""))}},
 	}
 
 	err = st.Parse(ascg(block2))
@@ -572,9 +626,9 @@ maximum: 20
 	ap := newSchemaAnnotationParser("SomeModel")
 	st.annotation = ap
 	st.taggers = []tagParser{
-		{"Maximum", false, nil, &setMaximum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMaximumFmt, ""))}},
-		{"Minimum", false, nil, &setMinimum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMinimumFmt, ""))}},
-		{"MultipleOf", false, nil, &setMultipleOf{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMultipleOfFmt, ""))}},
+		{"Maximum", false, false, nil, &setMaximum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMaximumFmt, ""))}},
+		{"Minimum", false, false, nil, &setMinimum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMinimumFmt, ""))}},
+		{"MultipleOf", false, false, nil, &setMultipleOf{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMultipleOfFmt, ""))}},
 	}
 
 	err = st.Parse(ascg(block))
@@ -607,9 +661,9 @@ maximum: 20
 	ap := newSchemaAnnotationParser("SomeModel")
 	st.annotation = ap
 	st.taggers = []tagParser{
-		{"Maximum", false, nil, &setMaximum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMaximumFmt, ""))}},
-		{"Minimum", false, nil, &setMinimum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMinimumFmt, ""))}},
-		{"MultipleOf", false, nil, &setMultipleOf{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMultipleOfFmt, ""))}},
+		{"Maximum", false, false, nil, &setMaximum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMaximumFmt, ""))}},
+		{"Minimum", false, false, nil, &setMinimum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMinimumFmt, ""))}},
+		{"MultipleOf", false, false, nil, &setMultipleOf{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMultipleOfFmt, ""))}},
 	}
 
 	err = st.Parse(ascg(block))
@@ -674,19 +728,6 @@ func TestSchemaValueExtractors(t *testing.T) {
 		"swagger:allOf      ",
 	}
 
-	discriminated := []string{
-		"// swagger:discriminated ",
-		"* swagger:discriminated ",
-		"* swagger:discriminated ",
-		" swagger:discriminated ",
-		"swagger:discriminated ",
-		"// swagger:discriminated    ",
-		"* swagger:discriminated     ",
-		"* swagger:discriminated    ",
-		" swagger:discriminated     ",
-		"swagger:discriminated      ",
-	}
-
 	parameters := []string{
 		"// swagger:parameters ",
 		"* swagger:parameters ",
@@ -719,7 +760,6 @@ func TestSchemaValueExtractors(t *testing.T) {
 	verifySwaggerOneArgSwaggerTag(t, rxModelOverride, models, append(validParams, "", "  ", " "), invalidParams)
 
 	verifySwaggerOneArgSwaggerTag(t, rxAllOf, allOf, append(validParams, "", "  ", " "), invalidParams)
-	verifySwaggerMultiArgSwaggerTag(t, rxDiscriminated, discriminated, validParams, invalidParams)
 
 	verifySwaggerMultiArgSwaggerTag(t, rxParametersOverride, parameters, validParams, invalidParams)
 
@@ -823,7 +863,10 @@ func verifyBoolean(t *testing.T, matcher *regexp.Regexp, names, names2 []string)
 	if len(names2) > 0 {
 		nm2 = " " + names2[0]
 	}
-	fmt.Printf("tested %d %s%s combinations\n", cnt, names[0], nm2)
+	var Debug = os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
+	if Debug {
+		fmt.Printf("tested %d %s%s combinations\n", cnt, names[0], nm2)
+	}
 }
 
 func verifyIntegerMinMaxManyWords(t *testing.T, matcher *regexp.Regexp, name1 string, words []string) {
@@ -870,7 +913,11 @@ func verifyIntegerMinMaxManyWords(t *testing.T, matcher *regexp.Regexp, name1 st
 	if len(words) > 0 {
 		nm2 = " " + words[0]
 	}
-	fmt.Printf("tested %d %s%s combinations\n", cnt, name1, nm2)
+	var Debug = os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
+	if Debug {
+		fmt.Printf("tested %d %s%s combinations\n", cnt, name1, nm2)
+
+	}
 }
 
 func verifyNumeric2Words(t *testing.T, matcher *regexp.Regexp, name1, name2 string) {
@@ -919,7 +966,10 @@ func verifyNumeric2Words(t *testing.T, matcher *regexp.Regexp, name1, name2 stri
 			}
 		}
 	}
-	fmt.Printf("tested %d %s %s combinations\n", cnt, name1, name2)
+	var Debug = os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
+	if Debug {
+		fmt.Printf("tested %d %s %s combinations\n", cnt, name1, name2)
+	}
 }
 
 func verifyMinMax(t *testing.T, matcher *regexp.Regexp, name string, operators []string) {
@@ -957,7 +1007,10 @@ func verifyMinMax(t *testing.T, matcher *regexp.Regexp, name string, operators [
 			}
 		}
 	}
-	fmt.Printf("tested %d %s combinations\n", cnt, name)
+	var Debug = os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
+	if Debug {
+		fmt.Printf("tested %d %s combinations\n", cnt, name)
+	}
 }
 
 func verifySwaggerOneArgSwaggerTag(t *testing.T, matcher *regexp.Regexp, prefixes, validParams, invalidParams []string) {
@@ -1022,7 +1075,11 @@ func TestEnhancement793(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotEmpty(t, bytes)
 
-		doc, err := loads.Analyzed(bytes, "")
+		file, err := ioutil.TempFile(os.TempDir(), "scanner")
+		file.Write(bytes)
+		file.Close()
+
+		doc, err := loads.Spec(file.Name())
 		if assert.NoError(t, err) {
 			validator := validate.NewSpecValidator(doc.Schema(), strfmt.Default)
 			res, _ := validator.Validate(doc)

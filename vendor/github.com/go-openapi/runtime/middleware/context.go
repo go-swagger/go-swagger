@@ -15,9 +15,8 @@
 package middleware
 
 import (
-	"log"
+	stdContext "context"
 	"net/http"
-	"os"
 	"strings"
 	"sync"
 
@@ -25,19 +24,19 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/logger"
 	"github.com/go-openapi/runtime/middleware/untyped"
-	"github.com/go-openapi/runtime/security"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/strfmt"
-	"github.com/gorilla/context"
 )
 
 // Debug when true turns on verbose logging
-var Debug = os.Getenv("SWAGGER_DEBUG") != "" || os.Getenv("DEBUG") != ""
+var Debug = logger.DebugEnabled()
+var Logger logger.Logger = logger.StandardLogger{}
 
 func debugLog(format string, args ...interface{}) {
 	if Debug {
-		log.Printf(format, args...)
+		Logger.Printf(format, args...)
 	}
 }
 
@@ -68,13 +67,13 @@ func (fn ResponderFunc) WriteResponse(rw http.ResponseWriter, pr runtime.Produce
 }
 
 // Context is a type safe wrapper around an untyped request context
-// used throughout to store request context with the gorilla context module
+// used throughout to store request context with the standard context attached
+// to the http.Request
 type Context struct {
 	spec     *loads.Document
 	analyzer *analysis.Spec
 	api      RoutableAPI
 	router   Router
-	formats  strfmt.Registry
 }
 
 type routableUntypedAPI struct {
@@ -94,7 +93,7 @@ func newRoutableUntypedAPI(spec *loads.Document, api *untyped.API, context *Cont
 	for method, hls := range analyzer.Operations() {
 		um := strings.ToUpper(method)
 		for path, op := range hls {
-			schemes := analyzer.SecurityDefinitionsFor(op)
+			schemes := analyzer.SecurityRequirementsFor(op)
 
 			if oh, ok := api.OperationHandlerFor(method, path); ok {
 				if handlers == nil {
@@ -106,10 +105,15 @@ func newRoutableUntypedAPI(spec *loads.Document, api *untyped.API, context *Cont
 
 				var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					// lookup route info in the context
-					route, _ := context.RouteInfo(r)
+					route, rCtx, _ := context.RouteInfo(r)
+					if rCtx != nil {
+						r = rCtx
+					}
 
 					// bind and validate the request using reflection
-					bound, validation := context.BindAndValidate(r, route)
+					var bound interface{}
+					var validation error
+					bound, r, validation = context.BindAndValidate(r, route)
 					if validation != nil {
 						context.Respond(w, r, route.Produces, route, validation)
 						return
@@ -167,6 +171,9 @@ func (r *routableUntypedAPI) ProducersFor(mediaTypes []string) map[string]runtim
 func (r *routableUntypedAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
 	return r.api.AuthenticatorsFor(schemes)
 }
+func (r *routableUntypedAPI) Authorizer() runtime.Authorizer {
+	return r.api.Authorizer()
+}
 func (r *routableUntypedAPI) Formats() strfmt.Registry {
 	return r.api.Formats()
 }
@@ -185,7 +192,7 @@ func NewRoutableContext(spec *loads.Document, routableAPI RoutableAPI, routes Ro
 	if spec != nil {
 		an = analysis.New(spec.Spec())
 	}
-	ctx := &Context{spec: spec, api: routableAPI, analyzer: an}
+	ctx := &Context{spec: spec, api: routableAPI, analyzer: an, router: routes}
 	return ctx
 }
 
@@ -197,6 +204,7 @@ func NewContext(spec *loads.Document, api *untyped.API, routes Router) *Context 
 	}
 	ctx := &Context{spec: spec, analyzer: an}
 	ctx.api = newRoutableUntypedAPI(spec, api, ctx)
+	ctx.router = routes
 	return ctx
 }
 
@@ -219,13 +227,36 @@ const (
 	ctxContentType
 	ctxResponseFormat
 	ctxMatchedRoute
-	ctxAllowedMethods
 	ctxBoundParams
 	ctxSecurityPrincipal
 	ctxSecurityScopes
-
-	ctxConsumer
 )
+
+// MatchedRouteFrom request context value.
+func MatchedRouteFrom(req *http.Request) *MatchedRoute {
+	mr := req.Context().Value(ctxMatchedRoute)
+	if mr == nil {
+		return nil
+	}
+	if res, ok := mr.(*MatchedRoute); ok {
+		return res
+	}
+	return nil
+}
+
+// SecurityPrincipalFrom request context value.
+func SecurityPrincipalFrom(req *http.Request) interface{} {
+	return req.Context().Value(ctxSecurityPrincipal)
+}
+
+// SecurityScopesFrom request context value.
+func SecurityScopesFrom(req *http.Request) []string {
+	rs := req.Context().Value(ctxSecurityScopes)
+	if res, ok := rs.([]string); ok {
+		return res
+	}
+	return nil
+}
 
 type contentTypeValue struct {
 	MediaType string
@@ -292,19 +323,23 @@ func (c *Context) BindValidRequest(request *http.Request, route *MatchedRoute, b
 }
 
 // ContentType gets the parsed value of a content type
-func (c *Context) ContentType(request *http.Request) (string, string, error) {
-	if v, ok := context.GetOk(request, ctxContentType); ok {
-		if val, ok := v.(*contentTypeValue); ok {
-			return val.MediaType, val.Charset, nil
-		}
+// Returns the media type, its charset and a shallow copy of the request
+// when its context doesn't contain the content type value, otherwise it returns
+// the same request
+// Returns the error that runtime.ContentType may retunrs.
+func (c *Context) ContentType(request *http.Request) (string, string, *http.Request, error) {
+	var rCtx = request.Context()
+
+	if v, ok := rCtx.Value(ctxContentType).(*contentTypeValue); ok {
+		return v.MediaType, v.Charset, request, nil
 	}
 
 	mt, cs, err := runtime.ContentType(request.Header)
 	if err != nil {
-		return "", "", err
+		return "", "", nil, err
 	}
-	context.Set(request, ctxContentType, &contentTypeValue{mt, cs})
-	return mt, cs, nil
+	rCtx = stdContext.WithValue(rCtx, ctxContentType, &contentTypeValue{mt, cs})
+	return mt, cs, request.WithContext(rCtx), nil
 }
 
 // LookupRoute looks a route up and returns true when it is found
@@ -316,34 +351,43 @@ func (c *Context) LookupRoute(request *http.Request) (*MatchedRoute, bool) {
 }
 
 // RouteInfo tries to match a route for this request
-func (c *Context) RouteInfo(request *http.Request) (*MatchedRoute, bool) {
-	if v, ok := context.GetOk(request, ctxMatchedRoute); ok {
-		if val, ok := v.(*MatchedRoute); ok {
-			return val, ok
-		}
+// Returns the matched route, a shallow copy of the request if its context
+// contains the matched router, otherwise the same request, and a bool to
+// indicate if it the request matches one of the routes, if it doesn't
+// then it returns false and nil for the other two return values
+func (c *Context) RouteInfo(request *http.Request) (*MatchedRoute, *http.Request, bool) {
+	var rCtx = request.Context()
+
+	if v, ok := rCtx.Value(ctxMatchedRoute).(*MatchedRoute); ok {
+		return v, request, ok
 	}
 
 	if route, ok := c.LookupRoute(request); ok {
-		context.Set(request, ctxMatchedRoute, route)
-		return route, ok
+		rCtx = stdContext.WithValue(rCtx, ctxMatchedRoute, route)
+		return route, request.WithContext(rCtx), ok
 	}
 
-	return nil, false
+	return nil, nil, false
 }
 
 // ResponseFormat negotiates the response content type
-func (c *Context) ResponseFormat(r *http.Request, offers []string) string {
-	if v, ok := context.GetOk(r, ctxResponseFormat); ok {
-		if val, ok := v.(string); ok {
-			return val
-		}
+// Returns the response format and a shallow copy of the request if its context
+// doesn't contain the response format, otherwise the same request
+func (c *Context) ResponseFormat(r *http.Request, offers []string) (string, *http.Request) {
+	var rCtx = r.Context()
+
+	if v, ok := rCtx.Value(ctxResponseFormat).(string); ok {
+		debugLog("[%s %s] found response format %q in context", r.Method, r.URL.Path, v)
+		return v, r
 	}
 
 	format := NegotiateContentType(r, offers, "")
 	if format != "" {
-		context.Set(r, ctxResponseFormat, format)
+		debugLog("[%s %s] set response format %q in context", r.Method, r.URL.Path, format)
+		r = r.WithContext(stdContext.WithValue(rCtx, ctxResponseFormat, format))
 	}
-	return format
+	debugLog("[%s %s] negotiated response format %q", r.Method, r.URL.Path, format)
+	return format, r
 }
 
 // AllowedMethods gets the allowed methods for the path of this request
@@ -351,59 +395,68 @@ func (c *Context) AllowedMethods(request *http.Request) []string {
 	return c.router.OtherMethods(request.Method, request.URL.EscapedPath())
 }
 
+// ResetAuth removes the current principal from the request context
+func (c *Context) ResetAuth(request *http.Request) *http.Request {
+	rctx := request.Context()
+	rctx = stdContext.WithValue(rctx, ctxSecurityPrincipal, nil)
+	rctx = stdContext.WithValue(rctx, ctxSecurityScopes, nil)
+	return request.WithContext(rctx)
+}
+
 // Authorize authorizes the request
-func (c *Context) Authorize(request *http.Request, route *MatchedRoute) (interface{}, error) {
-	if route == nil || len(route.Authenticators) == 0 {
-		return nil, nil
-	}
-	if v, ok := context.GetOk(request, ctxSecurityPrincipal); ok {
-		return v, nil
+// Returns the principal object and a shallow copy of the request when its
+// context doesn't contain the principal, otherwise the same request or an error
+// (the last) if one of the authenticators returns one or an Unauthenticated error
+func (c *Context) Authorize(request *http.Request, route *MatchedRoute) (interface{}, *http.Request, error) {
+	if route == nil || !route.HasAuth() {
+		return nil, nil, nil
 	}
 
-	var lastError error
-	for scheme, authenticator := range route.Authenticators {
-		applies, usr, err := authenticator.Authenticate(&security.ScopedAuthRequest{
-			Request:        request,
-			RequiredScopes: route.Scopes[scheme],
-		})
-		if !applies || err != nil || usr == nil {
-			if err != nil {
-				lastError = err
-			}
-			continue
+	var rCtx = request.Context()
+	if v := rCtx.Value(ctxSecurityPrincipal); v != nil {
+		return v, request, nil
+	}
+
+	applies, usr, err := route.Authenticators.Authenticate(request, route)
+	if !applies || err != nil || !route.Authenticators.AllowsAnonymous() && usr == nil {
+		if err != nil {
+			return nil, nil, err
 		}
-		context.Set(request, ctxSecurityPrincipal, usr)
-		context.Set(request, ctxSecurityScopes, route.Scopes[scheme])
-		return usr, nil
+		return nil, nil, errors.Unauthenticated("invalid credentials")
+	}
+	if route.Authorizer != nil {
+		if err := route.Authorizer.Authorize(request, usr); err != nil {
+			return nil, nil, errors.New(http.StatusForbidden, err.Error())
+		}
 	}
 
-	if lastError != nil {
-		return nil, lastError
-	}
-
-	return nil, errors.Unauthenticated("invalid credentials")
+	rCtx = stdContext.WithValue(rCtx, ctxSecurityPrincipal, usr)
+	rCtx = stdContext.WithValue(rCtx, ctxSecurityScopes, route.Authenticator.AllScopes())
+	return usr, request.WithContext(rCtx), nil
 }
 
 // BindAndValidate binds and validates the request
-func (c *Context) BindAndValidate(request *http.Request, matched *MatchedRoute) (interface{}, error) {
-	if v, ok := context.GetOk(request, ctxBoundParams); ok {
-		if val, ok := v.(*validation); ok {
-			debugLog("got cached validation (valid: %t)", len(val.result) == 0)
-			if len(val.result) > 0 {
-				return val.bound, errors.CompositeValidationError(val.result...)
-			}
-			return val.bound, nil
+// Returns the validation map and a shallow copy of the request when its context
+// doesn't contain the validation, otherwise it returns the same request or an
+// CompositeValidationError error
+func (c *Context) BindAndValidate(request *http.Request, matched *MatchedRoute) (interface{}, *http.Request, error) {
+	var rCtx = request.Context()
+
+	if v, ok := rCtx.Value(ctxBoundParams).(*validation); ok {
+		debugLog("got cached validation (valid: %t)", len(v.result) == 0)
+		if len(v.result) > 0 {
+			return v.bound, request, errors.CompositeValidationError(v.result...)
 		}
+		return v.bound, request, nil
 	}
 	result := validateRequest(c, request, matched)
-	if result != nil {
-		context.Set(request, ctxBoundParams, result)
-	}
+	rCtx = stdContext.WithValue(rCtx, ctxBoundParams, result)
+	request = request.WithContext(rCtx)
 	if len(result.result) > 0 {
-		return result.bound, errors.CompositeValidationError(result.result...)
+		return result.bound, request, errors.CompositeValidationError(result.result...)
 	}
 	debugLog("no validation errors found")
-	return result.bound, nil
+	return result.bound, request, nil
 }
 
 // NotFound the default not found responder for when no route has been matched yet
@@ -413,6 +466,7 @@ func (c *Context) NotFound(rw http.ResponseWriter, r *http.Request) {
 
 // Respond renders the response after doing some content negotiation
 func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []string, route *MatchedRoute, data interface{}) {
+	debugLog("responding to %s %s with produces: %v", r.Method, r.URL.Path, produces)
 	offers := []string{}
 	for _, mt := range produces {
 		if mt != c.api.DefaultProduces() {
@@ -421,15 +475,17 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 	}
 	// the default producer is last so more specific producers take precedence
 	offers = append(offers, c.api.DefaultProduces())
+	debugLog("offers: %v", offers)
 
-	format := c.ResponseFormat(r, offers)
+	var format string
+	format, r = c.ResponseFormat(r, offers)
 	rw.Header().Set(runtime.HeaderContentType, format)
 
 	if resp, ok := data.(Responder); ok {
 		producers := route.Producers
 		prod, ok := producers[format]
 		if !ok {
-			prods := c.api.ProducersFor([]string{c.api.DefaultProduces()})
+			prods := c.api.ProducersFor(normalizeOffers([]string{c.api.DefaultProduces()}))
 			pr, ok := prods[c.api.DefaultProduces()]
 			if !ok {
 				panic(errors.New(http.StatusInternalServerError, "can't find a producer for "+format))
@@ -457,7 +513,7 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 		if r.Method == "HEAD" {
 			return
 		}
-		producers := c.api.ProducersFor(offers)
+		producers := c.api.ProducersFor(normalizeOffers(offers))
 		prod, ok := producers[format]
 		if !ok {
 			panic(errors.New(http.StatusInternalServerError, "can't find a producer for "+format))
@@ -478,7 +534,7 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 		prod, ok := producers[format]
 		if !ok {
 			if !ok {
-				prods := c.api.ProducersFor([]string{c.api.DefaultProduces()})
+				prods := c.api.ProducersFor(normalizeOffers([]string{c.api.DefaultProduces()}))
 				pr, ok := prods[c.api.DefaultProduces()]
 				if !ok {
 					panic(errors.New(http.StatusInternalServerError, "can't find a producer for "+format))
@@ -513,7 +569,7 @@ func (c *Context) APIHandler(builder Builder) http.Handler {
 		Title:    title,
 	}
 
-	return Spec("", c.spec.Raw(), Redoc(redocOpts, c.RoutesHandler(builder)))
+	return Spec("", c.spec.Raw(), Redoc(redocOpts, c.RoutesHandler(b)))
 }
 
 // RoutesHandler returns a handler to serve the API, just the routes and the contract defined in the swagger spec

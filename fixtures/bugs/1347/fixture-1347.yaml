@@ -1,0 +1,43 @@
+swagger: '2.0'
+info:
+  title: fixture for issue#1347
+  version: '1.0.0'
+host: localhost
+basePath: /
+produces:
+  - application/json
+schemes:
+  - http
+paths:
+  /optional:
+    get:
+      operationId: getOptional
+      parameters:
+      - name: option1
+        in: query
+        type: string
+        format: hostname
+        required: false
+      - name: option2
+        in: body
+        required: false
+        schema:
+          $ref: '#/definitions/ContainerConfig'
+      responses:
+        200:
+          description: simple type
+          schema:
+            type: string
+            format: hostname
+        default:
+          description: option
+          schema:
+            $ref: '#/definitions/ContainerConfig'
+definitions:
+  ContainerConfig:
+    type: object
+    #required: [config1]
+    properties:
+      config1:
+        type: string
+        format: hostname

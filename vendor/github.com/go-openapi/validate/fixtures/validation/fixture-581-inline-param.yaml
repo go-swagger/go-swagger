@@ -1,0 +1,99 @@
+---
+swagger: '2.0'
+info:
+  title: 'fixture for issue #581'
+  version: '1.0'
+  description: |
+    Exercise boundary checks for minimum, maximum and multipleOf
+    For integer parameters (as default int64):
+      - inline
+      - schema objects, with nested array
+      - via $refs
+
+produces:
+  - application/json
+paths:
+  /fixture:
+    get:
+      operationId: op1
+      parameters:
+        - name: myid
+          in: query
+          schema:
+            $ref: '#/definitions/myId'
+        - name: inlineMaxInt 
+          in: query
+          type: integer
+          minimum: 0
+          #maximum: 100
+          # Error: Out of bound maximum
+          maximum: 922337203685477580700000000000000000
+          default: 99 
+        - name: inlineMinInt 
+          in: query
+          type: integer
+          minimum: -9223372036854775807000000000000000
+          # Error: Out of bound minimum
+          maximum: 1
+          default: 99 
+        - name: inlineInfiniteInt 
+          in: query
+          type: integer
+          # Errors: Out of bound minimum and maximum
+          minimum: -92233720368547758070000000000000000000000
+          maximum: 92233720368547758070000000000000000
+          default: 99 
+        - name: bigInt
+          in: query
+          type: integer
+          # TODO: not validated since no default value!!!
+          # Error: Out of bound factor
+          multipleOf: 3922337203685477580700000000000000000000000
+          # ISSUE: does use native method => use number
+        - name: negFactor
+          in: query
+          type: integer
+          # Error: negative factor
+          multipleOf: -300
+          default: -600
+      responses:
+        200:
+      responses:
+        200:
+          description: 'response exercising integer boundaries'
+          schema:
+            # TODO: should validate here too
+            $ref: '#/definitions/someIds'
+
+# TODO: should validate here too
+definitions:
+  myId:
+    type: object
+    properties:
+      uint8:
+        type: integer
+        minimum: 0
+        maximum: 255
+        # Error: default does not validate against boundaries
+        default: 256
+      int64:
+        type: integer
+        minimum: -9223372036854775808
+        maximum: 9223372036854775807000
+      uint64:
+        type: integer
+        minimum: -9223372036854775807000
+        maximum: 0
+        # See if detected?
+        default: 1
+      uint64-wrong:
+        type: integer
+        minimum: 0
+        maximum: 18446744073709551616
+  someIds:
+    type: object
+    properties:
+      smallId:
+        type: integer
+        minimum: 0
+        maximum: 12

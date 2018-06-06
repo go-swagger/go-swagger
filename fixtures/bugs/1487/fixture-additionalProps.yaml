@@ -1,0 +1,302 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: fixture for additionalProperties
+  description: various patterns of additionalProperties
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /models:
+    get:
+      operationId: modelOp
+      summary: many model variations
+      description: no description
+      tags:
+        - testcgen
+      responses:
+        default:
+          description: Generic Out
+definitions:
+  additionalThings:
+    type: object
+    required: [ origin ]
+    properties:
+      origin: 
+        type: string
+        enum: [ print, e-book, collection, museum ]
+      status: 
+        type: string
+        enum: [ OK, KO ]
+    additionalProperties:
+      type: string
+      enum: [ bookshop, amazon, library ]
+  additionalSliceOfObjects:
+    type: object 
+    properties: 
+      prop1:
+        type: string
+    additionalProperties:
+      type: array
+      uniqueItems: true
+      items: 
+        type: object
+        properties:
+          prop2: 
+            type: integer
+  additionalSliceOfPrimitives:
+    type: object 
+    properties: 
+      prop1:
+        type: string
+    additionalProperties:
+      type: array
+      uniqueItems: true
+      items: 
+        type: string
+        format: date
+  additionalSliceOfAliasedPrimitives:
+    type: object 
+    properties: 
+      prop2:
+        type: string
+        format: uuid
+    additionalProperties:
+      type: array
+      maxItems: 10
+      items: 
+        $ref: '#/definitions/aliasedDate'
+  additionalSliceOfAliasedNullablePrimitives:
+    type: object 
+    properties: 
+      prop3:
+        type: string
+        format: uuid
+    additionalProperties:
+      type: array
+      minItems: 10
+      items: 
+        $ref: '#/definitions/aliasedNullableDate'
+  additionalSliceOfSlice:
+    type: object 
+    properties: 
+      prop4:
+        type: string
+        format: uuid
+    additionalProperties:
+      type: array
+      items: 
+        type: array
+        maxItems: 10
+        items: 
+          type: object
+          uniqueItems: true
+          properties: 
+            prop5:
+              type: integer 
+              maximum: 10
+  additionalObject:
+    type: object
+    properties:
+      mockId: 
+        type: number
+    additionalProperties:
+      type: object
+      required: [ mockB ]
+      properties:
+        mockA: 
+          type: string
+          pattern: '^[A-Z]$'
+        mockB:
+          type: string
+          minLength: 1
+        mockC:
+          type: number
+  additionalEmptyObject:
+    type: object
+    properties:
+      # this one is rendered as interface{}: this is debatable
+      propA: 
+        type: object
+    additionalProperties:
+      # this one is rendered as map[string]interface{}, which is correct
+      type: object
+  emptyObjectWithAdditionalSlice:
+    type: object
+    additionalProperties:
+      type: array
+      items:
+        type: object
+        properties:
+          dummyProp1: 
+            type: string
+            format: date
+  additionalThingsNested:
+    type: object
+    properties:
+      origin: 
+        type: string
+        enum: [ goPrint, goE-book, goCollection, goMuseum ]
+    additionalProperties:
+      type: object
+      properties:
+        printerAddress: 
+          type: string
+        printerDate: 
+          type: string
+          format: date
+        printerCountry:
+          type: string
+          enum: [ "US", "FR", "UK", "BE", "CA", "DE"]
+      additionalProperties:
+        type: object
+        properties:
+          averageDelay:
+            type: string
+            format: duration
+  noValidationThing:
+    type: object
+    additionalProperties: true
+    properties:
+      discourse: 
+        type: string
+      hoursSpent:
+        type: number
+  interfaceThing:
+    type: object
+    additionalProperties: true
+  additionalFormatedThing:
+    type: object
+    additionalProperties:
+      type: string 
+      format: date
+  aliasedDate:
+    type: string
+    format: date
+  aliasedNullableDate:
+    type: string
+    format: date
+    x-nullable: true
+  additionalObjectWithAliasedThing:
+    type: object
+    properties:
+      blob:
+        type: integer
+        minimum: 1
+    additionalProperties:
+      $ref: '#/definitions/aliasedDate'
+  additionalObjectWithNullableThing:
+    type: object
+    properties:
+      blob:
+        type: integer
+        minimum: 1
+    additionalProperties:
+      $ref: '#/definitions/aliasedNullableDate'
+  additionalDateWithNullableThing:
+    type: object
+    properties:
+      nullableDate:
+        $ref: '#/definitions/aliasedNullableDate'
+    properties:
+      blob:
+        type: integer
+        minimum: 1
+    additionalProperties:
+      $ref: '#/definitions/aliasedNullableDate'
+  additionalObjectWithFormatedThing:
+    type: object
+    required: [ blob ]
+    properties:
+      blob:
+        type: integer
+        minimum: 1
+    additionalProperties:
+      type: string 
+      format: date
+  additionalArrayThing:
+    type: object
+    properties:
+      thisOneNotRequired:
+        type: integer
+        maximum: 10
+    additionalProperties:
+      type: array
+      uniqueItems: true
+      items: 
+        type: string
+        format: uuid
+  additionalNullableArrayThing:
+    type: object
+    properties:
+      thisOneNotRequired:
+        type: integer
+        maximum: 10
+    additionalProperties:
+      type: array
+      x-nullable: true
+      uniqueItems: true
+      items: 
+        type: string
+        format: isbn
+  additionalArrayOfRefedThing:
+    type: object
+    properties:
+      thisOneNotRequired:
+        type: integer
+        maximum: 10
+    additionalProperties:
+      type: array
+      uniqueItems: true
+      items: 
+        $ref: '#/definitions/aliasedDate' 
+  additionalTransitiveRefedThing:
+    type: object
+    properties:
+      thisOneNotRequired:
+        type: integer
+        maximum: 10
+    additionalProperties:
+      type: array
+      uniqueItems: true
+      items: 
+        $ref: '#/definitions/transitiveRefedThing' 
+  transitiveRefedThing:
+    type: object
+    properties:
+      thisOneNotRequiredEither:
+        type: integer
+        maximum: 20
+    additionalProperties:
+      type: object
+      properties: 
+        a1: 
+          type: string
+          format: date-time
+      additionalProperties:
+        $ref: '#/definitions/noValidationThing'
+  additionalArrayOfInterface:
+    type: object
+    properties:
+      thisOneNotRequired:
+        type: integer
+        maximum: 10
+    additionalProperties:
+      type: array
+      uniqueItems: true
+      items: 
+        type: object
+        additionalProperties: true
+  additionalArrayOfRefedObject:
+    type: object
+    properties:
+      thisOneNotRequired:
+        type: integer
+        maximum: 10
+    additionalProperties:
+      type: array
+      uniqueItems: true
+      items: 
+        $ref: '#/definitions/noValidationThing' 

@@ -6,6 +6,10 @@ info:
   description: |
     A very simple api description that makes a x-www-form-urlencoded only API to submit searches.
 
+tags:
+  - name: search
+  - name: tasks
+
 produces:
   - application/json
 
@@ -20,12 +24,17 @@ paths:
       description: searches the task titles and descriptions for a match
       consumes:
         - application/x-www-form-urlencoded
+      tags:
+        - search
       parameters:
         - name: q
           in: formData
           type: string
           description: the search string
           required: true
+      responses:
+        default:  
+          description: Generic Error
   /tasks:
     get:
       operationId: getTasks
@@ -63,13 +72,13 @@ paths:
             X-Rate-Limit-Reset:
               type: integer
               format: int32
-              default: "1449875311"
+              default: 1449875311
             X-Rate-Limit-Reset-Human:
               type: string
               default: 3 days
             X-Rate-Limit-Reset-Human-Number:
               type: string
-              default: 3
+              default: "3"
             Access-Control-Allow-Origin:
               type: string
               default: "*"

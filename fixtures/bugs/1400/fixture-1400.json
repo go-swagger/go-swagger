@@ -1,0 +1,36 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "v1",
+    "contact": {
+      "email": "support@example.io"
+    },
+    "description": "This API allows you to perform ...",
+    "title": "Frontend"
+  },
+  "schemes": [ "http" ],
+  "paths": {
+    "/file": {
+      "post": {
+        "summary": "Deposit New File (binary).",
+        "description": "Deposits a new File (binary) into SDR. Will return the SDR identifier for the File resource (aka the metadata object generated and persisted for management of the provided binary).",
+        "operationId": "depositNewFile",
+        "consumes": ["multipart/form-data"],
+        "produces": ["application/json"],
+        "parameters": [{
+          "in": "formData",
+          "name": "upFile",
+          "type": "file",
+          "description": "Binary to be added to an Object in TACO.",
+          "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful invocation"
+          }
+        }
+      }
+    }
+  }
+}

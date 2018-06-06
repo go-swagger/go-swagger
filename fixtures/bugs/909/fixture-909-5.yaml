@@ -1,0 +1,101 @@
+swagger: '2.0'
+info:
+  title: fixture for issue#909
+  version: '1.0.0'
+host: localhost
+basePath: /
+produces:
+  - application/json
+schemes:
+  - http
+paths:
+  /optional:
+    get:
+      operationId: getOptional
+      parameters:
+      - name: notAnOption1
+        in: query
+        type: array
+        collectionFormat: csv
+        required: true
+        items:
+          type: array
+          items:
+            type: string
+            format: date-time
+      - name: isAnOptionalHeader
+        in: header
+        type: array
+        collectionFormat: tsv
+        required: false
+        items:
+          type: array
+          items:
+            type: string
+            format: uuid
+      - name: notAnOption3
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/ContainerConfig'
+      responses:
+        200:
+          description: simple type
+          headers:
+            x-isAnOptionalHeader0:
+              type: string
+              format: date-time
+            x-isAnOptionalHeader1:
+              type: array
+              collectionFormat: tsv
+              minItems: 3
+              items:
+                type: string
+                format: date-time
+            x-isAnOptionalHeader2:
+              type: array
+              uniqueItems: true
+              items:
+                type: array
+                collectionFormat: pipes
+                items: 
+                  type: integer
+                  format: int32
+                  minimum: 20
+            x-isAnOptionalHeader3:
+              type: array
+              uniqueItems: true
+              # defaults to csv
+              #collectionFormat: csv
+              items:
+                type: array
+                collectionFormat: pipes
+                items: 
+                  type: array
+                  items:
+                    collectionFormat: tsv
+                    type: string
+                    format: uuid
+          schema:
+            type: string
+            format: hostname
+        201:
+          description: simple type
+          schema:
+            type: string
+            format: uuid
+        default:
+          description: schema type
+          schema:
+            $ref: '#/definitions/ContainerConfig'
+definitions:
+  ContainerConfig:
+    type: object
+    required: [config1]
+    properties:
+      config1:
+        type: string
+        format: date-time
+      config2:
+        type: string
+        format: uuid

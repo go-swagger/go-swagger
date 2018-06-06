@@ -13,7 +13,7 @@ import (
 // Which will expand the remote references in a spec and move inline schemas to definitions
 // after flattening there are no complex inlined anymore
 type FlattenSpec struct {
-	Compact bool           `long:"compact" description:"when present, doesn't prettify the the json"`
+	Compact bool           `long:"compact" description:"when present, doesn't prettify the json"`
 	Output  flags.Filename `long:"output" short:"o" description:"the file to write to"`
 }
 

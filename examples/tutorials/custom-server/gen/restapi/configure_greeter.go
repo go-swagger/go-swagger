@@ -1,3 +1,5 @@
+// This file is safe to edit. Once it exists it will not be overwritten
+
 package restapi
 
 import (
@@ -11,8 +13,6 @@ import (
 
 	"github.com/go-swagger/go-swagger/examples/tutorials/custom-server/gen/restapi/operations"
 )
-
-// This file is safe to edit. Once it exists it will not be overwritten
 
 //go:generate swagger generate server --target ../gen --name greeter --spec ../swagger/swagger.yml --exclude-main
 
@@ -28,7 +28,7 @@ func configureAPI(api *operations.GreeterAPI) http.Handler {
 	// Expected interface func(string, ...interface{})
 	//
 	// Example:
-	// s.api.Logger = log.Printf
+	// api.Logger = log.Printf
 
 	api.JSONConsumer = runtime.JSONConsumer()
 

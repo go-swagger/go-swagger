@@ -49,6 +49,7 @@ const (
 	rxCollectionFormatFmt = "%s[Cc]ollection(?:\\p{Zs}*[\\p{Pd}\\p{Pc}]?[Ff]ormat)\\p{Zs}*:\\p{Zs}*(.*)$"
 	rxEnumFmt             = "%s[Ee]num\\p{Zs}*:\\p{Zs}*(.*)$"
 	rxDefaultFmt          = "%s[Dd]efault\\p{Zs}*:\\p{Zs}*(.*)$"
+	rxExampleFmt          = "%s[Ee]xample\\p{Zs}*:\\p{Zs}*(.*)$"
 
 	rxMaxItemsFmt = "%s[Mm]ax(?:imum)?(?:\\p{Zs}*|[\\p{Pd}\\p{Pc}]|\\.)?[Ii]tems\\p{Zs}*:\\p{Zs}*(\\p{N}+)$"
 	rxMinItemsFmt = "%s[Mm]in(?:imum)?(?:\\p{Zs}*|[\\p{Pd}\\p{Pc}]|\\.)?[Ii]tems\\p{Zs}*:\\p{Zs}*(\\p{N}+)$"
@@ -59,17 +60,18 @@ const (
 
 var (
 	rxSwaggerAnnotation  = regexp.MustCompile(`swagger:([\p{L}\p{N}\p{Pd}\p{Pc}]+)`)
-	rxMeta               = regexp.MustCompile(`swagger:meta`)
 	rxFileUpload         = regexp.MustCompile(`swagger:file`)
 	rxStrFmt             = regexp.MustCompile(`swagger:strfmt\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}]+)$`)
+	rxAlias              = regexp.MustCompile(`swagger:alias`)
 	rxName               = regexp.MustCompile(`swagger:name\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}\.]+)$`)
 	rxAllOf              = regexp.MustCompile(`swagger:allOf\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}\.]+)?$`)
 	rxModelOverride      = regexp.MustCompile(`swagger:model\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}]+)?$`)
-	rxDiscriminated      = regexp.MustCompile(`swagger:discriminated\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}\p{Zs}]+)$`)
 	rxResponseOverride   = regexp.MustCompile(`swagger:response\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}]+)?$`)
 	rxParametersOverride = regexp.MustCompile(`swagger:parameters\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}\p{Zs}]+)$`)
 	rxEnum               = regexp.MustCompile(`swagger:enum\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}]+)$`)
+	rxIgnoreOverride     = regexp.MustCompile(`swagger:ignore\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}]+)?$`)
 	rxDefault            = regexp.MustCompile(`swagger:default\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}]+)$`)
+	rxType               = regexp.MustCompile(`swagger:type\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}]+)$`)
 	rxRoute              = regexp.MustCompile(
 		"swagger:route\\p{Zs}*" +
 			rxMethod +
@@ -80,7 +82,7 @@ var (
 			")?\\p{Zs}+" +
 			rxOpID + "\\p{Zs}*$")
 	rxBeginYAMLSpec    = regexp.MustCompile(`---\p{Zs}*$`)
-	rxUncommentHeaders = regexp.MustCompile(`^[\p{Zs}\t/\*-]*`)
+	rxUncommentHeaders = regexp.MustCompile(`^[\p{Zs}\t/\*-]*\|?`)
 	rxUncommentYAML    = regexp.MustCompile(`^[\p{Zs}\t]*/*`)
 	rxOperation        = regexp.MustCompile(
 		"swagger:operation\\p{Zs}*" +
@@ -101,6 +103,7 @@ var (
 
 	rxIn              = regexp.MustCompile(`[Ii]n\p{Zs}*:\p{Zs}*(query|path|header|body|formData)$`)
 	rxRequired        = regexp.MustCompile(`[Rr]equired\p{Zs}*:\p{Zs}*(true|false)$`)
+	rxExample         = regexp.MustCompile(`[Ex]ample\p{Zs}*:\p{Zs}*(.*)$`)
 	rxDiscriminator   = regexp.MustCompile(`[Dd]iscriminator\p{Zs}*:\p{Zs}*(true|false)$`)
 	rxReadOnly        = regexp.MustCompile(`[Rr]ead(?:\p{Zs}*|[\p{Pd}\p{Pc}])?[Oo]nly\p{Zs}*:\p{Zs}*(true|false)$`)
 	rxConsumes        = regexp.MustCompile(`[Cc]onsumes\p{Zs}*:`)
@@ -108,6 +111,7 @@ var (
 	rxSecuritySchemes = regexp.MustCompile(`[Ss]ecurity\p{Zs}*:`)
 	rxSecurity        = regexp.MustCompile(`[Ss]ecurity\p{Zs}*[Dd]efinitions:`)
 	rxResponses       = regexp.MustCompile(`[Rr]esponses\p{Zs}*:`)
+	rxParameters      = regexp.MustCompile(`[Pp]arameters\p{Zs}*:`)
 	rxSchemes         = regexp.MustCompile(`[Ss]chemes\p{Zs}*:\p{Zs}*((?:(?:https?|HTTPS?|wss?|WSS?)[\p{Zs},]*)+)$`)
 	rxVersion         = regexp.MustCompile(`[Vv]ersion\p{Zs}*:\p{Zs}*(.+)$`)
 	rxHost            = regexp.MustCompile(`[Hh]ost\p{Zs}*:\p{Zs}*(.+)$`)
@@ -116,12 +120,11 @@ var (
 	rxContact         = regexp.MustCompile(`[Cc]ontact\p{Zs}*-?(?:[Ii]info\p{Zs}*)?:\p{Zs}*(.+)$`)
 	rxTOS             = regexp.MustCompile(`[Tt](:?erms)?\p{Zs}*-?[Oo]f?\p{Zs}*-?[Ss](?:ervice)?\p{Zs}*:`)
 	rxExtensions      = regexp.MustCompile(`[Ee]xtensions\p{Zs}*:`)
+	rxInfoExtensions  = regexp.MustCompile(`[In]nfo\p{Zs}*[Ee]xtensions:`)
 )
 
 // Many thanks go to https://github.com/yvasiyarov/swagger
 // this is loosely based on that implementation but for swagger 2.0
-
-type setter func(interface{}, []string) error
 
 func joinDropLast(lines []string) string {
 	l := len(lines)
@@ -489,27 +492,30 @@ func swaggerSchemaForType(typeName string, prop swaggerTypable) error {
 	return nil
 }
 
-func newMultiLineTagParser(name string, parser valueParser) tagParser {
+func newMultiLineTagParser(name string, parser valueParser, skipCleanUp bool) tagParser {
 	return tagParser{
-		Name:      name,
-		MultiLine: true,
-		Parser:    parser,
+		Name:        name,
+		MultiLine:   true,
+		SkipCleanUp: skipCleanUp,
+		Parser:      parser,
 	}
 }
 
 func newSingleLineTagParser(name string, parser valueParser) tagParser {
 	return tagParser{
-		Name:      name,
-		MultiLine: false,
-		Parser:    parser,
+		Name:        name,
+		MultiLine:   false,
+		SkipCleanUp: false,
+		Parser:      parser,
 	}
 }
 
 type tagParser struct {
-	Name      string
-	MultiLine bool
-	Lines     []string
-	Parser    valueParser
+	Name        string
+	MultiLine   bool
+	SkipCleanUp bool
+	Lines       []string
+	Parser      valueParser
 }
 
 func (st *tagParser) Matches(line string) bool {
@@ -518,6 +524,46 @@ func (st *tagParser) Matches(line string) bool {
 
 func (st *tagParser) Parse(lines []string) error {
 	return st.Parser.Parse(lines)
+}
+
+func newYamlParser(rx *regexp.Regexp, setter func(json.RawMessage) error) valueParser {
+	return &yamlParser{
+		set: setter,
+		rx:  rx,
+	}
+}
+
+type yamlParser struct {
+	set func(json.RawMessage) error
+	rx  *regexp.Regexp
+}
+
+func (y *yamlParser) Parse(lines []string) error {
+	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+		return nil
+	}
+
+	var uncommented []string
+	uncommented = append(uncommented, removeYamlIndent(lines)...)
+
+	yamlContent := strings.Join(uncommented, "\n")
+	var yamlValue interface{}
+	err := yaml.Unmarshal([]byte(yamlContent), &yamlValue)
+	if err != nil {
+		return err
+	}
+
+	var jsonValue json.RawMessage
+	jsonValue, err = fmts.YAMLToJSON(yamlValue)
+	if err != nil {
+		return err
+	}
+
+	return y.set(jsonValue)
+}
+
+func (y *yamlParser) Matches(line string) bool {
+	return y.rx.MatchString(line)
 }
 
 // aggregates lines in header until it sees `---`,
@@ -529,7 +575,6 @@ type yamlSpecScanner struct {
 	setDescription func([]string)
 	workedOutTitle bool
 	title          []string
-	description    []string
 	skipHeader     bool
 }
 
@@ -739,6 +784,20 @@ func removeIndent(spec []string) []string {
 	return spec
 }
 
+// removes indent base on the first line
+func removeYamlIndent(spec []string) []string {
+	loc := rxIndent.FindStringIndex(spec[0])
+	var s []string
+	if loc[1] > 0 {
+		for i := range spec {
+			if len(spec[i]) >= loc[1] {
+				s = append(s, spec[i][loc[1]-1:])
+			}
+		}
+	}
+	return s
+}
+
 // aggregates lines in header until it sees a tag.
 type sectionedParser struct {
 	header     []string
@@ -753,7 +812,7 @@ type sectionedParser struct {
 	taggers        []tagParser
 	currentTagger  *tagParser
 	title          []string
-	description    []string
+	ignored        bool
 }
 
 func (st *sectionedParser) collectTitleDescription() {
@@ -787,6 +846,10 @@ COMMENTS:
 	for _, c := range doc.List {
 		for _, line := range strings.Split(c.Text, "\n") {
 			if rxSwaggerAnnotation.MatchString(line) {
+				if rxIgnoreOverride.MatchString(line) {
+					st.ignored = true
+					break COMMENTS // an explicit ignore terminates this parser
+				}
 				if st.annotation == nil || !st.annotation.Matches(line) {
 					break COMMENTS // a new swagger: annotation terminates this parser
 				}
@@ -843,7 +906,10 @@ COMMENTS:
 		st.setDescription(st.Description())
 	}
 	for _, mt := range st.matched {
-		if err := mt.Parse(cleanupScannerLines(mt.Lines, rxUncommentHeaders, rxBeginYAMLSpec)); err != nil {
+		if !mt.SkipCleanUp {
+			mt.Lines = cleanupScannerLines(mt.Lines, rxUncommentHeaders, nil)
+		}
+		if err := mt.Parse(mt.Lines); err != nil {
 			return err
 		}
 	}

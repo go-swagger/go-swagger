@@ -1,0 +1,87 @@
+---
+  swagger: "2.0"
+  info: 
+    title: "allOf bugs with empty objects"
+    version: "0.0.1"
+    description: "repro"
+    license: 
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  definitions: 
+    foo: 
+      type: "object"
+    bar: 
+      type: "object"
+    nonInterface:
+      type: "object"
+      additionalProperties:
+        type: string
+        format: date
+    # this one is generated as interface{} and validation is not honored
+    emptyEnum:
+      type: "object"
+      enum: 
+        - "abc"
+        - "def"
+    variation0:
+      allOf: 
+        - 
+          $ref: "#/definitions/foo"
+        - 
+          $ref: "#/definitions/bar"
+    variation1:
+      allOf: 
+        - 
+          $ref: "#/definitions/foo"
+        - 
+          $ref: "#/definitions/nonInterface"
+    variation2:
+      type: "object"
+      properties:
+        prop1:
+          $ref: '#/definitions/emptyEnum'
+    variation3:
+      type: "object"
+      properties:
+        prop1:
+          type: array
+          minItems: 10
+          items: 
+            $ref: '#/definitions/emptyEnum'
+    tupleVariation:
+      type: "array"
+      items: 
+        - type: integer
+          maximum: 10 
+        - $ref: '#/definitions/bar'
+        - $ref: '#/definitions/nonInterface'
+        - type: array 
+          maxItems: 10
+          items: 
+            $ref: '#/definitions/bar'
+      additionalItems:
+        $ref: '#/definitions/foo'
+    addItemsVariation:
+      type: "array"
+      items: 
+        - type: integer
+          maximum: 10 
+        - $ref: '#/definitions/bar'
+      additionalItems:
+        type: array 
+        uniqueItems: true
+        items:
+          $ref: '#/definitions/foo'
+  paths: 
+    /: 
+      get: 
+        responses: 
+          200: 
+            description: "OK"
+            schema: 
+              allOf: 
+                - 
+                  $ref: "#/definitions/foo"
+                - 
+                  $ref: "#/definitions/bar"
+

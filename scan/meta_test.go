@@ -101,7 +101,8 @@ func verifyMeta(t testing.TB, doc *spec.Swagger) {
 			TokenURL:         "/oauth2/token",
 			Flow:             "accessCode",
 			Scopes: map[string]string{
-				"bla": "foo",
+				"bla1": "foo1",
+				"bla2": "foo2",
 			},
 		},
 	}
@@ -118,10 +119,24 @@ func verifyMeta(t testing.TB, doc *spec.Swagger) {
 		},
 		"x-meta-value": "value",
 	}
+	expectedInfoExtensions := spec.Extensions{
+		"x-info-array": []interface{}{
+			"value1",
+			"value2",
+		},
+		"x-info-array-obj": []interface{}{
+			map[string]interface{}{
+				"name":  "obj",
+				"value": "field",
+			},
+		},
+		"x-info-value": "value",
+	}
 	assert.NotNil(t, doc.SecurityDefinitions["api_key"])
 	assert.NotNil(t, doc.SecurityDefinitions["oauth2"])
 	assert.EqualValues(t, spec.SecurityDefinitions{"api_key": &expectedSecuritySchemaKey, "oauth2": &expectedSecuritySchemaOAuth}, doc.SecurityDefinitions)
 	assert.EqualValues(t, expectedExtensions, doc.Extensions)
+	assert.EqualValues(t, expectedInfoExtensions, doc.Info.Extensions)
 	assert.Equal(t, "localhost", doc.Host)
 	assert.Equal(t, "/v2", doc.BasePath)
 

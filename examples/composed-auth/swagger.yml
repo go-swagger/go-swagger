@@ -1,0 +1,264 @@
+---
+
+swagger: '2.0'
+info:
+  title: Composing authorizations 
+  description: | 
+    This sample API demonstrates how to compose several authentication schemes 
+    and configure complex security requirements for your operations.
+
+    This API simulates a very simple market place with customers and resellers  
+    of items.
+
+    Personas:
+      - as a first time user, I want to see all items on sales
+      - as a registered customer, I want to post orders for items and 
+        consult my past orders
+      - as a registered reseller, I want to see all pending orders on the items 
+        I am selling on the market place
+      - as a reseller managing my own inventories, I want to post replenishment orders for the items I provide
+      - as a register user, I want to consult my personal account infos
+
+    The situation we defined on the authentication side is as follows:
+      - every known user is authenticated using a basic token
+      - resellers are authenticated using API keys - we let the option to authenticate using a header or query param
+      - any registered user (customer or reseller) will add a signed JWT to access more API endpoints
+
+    Obviously, there are several ways to achieve the same result. We just wanted to demonstrate here how
+    security requirements may compose several schemes.
+    
+    Note that we used the "OAuth2" declaration here but don't implement a real  
+    OAuth2 workflow: our intend here is just to be able to extract scopes from a passed JWT token (the 
+    only way to manipulate scoped authorizers with Swagger 2.0 is to declare them with type "oauth2").
+
+  version: '0.0.1'
+consumes:
+- application/json
+produces:
+- application/json
+schemes:
+  - http   # https in a normal setup
+basePath: /api
+securityDefinitions:
+  isRegistered:
+    # This scheme uses the header: "Authorization: Basic {base64 encoded string defined by username:password}"
+    # Scopes are not supported with this type of authorization.
+    type: basic
+  isReseller:
+    # This scheme uses the header: "X-Custom-Key: {base64 encoded string}"
+    # Scopes are not supported with this type of authorization.
+    type: apiKey
+    in: header
+    name: X-Custom-Key
+  isResellerQuery:
+    # This scheme uses the query parameter "CustomKeyAsQuery"
+    # Scopes are not supported with this type of authorization.
+    type: apiKey
+    in: query
+    name: CustomKeyAsQuery
+  hasRole:
+    # This scheme uses the header: "Authorization: Bearer {base64 encoded string representing a JWT}"
+    # Alternatively, the query param: "access_token" may be used.
+    #
+    # In our scenario, we must use the query param version in order to avoid 
+    # passing several headers with key 'Authorization'
+    type: oauth2
+    # The flow and URLs in spec are for documentary purpose: go-swagger does not implement OAuth workflows
+    flow: accessCode
+    authorizationUrl: 'https://dummy.oauth.net/auth'
+    tokenUrl: 'https://dumy.oauth.net/token'
+    # Required scopes are passed by the runtime to the authorizer
+    scopes:
+      customer: scope of registered customers
+      inventoryManager: scope of resellers acting as inventory managers
+
+# Default Security requirements for all operations
+security:
+  - isRegistered: []
+
+paths:
+  /items:
+    get:
+      summary: items on sale
+      operationId: GetItems
+      description: |
+        Everybody should be able to access this operation
+      security: []
+      responses: &multipleOrdersResponse
+        '200':
+          $ref: "#/responses/multipleItems"
+        default:
+          $ref: "#/responses/otherError"
+
+  /account:
+    get:
+      summary: registered user account
+      operationId: GetAccount
+      description: |
+        Every registered user should be able to access this operation
+      security:
+        - isRegistered: []
+      responses:
+        '200':
+          description: registered user personal account infos
+          schema:
+            type: object
+            additionalProperties: true
+        '401':
+          $ref: "#/responses/unauthorized"
+        default:
+          $ref: "#/responses/otherError"
+
+  /order/{orderID}:
+    get:
+      summary: retrieves an order
+      operationId: GetOrder
+      description: |
+        Only registered customers should be able to retrieve orders
+      security: 
+        - isRegistered: []
+          hasRole: [ customer ]  
+      parameters: &singleOrderParam
+        - name: orderID
+          in: path
+          type: string
+          required: true
+      responses: &singleOrderResponse
+        '200':
+          $ref: "#/responses/singleOrder"
+        '401':
+          $ref: "#/responses/unauthorized"
+        '403':
+          $ref: "#/responses/forbidden"
+        default:
+          $ref: "#/responses/otherError"
+  /order/add:
+    post:
+      summary: post a new order
+      operationId: AddOrder
+      description: |
+        Registered customers should be able to add purchase orders.
+        Registered inventory managers should be able to add replenishment orders.
+
+      security:
+        - isRegistered: []
+          hasRole: [ customer ]  
+        - isReseller: []
+          hasRole: [ inventoryManager ]  
+        - isResellerQuery: []
+          hasRole: [ inventoryManager ]  
+      parameters:
+        - name: order
+          in: body 
+          schema:
+            $ref: "#/definitions/Order"
+          required: true
+      responses:
+        '200':
+          description: empty response
+        '401':
+          $ref: "#/responses/unauthorized"
+        '403':
+          $ref: "#/responses/forbidden"
+        default:
+          $ref: "#/responses/otherError"
+
+  /orders/{itemID}:
+    get:
+      summary: retrieves all orders for an item
+      operationId: GetOrdersForItem
+      description: |
+        Only registered resellers should be able to search orders for an item
+      security:
+        - isReseller: []
+        - isResellerQuery: []
+      parameters: &singleItemParam
+        - name: itemID
+          in: path 
+          type: string
+          required: true
+      responses: &multipleOrdersResponse
+        '200':
+          $ref: "#/responses/multipleOrders"
+        '401':
+          $ref: "#/responses/unauthorized"
+        '403':
+          $ref: "#/responses/forbidden"
+        default:
+          $ref: "#/responses/otherError"
+
+definitions:
+  Order:
+    type: object
+    required: [ orderID ]
+    properties:
+      orderID: 
+        type: string
+      orderLines: 
+        type: array
+        items: 
+          x-go-name: orderLine
+          type: object
+          required: [quantity, purchasedItem]
+          properties:
+            quantity: 
+              type: string 
+              format: uint32
+              minimum: 1
+            purchasedItem: 
+              $ref: "#/definitions/Item"
+
+  Item:
+    type: string
+
+  Error:
+    type: object
+    required:
+       - message
+    properties:
+      code:
+        type: integer
+        format: int64
+      message:
+        type: string
+
+  principal:
+    type: object 
+    properties: 
+      name: 
+        type: string
+      roles:
+        type: array 
+        items: 
+          type: string
+
+responses:
+  unauthorized:
+    description: unauthorized access for a lack of authentication
+  forbidden:
+    description: forbidden access for a lack of sufficient privileges
+  otherError:
+    description: other error response
+    schema:
+      $ref: "#/definitions/Error"
+  singleOrder:
+    description: content of an order
+    schema:
+      $ref: "#/definitions/Order"
+  multipleOrders:
+    description: multiple orders
+    schema:
+      type: array
+      items:
+        $ref: "#/definitions/Order"
+  singleItem:
+    description: single item
+    schema:
+      type: string
+  multipleItems:
+    description: multiple items
+    schema:
+      type: array
+      items:
+        $ref: "#/definitions/Item"
+

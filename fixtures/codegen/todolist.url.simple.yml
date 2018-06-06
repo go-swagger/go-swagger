@@ -32,6 +32,7 @@ paths:
           in: path
           type: integer
           description: an integer  property
+          required: true
           multipleOf: 2
           minimum: 8
           exclusiveMinimum: true
@@ -42,6 +43,7 @@ paths:
           type: integer
           format: int32
           description: an int32 integer property
+          required: true
           multipleOf: 2
           minimum: 8
           exclusiveMinimum: true
@@ -62,6 +64,7 @@ paths:
           in: path
           type: number
           description: a float property
+          required: true
           multipleOf: 1.5
           minimum: 3
           exclusiveMinimum: true
@@ -72,6 +75,7 @@ paths:
           type: number
           format: float
           description: a float32 float property
+          required: true
           multipleOf: 1.5
           minimum: 3
           exclusiveMinimum: true

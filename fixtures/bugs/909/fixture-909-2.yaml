@@ -1,0 +1,62 @@
+swagger: '2.0'
+info:
+  title: fixture for issue#909
+  version: '1.0.0'
+host: localhost
+basePath: /
+produces:
+  - application/json
+schemes:
+  - http
+paths:
+  /optional:
+    get:
+      operationId: getOptional
+      parameters:
+      - name: notAnOption1
+        in: query
+        type: array
+        collectionFormat: csv
+        required: true
+        items:
+          type: string
+          format: date-time
+      - name: isAnOption2
+        in: query
+        type: array
+        collectionFormat: csv
+        required: false
+        items:
+          type: string
+          format: uuid
+      - name: notAnOption3
+        in: body
+        required: false
+        schema:
+          $ref: '#/definitions/ContainerConfig'
+      responses:
+        200:
+          description: simple type
+          schema:
+            type: string
+            format: date-time
+        201:
+          description: simple type
+          schema:
+            type: string
+            format: uuid
+        default:
+          description: schema type
+          schema:
+            $ref: '#/definitions/ContainerConfig'
+definitions:
+  ContainerConfig:
+    type: object
+    required: [config1]
+    properties:
+      config1:
+        type: string
+        format: date-time
+      config2:
+        type: string
+        format: uuid

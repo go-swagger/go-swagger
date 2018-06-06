@@ -8,7 +8,7 @@
   -
 {{- else }}
   {{- .OriginalName }}
-  {{- if not .Required }}{{ if not .IsArray }},omitempty{{ end }}{{ end }}
+  {{- if and (not .Required) (or (not .IsArray) .IsEmptyOmitted) }},omitempty{{ end }}
 {{- end }}"
 {{- if .XMLName }} xml:"{{ .XMLName }}"{{ end }}
 {{- if .CustomTag }} {{ .CustomTag }}{{ end }}`

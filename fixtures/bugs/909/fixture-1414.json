@@ -1,0 +1,47 @@
+{
+  "info": {
+    "termsOfService": "https://quay.io/tos",
+    "version": "v1",
+    "contact": {
+      "email": "support@quay.io"
+    },
+    "description": "This API allows you to perform many of the operations required to work with Quay repositories, users, and organizations. You can find out more at <a href=\"https://quay.io\">Quay</a>.",
+    "title": "Quay Frontend"
+  },
+  "basePath": "/",
+  "swagger": "2.0",
+  "paths": {
+   "/path": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "filter",
+        "description": "fetch items with filter",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "filter",
+            "in": "query",
+            "description": "filter",
+            "type": "array",
+            "collectionFormat": "multi",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "collectionFormat": "csv"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

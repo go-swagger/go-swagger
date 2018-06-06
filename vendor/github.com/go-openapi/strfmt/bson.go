@@ -27,15 +27,18 @@ import (
 
 func init() {
 	var id ObjectId
+	// register this format in the default registry
 	Default.Add("bsonobjectid", &id, IsBSONObjectID)
 }
 
 // IsBSONObjectID returns true when the string is a valid BSON.ObjectId
 func IsBSONObjectID(str string) bool {
-	var id bson.ObjectId
-	return id.UnmarshalText([]byte(str)) == nil
+	return bson.IsObjectIdHex(str)
 }
 
+// ObjectId represents a BSON object ID (alias to gopkg.in/mgo.v2/bson.ObjectId)
+//
+// swagger:strfmt bsonobjectid
 type ObjectId bson.ObjectId
 
 // NewObjectId creates a ObjectId from a Hex String
@@ -50,12 +53,7 @@ func (id *ObjectId) MarshalText() ([]byte, error) {
 
 // UnmarshalText hydrates this instance from text
 func (id *ObjectId) UnmarshalText(data []byte) error { // validation is performed later on
-	var rawID bson.ObjectId
-	if err := rawID.UnmarshalText(data); err != nil {
-		return err
-	}
-
-	*id = ObjectId(rawID)
+	*id = ObjectId(bson.ObjectIdHex(string(data)))
 	return nil
 }
 
@@ -83,32 +81,38 @@ func (id *ObjectId) String() string {
 	return string(*id)
 }
 
+// MarshalJSON returns the ObjectId as JSON
 func (id *ObjectId) MarshalJSON() ([]byte, error) {
 	var w jwriter.Writer
 	id.MarshalEasyJSON(&w)
 	return w.BuildBytes()
 }
 
+// MarshalEasyJSON writes the ObjectId to a easyjson.Writer
 func (id *ObjectId) MarshalEasyJSON(w *jwriter.Writer) {
 	w.String(bson.ObjectId(*id).Hex())
 }
 
+// UnmarshalJSON sets the ObjectId from JSON
 func (id *ObjectId) UnmarshalJSON(data []byte) error {
 	l := jlexer.Lexer{Data: data}
 	id.UnmarshalEasyJSON(&l)
 	return l.Error()
 }
 
+// UnmarshalEasyJSON sets the ObjectId from a easyjson.Lexer
 func (id *ObjectId) UnmarshalEasyJSON(in *jlexer.Lexer) {
 	if data := in.String(); in.Ok() {
 		*id = NewObjectId(data)
 	}
 }
 
+// GetBSON returns the hex representation of the ObjectId as a bson.M{} map.
 func (id *ObjectId) GetBSON() (interface{}, error) {
 	return bson.M{"data": bson.ObjectId(*id).Hex()}, nil
 }
 
+// SetBSON sets the ObjectId from raw bson data
 func (id *ObjectId) SetBSON(raw bson.Raw) error {
 	var m bson.M
 	if err := raw.Unmarshal(&m); err != nil {

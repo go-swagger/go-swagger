@@ -33,6 +33,7 @@ paths:
           in: path
           type: integer
           description: an integer  property
+          required: true
           multipleOf: 2
           minimum: 8
           exclusiveMinimum: true
@@ -43,6 +44,7 @@ paths:
           type: integer
           format: int32
           description: an int32 integer property
+          required: true
           multipleOf: 2
           minimum: 8
           exclusiveMinimum: true
@@ -62,6 +64,7 @@ paths:
         - name: siFloat
           in: path
           type: number
+          required: true
           description: a float property
           multipleOf: 1.5
           minimum: 3
@@ -73,6 +76,7 @@ paths:
           type: number
           format: float
           description: a float32 float property
+          required: true
           multipleOf: 1.5
           minimum: 3
           exclusiveMinimum: true
@@ -84,6 +88,7 @@ paths:
           format: double
           description: a float64 float property
           multipleOf: 1.5
+          required: true
           minimum: 3
           exclusiveMinimum: true
           maximum: 100

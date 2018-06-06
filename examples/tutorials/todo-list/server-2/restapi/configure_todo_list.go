@@ -1,3 +1,5 @@
+// This file is safe to edit. Once it exists it will not be overwritten
+
 package restapi
 
 import (
@@ -13,8 +15,6 @@ import (
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-2/restapi/operations/todos"
 )
 
-// This file is safe to edit. Once it exists it will not be overwritten
-
 //go:generate swagger generate server --target .. --name TodoList --spec ../swagger.yml
 
 func configureFlags(api *operations.TodoListAPI) {
@@ -29,7 +29,7 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 	// Expected interface func(string, ...interface{})
 	//
 	// Example:
-	// s.api.Logger = log.Printf
+	// api.Logger = log.Printf
 
 	api.JSONConsumer = runtime.JSONConsumer()
 

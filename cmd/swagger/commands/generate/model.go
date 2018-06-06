@@ -16,21 +16,17 @@ package generate
 
 import (
 	"errors"
-	"fmt"
 	"log"
-	"os"
-	"path/filepath"
-
-	"github.com/go-swagger/go-swagger/generator"
 )
 
 // Model the generate model file command
 type Model struct {
 	shared
-	Name        []string `long:"name" short:"n" description:"the model to generate"`
-	NoValidator bool     `long:"skip-validator" description:"when present will not generate a model validator"`
-	NoStruct    bool     `long:"skip-struct" description:"when present will not generate the model struct"`
-	DumpData    bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
+	Name           []string `long:"name" short:"n" description:"the model to generate"`
+	NoStruct       bool     `long:"skip-struct" description:"when present will not generate the model struct"`
+	DumpData       bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
+	SkipFlattening bool     `long:"skip-flatten" description:"skips flattening of spec prior to generation"`
+	SkipValidation bool     `long:"skip-validation" description:"skips validation of spec prior to generation"`
 }
 
 // Execute generates a model file
@@ -43,51 +39,17 @@ func (m *Model) Execute(args []string) error {
 	if m.ExistingModels != "" {
 		log.Println("Warning: Ignoring existing-models flag when generating models.")
 	}
-
-	cfg, err := readConfig(string(m.ConfigFile))
-	if err != nil {
-		return err
+	s := &Server{
+		shared:         m.shared,
+		Models:         m.Name,
+		DumpData:       m.DumpData,
+		ExcludeMain:    true,
+		ExcludeSpec:    true,
+		SkipSupport:    true,
+		SkipOperations: true,
+		SkipModels:     m.NoStruct,
+		SkipFlattening: m.SkipFlattening,
+		SkipValidation: m.SkipValidation,
 	}
-	setDebug(cfg)
-
-	opts := &generator.GenOpts{
-		Spec:             string(m.Spec),
-		Target:           string(m.Target),
-		APIPackage:       m.APIPackage,
-		ModelPackage:     m.ModelPackage,
-		ServerPackage:    m.ServerPackage,
-		ClientPackage:    m.ClientPackage,
-		DumpData:         m.DumpData,
-		TemplateDir:      string(m.TemplateDir),
-		IncludeValidator: !m.NoValidator,
-		IncludeModel:     !m.NoStruct,
-	}
-
-	if err := opts.EnsureDefaults(false); err != nil {
-		return err
-	}
-
-	if err := configureOptsFromConfig(cfg, opts); err != nil {
-		return err
-	}
-
-	if err := generator.GenerateDefinition(m.Name, opts); err != nil {
-		return err
-	}
-
-	rp, err := filepath.Rel(".", opts.Target)
-	if err != nil {
-		return err
-	}
-
-	fmt.Fprintf(os.Stderr, `Generation completed!
-
-For this generation to compile you need to have some packages in your GOPATH:
-
-  * github.com/go-openapi/runtime
-
-You can get these now with: go get -u -f %s/...
-`, rp)
-
-	return nil
+	return s.Execute(args)
 }

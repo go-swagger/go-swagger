@@ -1,0 +1,75 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: 'issue 1232'
+  description: verifies marshalling code on discriminated type
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /pet:
+    get:
+      operationId: getPet
+      summary: many model variations
+      description: no description
+      tags:
+        - testcgen
+      parameters:
+      - name: aPet
+        in: body 
+        schema: 
+          $ref: '#/definitions/Pet'
+      responses:
+        default:
+          description: Generic Out
+          schema:
+            $ref: '#/definitions/Pet'
+  /cat:
+    get:
+      operationId: getCat
+      summary: many model variations
+      description: no description
+      tags:
+        - testcgen
+      parameters:
+      - name: aCat
+        in: body 
+        schema: 
+          $ref: '#/definitions/Cat'
+      responses:
+        default:
+          description: Generic Out
+          schema:
+            $ref: '#/definitions/Pet'
+definitions:
+  Pet:
+    type: object
+    discriminator: petType
+    properties:
+      name:
+        type: string
+      petType:
+        type: string
+    required:
+    - name
+    - petType
+
+  Cat:
+    type: object
+    description: A representation of a cat
+    allOf:
+    - $ref: '#/definitions/Pet'
+    - properties:
+        huntingSkill:
+          type: string
+          description: The measured skill for hunting
+          default: lazy
+          enum:
+          - clueless
+          - lazy
+          - adventurous
+          - aggressive
+      required:
+      - huntingSkill

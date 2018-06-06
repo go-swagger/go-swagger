@@ -15,9 +15,7 @@
 package generate
 
 import (
-	"fmt"
-	"os"
-	"path/filepath"
+	"log"
 
 	"github.com/go-swagger/go-swagger/generator"
 )
@@ -33,9 +31,8 @@ type Support struct {
 	DefaultScheme string   `long:"default-scheme" description:"the default scheme for this API" default:"http"`
 }
 
-// Execute generates the supporting files file
-func (s *Support) Execute(args []string) error {
-	opts := generator.GenOpts{
+func (s *Support) getOpts() (*generator.GenOpts, error) {
+	return &generator.GenOpts{
 		Spec:          string(s.Spec),
 		Target:        string(s.Target),
 		APIPackage:    s.APIPackage,
@@ -46,30 +43,30 @@ func (s *Support) Execute(args []string) error {
 		DumpData:      s.DumpData,
 		DefaultScheme: s.DefaultScheme,
 		TemplateDir:   string(s.TemplateDir),
-	}
+	}, nil
+}
 
-	if err := generator.GenerateSupport(s.Name, nil, nil, &opts); err != nil {
-		return err
-	}
+func (s *Support) generate(opts *generator.GenOpts) error {
+	return generator.GenerateSupport(s.Name, nil, nil, opts)
+}
 
-	rp, err := filepath.Rel(".", opts.Target)
-	if err != nil {
-		return err
-	}
+func (s *Support) log(rp string) {
 
-	fmt.Fprintf(os.Stderr, `Generation completed!
+	log.Printf(`Generation completed!
 
 For this generation to compile you need to have some packages in your vendor or GOPATH:
 
   * github.com/go-openapi/runtime
-  * github.com/asaskevich/govalidator
-  * golang.org/x/net/context
-  * github.com/tylerb/graceful
-  * github.com/jessevdk/go-flags
+  * github.com/asaskevich/govalidator		
+  * github.com/tylerb/graceful		
+  * github.com/jessevdk/go-flags		
   * golang.org/x/net/context/ctxhttp
 
 You can get these now with: go get -u -f %s/...
 `, rp)
+}
 
-	return nil
+// Execute generates the supporting files file
+func (s *Support) Execute(args []string) error {
+	return createSwagger(s)
 }

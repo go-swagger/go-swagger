@@ -17,6 +17,9 @@ package generator
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -61,19 +64,17 @@ func TestGenerateModel_Sanity(t *testing.T) {
 				rendered := bytes.NewBuffer(nil)
 
 				err := templates.MustGet("model").Execute(rendered, genModel)
-				if assert.NoError(t, err) {
-					if assert.NoError(t, err) {
-						_, err := opts.LanguageOpts.FormatContent(strings.ToLower(k)+".go", rendered.Bytes())
-						assert.NoError(t, err)
-						//if assert.NoError(t, err) {
-						//fmt.Println(string(formatted))
-						//} else {
-						//fmt.Println(rendered.String())
-						////break
-						//}
+				if assert.NoError(t, err, "Unexpected error while rendering models for fixtures/codegen/todolist.models.yml: %v", err) {
+					_, err := opts.LanguageOpts.FormatContent(strings.ToLower(k)+".go", rendered.Bytes())
+					assert.NoError(t, err)
+					//if assert.NoError(t, err) {
+					//fmt.Println(string(formatted))
+					//} else {
+					//fmt.Println(rendered.String())
+					////break
+					//}
 
-						//assert.EqualValues(t, strings.TrimSpace(string(expected)), strings.TrimSpace(string(formatted)))
-					}
+					//assert.EqualValues(t, strings.TrimSpace(string(expected)), strings.TrimSpace(string(formatted)))
 				}
 			}
 		}
@@ -255,13 +256,77 @@ func TestGenerateModel_Primitives(t *testing.T) {
 		val.Name = "theType"
 		exp := v.Expected
 		if val.IsInterface || val.IsStream {
-			tt.assertRender(val, "type TheType "+exp+"\n\n")
+			tt.assertRender(&val, "type TheType "+exp+"\n  \n")
 			continue
 		}
-		tt.assertRender(val, "type TheType "+exp+"\n// Validate validates this the type\nfunc (o theType) Validate(formats strfmt.Registry) error {\n  return nil\n}\n")
+		tt.assertRender(&val, "type TheType "+exp+"\n  // Validate validates this the type\nfunc (o theType) Validate(formats strfmt.Registry) error {\n  return nil\n}\n")
 	}
 }
 
+func TestGenerateModel_Zeroes(t *testing.T) {
+	for _, v := range schTypeGenDataSimple {
+		//t.Logf("Zero for %s: %s", v.Value.GoType, v.Value.Zero())
+		switch v.Value.GoType {
+		// verifying Zero for primitive
+		case "string":
+			assert.Equal(t, `""`, v.Value.Zero())
+		case "bool":
+			assert.Equal(t, `false`, v.Value.Zero())
+		case "int32", "int64", "float32", "float64":
+			assert.Equal(t, `0`, v.Value.Zero())
+		// verifying Zero for primitive formatters
+		case "strfmt.Date", "strfmt.DateTime", "strfmt.OjbectId": // akin to structs
+			rex := regexp.MustCompile(regexp.QuoteMeta(v.Value.GoType) + `{}`)
+			assert.True(t, rex.MatchString(v.Value.Zero()))
+			k := v.Value
+			k.IsAliased = true
+			k.AliasedType = k.GoType
+			k.GoType = "myAliasedType"
+			rex = regexp.MustCompile(regexp.QuoteMeta(k.GoType+"("+k.AliasedType) + `{}` + `\)`)
+			assert.True(t, rex.MatchString(k.Zero()))
+			//t.Logf("Zero for %s: %s", k.GoType, k.Zero())
+		case "strfmt.Duration": // akin to integer
+			rex := regexp.MustCompile(regexp.QuoteMeta(v.Value.GoType) + `\(\d*\)`)
+			assert.True(t, rex.MatchString(v.Value.Zero()))
+			k := v.Value
+			k.IsAliased = true
+			k.AliasedType = k.GoType
+			k.GoType = "myAliasedType"
+			rex = regexp.MustCompile(regexp.QuoteMeta(k.GoType+"("+k.AliasedType) + `\(\d*\)` + `\)`)
+			//t.Logf("Zero for %s: %s", k.GoType, k.Zero())
+		case "strfmt.Base64": // akin to []byte
+			rex := regexp.MustCompile(regexp.QuoteMeta(v.Value.GoType) + `\(\[\]byte.*\)`)
+			assert.True(t, rex.MatchString(v.Value.Zero()))
+			k := v.Value
+			k.IsAliased = true
+			k.AliasedType = k.GoType
+			k.GoType = "myAliasedType"
+			rex = regexp.MustCompile(regexp.QuoteMeta(k.GoType+"("+k.AliasedType) + `\(\[\]byte.*\)` + `\)`)
+			// t.Logf("Zero for %s: %s", k.GoType, k.Zero())
+		case "interface{}":
+			assert.Equal(t, `nil`, v.Value.Zero())
+		case "io.ReadCloser":
+			continue
+		default:
+			if strings.HasPrefix(v.Value.GoType, "[]") || strings.HasPrefix(v.Value.GoType, "map[") { // akin to slice or map
+				assert.True(t, strings.HasPrefix(v.Value.Zero(), "make("))
+
+			} else if strings.HasPrefix(v.Value.GoType, "models.") {
+				assert.True(t, strings.HasPrefix(v.Value.Zero(), "new("))
+
+			} else { // akin to string
+				rex := regexp.MustCompile(regexp.QuoteMeta(v.Value.GoType) + `\(".*"\)`)
+				assert.True(t, rex.MatchString(v.Value.Zero()))
+				k := v.Value
+				k.IsAliased = true
+				k.AliasedType = k.GoType
+				k.GoType = "myAliasedType"
+				rex = regexp.MustCompile(regexp.QuoteMeta(k.GoType+"("+k.AliasedType) + `\(".*"\)` + `\)`)
+				//t.Logf("Zero for %s: %s", k.GoType, k.Zero())
+			}
+		}
+	}
+}
 func TestGenerateModel_Nota(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
@@ -499,7 +564,8 @@ func TestGenerateModel_WithMapInterface(t *testing.T) {
 			assert.Equal(t, "map[string]interface{}", prop.GoType)
 			assert.True(t, prop.Required)
 			assert.True(t, prop.HasValidations)
-			assert.False(t, prop.NeedsValidation)
+			// NOTE(fredbi): NeedsValidation now deprecated
+			//assert.False(t, prop.NeedsValidation)
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)
 			if assert.NoError(t, err) {
@@ -1372,6 +1438,31 @@ func TestGenerateModel_WithAllOfAndDiscriminator(t *testing.T) {
 	}
 }
 
+func TestGenerateModel_WithAllOfAndDiscriminatorAndArrayOfPolymorphs(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["PetWithPets"]
+		opts := opts()
+		genModel, err := makeGenDefinition("PetWithPets", "models", schema, specDoc, opts)
+		if assert.NoError(t, err) && assert.Len(t, genModel.AllOf, 2) {
+			assert.True(t, genModel.IsComplexObject)
+			assert.Equal(t, "PetWithPets", genModel.Name)
+			assert.Equal(t, "PetWithPets", genModel.GoType)
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("PetWithPets.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, "type PetWithPets struct {", res)
+					assertInCode(t, "UnmarshalPetSlice", res)
+				}
+			}
+		}
+	}
+}
+
 func TestGenerateModel_WithAllOf(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if assert.NoError(t, err) {
@@ -1734,8 +1825,8 @@ func TestGenModel_Issue423(t *testing.T) {
 				ct, err := opts.LanguageOpts.FormatContent("SRN.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
-					assertInCode(t, "Site json.RawMessage `json:\"site\"`", res)
-					assertInCode(t, "UnmarshalSite(bytes.NewBuffer(data.Site), runtime.JSONConsumer())", res)
+					assertInCode(t, "propSite, err := UnmarshalSite(bytes.NewBuffer(data.Site), runtime.JSONConsumer())", res)
+					assertInCode(t, "result.siteField = propSite", res)
 				}
 			}
 		}
@@ -1966,7 +2057,7 @@ func TestGenModel_Issue981(t *testing.T) {
 				ct, err := opts.LanguageOpts.FormatContent("user.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(ct)
-					fmt.Println(res)
+					//fmt.Println(res)
 					assertInCode(t, "FirstName string `json:\"first_name,omitempty\"`", res)
 					assertInCode(t, "LastName string `json:\"last_name,omitempty\"`", res)
 					assertInCode(t, "if swag.IsZero(m.Type)", res)
@@ -1979,4 +2070,427 @@ func TestGenModel_Issue981(t *testing.T) {
 		}
 	}
 
+}
+
+func TestGenModel_Issue774(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/774/swagger.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "Foo"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ff, err := opts.LanguageOpts.FormatContent("Foo.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					//fmt.Println(res)
+					assertInCode(t, "HasOmitEmptyFalse []string `json:\"hasOmitEmptyFalse\"`", res)
+					assertInCode(t, "HasOmitEmptyTrue []string `json:\"hasOmitEmptyTrue,omitempty\"`", res)
+					assertInCode(t, "NoOmitEmpty []string `json:\"noOmitEmpty\"`", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestGenModel_Issue1341(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/1341/swagger.yaml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "ExecutableValueString"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ff, err := opts.LanguageOpts.FormatContent("executable_value_string.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					//fmt.Println(res)
+					assertInCode(t, `return errors.New(422, "invalid ValueType value: %q", base.ValueType`, res)
+					assertInCode(t, "result.testField = base.Test", res)
+					assertInCode(t, "Test *string `json:\"Test\"`", res)
+					assertInCode(t, "Test: m.Test(),", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+// Non-regression when Debug mode activated
+// Run everything again in Debug mode, just to make
+// sure no side effect has been added while debugging
+// TODO: remove it when no more "if Debug {}" branches are
+// present in source code.
+func TestDebugModelEntries(t *testing.T) {
+	Debug = true
+	log.SetOutput(ioutil.Discard)
+	// Verification only: temporarily mute stderr for possible debug logs to stderr
+	//origStdout := os.Stdout
+	//origStderr := os.Stderr
+	//f, err := os.OpenFile("stderr.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	//if err != nil {
+	//	panic("Test interrupted: cannot redirect stderr to log file")
+	//}
+	//os.Stdout = ioutil.Discard
+	//os.Stderr = f
+
+	defer func() {
+		log.SetOutput(os.Stdout)
+		//os.Stderr = origStderr
+		Debug = false
+	}()
+
+	TestGenerateModel_Sanity(t)
+	TestGenerateModel_DocString(t)
+	TestGenerateModel_PropertyValidation(t)
+	TestGenerateModel_SchemaField(t)
+	TestGenSchemaType(t)
+	TestGenerateModel_Primitives(t)
+	TestGenerateModel_Nota(t)
+	TestGenerateModel_NotaWithRef(t)
+	TestGenerateModel_NotaWithMeta(t)
+	TestGenerateModel_RunParameters(t)
+	TestGenerateModel_NotaWithName(t)
+	TestGenerateModel_NotaWithRefRegistry(t)
+	TestGenerateModel_WithCustomTag(t)
+	TestGenerateModel_NotaWithMetaRegistry(t)
+	TestGenerateModel_WithMap(t)
+	TestGenerateModel_WithMapInterface(t)
+	TestGenerateModel_WithMapRef(t)
+	TestGenerateModel_WithMapComplex(t)
+	TestGenerateModel_WithMapRegistry(t)
+	TestGenerateModel_WithMapRegistryRef(t)
+	TestGenerateModel_WithMapComplexRegistry(t)
+	TestGenerateModel_WithAdditional(t)
+	TestGenerateModel_JustRef(t)
+	TestGenerateModel_WithRef(t)
+	TestGenerateModel_WithNullableRef(t)
+	TestGenerateModel_Scores(t)
+	TestGenerateModel_JaggedScores(t)
+	TestGenerateModel_Notables(t)
+	TestGenerateModel_Notablix(t)
+	TestGenerateModel_Stats(t)
+	TestGenerateModel_Statix(t)
+	TestGenerateModel_WithItems(t)
+	TestGenerateModel_WithComplexItems(t)
+	TestGenerateModel_WithItemsAndAdditional(t)
+	TestGenerateModel_WithItemsAndAdditional2(t)
+	TestGenerateModel_WithComplexAdditional(t)
+	TestGenerateModel_SimpleTuple(t)
+	TestGenerateModel_TupleWithExtra(t)
+	TestGenerateModel_TupleWithComplex(t)
+	TestGenerateModel_WithTuple(t)
+	TestGenerateModel_WithTupleWithExtra(t)
+	TestGenerateModel_WithAllOfAndDiscriminator(t)
+	TestGenerateModel_WithAllOfAndDiscriminatorAndArrayOfPolymorphs(t)
+	TestGenerateModel_WithAllOf(t)
+	TestNumericKeys(t)
+	TestGenModel_Issue196(t)
+	TestGenModel_Issue222(t)
+	TestGenModel_Issue243(t)
+	TestGenModel_Issue252(t)
+	TestGenModel_Issue251(t)
+	TestGenModel_Issue257(t)
+	TestGenModel_Issue340(t)
+	TestGenModel_Issue381(t)
+	TestGenModel_Issue300(t)
+	TestGenModel_Issue398(t)
+	TestGenModel_Issue454(t)
+	TestGenModel_Issue423(t)
+	TestGenModel_Issue453(t)
+	TestGenModel_Issue455(t)
+	TestGenModel_Issue763(t)
+	TestGenModel_Issue811_NullType(t)
+	TestGenModel_Issue811_Emojis(t)
+	TestGenModel_Issue752_EOFErr(t)
+	TestImports_ExistingModel(t)
+	TestGenModel_Issue786(t)
+	TestGenModel_Issue822(t)
+	TestGenModel_Issue981(t)
+	TestGenModel_Issue774(t)
+	TestGenModel_Issue1341(t)
+	Debug = false
+}
+
+// This tests to check that format validation is performed on non required schema properties
+func TestGenModel_Issue1347(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/1347/fixture-1347.yaml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		schema := definitions["ContainerConfig"]
+		opts := opts()
+		genModel, err := makeGenDefinition("ContainerConfig", "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ff, err := opts.LanguageOpts.FormatContent("Foo.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					//log.Println("1347")
+					//log.Println(res)
+					// Just verify that the validation call is generated even though we add a non-required property
+					assertInCode(t, `validate.FormatOf("config1", "body", "hostname", m.Config1.String(), formats)`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+// This tests to check that format validation is performed on MAC format
+func TestGenModel_Issue1348(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/1348/fixture-1348.yaml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "ContainerConfig"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					// Just verify that the validation call is generated with proper format
+					assertInCode(t, `if err := validate.FormatOf("config1", "body", "mac", m.Config1.String(), formats)`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+// This tests that additionalProperties with validation is generated properly.
+func TestGenModel_Issue1198(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/1198/fixture-1198.yaml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "pet"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					//log.Println("1198")
+					//log.Println(res)
+					// Just verify that the validation call is generated with proper format
+					assertInCode(t, `if err := m.validateDate(formats); err != nil {`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+// This tests that additionalProperties with validation is generated properly.
+func TestGenModel_Issue1397a(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/1397/fixture-1397a.yaml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "ContainerConfig"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					//log.Println("1397a")
+					//log.Println(res)
+					// Just verify that the validation call is generated with proper format
+					assertInCode(t, `if swag.IsZero(m[k]) { // not required`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+// This tests that an enum of object values validates properly.
+func TestGenModel_Issue1397b(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/1397/fixture-1397b.yaml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "ContainerConfig"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					//log.Println("1397b")
+					//log.Println(res)
+					// Just verify that the validation call is generated with proper format
+					assertInCode(t, `if err := m.validateContainerConfigEnum("", "body", m); err != nil {`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+// This tests that additionalProperties with an array of polymorphic objects is generated properly.
+func TestGenModel_Issue1409(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/1409/fixture-1409.yaml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "Graph"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					//log.Println("1409")
+					//log.Println(res)
+					// Just verify that the validation call is generated with proper format
+					assertInCode(t, `propNodes, err := UnmarshalNodeSlice(bytes.NewBuffer(data.Nodes), runtime.JSONConsumer())`, res)
+					assertInCode(t, `if err := json.Unmarshal(raw, &rawProps); err != nil {`, res)
+					assertInCode(t, `m.GraphAdditionalProperties[k] = toadd`, res)
+					assertInCode(t, `b3, err = json.Marshal(m.GraphAdditionalProperties)`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+// This tests makes sure model definitions from inline schema in response are properly flattened and get validation
+func TestGenModel_Issue866(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/866/fixture-866.yaml")
+	if assert.NoError(t, err) {
+		p, ok := specDoc.Spec().Paths.Paths["/"]
+		if assert.True(t, ok) {
+			op := p.Get
+			responses := op.Responses.StatusCodeResponses
+			for k, r := range responses {
+				t.Logf("Response: %d", k)
+				schema := *r.Schema
+				opts := opts()
+				genModel, err := makeGenDefinition("GetOKBody", "models", schema, specDoc, opts)
+				if assert.NoError(t, err) {
+					buf := bytes.NewBuffer(nil)
+					err := templates.MustGet("model").Execute(buf, genModel)
+					if assert.NoError(t, err) {
+						ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+						if assert.NoError(t, err) {
+							res := string(ct)
+							assertInCode(t, `if err := validate.Required(`, res)
+							assertInCode(t, `if err := validate.MaxLength(`, res)
+							assertInCode(t, `if err := m.validateAccessToken(formats); err != nil {`, res)
+							assertInCode(t, `if err := m.validateAccountID(formats); err != nil {`, res)
+						} else {
+							fmt.Println(buf.String())
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+// This tests makes sure marshalling and validation is generated in aliased formatted definitions
+func TestGenModel_Issue946(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/946/fixture-946.yaml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "mydate"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, `type Mydate strfmt.Date`, res)
+					assertInCode(t, `func (m *Mydate) UnmarshalJSON(b []byte) error {`, res)
+					assertInCode(t, `return ((*strfmt.Date)(m)).UnmarshalJSON(b)`, res)
+					assertInCode(t, `func (m Mydate) MarshalJSON() ([]byte, error) {`, res)
+					assertInCode(t, `return (strfmt.Date(m)).MarshalJSON()`, res)
+					assertInCode(t, `if err := validate.FormatOf("", "body", "date", strfmt.Date(m).String(), formats); err != nil {`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+// This tests makes sure that docstring in inline schema in response properly reflect the Required property
+func TestGenModel_Issue910(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/910/fixture-910.yaml")
+	if assert.NoError(t, err) {
+		p, ok := specDoc.Spec().Paths.Paths["/mytest"]
+		if assert.True(t, ok) {
+			op := p.Get
+			responses := op.Responses.StatusCodeResponses
+			for k, r := range responses {
+				t.Logf("Response: %d", k)
+				schema := *r.Schema
+				opts := opts()
+				genModel, err := makeGenDefinition("GetMyTestOKBody", "models", schema, specDoc, opts)
+				if assert.NoError(t, err) {
+					buf := bytes.NewBuffer(nil)
+					err := templates.MustGet("model").Execute(buf, genModel)
+					if assert.NoError(t, err) {
+						ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+						if assert.NoError(t, err) {
+							res := string(ct)
+							assertInCode(t, "// bar\n	// Required: true\n	Bar *int64 `json:\"bar\"`", res)
+							assertInCode(t, "// foo\n	// Required: true\n	Foo interface{} `json:\"foo\"`", res)
+							assertInCode(t, "// baz\n	Baz int64 `json:\"baz,omitempty\"`", res)
+							assertInCode(t, "// quux\n	Quux []string `json:\"quux\"`", res)
+							assertInCode(t, `if err := validate.Required("bar", "body", m.Bar); err != nil {`, res)
+							assertInCode(t, `if err := validate.Required("foo", "body", m.Foo); err != nil {`, res)
+							assertNotInCode(t, `if err := validate.Required("baz", "body", m.Baz); err != nil {`, res)
+							assertNotInCode(t, `if err := validate.Required("quux", "body", m.Quux); err != nil {`, res)
+							// NOTE(fredbi); fixed Required in slices. This property has actually no validation
+							assertNotInCode(t, `if swag.IsZero(m.Quux) { // not required`, res)
+						} else {
+							fmt.Println(buf.String())
+						}
+					}
+				}
+			}
+		}
+	}
 }

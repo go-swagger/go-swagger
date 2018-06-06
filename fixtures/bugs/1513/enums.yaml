@@ -1,0 +1,29 @@
+swagger: '2.0'
+info:
+  version: "1.0.0"
+  title: "Test enum serialisation"
+paths:
+
+  /example:
+    put:
+      operationid: put-enum
+      parameters:
+      - name: "something"
+        in: "body"
+        description: "PUT enum example"
+        required: true
+        schema:
+          $ref: '#/definitions/MyEnum'
+      responses:
+        202:
+          description: "PUT OK"
+        500:
+          description: "Error"
+
+definitions:
+
+  MyEnum:
+    type: "string"
+    enum:
+    - SOMEVALUE
+    - SOMEOTHERVALUE

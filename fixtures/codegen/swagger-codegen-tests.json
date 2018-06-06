@@ -121,7 +121,7 @@
             "type": "string"
           },
           "collectionFormat": "multi",
-          "default": "available"
+          "default": ["available"]
         }],
         "responses": {
           "200": {

@@ -15,15 +15,17 @@
 package client
 
 import (
+	"crypto"
+	"crypto/ecdsa"
+	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"io/ioutil"
 	"mime"
 	"net/http"
 	"net/http/httputil"
-	"os"
-	"path"
 	"strings"
 	"sync"
 	"time"
@@ -32,36 +34,103 @@ import (
 	"golang.org/x/net/context/ctxhttp"
 
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/logger"
+	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 )
 
 // TLSClientOptions to configure client authentication with mutual TLS
 type TLSClientOptions struct {
-	Certificate        string
-	Key                string
-	CA                 string
-	ServerName         string
+	// Certificate is the path to a PEM-encoded certificate to be used for
+	// client authentication. If set then Key must also be set.
+	Certificate string
+
+	// LoadedCertificate is the certificate to be used for client authentication.
+	// This field is ignored if Certificate is set. If this field is set, LoadedKey
+	// is also required.
+	LoadedCertificate *x509.Certificate
+
+	// Key is the path to an unencrypted PEM-encoded private key for client
+	// authentication. This field is required if Certificate is set.
+	Key string
+
+	// LoadedKey is the key for client authentication. This field is required if
+	// LoadedCertificate is set.
+	LoadedKey crypto.PrivateKey
+
+	// CA is a path to a PEM-encoded certificate that specifies the root certificate
+	// to use when validating the TLS certificate presented by the server. If this field
+	// (and LoadedCA) is not set, the system certificate pool is used. This field is ignored if LoadedCA
+	// is set.
+	CA string
+
+	// LoadedCA specifies the root certificate to use when validating the server's TLS certificate.
+	// If this field (and CA) is not set, the system certificate pool is used.
+	LoadedCA *x509.Certificate
+
+	// ServerName specifies the hostname to use when verifying the server certificate.
+	// If this field is set then InsecureSkipVerify will be ignored and treated as
+	// false.
+	ServerName string
+
+	// InsecureSkipVerify controls whether the certificate chain and hostname presented
+	// by the server are validated. If false, any certificate is accepted.
 	InsecureSkipVerify bool
-	_                  struct{}
+
+	// Prevents callers using unkeyed fields.
+	_ struct{}
 }
 
 // TLSClientAuth creates a tls.Config for mutual auth
 func TLSClientAuth(opts TLSClientOptions) (*tls.Config, error) {
-	// load client cert
-	cert, err := tls.LoadX509KeyPair(opts.Certificate, opts.Key)
-	if err != nil {
-		return nil, fmt.Errorf("tls client cert: %v", err)
-	}
-
 	// create client tls config
 	cfg := &tls.Config{}
-	cfg.Certificates = []tls.Certificate{cert}
+
+	// load client cert if specified
+	if opts.Certificate != "" {
+		cert, err := tls.LoadX509KeyPair(opts.Certificate, opts.Key)
+		if err != nil {
+			return nil, fmt.Errorf("tls client cert: %v", err)
+		}
+		cfg.Certificates = []tls.Certificate{cert}
+	} else if opts.LoadedCertificate != nil {
+		block := pem.Block{Type: "CERTIFICATE", Bytes: opts.LoadedCertificate.Raw}
+		certPem := pem.EncodeToMemory(&block)
+
+		var keyBytes []byte
+		switch k := opts.LoadedKey.(type) {
+		case *rsa.PrivateKey:
+			keyBytes = x509.MarshalPKCS1PrivateKey(k)
+		case *ecdsa.PrivateKey:
+			var err error
+			keyBytes, err = x509.MarshalECPrivateKey(k)
+			if err != nil {
+				return nil, fmt.Errorf("tls client priv key: %v", err)
+			}
+		default:
+			return nil, fmt.Errorf("tls client priv key: unsupported key type")
+		}
+
+		block = pem.Block{Type: "PRIVATE KEY", Bytes: keyBytes}
+		keyPem := pem.EncodeToMemory(&block)
+
+		cert, err := tls.X509KeyPair(certPem, keyPem)
+		if err != nil {
+			return nil, fmt.Errorf("tls client cert: %v", err)
+		}
+		cfg.Certificates = []tls.Certificate{cert}
+	}
+
 	cfg.InsecureSkipVerify = opts.InsecureSkipVerify
 
 	// When no CA certificate is provided, default to the system cert pool
 	// that way when a request is made to a server known by the system trust store,
 	// the name is still verified
-	if opts.CA != "" {
+	if opts.LoadedCA != nil {
+		caCertPool := x509.NewCertPool()
+		caCertPool.AddCert(opts.LoadedCA)
+		cfg.RootCAs = caCertPool
+	} else if opts.CA != "" {
 		// load ca cert
 		caCert, err := ioutil.ReadFile(opts.CA)
 		if err != nil {
@@ -119,8 +188,10 @@ type Runtime struct {
 	Host     string
 	BasePath string
 	Formats  strfmt.Registry
-	Debug    bool
 	Context  context.Context
+
+	Debug  bool
+	logger logger.Logger
 
 	clientOnce *sync.Once
 	client     *http.Client
@@ -155,7 +226,10 @@ func New(host, basePath string, schemes []string) *Runtime {
 	if !strings.HasPrefix(rt.BasePath, "/") {
 		rt.BasePath = "/" + rt.BasePath
 	}
-	rt.Debug = len(os.Getenv("DEBUG")) > 0
+
+	rt.Debug = logger.DebugEnabled()
+	rt.logger = logger.StandardLogger{}
+
 	if len(schemes) > 0 {
 		rt.schemes = schemes
 	}
@@ -202,6 +276,34 @@ func (r *Runtime) selectScheme(schemes []string) string {
 	}
 	return scheme
 }
+func transportOrDefault(left, right http.RoundTripper) http.RoundTripper {
+	if left == nil {
+		return right
+	}
+	return left
+}
+
+// EnableConnectionReuse drains the remaining body from a response
+// so that go will reuse the TCP connections.
+//
+// This is not enabled by default because there are servers where
+// the response never gets closed and that would make the code hang forever.
+// So instead it's provided as a http client middleware that can be used to override
+// any request.
+func (r *Runtime) EnableConnectionReuse() {
+	if r.client == nil {
+		r.Transport = KeepAliveTransport(
+			transportOrDefault(r.Transport, http.DefaultTransport),
+		)
+		return
+	}
+
+	r.client.Transport = KeepAliveTransport(
+		transportOrDefault(r.client.Transport,
+			transportOrDefault(r.Transport, http.DefaultTransport),
+		),
+	)
+}
 
 // Submit a request and when there is a body on success it will turn that into the result
 // all other things are turned into an api error for swagger which retains the status code
@@ -214,19 +316,19 @@ func (r *Runtime) Submit(operation *runtime.ClientOperation) (interface{}, error
 	}
 
 	var accept []string
-	for _, mimeType := range operation.ProducesMediaTypes {
-		accept = append(accept, mimeType)
+	accept = append(accept, operation.ProducesMediaTypes...)
+	if err = request.SetHeaderParam(runtime.HeaderAccept, accept...); err != nil {
+		return nil, err
 	}
-	request.SetHeaderParam(runtime.HeaderAccept, accept...)
 
 	if auth == nil && r.DefaultAuthentication != nil {
 		auth = r.DefaultAuthentication
 	}
-	if auth != nil {
-		if err := auth.AuthenticateRequest(request, r.Formats); err != nil {
-			return nil, err
-		}
-	}
+	//if auth != nil {
+	//	if err := auth.AuthenticateRequest(request, r.Formats); err != nil {
+	//		return nil, err
+	//	}
+	//}
 
 	// TODO: pick appropriate media type
 	cmt := r.DefaultMediaType
@@ -238,20 +340,16 @@ func (r *Runtime) Submit(operation *runtime.ClientOperation) (interface{}, error
 		}
 	}
 
-	req, err := request.BuildHTTP(cmt, r.Producers, r.Formats)
+    if _, ok := r.Producers[cmt]; !ok {
+        return nil, fmt.Errorf("none of producers: %v registered. try %s",r.Producers, cmt)
+    }
+
+	req, err := request.buildHTTP(cmt, r.BasePath, r.Producers, r.Formats, auth)
 	if err != nil {
 		return nil, err
 	}
 	req.URL.Scheme = r.pickScheme(operation.Schemes)
 	req.URL.Host = r.Host
-	var reinstateSlash bool
-	if req.URL.Path != "" && req.URL.Path != "/" && req.URL.Path[len(req.URL.Path)-1] == '/' {
-		reinstateSlash = true
-	}
-	req.URL.Path = path.Join(r.BasePath, req.URL.Path)
-	if reinstateSlash {
-		req.URL.Path = req.URL.Path + "/"
-	}
 
 	r.clientOnce.Do(func() {
 		r.client = &http.Client{
@@ -265,7 +363,7 @@ func (r *Runtime) Submit(operation *runtime.ClientOperation) (interface{}, error
 		if err2 != nil {
 			return nil, err2
 		}
-		fmt.Fprintln(os.Stderr, string(b))
+		r.logger.Debugf("%s\n", string(b))
 	}
 
 	var hasTimeout bool
@@ -305,7 +403,7 @@ func (r *Runtime) Submit(operation *runtime.ClientOperation) (interface{}, error
 		if err2 != nil {
 			return nil, err2
 		}
-		fmt.Fprintln(os.Stderr, string(b))
+		r.logger.Debugf("%s\n", string(b))
 	}
 
 	ct := res.Header.Get(runtime.HeaderContentType)
@@ -324,4 +422,18 @@ func (r *Runtime) Submit(operation *runtime.ClientOperation) (interface{}, error
 		return nil, fmt.Errorf("no consumer: %q", ct)
 	}
 	return readResponse.ReadResponse(response{res}, cons)
+}
+
+// SetDebug changes the debug flag.
+// It ensures that client and middlewares have the set debug level.
+func (r *Runtime) SetDebug(debug bool) {
+	r.Debug = debug
+	middleware.Debug = debug
+}
+
+// SetLogger changes the logger stream.
+// It ensures that client and middlewares use the same logger.
+func (r *Runtime) SetLogger(logger logger.Logger) {
+	r.logger = logger
+	middleware.Logger = logger
 }

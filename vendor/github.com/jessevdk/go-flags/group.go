@@ -9,7 +9,6 @@ import (
 	"reflect"
 	"strings"
 	"unicode/utf8"
-	"unsafe"
 )
 
 // ErrNotPointerToStruct indicates that a provided data container is not
@@ -174,6 +173,10 @@ func (g *Group) eachGroup(f func(*Group)) {
 	}
 }
 
+func isStringFalsy(s string) bool {
+	return s == "" || s == "false" || s == "no" || s == "0"
+}
+
 func (g *Group) scanStruct(realval reflect.Value, sfield *reflect.StructField, handler scanHandler) error {
 	stype := realval.Type()
 
@@ -255,10 +258,10 @@ func (g *Group) scanStruct(realval reflect.Value, sfield *reflect.StructField, h
 		valueName := mtag.Get("value-name")
 		defaultMask := mtag.Get("default-mask")
 
-		optional := (mtag.Get("optional") != "")
-		required := (mtag.Get("required") != "")
+		optional := !isStringFalsy(mtag.Get("optional"))
+		required := !isStringFalsy(mtag.Get("required"))
 		choices := mtag.GetMany("choice")
-		hidden := (mtag.Get("hidden") != "")
+		hidden := !isStringFalsy(mtag.Get("hidden"))
 
 		option := &Option{
 			Description:      description,
@@ -334,10 +337,22 @@ func (g *Group) scanSubGroupHandler(realval reflect.Value, sfield *reflect.Struc
 	subgroup := mtag.Get("group")
 
 	if len(subgroup) != 0 {
-		ptrval := reflect.NewAt(realval.Type(), unsafe.Pointer(realval.UnsafeAddr()))
+		var ptrval reflect.Value
+
+		if realval.Kind() == reflect.Ptr {
+			ptrval = realval
+
+			if ptrval.IsNil() {
+				ptrval.Set(reflect.New(ptrval.Type()))
+			}
+		} else {
+			ptrval = realval.Addr()
+		}
+
 		description := mtag.Get("description")
 
 		group, err := g.AddGroup(subgroup, description, ptrval.Interface())
+
 		if err != nil {
 			return true, err
 		}

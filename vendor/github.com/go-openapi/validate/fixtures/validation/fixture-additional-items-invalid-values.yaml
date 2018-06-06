@@ -1,0 +1,281 @@
+swagger: '2.0'
+info:
+  title: additionalItems
+  version: '1.0'
+  description: 'this spec exercise the additionalItems property on params and responses, with default and example values. This one is valid.'
+  license:
+    name: MIT
+host: localhost:8081
+basePath: /api/v1
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /servers/getBad1:
+    get:
+      operationId: getGoodOp
+      parameters:
+        - name: addItems
+          in: body
+          schema:
+            type: array
+            # Unsupported keyword
+            #additionalItems: false
+            items:
+              # inline schema
+              - type: object
+                properties:
+                  first:
+                    type: string
+              # ref simple schema
+              - $ref: '#/definitions/itemsSchema0'
+              # ref multiple complex schemas
+              - $ref: '#/definitions/itemsSchema1'
+              - $ref: '#/definitions/itemsSchema2'
+              - $ref: '#/definitions/itemsSchema3'
+            default: 
+              - first: [ 'A' , 'B' ]      #<-- error
+              - 'Default string'          #<-- validates scheme0
+              - x: 1                      #<-- error
+                c: 'ABC'                  #<-- error
+              - z: x                      #<-- error
+            example: 
+              - first: 2                  #<-- error
+              - 'A string'                #<-- validates scheme0
+              - 
+                c: 1
+                #x: 'a'                   #<-- error
+              - z: true                   #<-- error
+      responses:
+        default:
+          schema:
+            type: array
+            # Unsupported keyword
+            #additionalItems: false
+            items:
+              # inline schema
+              - type: object
+                properties:
+                  first:
+                    type: string
+              # ref simple schema
+              - $ref: '#/definitions/itemsSchema0'
+              # ref multiple complex schemas
+              - $ref: '#/definitions/itemsSchema1'
+              - $ref: '#/definitions/itemsSchema2'
+              - $ref: '#/definitions/itemsSchema3'
+            default: 
+              - first: [ 'A' , 'B' ]      #<-- error
+              - 'Default string'          #<-- validates scheme0
+              - x: 1                      #<-- error
+                c: 'ABC'                  #<-- error
+              - z: x                      #<-- error
+            example: 
+              - first: 2                  #<-- error
+              - 'A string'                #<-- validates scheme0
+              - 
+                c: 1
+                #x: 'a'                   #<-- error
+              - z: true                   #<-- error
+          examples:
+            application/json:
+              - first: 2                  #<-- error
+              - 'A string'                #<-- validates scheme0
+              - 
+                c: 1
+                #x: 'a'                   #<-- error
+              - z: true                   #<-- error
+
+        200:
+          description: 'ok'
+          schema:
+            type: array
+            # Unsupported keyword
+            #additionalItems: false
+            items:
+              # inline schema
+              - type: object
+                properties:
+                  first:
+                    type: string
+              # ref simple schema
+              - $ref: '#/definitions/itemsSchema0'
+              # ref multiple complex schemas
+              - $ref: '#/definitions/itemsSchema1'
+              - $ref: '#/definitions/itemsSchema2'
+              - $ref: '#/definitions/itemsSchema3'
+            default: 
+              - first: [ 'A' , 'B' ]      #<-- error
+              - 'Default string'          #<-- validates scheme0
+              - x: 1                      #<-- error
+                c: 'ABC'                  #<-- error
+              - z: x                      #<-- error
+            example: 
+              - first: 2                  #<-- error
+              - 'A string'                #<-- validates scheme0
+              - 
+                c: 1
+                #x: 'a'                   #<-- error
+              - z: true                   #<-- error
+          examples:
+            application/json:
+              - first: 2                  #<-- error
+              - 'A string'                #<-- validates scheme0
+              - 
+                c: 1
+                #x: 'a'                   #<-- error
+              - z: true                   #<-- error
+  /servers/getBad2:
+    get:
+      operationId: getGoodOp2
+      parameters:
+        - name: addItems
+          in: body
+          schema:
+            type: array
+            # Unsupported keyword
+            #additionalItems: false
+            items:
+              # inline schema
+              - type: object
+                properties:
+                  first:
+                    type: string
+              # ref simple schema
+              - $ref: '#/definitions/itemsSchema0'
+              # ref multiple complex schemas
+              - $ref: '#/definitions/itemsSchema1'
+              - $ref: '#/definitions/itemsSchema2'
+              - $ref: '#/definitions/itemsSchema3'
+            default: 
+              - first: 'Default string'          #<-- validates inline schema
+              - 'Default string'          #<-- validates scheme0
+              - x: 'a'                    #<-- validates schema1
+                c: 1
+              - z: 1                      #<-- validate  schema2
+            example: 
+              - first: 'Default string'          #<-- validates inline schema
+              - 'A string'                #<-- validates scheme0
+              - x: 'a'                    #<-- validates schema1
+                c: 1
+              - z: 1
+      responses:
+        200:
+          description: 'ok'
+  /servers/getBad3:
+    get:
+      operationId: getGoodOp3
+      parameters:
+        - name: addItems
+          in: body
+          schema:
+            type: array
+            # Unsupported keyword
+            #additionalItems: false
+            items:
+              # inline schema
+              - type: object
+                properties:
+                  first:
+                    type: string
+              # ref simple schema
+              - $ref: '#/definitions/itemsSchema0'
+              # ref multiple complex schemas
+              - $ref: '#/definitions/itemsSchema1'
+              - $ref: '#/definitions/itemsSchema2'
+              - $ref: '#/definitions/itemsSchema3'
+            default: 
+              - first: 'Default string'          #<-- validates inline schema
+              - 'Default string'          #<-- validates scheme0
+              - x: 'a'                    #<-- validates schema1
+                c: 1
+              - z: 1                      #<-- validate  schema2
+            example: 
+              - first: 'Default string'          #<-- validates inline schema
+              - 'A string'                #<-- validates scheme0
+              - x: 'a'                    #<-- validates schema1
+                c: 1
+              - z: 1
+      responses:
+        200:
+          description: 'ok'
+definitions:
+  itemsSchema0:
+    type: string
+  itemsSchema1:
+    type: object
+    required:
+      - x
+      - c
+    properties:
+      x:
+        type: string
+        enum:
+          - 'a'
+          - 'b'
+          - 'c'
+        default: 'a'
+        example: 'b'
+      c:
+        type: number
+        default: 1
+        example: 9
+    example:
+      x: 'c'
+      c: 12
+  itemsSchema2:
+    type: object
+    required:
+      - z
+    properties:
+      z:
+        type: number
+        default: 1
+        example: 9
+    example:
+      z: 12
+  itemsSchema3:
+    type: array
+    items:
+      type: array
+      items:
+        type: object
+        properties:
+          a:
+            type: string
+            default: 'a'
+            example: 'A'
+          b:
+            type: string
+            default: 'b'
+            example: 'B'
+        required: [ a, b ]
+        default:
+          a: 'x'
+          b: 'y'
+        example:
+          a: 'u'
+          b: 'v'
+      default:
+        - a: 'u'
+          #b: 'v'            #<-- error
+      example:
+        - a: 'u'
+          b: 'v'
+    default:
+      - 
+        - a: 'a'
+        - b: 'b'
+      - 
+        - a: 'c'
+        - b: 'd'
+    example:
+      - 
+        #- a: 'a'              #<-- error
+        - b: 'b'
+      - 
+        - a: 'c'
+        - b: 'd'

@@ -121,7 +121,8 @@ func (sv paramValidations) SetEnum(val string) {
 	}
 	sv.current.Enum = interfaceSlice
 }
-func (sv paramValidations) SetDefault(val string) { sv.current.Default = val }
+func (sv paramValidations) SetDefault(val interface{}) { sv.current.Default = val }
+func (sv paramValidations) SetExample(val interface{}) { sv.current.Example = val }
 
 type itemsValidations struct {
 	current *spec.Items
@@ -151,7 +152,8 @@ func (sv itemsValidations) SetEnum(val string) {
 	}
 	sv.current.Enum = interfaceSlice
 }
-func (sv itemsValidations) SetDefault(val string) { sv.current.Default = val }
+func (sv itemsValidations) SetDefault(val interface{}) { sv.current.Default = val }
+func (sv itemsValidations) SetExample(val interface{}) { sv.current.Example = val }
 
 type paramDecl struct {
 	File         *ast.File
@@ -200,19 +202,41 @@ type paramStructParser struct {
 	scp       *schemaParser
 }
 
+// Parse will traverse a file and look for parameters.
 func (pp *paramStructParser) Parse(gofile *ast.File, target interface{}) error {
 	tgt := target.(map[string]*spec.Operation)
 	for _, decl := range gofile.Decls {
-		gd, ok := decl.(*ast.GenDecl)
-		if !ok {
-			continue
-		}
-		for _, spc := range gd.Specs {
-			if ts, ok := spc.(*ast.TypeSpec); ok {
-				sd := paramDecl{gofile, gd, ts, nil}
-				sd.inferOperationIDs()
-				if err := pp.parseDecl(tgt, sd); err != nil {
-					return err
+		switch x1 := decl.(type) {
+		// Check for parameters at the package level.
+		case *ast.GenDecl:
+			for _, spc := range x1.Specs {
+				switch x2 := spc.(type) {
+				case *ast.TypeSpec:
+					sd := paramDecl{gofile, x1, x2, nil}
+					sd.inferOperationIDs()
+					if err := pp.parseDecl(tgt, sd); err != nil {
+						return err
+					}
+				}
+			}
+		// Check for parameters inside functions.
+		case *ast.FuncDecl:
+			for _, b := range x1.Body.List {
+				switch x2 := b.(type) {
+				case *ast.DeclStmt:
+					switch x3 := x2.Decl.(type) {
+					case *ast.GenDecl:
+						for _, spc := range x3.Specs {
+							switch x4 := spc.(type) {
+							case *ast.TypeSpec:
+								sd := paramDecl{gofile, x3, x4, nil}
+								sd.inferOperationIDs()
+								if err := pp.parseDecl(tgt, sd); err != nil {
+									return err
+								}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -283,6 +307,7 @@ func (pp *paramStructParser) parseEmbeddedStruct(gofile *ast.File, operation *sp
 	case *ast.StarExpr:
 		return pp.parseEmbeddedStruct(gofile, operation, tpe.X, seenPreviously)
 	}
+	fmt.Printf("3%#v\n", expr)
 	return fmt.Errorf("unable to resolve embedded struct for: %v", expr)
 }
 
@@ -306,7 +331,7 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 		for _, fld := range tpe.Fields.List {
 			if len(fld.Names) > 0 && fld.Names[0] != nil && fld.Names[0].IsExported() {
 				gnm := fld.Names[0].Name
-				nm, ignore, err := parseJSONTag(fld)
+				nm, ignore, _, err := parseJSONTag(fld)
 				if err != nil {
 					return err
 				}
@@ -362,7 +387,8 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 						newSingleLineTagParser("maxItems", &setMaxItems{paramValidations{&ps}, rxf(rxMaxItemsFmt, "")}),
 						newSingleLineTagParser("unique", &setUnique{paramValidations{&ps}, rxf(rxUniqueFmt, "")}),
 						newSingleLineTagParser("enum", &setEnum{paramValidations{&ps}, rxf(rxEnumFmt, "")}),
-						newSingleLineTagParser("default", &setDefault{paramValidations{&ps}, rxf(rxDefaultFmt, "")}),
+						newSingleLineTagParser("default", &setDefault{&ps.SimpleSchema, paramValidations{&ps}, rxf(rxDefaultFmt, "")}),
+						newSingleLineTagParser("example", &setExample{&ps.SimpleSchema, paramValidations{&ps}, rxf(rxExampleFmt, "")}),
 						newSingleLineTagParser("required", &setRequiredParam{&ps}),
 					}
 
@@ -382,7 +408,8 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 							newSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{itemsValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
 							newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{itemsValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
 							newSingleLineTagParser(fmt.Sprintf("items%dEnum", level), &setEnum{itemsValidations{items}, rxf(rxEnumFmt, itemsPrefix)}),
-							newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{itemsValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
+							newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{&items.SimpleSchema, itemsValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
+							newSingleLineTagParser(fmt.Sprintf("items%dExample", level), &setExample{&items.SimpleSchema, itemsValidations{items}, rxf(rxExampleFmt, itemsPrefix)}),
 						}
 					}
 
@@ -476,4 +503,14 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 	}
 
 	return nil
+}
+
+func isAliasParam(prop swaggerTypable) bool {
+	var isParam bool
+	if param, ok := prop.(paramTypable); ok {
+		isParam = param.param.In == "query" ||
+			param.param.In == "path" ||
+			param.param.In == "formData"
+	}
+	return isParam
 }

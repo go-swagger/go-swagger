@@ -1,0 +1,180 @@
+---
+  swagger: "2.0"
+  info: 
+    title: "param body with array of empty objects"
+    version: "0.0.1"
+    description: "repro issue 1537"
+    license: 
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  definitions: 
+    modelInterface:
+      type: object
+      additionalProperties: true
+    recordsModel:
+      type: array
+      items:
+        type: object
+    recordsModelWithMax:
+      type: array
+      maxItems: 10
+      items:
+        type: object
+  paths: 
+    /getRecords: 
+      get: 
+        operationId: getRecords
+        parameters:
+          - name: records
+            in: body
+            required: true
+            schema:
+              type: array
+              items:
+                type: object
+        responses: 
+          200: 
+            description: "OK"
+    /getRecordsMax: 
+      get: 
+        operationId: getRecordsMax
+        parameters:
+          - name: maxRecords
+            in: body
+            required: true
+            schema:
+              type: array
+              maxItems: 10
+              items:
+                type: object
+        responses: 
+          200: 
+            description: "OK"
+    /getInterface: 
+      get: 
+        operationId: getInterface
+        parameters:
+          - name: generic
+            in: body
+            schema:
+              type: object
+        responses: 
+          200: 
+            description: "OK"
+    /getAnotherInterface: 
+      get: 
+        operationId: getAnotherInterface
+        parameters:
+          - name: anotherGeneric
+            in: body
+            schema:
+              type: object
+              additionalProperties: true
+        responses: 
+          200: 
+            description: "OK"
+    /getMap: 
+      get: 
+        operationId: getMap
+        parameters:
+          - name: genericMap
+            in: body
+            schema:
+              type: object
+              additionalProperties: 
+                $ref: '#/definitions/modelInterface'
+        responses: 
+          200: 
+            description: "OK"
+    /getMapSlice: 
+      get: 
+        operationId: getMapSlice
+        parameters:
+          - name: genericMapSlice
+            in: body
+            schema:
+              type: array
+              items:
+                type: object
+                additionalProperties: 
+                  $ref: '#/definitions/modelInterface'
+        responses: 
+          200: 
+            description: "OK"
+    /getSliceMap: 
+      get: 
+        operationId: getSliceMap
+        parameters:
+          - name: genericSliceMap
+            in: body
+            schema:
+              type: object
+              additionalProperties: 
+                type: array
+                items:
+                  $ref: '#/definitions/modelInterface'
+        responses: 
+          200: 
+            description: "OK"
+    /getNested: 
+      get: 
+        operationId: getNested
+        parameters:
+          - name: genericNested
+            in: body
+            schema:
+              type: array
+              items: 
+                type: array
+                items:
+                  type: array
+                  items: 
+                    type: array
+                    items:
+                      type: object
+        responses: 
+          200: 
+            description: "OK"
+    /getNestedWithValidations: 
+      get: 
+        operationId: getNestedWithValidations
+        parameters:
+          - name: genericNestedWithValidations
+            in: body
+            schema:
+              type: array
+              items: 
+                type: array
+                items:
+                  type: array
+                  items: 
+                    type: array
+                    maxItems: 10
+                    items:
+                      type: object
+        responses: 
+          200: 
+            description: "OK"
+    /getNestedRequired: 
+      get: 
+        operationId: getNestedRequired
+        parameters:
+          - name: objectNestedRequired
+            in: body
+            schema:
+              type: array
+              items: 
+                type: array
+                items:
+                  type: array
+                  items: 
+                    type: array
+                    items:
+                      type: object
+                      required: [pkcs]
+                      properties:
+                        pkcs:
+                          type: string
+        responses: 
+          200: 
+            description: "OK"

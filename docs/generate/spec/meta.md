@@ -69,11 +69,11 @@ Annotation | Format
 //     - api_key:
 //
 //     SecurityDefinitions:
-//     - api_key:
+//     api_key:
 //          type: apiKey
 //          name: KEY
 //          in: header
-//     - oauth2:
+//     oauth2:
 //         type: oauth2
 //         authorizationUrl: /oauth2/auth
 //         tokenUrl: /oauth2/token
@@ -83,7 +83,6 @@ Annotation | Format
 //         flow: accessCode
 //
 //     Extensions:
-//     ---
 //     x-meta-value: value
 //     x-meta-array:
 //       - value1
@@ -91,7 +90,6 @@ Annotation | Format
 //     x-meta-array-obj:
 //       - name: obj
 //         value: field
-//     ---
 //
 // swagger:meta
 package classification

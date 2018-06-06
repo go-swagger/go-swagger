@@ -1,0 +1,66 @@
+swagger: '2.0'
+info:
+  title: issue-342
+  description: |
+    Original issue: a spec which triggers a panic because of invalid type assertion on parameters.
+    Specifically, this tests how validation carries on when references returns an unexpected object.
+    This may happen for parameters and responses and should be accurately reported.
+  version: 0.0.1
+  license:
+    name: MIT
+host: localhost:8081
+basePath: /api/v1
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /get_main_object:
+    get:
+      tags:
+        - maindata
+      parameters:
+        - name: pquery1
+          in: query
+          required: true
+          $ref: "#/definitions/sample_info/properties/sid"  # <-- error: a whole schema replaces the parameter
+        - $ref: "#/parameters/wrong"  # <-- error: wrong param props
+        - $ref: "#/parameters/notbetter"  # <-- error: wrong param schema
+        - $ref: "#/parameters/stillnogood"  # <-- error: wrong param schema
+        - name: pquery2
+          in: query
+          required: true
+          $ref: "nowhere.yaml#/definitions/sample_info/properties/sid"  # <-- error: expand ref error
+        - name: sid
+          in: body
+          required: true
+          $ref: "#/definitions/sample_info/properties/sid"  # <-- error: a whole schema replaces the parameter
+      responses:
+        '200':
+
+parameters:
+  wrong:
+    theName: wrongNameProperty
+    theType: wrongTypePropery
+  notbetter:
+    type: object
+    properties:
+      whenDidThatHappen:
+        type: string
+        format: date
+  stillnogood:
+    schema:
+      type: object
+      properties:
+        aintnogood:
+          type: integer
+definitions:
+  sample_info:
+    type: object
+    properties:
+      sid:
+        type: string
+        format: uuid
+

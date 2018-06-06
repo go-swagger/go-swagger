@@ -15,6 +15,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
 
@@ -28,11 +29,34 @@ func init() {
 	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
 }
 
+var (
+	// Debug is true when the SWAGGER_DEBUG env var is not empty
+	Debug = os.Getenv("SWAGGER_DEBUG") != ""
+)
+
 var opts struct {
+	// General options applicable to all commands
+	Quiet   func()       `long:"quiet" short:"q" description:"silence logs"`
+	LogFile func(string) `long:"output" short:"o" description:"redirect logs to file" value-name:"LOG-FILE"`
 	// Version bool `long:"version" short:"v" description:"print the version of the command"`
 }
 
 func main() {
+	// TODO: reactivate 'defer catch all' once product is stable
+	// Recovering from internal panics
+	// Stack may be printed in Debug mode
+	// Need import "runtime/debug".
+	//defer func() {
+	//	r := recover()
+	//	if r != nil {
+	//		log.Printf("Fatal error:", r)
+	//		if Debug {
+	//			debug.PrintStack()
+	//		}
+	//		os.Exit(1)
+	//	}
+	//}()
+
 	parser := flags.NewParser(&opts, flags.Default)
 	parser.ShortDescription = "helps you keep your API well described"
 	parser.LongDescription = `
@@ -75,7 +99,7 @@ It aims to represent the contract of your API with a language agnostic descripti
 		log.Fatal(err)
 	}
 
-	genpar, err := parser.AddCommand("generate", "genererate go code", "generate go code for the swagger spec file", &commands.Generate{})
+	genpar, err := parser.AddCommand("generate", "generate go code", "generate go code for the swagger spec file", &commands.Generate{})
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -100,6 +124,17 @@ It aims to represent the contract of your API with a language agnostic descripti
 			cmd.ShortDescription = "generate one or more server operations from the swagger spec"
 			cmd.LongDescription = cmd.ShortDescription
 		}
+	}
+
+	opts.Quiet = func() {
+		log.SetOutput(ioutil.Discard)
+	}
+	opts.LogFile = func(logfile string) {
+		f, err := os.OpenFile(logfile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+		if err != nil {
+			log.Fatalf("cannot write to file %s: %v", logfile, err)
+		}
+		log.SetOutput(f)
 	}
 
 	if _, err := parser.Parse(); err != nil {

@@ -1,6 +1,6 @@
 # BYO middleware
 
-Go-swagger chose the golang `net/http` package as base abstraction. That means that for _any_ supported transport by the toolkit you can reuse _any_ middleware existing middlewares that following the stdlib middlware pattern.
+Go-swagger chose the golang `net/http` package as base abstraction. That means that for _any_ supported transport by the toolkit you can reuse _any_ middleware existing middlewares that following the stdlib middleware pattern.
 
 <!--more-->
 
@@ -23,7 +23,7 @@ specification at that path.
 
 ### Add middleware
 
-The generated server allows for 2 extension points to inject middleware in its middlware chain. These have to do with
+The generated server allows for 2 extension points to inject middleware in its middleware chain. These have to do with
 the lifecycle of a request. You can find those hooks in the configure_xxx_api.go file.
 
 The first one is to add middleware all the way to the top of the middleware stack. To do this you add them in the
@@ -36,7 +36,7 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 ```
 
 The second extension point allows for middleware to be injected right before actually handling a matched request.
-This excludes the swagger.json document from being affected by this middlware though.  This extension point makes the
+This excludes the swagger.json document from being affected by this middleware though.  This extension point makes the
 middlewares execute right after routing but right before authentication, binding and validation.  You add middlewares
 to this point by editing the `setupMiddlewares` method in configure_xxx_api.go
 
@@ -101,7 +101,7 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 
 #### Add rate limiting
 
-You can also add rate limiting in a similar way. Lets say we just want to rate limit the valid requests to our swagger
+You can also add rate limiting in a similar way. Let's say we just want to rate limit the valid requests to our swagger
 API. To do so we could use [tollbooth](https://github.com/didip/tollbooth).
 
 ```go
@@ -112,4 +112,4 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 }
 ```
 
-And with this you've added rate limitting to your application.
+And with this you've added rate limiting to your application.

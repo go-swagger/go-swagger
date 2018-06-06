@@ -1,0 +1,46 @@
+swagger: '2.0'
+info:
+  description: description
+  title: title
+  version: 1.0.0
+basePath: "/"
+paths:
+  "/path":
+    post:
+      description: description
+      produces:
+        - application/json
+      tags:
+        - path
+      operationId: path.post
+      parameters:
+        - name: body
+          in: body
+          schema:
+            required:
+              - params
+            properties:
+              params:
+                type: object
+                required:
+                  - field
+                properties:
+                  field:
+                    description: field
+                    type: integer
+      responses:
+        '200':
+          description: description
+          schema:
+            type: object
+            required:
+            - result
+            properties:
+              result:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      description: id
+                      type: integer

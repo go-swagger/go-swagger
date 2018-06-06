@@ -8,13 +8,23 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/spec"
 )
+
+// GenCommon contains common properties needed across
+// definitions, app and operations
+// TargetImportPath may be used by templates to import other (possibly
+// generated) packages in the generation path (e.g. relative to GOPATH).
+// TargetImportPath is NOT used by standard templates.
+type GenCommon struct {
+	Copyright        string
+	TargetImportPath string
+}
 
 // GenDefinition contains all the properties to generate a
 // definition from a swagger spec
 type GenDefinition struct {
+	GenCommon
 	GenSchema
 	Package        string
 	Imports        map[string]string
@@ -22,6 +32,14 @@ type GenDefinition struct {
 	ExtraSchemas   []GenSchema
 	DependsOn      []string
 }
+
+// GenDefinitions represents a list of operations to generate
+// this implements a sort by operation id
+type GenDefinitions []GenDefinition
+
+func (g GenDefinitions) Len() int           { return len(g) }
+func (g GenDefinitions) Less(i, j int) bool { return g[i].Name < g[j].Name }
+func (g GenDefinitions) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
 
 // GenSchemaList is a list of schemas for generation.
 //
@@ -58,7 +76,7 @@ type GenSchema struct {
 	XMLName                 string
 	CustomTag               string
 	Properties              GenSchemaList
-	AllOf                   []GenSchema
+	AllOf                   GenSchemaList
 	HasAdditionalProperties bool
 	IsAdditionalProperties  bool
 	AdditionalProperties    *GenSchema
@@ -78,25 +96,37 @@ type GenSchema struct {
 }
 
 type sharedValidations struct {
-	Required            bool
-	MaxLength           *int64
-	MinLength           *int64
-	Pattern             string
-	MultipleOf          *float64
-	Minimum             *float64
-	Maximum             *float64
-	ExclusiveMinimum    bool
-	ExclusiveMaximum    bool
-	Enum                []interface{}
-	ItemsEnum           []interface{}
-	HasValidations      bool
+	HasValidations bool
+	Required       bool
+
+	// String validations
+	MaxLength *int64
+	MinLength *int64
+	Pattern   string
+
+	// Number validations
+	MultipleOf       *float64
+	Minimum          *float64
+	Maximum          *float64
+	ExclusiveMinimum bool
+	ExclusiveMaximum bool
+
+	Enum      []interface{}
+	ItemsEnum []interface{}
+
+	// Slice validations
 	MinItems            *int64
 	MaxItems            *int64
 	UniqueItems         bool
 	HasSliceValidations bool
-	NeedsSize           bool
-	NeedsValidation     bool
-	NeedsRequired       bool
+
+	// Not used yet (intended for maxProperties, minProperties validations)
+	NeedsSize bool
+	// Not used: deprecated
+	//NeedsValidation bool
+	//NeedsRequired bool
+
+	// NOTE: "patternProperties" and "dependencies" not supported by Swagger 2.0
 }
 
 // GenResponse represents a response object for code generation
@@ -118,6 +148,8 @@ type GenResponse struct {
 
 	Imports        map[string]string
 	DefaultImports []string
+
+	Extensions map[string]interface{}
 }
 
 // GenHeader represents a header on a response for code generation
@@ -150,12 +182,30 @@ type GenHeader struct {
 	ZeroValue string
 }
 
+// ItemsDepth returns a string "items.items..." with as many items as the level of nesting of the array.
+// For a header objects it always returns "".
+func (g *GenHeader) ItemsDepth() string {
+	// NOTE: this is currently used by templates to generate explicit comments in nested structures
+	return ""
+}
+
 // GenHeaders is a sorted collection of headers for codegen
 type GenHeaders []GenHeader
 
 func (g GenHeaders) Len() int           { return len(g) }
 func (g GenHeaders) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
 func (g GenHeaders) Less(i, j int) bool { return g[i].Name < g[j].Name }
+
+// HasSomeDefaults returns true is at least one header has a default value set
+func (g GenHeaders) HasSomeDefaults() bool {
+	// NOTE: this is currently used by templates to avoid empty constructs
+	for _, header := range g {
+		if header.HasDefault {
+			return true
+		}
+	}
+	return false
+}
 
 // GenParameter is used to represent
 // a parameter or a header for code generation.
@@ -189,6 +239,19 @@ type GenParameter struct {
 	HasDefault      bool
 	ZeroValue       string
 	AllowEmptyValue bool
+
+	// validation strategy for Body params, which may mix model and simple constructs.
+	// Distinguish the following cases:
+	// - HasSimpleBodyParams: body is an inline simple type
+	// - HasModelBodyParams: body is a model objectd
+	// - HasSimpleBodyItems: body is an inline array of simple type
+	// - HasModelBodyItems: body is an array of model objects
+	HasSimpleBodyParams bool
+	HasModelBodyParams  bool
+	HasSimpleBodyItems  bool
+	HasModelBodyItems   bool
+
+	Extensions map[string]interface{}
 }
 
 // IsQueryParam returns true when this parameter is a query param
@@ -221,12 +284,30 @@ func (g *GenParameter) IsFileParam() bool {
 	return g.SwaggerType == "file"
 }
 
+// ItemsDepth returns a string "items.items..." with as many items as the level of nesting of the array.
+// For a parameter object, it always returns "".
+func (g *GenParameter) ItemsDepth() string {
+	// NOTE: this is currently used by templates to generate explicit comments in nested structures
+	return ""
+}
+
 // GenParameters represents a sorted parameter collection
 type GenParameters []GenParameter
 
 func (g GenParameters) Len() int           { return len(g) }
 func (g GenParameters) Less(i, j int) bool { return g[i].Name < g[j].Name }
 func (g GenParameters) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
+
+// HasSomeDefaults returns true is at least one parameter has a default value set
+func (g GenParameters) HasSomeDefaults() bool {
+	// NOTE: this is currently used by templates to avoid empty constructs
+	for _, param := range g {
+		if param.HasDefault {
+			return true
+		}
+	}
+	return false
+}
 
 // GenItems represents the collection items for a collection parameter
 type GenItems struct {
@@ -244,10 +325,26 @@ type GenItems struct {
 
 	Location string
 	IndexVar string
+
+	// instructs generator to skip the splitting and parsing from CollectionFormat
+	SkipParse bool
+}
+
+// ItemsDepth returns a string "items.items..." with as many items as the level of nesting of the array.
+func (g *GenItems) ItemsDepth() string {
+	// NOTE: this is currently used by templates to generate explicit comments in nested structures
+	current := g
+	i := 1
+	for current.Parent != nil {
+		i++
+		current = current.Parent
+	}
+	return strings.Repeat("items.", i)
 }
 
 // GenOperationGroup represents a named (tagged) group of operations
 type GenOperationGroup struct {
+	GenCommon
 	Name       string
 	Operations GenOperations
 
@@ -257,6 +354,7 @@ type GenOperationGroup struct {
 	DefaultImports []string
 	RootPackage    string
 	WithContext    bool
+	GenOpts        *GenOpts
 }
 
 // GenOperationGroups is a sorted collection of operation groups
@@ -280,13 +378,12 @@ func (g GenStatusCodeResponses) MarshalJSON() ([]byte, error) {
 	}
 	var buf bytes.Buffer
 	buf.WriteRune('{')
-	s := 0
-	for _, v := range g {
+	for i, v := range g {
 		rb, err := json.Marshal(v)
 		if err != nil {
 			return nil, err
 		}
-		if s > 0 {
+		if i > 0 {
 			buf.WriteRune(',')
 		}
 		buf.WriteString(fmt.Sprintf("%q:", strconv.Itoa(v.Code)))
@@ -313,6 +410,7 @@ func (g *GenStatusCodeResponses) UnmarshalJSON(data []byte) error {
 
 // GenOperation represents an operation for code generation
 type GenOperation struct {
+	GenCommon
 	Package      string
 	ReceiverName string
 	Name         string
@@ -329,8 +427,8 @@ type GenOperation struct {
 	ExtraSchemas   []GenSchema
 
 	Authorized          bool
-	Security            []analysis.SecurityRequirement
-	SecurityDefinitions map[string]spec.SecurityScheme
+	Security            []GenSecurityRequirements
+	SecurityDefinitions GenSecuritySchemes
 	Principal           string
 
 	SuccessResponse  *GenResponse
@@ -344,9 +442,12 @@ type GenOperation struct {
 	HeaderParams         GenParameters
 	FormParams           GenParameters
 	HasQueryParams       bool
+	HasPathParams        bool
+	HasHeaderParams      bool
 	HasFormParams        bool
 	HasFormValueParams   bool
 	HasFileParams        bool
+	HasBodyParams        bool
 	HasStreamingResponse bool
 
 	Schemes            []string
@@ -355,6 +456,8 @@ type GenOperation struct {
 	ConsumesMediaTypes []string
 	WithContext        bool
 	TimeoutName        string
+
+	Extensions map[string]interface{}
 }
 
 // GenOperations represents a list of operations to generate
@@ -368,6 +471,7 @@ func (g GenOperations) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
 // GenApp represents all the meta data needed to generate an application
 // from a swagger spec
 type GenApp struct {
+	GenCommon
 	APIPackage          string
 	Package             string
 	ReceiverName        string
@@ -385,14 +489,21 @@ type GenApp struct {
 	ExtraSchemes        []string
 	Consumes            GenSerGroups
 	Produces            GenSerGroups
-	SecurityDefinitions []GenSecurityScheme
+	SecurityDefinitions GenSecuritySchemes
 	Models              []GenDefinition
 	Operations          GenOperations
 	OperationGroups     GenOperationGroups
 	SwaggerJSON         string
-	ExcludeSpec         bool
-	WithContext         bool
-	GenOpts             *GenOpts
+	// Embedded specs: this is important for when the generated server adds routes.
+	// NOTE: there is a distinct advantage to having this in runtime rather than generated code.
+	// We are noti ever going to generate the router.
+	// If embedding spec is an issue (e.g. memory usage), this can be excluded with the --exclude-spec
+	// generation option. Alternative methods to serve spec (e.g. from disk, ...) may be implemented by
+	// adding a middleware to the generated API.
+	FlatSwaggerJSON string
+	ExcludeSpec     bool
+	WithContext     bool
+	GenOpts         *GenOpts
 }
 
 // UseGoStructFlags returns true when no strategy is specified or it is set to "go-flags"
@@ -452,13 +563,6 @@ type GenSerializer struct {
 	Implementation string
 }
 
-// GenSecuritySchemes sorted representation of serializers
-type GenSecuritySchemes []GenSecurityScheme
-
-func (g GenSecuritySchemes) Len() int           { return len(g) }
-func (g GenSecuritySchemes) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
-func (g GenSecuritySchemes) Less(i, j int) bool { return g[i].Name < g[j].Name }
-
 // GenSecurityScheme represents a security scheme for code generation
 type GenSecurityScheme struct {
 	AppName      string
@@ -471,4 +575,35 @@ type GenSecurityScheme struct {
 	Scopes       []string
 	Source       string
 	Principal    string
+	// from spec.SecurityScheme
+	Description      string
+	Type             string
+	In               string
+	Flow             string
+	AuthorizationURL string
+	TokenURL         string
+	Extensions       map[string]interface{}
 }
+
+// GenSecuritySchemes sorted representation of serializers
+type GenSecuritySchemes []GenSecurityScheme
+
+func (g GenSecuritySchemes) Len() int           { return len(g) }
+func (g GenSecuritySchemes) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
+func (g GenSecuritySchemes) Less(i, j int) bool { return g[i].ID < g[j].ID }
+
+// GenSecurityRequirement represents a security requirement for an operation
+type GenSecurityRequirement struct {
+	Name   string
+	Scopes []string
+}
+
+// GenSecurityRequirements represents a compounded security requirement specification.
+// In a []GenSecurityRequirements complete requirements specification,
+// outer elements are interpreted as optional requirements (OR), and
+// inner elements are interpreted as jointly required (AND).
+type GenSecurityRequirements []GenSecurityRequirement
+
+func (g GenSecurityRequirements) Len() int           { return len(g) }
+func (g GenSecurityRequirements) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
+func (g GenSecurityRequirements) Less(i, j int) bool { return g[i].Name < g[j].Name }

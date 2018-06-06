@@ -15,6 +15,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/go-openapi/strfmt"
 	"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/transitive/mods"
 )
@@ -31,6 +33,7 @@ type NoModel struct {
 	// required: true
 	// minimum: > 10
 	// maximum: < 1000
+	// default: 11
 	ID int64 `json:"id"`
 
 	Ignored      string `json:"-"`
@@ -45,6 +48,7 @@ type NoModel struct {
 	// minimum: 3
 	// maximum: 45
 	// multiple of: 3
+	// example: 27
 	Score int32 `json:"score"`
 
 	// Name of this no model instance
@@ -61,6 +65,11 @@ type NoModel struct {
 	// read only: true
 	Created strfmt.DateTime `json:"created"`
 
+	// GoTimeCreated holds the time when this entry was created in go time.Time
+	//
+	// required: false
+	GoTimeCreated time.Time `json:"gocreated"`
+
 	// a FooSlice has foos which are strings
 	//
 	// min items: 3
@@ -70,6 +79,13 @@ type NoModel struct {
 	// items.maxLength: 10
 	// items.pattern: \w+
 	FooSlice []string `json:"foo_slice"`
+
+	// a TimeSlice is a slice of times
+	//
+	// min items: 3
+	// max items: 10
+	// unique: true
+	TimeSlice []time.Time `json:"time_slice"`
 
 	// a BarSlice has bars which are strings
 	//
@@ -85,6 +101,17 @@ type NoModel struct {
 	// items.items.items.pattern: \w+
 	BarSlice [][][]string `json:"bar_slice"`
 
+	// a DeepSlice has bars which are time
+	//
+	// min items: 3
+	// max items: 10
+	// unique: true
+	// items.minItems: 4
+	// items.maxItems: 9
+	// items.items.minItems: 5
+	// items.items.maxItems: 8
+	DeepTimeSlice [][][]time.Time `json:"deep_time_slice"`
+
 	// the items for this order
 	Items []struct {
 		// ID of this no model instance.
@@ -93,6 +120,7 @@ type NoModel struct {
 		// required: true
 		// minimum: > 10
 		// maximum: < 1000
+		// default: 11
 		ID int32 `json:"id"`
 
 		// The Pet to add to this NoModel items bucket.
@@ -107,6 +135,11 @@ type NoModel struct {
 		// minimum: 1
 		// maximum: 10
 		Quantity int16 `json:"quantity"`
+
+		// A dummy expiration date.
+		//
+		// required: true
+		Expiration time.Time `json:"expiration"`
 
 		// Notes to add to this item.
 		// This can be used to add special instructions.
@@ -161,6 +194,11 @@ type OtherTypes struct {
 	ManyModsTimed     mods.SomeTimedsType     `json:"manyModsTimed"`
 	ManyModsPetted    mods.SomePettedsType    `json:"manyModsPetted"`
 	ManyModsPettedPtr mods.SomePettedsPtrType `json:"manyModsPettedPtr"`
+
+	NamedAlias     SomeStringTypeAlias   `json:"namedAlias"`
+	NumberedAlias  SomeIntTypeAlias      `json:"numberedAlias"`
+	NamedsAlias    []SomeStringTypeAlias `json:"namedsAlias"`
+	NumberedsAlias []SomeIntTypeAlias    `json:"numberedsAlias"`
 }
 
 // A SimpleOne is a model with a few simple fields
@@ -182,6 +220,12 @@ type ComplexerOne struct {
 type OverridingOne struct {
 	SimpleOne
 	Age int64
+}
+
+// An OverridingOneIgnore is composed of a SimpleOne and overrides a field to ignore it
+type OverridingOneIgnore struct {
+	SimpleOne
+	Age int32 `json:"-"`
 }
 
 // An AllOfModel is composed out of embedded structs but it should build
@@ -555,4 +599,47 @@ type ModelA struct {
 // swagger:model cars
 type Cars struct {
 	Cars []*TeslaCar `json:"cars"`
+}
+
+// JSONString has fields with ",string" JSON directives.
+//
+// swagger:model jsonString
+type JSONString struct {
+	// Should be encoded as a string with string format "integer"
+	SomeInt    int    `json:"someInt,string"`
+	SomeInt8   int8   `json:"someInt8,string"`
+	SomeInt16  int16  `json:"someInt16,string"`
+	SomeInt32  int32  `json:"someInt32,string"`
+	SomeInt64  int64  `json:"someInt64,string"`
+	SomeUint   uint   `json:"someUint,string"`
+	SomeUint8  uint8  `json:"someUint8,string"`
+	SomeUint16 uint16 `json:"someUint16,string"`
+	SomeUint32 uint32 `json:"someUint32,string"`
+	SomeUint64 uint64 `json:"someUint64,string"`
+
+	// Should be encoded as a string with string format "double"
+	SomeFloat64 float64 `json:"someFloat64,string"`
+
+	// Should be encoded as a string with no format
+	SomeString string `json:"someString,string"`
+
+	// Should be encoded as a string with no format
+	SomeBool bool `json:"someBool,string"`
+
+	// The ",string" directive should be ignore before the type isn't scalar
+	SomethingElse Cars `json:"somethingElse,string"`
+}
+
+// IgnoredFields demostrates the use of swagger:ignore on struct fields.
+//
+// swagger:model ignoredFields
+type IgnoredFields struct {
+	SomeIncludedField string `json:"someIncludedField"`
+
+	// swagger:ignore
+	SomeIgnoredField string `json:"someIgnoredField"`
+
+	// This swagger:ignore tag won't work - it needs to be in the field's doc
+	// block
+	SomeErroneouslyIncludedField string `json:"someErroneouslyIncludedField"` // swagger:ignore
 }

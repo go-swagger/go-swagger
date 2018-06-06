@@ -1,4 +1,4 @@
-// Copyright 2017 Frank Schroeder. All rights reserved.
+// Copyright 2018 Frank Schroeder. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 //
@@ -196,9 +196,8 @@ func lexBeforeKey(l *lexer) stateFn {
 		return lexComment
 
 	case isWhitespace(r):
-		l.acceptRun(whitespace)
 		l.ignore()
-		return lexKey
+		return lexBeforeKey
 
 	default:
 		l.backup()

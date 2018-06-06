@@ -28,7 +28,7 @@ When a handler does use authentication then the second argument to the handler f
 principal for your application. You can specify the type name for this principal at generation time by specifying the
 -P or --principal flag.
 
-```shell
+```
 swagger generate server -P models.User
 swagger generate client -P models.User
 ```

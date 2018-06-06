@@ -46,6 +46,8 @@ Help Options:
           --flag-strategy=[go-flags|pflag]           the strategy to provide flags for the server (default: go-flags)
           --compatibility-mode=[modern|intermediate] the compatibility mode for the tls server (default: modern)
           --skip-validation                          skips validation of spec prior to generation
+      -r, --copyright-file=                          the file containing a copyright header for the generated source
+          --additional-initialism=                   additional consecutive capitals that should be considered as initialism, repeat for multiple
 ```
 
 The server application gets generated with all the handlers stubbed out with a not implemented handler. That means that you can start the API server immediately after generating it. It will respond to all valid requests with 501 Not Implemented. When a request is invalid it will most likely respond with an appropriate 4xx response.
@@ -120,7 +122,7 @@ func newCompleteMiddleware(ctx *middleware.Context) http.Handler {
 }
 ```
 
-Prior to handling requests however you probably want to configure the API with some actual implementations.  To do that you have to edit the configure_xxx_api.go file.  That file will only be generated the first time you generate a server application from a swagger spec. So the generated server uses this file to let you fill in the blanks.
+Prior to handling requests however you probably want to configure the API with some actual implementations.  To do that you have to edit the configure_xxx.go file.  That file will only be generated the first time you generate a server application from a swagger spec. So the generated server uses this file to let you fill in the blanks.
 
 For the todolist application that file looks like:
 
@@ -140,9 +142,9 @@ import (
 
 func configureAPI(api *operations.ToDoListAPI) http.Handler {
 	// configure the api here
-	api.JSONConsumer = httpkit.JSONConsumer()
+	api.JSONConsumer = runtime.JSONConsumer()
 
-	api.JSONProducer = httpkit.JSONProducer()
+	api.JSONProducer = runtime.JSONProducer()
 
 	api.KeyAuth = func(token string) (interface{}, error) {
 		return nil, errors.NotImplemented("api key auth (key) x-petstore-token from header has not yet been implemented")
@@ -203,6 +205,19 @@ type Producer interface {
 ```
 
 So it's something that can turn a reader into a hydrated interface. A producer is the counterpart of a consumer and writes objects to an io.Writer.  When you configure an api with those you make sure it can marshal the types for the supported content types.
+
+Go swagger automatically provides consumers and producers for known media types. To register a new mapping for a media
+type or to override an existing mapping, call the corresponding API functions in your configure_xxx.go file:
+
+```go
+func configureAPI(api *operations.ToDoListAPI) http.Handler {
+	// other setup code here...
+	
+	api.RegisterConsumer("application/pkcs10", myCustomConsumer)
+	api.RegisterProducer("application/pkcs10", myCustomProducer)
+}
+
+``` 
 
 The next thing that happens in the configureAPI method is setting up the authentication with a stub handler in this case. This particular swagger specification supports token based authentication and as such it wants you to configure a token auth handler.  Any error for an authentication handler is assumed to be an invalid authentication and will return the 401 status code.
 
@@ -347,7 +362,7 @@ Go swagger uses responders which are an interface implementation for things that
 // Responder is an interface for types to implement
 // when they want to be considered for writing HTTP responses
 type Responder interface {
-	WriteResponse(http.ResponseWriter, httpkit.Producer)
+	WriteResponse(http.ResponseWriter, runtime.Producer)
 }
 
 /*AddOneCreated Created
@@ -361,7 +376,7 @@ type AddOneCreated struct {
 }
 
 // WriteResponse to the client
-func (o *AddOneCreated) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *AddOneCreated) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(201)
 	if o.Payload != nil {
@@ -382,7 +397,7 @@ type AddOneDefault struct {
 }
 
 // WriteResponse to the client
-func (o *AddOneDefault) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer) {
+func (o *AddOneDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
 	if o.Payload != nil {

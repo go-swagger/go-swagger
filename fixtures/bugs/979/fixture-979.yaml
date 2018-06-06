@@ -1,0 +1,38 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: allOf without the explicit type object
+  description: checking that properties is enough to figure out an object schema
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /models:
+    get:
+      operationId: modelOp
+      summary: many model variations
+      description: no description
+      tags:
+        - testcgen
+      responses:
+        default:
+          description: Generic Out
+definitions:
+  Cluster:
+    type: object 
+    allOf:
+      - $ref: '#/definitions/NewCluster'
+      - properties:
+          result: 
+            description: results of cluster creation 
+            type: string  
+          status:
+            description: status of cluster created|updated|running|deleted 
+            type: string
+  NewCluster:
+    type: object
+    properties: 
+      dummyProp1:
+        type: integer

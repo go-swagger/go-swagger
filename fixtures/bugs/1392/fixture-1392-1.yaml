@@ -1,0 +1,64 @@
+swagger: "2.0"
+info:
+  title: Bug? Demo
+  description: Description.
+  version: "0.1.0"
+schemes:
+  - http
+produces:
+  - application/json
+consumes:
+  - application/json
+responses:
+  200:
+    description: OK
+    schema:
+      type: string
+  400:
+    description: Bad Request
+paths:
+  /someResource/:
+    patch:
+      operationId: PatchSomeResource
+      consumes:
+        - application/json
+      summary: Update the state of multiple stuff and things at once.
+      parameters:
+        - in: body
+          name: massUpdate
+          schema:
+            $ref: '#/definitions/BulkUpdateState'
+      responses:
+        200:
+          $ref: '#/responses/200'
+        400:
+          $ref: '#/responses/400'
+      tags:
+        - SomeResource
+definitions:
+  BulkUpdateState:
+    type: array
+    items:
+      $ref: '#/definitions/UpdateStateRequest'
+  UpdateStateRequest:
+    type: object
+    required:
+      - ID
+      - state
+    properties:
+      ID:
+        type: string
+        x-nullable: false
+      state:
+        $ref: '#/definitions/StateEnum'
+  UpdateRequest:
+    type: object
+  StateEnum:
+    type: string
+    enum:
+      - todo
+      - done
+      - blocked
+      - skipped
+      - unenrolled
+      - custom

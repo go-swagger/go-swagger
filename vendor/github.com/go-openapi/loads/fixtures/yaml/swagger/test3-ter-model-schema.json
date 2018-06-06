@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "./test3-model-schema.json",
+  "title": "test3-model-schema",
+  "description": "Test schema responses",
+  "definitions": {
+    "b": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

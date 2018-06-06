@@ -36,7 +36,7 @@ func TestParseResponses(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Len(t, responses, 7)
+	assert.Len(t, responses, 8)
 	cr, ok := responses["complexerOne"]
 	assert.True(t, ok)
 	assert.Len(t, cr.Headers, 7)
@@ -64,7 +64,7 @@ func TestParseResponses(t *testing.T) {
 			assert.Equal(t, "string", header.Type)
 			assert.Equal(t, "", header.Format)
 		default:
-			assert.Fail(t, "unkown header: "+k)
+			assert.Fail(t, "unknown header: "+k)
 		}
 	}
 
@@ -94,9 +94,13 @@ func TestParseResponses(t *testing.T) {
 	assert.True(t, ok)
 	assert.Len(t, sos.Headers, 1)
 
+	sosf, ok := responses["simpleOnesFunc"]
+	assert.True(t, ok)
+	assert.Len(t, sosf.Headers, 1)
+
 	res, ok := responses["someResponse"]
 	assert.True(t, ok)
-	assert.Len(t, res.Headers, 6)
+	assert.Len(t, res.Headers, 7)
 
 	for k, header := range res.Headers {
 		switch k {
@@ -109,6 +113,7 @@ func TestParseResponses(t *testing.T) {
 			assert.True(t, header.ExclusiveMaximum)
 			assert.EqualValues(t, 10, *header.Minimum)
 			assert.True(t, header.ExclusiveMinimum)
+			assert.Equal(t, 11, header.Default, "ID default value is incorrect")
 
 		case "score":
 			assert.Equal(t, "The Score of this model", header.Description)
@@ -119,6 +124,7 @@ func TestParseResponses(t *testing.T) {
 			assert.False(t, header.ExclusiveMaximum)
 			assert.EqualValues(t, 3, *header.Minimum)
 			assert.False(t, header.ExclusiveMinimum)
+			assert.Equal(t, 27, header.Example)
 
 		case "x-hdr-name":
 			assert.Equal(t, "Name of this some response instance", header.Description)
@@ -127,6 +133,11 @@ func TestParseResponses(t *testing.T) {
 			assert.EqualValues(t, 4, *header.MinLength)
 			assert.EqualValues(t, 50, *header.MaxLength)
 			assert.Equal(t, "[A-Za-z0-9-.]*", header.Pattern)
+
+		case "active":
+			assert.Equal(t, "Active state of the record", header.Description)
+			assert.Equal(t, "boolean", header.Type)
+			assert.Equal(t, true, header.Default)
 
 		case "created":
 			assert.Equal(t, "Created holds the time when this entry was created", header.Description)
@@ -147,6 +158,7 @@ func TestParseResponses(t *testing.T) {
 			assert.EqualValues(t, 3, *itprop.MinLength, "'foo_slice.items.minLength' should have been 3")
 			assert.EqualValues(t, 10, *itprop.MaxLength, "'foo_slice.items.maxLength' should have been 10")
 			assert.EqualValues(t, "\\w+", itprop.Pattern, "'foo_slice.items.pattern' should have \\w+")
+			assert.Equal(t, "foo", itprop.Example)
 
 		case "bar_slice":
 			assert.Equal(t, "a BarSlice has bars which are strings", header.Description)

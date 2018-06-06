@@ -1,0 +1,35 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: Private to-do list
+  description: |
+    A very simple api description that makes a json only API to submit to do's.
+
+produces:
+  - application/json
+
+consumes:
+  - application/json
+
+paths:
+  /foo:
+    get:
+      parameters:
+        - name: "groups[]"
+          in: query
+          type: array
+          collectionFormat: multi
+          items:
+            type: string
+
+definitions:
+  genericResource:
+    description: generic resource
+    properties:
+      meta:
+        type: string
+    required:
+      - meta
+    additionalProperties:
+      type: object

@@ -1,0 +1,99 @@
+---
+swagger: "2.0"
+info:
+  title: "Load Balancing Service API"
+  description: Play with path parameters and checks
+  version: "20170115"
+
+basePath: /20170115
+
+paths:
+  /loadBalancers/{loadBalancerId}/backendSets:
+    get:
+      summary: "ListBackendSets"
+      tags: ['loadBalancer']
+      description: Lists all backend sets associated with a given load balancer.
+      operationId: "ListBackendSets"
+      # fixed that: Missing parameter in path
+      parameters:
+        - name: loadBalancerId
+          type: string
+          in: path
+          # fixed that: should be required
+          required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: The list is being retrieved.
+          # fixed that: $ref is forbidden in headers
+          headers:
+            opc-response-id:
+              description: |
+                Unique identifier for the response.
+              type: string
+  /loadBalancers/{aLotOfLoadBalancerIds}/backendSets:
+    get:
+      summary: "ERROR"
+      tags: ['loadBalancer']
+      description: Triggers an invalid spec check
+      operationId: "ListALotOfBackendSets"
+      # fixed that: Missing parameter in path
+      parameters:
+        # Fixed that error here: parameter don't match
+        - name: aLotOfLoadBalancerIds
+          in: path
+          type: string
+          # fixed that: should be required
+          required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: The list is being retrieved.
+          # fixed that: $ref is forbidden in headers
+          headers:
+            opc-response-id:
+              description: |
+                Unique identifier for the response.
+              type: string
+  # This one should give a warning
+  /othercheck/{{sid}/warnMe:
+    get:
+      parameters:
+        # Fixed this: stupid, but what if I explictly want a { in name...
+        # Still an error since we add " in the name string
+        - name: '{sid'
+          in: path
+          type: string
+          required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+  # This one also
+  /othercheck/{sid }/warnMe:
+    get:
+      parameters:
+        # Fixed this: stupid, but what if I explictly want a space in name...
+        # Still an error since we add " in the name string
+        - name: 'sid '
+          in: path
+          type: string
+          required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+  # This one fails
+  /othercheck/{si/d}warnMe:
+    get:
+      parameters:
+        - name: sid
+          in: path
+          type: string
+          required: true
+      produces:
+      - "application/json"
+      responses:
+        200:

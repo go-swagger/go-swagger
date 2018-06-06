@@ -15,9 +15,8 @@
 package generate
 
 import (
-	"fmt"
-	"os"
-	"path/filepath"
+	"io/ioutil"
+	"log"
 	"strings"
 
 	"github.com/go-swagger/go-swagger/generator"
@@ -42,25 +41,24 @@ type Server struct {
 	FlagStrategy      string   `long:"flag-strategy" description:"the strategy to provide flags for the server" default:"go-flags" choice:"go-flags" choice:"pflag"`
 	CompatibilityMode string   `long:"compatibility-mode" description:"the compatibility mode for the tls server" default:"modern" choice:"modern" choice:"intermediate"`
 	SkipValidation    bool     `long:"skip-validation" description:"skips validation of spec prior to generation"`
+	SkipFlattening    bool     `long:"skip-flatten" description:"skips flattening of spec prior to generation"`
 }
 
-// Execute runs this command
-func (s *Server) Execute(args []string) error {
-	cfg, err := readConfig(string(s.ConfigFile))
-	if err != nil {
-		return err
-	}
-	setDebug(cfg)
-
-	if s.WithContext {
-		fmt.Fprintf(os.Stderr, "--with-context is deprecated because recent go versions now include the context on the request object to which you have access on the params.HTTPRequest property")
-	}
-
-	if s.ExistingModels != "" {
-		s.SkipModels = true
+func (s *Server) getOpts() (*generator.GenOpts, error) {
+	var copyrightstr string
+	copyrightfile := string(s.CopyrightFile)
+	if copyrightfile != "" {
+		//Read the Copyright from file path in opts
+		bytebuffer, err := ioutil.ReadFile(copyrightfile)
+		if err != nil {
+			return nil, err
+		}
+		copyrightstr = string(bytebuffer)
+	} else {
+		copyrightstr = ""
 	}
 
-	opts := &generator.GenOpts{
+	return &generator.GenOpts{
 		Spec:              string(s.Spec),
 		Target:            string(s.Target),
 		APIPackage:        s.APIPackage,
@@ -78,6 +76,7 @@ func (s *Server) Execute(args []string) error {
 		IncludeMain:       !s.ExcludeMain,
 		IncludeSupport:    !s.SkipSupport,
 		ValidateSpec:      !s.SkipValidation,
+		FlattenSpec:       !s.SkipFlattening,
 		ExcludeSpec:       s.ExcludeSpec,
 		TemplateDir:       string(s.TemplateDir),
 		WithContext:       s.WithContext,
@@ -89,40 +88,33 @@ func (s *Server) Execute(args []string) error {
 		FlagStrategy:      s.FlagStrategy,
 		CompatibilityMode: s.CompatibilityMode,
 		ExistingModels:    s.ExistingModels,
-	}
+		Copyright:         copyrightstr,
+	}, nil
+}
 
-	if e := opts.EnsureDefaults(false); e != nil {
-		return e
-	}
+func (s *Server) generate(opts *generator.GenOpts) error {
+	return generator.GenerateServer(s.Name, s.Models, s.Operations, opts)
+}
 
-	if e := configureOptsFromConfig(cfg, opts); e != nil {
-		return e
-	}
-
-	if e := generator.GenerateServer(s.Name, s.Models, s.Operations, opts); e != nil {
-		return e
-	}
-
-	rp, err := filepath.Rel(".", opts.Target)
-	if err != nil {
-		return err
-	}
+func (s *Server) log(rp string) {
 	flagsPackage := "github.com/jessevdk/go-flags"
 	if strings.HasPrefix(s.FlagStrategy, "pflag") {
 		flagsPackage = "github.com/spf13/pflag"
 	}
 
-	fmt.Fprintf(os.Stderr, `Generation completed!
+	log.Printf(`Generation completed!
 
 For this generation to compile you need to have some packages in your GOPATH:
 
-  * github.com/go-openapi/runtime
-  * github.com/tylerb/graceful
-  * `+flagsPackage+`
-  * golang.org/x/net/context
+	* github.com/go-openapi/runtime
+	* github.com/tylerb/graceful
+	* `+flagsPackage+`
 
 You can get these now with: go get -u -f %s/...
 `, rp)
+}
 
-	return nil
+// Execute runs this command
+func (s *Server) Execute(args []string) error {
+	return createSwagger(s)
 }

@@ -31,7 +31,7 @@ type SpecFile struct {
 	BasePath   string         `long:"base-path" short:"b" description:"the base path to use" default:"."`
 	BuildTags  string         `long:"tags" short:"t" description:"build tags" default:""`
 	ScanModels bool           `long:"scan-models" short:"m" description:"includes models that were annotated with 'swagger:model'"`
-	Compact    bool           `long:"compact" description:"when present, doesn't prettify the the json"`
+	Compact    bool           `long:"compact" description:"when present, doesn't prettify the json"`
 	Output     flags.Filename `long:"output" short:"o" description:"the file to write to"`
 	Input      flags.Filename `long:"input" short:"i" description:"the file to use as input"`
 }

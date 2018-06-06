@@ -1,0 +1,195 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: 'tests on polymorphic types: part I base types'
+  description: different types of base types and types based upon base types (by aliasing or composition)
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /models:
+    get:
+      operationId: modelOp
+      summary: many model variations
+      description: no description
+      tags:
+        - testcgen
+      responses:
+        default:
+          description: Generic Out
+definitions:
+  # different sorts of base types, from trivial to rich
+  trivialBase:
+    type: object
+    description: 'do not expect validations on this trivialBase: validation should be empty'
+    discriminator: trivialType
+    required:  
+      - trivialType
+    properties:
+      trivialType: 
+        type: string
+  trivialBaseWithValidation:
+    type: object
+    description: 'do not expect validation on the discriminator: they are documentary only'
+    discriminator: trivialTypeWithValidation
+    required: 
+      - trivialTypeWithValidation
+    properties:
+      trivialTypeWithValidation: 
+        description: 'not actually validated. This is documentary only'
+        type: string
+        maxLength: 255
+  baseWithProperty:
+    type: object
+    discriminator: baseWithPropertyType
+    required:
+      - baseWithPropertyType
+    properties:
+      baseWithPropertyType:
+        type: string
+      baseSize:
+        description: this one for sanity check simple validations
+        type: integer
+        minimum: 0
+  baseWithAddProps:
+    type: object
+    description: 'BREAKS'
+    discriminator: baseWithAddPropsType
+    required:
+      - baseWithAddPropsType
+    properties:
+      baseWithAddPropsType: 
+        description: this one for sanity check simple validations
+        type: string
+        format: hostname
+    additionalProperties:
+      type: object
+      properties:
+        baseAddProp:
+          type: integer
+          minimum: 0
+  baseWithMap:
+    description: 'PASS'
+    type: object
+    discriminator: baseWithMapType
+    required:
+      - baseWithMapType
+    properties:
+      baseWithMapType:
+        type: string
+    additionalProperties: true
+  baseWithTuple:
+    description: 'BREAKS'
+    type: object
+    discriminator: baseWithTupleType
+    required:
+      - baseWithTupleType
+    properties:
+      baseWithTupleType:
+        type: string
+      baseTuple: 
+        type: array
+        items:
+          - type: integer
+            minimum: 0
+          - type: string
+            format: date
+        additionalItems:
+          type: string
+          format: uuid
+  baseWithAllOf:
+    type: object
+    discriminator: baseWithAllOfType
+    required:
+      - baseWithAllOfType
+    properties:
+      baseWithAllOfType:
+        type: string
+      baseComposition:
+        type: object 
+        allOf: 
+          - properties:
+              baseProp1:
+                type: string
+            additionalProperties:
+              type: object
+              properties:
+                extendedProp1:
+                  type: string
+          - properties:
+              baseProp2:
+                type: string
+            additionalProperties:
+              type: object
+              properties:
+                extendedProp1:
+                  type: string
+  #
+  # Composition patterns on base types
+  #
+  # Aliases on 'trivialBase'
+  trivialSliceAlias:
+    type: array 
+    items: 
+      $ref: '#/definitions/trivialBase'
+  trivialSliceAliasWithValidation:
+    type: array 
+    maxItems: 15
+    items: 
+      $ref: '#/definitions/trivialBase'
+  trivialMapAlias:
+    type: object 
+    additionalProperties: 
+      $ref: '#/definitions/trivialBase'
+  # Aliases on trivialBaseWithValidation
+  trivialWithValidationSliceAlias:
+    type: array 
+    items: 
+      $ref: '#/definitions/trivialBaseWithValidation'
+  trivialWithValidationSliceAliasWithValidation:
+    type: array 
+    maxItems: 15
+    items: 
+      $ref: '#/definitions/trivialBaseWithValidation'
+  trivialWithValidationMapAlias:
+    type: object 
+    additionalProperties: 
+      $ref: '#/definitions/trivialBaseWithValidation'
+  # Aliases on ...
+  # TODO
+  # Compositions of base type 'trivialBase'
+  # As properties
+  trivialInProps:
+    type: object 
+    properties:
+      genericTrivialProp:
+        $ref: '#/definitions/trivialBase'
+  # As items
+  trivialInItems:
+    type: array
+    maxItems: 10
+    items:
+      $ref: '#/definitions/trivialBase'
+  # As additional properties
+  trivialInAddProps:
+    type: object 
+    properties:
+      prop1:
+        type: integer 
+        minimum: 10
+    additionalProperties:
+      $ref: '#/definitions/trivialBase'
+  # As tuple elements, with additionalItems
+  trivialInTuple:
+    type: array
+    items:
+      - type: integer       # sanity check element
+        minimum: 10
+      - $ref: '#/definitions/trivialBase'
+    additionalItems:
+     $ref: '#/definitions/trivialBase'
+
+  # As allOf: means creating a new subtype. 
+  # This is multiple inehritance and this story shall also be told...

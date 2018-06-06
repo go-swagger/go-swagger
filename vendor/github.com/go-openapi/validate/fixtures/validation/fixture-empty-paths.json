@@ -1,0 +1,22 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "",
+    "version": "1.0.0",
+    "title": "issue#161",
+    "termsOfService": "http://helloreverb.com/terms/",
+    "contact": {
+      "name": "apiteam@wordnik.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "host": "petstore.swagger.wordnik.com",
+  "basePath": "/v2",
+  "schemes": [
+    "http"
+  ],
+  "paths": {}
+}

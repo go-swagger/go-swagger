@@ -35,7 +35,7 @@ func TestScanFileParam(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	assert.Len(t, noParamOps, 8)
+	assert.Len(t, noParamOps, 10)
 
 	of, ok := noParamOps["myOperation"]
 	assert.True(t, ok)
@@ -59,6 +59,15 @@ func TestScanFileParam(t *testing.T) {
 	assert.Equal(t, "formData", extraParam.In)
 	assert.Equal(t, "integer", extraParam.Type)
 	assert.True(t, extraParam.Required)
+
+	ffp, ok := noParamOps["myFuncOperation"]
+	assert.True(t, ok)
+	assert.Len(t, ffp.Parameters, 1)
+	fileParam = ffp.Parameters[0]
+	assert.Equal(t, "MyFormFile desc.", fileParam.Description)
+	assert.Equal(t, "formData", fileParam.In)
+	assert.Equal(t, "file", fileParam.Type)
+	assert.False(t, fileParam.Required)
 }
 
 func TestParamsParser(t *testing.T) {
@@ -73,7 +82,7 @@ func TestParamsParser(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	assert.Len(t, noParamOps, 8)
+	assert.Len(t, noParamOps, 10)
 
 	cr, ok := noParamOps["yetAnotherOperation"]
 	assert.True(t, ok)
@@ -145,6 +154,7 @@ func TestParamsParser(t *testing.T) {
 			assert.True(t, param.ExclusiveMaximum)
 			assert.EqualValues(t, 10, *param.Minimum)
 			assert.True(t, param.ExclusiveMinimum)
+			assert.Equal(t, 1, param.Default, "%s default value is incorrect", param.Name)
 
 		case "score":
 			assert.Equal(t, "The Score of this model", param.Description)
@@ -157,6 +167,8 @@ func TestParamsParser(t *testing.T) {
 			assert.False(t, param.ExclusiveMaximum)
 			assert.EqualValues(t, 3, *param.Minimum)
 			assert.False(t, param.ExclusiveMinimum)
+			assert.Equal(t, 2, param.Default, "%s default value is incorrect", param.Name)
+			assert.Equal(t, 27, param.Example)
 
 		case "x-hdr-name":
 			assert.Equal(t, "Name of this no model instance", param.Description)
@@ -193,13 +205,13 @@ func TestParamsParser(t *testing.T) {
 			assert.False(t, param.Required)
 			assert.True(t, param.UniqueItems)
 			assert.Equal(t, "pipe", param.CollectionFormat)
-			assert.NotNil(t, param.Items, "foo_slice should have had an items property")
 			assert.EqualValues(t, 3, *param.MinItems, "'foo_slice' should have had 3 min items")
 			assert.EqualValues(t, 10, *param.MaxItems, "'foo_slice' should have had 10 max items")
 			itprop := param.Items
 			assert.EqualValues(t, 3, *itprop.MinLength, "'foo_slice.items.minLength' should have been 3")
 			assert.EqualValues(t, 10, *itprop.MaxLength, "'foo_slice.items.maxLength' should have been 10")
 			assert.EqualValues(t, "\\w+", itprop.Pattern, "'foo_slice.items.pattern' should have \\w+")
+			assert.EqualValues(t, "bar", itprop.Default, "'foo_slice.items.default' should have bar default value")
 
 		case "items":
 			assert.Equal(t, "Items", param.Extensions["x-go-name"])
@@ -221,6 +233,7 @@ func TestParamsParser(t *testing.T) {
 			assert.NotNil(t, iprop.Minimum)
 			assert.EqualValues(t, 10, *iprop.Minimum)
 			assert.True(t, iprop.ExclusiveMinimum, "'id' should have had an exclusive minimum")
+			assert.Equal(t, 3, iprop.Default, "Items.ID default value is incorrect")
 
 			assertRef(t, itprop, "pet", "Pet", "#/definitions/pet")
 			iprop, ok = itprop.Properties["pet"]
@@ -297,6 +310,35 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, 6, index, "%s index incorrect", param.Name)
 		case "items":
 			assert.Equal(t, 7, index, "%s index incorrect", param.Name)
+		default:
+			assert.Fail(t, "unkown property: "+param.Name)
+		}
+	}
+
+	// check that aliases work correctly
+	aliasOp, ok := noParamOps["someAliasOperation"]
+	assert.True(t, ok)
+	assert.Len(t, aliasOp.Parameters, 4)
+	for _, param := range aliasOp.Parameters {
+		switch param.Name {
+		case "intAlias":
+			assert.Equal(t, "query", param.In)
+			assert.Equal(t, "integer", param.Type)
+			assert.Equal(t, "int64", param.Format)
+			assert.True(t, param.Required)
+			assert.EqualValues(t, 10, *param.Maximum)
+			assert.EqualValues(t, 1, *param.Minimum)
+		case "stringAlias":
+			assert.Equal(t, "query", param.In)
+			assert.Equal(t, "string", param.Type)
+		case "intAliasPath":
+			assert.Equal(t, "path", param.In)
+			assert.Equal(t, "integer", param.Type)
+			assert.Equal(t, "int64", param.Format)
+		case "intAliasForm":
+			assert.Equal(t, "formData", param.In)
+			assert.Equal(t, "integer", param.Type)
+			assert.Equal(t, "int64", param.Format)
 		default:
 			assert.Fail(t, "unkown property: "+param.Name)
 		}
