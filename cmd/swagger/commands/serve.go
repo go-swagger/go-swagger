@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"path"
 	"strconv"
-	//"time"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime/middleware"
