@@ -7,18 +7,18 @@
 package {{ .APIPackage }}
 
 import (
-    "context"
+	"context"
 	"crypto/tls"
 	"errors"
 	"log"
 	"net"
 	"net/http"
-    "os"
-    "os/signal"
+	"os"
+	"os/signal"
 	"strconv"
 	"sync"
 	"sync/atomic"
-    "syscall"
+	"syscall"
 	"time"
 
 
@@ -165,7 +165,7 @@ func NewServer(api *{{ .Package }}.{{ pascalize .Name }}API) *Server {
   {{ end }}{{ end }}
 	s.shutdown = make(chan struct{})
 	s.api = api
-    s.interrupt = make(chan os.Signal, 1)
+	s.interrupt = make(chan os.Signal, 1)
 	return s
 }
 
@@ -189,7 +189,7 @@ type Server struct {
 	CleanupTimeout   time.Duration{{ if .UseGoStructFlags }}    `long:"cleanup-timeout" description:"grace period for which to wait before shutting down the server" default:"10s"`{{ end }}
 	MaxHeaderSize    flagext.ByteSize{{ if .UseGoStructFlags }} `long:"max-header-size" description:"controls the maximum number of bytes the server will read parsing the request header's keys and values, including the request line. It does not limit the size of the request body." default:"1MiB"`{{ end }}
 
-    SocketPath {{ if .UsePFlags }}string{{ else }}flags.Filename `long:"socket-path" description:"the unix socket to listen on" default:"/var/run/{{ dasherize .Name }}.sock"`{{ end }}
+	SocketPath {{ if .UsePFlags }}string{{ else }}flags.Filename `long:"socket-path" description:"the unix socket to listen on" default:"/var/run/{{ dasherize .Name }}.sock"`{{ end }}
 	domainSocketL net.Listener
 
 	Host string{{ if .UseGoStructFlags }} `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`{{ end }}
@@ -205,7 +205,7 @@ type Server struct {
 	TLSCertificate    {{ if .UsePFlags }}string{{ else }}flags.Filename `long:"tls-certificate" description:"the certificate to use for secure connections" env:"TLS_CERTIFICATE"`{{ end }}
 	TLSCertificateKey {{ if .UsePFlags }}string{{ else }}flags.Filename `long:"tls-key" description:"the private key to use for secure conections" env:"TLS_PRIVATE_KEY"`{{ end }}
 	TLSCACertificate  {{ if .UsePFlags }}string{{ else }}flags.Filename `long:"tls-ca" description:"the certificate authority file to be used with mutual tls auth" env:"TLS_CA_CERTIFICATE"`{{ end }}
-    TLSListenLimit    int{{ if .UseGoStructFlags }}            `long:"tls-listen-limit" description:"limit the number of outstanding requests"`{{ end }}
+	TLSListenLimit    int{{ if .UseGoStructFlags }}            `long:"tls-listen-limit" description:"limit the number of outstanding requests"`{{ end }}
 	TLSKeepAlive      time.Duration{{ if .UseGoStructFlags }}  `long:"tls-keep-alive" description:"sets the TCP keep-alive timeouts on accepted connections. It prunes dead TCP connections ( e.g. closing laptop mid-download)"`{{ end }}
 	TLSReadTimeout    time.Duration{{ if .UseGoStructFlags }}  `long:"tls-read-timeout" description:"maximum duration before timing out read of the request"`{{ end }}
 	TLSWriteTimeout   time.Duration{{ if .UseGoStructFlags }}  `long:"tls-write-timeout" description:"maximum duration before timing out write of the response"`{{ end }}
@@ -217,10 +217,9 @@ type Server struct {
 	hasListeners      bool
 	shutdown          chan struct{}
 	shuttingDown      int32
-
-    interrupted       bool
-    interrupt         chan os.Signal
-    chanLock          sync.RWMutex
+	interrupted       bool
+	interrupt         chan os.Signal
+	chanLock          sync.RWMutex
 }
 
 // Logf logs message either via defined user logger or via system one if no user logger is defined.
@@ -288,10 +287,10 @@ func (s *Server) Serve() (err error) {
 	}
 
 	var wg sync.WaitGroup
-    quitting := make(chan struct{})
-    once := new(sync.Once)
-    signalNotify(s.interrupt)
-    go handleInterrupt(once, s, quitting)
+	quitting := make(chan struct{})
+	once := new(sync.Once)
+	signalNotify(s.interrupt)
+	go handleInterrupt(once, s, quitting)
 
 	if s.hasScheme(schemeUnix) {
 		domainSocket := new(http.Server)
@@ -342,9 +341,7 @@ func (s *Server) Serve() (err error) {
 			}
 			s.Logf("Stopped serving {{ humanize .Name }} at http://%s", l.Addr())
 		}(s.httpServerL)
-
-		
-        go s.handleShutdown(&wg, httpServer)
+		go s.handleShutdown(&wg, httpServer)
 	}
 
 	if s.hasScheme(schemeHTTPS) {
@@ -429,9 +426,9 @@ func (s *Server) Serve() (err error) {
 			s.Logf("Stopped serving {{ humanize .Name }} at https://%s", l.Addr())
 		}(tls.NewListener(s.httpsServerL, httpsServer.TLSConfig))
 		go s.handleShutdown(&wg, httpsServer)
-    }
+	}
 
-    wg.Wait()
+	wg.Wait()
 	return nil
 }
 
@@ -512,46 +509,44 @@ func (s *Server) Shutdown() error {
 		s.Logf("already shutting down")
 		return nil
 	}
-    close(s.shutdown)
+	close(s.shutdown)
 	return nil
 }
 
 func (s *Server) handleShutdown(wg *sync.WaitGroup, server *http.Server) {
 	defer wg.Done()
+	ctx, cancel := context.WithTimeout(context.TODO(), 15*time.Second)
+	defer cancel()
 
-    ctx, cancel := context.WithTimeout(context.TODO(), 15*time.Second)
-    defer cancel()
-
-    <-s.shutdown
-    if err := server.Shutdown(ctx); err != nil {
-        // Error from closing listeners, or context timeout:
-        s.Logf("HTTP server Shutdown: %v", err)
-    } else {
-        atomic.AddInt32(&s.shuttingDown, 1)
-        select {
-        case <- ctx.Done():
-            if err := ctx.Err(); err != nil {
-                s.Logf("Error %s", err)
-            }
-        default:
-                done := make(chan error)
-                defer close(done)
-                go func() {
-                    <- ctx.Done()
-                    done <- ctx.Err()        
-                }()
-                go func() {
-                    //done <- s.api.Shutdown(ctx)
-                    s.api.ServerShutdown()
-                    done <- errors.New("API shut down")
-                }()
-                if err := <-done; err != nil {
-                    s.Logf("Error %s", err)
-                }
-
-        }
-    }
-    return
+	<-s.shutdown
+	if err := server.Shutdown(ctx); err != nil {
+	// Error from closing listeners, or context timeout:
+	s.Logf("HTTP server Shutdown: %v", err)
+	} else {
+		atomic.AddInt32(&s.shuttingDown, 1)
+		select {
+		case <- ctx.Done():
+			if err := ctx.Err(); err != nil {
+				s.Logf("Error %s", err)
+			}
+		default:
+			done := make(chan error)
+			defer close(done)
+			go func() {
+				<- ctx.Done()
+				done <- ctx.Err()
+			}()
+			go func() {
+				//done <- s.api.Shutdown(ctx)
+				s.api.ServerShutdown()
+				done <- errors.New("API shut down")
+			}()
+			if err := <-done; err != nil {
+				s.Logf("Error %s", err)
+			}
+		}
+	}
+	return
 }
 
 // GetHandler returns a handler useful for testing
@@ -595,7 +590,7 @@ func (s *Server) TLSListener() (net.Listener, error) {
 }
 
 func handleInterrupt(once *sync.Once, s *Server, quitting chan struct{}) {
-    once.Do(func(){
+	once.Do(func(){
 	for _ = range s.interrupt {
 		if s.interrupted {
 			s.Logf("Server already shutting down")
@@ -615,9 +610,9 @@ func handleInterrupt(once *sync.Once, s *Server, quitting chan struct{}) {
 			s.Logf("Error: %s", err)
 		}
 	}
-    })
+	})
 }
 
 func signalNotify(interrupt chan<- os.Signal) {
-    signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
 }
