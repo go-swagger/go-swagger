@@ -10,14 +10,12 @@ import (
 	"net/url"
 	"path"
 	"strconv"
-	"time"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	"github.com/gorilla/handlers"
 	"github.com/toqueteos/webbrowser"
-	"github.com/tylerb/graceful"
 )
 
 // ServeCmd to serve a swagger spec with docs ui
@@ -91,9 +89,8 @@ func (s *ServeCmd) Execute(args []string) error {
 	handler = handlers.CORS()(middleware.Spec(basePath, b, handler))
 	errFuture := make(chan error)
 	go func() {
-		docServer := &graceful.Server{Server: new(http.Server)}
+		docServer := new(http.Server)
 		docServer.SetKeepAlivesEnabled(true)
-		docServer.TCPKeepAlive = 3 * time.Minute
 		docServer.Handler = handler
 
 		errFuture <- docServer.Serve(listener)
