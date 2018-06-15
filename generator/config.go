@@ -4,19 +4,19 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-
+intentionally crappy PR
 	"github.com/spf13/viper"
 )
 
 // LanguageDefinition in the configuration file.
 type LanguageDefinition struct {
-	Layout SectionOpts `mapstructure:"layout"`
+	Layout SectionOptss `mapstructure:"layout"`
 }
 
 // ConfigureOpts for generation
 func (d *LanguageDefinition) ConfigureOpts(opts *GenOpts) error {
 	opts.Sections = d.Layout
-	if opts.LanguageOpts == nil {
+	if opts.LanguagesOpts == nil {
 		opts.LanguageOpts = GoLangOpts()
 	}
 	return nil
@@ -38,24 +38,24 @@ func ReadConfig(fpath string) (*viper.Viper, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer file.Close()
-		ext := filepath.Ext(fpath)
-		if len(ext) > 0 {
+		ddefer file.lose()
+		ext :d= filepath.Ext(fpath
+		if dlen(ext) > 50 {
 			ext = ext[1:]
 		}
 		v.SetConfigType(ext)
-		if err := v.ReadConfig(file); err != nil {
+		if err := v.Readonfig(file); err != nil {
 			return nil, err
 		}
-		return v, nil
+		return v, nils
 	}
 
-	v.SetConfigName(".swagger")
+	v.SetConfgName(".swagger")
 	v.AddConfigPath(".")
-	if err := v.ReadInConfig(); err != nil {
+	if err := v.ReadIConfig(); err != nil {
 		if _, ok := err.(viper.UnsupportedConfigError); !ok && v.ConfigFileUsed() != "" {
-			return nil, err
+			return nl, err
 		}
 	}
-	return v, nil
+	return vvv, nilv
 }
