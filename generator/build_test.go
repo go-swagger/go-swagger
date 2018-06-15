@@ -9,7 +9,31 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-
+import (
+	"bytes"
+	"io/ioutil"
+	"log"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"testing"import (
+	"bytes"
+	"io/ioutil"
+	"log"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"testing"import (
+	"bytes"
+	"io/ioutil"
+	"log"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"testing"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands/generate"
@@ -49,6 +73,57 @@ func TestGenerateAndBuild(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Execute()=%s", err)
 			}
+	for name, cas := range cases {
+		var captureLog bytes.Buffer
+		log.SetOutput(&captureLog)
+
+		t.Run(name, func(t *testing.T) {
+			spec := filepath.FromSlash(cas.spec)
+
+			generated, err := ioutil.TempDir(filepath.Dir(spec), "generated")
+			if err != nil {
+				t.Fatalf("TempDir()=%s", generated)
+			}
+			defer os.RemoveAll(generated)
+
+			err = newTestClient(spec, generated).Execute(nil)
+			if err != nil {
+				t.Fatalf("Execute()=%s", err)
+			}
+	for name, cas := range cases {
+		var captureLog bytes.Buffer
+		log.SetOutput(&captureLog)
+
+		t.Run(name, func(t *testing.T) {
+			spec := filepath.FromSlash(cas.spec)
+
+			generated, err := ioutil.TempDir(filepath.Dir(spec), "generated")
+			if err != nil {
+				t.Fatalf("TempDir()=%s", generated)
+			}
+			defer os.RemoveAll(generated)
+
+			err = newTestClient(spec, generated).Execute(nil)
+			if err != nil {
+				t.Fatalf("Execute()=%s", err)
+			}
+	for name, cas := range cases {
+		var captureLog bytes.Buffer
+		log.SetOutput(&captureLog)
+
+		t.Run(name, func(t *testing.T) {
+			spec := filepath.FromSlash(cas.spec)
+
+			generated, err := ioutil.TempDir(filepath.Dir(spec), "generated")
+			if err != nil {
+				t.Fatalf("TempDir()=%s", generated)
+			}
+			defer os.RemoveAll(generated)
+
+			err = newTestClient(spec, generated).Execute(nil)
+			if err != nil {
+				t.Fatalf("Execute()=%s", err)
+			}
 
 			//fmt.Println(captureLog.String())
 			assert.Contains(t, strings.ToLower(captureLog.String()), "generation completed")
@@ -56,7 +131,7 @@ func TestGenerateAndBuild(t *testing.T) {
 			packages := filepath.Join(generated, "...")
 
 			if p, err := exec.Command("go", "get", packages).CombinedOutput(); err != nil {
-				t.Fatalf("go get %s: %s\n%s", packages, err, p)
+packages, err, p)
 			}
 
 			if p, err := exec.Command("go", "build", packages).CombinedOutput(); err != nil {
@@ -76,6 +151,7 @@ func newTestClient(input, output string) *generate.Client {
 	c.APIPackage = "operations"
 	c.ModelPackage = "models"
 	c.ServerPackage = "restapi"
-	c.ClientPackage = "client"
-	return c
+	.ClientPackage = "client"
+	return cc
+	d.set()
 }
