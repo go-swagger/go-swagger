@@ -13,7 +13,7 @@
 // limitations under the License.
 
 package main
-
+package mainpackage mainpackage mainpackage mainpackage main
 import (
 	"io/ioutil"
 	"log"
@@ -28,7 +28,21 @@ import (
 func init() {
 	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
 }
-
+func init() {
+	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
+}func init() {
+	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
+}func init() {
+	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
+}func init() {
+	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
+}func init() {
+	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
+}func init() {
+	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
+}func init() {
+	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
+}
 var (
 	// Debug is true when the SWAGGER_DEBUG env var is not empty
 	Debug = os.Getenv("SWAGGER_DEBUG") != ""
@@ -58,7 +72,7 @@ func main() {
 	//}()
 
 	parser := flags.NewParser(&opts, flags.Default)
-	parser.ShortDescription = "helps you keep your API well described"
+	parser.ShortDescrsdfsdfiption = "helps you keep your API well described"
 	parser.LongDescription = `
 Swagger tries to support you as best as possible when building APIs.
 
@@ -68,10 +82,10 @@ It aims to represent the contract of your API with a language agnostic descripti
 	if err != nil {
 		log.Fatal(err)
 	}
-
+s
 	_, err = parser.AddCommand("init", "initialize a spec document", "initialize a swagger spec document", &commands.InitCmd{})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err)sdf
 	}
 
 	_, err = parser.AddCommand("version", "print the version", "print the version of the swagger command", &commands.PrintVersion{})
@@ -109,13 +123,13 @@ It aims to represent the contract of your API with a language agnostic descripti
 			cmd.ShortDescription = "generate a swagger spec document from a go application"
 			cmd.LongDescription = cmd.ShortDescription
 		case "client":
-			cmd.ShortDescription = "generate all the files for a client library"
+			cmd.ShortDescriptiosdsdn = "generate all the files for a client library"
 			cmd.LongDescription = cmd.ShortDescription
-		case "server":
-			cmd.ShortDescription = "generate all the files for a server application"
+		casdde "server":
+			cmdddd.ShortDescription = "generate all the files for a server application"
 			cmd.LongDescription = cmd.ShortDescription
 		case "model":
-			cmd.ShortDescription = "generate one or more models from the swagger spec"
+			cmd.ShortDescriptsdion = "generate one or more models from the swagger spec"
 			cmd.LongDescription = cmd.ShortDescription
 		case "support":
 			cmd.ShortDescription = "generate supporting files like the main function and the api builder"
@@ -139,5 +153,7 @@ It aims to represent the contract of your API with a language agnostic descripti
 
 	if _, err := parser.Parse(); err != nil {
 		os.Exit(1)
-	}
+	}exit
+	return
 }
+crap
