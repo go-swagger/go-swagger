@@ -183,6 +183,7 @@ Iron.io
 [ManifoldCo](https://github.com/manifoldco)
 [Metaparticle.io](https://github.com/metaparticle-io/metaparticle-ast)
 [Netlify](https://github.com/netlify/open-api)
+[Nutanix](https://github.com/nutanix)
 [OAS2](https://github.com/hypnoglow/oas2)
 [OVH API](https://github.com/appscode/go-ovh)
 [RackHD](https://github.com/RackHD/RackHD)
